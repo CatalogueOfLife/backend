@@ -19,6 +19,6 @@ public class ShellCmd extends ConfiguredCommand<ColAppConfig> {
   protected void run(Bootstrap<ColAppConfig> bootstrap, Namespace namespace, ColAppConfig configuration) throws Exception {
     System.out.format("Opening neo4j shell on port %s to dataset %s.\n" +
             "Open another dataset or post with key=null to close the shell.\n",
-            PORT, 1234);
+        PORT, 1234);
   }
 }

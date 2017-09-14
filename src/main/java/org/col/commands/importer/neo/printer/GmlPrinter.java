@@ -4,10 +4,10 @@ package org.col.commands.importer.neo.printer;
 import com.google.common.base.Function;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
+import org.col.api.vocab.Rank;
 import org.col.commands.importer.neo.model.NeoProperties;
 import org.col.commands.importer.neo.model.RelType;
 import org.col.commands.importer.neo.traverse.RankEvaluator;
-import org.col.api.vocab.Rank;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
@@ -19,7 +19,7 @@ import java.util.List;
 
 /**
  * Expects no pro parte relations in the walker!
-
+ * <p>
  * https://en.wikipedia.org/wiki/Graph_Modelling_Language
  * See http://www.fim.uni-passau.de/fileadmin/files/lehrstuhl/brandenburg/projekte/gml/gml-technical-report.pdf
  */

@@ -2,8 +2,8 @@ package org.col.commands.importer.neo;
 
 import com.google.common.io.Files;
 import org.apache.commons.io.FileUtils;
-import org.col.config.NeoConfig;
 import org.col.commands.importer.neo.model.TaxonNameNode;
+import org.col.config.NeoConfig;
 import org.col.util.CleanupUtils;
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
@@ -15,8 +15,7 @@ import java.io.File;
 
 /**
  * A factory for persistent & temporary, volatile neodb instances.
- *
- * */
+ */
 public class NeoDbFactory {
   private static final Logger LOG = LoggerFactory.getLogger(NeoDbFactory.class);
 

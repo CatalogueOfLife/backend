@@ -30,7 +30,7 @@ public final class VocabularyUtils {
    * Generic method to toEnum an enumeration value for a given string based on the name of the enum member.
    * The toEnum is case insensitive and ignore whitespaces, underscores and dashes.
    *
-   * @param name the enum members name to toEnum
+   * @param name  the enum members name to toEnum
    * @param vocab the enumeration class
    * @return the matching enum member or null if {@code name} is null or empty (see http://dev.gbif.org/issues/browse/POR-2858)
    * @throws IllegalArgumentException if the name cannot be parsed into a known name
@@ -64,17 +64,16 @@ public final class VocabularyUtils {
   public static <T extends Enum<?>> Optional<T> lookup(String name, Class<T> vocab) {
     T result = null;
     // this try/catch in needed until we replace all calls to lookupEnum() in favor of this method
-    try{
+    try {
       result = lookupEnum(name, vocab);
-    }
-    catch (IllegalArgumentException iaEx){/*ignore*/}
+    } catch (IllegalArgumentException iaEx) {/*ignore*/}
     return Optional.ofNullable(result);
   }
 
   /**
    * Looks up an enumeration by class name. One can get the classname using the likes of:
    * <p/>
-   *
+   * <p>
    * <pre>
    * {@code
    * Country.class.getName()
@@ -135,6 +134,7 @@ public final class VocabularyUtils {
   /**
    * Converts an enumeration value into a constant with the exact same name from a different enumeration class.
    * In case the enumeration constant name does not exist an error is thrown.
+   *
    * @param targetClass class of the target enumeration
    * @param value
    * @throws IllegalArgumentException in case the enumeration name does not exist in the target class
@@ -146,6 +146,7 @@ public final class VocabularyUtils {
   /**
    * Converts an enumeration value into a constant with the exact same name from a different enumeration class.
    * In case the enumeration constant name does not exist an error is thrown.
+   *
    * @param targetClass class of the target enumeration
    * @param value
    * @throws IllegalArgumentException in case the enumeration name does not exist in the target class

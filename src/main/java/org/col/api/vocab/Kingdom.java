@@ -34,7 +34,6 @@ public enum Kingdom {
    * Looks up a kingdom by its nub usage key.
    *
    * @param usageKey the nub usage key to lookup, must be < 9 to get a result.
-   *
    * @return the matching kingdom or null
    */
   public static Kingdom byNubUsageKey(int usageKey) {
@@ -50,7 +49,7 @@ public enum Kingdom {
    */
   public String scientificName() {
     String lower = name().replaceAll("_", " ").toLowerCase();
-    return this==INCERTAE_SEDIS ? lower : Character.toUpperCase(lower.charAt(0)) + lower.substring(1);
+    return this == INCERTAE_SEDIS ? lower : Character.toUpperCase(lower.charAt(0)) + lower.substring(1);
   }
 
   public int nubUsageKey() {

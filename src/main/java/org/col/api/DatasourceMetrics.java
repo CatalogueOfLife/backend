@@ -6,15 +6,15 @@ import java.util.Objects;
  *
  */
 public class DatasourceMetrics {
-    private Integer key;
+  private Integer key;
 
-    public Integer getKey() {
-        return key;
-    }
+  public Integer getKey() {
+    return key;
+  }
 
-    public void setKey(Integer key) {
-        this.key = key;
-    }
+  public void setKey(Integer key) {
+    this.key = key;
+  }
 
   @Override
   public boolean equals(Object o) {

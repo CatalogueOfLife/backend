@@ -5,6 +5,7 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.col.api.vocab.Issue;
 import org.col.api.vocab.Rank;
 import org.col.api.vocab.TaxonomicStatus;
 import org.col.commands.importer.neo.kryo.CliKryoFactory;
@@ -13,7 +14,6 @@ import org.col.commands.importer.neo.model.*;
 import org.col.commands.importer.neo.traverse.Traversals;
 import org.col.util.SciNameNormalizer;
 import org.gbif.api.model.checklistbank.ParsedName;
-import org.col.api.vocab.Issue;
 import org.mapdb.DB;
 import org.mapdb.Serializer;
 import org.neo4j.graphdb.*;
@@ -30,10 +30,10 @@ import java.util.*;
 /**
  * A persistence mechanism for storing core taxonomy & names properties and relations in an embedded
  * Neo4j database, while keeping a large BLOB of information in a separate MapDB storage.
- *
+ * <p>
  * Neo4j does not perform well storing large properties in its node and it is recommended to keep
  * large BLOBs or strings externally: https://neo4j.com/blog/dark-side-neo4j-worst-practices/
- *
+ * <p>
  * We use the Krypto library for a very performant binary
  * serialisation with the data keyed under the neo4j node id.
  *
@@ -177,12 +177,11 @@ public class NeoDb<T extends NeoTaxon> {
    * Finds nodes by their canonical name property.
    * Be careful when using this method on large graphs without a schema indexing the canonical name property!
    */
-  public Collection<Node> findByName(String canonicalName){
+  public Collection<Node> findByName(String canonicalName) {
     return Iterators.asCollection(neo.findNodes(Labels.TAXON, NeoProperties.CANONICAL_NAME, canonicalName));
   }
 
   /**
-   *
    * @param canonicalName
    * @return th matching node, null or NoSuchElementException
    */
@@ -273,6 +272,7 @@ public class NeoDb<T extends NeoTaxon> {
   /**
    * Updates a given data instance with the neo4j relational information, i.e. the classification
    * or synonymy.
+   *
    * @param n
    * @param obj
    */
@@ -454,7 +454,6 @@ public class NeoDb<T extends NeoTaxon> {
   }
 
   /**
-   *
    * Logs all neo4j nodes with their properties, mainly for debugging.
    * This avoids (potentially erroneous) tree traversals missing some nodes.
    */

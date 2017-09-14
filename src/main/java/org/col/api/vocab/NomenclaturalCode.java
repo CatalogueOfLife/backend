@@ -36,8 +36,8 @@ public enum NomenclaturalCode {
   PHYTOSOCIOLOGY("ICPN", "International Code of Phytosociological Nomenclature", "http://www.iavs.org/pdf/Code.pdf"),
   VIRUS("ICVCN", "International Code of Virus Classifications and Nomenclature", "http://talk.ICTVonline.org/"),
   ZOOLOGICAL("ICZN",
-             "International Code of Zoological Nomenclature",
-             "http://www.nhm.ac.uk/hosted-sites/iczn/code/index.jsp");
+      "International Code of Zoological Nomenclature",
+      "http://www.nhm.ac.uk/hosted-sites/iczn/code/index.jsp");
 
   private final String title;
   private final String acronym;

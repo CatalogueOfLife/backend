@@ -3,9 +3,9 @@ package org.col.commands.importer.neo.model;
 import org.apache.commons.lang3.StringUtils;
 import org.col.api.Name;
 import org.col.api.Taxon;
+import org.col.api.vocab.Issue;
 import org.col.api.vocab.Rank;
 import org.col.api.vocab.TaxonomicStatus;
-import org.col.api.vocab.Issue;
 import org.neo4j.graphdb.Node;
 
 import java.util.Objects;
@@ -13,7 +13,7 @@ import java.util.Objects;
 /**
  * Simple wrapper to hold a neo node together with all data for a record
  * inlcuding a name and a taxon instance.
- *
+ * <p>
  * The modified flag can be used to (manually) track if an instance has changed and needs to be persisted.
  */
 public class TaxonNameNode implements NeoTaxon {

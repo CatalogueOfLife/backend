@@ -56,7 +56,7 @@ public class UriArrayTypeHandler extends BaseTypeHandler<List<URI>> {
         try {
           uris.add(URI.create(u));
         } catch (Exception e) {
-          LOG.error("Failed to convert pg array {} to URI for value {}",pgArray, u);
+          LOG.error("Failed to convert pg array {} to URI for value {}", pgArray, u);
         }
       }
     }

@@ -1,47 +1,28 @@
 package org.col.db.mapper;
 
-import com.zaxxer.hikari.HikariDataSource;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
-import org.col.config.ConfigTestUtils;
-import org.col.db.DbTestRule;
-import org.col.db.MybatisBundle;
-import org.junit.AfterClass;
+import org.junit.ClassRule;
 import org.junit.Rule;
 
 /**
- *
+ * A reusable base class for all mybatis mapper tests that takes care of postgres & mybatis.
+ * It offers a mapper to test in the implementing subclass.
  */
 public class MapperTestBase<T> {
 
-    private static HikariDataSource dataSource;
-    private static SqlSession session;
+  T mapper;
 
-    T mapper;
+  @ClassRule
+  public static PgMybatisRule pgMybatisRule = new PgMybatisRule();
 
-    @Rule
-    public DbTestRule dbSetup = DbTestRule.empty();
+  @Rule
+  public DbInitRule dbInitRule = DbInitRule.empty();
 
-    public MapperTestBase(Class<T> mapperClazz) {
-        initMybatis();
-        mapper = session.getMapper(mapperClazz);
-    }
+  public MapperTestBase(Class<T> mapperClazz) {
+    mapper = pgMybatisRule.getMapper(mapperClazz);
+  }
 
-
-    public static void initMybatis() {
-        dataSource = ConfigTestUtils.testConfig().pool();
-        SqlSessionFactory factory = MybatisBundle.configure(dataSource, "test");
-        session = factory.openSession();
-    }
-
-    @AfterClass
-    public static void tearDown() {
-        session.close();
-        dataSource.close();
-    }
-
-    public void commit() {
-        session.commit();
-    }
+  public void commit() {
+    pgMybatisRule.commit();
+  }
 
 }

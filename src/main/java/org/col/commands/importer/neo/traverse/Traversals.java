@@ -1,8 +1,8 @@
 package org.col.commands.importer.neo.traverse;
 
+import org.col.api.vocab.Rank;
 import org.col.commands.importer.neo.model.NeoProperties;
 import org.col.commands.importer.neo.model.RelType;
-import org.col.api.vocab.Rank;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.ResourceIterator;
@@ -105,7 +105,7 @@ public class Traversals {
    * Traversal that iterates over all child taxa and their synonyms in a taxonomic order, i.e. by rank and secondary ordered by the name.
    * The traversal includes the initial starting node.
    * The node of pro parte synonyms will be visited multiple times, once for each synonym/pro_parte relationship!
-   *
+   * <p>
    * This traversal differes from DESCENDANTS that it includes the starting node and yields the nodes in a taxonomic order.
    * The order is a bit expensive to calculate and requires more memory. So use DESCENDANTS whenever possible.
    */
@@ -118,7 +118,7 @@ public class Traversals {
    * Traversal that iterates over all child taxa and their synonyms in a taxonomic order, but excludes pro parte relations, the node of pro parte synonyms will
    * therefore be visited only once via the synonym_of relationship.
    * The traversal includes the initial starting node.
-   *
+   * <p>
    * This traversal differes from DESCENDANTS that it includes the starting node and yields the nodes in a taxonomic order.
    * The order is a bit expensive to calculate and requires more memory. So use DESCENDANTS whenever possible.
    */
@@ -140,14 +140,15 @@ public class Traversals {
 
   /**
    * Tries to find a parent node with the given rank
+   *
    * @param start node to start looking for parents, excluded from search
    * @return the parent node with requested rank or null
    */
   public static Node findParentWithRank(Node start, Rank rank) {
-    try(ResourceIterator<Node> parents = Traversals.PARENTS.traverse(start).nodes().iterator()) {
+    try (ResourceIterator<Node> parents = Traversals.PARENTS.traverse(start).nodes().iterator()) {
       while (parents.hasNext()) {
         Node p = parents.next();
-        if ((int)p.getProperty(NeoProperties.RANK, -1) == rank.ordinal()) {
+        if ((int) p.getProperty(NeoProperties.RANK, -1) == rank.ordinal()) {
           return p;
         }
       }

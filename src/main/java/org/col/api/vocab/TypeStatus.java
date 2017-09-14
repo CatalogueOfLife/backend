@@ -11,6 +11,7 @@ import java.util.List;
 /**
  * A vocabulary to be used for a nomenclatural type status of a specimen or name.
  * See also the related TypeDesignationType enumeration.
+ *
  * @see <a href="http://rs.gbif.org/vocabulary/gbif/type_status.xml">rs.gbif.org vocabulary</a>
  * @see <a href="http://www.bgbm.org/TDWG/CODATA/Schema/ABCD_2.06/HTML/ABCD_2.06.html#element_NomenclaturalTypeDesignations_Link>Types in ABCD</a>
  */
@@ -20,7 +21,7 @@ public enum TypeStatus {
    * General type designation.
    * A specimen designated or indicated any kind of type of a species or infraspecific taxon.
    * If possible more specific type terms (holotype, syntype, etc.) should be applied.
-   *
+   * <p>
    * Or the type name of a name of higher rank for taxa above the species rank.
    */
   TYPE,

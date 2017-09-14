@@ -26,8 +26,8 @@ import org.gbif.api.jackson.ExtensionSerializer;
  *
  * @see <a href="http://rs.gbif.org/extension">GBIF Resources</a>
  */
-@JsonSerialize(using= ExtensionSerializer.class)
-@JsonDeserialize(using= ExtensionDeserializer.class)
+@JsonSerialize(using = ExtensionSerializer.class)
+@JsonDeserialize(using = ExtensionDeserializer.class)
 public enum Extension {
 
   /**
@@ -130,7 +130,6 @@ public enum Extension {
 
   /**
    * @param rowType the case insensitive row type uri for the extension
-   *
    * @return the matching extension or null
    */
   public static Extension fromRowType(String rowType) {

@@ -20,7 +20,6 @@ public class CountryTypeHandler extends BaseEnumTypeHandler<String, Country> {
    * Country.UNKNOWN.
    *
    * @param key a 2 or 3 letter ISO 3166 Country code
-   *
    * @return matching Country Enum, or null if incoming key was null
    */
   @Override

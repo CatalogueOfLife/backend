@@ -2,10 +2,10 @@ package org.col.commands.importer.neo.printer;
 
 import com.google.common.base.Function;
 import com.google.common.base.Throwables;
+import org.col.api.vocab.Rank;
 import org.col.commands.importer.neo.model.Labels;
 import org.col.commands.importer.neo.model.RelType;
 import org.col.commands.importer.neo.traverse.RankEvaluator;
-import org.col.api.vocab.Rank;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
@@ -17,15 +17,15 @@ import java.io.Writer;
 /**
  * Expects no pro parte relations in the walker!
  * http://www.graphviz.org/doc/info/lang.html
- *
+ * <p>
  * Example:
- *
+ * <p>
  * digraph G {
- *   t1 [label="Animalia"]
- *   t1 -> t16 [type=parent_of];
- *   t16 [label="Abies"]
- *   t17 [label="Pinus"]
- *   t17 -> t16 [type=synonym_of];
+ * t1 [label="Animalia"]
+ * t1 -> t16 [type=parent_of];
+ * t16 [label="Abies"]
+ * t17 [label="Pinus"]
+ * t17 -> t16 [type=synonym_of];
  * }
  */
 public class DotPrinter implements TreePrinter {

@@ -37,7 +37,7 @@ public class NeoConfig {
    * @return the KVP dbmap file used for the given dataset
    */
   public File kvp(int datasetKey) {
-    return new File(neoRepository, String.valueOf(datasetKey)+".kvp");
+    return new File(neoRepository, String.valueOf(datasetKey) + ".kvp");
   }
 
   /**

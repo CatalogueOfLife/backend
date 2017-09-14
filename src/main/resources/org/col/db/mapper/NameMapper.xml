@@ -28,6 +28,6 @@
     </update>
 
     <delete id="delete">
-        delete from name where key = #{key}
+        DELETE FROM name WHERE key = #{key}
     </delete>
 </mapper>

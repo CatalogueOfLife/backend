@@ -17,7 +17,7 @@ public class SciNameNormalizer {
   private static final Pattern white = Pattern.compile("\\s{2,}");
   private static final Pattern empty = Pattern.compile("['_-]");
   private static final Pattern removeRepeatedLetter = Pattern.compile("(\\p{L})\\1+");
-  private static final Pattern removeHybridSignGenus   = Pattern.compile("^\\s*[×xX]\\s*([A-Z])");
+  private static final Pattern removeHybridSignGenus = Pattern.compile("^\\s*[×xX]\\s*([A-Z])");
   private static final Pattern removeHybridSignEpithet = Pattern.compile("(?:^|\\s)(?:×\\s*|[xX]\\s+)([^A-Z])");
 
   // dont use guava or commons so we dont have to bundle it for the solr cloud plugin ...
@@ -64,9 +64,9 @@ public class SciNameNormalizer {
 
     s = s.trim();
 
-   // Remove a hybrid cross, or a likely hybrid cross.
-   s = removeHybridSignGenus.matcher(s).replaceAll("$1");
-   s = removeHybridSignEpithet.matcher(s).replaceAll(" $1");
+    // Remove a hybrid cross, or a likely hybrid cross.
+    s = removeHybridSignGenus.matcher(s).replaceAll("$1");
+    s = removeHybridSignEpithet.matcher(s).replaceAll(" $1");
 
     // Normalize letters and ligatures to their ASCII equivalent
     s = foldToAscii(s);

@@ -119,6 +119,7 @@ public enum Issue {
 
   /**
    * Name usage could only be matched to the GBIF backbone using fuzzy matching.
+   *
    * @deprecated because there should be no fuzzy matching being used anymore for matching checklist names
    */
   @Deprecated
@@ -202,7 +203,7 @@ public enum Issue {
     this.severity = severity;
   }
 
-  public Severity getSeverity(){
+  public Severity getSeverity() {
     return severity;
   }
 

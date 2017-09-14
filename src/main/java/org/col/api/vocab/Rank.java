@@ -166,7 +166,7 @@ public enum Rank {
    * It does not use a classic rank marker but indicated the Group rank after the actual groups name
    * For example Rhododendron boothii Mishmiense Group
    * or Primula Border Auricula Group
-   *
+   * <p>
    * Sometimes authors also used the words "sort", "type", "selections" or "hybrids" instead of Group which is not legal according to the code.
    */
   CULTIVAR_GROUP,
@@ -175,7 +175,7 @@ public enum Rank {
    * A group of cultivars. These can be roughly comparable to cultivar groups, but convarieties, unlike cultivar groups,
    * do not necessarily contain named varieties, and convarieties are members of traditional "Linnaean" ranks.
    * The ICNCP replaced this term with the term cultivar-group, and convarieties should not be used in modern cultivated plant taxonomy.
-   *
+   * <p>
    * From Spooner et al., Horticultural Reviews 28 (2003): 1-60
    */
   CONVARIETY("convar."),
@@ -346,7 +346,7 @@ public enum Rank {
       CONVARIETY
   );
 
-  private static final Map<Rank, NomenclaturalCode> RANK2CODE= ImmutableMap.<Rank, NomenclaturalCode>builder()
+  private static final Map<Rank, NomenclaturalCode> RANK2CODE = ImmutableMap.<Rank, NomenclaturalCode>builder()
       .put(PARVCLASS, NomenclaturalCode.ZOOLOGICAL)
       .put(MAGNORDER, NomenclaturalCode.ZOOLOGICAL)
       .put(GRANDORDER, NomenclaturalCode.ZOOLOGICAL)

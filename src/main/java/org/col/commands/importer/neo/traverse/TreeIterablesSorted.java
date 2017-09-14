@@ -1,8 +1,8 @@
 package org.col.commands.importer.neo.traverse;
 
 import com.google.common.collect.Lists;
-import org.col.commands.importer.neo.model.Labels;
 import org.col.api.vocab.Rank;
+import org.col.commands.importer.neo.model.Labels;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Path;

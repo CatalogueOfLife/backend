@@ -983,13 +983,12 @@ public enum Language {
 
   /**
    * @param code the case insensitive 2 or 3 letter codes
-   *
    * @return the matching language or UNKNOWN
    */
   public static Language fromIsoCode(String code) {
     if (!Strings.isNullOrEmpty(code)) {
       String codeLower = code.toLowerCase().trim();
-      if (codeLower.length() == 2){
+      if (codeLower.length() == 2) {
         for (Language language : Language.values()) {
           if (codeLower.equals(language.getIso2LetterCode())) {
             return language;
@@ -1054,7 +1053,7 @@ public enum Language {
 
     @Override
     public void serialize(Language value, JsonGenerator jgen, SerializerProvider provider) throws IOException,
-      JsonGenerationException {
+        JsonGenerationException {
       jgen.writeString(value.getIso3LetterCode());
     }
 
@@ -1076,7 +1075,7 @@ public enum Language {
         }
       } catch (Exception e) {
         throw new IOException("Unable to deserialize language from provided value (hint: not an ISO 2 or 3 character?): "
-                              + jp.getText());
+            + jp.getText());
       }
     }
 
@@ -1087,7 +1086,7 @@ public enum Language {
       if (UNKNOWN == l) {
         try {
           l = valueOf(value);
-        } catch( IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
           l = UNKNOWN;
         }
       }

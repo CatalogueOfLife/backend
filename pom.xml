@@ -58,6 +58,7 @@
         <name-parser.version>2.24</name-parser.version>
         <neo4j.version>3.2.3</neo4j.version>
         <postgresql.version>42.1.1</postgresql.version>
+        <postgresql-embedded>2.4</postgresql-embedded>
         <slf4j.version>1.7.24</slf4j.version>
 
         <!--
@@ -278,6 +279,12 @@
             <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>ru.yandex.qatools.embed</groupId>
+            <artifactId>postgresql-embedded</artifactId>
+            <version>${postgresql-embedded}</version>
+            <scope>test</scope>
+        </dependency>
 
     </dependencies>
 
@@ -491,7 +498,7 @@
                 <artifactId>maven-shade-plugin</artifactId>
                 <version>2.4.1</version>
                 <configuration>
-                    <createDependencyReducedPom>true</createDependencyReducedPom>
+                    <createDependencyReducedPom>false</createDependencyReducedPom>
                     <transformers>
                         <transformer
                                 implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
@@ -631,7 +638,6 @@
         <profile>
             <id>col-local</id>
             <properties>
-                <maven.test.skip>true</maven.test.skip>
                 <db.host>localhost</db.host>
                 <db.database>colplus</db.database>
                 <db.user>postgres</db.user>

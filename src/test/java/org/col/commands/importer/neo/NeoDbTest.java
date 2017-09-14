@@ -8,11 +8,11 @@ import org.col.api.Taxon;
 import org.col.api.vocab.Origin;
 import org.col.api.vocab.Rank;
 import org.col.api.vocab.TaxonomicStatus;
-import org.col.config.NeoConfig;
 import org.col.commands.importer.neo.model.Labels;
 import org.col.commands.importer.neo.model.RankedName;
 import org.col.commands.importer.neo.model.RelType;
 import org.col.commands.importer.neo.model.TaxonNameNode;
+import org.col.config.NeoConfig;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -42,9 +42,9 @@ public class NeoDbTest {
   public static Collection<Object[]> data() {
     cfg.neoRepository = Files.createTempDir();
 
-    return Arrays.asList(new Object[][] {
-        { false },
-        { true }
+    return Arrays.asList(new Object[][]{
+        {false},
+        {true}
     });
   }
 
@@ -214,7 +214,7 @@ public class NeoDbTest {
 
   @Test
   public void testNodeByTaxonId() throws Exception {
-    try(Transaction tx = db.beginTx()) {
+    try (Transaction tx = db.beginTx()) {
       assertNull(db.nodeByTaxonId("312"));
 
       TaxonNameNode tnn = create("312", "Abies", "Abies Mill.");
@@ -227,7 +227,7 @@ public class NeoDbTest {
 
   @Test
   public void testNodeByCanonical() throws Exception {
-    try(Transaction tx = db.beginTx()) {
+    try (Transaction tx = db.beginTx()) {
       assertNull(db.nodeByCanonical("Abies"));
 
       TaxonNameNode tnn = create("312", "Abies", "Abies Mill.");
@@ -241,7 +241,7 @@ public class NeoDbTest {
 
   @Test
   public void testNodesByCanonical() throws Exception {
-    try(Transaction tx = db.beginTx()) {
+    try (Transaction tx = db.beginTx()) {
       assertEquals(0, db.nodesByCanonical("Abies").size());
 
       create("312", "Abies", "Abies Mill.");
@@ -256,7 +256,7 @@ public class NeoDbTest {
 
   @Test
   public void testNodeBySciname() throws Exception {
-    try(Transaction tx = db.beginTx()) {
+    try (Transaction tx = db.beginTx()) {
       assertNull(db.nodeBySciname("Abies Mill."));
 
       Node n = create("312", "Abies", "Abies Mill.").getNode();
@@ -269,7 +269,7 @@ public class NeoDbTest {
 
   @Test
   public void testCreateTaxon() throws Exception {
-    try(Transaction tx = db.beginTx()) {
+    try (Transaction tx = db.beginTx()) {
       assertNull(db.nodeBySciname("Abies Mill."));
 
       Node n = create(Origin.DENORMED_CLASSIFICATION, "Abies Mill.", Rank.GENUS, TaxonomicStatus.ACCEPTED, false).node;
@@ -282,7 +282,7 @@ public class NeoDbTest {
 
   @Test
   public void testHighestParent() throws Exception {
-    try(Transaction tx = db.beginTx()) {
+    try (Transaction tx = db.beginTx()) {
 
       Node n = create(Origin.DENORMED_CLASSIFICATION, "Abies Mill.", Rank.GENUS, TaxonomicStatus.ACCEPTED, false).node;
       tx.success();
@@ -306,7 +306,7 @@ public class NeoDbTest {
 
   @Test
   public void testMatchesClassification() throws Exception {
-    try(Transaction tx = db.beginTx()) {
+    try (Transaction tx = db.beginTx()) {
 
       Node n = create(Origin.DENORMED_CLASSIFICATION, "Abies Mill.", Rank.GENUS, TaxonomicStatus.ACCEPTED, false).node;
       Node syn = create(Origin.DENORMED_CLASSIFICATION, "Pinus", Rank.GENUS, TaxonomicStatus.SYNONYM, false).node;
@@ -346,11 +346,11 @@ public class NeoDbTest {
     }
   }
 
-  private  TaxonNameNode create(Origin origin, String sciname, Rank rank, TaxonomicStatus status, boolean isRoot) {
+  private TaxonNameNode create(Origin origin, String sciname, Rank rank, TaxonomicStatus status, boolean isRoot) {
     return create(origin, sciname, sciname, rank, status, isRoot, null, null);
   }
 
-  private  TaxonNameNode create(Origin origin, String sciname, String canonical, Rank rank, TaxonomicStatus status, boolean isRoot, @Nullable String taxonID, @Nullable String remark) {
+  private TaxonNameNode create(Origin origin, String sciname, String canonical, Rank rank, TaxonomicStatus status, boolean isRoot, @Nullable String taxonID, @Nullable String remark) {
     Name n = new Name();
     n.setScientificName(sciname);
     n.setCanonicalName(canonical);
@@ -381,7 +381,7 @@ public class NeoDbTest {
     db.create(tnn);
     return tnn;
   }
-  
+
   public static TaxonNameNode usage(int key) {
     return usage(key, Rank.SPECIES);
   }

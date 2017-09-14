@@ -12,18 +12,18 @@
  */
 package org.col.api.vocab;
 
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.google.common.base.Function;
-import com.google.common.base.Strings;
-import com.google.common.collect.*;
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.base.Function;
+import com.google.common.base.Strings;
+import com.google.common.collect.*;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
@@ -42,7 +42,7 @@ import java.util.Set;
  * @see <a href="http://en.wikipedia.org/wiki/ISO_3166">ISO 3166 on Wikipedia</a>
  * @see <a href="http://en.wikipedia.org/wiki/ISO_3166-1_alpha-2">ISO 3166-1 alpha2 on Wikipedia</a>
  * @see <a href="http://en.wikipedia.org/wiki/ISO_3166-3">ISO_3166-3 on Wikipedia</a>
- *
+ * <p>
  * TODO: deal with outdated codes from ISO_3166-3
  */
 
@@ -1479,7 +1479,7 @@ public enum Country {
 
     @Override
     public void serialize(Country value, JsonGenerator jgen, SerializerProvider provider) throws IOException,
-      JsonGenerationException {
+        JsonGenerationException {
       jgen.writeString(value.alpha2);
     }
 
@@ -1500,7 +1500,7 @@ public enum Country {
         }
       } catch (Exception e) {
         throw new IOException("Unable to deserialize country from provided value (not an ISO 2 character?): "
-          + jp.getText());
+            + jp.getText());
       }
     }
   }
@@ -1522,13 +1522,13 @@ public enum Country {
    */
   public static class TitleDeserializer extends JsonDeserializer<Country> {
     private static Map<String, Country> TITLE_LOOKUP = Maps.uniqueIndex(Lists.newArrayList(Country.values()),
-                                                                       new Function<Country, String>() {
-      @Nullable
-      @Override
-      public String apply(@Nullable Country c) {
-        return c.title;
-      }
-    });
+        new Function<Country, String>() {
+          @Nullable
+          @Override
+          public String apply(@Nullable Country c) {
+            return c.title;
+          }
+        });
 
     @Override
     public Country deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException {

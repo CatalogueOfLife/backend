@@ -3,6 +3,15 @@
 DROP SCHEMA public CASCADE;
 CREATE SCHEMA public;
 
+CREATE EXTENSION IF NOT EXISTS hstore;
+
+CREATE TABLE typetest (
+  key serial PRIMARY KEY,
+  data hstore,
+  json jsonb,
+  uuid uuid
+);
+
 CREATE TABLE reference (
   key serial PRIMARY KEY,
   title text,
@@ -25,4 +34,10 @@ CREATE TABLE name (
   parsed boolean,
   published_in_key int REFERENCES reference,
   published_in_year int
+);
+
+
+CREATE TABLE serial (
+  key serial PRIMARY KEY,
+  title text
 );

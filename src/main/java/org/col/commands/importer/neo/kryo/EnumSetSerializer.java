@@ -11,56 +11,57 @@ import java.util.EnumSet;
 
 /**
  * A serializer for {@link EnumSet}s.
- * @see <a href="https://github.com/magro/kryo-serializers">kryo-serializers</a>
+ *
  * @author <a href="mailto:martin.grotzke@javakaffee.de">Martin Grotzke</a>
+ * @see <a href="https://github.com/magro/kryo-serializers">kryo-serializers</a>
  */
-@SuppressWarnings( { "unchecked", "rawtypes" } )
+@SuppressWarnings({"unchecked", "rawtypes"})
 public class EnumSetSerializer extends Serializer<EnumSet<? extends Enum<?>>> {
 
-    private static final Field TYPE_FIELD;
+  private static final Field TYPE_FIELD;
 
-    static {
-        try {
-            TYPE_FIELD = EnumSet.class.getDeclaredField( "elementType" );
-            TYPE_FIELD.setAccessible( true );
-        } catch ( final Exception e ) {
-            throw new RuntimeException( "The EnumSet class seems to have changed, could not access expected field.", e );
-        }
+  static {
+    try {
+      TYPE_FIELD = EnumSet.class.getDeclaredField("elementType");
+      TYPE_FIELD.setAccessible(true);
+    } catch (final Exception e) {
+      throw new RuntimeException("The EnumSet class seems to have changed, could not access expected field.", e);
+    }
+  }
+
+  @Override
+  public EnumSet<? extends Enum<?>> copy(final Kryo kryo, final EnumSet<? extends Enum<?>> original) {
+    return original.clone();
+  }
+
+  @Override
+  public EnumSet read(final Kryo kryo, final Input input, final Class<EnumSet<? extends Enum<?>>> type) {
+    final Class<Enum> elementType = kryo.readClass(input).getType();
+    final EnumSet result = EnumSet.noneOf(elementType);
+    final int size = input.readInt(true);
+    final Enum<?>[] enumConstants = elementType.getEnumConstants();
+    for (int i = 0; i < size; i++) {
+      result.add(enumConstants[input.readInt(true)]);
+    }
+    return result;
+  }
+
+  @Override
+  public void write(final Kryo kryo, final Output output, final EnumSet<? extends Enum<?>> set) {
+    kryo.writeClass(output, getElementType(set));
+    output.writeInt(set.size(), true);
+    for (final Enum item : set) {
+      output.writeInt(item.ordinal(), true);
     }
 
-    @Override
-    public EnumSet<? extends Enum<?>> copy (final Kryo kryo, final EnumSet<? extends Enum<?>> original) {
-        return original.clone();
-    }
+    if (Log.TRACE) Log.trace("kryo", "Wrote EnumSet: " + set);
+  }
 
-    @Override
-    public EnumSet read(final Kryo kryo, final Input input, final Class<EnumSet<? extends Enum<?>>> type) {
-        final Class<Enum> elementType = kryo.readClass( input ).getType();
-        final EnumSet result = EnumSet.noneOf( elementType );
-        final int size = input.readInt(true);
-        final Enum<?>[] enumConstants = elementType.getEnumConstants();
-        for ( int i = 0; i < size; i++ ) {
-            result.add( enumConstants[input.readInt(true)] );
-        }
-        return result;
+  private Class<? extends Enum<?>> getElementType(final EnumSet<? extends Enum<?>> set) {
+    try {
+      return (Class) TYPE_FIELD.get(set);
+    } catch (final Exception e) {
+      throw new RuntimeException("Could not access keys field.", e);
     }
-
-    @Override
-    public void write(final Kryo kryo, final Output output, final EnumSet<? extends Enum<?>> set) {
-        kryo.writeClass( output, getElementType( set ) );
-        output.writeInt( set.size(), true );
-        for (final Enum item : set) {
-            output.writeInt(item.ordinal(), true);
-        }
-
-        if ( Log.TRACE ) Log.trace("kryo", "Wrote EnumSet: " + set);
-    }
-
-    private Class<? extends Enum<?>> getElementType( final EnumSet<? extends Enum<?>> set ) {
-        try {
-            return (Class)TYPE_FIELD.get( set );
-        } catch ( final Exception e ) {
-            throw new RuntimeException( "Could not access keys field.", e );
-        }
-    }
+  }
 }

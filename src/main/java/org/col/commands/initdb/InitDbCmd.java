@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class InitDbCmd extends ConfiguredCommand<ColAppConfig> {
   private static final int DELAY_IN_SECONDS = 10;
-  private static final String SCHEMA_FILE = "org/col/db/dbschema.sql";
+  public static final String SCHEMA_FILE = "org/col/db/dbschema.sql";
 
   public InitDbCmd() {
     super("initdb", "Initialises a new database schema");

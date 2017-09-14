@@ -2,9 +2,9 @@ package org.col.commands.importer.neo.printer;
 
 import com.google.common.base.Function;
 import com.google.common.base.Throwables;
+import org.col.api.vocab.Rank;
 import org.col.commands.importer.neo.model.Labels;
 import org.col.commands.importer.neo.model.NeoProperties;
-import org.col.api.vocab.Rank;
 import org.neo4j.graphdb.Node;
 import org.parboiled.common.StringUtils;
 

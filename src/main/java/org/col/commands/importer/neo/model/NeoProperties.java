@@ -27,19 +27,19 @@ public class NeoProperties {
    */
   public static String getCanonicalName(Node n) {
     if (n.hasProperty(NeoProperties.CANONICAL_NAME)) {
-      return (String)n.getProperty(NeoProperties.CANONICAL_NAME);
+      return (String) n.getProperty(NeoProperties.CANONICAL_NAME);
     }
-    return (String)n.getProperty(NeoProperties.SCIENTIFIC_NAME, NULL_NAME);
+    return (String) n.getProperty(NeoProperties.SCIENTIFIC_NAME, NULL_NAME);
   }
 
   public static Rank getRank(Node n, Rank defaultValue) {
     if (n.hasProperty(NeoProperties.RANK)) {
-      return Rank.values()[(int)n.getProperty(NeoProperties.RANK)];
+      return Rank.values()[(int) n.getProperty(NeoProperties.RANK)];
     }
     return defaultValue;
   }
 
   public static String getScientificName(Node n) {
-    return (String)n.getProperty(NeoProperties.SCIENTIFIC_NAME, NULL_NAME);
+    return (String) n.getProperty(NeoProperties.SCIENTIFIC_NAME, NULL_NAME);
   }
 }

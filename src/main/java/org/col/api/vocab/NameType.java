@@ -55,7 +55,6 @@ public enum NameType {
    *
    * @see <a href="http://en.wikipedia.org/wiki/Candidatus">wikipedia</a>
    * @see <a href="http://www.bacterio.cict.fr/candidatus.html">J.P. Euzéby</a>
-   *
    */
   CANDIDATUS,
 
@@ -79,7 +78,6 @@ public enum NameType {
    * for not found name types.
    *
    * @param nameType case insensitive name of name type
-   *
    * @return the matching NameType or null
    */
   public static NameType fromString(String nameType) {

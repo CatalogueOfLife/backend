@@ -1,10 +1,10 @@
 package org.col.commands.importer.neo.printer;
 
 import com.google.common.base.Function;
+import org.col.api.vocab.Rank;
 import org.col.commands.importer.neo.NeoDb;
 import org.col.commands.importer.neo.model.NeoProperties;
 import org.col.commands.importer.neo.traverse.TreeWalker;
-import org.col.api.vocab.Rank;
 import org.neo4j.graphdb.Node;
 
 import javax.annotation.Nullable;

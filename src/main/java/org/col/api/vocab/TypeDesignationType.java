@@ -1,7 +1,8 @@
 package org.col.api.vocab;
 
 /**
- *A vocabulary to be used for reasons for a type designation of a specimen or name.
+ * A vocabulary to be used for reasons for a type designation of a specimen or name.
+ *
  * @see <a href="http://rs.gbif.org/vocabulary/gbif/type_designation_type.xml">rs.gbif.org vocabulary</a>
  */
 public enum TypeDesignationType {

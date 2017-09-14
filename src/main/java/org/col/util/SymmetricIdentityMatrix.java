@@ -37,13 +37,14 @@ public class SymmetricIdentityMatrix<T> {
 
   /**
    * Check if 2 values in the matrix exist or are identical.
+   *
    * @param val1
    * @param val2
    * @return true if values are identical or have an entry in the symmetric matrix
    */
   public boolean contains(T val1, T val2) {
     return val1.equals(val2)
-            || matches.containsKey(val1) && matches.get(val1).contains(val2)
-            || matches.containsKey(val2) && matches.get(val2).contains(val1);
+        || matches.containsKey(val1) && matches.get(val1).contains(val2)
+        || matches.containsKey(val2) && matches.get(val2).contains(val1);
   }
 }

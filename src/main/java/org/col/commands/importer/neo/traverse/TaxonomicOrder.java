@@ -16,7 +16,7 @@ public class TaxonomicOrder implements Comparator<Node> {
     int r1 = (int) n1.getProperty(NeoProperties.RANK, Integer.MAX_VALUE);
     int r2 = (int) n2.getProperty(NeoProperties.RANK, Integer.MAX_VALUE);
 
-    if (r1!=r2) {
+    if (r1 != r2) {
       return r1 - r2;
     }
     String c1 = NeoProperties.getCanonicalName(n1);

@@ -22,6 +22,7 @@ public class SerdeTestUtils {
   /**
    * Does a roundtrip from object to JSON and back to another object and then compares the 2 instances
    * and their hashcodes.
+   *
    * @return JSON string of the serialized object
    */
   public static <T> String testSerDe(T obj, Class<T> objClass) throws IOException {

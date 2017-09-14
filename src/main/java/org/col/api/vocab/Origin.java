@@ -39,10 +39,10 @@ public enum Origin {
 
   /**
    * Implicit usage from a verbatim accepted name usage.
-  */
+   */
   VERBATIM_ACCEPTED,
 
-    /**
+  /**
    * Implicit usage from a verbatim basionym/original name.
    */
   VERBATIM_BASIONYM,
@@ -88,7 +88,6 @@ public enum Origin {
    * for not found origins.
    *
    * @param origin case insensitive name of the origin
-   *
    * @return the matching Origin or null
    */
   public static Origin fromString(String origin) {

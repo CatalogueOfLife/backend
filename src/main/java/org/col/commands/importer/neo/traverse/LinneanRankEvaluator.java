@@ -1,7 +1,7 @@
 package org.col.commands.importer.neo.traverse;
 
-import org.col.commands.importer.neo.model.NeoProperties;
 import org.col.api.vocab.Rank;
+import org.col.commands.importer.neo.model.NeoProperties;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Path;
 import org.neo4j.graphdb.traversal.Evaluation;

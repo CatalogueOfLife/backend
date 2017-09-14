@@ -4,10 +4,10 @@ import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 import com.google.common.xml.XmlEscapers;
-import org.col.parser.NameParser;
+import org.col.api.vocab.Rank;
 import org.col.commands.importer.neo.model.Labels;
 import org.col.commands.importer.neo.model.NeoProperties;
-import org.col.api.vocab.Rank;
+import org.col.parser.NameParser;
 import org.neo4j.graphdb.Node;
 import org.parboiled.common.StringUtils;
 
@@ -36,7 +36,7 @@ public class XmlPrinter implements TreePrinter {
 
   @Override
   public void end(Node n) {
-    if (!n.hasLabel(Labels.SYNONYM)){
+    if (!n.hasLabel(Labels.SYNONYM)) {
       close(n);
     }
   }

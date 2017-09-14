@@ -17,22 +17,23 @@ import java.io.IOException;
 
 /**
  * A mapDB serializer that uses kryo under the hood to quickly serialize objects into the mapdb data output/input.
+ *
  * @param <T> the class to serialize
  */
 public class MapDbObjectSerializer<T> extends GroupSerializerObjectArray<T> {
-    private final KryoPool pool;
-    private final int bufferSize;
-    private final Class<T> clazz;
+  private final KryoPool pool;
+  private final int bufferSize;
+  private final Class<T> clazz;
 
   public MapDbObjectSerializer(Class<T> clazz, KryoFactory kryoFactory) {
     this(clazz, new KryoPool.Builder(kryoFactory).softReferences().build(), 256);
   }
 
   public MapDbObjectSerializer(Class<T> clazz, KryoPool pool, int bufferSize) {
-        this.pool = pool;
-        this.clazz = clazz;
-        this.bufferSize = bufferSize;
-    }
+    this.pool = pool;
+    this.clazz = clazz;
+    this.bufferSize = bufferSize;
+  }
 
   @Override
   public void serialize(@NotNull DataOutput2 out, @NotNull T value) throws IOException {
@@ -52,7 +53,7 @@ public class MapDbObjectSerializer<T> extends GroupSerializerObjectArray<T> {
 
   @Override
   public T deserialize(@NotNull DataInput2 in, int available) throws IOException {
-    if(available==0) return null;
+    if (available == 0) return null;
     Kryo kryo = pool.borrow();
     try {
       int size = DataIO.unpackInt(in);
@@ -65,9 +66,9 @@ public class MapDbObjectSerializer<T> extends GroupSerializerObjectArray<T> {
   }
 
   @Override
-    public boolean isTrusted() {
-        return true;
-    }
+  public boolean isTrusted() {
+    return true;
+  }
 
   @Override
   public int compare(T first, T second) {

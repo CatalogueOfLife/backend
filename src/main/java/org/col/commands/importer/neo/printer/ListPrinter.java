@@ -2,10 +2,10 @@ package org.col.commands.importer.neo.printer;
 
 import com.google.common.base.Function;
 import com.google.common.base.Throwables;
-import org.col.commands.importer.neo.model.Labels;
-import org.col.commands.importer.neo.model.NeoProperties;
 import org.col.api.vocab.Rank;
 import org.col.api.vocab.TaxonomicStatus;
+import org.col.commands.importer.neo.model.Labels;
+import org.col.commands.importer.neo.model.NeoProperties;
 import org.gbif.io.TabWriter;
 import org.neo4j.graphdb.Node;
 

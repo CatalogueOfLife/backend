@@ -34,9 +34,8 @@ public class URIValidator implements ConstraintValidator<HttpURI, URI> {
    * This method can be accessed concurrently, thread-safety must be ensured
    * by the implementation.
    *
-   * @param uri   object to validate
+   * @param uri     object to validate
    * @param context context in which the constraint is evaluated
-   *
    * @return {@code false} if {@code value} does not pass the constraint
    */
   @Override

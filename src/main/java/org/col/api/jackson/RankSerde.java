@@ -42,6 +42,7 @@ public class RankSerde {
    */
   public static class RankJsonDeserializer extends JsonDeserializer<Rank> {
     private static final Map<String, Rank> ranks = Maps.newHashMap();
+
     static {
       for (Rank r : Rank.values()) {
         if (r.getMarker() != null) {

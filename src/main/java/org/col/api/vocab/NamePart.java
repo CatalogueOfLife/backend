@@ -33,7 +33,6 @@ public enum NamePart {
    * for a not found NamePart.
    *
    * @param namePart case insensitive name of name part
-   *
    * @return the matching NamePart or null
    */
   public static NamePart fromString(String namePart) {

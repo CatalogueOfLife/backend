@@ -10,13 +10,13 @@ import com.esotericsoftware.kryo.io.Output;
  */
 public class NullSerializer<T> extends Serializer<T> {
 
-    @Override
-    public void write(final Kryo kryo, final Output output, final T obj) {
+  @Override
+  public void write(final Kryo kryo, final Output output, final T obj) {
 
-    }
+  }
 
-    @Override
-    public T read(final Kryo kryo, final Input input, final Class<T> theClass) {
-        return null;
-    }
+  @Override
+  public T read(final Kryo kryo, final Input input, final Class<T> theClass) {
+    return null;
+  }
 }

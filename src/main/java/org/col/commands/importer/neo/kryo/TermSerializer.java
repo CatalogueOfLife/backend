@@ -8,20 +8,20 @@ import org.gbif.dwc.terms.Term;
 import org.gbif.dwc.terms.TermFactory;
 
 public class TermSerializer extends Serializer<Term> {
-    private final TermFactory TF = TermFactory.instance();
+  private final TermFactory TF = TermFactory.instance();
 
-    public TermSerializer() {
-        // dont accept null values
-        super(false);
-    }
+  public TermSerializer() {
+    // dont accept null values
+    super(false);
+  }
 
-    @Override
-    public void write(Kryo kryo, Output output, Term term) {
-        output.writeString(term.qualifiedName());
-    }
+  @Override
+  public void write(Kryo kryo, Output output, Term term) {
+    output.writeString(term.qualifiedName());
+  }
 
-    @Override
-    public Term read(Kryo kryo, Input input, Class<Term> aClass) {
-        return TF.findTerm(input.readString());
-    }
+  @Override
+  public Term read(Kryo kryo, Input input, Class<Term> aClass) {
+    return TF.findTerm(input.readString());
+  }
 }

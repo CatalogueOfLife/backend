@@ -12,7 +12,7 @@ public class LanguageTypeHandler extends BaseEnumTypeHandler<String, Language> {
 
   @Override
   public String fromEnum(Language value) {
-    return value == null || value == Language.UNKNOWN  ? null : value.getIso2LetterCode();
+    return value == null || value == Language.UNKNOWN ? null : value.getIso2LetterCode();
   }
 
   @Override

@@ -4,8 +4,8 @@ import com.codahale.metrics.Meter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.PeekingIterator;
-import org.col.commands.importer.neo.model.NeoProperties;
 import org.col.api.vocab.Rank;
+import org.col.commands.importer.neo.model.NeoProperties;
 import org.neo4j.graphdb.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,16 +20,17 @@ public class TreeWalker {
   private static final Logger LOG = LoggerFactory.getLogger(TreeWalker.class);
   private static final int reportingSize = 10000;
 
-  public static void walkTree(GraphDatabaseService db, boolean inclProParte, StartEndHandler ... handler) {
+  public static void walkTree(GraphDatabaseService db, boolean inclProParte, StartEndHandler... handler) {
     walkTree(db, inclProParte, null, null, null, handler);
   }
 
   /**
    * Walks all nodes in a taxonomic tree order in a single transaction including pro parte relations
+   *
    * @param root if given starts to walk the subtree including the given node
    */
-  public static void walkTree(GraphDatabaseService db, boolean inclProParte, @Nullable Node root, @Nullable Rank lowestRank, @Nullable Meter meter, StartEndHandler ... handler) {
-    try (Transaction tx = db.beginTx()){
+  public static void walkTree(GraphDatabaseService db, boolean inclProParte, @Nullable Node root, @Nullable Rank lowestRank, @Nullable Meter meter, StartEndHandler... handler) {
+    try (Transaction tx = db.beginTx()) {
       walkTree(TreeIterablesSorted.allPath(db, root, lowestRank, inclProParte), meter, handler);
     }
   }
@@ -37,24 +38,24 @@ public class TreeWalker {
   /**
    * Walks allAccepted nodes in a single transaction
    */
-  public static void walkAcceptedTree(GraphDatabaseService db, StartEndHandler ... handler) {
+  public static void walkAcceptedTree(GraphDatabaseService db, StartEndHandler... handler) {
     walkAcceptedTree(db, null, null, new Meter(), handler);
   }
 
   /**
    * Walks allAccepted nodes in a single transaction
    */
-  public static void walkAcceptedTree(GraphDatabaseService db, @Nullable Node root, @Nullable Rank lowestRank, @Nullable Meter meter, StartEndHandler ... handler) {
-    try (Transaction tx = db.beginTx()){
+  public static void walkAcceptedTree(GraphDatabaseService db, @Nullable Node root, @Nullable Rank lowestRank, @Nullable Meter meter, StartEndHandler... handler) {
+    try (Transaction tx = db.beginTx()) {
       walkTree(TreeIterablesSorted.acceptedPath(db, root, lowestRank), meter, handler);
     }
   }
 
 
-  private static void walkTree(ResourceIterable<Path> paths, @Nullable Meter meter, StartEndHandler ... handler) {
+  private static void walkTree(ResourceIterable<Path> paths, @Nullable Meter meter, StartEndHandler... handler) {
     Path lastPath = null;
     long counter = 0;
-    try (ResourceIterator<Path> iter = paths.iterator()){
+    try (ResourceIterator<Path> iter = paths.iterator()) {
       while (iter.hasNext()) {
         Path p = iter.next();
         //logPath(p);
@@ -99,13 +100,13 @@ public class TreeWalker {
     }
   }
 
-  private static void handleStart(Node n, StartEndHandler ... handler) {
+  private static void handleStart(Node n, StartEndHandler... handler) {
     for (StartEndHandler h : handler) {
       h.start(n);
     }
   }
 
-  private static void handleEnd(Node n, StartEndHandler ... handler) {
+  private static void handleEnd(Node n, StartEndHandler... handler) {
     for (StartEndHandler h : handler) {
       h.end(n);
     }

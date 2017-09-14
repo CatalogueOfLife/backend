@@ -67,7 +67,7 @@ public class TaxonomicOrderExpander implements PathExpander {
       )
   );
 
-  private TaxonomicOrderExpander(RelType ... synonymRelations) {
+  private TaxonomicOrderExpander(RelType... synonymRelations) {
     if (synonymRelations == null) {
       this.synRels = ImmutableSet.of();
     } else {
