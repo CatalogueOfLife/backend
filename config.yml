@@ -1,0 +1,11 @@
+logging:
+  level: INFO
+  loggers:
+    "org.col": DEBUG
+  appenders:
+    - type: console
+db:
+  host: localhost
+  database: colplus
+  user: postgres
+  password:

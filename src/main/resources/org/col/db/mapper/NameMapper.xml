@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.col.db.mapper.NameMapper">
+
+    <sql id="COLS">
+      scientific_name, canonical_name, authorship, monomial, epithet, infra_epithet, rank, notho, parsed, published_in_key, published_in_year
+    </sql>
+
+    <sql id="PROPS">
+      #{scientificName}, #{canonicalName}, #{authorship}, #{monomial}, #{epithet}, #{infraEpithet},
+      #{rank}, #{notho}, #{parsed}, #{publishedInKey}, #{publishedInYear}
+    </sql>
+
+
+
+    <select id="get" resultType="Name">
+      SELECT * FROM name where key = #{key}
+    </select>
+
+    <insert id="insert" parameterType="map" useGeneratedKeys="true" keyProperty="key">
+      INSERT INTO name (<include refid="COLS" />) VALUES (<include refid="PROPS" />)
+    </insert>
+
+    <update id="update">
+      UPDATE name SET (<include refid="COLS" />) = (<include refid="PROPS" />) WHERE key = #{key}
+    </update>
+
+    <delete id="delete">
+        delete from name where key = #{key}
+    </delete>
+</mapper>

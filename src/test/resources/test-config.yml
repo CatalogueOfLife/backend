@@ -1,0 +1,4 @@
+host: ${db.host}
+database: ${db.database}
+user: ${db.user}
+password: ${db.password}
