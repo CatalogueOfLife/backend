@@ -10,6 +10,7 @@ import org.gbif.dwc.terms.*;
 import org.neo4j.kernel.impl.core.NodeProxy;
 
 import java.net.URI;
+import java.time.LocalDateTime;
 import java.util.*;
 
 
@@ -42,7 +43,7 @@ public class CliKryoFactory implements KryoFactory {
     kryo.register(IntArrayList.class);
 
     // java & commons
-    kryo.register(Date.class);
+    kryo.register(LocalDateTime.class);
     kryo.register(HashMap.class);
     kryo.register(HashSet.class);
     kryo.register(ArrayList.class);

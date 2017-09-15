@@ -65,7 +65,6 @@
         Maven plugin versions.
         Check for available updates: mvn versions:display-plugin-updates
         -->
-        <maven-assembly-plugin.version>3.0</maven-assembly-plugin.version>
         <maven-clean-plugin.version>3.0.0</maven-clean-plugin.version>
         <maven-compiler-plugin.version>3.6.1</maven-compiler-plugin.version>
         <maven-dependency-plugin.version>3.0.1</maven-dependency-plugin.version>
@@ -401,12 +400,6 @@
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-assembly-plugin</artifactId>
-                    <version>${maven-assembly-plugin.version}</version>
-                </plugin>
-
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-jar-plugin</artifactId>
                     <version>${maven-jar-plugin.version}</version>
                     <configuration>
@@ -466,6 +459,17 @@
                         <redirectTestOutputToFile>true</redirectTestOutputToFile>
                         <argLine>-Xmx256m</argLine>
                         <runOrder>random</runOrder>
+
+                        <includes>
+                            <!-- include regular unit tests -->
+                            <include>**/*Test.java</include>
+                            <!-- include test suites-->
+                            <include>**/*TestSuite.java</include>
+                        </includes>
+                        <excludes>
+                            <!-- exlude all mapper tests which are jointly executed by the MapperTestSuite instead -->
+                            <exclude>**/*MapperTest.java</exclude>
+                        </excludes>
                     </configuration>
                 </plugin>
                 <plugin>
