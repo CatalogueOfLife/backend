@@ -9,7 +9,9 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.commands.initdb.InitDbCmd;
 import org.col.db.MybatisBundle;
-import org.junit.rules.ExternalResource;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Rule;
 import ru.yandex.qatools.embed.postgresql.EmbeddedPostgres;
 import ru.yandex.qatools.embed.postgresql.distribution.Version;
 
@@ -21,44 +23,36 @@ import java.time.Duration;
 import java.time.Instant;
 
 /**
- * A junit test rule that starts up an {@link EmbeddedPostgres} server together with a
- * {@link HikariDataSource} and stops both at the end.
- * The rule was designed to share the server across all tests of a test class if it runs as
- * a static {@link org.junit.ClassRule}.
- *
- * It can even be used to share the same postgres server across several test classes
- * if it is used in as a {@link org.junit.ClassRule} in a TestSuite.
+ * A reusable base class for all mybatis mapper tests that takes care of postgres & mybatis.
+ * It offers a mapper to test in the implementing subclass.
  */
-public class PgMybatisRule extends ExternalResource {
+public class MapperTestBaseNoRule<T> {
   private static EmbeddedPostgres postgres;
   private static HikariDataSource dataSource;
   private static SqlSession session;
-  private boolean startedHere = false;
 
-  public <T> T getMapper(Class<T> mapperClazz) {
-    return session.getMapper(mapperClazz);
-  }
+  T mapper;
 
-  public static Connection getConnection() throws SQLException {
-    return dataSource.getConnection();
+  @Rule
+  public DbInitRule dbInitRule = DbInitRule.empty();
+
+  public MapperTestBaseNoRule(Class<T> mapperClazz) {
+    mapper = session.getMapper(mapperClazz);
   }
 
   public void commit() {
     session.commit();
   }
 
-  @Override
-  protected void before() throws Throwable {
-    super.before();
-    if (postgres == null) {
-      startDb();
-      startedHere = true;
-      initDb();
-      initMyBatis();
-    }
+
+  @BeforeClass
+  public static void before() throws Throwable {
+    startDb();
+    initDb();
+    initMyBatis();
   }
 
-  private void startDb() {
+  private static void startDb() {
     System.out.println("Starting Postgres");
     try {
       postgres = new EmbeddedPostgres(Version.V9_6_2);
@@ -69,8 +63,7 @@ public class PgMybatisRule extends ExternalResource {
       final String password = "species2000";
 
       Instant start = Instant.now();
-      //      System.out.println("Start postgres on port "+socket.getLocalPort());
-      String jdbcUrl = postgres.start("localhost", new ServerSocket(0).getLocalPort(), "testdb", "user", "password");
+      System.out.println("Start postgres on port "+socket.getLocalPort());
       final String url = postgres.start("localhost", socket.getLocalPort(), database, user, password);
       System.out.format("Pg startup time: %s ms\n", Duration.between(start, Instant.now()).toMillis());
 
@@ -97,7 +90,7 @@ public class PgMybatisRule extends ExternalResource {
     }
   }
 
-  private void initDb() {
+  private static void initDb() {
     try (Connection con = dataSource.getConnection()) {
       System.out.println("Init empty database schema\n");
       ScriptRunner runner = new ScriptRunner(con);
@@ -109,18 +102,16 @@ public class PgMybatisRule extends ExternalResource {
     }
   }
 
-  private void initMyBatis() {
+  private static void initMyBatis() {
     SqlSessionFactory factory = MybatisBundle.configure(dataSource, "test");
     session = factory.openSession();
   }
 
-  @Override
-  public void after() {
-    if (startedHere) {
-      System.out.println("Stopping Postgres");
-      dataSource.close();
-      postgres.stop();
-    }
+  @AfterClass
+  public static void after() {
+    System.out.println("Stopping Postgres");
+    dataSource.close();
+    postgres.stop();
   }
 
 }
