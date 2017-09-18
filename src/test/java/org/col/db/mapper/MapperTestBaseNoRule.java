@@ -11,7 +11,6 @@ import org.col.commands.initdb.InitDbCmd;
 import org.col.db.MybatisBundle;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Rule;
 import ru.yandex.qatools.embed.postgresql.EmbeddedPostgres;
 import ru.yandex.qatools.embed.postgresql.distribution.Version;
 
@@ -33,11 +32,11 @@ public class MapperTestBaseNoRule<T> {
 
   T mapper;
 
-  @Rule
-  public DbInitRule dbInitRule = DbInitRule.empty();
+  //@Rule
+  //public DbInitRule dbInitRule = DbInitRule.empty();
 
   public MapperTestBaseNoRule(Class<T> mapperClazz) {
-    mapper = session.getMapper(mapperClazz);
+    //mapper = session.getMapper(mapperClazz);
   }
 
   public void commit() {
