@@ -468,7 +468,7 @@
                         </includes>
                         <excludes>
                             <!-- exlude all mapper tests which are jointly executed by the MapperTestSuite instead -->
-                            <exclude>**/*MapperREMOVEMETest.java</exclude>
+                            <exclude>**/*MapperTest.java</exclude>
                         </excludes>
                     </configuration>
                 </plugin>

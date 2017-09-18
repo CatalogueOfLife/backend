@@ -13,9 +13,10 @@
 
   <logger name="org.apache.ibatis" level="WARN"/>
   <logger name="java.sql" level="INFO"/>
-  <logger name="ru.yandex.qatools.embed.postgresql" level="DEBUG"/>
+  <logger name="ru.yandex.qatools.embed" level="DEBUG"/>
+  <logger name="de.flapdoodle.embed" level="DEBUG"/>
 
-  <root level="INFO">
+  <root level="DEBUG">
     <appender-ref ref="CONSOLE"/>
   </root>
 

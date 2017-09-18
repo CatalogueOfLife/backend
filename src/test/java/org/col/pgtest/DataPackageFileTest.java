@@ -1,11 +1,13 @@
 package org.col.pgtest;
 
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
  * Integration tests of DataPackageMapper.
  */
+@Ignore
 public class DataPackageFileTest extends BMTest {
 
 
