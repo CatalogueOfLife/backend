@@ -77,7 +77,7 @@ public class PgMybatisRule implements TestRule {
   private void startDb() {
     System.out.println("Starting Postgres");
     try {
-      postgres = new EmbeddedPostgres(Version.Main.V9_6);
+      postgres = new EmbeddedPostgres(Version.V9_4_10);
       startedHere = true;
       // assigned to some free port
       ServerSocket socket = new ServerSocket(0);
