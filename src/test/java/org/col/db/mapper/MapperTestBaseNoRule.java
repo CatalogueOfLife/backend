@@ -55,7 +55,7 @@ public class MapperTestBaseNoRule<T> {
   private static void startDb() {
     System.out.println("Starting Postgres");
     try {
-      postgres = new EmbeddedPostgres(Version.V9_6_2);
+      postgres = new EmbeddedPostgres(Version.V9_6_3);
       // assigned to some free port
       ServerSocket socket = new ServerSocket(0);
       final String database = "col";
