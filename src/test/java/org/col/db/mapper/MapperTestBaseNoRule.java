@@ -1,23 +1,12 @@
 package org.col.db.mapper;
 
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
 import jersey.repackaged.com.google.common.base.Throwables;
-import org.apache.ibatis.io.Resources;
-import org.apache.ibatis.jdbc.ScriptRunner;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
-import org.col.commands.initdb.InitDbCmd;
-import org.col.db.MybatisBundle;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import ru.yandex.qatools.embed.postgresql.EmbeddedPostgres;
 import ru.yandex.qatools.embed.postgresql.distribution.Version;
 
-import java.io.IOException;
 import java.net.ServerSocket;
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.time.Duration;
 import java.time.Instant;
 
@@ -27,8 +16,6 @@ import java.time.Instant;
  */
 public class MapperTestBaseNoRule<T> {
   private static EmbeddedPostgres postgres;
-  private static HikariDataSource dataSource;
-  private static SqlSession session;
 
   T mapper;
 
@@ -40,15 +27,12 @@ public class MapperTestBaseNoRule<T> {
   }
 
   public void commit() {
-    session.commit();
   }
 
 
   @BeforeClass
   public static void before() throws Throwable {
     startDb();
-    initDb();
-    initMyBatis();
   }
 
   private static void startDb() {
@@ -66,22 +50,10 @@ public class MapperTestBaseNoRule<T> {
       final String url = postgres.start("localhost", socket.getLocalPort(), database, user, password);
       System.out.format("Pg startup time: %s ms\n", Duration.between(start, Instant.now()).toMillis());
 
-      HikariConfig hikari = new HikariConfig();
-      hikari.setJdbcUrl(url);
-      //hikari.setDataSourceClassName("org.postgresql.ds.PGSimpleDataSource");
-      hikari.setUsername(user);
-      hikari.setPassword(password);
-      hikari.setMaximumPoolSize(2);
-      hikari.setMinimumIdle(1);
-      dataSource = new HikariDataSource(hikari);
-
     } catch (Exception e) {
       System.err.println("Pg startup error: " + e.getMessage());
       e.printStackTrace();
 
-      if (dataSource != null) {
-        dataSource.close();
-      }
       if (postgres != null) {
         postgres.stop();
       }
@@ -89,27 +61,9 @@ public class MapperTestBaseNoRule<T> {
     }
   }
 
-  private static void initDb() {
-    try (Connection con = dataSource.getConnection()) {
-      System.out.println("Init empty database schema\n");
-      ScriptRunner runner = new ScriptRunner(con);
-      runner.runScript(Resources.getResourceAsReader(InitDbCmd.SCHEMA_FILE));
-      con.commit();
-
-    } catch (SQLException | IOException e) {
-      Throwables.propagate(e);
-    }
-  }
-
-  private static void initMyBatis() {
-    SqlSessionFactory factory = MybatisBundle.configure(dataSource, "test");
-    session = factory.openSession();
-  }
-
   @AfterClass
   public static void after() {
     System.out.println("Stopping Postgres");
-    dataSource.close();
     postgres.stop();
   }
 

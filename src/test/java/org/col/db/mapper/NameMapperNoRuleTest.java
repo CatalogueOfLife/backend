@@ -3,6 +3,7 @@ package org.col.db.mapper;
 import com.google.common.base.Stopwatch;
 import org.col.api.Name;
 import org.col.api.vocab.Rank;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -16,6 +17,14 @@ public class NameMapperNoRuleTest extends MapperTestBaseNoRule<NameMapper> {
 
   public NameMapperNoRuleTest() {
     super(NameMapper.class);
+  }
+
+  /**
+   * Initializes the MyBatis module.
+   */
+  @BeforeClass
+  public static void init() {
+    System.out.println("Init my test class");
   }
 
   private Name create() throws Exception {

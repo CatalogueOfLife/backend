@@ -129,11 +129,18 @@
     </dependencyManagement>
 
     <dependencies>
+        <!-- Dropqizard -->
         <dependency>
             <groupId>io.dropwizard</groupId>
             <artifactId>dropwizard-core</artifactId>
         </dependency>
-
+        <!--
+        <dependency>
+            <groupId>com.github.alex-shpak</groupId>
+            <artifactId>dropwizard-hk2bundle</artifactId>
+            <version>0.5.2</version>
+        </dependency>
+-->
         <!-- GBIF -->
         <dependency>
             <groupId>org.gbif</groupId>
