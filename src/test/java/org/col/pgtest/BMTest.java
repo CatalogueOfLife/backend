@@ -1,4 +1,4 @@
-package org.col.db.mapper.pgtest;
+package org.col.pgtest;
 
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -16,7 +16,7 @@ import java.util.Optional;
 /**
  * Base class to test MyBatis mappers using an embedded Postgres server.
  */
-public class BaseMapperTest {
+public class BMTest {
 
   //Embedded postgres server
   private static EmbeddedPostgres embeddedPostgres;

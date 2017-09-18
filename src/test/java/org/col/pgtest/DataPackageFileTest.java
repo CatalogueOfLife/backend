@@ -1,4 +1,4 @@
-package org.col.db.mapper.pgtest;
+package org.col.pgtest;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -6,7 +6,7 @@ import org.junit.Test;
 /**
  * Integration tests of DataPackageMapper.
  */
-public class DataPackageFileMapperTest  extends BaseMapperTest {
+public class DataPackageFileTest extends BMTest {
 
 
   /**
