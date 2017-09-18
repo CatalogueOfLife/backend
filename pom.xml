@@ -475,7 +475,10 @@
                         </includes>
                         <excludes>
                             <!-- exlude all mapper tests which are jointly executed by the MapperTestSuite instead -->
+                            <!--
+                                DISABLE FOR NOW
                             <exclude>**/*MapperTest.java</exclude>
+                            -->
                         </excludes>
                     </configuration>
                 </plugin>
