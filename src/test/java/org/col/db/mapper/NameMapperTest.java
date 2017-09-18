@@ -3,6 +3,7 @@ package org.col.db.mapper;
 import com.google.common.base.Stopwatch;
 import org.col.api.Name;
 import org.col.api.vocab.Rank;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -10,6 +11,7 @@ import static org.junit.Assert.assertEquals;
 /**
  *
  */
+@Ignore
 public class NameMapperTest extends MapperTestBase<NameMapper> {
 
   private int repeat = 1000;
