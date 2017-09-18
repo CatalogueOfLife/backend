@@ -30,12 +30,11 @@ public class MapperTestBaseNoRule<T> {
   @BeforeClass
   public static void before() throws Throwable {
     postgres = new EmbeddedPostgres(Version.V9_6_3);
-    // assigned to some free port
-    ServerSocket socket = new ServerSocket(0);
     final String database = "col";
     final String user = "col";
     final String password = "species2000";
-    final String url = postgres.start("localhost", socket.getLocalPort(), database, user, password);
+    // assigned to some free port using socket 0
+    final String url = postgres.start("localhost", new ServerSocket(0).getLocalPort(), database, user, password);
   }
 
   @AfterClass
