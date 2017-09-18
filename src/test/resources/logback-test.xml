@@ -13,6 +13,7 @@
 
   <logger name="org.apache.ibatis" level="WARN"/>
   <logger name="java.sql" level="INFO"/>
+  <logger name="ru.yandex.qatools.embed.postgresql" level="DEBUG"/>
 
   <root level="INFO">
     <appender-ref ref="CONSOLE"/>

@@ -81,12 +81,13 @@ public class PgMybatisRule implements TestRule {
       startedHere = true;
       // assigned to some free port
       ServerSocket socket = new ServerSocket(0);
+      final String database = "col";
       final String user = "col";
       final String password = "species2000";
 
       Instant start = Instant.now();
       //      System.out.println("Start postgres on port "+socket.getLocalPort());
-      final String url = postgres.start("localhost", socket.getLocalPort(), "col", user, password);
+      final String url = postgres.start("localhost", socket.getLocalPort(), database, user, password);
       System.out.format("Pg startup time: %s ms\n", Duration.between(start, Instant.now()).toMillis());
 
       HikariConfig hikari = new HikariConfig();
