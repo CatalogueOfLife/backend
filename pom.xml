@@ -58,7 +58,7 @@
         <name-parser.version>2.24</name-parser.version>
         <neo4j.version>3.2.3</neo4j.version>
         <postgresql.version>42.1.1</postgresql.version>
-        <postgresql-embedded>2.2</postgresql-embedded>
+        <postgresql-embedded>2.4</postgresql-embedded>
         <slf4j.version>1.7.24</slf4j.version>
 
         <!--

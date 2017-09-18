@@ -31,7 +31,7 @@ public class BMTest {
   @BeforeClass
   public static void initDB() throws IOException {
     embeddedPostgres = new EmbeddedPostgres(Version.V9_6_2);
-    jdbcUrl = embeddedPostgres.start("localhost", new ServerSocket(0).getLocalPort(), "testdb", "user", "password");
+    jdbcUrl = embeddedPostgres.start("localhost", new ServerSocket(0).getLocalPort(), "col", "col", "species2000");
     System.out.println("Postgres has started, yes!");
   }
 
