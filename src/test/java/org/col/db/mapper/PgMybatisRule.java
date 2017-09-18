@@ -77,7 +77,7 @@ public class PgMybatisRule implements TestRule {
   private void startDb() {
     System.out.println("Starting Postgres");
     try {
-      postgres = new EmbeddedPostgres(Version.V9_4_10);
+      postgres = new EmbeddedPostgres(Version.V9_6_2);
       startedHere = true;
       // assigned to some free port
       ServerSocket socket = new ServerSocket(0);
@@ -100,6 +100,9 @@ public class PgMybatisRule implements TestRule {
       dataSource = new HikariDataSource(hikari);
 
     } catch (Exception e) {
+      System.err.println("Pg startup error: " + e.getMessage());
+      e.printStackTrace();
+
       if (dataSource != null) {
         dataSource.close();
       }
