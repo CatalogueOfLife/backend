@@ -1,6 +1,6 @@
 package org.col.commands.importer;
 
-import org.col.db.mapper.DatasourceMetricsMapper;
+import org.col.db.mapper.DatasetMetricsMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,9 +13,9 @@ public class Analyser implements Runnable {
   private static final Logger LOG = LoggerFactory.getLogger(Analyser.class);
 
   private final int key;
-  private final DatasourceMetricsMapper mapper;
+  private final DatasetMetricsMapper mapper;
 
-  private Analyser(int key, DatasourceMetricsMapper mapper) {
+  private Analyser(int key, DatasetMetricsMapper mapper) {
     this.key = key;
     this.mapper = mapper;
   }
@@ -23,7 +23,7 @@ public class Analyser implements Runnable {
   /**
    * Creates a dataset specific analyser
    */
-  public static Analyser create(int key, DatasourceMetricsMapper mapper) {
+  public static Analyser create(int key, DatasetMetricsMapper mapper) {
     return new Analyser(key, mapper);
   }
 

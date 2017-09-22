@@ -3,7 +3,7 @@ package org.col.api;
 /**
  *
  */
-public class Datasource {
+public class Dataset {
   private Integer key;
   private String title;
 

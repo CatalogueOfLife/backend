@@ -1,5 +1,7 @@
 package org.col.api;
 
+import org.col.api.vocab.NomenclaturalActType;
+
 import java.util.Objects;
 
 /**
@@ -7,6 +9,7 @@ import java.util.Objects;
  */
 public class NameAct {
   private Integer key;
+  private NomenclaturalActType type;
 
   public Integer getKey() {
     return key;
@@ -16,16 +19,25 @@ public class NameAct {
     this.key = key;
   }
 
+  public NomenclaturalActType getType() {
+    return type;
+  }
+
+  public void setType(NomenclaturalActType type) {
+    this.type = type;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     NameAct nameAct = (NameAct) o;
-    return Objects.equals(key, nameAct.key);
+    return Objects.equals(key, nameAct.key) &&
+        type == nameAct.type;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(key);
+    return Objects.hash(key, type);
   }
 }

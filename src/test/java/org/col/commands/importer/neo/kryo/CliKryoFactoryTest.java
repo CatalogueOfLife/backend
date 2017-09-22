@@ -4,11 +4,11 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import com.google.common.collect.Lists;
-import org.col.api.DatasourceMetrics;
+import org.col.api.DatasetMetrics;
 import org.col.api.Name;
 import org.col.api.Reference;
 import org.col.api.Taxon;
-import org.col.api.vocab.Issue;
+import org.col.api.vocab.TaxonIssue;
 import org.col.api.vocab.Rank;
 import org.col.api.vocab.TaxonomicStatus;
 import org.col.commands.importer.neo.model.TaxonNameNode;
@@ -31,15 +31,15 @@ public class CliKryoFactoryTest {
   @Test
   public void testTaxonNameNode() throws Exception {
     Taxon t = new Taxon();
-    for (Issue issue : Issue.values()) {
+    for (TaxonIssue issue : TaxonIssue.values()) {
       t.addIssue(issue);
     }
     t.setStatus(TaxonomicStatus.DOUBTFUL);
     t.setModified(LocalDateTime.now());
 
     Name n = new Name();
-    n.setScientificName("Abies alba Mill.");
-    n.setCanonicalName("Abies alba");
+    n.setScientificName("Abies alba");
+    n.setAuthorship("Mill.");
     n.setRank(Rank.SPECIES);
 
     TaxonNameNode u = new TaxonNameNode(n, t);
@@ -61,7 +61,7 @@ public class CliKryoFactoryTest {
   public void testEmptyModels() throws Exception {
     assertSerde(new TaxonNameNode());
     assertSerde(new Reference());
-    assertSerde(new DatasourceMetrics());
+    assertSerde(new DatasetMetrics());
   }
 
   private void assertSerde(Object obj) {

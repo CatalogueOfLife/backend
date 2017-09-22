@@ -5,7 +5,7 @@ import java.util.Objects;
 /**
  *
  */
-public class NameAuthor {
+public class DatasetMetrics {
   private Integer key;
 
   public Integer getKey() {
@@ -20,8 +20,8 @@ public class NameAuthor {
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
-    NameAuthor author = (NameAuthor) o;
-    return Objects.equals(key, author.key);
+    DatasetMetrics that = (DatasetMetrics) o;
+    return Objects.equals(key, that.key);
   }
 
   @Override

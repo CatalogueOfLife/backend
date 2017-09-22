@@ -25,7 +25,7 @@ public class NameResource {
   @GET
   @Timed
   @Path("{key}")
-  public Name get(@PathParam("key") int key, @Context SqlSession session) {
+  public Name get(@PathParam("key") String key, @Context SqlSession session) {
     NameMapper mapper = session.getMapper(NameMapper.class);
     return mapper.get(key);
   }
@@ -33,15 +33,13 @@ public class NameResource {
   @GET
   @Timed
   @Path("create")
-  public int create(@QueryParam("name") String sciname, @QueryParam("ref") Integer ref, @QueryParam("rank") Optional<Rank> rank, @Context SqlSession session) {
+  public void create(@QueryParam("name") String sciname, @QueryParam("id") String id, @QueryParam("rank") Optional<Rank> rank, @Context SqlSession session) {
     Name n = parser.parse(sciname, rank);
-    n.setPublishedInKey(ref);
+    n.setKey(id);
 
     NameMapper mapper = session.getMapper(NameMapper.class);
     mapper.insert(n);
     session.commit();
-
-    return n.getKey();
   }
 
 }

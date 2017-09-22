@@ -22,7 +22,7 @@ import org.gbif.api.jackson.ExtensionDeserializer;
 import org.gbif.api.jackson.ExtensionSerializer;
 
 /**
- * Enumeration of dwc extensions for both Occurrence and Taxon that are indexed by GBIF.
+ * Enumeration of dwc extensions for Taxon core archives that are supported by CoL.
  *
  * @see <a href="http://rs.gbif.org/extension">GBIF Resources</a>
  */
@@ -31,74 +31,14 @@ import org.gbif.api.jackson.ExtensionSerializer;
 public enum Extension {
 
   /**
-   * @see <a href="http://rs.gbif.org/extension/audubon/audubon.xml">extension definition</a>
-   */
-  AUDUBON("http://rs.tdwg.org/ac/terms/Multimedia"),
-
-  /**
-   * @see <a href="http://rs.gbif.org/extension/gbif/1.0/description.xml">extension definition</a>
-   */
-  DESCRIPTION("http://rs.gbif.org/terms/1.0/Description"),
-
-  /**
    * @see <a href="http://rs.gbif.org/extension/gbif/1.0/distribution.xml">extension definition</a>
    */
   DISTRIBUTION("http://rs.gbif.org/terms/1.0/Distribution"),
 
   /**
-   * @see <a href="http://eol.org/schema/media_extension.xml">extension definition</a>
-   */
-  EOL_MEDIA("http://eol.org/schema/media/Document"),
-
-  /**
    * @see <a href="http://eol.org/schema/reference_extension.xml">extension definition</a>
    */
   EOL_REFERENCE("http://eol.org/schema/reference/Reference"),
-
-  /**
-   * @see <a href="http://rs.gbif.org/extension/germplasm/GermplasmAccession.xml">extension definition</a>
-   */
-  GERMPLASM_ACCESSION("http://purl.org/germplasm/germplasmTerm#GermplasmAccession"),
-
-  /**
-   * @see <a href="http://rs.gbif.org/extension/germplasm/MeasurementScore.xml">extension definition</a>
-   */
-  GERMPLASM_MEASUREMENT_SCORE("http://purl.org/germplasm/germplasmTerm#MeasurementScore"),
-
-  /**
-   * @see <a href="http://rs.gbif.org/extension/germplasm/MeasurementTrait.xml">extension definition</a>
-   */
-  GERMPLASM_MEASUREMENT_TRAIT("http://purl.org/germplasm/germplasmTerm#MeasurementTrait"),
-
-  /**
-   * @see <a href="http://rs.gbif.org/extension/germplasm/MeasurementTrial.xml">extension definition</a>
-   */
-  GERMPLASM_MEASUREMENT_TRIAL("http://purl.org/germplasm/germplasmTerm#MeasurementTrial"),
-
-  /**
-   * @see <a href="http://rs.gbif.org/extension/dwc/identification.xml">extension definition</a>
-   */
-  IDENTIFICATION("http://rs.tdwg.org/dwc/terms/Identification"),
-
-  /**
-   * @see <a href="http://rs.gbif.org/extension/gbif/1.0/identifier.xml">extension definition</a>
-   */
-  IDENTIFIER("http://rs.gbif.org/terms/1.0/Identifier"),
-
-  /**
-   * @see <a href="http://rs.gbif.org/extension/gbif/1.0/images.xml">extension definition</a>
-   */
-  IMAGE("http://rs.gbif.org/terms/1.0/Image"),
-
-  /**
-   * @see <a href="http://rs.gbif.org/extension/gbif/1.0/images.xml">extension definition</a>
-   */
-  MEASUREMENT_OR_FACT("http://rs.tdwg.org/dwc/terms/MeasurementOrFact"),
-
-  /**
-   * @see <a href="http://rs.gbif.org/extension/gbif/1.0/multimedia.xml">extension definition</a>
-   */
-  MULTIMEDIA("http://rs.gbif.org/terms/1.0/Multimedia"),
 
   /**
    * @see <a href="http://rs.gbif.org/extension/dwc/measurements_or_facts.xml">extension definition</a>

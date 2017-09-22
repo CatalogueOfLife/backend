@@ -2,7 +2,7 @@ package org.col.api;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Sets;
-import org.col.api.vocab.Issue;
+import org.col.api.vocab.TaxonIssue;
 import org.col.api.vocab.TaxonomicStatus;
 
 import java.time.LocalDateTime;
@@ -25,7 +25,7 @@ public class Taxon {
   private LocalDateTime modified;
   private LocalDateTime deleted;
   private LocalDateTime lastCrawled;
-  private Set<Issue> issues = EnumSet.noneOf(Issue.class);
+  private Set<TaxonIssue> issues = EnumSet.noneOf(TaxonIssue.class);
 
   public Integer getKey() {
     return key;
@@ -107,16 +107,16 @@ public class Taxon {
     this.lastCrawled = lastCrawled;
   }
 
-  public Set<Issue> getIssues() {
+  public Set<TaxonIssue> getIssues() {
     return issues;
   }
 
-  public void setIssues(Set<Issue> issues) {
+  public void setIssues(Set<TaxonIssue> issues) {
     Preconditions.checkNotNull(issues, "Issues cannot be null");
-    this.issues = Sets.newEnumSet(issues, Issue.class);
+    this.issues = Sets.newEnumSet(issues, TaxonIssue.class);
   }
 
-  public void addIssue(Issue issue) {
+  public void addIssue(TaxonIssue issue) {
     Preconditions.checkNotNull(issue, "Issue needs to be specified");
     this.issues.add(issue);
   }

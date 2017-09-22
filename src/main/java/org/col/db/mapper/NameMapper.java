@@ -7,12 +7,12 @@ import org.col.api.Name;
  *
  */
 public interface NameMapper {
-  Name get(@Param("key") int key);
+
+  Name getByInternalKey(@Param("key") int ikey);
+
+  Name get(@Param("key") String key);
 
   void insert(Name name);
 
-  void update(Name name);
-
-  void delete(@Param("key") int key);
 }
 

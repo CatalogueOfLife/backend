@@ -5,21 +5,69 @@
 <mapper namespace="org.col.db.mapper.NameMapper">
 
     <sql id="COLS">
-      scientific_name, canonical_name, authorship, monomial, epithet, infra_epithet, rank, notho, parsed, published_in_key, published_in_year
+      key,
+      dataset_key,
+      scientific_name,
+      authorship,
+      rank,
+      genus,
+      infrageneric_epithet,
+      specific_epithet,
+      infraspecific_epithet,
+      notho,
+      original_authors,
+      original_year,
+      combination_authors,
+      combination_year,
+      nomenclatural_code,
+      status,
+      type,
+      fossil,
+      original_name_key,
+      col_name_key,
+      remark
     </sql>
 
     <sql id="PROPS">
-      #{scientificName}, #{canonicalName}, #{authorship}, #{monomial}, #{epithet}, #{infraEpithet},
-      #{rank}, #{notho}, #{parsed}, #{publishedInKey}, #{publishedInYear}
+      #{key},
+      null,
+      #{scientificName},
+      #{authorship},
+      #{rank}::rank,
+      #{genus},
+      #{infragenericEpithet},
+      #{specificEpithet},
+      #{infraspecificEpithet},
+      #{notho},
+      #{originalAuthors, typeHandler=org.col.db.type.StringArrayTypeHandler},
+      #{originalYear},
+      #{combinationAuthors, typeHandler=org.col.db.type.StringArrayTypeHandler},
+      #{combinationYear},
+      #{nomenclaturalCode},
+      #{status},
+      #{type},
+      #{fossil},
+      #{originalNameKey},
+      #{colNameKey},
+      #{remark}
     </sql>
 
+    <!--  A mapping to Name, mostly auto mapped -->
+    <resultMap id="nameResultMap" type="Name" autoMapping="true">
+        <result property="combinationAuthors" column="combination_authors" typeHandler="org.col.db.type.StringArrayTypeHandler"/>
+        <result property="originalAuthors" column="original_authors" typeHandler="org.col.db.type.StringArrayTypeHandler"/>
+    </resultMap>
 
+
+    <select id="getByInternalKey" resultType="Name">
+      SELECT * FROM name where ikey = #{key}
+    </select>
 
     <select id="get" resultType="Name">
       SELECT * FROM name where key = #{key}
     </select>
 
-    <insert id="insert" parameterType="map" useGeneratedKeys="true" keyProperty="key">
+    <insert id="insert" parameterType="map" useGeneratedKeys="true" keyProperty="iKey">
       INSERT INTO name (<include refid="COLS" />) VALUES (<include refid="PROPS" />)
     </insert>
 

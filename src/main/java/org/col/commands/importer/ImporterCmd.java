@@ -4,7 +4,7 @@ import io.dropwizard.cli.ConfiguredCommand;
 import io.dropwizard.setup.Bootstrap;
 import net.sourceforge.argparse4j.inf.Namespace;
 import org.col.config.ColAppConfig;
-import org.col.db.mapper.DatasourceMetricsMapper;
+import org.col.db.mapper.DatasetMetricsMapper;
 
 public class ImporterCmd extends ConfiguredCommand<ColAppConfig> {
 
@@ -25,8 +25,8 @@ public class ImporterCmd extends ConfiguredCommand<ColAppConfig> {
     //importer.run();
 
     System.out.format("Analyzing %s!\n", datasetKey);
-    DatasourceMetricsMapper datasourceMetricsMapper = null;
-    Analyser analyser = Analyser.create(datasetKey, datasourceMetricsMapper);
+    DatasetMetricsMapper datasetMetricsMapper = null;
+    Analyser analyser = Analyser.create(datasetKey, datasetMetricsMapper);
     analyser.run();
 
     System.out.format("Import %s completed!\n", datasetKey);

@@ -16,6 +16,7 @@ import org.apache.ibatis.type.TypeHandlerRegistry;
 import org.col.api.Name;
 import org.col.config.ColAppConfig;
 import org.col.db.mapper.NameMapper;
+import org.col.db.type.RankTypeHandler;
 import org.col.db.type.UuidTypeHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -103,6 +104,7 @@ public class MybatisBundle implements ConfiguredBundle<ColAppConfig> {
     // register all type handler from the type subpackage
     registry.register(UuidTypeHandler.class.getPackage().getName());
     registry.setDefaultEnumTypeHandler(EnumOrdinalTypeHandler.class);
+    registry.register(RankTypeHandler.class);
   }
 
   /**

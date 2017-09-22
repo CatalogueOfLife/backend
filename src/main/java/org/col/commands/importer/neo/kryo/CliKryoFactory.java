@@ -27,13 +27,11 @@ public class CliKryoFactory implements KryoFactory {
     kryo.setRegistrationRequired(true);
 
     // col core
-    kryo.register(Datasource.class);
-    kryo.register(DatasourceMetrics.class);
+    kryo.register(Dataset.class);
+    kryo.register(DatasetMetrics.class);
     kryo.register(Name.class);
     kryo.register(NameAct.class);
-    kryo.register(NameAuthor.class);
     kryo.register(Reference.class);
-    kryo.register(Sector.class);
     kryo.register(Serial.class);
     kryo.register(Taxon.class);
     // cli specifics
@@ -53,23 +51,24 @@ public class CliKryoFactory implements KryoFactory {
     ImmutableListSerializer.registerSerializers(kryo);
 
     // enums
-
+    kryo.register(EnumMap.class, new EnumMapSerializer());
     kryo.register(EnumSet.class, new EnumSetSerializer());
-    kryo.register(Issue.class);
+    kryo.register(NameIssue.class);
+    kryo.register(TaxonIssue.class);
     kryo.register(NomenclaturalStatus.class);
-    kryo.register(NomenclaturalStatus[].class);
+    kryo.register(NomenclaturalActType.class);
     kryo.register(TaxonomicStatus.class);
+    kryo.register(NomenclaturalCode.class);
     kryo.register(Origin.class);
     kryo.register(Rank.class);
     kryo.register(Extension.class);
     kryo.register(Kingdom.class);
+    kryo.register(Lifezone.class);
     kryo.register(NameType.class);
     kryo.register(NamePart.class, 40);
     kryo.register(Language.class);
     kryo.register(Country.class);
     kryo.register(TypeStatus.class);
-    kryo.register(TypeDesignationType.class);
-    kryo.register(TaxGroup.class);
 
 
     // term enums

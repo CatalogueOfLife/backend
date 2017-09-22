@@ -3,7 +3,7 @@ package org.col.commands.importer.neo.model;
 import org.apache.commons.lang3.StringUtils;
 import org.col.api.Name;
 import org.col.api.Taxon;
-import org.col.api.vocab.Issue;
+import org.col.api.vocab.TaxonIssue;
 import org.col.api.vocab.Rank;
 import org.col.api.vocab.TaxonomicStatus;
 import org.neo4j.graphdb.Node;
@@ -56,7 +56,7 @@ public class TaxonNameNode implements NeoTaxon {
 
   @Override
   public String getCanonicalName() {
-    return name.getCanonicalName();
+    return name.getScientificName();
   }
 
   @Override
@@ -99,7 +99,7 @@ public class TaxonNameNode implements NeoTaxon {
   }
 
   @Override
-  public void addIssue(Issue issues) {
+  public void addIssue(TaxonIssue issues) {
     taxon.addIssue(issues);
   }
 

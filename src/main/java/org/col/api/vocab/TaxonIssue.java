@@ -6,7 +6,7 @@ import static org.col.api.vocab.Severity.*;
  * Enumeration of issues for all processed data encountered during datasource processing.
  * Issues are categorized by severity with the default of Warning.
  */
-public enum Issue {
+public enum TaxonIssue {
   /**
    * The value for dwc:parentNameUsageID could not be resolved.
    */
@@ -195,11 +195,11 @@ public enum Issue {
   /**
    * Default issue with severity warning.
    */
-  Issue() {
+  TaxonIssue() {
     this(WARNING);
   }
 
-  Issue(Severity severity) {
+  TaxonIssue(Severity severity) {
     this.severity = severity;
   }
 
