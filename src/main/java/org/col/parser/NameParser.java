@@ -2,10 +2,7 @@ package org.col.parser;
 
 import com.google.common.base.Splitter;
 import org.col.api.Name;
-import org.col.api.vocab.NamePart;
-import org.col.api.vocab.NameType;
-import org.col.api.vocab.Rank;
-import org.col.api.vocab.VocabularyUtils;
+import org.col.api.vocab.*;
 import org.gbif.api.model.checklistbank.ParsedName;
 import org.gbif.nameparser.GBIFNameParser;
 
@@ -28,7 +25,12 @@ public class NameParser {
     ParsedName pn = PARSER.parseQuietly(name, VocabularyUtils.convertToGbif(rank));
     Name n = new Name();
     n.setRank(rank.orElse(Rank.UNRANKED));
-    n.setType(VocabularyUtils.convertEnum(NameType.class, pn.getType()));
+    if (pn.getType() == org.gbif.api.vocabulary.NameType.DOUBTFUL) {
+      n.getIssues().put(NameIssue.UNUSUAL_CHARACTERS, null);
+      n.setType(NameType.SCIENTIFIC);
+    } else {
+      n.setType(VocabularyUtils.convertEnum(NameType.class, pn.getType()));
+    }
     if (pn.isParsed()) {
       n.setScientificName(pn.canonicalName());
 
@@ -47,6 +49,7 @@ public class NameParser {
       n.setNotho(VocabularyUtils.convertEnum(NamePart.class, pn.getNotho()));
 
     } else {
+      n.getIssues().put(NameIssue.UNPARSABLE, null);
       n.setScientificName(name);
     }
     return n;

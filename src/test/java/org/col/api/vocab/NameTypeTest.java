@@ -11,7 +11,6 @@ public class NameTypeTest {
   public void testIsBackbone() throws Exception {
     assertTrue(NameType.SCIENTIFIC.isBackboneType());
     assertTrue(NameType.VIRUS.isBackboneType());
-    assertTrue(NameType.DOUBTFUL.isBackboneType());
 
     assertFalse(NameType.PLACEHOLDER.isBackboneType());
     assertFalse(NameType.HYBRID.isBackboneType());
@@ -25,8 +24,6 @@ public class NameTypeTest {
   public void testIsParsable() throws Exception {
     assertTrue(NameType.SCIENTIFIC.isParsable());
     assertTrue(NameType.INFORMAL.isParsable());
-    assertTrue(NameType.DOUBTFUL.isParsable());
-
     assertFalse(NameType.VIRUS.isParsable());
     assertFalse(NameType.NO_NAME.isParsable());
     assertFalse(NameType.HYBRID.isParsable());

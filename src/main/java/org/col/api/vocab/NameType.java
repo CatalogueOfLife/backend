@@ -73,12 +73,6 @@ public enum NameType {
   OTU,
 
   /**
-   * A parsable name, but doubtful whether this is a scientific name at all.
-   * Usually indicated by carrying unusual characters or epithets like "null" in its name.
-   */
-  DOUBTFUL,
-
-  /**
    * A placeholder name like "incertae sedis" or "unknown genus".
    */
   PLACEHOLDER,
@@ -110,14 +104,14 @@ public enum NameType {
    * @return true if the type of name is included in the GBIF backbone
    */
   public boolean isBackboneType() {
-    return this == SCIENTIFIC || this == VIRUS || this == DOUBTFUL;
+    return this == SCIENTIFIC || this == VIRUS;
   }
 
   /**
    * @return true if the GBIF name parser can parse such a name into a ParsedName instance
    */
   public boolean isParsable() {
-    return this == SCIENTIFIC || this == INFORMAL || this == CULTIVAR || this == CANDIDATUS || this == DOUBTFUL;
+    return this == SCIENTIFIC || this == INFORMAL || this == CULTIVAR || this == CANDIDATUS;
   }
 
 }

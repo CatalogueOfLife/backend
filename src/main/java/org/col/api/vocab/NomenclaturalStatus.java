@@ -20,6 +20,12 @@ import javax.annotation.Nullable;
 /**
  * Vocabulary for the nomenclatural status of a name.
  *
+ * TODO: consider adding:
+ * nom. superfl.
+ * nomen protectum; nom. prot. a name granted protection, more specific than conserved
+ * nomen erratum (nom. err.) - a name given in error
+ * nomen suppressum (nom. supp.; plural: nomina suppressa) – a name that has been suppressed and cannot be used
+ *
  * See WFO Contributor Guidelines,
  * @see <a href="http://dev.e-taxonomy.eu/trac/wiki/NomenclaturalStatus">EDIT CDM</a>
  * @see <a href="http://wiki.tdwg.org/twiki/bin/view/UBIF/LinneanCoreNomenclaturalStatus">TDWG LinneanCoreNomenclaturalStatus</a>
@@ -71,6 +77,12 @@ public enum NomenclaturalStatus {
    * Names classed as available and valid by action of the ICZN or ICBN exercising its Plenary Powers .
    * Includes rulings to conserve junior/later synonyms in place of rejected forgotten names (nomen oblitum).
    * Such names are entered on the Official Lists.
+   *
+   * Conservation is possible only for botanical names at the rank of family, genus or species.
+   *
+   * Conserved names are a more generalized definition than the one for nomen protectum,
+   * which is specifically a conserved name that is either a junior synonym or homonym that is in use
+   * because the senior synonym or homonym has been made a nomen oblitum ("forgotten name").
    */
   CONSERVED("nomen conservandum", "nom. cons.", "conserved name"),
 
@@ -85,6 +97,28 @@ public enum NomenclaturalStatus {
   UNAVAILABLE("nomen invalidum", "nom. inval.", "unavailable"),
 
   /**
+   * The term is used to indicate a designation which looks exactly like a scientific name of an organism,
+   * and may have originally been intended to be a scientific name, but fails to be one
+   * because it has not (or has not yet) been published with an adequate description (or a reference to such a description),
+   * and thus is a "bare" or "naked" name, one which cannot be accepted as it currently stands.
+   * <p>
+   * Because a nomen nudum fails to qualify as a formal scientific name,
+   * a later author can publish a real scientific name that is identical in spelling.
+   * If one and the same author puts a name in print, first as a nomen nudum and later publishes the name
+   * accompanied by a description that meets the formal requirements,
+   * then the date of publication of the latter, formally correct, publication becomes the name's date of establishment.
+   * <p>
+   * According to the rules of zoological nomenclature a nomen nudum is unavailable.
+   * According to the rules of botanical nomenclature a nomen nudum is not validly published.
+   */
+  NAKED("nomen nudum", "nom. nud.", "naked name"),
+
+  /**
+   * A name which has been overlooked (literally, forgotten) and is no longer valid.
+   */
+  FORGOTTEN("nomen oblitum", "nom. obl.", "forgotten name"),
+
+  /**
    * A nomen illegitimum is a validly published name, but one that contravenes some of the articles laid down by
    * the International Botanical Congress. The name could be illegitimate because:
    * <ul>
@@ -97,7 +131,13 @@ public enum NomenclaturalStatus {
   ILLEGITIMATE("nomen illegitimum", "nom. illeg.", "objectively invalid"),
 
   /**
-   * Rejected / surpressed name. Inverse of conserved.
+   * A name that was superfluous at its time of publication,
+   * i. e. it was based on the same type as another, previously published name (ICN article 52).
+   */
+  SUPERFLUOUS("nomen superfluum", "nom. superfl.", "superfluous name"),
+
+  /**
+   * Rejected / suppressed name. Inverse of conserved. Outright rejection is possible for a name at any rank.
    */
   REJECTED("nomen rejiciendum", "nom. rej.", "rejected"),
 
@@ -108,17 +148,21 @@ public enum NomenclaturalStatus {
    * ICZN: doubtful or dubious names, names which are not certainly applicable to any known taxon or
    * for which the evidence is insufficient to permit recognition of the taxon to which they belong.
    * May possess availability conducive to uncertainty and instability.
-   * Also 'names under enquiry': NOMEN INQUIRENDUM (NOMINA INQUIRENDA).
    * <p>
    * In botany a name whose application is uncertain;
    * the confusion being derived from an incomplete or confusing description.
    * Example: Platanus hispanica auct., non Mill. ex Münchh., nom. dub.
    * The application of the name Platanus hispanica is uncertain, so the name has been rejected
    * in favour of Platanus ×acerifolia (Aiton) Willd., pro. sp.
+   * <p>
+   * Includes nomen ambiguum
    */
   DOUBTFUL("nomen dubium", "nom. dub.", "doubtful"),
 
-  UNEVALUATED(null, null, null);
+  /**
+   * Species inquirenda, a species of doubtful identity requiring further investigation
+   */
+  UNEVALUATED("nomen inquirendum", null, "unevaluated");
 
 
 
@@ -148,5 +192,12 @@ public enum NomenclaturalStatus {
   @Nullable
   public String getZoologicalLabel() {
     return zoology;
+  }
+
+  /**
+   * @return true if the name is potentially accepted to be used, following the codes conventions.
+   */
+  public boolean isLegitimate() {
+    return this == LEGITIMATE || this == CONSERVED || this == REPLACEMENT || this == VARIANT;
   }
 }

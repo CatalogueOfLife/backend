@@ -21,7 +21,10 @@ package org.col.api.vocab;
 public enum NomenclaturalActType {
 
   /**
-   * the description of a new original name, a new recombination, a replacement name or a change in rank.
+   * the description of a new original name,
+   * a new recombination (combinatio nova, comb. nov.),
+   * a replacement name (nomen novum, nom. nov.) or
+   * a change in rank (status novus, stat. nov.).
    * The publication linked to the description act is the dwc:namePublishedIn reference.
    */
   DESCRIPTION,
