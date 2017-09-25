@@ -29,11 +29,8 @@ package org.col.api.vocab;
 public enum NomenclaturalCode {
 
   BACTERIAL("ICNB", "International Code of Nomenclature of Bacteria", "http://www.ncbi.nlm.nih.gov/books/NBK8808/"),
-  BOTANICAL("ICBN", "International Code of Botanical Nomenclature", "http://ibot.sav.sk/icbn/main.htm"),
-  BIOCODE("BC", "BioCode", "http://www.bgbm.org/iapt/biocode/"),
+  BOTANICAL("ICN", "International Code of Nomenclature for algae, fungi, and plants", "http://ibot.sav.sk/icbn/main.htm"),
   CULTIVARS("ICNCP", "International Code of Nomenclature for Cultivated Plants", ""),
-  PHYLOCODE("PC", "Phylocode", "http://www.ohio.edu/phylocode/index.html"),
-  PHYTOSOCIOLOGY("ICPN", "International Code of Phytosociological Nomenclature", "http://www.iavs.org/pdf/Code.pdf"),
   VIRUS("ICVCN", "International Code of Virus Classifications and Nomenclature", "http://talk.ICTVonline.org/"),
   ZOOLOGICAL("ICZN",
       "International Code of Zoological Nomenclature",

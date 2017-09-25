@@ -98,7 +98,7 @@ CREATE TABLE name (
   original_year TEXT,
   combination_authors TEXT[],
   combination_year TEXT,
-  nomenclatural_code integer,
+  nomenclatural_code INTEGER,
   status INTEGER,
   type INTEGER,
   fossil BOOLEAN,
@@ -127,14 +127,13 @@ CREATE TABLE taxon (
   status INTEGER,
   origin INTEGER,
   rank rank,
-  kingdom INTEGER,
   according_to TEXT,
   according_to_date DATE,
   fossil BOOLEAN,
   recent BOOLEAN,
   lifezone INTEGER,
-  source_link TEXT,
-  species_estimate TEXT,
+  dataset_url TEXT,
+  species_estimate INTEGER,
   species_estimate_reference_key INTEGER REFERENCES reference,
   col_taxon_key INTEGER
 );
@@ -152,7 +151,8 @@ CREATE TABLE vernacular_name (
   dataset_key INTEGER NOT NULL REFERENCES dataset,
   taxon_key INTEGER NOT NULL REFERENCES taxon,
   name TEXT NOT NULL,
-  language CHAR(2)
+  language CHAR(2),
+  country CHAR(2)
 );
 
 CREATE TABLE vernacular_name_references (
