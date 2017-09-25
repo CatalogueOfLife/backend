@@ -28,15 +28,43 @@ public class NameMapperTest extends MapperTestBase<NameMapper> {
 
   @Test
   public void roundtrip() throws Exception {
-    Name s1 = create();
-    s1.setKey("sk1");
-    mapper.insert(s1);
+    Name n1 = create();
+    n1.setKey("sk1");
+    n1.setDataset(d1);
+    mapper.insert(n1);
 
     commit();
 
-    Name s2 = mapper.get(s1.getKey());
+    Name n1b = mapper.get(d1.getKey(), n1.getKey());
+    assertEquals(n1, n1b);
 
-    assertEquals(s1, s2);
+    Name n1c = mapper.getByInternalKey(n1.getKeyInternal());
+    assertEquals(n1, n1c);
+
+    // now with basionym
+    Name n2 = create();
+    n2.setKey("sk2");
+    n2.setDataset(d1);
+    n2.setKey("sk2");
+    n2.setDataset(d1);
+    n2.setOriginalName(n1);
+    n2.setOriginalName(n1);
+    mapper.insert(n2);
+
+    commit();
+
+    // we use a new instance of n1 with just the keys for the equality tests
+    n1 = new Name();
+    n1.setKey(n2.getOriginalName().getKey());
+    n1.setKeyInternal(n2.getOriginalName().getKeyInternal());
+    n2.setOriginalName(n1);
+
+    Name n2b = mapper.get(d1.getKey(), n2.getKey());
+    assertEquals(n2, n2b);
+
+    Name n2c = mapper.getByInternalKey(n2.getKeyInternal());
+    assertEquals(n2, n2c);
+
   }
 
 }

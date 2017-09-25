@@ -83,8 +83,8 @@ CREATE TABLE reference (
 );
 
 CREATE TABLE name (
-  ikey serial PRIMARY KEY,
-  key TEXT,
+  key serial PRIMARY KEY,
+  name_id TEXT,
   dataset_key INTEGER REFERENCES dataset,
   scientific_name text NOT NULL,
   authorship TEXT,
@@ -119,8 +119,8 @@ CREATE TABLE name_act (
 );
 
 CREATE TABLE taxon (
-  ikey serial PRIMARY KEY,
-  key TEXT,
+  key serial PRIMARY KEY,
+  taxon_id TEXT,
   dataset_key INTEGER NOT NULL REFERENCES dataset,
   parent_key INTEGER REFERENCES taxon,
   name_key INTEGER NOT NULL REFERENCES name,

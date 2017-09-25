@@ -8,8 +8,8 @@ import org.col.api.DatasetMetrics;
 import org.col.api.Name;
 import org.col.api.Reference;
 import org.col.api.Taxon;
-import org.col.api.vocab.TaxonIssue;
 import org.col.api.vocab.Rank;
+import org.col.api.vocab.TaxonIssue;
 import org.col.api.vocab.TaxonomicStatus;
 import org.col.commands.importer.neo.model.TaxonNameNode;
 import org.gbif.dwc.terms.*;
@@ -17,7 +17,6 @@ import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.net.URI;
-import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -32,10 +31,9 @@ public class CliKryoFactoryTest {
   public void testTaxonNameNode() throws Exception {
     Taxon t = new Taxon();
     for (TaxonIssue issue : TaxonIssue.values()) {
-      t.addIssue(issue);
+      //t.addIssue(issue);
     }
     t.setStatus(TaxonomicStatus.DOUBTFUL);
-    t.setModified(LocalDateTime.now());
 
     Name n = new Name();
     n.setScientificName("Abies alba");

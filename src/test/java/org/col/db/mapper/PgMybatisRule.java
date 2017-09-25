@@ -35,6 +35,11 @@ public class PgMybatisRule extends ExternalResource {
   private static SqlSession session;
   private boolean startedHere = false;
 
+  private static final boolean embeddedPg = false;
+  private static final String database = "colplus";
+  private static final String user = "markus";
+  private static final String password = "species2000";
+
   public <T> T getMapper(Class<T> mapperClazz) {
     return session.getMapper(mapperClazz);
   }
@@ -59,21 +64,23 @@ public class PgMybatisRule extends ExternalResource {
   }
 
   private void startDb() {
-    System.out.println("Starting Postgres");
     try {
-      postgres = new EmbeddedPostgres(Version.V9_6_3);
-      final String database = "col";
-      final String user = "col";
-      final String password = "species2000";
+      String url;
+      if (embeddedPg) {
+        System.out.println("Starting Postgres");
+        Instant start = Instant.now();
+        postgres = new EmbeddedPostgres(Version.V9_6_3);
+        // assigned some free port using local socket 0
+        url = postgres.start("localhost", new ServerSocket(0).getLocalPort(), database, user, password);
+        System.out.format("Pg startup time: %s ms\n", Duration.between(start, Instant.now()).toMillis());
+      } else {
+        System.out.println("Use external, local Postgres server on database " + database);
+        url = "jdbc:postgresql://localhost/"+database;
+      }
 
-      Instant start = Instant.now();
-      // assigned some free port using local socket 0
-      final String url = postgres.start("localhost", new ServerSocket(0).getLocalPort(), database, user, password);
-      System.out.format("Pg startup time: %s ms\n", Duration.between(start, Instant.now()).toMillis());
 
       HikariConfig hikari = new HikariConfig();
       hikari.setJdbcUrl(url);
-      //hikari.setDataSourceClassName("org.postgresql.ds.PGSimpleDataSource");
       hikari.setUsername(user);
       hikari.setPassword(password);
       hikari.setMaximumPoolSize(2);
@@ -116,7 +123,9 @@ public class PgMybatisRule extends ExternalResource {
     if (startedHere) {
       System.out.println("Stopping Postgres");
       dataSource.close();
-      postgres.stop();
+      if (postgres != null) {
+        postgres.stop();
+      }
     }
   }
 

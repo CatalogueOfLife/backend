@@ -4,8 +4,33 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="org.col.db.mapper.NameMapper">
 
+    <sql id="SELECT">
+        n.key,
+        n.name_id,
+        n.dataset_key,
+        n.scientific_name,
+        n.authorship,
+        n.rank,
+        n.genus,
+        n.infrageneric_epithet,
+        n.specific_epithet,
+        n.infraspecific_epithet,
+        n.notho,
+        n.original_authors,
+        n.original_year,
+        n.combination_authors,
+        n.combination_year,
+        n.nomenclatural_code,
+        n.status,
+        n.type,
+        n.fossil,
+        n.original_name_key,
+        bn.name_id AS original_name_id,
+        n.remark
+    </sql>
+
     <sql id="COLS">
-      key,
+      name_id,
       dataset_key,
       scientific_name,
       authorship,
@@ -24,13 +49,12 @@
       type,
       fossil,
       original_name_key,
-      col_name_key,
       remark
     </sql>
 
     <sql id="PROPS">
       #{key},
-      null,
+      #{dataset.key},
       #{scientificName},
       #{authorship},
       #{rank}::rank,
@@ -47,35 +71,43 @@
       #{status},
       #{type},
       #{fossil},
-      #{originalNameKey},
-      #{colNameKey},
+      #{originalName.keyInternal},
       #{remark}
+    </sql>
+
+    <sql id="FROM">
+        name n LEFT JOIN name bn ON n.original_name_key=bn.key
     </sql>
 
     <!--  A mapping to Name, mostly auto mapped -->
     <resultMap id="nameResultMap" type="Name" autoMapping="true">
+        <id property="keyInternal" column="key" />
+        <result property="key" column="name_id" />
         <result property="combinationAuthors" column="combination_authors" typeHandler="org.col.db.type.StringArrayTypeHandler"/>
         <result property="originalAuthors" column="original_authors" typeHandler="org.col.db.type.StringArrayTypeHandler"/>
+        <association property="dataset" javaType="Dataset">
+            <id property="key" column="dataset_key"/>
+        </association>
+        <association property="originalName" javaType="Name">
+            <id property="keyInternal" column="original_name_key"/>
+            <id property="key" column="original_name_id"/>
+        </association>
     </resultMap>
 
 
-    <select id="getByInternalKey" resultType="Name">
-      SELECT * FROM name where ikey = #{key}
+    <select id="getByInternalKey" resultMap="nameResultMap">
+      SELECT <include refid="SELECT" />
+      FROM <include refid="FROM" /> WHERE n.key = #{key}
     </select>
 
-    <select id="get" resultType="Name">
-      SELECT * FROM name where key = #{key}
+    <select id="get" resultMap="nameResultMap">
+      SELECT <include refid="SELECT" />
+      FROM <include refid="FROM" /> WHERE n.name_id = #{key}
     </select>
 
-    <insert id="insert" parameterType="map" useGeneratedKeys="true" keyProperty="iKey">
-      INSERT INTO name (<include refid="COLS" />) VALUES (<include refid="PROPS" />)
+    <insert id="insert" parameterType="map" useGeneratedKeys="true" keyProperty="keyInternal">
+      INSERT INTO name (<include refid="COLS" />)
+        VALUES (<include refid="PROPS" />)
     </insert>
 
-    <update id="update">
-      UPDATE name SET (<include refid="COLS" />) = (<include refid="PROPS" />) WHERE key = #{key}
-    </update>
-
-    <delete id="delete">
-        DELETE FROM name WHERE key = #{key}
-    </delete>
 </mapper>

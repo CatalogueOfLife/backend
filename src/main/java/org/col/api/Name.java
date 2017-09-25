@@ -3,7 +3,6 @@ package org.col.api;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.Lists;
 import org.col.api.vocab.*;
-import org.col.util.ParsingUtils;
 
 import java.util.EnumMap;
 import java.util.List;
@@ -20,13 +19,18 @@ public class Name {
    * This key is unique across all datasets but not exposed in the API.
    */
   @JsonIgnore
-  private Integer iKey;
+  private Integer keyInternal;
 
   /**
-   * Primary key of the name as given in the dataset.
+   * Primary key of the name as given in the dataset dwc:scientificNameID.
    * Only guaranteed to be unique within a dataset and can follow any kind of schema.
    */
   private String key;
+
+  /**
+   * Key to dataset instance. Defines context of the name key.
+   */
+  private Dataset dataset;
 
   /**
    * Entire canonical name string with a rank marker for infragenerics and infraspecfics, but excluding the authorship.
@@ -90,9 +94,10 @@ public class Name {
   private String combinationYear;
 
   /**
-   * Link to the original combination. In case of [replacement names](https://en.wikipedia.org/wiki/Nomen_novum) it points back to the replaced synonym.
+   * Link to the original combination.
+   * In case of [replacement names](https://en.wikipedia.org/wiki/Nomen_novum) it points back to the replaced synonym.
    */
-  private Integer originalNameKey;
+  private Name originalName;
 
   /**
    * true if the type specimen of the name is a fossil
@@ -115,21 +120,16 @@ public class Name {
   private String remark;
 
   /**
-   * matching name from the (provisional) Catalogue of Life.
-   */
-  private Integer colNameKey;
-
-  /**
    * Issues related to this name with potential values in the map
    */
   private Map<NameIssue, Object> issues = new EnumMap(NameIssue.class);
 
-  public Integer getiKey() {
-    return iKey;
+  public Integer getKeyInternal() {
+    return keyInternal;
   }
 
-  public void setiKey(Integer iKey) {
-    this.iKey = iKey;
+  public void setKeyInternal(Integer keyInternal) {
+    this.keyInternal = keyInternal;
   }
 
   public String getKey() {
@@ -138,6 +138,14 @@ public class Name {
 
   public void setKey(String key) {
     this.key = key;
+  }
+
+  public Dataset getDataset() {
+    return dataset;
+  }
+
+  public void setDataset(Dataset dataset) {
+    this.dataset = dataset;
   }
 
   public String getScientificName() {
@@ -224,13 +232,6 @@ public class Name {
     return originalYear;
   }
 
-  /**
-   * @return the original year parsed as an integer if possible, otherwise null
-   */
-  public Integer getOriginalYearAsInt() {
-    return ParsingUtils.parseInteger(originalYear);
-  }
-
   public void setOriginalYear(String originalYear) {
     this.originalYear = originalYear;
   }
@@ -247,23 +248,16 @@ public class Name {
     return combinationYear;
   }
 
-  /**
-   * @return the original year parsed as an integer if possible, otherwise null
-   */
-  public Integer setCombinationYearAsInt() {
-    return ParsingUtils.parseInteger(originalYear);
-  }
-
   public void setCombinationYear(String combinationYear) {
     this.combinationYear = combinationYear;
   }
 
-  public Integer getOriginalNameKey() {
-    return originalNameKey;
+  public Name getOriginalName() {
+    return originalName;
   }
 
-  public void setOriginalNameKey(Integer originalNameKey) {
-    this.originalNameKey = originalNameKey;
+  public void setOriginalName(Name originalName) {
+    this.originalName = originalName;
   }
 
   public Boolean getFossil() {
@@ -282,20 +276,20 @@ public class Name {
     this.status = status;
   }
 
+  public NameType getType() {
+    return type;
+  }
+
+  public void setType(NameType type) {
+    this.type = type;
+  }
+
   public String getRemark() {
     return remark;
   }
 
   public void setRemark(String remark) {
     this.remark = remark;
-  }
-
-  public Integer getColNameKey() {
-    return colNameKey;
-  }
-
-  public void setColNameKey(Integer colNameKey) {
-    this.colNameKey = colNameKey;
   }
 
   public Map<NameIssue, Object> getIssues() {
@@ -306,23 +300,16 @@ public class Name {
     this.issues = issues;
   }
 
-  public NameType getType() {
-    return type;
-  }
-
-  public void setType(NameType type) {
-    this.type = type;
-  }
-
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     Name name = (Name) o;
-    return Objects.equals(key, name.key) &&
+    return Objects.equals(keyInternal, name.keyInternal) &&
+        Objects.equals(key, name.key) &&
+        Objects.equals(dataset, name.dataset) &&
         Objects.equals(scientificName, name.scientificName) &&
         Objects.equals(authorship, name.authorship) &&
-        type == name.type &&
         rank == name.rank &&
         nomenclaturalCode == name.nomenclaturalCode &&
         Objects.equals(genus, name.genus) &&
@@ -334,16 +321,16 @@ public class Name {
         Objects.equals(originalYear, name.originalYear) &&
         Objects.equals(combinationAuthors, name.combinationAuthors) &&
         Objects.equals(combinationYear, name.combinationYear) &&
-        Objects.equals(originalNameKey, name.originalNameKey) &&
+        Objects.equals(originalName, name.originalName) &&
         Objects.equals(fossil, name.fossil) &&
         status == name.status &&
+        type == name.type &&
         Objects.equals(remark, name.remark) &&
-        Objects.equals(colNameKey, name.colNameKey) &&
         Objects.equals(issues, name.issues);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(key, scientificName, authorship, type, rank, nomenclaturalCode, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, notho, originalAuthors, originalYear, combinationAuthors, combinationYear, originalNameKey, fossil, status, remark, colNameKey, issues);
+    return Objects.hash(keyInternal, key, dataset, scientificName, authorship, rank, nomenclaturalCode, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, notho, originalAuthors, originalYear, combinationAuthors, combinationYear, originalName, fossil, status, type, remark, issues);
   }
 }

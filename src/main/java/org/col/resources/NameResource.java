@@ -27,7 +27,7 @@ public class NameResource {
   @Path("{key}")
   public Name get(@PathParam("key") String key, @Context SqlSession session) {
     NameMapper mapper = session.getMapper(NameMapper.class);
-    return mapper.get(key);
+    return mapper.get(1, key);
   }
 
   @GET

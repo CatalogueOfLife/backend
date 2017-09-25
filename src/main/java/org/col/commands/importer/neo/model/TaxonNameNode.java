@@ -1,10 +1,9 @@
 package org.col.commands.importer.neo.model;
 
-import org.apache.commons.lang3.StringUtils;
 import org.col.api.Name;
 import org.col.api.Taxon;
-import org.col.api.vocab.TaxonIssue;
 import org.col.api.vocab.Rank;
+import org.col.api.vocab.TaxonIssue;
 import org.col.api.vocab.TaxonomicStatus;
 import org.neo4j.graphdb.Node;
 
@@ -46,7 +45,7 @@ public class TaxonNameNode implements NeoTaxon {
 
   @Override
   public String getTaxonID() {
-    return taxon.getTaxonID();
+    return taxon.getKey();
   }
 
   @Override
@@ -100,7 +99,7 @@ public class TaxonNameNode implements NeoTaxon {
 
   @Override
   public void addIssue(TaxonIssue issues) {
-    taxon.addIssue(issues);
+    taxon.getIssues().put(issues, null);
   }
 
   /**
@@ -110,11 +109,13 @@ public class TaxonNameNode implements NeoTaxon {
    */
   @Override
   public void addRemark(String remark) {
-    if (StringUtils.isBlank(taxon.getRemarks())) {
-      taxon.setRemarks(remark);
+    /**
+    if (StringUtils.isBlank(name.getRemarks())) {
+      //taxon.setRemarks(remark);
     } else {
-      taxon.setRemarks(taxon.getRemarks() + "; " + remark);
+      //taxon.setRemarks(taxon.getRemarks() + "; " + remark);
     }
+     */
   }
 
   @Override
