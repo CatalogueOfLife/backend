@@ -1,9 +1,9 @@
 package org.col.api;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.col.api.vocab.Issue;
 import org.col.api.vocab.Lifezone;
 import org.col.api.vocab.Rank;
-import org.col.api.vocab.TaxonIssue;
 import org.col.api.vocab.TaxonomicStatus;
 
 import java.net.URI;
@@ -66,7 +66,7 @@ public class Taxon {
   /**
    * Issues related to this taxon with potential values in the map
    */
-  private Map<TaxonIssue, Object> issues = new EnumMap(TaxonIssue.class);
+  private Map<Issue, String> issues = new EnumMap(Issue.class);
 
   public Integer getKeyInternal() {
     return keyInternal;
@@ -188,11 +188,11 @@ public class Taxon {
     this.speciesEstimateReference = speciesEstimateReference;
   }
 
-  public Map<TaxonIssue, Object> getIssues() {
+  public Map<Issue, String> getIssues() {
     return issues;
   }
 
-  public void setIssues(Map<TaxonIssue, Object> issues) {
+  public void setIssues(Map<Issue, String> issues) {
     this.issues = issues;
   }
 

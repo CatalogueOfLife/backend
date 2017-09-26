@@ -8,8 +8,8 @@ import org.col.api.DatasetMetrics;
 import org.col.api.Name;
 import org.col.api.Reference;
 import org.col.api.Taxon;
+import org.col.api.vocab.Issue;
 import org.col.api.vocab.Rank;
-import org.col.api.vocab.TaxonIssue;
 import org.col.api.vocab.TaxonomicStatus;
 import org.col.commands.importer.neo.model.TaxonNameNode;
 import org.gbif.dwc.terms.*;
@@ -30,7 +30,7 @@ public class CliKryoFactoryTest {
   @Test
   public void testTaxonNameNode() throws Exception {
     Taxon t = new Taxon();
-    for (TaxonIssue issue : TaxonIssue.values()) {
+    for (Issue issue : Issue.values()) {
       //t.addIssue(issue);
     }
     t.setStatus(TaxonomicStatus.DOUBTFUL);

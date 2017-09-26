@@ -1,6 +1,6 @@
 package org.col.commands.importer.neo.model;
 
-import org.col.api.vocab.TaxonIssue;
+import org.col.api.vocab.Issue;
 import org.col.api.vocab.Rank;
 import org.col.api.vocab.TaxonomicStatus;
 import org.neo4j.graphdb.Node;
@@ -40,7 +40,7 @@ public interface NeoTaxon {
 
   void setParentKey(int key);
 
-  void addIssue(TaxonIssue issue);
+  void addIssue(Issue issue);
 
   void addRemark(String message);
 

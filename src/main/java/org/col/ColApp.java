@@ -1,5 +1,6 @@
 package org.col;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
@@ -34,12 +35,11 @@ public class ColApp extends Application<ColAppConfig> {
 
   @Override
   public void run(final ColAppConfig config, final Environment environment) {
-    // db
-    //final DBIFactory factory = new DBIFactory();
-    //final DBI jdbi = factory.build(environment, config.db.pool(), "postgresql");
-    //final UserDAO dao = jdbi.onDemand(UserDAO.class);
-
     // health
+
+    // JSON defaults
+    environment.getObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
+    //environment.getObjectMapper().configure(SerializationFeature.WRITE_NULL_MAP_VALUES, true);
 
     // resources
     environment.jersey().register(new NameResource());
