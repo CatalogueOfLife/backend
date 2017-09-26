@@ -3,6 +3,7 @@ package org.col.db.type;
 import com.google.common.base.Strings;
 import org.apache.ibatis.type.BaseTypeHandler;
 import org.apache.ibatis.type.JdbcType;
+import org.apache.ibatis.type.MappedTypes;
 
 import java.net.URI;
 import java.sql.CallableStatement;
@@ -13,6 +14,7 @@ import java.sql.SQLException;
 /**
  * A simple converter for varchars to URI.
  */
+@MappedTypes(URI.class)
 public class UriTypeHandler extends BaseTypeHandler<URI> {
 
   @Override

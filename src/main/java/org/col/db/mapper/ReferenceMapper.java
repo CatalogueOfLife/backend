@@ -10,12 +10,12 @@ public interface ReferenceMapper {
 
   Reference getByInternalKey(@Param("key") int key);
 
-  Reference get(@Param("dkey") int datasetKey, @Param("key") String key);
+  Reference get(@Param("datasetKey") int datasetKey, @Param("id") String id);
 
   /**
    * Returns the reference of the description act for the given name key.
    */
-  Reference getPublishedIn(@Param("datasetKey") int datasetKey, @Param("nameKey") String nameKey);
+  Reference getPublishedIn(@Param("datasetKey") int datasetKey, @Param("nameId") String nameId);
 
   void insert(Reference name);
 

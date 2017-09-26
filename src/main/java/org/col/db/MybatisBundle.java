@@ -105,6 +105,7 @@ public class MybatisBundle implements ConfiguredBundle<ColAppConfig> {
     registry.register(UuidTypeHandler.class.getPackage().getName());
     registry.setDefaultEnumTypeHandler(EnumOrdinalTypeHandler.class);
     registry.register(RankTypeHandler.class);
+
   }
 
   /**

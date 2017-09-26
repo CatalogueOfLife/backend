@@ -5,12 +5,6 @@ CREATE SCHEMA public;
 
 CREATE EXTENSION IF NOT EXISTS hstore;
 
-CREATE TABLE _typetest (
-  key serial PRIMARY KEY,
-  data hstore,
-  json jsonb,
-  uuid uuid
-);
 
 CREATE TYPE rank AS ENUM (
   'kingdom',
@@ -37,23 +31,26 @@ CREATE TYPE rank AS ENUM (
 CREATE TABLE dataset (
   key serial PRIMARY KEY,
   alias TEXT,
-  title text NOT NULL,
-  gbif_key uuid,
-  abstract TEXT,
+  title TEXT NOT NULL,
+  gbif_key UUID,
+  description TEXT,
   group_name TEXT,
   authors_and_editors TEXT,
   organisation TEXT,
   contact_person TEXT,
   version TEXT,
-  release_date date,
+  release_date DATE,
   taxonomic_coverage TEXT,
   coverage TEXT,
-  completeness TEXT,
-  confidence TEXT,
+  completeness INTEGER,
+  confidence INTEGER,
   homepage TEXT,
   data_format TEXT,
   data_access TEXT,
-  remark text
+  notes text,
+  created TIMESTAMP,
+  modified TIMESTAMP,
+  deleted TIMESTAMP
 );
 
 CREATE TABLE "serial" (
@@ -72,19 +69,17 @@ CREATE TABLE "serial" (
 );
 
 CREATE TABLE reference (
-  ikey serial PRIMARY KEY,
-  key TEXT,
+  key serial PRIMARY KEY,
+  id TEXT,
   dataset_key INTEGER NOT NULL REFERENCES dataset,
   serial_key INTEGER REFERENCES "serial",
   csl JSONB,
-  year int,
-  doi TEXT,
-  remark text
+  year int
 );
 
 CREATE TABLE name (
   key serial PRIMARY KEY,
-  name_id TEXT,
+  id TEXT,
   dataset_key INTEGER REFERENCES dataset,
   scientific_name text NOT NULL,
   authorship TEXT,

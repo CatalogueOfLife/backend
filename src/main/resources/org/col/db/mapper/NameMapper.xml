@@ -6,7 +6,7 @@
 
     <sql id="SELECT">
         n.key,
-        n.name_id,
+        n.id,
         n.dataset_key,
         n.scientific_name,
         n.authorship,
@@ -25,13 +25,13 @@
         n.type,
         n.fossil,
         n.original_name_key,
-        bn.name_id AS original_name_id,
+        bn.id AS original_name_id,
         n.issues,
         n.remark
     </sql>
 
     <sql id="COLS">
-      name_id,
+      id,
       dataset_key,
       scientific_name,
       authorship,
@@ -55,7 +55,7 @@
     </sql>
 
     <sql id="PROPS">
-      #{key},
+      #{id},
       #{dataset.key},
       #{scientificName},
       #{authorship},
@@ -73,7 +73,7 @@
       #{status},
       #{type},
       #{fossil},
-      #{originalName.keyInternal},
+      #{originalName.key},
       #{issues, typeHandler=org.col.db.type.HstoreIssueHandler}::hstore,
       #{remark}
     </sql>
@@ -84,8 +84,8 @@
 
     <!--  A mapping to Name, mostly auto mapped -->
     <resultMap id="nameResultMap" type="Name" autoMapping="true">
-        <id property="keyInternal" column="key" />
-        <result property="key" column="name_id" />
+        <id property="key" column="key" />
+        <id property="id" column="id"/>
         <result property="combinationAuthors" column="combination_authors" typeHandler="org.col.db.type.StringArrayTypeHandler"/>
         <result property="originalAuthors" column="original_authors" typeHandler="org.col.db.type.StringArrayTypeHandler"/>
         <result property="issues" column="issues" typeHandler="org.col.db.type.HstoreIssueHandler"/>
@@ -93,24 +93,25 @@
             <id property="key" column="dataset_key"/>
         </association>
         <association property="originalName" javaType="Name">
-            <id property="keyInternal" column="original_name_key"/>
-            <id property="key" column="original_name_id"/>
+            <id property="key" column="original_name_key"/>
+            <id property="id" column="original_name_id"/>
         </association>
     </resultMap>
 
 
-    <select id="getByInternalKey" resultMap="nameResultMap">
-      SELECT <include refid="SELECT" />
-      FROM <include refid="FROM" /> WHERE n.key = #{key}
+    <select id="getByKey" resultMap="nameResultMap">
+          SELECT <include refid="SELECT" />
+          FROM <include refid="FROM" /> WHERE n.key = #{key}
     </select>
 
     <select id="get" resultMap="nameResultMap">
-      SELECT <include refid="SELECT" />
-      FROM <include refid="FROM" /> WHERE n.name_id = #{key}
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
+        WHERE n.dataset_key = #{datasetKey} AND n.id = #{id}
     </select>
 
-    <insert id="insert" parameterType="Name" useGeneratedKeys="true" keyProperty="keyInternal">
-      INSERT INTO name (<include refid="COLS" />)
+    <insert id="insert" parameterType="Name" useGeneratedKeys="true" keyProperty="key">
+        INSERT INTO name (<include refid="COLS" />)
         VALUES (<include refid="PROPS" />)
     </insert>
 

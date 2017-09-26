@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.col.db.mapper.ReferenceMapper">
+
+    <sql id="SELECT">
+      key,
+      reference_id,
+      dataset_key,
+      csl,
+      serial_key,
+      year
+    </sql>
+
+    <sql id="COLS">
+      reference_id,
+      dataset_key,
+      csl,
+      serial_key,
+      year
+    </sql>
+
+    <sql id="PROPS">
+      #{key},
+      #{dataset.key},
+      #{csl},
+      #{serial.key},
+      #{year}
+    </sql>
+
+    <sql id="FROM">
+        reference r
+    </sql>
+
+    <!--  A mapping to Reference, mostly auto mapped -->
+    <resultMap id="referenceResultMap" type="Reference" autoMapping="true">
+        <id property="key" column="key" />
+        <association property="dataset" javaType="Dataset">
+            <id property="key" column="dataset_key"/>
+        </association>
+        <association property="serial" javaType="Serial">
+            <id property="key" column="serial_key"/>
+        </association>
+    </resultMap>
+
+
+    <select id="getByInternalKey" resultMap="referenceResultMap">
+      SELECT <include refid="SELECT" />
+      FROM <include refid="FROM" /> WHERE r.key = #{key}
+    </select>
+
+    <select id="get" resultMap="referenceResultMap">
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
+        WHERE r.dataset_key = #{datasetKey} AND r.id = #{id}
+    </select>
+
+    <insert id="insert" parameterType="Name" useGeneratedKeys="true" keyProperty="key">
+      INSERT INTO name (<include refid="COLS" />)
+        VALUES (<include refid="PROPS" />)
+    </insert>
+
+</mapper>

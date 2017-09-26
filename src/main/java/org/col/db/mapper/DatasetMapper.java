@@ -7,9 +7,9 @@ public interface DatasetMapper {
 
   Dataset get(@Param("key") int key);
 
-  void insert(@Param("d") Dataset dataset);
+  void insert(Dataset dataset);
 
-  void update(@Param("d") Dataset dataset);
+  void update(Dataset dataset);
 
   /**
    * Marks a dataset as deleted

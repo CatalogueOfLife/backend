@@ -2,6 +2,7 @@ package org.col.db.type;
 
 import com.google.common.base.Strings;
 import org.apache.ibatis.type.JdbcType;
+import org.apache.ibatis.type.MappedTypes;
 import org.apache.ibatis.type.TypeHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,6 +15,7 @@ import java.util.UUID;
  *
  * @see UUID
  */
+@MappedTypes(UUID.class)
 public class UuidTypeHandler implements TypeHandler<UUID> {
   private static final Logger LOG = LoggerFactory.getLogger(UuidTypeHandler.class);
 
