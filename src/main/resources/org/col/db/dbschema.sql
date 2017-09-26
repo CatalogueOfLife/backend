@@ -104,6 +104,7 @@ CREATE TABLE name (
   fossil BOOLEAN,
   original_name_key INTEGER REFERENCES name,
   col_name_key INTEGER,
+  issues hstore,
   remark TEXT
 );
 
@@ -135,6 +136,7 @@ CREATE TABLE taxon (
   dataset_url TEXT,
   species_estimate INTEGER,
   species_estimate_reference_key INTEGER REFERENCES reference,
+  issues hstore,
   col_taxon_key INTEGER
 );
 

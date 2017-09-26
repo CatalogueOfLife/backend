@@ -122,7 +122,7 @@ public class Name {
   /**
    * Issues related to this name with potential values in the map
    */
-  private Map<NameIssue, Object> issues = new EnumMap(NameIssue.class);
+  private Map<NameIssue, String> issues = new EnumMap(NameIssue.class);
 
   public Integer getKeyInternal() {
     return keyInternal;
@@ -292,11 +292,11 @@ public class Name {
     this.remark = remark;
   }
 
-  public Map<NameIssue, Object> getIssues() {
+  public Map<NameIssue, String> getIssues() {
     return issues;
   }
 
-  public void setIssues(Map<NameIssue, Object> issues) {
+  public void setIssues(Map<NameIssue, String> issues) {
     this.issues = issues;
   }
 

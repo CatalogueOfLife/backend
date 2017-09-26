@@ -26,6 +26,7 @@
         n.fossil,
         n.original_name_key,
         bn.name_id AS original_name_id,
+        n.issues,
         n.remark
     </sql>
 
@@ -49,6 +50,7 @@
       type,
       fossil,
       original_name_key,
+      issues,
       remark
     </sql>
 
@@ -72,6 +74,7 @@
       #{type},
       #{fossil},
       #{originalName.keyInternal},
+      #{issues, typeHandler=org.col.db.type.HstoreIssueHandler}::hstore,
       #{remark}
     </sql>
 
@@ -85,6 +88,7 @@
         <result property="key" column="name_id" />
         <result property="combinationAuthors" column="combination_authors" typeHandler="org.col.db.type.StringArrayTypeHandler"/>
         <result property="originalAuthors" column="original_authors" typeHandler="org.col.db.type.StringArrayTypeHandler"/>
+        <result property="issues" column="issues" typeHandler="org.col.db.type.HstoreIssueHandler"/>
         <association property="dataset" javaType="Dataset">
             <id property="key" column="dataset_key"/>
         </association>
@@ -105,7 +109,7 @@
       FROM <include refid="FROM" /> WHERE n.name_id = #{key}
     </select>
 
-    <insert id="insert" parameterType="map" useGeneratedKeys="true" keyProperty="keyInternal">
+    <insert id="insert" parameterType="Name" useGeneratedKeys="true" keyProperty="keyInternal">
       INSERT INTO name (<include refid="COLS" />)
         VALUES (<include refid="PROPS" />)
     </insert>
