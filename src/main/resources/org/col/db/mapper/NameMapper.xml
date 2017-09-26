@@ -115,4 +115,20 @@
         VALUES (<include refid="PROPS" />)
     </insert>
 
+    <select id="synonymsByKey" resultMap="nameResultMap">
+        SELECT <include refid="SELECT" />
+        FROM name ns
+          JOIN name bn ON ns.original_name_key=bn.key
+          JOIN name n ON (n.original_name_key=bn.key OR n.key=bn.key)
+        WHERE ns.key = #{key}
+    </select>
+
+    <select id="synonyms" resultMap="nameResultMap">
+        SELECT <include refid="SELECT" />
+        FROM name ns
+        JOIN name bn ON ns.original_name_key=bn.key
+        JOIN name n ON (n.original_name_key=bn.key OR n.key=bn.key)
+        WHERE ns.dataset_key = #{datasetKey} AND ns.id = #{id}
+    </select>
+
 </mapper>

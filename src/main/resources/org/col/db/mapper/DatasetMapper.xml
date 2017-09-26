@@ -86,7 +86,7 @@
       WHERE key = #{key}
     </select>
 
-    <insert id="insert" parameterType="Dataset" useGeneratedKeys="true" keyProperty="key">
+    <insert id="create" parameterType="Dataset" useGeneratedKeys="true" keyProperty="key">
       INSERT INTO dataset (<include refid="COLS" />, created)
              VALUES (<include refid="PROPS" />, now())
     </insert>

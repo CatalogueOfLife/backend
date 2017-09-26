@@ -8,7 +8,7 @@ import org.col.api.Reference;
  */
 public interface ReferenceMapper {
 
-  Reference getByInternalKey(@Param("key") int key);
+  Reference getByKey(@Param("key") int key);
 
   Reference get(@Param("datasetKey") int datasetKey, @Param("id") String id);
 

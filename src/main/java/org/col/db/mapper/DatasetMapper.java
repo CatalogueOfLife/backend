@@ -7,7 +7,7 @@ public interface DatasetMapper {
 
   Dataset get(@Param("key") int key);
 
-  void insert(Dataset dataset);
+  void create(Dataset dataset);
 
   void update(Dataset dataset);
 
