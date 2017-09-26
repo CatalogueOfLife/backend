@@ -1,6 +1,8 @@
 package org.col;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
@@ -9,7 +11,9 @@ import org.col.commands.initdb.InitDbCmd;
 import org.col.config.ColAppConfig;
 import org.col.db.MybatisBundle;
 import org.col.jersey.JerseyProviderBundle;
+import org.col.resources.DatasetResource;
 import org.col.resources.NameResource;
+import org.col.resources.ReferenceResource;
 
 public class ColApp extends Application<ColAppConfig> {
 
@@ -39,9 +43,12 @@ public class ColApp extends Application<ColAppConfig> {
 
     // JSON defaults
     environment.getObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
-    //environment.getObjectMapper().configure(SerializationFeature.WRITE_NULL_MAP_VALUES, true);
+    environment.getObjectMapper().registerModule(new JavaTimeModule());
+    environment.getObjectMapper().configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
 
     // resources
+    environment.jersey().register(new DatasetResource());
+    environment.jersey().register(new ReferenceResource());
     environment.jersey().register(new NameResource());
   }
 

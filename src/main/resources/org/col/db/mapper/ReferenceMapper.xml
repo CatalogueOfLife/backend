@@ -5,16 +5,16 @@
 <mapper namespace="org.col.db.mapper.ReferenceMapper">
 
     <sql id="SELECT">
-      key,
-      reference_id,
-      dataset_key,
-      csl,
-      serial_key,
-      year
+      r.key,
+      r.id,
+      r.dataset_key,
+      r.csl,
+      r.serial_key,
+      r.year
     </sql>
 
     <sql id="COLS">
-      reference_id,
+      id,
       dataset_key,
       csl,
       serial_key,
@@ -22,9 +22,9 @@
     </sql>
 
     <sql id="PROPS">
-      #{key},
+      #{id},
       #{dataset.key},
-      #{csl},
+      #{csl, typeHandler=org.col.db.type.CslJsonHandler}::jsonb,
       #{serial.key},
       #{year}
     </sql>
@@ -36,6 +36,7 @@
     <!--  A mapping to Reference, mostly auto mapped -->
     <resultMap id="referenceResultMap" type="Reference" autoMapping="true">
         <id property="key" column="key" />
+        <result property="csl" column="csl" typeHandler="org.col.db.type.CslJsonHandler" />
         <association property="dataset" javaType="Dataset">
             <id property="key" column="dataset_key"/>
         </association>
@@ -45,9 +46,10 @@
     </resultMap>
 
 
-    <select id="getByInternalKey" resultMap="referenceResultMap">
+    <select id="getByKey" resultMap="referenceResultMap">
       SELECT <include refid="SELECT" />
-      FROM <include refid="FROM" /> WHERE r.key = #{key}
+      FROM <include refid="FROM" />
+      WHERE r.key = #{key}
     </select>
 
     <select id="get" resultMap="referenceResultMap">
@@ -56,8 +58,8 @@
         WHERE r.dataset_key = #{datasetKey} AND r.id = #{id}
     </select>
 
-    <insert id="insert" parameterType="Name" useGeneratedKeys="true" keyProperty="key">
-      INSERT INTO name (<include refid="COLS" />)
+    <insert id="insert" parameterType="Reference" useGeneratedKeys="true" keyProperty="key">
+      INSERT INTO reference (<include refid="COLS" />)
         VALUES (<include refid="PROPS" />)
     </insert>
 

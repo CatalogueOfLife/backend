@@ -1,6 +1,8 @@
 package org.col.api;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import java.util.Objects;
 
@@ -29,7 +31,7 @@ public class Reference {
   /**
    * Reference metadata encoded as CSL-JSON.
    */
-  private Object csl;
+  private ObjectNode csl;
 
   /**
    * Serial container, defining the CSL container properties.
@@ -66,11 +68,11 @@ public class Reference {
     this.dataset = dataset;
   }
 
-  public Object getCsl() {
+  public ObjectNode getCsl() {
     return csl;
   }
 
-  public void setCsl(Object csl) {
+  public void setCsl(ObjectNode csl) {
     this.csl = csl;
   }
 
@@ -89,6 +91,26 @@ public class Reference {
   public void setYear(Integer year) {
     this.year = year;
   }
+
+
+  // VARIOUS METHODS DELEGATING TO THE UNDERLYING CSL JsonObject instance
+  @JsonIgnore
+  public String getTitle() {
+    return cslStr("title");
+  }
+
+  public void setTitle(String title) {
+    csl.put("title", title);
+  }
+
+  private String cslStr(String path) {
+    if (csl.has(path)) {
+      JsonNode node = csl.get(path);
+      return node.asText();
+    }
+    return null;
+  }
+
 
   @Override
   public boolean equals(Object o) {

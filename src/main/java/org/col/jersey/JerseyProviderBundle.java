@@ -17,6 +17,7 @@ public class JerseyProviderBundle implements Bundle {
   @Override
   public void run(Environment env) {
     env.jersey().register(QueryParam400Mapper.class);
+    env.jersey().register(CreatedResponseFilter.class);
   }
 
 }

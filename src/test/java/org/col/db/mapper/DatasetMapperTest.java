@@ -48,7 +48,7 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
   @Test
   public void roundtrip() throws Exception {
     Dataset d1 = create();
-    mapper().insert(d1);
+    mapper().create(d1);
 
     commit();
 
@@ -62,7 +62,7 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
   @Test
   public void delete() throws Exception {
     Dataset d1 = create();
-    mapper().insert(d1);
+    mapper().create(d1);
 
     commit();
 

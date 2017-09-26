@@ -33,9 +33,9 @@ public class NameResource {
   @GET
   @Timed
   @Path("{key}/synonyms")
-  public Name getSynonyms(@PathParam("datasetKey") Integer datasetKey, @PathParam("key") String key, @Context SqlSession session) {
+  public List<Name> getSynonyms(@PathParam("datasetKey") Integer datasetKey, @PathParam("key") String key, @Context SqlSession session) {
     NameMapper mapper = session.getMapper(NameMapper.class);
-    return mapper.get(datasetKey, key);
+    return mapper.synonyms(datasetKey, key);
   }
 
   @GET
@@ -43,7 +43,7 @@ public class NameResource {
   @Path("{key}/publishedIn")
   public Reference getPublishedIn(@PathParam("datasetKey") Integer datasetKey, @PathParam("key") String key, @Context SqlSession session) {
     ReferenceMapper mapper = session.getMapper(ReferenceMapper.class);
-    return mapper.get(datasetKey, key);
+    return mapper.getPublishedIn(datasetKey, key);
   }
 
   @GET
