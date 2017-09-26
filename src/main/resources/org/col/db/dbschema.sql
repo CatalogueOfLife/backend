@@ -116,7 +116,7 @@ CREATE TABLE name_act (
 
 CREATE TABLE taxon (
   key serial PRIMARY KEY,
-  taxon_id TEXT,
+  id TEXT,
   dataset_key INTEGER NOT NULL REFERENCES dataset,
   parent_key INTEGER REFERENCES taxon,
   name_key INTEGER NOT NULL REFERENCES name,

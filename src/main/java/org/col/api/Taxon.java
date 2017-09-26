@@ -72,7 +72,7 @@ public class Taxon {
     return key;
   }
 
-  public void setKeyInternal(Integer key) {
+  public void setKey(Integer key) {
     this.key = key;
   }
 
