@@ -4,7 +4,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 import org.apache.ibatis.type.BaseTypeHandler;
 import org.apache.ibatis.type.JdbcType;
-import org.col.api.vocab.NameIssue;
+import org.col.api.vocab.Issue;
 import org.postgresql.util.HStoreConverter;
 
 import java.sql.CallableStatement;
@@ -21,36 +21,36 @@ import java.util.Map;
  * As we do not map all java map types to this mybatis handler apply the handler manually for the relevant hstore fields
  * in the mapper xml.
  */
-public class HstoreIssueHandler extends BaseTypeHandler<Map<NameIssue, String>> {
+public class HstoreIssueHandler extends BaseTypeHandler<Map<Issue, String>> {
 
   @Override
-  public void setNonNullParameter(PreparedStatement ps, int i, Map<NameIssue, String> parameter, JdbcType jdbcType)
+  public void setNonNullParameter(PreparedStatement ps, int i, Map<Issue, String> parameter, JdbcType jdbcType)
     throws SQLException {
     ps.setString(i, HStoreConverter.toString(parameter));
   }
 
   @Override
-  public Map<NameIssue, String> getNullableResult(ResultSet rs, String columnName) throws SQLException {
+  public Map<Issue, String> getNullableResult(ResultSet rs, String columnName) throws SQLException {
     return fromString(rs.getString(columnName));
   }
 
   @Override
-  public Map<NameIssue, String> getNullableResult(ResultSet rs, int columnIndex) throws SQLException {
+  public Map<Issue, String> getNullableResult(ResultSet rs, int columnIndex) throws SQLException {
     return fromString(rs.getString(columnIndex));
   }
 
   @Override
-  public Map<NameIssue, String> getNullableResult(CallableStatement cs, int columnIndex) throws SQLException {
+  public Map<Issue, String> getNullableResult(CallableStatement cs, int columnIndex) throws SQLException {
     return fromString(cs.getString(columnIndex));
   }
 
-  private Map<NameIssue, String> fromString(String hstring) {
-    HashMap<NameIssue, String> typedMap = Maps.newHashMap();
+  private Map<Issue, String> fromString(String hstring) {
+    HashMap<Issue, String> typedMap = Maps.newHashMap();
     if (!Strings.isNullOrEmpty(hstring)) {
       Map<String, String> rawMap = HStoreConverter.fromString(hstring);
       for (Map.Entry<String, String> entry : rawMap.entrySet()) {
         try {
-          typedMap.put(NameIssue.valueOf(entry.getKey()), entry.getValue());
+          typedMap.put(Issue.valueOf(entry.getKey()), entry.getValue());
         } catch (IllegalArgumentException e) {
           // ignore this entry
         }

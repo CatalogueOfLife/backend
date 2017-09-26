@@ -2,8 +2,8 @@ package org.col.commands.importer.neo.model;
 
 import org.col.api.Name;
 import org.col.api.Taxon;
+import org.col.api.vocab.Issue;
 import org.col.api.vocab.Rank;
-import org.col.api.vocab.TaxonIssue;
 import org.col.api.vocab.TaxonomicStatus;
 import org.neo4j.graphdb.Node;
 
@@ -98,7 +98,7 @@ public class TaxonNameNode implements NeoTaxon {
   }
 
   @Override
-  public void addIssue(TaxonIssue issues) {
+  public void addIssue(Issue issues) {
     taxon.getIssues().put(issues, null);
   }
 

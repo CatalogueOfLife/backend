@@ -5,7 +5,7 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.col.api.vocab.TaxonIssue;
+import org.col.api.vocab.Issue;
 import org.col.api.vocab.Rank;
 import org.col.api.vocab.TaxonomicStatus;
 import org.col.commands.importer.neo.kryo.CliKryoFactory;
@@ -285,7 +285,7 @@ public class NeoDb<T extends NeoTaxon> {
       }
     } catch (RuntimeException e) {
       LOG.error("Unable to read basionym relation for {} with node {}", obj.getScientificName(), n.getId());
-      obj.addIssue(TaxonIssue.RELATIONSHIP_MISSING);
+      obj.addIssue(Issue.RELATIONSHIP_MISSING);
       obj.addRemark("Multiple original name relations");
     }
 
@@ -303,7 +303,7 @@ public class NeoDb<T extends NeoTaxon> {
       }
     } catch (RuntimeException e) {
       LOG.error("Unable to read accepted name relation for {} with node {}", obj.getScientificName(), n.getId(), e);
-      obj.addIssue(TaxonIssue.RELATIONSHIP_MISSING);
+      obj.addIssue(Issue.RELATIONSHIP_MISSING);
       obj.addRemark("Multiple accepted name relations");
     }
 
@@ -316,7 +316,7 @@ public class NeoDb<T extends NeoTaxon> {
       }
     } catch (RuntimeException e) {
       LOG.error("Unable to read parent relation for {} with node {}", obj.getScientificName(), n.getId());
-      obj.addIssue(TaxonIssue.RELATIONSHIP_MISSING);
+      obj.addIssue(Issue.RELATIONSHIP_MISSING);
       obj.addRemark("Multiple parent relations");
     }
   }

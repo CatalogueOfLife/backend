@@ -2,7 +2,7 @@ package org.col.db.mapper;
 
 import com.google.common.collect.Lists;
 import org.col.api.Name;
-import org.col.api.vocab.NameIssue;
+import org.col.api.vocab.Issue;
 import org.col.api.vocab.NamePart;
 import org.col.api.vocab.NameType;
 import org.col.api.vocab.Rank;
@@ -35,8 +35,8 @@ public class NameMapperTest extends MapperTestBase<NameMapper> {
     n.setCombinationAuthors(Lists.newArrayList("Mill."));
     n.setOriginalYear("1889");
     n.setOriginalAuthors(Lists.newArrayList("L.", "DC"));
-    n.getIssues().put(NameIssue.UNPARSABLE, "true");
-    n.getIssues().put(NameIssue.BASIONYM_AUTHOR_MISMATCH, null);
+    n.getIssues().put(Issue.UNPARSABLE, "true");
+    n.getIssues().put(Issue.BASIONYM_AUTHOR_MISMATCH, null);
     n.setType(NameType.SCIENTIFIC);
     return n;
   }

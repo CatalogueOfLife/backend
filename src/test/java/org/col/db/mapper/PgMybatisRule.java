@@ -37,7 +37,7 @@ public class PgMybatisRule extends ExternalResource {
 
   // switch this for local testing to false
   //Note: DO NOT COMMIT false or jenkins will fail!
-  private static final boolean embeddedPg = true;
+  private static final boolean embeddedPg = false;
   private static final String database = "colplus";
   private static final String user = "markus";
   private static final String password = "species2000";

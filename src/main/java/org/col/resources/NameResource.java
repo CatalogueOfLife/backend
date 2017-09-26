@@ -3,43 +3,55 @@ package org.col.resources;
 import com.codahale.metrics.annotation.Timed;
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.Name;
-import org.col.api.vocab.Rank;
+import org.col.api.NameAct;
+import org.col.api.Reference;
+import org.col.db.mapper.NameActMapper;
 import org.col.db.mapper.NameMapper;
-import org.col.parser.NameParser;
+import org.col.db.mapper.ReferenceMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import java.util.Optional;
+import java.util.List;
 
 
-@Path("/name")
+@Path("{datasetKey}/name")
 @Produces(MediaType.APPLICATION_JSON)
 public class NameResource {
   private static final Logger LOG = LoggerFactory.getLogger(NameResource.class);
 
-  final NameParser parser = new NameParser();
-
   @GET
   @Timed
   @Path("{key}")
-  public Name get(@PathParam("key") String key, @Context SqlSession session) {
+  public Name get(@PathParam("datasetKey") Integer datasetKey, @PathParam("key") String key, @Context SqlSession session) {
     NameMapper mapper = session.getMapper(NameMapper.class);
-    return mapper.get(1, key);
+    return mapper.get(datasetKey, key);
   }
 
   @GET
   @Timed
-  @Path("create")
-  public void create(@QueryParam("name") String sciname, @QueryParam("id") String id, @QueryParam("rank") Optional<Rank> rank, @Context SqlSession session) {
-    Name n = parser.parse(sciname, rank);
-    n.setKey(id);
-
+  @Path("{key}/synonyms")
+  public Name getSynonyms(@PathParam("datasetKey") Integer datasetKey, @PathParam("key") String key, @Context SqlSession session) {
     NameMapper mapper = session.getMapper(NameMapper.class);
-    mapper.insert(n);
-    session.commit();
+    return mapper.get(datasetKey, key);
+  }
+
+  @GET
+  @Timed
+  @Path("{key}/publishedIn")
+  public Reference getPublishedIn(@PathParam("datasetKey") Integer datasetKey, @PathParam("key") String key, @Context SqlSession session) {
+    ReferenceMapper mapper = session.getMapper(ReferenceMapper.class);
+    return mapper.get(datasetKey, key);
+  }
+
+  @GET
+  @Timed
+  @Path("{key}/acts")
+  public List<NameAct> getActs(@PathParam("datasetKey") Integer datasetKey, @PathParam("key") String key, @QueryParam("homotypic") Boolean homotypic, @Context SqlSession session) {
+    NameActMapper mapper = session.getMapper(NameActMapper.class);
+    return homotypic ? mapper.listByHomotypicGroup(datasetKey, key) : mapper.listByName(datasetKey, key);
   }
 
 }

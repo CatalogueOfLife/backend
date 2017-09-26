@@ -93,8 +93,7 @@ public class CliKryoFactory implements KryoFactory {
     // enums
     kryo.register(EnumMap.class, new EnumMapSerializer());
     kryo.register(EnumSet.class, new EnumSetSerializer());
-    kryo.register(NameIssue.class);
-    kryo.register(TaxonIssue.class);
+    kryo.register(Issue.class);
     kryo.register(NomenclaturalStatus.class);
     kryo.register(NomenclaturalActType.class);
     kryo.register(TaxonomicStatus.class);

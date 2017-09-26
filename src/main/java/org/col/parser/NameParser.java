@@ -26,7 +26,7 @@ public class NameParser {
     Name n = new Name();
     n.setRank(rank.orElse(Rank.UNRANKED));
     if (pn.getType() == org.gbif.api.vocabulary.NameType.DOUBTFUL) {
-      n.getIssues().put(NameIssue.UNUSUAL_CHARACTERS, null);
+      n.getIssues().put(Issue.UNUSUAL_CHARACTERS, null);
       n.setType(NameType.SCIENTIFIC);
     } else {
       n.setType(VocabularyUtils.convertEnum(NameType.class, pn.getType()));
@@ -49,7 +49,7 @@ public class NameParser {
       n.setNotho(VocabularyUtils.convertEnum(NamePart.class, pn.getNotho()));
 
     } else {
-      n.getIssues().put(NameIssue.UNPARSABLE, null);
+      n.getIssues().put(Issue.UNPARSABLE, null);
       n.setScientificName(name);
     }
     return n;
