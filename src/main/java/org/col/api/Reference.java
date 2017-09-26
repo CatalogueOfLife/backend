@@ -9,5 +9,7 @@ public class Reference {
   private Serial serial;
   private Integer year;
   private String doi;
+
+  
 }
 
