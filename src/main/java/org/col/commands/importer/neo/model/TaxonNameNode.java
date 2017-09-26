@@ -45,7 +45,7 @@ public class TaxonNameNode implements NeoTaxon {
 
   @Override
   public String getTaxonID() {
-    return taxon.getKey();
+    return taxon.getId();
   }
 
   @Override

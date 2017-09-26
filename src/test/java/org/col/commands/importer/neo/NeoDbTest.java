@@ -361,7 +361,7 @@ public class NeoDbTest {
     Taxon t = new Taxon();
     //t.setOrigin(origin);
     t.setStatus(status);
-    t.setKey(taxonID);
+    t.setId(taxonID);
     //t.setRemarks(remark);
 
     return create(t, n, isRoot);
@@ -395,7 +395,7 @@ public class NeoDbTest {
     n.setRank(rank);
 
     Taxon t = new Taxon();
-    t.setKey(String.valueOf(key));
+    t.setId(String.valueOf(key));
     //t.setKingdomKey(key);
     //t.setParentKey(key);
     //t.setAcceptedKey(key);

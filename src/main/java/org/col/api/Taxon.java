@@ -23,13 +23,13 @@ public class Taxon {
    * This key is unique across all datasets but not exposed in the API.
    */
   @JsonIgnore
-  private Integer keyInternal;
+  private Integer key;
 
   /**
    * Primary key of the taxon as given in the dataset as taxonID.
    * Only guaranteed to be unique within a dataset and can follow any kind of schema.
    */
-  private String key;
+  private String id;
 
   /**
    * Key to dataset instance. Defines context of the taxon key.
@@ -68,20 +68,20 @@ public class Taxon {
    */
   private Map<Issue, String> issues = new EnumMap(Issue.class);
 
-  public Integer getKeyInternal() {
-    return keyInternal;
-  }
-
-  public void setKeyInternal(Integer keyInternal) {
-    this.keyInternal = keyInternal;
-  }
-
-  public String getKey() {
+  public Integer getKey() {
     return key;
   }
 
-  public void setKey(String key) {
+  public void setKeyInternal(Integer key) {
     this.key = key;
+  }
+
+  public String getId() {
+    return id;
+  }
+
+  public void setId(String id) {
+    this.id = id;
   }
 
   public Dataset getDataset() {
@@ -201,8 +201,8 @@ public class Taxon {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     Taxon taxon = (Taxon) o;
-    return Objects.equals(keyInternal, taxon.keyInternal) &&
-        Objects.equals(key, taxon.key) &&
+    return Objects.equals(key, taxon.key) &&
+        Objects.equals(id, taxon.id) &&
         Objects.equals(dataset, taxon.dataset) &&
         Objects.equals(name, taxon.name) &&
         status == taxon.status &&
@@ -221,6 +221,6 @@ public class Taxon {
 
   @Override
   public int hashCode() {
-    return Objects.hash(keyInternal, key, dataset, name, status, rank, parent, accordingTo, accordingToDate, fossil, recent, lifezones, datasetUrl, speciesEstimate, speciesEstimateReference, issues);
+    return Objects.hash(key, id, dataset, name, status, rank, parent, accordingTo, accordingToDate, fossil, recent, lifezones, datasetUrl, speciesEstimate, speciesEstimateReference, issues);
   }
 }

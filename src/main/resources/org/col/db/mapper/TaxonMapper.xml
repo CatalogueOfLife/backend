@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.col.db.mapper.NameMapper">
+
+    <sql id="SELECT">
+        t.key,
+        t.taxon_id,
+        t.dataset_key,
+        t.parent_key,
+        pt.id as parent_id,
+        t.name_key,
+        n.id as name_id
+     </sql>
+
+    <sql id="COLS">
+    	key,
+    	taxon_id,
+    	dataset_key,
+    	parent_key,
+    	name_key
+    </sql>
+
+    <sql id="PROPS">
+      #{key},
+      #{dataset.key},
+      #{parent.key},
+      #{name.key}
+    </sql>
+
+    <sql id="FROM">
+        taxon t
+        LEFT JOIN taxon pt ON (t.parent_key=pt.key)
+        LEFT JOIN name n ON (t.name_key=n.key)
+    </sql>
+
+    <!--  A mapping to Name, mostly auto mapped -->
+    <resultMap id="nameResultMap" type="Taxon" autoMapping="true">
+        <id property="key" column="key" />
+        <id property="id" column="id" />
+         <association property="dataset" javaType="Dataset">
+            <id property="key" column="dataset_key"/>
+        </association>
+        <association property="parent" javaType="Taxon">
+            <id property="key" column="parent_key"/>
+            <id property="id" column="parent_id"/>
+        </association>
+        <association property="name" javaType="Name">
+            <id property="key" column="name_key"/>
+            <id property="id" column="name_id"/>
+        </association>
+    </resultMap>
+
+
+    <select id="getByInternalKey" resultMap="nameResultMap">
+      SELECT <include refid="SELECT" />
+      FROM <include refid="FROM" /> WHERE n.key = #{key}
+    </select>
+
+    <select id="get" resultMap="nameResultMap">
+      SELECT <include refid="SELECT" />
+      FROM <include refid="FROM" /> WHERE n.name_id = #{key}
+    </select>
+
+    <insert id="insert" parameterType="Taxon" useGeneratedKeys="true" keyProperty="key">
+      INSERT INTO name (<include refid="COLS" />)
+        VALUES (<include refid="PROPS" />)
+    </insert>
+
+</mapper>
