@@ -1,6 +1,7 @@
--- nothing
-INSERT INTO dataset (key, title) VALUES (1, 'First dataset');
-INSERT INTO dataset (key, title) VALUES (2, 'Second dataset');
+-- squirrels test data
+INSERT INTO dataset (key, title, created) VALUES (1, 'First dataset', now());
+INSERT INTO dataset (key, title, created) VALUES (2, 'Second dataset', now());
+ALTER SEQUENCE dataset_key_seq RESTART WITH 1000;
 
 INSERT INTO name (key, id) VALUES (1, 'First name');
 INSERT INTO name (key, id) VALUES (2, 'Second name');

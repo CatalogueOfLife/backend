@@ -19,13 +19,13 @@ public class Name {
    * This key is unique across all datasets but not exposed in the API.
    */
   @JsonIgnore
-  private Integer keyInternal;
+  private Integer key;
 
   /**
    * Primary key of the name as given in the dataset dwc:scientificNameID.
    * Only guaranteed to be unique within a dataset and can follow any kind of schema.
    */
-  private String key;
+  private String id;
 
   /**
    * Key to dataset instance. Defines context of the name key.
@@ -124,20 +124,20 @@ public class Name {
    */
   private Map<Issue, String> issues = new EnumMap(Issue.class);
 
-  public Integer getKeyInternal() {
-    return keyInternal;
-  }
-
-  public void setKeyInternal(Integer keyInternal) {
-    this.keyInternal = keyInternal;
-  }
-
-  public String getKey() {
+  public Integer getKey() {
     return key;
   }
 
-  public void setKey(String key) {
+  public void setKey(Integer key) {
     this.key = key;
+  }
+
+  public String getId() {
+    return id;
+  }
+
+  public void setId(String id) {
+    this.id = id;
   }
 
   public Dataset getDataset() {
@@ -305,8 +305,8 @@ public class Name {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     Name name = (Name) o;
-    return Objects.equals(keyInternal, name.keyInternal) &&
-        Objects.equals(key, name.key) &&
+    return Objects.equals(key, name.key) &&
+        Objects.equals(id, name.id) &&
         Objects.equals(dataset, name.dataset) &&
         Objects.equals(scientificName, name.scientificName) &&
         Objects.equals(authorship, name.authorship) &&
@@ -331,6 +331,6 @@ public class Name {
 
   @Override
   public int hashCode() {
-    return Objects.hash(keyInternal, key, dataset, scientificName, authorship, rank, nomenclaturalCode, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, notho, originalAuthors, originalYear, combinationAuthors, combinationYear, originalName, fossil, status, type, remark, issues);
+    return Objects.hash(key, id, dataset, scientificName, authorship, rank, nomenclaturalCode, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, notho, originalAuthors, originalYear, combinationAuthors, combinationYear, originalName, fossil, status, type, remark, issues);
   }
 }

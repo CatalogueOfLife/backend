@@ -11,16 +11,16 @@ import java.util.List;
  */
 public interface NameMapper {
 
-  Name getByInternalKey(@Param("key") int key);
+  Name getByKey(@Param("key") int key);
 
-  Name get(@Param("dkey") int datasetKey, @Param("key") String key);
+  Name get(@Param("datasetKey") int datasetKey, @Param("id") String id);
 
   void insert(Name name);
 
-  List<Name> synonyms(@Param("dkey") int datasetKey, @Param("key") String key);
+  List<Name> synonyms(@Param("datasetKey") int datasetKey, @Param("id") String id);
 
-  List<Name> synonymsByInternalKey(@Param("key") int key);
+  List<Name> synonymsByKey(@Param("key") int key);
 
-  PagingResult<Name> search(@Param("dkey") int datasetKey, @Param("q") String q);
+  PagingResult<Name> search(@Param("datasetKey") int datasetKey, @Param("q") String q);
 }
 

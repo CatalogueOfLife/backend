@@ -5,7 +5,6 @@ import com.zaxxer.hikari.HikariDataSource;
 import jersey.repackaged.com.google.common.base.Throwables;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.jdbc.ScriptRunner;
-import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.commands.initdb.InitDbCmd;
 import org.col.db.MybatisBundle;
@@ -29,29 +28,26 @@ import java.time.Instant;
  * It can even be used to share the same postgres server across several test classes
  * if it is used in as a {@link org.junit.ClassRule} in a TestSuite.
  */
-public class PgMybatisRule extends ExternalResource {
+public class PgSetupRule extends ExternalResource {
   private static EmbeddedPostgres postgres;
   private static HikariDataSource dataSource;
-  private static SqlSession session;
+  private static SqlSessionFactory sqlSessionFactory;
   private boolean startedHere = false;
 
   // switch this for local testing to false
   //Note: DO NOT COMMIT false or jenkins will fail!
-  private static final boolean embeddedPg = false;
+  private static final boolean embeddedPg = true;
   private static final String database = "colplus";
   private static final String user = "markus";
   private static final String password = "species2000";
 
-  public <T> T getMapper(Class<T> mapperClazz) {
-    return session.getMapper(mapperClazz);
-  }
 
   public static Connection getConnection() throws SQLException {
     return dataSource.getConnection();
   }
 
-  public void commit() {
-    session.commit();
+  public static SqlSessionFactory getSqlSessionFactory() throws SQLException {
+     return sqlSessionFactory;
   }
 
   @Override
@@ -61,7 +57,6 @@ public class PgMybatisRule extends ExternalResource {
       startDb();
       startedHere = true;
       initDb();
-      initMyBatis();
     }
   }
 
@@ -89,6 +84,9 @@ public class PgMybatisRule extends ExternalResource {
       hikari.setMinimumIdle(1);
       dataSource = new HikariDataSource(hikari);
 
+      // configure single mybatis session factory
+      sqlSessionFactory = MybatisBundle.configure(dataSource, "test");
+
     } catch (Exception e) {
       System.err.println("Pg startup error: " + e.getMessage());
       e.printStackTrace();
@@ -113,11 +111,6 @@ public class PgMybatisRule extends ExternalResource {
     } catch (SQLException | IOException e) {
       Throwables.propagate(e);
     }
-  }
-
-  private void initMyBatis() {
-    SqlSessionFactory factory = MybatisBundle.configure(dataSource, "test");
-    session = factory.openSession();
   }
 
   @Override
