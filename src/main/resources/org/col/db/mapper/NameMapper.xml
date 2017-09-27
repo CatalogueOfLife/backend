@@ -22,12 +22,12 @@
         n.combination_year,
         n.nomenclatural_code,
         n.status,
+        n.origin,
         n.type,
         n.fossil,
         n.original_name_key,
         bn.id AS original_name_id,
-        n.issues,
-        n.remark
+        n.remarks
     </sql>
 
     <sql id="COLS">
@@ -47,11 +47,11 @@
       combination_year,
       nomenclatural_code,
       status,
+      origin,
       type,
       fossil,
       original_name_key,
-      issues,
-      remark
+      remarks
     </sql>
 
     <sql id="PROPS">
@@ -71,11 +71,11 @@
       #{combinationYear},
       #{nomenclaturalCode},
       #{status},
+      #{origin},
       #{type},
       #{fossil},
       #{originalName.key},
-      #{issues, typeHandler=org.col.db.type.HstoreIssueHandler}::hstore,
-      #{remark}
+      #{remarks}
     </sql>
 
     <sql id="FROM">
@@ -85,10 +85,9 @@
     <!--  A mapping to Name, mostly auto mapped -->
     <resultMap id="nameResultMap" type="Name" autoMapping="true">
         <id property="key" column="key" />
-        <id property="id" column="id"/>
+        <result property="id" column="id"/>
         <result property="combinationAuthors" column="combination_authors" typeHandler="org.col.db.type.StringArrayTypeHandler"/>
         <result property="originalAuthors" column="original_authors" typeHandler="org.col.db.type.StringArrayTypeHandler"/>
-        <result property="issues" column="issues" typeHandler="org.col.db.type.HstoreIssueHandler"/>
         <association property="dataset" javaType="Dataset">
             <id property="key" column="dataset_key"/>
         </association>
@@ -110,7 +109,7 @@
         WHERE n.dataset_key = #{datasetKey} AND n.id = #{id}
     </select>
 
-    <insert id="insert" parameterType="Name" useGeneratedKeys="true" keyProperty="key">
+    <insert id="create" parameterType="Name" useGeneratedKeys="true" keyProperty="key">
         INSERT INTO name (<include refid="COLS" />)
         VALUES (<include refid="PROPS" />)
     </insert>

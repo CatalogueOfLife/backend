@@ -34,7 +34,7 @@ import javax.annotation.Nullable;
  * @see <a href="http://rs.gbif.org/vocabulary/gbif/nomenclatural_status.xml">rs.gbif.org vocabulary</a>
  * @see <a href="http://darwin.eeb.uconn.edu/systsem/table.html">Nomenclatural equivalences</a>
  */
-public enum NomenclaturalStatus {
+public enum NomStatus {
 
   /**
    * Botany: Names that are validly published and legitimate
@@ -170,7 +170,7 @@ public enum NomenclaturalStatus {
   private final String abbreviated;
   private final String zoology;
 
-  private NomenclaturalStatus(String botany, String abbreviated, String zoology) {
+  private NomStatus(String botany, String abbreviated, String zoology) {
     this.botany = botany;
     this.abbreviated = abbreviated;
     this.zoology = zoology;

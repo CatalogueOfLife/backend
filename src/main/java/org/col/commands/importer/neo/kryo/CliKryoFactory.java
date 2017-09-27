@@ -35,6 +35,7 @@ public class CliKryoFactory implements KryoFactory {
     kryo.register(Reference.class);
     kryo.register(Serial.class);
     kryo.register(Taxon.class);
+    kryo.register(VerbatimRecord.class);
     // cli specifics
     kryo.register(TaxonNameNode.class);
 
@@ -56,10 +57,10 @@ public class CliKryoFactory implements KryoFactory {
     kryo.register(EnumMap.class, new EnumMapSerializer());
     kryo.register(EnumSet.class, new EnumSetSerializer());
     kryo.register(Issue.class);
-    kryo.register(NomenclaturalStatus.class);
-    kryo.register(NomenclaturalActType.class);
+    kryo.register(NomStatus.class);
+    kryo.register(NomActType.class);
     kryo.register(TaxonomicStatus.class);
-    kryo.register(NomenclaturalCode.class);
+    kryo.register(NomCode.class);
     kryo.register(Origin.class);
     kryo.register(Rank.class);
     kryo.register(Extension.class);

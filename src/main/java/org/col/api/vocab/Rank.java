@@ -346,43 +346,43 @@ public enum Rank {
       CONVARIETY
   );
 
-  private static final Map<Rank, NomenclaturalCode> RANK2CODE = ImmutableMap.<Rank, NomenclaturalCode>builder()
-      .put(PARVCLASS, NomenclaturalCode.ZOOLOGICAL)
-      .put(MAGNORDER, NomenclaturalCode.ZOOLOGICAL)
-      .put(GRANDORDER, NomenclaturalCode.ZOOLOGICAL)
-      .put(PARVORDER, NomenclaturalCode.ZOOLOGICAL)
-      .put(SUPERLEGION, NomenclaturalCode.ZOOLOGICAL)
-      .put(LEGION, NomenclaturalCode.ZOOLOGICAL)
-      .put(SUBLEGION, NomenclaturalCode.ZOOLOGICAL)
-      .put(INFRALEGION, NomenclaturalCode.ZOOLOGICAL)
-      .put(SUPERCOHORT, NomenclaturalCode.ZOOLOGICAL)
-      .put(COHORT, NomenclaturalCode.ZOOLOGICAL)
-      .put(SUBCOHORT, NomenclaturalCode.ZOOLOGICAL)
-      .put(INFRACOHORT, NomenclaturalCode.ZOOLOGICAL)
-      .put(MORPH, NomenclaturalCode.ZOOLOGICAL)
-      .put(ABERRATION, NomenclaturalCode.ZOOLOGICAL)
-      .put(NATIO, NomenclaturalCode.ZOOLOGICAL)
+  private static final Map<Rank, NomCode> RANK2CODE = ImmutableMap.<Rank, NomCode>builder()
+      .put(PARVCLASS, NomCode.ZOOLOGICAL)
+      .put(MAGNORDER, NomCode.ZOOLOGICAL)
+      .put(GRANDORDER, NomCode.ZOOLOGICAL)
+      .put(PARVORDER, NomCode.ZOOLOGICAL)
+      .put(SUPERLEGION, NomCode.ZOOLOGICAL)
+      .put(LEGION, NomCode.ZOOLOGICAL)
+      .put(SUBLEGION, NomCode.ZOOLOGICAL)
+      .put(INFRALEGION, NomCode.ZOOLOGICAL)
+      .put(SUPERCOHORT, NomCode.ZOOLOGICAL)
+      .put(COHORT, NomCode.ZOOLOGICAL)
+      .put(SUBCOHORT, NomCode.ZOOLOGICAL)
+      .put(INFRACOHORT, NomCode.ZOOLOGICAL)
+      .put(MORPH, NomCode.ZOOLOGICAL)
+      .put(ABERRATION, NomCode.ZOOLOGICAL)
+      .put(NATIO, NomCode.ZOOLOGICAL)
 
-      .put(RACE, NomenclaturalCode.BOTANICAL)
-      .put(PROLES, NomenclaturalCode.BOTANICAL)
-      .put(SECTION, NomenclaturalCode.BOTANICAL)
-      .put(SUBSECTION, NomenclaturalCode.BOTANICAL)
-      .put(SERIES, NomenclaturalCode.BOTANICAL)
-      .put(SUBSERIES, NomenclaturalCode.BOTANICAL)
+      .put(RACE, NomCode.BOTANICAL)
+      .put(PROLES, NomCode.BOTANICAL)
+      .put(SECTION, NomCode.BOTANICAL)
+      .put(SUBSECTION, NomCode.BOTANICAL)
+      .put(SERIES, NomCode.BOTANICAL)
+      .put(SUBSERIES, NomCode.BOTANICAL)
 
-      .put(CULTIVAR, NomenclaturalCode.CULTIVARS)
-      .put(CULTIVAR_GROUP, NomenclaturalCode.CULTIVARS)
-      .put(CONVARIETY, NomenclaturalCode.CULTIVARS)
-      .put(GREX, NomenclaturalCode.CULTIVARS)
+      .put(CULTIVAR, NomCode.CULTIVARS)
+      .put(CULTIVAR_GROUP, NomCode.CULTIVARS)
+      .put(CONVARIETY, NomCode.CULTIVARS)
+      .put(GREX, NomCode.CULTIVARS)
 
-      .put(PATHOVAR, NomenclaturalCode.BACTERIAL)
-      .put(BIOVAR, NomenclaturalCode.BACTERIAL)
-      .put(CHEMOVAR, NomenclaturalCode.BACTERIAL)
-      .put(MORPHOVAR, NomenclaturalCode.BACTERIAL)
-      .put(PHAGOVAR, NomenclaturalCode.BACTERIAL)
-      .put(SEROVAR, NomenclaturalCode.BACTERIAL)
-      .put(CHEMOFORM, NomenclaturalCode.BACTERIAL)
-      .put(FORMA_SPECIALIS, NomenclaturalCode.BACTERIAL)
+      .put(PATHOVAR, NomCode.BACTERIAL)
+      .put(BIOVAR, NomCode.BACTERIAL)
+      .put(CHEMOVAR, NomCode.BACTERIAL)
+      .put(MORPHOVAR, NomCode.BACTERIAL)
+      .put(PHAGOVAR, NomCode.BACTERIAL)
+      .put(SEROVAR, NomCode.BACTERIAL)
+      .put(CHEMOFORM, NomCode.BACTERIAL)
+      .put(FORMA_SPECIALIS, NomCode.BACTERIAL)
       .build();
 
   private final String marker;
@@ -475,7 +475,7 @@ public enum Rank {
   /**
    * @return the nomenclatural code if the rank is restricted to just one code or null otherwise
    */
-  public NomenclaturalCode isRestrictedToCode() {
+  public NomCode isRestrictedToCode() {
     return RANK2CODE.get(this);
   }
 

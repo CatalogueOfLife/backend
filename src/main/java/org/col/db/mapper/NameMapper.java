@@ -2,7 +2,7 @@ package org.col.db.mapper;
 
 import org.apache.ibatis.annotations.Param;
 import org.col.api.Name;
-import org.col.api.PagingResult;
+import org.col.api.PagingResultSet;
 
 import java.util.List;
 
@@ -15,12 +15,12 @@ public interface NameMapper {
 
   Name get(@Param("datasetKey") int datasetKey, @Param("id") String id);
 
-  void insert(Name name);
+  void create(Name name);
 
   List<Name> synonyms(@Param("datasetKey") int datasetKey, @Param("id") String id);
 
   List<Name> synonymsByKey(@Param("key") int key);
 
-  PagingResult<Name> search(@Param("datasetKey") int datasetKey, @Param("q") String q);
+  PagingResultSet<Name> search(@Param("datasetKey") int datasetKey, @Param("q") String q);
 }
 

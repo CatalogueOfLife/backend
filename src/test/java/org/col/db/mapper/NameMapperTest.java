@@ -3,9 +3,9 @@ package org.col.db.mapper;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import org.col.api.Name;
-import org.col.api.vocab.Issue;
 import org.col.api.vocab.NamePart;
 import org.col.api.vocab.NameType;
+import org.col.api.vocab.Origin;
 import org.col.api.vocab.Rank;
 import org.gbif.utils.text.StringUtils;
 import org.junit.Test;
@@ -54,8 +54,7 @@ public class NameMapperTest extends MapperTestBase<NameMapper> {
     n.setCombinationAuthors(Lists.newArrayList("Mill."));
     n.setOriginalYear(StringUtils.randomSpeciesYear());
     n.setOriginalAuthors(Lists.newArrayList("L.", "DC"));
-    n.getIssues().put(Issue.UNPARSABLE, "true");
-    n.getIssues().put(Issue.BASIONYM_AUTHOR_MISMATCH, null);
+    n.setOrigin(Origin.SOURCE);
     n.setType(NameType.SCIENTIFIC);
     return n;
   }
@@ -63,7 +62,7 @@ public class NameMapperTest extends MapperTestBase<NameMapper> {
   @Test
   public void roundtrip() throws Exception {
     Name n1 = create("sk1");
-    mapper().insert(n1);
+    mapper().create(n1);
     assertNotNull(n1.getKey());
     commit();
 
@@ -76,7 +75,7 @@ public class NameMapperTest extends MapperTestBase<NameMapper> {
     // now with basionym
     Name n2 = create("sk2");
     n2.setOriginalName(n1);
-    mapper().insert(n2);
+    mapper().create(n2);
 
     commit();
 
@@ -97,17 +96,17 @@ public class NameMapperTest extends MapperTestBase<NameMapper> {
   @Test
   public void synonyms() throws Exception {
     Name n2bas = create("n2");
-    mapper().insert(n2bas);
+    mapper().create(n2bas);
 
     Name n1 = create("n1");
     n1.setOriginalName(n2bas);
-    mapper().insert(n1);
+    mapper().create(n1);
 
     Name n3 = create("n3", n2bas);
-    mapper().insert(n3);
+    mapper().create(n3);
 
     Name n4 = create("n4", n2bas);
-    mapper().insert(n4);
+    mapper().create(n4);
 
     commit();
 

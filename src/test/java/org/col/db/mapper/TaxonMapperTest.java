@@ -1,10 +1,10 @@
 package org.col.db.mapper;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.*;
-
 import org.col.api.Taxon;
 import org.junit.Test;
+
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  *
@@ -27,7 +27,7 @@ public class TaxonMapperTest extends MapperTestBase<TaxonMapper> {
 	public void roundtrip() throws Exception {
 		Taxon in = create();
 		in.setId("t1");
-		mapper().insert(in);
+		mapper().create(in);
 		assertNotNull(in.getKey());
 		commit();
 		

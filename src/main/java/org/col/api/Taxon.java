@@ -1,15 +1,12 @@
 package org.col.api;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.col.api.vocab.Issue;
 import org.col.api.vocab.Lifezone;
+import org.col.api.vocab.Origin;
 import org.col.api.vocab.Rank;
 import org.col.api.vocab.TaxonomicStatus;
 
-import java.net.URI;
 import java.time.LocalDate;
-import java.util.EnumMap;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -45,6 +42,8 @@ public class Taxon {
 
   private Rank rank;
 
+  private Origin origin;
+
   private Taxon parent;
 
   private String accordingTo;
@@ -57,16 +56,11 @@ public class Taxon {
 
   private Set<Lifezone> lifezones;
 
-  private URI datasetUrl;
-
   private Integer speciesEstimate;
 
   private Reference speciesEstimateReference;
 
-  /**
-   * Issues related to this taxon with potential values in the map
-   */
-  private Map<Issue, String> issues = new EnumMap(Issue.class);
+  private String remarks;
 
   public Integer getKey() {
     return key;
@@ -114,6 +108,14 @@ public class Taxon {
 
   public void setRank(Rank rank) {
     this.rank = rank;
+  }
+
+  public Origin getOrigin() {
+    return origin;
+  }
+
+  public void setOrigin(Origin origin) {
+    this.origin = origin;
   }
 
   public Taxon getParent() {
@@ -164,14 +166,6 @@ public class Taxon {
     this.lifezones = lifezones;
   }
 
-  public URI getDatasetUrl() {
-    return datasetUrl;
-  }
-
-  public void setDatasetUrl(URI datasetUrl) {
-    this.datasetUrl = datasetUrl;
-  }
-
   public Integer getSpeciesEstimate() {
     return speciesEstimate;
   }
@@ -188,12 +182,12 @@ public class Taxon {
     this.speciesEstimateReference = speciesEstimateReference;
   }
 
-  public Map<Issue, String> getIssues() {
-    return issues;
+  public String getRemarks() {
+    return remarks;
   }
 
-  public void setIssues(Map<Issue, String> issues) {
-    this.issues = issues;
+  public void setRemarks(String remarks) {
+    this.remarks = remarks;
   }
 
   @Override
@@ -207,16 +201,16 @@ public class Taxon {
         Objects.equals(name, taxon.name) &&
         status == taxon.status &&
         rank == taxon.rank &&
+        origin == taxon.origin &&
         Objects.equals(parent, taxon.parent) &&
         Objects.equals(accordingTo, taxon.accordingTo) &&
         Objects.equals(accordingToDate, taxon.accordingToDate) &&
         Objects.equals(fossil, taxon.fossil) &&
         Objects.equals(recent, taxon.recent) &&
         Objects.equals(lifezones, taxon.lifezones) &&
-        Objects.equals(datasetUrl, taxon.datasetUrl) &&
         Objects.equals(speciesEstimate, taxon.speciesEstimate) &&
         Objects.equals(speciesEstimateReference, taxon.speciesEstimateReference) &&
-        Objects.equals(issues, taxon.issues);
+        Objects.equals(remarks, taxon.remarks);
   }
 
   public boolean equalsShallow(Object o) {
@@ -233,10 +227,8 @@ public class Taxon {
         Objects.equals(fossil, taxon.fossil) &&
         Objects.equals(recent, taxon.recent) &&
         Objects.equals(lifezones, taxon.lifezones) &&
-        Objects.equals(datasetUrl, taxon.datasetUrl) &&
         Objects.equals(speciesEstimate, taxon.speciesEstimate) &&
-        Objects.equals(speciesEstimateReference, taxon.speciesEstimateReference) &&
-        Objects.equals(issues, taxon.issues);
+        Objects.equals(speciesEstimateReference, taxon.speciesEstimateReference);
     if(equal) {
     	if(parent == null) {
     		equal = taxon.parent == null;
@@ -260,6 +252,6 @@ public class Taxon {
 
   @Override
   public int hashCode() {
-    return Objects.hash(key, id, dataset, name, status, rank, parent, accordingTo, accordingToDate, fossil, recent, lifezones, datasetUrl, speciesEstimate, speciesEstimateReference, issues);
+    return Objects.hash(key, id, dataset, name, status, rank, origin, parent, accordingTo, accordingToDate, fossil, recent, lifezones, speciesEstimate, speciesEstimateReference, remarks);
   }
 }

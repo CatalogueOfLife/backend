@@ -1,8 +1,8 @@
 package org.col.commands.importer.neo.model;
 
+import com.google.common.base.Strings;
 import org.col.api.vocab.Rank;
 import org.gbif.dwc.terms.DwcTerm;
-import org.gbif.dwc.terms.GbifTerm;
 import org.neo4j.graphdb.Node;
 
 /**
@@ -13,23 +13,13 @@ public class NeoProperties {
   // properties used in NeoTaxon
   public static final String TAXON_ID = DwcTerm.taxonID.simpleName();
   public static final String RANK = "rank";
-  public static final String SCIENTIFIC_NAME = DwcTerm.scientificName.simpleName();
-  public static final String CANONICAL_NAME = GbifTerm.canonicalName.simpleName();
+  public static final String SCIENTIFIC_NAME = "scientificName";
+  public static final String AUTHORSHIP = "authorship";
   // used for proparte relations
   public static final String USAGE_KEY = "usageKey";
   public static final String NULL_NAME = "???";
 
   private NeoProperties() {
-  }
-
-  /**
-   * @return the canonical name if existing, otherwise the scientific name property or ultimately the default ??? as last resort
-   */
-  public static String getCanonicalName(Node n) {
-    if (n.hasProperty(NeoProperties.CANONICAL_NAME)) {
-      return (String) n.getProperty(NeoProperties.CANONICAL_NAME);
-    }
-    return (String) n.getProperty(NeoProperties.SCIENTIFIC_NAME, NULL_NAME);
   }
 
   public static Rank getRank(Node n, Rank defaultValue) {
@@ -41,5 +31,20 @@ public class NeoProperties {
 
   public static String getScientificName(Node n) {
     return (String) n.getProperty(NeoProperties.SCIENTIFIC_NAME, NULL_NAME);
+  }
+
+  public static String getAuthorship(Node n) {
+    return (String) n.getProperty(NeoProperties.AUTHORSHIP, null);
+  }
+
+  public static String getScientificNameWithAuthor(Node n) {
+    StringBuilder sb = new StringBuilder();
+    sb.append(getScientificName(n));
+    String authorship = getAuthorship(n);
+    if (!Strings.isNullOrEmpty(authorship)) {
+      sb.append(" ");
+      sb.append(authorship);
+    }
+    return sb.toString();
   }
 }

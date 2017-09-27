@@ -118,7 +118,7 @@ public class TreeWalker {
       if (sb.length() > 0) {
         sb.append(" -- ");
       }
-      sb.append(NeoProperties.getCanonicalName(n));
+      sb.append(NeoProperties.getScientificName(n));
     }
     LOG.info(sb.toString());
   }

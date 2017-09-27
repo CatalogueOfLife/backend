@@ -40,7 +40,7 @@ public class ReferenceMapperTest extends MapperTestBase<ReferenceMapper> {
   @Test
   public void roundtrip() throws Exception {
     Reference r1 = create();
-    mapper().insert(r1);
+    mapper().create(r1);
 
     commit();
 

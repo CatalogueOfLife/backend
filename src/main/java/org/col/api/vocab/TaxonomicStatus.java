@@ -16,10 +16,8 @@
 package org.col.api.vocab;
 
 /**
- * The taxonomic status of a taxon.
- * For synonyms more detailed status values are provided which "subclass" synonym.
- *
- * @see <a href="http://rs.gbif.org/vocabulary/gbif/taxonomic_status.xml">rs.gbif.org vocabulary</a>
+ * The taxonomic status of an accepted taxon.
+ * For synonyms only a nomenclatural status is allowed.
  */
 public enum TaxonomicStatus {
 
@@ -28,50 +26,6 @@ public enum TaxonomicStatus {
   /**
    * Treated as accepted, but doubtful whether this is correct.
    */
-  DOUBTFUL,
+  DOUBTFUL;
 
-  /**
-   * A general synonym, the exact type is unknown.
-   */
-  SYNONYM,
-
-  /**
-   * More specific subclass of SYNONYM.
-   */
-  HETEROTYPIC_SYNONYM,
-
-  /**
-   * More specific subclass of SYNONYM.
-   */
-  HOMOTYPIC_SYNONYM,
-
-  /**
-   * More specific subclass of SYNONYM.
-   */
-  PROPARTE_SYNONYM,
-
-  /**
-   * More specific subclass of SYNONYM.
-   */
-  MISAPPLIED,
-
-  /**
-   * Used in nub only.
-   */
-  @Deprecated
-  INTERMEDIATE_RANK_SYNONYM,
-
-  /**
-   * Used for unknown child taxa referred to via spec, ssp, ...
-   */
-  @Deprecated
-  DETERMINATION_SYNONYM;
-
-  public boolean isSynonym() {
-    return !isAccepted();
-  }
-
-  public boolean isAccepted() {
-    return this == ACCEPTED || this == DOUBTFUL;
-  }
 }

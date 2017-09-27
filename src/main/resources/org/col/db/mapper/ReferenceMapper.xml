@@ -58,7 +58,7 @@
         WHERE r.dataset_key = #{datasetKey} AND r.id = #{id}
     </select>
 
-    <insert id="insert" parameterType="Reference" useGeneratedKeys="true" keyProperty="key">
+    <insert id="create" parameterType="Reference" useGeneratedKeys="true" keyProperty="key">
       INSERT INTO reference (<include refid="COLS" />)
         VALUES (<include refid="PROPS" />)
     </insert>

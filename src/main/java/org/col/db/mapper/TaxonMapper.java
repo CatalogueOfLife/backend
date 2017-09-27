@@ -12,7 +12,7 @@ public interface TaxonMapper {
 
   Taxon get(@Param("dkey") int datasetKey, @Param("key") String key);
 
-  void insert(Taxon taxon);
+  void create(Taxon taxon);
 
 }
 

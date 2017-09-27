@@ -18,7 +18,7 @@ package org.col.api.vocab;
 /**
  * Vocabulary classifying the kind of nomenclatural act.
  */
-public enum NomenclaturalActType {
+public enum NomActType {
 
   /**
    * the description of a new original name,

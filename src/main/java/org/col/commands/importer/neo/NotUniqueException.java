@@ -6,6 +6,11 @@ package org.col.commands.importer.neo;
 public class NotUniqueException extends Exception {
   private final String key;
 
+  public NotUniqueException(String key, Exception e) {
+    super(e);
+    this.key = key;
+  }
+
   public NotUniqueException(String key, String message) {
     super(message);
     this.key = key;

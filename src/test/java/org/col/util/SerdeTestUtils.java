@@ -1,8 +1,9 @@
 package org.col.util;
 
-import org.codehaus.jackson.map.DeserializationConfig;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.map.SerializationConfig;
+
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 
 import java.io.IOException;
 
@@ -13,10 +14,9 @@ public class SerdeTestUtils {
   private static final ObjectMapper MAPPER = new ObjectMapper();
 
   static {
-//    MAPPER.registerModule(new GuavaModule());
-    MAPPER.configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-    MAPPER.configure(SerializationConfig.Feature.FAIL_ON_EMPTY_BEANS, false);
-    MAPPER.enable(SerializationConfig.Feature.INDENT_OUTPUT);
+    MAPPER.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    MAPPER.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+    MAPPER.enable(SerializationFeature.INDENT_OUTPUT);
   }
 
   /**

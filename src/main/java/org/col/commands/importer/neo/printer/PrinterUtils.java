@@ -20,19 +20,19 @@ public class PrinterUtils {
 
   }
 
-  private static final Function<Node, String> getCanonical = new Function<Node, String>() {
-    @Nullable
-    @Override
-    public String apply(@Nullable Node n) {
-      return NeoProperties.getCanonicalName(n);
-    }
-  };
-
   private static final Function<Node, String> getScientific = new Function<Node, String>() {
     @Nullable
     @Override
     public String apply(@Nullable Node n) {
       return NeoProperties.getScientificName(n);
+    }
+  };
+
+  private static final Function<Node, String> getScientificWithAuthorship = new Function<Node, String>() {
+    @Nullable
+    @Override
+    public String apply(@Nullable Node n) {
+      return NeoProperties.getScientificNameWithAuthor(n);
     }
   };
 
@@ -53,19 +53,19 @@ public class PrinterUtils {
     boolean includeProParte = false;
     switch (format) {
       case GML:
-        printer = new GmlPrinter(writer, lowestRank, fullNames ? getScientific : getCanonical, true);
+        printer = new GmlPrinter(writer, lowestRank, fullNames ? getScientificWithAuthorship : getScientific, true);
         break;
 
       case DOT:
-        printer = new DotPrinter(writer, lowestRank, fullNames ? getScientific : getCanonical);
+        printer = new DotPrinter(writer, lowestRank, fullNames ? getScientificWithAuthorship : getScientific);
         break;
 
       case LIST:
-        printer = new ListPrinter(writer, fullNames ? getScientific : getCanonical);
+        printer = new ListPrinter(writer, fullNames ? getScientificWithAuthorship : getScientific);
         break;
 
       case TAB:
-        printer = new TabPrinter(writer, fullNames ? getScientific : getCanonical);
+        printer = new TabPrinter(writer, fullNames ? getScientificWithAuthorship : getScientific);
         break;
 
       case XML:
@@ -74,7 +74,7 @@ public class PrinterUtils {
         break;
 
       default:
-        printer = new TxtPrinter(writer, fullNames ? getScientific : getCanonical);
+        printer = new TxtPrinter(writer, fullNames ? getScientificWithAuthorship : getScientific);
         includeProParte = true;
         break;
     }

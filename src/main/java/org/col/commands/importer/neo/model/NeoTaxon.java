@@ -22,7 +22,7 @@ public interface NeoTaxon {
 
   String getScientificName();
 
-  String getCanonicalName();
+  String getAuthorship();
 
   Rank getRank();
 
@@ -43,6 +43,5 @@ public interface NeoTaxon {
   void addIssue(Issue issue);
 
   void addRemark(String message);
-
 
 }

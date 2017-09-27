@@ -4,10 +4,7 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import com.google.common.collect.Lists;
-import org.col.api.DatasetMetrics;
-import org.col.api.Name;
-import org.col.api.Reference;
-import org.col.api.Taxon;
+import org.col.api.*;
 import org.col.api.vocab.Issue;
 import org.col.api.vocab.Rank;
 import org.col.api.vocab.TaxonomicStatus;
@@ -30,9 +27,6 @@ public class CliKryoFactoryTest {
   @Test
   public void testTaxonNameNode() throws Exception {
     Taxon t = new Taxon();
-    for (Issue issue : Issue.values()) {
-      //t.addIssue(issue);
-    }
     t.setStatus(TaxonomicStatus.DOUBTFUL);
 
     Name n = new Name();
@@ -40,7 +34,12 @@ public class CliKryoFactoryTest {
     n.setAuthorship("Mill.");
     n.setRank(Rank.SPECIES);
 
-    TaxonNameNode u = new TaxonNameNode(n, t);
+    VerbatimRecord v = new VerbatimRecord();
+    for (Issue issue : Issue.values()) {
+      v.addIssue(issue);
+    }
+
+    TaxonNameNode u = new TaxonNameNode(n, t, v);
     assertSerde(u);
   }
 

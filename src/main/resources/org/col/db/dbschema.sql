@@ -65,7 +65,7 @@ CREATE TABLE "serial" (
   firstYear INTEGER,
   lastYear INTEGER,
   csl JSONB,
-  remark text
+  remarks text
 );
 
 CREATE TABLE reference (
@@ -81,6 +81,7 @@ CREATE TABLE name (
   key serial PRIMARY KEY,
   id TEXT,
   dataset_key INTEGER REFERENCES dataset,
+  original_name_key INTEGER REFERENCES name,
   scientific_name text NOT NULL,
   authorship TEXT,
   rank rank,
@@ -95,12 +96,10 @@ CREATE TABLE name (
   combination_year TEXT,
   nomenclatural_code INTEGER,
   status INTEGER,
+  origin INTEGER,
   type INTEGER,
   fossil BOOLEAN,
-  original_name_key INTEGER REFERENCES name,
-  col_name_key INTEGER,
-  issues hstore,
-  remark TEXT
+  remarks TEXT
 );
 
 CREATE TABLE name_act (
@@ -131,8 +130,23 @@ CREATE TABLE taxon (
   dataset_url TEXT,
   species_estimate INTEGER,
   species_estimate_reference_key INTEGER REFERENCES reference,
+  remarks TEXT
+);
+
+CREATE TABLE synonyms (
+  taxon_key INTEGER REFERENCES taxon,
+  name_key INTEGER REFERENCES name,
+  PRIMARY KEY(taxon_key, name_key)
+);
+
+CREATE TABLE verbatim_record (
+  id TEXT NOT NULL,
+  dataset_key INTEGER NOT NULL REFERENCES dataset,
+  taxon_key INTEGER REFERENCES taxon,
+  name_key INTEGER REFERENCES name,
+  data jsonb,
   issues hstore,
-  col_taxon_key INTEGER
+  PRIMARY KEY(dataset_key, id)
 );
 
 CREATE TABLE taxon_references (
@@ -148,7 +162,7 @@ CREATE TABLE vernacular_name (
   dataset_key INTEGER NOT NULL REFERENCES dataset,
   taxon_key INTEGER NOT NULL REFERENCES taxon,
   name TEXT NOT NULL,
-  language CHAR(2),
+  language CHAR(3),
   country CHAR(2)
 );
 

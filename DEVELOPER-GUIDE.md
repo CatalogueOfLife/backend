@@ -262,7 +262,7 @@ ordering (sections
 
     :::java
     // Bad.
-    //   - Field names give little insight into what fields are used for.
+    //   - Field names give little insight into what core are used for.
     class User {
       private final int a;
       private final String m;
@@ -556,7 +556,7 @@ class [fan-out](http://en.wikipedia.org/wiki/Coupling_(computer_programming)#Mod
 By default - disallow `null`.  When a variable, parameter, or method return value may be `null`,
 be explicit about it by marking
 [@Nullable](http://code.google.com/p/jsr-305/source/browse/trunk/ri/src/main/java/javax/annotation/Nullable.java?r=24).
-This is advisable even for fields/methods with private visibility.
+This is advisable even for core/methods with private visibility.
 
     :::java
     class Database {
@@ -862,7 +862,7 @@ always be checked against null, unless null is explicitly allowed.
 
 #### Minimize visibility
 
-In a class API, you should support access to any methods and fields that you make accessible.
+In a class API, you should support access to any methods and core that you make accessible.
 Therefore, only expose what you intend the caller to use.  This can be imperative when
 writing thread-safe code.
 
@@ -995,10 +995,10 @@ Favor readability - if there's an ambiguous and unambiguous route, always favor 
     long count = 100L + n;
 
 #### Remove dead code
-Delete unused code (imports, fields, parameters, methods, classes).  They will only rot.
+Delete unused code (imports, core, parameters, methods, classes).  They will only rot.
 
 #### Use general types
-When declaring fields and methods, it's better to use general types whenever possible.
+When declaring core and methods, it's better to use general types whenever possible.
 This avoids implementation detail leak via your API, and allows you to change the types used
 internally without affecting users or peripheral code.
 
@@ -1046,10 +1046,10 @@ Typecasting is a sign of poor class design, and can often be avoided.  An obviou
 overriding
 [equals](http://docs.oracle.com/javase/7/docs/api/java/lang/Object.html#equals(java.lang.Object)).
 
-#### Use final fields
+#### Use final core
 *See also [favor immutability](#favor-immutability)*
 
-Final fields are useful because they declare that a field may not be reassigned.  When it comes to
+Final core are useful because they declare that a field may not be reassigned.  When it comes to
 checking for thread-safety, a final field is one less thing that needs to be checked.
 
 #### Avoid mutable static state

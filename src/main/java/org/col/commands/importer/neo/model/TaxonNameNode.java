@@ -1,7 +1,9 @@
 package org.col.commands.importer.neo.model;
 
+import com.google.common.base.Joiner;
 import org.col.api.Name;
 import org.col.api.Taxon;
+import org.col.api.VerbatimRecord;
 import org.col.api.vocab.Issue;
 import org.col.api.vocab.Rank;
 import org.col.api.vocab.TaxonomicStatus;
@@ -16,21 +18,25 @@ import java.util.Objects;
  * The modified flag can be used to (manually) track if an instance has changed and needs to be persisted.
  */
 public class TaxonNameNode implements NeoTaxon {
+  private final static Joiner remarkJoiner = Joiner.on("\n").skipNulls();
+
   public Node node;
   public Taxon taxon;
   public Name name;
+  public VerbatimRecord verbatim;
 
   public TaxonNameNode() {
   }
 
-  public TaxonNameNode(Name name, Taxon taxon) {
-    this(null, name, taxon);
+  public TaxonNameNode(Name name, Taxon taxon, VerbatimRecord verbatim) {
+    this(null, name, taxon, verbatim);
   }
 
-  public TaxonNameNode(Node node, Name name, Taxon taxon) {
+  public TaxonNameNode(Node node, Name name, Taxon taxon, VerbatimRecord verbatim) {
     this.node = node;
     this.name = name;
     this.taxon = taxon;
+    this.verbatim = verbatim;
   }
 
   @Override
@@ -54,8 +60,8 @@ public class TaxonNameNode implements NeoTaxon {
   }
 
   @Override
-  public String getCanonicalName() {
-    return name.getScientificName();
+  public String getAuthorship() {
+    return name.getAuthorship();
   }
 
   @Override
@@ -99,7 +105,7 @@ public class TaxonNameNode implements NeoTaxon {
 
   @Override
   public void addIssue(Issue issues) {
-    taxon.getIssues().put(issues, null);
+    verbatim.addIssue(issues);
   }
 
   /**
@@ -109,13 +115,7 @@ public class TaxonNameNode implements NeoTaxon {
    */
   @Override
   public void addRemark(String remark) {
-    /**
-    if (StringUtils.isBlank(name.getRemarks())) {
-      //taxon.setRemarks(remark);
-    } else {
-      //taxon.setRemarks(taxon.getRemarks() + "; " + remark);
-    }
-     */
+    name.setRemarks(remarkJoiner.join(name.getRemarks(), remark));
   }
 
   @Override

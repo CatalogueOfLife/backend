@@ -21,7 +21,7 @@ public class RankSerde {
   /**
    * Jackson {@link JsonSerializer} for {@link Rank}.
    */
-  public static class RankJsonSerializer extends JsonSerializer<Rank> {
+  public static class Serializer extends JsonSerializer<Rank> {
 
     @Override
     public void serialize(Rank value, JsonGenerator jgen, SerializerProvider provider) throws IOException {
@@ -40,7 +40,7 @@ public class RankSerde {
   /**
    * Jackson {@link JsonDeserializer} for {@link Rank}.
    */
-  public static class RankJsonDeserializer extends JsonDeserializer<Rank> {
+  public static class Deserializer extends JsonDeserializer<Rank> {
     private static final Map<String, Rank> ranks = Maps.newHashMap();
 
     static {

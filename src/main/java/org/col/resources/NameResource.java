@@ -5,9 +5,11 @@ import org.apache.ibatis.session.SqlSession;
 import org.col.api.Name;
 import org.col.api.NameAct;
 import org.col.api.Reference;
+import org.col.api.VerbatimRecord;
 import org.col.db.mapper.NameActMapper;
 import org.col.db.mapper.NameMapper;
 import org.col.db.mapper.ReferenceMapper;
+import org.col.db.mapper.VerbatimRecordMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,6 +46,14 @@ public class NameResource {
   public Reference getPublishedIn(@PathParam("datasetKey") Integer datasetKey, @PathParam("key") String key, @Context SqlSession session) {
     ReferenceMapper mapper = session.getMapper(ReferenceMapper.class);
     return mapper.getPublishedIn(datasetKey, key);
+  }
+
+  @GET
+  @Timed
+  @Path("{key}/verbatim")
+  public VerbatimRecord getVerbatim(@PathParam("datasetKey") Integer datasetKey, @PathParam("key") String key, @Context SqlSession session) {
+    VerbatimRecordMapper mapper = session.getMapper(VerbatimRecordMapper.class);
+    return mapper.getByName(datasetKey, key);
   }
 
   @GET

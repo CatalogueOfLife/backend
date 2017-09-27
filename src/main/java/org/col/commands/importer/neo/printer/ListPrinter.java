@@ -3,7 +3,6 @@ package org.col.commands.importer.neo.printer;
 import com.google.common.base.Function;
 import com.google.common.base.Throwables;
 import org.col.api.vocab.Rank;
-import org.col.api.vocab.TaxonomicStatus;
 import org.col.commands.importer.neo.model.Labels;
 import org.col.commands.importer.neo.model.NeoProperties;
 import org.gbif.io.TabWriter;
@@ -36,14 +35,14 @@ public class ListPrinter implements TreePrinter {
     try {
       Rank rank = NeoProperties.getRank(n, Rank.UNRANKED);
       if (Rank.FAMILY == rank) {
-        family = NeoProperties.getCanonicalName(n);
+        family = NeoProperties.getScientificName(n);
 
       } else if (Rank.FAMILY.higherThan(rank)) {
         String[] row = new String[4];
 
         row[0] = getTitle.apply(n);
         row[1] = rank.name().toLowerCase();
-        row[2] = (n.hasLabel(Labels.SYNONYM) ? TaxonomicStatus.SYNONYM.name() : TaxonomicStatus.ACCEPTED.name()).toLowerCase();
+        row[2] = (n.hasLabel(Labels.SYNONYM) ? "synonym" : "accepted");
         row[3] = family;
         writer.write(row);
       }

@@ -17,7 +17,7 @@ public interface ReferenceMapper {
    */
   Reference getPublishedIn(@Param("datasetKey") int datasetKey, @Param("nameId") String nameId);
 
-  void insert(Reference name);
+  void create(Reference name);
 
 }
 

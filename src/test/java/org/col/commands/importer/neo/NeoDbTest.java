@@ -194,12 +194,12 @@ public class NeoDbTest {
       Writer writer = new PrintWriter(System.out);
       for (GraphFormat format : GraphFormat.values()) {
         for (int bool = 1; bool > 0; bool--) {
-          for (Rank rank : ranks) {
+          for (Rank extension : ranks) {
             try (Transaction tx = db.beginTx()) {
               writer.write("\n" + org.apache.commons.lang3.StringUtils.repeat("+", 60) + "\n");
-              writer.write("Format=" + format + ", rank=" + rank + ", fullNames=" + (bool == 1) + "\n");
+              writer.write("Format=" + format + ", extension=" + extension + ", fullNames=" + (bool == 1) + "\n");
               writer.write(org.apache.commons.lang3.StringUtils.repeat("+", 80) + "\n");
-              db.printTree(writer, format, bool == 1, rank, null);
+              db.printTree(writer, format, bool == 1, extension, null);
             } catch (IllegalArgumentException e) {
               if (format != GraphFormat.GML && format != GraphFormat.TAB) {
                 Throwables.propagate(e);
@@ -230,29 +230,29 @@ public class NeoDbTest {
   @Test
   public void testNodeByCanonical() throws Exception {
     try (Transaction tx = db.beginTx()) {
-      assertNull(db.nodeByCanonical("Abies"));
+      assertNull(db.nodeByName("Abies"));
 
       TaxonNameNode tnn = create("312", "Abies", "Abies Mill.");
       tx.success();
 
-      assertEquals(tnn.getNode(), db.nodeByCanonical("Abies"));
-      //assertEquals(node, db.nodeByCanonical("abies"));
-      assertNull(db.nodeByCanonical("Abiess"));
+      assertEquals(tnn.getNode(), db.nodeByName("Abies"));
+      //assertEquals(node, db.nodeByName("abies"));
+      assertNull(db.nodeByName("Abiess"));
     }
   }
 
   @Test
   public void testNodesByCanonical() throws Exception {
     try (Transaction tx = db.beginTx()) {
-      assertEquals(0, db.nodesByCanonical("Abies").size());
+      assertEquals(0, db.nodesByName("Abies").size());
 
       create("312", "Abies", "Abies Mill.");
       tx.success();
-      assertEquals(1, db.nodesByCanonical("Abies").size());
+      assertEquals(1, db.nodesByName("Abies").size());
 
       create("313", "Abies", "Abies Mill.");
       tx.success();
-      assertEquals(2, db.nodesByCanonical("Abies").size());
+      assertEquals(2, db.nodesByName("Abies").size());
     }
   }
 
@@ -292,7 +292,7 @@ public class NeoDbTest {
       assertEquals(n, db.getDirectParent(n).node);
 
 
-      Node syn = create(Origin.DENORMED_CLASSIFICATION, "Pinus", Rank.GENUS, TaxonomicStatus.SYNONYM, false).node;
+      Node syn = create(Origin.DENORMED_CLASSIFICATION, "Pinus", Rank.GENUS, null, false).node;
       Node n2 = create(Origin.DENORMED_CLASSIFICATION, "Pinaceae", Rank.FAMILY, TaxonomicStatus.ACCEPTED, false).node;
       Node n3 = create(Origin.DENORMED_CLASSIFICATION, "Pinales", Rank.ORDER, TaxonomicStatus.ACCEPTED, false).node;
       Node n4 = create(Origin.DENORMED_CLASSIFICATION, "Plantae", Rank.KINGDOM, TaxonomicStatus.ACCEPTED, false).node;
@@ -311,7 +311,7 @@ public class NeoDbTest {
     try (Transaction tx = db.beginTx()) {
 
       Node n = create(Origin.DENORMED_CLASSIFICATION, "Abies Mill.", Rank.GENUS, TaxonomicStatus.ACCEPTED, false).node;
-      Node syn = create(Origin.DENORMED_CLASSIFICATION, "Pinus", Rank.GENUS, TaxonomicStatus.SYNONYM, false).node;
+      Node syn = create(Origin.DENORMED_CLASSIFICATION, "Pinus", Rank.GENUS, null, false).node;
       Node n2 = create(Origin.DENORMED_CLASSIFICATION, "Pinaceae", Rank.FAMILY, TaxonomicStatus.ACCEPTED, false).node;
       Node n3 = create(Origin.DENORMED_CLASSIFICATION, "Pinales", Rank.ORDER, TaxonomicStatus.ACCEPTED, false).node;
       Node n4 = create(Origin.DENORMED_CLASSIFICATION, "Plantae", Rank.KINGDOM, TaxonomicStatus.ACCEPTED, false).node;
@@ -359,10 +359,10 @@ public class NeoDbTest {
     n.setRank(rank);
 
     Taxon t = new Taxon();
-    //t.setOrigin(origin);
+    t.setOrigin(origin);
     t.setStatus(status);
     t.setId(taxonID);
-    //t.setRemarks(remark);
+    t.setRemarks(remark);
 
     return create(t, n, isRoot);
   }
@@ -373,13 +373,13 @@ public class NeoDbTest {
 
   private TaxonNameNode create(Taxon t, Name n, boolean isRoot) {
     Node node = db.createTaxon();
-    if (t.getStatus() != null && t.getStatus().isSynonym()) {
-      node.addLabel(Labels.SYNONYM);
-    }
+    //if (t.getStatus() != null && t.getStatus().isSynonym()) {
+    //  node.addLabel(Labels.SYNONYM);
+    //}
     if (isRoot) {
       node.addLabel(Labels.ROOT);
     }
-    TaxonNameNode tnn = new TaxonNameNode(node, n, t);
+    TaxonNameNode tnn = new TaxonNameNode(node, n, t, null);
     db.create(tnn);
     return tnn;
   }
@@ -400,7 +400,7 @@ public class NeoDbTest {
     //t.setParentKey(key);
     //t.setAcceptedKey(key);
     t.setStatus(TaxonomicStatus.ACCEPTED);
-    TaxonNameNode u = new TaxonNameNode(n, t);
+    TaxonNameNode u = new TaxonNameNode(n, t, null);
     return u;
   }
 

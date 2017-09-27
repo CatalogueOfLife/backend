@@ -4,9 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.Lists;
 import org.col.api.vocab.*;
 
-import java.util.EnumMap;
+import java.net.URI;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -51,7 +50,9 @@ public class Name {
   //@JsonDeserialize(using=RankSerde.RankJsonDeserializer.class)
   private Rank rank;
 
-  private NomenclaturalCode nomenclaturalCode;
+  private Origin origin;
+
+  private NomCode nomenclaturalCode;
 
   /**
    * The genus part of a bi- or trinomial name. Not used for genus names which are represented by the scientificName alone.
@@ -107,22 +108,19 @@ public class Name {
   /**
    * Current nomenclatural status of the name taking into account all known nomenclatural acts.
    */
-  private NomenclaturalStatus status;
+  private NomStatus status;
 
   /**
    * The kind of name classified in broad catagories based on their syntactical structure
    */
   private NameType type;
 
+  private URI sourceUrl;
+
   /**
    * notes for general remarks on the name, i.e. its nomenclature
    */
-  private String remark;
-
-  /**
-   * Issues related to this name with potential values in the map
-   */
-  private Map<Issue, String> issues = new EnumMap(Issue.class);
+  private String remarks;
 
   public Integer getKey() {
     return key;
@@ -172,11 +170,19 @@ public class Name {
     this.rank = rank;
   }
 
-  public NomenclaturalCode getNomenclaturalCode() {
+  public Origin getOrigin() {
+    return origin;
+  }
+
+  public void setOrigin(Origin origin) {
+    this.origin = origin;
+  }
+
+  public NomCode getNomenclaturalCode() {
     return nomenclaturalCode;
   }
 
-  public void setNomenclaturalCode(NomenclaturalCode nomenclaturalCode) {
+  public void setNomenclaturalCode(NomCode nomenclaturalCode) {
     this.nomenclaturalCode = nomenclaturalCode;
   }
 
@@ -268,11 +274,11 @@ public class Name {
     this.fossil = fossil;
   }
 
-  public NomenclaturalStatus getStatus() {
+  public NomStatus getStatus() {
     return status;
   }
 
-  public void setStatus(NomenclaturalStatus status) {
+  public void setStatus(NomStatus status) {
     this.status = status;
   }
 
@@ -284,20 +290,20 @@ public class Name {
     this.type = type;
   }
 
-  public String getRemark() {
-    return remark;
+  public URI getSourceUrl() {
+    return sourceUrl;
   }
 
-  public void setRemark(String remark) {
-    this.remark = remark;
+  public void setSourceUrl(URI sourceUrl) {
+    this.sourceUrl = sourceUrl;
   }
 
-  public Map<Issue, String> getIssues() {
-    return issues;
+  public String getRemarks() {
+    return remarks;
   }
 
-  public void setIssues(Map<Issue, String> issues) {
-    this.issues = issues;
+  public void setRemarks(String remarks) {
+    this.remarks = remarks;
   }
 
   @Override
@@ -311,6 +317,7 @@ public class Name {
         Objects.equals(scientificName, name.scientificName) &&
         Objects.equals(authorship, name.authorship) &&
         rank == name.rank &&
+        origin == name.origin &&
         nomenclaturalCode == name.nomenclaturalCode &&
         Objects.equals(genus, name.genus) &&
         Objects.equals(infragenericEpithet, name.infragenericEpithet) &&
@@ -325,12 +332,12 @@ public class Name {
         Objects.equals(fossil, name.fossil) &&
         status == name.status &&
         type == name.type &&
-        Objects.equals(remark, name.remark) &&
-        Objects.equals(issues, name.issues);
+        Objects.equals(sourceUrl, name.sourceUrl) &&
+        Objects.equals(remarks, name.remarks);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(key, id, dataset, scientificName, authorship, rank, nomenclaturalCode, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, notho, originalAuthors, originalYear, combinationAuthors, combinationYear, originalName, fossil, status, type, remark, issues);
+    return Objects.hash(key, id, dataset, scientificName, authorship, rank, origin, nomenclaturalCode, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, notho, originalAuthors, originalYear, combinationAuthors, combinationYear, originalName, fossil, status, type, sourceUrl, remarks);
   }
 }

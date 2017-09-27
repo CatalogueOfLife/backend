@@ -26,7 +26,7 @@ package org.col.api.vocab;
  *
  * @see <a href="http://en.wikipedia.org/wiki/Nomenclature_codes">Nomenclature codes (Wikipedia)</a>
  */
-public enum NomenclaturalCode {
+public enum NomCode {
 
   BACTERIAL("ICNB", "International Code of Nomenclature of Bacteria", "http://www.ncbi.nlm.nih.gov/books/NBK8808/"),
   BOTANICAL("ICN", "International Code of Nomenclature for algae, fungi, and plants", "http://ibot.sav.sk/icbn/main.htm"),
@@ -40,7 +40,7 @@ public enum NomenclaturalCode {
   private final String acronym;
   private final String link;
 
-  NomenclaturalCode(String acronym, String title, String link) {
+  NomCode(String acronym, String title, String link) {
     this.acronym = acronym;
     this.link = link;
     this.title = title;

@@ -15,19 +15,18 @@
  */
 package org.col.api.vocab;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Strings;
-import org.codehaus.jackson.map.annotate.JsonDeserialize;
-import org.codehaus.jackson.map.annotate.JsonSerialize;
-import org.gbif.api.jackson.ExtensionDeserializer;
-import org.gbif.api.jackson.ExtensionSerializer;
+import org.col.api.jackson.ExtensionSerde;
 
 /**
  * Enumeration of dwc extensions for Taxon core archives that are supported by CoL.
  *
  * @see <a href="http://rs.gbif.org/extension">GBIF Resources</a>
  */
-@JsonSerialize(using = ExtensionSerializer.class)
-@JsonDeserialize(using = ExtensionDeserializer.class)
+@JsonSerialize(using = ExtensionSerde.Serializer.class)
+@JsonDeserialize(using = ExtensionSerde.Deserializer.class)
 public enum Extension {
 
   /**

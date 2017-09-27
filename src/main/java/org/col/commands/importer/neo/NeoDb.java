@@ -1,19 +1,14 @@
 package org.col.commands.importer.neo;
 
 import com.esotericsoftware.kryo.pool.KryoPool;
-import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.col.api.vocab.Issue;
 import org.col.api.vocab.Rank;
-import org.col.api.vocab.TaxonomicStatus;
 import org.col.commands.importer.neo.kryo.CliKryoFactory;
 import org.col.commands.importer.neo.mapdb.MapDbObjectSerializer;
 import org.col.commands.importer.neo.model.*;
 import org.col.commands.importer.neo.traverse.Traversals;
-import org.col.util.SciNameNormalizer;
-import org.gbif.api.model.checklistbank.ParsedName;
 import org.mapdb.DB;
 import org.mapdb.Serializer;
 import org.neo4j.graphdb.*;
@@ -49,7 +44,6 @@ public class NeoDb<T extends NeoTaxon> {
   private final File neoDir;
   private final File kvpStore;
   private final KryoPool pool;
-  private final Joiner remarkJoiner = Joiner.on("\n").skipNulls();
 
   private GraphDatabaseService neo;
 
@@ -164,7 +158,7 @@ public class NeoDb<T extends NeoTaxon> {
     if (n != null) {
       setProperty(n, NeoProperties.TAXON_ID, t.getTaxonID());
       setProperty(n, NeoProperties.SCIENTIFIC_NAME, t.getScientificName());
-      setProperty(n, NeoProperties.CANONICAL_NAME, t.getCanonicalName());
+      setProperty(n, NeoProperties.AUTHORSHIP, t.getAuthorship());
       storeEnum(n, NeoProperties.RANK, t.getRank());
     }
   }
@@ -172,46 +166,6 @@ public class NeoDb<T extends NeoTaxon> {
   public Transaction beginTx() {
     return neo.beginTx();
   }
-
-  /**
-   * Finds nodes by their canonical name property.
-   * Be careful when using this method on large graphs without a schema indexing the canonical name property!
-   */
-  public Collection<Node> findByName(String canonicalName) {
-    return Iterators.asCollection(neo.findNodes(Labels.TAXON, NeoProperties.CANONICAL_NAME, canonicalName));
-  }
-
-  /**
-   * @param canonicalName
-   * @return th matching node, null or NoSuchElementException
-   */
-  public Node findByNameSingle(String canonicalName) {
-    return Iterators.single(neo.findNodes(Labels.TAXON, NeoProperties.CANONICAL_NAME, canonicalName));
-  }
-
-  /**
-   * @param scientificName
-   * @return th matching node, null or NoSuchElementException
-   */
-  public Node findByScientificName(String scientificName) {
-    return Iterators.single(neo.findNodes(Labels.TAXON, NeoProperties.SCIENTIFIC_NAME, scientificName));
-  }
-
-  /**
-   * @return the canonical name of a parsed name or the entire scientific name in case the canonical cannot be created (e.g. virus or hybrid names)
-   */
-  public static String canonicalOrScientificName(ParsedName pn, boolean withAuthors) {
-    String name = withAuthors ? pn.canonicalNameComplete() : SciNameNormalizer.normalize(pn.canonicalName());
-    if (StringUtils.isBlank(name)) {
-      // this should only ever happen for virus names, log otherwise
-      if (pn.isParsableType()) {
-        LOG.warn("Parsable name found with an empty canonical name string: {}", pn.getScientificName());
-      }
-      return pn.getScientificName();
-    }
-    return name;
-  }
-
 
   /**
    * Creates a new neo node labeld as a taxon.
@@ -251,9 +205,6 @@ public class NeoDb<T extends NeoTaxon> {
     if (data.containsKey(n.getId())) {
       T obj = data.get(n.getId());
       obj.setNode(n);
-      if (n.hasLabel(Labels.SYNONYM) && (obj.getStatus() == null || !obj.getStatus().isSynonym())) {
-        obj.setStatus(TaxonomicStatus.SYNONYM);
-      }
       if (readRelations) {
         readRelations(n, obj);
       }
@@ -298,7 +249,7 @@ public class NeoDb<T extends NeoTaxon> {
         obj.setAccepted(NeoProperties.getScientificName(acc));
         // update synonym flag based on relations
         if (obj.getStatus() == null) {
-          obj.setStatus(TaxonomicStatus.SYNONYM);
+          //TODO: obj.setStatus(TaxonomicStatus.SYNONYM);
         }
       }
     } catch (RuntimeException e) {
@@ -366,6 +317,61 @@ public class NeoDb<T extends NeoTaxon> {
     node.delete();
   }
 
+
+  /**
+   * Finds nodes by their canonical name property.
+   * Be careful when using this method on large graphs without a schema indexing the canonical name property!
+   */
+  public Collection<Node> nodesByName(String scientificName) {
+    return Iterators.asCollection(neo.findNodes(Labels.TAXON, NeoProperties.SCIENTIFIC_NAME, scientificName));
+  }
+
+  public Collection<Node> nodesByNameAndRank(String scientificName, org.col.api.vocab.Rank rank) {
+    List<Node> matching = filterByRank(getNeo().findNodes(Labels.TAXON, NeoProperties.SCIENTIFIC_NAME, scientificName), rank);
+    if (matching.size() > 10) {
+      LOG.warn("There are {} matches for the {} {}. This might indicate we are not dealing with a proper checklist", matching.size(), rank, scientificName);
+    }
+    return matching;
+  }
+
+  /**
+   * @return the single matching node with the taxonID or null
+   */
+  public Node nodeByTaxonId(String taxonID) {
+    return Iterators.singleOrNull(getNeo().findNodes(Labels.TAXON, NeoProperties.TAXON_ID, taxonID));
+  }
+
+  /**
+   * @return the single matching node with the canonical name or null
+   */
+  public Node nodeByName(String scientificName) throws NotUniqueException {
+    try {
+      return Iterators.singleOrNull(
+          getNeo().findNodes(Labels.TAXON, NeoProperties.SCIENTIFIC_NAME, scientificName)
+      );
+    } catch (NoSuchElementException e) {
+      throw new NotUniqueException(scientificName, "Scientific name not unique: " + scientificName);
+    }
+  }
+
+  /**
+   * @param scientificName
+   * @return the matching node, null or NotUniqueException
+   */
+  public Node nodeByNameAndAuthor(String scientificName, String authorship) throws NotUniqueException {
+    Node match = null;
+    for (Node n : nodesByName(scientificName)) {
+      String pAuthor = NeoProperties.getAuthorship(n);
+      if (pAuthor != null && pAuthor.equalsIgnoreCase(authorship)) {
+        if (match != null) {
+          throw new NotUniqueException(scientificName + " " + authorship, "ScientificName with authorship not unique: " + scientificName + " " + authorship);
+        }
+        match = n;
+      }
+    }
+    return match;
+  }
+
   /**
    * @return the last parent or the node itself if no parent exists
    */
@@ -376,40 +382,6 @@ public class NeoDb<T extends NeoTaxon> {
 
   protected Node getLinneanRankParent(Node n) {
     return Iterables.firstOrNull(Traversals.LINNEAN_PARENTS.traverse(n).nodes());
-  }
-
-  /**
-   * @return the single matching node with the taxonID or null
-   */
-  protected Node nodeByTaxonId(String taxonID) {
-    return Iterators.singleOrNull(getNeo().findNodes(Labels.TAXON, NeoProperties.TAXON_ID, taxonID));
-  }
-
-  /**
-   * @return the single matching node with the canonical name or null
-   */
-  protected Node nodeByCanonical(String canonical) throws NotUniqueException {
-    try {
-      return Iterators.singleOrNull(
-          getNeo().findNodes(Labels.TAXON, NeoProperties.CANONICAL_NAME, canonical)
-      );
-    } catch (NoSuchElementException e) {
-      throw new NotUniqueException(canonical, "Canonical name not unique: " + canonical);
-    }
-  }
-
-  protected Collection<Node> nodesByCanonical(String canonical) {
-    return Iterators.asCollection(
-        getNeo().findNodes(Labels.TAXON, NeoProperties.CANONICAL_NAME, canonical)
-    );
-  }
-
-  protected List<Node> nodesByCanonicalAndRank(String canonical, org.col.api.vocab.Rank rank) {
-    List<Node> matching = filterByRank(getNeo().findNodes(Labels.TAXON, NeoProperties.CANONICAL_NAME, canonical), rank);
-    if (matching.size() > 10) {
-      LOG.warn("There are {} matches for the {} {}. This might indicate we are not dealing with a proper checklist", matching.size(), rank, canonical);
-    }
-    return matching;
   }
 
   private List<Node> filterByRank(ResourceIterator<Node> nodes, org.col.api.vocab.Rank rank) {

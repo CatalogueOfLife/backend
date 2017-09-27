@@ -68,7 +68,7 @@
 		WHERE t.id = #{key}
 	</select>
 
-	<insert id="insert" parameterType="Taxon" useGeneratedKeys="true"
+	<insert id="create" parameterType="Taxon" useGeneratedKeys="true"
 		keyProperty="key">
 		INSERT INTO taxon (
 		<include refid="COLS" />

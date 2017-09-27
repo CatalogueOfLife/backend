@@ -20,7 +20,7 @@ public interface NameActMapper {
    */
   List<NameAct> listByHomotypicGroup(@Param("datasetKey") int datasetKey, @Param("nameKey") String nameKey);
 
-  void insert(NameAct act);
+  void create(NameAct act);
 
 }
 

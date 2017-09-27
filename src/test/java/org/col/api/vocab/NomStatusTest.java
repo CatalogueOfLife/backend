@@ -5,11 +5,11 @@ import org.junit.Test;
 /**
  *
  */
-public class NomenclaturalStatusTest {
+public class NomStatusTest {
 
   @Test
   public void isAccepted() throws Exception {
-    for (NomenclaturalStatus ns : NomenclaturalStatus.values()) {
+    for (NomStatus ns : NomStatus.values()) {
       System.out.println(ns.name() + " -> " + (ns.isLegitimate() ? "accepted" : "not"));
     }
   }
