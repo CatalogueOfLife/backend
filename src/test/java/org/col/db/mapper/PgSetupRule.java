@@ -36,10 +36,10 @@ public class PgSetupRule extends ExternalResource {
 
   // switch this for local testing to false
   //Note: DO NOT COMMIT false or jenkins will fail!
-  private static final boolean embeddedPg = false;
+  private static final boolean embeddedPg = true;
   private static final String database = "colplus";
-  private static final String user = "markus";
-  private static final String password = "species2000";
+  private static final String user = "postgres";
+  private static final String password = "postgres";
 
 
   public static Connection getConnection() throws SQLException {

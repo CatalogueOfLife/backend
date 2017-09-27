@@ -219,6 +219,45 @@ public class Taxon {
         Objects.equals(issues, taxon.issues);
   }
 
+  public boolean equalsShallow(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    Taxon taxon = (Taxon) o;
+    boolean equal = Objects.equals(key, taxon.key) &&
+        Objects.equals(id, taxon.id) &&
+        Objects.equals(dataset, taxon.dataset) &&
+        status == taxon.status &&
+        rank == taxon.rank &&
+        Objects.equals(accordingTo, taxon.accordingTo) &&
+        Objects.equals(accordingToDate, taxon.accordingToDate) &&
+        Objects.equals(fossil, taxon.fossil) &&
+        Objects.equals(recent, taxon.recent) &&
+        Objects.equals(lifezones, taxon.lifezones) &&
+        Objects.equals(datasetUrl, taxon.datasetUrl) &&
+        Objects.equals(speciesEstimate, taxon.speciesEstimate) &&
+        Objects.equals(speciesEstimateReference, taxon.speciesEstimateReference) &&
+        Objects.equals(issues, taxon.issues);
+    if(equal) {
+    	if(parent == null) {
+    		equal = taxon.parent == null;
+    	}
+    	else {
+    		equal = taxon.parent != null && 
+    				Objects.equals(parent.key, taxon.parent.key);
+    	}
+    }
+    if(equal) {
+    	if(name == null) {
+    		equal = taxon.name == null;
+    	}
+    	else {
+    		equal = taxon.name != null && 
+    				Objects.equals(name.getKey(), taxon.parent.getKey());
+    	}
+    }
+    return equal;
+  }
+
   @Override
   public int hashCode() {
     return Objects.hash(key, id, dataset, name, status, rank, parent, accordingTo, accordingToDate, fossil, recent, lifezones, datasetUrl, speciesEstimate, speciesEstimateReference, issues);

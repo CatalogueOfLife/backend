@@ -57,7 +57,7 @@
 		<include refid="SELECT" />
 		FROM
 		<include refid="FROM" />
-		WHERE n.key = #{key}
+		WHERE t.key = #{key}
 	</select>
 
 	<select id="get" resultMap="nameResultMap">
@@ -65,7 +65,7 @@
 		<include refid="SELECT" />
 		FROM
 		<include refid="FROM" />
-		WHERE n.name_id = #{key}
+		WHERE t.id = #{key}
 	</select>
 
 	<insert id="insert" parameterType="Taxon" useGeneratedKeys="true"

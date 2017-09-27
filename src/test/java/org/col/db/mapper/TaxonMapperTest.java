@@ -1,8 +1,8 @@
 package org.col.db.mapper;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
-import org.col.api.Name;
 import org.col.api.Taxon;
 import org.junit.Test;
 
@@ -25,10 +25,13 @@ public class TaxonMapperTest extends MapperTestBase<TaxonMapper> {
 
 	@Test
 	public void roundtrip() throws Exception {
-		Taxon t1 = create();
-		t1.setId("t1");
-		mapper().insert(t1);
-		assertNotNull(t1.getKey());
+		Taxon in = create();
+		in.setId("t1");
+		mapper().insert(in);
+		assertNotNull(in.getKey());
 		commit();
+		
+		Taxon out = mapper().get(D1.getKey(), in.getId());
+		assertTrue(in.equalsShallow(out));
 	}
 }
