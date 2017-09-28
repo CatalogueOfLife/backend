@@ -23,9 +23,9 @@ public class ReferenceResource {
   private static final Logger LOG = LoggerFactory.getLogger(ReferenceResource.class);
 
   @GET
-  public PagingResultSet<Reference> list(@PathParam("datasetKey") Integer datasetKey, Page page, @Context SqlSession session) {
+  public PagingResultSet<Reference> list(@PathParam("datasetKey") Integer datasetKey, @Context Page page, @Context SqlSession session) {
     ReferenceMapper mapper = session.getMapper(ReferenceMapper.class);
-    return new PagingResultSet<Reference>(mapper.count(datasetKey), mapper.list(datasetKey, page));
+    return new PagingResultSet<Reference>(page, mapper.count(datasetKey), mapper.list(datasetKey, page));
   }
 
   @GET

@@ -19,9 +19,9 @@ public class DatasetResource {
   private static final Logger LOG = LoggerFactory.getLogger(DatasetResource.class);
 
   @GET
-  public PagingResultSet<Dataset> list(Page page, @Context SqlSession session) {
+  public PagingResultSet<Dataset> list(@Context Page page, @Context SqlSession session) {
     DatasetMapper mapper = session.getMapper(DatasetMapper.class);
-    return new PagingResultSet<Dataset>(mapper.count(), mapper.list(page));
+    return new PagingResultSet<Dataset>(page, mapper.count(), mapper.list(page));
   }
 
   @POST

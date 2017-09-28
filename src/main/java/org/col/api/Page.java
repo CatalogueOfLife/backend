@@ -9,8 +9,11 @@ import java.util.Objects;
  */
 public class Page {
   public static final int MAX_LIMIT = 1000;
-  private int offset = 0;
-  private int limit = 10;
+  public static final int DEFAULT_LIMIT = 10;
+  public static final int DEFAULT_OFFSET = 0;
+
+  private int offset = DEFAULT_OFFSET;
+  private int limit = DEFAULT_LIMIT;
 
   public Page() {
   }

@@ -12,7 +12,9 @@ public class PagingResultSet<T> extends Page {
   private final int total;
   private final List<T> result;
 
-  public PagingResultSet(int total, List<T> result) {
+  public PagingResultSet(Page page, int total, List<T> result) {
+    this.setOffset(page.getOffset());
+    this.setLimit(page.getLimit());
     this.total = total;
     this.result = result;
   }

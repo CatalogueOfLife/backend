@@ -19,9 +19,9 @@ public class NameResource {
   private static final Logger LOG = LoggerFactory.getLogger(NameResource.class);
 
   @GET
-  public PagingResultSet<Name> list(@PathParam("datasetKey") Integer datasetKey, Page page, @Context SqlSession session) {
+  public PagingResultSet<Name> list(@PathParam("datasetKey") Integer datasetKey, @Context Page page, @Context SqlSession session) {
     NameMapper mapper = session.getMapper(NameMapper.class);
-    return new PagingResultSet<Name>(mapper.count(datasetKey), mapper.list(datasetKey, page));
+    return new PagingResultSet<Name>(page, mapper.count(datasetKey), mapper.list(datasetKey, page));
   }
 
   @GET
