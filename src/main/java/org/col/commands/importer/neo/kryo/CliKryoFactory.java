@@ -63,7 +63,6 @@ public class CliKryoFactory implements KryoFactory {
     kryo.register(NomCode.class);
     kryo.register(Origin.class);
     kryo.register(Rank.class);
-    kryo.register(Extension.class);
     kryo.register(Kingdom.class);
     kryo.register(Lifezone.class);
     kryo.register(NameType.class);
