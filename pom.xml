@@ -255,11 +255,6 @@
             <artifactId>jackson-dataformat-yaml</artifactId>
             <version>${jackson2.version}</version>
         </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.dataformat</groupId>
-            <artifactId>jackson-dataformat-smile</artifactId>
-            <version>${jackson2.version}</version>
-        </dependency>
 
         <!-- other -->
         <dependency>

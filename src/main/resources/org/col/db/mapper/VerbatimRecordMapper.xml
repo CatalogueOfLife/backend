@@ -9,7 +9,7 @@
         v.dataset_key,
         v.name_key,
         v.taxon_key,
-        v.data,
+        v.terms,
         v.issues
     </sql>
 
@@ -18,7 +18,7 @@
         dataset_key,
         name_key,
         taxon_key,
-        data,
+        terms,
         issues
     </sql>
 
@@ -27,7 +27,7 @@
       #{rec.dataset.key},
       #{nameKey},
       #{taxonKey},
-      #{rec.data, typeHandler=org.col.db.type.VerbatimTypeHandler}::jsonb,
+      #{rec.terms, typeHandler=org.col.db.type.VerbatimRecordTermsTypeHandler}::jsonb,
       #{rec.issues, typeHandler=org.col.db.type.HstoreIssueHandler}::hstore
     </sql>
 
@@ -38,7 +38,7 @@
     <!--  A mapping to Name, mostly auto mapped -->
     <resultMap id="verbatimResultMap" type="VerbatimRecord" autoMapping="true">
         <id property="id" column="id"/>
-        <result property="data" column="issues" typeHandler="org.col.db.type.VerbatimTypeHandler"/>
+        <result property="terms" column="terms" typeHandler="org.col.db.type.VerbatimRecordTermsTypeHandler"/>
         <result property="issues" column="issues" typeHandler="org.col.db.type.HstoreIssueHandler"/>
         <association property="dataset" javaType="Dataset">
             <id property="key" column="dataset_key"/>

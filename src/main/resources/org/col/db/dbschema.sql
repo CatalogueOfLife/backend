@@ -144,7 +144,7 @@ CREATE TABLE verbatim_record (
   dataset_key INTEGER NOT NULL REFERENCES dataset,
   taxon_key INTEGER REFERENCES taxon,
   name_key INTEGER REFERENCES name,
-  data jsonb,
+  terms jsonb,
   issues hstore,
   PRIMARY KEY(dataset_key, id)
 );

@@ -1,11 +1,9 @@
 package org.col.api;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.collect.Maps;
-import org.col.api.jackson.ExtensionSerde;
-import org.col.api.jackson.TermMapListSerde;
+import org.col.api.jackson.TermSerde;
 import org.gbif.dwc.terms.Term;
 
 import java.util.List;
@@ -17,39 +15,33 @@ import java.util.Objects;
  */
 public class VerbatimRecordTerms {
   /**
-   * The verbatim taxon core for the usage
+   * The verbatim core of the record
    */
-  @JsonIgnore
-  private Map<Term, String> core = Maps.newHashMap();
+  private TermRecord core = new TermRecord();
 
   /**
    * The verbatim extension records as read by a dwc star record, keyed on the extension
    */
-  @JsonSerialize(keyUsing = ExtensionSerde.Serializer.class, contentUsing = TermMapListSerde.Serializer.class)
-  @JsonDeserialize(keyUsing = ExtensionSerde.ExtensionKeyDeserializer.class, contentUsing = TermMapListSerde.Deserializer.class)
-  private Map<Term, List<Map<Term, String>>> extensions = Maps.newHashMap();
+  @JsonDeserialize(keyUsing = TermSerde.TermKeyDeserializer.class)
+  @JsonSerialize(keyUsing = TermSerde.FieldSerializer.class)
+  private Map<Term, List<TermRecord>> extensions = Maps.newHashMap();
 
-  /**
-   * A map of extension records, holding all verbatim extension terms.
-   */
-  public Map<Term, List<Map<Term, String>>> getExtensions() {
-    return extensions;
-  }
-
-  public void setExtensions(Map<Term, List<Map<Term, String>>> extensions) {
-    this.extensions = extensions;
-  }
-
-  /**
-   * A map holding all verbatim core terms.
-   */
-  public Map<Term, String> getCore() {
+  public TermRecord getCore() {
     return core;
   }
 
-  public void setCore(Map<Term, String> core) {
+  public void setCore(TermRecord core) {
     this.core = core;
   }
+
+  public Map<Term, List<TermRecord>> getExtensions() {
+    return extensions;
+  }
+
+  public void setExtensions(Map<Term, List<TermRecord>> extensions) {
+    this.extensions = extensions;
+  }
+
 
   @Override
   public boolean equals(Object o) {

@@ -1,24 +1,13 @@
 package org.col.api;
 
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
-import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Strings;
-import com.google.common.collect.Maps;
-import org.col.api.jackson.ExtensionSerde;
-import org.col.api.jackson.TermMapListSerde;
-import org.col.api.vocab.Extension;
+import com.google.common.collect.Lists;
 import org.col.api.vocab.Issue;
 import org.gbif.dwc.terms.Term;
-import org.gbif.dwc.terms.TermFactory;
 
 import javax.annotation.Nullable;
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -34,16 +23,30 @@ public class VerbatimRecord {
   private Dataset dataset;
 
   /**
-   * The actual verbatim data keyed on dwc terms.
+   * The actual verbatim terms keyed on dwc terms.
    */
-  @JsonIgnore
-  private VerbatimRecordTerms data;
+  private VerbatimRecordTerms terms;
 
   /**
    * Issues related to this taxon with potential values in the map
    */
   private Map<Issue, String> issues = new EnumMap(Issue.class);
 
+  public Dataset getDataset() {
+    return dataset;
+  }
+
+  public void setDataset(Dataset dataset) {
+    this.dataset = dataset;
+  }
+
+  public VerbatimRecordTerms getTerms() {
+    return terms;
+  }
+
+  public void setTerms(VerbatimRecordTerms terms) {
+    this.terms = terms;
+  }
 
   /**
    * @return The dwca coreId
@@ -57,25 +60,12 @@ public class VerbatimRecord {
   }
 
   /**
-   * A map of extension records, holding all verbatim extension terms.
-   */
-  @JsonSerialize(keyUsing = ExtensionSerde.Serializer.class, contentUsing = TermMapListSerde.Serializer.class)
-  public Map<Term, List<Map<Term, String>>> getExtensions() {
-    return data.getExtensions();
-  }
-
-  @JsonDeserialize(keyUsing = ExtensionSerde.ExtensionKeyDeserializer.class, contentUsing = TermMapListSerde.Deserializer.class)
-  public void setExtensions(Map<Term, List<Map<Term, String>>> extensions) {
-    this.data.setExtensions(extensions);
-  }
-
-  /**
    * Get the value of a specific term.
    */
   @Nullable
   public String getCoreTerm(Term term) {
     checkNotNull(term, "term can't be null");
-    return data.getCore().get(term);
+    return terms.getCore().get(term);
   }
 
   /**
@@ -83,20 +73,7 @@ public class VerbatimRecord {
    */
   public boolean hasCoreTerm(Term term) {
     checkNotNull(term, "term can't be null");
-    return !Strings.isNullOrEmpty(data.getCore().get(term));
-  }
-
-  /**
-   * @return true if at least one extension record exists
-   */
-  public boolean hasExtension(Extension extension) {
-    return data.getExtensions().containsKey(extension) && !data.getExtensions().get(extension).isEmpty();
-  }
-
-  public boolean hasExtension(Term rowType) {
-    checkNotNull(rowType, "term can't be null");
-    Extension ext = Extension.fromRowType(rowType.qualifiedName());
-    return ext != null && hasExtension(ext);
+    return !Strings.isNullOrEmpty(terms.getCore().get(term));
   }
 
   /**
@@ -107,29 +84,50 @@ public class VerbatimRecord {
    */
   public void setCoreTerm(Term term, @Nullable String value) {
     checkNotNull(term, "term can't be null");
-    data.getCore().put(term, value);
+    terms.getCore().put(term, value);
   }
 
   /**
-   * This private method is only for deserialization via jackson and not exposed anywhere else!
+   * @return list of extension row types
    */
-  @JsonAnySetter
-  private void addJsonVerbatimField(String key, String value) {
-    Term t = TermFactory.instance().findTerm(key);
-    data.getCore().put(t, value);
+  @JsonIgnore
+  public Set<Term> getExtensionRowTypes() {
+    return terms.getExtensions().keySet();
   }
 
   /**
-   * This private method is only for serialization via jackson and not exposed anywhere else!
-   * It maps the verbatimField terms into properties with their full qualified name.
+   * @return true if at least one extension record exists
    */
-  @JsonAnyGetter
-  private Map<String, String> jsonVerbatimFields() {
-    Map<String, String> extendedProps = Maps.newHashMap();
-    for (Map.Entry<Term, String> prop : data.getCore().entrySet()) {
-      extendedProps.put(prop.getKey().qualifiedName(), prop.getValue());
+  public boolean hasExtension(Term rowType) {
+    checkNotNull(rowType, "term can't be null");
+    return terms.getExtensions().containsKey(rowType) && !terms.getExtensions().get(rowType).isEmpty();
+  }
+
+  /**
+   * @return true if at least one extension record exists
+   */
+  public List<TermRecord> getExtensionRecords(Term rowType) {
+    checkNotNull(rowType, "term can't be null");
+    return terms.getExtensions().get(rowType);
+  }
+
+  /**
+   * Sets all extension records for a given rowType, replacing anything that might have existed for that rowType.
+   */
+  public void setExtensionRecords(Term rowType, List<TermRecord> extensionRecords) {
+    checkNotNull(rowType, "term can't be null");
+    terms.getExtensions().put(rowType, extensionRecords);
+  }
+
+  /**
+   * Adds a new extension record for the given rowType
+   */
+  public void addExtensionRecord(Term rowType, TermRecord extensionRecord) {
+    checkNotNull(rowType, "term can't be null");
+    if (!terms.getExtensions().containsKey(rowType)) {
+      terms.getExtensions().put(rowType, Lists.newArrayList());
     }
-    return extendedProps;
+    terms.getExtensions().get(rowType).add(extensionRecord);
   }
 
   public Map<Issue, String> getIssues() {
@@ -155,12 +153,12 @@ public class VerbatimRecord {
     VerbatimRecord that = (VerbatimRecord) o;
     return Objects.equals(id, that.id) &&
         Objects.equals(dataset, that.dataset) &&
-        Objects.equals(data, that.data) &&
+        Objects.equals(terms, that.terms) &&
         Objects.equals(issues, that.issues);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, dataset, data, issues);
+    return Objects.hash(id, dataset, terms, issues);
   }
 }

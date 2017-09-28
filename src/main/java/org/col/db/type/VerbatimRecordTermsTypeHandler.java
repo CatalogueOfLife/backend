@@ -6,8 +6,6 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import org.apache.ibatis.type.BaseTypeHandler;
 import org.apache.ibatis.type.JdbcType;
 import org.col.api.VerbatimRecordTerms;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.sql.CallableStatement;
@@ -18,14 +16,13 @@ import java.sql.SQLException;
 /**
  * Postgres type handler converting an entire VerbatimRecordTerms instance into a postgres JSONB data type.
  */
-public class VerbatimTypeHandler extends BaseTypeHandler<VerbatimRecordTerms> {
+public class VerbatimRecordTermsTypeHandler extends BaseTypeHandler<VerbatimRecordTerms> {
 
-  private static final Logger LOG = LoggerFactory.getLogger(VerbatimTypeHandler.class);
   private final ObjectReader reader;
   private final ObjectWriter writer;
 
 
-  public VerbatimTypeHandler() {
+  public VerbatimRecordTermsTypeHandler() {
     ObjectMapper mapper = new ObjectMapper();
     // object readers & writers are slightly more performant than simple object mappers
     // they also are thread safe!
@@ -53,24 +50,24 @@ public class VerbatimTypeHandler extends BaseTypeHandler<VerbatimRecordTerms> {
     return fromJson(cs.getString(columnIndex));
   }
 
-  private VerbatimRecordTerms fromJson(String json) {
+  private VerbatimRecordTerms fromJson(String json) throws SQLException {
     if (json != null) {
       try {
         return reader.readValue(json);
       } catch (IOException e) {
-        LOG.error("Cannot deserialize VerbatimRecordTerms from json", e);
+        throw new SQLException("Cannot deserialize VerbatimRecordTerms from JSON", e);
       }
     }
     return null;
   }
 
-  private String toJson(VerbatimRecordTerms verbatim) {
+  private String toJson(VerbatimRecordTerms verbatim) throws SQLException {
     if (verbatim != null) {
       try {
         return writer.writeValueAsString(verbatim);
 
       } catch (IOException e) {
-        LOG.error("Cannot serialize VerbatimRecordTerms into json", e);
+        throw new SQLException("Cannot serialize VerbatimRecordTerms into JSON", e);
       }
     }
     return null;
