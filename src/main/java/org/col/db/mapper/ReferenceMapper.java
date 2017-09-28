@@ -1,12 +1,19 @@
 package org.col.db.mapper;
 
 import org.apache.ibatis.annotations.Param;
+import org.col.api.Page;
 import org.col.api.Reference;
+
+import java.util.List;
 
 /**
  *
  */
 public interface ReferenceMapper {
+
+  int count(@Param("datasetKey") int datasetKey);
+
+  List<Reference> list(@Param("datasetKey") int datasetKey, @Param("page") Page page);
 
   Reference getByKey(@Param("key") int key);
 

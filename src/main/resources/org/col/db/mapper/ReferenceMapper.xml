@@ -46,6 +46,20 @@
     </resultMap>
 
 
+    <select id="count" parameterType="map" resultType="Integer">
+        SELECT count(*)
+        FROM reference
+        WHERE dataset_key = #{datasetKey}
+    </select>
+
+    <select id="list" parameterType="map" resultMap="referenceResultMap">
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
+        WHERE r.dataset_key = #{datasetKey}
+        ORDER BY key
+        <include refid="org.col.db.mapper.Common.limit"/>
+    </select>
+
     <select id="getByKey" resultMap="referenceResultMap">
       SELECT <include refid="SELECT" />
       FROM <include refid="FROM" />

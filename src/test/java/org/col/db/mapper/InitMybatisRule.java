@@ -51,7 +51,7 @@ public class InitMybatisRule extends ExternalResource {
     truncate();
     loadData();
     System.out.println("Open new mybatis session");
-    session = PgSetupRule.getSqlSessionFactory().openSession();
+    session = PgSetupRule.getSqlSessionFactory().openSession(false);
   }
 
   @Override

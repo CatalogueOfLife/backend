@@ -2,6 +2,7 @@ package org.col.db.mapper;
 
 import org.apache.ibatis.annotations.Param;
 import org.col.api.Name;
+import org.col.api.Page;
 import org.col.api.PagingResultSet;
 
 import java.util.List;
@@ -10,6 +11,10 @@ import java.util.List;
  *
  */
 public interface NameMapper {
+
+  int count(@Param("datasetKey") int datasetKey);
+
+  List<Name> list(@Param("datasetKey") int datasetKey, @Param("page") Page page);
 
   Name getByKey(@Param("key") int key);
 

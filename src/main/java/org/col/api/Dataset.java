@@ -252,4 +252,32 @@ public class Dataset {
   public int hashCode() {
     return Objects.hash(key, alias, title, gbifKey, description, groupName, authorsAndEditors, organisation, contactPerson, version, releaseDate, taxonomicCoverage, coverage, completeness, confidence, homepage, dataFormat, dataAccess, notes, created, modified, deleted);
   }
+
+  @Override
+  public String toString() {
+    return "Dataset{" +
+        "key=" + key +
+        ", alias='" + alias + '\'' +
+        ", title='" + title + '\'' +
+        ", gbifKey=" + gbifKey +
+        ", description='" + description + '\'' +
+        ", groupName='" + groupName + '\'' +
+        ", authorsAndEditors='" + authorsAndEditors + '\'' +
+        ", organisation='" + organisation + '\'' +
+        ", contactPerson='" + contactPerson + '\'' +
+        ", version='" + version + '\'' +
+        ", releaseDate=" + releaseDate +
+        ", taxonomicCoverage='" + taxonomicCoverage + '\'' +
+        ", coverage='" + coverage + '\'' +
+        ", completeness=" + completeness +
+        ", confidence=" + confidence +
+        ", homepage=" + homepage +
+        ", dataFormat=" + dataFormat +
+        ", dataAccess=" + dataAccess +
+        ", notes='" + notes + '\'' +
+        ", created=" + created +
+        ", modified=" + modified +
+        ", deleted=" + deleted +
+        '}';
+  }
 }

@@ -35,7 +35,7 @@
 	</sql>
 
 	<!-- A mapping to Name, mostly auto mapped -->
-	<resultMap id="nameResultMap" type="Taxon" autoMapping="true">
+	<resultMap id="taxonResultMap" type="Taxon" autoMapping="true">
 		<id property="key" column="key" />
 		<id property="id" column="id" />
 		<association property="dataset" javaType="Dataset">
@@ -52,7 +52,21 @@
 	</resultMap>
 
 
-	<select id="getByInternalKey" resultMap="nameResultMap">
+    <select id="count" parameterType="map" resultType="Integer">
+        SELECT count(*)
+        FROM taxon
+        WHERE dataset_key = #{datasetKey}
+    </select>
+
+    <select id="list" parameterType="map" resultMap="taxonResultMap">
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
+        WHERE t.dataset_key = #{datasetKey}
+        ORDER BY key
+        <include refid="org.col.db.mapper.Common.limit"/>
+    </select>
+    
+    <select id="getByInternalKey" resultMap="taxonResultMap">
 		SELECT
 		<include refid="SELECT" />
 		FROM
@@ -60,7 +74,7 @@
 		WHERE t.key = #{key}
 	</select>
 
-	<select id="get" resultMap="nameResultMap">
+	<select id="get" resultMap="taxonResultMap">
 		SELECT
 		<include refid="SELECT" />
 		FROM
@@ -68,8 +82,7 @@
 		WHERE t.id = #{key}
 	</select>
 
-	<insert id="create" parameterType="Taxon" useGeneratedKeys="true"
-		keyProperty="key">
+	<insert id="create" parameterType="Taxon" useGeneratedKeys="true" keyProperty="key">
 		INSERT INTO taxon (
 		<include refid="COLS" />
 		)

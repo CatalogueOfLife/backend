@@ -1,18 +1,18 @@
 package org.col.db.mapper;
 
-import java.util.Random;
-
 import org.col.api.Dataset;
 import org.col.api.Name;
 import org.col.api.Taxon;
 import org.junit.ClassRule;
 import org.junit.Rule;
 
+import java.util.Random;
+
 /**
  * A reusable base class for all mybatis mapper tests that takes care of postgres & mybatis.
  * It offers a mapper to test in the implementing subclass.
  */
-public class MapperTestBase<T> {
+public abstract class MapperTestBase<T> {
 
   public final static Random RND = new Random();
   public final static Dataset D1 = new Dataset();
@@ -68,5 +68,6 @@ public class MapperTestBase<T> {
   public void commit() {
     initMybatisRule.commit();
   }
+
 
 }

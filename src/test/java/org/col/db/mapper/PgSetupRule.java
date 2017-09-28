@@ -82,6 +82,7 @@ public class PgSetupRule extends ExternalResource {
       hikari.setPassword(password);
       hikari.setMaximumPoolSize(2);
       hikari.setMinimumIdle(1);
+      hikari.setAutoCommit(false);
       dataSource = new HikariDataSource(hikari);
 
       // configure single mybatis session factory
