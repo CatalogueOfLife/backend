@@ -8,6 +8,7 @@ import org.col.db.mapper.DatasetMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -19,7 +20,7 @@ public class DatasetResource {
   private static final Logger LOG = LoggerFactory.getLogger(DatasetResource.class);
 
   @GET
-  public PagingResultSet<Dataset> list(@Context Page page, @Context SqlSession session) {
+  public PagingResultSet<Dataset> list(@Valid @BeanParam Page page, @Context SqlSession session) {
     DatasetMapper mapper = session.getMapper(DatasetMapper.class);
     return new PagingResultSet<Dataset>(page, mapper.count(), mapper.list(page));
   }

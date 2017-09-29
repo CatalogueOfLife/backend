@@ -1,7 +1,9 @@
 package org.col.api;
 
-import com.google.common.base.Preconditions;
-
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.QueryParam;
 import java.util.Objects;
 
 /**
@@ -12,20 +14,26 @@ public class Page {
   public static final int DEFAULT_LIMIT = 10;
   public static final int DEFAULT_OFFSET = 0;
 
-  private int offset = DEFAULT_OFFSET;
-  private int limit = DEFAULT_LIMIT;
+  @QueryParam("offset")
+  @DefaultValue("0")
+  @Min(0)
+  private int offset;
+
+  @QueryParam("limit")
+  @DefaultValue("10")
+  @Min(0)
+  @Max(MAX_LIMIT)
+  private int limit;
 
   public Page() {
+    this(DEFAULT_OFFSET, DEFAULT_LIMIT);
   }
 
   public Page(int limit) {
-    this.limit = limit;
+    this(DEFAULT_OFFSET, limit);
   }
 
   public Page(int offset, int limit) {
-    Preconditions.checkArgument(offset >= 0, "Offset cannot be negative");
-    Preconditions.checkArgument(limit >= 0, "Limit cannot be negative");
-    Preconditions.checkArgument(limit <= MAX_LIMIT, "Maximum allowed Limit is 1000");
     this.offset = offset;
     this.limit = limit;
   }
@@ -71,5 +79,13 @@ public class Page {
   @Override
   public int hashCode() {
     return Objects.hash(offset, limit);
+  }
+
+  @Override
+  public String toString() {
+    return "Page{" +
+        "offset=" + offset +
+        ", limit=" + limit +
+        '}';
   }
 }

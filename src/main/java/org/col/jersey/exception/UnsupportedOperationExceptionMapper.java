@@ -13,4 +13,9 @@ public class UnsupportedOperationExceptionMapper extends JsonExceptionMapperBase
     super(Response.Status.NOT_IMPLEMENTED);
   }
 
+  @Override
+  String message(UnsupportedOperationException e) {
+    String msg = super.message(e);
+    return msg == null ? "API method not implemented yet" : msg;
+  }
 }

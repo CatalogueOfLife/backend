@@ -60,8 +60,9 @@ public class NameResource {
   @Timed
   @Path("{id}/acts")
   public List<NameAct> getActs(@PathParam("datasetKey") Integer datasetKey, @PathParam("id") String id, @QueryParam("homotypic") Boolean homotypic, @Context SqlSession session) {
-    NameActMapper mapper = session.getMapper(NameActMapper.class);
-    return homotypic ? mapper.listByHomotypicGroup(datasetKey, id) : mapper.listByName(datasetKey, id);
+    throw new UnsupportedOperationException();
+    //NameActMapper mapper = session.getMapper(NameActMapper.class);
+    //return homotypic ? mapper.listByHomotypicGroup(datasetKey, id) : mapper.listByName(datasetKey, id);
   }
 
 }
