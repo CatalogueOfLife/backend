@@ -1,4 +1,4 @@
-package org.col.jersey;
+package org.col.jersey.filter;
 
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerResponseContext;

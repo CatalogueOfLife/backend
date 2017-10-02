@@ -45,7 +45,7 @@ public class SqlSessionProvider implements Factory<SqlSession> {
 
   @Override
   public SqlSession provide() {
-    return sessionFactory.openSession();
+    return sessionFactory.openSession(false);
   }
 
   @Override

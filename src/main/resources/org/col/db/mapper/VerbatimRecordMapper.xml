@@ -35,6 +35,7 @@
         verbatim_record v
     </sql>
 
+
     <!--  A mapping to Name, mostly auto mapped -->
     <resultMap id="verbatimResultMap" type="VerbatimRecord" autoMapping="true">
         <id property="id" column="id"/>
@@ -44,6 +45,22 @@
             <id property="key" column="dataset_key"/>
         </association>
     </resultMap>
+
+
+
+    <select id="count" parameterType="map" resultType="Integer">
+        SELECT count(*)
+        FROM verbatim_record
+        WHERE dataset_key = #{datasetKey}
+    </select>
+
+    <select id="list" parameterType="map" resultMap="verbatimResultMap">
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
+        WHERE dataset_key = #{datasetKey}
+        ORDER BY id
+        <include refid="org.col.db.mapper.Common.limit"/>
+    </select>
 
     <select id="get" resultMap="verbatimResultMap">
         SELECT <include refid="SELECT" />

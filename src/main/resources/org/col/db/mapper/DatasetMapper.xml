@@ -80,6 +80,18 @@
         <id property="key" column="key" />
     </resultMap>
 
+    <select id="count" parameterType="map" resultType="Integer">
+        SELECT count(*)
+        FROM <include refid="FROM" />
+    </select>
+
+    <select id="list" parameterType="map" resultMap="datasetResultMap">
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
+        ORDER BY key
+        <include refid="org.col.db.mapper.Common.limit"/>
+    </select>
+
     <select id="get" parameterType="map" resultMap="datasetResultMap">
       SELECT <include refid="SELECT" />
       FROM <include refid="FROM" />

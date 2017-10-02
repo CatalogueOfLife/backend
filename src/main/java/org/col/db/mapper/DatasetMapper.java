@@ -2,8 +2,15 @@ package org.col.db.mapper;
 
 import org.apache.ibatis.annotations.Param;
 import org.col.api.Dataset;
+import org.col.api.Page;
+
+import java.util.List;
 
 public interface DatasetMapper {
+
+  int count();
+
+  List<Dataset> list(@Param("page") Page page);
 
   Dataset get(@Param("key") int key);
 

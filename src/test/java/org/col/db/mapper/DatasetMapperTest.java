@@ -1,17 +1,18 @@
 package org.col.db.mapper;
 
+import com.google.common.collect.Lists;
 import org.col.api.Dataset;
+import org.col.api.Page;
 import org.col.api.vocab.DataFormat;
 import org.gbif.utils.text.StringUtils;
 import org.junit.Test;
 
 import java.net.URI;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
 /**
  *
@@ -77,4 +78,59 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
     assertNotNull(d.getDeleted());
   }
 
+  @Test
+  public void count() throws Exception {
+    assertEquals(2, mapper().count());
+
+    mapper().create(create());
+    mapper().create(create());
+    // even thogh not committed we are in the same session so we see the new datasets already
+    assertEquals(4, mapper().count());
+
+    commit();
+    assertEquals(4, mapper().count());
+  }
+
+  @Test
+  public void list() throws Exception {
+    List<Dataset> ds = Lists.newArrayList();
+    ds.add(mapper().get(1));
+    ds.add(mapper().get(2));
+    ds.add(create());
+    ds.add(create());
+    ds.add(create());
+    ds.add(create());
+    ds.add(create());
+
+    for (Dataset d : ds) {
+      if (d.getKey() == null) {
+        mapper().create(d);
+      }
+      // dont compare created stamps
+      d.setCreated(null);
+    }
+    commit();
+
+    // get first page
+    Page p = new Page(0,4);
+
+    List<Dataset> res = removeCreated(mapper().list(p));
+    assertEquals(4, res.size());
+    assertEquals(Lists.partition(ds, 4).get(0), res);
+
+    // next page
+    p.next();
+    res = removeCreated(mapper().list(p));
+    assertEquals(3, res.size());
+    List<Dataset> l2 = Lists.partition(ds, 4).get(1);
+    assertEquals(l2, res);
+  }
+
+  private List<Dataset> removeCreated(List<Dataset> ds) {
+    for (Dataset d : ds) {
+      // dont compare created stamps
+      d.setCreated(null);
+    }
+    return ds;
+  }
 }

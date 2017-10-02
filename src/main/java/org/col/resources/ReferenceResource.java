@@ -2,6 +2,8 @@ package org.col.resources;
 
 import com.codahale.metrics.annotation.Timed;
 import org.apache.ibatis.session.SqlSession;
+import org.col.api.Page;
+import org.col.api.PagingResultSet;
 import org.col.api.Reference;
 import org.col.db.mapper.ReferenceMapper;
 import org.slf4j.Logger;
@@ -15,15 +17,21 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
 
-@Path("{datasetKey}/reference")
+@Path("/dataset/{datasetKey}/reference")
 @Produces(MediaType.APPLICATION_JSON)
 public class ReferenceResource {
   private static final Logger LOG = LoggerFactory.getLogger(ReferenceResource.class);
 
   @GET
+  public PagingResultSet<Reference> list(@PathParam("datasetKey") Integer datasetKey, @Context Page page, @Context SqlSession session) {
+    ReferenceMapper mapper = session.getMapper(ReferenceMapper.class);
+    return new PagingResultSet<Reference>(page, mapper.count(datasetKey), mapper.list(datasetKey, page));
+  }
+
+  @GET
   @Timed
-  @Path("{key}")
-  public Reference get(@PathParam("datasetKey") Integer datasetKey, @PathParam("key") String key, @Context SqlSession session) {
+  @Path("{id}")
+  public Reference get(@PathParam("datasetKey") Integer datasetKey, @PathParam("id") String key, @Context SqlSession session) {
     ReferenceMapper mapper = session.getMapper(ReferenceMapper.class);
     return mapper.get(datasetKey, key);
   }

@@ -2,7 +2,9 @@ package org.col.db.mapper;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
+import org.col.api.Dataset;
 import org.col.api.Name;
+import org.col.api.Page;
 import org.col.api.vocab.NamePart;
 import org.col.api.vocab.NameType;
 import org.col.api.vocab.Origin;
@@ -12,8 +14,7 @@ import org.junit.Test;
 
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 /**
  *
@@ -28,6 +29,12 @@ public class NameMapperTest extends MapperTestBase<NameMapper> {
   private Name create(String id, Name basionym) throws Exception {
     Name n = create(id);
     n.setOriginalName(basionym);
+    return n;
+  }
+
+  private Name create(Dataset d) throws Exception {
+    Name n = create();
+    n.setDataset(d);
     return n;
   }
 
@@ -91,6 +98,45 @@ public class NameMapperTest extends MapperTestBase<NameMapper> {
     Name n2c = mapper().getByKey(n2.getKey());
     assertEquals(n2, n2c);
 
+  }
+
+  @Test
+  public void list() throws Exception {
+    List<Name> names = Lists.newArrayList();
+    names.add(create(D2));
+    names.add(create(D2));
+    names.add(create(D2));
+    names.add(create(D2));
+    names.add(create(D2));
+
+    for (Name n : names) {
+      mapper().create(n);
+    }
+    commit();
+
+    // get first page
+    Page p = new Page(0,3);
+
+    List<Name> res = mapper().list(D2.getKey(), p);
+    assertEquals(3, res.size());
+    assertEquals(Lists.partition(names, 3).get(0), res);
+
+    // next page
+    p.next();
+    res = mapper().list(D2.getKey(), p);
+    assertEquals(2, res.size());
+    List<Name> l2 = Lists.partition(names, 3).get(1);
+    assertEquals(l2, res);
+  }
+
+  @Test
+  public void count() throws Exception {
+    assertEquals(2, mapper().count(D1.getKey()));
+
+    mapper().create(create());
+    mapper().create(create());
+    commit();
+    assertEquals(4, mapper().count(D1.getKey()));
   }
 
   @Test

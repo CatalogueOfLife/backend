@@ -1,5 +1,6 @@
 package org.col.api;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Objects;
 
@@ -8,23 +9,30 @@ import java.util.Objects;
  * @param <T> the type of the paging content
  */
 public class PagingResultSet<T> extends Page {
-  private int total;
-  private List<T> result;
+  private final int total;
+  private final List<T> result;
 
-  public int getTotal() {
-    return total;
+  public PagingResultSet(Page page, int total, List<T> result) {
+    this.setOffset(page.getOffset());
+    this.setLimit(page.getLimit());
+    this.total = total;
+    this.result = result;
   }
 
-  public void setTotal(int total) {
-    this.total = total;
+  @Nullable
+  public int getTotal() {
+    return total;
   }
 
   public List<T> getResult() {
     return result;
   }
 
-  public void setResult(List<T> result) {
-    this.result = result;
+  /**
+   * @return true if this is the last page and there are no more pages with content if the offset is increased.
+   */
+  public boolean isLast() {
+    return total <= getOffset() + getLimit();
   }
 
   @Override
