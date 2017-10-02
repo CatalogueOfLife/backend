@@ -126,7 +126,7 @@ CREATE TABLE taxon (
   according_to_date DATE,
   fossil BOOLEAN,
   recent BOOLEAN,
-  lifezone INTEGER,
+  lifezones INTEGER[],
   dataset_url TEXT,
   species_estimate INTEGER,
   species_estimate_reference_key INTEGER REFERENCES reference,

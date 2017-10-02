@@ -1,6 +1,7 @@
 package org.col.db.mapper;
 
 import org.col.api.Taxon;
+import org.col.api.vocab.TaxonomicStatus;
 import org.junit.Test;
 
 import static org.junit.Assert.assertNotNull;
@@ -20,6 +21,7 @@ public class TaxonMapperTest extends MapperTestBase<TaxonMapper> {
 		t.setDataset(D1);
 		t.setName(NAME1);
 		t.setParent(TAXON1);
+		t.setStatus(TaxonomicStatus.ACCEPTED);
 		return t;
 	}
 
