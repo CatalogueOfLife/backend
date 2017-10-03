@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 
-import org.col.api.Name;
 import org.col.api.Page;
 import org.col.api.Taxon;
 import org.col.api.vocab.Lifezone;
@@ -18,8 +17,6 @@ import org.col.api.vocab.Origin;
 import org.col.api.vocab.Rank;
 import org.col.api.vocab.TaxonomicStatus;
 import org.junit.Test;
-
-import com.google.common.collect.Lists;
 
 /**
  *
