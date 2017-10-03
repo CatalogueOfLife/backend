@@ -255,7 +255,7 @@ public class Taxon {
 			if (name == null) {
 				equal = taxon.name == null;
 			} else {
-				equal = taxon.name != null && Objects.equals(name.getKey(), taxon.parent.getKey());
+				equal = taxon.name != null && Objects.equals(name.getKey(), taxon.name.getKey());
 			}
 		}
 		if (equal) {
