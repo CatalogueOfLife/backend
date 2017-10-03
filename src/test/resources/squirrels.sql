@@ -10,3 +10,9 @@ ALTER SEQUENCE name_key_seq RESTART WITH 1000;
 INSERT INTO taxon (key, id, dataset_key, name_key) VALUES (1, 'root-1', 1, 1);
 INSERT INTO taxon (key, id, dataset_key, name_key) VALUES (2, 'root-2', 1, 2);
 ALTER SEQUENCE taxon_key_seq RESTART WITH 1000;
+
+INSERT INTO reference(key, id, dataset_key) VALUES (1, 'ref-1', 1);
+INSERT INTO reference(key, id, dataset_key) VALUES (2, 'ref-2', 2);
+ALTER SEQUENCE reference_key_seq RESTART WITH 1000;
+
+

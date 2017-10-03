@@ -1,12 +1,13 @@
 package org.col.db.mapper;
 
+import java.util.Random;
+
 import org.col.api.Dataset;
 import org.col.api.Name;
+import org.col.api.Reference;
 import org.col.api.Taxon;
 import org.junit.ClassRule;
 import org.junit.Rule;
-
-import java.util.Random;
 
 /**
  * A reusable base class for all mybatis mapper tests that takes care of postgres & mybatis.
@@ -23,6 +24,9 @@ public abstract class MapperTestBase<T> {
 
   public final static Taxon TAXON1 = new Taxon();
   public final static Taxon TAXON2 = new Taxon();
+
+  public final static Reference REF1 = new Reference();
+  public final static Reference REF2 = new Reference();
 
   static {
     D1.setKey(1);
@@ -47,6 +51,14 @@ public abstract class MapperTestBase<T> {
     TAXON2.setId("root-2");
     TAXON2.setDataset(D1);
     TAXON2.setName(NAME2);
+    
+    REF1.setKey(1);
+    REF1.setId("ref-1");
+    REF1.setDataset(D1);
+    
+    REF2.setKey(2);
+    REF2.setId("ref-2");
+    REF2.setDataset(D2);
   }
 
   private final Class<T> mapperClazz;

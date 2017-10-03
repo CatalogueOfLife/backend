@@ -58,7 +58,7 @@
 		#{accordingToDate},
 		#{fossil},
 		#{recent},
-		#{lifezones, typeHandler=org.col.db.type.ArraySetLifezoneTypeHandler},
+		#{lifezones, typeHandler=org.col.db.type.LifezoneTypeHandler},
 		#{datasetUrl, typeHandler=org.col.db.type.UriTypeHandler},
 		#{speciesEstimate},
 		#{speciesEstimateReference.key},
@@ -76,6 +76,7 @@
 	<resultMap id="taxonResultMap" type="Taxon" autoMapping="true">
 		<id property="key" column="key" />
 		<result property="id" column="id" />
+        <result property="lifezones" column="lifezones" typeHandler="org.col.db.type.LifezoneTypeHandler"/>
 		<association property="dataset" javaType="Dataset">
 			<id property="key" column="dataset_key" />
 		</association>

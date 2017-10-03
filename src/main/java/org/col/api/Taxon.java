@@ -243,8 +243,7 @@ public class Taxon {
 		    && Objects.equals(fossil, taxon.fossil)
 		    && Objects.equals(recent, taxon.recent)
 		    && Objects.equals(lifezones, taxon.lifezones)
-		    && Objects.equals(speciesEstimate, taxon.speciesEstimate)
-		    && Objects.equals(speciesEstimateReference, taxon.speciesEstimateReference);
+		    && Objects.equals(speciesEstimate, taxon.speciesEstimate);
 		if (equal) {
 			if (parent == null) {
 				equal = taxon.parent == null;
