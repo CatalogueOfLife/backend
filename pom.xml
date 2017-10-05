@@ -131,21 +131,6 @@
 
   <build>
     <defaultGoal>compile exec:java</defaultGoal>
-
-    <resources>
-      <resource>
-        <directory>src/main/resources</directory>
-        <filtering>false</filtering>
-      </resource>
-    </resources>
-
-    <testResources>
-      <testResource>
-        <directory>src/test/resources</directory>
-        <filtering>true</filtering>
-      </testResource>
-    </testResources>
-
     <pluginManagement>
       <plugins>
         <plugin>
