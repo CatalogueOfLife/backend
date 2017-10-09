@@ -2,6 +2,7 @@ package org.col.api;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import java.util.Objects;
@@ -92,6 +93,21 @@ public class Reference {
     this.year = year;
   }
 
+  /**
+   * @return An empty reference instance with an empty csl JsonNode.
+   */
+  public static Reference create() {
+    Reference r = new Reference();
+    r.csl = JsonNodeFactory.instance.objectNode();
+    return r;
+  }
+
+  // Simple way to build a canonical full representation of the reference
+  @JsonIgnore
+  public String getCitation() {
+    //TODO: use most fields so a reference citation is build
+    return cslStr("title");
+  }
 
   // VARIOUS METHODS DELEGATING TO THE UNDERLYING CSL JsonObject instance
   @JsonIgnore

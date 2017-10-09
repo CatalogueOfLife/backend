@@ -22,15 +22,15 @@ public class TreeIterablesSorted {
   /**
    * Iterates over all nodes in taxonomic hierarchy, but unsorted withing each branch.
    */
-  public static ResourceIterable<Node> allNodes(GraphDatabaseService db, @Nullable Node root, @Nullable Rank lowestRank, boolean inclProParte) {
-    return MultiRootNodeIterator.create(findRoot(db, root), filterRank(inclProParte ? Traversals.SORTED_TREE : Traversals.SORTED_TREE_WITHOUT_PRO_PARTE, lowestRank));
+  public static ResourceIterable<Node> allNodes(GraphDatabaseService db, @Nullable Node root, @Nullable Rank lowestRank) {
+    return MultiRootNodeIterator.create(findRoot(db, root), filterRank(Traversals.SORTED_TREE, lowestRank));
   }
 
   /**
-   * Iterates over all paths
+   * Iterates over all paths including multiple paths to pro parte synonyms
    */
-  public static ResourceIterable<Path> allPath(GraphDatabaseService db, @Nullable Node root, @Nullable Rank lowestRank, boolean inclProParte) {
-    return MultiRootPathIterator.create(findRoot(db, root), filterRank(inclProParte ? Traversals.SORTED_TREE : Traversals.SORTED_TREE_WITHOUT_PRO_PARTE, lowestRank));
+  public static ResourceIterable<Path> allPath(GraphDatabaseService db, @Nullable Node root, @Nullable Rank lowestRank) {
+    return MultiRootPathIterator.create(findRoot(db, root), filterRank(Traversals.SORTED_TREE, lowestRank));
   }
 
   /**

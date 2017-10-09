@@ -11,8 +11,8 @@ import javax.annotation.Nullable;
  */
 public class TreeIterables {
 
-  public static Iterable<Node> allNodes(GraphDatabaseService db, @Nullable Node root, @Nullable Rank lowestRank, boolean inclProParte) {
-    return MultiRootNodeIterator.create(TreeIterablesSorted.findRoot(db, root), TreeIterablesSorted.filterRank(inclProParte ? Traversals.TREE : Traversals.SORTED_TREE_WITHOUT_PRO_PARTE, lowestRank));
+  public static Iterable<Node> allNodes(GraphDatabaseService db, @Nullable Node root, @Nullable Rank lowestRank) {
+    return MultiRootNodeIterator.create(TreeIterablesSorted.findRoot(db, root), TreeIterablesSorted.filterRank(Traversals.TREE, lowestRank));
   }
 
 }

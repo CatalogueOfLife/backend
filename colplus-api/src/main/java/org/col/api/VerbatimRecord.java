@@ -15,17 +15,20 @@ import static com.google.common.base.Preconditions.checkNotNull;
  *
  */
 public class VerbatimRecord {
+  /**
+   * dwc archive core id.
+   */
   private String id;
 
   /**
-   * Key to dataset instance. Defines context of the name key.
+   * Key to dataset instance. Defines context of the core id.
    */
   private Dataset dataset;
 
   /**
    * The actual verbatim terms keyed on dwc terms.
    */
-  private VerbatimRecordTerms terms;
+  private VerbatimRecordTerms terms = new VerbatimRecordTerms();
 
   /**
    * Issues related to this taxon with potential values in the map

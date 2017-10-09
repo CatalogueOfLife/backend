@@ -2,10 +2,13 @@ package org.col.commands.importer.neo.kryo;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.pool.KryoFactory;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.TextNode;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import org.col.api.*;
 import org.col.api.vocab.*;
-import org.col.commands.importer.neo.model.TaxonNameNode;
+import org.col.commands.importer.neo.model.NeoTaxon;
 import org.gbif.dwc.terms.*;
 import org.neo4j.kernel.impl.core.NodeProxy;
 
@@ -20,7 +23,7 @@ import java.util.*;
  * We use Kryo for extremely fast byte serialization of temporary objects.
  * It is used to serialize various information in kvp stores during checklist indexing and nub builds.
  */
-public class CliKryoFactory implements KryoFactory {
+public class NeoKryoFactory implements KryoFactory {
 
   @Override
   public Kryo create() {
@@ -36,8 +39,15 @@ public class CliKryoFactory implements KryoFactory {
     kryo.register(Serial.class);
     kryo.register(Taxon.class);
     kryo.register(VerbatimRecord.class);
-    // cli specifics
-    kryo.register(TaxonNameNode.class);
+    kryo.register(VerbatimRecordTerms.class);
+    kryo.register(TermRecord.class);
+    kryo.register(Page.class);
+    // jackson json node (e.g. csl property)
+    kryo.register(ObjectNode.class);
+    kryo.register(TextNode.class);
+    kryo.register(JsonNodeFactory.class);
+    // normalizer specific models
+    kryo.register(NeoTaxon.class);
 
     // fastutil
     kryo.register(IntArrayList.class);
@@ -46,6 +56,7 @@ public class CliKryoFactory implements KryoFactory {
     kryo.register(LocalDateTime.class);
     kryo.register(LocalDate.class);
     kryo.register(HashMap.class);
+    kryo.register(LinkedHashMap.class);
     kryo.register(HashSet.class);
     kryo.register(ArrayList.class);
     kryo.register(UUID.class, new UUIDSerializer());
@@ -66,7 +77,7 @@ public class CliKryoFactory implements KryoFactory {
     kryo.register(Kingdom.class);
     kryo.register(Lifezone.class);
     kryo.register(NameType.class);
-    kryo.register(NamePart.class, 40);
+    kryo.register(NamePart.class);
     kryo.register(Language.class);
     kryo.register(Country.class);
     kryo.register(TypeStatus.class);
@@ -85,7 +96,7 @@ public class CliKryoFactory implements KryoFactory {
     kryo.register(XmpTerm.class);
     kryo.register(UnknownTerm.class, new TermSerializer());
 
-    // ignore neo node proxies and set them to null upon read:
+    // ignore normalizer node proxies and set them to null upon read:
     kryo.register(NodeProxy.class, new NullSerializer());
 
     return kryo;

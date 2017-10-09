@@ -15,7 +15,7 @@ public interface TaxonMapper {
 
   List<Taxon> list(@Param("datasetKey") int datasetKey, @Param("page") Page page);
 
-  Taxon getByInternalKey(@Param("key") int ikey);
+  Taxon getByKey(@Param("key") int ikey);
 
   Taxon get(@Param("datasetKey") int datasetKey, @Param("key") String key);
 

@@ -1,11 +1,8 @@
 package org.col.commands.importer.neo;
 
 import com.google.common.io.Files;
-import org.apache.commons.io.FileUtils;
-import org.col.commands.importer.neo.model.TaxonNameNode;
-import org.col.commands.config.NeoConfig;
+import org.col.commands.config.NormalizerConfig;
 import org.col.util.CleanupUtils;
-import org.mapdb.DB;
 import org.mapdb.DBMaker;
 import org.neo4j.graphdb.factory.GraphDatabaseBuilder;
 import org.slf4j.Logger;
@@ -25,65 +22,63 @@ public class NeoDbFactory {
    *
    * @param mappedMemory used for the neo4j db
    */
-  public static NeoDb<TaxonNameNode> temporaryDb(int mappedMemory) {
-    LOG.debug("Create new in memory dao");
-    DB kvp = DBMaker.memoryDB()
-        .make();
-
+  public static NeoDb temporaryDb(int mappedMemory) {
+    LOG.debug("Create new in memory NormalizerStore");
     File storeDir = Files.createTempDir();
-    NeoConfig cfg = new NeoConfig();
+    NormalizerConfig cfg = new NormalizerConfig();
     cfg.mappedMemory = mappedMemory;
-    GraphDatabaseBuilder builder = cfg.newEmbeddedDb(storeDir, false, null);
     CleanupUtils.registerCleanupHook(storeDir);
 
-    return new NeoDb<TaxonNameNode>(TaxonNameNode.class, kvp, storeDir, null, builder);
+    return create(cfg, storeDir, false, DBMaker.memoryDB());
   }
 
   /**
-   * A backend that is stored in files inside the configured neo directory.
+   * A backend that is stored in files inside the configured normalizer directory.
    *
    * @param eraseExisting if true erases any previous data files
    */
-  private static NeoDb<TaxonNameNode> persistentDb(NeoConfig cfg, int datasetKey, boolean eraseExisting) {
-    DB kvp = null;
+  private static NeoDb persistentDb(NormalizerConfig cfg, int datasetKey, boolean eraseExisting) {
+    LOG.debug("Create persistent NormalizerStore");
+    final File storeDir = cfg.neoDir(datasetKey);
+    final File mapDbFile = mapDbFile(storeDir);
+    DBMaker.Maker dbMaker = DBMaker
+        .fileDB(mapDbFile)
+        .fileMmapEnableIfSupported();
+    return create(cfg, storeDir, eraseExisting, dbMaker);
+  }
+
+  /**
+   * A backend that is stored in files inside the configured normalizer directory.
+   *
+   * @param eraseExisting if true erases any previous data files
+   */
+  private static NeoDb create(NormalizerConfig cfg, File storeDir, boolean eraseExisting, DBMaker.Maker dbMaker) {
     try {
-      final File kvpF = cfg.kvp(datasetKey);
-      final File storeDir = cfg.neoDir(datasetKey);
-      if (eraseExisting) {
-        LOG.debug("Remove existing data store");
-        if (kvpF.exists()) {
-          kvpF.delete();
-        }
-      }
-      FileUtils.forceMkdir(kvpF.getParentFile());
-      LOG.debug("Use KVP store {}", kvpF.getAbsolutePath());
-      kvp = DBMaker.fileDB(kvpF)
-          .fileMmapEnableIfSupported()
-          .make();
       GraphDatabaseBuilder builder = cfg.newEmbeddedDb(storeDir, eraseExisting, null);
-      return new NeoDb<TaxonNameNode>(TaxonNameNode.class, kvp, storeDir, kvpF, builder);
+
+      return new NeoDb(dbMaker.make(), storeDir, builder, cfg.batchSize);
 
     } catch (Exception e) {
-      if (kvp != null && !kvp.isClosed()) {
-        kvp.close();
-      }
-      throw new IllegalStateException("Failed to init persistent DAO for " + datasetKey, e);
+      throw new IllegalStateException("Failed to init NormalizerStore at " + storeDir, e);
     }
   }
 
   /**
    * @return the neodb for an existing, persistent db
    */
-  public static NeoDb<TaxonNameNode> open(NeoConfig cfg, int datasetKey) {
+  public static NeoDb open(NormalizerConfig cfg, int datasetKey) {
     return persistentDb(cfg, datasetKey, false);
   }
 
   /**
    * @return creates a new, empty, persistent dao wiping any data that might have existed for that dataset
    */
-  public static NeoDb<TaxonNameNode> create(NeoConfig cfg, int datasetKey) {
+  public static NeoDb create(NormalizerConfig cfg, int datasetKey) {
     return persistentDb(cfg, datasetKey, true);
   }
 
+  private static File mapDbFile(File neoDir) {
+    return new File(neoDir, "mapdb.bin");
+  }
 }
 

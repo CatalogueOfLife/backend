@@ -207,7 +207,7 @@ public enum TypeStatus {
   PLASTOTYPE,
 
   /**
-   * A referred, described, measured or figured specimen in the original publication (including a neo/lectotypification publication) that is not a primary type. [Zoo.]
+   * A referred, described, measured or figured specimen in the original publication (including a normalizer/lectotypification publication) that is not a primary type. [Zoo.]
    */
   SECONDARYTYPE,
 

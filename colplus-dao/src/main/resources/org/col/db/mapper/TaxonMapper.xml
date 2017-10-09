@@ -109,7 +109,7 @@
         <include refid="org.col.db.mapper.Common.limit"/>
     </select>
     
-    <select id="getByInternalKey" resultMap="taxonResultMap">
+    <select id="getByKey" resultMap="taxonResultMap">
 		SELECT
 		<include refid="SELECT" />
 		FROM

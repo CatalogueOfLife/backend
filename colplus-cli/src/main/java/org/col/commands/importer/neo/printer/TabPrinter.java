@@ -18,7 +18,7 @@ import java.io.Writer;
 import java.util.Set;
 
 /**
- * Dumps a neo db in a simple tab delimited format used by the nub integration tests.
+ * Dumps a normalizer db in a simple tab delimited format used by the nub integration tests.
  * Expects no pro parte relations in the walker!
  */
 public class TabPrinter implements TreePrinter {
@@ -44,9 +44,6 @@ public class TabPrinter implements TreePrinter {
         // we can have multiple accepted parents for pro parte synonyms
         Set<Long> parentKeys = Sets.newHashSet();
         for (Relationship synRel : n.getRelationships(RelType.SYNONYM_OF, Direction.OUTGOING)) {
-          parentKeys.add(synRel.getOtherNode(n).getId());
-        }
-        for (Relationship synRel : n.getRelationships(RelType.PROPARTE_SYNONYM_OF, Direction.OUTGOING)) {
           parentKeys.add(synRel.getOtherNode(n).getId());
         }
         row[1] = ID_CONCAT.join(parentKeys);

@@ -146,6 +146,20 @@
           <version>${project.version}</version>
 	    </dependency>
 
+        <!-- Dropwizard Bill of materials. Imports all versions just like Dropwizard uses -->
+        <dependency>
+            <groupId>io.dropwizard</groupId>
+            <artifactId>dropwizard-core</artifactId>
+            <version>${dropwizard.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.dropwizard</groupId>
+            <artifactId>dropwizard-bom</artifactId>
+            <version>${dropwizard.version}</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
+
         <!-- javax -->
         <dependency>
             <groupId>javax.ws.rs</groupId>
@@ -163,116 +177,103 @@
             <version>${jsr305.version}</version>
         </dependency>
 
-	    <!-- Dropwizard Bill of materials. Imports all versions just like Dropwizard uses -->
-	    <dependency>
-	      <groupId>io.dropwizard</groupId>
-	      <artifactId>dropwizard-core</artifactId>
-          <version>${dropwizard.version}</version>
-	    </dependency>
+        <!-- GBIF -->
         <dependency>
-          <groupId>io.dropwizard</groupId>
-          <artifactId>dropwizard-bom</artifactId>
-          <version>${dropwizard.version}</version>
-          <type>pom</type>
-          <scope>import</scope>
+            <groupId>org.gbif</groupId>
+            <artifactId>dwc-api</artifactId>
+            <version>${dwc-api.version}</version>
         </dependency>
-
-	    <!-- GBIF -->
-	    <dependency>
-	      <groupId>org.gbif</groupId>
-	      <artifactId>dwc-api</artifactId>
-	      <version>${dwc-api.version}</version>
-	    </dependency>
         <dependency>
             <groupId>org.gbif</groupId>
             <artifactId>gbif-common</artifactId>
             <version>${gbif-common.version}</version>
         </dependency>
-	    <dependency>
-	      <groupId>org.gbif</groupId>
-	      <artifactId>name-parser</artifactId>
-	      <version>${name-parser.version}</version>
-	    </dependency>
-	    <dependency>
-	      <groupId>org.gbif</groupId>
-	      <artifactId>gbif-parsers</artifactId>
-	      <version>${gbif-parser.version}</version>
-	    </dependency>
-	    <dependency>
-	      <groupId>org.gbif</groupId>
-	      <artifactId>dwca-io</artifactId>
-	      <version>${dwca-io.version}</version>
-	      <exclusions>
-	        <exclusion>
-	          <!-- digester via cglib brings in an old asm version, conflicting with kryo -->
-	          <artifactId>asm</artifactId>
-	          <groupId>asm</groupId>
-	        </exclusion>
-	      </exclusions>
-	    </dependency>
+        <dependency>
+            <groupId>org.gbif</groupId>
+            <artifactId>name-parser</artifactId>
+            <version>${name-parser.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.gbif</groupId>
+            <artifactId>gbif-parsers</artifactId>
+            <version>${gbif-parser.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.gbif</groupId>
+            <artifactId>dwca-io</artifactId>
+            <version>${dwca-io.version}</version>
+            <exclusions>
+                <exclusion>
+                    <!-- digester via cglib brings in an old asm version, conflicting with kryo -->
+                    <artifactId>asm</artifactId>
+                    <groupId>asm</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
 
-	    <!-- mybatis / DB -->
-	    <dependency>
-	      <groupId>org.postgresql</groupId>
-	      <artifactId>postgresql</artifactId>
-	      <version>${postgresql.version}</version>
-	    </dependency>
-	    <dependency>
-	      <groupId>com.zaxxer</groupId>
-	      <artifactId>HikariCP</artifactId>
-	      <version>${hikaricp.version}</version>
-	    </dependency>
-	    <dependency>
-	      <groupId>org.mybatis</groupId>
-	      <artifactId>mybatis</artifactId>
-	      <version>${mybatis.version}</version>
-	    </dependency>
+        <!-- mybatis / DB -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>${postgresql.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
+            <version>${hikaricp.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.mybatis</groupId>
+            <artifactId>mybatis</artifactId>
+            <version>${mybatis.version}</version>
+        </dependency>
 
-	    <!-- neo4j, mapdb & kryo -->
-	    <dependency>
-	      <groupId>org.mapdb</groupId>
-	      <artifactId>mapdb</artifactId>
-	      <version>${mapdb.version}</version>
-	    </dependency>
-	    <dependency>
-	      <groupId>org.neo4j</groupId>
-	      <artifactId>neo4j</artifactId>
-	      <version>${neo4j.version}</version>
-	      <exclusions>
-	        <exclusion>
-	          <!-- turn off usage reporting to neo -->
-	          <groupId>org.neo4j</groupId>
-	          <artifactId>neo4j-udc</artifactId>
-	        </exclusion>
-	      </exclusions>
-	    </dependency>
-	    <dependency>
-	      <groupId>org.neo4j</groupId>
-	      <artifactId>neo4j-kernel</artifactId>
-	      <version>${neo4j.version}</version>
-	    </dependency>
-	    <dependency>
-	      <groupId>org.neo4j</groupId>
-	      <artifactId>neo4j-cypher</artifactId>
-	      <version>${neo4j.version}</version>
-	    </dependency>
-	    <dependency>
-	      <groupId>org.neo4j</groupId>
-	      <artifactId>neo4j-shell</artifactId>
-	      <version>${neo4j.version}</version>
-	    </dependency>
-	    <dependency>
-	      <groupId>org.neo4j</groupId>
-	      <artifactId>neo4j-slf4j</artifactId>
-	      <version>${neo4j.version}</version>
-	    </dependency>
-	    <!-- we use kryo to serialize data into binary which is > 10 times faster than jackson even with 
-	      smile -->
-	    <dependency>
-	      <groupId>com.esotericsoftware</groupId>
-	      <artifactId>kryo</artifactId>
-	      <version>${kryo.version}</version>
-	    </dependency>
+        <!-- neo4j -->
+        <dependency>
+            <groupId>org.neo4j</groupId>
+            <artifactId>neo4j</artifactId>
+            <version>${neo4j.version}</version>
+            <exclusions>
+                <exclusion>
+                    <!-- turn off usage reporting to normalizer -->
+                    <groupId>org.neo4j</groupId>
+                    <artifactId>neo4j-udc</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.neo4j</groupId>
+            <artifactId>neo4j-kernel</artifactId>
+            <version>${neo4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.neo4j</groupId>
+            <artifactId>neo4j-cypher</artifactId>
+            <version>${neo4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.neo4j</groupId>
+            <artifactId>neo4j-shell</artifactId>
+            <version>${neo4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.neo4j</groupId>
+            <artifactId>neo4j-slf4j</artifactId>
+            <version>${neo4j.version}</version>
+        </dependency>
+
+        <!-- mapdb & kryo-->
+        <dependency>
+            <groupId>org.mapdb</groupId>
+            <artifactId>mapdb</artifactId>
+            <version>${mapdb.version}</version>
+        </dependency>
+        <!-- we use kryo to serialize data into binary which is > 10 times faster than jackson even with smile -->
+        <dependency>
+            <groupId>com.esotericsoftware</groupId>
+            <artifactId>kryo</artifactId>
+            <version>${kryo.version}</version>
+        </dependency>
 
 	    <!-- logging -->
 	    <dependency>

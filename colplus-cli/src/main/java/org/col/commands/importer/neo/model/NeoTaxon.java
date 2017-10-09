@@ -1,47 +1,57 @@
 package org.col.commands.importer.neo.model;
 
-import org.col.api.vocab.Issue;
-import org.col.api.vocab.Rank;
-import org.col.api.vocab.TaxonomicStatus;
+import com.google.common.collect.Lists;
+import org.col.api.*;
 import org.neo4j.graphdb.Node;
 
+import java.util.List;
+import java.util.Objects;
+
 /**
- * Minimal interface to retrieve data stored as neo4j properties from any data class
- * to be persisted in the neodb.
+ * Simple wrapper to hold a normalizer node together with all data for a record
+ * inlcuding a name and a taxon instance.
+ * <p>
+ * The modified flag can be used to (manually) track if an instance has changed and needs to be persisted.
  */
-public interface NeoTaxon {
+public class NeoTaxon {
+  public Node node;
+  public VerbatimRecord verbatim;
+  public Taxon taxon;
+  public List<NameAct> acts = Lists.newArrayList();
+  public List<VernacularName> vernacularNames = Lists.newArrayList();
+  public List<Distribution> distributions = Lists.newArrayList();
+  public List<Reference> references = Lists.newArrayList();
 
   /**
-   * @return the neo4j node this object is stored under or null if it is not persisted (yet)
+   * @return list all reference placeholders with just a key.
    */
-  Node getNode();
+  public List<Reference> listReferencePlaceholders() {
+    return Lists.newArrayList();
+  }
 
-  void setNode(Node node);
+  /**
+   * @return list all reference with actual values, i.e. no placeholders, extracted from all data of this taxon.
+   */
+  public List<Reference> listReferences() {
+    return Lists.newArrayList();
+  }
 
-  String getTaxonID();
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    NeoTaxon neoTaxon = (NeoTaxon) o;
+    return Objects.equals(node, neoTaxon.node) &&
+        Objects.equals(verbatim, neoTaxon.verbatim) &&
+        Objects.equals(taxon, neoTaxon.taxon) &&
+        Objects.equals(acts, neoTaxon.acts) &&
+        Objects.equals(vernacularNames, neoTaxon.vernacularNames) &&
+        Objects.equals(distributions, neoTaxon.distributions) &&
+        Objects.equals(references, neoTaxon.references);
+  }
 
-  String getScientificName();
-
-  String getAuthorship();
-
-  Rank getRank();
-
-  TaxonomicStatus getStatus();
-
-  void setStatus(TaxonomicStatus status);
-
-  void setAcceptedKey(int key);
-
-  void setAccepted(String scientificName);
-
-  void setBasionymKey(int key);
-
-  void setBasionym(String scientificName);
-
-  void setParentKey(int key);
-
-  void addIssue(Issue issue);
-
-  void addRemark(String message);
-
+  @Override
+  public int hashCode() {
+    return Objects.hash(node, verbatim, taxon, acts, vernacularNames, distributions, references);
+  }
 }

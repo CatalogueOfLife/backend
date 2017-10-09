@@ -16,12 +16,12 @@ import java.io.File;
  *
  */
 @SuppressWarnings("PublicField")
-public class NeoConfig {
+public class NormalizerConfig {
 
-  private static final Logger LOG = LoggerFactory.getLogger(NeoConfig.class);
+  private static final Logger LOG = LoggerFactory.getLogger(NormalizerConfig.class);
 
   @NotNull
-  public File neoRepository;
+  public File directory;
 
   @NotNull
   public int batchSize = 10000;
@@ -29,19 +29,23 @@ public class NeoConfig {
   @Min(0)
   public int mappedMemory = 128;
 
+  public File datasetDir(int datasetKey) {
+    return new File(directory, String.valueOf(datasetKey));
+  }
+
   public File neoDir(int datasetKey) {
-    return new File(neoRepository, String.valueOf(datasetKey));
+    return new File(datasetDir(datasetKey), "normalizer");
   }
 
   /**
-   * @return the KVP dbmap file used for the given dataset
+   * The dataset directory containing the original source files, e.g. the dwc archive.
    */
-  public File kvp(int datasetKey) {
-    return new File(neoRepository, String.valueOf(datasetKey) + ".kvp");
+  public File source(int datasetKey) {
+    return new File(datasetDir(datasetKey), "source");
   }
 
   /**
-   * Creates a new embedded db in the neoRepository folder.
+   * Creates a new embedded db in the directory folder.
    *
    * @param eraseExisting if true deletes previously existing db
    */

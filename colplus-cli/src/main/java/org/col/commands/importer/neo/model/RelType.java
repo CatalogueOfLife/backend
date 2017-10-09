@@ -6,8 +6,19 @@ import org.neo4j.graphdb.RelationshipType;
  *
  */
 public enum RelType implements RelationshipType {
+  /**
+   * Taxon -> Taxon
+   */
   PARENT_OF,
+
+  /**
+   * Name -> Taxon
+   */
   SYNONYM_OF,
-  PROPARTE_SYNONYM_OF,
-  BASIONYM_OF
+
+  /**
+   * Name -> Name
+   */
+  BASIONYM_OF;
+
 }

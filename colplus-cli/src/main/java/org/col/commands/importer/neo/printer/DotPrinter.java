@@ -88,8 +88,6 @@ public class DotPrinter implements TreePrinter {
             end = rel.getStartNode().getId();
             if (rel.isType(RelType.SYNONYM_OF)) {
               type = "syn";
-            } else if (rel.isType(RelType.PROPARTE_SYNONYM_OF)) {
-              type = "pp";
             } else if (rel.isType(RelType.BASIONYM_OF)) {
               type = "bas";
             } else {

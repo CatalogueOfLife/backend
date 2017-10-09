@@ -8,7 +8,7 @@ import org.col.api.*;
 import org.col.api.vocab.Issue;
 import org.col.api.vocab.Rank;
 import org.col.api.vocab.TaxonomicStatus;
-import org.col.commands.importer.neo.model.TaxonNameNode;
+import org.col.commands.importer.neo.model.NeoTaxon;
 import org.gbif.dwc.terms.*;
 import org.junit.Test;
 
@@ -21,26 +21,30 @@ import static org.junit.Assert.assertEquals;
 /**
  *
  */
-public class CliKryoFactoryTest {
-  Kryo kryo = new CliKryoFactory().create();
+public class NeoKryoFactoryTest {
+  Kryo kryo = new NeoKryoFactory().create();
 
   @Test
-  public void testTaxonNameNode() throws Exception {
-    Taxon t = new Taxon();
-    t.setStatus(TaxonomicStatus.DOUBTFUL);
+  public void testNeoTaxon() throws Exception {
+    NeoTaxon t = new NeoTaxon();
 
-    Name n = new Name();
-    n.setScientificName("Abies alba");
-    n.setAuthorship("Mill.");
-    n.setRank(Rank.SPECIES);
+    t.taxon = new Taxon();
+    t.taxon.setStatus(TaxonomicStatus.DOUBTFUL);
 
-    VerbatimRecord v = new VerbatimRecord();
+    t.taxon.setName(new Name());
+    t.taxon.getName().setScientificName("Abies alba");
+    t.taxon.getName().setAuthorship("Mill.");
+    t.taxon.getName().setRank(Rank.SPECIES);
+
+    t.verbatim = new VerbatimRecord();
     for (Issue issue : Issue.values()) {
-      v.addIssue(issue);
+      t.verbatim.addIssue(issue);
+    }
+    for (Term term : GbifTerm.values()) {
+      t.verbatim.setCoreTerm(term, term.simpleName());
     }
 
-    TaxonNameNode u = new TaxonNameNode(n, t, v);
-    assertSerde(u);
+    assertSerde(t);
   }
 
   @Test
@@ -56,7 +60,7 @@ public class CliKryoFactoryTest {
 
   @Test
   public void testEmptyModels() throws Exception {
-    assertSerde(new TaxonNameNode());
+    assertSerde(new NeoTaxon());
     assertSerde(new Reference());
     assertSerde(new DatasetMetrics());
   }

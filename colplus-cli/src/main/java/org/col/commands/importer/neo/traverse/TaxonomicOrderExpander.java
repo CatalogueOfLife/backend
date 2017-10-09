@@ -5,7 +5,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;
-import org.col.commands.importer.neo.model.Labels;
 import org.col.commands.importer.neo.model.RelType;
 import org.neo4j.graphdb.*;
 import org.neo4j.graphdb.traversal.BranchState;
@@ -28,11 +27,6 @@ public class TaxonomicOrderExpander implements PathExpander {
    */
   public final static TaxonomicOrderExpander TREE_WITH_SYNONYMS_EXPANDER = new TaxonomicOrderExpander(RelType.SYNONYM_OF);
 
-  /**
-   * Expander following the parent_of, synonym_of and proparte_synonym_of relations in taxonomic order
-   */
-  public final static TaxonomicOrderExpander TREE_WITH_PPSYNONYMS_EXPANDER = new TaxonomicOrderExpander(RelType.SYNONYM_OF, RelType.PROPARTE_SYNONYM_OF);
-
   private final Set<RelType> synRels;
 
   private static final Ordering<Relationship> CHILDREN_ORDER = Ordering.from(new TaxonomicOrder()).onResultOf(
@@ -51,7 +45,7 @@ public class TaxonomicOrderExpander implements PathExpander {
         @Nullable
         @Override
         public Boolean apply(Relationship rel) {
-          return rel.getStartNode().hasLabel(Labels.BASIONYM);
+          return rel.getStartNode().hasRelationship(RelType.BASIONYM_OF, Direction.OUTGOING);
         }
       }
   ).compound(
