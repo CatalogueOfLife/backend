@@ -1,10 +1,10 @@
 package org.col.api;
 
 import org.col.api.vocab.DataFormat;
-import org.hibernate.validator.constraints.NotEmpty;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotEmpty;
 import java.net.URI;
 import java.time.LocalDate;
 import java.time.LocalDateTime;

@@ -14,7 +14,7 @@ import io.dropwizard.servlets.tasks.Task;
 import io.dropwizard.setup.AdminEnvironment;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
-import org.col.config.ColAppConfig;
+import org.col.ColAppConfig;
 import org.eclipse.jetty.util.component.LifeCycle;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.Binder;

@@ -3,7 +3,7 @@ package org.col.commands.importer.neo;
 import com.google.common.io.Files;
 import org.apache.commons.io.FileUtils;
 import org.col.commands.importer.neo.model.TaxonNameNode;
-import org.col.config.NeoConfig;
+import org.col.commands.config.NeoConfig;
 import org.col.util.CleanupUtils;
 import org.mapdb.DB;
 import org.mapdb.DBMaker;

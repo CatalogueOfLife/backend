@@ -1,22 +1,17 @@
 package org.col;
 
-import org.col.commands.hello.HelloCmd;
-import org.col.commands.initdb.InitDbCmd;
-import org.col.config.ColAppConfig;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import io.dropwizard.Application;
+import io.dropwizard.setup.Bootstrap;
+import io.dropwizard.setup.Environment;
 import org.col.db.MybatisBundle;
 import org.col.jersey.JerseyProviderBundle;
 import org.col.resources.DatasetResource;
 import org.col.resources.NameResource;
 import org.col.resources.ReferenceResource;
 import org.col.resources.TaxonResource;
-
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-
-import io.dropwizard.Application;
-import io.dropwizard.setup.Bootstrap;
-import io.dropwizard.setup.Environment;
 
 public class ColApp extends Application<ColAppConfig> {
 
@@ -35,9 +30,6 @@ public class ColApp extends Application<ColAppConfig> {
     bootstrap.addBundle(new MybatisBundle());
     // various custom jersey providers
     bootstrap.addBundle(new JerseyProviderBundle());
-    // commands
-    bootstrap.addCommand(new HelloCmd());
-    bootstrap.addCommand(new InitDbCmd());
   }
 
   @Override

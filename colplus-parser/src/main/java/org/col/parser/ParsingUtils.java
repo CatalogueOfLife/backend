@@ -1,4 +1,4 @@
-package org.col.util;
+package org.col.parser;
 
 import org.gbif.common.parsers.NumberParser;
 

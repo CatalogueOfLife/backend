@@ -1,4 +1,4 @@
-package org.col.config;
+package org.col.commands.config;
 
 import javax.validation.constraints.Min;
 
