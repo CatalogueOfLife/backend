@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.col.db.mapper.VernacularNameMapper">
+
+  <sql id="SELECT">
+    vn.key,
+    vn.dataset_key,
+    vn.taxon_key,
+    t.id as taxon_id,
+    vn.name,
+    vn.language,
+    vn.country
+  </sql>
+
+  <sql id="COLS">
+    dataset_key,
+    taxon_key,
+    name,
+    language,
+    country
+  </sql>
+
+  <sql id="PROPS">
+    #{dataset.key},
+    #{taxon.key},
+    #{name},
+    #{language},
+    #{country}
+  </sql>
+
+  <sql id="FROM">
+    vernacular_name vn
+    LEFT JOIN dataset d on (vn.dataset_key=d.key)
+    LEFT JOIN taxon t on
+    (vn.taxon_key=t.key)
+  </sql>
+
+  <!-- A mapping to Name, mostly auto mapped -->
+  <resultMap id="vernacularNameResultMap" type="VernacularName" autoMapping="true">
+    <id property="key" column="key" />
+    <association property="dataset" javaType="Dataset">
+      <id property="key" column="dataset_key" />
+    </association>
+    <association property="taxon" javaType="Taxon">
+      <id property="key" column="taxon_key" />
+      <id property="id" column="taxon_id" />
+    </association>
+  </resultMap>
+
+
+  <select id="count" parameterType="map" resultType="Integer">
+    SELECT count(*)
+    FROM vernacular_name
+    WHERE
+    dataset_key = #{datasetKey}
+  </select>
+
+  <select id="list" parameterType="map" resultMap="vernacularNameResultMap">
+    SELECT
+    <include refid="SELECT" />
+    FROM
+    <include refid="FROM" />
+    WHERE t.dataset_key = #{datasetKey}
+    ORDER BY key
+    <include refid="org.col.db.mapper.Common.limit" />
+  </select>
+
+  <select id="getByInternalKey" resultMap="vernacularNameResultMap">
+    SELECT
+    <include refid="SELECT" />
+    FROM
+    <include refid="FROM" />
+    WHERE t.key = #{key}
+  </select>
+
+  <select id="get" resultMap="vernacularNameResultMap">
+    SELECT
+    <include refid="SELECT" />
+    FROM
+    <include refid="FROM" />
+    WHERE t.id = #{key}
+  </select>
+
+  <insert id="create" parameterType="VernacularName" useGeneratedKeys="true" keyProperty="key">
+    INSERT INTO vernacular_name (
+    <include refid="COLS" />
+    )
+    VALUES (
+    <include refid="PROPS" />
+    )
+  </insert>
+
+</mapper>
