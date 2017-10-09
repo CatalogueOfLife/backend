@@ -8,5 +8,4 @@
   </parent>
   <artifactId>colplus-dwca</artifactId>
   <name>CoL backend services (DAO)</name>
-  <url>http://github.org/sp2000/${project.artifactId}</url>
 </project>

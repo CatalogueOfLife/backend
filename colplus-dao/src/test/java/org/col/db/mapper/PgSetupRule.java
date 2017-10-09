@@ -1,5 +1,16 @@
 package org.col.db.mapper;
 
+import com.google.common.base.Throwables;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
+import org.apache.ibatis.io.Resources;
+import org.apache.ibatis.jdbc.ScriptRunner;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.col.db.MybatisFactory;
+import org.junit.rules.ExternalResource;
+import ru.yandex.qatools.embed.postgresql.EmbeddedPostgres;
+import ru.yandex.qatools.embed.postgresql.distribution.Version;
+
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.sql.Connection;
@@ -7,18 +18,7 @@ import java.sql.SQLException;
 import java.time.Duration;
 import java.time.Instant;
 
-import org.apache.ibatis.io.Resources;
-import org.apache.ibatis.jdbc.ScriptRunner;
-import org.apache.ibatis.session.SqlSessionFactory;
-import org.col.db.MybatisBundle;
-import org.junit.rules.ExternalResource;
-
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
-
-import jersey.repackaged.com.google.common.base.Throwables;
-import ru.yandex.qatools.embed.postgresql.EmbeddedPostgres;
-import ru.yandex.qatools.embed.postgresql.distribution.Version;
+import static org.col.db.PgConfig.SCHEMA_FILE;
 
 /**
  * A junit test rule that starts up an {@link EmbeddedPostgres} server together
@@ -87,7 +87,7 @@ public class PgSetupRule extends ExternalResource {
 			dataSource = new HikariDataSource(hikari);
 
 			// configure single mybatis session factory
-			sqlSessionFactory = MybatisBundle.configure(dataSource, "test");
+			sqlSessionFactory = MybatisFactory.configure(dataSource, "test");
 
 		} catch (Exception e) {
 			System.err.println("Pg startup error: " + e.getMessage());
@@ -107,7 +107,7 @@ public class PgSetupRule extends ExternalResource {
 		try (Connection con = dataSource.getConnection()) {
 			System.out.println("Init empty database schema\n");
 			ScriptRunner runner = new ScriptRunner(con);
-			runner.runScript(Resources.getResourceAsReader(MybatisBundle.SCHEMA_FILE));
+			runner.runScript(Resources.getResourceAsReader(SCHEMA_FILE));
 			con.commit();
 
 		} catch (SQLException | IOException e) {

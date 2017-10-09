@@ -12,7 +12,7 @@ import org.col.commands.importer.neo.model.Labels;
 import org.col.commands.importer.neo.model.RankedName;
 import org.col.commands.importer.neo.model.RelType;
 import org.col.commands.importer.neo.model.TaxonNameNode;
-import org.col.config.NeoConfig;
+import org.col.commands.config.NeoConfig;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;

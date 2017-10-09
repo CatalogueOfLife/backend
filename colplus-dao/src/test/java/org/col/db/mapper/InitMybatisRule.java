@@ -1,6 +1,6 @@
 package org.col.db.mapper;
 
-import jersey.repackaged.com.google.common.base.Throwables;
+import com.google.common.base.Throwables;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.jdbc.ScriptRunner;
 import org.apache.ibatis.session.SqlSession;

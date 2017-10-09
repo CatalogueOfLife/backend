@@ -1,4 +1,4 @@
-package org.col.config;
+package org.col.commands.config;
 
 import org.apache.commons.io.FileUtils;
 import org.neo4j.graphdb.factory.GraphDatabaseBuilder;

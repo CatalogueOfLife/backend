@@ -1,4 +1,4 @@
-package org.col.config;
+package org.col.db;
 
 import com.google.common.base.MoreObjects;
 import com.zaxxer.hikari.HikariConfig;
@@ -15,6 +15,7 @@ import java.util.Objects;
  */
 @SuppressWarnings("PublicField")
 public class PgConfig {
+  public static final String SCHEMA_FILE = "org/col/db/dbschema.sql";
 
   public String host = "localhost";
   public String database;

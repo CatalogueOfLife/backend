@@ -3,12 +3,12 @@ package org.col.commands.neoshell;
 import io.dropwizard.cli.ConfiguredCommand;
 import io.dropwizard.setup.Bootstrap;
 import net.sourceforge.argparse4j.inf.Namespace;
-import org.col.config.ColAppConfig;
+import org.col.commands.config.CliConfig;
 
 /**
  * Basic task to showcase hello world
  */
-public class ShellCmd extends ConfiguredCommand<ColAppConfig> {
+public class ShellCmd extends ConfiguredCommand<CliConfig> {
   private static final int PORT = 1337;
 
   public ShellCmd() {
@@ -16,7 +16,7 @@ public class ShellCmd extends ConfiguredCommand<ColAppConfig> {
   }
 
   @Override
-  protected void run(Bootstrap<ColAppConfig> bootstrap, Namespace namespace, ColAppConfig configuration) throws Exception {
+  protected void run(Bootstrap<CliConfig> bootstrap, Namespace namespace, CliConfig configuration) throws Exception {
     System.out.format("Opening neo4j shell on port %s to dataset %s.\n" +
             "Open another dataset or post with key=null to close the shell.\n",
         PORT, 1234);
