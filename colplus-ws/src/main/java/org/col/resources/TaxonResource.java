@@ -21,7 +21,8 @@ import com.codahale.metrics.annotation.Timed;
 @Produces(MediaType.APPLICATION_JSON)
 public class TaxonResource {
 
-  private static final Logger LOG = LoggerFactory.getLogger(NameResource.class);
+  @SuppressWarnings("unused")
+	private static final Logger LOG = LoggerFactory.getLogger(TaxonResource.class);
 
   @GET
   @Timed

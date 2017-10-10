@@ -36,7 +36,7 @@ public class VernacularNameMapperTest extends MapperTestBase<VernacularNameMappe
 		mapper().create(c);
 		VernacularName a = create("a");
 		mapper().create(a);
-		List<VernacularName> list = mapper().getVernacularNamesForTaxon(TAXON1.getKey(), D1.getKey());
+		List<VernacularName> list = mapper().getVernacularNamesForTaxon(D1.getKey(), TAXON1.getKey());
 		assertEquals(3, list.size());
 		assertTrue(a.equalsShallow(list.get(0)));
 		assertTrue(b.equalsShallow(list.get(1)));

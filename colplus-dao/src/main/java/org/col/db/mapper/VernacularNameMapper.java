@@ -7,8 +7,8 @@ import org.col.api.VernacularName;
 
 public interface VernacularNameMapper {
 
-	List<VernacularName> getVernacularNamesForTaxon(@Param("taxonKey") int taxonKey,
-	    @Param("datasetKey") int datasetKey);
+	List<VernacularName> getVernacularNamesForTaxon(@Param("datasetKey") int datasetKey,
+	    @Param("taxonKey") int taxonKey);
 
 	VernacularName getByInternalKey(@Param("key") int ikey);
 
