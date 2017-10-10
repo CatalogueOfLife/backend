@@ -2,21 +2,25 @@ package org.col.commands.importer.neo.model;
 
 import com.google.common.base.Strings;
 import org.col.api.vocab.Rank;
+import org.gbif.dwc.terms.DcTerm;
 import org.gbif.dwc.terms.DwcTerm;
 import org.neo4j.graphdb.Node;
 
 /**
  * Property names of neo4j nodes.
- * Any property we store in neo should be listed here to avoid overlaps or other confusion.
+ * Any property we store in normalizer should be listed here to avoid overlaps or other confusion.
  */
 public class NeoProperties {
   // properties used in NeoTaxon
+  public static final String CORE_ID = DcTerm.identifier.simpleName();
+  public static final String NAME_ID = DwcTerm.scientificNameID.simpleName();
   public static final String TAXON_ID = DwcTerm.taxonID.simpleName();
+  public static final String REFERENCE_ID = "referenceID";
+  public static final String CITATION = "citation";
   public static final String RANK = "rank";
   public static final String SCIENTIFIC_NAME = "scientificName";
   public static final String AUTHORSHIP = "authorship";
-  // used for proparte relations
-  public static final String USAGE_KEY = "usageKey";
+
   public static final String NULL_NAME = "???";
 
   private NeoProperties() {

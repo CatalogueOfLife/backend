@@ -13,7 +13,7 @@ public class SciNameNormalizer {
   private static final Pattern suffix_a = Pattern.compile("(?:on|um|us|a)$");
   private static final Pattern suffix_i = Pattern.compile("ei$");
   private static final Pattern i = Pattern.compile("(?<!\\b)[jyi]+");
-  private static final Pattern trh = Pattern.compile("([tr])h", Pattern.CASE_INSENSITIVE);
+  private static final Pattern trh = Pattern.compile("([gtr])h", Pattern.CASE_INSENSITIVE);
   private static final Pattern white = Pattern.compile("\\s{2,}");
   private static final Pattern empty = Pattern.compile("['_-]");
   private static final Pattern removeRepeatedLetter = Pattern.compile("(\\p{L})\\1+");

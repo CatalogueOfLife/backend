@@ -17,12 +17,12 @@ import org.neo4j.graphdb.traversal.Evaluator;
  */
 public class ChunkingEvaluator implements Evaluator {
 
-  private NeoDb<?> db;
+  private NeoDb db;
   private int chunkSize;
   private int minChunkSize;
   private LongSet chunkIds = new LongOpenHashSet();
 
-  public ChunkingEvaluator(NeoDb<?> db, int minChunkSize, int chunkSize) {
+  public ChunkingEvaluator(NeoDb db, int minChunkSize, int chunkSize) {
     Preconditions.checkArgument(minChunkSize < chunkSize, "Minimum chunk size needs to be smaller then the chunk size");
     Preconditions.checkArgument(minChunkSize >= 0, "Minimum chunk size needs to be positive");
     Preconditions.checkArgument(chunkSize > 0, "Chunk size needs to be at least 1");

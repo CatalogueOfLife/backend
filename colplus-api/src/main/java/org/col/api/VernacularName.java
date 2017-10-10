@@ -9,9 +9,6 @@ import org.col.api.vocab.Language;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-/**
- *
- */
 public class VernacularName {
 
 	@JsonIgnore
@@ -26,6 +23,34 @@ public class VernacularName {
 	private Language language;
 
 	private Country country;
+
+	public boolean equalsShallow(@Nullable VernacularName vn) {
+		if (this == vn) {
+			return true;
+		}
+		if (vn == null) {
+			return false;
+		}
+		boolean equal = Objects.equals(key, vn.key)
+		    && Objects.equals(name, vn.name)
+		    && Objects.equals(language, vn.language)
+		    && Objects.equals(country, vn.country);
+		if (equal) {
+			if (dataset == null) {
+				equal = vn.dataset == null;
+			} else {
+				equal = vn.dataset != null && Objects.equals(dataset.getKey(), vn.dataset.getKey());
+			}
+		}
+		if (equal) {
+			if (taxon == null) {
+				equal = vn.taxon == null;
+			} else {
+				equal = vn.taxon != null && Objects.equals(taxon.getKey(), vn.taxon.getKey());
+			}
+		}
+		return equal;
+	}
 
 	public Integer getKey() {
 		return key;
@@ -73,34 +98,6 @@ public class VernacularName {
 
 	public void setCountry(Country country) {
 		this.country = country;
-	}
-
-	public boolean equalsShallow(@Nullable VernacularName vn) {
-		if (this == vn) {
-			return true;
-		}
-		if (vn == null) {
-			return false;
-		}
-		boolean equal = Objects.equals(key, vn.key)
-		    && Objects.equals(name, vn.name)
-		    && Objects.equals(language, vn.language)
-		    && Objects.equals(country, vn.country);
-		if (equal) {
-			if (dataset == null) {
-				equal = vn.dataset == null;
-			} else {
-				equal = vn.dataset != null && Objects.equals(dataset.getKey(), vn.dataset.getKey());
-			}
-		}
-		if (equal) {
-			if (taxon == null) {
-				equal = vn.taxon == null;
-			} else {
-				equal = vn.taxon != null && Objects.equals(taxon.getKey(), vn.taxon.getKey());
-			}
-		}
-		return equal;
 	}
 
 }

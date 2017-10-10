@@ -5,6 +5,8 @@ import com.google.common.base.Throwables;
 import org.col.api.vocab.Rank;
 import org.col.commands.importer.neo.model.Labels;
 import org.col.commands.importer.neo.model.NeoProperties;
+import org.col.commands.importer.neo.model.RelType;
+import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.parboiled.common.StringUtils;
 
@@ -63,7 +65,7 @@ public class TxtPrinter implements TreePrinter {
       if (n.hasLabel(Labels.SYNONYM)) {
         writer.write(SYNONYM_SYMBOL);
       }
-      if (n.hasLabel(Labels.BASIONYM)) {
+      if (n.hasRelationship(RelType.BASIONYM_OF, Direction.OUTGOING)) {
         writer.write(BASIONYM_SYMBOL);
       }
       writer.write(getTitle.apply(n));

@@ -50,7 +50,6 @@ public class PrinterUtils {
    */
   public static void printTree(NeoDb neo, Writer writer, GraphFormat format, final boolean fullNames, @Nullable Rank lowestRank, @Nullable Node root) throws Exception {
     TreePrinter printer;
-    boolean includeProParte = false;
     switch (format) {
       case GML:
         printer = new GmlPrinter(writer, lowestRank, fullNames ? getScientificWithAuthorship : getScientific, true);
@@ -70,15 +69,13 @@ public class PrinterUtils {
 
       case XML:
         printer = new XmlPrinter(writer);
-        includeProParte = true;
         break;
 
       default:
         printer = new TxtPrinter(writer, fullNames ? getScientificWithAuthorship : getScientific);
-        includeProParte = true;
         break;
     }
-    TreeWalker.walkTree(neo.getNeo(), includeProParte, root, lowestRank, null, printer);
+    TreeWalker.walkTree(neo.getNeo(), root, lowestRank, null, printer);
     printer.close();
     writer.flush();
   }

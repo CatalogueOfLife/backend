@@ -43,6 +43,17 @@ public class Dataset {
   private LocalDateTime modified;
   private LocalDateTime deleted;
 
+  public Dataset() {
+    this.key = key;
+  }
+
+  /**
+   * A key only dataset often used to represent just a foreign key to a dataset in other classes.
+   */
+  public Dataset(Integer key) {
+    this.key = key;
+  }
+
   public Integer getKey() {
     return key;
   }

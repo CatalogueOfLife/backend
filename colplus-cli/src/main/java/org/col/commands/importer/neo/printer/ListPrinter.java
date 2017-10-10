@@ -12,7 +12,7 @@ import java.io.IOException;
 import java.io.Writer;
 
 /**
- * Dumps a neo db in a simple tab delimited format showing the following columns:
+ * Dumps a normalizer db in a simple tab delimited format showing the following columns:
  * name, rank, status, family
  * Expects no pro parte relations in the walker!
  */

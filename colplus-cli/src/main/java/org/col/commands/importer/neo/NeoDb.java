@@ -1,26 +1,26 @@
 package org.col.commands.importer.neo;
 
 import com.esotericsoftware.kryo.pool.KryoPool;
-import com.google.common.collect.Lists;
+import com.google.common.base.Throwables;
 import org.apache.commons.io.FileUtils;
-import org.col.api.vocab.Issue;
-import org.col.api.vocab.Rank;
-import org.col.commands.importer.neo.kryo.CliKryoFactory;
-import org.col.commands.importer.neo.mapdb.MapDbObjectSerializer;
-import org.col.commands.importer.neo.model.*;
-import org.col.commands.importer.neo.traverse.Traversals;
+import org.col.api.Reference;
+import org.col.commands.importer.neo.model.Labels;
+import org.col.commands.importer.neo.model.NeoProperties;
+import org.col.commands.importer.neo.model.NeoTaxon;
 import org.mapdb.DB;
 import org.mapdb.Serializer;
-import org.neo4j.graphdb.*;
+import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.factory.GraphDatabaseBuilder;
-import org.neo4j.helpers.collection.Iterables;
-import org.neo4j.helpers.collection.Iterators;
+import org.neo4j.kernel.api.exceptions.index.IndexEntryConflictException;
+import org.neo4j.unsafe.batchinsert.BatchInserter;
+import org.neo4j.unsafe.batchinsert.BatchInserters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
 import java.io.File;
-import java.util.*;
+import java.io.IOException;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * A persistence mechanism for storing core taxonomy & names properties and relations in an embedded
@@ -29,44 +29,50 @@ import java.util.*;
  * Neo4j does not perform well storing large properties in its node and it is recommended to keep
  * large BLOBs or strings externally: https://neo4j.com/blog/dark-side-neo4j-worst-practices/
  * <p>
- * We use the Krypto library for a very performant binary
+ * We use the Kryo library for a very performant binary
  * serialisation with the data keyed under the neo4j node id.
- *
- * @param <T> the persisted object class stored in mapdb
  */
-public class NeoDb<T extends NeoTaxon> {
+public class NeoDb implements NormalizerStore {
   private static final Logger LOG = LoggerFactory.getLogger(NeoDb.class);
-
-  private final Class<T> dataClass;
   private final GraphDatabaseBuilder neoFactory;
   private final DB mapDb;
-  private final Map<Long, T> data;
+  private final Map<Long, NeoTaxon> taxa;
+  private final Map<Integer, Reference> references;
+  private final AtomicInteger referenceSequence = new AtomicInteger(0);
   private final File neoDir;
-  private final File kvpStore;
   private final KryoPool pool;
+  private BatchInserter inserter;
+  private final int batchSize;
 
   private GraphDatabaseService neo;
-
 
   /**
    * @param mapDb
    * @param neoDir
    * @param neoFactory
    */
-  NeoDb(Class<T> dataClass, DB mapDb, File neoDir, @Nullable File kvpStore, GraphDatabaseBuilder neoFactory) {
-    this.dataClass = dataClass;
+  NeoDb(DB mapDb, File neoDir, GraphDatabaseBuilder neoFactory, int batchSize) throws Exception {
     this.neoFactory = neoFactory;
     this.neoDir = neoDir;
-    this.kvpStore = kvpStore;
     this.mapDb = mapDb;
+    this.batchSize = batchSize;
 
     try {
-      pool = new KryoPool.Builder(new CliKryoFactory())
+      pool = new KryoPool.Builder(new org.col.commands.importer.neo.kryo.NeoKryoFactory())
           .softReferences()
           .build();
-      data = mapDb.hashMap("data")
+
+      //TODO: reorganize file layout; allow to reopen/append kryo file!
+      // dataset1/
+      //   normalizer(dir)
+      //   mapdb
+      taxa = mapDb.hashMap("taxa")
           .keySerializer(Serializer.LONG)
-          .valueSerializer(new MapDbObjectSerializer(dataClass, pool, 256))
+          .valueSerializer(new MapDbObjectSerializer(NeoTaxon.class, pool, 256))
+          .createOrOpen();
+      references = mapDb.hashMap("references")
+          .keySerializer(Serializer.INTEGER)
+          .valueSerializer(new MapDbObjectSerializer(Reference.class, pool, 128))
           .createOrOpen();
       openNeo();
     } catch (Exception e) {
@@ -74,31 +80,28 @@ public class NeoDb<T extends NeoTaxon> {
       close();
       throw e;
     }
-  }
+  };
 
   /**
    * Fully closes the dao leaving any potentially existing persistence files untouched.
    */
+  @Override
   public void close() {
     try {
       if (mapDb != null && !mapDb.isClosed()) {
         mapDb.close();
       }
     } catch (Exception e) {
-      LOG.error("Failed to close mapDb store {}", kvpStore.getAbsolutePath(), e);
+      LOG.error("Failed to close mapDb for directory {}", neoDir.getAbsolutePath(), e);
     }
     closeNeo();
-    LOG.debug("Closed DAO for directory {}", neoDir.getAbsolutePath());
+    LOG.debug("Closed NormalizerStore for directory {}", neoDir.getAbsolutePath());
   }
 
   public void closeAndDelete() {
     close();
-    if (kvpStore != null && kvpStore.exists()) {
-      LOG.debug("Deleting kvp storage file {}", kvpStore.getAbsolutePath());
-      FileUtils.deleteQuietly(kvpStore);
-    }
     if (neoDir != null && neoDir.exists()) {
-      LOG.debug("Deleting neo4j directory {}", neoDir.getAbsolutePath());
+      LOG.debug("Deleting neo4j & mapDB directory {}", neoDir.getAbsolutePath());
       FileUtils.deleteQuietly(neoDir);
     }
   }
@@ -122,318 +125,83 @@ public class NeoDb<T extends NeoTaxon> {
     return neo;
   }
 
-  /**
-   * Sets a node property and removes it in case the property value is null.
-   */
-  private static void setProperty(Node n, String property, Object value) {
-    if (value == null) {
-      n.removeProperty(property);
+  @Override
+  public int getDatasetKey() {
+    return -1;
+  }
+
+  @Override
+  public void startBatchMode() {
+    try {
+      inserter = BatchInserters.inserter(neoDir);
+    } catch (IOException e) {
+      Throwables.propagate(e);
+    }
+  }
+
+  public boolean isBatchMode() {
+    return inserter != null;
+  }
+
+  @Override
+  public void endBatchMode() throws NotUniqueRuntimeException {
+    try {
+      try {
+        // define indices
+        LOG.info("Building lucene index taxonID ...");
+        //TODO: neo4j batchinserter does not seem to evaluate the unique constraint. Duplicates pass thru (see tests) !!!
+        inserter.createDeferredConstraint(Labels.TAXON).assertPropertyIsUnique(NeoProperties.TAXON_ID).create();
+        LOG.info("Building lucene index scientificName ...");
+        inserter.createDeferredSchemaIndex(Labels.TAXON).on(NeoProperties.SCIENTIFIC_NAME).create();
+        LOG.info("Building lucene index scientificNameID ...");
+        inserter.createDeferredSchemaIndex(Labels.TAXON).on(NeoProperties.NAME_ID).create();
+      } finally {
+        // this is when lucene indices are build and thus throws RuntimeExceptions when unique constraints are broken
+        // we catch these exceptions below
+        inserter.shutdown();
+      }
+    } catch (RuntimeException e) {
+      Throwable t = e.getCause();
+      // check if the cause was a broken unique constraint which can only be taxonID in our case
+      if (t != null && t instanceof IndexEntryConflictException) {
+        IndexEntryConflictException pe = (IndexEntryConflictException) t;
+        LOG.error("TaxonID not unique. Value {} used for both node {} and {}", pe.getSinglePropertyValue(), pe.getExistingNodeId(), pe.getAddedNodeId());
+        throw new NotUniqueRuntimeException("TaxonID", pe.getSinglePropertyValue());
+      } else {
+        throw e;
+      }
+    }
+    openNeo();
+    inserter = null;
+  }
+
+  @Override
+  public void put(NeoTaxon tax) {
+    // extract references into ref store before store them
+    for (Reference r : tax.listReferences()) {
+      //TODO: add reference to map if new, replace all props with just the key
+      put(r);
+    }
+    //TODO: update neo4j properties either via batch mode or classic
+    if (isBatchMode()) {
+      // batch insert normalizer properties used during normalization
+      //Map<String, Object> props = store.neoProperties(core.id(), u, v);
+      //long nodeId = inserter.createNode(props, Labels.TAXON, u.isSynonym() ? Labels.SYNONYM : Labels.TAXON);
+
     } else {
-      n.setProperty(property, value);
+      //TODO: create neo4j node if needed
+
     }
+    taxa.put(tax.node.getId(), tax);
+    //TODO: update neo4j props
   }
 
-  private static <T> T readEnum(Node n, String property, Class<T> vocab, T defaultValue) {
-    Object val = n.getProperty(property, null);
-    if (val != null) {
-      int idx = (Integer) val;
-      return (T) vocab.getEnumConstants()[idx];
+  @Override
+  public void put(Reference r) {
+    if (r.getKey() == null) {
+      r.setKey(referenceSequence.incrementAndGet());
     }
-    return defaultValue;
+    references.put(r.getKey(), r);
   }
-
-  private static void storeEnum(Node n, String property, Enum value) {
-    if (value == null) {
-      n.removeProperty(property);
-    } else {
-      n.setProperty(property, value.ordinal());
-    }
-  }
-
-  private Rank readRank(Node n) {
-    return readEnum(n, NeoProperties.RANK, Rank.class, Rank.UNRANKED);
-  }
-
-  private void updateNeo(Node n, T t) {
-    if (n != null) {
-      setProperty(n, NeoProperties.TAXON_ID, t.getTaxonID());
-      setProperty(n, NeoProperties.SCIENTIFIC_NAME, t.getScientificName());
-      setProperty(n, NeoProperties.AUTHORSHIP, t.getAuthorship());
-      storeEnum(n, NeoProperties.RANK, t.getRank());
-    }
-  }
-
-  public Transaction beginTx() {
-    return neo.beginTx();
-  }
-
-  /**
-   * Creates a new neo node labeld as a taxon.
-   *
-   * @return the new & empty neo node
-   */
-  public Node createTaxon() {
-    return neo.createNode(Labels.TAXON);
-  }
-
-  /**
-   * Creates a new neo4j node, updates it with information from the data instance and stores it in the kvp store.
-   */
-  public Node create(T obj) {
-    Node n = createTaxon();
-    obj.setNode(n);
-    // store usage in kvp store
-    this.data.put(n.getId(), obj);
-    // update neo with indexed properties
-    updateNeo(n, obj);
-    return n;
-  }
-
-  private Node getRelatedTaxon(Node n, RelType type, Direction dir) {
-    Relationship rel = n.getSingleRelationship(type, dir);
-    if (rel != null) {
-      return rel.getOtherNode(n);
-    }
-    return null;
-  }
-
-  /**
-   * Reads a node into a name usage instance with keys being the node ids long values based on the neo relations.
-   * The bulk of the usage data comes from the KVP store and neo properties are overlayed.
-   */
-  public T read(Node n, boolean readRelations) {
-    if (data.containsKey(n.getId())) {
-      T obj = data.get(n.getId());
-      obj.setNode(n);
-      if (readRelations) {
-        readRelations(n, obj);
-      }
-      return obj;
-    }
-    return null;
-  }
-
-  /**
-   * Retrieves data just from the kvp store without overlaying neo4j information.
-   */
-  public T readData(long key) {
-    return data.get(key);
-  }
-
-  /**
-   * Updates a given data instance with the neo4j relational information, i.e. the classification
-   * or synonymy.
-   *
-   * @param n
-   * @param obj
-   */
-  private void readRelations(Node n, T obj) {
-    try {
-      Node bas = getRelatedTaxon(n, RelType.BASIONYM_OF, Direction.INCOMING);
-      if (bas != null) {
-        obj.setBasionymKey((int) bas.getId());
-        obj.setBasionym(NeoProperties.getScientificName(bas));
-      }
-    } catch (RuntimeException e) {
-      LOG.error("Unable to read basionym relation for {} with node {}", obj.getScientificName(), n.getId());
-      obj.addIssue(Issue.RELATIONSHIP_MISSING);
-      obj.addRemark("Multiple original name relations");
-    }
-
-    Node acc = null;
-    try {
-      // pro parte synonym relations must have been flattened already...
-      acc = getRelatedTaxon(n, RelType.SYNONYM_OF, Direction.OUTGOING);
-      if (acc != null) {
-        obj.setAcceptedKey((int) acc.getId());
-        obj.setAccepted(NeoProperties.getScientificName(acc));
-        // update synonym flag based on relations
-        if (obj.getStatus() == null) {
-          //TODO: obj.setStatus(TaxonomicStatus.SYNONYM);
-        }
-      }
-    } catch (RuntimeException e) {
-      LOG.error("Unable to read accepted name relation for {} with node {}", obj.getScientificName(), n.getId(), e);
-      obj.addIssue(Issue.RELATIONSHIP_MISSING);
-      obj.addRemark("Multiple accepted name relations");
-    }
-
-    try {
-      // prefer the parent relationship of the accepted node if it exists
-      Node p = getRelatedTaxon(acc == null ? n : acc, RelType.PARENT_OF, Direction.INCOMING);
-      if (p != null) {
-        obj.setParentKey((int) p.getId());
-        //u.setParent(NeoProperties.getCanonicalName(p));
-      }
-    } catch (RuntimeException e) {
-      LOG.error("Unable to read parent relation for {} with node {}", obj.getScientificName(), n.getId());
-      obj.addIssue(Issue.RELATIONSHIP_MISSING);
-      obj.addRemark("Multiple parent relations");
-    }
-  }
-
-  /**
-   * Reads a simple RankedName instance based purely on neo4j properties.
-   */
-  public RankedName readRankedName(Node n) {
-    RankedName rn = null;
-    if (n != null) {
-      rn = new RankedName();
-      rn.node = n;
-      rn.name = NeoProperties.getScientificName(n);
-      rn.rank = readRank(n);
-    }
-    return rn;
-  }
-
-  /**
-   * Stores a data instance in both the kvp store and updates the neo node properties.
-   */
-  public void update(T nn) {
-    update(nn, true);
-  }
-
-  /**
-   * Stores a data instance in the kvp store and optionally also updates the neo node properties if requested.
-   */
-  public void update(T nn, boolean updateNeo) {
-    data.put(nn.getNode().getId(), nn);
-    if (updateNeo) {
-      // update neo with indexed properties
-      updateNeo(nn.getNode(), nn);
-    }
-  }
-
-  /**
-   * Deletes kvp entry and neo node together with all its relations.
-   */
-  public void delete(Node node) {
-    LOG.debug("Deleting node {} {}", node.getId(), NeoProperties.getScientificName(node));
-    data.remove(node.getId());
-    // remove all relations
-    for (Relationship rel : node.getRelationships()) {
-      rel.delete();
-    }
-    node.delete();
-  }
-
-
-  /**
-   * Finds nodes by their canonical name property.
-   * Be careful when using this method on large graphs without a schema indexing the canonical name property!
-   */
-  public Collection<Node> nodesByName(String scientificName) {
-    return Iterators.asCollection(neo.findNodes(Labels.TAXON, NeoProperties.SCIENTIFIC_NAME, scientificName));
-  }
-
-  public Collection<Node> nodesByNameAndRank(String scientificName, org.col.api.vocab.Rank rank) {
-    List<Node> matching = filterByRank(getNeo().findNodes(Labels.TAXON, NeoProperties.SCIENTIFIC_NAME, scientificName), rank);
-    if (matching.size() > 10) {
-      LOG.warn("There are {} matches for the {} {}. This might indicate we are not dealing with a proper checklist", matching.size(), rank, scientificName);
-    }
-    return matching;
-  }
-
-  /**
-   * @return the single matching node with the taxonID or null
-   */
-  public Node nodeByTaxonId(String taxonID) {
-    return Iterators.singleOrNull(getNeo().findNodes(Labels.TAXON, NeoProperties.TAXON_ID, taxonID));
-  }
-
-  /**
-   * @return the single matching node with the canonical name or null
-   */
-  public Node nodeByName(String scientificName) throws NotUniqueException {
-    try {
-      return Iterators.singleOrNull(
-          getNeo().findNodes(Labels.TAXON, NeoProperties.SCIENTIFIC_NAME, scientificName)
-      );
-    } catch (NoSuchElementException e) {
-      throw new NotUniqueException(scientificName, "Scientific name not unique: " + scientificName);
-    }
-  }
-
-  /**
-   * @param scientificName
-   * @return the matching node, null or NotUniqueException
-   */
-  public Node nodeByNameAndAuthor(String scientificName, String authorship) throws NotUniqueException {
-    Node match = null;
-    for (Node n : nodesByName(scientificName)) {
-      String pAuthor = NeoProperties.getAuthorship(n);
-      if (pAuthor != null && pAuthor.equalsIgnoreCase(authorship)) {
-        if (match != null) {
-          throw new NotUniqueException(scientificName + " " + authorship, "ScientificName with authorship not unique: " + scientificName + " " + authorship);
-        }
-        match = n;
-      }
-    }
-    return match;
-  }
-
-  /**
-   * @return the last parent or the node itself if no parent exists
-   */
-  protected RankedName getDirectParent(Node n) {
-    Node p = Iterables.lastOrNull(Traversals.PARENTS.traverse(n).nodes());
-    return readRankedName(p != null ? p : n);
-  }
-
-  protected Node getLinneanRankParent(Node n) {
-    return Iterables.firstOrNull(Traversals.LINNEAN_PARENTS.traverse(n).nodes());
-  }
-
-  private List<Node> filterByRank(ResourceIterator<Node> nodes, org.col.api.vocab.Rank rank) {
-    List<Node> matchingRanks = Lists.newArrayList();
-    while (nodes.hasNext()) {
-      Node n = nodes.next();
-      if (rank == null || n.getProperty(NeoProperties.RANK, rank.ordinal()).equals(rank.ordinal())) {
-        matchingRanks.add(n);
-      }
-    }
-    return matchingRanks;
-  }
-
-  /**
-   * @return the single matching node with the scientific name or null
-   */
-  protected Node nodeBySciname(String sciname) throws NotUniqueException {
-    try {
-      return Iterators.singleOrNull(
-          getNeo().findNodes(Labels.TAXON, NeoProperties.SCIENTIFIC_NAME, sciname)
-      );
-    } catch (NoSuchElementException e) {
-      throw new NotUniqueException(sciname, "Scientific name not unique: " + sciname);
-    }
-  }
-
-  protected boolean matchesClassification(Node n, List<RankedName> classification) {
-    Iterator<RankedName> clIter = classification.listIterator();
-    Iterator<Node> nodeIter = Traversals.PARENTS.traverse(n).nodes().iterator();
-
-    while (clIter.hasNext()) {
-      if (!nodeIter.hasNext()) {
-        return false;
-      }
-      RankedName rn1 = clIter.next();
-      RankedName rn2 = readRankedName(nodeIter.next());
-      if (rn1.rank != rn2.rank || !rn1.name.equals(rn2.name)) {
-        return false;
-      }
-    }
-    return !nodeIter.hasNext();
-  }
-
-  /**
-   * Logs all neo4j nodes with their properties, mainly for debugging.
-   * This avoids (potentially erroneous) tree traversals missing some nodes.
-   */
-  public void logAll() throws Exception {
-    for (Node n : neo.getAllNodes()) {
-      LOG.info("{} {} [{} {}]", n.getId(), NeoProperties.getScientificName(n), n.hasLabel(Labels.SYNONYM) ? "syn." : "acc.", NeoProperties.getRank(n, null));
-    }
-  }
-
 }
 

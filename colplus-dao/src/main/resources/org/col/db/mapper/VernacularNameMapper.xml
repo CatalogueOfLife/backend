@@ -50,21 +50,14 @@
   </resultMap>
 
 
-  <select id="count" parameterType="map" resultType="Integer">
-    SELECT count(*)
-    FROM vernacular_name
-    WHERE
-    dataset_key = #{datasetKey}
-  </select>
-
-  <select id="list" parameterType="map" resultMap="vernacularNameResultMap">
+  <select id="getVernacularNamesForTaxon" parameterType="map" resultMap="vernacularNameResultMap">
     SELECT
     <include refid="SELECT" />
     FROM
     <include refid="FROM" />
-    WHERE t.dataset_key = #{datasetKey}
-    ORDER BY key
-    <include refid="org.col.db.mapper.Common.limit" />
+    WHERE vn.taxon_key = #{taxonKey}
+    AND vn.dataset_key = #{datasetKey}
+    ORDER BY name
   </select>
 
   <select id="getByInternalKey" resultMap="vernacularNameResultMap">
@@ -72,15 +65,7 @@
     <include refid="SELECT" />
     FROM
     <include refid="FROM" />
-    WHERE t.key = #{key}
-  </select>
-
-  <select id="get" resultMap="vernacularNameResultMap">
-    SELECT
-    <include refid="SELECT" />
-    FROM
-    <include refid="FROM" />
-    WHERE t.id = #{key}
+    WHERE vn.key = #{key}
   </select>
 
   <insert id="create" parameterType="VernacularName" useGeneratedKeys="true" keyProperty="key">

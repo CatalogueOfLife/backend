@@ -12,7 +12,7 @@ import org.neo4j.graphdb.traversal.Uniqueness;
 import org.neo4j.kernel.impl.traversal.MonoDirectionalTraversalDescription;
 
 /**
- * Various reusable traversal descriptions for taxonomic neo dbs.
+ * Various reusable traversal descriptions for taxonomic normalizer dbs.
  */
 public class Traversals {
   public static final TraversalDescription PARENT = new MonoDirectionalTraversalDescription()
@@ -41,7 +41,6 @@ public class Traversals {
 
   public static final TraversalDescription SYNONYMS = new MonoDirectionalTraversalDescription()
       .relationships(RelType.SYNONYM_OF, Direction.INCOMING)
-      .relationships(RelType.PROPARTE_SYNONYM_OF, Direction.INCOMING)
       .breadthFirst()
       .evaluator(Evaluators.toDepth(1))
       .evaluator(Evaluators.excludeStartPosition())
@@ -49,7 +48,6 @@ public class Traversals {
 
   public static final TraversalDescription ACCEPTED = new MonoDirectionalTraversalDescription()
       .relationships(RelType.SYNONYM_OF, Direction.OUTGOING)
-      .relationships(RelType.PROPARTE_SYNONYM_OF, Direction.OUTGOING)
       .breadthFirst()
       .evaluator(Evaluators.toDepth(1))
       .evaluator(Evaluators.excludeStartPosition())
@@ -76,21 +74,12 @@ public class Traversals {
 
   /**
    * Traversal that iterates depth first over all descendants including synonyms and the starting node.
-   * The node of pro parte synonyms will be visited only once as pro_parte relationships are ignored.
-   * There is no particular order for the direct children.
-   * See SORTED_TREE traversals if a taxonomic order is required!
-   */
-  public static final TraversalDescription TREE_WITHOUT_PRO_PARTE = ACCEPTED_TREE
-      .relationships(RelType.SYNONYM_OF, Direction.INCOMING);
-
-  /**
-   * Traversal that iterates depth first over all descendants including synonyms and the starting node.
    * The node of pro parte synonyms will be visited multiple times.
    * There is no particular order for the direct children.
    * See SORTED_TREE traversals if a taxonomic order is required!
    */
-  public static final TraversalDescription TREE = TREE_WITHOUT_PRO_PARTE
-      .relationships(RelType.PROPARTE_SYNONYM_OF, Direction.INCOMING);
+  public static final TraversalDescription TREE = ACCEPTED_TREE
+      .relationships(RelType.SYNONYM_OF, Direction.INCOMING);
 
   /**
    * Traversal that iterates depth first over all descendants including synonyms.
@@ -110,19 +99,6 @@ public class Traversals {
    * The order is a bit expensive to calculate and requires more memory. So use DESCENDANTS whenever possible.
    */
   public static final TraversalDescription SORTED_TREE = new MonoDirectionalTraversalDescription()
-      .depthFirst()
-      .expand(TaxonomicOrderExpander.TREE_WITH_PPSYNONYMS_EXPANDER)
-      .uniqueness(Uniqueness.NODE_PATH);
-
-  /**
-   * Traversal that iterates over all child taxa and their synonyms in a taxonomic order, but excludes pro parte relations, the node of pro parte synonyms will
-   * therefore be visited only once via the synonym_of relationship.
-   * The traversal includes the initial starting node.
-   * <p>
-   * This traversal differes from DESCENDANTS that it includes the starting node and yields the nodes in a taxonomic order.
-   * The order is a bit expensive to calculate and requires more memory. So use DESCENDANTS whenever possible.
-   */
-  public static final TraversalDescription SORTED_TREE_WITHOUT_PRO_PARTE = new MonoDirectionalTraversalDescription()
       .depthFirst()
       .expand(TaxonomicOrderExpander.TREE_WITH_SYNONYMS_EXPANDER)
       .uniqueness(Uniqueness.NODE_PATH);

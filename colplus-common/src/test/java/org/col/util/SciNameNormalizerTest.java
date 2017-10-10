@@ -37,6 +37,9 @@ public class SciNameNormalizerTest {
     // https://github.com/gbif/checklistbank/issues/7
     assertEquals("Eragrostis browni", SciNameNormalizer.normalize("Eragrostis brownii"));
     assertEquals("Eragrostis browni", SciNameNormalizer.normalize("Eragrostis brownei"));
+    assertEquals("Theridion uhligi", SciNameNormalizer.normalize("Theridion uhlighi"));
+    assertEquals("Theridion uhligi", SciNameNormalizer.normalize("Theridion uhliigi"));
+
   }
 
   @Test
