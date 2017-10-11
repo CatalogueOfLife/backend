@@ -27,11 +27,12 @@ public class VernacularNameResource {
 	@GET
 	@Timed
 	@Path("getVernacularNamesForTaxon/{taxonKey}")
-	public List<VernacularName> getVernacularNamesForTaxon(
-	    @PathParam("datasetKey") Integer datasetKey, @PathParam("taxonKey") Integer taxonKey,
+	public List<VernacularName> getVernacularNames(
+	    @PathParam("datasetKey") int datasetKey,
+	    @PathParam("taxonId") String taxonId,
 	    @Context SqlSession session) {
 		VernacularNameMapper mapper = session.getMapper(VernacularNameMapper.class);
-		return mapper.getVernacularNamesForTaxon(datasetKey, taxonKey);
+		return mapper.getVernacularNames(datasetKey, taxonId);
 	}
 
 }

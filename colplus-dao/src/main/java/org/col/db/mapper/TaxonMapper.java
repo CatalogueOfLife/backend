@@ -17,7 +17,7 @@ public interface TaxonMapper {
 
   Taxon getByKey(@Param("key") int ikey);
 
-  Taxon get(@Param("datasetKey") int datasetKey, @Param("key") String key);
+  Taxon get(@Param("datasetKey") int datasetKey, @Param("id") String id);
 
   void create(Taxon taxon);
 

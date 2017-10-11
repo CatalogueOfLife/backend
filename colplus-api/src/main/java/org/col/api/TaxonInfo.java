@@ -1,22 +1,47 @@
 package org.col.api;
 
-import com.google.common.collect.Lists;
-
 import java.util.List;
 
-/**
- *
- */
 public class TaxonInfo {
 
-  /**
-   * Key to dataset instance. Defines context of the name key.
-   */
-  private Dataset dataset;
+	private Taxon taxon;
 
-  private List<VernacularName> vernacularNames = Lists.newArrayList();
+	private List<VernacularName> vernacularNames;
 
-  private List<Distribution> distributions = Lists.newArrayList();
+	private List<Distribution> distributions;
 
-  private List<Reference> references = Lists.newArrayList();
+	private List<Reference> references;
+
+	public Taxon getTaxon() {
+		return taxon;
+	}
+
+	public void setTaxon(Taxon taxon) {
+		this.taxon = taxon;
+	}
+
+	public List<VernacularName> getVernacularNames() {
+		return vernacularNames;
+	}
+
+	public void setVernacularNames(List<VernacularName> vernacularNames) {
+		this.vernacularNames = vernacularNames;
+	}
+
+	public List<Distribution> getDistributions() {
+		return distributions;
+	}
+
+	public void setDistributions(List<Distribution> distributions) {
+		this.distributions = distributions;
+	}
+
+	public List<Reference> getReferences() {
+		return references;
+	}
+
+	public void setReferences(List<Reference> references) {
+		this.references = references;
+	}
+
 }

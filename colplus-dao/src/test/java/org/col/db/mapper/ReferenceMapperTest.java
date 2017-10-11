@@ -3,6 +3,7 @@ package org.col.db.mapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.col.api.Reference;
+import org.col.dao.DaoTestUtil;
 import org.gbif.utils.text.StringUtils;
 import org.junit.Test;
 
@@ -19,7 +20,7 @@ public class ReferenceMapperTest extends MapperTestBase<ReferenceMapper> {
 
   private Reference create() throws Exception {
     Reference d = new Reference();
-    d.setDataset(D1);
+    d.setDataset(DaoTestUtil.DATASET1);
     d.setId(StringUtils.randomString(8));
     d.setYear(1988);
     d.setCsl(createCsl());

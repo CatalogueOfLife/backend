@@ -10,7 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class MybatisBundle implements ConfiguredBundle<ColAppConfig> {
-	
+
 	private static final Logger LOG = LoggerFactory.getLogger(MybatisBundle.class);
 	private static final String NAME = "mybatis";
 

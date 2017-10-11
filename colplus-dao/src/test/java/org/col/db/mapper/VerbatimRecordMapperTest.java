@@ -4,6 +4,7 @@ import org.col.api.TermRecord;
 import org.col.api.VerbatimRecord;
 import org.col.api.VerbatimRecordTerms;
 import org.col.api.vocab.Issue;
+import org.col.dao.DaoTestUtil;
 import org.gbif.dwc.terms.*;
 import org.gbif.utils.text.StringUtils;
 import org.junit.Test;
@@ -25,7 +26,7 @@ public class VerbatimRecordMapperTest extends MapperTestBase<VerbatimRecordMappe
 
   private VerbatimRecord create() throws Exception {
     VerbatimRecord v = new VerbatimRecord();
-    v.setDataset(D1);
+    v.setDataset(DaoTestUtil.DATASET1);
     v.setId(StringUtils.randomString(8));
     v.addIssue(Issue.ACCEPTED_NAME_MISSING);
     v.addIssue(Issue.HOMONYM, "Abies alba");

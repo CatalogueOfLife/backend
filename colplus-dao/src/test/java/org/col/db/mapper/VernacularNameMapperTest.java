@@ -1,13 +1,15 @@
 package org.col.db.mapper;
 
+import static org.col.dao.DaoTestUtil.DATASET1;
+import static org.col.dao.DaoTestUtil.TAXON1;
+import static org.col.dao.DaoTestUtil.newVernacularName;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 
 import org.col.api.VernacularName;
-import org.col.api.vocab.Country;
-import org.col.api.vocab.Language;
 import org.junit.Test;
 
 /**
@@ -21,41 +23,27 @@ public class VernacularNameMapperTest extends MapperTestBase<VernacularNameMappe
 
 	@Test
 	public void roundtrip() throws Exception {
-		VernacularName in = create("cat");
+		VernacularName in = newVernacularName("cat");
 		mapper().create(in);
 		assertNotNull(in.getKey());
 		commit();
-		VernacularName out = mapper().getByInternalKey(in.getKey());
+		VernacularName out = mapper().getByKey(in.getKey());
 		assertTrue(in.equalsShallow(out));
 	}
 
-	public void testGetVernacularNamesForTaxon() throws Exception {
-		VernacularName b = create("b");
+	@Test
+	public void testGetVernacularNames() throws Exception {
+		VernacularName b = newVernacularName("b");
 		mapper().create(b);
-		VernacularName c = create("c");
+		VernacularName c = newVernacularName("c");
 		mapper().create(c);
-		VernacularName a = create("a");
+		VernacularName a = newVernacularName("a");
 		mapper().create(a);
-		List<VernacularName> list = mapper().getVernacularNamesForTaxon(D1.getKey(), TAXON1.getKey());
+		List<VernacularName> list = mapper().getVernacularNames(DATASET1.getKey(), TAXON1.getId());
 		assertEquals(3, list.size());
 		assertTrue(a.equalsShallow(list.get(0)));
 		assertTrue(b.equalsShallow(list.get(1)));
 		assertTrue(c.equalsShallow(list.get(2)));
-	}
-
-	private static VernacularName create(String name) throws Exception {
-		VernacularName vn = create();
-		vn.setName(name);
-		return vn;
-	}
-
-	private static VernacularName create() throws Exception {
-		VernacularName t = new VernacularName();
-		t.setDataset(D1);
-		t.setTaxon(TAXON1);
-		t.setLanguage(Language.ENGLISH);
-		t.setCountry(Country.UNITED_KINGDOM);
-		return t;
 	}
 
 }

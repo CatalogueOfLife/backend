@@ -122,7 +122,7 @@
 		<include refid="SELECT" />
 		FROM
 		<include refid="FROM" />
-		WHERE t.id = #{key}
+        WHERE t.dataset_key = #{datasetKey} AND t.id = #{id}
 	</select>
 
 	<insert id="create" parameterType="Taxon" useGeneratedKeys="true" keyProperty="key">

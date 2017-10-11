@@ -9,6 +9,7 @@ import org.col.api.vocab.NamePart;
 import org.col.api.vocab.NameType;
 import org.col.api.vocab.Origin;
 import org.col.api.vocab.Rank;
+import org.col.dao.DaoTestUtil;
 import org.gbif.utils.text.StringUtils;
 import org.junit.Test;
 
@@ -46,7 +47,7 @@ public class NameMapperTest extends MapperTestBase<NameMapper> {
 
   private Name create() throws Exception {
     Name n = new Name();
-    n.setDataset(D1);
+    n.setDataset(DaoTestUtil.DATASET1);
     n.setScientificName(StringUtils.randomSpecies());
     n.setAuthorship(StringUtils.randomAuthor());
     List<String> tokens = SPACE_SPLITTER.splitToList(n.getScientificName());
@@ -73,7 +74,7 @@ public class NameMapperTest extends MapperTestBase<NameMapper> {
     assertNotNull(n1.getKey());
     commit();
 
-    Name n1b = mapper().get(D1.getKey(), n1.getId());
+    Name n1b = mapper().get(DaoTestUtil.DATASET1.getKey(), n1.getId());
     assertEquals(n1, n1b);
 
     Name n1c = mapper().getByKey(n1.getKey());
@@ -92,7 +93,7 @@ public class NameMapperTest extends MapperTestBase<NameMapper> {
     n1.setId(n2.getOriginalName().getId());
     n2.setOriginalName(n1);
 
-    Name n2b = mapper().get(D1.getKey(), n2.getId());
+    Name n2b = mapper().get(DaoTestUtil.DATASET1.getKey(), n2.getId());
     assertEquals(n2, n2b);
 
     Name n2c = mapper().getByKey(n2.getKey());
@@ -103,11 +104,11 @@ public class NameMapperTest extends MapperTestBase<NameMapper> {
   @Test
   public void list() throws Exception {
     List<Name> names = Lists.newArrayList();
-    names.add(create(D2));
-    names.add(create(D2));
-    names.add(create(D2));
-    names.add(create(D2));
-    names.add(create(D2));
+    names.add(create(DaoTestUtil.DATASET2));
+    names.add(create(DaoTestUtil.DATASET2));
+    names.add(create(DaoTestUtil.DATASET2));
+    names.add(create(DaoTestUtil.DATASET2));
+    names.add(create(DaoTestUtil.DATASET2));
 
     for (Name n : names) {
       mapper().create(n);
@@ -117,13 +118,13 @@ public class NameMapperTest extends MapperTestBase<NameMapper> {
     // get first page
     Page p = new Page(0,3);
 
-    List<Name> res = mapper().list(D2.getKey(), p);
+    List<Name> res = mapper().list(DaoTestUtil.DATASET2.getKey(), p);
     assertEquals(3, res.size());
     assertEquals(Lists.partition(names, 3).get(0), res);
 
     // next page
     p.next();
-    res = mapper().list(D2.getKey(), p);
+    res = mapper().list(DaoTestUtil.DATASET2.getKey(), p);
     assertEquals(2, res.size());
     List<Name> l2 = Lists.partition(names, 3).get(1);
     assertEquals(l2, res);
@@ -131,12 +132,12 @@ public class NameMapperTest extends MapperTestBase<NameMapper> {
 
   @Test
   public void count() throws Exception {
-    assertEquals(2, mapper().count(D1.getKey()));
+    assertEquals(2, mapper().count(DaoTestUtil.DATASET1.getKey()));
 
     mapper().create(create());
     mapper().create(create());
     commit();
-    assertEquals(4, mapper().count(D1.getKey()));
+    assertEquals(4, mapper().count(DaoTestUtil.DATASET1.getKey()));
   }
 
   @Test

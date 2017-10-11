@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import org.col.api.Dataset;
 import org.col.api.Page;
 import org.col.api.vocab.DataFormat;
+import org.col.dao.DaoTestUtil;
 import org.gbif.utils.text.StringUtils;
 import org.junit.Test;
 
@@ -30,8 +31,8 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
     d.setDescription(StringUtils.randomString(500));
     d.setAlias(StringUtils.randomString(10));
     d.setAuthorsAndEditors(StringUtils.randomString(100));
-    d.setCompleteness(RND.nextInt(100));
-    d.setConfidence(RND.nextInt(5));
+    d.setCompleteness(DaoTestUtil.RND.nextInt(100));
+    d.setConfidence(DaoTestUtil.RND.nextInt(5));
     d.setContactPerson("Hans Peter");
     d.setCoverage(StringUtils.randomString(75));
     d.setTaxonomicCoverage("tax cover");
