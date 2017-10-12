@@ -1,11 +1,9 @@
 package org.col.api;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.collect.Lists;
 import org.col.api.vocab.*;
 
 import java.net.URI;
-import java.util.List;
 import java.util.Objects;
 
 /**
@@ -38,9 +36,9 @@ public class Name {
   private String scientificName;
 
   /**
-   * full unparsed authorship of the name incl basionym and years
+   * Parsed authorship of the name incl basionym and years
    */
-  private String authorship;
+  private Authorship authorship = new Authorship();
 
   /**
    * rank of the name from enumeration above
@@ -72,27 +70,6 @@ public class Name {
    * The part of the name which is considered a hybrid;  see [GBIF](https://github.com/gbif/gbif-api/blob/master/src/main/java/org/gbif/api/vocabulary/NamePart.java#L24)
    */
   private NamePart notho;
-
-  /**
-   * list of basionym authors.
-   */
-  private List<String> originalAuthors = Lists.newArrayList();
-
-  /**
-   * Year of original name publication
-   */
-  private String originalYear;
-
-  /**
-   * list of authors excluding ex- authors
-   */
-  private List<String> combinationAuthors = Lists.newArrayList();
-
-  /**
-   * The year this combination was first published, usually the same as the publishedIn reference.
-   * It is used for sorting names and ought to be populated even for botanical names which do not use it in the complete authorship string.
-   */
-  private String combinationYear;
 
   /**
    * Link to the original combination.
@@ -157,12 +134,20 @@ public class Name {
     this.scientificName = scientificName;
   }
 
-  public String getAuthorship() {
+  public Authorship getAuthorship() {
     return authorship;
   }
 
-  public void setAuthorship(String authorship) {
+  public void setAuthorship(Authorship authorship) {
     this.authorship = authorship;
+  }
+
+  public String getEtymology() {
+    return etymology;
+  }
+
+  public void setEtymology(String etymology) {
+    this.etymology = etymology;
   }
 
   public Rank getRank() {
@@ -229,38 +214,6 @@ public class Name {
     this.notho = notho;
   }
 
-  public List<String> getOriginalAuthors() {
-    return originalAuthors;
-  }
-
-  public void setOriginalAuthors(List<String> originalAuthors) {
-    this.originalAuthors = originalAuthors;
-  }
-
-  public String getOriginalYear() {
-    return originalYear;
-  }
-
-  public void setOriginalYear(String originalYear) {
-    this.originalYear = originalYear;
-  }
-
-  public List<String> getCombinationAuthors() {
-    return combinationAuthors;
-  }
-
-  public void setCombinationAuthors(List<String> combinationAuthors) {
-    this.combinationAuthors = combinationAuthors;
-  }
-
-  public String getCombinationYear() {
-    return combinationYear;
-  }
-
-  public void setCombinationYear(String combinationYear) {
-    this.combinationYear = combinationYear;
-  }
-
   public Name getOriginalName() {
     return originalName;
   }
@@ -309,22 +262,8 @@ public class Name {
     this.remarks = remarks;
   }
 
-  /**
-   * Copies the authorship properties from a given source instance.
-   * @param authors
-   */
-  public void copyAuthorship(Name authors) {
-    setAuthorship(authors.getAuthorship());
-    setCombinationAuthors(authors.getCombinationAuthors());
-    setCombinationYear(authors.getCombinationYear());
-    setOriginalAuthors(authors.getOriginalAuthors());
-    setOriginalYear(authors.getOriginalYear());
-  }
-
   public boolean hasAuthorship() {
-    return authorship != null ||
-        combinationYear != null || !combinationAuthors.isEmpty() ||
-        originalYear != null || !originalAuthors.isEmpty();
+    return authorship != null && !authorship.isEmpty();
   }
 
   @Override
@@ -345,10 +284,6 @@ public class Name {
         Objects.equals(specificEpithet, name.specificEpithet) &&
         Objects.equals(infraspecificEpithet, name.infraspecificEpithet) &&
         notho == name.notho &&
-        Objects.equals(originalAuthors, name.originalAuthors) &&
-        Objects.equals(originalYear, name.originalYear) &&
-        Objects.equals(combinationAuthors, name.combinationAuthors) &&
-        Objects.equals(combinationYear, name.combinationYear) &&
         Objects.equals(originalName, name.originalName) &&
         Objects.equals(fossil, name.fossil) &&
         status == name.status &&
@@ -359,7 +294,7 @@ public class Name {
 
   @Override
   public int hashCode() {
-    return Objects.hash(key, id, dataset, scientificName, authorship, rank, origin, nomenclaturalCode, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, notho, originalAuthors, originalYear, combinationAuthors, combinationYear, originalName, fossil, status, type, sourceUrl, remarks);
+    return Objects.hash(key, id, dataset, scientificName, authorship, rank, origin, nomenclaturalCode, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, notho, originalName, fossil, status, type, sourceUrl, remarks);
   }
 
   @Override
@@ -378,10 +313,6 @@ public class Name {
         ", specificEpithet='" + specificEpithet + '\'' +
         ", infraspecificEpithet='" + infraspecificEpithet + '\'' +
         ", notho=" + notho +
-        ", originalAuthors=" + originalAuthors +
-        ", originalYear='" + originalYear + '\'' +
-        ", combinationAuthors=" + combinationAuthors +
-        ", combinationYear='" + combinationYear + '\'' +
         ", originalName=" + originalName +
         ", fossil=" + fossil +
         ", status=" + status +

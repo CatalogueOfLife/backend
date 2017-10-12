@@ -136,14 +136,13 @@ public class NameParserGNA implements NameParser {
     return n;
   }
 
-  private void setAuthorship(Name pn, Option<Epithet> epi) {
+  private void setAuthorship(Name n, Option<Epithet> epi) {
     if (epi.isDefined() && epi.get().hasAuthorship()) {
       Authorship auth = epi.get().getAuthorship();
-      pn.setAuthorship(auth.getAuthorship());
-      pn.setCombinationAuthors(Lists.newArrayList(auth.getCombinationAuthors()));
-      pn.setCombinationYear(auth.getCombinationYear());
-      pn.setOriginalAuthors(Lists.newArrayList(auth.getBasionymAuthors()));
-      pn.setOriginalYear(auth.getBasionymYear());
+      n.getAuthorship().setCombinationAuthors(Lists.newArrayList(auth.getCombinationAuthors()));
+      n.getAuthorship().setCombinationYear(auth.getCombinationYear());
+      n.getAuthorship().setOriginalAuthors(Lists.newArrayList(auth.getBasionymAuthors()));
+      n.getAuthorship().setOriginalYear(auth.getBasionymYear());
     }
   }
 

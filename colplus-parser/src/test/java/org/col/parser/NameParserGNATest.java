@@ -9,6 +9,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  *
@@ -129,32 +130,33 @@ public class NameParserGNATest {
     }
   
     NameAssertion combAuthors(String year, String ... authors) {
-      assertEquals(year, n.getCombinationYear());
-      assertEquals(Lists.newArrayList(authors), n.getCombinationAuthors());
+      assertEquals(year, n.getAuthorship().getCombinationYear());
+      assertEquals(Lists.newArrayList(authors), n.getAuthorship().getCombinationAuthors());
       return this;
     }
 
     NameAssertion basAuthors(String year, String ... authors) {
-      assertEquals(year, n.getOriginalYear());
-      assertEquals(Lists.newArrayList(authors), n.getOriginalAuthors());
+      assertEquals(year, n.getAuthorship().getOriginalYear());
+      assertEquals(Lists.newArrayList(authors), n.getAuthorship().getOriginalAuthors());
       return this;
     }
 
     NameAssertion noAuthors() {
       noCombAuthors();
       noBasAuthors();
+      assertTrue((n.getAuthorship().isEmpty()));
       return this;
     }
 
     NameAssertion noCombAuthors() {
-      assertNull(n.getCombinationYear());
-      assertEquals(Lists.newArrayList(), n.getCombinationAuthors());
+      assertNull(n.getAuthorship().getCombinationYear());
+      assertEquals(Lists.newArrayList(), n.getAuthorship().getCombinationAuthors());
       return this;
     }
 
     NameAssertion noBasAuthors() {
-      assertNull(n.getOriginalYear());
-      assertEquals(Lists.newArrayList(), n.getOriginalAuthors());
+      assertNull(n.getAuthorship().getOriginalYear());
+      assertEquals(Lists.newArrayList(), n.getAuthorship().getOriginalAuthors());
       return this;
     }
   }

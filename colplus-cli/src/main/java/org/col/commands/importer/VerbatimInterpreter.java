@@ -1,5 +1,6 @@
 package org.col.commands.importer;
 
+import org.col.api.Authorship;
 import org.col.api.Name;
 import org.col.api.Taxon;
 import org.col.api.VerbatimRecord;
@@ -67,11 +68,11 @@ public class VerbatimInterpreter {
 
     // try to add an authorship if not yet there
     if (v.hasCoreTerm(DwcTerm.scientificNameAuthorship)) {
-      Name authorship = parseAuthorship(v.getCoreTerm(DwcTerm.scientificNameAuthorship));
+      Authorship authorship = parseAuthorship(v.getCoreTerm(DwcTerm.scientificNameAuthorship));
       if (n.hasAuthorship()) {
         // TODO: compare authorships and raise warning if different
       } else {
-        n.copyAuthorship(authorship);
+        n.setAuthorship(authorship);
       }
     }
 
@@ -83,11 +84,8 @@ public class VerbatimInterpreter {
   /**
    * @return a name instance with just the parsed authorship, i.e. combination & original year & author list
    */
-  private Name parseAuthorship(String authorship) {
+  private Authorship parseAuthorship(String authorship) {
     Name auth = nameParser.parse("Abies alba "+authorship, Rank.SPECIES).get();
-    auth.setGenus(null);
-    auth.setSpecificEpithet(null);
-    auth.setRank(null);
-    return auth;
+    return auth.getAuthorship();
   }
 }

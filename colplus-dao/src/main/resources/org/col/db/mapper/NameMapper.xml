@@ -9,7 +9,6 @@
         n.id,
         n.dataset_key,
         n.scientific_name,
-        n.authorship,
         n.rank,
         n.genus,
         n.infrageneric_epithet,
@@ -34,7 +33,6 @@
       id,
       dataset_key,
       scientific_name,
-      authorship,
       rank,
       genus,
       infrageneric_epithet,
@@ -58,17 +56,16 @@
       #{id},
       #{dataset.key},
       #{scientificName},
-      #{authorship},
       #{rank}::rank,
       #{genus},
       #{infragenericEpithet},
       #{specificEpithet},
       #{infraspecificEpithet},
       #{notho},
-      #{originalAuthors, typeHandler=org.col.db.type.StringArrayTypeHandler},
-      #{originalYear},
-      #{combinationAuthors, typeHandler=org.col.db.type.StringArrayTypeHandler},
-      #{combinationYear},
+      #{authorship.originalAuthors, typeHandler=org.col.db.type.StringArrayTypeHandler},
+      #{authorship.originalYear},
+      #{authorship.combinationAuthors, typeHandler=org.col.db.type.StringArrayTypeHandler},
+      #{authorship.combinationYear},
       #{nomenclaturalCode},
       #{status},
       #{origin},
@@ -86,14 +83,18 @@
     <resultMap id="nameResultMap" type="Name" autoMapping="true">
         <id property="key" column="key" />
         <result property="id" column="id"/>
-        <result property="combinationAuthors" column="combination_authors" typeHandler="org.col.db.type.StringArrayTypeHandler"/>
-        <result property="originalAuthors" column="original_authors" typeHandler="org.col.db.type.StringArrayTypeHandler"/>
+        <association property="authorship" javaType="Authorship">
+            <result property="combinationAuthors" column="combination_authors" typeHandler="org.col.db.type.StringArrayTypeHandler"/>
+            <result property="combinationYear" column="combination_year"/>
+            <result property="originalAuthors" column="original_authors" typeHandler="org.col.db.type.StringArrayTypeHandler"/>
+            <result property="originalYear" column="original_year"/>
+        </association>
         <association property="dataset" javaType="Dataset">
             <id property="key" column="dataset_key"/>
         </association>
         <association property="originalName" javaType="Name">
             <id property="key" column="original_name_key"/>
-            <id property="id" column="original_name_id"/>
+            <result property="id" column="original_name_id"/>
         </association>
     </resultMap>
 

@@ -10,6 +10,7 @@ import org.col.api.vocab.Rank;
 import org.col.api.vocab.TaxonomicStatus;
 import org.col.commands.importer.neo.model.NeoTaxon;
 import org.gbif.dwc.terms.*;
+import org.gbif.utils.text.StringUtils;
 import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
@@ -33,7 +34,7 @@ public class NeoKryoFactoryTest {
 
     t.taxon.setName(new Name());
     t.taxon.getName().setScientificName("Abies alba");
-    t.taxon.getName().setAuthorship("Mill.");
+    t.taxon.getName().setAuthorship(createAuthorship());
     t.taxon.getName().setRank(Rank.SPECIES);
 
     t.verbatim = new VerbatimRecord();
@@ -45,6 +46,19 @@ public class NeoKryoFactoryTest {
     }
 
     assertSerde(t);
+  }
+
+  private static Authorship createAuthorship() throws Exception {
+    Authorship a = new Authorship();
+    while (a.getCombinationAuthors().size() < 3) {
+      a.getCombinationAuthors().add(StringUtils.randomAuthor());
+    }
+    a.setCombinationYear(StringUtils.randomSpeciesYear());
+    while (a.getOriginalAuthors().isEmpty()) {
+      a.getOriginalAuthors().add(StringUtils.randomAuthor());
+    }
+    a.setOriginalYear(StringUtils.randomSpeciesYear());
+    return a;
   }
 
   @Test

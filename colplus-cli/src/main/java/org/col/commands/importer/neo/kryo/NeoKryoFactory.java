@@ -31,6 +31,7 @@ public class NeoKryoFactory implements KryoFactory {
     kryo.setRegistrationRequired(true);
 
     // col core
+    kryo.register(Authorship.class);
     kryo.register(Dataset.class);
     kryo.register(DatasetMetrics.class);
     kryo.register(Name.class);

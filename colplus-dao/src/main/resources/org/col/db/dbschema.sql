@@ -83,7 +83,6 @@ CREATE TABLE name (
   dataset_key INTEGER REFERENCES dataset,
   original_name_key INTEGER REFERENCES name,
   scientific_name text NOT NULL,
-  authorship TEXT,
   rank rank,
   genus TEXT,
   infrageneric_epithet TEXT,

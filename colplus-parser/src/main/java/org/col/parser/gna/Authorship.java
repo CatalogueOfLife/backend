@@ -11,7 +11,6 @@ import java.util.List;
  *
  */
 public class Authorship {
-  private final String authorship;
   private final Map<String, Object> combination;
   private final Map<String, Object> basionym;
 
@@ -21,10 +20,10 @@ public class Authorship {
    * This needs to be called manually before any authorship getters
    */
   Authorship(Map<String, Object> authorshipMap) {
-    authorship = (String) authorshipMap.get("value").get();
     Map<String, Object> comb = ScalaUtils.optionMap(authorshipMap.get("combination_authorship"));
     Map<String, Object> bas = ScalaUtils.optionMap(authorshipMap.get("basionym_authorship"));
     // in case of just a combination author it comes as the basionym author, swap!
+    String authorship = (String) authorshipMap.get("value").get();
     if (comb.isEmpty() && !bas.isEmpty() && !authorship.startsWith("(")) {
       combination = bas;
       basionym = comb;
@@ -32,13 +31,6 @@ public class Authorship {
       combination = comb;
       basionym = bas;
     }
-  }
-
-  /**
-   * @return the full authorship string
-   */
-  public String getAuthorship() {
-    return authorship;
   }
 
   public List<String> getCombinationAuthors() {
