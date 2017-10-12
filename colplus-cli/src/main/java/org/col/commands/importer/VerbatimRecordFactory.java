@@ -1,4 +1,4 @@
-package org.col.commands.importer.neo;
+package org.col.commands.importer;
 
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Strings;

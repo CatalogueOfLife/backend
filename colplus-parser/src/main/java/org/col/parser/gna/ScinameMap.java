@@ -2,16 +2,13 @@ package org.col.parser.gna;
 
 import org.globalnames.parser.ScientificNameParser;
 import scala.Option;
-import scala.collection.JavaConversions;
 import scala.collection.Map;
-
-import java.util.Optional;
 
 /**
  *
  */
 public class ScinameMap {
-    private final java.util.Map<String, Object> map;
+    private final Map<String, Object> map;
 
 
     public static ScinameMap create(ScientificNameParser.Result result) {
@@ -21,54 +18,48 @@ public class ScinameMap {
     }
 
     private ScinameMap(Map map) {
-        this.map = JavaConversions.mapAsJavaMap(map);
+        this.map = map;
     }
 
-    public Optional<Epithet> uninomial() {
+    public Option<Epithet> uninomial() {
         return epithet("uninomial");
     }
 
-    public Optional<Epithet> genus() {
+    public Option<Epithet> genus() {
         return epithet("genus");
     }
 
-    public Optional<Epithet> infraGeneric() {
+    public Option<Epithet> infraGeneric() {
         return epithet("infrageneric_epithet");
     }
 
-    public Optional<Epithet> specificEpithet() {
+    public Option<Epithet> specificEpithet() {
         return epithet("specific_epithet");
     }
 
-    public Optional<Epithet> infraSpecificEpithet() {
-        Optional opt = mapValue(map, "infraspecific_epithets");
-        if (opt.isPresent()) {
+    public Option<Epithet> infraSpecificEpithet() {
+        Option opt = ScalaUtils.unwrap(map.get("infraspecific_epithets"));
+        if (opt.isDefined()) {
             scala.collection.immutable.List list = (scala.collection.immutable.List) opt.get();
             if (list.isEmpty()) {
-                return Optional.empty();
+                return Option.empty();
             }
-            return Optional.of(new Epithet((Map) list.last()));
+            return Option.apply(new Epithet((Map) list.last()));
         }
-        return Optional.empty();
+        return Option.empty();
     }
 
-    Optional<Object> annotation() {
-        return mapValue(map, "annotation_identification");
+    Option<Object> annotation() {
+        return map.get("annotation_identification");
     }
 
-    static Optional<Object> mapValue(java.util.Map<String, Object> map, String key) {
-        if (map.containsKey(key) && !(map.get(key) instanceof Option)) {
-            return Optional.of(map.get(key));
-        }
-        return Optional.empty();
-    }
 
-    private Optional<Epithet> epithet(String key) {
-        Optional val = mapValue(this.map, key);
-        if (val.isPresent()) {
-            return Optional.of(new Epithet((Map) val.get()));
+    private Option<Epithet> epithet(String key) {
+        Option val = ScalaUtils.unwrap(map.get(key));
+        if (val.isDefined()) {
+          return Option.apply(new Epithet((Map) val.get()));
         }
-        return Optional.empty();
+        return Option.empty();
     }
 
 }

@@ -309,6 +309,24 @@ public class Name {
     this.remarks = remarks;
   }
 
+  /**
+   * Copies the authorship properties from a given source instance.
+   * @param authors
+   */
+  public void copyAuthorship(Name authors) {
+    setAuthorship(authors.getAuthorship());
+    setCombinationAuthors(authors.getCombinationAuthors());
+    setCombinationYear(authors.getCombinationYear());
+    setOriginalAuthors(authors.getOriginalAuthors());
+    setOriginalYear(authors.getOriginalYear());
+  }
+
+  public boolean hasAuthorship() {
+    return authorship != null ||
+        combinationYear != null || !combinationAuthors.isEmpty() ||
+        originalYear != null || !originalAuthors.isEmpty();
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -373,6 +391,21 @@ public class Name {
         ", etymology='" + etymology + '\'' +
         '}';
   }
+
+  /**
+   * Builds a scientific name without authorship from the individual properties
+   */
+  public String buildScientificName() {
+    return null;
+  }
+
+  /**
+   * Builds a scientific name without authorship from the individual properties
+   */
+  public String buildScientificName(boolean authorship, boolean rank) {
+    return null;
+  }
+
   //
 //  public String buildScientificName() {
 //    return null;

@@ -1,81 +1,78 @@
 package org.col.parser.gna;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import scala.Option;
-import scala.Some;
 import scala.collection.JavaConversions;
+import scala.collection.Map;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  *
  */
 public class Authorship {
-    private final Map<String, Object> combination;
-    private final Map<String, Object> basionym;
+  private final String authorship;
+  private final Map<String, Object> combination;
+  private final Map<String, Object> basionym;
 
-    private static Map<String, Object> someMap(Object obj) {
-        if (obj instanceof Some) {
-            return JavaConversions.mapAsJavaMap(((Some<scala.collection.Map>) obj).get());
-        } else if (obj instanceof scala.collection.Map) {
-            return JavaConversions.mapAsJavaMap((scala.collection.Map) obj);
-        }
-        return Maps.newHashMap();
-    }
 
-    /**
-     * Lazily initializes the authorship maps when needed.
-     * This needs to be called manually before any authorship getters
-     */
-    Authorship(Map<String, Object> map) {
-        if (map.containsKey("authorship")) {
-            Map<String, Object> auth = someMap(map.get("authorship"));
-            Map<String, Object> comb = someMap(auth.get("combination_authorship"));
-            Map<String, Object> bas  = someMap(auth.get("basionym_authorship"));
-            // in case of just a combination author it comes as the basionym author, swap!
-            if (comb.isEmpty() && !bas.isEmpty() && !((String)auth.get("value")).startsWith("(")) {
-                combination = bas;
-                basionym = comb;
-            } else {
-                combination = comb;
-                basionym = bas;
-            }
-        } else {
-            combination = Maps.newHashMap();
-            basionym = Maps.newHashMap();
-        }
+  /**
+   * Lazily initializes the authorship maps when needed.
+   * This needs to be called manually before any authorship getters
+   */
+  Authorship(Map<String, Object> authorshipMap) {
+    authorship = (String) authorshipMap.get("value").get();
+    Map<String, Object> comb = ScalaUtils.optionMap(authorshipMap.get("combination_authorship"));
+    Map<String, Object> bas = ScalaUtils.optionMap(authorshipMap.get("basionym_authorship"));
+    // in case of just a combination author it comes as the basionym author, swap!
+    if (comb.isEmpty() && !bas.isEmpty() && !authorship.startsWith("(")) {
+      combination = bas;
+      basionym = comb;
+    } else {
+      combination = comb;
+      basionym = bas;
     }
+  }
 
-    public List<String> getCombinationAuthors() {
-        return authors(combination, false);
-    }
+  /**
+   * @return the full authorship string
+   */
+  public String getAuthorship() {
+    return authorship;
+  }
 
-    public List<String> getBasionymAuthors() {
-        return authors(basionym, false);
-    }
+  public List<String> getCombinationAuthors() {
+    return authors(combination, false);
+  }
 
-    public String getCombinationYear() {
-        return mapValue(combination.get("year"));
-    }
+  public List<String> getBasionymAuthors() {
+    return authors(basionym, false);
+  }
 
-    public String getBasionymYear() {
-        return mapValue(basionym.get("year"));
-    }
+  public String getCombinationYear() {
+    return mapValueString(combination, "year");
+  }
 
-    private static List<String> authors(Map<String, Object> auth, boolean ex) {
-        String key = ex ? "ex_authors" : "authors";
-        if (auth.containsKey(key)) {
-          return JavaConversions.seqAsJavaList( (scala.collection.immutable.List) auth.get(key));
-        }
-        return Lists.newArrayList();
-    }
+  public String getBasionymYear() {
+    return mapValueString(basionym,"year");
+  }
 
-    private static String mapValue(Object val) {
-        if (val == null || val instanceof Option) {
-            return null;
-        }
-        return (String) JavaConversions.mapAsJavaMap((scala.collection.Map) val).get("value");
+  private static List<String> authors(Map<String, Object> auth, boolean ex) {
+    String key = ex ? "ex_authors" : "authors";
+    if (auth.contains(key)) {
+      return JavaConversions.seqAsJavaList((scala.collection.immutable.List) auth.get(key).get());
     }
+    return Lists.newArrayList();
+  }
+
+  /**
+   * Return the nested map value for the key and use "value" as key for the second,nested map.
+   */
+  private static String mapValueString(Map map, String key) {
+    Option val = ScalaUtils.unwrap(map.get(key));
+    if (val.isDefined()) {
+      return ScalaUtils.mapString((Map)val.get(), "value");
+    }
+    return null;
+  }
 }

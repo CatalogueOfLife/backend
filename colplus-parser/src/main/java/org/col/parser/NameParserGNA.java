@@ -1,5 +1,6 @@
 package org.col.parser;
 
+import com.google.common.collect.Lists;
 import org.col.api.Name;
 import org.col.api.vocab.NameType;
 import org.col.api.vocab.Rank;
@@ -67,29 +68,29 @@ public class NameParserGNA implements NameParser {
           n.setType(typeFromQuality(sn.quality()));
           ScinameMap map = ScinameMap.create(result);
 
-          Optional<Epithet> authorship = Optional.empty();
-          Optional<Epithet> uninomial = map.uninomial();
-          if (uninomial.isPresent()) {
+          Option<Epithet> authorship = Option.empty();
+          Option<Epithet> uninomial = map.uninomial();
+          if (uninomial.isDefined()) {
             // dont set anything, we use scientificName for uninomials
             //pn.setGenus(uninomial.get().getEpithet());
             authorship = uninomial;
 
           } else {
             // bi/trinomials do not come with a uninomial
-            Optional<Epithet> genus = map.genus();
-            if (genus.isPresent()) {
+            Option<Epithet> genus = map.genus();
+            if (genus.isDefined()) {
               n.setGenus(genus.get().getEpithet());
               authorship = genus;
             }
 
-            Optional<Epithet> infraGenus = map.infraGeneric();
-            if (infraGenus.isPresent()) {
+            Option<Epithet> infraGenus = map.infraGeneric();
+            if (infraGenus.isDefined()) {
               n.setInfragenericEpithet(infraGenus.get().getEpithet());
               authorship = infraGenus;
             }
 
-            Optional<Epithet> species = map.specificEpithet();
-            if (species.isPresent()) {
+            Option<Epithet> species = map.specificEpithet();
+            if (species.isDefined()) {
               n.setSpecificEpithet(species.get().getEpithet());
               authorship = species;
               if (n.getRank().equals(Rank.UNRANKED)) {
@@ -97,8 +98,8 @@ public class NameParserGNA implements NameParser {
               }
             }
 
-            Optional<Epithet> infraSpecies = map.infraSpecificEpithet();
-            if (infraSpecies.isPresent()) {
+            Option<Epithet> infraSpecies = map.infraSpecificEpithet();
+            if (infraSpecies.isDefined()) {
               n.setInfraspecificEpithet(infraSpecies.get().getEpithet());
               Rank rankCol = GnaRankUtils.inferRank(infraSpecies.get().getRank());
               if (rankCol != null) {
@@ -135,12 +136,13 @@ public class NameParserGNA implements NameParser {
     return n;
   }
 
-  private void setAuthorship(Name pn, Optional<Epithet> epi) {
-    if (epi.isPresent()) {
+  private void setAuthorship(Name pn, Option<Epithet> epi) {
+    if (epi.isDefined() && epi.get().hasAuthorship()) {
       Authorship auth = epi.get().getAuthorship();
-      pn.setCombinationAuthors(auth.getCombinationAuthors());
+      pn.setAuthorship(auth.getAuthorship());
+      pn.setCombinationAuthors(Lists.newArrayList(auth.getCombinationAuthors()));
       pn.setCombinationYear(auth.getCombinationYear());
-      pn.setOriginalAuthors(auth.getBasionymAuthors());
+      pn.setOriginalAuthors(Lists.newArrayList(auth.getBasionymAuthors()));
       pn.setOriginalYear(auth.getBasionymYear());
     }
   }

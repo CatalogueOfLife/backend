@@ -5,6 +5,8 @@ import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import org.col.api.VerbatimRecord;
 import org.col.commands.importer.NormalizationFailedException;
+import org.col.commands.importer.VerbatimInterpreter;
+import org.col.commands.importer.VerbatimRecordFactory;
 import org.col.commands.importer.neo.model.NeoTaxon;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.Term;
