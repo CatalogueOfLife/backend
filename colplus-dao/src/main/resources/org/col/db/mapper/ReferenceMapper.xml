@@ -4,77 +4,87 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="org.col.db.mapper.ReferenceMapper">
 
-    <sql id="SELECT">
-      r.key,
-      r.id,
-      r.dataset_key,
-      r.csl,
-      r.serial_key,
-      r.year
-    </sql>
+  <sql id="SELECT">
+    r.key,
+    r.id,
+    r.dataset_key,
+    r.csl,
+    r.serial_key,
+    r.year
+  </sql>
 
-    <sql id="COLS">
-      id,
-      dataset_key,
-      csl,
-      serial_key,
-      year
-    </sql>
+  <sql id="COLS">
+    id,
+    dataset_key,
+    csl,
+    serial_key,
+    year
+  </sql>
 
-    <sql id="PROPS">
-      #{id},
-      #{dataset.key},
-      #{csl, typeHandler=org.col.db.type.CslJsonHandler}::jsonb,
-      #{serial.key},
-      #{year}
-    </sql>
+  <sql id="PROPS">
+    #{id},
+    #{dataset.key},
+    #{csl, typeHandler=org.col.db.type.CslJsonHandler}::jsonb,
+    #{serial.key},
+    #{year}
+  </sql>
 
-    <sql id="FROM">
-        reference r
-    </sql>
+  <sql id="FROM">
+    reference r
+  </sql>
 
-    <!--  A mapping to Reference, mostly auto mapped -->
-    <resultMap id="referenceResultMap" type="Reference" autoMapping="true">
-        <id property="key" column="key" />
-        <result property="csl" column="csl" typeHandler="org.col.db.type.CslJsonHandler" />
-        <association property="dataset" javaType="Dataset">
-            <id property="key" column="dataset_key"/>
-        </association>
-        <association property="serial" javaType="Serial">
-            <id property="key" column="serial_key"/>
-        </association>
-    </resultMap>
+  <!-- A mapping to Reference, mostly auto mapped -->
+  <resultMap id="referenceResultMap" type="Reference" autoMapping="true">
+    <id property="key" column="key" />
+    <result property="csl" column="csl" typeHandler="org.col.db.type.CslJsonHandler" />
+    <association property="dataset" javaType="Dataset">
+      <id property="key" column="dataset_key" />
+    </association>
+    <association property="serial" javaType="Serial">
+      <id property="key" column="serial_key" />
+    </association>
+  </resultMap>
 
 
-    <select id="count" parameterType="map" resultType="Integer">
-        SELECT count(*)
-        FROM reference
-        WHERE dataset_key = #{datasetKey}
-    </select>
+  <select id="count" parameterType="map" resultType="Integer">
+    SELECT count(*)
+    FROM reference
+    WHERE dataset_key = #{datasetKey}
+  </select>
 
-    <select id="list" parameterType="map" resultMap="referenceResultMap">
-        SELECT <include refid="SELECT" />
-        FROM <include refid="FROM" />
-        WHERE r.dataset_key = #{datasetKey}
-        ORDER BY key
-        <include refid="org.col.db.mapper.Common.limit"/>
-    </select>
+  <select id="list" parameterType="map" resultMap="referenceResultMap">
+    SELECT
+    <include refid="SELECT" />
+    FROM
+    <include refid="FROM" />
+    WHERE r.dataset_key = #{datasetKey}
+    ORDER BY key
+    <include refid="org.col.db.mapper.Common.limit" />
+  </select>
 
-    <select id="getByKey" resultMap="referenceResultMap">
-      SELECT <include refid="SELECT" />
-      FROM <include refid="FROM" />
-      WHERE r.key = #{key}
-    </select>
+  <select id="getByKey" resultMap="referenceResultMap">
+    SELECT
+    <include refid="SELECT" />
+    FROM
+    <include refid="FROM" />
+    WHERE r.key = #{key}
+  </select>
 
-    <select id="get" resultMap="referenceResultMap">
-        SELECT <include refid="SELECT" />
-        FROM <include refid="FROM" />
-        WHERE r.dataset_key = #{datasetKey} AND r.id = #{id}
-    </select>
+  <select id="get" resultMap="referenceResultMap">
+    SELECT
+    <include refid="SELECT" />
+    FROM
+    <include refid="FROM" />
+    WHERE r.dataset_key = #{datasetKey} AND r.id = #{id}
+  </select>
 
-    <insert id="create" parameterType="Reference" useGeneratedKeys="true" keyProperty="key">
-      INSERT INTO reference (<include refid="COLS" />)
-        VALUES (<include refid="PROPS" />)
-    </insert>
+  <insert id="create" parameterType="Reference" useGeneratedKeys="true" keyProperty="key">
+    INSERT INTO reference (
+    <include refid="COLS" />
+    )
+    VALUES (
+    <include refid="PROPS" />
+    )
+  </insert>
 
 </mapper>
