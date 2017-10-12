@@ -26,7 +26,7 @@ public class VernacularNameResource {
 
 	@GET
 	@Timed
-	@Path("getVernacularNamesForTaxon/{taxonKey}")
+	@Path("{taxonId}/forTaxon")
 	public List<VernacularName> getVernacularNames(
 	    @PathParam("datasetKey") int datasetKey,
 	    @PathParam("taxonId") String taxonId,

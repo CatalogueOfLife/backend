@@ -22,11 +22,6 @@ public class TaxonDao {
 		return mapper.get(datasetKey, id);
 	}
 
-	public List<VernacularName> getVernacularNames(Integer datasetKey, String taxonId) {
-		VernacularNameMapper mapper = session.getMapper(VernacularNameMapper.class);
-		return mapper.getVernacularNames(datasetKey, taxonId);
-	}
-
 	public TaxonInfo getTaxonInfo(int datasetKey, String id) {
 		TaxonInfo info = new TaxonInfo();
 		TaxonMapper tMapper = session.getMapper(TaxonMapper.class);

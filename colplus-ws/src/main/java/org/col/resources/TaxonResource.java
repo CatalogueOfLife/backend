@@ -1,7 +1,5 @@
 package org.col.resources;
 
-import java.util.List;
-
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -12,7 +10,6 @@ import javax.ws.rs.core.MediaType;
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.Taxon;
 import org.col.api.TaxonInfo;
-import org.col.api.VernacularName;
 import org.col.dao.TaxonDao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,15 +30,6 @@ public class TaxonResource {
 	    @PathParam("id") String id,
 	    @Context SqlSession session) {
 		return new TaxonDao(session).get(datasetKey, id);
-	}
-
-	@GET
-	@Timed
-	@Path("{taxonId}/getVernacularNames")
-	public List<VernacularName> getVernacularNames(@PathParam("datasetKey") int datasetKey,
-	    @PathParam("taxonId") String taxonId,
-	    @Context SqlSession session) {
-		return new TaxonDao(session).getVernacularNames(datasetKey, taxonId);
 	}
 
 	@GET
