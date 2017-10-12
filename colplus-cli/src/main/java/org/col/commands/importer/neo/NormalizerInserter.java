@@ -27,6 +27,7 @@ public class NormalizerInserter {
   private Archive arch;
   private InsertMetadata meta = new InsertMetadata();
   private final NormalizerStore store;
+  VerbatimInterpreter interpreter = new VerbatimInterpreter();
 
   public NormalizerInserter(NormalizerStore store) throws IOException {
     this.store = store;
@@ -53,7 +54,7 @@ public class NormalizerInserter {
 
     VerbatimRecord v = VerbatimRecordFactory.build(store.getDatasetKey(), star);
 
-    NeoTaxon i = VerbatimInterpreter.interpret(v);
+    NeoTaxon i = interpreter.interpret(v);
 
     // store interpreted record incl verbatim
     store.put(i);

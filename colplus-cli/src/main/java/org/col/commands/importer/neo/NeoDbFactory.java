@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.IOException;
 
 /**
  * A factory for persistent & temporary, volatile neodb instances.
@@ -37,9 +38,9 @@ public class NeoDbFactory {
    *
    * @param eraseExisting if true erases any previous data files
    */
-  private static NeoDb persistentDb(NormalizerConfig cfg, int datasetKey, boolean eraseExisting) {
-    LOG.debug("Create persistent NormalizerStore");
+  private static NeoDb persistentDb(NormalizerConfig cfg, int datasetKey, boolean eraseExisting) throws IOException {
     final File storeDir = cfg.neoDir(datasetKey);
+    LOG.debug("{} persistent NormalizerStore at {}", eraseExisting ? "Create" : "Open", storeDir);
     final File mapDbFile = mapDbFile(storeDir);
     DBMaker.Maker dbMaker = DBMaker
         .fileDB(mapDbFile)
@@ -56,6 +57,10 @@ public class NeoDbFactory {
     try {
       GraphDatabaseBuilder builder = cfg.newEmbeddedDb(storeDir, eraseExisting, null);
 
+      // make sure mapdb parent dirs exist
+      if (!storeDir.exists()) {
+        storeDir.mkdirs();
+      }
       return new NeoDb(dbMaker.make(), storeDir, builder, cfg.batchSize);
 
     } catch (Exception e) {
@@ -66,14 +71,14 @@ public class NeoDbFactory {
   /**
    * @return the neodb for an existing, persistent db
    */
-  public static NeoDb open(NormalizerConfig cfg, int datasetKey) {
+  public static NeoDb open(NormalizerConfig cfg, int datasetKey) throws IOException {
     return persistentDb(cfg, datasetKey, false);
   }
 
   /**
    * @return creates a new, empty, persistent dao wiping any data that might have existed for that dataset
    */
-  public static NeoDb create(NormalizerConfig cfg, int datasetKey) {
+  public static NeoDb create(NormalizerConfig cfg, int datasetKey) throws IOException {
     return persistentDb(cfg, datasetKey, true);
   }
 

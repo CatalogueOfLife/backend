@@ -139,23 +139,11 @@ public final class VocabularyUtils {
    * @param value
    * @throws IllegalArgumentException in case the enumeration name does not exist in the target class
    */
-  public static <G extends Enum<G>> G convertEnum(Class<G> targetClass, Optional<? extends Enum> value) {
-    return value.map(r -> Enum.valueOf(targetClass, r.name())).orElse(null);
-  }
-
-  /**
-   * Converts an enumeration value into a constant with the exact same name from a different enumeration class.
-   * In case the enumeration constant name does not exist an error is thrown.
-   *
-   * @param targetClass class of the target enumeration
-   * @param value
-   * @throws IllegalArgumentException in case the enumeration name does not exist in the target class
-   */
   public static <G extends Enum<G>> G convertEnum(Class<G> targetClass, Enum<?> value) {
     return value == null ? null : Enum.valueOf(targetClass, value.name());
   }
 
-  public static org.gbif.api.vocabulary.Rank convertToGbif(Optional<Rank> rank) {
+  public static org.gbif.api.vocabulary.Rank convertToGbif(Rank rank) {
     return convertEnum(org.gbif.api.vocabulary.Rank.class, rank);
   }
 

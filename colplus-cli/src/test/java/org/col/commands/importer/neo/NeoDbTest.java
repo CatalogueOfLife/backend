@@ -1,33 +1,18 @@
 package org.col.commands.importer.neo;
 
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
 import com.google.common.io.Files;
-import org.col.api.Name;
-import org.col.api.Taxon;
-import org.col.api.vocab.Origin;
-import org.col.api.vocab.Rank;
-import org.col.api.vocab.TaxonomicStatus;
 import org.col.commands.config.NormalizerConfig;
-import org.col.commands.importer.neo.model.Labels;
-import org.col.commands.importer.neo.model.RankedName;
-import org.col.commands.importer.neo.model.RelType;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Transaction;
 
-import javax.annotation.Nullable;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 import java.util.Random;
-
-import static org.junit.Assert.*;
 
 /**
  *
@@ -57,7 +42,7 @@ public class NeoDbTest {
   }
 
   @Before
-  public void init() {
+  public void init() throws IOException {
     if (persistent) {
       db = NeoDbFactory.create(cfg, DATASET_KEY);
     } else {

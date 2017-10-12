@@ -26,6 +26,26 @@
             <artifactId>colplus-dwca</artifactId>
         </dependency>
 
+        <!-- GNA name parser in Scala -->
+        <dependency>
+            <groupId>org.globalnames</groupId>
+            <artifactId>gnparser_2.11</artifactId>
+            <version>0.4.2</version>
+            <exclusions>
+                <!--
+                <exclusion>
+                    <groupId>org.json4s</groupId>
+                    <artifactId>json4s-jackson_2.11</artifactId>
+                </exclusion>
+                -->
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-library</artifactId>
+            <version>2.11.8</version>
+        </dependency>
+
         <!-- logging -->
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -39,4 +59,20 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>false</filtering>
+            </resource>
+        </resources>
+        <testResources>
+            <testResource>
+                <directory>src/test/resources</directory>
+                <filtering>false</filtering>
+            </testResource>
+        </testResources>
+    </build>
+
 </project>

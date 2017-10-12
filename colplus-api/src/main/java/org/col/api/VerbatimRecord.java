@@ -72,6 +72,15 @@ public class VerbatimRecord {
   }
 
   /**
+   * Get the first non blank term for a list of terms.
+   * @param terms list to try
+   */
+  @Nullable
+  public String getFirst(Term ... terms) {
+    return this.terms.getCore().getFirst(terms);
+  }
+
+  /**
    * @return true if a verbatim term exists and is not null or an empty string
    */
   public boolean hasCoreTerm(Term term) {
