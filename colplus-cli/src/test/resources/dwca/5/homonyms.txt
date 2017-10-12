@@ -1,0 +1,23 @@
+"TAXONID","SCIENTIFICNAME","SCIENTIFICNAMEAUTHORSHIP","GENUS","SPECIFICEPITHET","FAMILY","ORDER","CLASS","PHYLUM","KINGDOM","TAXONRANK","TAXONOMICSTATUS","NOMENCLATURALSTATUS","NAMEACCORDINGTO","NAMEPUBLISHEDIN","ACCEPTEDNAMEUSAGE","TAXONREMARKS","MODIFIED","NOMENCLATURALCODE"
+"por10083","Megalithistida",,,,,"Megalithistida","Demospongea","Porifera","Animalia","order","synonym",,,,,,"01-06-2010","ICZN"
+"mol101988","Tubiferidae Cossmann, 1895","Cossmann, 1895",,,"Tubiferidae","Heterostropha","Gastropoda","Mollusca","Animalia","family","synonym",,"Wieczorek, 1979",,,"Senior homonym of Tubiferidae Poche, 1913 in Liceida (= Tubiferaceae in botanical classification)","30-04-2010","ICZN"
+"hex1088048","Acanthophora Hulst, 1896","Hulst, 1896","Acanthotoca",,"Geometridae","Lepidoptera","Insecta","Arthropoda","Animalia","genus","synonym","invalid","Nomenclator Zoologicus","Trans. Amer. ent. Soc., 23, 320, 365.","Acanthotoca","(See Acanthotoca Fletcher 1979) (Nomen. Zool.)","14-04-2009","ICZN"
+"alg1003972","Acanthophora J.V.F. Lamouroux, 1813","J.V.F. Lamouroux, 1813","Acanthophora",,"Rhodomelaceae","Ceramiales","Rhodophyceae","Rhodophyta","Plantae","genus","accepted",,"SN2000/de Jong et al., 1999; Index Nominum Genericorum",,,,"21-09-2006","ICBN"
+"hex1090241","Acanthophora Borgmeier, 1922","Borgmeier, 1922","",,"Phoridae","Diptera","Insecta","Arthropoda","Animalia","genus","synonym","invalid","Nomenclator Zoologicus","Z. Dtsch. Ver. Wiss. u. Kunst S. Paulo, 3, 164.","Acanthophorides","(See Acanthophorides Borgmeier 1924.) (Nomen. Zool.)","14-04-2009","ICZN"
+"pln1019319","Acanthophora Merrill, 1918","Merrill, 1918","Acanthophora",,"Araliaceae","Apiales","Magnoliopsida","Magnoliophyta","Plantae","genus",,,"CoL2006; Index Nominum Genericorum",,,,"14-11-2006","ICBN"
+"por1001935","Acanthophora Sollas, 1873","Sollas, 1873","Acanthophora",,,"Astrophorida","Demospongea","Porifera","Animalia","genus","valid",,"Sepkoski (2002); Nomenclator Zoologicus","Quart. J. geol. Soc., 29, 79.",,,"06-02-2007","ICZN"
+
+"1295392","Tulostoma Persoon, 1794","Persoon, 1794","Tulostoma",,"Agaricaceae","Agaricales","Agaricomycetes","Basidiomycota","Fungi","genus","accepted",,"SN2000/Kirk et al., 2001; Index Nominum Genericorum; Index Fungorum",,"Tulostoma Persoon, 1794","Authority cited elsewhere as Persoon, 1801","21-09-2006","ICBN"
+"1295393","Tulostoma Nevill, 1885","Nevill, 1885","Tulostoma",,"Viviparidae","Mesogastropoda","Gastropoda","Mollusca","Animalia","genus","synonym","orthographia","Nomenclator Zoologicus","Hand List Moll. Indian Mus., 2, 32.","Tulotoma","(err. pro Tulot- Haldeman 1840) (Nomen. Zool.)","14-04-2009","ICZN"
+
+"mol1024692","Amphibia Berthold, 1827","Berthold, 1827","Amphibia",,,,,"Mollusca","Animalia","genus",,,"Nomenclator Zoologicus","in Latreille, Nat. Fam. Thierr., 174, 564.",,"(emend. pro Succinea Draparnaud 1801) (Nomen. Zool.)","14-04-2009","ICZN"
+"alg1003942","Amphibia Stackhouse, 1809","Stackhouse, 1809","Amphibia",,"Rhodomelaceae","Ceramiales","Rhodophyceae","Rhodophyta","Plantae","genus",,"rejiciendum","CoL2006/AlgaeBase; Index Nominum Genericorum",,,"Nom. rej.","21-09-2006","ICBN"
+"hex1065119","Amphibia Perroud & Montrouzier, 1864","Perroud & Montrouzier, 1864","Amphibia",,"Carabidae","Coleoptera","Insecta","Arthropoda","Animalia","genus",,,"Australian Faunal Directory (August 2007); Nomenclator Zoologicus","Ann. Soc. linn. Lyon, 11, 69.",,,"03-09-2007","ICZN"
+
+"markus01","Amphibia hybrid × formula Perroud & Montrouzier, 1864",,"Amphibia",,"Carabidae","Coleoptera","Insecta","Arthropoda","Animalia","genus",,,,,,,,"ICZN"
+"markus02","Virus name 13 Ictv",,,,,,,,"Virus","species",,,,,,,,"ICTV"
+"markus03","Markusgenus Döring",,,,,,,,"Plantae","genus",,,,,,,,"ICBN"
+"markus04","Markusgenus Hannover",,,,,,,"Arthropoda","Animalia",,,,,,,,,"ICZN"
+"markus05","Markusgenus London",,,,,,,"Chordata","Animalia","gennusss",,,,,,,,"ICZN"
+
+"interRankHomonym1","Chaetognatha Felder, 1874","Felder, 1874",,,,"Lepidoptera","Insecta","Arthropoda","Animalia",,,,,,,,,"ICZN"

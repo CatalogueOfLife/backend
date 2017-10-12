@@ -3,10 +3,12 @@ package org.col.api;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Strings;
+import org.apache.commons.lang3.StringUtils;
 import org.col.api.jackson.RecTermsSerde;
 import org.col.api.jackson.TermSerde;
 import org.gbif.dwc.terms.Term;
 
+import javax.annotation.Nullable;
 import java.util.HashMap;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -26,4 +28,18 @@ public class TermRecord extends HashMap<Term, String> {
     return !Strings.isNullOrEmpty(get(term));
   }
 
+  /**
+   * Get the first non blank term for a list of terms.
+   * @param terms list to try
+   */
+  @Nullable
+  public String getFirst(Term ... terms) {
+    for (Term t : terms) {
+      String val = this.get(t);
+      if (!StringUtils.isBlank(val)) {
+        return val;
+      }
+    }
+    return null;
+  }
 }

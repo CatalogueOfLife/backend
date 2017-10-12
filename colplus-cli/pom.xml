@@ -34,6 +34,10 @@
         </dependency>
         <dependency>
             <groupId>org.col</groupId>
+            <artifactId>colplus-parser</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.col</groupId>
             <artifactId>colplus-dao</artifactId>
         </dependency>
         <dependency>
@@ -94,4 +98,19 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>false</filtering>
+            </resource>
+        </resources>
+        <testResources>
+            <testResource>
+                <directory>src/test/resources</directory>
+                <filtering>false</filtering>
+            </testResource>
+        </testResources>
+    </build>
 </project>

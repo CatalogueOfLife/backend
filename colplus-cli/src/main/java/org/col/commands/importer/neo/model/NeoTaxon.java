@@ -16,6 +16,8 @@ import java.util.Objects;
 public class NeoTaxon {
   public Node node;
   public VerbatimRecord verbatim;
+  // we keep the name distinct from the Taxon here so we can also accomodate synonyms which do not have a taxon instance!
+  public Name name;
   public Taxon taxon;
   public List<NameAct> acts = Lists.newArrayList();
   public List<VernacularName> vernacularNames = Lists.newArrayList();
@@ -53,5 +55,13 @@ public class NeoTaxon {
   @Override
   public int hashCode() {
     return Objects.hash(node, verbatim, taxon, acts, vernacularNames, distributions, references);
+  }
+
+  public boolean isSynonym() {
+    return taxon == null;
+  }
+
+  public Labels getNeoLabel() {
+    return isSynonym() ? Labels.SYNONYM : Labels.TAXON;
   }
 }

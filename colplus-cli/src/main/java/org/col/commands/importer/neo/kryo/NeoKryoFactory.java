@@ -65,23 +65,23 @@ public class NeoKryoFactory implements KryoFactory {
     ImmutableListSerializer.registerSerializers(kryo);
 
     // enums
+    kryo.register(Country.class);
+    kryo.register(DataFormat.class);
     kryo.register(EnumMap.class, new EnumMapSerializer());
     kryo.register(EnumSet.class, new EnumSetSerializer());
     kryo.register(Issue.class);
-    kryo.register(NomStatus.class);
+    kryo.register(Kingdom.class);
+    kryo.register(Language.class);
+    kryo.register(Lifezone.class);
+    kryo.register(NamePart.class);
+    kryo.register(NameType.class);
     kryo.register(NomActType.class);
-    kryo.register(TaxonomicStatus.class);
     kryo.register(NomCode.class);
+    kryo.register(NomStatus.class);
     kryo.register(Origin.class);
     kryo.register(Rank.class);
-    kryo.register(Kingdom.class);
-    kryo.register(Lifezone.class);
-    kryo.register(NameType.class);
-    kryo.register(NamePart.class);
-    kryo.register(Language.class);
-    kryo.register(Country.class);
+    kryo.register(TaxonomicStatus.class);
     kryo.register(TypeStatus.class);
-
 
     // term enums
     kryo.register(AcTerm.class);

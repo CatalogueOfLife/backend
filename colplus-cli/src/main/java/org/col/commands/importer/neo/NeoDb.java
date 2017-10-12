@@ -130,9 +130,15 @@ public class NeoDb implements NormalizerStore {
     return -1;
   }
 
+  /**
+   * Shuts down the regular neo4j db and opens up neo4j in batch mode.
+   * While batch mode is active only writes will be accepted and reads from the store
+   * will throw exceptions.
+   */
   @Override
   public void startBatchMode() {
     try {
+      closeNeo();
       inserter = BatchInserters.inserter(neoDir);
     } catch (IOException e) {
       Throwables.propagate(e);
@@ -182,18 +188,25 @@ public class NeoDb implements NormalizerStore {
       //TODO: add reference to map if new, replace all props with just the key
       put(r);
     }
-    //TODO: update neo4j properties either via batch mode or classic
+
+    // update neo4j properties either via batch mode or classic
+    //TODO: set ROOT or other labels
+    long nodeId;
+    Map<String, Object> props = NeoDbUtils.neo4jProps(tax);
     if (isBatchMode()) {
       // batch insert normalizer properties used during normalization
-      //Map<String, Object> props = store.neoProperties(core.id(), u, v);
-      //long nodeId = inserter.createNode(props, Labels.TAXON, u.isSynonym() ? Labels.SYNONYM : Labels.TAXON);
+      nodeId = inserter.createNode(props, tax.getNeoLabel());
 
     } else {
-      //TODO: create neo4j node if needed
-
+      // create neo4j node if needed
+      if (tax.node == null) {
+        tax.node = neo.createNode(tax.getNeoLabel());
+      }
+      nodeId = tax.node.getId();
+      // update neo4j props
+      NeoDbUtils.setProperties(tax.node, props);
     }
-    taxa.put(tax.node.getId(), tax);
-    //TODO: update neo4j props
+    taxa.put(nodeId, tax);
   }
 
   @Override
