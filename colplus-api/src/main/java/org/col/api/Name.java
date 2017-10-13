@@ -1,6 +1,7 @@
 package org.col.api;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.col.api.exception.InvalidNameException;
 import org.col.api.vocab.*;
 
 import java.net.URI;
@@ -46,7 +47,7 @@ public class Name {
   //@JsonProperty("rankMarker")
   //@JsonSerialize(using=RankSerde.RankJsonSerializer.class)
   //@JsonDeserialize(using=RankSerde.RankJsonDeserializer.class)
-  private Rank rank;
+  private Rank rank = Rank.UNRANKED;
 
   private Origin origin;
 
@@ -324,230 +325,82 @@ public class Name {
   }
 
   /**
-   * Builds a scientific name without authorship from the individual properties
+   * Validates consistency of name properties.
+   * This method checks if the given rank matches populated properties
+   * and available properties make sense together.
    */
-  public String buildScientificName() {
-    return null;
+  public boolean isConsistent() {
+    if (specificEpithet != null && genus == null) {
+      return false;
+
+    } else if (infraspecificEpithet != null && specificEpithet == null) {
+      return false;
+
+    } else if ( infragenericEpithet != null && specificEpithet != null) {
+      return false;
+
+    }
+    // verify ranks
+    if (rank != null && rank.notOtherOrUnranked()) {
+      if (rank.isGenusOrSuprageneric()) {
+        if (genus != null || scientificName == null) return false;
+
+      } else if (rank.isInfrageneric() && rank.isSupraspecific()) {
+        if (infragenericEpithet == null) return false;
+
+      } else if (rank.isSpeciesOrBelow()) {
+        if (specificEpithet == null) return false;
+        if (!rank.isInfraspecific() && infraspecificEpithet != null) return false;
+      }
+
+      if (rank.isInfraspecific()) {
+        if (infraspecificEpithet == null) return false;
+      }
+    }
+    return true;
   }
 
   /**
    * Builds a scientific name without authorship from the individual properties
    */
-  public String buildScientificName(boolean authorship, boolean rank) {
-    return null;
-  }
+  public String buildScientificName() throws InvalidNameException {
+    if (infragenericEpithet != null) {
+      // an infrageneric with or without a genus given?
+      StringBuilder sb = new StringBuilder();
+      if (genus != null) {
+        sb.append(genus);
+        sb.append(" ");
+      }
+      if (rank.isInfrageneric()) {
+        sb.append(rank.getMarker());
+        sb.append(" ");
+      }
+      sb.append(infragenericEpithet);
+      return sb.toString();
 
-  //
-//  public String buildScientificName() {
-//    return null;
-//  }
-//
-//  /**
-//   * build a name controlling all available flags for name parts to be included in the resulting name.
-//   *
-//   * @param hybridMarker    include the hybrid marker with the name if existing
-//   * @param rankMarker      include the infraspecific or infrageneric rank marker with the name if existing
-//   * @param authorship      include the names authorship (authorteam and year)
-//   * @param infrageneric include the infrageneric name in brackets for species or infraspecies
-//   * @param genusForInfrageneric include the genus name in front of an infrageneric name (not a species)
-//   * @param abbreviateGenus if true abreviate the genus with its first character
-//   * @param decomposition   decompose unicode ligatures into their corresponding ascii ones, e.g. æ beomes ae
-//   * @param asciiOnly       transform unicode letters into their corresponding ascii ones, e.g. ø beomes o and ü u
-//   * @param showIndet       if true include the rank marker for incomplete determinations, for example Puma spec.
-//   * @param nomNote         include nomenclatural notes
-//   * @param remarks         include informal remarks
-//   */
-//  public String buildName(
-//      boolean hybridMarker,
-//      boolean rankMarker,
-//      boolean authorship,
-//      boolean infrageneric,
-//      boolean genusForInfrageneric,
-//      boolean abbreviateGenus,
-//      boolean decomposition,
-//      boolean asciiOnly,
-//      boolean showIndet,
-//      boolean nomNote,
-//      boolean remarks,
-//      boolean showSensu,
-//      boolean showCultivar,
-//      boolean showStrain
-//  ) {
-//    StringBuilder sb = new StringBuilder();
-//
-//    if (org.gbif.api.vocabulary.NameType.CANDIDATUS == type) {
-//      sb.append("Candidatus ");
-//    }
-//
-//    if (genusOrAbove != null && (genusForInfrageneric || infraGeneric == null || specificEpithet != null)) {
-//      if (hybridMarker && org.gbif.api.vocabulary.NamePart.GENERIC == notho) {
-//        sb.append(HYBRID_MARKER);
-//      }
-//      if (abbreviateGenus) {
-//        sb.append(genusOrAbove.substring(0, 1)).append('.');
-//      } else {
-//        sb.append(genusOrAbove);
-//      }
-//    }
-//    if (specificEpithet == null) {
-//      if (org.gbif.api.vocabulary.Rank.SPECIES == rank) {
-//        // no species epitheton given, but rank=species. Indetermined species!
-//        if (showIndet) {
-//          sb.append(" spec.");
-//        }
-//      } else if (rank != null && rank.isInfraspecific()) {
-//        // no species epitheton given, but rank below species. Indetermined!
-//        if (showIndet) {
-//          sb.append(' ');
-//          sb.append(rank.getMarker());
-//        }
-//      } else if (infraGeneric != null) {
-//        // this is the terminal name part - always show it!
-//        if (rankMarker && rank != null) {
-//          // If we know the rank we use explicit rank markers
-//          // this is how botanical infrageneric names are formed, see http://www.iapt-taxon.org/nomen/main.php?page=art21
-//          sb.append(' ');
-//          appendRankMarker(sb, rank);
-//          sb.append(infraGeneric);
-//
-//        } else {
-//          if (genusForInfrageneric && genusOrAbove != null) {
-//            // if we have shown the genus already and we do not know the rank we use parenthesis to indicate an infrageneric
-//            sb.append(" (")
-//                .append(infraGeneric)
-//                .append(")");
-//          } else {
-//            // no genus shown yet, just show the plain infrageneric name
-//            sb.append(infraGeneric);
-//          }
-//        }
-//      }
-//      // genus/infrageneric authorship
-//      if (authorship) {
-//        appendAuthorship(sb);
-//      }
-//    } else {
-//      if (infrageneric && infraGeneric != null && (rank == null || rank == org.gbif.api.vocabulary.Rank.GENUS)) {
-//        // only show subgenus if requested
-//        sb.append(" (");
-//        sb.append(infraGeneric);
-//        sb.append(')');
-//      }
-//
-//      // species part
-//      sb.append(' ');
-//      if (hybridMarker && org.gbif.api.vocabulary.NamePart.SPECIFIC == notho) {
-//        sb.append(HYBRID_MARKER);
-//      }
-//      String epi = specificEpithet.replaceAll("[ _-]", "-");
-//      sb.append(epi);
-//
-//      if (infraSpecificEpithet == null) {
-//        // Indetermined? Only show indet cultivar marker if no cultivar epithet exists
-//        if (showIndet && rank != null && rank.isInfraspecific() && (org.gbif.api.vocabulary.Rank.CULTIVAR != rank || cultivarEpithet == null)) {
-//          // no infraspecific epitheton given, but rank below species. Indetermined!
-//          sb.append(' ');
-//          sb.append(rank.getMarker());
-//        }
-//
-//        // species authorship
-//        if (authorship) {
-//          appendAuthorship(sb);
-//        }
-//      } else {
-//        // infraspecific part
-//        sb.append(' ');
-//        if (hybridMarker && org.gbif.api.vocabulary.NamePart.INFRASPECIFIC == notho) {
-//          if (rankMarker) {
-//            sb.append("notho");
-//          } else {
-//            sb.append(HYBRID_MARKER);
-//          }
-//        }
-//        if (rankMarker) {
-//          appendRankMarker(sb, rank);
-//        }
-//        epi = infraSpecificEpithet.replaceAll("[ _-]", "-");
-//        sb.append(epi);
-//        // non autonym authorship ?
-//        if (authorship && !isAutonym()) {
-//          appendAuthorship(sb);
-//        }
-//      }
-//    }
-//
-//    // add cultivar name
-//    if (showStrain && strain != null) {
-//      sb.append(" ");
-//      sb.append(strain);
-//    }
-//
-//    // add cultivar name
-//    if (showCultivar && cultivarEpithet != null) {
-//      sb.append(" '");
-//      sb.append(cultivarEpithet);
-//      sb.append("'");
-//    }
-//
-//    // add sensu/sec reference
-//    if (showSensu && sensu != null) {
-//      sb.append(" ");
-//      sb.append(sensu);
-//    }
-//
-//    // add nom status
-//    if (nomNote && nomStatus != null) {
-//      sb.append(", ");
-//      sb.append(nomStatus);
-//    }
-//
-//    // add remarks
-//    if (remarks && this.remarks != null) {
-//      sb.append(" [");
-//      sb.append(this.remarks);
-//      sb.append("]");
-//    }
-//
-//    String name = sb.toString().trim();
-//    if (decomposition) {
-//      name = UnicodeUtils.decompose(name);
-//    }
-//    if (asciiOnly) {
-//      name = UnicodeUtils.ascii(name);
-//    }
-//    return Strings.emptyToNull(name);
-//  }
-//
-//  private void appendRankMarker(StringBuilder sb, org.gbif.api.vocabulary.Rank rank) {
-//    if (rank != null && rank.getMarker() != null) {
-//      sb.append(rank.getMarker());
-//      sb.append(' ');
-//    }
-//  }
-//
-//  private void appendAuthorship(StringBuilder sb) {
-//    if (bracketAuthorship == null) {
-//      if (bracketYear != null) {
-//        sb.append(" (");
-//        sb.append(bracketYear);
-//        sb.append(")");
-//      }
-//    } else {
-//      sb.append(" (");
-//      sb.append(bracketAuthorship);
-//      if (bracketYear != null) {
-//        sb.append(", ");
-//        sb.append(bracketYear);
-//      }
-//      sb.append(")");
-//    }
-//    if (authorship != null) {
-//      sb.append(" ").append(authorship);
-//    }
-//    if (year != null) {
-//      sb.append(", ");
-//      sb.append(year);
-//    }
-//  }
+    } else if (genus == null) {
+      // this is a uninomial, e.g. genus or a higher rank
+      return scientificName;
+
+    } else if (specificEpithet != null) {
+      // species at least, maybe infraspecific
+      StringBuilder sb = new StringBuilder();
+      sb.append(genus);
+      sb.append(" ");
+      sb.append(specificEpithet);
+      if (infraspecificEpithet != null) {
+        sb.append(" ");
+        if (rank.isInfraspecific()) {
+          sb.append(rank.getMarker());
+          sb.append(" ");
+        }
+        sb.append(infraspecificEpithet);
+      }
+      return sb.toString();
+
+    } else {
+      throw new InvalidNameException("Name without species epithet but not an infrageneric", this);
+    }
+  }
 
 }

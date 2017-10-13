@@ -103,9 +103,9 @@
              VALUES (<include refid="PROPS" />, now())
     </insert>
 
-    <update id="udpate" parameterType="Dataset">
-        UPDATE dataset (<include refid="COLS" />, modified)
-        VALUES (<include refid="PROPS" />, now())
+    <update id="update" parameterType="Dataset">
+        UPDATE dataset
+        SET (<include refid="COLS" />, modified) = (<include refid="PROPS" />, now())
         WHERE key = #{key}
     </update>
 

@@ -36,7 +36,7 @@ public class NameParserGNA implements NameParser {
 
   private Name convert(String name, Rank rank, ScientificNameParser.Result result) {
     if (LOG.isDebugEnabled()) {
-      LOG.debug("GNA result: %s", result);
+      LOG.debug("GNA result: {}", result);
     }
 
     Name n = new Name();

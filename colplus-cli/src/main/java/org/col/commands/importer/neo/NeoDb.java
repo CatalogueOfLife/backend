@@ -1,15 +1,22 @@
 package org.col.commands.importer.neo;
 
 import com.esotericsoftware.kryo.pool.KryoPool;
+import com.google.common.base.Function;
 import com.google.common.base.Throwables;
+import com.google.common.collect.Lists;
 import org.apache.commons.io.FileUtils;
+import org.col.api.Dataset;
 import org.col.api.Reference;
+import org.col.commands.importer.neo.kryo.NeoKryoFactory;
+import org.col.commands.importer.neo.mapdb.MapDbObjectSerializer;
 import org.col.commands.importer.neo.model.Labels;
 import org.col.commands.importer.neo.model.NeoProperties;
 import org.col.commands.importer.neo.model.NeoTaxon;
+import org.mapdb.Atomic;
 import org.mapdb.DB;
 import org.mapdb.Serializer;
 import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.factory.GraphDatabaseBuilder;
 import org.neo4j.kernel.api.exceptions.index.IndexEntryConflictException;
 import org.neo4j.unsafe.batchinsert.BatchInserter;
@@ -17,10 +24,12 @@ import org.neo4j.unsafe.batchinsert.BatchInserters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Stream;
 
 /**
  * A persistence mechanism for storing core taxonomy & names properties and relations in an embedded
@@ -36,6 +45,7 @@ public class NeoDb implements NormalizerStore {
   private static final Logger LOG = LoggerFactory.getLogger(NeoDb.class);
   private final GraphDatabaseBuilder neoFactory;
   private final DB mapDb;
+  private final Atomic.Var<Dataset> dataset;
   private final Map<Long, NeoTaxon> taxa;
   private final Map<Integer, Reference> references;
   private final AtomicInteger referenceSequence = new AtomicInteger(0);
@@ -58,7 +68,7 @@ public class NeoDb implements NormalizerStore {
     this.batchSize = batchSize;
 
     try {
-      pool = new KryoPool.Builder(new org.col.commands.importer.neo.kryo.NeoKryoFactory())
+      pool = new KryoPool.Builder(new NeoKryoFactory())
           .softReferences()
           .build();
 
@@ -66,6 +76,7 @@ public class NeoDb implements NormalizerStore {
       // dataset1/
       //   normalizer(dir)
       //   mapdb
+      dataset = (Atomic.Var<Dataset>) mapDb.atomicVar("dataset", new MapDbObjectSerializer(Dataset.class, pool, 256)).createOrOpen();
       taxa = mapDb.hashMap("taxa")
           .keySerializer(Serializer.LONG)
           .valueSerializer(new MapDbObjectSerializer(NeoTaxon.class, pool, 256))
@@ -75,6 +86,7 @@ public class NeoDb implements NormalizerStore {
           .valueSerializer(new MapDbObjectSerializer(Reference.class, pool, 128))
           .createOrOpen();
       openNeo();
+
     } catch (Exception e) {
       LOG.error("Failed to initialize a new NeoDB", e);
       close();
@@ -126,8 +138,30 @@ public class NeoDb implements NormalizerStore {
   }
 
   @Override
-  public int getDatasetKey() {
-    return -1;
+  public Stream<NeoTaxon> all() {
+    //TODO: use proper tree traversal in neo!!!
+    return taxa.entrySet().stream().map(new Function<Map.Entry<Long, NeoTaxon>, NeoTaxon>() {
+      @Nullable
+      @Override
+      public NeoTaxon apply(@Nullable Map.Entry<Long, NeoTaxon> entry) {
+        NeoTaxon t = entry.getValue();
+        try (Transaction tx = neo.beginTx()) {
+          t.node = neo.getNodeById(entry.getKey());
+        }
+        return t;
+      }
+    });
+  }
+
+  @Override
+  public Stream<NeoTaxon> originalNames() {
+    //TODO: implement properly
+    return Lists.<NeoTaxon>newArrayList().stream();
+  }
+
+  @Override
+  public Dataset getDataset() {
+    return dataset.get();
   }
 
   /**
@@ -215,6 +249,16 @@ public class NeoDb implements NormalizerStore {
       r.setKey(referenceSequence.incrementAndGet());
     }
     references.put(r.getKey(), r);
+  }
+
+  @Override
+  public void put(Dataset d) {
+    // keep existing dataset key
+    Dataset old = dataset.get();
+    if (old != null) {
+      d.setKey(old.getKey());
+    }
+    dataset.set(d);
   }
 }
 

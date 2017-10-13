@@ -3,7 +3,9 @@ package org.col.commands.importer.neo;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
+import org.col.api.Dataset;
 import org.col.api.VerbatimRecord;
+import org.col.api.vocab.DataFormat;
 import org.col.commands.importer.NormalizationFailedException;
 import org.col.commands.importer.VerbatimInterpreter;
 import org.col.commands.importer.VerbatimRecordFactory;
@@ -12,6 +14,7 @@ import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.Term;
 import org.gbif.dwca.io.Archive;
 import org.gbif.dwca.io.ArchiveFactory;
+import org.gbif.dwca.io.MetadataException;
 import org.gbif.dwca.record.StarRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,6 +44,7 @@ public class NormalizerInserter {
    */
   public InsertMetadata insert(File dwca) throws NormalizationFailedException {
     openArchive(dwca);
+    updateMetadata();
     store.startBatchMode();
     for (StarRecord star : arch) {
       insertStarRecord(star);
@@ -51,10 +55,33 @@ public class NormalizerInserter {
     return meta;
   }
 
+  /**
+   * Reads the dataset metadata and puts it into the store
+   */
+  private void updateMetadata() {
+    Dataset d = new Dataset();
+    d.setDataFormat(DataFormat.DWCA);
+    try {
+      //TODO: replace with a leaner CoL dataset parser for EML that can handle specific CoL extensions
+      org.gbif.api.model.registry.Dataset gbif = arch.getMetadata();
+
+      d.setTitle(gbif.getTitle());
+      d.setDescription(gbif.getDescription());
+      d.setHomepage(gbif.getHomepage());
+
+    } catch (MetadataException e) {
+      LOG.error("Unable to read dataset metadata from dwc archive", e);
+
+    } finally {
+      // the key will be preserved by the store
+      store.put(d);
+    }
+  }
+
   @VisibleForTesting
   protected void insertStarRecord(StarRecord star) throws NormalizationFailedException {
 
-    VerbatimRecord v = VerbatimRecordFactory.build(store.getDatasetKey(), star);
+    VerbatimRecord v = VerbatimRecordFactory.build(star);
 
     NeoTaxon i = interpreter.interpret(v);
 
@@ -66,8 +93,8 @@ public class NormalizerInserter {
     if (meta.getRecords() % (10000) == 0) {
       LOG.info("Inserts done into neo4j: {}", meta.getRecords());
       if (Thread.interrupted()) {
-        LOG.warn("NeoInserter interrupted, exit {} early with incomplete parsing", store.getDatasetKey());
-        throw new NormalizationFailedException("NeoInserter interrupted");
+        LOG.warn("NormalizerInserter interrupted, exit early with incomplete parsing");
+        throw new NormalizationFailedException("NormalizerInserter interrupted");
       }
     }
   }

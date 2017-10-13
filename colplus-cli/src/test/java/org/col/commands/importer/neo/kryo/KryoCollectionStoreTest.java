@@ -1,4 +1,4 @@
-package org.col.commands.importer.neo;
+package org.col.commands.importer.neo.kryo;
 
 import com.esotericsoftware.kryo.pool.KryoPool;
 import org.col.api.Page;
@@ -14,7 +14,7 @@ import static org.junit.Assert.assertNotNull;
 /**
  *
  */
-public class KryoStoreTest {
+public class KryoCollectionStoreTest {
 
   @Test
   public void storeReferences() throws Exception {
@@ -23,7 +23,7 @@ public class KryoStoreTest {
         .softReferences()
         .build();
 
-    try (KryoStore<Page> store = new KryoStore(Page.class, File.createTempFile("kryo-",".bin"), pool)) {
+    try (KryoCollectionStore<Page> store = new KryoCollectionStore(Page.class, File.createTempFile("kryo-",".bin"), pool)) {
 
       for (int i = 0; i < 100; i++) {
         Page r = buildPage();

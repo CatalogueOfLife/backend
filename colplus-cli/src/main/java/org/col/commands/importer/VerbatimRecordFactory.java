@@ -2,7 +2,6 @@ package org.col.commands.importer;
 
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Strings;
-import org.col.api.Dataset;
 import org.col.api.TermRecord;
 import org.col.api.VerbatimRecord;
 import org.gbif.dwc.terms.Term;
@@ -26,9 +25,8 @@ public class VerbatimRecordFactory {
     return Strings.emptyToNull(CharMatcher.JAVA_ISO_CONTROL.trimAndCollapseFrom(x, ' ').trim());
   }
 
-  public static VerbatimRecord build (int datasetKey, StarRecord star) {
+  public static VerbatimRecord build (StarRecord star) {
     VerbatimRecord v = new VerbatimRecord();
-    v.setDataset(new Dataset(datasetKey));
     v.setId(star.core().id());
 
     // set core terms

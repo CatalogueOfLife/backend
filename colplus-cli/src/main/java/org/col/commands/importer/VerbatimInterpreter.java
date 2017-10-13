@@ -4,11 +4,15 @@ import org.col.api.Authorship;
 import org.col.api.Name;
 import org.col.api.Taxon;
 import org.col.api.VerbatimRecord;
+import org.col.api.vocab.NameType;
+import org.col.api.vocab.Origin;
 import org.col.api.vocab.Rank;
 import org.col.commands.importer.neo.model.NeoTaxon;
 import org.col.parser.NameParser;
 import org.col.parser.NameParserGNA;
 import org.col.parser.RankParser;
+import org.col.parser.UriParser;
+import org.gbif.dwc.terms.DcTerm;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.GbifTerm;
 import org.gbif.dwc.terms.Term;
@@ -23,6 +27,7 @@ public class VerbatimInterpreter {
 
   private RankParser rankParser = new RankParser();
   private NameParser nameParser = new NameParserGNA();
+  private UriParser uriParser = new UriParser();
 
 
   private static String first(VerbatimRecord v, Term... terms) {
@@ -54,6 +59,7 @@ public class VerbatimInterpreter {
     // or use the atomized parts which we also use to validate the parsing result.
     if (v.hasCoreTerm(DwcTerm.scientificName)) {
       n = nameParser.parse(v.getCoreTerm(DwcTerm.scientificName), rank).get();
+      // TODO: validate name against optional atomized terms!
 
     } else {
       n = new Name();
@@ -63,7 +69,9 @@ public class VerbatimInterpreter {
       n.setSpecificEpithet(v.getCoreTerm(DwcTerm.specificEpithet));
       n.setInfraspecificEpithet(v.getCoreTerm(DwcTerm.infraspecificEpithet));
       n.setScientificName(n.buildScientificName());
-
+      n.setType(NameType.SCIENTIFIC);
+      //TODO: detect named hybrids in epithets manually
+      n.setNotho(null);
     }
 
     // try to add an authorship if not yet there
@@ -76,7 +84,22 @@ public class VerbatimInterpreter {
       }
     }
 
+    if (!n.isConsistent()) {
+      //TODO: store issue
+      LOG.warn("Inconsistent name: {}", n);
+    }
+
     n.setId(v.getFirst(DwcTerm.scientificNameID, DwcTerm.taxonID));
+    n.setOrigin(Origin.SOURCE);
+    n.setSourceUrl(uriParser.parse(v.getCoreTerm(DcTerm.references)).orElse(null));
+    // TODO: use new scientificNameRemarks/nomenclatureRemarks term
+    n.setRemarks(v.getCoreTerm(DwcTerm.taxonRemarks));
+    // TODO: set more properties
+    n.setEtymology(null);
+    n.setOriginalName(null);
+    n.setFossil(null);
+    n.setNomenclaturalCode(null);
+    n.setStatus(null);
 
     return n;
   }

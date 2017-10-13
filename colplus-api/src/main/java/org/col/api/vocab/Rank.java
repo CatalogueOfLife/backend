@@ -410,14 +410,14 @@ public enum Rank {
    * @return true for infra subspecific ranks.
    */
   public boolean isInfrasubspecific() {
-    return ordinal() > SUBSPECIES.ordinal() && notOtherOrUnknown();
+    return ordinal() > SUBSPECIES.ordinal() && notOtherOrUnranked();
   }
 
   /**
    * @return true for rank is below genus. Also incluse species and infraspecific ranks
    */
   public boolean isInfrageneric() {
-    return ordinal() > GENUS.ordinal() && notOtherOrUnknown();
+    return ordinal() > GENUS.ordinal() && notOtherOrUnranked();
   }
 
   /**
@@ -433,10 +433,10 @@ public enum Rank {
   }
 
   public boolean isSpeciesOrBelow() {
-    return ordinal() >= SPECIES.ordinal() && notOtherOrUnknown();
+    return ordinal() >= SPECIES.ordinal() && notOtherOrUnranked();
   }
 
-  public boolean notOtherOrUnknown() {
+  public boolean notOtherOrUnranked() {
     return this != OTHER && this != UNRANKED;
   }
 
@@ -445,6 +445,13 @@ public enum Rank {
    */
   public boolean isSuprageneric() {
     return ordinal() < GENUS.ordinal();
+  }
+
+  /**
+   * @return true if the rank is above genus.
+   */
+  public boolean isGenusOrSuprageneric() {
+    return ordinal() <= GENUS.ordinal();
   }
 
   /**

@@ -1,4 +1,4 @@
-package org.col.commands.importer.neo;
+package org.col.commands.importer.neo.kryo;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.InputChunked;
@@ -15,7 +15,7 @@ import java.util.Iterator;
  * Store that writes objects of the same type to a file and offers an iterator to read them all in the
  * same order as initially written.
  */
-public class KryoStore<T> implements AutoCloseable, Iterable<T> {
+public class KryoCollectionStore<T> implements AutoCloseable, Iterable<T> {
 
   private final File store;
   private OutputStream outputStream;
@@ -24,7 +24,7 @@ public class KryoStore<T> implements AutoCloseable, Iterable<T> {
   private final KryoPool pool;
   private final Class<T> clazz;
 
-  public KryoStore(Class<T> clazz, File store, KryoPool pool) throws FileNotFoundException {
+  public KryoCollectionStore(Class<T> clazz, File store, KryoPool pool) throws FileNotFoundException {
     this.clazz = clazz;
     this.store = store;
     outputStream = new UnsafeOutput(new FileOutputStream(store));

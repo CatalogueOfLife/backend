@@ -6,7 +6,6 @@ import com.esotericsoftware.kryo.io.Output;
 import com.esotericsoftware.kryo.pool.KryoFactory;
 import com.esotericsoftware.kryo.pool.KryoPool;
 import org.apache.commons.lang3.NotImplementedException;
-import org.jetbrains.annotations.NotNull;
 import org.mapdb.DataIO;
 import org.mapdb.DataInput2;
 import org.mapdb.DataOutput2;
@@ -36,7 +35,7 @@ public class MapDbObjectSerializer<T> extends GroupSerializerObjectArray<T> {
   }
 
   @Override
-  public void serialize(@NotNull DataOutput2 out, @NotNull T value) throws IOException {
+  public void serialize(DataOutput2 out, T value) throws IOException {
     Kryo kryo = pool.borrow();
     try {
       ByteArrayOutputStream buffer = new ByteArrayOutputStream(bufferSize);
@@ -52,7 +51,7 @@ public class MapDbObjectSerializer<T> extends GroupSerializerObjectArray<T> {
   }
 
   @Override
-  public T deserialize(@NotNull DataInput2 in, int available) throws IOException {
+  public T deserialize(DataInput2 in, int available) throws IOException {
     if (available == 0) return null;
     Kryo kryo = pool.borrow();
     try {
