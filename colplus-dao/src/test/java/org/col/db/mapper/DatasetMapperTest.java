@@ -3,9 +3,9 @@ package org.col.db.mapper;
 import com.google.common.collect.Lists;
 import org.col.api.Dataset;
 import org.col.api.Page;
+import org.col.api.RandomUtils;
 import org.col.api.vocab.DataFormat;
 import org.col.dao.DaoTestUtil;
-import org.gbif.utils.text.StringUtils;
 import org.junit.Test;
 
 import java.net.URI;
@@ -27,14 +27,14 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
   private Dataset create() throws Exception {
     Dataset d = new Dataset();
     d.setGbifKey(UUID.randomUUID());
-    d.setTitle(StringUtils.randomString(80));
-    d.setDescription(StringUtils.randomString(500));
-    d.setAlias(StringUtils.randomString(10));
-    d.setAuthorsAndEditors(StringUtils.randomString(100));
+    d.setTitle(RandomUtils.randomString(80));
+    d.setDescription(RandomUtils.randomString(500));
+    d.setAlias(RandomUtils.randomString(10));
+    d.setAuthorsAndEditors(RandomUtils.randomString(100));
     d.setCompleteness(DaoTestUtil.RND.nextInt(100));
     d.setConfidence(DaoTestUtil.RND.nextInt(5));
     d.setContactPerson("Hans Peter");
-    d.setCoverage(StringUtils.randomString(75));
+    d.setCoverage(RandomUtils.randomString(75));
     d.setTaxonomicCoverage("tax cover");
     d.setDataAccess(URI.create("https://api.gbif.org/v1/dataset/"+d.getGbifKey()));
     d.setDataFormat(DataFormat.SQL);

@@ -2,22 +2,19 @@ package org.col.db.mapper;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
-import org.col.api.Authorship;
-import org.col.api.Dataset;
-import org.col.api.Name;
-import org.col.api.Page;
+import org.col.api.*;
 import org.col.api.vocab.NamePart;
 import org.col.api.vocab.NameType;
 import org.col.api.vocab.Origin;
 import org.col.api.vocab.Rank;
 import org.col.dao.DaoTestUtil;
-import org.gbif.utils.text.StringUtils;
 import org.junit.Test;
 
 import java.util.List;
 import java.util.Random;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  *
@@ -51,7 +48,7 @@ public class NameMapperTest extends MapperTestBase<NameMapper> {
   private Name create() throws Exception {
     Name n = new Name();
     n.setDataset(DaoTestUtil.DATASET1);
-    n.setScientificName(StringUtils.randomSpecies());
+    n.setScientificName(RandomUtils.randomSpecies());
     n.setAuthorship(createAuthorship());
     List<String> tokens = SPACE_SPLITTER.splitToList(n.getScientificName());
     n.setGenus(tokens.get(0));
@@ -69,13 +66,13 @@ public class NameMapperTest extends MapperTestBase<NameMapper> {
   private Authorship createAuthorship() throws Exception {
     Authorship a = new Authorship();
     while (a.getCombinationAuthors().size() < 2 || rnd.nextBoolean()) {
-      a.getCombinationAuthors().add(StringUtils.randomAuthor());
+      a.getCombinationAuthors().add(RandomUtils.randomAuthor());
     }
-    a.setCombinationYear(StringUtils.randomSpeciesYear());
+    a.setCombinationYear(RandomUtils.randomSpeciesYear());
     while (a.getOriginalAuthors().isEmpty() || rnd.nextBoolean()) {
-      a.getOriginalAuthors().add(StringUtils.randomAuthor());
+      a.getOriginalAuthors().add(RandomUtils.randomAuthor());
     }
-    a.setOriginalYear(StringUtils.randomSpeciesYear());
+    a.setOriginalYear(RandomUtils.randomSpeciesYear());
     return a;
   }
 

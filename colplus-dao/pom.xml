@@ -50,5 +50,11 @@
             <artifactId>postgresql-embedded</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.col</groupId>
+            <artifactId>colplus-api</artifactId>
+            <classifier>tests</classifier>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>

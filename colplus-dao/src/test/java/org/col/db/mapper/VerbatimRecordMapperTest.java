@@ -1,12 +1,15 @@
 package org.col.db.mapper;
 
+import org.col.api.RandomUtils;
 import org.col.api.TermRecord;
 import org.col.api.VerbatimRecord;
 import org.col.api.VerbatimRecordTerms;
 import org.col.api.vocab.Issue;
 import org.col.dao.DaoTestUtil;
-import org.gbif.dwc.terms.*;
-import org.gbif.utils.text.StringUtils;
+import org.gbif.dwc.terms.DcTerm;
+import org.gbif.dwc.terms.DwcTerm;
+import org.gbif.dwc.terms.GbifTerm;
+import org.gbif.dwc.terms.UnknownTerm;
 import org.junit.Test;
 
 import java.net.URI;
@@ -27,7 +30,7 @@ public class VerbatimRecordMapperTest extends MapperTestBase<VerbatimRecordMappe
   private VerbatimRecord create() throws Exception {
     VerbatimRecord v = new VerbatimRecord();
     v.setDataset(DaoTestUtil.DATASET1);
-    v.setId(StringUtils.randomString(8));
+    v.setId(RandomUtils.randomString(8));
     v.addIssue(Issue.ACCEPTED_NAME_MISSING);
     v.addIssue(Issue.HOMONYM, "Abies alba");
     v.setTerms(new VerbatimRecordTerms());
@@ -38,15 +41,15 @@ public class VerbatimRecordMapperTest extends MapperTestBase<VerbatimRecordMappe
     }
     for (GbifTerm t : GbifTerm.values()) {
       if (t.isClass()) continue;
-      v.setCoreTerm(t, StringUtils.randomString(1 + rnd.nextInt(19)).toLowerCase());
+      v.setCoreTerm(t, RandomUtils.randomString(1 + rnd.nextInt(19)).toLowerCase());
     }
-    v.setCoreTerm(new UnknownTerm(URI.create("http://col.plus/terms/punk")), StringUtils.randomString(1 + rnd.nextInt(50)));
+    v.setCoreTerm(new UnknownTerm(URI.create("http://col.plus/terms/punk")), RandomUtils.randomString(1 + rnd.nextInt(50)));
 
     // distribution
     for (int idx=0; idx < 2; idx++) {
       TermRecord rec = new TermRecord();
-      rec.put(DwcTerm.countryCode, StringUtils.randomString(2).toUpperCase());
-      rec.put(DwcTerm.locality, StringUtils.randomString(20).toLowerCase());
+      rec.put(DwcTerm.countryCode, RandomUtils.randomString(2).toUpperCase());
+      rec.put(DwcTerm.locality, RandomUtils.randomString(20).toLowerCase());
       rec.put(DwcTerm.occurrenceStatus, "present");
       rec.put(new UnknownTerm(URI.create("http://col.plus/terms/punk")), "Stiv Bators");
       v.addExtensionRecord(GbifTerm.Distribution, rec);
@@ -55,9 +58,9 @@ public class VerbatimRecordMapperTest extends MapperTestBase<VerbatimRecordMappe
     // vernacular
     for (int idx=0; idx < 3; idx++) {
       TermRecord rec = new TermRecord();
-      rec.put(DwcTerm.countryCode, StringUtils.randomString(2).toUpperCase());
-      rec.put(DcTerm.language, StringUtils.randomString(3).toLowerCase());
-      rec.put(DwcTerm.vernacularName, StringUtils.randomSpecies());
+      rec.put(DwcTerm.countryCode, RandomUtils.randomString(2).toUpperCase());
+      rec.put(DcTerm.language, RandomUtils.randomString(3).toLowerCase());
+      rec.put(DwcTerm.vernacularName, RandomUtils.randomSpecies());
       rec.put(new UnknownTerm(URI.create("http://col.plus/terms/punk")), "Stiv Bators");
       v.addExtensionRecord(GbifTerm.VernacularName, rec);
     }

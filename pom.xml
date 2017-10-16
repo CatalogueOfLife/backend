@@ -135,7 +135,14 @@
 	      <artifactId>colplus-api</artifactId>
           <version>${project.version}</version>
 	    </dependency>
-	    <dependency>
+        <dependency>
+            <groupId>org.col</groupId>
+            <artifactId>colplus-api</artifactId>
+            <version>${project.version}</version>
+            <classifier>tests</classifier>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
 	      <groupId>org.col</groupId>
 	      <artifactId>colplus-common</artifactId>
           <version>${project.version}</version>

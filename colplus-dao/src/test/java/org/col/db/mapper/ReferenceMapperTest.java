@@ -2,9 +2,9 @@ package org.col.db.mapper;
 
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.col.api.RandomUtils;
 import org.col.api.Reference;
 import org.col.dao.DaoTestUtil;
-import org.gbif.utils.text.StringUtils;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -21,7 +21,7 @@ public class ReferenceMapperTest extends MapperTestBase<ReferenceMapper> {
   private Reference create() throws Exception {
     Reference d = new Reference();
     d.setDataset(DaoTestUtil.DATASET1);
-    d.setId(StringUtils.randomString(8));
+    d.setId(RandomUtils.randomString(8));
     d.setYear(1988);
     d.setCsl(createCsl());
     return d;
@@ -30,11 +30,11 @@ public class ReferenceMapperTest extends MapperTestBase<ReferenceMapper> {
   private ObjectNode createCsl() {
     JsonNodeFactory factory = JsonNodeFactory.instance;
     ObjectNode csl = factory.objectNode();
-    csl.put("title", StringUtils.randomString(80));
-    csl.put("container-title", StringUtils.randomString(100));
+    csl.put("title", RandomUtils.randomString(80));
+    csl.put("container-title", RandomUtils.randomString(100));
     csl.put("publisher", "Springer");
     csl.put("year", "1988");
-    csl.put("doi", "doi:10.1234/" + StringUtils.randomString(20));
+    csl.put("doi", "doi:10.1234/" + RandomUtils.randomString(20));
     return csl;
   }
 
