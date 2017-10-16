@@ -15,7 +15,6 @@
  */
 package org.col.api.vocab;
 
-import org.gbif.api.util.VocabularyUtils;
 
 /**
  * Enumeration for all continents based on the 7 number model found on

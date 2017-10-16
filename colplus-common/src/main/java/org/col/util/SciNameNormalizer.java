@@ -2,7 +2,7 @@ package org.col.util;
 
 import java.util.regex.Pattern;
 
-import static org.gbif.utils.text.StringUtils.foldToAscii;
+import static org.col.util.text.StringUtils.foldToAscii;
 
 
 /**

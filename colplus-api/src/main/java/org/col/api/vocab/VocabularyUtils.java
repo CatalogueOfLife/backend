@@ -24,7 +24,7 @@ import java.util.Optional;
 
 public final class VocabularyUtils {
 
-  private static final Logger LOG = LoggerFactory.getLogger(org.gbif.api.util.VocabularyUtils.class);
+  private static final Logger LOG = LoggerFactory.getLogger(VocabularyUtils.class);
 
   /**
    * Generic method to toEnum an enumeration value for a given string based on the name of the enum member.
@@ -107,7 +107,7 @@ public final class VocabularyUtils {
    */
   public static Map<String, Enum<?>[]> listEnumerations(String packageName) {
     try {
-      ClassPath cp = ClassPath.from(org.gbif.api.util.VocabularyUtils.class.getClassLoader());
+      ClassPath cp = ClassPath.from(VocabularyUtils.class.getClassLoader());
       ImmutableMap.Builder<String, Enum<?>[]> builder = ImmutableMap.builder();
 
       List<ClassPath.ClassInfo> infos = cp.getTopLevelClasses(packageName).asList();
@@ -141,10 +141,6 @@ public final class VocabularyUtils {
    */
   public static <G extends Enum<G>> G convertEnum(Class<G> targetClass, Enum<?> value) {
     return value == null ? null : Enum.valueOf(targetClass, value.name());
-  }
-
-  public static org.gbif.api.vocabulary.Rank convertToGbif(Rank rank) {
-    return convertEnum(org.gbif.api.vocabulary.Rank.class, rank);
   }
 
 }

@@ -9,6 +9,10 @@ public class UnparsableException extends IllegalArgumentException {
     super(e);
   }
 
+  public UnparsableException(String msg) {
+    super(msg);
+  }
+
   public UnparsableException(NameType type, String name) {
     super("Unparsable "+type+" name: " + name);
   }

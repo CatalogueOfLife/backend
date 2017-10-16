@@ -12,7 +12,7 @@
   <name>CoL backend services (Parser)</name>
 
     <dependencies>
-        <!-- col & gbif-->
+        <!-- col -->
         <dependency>
             <groupId>org.col</groupId>
             <artifactId>colplus-api</artifactId>
@@ -26,24 +26,46 @@
             <artifactId>colplus-dwca</artifactId>
         </dependency>
 
-        <!-- GNA name parser in Scala -->
+        <!-- gbif-->
+        <dependency>
+            <groupId>org.gbif</groupId>
+            <artifactId>gbif-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.gbif</groupId>
+            <artifactId>gbif-parsers</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.gbif</groupId>
+            <artifactId>name-parser</artifactId>
+        </dependency>
+
+        <!-- GNA name parser in Scala using AST 2.11 libs -->
         <dependency>
             <groupId>org.globalnames</groupId>
             <artifactId>gnparser_2.11</artifactId>
-            <version>0.4.2</version>
-            <exclusions>
-                <!--
-                <exclusion>
-                    <groupId>org.json4s</groupId>
-                    <artifactId>json4s-jackson_2.11</artifactId>
-                </exclusion>
-                -->
-            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.json4s</groupId>
+            <artifactId>json4s-ast_2.11</artifactId>
         </dependency>
         <dependency>
             <groupId>org.scala-lang</groupId>
             <artifactId>scala-library</artifactId>
-            <version>2.11.8</version>
+        </dependency>
+
+        <!-- other -->
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.google.code.findbugs</groupId>
+            <artifactId>jsr305</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
         </dependency>
 
         <!-- logging -->

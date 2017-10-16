@@ -29,7 +29,7 @@ public class NameParserGBIF implements NameParser {
    * into ParsedName objects with the scientific name, rank and name type given.
    */
   public Optional<Name> parse(String name, Rank rank) {
-    ParsedName pn = PARSER.parseQuietly(name, VocabularyUtils.convertToGbif(rank));
+    ParsedName pn = PARSER.parseQuietly(name, RankParser.convertToGbif(rank));
     Name n = new Name();
     n.setRank(rank);
     if (pn.getType() == org.gbif.api.vocabulary.NameType.DOUBTFUL) {

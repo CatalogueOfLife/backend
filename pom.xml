@@ -38,8 +38,9 @@
     <dwc-api.version>1.17</dwc-api.version>
     <dwca-io.version>1.31</dwca-io.version>
     <fastutil.version>8.1.0</fastutil.version>
-    <gbif-parser.version>0.31</gbif-parser.version>
+    <gbif-api.version>0.48</gbif-api.version>
     <gbif-common.version>0.36</gbif-common.version>
+    <gbif-parser.version>0.31</gbif-parser.version>
     <guava.version>21.0</guava.version>
     <hikaricp.version>2.7.1</hikaricp.version>
     <hk2.version>2.5.0-b32</hk2.version>
@@ -57,7 +58,10 @@
     <postgresql-embedded>2.4</postgresql-embedded>
     <slf4j.version>1.7.24</slf4j.version>
     <validation-api.version>2.0.0.Final</validation-api.version>
-
+    <!-- GNA Parser deps -->
+    <gnparser.version>0.4.2</gnparser.version>
+    <json4s.version>3.5.2</json4s.version>
+    <scala.version>2.11.8</scala.version>
 
       <!-- Maven plugin versions.
           Check for available updates: mvn versions:display-plugin-updates
@@ -215,8 +219,8 @@
         </dependency>
         <dependency>
             <groupId>org.gbif</groupId>
-            <artifactId>gbif-common</artifactId>
-            <version>${gbif-common.version}</version>
+            <artifactId>gbif-api</artifactId>
+            <version>${gbif-api.version}</version>
         </dependency>
         <dependency>
             <groupId>org.gbif</groupId>
@@ -239,6 +243,23 @@
                     <groupId>asm</groupId>
                 </exclusion>
             </exclusions>
+        </dependency>
+
+        <!-- GNA -->
+        <dependency>
+            <groupId>org.globalnames</groupId>
+            <artifactId>gnparser_2.11</artifactId>
+            <version>${gnparser.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.json4s</groupId>
+            <artifactId>json4s-ast_2.11</artifactId>
+            <version>${json4s.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-library</artifactId>
+            <version>${scala.version}</version>
         </dependency>
 
         <!-- mybatis / DB -->

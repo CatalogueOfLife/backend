@@ -2,6 +2,7 @@ package org.col.parser;
 
 import com.google.common.base.Strings;
 import org.col.api.vocab.Rank;
+import org.col.api.vocab.VocabularyUtils;
 
 import java.util.Optional;
 
@@ -22,4 +23,9 @@ public class RankParser implements Parser<Rank> {
     }
     return Optional.empty();
   }
+
+  public static org.gbif.api.vocabulary.Rank convertToGbif(Rank rank) {
+    return VocabularyUtils.convertEnum(org.gbif.api.vocabulary.Rank.class, rank);
+  }
+
 }
