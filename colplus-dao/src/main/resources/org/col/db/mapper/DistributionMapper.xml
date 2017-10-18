@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.col.db.mapper.DistributionMapper">
+
+  <sql id="SELECT">
+    d.key,
+    d.dataset_key,
+    d.taxon_key,
+    t.id as taxon_id,
+    d.area,
+    d.area_standard,
+    d.status
+  </sql>
+
+  <sql id="COLS">
+    dataset_key,
+    taxon_key,
+    area,
+    area_standard,
+    status
+  </sql>
+
+  <sql id="PROPS">
+    #{dataset.key},
+    #{taxon.key},
+    #{area},
+    #{areaStandard},
+    #{status}
+  </sql>
+
+  <sql id="FROM">
+    distribution d
+    LEFT JOIN dataset ds on (d.dataset_key=ds.key)
+    LEFT JOIN taxon t on (d.taxon_key=t.key)
+  </sql>
+
+  <!-- A mapping to Name, mostly auto mapped -->
+  <resultMap id="distributionResultMap" type="Distribution" autoMapping="true">
+    <id property="key" column="key" />
+    <association property="dataset" javaType="Dataset">
+      <id property="key" column="dataset_key" />
+    </association>
+    <association property="taxon" javaType="Taxon">
+      <id property="key" column="taxon_key" />
+      <id property="id" column="taxon_id" />
+    </association>
+  </resultMap>
+
+
+  <select id="getDistributions" parameterType="map" resultMap="distributionResultMap">
+    SELECT
+    <include refid="SELECT" />
+    FROM
+    <include refid="FROM" />
+    WHERE d.dataset_key = #{datasetKey} AND t.id = #{taxonId}
+    ORDER BY d.key
+  </select>
+
+  <select id="getDistributionsByTaxonKey" parameterType="map" resultMap="distributionResultMap">
+    SELECT
+    <include refid="SELECT" />
+    FROM
+    <include refid="FROM" />
+    WHERE d.taxon_key = #{taxonKey}
+    ORDER BY d.key
+  </select>
+
+  <select id="getByKey" resultMap="distributionResultMap">
+    SELECT
+    <include refid="SELECT" />
+    FROM
+    <include refid="FROM" />
+    WHERE d.key = #{key}
+  </select>
+
+  <insert id="create" parameterType="Distribution" useGeneratedKeys="true" keyProperty="key">
+    INSERT INTO distribution (
+    <include refid="COLS" />
+    )
+    VALUES (
+    <include refid="PROPS" />
+    )
+  </insert>
+
+</mapper>
