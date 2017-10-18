@@ -3,10 +3,10 @@ package org.col.dao;
 import java.util.List;
 
 import org.apache.ibatis.session.SqlSession;
+import org.col.api.AssociatedReference;
 import org.col.api.Name;
 import org.col.api.Page;
 import org.col.api.PagingResultSet;
-import org.col.api.Reference;
 import org.col.api.VerbatimRecord;
 import org.col.db.mapper.NameMapper;
 import org.col.db.mapper.ReferenceMapper;
@@ -31,9 +31,10 @@ public class NameDao {
 	}
 
 	public PagingResultSet<Name> list(int datasetKey, Page page) {
+		Page p = page == null ? new Page() : page;
 		NameMapper mapper = session.getMapper(NameMapper.class);
 		int total = mapper.count(datasetKey);
-		List<Name> result = mapper.list(datasetKey, page);
+		List<Name> result = mapper.list(datasetKey, p);
 		return new PagingResultSet<>(page, total, result);
 	}
 
@@ -67,7 +68,7 @@ public class NameDao {
 		return mapper.search(datasetKey, q);
 	}
 
-	public Reference getPublishedIn(int datasetKey, String id) {
+	public AssociatedReference getPublishedIn(int datasetKey, String id) {
 		ReferenceMapper mapper = session.getMapper(ReferenceMapper.class);
 		return mapper.getPublishedIn(datasetKey, id);
 	}

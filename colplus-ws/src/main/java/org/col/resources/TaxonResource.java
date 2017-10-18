@@ -1,5 +1,6 @@
 package org.col.resources;
 
+import javax.annotation.Nullable;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -8,6 +9,8 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.ibatis.session.SqlSession;
+import org.col.api.Page;
+import org.col.api.PagingResultSet;
 import org.col.api.Taxon;
 import org.col.api.TaxonInfo;
 import org.col.dao.TaxonDao;
@@ -24,12 +27,21 @@ public class TaxonResource {
 	private static final Logger LOG = LoggerFactory.getLogger(TaxonResource.class);
 
 	@GET
+	public PagingResultSet<Taxon> list(@PathParam("datasetKey") Integer datasetKey,
+	    @Nullable @Context Page page,
+	    @Context SqlSession session) {
+		TaxonDao dao = new TaxonDao(session);
+		return dao.list(datasetKey, page);
+	}
+
+	@GET
 	@Timed
 	@Path("{id}")
 	public Taxon get(@PathParam("datasetKey") int datasetKey,
 	    @PathParam("id") String id,
 	    @Context SqlSession session) {
-		return new TaxonDao(session).get(datasetKey, id);
+		TaxonDao dao = new TaxonDao(session);
+		return dao.get(datasetKey, id);
 	}
 
 	@GET
@@ -38,7 +50,8 @@ public class TaxonResource {
 	public TaxonInfo info(@PathParam("datasetKey") int datasetKey,
 	    @PathParam("taxonId") String taxonId,
 	    @Context SqlSession session) {
-		return new TaxonDao(session).getTaxonInfo(datasetKey, taxonId);
+		TaxonDao dao = new TaxonDao(session);
+		return dao.getTaxonInfo(datasetKey, taxonId);
 	}
 
 }

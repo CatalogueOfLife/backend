@@ -2,8 +2,11 @@ package org.col.dao;
 
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.Page;
+import org.col.api.PagingResultSet;
 import org.col.api.Taxon;
 import org.col.api.TaxonInfo;
 import org.col.api.VernacularName;
@@ -23,9 +26,12 @@ public class TaxonDao {
 		return mapper.count(datasetKey);
 	}
 
-	public List<Taxon> list(int datasetKey, Page page) {
+	public PagingResultSet<Taxon> list(int datasetKey, @Nullable Page page) {
+		Page p = page == null ? new Page() : page;
 		TaxonMapper mapper = session.getMapper(TaxonMapper.class);
-		return mapper.list(datasetKey, page);
+		int total = mapper.count(datasetKey);
+		List<Taxon> result = mapper.list(datasetKey, p);
+		return new PagingResultSet<>(p, total, result);
 	}
 
 	public Taxon getByKey(int key) {

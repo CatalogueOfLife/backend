@@ -11,30 +11,35 @@ import org.apache.ibatis.session.SqlSession;
 import org.col.api.Page;
 import org.col.api.PagingResultSet;
 import org.col.api.Reference;
-import org.col.db.mapper.ReferenceMapper;
+import org.col.dao.ReferenceDao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.codahale.metrics.annotation.Timed;
 
-
 @Path("/dataset/{datasetKey}/reference")
 @Produces(MediaType.APPLICATION_JSON)
 public class ReferenceResource {
-  private static final Logger LOG = LoggerFactory.getLogger(ReferenceResource.class);
 
-  @GET
-  public PagingResultSet<Reference> list(@PathParam("datasetKey") Integer datasetKey, @Context Page page, @Context SqlSession session) {
-    ReferenceMapper mapper = session.getMapper(ReferenceMapper.class);
-    return new PagingResultSet<Reference>(page, mapper.count(datasetKey), mapper.list(datasetKey, page));
-  }
+	@SuppressWarnings("unused")
+	private static final Logger LOG = LoggerFactory.getLogger(ReferenceResource.class);
 
-  @GET
-  @Timed
-  @Path("{id}")
-  public Reference get(@PathParam("datasetKey") Integer datasetKey, @PathParam("id") String key, @Context SqlSession session) {
-    ReferenceMapper mapper = session.getMapper(ReferenceMapper.class);
-    return mapper.get(datasetKey, key);
-  }
+	@GET
+	public PagingResultSet<Reference> list(@PathParam("datasetKey") Integer datasetKey,
+	    @Context Page page,
+	    @Context SqlSession session) {
+		ReferenceDao dao = new ReferenceDao(session);
+		return dao.list(datasetKey, page);
+	}
+
+	@GET
+	@Timed
+	@Path("{id}")
+	public Reference get(@PathParam("datasetKey") Integer datasetKey,
+	    @PathParam("id") String id,
+	    @Context SqlSession session) {
+		ReferenceDao dao = new ReferenceDao(session);
+		return dao.get(datasetKey, id);
+	}
 
 }

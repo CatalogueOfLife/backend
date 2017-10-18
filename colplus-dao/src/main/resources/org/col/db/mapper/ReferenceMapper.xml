@@ -13,6 +13,16 @@
     r.year
   </sql>
 
+  <sql id="SELECT_WITH_PAGE">
+    r.key,
+    r.id,
+    r.dataset_key,
+    r.csl,
+    r.serial_key,
+    r.year,
+    na.reference_page as page
+  </sql>
+
   <sql id="COLS">
     id,
     dataset_key,
@@ -45,11 +55,26 @@
     </association>
   </resultMap>
 
+  <resultMap id="associatedReferenceResultMap" type="AssociatedReference" autoMapping="false">
+    <id property="reference.key" column="key" />
+    <result property="reference.id" column="id" />
+    <result property="reference.csl" column="csl" typeHandler="org.col.db.type.CslJsonHandler" />
+    <result property="reference.year" column="year" />
+    <result property="page" column="page" />
+    <association property="reference.dataset" javaType="Dataset">
+      <id property="key" column="dataset_key" />
+    </association>
+    <association property="reference.serial" javaType="Serial">
+      <id property="key" column="serial_key" />
+    </association>
+  </resultMap>
+
 
   <select id="count" parameterType="map" resultType="Integer">
     SELECT count(*)
     FROM reference
-    WHERE dataset_key = #{datasetKey}
+    WHERE
+    dataset_key = #{datasetKey}
   </select>
 
   <select id="list" parameterType="map" resultMap="referenceResultMap">
@@ -76,6 +101,17 @@
     FROM
     <include refid="FROM" />
     WHERE r.dataset_key = #{datasetKey} AND r.id = #{id}
+  </select>
+
+  <select id="getPublishedIn" resultMap="associatedReferenceResultMap">
+    SELECT
+    <include refid="SELECT_WITH_PAGE" />
+    FROM reference r
+    LEFT JOIN name_act na ON (r.key = na.reference_key)
+    LEFT JOIN name n ON (na.name_key = n.key)
+    WHERE n.dataset_key = #{datasetKey} AND n.id = #{nameId}
+    AND na.type = 0 <!-- DESCRIPTION 
+      (not sure if this is necessary) -->
   </select>
 
   <insert id="create" parameterType="Reference" useGeneratedKeys="true" keyProperty="key">

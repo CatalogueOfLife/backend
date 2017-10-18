@@ -11,7 +11,7 @@
     </encoder>
   </appender>
 
-  <logger name="org.apache.ibatis" level="WARN"/>
+  <logger name="org.apache.ibatis" level="DEBUG"/>
   <logger name="java.sql" level="INFO"/>
   <logger name="ru.yandex.qatools.embed" level="DEBUG"/>
   <logger name="de.flapdoodle.embed" level="DEBUG"/>
