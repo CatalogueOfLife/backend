@@ -2,8 +2,6 @@ package org.col.api;
 
 import java.util.Objects;
 
-import javax.annotation.Nullable;
-
 import org.col.api.vocab.Country;
 import org.col.api.vocab.Language;
 
@@ -23,34 +21,6 @@ public class VernacularName {
 	private Language language;
 
 	private Country country;
-
-	public boolean equalsShallow(@Nullable VernacularName vn) {
-		if (this == vn) {
-			return true;
-		}
-		if (vn == null) {
-			return false;
-		}
-		boolean equal = Objects.equals(key, vn.key)
-		    && Objects.equals(name, vn.name)
-		    && Objects.equals(language, vn.language)
-		    && Objects.equals(country, vn.country);
-		if (equal) {
-			if (dataset == null) {
-				equal = vn.dataset == null;
-			} else {
-				equal = vn.dataset != null && Objects.equals(dataset.getKey(), vn.dataset.getKey());
-			}
-		}
-		if (equal) {
-			if (taxon == null) {
-				equal = vn.taxon == null;
-			} else {
-				equal = vn.taxon != null && Objects.equals(taxon.getKey(), vn.taxon.getKey());
-			}
-		}
-		return equal;
-	}
 
 	public Integer getKey() {
 		return key;
@@ -98,6 +68,43 @@ public class VernacularName {
 
 	public void setCountry(Country country) {
 		this.country = country;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null || getClass() != obj.getClass()) {
+			return false;
+		}
+		VernacularName other = (VernacularName) obj;
+		return Objects.equals(key, other.key)
+		    && Objects.equals(name, other.name)
+		    && Objects.equals(language, other.language)
+		    && Objects.equals(country, other.country)
+		    && Objects.equals(dataset, other.dataset)
+		    && Objects.equals(taxon, other.taxon);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(key, name, language, country, dataset, taxon);
+	}
+
+	public boolean equalsShallow(VernacularName other) {
+		if (this == other) {
+			return true;
+		}
+		if (other == null) {
+			return false;
+		}
+		return Objects.equals(key, other.key)
+		    && ApiUtil.equalsShallow(dataset, other.dataset)
+		    && ApiUtil.equalsShallow(taxon, other.taxon)
+		    && Objects.equals(name, other.name)
+		    && Objects.equals(language, other.language)
+		    && Objects.equals(country, other.country);
 	}
 
 }

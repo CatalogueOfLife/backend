@@ -5,11 +5,13 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import org.apache.ibatis.session.SqlSession;
+import org.col.api.Distribution;
 import org.col.api.Page;
 import org.col.api.PagingResultSet;
 import org.col.api.Taxon;
 import org.col.api.TaxonInfo;
 import org.col.api.VernacularName;
+import org.col.db.mapper.DistributionMapper;
 import org.col.db.mapper.TaxonMapper;
 import org.col.db.mapper.VernacularNameMapper;
 
@@ -59,6 +61,10 @@ public class TaxonDao {
 		VernacularNameMapper vMapper = session.getMapper(VernacularNameMapper.class);
 		List<VernacularName> vernaculars = vMapper.getVernacularNamesByTaxonKey(taxon.getKey());
 		info.setVernacularNames(vernaculars);
+
+		DistributionMapper dMapper = session.getMapper(DistributionMapper.class);
+		List<Distribution> distributions = dMapper.getDistributionsByTaxonKey(taxon.getKey());
+		info.setDistributions(distributions);
 
 		return info;
 	}

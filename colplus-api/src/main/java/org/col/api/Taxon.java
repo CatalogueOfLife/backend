@@ -24,20 +24,10 @@ public class Taxon {
 	@JsonIgnore
 	private Integer key;
 
-	/**
-	 * Primary key of the taxon as given in the dataset as taxonID. Only guaranteed
-	 * to be unique within a dataset and can follow any kind of schema.
-	 */
 	private String id;
 
-	/**
-	 * Key to dataset instance. Defines context of the taxon key.
-	 */
 	private Dataset dataset;
 
-	/**
-	 *
-	 */
 	private Name name;
 
 	private TaxonomicStatus status;
@@ -203,71 +193,28 @@ public class Taxon {
 	}
 
 	@Override
-	public boolean equals(Object o) {
-		if (this == o)
+	public boolean equals(Object obj) {
+		if (this == obj)
 			return true;
-		if (o == null || getClass() != o.getClass())
+		if (obj == null || getClass() != obj.getClass())
 			return false;
-		Taxon taxon = (Taxon) o;
-		return Objects.equals(key, taxon.key)
-		    && Objects.equals(id, taxon.id)
-		    && Objects.equals(dataset, taxon.dataset)
-		    && Objects.equals(name, taxon.name)
-		    && status == taxon.status
-		    && rank == taxon.rank
-		    && origin == taxon.origin
-		    && Objects.equals(parent, taxon.parent)
-		    && Objects.equals(accordingTo, taxon.accordingTo)
-		    && Objects.equals(accordingToDate, taxon.accordingToDate)
-		    && Objects.equals(fossil, taxon.fossil)
-		    && Objects.equals(recent, taxon.recent)
-		    && Objects.equals(lifezones, taxon.lifezones)
-		    && Objects.equals(speciesEstimate, taxon.speciesEstimate)
-		    && Objects.equals(speciesEstimateReference, taxon.speciesEstimateReference)
-		    && Objects.equals(remarks, taxon.remarks);
-	}
-
-	public boolean equalsShallow(Object o) {
-		if (this == o)
-			return true;
-		if (o == null || getClass() != o.getClass())
-			return false;
-		Taxon taxon = (Taxon) o;
-		boolean equal = Objects.equals(key, taxon.key)
-		    && Objects.equals(id, taxon.id)
-		    && Objects.equals(dataset, taxon.dataset)
-		    && status == taxon.status
-		    && rank == taxon.rank
-		    && Objects.equals(accordingTo, taxon.accordingTo)
-		    && Objects.equals(accordingToDate, taxon.accordingToDate)
-		    && Objects.equals(fossil, taxon.fossil)
-		    && Objects.equals(recent, taxon.recent)
-		    && Objects.equals(lifezones, taxon.lifezones)
-		    && Objects.equals(speciesEstimate, taxon.speciesEstimate);
-		if (equal) {
-			if (parent == null) {
-				equal = taxon.parent == null;
-			} else {
-				equal = taxon.parent != null && Objects.equals(parent.key, taxon.parent.key);
-			}
-		}
-		if (equal) {
-			if (name == null) {
-				equal = taxon.name == null;
-			} else {
-				equal = taxon.name != null && Objects.equals(name.getKey(), taxon.name.getKey());
-			}
-		}
-		if (equal) {
-			if (speciesEstimateReference == null) {
-				equal = taxon.speciesEstimateReference == null;
-			} else {
-				Reference ref0 = speciesEstimateReference;
-				Reference ref1 = taxon.speciesEstimateReference;
-				equal = ref1 != null && Objects.equals(ref0.getKey(), ref1.getKey());
-			}
-		}
-		return equal;
+		Taxon other = (Taxon) obj;
+		return Objects.equals(key, other.key)
+		    && Objects.equals(id, other.id)
+		    && Objects.equals(dataset, other.dataset)
+		    && Objects.equals(name, other.name)
+		    && status == other.status
+		    && rank == other.rank
+		    && origin == other.origin
+		    && Objects.equals(parent, other.parent)
+		    && Objects.equals(accordingTo, other.accordingTo)
+		    && Objects.equals(accordingToDate, other.accordingToDate)
+		    && Objects.equals(fossil, other.fossil)
+		    && Objects.equals(recent, other.recent)
+		    && Objects.equals(lifezones, other.lifezones)
+		    && Objects.equals(speciesEstimate, other.speciesEstimate)
+		    && Objects.equals(speciesEstimateReference, other.speciesEstimateReference)
+		    && Objects.equals(remarks, other.remarks);
 	}
 
 	@Override
@@ -276,4 +223,30 @@ public class Taxon {
 		    accordingToDate, fossil, recent, lifezones, speciesEstimate, speciesEstimateReference,
 		    remarks);
 	}
+
+	public boolean equalsShallow(Taxon other) {
+		if (this == other) {
+			return true;
+		}
+		if (other == null) {
+			return false;
+		}
+		return Objects.equals(key, other.key)
+		    && Objects.equals(id, other.id)
+		    && ApiUtil.equalsShallow(dataset, other.dataset)
+		    && ApiUtil.equalsShallow(name, other.name)
+		    && status == other.status
+		    && rank == other.rank
+		    && origin == other.origin
+		    && ApiUtil.equalsShallow(parent, other.parent)
+		    && Objects.equals(accordingTo, other.accordingTo)
+		    && Objects.equals(accordingToDate, other.accordingToDate)
+		    && Objects.equals(fossil, other.fossil)
+		    && Objects.equals(recent, other.recent)
+		    && Objects.equals(lifezones, other.lifezones)
+		    && Objects.equals(speciesEstimate, other.speciesEstimate)
+		    && ApiUtil.equalsShallow(speciesEstimateReference, other.speciesEstimateReference)
+		    && Objects.equals(remarks, other.remarks);
+	}
+
 }
