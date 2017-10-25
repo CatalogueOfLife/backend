@@ -13,9 +13,9 @@ ALTER SEQUENCE taxon_key_seq RESTART WITH 1000;
 
 INSERT INTO reference(key, id, dataset_key) VALUES (1, 'ref-1', 1);
 INSERT INTO reference(key, id, dataset_key) VALUES (2, 'ref-2', 2);
+ALTER SEQUENCE reference_key_seq RESTART WITH 1000;
 
 INSERT INTO name_act(key, dataset_key, type, name_key, reference_key, reference_page) VALUES (1, 1, 0, 1, 1, 712);
-
-ALTER SEQUENCE reference_key_seq RESTART WITH 1000;
+ALTER SEQUENCE name_act_key_seq RESTART WITH 1000;
 
 

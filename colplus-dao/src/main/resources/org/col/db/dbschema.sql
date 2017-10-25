@@ -106,6 +106,7 @@ CREATE TABLE name_act (
   key serial PRIMARY KEY,
   dataset_key INTEGER NOT NULL REFERENCES dataset,
   type INTEGER NOT NULL,
+  status INTEGER,
   name_key INTEGER NOT NULL REFERENCES name,
   related_name_key INTEGER NULL REFERENCES name,
   description TEXT,
