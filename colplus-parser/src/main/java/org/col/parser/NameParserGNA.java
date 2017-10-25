@@ -22,25 +22,18 @@ import java.util.Optional;
 public class NameParserGNA implements NameParser {
   private static final Logger LOG = LoggerFactory.getLogger(NameParserGNA.class);
 
+  public static final NameParser PARSER = new NameParserGNA();
+
   private final ScientificNameParser parser = ScientificNameParser.instance();
 
   @Override
-  public Optional<Name> parse(String scientificName) {
-    return parse(scientificName, Rank.UNRANKED);
-  }
-
-  public Optional<Name> parse(String scientificName, Rank rank) {
+  public Optional<Name> parse(String scientificName) throws UnparsableException {
     ScientificNameParser.Result sn = parser.fromString(scientificName);
-    return Optional.of(convert(scientificName, rank, sn));
+    return Optional.of(convert(scientificName, sn));
   }
 
-  private Name convert(String name, Rank rank, ScientificNameParser.Result result) {
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("GNA result: {}", result);
-    }
-
+  private Name convert(String name, ScientificNameParser.Result result) throws UnparsableException {
     Name n = new Name();
-    n.setRank(rank);
 
     if (result.preprocessorResult().virus()) {
       n.setScientificName(name);
@@ -50,11 +43,13 @@ public class NameParserGNA implements NameParser {
       try {
         ScientificName sn = result.scientificName();
 
-        if (result.scientificName().surrogate()) {
+        if (sn.surrogate()) {
+          n.setScientificName(name);
           n.setType(NameType.PLACEHOLDER);
 
         } else if (sn.hybrid().isDefined() && (Boolean) sn.hybrid().get()) {
-          throw new UnparsableException(NameType.HYBRID, name);
+          n.setScientificName(name);
+          n.setType(NameType.HYBRID);
 
         } else {
           Option<String> canonical = result.canonized(true);
@@ -126,13 +121,11 @@ public class NameParserGNA implements NameParser {
         // rethrow UnparsableException as we throw these on purpose
         throw e;
 
-      } catch (Exception e) {
+      } catch (RuntimeException e) {
         // convert all other unhandled exceptions into UnparsableException
         throw new UnparsableException(NameType.NO_NAME, name);
       }      
     }
-
-    //System.out.println("  GNA pn: " + pn.canonicalNameComplete());
     return n;
   }
 

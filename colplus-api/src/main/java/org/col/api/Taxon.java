@@ -1,16 +1,14 @@
 package org.col.api;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.col.api.vocab.*;
+
 import java.net.URI;
 import java.time.LocalDate;
+import java.util.EnumMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-
-import org.col.api.vocab.Lifezone;
-import org.col.api.vocab.Origin;
-import org.col.api.vocab.Rank;
-import org.col.api.vocab.TaxonomicStatus;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  *
@@ -55,6 +53,11 @@ public class Taxon {
 	private Reference speciesEstimateReference;
 
 	private String remarks;
+
+  /**
+   * Issues related to this taxon with potential values in the map
+   */
+  private Map<Issue, String> issues = new EnumMap(Issue.class);
 
 	public Integer getKey() {
 		return key;
@@ -192,39 +195,53 @@ public class Taxon {
 		this.remarks = remarks;
 	}
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null || getClass() != obj.getClass())
-			return false;
-		Taxon other = (Taxon) obj;
-		return Objects.equals(key, other.key)
-		    && Objects.equals(id, other.id)
-		    && Objects.equals(dataset, other.dataset)
-		    && Objects.equals(name, other.name)
-		    && status == other.status
-		    && rank == other.rank
-		    && origin == other.origin
-		    && Objects.equals(parent, other.parent)
-		    && Objects.equals(accordingTo, other.accordingTo)
-		    && Objects.equals(accordingToDate, other.accordingToDate)
-		    && Objects.equals(fossil, other.fossil)
-		    && Objects.equals(recent, other.recent)
-		    && Objects.equals(lifezones, other.lifezones)
-		    && Objects.equals(speciesEstimate, other.speciesEstimate)
-		    && Objects.equals(speciesEstimateReference, other.speciesEstimateReference)
-		    && Objects.equals(remarks, other.remarks);
-	}
+  public Map<Issue, String> getIssues() {
+    return issues;
+  }
 
-	@Override
-	public int hashCode() {
-		return Objects.hash(key, id, dataset, name, status, rank, origin, parent, accordingTo,
-		    accordingToDate, fossil, recent, lifezones, speciesEstimate, speciesEstimateReference,
-		    remarks);
-	}
+  public void setIssues(Map<Issue, String> issues) {
+    this.issues = issues;
+  }
 
-	public boolean equalsShallow(Taxon other) {
+  public void addIssue(Issue issue) {
+    issues.put(issue, null);
+  }
+
+  public void addIssue(Issue issue, Object value) {
+    issues.put(issue, value.toString());
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    Taxon taxon = (Taxon) o;
+    return Objects.equals(key, taxon.key) &&
+        Objects.equals(id, taxon.id) &&
+        Objects.equals(dataset, taxon.dataset) &&
+        Objects.equals(name, taxon.name) &&
+        status == taxon.status &&
+        rank == taxon.rank &&
+        origin == taxon.origin &&
+        Objects.equals(parent, taxon.parent) &&
+        Objects.equals(accordingTo, taxon.accordingTo) &&
+        Objects.equals(accordingToDate, taxon.accordingToDate) &&
+        Objects.equals(fossil, taxon.fossil) &&
+        Objects.equals(recent, taxon.recent) &&
+        Objects.equals(lifezones, taxon.lifezones) &&
+        Objects.equals(datasetUrl, taxon.datasetUrl) &&
+        Objects.equals(speciesEstimate, taxon.speciesEstimate) &&
+        Objects.equals(speciesEstimateReference, taxon.speciesEstimateReference) &&
+        Objects.equals(remarks, taxon.remarks) &&
+        Objects.equals(issues, taxon.issues);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(key, id, dataset, name, status, rank, origin, parent, accordingTo, accordingToDate, fossil, recent, lifezones, datasetUrl, speciesEstimate, speciesEstimateReference, remarks, issues);
+  }
+
+  public boolean equalsShallow(Taxon other) {
 		if (this == other) {
 			return true;
 		}

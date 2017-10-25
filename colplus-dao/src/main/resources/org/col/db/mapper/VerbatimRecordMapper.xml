@@ -9,8 +9,7 @@
         v.dataset_key,
         v.name_key,
         v.taxon_key,
-        v.terms,
-        v.issues
+        v.terms
     </sql>
 
     <sql id="COLS">
@@ -18,8 +17,7 @@
         dataset_key,
         name_key,
         taxon_key,
-        terms,
-        issues
+        terms
     </sql>
 
     <sql id="PROPS">
@@ -27,8 +25,7 @@
       #{rec.dataset.key},
       #{nameKey},
       #{taxonKey},
-      #{rec.terms, typeHandler=org.col.db.type.VerbatimRecordTermsTypeHandler}::jsonb,
-      #{rec.issues, typeHandler=org.col.db.type.HstoreIssueHandler}::hstore
+      #{rec.terms, typeHandler=org.col.db.type.VerbatimRecordTermsTypeHandler}::jsonb
     </sql>
 
     <sql id="FROM">
@@ -40,7 +37,6 @@
     <resultMap id="verbatimResultMap" type="VerbatimRecord" autoMapping="true">
         <id property="id" column="id"/>
         <result property="terms" column="terms" typeHandler="org.col.db.type.VerbatimRecordTermsTypeHandler"/>
-        <result property="issues" column="issues" typeHandler="org.col.db.type.HstoreIssueHandler"/>
         <association property="dataset" javaType="Dataset">
             <id property="key" column="dataset_key"/>
         </association>

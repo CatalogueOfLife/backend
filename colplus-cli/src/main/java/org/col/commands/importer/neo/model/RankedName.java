@@ -4,15 +4,15 @@ import org.col.api.vocab.Rank;
 import org.neo4j.graphdb.Node;
 
 public class RankedName {
-  public String name;
-  public Rank rank;
-  public Node node;
+  public final Node node;
+  public final String name;
+  public final String author;
+  public final Rank rank;
 
-  public RankedName() {
-  }
-
-  public RankedName(String name, Rank rank) {
+  public RankedName(Node n, String name, String author, Rank rank) {
+    this.node = n;
     this.name = name;
+    this.author = author;
     this.rank = rank;
   }
 
@@ -22,6 +22,6 @@ public class RankedName {
 
   @Override
   public String toString() {
-    return name + '[' + rank + ']';
+    return name + ' ' + author + " [" + rank + ']';
   }
 }

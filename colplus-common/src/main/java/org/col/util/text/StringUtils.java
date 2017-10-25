@@ -1,5 +1,6 @@
 package org.col.util.text;
 
+import com.google.common.base.CharMatcher;
 import com.google.common.base.Charsets;
 import com.google.common.base.Strings;
 
@@ -7,7 +8,6 @@ import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.CharsetDecoder;
 import java.text.Normalizer;
-import java.util.Random;
 import java.util.regex.Pattern;
 
 
@@ -17,13 +17,8 @@ import java.util.regex.Pattern;
  */
 public class StringUtils {
   private static Pattern MARKER = Pattern.compile("\\p{M}");
-  public static final int LINNEAN_YEAR = 1751;
-  private static final String CONS = "BCDFGHJKLMNPQRSTVWXYZ";
   private static final Pattern OCT = Pattern.compile("^[0-7]+$");
   private static final Pattern HEX = Pattern.compile("^[0-9abcdefABCDEF]+$");
-
-  private static final String VOC = "AEIOU";
-  private static Random rnd = new Random();
 
   private StringUtils() {
   }
@@ -289,4 +284,21 @@ public class StringUtils {
     return text;
   }
 
+  /**
+   * Generic string cleaning that replaces all non digit or letter characters with a single space and finally trims to null;
+   * replaces all non digit or letter characters with a single space, including invisible control characters, underscore and dashes;
+   * converts the string to upper case;
+   * finally folds the string to pure ASCII characters
+   *
+   * @param x any input string used for parsing a single value
+   * @return the cleaned, normalized string
+   */
+  public static String digitOrAsciiLetters(String x) {
+    CharMatcher cm = CharMatcher.javaLetterOrDigit().negate();
+    if (x == null) return null;
+    x = cm.trimAndCollapseFrom(x, ' ');
+    x = x.toUpperCase();
+    x = foldToAscii(x);
+    return Strings.emptyToNull(x);
+  }
 }

@@ -24,7 +24,8 @@
 		t.species_estimate,
 		t.species_estimate_reference_key,
 		r.id as species_estimate_reference_id,
-		t.remarks
+		t.remarks,
+        t.issues
 	</sql>
 
 	<sql id="COLS">
@@ -43,7 +44,8 @@
 		dataset_url,
 		species_estimate,
 		species_estimate_reference_key,
-		remarks
+		remarks,
+        issues
 	</sql>
 
 	<sql id="PROPS">
@@ -62,7 +64,8 @@
 		#{datasetUrl, typeHandler=org.col.db.type.UriTypeHandler},
 		#{speciesEstimate},
 		#{speciesEstimateReference.key},
-		#{remarks}
+		#{remarks},
+        #{issues, typeHandler=org.col.db.type.HstoreIssueHandler}::hstore
 	</sql>
 
 	<sql id="FROM">
@@ -77,6 +80,7 @@
 		<id property="key" column="key" />
 		<result property="id" column="id" />
         <result property="lifezones" column="lifezones" typeHandler="org.col.db.type.LifezoneTypeHandler"/>
+        <result property="issues" column="issues" typeHandler="org.col.db.type.HstoreIssueHandler"/>
 		<association property="dataset" javaType="Dataset">
 			<id property="key" column="dataset_key" />
 		</association>

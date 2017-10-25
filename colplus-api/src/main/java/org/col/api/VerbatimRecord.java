@@ -3,11 +3,12 @@ package org.col.api;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
-import org.col.api.vocab.Issue;
 import org.gbif.dwc.terms.Term;
 
 import javax.annotation.Nullable;
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -29,11 +30,6 @@ public class VerbatimRecord {
    * The actual verbatim terms keyed on dwc terms.
    */
   private VerbatimRecordTerms terms = new VerbatimRecordTerms();
-
-  /**
-   * Issues related to this taxon with potential values in the map
-   */
-  private Map<Issue, String> issues = new EnumMap(Issue.class);
 
   public Dataset getDataset() {
     return dataset;
@@ -142,22 +138,6 @@ public class VerbatimRecord {
     terms.getExtensions().get(rowType).add(extensionRecord);
   }
 
-  public Map<Issue, String> getIssues() {
-    return issues;
-  }
-
-  public void setIssues(Map<Issue, String> issues) {
-    this.issues = issues;
-  }
-
-  public void addIssue(Issue issue) {
-    issues.put(issue, null);
-  }
-
-  public void addIssue(Issue issue, Object value) {
-    issues.put(issue, value.toString());
-  }
-
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -165,12 +145,11 @@ public class VerbatimRecord {
     VerbatimRecord that = (VerbatimRecord) o;
     return Objects.equals(id, that.id) &&
         Objects.equals(dataset, that.dataset) &&
-        Objects.equals(terms, that.terms) &&
-        Objects.equals(issues, that.issues);
+        Objects.equals(terms, that.terms);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, dataset, terms, issues);
+    return Objects.hash(id, dataset, terms);
   }
 }

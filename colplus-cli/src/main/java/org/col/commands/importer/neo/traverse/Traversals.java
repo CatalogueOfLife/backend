@@ -5,11 +5,15 @@ import org.col.commands.importer.neo.model.NeoProperties;
 import org.col.commands.importer.neo.model.RelType;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.ResourceIterator;
 import org.neo4j.graphdb.traversal.Evaluators;
 import org.neo4j.graphdb.traversal.TraversalDescription;
 import org.neo4j.graphdb.traversal.Uniqueness;
+import org.neo4j.helpers.collection.Iterators;
 import org.neo4j.kernel.impl.traversal.MonoDirectionalTraversalDescription;
+
+import java.util.Set;
 
 /**
  * Various reusable traversal descriptions for taxonomic normalizer dbs.
@@ -115,12 +119,35 @@ public class Traversals {
 
 
   /**
+   * Tries to find the set of accepted nodes.
+   * Can be multiple due to pro parte synonyms.
+   *
+   * @param syn synonym node to look for accepted nodes
+   */
+  public static Set<Node> acceptedOf(Node syn) {
+    try (ResourceIterator<Node> accepted = Traversals.ACCEPTED.traverse(syn).nodes().iterator()) {
+      return Iterators.asSet(accepted);
+    }
+  }
+
+  /**
+   * Tries to find the next direct parent node.
+   *
+   * @param start node to start looking for parents, excluded from search
+   * @return the parent node or null
+   */
+  public static Node parentOf(Node start) {
+    Relationship rel = start.getSingleRelationship(RelType.PARENT_OF, Direction.INCOMING);
+    return rel == null ? null : rel.getStartNode();
+  }
+
+  /**
    * Tries to find a parent node with the given rank
    *
    * @param start node to start looking for parents, excluded from search
    * @return the parent node with requested rank or null
    */
-  public static Node findParentWithRank(Node start, Rank rank) {
+  public static Node parentWithRankOf(Node start, Rank rank) {
     try (ResourceIterator<Node> parents = Traversals.PARENTS.traverse(start).nodes().iterator()) {
       while (parents.hasNext()) {
         Node p = parents.next();

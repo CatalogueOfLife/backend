@@ -26,7 +26,8 @@
         n.fossil,
         n.original_name_key,
         bn.id AS original_name_id,
-        n.remarks
+        n.remarks,
+        n.issues
     </sql>
 
     <sql id="COLS">
@@ -49,7 +50,8 @@
       type,
       fossil,
       original_name_key,
-      remarks
+      remarks,
+      issues
     </sql>
 
     <sql id="PROPS">
@@ -72,7 +74,8 @@
       #{type},
       #{fossil},
       #{originalName.key},
-      #{remarks}
+      #{remarks},
+      #{issues, typeHandler=org.col.db.type.HstoreIssueHandler}::hstore
     </sql>
 
     <sql id="FROM">
@@ -83,6 +86,7 @@
     <resultMap id="nameResultMap" type="Name" autoMapping="true">
         <id property="key" column="key" />
         <result property="id" column="id"/>
+        <result property="issues" column="issues" typeHandler="org.col.db.type.HstoreIssueHandler"/>
         <association property="authorship" javaType="Authorship">
             <result property="combinationAuthors" column="combination_authors" typeHandler="org.col.db.type.StringArrayTypeHandler"/>
             <result property="combinationYear" column="combination_year"/>

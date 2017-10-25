@@ -33,6 +33,10 @@ public class NeoProperties {
     return defaultValue;
   }
 
+  public static String getTaxonID(Node n) {
+    return (String) n.getProperty(NeoProperties.TAXON_ID, null);
+  }
+
   public static String getScientificName(Node n) {
     return (String) n.getProperty(NeoProperties.SCIENTIFIC_NAME, NULL_NAME);
   }

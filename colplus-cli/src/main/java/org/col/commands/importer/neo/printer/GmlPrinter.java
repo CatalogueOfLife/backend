@@ -96,7 +96,7 @@ public class GmlPrinter implements TreePrinter {
           NeoProperties.getRank(n, Rank.UNRANKED).name().toLowerCase()
       );
       writer.write("  node [\n");
-      writer.write("    id " + n.getId() + "\n");
+      writer.write("    value " + n.getId() + "\n");
       writer.write("    label \"" + label + "\"\n");
       writer.write("  ]\n");
 

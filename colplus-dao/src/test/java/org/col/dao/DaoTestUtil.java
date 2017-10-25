@@ -1,21 +1,12 @@
 package org.col.dao;
 
+import org.col.api.*;
+import org.col.api.vocab.*;
+
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.EnumSet;
 import java.util.Random;
-
-import org.col.api.Dataset;
-import org.col.api.Name;
-import org.col.api.Reference;
-import org.col.api.Taxon;
-import org.col.api.VernacularName;
-import org.col.api.vocab.Country;
-import org.col.api.vocab.Language;
-import org.col.api.vocab.Lifezone;
-import org.col.api.vocab.Origin;
-import org.col.api.vocab.Rank;
-import org.col.api.vocab.TaxonomicStatus;
 
 public class DaoTestUtil {
 
@@ -137,6 +128,8 @@ public class DaoTestUtil {
 		t.setRemarks("Foo == Bar");
 		t.setSpeciesEstimate(81);
 		t.setSpeciesEstimateReference(REF1);
+    t.addIssue(Issue.ACCEPTED_NAME_MISSING);
+    t.addIssue(Issue.HOMONYM, "Abies alba");
 		return t;
 	}
 }

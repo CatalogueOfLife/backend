@@ -9,6 +9,7 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 import org.col.api.*;
 import org.col.api.vocab.*;
 import org.col.commands.importer.neo.model.NeoTaxon;
+import org.col.commands.importer.neo.model.RankedName;
 import org.gbif.dwc.terms.*;
 import org.neo4j.kernel.impl.core.NodeProxy;
 
@@ -32,6 +33,7 @@ public class NeoKryoFactory implements KryoFactory {
 
     // col core
     kryo.register(Authorship.class);
+    kryo.register(Classification.class);
     kryo.register(Dataset.class);
     kryo.register(DatasetMetrics.class);
     kryo.register(Name.class);
@@ -47,8 +49,11 @@ public class NeoKryoFactory implements KryoFactory {
     kryo.register(ObjectNode.class);
     kryo.register(TextNode.class);
     kryo.register(JsonNodeFactory.class);
+
     // normalizer specific models
     kryo.register(NeoTaxon.class);
+    kryo.register(NeoTaxon.Synonym.class);
+    kryo.register(RankedName.class);
 
     // fastutil
     kryo.register(IntArrayList.class);

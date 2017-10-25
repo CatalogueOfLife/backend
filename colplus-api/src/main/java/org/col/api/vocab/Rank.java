@@ -122,9 +122,13 @@ public enum Rank {
 
   INFRAGENUS("infragen."),
 
+  SUPERSECTION("supersect."),
+
   SECTION("sect."),
 
   SUBSECTION("subsect."),
+
+  SUPERSERIES("superser."),
 
   SERIES("ser."),
 
@@ -186,15 +190,9 @@ public enum Rank {
   INFRASUBSPECIFIC_NAME("infrasubsp."),
 
   /**
-   * Botanical legacy rank
+   * Botanical legacy rank for a race, recommended in botanical code from 1868
    */
-
   PROLES("prol."),
-
-  /**
-   * Botanical legacy rank
-   */
-  RACE("race"),
 
   /**
    * Zoological legacy rank
@@ -341,7 +339,6 @@ public enum Rank {
       MORPH,
       ABERRATION,
       NATIO,
-      RACE,
       PROLES,
       CONVARIETY
   );
@@ -363,7 +360,6 @@ public enum Rank {
       .put(ABERRATION, NomCode.ZOOLOGICAL)
       .put(NATIO, NomCode.ZOOLOGICAL)
 
-      .put(RACE, NomCode.BOTANICAL)
       .put(PROLES, NomCode.BOTANICAL)
       .put(SECTION, NomCode.BOTANICAL)
       .put(SUBSECTION, NomCode.BOTANICAL)

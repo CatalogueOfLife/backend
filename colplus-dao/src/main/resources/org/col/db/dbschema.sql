@@ -98,7 +98,8 @@ CREATE TABLE name (
   origin INTEGER,
   type INTEGER,
   fossil BOOLEAN,
-  remarks TEXT
+  remarks TEXT,
+  issues hstore
 );
 
 CREATE TABLE name_act (
@@ -129,7 +130,8 @@ CREATE TABLE taxon (
   dataset_url TEXT,
   species_estimate INTEGER,
   species_estimate_reference_key INTEGER REFERENCES reference,
-  remarks TEXT
+  remarks TEXT,
+  issues hstore
 );
 
 CREATE TABLE synonyms (
@@ -144,7 +146,6 @@ CREATE TABLE verbatim_record (
   taxon_key INTEGER REFERENCES taxon,
   name_key INTEGER REFERENCES name,
   terms jsonb,
-  issues hstore,
   PRIMARY KEY(dataset_key, id)
 );
 

@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.google.common.collect.Maps;
 import org.col.api.vocab.Rank;
 
@@ -17,6 +18,11 @@ import java.util.Map;
  * Jackson {@link JsonSerializer} and Jackson {@link JsonDeserializer} classes for {@link Rank} that uses the common rank markers instead of enum names.
  */
 public class RankSerde {
+  public static final SimpleModule MODULE = new SimpleModule();
+  static {
+    MODULE.addSerializer(Rank.class, new Serializer());
+    MODULE.addDeserializer(Rank.class, new Deserializer());
+  }
 
   /**
    * Jackson {@link JsonSerializer} for {@link Rank}.

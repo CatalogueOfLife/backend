@@ -72,9 +72,7 @@ public class NeoDbUtils {
     putIfNotNull(props, NeoProperties.AUTHORSHIP, tax.name.getAuthorship().toString());
     putIfNotNull(props, NeoProperties.RANK, tax.name.getRank());
     putIfNotNull(props, NeoProperties.NAME_ID, tax.name.getId());
-    if (tax.taxon != null) {
-      putIfNotNull(props, NeoProperties.TAXON_ID, tax.taxon.getId());
-    }
+    putIfNotNull(props, NeoProperties.TAXON_ID, tax.getTaxonID());
     return props;
   }
 }

@@ -36,11 +36,11 @@ public class NeoKryoFactoryTest {
     t.taxon.getName().setScientificName("Abies alba");
     t.taxon.getName().setAuthorship(createAuthorship());
     t.taxon.getName().setRank(Rank.SPECIES);
+    for (Issue issue : Issue.values()) {
+      t.taxon.addIssue(issue);
+    }
 
     t.verbatim = new VerbatimRecord();
-    for (Issue issue : Issue.values()) {
-      t.verbatim.addIssue(issue);
-    }
     for (Term term : GbifTerm.values()) {
       t.verbatim.setCoreTerm(term, term.simpleName());
     }

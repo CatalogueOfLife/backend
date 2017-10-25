@@ -1,4 +1,4 @@
-package org.col.commands.importer;
+package org.col.commands.importer.dwca;
 
 /**
  *

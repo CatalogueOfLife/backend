@@ -6,6 +6,7 @@ import org.apache.ibatis.session.SqlSession;
 import org.col.api.Dataset;
 import org.col.commands.config.ImporterConfig;
 import org.col.commands.config.NormalizerConfig;
+import org.col.commands.importer.dwca.Normalizer;
 import org.col.commands.importer.neo.NeoDbFactory;
 import org.col.commands.importer.neo.NormalizerStore;
 import org.col.db.mapper.DatasetMapper;
@@ -71,8 +72,7 @@ public class ImporterIT {
 
   @Test
   public void testDwca1() throws Exception {
-    normalizeAndImport(2);
-
+    normalizeAndImport(1);
   }
 
 }

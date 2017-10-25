@@ -86,11 +86,11 @@ public class NameParserGNATest {
 
 
 
-  static NameAssertion assertName(String rawName, String sciname) {
+  static NameAssertion assertName(String rawName, String sciname) throws UnparsableException {
     return assertName(rawName, sciname, NameType.SCIENTIFIC);
   }
 
-  static NameAssertion assertName(String rawName, String sciname, NameType type) {
+  static NameAssertion assertName(String rawName, String sciname, NameType type) throws UnparsableException {
     Name n = parser.parse(rawName).get();
     assertEquals(sciname, n.getScientificName());
     assertEquals(type, n.getType());

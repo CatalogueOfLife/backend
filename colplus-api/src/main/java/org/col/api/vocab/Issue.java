@@ -7,7 +7,18 @@ public enum Issue {
   /**
    * The name string could not be parsed.
    */
-  UNPARSABLE,
+  UNPARSABLE_NAME,
+
+  /**
+   * The authorship string could not be parsed.
+   */
+  UNPARSABLE_AUTHORSHIP,
+
+  /**
+   * An parsed, but inconsistent name.
+   * E.g. the rank of the name does not match the given name parts or suffices.
+   */
+  INCONSISTENT_NAME,
 
   /**
    * The name parts contain unusual characters.
@@ -18,11 +29,6 @@ public enum Issue {
    * At least one epithet equals "null" or "none".
    */
   NULL_EPITHET,
-
-  /**
-   * The rank of the name does not match the given name parts or suffices.
-   */
-  RANK_MISMATCH,
 
   /**
    * dwc:nomenclaturalStatus could not be interpreted
@@ -180,9 +186,9 @@ public enum Issue {
   BACKBONE_MATCH_FUZZY,
 
   /**
-   * Synonym has a verbatim accepted name which is not unique and refers to several records.
+   * A scientific name has been used to point to another record (synonym->accepted, combination->basionym) which is not unique and refers to several records.
    */
-  ACCEPTED_NAME_NOT_UNIQUE,
+  NAME_NOT_UNIQUE,
 
   /**
    * Record has a verbatim parent name which is not unique and refers to several records.

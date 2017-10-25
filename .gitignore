@@ -1,6 +1,7 @@
 *.iml
 target
 .idea
+colplus-cli/graphs/
 
 /.project
 /.classpath

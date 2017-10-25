@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.col.api.vocab.Language;
 
 import java.io.IOException;
@@ -16,6 +17,11 @@ import java.io.IOException;
  * that uses the ISO 3 letter codes instead of enum names.
  */
 public class LanguageSerde {
+  public static final SimpleModule MODULE = new SimpleModule();
+  static {
+    MODULE.addSerializer(Language.class, new Serializer());
+    MODULE.addDeserializer(Language.class, new Deserializer());
+  }
 
   /**
    * Jackson {@link JsonSerializer} for {@link Language}.

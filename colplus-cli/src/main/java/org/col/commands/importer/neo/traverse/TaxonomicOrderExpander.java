@@ -1,9 +1,7 @@
 package org.col.commands.importer.neo.traverse;
 
 import com.google.common.base.Function;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;
 import org.col.commands.importer.neo.model.RelType;
 import org.neo4j.graphdb.*;
@@ -11,7 +9,6 @@ import org.neo4j.graphdb.traversal.BranchState;
 
 import javax.annotation.Nullable;
 import java.util.List;
-import java.util.Set;
 
 /**
  * depth first, rank then scientific name order based branching.
@@ -20,14 +17,14 @@ public class TaxonomicOrderExpander implements PathExpander {
   /**
    * Expander following the parent_of relations in taxonomic order
    */
-  public final static TaxonomicOrderExpander TREE_EXPANDER = new TaxonomicOrderExpander();
+  public final static TaxonomicOrderExpander TREE_EXPANDER = new TaxonomicOrderExpander(false);
 
   /**
    * Expander following the parent_of and synonym_of relations in taxonomic order
    */
-  public final static TaxonomicOrderExpander TREE_WITH_SYNONYMS_EXPANDER = new TaxonomicOrderExpander(RelType.SYNONYM_OF);
+  public final static TaxonomicOrderExpander TREE_WITH_SYNONYMS_EXPANDER = new TaxonomicOrderExpander(true);
 
-  private final Set<RelType> synRels;
+  private final boolean includeSynonyms;
 
   private static final Ordering<Relationship> CHILDREN_ORDER = Ordering.from(new TaxonomicOrder()).onResultOf(
       new Function<Relationship, Node>() {
@@ -61,28 +58,21 @@ public class TaxonomicOrderExpander implements PathExpander {
       )
   );
 
-  private TaxonomicOrderExpander(RelType... synonymRelations) {
-    if (synonymRelations == null) {
-      this.synRels = ImmutableSet.of();
-    } else {
-      this.synRels = ImmutableSet.copyOf(synonymRelations);
-    }
+  private TaxonomicOrderExpander(boolean includeSynonyms) {
+    this.includeSynonyms = includeSynonyms;
   }
 
   @Override
   public Iterable<Relationship> expand(Path path, BranchState state) {
     List<Relationship> children = CHILDREN_ORDER.sortedCopy(path.endNode().getRelationships(RelType.PARENT_OF, Direction.OUTGOING));
-    if (synRels.isEmpty()) {
-      return children;
-    } else {
-      List<Iterable<Relationship>> synResults = Lists.newArrayList();
-      for (RelType rt : synRels) {
-        synResults.add(path.endNode().getRelationships(rt, Direction.INCOMING));
-      }
+    if (includeSynonyms) {
+      Iterable<Relationship> synResults = path.endNode().getRelationships(RelType.SYNONYM_OF, Direction.INCOMING);
       return Iterables.concat(
-          SYNONYM_ORDER.sortedCopy(Iterables.concat(synResults)),
+          SYNONYM_ORDER.sortedCopy(synResults),
           children
       );
+    } else {
+      return children;
     }
   }
 

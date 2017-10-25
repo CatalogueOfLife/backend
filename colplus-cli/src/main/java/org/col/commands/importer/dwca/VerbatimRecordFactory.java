@@ -1,4 +1,4 @@
-package org.col.commands.importer;
+package org.col.commands.importer.dwca;
 
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Strings;
@@ -22,7 +22,7 @@ public class VerbatimRecordFactory {
     if (Strings.isNullOrEmpty(x) || NULL_PATTERN.matcher(x).find()) {
       return null;
     }
-    return Strings.emptyToNull(CharMatcher.JAVA_ISO_CONTROL.trimAndCollapseFrom(x, ' ').trim());
+    return Strings.emptyToNull(CharMatcher.javaIsoControl().trimAndCollapseFrom(x, ' ').trim());
   }
 
   public static VerbatimRecord build (StarRecord star) {

@@ -4,7 +4,6 @@ import org.col.api.RandomUtils;
 import org.col.api.TermRecord;
 import org.col.api.VerbatimRecord;
 import org.col.api.VerbatimRecordTerms;
-import org.col.api.vocab.Issue;
 import org.col.dao.DaoTestUtil;
 import org.gbif.dwc.terms.DcTerm;
 import org.gbif.dwc.terms.DwcTerm;
@@ -31,8 +30,6 @@ public class VerbatimRecordMapperTest extends MapperTestBase<VerbatimRecordMappe
     VerbatimRecord v = new VerbatimRecord();
     v.setDataset(DaoTestUtil.DATASET1);
     v.setId(RandomUtils.randomString(8));
-    v.addIssue(Issue.ACCEPTED_NAME_MISSING);
-    v.addIssue(Issue.HOMONYM, "Abies alba");
     v.setTerms(new VerbatimRecordTerms());
     // core
     for (DwcTerm t : DwcTerm.values()) {

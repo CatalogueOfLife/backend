@@ -3,10 +3,7 @@ package org.col.db.mapper;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import org.col.api.*;
-import org.col.api.vocab.NamePart;
-import org.col.api.vocab.NameType;
-import org.col.api.vocab.Origin;
-import org.col.api.vocab.Rank;
+import org.col.api.vocab.*;
 import org.col.dao.DaoTestUtil;
 import org.junit.Test;
 
@@ -60,6 +57,8 @@ public class NameMapperTest extends MapperTestBase<NameMapper> {
     n.setRank(Rank.SPECIES);
     n.setOrigin(Origin.SOURCE);
     n.setType(NameType.SCIENTIFIC);
+    n.addIssue(Issue.ACCEPTED_NAME_MISSING);
+    n.addIssue(Issue.HOMONYM, "Abies alba");
     return n;
   }
 

@@ -1,6 +1,5 @@
 package org.col.commands.importer.neo.printer;
 
-import com.google.common.base.Function;
 import com.google.common.base.Throwables;
 import org.col.api.vocab.Rank;
 import org.col.commands.importer.neo.model.Labels;
@@ -10,7 +9,6 @@ import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.parboiled.common.StringUtils;
 
-import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.Writer;
 
@@ -23,29 +21,17 @@ public class TxtPrinter implements TreePrinter {
 
   private static final int indentation = 2;
   private int level = 0;
-  private final Function<Node, String> getTitle;
   private final Writer writer;
   private final boolean showIds;
 
 
-  public TxtPrinter(Writer writer, Function<Node, String> getTitle, boolean showIds) {
+  public TxtPrinter(Writer writer, boolean showIds) {
     this.writer = writer;
-    this.getTitle = getTitle;
     this.showIds = showIds;
   }
 
-  public TxtPrinter(Writer writer, Function<Node, String> getTitle) {
-    this(writer, getTitle, false);
-  }
-
   public TxtPrinter(Writer writer) {
-    this(writer, new Function<Node, String>() {
-      @Nullable
-      @Override
-      public String apply(@Nullable Node input) {
-        return NeoProperties.getScientificName(input);
-      }
-    }, false);
+    this(writer, false);
   }
 
   @Override
@@ -61,6 +47,7 @@ public class TxtPrinter implements TreePrinter {
 
   private void print(Node n) {
     try {
+      //writer.write(String.valueOf(n.getId()));
       writer.write(StringUtils.repeat(' ', level * indentation));
       if (n.hasLabel(Labels.SYNONYM)) {
         writer.write(SYNONYM_SYMBOL);
@@ -68,7 +55,12 @@ public class TxtPrinter implements TreePrinter {
       if (n.hasRelationship(RelType.BASIONYM_OF, Direction.OUTGOING)) {
         writer.write(BASIONYM_SYMBOL);
       }
-      writer.write(getTitle.apply(n));
+      writer.write(NeoProperties.getScientificName(n));
+      String author = NeoProperties.getAuthorship(n);
+      if (!org.apache.commons.lang3.StringUtils.isBlank(author)) {
+        writer.write(" ");
+        writer.write(author);
+      }
       if (n.hasProperty(NeoProperties.RANK)) {
         writer.write(" [");
         writer.write(Rank.values()[(Integer) n.getProperty(NeoProperties.RANK)].name().toLowerCase());

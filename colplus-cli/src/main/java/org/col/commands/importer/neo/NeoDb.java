@@ -1,35 +1,37 @@
 package org.col.commands.importer.neo;
 
 import com.esotericsoftware.kryo.pool.KryoPool;
-import com.google.common.base.Function;
 import com.google.common.base.Throwables;
-import com.google.common.collect.Lists;
 import org.apache.commons.io.FileUtils;
 import org.col.api.Dataset;
 import org.col.api.Reference;
+import org.col.api.vocab.Rank;
 import org.col.commands.importer.neo.kryo.NeoKryoFactory;
 import org.col.commands.importer.neo.mapdb.MapDbObjectSerializer;
 import org.col.commands.importer.neo.model.Labels;
 import org.col.commands.importer.neo.model.NeoProperties;
 import org.col.commands.importer.neo.model.NeoTaxon;
+import org.col.commands.importer.neo.model.RankedName;
 import org.mapdb.Atomic;
 import org.mapdb.DB;
 import org.mapdb.Serializer;
 import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.factory.GraphDatabaseBuilder;
+import org.neo4j.helpers.collection.Iterators;
 import org.neo4j.kernel.api.exceptions.index.IndexEntryConflictException;
 import org.neo4j.unsafe.batchinsert.BatchInserter;
 import org.neo4j.unsafe.batchinsert.BatchInserters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Stream;
 
 /**
  * A persistence mechanism for storing core taxonomy & names properties and relations in an embedded
@@ -39,10 +41,12 @@ import java.util.stream.Stream;
  * large BLOBs or strings externally: https://neo4j.com/blog/dark-side-neo4j-worst-practices/
  * <p>
  * We use the Kryo library for a very performant binary
- * serialisation with the data keyed under the neo4j node id.
+ * serialisation with the data keyed under the neo4j node value.
  */
 public class NeoDb implements NormalizerStore {
   private static final Logger LOG = LoggerFactory.getLogger(NeoDb.class);
+  private static final Labels[] TAX_LABELS = new Labels[]{Labels.ALL, Labels.TAXON, Labels.ROOT};
+  private static final Labels[] SYN_LABELS = new Labels[]{Labels.ALL, Labels.SYNONYM};
   private final GraphDatabaseBuilder neoFactory;
   private final DB mapDb;
   private final Atomic.Var<Dataset> dataset;
@@ -138,30 +142,88 @@ public class NeoDb implements NormalizerStore {
   }
 
   @Override
-  public Stream<NeoTaxon> all() {
-    //TODO: use proper tree traversal in neo!!!
-    return taxa.entrySet().stream().map(new Function<Map.Entry<Long, NeoTaxon>, NeoTaxon>() {
-      @Nullable
-      @Override
-      public NeoTaxon apply(@Nullable Map.Entry<Long, NeoTaxon> entry) {
-        NeoTaxon t = entry.getValue();
-        try (Transaction tx = neo.beginTx()) {
-          t.node = neo.getNodeById(entry.getKey());
-        }
-        return t;
-      }
-    });
+  public NeoTaxon get(Node n) {
+    NeoTaxon t = taxa.get(n.getId());
+    if (t != null) {
+      t.node = n;
+    }
+    return t;
   }
 
   @Override
-  public Stream<NeoTaxon> originalNames() {
-    //TODO: implement properly
-    return Lists.<NeoTaxon>newArrayList().stream();
+  public RankedName getRankedName(Node n) {
+    return new RankedName(n,
+        NeoProperties.getScientificName(n),
+        NeoProperties.getAuthorship(n),
+        NeoProperties.getRank(n, Rank.UNRANKED)
+    );
+  }
+
+  /**
+   * @return the single matching node with the taxonID or null
+   */
+  @Override
+  public Node byTaxonID(String taxonID) {
+    try {
+      return Iterators.singleOrNull(neo.findNodes(Labels.ALL, NeoProperties.TAXON_ID, taxonID));
+    } catch (NoSuchElementException e) {
+      throw new NotUniqueRuntimeException(NeoProperties.TAXON_ID, taxonID);
+    }
+  }
+
+  /**
+   * @return the matching nodes with the scientificName
+   */
+  @Override
+  public List<Node> byScientificName(String scientificName) {
+    return Iterators.asList(neo.findNodes(Labels.ALL, NeoProperties.SCIENTIFIC_NAME, scientificName));
+  }
+
+  @Override
+  public List<Node> byScientificName(String scientificName, Rank rank) {
+    List<Node> names = byScientificName(scientificName);
+    names.removeIf(n -> !NeoProperties.getRank(n, Rank.UNRANKED).equals(rank));
+    return names;
   }
 
   @Override
   public Dataset getDataset() {
     return dataset.get();
+  }
+
+  @Override
+  public void processAll(int batchSize, NodeBatchProcessor callback) {
+    Transaction tx = neo.beginTx();
+    int counter = 0;
+    try {
+      for (Node n : neo.getAllNodes()) {
+        callback.process(n);
+        counter++;
+        if (counter % batchSize == 0) {
+          if (callback.commitBatch(counter)) {
+            tx.success();
+          }
+          tx.close();
+          tx = neo.beginTx();
+        }
+      }
+    } finally {
+      if (callback.commitBatch(counter)) {
+        tx.success();
+      }
+      tx.close();
+    }
+  }
+
+  public interface NodeBatchProcessor {
+    void process(Node n);
+
+    /**
+     * Indicates whether the batch should be committed or not
+     * @param counter the total record counter of processed records at this point
+     * @return true if the batch should be comitted.
+     */
+    boolean commitBatch(int counter);
   }
 
   /**
@@ -229,18 +291,22 @@ public class NeoDb implements NormalizerStore {
     Map<String, Object> props = NeoDbUtils.neo4jProps(tax);
     if (isBatchMode()) {
       // batch insert normalizer properties used during normalization
-      nodeId = inserter.createNode(props, tax.getNeoLabel());
+      nodeId = inserter.createNode(props, getNeoLabels(tax));
 
     } else {
       // create neo4j node if needed
       if (tax.node == null) {
-        tax.node = neo.createNode(tax.getNeoLabel());
+        tax.node = neo.createNode(getNeoLabels(tax));
       }
       nodeId = tax.node.getId();
       // update neo4j props
       NeoDbUtils.setProperties(tax.node, props);
     }
     taxa.put(nodeId, tax);
+  }
+
+  private Labels[] getNeoLabels(NeoTaxon t) {
+    return t.isSynonym() ? SYN_LABELS : TAX_LABELS;
   }
 
   @Override

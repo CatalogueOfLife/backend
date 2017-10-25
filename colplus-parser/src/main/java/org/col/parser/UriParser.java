@@ -9,6 +9,7 @@ import java.util.Optional;
  * URI parser as wrapper around the gbif url parser
  */
 public class UriParser implements Parser<URI> {
+  public static final UriParser PARSER = new UriParser();
 
   @Override
   public Optional<URI> parse(String value) {

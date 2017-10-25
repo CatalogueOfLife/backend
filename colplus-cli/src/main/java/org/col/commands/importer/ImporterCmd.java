@@ -5,6 +5,7 @@ import io.dropwizard.cli.ConfiguredCommand;
 import io.dropwizard.setup.Bootstrap;
 import net.sourceforge.argparse4j.inf.Namespace;
 import org.col.commands.config.CliConfig;
+import org.col.commands.importer.dwca.Normalizer;
 import org.col.commands.importer.neo.NeoDbFactory;
 import org.col.commands.importer.neo.NormalizerStore;
 import org.col.db.MybatisFactory;
@@ -28,6 +29,7 @@ public class ImporterCmd extends ConfiguredCommand<CliConfig> {
     // create datasource
     HikariDataSource ds = cfg.db.pool();
     try {
+      //TODO: enable imports in different formats!!!
       File dwca = cfg.normalizer.source(datasetKey);
       URL dwcaUrl = null;
       System.out.format("Downloading %s from %s!\n", datasetKey, dwca);

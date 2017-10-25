@@ -1,4 +1,4 @@
-package org.col.commands.importer.neo;
+package org.col.commands.importer.dwca;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Splitter;
@@ -6,15 +6,13 @@ import com.google.common.base.Strings;
 import org.col.api.Dataset;
 import org.col.api.VerbatimRecord;
 import org.col.api.vocab.DataFormat;
-import org.col.commands.importer.NormalizationFailedException;
-import org.col.commands.importer.VerbatimInterpreter;
-import org.col.commands.importer.VerbatimRecordFactory;
+import org.col.commands.importer.neo.InsertMetadata;
+import org.col.commands.importer.neo.NormalizerStore;
 import org.col.commands.importer.neo.model.NeoTaxon;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.Term;
 import org.gbif.dwca.io.Archive;
 import org.gbif.dwca.io.ArchiveFactory;
-import org.gbif.dwca.io.MetadataException;
 import org.gbif.dwca.record.StarRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +30,7 @@ public class NormalizerInserter {
   private Archive arch;
   private InsertMetadata meta = new InsertMetadata();
   private final NormalizerStore store;
-  VerbatimInterpreter interpreter = new VerbatimInterpreter();
+  private VerbatimInterpreter interpreter;
 
   public NormalizerInserter(NormalizerStore store) throws IOException {
     this.store = store;
@@ -45,6 +43,7 @@ public class NormalizerInserter {
   public InsertMetadata insert(File dwca) throws NormalizationFailedException {
     openArchive(dwca);
     updateMetadata();
+    interpreter = new VerbatimInterpreter(meta);
     store.startBatchMode();
     for (StarRecord star : arch) {
       insertStarRecord(star);
@@ -62,15 +61,19 @@ public class NormalizerInserter {
     Dataset d = new Dataset();
     d.setDataFormat(DataFormat.DWCA);
     try {
-      //TODO: replace with a leaner CoL dataset parser for EML that can handle specific CoL extensions
-      org.gbif.api.model.registry.Dataset gbif = arch.getMetadata();
+      if (Strings.isNullOrEmpty(arch.getMetadataLocation())) {
+        LOG.info("No dataset metadata available");
 
-      d.setTitle(gbif.getTitle());
-      d.setDescription(gbif.getDescription());
-      d.setHomepage(gbif.getHomepage());
+      } else {
+        //TODO: replace with a leaner CoL dataset parser for EML that can handle specific CoL extensions
+        org.gbif.api.model.registry.Dataset gbif = arch.getMetadata();
+        d.setTitle(gbif.getTitle());
+        d.setDescription(gbif.getDescription());
+        d.setHomepage(gbif.getHomepage());
+      }
 
-    } catch (MetadataException e) {
-      LOG.error("Unable to read dataset metadata from dwc archive", e);
+    } catch (Throwable e) {
+      LOG.error("Unable to read dataset metadata from dwc archive", e.getMessage());
 
     } finally {
       // the key will be preserved by the store
@@ -89,7 +92,7 @@ public class NormalizerInserter {
     store.put(i);
 
     meta.incRecords();
-    meta.incRank(i.taxon.getRank());
+    meta.incRank(i.name.getRank());
     if (meta.getRecords() % (10000) == 0) {
       LOG.info("Inserts done into neo4j: {}", meta.getRecords());
       if (Thread.interrupted()) {

@@ -5,6 +5,8 @@ import org.col.api.exception.InvalidNameException;
 import org.col.api.vocab.*;
 
 import java.net.URI;
+import java.util.EnumMap;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -102,6 +104,11 @@ public class Name {
 
   // TODO: add to stack incl DAO
   private String etymology;
+
+  /**
+   * Issues related to this name with potential values in the map
+   */
+  private Map<Issue, String> issues = new EnumMap(Issue.class);
 
   public Integer getKey() {
     return key;
@@ -267,6 +274,22 @@ public class Name {
     return authorship != null && !authorship.isEmpty();
   }
 
+  public Map<Issue, String> getIssues() {
+    return issues;
+  }
+
+  public void setIssues(Map<Issue, String> issues) {
+    this.issues = issues;
+  }
+
+  public void addIssue(Issue issue) {
+    issues.put(issue, null);
+  }
+
+  public void addIssue(Issue issue, Object value) {
+    issues.put(issue, value.toString());
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -290,12 +313,14 @@ public class Name {
         status == name.status &&
         type == name.type &&
         Objects.equals(sourceUrl, name.sourceUrl) &&
-        Objects.equals(remarks, name.remarks);
+        Objects.equals(remarks, name.remarks) &&
+        Objects.equals(etymology, name.etymology) &&
+        Objects.equals(issues, name.issues);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(key, id, dataset, scientificName, authorship, rank, origin, nomenclaturalCode, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, notho, originalName, fossil, status, type, sourceUrl, remarks);
+    return Objects.hash(key, id, dataset, scientificName, authorship, rank, origin, nomenclaturalCode, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, notho, originalName, fossil, status, type, sourceUrl, remarks, etymology, issues);
   }
 
   @Override

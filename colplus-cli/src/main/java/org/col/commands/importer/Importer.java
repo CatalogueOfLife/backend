@@ -5,10 +5,13 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.Dataset;
 import org.col.commands.config.ImporterConfig;
+import org.col.commands.importer.neo.NeoDb;
 import org.col.commands.importer.neo.NormalizerStore;
+import org.col.commands.importer.neo.model.NeoTaxon;
 import org.col.db.mapper.DatasetMapper;
 import org.col.db.mapper.NameMapper;
 import org.col.db.mapper.TaxonMapper;
+import org.neo4j.graphdb.Node;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,35 +67,44 @@ public class Importer implements Runnable {
       // insert original names first and remember postgres keys for subsequent combinations and taxa
       LOG.info("Inserting original names");
       Map<Long, Integer> originalNameKeys = Maps.newHashMap();
-      store.originalNames().forEach(t -> {
-        t.name.setDataset(dataset);
-        nameMapper.create(t.name);
-        originalNameKeys.put(t.node.getId(), t.name.getKey());
-        countAndCommit(session);
-      });
+//      store.originalNames().forEach(t -> {
+//        t.name.setDataset(dataset);
+//        nameMapper.create(t.name);
+//        originalNameKeys.put(t.node.getId(), t.name.getKey());
+//        countAndCommit(session);
+//      });
       session.commit();
       LOG.info("Inserted {} original names", counter);
 
       // insert taxa with all the rest
       LOG.info("Inserting remaining names and all taxa");
       TaxonMapper taxonMapper = session.getMapper(TaxonMapper.class);
-      store.all().forEach(t -> {
-        if (originalNameKeys.containsKey(t.node.getId())) {
-          // this is an original name we have already inserted!
-          t.name.setKey(originalNameKeys.get(t.node.getId()));
-          t.name.setDataset(dataset);
-        } else {
-          nameMapper.create(t.name);
-          countAndCommit(session);
-        }
-        // TODO: insert synonym relations!
-        if (t.taxon != null) {
-          t.taxon.setDataset(dataset);
-          t.taxon.setName(t.name);
-          taxonMapper.create(t.taxon);
-          countAndCommit(session);
+      store.processAll(1000, new NeoDb.NodeBatchProcessor() {
+        @Override
+        public void process(Node n) {
+          NeoTaxon t = store.get(n);
+          if (originalNameKeys.containsKey(t.node.getId())) {
+            // this is an original name we have already inserted!
+            t.name.setKey(originalNameKeys.get(t.node.getId()));
+            t.name.setDataset(dataset);
+          } else {
+            nameMapper.create(t.name);
+            countAndCommit(session);
+          }
+          // TODO: insert synonym relations!
+          if (t.taxon != null) {
+            t.taxon.setDataset(dataset);
+            t.taxon.setName(t.name);
+            taxonMapper.create(t.taxon);
+            countAndCommit(session);
 
-          //TODO: insert related infos
+            //TODO: insert related infos
+          }
+        }
+
+        @Override
+        public boolean commitBatch(int counter) {
+          return false;
         }
       });
       session.commit();
