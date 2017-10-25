@@ -160,6 +160,34 @@ public enum NomStatus {
   DOUBTFUL("nomen dubium", "nom. dub.", "doubtful"),
 
   /**
+   * An unpublished name that was given a temporary placeholder name to work with.
+   * Sometimes these names do not get properly published for decades and can be cited in other works.
+   * Example: Genoplesium vernalis D.L. Jones ms.
+   *
+   * Often abbreviated as ined. (ineditus) and sometimes called chironym/cheironym.
+   *
+   * In the 1980s in Australia, botanists agreed on a formula (Croft 1989, Conn 2000) for use with
+   * unpublished names to avoid the confusion that was arising through the use of such things as
+   * “Verticordia sp.1”, “Verticordia sp.2” etc.
+   * There was no guarantee that what was called “sp.1” in one institution was identical to “sp.1” in a second.
+   *
+   * The agreed formula is in the form of:
+   * Genus sp. <colloquial name or description> (<Voucher>)
+   *
+   * Examples:
+   * Prostanthera sp. Somersbey (B.J.Conn 4024)
+   * Elseya sp. nov. (AMS – R140984)
+   *
+   * Some zoologists use a similar convention, but it is not done so universally.
+   */
+  MANUSCRIPT("manuscript name", "ms.", "manuscript name"),
+  /**
+   * A name usage erroneously cited without a sec/sensu indication so it appears to be a published homonym with a different authority.
+   * See https://en.wikipedia.org/wiki/Chresonym
+   */
+  CHRESONYM("chresonym", null, "chresonym"),
+
+  /**
    * Species inquirenda, a species of doubtful identity requiring further investigation
    */
   UNEVALUATED("nomen inquirendum", null, "unevaluated");

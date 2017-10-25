@@ -2,6 +2,7 @@ package org.col.parser;
 
 import com.google.common.base.Enums;
 import com.google.common.base.Optional;
+import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 import org.col.util.text.StringUtils;
 import org.gbif.utils.file.csv.CSVReader;
@@ -37,7 +38,7 @@ abstract class EnumParser<T extends Enum> extends ParserBase<T> {
           LOG.debug("Ignore unmapped value {} on line {}", row[0], reader.currLineNumber());
           continue;
         }
-        if (row.length != 2) {
+        if (row.length != 2 || Strings.isNullOrEmpty(row[1])) {
           LOG.warn("Ignore invalid mapping line {} with {} columns", reader.currLineNumber(), row.length);
           continue;
         }

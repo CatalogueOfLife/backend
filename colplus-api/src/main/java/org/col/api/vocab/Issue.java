@@ -36,6 +36,11 @@ public enum Issue {
   NOMENCLATURAL_STATUS_INVALID,
 
   /**
+   * dwc:nomenclaturalCode could not be interpreted
+   */
+  NOMENCLATURAL_CODE_INVALID,
+
+  /**
    * A recombination with a basionym authorship which does not match the authorship of the linked basionym.
    */
   BASIONYM_AUTHOR_MISMATCH,

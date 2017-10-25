@@ -19,10 +19,6 @@ import org.slf4j.LoggerFactory;
 public class VerbatimInterpreter {
   private static final Logger LOG = LoggerFactory.getLogger(VerbatimInterpreter.class);
 
-  private RankParser rankParser = RankParser.PARSER;
-  private NameParser nameParser = NameParserGNA.PARSER;
-  private UriParser uriParser = UriParser.PARSER;
-  private SynonymStatusParser synonymStatusParser = SynonymStatusParser.PARSER;
   private InsertMetadata insertMetadata;
 
   public VerbatimInterpreter(InsertMetadata insertMetadata) {
@@ -45,12 +41,6 @@ public class VerbatimInterpreter {
     t.verbatim = v;
     // name
     t.name = interpretName(v);
-    if (insertMetadata.isOriginalNameMapped()) {
-      Name on = new Name();
-      on.setScientificName(v.getCoreTerm(DwcTerm.originalNameUsage));
-      on.setId(v.getCoreTerm(DwcTerm.originalNameUsageID));
-      t.name.setOriginalName(on);
-    }
     // flat classification
     t.classification = new Classification();
     for (DwcTerm dwc : DwcTerm.HIGHER_RANKS) {
@@ -79,7 +69,7 @@ public class VerbatimInterpreter {
   private NeoTaxon.Synonym parseSynonym(VerbatimRecord v) {
     NeoTaxon.Synonym syn = new NeoTaxon.Synonym();
 
-    syn.statusSynonym = SafeParser.parse(synonymStatusParser, v.getCoreTerm(DwcTerm.taxonomicStatus))
+    syn.statusSynonym = SafeParser.parse(SynonymStatusParser.PARSER, v.getCoreTerm(DwcTerm.taxonomicStatus))
         .orElse(false);
     if (insertMetadata.isAcceptedNameMapped()) {
       syn.acceptedNameUsage = getCoreTermIfDifferent(v, DwcTerm.acceptedNameUsage, DwcTerm.scientificName);
@@ -129,7 +119,7 @@ public class VerbatimInterpreter {
     Name n;
     if (v.hasCoreTerm(DwcTerm.scientificName)) {
       try {
-        n = nameParser.parse(v.getCoreTerm(DwcTerm.scientificName)).get();
+        n = NameParserGNA.PARSER.parse(v.getCoreTerm(DwcTerm.scientificName)).get();
         // TODO: validate name against optional atomized terms!
       } catch (UnparsableException e) {
         n = buildNameFromVerbatimTerms(v);
@@ -140,7 +130,7 @@ public class VerbatimInterpreter {
       n = buildNameFromVerbatimTerms(v);
     }
     // parse rank
-    final Rank rank = SafeParser.parse(rankParser, v.getFirst(DwcTerm.taxonRank, DwcTerm.verbatimTaxonRank))
+    final Rank rank = SafeParser.parse(RankParser.PARSER, v.getFirst(DwcTerm.taxonRank, DwcTerm.verbatimTaxonRank))
         .orElse(Rank.UNRANKED, Issue.RANK_INVALID, n.getIssues());
     n.setRank(rank);
 
@@ -160,23 +150,34 @@ public class VerbatimInterpreter {
       }
     }
 
-    if (!n.isConsistent()) {
-      n.addIssue(Issue.INCONSISTENT_NAME);
-      LOG.warn("Inconsistent name: {}", n);
-    }
-
     n.setId(v.getFirst(DwcTerm.scientificNameID, DwcTerm.taxonID));
     n.setOrigin(Origin.SOURCE);
-    n.setSourceUrl(uriParser.parse(v.getCoreTerm(DcTerm.references)).orElse(null));
+    n.setSourceUrl(UriParser.PARSER.parse(v.getCoreTerm(DcTerm.references)).orElse(null));
+    n.setStatus(SafeParser.parse(NomStatusParser.PARSER, v.getCoreTerm(DwcTerm.nomenclaturalStatus))
+        .orElse(null, Issue.NOMENCLATURAL_STATUS_INVALID, n.getIssues())
+    );
+    n.setNomenclaturalCode(SafeParser.parse(NomCodeParser.PARSER, v.getCoreTerm(DwcTerm.nomenclaturalCode))
+        .orElse(null, Issue.NOMENCLATURAL_CODE_INVALID, n.getIssues())
+    );
     // TODO: use new scientificNameRemarks/nomenclatureRemarks term
     n.setRemarks(v.getCoreTerm(DwcTerm.taxonRemarks));
 
     // TODO: parse and set more properties
     n.setEtymology(null);
-    n.setOriginalName(null);
     n.setFossil(null);
-    n.setNomenclaturalCode(null);
-    n.setStatus(null);
+
+    // basionym
+    if (insertMetadata.isOriginalNameMapped()) {
+      Name on = new Name();
+      on.setScientificName(v.getCoreTerm(DwcTerm.originalNameUsage));
+      on.setId(v.getCoreTerm(DwcTerm.originalNameUsageID));
+      n.setOriginalName(on);
+    }
+
+    if (!n.isConsistent()) {
+      n.addIssue(Issue.INCONSISTENT_NAME);
+      LOG.warn("Inconsistent name: {}", n);
+    }
 
     return n;
   }
@@ -185,7 +186,7 @@ public class VerbatimInterpreter {
    * @return a name instance with just the parsed authorship, i.e. combination & original year & author list
    */
   private Authorship parseAuthorship(String authorship) throws UnparsableException {
-      Name auth = nameParser.parse("Abies alba "+authorship).get();
+      Name auth = NameParserGNA.PARSER.parse("Abies alba "+authorship).get();
       return auth.getAuthorship();
   }
 }
