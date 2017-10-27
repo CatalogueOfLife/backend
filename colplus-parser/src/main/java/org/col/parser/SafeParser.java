@@ -56,6 +56,23 @@ public class SafeParser<T> {
   }
 
   /**
+   * Always returns a value, if needed falling back to null.
+   * @return the parsed value if present, otherwise null
+   */
+  public T orNull() {
+    return isPresent() ? result.get() : null;
+  }
+
+  /**
+   * Always returns a value, if needed falling back to null.
+   * If the value was unparsable an issue is added to the issue collector.
+   * @return the parsed value if present, null if empty or unparsable
+   */
+  public T orNull(Issue unparsableIssue, Map<Issue, String> issueCollector) {
+    return orElse(null, unparsableIssue, issueCollector);
+  }
+
+  /**
    * Always returns a value, if needed falling back to a default.
    * If the value was unparsable an issue is added to the issue collector.
    * @return the parsed value if present, other if empty or unparsable

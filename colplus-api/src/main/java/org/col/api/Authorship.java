@@ -103,8 +103,7 @@ public class Authorship {
   private String joinAuthors(LinkedList<String> authors) {
     // TODO: offer option to abbreviate with et al.
     if (authors.size() > 1) {
-      String last = authors.removeLast();
-      return AUTHORSHIP_JOINER.join(authors) + " & " + last;
+      return AUTHORSHIP_JOINER.join(authors.subList(0, authors.size()-1)) + " & " + authors.getLast();
     } else {
       return AUTHORSHIP_JOINER.join(authors);
     }

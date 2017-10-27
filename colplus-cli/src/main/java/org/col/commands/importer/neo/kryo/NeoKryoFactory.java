@@ -65,6 +65,7 @@ public class NeoKryoFactory implements KryoFactory {
     kryo.register(LinkedHashMap.class);
     kryo.register(HashSet.class);
     kryo.register(ArrayList.class);
+    kryo.register(LinkedList.class);
     kryo.register(UUID.class, new UUIDSerializer());
     kryo.register(URI.class, new URISerializer());
     kryo.register(int[].class);

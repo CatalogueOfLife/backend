@@ -47,17 +47,7 @@ public class VerbatimInterpreter {
       t.classification.setByTerm(dwc, v.getCoreTerm(dwc));
     }
     // add taxon in any case - we can swap stawtus of a synonym during normalization
-    // and it keeps the taxonID for resolution of relations
-    t.taxon = new Taxon();
-    t.taxon.setId(useCoreIdForTaxonID ? v.getId() : v.getCoreTerm(DwcTerm.taxonID));
-    //TODO: parse status
-    t.taxon.setStatus(TaxonomicStatus.ACCEPTED);
-    if (insertMetadata.isParentNameMapped()) {
-      Taxon parent = new Taxon();
-      //parent.setScientificName(v.getCoreTerm(DwcTerm.parentNameUsage));
-      parent.setId(v.getCoreTerm(DwcTerm.parentNameUsageID));
-      t.taxon.setParent(parent);
-    }
+    t.taxon = interpretTaxon(v, useCoreIdForTaxonID);
     // a synonym by status?
     // we deal with relations via DwcTerm.acceptedNameUsageID and DwcTerm.acceptedNameUsage during main normalization
     if(SafeParser.parse(SynonymStatusParser.PARSER, v.getCoreTerm(DwcTerm.taxonomicStatus)).orElse(false)) {
@@ -67,22 +57,32 @@ public class VerbatimInterpreter {
     return t;
   }
 
-  private Name buildNameFromVerbatimTerms(VerbatimRecord v) {
-    Name n = new Name();
-    n.setGenus(v.getFirst(GbifTerm.genericName, DwcTerm.genus));
-    n.setInfragenericEpithet(v.getCoreTerm(DwcTerm.subgenus));
-    n.setSpecificEpithet(v.getCoreTerm(DwcTerm.specificEpithet));
-    n.setInfraspecificEpithet(v.getCoreTerm(DwcTerm.infraspecificEpithet));
-    n.setType(NameType.SCIENTIFIC);
-    //TODO: detect named hybrids in epithets manually
-    n.setNotho(null);
-    try {
-      n.setScientificName(n.buildScientificName());
-    } catch (InvalidNameException e) {
-      LOG.warn("Invalid atomised name found: {}", n);
-      n.addIssue(Issue.INCONSISTENT_NAME);
+  private Taxon interpretTaxon(VerbatimRecord v, boolean useCoreIdForTaxonID) {
+    // and it keeps the taxonID for resolution of relations
+    Taxon t = new Taxon();
+    t.setId(useCoreIdForTaxonID ? v.getId() : v.getCoreTerm(DwcTerm.taxonID));
+    t.setStatus(SafeParser.parse(TaxonomicStatusParser.PARSER, v.getCoreTerm(DwcTerm.taxonomicStatus))
+        .orElse(TaxonomicStatus.DOUBTFUL)
+    );
+    //TODO: interpret all of Taxon via new dwca extension
+    t.setAccordingTo(null);
+    t.setAccordingToDate(null);
+    t.setOrigin(Origin.SOURCE);
+    t.setDatasetUrl(SafeParser.parse(UriParser.PARSER, v.getCoreTerm(DcTerm.references)).orNull());
+    t.setFossil(null);
+    t.setRecent(null);
+    //t.setLifezones();
+    t.setSpeciesEstimate(null);
+    t.setSpeciesEstimateReference(null);
+    t.setRemarks(v.getCoreTerm(DwcTerm.taxonRemarks));
+
+    if (insertMetadata.isParentNameMapped()) {
+      Taxon parent = new Taxon();
+      //parent.setScientificName(v.getCoreTerm(DwcTerm.parentNameUsage));
+      parent.setId(v.getCoreTerm(DwcTerm.parentNameUsageID));
+      t.setParent(parent);
     }
-    return n;
+    return t;
   }
 
   private Name interpretName(VerbatimRecord v) {
@@ -132,11 +132,9 @@ public class VerbatimInterpreter {
     n.setNomenclaturalCode(SafeParser.parse(NomCodeParser.PARSER, v.getCoreTerm(DwcTerm.nomenclaturalCode))
         .orElse(null, Issue.NOMENCLATURAL_CODE_INVALID, n.getIssues())
     );
-    // TODO: use new scientificNameRemarks/nomenclatureRemarks term
-    n.setRemarks(v.getCoreTerm(DwcTerm.taxonRemarks));
-
-    // TODO: parse and set more properties
-    n.setEtymology(null);
+    //TODO: should we also get these through an extension, e.g. species profile or a nomenclature extension?
+    n.setRemarks(v.getCoreTerm(CoLTerm.nomenclaturalRemarks));
+    n.setEtymology(v.getCoreTerm(CoLTerm.etymology));
     n.setFossil(null);
 
     // basionym is kept purely in neo4j
@@ -146,6 +144,24 @@ public class VerbatimInterpreter {
       LOG.warn("Inconsistent name: {}", n);
     }
 
+    return n;
+  }
+
+  private Name buildNameFromVerbatimTerms(VerbatimRecord v) {
+    Name n = new Name();
+    n.setGenus(v.getFirst(GbifTerm.genericName, DwcTerm.genus));
+    n.setInfragenericEpithet(v.getCoreTerm(DwcTerm.subgenus));
+    n.setSpecificEpithet(v.getCoreTerm(DwcTerm.specificEpithet));
+    n.setInfraspecificEpithet(v.getCoreTerm(DwcTerm.infraspecificEpithet));
+    n.setType(NameType.SCIENTIFIC);
+    //TODO: detect named hybrids in epithets manually
+    n.setNotho(null);
+    try {
+      n.setScientificName(n.buildScientificName());
+    } catch (InvalidNameException e) {
+      LOG.warn("Invalid atomised name found: {}", n);
+      n.addIssue(Issue.INCONSISTENT_NAME);
+    }
     return n;
   }
 

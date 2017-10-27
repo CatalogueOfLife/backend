@@ -122,76 +122,12 @@ public class Normalizer implements Runnable {
     applyDenormedClassification();
 
     // set correct ROOT and PROPARTE labels for easier access
-    updateLabels();
+    store.updateLabels();
 
     // updates the taxon instances with infos derived from neo4j relations
-    updateTaxonStoreWithRelations();
+    store.updateTaxonStoreWithRelations();
 
     LOG.info("Relation setup completed.");
-  }
-
-  // overlay neo4j relations
-  private void updateTaxonStoreWithRelations() {
-    try (Transaction tx = store.getNeo().beginTx()) {
-      for (Node n : store.getNeo().getAllNodes()) {
-        NeoTaxon t = store.get(n);
-        t.taxon.setKey((int)n.getId());
-        // basionym
-        Node bn = getSingleRelated(t.node, RelType.BASIONYM_OF, Direction.INCOMING);
-        if (bn != null) {
-          NeoTaxon bas = store.get(bn);
-          bas.name.setKey((int)bn.getId());
-          t.name.setOriginalName(bas.name);
-        }
-
-        if (t.node.hasLabel(Labels.SYNONYM)) {
-          // accepted, can be multiple
-          for (Relationship synRel : t.node.getRelationships(RelType.SYNONYM_OF, Direction.OUTGOING)) {
-            if (t.synonym == null) {
-              t.synonym = new NeoTaxon.Synonym();
-            }
-            t.synonym.accepted.add(extractTaxon(synRel.getOtherNode(t.node)));
-          }
-
-        } else if (!t.node.hasLabel(Labels.ROOT)){
-          // parent
-          Node p = getSingleRelated(t.node, RelType.PARENT_OF, Direction.INCOMING);
-          t.taxon.setParent(extractTaxon(p));
-        }
-        // store the updated object
-        store.put(t);
-      }
-    }
-  }
-
-  private Taxon extractTaxon(Node n) {
-    NeoTaxon t = store.get(n);
-    t.taxon.setName(t.name);
-    // use neo4j node as key
-    t.taxon.setKey((int)n.getId());
-    return t.taxon;
-  }
-
-  private Node getSingleRelated(Node n, RelType type, Direction dir) {
-    try {
-      Relationship rel = n.getSingleRelationship(type, dir);
-      if (rel != null) {
-        return rel.getOtherNode(n);
-      }
-
-    } catch (NotFoundException e) {
-      // thrown in case of multiple relations, debug
-      LOG.debug("Multiple {} {} relations found for {}: {} - {}", dir, type, n, NeoProperties.getTaxonID(n), NeoProperties.getScientificNameWithAuthor(n));
-      for (Relationship rel : n.getRelationships(type, dir)) {
-        Node other = rel.getOtherNode(n);
-        LOG.debug("  {} {}/{} - {}",
-             dir == Direction.INCOMING ? "<-- "+type.abbrev+" --" : "-- "+type.abbrev+" -->",
-             other,
-             NeoProperties.getTaxonID(other), NeoProperties.getScientificNameWithAuthor(other));
-      }
-      throw new NormalizationFailedException("Multiple "+dir+" "+type+" relations found for "+NeoProperties.getScientificNameWithAuthor(n), e);
-    }
-    return null;
   }
 
   /**
@@ -423,39 +359,6 @@ public class Normalizer implements Runnable {
         parent.createRelationshipTo(child, RelType.PARENT_OF);
       }
 
-    }
-  }
-
-  private void updateLabels() {
-    // set ROOT
-    LOG.info("Labelling root nodes");
-    String query =  "MATCH (r:TAXON) " +
-                    "WHERE not ( ()-[:PARENT_OF]->(r) ) " +
-                    "SET r :ROOT " +
-                    "RETURN count(r)";
-    long count = updateLabel(query);
-    LOG.info("Labelled {} root nodes", count);
-
-    // set PROPARTE_SYNONYM
-    LOG.info("Labelling proparte synonym nodes");
-    query = "MATCH (s:SYNONYM)-[sr:SYNONYM_OF]->() " +
-            "WITH s, count(sr) AS count " +
-            "WHERE count > 1 " +
-            "SET s :PROPARTE_SYNONYM " +
-            "RETURN count";
-    count = updateLabel(query);
-    LOG.info("Labelled {} pro parte synonym nodes", count);
-  }
-
-  private long updateLabel(String query) {
-    try (Transaction tx = store.getNeo().beginTx()) {
-      Result result = store.getNeo().execute(query);
-      tx.success();
-      if (result.hasNext()) {
-        return (Long) result.next().values().iterator().next();
-      } else {
-        return 0;
-      }
     }
   }
 

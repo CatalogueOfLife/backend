@@ -5,18 +5,19 @@ import com.google.common.base.Throwables;
 import org.apache.commons.io.FileUtils;
 import org.col.api.Dataset;
 import org.col.api.Reference;
+import org.col.api.Taxon;
 import org.col.api.vocab.Rank;
+import org.col.commands.importer.dwca.NormalizationFailedException;
 import org.col.commands.importer.neo.kryo.NeoKryoFactory;
 import org.col.commands.importer.neo.mapdb.MapDbObjectSerializer;
 import org.col.commands.importer.neo.model.Labels;
 import org.col.commands.importer.neo.model.NeoProperties;
 import org.col.commands.importer.neo.model.NeoTaxon;
+import org.col.commands.importer.neo.model.RelType;
 import org.mapdb.Atomic;
 import org.mapdb.DB;
 import org.mapdb.Serializer;
-import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.*;
 import org.neo4j.graphdb.factory.GraphDatabaseBuilder;
 import org.neo4j.helpers.collection.Iterators;
 import org.neo4j.kernel.api.exceptions.index.IndexEntryConflictException;
@@ -75,11 +76,8 @@ public class NeoDb implements NormalizerStore {
           .softReferences()
           .build();
 
-      //TODO: reorganize file layout; allow to reopen/append kryo file!
-      // dataset1/
-      //   normalizer(dir)
-      //   mapdb
-      dataset = (Atomic.Var<Dataset>) mapDb.atomicVar("dataset", new MapDbObjectSerializer(Dataset.class, pool, 256)).createOrOpen();
+      dataset = (Atomic.Var<Dataset>) mapDb.atomicVar("dataset", new MapDbObjectSerializer(Dataset.class, pool, 256))
+          .createOrOpen();
       taxa = mapDb.hashMap("taxa")
           .keySerializer(Serializer.LONG)
           .valueSerializer(new MapDbObjectSerializer(NeoTaxon.class, pool, 256))
@@ -241,7 +239,6 @@ public class NeoDb implements NormalizerStore {
       try {
         // define indices
         LOG.info("Building lucene index taxonID ...");
-        //TODO: neo4j batchinserter does not seem to evaluate the unique constraint. Duplicates pass thru (see tests) !!!
         inserter.createDeferredConstraint(Labels.ALL).assertPropertyIsUnique(NeoProperties.TAXON_ID).create();
         LOG.info("Building lucene index scientificName ...");
         inserter.createDeferredSchemaIndex(Labels.ALL).on(NeoProperties.SCIENTIFIC_NAME).create();
@@ -268,31 +265,36 @@ public class NeoDb implements NormalizerStore {
   }
 
   @Override
-  public void put(NeoTaxon tax) {
+  public NeoTaxon put(NeoTaxon t) {
     // extract references into ref store before store them
-    for (Reference r : tax.listReferences()) {
+    for (Reference r : t.listReferences()) {
       //TODO: add reference to map if new, replace all props with just the key
       put(r);
     }
 
     // update neo4j properties either via batch mode or classic
-    //TODO: set ROOT or other labels
     long nodeId;
-    Map<String, Object> props = NeoDbUtils.neo4jProps(tax);
+    Map<String, Object> props = NeoDbUtils.neo4jProps(t);
     if (isBatchMode()) {
       // batch insert normalizer properties used during normalization
-      nodeId = inserter.createNode(props, getNeoLabels(tax));
+      nodeId = inserter.createNode(props, getNeoLabels(t));
 
     } else {
       // create neo4j node if needed
-      if (tax.node == null) {
-        tax.node = neo.createNode(getNeoLabels(tax));
+      if (t.node == null) {
+        t.node = neo.createNode(getNeoLabels(t));
       }
-      nodeId = tax.node.getId();
+      nodeId = t.node.getId();
       // update neo4j props
-      NeoDbUtils.setProperties(tax.node, props);
+      NeoDbUtils.setProperties(t.node, props);
     }
-    taxa.put(nodeId, tax);
+    taxa.put(nodeId, t);
+
+    // use neo4j node ids as keys for both name and taxon
+    t.taxon.setKey((int)nodeId);
+    t.name.setKey(t.taxon.getKey());
+
+    return t;
   }
 
   private Labels[] getNeoLabels(NeoTaxon t) {
@@ -300,21 +302,125 @@ public class NeoDb implements NormalizerStore {
   }
 
   @Override
-  public void put(Reference r) {
+  public Reference put(Reference r) {
     if (r.getKey() == null) {
       r.setKey(referenceSequence.incrementAndGet());
     }
     references.put(r.getKey(), r);
+    return r;
   }
 
   @Override
-  public void put(Dataset d) {
+  public Dataset put(Dataset d) {
     // keep existing dataset key
     Dataset old = dataset.get();
     if (old != null) {
       d.setKey(old.getKey());
     }
     dataset.set(d);
+    return d;
   }
+
+  /**
+   * overlay neo4j relations to NeoTaxon instances
+   */
+  @Override
+  public void updateTaxonStoreWithRelations() {
+    try (Transaction tx = getNeo().beginTx()) {
+      for (Node n : getNeo().getAllNodes()) {
+        NeoTaxon t = get(n);
+        t.taxon.setKey((int)n.getId());
+        // basionym
+        Node bn = getSingleRelated(t.node, RelType.BASIONYM_OF, Direction.INCOMING);
+        if (bn != null) {
+          NeoTaxon bas = get(bn);
+          bas.name.setKey((int)bn.getId());
+          t.name.setOriginalName(bas.name);
+        }
+
+        if (t.node.hasLabel(Labels.SYNONYM)) {
+          // accepted, can be multiple
+          for (Relationship synRel : t.node.getRelationships(RelType.SYNONYM_OF, Direction.OUTGOING)) {
+            if (t.synonym == null) {
+              t.synonym = new NeoTaxon.Synonym();
+            }
+            t.synonym.accepted.add(extractTaxon(synRel.getOtherNode(t.node)));
+          }
+
+        } else if (!t.node.hasLabel(Labels.ROOT)){
+          // parent
+          Node p = getSingleRelated(t.node, RelType.PARENT_OF, Direction.INCOMING);
+          t.taxon.setParent(extractTaxon(p));
+        }
+        // store the updated object directly in MapDB, avoiding unecessary updates to Neo
+        taxa.put(t.node.getId(), t);
+      }
+    }
+  }
+
+  private Taxon extractTaxon(Node n) {
+    NeoTaxon t = get(n);
+    t.taxon.setName(t.name);
+    // use neo4j node as key
+    t.taxon.setKey((int)n.getId());
+    return t.taxon;
+  }
+
+  private Node getSingleRelated(Node n, RelType type, Direction dir) {
+    try {
+      Relationship rel = n.getSingleRelationship(type, dir);
+      if (rel != null) {
+        return rel.getOtherNode(n);
+      }
+
+    } catch (NotFoundException e) {
+      // thrown in case of multiple relations, debug
+      LOG.debug("Multiple {} {} relations found for {}: {} - {}", dir, type, n, NeoProperties.getTaxonID(n), NeoProperties.getScientificNameWithAuthor(n));
+      for (Relationship rel : n.getRelationships(type, dir)) {
+        Node other = rel.getOtherNode(n);
+        LOG.debug("  {} {}/{} - {}",
+            dir == Direction.INCOMING ? "<-- "+type.abbrev+" --" : "-- "+type.abbrev+" -->",
+            other,
+            NeoProperties.getTaxonID(other), NeoProperties.getScientificNameWithAuthor(other));
+      }
+      throw new NormalizationFailedException("Multiple "+dir+" "+type+" relations found for "+NeoProperties.getScientificNameWithAuthor(n), e);
+    }
+    return null;
+  }
+
+  @Override
+  public void updateLabels() {
+    // set ROOT
+    LOG.info("Labelling root nodes");
+    String query =  "MATCH (r:TAXON) " +
+        "WHERE not ( ()-[:PARENT_OF]->(r) ) " +
+        "SET r :ROOT " +
+        "RETURN count(r)";
+    long count = updateLabel(query);
+    LOG.info("Labelled {} root nodes", count);
+
+    // set PROPARTE_SYNONYM
+    LOG.info("Labelling proparte synonym nodes");
+    query = "MATCH (s:SYNONYM)-[sr:SYNONYM_OF]->() " +
+        "WITH s, count(sr) AS count " +
+        "WHERE count > 1 " +
+        "SET s :PROPARTE_SYNONYM " +
+        "RETURN count";
+    count = updateLabel(query);
+    LOG.info("Labelled {} pro parte synonym nodes", count);
+  }
+
+  private long updateLabel(String query) {
+    try (Transaction tx = neo.beginTx()) {
+      Result result = neo.execute(query);
+      tx.success();
+      if (result.hasNext()) {
+        return (Long) result.next().values().iterator().next();
+      } else {
+        return 0;
+      }
+    }
+  }
+
 }
 

@@ -20,8 +20,10 @@ public class AuthorshipTest {
 
     auth.getOriginalAuthors().add("Bassier");
     assertEquals("(Bassier) L.", auth.toString());
+    assertEquals("(Bassier) L.", auth.toString());
 
     auth.getCombinationAuthors().add("Rohe");
+    assertEquals("(Bassier) L. & Rohe", auth.toString());
     assertEquals("(Bassier) L. & Rohe", auth.toString());
   }
 

@@ -2,6 +2,7 @@ package org.col.api;
 
 import com.google.common.base.Strings;
 import org.apache.commons.lang3.text.WordUtils;
+import org.col.api.vocab.Rank;
 
 import java.util.Calendar;
 import java.util.Random;
@@ -42,6 +43,53 @@ public class RandomUtils {
 
   public static String randomAuthor() {
     return WordUtils.capitalize(RandomUtils.randomString(rnd.nextInt(12) + 1).toLowerCase());
+  }
+
+  public static Authorship randomAuthorship() {
+    Authorship auth = new Authorship();
+    while (rnd.nextBoolean()) {
+      auth.getCombinationAuthors().add(randomAuthor());
+    }
+    if (rnd.nextBoolean()) {
+      auth.setCombinationYear(randomSpeciesYear());
+    }
+
+    while (rnd.nextBoolean() && rnd.nextBoolean()) {
+      auth.getOriginalAuthors().add(randomAuthor());
+    }
+    if (rnd.nextBoolean()) {
+      auth.setOriginalYear(randomSpeciesYear());
+    }
+    return auth;
+  }
+
+  public static Rank randomRank() {
+    switch (rnd.nextInt(10)) {
+      case 1: return Rank.values()[ rnd.nextInt(Rank.values().length) ];
+      case 2: return Rank.values()[ rnd.nextInt(Rank.FAMILY.ordinal()) ];
+      case 3: return Rank.FAMILY;
+      case 4: return Rank.GENUS;
+      case 5: return Rank.SUBSPECIES;
+      case 6: return Rank.values()[ Rank.SPECIES.ordinal() + rnd.nextInt(Rank.values().length - Rank.SPECIES.ordinal()) ];
+      default: return Rank.SPECIES;
+    }
+  }
+
+  public static Name randomName() {
+    Name n = new Name();
+    n.setAuthorship(randomAuthorship());
+    Rank rank = randomRank();
+    n.setRank(rank);
+    if (rank == Rank.SPECIES) {
+      n.setScientificName(randomSpecies());
+    } else if (rank.isInfraspecific()) {
+      n.setScientificName(randomSpecies() + " " + rank.getMarker() + " " + randomEpithet());
+    } else if (rank == Rank.FAMILY) {
+      n.setScientificName(randomFamily());
+    } else {
+      n.setScientificName(randomGenus());
+    }
+    return n;
   }
 
   /**

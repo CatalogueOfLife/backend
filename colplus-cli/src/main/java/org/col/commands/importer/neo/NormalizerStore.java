@@ -17,6 +17,9 @@ public interface NormalizerStore extends AutoCloseableRuntime {
 
   GraphDatabaseService getNeo();
 
+  /**
+   * get taxon by its unique taxonID
+   */
   Node byTaxonID(String taxonID);
 
   List<Node> byScientificName(String scientificName);
@@ -29,11 +32,11 @@ public interface NormalizerStore extends AutoCloseableRuntime {
 
   void endBatchMode();
 
-  void put(NeoTaxon taxon);
+  NeoTaxon put(NeoTaxon taxon);
 
-  void put(Reference r);
+  Reference put(Reference r);
 
-  void put(Dataset d);
+  Dataset put(Dataset d);
 
   /**
    * Process all nodes in batches with the given callback handler.
@@ -50,4 +53,10 @@ public interface NormalizerStore extends AutoCloseableRuntime {
 
   NeoTaxon get(Node n);
 
+  void updateTaxonStoreWithRelations();
+
+  /**
+   * Set correct ROOT and PROPARTE labels for easier access
+   */
+  void updateLabels();
 }
