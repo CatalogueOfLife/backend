@@ -36,6 +36,13 @@ public class PrinterUtils {
     printTree(neo, writer, format, null, null);
   }
 
+  public static void debugTree(GraphDatabaseService neo, Writer writer) throws Exception {
+    TreePrinter printer = new TxtPrinter(writer, true);
+    TreeWalker.walkTree(neo, printer);
+    printer.close();
+    writer.flush();
+  }
+
   /**
    * Prints the entire neo4j tree out to a print stream, mainly for debugging.
    * Synonyms are marked with a prepended asterisk.

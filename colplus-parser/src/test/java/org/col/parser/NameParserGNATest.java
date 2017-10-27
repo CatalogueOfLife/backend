@@ -30,6 +30,11 @@ public class NameParserGNATest {
         .combAuthors(null, "Mill.")
         .noBasAuthors();
 
+    assertName("Abies alba ssp. alpina Mill.", "Abies alba subsp. alpina")
+        .infraSpecies("Abies", "alba", Rank.SUBSPECIES, "alpina")
+        .combAuthors(null, "Mill.")
+        .noBasAuthors();
+
     assertName("Festuca ovina L. subvar. gracilis Hackel", "Festuca ovina subvar. gracilis")
         .infraSpecies("Festuca", "ovina", Rank.SUBVARIETY, "gracilis")
         .combAuthors(null,"Hackel")
@@ -50,11 +55,25 @@ public class NameParserGNATest {
         .combAuthors(null, "Van Heurck", "Müll. Arg.")
         .noBasAuthors();
 
+    assertName("Zignoella subgen. Trematostoma Sacc.", "Zignoella subgen. Trematostoma")
+        .infraGeneric("Zignoella", Rank.SUBGENUS, "Trematostoma")
+        .combAuthors(null, "Sacc.")
+        .noBasAuthors();
+
     //TODO: do we expect d'urvilleana or durvilleana ???
     assertName("Angiopteris d'urvilleana de Vriese", "Angiopteris durvilleana")
         .species("Angiopteris", "durvilleana")
         .combAuthors(null, "de Vriese")
         .noBasAuthors();
+
+    assertName("[unassigned] Cladobranchia", "[unassigned] Cladobranchia", NameType.PLACEHOLDER)
+        .noAuthors();
+
+    assertName("Biota incertae sedis", "Biota incertae sedis", NameType.PLACEHOLDER)
+        .noAuthors();
+
+    assertName("Mollusca not assigned", "Mollusca not assigned", NameType.PLACEHOLDER)
+        .noAuthors();
   }
 
   @Test
@@ -82,9 +101,13 @@ public class NameParserGNATest {
         .infraSpecies("Baccharis", "microphylla", Rank.VARIETY, "rhomboidea")
         .combAuthors(null, "Sch. Bip.")
         .noBasAuthors();
+
+    assertName("subgen. Trematostoma Sacc.", "subgen. Trematostoma")
+        .infraGeneric(null, Rank.SUBGENUS, "Trematostoma")
+        .combAuthors(null, "Sacc.")
+        .noBasAuthors();
+
   }
-
-
 
   static NameAssertion assertName(String rawName, String sciname) throws UnparsableException {
     return assertName(rawName, sciname, NameType.SCIENTIFIC);
@@ -107,14 +130,25 @@ public class NameParserGNATest {
     NameAssertion monomial(String monomial) {
       assertEquals(monomial, n.getScientificName());
       assertNull(n.getGenus());
+      assertNull(n.getInfragenericEpithet());
       assertNull(n.getSpecificEpithet());
       assertNull(n.getInfraspecificEpithet());
       //assertEquals(Rank.SPECIES, n.getRank());
       return this;
     }
 
+    NameAssertion infraGeneric(String genus, Rank rank, String infraGeneric) {
+      assertEquals(genus, n.getGenus());
+      assertEquals(infraGeneric, n.getInfragenericEpithet());
+      assertNull(n.getSpecificEpithet());
+      assertNull(n.getInfraspecificEpithet());
+      assertEquals(rank, n.getRank());
+      return this;
+    }
+
     NameAssertion species(String genus, String epithet) {
       assertEquals(genus, n.getGenus());
+      assertNull(n.getInfragenericEpithet());
       assertEquals(epithet, n.getSpecificEpithet());
       assertNull(n.getInfraspecificEpithet());
       assertEquals(Rank.SPECIES, n.getRank());
@@ -123,6 +157,7 @@ public class NameParserGNATest {
   
     NameAssertion infraSpecies(String genus, String epithet, Rank rank, String infraEpithet) {
       assertEquals(genus, n.getGenus());
+      assertNull(n.getInfragenericEpithet());
       assertEquals(epithet, n.getSpecificEpithet());
       assertEquals(infraEpithet, n.getInfraspecificEpithet());
       assertEquals(rank, n.getRank());

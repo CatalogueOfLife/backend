@@ -11,7 +11,6 @@ import org.col.commands.importer.neo.mapdb.MapDbObjectSerializer;
 import org.col.commands.importer.neo.model.Labels;
 import org.col.commands.importer.neo.model.NeoProperties;
 import org.col.commands.importer.neo.model.NeoTaxon;
-import org.col.commands.importer.neo.model.RankedName;
 import org.mapdb.Atomic;
 import org.mapdb.DB;
 import org.mapdb.Serializer;
@@ -45,7 +44,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class NeoDb implements NormalizerStore {
   private static final Logger LOG = LoggerFactory.getLogger(NeoDb.class);
-  private static final Labels[] TAX_LABELS = new Labels[]{Labels.ALL, Labels.TAXON, Labels.ROOT};
+  private static final Labels[] TAX_LABELS = new Labels[]{Labels.ALL, Labels.TAXON};
   private static final Labels[] SYN_LABELS = new Labels[]{Labels.ALL, Labels.SYNONYM};
   private final GraphDatabaseBuilder neoFactory;
   private final DB mapDb;
@@ -150,15 +149,6 @@ public class NeoDb implements NormalizerStore {
     return t;
   }
 
-  @Override
-  public RankedName getRankedName(Node n) {
-    return new RankedName(n,
-        NeoProperties.getScientificName(n),
-        NeoProperties.getAuthorship(n),
-        NeoProperties.getRank(n, Rank.UNRANKED)
-    );
-  }
-
   /**
    * @return the single matching node with the taxonID or null
    */
@@ -252,11 +242,11 @@ public class NeoDb implements NormalizerStore {
         // define indices
         LOG.info("Building lucene index taxonID ...");
         //TODO: neo4j batchinserter does not seem to evaluate the unique constraint. Duplicates pass thru (see tests) !!!
-        inserter.createDeferredConstraint(Labels.TAXON).assertPropertyIsUnique(NeoProperties.TAXON_ID).create();
+        inserter.createDeferredConstraint(Labels.ALL).assertPropertyIsUnique(NeoProperties.TAXON_ID).create();
         LOG.info("Building lucene index scientificName ...");
-        inserter.createDeferredSchemaIndex(Labels.TAXON).on(NeoProperties.SCIENTIFIC_NAME).create();
+        inserter.createDeferredSchemaIndex(Labels.ALL).on(NeoProperties.SCIENTIFIC_NAME).create();
         LOG.info("Building lucene index scientificNameID ...");
-        inserter.createDeferredSchemaIndex(Labels.TAXON).on(NeoProperties.NAME_ID).create();
+        inserter.createDeferredSchemaIndex(Labels.ALL).on(NeoProperties.NAME_ID).create();
       } finally {
         // this is when lucene indices are build and thus throws RuntimeExceptions when unique constraints are broken
         // we catch these exceptions below

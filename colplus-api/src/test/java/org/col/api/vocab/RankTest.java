@@ -172,4 +172,18 @@ public class RankTest {
     // questionable
     assertFalse(Rank.UNRANKED.higherThan(Rank.VARIETY));
   }
+
+  @Test
+  public void testNotUnranked() {
+    assertFalse(Rank.UNRANKED.notOtherOrUnranked());
+    assertFalse(Rank.OTHER.notOtherOrUnranked());
+
+    assertTrue(Rank.INFRAGENERIC_NAME.notOtherOrUnranked());
+    assertTrue(Rank.SPECIES.notOtherOrUnranked());
+    assertTrue(Rank.GENUS.notOtherOrUnranked());
+    assertTrue(Rank.SUBGENUS.notOtherOrUnranked());
+    assertTrue(Rank.DOMAIN.notOtherOrUnranked());
+    assertTrue(Rank.INFRASUBSPECIFIC_NAME.notOtherOrUnranked());
+    assertTrue(Rank.STRAIN.notOtherOrUnranked());
+  }
 }

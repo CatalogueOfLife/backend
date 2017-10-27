@@ -1,10 +1,10 @@
 package org.col.commands.importer.dwca;
 
-import com.google.common.base.Charsets;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.io.Files;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
+import org.col.api.Taxon;
 import org.col.commands.config.NormalizerConfig;
 import org.col.commands.importer.neo.NeoDbFactory;
 import org.col.commands.importer.neo.NormalizerStore;
@@ -12,11 +12,8 @@ import org.col.commands.importer.neo.NotUniqueRuntimeException;
 import org.col.commands.importer.neo.model.Labels;
 import org.col.commands.importer.neo.model.NeoProperties;
 import org.col.commands.importer.neo.model.NeoTaxon;
-import org.col.commands.importer.neo.printer.GraphFormat;
-import org.col.commands.importer.neo.printer.PrinterUtils;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.NotFoundException;
@@ -27,13 +24,11 @@ import org.neo4j.helpers.collection.Iterables;
 import org.neo4j.helpers.collection.Iterators;
 
 import javax.annotation.Nullable;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringWriter;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static org.junit.Assert.*;
@@ -61,8 +56,8 @@ public class NormalizerIT {
     Normalizer norm = new Normalizer(store, dwca.toFile());
     norm.run();
 
-    reopen(datasetKey);
-    assertTree(datasetKey);
+    // reopen
+    store = NeoDbFactory.open(cfg,datasetKey);
   }
 
   @Before
@@ -77,15 +72,6 @@ public class NormalizerIT {
       // store is close by Normalizer.run method already
       FileUtils.deleteQuietly(cfg.directory);
     }
-  }
-
-  void reopen(int datasetKey) throws IOException {
-    store = NeoDbFactory.open(cfg,datasetKey);
-  }
-
-  NeoTaxon byNodeId(long id) {
-    Node n = store.getNeo().getNodeById(id);
-    return store.get(n);
   }
 
   NeoTaxon byTaxonID(String id) {
@@ -113,21 +99,7 @@ public class NormalizerIT {
     return store.get(nodes.get(0));
   }
 
-  private void assertTree(int datasetKey) throws Exception {
-    System.out.println("assert tree");
-
-    InputStream tree = getClass().getResourceAsStream("/trees/dwca-"+datasetKey+".txt");
-    String expected = IOUtils.toString(tree, Charsets.UTF_8);
-
-    StringWriter buffer = new StringWriter();
-    PrinterUtils.printTree(store.getNeo(), buffer, GraphFormat.TEXT);
-
-    // compare trees
-    assertEquals(expected, buffer.toString().trim());
-  }
-
   @Test
-  @Ignore("Need to fix name parsing first")
   public void testNeoIndices() throws Exception {
     normalize(1);
 
@@ -153,24 +125,45 @@ public class NormalizerIT {
   }
 
   @Test
-  public void testIdList() throws Exception {
+  public void testBasionym() throws Exception {
     normalize(1);
 
     try (Transaction tx = store.getNeo().beginTx()) {
       NeoTaxon u1 = byTaxonID("1006");
       NeoTaxon u2 = byName("Leontodon taraxacoides", "(Vill.) Mérat");
-//      NeoTaxon u3 = byNodeId(u1.taxon.getKey());
-
       assertEquals(u1, u2);
-//      assertEquals(u1, u3);
+
+      NeoTaxon bas = byName("Leonida taraxacoida");
+      assertEquals(u2.name.getOriginalName().getId(), bas.name.getId());
+      assertEquals(u2.name.getOriginalName().getKey(), bas.taxon.getKey());
+      assertEquals(u2.name.getOriginalName().getScientificName(), bas.name.getScientificName());
+      assertEquals(u2.name.getOriginalName().getAuthorship(), bas.name.getAuthorship());
 
       NeoTaxon syn = byName("Leontodon leysseri");
+      assertEquals(1, syn.synonym.accepted.size());
       NeoTaxon acc = byTaxonID("1006");
-      assertEquals(acc.taxon.getId(), syn.synonym.acceptedNameUsageID);
+      assertEquals(acc.taxon.getId(), syn.synonym.accepted.get(0).getId());
+      assertEquals(acc.taxon.getKey(), syn.synonym.accepted.get(0).getKey());
+    }
+  }
 
-      // TODO: metrics
-     // assertMetrics(getMetricsByTaxonId("101"), 2, 2, 0, 0, 0, 0, 0, 0, 0, 2);
-     // assertMetrics(getMetricsByTaxonId("1"), 1, 15, 1, 0, 0, 0, 1, 4, 0, 7);
+  @Test
+  public void testProParte() throws Exception {
+    normalize(8);
+
+    try (Transaction tx = store.getNeo().beginTx()) {
+      NeoTaxon syn = byTaxonID("1001");
+      assertEquals(3, syn.synonym.accepted.size());
+
+      Map<String, String> expectedAccepted = Maps.newHashMap();
+      expectedAccepted.put("1000", "Calendula arvensis");
+      expectedAccepted.put("10000", "Calendula incana subsp. incana");
+      expectedAccepted.put("10002", "Calendula incana subsp. maderensis");
+
+      for (Taxon acc : syn.synonym.accepted) {
+        assertEquals(expectedAccepted.remove(acc.getId()), acc.getName().getScientificName());
+      }
+      assertTrue(expectedAccepted.isEmpty());
     }
   }
 

@@ -14,6 +14,25 @@ import java.io.Writer;
 
 /**
  * A handler that can be used with the TaxonWalker to print a neo4j taxonomy in a simple nested text structure.
+ * Synonyms are prefixed with an asterisk *,
+ * Pro parte synoynms with a double asterisk **,
+ * basionyms are prefixed by a $ and listed first in the synonymy.
+ *
+ * Ranks are given in brackets after the scientific name
+ *
+ * A basic example tree would look like this:
+<pre>
+Plantae [kingdom]
+  Compositae Giseke [family]
+    *Asteraceae [family]
+    Artemisia L. [genus]
+      Artemisia elatior (Torr. & A. Gray) Rydb.
+        *$Artemisia tilesii var. elatior Torr. & A. Gray
+      $Artemisia rupestre Schrank L. [species]
+        *Absinthium rupestre (L.) Schrank [species]
+        *Absinthium viridifolium var. rupestre (L.) Besser
+</pre>
+ *
  */
 public class TxtPrinter implements TreePrinter {
   public static final String SYNONYM_SYMBOL = "*";
@@ -52,6 +71,9 @@ public class TxtPrinter implements TreePrinter {
       if (n.hasLabel(Labels.SYNONYM)) {
         writer.write(SYNONYM_SYMBOL);
       }
+      if (n.hasLabel(Labels.PROPARTE_SYNONYM)) {
+        writer.write(SYNONYM_SYMBOL);
+      }
       if (n.hasRelationship(RelType.BASIONYM_OF, Direction.OUTGOING)) {
         writer.write(BASIONYM_SYMBOL);
       }
@@ -65,8 +87,10 @@ public class TxtPrinter implements TreePrinter {
         writer.write(" [");
         writer.write(Rank.values()[(Integer) n.getProperty(NeoProperties.RANK)].name().toLowerCase());
         if (showIds) {
-          writer.write(",");
+          writer.write("; ");
           writer.write(String.valueOf(n.getId()));
+          writer.write("; ");
+          writer.write(NeoProperties.getTaxonID(n));
         }
         writer.write("]");
       }

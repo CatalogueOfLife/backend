@@ -86,7 +86,7 @@ public class NormalizerInserter {
 
     VerbatimRecord v = VerbatimRecordFactory.build(star);
 
-    NeoTaxon i = interpreter.interpret(v);
+    NeoTaxon i = interpreter.interpret(v, meta.isCoreIdUsed());
 
     // store interpreted record incl verbatim
     store.put(i);

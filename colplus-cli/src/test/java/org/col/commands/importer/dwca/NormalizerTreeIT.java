@@ -28,7 +28,11 @@ import static org.junit.Assert.assertFalse;
 
 /**
  * Tests to normalize various dwc archives
- * and compares the results from the neo store with an expected text tree representation stored as files.
+ * and compare the results from the resulting neo store with an expected text tree representation stored as files.
+ *
+ * This exactly compares the parent_of and synonym_of relations, implicitly created names/taxa
+ * and verifies that basionym relations are existing, but does not very the actual basionym itself
+ * (which is checked in a manual test in NormalizerIT instead)
  */
 @RunWith(Parameterized.class)
 public class NormalizerTreeIT {
@@ -40,9 +44,7 @@ public class NormalizerTreeIT {
 
   @Parameterized.Parameters
   public static Collection<Object[]> data() {
-    //TODO: use all tests when ready
-    //IntStream stream = IntStream.rangeClosed(1, MAX_DWCA_ID);
-    IntStream stream = IntStream.of(1,2,3,4,7,20);
+    IntStream stream = IntStream.rangeClosed(0, MAX_DWCA_ID);
     return stream
         .mapToObj(i -> new Object[]{i})
         .collect(Collectors.toList());
@@ -81,25 +83,20 @@ public class NormalizerTreeIT {
       store = NeoDbFactory.create(cfg,datasetKey);
 
       Normalizer norm = new Normalizer(store, dwca.toFile());
-      norm.run();
+      try {
+        norm.run();
 
-      // reopen the neo db
-      store = NeoDbFactory.open(cfg,datasetKey);
-
+      } finally {
+        // reopen the neo db
+        store = NeoDbFactory.open(cfg,datasetKey);
+        debug();
+      }
 
       // assert tree
       InputStream tree = getClass().getResourceAsStream("/dwca/"+datasetKey+"/expected.tree");
       String expected = IOUtils.toString(tree, Charsets.UTF_8).trim();
 
-      // dump graph as DOT file for debugging
-      File dotFile = new File("graphs/tree"+datasetKey+".dot");
-      Files.createParentDirs(dotFile);
-      Writer writer = new FileWriter(dotFile);
-      PrinterUtils.printTree(store.getNeo(), writer, GraphFormat.DOT);
-      writer.close();
-      System.out.println("Wrote graph to "+dotFile.getAbsolutePath());
-
-      writer = new StringWriter();
+      Writer writer = new StringWriter();
       PrinterUtils.printTree(store.getNeo(), writer, GraphFormat.TEXT);
       String neotree = writer.toString().trim();
       assertFalse("Empty tree, probably no root node found", neotree.isEmpty());
@@ -111,6 +108,16 @@ public class NormalizerTreeIT {
       System.err.println("Failed to normalize dataset "+datasetKey);
       throw e;
     }
+  }
+
+  void debug() throws Exception {
+    // dump graph as DOT file for debugging
+    File dotFile = new File("graphs/tree"+datasetKey+".dot");
+    Files.createParentDirs(dotFile);
+    Writer writer = new FileWriter(dotFile);
+    PrinterUtils.printTree(store.getNeo(), writer, GraphFormat.DOT);
+    writer.close();
+    System.out.println("Wrote graph to "+dotFile.getAbsolutePath());
   }
 
 }

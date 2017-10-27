@@ -35,7 +35,7 @@ public class VerbatimInterpreter {
     return null;
   }
 
-  public NeoTaxon interpret(VerbatimRecord v) {
+  public NeoTaxon interpret(VerbatimRecord v, boolean useCoreIdForTaxonID) {
     NeoTaxon t = new NeoTaxon();
     // verbatim
     t.verbatim = v;
@@ -49,7 +49,7 @@ public class VerbatimInterpreter {
     // add taxon in any case - we can swap stawtus of a synonym during normalization
     // and it keeps the taxonID for resolution of relations
     t.taxon = new Taxon();
-    t.taxon.setId(v.getCoreTerm(DwcTerm.taxonID));
+    t.taxon.setId(useCoreIdForTaxonID ? v.getId() : v.getCoreTerm(DwcTerm.taxonID));
     //TODO: parse status
     t.taxon.setStatus(TaxonomicStatus.ACCEPTED);
     if (insertMetadata.isParentNameMapped()) {
@@ -58,40 +58,13 @@ public class VerbatimInterpreter {
       parent.setId(v.getCoreTerm(DwcTerm.parentNameUsageID));
       t.taxon.setParent(parent);
     }
-    // a synonym?
-    t.synonym = parseSynonym(v);
+    // a synonym by status?
+    // we deal with relations via DwcTerm.acceptedNameUsageID and DwcTerm.acceptedNameUsage during main normalization
+    if(SafeParser.parse(SynonymStatusParser.PARSER, v.getCoreTerm(DwcTerm.taxonomicStatus)).orElse(false)) {
+      t.synonym = new NeoTaxon.Synonym();
+    }
+
     return t;
-  }
-
-  /**
-   * @return A synonym instance if the record is considered to be a synonym, otherwise null
-   */
-  private NeoTaxon.Synonym parseSynonym(VerbatimRecord v) {
-    NeoTaxon.Synonym syn = new NeoTaxon.Synonym();
-
-    syn.statusSynonym = SafeParser.parse(SynonymStatusParser.PARSER, v.getCoreTerm(DwcTerm.taxonomicStatus))
-        .orElse(false);
-    if (insertMetadata.isAcceptedNameMapped()) {
-      syn.acceptedNameUsage = getCoreTermIfDifferent(v, DwcTerm.acceptedNameUsage, DwcTerm.scientificName);
-      syn.acceptedNameUsageID = getCoreTermIfDifferent(v, DwcTerm.acceptedNameUsageID, DwcTerm.taxonID);
-    }
-    if (syn.statusSynonym || syn.acceptedNameUsage != null || syn.acceptedNameUsageID != null) {
-      syn.id = v.getCoreTerm(DwcTerm.taxonID);
-      return syn;
-    }
-    return null;
-  }
-
-  /**
-   * @return the value of term if the value is different from the value of otherTerm. Null otherwise
-   */
-  private String getCoreTermIfDifferent(VerbatimRecord v, Term term, Term otherTerm) {
-    String val1 = v.getCoreTerm(term);
-    String val2 = v.getCoreTerm(otherTerm);
-    if (val1 != null && val2 != null && !val1.equals(val2)) {
-      return val1;
-    }
-    return null;
   }
 
   private Name buildNameFromVerbatimTerms(VerbatimRecord v) {
@@ -166,13 +139,7 @@ public class VerbatimInterpreter {
     n.setEtymology(null);
     n.setFossil(null);
 
-    // basionym
-    if (insertMetadata.isOriginalNameMapped()) {
-      Name on = new Name();
-      on.setScientificName(v.getCoreTerm(DwcTerm.originalNameUsage));
-      on.setId(v.getCoreTerm(DwcTerm.originalNameUsageID));
-      n.setOriginalName(on);
-    }
+    // basionym is kept purely in neo4j
 
     if (!n.isConsistent()) {
       n.addIssue(Issue.INCONSISTENT_NAME);

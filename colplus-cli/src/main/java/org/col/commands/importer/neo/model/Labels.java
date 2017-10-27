@@ -12,16 +12,19 @@ public enum Labels implements Label {
   ALL,
 
   /**
-   * Accepted taxa only, subclass of ALL
+   * Accepted taxa only
    */
   TAXON,
 
   /**
-   * Synonyms only, subclass of ALL
+   * Synonyms only
    */
   SYNONYM,
 
-  ROOT,
-  AUTONYM,
-  IMPLICIT
+  /**
+   * Proparte synonyms which have at least 2 SYNONYM_OF relations, subclass of SYNONYM
+   */
+  PROPARTE_SYNONYM,
+
+  ROOT
 }

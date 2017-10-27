@@ -1,0 +1,1 @@
+Tests the relinking of chained synonyms that point to other synonyms.

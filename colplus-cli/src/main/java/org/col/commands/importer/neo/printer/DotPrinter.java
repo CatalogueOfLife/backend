@@ -62,16 +62,15 @@ public class DotPrinter implements TreePrinter {
   @Override
   public void start(Node n) {
     try {
-      // n1 [label="Animalia"]
       writer.append("  n");
       writer.append(String.valueOf(n.getId()));
       writer.append("  [label=\"");
       writer.append(getTitle.apply(n));
+      writer.append("\"");
       if (n.hasLabel(Labels.SYNONYM)) {
-        writer.append("\", fontcolor=darkgreen]\n");
-      } else {
-        writer.append("\"]\n");
+        writer.append(", fontcolor=darkgreen");
       }
+      writer.append("]\n");
 
       // edges
       for (Relationship rel : n.getRelationships(Direction.OUTGOING)) {

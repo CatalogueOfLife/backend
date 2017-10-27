@@ -11,7 +11,17 @@ import java.util.List;
  *
  */
 public class Classification {
-  private static final List<Rank> DWC_RANKS_REVERSE = ImmutableList.copyOf(Lists.reverse(Rank.DWC_RANKS));
+  public static final List<Rank> RANKS = ImmutableList.of(
+      Rank.KINGDOM,
+      Rank.PHYLUM,
+      Rank.CLASS,
+      Rank.ORDER,
+      Rank.SUPERFAMILY,
+      Rank.FAMILY,
+      Rank.GENUS,
+      Rank.SUBGENUS
+  );
+  private static final List<Rank> RANKS_REVERSED = ImmutableList.copyOf(Lists.reverse(RANKS));
 
   private String kingdom;
   private String phylum;
@@ -138,8 +148,17 @@ public class Classification {
     return null;
   }
 
+  public void clearRankAndBelow(Rank rank) {
+    for (Rank r : RANKS_REVERSED) {
+      if (r.higherThan(rank)) {
+        break;
+      }
+      setByRank(r, null);
+    }
+  }
+
   public Rank getLowestExistingRank() {
-    for (Rank r : DWC_RANKS_REVERSE) {
+    for (Rank r : RANKS_REVERSED) {
       if (getByRank(r) != null) {
         return r;
       }

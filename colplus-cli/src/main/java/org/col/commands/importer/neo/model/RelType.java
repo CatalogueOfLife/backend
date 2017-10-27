@@ -9,16 +9,21 @@ public enum RelType implements RelationshipType {
   /**
    * Taxon -> Taxon
    */
-  PARENT_OF,
+  PARENT_OF("par"),
 
   /**
    * Name -> Taxon
    */
-  SYNONYM_OF,
+  SYNONYM_OF("syn"),
 
   /**
    * Name -> Name
    */
-  BASIONYM_OF;
+  BASIONYM_OF("bas");
 
+  public final String abbrev;
+
+  RelType(String abbrev) {
+    this.abbrev = abbrev;
+  }
 }

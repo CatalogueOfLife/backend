@@ -4,7 +4,6 @@ import org.col.api.Dataset;
 import org.col.api.Reference;
 import org.col.api.vocab.Rank;
 import org.col.commands.importer.neo.model.NeoTaxon;
-import org.col.commands.importer.neo.model.RankedName;
 import org.col.common.AutoCloseableRuntime;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -51,5 +50,4 @@ public interface NormalizerStore extends AutoCloseableRuntime {
 
   NeoTaxon get(Node n);
 
-  RankedName getRankedName(Node n);
 }

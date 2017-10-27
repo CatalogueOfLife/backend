@@ -8,6 +8,7 @@ import org.col.api.vocab.Rank;
 import org.col.api.vocab.TaxonomicStatus;
 import org.neo4j.graphdb.Node;
 
+import javax.annotation.Nullable;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -36,12 +37,15 @@ public class NeoTaxon {
   public Map<Issue, String> issues = new EnumMap(Issue.class);
   public List<String> remarks = Lists.newArrayList();
 
-  public static NeoTaxon createTaxon(Origin origin, String sciname, Rank rank, TaxonomicStatus status) {
+  public static NeoTaxon createTaxon(Origin origin, String sciname, @Nullable Authorship authorship, @Nullable Rank rank, TaxonomicStatus status) {
     NeoTaxon t = new NeoTaxon();
 
     t.name = new Name();
     t.name.setScientificName(sciname);
-    t.name.setRank(rank);
+    if (authorship != null) {
+      t.name.setAuthorship(authorship);
+    }
+    t.name.setRank(rank == null ? Rank.UNRANKED : rank);
     t.name.setOrigin(origin);
 
     t.taxon = new Taxon();
@@ -51,12 +55,7 @@ public class NeoTaxon {
   }
 
   public static class Synonym {
-    // the taxonID, same as Taxon.value
-    public String id;
-    public String acceptedNameUsageID;
-    public String acceptedNameUsage;
-    // if true dwc:taxonomicStatus determined this is a synonym, not the acceptedXYZ fields
-    public boolean statusSynonym;
+    public List<Taxon> accepted = Lists.newArrayList();
   }
 
   /**
@@ -109,6 +108,6 @@ public class NeoTaxon {
   }
 
   public String getTaxonID() {
-    return isSynonym() ? synonym.id : taxon.getId();
+    return taxon.getId();
   }
 }

@@ -2,7 +2,6 @@ package org.col.commands.importer.neo.model;
 
 import com.google.common.base.Strings;
 import org.col.api.vocab.Rank;
-import org.gbif.dwc.terms.DcTerm;
 import org.gbif.dwc.terms.DwcTerm;
 import org.neo4j.graphdb.Node;
 
@@ -12,11 +11,8 @@ import org.neo4j.graphdb.Node;
  */
 public class NeoProperties {
   // properties used in NeoTaxon
-  public static final String CORE_ID = DcTerm.identifier.simpleName();
   public static final String NAME_ID = DwcTerm.scientificNameID.simpleName();
   public static final String TAXON_ID = DwcTerm.taxonID.simpleName();
-  public static final String REFERENCE_ID = "referenceID";
-  public static final String CITATION = "citation";
   public static final String RANK = "rank";
   public static final String SCIENTIFIC_NAME = "scientificName";
   public static final String AUTHORSHIP = "authorship";
@@ -54,5 +50,16 @@ public class NeoProperties {
       sb.append(authorship);
     }
     return sb.toString();
+  }
+
+  /**
+   * Reads a ranked name instance purely from neo4j properties
+   */
+  public static RankedName getRankedName(Node n) {
+    return new RankedName(n,
+        getScientificName(n),
+        getAuthorship(n),
+        getRank(n, Rank.UNRANKED)
+    );
   }
 }
