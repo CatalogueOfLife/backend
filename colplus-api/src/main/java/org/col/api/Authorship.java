@@ -3,11 +3,12 @@ package org.col.api;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 
 /**
- * TODO: deal with ex-authors
+ * TODO: deal with ex-authors https://github.com/Sp2000/colplus-backend/issues/10
  */
 public class Authorship {
   private static final Joiner AUTHORSHIP_JOINER = Joiner.on(", ").skipNulls();
@@ -15,7 +16,7 @@ public class Authorship {
   /**
    * list of basionym authors.
    */
-  private List<String> originalAuthors = Lists.newArrayList();
+  private LinkedList<String> originalAuthors = Lists.newLinkedList();
 
   /**
    * Year of original name publication
@@ -25,7 +26,7 @@ public class Authorship {
   /**
    * list of authors excluding ex- authors
    */
-  private List<String> combinationAuthors = Lists.newArrayList();
+  private LinkedList<String> combinationAuthors = Lists.newLinkedList();
 
   /**
    * The year this combination was first published, usually the same as the publishedIn reference.
@@ -38,7 +39,7 @@ public class Authorship {
   }
 
   public void setOriginalAuthors(List<String> originalAuthors) {
-    this.originalAuthors = originalAuthors;
+    this.originalAuthors = Lists.newLinkedList(originalAuthors);
   }
 
   public String getOriginalYear() {
@@ -54,7 +55,7 @@ public class Authorship {
   }
 
   public void setCombinationAuthors(List<String> combinationAuthors) {
-    this.combinationAuthors = combinationAuthors;
+    this.combinationAuthors = Lists.newLinkedList(combinationAuthors);
   }
 
   public String getCombinationYear() {
@@ -99,10 +100,14 @@ public class Authorship {
     return Objects.hash(originalAuthors, originalYear, combinationAuthors, combinationYear);
   }
 
-  private String joinAuthors(List<String> authors) {
-    //TODO: use & for last author join
+  private String joinAuthors(LinkedList<String> authors) {
     // TODO: offer option to abbreviate with et al.
-    return AUTHORSHIP_JOINER.join(authors);
+    if (authors.size() > 1) {
+      String last = authors.removeLast();
+      return AUTHORSHIP_JOINER.join(authors) + " & " + last;
+    } else {
+      return AUTHORSHIP_JOINER.join(authors);
+    }
   }
 
   /**
@@ -110,23 +115,26 @@ public class Authorship {
    */
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
-    if (hasOriginal()) {
-      sb.append("(");
-      sb.append(joinAuthors(originalAuthors));
-      if (originalYear != null && !originalAuthors.isEmpty()) {
-        sb.append(", ");
-        sb.append(originalYear);
+    if (hasCombination() || hasOriginal()) {
+      StringBuilder sb = new StringBuilder();
+      if (hasOriginal()) {
+        sb.append("(");
+        sb.append(joinAuthors(originalAuthors));
+        if (originalYear != null && !originalAuthors.isEmpty()) {
+          sb.append(", ");
+          sb.append(originalYear);
+        }
+        sb.append(") ");
       }
-      sb.append(") ");
-    }
-    if (hasCombination()) {
-      sb.append(joinAuthors(combinationAuthors));
-      if (combinationYear != null && !combinationAuthors.isEmpty()) {
-        sb.append(", ");
-        sb.append(combinationYear);
+      if (hasCombination()) {
+        sb.append(joinAuthors(combinationAuthors));
+        if (combinationYear != null && !combinationAuthors.isEmpty()) {
+          sb.append(", ");
+          sb.append(combinationYear);
+        }
       }
+      return sb.toString();
     }
-    return sb.toString();
+    return null;
   }
 }
