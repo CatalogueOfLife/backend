@@ -1,78 +1,21 @@
-a	ACCEPTED
-acceped	ACCEPTED
-accepted	ACCEPTED
-acceptedgenusname	ACCEPTED
-acceptedname	ACCEPTED
-aceptado	ACCEPTED
-authority	ACCEPTED
-preferredname	ACCEPTED
-valid	ACCEPTED
-nomeaceito	ACCEPTED
+a,ACCEPTED
+acceped,ACCEPTED
+accepted,ACCEPTED
+acceptedgenusname,ACCEPTED
+acceptedname,ACCEPTED
+aceptado,ACCEPTED
+authority,ACCEPTED
+preferredname,ACCEPTED
+valid,ACCEPTED
+nomeaceito,ACCEPTED
 
-aceptadoprovisionalmente	DOUBTFUL
-d	DOUBTFUL
-doubtful	DOUBTFUL
-dubioustaxonconcept	DOUBTFUL
-nomendubium	DOUBTFUL
-provisionallyacceptedname	DOUBTFUL
-temporaryname	DOUBTFUL
-todetermine	DOUBTFUL
-unresolved	DOUBTFUL
-provisional	DOUBTFUL
-
-alternaterepresentation	SYNONYM
-equivalenname	SYNONYM
-equivalentname	SYNONYM
-genbankacronym	SYNONYM
-genbanksynonym	SYNONYM
-genussynonym	SYNONYM
-incorrectspelling	SYNONYM
-invalid	SYNONYM
-issynonymof	SYNONYM
-juniorsynonym	SYNONYM
-lexicalvariant	SYNONYM
-misnomer	SYNONYM
-misspelling	SYNONYM
-noacceped	SYNONYM
-nomennudum	SYNONYM
-notaccepted	SYNONYM
-notdescribed	SYNONYM
-othercombination	SYNONYM
-replacedname	SYNONYM
-spellingalternative	SYNONYM
-sinonimo	SYNONYM
-synonym	SYNONYM
-synonymsl	SYNONYM
-unaccepted	SYNONYM
-unavailable	SYNONYM
-unpublishedname	SYNONYM
-
-ambiguoussynonym	HETEROTYPIC_SYNONYM
-heterotypicsynonym	HETEROTYPIC_SYNONYM
-heterotypicsynonym	HETEROTYPIC_SYNONYM
-isheterotypicsynonymof	HETEROTYPIC_SYNONYM
-synonymsubjective	HETEROTYPIC_SYNONYM
-synonymsubjectiveheterotypic	HETEROTYPIC_SYNONYM
-sinônimo HETEROTIPICO	HETEROTYPIC_SYNONYM
-
-ishomotypicsynonymof	HOMOTYPIC_SYNONYM
-synonymoriginalcombination	HOMOTYPIC_SYNONYM
-homotypicsynonym	HOMOTYPIC_SYNONYM
-homotypicsynonym	HOMOTYPIC_SYNONYM
-synonymobjectivehomotypic	HOMOTYPIC_SYNONYM
-sinônimo HOMOTIPICO	HOMOTYPIC_SYNONYM
-
-pp	PROPARTE_SYNONYM
-pparte	PROPARTE_SYNONYM
-ppsyn	PROPARTE_SYNONYM
-ppsynonym	PROPARTE_SYNONYM
-proparte	PROPARTE_SYNONYM
-propartesynonym	PROPARTE_SYNONYM
-
-ismisappliednamefor	MISAPPLIED
-misapplied	MISAPPLIED
-misappliedname	MISAPPLIED
-
-determinationsynonym	DETERMINATION_SYNONYM
-
-intermediateranksynonym	INTERMEDIATE_RANK_SYNONYM
+aceptadoprovisionalmente,DOUBTFUL
+d,DOUBTFUL
+doubtful,DOUBTFUL
+dubioustaxonconcept,DOUBTFUL
+nomendubium,DOUBTFUL
+provisionallyacceptedname,DOUBTFUL
+temporaryname,DOUBTFUL
+todetermine,DOUBTFUL
+unresolved,DOUBTFUL
+provisional,DOUBTFUL
