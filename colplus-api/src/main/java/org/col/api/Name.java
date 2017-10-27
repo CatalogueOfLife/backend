@@ -102,7 +102,6 @@ public class Name {
    */
   private String remarks;
 
-  // TODO: add to stack incl DAO
   private String etymology;
 
   /**

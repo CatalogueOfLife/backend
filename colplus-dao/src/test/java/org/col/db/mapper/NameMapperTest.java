@@ -57,6 +57,7 @@ public class NameMapperTest extends MapperTestBase<NameMapper> {
     n.setRank(Rank.SPECIES);
     n.setOrigin(Origin.SOURCE);
     n.setType(NameType.SCIENTIFIC);
+    n.setEtymology("A random species name");
     n.addIssue(Issue.ACCEPTED_NAME_MISSING);
     n.addIssue(Issue.HOMONYM, "Abies alba");
     return n;

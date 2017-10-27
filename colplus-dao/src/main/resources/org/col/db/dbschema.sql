@@ -98,6 +98,7 @@ CREATE TABLE name (
   origin INTEGER,
   type INTEGER,
   fossil BOOLEAN,
+  etymology TEXT,
   remarks TEXT,
   issues hstore
 );

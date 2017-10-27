@@ -27,6 +27,7 @@
         n.original_name_key,
         bn.id AS original_name_id,
         n.remarks,
+        n.etymology,
         n.issues
     </sql>
 
@@ -51,6 +52,7 @@
       fossil,
       original_name_key,
       remarks,
+      etymology,
       issues
     </sql>
 
@@ -75,6 +77,7 @@
       #{fossil},
       #{originalName.key},
       #{remarks},
+      #{etymology},
       #{issues, typeHandler=org.col.db.type.HstoreIssueHandler}::hstore
     </sql>
 
