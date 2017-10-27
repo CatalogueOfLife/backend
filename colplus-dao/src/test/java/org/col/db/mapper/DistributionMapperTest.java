@@ -1,16 +1,14 @@
 package org.col.db.mapper;
 
-import static org.col.dao.DaoTestUtil.DATASET1;
-import static org.col.dao.DaoTestUtil.TAXON1;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-import java.util.List;
-
 import org.col.api.Distribution;
 import org.col.api.vocab.DistributionStatus;
 import org.junit.Test;
+
+import java.util.List;
+
+import static org.col.dao.DaoTestUtil.DATASET1;
+import static org.col.dao.DaoTestUtil.TAXON1;
+import static org.junit.Assert.*;
 
 /**
  *
@@ -23,15 +21,18 @@ public class DistributionMapperTest extends MapperTestBase<DistributionMapper> {
 
 	@Test
 	public void roundtrip() throws Exception {
-		Distribution in = newDistribution("Europe");
-		mapper().create(in);
-		assertNotNull(in.getKey());
-		commit();
-		Distribution out = mapper().getByKey(in.getKey());
-		assertTrue(in.equalsShallow(out));
+    Distribution in = newDistribution("Europe");
+    for (DistributionStatus status : DistributionStatus.values()) {
+      in.setStatus(status);
+      mapper().create(in);
+      assertNotNull(in.getKey());
+      commit();
+      Distribution out = mapper().getByKey(in.getKey());
+      assertTrue(in.equalsShallow(out));
+    }
 	}
 
-	@Test
+  @Test
 	public void testGetDistributions() throws Exception {
 		Distribution a = newDistribution("a");
 		mapper().create(a);
@@ -52,7 +53,7 @@ public class DistributionMapperTest extends MapperTestBase<DistributionMapper> {
 		d.setTaxon(TAXON1);
 		d.setArea(area);
 		d.setAreaStandard(7);
-		d.setStatus(DistributionStatus.ABSENT);
+		d.setStatus(DistributionStatus.NATIVE);
 		return d;
 	}
 }

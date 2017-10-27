@@ -1,9 +1,12 @@
 package org.col.api.vocab;
 
 /**
- * TODO: use CoL distribution status values !!!
+ * CoL distribution status values according to ACEF.
  */
 public enum DistributionStatus {
 
-  PRESENT, ABSENT;
+  NATIVE,
+  DOMESTICATED,
+  ALIEN,
+  UNCERTAIN
 }
