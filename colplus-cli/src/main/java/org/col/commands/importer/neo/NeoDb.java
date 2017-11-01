@@ -180,11 +180,11 @@ public class NeoDb implements NormalizerStore {
   }
 
   @Override
-  public void processAll(int batchSize, NodeBatchProcessor callback) {
+  public void process(Labels label, int batchSize, NodeBatchProcessor callback) {
     Transaction tx = neo.beginTx();
     int counter = 0;
     try {
-      for (Node n : neo.getAllNodes()) {
+      for (Node n : Iterators.loop(neo.findNodes(label))) {
         callback.process(n);
         counter++;
         if (counter % batchSize == 0) {
@@ -209,9 +209,16 @@ public class NeoDb implements NormalizerStore {
     /**
      * Indicates whether the batch should be committed or not
      * @param counter the total record counter of processed records at this point
-     * @return true if the batch should be comitted.
+     * @return true if the batch should be committed.
      */
     boolean commitBatch(int counter);
+
+    /**
+     * Indicates whether the final batch should be committed or not
+     * @param counter the total record counter of processed records
+     * @return true if the batch should be committed.
+     */
+    boolean finalBatch(int counter);
   }
 
   /**
@@ -398,6 +405,15 @@ public class NeoDb implements NormalizerStore {
         "RETURN count(r)";
     long count = updateLabel(query);
     LOG.info("Labelled {} root nodes", count);
+
+    // set BASIONYM
+    LOG.info("Labelling basionym nodes");
+    query = "MATCH (b:ALL)-[:BASIONYM_OF]->() " +
+        "SET b :BASIONYM " +
+        "RETURN count(b)";
+    count = updateLabel(query);
+    LOG.info("Labelled {} basionym nodes", count);
+
 
     // set PROPARTE_SYNONYM
     LOG.info("Labelling proparte synonym nodes");

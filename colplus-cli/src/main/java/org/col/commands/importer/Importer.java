@@ -7,7 +7,10 @@ import org.col.api.Dataset;
 import org.col.commands.config.ImporterConfig;
 import org.col.commands.importer.neo.NeoDb;
 import org.col.commands.importer.neo.NormalizerStore;
+import org.col.commands.importer.neo.model.Labels;
 import org.col.commands.importer.neo.model.NeoTaxon;
+import org.col.commands.importer.neo.traverse.StartEndHandler;
+import org.col.commands.importer.neo.traverse.TreeWalker;
 import org.col.db.mapper.DatasetMapper;
 import org.col.db.mapper.NameMapper;
 import org.col.db.mapper.TaxonMapper;
@@ -16,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Map;
+import java.util.Stack;
 
 /**
  *
@@ -27,7 +31,7 @@ public class Importer implements Runnable {
   private final int batchSize;
   private final SqlSessionFactory sessionFactory;
   private final Dataset dataset;
-  private int counter = 0;
+  private Map<Integer, Integer> originalNameKeys = Maps.newHashMap();
 
   public Importer(int datasetKey, NormalizerStore store, SqlSessionFactory sessionFactory, ImporterConfig cfg) {
     this.dataset = store.getDataset();
@@ -39,7 +43,10 @@ public class Importer implements Runnable {
 
   @Override
   public void run() {
-    insertData();
+    insertReferences();
+    insertBasionyms();
+    insertTaxaAndNames();
+
     updateMetadata();
   }
 
@@ -58,64 +65,110 @@ public class Importer implements Runnable {
     }
   }
 
-  private void insertData() {
-    try (SqlSession session = sessionFactory.openSession(false)) {
+  private void insertReferences() {
+    LOG.warn("Inserting references not yet implemented");
+  }
 
-      // TODO: insert references
-
+  private void insertBasionyms() {
+    // basionyms first
+    try (final SqlSession session = sessionFactory.openSession(false)) {
       NameMapper nameMapper = session.getMapper(NameMapper.class);
       // insert original names first and remember postgres keys for subsequent combinations and taxa
       LOG.info("Inserting original names");
-      Map<Long, Integer> originalNameKeys = Maps.newHashMap();
-//      store.originalNames().forEach(t -> {
-//        t.name.setDataset(dataset);
-//        nameMapper.create(t.name);
-//        originalNameKeys.put(t.node.getId(), t.name.getKey());
-//        countAndCommit(session);
-//      });
-      session.commit();
-      LOG.info("Inserted {} original names", counter);
-
-      // insert taxa with all the rest
-      LOG.info("Inserting remaining names and all taxa");
-      TaxonMapper taxonMapper = session.getMapper(TaxonMapper.class);
-      store.processAll(1000, new NeoDb.NodeBatchProcessor() {
+      store.process(Labels.BASIONYM, batchSize, new NeoDb.NodeBatchProcessor() {
         @Override
         public void process(Node n) {
           NeoTaxon t = store.get(n);
-          if (originalNameKeys.containsKey(t.node.getId())) {
-            // this is an original name we have already inserted!
-            t.name.setKey(originalNameKeys.get(t.node.getId()));
-            t.name.setDataset(dataset);
-          } else {
-            nameMapper.create(t.name);
-            countAndCommit(session);
-          }
-          // TODO: insert synonym relations!
-          if (t.taxon != null) {
-            t.taxon.setDataset(dataset);
-            t.taxon.setName(t.name);
-            taxonMapper.create(t.taxon);
-            countAndCommit(session);
-
-            //TODO: insert related infos
-          }
+          t.name.setDataset(dataset);
+          nameMapper.create(t.name);
+          // keep basionym name key map
+          originalNameKeys.put((int)t.node.getId(), t.name.getKey());
         }
 
         @Override
         public boolean commitBatch(int counter) {
-          return false;
+          session.commit();
+          LOG.debug("Inserted {} basionyms", counter);
+          return true;
         }
+
+        @Override
+        public boolean finalBatch(int counter) {
+          session.commit();
+          LOG.info("Inserted {} basionyms", counter);
+          return true;
+        }
+
       });
-      session.commit();
     }
   }
 
-  private void countAndCommit(SqlSession session) {
-    counter++;
-    if (counter % batchSize == 0) {
+  /**
+   * insert taxa with all the rest
+   */
+  private void insertTaxaAndNames() {
+    try (SqlSession session = sessionFactory.openSession(false)) {
+      LOG.info("Inserting remaining names and all taxa");
+      NameMapper nameMapper = session.getMapper(NameMapper.class);
+      TaxonMapper taxonMapper = session.getMapper(TaxonMapper.class);
+      // iterate over taxonomic tree in depth first order, keeping postgres parent keys
+      TreeWalker.walkTree(store.getNeo(), new StartEndHandler() {
+        int counter = 0;
+        Stack<Integer> parentKeys = new Stack<Integer>();
+
+        @Override
+        public void start(Node n) {
+          NeoTaxon t = store.get(n);
+          // insert name if not yet inserted (=basionym)
+          if (originalNameKeys.containsKey((int)n.getId())) {
+            // this is an original name we have already inserted, use postgres keys
+            t.name.setKey(originalNameKeys.get((int)n.getId()));
+            t.name.setDataset(dataset);
+          } else {
+            // update basionym keys
+            if (t.name.getOriginalName() != null) {
+              t.name.getOriginalName().setKey(originalNameKeys.get(t.name.getOriginalName().getKey()));
+            }
+            t.name.setDataset(dataset);
+            nameMapper.create(t.name);
+          }
+
+
+          // insert accepted taxon or synonym
+          if (t.isSynonym()) {
+            // TODO: insert synonym relations!
+
+          } else {
+            if (!parentKeys.empty()) {
+              // use parent postgres key from stack, but keep it there
+              t.taxon.getParent().setKey(parentKeys.peek());
+            }
+            t.taxon.setDataset(dataset);
+            t.taxon.setName(t.name);
+            taxonMapper.create(t.taxon);
+            // push new postgres key onto stack for this taxon as we traverse in depth first
+            parentKeys.push(t.taxon.getKey());
+          }
+
+          //TODO: insert related infos
+
+          // commit in batches
+          if (counter++ % batchSize == 0) {
+            session.commit();
+            LOG.debug("Inserted {} names and taxa", counter);
+          }
+        }
+
+        @Override
+        public void end(Node n) {
+          // remove this key from parent list if its an accepted taxon
+          if (n.hasLabel(Labels.TAXON)) {
+            parentKeys.pop();
+          }
+        }
+      });
       session.commit();
-      LOG.info("Inserted {} records", counter);
+      LOG.debug("Inserted all names and taxa");
     }
   }
 }
