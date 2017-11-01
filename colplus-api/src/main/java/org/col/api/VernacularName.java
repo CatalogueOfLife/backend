@@ -10,23 +10,23 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 public class VernacularName {
 
 	@JsonIgnore
-	private Integer key;
+	private int key;
 
 	private String name;
 
-	private Dataset dataset;
+	private int datasetKey;
 
-	private Taxon taxon;
+	private int taxonKey;
 
 	private Language language;
 
 	private Country country;
 
-	public Integer getKey() {
+	public int getKey() {
 		return key;
 	}
 
-	public void setKey(Integer key) {
+	public void setKey(int key) {
 		this.key = key;
 	}
 
@@ -38,20 +38,20 @@ public class VernacularName {
 		this.name = name;
 	}
 
-	public Dataset getDataset() {
-		return dataset;
+	public int getDatasetKey() {
+		return datasetKey;
 	}
 
-	public void setDataset(Dataset dataset) {
-		this.dataset = dataset;
+	public void setDatasetKey(int datasetKey) {
+		this.datasetKey = datasetKey;
 	}
 
-	public Taxon getTaxon() {
-		return taxon;
+	public int getTaxonKey() {
+		return taxonKey;
 	}
 
-	public void setTaxon(Taxon taxon) {
-		this.taxon = taxon;
+	public void setTaxonKey(int taxonKey) {
+		this.taxonKey = taxonKey;
 	}
 
 	public Language getLanguage() {
@@ -79,32 +79,32 @@ public class VernacularName {
 			return false;
 		}
 		VernacularName other = (VernacularName) obj;
-		return Objects.equals(key, other.key)
-		    && Objects.equals(name, other.name)
-		    && Objects.equals(language, other.language)
-		    && Objects.equals(country, other.country)
-		    && Objects.equals(dataset, other.dataset)
-		    && Objects.equals(taxon, other.taxon);
-	}
-
-	@Override
-	public int hashCode() {
-		return Objects.hash(key, name, language, country, dataset, taxon);
-	}
-
-	public boolean equalsShallow(VernacularName other) {
-		if (this == other) {
-			return true;
-		}
-		if (other == null) {
-			return false;
-		}
-		return Objects.equals(key, other.key)
-		    && ApiUtil.equalsShallow(dataset, other.dataset)
-		    && ApiUtil.equalsShallow(taxon, other.taxon)
+		return key == other.key
+		    && datasetKey == other.datasetKey
+		    && taxonKey == other.taxonKey
 		    && Objects.equals(name, other.name)
 		    && Objects.equals(language, other.language)
 		    && Objects.equals(country, other.country);
 	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(key, datasetKey, taxonKey, name, language, country);
+	}
+
+	// public boolean equalsShallow(VernacularName other) {
+	// if (this == other) {
+	// return true;
+	// }
+	// if (other == null) {
+	// return false;
+	// }
+	// return Objects.equals(key, other.key)
+	// && ApiUtil.equalsShallow(dataset, other.dataset)
+	// && ApiUtil.equalsShallow(taxon, other.taxon)
+	// && Objects.equals(name, other.name)
+	// && Objects.equals(language, other.language)
+	// && Objects.equals(country, other.country);
+	// }
 
 }

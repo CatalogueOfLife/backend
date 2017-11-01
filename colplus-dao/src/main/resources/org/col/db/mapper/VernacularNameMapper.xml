@@ -23,8 +23,8 @@
   </sql>
 
   <sql id="PROPS">
-    #{dataset.key},
-    #{taxon.key},
+    #{datasetKey},
+    #{taxonKey},
     #{name},
     #{language},
     #{country}
@@ -37,16 +37,8 @@
     (vn.taxon_key=t.key)
   </sql>
 
-  <!-- A mapping to Name, mostly auto mapped -->
   <resultMap id="vernacularNameResultMap" type="VernacularName" autoMapping="true">
     <id property="key" column="key" />
-    <association property="dataset" javaType="Dataset">
-      <id property="key" column="dataset_key" />
-    </association>
-    <association property="taxon" javaType="Taxon">
-      <id property="key" column="taxon_key" />
-      <id property="id" column="taxon_id" />
-    </association>
   </resultMap>
 
 

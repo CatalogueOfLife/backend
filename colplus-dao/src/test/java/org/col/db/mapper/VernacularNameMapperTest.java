@@ -28,7 +28,7 @@ public class VernacularNameMapperTest extends MapperTestBase<VernacularNameMappe
 		assertNotNull(in.getKey());
 		commit();
 		VernacularName out = mapper().getByKey(in.getKey());
-		assertTrue(in.equalsShallow(out));
+		assertTrue(in.equals(out));
 	}
 
 	@Test
@@ -41,9 +41,9 @@ public class VernacularNameMapperTest extends MapperTestBase<VernacularNameMappe
 		mapper().create(a);
 		List<VernacularName> list = mapper().getVernacularNames(DATASET1.getKey(), TAXON1.getId());
 		assertEquals(3, list.size());
-		assertTrue(a.equalsShallow(list.get(0)));
-		assertTrue(b.equalsShallow(list.get(1)));
-		assertTrue(c.equalsShallow(list.get(2)));
+		assertTrue(a.equals(list.get(0)));
+		assertTrue(b.equals(list.get(1)));
+		assertTrue(c.equals(list.get(2)));
 	}
 
 }

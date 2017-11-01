@@ -91,8 +91,8 @@ public class DaoTestUtil {
 	 */
 	public static VernacularName newVernacularName(Taxon taxon, String name) throws Exception {
 		VernacularName vn = new VernacularName();
-		vn.setDataset(DATASET1);
-		vn.setTaxon(taxon);
+		vn.setDatasetKey(DATASET1.getKey());
+		vn.setTaxonKey(taxon.getKey());
 		vn.setName(name);
 		vn.setLanguage(Language.ENGLISH);
 		vn.setCountry(Country.UNITED_KINGDOM);
@@ -128,8 +128,8 @@ public class DaoTestUtil {
 		t.setRemarks("Foo == Bar");
 		t.setSpeciesEstimate(81);
 		t.setSpeciesEstimateReference(REF1);
-    t.addIssue(Issue.ACCEPTED_NAME_MISSING);
-    t.addIssue(Issue.HOMONYM, "Abies alba");
+		t.addIssue(Issue.ACCEPTED_NAME_MISSING);
+		t.addIssue(Issue.HOMONYM, "Abies alba");
 		return t;
 	}
 }
