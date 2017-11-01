@@ -58,14 +58,25 @@
     </association>
   </resultMap>
 
-  <select id="list" parameterType="map" resultMap="nameActResultMap">
+  <select id="listByName" parameterType="map" resultMap="nameActResultMap">
     SELECT
     <include refid="SELECT" />
-    FROM
-    <include refid="FROM" />
+    FROM name_act na
+    LEFT JOIN name n ON (na.name_key = n.key)
     WHERE na.dataset_key = #{datasetKey}
-    ORDER BY key
-    <include refid="org.col.db.mapper.Common.limit" />
+    AND n.id = #{nameId}
+    ORDER BY na.key
+  </select>
+
+  <select id="listByHomotypicGroup" parameterType="map" resultMap="nameActResultMap">
+    SELECT
+    <include refid="SELECT" />
+    FROM name_act as na
+    LEFT JOIN name as name ON (na.name_key = name.key OR na.name_key = name.original_name_key)
+    LEFT JOIN name as sibling ON (name.original_name_key = sibling.original_name_key AND name.key != sibling.key)
+    WHERE na.dataset_key = #{datasetKey}
+    AND (name.id = #{nameId} OR sibling.id = #{nameId})
+    ORDER BY na.key
   </select>
 
   <select id="getByKey" resultMap="nameActResultMap">
