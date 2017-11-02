@@ -13,8 +13,8 @@ public class Distribution {
 
 	@JsonIgnore
 	private Integer key;
-	private Dataset dataset;
-	private Taxon taxon;
+	private Integer datasetKey;
+	private Integer taxonKey;
 	private String area;
 	private int areaStandard;
 	private DistributionStatus status;
@@ -27,20 +27,20 @@ public class Distribution {
 		this.key = key;
 	}
 
-	public Dataset getDataset() {
-		return dataset;
+	public Integer getDatasetKey() {
+		return datasetKey;
 	}
 
-	public void setDataset(Dataset dataset) {
-		this.dataset = dataset;
+	public void setDatasetKey(Integer key) {
+		this.datasetKey = key;
 	}
 
-	public Taxon getTaxon() {
-		return taxon;
+	public Integer getTaxonKey() {
+		return taxonKey;
 	}
 
-	public void setTaxon(Taxon taxon) {
-		this.taxon = taxon;
+	public void setTaxonKey(Integer key) {
+		this.taxonKey = key;
 	}
 
 	public String getArea() {
@@ -77,30 +77,15 @@ public class Distribution {
 		}
 		Distribution other = (Distribution) obj;
 		return Objects.equals(key, other.key)
-		    && Objects.equals(dataset, other.dataset)
-		    && Objects.equals(taxon, other.taxon)
+		    && Objects.equals(datasetKey, other.datasetKey)
+		    && Objects.equals(taxonKey, other.taxonKey)
 		    && Objects.equals(area, other.area)
 		    && areaStandard == other.areaStandard
 		    && status == other.status;
 	}
 
 	public int hashCode() {
-		return Objects.hash(key, dataset, taxon, area, areaStandard, status);
-	}
-
-	public boolean equalsShallow(Distribution other) {
-		if (this == other) {
-			return true;
-		}
-		if (other == null) {
-			return false;
-		}
-		return Objects.equals(key, other.key)
-		    && ApiUtil.equalsShallow(dataset, other.dataset)
-		    && ApiUtil.equalsShallow(taxon, other.taxon)
-		    && Objects.equals(area, other.area)
-		    && areaStandard == other.areaStandard
-		    && status == other.status;
+		return Objects.hash(key, datasetKey, taxonKey, area, areaStandard, status);
 	}
 
 }

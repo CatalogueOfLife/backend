@@ -23,8 +23,8 @@
   </sql>
 
   <sql id="PROPS">
-    #{dataset.key},
-    #{taxon.key},
+    #{datasetKey},
+    #{taxonKey},
     #{area},
     #{areaStandard},
     #{status}
@@ -36,16 +36,9 @@
     LEFT JOIN taxon t on (d.taxon_key=t.key)
   </sql>
 
-  <!-- A mapping to Name, mostly auto mapped -->
+  <!-- A mapping to Distribution, mostly auto mapped -->
   <resultMap id="distributionResultMap" type="Distribution" autoMapping="true">
     <id property="key" column="key" />
-    <association property="dataset" javaType="Dataset">
-      <id property="key" column="dataset_key" />
-    </association>
-    <association property="taxon" javaType="Taxon">
-      <id property="key" column="taxon_key" />
-      <id property="id" column="taxon_id" />
-    </association>
   </resultMap>
 
 
