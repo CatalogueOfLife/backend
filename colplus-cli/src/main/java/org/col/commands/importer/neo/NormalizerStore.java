@@ -3,6 +3,7 @@ package org.col.commands.importer.neo;
 import org.col.api.Dataset;
 import org.col.api.Reference;
 import org.col.api.vocab.Rank;
+import org.col.commands.importer.neo.model.Labels;
 import org.col.commands.importer.neo.model.NeoTaxon;
 import org.col.common.AutoCloseableRuntime;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -46,17 +47,18 @@ public interface NormalizerStore extends AutoCloseableRuntime {
    *
    * Iteration is by node value starting from node value 1 to highest.
    *
+   * @param label neo4j node label to select nodes by. Use Labels.ALL for all nodes
    * @param batchSize
    * @param callback
    */
-  void processAll(int batchSize, NeoDb.NodeBatchProcessor callback);
+  void process(Labels label, int batchSize, NeoDb.NodeBatchProcessor callback);
 
   NeoTaxon get(Node n);
 
   void updateTaxonStoreWithRelations();
 
   /**
-   * Set correct ROOT and PROPARTE labels for easier access
+   * Set correct ROOT, PROPARTE and BASIONYM labels for easier access
    */
   void updateLabels();
 }

@@ -26,5 +26,10 @@ public enum Labels implements Label {
    */
   PROPARTE_SYNONYM,
 
+  /**
+   * Basionym with at least one BASIONYM_OF relation
+   */
+  BASIONYM,
+
   ROOT
 }

@@ -94,7 +94,7 @@ public class Normalizer implements Runnable {
   private void normalize() {
     LOG.info("Start processing explicit relations ...");
 
-    store.processAll(10000, new NeoDb.NodeBatchProcessor() {
+    store.process(Labels.ALL,10000, new NeoDb.NodeBatchProcessor() {
       @Override
       public void process(Node n) {
         NeoTaxon t = store.get(n);
@@ -110,8 +110,13 @@ public class Normalizer implements Runnable {
         LOG.debug("Processed relations for {} nodes", counter);
         return true;
       }
+
+      @Override
+      public boolean finalBatch(int counter) {
+        LOG.info("Processed relations for all {} nodes", counter);
+        return true;
+      }
     });
-    LOG.info("Relation processing completed.");
 
     // cleanup synonym & parent relations
     cutSynonymCycles();
@@ -214,7 +219,7 @@ public class Normalizer implements Runnable {
       return;
     }
 
-    store.processAll(10000, new NeoDb.NodeBatchProcessor() {
+    store.process(Labels.ALL,10000, new NeoDb.NodeBatchProcessor() {
       @Override
       public void process(Node n) {
         if (n.hasLabel(Labels.TAXON)) {
@@ -236,8 +241,13 @@ public class Normalizer implements Runnable {
         LOG.info("Higher classifications processed for {} taxa", counter);
         return true;
       }
+
+      @Override
+      public boolean finalBatch(int counter) {
+        LOG.info("Higher classifications processed for all {} taxa", counter);
+        return true;
+      }
     });
-    LOG.info("Classification processing completed.");
   }
 
   private RankedName findHighestParent(Node n) {

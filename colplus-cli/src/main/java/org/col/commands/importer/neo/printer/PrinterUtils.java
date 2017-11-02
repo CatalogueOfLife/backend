@@ -3,6 +3,7 @@ package org.col.commands.importer.neo.printer;
 import com.google.common.base.Function;
 import org.col.api.vocab.Rank;
 import org.col.commands.importer.neo.model.NeoProperties;
+import org.col.commands.importer.neo.traverse.Traversals;
 import org.col.commands.importer.neo.traverse.TreeWalker;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -36,13 +37,6 @@ public class PrinterUtils {
     printTree(neo, writer, format, null, null);
   }
 
-  public static void debugTree(GraphDatabaseService neo, Writer writer) throws Exception {
-    TreePrinter printer = new TxtPrinter(writer, true);
-    TreeWalker.walkTree(neo, printer);
-    printer.close();
-    writer.flush();
-  }
-
   /**
    * Prints the entire neo4j tree out to a print stream, mainly for debugging.
    * Synonyms are marked with a prepended asterisk.
@@ -74,7 +68,7 @@ public class PrinterUtils {
         printer = new TxtPrinter(writer);
         break;
     }
-    TreeWalker.walkTree(neo, root, lowestRank, null, printer);
+    TreeWalker.walkTree(neo, Traversals.SORTED_TREE, root, lowestRank, printer);
     printer.close();
     writer.flush();
   }

@@ -4,19 +4,24 @@ import com.google.common.io.Files;
 import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.Dataset;
+import org.col.api.Name;
+import org.col.api.Taxon;
 import org.col.commands.config.ImporterConfig;
 import org.col.commands.config.NormalizerConfig;
 import org.col.commands.importer.dwca.Normalizer;
 import org.col.commands.importer.neo.NeoDbFactory;
 import org.col.commands.importer.neo.NormalizerStore;
-import org.col.db.mapper.DatasetMapper;
-import org.col.db.mapper.InitMybatisRule;
-import org.col.db.mapper.PgSetupRule;
+import org.col.db.mapper.*;
 import org.junit.*;
 
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.LinkedList;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  *
@@ -73,6 +78,34 @@ public class ImporterIT {
   @Test
   public void testDwca1() throws Exception {
     normalizeAndImport(1);
+
+    // verify results
+    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+      TaxonMapper taxonMapper = session.getMapper(TaxonMapper.class);
+      NameMapper nameMapper = session.getMapper(NameMapper.class);
+      // check basionym
+      Name n1006 = nameMapper.get(dataset.getKey(), "1006");
+      assertEquals("Leontodon taraxacoides", n1006.getScientificName());
+
+      Name bas = nameMapper.getByKey(n1006.getOriginalName().getKey());
+      assertEquals("Leonida taraxacoida", bas.getScientificName());
+      assertEquals("1006-s3", bas.getId());
+
+      // check taxon parents
+      assertParents(taxonMapper, "1006", "102", "30", "20", "10", "1");
+
+      // TODO: check synonym
+    }
+  }
+
+  private void assertParents(TaxonMapper taxonMapper, String taxonID, String ... parentIds) {
+    final LinkedList<String> expected = new LinkedList<String>(Arrays.asList(parentIds));
+    Taxon t = taxonMapper.get(dataset.getKey(), taxonID);
+    while (t.getParent() != null) {
+      assertEquals(expected.pop(), t.getParent().getId());
+      t = taxonMapper.getByKey(t.getParent().getKey());
+    }
+    assertTrue(expected.isEmpty());
   }
 
 }
