@@ -70,11 +70,11 @@ public class DaoTestUtil {
 
 		REF1.setKey(1);
 		REF1.setId("ref-1");
-		REF1.setDataset(DATASET1);
+		REF1.setDatasetKey(DATASET1.getKey());
 
 		REF2.setKey(2);
 		REF2.setId("ref-2");
-		REF2.setDataset(DATASET2);
+		REF2.setDatasetKey(DATASET2.getKey());
 	}
 
 	/*

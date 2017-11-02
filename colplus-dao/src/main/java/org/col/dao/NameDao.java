@@ -3,7 +3,7 @@ package org.col.dao;
 import java.util.List;
 
 import org.apache.ibatis.session.SqlSession;
-import org.col.api.AssociatedReference;
+import org.col.api.PagedReference;
 import org.col.api.Name;
 import org.col.api.Page;
 import org.col.api.PagingResultSet;
@@ -68,7 +68,7 @@ public class NameDao {
 		return mapper.search(datasetKey, q);
 	}
 
-	public AssociatedReference getPublishedIn(int datasetKey, String id) {
+	public PagedReference getPublishedIn(int datasetKey, String id) {
 		ReferenceMapper mapper = session.getMapper(ReferenceMapper.class);
 		return mapper.getPublishedIn(datasetKey, id);
 	}

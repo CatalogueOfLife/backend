@@ -10,7 +10,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 public class VernacularName {
 
 	@JsonIgnore
-	private int key;
+	private Integer key;
 
 	private String name;
 
@@ -22,11 +22,11 @@ public class VernacularName {
 
 	private Country country;
 
-	public int getKey() {
+	public Integer getKey() {
 		return key;
 	}
 
-	public void setKey(int key) {
+	public void setKey(Integer key) {
 		this.key = key;
 	}
 
@@ -79,7 +79,7 @@ public class VernacularName {
 			return false;
 		}
 		VernacularName other = (VernacularName) obj;
-		return key == other.key
+		return Objects.equals(key, other.key)
 		    && datasetKey == other.datasetKey
 		    && taxonKey == other.taxonKey
 		    && Objects.equals(name, other.name)

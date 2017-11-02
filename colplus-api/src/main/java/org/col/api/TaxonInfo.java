@@ -12,7 +12,7 @@ public class TaxonInfo {
 
 	private List<Distribution> distributions;
 
-  private List<Reference> references = Lists.newArrayList();
+	private List<Reference> references = Lists.newArrayList();
 
 	public Taxon getTaxon() {
 		return taxon;
@@ -46,15 +46,16 @@ public class TaxonInfo {
 		this.references = references;
 	}
 
-  /**
-   * @return the reference from the wrapped reference list with Reference.key=referenceKey
-   */
-  public Reference getByKey(int referenceKey) {
-    for (Reference r : references) {
-      if (r.getKey().equals(referenceKey)) {
-        return r;
-      }
-    }
-    return null;
-  }
+	/**
+	 * @return the reference from the wrapped reference list with
+	 *         Reference.key=referenceKey
+	 */
+	public Reference getByKey(int referenceKey) {
+		for (Reference r : references) {
+			if (r.getKey() == referenceKey) {
+				return r;
+			}
+		}
+		return null;
+	}
 }

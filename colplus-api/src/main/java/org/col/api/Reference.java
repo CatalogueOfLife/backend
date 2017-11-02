@@ -1,11 +1,11 @@
 package org.col.api;
 
+import java.util.Objects;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-
-import java.util.Objects;
 
 /**
  * Simplified literature reference class linked to an optional serial container.
@@ -27,7 +27,7 @@ public class Reference {
 	/**
 	 * Key to dataset instance. Defines context of the reference key.
 	 */
-	private Dataset dataset;
+	private int datasetKey;
 
 	/**
 	 * Reference metadata encoded as CSL-JSON.
@@ -37,7 +37,7 @@ public class Reference {
 	/**
 	 * Serial container, defining the CSL container properties.
 	 */
-	private Serial serial;
+	private Integer serialKey;
 
 	/**
 	 * Parsed integer of the year of publication. Extracted from CSL data, but kept
@@ -61,12 +61,12 @@ public class Reference {
 		this.id = id;
 	}
 
-	public Dataset getDataset() {
-		return dataset;
+	public int getDatasetKey() {
+		return datasetKey;
 	}
 
-	public void setDataset(Dataset dataset) {
-		this.dataset = dataset;
+	public void setDatasetKey(int datasetKey) {
+		this.datasetKey = datasetKey;
 	}
 
 	public ObjectNode getCsl() {
@@ -77,12 +77,12 @@ public class Reference {
 		this.csl = csl;
 	}
 
-	public Serial getSerial() {
-		return serial;
+	public Integer getSerialKey() {
+		return serialKey;
 	}
 
-	public void setSerial(Serial serial) {
-		this.serial = serial;
+	public void setSerialKey(Integer serialKey) {
+		this.serialKey = serialKey;
 	}
 
 	public Integer getYear() {
@@ -131,19 +131,20 @@ public class Reference {
 	public boolean equals(Object o) {
 		if (this == o)
 			return true;
-		if (o == null || getClass() != o.getClass())
+		if (o == null || !(o instanceof Reference))
 			return false;
 		Reference reference = (Reference) o;
 		return Objects.equals(key, reference.key)
+		    && datasetKey == reference.datasetKey
 		    && Objects.equals(id, reference.id)
-		    && Objects.equals(dataset, reference.dataset)
 		    && Objects.equals(csl, reference.csl)
-		    && Objects.equals(serial, reference.serial)
+		    && Objects.equals(serialKey, reference.serialKey)
 		    && Objects.equals(year, reference.year);
 	}
-	
+
 	@Override
 	public int hashCode() {
-		return Objects.hash(key, id, dataset, csl, serial, year);
+		return Objects.hash(key, datasetKey, id, csl, serialKey, year);
 	}
+
 }

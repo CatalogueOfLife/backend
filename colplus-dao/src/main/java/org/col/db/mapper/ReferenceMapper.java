@@ -3,7 +3,7 @@ package org.col.db.mapper;
 import java.util.List;
 
 import org.apache.ibatis.annotations.Param;
-import org.col.api.AssociatedReference;
+import org.col.api.PagedReference;
 import org.col.api.Page;
 import org.col.api.Reference;
 
@@ -23,7 +23,7 @@ public interface ReferenceMapper {
   /**
    * Returns the reference of the description act for the given name key.
    */
-  AssociatedReference getPublishedIn(@Param("datasetKey") int datasetKey, @Param("nameId") String nameId);
+  PagedReference getPublishedIn(@Param("datasetKey") int datasetKey, @Param("nameId") String nameId);
 
   void create(Reference name);
 

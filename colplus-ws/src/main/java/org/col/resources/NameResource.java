@@ -12,7 +12,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.ibatis.session.SqlSession;
-import org.col.api.AssociatedReference;
+import org.col.api.PagedReference;
 import org.col.api.Name;
 import org.col.api.NameAct;
 import org.col.api.Page;
@@ -62,7 +62,7 @@ public class NameResource {
 	@GET
 	@Timed
 	@Path("{id}/publishedIn")
-	public AssociatedReference getPublishedIn(@PathParam("datasetKey") Integer datasetKey,
+	public PagedReference getPublishedIn(@PathParam("datasetKey") Integer datasetKey,
 	    @PathParam("id") String id,
 	    @Context SqlSession session) {
 		NameDao dao = new NameDao(session);

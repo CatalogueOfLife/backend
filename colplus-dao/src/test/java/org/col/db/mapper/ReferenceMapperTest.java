@@ -1,14 +1,15 @@
 package org.col.db.mapper;
 
-import static org.col.dao.DaoTestUtil.*;
+import static org.col.dao.DaoTestUtil.DATASET1;
+import static org.col.dao.DaoTestUtil.NAME1;
+import static org.col.dao.DaoTestUtil.REF1;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.col.api.AssociatedReference;
+import org.col.api.PagedReference;
 import org.col.api.Page;
 import org.col.api.RandomUtils;
 import org.col.api.Reference;
@@ -27,7 +28,7 @@ public class ReferenceMapperTest extends MapperTestBase<ReferenceMapper> {
 		super(ReferenceMapper.class);
 	}
 
-	// @Test
+	@Test
 	public void roundtrip() throws Exception {
 		Reference r1 = create();
 		mapper().create(r1);
@@ -76,17 +77,18 @@ public class ReferenceMapperTest extends MapperTestBase<ReferenceMapper> {
 
 	@Test
 	public void getPublishedIn() {
-		AssociatedReference expected = new AssociatedReference();
-		// See squirrels.sql:
-		expected.setReference(REF1);
-		expected.setPage("712");
-		AssociatedReference ref = mapper().getPublishedIn(DATASET1.getKey(), NAME1.getId());
-		assertEquals("01", expected, ref);
+		// PagedReference pr = new
+		// // See squirrels.sql:
+		// expected.setReference(REF1);
+		// expected.setPage("712");
+		PagedReference ref = mapper().getPublishedIn(DATASET1.getKey(), NAME1.getId());
+		assertEquals("01", REF1, ref);
+		assertEquals("01", "712", ref.getPage());
 	}
 
 	private static Reference create() throws Exception {
 		Reference ref = new Reference();
-		ref.setDataset(DaoTestUtil.DATASET1);
+		ref.setDatasetKey(DaoTestUtil.DATASET1.getKey());
 		ref.setId(RandomUtils.randomString(8));
 		ref.setYear(1988);
 		ref.setCsl(createCsl());

@@ -33,9 +33,9 @@
 
   <sql id="PROPS">
     #{id},
-    #{dataset.key},
+    #{datasetKey},
     #{csl, typeHandler=org.col.db.type.CslJsonHandler}::jsonb,
-    #{serial.key},
+    #{serialKey},
     #{year}
   </sql>
 
@@ -47,27 +47,14 @@
   <resultMap id="referenceResultMap" type="Reference" autoMapping="true">
     <id property="key" column="key" />
     <result property="csl" column="csl" typeHandler="org.col.db.type.CslJsonHandler" />
-    <association property="dataset" javaType="Dataset">
-      <id property="key" column="dataset_key" />
-    </association>
-    <association property="serial" javaType="Serial">
-      <id property="key" column="serial_key" />
-    </association>
   </resultMap>
 
-  <resultMap id="associatedReferenceResultMap" type="AssociatedReference" autoMapping="false">
-    <id property="reference.key" column="key" />
-    <result property="reference.id" column="id" />
-    <result property="reference.csl" column="csl" typeHandler="org.col.db.type.CslJsonHandler" />
-    <result property="reference.year" column="year" />
-    <result property="page" column="page" />
-    <association property="reference.dataset" javaType="Dataset">
-      <id property="key" column="dataset_key" />
-    </association>
-    <association property="reference.serial" javaType="Serial">
-      <id property="key" column="serial_key" />
-    </association>
+  <!-- A mapping to PagedReference, mostly auto mapped -->
+  <resultMap id="pagedReferenceResultMap" type="PagedReference" autoMapping="true">
+    <id property="key" column="key" />
+    <result property="csl" column="csl" typeHandler="org.col.db.type.CslJsonHandler" />
   </resultMap>
+
 
 
   <select id="count" parameterType="map" resultType="Integer">
@@ -103,7 +90,7 @@
     WHERE r.dataset_key = #{datasetKey} AND r.id = #{id}
   </select>
 
-  <select id="getPublishedIn" resultMap="associatedReferenceResultMap">
+  <select id="getPublishedIn" resultMap="pagedReferenceResultMap">
     SELECT
     <include refid="SELECT_WITH_PAGE" />
     FROM reference r
