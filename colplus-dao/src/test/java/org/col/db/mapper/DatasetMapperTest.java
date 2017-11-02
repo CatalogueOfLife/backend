@@ -5,7 +5,7 @@ import org.col.api.Dataset;
 import org.col.api.Page;
 import org.col.api.RandomUtils;
 import org.col.api.vocab.DataFormat;
-import org.col.dao.DaoTestUtil;
+import org.col.TestEntityGenerator;
 import org.junit.Test;
 
 import java.net.URI;
@@ -31,8 +31,8 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
     d.setDescription(RandomUtils.randomString(500));
     d.setAlias(RandomUtils.randomString(10));
     d.setAuthorsAndEditors(RandomUtils.randomString(100));
-    d.setCompleteness(DaoTestUtil.RND.nextInt(100));
-    d.setConfidence(DaoTestUtil.RND.nextInt(5));
+    d.setCompleteness(TestEntityGenerator.RND.nextInt(100));
+    d.setConfidence(TestEntityGenerator.RND.nextInt(5));
     d.setContactPerson("Hans Peter");
     d.setCoverage(RandomUtils.randomString(75));
     d.setTaxonomicCoverage("tax cover");

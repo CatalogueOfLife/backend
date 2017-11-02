@@ -77,7 +77,7 @@ public class NeoDbTest {
       // now relate the 2 nodes and make sure when we read the relations the instance is changed accordingly
       t1.node.createRelationshipTo(t2.node, RelType.PARENT_OF);
       t1.node.createRelationshipTo(t2.node, RelType.BASIONYM_OF);
-      assertNull(t2.name.getOriginalName());
+      assertNull(t2.name.getBasionym());
 
       tx.success();
     }
@@ -89,7 +89,7 @@ public class NeoDbTest {
       assertEquals(t1, t1b);
 
       NeoTaxon t2b = db.get(db.byTaxonID("13"));
-      assertEquals(t2b.name.getOriginalName(), t1.name);
+      assertEquals(t2b.name.getBasionym(), t1.name);
     }
   }
 

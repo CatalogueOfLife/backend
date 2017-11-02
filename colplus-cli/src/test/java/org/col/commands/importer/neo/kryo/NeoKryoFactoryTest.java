@@ -54,10 +54,10 @@ public class NeoKryoFactoryTest {
       a.getCombinationAuthors().add(StringUtils.randomAuthor());
     }
     a.setCombinationYear(StringUtils.randomSpeciesYear());
-    while (a.getOriginalAuthors().isEmpty()) {
-      a.getOriginalAuthors().add(StringUtils.randomAuthor());
+    while (a.getBasionymAuthors().isEmpty()) {
+      a.getBasionymAuthors().add(StringUtils.randomAuthor());
     }
-    a.setOriginalYear(StringUtils.randomSpeciesYear());
+    a.setBasionymYear(StringUtils.randomSpeciesYear());
     return a;
   }
 

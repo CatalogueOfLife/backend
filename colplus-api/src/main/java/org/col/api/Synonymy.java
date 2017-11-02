@@ -14,10 +14,6 @@ public class Synonymy {
     this.synonyms = Lists.newArrayList();
   }
 
-  public Synonymy(List<List<Name>> synonyms) {
-    this.synonyms = synonyms;
-  }
-
   public List<List<Name>> listHomotypicGroups() {
     return synonyms;
   }
@@ -26,4 +22,13 @@ public class Synonymy {
     this.synonyms.add(synonyms);
   }
 
+  public boolean isEmpty() {
+    return synonyms.isEmpty();
+  }
+
+  public int size() {
+    return synonyms.stream()
+        .mapToInt(List::size)
+        .sum();
+  }
 }

@@ -78,7 +78,7 @@ public class Name {
    * Link to the original combination.
    * In case of [replacement names](https://en.wikipedia.org/wiki/Nomen_novum) it points back to the replaced synonym.
    */
-  private Name originalName;
+  private Name basionym;
 
   /**
    * true if the type specimen of the name is a fossil
@@ -221,12 +221,12 @@ public class Name {
     this.notho = notho;
   }
 
-  public Name getOriginalName() {
-    return originalName;
+  public Name getBasionym() {
+    return basionym;
   }
 
-  public void setOriginalName(Name originalName) {
-    this.originalName = originalName;
+  public void setBasionym(Name basionym) {
+    this.basionym = basionym;
   }
 
   public Boolean getFossil() {
@@ -307,7 +307,7 @@ public class Name {
         Objects.equals(specificEpithet, name.specificEpithet) &&
         Objects.equals(infraspecificEpithet, name.infraspecificEpithet) &&
         notho == name.notho &&
-        Objects.equals(originalName, name.originalName) &&
+        Objects.equals(basionym, name.basionym) &&
         Objects.equals(fossil, name.fossil) &&
         status == name.status &&
         type == name.type &&
@@ -319,7 +319,7 @@ public class Name {
 
   @Override
   public int hashCode() {
-    return Objects.hash(key, id, dataset, scientificName, authorship, rank, origin, nomenclaturalCode, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, notho, originalName, fossil, status, type, sourceUrl, remarks, etymology, issues);
+    return Objects.hash(key, id, dataset, scientificName, authorship, rank, origin, nomenclaturalCode, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, notho, basionym, fossil, status, type, sourceUrl, remarks, etymology, issues);
   }
 
   @Override
@@ -338,7 +338,7 @@ public class Name {
         ", specificEpithet='" + specificEpithet + '\'' +
         ", infraspecificEpithet='" + infraspecificEpithet + '\'' +
         ", notho=" + notho +
-        ", originalName=" + originalName +
+        ", basionym=" + basionym +
         ", fossil=" + fossil +
         ", status=" + status +
         ", type=" + type +

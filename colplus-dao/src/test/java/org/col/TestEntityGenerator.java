@@ -1,16 +1,23 @@
-package org.col.dao;
+package org.col;
 
+import com.google.common.base.Splitter;
 import org.col.api.*;
 import org.col.api.vocab.*;
 
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Random;
 
-public class DaoTestUtil {
+/**
+ * utility class to generate new test instances to be used in tests.
+ */
+public class TestEntityGenerator {
 
 	public final static Random RND = new Random();
+  private static final Splitter SPACE_SPLITTER = Splitter.on(" ").trimResults();
+
 	/**
 	 * Corresponds exactly to 1st dataset record inserted via squirrels.sql
 	 */
@@ -107,8 +114,7 @@ public class DaoTestUtil {
 	}
 
 	/*
-	 * Creates a new taxon with the specified id, belonging to the specified
-	 * dataset.
+	 * Creates a new taxon with the specified id, belonging to the specified dataset.
 	 */
 	public static Taxon newTaxon(Dataset dataset, String id) throws Exception {
 		Taxon t = new Taxon();
@@ -132,4 +138,47 @@ public class DaoTestUtil {
     t.addIssue(Issue.HOMONYM, "Abies alba");
 		return t;
 	}
+
+  /*
+   * Creates a new name with the specified id, belonging to the specified dataset.
+   */
+  public static Name newName(String id) throws Exception {
+    Name n = newName();
+    n.setId(id);
+    return n;
+  }
+
+  public static Name newName() throws Exception {
+    Name n = new Name();
+    n.setDataset(TestEntityGenerator.DATASET1);
+    n.setScientificName(RandomUtils.randomSpecies());
+    n.setAuthorship(createAuthorship());
+    List<String> tokens = SPACE_SPLITTER.splitToList(n.getScientificName());
+    n.setGenus(tokens.get(0));
+    n.setSpecificEpithet(tokens.get(1));
+    n.setInfragenericEpithet("Igen");
+    n.setInfraspecificEpithet(null);
+    n.setNotho(NamePart.SPECIFIC);
+    n.setFossil(true);
+    n.setRank(Rank.SPECIES);
+    n.setOrigin(Origin.SOURCE);
+    n.setType(NameType.SCIENTIFIC);
+    n.setEtymology("A random species name");
+    n.addIssue(Issue.ACCEPTED_NAME_MISSING);
+    n.addIssue(Issue.HOMONYM, "Abies alba");
+    return n;
+  }
+
+  public static Authorship createAuthorship() throws Exception {
+    Authorship a = new Authorship();
+    while (a.getCombinationAuthors().size() < 2 || RND.nextBoolean()) {
+      a.getCombinationAuthors().add(RandomUtils.randomAuthor());
+    }
+    a.setCombinationYear(RandomUtils.randomSpeciesYear());
+    while (a.getBasionymAuthors().isEmpty() || RND.nextBoolean()) {
+      a.getBasionymAuthors().add(RandomUtils.randomAuthor());
+    }
+    a.setBasionymYear(RandomUtils.randomSpeciesYear());
+    return a;
+  }
 }

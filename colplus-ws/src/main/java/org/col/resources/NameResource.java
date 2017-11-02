@@ -51,12 +51,12 @@ public class NameResource {
 
 	@GET
 	@Timed
-	@Path("{id}/synonyms")
+	@Path("{id}/basionymGroup")
 	public List<Name> getSynonyms(@PathParam("datasetKey") Integer datasetKey,
 	    @PathParam("id") String id,
 	    @Context SqlSession session) {
 		NameDao dao = new NameDao(session);
-		return dao.synonyms(datasetKey, id);
+		return dao.basionymGroup(datasetKey, id);
 	}
 
 	@GET

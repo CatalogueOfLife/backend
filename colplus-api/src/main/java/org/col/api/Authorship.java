@@ -16,12 +16,12 @@ public class Authorship {
   /**
    * list of basionym authors.
    */
-  private LinkedList<String> originalAuthors = Lists.newLinkedList();
+  private LinkedList<String> basionymAuthors = Lists.newLinkedList();
 
   /**
    * Year of original name publication
    */
-  private String originalYear;
+  private String basionymYear;
 
   /**
    * list of authors excluding ex- authors
@@ -34,20 +34,20 @@ public class Authorship {
    */
   private String combinationYear;
 
-  public List<String> getOriginalAuthors() {
-    return originalAuthors;
+  public List<String> getBasionymAuthors() {
+    return basionymAuthors;
   }
 
-  public void setOriginalAuthors(List<String> originalAuthors) {
-    this.originalAuthors = Lists.newLinkedList(originalAuthors);
+  public void setBasionymAuthors(List<String> basionymAuthors) {
+    this.basionymAuthors = Lists.newLinkedList(basionymAuthors);
   }
 
-  public String getOriginalYear() {
-    return originalYear;
+  public String getBasionymYear() {
+    return basionymYear;
   }
 
-  public void setOriginalYear(String originalYear) {
-    this.originalYear = originalYear;
+  public void setBasionymYear(String basionymYear) {
+    this.basionymYear = basionymYear;
   }
 
   public List<String> getCombinationAuthors() {
@@ -67,14 +67,14 @@ public class Authorship {
   }
 
   public boolean isEmpty() {
-    return combinationAuthors.isEmpty() && combinationYear == null && originalAuthors.isEmpty() && originalYear == null;
+    return combinationAuthors.isEmpty() && combinationYear == null && basionymAuthors.isEmpty() && basionymYear == null;
   }
 
   /**
    * @return true if original year or authors exist
    */
   public boolean hasOriginal() {
-    return !originalAuthors.isEmpty() || originalYear != null;
+    return !basionymAuthors.isEmpty() || basionymYear != null;
   }
 
   /**
@@ -89,15 +89,15 @@ public class Authorship {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     Authorship that = (Authorship) o;
-    return Objects.equals(originalAuthors, that.originalAuthors) &&
-        Objects.equals(originalYear, that.originalYear) &&
+    return Objects.equals(basionymAuthors, that.basionymAuthors) &&
+        Objects.equals(basionymYear, that.basionymYear) &&
         Objects.equals(combinationAuthors, that.combinationAuthors) &&
         Objects.equals(combinationYear, that.combinationYear);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(originalAuthors, originalYear, combinationAuthors, combinationYear);
+    return Objects.hash(basionymAuthors, basionymYear, combinationAuthors, combinationYear);
   }
 
   private String joinAuthors(LinkedList<String> authors) {
@@ -118,10 +118,10 @@ public class Authorship {
       StringBuilder sb = new StringBuilder();
       if (hasOriginal()) {
         sb.append("(");
-        sb.append(joinAuthors(originalAuthors));
-        if (originalYear != null && !originalAuthors.isEmpty()) {
+        sb.append(joinAuthors(basionymAuthors));
+        if (basionymYear != null && !basionymAuthors.isEmpty()) {
           sb.append(", ");
-          sb.append(originalYear);
+          sb.append(basionymYear);
         }
         sb.append(") ");
       }

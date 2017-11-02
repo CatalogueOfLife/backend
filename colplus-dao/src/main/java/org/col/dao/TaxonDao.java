@@ -1,19 +1,14 @@
 package org.col.dao;
 
-import java.util.List;
-
-import javax.annotation.Nullable;
-
 import org.apache.ibatis.session.SqlSession;
-import org.col.api.Distribution;
-import org.col.api.Page;
-import org.col.api.PagingResultSet;
-import org.col.api.Taxon;
-import org.col.api.TaxonInfo;
-import org.col.api.VernacularName;
+import org.col.api.*;
+import org.col.db.NotFoundException;
 import org.col.db.mapper.DistributionMapper;
 import org.col.db.mapper.TaxonMapper;
 import org.col.db.mapper.VernacularNameMapper;
+
+import javax.annotation.Nullable;
+import java.util.List;
 
 public class TaxonDao {
 
@@ -36,14 +31,13 @@ public class TaxonDao {
 		return new PagingResultSet<>(p, total, result);
 	}
 
-	public Taxon getByKey(int key) {
+	public Taxon get(int key) {
 		TaxonMapper mapper = session.getMapper(TaxonMapper.class);
-		return mapper.getByKey(key);
+		return mapper.get(key);
 	}
 
 	public Taxon get(int datasetKey, String id) {
-		TaxonMapper mapper = session.getMapper(TaxonMapper.class);
-		return mapper.get(datasetKey, id);
+		return get(lookup(datasetKey, id));
 	}
 
 	public void create(Taxon taxon) {
@@ -51,11 +45,15 @@ public class TaxonDao {
 		mapper.create(taxon);
 	}
 
-	public TaxonInfo getTaxonInfo(int datasetKey, String id) {
+  public TaxonInfo getTaxonInfo(int datasetKey, String id) {
+	  return getTaxonInfo(lookup(datasetKey, id));
+  }
+
+	public TaxonInfo getTaxonInfo(int key) {
 		TaxonInfo info = new TaxonInfo();
 
 		TaxonMapper tMapper = session.getMapper(TaxonMapper.class);
-		Taxon taxon = tMapper.get(datasetKey, id);
+		Taxon taxon = tMapper.get(key);
 		info.setTaxon(taxon);
 
 		VernacularNameMapper vMapper = session.getMapper(VernacularNameMapper.class);
@@ -68,5 +66,14 @@ public class TaxonDao {
 
 		return info;
 	}
+
+  private int lookup(int datasetKey, String id) throws NotFoundException {
+    TaxonMapper mapper = session.getMapper(TaxonMapper.class);
+    Integer key = mapper.lookupKey(datasetKey, id);
+    if (key == null) {
+      throw new NotFoundException(Taxon.class, datasetKey, id);
+    }
+    return key;
+  }
 
 }

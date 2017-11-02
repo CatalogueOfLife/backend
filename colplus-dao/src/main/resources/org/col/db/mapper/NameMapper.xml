@@ -15,8 +15,8 @@
         n.specific_epithet,
         n.infraspecific_epithet,
         n.notho,
-        n.original_authors,
-        n.original_year,
+        n.basionym_authors,
+        n.basionym_year,
         n.combination_authors,
         n.combination_year,
         n.nomenclatural_code,
@@ -24,8 +24,8 @@
         n.origin,
         n.type,
         n.fossil,
-        n.original_name_key,
-        bn.id AS original_name_id,
+        n.basionym_key,
+        bn.id AS basionym_id,
         n.remarks,
         n.etymology,
         n.issues
@@ -41,8 +41,8 @@
       specific_epithet,
       infraspecific_epithet,
       notho,
-      original_authors,
-      original_year,
+      basionym_authors,
+      basionym_year,
       combination_authors,
       combination_year,
       nomenclatural_code,
@@ -50,7 +50,7 @@
       origin,
       type,
       fossil,
-      original_name_key,
+      basionym_key,
       remarks,
       etymology,
       issues
@@ -66,8 +66,8 @@
       #{specificEpithet},
       #{infraspecificEpithet},
       #{notho},
-      #{authorship.originalAuthors, typeHandler=org.col.db.type.StringArrayTypeHandler},
-      #{authorship.originalYear},
+      #{authorship.basionymAuthors, typeHandler=org.col.db.type.StringArrayTypeHandler},
+      #{authorship.basionymYear},
       #{authorship.combinationAuthors, typeHandler=org.col.db.type.StringArrayTypeHandler},
       #{authorship.combinationYear},
       #{nomenclaturalCode},
@@ -75,14 +75,14 @@
       #{origin},
       #{type},
       #{fossil},
-      #{originalName.key},
+      #{basionym.key},
       #{remarks},
       #{etymology},
       #{issues, typeHandler=org.col.db.type.HstoreIssueHandler}::hstore
     </sql>
 
     <sql id="FROM">
-        name n LEFT JOIN name bn ON n.original_name_key=bn.key
+        name n LEFT JOIN name bn ON n.basionym_key=bn.key
     </sql>
 
     <!--  A mapping to Name, mostly auto mapped -->
@@ -93,19 +93,25 @@
         <association property="authorship" javaType="Authorship">
             <result property="combinationAuthors" column="combination_authors" typeHandler="org.col.db.type.StringArrayTypeHandler"/>
             <result property="combinationYear" column="combination_year"/>
-            <result property="originalAuthors" column="original_authors" typeHandler="org.col.db.type.StringArrayTypeHandler"/>
-            <result property="originalYear" column="original_year"/>
+            <result property="basionymAuthors" column="basionym_authors" typeHandler="org.col.db.type.StringArrayTypeHandler"/>
+            <result property="basionymYear" column="basionym_year"/>
         </association>
         <association property="dataset" javaType="Dataset">
             <id property="key" column="dataset_key"/>
         </association>
-        <association property="originalName" javaType="Name">
-            <id property="key" column="original_name_key"/>
-            <result property="id" column="original_name_id"/>
+        <association property="basionym" javaType="Name">
+            <id property="key" column="basionym_key"/>
+            <result property="id" column="basionym_id"/>
         </association>
     </resultMap>
 
 
+
+    <select id="lookupKey" resultType="Integer">
+        SELECT key
+        FROM name
+        WHERE dataset_key = #{datasetKey} AND id = #{id}
+    </select>
 
     <select id="count" parameterType="map" resultType="Integer">
         SELECT count(*)
@@ -121,15 +127,9 @@
         <include refid="org.col.db.mapper.Common.limit"/>
     </select>
 
-    <select id="getByKey" resultMap="nameResultMap">
+    <select id="get" resultMap="nameResultMap">
           SELECT <include refid="SELECT" />
           FROM <include refid="FROM" /> WHERE n.key = #{key}
-    </select>
-
-    <select id="get" resultMap="nameResultMap">
-        SELECT <include refid="SELECT" />
-        FROM <include refid="FROM" />
-        WHERE n.dataset_key = #{datasetKey} AND n.id = #{id}
     </select>
 
     <insert id="create" parameterType="Name" useGeneratedKeys="true" keyProperty="key">
@@ -137,20 +137,24 @@
         VALUES (<include refid="PROPS" />)
     </insert>
 
-    <select id="synonymsByKey" resultMap="nameResultMap">
+    <select id="basionymGroup" resultMap="nameResultMap">
         SELECT <include refid="SELECT" />
         FROM name ns
-          JOIN name bn ON ns.original_name_key=bn.key
-          JOIN name n ON (n.original_name_key=bn.key OR n.key=bn.key)
+          JOIN name bn ON ns.basionym_key=bn.key
+          JOIN name n ON (n.basionym_key=bn.key OR n.key=bn.key)
         WHERE ns.key = #{key}
     </select>
 
+    <insert id="addSynonym" parameterType="map">
+        INSERT INTO synonyms (dataset_key, taxon_key, name_key)
+        VALUES (#{datasetKey}, #{key}, #{nameKey})
+    </insert>
+
     <select id="synonyms" resultMap="nameResultMap">
         SELECT <include refid="SELECT" />
-        FROM name ns
-        JOIN name bn ON ns.original_name_key=bn.key
-        JOIN name n ON (n.original_name_key=bn.key OR n.key=bn.key)
-        WHERE ns.dataset_key = #{datasetKey} AND ns.id = #{id}
+        FROM <include refid="FROM" />
+        JOIN synonyms s ON s.name_key=n.key
+        WHERE s.taxon_key = #{key}
+        ORDER BY COALESCE(n.basionym_key, n.key)
     </select>
-
 </mapper>

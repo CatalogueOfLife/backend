@@ -1,21 +1,15 @@
 package org.col.db.mapper;
 
-import static org.col.dao.DaoTestUtil.DATASET1;
-import static org.col.dao.DaoTestUtil.NAME1;
-import static org.col.dao.DaoTestUtil.NAME2;
-import static org.col.dao.DaoTestUtil.REF1;
-import static org.col.dao.DaoTestUtil.REF2;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-import java.util.List;
-
 import org.col.api.Name;
 import org.col.api.NameAct;
 import org.col.api.vocab.NomActType;
 import org.col.api.vocab.NomStatus;
 import org.junit.Test;
+
+import java.util.List;
+
+import static org.col.TestEntityGenerator.*;
+import static org.junit.Assert.*;
 
 /**
  *
@@ -84,7 +78,7 @@ public class NameActMapperTest extends MapperTestBase<NameActMapper> {
 		name.setDataset(DATASET1);
 		name.setId("foo-new");
 		name.setScientificName("Foo new");
-		name.setOriginalName(basionym);
+		name.setBasionym(basionym);
 		nameMapper.create(name);
 
 		nameAct = new NameAct();
@@ -105,7 +99,7 @@ public class NameActMapperTest extends MapperTestBase<NameActMapper> {
 		name.setDataset(DATASET1);
 		name.setId("foo-too");
 		name.setScientificName("Foo too");
-		name.setOriginalName(basionym);
+		name.setBasionym(basionym);
 		nameMapper.create(name);
 
 		nameAct = new NameAct();

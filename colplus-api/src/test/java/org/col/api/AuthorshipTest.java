@@ -18,7 +18,7 @@ public class AuthorshipTest {
     auth.getCombinationAuthors().add("L.");
     assertEquals("L.", auth.toString());
 
-    auth.getOriginalAuthors().add("Bassier");
+    auth.getBasionymAuthors().add("Bassier");
     assertEquals("(Bassier) L.", auth.toString());
     assertEquals("(Bassier) L.", auth.toString());
 

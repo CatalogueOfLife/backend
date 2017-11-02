@@ -1,8 +1,8 @@
 package org.col.db.mapper;
 
-import static org.col.dao.DaoTestUtil.DATASET1;
-import static org.col.dao.DaoTestUtil.TAXON1;
-import static org.col.dao.DaoTestUtil.newVernacularName;
+import static org.col.TestEntityGenerator.DATASET1;
+import static org.col.TestEntityGenerator.TAXON1;
+import static org.col.TestEntityGenerator.newVernacularName;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;

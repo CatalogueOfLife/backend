@@ -55,10 +55,10 @@ public class RandomUtils {
     }
 
     while (rnd.nextBoolean() && rnd.nextBoolean()) {
-      auth.getOriginalAuthors().add(randomAuthor());
+      auth.getBasionymAuthors().add(randomAuthor());
     }
     if (rnd.nextBoolean()) {
-      auth.setOriginalYear(randomSpeciesYear());
+      auth.setBasionymYear(randomSpeciesYear());
     }
     return auth;
   }

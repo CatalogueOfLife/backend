@@ -1,6 +1,6 @@
 package org.col.db.mapper;
 
-import static org.col.dao.DaoTestUtil.*;
+import static org.col.TestEntityGenerator.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -12,7 +12,7 @@ import org.col.api.AssociatedReference;
 import org.col.api.Page;
 import org.col.api.RandomUtils;
 import org.col.api.Reference;
-import org.col.dao.DaoTestUtil;
+import org.col.TestEntityGenerator;
 import org.junit.Test;
 
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
@@ -86,7 +86,7 @@ public class ReferenceMapperTest extends MapperTestBase<ReferenceMapper> {
 
 	private static Reference create() throws Exception {
 		Reference ref = new Reference();
-		ref.setDataset(DaoTestUtil.DATASET1);
+		ref.setDataset(TestEntityGenerator.DATASET1);
 		ref.setId(RandomUtils.randomString(8));
 		ref.setYear(1988);
 		ref.setCsl(createCsl());

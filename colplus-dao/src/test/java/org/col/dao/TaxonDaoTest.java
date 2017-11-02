@@ -1,14 +1,12 @@
 package org.col.dao;
 
-import static org.col.dao.DaoTestUtil.DATASET1;
-import static org.col.dao.DaoTestUtil.newTaxon;
-import static org.col.dao.DaoTestUtil.newVernacularName;
-
 import org.col.api.Taxon;
 import org.col.api.TaxonInfo;
 import org.col.db.mapper.TaxonMapper;
 import org.col.db.mapper.VernacularNameMapper;
 import org.junit.Test;
+
+import static org.col.TestEntityGenerator.*;
 
 public class TaxonDaoTest extends DaoTestBase {
 

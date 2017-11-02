@@ -23,7 +23,7 @@ import java.util.Objects;
 public class NeoTaxon {
   public Node node;
   public VerbatimRecord verbatim;
-  // we keep the name distinct from the Taxon here so we can also accomodate synonyms which do not have a taxon instance!
+  // we keep the name distinct from the Taxon here so we can also accomodate basionymGroup which do not have a taxon instance!
   public Name name;
   // either a taxon or a synonym, never both!
   public Taxon taxon;

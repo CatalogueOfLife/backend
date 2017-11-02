@@ -99,6 +99,12 @@
 	</resultMap>
 
 
+    <select id="lookupKey" resultType="Integer">
+        SELECT key
+        FROM taxon
+        WHERE dataset_key = #{datasetKey} AND id = #{id}
+    </select>
+
     <select id="count" parameterType="map" resultType="Integer">
         SELECT count(*)
         FROM taxon
@@ -113,20 +119,12 @@
         <include refid="org.col.db.mapper.Common.limit"/>
     </select>
     
-    <select id="getByKey" resultMap="taxonResultMap">
+    <select id="get" resultMap="taxonResultMap">
 		SELECT
 		<include refid="SELECT" />
 		FROM
 		<include refid="FROM" />
 		WHERE t.key = #{key}
-	</select>
-
-	<select id="get" resultMap="taxonResultMap">
-		SELECT
-		<include refid="SELECT" />
-		FROM
-		<include refid="FROM" />
-        WHERE t.dataset_key = #{datasetKey} AND t.id = #{id}
 	</select>
 
 	<insert id="create" parameterType="Taxon" useGeneratedKeys="true" keyProperty="key">
