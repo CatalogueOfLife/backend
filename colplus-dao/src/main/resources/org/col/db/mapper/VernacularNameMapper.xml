@@ -25,9 +25,9 @@
   <sql id="PROPS">
     #{datasetKey},
     #{taxonKey},
-    #{name},
-    #{language},
-    #{country}
+    #{vernacular.name},
+    #{vernacular.language},
+    #{vernacular.country}
   </sql>
 
   <sql id="FROM">
@@ -68,7 +68,7 @@
     WHERE vn.key = #{key}
   </select>
 
-  <insert id="create" parameterType="VernacularName" useGeneratedKeys="true" keyProperty="key">
+  <insert id="create" parameterType="VernacularName" useGeneratedKeys="true" keyProperty="vernacular.key">
     INSERT INTO vernacular_name (
     <include refid="COLS" />
     )

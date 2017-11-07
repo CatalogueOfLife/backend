@@ -14,10 +14,6 @@ public class VernacularName {
 
 	private String name;
 
-	private int datasetKey;
-
-	private int taxonKey;
-
 	private Language language;
 
 	private Country country;
@@ -36,22 +32,6 @@ public class VernacularName {
 
 	public void setName(String name) {
 		this.name = name;
-	}
-
-	public int getDatasetKey() {
-		return datasetKey;
-	}
-
-	public void setDatasetKey(int datasetKey) {
-		this.datasetKey = datasetKey;
-	}
-
-	public int getTaxonKey() {
-		return taxonKey;
-	}
-
-	public void setTaxonKey(int taxonKey) {
-		this.taxonKey = taxonKey;
 	}
 
 	public Language getLanguage() {
@@ -80,8 +60,6 @@ public class VernacularName {
 		}
 		VernacularName other = (VernacularName) obj;
 		return Objects.equals(key, other.key)
-		    && datasetKey == other.datasetKey
-		    && taxonKey == other.taxonKey
 		    && Objects.equals(name, other.name)
 		    && Objects.equals(language, other.language)
 		    && Objects.equals(country, other.country);
@@ -89,22 +67,8 @@ public class VernacularName {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(key, datasetKey, taxonKey, name, language, country);
+		return Objects.hash(key, name, language, country);
 	}
 
-	// public boolean equalsShallow(VernacularName other) {
-	// if (this == other) {
-	// return true;
-	// }
-	// if (other == null) {
-	// return false;
-	// }
-	// return Objects.equals(key, other.key)
-	// && ApiUtil.equalsShallow(dataset, other.dataset)
-	// && ApiUtil.equalsShallow(taxon, other.taxon)
-	// && Objects.equals(name, other.name)
-	// && Objects.equals(language, other.language)
-	// && Objects.equals(country, other.country);
-	// }
 
 }

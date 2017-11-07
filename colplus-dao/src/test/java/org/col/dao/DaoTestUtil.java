@@ -81,18 +81,12 @@ public class DaoTestUtil {
 	 * Creates a VernacularName using the specified vernacular name, belonging to
 	 * taxon TAXON1 and dataset DATASET1.
 	 */
-	public static VernacularName newVernacularName(String name) throws Exception {
-		return newVernacularName(TAXON1, name);
-	}
-
 	/*
 	 * Creates a VernacularName using the specified vernacular name, belonging to
 	 * the specified taxon and dataset DATASET1.
 	 */
-	public static VernacularName newVernacularName(Taxon taxon, String name) throws Exception {
+	public static VernacularName newVernacularName(String name) throws Exception {
 		VernacularName vn = new VernacularName();
-		vn.setDatasetKey(DATASET1.getKey());
-		vn.setTaxonKey(taxon.getKey());
 		vn.setName(name);
 		vn.setLanguage(Language.ENGLISH);
 		vn.setCountry(Country.UNITED_KINGDOM);
