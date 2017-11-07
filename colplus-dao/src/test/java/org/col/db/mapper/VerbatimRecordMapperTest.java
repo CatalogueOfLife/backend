@@ -4,7 +4,7 @@ import org.col.api.RandomUtils;
 import org.col.api.TermRecord;
 import org.col.api.VerbatimRecord;
 import org.col.api.VerbatimRecordTerms;
-import org.col.dao.DaoTestUtil;
+import org.col.TestEntityGenerator;
 import org.gbif.dwc.terms.DcTerm;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.GbifTerm;
@@ -28,7 +28,7 @@ public class VerbatimRecordMapperTest extends MapperTestBase<VerbatimRecordMappe
 
   private VerbatimRecord create() throws Exception {
     VerbatimRecord v = new VerbatimRecord();
-    v.setDataset(DaoTestUtil.DATASET1);
+    v.setDataset(TestEntityGenerator.DATASET1);
     v.setId(RandomUtils.randomString(8));
     v.setTerms(new VerbatimRecordTerms());
     // core

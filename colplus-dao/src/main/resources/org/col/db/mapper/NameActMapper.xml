@@ -72,8 +72,8 @@
     SELECT
     <include refid="SELECT" />
     FROM name_act as na
-    LEFT JOIN name as name ON (na.name_key = name.key OR na.name_key = name.original_name_key)
-    LEFT JOIN name as sibling ON (name.original_name_key = sibling.original_name_key AND name.key != sibling.key)
+    LEFT JOIN name as name ON (na.name_key = name.key OR na.name_key = name.basionym_key)
+    LEFT JOIN name as sibling ON (name.basionym_key = sibling.basionym_key AND name.key != sibling.key)
     WHERE na.dataset_key = #{datasetKey}
     AND (name.id = #{nameId} OR sibling.id = #{nameId})
     ORDER BY na.key

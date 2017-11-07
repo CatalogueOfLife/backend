@@ -1,19 +1,19 @@
 package org.col.db.mapper;
 
-import static org.col.dao.DaoTestUtil.DATASET1;
-import static org.col.dao.DaoTestUtil.NAME1;
-import static org.col.dao.DaoTestUtil.REF1;
+import static org.col.TestEntityGenerator.DATASET1;
+import static org.col.TestEntityGenerator.NAME1;
+import static org.col.TestEntityGenerator.REF1;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.col.api.PagedReference;
+import org.col.TestEntityGenerator;
 import org.col.api.Page;
+import org.col.api.PagedReference;
 import org.col.api.RandomUtils;
 import org.col.api.Reference;
-import org.col.dao.DaoTestUtil;
 import org.junit.Test;
 
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
@@ -88,7 +88,7 @@ public class ReferenceMapperTest extends MapperTestBase<ReferenceMapper> {
 
 	private static Reference create() throws Exception {
 		Reference ref = new Reference();
-		ref.setDatasetKey(DaoTestUtil.DATASET1.getKey());
+		ref.setDatasetKey(TestEntityGenerator.DATASET1.getKey());
 		ref.setId(RandomUtils.randomString(8));
 		ref.setYear(1988);
 		ref.setCsl(createCsl());

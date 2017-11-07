@@ -118,9 +118,10 @@ public class PgSetupRule extends ExternalResource {
 	@Override
 	public void after() {
 		if (startedHere) {
-			System.out.println("Stopping Postgres");
+      System.out.println("Shutdown dbpool");
 			dataSource.close();
 			if (postgres != null) {
+			  System.out.println("Stopping Postgres");
 				postgres.stop();
 			}
 		}

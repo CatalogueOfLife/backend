@@ -43,8 +43,8 @@ public class NameParserGBIF implements NameParser {
 
       n.getAuthorship().setCombinationAuthors(splitAuthors(pn.getAuthorship()));
       n.getAuthorship().setCombinationYear(pn.getYear());
-      n.getAuthorship().setOriginalAuthors(splitAuthors(pn.getBracketAuthorship()));
-      n.getAuthorship().setOriginalYear(pn.getBracketYear());
+      n.getAuthorship().setBasionymAuthors(splitAuthors(pn.getBracketAuthorship()));
+      n.getAuthorship().setBasionymYear(pn.getBracketYear());
 
       if (pn.isBinomial()) {
         n.setGenus(pn.getGenusOrAbove());

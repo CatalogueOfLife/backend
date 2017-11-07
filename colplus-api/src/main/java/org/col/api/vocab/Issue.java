@@ -48,14 +48,13 @@ public enum Issue {
   /**
    * Record has a verbatim original name (basionym) which is not unique and refers to several records.
    */
-  ORIGINAL_NAME_NOT_UNIQUE,
+  BASIONYM_NOT_UNIQUE,
 
   /**
    * Record has a original name (basionym) relationship which was derived from name & authorship comparison, but did not exist explicitly in the data.
    * This should only be flagged in programmatically generated GBIF backbone usages.
-   * GBIF backbone specific issue.
    */
-  ORIGINAL_NAME_DERIVED,
+  BASIONYM_DERIVED,
 
   /**
    * There have been more than one accepted name in a homotypical basionym group of names.

@@ -171,8 +171,8 @@ public class NameParserGNATest {
     }
 
     NameAssertion basAuthors(String year, String ... authors) {
-      assertEquals(year, n.getAuthorship().getOriginalYear());
-      assertEquals(Lists.newArrayList(authors), n.getAuthorship().getOriginalAuthors());
+      assertEquals(year, n.getAuthorship().getBasionymYear());
+      assertEquals(Lists.newArrayList(authors), n.getAuthorship().getBasionymAuthors());
       return this;
     }
 
@@ -190,8 +190,8 @@ public class NameParserGNATest {
     }
 
     NameAssertion noBasAuthors() {
-      assertNull(n.getAuthorship().getOriginalYear());
-      assertEquals(Lists.newArrayList(), n.getAuthorship().getOriginalAuthors());
+      assertNull(n.getAuthorship().getBasionymYear());
+      assertEquals(Lists.newArrayList(), n.getAuthorship().getBasionymAuthors());
       return this;
     }
   }

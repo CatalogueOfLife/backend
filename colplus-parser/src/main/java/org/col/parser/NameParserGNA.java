@@ -165,8 +165,8 @@ public class NameParserGNA implements NameParser {
       Authorship auth = epi.get().getAuthorship();
       n.getAuthorship().setCombinationAuthors(Lists.newArrayList(auth.getCombinationAuthors()));
       n.getAuthorship().setCombinationYear(auth.getCombinationYear());
-      n.getAuthorship().setOriginalAuthors(Lists.newArrayList(auth.getBasionymAuthors()));
-      n.getAuthorship().setOriginalYear(auth.getBasionymYear());
+      n.getAuthorship().setBasionymAuthors(Lists.newArrayList(auth.getBasionymAuthors()));
+      n.getAuthorship().setBasionymYear(auth.getBasionymYear());
     }
   }
 

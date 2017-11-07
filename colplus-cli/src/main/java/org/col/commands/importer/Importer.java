@@ -126,8 +126,8 @@ public class Importer implements Runnable {
             t.name.setDataset(dataset);
           } else {
             // update basionym keys
-            if (t.name.getOriginalName() != null) {
-              t.name.getOriginalName().setKey(originalNameKeys.get(t.name.getOriginalName().getKey()));
+            if (t.name.getBasionym() != null) {
+              t.name.getBasionym().setKey(originalNameKeys.get(t.name.getBasionym().getKey()));
             }
             t.name.setDataset(dataset);
             nameMapper.create(t.name);

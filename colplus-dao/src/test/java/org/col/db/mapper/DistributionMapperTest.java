@@ -6,8 +6,8 @@ import org.junit.Test;
 
 import java.util.List;
 
-import static org.col.dao.DaoTestUtil.DATASET1;
-import static org.col.dao.DaoTestUtil.TAXON1;
+import static org.col.TestEntityGenerator.DATASET1;
+import static org.col.TestEntityGenerator.TAXON1;
 import static org.junit.Assert.*;
 
 /**

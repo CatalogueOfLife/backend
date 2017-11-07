@@ -11,6 +11,8 @@ import org.col.commands.config.NormalizerConfig;
 import org.col.commands.importer.dwca.Normalizer;
 import org.col.commands.importer.neo.NeoDbFactory;
 import org.col.commands.importer.neo.NormalizerStore;
+import org.col.dao.NameDao;
+import org.col.dao.TaxonDao;
 import org.col.db.mapper.*;
 import org.junit.*;
 
@@ -81,29 +83,30 @@ public class ImporterIT {
 
     // verify results
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
-      TaxonMapper taxonMapper = session.getMapper(TaxonMapper.class);
-      NameMapper nameMapper = session.getMapper(NameMapper.class);
+      TaxonDao tdao = new TaxonDao(session);
+      NameDao ndao = new NameDao(session);
+
       // check basionym
-      Name n1006 = nameMapper.get(dataset.getKey(), "1006");
+      Name n1006 = ndao.get(dataset.getKey(), "1006");
       assertEquals("Leontodon taraxacoides", n1006.getScientificName());
 
-      Name bas = nameMapper.getByKey(n1006.getOriginalName().getKey());
+      Name bas = ndao.get(n1006.getBasionym().getKey());
       assertEquals("Leonida taraxacoida", bas.getScientificName());
       assertEquals("1006-s3", bas.getId());
 
       // check taxon parents
-      assertParents(taxonMapper, "1006", "102", "30", "20", "10", "1");
+      assertParents(tdao, "1006", "102", "30", "20", "10", "1");
 
       // TODO: check synonym
     }
   }
 
-  private void assertParents(TaxonMapper taxonMapper, String taxonID, String ... parentIds) {
+  private void assertParents(TaxonDao tdao, String taxonID, String ... parentIds) {
     final LinkedList<String> expected = new LinkedList<String>(Arrays.asList(parentIds));
-    Taxon t = taxonMapper.get(dataset.getKey(), taxonID);
+    Taxon t = tdao.get(dataset.getKey(), taxonID);
     while (t.getParent() != null) {
       assertEquals(expected.pop(), t.getParent().getId());
-      t = taxonMapper.getByKey(t.getParent().getKey());
+      t = tdao.get(t.getParent().getKey());
     }
     assertTrue(expected.isEmpty());
   }

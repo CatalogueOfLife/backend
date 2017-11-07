@@ -1,123 +1,75 @@
 package org.col.db.mapper;
 
-import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
+import org.col.TestEntityGenerator;
 import org.col.api.*;
-import org.col.api.vocab.*;
-import org.col.dao.DaoTestUtil;
 import org.junit.Test;
 
 import java.util.List;
-import java.util.Random;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 /**
  *
  */
 public class NameMapperTest extends MapperTestBase<NameMapper> {
-  Splitter SPACE_SPLITTER = Splitter.on(" ").trimResults();
-  Random rnd = new Random();
 
   public NameMapperTest() {
     super(NameMapper.class);
   }
 
   private Name create(String id, Name basionym) throws Exception {
-    Name n = create(id);
-    n.setOriginalName(basionym);
+    Name n = TestEntityGenerator.newName(id);
+    n.setBasionym(basionym);
     return n;
   }
 
   private Name create(Dataset d) throws Exception {
-    Name n = create();
+    Name n = TestEntityGenerator.newName();
     n.setDataset(d);
     return n;
   }
 
-  private Name create(String id) throws Exception {
-    Name n = create();
-    n.setId(id);
-    return n;
-  }
-
-  private Name create() throws Exception {
-    Name n = new Name();
-    n.setDataset(DaoTestUtil.DATASET1);
-    n.setScientificName(RandomUtils.randomSpecies());
-    n.setAuthorship(createAuthorship());
-    List<String> tokens = SPACE_SPLITTER.splitToList(n.getScientificName());
-    n.setGenus(tokens.get(0));
-    n.setSpecificEpithet(tokens.get(1));
-    n.setInfragenericEpithet("Igen");
-    n.setInfraspecificEpithet(null);
-    n.setNotho(NamePart.SPECIFIC);
-    n.setFossil(true);
-    n.setRank(Rank.SPECIES);
-    n.setOrigin(Origin.SOURCE);
-    n.setType(NameType.SCIENTIFIC);
-    n.setEtymology("A random species name");
-    n.addIssue(Issue.ACCEPTED_NAME_MISSING);
-    n.addIssue(Issue.HOMONYM, "Abies alba");
-    return n;
-  }
-
-  private Authorship createAuthorship() throws Exception {
-    Authorship a = new Authorship();
-    while (a.getCombinationAuthors().size() < 2 || rnd.nextBoolean()) {
-      a.getCombinationAuthors().add(RandomUtils.randomAuthor());
-    }
-    a.setCombinationYear(RandomUtils.randomSpeciesYear());
-    while (a.getOriginalAuthors().isEmpty() || rnd.nextBoolean()) {
-      a.getOriginalAuthors().add(RandomUtils.randomAuthor());
-    }
-    a.setOriginalYear(RandomUtils.randomSpeciesYear());
-    return a;
-  }
-
   @Test
   public void roundtrip() throws Exception {
-    Name n1 = create("sk1");
+    Name n1 = TestEntityGenerator.newName("sk1");
     mapper().create(n1);
     assertNotNull(n1.getKey());
     commit();
 
-    Name n1b = mapper().get(DaoTestUtil.DATASET1.getKey(), n1.getId());
+    int n1Key = mapper().lookupKey(TestEntityGenerator.DATASET1.getKey(), n1.getId());
+    assertEquals((Integer)n1Key, n1.getKey());
+
+    Name n1b = mapper().get(n1Key);
     assertEquals(n1, n1b);
 
-    Name n1c = mapper().getByKey(n1.getKey());
-    assertEquals(n1, n1c);
-
     // now with basionym
-    Name n2 = create("sk2");
-    n2.setOriginalName(n1);
+    Name n2 = TestEntityGenerator.newName("sk2");
+    n2.setBasionym(n1);
     mapper().create(n2);
 
     commit();
 
     // we use a new instance of n1 with just the keys for the equality tests
     n1 = new Name();
-    n1.setKey(n2.getOriginalName().getKey());
-    n1.setId(n2.getOriginalName().getId());
-    n2.setOriginalName(n1);
+    n1.setKey(n2.getBasionym().getKey());
+    n1.setId(n2.getBasionym().getId());
+    n2.setBasionym(n1);
 
-    Name n2b = mapper().get(DaoTestUtil.DATASET1.getKey(), n2.getId());
+    int n2Key = mapper().lookupKey(TestEntityGenerator.DATASET1.getKey(), n2.getId());
+    assertEquals((Integer)n2Key, n2.getKey());
+    Name n2b = mapper().get(n2Key);
     assertEquals(n2, n2b);
-
-    Name n2c = mapper().getByKey(n2.getKey());
-    assertEquals(n2, n2c);
-
   }
 
   @Test
   public void list() throws Exception {
     List<Name> names = Lists.newArrayList();
-    names.add(create(DaoTestUtil.DATASET2));
-    names.add(create(DaoTestUtil.DATASET2));
-    names.add(create(DaoTestUtil.DATASET2));
-    names.add(create(DaoTestUtil.DATASET2));
-    names.add(create(DaoTestUtil.DATASET2));
+    names.add(create(TestEntityGenerator.DATASET2));
+    names.add(create(TestEntityGenerator.DATASET2));
+    names.add(create(TestEntityGenerator.DATASET2));
+    names.add(create(TestEntityGenerator.DATASET2));
+    names.add(create(TestEntityGenerator.DATASET2));
 
     for (Name n : names) {
       mapper().create(n);
@@ -127,13 +79,13 @@ public class NameMapperTest extends MapperTestBase<NameMapper> {
     // get first page
     Page p = new Page(0,3);
 
-    List<Name> res = mapper().list(DaoTestUtil.DATASET2.getKey(), p);
+    List<Name> res = mapper().list(TestEntityGenerator.DATASET2.getKey(), p);
     assertEquals(3, res.size());
     assertEquals(Lists.partition(names, 3).get(0), res);
 
     // next page
     p.next();
-    res = mapper().list(DaoTestUtil.DATASET2.getKey(), p);
+    res = mapper().list(TestEntityGenerator.DATASET2.getKey(), p);
     assertEquals(2, res.size());
     List<Name> l2 = Lists.partition(names, 3).get(1);
     assertEquals(l2, res);
@@ -141,21 +93,21 @@ public class NameMapperTest extends MapperTestBase<NameMapper> {
 
   @Test
   public void count() throws Exception {
-    assertEquals(2, mapper().count(DaoTestUtil.DATASET1.getKey()));
+    assertEquals(2, mapper().count(TestEntityGenerator.DATASET1.getKey()));
 
-    mapper().create(create());
-    mapper().create(create());
+    mapper().create(TestEntityGenerator.newName());
+    mapper().create(TestEntityGenerator.newName());
     commit();
-    assertEquals(4, mapper().count(DaoTestUtil.DATASET1.getKey()));
+    assertEquals(4, mapper().count(TestEntityGenerator.DATASET1.getKey()));
   }
 
   @Test
-  public void synonyms() throws Exception {
-    Name n2bas = create("n2");
+  public void basionymGroup() throws Exception {
+    Name n2bas = TestEntityGenerator.newName("n2");
     mapper().create(n2bas);
 
-    Name n1 = create("n1");
-    n1.setOriginalName(n2bas);
+    Name n1 = TestEntityGenerator.newName("n1");
+    n1.setBasionym(n2bas);
     mapper().create(n1);
 
     Name n3 = create("n3", n2bas);
@@ -166,14 +118,71 @@ public class NameMapperTest extends MapperTestBase<NameMapper> {
 
     commit();
 
-    List<Name> s1 = mapper().synonymsByKey(n1.getKey());
+    List<Name> s1 = mapper().basionymGroup(n1.getKey());
     assertEquals(4, s1.size());
-    List<Name> s2 = mapper().synonymsByKey(n1.getKey());
+    List<Name> s2 = mapper().basionymGroup(n1.getKey());
     assertEquals(s1, s2);
-    List<Name> s3 = mapper().synonymsByKey(n1.getKey());
+    List<Name> s3 = mapper().basionymGroup(n1.getKey());
     assertEquals(s1, s3);
-    List<Name> s4 = mapper().synonymsByKey(n1.getKey());
+    List<Name> s4 = mapper().basionymGroup(n1.getKey());
     assertEquals(s1, s4);
+  }
+
+  @Test
+  public void synonyms() throws Exception {
+    final int accKey = TestEntityGenerator.TAXON1.getKey();
+    final int datasetKey = TestEntityGenerator.TAXON1.getDataset().getKey();
+
+    List<Name> synonyms = mapper().synonyms(accKey);
+    assertTrue(synonyms.isEmpty());
+    assertEquals(0, synonyms.size());
+
+    // homotypic 1
+    Name syn1 = TestEntityGenerator.newName("syn1");
+    mapper().create(syn1);
+
+    // homotypic 2
+    Name syn2bas = TestEntityGenerator.newName("syn2bas");
+    mapper().create(syn2bas);
+
+    Name syn21 = TestEntityGenerator.newName("syn2.1");
+    syn21.setBasionym(syn2bas);
+    mapper().create(syn21);
+
+    Name syn22 = TestEntityGenerator.newName("syn2.2");
+    syn22.setBasionym(syn2bas);
+    mapper().create(syn22);
+
+    // homotypic 3
+    Name syn3bas = TestEntityGenerator.newName("syn3bas");
+    mapper().create(syn3bas);
+
+    Name syn31 = TestEntityGenerator.newName("syn3.1");
+    syn31.setBasionym(syn3bas);
+    mapper().create(syn31);
+
+    commit();
+
+    // no synonym links added yet, expect empty synonymy even though basionym links exist!
+    synonyms = mapper().synonyms(accKey);
+    assertTrue(synonyms.isEmpty());
+    assertEquals(0, synonyms.size());
+
+    // now add a few synonyms
+    mapper().addSynonym(datasetKey, accKey, syn1.getKey());
+    commit();
+    synonyms = mapper().synonyms(accKey);
+    assertFalse(synonyms.isEmpty());
+    assertEquals(1, synonyms.size());
+
+    mapper().addSynonym(datasetKey, accKey, syn2bas.getKey());
+    mapper().addSynonym(datasetKey, accKey, syn21.getKey());
+    mapper().addSynonym(datasetKey, accKey, syn22.getKey());
+    mapper().addSynonym(datasetKey, accKey, syn3bas.getKey());
+    mapper().addSynonym(datasetKey, accKey, syn31.getKey());
+
+    synonyms = mapper().synonyms(accKey);
+    assertEquals(6, synonyms.size());
   }
 
 }

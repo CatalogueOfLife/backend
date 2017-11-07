@@ -31,15 +31,15 @@ public class RankTest {
   @Test
   @Ignore
   public void printPostgresEnum() {
-    System.out.print("CREATE TYPE value AS ENUM (");
+    System.out.print("CREATE TYPE rank AS ENUM (");
     boolean first = true;
     for (Rank r : Rank.values()) {
       if (!first) {
-        System.out.print(", ");
+        System.out.print(",");
       } else {
         first = false;
       }
-      System.out.print("'"+r.name().toLowerCase()+"'");
+      System.out.print("\n  '"+r.name().toLowerCase()+"'");
     }
     System.out.println(");");
   }
