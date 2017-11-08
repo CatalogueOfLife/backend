@@ -11,7 +11,7 @@ import java.util.Objects;
  */
 public class NameAct {
 	private Integer key;
-	private Dataset dataset;
+	private Integer datasetKey;
 	private NomActType type;
 
 	/**
@@ -33,12 +33,12 @@ public class NameAct {
 		this.key = key;
 	}
 
-	public Dataset getDataset() {
-		return dataset;
+	public Integer getDatasetKey() {
+		return datasetKey;
 	}
 
-	public void setDataset(Dataset dataset) {
-		this.dataset = dataset;
+	public void setDatasetKey(Integer datasetKey) {
+		this.datasetKey = datasetKey;
 	}
 
 	public NomActType getType() {
@@ -105,6 +105,7 @@ public class NameAct {
 			return false;
 		NameAct nameAct = (NameAct) o;
 		return Objects.equals(key, nameAct.key)
+		    && Objects.equals(datasetKey, nameAct.datasetKey)
 		    && type == nameAct.type
 		    && status == nameAct.status
 		    && Objects.equals(name, nameAct.name)
@@ -116,23 +117,23 @@ public class NameAct {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(key, type, status, name, relatedName, referencePage, reference);
+		return Objects.hash(key, datasetKey, type, status, name, relatedName, referencePage, reference);
 	}
 
-	public boolean equalsShallow(NameAct nameAct) {
-		if (this == nameAct) {
-			return true;
-		}
-		if (nameAct == null) {
-			return false;
-		}
-		return Objects.equals(key, nameAct.key)
-		    && type == nameAct.type
-		    && status == nameAct.status
-		    && ApiUtil.equalsShallow(dataset, nameAct.dataset)
-		    && ApiUtil.equalsShallow(name, nameAct.name)
-		    && ApiUtil.equalsShallow(relatedName, nameAct.relatedName)
-		    && ApiUtil.equalsShallow(reference, nameAct.reference)
-		    && Objects.equals(referencePage, nameAct.referencePage);
-	}
+	// public boolean equalsShallow(NameAct nameAct) {
+	// if (this == nameAct) {
+	// return true;
+	// }
+	// if (nameAct == null) {
+	// return false;
+	// }
+	// return Objects.equals(key, nameAct.key)
+	// && type == nameAct.type
+	// && status == nameAct.status
+	// && ApiUtil.equalsShallow(dataset, nameAct.dataset)
+	// && ApiUtil.equalsShallow(name, nameAct.name)
+	// && ApiUtil.equalsShallow(relatedName, nameAct.relatedName)
+	// && ApiUtil.equalsShallow(reference, nameAct.reference)
+	// && Objects.equals(referencePage, nameAct.referencePage);
+	// }
 }

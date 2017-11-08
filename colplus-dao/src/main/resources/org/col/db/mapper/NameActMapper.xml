@@ -28,7 +28,7 @@
   </sql>
 
   <sql id="PROPS">
-    #{dataset.key},
+    #{datasetKey},
     #{type},
     #{status},
     #{name.key},
@@ -44,9 +44,6 @@
 
   <resultMap id="nameActResultMap" type="NameAct" autoMapping="true">
     <id property="key" column="key" />
-    <association property="dataset" javaType="Dataset">
-      <id property="key" column="dataset_key" />
-    </association>
     <association property="name" javaType="Name">
       <id property="key" column="name_key" />
     </association>
