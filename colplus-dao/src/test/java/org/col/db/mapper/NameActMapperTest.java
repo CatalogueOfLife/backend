@@ -67,13 +67,13 @@ public class NameActMapperTest extends MapperTestBase<NameActMapper> {
 
 		nameAct = new NameAct();
 		nameAct.setDatasetKey(DATASET1.getKey());
-		nameAct.setName(basionym);
+		nameAct.setNameKey(basionym.getKey());
 		nameAct.setType(NomActType.DESCRIPTION);
 		mapper().create(nameAct);
 
 		nameAct = new NameAct();
 		nameAct.setDatasetKey(DATASET1.getKey());
-		nameAct.setName(basionym);
+		nameAct.setNameKey(basionym.getKey());
 		nameAct.setType(NomActType.TYPIFICATION);
 		mapper().create(nameAct);
 
@@ -88,13 +88,13 @@ public class NameActMapperTest extends MapperTestBase<NameActMapper> {
 
 		nameAct = new NameAct();
 		nameAct.setDatasetKey(DATASET1.getKey());
-		nameAct.setName(name);
+		nameAct.setNameKey(name.getKey());
 		nameAct.setType(NomActType.DESCRIPTION);
 		mapper().create(nameAct);
 
 		nameAct = new NameAct();
 		nameAct.setDatasetKey(DATASET1.getKey());
-		nameAct.setName(name);
+		nameAct.setNameKey(name.getKey());
 		nameAct.setType(NomActType.TYPIFICATION);
 		mapper().create(nameAct);
 
@@ -109,16 +109,20 @@ public class NameActMapperTest extends MapperTestBase<NameActMapper> {
 
 		nameAct = new NameAct();
 		nameAct.setDatasetKey(DATASET1.getKey());
-		nameAct.setName(name);
+		nameAct.setNameKey(name.getKey());
 		nameAct.setType(NomActType.DESCRIPTION);
 		mapper().create(nameAct);
 
 		commit();
+		
+		// So total size of homotypic group is 2 + 2 + 1 = 5
 
-		List<NameAct> nas = mapper().listByHomotypicGroup(DATASET1.getKey(), "foo-too");
-
-		// 2 + 2 + 1
+		List<NameAct> nas = mapper().listByHomotypicGroup(DATASET1.getKey(), "foo-bar");
 		assertEquals("01", 5, nas.size());
+		nas = mapper().listByHomotypicGroup(DATASET1.getKey(), "foo-new");
+		assertEquals("02", 5, nas.size());
+		nas = mapper().listByHomotypicGroup(DATASET1.getKey(), "foo-too");
+		assertEquals("03", 5, nas.size());
 	}
 
 	private static NameAct newNameAct1() {
@@ -126,9 +130,9 @@ public class NameActMapperTest extends MapperTestBase<NameActMapper> {
 		na.setDatasetKey(DATASET1.getKey());
 		na.setType(NomActType.DESCRIPTION);
 		na.setStatus(NomStatus.REPLACEMENT);
-		na.setName(NAME1);
-		na.setRelatedName(NAME2);
-		na.setReference(REF1);
+		na.setNameKey(NAME1.getKey());
+		na.setRelatedNameKey(NAME2.getKey());
+		na.setReferenceKey(REF1.getKey());
 		na.setReferencePage("12");
 		return na;
 	}
@@ -138,9 +142,9 @@ public class NameActMapperTest extends MapperTestBase<NameActMapper> {
 		na.setDatasetKey(DATASET1.getKey());
 		na.setType(NomActType.DESCRIPTION);
 		na.setStatus(NomStatus.REPLACEMENT);
-		na.setName(NAME2);
-		na.setRelatedName(null);
-		na.setReference(REF2);
+		na.setNameKey(NAME2.getKey());
+		na.setRelatedNameKey(null);
+		na.setReferenceKey(REF2.getKey());
 		na.setReferencePage("9");
 		return na;
 	}

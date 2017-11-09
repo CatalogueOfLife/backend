@@ -1,9 +1,9 @@
 package org.col.api;
 
+import java.util.Objects;
+
 import org.col.api.vocab.NomActType;
 import org.col.api.vocab.NomStatus;
-
-import java.util.Objects;
 
 /**
  * A nomenclatural act such as a species description, type designation or
@@ -19,11 +19,11 @@ public class NameAct {
 	 */
 	private NomStatus status;
 
-	private Name name;
-	private Name relatedName;
+	private Integer nameKey;
+	private Integer relatedNameKey;
 	private String description;
+	private Integer referenceKey;
 	private String referencePage;
-	private Reference reference;
 
 	public Integer getKey() {
 		return key;
@@ -57,20 +57,20 @@ public class NameAct {
 		this.status = status;
 	}
 
-	public Name getName() {
-		return name;
+	public Integer getNameKey() {
+		return nameKey;
 	}
 
-	public void setName(Name name) {
-		this.name = name;
+	public void setNameKey(Integer nameKey) {
+		this.nameKey = nameKey;
 	}
 
-	public Name getRelatedName() {
-		return relatedName;
+	public Integer getRelatedNameKey() {
+		return relatedNameKey;
 	}
 
-	public void setRelatedName(Name relatedName) {
-		this.relatedName = relatedName;
+	public void setRelatedNameKey(Integer key) {
+		this.relatedNameKey = key;
 	}
 
 	public String getDescription() {
@@ -81,20 +81,20 @@ public class NameAct {
 		this.description = description;
 	}
 
+	public Integer getReferenceKey() {
+		return referenceKey;
+	}
+
+	public void setReferenceKey(Integer key) {
+		this.referenceKey = key;
+	}
+
 	public String getReferencePage() {
 		return referencePage;
 	}
 
 	public void setReferencePage(String referencePage) {
 		this.referencePage = referencePage;
-	}
-
-	public Reference getReference() {
-		return reference;
-	}
-
-	public void setReference(Reference reference) {
-		this.reference = reference;
 	}
 
 	@Override
@@ -108,16 +108,17 @@ public class NameAct {
 		    && Objects.equals(datasetKey, nameAct.datasetKey)
 		    && type == nameAct.type
 		    && status == nameAct.status
-		    && Objects.equals(name, nameAct.name)
-		    && Objects.equals(relatedName, nameAct.relatedName)
+		    && Objects.equals(nameKey, nameAct.nameKey)
+		    && Objects.equals(relatedNameKey, nameAct.relatedNameKey)
 		    && Objects.equals(description, nameAct.description)
 		    && Objects.equals(referencePage, nameAct.referencePage)
-		    && Objects.equals(reference, nameAct.reference);
+		    && Objects.equals(referenceKey, nameAct.referenceKey);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(key, datasetKey, type, status, name, relatedName, referencePage, reference);
+		return Objects.hash(key, datasetKey, type, status, nameKey, relatedNameKey, referencePage,
+		    referenceKey);
 	}
 
 	// public boolean equalsShallow(NameAct nameAct) {

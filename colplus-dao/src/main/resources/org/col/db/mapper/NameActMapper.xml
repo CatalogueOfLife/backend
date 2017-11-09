@@ -31,10 +31,10 @@
     #{datasetKey},
     #{type},
     #{status},
-    #{name.key},
-    #{relatedName.key},
+    #{nameKey},
+    #{relatedNameKey},
     #{description},
-    #{reference.key},
+    #{referenceKey},
     #{referencePage}
   </sql>
 
@@ -44,15 +44,6 @@
 
   <resultMap id="nameActResultMap" type="NameAct" autoMapping="true">
     <id property="key" column="key" />
-    <association property="name" javaType="Name">
-      <id property="key" column="name_key" />
-    </association>
-    <association property="relatedName" javaType="Name">
-      <id property="key" column="related_name_key" />
-    </association>
-    <association property="reference" javaType="Reference">
-      <id property="key" column="reference_key" />
-    </association>
   </resultMap>
 
   <select id="listByName" parameterType="map" resultMap="nameActResultMap">
@@ -65,15 +56,30 @@
     ORDER BY na.key
   </select>
 
+  <!-- Get all name acts associated with the basionym of the provided name id and all names referencing that basionym -->
   <select id="listByHomotypicGroup" parameterType="map" resultMap="nameActResultMap">
     SELECT
     <include refid="SELECT" />
     FROM name_act as na
-    LEFT JOIN name as name ON (na.name_key = name.key OR na.name_key = name.basionym_key)
-    LEFT JOIN name as sibling ON (name.basionym_key = sibling.basionym_key AND name.key != sibling.key)
     WHERE na.dataset_key = #{datasetKey}
-    AND (name.id = #{nameId} OR sibling.id = #{nameId})
-    ORDER BY na.key
+    AND (
+      <!-- Get name corresponding to #{nameId} -->
+      na.name_key in (SELECT key FROM name where id = #{nameId})
+      <!-- Get basionym of name corresponding to #{nameId} (if name is not itself a basionym) -->
+      OR na.name_key in (SELECT basionym_key FROM name where id = #{nameId})
+      <!-- Get siblings of name (if name is not itself a basionym) -->
+      OR na.name_key in (
+        SELECT sibling.key FROM name as sibling
+        JOIN name as given ON (given.basionym_key = sibling.basionym_key)
+        WHERE given.id = #{nameId}
+      )
+      <!-- Get children of name (if name is a basionym) -->
+      OR na.name_key in (
+        SELECT child.key FROM name as child
+        JOIN name as given ON (given.key = child.basionym_key)
+        WHERE given.id = #{nameId}
+      )
+    )
   </select>
 
   <select id="getByKey" resultMap="nameActResultMap">
