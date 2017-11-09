@@ -61,20 +61,21 @@
     SELECT
     <include refid="SELECT" />
     FROM name_act as na
+    JOIN name as name ON (na.name_key = name.key)
     WHERE na.dataset_key = #{datasetKey}
     AND (
       <!-- Get name corresponding to #{nameId} -->
-      na.name_key in (SELECT key FROM name where id = #{nameId})
+      name.id = #{nameId}
       <!-- Get basionym of name corresponding to #{nameId} (if name is not itself a basionym) -->
-      OR na.name_key in (SELECT basionym_key FROM name where id = #{nameId})
+      OR name.key in (SELECT basionym_key FROM name where id = #{nameId})
       <!-- Get siblings of name (if name is not itself a basionym) -->
-      OR na.name_key in (
+      OR name.key in (
         SELECT sibling.key FROM name as sibling
         JOIN name as given ON (given.basionym_key = sibling.basionym_key)
         WHERE given.id = #{nameId}
       )
       <!-- Get children of name (if name is a basionym) -->
-      OR na.name_key in (
+      OR name.key in (
         SELECT child.key FROM name as child
         JOIN name as given ON (given.key = child.basionym_key)
         WHERE given.id = #{nameId}
