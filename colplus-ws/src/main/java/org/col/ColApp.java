@@ -13,7 +13,6 @@ import org.col.resources.DatasetResource;
 import org.col.resources.NameResource;
 import org.col.resources.ReferenceResource;
 import org.col.resources.TaxonResource;
-import org.col.resources.VernacularNameResource;
 
 public class ColApp extends Application<ColAppConfig> {
 
@@ -44,12 +43,10 @@ public class ColApp extends Application<ColAppConfig> {
 		environment.getObjectMapper().configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
 
 		// resources
-		// environment.jersey().packages(NameResource.class.getPackage().getName());
 		environment.jersey().register(new DatasetResource());
 		environment.jersey().register(new ReferenceResource());
 		environment.jersey().register(new NameResource());
 		environment.jersey().register(new TaxonResource());
-		environment.jersey().register(new VernacularNameResource());
 	}
 
 }

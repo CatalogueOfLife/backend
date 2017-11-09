@@ -1,18 +1,15 @@
 package org.col.db.mapper;
 
-import java.util.List;
-
 import org.apache.ibatis.annotations.Param;
 import org.col.api.VernacularName;
 
+import java.util.List;
+
 public interface VernacularNameMapper {
 
-	List<VernacularName> getVernacularNames(@Param("datasetKey") int datasetKey,
-	    @Param("taxonId") String taxonId);
+	List<VernacularName> listByTaxon(@Param("taxonKey") int taxonKey);
 
-	List<VernacularName> getVernacularNamesByTaxonKey(@Param("taxonKey") int taxonKey);
-
-	VernacularName getByKey(@Param("key") int ikey);
+	VernacularName get(@Param("key") int key);
 
 	void create(@Param("vernacular") VernacularName vn,
 	    @Param("taxonKey") int taxonKey,

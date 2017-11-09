@@ -6,9 +6,6 @@
 
   <sql id="SELECT">
     vn.key,
-    vn.dataset_key,
-    vn.taxon_key,
-    t.id as taxon_id,
     vn.name,
     vn.language,
     vn.country
@@ -32,9 +29,6 @@
 
   <sql id="FROM">
     vernacular_name vn
-    LEFT JOIN dataset d on (vn.dataset_key=d.key)
-    LEFT JOIN taxon t on
-    (vn.taxon_key=t.key)
   </sql>
 
   <resultMap id="vernacularNameResultMap" type="VernacularName" autoMapping="true">
@@ -42,39 +36,22 @@
   </resultMap>
 
 
-  <select id="getVernacularNames" parameterType="map" resultMap="vernacularNameResultMap">
-    SELECT
-    <include refid="SELECT" />
-    FROM
-    <include refid="FROM" />
-    WHERE vn.dataset_key = #{datasetKey} AND t.id = #{taxonId}
-    ORDER BY name
-  </select>
-
-  <select id="getVernacularNamesByTaxonKey" parameterType="map" resultMap="vernacularNameResultMap">
-    SELECT
-    <include refid="SELECT" />
-    FROM
-    <include refid="FROM" />
+  <select id="listByTaxon" parameterType="map" resultMap="vernacularNameResultMap">
+    SELECT <include refid="SELECT" />
+    FROM <include refid="FROM" />
     WHERE vn.taxon_key = #{taxonKey}
     ORDER BY name
   </select>
 
-  <select id="getByKey" resultMap="vernacularNameResultMap">
-    SELECT
-    <include refid="SELECT" />
-    FROM
-    <include refid="FROM" />
+  <select id="get" resultMap="vernacularNameResultMap">
+    SELECT <include refid="SELECT" />
+    FROM <include refid="FROM" />
     WHERE vn.key = #{key}
   </select>
 
   <insert id="create" parameterType="VernacularName" useGeneratedKeys="true" keyProperty="vernacular.key">
-    INSERT INTO vernacular_name (
-    <include refid="COLS" />
-    )
-    VALUES (
-    <include refid="PROPS" />
-    )
+    INSERT INTO vernacular_name (<include refid="COLS" />)
+    VALUES (<include refid="PROPS" />)
   </insert>
 
 </mapper>
