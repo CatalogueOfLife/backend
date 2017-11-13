@@ -106,8 +106,7 @@ public class NameMapperTest extends MapperTestBase<NameMapper> {
     Name n2bas = TestEntityGenerator.newName("n2");
     mapper().create(n2bas);
 
-    Name n1 = TestEntityGenerator.newName("n1");
-    n1.setBasionym(n2bas);
+    Name n1 = create("n1", n2bas);
     mapper().create(n1);
 
     Name n3 = create("n3", n2bas);
@@ -120,11 +119,17 @@ public class NameMapperTest extends MapperTestBase<NameMapper> {
 
     List<Name> s1 = mapper().basionymGroup(n1.getKey());
     assertEquals(4, s1.size());
-    List<Name> s2 = mapper().basionymGroup(n1.getKey());
+
+    List<Name> s2 = mapper().basionymGroup(n2bas.getKey());
+    assertEquals(4, s2.size());
     assertEquals(s1, s2);
-    List<Name> s3 = mapper().basionymGroup(n1.getKey());
+
+    List<Name> s3 = mapper().basionymGroup(n3.getKey());
+    assertEquals(4, s3.size());
     assertEquals(s1, s3);
-    List<Name> s4 = mapper().basionymGroup(n1.getKey());
+
+    List<Name> s4 = mapper().basionymGroup(n4.getKey());
+    assertEquals(4, s4.size());
     assertEquals(s1, s4);
   }
 

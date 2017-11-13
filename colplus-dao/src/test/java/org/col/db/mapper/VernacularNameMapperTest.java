@@ -1,16 +1,12 @@
 package org.col.db.mapper;
 
-import static org.col.TestEntityGenerator.DATASET1;
-import static org.col.TestEntityGenerator.TAXON1;
-import static org.col.TestEntityGenerator.newVernacularName;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import org.col.api.VernacularName;
+import org.junit.Test;
 
 import java.util.List;
 
-import org.col.api.VernacularName;
-import org.junit.Test;
+import static org.col.TestEntityGenerator.*;
+import static org.junit.Assert.*;
 
 /**
  *
@@ -27,19 +23,20 @@ public class VernacularNameMapperTest extends MapperTestBase<VernacularNameMappe
 		mapper().create(in, 1, 1);
 		assertNotNull(in.getKey());
 		commit();
-		VernacularName out = mapper().getByKey(in.getKey());
+		VernacularName out = mapper().get(in.getKey());
 		assertTrue(in.equals(out));
 	}
 
 	@Test
-	public void testGetVernacularNames() throws Exception {
+	public void testListByTaxon() throws Exception {
 		VernacularName b = newVernacularName("b");
 		mapper().create(b, TAXON1.getKey(), DATASET1.getKey());
 		VernacularName c = newVernacularName("c");
 		mapper().create(c, TAXON1.getKey(), DATASET1.getKey());
 		VernacularName a = newVernacularName("a");
 		mapper().create(a, TAXON1.getKey(), DATASET1.getKey());
-		List<VernacularName> list = mapper().getVernacularNames(DATASET1.getKey(), TAXON1.getId());
+
+		List<VernacularName> list = mapper().listByTaxon(TAXON1.getKey());
 		assertEquals(3, list.size());
 		assertTrue(a.equals(list.get(0)));
 		assertTrue(b.equals(list.get(1)));

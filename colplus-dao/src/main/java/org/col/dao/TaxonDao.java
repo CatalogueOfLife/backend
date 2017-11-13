@@ -57,7 +57,7 @@ public class TaxonDao {
 		info.setTaxon(taxon);
 
 		VernacularNameMapper vMapper = session.getMapper(VernacularNameMapper.class);
-		List<VernacularName> vernaculars = vMapper.getVernacularNamesByTaxonKey(taxon.getKey());
+		List<VernacularName> vernaculars = vMapper.listByTaxon(taxon.getKey());
 		info.setVernacularNames(vernaculars);
 
 		DistributionMapper dMapper = session.getMapper(DistributionMapper.class);

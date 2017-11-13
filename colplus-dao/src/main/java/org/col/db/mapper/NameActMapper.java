@@ -1,16 +1,16 @@
 package org.col.db.mapper;
 
-import java.util.List;
-
 import org.apache.ibatis.annotations.Param;
 import org.col.api.NameAct;
+
+import java.util.List;
 
 /**
  *
  */
 public interface NameActMapper {
 
-	NameAct getByKey(@Param("key") int ikey);
+	NameAct get(@Param("key") int ikey);
 
 	/**
 	 * Returns the list of nomenclatural acts for a single name.

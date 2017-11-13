@@ -1,20 +1,16 @@
 package org.col.db.mapper;
 
-import static org.col.TestEntityGenerator.DATASET1;
-import static org.col.TestEntityGenerator.NAME1;
-import static org.col.TestEntityGenerator.NAME2;
-import static org.col.TestEntityGenerator.REF1;
-import static org.col.TestEntityGenerator.REF2;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
-import java.util.List;
-
 import org.col.api.Name;
 import org.col.api.NameAct;
 import org.col.api.vocab.NomActType;
 import org.col.api.vocab.NomStatus;
 import org.junit.Test;
+
+import java.util.List;
+
+import static org.col.TestEntityGenerator.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  *
@@ -31,7 +27,7 @@ public class NameActMapperTest extends MapperTestBase<NameActMapper> {
 		mapper().create(in);
 		assertNotNull(in.getKey());
 		commit();
-		NameAct out = mapper().getByKey(in.getKey());
+		NameAct out = mapper().get(in.getKey());
 		// assertTrue(in.equalsShallow(out));
 	}
 
@@ -119,8 +115,10 @@ public class NameActMapperTest extends MapperTestBase<NameActMapper> {
 
 		List<NameAct> nas = mapper().listByHomotypicGroup(DATASET1.getKey(), "foo-bar");
 		assertEquals("01", 5, nas.size());
+
 		nas = mapper().listByHomotypicGroup(DATASET1.getKey(), "foo-new");
 		assertEquals("02", 5, nas.size());
+
 		nas = mapper().listByHomotypicGroup(DATASET1.getKey(), "foo-too");
 		assertEquals("03", 5, nas.size());
 	}

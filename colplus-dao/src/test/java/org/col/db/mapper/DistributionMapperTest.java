@@ -2,6 +2,7 @@ package org.col.db.mapper;
 
 import org.col.api.Distribution;
 import org.col.api.vocab.DistributionStatus;
+import org.col.api.vocab.Gazetteer;
 import org.junit.Test;
 
 import java.util.List;
@@ -52,7 +53,7 @@ public class DistributionMapperTest extends MapperTestBase<DistributionMapper> {
 		d.setDatasetKey(DATASET1.getKey());
 		d.setTaxonKey(TAXON1.getKey());
 		d.setArea(area);
-		d.setAreaStandard(7);
+		d.setAreaStandard(Gazetteer.TDWG);
 		d.setStatus(DistributionStatus.NATIVE);
 		return d;
 	}

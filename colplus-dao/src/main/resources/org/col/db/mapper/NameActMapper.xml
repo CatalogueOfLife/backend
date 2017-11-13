@@ -50,54 +50,35 @@
     SELECT
     <include refid="SELECT" />
     FROM name_act na
-    LEFT JOIN name n ON (na.name_key = n.key)
+      JOIN name n ON na.name_key = n.key
     WHERE na.dataset_key = #{datasetKey}
-    AND n.id = #{nameId}
+      AND n.id = #{nameId}
     ORDER BY na.key
   </select>
 
-  <!-- Get all name acts associated with the basionym of the provided name id and all names referencing that basionym -->
+    <!-- Get all name acts associated with the basionym of the provided name id and all names referencing that basionym -->
   <select id="listByHomotypicGroup" parameterType="map" resultMap="nameActResultMap">
-    SELECT
-    <include refid="SELECT" />
-    FROM name_act as na
-    JOIN name as name ON (na.name_key = name.key)
-    WHERE na.dataset_key = #{datasetKey}
-    AND (
-      <!-- Get name corresponding to #{nameId} -->
-      name.id = #{nameId}
-      <!-- Get basionym of name corresponding to #{nameId} (if name is not itself a basionym) -->
-      OR name.key in (SELECT basionym_key FROM name where id = #{nameId})
-      <!-- Get siblings of name (if name is not itself a basionym) -->
-      OR name.key in (
-        SELECT sibling.key FROM name as sibling
-        JOIN name as given ON (given.basionym_key = sibling.basionym_key)
-        WHERE given.id = #{nameId}
-      )
-      <!-- Get children of name (if name is a basionym) -->
-      OR name.key in (
-        SELECT child.key FROM name as child
-        JOIN name as given ON (given.key = child.basionym_key)
-        WHERE given.id = #{nameId}
-      )
-    )
+    SELECT <include refid="SELECT" />
+    FROM name ns
+      JOIN name n ON
+          <!-- ns was the basionym of other combinations-->
+          n.basionym_key=ns.key OR n.key=ns.key
+          <!-- ns was a combination with a basionym -->
+          OR n.key=ns.basionym_key OR n.basionym_key=ns.basionym_key
+      LEFT JOIN name bn ON n.basionym_key=bn.key
+      JOIN name_act na ON na.name_key=n.key
+    WHERE ns.dataset_key=#{datasetKey} AND ns.id=#{nameId}
   </select>
 
-  <select id="getByKey" resultMap="nameActResultMap">
-    SELECT
-    <include refid="SELECT" />
-    FROM
-    <include refid="FROM" />
+  <select id="get" resultMap="nameActResultMap">
+    SELECT <include refid="SELECT" />
+    FROM <include refid="FROM" />
     WHERE na.key = #{key}
   </select>
 
   <insert id="create" parameterType="NameAct" useGeneratedKeys="true" keyProperty="key">
-    INSERT INTO name_act (
-    <include refid="COLS" />
-    )
-    VALUES (
-    <include refid="PROPS" />
-    )
+    INSERT INTO name_act (<include refid="COLS" />)
+    VALUES (<include refid="PROPS" />)
   </insert>
 
 </mapper>

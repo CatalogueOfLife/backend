@@ -1,10 +1,10 @@
 package org.col.api;
 
-import java.util.Objects;
-
-import org.col.api.vocab.DistributionStatus;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.col.api.vocab.DistributionStatus;
+import org.col.api.vocab.Gazetteer;
+
+import java.util.Objects;
 
 /**
  *
@@ -16,7 +16,7 @@ public class Distribution {
 	private Integer datasetKey;
 	private Integer taxonKey;
 	private String area;
-	private int areaStandard;
+	private Gazetteer areaStandard;
 	private DistributionStatus status;
 
 	public Integer getKey() {
@@ -51,11 +51,11 @@ public class Distribution {
 		this.area = area;
 	}
 
-	public int getAreaStandard() {
+	public Gazetteer getAreaStandard() {
 		return areaStandard;
 	}
 
-	public void setAreaStandard(int areaStandard) {
+	public void setAreaStandard(Gazetteer areaStandard) {
 		this.areaStandard = areaStandard;
 	}
 
