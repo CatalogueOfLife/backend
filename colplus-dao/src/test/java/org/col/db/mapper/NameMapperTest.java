@@ -136,7 +136,7 @@ public class NameMapperTest extends MapperTestBase<NameMapper> {
   @Test
   public void synonyms() throws Exception {
     final int accKey = TestEntityGenerator.TAXON1.getKey();
-    final int datasetKey = TestEntityGenerator.TAXON1.getDataset().getKey();
+    final int datasetKey = TestEntityGenerator.TAXON1.getDatasetKey();
 
     List<Name> synonyms = mapper().synonyms(accKey);
     assertTrue(synonyms.isEmpty());

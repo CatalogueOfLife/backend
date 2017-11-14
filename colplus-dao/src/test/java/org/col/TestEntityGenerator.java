@@ -67,12 +67,12 @@ public class TestEntityGenerator {
 
 		TAXON1.setKey(1);
 		TAXON1.setId("root-1");
-		TAXON1.setDataset(DATASET1);
+		TAXON1.setDatasetKey(DATASET1.getKey());
 		TAXON1.setName(NAME1);
 
 		TAXON2.setKey(2);
 		TAXON2.setId("root-2");
-		TAXON2.setDataset(DATASET1);
+		TAXON2.setDatasetKey(DATASET1.getKey());
 		TAXON2.setName(NAME2);
 
 		REF1.setKey(1);
@@ -110,7 +110,7 @@ public class TestEntityGenerator {
 		Taxon t = new Taxon();
 		t.setAccordingTo("Foo");
 		t.setAccordingToDate(LocalDate.of(2010, 11, 24));
-		t.setDataset(dataset);
+		t.setDatasetKey(dataset.getKey());
 		t.setDatasetUrl(URI.create("http://foo.com"));
 		t.setFossil(true);
 		t.setId(id);

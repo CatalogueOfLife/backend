@@ -143,7 +143,7 @@ public class Importer implements Runnable {
               // use parent postgres key from stack, but keep it there
               t.taxon.getParent().setKey(parentKeys.peek());
             }
-            t.taxon.setDataset(dataset);
+            t.taxon.setDatasetKey(dataset.getKey());
             t.taxon.setName(t.name);
             taxonMapper.create(t.taxon);
             // push new postgres key onto stack for this taxon as we traverse in depth first

@@ -24,7 +24,7 @@ public class Taxon {
 
 	private String id;
 
-	private Dataset dataset;
+	private Integer datasetKey;
 
 	private Name name;
 
@@ -75,12 +75,12 @@ public class Taxon {
 		this.id = id;
 	}
 
-	public Dataset getDataset() {
-		return dataset;
+	public Integer getDatasetKey() {
+		return datasetKey;
 	}
 
-	public void setDataset(Dataset dataset) {
-		this.dataset = dataset;
+	public void setDatasetKey(Integer key) {
+		this.datasetKey = key;
 	}
 
 	public Name getName() {
@@ -218,7 +218,7 @@ public class Taxon {
     Taxon taxon = (Taxon) o;
     return Objects.equals(key, taxon.key) &&
         Objects.equals(id, taxon.id) &&
-        Objects.equals(dataset, taxon.dataset) &&
+        Objects.equals(datasetKey, taxon.datasetKey) &&
         Objects.equals(name, taxon.name) &&
         status == taxon.status &&
         rank == taxon.rank &&
@@ -238,7 +238,7 @@ public class Taxon {
 
   @Override
   public int hashCode() {
-    return Objects.hash(key, id, dataset, name, status, rank, origin, parent, accordingTo, accordingToDate, fossil, recent, lifezones, datasetUrl, speciesEstimate, speciesEstimateReference, remarks, issues);
+    return Objects.hash(key, id, datasetKey, name, status, rank, origin, parent, accordingTo, accordingToDate, fossil, recent, lifezones, datasetUrl, speciesEstimate, speciesEstimateReference, remarks, issues);
   }
 
   public boolean equalsShallow(Taxon other) {
@@ -250,7 +250,7 @@ public class Taxon {
 		}
 		return Objects.equals(key, other.key)
 		    && Objects.equals(id, other.id)
-		    && ApiUtil.equalsShallow(dataset, other.dataset)
+		    && Objects.equals(datasetKey, other.datasetKey)
 		    && ApiUtil.equalsShallow(name, other.name)
 		    && status == other.status
 		    && rank == other.rank

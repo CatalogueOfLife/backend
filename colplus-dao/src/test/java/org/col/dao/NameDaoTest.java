@@ -16,7 +16,7 @@ public class NameDaoTest extends DaoTestBase {
       NameDao dao = new NameDao(session());
 
       final int accKey = TestEntityGenerator.TAXON1.getKey();
-      final int datasetKey = TestEntityGenerator.TAXON1.getDataset().getKey();
+      final int datasetKey = TestEntityGenerator.TAXON1.getDatasetKey();
 
       Synonymy synonymy = dao.getSynonymy(accKey);
       assertTrue(synonymy.isEmpty());
