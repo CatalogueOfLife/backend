@@ -1,16 +1,20 @@
 package org.col.db.mapper;
 
+import static org.col.TestEntityGenerator.DATASET1;
+import static org.col.TestEntityGenerator.NAME1;
+import static org.col.TestEntityGenerator.NAME2;
+import static org.col.TestEntityGenerator.REF1;
+import static org.col.TestEntityGenerator.REF2;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
+import java.util.List;
+
 import org.col.api.Name;
 import org.col.api.NameAct;
 import org.col.api.vocab.NomActType;
 import org.col.api.vocab.NomStatus;
 import org.junit.Test;
-
-import java.util.List;
-
-import static org.col.TestEntityGenerator.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 /**
  *
@@ -54,7 +58,7 @@ public class NameActMapperTest extends MapperTestBase<NameActMapper> {
 		// Create basionym with 2 name acts
 
 		Name basionym = new Name();
-		basionym.setDataset(DATASET1);
+		basionym.setDatasetKey(DATASET1.getKey());
 		basionym.setId("foo-bar");
 		basionym.setScientificName("Foo bar");
 		nameMapper.create(basionym);
@@ -76,7 +80,7 @@ public class NameActMapperTest extends MapperTestBase<NameActMapper> {
 		// Create name referencing basionym, also with 2 name acts
 
 		Name name = new Name();
-		name.setDataset(DATASET1);
+		name.setDatasetKey(DATASET1.getKey());
 		name.setId("foo-new");
 		name.setScientificName("Foo new");
 		name.setBasionym(basionym);
@@ -97,7 +101,7 @@ public class NameActMapperTest extends MapperTestBase<NameActMapper> {
 		// Create another name referencing basionym, with 1 name act
 
 		name = new Name();
-		name.setDataset(DATASET1);
+		name.setDatasetKey(DATASET1.getKey());
 		name.setId("foo-too");
 		name.setScientificName("Foo too");
 		name.setBasionym(basionym);
@@ -110,7 +114,7 @@ public class NameActMapperTest extends MapperTestBase<NameActMapper> {
 		mapper().create(nameAct);
 
 		commit();
-		
+
 		// So total size of homotypic group is 2 + 2 + 1 = 5
 
 		List<NameAct> nas = mapper().listByHomotypicGroup(DATASET1.getKey(), "foo-bar");

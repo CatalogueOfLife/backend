@@ -1,14 +1,29 @@
 package org.col;
 
-import com.google.common.base.Splitter;
-import org.col.api.*;
-import org.col.api.vocab.*;
-
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Random;
+
+import org.col.api.Authorship;
+import org.col.api.Dataset;
+import org.col.api.Name;
+import org.col.api.RandomUtils;
+import org.col.api.Reference;
+import org.col.api.Taxon;
+import org.col.api.VernacularName;
+import org.col.api.vocab.Country;
+import org.col.api.vocab.Issue;
+import org.col.api.vocab.Language;
+import org.col.api.vocab.Lifezone;
+import org.col.api.vocab.NamePart;
+import org.col.api.vocab.NameType;
+import org.col.api.vocab.Origin;
+import org.col.api.vocab.Rank;
+import org.col.api.vocab.TaxonomicStatus;
+
+import com.google.common.base.Splitter;
 
 /**
  * utility class to generate new test instances to be used in tests.
@@ -16,7 +31,7 @@ import java.util.Random;
 public class TestEntityGenerator {
 
 	public final static Random RND = new Random();
-  private static final Splitter SPACE_SPLITTER = Splitter.on(" ").trimResults();
+	private static final Splitter SPACE_SPLITTER = Splitter.on(" ").trimResults();
 
 	/**
 	 * Corresponds exactly to 1st dataset record inserted via squirrels.sql
@@ -57,12 +72,12 @@ public class TestEntityGenerator {
 
 		NAME1.setKey(1);
 		NAME1.setId("name-1");
-		NAME1.setDataset(DATASET1);
+		NAME1.setDatasetKey(DATASET1.getKey());
 		NAME1.setScientificName("Malus sylvestris");
 
 		NAME2.setKey(2);
 		NAME2.setId("name-2");
-		NAME2.setDataset(DATASET1);
+		NAME2.setDatasetKey(DATASET1.getKey());
 		NAME2.setScientificName("Larus fuscus");
 
 		TAXON1.setKey(1);
@@ -104,7 +119,8 @@ public class TestEntityGenerator {
 	}
 
 	/*
-	 * Creates a new taxon with the specified id, belonging to the specified dataset.
+	 * Creates a new taxon with the specified id, belonging to the specified
+	 * dataset.
 	 */
 	public static Taxon newTaxon(Dataset dataset, String id) throws Exception {
 		Taxon t = new Taxon();
@@ -129,46 +145,46 @@ public class TestEntityGenerator {
 		return t;
 	}
 
-  /*
-   * Creates a new name with the specified id, belonging to the specified dataset.
-   */
-  public static Name newName(String id) throws Exception {
-    Name n = newName();
-    n.setId(id);
-    return n;
-  }
+	/*
+	 * Creates a new name with the specified id, belonging to the specified dataset.
+	 */
+	public static Name newName(String id) throws Exception {
+		Name n = newName();
+		n.setId(id);
+		return n;
+	}
 
-  public static Name newName() throws Exception {
-    Name n = new Name();
-    n.setDataset(TestEntityGenerator.DATASET1);
-    n.setScientificName(RandomUtils.randomSpecies());
-    n.setAuthorship(createAuthorship());
-    List<String> tokens = SPACE_SPLITTER.splitToList(n.getScientificName());
-    n.setGenus(tokens.get(0));
-    n.setSpecificEpithet(tokens.get(1));
-    n.setInfragenericEpithet("Igen");
-    n.setInfraspecificEpithet(null);
-    n.setNotho(NamePart.SPECIFIC);
-    n.setFossil(true);
-    n.setRank(Rank.SPECIES);
-    n.setOrigin(Origin.SOURCE);
-    n.setType(NameType.SCIENTIFIC);
-    n.setEtymology("A random species name");
-    n.addIssue(Issue.ACCEPTED_NAME_MISSING);
-    n.addIssue(Issue.HOMONYM, "Abies alba");
-    return n;
-  }
+	public static Name newName() throws Exception {
+		Name n = new Name();
+		n.setDatasetKey(TestEntityGenerator.DATASET1.getKey());
+		n.setScientificName(RandomUtils.randomSpecies());
+		n.setAuthorship(createAuthorship());
+		List<String> tokens = SPACE_SPLITTER.splitToList(n.getScientificName());
+		n.setGenus(tokens.get(0));
+		n.setSpecificEpithet(tokens.get(1));
+		n.setInfragenericEpithet("Igen");
+		n.setInfraspecificEpithet(null);
+		n.setNotho(NamePart.SPECIFIC);
+		n.setFossil(true);
+		n.setRank(Rank.SPECIES);
+		n.setOrigin(Origin.SOURCE);
+		n.setType(NameType.SCIENTIFIC);
+		n.setEtymology("A random species name");
+		n.addIssue(Issue.ACCEPTED_NAME_MISSING);
+		n.addIssue(Issue.HOMONYM, "Abies alba");
+		return n;
+	}
 
-  public static Authorship createAuthorship() throws Exception {
-    Authorship a = new Authorship();
-    while (a.getCombinationAuthors().size() < 2 || RND.nextBoolean()) {
-      a.getCombinationAuthors().add(RandomUtils.randomAuthor());
-    }
-    a.setCombinationYear(RandomUtils.randomSpeciesYear());
-    while (a.getBasionymAuthors().isEmpty() || RND.nextBoolean()) {
-      a.getBasionymAuthors().add(RandomUtils.randomAuthor());
-    }
-    a.setBasionymYear(RandomUtils.randomSpeciesYear());
-    return a;
-  }
+	public static Authorship createAuthorship() throws Exception {
+		Authorship a = new Authorship();
+		while (a.getCombinationAuthors().size() < 2 || RND.nextBoolean()) {
+			a.getCombinationAuthors().add(RandomUtils.randomAuthor());
+		}
+		a.setCombinationYear(RandomUtils.randomSpeciesYear());
+		while (a.getBasionymAuthors().isEmpty() || RND.nextBoolean()) {
+			a.getBasionymAuthors().add(RandomUtils.randomAuthor());
+		}
+		a.setBasionymYear(RandomUtils.randomSpeciesYear());
+		return a;
+	}
 }
