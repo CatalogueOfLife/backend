@@ -121,7 +121,7 @@ public class Name {
 	/**
 	 * Issues related to this name with potential values in the map
 	 */
-	private Map<Issue, String> issues = new EnumMap(Issue.class);
+	private Map<Issue, String> issues = new EnumMap<>(Issue.class);
 
 	public Integer getKey() {
 		return key;

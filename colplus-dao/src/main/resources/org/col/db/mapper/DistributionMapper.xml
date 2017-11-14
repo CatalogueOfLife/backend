@@ -8,7 +8,6 @@
     d.key,
     d.dataset_key,
     d.taxon_key,
-    t.id as taxon_id,
     d.area,
     d.area_standard,
     d.status
@@ -32,8 +31,6 @@
 
   <sql id="FROM">
     distribution d
-    LEFT JOIN dataset ds on (d.dataset_key=ds.key)
-    LEFT JOIN taxon t on (d.taxon_key=t.key)
   </sql>
 
   <!-- A mapping to Distribution, mostly auto mapped -->
@@ -42,16 +39,7 @@
   </resultMap>
 
 
-  <select id="getDistributions" parameterType="map" resultMap="distributionResultMap">
-    SELECT
-    <include refid="SELECT" />
-    FROM
-    <include refid="FROM" />
-    WHERE d.dataset_key = #{datasetKey} AND t.id = #{taxonId}
-    ORDER BY d.key
-  </select>
-
-  <select id="getDistributionsByTaxonKey" parameterType="map" resultMap="distributionResultMap">
+  <select id="listByTaxon" parameterType="map" resultMap="distributionResultMap">
     SELECT
     <include refid="SELECT" />
     FROM
@@ -60,7 +48,7 @@
     ORDER BY d.key
   </select>
 
-  <select id="getByKey" resultMap="distributionResultMap">
+  <select id="get" resultMap="distributionResultMap">
     SELECT
     <include refid="SELECT" />
     FROM

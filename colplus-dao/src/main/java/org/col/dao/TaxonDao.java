@@ -61,7 +61,7 @@ public class TaxonDao {
 		info.setVernacularNames(vernaculars);
 
 		DistributionMapper dMapper = session.getMapper(DistributionMapper.class);
-		List<Distribution> distributions = dMapper.getDistributionsByTaxonKey(taxon.getKey());
+		List<Distribution> distributions = dMapper.listByTaxon(taxon.getKey());
 		info.setDistributions(distributions);
 
 		return info;

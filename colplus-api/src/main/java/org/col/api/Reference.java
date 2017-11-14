@@ -27,7 +27,7 @@ public class Reference {
 	/**
 	 * Key to dataset instance. Defines context of the reference key.
 	 */
-	private int datasetKey;
+	private Integer datasetKey;
 
 	/**
 	 * Reference metadata encoded as CSL-JSON.
@@ -61,11 +61,11 @@ public class Reference {
 		this.id = id;
 	}
 
-	public int getDatasetKey() {
+	public Integer getDatasetKey() {
 		return datasetKey;
 	}
 
-	public void setDatasetKey(int datasetKey) {
+	public void setDatasetKey(Integer datasetKey) {
 		this.datasetKey = datasetKey;
 	}
 

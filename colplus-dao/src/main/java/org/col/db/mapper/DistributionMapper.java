@@ -7,12 +7,9 @@ import org.col.api.Distribution;
 
 public interface DistributionMapper {
 
-	List<Distribution> getDistributions(@Param("datasetKey") int datasetKey,
-	    @Param("taxonId") String taxonId);
+	List<Distribution> listByTaxon(@Param("taxonKey") int taxonKey);
 
-	List<Distribution> getDistributionsByTaxonKey(@Param("taxonKey") int taxonKey);
-
-	Distribution getByKey(@Param("key") int ikey);
+	Distribution get(@Param("key") int ikey);
 
 	void create(Distribution vn);
 
