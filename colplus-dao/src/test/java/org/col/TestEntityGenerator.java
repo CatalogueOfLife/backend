@@ -117,7 +117,7 @@ public class TestEntityGenerator {
 		t.setLifezones(EnumSet.of(Lifezone.BRACKISH, Lifezone.FRESHWATER, Lifezone.TERRESTRIAL));
 		t.setName(NAME1);
 		t.setOrigin(Origin.SOURCE);
-		t.setParent(TAXON1);
+		t.setParentKey(TAXON1.getKey());
 		t.setStatus(TaxonomicStatus.ACCEPTED);
 		t.setRank(Rank.CLASS);
 		t.setRecent(true);

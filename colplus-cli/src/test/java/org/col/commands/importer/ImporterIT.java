@@ -104,9 +104,10 @@ public class ImporterIT {
   private void assertParents(TaxonDao tdao, String taxonID, String ... parentIds) {
     final LinkedList<String> expected = new LinkedList<String>(Arrays.asList(parentIds));
     Taxon t = tdao.get(dataset.getKey(), taxonID);
-    while (t.getParent() != null) {
-      assertEquals(expected.pop(), t.getParent().getId());
-      t = tdao.get(t.getParent().getKey());
+    while (t.getParentKey() != null) {
+    	Taxon parent = tdao.get(t.getParentKey());
+      assertEquals(expected.pop(), parent.getId());
+      t = parent;
     }
     assertTrue(expected.isEmpty());
   }

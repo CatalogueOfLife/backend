@@ -34,7 +34,7 @@ public class Taxon {
 
 	private Origin origin;
 
-	private Taxon parent;
+	private Integer parentKey;
 
 	private String accordingTo;
 
@@ -54,10 +54,10 @@ public class Taxon {
 
 	private String remarks;
 
-  /**
-   * Issues related to this taxon with potential values in the map
-   */
-  private Map<Issue, String> issues = new EnumMap<>(Issue.class);
+	/**
+	 * Issues related to this taxon with potential values in the map
+	 */
+	private Map<Issue, String> issues = new EnumMap<>(Issue.class);
 
 	public Integer getKey() {
 		return key;
@@ -115,12 +115,12 @@ public class Taxon {
 		this.origin = origin;
 	}
 
-	public Taxon getParent() {
-		return parent;
+	public Integer getParentKey() {
+		return parentKey;
 	}
 
-	public void setParent(Taxon parent) {
-		this.parent = parent;
+	public void setParentKey(Integer key) {
+		this.parentKey = key;
 	}
 
 	public String getAccordingTo() {
@@ -195,53 +195,57 @@ public class Taxon {
 		this.remarks = remarks;
 	}
 
-  public Map<Issue, String> getIssues() {
-    return issues;
-  }
+	public Map<Issue, String> getIssues() {
+		return issues;
+	}
 
-  public void setIssues(Map<Issue, String> issues) {
-    this.issues = issues;
-  }
+	public void setIssues(Map<Issue, String> issues) {
+		this.issues = issues;
+	}
 
-  public void addIssue(Issue issue) {
-    issues.put(issue, null);
-  }
+	public void addIssue(Issue issue) {
+		issues.put(issue, null);
+	}
 
-  public void addIssue(Issue issue, Object value) {
-    issues.put(issue, value.toString());
-  }
+	public void addIssue(Issue issue, Object value) {
+		issues.put(issue, value.toString());
+	}
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
-    Taxon taxon = (Taxon) o;
-    return Objects.equals(key, taxon.key) &&
-        Objects.equals(id, taxon.id) &&
-        Objects.equals(datasetKey, taxon.datasetKey) &&
-        Objects.equals(name, taxon.name) &&
-        status == taxon.status &&
-        rank == taxon.rank &&
-        origin == taxon.origin &&
-        Objects.equals(parent, taxon.parent) &&
-        Objects.equals(accordingTo, taxon.accordingTo) &&
-        Objects.equals(accordingToDate, taxon.accordingToDate) &&
-        Objects.equals(fossil, taxon.fossil) &&
-        Objects.equals(recent, taxon.recent) &&
-        Objects.equals(lifezones, taxon.lifezones) &&
-        Objects.equals(datasetUrl, taxon.datasetUrl) &&
-        Objects.equals(speciesEstimate, taxon.speciesEstimate) &&
-        Objects.equals(speciesEstimateReference, taxon.speciesEstimateReference) &&
-        Objects.equals(remarks, taxon.remarks) &&
-        Objects.equals(issues, taxon.issues);
-  }
+	@Override
+	public boolean equals(Object o) {
+		if (this == o)
+			return true;
+		if (o == null || getClass() != o.getClass())
+			return false;
+		Taxon taxon = (Taxon) o;
+		return Objects.equals(key, taxon.key)
+		    && Objects.equals(id, taxon.id)
+		    && Objects.equals(datasetKey, taxon.datasetKey)
+		    && Objects.equals(name, taxon.name)
+		    && status == taxon.status
+		    && rank == taxon.rank
+		    && origin == taxon.origin
+		    && Objects.equals(parentKey, taxon.parentKey)
+		    && Objects.equals(accordingTo, taxon.accordingTo)
+		    && Objects.equals(accordingToDate, taxon.accordingToDate)
+		    && Objects.equals(fossil, taxon.fossil)
+		    && Objects.equals(recent, taxon.recent)
+		    && Objects.equals(lifezones, taxon.lifezones)
+		    && Objects.equals(datasetUrl, taxon.datasetUrl)
+		    && Objects.equals(speciesEstimate, taxon.speciesEstimate)
+		    && Objects.equals(speciesEstimateReference, taxon.speciesEstimateReference)
+		    && Objects.equals(remarks, taxon.remarks)
+		    && Objects.equals(issues, taxon.issues);
+	}
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(key, id, datasetKey, name, status, rank, origin, parent, accordingTo, accordingToDate, fossil, recent, lifezones, datasetUrl, speciesEstimate, speciesEstimateReference, remarks, issues);
-  }
+	@Override
+	public int hashCode() {
+		return Objects.hash(key, id, datasetKey, name, status, rank, origin, parentKey, accordingTo,
+		    accordingToDate, fossil, recent, lifezones, datasetUrl, speciesEstimate,
+		    speciesEstimateReference, remarks, issues);
+	}
 
-  public boolean equalsShallow(Taxon other) {
+	public boolean equalsShallow(Taxon other) {
 		if (this == other) {
 			return true;
 		}
@@ -255,7 +259,7 @@ public class Taxon {
 		    && status == other.status
 		    && rank == other.rank
 		    && origin == other.origin
-		    && ApiUtil.equalsShallow(parent, other.parent)
+		    && Objects.equals(parentKey, other.parentKey)
 		    && Objects.equals(accordingTo, other.accordingTo)
 		    && Objects.equals(accordingToDate, other.accordingToDate)
 		    && Objects.equals(fossil, other.fossil)

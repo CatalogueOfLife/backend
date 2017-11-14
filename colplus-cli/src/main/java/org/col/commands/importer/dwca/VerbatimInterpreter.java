@@ -80,7 +80,7 @@ public class VerbatimInterpreter {
       Taxon parent = new Taxon();
       //parent.setScientificName(v.getCoreTerm(DwcTerm.parentNameUsage));
       parent.setId(v.getCoreTerm(DwcTerm.parentNameUsageID));
-      t.setParent(parent);
+      t.setParentKey(parent.getKey());
     }
     return t;
   }

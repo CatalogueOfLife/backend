@@ -357,7 +357,7 @@ public class NeoDb implements NormalizerStore {
         } else if (!t.node.hasLabel(Labels.ROOT)){
           // parent
           Node p = getSingleRelated(t.node, RelType.PARENT_OF, Direction.INCOMING);
-          t.taxon.setParent(extractTaxon(p));
+          t.taxon.setParentKey(extractTaxon(p).getKey());
         }
         // store the updated object directly in MapDB, avoiding unecessary updates to Neo
         taxa.put(t.node.getId(), t);

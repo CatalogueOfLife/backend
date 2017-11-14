@@ -141,7 +141,7 @@ public class Importer implements Runnable {
           } else {
             if (!parentKeys.empty()) {
               // use parent postgres key from stack, but keep it there
-              t.taxon.getParent().setKey(parentKeys.peek());
+              t.taxon.setParentKey(parentKeys.peek());
             }
             t.taxon.setDatasetKey(dataset.getKey());
             t.taxon.setName(t.name);
