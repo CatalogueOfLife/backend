@@ -41,7 +41,7 @@ public class NameActMapperTest extends MapperTestBase<NameActMapper> {
 		mapper().create(newNameAct1());
 		mapper().create(newNameAct2());
 		commit();
-		List<NameAct> nas = mapper().listByName(DATASET1.getKey(), NAME1.getId());
+		List<NameAct> nas = mapper().listByName(DATASET1.getKey(), NAME1.getKey());
 		/*
 		 * NB We have one pre-inserted (squirrels.sql) NameAct record associated with
 		 * NAME1; one of the records inserted here is _not_ associated with NAME1, so we
@@ -117,13 +117,16 @@ public class NameActMapperTest extends MapperTestBase<NameActMapper> {
 
 		// So total size of homotypic group is 2 + 2 + 1 = 5
 
-		List<NameAct> nas = mapper().listByHomotypicGroup(DATASET1.getKey(), "foo-bar");
+		Integer nameKey = nameMapper.lookupKey(DATASET1.getKey(), "foo-bar");
+		List<NameAct> nas = mapper().listByHomotypicGroup(DATASET1.getKey(), nameKey);
 		assertEquals("01", 5, nas.size());
 
-		nas = mapper().listByHomotypicGroup(DATASET1.getKey(), "foo-new");
+		nameKey = nameMapper.lookupKey(DATASET1.getKey(), "foo-new");
+		nas = mapper().listByHomotypicGroup(DATASET1.getKey(), nameKey);
 		assertEquals("02", 5, nas.size());
 
-		nas = mapper().listByHomotypicGroup(DATASET1.getKey(), "foo-too");
+		nameKey = nameMapper.lookupKey(DATASET1.getKey(), "foo-too");
+		nas = mapper().listByHomotypicGroup(DATASET1.getKey(), nameKey);
 		assertEquals("03", 5, nas.size());
 	}
 

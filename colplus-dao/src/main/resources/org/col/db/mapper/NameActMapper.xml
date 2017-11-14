@@ -50,35 +50,43 @@
     SELECT
     <include refid="SELECT" />
     FROM name_act na
-      JOIN name n ON na.name_key = n.key
-    WHERE na.dataset_key = #{datasetKey}
-      AND n.id = #{nameId}
+    JOIN name n ON na.name_key = n.key
+    WHERE n.key = #{nameKey}
+    AND na.dataset_key = #{datasetKey}
     ORDER BY na.key
   </select>
 
-    <!-- Get all name acts associated with the basionym of the provided name id and all names referencing that basionym -->
+  <!-- Get all name acts associated with the basionym of the provided name id and all names referencing that basionym -->
   <select id="listByHomotypicGroup" parameterType="map" resultMap="nameActResultMap">
-    SELECT <include refid="SELECT" />
+    SELECT
+    <include refid="SELECT" />
     FROM name ns
-      JOIN name n ON
-          <!-- ns was the basionym of other combinations-->
-          n.basionym_key=ns.key OR n.key=ns.key
-          <!-- ns was a combination with a basionym -->
-          OR n.key=ns.basionym_key OR n.basionym_key=ns.basionym_key
-      LEFT JOIN name bn ON n.basionym_key=bn.key
-      JOIN name_act na ON na.name_key=n.key
-    WHERE ns.dataset_key=#{datasetKey} AND ns.id=#{nameId}
+    JOIN name n ON
+    <!-- ns was the basionym of other combinations -->
+    n.basionym_key = ns.key OR n.key = ns.key
+    <!-- ns was a combination with a basionym -->
+    OR n.key = ns.basionym_key OR n.basionym_key = ns.basionym_key
+    LEFT JOIN name bn ON n.basionym_key=bn.key
+    JOIN name_act na ON na.name_key=n.key
+    WHERE ns.key = #{nameKey}
+    AND ns.dataset_key = #{datasetKey}
   </select>
 
   <select id="get" resultMap="nameActResultMap">
-    SELECT <include refid="SELECT" />
-    FROM <include refid="FROM" />
+    SELECT
+    <include refid="SELECT" />
+    FROM
+    <include refid="FROM" />
     WHERE na.key = #{key}
   </select>
 
   <insert id="create" parameterType="NameAct" useGeneratedKeys="true" keyProperty="key">
-    INSERT INTO name_act (<include refid="COLS" />)
-    VALUES (<include refid="PROPS" />)
+    INSERT INTO name_act (
+    <include refid="COLS" />
+    )
+    VALUES (
+    <include refid="PROPS" />
+    )
   </insert>
 
 </mapper>
