@@ -50,7 +50,7 @@
 
 	<sql id="PROPS">
 		#{id},
-		#{dataset.key},
+		#{datasetKey},
 		#{parent.key},
 		#{name.key},
 		#{status},
@@ -81,9 +81,6 @@
 		<result property="id" column="id" />
         <result property="lifezones" column="lifezones" typeHandler="org.col.db.type.LifezoneTypeHandler"/>
         <result property="issues" column="issues" typeHandler="org.col.db.type.HstoreIssueHandler"/>
-		<association property="dataset" javaType="Dataset">
-			<id property="key" column="dataset_key" />
-		</association>
 		<association property="parent" javaType="Taxon">
 			<id property="key" column="parent_key" />
 			<id property="id" column="parent_id" />
