@@ -50,7 +50,7 @@ public class VerbatimRecordFactory {
 
   private static TermRecord buildTermRec(Record eRec) {
     TermRecord tr = new TermRecord();
-    for (Term t : tr.keySet()) {
+    for (Term t : eRec.terms()) {
       String val = clean(eRec.value(t));
       if (val != null) {
         tr.put(t, val);

@@ -1,12 +1,11 @@
 package org.col.api;
 
-import java.util.List;
-import java.util.Objects;
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.col.api.vocab.DistributionStatus;
 import org.col.api.vocab.Gazetteer;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.util.List;
+import java.util.Objects;
 
 /**
  *
@@ -15,12 +14,9 @@ public class Distribution {
 
 	@JsonIgnore
 	private Integer key;
-	private Integer datasetKey;
-	private Integer taxonKey;
 	private String area;
 	private Gazetteer areaStandard;
 	private DistributionStatus status;
-	
 	private List<ReferencePointer> references;
 
 	public Integer getKey() {
@@ -29,22 +25,6 @@ public class Distribution {
 
 	public void setKey(Integer key) {
 		this.key = key;
-	}
-
-	public Integer getDatasetKey() {
-		return datasetKey;
-	}
-
-	public void setDatasetKey(Integer key) {
-		this.datasetKey = key;
-	}
-
-	public Integer getTaxonKey() {
-		return taxonKey;
-	}
-
-	public void setTaxonKey(Integer key) {
-		this.taxonKey = key;
 	}
 
 	public String getArea() {
@@ -71,25 +51,20 @@ public class Distribution {
 		this.status = status;
 	}
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
-		}
-		if (obj == null || getClass() != obj.getClass()) {
-			return false;
-		}
-		Distribution other = (Distribution) obj;
-		return Objects.equals(key, other.key)
-		    && Objects.equals(datasetKey, other.datasetKey)
-		    && Objects.equals(taxonKey, other.taxonKey)
-		    && Objects.equals(area, other.area)
-		    && areaStandard == other.areaStandard
-		    && status == other.status;
-	}
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    Distribution that = (Distribution) o;
+    return Objects.equals(key, that.key) &&
+        Objects.equals(area, that.area) &&
+        areaStandard == that.areaStandard &&
+        status == that.status &&
+        Objects.equals(references, that.references);
+  }
 
-	public int hashCode() {
-		return Objects.hash(key, datasetKey, taxonKey, area, areaStandard, status);
-	}
-
+  @Override
+  public int hashCode() {
+    return Objects.hash(key, area, areaStandard, status, references);
+  }
 }

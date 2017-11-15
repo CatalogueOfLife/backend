@@ -1,5 +1,7 @@
 package org.col.commands.importer.dwca;
 
+import com.google.common.base.CharMatcher;
+import com.google.common.base.Splitter;
 import org.col.api.*;
 import org.col.api.exception.InvalidNameException;
 import org.col.api.vocab.*;
@@ -18,6 +20,7 @@ import org.slf4j.LoggerFactory;
  */
 public class VerbatimInterpreter {
   private static final Logger LOG = LoggerFactory.getLogger(VerbatimInterpreter.class);
+  private static final Splitter MULTIVAL = Splitter.on(CharMatcher.anyOf(";|,")).trimResults();
 
   private InsertMetadata insertMetadata;
 
@@ -53,8 +56,71 @@ public class VerbatimInterpreter {
     if(SafeParser.parse(SynonymStatusParser.PARSER, v.getCoreTerm(DwcTerm.taxonomicStatus)).orElse(false)) {
       t.synonym = new NeoTaxon.Synonym();
     }
+    // supplementary infos
+    interpretVernacularNames(t);
+    interpretDistributions(t);
 
     return t;
+  }
+
+  private void interpretDistributions(NeoTaxon t) {
+    if (t.verbatim.hasExtension(GbifTerm.Distribution)) {
+      for (TermRecord rec : t.verbatim.getExtensionRecords(GbifTerm.Distribution)) {
+        // try to figure out an area
+        if (rec.hasTerm(DwcTerm.locationID)) {
+          for (String loc : MULTIVAL.split(rec.get(DwcTerm.locationID))) {
+            AreaParser.Area area = SafeParser.parse(AreaParser.PARSER, loc).orNull();
+            if (area != null) {
+              addDistribution(t, area.area, area.standard);
+            } else {
+              t.addIssue(Issue.DISTRIBUTION_UNPARSABLE_AREA);
+            }
+          }
+
+        } else if(rec.hasTerm(DwcTerm.countryCode) || rec.hasTerm(DwcTerm.country)) {
+          for (String craw : MULTIVAL.split(rec.getFirst(DwcTerm.countryCode, DwcTerm.country))) {
+            Country country = SafeParser.parse(CountryParser.PARSER, craw).orNull();
+            if (country != null) {
+              addDistribution(t, country.getIso2LetterCode(), Gazetteer.ISO);
+            } else {
+              t.addIssue(Issue.DISTRIBUTION_UNPARSABLE_COUNTRY);
+            }
+          }
+
+        } else if(rec.hasTerm(DwcTerm.locality)) {
+          addDistribution(t, rec.get(DwcTerm.locality), Gazetteer.TEXT);
+
+        } else {
+          t.addIssue(Issue.DISTRIBUTION_INVALID);
+        }
+      }
+    }
+  }
+
+  private void addDistribution(NeoTaxon t, String area, Gazetteer standard) {
+    //TODO: parse references!!!
+    Distribution d = new Distribution();
+    d.setArea(area);
+    d.setAreaStandard(standard);
+    t.distributions.add(d);
+  }
+
+  private void interpretVernacularNames(NeoTaxon t) {
+    if (t.verbatim.hasExtension(GbifTerm.VernacularName)) {
+      for (TermRecord rec : t.verbatim.getExtensionRecords(GbifTerm.VernacularName)) {
+        if (rec.hasTerm(DwcTerm.vernacularName)) {
+          //TODO: parse references!!!
+          VernacularName vn = new VernacularName();
+          vn.setName(rec.get(DwcTerm.vernacularName));
+          vn.setLanguage(SafeParser.parse(LanguageParser.PARSER, rec.get(DcTerm.language)).orNull());
+          vn.setCountry(SafeParser.parse(CountryParser.PARSER, rec.getFirst(DwcTerm.countryCode, DwcTerm.country)).orNull());
+          t.vernacularNames.add(vn);
+        } else {
+          // vernacular names required
+          t.addIssue(Issue.VERNACULAR_NAME_INVALID);
+        }
+      }
+    }
   }
 
   private Taxon interpretTaxon(VerbatimRecord v, boolean useCoreIdForTaxonID) {

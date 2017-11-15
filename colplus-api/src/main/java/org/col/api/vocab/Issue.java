@@ -140,7 +140,7 @@ public enum Issue {
   CLASSIFICATION_NOT_APPLIED,
 
   /**
-   * At least one vernacular name extension record attached to this name usage is invalid.
+   * At least one vernacular name extension record attached to this name usage is empty or clearly not a name.
    */
   VERNACULAR_NAME_INVALID,
 
@@ -153,6 +153,9 @@ public enum Issue {
    * At least one distribution extension record attached to this name usage is invalid.
    */
   DISTRIBUTION_INVALID,
+
+  DISTRIBUTION_UNPARSABLE_AREA,
+  DISTRIBUTION_UNPARSABLE_COUNTRY,
 
   /**
    * At least one species profile extension record attached to this name usage is invalid.

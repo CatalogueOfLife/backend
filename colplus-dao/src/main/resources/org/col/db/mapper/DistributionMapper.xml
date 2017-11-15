@@ -24,9 +24,9 @@
   <sql id="PROPS">
     #{datasetKey},
     #{taxonKey},
-    #{area},
-    #{areaStandard},
-    #{status}
+    #{d.area},
+    #{d.areaStandard},
+    #{d.status}
   </sql>
 
   <sql id="FROM">
@@ -40,29 +40,21 @@
 
 
   <select id="listByTaxon" parameterType="map" resultMap="distributionResultMap">
-    SELECT
-    <include refid="SELECT" />
-    FROM
-    <include refid="FROM" />
+    SELECT <include refid="SELECT" />
+    FROM <include refid="FROM" />
     WHERE d.taxon_key = #{taxonKey}
     ORDER BY d.key
   </select>
 
   <select id="get" resultMap="distributionResultMap">
-    SELECT
-    <include refid="SELECT" />
-    FROM
-    <include refid="FROM" />
+    SELECT <include refid="SELECT" />
+    FROM <include refid="FROM" />
     WHERE d.key = #{key}
   </select>
 
-  <insert id="create" parameterType="Distribution" useGeneratedKeys="true" keyProperty="key">
-    INSERT INTO distribution (
-    <include refid="COLS" />
-    )
-    VALUES (
-    <include refid="PROPS" />
-    )
+  <insert id="create" parameterType="Distribution" useGeneratedKeys="true" keyProperty="d.key">
+    INSERT INTO distribution (<include refid="COLS" />)
+    VALUES (<include refid="PROPS" />)
   </insert>
 
 </mapper>

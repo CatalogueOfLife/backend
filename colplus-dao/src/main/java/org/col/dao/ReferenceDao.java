@@ -1,12 +1,12 @@
 package org.col.dao;
 
-import java.util.List;
-
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.Page;
 import org.col.api.PagingResultSet;
 import org.col.api.Reference;
 import org.col.db.mapper.ReferenceMapper;
+
+import java.util.List;
 
 public class ReferenceDao {
 
@@ -28,7 +28,7 @@ public class ReferenceDao {
 		return new PagingResultSet<>(page, total, result);
 	}
 
-	public Reference getByKey(int key) {
+	public Reference get(int key) {
 		ReferenceMapper mapper = session.getMapper(ReferenceMapper.class);
 		return mapper.get(key);
 	}

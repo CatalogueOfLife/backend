@@ -1,14 +1,14 @@
 package org.col.db.mapper;
 
-import static org.col.TestEntityGenerator.DATASET1;
-import static org.col.TestEntityGenerator.TAXON1;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
 import org.col.api.Distribution;
 import org.col.api.vocab.DistributionStatus;
 import org.col.api.vocab.Gazetteer;
 import org.junit.Test;
+
+import static org.col.TestEntityGenerator.DATASET1;
+import static org.col.TestEntityGenerator.TAXON1;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  *
@@ -24,7 +24,7 @@ public class DistributionMapperTest extends MapperTestBase<DistributionMapper> {
 		Distribution in = newDistribution("Europe");
 		for (DistributionStatus status : DistributionStatus.values()) {
 			in.setStatus(status);
-			mapper().create(in);
+			mapper().create(in, TAXON1.getKey(), DATASET1.getKey());
 			assertNotNull(in.getKey());
 			commit();
 			Distribution out = mapper().get(in.getKey());
@@ -34,8 +34,6 @@ public class DistributionMapperTest extends MapperTestBase<DistributionMapper> {
 
 	private static Distribution newDistribution(String area) {
 		Distribution d = new Distribution();
-		d.setDatasetKey(DATASET1.getKey());
-		d.setTaxonKey(TAXON1.getKey());
 		d.setArea(area);
 		d.setAreaStandard(Gazetteer.TDWG);
 		d.setStatus(DistributionStatus.NATIVE);

@@ -1,11 +1,11 @@
 package org.col.commands.importer;
 
-import java.util.Map;
-import java.util.Stack;
-
+import com.google.common.collect.Maps;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.Dataset;
+import org.col.api.Distribution;
+import org.col.api.VernacularName;
 import org.col.commands.config.ImporterConfig;
 import org.col.commands.importer.neo.NeoDb;
 import org.col.commands.importer.neo.NormalizerStore;
@@ -13,14 +13,13 @@ import org.col.commands.importer.neo.model.Labels;
 import org.col.commands.importer.neo.model.NeoTaxon;
 import org.col.commands.importer.neo.traverse.StartEndHandler;
 import org.col.commands.importer.neo.traverse.TreeWalker;
-import org.col.db.mapper.DatasetMapper;
-import org.col.db.mapper.NameMapper;
-import org.col.db.mapper.TaxonMapper;
+import org.col.db.mapper.*;
 import org.neo4j.graphdb.Node;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Maps;
+import java.util.Map;
+import java.util.Stack;
 
 /**
  *
@@ -114,8 +113,11 @@ public class Importer implements Runnable {
 			LOG.info("Inserting remaining names and all taxa");
 			NameMapper nameMapper = session.getMapper(NameMapper.class);
 			TaxonMapper taxonMapper = session.getMapper(TaxonMapper.class);
-			// iterate over taxonomic tree in depth first order, keeping postgres parent
-			// keys
+      VerbatimRecordMapper verbatimMapper = session.getMapper(VerbatimRecordMapper.class);
+      DistributionMapper distributionMapper = session.getMapper(DistributionMapper.class);
+      VernacularNameMapper vernacularMapper = session.getMapper(VernacularNameMapper.class);
+
+      // iterate over taxonomic tree in depth first order, keeping postgres parent keys
 			TreeWalker.walkTree(store.getNeo(), new StartEndHandler() {
 				int counter = 0;
 				Stack<Integer> parentKeys = new Stack<Integer>();
@@ -138,8 +140,10 @@ public class Importer implements Runnable {
 					}
 
 					// insert accepted taxon or synonym
+          Integer taxonKey;
 					if (t.isSynonym()) {
 						// TODO: insert synonym relations!
+            taxonKey = null;
 
 					} else {
 						if (!parentKeys.empty()) {
@@ -149,11 +153,24 @@ public class Importer implements Runnable {
 						t.taxon.setDatasetKey(dataset.getKey());
 						t.taxon.setName(t.name);
 						taxonMapper.create(t.taxon);
+            taxonKey = t.taxon.getKey();
 						// push new postgres key onto stack for this taxon as we traverse in depth first
-						parentKeys.push(t.taxon.getKey());
+						parentKeys.push(taxonKey);
+
+            // insert vernacular
+            for (VernacularName vn : t.vernacularNames) {
+              vernacularMapper.create(vn, taxonKey, dataset.getKey());
+            }
+
+            // insert distributions
+            for (Distribution d : t.distributions) {
+              distributionMapper.create(d, taxonKey, dataset.getKey());
+            }
 					}
 
-					// TODO: insert related infos
+          // insert verbatim rec
+          t.verbatim.setDataset(dataset);
+          verbatimMapper.create(t.verbatim, taxonKey, t.name.getKey());
 
 					// commit in batches
 					if (counter++ % batchSize == 0) {
