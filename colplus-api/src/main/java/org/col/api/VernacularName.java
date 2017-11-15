@@ -12,16 +12,10 @@ public class VernacularName {
 
 	@JsonIgnore
 	private Integer key;
-
 	private String name;
-
 	private Language language;
-
 	private Country country;
-	
 	private List<ReferencePointer> references;
-
-
 
 	public Integer getKey() {
 		return key;
@@ -55,6 +49,14 @@ public class VernacularName {
 		this.country = country;
 	}
 
+	public List<ReferencePointer> getReferences() {
+		return references;
+	}
+
+	public void setReferences(List<ReferencePointer> references) {
+		this.references = references;
+	}
+
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj) {
@@ -74,6 +76,5 @@ public class VernacularName {
 	public int hashCode() {
 		return Objects.hash(key, name, language, country);
 	}
-
 
 }

@@ -37,21 +37,29 @@
 
 
   <select id="listByTaxon" parameterType="map" resultMap="vernacularNameResultMap">
-    SELECT <include refid="SELECT" />
-    FROM <include refid="FROM" />
+    SELECT
+    <include refid="SELECT" />
+    FROM
+    <include refid="FROM" />
     WHERE vn.taxon_key = #{taxonKey}
     ORDER BY name
   </select>
 
   <select id="get" resultMap="vernacularNameResultMap">
-    SELECT <include refid="SELECT" />
-    FROM <include refid="FROM" />
+    SELECT
+    <include refid="SELECT" />
+    FROM
+    <include refid="FROM" />
     WHERE vn.key = #{key}
   </select>
 
   <insert id="create" parameterType="VernacularName" useGeneratedKeys="true" keyProperty="vernacular.key">
-    INSERT INTO vernacular_name (<include refid="COLS" />)
-    VALUES (<include refid="PROPS" />)
+    INSERT INTO vernacular_name (
+    <include refid="COLS" />
+    )
+    VALUES (
+    <include refid="PROPS" />
+    )
   </insert>
 
 </mapper>

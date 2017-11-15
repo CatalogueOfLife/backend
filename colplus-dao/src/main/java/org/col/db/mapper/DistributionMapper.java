@@ -11,6 +11,8 @@ public interface DistributionMapper {
 
 	Distribution get(@Param("key") int ikey);
 
-	void create(Distribution vn);
+	void create(@Param("distribution") Distribution distribution,
+	    @Param("taxonKey") int taxonKey,
+	    @Param("datasetKey") int datasetKey);
 
 }

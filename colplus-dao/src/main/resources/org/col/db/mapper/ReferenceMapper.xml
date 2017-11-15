@@ -74,6 +74,16 @@
     <include refid="org.col.db.mapper.Common.limit" />
   </select>
 
+  <select id="listByDistribution" parameterType="map" resultMap="referenceResultMap">
+    SELECT
+    <include refid="SELECT" />
+    FROM reference r
+    JOIN distribution_references paged
+    WHERE paged.distribution
+    ORDER BY key
+    <include refid="org.col.db.mapper.Common.limit" />
+  </select>
+
   <select id="get" resultMap="referenceResultMap">
     SELECT
     <include refid="SELECT" />

@@ -15,12 +15,9 @@ public class Distribution {
 
 	@JsonIgnore
 	private Integer key;
-	private Integer datasetKey;
-	private Integer taxonKey;
 	private String area;
 	private Gazetteer areaStandard;
 	private DistributionStatus status;
-	
 	private List<ReferencePointer> references;
 
 	public Integer getKey() {
@@ -29,22 +26,6 @@ public class Distribution {
 
 	public void setKey(Integer key) {
 		this.key = key;
-	}
-
-	public Integer getDatasetKey() {
-		return datasetKey;
-	}
-
-	public void setDatasetKey(Integer key) {
-		this.datasetKey = key;
-	}
-
-	public Integer getTaxonKey() {
-		return taxonKey;
-	}
-
-	public void setTaxonKey(Integer key) {
-		this.taxonKey = key;
 	}
 
 	public String getArea() {
@@ -71,6 +52,14 @@ public class Distribution {
 		this.status = status;
 	}
 
+	public List<ReferencePointer> getReferences() {
+		return references;
+	}
+
+	public void setReferences(List<ReferencePointer> references) {
+		this.references = references;
+	}
+
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj) {
@@ -81,15 +70,13 @@ public class Distribution {
 		}
 		Distribution other = (Distribution) obj;
 		return Objects.equals(key, other.key)
-		    && Objects.equals(datasetKey, other.datasetKey)
-		    && Objects.equals(taxonKey, other.taxonKey)
 		    && Objects.equals(area, other.area)
 		    && areaStandard == other.areaStandard
 		    && status == other.status;
 	}
 
 	public int hashCode() {
-		return Objects.hash(key, datasetKey, taxonKey, area, areaStandard, status);
+		return Objects.hash(key, area, areaStandard, status);
 	}
 
 }

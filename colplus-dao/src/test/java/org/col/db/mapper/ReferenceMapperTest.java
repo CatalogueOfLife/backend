@@ -33,7 +33,7 @@ public class ReferenceMapperTest extends MapperTestBase<ReferenceMapper> {
 		Reference r1 = create();
 		mapper().create(r1);
 		commit();
-		Reference r2 = mapper().getByKey(r1.getKey());
+		Reference r2 = mapper().get(r1.getKey());
 		assertEquals(r1, r2);
 	}
 

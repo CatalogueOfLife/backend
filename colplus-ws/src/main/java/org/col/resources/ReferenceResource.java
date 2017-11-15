@@ -35,11 +35,9 @@ public class ReferenceResource {
 	@GET
 	@Timed
 	@Path("{id}")
-	public Reference get(@PathParam("datasetKey") Integer datasetKey,
-	    @PathParam("id") String id,
-	    @Context SqlSession session) {
+	public Reference get(@PathParam("key") Integer key, @Context SqlSession session) {
 		ReferenceDao dao = new ReferenceDao(session);
-		return dao.get(datasetKey, id);
+		return dao.get(key);
 	}
 
 }

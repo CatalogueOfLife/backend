@@ -1,5 +1,7 @@
 package org.col.api;
 
+import java.util.Objects;
+
 public class ReferencePointer {
 
 	private Integer referenceKey;
@@ -19,6 +21,23 @@ public class ReferencePointer {
 
 	public void setPage(String page) {
 		this.page = page;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null || getClass() != obj.getClass()) {
+			return false;
+		}
+		ReferencePointer other = (ReferencePointer) obj;
+		return Objects.equals(referenceKey, other.referenceKey) && Objects.equals(page, other.page);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(referenceKey, page);
 	}
 
 }

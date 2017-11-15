@@ -28,7 +28,7 @@ public class ReferenceDao {
 		return new PagingResultSet<>(page, total, result);
 	}
 
-	public Reference getByKey(int key) {
+	public Reference get(int key) {
 		ReferenceMapper mapper = session.getMapper(ReferenceMapper.class);
 		return mapper.get(key);
 	}
