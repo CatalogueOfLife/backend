@@ -1,11 +1,14 @@
 package org.col.commands.importer;
 
+import com.google.common.collect.Sets;
 import com.google.common.io.Files;
+import jersey.repackaged.com.google.common.collect.Maps;
 import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.session.SqlSession;
-import org.col.api.Dataset;
-import org.col.api.Name;
-import org.col.api.Taxon;
+import org.col.api.*;
+import org.col.api.vocab.DistributionStatus;
+import org.col.api.vocab.Gazetteer;
+import org.col.api.vocab.Language;
 import org.col.commands.config.ImporterConfig;
 import org.col.commands.config.NormalizerConfig;
 import org.col.commands.importer.dwca.Normalizer;
@@ -13,7 +16,9 @@ import org.col.commands.importer.neo.NeoDbFactory;
 import org.col.commands.importer.neo.NormalizerStore;
 import org.col.dao.NameDao;
 import org.col.dao.TaxonDao;
-import org.col.db.mapper.*;
+import org.col.db.mapper.DatasetMapper;
+import org.col.db.mapper.InitMybatisRule;
+import org.col.db.mapper.PgSetupRule;
 import org.junit.*;
 
 import java.net.URL;
@@ -21,6 +26,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.Map;
+import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -99,6 +106,62 @@ public class ImporterIT {
 
       // TODO: check synonym
     }
+  }
+
+  @Test
+  public void testSupplementary() throws Exception {
+    normalizeAndImport(24);
+
+    // verify results
+    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+      TaxonDao tdao = new TaxonDao(session);
+
+      // check species name
+      Taxon tax = tdao.get(dataset.getKey(), "1000");
+      //assertEquals("Crepis pulchra", tax.getName().getScientificName());
+
+      TaxonInfo info = tdao.getTaxonInfo(tax.getKey());
+      // check vernaculars
+      Map<Language, String> expV = Maps.newHashMap();
+      expV.put(Language.GERMAN, "Schöner Pippau");
+      expV.put(Language.ENGLISH, "smallflower hawksbeard");
+      assertEquals(expV.size(), info.getVernacularNames().size());
+      for (VernacularName vn : info.getVernacularNames()) {
+        assertEquals(expV.remove(vn.getLanguage()), vn.getName());
+      }
+      assertTrue(expV.isEmpty());
+
+      // check distributions
+      Set<Distribution> expD = Sets.newHashSet();
+      expD.add(dist(Gazetteer.TEXT, "All of Austria and the alps", DistributionStatus.NATIVE));
+      expD.add(dist(Gazetteer.ISO, "DE", DistributionStatus.NATIVE));
+      expD.add(dist(Gazetteer.ISO, "FR", DistributionStatus.NATIVE));
+      expD.add(dist(Gazetteer.ISO, "DK", DistributionStatus.NATIVE));
+      expD.add(dist(Gazetteer.ISO, "UK", DistributionStatus.NATIVE));
+      expD.add(dist(Gazetteer.ISO, "NG", DistributionStatus.NATIVE));
+      expD.add(dist(Gazetteer.ISO, "KE", DistributionStatus.NATIVE));
+      expD.add(dist(Gazetteer.TDWG, "AGS", DistributionStatus.NATIVE));
+      expD.add(dist(Gazetteer.FAO, "37.4.1", DistributionStatus.NATIVE));
+      expD.add(dist(Gazetteer.TDWG, "MOR-MO", DistributionStatus.NATIVE));
+      expD.add(dist(Gazetteer.TDWG, "MOR-CE", DistributionStatus.NATIVE));
+      expD.add(dist(Gazetteer.TDWG, "MOR-ME", DistributionStatus.NATIVE));
+      expD.add(dist(Gazetteer.TDWG, "CPP", DistributionStatus.NATIVE));
+      expD.add(dist(Gazetteer.TDWG, "OFS", DistributionStatus.NATIVE));
+      expD.add(dist(Gazetteer.TDWG, "NAM", DistributionStatus.NATIVE));
+
+      assertEquals(expD.size(), info.getDistributions().size());
+      // remove dist keys before we check equality
+      info.getDistributions().forEach(d -> d.setKey(null));
+      assertEquals(expD, Sets.newHashSet(info.getDistributions()));
+    }
+  }
+
+  private Distribution dist(Gazetteer standard, String area, DistributionStatus status) {
+    Distribution d = new Distribution();
+    d.setArea(area);
+    d.setAreaStandard(standard);
+    d.setStatus(status);
+    return d;
   }
 
   private void assertParents(TaxonDao tdao, String taxonID, String ... parentIds) {

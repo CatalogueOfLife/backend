@@ -1,14 +1,7 @@
 package org.col.db.mapper;
 
-import static org.col.TestEntityGenerator.DATASET1;
-import static org.col.TestEntityGenerator.NAME1;
-import static org.col.TestEntityGenerator.REF1;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-import java.util.ArrayList;
-import java.util.List;
-
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.col.TestEntityGenerator;
 import org.col.api.Page;
 import org.col.api.PagedReference;
@@ -16,8 +9,12 @@ import org.col.api.RandomUtils;
 import org.col.api.Reference;
 import org.junit.Test;
 
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.col.TestEntityGenerator.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  *

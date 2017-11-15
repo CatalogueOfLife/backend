@@ -1,0 +1,10 @@
+taxonID	locationID	locality	countryCode	country	occurrenceStatus	source
+1000				Deutschland	present	
+1000				France	present	
+1000		All of Austria and the alps			present	
+1000			DK,UK		present	
+1000				Nigeria,Kenia	present	
+1000	TDWG:AGS				present	
+1000	FAO:37.4.1				present	
+1000	TDWG:MOR-MO,TDWG:MOR-CE,TDWG:MOR-ME				present	
+1000	tdwg:cpp; tdwg:ofs; tdwg:nam				present	

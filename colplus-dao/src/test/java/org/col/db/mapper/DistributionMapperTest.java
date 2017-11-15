@@ -1,14 +1,14 @@
 package org.col.db.mapper;
 
-import static org.col.TestEntityGenerator.DATASET1;
-import static org.col.TestEntityGenerator.TAXON1;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
 import org.col.api.Distribution;
 import org.col.api.vocab.DistributionStatus;
 import org.col.api.vocab.Gazetteer;
 import org.junit.Test;
+
+import static org.col.TestEntityGenerator.DATASET1;
+import static org.col.TestEntityGenerator.TAXON1;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  *
