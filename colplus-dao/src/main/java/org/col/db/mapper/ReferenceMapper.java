@@ -23,7 +23,7 @@ public interface ReferenceMapper {
   /**
    * Returns the reference of the description act for the given name key.
    */
-  PagedReference getPublishedIn(@Param("datasetKey") int datasetKey, @Param("nameId") String nameId);
+  PagedReference getPublishedIn(@Param("datasetKey") int datasetKey, @Param("nameKey") int nameKey);
 
   void create(Reference name);
 

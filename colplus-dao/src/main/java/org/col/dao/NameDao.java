@@ -56,67 +56,70 @@ public class NameDao {
 		mapper.create(name);
 	}
 
-  /**
-   * Lists all homotypic basionymGroup based on the same basionym
-   */
-  public List<Name> basionymGroup(int key) {
-    NameMapper mapper = session.getMapper(NameMapper.class);
-    return mapper.basionymGroup(key);
-  }
+	/**
+	 * Lists all homotypic basionymGroup based on the same basionym
+	 */
+	public List<Name> basionymGroup(int key) {
+		NameMapper mapper = session.getMapper(NameMapper.class);
+		return mapper.basionymGroup(key);
+	}
 
-  /**
-   * Lists all homotypic basionymGroup based on the same basionym
-   */
+	/**
+	 * Lists all homotypic basionymGroup based on the same basionym
+	 */
 	public List<Name> basionymGroup(int datasetKey, String id) {
 		return basionymGroup(lookup(datasetKey, id));
 	}
 
-  /**
-   * Adds a new synonym link for an existing taxon and synonym name.
-   * This link is used for both a hetero- or homotypic synonym.
-   *
-   * @param taxonKey the key of the accepted Taxon
-   * @param synonymNameKey the key of the synonym Name
-   */
-  public void addSynonym(int datasetKey, int taxonKey, int synonymNameKey) {
-    NameMapper mapper = session.getMapper(NameMapper.class);
-    mapper.addSynonym(datasetKey, taxonKey, synonymNameKey);
-  }
+	/**
+	 * Adds a new synonym link for an existing taxon and synonym name. This link is
+	 * used for both a hetero- or homotypic synonym.
+	 *
+	 * @param taxonKey
+	 *          the key of the accepted Taxon
+	 * @param synonymNameKey
+	 *          the key of the synonym Name
+	 */
+	public void addSynonym(int datasetKey, int taxonKey, int synonymNameKey) {
+		NameMapper mapper = session.getMapper(NameMapper.class);
+		mapper.addSynonym(datasetKey, taxonKey, synonymNameKey);
+	}
 
-  /**
-   * Assemble a synonymy object from the list of synonymy names for a given accepted taxon.
-   */
-  public Synonymy getSynonymy(int taxonKey) {
-    NameMapper mapper = session.getMapper(NameMapper.class);
-    Synonymy syn = new Synonymy();
-    int lastBasKey = -1;
-    List<Name> homotypics = null;
-    for (Name n : mapper.synonyms(taxonKey)) {
-      int basKey = n.getBasionym() == null ? n.getKey() : n.getBasionym().getKey();
-      if (lastBasKey == -1 || basKey != lastBasKey) {
-        lastBasKey = basKey;
-        // new homotypic group
-        if (homotypics != null) {
-          syn.addHomotypicGroup(homotypics);
-        }
-        homotypics = Lists.newArrayList();
-      }
-      homotypics.add(n);
-    }
-    if (homotypics != null) {
-      syn.addHomotypicGroup(homotypics);
-    }
-    return syn;
-  }
+	/**
+	 * Assemble a synonymy object from the list of synonymy names for a given
+	 * accepted taxon.
+	 */
+	public Synonymy getSynonymy(int taxonKey) {
+		NameMapper mapper = session.getMapper(NameMapper.class);
+		Synonymy syn = new Synonymy();
+		int lastBasKey = -1;
+		List<Name> homotypics = null;
+		for (Name n : mapper.synonyms(taxonKey)) {
+			int basKey = n.getBasionym() == null ? n.getKey() : n.getBasionym().getKey();
+			if (lastBasKey == -1 || basKey != lastBasKey) {
+				lastBasKey = basKey;
+				// new homotypic group
+				if (homotypics != null) {
+					syn.addHomotypicGroup(homotypics);
+				}
+				homotypics = Lists.newArrayList();
+			}
+			homotypics.add(n);
+		}
+		if (homotypics != null) {
+			syn.addHomotypicGroup(homotypics);
+		}
+		return syn;
+	}
 
 	public PagingResultSet<Name> search(int datasetKey, String q) {
 		NameMapper mapper = session.getMapper(NameMapper.class);
 		return mapper.search(datasetKey, q);
 	}
 
-	public PagedReference getPublishedIn(int datasetKey, String id) {
+	public PagedReference getPublishedIn(int datasetKey, int nameKey) {
 		ReferenceMapper mapper = session.getMapper(ReferenceMapper.class);
-		return mapper.getPublishedIn(datasetKey, id);
+		return mapper.getPublishedIn(datasetKey, nameKey);
 	}
 
 	public VerbatimRecord getVerbatim(int datasetKey, String id) {
@@ -124,14 +127,13 @@ public class NameDao {
 		return mapper.getByName(datasetKey, id);
 	}
 
-
 	private int lookup(int datasetKey, String id) throws NotFoundException {
-    NameMapper mapper = session.getMapper(NameMapper.class);
-    Integer key = mapper.lookupKey(datasetKey, id);
-    if (key == null) {
-      throw new NotFoundException(Name.class, datasetKey, id);
-    }
-    return key;
-  }
+		NameMapper mapper = session.getMapper(NameMapper.class);
+		Integer key = mapper.lookupKey(datasetKey, id);
+		if (key == null) {
+			throw new NotFoundException(Name.class, datasetKey, id);
+		}
+		return key;
+	}
 
 }

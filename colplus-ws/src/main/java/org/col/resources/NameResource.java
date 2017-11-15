@@ -63,10 +63,10 @@ public class NameResource {
 	@Timed
 	@Path("{id}/publishedIn")
 	public PagedReference getPublishedIn(@PathParam("datasetKey") Integer datasetKey,
-	    @PathParam("id") String id,
+	    @PathParam("nameKey") int nameKey,
 	    @Context SqlSession session) {
 		NameDao dao = new NameDao(session);
-		return dao.getPublishedIn(datasetKey, id);
+		return dao.getPublishedIn(datasetKey, nameKey);
 	}
 
 	@GET

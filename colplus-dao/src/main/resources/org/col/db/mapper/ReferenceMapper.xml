@@ -95,10 +95,8 @@
     <include refid="SELECT_WITH_PAGE" />
     FROM reference r
     LEFT JOIN name_act na ON (r.key = na.reference_key)
-    LEFT JOIN name n ON (na.name_key = n.key)
-    WHERE n.dataset_key = #{datasetKey} AND n.id = #{nameId}
-    AND na.type = 0 <!-- DESCRIPTION 
-      (not sure if this is necessary) -->
+    WHERE na.dataset_key = #{datasetKey} AND na.name_key = #{nameKey}
+    AND na.type = 0 <!-- DESCRIPTION (not sure if this is necessary) -->
   </select>
 
   <insert id="create" parameterType="Reference" useGeneratedKeys="true" keyProperty="key">

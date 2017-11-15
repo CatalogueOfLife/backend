@@ -77,13 +77,9 @@ public class ReferenceMapperTest extends MapperTestBase<ReferenceMapper> {
 
 	@Test
 	public void getPublishedIn() {
-		// PagedReference pr = new
-		// // See squirrels.sql:
-		// expected.setReference(REF1);
-		// expected.setPage("712");
-		PagedReference ref = mapper().getPublishedIn(DATASET1.getKey(), NAME1.getId());
+		PagedReference ref = mapper().getPublishedIn(DATASET1.getKey(), NAME1.getKey());
 		assertEquals("01", REF1, ref);
-		assertEquals("01", "712", ref.getPage());
+		assertEquals("02", "712", ref.getPage());
 	}
 
 	private static Reference create() throws Exception {
