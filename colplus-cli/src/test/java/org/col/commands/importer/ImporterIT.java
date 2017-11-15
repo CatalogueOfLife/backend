@@ -1,6 +1,6 @@
 package org.col.commands.importer;
 
-import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.google.common.io.Files;
 import jersey.repackaged.com.google.common.collect.Maps;
 import org.apache.commons.io.FileUtils;
@@ -26,8 +26,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -132,7 +132,7 @@ public class ImporterIT {
       assertTrue(expV.isEmpty());
 
       // check distributions
-      List<Distribution> expD = Lists.newArrayList();
+      Set<Distribution> expD = Sets.newHashSet();
       expD.add(dist(Gazetteer.TEXT, "All of Austria and the alps", DistributionStatus.NATIVE));
       expD.add(dist(Gazetteer.ISO, "DE", DistributionStatus.NATIVE));
       expD.add(dist(Gazetteer.ISO, "FR", DistributionStatus.NATIVE));
@@ -145,12 +145,14 @@ public class ImporterIT {
       expD.add(dist(Gazetteer.TDWG, "MOR-MO", DistributionStatus.NATIVE));
       expD.add(dist(Gazetteer.TDWG, "MOR-CE", DistributionStatus.NATIVE));
       expD.add(dist(Gazetteer.TDWG, "MOR-ME", DistributionStatus.NATIVE));
-      expD.add(dist(Gazetteer.TDWG, "cpp", DistributionStatus.NATIVE));
-      expD.add(dist(Gazetteer.TDWG, "ofs", DistributionStatus.NATIVE));
-      expD.add(dist(Gazetteer.TDWG, "nam", DistributionStatus.NATIVE));
+      expD.add(dist(Gazetteer.TDWG, "CPP", DistributionStatus.NATIVE));
+      expD.add(dist(Gazetteer.TDWG, "OFS", DistributionStatus.NATIVE));
+      expD.add(dist(Gazetteer.TDWG, "NAM", DistributionStatus.NATIVE));
 
       assertEquals(expD.size(), info.getDistributions().size());
-      assertEquals(expD, info.getDistributions());
+      // remove dist keys before we check equality
+      info.getDistributions().forEach(d -> d.setKey(null));
+      assertEquals(expD, Sets.newHashSet(info.getDistributions()));
     }
   }
 

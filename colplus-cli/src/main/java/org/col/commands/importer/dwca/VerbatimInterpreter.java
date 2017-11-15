@@ -102,6 +102,8 @@ public class VerbatimInterpreter {
     Distribution d = new Distribution();
     d.setArea(area);
     d.setAreaStandard(standard);
+    //TODO: parse status!!!
+    d.setStatus(DistributionStatus.NATIVE);
     t.distributions.add(d);
   }
 

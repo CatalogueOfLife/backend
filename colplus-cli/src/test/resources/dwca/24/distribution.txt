@@ -1,6 +1,6 @@
 taxonID	locationID	locality	countryCode	country	occurrenceStatus	source
-1000			DE	Germany	present	
-1000				Frankreich	present	
+1000				Deutschland	present	
+1000				France	present	
 1000		All of Austria and the alps			present	
 1000			DK,UK		present	
 1000				Nigeria,Kenia	present	

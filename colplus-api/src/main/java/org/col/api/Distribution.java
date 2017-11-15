@@ -51,6 +51,14 @@ public class Distribution {
 		this.status = status;
 	}
 
+  public List<ReferencePointer> getReferences() {
+    return references;
+  }
+
+  public void setReferences(List<ReferencePointer> references) {
+    this.references = references;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;

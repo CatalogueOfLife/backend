@@ -20,21 +20,20 @@ public class AreaParser implements Parser<AreaParser.Area> {
 
     } else {
       String[] parts = area.split(":", 2);
-      Gazetteer standard;
       if (parts.length > 1) {
-        standard = parseStandard(parts[0]);
-        area = parts[1];
+        Gazetteer standard = parseStandard(parts[0]);
+        return Optional.of(new Area(normalizeAndValidate(parts[1], standard), standard));
       } else {
-        standard = Gazetteer.TEXT;
+        throw new UnparsableException("Invalid area code missing a gazetteer prefix");
       }
-      return Optional.of(new Area(normalizeAndValidate(area, standard), standard));
     }
   }
 
-  private static String normalizeAndValidate(String area, Gazetteer standard) {
+  private static String normalizeAndValidate(String area, Gazetteer standard) throws UnparsableException {
     switch (standard) {
       case TDWG:
       case ISO:
+        //TODO: parse country
         return area.toUpperCase().trim();
     }
     return area.trim();
