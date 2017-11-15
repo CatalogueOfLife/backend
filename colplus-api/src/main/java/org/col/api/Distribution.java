@@ -1,10 +1,12 @@
 package org.col.api;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.util.List;
+import java.util.Objects;
+
 import org.col.api.vocab.DistributionStatus;
 import org.col.api.vocab.Gazetteer;
 
-import java.util.Objects;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  *
@@ -18,6 +20,8 @@ public class Distribution {
 	private String area;
 	private Gazetteer areaStandard;
 	private DistributionStatus status;
+	
+	private List<ReferencePointer> references;
 
 	public Integer getKey() {
 		return key;

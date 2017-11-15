@@ -30,12 +30,7 @@ public class ReferenceDao {
 
 	public Reference getByKey(int key) {
 		ReferenceMapper mapper = session.getMapper(ReferenceMapper.class);
-		return mapper.getByKey(key);
-	}
-
-	public Reference get(int datasetKey, String id) {
-		ReferenceMapper mapper = session.getMapper(ReferenceMapper.class);
-		return mapper.get(datasetKey, id);
+		return mapper.get(key);
 	}
 
 	public void create(Reference ref) {

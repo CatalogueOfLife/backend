@@ -1,8 +1,8 @@
 package org.col.api;
 
-import com.google.common.collect.Lists;
-
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class TaxonInfo {
 
@@ -12,7 +12,7 @@ public class TaxonInfo {
 
 	private List<Distribution> distributions;
 
-	private List<Reference> references = Lists.newArrayList();
+	private Map<Integer, Reference> references = new HashMap<>();
 
 	public Taxon getTaxon() {
 		return taxon;
@@ -38,24 +38,5 @@ public class TaxonInfo {
 		this.distributions = distributions;
 	}
 
-	public List<Reference> getReferences() {
-		return references;
-	}
 
-	public void setReferences(List<Reference> references) {
-		this.references = references;
-	}
-
-	/**
-	 * @return the reference from the wrapped reference list with
-	 *         Reference.key=referenceKey
-	 */
-	public Reference getByKey(int referenceKey) {
-		for (Reference r : references) {
-			if (r.getKey() == referenceKey) {
-				return r;
-			}
-		}
-		return null;
-	}
 }

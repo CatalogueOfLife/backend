@@ -1,5 +1,6 @@
 package org.col.api;
 
+import java.util.List;
 import java.util.Objects;
 
 import org.col.api.vocab.Country;
@@ -17,6 +18,10 @@ public class VernacularName {
 	private Language language;
 
 	private Country country;
+	
+	private List<ReferencePointer> references;
+
+
 
 	public Integer getKey() {
 		return key;

@@ -74,20 +74,12 @@
     <include refid="org.col.db.mapper.Common.limit" />
   </select>
 
-  <select id="getByKey" resultMap="referenceResultMap">
-    SELECT
-    <include refid="SELECT" />
-    FROM
-    <include refid="FROM" />
-    WHERE r.key = #{key}
-  </select>
-
   <select id="get" resultMap="referenceResultMap">
     SELECT
     <include refid="SELECT" />
     FROM
     <include refid="FROM" />
-    WHERE r.dataset_key = #{datasetKey} AND r.id = #{id}
+    WHERE r.key = #{key}
   </select>
 
   <select id="getPublishedIn" resultMap="pagedReferenceResultMap">

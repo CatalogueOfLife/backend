@@ -12,20 +12,19 @@ import org.col.api.Reference;
  */
 public interface ReferenceMapper {
 
-  int count(@Param("datasetKey") int datasetKey);
+	Reference get(@Param("key") int key);
 
-  List<Reference> list(@Param("datasetKey") int datasetKey, @Param("page") Page page);
+	int count(@Param("datasetKey") int datasetKey);
 
-  Reference getByKey(@Param("key") int key);
+	List<Reference> list(@Param("datasetKey") int datasetKey, @Param("page") Page page);
 
-  Reference get(@Param("datasetKey") int datasetKey, @Param("id") String id);
+	List<Reference> listByDistribution(@Param("distributionKey") int distributionKey);
 
-  /**
-   * Returns the reference of the description act for the given name key.
-   */
-  PagedReference getPublishedIn(@Param("datasetKey") int datasetKey, @Param("nameKey") int nameKey);
+	/**
+	 * Returns the reference of the description act for the given name key.
+	 */
+	PagedReference getPublishedIn(@Param("datasetKey") int datasetKey, @Param("nameKey") int nameKey);
 
-  void create(Reference name);
+	void create(Reference name);
 
 }
-
