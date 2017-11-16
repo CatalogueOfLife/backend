@@ -5,6 +5,6 @@ taxonID	locationID	locality	countryCode	country	occurrenceStatus	source
 1000			DK,UK		present	
 1000				Nigeria,Kenia	present	
 1000	TDWG:AGS				present	
-1000	FAO:37.4.1				present	
+1000	FISHING:37.4.1				present	
 1000	TDWG:MOR-MO,TDWG:MOR-CE,TDWG:MOR-ME				present	
-1000	tdwg:cpp; tdwg:ofs; tdwg:nam				present	
+1000	tdwg:cpp; tdwg:of; tdwg:nam				present	

@@ -1,12 +1,11 @@
 package org.col.api;
 
-import java.util.List;
-import java.util.Objects;
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.col.api.vocab.DistributionStatus;
 import org.col.api.vocab.Gazetteer;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.util.List;
+import java.util.Objects;
 
 /**
  *
@@ -79,4 +78,8 @@ public class Distribution {
 		return Objects.hash(key, area, areaStandard, status);
 	}
 
+  @Override
+  public String toString() {
+    return status==null ? "Unknown" : status + " in " + areaStandard + ":" + area;
+  }
 }

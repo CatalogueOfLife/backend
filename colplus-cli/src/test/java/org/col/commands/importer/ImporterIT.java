@@ -137,22 +137,27 @@ public class ImporterIT {
       expD.add(dist(Gazetteer.ISO, "DE", DistributionStatus.NATIVE));
       expD.add(dist(Gazetteer.ISO, "FR", DistributionStatus.NATIVE));
       expD.add(dist(Gazetteer.ISO, "DK", DistributionStatus.NATIVE));
-      expD.add(dist(Gazetteer.ISO, "UK", DistributionStatus.NATIVE));
+      expD.add(dist(Gazetteer.ISO, "GB", DistributionStatus.NATIVE));
       expD.add(dist(Gazetteer.ISO, "NG", DistributionStatus.NATIVE));
       expD.add(dist(Gazetteer.ISO, "KE", DistributionStatus.NATIVE));
       expD.add(dist(Gazetteer.TDWG, "AGS", DistributionStatus.NATIVE));
-      expD.add(dist(Gazetteer.FAO, "37.4.1", DistributionStatus.NATIVE));
+      expD.add(dist(Gazetteer.FAO_FISHING, "37.4.1", DistributionStatus.NATIVE));
       expD.add(dist(Gazetteer.TDWG, "MOR-MO", DistributionStatus.NATIVE));
       expD.add(dist(Gazetteer.TDWG, "MOR-CE", DistributionStatus.NATIVE));
       expD.add(dist(Gazetteer.TDWG, "MOR-ME", DistributionStatus.NATIVE));
       expD.add(dist(Gazetteer.TDWG, "CPP", DistributionStatus.NATIVE));
-      expD.add(dist(Gazetteer.TDWG, "OFS", DistributionStatus.NATIVE));
       expD.add(dist(Gazetteer.TDWG, "NAM", DistributionStatus.NATIVE));
 
       assertEquals(expD.size(), info.getDistributions().size());
       // remove dist keys before we check equality
       info.getDistributions().forEach(d -> d.setKey(null));
-      assertEquals(expD, Sets.newHashSet(info.getDistributions()));
+      Set<Distribution> imported = Sets.newHashSet(info.getDistributions());
+
+      Sets.SetView<Distribution> diff = Sets.difference(expD, imported);
+      for (Distribution d : diff) {
+        System.out.println(d);
+      }
+      assertEquals(expD, imported);
     }
   }
 

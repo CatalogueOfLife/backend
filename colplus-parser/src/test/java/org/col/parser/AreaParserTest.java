@@ -19,15 +19,18 @@ public class AreaParserTest extends ParserTestBase<AreaParser.Area> {
   public void parse() throws Exception {
     assertParse(new AreaParser.Area("AGS", Gazetteer.TDWG), "tdwg:AGS");
     assertParse(new AreaParser.Area("AGS", Gazetteer.TDWG), "TDWG:ags ");
+    assertParse(new AreaParser.Area("3", Gazetteer.TDWG), "TDWG:3");
+    assertParse(new AreaParser.Area("14", Gazetteer.TDWG), "TDWG : 14");
+    assertParse(new AreaParser.Area("RUN-OO", Gazetteer.TDWG), "TDWG : RUN - OO");
+    assertParse(new AreaParser.Area("CRL-PA", Gazetteer.TDWG), "tdwg:crl-pa");
+    assertParse(new AreaParser.Area("DE", Gazetteer.ISO), "iso:de");
+    assertParse(new AreaParser.Area("DE", Gazetteer.ISO), "fao:ger");
+    assertParse(new AreaParser.Area("37.4.1", Gazetteer.FAO_FISHING), "fish:37.4.1");
   }
 
   @Override
   List<String> unparsableValues() {
-    return Lists.newArrayList(".", "?", "---", "öüä", "#67#", "wtf", "nothing");
+    return Lists.newArrayList(".", "?", "---", "öüä", "#67#", "wtf", "nothing", "t ru e", "a", "2",
+        "Nig", "har:123", "iso:gggg", "tdwg:432", "f:37.4.1", "fish:7458923");
   }
-
-  List<String> additionalUnparsableValues() {
-    return Lists.newArrayList("t ru e", "a", "2", "Nig", "har:123");
-  }
-
 }

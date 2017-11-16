@@ -7,27 +7,26 @@ public enum Gazetteer {
 
   /**
    * World Geographical Scheme for Recording Plant Distributions
-   * published by TDWG at level 3 or 4.
+   * published by TDWG at level 1, 2, 3 or 4.
+   * Level 1 = Continents
+   * Level 2 = Regions
+   * Level 3 = Botanical countries
+   * Level 4 = Basic recording units
+   *
    * @see <a href="http://www.tdwg.org/standards/109">TDWG Standard</a>
    */
   TDWG,
 
   /**
    * ISO 3166-1 Country codes given either as alpha-2, alpha-3 or numeric codes.
+   * Mostly synonymous are the <a href="http://www.fao.org/countryprofiles/iso3list/en/">FAO ISO 3 letter country codes</a>.
    *
    * @see <a href="https://www.iso.org/obp/ui/">ISO Code Browser</a>
    */
   ISO,
 
   /**
-   * FAO ISO country codes.
-   *
-   * @see <a href="http://www.fao.org/countryprofiles/iso3list/en/">FAO ISO codes</a>
-   */
-  FAO,
-
-  /**
-   * FAO Fishing Areas.
+   * FAO Major Fishing Areas
    * @see <a href="http://www.fao.org/fishery/cwp/handbook/H/en">FAO Fishing Areas</a>
    */
   FAO_FISHING,
