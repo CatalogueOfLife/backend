@@ -141,7 +141,7 @@ public class VerbatimInterpreter {
     t.setRecent(null);
     //t.setLifezones();
     t.setSpeciesEstimate(null);
-    t.setSpeciesEstimateReference(null);
+    t.setSpeciesEstimateReferenceKey(null);
     t.setRemarks(v.getCoreTerm(DwcTerm.taxonRemarks));
 
     if (insertMetadata.isParentNameMapped()) {

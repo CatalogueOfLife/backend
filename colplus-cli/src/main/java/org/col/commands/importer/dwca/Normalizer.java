@@ -54,7 +54,7 @@ public class Normalizer implements Runnable {
   }
 
   /**
-   * Run the normalizer and closes the store at the end.
+   * Run the normalizer and close the store at the end.
    *
    * @throws NormalizationFailedException
    */

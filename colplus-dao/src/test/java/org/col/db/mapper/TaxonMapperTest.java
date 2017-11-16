@@ -26,7 +26,7 @@ public class TaxonMapperTest extends MapperTestBase<TaxonMapper> {
 		assertNotNull(in.getKey());
 		commit();
 		Taxon out = mapper().get(mapper().lookupKey(TestEntityGenerator.DATASET1.getKey(), in.getId()));
-		assertTrue(in.equalsShallow(out));
+    assertEquals(in, out);
 	}
 
 	@Test

@@ -9,9 +9,7 @@
 		t.id,
 		t.dataset_key,
 		t.parent_key,
-		pt.id as parent_id,
-		t.name_key,
-		n.id as name_id,
+		t.name_key as n_key,
 		t.status,
 		t.origin,
 		t.rank,
@@ -23,9 +21,31 @@
 		t.dataset_url,
 		t.species_estimate,
 		t.species_estimate_reference_key,
-		r.id as species_estimate_reference_id,
 		t.remarks,
-        t.issues
+        t.issues,
+
+        n.id as n_id,
+        n.dataset_key as n_dataset_key,
+        n.scientific_name as n_scientific_name,
+        n.rank as n_rank,
+        n.genus as n_genus,
+        n.infrageneric_epithet as n_infrageneric_epithet,
+        n.specific_epithet as n_specific_epithet,
+        n.infraspecific_epithet as n_infraspecific_epithet,
+        n.notho as n_notho,
+        n.basionym_authors as n_basionym_authors,
+        n.basionym_year as n_basionym_year,
+        n.combination_authors as n_combination_authors,
+        n.combination_year as n_combination_year,
+        n.nomenclatural_code as n_nomenclatural_code,
+        n.status as n_status,
+        n.origin as n_origin,
+        n.type as n_type,
+        n.fossil as n_fossil,
+        n.basionym_key as n_basionym_key,
+        n.remarks as n_remarks,
+        n.etymology as n_etymology,
+        n.issues as n_issues
 	</sql>
 
 	<sql id="COLS">
@@ -63,16 +83,13 @@
 		#{lifezones, typeHandler=org.col.db.type.LifezoneTypeHandler},
 		#{datasetUrl, typeHandler=org.col.db.type.UriTypeHandler},
 		#{speciesEstimate},
-		#{speciesEstimateReference.key},
+		#{speciesEstimateReferenceKey},
 		#{remarks},
         #{issues, typeHandler=org.col.db.type.HstoreIssueHandler}::hstore
 	</sql>
 
 	<sql id="FROM">
-		taxon t
-		LEFT JOIN taxon pt ON (t.parent_key=pt.key)
-		LEFT JOIN name n ON (t.name_key=n.key)
-		LEFT JOIN reference r ON (t.species_estimate_reference_key=r.key)
+		taxon t JOIN name n ON (t.name_key=n.key)
 	</sql>
 
 	<!-- A mapping to Name, mostly auto mapped -->
@@ -81,14 +98,7 @@
 		<result property="id" column="id" />
         <result property="lifezones" column="lifezones" typeHandler="org.col.db.type.LifezoneTypeHandler"/>
         <result property="issues" column="issues" typeHandler="org.col.db.type.HstoreIssueHandler"/>
-		<association property="name" javaType="Name">
-			<id property="key" column="name_key" />
-			<id property="id" column="name_id" />
-		</association>
-		<association property="speciesEstimateReference" javaType="Reference">
-			<id property="key" column="species_estimate_reference_key" />
-			<id property="id" column="species_estimate_reference_id" />
-		</association>
+		<association property="name" javaType="Name" resultMap="org.col.db.mapper.NameMapper.nameResultMap" columnPrefix="n_" />
 	</resultMap>
 
 
@@ -113,20 +123,14 @@
     </select>
     
     <select id="get" resultMap="taxonResultMap">
-		SELECT
-		<include refid="SELECT" />
-		FROM
-		<include refid="FROM" />
+		SELECT <include refid="SELECT" />
+		FROM <include refid="FROM" />
 		WHERE t.key = #{key}
 	</select>
 
 	<insert id="create" parameterType="Taxon" useGeneratedKeys="true" keyProperty="key">
-		INSERT INTO taxon (
-		<include refid="COLS" />
-		)
-		VALUES (
-		<include refid="PROPS" />
-		)
+		INSERT INTO taxon (<include refid="COLS" />)
+		VALUES (<include refid="PROPS" />)
 	</insert>
 
 </mapper>

@@ -50,7 +50,7 @@ public class Taxon {
 
 	private Integer speciesEstimate;
 
-	private Reference speciesEstimateReference;
+	private Integer speciesEstimateReferenceKey;
 
 	private String remarks;
 
@@ -179,15 +179,15 @@ public class Taxon {
 		this.speciesEstimate = speciesEstimate;
 	}
 
-	public Reference getSpeciesEstimateReference() {
-		return speciesEstimateReference;
-	}
+  public Integer getSpeciesEstimateReferenceKey() {
+    return speciesEstimateReferenceKey;
+  }
 
-	public void setSpeciesEstimateReference(Reference speciesEstimateReference) {
-		this.speciesEstimateReference = speciesEstimateReference;
-	}
+  public void setSpeciesEstimateReferenceKey(Integer speciesEstimateReferenceKey) {
+    this.speciesEstimateReferenceKey = speciesEstimateReferenceKey;
+  }
 
-	public String getRemarks() {
+  public String getRemarks() {
 		return remarks;
 	}
 
@@ -233,7 +233,7 @@ public class Taxon {
 		    && Objects.equals(lifezones, taxon.lifezones)
 		    && Objects.equals(datasetUrl, taxon.datasetUrl)
 		    && Objects.equals(speciesEstimate, taxon.speciesEstimate)
-		    && Objects.equals(speciesEstimateReference, taxon.speciesEstimateReference)
+		    && Objects.equals(speciesEstimateReferenceKey, taxon.speciesEstimateReferenceKey)
 		    && Objects.equals(remarks, taxon.remarks)
 		    && Objects.equals(issues, taxon.issues);
 	}
@@ -242,7 +242,7 @@ public class Taxon {
 	public int hashCode() {
 		return Objects.hash(key, id, datasetKey, name, status, rank, origin, parentKey, accordingTo,
 		    accordingToDate, fossil, recent, lifezones, datasetUrl, speciesEstimate,
-		    speciesEstimateReference, remarks, issues);
+        speciesEstimateReferenceKey, remarks, issues);
 	}
 
 	public boolean equalsShallow(Taxon other) {
@@ -266,7 +266,7 @@ public class Taxon {
 		    && Objects.equals(recent, other.recent)
 		    && Objects.equals(lifezones, other.lifezones)
 		    && Objects.equals(speciesEstimate, other.speciesEstimate)
-		    && ApiUtil.equalsShallow(speciesEstimateReference, other.speciesEstimateReference)
+		    && Objects.equals(speciesEstimateReferenceKey, other.speciesEstimateReferenceKey)
 		    && Objects.equals(remarks, other.remarks);
 	}
 

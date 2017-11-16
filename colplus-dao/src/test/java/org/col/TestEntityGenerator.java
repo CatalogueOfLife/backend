@@ -1,29 +1,14 @@
 package org.col;
 
+import com.google.common.base.Splitter;
+import org.col.api.*;
+import org.col.api.vocab.*;
+
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Random;
-
-import org.col.api.Authorship;
-import org.col.api.Dataset;
-import org.col.api.Name;
-import org.col.api.RandomUtils;
-import org.col.api.Reference;
-import org.col.api.Taxon;
-import org.col.api.VernacularName;
-import org.col.api.vocab.Country;
-import org.col.api.vocab.Issue;
-import org.col.api.vocab.Language;
-import org.col.api.vocab.Lifezone;
-import org.col.api.vocab.NamePart;
-import org.col.api.vocab.NameType;
-import org.col.api.vocab.Origin;
-import org.col.api.vocab.Rank;
-import org.col.api.vocab.TaxonomicStatus;
-
-import com.google.common.base.Splitter;
 
 /**
  * utility class to generate new test instances to be used in tests.
@@ -139,7 +124,7 @@ public class TestEntityGenerator {
 		t.setRecent(true);
 		t.setRemarks("Foo == Bar");
 		t.setSpeciesEstimate(81);
-		t.setSpeciesEstimateReference(REF1);
+		t.setSpeciesEstimateReferenceKey(REF1.getKey());
 		t.addIssue(Issue.ACCEPTED_NAME_MISSING);
 		t.addIssue(Issue.HOMONYM, "Abies alba");
 		return t;

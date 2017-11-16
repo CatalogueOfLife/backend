@@ -118,7 +118,7 @@ public class ImporterIT {
 
       // check species name
       Taxon tax = tdao.get(dataset.getKey(), "1000");
-      //assertEquals("Crepis pulchra", tax.getName().getScientificName());
+      assertEquals("Crepis pulchra", tax.getName().getScientificName());
 
       TaxonInfo info = tdao.getTaxonInfo(tax.getKey());
       // check vernaculars
