@@ -26,6 +26,9 @@ public class AreaParserTest extends ParserTestBase<AreaParser.Area> {
     assertParse(new AreaParser.Area("DE", Gazetteer.ISO), "iso:de");
     assertParse(new AreaParser.Area("DE", Gazetteer.ISO), "fao:ger");
     assertParse(new AreaParser.Area("37.4.1", Gazetteer.FAO_FISHING), "fish:37.4.1");
+    assertParse(new AreaParser.Area("27.12.a.4", Gazetteer.FAO_FISHING), "fish:27.12.a.4");
+    assertParse(new AreaParser.Area("27.12.c", Gazetteer.FAO_FISHING), "fish:27.12.C");
+    assertParse(new AreaParser.Area("27.3.d.28.2", Gazetteer.FAO_FISHING), "fish:27.3.d.28.2");
   }
 
   @Override

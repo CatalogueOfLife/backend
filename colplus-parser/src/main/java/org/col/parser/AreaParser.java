@@ -24,7 +24,7 @@ public class AreaParser implements Parser<AreaParser.Area> {
   public static final AreaParser PARSER = new AreaParser();
   private final Map<String, Gazetteer> gazetteerLookup;
   private final Pattern TDWG = Pattern.compile("^([1-9][0-9]?|[a-z]{3}(-[a-z]{2})?)$", Pattern.CASE_INSENSITIVE);
-  private final Pattern FISHING = Pattern.compile("^[1-9][0-9]?(\\.[1-9]){1,3}$", Pattern.CASE_INSENSITIVE);
+  private final Pattern FISHING = Pattern.compile("^[0-9]{1,2}(\\.([1-9]{1,2}|[a-z])){0,4}$", Pattern.CASE_INSENSITIVE);
 
   public AreaParser() {
     Map<String, Gazetteer> gaz = Maps.newHashMap();
@@ -93,7 +93,7 @@ public class AreaParser implements Parser<AreaParser.Area> {
         if (! this.FISHING.matcher(areaClean).find()) {
           throw new UnparsableException("Unparsable FAO fishing area: " + area);
         }
-        return areaClean;
+        return areaClean.toLowerCase();
       case IHO:
       case LONGHURST:
       case TEOW:
