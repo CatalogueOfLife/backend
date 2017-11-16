@@ -1,6 +1,8 @@
 package org.col.commands.importer;
 
-import com.google.common.collect.Maps;
+import java.util.Map;
+import java.util.Stack;
+
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.Dataset;
@@ -13,13 +15,17 @@ import org.col.commands.importer.neo.model.Labels;
 import org.col.commands.importer.neo.model.NeoTaxon;
 import org.col.commands.importer.neo.traverse.StartEndHandler;
 import org.col.commands.importer.neo.traverse.TreeWalker;
-import org.col.db.mapper.*;
+import org.col.db.mapper.DatasetMapper;
+import org.col.db.mapper.DistributionMapper;
+import org.col.db.mapper.NameMapper;
+import org.col.db.mapper.TaxonMapper;
+import org.col.db.mapper.VerbatimRecordMapper;
+import org.col.db.mapper.VernacularNameMapper;
 import org.neo4j.graphdb.Node;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Map;
-import java.util.Stack;
+import com.google.common.collect.Maps;
 
 /**
  *
@@ -132,8 +138,8 @@ public class Importer implements Runnable {
 						t.name.setDatasetKey(dataset.getKey());
 					} else {
 						// update basionym keys
-						if (t.name.getBasionym() != null) {
-							t.name.getBasionym().setKey(originalNameKeys.get(t.name.getBasionym().getKey()));
+						if (t.name.getBasionymKey() != null) {
+							t.name.setBasionymKey(originalNameKeys.get(t.name.getBasionymKey()));
 						}
 						t.name.setDatasetKey(dataset.getKey());
 						nameMapper.create(t.name);

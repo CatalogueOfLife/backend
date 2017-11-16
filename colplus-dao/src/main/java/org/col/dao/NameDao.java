@@ -95,7 +95,7 @@ public class NameDao {
 		int lastBasKey = -1;
 		List<Name> homotypics = null;
 		for (Name n : mapper.synonyms(taxonKey)) {
-			int basKey = n.getBasionym() == null ? n.getKey() : n.getBasionym().getKey();
+			int basKey = n.getBasionymKey() == null ? n.getKey() : n.getBasionymKey();
 			if (lastBasKey == -1 || basKey != lastBasKey) {
 				lastBasKey = basKey;
 				// new homotypic group

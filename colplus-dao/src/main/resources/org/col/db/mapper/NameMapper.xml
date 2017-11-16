@@ -75,7 +75,7 @@
     #{origin},
     #{type},
     #{fossil},
-    #{basionym.key},
+    #{basionymKey},
     #{remarks},
     #{etymology},
     #{issues, typeHandler=org.col.db.type.HstoreIssueHandler}::hstore
@@ -95,10 +95,6 @@
       <result property="combinationYear" column="combination_year" />
       <result property="basionymAuthors" column="basionym_authors" typeHandler="org.col.db.type.StringArrayTypeHandler" />
       <result property="basionymYear" column="basionym_year" />
-    </association>
-    <association property="basionym" javaType="Name">
-      <id property="key" column="basionym_key" />
-      <result property="id" column="basionym_id" />
     </association>
   </resultMap>
 

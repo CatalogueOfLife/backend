@@ -342,7 +342,7 @@ public class NeoDb implements NormalizerStore {
         if (bn != null) {
           NeoTaxon bas = get(bn);
           bas.name.setKey((int)bn.getId());
-          t.name.setBasionym(bas.name);
+          t.name.setBasionymKey(bas.name.getBasionymKey());
         }
 
         if (t.node.hasLabel(Labels.SYNONYM)) {

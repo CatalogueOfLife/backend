@@ -20,7 +20,7 @@ public class NameMapperTest extends MapperTestBase<NameMapper> {
 
 	private Name create(String id, Name basionym) throws Exception {
 		Name n = TestEntityGenerator.newName(id);
-		n.setBasionym(basionym);
+		n.setBasionymKey(basionym.getKey());
 		return n;
 	}
 
@@ -45,16 +45,16 @@ public class NameMapperTest extends MapperTestBase<NameMapper> {
 
 		// now with basionym
 		Name n2 = TestEntityGenerator.newName("sk2");
-		n2.setBasionym(n1);
+		n2.setBasionymKey(n1.getKey());
 		mapper().create(n2);
 
 		commit();
 
 		// we use a new instance of n1 with just the keys for the equality tests
-		n1 = new Name();
-		n1.setKey(n2.getBasionym().getKey());
-		n1.setId(n2.getBasionym().getId());
-		n2.setBasionym(n1);
+//		n1 = new Name();
+//		n1.setKey(n2.getBasionymKey());
+//		n1.setId(n2.getBasionymKey());
+//		n2.setBasionymKey(n1);
 
 		int n2Key = mapper().lookupKey(TestEntityGenerator.DATASET1.getKey(), n2.getId());
 		assertEquals((Integer) n2Key, n2.getKey());
@@ -151,11 +151,11 @@ public class NameMapperTest extends MapperTestBase<NameMapper> {
 		mapper().create(syn2bas);
 
 		Name syn21 = TestEntityGenerator.newName("syn2.1");
-		syn21.setBasionym(syn2bas);
+		syn21.setBasionymKey(syn2bas.getKey());
 		mapper().create(syn21);
 
 		Name syn22 = TestEntityGenerator.newName("syn2.2");
-		syn22.setBasionym(syn2bas);
+		syn22.setBasionymKey(syn2bas.getKey());
 		mapper().create(syn22);
 
 		// homotypic 3
@@ -163,7 +163,7 @@ public class NameMapperTest extends MapperTestBase<NameMapper> {
 		mapper().create(syn3bas);
 
 		Name syn31 = TestEntityGenerator.newName("syn3.1");
-		syn31.setBasionym(syn3bas);
+		syn31.setBasionymKey(syn3bas.getKey());
 		mapper().create(syn31);
 
 		commit();

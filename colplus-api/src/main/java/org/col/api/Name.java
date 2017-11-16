@@ -90,7 +90,7 @@ public class Name {
 	 * names](https://en.wikipedia.org/wiki/Nomen_novum) it points back to the
 	 * replaced synonym.
 	 */
-	private Name basionym;
+	private Integer basionymKey;
 
 	/**
 	 * true if the type specimen of the name is a fossil
@@ -235,12 +235,12 @@ public class Name {
 		this.notho = notho;
 	}
 
-	public Name getBasionym() {
-		return basionym;
+	public Integer getBasionymKey() {
+		return basionymKey;
 	}
 
-	public void setBasionym(Name basionym) {
-		this.basionym = basionym;
+	public void setBasionymKey(Integer key) {
+		this.basionymKey = key;
 	}
 
 	public Boolean getFossil() {
@@ -323,7 +323,7 @@ public class Name {
 		    && Objects.equals(specificEpithet, name.specificEpithet)
 		    && Objects.equals(infraspecificEpithet, name.infraspecificEpithet)
 		    && notho == name.notho
-		    && Objects.equals(basionym, name.basionym)
+		    && Objects.equals(basionymKey, name.basionymKey)
 		    && Objects.equals(fossil, name.fossil)
 		    && status == name.status
 		    && type == name.type
@@ -337,7 +337,7 @@ public class Name {
 	public int hashCode() {
 		return Objects.hash(key, id, datasetKey, scientificName, authorship, rank, origin,
 		    nomenclaturalCode, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, notho,
-		    basionym, fossil, status, type, sourceUrl, remarks, etymology, issues);
+		    basionymKey, fossil, status, type, sourceUrl, remarks, etymology, issues);
 	}
 
 	@Override
@@ -377,7 +377,7 @@ public class Name {
 		    + ", notho="
 		    + notho
 		    + ", basionym="
-		    + basionym
+		    + basionymKey
 		    + ", fossil="
 		    + fossil
 		    + ", status="

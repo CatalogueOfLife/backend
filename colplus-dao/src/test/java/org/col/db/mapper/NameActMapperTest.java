@@ -83,7 +83,7 @@ public class NameActMapperTest extends MapperTestBase<NameActMapper> {
 		name.setDatasetKey(DATASET1.getKey());
 		name.setId("foo-new");
 		name.setScientificName("Foo new");
-		name.setBasionym(basionym);
+		name.setBasionymKey(basionym.getKey());
 		nameMapper.create(name);
 
 		nameAct = new NameAct();
@@ -104,7 +104,7 @@ public class NameActMapperTest extends MapperTestBase<NameActMapper> {
 		name.setDatasetKey(DATASET1.getKey());
 		name.setId("foo-too");
 		name.setScientificName("Foo too");
-		name.setBasionym(basionym);
+		name.setBasionymKey(basionym.getKey());
 		nameMapper.create(name);
 
 		nameAct = new NameAct();

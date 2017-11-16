@@ -97,7 +97,7 @@ public class ImporterIT {
       Name n1006 = ndao.get(dataset.getKey(), "1006");
       assertEquals("Leontodon taraxacoides", n1006.getScientificName());
 
-      Name bas = ndao.get(n1006.getBasionym().getKey());
+      Name bas = ndao.get(n1006.getBasionymKey());
       assertEquals("Leonida taraxacoida", bas.getScientificName());
       assertEquals("1006-s3", bas.getId());
 

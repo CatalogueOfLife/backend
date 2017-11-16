@@ -134,10 +134,10 @@ public class NormalizerIT {
       assertEquals(u1, u2);
 
       NeoTaxon bas = byName("Leonida taraxacoida");
-      assertEquals(u2.name.getBasionym().getId(), bas.name.getId());
-      assertEquals(u2.name.getBasionym().getKey(), bas.taxon.getKey());
-      assertEquals(u2.name.getBasionym().getScientificName(), bas.name.getScientificName());
-      assertEquals(u2.name.getBasionym().getAuthorship(), bas.name.getAuthorship());
+      //assertEquals(u2.name.getBasionym().getId(), bas.name.getId());
+      assertEquals(u2.name.getBasionymKey(), bas.taxon.getKey());
+      //assertEquals(u2.name.getBasionym().getScientificName(), bas.name.getScientificName());
+      //assertEquals(u2.name.getBasionym().getAuthorship(), bas.name.getAuthorship());
 
       NeoTaxon syn = byName("Leontodon leysseri");
       assertEquals(1, syn.synonym.accepted.size());
