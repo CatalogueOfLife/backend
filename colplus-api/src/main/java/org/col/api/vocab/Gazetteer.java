@@ -29,7 +29,7 @@ public enum Gazetteer {
    * FAO Major Fishing Areas
    * @see <a href="http://www.fao.org/fishery/cwp/handbook/H/en">FAO Fishing Areas</a>
    */
-  FAO_FISHING,
+  FAO,
 
   /**
    * Longhurst Biogeographical Provinces, a partition of the world oceans into provinces

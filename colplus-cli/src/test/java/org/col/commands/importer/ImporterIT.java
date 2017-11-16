@@ -141,7 +141,7 @@ public class ImporterIT {
       expD.add(dist(Gazetteer.ISO, "NG", DistributionStatus.NATIVE));
       expD.add(dist(Gazetteer.ISO, "KE", DistributionStatus.NATIVE));
       expD.add(dist(Gazetteer.TDWG, "AGS", DistributionStatus.NATIVE));
-      expD.add(dist(Gazetteer.FAO_FISHING, "37.4.1", DistributionStatus.NATIVE));
+      expD.add(dist(Gazetteer.FAO, "37.4.1", DistributionStatus.NATIVE));
       expD.add(dist(Gazetteer.TDWG, "MOR-MO", DistributionStatus.NATIVE));
       expD.add(dist(Gazetteer.TDWG, "MOR-CE", DistributionStatus.NATIVE));
       expD.add(dist(Gazetteer.TDWG, "MOR-ME", DistributionStatus.NATIVE));

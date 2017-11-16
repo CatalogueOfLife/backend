@@ -62,7 +62,7 @@ public class AreaParser implements Parser<AreaParser.Area> {
       String[] parts = CharMatcher.invisible().removeFrom(area).split(":", 2);
       if (parts.length > 1) {
         Gazetteer standard = parseStandard(parts[0]);
-        return Optional.of(new Area(normalizeAndValidate(parts[1], standard), standard));
+        return Optional.of(normalizeAndValidate(parts[1], standard));
       } else {
         throw new UnparsableException("Invalid area code missing a gazetteer prefix");
       }
@@ -72,7 +72,7 @@ public class AreaParser implements Parser<AreaParser.Area> {
   /**
    * Removes all invisible chars and collapses and trims whitespace or removes it depending on the gazatteer
    */
-  private String normalizeAndValidate(final String area, Gazetteer standard) throws UnparsableException {
+  private Area normalizeAndValidate(final String area, Gazetteer standard) throws UnparsableException {
     String areaClean;
     if (standard != Gazetteer.TEXT && standard != Gazetteer.LONGHURST && standard != Gazetteer.TEOW) {
       areaClean = CharMatcher.whitespace().trimAndCollapseFrom(area, ' ');
@@ -85,21 +85,35 @@ public class AreaParser implements Parser<AreaParser.Area> {
         if (!this.TDWG.matcher(areaClean).find()) {
           throw new UnparsableException("Unparsable TDWG area code: " + area);
         }
-        return areaClean.toUpperCase();
+        areaClean = areaClean.toUpperCase();
+        break;
+
       case ISO:
         Optional<Country> c = CountryParser.PARSER.parse(areaClean);
-        return c.orElseThrow(() -> new UnparsableException(Country.class, area)).getIso2LetterCode();
-      case FAO_FISHING:
-        if (! this.FISHING.matcher(areaClean).find()) {
-          throw new UnparsableException("Unparsable FAO fishing area: " + area);
+        areaClean = c.orElseThrow(() -> new UnparsableException(Country.class, area)).getIso2LetterCode();
+        break;
+
+      case FAO:
+        if (this.FISHING.matcher(areaClean).find()) {
+          areaClean = areaClean.toLowerCase();
+        } else {
+          // FAO is sometimes also used for ISO codes, try that
+          Optional<Country> faoC = CountryParser.PARSER.parse(areaClean);
+          if (faoC.isPresent()) {
+            standard = Gazetteer.ISO;
+            areaClean = faoC.get().getIso2LetterCode();
+          } else {
+            throw new UnparsableException("Unparsable FAO fishing area: " + area);
+          }
         }
-        return areaClean.toLowerCase();
+        break;
+
       case IHO:
       case LONGHURST:
       case TEOW:
       case TEXT:
     }
-    return areaClean;
+    return new Area(areaClean, standard);
   }
 
   private Gazetteer parseStandard(String standard) throws UnparsableException {
