@@ -11,8 +11,8 @@ import java.util.List;
  *
  */
 public class Authorship {
-  private final Map<String, Object> combination;
-  private final Map<String, Object> basionym;
+  public final Map<String, Object> combination;
+  public final Map<String, Object> basionym;
 
 
   /**
@@ -33,26 +33,17 @@ public class Authorship {
     }
   }
 
-  public List<String> getCombinationAuthors() {
-    return authors(combination, false);
+  public static String year(Map<String, Object> auth) {
+    return mapValueString(auth,"year");
   }
 
-  public List<String> getBasionymAuthors() {
-    return authors(basionym, false);
-  }
-
-  public String getCombinationYear() {
-    return mapValueString(combination, "year");
-  }
-
-  public String getBasionymYear() {
-    return mapValueString(basionym,"year");
-  }
-
-  private static List<String> authors(Map<String, Object> auth, boolean ex) {
+  public static List<String> authors(Map<String, Object> auth, boolean ex) {
     String key = ex ? "ex_authors" : "authors";
     if (auth.contains(key)) {
-      return JavaConversions.seqAsJavaList((scala.collection.immutable.List) auth.get(key).get());
+      Option val = ScalaUtils.unwrap(auth.get(key));
+      if (val.isDefined()) {
+        return JavaConversions.seqAsJavaList((scala.collection.immutable.List) val.get());
+      }
     }
     return Lists.newArrayList();
   }

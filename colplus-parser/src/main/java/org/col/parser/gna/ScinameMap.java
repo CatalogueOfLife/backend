@@ -15,15 +15,11 @@ public class ScinameMap {
   private final Map<String, Object> map;
 
 
-  public static ScinameMap create(ScientificNameParser.Result result) throws UnparsableException {
+  public static ScinameMap create(String verbatim, ScientificNameParser.Result result) throws UnparsableException {
     Object details = result.detailed();
     if (details instanceof org.json4s.JsonAST.JArray) {
       org.json4s.JsonAST.JArray array = (org.json4s.JsonAST.JArray) details;
       return new ScinameMap((scala.collection.immutable.Map) array.values().iterator().next());
-
-    } else if (details instanceof org.json4s.JsonAST.JNothing$) {
-      // what now?
-      throw new UnparsableException("GNA Parser details of type Nothing for name: " + result.render(false, false));
 
     } else {
       LOG.info(result.render(false, false));
@@ -49,6 +45,14 @@ public class ScinameMap {
 
   public Option<Epithet> specificEpithet() {
     return epithet("specific_epithet");
+  }
+
+  public int infraSpecificEpithetCount() {
+    Option opt = ScalaUtils.unwrap(map.get("infraspecific_epithets"));
+    if (opt.isDefined()) {
+      return ((scala.collection.immutable.List) opt.get()).size();
+    }
+    return 0;
   }
 
   public Option<Epithet> infraSpecificEpithet() {

@@ -144,7 +144,13 @@ public class TestEntityGenerator {
 		n.setDatasetKey(TestEntityGenerator.DATASET1.getKey());
 		n.setScientificName(RandomUtils.randomSpecies());
 		n.setAuthorship(createAuthorship());
-		List<String> tokens = SPACE_SPLITTER.splitToList(n.getScientificName());
+    if(RND.nextBoolean()) {
+      n.setBasionymAuthorship(createAuthorship());
+    }
+    if (RND.nextInt(10) == 1) {
+      n.setSanctioningAuthor("Fr.");
+    }
+    List<String> tokens = SPACE_SPLITTER.splitToList(n.getScientificName());
 		n.setGenus(tokens.get(0));
 		n.setSpecificEpithet(tokens.get(1));
 		n.setInfragenericEpithet("Igen");
@@ -154,7 +160,6 @@ public class TestEntityGenerator {
 		n.setRank(Rank.SPECIES);
 		n.setOrigin(Origin.SOURCE);
 		n.setType(NameType.SCIENTIFIC);
-		n.setEtymology("A random species name");
 		n.addIssue(Issue.ACCEPTED_NAME_MISSING);
 		n.addIssue(Issue.HOMONYM, "Abies alba");
 		return n;
@@ -162,14 +167,10 @@ public class TestEntityGenerator {
 
 	public static Authorship createAuthorship() throws Exception {
 		Authorship a = new Authorship();
-		while (a.getCombinationAuthors().size() < 2 || RND.nextBoolean()) {
-			a.getCombinationAuthors().add(RandomUtils.randomAuthor());
+		while (a.getAuthors().size() < 2 || RND.nextBoolean()) {
+			a.getAuthors().add(RandomUtils.randomAuthor());
 		}
-		a.setCombinationYear(RandomUtils.randomSpeciesYear());
-		while (a.getBasionymAuthors().isEmpty() || RND.nextBoolean()) {
-			a.getBasionymAuthors().add(RandomUtils.randomAuthor());
-		}
-		a.setBasionymYear(RandomUtils.randomSpeciesYear());
+		a.setYear(RandomUtils.randomSpeciesYear());
 		return a;
 	}
 }

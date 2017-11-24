@@ -1,23 +1,35 @@
 package org.col.parser.gna;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
+import com.google.common.collect.*;
+import org.col.api.vocab.NomCode;
 import org.col.api.vocab.Rank;
 
-import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Map;
+import java.util.SortedMap;
 import java.util.regex.Pattern;
 
 import static org.col.api.vocab.Rank.*;
 
 /**
- * TODO: copied from GBIFNameParser. Move to a shared module
+ *
  */
-public class GnaRankUtils {
+public class RankUtils {
   /**
    * Matches all dots ("."), underscores ("_") and dashes ("-").
    */
   private static final Pattern NORMALIZE_RANK_MARKER = Pattern.compile("(?:[._ -]+|\\bnotho)");
+
+  protected static final List<Rank> INFRASUBSPECIFIC_MICROBIAL_RANKS;
+  static {
+    List<Rank> microbialRanks = Lists.newArrayList();
+    for (Rank r : Rank.values()) {
+      if (r.isRestrictedToCode()== NomCode.BACTERIAL && r.isInfraspecific()) {
+        microbialRanks.add(r);
+      }
+    }
+    INFRASUBSPECIFIC_MICROBIAL_RANKS = ImmutableList.copyOf(microbialRanks);
+  }
 
   /**
    * Map of only suprageneric rank markers to their respective rank enum.
@@ -134,17 +146,46 @@ public class GnaRankUtils {
   }
 
   /**
+   * An immutable map of name suffices to corresponding ranks across all kingdoms.
+   * To minimize wrong matches this map is sorted by suffix length with the first suffices being the longest and
+   * therefore most accurate matches.
+   * See http://www.nhm.ac.uk/hosted-sites/iczn/code/index.jsp?nfv=true&article=29
+   */
+  protected static final SortedMap<String, Rank> SUFFICES_RANK_MAP =
+      new ImmutableSortedMap.Builder<String, Rank>(Ordering.natural())
+          .put("mycetidae", SUBCLASS)
+          .put("phycidae", SUBCLASS)
+          .put("mycotina", SUBPHYLUM)
+          .put("phytina", SUBPHYLUM)
+          .put("phyceae", CLASS)
+          .put("mycetes", CLASS)
+          .put("mycota", PHYLUM)
+          .put("opsida", CLASS)
+          .put("oideae", SUBFAMILY)
+          .put("aceae", FAMILY)
+          .put("phyta", PHYLUM)
+          .put("oidea", SUPERFAMILY)
+          .put("ineae", SUBORDER)
+          .put("anae", SUPERORDER)
+          .put("ales", ORDER)
+          .put("acea", SUPERFAMILY)
+          .put("idae", FAMILY)
+          .put("inae", SUBFAMILY)
+          .put("eae", TRIBE)
+          .put("ini", TRIBE)
+          .put("ina", SUBTRIBE)
+          .build();
+
+  /**
    * Tries its best to infer a rank from a given rank marker such as subsp.
    *
    * @return the inferred rank or null
    */
-  public static Rank inferRank(@Nullable String rankMarker) {
+  public static Rank inferRank(String rankMarker) {
     if (rankMarker != null) {
       return RANK_MARKER_MAP.get(NORMALIZE_RANK_MARKER.matcher(rankMarker.toLowerCase()).replaceAll(""));
     }
     return null;
   }
-
-
 
 }

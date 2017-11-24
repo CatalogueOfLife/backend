@@ -9,6 +9,7 @@ import org.col.api.vocab.VocabularyUtils;
 import org.gbif.api.model.checklistbank.ParsedName;
 import org.gbif.nameparser.GBIFNameParser;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -41,10 +42,10 @@ public class NameParserGBIF implements NameParser {
     if (pn.isParsed()) {
       n.setScientificName(pn.canonicalName());
 
-      n.getAuthorship().setCombinationAuthors(splitAuthors(pn.getAuthorship()));
-      n.getAuthorship().setCombinationYear(pn.getYear());
-      n.getAuthorship().setBasionymAuthors(splitAuthors(pn.getBracketAuthorship()));
-      n.getAuthorship().setBasionymYear(pn.getBracketYear());
+      n.getAuthorship().setAuthors(splitAuthors(pn.getAuthorship()));
+      n.getAuthorship().setYear(pn.getYear());
+      n.getBasionymAuthorship().setAuthors(splitAuthors(pn.getBracketAuthorship()));
+      n.getBasionymAuthorship().setYear(pn.getBracketYear());
 
       if (pn.isBinomial()) {
         n.setGenus(pn.getGenusOrAbove());
@@ -62,7 +63,10 @@ public class NameParserGBIF implements NameParser {
   }
 
   private List<String> splitAuthors(String authors) {
-    return AUTHORTEAM_SPLITTER.splitToList(authors);
+    if (authors != null) {
+      return AUTHORTEAM_SPLITTER.splitToList(authors);
+    }
+    return Collections.emptyList();
   }
 
 }

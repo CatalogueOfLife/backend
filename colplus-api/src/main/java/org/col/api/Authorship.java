@@ -3,85 +3,63 @@ package org.col.api;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 
 /**
+ * TODO: make new class grouping basionym & comb Authorship and add authors, ex-authors & sanction authors part of Authorship!!!
  * TODO: deal with ex-authors https://github.com/Sp2000/colplus-backend/issues/10
+ * TODO: add sanctioning author (Fr. or Pers.) to both basionym & recomb
  */
 public class Authorship {
   private static final Joiner AUTHORSHIP_JOINER = Joiner.on(", ").skipNulls();
 
   /**
-   * list of basionym authors.
+   * list of authors.
    */
-  private LinkedList<String> basionymAuthors = Lists.newLinkedList();
-
-  /**
-   * Year of original name publication
-   */
-  private String basionymYear;
+  private List<String> authors = Lists.newArrayList();
 
   /**
    * list of authors excluding ex- authors
    */
-  private LinkedList<String> combinationAuthors = Lists.newLinkedList();
+  private List<String> exAuthors = Lists.newArrayList();
 
   /**
-   * The year this combination was first published, usually the same as the publishedIn reference.
+   * The year the combination or basionym was first published, usually the same as the publishedIn reference.
    * It is used for sorting names and ought to be populated even for botanical names which do not use it in the complete authorship string.
    */
-  private String combinationYear;
+  private String year;
 
-  public List<String> getBasionymAuthors() {
-    return basionymAuthors;
+  public List<String> getAuthors() {
+    return authors;
   }
 
-  public void setBasionymAuthors(List<String> basionymAuthors) {
-    this.basionymAuthors = Lists.newLinkedList(basionymAuthors);
+  public void setAuthors(List<String> authors) {
+    this.authors = authors;
   }
 
-  public String getBasionymYear() {
-    return basionymYear;
+  public List<String> getExAuthors() {
+    return exAuthors;
   }
 
-  public void setBasionymYear(String basionymYear) {
-    this.basionymYear = basionymYear;
+  public void setExAuthors(List<String> exAuthors) {
+    this.exAuthors = exAuthors;
   }
 
-  public List<String> getCombinationAuthors() {
-    return combinationAuthors;
+  public String getYear() {
+    return year;
   }
 
-  public void setCombinationAuthors(List<String> combinationAuthors) {
-    this.combinationAuthors = Lists.newLinkedList(combinationAuthors);
-  }
-
-  public String getCombinationYear() {
-    return combinationYear;
-  }
-
-  public void setCombinationYear(String combinationYear) {
-    this.combinationYear = combinationYear;
+  public void setYear(String year) {
+    this.year = year;
   }
 
   public boolean isEmpty() {
-    return combinationAuthors.isEmpty() && combinationYear == null && basionymAuthors.isEmpty() && basionymYear == null;
+    return authors.isEmpty() && year == null;
   }
 
-  /**
-   * @return true if original year or authors exist
-   */
-  public boolean hasOriginal() {
-    return !basionymAuthors.isEmpty() || basionymYear != null;
-  }
-
-  /**
-   * @return true if original year or authors exist
-   */
-  public boolean hasCombination() {
-    return !combinationAuthors.isEmpty() || combinationYear != null;
+  public boolean exists() {
+    return !authors.isEmpty() || year != null;
   }
 
   @Override
@@ -89,21 +67,23 @@ public class Authorship {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     Authorship that = (Authorship) o;
-    return Objects.equals(basionymAuthors, that.basionymAuthors) &&
-        Objects.equals(basionymYear, that.basionymYear) &&
-        Objects.equals(combinationAuthors, that.combinationAuthors) &&
-        Objects.equals(combinationYear, that.combinationYear);
+    return Objects.equals(authors, that.authors) &&
+        Objects.equals(exAuthors, that.exAuthors) &&
+        Objects.equals(year, that.year);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(basionymAuthors, basionymYear, combinationAuthors, combinationYear);
+    return Objects.hash(authors, exAuthors, year);
   }
 
-  private String joinAuthors(LinkedList<String> authors) {
-    // TODO: offer option to abbreviate with et al.
-    if (authors.size() > 1) {
-      return AUTHORSHIP_JOINER.join(authors.subList(0, authors.size()-1)) + " & " + authors.getLast();
+  private static String joinAuthors(List<String> authors, boolean useEtAl) {
+    if (useEtAl && authors.size() > 2) {
+      return AUTHORSHIP_JOINER.join(authors.subList(0, 1)) + " et al.";
+
+    } else if (authors.size() > 1) {
+      return AUTHORSHIP_JOINER.join(authors.subList(0, authors.size()-1)) + " & " + authors.get(authors.size() - 1);
+
     } else {
       return AUTHORSHIP_JOINER.join(authors);
     }
@@ -114,23 +94,20 @@ public class Authorship {
    */
   @Override
   public String toString() {
-    if (hasCombination() || hasOriginal()) {
+    if (exists()) {
       StringBuilder sb = new StringBuilder();
-      if (hasOriginal()) {
-        sb.append("(");
-        sb.append(joinAuthors(basionymAuthors));
-        if (basionymYear != null && !basionymAuthors.isEmpty()) {
-          sb.append(", ");
-          sb.append(basionymYear);
-        }
-        sb.append(") ");
+      if (!exAuthors.isEmpty()) {
+        sb.append(joinAuthors(exAuthors, false));
+        sb.append(" ex ");
       }
-      if (hasCombination()) {
-        sb.append(joinAuthors(combinationAuthors));
-        if (combinationYear != null && !combinationAuthors.isEmpty()) {
+      if (!authors.isEmpty()) {
+        sb.append(joinAuthors(authors, false));
+      }
+      if (year != null) {
+        if (sb.length() > 0) {
           sb.append(", ");
-          sb.append(combinationYear);
         }
+        sb.append(year);
       }
       return sb.toString();
     }

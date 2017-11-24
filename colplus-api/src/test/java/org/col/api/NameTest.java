@@ -1,5 +1,6 @@
 package org.col.api;
 
+import org.col.api.vocab.NamePart;
 import org.col.api.vocab.Rank;
 import org.junit.Test;
 
@@ -21,7 +22,7 @@ public class NameTest {
 
     n.setScientificName("Abies");
     n.setRank(Rank.GENUS);
-    n.getAuthorship().getCombinationAuthors().add("Mill.");
+    n.getAuthorship().getAuthors().add("Mill.");
     assertEquals("Abies", n.buildScientificName());
 
     n.setRank(Rank.UNRANKED);
@@ -51,6 +52,41 @@ public class NameTest {
 
     n.setRank(Rank.VARIETY);
     assertEquals("Abies alba var. alpina", n.buildScientificName());
+
+    n.setRank(Rank.INFRASPECIFIC_NAME);
+    assertEquals("Abies alba alpina", n.buildScientificName());
+
+    n.setNotho(NamePart.INFRASPECIFIC);
+    assertEquals("Abies alba × alpina", n.buildScientificName());
+
+    n.setNotho(NamePart.GENERIC);
+    assertEquals("× Abies alba alpina", n.buildScientificName());
+  }
+
+  @Test
+  public void testFullAuthorship() throws Exception {
+    Name n = new Name();
+    assertNull(n.fullAuthorship());
+
+    n.getAuthorship().getAuthors().add("L.");
+    assertEquals("L.", n.fullAuthorship());
+
+    n.getBasionymAuthorship().getAuthors().add("Bassier");
+    assertEquals("(Bassier) L.", n.fullAuthorship());
+    assertEquals("(Bassier) L.", n.fullAuthorship());
+
+    n.getAuthorship().getAuthors().add("Rohe");
+    assertEquals("(Bassier) L. & Rohe", n.fullAuthorship());
+    assertEquals("(Bassier) L. & Rohe", n.fullAuthorship());
+
+    n.setSanctioningAuthor("Fr.");
+    assertEquals("(Bassier) L. & Rohe : Fr.", n.fullAuthorship());
+
+
+    n = new Name();
+    n.getAuthorship().getAuthors().add("L.");
+    n.setSanctioningAuthor("Pers.");
+    assertEquals("L. : Pers.", n.fullAuthorship());
   }
 
   @Test
@@ -74,7 +110,7 @@ public class NameTest {
     n.setScientificName("Abies");
     assertTrue(n.isConsistent());
 
-    n.getAuthorship().getCombinationAuthors().add("Mill.");
+    n.getAuthorship().getAuthors().add("Mill.");
     assertTrue(n.isConsistent());
 
     n.setRank(Rank.SPECIES);

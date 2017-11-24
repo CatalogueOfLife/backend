@@ -48,17 +48,14 @@ public class RandomUtils {
   public static Authorship randomAuthorship() {
     Authorship auth = new Authorship();
     while (rnd.nextBoolean()) {
-      auth.getCombinationAuthors().add(randomAuthor());
+      auth.getAuthors().add(randomAuthor());
     }
     if (rnd.nextBoolean()) {
-      auth.setCombinationYear(randomSpeciesYear());
+      auth.setYear(randomSpeciesYear());
     }
 
-    while (rnd.nextBoolean() && rnd.nextBoolean()) {
-      auth.getBasionymAuthors().add(randomAuthor());
-    }
-    if (rnd.nextBoolean()) {
-      auth.setBasionymYear(randomSpeciesYear());
+    while (rnd.nextInt(10) == 1) {
+      auth.getExAuthors().add(randomAuthor());
     }
     return auth;
   }

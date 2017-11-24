@@ -7,7 +7,7 @@
     <version>1.0-SNAPSHOT</version>
   </parent>
   <artifactId>colplus-ws</artifactId>
-  <name>CoL backend services (WS)</name>
+  <name>Clearinghouse backend services (WS)</name>
 
     <properties>
         <mainClass>org.col.ColApp</mainClass>

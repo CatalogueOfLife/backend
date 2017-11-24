@@ -4,13 +4,13 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import com.google.common.collect.Lists;
+import org.col.TestEntityGenerator;
 import org.col.api.*;
 import org.col.api.vocab.Issue;
 import org.col.api.vocab.Rank;
 import org.col.api.vocab.TaxonomicStatus;
 import org.col.commands.importer.neo.model.NeoTaxon;
 import org.gbif.dwc.terms.*;
-import org.gbif.utils.text.StringUtils;
 import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
@@ -34,7 +34,8 @@ public class NeoKryoFactoryTest {
 
     t.taxon.setName(new Name());
     t.taxon.getName().setScientificName("Abies alba");
-    t.taxon.getName().setAuthorship(createAuthorship());
+    t.taxon.getName().setAuthorship(TestEntityGenerator.createAuthorship());
+    t.taxon.getName().setBasionymAuthorship(TestEntityGenerator.createAuthorship());
     t.taxon.getName().setRank(Rank.SPECIES);
     for (Issue issue : Issue.values()) {
       t.taxon.addIssue(issue);
@@ -46,19 +47,6 @@ public class NeoKryoFactoryTest {
     }
 
     assertSerde(t);
-  }
-
-  private static Authorship createAuthorship() throws Exception {
-    Authorship a = new Authorship();
-    while (a.getCombinationAuthors().size() < 3) {
-      a.getCombinationAuthors().add(StringUtils.randomAuthor());
-    }
-    a.setCombinationYear(StringUtils.randomSpeciesYear());
-    while (a.getBasionymAuthors().isEmpty()) {
-      a.getBasionymAuthors().add(StringUtils.randomAuthor());
-    }
-    a.setBasionymYear(StringUtils.randomSpeciesYear());
-    return a;
   }
 
   @Test

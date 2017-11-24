@@ -1,6 +1,10 @@
-country,ISO
-isocountry,ISO
 3166,ISO
+country,ISO
 fao,ISO
 fish,FAO
 fishing,FAO
+globalplanet,WOEID
+gp,WOEID
+isocountry,ISO
+woe,WOEID
+yahoo,WOEID

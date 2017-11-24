@@ -89,8 +89,12 @@ public class AreaParser implements Parser<AreaParser.Area> {
         break;
 
       case ISO:
-        Optional<Country> c = CountryParser.PARSER.parse(areaClean);
+        String[] isoParts = areaClean.split("-", 2);
+        Optional<Country> c = CountryParser.PARSER.parse(isoParts[0]);
         areaClean = c.orElseThrow(() -> new UnparsableException(Country.class, area)).getIso2LetterCode();
+        if (isoParts.length > 1) {
+          areaClean = areaClean + "-" + isoParts[1].toUpperCase();
+        }
         break;
 
       case FAO:

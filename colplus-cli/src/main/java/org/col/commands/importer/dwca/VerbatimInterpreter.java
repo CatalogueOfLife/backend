@@ -202,7 +202,6 @@ public class VerbatimInterpreter {
     );
     //TODO: should we also get these through an extension, e.g. species profile or a nomenclature extension?
     n.setRemarks(v.getCoreTerm(CoLTerm.nomenclaturalRemarks));
-    n.setEtymology(v.getCoreTerm(CoLTerm.etymology));
     n.setFossil(null);
 
     // basionym is kept purely in neo4j

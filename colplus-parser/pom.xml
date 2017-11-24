@@ -35,10 +35,6 @@
             <groupId>org.gbif</groupId>
             <artifactId>gbif-parsers</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.gbif</groupId>
-            <artifactId>name-parser</artifactId>
-        </dependency>
 
         <!-- GNA name parser in Scala using AST 2.11 libs -->
         <dependency>

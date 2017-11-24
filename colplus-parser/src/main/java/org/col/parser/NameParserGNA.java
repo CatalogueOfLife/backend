@@ -1,12 +1,13 @@
 package org.col.parser;
 
+import com.google.common.base.CharMatcher;
 import com.google.common.collect.Lists;
 import org.col.api.Name;
 import org.col.api.vocab.NameType;
 import org.col.api.vocab.Rank;
 import org.col.parser.gna.Authorship;
 import org.col.parser.gna.Epithet;
-import org.col.parser.gna.GnaRankUtils;
+import org.col.parser.gna.RankUtils;
 import org.col.parser.gna.ScinameMap;
 import org.globalnames.parser.ScientificName;
 import org.globalnames.parser.ScientificNameParser;
@@ -15,7 +16,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import scala.Option;
 import scala.collection.Iterator;
+import scala.collection.Map;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
@@ -27,11 +30,15 @@ public class NameParserGNA implements NameParser {
 
   public static final NameParser PARSER = new NameParserGNA();
   private final static Pattern PLACEHOLDER = Pattern.compile("(?:unnamed|mixed|unassigned|unallocated|unplaced|undetermined|unclassified|uncultured|unknown|unspecified|uncertain|incertae sedis|not assigned|awaiting allocation|temp|dummy)", Pattern.CASE_INSENSITIVE);
-
+  private final static CharMatcher EMPTY = CharMatcher.invisible().and(CharMatcher.whitespace());
   private final ScientificNameParser parser = ScientificNameParser.instance();
 
   @Override
   public Optional<Name> parse(String scientificName) throws UnparsableException {
+    if (scientificName == null || EMPTY.matchesAllOf(scientificName)) {
+      return Optional.empty();
+    }
+
     Name n = preparse(scientificName);
     if (n == null) {
       ScientificNameParser.Result sn = parser.fromString(scientificName);
@@ -70,8 +77,8 @@ public class NameParserGNA implements NameParser {
       LOG.warn(warn.toString());
     }
 
-    if (result.preprocessorResult().noParse()) {
-      throw new UnparsableException(NameType.NO_NAME, name);
+    if (result.preprocessorResult().noParse() || result.detailed() instanceof org.json4s.JsonAST.JNothing$) {
+      n.setType(NameType.NO_NAME);
 
     } else if (result.preprocessorResult().virus()) {
       n.setType(NameType.VIRUS);
@@ -87,7 +94,7 @@ public class NameParserGNA implements NameParser {
 
       } else {
 
-        ScinameMap map = ScinameMap.create(result);
+        ScinameMap map = ScinameMap.create(name, result);
         n.setType(typeFromQuality(sn.quality()));
         Option<Epithet> authorship = Option.empty();
         Option<Epithet> uninomial = map.uninomial();
@@ -97,7 +104,7 @@ public class NameParserGNA implements NameParser {
             // infrageneric
             n.setGenus(uninomial.get().getParent());
             n.setInfragenericEpithet(uninomial.get().getEpithet());
-            Rank rankCol = GnaRankUtils.inferRank(uninomial.get().getRank());
+            Rank rankCol = RankUtils.inferRank(uninomial.get().getRank());
             n.setRank(rankCol);
             n.setScientificName(n.buildScientificName());
 
@@ -122,32 +129,36 @@ public class NameParserGNA implements NameParser {
             authorship = infraGenus;
           }
 
+          Rank parsedRank = null;
           Option<Epithet> species = map.specificEpithet();
           if (species.isDefined()) {
             n.setSpecificEpithet(species.get().getEpithet());
             authorship = species;
-            if (n.getRank().equals(Rank.UNRANKED)) {
-              n.setRank(Rank.SPECIES);
-            }
+            parsedRank = Rank.SPECIES;
           }
 
           Option<Epithet> infraSpecies = map.infraSpecificEpithet();
           if (infraSpecies.isDefined()) {
             n.setInfraspecificEpithet(infraSpecies.get().getEpithet());
-            Rank rankCol = GnaRankUtils.inferRank(infraSpecies.get().getRank());
+            Rank rankCol = RankUtils.inferRank(infraSpecies.get().getRank());
             if (rankCol != null) {
               n.setRank(rankCol);
-            } else if (n.getRank().equals(Rank.UNRANKED)) {
-              n.setRank(Rank.INFRASPECIFIC_NAME);
+            } else {
+              parsedRank = map.infraSpecificEpithetCount() > 1 ? Rank.INFRASUBSPECIFIC_NAME : Rank.INFRASPECIFIC_NAME;
             }
             authorship = infraSpecies;
           }
+
+          if (parsedRank != null && (n.getRank() == null || n.getRank().equals(Rank.UNRANKED))) {
+            n.setRank(parsedRank);
+          }
+
           // build canonical scientific name by our Name class - it uses different logic than the GNA Parser
           n.setScientificName(n.buildScientificName());
         }
 
         // set authorship from the lowest epithet
-        setAuthorship(n, authorship);
+        setFullAuthorship(n, authorship);
 
         //TODO: see if we can handle annotations, do they map to ParsedName at all ???
         //Optional anno = map.annotation();
@@ -160,14 +171,25 @@ public class NameParserGNA implements NameParser {
     return n;
   }
 
-  private void setAuthorship(Name n, Option<Epithet> epi) {
+  private void setFullAuthorship(Name n, Option<Epithet> epi) {
     if (epi.isDefined() && epi.get().hasAuthorship()) {
       Authorship auth = epi.get().getAuthorship();
-      n.getAuthorship().setCombinationAuthors(Lists.newArrayList(auth.getCombinationAuthors()));
-      n.getAuthorship().setCombinationYear(auth.getCombinationYear());
-      n.getAuthorship().setBasionymAuthors(Lists.newArrayList(auth.getBasionymAuthors()));
-      n.getAuthorship().setBasionymYear(auth.getBasionymYear());
+      setAuthorship(n.getAuthorship(), auth.combination);
+      setAuthorship(n.getBasionymAuthorship(), auth.basionym);
     }
+  }
+
+  private void setAuthorship(org.col.api.Authorship auth, Map<String, Object> map) {
+    // if ex authors exist we will swap them to follow the botanical order convention by default
+    // as ex authors are mainly used in the botanical world
+    List<String> ex = Lists.newArrayList(Authorship.authors(map, true));
+    if (ex.isEmpty()) {
+      auth.setAuthors(Lists.newArrayList(Authorship.authors(map, false)));
+    } else {
+      auth.setAuthors(ex);
+      auth.setExAuthors(Lists.newArrayList(Authorship.authors(map, false)));
+    }
+    auth.setYear(Authorship.year(map));
   }
 
   private static NameType typeFromQuality(Integer quality) {

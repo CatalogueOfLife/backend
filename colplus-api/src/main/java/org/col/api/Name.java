@@ -1,25 +1,19 @@
 package org.col.api;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.col.api.exception.InvalidNameException;
+import org.col.api.vocab.*;
+
 import java.net.URI;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.Objects;
 
-import org.col.api.exception.InvalidNameException;
-import org.col.api.vocab.Issue;
-import org.col.api.vocab.NamePart;
-import org.col.api.vocab.NameType;
-import org.col.api.vocab.NomCode;
-import org.col.api.vocab.NomStatus;
-import org.col.api.vocab.Origin;
-import org.col.api.vocab.Rank;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 /**
  *
  */
 public class Name {
+  private static final Character HYBRID_MARKER = '×';
 
 	/**
 	 * Internal surrogate key of the name as provided by postgres. This key is
@@ -47,9 +41,21 @@ public class Name {
 	private String scientificName;
 
 	/**
-	 * Parsed authorship of the name incl basionym and years
+	 * Authorship with years of the name, but excluding any basionym authorship.
+   * For binomials the combination authors.
 	 */
 	private Authorship authorship = new Authorship();
+
+  /**
+   * Basionym authorship with years of the name
+   */
+  private Authorship basionymAuthorship = new Authorship();
+
+  /**
+   * The sanctioning author for sanctioned fungal names.
+   * Fr. or Pers.
+   */
+  private String sanctioningAuthor;
 
 	/**
 	 * rank of the name from enumeration above
@@ -78,6 +84,10 @@ public class Name {
 	private String specificEpithet;
 
 	private String infraspecificEpithet;
+
+  private String cultivarEpithet;
+
+  private String strain;
 
 	/**
 	 * The part of the name which is considered a hybrid; see
@@ -115,8 +125,6 @@ public class Name {
 	 * notes for general remarks on the name, i.e. its nomenclature
 	 */
 	private String remarks;
-
-	private String etymology;
 
 	/**
 	 * Issues related to this name with potential values in the map
@@ -163,15 +171,23 @@ public class Name {
 		this.authorship = authorship;
 	}
 
-	public String getEtymology() {
-		return etymology;
-	}
+  public Authorship getBasionymAuthorship() {
+    return basionymAuthorship;
+  }
 
-	public void setEtymology(String etymology) {
-		this.etymology = etymology;
-	}
+  public void setBasionymAuthorship(Authorship basionymAuthorship) {
+    this.basionymAuthorship = basionymAuthorship;
+  }
 
-	public Rank getRank() {
+  public String getSanctioningAuthor() {
+    return sanctioningAuthor;
+  }
+
+  public void setSanctioningAuthor(String sanctioningAuthor) {
+    this.sanctioningAuthor = sanctioningAuthor;
+  }
+
+  public Rank getRank() {
 		return rank;
 	}
 
@@ -227,7 +243,23 @@ public class Name {
 		this.infraspecificEpithet = infraspecificEpithet;
 	}
 
-	public NamePart getNotho() {
+  public String getCultivarEpithet() {
+    return cultivarEpithet;
+  }
+
+  public void setCultivarEpithet(String cultivarEpithet) {
+    this.cultivarEpithet = cultivarEpithet;
+  }
+
+  public String getStrain() {
+    return strain;
+  }
+
+  public void setStrain(String strain) {
+    this.strain = strain;
+  }
+
+  public NamePart getNotho() {
 		return notho;
 	}
 
@@ -303,97 +335,68 @@ public class Name {
 		issues.put(issue, value.toString());
 	}
 
-	@Override
-	public boolean equals(Object o) {
-		if (this == o)
-			return true;
-		if (o == null || getClass() != o.getClass())
-			return false;
-		Name name = (Name) o;
-		return Objects.equals(key, name.key)
-		    && Objects.equals(id, name.id)
-		    && Objects.equals(datasetKey, name.datasetKey)
-		    && Objects.equals(scientificName, name.scientificName)
-		    && Objects.equals(authorship, name.authorship)
-		    && rank == name.rank
-		    && origin == name.origin
-		    && nomenclaturalCode == name.nomenclaturalCode
-		    && Objects.equals(genus, name.genus)
-		    && Objects.equals(infragenericEpithet, name.infragenericEpithet)
-		    && Objects.equals(specificEpithet, name.specificEpithet)
-		    && Objects.equals(infraspecificEpithet, name.infraspecificEpithet)
-		    && notho == name.notho
-		    && Objects.equals(basionymKey, name.basionymKey)
-		    && Objects.equals(fossil, name.fossil)
-		    && status == name.status
-		    && type == name.type
-		    && Objects.equals(sourceUrl, name.sourceUrl)
-		    && Objects.equals(remarks, name.remarks)
-		    && Objects.equals(etymology, name.etymology)
-		    && Objects.equals(issues, name.issues);
-	}
+  /**
+   * @return the full authorship string as used in scientific names
+   */
+  public String fullAuthorship() {
+    if (authorship.exists() || basionymAuthorship.exists()) {
+      StringBuilder sb = new StringBuilder();
+      if (basionymAuthorship.exists()) {
+        sb.append("(");
+        sb.append(basionymAuthorship.toString());
+        sb.append(") ");
+      }
+      if (authorship.exists()) {
+        sb.append(authorship.toString());
+        //TODO: remove in default rendering according to Paul Kirk!
+        if (sanctioningAuthor != null) {
+          sb.append(" : ");
+          sb.append(sanctioningAuthor);
+        }
+      }
+      return sb.toString();
+    }
+    return null;
+  }
 
-	@Override
-	public int hashCode() {
-		return Objects.hash(key, id, datasetKey, scientificName, authorship, rank, origin,
-		    nomenclaturalCode, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, notho,
-		    basionymKey, fossil, status, type, sourceUrl, remarks, etymology, issues);
-	}
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    Name name = (Name) o;
+    return Objects.equals(key, name.key) &&
+        Objects.equals(id, name.id) &&
+        Objects.equals(datasetKey, name.datasetKey) &&
+        Objects.equals(scientificName, name.scientificName) &&
+        Objects.equals(authorship, name.authorship) &&
+        Objects.equals(basionymAuthorship, name.basionymAuthorship) &&
+        Objects.equals(sanctioningAuthor, name.sanctioningAuthor) &&
+        rank == name.rank &&
+        origin == name.origin &&
+        nomenclaturalCode == name.nomenclaturalCode &&
+        Objects.equals(genus, name.genus) &&
+        Objects.equals(infragenericEpithet, name.infragenericEpithet) &&
+        Objects.equals(specificEpithet, name.specificEpithet) &&
+        Objects.equals(infraspecificEpithet, name.infraspecificEpithet) &&
+        notho == name.notho &&
+        Objects.equals(basionymKey, name.basionymKey) &&
+        Objects.equals(fossil, name.fossil) &&
+        status == name.status &&
+        type == name.type &&
+        Objects.equals(sourceUrl, name.sourceUrl) &&
+        Objects.equals(remarks, name.remarks) &&
+        Objects.equals(issues, name.issues);
+  }
 
-	@Override
-	public String toString() {
-		return "Name{"
-		    + "key="
-		    + key
-		    + ", id='"
-		    + id
-		    + '\''
-		    + ", dataset="
-		    + datasetKey
-		    + ", scientificName='"
-		    + scientificName
-		    + '\''
-		    + ", authorship='"
-		    + authorship
-		    + '\''
-		    + ", rank="
-		    + rank
-		    + ", origin="
-		    + origin
-		    + ", nomenclaturalCode="
-		    + nomenclaturalCode
-		    + ", genus='"
-		    + genus
-		    + '\''
-		    + ", infragenericEpithet='"
-		    + infragenericEpithet
-		    + '\''
-		    + ", specificEpithet='"
-		    + specificEpithet
-		    + '\''
-		    + ", infraspecificEpithet='"
-		    + infraspecificEpithet
-		    + '\''
-		    + ", notho="
-		    + notho
-		    + ", basionym="
-		    + basionymKey
-		    + ", fossil="
-		    + fossil
-		    + ", status="
-		    + status
-		    + ", type="
-		    + type
-		    + ", sourceUrl="
-		    + sourceUrl
-		    + ", remarks='"
-		    + remarks
-		    + '\''
-		    + ", etymology='"
-		    + etymology
-		    + '\''
-		    + '}';
-	}
+  @Override
+  public int hashCode() {
+    return Objects.hash(key, id, datasetKey, scientificName, authorship, basionymAuthorship, sanctioningAuthor, rank, origin, nomenclaturalCode, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, notho, basionymKey, fossil, status, type, sourceUrl, remarks, issues);
+  }
+
+  @Override
+  public String toString() {
+    return key + "[" + id + "] " + buildScientificName() + " " + fullAuthorship();
+  }
 
 	/**
 	 * Validates consistency of name properties. This method checks if the given
@@ -444,32 +447,57 @@ public class Name {
 			// an infrageneric with or without a genus given?
 			StringBuilder sb = new StringBuilder();
 			if (genus != null) {
+			  if (NamePart.GENERIC == notho) {
+			    sb.append(HYBRID_MARKER);
+          sb.append(" ");
+        }
 				sb.append(genus);
 				sb.append(" ");
 			}
-			if (rank.isInfrageneric()) {
-				sb.append(rank.getMarker());
-				sb.append(" ");
-			}
-			sb.append(infragenericEpithet);
+
+      if (rank.isInfrageneric()) {
+        sb.append(rank.getMarker());
+        sb.append(" ");
+      }
+      if (NamePart.INFRAGENERIC == notho) {
+        sb.append(HYBRID_MARKER);
+        sb.append(" ");
+      }
+      sb.append(infragenericEpithet);
+
 			return sb.toString();
 
 		} else if (genus == null) {
 			// this is a uninomial, e.g. genus or a higher rank
-			return scientificName;
+      if (NamePart.GENERIC == notho) {
+        return HYBRID_MARKER + " " + scientificName;
+      }
+      return scientificName;
 
 		} else if (specificEpithet != null) {
 			// species at least, maybe infraspecific
 			StringBuilder sb = new StringBuilder();
+      if (NamePart.GENERIC == notho) {
+        sb.append(HYBRID_MARKER);
+        sb.append(" ");
+      }
 			sb.append(genus);
 			sb.append(" ");
+      if (NamePart.SPECIFIC == notho) {
+        sb.append(HYBRID_MARKER);
+        sb.append(" ");
+      }
 			sb.append(specificEpithet);
 			if (infraspecificEpithet != null) {
 				sb.append(" ");
-				if (rank.isInfraspecific()) {
+				if (rank.isInfraspecific() && !rank.isUncomparable()) {
 					sb.append(rank.getMarker());
 					sb.append(" ");
 				}
+        if (NamePart.INFRASPECIFIC == notho) {
+          sb.append(HYBRID_MARKER);
+          sb.append(" ");
+        }
 				sb.append(infraspecificEpithet);
 			}
 			return sb.toString();

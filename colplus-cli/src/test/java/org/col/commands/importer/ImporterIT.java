@@ -147,6 +147,10 @@ public class ImporterIT {
       expD.add(dist(Gazetteer.TDWG, "MOR-ME", DistributionStatus.NATIVE));
       expD.add(dist(Gazetteer.TDWG, "CPP", DistributionStatus.NATIVE));
       expD.add(dist(Gazetteer.TDWG, "NAM", DistributionStatus.NATIVE));
+      expD.add(dist(Gazetteer.ISO, "IT-82", DistributionStatus.NATIVE));
+      expD.add(dist(Gazetteer.ISO, "ES-CN", DistributionStatus.NATIVE));
+      expD.add(dist(Gazetteer.ISO, "FR-H", DistributionStatus.NATIVE));
+      expD.add(dist(Gazetteer.ISO, "FM-PNI", DistributionStatus.NATIVE));
 
       assertEquals(expD.size(), info.getDistributions().size());
       // remove dist keys before we check equality

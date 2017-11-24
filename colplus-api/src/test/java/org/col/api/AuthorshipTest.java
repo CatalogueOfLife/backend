@@ -15,16 +15,23 @@ public class AuthorshipTest {
     Authorship auth = new Authorship();
     assertNull(auth.toString());
 
-    auth.getCombinationAuthors().add("L.");
+    auth.getAuthors().add("L.");
     assertEquals("L.", auth.toString());
 
-    auth.getBasionymAuthors().add("Bassier");
-    assertEquals("(Bassier) L.", auth.toString());
-    assertEquals("(Bassier) L.", auth.toString());
+    auth.getAuthors().add("Rohe");
+    assertEquals("L. & Rohe", auth.toString());
 
-    auth.getCombinationAuthors().add("Rohe");
-    assertEquals("(Bassier) L. & Rohe", auth.toString());
-    assertEquals("(Bassier) L. & Rohe", auth.toString());
+    auth.getAuthors().clear();
+    auth.setYear("1878");
+    assertEquals("1878", auth.toString());
+
+    auth.getAuthors().add("L.");
+    auth.getAuthors().add("Rohe");
+    assertEquals("L. & Rohe, 1878", auth.toString());
+
+    auth.getExAuthors().add("Bassier");
+    assertEquals("Bassier ex L. & Rohe, 1878", auth.toString());
+
   }
 
 }

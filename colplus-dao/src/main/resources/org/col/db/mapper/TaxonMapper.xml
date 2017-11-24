@@ -34,9 +34,12 @@
         n.infraspecific_epithet as n_infraspecific_epithet,
         n.notho as n_notho,
         n.basionym_authors as n_basionym_authors,
+        n.basionym_ex_authors as n_basionym_ex_authors,
         n.basionym_year as n_basionym_year,
         n.combination_authors as n_combination_authors,
+        n.combination_ex_authors as n_combination_ex_authors,
         n.combination_year as n_combination_year,
+        n.sanctioning_author as n_sanctioning_author,
         n.nomenclatural_code as n_nomenclatural_code,
         n.status as n_status,
         n.origin as n_origin,
@@ -44,7 +47,6 @@
         n.fossil as n_fossil,
         n.basionym_key as n_basionym_key,
         n.remarks as n_remarks,
-        n.etymology as n_etymology,
         n.issues as n_issues
 	</sql>
 

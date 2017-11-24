@@ -20,12 +20,6 @@ import javax.annotation.Nullable;
 /**
  * Vocabulary for the nomenclatural status of a name.
  *
- * TODO: consider adding:
- * nom. superfl.
- * nomen protectum; nom. prot. a name granted protection, more specific than conserved
- * nomen erratum (nom. err.) - a name given in error
- * nomen suppressum (nom. supp.; plural: nomina suppressa) – a name that has been suppressed and cannot be used
- *
  * See WFO Contributor Guidelines,
  * @see <a href="http://dev.e-taxonomy.eu/trac/wiki/NomenclaturalStatus">EDIT CDM</a>
  * @see <a href="http://wiki.tdwg.org/twiki/bin/view/UBIF/LinneanCoreNomenclaturalStatus">TDWG LinneanCoreNomenclaturalStatus</a>
@@ -87,10 +81,17 @@ public enum NomStatus {
   CONSERVED("nomen conservandum", "nom. cons.", "conserved name"),
 
   /**
+   * A zoological name protected via "Reversal of Precedence" in accordance with ICZN Article 23.9.1
+   * A conserved name that is either a junior synonym or homonym that is in use
+   * because the senior synonym or homonym has been made a nomen oblitum ("forgotten name").
+   */
+  PROTECTED("nomen protectum", "nom. prot.", "protected name"),
+
+  /**
    * A name that was not validly published according to the rules of the code,
    * or a name that was not accepted by the author in the original publication, for example,
    * if the name was suggested as a synonym of an accepted name.
-   * In zoology this is called an unavailable name.
+   * In zoology referred to as an unavailable name.
    * Example: Linaria vulgaris Hill, nom. inval.
    * Many names published by John Hill between 1753 and 1757 were not accepted as validly published.
    */
@@ -114,7 +115,9 @@ public enum NomStatus {
   NAKED("nomen nudum", "nom. nud.", "naked name"),
 
   /**
-   * A name which has been overlooked (literally, forgotten) and is no longer valid.
+   * A name which has been overlooked (literally, forgotten), has not been in use after 1899 and is no longer valid.
+   * The name is turned invalid in favor of the nomen protectum.
+   * ICZN Article 23.9.1
    */
   FORGOTTEN("nomen oblitum", "nom. obl.", "forgotten name"),
 
@@ -181,6 +184,7 @@ public enum NomStatus {
    * Some zoologists use a similar convention, but it is not done so universally.
    */
   MANUSCRIPT("manuscript name", "ms.", "manuscript name"),
+
   /**
    * A name usage erroneously cited without a sec/sensu indication so it appears to be a published homonym with a different authority.
    * See https://en.wikipedia.org/wiki/Chresonym
@@ -223,9 +227,17 @@ public enum NomStatus {
   }
 
   /**
+   * @return true if the name status indicates that it is validly published / available.
+   */
+  public boolean isAvailable() {
+    return this != CHRESONYM && this != MANUSCRIPT && this != NAKED && this != UNAVAILABLE;
+  }
+
+  /**
    * @return true if the name is potentially accepted to be used, following the codes conventions.
+   * It excludes doubtful or unevaluated names.
    */
   public boolean isLegitimate() {
-    return this == LEGITIMATE || this == CONSERVED || this == REPLACEMENT || this == VARIANT;
+    return this == LEGITIMATE || this == CONSERVED || this == PROTECTED || this == REPLACEMENT || this == VARIANT;
   }
 }
