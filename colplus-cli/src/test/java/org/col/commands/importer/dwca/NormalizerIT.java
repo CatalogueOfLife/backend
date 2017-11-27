@@ -12,6 +12,8 @@ import org.col.commands.importer.neo.NotUniqueRuntimeException;
 import org.col.commands.importer.neo.model.Labels;
 import org.col.commands.importer.neo.model.NeoProperties;
 import org.col.commands.importer.neo.model.NeoTaxon;
+import org.col.commands.importer.neo.printer.GraphFormat;
+import org.col.commands.importer.neo.printer.PrinterUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -24,6 +26,10 @@ import org.neo4j.helpers.collection.Iterables;
 import org.neo4j.helpers.collection.Iterators;
 
 import javax.annotation.Nullable;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.PrintWriter;
+import java.io.Writer;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -141,7 +147,20 @@ public class NormalizerIT {
       NeoTaxon acc = byTaxonID("1006");
       assertEquals(acc.taxon.getId(), syn.synonym.accepted.get(0).getId());
       assertEquals(acc.taxon.getKey(), syn.synonym.accepted.get(0).getKey());
+
     }
+  }
+
+  private void debug() throws Exception {
+    PrinterUtils.printTree(store.getNeo(), new PrintWriter(System.out), GraphFormat.TEXT);
+
+    // dump graph as DOT file for debugging
+    File dotFile = new File("graphs/dbugtree.dot");
+    Files.createParentDirs(dotFile);
+    Writer writer = new FileWriter(dotFile);
+    PrinterUtils.printTree(store.getNeo(), writer, GraphFormat.DOT);
+    writer.close();
+    System.out.println("Wrote graph to "+dotFile.getAbsolutePath());
   }
 
   @Test

@@ -36,7 +36,11 @@ import java.util.Set;
  */
 public class Normalizer implements Runnable {
   private static final Logger LOG = LoggerFactory.getLogger(Normalizer.class);
-  public static final String PLACEHOLDER_NAME = "Incertae sedis";
+  public static final Name PLACEHOLDER = new Name();
+  static {
+    PLACEHOLDER.setScientificName("Incertae sedis");
+    PLACEHOLDER.setRank(Rank.UNRANKED);
+  }
   private static final List<Splitter> COMMON_SPLITTER = Lists.newArrayList();
   static {
     for (char del : "[|;, ]".toCharArray()) {
@@ -155,7 +159,8 @@ public class Normalizer implements Runnable {
         && (t.isSynonym() || t.issues.containsKey(Issue.ACCEPTED_NAME_USAGE_ID_INVALID))
     ) {
       t.addIssue(Issue.ACCEPTED_NAME_MISSING);
-      RankedName acc = createDoubtfulFromSource(Origin.MISSING_ACCEPTED, PLACEHOLDER_NAME, null, t.name.getRank(), t, t.name.getRank(), null, Issue.ACCEPTED_NAME_MISSING, t.name.getScientificName());
+      PLACEHOLDER.setRank(t.name.getRank());
+      RankedName acc = createDoubtfulFromSource(Origin.MISSING_ACCEPTED, PLACEHOLDER, t, t.name.getRank(), null, Issue.ACCEPTED_NAME_MISSING, t.name.getScientificName());
       // now remove any denormed classification from this synonym as we have copied it already to the accepted placeholder
       t.classification = null;
       createSynonymRel(t.node, acc.node);
@@ -349,10 +354,6 @@ public class Normalizer implements Runnable {
 
   private void assignParent(Node parent, Node child) {
     if (parent != null) {
-      if (NeoProperties.getScientificNameWithAuthor(child).startsWith("Biota")) {
-        LOG.debug("child: {}", NeoProperties.getScientificNameWithAuthor(child));
-        LOG.debug("parent: {}", NeoProperties.getScientificNameWithAuthor(parent));
-      }
       if (child.hasRelationship(RelType.PARENT_OF, Direction.INCOMING)) {
         // override existing parent!
         Node oldParent=null;
@@ -641,7 +642,7 @@ public class Normalizer implements Runnable {
         List<Node> matches = store.byScientificName(name.getScientificName());
         // remove other authors, but allow names without authors
         if (name.hasAuthorship()) {
-          matches.removeIf(n -> !Strings.isNullOrEmpty(NeoProperties.getAuthorship(n)) && !NeoProperties.getAuthorship(n).equalsIgnoreCase(name.getAuthorship().toString()));
+          matches.removeIf(n -> !Strings.isNullOrEmpty(NeoProperties.getAuthorship(n)) && !NeoProperties.getAuthorship(n).equalsIgnoreCase(name.fullAuthorship()));
         }
 
         // if multiple matches remove basionymGroup
@@ -653,7 +654,7 @@ public class Normalizer implements Runnable {
         if (matches.isEmpty()) {
           // create
           LOG.debug("{} {} not existing, materialize it", term.simpleName(), name);
-          return createDoubtfulFromSource(createdOrigin, name.getScientificName(), name.getAuthorship(), name.getRank(), t, t.name.getRank(), null, null, null);
+          return createDoubtfulFromSource(createdOrigin, name, t, t.name.getRank(), null, null, null);
 
         } else {
           if (matches.size() > 1) {
@@ -668,7 +669,10 @@ public class Normalizer implements Runnable {
   }
 
   private NeoTaxon createAccepted(Origin origin, String sciname, Rank rank) {
-    NeoTaxon t = NeoTaxon.createTaxon(origin, sciname, null, rank, TaxonomicStatus.ACCEPTED);
+    Name n = new Name();
+    n.setScientificName(sciname);
+    n.setRank(rank);
+    NeoTaxon t = NeoTaxon.createTaxon(origin, n, TaxonomicStatus.ACCEPTED);
 
     // store, which creates a new neo node
     store.put(t);
@@ -676,7 +680,8 @@ public class Normalizer implements Runnable {
   }
 
   private RankedName createPlaceholder(Origin origin, @Nullable Issue issue, @Nullable String issueValue) {
-    return createDoubtfulFromSource(origin, PLACEHOLDER_NAME, null, null, null, Rank.GENUS,null, issue, issueValue);
+    PLACEHOLDER.setRank(Rank.UNRANKED);
+    return createDoubtfulFromSource(origin, PLACEHOLDER, null, Rank.GENUS,null, issue, issueValue);
   }
 
   /**
@@ -684,12 +689,15 @@ public class Normalizer implements Runnable {
    * Only copies the classification above genus and ignores genus and below!
    * A verbatim usage is created with just the parentNameUsage(ID) values so they can get resolved into proper neo relations later.
    *
+   * @param name the new name to be used
+   * @param source the taxon source to copy from
    * @param taxonID the optional taxonID to apply to the new node
    * @param excludeRankAndBelow the rank (and all ranks below) to exclude from the source classification
    */
-  private RankedName createDoubtfulFromSource(Origin origin, String sciname, @Nullable Authorship authorship, Rank rank, @Nullable NeoTaxon source,
-                                              Rank excludeRankAndBelow, @Nullable String taxonID, @Nullable Issue issue, @Nullable String issueValue) {
-    NeoTaxon t = NeoTaxon.createTaxon(origin, sciname, authorship, rank, TaxonomicStatus.DOUBTFUL);
+  private RankedName createDoubtfulFromSource(Origin origin, Name name,
+                                              @Nullable NeoTaxon source, Rank excludeRankAndBelow, @Nullable String taxonID,
+                                              @Nullable Issue issue, @Nullable String issueValue) {
+    NeoTaxon t = NeoTaxon.createTaxon(origin, name, TaxonomicStatus.DOUBTFUL);
     t.taxon.setId(taxonID);
     // copy verbatim classification from source
     if (source != null) {

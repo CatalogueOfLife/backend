@@ -316,7 +316,7 @@ public class Name {
 	}
 
 	public boolean hasAuthorship() {
-		return authorship != null && !authorship.isEmpty();
+		return authorship.exists() || basionymAuthorship.exists();
 	}
 
 	public Map<Issue, String> getIssues() {

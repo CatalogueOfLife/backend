@@ -4,11 +4,9 @@ import com.google.common.collect.Lists;
 import org.col.api.*;
 import org.col.api.vocab.Issue;
 import org.col.api.vocab.Origin;
-import org.col.api.vocab.Rank;
 import org.col.api.vocab.TaxonomicStatus;
 import org.neo4j.graphdb.Node;
 
-import javax.annotation.Nullable;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -37,15 +35,10 @@ public class NeoTaxon {
   public Map<Issue, String> issues = new EnumMap(Issue.class);
   public List<String> remarks = Lists.newArrayList();
 
-  public static NeoTaxon createTaxon(Origin origin, String sciname, @Nullable Authorship authorship, @Nullable Rank rank, TaxonomicStatus status) {
+  public static NeoTaxon createTaxon(Origin origin, Name name, TaxonomicStatus status) {
     NeoTaxon t = new NeoTaxon();
 
-    t.name = new Name();
-    t.name.setScientificName(sciname);
-    if (authorship != null) {
-      t.name.setAuthorship(authorship);
-    }
-    t.name.setRank(rank == null ? Rank.UNRANKED : rank);
+    t.name = name;
     t.name.setOrigin(origin);
 
     t.taxon = new Taxon();
