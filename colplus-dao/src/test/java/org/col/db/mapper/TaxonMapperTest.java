@@ -61,19 +61,19 @@ public class TaxonMapperTest extends MapperTestBase<TaxonMapper> {
     // get first page
     Page p = new Page(0,3);
 
-//    List<Taxon> res = mapper().list(TestEntityGenerator.DATASET1.getKey(), p);
-//    assertEquals(3, res.size());
-//    // First 2 taxa in dataset D1 are pre-inserted taxa:
-//    assertTrue(TestEntityGenerator.TAXON1.equalsShallow(res.get(0)));
-//    assertTrue(TestEntityGenerator.TAXON2.equalsShallow(res.get(1)));
-//    assertTrue(taxa.get(0).equalsShallow(res.get(2)));
-//    
-//		p.next();
-//		res = mapper().list(TestEntityGenerator.DATASET1.getKey(), p);
-//		assertEquals(3, res.size());
-//		assertTrue(taxa.get(1).equalsShallow(res.get(0)));
-//		assertTrue(taxa.get(2).equalsShallow(res.get(1)));
-//		assertTrue(taxa.get(3).equalsShallow(res.get(2)));
+    List<Taxon> res = mapper().list(TestEntityGenerator.DATASET1.getKey(), p);
+    assertEquals(3, res.size());
+    // First 2 taxa in dataset D1 are pre-inserted taxa:
+    assertTrue(TestEntityGenerator.TAXON1.getKey().equals(res.get(0).getKey()));
+    assertTrue(TestEntityGenerator.TAXON2.getKey().equals(res.get(1).getKey()));;
+    assertTrue(taxa.get(0).getKey().equals(res.get(2).getKey()));
+    
+		p.next();
+		res = mapper().list(TestEntityGenerator.DATASET1.getKey(), p);
+		assertEquals(3, res.size());
+		assertTrue(taxa.get(1).getKey().equals(res.get(0).getKey()));
+		assertTrue(taxa.get(2).getKey().equals(res.get(1).getKey()));
+		assertTrue(taxa.get(3).getKey().equals(res.get(2).getKey()));
 
 	}
 }

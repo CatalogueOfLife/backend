@@ -148,6 +148,7 @@ public class Reference {
 	public boolean equals(Object o) {
 		if (this == o)
 			return true;
+		// use instanceof - not getClass()! See PagedReference.equals()
 		if (o == null || !(o instanceof Reference))
 			return false;
 		Reference reference = (Reference) o;

@@ -239,8 +239,6 @@ CREATE TABLE distribution (
   area TEXT,
   area_standard INTEGER,
   status INTEGER,
-  reference_key INTEGER REFERENCES reference,
-  reference_page TEXT
 );
 
 CREATE TABLE distribution_references (

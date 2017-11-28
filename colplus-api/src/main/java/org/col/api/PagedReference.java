@@ -35,12 +35,13 @@ public class PagedReference extends Reference {
 			return false;
 		}
 		PagedReference other = (PagedReference) obj;
-		return Objects.equals(referencePage, other.referencePage);
+		return Objects.equals(referencePage, other.referencePage)
+		    && Objects.equals(referenceForKey, other.referenceForKey);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(super.hashCode(), referencePage);
+		return Objects.hash(super.hashCode(), referencePage, referenceForKey);
 	}
 
 }
