@@ -15,7 +15,20 @@ INSERT INTO reference(key, id, dataset_key) VALUES (1, 'ref-1', 1);
 INSERT INTO reference(key, id, dataset_key) VALUES (2, 'ref-2', 2);
 ALTER SEQUENCE reference_key_seq RESTART WITH 1000;
 
-INSERT INTO name_act(key, dataset_key, type, name_key, reference_key, reference_page) VALUES (1, 1, 0, 1, 1, 712);
+INSERT INTO taxon_references(dataset_key, taxon_key, reference_key, reference_page) VALUES (1, 1, 1, '12');
+INSERT INTO taxon_references(dataset_key, taxon_key, reference_key, reference_page) VALUES (1, 2, 1, '100');
+INSERT INTO taxon_references(dataset_key, taxon_key, reference_key, reference_page) VALUES (1, 2, 2, '133');
+
+INSERT INTO name_act(key, dataset_key, type, name_key, reference_key, reference_page) VALUES (1, 1, 0, 1, 1, '712');
 ALTER SEQUENCE name_act_key_seq RESTART WITH 1000;
+
+INSERT INTO distribution(key, dataset_key, taxon_key, area) VALUES (1, 1, 1, 'Berlin');
+INSERT INTO distribution(key, dataset_key, taxon_key, area) VALUES (2, 1, 1, 'Leiden');
+INSERT INTO distribution(key, dataset_key, taxon_key, area) VALUES (3, 1, 2, 'New York');
+ALTER SEQUENCE distribution_key_seq RESTART WITH 1000;
+
+INSERT INTO distribution_references(dataset_key,distribution_key,reference_key,reference_page) VALUES (1, 1, 1, '145');
+INSERT INTO distribution_references(dataset_key,distribution_key,reference_key,reference_page) VALUES (1, 1, 2, '34');
+INSERT INTO distribution_references(dataset_key,distribution_key,reference_key,reference_page) VALUES (1, 2, 2, '35');
 
 

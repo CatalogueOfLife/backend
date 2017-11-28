@@ -3,8 +3,8 @@ package org.col.db.mapper;
 import java.util.List;
 
 import org.apache.ibatis.annotations.Param;
-import org.col.api.PagedReference;
 import org.col.api.Page;
+import org.col.api.PagedReference;
 import org.col.api.Reference;
 
 /**
@@ -18,7 +18,9 @@ public interface ReferenceMapper {
 
 	List<Reference> list(@Param("datasetKey") int datasetKey, @Param("page") Page page);
 
-	List<Reference> listByDistribution(@Param("distributionKey") int distributionKey);
+	List<PagedReference> listByTaxon(@Param("taxonKey") int taxonKey);
+
+	List<PagedReference> listByDistributionOfTaxon(@Param("taxonKey") int taxonKey);
 
 	/**
 	 * Returns the reference of the description act for the given name key.

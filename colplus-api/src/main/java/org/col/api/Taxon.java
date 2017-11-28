@@ -1,14 +1,22 @@
 package org.col.api;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.col.api.vocab.*;
-
 import java.net.URI;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+
+import org.col.api.vocab.Issue;
+import org.col.api.vocab.Lifezone;
+import org.col.api.vocab.Origin;
+import org.col.api.vocab.Rank;
+import org.col.api.vocab.TaxonomicStatus;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  *
@@ -53,6 +61,8 @@ public class Taxon {
 	private Integer speciesEstimateReferenceKey;
 
 	private String remarks;
+
+	private List<ReferencePointer> references;
 
 	/**
 	 * Issues related to this taxon with potential values in the map
@@ -179,15 +189,15 @@ public class Taxon {
 		this.speciesEstimate = speciesEstimate;
 	}
 
-  public Integer getSpeciesEstimateReferenceKey() {
-    return speciesEstimateReferenceKey;
-  }
+	public Integer getSpeciesEstimateReferenceKey() {
+		return speciesEstimateReferenceKey;
+	}
 
-  public void setSpeciesEstimateReferenceKey(Integer speciesEstimateReferenceKey) {
-    this.speciesEstimateReferenceKey = speciesEstimateReferenceKey;
-  }
+	public void setSpeciesEstimateReferenceKey(Integer speciesEstimateReferenceKey) {
+		this.speciesEstimateReferenceKey = speciesEstimateReferenceKey;
+	}
 
-  public String getRemarks() {
+	public String getRemarks() {
 		return remarks;
 	}
 
@@ -209,6 +219,13 @@ public class Taxon {
 
 	public void addIssue(Issue issue, Object value) {
 		issues.put(issue, value.toString());
+	}
+
+	public void addReferences(Collection<PagedReference> refs) {
+		references = new ArrayList<>(refs.size());
+		for (PagedReference pr : refs) {
+			references.add(new ReferencePointer(pr.getKey(), pr.getReferencePage()));
+		}
 	}
 
 	@Override
@@ -242,32 +259,7 @@ public class Taxon {
 	public int hashCode() {
 		return Objects.hash(key, id, datasetKey, name, status, rank, origin, parentKey, accordingTo,
 		    accordingToDate, fossil, recent, lifezones, datasetUrl, speciesEstimate,
-        speciesEstimateReferenceKey, remarks, issues);
-	}
-
-	public boolean equalsShallow(Taxon other) {
-		if (this == other) {
-			return true;
-		}
-		if (other == null) {
-			return false;
-		}
-		return Objects.equals(key, other.key)
-		    && Objects.equals(id, other.id)
-		    && Objects.equals(datasetKey, other.datasetKey)
-		    && ApiUtil.equalsShallow(name, other.name)
-		    && status == other.status
-		    && rank == other.rank
-		    && origin == other.origin
-		    && Objects.equals(parentKey, other.parentKey)
-		    && Objects.equals(accordingTo, other.accordingTo)
-		    && Objects.equals(accordingToDate, other.accordingToDate)
-		    && Objects.equals(fossil, other.fossil)
-		    && Objects.equals(recent, other.recent)
-		    && Objects.equals(lifezones, other.lifezones)
-		    && Objects.equals(speciesEstimate, other.speciesEstimate)
-		    && Objects.equals(speciesEstimateReferenceKey, other.speciesEstimateReferenceKey)
-		    && Objects.equals(remarks, other.remarks);
+		    speciesEstimateReferenceKey, remarks, issues);
 	}
 
 }

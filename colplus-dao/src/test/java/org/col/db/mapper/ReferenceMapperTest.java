@@ -73,10 +73,27 @@ public class ReferenceMapperTest extends MapperTestBase<ReferenceMapper> {
 	}
 
 	@Test
+	public void listByTaxon() {
+		List<PagedReference> refs = mapper().listByTaxon(1);
+		assertEquals("01", 1, refs.size());
+		assertEquals("02", "12", refs.get(0).getReferencePage());
+		refs = mapper().listByTaxon(2);
+		assertEquals("03", 2, refs.size());
+		assertEquals("04", "100", refs.get(0).getReferencePage());
+		assertEquals("05", "133", refs.get(1).getReferencePage());
+	}
+	
+	@Test
+	public void listByDistributionOfTaxon() {
+		List<PagedReference> refs = mapper().listByDistributionOfTaxon(1);
+		assertEquals("01", 3, refs.size());
+	}
+
+	@Test
 	public void getPublishedIn() {
 		PagedReference ref = mapper().getPublishedIn(DATASET1.getKey(), NAME1.getKey());
 		assertEquals("01", REF1, ref);
-		assertEquals("02", "712", ref.getPage());
+		assertEquals("02", "712", ref.getReferencePage());
 	}
 
 	private static Reference create() throws Exception {

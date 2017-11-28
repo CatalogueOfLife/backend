@@ -12,7 +12,7 @@ public class TaxonInfo {
 
 	private List<Distribution> distributions;
 
-	private Map<Integer, Reference> references = new HashMap<>();
+	private Map<Integer, PagedReference> references = new HashMap<>();
 
 	public Taxon getTaxon() {
 		return taxon;
@@ -38,5 +38,10 @@ public class TaxonInfo {
 		this.distributions = distributions;
 	}
 
+	public void addReferences(List<PagedReference> refs) {
+		for (PagedReference ref : refs) {
+			references.put(ref.getKey(), ref);
+		}
+	}
 
 }

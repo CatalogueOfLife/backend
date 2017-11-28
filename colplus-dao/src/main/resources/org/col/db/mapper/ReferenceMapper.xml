@@ -74,14 +74,21 @@
     <include refid="org.col.db.mapper.Common.limit" />
   </select>
 
-  <select id="listByDistribution" parameterType="map" resultMap="referenceResultMap">
-    SELECT
-    <include refid="SELECT" />
+  <select id="listByTaxon" parameterType="map" resultMap="pagedReferenceResultMap">
+    SELECT r.key,r.id,r.dataset_key,r.csl,r.serial_key,r.year,j.reference_page
     FROM reference r
-    JOIN distribution_references paged
-    WHERE paged.distribution
+    JOIN taxon_references j ON (r.key = j.reference_key)
+    WHERE j.taxon_key = #{taxonKey}
     ORDER BY key
-    <include refid="org.col.db.mapper.Common.limit" />
+  </select>
+
+  <select id="listByDistributionOfTaxon" parameterType="map" resultMap="pagedReferenceResultMap">
+    SELECT r.key,r.id,r.dataset_key,r.csl,r.serial_key,r.year,j.reference_page
+    FROM reference r
+    JOIN distribution_references j ON (r.key = j.reference_key)
+    JOIN distribution d ON (j.distribution_key = d.key)
+    WHERE d.taxon_key = #{taxonKey}
+    ORDER BY key
   </select>
 
   <select id="get" resultMap="referenceResultMap">
@@ -93,12 +100,11 @@
   </select>
 
   <select id="getPublishedIn" resultMap="pagedReferenceResultMap">
-    SELECT
-    <include refid="SELECT_WITH_PAGE" />
+    SELECT r.key,r.id,r.dataset_key,r.csl,r.serial_key,r.year,j.reference_page
     FROM reference r
-    LEFT JOIN name_act na ON (r.key = na.reference_key)
-    WHERE na.dataset_key = #{datasetKey} AND na.name_key = #{nameKey}
-    AND na.type = 0 <!-- DESCRIPTION (not sure if this is necessary) -->
+    LEFT JOIN name_act j ON (r.key = j.reference_key)
+    WHERE j.dataset_key = #{datasetKey} AND j.name_key = #{nameKey}
+    AND j.type = 0 <!-- DESCRIPTION (not sure if this is necessary) -->
   </select>
 
   <insert id="create" parameterType="Reference" useGeneratedKeys="true" keyProperty="key">

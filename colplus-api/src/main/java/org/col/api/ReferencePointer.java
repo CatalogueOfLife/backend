@@ -7,6 +7,14 @@ public class ReferencePointer {
 	private Integer referenceKey;
 	private String page;
 
+	public ReferencePointer() {
+	}
+
+	public ReferencePointer(Integer referenceKey, String page) {
+		this.referenceKey = referenceKey;
+		this.page = page;
+	}
+
 	public Integer getReferenceKey() {
 		return referenceKey;
 	}

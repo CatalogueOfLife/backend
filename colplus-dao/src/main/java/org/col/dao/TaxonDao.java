@@ -4,6 +4,7 @@ import org.apache.ibatis.session.SqlSession;
 import org.col.api.*;
 import org.col.db.NotFoundException;
 import org.col.db.mapper.DistributionMapper;
+import org.col.db.mapper.ReferenceMapper;
 import org.col.db.mapper.TaxonMapper;
 import org.col.db.mapper.VernacularNameMapper;
 
@@ -63,6 +64,12 @@ public class TaxonDao {
 		DistributionMapper dMapper = session.getMapper(DistributionMapper.class);
 		List<Distribution> distributions = dMapper.listByTaxon(taxon.getKey());
 		info.setDistributions(distributions);
+		
+		ReferenceMapper rMapper = session.getMapper(ReferenceMapper.class);
+		
+		List<PagedReference> refs = rMapper.listByTaxon(key);
+		info.addReferences(refs);
+		taxon.addReferences(refs);	
 
 		return info;
 	}

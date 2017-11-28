@@ -4,14 +4,14 @@ import java.util.Objects;
 
 public class PagedReference extends Reference {
 
-	private String page;
+	private String referencePage;
 
-	public String getPage() {
-		return page;
+	public String getReferencePage() {
+		return referencePage;
 	}
 
-	public void setPage(String page) {
-		this.page = page;
+	public void setReferencePage(String page) {
+		this.referencePage = page;
 	}
 
 	public boolean equals(Object obj) {
@@ -22,12 +22,12 @@ public class PagedReference extends Reference {
 			return false;
 		}
 		PagedReference other = (PagedReference) obj;
-		return Objects.equals(page, other.page);
+		return Objects.equals(referencePage, other.referencePage);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(super.hashCode(), page);
+		return Objects.hash(super.hashCode(), referencePage);
 	}
 
 }
