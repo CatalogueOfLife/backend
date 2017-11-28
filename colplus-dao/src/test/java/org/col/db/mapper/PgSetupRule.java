@@ -66,10 +66,9 @@ public class PgSetupRule extends ExternalResource {
 			if (embeddedPg) {
 				System.out.println("Starting Postgres");
 				Instant start = Instant.now();
-				postgres = new EmbeddedPostgres(Version.V9_6_3);
+				postgres = new EmbeddedPostgres(Version.V10_0);
 				// assigned some free port using local socket 0
-				url = postgres.start("localhost", new ServerSocket(0).getLocalPort(), database, user,
-				    password);
+				url = postgres.start("localhost", new ServerSocket(0).getLocalPort(), database, user, password);
 				System.out.format("Pg startup time: %s ms\n",
 				    Duration.between(start, Instant.now()).toMillis());
 			} else {
