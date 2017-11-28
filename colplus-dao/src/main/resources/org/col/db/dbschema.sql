@@ -90,6 +90,7 @@ CREATE TABLE dataset (
   type INTEGER,
   title TEXT NOT NULL,
   gbif_key UUID,
+  gbif_publisher_key UUID,
   description TEXT,
   organisation TEXT,
   contact_person TEXT,
@@ -249,3 +250,15 @@ CREATE TABLE distribution_references (
   PRIMARY KEY(distribution_key, reference_key)
 );
 
+
+
+-- FUNCTIONS
+CREATE FUNCTION plaziGbifKey() RETURNS UUID AS $$
+  SELECT '7ce8aef0-9e92-11dc-8738-b8a03c50a862'::uuid
+$$
+LANGUAGE SQL
+IMMUTABLE;
+
+
+-- INDICES
+CREATE index ON dataset (gbif_key);

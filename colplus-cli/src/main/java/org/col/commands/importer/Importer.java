@@ -1,8 +1,6 @@
 package org.col.commands.importer;
 
-import java.util.Map;
-import java.util.Stack;
-
+import com.google.common.collect.Maps;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.Dataset;
@@ -15,17 +13,13 @@ import org.col.commands.importer.neo.model.Labels;
 import org.col.commands.importer.neo.model.NeoTaxon;
 import org.col.commands.importer.neo.traverse.StartEndHandler;
 import org.col.commands.importer.neo.traverse.TreeWalker;
-import org.col.db.mapper.DatasetMapper;
-import org.col.db.mapper.DistributionMapper;
-import org.col.db.mapper.NameMapper;
-import org.col.db.mapper.TaxonMapper;
-import org.col.db.mapper.VerbatimRecordMapper;
-import org.col.db.mapper.VernacularNameMapper;
+import org.col.db.mapper.*;
 import org.neo4j.graphdb.Node;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Maps;
+import java.util.Map;
+import java.util.Stack;
 
 /**
  *
@@ -64,10 +58,10 @@ public class Importer implements Runnable {
 			DatasetMapper mapper = session.getMapper(DatasetMapper.class);
 			// TODO: merge new dataset with old one...
 			Dataset old = mapper.get(dataset.getKey());
-			if (dataset.getTitle() == null) {
-				dataset.setTitle(old.getTitle());
+			if (dataset.getTitle() != null) {
+        old.setTitle(dataset.getTitle());
 			}
-			mapper.update(dataset);
+			mapper.update(old);
 			session.commit();
 		}
 	}

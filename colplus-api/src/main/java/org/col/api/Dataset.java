@@ -22,6 +22,7 @@ public class Dataset {
 	@NotEmpty
 	private String title;
 	private UUID gbifKey;
+  private UUID gbifPublisherKey;
 	private String description;
 	private String organisation;
 	private String contactPerson;
@@ -80,7 +81,15 @@ public class Dataset {
 		this.gbifKey = gbifKey;
 	}
 
-	public String getDescription() {
+  public UUID getGbifPublisherKey() {
+    return gbifPublisherKey;
+  }
+
+  public void setGbifPublisherKey(UUID gbifPublisherKey) {
+    this.gbifPublisherKey = gbifPublisherKey;
+  }
+
+  public String getDescription() {
 		return description;
 	}
 
@@ -201,6 +210,7 @@ public class Dataset {
         type == dataset.type &&
         Objects.equals(title, dataset.title) &&
         Objects.equals(gbifKey, dataset.gbifKey) &&
+        Objects.equals(gbifPublisherKey, dataset.gbifPublisherKey) &&
         Objects.equals(description, dataset.description) &&
         Objects.equals(organisation, dataset.organisation) &&
         Objects.equals(contactPerson, dataset.contactPerson) &&
@@ -219,7 +229,7 @@ public class Dataset {
 
   @Override
   public int hashCode() {
-    return Objects.hash(key, type, title, gbifKey, description, organisation, contactPerson, authorsAndEditors, license, version, releaseDate, homepage, dataFormat, dataAccess, notes, created, modified, deleted);
+    return Objects.hash(key, type, title, gbifKey, gbifPublisherKey, description, organisation, contactPerson, authorsAndEditors, license, version, releaseDate, homepage, dataFormat, dataAccess, notes, created, modified, deleted);
   }
 
   @Override

@@ -21,7 +21,7 @@ public class NormalizerConfig {
   private static final Logger LOG = LoggerFactory.getLogger(NormalizerConfig.class);
 
   @NotNull
-  public File directory;
+  public File directory = new File("/tmp");
 
   @NotNull
   public int batchSize = 10000;
@@ -38,9 +38,13 @@ public class NormalizerConfig {
   }
 
   /**
-   * The dataset directory containing the original source files, e.g. the dwc archive.
+   * The dataset source files as a single (zip) archive.
    */
   public File source(int datasetKey) {
+    return new File(datasetDir(datasetKey), "source.zip");
+  }
+
+  public File sourceDir(int datasetKey) {
     return new File(datasetDir(datasetKey), "source");
   }
 

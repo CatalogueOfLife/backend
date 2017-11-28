@@ -402,6 +402,7 @@ public class Name {
 	 * Validates consistency of name properties. This method checks if the given
 	 * rank matches populated properties and available properties make sense
 	 * together.
+   * TODO: report reason
 	 */
 	public boolean isConsistent() {
 		if (specificEpithet != null && genus == null) {

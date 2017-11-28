@@ -1,5 +1,7 @@
 package org.col.api;
 
+import org.col.api.vocab.Coverage;
+
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import java.time.LocalDateTime;
@@ -24,7 +26,7 @@ public class Sector {
 	private List<String> authorsAndEditors;
 	private String organisation;
 	private String contactPerson;
-  private String coverage;
+  private Coverage coverage;
 	@Max(100)
 	@Min(0)
 	private Integer completeness;
@@ -111,6 +113,14 @@ public class Sector {
     this.contactPerson = contactPerson;
   }
 
+  public Coverage getCoverage() {
+    return coverage;
+  }
+
+  public void setCoverage(Coverage coverage) {
+    this.coverage = coverage;
+  }
+
   public Integer getCompleteness() {
     return completeness;
   }
@@ -173,6 +183,7 @@ public class Sector {
         Objects.equals(authorsAndEditors, sector.authorsAndEditors) &&
         Objects.equals(organisation, sector.organisation) &&
         Objects.equals(contactPerson, sector.contactPerson) &&
+        coverage == sector.coverage &&
         Objects.equals(completeness, sector.completeness) &&
         Objects.equals(confidence, sector.confidence) &&
         Objects.equals(notes, sector.notes) &&
@@ -183,6 +194,6 @@ public class Sector {
 
   @Override
   public int hashCode() {
-    return Objects.hash(key, datasetKey, groupName, alias, title, description, authorsAndEditors, organisation, contactPerson, completeness, confidence, notes, created, modified, deleted);
+    return Objects.hash(key, datasetKey, groupName, alias, title, description, authorsAndEditors, organisation, contactPerson, coverage, completeness, confidence, notes, created, modified, deleted);
   }
 }

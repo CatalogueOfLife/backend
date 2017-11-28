@@ -40,6 +40,7 @@ public class NeoKryoFactory implements KryoFactory {
     kryo.register(Name.class);
     kryo.register(NameAct.class);
     kryo.register(Reference.class);
+    kryo.register(Sector.class);
     kryo.register(Serial.class);
     kryo.register(Taxon.class);
     kryo.register(VernacularName.class);
@@ -74,8 +75,10 @@ public class NeoKryoFactory implements KryoFactory {
     ImmutableListSerializer.registerSerializers(kryo);
 
     // enums
+    kryo.register(Coverage.class);
     kryo.register(Country.class);
     kryo.register(DataFormat.class);
+    kryo.register(DatasetType.class);
     kryo.register(DistributionStatus.class);
     kryo.register(EnumMap.class, new EnumMapSerializer());
     kryo.register(EnumSet.class, new EnumSetSerializer());
@@ -83,7 +86,8 @@ public class NeoKryoFactory implements KryoFactory {
     kryo.register(Issue.class);
     kryo.register(Kingdom.class);
     kryo.register(Language.class);
-    kryo.register(Lifezone.class);
+    kryo.register(License.class);
+      kryo.register(Lifezone.class);
     kryo.register(NamePart.class);
     kryo.register(NameType.class);
     kryo.register(NomActType.class);

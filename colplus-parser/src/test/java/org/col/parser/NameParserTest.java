@@ -19,7 +19,14 @@ import static org.junit.Assert.*;
  */
 @Ignore
 public class NameParserTest {
-  static final NameParser parser = new NameParserGNA();
+  static final NameParser parser = new NameParserGBIF();
+
+  @Test
+  public void parseSubgenera() throws Exception {
+    assertName("Eteone subgen. Mysta", "Mysta")
+        .infraGeneric("Eteone", Rank.SUBGENUS, "Mysta")
+        .nothingElse();
+  }
 
   @Test
   public void parseSpecies() throws Exception {
