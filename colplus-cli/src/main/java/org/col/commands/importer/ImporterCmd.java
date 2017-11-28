@@ -11,11 +11,14 @@ import org.col.commands.importer.neo.NormalizerStore;
 import org.col.db.MybatisFactory;
 import org.col.db.mapper.DatasetMetricsMapper;
 import org.gbif.util.DownloadUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.net.URL;
 
 public class ImporterCmd extends ConfiguredCommand<CliConfig> {
+  private static final Logger LOG = LoggerFactory.getLogger(ImporterCmd.class);
 
   public ImporterCmd() {
     super("importer", "Imports the latest version of an external dataset into staging");
@@ -32,15 +35,15 @@ public class ImporterCmd extends ConfiguredCommand<CliConfig> {
       //TODO: enable imports in different formats!!!
       File dwca = cfg.normalizer.source(datasetKey);
       URL dwcaUrl = null;
-      System.out.format("Downloading %s from %s!\n", datasetKey, dwca);
+      LOG.info("Downloading {} from {}!", datasetKey, dwca);
       DownloadUtil.download(dwcaUrl, dwca);
 
-      System.out.format("Normalizing %s!\n", datasetKey);
+      LOG.info("Normalizing {}!", datasetKey);
       NormalizerStore store = NeoDbFactory.create(cfg.normalizer, datasetKey);
       Normalizer normalizer = new Normalizer(store, dwca);
       normalizer.run();
 
-      System.out.format("Importing %s into Postgres!\n", datasetKey);
+      LOG.info("Importing {} into Postgres!", datasetKey);
       Importer importer = new Importer(datasetKey,
           NeoDbFactory.open(cfg.normalizer, datasetKey),
           MybatisFactory.configure(ds, "importer"),
@@ -48,12 +51,12 @@ public class ImporterCmd extends ConfiguredCommand<CliConfig> {
       );
       importer.run();
 
-      System.out.format("Analyzing %s!\n", datasetKey);
+      LOG.info("Analyzing {}!", datasetKey);
       DatasetMetricsMapper datasetMetricsMapper = null;
       Analyser analyser = Analyser.create(datasetKey, datasetMetricsMapper);
       analyser.run();
 
-      System.out.format("Import %s completed!\n", datasetKey);
+      LOG.info("Import {} completed!", datasetKey);
 
     } finally {
       ds.close();

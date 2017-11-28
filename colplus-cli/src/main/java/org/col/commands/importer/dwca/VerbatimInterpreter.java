@@ -193,7 +193,7 @@ public class VerbatimInterpreter {
 
     n.setId(v.getFirst(DwcTerm.scientificNameID, DwcTerm.taxonID));
     n.setOrigin(Origin.SOURCE);
-    n.setSourceUrl(UriParser.PARSER.parse(v.getCoreTerm(DcTerm.references)).orElse(null));
+    n.setSourceUrl(SafeParser.parse(UriParser.PARSER, v.getCoreTerm(DcTerm.references)).orNull());
     n.setStatus(SafeParser.parse(NomStatusParser.PARSER, v.getCoreTerm(DwcTerm.nomenclaturalStatus))
         .orElse(null, Issue.NOMENCLATURAL_STATUS_INVALID, n.getIssues())
     );

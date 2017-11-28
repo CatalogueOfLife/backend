@@ -5,7 +5,7 @@ import org.col.api.Dataset;
 import org.col.api.Page;
 import org.col.api.RandomUtils;
 import org.col.api.vocab.DataFormat;
-import org.col.TestEntityGenerator;
+import org.col.api.vocab.License;
 import org.junit.Test;
 
 import java.net.URI;
@@ -29,18 +29,15 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
     d.setGbifKey(UUID.randomUUID());
     d.setTitle(RandomUtils.randomString(80));
     d.setDescription(RandomUtils.randomString(500));
-    d.setAlias(RandomUtils.randomString(10));
-    d.setAuthorsAndEditors(RandomUtils.randomString(100));
-    d.setCompleteness(TestEntityGenerator.RND.nextInt(100));
-    d.setConfidence(TestEntityGenerator.RND.nextInt(5));
+    d.setLicense(License.CC0);
+    for (int i = 0; i < 8; i++){
+      d.getAuthorsAndEditors().add(RandomUtils.randomString(100));
+    }
     d.setContactPerson("Hans Peter");
-    d.setCoverage(RandomUtils.randomString(75));
-    d.setTaxonomicCoverage("tax cover");
     d.setDataAccess(URI.create("https://api.gbif.org/v1/dataset/"+d.getGbifKey()));
     d.setDataFormat(DataFormat.SQL);
     d.setReleaseDate(LocalDate.now());
     d.setVersion("v123");
-    d.setGroupName("Affen");
     d.setHomepage(URI.create("https://www.gbif.org/dataset/"+d.getGbifKey()));
     d.setNotes("my notes");
     d.setOrganisation("my org");

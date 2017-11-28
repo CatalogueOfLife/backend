@@ -5,6 +5,7 @@ import org.col.api.Dataset;
 import org.col.api.Page;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface DatasetMapper {
 
@@ -13,6 +14,8 @@ public interface DatasetMapper {
   List<Dataset> list(@Param("page") Page page);
 
   Dataset get(@Param("key") int key);
+
+  Dataset getByGBIF(@Param("key") UUID key);
 
   void create(Dataset dataset);
 

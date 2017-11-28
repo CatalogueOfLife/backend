@@ -6,20 +6,16 @@
 
     <sql id="SELECT">
       key,
-      alias,
+      type,
       title,
       gbif_key,
       description,
-      group_name,
-      authors_and_editors,
       organisation,
       contact_person,
+      authors_and_editors,
+      license,
       version,
       release_date,
-      taxonomic_coverage,
-      coverage,
-      completeness,
-      confidence,
       homepage,
       data_format,
       data_access,
@@ -30,20 +26,16 @@
     </sql>
 
     <sql id="COLS">
-      alias,
+      type,
       title,
       gbif_key,
       description,
-      group_name,
-      authors_and_editors,
       organisation,
       contact_person,
+      authors_and_editors,
+      license,
       version,
       release_date,
-      taxonomic_coverage,
-      coverage,
-      completeness,
-      confidence,
       homepage,
       data_format,
       data_access,
@@ -51,20 +43,16 @@
     </sql>
 
     <sql id="PROPS">
-      #{alias},
+      #{type},
       #{title},
       #{gbifKey},
       #{description},
-      #{groupName},
-      #{authorsAndEditors},
       #{organisation},
       #{contactPerson},
+      #{authorsAndEditors, typeHandler=org.col.db.type.StringArrayTypeHandler},
+      #{license},
       #{version},
       #{releaseDate},
-      #{taxonomicCoverage},
-      #{coverage},
-      #{completeness},
-      #{confidence},
       #{homepage},
       #{dataFormat},
       #{dataAccess},
@@ -78,6 +66,7 @@
     <!--  A mapping to Name, mostly auto mapped -->
     <resultMap id="datasetResultMap" type="Dataset" autoMapping="true">
         <id property="key" column="key" />
+        <result property="authorsAndEditors" column="authors_and_editors" typeHandler="org.col.db.type.StringArrayTypeHandler" />
     </resultMap>
 
     <select id="count" parameterType="map" resultType="Integer">
@@ -96,6 +85,12 @@
       SELECT <include refid="SELECT" />
       FROM <include refid="FROM" />
       WHERE key = #{key}
+    </select>
+
+    <select id="getByGBIF" parameterType="map" resultMap="datasetResultMap">
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
+        WHERE gbif_key = #{key}
     </select>
 
     <insert id="create" parameterType="Dataset" useGeneratedKeys="true" keyProperty="key">

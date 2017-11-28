@@ -56,6 +56,13 @@ public class SafeParser<T> {
   }
 
   /**
+   * Always returns a value, if needed falling back to defaults for empty or unparsable.
+   */
+  public T orElse(T empty, T unparsable) {
+    return isPresent() ? result.get() : (isParsable() ? unparsable : empty);
+  }
+
+  /**
    * Always returns a value, if needed falling back to null.
    * @return the parsed value if present, otherwise null
    */
