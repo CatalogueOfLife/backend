@@ -44,9 +44,11 @@
     <guava.version>21.0</guava.version>
     <hikaricp.version>2.7.1</hikaricp.version>
     <hk2.version>2.5.0-b32</hk2.version>
-    <!-- make sure jackson matches dropwizards jackson version -->
+    <!-- make sure jackson matches dropwizards version -->
     <jackson2.version>2.8.10</jackson2.version>
     <javax.ws.rs-api.version>2.0.1</javax.ws.rs-api.version>
+    <!-- make sure jersey matches dropwizards version -->
+    <jersey.version>2.25.1</jersey.version>
     <jsr305.version>3.0.2</jsr305.version>
     <junit.version>4.12</junit.version>
     <kryo.version>4.0.1</kryo.version>
@@ -55,8 +57,8 @@
     <mybatis.version>3.4.5</mybatis.version>
     <name-parser.version>2.24</name-parser.version>
     <neo4j.version>3.2.3</neo4j.version>
-    <postgresql.version>42.1.1</postgresql.version>
-    <postgresql-embedded>2.4</postgresql-embedded>
+    <postgresql.version>42.1.4</postgresql.version>
+    <postgresql-embedded>2.5</postgresql-embedded>
     <slf4j.version>1.7.24</slf4j.version>
     <validation-api.version>2.0.0.Final</validation-api.version>
     <!-- GNA Parser deps -->
@@ -179,10 +181,22 @@
         </dependency>
         <dependency>
             <groupId>io.dropwizard</groupId>
+            <artifactId>dropwizard-client</artifactId>
+            <version>${dropwizard.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.dropwizard</groupId>
             <artifactId>dropwizard-bom</artifactId>
             <version>${dropwizard.version}</version>
             <type>pom</type>
             <scope>import</scope>
+        </dependency>
+
+        <!-- jersey -->
+        <dependency>
+            <groupId>org.glassfish.jersey.ext.rx</groupId>
+            <artifactId>jersey-rx-client-java8</artifactId>
+            <version>${jersey.version}</version>
         </dependency>
 
         <!-- HK2 dependency injection - follow closely the version used by Jersey via Dropwizard -->
