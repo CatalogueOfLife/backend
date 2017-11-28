@@ -75,15 +75,24 @@
   </select>
 
   <select id="listByTaxon" parameterType="map" resultMap="pagedReferenceResultMap">
-    SELECT r.key,r.id,r.dataset_key,r.csl,r.serial_key,r.year,j.reference_page
+    SELECT r.key,r.id,r.dataset_key,r.csl,r.serial_key,r.year,j.reference_page,j.taxon_key as reference_for_key
     FROM reference r
     JOIN taxon_references j ON (r.key = j.reference_key)
     WHERE j.taxon_key = #{taxonKey}
     ORDER BY key
   </select>
 
+  <select id="listByVernacularNamesOfTaxon" parameterType="map" resultMap="pagedReferenceResultMap">
+    SELECT r.key,r.id,r.dataset_key,r.csl,r.serial_key,r.year,j.reference_page,j.vernacular_name_key as reference_for_key
+    FROM reference r
+    JOIN vernacular_name_references j ON (r.key = j.reference_key)
+    JOIN vernacular_name v ON (j.vernacular_name_key = v.key)
+    WHERE v.taxon_key = #{taxonKey}
+    ORDER BY key
+  </select>
+
   <select id="listByDistributionOfTaxon" parameterType="map" resultMap="pagedReferenceResultMap">
-    SELECT r.key,r.id,r.dataset_key,r.csl,r.serial_key,r.year,j.reference_page
+    SELECT r.key,r.id,r.dataset_key,r.csl,r.serial_key,r.year,j.reference_page,j.distribution_key as reference_for_key
     FROM reference r
     JOIN distribution_references j ON (r.key = j.reference_key)
     JOIN distribution d ON (j.distribution_key = d.key)

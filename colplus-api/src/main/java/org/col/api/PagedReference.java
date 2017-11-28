@@ -5,6 +5,11 @@ import java.util.Objects;
 public class PagedReference extends Reference {
 
 	private String referencePage;
+	/*
+	 * The key of the referenced object (a taxon, vernacular name, distribution,
+	 * etc.)
+	 */
+	private Integer referenceForKey;
 
 	public String getReferencePage() {
 		return referencePage;
@@ -12,6 +17,14 @@ public class PagedReference extends Reference {
 
 	public void setReferencePage(String page) {
 		this.referencePage = page;
+	}
+
+	public Integer getReferenceForKey() {
+		return referenceForKey;
+	}
+
+	public void setReferenceForKey(Integer referenceForKey) {
+		this.referenceForKey = referenceForKey;
 	}
 
 	public boolean equals(Object obj) {

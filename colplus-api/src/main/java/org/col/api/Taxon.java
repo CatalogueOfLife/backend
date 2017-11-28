@@ -221,10 +221,12 @@ public class Taxon {
 		issues.put(issue, value.toString());
 	}
 
-	public void addReferences(Collection<PagedReference> refs) {
-		references = new ArrayList<>(refs.size());
-		for (PagedReference pr : refs) {
-			references.add(new ReferencePointer(pr.getKey(), pr.getReferencePage()));
+	public void createReferences(Collection<PagedReference> refs) {
+		if (!refs.isEmpty()) {
+			references = new ArrayList<>(refs.size());
+			for (PagedReference pr : refs) {
+				references.add(new ReferencePointer(pr.getKey(), pr.getReferencePage()));
+			}
 		}
 	}
 

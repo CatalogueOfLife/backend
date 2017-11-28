@@ -1,11 +1,14 @@
 package org.col.api;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
+
 import org.col.api.vocab.DistributionStatus;
 import org.col.api.vocab.Gazetteer;
 
-import java.util.List;
-import java.util.Objects;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  *
@@ -59,6 +62,17 @@ public class Distribution {
 		this.references = references;
 	}
 
+	public void createReferences(Collection<PagedReference> refs) {
+		if (!refs.isEmpty()) {
+			references = new ArrayList<>();
+			for (PagedReference pr : refs) {
+				if (key.equals(pr.getReferenceForKey())) {
+					references.add(new ReferencePointer(pr.getKey(), pr.getReferencePage()));
+				}
+			}
+		}
+	}
+
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj) {
@@ -78,8 +92,8 @@ public class Distribution {
 		return Objects.hash(key, area, areaStandard, status);
 	}
 
-  @Override
-  public String toString() {
-    return status==null ? "Unknown" : status + " in " + areaStandard + ":" + area;
-  }
+	@Override
+	public String toString() {
+		return status == null ? "Unknown" : status + " in " + areaStandard + ":" + area;
+	}
 }

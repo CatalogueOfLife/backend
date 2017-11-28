@@ -1,5 +1,7 @@
 package org.col.api;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
@@ -55,6 +57,17 @@ public class VernacularName {
 
 	public void setReferences(List<ReferencePointer> references) {
 		this.references = references;
+	}
+
+	public void createReferences(Collection<PagedReference> refs) {
+		if (!refs.isEmpty()) {
+			references = new ArrayList<>();
+			for (PagedReference pr : refs) {
+				if (key.equals(pr.getReferenceForKey())) {
+					references.add(new ReferencePointer(pr.getKey(), pr.getReferencePage()));
+				}
+			}
+		}
 	}
 
 	@Override

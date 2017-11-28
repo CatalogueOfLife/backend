@@ -20,6 +20,8 @@ public interface ReferenceMapper {
 
 	List<PagedReference> listByTaxon(@Param("taxonKey") int taxonKey);
 
+	List<PagedReference> listByVernacularNamesOfTaxon(@Param("taxonKey") int taxonKey);
+
 	List<PagedReference> listByDistributionOfTaxon(@Param("taxonKey") int taxonKey);
 
 	/**

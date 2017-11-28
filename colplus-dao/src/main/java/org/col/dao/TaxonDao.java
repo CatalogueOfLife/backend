@@ -1,15 +1,22 @@
 package org.col.dao;
 
+import java.util.List;
+
+import javax.annotation.Nullable;
+
 import org.apache.ibatis.session.SqlSession;
-import org.col.api.*;
+import org.col.api.Distribution;
+import org.col.api.Page;
+import org.col.api.PagedReference;
+import org.col.api.PagingResultSet;
+import org.col.api.Taxon;
+import org.col.api.TaxonInfo;
+import org.col.api.VernacularName;
 import org.col.db.NotFoundException;
 import org.col.db.mapper.DistributionMapper;
 import org.col.db.mapper.ReferenceMapper;
 import org.col.db.mapper.TaxonMapper;
 import org.col.db.mapper.VernacularNameMapper;
-
-import javax.annotation.Nullable;
-import java.util.List;
 
 public class TaxonDao {
 
@@ -46,9 +53,9 @@ public class TaxonDao {
 		mapper.create(taxon);
 	}
 
-  public TaxonInfo getTaxonInfo(int datasetKey, String id) {
-	  return getTaxonInfo(lookup(datasetKey, id));
-  }
+	public TaxonInfo getTaxonInfo(int datasetKey, String id) {
+		return getTaxonInfo(lookup(datasetKey, id));
+	}
 
 	public TaxonInfo getTaxonInfo(int key) {
 		TaxonInfo info = new TaxonInfo();
@@ -64,23 +71,35 @@ public class TaxonDao {
 		DistributionMapper dMapper = session.getMapper(DistributionMapper.class);
 		List<Distribution> distributions = dMapper.listByTaxon(taxon.getKey());
 		info.setDistributions(distributions);
-		
+
 		ReferenceMapper rMapper = session.getMapper(ReferenceMapper.class);
-		
+
 		List<PagedReference> refs = rMapper.listByTaxon(key);
 		info.addReferences(refs);
-		taxon.addReferences(refs);	
+		taxon.createReferences(refs);
+
+		refs = rMapper.listByVernacularNamesOfTaxon(key);
+		info.addReferences(refs);
+		for (VernacularName v : vernaculars) {
+			v.createReferences(refs);
+		}
+
+		refs = rMapper.listByDistributionOfTaxon(key);
+		info.addReferences(refs);
+		for (Distribution d : distributions) {
+			d.createReferences(refs);
+		}
 
 		return info;
 	}
 
-  private int lookup(int datasetKey, String id) throws NotFoundException {
-    TaxonMapper mapper = session.getMapper(TaxonMapper.class);
-    Integer key = mapper.lookupKey(datasetKey, id);
-    if (key == null) {
-      throw new NotFoundException(Taxon.class, datasetKey, id);
-    }
-    return key;
-  }
+	private int lookup(int datasetKey, String id) throws NotFoundException {
+		TaxonMapper mapper = session.getMapper(TaxonMapper.class);
+		Integer key = mapper.lookupKey(datasetKey, id);
+		if (key == null) {
+			throw new NotFoundException(Taxon.class, datasetKey, id);
+		}
+		return key;
+	}
 
 }

@@ -45,6 +45,23 @@ public class Reference {
 	 */
 	private Integer year;
 
+	public Reference() {
+	}
+
+	/*
+	 * Copy constructor. Creates a shallow copy. Needed because we need to convert
+	 * PagedReference instance to Reference instance (shedding the extra fields in
+	 * PagedReference). See TaxonDao.getTaxonInfo().
+	 */
+	public Reference(Reference source) {
+		this.key = source.key;
+		this.id = source.id;
+		this.datasetKey = source.datasetKey;
+		this.csl = source.csl;
+		this.serialKey = source.serialKey;
+		this.year = source.year;
+	}
+
 	public Integer getKey() {
 		return key;
 	}

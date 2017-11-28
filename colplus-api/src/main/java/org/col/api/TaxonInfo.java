@@ -1,5 +1,6 @@
 package org.col.api;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,7 +13,7 @@ public class TaxonInfo {
 
 	private List<Distribution> distributions;
 
-	private Map<Integer, PagedReference> references = new HashMap<>();
+	private Map<Integer, Reference> references = new HashMap<>();
 
 	public Taxon getTaxon() {
 		return taxon;
@@ -38,9 +39,11 @@ public class TaxonInfo {
 		this.distributions = distributions;
 	}
 
-	public void addReferences(List<PagedReference> refs) {
-		for (PagedReference ref : refs) {
-			references.put(ref.getKey(), ref);
+	public void addReferences(Collection<PagedReference> refs) {
+		for (PagedReference pr : refs) {
+			if (!references.containsKey(pr.getKey())) {
+				references.put(pr.getKey(), new Reference(pr));
+			}
 		}
 	}
 

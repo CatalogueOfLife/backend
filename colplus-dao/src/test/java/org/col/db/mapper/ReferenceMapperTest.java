@@ -82,7 +82,17 @@ public class ReferenceMapperTest extends MapperTestBase<ReferenceMapper> {
 		assertEquals("04", "100", refs.get(0).getReferencePage());
 		assertEquals("05", "133", refs.get(1).getReferencePage());
 	}
-	
+
+	@Test
+	public void listByVernacularNamesOfTaxon() {
+		List<PagedReference> refs = mapper().listByVernacularNamesOfTaxon(1);
+		assertEquals("01", 2, refs.size());
+		assertEquals("02", Integer.valueOf(1), refs.get(0).getReferenceForKey());
+		assertEquals("03", Integer.valueOf(2), refs.get(1).getReferenceForKey());
+		assertEquals("04", "145", refs.get(0).getReferencePage());
+		assertEquals("05", "145", refs.get(1).getReferencePage());
+	}
+
 	@Test
 	public void listByDistributionOfTaxon() {
 		List<PagedReference> refs = mapper().listByDistributionOfTaxon(1);
