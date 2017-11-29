@@ -15,6 +15,11 @@ public enum Issue {
   UNPARSABLE_AUTHORSHIP,
 
   /**
+   * Authorship found in scientificName and scientificNameAuthorship differ.
+   */
+  INCONSISTENT_AUTHORSHIP,
+
+  /**
    * An parsed, but inconsistent name.
    * E.g. the rank of the name does not match the given name parts or suffices.
    */

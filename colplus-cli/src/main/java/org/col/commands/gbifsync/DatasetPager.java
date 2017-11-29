@@ -1,5 +1,8 @@
 package org.col.commands.gbifsync;
 
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import org.col.api.Dataset;
 import org.col.api.Page;
 import org.col.api.vocab.DataFormat;
@@ -22,6 +25,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 /**
@@ -35,15 +39,38 @@ public class DatasetPager {
   final RxWebTarget<RxCompletionStageInvoker> datasets;
   final RxWebTarget<RxCompletionStageInvoker> publisher;
   final RxClient<RxCompletionStageInvoker> client;
+  private final LoadingCache<UUID, String> pCache;
 
   public DatasetPager(RxClient<RxCompletionStageInvoker> client, GbifConfig gbif) {
-    UriBuilder uriBuilder = UriBuilder.fromUri(gbif.api);
     this.client = client;
     datasets = client
-        .target(uriBuilder.path("/dataset"))
+        .target(UriBuilder.fromUri(gbif.api).path("/dataset"))
         .queryParam("type", "CHECKLIST");
     publisher = client
-        .target(uriBuilder.path("/organization/"));
+        .target(UriBuilder.fromUri(gbif.api).path("/organization/"));
+
+    pCache = CacheBuilder.newBuilder()
+        .maximumSize(1000)
+        .build(new CacheLoader<UUID, String>() {
+             @Override
+             public String load(UUID key) throws Exception {
+               RxWebTarget<RxCompletionStageInvoker> pubDetail = publisher.path(key.toString());
+               LOG.info("Retrieve publisher {}", pubDetail.getUri());
+               return pubDetail.request()
+                   .accept(MediaType.APPLICATION_JSON_TYPE)
+                   .rx()
+                   .get(GPublisher.class)
+                   .exceptionally(e -> {
+                     LOG.error("Failed to retrieve publisher details for {}", key, e);
+                     return null;
+                   })
+                   .thenApply(p -> p == null ? null : p.title)
+                   .toCompletableFuture()
+                   .join();
+             }
+           }
+        );
+
     LOG.info("Created dataset pager for {}", datasets.getUri());
   }
 
@@ -51,16 +78,25 @@ public class DatasetPager {
     return hasNext;
   }
 
-  private RxWebTarget<RxCompletionStageInvoker> applyPage(RxWebTarget<RxCompletionStageInvoker> target) {
-    return target
+  private RxWebTarget<RxCompletionStageInvoker> datasetPage() {
+    return datasets
         .queryParam("offset", page.getOffset())
         .queryParam("limit", page.getLimit());
+  }
+
+  private String publisher(final UUID key) {
+    try {
+      return pCache.get(key);
+    } catch (ExecutionException e) {
+      LOG.error("Failed to retrieve publisher {} from cache", key, e);
+      throw new IllegalStateException(e);
+    }
   }
 
   public List<Dataset> next() {
     LOG.info("retrieve {}", page);
     try {
-      return applyPage(datasets)
+      return datasetPage()
           .request()
           .accept(MediaType.APPLICATION_JSON_TYPE)
           .rx()
@@ -69,9 +105,12 @@ public class DatasetPager {
             hasNext = !resp.endOfRecords;
             return resp;
           })
-          .thenApplyAsync(resp -> resp.results.parallelStream().map(DatasetPager :: convert).collect(Collectors.toList()))
+          .thenApply(resp -> resp.results.stream()
+              .map(this::convert)
+              .collect(Collectors.toList())
+          )
           .toCompletableFuture()
-          .get();
+          .join();
 
     } catch (Exception e) {
       hasNext = false;
@@ -82,10 +121,11 @@ public class DatasetPager {
     }
   }
 
-  private static Dataset convert(GDataset g) {
+  private Dataset convert(GDataset g) {
     Dataset d = new Dataset();
     d.setGbifKey(g.key);
     d.setGbifPublisherKey(g.publishingOrganizationKey);
+    d.setOrganisation(publisher(g.publishingOrganizationKey));
     d.setTitle(g.title);
     d.setDescription(g.description);
     Optional<GEndpoint> dwca = g.endpoints.stream().filter(e -> e.type.equalsIgnoreCase("DWC_ARCHIVE")).findFirst();
@@ -97,8 +137,6 @@ public class DatasetPager {
     }
     d.setHomepage(uri(g.homepage));
     d.setLicense(SafeParser.parse(LicenseParser.PARSER, g.license).orElse(License.UNSPECIFIED, License.UNSUPPORTED));
-    //TODO retrieve real publisher title
-    d.setOrganisation(opt(g.publishingOrganizationKey));
     //TODO: convert contact and authors
     d.setContactPerson(null);
     d.setAuthorsAndEditors(null);

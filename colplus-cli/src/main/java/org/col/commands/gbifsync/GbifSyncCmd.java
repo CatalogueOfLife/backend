@@ -29,7 +29,7 @@ public class GbifSyncCmd extends EnvironmentCommand<CliConfig> {
     super(new CliApp(),"gbifsync", "Syncs datasets with the GBIF registry");
   }
 
-  protected void sync(DatasetPager pager, DatasetMapper mapper) throws Exception {
+  private void sync(DatasetPager pager, DatasetMapper mapper) throws Exception {
     int created = 0;
     int updated = 0;
     int deleted = 0;
@@ -37,17 +37,33 @@ public class GbifSyncCmd extends EnvironmentCommand<CliConfig> {
     while (pager.hasNext()) {
       List<Dataset> page = pager.next();
       for (Dataset gbif : page) {
-        Dataset existing = mapper.getByGBIF(gbif.getGbifKey());
-        if (existing == null) {
+        Dataset curr = mapper.getByGBIF(gbif.getGbifKey());
+        if (curr == null) {
           // create new dataset
           mapper.create(gbif);
           created++;
+          LOG.debug("New dataset added from GBIF: {} - {}", gbif.getKey(), gbif.getTitle());
 
-        } else {
-          // TODO: check when to update existing dataset and do it properly not just the title
-          existing.setTitle(gbif.getTitle());
-          mapper.update(existing);
-          updated++;
+        } else
+          /**
+           * we modify core metadata (title, description, contacts, version) via the dwc archive metadata
+           * gbif syncs only change one of the following
+           *  - dwca access url
+           *  - license
+           *  - organization (publisher)
+           *  - homepage
+           */
+          if (!gbif.getDataAccess().equals(curr.getDataAccess()) ||
+              !gbif.getLicense().equals(curr.getLicense()) ||
+              !gbif.getOrganisation().equals(curr.getOrganisation()) ||
+              !gbif.getHomepage().equals(curr.getHomepage())
+              ) {
+            curr.setDataAccess(gbif.getDataAccess());
+            curr.setLicense(gbif.getLicense());
+            curr.setOrganisation(gbif.getOrganisation());
+            curr.setHomepage(gbif.getHomepage());
+            mapper.update(curr);
+            updated++;
         }
       }
     }
@@ -56,11 +72,10 @@ public class GbifSyncCmd extends EnvironmentCommand<CliConfig> {
   }
 
   @Override
-  protected void run(Environment environment, Namespace namespace, CliConfig cfg) throws Exception {
+  protected void run(Environment env, Namespace namespace, CliConfig cfg) throws Exception {
     final HikariDataSource ds = cfg.db.pool();
     final SqlSessionFactory sessionFactory = MybatisFactory.configure(ds, "gbif-sync");
-
-    final RxClient<RxCompletionStageInvoker> rxClient = new JerseyClientBuilder(environment)
+    final RxClient<RxCompletionStageInvoker> rxClient = new JerseyClientBuilder(env)
         .using(cfg.client)
         .buildRx(getName(), RxCompletionStageInvoker.class);
 

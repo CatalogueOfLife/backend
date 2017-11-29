@@ -178,11 +178,18 @@ public class VerbatimInterpreter {
     // try to add an authorship if not yet there
     if (v.hasCoreTerm(DwcTerm.scientificNameAuthorship)) {
       try {
-        Authorship authorship = parseAuthorship(v.getCoreTerm(DwcTerm.scientificNameAuthorship));
+        Name authorship = parseAuthorship(v.getCoreTerm(DwcTerm.scientificNameAuthorship));
         if (n.hasAuthorship()) {
-          // TODO: compare authorships and raise warning if different
+          if (!n.fullAuthorship().equalsIgnoreCase(authorship.fullAuthorship())){
+            n.addIssue(Issue.INCONSISTENT_AUTHORSHIP);
+            LOG.warn("Different authorship found in dwc:scientificName=[{}] and dwc:scientificNameAuthorship=[{}]",
+                n.fullAuthorship(),
+                authorship.fullAuthorship());
+          }
         } else {
-          n.setAuthorship(authorship);
+          n.setAuthorship(authorship.getAuthorship());
+          n.setSanctioningAuthor(authorship.getSanctioningAuthor());
+          n.setBasionymAuthorship(authorship.getBasionymAuthorship());
         }
 
       } catch (UnparsableException e) {
@@ -235,8 +242,7 @@ public class VerbatimInterpreter {
   /**
    * @return a name instance with just the parsed authorship, i.e. combination & original year & author list
    */
-  private Authorship parseAuthorship(String authorship) throws UnparsableException {
-      Name auth = NameParserGNA.PARSER.parse("Abies alba "+authorship).get();
-      return auth.getAuthorship();
+  private Name parseAuthorship(String authorship) throws UnparsableException {
+      return NameParserGNA.PARSER.parse("Abies alba "+authorship).get();
   }
 }

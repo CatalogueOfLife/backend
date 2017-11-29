@@ -9,10 +9,12 @@ import org.col.commands.gbifsync.GbifSyncCmd;
 import org.col.commands.hello.HelloCmd;
 import org.col.commands.importer.ImporterCmd;
 import org.col.commands.initdb.InitDbCmd;
+import org.slf4j.bridge.SLF4JBridgeHandler;
 
 public class CliApp extends Application<CliConfig> {
 
   public static void main(final String[] args) throws Exception {
+    SLF4JBridgeHandler.install();
     new CliApp().run(args);
   }
 
