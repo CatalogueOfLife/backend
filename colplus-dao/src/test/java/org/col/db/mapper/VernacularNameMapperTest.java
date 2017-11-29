@@ -30,13 +30,13 @@ public class VernacularNameMapperTest extends MapperTestBase<VernacularNameMappe
 	@Test
 	public void testListByTaxon() throws Exception {
 		VernacularName b = newVernacularName("b");
-		mapper().create(b, TAXON1.getKey(), DATASET1.getKey());
+		mapper().create(b, TAXON2.getKey(), DATASET1.getKey());
 		VernacularName c = newVernacularName("c");
-		mapper().create(c, TAXON1.getKey(), DATASET1.getKey());
+		mapper().create(c, TAXON2.getKey(), DATASET1.getKey());
 		VernacularName a = newVernacularName("a");
-		mapper().create(a, TAXON1.getKey(), DATASET1.getKey());
+		mapper().create(a, TAXON2.getKey(), DATASET1.getKey());
 
-		List<VernacularName> list = mapper().listByTaxon(TAXON1.getKey());
+		List<VernacularName> list = mapper().listByTaxon(TAXON2.getKey());
 		assertEquals(3, list.size());
 		assertTrue(a.equals(list.get(0)));
 		assertTrue(b.equals(list.get(1)));

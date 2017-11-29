@@ -32,9 +32,9 @@ INSERT INTO distribution_references(dataset_key,distribution_key,reference_key,r
 INSERT INTO distribution_references(dataset_key,distribution_key,reference_key,reference_page) VALUES (1, 1, 2, '34');
 INSERT INTO distribution_references(dataset_key,distribution_key,reference_key,reference_page) VALUES (1, 2, 2, '35');
 
-INSERT INTO vernacular_name(key,dataset_key,taxon_key,name,language) VALUES (1, 1, 2, 'Apple', 'en');
-INSERT INTO vernacular_name(key,dataset_key,taxon_key,name,language) VALUES (2, 1, 2, 'Apfel', 'de');
-INSERT INTO vernacular_name(key,dataset_key,taxon_key,name,language) VALUES (3, 1, 2, 'Meeuw', 'nl');
+INSERT INTO vernacular_name(key,dataset_key,taxon_key,name,language) VALUES (1, 1, 1, 'Apple', 'en');
+INSERT INTO vernacular_name(key,dataset_key,taxon_key,name,language) VALUES (2, 1, 1, 'Apfel', 'de');
+INSERT INTO vernacular_name(key,dataset_key,taxon_key,name,language) VALUES (3, 1, 1, 'Meeuw', 'nl');
 ALTER SEQUENCE vernacular_name_key_seq RESTART WITH 1000;
 
 INSERT INTO vernacular_name_references(dataset_key,vernacular_name_key,reference_key,reference_page) VALUES (1, 1, 1, '145');

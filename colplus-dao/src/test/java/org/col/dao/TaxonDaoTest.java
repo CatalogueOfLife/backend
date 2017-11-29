@@ -1,13 +1,13 @@
 package org.col.dao;
 
-import static org.junit.Assert.assertEquals;
+import org.col.api.TaxonInfo;
+import org.col.util.BeanPrinter;
+import org.junit.Test;
 
 import java.util.HashSet;
 import java.util.Set;
 
-import org.col.api.TaxonInfo;
-import org.col.util.BeanPrinter;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
 
 public class TaxonDaoTest extends DaoTestBase {
 
@@ -20,10 +20,9 @@ public class TaxonDaoTest extends DaoTestBase {
 		// See squirrels.sql
 		assertEquals("01", "root-1", info.getTaxon().getId());
 		assertEquals("02", 1, info.getTaxon().getReferences().size());
-		assertEquals("03", 1, info.getTaxon().getReferences().size());
-		assertEquals("04", 2, info.getDistributions().size());
-		assertEquals("05", 2, info.getVernacularNames().size());
-		assertEquals("06", 2, info.getReferences().size());
+		assertEquals("03", 2, info.getDistributions().size());
+		assertEquals("04", 2, info.getVernacularNames().size());
+		assertEquals("05", 2, info.getReferences().size());
 
 		Set<Integer> refKeys1 = new HashSet<>();
 		info.getReferences().values().stream().forEach(e -> refKeys1.add(e.getKey()));
