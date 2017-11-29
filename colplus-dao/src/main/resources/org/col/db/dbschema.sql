@@ -239,7 +239,7 @@ CREATE TABLE distribution (
   taxon_key INTEGER NOT NULL REFERENCES taxon,
   area TEXT,
   area_standard INTEGER,
-  status INTEGER,
+  status INTEGER
 );
 
 CREATE TABLE distribution_references (
