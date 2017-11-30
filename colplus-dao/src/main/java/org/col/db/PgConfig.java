@@ -17,7 +17,11 @@ import java.util.Objects;
 public class PgConfig {
   public static final String SCHEMA_FILE = "org/col/db/dbschema.sql";
 
-  public String host = "localhost";
+  /**
+   * Use null to indicate an embedded postgres server
+   */
+  public String host;
+  public int port = 5432;
   public String database;
   public String user;
   public String password;
@@ -82,7 +86,7 @@ public class PgConfig {
   }
 
   private String jdbcUrl() {
-    return "jdbc:postgresql://" + host + "/" + database;
+    return "jdbc:postgresql://" + host + ":" + port + "/" + database;
   }
 
   /**

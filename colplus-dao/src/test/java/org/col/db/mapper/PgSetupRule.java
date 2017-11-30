@@ -7,7 +7,11 @@ import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.jdbc.ScriptRunner;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.db.MybatisFactory;
+import org.col.db.PgConfig;
+import org.col.util.YamlUtils;
 import org.junit.rules.ExternalResource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.yandex.qatools.embed.postgresql.EmbeddedPostgres;
 import ru.yandex.qatools.embed.postgresql.distribution.Version;
 
@@ -28,19 +32,17 @@ import static org.col.db.PgConfig.SCHEMA_FILE;
  *
  * It can even be used to share the same postgres server across several test
  * classes if it is used in as a {@link org.junit.ClassRule} in a TestSuite.
+ *
+ * By default it uses an embedded postgres server.
+ * Setting the System variable "" to true enables the use of
  */
 public class PgSetupRule extends ExternalResource {
+  private static final Logger LOG = LoggerFactory.getLogger(PgSetupRule.class);
+
 	private static EmbeddedPostgres postgres;
 	private static HikariDataSource dataSource;
 	private static SqlSessionFactory sqlSessionFactory;
 	private boolean startedHere = false;
-
-	// switch this for local testing to false
-	// Note: DO NOT COMMIT false or jenkins will fail!
-	private static final boolean embeddedPg = true;
-	private static final String database = "colplus";
-	private static final String user = "postgres";
-	private static final String password = "postgres";
 
 	public static Connection getConnection() throws SQLException {
 		return dataSource.getConnection();
@@ -62,27 +64,23 @@ public class PgSetupRule extends ExternalResource {
 
 	private void startDb() {
 		try {
-			String url;
-			if (System.getenv("COLPLUS_PG_NON_EMBEDDED") == null) {
-				System.out.println("Starting Postgres");
+      PgConfig cfg = YamlUtils.read(PgConfig.class, "/pg-test.yaml");
+			if (cfg.host == null) {
+        LOG.info("Starting embedded Postgres");
 				Instant start = Instant.now();
 				postgres = new EmbeddedPostgres(Version.V10_0);
 				// assigned some free port using local socket 0
-				url = postgres.start("localhost", new ServerSocket(0).getLocalPort(), database, user,
-				    password);
-				System.out.format("Pg startup time: %s ms\n",
-				    Duration.between(start, Instant.now()).toMillis());
+        cfg.port = new ServerSocket(0).getLocalPort();
+        cfg.host = "localhost";
+        cfg.maximumPoolSize = 2;
+				postgres.start(cfg.host, cfg.port, cfg.database, cfg.user, cfg.password);
+        LOG.info("Pg startup time: {} ms", Duration.between(start, Instant.now()).toMillis());
+
 			} else {
-				System.out.println("Use external, local Postgres server on database " + database);
-				url = "jdbc:postgresql://localhost/" + database;
+				LOG.info("Use external Postgres server {}/{}", cfg.host, cfg.database);
 			}
 
-			HikariConfig hikari = new HikariConfig();
-			hikari.setJdbcUrl(url);
-			hikari.setUsername(user);
-			hikari.setPassword(password);
-			hikari.setMaximumPoolSize(2);
-			hikari.setMinimumIdle(1);
+			HikariConfig hikari = cfg.hikariConfig();
 			hikari.setAutoCommit(false);
 			dataSource = new HikariDataSource(hikari);
 
@@ -90,8 +88,7 @@ public class PgSetupRule extends ExternalResource {
 			sqlSessionFactory = MybatisFactory.configure(dataSource, "test");
 
 		} catch (Exception e) {
-			System.err.println("Pg startup error: " + e.getMessage());
-			e.printStackTrace();
+      LOG.error("Pg startup error: {}", e.getMessage(), e);
 
 			if (dataSource != null) {
 				dataSource.close();
