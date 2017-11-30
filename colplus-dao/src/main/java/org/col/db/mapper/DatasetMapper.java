@@ -9,27 +9,32 @@ import java.util.UUID;
 
 public interface DatasetMapper {
 
-  int count();
+	int count();
 
-  List<Dataset> list(@Param("page") Page page);
+	List<Dataset> list(@Param("page") Page page);
 
-  Dataset get(@Param("key") int key);
+	List<Dataset> search(@Param("q") String query);
 
-  Dataset getByGBIF(@Param("key") UUID key);
+	Dataset get(@Param("key") int key);
 
-  void create(Dataset dataset);
+	Dataset getByGBIF(@Param("key") UUID key);
 
-  void update(Dataset dataset);
+	void create(Dataset dataset);
 
-  /**
-   * Marks a dataset as deleted
-   * @param key
-   */
-  void delete(@Param("key") int key);
+	void update(Dataset dataset);
 
-  /**
-   * Truncates all data from a dataset cascading to all entities incl names, taxa and references.
-   * @param key
-   */
-  void truncateDatasetData(@Param("key") int key);
+	/**
+	 * Marks a dataset as deleted
+	 * 
+	 * @param key
+	 */
+	void delete(@Param("key") int key);
+
+	/**
+	 * Truncates all data from a dataset cascading to all entities incl names, taxa
+	 * and references.
+	 * 
+	 * @param key
+	 */
+	void truncateDatasetData(@Param("key") int key);
 }

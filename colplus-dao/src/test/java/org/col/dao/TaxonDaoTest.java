@@ -1,7 +1,6 @@
 package org.col.dao;
 
 import org.col.api.TaxonInfo;
-import org.col.util.BeanPrinter;
 import org.junit.Test;
 
 import java.util.HashSet;
@@ -15,13 +14,13 @@ public class TaxonDaoTest extends DaoTestBase {
 	public void testInfo() throws Exception {
 		TaxonDao dao = new TaxonDao(session());
 		TaxonInfo info = dao.getTaxonInfo(1);
-		BeanPrinter.out(info);
+		// BeanPrinter.out(info);
 
 		// See squirrels.sql
 		assertEquals("01", "root-1", info.getTaxon().getId());
 		assertEquals("02", 1, info.getTaxon().getReferences().size());
 		assertEquals("03", 2, info.getDistributions().size());
-		assertEquals("04", 2, info.getVernacularNames().size());
+		assertEquals("04", 3, info.getVernacularNames().size());
 		assertEquals("05", 2, info.getReferences().size());
 
 		Set<Integer> refKeys1 = new HashSet<>();
@@ -34,7 +33,7 @@ public class TaxonDaoTest extends DaoTestBase {
 		info.getVernacularNames().stream()
 		    .forEach(x -> x.getReferences().stream().forEach(e -> refKeys2.add(e.getReferenceKey())));
 
-		assertEquals("07", refKeys1, refKeys2);
+		assertEquals("06", refKeys1, refKeys2);
 
 	}
 
