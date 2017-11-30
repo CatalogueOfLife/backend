@@ -1,19 +1,23 @@
 package org.col.db.mapper;
 
-import com.google.common.collect.Lists;
-import org.col.api.Dataset;
-import org.col.api.Page;
-import org.col.api.RandomUtils;
-import org.col.api.vocab.DataFormat;
-import org.col.api.vocab.License;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
-import static org.junit.Assert.*;
+import org.col.api.Dataset;
+import org.col.api.Page;
+import org.col.api.RandomUtils;
+import org.col.api.vocab.DataFormat;
+import org.col.api.vocab.License;
+import org.junit.Assert;
+import org.junit.Test;
+
+import com.google.common.collect.Lists;
 
 /**
  *
@@ -24,7 +28,7 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
 		super(DatasetMapper.class);
 	}
 
-	private Dataset create() throws Exception {
+	private static Dataset create() throws Exception {
 		Dataset d = new Dataset();
 		d.setGbifKey(UUID.randomUUID());
 		d.setTitle(RandomUtils.randomString(80));
@@ -126,15 +130,43 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
 	}
 
 	@Test
-	public void search() throws Exception {
-		List<Dataset> ds = mapper().search("First dataset");
+	public void countSearchResults() throws Exception {
+		createSearchableDataset("BIZ", "CUIT", "A sentence with worms and stuff");
+		createSearchableDataset("ITIS", "ITIS", "Also contains worms");
+		createSearchableDataset("WORMS", "WORMS", "The Worms dataset");
+		createSearchableDataset("FOO", "BAR", null);
+		commit();
+		int count = mapper().countSearchResults("worms");
+		assertEquals("01", 3, count);
 	}
 
-	private List<Dataset> removeCreated(List<Dataset> ds) {
+	@Test
+	public void search() throws Exception {
+		createSearchableDataset("BIZ", "CUIT", "A sentence with worms and stuff");
+		createSearchableDataset("ITIS", "ITIS", "Also contains worms");
+		createSearchableDataset("WORMS", "WORMS", "The Worms dataset");
+		createSearchableDataset("FOO", "BAR", null);
+		commit();
+		List<Dataset> datasets = mapper().search("worms", new Page());
+		assertEquals("01", 3, datasets.size());
+		// check order by rank:
+		assertEquals("02", "WORMS", datasets.get(0).getTitle());
+		datasets.forEach(c -> Assert.assertNotEquals("03", "FOO", c.getTitle()));
+	}
+
+	private static List<Dataset> removeCreated(List<Dataset> ds) {
 		for (Dataset d : ds) {
 			// dont compare created stamps
 			d.setCreated(null);
 		}
 		return ds;
+	}
+
+	private void createSearchableDataset(String title, String organisation, String description) {
+		Dataset ds = new Dataset();
+		ds.setTitle(title);
+		ds.setOrganisation(organisation);
+		ds.setDescription(description);
+		mapper().create(ds);
 	}
 }

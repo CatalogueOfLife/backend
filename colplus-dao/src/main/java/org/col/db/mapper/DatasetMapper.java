@@ -1,11 +1,11 @@
 package org.col.db.mapper;
 
+import java.util.List;
+import java.util.UUID;
+
 import org.apache.ibatis.annotations.Param;
 import org.col.api.Dataset;
 import org.col.api.Page;
-
-import java.util.List;
-import java.util.UUID;
 
 public interface DatasetMapper {
 
@@ -13,7 +13,9 @@ public interface DatasetMapper {
 
 	List<Dataset> list(@Param("page") Page page);
 
-	List<Dataset> search(@Param("q") String query);
+	int countSearchResults(@Param("q") String query);
+
+	List<Dataset> search(@Param("q") String query, @Param("page") Page page);
 
 	Dataset get(@Param("key") int key);
 

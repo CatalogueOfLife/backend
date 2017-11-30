@@ -84,6 +84,19 @@
         <include refid="org.col.db.mapper.Common.limit"/>
     </select>
 
+    <select id="countSearchResults" parameterType="map" resultType="Integer">
+        SELECT COUNT(*)
+        FROM
+            (
+              SELECT
+                setweight(to_tsvector(coalesce(unaccent(title),'')), 'D') ||
+                setweight(to_tsvector(coalesce(unaccent(description),'')), 'A') ||
+                setweight(to_tsvector(coalesce(unaccent(organisation),'')), 'A') as document
+              FROM dataset     
+            ) AS ds
+        WHERE ds.document @@ plainto_tsquery(#{q})
+    </select>
+
     <select id="search" parameterType="map" resultMap="datasetResultMap">
         SELECT <include refid="SELECT" />
         FROM
@@ -94,7 +107,9 @@
                 setweight(to_tsvector(coalesce(unaccent(organisation),'')), 'A') as document
               FROM dataset     
             ) AS ds
-        WHERE ds.document @@ to_tsquery('First')
+        WHERE ds.document @@ plainto_tsquery(#{q})
+        ORDER BY ts_rank(ds.document, plainto_tsquery(#{q})) DESC
+        <include refid="org.col.db.mapper.Common.limit"/>
     </select>
     
     
