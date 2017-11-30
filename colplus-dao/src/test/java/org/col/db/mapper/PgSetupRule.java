@@ -63,12 +63,13 @@ public class PgSetupRule extends ExternalResource {
 	private void startDb() {
 		try {
 			String url;
-			if (embeddedPg) {
+			if (System.getenv("COLPLUS_PG_NON_EMBEDDED") == null) {
 				System.out.println("Starting Postgres");
 				Instant start = Instant.now();
 				postgres = new EmbeddedPostgres(Version.V10_0);
 				// assigned some free port using local socket 0
-				url = postgres.start("localhost", new ServerSocket(0).getLocalPort(), database, user, password);
+				url = postgres.start("localhost", new ServerSocket(0).getLocalPort(), database, user,
+				    password);
 				System.out.format("Pg startup time: %s ms\n",
 				    Duration.between(start, Instant.now()).toMillis());
 			} else {
@@ -117,10 +118,10 @@ public class PgSetupRule extends ExternalResource {
 	@Override
 	public void after() {
 		if (startedHere) {
-      System.out.println("Shutdown dbpool");
+			System.out.println("Shutdown dbpool");
 			dataSource.close();
 			if (postgres != null) {
-			  System.out.println("Stopping Postgres");
+				System.out.println("Stopping Postgres");
 				postgres.stop();
 			}
 		}
