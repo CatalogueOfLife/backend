@@ -3,6 +3,10 @@ package org.col;
 import com.google.common.base.Splitter;
 import org.col.api.*;
 import org.col.api.vocab.*;
+import org.gbif.nameparser.api.Authorship;
+import org.gbif.nameparser.api.NamePart;
+import org.gbif.nameparser.api.NameType;
+import org.gbif.nameparser.api.Rank;
 
 import java.net.URI;
 import java.time.LocalDate;

@@ -2,8 +2,8 @@ package org.col.api;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import org.col.api.vocab.Rank;
 import org.gbif.dwc.terms.DwcTerm;
+import org.gbif.nameparser.api.Rank;
 
 import java.util.List;
 

@@ -1,8 +1,8 @@
 package org.col.commands.importer.neo.model;
 
 import com.google.common.base.Strings;
-import org.col.api.vocab.Rank;
 import org.gbif.dwc.terms.DwcTerm;
+import org.gbif.nameparser.api.Rank;
 import org.neo4j.graphdb.Node;
 
 /**

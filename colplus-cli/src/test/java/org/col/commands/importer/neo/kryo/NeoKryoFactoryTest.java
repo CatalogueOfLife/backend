@@ -7,7 +7,7 @@ import com.google.common.collect.Lists;
 import org.col.TestEntityGenerator;
 import org.col.api.*;
 import org.col.api.vocab.Issue;
-import org.col.api.vocab.Rank;
+import org.gbif.nameparser.api.Rank;
 import org.col.api.vocab.TaxonomicStatus;
 import org.col.commands.importer.neo.model.NeoTaxon;
 import org.gbif.dwc.terms.*;

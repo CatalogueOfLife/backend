@@ -3,10 +3,11 @@ package org.col.commands.importer.dwca;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
-import org.col.api.*;
+import org.col.api.Classification;
+import org.col.api.Name;
+import org.col.api.VerbatimRecord;
 import org.col.api.vocab.Issue;
 import org.col.api.vocab.Origin;
-import org.col.api.vocab.Rank;
 import org.col.api.vocab.TaxonomicStatus;
 import org.col.commands.importer.neo.InsertMetadata;
 import org.col.commands.importer.neo.NeoDb;
@@ -14,9 +15,10 @@ import org.col.commands.importer.neo.NormalizerStore;
 import org.col.commands.importer.neo.NotUniqueRuntimeException;
 import org.col.commands.importer.neo.model.*;
 import org.col.commands.importer.neo.traverse.Traversals;
-import org.col.parser.NameParserGNA;
-import org.col.parser.UnparsableException;
+import org.col.parser.NameParser;
 import org.gbif.dwc.terms.DwcTerm;
+import org.gbif.nameparser.api.NameType;
+import org.gbif.nameparser.api.Rank;
 import org.neo4j.graphdb.*;
 import org.neo4j.helpers.collection.Iterables;
 import org.neo4j.helpers.collection.Iterators;
@@ -40,6 +42,8 @@ public class Normalizer implements Runnable {
   static {
     PLACEHOLDER.setScientificName("Incertae sedis");
     PLACEHOLDER.setRank(Rank.UNRANKED);
+    PLACEHOLDER.setType(NameType.PLACEHOLDER);
+    PLACEHOLDER.setParsed(false);
   }
   private static final List<Splitter> COMMON_SPLITTER = Lists.newArrayList();
   static {
@@ -627,14 +631,10 @@ public class Normalizer implements Runnable {
    */
   private RankedName lookupByName(DwcTerm term, NeoTaxon t, Origin createdOrigin) {
     if (t.verbatim.hasCoreTerm(term)) {
-      Name nameTmp;
-      try {
-        nameTmp = NameParserGNA.PARSER.parse(t.verbatim.getCoreTerm(term)).get();
-      } catch (UnparsableException e) {
-        LOG.warn("Unable to parse");
-        nameTmp = new Name();
+      Name nameTmp = NameParser.PARSER.parse(t.verbatim.getCoreTerm(term)).get();
+      if (!nameTmp.isParsed() && nameTmp.getType().isParsable()) {
+        LOG.warn("Unable to parse {}", t.verbatim.getCoreTerm(term));
         nameTmp.addIssue(Issue.UNPARSABLE_NAME);
-        nameTmp.setScientificName(t.verbatim.getCoreTerm(term));
       }
 
       final Name name = nameTmp;
@@ -642,7 +642,7 @@ public class Normalizer implements Runnable {
         List<Node> matches = store.byScientificName(name.getScientificName());
         // remove other authors, but allow names without authors
         if (name.hasAuthorship()) {
-          matches.removeIf(n -> !Strings.isNullOrEmpty(NeoProperties.getAuthorship(n)) && !NeoProperties.getAuthorship(n).equalsIgnoreCase(name.fullAuthorship()));
+          matches.removeIf(n -> !Strings.isNullOrEmpty(NeoProperties.getAuthorship(n)) && !NeoProperties.getAuthorship(n).equalsIgnoreCase(name.authorshipComplete()));
         }
 
         // if multiple matches remove basionymGroup

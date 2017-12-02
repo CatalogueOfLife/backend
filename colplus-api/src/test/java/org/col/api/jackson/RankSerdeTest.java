@@ -13,7 +13,7 @@
 package org.col.api.jackson;
 
 
-import org.col.api.vocab.Rank;
+import org.gbif.nameparser.api.Rank;
 
 public class RankSerdeTest extends SerdeTestBase<Rank> {
 

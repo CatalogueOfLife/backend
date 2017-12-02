@@ -56,16 +56,12 @@
     <mapdb.version>3.0.5</mapdb.version>
     <mockito.version>2.12.0</mockito.version>
     <mybatis.version>3.4.5</mybatis.version>
-    <name-parser.version>2.24</name-parser.version>
+    <name-parser.version>3.0-SNAPSHOT</name-parser.version>
     <neo4j.version>3.2.3</neo4j.version>
     <postgresql.version>42.1.4</postgresql.version>
     <postgresql-embedded.version>2.5</postgresql-embedded.version>
     <slf4j.version>1.7.24</slf4j.version>
     <validation-api.version>2.0.0.Final</validation-api.version>
-    <!-- GNA Parser deps -->
-    <gnparser.version>0.4.2</gnparser.version>
-    <json4s.version>3.5.2</json4s.version>
-    <scala.version>2.11.8</scala.version>
 
       <!-- Maven plugin versions.
           Check for available updates: mvn versions:display-plugin-updates
@@ -247,6 +243,11 @@
         </dependency>
         <dependency>
             <groupId>org.gbif</groupId>
+            <artifactId>name-parser-api</artifactId>
+            <version>${name-parser.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.gbif</groupId>
             <artifactId>name-parser</artifactId>
             <version>${name-parser.version}</version>
         </dependency>
@@ -266,23 +267,6 @@
                     <groupId>asm</groupId>
                 </exclusion>
             </exclusions>
-        </dependency>
-
-        <!-- GNA -->
-        <dependency>
-            <groupId>org.globalnames</groupId>
-            <artifactId>gnparser_2.11</artifactId>
-            <version>${gnparser.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.json4s</groupId>
-            <artifactId>json4s-ast_2.11</artifactId>
-            <version>${json4s.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.scala-lang</groupId>
-            <artifactId>scala-library</artifactId>
-            <version>${scala.version}</version>
         </dependency>
 
         <!-- mybatis / DB -->

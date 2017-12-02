@@ -2,7 +2,7 @@ package org.col.commands.importer.txttree;
 
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
-import org.col.api.vocab.Rank;
+import org.gbif.nameparser.api.Rank;
 import org.gbif.utils.file.FileUtils;
 
 import java.io.BufferedReader;

@@ -9,6 +9,7 @@ import org.glassfish.jersey.client.rx.Rx;
 import org.glassfish.jersey.client.rx.RxClient;
 import org.glassfish.jersey.client.rx.java8.RxCompletionStageInvoker;
 import org.glassfish.jersey.logging.LoggingFeature;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
@@ -20,6 +21,7 @@ import java.util.logging.Logger;
 /**
  *
  */
+@Ignore("GBIF service needs to be mocked - this uses live services")
 public class DatasetPagerTest {
   @Test
   public void next() throws Exception {

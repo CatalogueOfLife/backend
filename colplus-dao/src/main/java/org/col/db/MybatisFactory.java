@@ -13,6 +13,7 @@ import org.col.api.Name;
 import org.col.db.mapper.NameMapper;
 import org.col.db.type.RankTypeHandler;
 import org.col.db.type.UuidTypeHandler;
+import org.gbif.nameparser.api.ParsedName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,8 +66,9 @@ public class MybatisFactory {
 	}
 
 	private static void registerTypeAliases(TypeAliasRegistry registry) {
-		// register all aliases from the api package
+		// register all aliases from the api packages
 		registry.registerAliases(Name.class.getPackage().getName());
+    registry.registerAliases(ParsedName.class.getPackage().getName());
 	}
 
 	private static void registerTypeHandlers(TypeHandlerRegistry registry) {

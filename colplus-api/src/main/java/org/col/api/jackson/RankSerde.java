@@ -9,7 +9,7 @@ import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.google.common.collect.Maps;
-import org.col.api.vocab.Rank;
+import org.gbif.nameparser.api.Rank;
 
 import java.io.IOException;
 import java.util.Map;

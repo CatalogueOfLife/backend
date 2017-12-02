@@ -21,7 +21,7 @@ public class TaxonDaoTest extends DaoTestBase {
 		assertEquals("01", "root-1", info.getTaxon().getId());
 		assertEquals("02", 1, info.getTaxon().getReferences().size());
 		assertEquals("03", 2, info.getDistributions().size());
-		assertEquals("04", 2, info.getVernacularNames().size());
+		assertEquals("04", 3, info.getVernacularNames().size());
 		assertEquals("05", 2, info.getReferences().size());
 
 		Set<Integer> refKeys1 = new HashSet<>();

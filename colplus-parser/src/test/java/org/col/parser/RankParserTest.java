@@ -1,7 +1,7 @@
 package org.col.parser;
 
 import com.google.common.collect.Lists;
-import org.col.api.vocab.Rank;
+import org.gbif.nameparser.api.Rank;
 import org.junit.Test;
 
 import java.util.List;

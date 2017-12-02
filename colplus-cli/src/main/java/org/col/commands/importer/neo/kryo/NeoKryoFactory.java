@@ -5,12 +5,15 @@ import com.esotericsoftware.kryo.pool.KryoFactory;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
+import de.javakaffee.kryoserializers.UnmodifiableCollectionsSerializer;
+import de.javakaffee.kryoserializers.guava.ImmutableListSerializer;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import org.col.api.*;
 import org.col.api.vocab.*;
 import org.col.commands.importer.neo.model.NeoTaxon;
 import org.col.commands.importer.neo.model.RankedName;
 import org.gbif.dwc.terms.*;
+import org.gbif.nameparser.api.*;
 import org.neo4j.kernel.impl.core.NodeProxy;
 
 import java.net.URI;
@@ -72,6 +75,7 @@ public class NeoKryoFactory implements KryoFactory {
     kryo.register(UUID.class, new UUIDSerializer());
     kryo.register(URI.class, new URISerializer());
     kryo.register(int[].class);
+    UnmodifiableCollectionsSerializer.registerSerializers( kryo );
     ImmutableListSerializer.registerSerializers(kryo);
 
     // enums

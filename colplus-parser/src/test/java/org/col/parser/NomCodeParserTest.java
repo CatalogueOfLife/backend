@@ -1,7 +1,7 @@
 package org.col.parser;
 
 import com.google.common.collect.Lists;
-import org.col.api.vocab.NomCode;
+import org.gbif.nameparser.api.NomCode;
 import org.junit.Test;
 
 import java.util.List;

@@ -1,7 +1,7 @@
 package org.col.commands.importer.txttree;
 
 import org.apache.commons.io.IOUtils;
-import org.col.api.vocab.Rank;
+import org.gbif.nameparser.api.Rank;
 import org.gbif.utils.file.FileUtils;
 import org.junit.Test;
 

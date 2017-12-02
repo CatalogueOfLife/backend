@@ -3,10 +3,9 @@ package org.col.parser;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import org.col.api.Name;
-import org.col.api.vocab.NamePart;
-import org.col.api.vocab.NameType;
-import org.col.api.vocab.Rank;
-import org.junit.Ignore;
+import org.gbif.nameparser.api.NamePart;
+import org.gbif.nameparser.api.NameType;
+import org.gbif.nameparser.api.Rank;
 import org.junit.Test;
 
 import java.util.Optional;
@@ -15,15 +14,15 @@ import java.util.Set;
 import static org.junit.Assert.*;
 
 /**
- *
+ * The bulk of parsing tests are part of the GBIF Name Parser project.
+ * Some name parsing tests kept in this project.
  */
-@Ignore
 public class NameParserTest {
-  static final NameParser parser = new NameParserGBIF();
+  static final NameParser parser = new NameParser();
 
   @Test
   public void parseSubgenera() throws Exception {
-    assertName("Eteone subgen. Mysta", "Mysta")
+    assertName("Eteone subgen. Mysta", "Eteone subgen. Mysta")
         .infraGeneric("Eteone", Rank.SUBGENUS, "Mysta")
         .nothingElse();
   }
@@ -43,11 +42,11 @@ public class NameParserTest {
 
     assertName("Alstonia vieillardii Van Heurck & Müll.Arg.", "Alstonia vieillardii")
         .species("Alstonia", "vieillardii")
-        .combAuthors(null, "Van Heurck", "Müll. Arg.")
+        .combAuthors(null, "Van Heurck", "Müll.Arg.")
         .nothingElse();
     //TODO: do we expect d'urvilleana or durvilleana ???
-    assertName("Angiopteris d'urvilleana de Vriese", "Angiopteris durvilleana")
-        .species("Angiopteris", "durvilleana")
+    assertName("Angiopteris d'urvilleana de Vriese", "Angiopteris d'urvilleana")
+        .species("Angiopteris", "d'urvilleana")
         .combAuthors(null, "de Vriese")
         .nothingElse();
   }
@@ -70,28 +69,12 @@ public class NameParserTest {
         .combAuthors("1978", "Young", "Dye", "Wilkie")
         .basAuthors("1939", "Ark");
 
-    assertName("Agaricus compactus sarcocephalus (Fr.) Fr. ", "Agaricus compactus sarcocephalus")
-        .infraSpecies("Agaricus", "compactus", Rank.INFRASPECIFIC_NAME, "sarcocephalus")
-        .combAuthors(null, "Fr.")
-        .basAuthors(null, "Fr.")
-        .nothingElse();
-
     assertName("Baccharis microphylla Kunth var. rhomboidea Wedd. ex Sch. Bip. (nom. nud.)", "Baccharis microphylla var. rhomboidea")
         .infraSpecies("Baccharis", "microphylla", Rank.VARIETY, "rhomboidea")
-        .combAuthors(null, "Sch. Bip.")
+        .combAuthors(null, "Sch.Bip.")
         .combExAuthors("Wedd.")
         .nothingElse();
 
-  }
-
-  @Test
-  public void testExAuthors() throws Exception {
-    // In botany (99% of ex author use) the ex author comes first, see https://en.wikipedia.org/wiki/Author_citation_(botany)#Usage_of_the_term_.22ex.22
-    assertName("Baccharis microphylla Kunth var. rhomboidea Wedd. ex Sch. Bip. (nom. nud.)", "Baccharis microphylla var. rhomboidea")
-        .infraSpecies("Baccharis", "microphylla", Rank.VARIETY, "rhomboidea")
-        .combAuthors(null, "Sch. Bip.")
-        .combExAuthors("Wedd.")
-        .nothingElse();
   }
 
   @Test
@@ -108,14 +91,14 @@ public class NameParserTest {
 
     assertName("Acipenser gueldenstaedti colchicus natio danubicus Movchan, 1967", "Acipenser gueldenstaedti natio danubicus")
         .infraSpecies("Acipenser", "gueldenstaedti", Rank.NATIO, "danubicus")
-        .combAuthors("1967", "Movchan.");
+        .combAuthors("1967", "Movchan");
   }
 
   @Test
   public void parseMonomial() throws Exception {
 
     assertName("Acripeza Guérin-Ménéville 1838", "Acripeza")
-        .monomial("Acripeza")
+        .monomial("Acripeza", Rank.UNRANKED)
         .combAuthors("1838", "Guérin-Ménéville")
         .nothingElse();
 
@@ -129,8 +112,8 @@ public class NameParserTest {
         .combAuthors(null, "Sacc.")
         .nothingElse();
 
-    assertName("subgen. Trematostoma Sacc.", "subgen. Trematostoma")
-        .infraGeneric(null, Rank.SUBGENUS, "Trematostoma")
+    assertName("subgen. Trematostoma Sacc.", "Trematostoma")
+        .monomial("Trematostoma", Rank.SUBGENUS)
         .combAuthors(null, "Sacc.")
         .nothingElse();
 
@@ -167,24 +150,17 @@ public class NameParserTest {
    */
   @Test
   public void testAvoidNPE() throws Exception {
-    assertNoName("\"");
     assertNoName("\\");
     assertNoName(".");
     assertNoName("a");
-    assertNoName("'");
     assertNoName("von");
     assertNoName("X");
     assertNoName("@");
     assertNoName("&nbsp;");
-    assertNoName("\"? gryphoidis");
   }
 
   private void assertNoName(String name) throws UnparsableException {
-    assertEmptyName(name, NameType.NO_NAME);
-  }
-
-  private void assertEmptyName(String name, NameType type) throws UnparsableException {
-    assertName(name, name, type)
+    assertName(name, name, NameType.NO_NAME)
         .nothingElse();
   }
 
@@ -203,40 +179,19 @@ public class NameParserTest {
         .combAuthors(null, "L.")
         .sanctAuthor("Fr.")
         .nothingElse();
-
-    assertName("Agaricus compactus sarcocephalus (Fr. : Fr.) Fr. ", "Agaricus compactus sarcocephalus")
-        .infraSpecies("Agaricus", "compactus", Rank.INFRASPECIFIC_NAME, "sarcocephalus")
-        .combAuthors(null, "Fr.")
-        .basAuthors("Fr.")
-        .nothingElse();
   }
 
   @Test
   public void parseNothotaxa() throws Exception {
     // https://github.com/GlobalNamesArchitecture/gnparser/issues/410
-    assertName("Iris germanica nothovar. florentina", "Iris germanica × florentina")
+    assertName("Iris germanica nothovar. florentina", "Iris germanica nothovar. florentina")
         .infraSpecies("Iris", "germanica", Rank.VARIETY, "florentina")
         .notho(NamePart.INFRASPECIFIC)
         .nothingElse();
 
-    assertName("Abies alba var. ×alpina L.", "Abies alba × alpina")
+    assertName("Abies alba var. ×alpina L.", "Abies alba nothovar. alpina")
         .infraSpecies("Abies", "alba", Rank.VARIETY, "alpina")
         .notho(NamePart.INFRASPECIFIC)
-        .combAuthors(null, "Fr.")
-        .nothingElse();
-
-    assertName("Abies alba × alpina L.", "Abies alba × alpina")
-        .infraSpecies("Abies", "alba", Rank.VARIETY, "alpina")
-        .notho(NamePart.INFRASPECIFIC)
-        .combAuthors(null, "Fr.")
-        .nothingElse();
-  }
-
-  @Test
-  public void parseCultivars() throws Exception {
-    // fix cultivar names
-    assertName("Acer campestre L. cv. 'nanum'", "Acer campestre", NameType.CULTIVAR)
-        .species("Acer", "campestre")
         .combAuthors(null, "L.")
         .nothingElse();
   }
@@ -244,7 +199,7 @@ public class NameParserTest {
   @Test
   public void parseHybridFormulas() throws Exception {
     // fix hybrids formulas
-    assertName("Asplenium rhizophyllum DC. x ruta-muraria E.L. Braun 1939", "Asplenium rhizophyllum x ruta-muraria", NameType.HYBRID)
+    assertName("Asplenium rhizophyllum DC. x ruta-muraria E.L. Braun 1939", "Asplenium rhizophyllum DC. x ruta-muraria E.L. Braun 1939", NameType.HYBRID_FORMULA)
         .nothingElse();
 
   }
@@ -318,13 +273,14 @@ public class NameParserTest {
       return this;
     }
 
-    NameAssertion monomial(String monomial) {
-      assertEquals(monomial, n.getScientificName());
+    NameAssertion monomial(String monomial, Rank rank) {
+      assertEquals(monomial, n.getUninomial());
       assertNull(n.getGenus());
       assertNull(n.getInfragenericEpithet());
       assertNull(n.getSpecificEpithet());
       assertNull(n.getInfraspecificEpithet());
-      return add(NP.EPITHETS);
+      assertEquals(rank, n.getRank());
+      return add(NP.EPITHETS, NP.RANK);
     }
 
     NameAssertion infraGeneric(String genus, Rank rank, String infraGeneric) {

@@ -1,6 +1,9 @@
 package org.col.parser;
 
-import org.col.api.vocab.NameType; /**
+
+import org.gbif.nameparser.api.NameType;
+
+/**
  *
  */
 public class UnparsableException extends Exception {

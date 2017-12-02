@@ -1,6 +1,6 @@
 package org.col.parser;
 
-import org.col.api.vocab.NomCode;
+import org.gbif.nameparser.api.NomCode;
 
 /**
  *

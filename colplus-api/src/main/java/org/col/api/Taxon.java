@@ -1,22 +1,15 @@
 package org.col.api;
 
-import java.net.URI;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.col.api.vocab.Issue;
 import org.col.api.vocab.Lifezone;
 import org.col.api.vocab.Origin;
-import org.col.api.vocab.Rank;
 import org.col.api.vocab.TaxonomicStatus;
+import org.gbif.nameparser.api.Rank;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.net.URI;
+import java.time.LocalDate;
+import java.util.*;
 
 /**
  *
@@ -33,6 +26,11 @@ public class Taxon {
 	private String id;
 
 	private Integer datasetKey;
+
+  /**
+   * Clearinghouse taxon concept identifier based on the synonymy of the taxon and its siblings
+   */
+  private Integer taxonID;
 
 	private Name name;
 
@@ -85,7 +83,15 @@ public class Taxon {
 		this.id = id;
 	}
 
-	public Integer getDatasetKey() {
+  public Integer getTaxonID() {
+    return taxonID;
+  }
+
+  public void setTaxonID(Integer taxonID) {
+    this.taxonID = taxonID;
+  }
+
+  public Integer getDatasetKey() {
 		return datasetKey;
 	}
 
@@ -238,38 +244,35 @@ public class Taxon {
 		}
 	}
 
-	@Override
-	public boolean equals(Object o) {
-		if (this == o)
-			return true;
-		if (o == null || getClass() != o.getClass())
-			return false;
-		Taxon taxon = (Taxon) o;
-		return Objects.equals(key, taxon.key)
-		    && Objects.equals(id, taxon.id)
-		    && Objects.equals(datasetKey, taxon.datasetKey)
-		    && Objects.equals(name, taxon.name)
-		    && status == taxon.status
-		    && rank == taxon.rank
-		    && origin == taxon.origin
-		    && Objects.equals(parentKey, taxon.parentKey)
-		    && Objects.equals(accordingTo, taxon.accordingTo)
-		    && Objects.equals(accordingToDate, taxon.accordingToDate)
-		    && Objects.equals(fossil, taxon.fossil)
-		    && Objects.equals(recent, taxon.recent)
-		    && Objects.equals(lifezones, taxon.lifezones)
-		    && Objects.equals(datasetUrl, taxon.datasetUrl)
-		    && Objects.equals(speciesEstimate, taxon.speciesEstimate)
-		    && Objects.equals(speciesEstimateReferenceKey, taxon.speciesEstimateReferenceKey)
-		    && Objects.equals(remarks, taxon.remarks)
-		    && Objects.equals(issues, taxon.issues);
-	}
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    Taxon taxon = (Taxon) o;
+    return Objects.equals(key, taxon.key) &&
+        Objects.equals(id, taxon.id) &&
+        Objects.equals(datasetKey, taxon.datasetKey) &&
+        Objects.equals(taxonID, taxon.taxonID) &&
+        Objects.equals(name, taxon.name) &&
+        status == taxon.status &&
+        rank == taxon.rank &&
+        origin == taxon.origin &&
+        Objects.equals(parentKey, taxon.parentKey) &&
+        Objects.equals(accordingTo, taxon.accordingTo) &&
+        Objects.equals(accordingToDate, taxon.accordingToDate) &&
+        Objects.equals(fossil, taxon.fossil) &&
+        Objects.equals(recent, taxon.recent) &&
+        Objects.equals(lifezones, taxon.lifezones) &&
+        Objects.equals(datasetUrl, taxon.datasetUrl) &&
+        Objects.equals(speciesEstimate, taxon.speciesEstimate) &&
+        Objects.equals(speciesEstimateReferenceKey, taxon.speciesEstimateReferenceKey) &&
+        Objects.equals(remarks, taxon.remarks) &&
+        Objects.equals(references, taxon.references) &&
+        Objects.equals(issues, taxon.issues);
+  }
 
-	@Override
-	public int hashCode() {
-		return Objects.hash(key, id, datasetKey, name, status, rank, origin, parentKey, accordingTo,
-		    accordingToDate, fossil, recent, lifezones, datasetUrl, speciesEstimate,
-		    speciesEstimateReferenceKey, remarks, issues);
-	}
-
+  @Override
+  public int hashCode() {
+    return Objects.hash(key, id, datasetKey, taxonID, name, status, rank, origin, parentKey, accordingTo, accordingToDate, fossil, recent, lifezones, datasetUrl, speciesEstimate, speciesEstimateReferenceKey, remarks, references, issues);
+  }
 }

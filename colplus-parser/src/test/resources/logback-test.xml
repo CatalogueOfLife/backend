@@ -11,7 +11,10 @@
         </encoder>
     </appender>
 
-    <root level="DEBUG">
+    <logger name="org.gbif" level="INFO"/>
+    <logger name="org.col" level="DEBUG"/>
+
+    <root level="WARN">
         <appender-ref ref="CONSOLE"/>
     </root>
 

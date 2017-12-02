@@ -2,7 +2,7 @@ package org.col.commands.importer.neo;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.Maps;
-import org.col.api.vocab.Rank;
+import org.gbif.nameparser.api.Rank;
 import org.gbif.dwc.terms.Term;
 
 import java.util.Map;

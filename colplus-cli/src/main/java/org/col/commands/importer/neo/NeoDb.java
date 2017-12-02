@@ -6,7 +6,7 @@ import org.apache.commons.io.FileUtils;
 import org.col.api.Dataset;
 import org.col.api.Reference;
 import org.col.api.Taxon;
-import org.col.api.vocab.Rank;
+import org.gbif.nameparser.api.Rank;
 import org.col.commands.importer.dwca.NormalizationFailedException;
 import org.col.commands.importer.neo.kryo.NeoKryoFactory;
 import org.col.commands.importer.neo.mapdb.MapDbObjectSerializer;

@@ -1,6 +1,6 @@
 package org.col.commands.importer.neo.model;
 
-import org.col.api.vocab.Rank;
+import org.gbif.nameparser.api.Rank;
 import org.neo4j.graphdb.Node;
 
 public class RankedName {

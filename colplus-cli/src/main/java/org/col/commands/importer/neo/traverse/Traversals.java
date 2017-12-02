@@ -1,6 +1,6 @@
 package org.col.commands.importer.neo.traverse;
 
-import org.col.api.vocab.Rank;
+import org.gbif.nameparser.api.Rank;
 import org.col.commands.importer.neo.model.NeoProperties;
 import org.col.commands.importer.neo.model.RelType;
 import org.neo4j.graphdb.Direction;

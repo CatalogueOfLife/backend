@@ -1,6 +1,6 @@
 package org.col.util;
 
-import org.col.api.vocab.Rank;
+import org.gbif.nameparser.api.Rank;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

@@ -2,6 +2,7 @@ package org.col.commands.importer.dwca;
 
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Splitter;
+import com.google.common.collect.Maps;
 import org.col.api.*;
 import org.col.api.exception.InvalidNameException;
 import org.col.api.vocab.*;
@@ -12,8 +13,12 @@ import org.gbif.dwc.terms.DcTerm;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.GbifTerm;
 import org.gbif.dwc.terms.Term;
+import org.gbif.nameparser.api.NameType;
+import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Map;
 
 /**
  * Interprets a verbatim record and transforms it into a name, taxon and unique references.
@@ -154,37 +159,40 @@ public class VerbatimInterpreter {
   }
 
   private Name interpretName(VerbatimRecord v) {
+    Map<Issue, String> issues = Maps.newHashMap();
+
+    // parse rank
+    Rank rank = SafeParser.parse(RankParser.PARSER, v.getFirst(DwcTerm.taxonRank, DwcTerm.verbatimTaxonRank))
+        .orElse(Rank.UNRANKED, Issue.RANK_INVALID, issues);
     // we can get the scientific name in various ways.
     // we parse all names from the scientificName + optional authorship
     // or use the atomized parts which we also use to validate the parsing result.
     Name n;
     if (v.hasCoreTerm(DwcTerm.scientificName)) {
-      try {
-        n = NameParserGNA.PARSER.parse(v.getCoreTerm(DwcTerm.scientificName)).get();
-        // TODO: validate name against optional atomized terms!
-      } catch (UnparsableException e) {
-        n = buildNameFromVerbatimTerms(v);
-        n.addIssue(Issue.UNPARSABLE_NAME);
-      }
+      n = NameParser.PARSER.parse(v.getCoreTerm(DwcTerm.scientificName), rank).get();
+      // TODO: validate name against optional atomized terms!
+      //Name n2 = buildNameFromVerbatimTerms(v);
 
     } else {
       n = buildNameFromVerbatimTerms(v);
     }
-    // parse rank
-    final Rank rank = SafeParser.parse(RankParser.PARSER, v.getFirst(DwcTerm.taxonRank, DwcTerm.verbatimTaxonRank))
-        .orElse(Rank.UNRANKED, Issue.RANK_INVALID, n.getIssues());
-    n.setRank(rank);
+    n.getIssues().putAll(issues);
+
+    // assign best rank
+    if (rank.notOtherOrUnranked() || n.getRank() == null) {
+      n.setRank(rank);
+    }
 
     // try to add an authorship if not yet there
     if (v.hasCoreTerm(DwcTerm.scientificNameAuthorship)) {
       try {
         Name authorship = parseAuthorship(v.getCoreTerm(DwcTerm.scientificNameAuthorship));
         if (n.hasAuthorship()) {
-          if (!n.fullAuthorship().equalsIgnoreCase(authorship.fullAuthorship())){
+          if (!n.authorshipComplete().equalsIgnoreCase(authorship.authorshipComplete())){
             n.addIssue(Issue.INCONSISTENT_AUTHORSHIP);
             LOG.warn("Different authorship found in dwc:scientificName=[{}] and dwc:scientificNameAuthorship=[{}]",
-                n.fullAuthorship(),
-                authorship.fullAuthorship());
+                n.authorshipComplete(),
+                authorship.authorshipComplete());
           }
         } else {
           n.setAuthorship(authorship.getAuthorship());
@@ -204,7 +212,7 @@ public class VerbatimInterpreter {
     n.setStatus(SafeParser.parse(NomStatusParser.PARSER, v.getCoreTerm(DwcTerm.nomenclaturalStatus))
         .orElse(null, Issue.NOMENCLATURAL_STATUS_INVALID, n.getIssues())
     );
-    n.setNomenclaturalCode(SafeParser.parse(NomCodeParser.PARSER, v.getCoreTerm(DwcTerm.nomenclaturalCode))
+    n.setCode(SafeParser.parse(NomCodeParser.PARSER, v.getCoreTerm(DwcTerm.nomenclaturalCode))
         .orElse(null, Issue.NOMENCLATURAL_CODE_INVALID, n.getIssues())
     );
     //TODO: should we also get these through an extension, e.g. species profile or a nomenclature extension?
@@ -231,7 +239,7 @@ public class VerbatimInterpreter {
     //TODO: detect named hybrids in epithets manually
     n.setNotho(null);
     try {
-      n.setScientificName(n.buildScientificName());
+      n.setScientificName(n.canonicalName());
     } catch (InvalidNameException e) {
       LOG.warn("Invalid atomised name found: {}", n);
       n.addIssue(Issue.INCONSISTENT_NAME);
@@ -243,6 +251,6 @@ public class VerbatimInterpreter {
    * @return a name instance with just the parsed authorship, i.e. combination & original year & author list
    */
   private Name parseAuthorship(String authorship) throws UnparsableException {
-      return NameParserGNA.PARSER.parse("Abies alba "+authorship).get();
+      return NameParser.PARSER.parse("Abies alba "+authorship).get();
   }
 }

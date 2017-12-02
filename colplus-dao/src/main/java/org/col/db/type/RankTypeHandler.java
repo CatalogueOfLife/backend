@@ -2,7 +2,7 @@ package org.col.db.type;
 
 
 import org.apache.ibatis.type.MappedTypes;
-import org.col.api.vocab.Rank;
+import org.gbif.nameparser.api.Rank;
 
 @MappedTypes(Rank.class)
 public class RankTypeHandler extends BaseEnumTypeHandler<String, Rank> {
