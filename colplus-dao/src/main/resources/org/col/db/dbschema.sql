@@ -5,6 +5,8 @@ CREATE SCHEMA public;
 
 CREATE EXTENSION IF NOT EXISTS hstore;
 
+CREATE EXTENSION IF NOT EXISTS unaccent;
+
 
 CREATE TYPE rank AS ENUM (
   'domain',

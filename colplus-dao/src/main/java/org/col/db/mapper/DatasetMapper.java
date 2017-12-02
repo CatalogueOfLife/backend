@@ -1,35 +1,42 @@
 package org.col.db.mapper;
 
+import java.util.List;
+import java.util.UUID;
+
 import org.apache.ibatis.annotations.Param;
 import org.col.api.Dataset;
 import org.col.api.Page;
 
-import java.util.List;
-import java.util.UUID;
-
 public interface DatasetMapper {
 
-  int count();
+	int count();
 
-  List<Dataset> list(@Param("page") Page page);
+	List<Dataset> list(@Param("page") Page page);
 
-  Dataset get(@Param("key") int key);
+	int countSearchResults(@Param("q") String query);
 
-  Dataset getByGBIF(@Param("key") UUID key);
+	List<Dataset> search(@Param("q") String query, @Param("page") Page page);
 
-  void create(Dataset dataset);
+	Dataset get(@Param("key") int key);
 
-  void update(Dataset dataset);
+	Dataset getByGBIF(@Param("key") UUID key);
 
-  /**
-   * Marks a dataset as deleted
-   * @param key
-   */
-  void delete(@Param("key") int key);
+	void create(Dataset dataset);
 
-  /**
-   * Truncates all data from a dataset cascading to all entities incl names, taxa and references.
-   * @param key
-   */
-  void truncateDatasetData(@Param("key") int key);
+	void update(Dataset dataset);
+
+	/**
+	 * Marks a dataset as deleted
+	 * 
+	 * @param key
+	 */
+	void delete(@Param("key") int key);
+
+	/**
+	 * Truncates all data from a dataset cascading to all entities incl names, taxa
+	 * and references.
+	 * 
+	 * @param key
+	 */
+	void truncateDatasetData(@Param("key") int key);
 }
