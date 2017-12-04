@@ -23,13 +23,13 @@ public class DatasetDao {
 		this.session = sqlSession;
 	}
 
-	public PagingResultSet<Dataset> search(String query, @Nullable Page page) {
-		Page p = page == null ? new Page() : page;
-		String q = query + ":*"; // Enable "starts_with" term matching
+	public PagingResultSet<Dataset> search(String q, @Nullable Page page) {
+		page = page == null ? new Page() : page;
+		String query = q + ":*"; // Enable "starts_with" term matching
 		DatasetMapper mapper = session.getMapper(DatasetMapper.class);
-		int total = mapper.countSearchResults(q);
-		List<Dataset> result = mapper.search(q, p);
-		return new PagingResultSet<>(p, total, result);
+		int total = mapper.countSearchResults(query);
+		List<Dataset> result = mapper.search(query, page);
+		return new PagingResultSet<>(page, total, result);
 	}
 
 }

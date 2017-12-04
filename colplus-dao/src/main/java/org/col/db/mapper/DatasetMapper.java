@@ -13,9 +13,9 @@ public interface DatasetMapper {
 
 	List<Dataset> list(@Param("page") Page page);
 
-	int countSearchResults(@Param("q") String query);
+	int countSearchResults(@Param("q") String q);
 
-	List<Dataset> search(@Param("q") String query, @Param("page") Page page);
+	List<Dataset> search(@Param("q") String q, @Param("page") Page page);
 
 	Dataset get(@Param("key") int key);
 

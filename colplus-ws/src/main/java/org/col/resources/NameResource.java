@@ -12,10 +12,10 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.ibatis.session.SqlSession;
-import org.col.api.PagedReference;
 import org.col.api.Name;
 import org.col.api.NameAct;
 import org.col.api.Page;
+import org.col.api.PagedReference;
 import org.col.api.PagingResultSet;
 import org.col.api.VerbatimRecord;
 import org.col.dao.NameDao;
@@ -37,6 +37,17 @@ public class NameResource {
 	    @Context SqlSession session) {
 		NameDao dao = new NameDao(session);
 		return dao.list(datasetKey, page);
+	}
+
+	@GET
+	@Timed
+	@Path("/search")
+	public PagingResultSet<Name> search(@PathParam("datasetKey") Integer datasetKey,
+	    @QueryParam("q") String q,
+	    @Nullable @Context Page page,
+	    @Context SqlSession session) {
+		NameDao dao = new NameDao(session);
+		return dao.search(datasetKey, q, page);
 	}
 
 	@GET

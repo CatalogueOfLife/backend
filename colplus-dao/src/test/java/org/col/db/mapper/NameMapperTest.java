@@ -1,13 +1,19 @@
 package org.col.db.mapper;
 
-import com.google.common.collect.Lists;
-import org.col.TestEntityGenerator;
-import org.col.api.*;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 
-import static org.junit.Assert.*;
+import org.col.TestEntityGenerator;
+import org.col.api.Dataset;
+import org.col.api.Name;
+import org.col.api.Page;
+import org.junit.Test;
+
+import com.google.common.collect.Lists;
 
 /**
  *
@@ -18,13 +24,13 @@ public class NameMapperTest extends MapperTestBase<NameMapper> {
 		super(NameMapper.class);
 	}
 
-	private Name create(String id, Name basionym) throws Exception {
+	private static Name create(final String id, final Name basionym) throws Exception {
 		Name n = TestEntityGenerator.newName(id);
 		n.setBasionymKey(basionym.getKey());
 		return n;
 	}
 
-	private Name create(Dataset d) throws Exception {
+	private static Name create(Dataset d) throws Exception {
 		Name n = TestEntityGenerator.newName();
 		n.setDatasetKey(d.getKey());
 		return n;
@@ -51,10 +57,10 @@ public class NameMapperTest extends MapperTestBase<NameMapper> {
 		commit();
 
 		// we use a new instance of n1 with just the keys for the equality tests
-//		n1 = new Name();
-//		n1.setKey(n2.getBasionymKey());
-//		n1.setId(n2.getBasionymKey());
-//		n2.setBasionymKey(n1);
+		// n1 = new Name();
+		// n1.setKey(n2.getBasionymKey());
+		// n1.setId(n2.getBasionymKey());
+		// n2.setBasionymKey(n1);
 
 		int n2Key = mapper().lookupKey(TestEntityGenerator.DATASET1.getKey(), n2.getId());
 		assertEquals((Integer) n2Key, n2.getKey());
@@ -189,6 +195,64 @@ public class NameMapperTest extends MapperTestBase<NameMapper> {
 
 		synonyms = mapper().synonyms(accKey);
 		assertEquals(6, synonyms.size());
+	}
+
+	@Test
+	public void search() throws Exception {
+		Name n = TestEntityGenerator.newName("a");
+		n.setScientificName("Foo bar");
+		n.setGenus("Foo");
+		n.setSpecificEpithet("bar");
+		mapper().create(n);
+
+		n = TestEntityGenerator.newName("b");
+		n.setScientificName("Foo baz");
+		n.setGenus("Foo");
+		n.setSpecificEpithet("baz");
+		mapper().create(n);
+
+		n = TestEntityGenerator.newName("c");
+		n.setScientificName("Fee bar");
+		n.setGenus("Fee");
+		n.setSpecificEpithet("bar");
+		mapper().create(n);
+
+		commit();
+
+		List<Name> names = mapper().search(TestEntityGenerator.DATASET1.getKey(), "foo", new Page());
+		assertEquals("01", 2, names.size());
+
+		names = mapper().search(TestEntityGenerator.DATASET1.getKey(), "baz", new Page());
+		assertEquals("02", 1, names.size());
+	}
+
+	@Test
+	public void countSearchResults() throws Exception {
+		Name n = TestEntityGenerator.newName("a");
+		n.setScientificName("Foo bar");
+		n.setGenus("Foo");
+		n.setSpecificEpithet("bar");
+		mapper().create(n);
+
+		n = TestEntityGenerator.newName("b");
+		n.setScientificName("Foo baz");
+		n.setGenus("Foo");
+		n.setSpecificEpithet("baz");
+		mapper().create(n);
+
+		n = TestEntityGenerator.newName("c");
+		n.setScientificName("Fee bar");
+		n.setGenus("Fee");
+		n.setSpecificEpithet("bar");
+		mapper().create(n);
+
+		commit();
+
+		int count = mapper().countSearchResults(TestEntityGenerator.DATASET1.getKey(), "foo");
+		assertEquals("01", 2, count);
+
+		count = mapper().countSearchResults(TestEntityGenerator.DATASET1.getKey(), "baz");
+		assertEquals("02", 1, count);
 	}
 
 }

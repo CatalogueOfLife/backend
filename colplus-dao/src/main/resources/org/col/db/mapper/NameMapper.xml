@@ -133,6 +133,39 @@
     ORDER BY key
     <include refid="org.col.db.mapper.Common.limit" />
   </select>
+  
+
+  <select id="countSearchResults" parameterType="map" resultType="Integer">
+    SELECT COUNT(*)
+    FROM
+        (
+          SELECT <include refid="SELECT" />,
+              setweight(to_tsvector(coalesce(n.genus,'')), 'A') ||
+              setweight(to_tsvector(coalesce(n.infrageneric_epithet,'')), 'A') ||
+              setweight(to_tsvector(coalesce(n.specific_epithet,'')), 'A') ||
+              setweight(to_tsvector(coalesce(n.infraspecific_epithet,'')), 'A') ||
+              setweight(to_tsvector(coalesce(n.scientific_name,'')), 'C') as document
+          FROM name n  
+        ) AS n
+    WHERE n.document @@ plainto_tsquery(#{q})
+  </select>
+
+  <select id="search" parameterType="map" resultMap="nameResultMap">
+    SELECT <include refid="SELECT" />
+    FROM
+        (
+          SELECT <include refid="SELECT" />,
+              setweight(to_tsvector(coalesce(n.genus,'')), 'A') ||
+              setweight(to_tsvector(coalesce(n.infrageneric_epithet,'')), 'A') ||
+              setweight(to_tsvector(coalesce(n.specific_epithet,'')), 'A') ||
+              setweight(to_tsvector(coalesce(n.infraspecific_epithet,'')), 'A') ||
+              setweight(to_tsvector(coalesce(n.scientific_name,'')), 'C') as document
+          FROM name n  
+        ) AS n
+    WHERE n.document @@ plainto_tsquery(#{q})
+    ORDER BY ts_rank(n.document, plainto_tsquery(#{q})) DESC
+    <include refid="org.col.db.mapper.Common.limit"/>
+  </select>
 
   <select id="get" resultMap="nameResultMap">
     SELECT
