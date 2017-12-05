@@ -5,12 +5,19 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.col.TestEntityGenerator;
 import org.col.api.Dataset;
 import org.col.api.Name;
+import org.col.api.NameSearch;
 import org.col.api.Page;
+import org.col.api.vocab.Issue;
+import org.col.api.vocab.NomStatus;
+import org.gbif.nameparser.api.Rank;
 import org.junit.Test;
 
 import com.google.common.collect.Lists;
@@ -198,32 +205,175 @@ public class NameMapperTest extends MapperTestBase<NameMapper> {
 	}
 
 	@Test
-	public void search() throws Exception {
+	// Test with rank as extra search criterion
+	public void searchWithRank() throws Exception {
 		Name n = TestEntityGenerator.newName("a");
 		n.setScientificName("Foo bar");
 		n.setGenus("Foo");
 		n.setSpecificEpithet("bar");
+		n.setRank(Rank.SPECIES);
 		mapper().create(n);
 
 		n = TestEntityGenerator.newName("b");
 		n.setScientificName("Foo baz");
 		n.setGenus("Foo");
 		n.setSpecificEpithet("baz");
+		n.setRank(Rank.SPECIES);
 		mapper().create(n);
 
 		n = TestEntityGenerator.newName("c");
 		n.setScientificName("Fee bar");
 		n.setGenus("Fee");
 		n.setSpecificEpithet("bar");
+		n.setRank(Rank.SPECIES);
+		mapper().create(n);
+
+		n = TestEntityGenerator.newName("d");
+		n.setScientificName("Foo");
+		n.setRank(Rank.PHYLUM);
 		mapper().create(n);
 
 		commit();
 
-		List<Name> names = mapper().search(TestEntityGenerator.DATASET1.getKey(), "foo", new Page());
-		assertEquals("01", 2, names.size());
+		NameSearch search = new NameSearch();
+		search.setDatasetKey(TestEntityGenerator.DATASET1.getKey());
+		search.setQ("foo");
+		List<Name> names = mapper().search(search, new Page());
+		assertEquals("01", 3, names.size());
 
-		names = mapper().search(TestEntityGenerator.DATASET1.getKey(), "baz", new Page());
-		assertEquals("02", 1, names.size());
+		search.setRank(Rank.SPECIES);
+		names = mapper().search(search, new Page());
+		assertEquals("02", 2, names.size());
+
+		search.setQ("baz");
+		names = mapper().search(search, new Page());
+		assertEquals("03", 1, names.size());
+
+		search.setQ("Foo");
+		search.setRank(Rank.PHYLUM);
+		names = mapper().search(search, new Page());
+		assertEquals("04", 1, names.size());
+
+		search.setRank(Rank.CLASS);
+		names = mapper().search(search, new Page());
+		assertEquals("05", 0, names.size());
+}
+
+	@Test
+	// Test with status as extra search criterion
+	public void searchWithTaxstatus() throws Exception {
+		Name n = TestEntityGenerator.newName("a");
+		n.setScientificName("Foo bar");
+		n.setGenus("Foo");
+		n.setSpecificEpithet("bar");
+		n.setStatus(NomStatus.UNEVALUATED);
+		mapper().create(n);
+
+		n = TestEntityGenerator.newName("b");
+		n.setScientificName("Foo baz");
+		n.setGenus("Foo");
+		n.setSpecificEpithet("baz");
+		n.setStatus(NomStatus.UNEVALUATED);
+		mapper().create(n);
+
+		n = TestEntityGenerator.newName("c");
+		n.setScientificName("Fee bar");
+		n.setGenus("Fee");
+		n.setSpecificEpithet("bar");
+		n.setStatus(NomStatus.UNEVALUATED);
+		mapper().create(n);
+
+		n = TestEntityGenerator.newName("d");
+		n.setScientificName("Foo");
+		n.setStatus(NomStatus.CHRESONYM);
+		mapper().create(n);
+
+		commit();
+
+		NameSearch search = new NameSearch();
+		search.setDatasetKey(TestEntityGenerator.DATASET1.getKey());
+		search.setQ("foo");
+		List<Name> names = mapper().search(search, new Page());
+		assertEquals("01", 3, names.size());
+
+		search.setNomstatus(NomStatus.UNEVALUATED);
+		names = mapper().search(search, new Page());
+		assertEquals("02", 2, names.size());
+
+		search.setQ("baz");
+		names = mapper().search(search, new Page());
+		assertEquals("03", 1, names.size());
+
+		search.setQ("Foo");
+		search.setNomstatus(NomStatus.CHRESONYM);
+		names = mapper().search(search, new Page());
+		assertEquals("04", 1, names.size());
+		
+		search.setNomstatus(NomStatus.DOUBTFUL);
+		names = mapper().search(search, new Page());
+		assertEquals("05", 0, names.size());
+	}
+
+	@Test
+	// Test with issue as extra search criterion
+	public void searchWithIssue() throws Exception {
+		
+		Map<Issue, String> issue = new EnumMap<>(Issue.class);
+		issue.put(Issue.UNPARSABLE_AUTHORSHIP, "Very unfortunate");
+
+		Name n = TestEntityGenerator.newName("a");
+		n.setScientificName("Foo bar");
+		n.setGenus("Foo");
+		n.setSpecificEpithet("bar");
+		n.setIssues(issue);
+		mapper().create(n);
+
+		n = TestEntityGenerator.newName("b");
+		n.setScientificName("Foo baz");
+		n.setGenus("Foo");
+		n.setSpecificEpithet("baz");
+		n.setIssues(issue);
+		mapper().create(n);
+
+		n = TestEntityGenerator.newName("c");
+		n.setScientificName("Fee bar");
+		n.setGenus("Fee");
+		n.setSpecificEpithet("bar");
+		n.setIssues(issue);
+		mapper().create(n);
+
+		Map<Issue, String> otherIssue = new EnumMap<>(Issue.class);
+		otherIssue.put(Issue.BIB_REFERENCE_INVALID, "Ouch");
+
+		n = TestEntityGenerator.newName("d");
+		n.setScientificName("Foo");
+		n.setIssues(otherIssue);
+		mapper().create(n);
+
+		commit();		
+
+		NameSearch search = new NameSearch();
+		search.setDatasetKey(TestEntityGenerator.DATASET1.getKey());
+		search.setQ("foo");
+		List<Name> names = mapper().search(search, new Page());
+		assertEquals("01", 3, names.size());
+
+		search.setIssue(Issue.UNPARSABLE_AUTHORSHIP);
+		names = mapper().search(search, new Page());
+		assertEquals("02", 2, names.size());
+
+		search.setQ("baz");
+		names = mapper().search(search, new Page());
+		assertEquals("03", 1, names.size());
+
+		search.setQ("Foo");
+		search.setIssue(Issue.BIB_REFERENCE_INVALID);
+		names = mapper().search(search, new Page());
+		assertEquals("04", 1, names.size());
+		
+		search.setIssue(Issue.ALT_IDENTIFIER_INVALID);
+		names = mapper().search(search, new Page());
+		assertEquals("05", 0, names.size());
 	}
 
 	@Test
@@ -232,27 +382,52 @@ public class NameMapperTest extends MapperTestBase<NameMapper> {
 		n.setScientificName("Foo bar");
 		n.setGenus("Foo");
 		n.setSpecificEpithet("bar");
+		n.setRank(Rank.SPECIES);
 		mapper().create(n);
 
 		n = TestEntityGenerator.newName("b");
 		n.setScientificName("Foo baz");
 		n.setGenus("Foo");
 		n.setSpecificEpithet("baz");
+		n.setRank(Rank.SPECIES);
 		mapper().create(n);
 
 		n = TestEntityGenerator.newName("c");
 		n.setScientificName("Fee bar");
 		n.setGenus("Fee");
 		n.setSpecificEpithet("bar");
+		n.setRank(Rank.SPECIES);
+		mapper().create(n);
+
+		n = TestEntityGenerator.newName("d");
+		n.setScientificName("Foo");
+		n.setRank(Rank.PHYLUM);
 		mapper().create(n);
 
 		commit();
 
-		int count = mapper().countSearchResults(TestEntityGenerator.DATASET1.getKey(), "foo");
-		assertEquals("01", 2, count);
+		NameSearch search = new NameSearch();
+		search.setDatasetKey(TestEntityGenerator.DATASET1.getKey());
+		search.setQ("foo");
+		int count = mapper().countSearchResults(search);
+		assertEquals("01", 3, count);
 
-		count = mapper().countSearchResults(TestEntityGenerator.DATASET1.getKey(), "baz");
-		assertEquals("02", 1, count);
+		search.setRank(Rank.SPECIES);
+		count = mapper().countSearchResults(search);
+		assertEquals("02", 2, count);
+
+		search.setQ("baz");
+		count = mapper().countSearchResults(search);
+		assertEquals("03", 1, count);
+
+		search.setQ("Foo");
+		search.setRank(Rank.PHYLUM);
+		count = mapper().countSearchResults(search);
+		assertEquals("04", 1, count);
+
+		search.setRank(Rank.CLASS);
+		count = mapper().countSearchResults(search);
+		assertEquals("05", 0, count);
 	}
 
 }

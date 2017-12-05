@@ -92,6 +92,30 @@
   <sql id="FROM">
     name n LEFT JOIN name bn ON n.basionym_key=bn.key
   </sql>
+  
+  <sql id="SEARCH_INNER_QUERY">
+    (SELECT <include refid="SELECT" />,
+        setweight(to_tsvector(coalesce(n.genus,'')), 'A') ||
+        setweight(to_tsvector(coalesce(n.infrageneric_epithet,'')), 'A') ||
+        setweight(to_tsvector(coalesce(n.specific_epithet,'')), 'A') ||
+        setweight(to_tsvector(coalesce(n.infraspecific_epithet,'')), 'A') ||
+        setweight(to_tsvector(coalesce(n.scientific_name,'')), 'C') as document
+    FROM name n
+    <!--
+      Since name-to-taxon relationship is 1:n, this might produce duplicate
+      names and some inaccuracy in the search result count. For now we assume
+      that's OK.
+    -->
+    LEFT JOIN taxon t ON (n.key = t.name_key)
+    WHERE n.dataset_key = #{nameSearch.datasetKey}
+    AND (#{nameSearch.rank}::rank IS NULL OR #{nameSearch.rank}::rank = n.rank)
+    AND (#{nameSearch.nomstatus}::int IS NULL OR #{nameSearch.nomstatus}::int = n.status)
+    AND (#{nameSearch.taxstatus}::int IS NULL OR #{nameSearch.taxstatus}::int = t.status)
+    AND (
+            #{nameSearch.issue, typeHandler=org.apache.ibatis.type.EnumTypeHandler}::text IS NULL 
+            OR n.issues ?? #{nameSearch.issue, typeHandler=org.apache.ibatis.type.EnumTypeHandler}
+        ))
+  </sql>
 
   <!-- A mapping to Name, mostly auto mapped -->
   <resultMap id="nameResultMap" type="Name" autoMapping="true">
@@ -137,33 +161,15 @@
 
   <select id="countSearchResults" parameterType="map" resultType="Integer">
     SELECT COUNT(*)
-    FROM
-        (
-          SELECT <include refid="SELECT" />,
-              setweight(to_tsvector(coalesce(n.genus,'')), 'A') ||
-              setweight(to_tsvector(coalesce(n.infrageneric_epithet,'')), 'A') ||
-              setweight(to_tsvector(coalesce(n.specific_epithet,'')), 'A') ||
-              setweight(to_tsvector(coalesce(n.infraspecific_epithet,'')), 'A') ||
-              setweight(to_tsvector(coalesce(n.scientific_name,'')), 'C') as document
-          FROM name n  
-        ) AS n
-    WHERE n.document @@ plainto_tsquery(#{q})
+    FROM <include refid="SEARCH_INNER_QUERY" /> AS n
+    WHERE n.document @@ plainto_tsquery(#{nameSearch.q})
   </select>
 
   <select id="search" parameterType="map" resultMap="nameResultMap">
     SELECT <include refid="SELECT" />
-    FROM
-        (
-          SELECT <include refid="SELECT" />,
-              setweight(to_tsvector(coalesce(n.genus,'')), 'A') ||
-              setweight(to_tsvector(coalesce(n.infrageneric_epithet,'')), 'A') ||
-              setweight(to_tsvector(coalesce(n.specific_epithet,'')), 'A') ||
-              setweight(to_tsvector(coalesce(n.infraspecific_epithet,'')), 'A') ||
-              setweight(to_tsvector(coalesce(n.scientific_name,'')), 'C') as document
-          FROM name n  
-        ) AS n
-    WHERE n.document @@ plainto_tsquery(#{q})
-    ORDER BY ts_rank(n.document, plainto_tsquery(#{q})) DESC
+    FROM <include refid="SEARCH_INNER_QUERY" /> AS n
+    WHERE n.document @@ plainto_tsquery(#{nameSearch.q})
+    ORDER BY ts_rank(n.document, plainto_tsquery(#{nameSearch.q})) DESC
     <include refid="org.col.db.mapper.Common.limit"/>
   </select>
 

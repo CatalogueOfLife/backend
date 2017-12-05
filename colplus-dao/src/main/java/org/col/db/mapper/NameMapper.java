@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.apache.ibatis.annotations.Param;
 import org.col.api.Name;
+import org.col.api.NameSearch;
 import org.col.api.Page;
 
 /**
@@ -39,9 +40,7 @@ public interface NameMapper {
 	 */
 	List<Name> basionymGroup(@Param("key") int key);
 
-	int countSearchResults(@Param("datasetKey") int datasetKey, @Param("q") String q);
+	int countSearchResults(@Param("nameSearch") NameSearch nameSearch);
 
-	List<Name> search(@Param("datasetKey") int datasetKey,
-	    @Param("q") String q,
-	    @Param("page") Page page);
+	List<Name> search(@Param("nameSearch") NameSearch nameSearch, @Param("page") Page page);
 }

@@ -1,11 +1,11 @@
 package org.col.dao;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.Nullable;
 
 import org.apache.ibatis.session.SqlSession;
-import org.col.api.Dataset;
 import org.col.api.Name;
 import org.col.api.Page;
 import org.col.api.PagedReference;
@@ -13,7 +13,6 @@ import org.col.api.PagingResultSet;
 import org.col.api.Synonymy;
 import org.col.api.VerbatimRecord;
 import org.col.db.NotFoundException;
-import org.col.db.mapper.DatasetMapper;
 import org.col.db.mapper.NameMapper;
 import org.col.db.mapper.ReferenceMapper;
 import org.col.db.mapper.VerbatimRecordMapper;
@@ -117,12 +116,14 @@ public class NameDao {
 	}
 
 	public PagingResultSet<Name> search(int datasetKey, String q, @Nullable Page page) {
-		page = page == null ? new Page() : page;
-		String query = q + ":*"; // Enable "starts_with" term matching
-		NameMapper mapper = session.getMapper(NameMapper.class);
-		int total = mapper.countSearchResults(datasetKey, query);
-		List<Name> result = mapper.search(datasetKey, query, page);
-		return new PagingResultSet<>(page, total, result);
+		return null;
+		// page = page == null ? new Page() : page;
+		// String query = q + ":*"; // Enable "starts_with" term matching
+		// NameMapper mapper = session.getMapper(NameMapper.class);
+		// int total = mapper.countSearchResults(datasetKey, query);
+		// List<Name> result = new ArrayList<>();//mapper.search(datasetKey, query,
+		// page);
+		// return new PagingResultSet<>(page, total, result);
 	}
 
 	public PagedReference getPublishedIn(int datasetKey, int nameKey) {
