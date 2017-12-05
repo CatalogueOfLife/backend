@@ -1,12 +1,12 @@
 package org.col.dao;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.Nullable;
 
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.Name;
+import org.col.api.NameSearch;
 import org.col.api.Page;
 import org.col.api.PagedReference;
 import org.col.api.PagingResultSet;
@@ -115,15 +115,15 @@ public class NameDao {
 		return syn;
 	}
 
-	public PagingResultSet<Name> search(int datasetKey, String q, @Nullable Page page) {
-		return null;
-		// page = page == null ? new Page() : page;
-		// String query = q + ":*"; // Enable "starts_with" term matching
-		// NameMapper mapper = session.getMapper(NameMapper.class);
-		// int total = mapper.countSearchResults(datasetKey, query);
-		// List<Name> result = new ArrayList<>();//mapper.search(datasetKey, query,
-		// page);
-		// return new PagingResultSet<>(page, total, result);
+	public PagingResultSet<Name> search(NameSearch query, @Nullable Page page) {
+		page = page == null ? new Page() : page;
+		if (query.getQ() != null) {
+			query.setQ(query.getQ() + ":*");
+		}
+		NameMapper mapper = session.getMapper(NameMapper.class);
+		int total = mapper.countSearchResults(query);
+		List<Name> result = mapper.search(query, page);
+		return new PagingResultSet<>(page, total, result);
 	}
 
 	public PagedReference getPublishedIn(int datasetKey, int nameKey) {

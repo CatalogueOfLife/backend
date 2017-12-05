@@ -3,6 +3,7 @@ package org.col.resources;
 import java.util.List;
 
 import javax.annotation.Nullable;
+import javax.ws.rs.BeanParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -14,6 +15,7 @@ import javax.ws.rs.core.MediaType;
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.Name;
 import org.col.api.NameAct;
+import org.col.api.NameSearch;
 import org.col.api.Page;
 import org.col.api.PagedReference;
 import org.col.api.PagingResultSet;
@@ -42,12 +44,11 @@ public class NameResource {
 	@GET
 	@Timed
 	@Path("/search")
-	public PagingResultSet<Name> search(@PathParam("datasetKey") Integer datasetKey,
-	    @QueryParam("q") String q,
-	    @Nullable @Context Page page,
+	public PagingResultSet<Name> search(@BeanParam NameSearch query,
+	    @Nullable @BeanParam Page page,
 	    @Context SqlSession session) {
 		NameDao dao = new NameDao(session);
-		return dao.search(datasetKey, q, page);
+		return dao.search(query, page);
 	}
 
 	@GET

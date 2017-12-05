@@ -1,5 +1,8 @@
 package org.col.api;
 
+import javax.ws.rs.PathParam;
+import javax.ws.rs.QueryParam;
+
 import org.col.api.vocab.Issue;
 import org.col.api.vocab.NomStatus;
 import org.col.api.vocab.TaxonomicStatus;
@@ -8,16 +11,22 @@ import org.gbif.nameparser.api.Rank;
 
 public class NameSearch {
 
+	@PathParam("datasetKey")
 	private int datasetKey;
 
+	@QueryParam("q")
 	private String q;
 
+	@QueryParam("rank")
 	private Rank rank;
 
+	@QueryParam("taxstatus")
 	private NomStatus nomstatus;
 
+	@QueryParam("taxstatus")
 	private TaxonomicStatus taxstatus;
 
+	@QueryParam("issue")
 	private Issue issue;
 
 	/**
