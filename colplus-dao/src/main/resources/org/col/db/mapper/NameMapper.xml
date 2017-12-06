@@ -111,6 +111,7 @@
     AND (#{nameSearch.rank}::rank IS NULL OR #{nameSearch.rank}::rank = n.rank)
     AND (#{nameSearch.nomstatus}::int IS NULL OR #{nameSearch.nomstatus}::int = n.status)
     AND (#{nameSearch.taxstatus}::int IS NULL OR #{nameSearch.taxstatus}::int = t.status)
+    AND (#{nameSearch.type}::int IS NULL OR #{nameSearch.type}::int = n.type)
     AND (
             #{nameSearch.issue, typeHandler=org.apache.ibatis.type.EnumTypeHandler}::text IS NULL 
             OR n.issues ?? #{nameSearch.issue, typeHandler=org.apache.ibatis.type.EnumTypeHandler}

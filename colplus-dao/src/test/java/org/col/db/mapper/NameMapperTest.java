@@ -6,7 +6,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.EnumMap;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -17,6 +16,7 @@ import org.col.api.NameSearch;
 import org.col.api.Page;
 import org.col.api.vocab.Issue;
 import org.col.api.vocab.NomStatus;
+import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Test;
 
@@ -257,7 +257,63 @@ public class NameMapperTest extends MapperTestBase<NameMapper> {
 		search.setRank(Rank.CLASS);
 		names = mapper().search(search, new Page());
 		assertEquals("05", 0, names.size());
-}
+	}
+
+
+	@Test
+	// Test with name type as extra search criterion
+	public void searchWithType() throws Exception {
+		Name n = TestEntityGenerator.newName("a");
+		n.setScientificName("Foo bar");
+		n.setGenus("Foo");
+		n.setSpecificEpithet("bar");
+		n.setType(NameType.SCIENTIFIC);
+		mapper().create(n);
+
+		n = TestEntityGenerator.newName("b");
+		n.setScientificName("Foo baz");
+		n.setGenus("Foo");
+		n.setSpecificEpithet("baz");
+		n.setType(NameType.SCIENTIFIC);
+		mapper().create(n);
+
+		n = TestEntityGenerator.newName("c");
+		n.setScientificName("Fee bar");
+		n.setGenus("Fee");
+		n.setSpecificEpithet("bar");
+		n.setType(NameType.SCIENTIFIC);
+		mapper().create(n);
+
+		n = TestEntityGenerator.newName("d");
+		n.setScientificName("Foo");
+		n.setType(NameType.VIRUS);
+		mapper().create(n);
+
+		commit();
+
+		NameSearch search = new NameSearch();
+		search.setDatasetKey(TestEntityGenerator.DATASET1.getKey());
+		search.setQ("foo");
+		List<Name> names = mapper().search(search, new Page());
+		assertEquals("01", 3, names.size());
+
+		search.setType(NameType.SCIENTIFIC);
+		names = mapper().search(search, new Page());
+		assertEquals("02", 2, names.size());
+
+		search.setQ("baz");
+		names = mapper().search(search, new Page());
+		assertEquals("03", 1, names.size());
+
+		search.setQ("Foo");
+		search.setType(NameType.VIRUS);
+		names = mapper().search(search, new Page());
+		assertEquals("04", 1, names.size());
+
+		search.setType(NameType.HYBRID_FORMULA);
+		names = mapper().search(search, new Page());
+		assertEquals("05", 0, names.size());
+	}
 
 	@Test
 	// Test with status as extra search criterion
@@ -308,7 +364,7 @@ public class NameMapperTest extends MapperTestBase<NameMapper> {
 		search.setNomstatus(NomStatus.CHRESONYM);
 		names = mapper().search(search, new Page());
 		assertEquals("04", 1, names.size());
-		
+
 		search.setNomstatus(NomStatus.DOUBTFUL);
 		names = mapper().search(search, new Page());
 		assertEquals("05", 0, names.size());
@@ -317,7 +373,7 @@ public class NameMapperTest extends MapperTestBase<NameMapper> {
 	@Test
 	// Test with issue as extra search criterion
 	public void searchWithIssue() throws Exception {
-		
+
 		Map<Issue, String> issue = new EnumMap<>(Issue.class);
 		issue.put(Issue.UNPARSABLE_AUTHORSHIP, "Very unfortunate");
 
@@ -350,7 +406,7 @@ public class NameMapperTest extends MapperTestBase<NameMapper> {
 		n.setIssues(otherIssue);
 		mapper().create(n);
 
-		commit();		
+		commit();
 
 		NameSearch search = new NameSearch();
 		search.setDatasetKey(TestEntityGenerator.DATASET1.getKey());
@@ -370,7 +426,7 @@ public class NameMapperTest extends MapperTestBase<NameMapper> {
 		search.setIssue(Issue.BIB_REFERENCE_INVALID);
 		names = mapper().search(search, new Page());
 		assertEquals("04", 1, names.size());
-		
+
 		search.setIssue(Issue.ALT_IDENTIFIER_INVALID);
 		names = mapper().search(search, new Page());
 		assertEquals("05", 0, names.size());
