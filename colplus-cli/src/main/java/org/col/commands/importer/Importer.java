@@ -6,6 +6,7 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.Dataset;
 import org.col.api.Distribution;
 import org.col.api.VernacularName;
+import org.col.api.vocab.Origin;
 import org.col.commands.config.ImporterConfig;
 import org.col.commands.importer.neo.NeoDb;
 import org.col.commands.importer.neo.NormalizerStore;
@@ -88,19 +89,10 @@ public class Importer implements Runnable {
 				}
 
 				@Override
-				public boolean commitBatch(int counter) {
+				public void commitBatch(int counter) {
 					session.commit();
 					LOG.debug("Inserted {} basionyms", counter);
-					return true;
 				}
-
-				@Override
-				public boolean finalBatch(int counter) {
-					session.commit();
-					LOG.info("Inserted {} basionyms", counter);
-					return true;
-				}
-
 			});
 		}
 	}
@@ -169,8 +161,13 @@ public class Importer implements Runnable {
 					}
 
           // insert verbatim rec
-          t.verbatim.setDataset(dataset);
-          verbatimMapper.create(t.verbatim, taxonKey, t.name.getKey());
+          if (t.verbatim != null) {
+            t.verbatim.setDataset(dataset);
+            verbatimMapper.create(t.verbatim, taxonKey, t.name.getKey());
+
+					} else if(t.name.getOrigin().equals(Origin.SOURCE)) {
+            LOG.warn("No verbatim record for {}", t.name);
+          }
 
 					// commit in batches
 					if (counter++ % batchSize == 0) {

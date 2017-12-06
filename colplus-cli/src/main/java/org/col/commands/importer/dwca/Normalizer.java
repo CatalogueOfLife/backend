@@ -87,6 +87,11 @@ public class Normalizer implements Runnable {
       // matches names and taxon concepts and builds metrics per name/taxon
       matchAndCount();
       LOG.info("Normalization succeeded");
+
+    } catch (Exception e){
+      LOG.error("Normalizer failed", e);
+      throw e;
+
     } finally {
       if (closeStore) {
         store.close();
@@ -105,24 +110,22 @@ public class Normalizer implements Runnable {
     store.process(Labels.ALL,10000, new NeoDb.NodeBatchProcessor() {
       @Override
       public void process(Node n) {
-        NeoTaxon t = store.get(n);
-        insertAcceptedRel(t);
-        insertParentRel(t);
-        insertBasionymRel(t);
-        store.put(t);
+        try {
+          NeoTaxon t = store.get(n);
+          insertAcceptedRel(t);
+          insertParentRel(t);
+          insertBasionymRel(t);
+          store.put(t);
+
+        } catch (Exception e) {
+          LOG.error("proc err", e);
+        }
       }
 
       @Override
-      public boolean commitBatch(int counter) {
+      public void commitBatch(int counter) {
         checkInterrupted();
         LOG.debug("Processed relations for {} nodes", counter);
-        return true;
-      }
-
-      @Override
-      public boolean finalBatch(int counter) {
-        LOG.info("Processed relations for all {} nodes", counter);
-        return true;
       }
     });
 
@@ -246,15 +249,8 @@ public class Normalizer implements Runnable {
       }
 
       @Override
-      public boolean commitBatch(int counter) {
+      public void commitBatch(int counter) {
         LOG.info("Higher classifications processed for {} taxa", counter);
-        return true;
-      }
-
-      @Override
-      public boolean finalBatch(int counter) {
-        LOG.info("Higher classifications processed for all {} taxa", counter);
-        return true;
       }
     });
   }

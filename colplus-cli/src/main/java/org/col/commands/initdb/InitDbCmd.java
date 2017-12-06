@@ -33,9 +33,11 @@ public class InitDbCmd extends ConfiguredCommand<CliConfig> {
     System.out.format("Initialising database %s on %s.\n", cfg.db.database, cfg.db.host);
     System.out.format("You have %s seconds to abort if you did not intend to do so !!!\n", DELAY_IN_SECONDS);
     TimeUnit.SECONDS.sleep(DELAY_IN_SECONDS);
+    execute(cfg);
+  }
 
+  private void execute(CliConfig cfg) throws Exception {
     try (Connection con = cfg.db.connect()) {
-
       System.out.println("Starting database initialisation");
       ScriptRunner runner = new ScriptRunner(con);
       // run sql files

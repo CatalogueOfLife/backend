@@ -14,7 +14,6 @@ import org.col.commands.importer.neo.NeoDbFactory;
 import org.col.commands.importer.neo.NormalizerStore;
 import org.col.db.MybatisFactory;
 import org.col.db.mapper.DatasetMapper;
-import org.col.db.mapper.DatasetMetricsMapper;
 import org.gbif.util.DownloadUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,12 +80,12 @@ public class ImporterCmd extends ConfiguredCommand<CliConfig> {
       );
       importer.run();
 
-      LOG.info("Analyzing {}!", datasetKey);
-      try (SqlSession session = factory.openSession(true)){
-        DatasetMetricsMapper datasetMetricsMapper = session.getMapper(DatasetMetricsMapper.class);
-        Analyser analyser = Analyser.create(datasetKey, datasetMetricsMapper);
-        analyser.run();
-      }
+      LOG.info("Analyzing {}! NOT IMPLEMENTED YET!", datasetKey);
+      //try (SqlSession session = factory.openSession(true)){
+      //  DatasetMetricsMapper datasetMetricsMapper = session.getMapper(DatasetMetricsMapper.class);
+      //  Analyser analyser = Analyser.create(datasetKey, datasetMetricsMapper);
+      //  analyser.run();
+      //}
 
       LOG.info("Import {} completed!", datasetKey);
 

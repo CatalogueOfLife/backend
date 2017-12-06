@@ -2,11 +2,11 @@ package org.col.commands.importer.neo;
 
 import com.esotericsoftware.kryo.pool.KryoPool;
 import com.google.common.base.Throwables;
+import com.google.common.collect.UnmodifiableIterator;
 import org.apache.commons.io.FileUtils;
 import org.col.api.Dataset;
 import org.col.api.Reference;
 import org.col.api.Taxon;
-import org.gbif.nameparser.api.Rank;
 import org.col.commands.importer.dwca.NormalizationFailedException;
 import org.col.commands.importer.neo.kryo.NeoKryoFactory;
 import org.col.commands.importer.neo.mapdb.MapDbObjectSerializer;
@@ -14,6 +14,8 @@ import org.col.commands.importer.neo.model.Labels;
 import org.col.commands.importer.neo.model.NeoProperties;
 import org.col.commands.importer.neo.model.NeoTaxon;
 import org.col.commands.importer.neo.model.RelType;
+import org.col.util.concurrent.BlockingThreadPoolExecutor;
+import org.gbif.nameparser.api.Rank;
 import org.mapdb.Atomic;
 import org.mapdb.DB;
 import org.mapdb.Serializer;
@@ -31,6 +33,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -180,26 +184,55 @@ public class NeoDb implements NormalizerStore {
   }
 
   @Override
-  public void process(Labels label, int batchSize, NodeBatchProcessor callback) {
-    Transaction tx = neo.beginTx();
-    int counter = 0;
-    try {
-      for (Node n : Iterators.loop(neo.findNodes(label))) {
-        callback.process(n);
+  public void process(Labels label, final int batchSize, NodeBatchProcessor callback) {
+    ExecutorService service =  BlockingThreadPoolExecutor.newFixedThreadPool(1, 3);
+
+    try (Transaction tx = neo.beginTx()){
+      int counter = 0;
+      UnmodifiableIterator<List<Node>> batchIter = com.google.common.collect.Iterators.partition(neo.findNodes(label), batchSize);
+      while (batchIter.hasNext()) {
+        List<Node> batch = batchIter.next();
+        // execute batch processing in separate thread to not create nested flat transactions
+        service.submit(new BatchCallback(neo, callback, batch));
         counter++;
-        if (counter % batchSize == 0) {
-          if (callback.commitBatch(counter)) {
-            tx.success();
-          }
-          tx.close();
-          tx = neo.beginTx();
+      }
+      // await termination
+      service.shutdown();
+      service.awaitTermination(10, TimeUnit.DAYS);
+      LOG.info("Neo processing of {} finished in {} batches", label, counter);
+
+    } catch (InterruptedException e) {
+      LOG.error("Neo processing interrupted", e);
+
+    } catch (Exception e){
+      LOG.error("Neo processing with {} failed", callback.getClass(), e);
+      throw e;
+    }
+  }
+
+  static class BatchCallback implements Runnable {
+    AtomicInteger counter = new AtomicInteger();
+    private final GraphDatabaseService neo;
+    private final NodeBatchProcessor callback;
+    private final List<Node> batch;
+
+    public BatchCallback(GraphDatabaseService neo, NodeBatchProcessor callback, List<Node> batch) {
+      this.neo = neo;
+      this.callback = callback;
+      this.batch = batch;
+    }
+
+    @Override
+    public void run() {
+      try (Transaction tx = neo.beginTx()) {
+        LOG.debug("Start new neo processing batch with {}", batch.get(0));
+        for (Node n : batch) {
+          callback.process(n);
+          counter.incrementAndGet();
         }
-      }
-    } finally {
-      if (callback.commitBatch(counter)) {
         tx.success();
+        callback.commitBatch(counter.get());
       }
-      tx.close();
     }
   }
 
@@ -211,14 +244,7 @@ public class NeoDb implements NormalizerStore {
      * @param counter the total record counter of processed records at this point
      * @return true if the batch should be committed.
      */
-    boolean commitBatch(int counter);
-
-    /**
-     * Indicates whether the final batch should be committed or not
-     * @param counter the total record counter of processed records
-     * @return true if the batch should be committed.
-     */
-    boolean finalBatch(int counter);
+    void commitBatch(int counter);
   }
 
   /**
