@@ -42,9 +42,14 @@ public class PgSetupRule extends ExternalResource {
 	private static EmbeddedPostgres postgres;
 	private static HikariDataSource dataSource;
 	private static SqlSessionFactory sqlSessionFactory;
+  private static PgConfig cfg;
 	private boolean startedHere = false;
 
-	public static Connection getConnection() throws SQLException {
+  public static PgConfig getCfg() throws SQLException {
+    return cfg;
+  }
+
+  public static Connection getConnection() throws SQLException {
 		return dataSource.getConnection();
 	}
 
@@ -64,7 +69,7 @@ public class PgSetupRule extends ExternalResource {
 
 	private void startDb() {
 		try {
-      PgConfig cfg = YamlUtils.read(PgConfig.class, "/pg-test.yaml");
+      cfg = YamlUtils.read(PgConfig.class, "/pg-test.yaml");
 			if (cfg.host == null) {
         LOG.info("Starting embedded Postgres");
 				Instant start = Instant.now();
@@ -100,7 +105,7 @@ public class PgSetupRule extends ExternalResource {
 		}
 	}
 
-	private void initDb() {
+  private void initDb() {
 		try (Connection con = dataSource.getConnection()) {
 			System.out.println("Init empty database schema\n");
 			ScriptRunner runner = new ScriptRunner(con);

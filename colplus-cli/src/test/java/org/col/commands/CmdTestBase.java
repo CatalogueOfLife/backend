@@ -6,13 +6,16 @@ import io.dropwizard.util.JarLocation;
 import org.col.commands.config.CliConfig;
 import org.col.commands.initdb.InitDbCmd;
 import org.col.db.mapper.PgSetupRule;
+import org.col.util.YamlUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Optional;
 
@@ -30,12 +33,33 @@ public abstract class CmdTestBase {
   private final ByteArrayOutputStream stdOut = new ByteArrayOutputStream();
   private final ByteArrayOutputStream stdErr = new ByteArrayOutputStream();
   protected Cli cli;
+  private final CliConfig cfg;
 
   @ClassRule
   public static PgSetupRule pgSetupRule = new PgSetupRule();
+  private File tempDbCfg;
+
+  public CmdTestBase() {
+    this.cfg = new CliConfig();
+  }
+
+  public CmdTestBase(CliConfig cfg) {
+    this.cfg = cfg;
+  }
 
   @Before
   public void setUp() throws Exception {
+    // swap out db configs for the ones used by the PgSetupRule
+    tempDbCfg = Files.createTempFile("colplus-db", ".yaml").toFile();
+    cfg.db = PgSetupRule.getCfg();
+    // somehow serde doesnt work with the inherited Configuration props, set them to null to ignore them
+    cfg.client = null;
+    cfg.setLoggingFactory(null);
+    cfg.setServerFactory(null);
+    cfg.setMetricsFactory(null);
+    YamlUtils.write(cfg, tempDbCfg);
+
+
     // Setup necessary mock
     final JarLocation location = mock(JarLocation.class);
     when(location.getVersion()).thenReturn(Optional.of("1.0-SNAPSHOT"));
@@ -57,6 +81,7 @@ public abstract class CmdTestBase {
     System.setOut(originalOut);
     System.setErr(originalErr);
     System.setIn(originalIn);
+    tempDbCfg.delete();
   }
 
   /**
@@ -65,7 +90,7 @@ public abstract class CmdTestBase {
   public void run(String ... args) throws Exception {
     final int N = args.length;
     args = Arrays.copyOf(args, N + 1);
-    args[N] = "target/test-classes/cli-test.yaml";
+    args[N] = tempDbCfg.getAbsolutePath();
 
     assertTrue(cli.run(args));
   }
