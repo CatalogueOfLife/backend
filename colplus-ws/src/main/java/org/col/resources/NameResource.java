@@ -2,7 +2,6 @@ package org.col.resources;
 
 import java.util.List;
 
-import javax.annotation.Nullable;
 import javax.ws.rs.BeanParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -35,7 +34,7 @@ public class NameResource {
 
 	@GET
 	public PagingResultSet<Name> list(@PathParam("datasetKey") Integer datasetKey,
-	    @Nullable @Context Page page,
+	    @Context Page page,
 	    @Context SqlSession session) {
 		NameDao dao = new NameDao(session);
 		return dao.list(datasetKey, page);
@@ -45,7 +44,7 @@ public class NameResource {
 	@Timed
 	@Path("/search")
 	public PagingResultSet<Name> search(@BeanParam NameSearch query,
-	    @Nullable @BeanParam Page page,
+	    @BeanParam Page page,
 	    @Context SqlSession session) {
 		NameDao dao = new NameDao(session);
 		return dao.search(query, page);

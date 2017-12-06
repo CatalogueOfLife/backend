@@ -20,7 +20,7 @@ public class NameSearch {
 	@QueryParam("rank")
 	private Rank rank;
 
-	@QueryParam("taxstatus")
+	@QueryParam("nomstatus")
 	private NomStatus nomstatus;
 
 	@QueryParam("taxstatus")
@@ -29,10 +29,7 @@ public class NameSearch {
 	@QueryParam("issue")
 	private Issue issue;
 
-	/**
-	 * Specified in REST API but no such thing in Name class so currently ignored in
-	 * name search.
-	 */
+	@QueryParam("taxstatus")
 	private NameType type;
 
 	public int getDatasetKey() {
