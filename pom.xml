@@ -79,6 +79,17 @@
     <maven-source-plugin.version>3.0.1</maven-source-plugin.version>
     <maven-surefire-plugin.version>2.20</maven-surefire-plugin.version>
     <versions-maven-plugin.version>2.4</versions-maven-plugin.version>
+
+    <!--
+    default maven properties to define the postgres server for running tests
+    host=null indicates an embedded postgres
+
+    To use a different server please activate a personal profile
+    -->
+    <pg-test.host>null</pg-test.host>
+    <pg-test.database>colplus</pg-test.database>
+    <pg-test.user>postgres</pg-test.user>
+    <pg-test.password>postgres</pg-test.password>
   </properties>
 
   <licenses>

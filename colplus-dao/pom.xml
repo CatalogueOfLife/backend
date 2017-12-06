@@ -12,19 +12,6 @@
 
     <name>CoL backend services (DAO)</name>
 
-    <properties>
-        <!--
-        default maven properties to define the postgres server for running tests
-        host=null indicates an embedded postgres
-
-        To use a different server please activate a personal profile
-        -->
-        <pg-test.host>null</pg-test.host>
-        <pg-test.database>colplus</pg-test.database>
-        <pg-test.user>postgres</pg-test.user>
-        <pg-test.password>postgres</pg-test.password>
-    </properties>
-
     <build>
         <resources>
             <resource>

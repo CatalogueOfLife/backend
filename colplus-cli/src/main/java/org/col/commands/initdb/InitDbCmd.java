@@ -8,7 +8,13 @@ import org.apache.ibatis.jdbc.ScriptRunner;
 import org.col.commands.config.CliConfig;
 import org.col.db.PgConfig;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.net.URI;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -16,9 +22,11 @@ import java.util.concurrent.TimeUnit;
  */
 public class InitDbCmd extends ConfiguredCommand<CliConfig> {
   private static final int DELAY_IN_SECONDS = 10;
+  private static final URI COL_DATASETS_URI = URI.create("https://raw.githubusercontent.com/Sp2000/colplus-repo/master/AC2017/datasets.sql");
   public InitDbCmd() {
     super("initdb", "Initialises a new database schema");
   }
+
 
   @Override
   protected void run(Bootstrap<CliConfig> bootstrap, Namespace namespace, CliConfig cfg) throws Exception {
@@ -30,13 +38,22 @@ public class InitDbCmd extends ConfiguredCommand<CliConfig> {
 
       System.out.println("Starting database initialisation");
       ScriptRunner runner = new ScriptRunner(con);
-      try {
-        runner.runScript(Resources.getResourceAsReader(PgConfig.SCHEMA_FILE));
-        con.commit();
+      // run sql files
+      exec(PgConfig.SCHEMA_FILE, runner, con, Resources.getResourceAsReader(PgConfig.SCHEMA_FILE));
 
-      } catch (Exception e) {
-        throw new IllegalStateException("Fail to restore: " + PgConfig.SCHEMA_FILE, e);
+      try (BufferedReader datasets = new BufferedReader(new InputStreamReader(COL_DATASETS_URI.toURL().openStream()))) {
+        exec(COL_DATASETS_URI.toString(), runner, con, datasets);
       }
+    }
+  }
+
+  private void exec(String name, ScriptRunner runner, Connection con, Reader reader) throws IOException, SQLException {
+    try {
+      System.out.println("Run ");
+      runner.runScript(reader);
+      con.commit();
+    } catch (Exception e) {
+      throw new IllegalStateException("Fail to execute sql file: " + name, e);
     }
   }
 }

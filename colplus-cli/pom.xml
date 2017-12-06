@@ -154,6 +154,16 @@
             <testResource>
                 <directory>src/test/resources</directory>
                 <filtering>false</filtering>
+                <excludes>
+                    <exclude>cli-test.yaml</exclude>
+                </excludes>
+            </testResource>
+            <testResource>
+                <directory>src/test/resources</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>cli-test.yaml</include>
+                </includes>
             </testResource>
         </testResources>
         <plugins>
