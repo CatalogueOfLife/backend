@@ -3,6 +3,9 @@ package org.col.db.mapper;
 import org.col.TestEntityGenerator;
 import org.col.api.Page;
 import org.col.api.Taxon;
+import org.javers.core.Javers;
+import org.javers.core.JaversBuilder;
+import org.javers.core.diff.Diff;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -25,7 +28,11 @@ public class TaxonMapperTest extends MapperTestBase<TaxonMapper> {
 		mapper().create(in);
 		assertNotNull(in.getKey());
 		commit();
-		Taxon out = mapper().get(mapper().lookupKey(TestEntityGenerator.DATASET1.getKey(), in.getId()));
+		Taxon out = mapper().get(in.getKey());
+
+    Javers javers = JaversBuilder.javers().build();
+    Diff diff = javers.compare(in, out);
+    assertEquals(0, diff.getChanges().size());
     assertEquals(in, out);
 	}
 

@@ -1,23 +1,23 @@
 package org.col.db.mapper;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import com.google.common.collect.Lists;
+import org.col.api.Dataset;
+import org.col.api.Page;
+import org.col.api.RandomUtils;
+import org.col.api.vocab.DataFormat;
+import org.col.api.vocab.License;
+import org.javers.core.Javers;
+import org.javers.core.JaversBuilder;
+import org.javers.core.diff.Diff;
+import org.junit.Assert;
+import org.junit.Test;
 
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
-import org.col.api.Dataset;
-import org.col.api.Page;
-import org.col.api.RandomUtils;
-import org.col.api.vocab.DataFormat;
-import org.col.api.vocab.License;
-import org.junit.Assert;
-import org.junit.Test;
-
-import com.google.common.collect.Lists;
+import static org.junit.Assert.*;
 
 /**
  *
@@ -58,6 +58,7 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
 		Dataset d2 = mapper().get(d1.getKey());
 		// remove newly set property
 		d2.setCreated(null);
+    d2.setModified(null);
 
 		assertEquals(d1, d2);
 	}
@@ -113,20 +114,24 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
 			d.setCreated(null);
 		}
 		commit();
+    removeCreated(ds);
 
 		// get first page
 		Page p = new Page(0, 4);
 
-		List<Dataset> res = removeCreated(mapper().list(p));
+
+    List<Dataset> res = removeCreated(mapper().list(p));
 		assertEquals(4, res.size());
-		assertEquals(Lists.partition(ds, 4).get(0), res);
+    Javers javers = JaversBuilder.javers().build();
+    Diff diff = javers.compare(ds.get(0), res.get(0));
+    assertEquals(0, diff.getChanges().size());
+    assertEquals(ds.subList(0,4), res);
 
 		// next page
 		p.next();
 		res = removeCreated(mapper().list(p));
 		assertEquals(3, res.size());
-		List<Dataset> l2 = Lists.partition(ds, 4).get(1);
-		assertEquals(l2, res);
+		assertEquals(ds.subList(4,7), res);
 	}
 
 	@Test
@@ -158,6 +163,7 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
 		for (Dataset d : ds) {
 			// dont compare created stamps
 			d.setCreated(null);
+      d.setModified(null);
 		}
 		return ds;
 	}

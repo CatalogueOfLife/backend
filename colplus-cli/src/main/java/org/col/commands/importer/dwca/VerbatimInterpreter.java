@@ -148,13 +148,6 @@ public class VerbatimInterpreter {
     t.setSpeciesEstimate(null);
     t.setSpeciesEstimateReferenceKey(null);
     t.setRemarks(v.getCoreTerm(DwcTerm.taxonRemarks));
-
-    if (insertMetadata.isParentNameMapped()) {
-      Taxon parent = new Taxon();
-      //parent.setScientificName(v.getCoreTerm(DwcTerm.parentNameUsage));
-      parent.setId(v.getCoreTerm(DwcTerm.parentNameUsageID));
-      t.setParentKey(parent.getKey());
-    }
     return t;
   }
 

@@ -25,8 +25,8 @@ import java.util.Stack;
 /**
  *
  */
-public class Importer implements Runnable {
-	private static final Logger LOG = LoggerFactory.getLogger(Importer.class);
+public class PgImport implements Runnable {
+	private static final Logger LOG = LoggerFactory.getLogger(PgImport.class);
 
 	private final NormalizerStore store;
 	private final int batchSize;
@@ -34,8 +34,8 @@ public class Importer implements Runnable {
 	private final Dataset dataset;
 	private Map<Integer, Integer> originalNameKeys = Maps.newHashMap();
 
-	public Importer(int datasetKey, NormalizerStore store, SqlSessionFactory sessionFactory,
-	    ImporterConfig cfg) {
+	public PgImport(int datasetKey, NormalizerStore store, SqlSessionFactory sessionFactory,
+                  ImporterConfig cfg) {
 		this.dataset = store.getDataset();
 		this.dataset.setKey(datasetKey);
 		this.store = store;
@@ -128,6 +128,9 @@ public class Importer implements Runnable {
 							t.name.setBasionymKey(originalNameKeys.get(t.name.getBasionymKey()));
 						}
 						t.name.setDatasetKey(dataset.getKey());
+						if (t.name.getType()==null) {
+						  int x =87;
+            }
 						nameMapper.create(t.name);
 					}
 
@@ -176,7 +179,7 @@ public class Importer implements Runnable {
 					}
 				}
 
-				@Override
+        @Override
 				public void end(Node n) {
 					// remove this key from parent list if its an accepted taxon
 					if (n.hasLabel(Labels.TAXON)) {
@@ -188,4 +191,5 @@ public class Importer implements Runnable {
 			LOG.debug("Inserted all names and taxa");
 		}
 	}
+
 }

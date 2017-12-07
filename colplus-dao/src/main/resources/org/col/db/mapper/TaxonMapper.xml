@@ -12,7 +12,6 @@
 		t.name_key as n_key,
 		t.status,
 		t.origin,
-		t.rank,
 		t.according_to,
 		t.according_to_date,
 		t.fossil,
@@ -58,7 +57,6 @@
 		name_key,
 		status,
 		origin,
-		rank,
 		according_to,
 		according_to_date,
 		fossil,
@@ -78,12 +76,11 @@
 		#{name.key},
 		#{status},
 		#{origin},
-		#{rank}::rank,
 		#{accordingTo},
 		#{accordingToDate},
 		#{fossil},
 		#{recent},
-		#{lifezones, typeHandler=org.col.db.type.LifezoneTypeHandler},
+		#{lifezones, typeHandler=org.col.db.type.LifezoneSetTypeHandler},
 		#{datasetUrl, typeHandler=org.col.db.type.UriTypeHandler},
 		#{speciesEstimate},
 		#{speciesEstimateReferenceKey},
@@ -99,7 +96,7 @@
 	<resultMap id="taxonResultMap" type="Taxon" autoMapping="true">
 		<id property="key" column="key" />
 		<result property="id" column="id" />
-        <result property="lifezones" column="lifezones" typeHandler="org.col.db.type.LifezoneTypeHandler"/>
+        <result property="lifezones" column="lifezones" typeHandler="org.col.db.type.LifezoneSetTypeHandler"/>
         <result property="issues" column="issues" typeHandler="org.col.db.type.HstoreIssueHandler"/>
 		<association property="name" javaType="Name" resultMap="org.col.db.mapper.NameMapper.nameResultMap" columnPrefix="n_" />
 	</resultMap>

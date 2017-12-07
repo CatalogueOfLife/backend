@@ -62,7 +62,10 @@ public abstract class CmdTestBase {
     // Add commands you want to test
     final Bootstrap<CliConfig> bootstrap = new Bootstrap<>(new CliApp());
     bootstrap.addCommand(new InitDbCmd());
-    bootstrap.addCommand(registerCommand());
+    Command cmd = registerCommand();
+    if (cmd != null) {
+      bootstrap.addCommand(cmd);
+    }
 
     // Build what'll run the command and interpret arguments
     cli = new Cli(location, bootstrap, System.out, System.err);
@@ -79,7 +82,7 @@ public abstract class CmdTestBase {
   public void run(boolean initdb, String ... args) throws Exception {
     // first run initdb?
     if (initdb) {
-      cli.run("initdb", tempDbCfg.getAbsolutePath());
+      cli.run("initdb", "--prompt", "0", tempDbCfg.getAbsolutePath());
     }
 
     // now run the real arg

@@ -103,10 +103,34 @@ CREATE TABLE dataset (
   homepage TEXT,
   data_format INTEGER,
   data_access TEXT,
+  import_frequency INTEGER,
   notes text,
-  created TIMESTAMP,
-  modified TIMESTAMP,
-  deleted TIMESTAMP
+  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  deleted TIMESTAMP WITHOUT TIME ZONE
+);
+
+CREATE TABLE dataset_import (
+  dataset_key INTEGER NOT NULL REFERENCES dataset,
+  attempt INTEGER NOT NULL,
+  success BOOLEAN,
+  error TEXT,
+  started TIMESTAMP WITHOUT TIME ZONE,
+  finished TIMESTAMP WITHOUT TIME ZONE,
+  download TIMESTAMP WITHOUT TIME ZONE,
+  verbatim_count INTEGER,
+  name_count INTEGER,
+  taxon_count INTEGER,
+  vernacular_count INTEGER,
+  distribution_count INTEGER,
+  issues_count HSTORE,
+  names_by_rank_count HSTORE,
+  names_by_type_count HSTORE,
+  vernaculars_by_language_count HSTORE,
+  distributions_by_gazetteer_count HSTORE,
+  names_by_origin_count HSTORE,
+
+  PRIMARY KEY (dataset_key, attempt)
 );
 
 CREATE TABLE "serial" (
@@ -139,7 +163,7 @@ CREATE TABLE name (
   dataset_key INTEGER REFERENCES dataset,
   basionym_key INTEGER REFERENCES name,
   scientific_name TEXT NOT NULL,
-  rank rank,
+  rank rank NOT NULL,
   uninomial TEXT,
   genus TEXT,
   infrageneric_epithet TEXT,
@@ -154,9 +178,9 @@ CREATE TABLE name (
   combination_year TEXT,
   sanctioning_author TEXT,
   code INTEGER,
-  type INTEGER,
+  type INTEGER NOT NULL,
   status INTEGER,
-  origin INTEGER,
+  origin INTEGER NOT NULL,
   fossil BOOLEAN,
   remarks TEXT,
   issues hstore
@@ -180,9 +204,8 @@ CREATE TABLE taxon (
   dataset_key INTEGER NOT NULL REFERENCES dataset,
   parent_key INTEGER REFERENCES taxon,
   name_key INTEGER NOT NULL REFERENCES name,
-  status INTEGER,
-  origin INTEGER,
-  rank rank,
+  status INTEGER NOT NULL,
+  origin INTEGER NOT NULL,
   according_to TEXT,
   according_to_date DATE,
   fossil BOOLEAN,
@@ -240,8 +263,8 @@ CREATE TABLE distribution (
   key serial PRIMARY KEY,
   dataset_key INTEGER NOT NULL REFERENCES dataset,
   taxon_key INTEGER NOT NULL REFERENCES taxon,
-  area TEXT,
-  area_standard INTEGER,
+  area TEXT NOT NULL,
+  area_standard INTEGER NOT NULL,
   status INTEGER
 );
 

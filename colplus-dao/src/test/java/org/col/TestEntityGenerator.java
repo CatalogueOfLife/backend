@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Random;
 
 /**
- * utility class to generate new test instances to be used in tests.
+ * utility class to metrics new test instances to be used in tests.
  */
 public class TestEntityGenerator {
 
@@ -57,27 +57,37 @@ public class TestEntityGenerator {
 
 	static {
 		DATASET1.setKey(1);
-		DATASET2.setKey(2);
+    DATASET2.setKey(2);
 
 		NAME1.setKey(1);
 		NAME1.setId("name-1");
 		NAME1.setDatasetKey(DATASET1.getKey());
 		NAME1.setScientificName("Malus sylvestris");
+    NAME1.setRank(Rank.SPECIES);
+    NAME1.setOrigin(Origin.SOURCE);
+    NAME1.setType(NameType.SCIENTIFIC);
 
 		NAME2.setKey(2);
 		NAME2.setId("name-2");
 		NAME2.setDatasetKey(DATASET1.getKey());
 		NAME2.setScientificName("Larus fuscus");
+    NAME2.setRank(Rank.SPECIES);
+    NAME2.setOrigin(Origin.SOURCE);
+    NAME2.setType(NameType.SCIENTIFIC);
 
 		TAXON1.setKey(1);
 		TAXON1.setId("root-1");
 		TAXON1.setDatasetKey(DATASET1.getKey());
 		TAXON1.setName(NAME1);
+    TAXON1.setOrigin(Origin.SOURCE);
+    TAXON1.setStatus(TaxonomicStatus.ACCEPTED);
 
 		TAXON2.setKey(2);
 		TAXON2.setId("root-2");
 		TAXON2.setDatasetKey(DATASET1.getKey());
 		TAXON2.setName(NAME2);
+    TAXON2.setOrigin(Origin.SOURCE);
+    TAXON2.setStatus(TaxonomicStatus.ACCEPTED);
 
 		REF1.setKey(1);
 		REF1.setId("ref-1");
@@ -124,7 +134,6 @@ public class TestEntityGenerator {
 		t.setOrigin(Origin.SOURCE);
 		t.setParentKey(TAXON1.getKey());
 		t.setStatus(TaxonomicStatus.ACCEPTED);
-		t.setRank(Rank.CLASS);
 		t.setRecent(true);
 		t.setRemarks("Foo == Bar");
 		t.setSpeciesEstimate(81);

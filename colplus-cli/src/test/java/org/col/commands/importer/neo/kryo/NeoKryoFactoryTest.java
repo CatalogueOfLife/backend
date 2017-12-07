@@ -64,7 +64,7 @@ public class NeoKryoFactoryTest {
   public void testEmptyModels() throws Exception {
     assertSerde(new NeoTaxon());
     assertSerde(new Reference());
-    assertSerde(new DatasetMetrics());
+    assertSerde(new DatasetImport());
   }
 
   private void assertSerde(Object obj) {

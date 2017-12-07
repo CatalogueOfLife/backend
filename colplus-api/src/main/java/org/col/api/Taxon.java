@@ -5,7 +5,6 @@ import org.col.api.vocab.Issue;
 import org.col.api.vocab.Lifezone;
 import org.col.api.vocab.Origin;
 import org.col.api.vocab.TaxonomicStatus;
-import org.gbif.nameparser.api.Rank;
 
 import java.net.URI;
 import java.time.LocalDate;
@@ -35,8 +34,6 @@ public class Taxon {
 	private Name name;
 
 	private TaxonomicStatus status;
-
-	private Rank rank;
 
 	private Origin origin;
 
@@ -113,14 +110,6 @@ public class Taxon {
 
 	public void setStatus(TaxonomicStatus status) {
 		this.status = status;
-	}
-
-	public Rank getRank() {
-		return rank;
-	}
-
-	public void setRank(Rank rank) {
-		this.rank = rank;
 	}
 
 	public Origin getOrigin() {
@@ -255,7 +244,6 @@ public class Taxon {
         Objects.equals(taxonID, taxon.taxonID) &&
         Objects.equals(name, taxon.name) &&
         status == taxon.status &&
-        rank == taxon.rank &&
         origin == taxon.origin &&
         Objects.equals(parentKey, taxon.parentKey) &&
         Objects.equals(accordingTo, taxon.accordingTo) &&
@@ -273,6 +261,6 @@ public class Taxon {
 
   @Override
   public int hashCode() {
-    return Objects.hash(key, id, datasetKey, taxonID, name, status, rank, origin, parentKey, accordingTo, accordingToDate, fossil, recent, lifezones, datasetUrl, speciesEstimate, speciesEstimateReferenceKey, remarks, references, issues);
+    return Objects.hash(key, id, datasetKey, taxonID, name, status, origin, parentKey, accordingTo, accordingToDate, fossil, recent, lifezones, datasetUrl, speciesEstimate, speciesEstimateReferenceKey, remarks, references, issues);
   }
 }

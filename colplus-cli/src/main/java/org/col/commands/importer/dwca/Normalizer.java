@@ -43,6 +43,7 @@ public class Normalizer implements Runnable {
     PLACEHOLDER.setScientificName("Incertae sedis");
     PLACEHOLDER.setRank(Rank.UNRANKED);
     PLACEHOLDER.setType(NameType.PLACEHOLDER);
+    PLACEHOLDER.setOrigin(Origin.OTHER);
     PLACEHOLDER.setParsed(false);
   }
   private static final List<Splitter> COMMON_SPLITTER = Lists.newArrayList();
@@ -668,6 +669,7 @@ public class Normalizer implements Runnable {
     Name n = new Name();
     n.setScientificName(sciname);
     n.setRank(rank);
+    n.setType(NameType.SCIENTIFIC);
     NeoTaxon t = NeoTaxon.createTaxon(origin, n, TaxonomicStatus.ACCEPTED);
 
     // store, which creates a new neo node

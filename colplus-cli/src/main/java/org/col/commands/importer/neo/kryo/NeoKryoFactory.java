@@ -38,7 +38,7 @@ public class NeoKryoFactory implements KryoFactory {
     kryo.register(Authorship.class);
     kryo.register(Classification.class);
     kryo.register(Dataset.class);
-    kryo.register(DatasetMetrics.class);
+    kryo.register(DatasetImport.class);
     kryo.register(Distribution.class);
     kryo.register(Name.class);
     kryo.register(NameAct.class);
@@ -86,6 +86,7 @@ public class NeoKryoFactory implements KryoFactory {
     kryo.register(DistributionStatus.class);
     kryo.register(EnumMap.class, new EnumMapSerializer());
     kryo.register(EnumSet.class, new EnumSetSerializer());
+    kryo.register(Frequency.class);
     kryo.register(Gazetteer.class);
     kryo.register(Issue.class);
     kryo.register(Kingdom.class);

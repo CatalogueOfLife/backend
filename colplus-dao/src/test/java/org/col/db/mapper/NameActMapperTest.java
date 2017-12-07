@@ -1,20 +1,19 @@
 package org.col.db.mapper;
 
-import static org.col.TestEntityGenerator.DATASET1;
-import static org.col.TestEntityGenerator.NAME1;
-import static org.col.TestEntityGenerator.NAME2;
-import static org.col.TestEntityGenerator.REF1;
-import static org.col.TestEntityGenerator.REF2;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
-import java.util.List;
-
 import org.col.api.Name;
 import org.col.api.NameAct;
 import org.col.api.vocab.NomActType;
 import org.col.api.vocab.NomStatus;
+import org.col.api.vocab.Origin;
+import org.gbif.nameparser.api.NameType;
+import org.gbif.nameparser.api.Rank;
 import org.junit.Test;
+
+import java.util.List;
+
+import static org.col.TestEntityGenerator.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  *
@@ -50,6 +49,25 @@ public class NameActMapperTest extends MapperTestBase<NameActMapper> {
 		assertEquals("01", 3, nas.size());
 	}
 
+	private Name createName(String id, String name){
+    Name n = new Name();
+    n.setDatasetKey(DATASET1.getKey());
+    n.setId(id);
+    n.setScientificName(name);
+    n.setType(NameType.SCIENTIFIC);
+    n.setRank(Rank.UNRANKED);
+    n.setOrigin(Origin.SOURCE);
+    return n;
+  }
+
+  private NameAct createAct(int nameKey,  NomActType type){
+    NameAct act = new NameAct();
+    act.setDatasetKey(DATASET1.getKey());
+    act.setNameKey(nameKey);
+    act.setType(type);
+    return act;
+  }
+
 	@Test
 	public void testListByHomotypicGroup() throws Exception {
 
@@ -57,60 +75,34 @@ public class NameActMapperTest extends MapperTestBase<NameActMapper> {
 
 		// Create basionym with 2 name acts
 
-		Name basionym = new Name();
-		basionym.setDatasetKey(DATASET1.getKey());
-		basionym.setId("foo-bar");
-		basionym.setScientificName("Foo bar");
+		Name basionym = createName("foo-bar", "Foo bar");
 		nameMapper.create(basionym);
 
-		NameAct nameAct;
-
-		nameAct = new NameAct();
-		nameAct.setDatasetKey(DATASET1.getKey());
-		nameAct.setNameKey(basionym.getKey());
-		nameAct.setType(NomActType.DESCRIPTION);
+		NameAct nameAct = createAct(basionym.getKey(), NomActType.DESCRIPTION);
 		mapper().create(nameAct);
 
-		nameAct = new NameAct();
-		nameAct.setDatasetKey(DATASET1.getKey());
-		nameAct.setNameKey(basionym.getKey());
-		nameAct.setType(NomActType.TYPIFICATION);
+    nameAct = createAct(basionym.getKey(), NomActType.TYPIFICATION);
 		mapper().create(nameAct);
 
 		// Create name referencing basionym, also with 2 name acts
 
-		Name name = new Name();
-		name.setDatasetKey(DATASET1.getKey());
-		name.setId("foo-new");
-		name.setScientificName("Foo new");
+    Name name = createName("foo-new", "Foo new");
 		name.setBasionymKey(basionym.getKey());
 		nameMapper.create(name);
 
-		nameAct = new NameAct();
-		nameAct.setDatasetKey(DATASET1.getKey());
-		nameAct.setNameKey(name.getKey());
-		nameAct.setType(NomActType.DESCRIPTION);
+    nameAct = createAct(name.getKey(), NomActType.DESCRIPTION);
 		mapper().create(nameAct);
 
-		nameAct = new NameAct();
-		nameAct.setDatasetKey(DATASET1.getKey());
-		nameAct.setNameKey(name.getKey());
-		nameAct.setType(NomActType.TYPIFICATION);
+    nameAct = createAct(name.getKey(), NomActType.TYPIFICATION);
 		mapper().create(nameAct);
 
 		// Create another name referencing basionym, with 1 name act
 
-		name = new Name();
-		name.setDatasetKey(DATASET1.getKey());
-		name.setId("foo-too");
-		name.setScientificName("Foo too");
+    name = createName("foo-too", "Foo too");
 		name.setBasionymKey(basionym.getKey());
 		nameMapper.create(name);
 
-		nameAct = new NameAct();
-		nameAct.setDatasetKey(DATASET1.getKey());
-		nameAct.setNameKey(name.getKey());
-		nameAct.setType(NomActType.DESCRIPTION);
+    nameAct = createAct(name.getKey(), NomActType.DESCRIPTION);
 		mapper().create(nameAct);
 
 		commit();

@@ -74,7 +74,7 @@ public class MybatisFactory {
 	private static void registerTypeHandlers(TypeHandlerRegistry registry) {
 		// register all type handler from the type subpackage
 		registry.register(UuidTypeHandler.class.getPackage().getName());
-		registry.setDefaultEnumTypeHandler(EnumOrdinalTypeHandler.class);
+    registry.setDefaultEnumTypeHandler(EnumOrdinalTypeHandler.class);
 		registry.register(RankTypeHandler.class);
 
 	}

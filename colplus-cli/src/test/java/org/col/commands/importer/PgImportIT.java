@@ -35,7 +35,7 @@ import static org.junit.Assert.assertTrue;
 /**
  *
  */
-public class ImporterIT {
+public class PgImportIT {
   private NormalizerStore store;
   private NormalizerConfig cfg;
   private ImporterConfig icfg = new ImporterConfig();
@@ -80,7 +80,7 @@ public class ImporterIT {
 
     // import into postgres
     store = NeoDbFactory.open(cfg, dataset.getKey());
-    Importer importer = new Importer(dataset.getKey(), store, PgSetupRule.getSqlSessionFactory(), icfg);
+    PgImport importer = new PgImport(dataset.getKey(), store, PgSetupRule.getSqlSessionFactory(), icfg);
     importer.run();
   }
 

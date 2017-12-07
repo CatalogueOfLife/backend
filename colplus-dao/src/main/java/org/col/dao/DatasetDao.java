@@ -1,16 +1,18 @@
 package org.col.dao;
 
-import java.util.List;
-
-import javax.annotation.Nullable;
-
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.Dataset;
+import org.col.api.DatasetImport;
 import org.col.api.Page;
 import org.col.api.PagingResultSet;
+import org.col.db.mapper.DatasetImportMapper;
 import org.col.db.mapper.DatasetMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nullable;
+import java.time.LocalDateTime;
+import java.util.List;
 
 public class DatasetDao {
 
@@ -31,5 +33,50 @@ public class DatasetDao {
 		List<Dataset> result = mapper.search(query, page);
 		return new PagingResultSet<>(page, total, result);
 	}
+
+  /**
+   * Creates a new successful dataset import instance with metrics
+   */
+  public DatasetImport createImportSuccess(Dataset dataset,
+                                           LocalDateTime importStart,
+                                           LocalDateTime download
+  ) {
+    LOG.info("Create new metrics for dataset {}", dataset.getKey());
+    DatasetImportMapper mapper = session.getMapper(DatasetImportMapper.class);
+    // metrics counts
+    DatasetImport di = mapper.metrics(dataset.getKey());
+    // update new metrics instance with more infos
+    di.setDatasetKey(dataset.getKey());
+    di.setDownload(download);
+    di.setStarted(importStart);
+    di.setFinished(LocalDateTime.now());
+    di.setSuccess(true);
+    di.setError(null);
+    mapper.create(di);
+    return di;
+  }
+
+  /**
+   * Creates a new dataset import instance without metrics for a failed import.
+   */
+  public DatasetImport createImportFailure(Dataset dataset,
+                                           LocalDateTime importStart,
+                                           LocalDateTime download,
+                                           Exception e
+  ) {
+    LOG.info("Create new import error log for dataset {}", dataset.getKey());
+    DatasetImportMapper mapper = session.getMapper(DatasetImportMapper.class);
+    // metrics counts
+    DatasetImport di = new DatasetImport();
+    // update new metrics instance with more infos
+    di.setDatasetKey(dataset.getKey());
+    di.setDownload(download);
+    di.setStarted(importStart);
+    di.setFinished(LocalDateTime.now());
+    di.setSuccess(false);
+    di.setError(e.getMessage());
+    mapper.create(di);
+    return di;
+  }
 
 }

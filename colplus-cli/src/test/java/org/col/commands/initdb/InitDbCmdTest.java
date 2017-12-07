@@ -12,11 +12,12 @@ public class InitDbCmdTest extends CmdTestBase {
 
   @Override
   public Command registerCommand() {
-    return new InitDbCmd();
+    // initdb is already a standard command
+    return null;
   }
 
   @Test
   public void testInitCmd() throws Exception {
-    run(false, "initdb");
+    run(false, "initdb", "--prompt", "0");
   }
 }

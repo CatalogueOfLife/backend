@@ -15,8 +15,6 @@
  */
 package org.col.api.vocab;
 
-import com.google.common.base.Strings;
-
 /**
  * Enumeration to classify name usages by how they originated.
  */
@@ -82,23 +80,5 @@ public enum Origin {
    * Any other origin not covered by the above.
    */
   OTHER;
-
-  /**
-   * Case insensitive lookup of an Origin by its name that does not throw an exception but returns null
-   * for not found origins.
-   *
-   * @param origin case insensitive name of the origin
-   * @return the matching Origin or null
-   */
-  public static Origin fromString(String origin) {
-    if (!Strings.isNullOrEmpty(origin)) {
-      try {
-        return valueOf(origin.toUpperCase().trim());
-      } catch (IllegalArgumentException e) {
-        // swallow
-      }
-    }
-    return null;
-  }
 
 }

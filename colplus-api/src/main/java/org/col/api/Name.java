@@ -68,6 +68,12 @@ public class Name extends ParsedName {
 
 	private URI sourceUrl;
 
+  /**
+   * Issues related to this name with potential values in the map
+   */
+  private Map<Issue, String> issues = new EnumMap<>(Issue.class);
+
+
   public Name() {
   }
 
@@ -97,11 +103,6 @@ public class Name extends ParsedName {
       addWarning(w);
     }
   }
-
-  /**
-	 * Issues related to this name with potential values in the map
-	 */
-	private Map<Issue, String> issues = new EnumMap<>(Issue.class);
 
 	public Integer getKey() {
 		return key;

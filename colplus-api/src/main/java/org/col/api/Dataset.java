@@ -3,6 +3,7 @@ package org.col.api;
 import com.google.common.collect.Lists;
 import org.col.api.vocab.DataFormat;
 import org.col.api.vocab.DatasetType;
+import org.col.api.vocab.Frequency;
 import org.col.api.vocab.License;
 
 import javax.validation.constraints.NotEmpty;
@@ -33,6 +34,7 @@ public class Dataset {
 	private URI homepage;
 	private DataFormat dataFormat;
 	private URI dataAccess;
+	private Frequency importFrequency;
 	private String notes;
 	private LocalDateTime created;
 	private LocalDateTime modified;
@@ -169,7 +171,15 @@ public class Dataset {
 		this.dataAccess = dataAccess;
 	}
 
-	public String getNotes() {
+  public Frequency getImportFrequency() {
+    return importFrequency;
+  }
+
+  public void setImportFrequency(Frequency importFrequency) {
+    this.importFrequency = importFrequency;
+  }
+
+  public String getNotes() {
 		return notes;
 	}
 
@@ -221,6 +231,7 @@ public class Dataset {
         Objects.equals(homepage, dataset.homepage) &&
         dataFormat == dataset.dataFormat &&
         Objects.equals(dataAccess, dataset.dataAccess) &&
+        importFrequency == dataset.importFrequency &&
         Objects.equals(notes, dataset.notes) &&
         Objects.equals(created, dataset.created) &&
         Objects.equals(modified, dataset.modified) &&
@@ -229,7 +240,7 @@ public class Dataset {
 
   @Override
   public int hashCode() {
-    return Objects.hash(key, type, title, gbifKey, gbifPublisherKey, description, organisation, contactPerson, authorsAndEditors, license, version, releaseDate, homepage, dataFormat, dataAccess, notes, created, modified, deleted);
+    return Objects.hash(key, type, title, gbifKey, gbifPublisherKey, description, organisation, contactPerson, authorsAndEditors, license, version, releaseDate, homepage, dataFormat, dataAccess, importFrequency, notes, created, modified, deleted);
   }
 
   @Override

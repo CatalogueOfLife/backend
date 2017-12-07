@@ -3,6 +3,7 @@ package org.col.commands.initdb;
 import io.dropwizard.cli.ConfiguredCommand;
 import io.dropwizard.setup.Bootstrap;
 import net.sourceforge.argparse4j.inf.Namespace;
+import net.sourceforge.argparse4j.inf.Subparser;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.jdbc.ScriptRunner;
 import org.col.commands.config.CliConfig;
@@ -21,18 +22,33 @@ import java.util.concurrent.TimeUnit;
  * Basic task to showcase hello world
  */
 public class InitDbCmd extends ConfiguredCommand<CliConfig> {
-  private static final int DELAY_IN_SECONDS = 10;
   private static final URI COL_DATASETS_URI = URI.create("https://raw.githubusercontent.com/Sp2000/colplus-repo/master/AC2017/datasets.sql");
+
   public InitDbCmd() {
     super("initdb", "Initialises a new database schema");
   }
 
+  @Override
+  public void configure(Subparser subparser) {
+    super.configure(subparser);
+    // Adds import options
+    subparser.addArgument("--prompt")
+        .setDefault(10)
+        .dest("prompt")
+        .type(Integer.class)
+        .required(false)
+        .help("Waiting time in seconds for a user prompt to abort db initialisation. Use zero for no prompt");
+  }
 
   @Override
   protected void run(Bootstrap<CliConfig> bootstrap, Namespace namespace, CliConfig cfg) throws Exception {
-    System.out.format("Initialising database %s on %s.\n", cfg.db.database, cfg.db.host);
-    System.out.format("You have %s seconds to abort if you did not intend to do so !!!\n", DELAY_IN_SECONDS);
-    TimeUnit.SECONDS.sleep(DELAY_IN_SECONDS);
+    final int prompt = namespace.getInt("prompt");
+    if (prompt > 0) {
+      System.out.format("Initialising database %s on %s.\n", cfg.db.database, cfg.db.host);
+      System.out.format("You have %s seconds to abort if you did not intend to do so !!!\n", prompt);
+      TimeUnit.SECONDS.sleep(prompt);
+    }
+
     execute(cfg);
   }
 

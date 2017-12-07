@@ -28,7 +28,7 @@ public class HstoreIssueHandler extends BaseTypeHandler<EnumMap<Issue, String>> 
 
   @Override
   public void setNonNullParameter(PreparedStatement ps, int i, EnumMap<Issue, String> parameter, JdbcType jdbcType)
-    throws SQLException {
+      throws SQLException {
     ps.setString(i, HStoreConverter.toString(parameter));
   }
 

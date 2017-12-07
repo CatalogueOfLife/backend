@@ -43,6 +43,7 @@ public class NeoTaxon {
 
     t.taxon = new Taxon();
     t.taxon.setStatus(status);
+    t.taxon.setOrigin(origin);
 
     return t;
   }
