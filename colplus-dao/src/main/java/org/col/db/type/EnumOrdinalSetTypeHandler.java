@@ -16,8 +16,10 @@ import java.util.stream.Collectors;
 public abstract class EnumOrdinalSetTypeHandler<T extends Enum<T>> extends BaseTypeHandler<Set<T>> {
 
   private final T[] values;
+  private final Class<T> enumClass;
 
   public EnumOrdinalSetTypeHandler(Class<T> enumClass) {
+    this.enumClass = enumClass;
     values = enumClass.getEnumConstants();
   }
 
@@ -48,8 +50,8 @@ public abstract class EnumOrdinalSetTypeHandler<T extends Enum<T>> extends BaseT
 	}
 
 	private Set<T> convert(Array pgArray) throws SQLException {
-		if (pgArray == null) {
-			return Collections.<T>emptySet();
+		if (pgArray == null || pgArray.getArray() == null || ((Integer[])pgArray.getArray()).length==0) {
+			return EnumSet.noneOf(enumClass);
 		}
     return EnumSet.copyOf(Arrays.stream(((Integer[]) pgArray.getArray()))
         .map(i -> values[i])
