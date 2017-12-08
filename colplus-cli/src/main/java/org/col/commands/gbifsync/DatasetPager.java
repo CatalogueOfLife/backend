@@ -59,7 +59,6 @@ public class DatasetPager {
                GPublisher p = pubDetail.request()
                    .accept(MediaType.APPLICATION_JSON_TYPE)
                    .get(GPublisher.class);
-               LOG.info("Retrieved publisher {}", p);
                return p == null ? null : p.title;
              }
            }
@@ -136,7 +135,7 @@ public class DatasetPager {
     d.setNotes(null);
     d.setVersion(opt(g.pubDate));
     d.setCreated(LocalDateTime.now());
-    LOG.info("Dataset {} converted", g.key);
+    LOG.debug("Dataset {} converted: {}", g.key, g.title);
     return d;
   }
 

@@ -42,7 +42,7 @@ public class GbifSyncCmd extends EnvironmentCommand<CliConfig> {
           // create new dataset
           mapper.create(gbif);
           created++;
-          LOG.debug("New dataset added from GBIF: {} - {}", gbif.getKey(), gbif.getTitle());
+          LOG.info("New dataset added from GBIF: {} - {}", gbif.getKey(), gbif.getTitle());
 
         } else
           /**
@@ -79,7 +79,7 @@ public class GbifSyncCmd extends EnvironmentCommand<CliConfig> {
         .using(cfg.client)
         .buildRx(getName(), RxCompletionStageInvoker.class);
 
-    try (SqlSession session = sessionFactory.openSession(false)) {
+    try (SqlSession session = sessionFactory.openSession(true)) {
       DatasetPager pager = new DatasetPager(rxClient, cfg.gbif);
       DatasetMapper mapper = session.getMapper(DatasetMapper.class);
       LOG.info("Syncing datasets from GBIF registry {}", cfg.gbif.api);
