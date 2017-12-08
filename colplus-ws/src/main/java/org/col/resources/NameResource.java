@@ -1,29 +1,17 @@
 package org.col.resources;
 
-import java.util.List;
-
-import javax.ws.rs.BeanParam;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-
+import com.codahale.metrics.annotation.Timed;
 import org.apache.ibatis.session.SqlSession;
-import org.col.api.Name;
-import org.col.api.NameAct;
-import org.col.api.NameSearch;
-import org.col.api.Page;
-import org.col.api.PagedReference;
-import org.col.api.PagingResultSet;
-import org.col.api.VerbatimRecord;
+import org.col.api.*;
 import org.col.dao.NameDao;
+import org.col.db.mapper.NameActMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.codahale.metrics.annotation.Timed;
+import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import java.util.List;
 
 @Path("/dataset/{datasetKey}/name")
 @Produces(MediaType.APPLICATION_JSON)
@@ -34,7 +22,7 @@ public class NameResource {
 
 	@GET
 	public PagingResultSet<Name> list(@PathParam("datasetKey") Integer datasetKey,
-	    @Context Page page,
+	    @BeanParam Page page,
 	    @Context SqlSession session) {
 		NameDao dao = new NameDao(session);
 		return dao.list(datasetKey, page);
@@ -44,8 +32,8 @@ public class NameResource {
 	@Timed
 	@Path("/search")
 	public PagingResultSet<Name> search(@BeanParam NameSearch query,
-	    @BeanParam Page page,
-	    @Context SqlSession session) {
+                                      @BeanParam Page page,
+                                      @Context SqlSession session) {
 		NameDao dao = new NameDao(session);
 		return dao.search(query, page);
 	}
@@ -54,8 +42,8 @@ public class NameResource {
 	@Timed
 	@Path("{id}")
 	public Name get(@PathParam("datasetKey") Integer datasetKey,
-	    @PathParam("id") String id,
-	    @Context SqlSession session) {
+                  @PathParam("id") String id,
+                  @Context SqlSession session) {
 		NameDao dao = new NameDao(session);
 		return dao.get(datasetKey, id);
 	}
@@ -64,8 +52,8 @@ public class NameResource {
 	@Timed
 	@Path("{id}/basionymGroup")
 	public List<Name> getSynonyms(@PathParam("datasetKey") Integer datasetKey,
-	    @PathParam("id") String id,
-	    @Context SqlSession session) {
+                                @PathParam("id") String id,
+                                @Context SqlSession session) {
 		NameDao dao = new NameDao(session);
 		return dao.basionymGroup(datasetKey, id);
 	}
@@ -74,7 +62,7 @@ public class NameResource {
 	@Timed
 	@Path("{id}/publishedIn")
 	public PagedReference getPublishedIn(@PathParam("datasetKey") Integer datasetKey,
-	    @PathParam("nameKey") int nameKey,
+                                       @PathParam("id") int nameKey,
 	    @Context SqlSession session) {
 		NameDao dao = new NameDao(session);
 		return dao.getPublishedIn(datasetKey, nameKey);
@@ -84,8 +72,8 @@ public class NameResource {
 	@Timed
 	@Path("{id}/verbatim")
 	public VerbatimRecord getVerbatim(@PathParam("datasetKey") Integer datasetKey,
-	    @PathParam("id") String id,
-	    @Context SqlSession session) {
+                                    @PathParam("id") String id,
+                                    @Context SqlSession session) {
 		NameDao dao = new NameDao(session);
 		return dao.getVerbatim(datasetKey, id);
 	}
@@ -95,13 +83,11 @@ public class NameResource {
 	@Path("{id}/acts")
 	@SuppressWarnings("unused")
 	public List<NameAct> getActs(@PathParam("datasetKey") Integer datasetKey,
-	    @PathParam("id") String id,
-	    @QueryParam("homotypic") Boolean homotypic,
-	    @Context SqlSession session) {
-		throw new UnsupportedOperationException();
-		// NameActMapper mapper = session.getMapper(NameActMapper.class);
-		// return homotypic ? mapper.listByHomotypicGroup(datasetKey, id) :
-		// mapper.listByName(datasetKey, id);
+                               @PathParam("id") int nameKey,
+                              @QueryParam("homotypic") Boolean homotypic,
+                              @Context SqlSession session) {
+		NameActMapper mapper = session.getMapper(NameActMapper.class);
+		return homotypic ? mapper.listByHomotypicGroup(datasetKey, nameKey) : mapper.listByName(datasetKey, nameKey);
 	}
 
 }

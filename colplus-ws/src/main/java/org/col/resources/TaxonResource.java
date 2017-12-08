@@ -28,7 +28,7 @@ public class TaxonResource {
 
 	@GET
 	public PagingResultSet<Taxon> list(@PathParam("datasetKey") Integer datasetKey,
-	    @Nullable @Context Page page,
+	    @Nullable @BeanParam Page page,
 	    @Context SqlSession session) {
 		TaxonDao dao = new TaxonDao(session);
 		return dao.list(datasetKey, page);

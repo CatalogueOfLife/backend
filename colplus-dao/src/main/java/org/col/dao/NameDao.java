@@ -1,17 +1,8 @@
 package org.col.dao;
 
-import java.util.List;
-
-import javax.annotation.Nullable;
-
+import com.google.common.collect.Lists;
 import org.apache.ibatis.session.SqlSession;
-import org.col.api.Name;
-import org.col.api.NameSearch;
-import org.col.api.Page;
-import org.col.api.PagedReference;
-import org.col.api.PagingResultSet;
-import org.col.api.Synonymy;
-import org.col.api.VerbatimRecord;
+import org.col.api.*;
 import org.col.db.NotFoundException;
 import org.col.db.mapper.NameMapper;
 import org.col.db.mapper.ReferenceMapper;
@@ -19,7 +10,8 @@ import org.col.db.mapper.VerbatimRecordMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Lists;
+import java.util.List;
+import java.util.Optional;
 
 public class NameDao {
 
@@ -38,10 +30,9 @@ public class NameDao {
 	}
 
 	public PagingResultSet<Name> list(int datasetKey, Page page) {
-		Page p = page == null ? new Page() : page;
 		NameMapper mapper = session.getMapper(NameMapper.class);
 		int total = mapper.count(datasetKey);
-		List<Name> result = mapper.list(datasetKey, p);
+		List<Name> result = mapper.list(datasetKey, page);
 		return new PagingResultSet<>(page, total, result);
 	}
 
@@ -115,8 +106,7 @@ public class NameDao {
 		return syn;
 	}
 
-	public PagingResultSet<Name> search(NameSearch query, @Nullable Page page) {
-		page = page == null ? new Page() : page;
+	public PagingResultSet<Name> search(NameSearch query, Page page) {
 		if (query.getQ() != null) {
 			query.setQ(query.getQ() + ":*");
 		}

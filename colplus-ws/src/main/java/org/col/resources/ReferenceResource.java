@@ -26,7 +26,7 @@ public class ReferenceResource {
 
 	@GET
 	public PagingResultSet<Reference> list(@PathParam("datasetKey") Integer datasetKey,
-	    @Context Page page,
+	    @BeanParam Page page,
 	    @Context SqlSession session) {
 		ReferenceDao dao = new ReferenceDao(session);
 		return dao.list(datasetKey, page);

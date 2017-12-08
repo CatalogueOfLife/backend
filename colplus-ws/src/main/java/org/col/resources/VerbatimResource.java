@@ -22,7 +22,7 @@ public class VerbatimResource {
 
   @GET
   @Timed
-  public PagingResultSet<VerbatimRecord > list(@PathParam("datasetKey") Integer datasetKey, @Context Page page, @Context SqlSession session) {
+  public PagingResultSet<VerbatimRecord > list(@PathParam("datasetKey") Integer datasetKey, @BeanParam Page page, @Context SqlSession session) {
     VerbatimRecordMapper mapper = session.getMapper(VerbatimRecordMapper.class);
     return new PagingResultSet<VerbatimRecord>(page, mapper.count(datasetKey), mapper.list(datasetKey, page));
   }
