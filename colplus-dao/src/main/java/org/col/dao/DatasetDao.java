@@ -39,10 +39,6 @@ public class DatasetDao {
 		return new PagingResultSet<>(page, total, result);
 	}
 
-	public Iterable<Dataset> all(){
-    return new Pager<Dataset>(100, mapper::list);
-  }
-
   /**
    * Creates a new successful dataset import instance with metrics
    */

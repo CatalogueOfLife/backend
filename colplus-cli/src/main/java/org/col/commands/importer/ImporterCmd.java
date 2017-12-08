@@ -14,6 +14,7 @@ import org.col.commands.importer.dwca.Normalizer;
 import org.col.commands.importer.neo.NeoDbFactory;
 import org.col.commands.importer.neo.NormalizerStore;
 import org.col.dao.DatasetDao;
+import org.col.dao.Pager;
 import org.col.db.MybatisFactory;
 import org.col.db.mapper.DatasetMapper;
 import org.gbif.util.DownloadUtil;
@@ -61,24 +62,26 @@ public class ImporterCmd extends ConfiguredCommand<CliConfig> {
     HikariDataSource ds = cfg.db.pool();
     SqlSessionFactory factory = MybatisFactory.configure(ds, "importer");
 
-    try (SqlSession session = factory.openSession(true)){
-      DatasetDao ddao = new DatasetDao(session);
+    try {
       final boolean all = namespace.getBoolean("all");
       if (all) {
-        for (Dataset d : ddao.all()){
+        for (Dataset d : Pager.datasets(factory)){
           importDataset(d, factory);
         }
 
       } else {
         final int datasetKey = namespace.getInt("key");
-        Dataset d = ddao.get(datasetKey);
-        if (d == null) {
-          throw new IllegalArgumentException("Dataset " + datasetKey + " not existing");
+        Dataset d;
+        try (SqlSession session = factory.openSession()) {
+          d = session.getMapper(DatasetMapper.class).get(datasetKey);
+          if (d == null) {
+            throw new IllegalArgumentException("Dataset " + datasetKey + " not existing");
 
-        } else if (d.getDataAccess() == null) {
-          throw new IllegalStateException("Dataset " + datasetKey + " has no external datasource configured");
+          } else if (d.getDataAccess() == null) {
+            throw new IllegalStateException("Dataset " + datasetKey + " has no external datasource configured");
+          }
         }
-        importDataset(datasetKey, factory);
+        importDataset(d, factory);
       }
 
     } finally {
@@ -93,19 +96,6 @@ public class ImporterCmd extends ConfiguredCommand<CliConfig> {
   private LocalDateTime lastModified(final int datasetKey) {
     File dwca = cfg.normalizer.source(datasetKey);
     return LocalDateTime.ofInstant(Instant.ofEpochMilli(dwca.lastModified()), ZoneId.systemDefault());
-  }
-
-  private void importDataset(int datasetKey, SqlSessionFactory factory) throws Exception {
-    try (SqlSession session = factory.openSession(true)){
-      Dataset d = session.getMapper(DatasetMapper.class).get(datasetKey);
-      if (d == null) {
-        throw new IllegalArgumentException("Dataset " + datasetKey + " not existing");
-
-      } else if (d.getDataAccess() == null) {
-        throw new IllegalStateException("Dataset " + datasetKey + " has no external datasource configured");
-      }
-      importDataset(d, factory);
-    }
   }
 
   private void importDataset(Dataset d, SqlSessionFactory factory) throws Exception {

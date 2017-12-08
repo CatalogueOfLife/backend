@@ -1,7 +1,11 @@
 package org.col.dao;
 
 import com.google.common.base.Preconditions;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.col.api.Dataset;
 import org.col.api.Page;
+import org.col.db.mapper.DatasetMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,24 +21,35 @@ public class Pager<T> implements Iterable<T> {
     private final int pageSize;
   private final Function<Page, List<T>> nextPageFunc;
 
-    /**
+  public static Iterable<Dataset> datasets(final SqlSessionFactory sessionFactory){
+    return new Pager<Dataset>(100, new Function<Page, List<Dataset>>() {
+      @Override
+      public List<Dataset> apply(Page page) {
+        try (SqlSession session = sessionFactory.openSession()){
+          return session.getMapper(DatasetMapper.class).list(page);
+        }
+      }
+    });
+  }
+
+  /**
      * @param pageSize to use when talking to the registry
      */
-    public Pager(int pageSize, Function<Page, List<T>> nextPageFunc) {
+    private Pager(int pageSize, Function<Page, List<T>> nextPageFunc) {
         Preconditions.checkArgument(pageSize > 0, "pageSize must at least be 1");
         this.pageSize = pageSize;
         this.nextPageFunc = nextPageFunc;
     }
 
-    class ResponseIterator implements Iterator<T>{
+    class PageResultIterator implements Iterator<T>{
         private final Page page = new Page(0, pageSize);
         private boolean hasMore = true;
         private Iterator<T> iter;
         private T next;
 
-        public ResponseIterator() {
+        public PageResultIterator() {
             loadPage();
-            next = nextEntity();
+            next = nextObj();
         }
 
         @Override
@@ -45,7 +60,7 @@ public class Pager<T> implements Iterable<T> {
         @Override
         public T next() {
             T entity = next;
-            next = nextEntity();
+            next = nextObj();
             return entity;
         }
 
@@ -54,7 +69,7 @@ public class Pager<T> implements Iterable<T> {
             throw new UnsupportedOperationException();
         }
 
-        private T nextEntity() {
+        private T nextObj() {
             while (true) {
                 if (!iter.hasNext()) {
                     if (hasMore) {
@@ -64,10 +79,8 @@ public class Pager<T> implements Iterable<T> {
                         return null;
                     }
                 }
-                T entity = iter.next();
-                if (!exclude(entity)) {
-                    return entity;
-                }
+                T obj = iter.next();
+                return obj;
             }
         }
 
@@ -80,16 +93,9 @@ public class Pager<T> implements Iterable<T> {
         }
     }
 
-    /**
-     * Override this method to implement other exclusion filters.
-     */
-    protected boolean exclude(T entity) {
-        return false;
-    }
-
     @Override
     public Iterator<T> iterator() {
-        return new ResponseIterator();
+        return new PageResultIterator();
     }
 
 }
