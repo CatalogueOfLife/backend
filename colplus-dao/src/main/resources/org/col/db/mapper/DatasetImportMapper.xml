@@ -114,7 +114,7 @@
 
         (SELECT array_to_string(array_agg( key || '=>' || cnt), ', ')::hstore FROM
             (SELECT iss AS key, count(*)::text AS cnt FROM (
-              SELECT unnest(akeys(issues)) iss from name WHERE dataset_key=#{key}
+              SELECT unnest(issues) iss from name WHERE dataset_key=#{key}
               ) AS dis GROUP BY key
             ) AS issues
         ) AS issues_count,
