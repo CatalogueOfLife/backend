@@ -56,21 +56,14 @@ public class DatasetPager {
              public String load(UUID key) throws Exception {
                RxWebTarget<RxCompletionStageInvoker> pubDetail = publisher.path(key.toString());
                LOG.info("Retrieve publisher {}", pubDetail.getUri());
-               return pubDetail.request()
+               GPublisher p = pubDetail.request()
                    .accept(MediaType.APPLICATION_JSON_TYPE)
-                   .rx()
-                   .get(GPublisher.class)
-                   .exceptionally(e -> {
-                     LOG.error("Failed to retrieve publisher details for {}", key, e);
-                     return null;
-                   })
-                   .thenApply(p -> p == null ? null : p.title)
-                   .toCompletableFuture()
-                   .join();
+                   .get(GPublisher.class);
+               LOG.info("Retrieved publisher {}", p);
+               return p == null ? null : p.title;
              }
            }
         );
-
     LOG.info("Created dataset pager for {}", datasets.getUri());
   }
 
@@ -143,6 +136,7 @@ public class DatasetPager {
     d.setNotes(null);
     d.setVersion(opt(g.pubDate));
     d.setCreated(LocalDateTime.now());
+    LOG.info("Dataset {} converted", g.key);
     return d;
   }
 
