@@ -85,7 +85,7 @@
 		#{speciesEstimate},
 		#{speciesEstimateReferenceKey},
 		#{remarks},
-        #{issues, typeHandler=org.col.db.type.HstoreIssueHandler}::hstore
+        #{issues, typeHandler=org.col.db.type2.IssueSetTypeHandler}::int[]
 	</sql>
 
 	<sql id="FROM">
@@ -97,7 +97,7 @@
 		<id property="key" column="key" />
 		<result property="id" column="id" />
         <result property="lifezones" column="lifezones" typeHandler="org.col.db.type.LifezoneSetTypeHandler"/>
-        <result property="issues" column="issues" typeHandler="org.col.db.type.HstoreIssueHandler"/>
+        <result property="issues" column="issues" typeHandler="org.col.db.type2.IssueSetTypeHandler"/>
 		<association property="name" javaType="Name" resultMap="org.col.db.mapper.NameMapper.nameResultMap" columnPrefix="n_" />
 	</resultMap>
 

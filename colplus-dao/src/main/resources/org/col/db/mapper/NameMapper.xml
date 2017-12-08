@@ -75,9 +75,9 @@
     #{basionymAuthorship.authors, typeHandler=org.col.db.type.StringArrayTypeHandler},
     #{basionymAuthorship.exAuthors, typeHandler=org.col.db.type.StringArrayTypeHandler},
     #{basionymAuthorship.year},
-    #{authorship.authors, typeHandler=org.col.db.type.StringArrayTypeHandler},
-    #{authorship.exAuthors, typeHandler=org.col.db.type.StringArrayTypeHandler},
-    #{authorship.year},
+    #{combinationAuthorship.authors, typeHandler=org.col.db.type.StringArrayTypeHandler},
+    #{combinationAuthorship.exAuthors, typeHandler=org.col.db.type.StringArrayTypeHandler},
+    #{combinationAuthorship.year},
     #{sanctioningAuthor},
     #{code},
     #{status},
@@ -86,44 +86,39 @@
     #{fossil},
     #{basionymKey},
     #{remarks},
-    #{issues, typeHandler=org.col.db.type.HstoreIssueHandler}::hstore
+    #{issues, typeHandler=org.col.db.type2.IssueSetTypeHandler}::int[]
   </sql>
 
   <sql id="FROM">
     name n LEFT JOIN name bn ON n.basionym_key=bn.key
   </sql>
-  
-  <sql id="SEARCH_INNER_QUERY">
-    (SELECT <include refid="SELECT" />,
-        setweight(to_tsvector(coalesce(n.genus,'')), 'A') ||
-        setweight(to_tsvector(coalesce(n.infrageneric_epithet,'')), 'A') ||
-        setweight(to_tsvector(coalesce(n.specific_epithet,'')), 'A') ||
-        setweight(to_tsvector(coalesce(n.infraspecific_epithet,'')), 'A') ||
-        setweight(to_tsvector(coalesce(n.scientific_name,'')), 'C') as document
-    FROM name n
-    <!--
-      Since name-to-taxon relationship is 1:n, this might produce duplicate
-      names and some inaccuracy in the search result count. For now we assume
-      that's OK.
-    -->
-    LEFT JOIN taxon t ON (n.key = t.name_key)
-    WHERE n.dataset_key = #{nameSearch.datasetKey}
-    AND (#{nameSearch.rank}::rank IS NULL OR #{nameSearch.rank}::rank = n.rank)
-    AND (#{nameSearch.nomstatus}::int IS NULL OR #{nameSearch.nomstatus}::int = n.status)
-    AND (#{nameSearch.taxstatus}::int IS NULL OR #{nameSearch.taxstatus}::int = t.status)
-    AND (#{nameSearch.type}::int IS NULL OR #{nameSearch.type}::int = n.type)
-    AND (
-            #{nameSearch.issue, typeHandler=org.apache.ibatis.type.EnumTypeHandler}::text IS NULL 
-            OR n.issues ?? #{nameSearch.issue, typeHandler=org.apache.ibatis.type.EnumTypeHandler}
-        ))
+
+  <!-- TODO: filter only accepted or synoynms -->
+  <sql id="SEARCH_WHERE">
+    n.doc @@ plainto_tsquery(#{nameSearch.q})
+    <if test="nameSearch.datasetKey != null">
+        AND #{nameSearch.datasetKey} = n.dataset_key
+    </if>
+    <if test="nameSearch.rank != null">
+        AND #{nameSearch.rank}::rank = n.rank
+    </if>
+    <if test="nameSearch.nomstatus != null">
+        AND #{nameSearch.nomstatus}::int = n.status
+    </if>
+    <if test="nameSearch.type != null">
+        AND #{nameSearch.type}::int = n.type
+    </if>
+    <if test="nameSearch.issue != null">
+        AND n.issues @> array[#{nameSearch.issue}::int]
+    </if>
   </sql>
 
   <!-- A mapping to Name, mostly auto mapped -->
   <resultMap id="nameResultMap" type="Name" autoMapping="true">
     <id property="key" column="key" />
     <result property="id" column="id" />
-    <result property="issues" column="issues" typeHandler="org.col.db.type.HstoreIssueHandler" />
-    <association property="authorship" javaType="Authorship">
+    <result property="issues" column="issues" typeHandler="org.col.db.type2.IssueSetTypeHandler" />
+    <association property="combinationAuthorship" javaType="Authorship">
       <result property="authors" column="combination_authors" typeHandler="org.col.db.type.StringArrayTypeHandler" />
       <result property="exAuthors" column="combination_ex_authors" typeHandler="org.col.db.type.StringArrayTypeHandler" />
       <result property="year" column="combination_year" />
@@ -162,23 +157,21 @@
 
   <select id="countSearchResults" parameterType="map" resultType="Integer">
     SELECT COUNT(*)
-    FROM <include refid="SEARCH_INNER_QUERY" /> AS n
-    WHERE n.document @@ plainto_tsquery(#{nameSearch.q})
+    FROM <include refid="FROM" />
+    WHERE <include refid="SEARCH_WHERE" />
   </select>
 
   <select id="search" parameterType="map" resultMap="nameResultMap">
     SELECT <include refid="SELECT" />
-    FROM <include refid="SEARCH_INNER_QUERY" /> AS n
-    WHERE n.document @@ plainto_tsquery(#{nameSearch.q})
-    ORDER BY ts_rank(n.document, plainto_tsquery(#{nameSearch.q})) DESC
+    FROM <include refid="FROM" />
+    WHERE <include refid="SEARCH_WHERE" />
+    ORDER BY ts_rank(n.doc, plainto_tsquery(#{nameSearch.q})) DESC
     <include refid="org.col.db.mapper.Common.limit"/>
   </select>
 
   <select id="get" resultMap="nameResultMap">
-    SELECT
-    <include refid="SELECT" />
-    FROM
-    <include refid="FROM" />
+    SELECT <include refid="SELECT" />
+    FROM <include refid="FROM" />
     WHERE n.key = #{key}
   </select>
 

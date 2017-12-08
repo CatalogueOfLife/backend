@@ -7,6 +7,10 @@ CREATE EXTENSION IF NOT EXISTS hstore;
 
 CREATE EXTENSION IF NOT EXISTS unaccent;
 
+-- use unaccent by default for all simple search
+CREATE TEXT SEARCH CONFIGURATION public.simple2 ( COPY = pg_catalog.simple );
+ALTER TEXT SEARCH CONFIGURATION simple2 ALTER MAPPING
+FOR hword, hword_part, word WITH unaccent;
 
 CREATE TYPE rank AS ENUM (
   'domain',
@@ -183,8 +187,28 @@ CREATE TABLE name (
   origin INTEGER NOT NULL,
   fossil BOOLEAN,
   remarks TEXT,
-  issues hstore
+  issues INT[],
+  doc tsvector
 );
+
+CREATE INDEX ON name USING gin(doc);
+
+CREATE OR REPLACE FUNCTION name_doc_update() RETURNS trigger AS $$
+BEGIN
+    NEW.doc :=
+      setweight(to_tsvector('simple2', coalesce(NEW.scientific_name,'')), 'A') ||
+      setweight(to_tsvector('simple2', array_to_string(NEW.combination_authors,'')), 'C') ||
+      setweight(to_tsvector('simple2', array_to_string(NEW.combination_ex_authors,'')), 'D') ||
+      setweight(to_tsvector('simple2', array_to_string(NEW.basionym_authors,'')), 'C') ||
+      setweight(to_tsvector('simple2', array_to_string(NEW.basionym_ex_authors,'')), 'D');
+    RETURN NEW;
+END
+$$
+LANGUAGE plpgsql;
+
+CREATE TRIGGER name_trigger BEFORE INSERT OR UPDATE
+  ON name FOR EACH ROW EXECUTE PROCEDURE name_doc_update();
+
 
 CREATE TABLE name_act (
   key serial PRIMARY KEY,
@@ -215,7 +239,7 @@ CREATE TABLE taxon (
   species_estimate INTEGER,
   species_estimate_reference_key INTEGER REFERENCES reference,
   remarks TEXT,
-  issues hstore
+  issues INT[]
 );
 
 CREATE TABLE synonyms (

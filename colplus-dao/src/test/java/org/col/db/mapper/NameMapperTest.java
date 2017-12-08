@@ -12,9 +12,7 @@ import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Test;
 
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.junit.Assert.*;
 
@@ -370,8 +368,8 @@ public class NameMapperTest extends MapperTestBase<NameMapper> {
 	// Test with issue as extra search criterion
 	public void searchWithIssue() throws Exception {
 
-		Map<Issue, String> issue = new EnumMap<>(Issue.class);
-		issue.put(Issue.UNPARSABLE_AUTHORSHIP, "Very unfortunate");
+		Set<Issue> issue = EnumSet.noneOf(Issue.class);
+		issue.add(Issue.UNPARSABLE_AUTHORSHIP);
 
 		Name n = TestEntityGenerator.newName("a");
 		n.setScientificName("Foo bar");
@@ -394,8 +392,8 @@ public class NameMapperTest extends MapperTestBase<NameMapper> {
 		n.setIssues(issue);
 		mapper().create(n);
 
-		Map<Issue, String> otherIssue = new EnumMap<>(Issue.class);
-		otherIssue.put(Issue.BIB_REFERENCE_INVALID, "Ouch");
+    Set<Issue> otherIssue = EnumSet.noneOf(Issue.class);
+		otherIssue.add(Issue.BIB_REFERENCE_INVALID);
 
 		n = TestEntityGenerator.newName("d");
 		n.setScientificName("Foo");

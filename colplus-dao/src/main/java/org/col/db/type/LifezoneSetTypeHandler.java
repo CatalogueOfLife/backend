@@ -8,9 +8,7 @@ import org.col.api.vocab.Lifezone;
  */
 public class LifezoneSetTypeHandler extends EnumOrdinalSetTypeHandler<Lifezone> {
 
-	@Override
-	protected Class<Lifezone> getEnumClass() {
-		return Lifezone.class;
-	}
-
+  public LifezoneSetTypeHandler() {
+    super(Lifezone.class);
+  }
 }

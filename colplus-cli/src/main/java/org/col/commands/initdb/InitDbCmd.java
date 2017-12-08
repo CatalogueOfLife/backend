@@ -56,6 +56,7 @@ public class InitDbCmd extends ConfiguredCommand<CliConfig> {
     try (Connection con = cfg.db.connect()) {
       System.out.println("Starting database initialisation");
       ScriptRunner runner = new ScriptRunner(con);
+      runner.setSendFullScript(true);
       // run sql files
       exec(PgConfig.SCHEMA_FILE, runner, con, Resources.getResourceAsReader(PgConfig.SCHEMA_FILE));
 

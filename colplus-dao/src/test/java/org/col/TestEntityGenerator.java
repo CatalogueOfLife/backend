@@ -139,7 +139,7 @@ public class TestEntityGenerator {
 		t.setSpeciesEstimate(81);
 		t.setSpeciesEstimateReferenceKey(REF1.getKey());
 		t.addIssue(Issue.ACCEPTED_NAME_MISSING);
-		t.addIssue(Issue.HOMONYM, "Abies alba");
+		t.addIssue(Issue.HOMONYM);
 		return t;
 	}
 
@@ -174,7 +174,7 @@ public class TestEntityGenerator {
 		n.setOrigin(Origin.SOURCE);
 		n.setType(NameType.SCIENTIFIC);
 		n.addIssue(Issue.ACCEPTED_NAME_MISSING);
-		n.addIssue(Issue.HOMONYM, "Abies alba");
+		n.addIssue(Issue.HOMONYM);
 		return n;
 	}
 

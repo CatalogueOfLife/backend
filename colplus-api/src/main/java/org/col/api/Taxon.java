@@ -57,10 +57,7 @@ public class Taxon {
 
 	private List<ReferencePointer> references;
 
-	/**
-	 * Issues related to this taxon with potential values in the map
-	 */
-	private Map<Issue, String> issues = new EnumMap<>(Issue.class);
+  private Set<Issue> issues = EnumSet.noneOf(Issue.class);
 
 	public Integer getKey() {
 		return key;
@@ -198,20 +195,16 @@ public class Taxon {
 		this.remarks = remarks;
 	}
 
-	public Map<Issue, String> getIssues() {
+	public Set<Issue> getIssues() {
 		return issues;
 	}
 
-	public void setIssues(Map<Issue, String> issues) {
+	public void setIssues(Set<Issue> issues) {
 		this.issues = issues;
 	}
 
 	public void addIssue(Issue issue) {
-		issues.put(issue, null);
-	}
-
-	public void addIssue(Issue issue, Object value) {
-		issues.put(issue, value.toString());
+		issues.add(issue);
 	}
 
 	public List<ReferencePointer> getReferences() {

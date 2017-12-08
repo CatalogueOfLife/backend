@@ -2,8 +2,8 @@ package org.col.parser;
 
 import org.col.api.vocab.Issue;
 
-import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * A parsing utility class wrapping a Parser<T> instance so that no UnparsableException is thrown.
@@ -75,7 +75,7 @@ public class SafeParser<T> {
    * If the value was unparsable an issue is added to the issue collector.
    * @return the parsed value if present, null if empty or unparsable
    */
-  public T orNull(Issue unparsableIssue, Map<Issue, String> issueCollector) {
+  public T orNull(Issue unparsableIssue, Set<Issue> issueCollector) {
     return orElse(null, unparsableIssue, issueCollector);
   }
 
@@ -84,21 +84,12 @@ public class SafeParser<T> {
    * If the value was unparsable an issue is added to the issue collector.
    * @return the parsed value if present, other if empty or unparsable
    */
-  public T orElse(T other, Issue unparsableIssue, Map<Issue, String> issueCollector) {
-    return orElse(other, unparsableIssue, null, issueCollector);
-  }
-
-  /**
-   * Always returns a value, if needed falling back to a default.
-   * If the value was unparsable an issue with a given value is added to the issue collector.
-   * @return the parsed value if present, other if empty or unparsable
-   */
-  public T orElse(T other, Issue unparsableIssue, String issueValue, Map<Issue, String> issueCollector) {
+  public T orElse(T other, Issue unparsableIssue, Set<Issue> issueCollector) {
     if (isParsable()) {
       return result.orElse(other);
 
     } else {
-      issueCollector.put(unparsableIssue, issueValue);
+      issueCollector.add(unparsableIssue);
       return other;
     }
   }

@@ -6,9 +6,9 @@ import org.col.api.vocab.Origin;
 import org.gbif.nameparser.api.ParsedName;
 
 import java.net.URI;
-import java.util.EnumMap;
-import java.util.Map;
+import java.util.EnumSet;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  *
@@ -69,7 +69,7 @@ public class Name extends ParsedName {
   /**
    * Issues related to this name with potential values in the map
    */
-  private Map<Issue, String> issues = new EnumMap<>(Issue.class);
+  private Set<Issue> issues = EnumSet.noneOf(Issue.class);
 
   /**
    * Returns the full authorship incl basionym and sanctioning authors from individual parts.
@@ -188,20 +188,16 @@ public class Name extends ParsedName {
 		this.sourceUrl = sourceUrl;
 	}
 
-	public Map<Issue, String> getIssues() {
+	public Set<Issue> getIssues() {
 		return issues;
 	}
 
-	public void setIssues(Map<Issue, String> issues) {
+	public void setIssues(Set<Issue> issues) {
 		this.issues = issues;
 	}
 
 	public void addIssue(Issue issue) {
-		issues.put(issue, null);
-	}
-
-	public void addIssue(Issue issue, Object value) {
-		issues.put(issue, value.toString());
+		issues.add(issue);
 	}
 
   @Override

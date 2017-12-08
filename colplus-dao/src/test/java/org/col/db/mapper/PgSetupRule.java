@@ -109,7 +109,9 @@ public class PgSetupRule extends ExternalResource {
 		try (Connection con = dataSource.getConnection()) {
 			System.out.println("Init empty database schema\n");
 			ScriptRunner runner = new ScriptRunner(con);
-			runner.runScript(Resources.getResourceAsReader(SCHEMA_FILE));
+			// needed to honor the $$ escapes in pg functions
+      runner.setSendFullScript(true);
+      runner.runScript(Resources.getResourceAsReader(SCHEMA_FILE));
 			con.commit();
 
 		} catch (SQLException | IOException e) {

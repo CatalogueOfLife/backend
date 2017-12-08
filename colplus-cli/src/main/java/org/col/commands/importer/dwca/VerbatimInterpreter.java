@@ -2,7 +2,6 @@ package org.col.commands.importer.dwca;
 
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Splitter;
-import com.google.common.collect.Maps;
 import org.col.api.*;
 import org.col.api.exception.InvalidNameException;
 import org.col.api.vocab.*;
@@ -18,7 +17,8 @@ import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Map;
+import java.util.EnumSet;
+import java.util.Set;
 
 /**
  * Interprets a verbatim record and transforms it into a name, taxon and unique references.
@@ -152,7 +152,7 @@ public class VerbatimInterpreter {
   }
 
   private Name interpretName(VerbatimRecord v) {
-    Map<Issue, String> issues = Maps.newHashMap();
+    Set<Issue> issues = EnumSet.noneOf(Issue.class);
 
     // parse rank
     Rank rank = SafeParser.parse(RankParser.PARSER, v.getFirst(DwcTerm.taxonRank, DwcTerm.verbatimTaxonRank))
@@ -169,7 +169,7 @@ public class VerbatimInterpreter {
     } else {
       n = buildNameFromVerbatimTerms(v);
     }
-    n.getIssues().putAll(issues);
+    n.getIssues().addAll(issues);
 
     // assign best rank
     if (rank.notOtherOrUnranked() || n.getRank() == null) {
