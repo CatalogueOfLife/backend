@@ -1,6 +1,5 @@
 package org.col.api;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.col.api.vocab.Issue;
 import org.col.api.vocab.NomStatus;
 import org.col.api.vocab.Origin;
@@ -20,7 +19,6 @@ public class Name extends ParsedName {
 	 * Internal surrogate key of the name as provided by postgres. This key is
 	 * unique across all datasets but not exposed in the API.
 	 */
-	@JsonIgnore
 	private Integer key;
 
 	/**
@@ -73,12 +71,18 @@ public class Name extends ParsedName {
    */
   private Map<Issue, String> issues = new EnumMap<>(Issue.class);
 
+  /**
+   * Returns the full authorship incl basionym and sanctioning authors from individual parts.
+   */
+  public String getAuthorship() {
+    return authorshipComplete();
+  }
 
   public Name() {
   }
 
   public Name(ParsedName pn) {
-    setAuthorship(pn.getAuthorship());
+    setCombinationAuthorship(pn.getCombinationAuthorship());
     setBasionymAuthorship(pn.getBasionymAuthorship());
     setSanctioningAuthor(pn.getSanctioningAuthor());
     setRank(pn.getRank());

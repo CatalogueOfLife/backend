@@ -156,7 +156,7 @@ public class TestEntityGenerator {
 		Name n = new Name();
 		n.setDatasetKey(TestEntityGenerator.DATASET1.getKey());
 		n.setScientificName(RandomUtils.randomSpecies());
-		n.setAuthorship(createAuthorship());
+		n.setCombinationAuthorship(createAuthorship());
     if(RND.nextBoolean()) {
       n.setBasionymAuthorship(createAuthorship());
     }

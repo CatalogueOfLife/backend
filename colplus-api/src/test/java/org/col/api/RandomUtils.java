@@ -75,7 +75,7 @@ public class RandomUtils {
 
   public static Name randomName() {
     Name n = new Name();
-    n.setAuthorship(randomAuthorship());
+    n.setCombinationAuthorship(randomAuthorship());
     Rank rank = randomRank();
     n.setRank(rank);
     if (rank == Rank.SPECIES) {

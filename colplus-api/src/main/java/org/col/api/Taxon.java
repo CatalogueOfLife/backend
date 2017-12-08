@@ -1,6 +1,5 @@
 package org.col.api;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.col.api.vocab.Issue;
 import org.col.api.vocab.Lifezone;
 import org.col.api.vocab.Origin;
@@ -19,7 +18,6 @@ public class Taxon {
 	 * Internal surrogate key of the taxon as provided by postgres. This key is
 	 * unique across all datasets but not exposed in the API.
 	 */
-	@JsonIgnore
 	private Integer key;
 
 	private String id;

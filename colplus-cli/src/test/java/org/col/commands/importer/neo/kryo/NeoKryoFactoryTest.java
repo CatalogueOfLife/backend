@@ -34,7 +34,7 @@ public class NeoKryoFactoryTest {
 
     t.taxon.setName(new Name());
     t.taxon.getName().setScientificName("Abies alba");
-    t.taxon.getName().setAuthorship(TestEntityGenerator.createAuthorship());
+    t.taxon.getName().setCombinationAuthorship(TestEntityGenerator.createAuthorship());
     t.taxon.getName().setBasionymAuthorship(TestEntityGenerator.createAuthorship());
     t.taxon.getName().setRank(Rank.SPECIES);
     for (Issue issue : Issue.values()) {

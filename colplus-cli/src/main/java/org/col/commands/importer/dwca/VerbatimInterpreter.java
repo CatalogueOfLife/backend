@@ -188,7 +188,7 @@ public class VerbatimInterpreter {
                 authorship.authorshipComplete());
           }
         } else {
-          n.setAuthorship(authorship.getAuthorship());
+          n.setCombinationAuthorship(authorship.getCombinationAuthorship());
           n.setSanctioningAuthor(authorship.getSanctioningAuthor());
           n.setBasionymAuthorship(authorship.getBasionymAuthorship());
         }

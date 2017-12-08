@@ -243,11 +243,11 @@ public class NameParserTest {
               assertNull(n.getNotho());
               break;
             case AUTH:
-              assertNull(n.getAuthorship().getYear());
-              assertTrue(n.getAuthorship().getAuthors().isEmpty());
+              assertNull(n.getCombinationAuthorship().getYear());
+              assertTrue(n.getCombinationAuthorship().getAuthors().isEmpty());
               break;
             case EXAUTH:
-              assertTrue(n.getAuthorship().getExAuthors().isEmpty());
+              assertTrue(n.getCombinationAuthorship().getExAuthors().isEmpty());
               break;
             case BAS:
               assertNull(n.getBasionymAuthorship().getYear());
@@ -311,8 +311,8 @@ public class NameParserTest {
     }
   
     NameAssertion combAuthors(String year, String ... authors) {
-      assertEquals(year, n.getAuthorship().getYear());
-      assertEquals(Lists.newArrayList(authors), n.getAuthorship().getAuthors());
+      assertEquals(year, n.getCombinationAuthorship().getYear());
+      assertEquals(Lists.newArrayList(authors), n.getCombinationAuthorship().getAuthors());
       return add(NP.AUTH);
     }
 
@@ -327,7 +327,7 @@ public class NameParserTest {
     }
 
     NameAssertion combExAuthors(String ... authors) {
-      assertEquals(Lists.newArrayList(authors), n.getAuthorship().getExAuthors());
+      assertEquals(Lists.newArrayList(authors), n.getCombinationAuthorship().getExAuthors());
       return add(NP.EXAUTH);
     }
 
