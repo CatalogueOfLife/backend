@@ -1,12 +1,6 @@
 package org.col.resources;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-
+import com.codahale.metrics.annotation.Timed;
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.Page;
 import org.col.api.PagingResultSet;
@@ -15,7 +9,10 @@ import org.col.dao.ReferenceDao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.codahale.metrics.annotation.Timed;
+import javax.validation.Valid;
+import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
 
 @Path("/dataset/{datasetKey}/reference")
 @Produces(MediaType.APPLICATION_JSON)
@@ -26,8 +23,8 @@ public class ReferenceResource {
 
 	@GET
 	public PagingResultSet<Reference> list(@PathParam("datasetKey") Integer datasetKey,
-	    @BeanParam Page page,
-	    @Context SqlSession session) {
+                                         @Valid @BeanParam Page page,
+                                         @Context SqlSession session) {
 		ReferenceDao dao = new ReferenceDao(session);
 		return dao.list(datasetKey, page);
 	}

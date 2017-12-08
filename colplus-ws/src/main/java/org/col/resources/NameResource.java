@@ -8,6 +8,7 @@ import org.col.db.mapper.NameActMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -22,8 +23,8 @@ public class NameResource {
 
 	@GET
 	public PagingResultSet<Name> list(@PathParam("datasetKey") Integer datasetKey,
-	    @BeanParam Page page,
-	    @Context SqlSession session) {
+                                    @Valid @BeanParam Page page,
+	                                  @Context SqlSession session) {
 		NameDao dao = new NameDao(session);
 		return dao.list(datasetKey, page);
 	}
@@ -32,7 +33,7 @@ public class NameResource {
 	@Timed
 	@Path("/search")
 	public PagingResultSet<Name> search(@BeanParam NameSearch query,
-                                      @BeanParam Page page,
+                                      @Valid @BeanParam Page page,
                                       @Context SqlSession session) {
 		NameDao dao = new NameDao(session);
 		return dao.search(query, page);
@@ -63,7 +64,7 @@ public class NameResource {
 	@Path("{id}/publishedIn")
 	public PagedReference getPublishedIn(@PathParam("datasetKey") Integer datasetKey,
                                        @PathParam("id") int nameKey,
-	    @Context SqlSession session) {
+	                                     @Context SqlSession session) {
 		NameDao dao = new NameDao(session);
 		return dao.getPublishedIn(datasetKey, nameKey);
 	}
@@ -84,8 +85,8 @@ public class NameResource {
 	@SuppressWarnings("unused")
 	public List<NameAct> getActs(@PathParam("datasetKey") Integer datasetKey,
                                @PathParam("id") int nameKey,
-                              @QueryParam("homotypic") Boolean homotypic,
-                              @Context SqlSession session) {
+                               @QueryParam("homotypic") Boolean homotypic,
+                               @Context SqlSession session) {
 		NameActMapper mapper = session.getMapper(NameActMapper.class);
 		return homotypic ? mapper.listByHomotypicGroup(datasetKey, nameKey) : mapper.listByName(datasetKey, nameKey);
 	}
