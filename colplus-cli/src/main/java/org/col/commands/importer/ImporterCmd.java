@@ -22,7 +22,9 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 public class ImporterCmd extends ConfiguredCommand<CliConfig> {
   private static final Logger LOG = LoggerFactory.getLogger(ImporterCmd.class);
@@ -40,20 +42,45 @@ public class ImporterCmd extends ConfiguredCommand<CliConfig> {
     subparser.addArgument("-k", "--key")
         .dest("key")
         .type(Integer.class)
-        .required(true)
+        .required(false)
         .help("The key of the dataset to import");
+    subparser.addArgument("--all")
+        .dest("all")
+        .type(Boolean.class)
+        .setDefault(false)
+        .setConst(true)
+        .required(false)
+        .help("Import all datasets");
   }
 
   @Override
   protected void run(Bootstrap<CliConfig> bootstrap, Namespace namespace, CliConfig cfg) throws Exception {
     this.cfg = cfg;
-    final int datasetKey = namespace.getInt("key");
 
     // create datasource and make sure it gets closed at the end!
     HikariDataSource ds = cfg.db.pool();
-    try {
-      SqlSessionFactory factory = MybatisFactory.configure(ds, "importer");
-      importDataset(datasetKey, factory);
+    SqlSessionFactory factory = MybatisFactory.configure(ds, "importer");
+
+    try (SqlSession session = factory.openSession(true)){
+      DatasetDao ddao = new DatasetDao(session);
+      final boolean all = namespace.getBoolean("all");
+      if (all) {
+        for (Dataset d : ddao.all()){
+          importDataset(d, factory);
+        }
+
+      } else {
+        final int datasetKey = namespace.getInt("key");
+        Dataset d = ddao.get(datasetKey);
+        if (d == null) {
+          throw new IllegalArgumentException("Dataset " + datasetKey + " not existing");
+
+        } else if (d.getDataAccess() == null) {
+          throw new IllegalStateException("Dataset " + datasetKey + " has no external datasource configured");
+        }
+        importDataset(datasetKey, factory);
+      }
+
     } finally {
       ds.close();
     }
@@ -65,26 +92,47 @@ public class ImporterCmd extends ConfiguredCommand<CliConfig> {
    */
   private LocalDateTime lastModified(final int datasetKey) {
     File dwca = cfg.normalizer.source(datasetKey);
-    return null;
+    return LocalDateTime.ofInstant(Instant.ofEpochMilli(dwca.lastModified()), ZoneId.systemDefault());
   }
 
   private void importDataset(int datasetKey, SqlSessionFactory factory) throws Exception {
-    // read requested dataset and make sure it exists
-    Dataset d;
     try (SqlSession session = factory.openSession(true)){
-      DatasetMapper datasetMapper = session.getMapper(DatasetMapper.class);
-      d = datasetMapper.get(datasetKey);
+      Dataset d = session.getMapper(DatasetMapper.class).get(datasetKey);
       if (d == null) {
         throw new IllegalArgumentException("Dataset " + datasetKey + " not existing");
 
       } else if (d.getDataAccess() == null) {
         throw new IllegalStateException("Dataset " + datasetKey + " has no external datasource configured");
       }
+      importDataset(d, factory);
     }
+  }
 
+  private void importDataset(Dataset d, SqlSessionFactory factory) throws Exception {
+    final int datasetKey = d.getKey();
     final LocalDateTime start = LocalDateTime.now();
     try {
-      importDataset(d, factory);
+      LOG.info("Downloading sources for dataset {} from {}", datasetKey, d.getDataAccess());
+      File dwca = cfg.normalizer.source(datasetKey);
+      dwca.getParentFile().mkdirs();
+      DownloadUtil.download(d.getDataAccess().toURL(), dwca);
+
+      LOG.info("Extracting files from archive {}", datasetKey);
+      File dwcaDir = cfg.normalizer.sourceDir(datasetKey);
+      dwcaDir.mkdirs();
+      CompressionUtil.decompressFile(dwcaDir, dwca);
+
+      LOG.info("Normalizing {}!", datasetKey);
+      NormalizerStore store = NeoDbFactory.create(cfg.normalizer, datasetKey);
+      Normalizer normalizer = new Normalizer(store, dwcaDir);
+      normalizer.run();
+
+      LOG.info("Writing {} to Postgres!", datasetKey);
+      PgImport pgImport = new PgImport(datasetKey,
+          NeoDbFactory.open(cfg.normalizer, datasetKey), factory, cfg.importer
+      );
+      pgImport.run();
+
       LOG.info("Analyzing {} metrics", datasetKey);
       try (SqlSession session = factory.openSession(true)){
         DatasetDao dao = new DatasetDao(session);
@@ -104,30 +152,5 @@ public class ImporterCmd extends ConfiguredCommand<CliConfig> {
       }
       throw e;
     }
-  }
-
-  private void importDataset(Dataset d, SqlSessionFactory factory) throws Exception {
-    final int datasetKey = d.getKey();
-
-    LOG.info("Downloading sources for dataset {} from {}", datasetKey, d.getDataAccess());
-    File dwca = cfg.normalizer.source(datasetKey);
-    dwca.getParentFile().mkdirs();
-    DownloadUtil.download(d.getDataAccess().toURL(), dwca);
-
-    LOG.info("Extracting files from archive {}", datasetKey);
-    File dwcaDir = cfg.normalizer.sourceDir(datasetKey);
-    dwcaDir.mkdirs();
-    CompressionUtil.decompressFile(dwcaDir, dwca);
-
-    LOG.info("Normalizing {}!", datasetKey);
-    NormalizerStore store = NeoDbFactory.create(cfg.normalizer, datasetKey);
-    Normalizer normalizer = new Normalizer(store, dwcaDir);
-    normalizer.run();
-
-    LOG.info("Writing {} to Postgres!", datasetKey);
-    PgImport pgImport = new PgImport(datasetKey,
-        NeoDbFactory.open(cfg.normalizer, datasetKey), factory, cfg.importer
-    );
-    pgImport.run();
   }
 }
