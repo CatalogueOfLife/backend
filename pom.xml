@@ -126,6 +126,7 @@
     <module>colplus-dwca</module>
     <module>colplus-parser</module>
     <module>colplus-ws</module>
+      <module>colplus-common-dw</module>
   </modules>
 
   <distributionManagement>
@@ -159,6 +160,11 @@
 	      <artifactId>colplus-common</artifactId>
           <version>${project.version}</version>
 	    </dependency>
+        <dependency>
+            <groupId>org.col</groupId>
+            <artifactId>colplus-common-dw</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 	    <dependency>
 	      <groupId>org.col</groupId>
 	      <artifactId>colplus-dao</artifactId>

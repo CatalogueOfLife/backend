@@ -12,6 +12,7 @@ import org.col.commands.importer.neo.printer.GraphFormat;
 import org.col.commands.importer.neo.printer.PrinterUtils;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -37,6 +38,7 @@ import static org.junit.Assert.assertFalse;
  * (which is checked in a manual test in NormalizerIT instead)
  */
 @RunWith(Parameterized.class)
+@Ignore
 public class NormalizerTreeIT {
   final static int MAX_DWCA_ID = 23;
 

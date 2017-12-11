@@ -14,7 +14,6 @@ import io.dropwizard.servlets.tasks.Task;
 import io.dropwizard.setup.AdminEnvironment;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
-import org.col.ColAppConfig;
 import org.eclipse.jetty.util.component.LifeCycle;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.Binder;
@@ -27,7 +26,7 @@ import java.util.stream.Stream;
 
 import static org.glassfish.hk2.utilities.ServiceLocatorUtilities.bind;
 
-public class HK2Bundle implements ConfiguredBundle<ColAppConfig> {
+public class HK2Bundle<T> implements ConfiguredBundle<T> {
 
   private final ServiceLocator serviceLocator;
 
@@ -59,7 +58,7 @@ public class HK2Bundle implements ConfiguredBundle<ColAppConfig> {
   }
 
   @Override
-  public void run(ColAppConfig configuration, Environment environment) throws Exception {
+  public void run(T configuration, Environment environment) throws Exception {
     ServiceLocatorUtilities.bind(serviceLocator, new EnvBinder(application, environment));
 
     JerseyEnvironment jersey = environment.jersey();

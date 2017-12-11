@@ -41,6 +41,10 @@
         </dependency>
         <dependency>
             <groupId>org.col</groupId>
+            <artifactId>colplus-common-dw</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.col</groupId>
             <artifactId>colplus-dwca</artifactId>
         </dependency>
         <dependency>
