@@ -71,13 +71,6 @@ public class Name extends ParsedName {
    */
   private Set<Issue> issues = EnumSet.noneOf(Issue.class);
 
-  /**
-   * Returns the full authorship incl basionym and sanctioning authors from individual parts.
-   */
-  public String getAuthorship() {
-    return authorshipComplete();
-  }
-
   public Name() {
   }
 

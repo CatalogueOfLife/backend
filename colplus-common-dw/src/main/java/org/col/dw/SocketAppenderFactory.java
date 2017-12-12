@@ -72,7 +72,7 @@ public class SocketAppenderFactory extends AbstractAppenderFactory<ILoggingEvent
     getFilterFactories().forEach(f -> appender.addFilter(f.build()));
     appender.start();
 
-    LOG.info("Created socket appender for {}:{}", host, port);
+    LOG.debug("Created asynchroneous (queue={}) socket appender for {}:{}", getQueueSize(), host, port);
     return wrapAsync(appender, asyncAppenderFactory);
   }
 }

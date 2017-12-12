@@ -4,15 +4,13 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.dropwizard.Application;
+import io.dropwizard.forms.MultiPartBundle;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
-
+import org.col.api.jackson.ApiModule;
 import org.col.db.MybatisBundle;
 import org.col.jersey.JerseyProviderBundle;
-import org.col.resources.DatasetResource;
-import org.col.resources.NameResource;
-import org.col.resources.ReferenceResource;
-import org.col.resources.TaxonResource;
+import org.col.resources.*;
 
 public class ColApp extends Application<ColAppConfig> {
 
@@ -31,7 +29,10 @@ public class ColApp extends Application<ColAppConfig> {
 		bootstrap.addBundle(new MybatisBundle());
 		// various custom jersey providers
 		bootstrap.addBundle(new JerseyProviderBundle());
-	}
+    bootstrap.addBundle(new MultiPartBundle());
+    // customize jackson
+    bootstrap.getObjectMapper().registerModule(new ApiModule());
+  }
 
 	@Override
 	public void run(final ColAppConfig config, final Environment environment) {
@@ -47,6 +48,8 @@ public class ColApp extends Application<ColAppConfig> {
 		environment.jersey().register(new ReferenceResource());
 		environment.jersey().register(new NameResource());
 		environment.jersey().register(new TaxonResource());
+    environment.jersey().register(new ParserResource());
+
 	}
 
 }

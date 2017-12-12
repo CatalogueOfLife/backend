@@ -9,6 +9,8 @@ import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.Dataset;
+import org.col.api.vocab.DataFormat;
+import org.col.api.vocab.License;
 import org.col.commands.config.CliConfig;
 import org.col.commands.importer.dwca.Normalizer;
 import org.col.commands.importer.neo.NeoDbFactory;
@@ -22,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.net.URI;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -52,6 +55,11 @@ public class ImporterCmd extends ConfiguredCommand<CliConfig> {
         .setConst(true)
         .required(false)
         .help("Import all datasets");
+    subparser.addArgument("--url")
+        .dest("url")
+        .type(String.class)
+        .required(false)
+        .help("Import a dataset from a URL, creating a new dataset entry");
   }
 
   @Override
@@ -70,15 +78,31 @@ public class ImporterCmd extends ConfiguredCommand<CliConfig> {
         }
 
       } else {
-        final int datasetKey = namespace.getInt("key");
+
         Dataset d;
         try (SqlSession session = factory.openSession()) {
-          d = session.getMapper(DatasetMapper.class).get(datasetKey);
-          if (d == null) {
-            throw new IllegalArgumentException("Dataset " + datasetKey + " not existing");
+          DatasetMapper dmapper = session.getMapper(DatasetMapper.class);
+          String url = namespace.getString("url");
+          if (url != null) {
+            // new dataset with given url
+            d = new Dataset();
+            d.setTitle(url);
+            d.setDataFormat(DataFormat.DWCA);
+            d.setDataAccess(URI.create(url));
+            d.setLicense(License.UNSPECIFIED);
+            dmapper.create(d);
+            session.commit();
 
-          } else if (d.getDataAccess() == null) {
-            throw new IllegalStateException("Dataset " + datasetKey + " has no external datasource configured");
+          } else {
+            // get by key
+            int datasetKey = namespace.getInt("key");
+            d = dmapper.get(datasetKey);
+            if (d == null) {
+              throw new IllegalArgumentException("Dataset " + datasetKey + " not existing");
+
+            } else if (d.getDataAccess() == null) {
+              throw new IllegalStateException("Dataset " + datasetKey + " has no external datasource configured");
+            }
           }
         }
         importDataset(d, factory);

@@ -15,6 +15,7 @@ import org.col.commands.importer.neo.model.NeoTaxon;
 import org.col.commands.importer.neo.traverse.StartEndHandler;
 import org.col.commands.importer.neo.traverse.TreeWalker;
 import org.col.db.mapper.*;
+import org.gbif.dwc.terms.DwcTerm;
 import org.neo4j.graphdb.Node;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,12 +46,22 @@ public class PgImport implements Runnable {
 
 	@Override
 	public void run() {
+	  truncate();
 		insertReferences();
 		insertBasionyms();
 		insertTaxaAndNames();
 
 		updateMetadata();
 	}
+
+	private void truncate(){
+    try (SqlSession session = sessionFactory.openSession(true)) {
+      LOG.info("Remove existing data for dataset {}: {}", dataset.getKey(), dataset.getTitle());
+      DatasetMapper mapper = session.getMapper(DatasetMapper.class);
+      mapper.truncateDatasetData(dataset.getKey());
+      session.commit();
+    }
+  }
 
 	private void updateMetadata() {
 		// TODO: update last crawled, modified etc...
@@ -102,55 +113,55 @@ public class PgImport implements Runnable {
 	 */
 	private void insertTaxaAndNames() {
 		try (SqlSession session = sessionFactory.openSession(false)) {
-			LOG.info("Inserting remaining names and all taxa");
-			NameMapper nameMapper = session.getMapper(NameMapper.class);
-			TaxonMapper taxonMapper = session.getMapper(TaxonMapper.class);
+      LOG.info("Inserting remaining names and all taxa");
+      NameMapper nameMapper = session.getMapper(NameMapper.class);
+      TaxonMapper taxonMapper = session.getMapper(TaxonMapper.class);
       VerbatimRecordMapper verbatimMapper = session.getMapper(VerbatimRecordMapper.class);
       DistributionMapper distributionMapper = session.getMapper(DistributionMapper.class);
       VernacularNameMapper vernacularMapper = session.getMapper(VernacularNameMapper.class);
 
       // iterate over taxonomic tree in depth first order, keeping postgres parent keys
-			TreeWalker.walkTree(store.getNeo(), new StartEndHandler() {
-				int counter = 0;
-				Stack<Integer> parentKeys = new Stack<Integer>();
+      TreeWalker.walkTree(store.getNeo(), new StartEndHandler() {
+        int counter = 0;
+        Stack<Integer> parentKeys = new Stack<Integer>();
 
-				@Override
-				public void start(Node n) {
-					NeoTaxon t = store.get(n);
-					// insert name if not yet inserted (=basionym)
-					if (originalNameKeys.containsKey((int) n.getId())) {
-						// this is an original name we have already inserted, use postgres keys
-						t.name.setKey(originalNameKeys.get((int) n.getId()));
-						t.name.setDatasetKey(dataset.getKey());
-					} else {
-						// update basionym keys
-						if (t.name.getBasionymKey() != null) {
-							t.name.setBasionymKey(originalNameKeys.get(t.name.getBasionymKey()));
-						}
-						t.name.setDatasetKey(dataset.getKey());
-						if (t.name.getType()==null) {
-						  int x =87;
+        @Override
+        public void start(Node n) {
+          NeoTaxon t = store.get(n);
+          // insert name if not yet inserted (=basionym)
+          if (originalNameKeys.containsKey((int) n.getId())) {
+            // this is an original name we have already inserted, use postgres keys
+            t.name.setKey(originalNameKeys.get((int) n.getId()));
+            t.name.setDatasetKey(dataset.getKey());
+          } else {
+            // update basionym keys
+            if (t.name.getBasionymKey() != null) {
+              t.name.setBasionymKey(originalNameKeys.get(t.name.getBasionymKey()));
             }
-						nameMapper.create(t.name);
-					}
+            t.name.setDatasetKey(dataset.getKey());
+            if (t.name.getType() == null) {
+              int x = 87;
+            }
+            nameMapper.create(t.name);
+          }
 
-					// insert accepted taxon or synonym
+          // insert accepted taxon or synonym
           Integer taxonKey;
-					if (t.isSynonym()) {
-						// TODO: insert synonym relations!
+          if (t.isSynonym()) {
+            // TODO: insert synonym relations!
             taxonKey = null;
 
-					} else {
-						if (!parentKeys.empty()) {
-							// use parent postgres key from stack, but keep it there
-							t.taxon.setParentKey(parentKeys.peek());
-						}
-						t.taxon.setDatasetKey(dataset.getKey());
-						t.taxon.setName(t.name);
-						taxonMapper.create(t.taxon);
+          } else {
+            if (!parentKeys.empty()) {
+              // use parent postgres key from stack, but keep it there
+              t.taxon.setParentKey(parentKeys.peek());
+            }
+            t.taxon.setDatasetKey(dataset.getKey());
+            t.taxon.setName(t.name);
+            taxonMapper.create(t.taxon);
             taxonKey = t.taxon.getKey();
-						// push new postgres key onto stack for this taxon as we traverse in depth first
-						parentKeys.push(taxonKey);
+            // push new postgres key onto stack for this taxon as we traverse in depth first
+            parentKeys.push(taxonKey);
 
             // insert vernacular
             for (VernacularName vn : t.vernacularNames) {
@@ -161,34 +172,40 @@ public class PgImport implements Runnable {
             for (Distribution d : t.distributions) {
               distributionMapper.create(d, taxonKey, dataset.getKey());
             }
-					}
+          }
 
           // insert verbatim rec
           if (t.verbatim != null) {
             t.verbatim.setDataset(dataset);
+            LOG.info("id{} tid:{} nid:{} name:{}", t.verbatim.getId(), taxonKey, t.name.getKey(), t.verbatim.getCoreTerm(DwcTerm.scientificName));
             verbatimMapper.create(t.verbatim, taxonKey, t.name.getKey());
 
-					} else if(t.name.getOrigin().equals(Origin.SOURCE)) {
+          } else if (t.name.getOrigin().equals(Origin.SOURCE)) {
             LOG.warn("No verbatim record for {}", t.name);
           }
 
-					// commit in batches
-					if (counter++ % batchSize == 0) {
-						session.commit();
-						LOG.debug("Inserted {} names and taxa", counter);
-					}
-				}
+          // commit in batches
+          if (counter++ % batchSize == 0) {
+            session.commit();
+            LOG.debug("Inserted {} names and taxa", counter);
+          }
+        }
 
         @Override
-				public void end(Node n) {
-					// remove this key from parent list if its an accepted taxon
-					if (n.hasLabel(Labels.TAXON)) {
-						parentKeys.pop();
-					}
-				}
-			});
-			session.commit();
-			LOG.debug("Inserted all names and taxa");
+        public void end(Node n) {
+          // remove this key from parent list if its an accepted taxon
+          if (n.hasLabel(Labels.TAXON)) {
+            parentKeys.pop();
+          }
+        }
+      });
+      session.commit();
+      LOG.debug("Inserted all names and taxa");
+
+		} catch (Exception e) {
+      LOG.error("Fatal error during names and taxa insert", e);
+      throw e;
+
 		}
 	}
 

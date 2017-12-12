@@ -717,7 +717,7 @@ public class Normalizer implements Runnable {
     // store, which creates a new neo node
     store.put(t);
 
-    return new RankedName(t.node, t.name.getScientificName(), t.name.getAuthorship().toString(), t.name.getRank());
+    return new RankedName(t.node, t.name.getScientificName(), t.name.authorshipComplete(), t.name.getRank());
   }
 
   private void checkInterrupted() throws NormalizationFailedException {
