@@ -8,6 +8,7 @@ import org.gbif.nameparser.api.ParsedName;
 
 /**
  * Jackson module that defines all serde rules for all CoL API model classes.
+ * //TODO: move custom serde annotations over to here
  */
 public class ApiModule extends SimpleModule {
   public ApiModule() {

@@ -1,6 +1,8 @@
 package org.col.commands.importer;
 
 import com.google.common.collect.Maps;
+import it.unimi.dsi.fastutil.longs.Long2IntMap;
+import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.Dataset;
@@ -50,11 +52,12 @@ public class PgImport implements Runnable {
 		insertReferences();
 		insertBasionyms();
 		insertTaxaAndNames();
+    insertVerbatim();
 
 		updateMetadata();
 	}
 
-	private void truncate(){
+  private void truncate(){
     try (SqlSession session = sessionFactory.openSession(true)) {
       LOG.info("Remove existing data for dataset {}: {}", dataset.getKey(), dataset.getTitle());
       DatasetMapper mapper = session.getMapper(DatasetMapper.class);
@@ -121,6 +124,8 @@ public class PgImport implements Runnable {
       VernacularNameMapper vernacularMapper = session.getMapper(VernacularNameMapper.class);
 
       // iterate over taxonomic tree in depth first order, keeping postgres parent keys
+      // pro parte synonyms will be visited multiple times, remember their name pg key!
+      Long2IntMap proParteNames = new Long2IntOpenHashMap();
       TreeWalker.walkTree(store.getNeo(), new StartEndHandler() {
         int counter = 0;
         Stack<Integer> parentKeys = new Stack<Integer>();
@@ -128,6 +133,18 @@ public class PgImport implements Runnable {
         @Override
         public void start(Node n) {
           NeoTaxon t = store.get(n);
+          // is this a pro parte synonym that we have processed before already?
+          if (proParteNames.containsKey(n.getId())) {
+            // doublechecking - make sure this is really a synonym
+            if (t.synonym != null) {
+              // now add another synonym relation now that the other accepted exists in pg
+              nameMapper.addSynonym(dataset.getKey(), parentKeys.peek(), proParteNames.get(n.getId()));
+            } else {
+              LOG.warn("We have seen node {} before, but its not a pro parte synonym!", n.getId());
+            }
+            return;
+          }
+
           // insert name if not yet inserted (=basionym)
           if (originalNameKeys.containsKey((int) n.getId())) {
             // this is an original name we have already inserted, use postgres keys
@@ -139,17 +156,17 @@ public class PgImport implements Runnable {
               t.name.setBasionymKey(originalNameKeys.get(t.name.getBasionymKey()));
             }
             t.name.setDatasetKey(dataset.getKey());
-            if (t.name.getType() == null) {
-              int x = 87;
-            }
             nameMapper.create(t.name);
           }
 
           // insert accepted taxon or synonym
           Integer taxonKey;
           if (t.isSynonym()) {
-            // TODO: insert synonym relations!
             taxonKey = null;
+            if (t.synonym.accepted.size()>1) {
+              proParteNames.put(n.getId(), (int) t.name.getKey());
+            }
+            nameMapper.addSynonym(dataset.getKey(), parentKeys.peek(), t.name.getKey());
 
           } else {
             if (!parentKeys.empty()) {
@@ -208,5 +225,12 @@ public class PgImport implements Runnable {
 
 		}
 	}
+
+  /**
+   * Inserts the verbatim record together with links to derived name & taxon
+   */
+  private void insertVerbatim() {
+
+  }
 
 }
