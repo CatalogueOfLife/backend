@@ -149,4 +149,37 @@
         UPDATE dataset SET deleted = now()
         WHERE key = #{key}
     </update>
+
+    <delete id="truncateDatasetData" parameterType="map">
+        DELETE FROM distribution_references
+        WHERE dataset_key = #{key};
+
+        DELETE FROM distribution
+        WHERE dataset_key = #{key};
+
+        DELETE FROM vernacular_name_references
+        WHERE dataset_key = #{key};
+
+        DELETE FROM vernacular_name
+        WHERE dataset_key = #{key};
+
+        DELETE FROM synonyms
+        WHERE dataset_key = #{key};
+
+        DELETE FROM taxon_references
+        WHERE dataset_key = #{key};
+
+        DELETE FROM taxon
+        WHERE dataset_key = #{key};
+
+        DELETE FROM name_act
+        WHERE dataset_key = #{key};
+
+        DELETE FROM name
+        WHERE dataset_key = #{key};
+
+        DELETE FROM verbatim_record
+        WHERE dataset_key = #{key};
+    </delete>
+
 </mapper>
