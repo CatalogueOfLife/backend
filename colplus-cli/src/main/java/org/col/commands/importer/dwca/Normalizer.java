@@ -119,7 +119,7 @@ public class Normalizer implements Runnable {
           store.put(t);
 
         } catch (Exception e) {
-          LOG.error("proc err", e);
+          LOG.error("error processing explicit relations for {} {}", n, NeoProperties.getScientificNameWithAuthor(n), e);
         }
       }
 

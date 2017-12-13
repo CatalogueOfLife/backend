@@ -14,7 +14,7 @@ import org.col.commands.importer.neo.model.Labels;
 import org.col.commands.importer.neo.model.NeoProperties;
 import org.col.commands.importer.neo.model.NeoTaxon;
 import org.col.commands.importer.neo.model.RelType;
-import org.col.util.concurrent.BlockingThreadPoolExecutor;
+import org.col.util.concurrent.ThrottledThreadPoolExecutor;
 import org.gbif.nameparser.api.Rank;
 import org.mapdb.Atomic;
 import org.mapdb.DB;
@@ -185,7 +185,7 @@ public class NeoDb implements NormalizerStore {
 
   @Override
   public void process(Labels label, final int batchSize, NodeBatchProcessor callback) {
-    ExecutorService service =  BlockingThreadPoolExecutor.newFixedThreadPool(1, 3);
+    ExecutorService service =  ThrottledThreadPoolExecutor.newFixedThreadPool(1, 3);
 
     try (Transaction tx = neo.beginTx()){
       int counter = 0;

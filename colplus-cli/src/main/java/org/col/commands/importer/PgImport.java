@@ -17,7 +17,6 @@ import org.col.commands.importer.neo.model.NeoTaxon;
 import org.col.commands.importer.neo.traverse.StartEndHandler;
 import org.col.commands.importer.neo.traverse.TreeWalker;
 import org.col.db.mapper.*;
-import org.gbif.dwc.terms.DwcTerm;
 import org.neo4j.graphdb.Node;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,7 +41,7 @@ public class PgImport implements Runnable {
 		this.dataset = store.getDataset();
 		this.dataset.setKey(datasetKey);
 		this.store = store;
-		this.batchSize = 10000;
+		this.batchSize = cfg.batchSize;
 		this.sessionFactory = sessionFactory;
 	}
 
@@ -192,9 +191,15 @@ public class PgImport implements Runnable {
           }
 
           // insert verbatim rec
+          LOG.debug("{}{} tax={} name={}:{}",
+              t.name.getOrigin(),
+              t.verbatim==null? "" : " "+t.verbatim.getId(),
+              taxonKey,
+              t.name.getKey(),
+              t.name.canonicalNameComplete()
+          );
           if (t.verbatim != null) {
             t.verbatim.setDataset(dataset);
-            LOG.info("id{} tid:{} nid:{} name:{}", t.verbatim.getId(), taxonKey, t.name.getKey(), t.verbatim.getCoreTerm(DwcTerm.scientificName));
             verbatimMapper.create(t.verbatim, taxonKey, t.name.getKey());
 
           } else if (t.name.getOrigin().equals(Origin.SOURCE)) {
@@ -204,7 +209,7 @@ public class PgImport implements Runnable {
           // commit in batches
           if (counter++ % batchSize == 0) {
             session.commit();
-            LOG.debug("Inserted {} names and taxa", counter);
+            LOG.info("Inserted {} names and taxa", counter);
           }
         }
 

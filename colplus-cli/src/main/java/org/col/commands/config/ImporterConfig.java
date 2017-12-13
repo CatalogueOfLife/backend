@@ -9,8 +9,6 @@ import javax.validation.constraints.Min;
 public class ImporterConfig {
 
   @Min(1)
-  public int chunkSize = 10000;
+  public int batchSize = 10000;
 
-  @Min(0)
-  public int chunkMinSize = 100;
 }
