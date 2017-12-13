@@ -94,13 +94,25 @@
         <dependency>
             <groupId>de.javakaffee</groupId>
             <artifactId>kryo-serializers</artifactId>
-            <version>0.42</version>
         </dependency>
         <dependency>
             <groupId>it.unimi.dsi</groupId>
             <artifactId>fastutil</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-xml</artifactId>
+        </dependency>
+        <!--
+        You usually also want to make sure that XML library in use is Woodstox
+        since it is not only faster than Stax implementation JDK provides,
+        but also works better and avoids some known issues like adding unnecessary namespace prefixes
+        -->
+        <dependency>
+            <groupId>org.codehaus.woodstox</groupId>
+            <artifactId>woodstox-core-asl</artifactId>
+            <version>4.4.1</version>
+        </dependency>
         <!-- commons -->
         <dependency>
             <groupId>org.apache.commons</groupId>

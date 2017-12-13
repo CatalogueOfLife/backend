@@ -8,15 +8,15 @@ import org.junit.Test;
 /**
  *
  */
+@Ignore("manual debug tests for entire import commands")
 public class ImporterCmdTest extends CmdTestBase {
 
   @Test
   public void testImporterCmd() throws Exception {
-    run(true, "import", "--key", "73");
+    run(true, "import", "--key", "10");
   }
 
   @Test
-  @Ignore("manual debug test")
   public void testImportDwcaUrl() throws Exception {
     run(true, "import", "--url", "http://data.canadensys.net/ipt/archive.do?r=vascan");
   }
