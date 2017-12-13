@@ -242,7 +242,7 @@ CREATE TABLE taxon (
   issues INT[]
 );
 
-CREATE TABLE synonyms (
+CREATE TABLE synonym (
   taxon_key INTEGER REFERENCES taxon,
   name_key INTEGER REFERENCES name,
   dataset_key INTEGER NOT NULL REFERENCES dataset,
@@ -258,7 +258,7 @@ CREATE TABLE verbatim_record (
   PRIMARY KEY(dataset_key, id)
 );
 
-CREATE TABLE taxon_references (
+CREATE TABLE taxon_reference (
   dataset_key INTEGER NOT NULL REFERENCES dataset,
   taxon_key INTEGER NOT NULL REFERENCES taxon,
   reference_key INTEGER NOT NULL REFERENCES reference,
@@ -275,7 +275,7 @@ CREATE TABLE vernacular_name (
   country CHAR(2)
 );
 
-CREATE TABLE vernacular_name_references (
+CREATE TABLE vernacular_name_reference (
   dataset_key INTEGER NOT NULL REFERENCES dataset,
   vernacular_name_key INTEGER NOT NULL REFERENCES vernacular_name,
   reference_key INTEGER NOT NULL REFERENCES reference,
@@ -292,7 +292,7 @@ CREATE TABLE distribution (
   status INTEGER
 );
 
-CREATE TABLE distribution_references (
+CREATE TABLE distribution_reference (
   dataset_key INTEGER NOT NULL REFERENCES dataset,
   distribution_key INTEGER NOT NULL REFERENCES distribution,
   reference_key INTEGER NOT NULL REFERENCES reference,

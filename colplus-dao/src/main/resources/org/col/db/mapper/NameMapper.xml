@@ -198,7 +198,7 @@
   </select>
 
   <insert id="addSynonym" parameterType="map">
-    INSERT INTO synonyms (dataset_key, taxon_key, name_key)
+    INSERT INTO synonym (dataset_key, taxon_key, name_key)
     VALUES (#{datasetKey}, #{key}, #{nameKey})
   </insert>
 
@@ -207,7 +207,7 @@
     <include refid="SELECT" />
     FROM
     <include refid="FROM" />
-    JOIN synonyms s ON s.name_key=n.key
+    JOIN synonym s ON s.name_key=n.key
     WHERE s.taxon_key = #{key}
     ORDER BY COALESCE(n.basionym_key, n.key)
   </select>

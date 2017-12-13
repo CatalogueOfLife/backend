@@ -151,22 +151,22 @@
     </update>
 
     <delete id="truncateDatasetData" parameterType="map">
-        DELETE FROM distribution_references
+        DELETE FROM distribution_reference
         WHERE dataset_key = #{key};
 
         DELETE FROM distribution
         WHERE dataset_key = #{key};
 
-        DELETE FROM vernacular_name_references
+        DELETE FROM vernacular_name_reference
         WHERE dataset_key = #{key};
 
         DELETE FROM vernacular_name
         WHERE dataset_key = #{key};
 
-        DELETE FROM synonyms
+        DELETE FROM synonym
         WHERE dataset_key = #{key};
 
-        DELETE FROM taxon_references
+        DELETE FROM taxon_reference
         WHERE dataset_key = #{key};
 
         DELETE FROM taxon
