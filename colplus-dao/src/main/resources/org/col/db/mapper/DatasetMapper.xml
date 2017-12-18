@@ -96,7 +96,7 @@
             ORDER BY d.key, di.attempt DESC
         ) AS latest
         WHERE COALESCE (verbatim_count,0) = 0
-        ORDER BY d.key
+        ORDER BY key
         <include refid="org.col.db.mapper.Common.limit"/>
     </select>
 

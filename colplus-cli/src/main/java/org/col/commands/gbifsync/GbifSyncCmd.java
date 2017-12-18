@@ -73,11 +73,11 @@ public class GbifSyncCmd extends EnvironmentCommand<CliConfig> {
 
   @Override
   protected void run(Environment env, Namespace namespace, CliConfig cfg) throws Exception {
-    final HikariDataSource ds = cfg.db.pool();
-    final SqlSessionFactory sessionFactory = MybatisFactory.configure(ds, "gbif-sync");
     final RxClient<RxCompletionStageInvoker> rxClient = new JerseyClientBuilder(env)
         .using(cfg.client)
         .buildRx(getName(), RxCompletionStageInvoker.class);
+    final HikariDataSource ds = cfg.db.pool();
+    final SqlSessionFactory sessionFactory = MybatisFactory.configure(ds, "gbif-sync");
 
     try (SqlSession session = sessionFactory.openSession(true)) {
       DatasetPager pager = new DatasetPager(rxClient, cfg.gbif);
