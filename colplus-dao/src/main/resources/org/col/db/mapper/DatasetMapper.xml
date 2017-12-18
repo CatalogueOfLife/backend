@@ -87,6 +87,19 @@
         <include refid="org.col.db.mapper.Common.limit"/>
     </select>
 
+    <select id="listEmpty" parameterType="map" resultMap="datasetResultMap">
+        SELECT *
+        FROM (
+            SELECT DISTINCT ON (d.key) di.verbatim_count, <include refid="SELECT" />
+            FROM <include refid="FROM" />
+              LEFT JOIN dataset_import di ON di.dataset_key=d.key
+            ORDER BY d.key, di.attempt DESC
+        ) AS latest
+        WHERE COALESCE (verbatim_count,0) = 0
+        ORDER BY d.key
+        <include refid="org.col.db.mapper.Common.limit"/>
+    </select>
+
     <select id="countSearchResults" parameterType="map" resultType="Integer">
         SELECT COUNT(*)
         FROM

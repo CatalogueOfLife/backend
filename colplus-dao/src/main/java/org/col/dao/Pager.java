@@ -21,12 +21,16 @@ public class Pager<T> implements Iterable<T> {
     private final int pageSize;
   private final Function<Page, List<T>> nextPageFunc;
 
-  public static Iterable<Dataset> datasets(final SqlSessionFactory sessionFactory){
+  public static Iterable<Dataset> datasets(final SqlSessionFactory sessionFactory, final boolean emptyOnly){
     return new Pager<Dataset>(100, new Function<Page, List<Dataset>>() {
       @Override
       public List<Dataset> apply(Page page) {
         try (SqlSession session = sessionFactory.openSession()){
-          return session.getMapper(DatasetMapper.class).list(page);
+          if (emptyOnly) {
+            return session.getMapper(DatasetMapper.class).listEmpty(page);
+          } else {
+            return session.getMapper(DatasetMapper.class).list(page);
+          }
         }
       }
     });

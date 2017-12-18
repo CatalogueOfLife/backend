@@ -56,6 +56,13 @@ public class ImporterCmd extends ConfiguredCommand<CliConfig> {
         .setConst(true)
         .required(false)
         .help("Import all datasets");
+    subparser.addArgument("--all-empty")
+        .dest("empty")
+        .type(Boolean.class)
+        .setDefault(false)
+        .setConst(true)
+        .required(false)
+        .help("Import all empty datasets");
     subparser.addArgument("--url")
         .dest("url")
         .type(String.class)
@@ -73,10 +80,16 @@ public class ImporterCmd extends ConfiguredCommand<CliConfig> {
 
     try {
       final boolean all = namespace.getBoolean("all");
+      final boolean empty = namespace.getBoolean("empty");
       if (all) {
-        for (Dataset d : Pager.datasets(factory)){
+        for (Dataset d : Pager.datasets(factory, false)) {
           importDataset(d, factory);
         }
+
+      } else if (empty) {
+          for (Dataset d : Pager.datasets(factory, true)){
+            importDataset(d, factory);
+          }
 
       } else {
 
@@ -158,6 +171,7 @@ public class ImporterCmd extends ConfiguredCommand<CliConfig> {
         DatasetDao dao = new DatasetDao(session);
         dao.createImportSuccess(d, start, lastModified(datasetKey));
       }
+
       LOG.info("Dataset import {} completed in {}",
           datasetKey,
           DurationFormatUtils.formatDurationHMS(Duration.between(start, LocalDateTime.now()).toMillis())
