@@ -16,7 +16,7 @@
   <logger name="ru.yandex.qatools.embed" level="INFO"/>
   <logger name="de.flapdoodle.embed" level="INFO"/>
 
-  <root level="INFO">
+  <root level="DEBUG">
     <appender-ref ref="CONSOLE"/>
   </root>
 

@@ -5,6 +5,7 @@ import java.util.List;
 import org.apache.ibatis.annotations.Param;
 import org.col.api.Name;
 import org.col.api.NameSearch;
+import org.col.api.NameSearchResult;
 import org.col.api.Page;
 
 /**
@@ -42,5 +43,5 @@ public interface NameMapper {
 
 	int countSearchResults(@Param("nameSearch") NameSearch nameSearch);
 
-	List<Name> search(@Param("nameSearch") NameSearch nameSearch, @Param("page") Page page);
+	List<NameSearchResult> search(@Param("nameSearch") NameSearch nameSearch, @Param("page") Page page);
 }

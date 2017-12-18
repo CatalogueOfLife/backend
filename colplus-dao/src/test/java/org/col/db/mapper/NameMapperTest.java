@@ -1,25 +1,43 @@
 package org.col.db.mapper;
 
-import com.google.common.collect.Lists;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Set;
+
 import org.col.TestEntityGenerator;
 import org.col.api.Dataset;
 import org.col.api.Name;
 import org.col.api.NameSearch;
 import org.col.api.Page;
+import org.col.api.NameSearchResult;
+import org.col.api.Taxon;
 import org.col.api.vocab.Issue;
 import org.col.api.vocab.NomStatus;
+import org.col.api.vocab.Origin;
+import org.col.api.vocab.TaxonomicStatus;
+import org.col.util.BeanPrinter;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Test;
 
-import java.util.*;
-
-import static org.junit.Assert.*;
+import com.google.common.base.Splitter;
+import com.google.common.collect.Lists;
 
 /**
  *
  */
 public class NameMapperTest extends MapperTestBase<NameMapper> {
+
+	private static final Splitter SPACE_SPLITTER = Splitter.on(" ").trimResults();
 
 	public NameMapperTest() {
 		super(NameMapper.class);
@@ -108,7 +126,7 @@ public class NameMapperTest extends MapperTestBase<NameMapper> {
 		assertEquals(4, mapper().count(TestEntityGenerator.DATASET1.getKey()));
 	}
 
-	@Test
+	// @Test
 	public void basionymGroup() throws Exception {
 		Name n2bas = TestEntityGenerator.newName("n2");
 		mapper().create(n2bas);
@@ -232,7 +250,7 @@ public class NameMapperTest extends MapperTestBase<NameMapper> {
 		NameSearch search = new NameSearch();
 		search.setDatasetKey(TestEntityGenerator.DATASET1.getKey());
 		search.setQ("foo");
-		List<Name> names = mapper().search(search, new Page());
+		List<NameSearchResult> names = mapper().search(search, new Page());
 		assertEquals("01", 3, names.size());
 
 		search.setRank(Rank.SPECIES);
@@ -252,7 +270,6 @@ public class NameMapperTest extends MapperTestBase<NameMapper> {
 		names = mapper().search(search, new Page());
 		assertEquals("05", 0, names.size());
 	}
-
 
 	@Test
 	// Test with name type as extra search criterion
@@ -288,7 +305,7 @@ public class NameMapperTest extends MapperTestBase<NameMapper> {
 		NameSearch search = new NameSearch();
 		search.setDatasetKey(TestEntityGenerator.DATASET1.getKey());
 		search.setQ("foo");
-		List<Name> names = mapper().search(search, new Page());
+		List<NameSearchResult> names = mapper().search(search, new Page());
 		assertEquals("01", 3, names.size());
 
 		search.setType(NameType.SCIENTIFIC);
@@ -343,7 +360,7 @@ public class NameMapperTest extends MapperTestBase<NameMapper> {
 		NameSearch search = new NameSearch();
 		search.setDatasetKey(TestEntityGenerator.DATASET1.getKey());
 		search.setQ("foo");
-		List<Name> names = mapper().search(search, new Page());
+		List<NameSearchResult> names = mapper().search(search, new Page());
 		assertEquals("01", 3, names.size());
 
 		search.setNomstatus(NomStatus.UNEVALUATED);
@@ -362,6 +379,183 @@ public class NameMapperTest extends MapperTestBase<NameMapper> {
 		search.setNomstatus(NomStatus.DOUBTFUL);
 		names = mapper().search(search, new Page());
 		assertEquals("05", 0, names.size());
+	}
+
+	@Test
+	// Test synonymy
+	public void searchWithSynonyms() throws Exception {
+
+		NameSearchResult syn1 = newSynonym("Syn one"); // 1
+		NameSearchResult syn2 = newSynonym("Syn two"); // 2
+
+		Name acc1 = newAcceptedName("Accepted one"); // 3
+		Name acc2 = newAcceptedName("Accepted two"); // 4
+		Name acc3 = newAcceptedName("Accepted three"); // 5
+
+		Taxon t1 = newTaxon("t-01", acc1);
+		Taxon t2 = newTaxon("t-02", acc2);
+		Taxon t3 = newTaxon("t-03", acc3);
+
+		syn1.setTaxa(Arrays.asList(t1, t2));
+		syn2.setTaxa(Arrays.asList(t3));
+
+		saveSynonym(syn1);
+		saveSynonym(syn2);
+
+		commit();
+
+		// Since we have an empty NameSearch, we should just have all names;
+		// the ones created here + the ones inserted through squirrels
+		List<NameSearchResult> result = mapper().search(new NameSearch(), new Page());
+		assertEquals("01", 7, result.size());
+
+	}
+
+	@Test
+	// Test synonymy (make sure "accepted" property is set correctly)
+	public void searchWithSynonyms2() throws Exception {
+
+		NameSearchResult syn1 = newSynonym("Syn one"); // 1
+		NameSearchResult syn2 = newSynonym("Syn two"); // 2
+
+		Name acc1 = newAcceptedName("Accepted one"); // 3
+		Name acc2 = newAcceptedName("Accepted two"); // 4
+		Name acc3 = newAcceptedName("Accepted three"); // 5
+
+		Taxon t1 = newTaxon("t-01", acc1);
+		Taxon t2 = newTaxon("t-02", acc2);
+		Taxon t3 = newTaxon("t-03", acc3);
+
+		syn1.setTaxa(Arrays.asList(t1, t2));
+		syn2.setTaxa(Arrays.asList(t3));
+
+		saveSynonym(syn1);
+		saveSynonym(syn2);
+
+		commit();
+
+		NameSearch query = new NameSearch();
+		// Provide key of synonym
+		query.setKey(syn1.getKey());
+		List<NameSearchResult> result = mapper().search(query, new Page());
+		assertEquals("01", 1, result.size());
+		assertFalse("02", result.get(0).isAccepted());
+
+	}
+
+	@Test
+	// Test synonymy (make sure "accepted" property is set correctly)
+	public void searchWithSynonyms3() throws Exception {
+
+		NameSearchResult syn1 = newSynonym("Syn one"); // 1
+		NameSearchResult syn2 = newSynonym("Syn two"); // 2
+
+		Name acc1 = newAcceptedName("Accepted one"); // 3
+		Name acc2 = newAcceptedName("Accepted two"); // 4
+		Name acc3 = newAcceptedName("Accepted three"); // 5
+
+		Taxon t1 = newTaxon("t-01", acc1);
+		Taxon t2 = newTaxon("t-02", acc2);
+		Taxon t3 = newTaxon("t-03", acc3);
+
+		syn1.setTaxa(Arrays.asList(t1, t2));
+		syn2.setTaxa(Arrays.asList(t3));
+
+		saveSynonym(syn1);
+		saveSynonym(syn2);
+
+		commit();
+
+		NameSearch query = new NameSearch();
+		// Provide key of accepted name
+		query.setKey(acc1.getKey());
+		List<NameSearchResult> result = mapper().search(query, new Page());
+		assertEquals("01", 1, result.size());
+		assertTrue("02", result.get(0).isAccepted());
+
+	}
+
+	@Test
+	// Test sorting (only make sure we generate valid SQL)
+	public void searchSort() throws Exception {
+
+		NameSearchResult syn1 = newSynonym("Syn one"); // 1
+		NameSearchResult syn2 = newSynonym("Syn two"); // 2
+
+		Name acc1 = newAcceptedName("Accepted one"); // 3
+		Name acc2 = newAcceptedName("Accepted two"); // 4
+		Name acc3 = newAcceptedName("Accepted three"); // 5
+
+		Taxon t1 = newTaxon("t-01", acc1);
+		Taxon t2 = newTaxon("t-02", acc2);
+		Taxon t3 = newTaxon("t-03", acc3);
+
+		syn1.setTaxa(Arrays.asList(t1, t2));
+		syn2.setTaxa(Arrays.asList(t3));
+
+		saveSynonym(syn1);
+		saveSynonym(syn2);
+
+		commit();
+
+		NameSearch query = new NameSearch();
+		query.setSortBy(NameSearch.SortBy.RELEVANCE);
+		mapper().search(query, new Page());
+		query.setSortBy(NameSearch.SortBy.NAME);
+		mapper().search(query, new Page());
+		
+	}
+
+	private static NameSearchResult newSynonym(String scientificName) {
+		NameSearchResult syn = new NameSearchResult();
+		syn.setDatasetKey(TestEntityGenerator.DATASET1.getKey());
+		syn.setId(scientificName.toLowerCase().replace(' ', '-'));
+		syn.setScientificName(scientificName);
+		List<String> tokens = SPACE_SPLITTER.splitToList(scientificName);
+		syn.setGenus(tokens.get(0));
+		syn.setSpecificEpithet(tokens.get(1));
+		syn.setOrigin(Origin.SOURCE);
+		syn.setType(NameType.SCIENTIFIC);
+		return syn;
+	}
+
+	private static Name newAcceptedName(String scientificName) {
+		Name name = new Name();
+		name.setDatasetKey(TestEntityGenerator.DATASET1.getKey());
+		name.setId(scientificName.toLowerCase().replace(' ', '-'));
+		name.setScientificName(scientificName);
+		List<String> tokens = SPACE_SPLITTER.splitToList(scientificName);
+		name.setGenus(tokens.get(0));
+		name.setSpecificEpithet(tokens.get(1));
+		name.setOrigin(Origin.SOURCE);
+		name.setType(NameType.SCIENTIFIC);
+		return name;
+	}
+
+	private static Taxon newTaxon(String id, Name n) {
+		Taxon t = new Taxon();
+		t.setDatasetKey(TestEntityGenerator.DATASET1.getKey());
+		t.setId(id);
+		t.setName(n);
+		t.setOrigin(Origin.SOURCE);
+		t.setStatus(TaxonomicStatus.ACCEPTED);
+		return t;
+	}
+
+	private void saveSynonym(NameSearchResult syn) throws SQLException {
+		mapper().create(syn);
+		TaxonMapper taxonMapper = initMybatisRule.getMapper(TaxonMapper.class);
+		Connection conn = initMybatisRule.getSqlSession().getConnection();
+		String sql = "INSERT INTO synonym(taxon_key,name_key,dataset_key) VALUES (?,?,?)";
+		PreparedStatement ps = conn.prepareStatement(sql);
+		for (Taxon t : syn.getTaxa()) {
+			mapper().create(t.getName());
+			taxonMapper.create(t);
+			ps.setInt(1, t.getKey());
+			ps.setInt(2, syn.getKey());
+			ps.setInt(3, syn.getDatasetKey());
+			ps.executeUpdate();
+		}
 	}
 
 	@Test
@@ -392,7 +586,7 @@ public class NameMapperTest extends MapperTestBase<NameMapper> {
 		n.setIssues(issue);
 		mapper().create(n);
 
-    Set<Issue> otherIssue = EnumSet.noneOf(Issue.class);
+		Set<Issue> otherIssue = EnumSet.noneOf(Issue.class);
 		otherIssue.add(Issue.BIB_REFERENCE_INVALID);
 
 		n = TestEntityGenerator.newName("d");
@@ -405,7 +599,7 @@ public class NameMapperTest extends MapperTestBase<NameMapper> {
 		NameSearch search = new NameSearch();
 		search.setDatasetKey(TestEntityGenerator.DATASET1.getKey());
 		search.setQ("foo");
-		List<Name> names = mapper().search(search, new Page());
+		List<NameSearchResult> names = mapper().search(search, new Page());
 		assertEquals("01", 3, names.size());
 
 		search.setIssue(Issue.UNPARSABLE_AUTHORSHIP);

@@ -11,11 +11,19 @@ import org.gbif.nameparser.api.Rank;
 
 public class NameSearch {
 
-	@PathParam("datasetKey")
-	private int datasetKey;
+	public static enum SortBy {
+		RELEVANCE,
+		NAME
+	}
 
 	@QueryParam("q")
 	private String q;
+
+	@PathParam("datasetKey")
+	private Integer datasetKey;
+
+	@QueryParam("key")
+	private Integer key;
 
 	@QueryParam("rank")
 	private Rank rank;
@@ -32,13 +40,8 @@ public class NameSearch {
 	@QueryParam("taxstatus")
 	private NameType type;
 
-	public int getDatasetKey() {
-		return datasetKey;
-	}
-
-	public void setDatasetKey(int datasetKey) {
-		this.datasetKey = datasetKey;
-	}
+	@QueryParam("sortBy")
+	private SortBy sortBy;
 
 	public String getQ() {
 		return q;
@@ -46,6 +49,22 @@ public class NameSearch {
 
 	public void setQ(String q) {
 		this.q = q;
+	}
+
+	public Integer getDatasetKey() {
+		return datasetKey;
+	}
+
+	public void setDatasetKey(Integer datasetKey) {
+		this.datasetKey = datasetKey;
+	}
+
+	public Integer getKey() {
+		return key;
+	}
+
+	public void setKey(Integer key) {
+		this.key = key;
 	}
 
 	public Rank getRank() {
@@ -86,6 +105,14 @@ public class NameSearch {
 
 	public void setType(NameType type) {
 		this.type = type;
+	}
+
+	public SortBy getSortBy() {
+		return sortBy;
+	}
+
+	public void setSortBy(SortBy sortBy) {
+		this.sortBy = sortBy;
 	}
 
 }
