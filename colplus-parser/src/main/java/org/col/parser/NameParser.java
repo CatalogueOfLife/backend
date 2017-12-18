@@ -4,6 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.col.api.Name;
 import org.col.api.vocab.Issue;
 import org.gbif.nameparser.NameParserGBIF;
+import org.gbif.nameparser.api.ParsedName;
 import org.gbif.nameparser.api.Rank;
 import org.gbif.nameparser.api.UnparsableNameException;
 
@@ -33,17 +34,16 @@ public class NameParser implements Parser<Name> {
     try {
       n = new Name(PARSER_INTERNAL.parse(name, rank));
       n.setScientificName(n.canonicalNameWithoutAuthorship());
-      if (!n.isParsed() || !n.isAuthorsParsed()) {
+      if (!n.getState().isAuthorshipParsed()) {
         n.addIssue(Issue.UNPARSABLE_NAME);
       }
 
     } catch (UnparsableNameException e) {
       n = new Name();
-      n.setParsed(false);
-      n.setAuthorsParsed(false);
-      n.setType(e.getType());
       n.setRank(rank);
       n.setScientificName(e.getName());
+      n.setType(e.getType());
+      n.setState(ParsedName.State.NONE);
       // adds an issue in case the type indicates a parsable name
       if (n.getType().isParsable()) {
         n.addIssue(Issue.UNPARSABLE_NAME);
