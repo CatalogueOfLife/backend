@@ -94,8 +94,7 @@ public class Name extends ParsedName {
     setRemarks(pn.getRemarks());
     setType(pn.getType());
     setDoubtful(pn.isDoubtful());
-    setParsed(pn.isParsed());
-    setAuthorsParsed(pn.isAuthorsParsed());
+    setState(pn.getState());
     for (String w : pn.getWarnings()) {
       addWarning(w);
     }
