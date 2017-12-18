@@ -42,7 +42,7 @@
         accepted.id as accepted_id,
         accepted.scientific_name as accepted_scientific_name,
         accepted.rank as accepted_rank,
-        CASE t2.key WHEN NULL THEN FALSE ELSE TRUE END as accepted
+        CASE COALESCE(t2.key, 0) WHEN 0 THEN FALSE ELSE TRUE END as accepted
     </sql>
 
     <sql id="COLS">

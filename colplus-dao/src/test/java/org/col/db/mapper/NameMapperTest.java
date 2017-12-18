@@ -403,7 +403,6 @@ public class NameMapperTest extends MapperTestBase<NameMapper> {
 	}
 
 	@Test
-  @Ignore("Fails, needs someone to check who knows whats expected")
 	// Test synonymy (make sure "accepted" property is set correctly)
 	public void searchWithSynonyms2() throws Exception {
 
