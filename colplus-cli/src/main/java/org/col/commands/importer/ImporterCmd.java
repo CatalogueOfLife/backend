@@ -5,6 +5,7 @@ import io.dropwizard.cli.ConfiguredCommand;
 import io.dropwizard.setup.Bootstrap;
 import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -125,6 +126,8 @@ public class ImporterCmd extends ConfiguredCommand<CliConfig> {
   private void importDataset(Dataset d, SqlSessionFactory factory) throws Exception {
     final int datasetKey = d.getKey();
     final LocalDateTime start = LocalDateTime.now();
+    final File dwcaDir = cfg.normalizer.sourceDir(datasetKey);
+    NormalizerStore store = null;
     try {
       LOG.info("Downloading sources for dataset {} from {}", datasetKey, d.getDataAccess());
       File dwca = cfg.normalizer.source(datasetKey);
@@ -132,18 +135,21 @@ public class ImporterCmd extends ConfiguredCommand<CliConfig> {
       DownloadUtil.download(d.getDataAccess().toURL(), dwca);
 
       LOG.info("Extracting files from archive {}", datasetKey);
-      File dwcaDir = cfg.normalizer.sourceDir(datasetKey);
+      if (dwcaDir.exists()) {
+        LOG.info("Remove existing uncompressed dwca dir {}", dwcaDir.getAbsolutePath());
+        FileUtils.deleteDirectory(dwcaDir);
+      }
       dwcaDir.mkdirs();
       CompressionUtil.decompressFile(dwcaDir, dwca);
 
       LOG.info("Normalizing {}!", datasetKey);
-      NormalizerStore store = NeoDbFactory.create(cfg.normalizer, datasetKey);
+      store = NeoDbFactory.create(cfg.normalizer, datasetKey);
       Normalizer normalizer = new Normalizer(store, dwcaDir);
       normalizer.run();
 
       LOG.info("Writing {} to Postgres!", datasetKey);
-      PgImport pgImport = new PgImport(datasetKey,
-          NeoDbFactory.open(cfg.normalizer, datasetKey), factory, cfg.importer
+      store = NeoDbFactory.open(cfg.normalizer, datasetKey);
+      PgImport pgImport = new PgImport(datasetKey, store, factory, cfg.importer
       );
       pgImport.run();
 
@@ -164,7 +170,15 @@ public class ImporterCmd extends ConfiguredCommand<CliConfig> {
         DatasetDao dao = new DatasetDao(session);
         dao.createImportFailure(d, start, lastModified(datasetKey), e);
       }
-      throw e;
+
+    } finally {
+      // close neo store if open
+      if (store != null) {
+        store.close();
+      }
+      // remove decompressed dwca folder
+      LOG.info("Remove uncompressed dwca dir {}", dwcaDir.getAbsolutePath());
+      FileUtils.deleteDirectory(dwcaDir);
     }
   }
 }
