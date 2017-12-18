@@ -4,211 +4,256 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="org.col.db.mapper.NameMapper">
 
-  <sql id="SELECT">
-    n.key,
-    n.id,
-    n.dataset_key,
-    n.scientific_name,
-    n.rank,
-    n.uninomial,
-    n.genus,
-    n.infrageneric_epithet,
-    n.specific_epithet,
-    n.infraspecific_epithet,
-    n.notho,
-    n.basionym_authors,
-    n.basionym_ex_authors,
-    n.basionym_year,
-    n.combination_authors,
-    n.combination_ex_authors,
-    n.combination_year,
-    n.sanctioning_author,
-    n.code,
-    n.status,
-    n.origin,
-    n.type,
-    n.fossil,
-    n.basionym_key,
-    n.remarks,
-    n.issues
-  </sql>
+    <sql id="SELECT">
+        n.key,
+        n.id,
+        n.dataset_key,
+        n.scientific_name,
+        n.rank,
+        n.uninomial,
+        n.genus,
+        n.infrageneric_epithet,
+        n.specific_epithet,
+        n.infraspecific_epithet,
+        n.notho,
+        n.basionym_authors,
+        n.basionym_ex_authors,
+        n.basionym_year,
+        n.combination_authors,
+        n.combination_ex_authors,
+        n.combination_year,
+        n.sanctioning_author,
+        n.code,
+        n.status,
+        n.origin,
+        n.type,
+        n.fossil,
+        n.basionym_key,
+        n.remarks,
+        n.issues
+    </sql>
 
-  <sql id="COLS">
-    id,
-    dataset_key,
-    scientific_name,
-    rank,
-    uninomial,
-    genus,
-    infrageneric_epithet,
-    specific_epithet,
-    infraspecific_epithet,
-    notho,
-    basionym_authors,
-    basionym_ex_authors,
-    basionym_year,
-    combination_authors,
-    combination_ex_authors,
-    combination_year,
-    sanctioning_author,
-    code,
-    status,
-    origin,
-    type,
-    fossil,
-    basionym_key,
-    remarks,
-    issues
-  </sql>
+    <sql id="SEARCH_SELECT">
+        <include refid="SELECT" />
+        ,
+        t.key as taxon_key,
+        t.id as taxon_id,
+        accepted.key as accepted_key,
+        accepted.id as accepted_id,
+        accepted.scientific_name as accepted_scientific_name,
+        accepted.rank as accepted_rank,
+        CASE t2.key WHEN NULL THEN FALSE ELSE TRUE END as accepted
+    </sql>
 
-  <sql id="PROPS">
-    #{id},
-    #{datasetKey},
-    #{scientificName},
-    #{rank}::rank,
-    #{uninomial},
-    #{genus},
-    #{infragenericEpithet},
-    #{specificEpithet},
-    #{infraspecificEpithet},
-    #{notho},
-    #{basionymAuthorship.authors, typeHandler=org.col.db.type.StringArrayTypeHandler},
-    #{basionymAuthorship.exAuthors, typeHandler=org.col.db.type.StringArrayTypeHandler},
-    #{basionymAuthorship.year},
-    #{combinationAuthorship.authors, typeHandler=org.col.db.type.StringArrayTypeHandler},
-    #{combinationAuthorship.exAuthors, typeHandler=org.col.db.type.StringArrayTypeHandler},
-    #{combinationAuthorship.year},
-    #{sanctioningAuthor},
-    #{code},
-    #{status},
-    #{origin},
-    #{type},
-    #{fossil},
-    #{basionymKey},
-    #{remarks},
-    #{issues, typeHandler=org.col.db.type2.IssueSetTypeHandler}::int[]
-  </sql>
+    <sql id="COLS">
+        id,
+        dataset_key,
+        scientific_name,
+        rank,
+        uninomial,
+        genus,
+        infrageneric_epithet,
+        specific_epithet,
+        infraspecific_epithet,
+        notho,
+        basionym_authors,
+        basionym_ex_authors,
+        basionym_year,
+        combination_authors,
+        combination_ex_authors,
+        combination_year,
+        sanctioning_author,
+        code,
+        status,
+        origin,
+        type,
+        fossil,
+        basionym_key,
+        remarks,
+        issues
+    </sql>
 
-  <sql id="FROM">
-    name n LEFT JOIN name bn ON n.basionym_key=bn.key
-  </sql>
+    <sql id="PROPS">
+        #{id},
+        #{datasetKey},
+        #{scientificName},
+        #{rank}::rank,
+        #{uninomial},
+        #{genus},
+        #{infragenericEpithet},
+        #{specificEpithet},
+        #{infraspecificEpithet},
+        #{notho},
+        #{basionymAuthorship.authors, typeHandler=org.col.db.type.StringArrayTypeHandler},
+        #{basionymAuthorship.exAuthors, typeHandler=org.col.db.type.StringArrayTypeHandler},
+        #{basionymAuthorship.year},
+        #{combinationAuthorship.authors, typeHandler=org.col.db.type.StringArrayTypeHandler},
+        #{combinationAuthorship.exAuthors, typeHandler=org.col.db.type.StringArrayTypeHandler},
+        #{combinationAuthorship.year},
+        #{sanctioningAuthor},
+        #{code},
+        #{status},
+        #{origin},
+        #{type},
+        #{fossil},
+        #{basionymKey},
+        #{remarks},
+        #{issues, typeHandler=org.col.db.type2.IssueSetTypeHandler}::int[]
+    </sql>
 
-  <!-- TODO: filter only accepted or synoynms -->
-  <sql id="SEARCH_WHERE">
-    n.doc @@ plainto_tsquery(#{nameSearch.q})
-    <if test="nameSearch.datasetKey != null">
-        AND #{nameSearch.datasetKey} = n.dataset_key
-    </if>
-    <if test="nameSearch.rank != null">
-        AND #{nameSearch.rank}::rank = n.rank
-    </if>
-    <if test="nameSearch.nomstatus != null">
-        AND #{nameSearch.nomstatus}::int = n.status
-    </if>
-    <if test="nameSearch.type != null">
-        AND #{nameSearch.type}::int = n.type
-    </if>
-    <if test="nameSearch.issue != null">
-        AND n.issues @> array[#{nameSearch.issue}::int]
-    </if>
-  </sql>
+    <sql id="FROM">
+        name n LEFT JOIN name bn ON n.basionym_key=bn.key
+    </sql>
 
-  <!-- A mapping to Name, mostly auto mapped -->
-  <resultMap id="nameResultMap" type="Name" autoMapping="true">
-    <id property="key" column="key" />
-    <result property="id" column="id" />
-    <result property="issues" column="issues" typeHandler="org.col.db.type2.IssueSetTypeHandler" />
-    <association property="combinationAuthorship" javaType="Authorship">
-      <result property="authors" column="combination_authors" typeHandler="org.col.db.type.StringArrayTypeHandler" />
-      <result property="exAuthors" column="combination_ex_authors" typeHandler="org.col.db.type.StringArrayTypeHandler" />
-      <result property="year" column="combination_year" />
-    </association>
-    <association property="basionymAuthorship" javaType="Authorship">
-      <result property="authors" column="basionym_authors" typeHandler="org.col.db.type.StringArrayTypeHandler" />
-      <result property="exAuthors" column="basionym_ex_authors" typeHandler="org.col.db.type.StringArrayTypeHandler" />
-      <result property="year" column="basionym_year" />
-    </association>
-  </resultMap>
+    <sql id="SEARCH_FROM">
+        <include refid="FROM" />
+        LEFT JOIN synonym syn on (n.key = syn.name_key)
+        LEFT JOIN taxon t on (syn.taxon_key = t.key)
+        LEFT JOIN name accepted on (t.name_key = accepted.key)
+        LEFT JOIN taxon t2 ON (n.key = t2.name_key)
+    </sql>
+
+    <!-- TODO: filter only accepted or synoynms -->
+    <sql id="SEARCH_WHERE">
+        TRUE
+        <if test="nameSearch.q!= null">
+            AND n.doc @@ plainto_tsquery(#{nameSearch.q})
+        </if>
+        <if test="nameSearch.datasetKey != null">
+            AND #{nameSearch.datasetKey} = n.dataset_key
+        </if>
+        <if test="nameSearch.key != null">
+            AND #{nameSearch.key} = n.key
+        </if>
+        <if test="nameSearch.rank != null">
+            AND #{nameSearch.rank}::rank = n.rank
+        </if>
+        <if test="nameSearch.nomstatus != null">
+            AND #{nameSearch.nomstatus}::int = n.status
+        </if>
+        <if test="nameSearch.type != null">
+            AND #{nameSearch.type}::int = n.type
+        </if>
+        <if test="nameSearch.issue != null">
+            AND n.issues @> array[#{nameSearch.issue}::int]
+        </if>
+    </sql>
+
+    <!-- A mapping to Name, mostly auto mapped -->
+    <resultMap id="nameResultMap" type="Name" autoMapping="true">
+        <id property="key" column="key" />
+        <result property="id" column="id" />
+        <result property="issues" column="issues" typeHandler="org.col.db.type2.IssueSetTypeHandler" />
+        <association property="combinationAuthorship" javaType="Authorship">
+            <result property="authors" column="combination_authors" typeHandler="org.col.db.type.StringArrayTypeHandler" />
+            <result property="exAuthors" column="combination_ex_authors" typeHandler="org.col.db.type.StringArrayTypeHandler" />
+            <result property="year" column="combination_year" />
+        </association>
+        <association property="basionymAuthorship" javaType="Authorship">
+            <result property="authors" column="basionym_authors" typeHandler="org.col.db.type.StringArrayTypeHandler" />
+            <result property="exAuthors" column="basionym_ex_authors" typeHandler="org.col.db.type.StringArrayTypeHandler" />
+            <result property="year" column="basionym_year" />
+        </association>
+    </resultMap>
+
+    <resultMap id="nameSearchResultMap" type="NameSearchResult" autoMapping="true" extends="nameResultMap">
+        <collection property="taxa" ofType="Taxon" columnPrefix="taxon_" autoMapping="true">
+            <id property="key" column="taxon_key" />
+            <association property="name" javaType="Name" resultMap="nameResultMap" autoMapping="true" columnPrefix="accepted_" />            
+        </collection>
+    </resultMap>
+    
+    <select id="lookupKey" resultType="Integer">
+        SELECT key
+        FROM name
+        WHERE dataset_key = #{datasetKey} AND id = #{id}
+    </select>
+
+    <select id="count" parameterType="map" resultType="Integer">
+        SELECT count(*)
+        FROM name
+        WHERE dataset_key = #{datasetKey}
+    </select>
+
+    <select id="list" parameterType="map" resultMap="nameResultMap">
+        SELECT
+        <include refid="SELECT" />
+        FROM
+        <include refid="FROM" />
+        WHERE n.dataset_key = #{datasetKey}
+        ORDER BY key
+        <include refid="org.col.db.mapper.Common.limit" />
+    </select>
 
 
+    <select id="countSearchResults" parameterType="map" resultType="Integer">
+        SELECT COUNT(*)
+        FROM
+        <include refid="FROM" />
+        WHERE
+        <include refid="SEARCH_WHERE" />
+    </select>
 
-  <select id="lookupKey" resultType="Integer">
-    SELECT key
-    FROM name
-    WHERE dataset_key = #{datasetKey} AND id = #{id}
-  </select>
+    <select id="search" parameterType="map" resultMap="nameSearchResultMap">
+        SELECT
+        <include refid="SEARCH_SELECT" />
+        FROM
+        <include refid="SEARCH_FROM" />
+        WHERE
+        <include refid="SEARCH_WHERE" />
+        <choose>
+            <when test="nameSearch.sortBy == null or nameSearch.sortBy.toString() == 'NAME'">
+                ORDER BY n.scientific_name ASC
+            </when>
+            <otherwise>
+                ORDER BY ts_rank(n.doc, plainto_tsquery(#{nameSearch.q})) DESC
+            </otherwise>
+        </choose>
+        <include refid="org.col.db.mapper.Common.limit" />
+    </select>
 
-  <select id="count" parameterType="map" resultType="Integer">
-    SELECT count(*)
-    FROM name
-    WHERE dataset_key = #{datasetKey}
-  </select>
+    <select id="get" resultMap="nameResultMap">
+        SELECT
+        <include refid="SELECT" />
+        FROM
+        <include refid="FROM" />
+        WHERE n.key = #{key}
+    </select>
 
-  <select id="list" parameterType="map" resultMap="nameResultMap">
-    SELECT
-    <include refid="SELECT" />
-    FROM
-    <include refid="FROM" />
-    WHERE n.dataset_key = #{datasetKey}
-    ORDER BY key
-    <include refid="org.col.db.mapper.Common.limit" />
-  </select>
-  
+    <insert id="create" parameterType="Name" useGeneratedKeys="true" keyProperty="key">
+        INSERT INTO name (
+        <include refid="COLS" />
+        )
+        VALUES (
+        <include refid="PROPS" />
+        )
+    </insert>
 
-  <select id="countSearchResults" parameterType="map" resultType="Integer">
-    SELECT COUNT(*)
-    FROM <include refid="FROM" />
-    WHERE <include refid="SEARCH_WHERE" />
-  </select>
+    <select id="basionymGroup" resultMap="nameResultMap">
+        SELECT
+        <include refid="SELECT" />
+        FROM name ns
+        JOIN name n ON
+        <!-- ns was the basionym of other combinations -->
+        n.basionym_key=ns.key OR n.key = ns.key
+        <!-- ns was a combination with a basionym -->
+        OR n.key=ns.basionym_key OR n.basionym_key=ns.basionym_key
+        LEFT JOIN name bn ON n.basionym_key=bn.key
+        WHERE ns.key=#{key}
+    </select>
 
-  <select id="search" parameterType="map" resultMap="nameResultMap">
-    SELECT <include refid="SELECT" />
-    FROM <include refid="FROM" />
-    WHERE <include refid="SEARCH_WHERE" />
-    ORDER BY ts_rank(n.doc, plainto_tsquery(#{nameSearch.q})) DESC
-    <include refid="org.col.db.mapper.Common.limit"/>
-  </select>
+    <insert id="addSynonym" parameterType="map">
+        INSERT INTO synonym (dataset_key, taxon_key, name_key)
+        VALUES (#{datasetKey}, #{key}, #{nameKey})
+    </insert>
 
-  <select id="get" resultMap="nameResultMap">
-    SELECT <include refid="SELECT" />
-    FROM <include refid="FROM" />
-    WHERE n.key = #{key}
-  </select>
-
-  <insert id="create" parameterType="Name" useGeneratedKeys="true" keyProperty="key">
-    INSERT INTO name (
-    <include refid="COLS" />
-    )
-    VALUES (
-    <include refid="PROPS" />
-    )
-  </insert>
-
-  <select id="basionymGroup" resultMap="nameResultMap">
-    SELECT
-    <include refid="SELECT" />
-    FROM name ns
-    JOIN name n ON
-    <!-- ns was the basionym of other combinations -->
-    n.basionym_key=ns.key OR n.key = ns.key
-    <!-- ns was a combination with a basionym -->
-    OR n.key=ns.basionym_key OR n.basionym_key=ns.basionym_key
-    LEFT JOIN name bn ON n.basionym_key=bn.key
-    WHERE ns.key=#{key}
-  </select>
-
-  <insert id="addSynonym" parameterType="map">
-    INSERT INTO synonym (dataset_key, taxon_key, name_key)
-    VALUES (#{datasetKey}, #{key}, #{nameKey})
-  </insert>
-
-  <select id="synonyms" resultMap="nameResultMap">
-    SELECT
-    <include refid="SELECT" />
-    FROM
-    <include refid="FROM" />
-    JOIN synonym s ON s.name_key=n.key
-    WHERE s.taxon_key = #{key}
-    ORDER BY COALESCE(n.basionym_key, n.key)
-  </select>
+    <select id="synonyms" resultMap="nameResultMap">
+        SELECT
+        <include refid="SELECT" />
+        FROM
+        <include refid="FROM" />
+        JOIN synonym s ON s.name_key=n.key
+        WHERE s.taxon_key = #{key}
+        ORDER BY COALESCE(n.basionym_key, n.key)
+    </select>
 </mapper>

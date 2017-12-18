@@ -32,7 +32,7 @@ public class NameResource {
 	@GET
 	@Timed
 	@Path("/search")
-	public PagingResultSet<Name> search(@BeanParam NameSearch query,
+	public PagingResultSet<NameSearchResult> search(@BeanParam NameSearch query,
                                       @Valid @BeanParam Page page,
                                       @Context SqlSession session) {
 		NameDao dao = new NameDao(session);

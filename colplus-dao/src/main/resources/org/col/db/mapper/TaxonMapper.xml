@@ -122,6 +122,16 @@
         <include refid="org.col.db.mapper.Common.limit"/>
     </select>
     
+    <select id="getAcceptedNames">
+        SELECT <include refid="SELECT" />, s.name_key as synonym_name_key
+        FROM  <include refid="FROM" />
+        JOIN synonym s ON (t.key = s.taxon_key)
+        WHERE s.name_key IN
+        <foreach item="nameKey" collection="nameKeys" separator="," open="(" close=")">
+            #{nameKey}
+        </foreach>
+    </select>
+    
     <select id="get" resultMap="taxonResultMap">
 		SELECT <include refid="SELECT" />
 		FROM <include refid="FROM" />

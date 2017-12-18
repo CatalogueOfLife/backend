@@ -1,8 +1,16 @@
 package org.col.dao;
 
-import com.google.common.collect.Lists;
+import java.util.List;
+
 import org.apache.ibatis.session.SqlSession;
-import org.col.api.*;
+import org.col.api.Name;
+import org.col.api.NameSearch;
+import org.col.api.NameSearchResult;
+import org.col.api.Page;
+import org.col.api.PagedReference;
+import org.col.api.PagingResultSet;
+import org.col.api.Synonymy;
+import org.col.api.VerbatimRecord;
 import org.col.db.NotFoundException;
 import org.col.db.mapper.NameMapper;
 import org.col.db.mapper.ReferenceMapper;
@@ -10,8 +18,7 @@ import org.col.db.mapper.VerbatimRecordMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
-import java.util.Optional;
+import com.google.common.collect.Lists;
 
 public class NameDao {
 
@@ -106,13 +113,13 @@ public class NameDao {
 		return syn;
 	}
 
-	public PagingResultSet<Name> search(NameSearch query, Page page) {
+	public PagingResultSet<NameSearchResult> search(NameSearch query, Page page) {
 		if (query.getQ() != null) {
 			query.setQ(query.getQ() + ":*");
 		}
 		NameMapper mapper = session.getMapper(NameMapper.class);
 		int total = mapper.countSearchResults(query);
-		List<Name> result = mapper.search(query, page);
+		List<NameSearchResult> result = mapper.search(query, page);
 		return new PagingResultSet<>(page, total, result);
 	}
 
