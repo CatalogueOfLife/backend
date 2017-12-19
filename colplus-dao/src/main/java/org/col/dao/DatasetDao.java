@@ -36,9 +36,9 @@ public class DatasetDao {
 
 	public PagingResultSet<Dataset> search(String q, @Nullable Page page) {
 		page = page == null ? new Page() : page;
-		String query = q + ":*"; // Enable "starts_with" term matching
-		int total = mapper.countSearchResults(query);
-		List<Dataset> result = mapper.search(query, page);
+		//String query = q + ":*"; // Enable "starts_with" term matching
+    int total = mapper.count(q);
+		List<Dataset> result = mapper.search(q, page);
 		return new PagingResultSet<>(page, total, result);
 	}
 

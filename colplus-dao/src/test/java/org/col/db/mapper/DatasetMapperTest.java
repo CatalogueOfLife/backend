@@ -83,16 +83,16 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
 
 	@Test
 	public void count() throws Exception {
-		assertEquals(2, mapper().count());
+		assertEquals(2, mapper().count(null));
 
 		mapper().create(create());
 		mapper().create(create());
 		// even thogh not committed we are in the same session so we see the new
 		// datasets already
-		assertEquals(4, mapper().count());
+		assertEquals(4, mapper().count(null));
 
 		commit();
-		assertEquals(4, mapper().count());
+		assertEquals(4, mapper().count(null));
 	}
 
 	@Test
@@ -141,7 +141,7 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
 		createSearchableDataset("WORMS", "WORMS", "The Worms dataset");
 		createSearchableDataset("FOO", "BAR", null);
 		commit();
-		int count = mapper().countSearchResults("worms");
+		int count = mapper().count("worms");
 		assertEquals("01", 3, count);
 	}
 

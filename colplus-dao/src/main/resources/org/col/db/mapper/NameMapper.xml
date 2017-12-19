@@ -117,7 +117,7 @@
     <sql id="SEARCH_WHERE">
         TRUE
         <if test="nameSearch.q!= null">
-            AND n.doc @@ plainto_tsquery(#{nameSearch.q})
+            AND n.doc @@ plainto_tsquery('simple2', #{nameSearch.q})
         </if>
         <if test="nameSearch.datasetKey != null">
             AND #{nameSearch.datasetKey} = n.dataset_key
@@ -206,7 +206,7 @@
                 ORDER BY n.scientific_name ASC
             </when>
             <otherwise>
-                ORDER BY ts_rank(n.doc, plainto_tsquery(#{nameSearch.q})) DESC
+                ORDER BY ts_rank(n.doc, plainto_tsquery('simple2', #{nameSearch.q})) DESC
             </otherwise>
         </choose>
         <include refid="org.col.db.mapper.Common.limit" />

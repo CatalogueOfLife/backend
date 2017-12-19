@@ -111,8 +111,28 @@ CREATE TABLE dataset (
   notes text,
   created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
-  deleted TIMESTAMP WITHOUT TIME ZONE
+  deleted TIMESTAMP WITHOUT TIME ZONE,
+  doc tsvector
 );
+
+CREATE INDEX ON dataset USING gin(doc);
+
+CREATE OR REPLACE FUNCTION dataset_doc_update() RETURNS trigger AS $$
+BEGIN
+    NEW.doc :=
+      setweight(to_tsvector('simple2', coalesce(NEW.title,'')), 'A') ||
+      setweight(to_tsvector('simple2', coalesce(NEW.organisation,'')), 'B') ||
+      setweight(to_tsvector('simple2', coalesce(NEW.description,'')), 'C') ||
+      setweight(to_tsvector('simple2', coalesce(NEW.contact_person,'')), 'C') ||
+      setweight(to_tsvector('simple2', coalesce(array_to_string(NEW.authors_and_editors, '|'), '')), 'C') ||
+      setweight(to_tsvector('simple2', coalesce(NEW.gbif_key::text,'')), 'C');
+    RETURN NEW;
+END
+$$
+LANGUAGE plpgsql;
+
+CREATE TRIGGER dataset_trigger BEFORE INSERT OR UPDATE
+  ON dataset FOR EACH ROW EXECUTE PROCEDURE dataset_doc_update();
 
 CREATE TABLE dataset_import (
   dataset_key INTEGER NOT NULL REFERENCES dataset,

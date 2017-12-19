@@ -4,25 +4,24 @@ import org.apache.ibatis.annotations.Param;
 import org.col.api.Dataset;
 import org.col.api.Page;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.UUID;
 
 public interface DatasetMapper {
 
-	int count();
+	int count(@Nullable @Param("q") String q);
 
-	List<Dataset> list(@Param("page") Page page);
+  List<Dataset> list(@Param("page") Page page);
+
+	List<Dataset> search(@Nullable @Param("q") String q, @Param("page") Page page);
 
   /**
    * Page through all datasets, listing datasets which have not been imported before.
    */
   List<Dataset> listEmpty(@Param("page") Page page);
 
-	int countSearchResults(@Param("q") String q);
-
-	List<Dataset> search(@Param("q") String q, @Param("page") Page page);
-
-	Dataset get(@Param("key") int key);
+  Dataset get(@Param("key") int key);
 
 	Dataset getByGBIF(@Param("key") UUID key);
 
