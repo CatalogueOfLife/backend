@@ -46,7 +46,6 @@ public class DatasetDao {
    * Creates a new successful dataset import instance with metrics
    */
   public DatasetImport startImport(Dataset dataset) {
-    LOG.info("Create new import attempt for dataset {}", dataset.getKey());
     // build new import
     DatasetImport di = new DatasetImport();
     di.setDatasetKey(dataset.getKey());
@@ -59,17 +58,14 @@ public class DatasetDao {
   /**
    * Updates a running dataset import instance with metrics and success state.
    */
-  public void updateImportSuccess(DatasetImport di,
-                                  LocalDateTime download
-  ) {
-    LOG.info("Build import metrics for dataset {}", di.getDatasetKey());
+  public void updateImportSuccess(DatasetImport di) {
     // generate new count metrics
     DatasetImport m = diMapper.metrics(di.getDatasetKey());
     // update metrics instance with existing infos
     m.setDatasetKey(di.getDatasetKey());
     m.setAttempt(di.getAttempt());
     m.setStarted(di.getStarted());
-    m.setDownload(download);
+    m.setDownload(di.getDownload());
     m.setFinished(LocalDateTime.now());
     m.setState(ImportState.SUCCESS);
     m.setError(null);
@@ -79,17 +75,20 @@ public class DatasetDao {
   /**
    * Creates a new dataset import instance without metrics for a failed import.
    */
-  public void updateImportFailure(DatasetImport di,
-                                  LocalDateTime download,
-                                  ImportState state,
-                                  Exception e
-  ) {
-    LOG.info("Update dataset import with error log for {}", di.getDatasetKey());
-    di.setDownload(download);
+  public void updateImportFailure(DatasetImport di, ImportState state, Exception e) {
     di.setFinished(LocalDateTime.now());
     di.setState(state);
     di.setError(e.getMessage());
     diMapper.update(di);
   }
 
+  /**
+   * Creates a new dataset import instance without metrics for a failed import.
+   */
+  public void updateImportUnchanged(DatasetImport di) {
+    di.setFinished(LocalDateTime.now());
+    di.setState(ImportState.UNCHANGED);
+    di.setError(null);
+    diMapper.update(di);
+  }
 }

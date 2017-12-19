@@ -2,6 +2,7 @@ package org.col.commands.importer;
 
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.filefilter.HiddenFileFilter;
 import org.apache.commons.io.filefilter.TrueFileFilter;
@@ -64,7 +65,8 @@ public class CompressionUtil {
   /**
    * Tries to decompress a file trying gzip or zip regardless of the filename or its suffix.
    *
-   * @param directory      directory where archive's contents will be decompressed to
+   * @param directory      directory where archive's contents will be decompressed to.
+   *                       If already existing it will be wiped
    * @param compressedFile compressed file
    *
    * @return list of files that have been extracted or null an empty list if archive couldn't be decompressed
@@ -74,6 +76,12 @@ public class CompressionUtil {
    * @throws UnsupportedCompressionType if the compression type wasn't recognized
    */
   public static List<File> decompressFile(File directory, File compressedFile) throws IOException, UnsupportedCompressionType {
+    if (directory.exists()) {
+      LOG.debug("Remove existing uncompressed dir {}", directory.getAbsolutePath());
+      FileUtils.deleteDirectory(directory);
+    }
+    directory.mkdirs();
+
     List<File> files = null;
     // first try zip
     try {

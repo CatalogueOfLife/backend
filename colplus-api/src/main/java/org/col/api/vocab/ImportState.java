@@ -16,6 +16,11 @@ public enum ImportState {
   SUCCESS,
 
   /**
+   * Sources have not been changed since last import. Imported stopped.
+   */
+  UNCHANGED,
+
+  /**
    * Manually aborted import, e.g. system was shut down.
    */
   ABORTED,
