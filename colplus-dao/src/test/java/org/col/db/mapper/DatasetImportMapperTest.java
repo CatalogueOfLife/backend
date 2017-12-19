@@ -13,6 +13,7 @@ import java.util.Random;
 
 import static org.col.TestEntityGenerator.DATASET1;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 
 
@@ -30,7 +31,7 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     DatasetImport d = new DatasetImport();
     d.setDatasetKey(DATASET1.getKey());
     d.setError("no error");
-    d.setSuccess(true);
+    d.setState(ImportState.RUNNING);
     d.setStarted(LocalDateTime.now());
     d.setFinished(LocalDateTime.now());
     d.setDownload(LocalDateTime.now());
@@ -66,6 +67,13 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     DatasetImport d2 = mapper().last(d1.getDatasetKey());
     assertNotNull(d2.getAttempt());
     d1.setAttempt(d2.getAttempt());
+    assertEquals(d1, d2);
+
+    d1.setState(ImportState.SUCCESS);
+    mapper().update(d1);
+    assertNotEquals(d1, d2);
+
+    d2 = mapper().last(d1.getDatasetKey());
     assertEquals(d1, d2);
   }
 

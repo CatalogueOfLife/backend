@@ -10,7 +10,9 @@ import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.Dataset;
+import org.col.api.DatasetImport;
 import org.col.api.vocab.DataFormat;
+import org.col.api.vocab.ImportState;
 import org.col.api.vocab.License;
 import org.col.commands.config.CliConfig;
 import org.col.commands.importer.dwca.Normalizer;
@@ -141,6 +143,16 @@ public class ImporterCmd extends ConfiguredCommand<CliConfig> {
     final LocalDateTime start = LocalDateTime.now();
     final File dwcaDir = cfg.normalizer.sourceDir(datasetKey);
     NormalizerStore store = null;
+    DatasetImport di;
+
+    try (SqlSession session = factory.openSession(true)){
+      LOG.info("Start import of dataset {} from {}", datasetKey, d.getDataAccess());
+      DatasetDao dao = new DatasetDao(session);
+      di = dao.startImport(d);
+    }
+
+    // keep track which larger step failed
+    ImportState state = ImportState.FAILED_DOWNLOAD;
     try {
       LOG.info("Downloading sources for dataset {} from {}", datasetKey, d.getDataAccess());
       File dwca = cfg.normalizer.source(datasetKey);
@@ -156,20 +168,23 @@ public class ImporterCmd extends ConfiguredCommand<CliConfig> {
       CompressionUtil.decompressFile(dwcaDir, dwca);
 
       LOG.info("Normalizing {}!", datasetKey);
+      state = ImportState.FAILED_NORMALIZER;
       store = NeoDbFactory.create(cfg.normalizer, datasetKey);
       Normalizer normalizer = new Normalizer(store, dwcaDir);
       normalizer.run();
 
       LOG.info("Writing {} to Postgres!", datasetKey);
+      state = ImportState.FAILED_PGIMPORT;
       store = NeoDbFactory.open(cfg.normalizer, datasetKey);
       PgImport pgImport = new PgImport(datasetKey, store, factory, cfg.importer
       );
       pgImport.run();
 
       LOG.info("Analyzing {} metrics", datasetKey);
+      state = ImportState.FAILED_METRICS;
       try (SqlSession session = factory.openSession(true)){
         DatasetDao dao = new DatasetDao(session);
-        dao.createImportSuccess(d, start, lastModified(datasetKey));
+        dao.updateImportSuccess(di, lastModified(datasetKey));
       }
 
       LOG.info("Dataset import {} completed in {}",
@@ -182,7 +197,7 @@ public class ImporterCmd extends ConfiguredCommand<CliConfig> {
       LOG.error("Dataset {} import failed. Log to pg.", datasetKey, e);
       try (SqlSession session = factory.openSession(true)){
         DatasetDao dao = new DatasetDao(session);
-        dao.createImportFailure(d, start, lastModified(datasetKey), e);
+        dao.updateImportFailure(di, lastModified(datasetKey), state, e);
       }
 
     } finally {

@@ -117,7 +117,7 @@ CREATE TABLE dataset (
 CREATE TABLE dataset_import (
   dataset_key INTEGER NOT NULL REFERENCES dataset,
   attempt INTEGER NOT NULL,
-  success BOOLEAN,
+  state INTEGER NOT NULL,
   error TEXT,
   started TIMESTAMP WITHOUT TIME ZONE,
   finished TIMESTAMP WITHOUT TIME ZONE,

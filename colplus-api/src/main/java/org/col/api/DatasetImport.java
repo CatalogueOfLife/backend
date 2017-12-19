@@ -20,9 +20,9 @@ public class DatasetImport {
   private Integer attempt;
 
   /**
-   * True if import ended successfully and was not rolled back.
+   * State of the import, indicating if still running, success or failure.
    */
-  private boolean success;
+  private ImportState state;
 
   /**
    * Last modification date of the downloaded file
@@ -69,12 +69,12 @@ public class DatasetImport {
     this.datasetKey = datasetKey;
   }
 
-  public boolean isSuccess() {
-    return success;
+  public ImportState getState() {
+    return state;
   }
 
-  public void setSuccess(boolean success) {
-    this.success = success;
+  public void setState(ImportState state) {
+    this.state = state;
   }
 
   public LocalDateTime getDownload() {
@@ -202,7 +202,7 @@ public class DatasetImport {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     DatasetImport that = (DatasetImport) o;
-    return success == that.success &&
+    return state == that.state &&
         Objects.equals(attempt, that.attempt) &&
         Objects.equals(datasetKey, that.datasetKey) &&
         Objects.equals(download, that.download) &&
@@ -224,6 +224,19 @@ public class DatasetImport {
 
   @Override
   public int hashCode() {
-    return Objects.hash(attempt, datasetKey, success, download, started, finished, error, verbatimCount, nameCount, taxonCount, vernacularCount, distributionCount, issuesCount, namesByRankCount, namesByTypeCount, vernacularsByLanguageCount, distributionsByGazetteerCount, namesByOriginCount);
+    return Objects.hash(attempt, datasetKey, state, download, started, finished, error, verbatimCount, nameCount, taxonCount, vernacularCount, distributionCount, issuesCount, namesByRankCount, namesByTypeCount, vernacularsByLanguageCount, distributionsByGazetteerCount, namesByOriginCount);
+  }
+
+  @Override
+  public String toString() {
+    return "DatasetImport{" +
+        datasetKey +
+        " - " + attempt +
+        ": state=" + state +
+        ", started=" + started +
+        ", verbatim=" + verbatimCount +
+        ", names=" + nameCount +
+        ", taxa=" + taxonCount +
+        '}';
   }
 }
