@@ -112,7 +112,7 @@
     SELECT r.key,r.id,r.dataset_key,r.csl,r.serial_key,r.year,j.reference_page
     FROM reference r
     LEFT JOIN name_act j ON (r.key = j.reference_key)
-    WHERE j.dataset_key = #{datasetKey} AND j.name_key = #{nameKey}
+    WHERE j.name_key = #{nameKey}
     AND j.type = 0 <!-- DESCRIPTION (not sure if this is necessary) -->
   </select>
 

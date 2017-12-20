@@ -120,7 +120,7 @@
     <!-- TODO: filter only accepted or synoynms -->
     <sql id="SEARCH_WHERE">
         TRUE
-        <if test="nameSearch.q!= null">
+        <if test="nameSearch.q != null">
             AND n.doc @@ plainto_tsquery('simple2', #{nameSearch.q})
         </if>
         <if test="nameSearch.datasetKey != null">
@@ -182,13 +182,11 @@
     <select id="lookupKey" resultType="Integer">
         SELECT key
         FROM name
-        WHERE dataset_key = #{datasetKey} AND id = #{id}
+        WHERE id = #{id} AND dataset_key = #{datasetKey}
     </select>
 
     <select id="count" parameterType="map" resultType="Integer">
-        SELECT count(*)
-        FROM name
-        WHERE dataset_key = #{datasetKey}
+        SELECT count(*) FROM name WHERE dataset_key = #{datasetKey}
     </select>
 
     <select id="list" parameterType="map" resultMap="nameResultMap">

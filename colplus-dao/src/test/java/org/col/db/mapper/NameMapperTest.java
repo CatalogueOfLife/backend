@@ -63,7 +63,7 @@ public class NameMapperTest extends MapperTestBase<NameMapper> {
 		assertNotNull(n1.getKey());
 		commit();
 
-		int n1Key = mapper().lookupKey(TestEntityGenerator.DATASET1.getKey(), n1.getId());
+		int n1Key = mapper().lookupKey(n1.getId(), TestEntityGenerator.DATASET1.getKey());
 		assertEquals((Integer) n1Key, n1.getKey());
 
 		Name n1b = mapper().get(n1Key);
@@ -82,7 +82,7 @@ public class NameMapperTest extends MapperTestBase<NameMapper> {
 		// n1.setId(n2.getBasionymKey());
 		// n2.setBasionymKey(n1);
 
-		int n2Key = mapper().lookupKey(TestEntityGenerator.DATASET1.getKey(), n2.getId());
+		int n2Key = mapper().lookupKey(n2.getId(), TestEntityGenerator.DATASET1.getKey());
 		assertEquals((Integer) n2Key, n2.getKey());
 		Name n2b = mapper().get(n2Key);
 		assertEquals(n2, n2b);

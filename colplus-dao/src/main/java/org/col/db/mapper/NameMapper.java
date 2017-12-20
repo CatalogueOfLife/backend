@@ -13,7 +13,7 @@ import org.col.db.mapper.temp.NameSearchResultTemp;
  */
 public interface NameMapper {
 
-	Integer lookupKey(@Param("datasetKey") int datasetKey, @Param("id") String id);
+	Integer lookupKey(@Param("id") String id, @Param("datasetKey") int datasetKey);
 
 	int count(@Param("datasetKey") int datasetKey);
 
@@ -43,5 +43,6 @@ public interface NameMapper {
 
 	int countSearchResults(@Param("nameSearch") NameSearch nameSearch);
 
-	List<NameSearchResultTemp> search(@Param("nameSearch") NameSearch nameSearch, @Param("page") Page page);
+	List<NameSearchResultTemp> search(@Param("nameSearch") NameSearch nameSearch,
+	    @Param("page") Page page);
 }

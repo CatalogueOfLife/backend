@@ -1,5 +1,15 @@
 package org.col.db.mapper;
 
+import static org.col.TestEntityGenerator.DATASET1;
+import static org.col.TestEntityGenerator.NAME1;
+import static org.col.TestEntityGenerator.NAME2;
+import static org.col.TestEntityGenerator.REF1;
+import static org.col.TestEntityGenerator.REF2;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
+import java.util.List;
+
 import org.col.api.Name;
 import org.col.api.NameAct;
 import org.col.api.vocab.NomActType;
@@ -9,15 +19,10 @@ import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Test;
 
-import java.util.List;
-
-import static org.col.TestEntityGenerator.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
 /**
  *
  */
+@SuppressWarnings("static-method")
 public class NameActMapperTest extends MapperTestBase<NameActMapper> {
 
 	public NameActMapperTest() {
@@ -40,7 +45,7 @@ public class NameActMapperTest extends MapperTestBase<NameActMapper> {
 		mapper().create(newNameAct1());
 		mapper().create(newNameAct2());
 		commit();
-		List<NameAct> nas = mapper().listByName(DATASET1.getKey(), NAME1.getKey());
+		List<NameAct> nas = mapper().listByName(NAME1.getKey());
 		/*
 		 * NB We have one pre-inserted (squirrels.sql) NameAct record associated with
 		 * NAME1; one of the records inserted here is _not_ associated with NAME1, so we
@@ -49,24 +54,24 @@ public class NameActMapperTest extends MapperTestBase<NameActMapper> {
 		assertEquals("01", 3, nas.size());
 	}
 
-	private Name createName(String id, String name){
-    Name n = new Name();
-    n.setDatasetKey(DATASET1.getKey());
-    n.setId(id);
-    n.setScientificName(name);
-    n.setType(NameType.SCIENTIFIC);
-    n.setRank(Rank.UNRANKED);
-    n.setOrigin(Origin.SOURCE);
-    return n;
-  }
+	private Name createName(String id, String name) {
+		Name n = new Name();
+		n.setDatasetKey(DATASET1.getKey());
+		n.setId(id);
+		n.setScientificName(name);
+		n.setType(NameType.SCIENTIFIC);
+		n.setRank(Rank.UNRANKED);
+		n.setOrigin(Origin.SOURCE);
+		return n;
+	}
 
-  private NameAct createAct(int nameKey,  NomActType type){
-    NameAct act = new NameAct();
-    act.setDatasetKey(DATASET1.getKey());
-    act.setNameKey(nameKey);
-    act.setType(type);
-    return act;
-  }
+	private NameAct createAct(int nameKey, NomActType type) {
+		NameAct act = new NameAct();
+		act.setDatasetKey(DATASET1.getKey());
+		act.setNameKey(nameKey);
+		act.setType(type);
+		return act;
+	}
 
 	@Test
 	public void testListByHomotypicGroup() throws Exception {
@@ -81,44 +86,44 @@ public class NameActMapperTest extends MapperTestBase<NameActMapper> {
 		NameAct nameAct = createAct(basionym.getKey(), NomActType.DESCRIPTION);
 		mapper().create(nameAct);
 
-    nameAct = createAct(basionym.getKey(), NomActType.TYPIFICATION);
+		nameAct = createAct(basionym.getKey(), NomActType.TYPIFICATION);
 		mapper().create(nameAct);
 
 		// Create name referencing basionym, also with 2 name acts
 
-    Name name = createName("foo-new", "Foo new");
+		Name name = createName("foo-new", "Foo new");
 		name.setBasionymKey(basionym.getKey());
 		nameMapper.create(name);
 
-    nameAct = createAct(name.getKey(), NomActType.DESCRIPTION);
+		nameAct = createAct(name.getKey(), NomActType.DESCRIPTION);
 		mapper().create(nameAct);
 
-    nameAct = createAct(name.getKey(), NomActType.TYPIFICATION);
+		nameAct = createAct(name.getKey(), NomActType.TYPIFICATION);
 		mapper().create(nameAct);
 
 		// Create another name referencing basionym, with 1 name act
 
-    name = createName("foo-too", "Foo too");
+		name = createName("foo-too", "Foo too");
 		name.setBasionymKey(basionym.getKey());
 		nameMapper.create(name);
 
-    nameAct = createAct(name.getKey(), NomActType.DESCRIPTION);
+		nameAct = createAct(name.getKey(), NomActType.DESCRIPTION);
 		mapper().create(nameAct);
 
 		commit();
 
 		// So total size of homotypic group is 2 + 2 + 1 = 5
 
-		Integer nameKey = nameMapper.lookupKey(DATASET1.getKey(), "foo-bar");
-		List<NameAct> nas = mapper().listByHomotypicGroup(DATASET1.getKey(), nameKey);
+		Integer nameKey = nameMapper.lookupKey("foo-bar", DATASET1.getKey());
+		List<NameAct> nas = mapper().listByHomotypicGroup(nameKey);
 		assertEquals("01", 5, nas.size());
 
-		nameKey = nameMapper.lookupKey(DATASET1.getKey(), "foo-new");
-		nas = mapper().listByHomotypicGroup(DATASET1.getKey(), nameKey);
+		nameKey = nameMapper.lookupKey("foo-new", DATASET1.getKey());
+		nas = mapper().listByHomotypicGroup(nameKey);
 		assertEquals("02", 5, nas.size());
 
-		nameKey = nameMapper.lookupKey(DATASET1.getKey(), "foo-too");
-		nas = mapper().listByHomotypicGroup(DATASET1.getKey(), nameKey);
+		nameKey = nameMapper.lookupKey("foo-too", DATASET1.getKey());
+		nas = mapper().listByHomotypicGroup(nameKey);
 		assertEquals("03", 5, nas.size());
 	}
 

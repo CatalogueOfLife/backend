@@ -1,20 +1,34 @@
 package org.col.resources;
 
-import com.codahale.metrics.annotation.Timed;
+import java.util.List;
+
+import javax.validation.Valid;
+import javax.ws.rs.BeanParam;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+
 import org.apache.ibatis.session.SqlSession;
-import org.col.api.*;
+import org.col.api.Name;
+import org.col.api.NameAct;
+import org.col.api.NameSearch;
+import org.col.api.NameSearchResult;
+import org.col.api.Page;
+import org.col.api.PagedReference;
+import org.col.api.PagingResultSet;
+import org.col.api.VerbatimRecord;
 import org.col.dao.NameDao;
 import org.col.db.mapper.NameActMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.validation.Valid;
-import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import java.util.List;
+import com.codahale.metrics.annotation.Timed;
 
-@Path("/dataset/{datasetKey}/name")
+@Path("/name")
 @Produces(MediaType.APPLICATION_JSON)
 public class NameResource {
 
@@ -22,73 +36,73 @@ public class NameResource {
 	private static final Logger LOG = LoggerFactory.getLogger(NameResource.class);
 
 	@GET
-	public PagingResultSet<Name> list(@PathParam("datasetKey") Integer datasetKey,
-                                    @Valid @BeanParam Page page,
-	                                  @Context SqlSession session) {
+	public PagingResultSet<Name> list(@QueryParam("datasetKey") Integer datasetKey,
+	    @Valid @BeanParam Page page,
+	    @Context SqlSession session) {
 		NameDao dao = new NameDao(session);
 		return dao.list(datasetKey, page);
 	}
 
 	@GET
 	@Timed
-	@Path("/search")
+	@Path("search")
 	public PagingResultSet<NameSearchResult> search(@BeanParam NameSearch query,
-                                      @Valid @BeanParam Page page,
-                                      @Context SqlSession session) {
+	    @Valid @BeanParam Page page,
+	    @Context SqlSession session) {
 		NameDao dao = new NameDao(session);
 		return dao.search(query, page);
 	}
 
 	@GET
 	@Timed
-	@Path("{id}")
-	public Name get(@PathParam("datasetKey") Integer datasetKey,
-                  @PathParam("id") String id,
-                  @Context SqlSession session) {
+	@Path("{id}/{datasetKey}")
+	public Integer lookupKey(@PathParam("id") String id,
+	    @PathParam("datasetKey") int datasetKey,
+	    @Context SqlSession session) {
 		NameDao dao = new NameDao(session);
-		return dao.get(datasetKey, id);
+		return dao.lookupKey(id, datasetKey);
 	}
 
 	@GET
 	@Timed
-	@Path("{id}/basionymGroup")
-	public List<Name> getSynonyms(@PathParam("datasetKey") Integer datasetKey,
-                                @PathParam("id") String id,
-                                @Context SqlSession session) {
+	@Path("{key}")
+	public Name get(@PathParam("key") int key, @Context SqlSession session) {
 		NameDao dao = new NameDao(session);
-		return dao.basionymGroup(datasetKey, id);
+		return dao.get(key);
 	}
 
 	@GET
 	@Timed
-	@Path("{id}/publishedIn")
-	public PagedReference getPublishedIn(@PathParam("datasetKey") Integer datasetKey,
-                                       @PathParam("id") int nameKey,
-	                                     @Context SqlSession session) {
+	@Path("{key}/synonyms")
+	public List<Name> getSynonyms(@PathParam("key") int key, @Context SqlSession session) {
 		NameDao dao = new NameDao(session);
-		return dao.getPublishedIn(datasetKey, nameKey);
+		return dao.basionymGroup(key);
 	}
 
 	@GET
 	@Timed
-	@Path("{id}/verbatim")
-	public VerbatimRecord getVerbatim(@PathParam("datasetKey") Integer datasetKey,
-                                    @PathParam("id") String id,
-                                    @Context SqlSession session) {
+	@Path("{key}/publishedIn")
+	public PagedReference getPublishedIn(@PathParam("key") int key, @Context SqlSession session) {
 		NameDao dao = new NameDao(session);
-		return dao.getVerbatim(datasetKey, id);
+		return dao.getPublishedIn(key);
 	}
 
 	@GET
 	@Timed
-	@Path("{id}/acts")
-	@SuppressWarnings("unused")
-	public List<NameAct> getActs(@PathParam("datasetKey") Integer datasetKey,
-                               @PathParam("id") int nameKey,
-                               @QueryParam("homotypic") Boolean homotypic,
-                               @Context SqlSession session) {
+	@Path("{key}/verbatim")
+	public VerbatimRecord getVerbatim(@PathParam("key") int key, @Context SqlSession session) {
+		NameDao dao = new NameDao(session);
+		return dao.getVerbatim(key);
+	}
+
+	@GET
+	@Timed
+	@Path("{key}/acts")
+	public List<NameAct> getActs(@PathParam("key") int key,
+	    @QueryParam("homotypic") Boolean homotypic,
+	    @Context SqlSession session) {
 		NameActMapper mapper = session.getMapper(NameActMapper.class);
-		return homotypic ? mapper.listByHomotypicGroup(datasetKey, nameKey) : mapper.listByName(datasetKey, nameKey);
+		return homotypic ? mapper.listByHomotypicGroup(key) : mapper.listByName(key);
 	}
 
 }
