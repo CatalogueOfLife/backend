@@ -24,4 +24,5 @@ public interface DatasetImportMapper {
 
   void create(@Param("di") DatasetImport datasetImport);
 
+  void update(@Param("di") DatasetImport datasetImport);
 }

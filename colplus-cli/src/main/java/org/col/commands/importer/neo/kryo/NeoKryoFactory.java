@@ -90,11 +90,12 @@ public class NeoKryoFactory implements KryoFactory {
     kryo.register(EnumSet.class, new EnumSetSerializer());
     kryo.register(Frequency.class);
     kryo.register(Gazetteer.class);
+    kryo.register(ImportState.class);
     kryo.register(Issue.class);
     kryo.register(Kingdom.class);
     kryo.register(Language.class);
     kryo.register(License.class);
-      kryo.register(Lifezone.class);
+    kryo.register(Lifezone.class);
     kryo.register(NamePart.class);
     kryo.register(NameType.class);
     kryo.register(NomActType.class);

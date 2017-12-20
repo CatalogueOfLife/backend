@@ -1,11 +1,11 @@
 package org.col.api;
 
-import java.util.Objects;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+
+import java.util.Objects;
 
 /**
  * Simplified literature reference class linked to an optional serial container.
@@ -28,6 +28,11 @@ public class Reference {
 	 * Key to dataset instance. Defines context of the reference key.
 	 */
 	private Integer datasetKey;
+
+  /**
+   * Full reference citation as alternative to structured CSL data.
+   */
+  private String citation;
 
 	/**
 	 * Reference metadata encoded as CSL-JSON.
@@ -57,6 +62,7 @@ public class Reference {
 		this.key = source.key;
 		this.id = source.id;
 		this.datasetKey = source.datasetKey;
+    this.citation = source.citation;
 		this.csl = source.csl;
 		this.serialKey = source.serialKey;
 		this.year = source.year;
@@ -86,7 +92,11 @@ public class Reference {
 		this.datasetKey = datasetKey;
 	}
 
-	public ObjectNode getCsl() {
+  public void setCitation(String citation) {
+    this.citation = citation;
+  }
+
+  public ObjectNode getCsl() {
 		return csl;
 	}
 
@@ -119,13 +129,6 @@ public class Reference {
 		return r;
 	}
 
-	// Simple way to build a canonical full representation of the reference
-	@JsonIgnore
-	public String getCitation() {
-		// TODO: use most fields so a reference citation is build
-		return cslStr("title");
-	}
-
 	// VARIOUS METHODS DELEGATING TO THE UNDERLYING CSL JsonObject instance
 	@JsonIgnore
 	public String getTitle() {
@@ -153,8 +156,9 @@ public class Reference {
 			return false;
 		Reference reference = (Reference) o;
 		return Objects.equals(key, reference.key)
-		    && datasetKey == reference.datasetKey
+		    && Objects.equals(datasetKey, reference.datasetKey)
 		    && Objects.equals(id, reference.id)
+        && Objects.equals(citation, reference.citation)
 		    && Objects.equals(csl, reference.csl)
 		    && Objects.equals(serialKey, reference.serialKey)
 		    && Objects.equals(year, reference.year);
@@ -162,7 +166,7 @@ public class Reference {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(key, datasetKey, id, csl, serialKey, year);
+		return Objects.hash(key, datasetKey, id, citation, csl, serialKey, year);
 	}
 
 }
