@@ -4,23 +4,23 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="org.col.db.mapper.TaxonMapper">
 
-	<sql id="SELECT">
-		t.key,
-		t.id,
-		t.dataset_key,
-		t.parent_key,
-		t.name_key as n_key,
-		t.status,
-		t.origin,
-		t.according_to,
-		t.according_to_date,
-		t.fossil,
-		t.recent,
-		t.lifezones,
-		t.dataset_url,
-		t.species_estimate,
-		t.species_estimate_reference_key,
-		t.remarks,
+    <sql id="SELECT">
+        t.key,
+        t.id,
+        t.dataset_key,
+        t.parent_key,
+        t.name_key as n_key,
+        t.status,
+        t.origin,
+        t.according_to,
+        t.according_to_date,
+        t.fossil,
+        t.recent,
+        t.lifezones,
+        t.dataset_url,
+        t.species_estimate,
+        t.species_estimate_reference_key,
+        t.remarks,
         t.issues,
 
         n.id as n_id,
@@ -45,102 +45,118 @@
         n.origin as n_origin,
         n.type as n_type,
         n.fossil as n_fossil,
-        n.basionym_key as n_basionym_key,
+        n.basionym_key
+        as n_basionym_key,
         n.remarks as n_remarks,
         n.issues as n_issues
-	</sql>
+    </sql>
 
-	<sql id="COLS">
-		id,
-		dataset_key,
-		parent_key,
-		name_key,
-		status,
-		origin,
-		according_to,
-		according_to_date,
-		fossil,
-		recent,
-		lifezones,
-		dataset_url,
-		species_estimate,
-		species_estimate_reference_key,
-		remarks,
+    <sql id="COLS">
+        id,
+        dataset_key,
+        parent_key,
+        name_key,
+        status,
+        origin,
+        according_to,
+        according_to_date,
+        fossil,
+        recent,
+        lifezones,
+        dataset_url,
+        species_estimate,
+        species_estimate_reference_key,
+        remarks,
         issues
-	</sql>
+    </sql>
 
-	<sql id="PROPS">
-		#{id},
-		#{datasetKey},
-		#{parentKey},
-		#{name.key},
-		#{status},
-		#{origin},
-		#{accordingTo},
-		#{accordingToDate},
-		#{fossil},
-		#{recent},
-		#{lifezones, typeHandler=org.col.db.type.LifezoneSetTypeHandler},
-		#{datasetUrl, typeHandler=org.col.db.type.UriTypeHandler},
-		#{speciesEstimate},
-		#{speciesEstimateReferenceKey},
-		#{remarks},
+    <sql id="PROPS">
+        #{id},
+        #{datasetKey},
+        #{parentKey},
+        #{name.key},
+        #{status},
+        #{origin},
+        #{accordingTo},
+        #{accordingToDate},
+        #{fossil},
+        #{recent},
+        #{lifezones, typeHandler=org.col.db.type.LifezoneSetTypeHandler},
+        #{datasetUrl, typeHandler=org.col.db.type.UriTypeHandler},
+        #{speciesEstimate},
+        #{speciesEstimateReferenceKey},
+        #{remarks},
         #{issues, typeHandler=org.col.db.type2.IssueSetTypeHandler}::int[]
-	</sql>
+    </sql>
 
-	<sql id="FROM">
-		taxon t JOIN name n ON (t.name_key=n.key)
-	</sql>
+    <sql id="FROM">
+        taxon t JOIN name n ON (t.name_key=n.key)
+    </sql>
 
-	<!-- A mapping to Name, mostly auto mapped -->
-	<resultMap id="taxonResultMap" type="Taxon" autoMapping="true">
-		<id property="key" column="key" />
-		<result property="id" column="id" />
-        <result property="lifezones" column="lifezones" typeHandler="org.col.db.type.LifezoneSetTypeHandler"/>
-        <result property="issues" column="issues" typeHandler="org.col.db.type2.IssueSetTypeHandler"/>
-		<association property="name" javaType="Name" resultMap="org.col.db.mapper.NameMapper.nameResultMap" columnPrefix="n_" />
-	</resultMap>
+    <!-- A mapping to Name, mostly auto mapped -->
+    <resultMap id="taxonResultMap" type="Taxon" autoMapping="true">
+        <id property="key" column="key" />
+        <result property="id" column="id" />
+        <result property="lifezones" column="lifezones" typeHandler="org.col.db.type.LifezoneSetTypeHandler" />
+        <result property="issues" column="issues" typeHandler="org.col.db.type2.IssueSetTypeHandler" />
+        <association property="name" javaType="Name" resultMap="org.col.db.mapper.NameMapper.nameResultMap" columnPrefix="n_" />
+    </resultMap>
 
 
     <select id="lookupKey" resultType="Integer">
         SELECT key
         FROM taxon
-        WHERE dataset_key = #{datasetKey} AND id = #{id}
+        WHERE id = #{id} AND dataset_key = #{datasetKey}
     </select>
 
     <select id="count" parameterType="map" resultType="Integer">
         SELECT count(*)
         FROM taxon
-        WHERE dataset_key = #{datasetKey}
+        <if test="datasetKey != null">
+            WHERE dataset_key = #{datasetKey}
+        </if>
     </select>
 
     <select id="list" parameterType="map" resultMap="taxonResultMap">
-        SELECT <include refid="SELECT" />
-        FROM <include refid="FROM" />
-        WHERE t.dataset_key = #{datasetKey}
+        SELECT
+        <include refid="SELECT" />
+        FROM
+        <include refid="FROM" />
+        <if test="datasetKey != null">
+            WHERE t.dataset_key = #{datasetKey}
+        </if>
         ORDER BY key
-        <include refid="org.col.db.mapper.Common.limit"/>
+        <include refid="org.col.db.mapper.Common.limit" />
     </select>
-    
+
     <select id="getAcceptedNames">
-        SELECT <include refid="SELECT" />, s.name_key as synonym_name_key
-        FROM  <include refid="FROM" />
+        SELECT
+        <include refid="SELECT" />
+        , s.name_key as synonym_name_key
+        FROM
+        <include refid="FROM" />
         JOIN synonym s ON (t.key = s.taxon_key)
         WHERE s.name_key IN
         <foreach item="nameKey" collection="nameKeys" separator="," open="(" close=")">
             #{nameKey}
         </foreach>
     </select>
-    
-    <select id="get" resultMap="taxonResultMap">
-		SELECT <include refid="SELECT" />
-		FROM <include refid="FROM" />
-		WHERE t.key = #{key}
-	</select>
 
-	<insert id="create" parameterType="Taxon" useGeneratedKeys="true" keyProperty="key">
-		INSERT INTO taxon (<include refid="COLS" />)
-		VALUES (<include refid="PROPS" />)
-	</insert>
+    <select id="get" resultMap="taxonResultMap">
+        SELECT
+        <include refid="SELECT" />
+        FROM
+        <include refid="FROM" />
+        WHERE t.key = #{key}
+    </select>
+
+    <insert id="create" parameterType="Taxon" useGeneratedKeys="true" keyProperty="key">
+        INSERT INTO taxon (
+        <include refid="COLS" />
+        )
+        VALUES (
+        <include refid="PROPS" />
+        )
+    </insert>
 
 </mapper>

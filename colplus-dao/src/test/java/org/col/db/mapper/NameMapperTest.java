@@ -1,17 +1,9 @@
 package org.col.db.mapper;
 
-import com.google.common.base.Splitter;
-import com.google.common.collect.Lists;
-import org.col.TestEntityGenerator;
-import org.col.api.*;
-import org.col.api.vocab.Issue;
-import org.col.api.vocab.NomStatus;
-import org.col.api.vocab.Origin;
-import org.col.api.vocab.TaxonomicStatus;
-import org.gbif.nameparser.api.NameType;
-import org.gbif.nameparser.api.Rank;
-import org.junit.Ignore;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -21,7 +13,25 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
-import static org.junit.Assert.*;
+import org.col.TestEntityGenerator;
+import org.col.api.Dataset;
+import org.col.api.Name;
+import org.col.api.NameSearch;
+import org.col.api.NameSearchResult;
+import org.col.api.Page;
+import org.col.api.Taxon;
+import org.col.api.vocab.Issue;
+import org.col.api.vocab.NomStatus;
+import org.col.api.vocab.Origin;
+import org.col.api.vocab.TaxonomicStatus;
+import org.col.db.mapper.temp.NameSearchResultTemp;
+import org.col.util.BeanPrinter;
+import org.gbif.nameparser.api.NameType;
+import org.gbif.nameparser.api.Rank;
+import org.junit.Test;
+
+import com.google.common.base.Splitter;
+import com.google.common.collect.Lists;
 
 /**
  *
@@ -53,7 +63,7 @@ public class NameMapperTest extends MapperTestBase<NameMapper> {
 		assertNotNull(n1.getKey());
 		commit();
 
-		int n1Key = mapper().lookupKey(TestEntityGenerator.DATASET1.getKey(), n1.getId());
+		int n1Key = mapper().lookupKey(n1.getId(), TestEntityGenerator.DATASET1.getKey());
 		assertEquals((Integer) n1Key, n1.getKey());
 
 		Name n1b = mapper().get(n1Key);
@@ -72,7 +82,7 @@ public class NameMapperTest extends MapperTestBase<NameMapper> {
 		// n1.setId(n2.getBasionymKey());
 		// n2.setBasionymKey(n1);
 
-		int n2Key = mapper().lookupKey(TestEntityGenerator.DATASET1.getKey(), n2.getId());
+		int n2Key = mapper().lookupKey(n2.getId(), TestEntityGenerator.DATASET1.getKey());
 		assertEquals((Integer) n2Key, n2.getKey());
 		Name n2b = mapper().get(n2Key);
 		assertEquals(n2, n2b);
@@ -241,7 +251,7 @@ public class NameMapperTest extends MapperTestBase<NameMapper> {
 		NameSearch search = new NameSearch();
 		search.setDatasetKey(TestEntityGenerator.DATASET1.getKey());
 		search.setQ("foo");
-		List<NameSearchResult> names = mapper().search(search, new Page());
+		List<NameSearchResultTemp> names = mapper().search(search, new Page());
 		assertEquals("01", 3, names.size());
 
 		search.setRank(Rank.SPECIES);
@@ -296,7 +306,7 @@ public class NameMapperTest extends MapperTestBase<NameMapper> {
 		NameSearch search = new NameSearch();
 		search.setDatasetKey(TestEntityGenerator.DATASET1.getKey());
 		search.setQ("foo");
-		List<NameSearchResult> names = mapper().search(search, new Page());
+		List<NameSearchResultTemp> names = mapper().search(search, new Page());
 		assertEquals("01", 3, names.size());
 
 		search.setType(NameType.SCIENTIFIC);
@@ -351,7 +361,7 @@ public class NameMapperTest extends MapperTestBase<NameMapper> {
 		NameSearch search = new NameSearch();
 		search.setDatasetKey(TestEntityGenerator.DATASET1.getKey());
 		search.setQ("foo");
-		List<NameSearchResult> names = mapper().search(search, new Page());
+		List<NameSearchResultTemp> names = mapper().search(search, new Page());
 		assertEquals("01", 3, names.size());
 
 		search.setNomstatus(NomStatus.UNEVALUATED);
@@ -397,13 +407,13 @@ public class NameMapperTest extends MapperTestBase<NameMapper> {
 
 		// Since we have an empty NameSearch, we should just have all names;
 		// the ones created here + the ones inserted through squirrels
-		List<NameSearchResult> result = mapper().search(new NameSearch(), new Page());
+		List<NameSearchResultTemp> result = mapper().search(new NameSearch(), new Page());
 		assertEquals("01", 7, result.size());
 
 	}
 
 	@Test
-	// Test synonymy (make sure "accepted" property is set correctly)
+	// Test synonymy (make sure "accepted" property will be set correctly)
 	public void searchWithSynonyms2() throws Exception {
 
 		NameSearchResult syn1 = newSynonym("Syn one"); // 1
@@ -428,14 +438,16 @@ public class NameMapperTest extends MapperTestBase<NameMapper> {
 		NameSearch query = new NameSearch();
 		// Provide key of synonym
 		query.setKey(syn1.getKey());
-		List<NameSearchResult> result = mapper().search(query, new Page());
+		List<NameSearchResultTemp> result = mapper().search(query, new Page());
 		assertEquals("01", 1, result.size());
-		assertFalse("02", result.get(0).isAccepted());
-
+		assertNull("02", result.get(0).getTaxonOfThisName());
+		assertNotNull("03", result.get(0).getTaxaOfAcceptedNames());
+		BeanPrinter bp = new BeanPrinter();
+		bp.setShowObjectIds(true);
 	}
 
 	@Test
-	// Test synonymy (make sure "accepted" property is set correctly)
+	// Test synonymy (make sure "accepted" property will be set correctly)
 	public void searchWithSynonyms3() throws Exception {
 
 		NameSearchResult syn1 = newSynonym("Syn one"); // 1
@@ -460,10 +472,10 @@ public class NameMapperTest extends MapperTestBase<NameMapper> {
 		NameSearch query = new NameSearch();
 		// Provide key of accepted name
 		query.setKey(acc1.getKey());
-		List<NameSearchResult> result = mapper().search(query, new Page());
+		List<NameSearchResultTemp> result = mapper().search(query, new Page());
 		assertEquals("01", 1, result.size());
-		assertTrue("02", result.get(0).isAccepted());
-
+		assertNotNull("02", result.get(0).getTaxonOfThisName());
+		assertEquals("03", 0, result.get(0).getTaxaOfAcceptedNames().size());
 	}
 
 	@Test
@@ -494,7 +506,7 @@ public class NameMapperTest extends MapperTestBase<NameMapper> {
 		mapper().search(query, new Page());
 		query.setSortBy(NameSearch.SortBy.NAME);
 		mapper().search(query, new Page());
-		
+
 	}
 
 	private static NameSearchResult newSynonym(String scientificName) {
@@ -590,7 +602,7 @@ public class NameMapperTest extends MapperTestBase<NameMapper> {
 		NameSearch search = new NameSearch();
 		search.setDatasetKey(TestEntityGenerator.DATASET1.getKey());
 		search.setQ("foo");
-		List<NameSearchResult> names = mapper().search(search, new Page());
+		List<NameSearchResultTemp> names = mapper().search(search, new Page());
 		assertEquals("01", 3, names.size());
 
 		search.setIssue(Issue.UNPARSABLE_AUTHORSHIP);

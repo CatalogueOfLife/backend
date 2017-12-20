@@ -15,13 +15,12 @@ public interface NameActMapper {
 	/**
 	 * Returns the list of nomenclatural acts for a single name.
 	 */
-	List<NameAct> listByName(@Param("datasetKey") int datasetKey, @Param("nameKey") int nameKey);
+	List<NameAct> listByName(@Param("nameKey") int nameKey);
 
 	/**
 	 * Returns the list of nomenclatural acts for a whole homotypic group.
 	 */
-	List<NameAct> listByHomotypicGroup(@Param("datasetKey") int datasetKey,
-	    @Param("nameKey") int nameKey);
+	List<NameAct> listByHomotypicGroup(@Param("nameKey") int nameKey);
 
 	void create(NameAct act);
 

@@ -32,10 +32,10 @@ public class Name extends ParsedName {
 	 */
 	private Integer datasetKey;
 
-  /**
-   * Global name identifier from a nomenclator or the clearinghouse
-   */
-  private String scientificNameID;
+	/**
+	 * Global name identifier from a nomenclator or the clearinghouse
+	 */
+	private String scientificNameID;
 
 	/**
 	 * Entire canonical name string with a rank marker for infragenerics and
@@ -66,39 +66,57 @@ public class Name extends ParsedName {
 
 	private URI sourceUrl;
 
-  /**
-   * Issues related to this name with potential values in the map
-   */
-  private Set<Issue> issues = EnumSet.noneOf(Issue.class);
+	/**
+	 * Issues related to this name with potential values in the map
+	 */
+	private Set<Issue> issues = EnumSet.noneOf(Issue.class);
 
-  public Name() {
-  }
+	public Name() {
+	}
 
-  public Name(ParsedName pn) {
-    setCombinationAuthorship(pn.getCombinationAuthorship());
-    setBasionymAuthorship(pn.getBasionymAuthorship());
-    setSanctioningAuthor(pn.getSanctioningAuthor());
-    setRank(pn.getRank());
-    setCode(pn.getCode());
-    setUninomial(pn.getUninomial());
-    setGenus(pn.getGenus());
-    setInfragenericEpithet(pn.getInfragenericEpithet());
-    setSpecificEpithet(pn.getSpecificEpithet());
-    setInfraspecificEpithet(pn.getInfraspecificEpithet());
-    setCultivarEpithet(pn.getCultivarEpithet());
-    setStrain(pn.getStrain());
-    setCandidatus(pn.isCandidatus());
-    setNotho(pn.getNotho());
-    setSensu(pn.getSensu());
-    setNomenclaturalNotes(pn.getNomenclaturalNotes());
-    setRemarks(pn.getRemarks());
-    setType(pn.getType());
-    setDoubtful(pn.isDoubtful());
-    setState(pn.getState());
-    for (String w : pn.getWarnings()) {
-      addWarning(w);
-    }
-  }
+	public Name(ParsedName pn) {
+		setCombinationAuthorship(pn.getCombinationAuthorship());
+		setBasionymAuthorship(pn.getBasionymAuthorship());
+		setSanctioningAuthor(pn.getSanctioningAuthor());
+		setRank(pn.getRank());
+		setCode(pn.getCode());
+		setUninomial(pn.getUninomial());
+		setGenus(pn.getGenus());
+		setInfragenericEpithet(pn.getInfragenericEpithet());
+		setSpecificEpithet(pn.getSpecificEpithet());
+		setInfraspecificEpithet(pn.getInfraspecificEpithet());
+		setCultivarEpithet(pn.getCultivarEpithet());
+		setStrain(pn.getStrain());
+		setCandidatus(pn.isCandidatus());
+		setNotho(pn.getNotho());
+		setSensu(pn.getSensu());
+		setNomenclaturalNotes(pn.getNomenclaturalNotes());
+		setRemarks(pn.getRemarks());
+		setType(pn.getType());
+		setDoubtful(pn.isDoubtful());
+		setState(pn.getState());
+		for (String w : pn.getWarnings()) {
+			addWarning(w);
+		}
+	}
+
+	/**
+	 * Copy constructor. Creates shallow copy.
+	 */
+	public Name(Name n) {
+		this((ParsedName) n);
+		this.key = n.key;
+		this.id = n.id;
+		this.datasetKey = n.datasetKey;
+		this.scientificNameID = n.scientificNameID;
+		this.scientificName = n.scientificName;
+		this.origin = n.origin;
+		this.basionymKey = n.basionymKey;
+		this.fossil = n.fossil;
+		this.status = n.status;
+		this.sourceUrl = n.sourceUrl;
+		this.issues = n.issues;
+	}
 
 	public Integer getKey() {
 		return key;
@@ -124,15 +142,15 @@ public class Name extends ParsedName {
 		this.datasetKey = key;
 	}
 
-  public String getScientificNameID() {
-    return scientificNameID;
-  }
+	public String getScientificNameID() {
+		return scientificNameID;
+	}
 
-  public void setScientificNameID(String scientificNameID) {
-    this.scientificNameID = scientificNameID;
-  }
+	public void setScientificNameID(String scientificNameID) {
+		this.scientificNameID = scientificNameID;
+	}
 
-  public String getScientificName() {
+	public String getScientificName() {
 		return scientificName;
 	}
 
@@ -192,33 +210,37 @@ public class Name extends ParsedName {
 		issues.add(issue);
 	}
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
-    if (!super.equals(o)) return false;
-    Name name = (Name) o;
-    return Objects.equals(key, name.key) &&
-        Objects.equals(id, name.id) &&
-        Objects.equals(datasetKey, name.datasetKey) &&
-        Objects.equals(scientificNameID, name.scientificNameID) &&
-        Objects.equals(scientificName, name.scientificName) &&
-        origin == name.origin &&
-        Objects.equals(basionymKey, name.basionymKey) &&
-        Objects.equals(fossil, name.fossil) &&
-        status == name.status &&
-        Objects.equals(sourceUrl, name.sourceUrl) &&
-        Objects.equals(issues, name.issues);
-  }
+	@Override
+	public boolean equals(Object o) {
+		if (this == o)
+			return true;
+		if (o == null || getClass() != o.getClass())
+			return false;
+		if (!super.equals(o))
+			return false;
+		Name name = (Name) o;
+		return Objects.equals(key, name.key)
+		    && Objects.equals(id, name.id)
+		    && Objects.equals(datasetKey, name.datasetKey)
+		    && Objects.equals(scientificNameID, name.scientificNameID)
+		    && Objects.equals(scientificName, name.scientificName)
+		    && origin == name.origin
+		    && Objects.equals(basionymKey, name.basionymKey)
+		    && Objects.equals(fossil, name.fossil)
+		    && status == name.status
+		    && Objects.equals(sourceUrl, name.sourceUrl)
+		    && Objects.equals(issues, name.issues);
+	}
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(super.hashCode(), key, id, datasetKey, scientificNameID, scientificName, origin, basionymKey, fossil, status, sourceUrl, issues);
-  }
+	@Override
+	public int hashCode() {
+		return Objects.hash(super.hashCode(), key, id, datasetKey, scientificNameID, scientificName,
+		    origin, basionymKey, fossil, status, sourceUrl, issues);
+	}
 
-  @Override
-  public String toString() {
-    return key + "[" + id + "] " + canonicalNameComplete();
-  }
+	@Override
+	public String toString() {
+		return key + "[" + id + "] " + canonicalNameComplete();
+	}
 
 }

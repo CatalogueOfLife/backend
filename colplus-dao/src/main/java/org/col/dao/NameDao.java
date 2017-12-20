@@ -1,5 +1,6 @@
 package org.col.dao;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.ibatis.session.SqlSession;
@@ -15,6 +16,7 @@ import org.col.db.NotFoundException;
 import org.col.db.mapper.NameMapper;
 import org.col.db.mapper.ReferenceMapper;
 import org.col.db.mapper.VerbatimRecordMapper;
+import org.col.db.mapper.temp.NameSearchResultTemp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,20 +38,25 @@ public class NameDao {
 		return mapper.count(datasetKey);
 	}
 
-	public PagingResultSet<Name> list(int datasetKey, Page page) {
+	public PagingResultSet<Name> list(Integer datasetKey, Page page) {
 		NameMapper mapper = session.getMapper(NameMapper.class);
 		int total = mapper.count(datasetKey);
 		List<Name> result = mapper.list(datasetKey, page);
 		return new PagingResultSet<>(page, total, result);
 	}
 
-	public Name get(int key) {
+	public Integer lookupKey(String id, int datasetKey) throws NotFoundException {
 		NameMapper mapper = session.getMapper(NameMapper.class);
-		return mapper.get(key);
+		Integer key = mapper.lookupKey(id, datasetKey);
+		if (key == null) {
+			throw new NotFoundException(Name.class, datasetKey, id);
+		}
+		return key;
 	}
 
-	public Name get(int datasetKey, String id) {
-		return get(lookup(datasetKey, id));
+	public Name get(Integer key) {
+		NameMapper mapper = session.getMapper(NameMapper.class);
+		return mapper.get(key);
 	}
 
 	public void create(Name name) {
@@ -63,13 +70,6 @@ public class NameDao {
 	public List<Name> basionymGroup(int key) {
 		NameMapper mapper = session.getMapper(NameMapper.class);
 		return mapper.basionymGroup(key);
-	}
-
-	/**
-	 * Lists all homotypic basionymGroup based on the same basionym
-	 */
-	public List<Name> basionymGroup(int datasetKey, String id) {
-		return basionymGroup(lookup(datasetKey, id));
 	}
 
 	/**
@@ -119,27 +119,20 @@ public class NameDao {
 		}
 		NameMapper mapper = session.getMapper(NameMapper.class);
 		int total = mapper.countSearchResults(query);
-		List<NameSearchResult> result = mapper.search(query, page);
+		List<NameSearchResultTemp> temp = mapper.search(query, page);
+		List<NameSearchResult> result = new ArrayList<>(temp.size());
+		temp.forEach(c -> result.add(c.toNameSearchResult()));
 		return new PagingResultSet<>(page, total, result);
 	}
 
-	public PagedReference getPublishedIn(int datasetKey, int nameKey) {
+	public PagedReference getPublishedIn(int nameKey) {
 		ReferenceMapper mapper = session.getMapper(ReferenceMapper.class);
-		return mapper.getPublishedIn(datasetKey, nameKey);
+		return mapper.getPublishedIn(nameKey);
 	}
 
-	public VerbatimRecord getVerbatim(int datasetKey, String id) {
+	public VerbatimRecord getVerbatim(int nameKey) {
 		VerbatimRecordMapper mapper = session.getMapper(VerbatimRecordMapper.class);
-		return mapper.getByName(datasetKey, id);
-	}
-
-	private int lookup(int datasetKey, String id) throws NotFoundException {
-		NameMapper mapper = session.getMapper(NameMapper.class);
-		Integer key = mapper.lookupKey(datasetKey, id);
-		if (key == null) {
-			throw new NotFoundException(Name.class, datasetKey, id);
-		}
-		return key;
+		return mapper.getByName(nameKey);
 	}
 
 }

@@ -52,7 +52,6 @@
     FROM name_act na
     JOIN name n ON na.name_key = n.key
     WHERE n.key = #{nameKey}
-    AND na.dataset_key = #{datasetKey}
     ORDER BY na.key
   </select>
 
@@ -69,7 +68,6 @@
     LEFT JOIN name bn ON n.basionym_key=bn.key
     JOIN name_act na ON na.name_key=n.key
     WHERE ns.key = #{nameKey}
-    AND ns.dataset_key = #{datasetKey}
   </select>
 
   <select id="get" resultMap="nameActResultMap">

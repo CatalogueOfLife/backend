@@ -101,7 +101,7 @@ public class ReferenceMapperTest extends MapperTestBase<ReferenceMapper> {
 
 	@Test
 	public void getPublishedIn() {
-		PagedReference ref = mapper().getPublishedIn(DATASET1.getKey(), NAME1.getKey());
+		PagedReference ref = mapper().getPublishedIn(NAME1.getKey());
 		assertEquals("01", REF1, ref);
 		assertEquals("02", "712", ref.getReferencePage());
 	}

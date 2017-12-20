@@ -68,7 +68,7 @@
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
             JOIN name n ON n.key=v.name_key
-        WHERE n.dataset_key = #{datasetKey} AND n.id = #{id}
+        WHERE n.key = #{nameKey}
     </select>
 
     <select id="getByTaxon" resultMap="verbatimResultMap">

@@ -17,7 +17,7 @@ public interface VerbatimRecordMapper {
 
   VerbatimRecord get(@Param("datasetKey") int datasetKey, @Param("id") String id);
 
-  VerbatimRecord getByName(@Param("datasetKey") int datasetKey, @Param("id") String nameId);
+  VerbatimRecord getByName(@Param("nameKey") int nameKey);
 
   VerbatimRecord getByTaxon(@Param("datasetKey") int datasetKey, @Param("id") String taxonId);
 

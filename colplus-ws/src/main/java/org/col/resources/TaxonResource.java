@@ -1,6 +1,15 @@
 package org.col.resources;
 
-import com.codahale.metrics.annotation.Timed;
+import javax.validation.Valid;
+import javax.ws.rs.BeanParam;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.Page;
 import org.col.api.PagingResultSet;
@@ -10,12 +19,9 @@ import org.col.dao.TaxonDao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.validation.Valid;
-import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
+import com.codahale.metrics.annotation.Timed;
 
-@Path("{datasetKey}/taxon")
+@Path("/taxon")
 @Produces(MediaType.APPLICATION_JSON)
 public class TaxonResource {
 
@@ -23,31 +29,37 @@ public class TaxonResource {
 	private static final Logger LOG = LoggerFactory.getLogger(TaxonResource.class);
 
 	@GET
-	public PagingResultSet<Taxon> list(@PathParam("datasetKey") Integer datasetKey,
-                                     @Valid @BeanParam Page page,
-                                    @Context SqlSession session) {
+	public PagingResultSet<Taxon> list(@QueryParam("datasetKey") Integer datasetKey,
+	    @Valid @BeanParam Page page,
+	    @Context SqlSession session) {
 		TaxonDao dao = new TaxonDao(session);
 		return dao.list(datasetKey, page);
 	}
 
 	@GET
 	@Timed
-	@Path("{id}")
-	public Taxon get(@PathParam("datasetKey") int datasetKey,
-                  @PathParam("id") String id,
-                  @Context SqlSession session) {
+	@Path("{id}/{datasetKey}")
+	public Integer lookupKey(@PathParam("id") String id,
+	    @PathParam("datasetKey") int datasetKey,
+	    @Context SqlSession session) {
 		TaxonDao dao = new TaxonDao(session);
-		return dao.get(datasetKey, id);
+		return dao.lookupKey(id, datasetKey);
 	}
 
 	@GET
 	@Timed
-	@Path("{taxonId}/info")
-	public TaxonInfo info(@PathParam("datasetKey") int datasetKey,
-                        @PathParam("taxonId") String taxonId,
-                        @Context SqlSession session) {
+	@Path("{key}")
+	public Taxon get(@PathParam("key") int key, @Context SqlSession session) {
 		TaxonDao dao = new TaxonDao(session);
-		return dao.getTaxonInfo(datasetKey, taxonId);
+		return dao.get(key);
+	}
+
+	@GET
+	@Timed
+	@Path("{key}/info")
+	public TaxonInfo info(@PathParam("key") int key, @Context SqlSession session) {
+		TaxonDao dao = new TaxonDao(session);
+		return dao.getTaxonInfo(key);
 	}
 
 }

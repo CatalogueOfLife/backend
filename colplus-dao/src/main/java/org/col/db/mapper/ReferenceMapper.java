@@ -12,11 +12,13 @@ import org.col.api.Reference;
  */
 public interface ReferenceMapper {
 
-	Reference get(@Param("key") int key);
-
 	int count(@Param("datasetKey") int datasetKey);
 
 	List<Reference> list(@Param("datasetKey") int datasetKey, @Param("page") Page page);
+
+	Integer lookupKey(String id, int datasetKey);
+
+	Reference get(@Param("key") int key);
 
 	List<PagedReference> listByTaxon(@Param("taxonKey") int taxonKey);
 
@@ -27,7 +29,7 @@ public interface ReferenceMapper {
 	/**
 	 * Returns the reference of the description act for the given name key.
 	 */
-	PagedReference getPublishedIn(@Param("datasetKey") int datasetKey, @Param("nameKey") int nameKey);
+	PagedReference getPublishedIn(@Param("nameKey") int nameKey);
 
 	void create(Reference name);
 

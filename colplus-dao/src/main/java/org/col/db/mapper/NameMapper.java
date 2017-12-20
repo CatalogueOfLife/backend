@@ -5,19 +5,19 @@ import java.util.List;
 import org.apache.ibatis.annotations.Param;
 import org.col.api.Name;
 import org.col.api.NameSearch;
-import org.col.api.NameSearchResult;
 import org.col.api.Page;
+import org.col.db.mapper.temp.NameSearchResultTemp;
 
 /**
  *
  */
 public interface NameMapper {
 
-	Integer lookupKey(@Param("datasetKey") int datasetKey, @Param("id") String id);
+	int count(@Param("datasetKey") Integer datasetKey);
 
-	int count(@Param("datasetKey") int datasetKey);
+	List<Name> list(@Param("datasetKey") Integer datasetKey, @Param("page") Page page);
 
-	List<Name> list(@Param("datasetKey") int datasetKey, @Param("page") Page page);
+	Integer lookupKey(@Param("id") String id, @Param("datasetKey") int datasetKey);
 
 	Name get(@Param("key") int key);
 
@@ -43,5 +43,6 @@ public interface NameMapper {
 
 	int countSearchResults(@Param("nameSearch") NameSearch nameSearch);
 
-	List<NameSearchResult> search(@Param("nameSearch") NameSearch nameSearch, @Param("page") Page page);
+	List<NameSearchResultTemp> search(@Param("nameSearch") NameSearch nameSearch,
+	    @Param("page") Page page);
 }
