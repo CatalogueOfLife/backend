@@ -5,7 +5,6 @@ import com.google.common.base.Splitter;
 import org.col.api.*;
 import org.col.api.exception.InvalidNameException;
 import org.col.api.vocab.*;
-import org.col.commands.importer.neo.InsertMetadata;
 import org.col.commands.importer.neo.model.NeoTaxon;
 import org.col.parser.*;
 import org.gbif.dwc.terms.DcTerm;
@@ -216,7 +215,7 @@ public class VerbatimInterpreter {
 
     if (!n.isConsistent()) {
       n.addIssue(Issue.INCONSISTENT_NAME);
-      LOG.warn("Inconsistent name: {}", n);
+      LOG.info("Inconsistent name: {}", n);
     }
 
     return n;

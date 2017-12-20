@@ -9,7 +9,6 @@ import org.col.api.VerbatimRecord;
 import org.col.api.vocab.Issue;
 import org.col.api.vocab.Origin;
 import org.col.api.vocab.TaxonomicStatus;
-import org.col.commands.importer.neo.InsertMetadata;
 import org.col.commands.importer.neo.NeoDb;
 import org.col.commands.importer.neo.NormalizerStore;
 import org.col.commands.importer.neo.NotUniqueRuntimeException;

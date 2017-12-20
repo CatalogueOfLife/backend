@@ -99,10 +99,11 @@
     <select id="listEmpty" parameterType="map" resultMap="datasetResultMap">
         SELECT *
         FROM (
-        SELECT DISTINCT ON (d.key) di.verbatim_count, <include refid="SELECT" />
-        FROM <include refid="FROM" />
-        LEFT JOIN dataset_import di ON di.dataset_key=d.key
-        ORDER BY d.key, di.attempt DESC
+            SELECT DISTINCT ON (d.key) di.verbatim_count, <include refid="SELECT" />
+            FROM <include refid="FROM" />
+            LEFT JOIN dataset_import di ON di.dataset_key=d.key
+            WHERE d.deleted IS NULL
+            ORDER BY d.key, di.attempt DESC
         ) AS latest
         WHERE COALESCE (verbatim_count,0) = 0
         ORDER BY key
@@ -118,7 +119,7 @@
                 ORDER BY key
             </when>
             <otherwise>
-                ORDER BY ts_rank(doc, plainto_tsquery('simple2', #{q})) DESC
+                ORDER BY ts_rank_cd(doc, plainto_tsquery('simple2', #{q})) DESC
             </otherwise>
         </choose>
         <include refid="org.col.db.mapper.Common.limit"/>

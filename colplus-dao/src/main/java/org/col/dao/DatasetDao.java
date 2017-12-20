@@ -1,5 +1,6 @@
 package org.col.dao;
 
+import com.google.common.base.Preconditions;
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.Dataset;
 import org.col.api.DatasetImport;
@@ -69,7 +70,7 @@ public class DatasetDao {
     m.setFinished(LocalDateTime.now());
     m.setState(ImportState.SUCCESS);
     m.setError(null);
-    diMapper.update(m);
+    update(m);
   }
 
   /**
@@ -78,8 +79,9 @@ public class DatasetDao {
   public void updateImportFailure(DatasetImport di, ImportState state, Exception e) {
     di.setFinished(LocalDateTime.now());
     di.setState(state);
+    //System.out.println(ExceptionUtils.getMessage(e));
     di.setError(e.getMessage());
-    diMapper.update(di);
+    update(di);
   }
 
   /**
@@ -89,6 +91,12 @@ public class DatasetDao {
     di.setFinished(LocalDateTime.now());
     di.setState(ImportState.UNCHANGED);
     di.setError(null);
+    update(di);
+  }
+
+  private void update(DatasetImport di) {
+    Preconditions.checkNotNull(di.getDatasetKey(), "datasetKey required for update");
+    Preconditions.checkNotNull(di.getAttempt(),"attempt required for update");
     diMapper.update(di);
   }
 }

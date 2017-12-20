@@ -61,8 +61,8 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
   public void roundtrip() throws Exception {
     DatasetImport d1 = create();
     mapper().create(d1);
-
     commit();
+    assertEquals((Integer)1, d1.getAttempt());
 
     DatasetImport d2 = mapper().last(d1.getDatasetKey());
     assertNotNull(d2.getAttempt());
@@ -70,11 +70,13 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     assertEquals(d1, d2);
 
     d1.setState(ImportState.SUCCESS);
+    d1.setError("no error at all");
     mapper().update(d1);
     assertNotEquals(d1, d2);
 
     d2 = mapper().last(d1.getDatasetKey());
     assertEquals(d1, d2);
+    commit();
   }
 
   @Test

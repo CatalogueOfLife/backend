@@ -1,5 +1,6 @@
 package org.col.commands.importer;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 import it.unimi.dsi.fastutil.longs.Long2IntMap;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
@@ -132,6 +133,9 @@ public class PgImport implements Runnable {
         @Override
         public void start(Node n) {
           NeoTaxon t = store.get(n);
+          if (Strings.isNullOrEmpty(t.name.getScientificName())) {
+            LOG.error("NULL name should not exist! {}", t);
+          }
           // is this a pro parte synonym that we have processed before already?
           if (proParteNames.containsKey(n.getId())) {
             // doublechecking - make sure this is really a synonym

@@ -154,10 +154,13 @@
     </select>
 
     <insert id="create" parameterType="DatasetImport">
-      INSERT INTO dataset_import (<include refid="COLS" />, attempt)
-             VALUES (<include refid="PROPS" />,
-            (SELECT coalesce(max(attempt)+1, 1) FROM dataset_import WHERE dataset_key=#{di.datasetKey})
-      )
+        <selectKey keyProperty="di.attempt" resultType="int" order="BEFORE" >
+            SELECT coalesce(max(attempt)+1, 1)
+            FROM dataset_import
+            WHERE dataset_key=#{di.datasetKey}
+        </selectKey>
+        INSERT INTO dataset_import (<include refid="COLS" />, attempt)
+          VALUES (<include refid="PROPS" />, #{di.attempt})
     </insert>
 
     <update id="update" parameterType="DatasetImport">

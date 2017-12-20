@@ -208,6 +208,7 @@ public class ImporterCmd extends EnvironmentCommand<CliConfig> {
       LOG.error("Dataset {} import failed. Log to pg.", datasetKey, e);
       try (SqlSession session = factory.openSession(true)){
         new DatasetDao(session).updateImportFailure(di, state, e);
+        session.commit();
       }
 
     } finally {

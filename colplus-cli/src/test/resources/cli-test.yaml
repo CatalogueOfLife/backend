@@ -14,5 +14,5 @@ db:
 normalizer:
   directory: /tmp/colplus
 client:
-  timeout: 10000ms
-  connectionTimeout: 1000ms
+  timeout: 20000ms
+  connectionTimeout: 5000ms

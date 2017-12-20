@@ -1,16 +1,12 @@
 package org.col.commands.importer.dwca;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import org.col.api.Dataset;
 import org.col.api.VerbatimRecord;
 import org.col.api.vocab.DataFormat;
-import org.col.commands.importer.neo.InsertMetadata;
 import org.col.commands.importer.neo.NormalizerStore;
 import org.col.commands.importer.neo.model.NeoTaxon;
-import org.gbif.dwc.terms.DwcTerm;
-import org.gbif.dwc.terms.Term;
 import org.gbif.dwca.io.Archive;
 import org.gbif.dwca.io.ArchiveFactory;
 import org.gbif.dwca.record.StarRecord;
@@ -39,6 +35,8 @@ public class NormalizerInserter {
   /**
    * Inserts DwC-A data from the source files into the normalizer store using
    * a neo4j batch inserter. Finally indices are build and a regular store instance returned.
+   *
+   * Before inserting it does a quick check to see if all required dwc terms are actually mapped.
    */
   public InsertMetadata insert(File dwca) throws NormalizationFailedException {
     openArchive(dwca);
@@ -103,36 +101,10 @@ public class NormalizerInserter {
   }
 
   private void openArchive(File dwca) throws NormalizationFailedException {
-    meta = new InsertMetadata();
     try {
       LOG.info("Reading dwc archive from {}", dwca);
       arch = ArchiveFactory.openArchive(dwca);
-      if (!arch.getCore().hasTerm(DwcTerm.taxonID)) {
-        LOG.warn("Using core ID for taxonID");
-        meta.setCoreIdUsed(true);
-      }
-      // multi values in use for acceptedID?
-      for (Term t : arch.getCore().getTerms()) {
-        String delim = arch.getCore().getField(t).getDelimitedBy();
-        if (!Strings.isNullOrEmpty(delim)) {
-          meta.getMultiValueDelimiters().put(t, Splitter.on(delim).omitEmptyStrings());
-        }
-      }
-      for (Term t : DwcTerm.HIGHER_RANKS) {
-        if (arch.getCore().hasTerm(t)) {
-          meta.setDenormedClassificationMapped(true);
-          break;
-        }
-      }
-      if (arch.getCore().hasTerm(DwcTerm.parentNameUsageID) || arch.getCore().hasTerm(DwcTerm.parentNameUsage)) {
-        meta.setParentNameMapped(true);
-      }
-      if (arch.getCore().hasTerm(DwcTerm.acceptedNameUsageID) || arch.getCore().hasTerm(DwcTerm.acceptedNameUsage)) {
-        meta.setAcceptedNameMapped(true);
-      }
-      if (arch.getCore().hasTerm(DwcTerm.originalNameUsageID) || arch.getCore().hasTerm(DwcTerm.originalNameUsage)) {
-        meta.setOriginalNameMapped(true);
-      }
+      meta = DwcaMetaValidator.check(arch);
     } catch (IOException e) {
       throw new NormalizationFailedException("IOException opening archive " + dwca.getAbsolutePath(), e);
     }

@@ -104,4 +104,10 @@ public class NeoTaxon {
   public String getTaxonID() {
     return taxon.getId();
   }
+
+  @Override
+  public String toString() {
+    String id = verbatim == null ? "" : verbatim.getId() + "/";
+    return id + node + " ## " + name + " ## " + taxon;
+  }
 }

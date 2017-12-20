@@ -1,4 +1,4 @@
-package org.col.commands.importer.neo;
+package org.col.commands.importer.dwca;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.Maps;
@@ -13,6 +13,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class InsertMetadata {
   private boolean coreIdUsed;
+  private boolean parsedNameMapped;
   private boolean denormedClassificationMapped;
   private boolean originalNameMapped;
   private boolean acceptedNameMapped;
@@ -31,6 +32,17 @@ public class InsertMetadata {
 
   public void setCoreIdUsed(boolean coreIdUsed) {
     this.coreIdUsed = coreIdUsed;
+  }
+
+  /**
+   * @return true if at least genus and specificEpithet are mapped
+   */
+  public boolean isParsedNameMapped() {
+    return parsedNameMapped;
+  }
+
+  public void setParsedNameMapped(boolean parsedNameMapped) {
+    this.parsedNameMapped = parsedNameMapped;
   }
 
   public boolean isDenormedClassificationMapped() {

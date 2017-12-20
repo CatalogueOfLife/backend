@@ -8,6 +8,8 @@ import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.jdbc.ScriptRunner;
 import org.col.commands.config.CliConfig;
 import org.col.db.PgConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -22,6 +24,7 @@ import java.util.concurrent.TimeUnit;
  * Basic task to showcase hello world
  */
 public class InitDbCmd extends ConfiguredCommand<CliConfig> {
+  private static final Logger LOG = LoggerFactory.getLogger(InitDbCmd.class);
   private static final URI COL_DATASETS_URI = URI.create("https://raw.githubusercontent.com/Sp2000/colplus-repo/master/AC2017/datasets.sql");
 
   public InitDbCmd() {
@@ -54,7 +57,7 @@ public class InitDbCmd extends ConfiguredCommand<CliConfig> {
 
   private void execute(CliConfig cfg) throws Exception {
     try (Connection con = cfg.db.connect()) {
-      System.out.println("Starting database initialisation");
+      LOG.info("Starting database initialisation");
       ScriptRunner runner = new ScriptRunner(con);
       runner.setSendFullScript(true);
       // run sql files
@@ -68,7 +71,7 @@ public class InitDbCmd extends ConfiguredCommand<CliConfig> {
 
   private void exec(String name, ScriptRunner runner, Connection con, Reader reader) throws IOException, SQLException {
     try {
-      System.out.println("Run ");
+      LOG.info("Execute {}", name);
       runner.runScript(reader);
       con.commit();
     } catch (Exception e) {

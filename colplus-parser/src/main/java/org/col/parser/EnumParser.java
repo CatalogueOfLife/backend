@@ -39,7 +39,7 @@ abstract class EnumParser<T extends Enum> extends ParserBase<T> {
           continue;
         }
         if (row.length != 2 || Strings.isNullOrEmpty(row[1])) {
-          LOG.warn("Ignore invalid mapping in {}, line {} with {} columns", mappingResourceFile, reader.currLineNumber(), row.length);
+          LOG.info("Ignore invalid mapping in {}, line {} with {} columns", mappingResourceFile, reader.currLineNumber(), row.length);
           continue;
         }
         Optional<T> val = Enums.getIfPresent(enumClass, row[1]);
