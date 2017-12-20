@@ -215,9 +215,13 @@ public class ImporterCmd extends EnvironmentCommand<CliConfig> {
       // close neo store if open
       if (store != null) {
         store.close();
+        // delete it
+        File storeDir = cfg.normalizer.neoDir(datasetKey);
+        LOG.debug("Remove NormalizerStore at {}", storeDir);
+        FileUtils.deleteDirectory(storeDir);
       }
       // remove decompressed dwca folder
-      LOG.info("Remove uncompressed dwca dir {}", dwcaDir.getAbsolutePath());
+      LOG.debug("Remove uncompressed dwca dir {}", dwcaDir.getAbsolutePath());
       FileUtils.deleteDirectory(dwcaDir);
     }
   }
