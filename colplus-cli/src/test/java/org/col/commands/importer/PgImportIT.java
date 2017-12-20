@@ -118,7 +118,7 @@ public class PgImportIT {
 			TaxonDao tdao = new TaxonDao(session);
 
 			// check species name
-			Taxon tax = tdao.get(dataset.getKey(), "1000");
+			Taxon tax = tdao.get(tdao.lookupKey("1000",dataset.getKey()));
 			assertEquals("Crepis pulchra", tax.getName().getScientificName());
 
 			TaxonInfo info = tdao.getTaxonInfo(tax.getKey());
@@ -176,7 +176,7 @@ public class PgImportIT {
 
 	private void assertParents(TaxonDao tdao, String taxonID, String... parentIds) {
 		final LinkedList<String> expected = new LinkedList<String>(Arrays.asList(parentIds));
-		Taxon t = tdao.get(dataset.getKey(), taxonID);
+		Taxon t = tdao.get(tdao.lookupKey(taxonID,dataset.getKey()));
 		while (t.getParentKey() != null) {
 			Taxon parent = tdao.get(t.getParentKey());
 			assertEquals(expected.pop(), parent.getId());

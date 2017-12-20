@@ -2,8 +2,6 @@ package org.col.dao;
 
 import java.util.List;
 
-import javax.annotation.Nullable;
-
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.Distribution;
 import org.col.api.Page;
@@ -31,7 +29,7 @@ public class TaxonDao {
 		return mapper.count(datasetKey);
 	}
 
-	public PagingResultSet<Taxon> list(int datasetKey, @Nullable Page page) {
+	public PagingResultSet<Taxon> list(Integer datasetKey, Page page) {
 		Page p = page == null ? new Page() : page;
 		TaxonMapper mapper = session.getMapper(TaxonMapper.class);
 		int total = mapper.count(datasetKey);
@@ -39,22 +37,23 @@ public class TaxonDao {
 		return new PagingResultSet<>(p, total, result);
 	}
 
+	public int lookupKey(String id, int datasetKey) throws NotFoundException {
+		TaxonMapper mapper = session.getMapper(TaxonMapper.class);
+		Integer key = mapper.lookupKey(id, datasetKey);
+		if (key == null) {
+			throw new NotFoundException(Taxon.class, datasetKey, id);
+		}
+		return key;
+	}
+
 	public Taxon get(int key) {
 		TaxonMapper mapper = session.getMapper(TaxonMapper.class);
 		return mapper.get(key);
 	}
 
-	public Taxon get(int datasetKey, String id) {
-		return get(lookup(datasetKey, id));
-	}
-
 	public void create(Taxon taxon) {
 		TaxonMapper mapper = session.getMapper(TaxonMapper.class);
 		mapper.create(taxon);
-	}
-
-	public TaxonInfo getTaxonInfo(int datasetKey, String id) {
-		return getTaxonInfo(lookup(datasetKey, id));
 	}
 
 	public TaxonInfo getTaxonInfo(int key) {
@@ -91,15 +90,6 @@ public class TaxonDao {
 		}
 
 		return info;
-	}
-
-	private int lookup(int datasetKey, String id) throws NotFoundException {
-		TaxonMapper mapper = session.getMapper(TaxonMapper.class);
-		Integer key = mapper.lookupKey(datasetKey, id);
-		if (key == null) {
-			throw new NotFoundException(Taxon.class, datasetKey, id);
-		}
-		return key;
 	}
 
 }

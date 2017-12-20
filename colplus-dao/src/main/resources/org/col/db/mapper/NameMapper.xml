@@ -186,7 +186,10 @@
     </select>
 
     <select id="count" parameterType="map" resultType="Integer">
-        SELECT count(*) FROM name WHERE dataset_key = #{datasetKey}
+        SELECT count(*) FROM name
+        <if test="datasetKey != null">
+            WHERE dataset_key = #{datasetKey}
+        </if>
     </select>
 
     <select id="list" parameterType="map" resultMap="nameResultMap">
@@ -194,7 +197,9 @@
         <include refid="SELECT" />
         FROM
         <include refid="FROM" />
-        WHERE n.dataset_key = #{datasetKey}
+        <if test="datasetKey != null">
+            WHERE n.dataset_key = #{datasetKey}
+        </if>
         ORDER BY key
         <include refid="org.col.db.mapper.Common.limit" />
     </select>

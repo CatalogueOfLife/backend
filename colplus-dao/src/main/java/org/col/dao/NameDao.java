@@ -38,11 +38,20 @@ public class NameDao {
 		return mapper.count(datasetKey);
 	}
 
-	public PagingResultSet<Name> list(int datasetKey, Page page) {
+	public PagingResultSet<Name> list(Integer datasetKey, Page page) {
 		NameMapper mapper = session.getMapper(NameMapper.class);
 		int total = mapper.count(datasetKey);
 		List<Name> result = mapper.list(datasetKey, page);
 		return new PagingResultSet<>(page, total, result);
+	}
+
+	public Integer lookupKey(String id, int datasetKey) throws NotFoundException {
+		NameMapper mapper = session.getMapper(NameMapper.class);
+		Integer key = mapper.lookupKey(id, datasetKey);
+		if (key == null) {
+			throw new NotFoundException(Name.class, datasetKey, id);
+		}
+		return key;
 	}
 
 	public Name get(Integer key) {
@@ -124,15 +133,6 @@ public class NameDao {
 	public VerbatimRecord getVerbatim(int nameKey) {
 		VerbatimRecordMapper mapper = session.getMapper(VerbatimRecordMapper.class);
 		return mapper.getByName(nameKey);
-	}
-
-	public Integer lookupKey(String id, int datasetKey) throws NotFoundException {
-		NameMapper mapper = session.getMapper(NameMapper.class);
-		Integer key = mapper.lookupKey(id, datasetKey);
-		if (key == null) {
-			throw new NotFoundException(Name.class, datasetKey, id);
-		}
-		return key;
 	}
 
 }

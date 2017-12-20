@@ -15,9 +15,9 @@ public interface NameMapper {
 
 	Integer lookupKey(@Param("id") String id, @Param("datasetKey") int datasetKey);
 
-	int count(@Param("datasetKey") int datasetKey);
+	int count(@Param("datasetKey") Integer datasetKey);
 
-	List<Name> list(@Param("datasetKey") int datasetKey, @Param("page") Page page);
+	List<Name> list(@Param("datasetKey") Integer datasetKey, @Param("page") Page page);
 
 	Name get(@Param("key") int key);
 
