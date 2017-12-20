@@ -38,6 +38,16 @@ public class TaxonResource {
 
 	@GET
 	@Timed
+	@Path("{id}/{datasetKey}")
+	public Integer lookupKey(@PathParam("id") String id,
+	    @PathParam("datasetKey") int datasetKey,
+	    @Context SqlSession session) {
+		TaxonDao dao = new TaxonDao(session);
+		return dao.lookupKey(id, datasetKey);
+	}
+
+	@GET
+	@Timed
 	@Path("{key}")
 	public Taxon get(@PathParam("key") int key, @Context SqlSession session) {
 		TaxonDao dao = new TaxonDao(session);

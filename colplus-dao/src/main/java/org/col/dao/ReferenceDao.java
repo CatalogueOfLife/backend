@@ -28,6 +28,11 @@ public class ReferenceDao {
 		return new PagingResultSet<>(page, total, result);
 	}
 
+	public Integer lookupKey(String id, int datasetKey) {
+		ReferenceMapper mapper = session.getMapper(ReferenceMapper.class);
+		return mapper.lookupKey(id, datasetKey);
+	}
+
 	public Reference get(int key) {
 		ReferenceMapper mapper = session.getMapper(ReferenceMapper.class);
 		return mapper.get(key);
