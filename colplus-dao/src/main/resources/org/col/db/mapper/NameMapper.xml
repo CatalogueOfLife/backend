@@ -38,11 +38,14 @@
         ,
         t.key as taxon_key,
         t.id as taxon_id,
+        t.status as taxon_status,
         accepted.key as accepted_key,
         accepted.id as accepted_id,
         accepted.scientific_name as accepted_scientific_name,
         accepted.rank as accepted_rank,
-        CASE COALESCE(t2.key, 0) WHEN 0 THEN FALSE ELSE TRUE END as accepted
+        mytaxon.key as mytaxon_key,
+        mytaxon.id as mytaxon_id,
+        mytaxon.status as mytaxon_status
     </sql>
 
     <sql id="COLS">
@@ -88,7 +91,8 @@
         #{basionymAuthorship.exAuthors, typeHandler=org.col.db.type.StringArrayTypeHandler},
         #{basionymAuthorship.year},
         #{combinationAuthorship.authors, typeHandler=org.col.db.type.StringArrayTypeHandler},
-        #{combinationAuthorship.exAuthors, typeHandler=org.col.db.type.StringArrayTypeHandler},
+        #{combinationAuthorship.exAuthors,
+        typeHandler=org.col.db.type.StringArrayTypeHandler},
         #{combinationAuthorship.year},
         #{sanctioningAuthor},
         #{code},
@@ -110,7 +114,7 @@
         LEFT JOIN synonym syn on (n.key = syn.name_key)
         LEFT JOIN taxon t on (syn.taxon_key = t.key)
         LEFT JOIN name accepted on (t.name_key = accepted.key)
-        LEFT JOIN taxon t2 ON (n.key = t2.name_key)
+        LEFT JOIN taxon mytaxon ON (n.key = mytaxon.name_key)
     </sql>
 
     <!-- TODO: filter only accepted or synoynms -->
@@ -156,13 +160,25 @@
         </association>
     </resultMap>
 
-    <resultMap id="nameSearchResultMap" type="NameSearchResult" autoMapping="true" extends="nameResultMap">
-        <collection property="taxa" ofType="Taxon" columnPrefix="taxon_" autoMapping="true">
+    <resultMap id="nameSearchResultMap" type="org.col.db.mapper.temp.NameSearchResultTemp" extends="nameResultMap">
+        <association property="taxonOfThisName" javaType="Taxon">
+            <id property="key" column="mytaxon_key" />
+            <result property="id" column="mytaxon_id" />
+            <result property="status" column="mytaxon_status" />
+        </association>
+        <collection property="taxaOfAcceptedNames" ofType="Taxon">
             <id property="key" column="taxon_key" />
-            <association property="name" javaType="Name" resultMap="nameResultMap" autoMapping="true" columnPrefix="accepted_" />            
+            <result property="id" column="taxon_id" />
+            <result property="status" column="taxon_status" />
+            <association property="name" javaType="Name">
+                <result property="key" column="accepted_key" />
+                <result property="id" column="accepted_id" />
+                <result property="scientificName" column="accepted_scientific_name" />
+                <result property="rank" column="accepted_rank" />
+            </association>
         </collection>
     </resultMap>
-    
+
     <select id="lookupKey" resultType="Integer">
         SELECT key
         FROM name

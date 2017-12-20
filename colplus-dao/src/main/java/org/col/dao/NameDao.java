@@ -1,5 +1,6 @@
 package org.col.dao;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.ibatis.session.SqlSession;
@@ -15,6 +16,7 @@ import org.col.db.NotFoundException;
 import org.col.db.mapper.NameMapper;
 import org.col.db.mapper.ReferenceMapper;
 import org.col.db.mapper.VerbatimRecordMapper;
+import org.col.db.mapper.temp.NameSearchResultTemp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -119,7 +121,9 @@ public class NameDao {
 		}
 		NameMapper mapper = session.getMapper(NameMapper.class);
 		int total = mapper.countSearchResults(query);
-		List<NameSearchResult> result = mapper.search(query, page);
+		List<NameSearchResultTemp> temp = mapper.search(query, page);
+		List<NameSearchResult> result = new ArrayList<>(temp.size());
+		temp.forEach(c -> result.add(c.toNameSearchResult()));
 		return new PagingResultSet<>(page, total, result);
 	}
 
