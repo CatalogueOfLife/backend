@@ -150,6 +150,16 @@
         WHERE t.key = #{key}
     </select>
 
+    <select id="children" resultMap="taxonResultMap">
+        SELECT
+        <include refid="SELECT" />
+        FROM
+        <include refid="FROM" />
+        WHERE t.parent_key = #{key}
+        ORDER BY key
+        <include refid="org.col.db.mapper.Common.limit" />
+    </select>
+
     <insert id="create" parameterType="Taxon" useGeneratedKeys="true" keyProperty="key">
         INSERT INTO taxon (
         <include refid="COLS" />

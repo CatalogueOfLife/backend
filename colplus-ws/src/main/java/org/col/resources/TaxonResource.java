@@ -1,5 +1,7 @@
 package org.col.resources;
 
+import java.util.List;
+
 import javax.validation.Valid;
 import javax.ws.rs.BeanParam;
 import javax.ws.rs.GET;
@@ -52,6 +54,16 @@ public class TaxonResource {
 	public Taxon get(@PathParam("key") int key, @Context SqlSession session) {
 		TaxonDao dao = new TaxonDao(session);
 		return dao.get(key);
+	}
+
+	@GET
+	@Timed
+	@Path("{key}/children")
+	public List<Taxon> children(@PathParam("key") int key,
+	    @Valid @BeanParam Page page,
+	    @Context SqlSession session) {
+		TaxonDao dao = new TaxonDao(session);
+		return dao.getChildren(key, page);
 	}
 
 	@GET

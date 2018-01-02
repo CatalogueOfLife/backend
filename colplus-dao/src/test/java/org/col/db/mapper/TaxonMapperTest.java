@@ -30,10 +30,10 @@ public class TaxonMapperTest extends MapperTestBase<TaxonMapper> {
 		commit();
 		Taxon out = mapper().get(in.getKey());
 
-    Javers javers = JaversBuilder.javers().build();
-    Diff diff = javers.compare(in, out);
-    assertEquals(0, diff.getChanges().size());
-    assertEquals(in, out);
+		Javers javers = JaversBuilder.javers().build();
+		Diff diff = javers.compare(in, out);
+		assertEquals(0, diff.getChanges().size());
+		assertEquals(in, out);
 	}
 
 	@Test
@@ -60,21 +60,22 @@ public class TaxonMapperTest extends MapperTestBase<TaxonMapper> {
 		taxa.add(TestEntityGenerator.newTaxon("t7"));
 		taxa.add(TestEntityGenerator.newTaxon("t8"));
 		taxa.add(TestEntityGenerator.newTaxon("t9"));
-		for(Taxon t : taxa) {
+		for (Taxon t : taxa) {
 			mapper().create(t);
 		}
 		commit();
 
-    // get first page
-    Page p = new Page(0,3);
+		// get first page
+		Page p = new Page(0, 3);
 
-    List<Taxon> res = mapper().list(TestEntityGenerator.DATASET1.getKey(), p);
-    assertEquals(3, res.size());
-    // First 2 taxa in dataset D1 are pre-inserted taxa:
-    assertTrue(TestEntityGenerator.TAXON1.getKey().equals(res.get(0).getKey()));
-    assertTrue(TestEntityGenerator.TAXON2.getKey().equals(res.get(1).getKey()));;
-    assertTrue(taxa.get(0).getKey().equals(res.get(2).getKey()));
-    
+		List<Taxon> res = mapper().list(TestEntityGenerator.DATASET1.getKey(), p);
+		assertEquals(3, res.size());
+		// First 2 taxa in dataset D1 are pre-inserted taxa:
+		assertTrue(TestEntityGenerator.TAXON1.getKey().equals(res.get(0).getKey()));
+		assertTrue(TestEntityGenerator.TAXON2.getKey().equals(res.get(1).getKey()));
+		;
+		assertTrue(taxa.get(0).getKey().equals(res.get(2).getKey()));
+
 		p.next();
 		res = mapper().list(TestEntityGenerator.DATASET1.getKey(), p);
 		assertEquals(3, res.size());
@@ -83,4 +84,32 @@ public class TaxonMapperTest extends MapperTestBase<TaxonMapper> {
 		assertTrue(taxa.get(3).getKey().equals(res.get(2).getKey()));
 
 	}
+
+	@Test
+	public void children() throws Exception {
+		Taxon parent = TestEntityGenerator.newTaxon("parent-1");
+		mapper().create(parent);
+
+		Taxon c1 = TestEntityGenerator.newTaxon("child-1");
+		c1.setParentKey(parent.getKey());
+		mapper().create(c1);
+
+		Taxon c2 = TestEntityGenerator.newTaxon("child-2");
+		c2.setParentKey(parent.getKey());
+		mapper().create(c2);
+
+		Taxon c3 = TestEntityGenerator.newTaxon("child-3");
+		c3.setParentKey(parent.getKey());
+		mapper().create(c3);
+
+		commit();
+
+		List<Taxon> res = mapper().children(parent.getKey(), new Page(0, 5));
+		assertEquals("01", 3, res.size());
+		assertEquals("02", c1, res.get(0));
+		assertEquals("03", c2, res.get(1));
+		assertEquals("04", c3, res.get(2));
+
+	}
+
 }
