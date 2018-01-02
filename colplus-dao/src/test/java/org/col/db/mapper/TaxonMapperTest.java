@@ -1,5 +1,12 @@
 package org.col.db.mapper;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import org.col.TestEntityGenerator;
 import org.col.api.Page;
 import org.col.api.Taxon;
@@ -7,11 +14,6 @@ import org.javers.core.Javers;
 import org.javers.core.JaversBuilder;
 import org.javers.core.diff.Diff;
 import org.junit.Test;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.junit.Assert.*;
 
 /**
  *
@@ -109,6 +111,45 @@ public class TaxonMapperTest extends MapperTestBase<TaxonMapper> {
 		assertEquals("02", c1, res.get(0));
 		assertEquals("03", c2, res.get(1));
 		assertEquals("04", c3, res.get(2));
+
+	}
+
+	@Test
+	public void classification() throws Exception {
+
+		Taxon kingdom = TestEntityGenerator.newTaxon("kingdom-01"); // 1
+		// Explicitly set to null to override TestEntityGenerator
+		kingdom.setParentKey(null);
+		mapper().create(kingdom);
+
+		Taxon phylum = TestEntityGenerator.newTaxon("phylum-01"); // 2
+		phylum.setParentKey(kingdom.getKey());
+		mapper().create(phylum);
+
+		Taxon clazz = TestEntityGenerator.newTaxon("class-01"); // 3
+		clazz.setParentKey(phylum.getKey());
+		mapper().create(clazz);
+
+		Taxon order = TestEntityGenerator.newTaxon("order-01"); // 4
+		order.setParentKey(clazz.getKey());
+		mapper().create(order);
+
+		Taxon family = TestEntityGenerator.newTaxon("family-01"); // 5
+		family.setParentKey(order.getKey());
+		mapper().create(family);
+
+		Taxon genus = TestEntityGenerator.newTaxon("genus-01"); // 6
+		genus.setParentKey(family.getKey());
+		mapper().create(genus);
+
+		Taxon species = TestEntityGenerator.newTaxon("species-01"); // 7
+		species.setParentKey(genus.getKey());
+		mapper().create(species);
+
+		commit();
+
+		List<Taxon> res = mapper().classification(species.getKey());
+		assertEquals("01", 7, res.size());
 
 	}
 

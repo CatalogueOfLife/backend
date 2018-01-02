@@ -51,6 +51,11 @@ public class TaxonDao {
 		return mapper.get(key);
 	}
 
+	public List<Taxon> getClassification(int key) {
+		TaxonMapper mapper = session.getMapper(TaxonMapper.class);
+		return mapper.classification(key);
+	}
+
 	public List<Taxon> getChildren(int key, Page page) {
 		TaxonMapper mapper = session.getMapper(TaxonMapper.class);
 		return mapper.children(key, page);

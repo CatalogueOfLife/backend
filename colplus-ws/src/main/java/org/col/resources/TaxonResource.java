@@ -68,6 +68,14 @@ public class TaxonResource {
 
 	@GET
 	@Timed
+	@Path("{key}/classification")
+	public List<Taxon> classification(@PathParam("key") int key, @Context SqlSession session) {
+		TaxonDao dao = new TaxonDao(session);
+		return dao.getClassification(key);
+	}
+
+	@GET
+	@Timed
 	@Path("{key}/info")
 	public TaxonInfo info(@PathParam("key") int key, @Context SqlSession session) {
 		TaxonDao dao = new TaxonDao(session);
