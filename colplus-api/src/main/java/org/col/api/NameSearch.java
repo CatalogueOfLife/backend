@@ -37,7 +37,7 @@ public class NameSearch {
 	@QueryParam("issue")
 	private Issue issue;
 
-	@QueryParam("taxstatus")
+	@QueryParam("type")
 	private NameType type;
 
 	@QueryParam("sortBy")
