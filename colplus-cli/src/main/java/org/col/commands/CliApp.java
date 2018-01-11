@@ -20,7 +20,7 @@ public class CliApp extends Application<CliConfig> {
 
   @Override
   public String getName() {
-    return "Clearinghouse";
+    return "colplus-cli";
   }
 
   @Override

@@ -58,7 +58,7 @@ public class LogstashAppenderFactory extends AbstractAppenderFactory<ILoggingEve
     getFilterFactories().forEach(f -> appender.addFilter(f.build()));
     appender.start();
 
-    LOG.debug("Created asynchroneous (queue={}) logstash appender for {}:{}", getQueueSize(), host, port);
+    LOG.debug("Created asynchroneous (queue={}, custom={}) logstash appender for {}:{}", getQueueSize(), appender.getCustomFields(), host, port);
     return wrapAsync(appender, asyncAppenderFactory);
   }
 
