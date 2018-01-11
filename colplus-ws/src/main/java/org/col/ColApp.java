@@ -20,7 +20,7 @@ public class ColApp extends Application<ColAppConfig> {
 
 	@Override
 	public String getName() {
-		return "Catalogue of Life";
+		return "colplus-ws";
 	}
 
 	@Override

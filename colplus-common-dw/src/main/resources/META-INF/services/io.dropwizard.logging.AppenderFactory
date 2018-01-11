@@ -1,4 +1,4 @@
 io.dropwizard.logging.ConsoleAppenderFactory
 io.dropwizard.logging.FileAppenderFactory
 io.dropwizard.logging.SyslogAppenderFactory
-org.col.dw.SocketAppenderFactory
+org.col.dw.LogstashAppenderFactory

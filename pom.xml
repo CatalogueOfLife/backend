@@ -55,6 +55,7 @@
     <kryo.version>4.0.1</kryo.version>
     <kryo-serializers.version>0.42</kryo-serializers.version>
     <logback.version>1.2.3</logback.version>
+    <logstash-logback.version>4.11</logstash-logback.version>
     <mapdb.version>3.0.5</mapdb.version>
     <mockito.version>2.12.0</mockito.version>
     <mybatis.version>3.4.5</mybatis.version>
@@ -122,12 +123,12 @@
   <modules>
     <module>colplus-api</module>
     <module>colplus-common</module>
+    <module>colplus-common-dw</module>
     <module>colplus-cli</module>
     <module>colplus-dao</module>
     <module>colplus-dwca</module>
     <module>colplus-parser</module>
     <module>colplus-ws</module>
-      <module>colplus-common-dw</module>
   </modules>
 
   <distributionManagement>
@@ -373,8 +374,13 @@
             <artifactId>logback-classic</artifactId>
             <version>${logback.version}</version>
         </dependency>
+        <dependency>
+            <groupId>net.logstash.logback</groupId>
+            <artifactId>logstash-logback-encoder</artifactId>
+            <version>${logstash-logback.version}</version>
+        </dependency>
 
-	    <!-- JACKSON2 -->
+        <!-- JACKSON2 -->
 	    <dependency>
 	      <groupId>com.fasterxml.jackson.core</groupId>
 	      <artifactId>jackson-databind</artifactId>
