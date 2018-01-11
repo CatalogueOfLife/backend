@@ -1,29 +1,27 @@
 package org.col.dw;
 
 import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.classic.net.SocketAppender;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.Appender;
-import ch.qos.logback.core.util.Duration;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import io.dropwizard.logging.AbstractAppenderFactory;
 import io.dropwizard.logging.async.AsyncAppenderFactory;
 import io.dropwizard.logging.filter.LevelFilterFactory;
 import io.dropwizard.logging.layout.LayoutFactory;
+import net.logstash.logback.appender.LogstashSocketAppender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- *
+ * Use MDC fields to provide additional logstash fields
  */
-@JsonTypeName("socket")
-public class SocketAppenderFactory extends AbstractAppenderFactory<ILoggingEvent> {
-  private static final Logger LOG = LoggerFactory.getLogger(SocketAppenderFactory.class);
+@JsonTypeName("logstash")
+public class LogstashAppenderFactory extends AbstractAppenderFactory<ILoggingEvent> {
+  private static final Logger LOG = LoggerFactory.getLogger(LogstashAppenderFactory.class);
 
   private int port;
   private String host;
-  private int reconnectionDelay = 10000;
 
   @JsonProperty
   public int getPort() {
@@ -45,34 +43,33 @@ public class SocketAppenderFactory extends AbstractAppenderFactory<ILoggingEvent
     this.host = host;
   }
 
-  @JsonProperty
-  public int getReconnectionDelay() {
-    return reconnectionDelay;
-  }
-
-  @JsonProperty
-  public void setReconnectionDelay(int reconnectionDelay) {
-    this.reconnectionDelay = reconnectionDelay;
-  }
-
   @Override
   public Appender<ILoggingEvent> build(LoggerContext context, String applicationName, LayoutFactory<ILoggingEvent> layoutFactory,
                            LevelFilterFactory<ILoggingEvent> levelFilterFactory, AsyncAppenderFactory<ILoggingEvent> asyncAppenderFactory) {
 
-    final SocketAppender appender = new SocketAppender();
-    appender.setName("socket-appender");
+    final LogstashSocketAppender appender = new LogstashSocketAppender();
+    appender.setName("logstash-appender");
     appender.setContext(context);
-    appender.setRemoteHost(host);
+    appender.setHost(host);
     appender.setPort(port);
     appender.setIncludeCallerData(isIncludeCallerData());
-    appender.setQueueSize(getQueueSize());
-    appender.setReconnectionDelay(new Duration(reconnectionDelay));
-
+    appender.setCustomFields(customFieldJson(applicationName));
     appender.addFilter(levelFilterFactory.build(threshold));
     getFilterFactories().forEach(f -> appender.addFilter(f.build()));
     appender.start();
 
-    LOG.debug("Created asynchroneous (queue={}) socket appender for {}:{}", getQueueSize(), host, port);
+    LOG.debug("Created asynchroneous (queue={}, custom={}) logstash appender for {}:{}", getQueueSize(), appender.getCustomFields(), host, port);
     return wrapAsync(appender, asyncAppenderFactory);
+  }
+
+  public static String customFieldJson(String applicationName){
+    StringBuilder sb = new StringBuilder();
+    sb.append("{")
+        .append("\"environment\":\"col\",")
+        .append("\"class\":\"")
+        .append(applicationName)
+        .append("\"")
+        .append("}");
+    return sb.toString();
   }
 }

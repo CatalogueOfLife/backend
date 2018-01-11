@@ -81,6 +81,7 @@ public class ParserResource {
   @Timed
   private List<ParsedName> parse(Stream<String> names) {
     return names
+        .peek(n -> LOG.info("Parse: {}", n))
         .map(parser::parse)
         .filter(Optional::isPresent)
         .map(Optional::get)
