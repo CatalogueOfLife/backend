@@ -25,12 +25,13 @@ import com.codahale.metrics.annotation.Timed;
 
 @Path("/taxon")
 @Produces(MediaType.APPLICATION_JSON)
+@SuppressWarnings("static-method")
 public class TaxonResource {
 
 	@SuppressWarnings("unused")
 	private static final Logger LOG = LoggerFactory.getLogger(TaxonResource.class);
 
-	@GET
+  @GET
 	public PagingResultSet<Taxon> list(@QueryParam("datasetKey") Integer datasetKey,
 	    @Valid @BeanParam Page page,
 	    @Context SqlSession session) {

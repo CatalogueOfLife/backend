@@ -1,7 +1,6 @@
 package org.col.dao;
 
 import java.util.List;
-
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.Distribution;
 import org.col.api.Page;
@@ -10,7 +9,8 @@ import org.col.api.PagingResultSet;
 import org.col.api.Taxon;
 import org.col.api.TaxonInfo;
 import org.col.api.VernacularName;
-import org.col.db.NotFoundException;
+import org.col.db.KeyNotFoundException;
+import org.col.db.NotInDatasetException;
 import org.col.db.mapper.DistributionMapper;
 import org.col.db.mapper.ReferenceMapper;
 import org.col.db.mapper.TaxonMapper;
@@ -18,88 +18,96 @@ import org.col.db.mapper.VernacularNameMapper;
 
 public class TaxonDao {
 
-	private final SqlSession session;
+  private final SqlSession session;
 
-	public TaxonDao(SqlSession sqlSession) {
-		this.session = sqlSession;
-	}
+  public TaxonDao(SqlSession sqlSession) {
+    this.session = sqlSession;
+  }
 
-	public int count(int datasetKey) {
-		TaxonMapper mapper = session.getMapper(TaxonMapper.class);
-		return mapper.count(datasetKey);
-	}
+  public int count(int datasetKey) {
+    TaxonMapper mapper = session.getMapper(TaxonMapper.class);
+    return mapper.count(datasetKey);
+  }
 
-	public PagingResultSet<Taxon> list(Integer datasetKey, Page page) {
-		Page p = page == null ? new Page() : page;
-		TaxonMapper mapper = session.getMapper(TaxonMapper.class);
-		int total = mapper.count(datasetKey);
-		List<Taxon> result = mapper.list(datasetKey, p);
-		return new PagingResultSet<>(p, total, result);
-	}
+  public PagingResultSet<Taxon> list(Integer datasetKey, Page page) {
+    Page p = page == null ? new Page() : page;
+    TaxonMapper mapper = session.getMapper(TaxonMapper.class);
+    int total = mapper.count(datasetKey);
+    List<Taxon> result = mapper.list(datasetKey, p);
+    return new PagingResultSet<>(p, total, result);
+  }
 
-	public int lookupKey(String id, int datasetKey) throws NotFoundException {
-		TaxonMapper mapper = session.getMapper(TaxonMapper.class);
-		Integer key = mapper.lookupKey(id, datasetKey);
-		if (key == null) {
-			throw new NotFoundException(Taxon.class, datasetKey, id);
-		}
-		return key;
-	}
+  public int lookupKey(String id, int datasetKey) throws NotInDatasetException {
+    TaxonMapper mapper = session.getMapper(TaxonMapper.class);
+    Integer key = mapper.lookupKey(id, datasetKey);
+    if (key == null) {
+      throw new NotInDatasetException(Taxon.class, datasetKey, id);
+    }
+    return key;
+  }
 
-	public Taxon get(int key) {
-		TaxonMapper mapper = session.getMapper(TaxonMapper.class);
-		return mapper.get(key);
-	}
+  public Taxon get(int key) {
+    TaxonMapper mapper = session.getMapper(TaxonMapper.class);
+    Taxon t = mapper.get(key);
+    if (t == null) {
+      throw new KeyNotFoundException(Taxon.class, key);
+    }
+    return mapper.get(key);
+  }
 
-	public List<Taxon> getClassification(int key) {
-		TaxonMapper mapper = session.getMapper(TaxonMapper.class);
-		return mapper.classification(key);
-	}
+  public List<Taxon> getClassification(int key) {
+    TaxonMapper mapper = session.getMapper(TaxonMapper.class);
+    return mapper.classification(key);
+  }
 
-	public List<Taxon> getChildren(int key, Page page) {
-		TaxonMapper mapper = session.getMapper(TaxonMapper.class);
-		return mapper.children(key, page);
-	}
+  public List<Taxon> getChildren(int key, Page page) {
+    TaxonMapper mapper = session.getMapper(TaxonMapper.class);
+    return mapper.children(key, page);
+  }
 
-	public void create(Taxon taxon) {
-		TaxonMapper mapper = session.getMapper(TaxonMapper.class);
-		mapper.create(taxon);
-	}
+  public void create(Taxon taxon) {
+    TaxonMapper mapper = session.getMapper(TaxonMapper.class);
+    mapper.create(taxon);
+  }
 
-	public TaxonInfo getTaxonInfo(int key) {
-		TaxonInfo info = new TaxonInfo();
+  public TaxonInfo getTaxonInfo(int key) {
 
-		TaxonMapper tMapper = session.getMapper(TaxonMapper.class);
-		Taxon taxon = tMapper.get(key);
-		info.setTaxon(taxon);
+    TaxonMapper tMapper = session.getMapper(TaxonMapper.class);
+    Taxon taxon = tMapper.get(key);
+    if (taxon == null) {
+      throw new KeyNotFoundException(Taxon.class, key);
+    }
+    TaxonInfo info = new TaxonInfo();
 
-		VernacularNameMapper vMapper = session.getMapper(VernacularNameMapper.class);
-		List<VernacularName> vernaculars = vMapper.listByTaxon(taxon.getKey());
-		info.setVernacularNames(vernaculars);
+    info.setTaxon(taxon);
 
-		DistributionMapper dMapper = session.getMapper(DistributionMapper.class);
-		List<Distribution> distributions = dMapper.listByTaxon(taxon.getKey());
-		info.setDistributions(distributions);
+    VernacularNameMapper vMapper = session.getMapper(VernacularNameMapper.class);
+    List<VernacularName> vernaculars = vMapper.listByTaxon(taxon.getKey());
+    info.setVernacularNames(vernaculars);
 
-		ReferenceMapper rMapper = session.getMapper(ReferenceMapper.class);
+    DistributionMapper dMapper = session.getMapper(DistributionMapper.class);
+    List<Distribution> distributions = dMapper.listByTaxon(taxon.getKey());
+    info.setDistributions(distributions);
 
-		List<PagedReference> refs = rMapper.listByTaxon(key);
-		info.addReferences(refs);
-		taxon.createReferences(refs);
+    ReferenceMapper rMapper = session.getMapper(ReferenceMapper.class);
 
-		refs = rMapper.listByVernacularNamesOfTaxon(key);
-		info.addReferences(refs);
-		for (VernacularName v : vernaculars) {
-			v.createReferences(refs);
-		}
+    List<PagedReference> refs = rMapper.listByTaxon(key);
+    info.addReferences(refs);
+    taxon.createReferences(refs);
 
-		refs = rMapper.listByDistributionOfTaxon(key);
-		info.addReferences(refs);
-		for (Distribution d : distributions) {
-			d.createReferences(refs);
-		}
+    refs = rMapper.listByVernacularNamesOfTaxon(key);
+    info.addReferences(refs);
+    for (VernacularName v : vernaculars) {
+      v.createReferences(refs);
+    }
 
-		return info;
-	}
+    refs = rMapper.listByDistributionOfTaxon(key);
+    info.addReferences(refs);
+    for (Distribution d : distributions) {
+      d.createReferences(refs);
+    }
+
+    return info;
+  }
 
 }

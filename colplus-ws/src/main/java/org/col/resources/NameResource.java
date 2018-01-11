@@ -30,12 +30,13 @@ import com.codahale.metrics.annotation.Timed;
 
 @Path("/name")
 @Produces(MediaType.APPLICATION_JSON)
+@SuppressWarnings("static-method")
 public class NameResource {
 
 	@SuppressWarnings("unused")
 	private static final Logger LOG = LoggerFactory.getLogger(NameResource.class);
 
-	@GET
+  @GET
 	public PagingResultSet<Name> list(@QueryParam("datasetKey") Integer datasetKey,
 	    @Valid @BeanParam Page page,
 	    @Context SqlSession session) {
