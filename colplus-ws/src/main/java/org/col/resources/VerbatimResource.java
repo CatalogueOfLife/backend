@@ -3,7 +3,7 @@ package org.col.resources;
 import com.codahale.metrics.annotation.Timed;
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.Page;
-import org.col.api.PagingResultSet;
+import org.col.api.ResultPage;
 import org.col.api.VerbatimRecord;
 import org.col.db.mapper.VerbatimRecordMapper;
 import javax.validation.Valid;
@@ -18,10 +18,10 @@ public class VerbatimResource {
 
   @GET
   @Timed
-  public PagingResultSet<VerbatimRecord> list(@PathParam("datasetKey") Integer datasetKey,
+  public ResultPage<VerbatimRecord> list(@PathParam("datasetKey") Integer datasetKey,
       @Valid @BeanParam Page page, @Context SqlSession session) {
     VerbatimRecordMapper mapper = session.getMapper(VerbatimRecordMapper.class);
-    return new PagingResultSet<VerbatimRecord>(page, mapper.count(datasetKey),
+    return new ResultPage<VerbatimRecord>(page, mapper.count(datasetKey),
         mapper.list(datasetKey, page));
   }
 

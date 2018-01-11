@@ -18,7 +18,7 @@ import org.apache.ibatis.session.SqlSession;
 import org.col.api.Dataset;
 import org.col.api.DatasetImport;
 import org.col.api.Page;
-import org.col.api.PagingResultSet;
+import org.col.api.ResultPage;
 import org.col.dao.DatasetDao;
 import org.col.db.mapper.DatasetImportMapper;
 import org.col.db.mapper.DatasetMapper;
@@ -34,7 +34,7 @@ public class DatasetResource {
   private static final Logger LOG = LoggerFactory.getLogger(DatasetResource.class);
 
   @GET
-  public PagingResultSet<Dataset> list(@Valid @BeanParam Page page, @QueryParam("q") String q,
+  public ResultPage<Dataset> list(@Valid @BeanParam Page page, @QueryParam("q") String q,
       @Context SqlSession session) {
     return new DatasetDao(session).search(q, page);
   }

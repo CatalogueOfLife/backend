@@ -7,7 +7,7 @@ import org.apache.ibatis.session.SqlSession;
 import org.col.api.Dataset;
 import org.col.api.DatasetImport;
 import org.col.api.Page;
-import org.col.api.PagingResultSet;
+import org.col.api.ResultPage;
 import org.col.api.vocab.ImportState;
 import org.col.db.KeyNotFoundException;
 import org.col.db.mapper.DatasetImportMapper;
@@ -39,12 +39,12 @@ public class DatasetDao {
     return result;
   }
 
-  public PagingResultSet<Dataset> search(String q, @Nullable Page page) {
+  public ResultPage<Dataset> search(String q, @Nullable Page page) {
     page = page == null ? new Page() : page;
     // String query = q + ":*"; // Enable "starts_with" term matching
     int total = mapper.count(q);
     List<Dataset> result = mapper.search(q, page);
-    return new PagingResultSet<>(page, total, result);
+    return new ResultPage<>(page, total, result);
   }
 
   /**

@@ -6,13 +6,14 @@ import java.util.Objects;
 
 /**
  * A generic paging response wrapping a list payload
+ * 
  * @param <T> the type of the paging content
  */
-public class PagingResultSet<T> extends Page {
+public class ResultPage<T> extends Page {
   private final int total;
   private final List<T> result;
 
-  public PagingResultSet(Page page, int total, List<T> result) {
+  public ResultPage(Page page, int total, List<T> result) {
     this.setOffset(page.getOffset());
     this.setLimit(page.getLimit());
     this.total = total;
@@ -29,7 +30,8 @@ public class PagingResultSet<T> extends Page {
   }
 
   /**
-   * @return true if this is the last page and there are no more pages with content if the offset is increased.
+   * @return true if this is the last page and there are no more pages with content if the offset is
+   *         increased.
    */
   public boolean isLast() {
     return total <= getOffset() + getLimit();
@@ -37,11 +39,12 @@ public class PagingResultSet<T> extends Page {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
-    PagingResultSet<?> resultSet = (PagingResultSet<?>) o;
-    return total == resultSet.total &&
-        Objects.equals(result, resultSet.result);
+    if (this == o)
+      return true;
+    if (o == null || getClass() != o.getClass())
+      return false;
+    ResultPage<?> other = (ResultPage<?>) o;
+    return total == other.total && Objects.equals(result, other.result);
   }
 
   @Override

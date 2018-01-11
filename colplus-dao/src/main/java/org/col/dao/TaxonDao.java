@@ -5,7 +5,7 @@ import org.apache.ibatis.session.SqlSession;
 import org.col.api.Distribution;
 import org.col.api.Page;
 import org.col.api.PagedReference;
-import org.col.api.PagingResultSet;
+import org.col.api.ResultPage;
 import org.col.api.Taxon;
 import org.col.api.TaxonInfo;
 import org.col.api.VernacularName;
@@ -29,12 +29,12 @@ public class TaxonDao {
     return mapper.count(datasetKey);
   }
 
-  public PagingResultSet<Taxon> list(Integer datasetKey, Page page) {
+  public ResultPage<Taxon> list(Integer datasetKey, Page page) {
     Page p = page == null ? new Page() : page;
     TaxonMapper mapper = session.getMapper(TaxonMapper.class);
     int total = mapper.count(datasetKey);
     List<Taxon> result = mapper.list(datasetKey, p);
-    return new PagingResultSet<>(p, total, result);
+    return new ResultPage<>(p, total, result);
   }
 
   public int lookupKey(String id, int datasetKey) throws NotInDatasetException {
@@ -48,11 +48,11 @@ public class TaxonDao {
 
   public Taxon get(int key) {
     TaxonMapper mapper = session.getMapper(TaxonMapper.class);
-    Taxon t = mapper.get(key);
-    if (t == null) {
+    Taxon result = mapper.get(key);
+    if (result == null) {
       throw new KeyNotFoundException(Taxon.class, key);
     }
-    return mapper.get(key);
+    return result;
   }
 
   public List<Taxon> getClassification(int key) {

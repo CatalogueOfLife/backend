@@ -19,7 +19,7 @@ import org.col.api.NameSearch;
 import org.col.api.NameSearchResult;
 import org.col.api.Page;
 import org.col.api.PagedReference;
-import org.col.api.PagingResultSet;
+import org.col.api.ResultPage;
 import org.col.api.VerbatimRecord;
 import org.col.dao.NameDao;
 import org.col.db.mapper.NameActMapper;
@@ -37,7 +37,7 @@ public class NameResource {
 	private static final Logger LOG = LoggerFactory.getLogger(NameResource.class);
 
   @GET
-	public PagingResultSet<Name> list(@QueryParam("datasetKey") Integer datasetKey,
+	public ResultPage<Name> list(@QueryParam("datasetKey") Integer datasetKey,
 	    @Valid @BeanParam Page page,
 	    @Context SqlSession session) {
 		NameDao dao = new NameDao(session);
@@ -47,7 +47,7 @@ public class NameResource {
 	@GET
 	@Timed
 	@Path("search")
-	public PagingResultSet<NameSearchResult> search(@BeanParam NameSearch query,
+	public ResultPage<NameSearchResult> search(@BeanParam NameSearch query,
 	    @Valid @BeanParam Page page,
 	    @Context SqlSession session) {
 		NameDao dao = new NameDao(session);

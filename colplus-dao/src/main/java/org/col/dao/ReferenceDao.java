@@ -3,7 +3,7 @@ package org.col.dao;
 import java.util.List;
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.Page;
-import org.col.api.PagingResultSet;
+import org.col.api.ResultPage;
 import org.col.api.Reference;
 import org.col.api.Taxon;
 import org.col.db.KeyNotFoundException;
@@ -23,11 +23,11 @@ public class ReferenceDao {
     return mapper.count(datasetKey);
   }
 
-  public PagingResultSet<Reference> list(int datasetKey, Page page) {
+  public ResultPage<Reference> list(int datasetKey, Page page) {
     ReferenceMapper mapper = session.getMapper(ReferenceMapper.class);
     int total = mapper.count(datasetKey);
     List<Reference> result = mapper.list(datasetKey, page);
-    return new PagingResultSet<>(page, total, result);
+    return new ResultPage<>(page, total, result);
   }
 
   public Integer lookupKey(String id, int datasetKey) {

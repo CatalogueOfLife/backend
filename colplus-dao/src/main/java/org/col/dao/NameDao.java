@@ -8,7 +8,7 @@ import org.col.api.NameSearch;
 import org.col.api.NameSearchResult;
 import org.col.api.Page;
 import org.col.api.PagedReference;
-import org.col.api.PagingResultSet;
+import org.col.api.ResultPage;
 import org.col.api.Synonymy;
 import org.col.api.VerbatimRecord;
 import org.col.db.KeyNotFoundException;
@@ -37,11 +37,11 @@ public class NameDao {
     return mapper.count(datasetKey);
   }
 
-  public PagingResultSet<Name> list(Integer datasetKey, Page page) {
+  public ResultPage<Name> list(Integer datasetKey, Page page) {
     NameMapper mapper = session.getMapper(NameMapper.class);
     int total = mapper.count(datasetKey);
     List<Name> result = mapper.list(datasetKey, page);
-    return new PagingResultSet<>(page, total, result);
+    return new ResultPage<>(page, total, result);
   }
 
   public Integer lookupKey(String id, int datasetKey) throws NotInDatasetException {
@@ -113,7 +113,7 @@ public class NameDao {
     return syn;
   }
 
-  public PagingResultSet<NameSearchResult> search(NameSearch query, Page page) {
+  public ResultPage<NameSearchResult> search(NameSearch query, Page page) {
     if (query.getQ() != null) {
       query.setQ(query.getQ() + ":*");
     }
@@ -122,7 +122,7 @@ public class NameDao {
     List<NameSearchResultTemp> temp = mapper.search(query, page);
     List<NameSearchResult> result = new ArrayList<>(temp.size());
     temp.forEach(c -> result.add(c.toNameSearchResult()));
-    return new PagingResultSet<>(page, total, result);
+    return new ResultPage<>(page, total, result);
   }
 
   public PagedReference getPublishedIn(int nameKey) {

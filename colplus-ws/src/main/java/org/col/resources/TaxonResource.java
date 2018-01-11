@@ -14,7 +14,7 @@ import javax.ws.rs.core.MediaType;
 
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.Page;
-import org.col.api.PagingResultSet;
+import org.col.api.ResultPage;
 import org.col.api.Taxon;
 import org.col.api.TaxonInfo;
 import org.col.dao.TaxonDao;
@@ -32,7 +32,7 @@ public class TaxonResource {
 	private static final Logger LOG = LoggerFactory.getLogger(TaxonResource.class);
 
   @GET
-	public PagingResultSet<Taxon> list(@QueryParam("datasetKey") Integer datasetKey,
+	public ResultPage<Taxon> list(@QueryParam("datasetKey") Integer datasetKey,
 	    @Valid @BeanParam Page page,
 	    @Context SqlSession session) {
 		TaxonDao dao = new TaxonDao(session);
