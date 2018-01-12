@@ -14,6 +14,7 @@ import java.io.PrintWriter;
  */
 public abstract class BaseTask extends Task {
   private static final Logger LOG = LoggerFactory.getLogger(HelloTask.class);
+  public static final String MDC_KEY_TASK = "task";
 
   public BaseTask(String name) {
     super(name);
@@ -21,10 +22,10 @@ public abstract class BaseTask extends Task {
 
   @Override
   public void execute(ImmutableMultimap<String, String> parameters, PrintWriter output) throws Exception {
-    MDC.put("task", getName());
+    MDC.put(MDC_KEY_TASK, getName());
     LOG.info("Execute {}", getName());
     run(parameters, output);
-    MDC.remove("task");
+    MDC.remove(MDC_KEY_TASK);
   }
 
   public abstract void run(ImmutableMultimap<String, String> params, PrintWriter out) throws Exception;

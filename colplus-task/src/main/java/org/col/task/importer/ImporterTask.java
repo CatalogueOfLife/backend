@@ -21,6 +21,7 @@ import org.col.task.importer.neo.NeoDbFactory;
 import org.col.task.importer.neo.NormalizerStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 import java.io.File;
 import java.io.PrintWriter;
@@ -33,6 +34,7 @@ import java.time.LocalDateTime;
  */
 public class ImporterTask extends BaseTask {
   private static final Logger LOG = LoggerFactory.getLogger(ImporterTask.class);
+  public static final String MDC_KEY_DATASET = "dataset";
 
   private final TaskServerConfig cfg;
   private final DownloadUtil downloader;
@@ -106,6 +108,7 @@ public class ImporterTask extends BaseTask {
 
   private void importDataset(Dataset d, boolean force) throws Exception {
     final int datasetKey = d.getKey();
+    MDC.put(MDC_KEY_DATASET, String.valueOf(datasetKey));
     final File dwcaDir = cfg.normalizer.sourceDir(datasetKey);
     NormalizerStore store = null;
     DatasetImport di;
@@ -181,6 +184,8 @@ public class ImporterTask extends BaseTask {
       // remove decompressed dwca folder
       LOG.debug("Remove uncompressed dwca dir {}", dwcaDir.getAbsolutePath());
       FileUtils.deleteDirectory(dwcaDir);
+
+      MDC.remove(MDC_KEY_DATASET);
     }
   }
 }
