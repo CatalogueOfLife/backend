@@ -46,6 +46,14 @@ public class LogstashAppenderFactory extends AbstractAppenderFactory<ILoggingEve
     this.host = host;
   }
 
+  public Map<String, String> getExtra() {
+    return extra;
+  }
+
+  public void setExtra(Map<String, String> extra) {
+    this.extra = extra;
+  }
+
   @Override
   public Appender<ILoggingEvent> build(LoggerContext context, String applicationName, LayoutFactory<ILoggingEvent> layoutFactory,
                            LevelFilterFactory<ILoggingEvent> levelFilterFactory, AsyncAppenderFactory<ILoggingEvent> asyncAppenderFactory) {
@@ -69,7 +77,7 @@ public class LogstashAppenderFactory extends AbstractAppenderFactory<ILoggingEve
     StringBuilder sb = new StringBuilder();
     sb.append("{")
         .append("\"environment\":\"col\",")
-        .append("\"application\":\"")
+        .append("\"class\":\"")
         .append(applicationName)
         .append("\"");
     if (extra != null) {
