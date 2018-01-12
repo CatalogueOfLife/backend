@@ -1,0 +1,17 @@
+digraph G {
+  node [shape=plaintext]
+
+  n3  [label="Fungi"]
+  n3 -> n4
+  n4  [label="Basidiomycota"]
+  n4 -> n5
+  n5  [label="Agaricomycetes"]
+  n5 -> n6
+  n6  [label="Lepiota"]
+  n6 -> n1
+  n6 -> n0
+  n1  [label="Lepiota nuda"]
+  n2  [label="Kamasutra nuda", fontcolor=darkgreen]
+  n1 -> n2  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n0  [label="Lepiota seminuda"]
+}

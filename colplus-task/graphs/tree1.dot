@@ -1,0 +1,46 @@
+digraph G {
+  node [shape=plaintext]
+
+  n0  [label="Plantae"]
+  n0 -> n2
+  n1  [label="Viridae", fontcolor=darkgreen]
+  n0 -> n1  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n2  [label="Asteraceae"]
+  n2 -> n4
+  n3  [label="Compositae", fontcolor=darkgreen]
+  n2 -> n3  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n4  [label="Cichorioideae"]
+  n4 -> n7
+  n4 -> n6
+  n4 -> n5
+  n5  [label="Cichorieae"]
+  n5 -> n9
+  n5 -> n8
+  n8  [label="Crepis L."]
+  n8 -> n13
+  n8 -> n12
+  n12  [label="Crepis bakeri Greene"]
+  n13  [label="Crepis occidentalis Nutt."]
+  n9  [label="Leontodon"]
+  n9 -> n15
+  n9 -> n14
+  n14  [label="Leontodon anomalus"]
+  n15  [label="Leontodon taraxacoides (Vill.) Mérat"]
+  n18  [label="Leonida taraxacoida Vill.", fontcolor=darkgreen]
+  n15 -> n18  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n15 -> n18  [color=darkgreen, fontcolor=darkgreen, label=bas]
+  n16  [label="Leontodon leysseri", fontcolor=darkgreen]
+  n15 -> n16  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n17  [label="Leontodon saxatilis", fontcolor=darkgreen]
+  n15 -> n17  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n6  [label="Gundelieae"]
+  n6 -> n10
+  n10  [label="Gundelia L."]
+  n10 -> n20
+  n10 -> n19
+  n19  [label="Gundelia rosea L."]
+  n20  [label="Gundelia tournefortii L."]
+  n7  [label="Platycarpha"]
+  n7 -> n11
+  n11  [label="Platycarpha glomerata (Thunberg) A.P.de Candolle"]
+}

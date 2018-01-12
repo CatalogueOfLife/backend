@@ -1,0 +1,93 @@
+digraph G {
+  node [shape=plaintext]
+
+  n40  [label="Biota"]
+  n40 -> n0
+  n0  [label="Animalia"]
+  n0 -> n1
+  n1  [label="Porifera Grant, 1836"]
+  n1 -> n2
+  n2  [label="Hexactinellida Schmidt, 1870"]
+  n2 -> n3
+  n3  [label="Amphidiscophora Schulze, 1886"]
+  n3 -> n4
+  n4  [label="Amphidiscosida Schrammen, 1924"]
+  n4 -> n5
+  n5  [label="Hyalonematidae Gray, 1857"]
+  n5 -> n41
+  n5 -> n6
+  n6  [label="Hyalonema Gray, 1832"]
+  n6 -> n44
+  n6 -> n42
+  n44  [label="Stylocalyx"]
+  n44 -> n43
+  n43  [label="Hyalonema (Stylocalyx) "]
+  n42  [label="Hyalonema (Hyalonema) "]
+  n41  [label="Hyalonema (Corynonema) "]
+  n41 -> n38
+  n41 -> n21
+  n41 -> n19
+  n41 -> n20
+  n41 -> n8
+  n41 -> n9
+  n41 -> n10
+  n41 -> n16
+  n41 -> n15
+  n41 -> n18
+  n41 -> n17
+  n41 -> n11
+  n41 -> n12
+  n41 -> n13
+  n41 -> n14
+  n22  [label="Corynonema Ijima, 1927", fontcolor=darkgreen]
+  n41 -> n22  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n7  [label="Hyalonema subgen. Corynonema Ijima, 1927", fontcolor=darkgreen]
+  n41 -> n7  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n8  [label="calix Schulze, 1904"]
+  n24  [label="Hyalonema calix Schulze, 1904", fontcolor=darkgreen]
+  n8 -> n24  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n9  [label="clathratum Ijima, 1895"]
+  n25  [label="Hyalonema clathratum Ijima, 1895", fontcolor=darkgreen]
+  n9 -> n25  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n10  [label="cupressiferum Schulze, 1893"]
+  n26  [label="Hyalonema cupressiferum Schulze, 1893", fontcolor=darkgreen]
+  n10 -> n26  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n11  [label="depressum (Schulze, 1886) "]
+  n37  [label="Hyalonema depressum Schulze, 1886", fontcolor=darkgreen]
+  n11 -> n37  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n36  [label="depressum Schulze, 1886", fontcolor=darkgreen]
+  n11 -> n36  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n12  [label="grandancora Lendenfeld, 1915"]
+  n32  [label="grandancora Lendenfeld, 1915", fontcolor=darkgreen]
+  n12 -> n32  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n13  [label="hercules Schulze, 1899"]
+  n27  [label="Hyalonema hercules Schulze, 1899", fontcolor=darkgreen]
+  n13 -> n27  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n38  [label="intersubgenerica Tabachnick, Janussen & Menschenina, 2008"]
+  n14  [label="natalense (Lévi, 1964) "]
+  n23  [label="Corynonema natalense Lévi, 1964", fontcolor=darkgreen]
+  n14 -> n23  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n15  [label="owstoni Ijima, 1894"]
+  n28  [label="Hyalonema owstoni Ijima, 1894", fontcolor=darkgreen]
+  n15 -> n28  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n16  [label="placuna Lendenfeld, 1915"]
+  n33  [label="placuna Lendenfeld, 1915", fontcolor=darkgreen]
+  n16 -> n33  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n17  [label="populiferum Schulze, 1899"]
+  n29  [label="Hyalonema populiferum Schulze, 1899", fontcolor=darkgreen]
+  n17 -> n29  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n18  [label="rotundum Ijima, 1927"]
+  n30  [label="Hyalonema rotundum Ijima, 1927", fontcolor=darkgreen]
+  n18 -> n30  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n19  [label="tenuifusum Lendenfeld, 1915"]
+  n39  [label="Corynonema tenuifusum (Lendenfeld, 1915) ", fontcolor=darkgreen]
+  n19 -> n39  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n34  [label="tenuifusum Lendenfeld, 1915", fontcolor=darkgreen]
+  n19 -> n34  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n20  [label="tylostylum Lendenfeld, 1915"]
+  n35  [label="tylostylum Lendenfeld, 1915", fontcolor=darkgreen]
+  n20 -> n35  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n21  [label="weltneri Schulze, 1895"]
+  n31  [label="Hyalonema weltneri Schulze, 1895", fontcolor=darkgreen]
+  n21 -> n31  [color=darkgreen, fontcolor=darkgreen, label=syn]
+}

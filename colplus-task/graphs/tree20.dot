@@ -1,0 +1,59 @@
+digraph G {
+  node [shape=plaintext]
+
+  n9  [label="Fungi"]
+  n9 -> n10
+  n10  [label="Ascomycota"]
+  n10 -> n24
+  n10 -> n20
+  n10 -> n11
+  n11  [label="Dothideomycetes"]
+  n11 -> n17
+  n11 -> n12
+  n12  [label="Capnodiales"]
+  n12 -> n13
+  n13  [label="Mycosphaerellaceae"]
+  n13 -> n16
+  n13 -> n15
+  n13 -> n14
+  n14  [label="Pseudocercospora"]
+  n14 -> n2
+  n2  [label="Pseudocercospora fici (Heald & F.A.Wolf) X.J.Liu & Y.L.Guo"]
+  n1  [label="Cercospora fici Heald & F.A.Wolf", fontcolor=darkgreen]
+  n2 -> n1  [color=darkgreen, fontcolor=darkgreen, label=bas]
+  n2 -> n1  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n15  [label="Septoria"]
+  n15 -> n3
+  n3  [label="Septoria coffeae Wakef."]
+  n16  [label="Sphaerella"]
+  n16 -> n4
+  n4  [label="Sphaerella minuta Auersw."]
+  n17  [label="Pleosporales"]
+  n17 -> n18
+  n18  [label="Arthopyreniaceae"]
+  n18 -> n19
+  n19  [label="Arthopyrenia"]
+  n19 -> n5
+  n5  [label="Arthopyrenia punctiformis (Schrank) A.Massal."]
+  n7  [label="Lichen punctiformis Schrank", fontcolor=darkgreen]
+  n5 -> n7  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n5 -> n7  [color=darkgreen, fontcolor=darkgreen, label=bas]
+  n0  [label="Arthonia cembrina Anzi", fontcolor=darkgreen]
+  n5 -> n0  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n20  [label="Incertae sedis"]
+  n20 -> n21
+  n21  [label="Triblidiales"]
+  n21 -> n22
+  n22  [label="Triblidiaceae"]
+  n22 -> n23
+  n23  [label="Blitridium"]
+  n23 -> n6
+  n6  [label="Blitridium symphoricarpi Ellis & Everh."]
+  n24  [label="Sordariomycetes"]
+  n24 -> n25
+  n25  [label="Chaetosphaeriales"]
+  n25 -> n26
+  n26  [label="Chaetosphaeriaceae"]
+  n26 -> n8
+  n8  [label="Chaetosphaeria Tul. & C.Tul."]
+}

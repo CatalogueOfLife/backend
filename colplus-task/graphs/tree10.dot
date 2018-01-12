@@ -1,0 +1,331 @@
+digraph G {
+  node [shape=plaintext]
+
+  n0  [label="Biota"]
+  n0 -> n11
+  n0 -> n9
+  n0 -> n7
+  n0 -> n6
+  n0 -> n5
+  n0 -> n4
+  n0 -> n3
+  n0 -> n2
+  n0 -> n1
+  n1  [label="Animalia"]
+  n1 -> n16
+  n16  [label="Mollusca"]
+  n16 -> n29
+  n16 -> n30
+  n16 -> n26
+  n16 -> n17
+  n30  [label="Bivalvia Linnaeus, 1758"]
+  n30 -> n31
+  n31  [label="Protobranchia Pelseneer, 1889"]
+  n26  [label="Gastropoda Cuvier, 1795"]
+  n26 -> n163
+  n26 -> n162
+  n26 -> n114
+  n26 -> n115
+  n26 -> n127
+  n26 -> n131
+  n26 -> n110
+  n26 -> n159
+  n26 -> n132
+  n26 -> n158
+  n26 -> n161
+  n26 -> n160
+  n26 -> n136
+  n26 -> n113
+  n26 -> n156
+  n26 -> n111
+  n26 -> n112
+  n26 -> n157
+  n26 -> n27
+  n27  [label="Prosobranchia Milne Edwards, 1848"]
+  n27 -> n37
+  n27 -> n32
+  n32  [label="Archaeogastropoda Thiele, 1925"]
+  n37  [label="Mesogastropoda Thiele, 1925"]
+  n161  [label="Anaspidea"]
+  n161 -> n140
+  n140  [label="Aplysioidea"]
+  n140 -> n78
+  n78  [label="Aplysiidae Lamarck, 1809"]
+  n159  [label="Cephalaspidea"]
+  n159 -> n135
+  n159 -> n134
+  n159 -> n133
+  n133  [label="Bulloidea"]
+  n133 -> n67
+  n67  [label="Retusidae Thiele, 1925"]
+  n135  [label="Diaphanoidea"]
+  n135 -> n69
+  n69  [label="Cylichnidae H.Adams & A.Adams, 1854"]
+  n134  [label="Philinoidea"]
+  n134 -> n70
+  n134 -> n68
+  n70  [label="Philinidae Gray, 1850"]
+  n68  [label="Scaphandridae G.O.Sars, 1878"]
+  n160  [label="Gymnosomata"]
+  n160 -> n137
+  n137  [label="Clionoidea"]
+  n137 -> n74
+  n137 -> n73
+  n74  [label="Clionidae Rafinesque, 1815"]
+  n73  [label="Pneumodermatidae Latreille, 1825"]
+  n156  [label="Littorinimorpha"]
+  n156 -> n126
+  n156 -> n125
+  n156 -> n116
+  n156 -> n117
+  n156 -> n123
+  n156 -> n124
+  n156 -> n122
+  n156 -> n118
+  n124  [label="Calyptraeoidea"]
+  n124 -> n55
+  n55  [label="Calyptraeidae Lamarck, 1809"]
+  n54  [label="Crepidulidae Fleming, 1822", fontcolor=darkgreen]
+  n55 -> n54  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n123  [label="Capuloidea"]
+  n123 -> n53
+  n53  [label="Capulidae Fleming, 1822"]
+  n116  [label="Littorinoidea"]
+  n116 -> n38
+  n38  [label="Littorinidae Children, 1834"]
+  n126  [label="Naticoidea"]
+  n126 -> n59
+  n59  [label="Naticidae Guilding, 1834"]
+  n118  [label="Rissooidea"]
+  n118 -> n42
+  n42  [label="Rissoidae Gray, 1847"]
+  n117  [label="Truncatelloidea"]
+  n117 -> n43
+  n117 -> n45
+  n117 -> n40
+  n117 -> n39
+  n117 -> n41
+  n40  [label="Assimineidae H.Adams & A.Adams, 1856"]
+  n45  [label="Caecidae Gray, 1850"]
+  n39  [label="Hydrobiidae Stimpson, 1865"]
+  n41  [label="Iravadiidae Thiele, 1928"]
+  n43  [label="Tornidae Sacco, 1896"]
+  n44  [label="Adeorbidae Monterosato, 1884", fontcolor=darkgreen]
+  n43 -> n44  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n122  [label="Vanikoroidea"]
+  n122 -> n51
+  n122 -> n52
+  n51  [label="Aclididae G.O.Sars, 1878"]
+  n52  [label="Eulimidae Philippi, 1853"]
+  n125  [label="Velutinoidea"]
+  n125 -> n58
+  n125 -> n57
+  n58  [label="Triviidae Troschel, 1863"]
+  n57  [label="Velutinidae Gray, 1840"]
+  n56  [label="Lamellariidae d'Orbigny, 1841", fontcolor=darkgreen]
+  n57 -> n56  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n158  [label="Neogastropoda"]
+  n158 -> n130
+  n158 -> n129
+  n158 -> n128
+  n129  [label="Buccinoidea"]
+  n129 -> n63
+  n129 -> n62
+  n62  [label="Buccinidae Rafinesque, 1815"]
+  n63  [label="Nassariidae Iredale, 1916"]
+  n130  [label="Conoidea"]
+  n130 -> n64
+  n64  [label="Turridae H.Adams & A.Adams, 1853"]
+  n128  [label="Muricoidea"]
+  n128 -> n61
+  n61  [label="Muricidae Rafinesque, 1815"]
+  n162  [label="Nudibranchia"]
+  n162 -> n147
+  n162 -> n149
+  n162 -> n148
+  n162 -> n150
+  n162 -> n151
+  n162 -> n141
+  n162 -> n142
+  n162 -> n143
+  n141  [label="Doridacea"]
+  n141 -> n79
+  n79  [label="Doridoidea Rafinesque, 1815"]
+  n79 -> n144
+  n79 -> n145
+  n145  [label="Discodorididae"]
+  n84  [label="Kentrodorididae Bergh, 1891", fontcolor=darkgreen]
+  n145 -> n84  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n144  [label="Dorididae"]
+  n83  [label="Archidorididae Bergh, 1891", fontcolor=darkgreen]
+  n144 -> n83  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n151  [label="Fionoidea"]
+  n151 -> n95
+  n151 -> n94
+  n94  [label="Eubranchidae Odhner, 1934"]
+  n95  [label="Tergipedidae Bergh, 1889"]
+  n150  [label="Flabellinoidea"]
+  n150 -> n91
+  n91  [label="Flabellinidae Bergh, 1889"]
+  n142  [label="Onchidoridoidea"]
+  n142 -> n81
+  n142 -> n80
+  n80  [label="Goniodorididae H.Adams & A.Adams, 1854"]
+  n81  [label="Onchidorididae Gray, 1827"]
+  n143  [label="Polyceroidea"]
+  n143 -> n82
+  n82  [label="Polyceridae Alder & Hancock, 1845"]
+  n149  [label="Aeolidida"]
+  n149 -> n90
+  n90  [label="Aeolidioidea Gray, 1827"]
+  n90 -> n93
+  n90 -> n92
+  n93  [label="Aeolidiidae Gray, 1827"]
+  n92  [label="Facelinidae Bergh, 1889"]
+  n147  [label="Dendronotida"]
+  n147 -> n146
+  n146  [label="Tritonioidea"]
+  n146 -> n87
+  n146 -> n86
+  n146 -> n88
+  n85  [label="Dendronotoidea Allman, 1845", fontcolor=darkgreen]
+  n146 -> n85  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n88  [label="Dendronotidae Allman, 1845"]
+  n87  [label="Lomanotidae Bergh, 1890"]
+  n86  [label="Tritoniidae Lamarck, 1809"]
+  n148  [label="[unassigned] Cladobranchia"]
+  n148 -> n89
+  n89  [label="Dotidae Gray, 1853"]
+  n157  [label="[unassigned] Caenogastropoda"]
+  n157 -> n121
+  n157 -> n119
+  n157 -> n120
+  n119  [label="Cerithioidea"]
+  n119 -> n46
+  n119 -> n47
+  n47  [label="Cerithiidae Fleming, 1822"]
+  n46  [label="Turritellidae Lovén, 1847"]
+  n121  [label="Epitonioidea"]
+  n121 -> n50
+  n50  [label="Epitoniidae Berry, 1910"]
+  n120  [label="Triphoroidea"]
+  n120 -> n48
+  n120 -> n49
+  n48  [label="Cerithiopsidae H.Adams & A.Adams, 1853"]
+  n49  [label="Triphoridae Gray, 1847"]
+  n163  [label="[unassigned] Pulmonata"]
+  n163 -> n153
+  n153  [label="Ellobioidea"]
+  n153 -> n97
+  n97  [label="Ellobiidae L.Pfeiffer, 1854"]
+  n132  [label="Acteonoidea"]
+  n132 -> n66
+  n66  [label="Acteonidae d'Orbigny, 1843"]
+  n111  [label="Fissurelloidea"]
+  n111 -> n33
+  n33  [label="Fissurellidae Fleming, 1822"]
+  n113  [label="Lottioidea"]
+  n113 -> n35
+  n35  [label="Acmaeidae Forbes, 1850"]
+  n112  [label="Patelloidea"]
+  n112 -> n34
+  n34  [label="Patellidae Rafinesque, 1815"]
+  n136  [label="Pyramidelloidea"]
+  n136 -> n71
+  n71  [label="Pyramidellidae Gray, 1840"]
+  n114  [label="Skeneidae"]
+  n36  [label="Skeneinae Clark W., 1851", fontcolor=darkgreen]
+  n114 -> n36  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n115  [label="Turbinidae"]
+  n127  [label="Caenogastropoda"]
+  n127 -> n60
+  n60  [label="Neogastropoda Wenz, 1938"]
+  n110  [label="Heterobranchia"]
+  n110 -> n28
+  n28  [label="Pulmonata"]
+  n28 -> n152
+  n152  [label="Hygrophila"]
+  n96  [label="Basommatophora", fontcolor=darkgreen]
+  n152 -> n96  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n131  [label="Opisthobranchia"]
+  n131 -> n75
+  n131 -> n72
+  n131 -> n77
+  n131 -> n65
+  n77  [label="Anaspidea Fischer, 1883"]
+  n65  [label="Cephalaspidea P.Fischer, 1883"]
+  n72  [label="Gymnosomata Blainville, 1824"]
+  n75  [label="Sacoglossa Ihering, 1876"]
+  n75 -> n139
+  n139  [label="Limapontioidea"]
+  n139 -> n138
+  n138  [label="Limapontiidae"]
+  n76  [label="Stiligeridae Iredale & O'Donoghue, 1923", fontcolor=darkgreen]
+  n138 -> n76  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n17  [label="Polyplacophora Gray, 1821"]
+  n17 -> n155
+  n17 -> n107
+  n17 -> n18
+  n18  [label="Neoloricata Bergenhayn, 1955"]
+  n18 -> n19
+  n19  [label="Lepidopleurida Thiele, 1909"]
+  n19 -> n154
+  n154  [label="Leptochitonidae"]
+  n154 -> n105
+  n105  [label="Lepidopleurina"]
+  n105 -> n20
+  n20  [label="Leptochitonidae Dall, 1889"]
+  n155  [label="Chitonida"]
+  n155 -> n108
+  n155 -> n109
+  n108  [label="Chitonoidea"]
+  n108 -> n22
+  n108 -> n23
+  n22  [label="Chitonidae Rafinesque, 1815"]
+  n23  [label="Ischnochitonidae Dall, 1889"]
+  n109  [label="Cryptoplacoidea"]
+  n109 -> n25
+  n25  [label="Acanthochitonidae Pilsbry, 1893"]
+  n107  [label="Chitonida"]
+  n107 -> n106
+  n107 -> n24
+  n24  [label="Acanthochitonina Bergenhayn, 1930"]
+  n106  [label="Chitonina"]
+  n21  [label="Ischnochitonina Bergenhayn, 1930", fontcolor=darkgreen]
+  n106 -> n21  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n29  [label="Scaphopoda Bronn, 1862"]
+  n29 -> n98
+  n98  [label="Dentaliida Starobogatov, 1974"]
+  n7  [label="Archaea Woese, Kandler & Wheelis, 1990"]
+  n5  [label="Bacteria"]
+  n11  [label="Biota incertae sedis"]
+  n6  [label="Chromista"]
+  n6 -> n100
+  n100  [label="Alveolata"]
+  n100 -> n10
+  n10  [label="Ciliophora"]
+  n3  [label="Fungi"]
+  n2  [label="Plantae Haeckel, 1866"]
+  n4  [label="Protozoa Owen, 1858"]
+  n4 -> n104
+  n4 -> n99
+  n99  [label="Incertae sedis"]
+  n99 -> n101
+  n8  [label="Sarcomastigophora", fontcolor=darkgreen]
+  n99 -> n8  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n101  [label="Myzozoa"]
+  n101 -> n102
+  n12  [label="Mastigophora", fontcolor=darkgreen]
+  n101 -> n12  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n102  [label="Incertae sedis"]
+  n102 -> n14
+  n13  [label="Zoomastigophora", fontcolor=darkgreen]
+  n102 -> n13  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n14  [label="Choanoflagellida Kent, 1880"]
+  n104  [label="Discomitochondria"]
+  n104 -> n103
+  n103  [label="Kinetoplastea"]
+  n15  [label="Kinetoplastida", fontcolor=darkgreen]
+  n103 -> n15  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n9  [label="Viruses"]
+}

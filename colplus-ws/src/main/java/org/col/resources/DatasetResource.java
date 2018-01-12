@@ -1,29 +1,21 @@
 package org.col.resources;
 
-import java.util.List;
-import javax.validation.Valid;
-import javax.ws.rs.BeanParam;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import com.google.common.collect.Lists;
 import org.apache.ibatis.session.SqlSession;
-import org.col.api.Dataset;
-import org.col.api.DatasetImport;
-import org.col.api.Page;
-import org.col.api.PagingResultSet;
+import org.col.api.*;
 import org.col.dao.DatasetDao;
 import org.col.db.mapper.DatasetImportMapper;
 import org.col.db.mapper.DatasetMapper;
+import org.col.db.mapper.VerbatimRecordMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.validation.Valid;
+import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.util.List;
 
 @Path("/dataset")
 @Produces(MediaType.APPLICATION_JSON)
@@ -77,14 +69,31 @@ public class DatasetResource {
   @GET
   @Path("{key}/import")
   public List<DatasetImport> getImports(@PathParam("key") Integer key,
+                                        @QueryParam("all") Boolean all,
       @Context SqlSession session) {
-    return session.getMapper(DatasetImportMapper.class).list(key);
+    DatasetImportMapper mapper = session.getMapper(DatasetImportMapper.class);
+    if (all == null || !all) {
+      return Lists.newArrayList(mapper.lastSuccessful(key));
+    } else {
+      return mapper.list(key);
+    }
   }
 
   @GET
-  @Path("{key}/import/last")
-  public DatasetImport getLastImport(@PathParam("key") Integer key, @Context SqlSession session) {
-    return session.getMapper(DatasetImportMapper.class).lastSuccessful(key);
+  @Path("{key}/verbatim")
+  public PagingResultSet<VerbatimRecord> list(@PathParam("key") Integer datasetKey,
+                                              @Valid @BeanParam Page page,
+                                              @Context SqlSession session) {
+    VerbatimRecordMapper mapper = session.getMapper(VerbatimRecordMapper.class);
+    return new PagingResultSet<VerbatimRecord>(page, mapper.count(datasetKey), mapper.list(datasetKey, page));
   }
 
+  @GET
+  @Path("{key}/verbatim/{id}")
+  public VerbatimRecord get(@PathParam("key") Integer datasetKey,
+                            @PathParam("id") String id,
+                            @Context SqlSession session) {
+    VerbatimRecordMapper mapper = session.getMapper(VerbatimRecordMapper.class);
+    return mapper.get(datasetKey, id);
+  }
 }

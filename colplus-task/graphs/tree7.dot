@@ -1,0 +1,21 @@
+digraph G {
+  node [shape=plaintext]
+
+  n0  [label="Animalia"]
+  n0 -> n1
+  n1  [label="Arthropoda"]
+  n1 -> n2
+  n2  [label="Insecta"]
+  n2 -> n3
+  n3  [label="Coleoptera"]
+  n3 -> n6
+  n3 -> n4
+  n4  [label="Leptura tinktura Döring, 2011"]
+  n6  [label="Pygoleptura nigrella"]
+  n5  [label="Leptura nigrella Adams, 1909", fontcolor=darkgreen]
+  n6 -> n5  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n10  [label="Pygoleptura synomica"]
+  n7  [label="Pygoleptura tinktura Döring, 2011"]
+  n8  [label="Pygoleptura tinktura subsp. synomica Döring, 2011"]
+  n9  [label="Pygoleptura"]
+}

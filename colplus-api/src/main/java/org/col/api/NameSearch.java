@@ -1,13 +1,12 @@
 package org.col.api;
 
-import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
-
 import org.col.api.vocab.Issue;
 import org.col.api.vocab.NomStatus;
 import org.col.api.vocab.TaxonomicStatus;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
+
+import javax.ws.rs.QueryParam;
 
 public class NameSearch {
 
@@ -19,7 +18,7 @@ public class NameSearch {
 	@QueryParam("q")
 	private String q;
 
-	@PathParam("datasetKey")
+	@QueryParam("datasetKey")
 	private Integer datasetKey;
 
 	@QueryParam("key")

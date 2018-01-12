@@ -1,0 +1,191 @@
+digraph G {
+  node [shape=plaintext]
+
+  n87  [label="Iridaceae Juss."]
+  n87 -> n153
+  n87 -> n152
+  n87 -> n119
+  n87 -> n151
+  n87 -> n150
+  n87 -> n112
+  n87 -> n113
+  n87 -> n0
+  n150  [label="Cypella"]
+  n150 -> n111
+  n111  [label="Incertae sedis"]
+  n119  [label="Incertae sedis"]
+  n113  [label="Incertae sedis"]
+  n151  [label="Lansbergia"]
+  n151 -> n117
+  n151 -> n114
+  n151 -> n115
+  n151 -> n116
+  n117  [label="Incertae sedis"]
+  n114  [label="Incertae sedis"]
+  n115  [label="Incertae sedis"]
+  n116  [label="Incertae sedis"]
+  n152  [label="Marica"]
+  n152 -> n118
+  n118  [label="Incertae sedis"]
+  n153  [label="Remaclea"]
+  n153 -> n120
+  n120  [label="Incertae sedis"]
+  n0  [label="Trimezia Salisb. ex Herb."]
+  n0 -> n145
+  n0 -> n146
+  n0 -> n143
+  n0 -> n144
+  n0 -> n149
+  n0 -> n147
+  n0 -> n148
+  n0 -> n137
+  n0 -> n138
+  n0 -> n135
+  n0 -> n136
+  n0 -> n141
+  n0 -> n142
+  n0 -> n139
+  n0 -> n140
+  n0 -> n130
+  n0 -> n129
+  n0 -> n128
+  n0 -> n127
+  n0 -> n134
+  n0 -> n133
+  n0 -> n132
+  n0 -> n131
+  n0 -> n122
+  n0 -> n3
+  n0 -> n4
+  n0 -> n7
+  n0 -> n9
+  n0 -> n10
+  n0 -> n11
+  n0 -> n12
+  n0 -> n13
+  n0 -> n16
+  n0 -> n17
+  n0 -> n26
+  n0 -> n22
+  n0 -> n35
+  n0 -> n33
+  n0 -> n36
+  n0 -> n72
+  n0 -> n56
+  n0 -> n75
+  n0 -> n74
+  n0 -> n85
+  n0 -> n86
+  n0 -> n88
+  n0 -> n90
+  n0 -> n89
+  n0 -> n93
+  n0 -> n94
+  n0 -> n91
+  n0 -> n92
+  n0 -> n97
+  n0 -> n98
+  n0 -> n95
+  n0 -> n96
+  n0 -> n101
+  n0 -> n102
+  n0 -> n99
+  n0 -> n100
+  n0 -> n105
+  n0 -> n106
+  n0 -> n103
+  n0 -> n104
+  n0 -> n110
+  n0 -> n109
+  n0 -> n108
+  n0 -> n107
+  n0 -> n123
+  n0 -> n124
+  n0 -> n125
+  n0 -> n126
+  n0 -> n121
+  n145  [label="Incertae sedis"]
+  n143  [label="Incertae sedis"]
+  n144  [label="Incertae sedis"]
+  n147  [label="Incertae sedis"]
+  n137  [label="Incertae sedis"]
+  n138  [label="Incertae sedis"]
+  n135  [label="Incertae sedis"]
+  n136  [label="Incertae sedis"]
+  n141  [label="Incertae sedis"]
+  n139  [label="Incertae sedis"]
+  n140  [label="Incertae sedis"]
+  n130  [label="Incertae sedis"]
+  n129  [label="Incertae sedis"]
+  n128  [label="Incertae sedis"]
+  n127  [label="Incertae sedis"]
+  n122  [label="Incertae sedis"]
+  n90  [label="Incertae sedis"]
+  n93  [label="Incertae sedis"]
+  n94  [label="Incertae sedis"]
+  n92  [label="Incertae sedis"]
+  n97  [label="Incertae sedis"]
+  n98  [label="Incertae sedis"]
+  n95  [label="Incertae sedis"]
+  n96  [label="Incertae sedis"]
+  n101  [label="Incertae sedis"]
+  n102  [label="Incertae sedis"]
+  n99  [label="Incertae sedis"]
+  n100  [label="Incertae sedis"]
+  n105  [label="Incertae sedis"]
+  n106  [label="Incertae sedis"]
+  n103  [label="Incertae sedis"]
+  n104  [label="Incertae sedis"]
+  n110  [label="Incertae sedis"]
+  n109  [label="Incertae sedis"]
+  n108  [label="Incertae sedis"]
+  n107  [label="Incertae sedis"]
+  n125  [label="Incertae sedis"]
+  n126  [label="Incertae sedis"]
+  n121  [label="Incertae sedis"]
+  n88  [label="Moraea grandiflora Sessé & Moc."]
+  n2  [label="Trimezia lutea (Klatt) Foster", fontcolor=darkgreen]
+  n88 -> n2  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n10  [label="Trimezia brevicaulis Ravenna"]
+  n86  [label="Trimezia campanula Lovo & Mello-Silva"]
+  n56  [label="Trimezia capitellata Ravenna"]
+  n11  [label="Trimezia cathartica (Klatt) Niederl."]
+  n7  [label="Trimezia caulosa Ravenna"]
+  n22  [label="Trimezia connata Ravenna"]
+  n26  [label="Trimezia exillima Ravenna"]
+  n13  [label="Trimezia fistulosa Foster"]
+  n13 -> n82
+  n13 -> n14
+  n82  [label="Trimezia fistulosa subsp. fistulosa Foster"]
+  n14  [label="Trimezia fistulosa var. longifolia Chukr"]
+  n3  [label="Trimezia martinicensis (Jacq.) Herb."]
+  n33  [label="Trimezia organensis Ravenna"]
+  n72  [label="Trimezia paradoxa Ravenna"]
+  n35  [label="Trimezia plicatifolia Chukr"]
+  n36  [label="Trimezia pusilla Ravenna"]
+  n74  [label="Trimezia rotundata Ravenna"]
+  n75  [label="Trimezia rupestris Ravenna"]
+  n9  [label="Trimezia sincorana Ravenna"]
+  n4  [label="Trimezia spathata (Klatt) Baker"]
+  n85  [label="Trimezia speciosa (Ravenna) Chukr"]
+  n16  [label="Trimezia spectabilis Ravenna"]
+  n12  [label="Trimezia truncata Ravenna"]
+  n17  [label="Trimezia violacea (Klatt) Ravenna"]
+  n146  [label="Incertae sedis"]
+  n149  [label="Incertae sedis"]
+  n148  [label="Incertae sedis"]
+  n142  [label="Incertae sedis"]
+  n134  [label="Incertae sedis"]
+  n133  [label="Incertae sedis"]
+  n132  [label="Incertae sedis"]
+  n131  [label="Incertae sedis"]
+  n89  [label="Incertae sedis"]
+  n91  [label="Incertae sedis"]
+  n123  [label="Incertae sedis"]
+  n124  [label="Incertae sedis"]
+  n112  [label="Cypella Herb."]
+  n112 -> n42
+  n42  [label="Cypella purgans Mart. ex Klatt"]
+  n1  [label="Trimezia juncifolia (Klatt) Benth. & Hook.", fontcolor=darkgreen]
+  n42 -> n1  [color=darkgreen, fontcolor=darkgreen, label=syn]
+}

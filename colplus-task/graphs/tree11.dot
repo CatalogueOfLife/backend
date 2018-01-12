@@ -1,0 +1,20 @@
+digraph G {
+  node [shape=plaintext]
+
+  n0  [label="Plantae"]
+  n0 -> n1
+  n1  [label="Compositae Giseke"]
+  n1 -> n3
+  n2  [label="Asteraceae", fontcolor=darkgreen]
+  n1 -> n2  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n3  [label="Calendula L."]
+  n3 -> n5
+  n3 -> n4
+  n5  [label="Calendula eckerleinii Ohle"]
+  n7  [label="Calendula algarbiensis Boss.", fontcolor=darkgreen]
+  n5 -> n7  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n6 -> n7  [color=darkgreen, fontcolor=darkgreen, label=bas]
+  n4  [label="Calendula incana Willd."]
+  n4 -> n6
+  n6  [label="Calendula incana subsp. algarbiensis (Boiss.) Ohle"]
+}

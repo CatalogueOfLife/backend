@@ -1,0 +1,53 @@
+digraph G {
+  node [shape=plaintext]
+
+  n1  [label="Plantae"]
+  n1 -> n2
+  n0  [label="Viridae", fontcolor=darkgreen]
+  n1 -> n0  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n2  [label="Asteraceae"]
+  n2 -> n4
+  n3  [label="Compositae", fontcolor=darkgreen]
+  n2 -> n3  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n4  [label="Cichorioideae"]
+  n4 -> n5
+  n5  [label="Cichorieae"]
+  n5 -> n8
+  n5 -> n7
+  n5 -> n6
+  n6  [label="Crepis L."]
+  n6 -> n11
+  n6 -> n10
+  n9  [label="Kreps L.", fontcolor=darkgreen]
+  n6 -> n9  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n10  [label="Crepis bakeri Greene"]
+  n12  [label="Kreps bakeri DC.", fontcolor=darkgreen]
+  n10 -> n12  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n10 -> n12  [color=darkgreen, fontcolor=darkgreen, label=bas]
+  n11  [label="Crepis occidentalis Nutt."]
+  n15  [label="Leontodon occidentalis", fontcolor=darkgreen]
+  n11 -> n15  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n17 -> n15  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n14 -> n15  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n11 -> n15  [color=darkgreen, fontcolor=darkgreen, label=bas]
+  n7  [label="Leontodon"]
+  n7 -> n14
+  n7 -> n13
+  n13  [label="Leontodon anomalus"]
+  n14  [label="Leontodon taraxacoides (Vill.) Mérat"]
+  n15  [label="Leontodon occidentalis", fontcolor=darkgreen]
+  n11 -> n15  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n17 -> n15  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n14 -> n15  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n11 -> n15  [color=darkgreen, fontcolor=darkgreen, label=bas]
+  n16  [label="Leontodon saxatilis", fontcolor=darkgreen]
+  n14 -> n16  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n8  [label="Quertuga"]
+  n8 -> n17
+  n17  [label="Quertuga occidentalis"]
+  n15  [label="Leontodon occidentalis", fontcolor=darkgreen]
+  n11 -> n15  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n17 -> n15  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n14 -> n15  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n11 -> n15  [color=darkgreen, fontcolor=darkgreen, label=bas]
+}

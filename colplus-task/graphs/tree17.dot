@@ -1,0 +1,1577 @@
+digraph G {
+  node [shape=plaintext]
+
+  n555  [label="Plantae"]
+  n555 -> n784
+  n555 -> n785
+  n555 -> n783
+  n555 -> n786
+  n555 -> n777
+  n555 -> n776
+  n555 -> n778
+  n555 -> n773
+  n555 -> n772
+  n555 -> n771
+  n555 -> n775
+  n555 -> n774
+  n555 -> n779
+  n555 -> n782
+  n555 -> n780
+  n555 -> n781
+  n555 -> n754
+  n555 -> n755
+  n555 -> n757
+  n555 -> n756
+  n555 -> n748
+  n555 -> n747
+  n555 -> n750
+  n555 -> n749
+  n555 -> n751
+  n555 -> n753
+  n555 -> n752
+  n555 -> n765
+  n555 -> n766
+  n555 -> n767
+  n555 -> n768
+  n555 -> n769
+  n555 -> n770
+  n555 -> n758
+  n555 -> n759
+  n555 -> n760
+  n555 -> n761
+  n555 -> n762
+  n555 -> n763
+  n555 -> n764
+  n555 -> n736
+  n555 -> n735
+  n555 -> n734
+  n555 -> n733
+  n555 -> n732
+  n555 -> n731
+  n555 -> n730
+  n555 -> n729
+  n555 -> n728
+  n555 -> n746
+  n555 -> n745
+  n555 -> n744
+  n555 -> n742
+  n555 -> n743
+  n555 -> n740
+  n555 -> n741
+  n555 -> n738
+  n555 -> n739
+  n555 -> n737
+  n555 -> n716
+  n555 -> n715
+  n555 -> n714
+  n555 -> n712
+  n555 -> n713
+  n555 -> n711
+  n555 -> n710
+  n555 -> n724
+  n555 -> n725
+  n555 -> n726
+  n555 -> n727
+  n555 -> n721
+  n555 -> n722
+  n555 -> n723
+  n555 -> n718
+  n555 -> n719
+  n555 -> n720
+  n555 -> n717
+  n555 -> n701
+  n555 -> n702
+  n555 -> n704
+  n555 -> n703
+  n555 -> n705
+  n555 -> n707
+  n555 -> n706
+  n555 -> n708
+  n555 -> n709
+  n555 -> n689
+  n555 -> n690
+  n555 -> n691
+  n555 -> n692
+  n555 -> n693
+  n555 -> n694
+  n555 -> n695
+  n555 -> n696
+  n555 -> n697
+  n555 -> n698
+  n555 -> n699
+  n555 -> n700
+  n555 -> n678
+  n555 -> n677
+  n555 -> n682
+  n555 -> n681
+  n555 -> n680
+  n555 -> n679
+  n555 -> n686
+  n555 -> n685
+  n555 -> n684
+  n555 -> n683
+  n555 -> n688
+  n555 -> n687
+  n555 -> n665
+  n555 -> n666
+  n555 -> n664
+  n555 -> n669
+  n555 -> n667
+  n555 -> n668
+  n555 -> n672
+  n555 -> n670
+  n555 -> n671
+  n555 -> n675
+  n555 -> n676
+  n555 -> n673
+  n555 -> n674
+  n555 -> n659
+  n555 -> n658
+  n555 -> n661
+  n555 -> n660
+  n555 -> n655
+  n555 -> n657
+  n555 -> n656
+  n555 -> n663
+  n555 -> n662
+  n555 -> n645
+  n555 -> n646
+  n555 -> n647
+  n555 -> n644
+  n555 -> n651
+  n555 -> n652
+  n555 -> n653
+  n555 -> n654
+  n555 -> n648
+  n555 -> n649
+  n555 -> n650
+  n555 -> n638
+  n555 -> n637
+  n555 -> n636
+  n555 -> n635
+  n555 -> n634
+  n555 -> n643
+  n555 -> n642
+  n555 -> n641
+  n555 -> n640
+  n555 -> n639
+  n555 -> n627
+  n555 -> n626
+  n555 -> n624
+  n555 -> n625
+  n555 -> n623
+  n555 -> n632
+  n555 -> n633
+  n555 -> n630
+  n555 -> n631
+  n555 -> n628
+  n555 -> n629
+  n555 -> n616
+  n555 -> n617
+  n555 -> n618
+  n555 -> n619
+  n555 -> n620
+  n555 -> n621
+  n555 -> n622
+  n555 -> n614
+  n555 -> n615
+  n555 -> n179
+  n555 -> n608
+  n555 -> n609
+  n555 -> n611
+  n555 -> n610
+  n555 -> n613
+  n555 -> n612
+  n555 -> n602
+  n555 -> n603
+  n555 -> n605
+  n555 -> n604
+  n555 -> n607
+  n555 -> n556
+  n555 -> n557
+  n555 -> n558
+  n555 -> n559
+  n555 -> n560
+  n555 -> n561
+  n555 -> n562
+  n555 -> n563
+  n555 -> n564
+  n555 -> n21
+  n555 -> n565
+  n555 -> n566
+  n555 -> n568
+  n555 -> n567
+  n555 -> n570
+  n555 -> n569
+  n555 -> n572
+  n555 -> n571
+  n555 -> n573
+  n555 -> n575
+  n555 -> n574
+  n555 -> n577
+  n555 -> n576
+  n555 -> n578
+  n555 -> n581
+  n555 -> n579
+  n555 -> n580
+  n555 -> n582
+  n555 -> n584
+  n555 -> n583
+  n555 -> n586
+  n555 -> n585
+  n555 -> n590
+  n555 -> n589
+  n555 -> n588
+  n555 -> n587
+  n555 -> n593
+  n555 -> n591
+  n555 -> n592
+  n555 -> n594
+  n555 -> n109
+  n555 -> n110
+  n555 -> n596
+  n555 -> n595
+  n555 -> n598
+  n555 -> n597
+  n555 -> n600
+  n555 -> n601
+  n555 -> n599
+  n555 -> n606
+  n770  [label="Acer"]
+  n770 -> n488
+  n488  [label="Acer rubrum L."]
+  n743  [label="Agalinis"]
+  n743 -> n446
+  n743 -> n447
+  n743 -> n448
+  n743 -> n444
+  n743 -> n445
+  n743 -> n440
+  n743 -> n441
+  n440  [label="Agalinis aphylla (Nutt.) Raf."]
+  n441  [label="Agalinis fasciculata (Elliott) Raf."]
+  n444  [label="Agalinis linifolia (Nutt.) Britton"]
+  n445  [label="Agalinis obtusifolia Raf."]
+  n446  [label="Agalinis purpurea (L.) Pennell"]
+  n447  [label="Agalinis setacea (J.F.Gmel.) Raf."]
+  n448  [label="Agalinis virgata Raf."]
+  n580  [label="Agrostis"]
+  n580 -> n66
+  n580 -> n67
+  n580 -> n68
+  n66  [label="Agrostis altissima (Walter) Tuck."]
+  n67  [label="Agrostis hyemalis (Walter) Britton, Sterns & Poggenb."]
+  n68  [label="Agrostis perennans (Walter) Tuck."]
+  n571  [label="Aletris"]
+  n571 -> n44
+  n571 -> n45
+  n571 -> n42
+  n42  [label="Aletris aurea Walter"]
+  n44  [label="Aletris farinosa L."]
+  n45  [label="Aletris lutea Small"]
+  n597  [label="Allium"]
+  n597 -> n132
+  n132  [label="Allium species"]
+  n759  [label="Amelanchier"]
+  n759 -> n472
+  n759 -> n473
+  n472  [label="Amelanchier canadensis (L.) Medik."]
+  n473  [label="Amelanchier spicata (Lam.) K.Koch"]
+  n567  [label="Amianthium"]
+  n567 -> n38
+  n38  [label="Amianthium muscitoxicum (Walter) A.Gray"]
+  n732  [label="Ammannia"]
+  n732 -> n417
+  n417  [label="Ammannia coccinea Rottb."]
+  n694  [label="Amorpha"]
+  n694 -> n326
+  n694 -> n325
+  n325  [label="Amorpha georgiana Wilbur"]
+  n326  [label="Amorpha herbacea var. herbacea Walter"]
+  n581  [label="Amphicarpum"]
+  n581 -> n69
+  n69  [label="Amphicarpum amphicarpon (Pursh) Nash"]
+  n582  [label="Andropogon"]
+  n582 -> n78
+  n582 -> n77
+  n582 -> n80
+  n582 -> n79
+  n582 -> n70
+  n582 -> n72
+  n582 -> n71
+  n582 -> n74
+  n582 -> n73
+  n582 -> n75
+  n70  [label="Andropogon dealbatus (C.Mohr ex Hack.) Weakley & LeBlond"]
+  n71  [label="Andropogon gerardii Vitman"]
+  n72  [label="Andropogon glaucopsis Steud."]
+  n73  [label="Andropogon glomeratus (Walter) Britton, Sterns & Poggenb."]
+  n74  [label="Andropogon hirsutior (Hack.) Weakley & LeBlond"]
+  n75  [label="Andropogon mohrii (Hack.) Hack. ex Vasey"]
+  n77  [label="Andropogon perangustatus Nash"]
+  n78  [label="Andropogon tenuispatheus (Nash) Nash"]
+  n79  [label="Andropogon virginicus var. decipiens C.S.Campb."]
+  n80  [label="Andropogon virginicus var. virginicus L."]
+  n583  [label="Anthenantia"]
+  n583 -> n81
+  n81  [label="Anthenantia rufa (Elliott) Schult."]
+  n695  [label="Apios"]
+  n695 -> n327
+  n327  [label="Apios americana Medik."]
+  n628  [label="Aralia"]
+  n628 -> n204
+  n204  [label="Aralia spinosa L."]
+  n584  [label="Aristida"]
+  n584 -> n83
+  n584 -> n84
+  n584 -> n85
+  n584 -> n82
+  n82  [label="Aristida palustris (Chapm.) Vasey"]
+  n83  [label="Aristida simpliciflora Chapm."]
+  n84  [label="Aristida stricta Michx."]
+  n85  [label="Aristida virgata Trin."]
+  n629  [label="Arnica"]
+  n629 -> n205
+  n205  [label="Arnica acaulis (Walter) Britton, Sterns & Poggenb."]
+  n630  [label="Arnoglossum"]
+  n630 -> n206
+  n206  [label="Arnoglossum ovatum var. lanceolatum (Nutt.) D.B.Ward"]
+  n760  [label="Aronia"]
+  n760 -> n474
+  n474  [label="Aronia arbutifolia (L.) Pers."]
+  n585  [label="Arundinaria"]
+  n585 -> n86
+  n585 -> n88
+  n86  [label="Arundinaria gigantea (Walter) Muhl."]
+  n88  [label="Arundinaria tecta (Walter) Muhl."]
+  n626  [label="Asclepias"]
+  n626 -> n197
+  n626 -> n199
+  n626 -> n196
+  n626 -> n195
+  n195  [label="Asclepias lanceolata Walter"]
+  n196  [label="Asclepias longifolia Michx."]
+  n197  [label="Asclepias pedicellata Walter"]
+  n199  [label="Asclepias rubra L."]
+  n631  [label="Baccharis"]
+  n631 -> n207
+  n207  [label="Baccharis glomeruliflora Pers."]
+  n632  [label="Balduina"]
+  n632 -> n208
+  n208  [label="Balduina uniflora Nutt."]
+  n696  [label="Baptisia"]
+  n696 -> n328
+  n696 -> n329
+  n328  [label="Baptisia cinerea (Raf.) Fernald & B.G.Schub."]
+  n329  [label="Baptisia tinctoria (L.) Vent."]
+  n711  [label="Bartonia"]
+  n711 -> n364
+  n711 -> n363
+  n363  [label="Bartonia verna Raf. ex Barton"]
+  n364  [label="Bartonia virginica (L.) Britton, Sterns & Poggenb."]
+  n758  [label="Berchemia"]
+  n758 -> n471
+  n471  [label="Berchemia scandens (Hill) K.Koch"]
+  n633  [label="Bigelowia"]
+  n633 -> n210
+  n210  [label="Bigelowia nudata var. nudata (Michx.) DC."]
+  n666  [label="Bignonia"]
+  n666 -> n281
+  n281  [label="Bignonia capreolata L."]
+  n615  [label="Bulbostylis"]
+  n615 -> n176
+  n176  [label="Bulbostylis stenophylla (Elliott) C.B.Clarke"]
+  n606  [label="Burmannia"]
+  n606 -> n154
+  n154  [label="Burmannia capitata (Walter ex J.F.Gmel.) Mart."]
+  n586  [label="Calamagrostis"]
+  n586 -> n89
+  n89  [label="Calamagrostis coarctata Eaton"]
+  n587  [label="Calamovilfa"]
+  n587 -> n90
+  n90  [label="Calamovilfa brevipilis (Torr.) Hack. ex Scribn. & Southw."]
+  n573  [label="Calopogon"]
+  n573 -> n48
+  n573 -> n47
+  n573 -> n46
+  n46  [label="Calopogon barbatus (Walter) Ames"]
+  n47  [label="Calopogon pallidus Chapm."]
+  n48  [label="Calopogon tuberosus var. tuberosus (L.) Britton, Sterns & Poggenb."]
+  n667  [label="Campsis"]
+  n667 -> n282
+  n282  [label="Campsis radicans (L.) Seem. ex Bureau"]
+  n622  [label="Carex"]
+  n622 -> n276
+  n622 -> n254
+  n622 -> n265
+  n622 -> n243
+  n622 -> n232
+  n622 -> n220
+  n622 -> n198
+  n622 -> n209
+  n622 -> n187
+  n187  [label="Carex chapmanii Steud."]
+  n198  [label="Carex elliottii Schwein. & Torr."]
+  n209  [label="Carex glaucescens Elliott"]
+  n232  [label="Carex lonchocarpa Willd. ex Spreng."]
+  n243  [label="Carex lutea LeBlond"]
+  n254  [label="Carex physorhyncha Liebm. ex Steud."]
+  n265  [label="Carex striata Michx."]
+  n276  [label="Carex venusta Dewey"]
+  n220  [label="Carex leptalea subsp. harperi"]
+  n634  [label="Carphephorus"]
+  n634 -> n212
+  n634 -> n211
+  n211  [label="Carphephorus bellidifolius (Michx.) Torr. & A.Gray"]
+  n212  [label="Carphephorus tomentosus (Michx.) Torr. & A.Gray"]
+  n718  [label="Carya"]
+  n718 -> n393
+  n393  [label="Carya tomentosa (Poir.) Nutt."]
+  n620  [label="Centella"]
+  n620 -> n184
+  n184  [label="Centella erecta (L.f.) Fernald"]
+  n697  [label="Centrosema"]
+  n697 -> n330
+  n330  [label="Centrosema virginianum (L.) Benth."]
+  n699  [label="Chamaecrista"]
+  n699 -> n333
+  n699 -> n334
+  n333  [label="Chamaecrista fasciculata var. fasciculata (Michx.) Greene"]
+  n334  [label="Chamaecrista nictitans var. nictitans (L.) Moench"]
+  n565  [label="Chamaecyparis"]
+  n565 -> n32
+  n32  [label="Chamaecyparis thyoides (L.) Britton, Sterns & Poggenb."]
+  n680  [label="Chamaedaphne"]
+  n680 -> n302
+  n302  [label="Chamaedaphne calyculata (L.) Moench"]
+  n559  [label="Chamaelirium"]
+  n559 -> n3
+  n3  [label="Chamaelirium luteum (L.) A.Gray"]
+  n635  [label="Chaptalia"]
+  n635 -> n213
+  n213  [label="Chaptalia tomentosa Vent."]
+  n588  [label="Chasmanthium"]
+  n588 -> n91
+  n91  [label="Chasmanthium laxum (L.) Yates"]
+  n636  [label="Chrysopsis"]
+  n636 -> n214
+  n214  [label="Chrysopsis mariana (L.) Elliott"]
+  n637  [label="Cirsium"]
+  n637 -> n219
+  n637 -> n218
+  n637 -> n217
+  n637 -> n216
+  n637 -> n215
+  n217  [label="Cirsium lecontei Torr. & A.Gray"]
+  n218  [label="Cirsium repandum Michx."]
+  n219  [label="Cirsium virginianum (L.) Michx."]
+  n215  [label="Cirsium horridulum var. horridulum Michx."]
+  n216  [label="Cirsium horridulum var. vittatum (Small) R.W.Long"]
+  n670  [label="Cladium"]
+  n670 -> n298
+  n670 -> n287
+  n287  [label="Cladium jamaicense Crantz"]
+  n298  [label="Cladium mariscoides (Muhl.) Torr."]
+  n574  [label="Cleistesiopsis"]
+  n574 -> n50
+  n574 -> n49
+  n49  [label="Cleistesiopsis divaricata (L.) Pansarin & F.Barros"]
+  n50  [label="Cleistesiopsis oricamporum P.M.Br."]
+  n756  [label="Clematis"]
+  n756 -> n469
+  n469  [label="Clematis crispa L."]
+  n672  [label="Clethra"]
+  n672 -> n290
+  n290  [label="Clethra alnifolia L."]
+  n691  [label="Cnidoscolus"]
+  n691 -> n322
+  n322  [label="Cnidoscolus stimulosus (Michx.) Engelm. & A.Gray"]
+  n589  [label="Coelorachis"]
+  n589 -> n92
+  n92  [label="Coelorachis rugosa (Nutt.) Nash"]
+  n590  [label="Coleataenia"]
+  n590 -> n95
+  n590 -> n96
+  n590 -> n93
+  n590 -> n94
+  n93  [label="Coleataenia anceps subsp. anceps (Michx.) Soreng"]
+  n94  [label="Coleataenia anceps subsp. rhizomata (Hitchc. & Chase) Soreng"]
+  n95  [label="Coleataenia longifolia subsp. combsii (Scribn. & C.R.Ball) Soreng"]
+  n96  [label="Coleataenia longifolia subsp. longifolia (Torr.) Soreng"]
+  n639  [label="Coreopsis"]
+  n639 -> n224
+  n639 -> n225
+  n639 -> n222
+  n639 -> n223
+  n222  [label="Coreopsis falcata F.E.Boynton"]
+  n223  [label="Coreopsis linifolia Nutt."]
+  n224  [label="Coreopsis palustris Sorrie"]
+  n225  [label="Coreopsis species"]
+  n674  [label="Cornus"]
+  n674 -> n293
+  n293  [label="Cornus stricta Lam."]
+  n700  [label="Crotalaria"]
+  n700 -> n335
+  n335  [label="Crotalaria purshii DC."]
+  n591  [label="Ctenium"]
+  n591 -> n97
+  n97  [label="Ctenium aromaticum (Walter) Alph.Wood"]
+  n673  [label="Cuscuta"]
+  n673 -> n291
+  n673 -> n292
+  n291  [label="Cuscuta gronovii Willd. ex Roem. & Schult."]
+  n292  [label="Cuscuta pentagona Engelm."]
+  n686  [label="Cyperus"]
+  n686 -> n309
+  n309  [label="Cyperus haspan L."]
+  n675  [label="Cyrilla"]
+  n675 -> n294
+  n294  [label="Cyrilla racemiflora L."]
+  n592  [label="Danthonia"]
+  n592 -> n99
+  n99  [label="Danthonia sericea Nutt."]
+  n701  [label="Desmodium"]
+  n701 -> n336
+  n701 -> n337
+  n701 -> n338
+  n701 -> n339
+  n336  [label="Desmodium ciliare (Muhl. ex Willd.) DC."]
+  n337  [label="Desmodium lineatum (Michx.) DC."]
+  n338  [label="Desmodium paniculatum (L.) DC."]
+  n339  [label="Desmodium tenuifolium Torr. & A.Gray"]
+  n593  [label="Dichanthelium"]
+  n593 -> n125
+  n593 -> n126
+  n593 -> n127
+  n593 -> n128
+  n593 -> n122
+  n593 -> n123
+  n593 -> n124
+  n593 -> n113
+  n593 -> n112
+  n593 -> n111
+  n593 -> n108
+  n593 -> n107
+  n593 -> n106
+  n593 -> n120
+  n593 -> n119
+  n593 -> n118
+  n593 -> n117
+  n593 -> n116
+  n593 -> n115
+  n593 -> n114
+  n593 -> n104
+  n593 -> n105
+  n593 -> n102
+  n593 -> n103
+  n593 -> n100
+  n593 -> n101
+  n103  [label="Dichanthelium caerulescens (Hack. ex Hitchc.) Correll"]
+  n106  [label="Dichanthelium consanguineum (Kunth) Gould & C.A.Clark"]
+  n111  [label="Dichanthelium dichotomum (L.) Gould"]
+  n112  [label="Dichanthelium ensifolium (Baldwin ex Elliott) Gould"]
+  n113  [label="Dichanthelium leucothrix (Nash) Freckmann"]
+  n114  [label="Dichanthelium longiligulatum (Nash) Freckmann"]
+  n115  [label="Dichanthelium mattamuskeetense (Ashe) Mohlenbr."]
+  n118  [label="Dichanthelium scabriusculum (Elliott) Gould & C.A.Clark"]
+  n119  [label="Dichanthelium scoparium (Lam.) Gould"]
+  n122  [label="Dichanthelium species"]
+  n120  [label="Dichanthelium species"]
+  n123  [label="Dichanthelium sphaerocarpon (Elliott) Gould"]
+  n126  [label="Dichanthelium tenue (Muhl.) Freckmann & Lelong"]
+  n128  [label="Dichanthelium webberianum (Nash) LeBlond"]
+  n104  [label="Dichanthelium chamaelonche subsp. chamaelonche (Trin.) Freckmann & Lelong"]
+  n105  [label="Dichanthelium commutatum subsp. commutatum (Schult.) Gould"]
+  n100  [label="Dichanthelium acuminatum var. acuminatum (Sw.) Gould & C.A.Clark"]
+  n101  [label="Dichanthelium acuminatum var. fasciculatum (Torr.) Freckmann"]
+  n102  [label="Dichanthelium acuminatum var. lindheimeri (Nash) Gould & C.A.Clark"]
+  n107  [label="Dichanthelium dichotomum var. nitidum (Lam.) LeBlond"]
+  n108  [label="Dichanthelium dichotomum var. roanokense (Ashe) LeBlond"]
+  n116  [label="Dichanthelium ovale var. addisonii (Nash) Gould & C.A.Clark"]
+  n117  [label="Dichanthelium ovale var. ovale (Elliott) Gould & C.A.Clark"]
+  n124  [label="Dichanthelium strigosum var. leucoblepharis (Trin.) Freckmann"]
+  n125  [label="Dichanthelium strigosum var. strigosum (Muhl. ex Elliott) Freckmann"]
+  n127  [label="Dichanthelium villosissimum var. villosissimum (Nash) Freckmann"]
+  n765  [label="Diodia"]
+  n765 -> n481
+  n765 -> n482
+  n481  [label="Diodia teres Walter"]
+  n482  [label="Diodia virginiana L."]
+  n677  [label="Dionaea"]
+  n677 -> n296
+  n296  [label="Dionaea muscipula J.Ellis"]
+  n784  [label="Dioscorea"]
+  n784 -> n551
+  n551  [label="Dioscorea villosa L."]
+  n679  [label="Diospyros"]
+  n679 -> n301
+  n301  [label="Diospyros virginiana L."]
+  n678  [label="Drosera"]
+  n678 -> n299
+  n678 -> n300
+  n678 -> n297
+  n297  [label="Drosera brevifolia Pursh"]
+  n299  [label="Drosera capillaris Poir."]
+  n300  [label="Drosera intermedia Hayne"]
+  n689  [label="Dulichium"]
+  n689 -> n320
+  n320  [label="Dulichium arundinaceum var. arundinaceum (L.) Britton"]
+  n698  [label="Eleocharis"]
+  n698 -> n376
+  n698 -> n365
+  n698 -> n343
+  n698 -> n354
+  n698 -> n331
+  n331  [label="Eleocharis baldwinii (Torr.) Chapm."]
+  n343  [label="Eleocharis equisetoides (Elliott) Torr."]
+  n354  [label="Eleocharis microcarpa Torr."]
+  n365  [label="Eleocharis obtusa (Willd.) Schult."]
+  n376  [label="Eleocharis tuberculosa (Michx.) Roem. & Schult."]
+  n640  [label="Elephantopus"]
+  n640 -> n226
+  n226  [label="Elephantopus nudatus A.Gray"]
+  n595  [label="Eragrostis"]
+  n595 -> n129
+  n595 -> n130
+  n129  [label="Eragrostis elliottii S.Watson"]
+  n130  [label="Eragrostis refracta (Muhl. ex Elliott) Scribn."]
+  n641  [label="Erechtites"]
+  n641 -> n227
+  n227  [label="Erechtites hieraciifolius (L.) Raf. ex DC."]
+  n642  [label="Erigeron"]
+  n642 -> n228
+  n228  [label="Erigeron vernus (L.) Torr. & A.Gray"]
+  n785  [label="Eriocaulon"]
+  n785 -> n553
+  n785 -> n552
+  n552  [label="Eriocaulon compressum Lam."]
+  n553  [label="Eriocaulon decangulare var. decangulare L."]
+  n621  [label="Eryngium"]
+  n621 -> n190
+  n621 -> n189
+  n621 -> n185
+  n621 -> n186
+  n621 -> n188
+  n188  [label="Eryngium integrifolium Walter"]
+  n185  [label="Eryngium aquaticum var. aquaticum L."]
+  n186  [label="Eryngium aquaticum var. ravenelii (A.Gray) Mathias & Constance"]
+  n189  [label="Eryngium yuccifolium var. synchaetum A.Gray ex J.M.Coult. & Rose"]
+  n190  [label="Eryngium yuccifolium var. yuccifolium Michx."]
+  n681  [label="Eubotrys"]
+  n681 -> n303
+  n303  [label="Eubotrys racemosa (L.) Nutt."]
+  n643  [label="Eupatorium"]
+  n643 -> n233
+  n643 -> n235
+  n643 -> n234
+  n643 -> n237
+  n643 -> n236
+  n643 -> n230
+  n643 -> n231
+  n643 -> n229
+  n229  [label="Eupatorium capillifolium (Lam.) Small"]
+  n230  [label="Eupatorium hyssopifolium L."]
+  n231  [label="Eupatorium leucolepis (DC.) Torr. & A.Gray"]
+  n233  [label="Eupatorium mohrii Greene"]
+  n234  [label="Eupatorium perfoliatum L."]
+  n235  [label="Eupatorium pilosum Walter"]
+  n236  [label="Eupatorium recurvans Small"]
+  n237  [label="Eupatorium rotundifolium L."]
+  n692  [label="Euphorbia"]
+  n692 -> n323
+  n323  [label="Euphorbia ipecacuanhae L."]
+  n644  [label="Eurybia"]
+  n644 -> n239
+  n644 -> n238
+  n238  [label="Eurybia compacta G.L.Nesom"]
+  n239  [label="Eurybia paludosa (Aiton) G.L.Nesom"]
+  n645  [label="Euthamia"]
+  n645 -> n240
+  n240  [label="Euthamia caroliniana (L.) Greene ex Porter & Britton"]
+  n717  [label="Fimbristylis"]
+  n717 -> n387
+  n387  [label="Fimbristylis puberula var. puberula (Michx.) Vahl"]
+  n715  [label="Fothergilla"]
+  n715 -> n375
+  n375  [label="Fothergilla gardenii L."]
+  n740  [label="Fraxinus"]
+  n740 -> n433
+  n433  [label="Fraxinus caroliniana Mill."]
+  n722  [label="Fuirena"]
+  n722 -> n409
+  n722 -> n398
+  n398  [label="Fuirena breviseta (Coville) Coville"]
+  n409  [label="Fuirena pumila (Torr.) Spreng."]
+  n702  [label="Galactia"]
+  n702 -> n340
+  n340  [label="Galactia regularis (L.) Britton, Sterns & Poggenb."]
+  n682  [label="Gaylussacia"]
+  n682 -> n304
+  n682 -> n305
+  n304  [label="Gaylussacia dumosa (Andrews) Torr. & A.Gray"]
+  n305  [label="Gaylussacia frondosa (L.) Torr. & A.Gray ex Torr."]
+  n710  [label="Gelsemium"]
+  n710 -> n362
+  n362  [label="Gelsemium sempervirens J.St.-Hil."]
+  n712  [label="Gentiana"]
+  n712 -> n366
+  n712 -> n368
+  n712 -> n367
+  n366  [label="Gentiana autumnalis L."]
+  n367  [label="Gentiana catesbaei Walter"]
+  n368  [label="Gentiana saponaria L."]
+  n774  [label="Gordonia"]
+  n774 -> n494
+  n494  [label="Gordonia lasianthus (L.) J.Ellis"]
+  n596  [label="Gymnopogon"]
+  n596 -> n131
+  n131  [label="Gymnopogon brevifolius Trin."]
+  n646  [label="Helenium"]
+  n646 -> n242
+  n646 -> n241
+  n241  [label="Helenium autumnale L."]
+  n242  [label="Helenium pinnatifidum (Schwein. ex Nutt.) Rydb."]
+  n647  [label="Helianthus"]
+  n647 -> n244
+  n647 -> n245
+  n244  [label="Helianthus angustifolius L."]
+  n245  [label="Helianthus heterophyllus Nutt."]
+  n648  [label="Hieracium"]
+  n648 -> n246
+  n246  [label="Hieracium gronovii L."]
+  n716  [label="Hypericum"]
+  n716 -> n377
+  n716 -> n378
+  n716 -> n381
+  n716 -> n382
+  n716 -> n379
+  n716 -> n380
+  n716 -> n391
+  n716 -> n390
+  n716 -> n392
+  n716 -> n384
+  n716 -> n383
+  n716 -> n386
+  n716 -> n385
+  n716 -> n389
+  n716 -> n388
+  n377  [label="Hypericum brachyphyllum (Spach) Steud."]
+  n378  [label="Hypericum canadense L."]
+  n379  [label="Hypericum cistifolium Lam."]
+  n380  [label="Hypericum crux-andreae (L.) Crantz"]
+  n382  [label="Hypericum denticulatum Walter"]
+  n383  [label="Hypericum galioides Lam."]
+  n384  [label="Hypericum gentianoides (L.) Britton, Sterns & Poggenb."]
+  n385  [label="Hypericum gymnanthum Engelm. & A.Gray"]
+  n386  [label="Hypericum hypericoides (L.) Crantz"]
+  n388  [label="Hypericum lloydii (Svenson) W.P.Adams"]
+  n390  [label="Hypericum setosum L."]
+  n391  [label="Hypericum tenuifolium Pursh"]
+  n392  [label="Hypericum virginicum L."]
+  n381  [label="Hypericum densiflorum var. densiflorum Pursh"]
+  n389  [label="Hypericum mutilum var. mutilum L."]
+  n560  [label="Hypoxis"]
+  n560 -> n7
+  n560 -> n6
+  n560 -> n5
+  n560 -> n4
+  n4  [label="Hypoxis curtissii Rose"]
+  n5  [label="Hypoxis hirsuta (L.) Coville"]
+  n6  [label="Hypoxis sessilis L."]
+  n7  [label="Hypoxis wrightii (Baker) Brackett"]
+  n719  [label="Hyptis"]
+  n719 -> n394
+  n394  [label="Hyptis alata Shinners"]
+  n627  [label="Ilex"]
+  n627 -> n200
+  n627 -> n201
+  n627 -> n202
+  n627 -> n203
+  n200  [label="Ilex coriacea (Pursh) Chapm."]
+  n201  [label="Ilex glabra (L.) A.Gray"]
+  n202  [label="Ilex myrtifolia Walter"]
+  n203  [label="Ilex opaca var. opaca Aiton"]
+  n703  [label="Indigofera"]
+  n703 -> n341
+  n341  [label="Indigofera caroliniana Mill."]
+  n649  [label="Ionactis"]
+  n649 -> n247
+  n247  [label="Ionactis linariifolia (L.) Greene"]
+  n561  [label="Iris"]
+  n561 -> n11
+  n561 -> n9
+  n561 -> n8
+  n8  [label="Iris tridentata Pursh"]
+  n9  [label="Iris verna var. verna L."]
+  n11  [label="Iris virginica var. virginica L."]
+  n735  [label="Isolepis"]
+  n735 -> n420
+  n420  [label="Isolepis carinata Hook. & Arn. ex Torr."]
+  n564  [label="Juncus"]
+  n564 -> n35
+  n564 -> n34
+  n564 -> n36
+  n564 -> n31
+  n564 -> n33
+  n564 -> n28
+  n564 -> n27
+  n564 -> n30
+  n564 -> n29
+  n564 -> n24
+  n564 -> n23
+  n564 -> n26
+  n564 -> n25
+  n564 -> n22
+  n564 -> n19
+  n564 -> n20
+  n564 -> n17
+  n564 -> n18
+  n17  [label="Juncus acuminatus Michx."]
+  n18  [label="Juncus biflorus Elliott"]
+  n19  [label="Juncus bufonius L."]
+  n20  [label="Juncus canadensis J.Gay ex Laharpe"]
+  n22  [label="Juncus coriaceus Mack."]
+  n23  [label="Juncus dichotomus Elliott"]
+  n24  [label="Juncus diffusissimus Buckley"]
+  n26  [label="Juncus elliottii Chapm."]
+  n27  [label="Juncus marginatus Rostk."]
+  n28  [label="Juncus megacephalus M.A.Curtis"]
+  n29  [label="Juncus pelocarpus E.Mey."]
+  n30  [label="Juncus polycephalos Michx."]
+  n31  [label="Juncus repens Michx."]
+  n35  [label="Juncus trigonocarpus Steud."]
+  n25  [label="Juncus effusus subsp. solutus (Fernald & Wiegand) Hämet-Ahti"]
+  n33  [label="Juncus scirpoides var. compositus R.M.Harper"]
+  n34  [label="Juncus scirpoides var. scirpoides Lam."]
+  n36  [label="Juncus validus var. validus Coville"]
+  n572  [label="Juniperus"]
+  n572 -> n43
+  n43  [label="Juniperus virginiana var. virginiana L."]
+  n683  [label="Kalmia"]
+  n683 -> n306
+  n306  [label="Kalmia carolina Small"]
+  n739  [label="Kyllinga"]
+  n739 -> n431
+  n431  [label="Kyllinga odorata Vahl"]
+  n558  [label="Lachnanthes"]
+  n558 -> n2
+  n2  [label="Lachnanthes caroliniana (Lam.) Dandy"]
+  n556  [label="Lachnocaulon"]
+  n556 -> n0
+  n0  [label="Lachnocaulon anceps (Walter) Morong"]
+  n671  [label="Lechea"]
+  n671 -> n289
+  n671 -> n288
+  n288  [label="Lechea minor L."]
+  n289  [label="Lechea pulchella var. ramosissima (Hodgdon) Sorrie & Weakley"]
+  n704  [label="Lespedeza"]
+  n704 -> n342
+  n704 -> n345
+  n704 -> n344
+  n342  [label="Lespedeza angustifolia (Pursh) Elliott"]
+  n344  [label="Lespedeza capitata Michx."]
+  n345  [label="Lespedeza hirta var. curtissii (Clewell) Isely"]
+  n684  [label="Leucothoe"]
+  n684 -> n307
+  n307  [label="Leucothoe axillaris (Lam.) D.Don"]
+  n650  [label="Liatris"]
+  n650 -> n249
+  n650 -> n248
+  n248  [label="Liatris pilosa (Aiton) Willd."]
+  n249  [label="Liatris spicata var. resinosa (Nutt.) Gaiser"]
+  n566  [label="Lilium"]
+  n566 -> n37
+  n37  [label="Lilium catesbaei Walter"]
+  n730  [label="Lindernia"]
+  n730 -> n414
+  n414  [label="Lindernia dubia var. anagallidea (Michx.) Cooperr."]
+  n729  [label="Linum"]
+  n729 -> n413
+  n729 -> n412
+  n729 -> n411
+  n729 -> n410
+  n729 -> n408
+  n411  [label="Linum intercursum E.P.Bicknell"]
+  n413  [label="Linum striatum Walter"]
+  n408  [label="Linum floridanum var. chrysocarpum C.M.Rogers"]
+  n410  [label="Linum floridanum var. floridanum (Planch.) Trel."]
+  n412  [label="Linum medium var. texanum (Planch.) Fernald"]
+  n617  [label="Liquidambar"]
+  n617 -> n181
+  n181  [label="Liquidambar styraciflua L."]
+  n733  [label="Liriodendron"]
+  n733 -> n418
+  n418  [label="Liriodendron tulipifera L."]
+  n668  [label="Lobelia"]
+  n668 -> n283
+  n668 -> n284
+  n668 -> n285
+  n283  [label="Lobelia canbyi A.Gray"]
+  n284  [label="Lobelia glandulosa Walter"]
+  n285  [label="Lobelia nuttallii Schult."]
+  n669  [label="Lonicera"]
+  n669 -> n286
+  n286  [label="Lonicera sempervirens L."]
+  n741  [label="Ludwigia"]
+  n741 -> n438
+  n741 -> n435
+  n741 -> n434
+  n741 -> n437
+  n741 -> n436
+  n434  [label="Ludwigia hirtella Raf."]
+  n435  [label="Ludwigia linearis Walter"]
+  n436  [label="Ludwigia maritima R.M.Harper"]
+  n437  [label="Ludwigia microcarpa Michx."]
+  n438  [label="Ludwigia virgata Michx."]
+  n778  [label="Lycopodiella"]
+  n778 -> n510
+  n778 -> n521
+  n510  [label="Lycopodiella alopecuroides (L.) Cranfill"]
+  n521  [label="Lycopodiella appressa (Chapm.) Cranfill"]
+  n720  [label="Lycopus"]
+  n720 -> n395
+  n720 -> n396
+  n395  [label="Lycopus amplectens Raf."]
+  n396  [label="Lycopus rubellus Moench"]
+  n685  [label="Lyonia"]
+  n685 -> n308
+  n685 -> n311
+  n685 -> n310
+  n308  [label="Lyonia ligustrina (L.) DC."]
+  n310  [label="Lyonia lucida (Lam.) K.Koch"]
+  n311  [label="Lyonia mariana (L.) D.Don"]
+  n755  [label="Lysimachia"]
+  n755 -> n467
+  n755 -> n468
+  n467  [label="Lysimachia asperulifolia Poir."]
+  n468  [label="Lysimachia loomisii Torr."]
+  n734  [label="Magnolia"]
+  n734 -> n419
+  n419  [label="Magnolia virginiana L."]
+  n651  [label="Marshallia"]
+  n651 -> n250
+  n250  [label="Marshallia graminifolia (Walter) Small"]
+  n652  [label="Mikania"]
+  n652 -> n251
+  n251  [label="Mikania scandens (L.) Willd."]
+  n749  [label="Mimulus"]
+  n749 -> n452
+  n452  [label="Mimulus ringens var. ringens L."]
+  n766  [label="Mitchella"]
+  n766 -> n483
+  n483  [label="Mitchella repens L."]
+  n731  [label="Mitreola"]
+  n731 -> n416
+  n731 -> n415
+  n415  [label="Mitreola petiolata (J.F.Gmel.) Torr. & A.Gray"]
+  n416  [label="Mitreola sessilifolia (J.F.Gmel.) G.Don"]
+  n737  [label="Morella"]
+  n737 -> n427
+  n737 -> n429
+  n737 -> n428
+  n427  [label="Morella caroliniensis (Mill.) Small"]
+  n428  [label="Morella cerifera (L.) Small"]
+  n429  [label="Morella pumila (Michx.) Small"]
+  n598  [label="Muhlenbergia"]
+  n598 -> n134
+  n598 -> n133
+  n598 -> n135
+  n133  [label="Muhlenbergia capillaris (Lam.) Trin."]
+  n134  [label="Muhlenbergia expansa (Poir.) Trin."]
+  n135  [label="Muhlenbergia torreyana (Schult.) Hitchc."]
+  n750  [label="Nuttallanthus"]
+  n750 -> n453
+  n453  [label="Nuttallanthus canadensis (L.) D.A.Sutton"]
+  n738  [label="Nyssa"]
+  n738 -> n432
+  n738 -> n430
+  n430  [label="Nyssa biflora Walter"]
+  n432  [label="Nyssa sylvatica Marshall"]
+  n742  [label="Oenothera"]
+  n742 -> n439
+  n439  [label="Oenothera fruticosa var. unguiculata Fernald"]
+  n767  [label="Oldenlandia"]
+  n767 -> n484
+  n484  [label="Oldenlandia uniflora L."]
+  n783  [label="Osmunda"]
+  n783 -> n543
+  n543  [label="Osmunda spectabilis Willd."]
+  n786  [label="Osmundastrum"]
+  n786 -> n554
+  n554  [label="Osmundastrum cinnamomeum (L.) C.Presl"]
+  n623  [label="Oxypolis"]
+  n623 -> n192
+  n623 -> n191
+  n191  [label="Oxypolis rigidior (L.) Raf."]
+  n192  [label="Oxypolis ternata (Nutt.) A.Heller"]
+  n653  [label="Packera"]
+  n653 -> n252
+  n252  [label="Packera paupercula (Michx.) Á.Löve & D.Löve"]
+  n599  [label="Panicum"]
+  n599 -> n137
+  n599 -> n136
+  n599 -> n139
+  n599 -> n138
+  n137  [label="Panicum hemitomon Schult."]
+  n138  [label="Panicum verrucosum Muhl."]
+  n139  [label="Panicum virgatum L."]
+  n136  [label="Panicum dichotomiflorum var. puritanorum Svenson"]
+  n748  [label="Parnassia"]
+  n748 -> n451
+  n451  [label="Parnassia caroliniana Michx."]
+  n776  [label="Parthenocissus"]
+  n776 -> n503
+  n503  [label="Parthenocissus quinquefolia (L.) Planch."]
+  n600  [label="Paspalum"]
+  n600 -> n146
+  n600 -> n145
+  n600 -> n144
+  n600 -> n140
+  n600 -> n142
+  n600 -> n141
+  n140  [label="Paspalum floridanum Michx."]
+  n141  [label="Paspalum praecox var. curtisianum (Steud.) Vasey"]
+  n142  [label="Paspalum praecox var. praecox Walter"]
+  n144  [label="Paspalum setaceum var. ciliatifolium (Michx.) Vasey"]
+  n145  [label="Paspalum setaceum var. muhlenbergii (Nash) D.J.Banks"]
+  n146  [label="Paspalum setaceum var. setaceum Michx."]
+  n746  [label="Pedicularis"]
+  n746 -> n449
+  n449  [label="Pedicularis canadensis L."]
+  n751  [label="Penstemon"]
+  n751 -> n455
+  n751 -> n456
+  n455  [label="Penstemon australis Small"]
+  n456  [label="Penstemon laevigatus Aiton"]
+  n725  [label="Persea"]
+  n725 -> n402
+  n402  [label="Persea palustris (Raf.) Sarg."]
+  n769  [label="Phoradendron"]
+  n769 -> n486
+  n486  [label="Phoradendron leucarpum var. leucarpum (Raf.) Reveal & M.C.Johnst."]
+  n721  [label="Physostegia"]
+  n721 -> n397
+  n397  [label="Physostegia purpurea (Walter) S.F.Blake"]
+  n727  [label="Pinguicula"]
+  n727 -> n405
+  n727 -> n404
+  n404  [label="Pinguicula caerulea Walter"]
+  n405  [label="Pinguicula pumila Michx."]
+  n579  [label="Pinus"]
+  n579 -> n98
+  n579 -> n87
+  n579 -> n76
+  n579 -> n65
+  n76  [label="Pinus palustris Mill."]
+  n87  [label="Pinus serotina Michx."]
+  n98  [label="Pinus taeda L."]
+  n65  [label="Pinus elliottii var. elliottii Engelm."]
+  n654  [label="Pityopsis"]
+  n654 -> n253
+  n253  [label="Pityopsis graminifolia var. latifolia (Fernald) Semple & F.D.Bowers"]
+  n752  [label="Plantago"]
+  n752 -> n457
+  n457  [label="Plantago sparsiflora Michx."]
+  n575  [label="Platanthera"]
+  n575 -> n53
+  n575 -> n52
+  n575 -> n56
+  n575 -> n55
+  n575 -> n51
+  n51  [label="Platanthera blephariglottis (Willd.) Lindl."]
+  n52  [label="Platanthera ciliaris (L.) Lindl."]
+  n53  [label="Platanthera cristata (Michx.) Lindl."]
+  n55  [label="Platanthera integra (Nutt.) A.Gray ex L.C.Beck"]
+  n56  [label="Platanthera nivea (Nutt.) Luer"]
+  n609  [label="Pleea"]
+  n609 -> n161
+  n161  [label="Pleea tenuifolia Michx."]
+  n655  [label="Pluchea"]
+  n655 -> n255
+  n655 -> n256
+  n255  [label="Pluchea baccharis (Mill.) Pruski"]
+  n256  [label="Pluchea foetida (L.) DC."]
+  n577  [label="Pogonia"]
+  n577 -> n57
+  n57  [label="Pogonia ophioglossoides (L.) Ker Gawl."]
+  n754  [label="Polygala"]
+  n754 -> n460
+  n754 -> n459
+  n754 -> n464
+  n754 -> n463
+  n754 -> n462
+  n754 -> n461
+  n754 -> n466
+  n459  [label="Polygala brevifolia Nutt."]
+  n460  [label="Polygala cruciata L."]
+  n461  [label="Polygala hookeri Torr. & A.Gray"]
+  n462  [label="Polygala incarnata L."]
+  n463  [label="Polygala lutea L."]
+  n464  [label="Polygala ramosa Elliott"]
+  n466  [label="Polygala verticillata L."]
+  n773  [label="Polypremum"]
+  n773 -> n493
+  n493  [label="Polypremum procumbens L."]
+  n761  [label="Potentilla"]
+  n761 -> n475
+  n475  [label="Potentilla simplex Michx."]
+  n656  [label="Prenanthes"]
+  n656 -> n257
+  n257  [label="Prenanthes autumnalis Walter"]
+  n714  [label="Proserpinaca"]
+  n714 -> n374
+  n374  [label="Proserpinaca pectinata Lam."]
+  n762  [label="Prunus"]
+  n762 -> n477
+  n477  [label="Prunus serotina var. serotina Ehrh."]
+  n657  [label="Pseudognaphalium"]
+  n657 -> n258
+  n258  [label="Pseudognaphalium obtusifolium (L.) Hilliard & Burtt"]
+  n779  [label="Pseudolycopodiella"]
+  n779 -> n532
+  n532  [label="Pseudolycopodiella caroliniana (L.) Holub"]
+  n745  [label="Pteridium"]
+  n745 -> n443
+  n443  [label="Pteridium aquilinum var. pseudocaudatum (Clute) A.Heller"]
+  n658  [label="Pterocaulon"]
+  n658 -> n259
+  n259  [label="Pterocaulon pycnostachyum (Michx.) Elliott"]
+  n624  [label="Ptilimnium"]
+  n624 -> n193
+  n193  [label="Ptilimnium capillaceum (Michx.) Raf."]
+  n723  [label="Pycnanthemum"]
+  n723 -> n400
+  n723 -> n399
+  n399  [label="Pycnanthemum flexuosum (Walter) Britton, Sterns & Poggenb."]
+  n400  [label="Pycnanthemum setosum Nutt."]
+  n659  [label="Pyrrhopappus"]
+  n659 -> n260
+  n260  [label="Pyrrhopappus carolinianus (Walter) DC."]
+  n676  [label="Pyxidanthera"]
+  n676 -> n295
+  n295  [label="Pyxidanthera barbulata Michx."]
+  n709  [label="Quercus"]
+  n709 -> n361
+  n709 -> n360
+  n709 -> n359
+  n709 -> n358
+  n709 -> n353
+  n709 -> n352
+  n709 -> n357
+  n709 -> n356
+  n709 -> n355
+  n352  [label="Quercus coccinea Münchh."]
+  n353  [label="Quercus falcata Michx."]
+  n355  [label="Quercus incana W.Bartram"]
+  n356  [label="Quercus laurifolia Michx."]
+  n357  [label="Quercus margarettae (Ashe) Small"]
+  n359  [label="Quercus nigra L."]
+  n360  [label="Quercus stellata Wangenh."]
+  n361  [label="Quercus velutina Lam."]
+  n358  [label="Quercus marilandica var. marilandica Münchh."]
+  n736  [label="Rhexia"]
+  n736 -> n425
+  n736 -> n426
+  n736 -> n423
+  n736 -> n424
+  n736 -> n421
+  n736 -> n422
+  n421  [label="Rhexia alifanus Walter"]
+  n422  [label="Rhexia lutea Walter"]
+  n425  [label="Rhexia nashii Small"]
+  n426  [label="Rhexia petiolata Walter"]
+  n423  [label="Rhexia mariana var. exalbida Michx."]
+  n424  [label="Rhexia mariana var. mariana L."]
+  n687  [label="Rhododendron"]
+  n687 -> n313
+  n687 -> n312
+  n312  [label="Rhododendron atlanticum (Ashe) Rehder"]
+  n313  [label="Rhododendron viscosum (L.) Torr."]
+  n618  [label="Rhus"]
+  n618 -> n182
+  n182  [label="Rhus copallinum var. copallinum L."]
+  n744  [label="Rhynchospora"]
+  n744 -> n505
+  n744 -> n512
+  n744 -> n511
+  n744 -> n509
+  n744 -> n508
+  n744 -> n507
+  n744 -> n506
+  n744 -> n498
+  n744 -> n533
+  n744 -> n535
+  n744 -> n534
+  n744 -> n530
+  n744 -> n529
+  n744 -> n531
+  n744 -> n536
+  n744 -> n517
+  n744 -> n518
+  n744 -> n519
+  n744 -> n520
+  n744 -> n513
+  n744 -> n514
+  n744 -> n515
+  n744 -> n516
+  n744 -> n525
+  n744 -> n526
+  n744 -> n527
+  n744 -> n528
+  n744 -> n522
+  n744 -> n523
+  n744 -> n524
+  n744 -> n465
+  n744 -> n454
+  n744 -> n487
+  n744 -> n476
+  n744 -> n442
+  n442  [label="Rhynchospora baldwinii A.Gray"]
+  n454  [label="Rhynchospora caduca Elliott"]
+  n476  [label="Rhynchospora chalarocephala Fernald & Gale"]
+  n487  [label="Rhynchospora chapmanii M.A.Curtis"]
+  n498  [label="Rhynchospora ciliaris (Michx.) C.Mohr"]
+  n505  [label="Rhynchospora colorata (L.) H.Pfeiff."]
+  n506  [label="Rhynchospora corniculata (Lam.) A.Gray"]
+  n507  [label="Rhynchospora debilis Gale"]
+  n508  [label="Rhynchospora decurrens Chapm."]
+  n509  [label="Rhynchospora distans (Michx.) Vahl"]
+  n511  [label="Rhynchospora divergens Chapm. ex M.A.Curtis"]
+  n512  [label="Rhynchospora fascicularis (Michx.) Vahl"]
+  n513  [label="Rhynchospora filifolia A.Gray"]
+  n514  [label="Rhynchospora galeana Naczi, W.M.Knapp & G.Moor"]
+  n515  [label="Rhynchospora globularis (Chapm.) Small"]
+  n517  [label="Rhynchospora gracilenta A.Gray"]
+  n518  [label="Rhynchospora inexpansa (Michx.) Vahl"]
+  n519  [label="Rhynchospora latifolia (Baldwin) W.W.Thomas"]
+  n520  [label="Rhynchospora macrostachya Torr. ex A.Gray"]
+  n522  [label="Rhynchospora microcarpa Baldwin ex A.Gray"]
+  n523  [label="Rhynchospora microcephala (Britton) Britton ex Small"]
+  n524  [label="Rhynchospora mixta Britton"]
+  n525  [label="Rhynchospora nitens (Vahl) A.Gray"]
+  n526  [label="Rhynchospora oligantha A.Gray"]
+  n527  [label="Rhynchospora pallida M.A.Curti"]
+  n528  [label="Rhynchospora pinetorum Britton & Small"]
+  n529  [label="Rhynchospora plumosa Elliott"]
+  n530  [label="Rhynchospora pusilla Chapm. ex M.A.Curtis"]
+  n531  [label="Rhynchospora rariflora (Michx.) Elliott"]
+  n533  [label="Rhynchospora scirpoides (Torr.) Griseb."]
+  n534  [label="Rhynchospora thornei Kral"]
+  n535  [label="Rhynchospora torreyana A.Gray"]
+  n536  [label="Rhynchospora wrightiana Boeck."]
+  n465  [label="Rhynchospora cephalantha var. cephalantha A.Gray"]
+  n516  [label="Rhynchospora glomerata var. glomerata (L.) Vahl"]
+  n763  [label="Rosa"]
+  n763 -> n478
+  n478  [label="Rosa palustris Marshall"]
+  n764  [label="Rubus"]
+  n764 -> n480
+  n764 -> n479
+  n479  [label="Rubus cuneifolius Pursh"]
+  n480  [label="Rubus pensilvanicus Poir."]
+  n713  [label="Sabatia"]
+  n713 -> n372
+  n713 -> n373
+  n713 -> n370
+  n713 -> n371
+  n713 -> n369
+  n369  [label="Sabatia angularis (L.) Pursh"]
+  n370  [label="Sabatia brachiata Elliott"]
+  n371  [label="Sabatia campanulata (L.) Torr."]
+  n372  [label="Sabatia difformis (L.) Druce"]
+  n373  [label="Sabatia gentianoides Elliott"]
+  n602  [label="Saccharum"]
+  n602 -> n147
+  n602 -> n148
+  n602 -> n149
+  n602 -> n150
+  n147  [label="Saccharum baldwinii Spreng."]
+  n149  [label="Saccharum coarctatum (Fernald) R.D.Webster"]
+  n150  [label="Saccharum giganteum (Walter) Pers."]
+  n148  [label="Saccharum brevibarbe var. contortum (Elliott) R.D.Webster"]
+  n768  [label="Salix"]
+  n768 -> n485
+  n485  [label="Salix caroliniana Michx."]
+  n771  [label="Sarracenia"]
+  n771 -> n490
+  n771 -> n491
+  n771 -> n489
+  n489  [label="Sarracenia flava L."]
+  n490  [label="Sarracenia purpurea subsp. venosa (Raf.) Fernald"]
+  n491  [label="Sarracenia rubra subsp. rubra Walter"]
+  n726  [label="Sassafras"]
+  n726 -> n403
+  n403  [label="Sassafras albidum J.Presl"]
+  n603  [label="Schizachyrium"]
+  n603 -> n151
+  n151  [label="Schizachyrium scoparium var. scoparium (Michx.) Nash"]
+  n780  [label="Schoenoplectus"]
+  n780 -> n537
+  n537  [label="Schoenoplectus pungens var. pungens (Vahl) Palla"]
+  n781  [label="Scirpus"]
+  n781 -> n539
+  n781 -> n538
+  n538  [label="Scirpus cyperinus (L.) Kunth"]
+  n539  [label="Scirpus lineatus Michx."]
+  n782  [label="Scleria"]
+  n782 -> n549
+  n782 -> n548
+  n782 -> n550
+  n782 -> n542
+  n782 -> n541
+  n782 -> n545
+  n782 -> n544
+  n782 -> n547
+  n782 -> n546
+  n782 -> n540
+  n540  [label="Scleria baldwinii (Torr.) Steud."]
+  n544  [label="Scleria georgiana Core"]
+  n545  [label="Scleria minor (Britton) W.Stone"]
+  n546  [label="Scleria muehlenbergii Steud."]
+  n548  [label="Scleria species"]
+  n549  [label="Scleria triglomerata Michx."]
+  n550  [label="Scleria verticillata Muhl. ex Willd."]
+  n541  [label="Scleria ciliata var. ciliata Michx."]
+  n542  [label="Scleria ciliata var. glabra (Chapm.) Fairey"]
+  n547  [label="Scleria pauciflora var. caroliniana (Willd.) Alph.Wood"]
+  n724  [label="Scutellaria"]
+  n724 -> n401
+  n401  [label="Scutellaria integrifolia L."]
+  n562  [label="Selaginella"]
+  n562 -> n10
+  n10  [label="Selaginella apoda (L.) C.Morren"]
+  n660  [label="Sericocarpus"]
+  n660 -> n261
+  n261  [label="Sericocarpus linifolius (L.) Britton, Sterns & Poggenb."]
+  n604  [label="Setaria"]
+  n604 -> n152
+  n152  [label="Setaria parviflora (Poir.) Kerguélen"]
+  n747  [label="Seymeria"]
+  n747 -> n450
+  n450  [label="Seymeria cassioides (J.F.Gmel.) S.F.Blake"]
+  n661  [label="Silphium"]
+  n661 -> n262
+  n262  [label="Silphium compositum var. compositum Michx."]
+  n563  [label="Sisyrinchium"]
+  n563 -> n16
+  n563 -> n14
+  n563 -> n15
+  n563 -> n12
+  n563 -> n13
+  n12  [label="Sisyrinchium albidum Raf."]
+  n13  [label="Sisyrinchium angustifolium Mill."]
+  n14  [label="Sisyrinchium arenicola E.P.Bicknell"]
+  n15  [label="Sisyrinchium atlanticum E.P.Bicknell"]
+  n16  [label="Sisyrinchium capillare E.P.Bicknell"]
+  n608  [label="Smilax"]
+  n608 -> n158
+  n608 -> n157
+  n608 -> n156
+  n608 -> n160
+  n608 -> n159
+  n156  [label="Smilax bona-nox L."]
+  n157  [label="Smilax glauca Walter"]
+  n158  [label="Smilax laurifolia L."]
+  n159  [label="Smilax rotundifolia L."]
+  n160  [label="Smilax smallii Morong"]
+  n662  [label="Solidago"]
+  n662 -> n269
+  n662 -> n270
+  n662 -> n263
+  n662 -> n264
+  n662 -> n267
+  n662 -> n268
+  n662 -> n266
+  n263  [label="Solidago fistulosa Mill."]
+  n264  [label="Solidago gracillima Torr. & A.Gray"]
+  n266  [label="Solidago odora Aiton"]
+  n267  [label="Solidago pinetorum Small"]
+  n269  [label="Solidago pulchra Small"]
+  n270  [label="Solidago stricta Aiton"]
+  n268  [label="Solidago puberula var. pulverulenta (Nutt.) Chapm."]
+  n753  [label="Sophronanthe"]
+  n753 -> n458
+  n458  [label="Sophronanthe pilosa (Michx.) Small"]
+  n605  [label="Sorghastrum"]
+  n605 -> n153
+  n153  [label="Sorghastrum nutans (L.) Nash"]
+  n578  [label="Spiranthes"]
+  n578 -> n59
+  n578 -> n60
+  n578 -> n58
+  n578 -> n63
+  n578 -> n64
+  n578 -> n61
+  n578 -> n62
+  n58  [label="Spiranthes cernua (L.) Rich."]
+  n59  [label="Spiranthes eatonii Ames ex P.M.Br."]
+  n61  [label="Spiranthes laciniata (Small) Ames"]
+  n62  [label="Spiranthes longilabris Lindl."]
+  n63  [label="Spiranthes praecox (Walter) S.Watson"]
+  n64  [label="Spiranthes vernalis Englem. & A.Gray"]
+  n60  [label="Spiranthes lacera var. gracilis (Bigelow) Luer"]
+  n607  [label="Sporobolus"]
+  n607 -> n155
+  n155  [label="Sporobolus pinetorum Weakley & P.M.Peterson"]
+  n568  [label="Stenanthium"]
+  n568 -> n39
+  n39  [label="Stenanthium densum (Desr.) Zomlefer & Judd"]
+  n705  [label="Strophostyles"]
+  n705 -> n346
+  n346  [label="Strophostyles umbellata (Muhl. ex Willd.) Britton"]
+  n706  [label="Stylosanthes"]
+  n706 -> n347
+  n347  [label="Stylosanthes biflora (L.) Britton, Sterns & Poggenb."]
+  n663  [label="Symphyotrichum"]
+  n663 -> n271
+  n663 -> n274
+  n663 -> n275
+  n663 -> n272
+  n663 -> n273
+  n271  [label="Symphyotrichum dumosum (L.) G.L.Nesom"]
+  n272  [label="Symphyotrichum lateriflorum (L.) Á.Löve & D.Löve"]
+  n275  [label="Symphyotrichum walteri (Alexander) G.L.Nesom"]
+  n273  [label="Symphyotrichum novi-belgii var. elodes (Torr. & A.Gray) G.L.Nesom"]
+  n274  [label="Symphyotrichum pilosum var. pilosum (Willd.) G.L.Nesom"]
+  n772  [label="Symplocos"]
+  n772 -> n492
+  n492  [label="Symplocos tinctoria"]
+  n557  [label="Syngonanthus"]
+  n557 -> n1
+  n1  [label="Syngonanthus flavidulus (Michx.) Ruhland"]
+  n576  [label="Taxodium"]
+  n576 -> n54
+  n54  [label="Taxodium ascendens Brongn."]
+  n707  [label="Tephrosia"]
+  n707 -> n350
+  n707 -> n349
+  n707 -> n348
+  n348  [label="Tephrosia florida (F.Dietr.) C.E.Wood"]
+  n349  [label="Tephrosia hispidula (Michx.) Pers."]
+  n350  [label="Tephrosia spicata (Walter) Torr. & A.Gray"]
+  n757  [label="Thalictrum"]
+  n757 -> n470
+  n470  [label="Thalictrum cooleyi H.E.Ahles"]
+  n625  [label="Tiedemannia"]
+  n625 -> n194
+  n194  [label="Tiedemannia filiformis var. filiformis (Walter) Feist & S.R.Downie"]
+  n601  [label="Tillandsia"]
+  n601 -> n143
+  n143  [label="Tillandsia usneoides (L.) L."]
+  n610  [label="Tofieldia"]
+  n610 -> n162
+  n162  [label="Tofieldia glabra Nutt."]
+  n619  [label="Toxicodendron"]
+  n619 -> n183
+  n183  [label="Toxicodendron radicans var. radicans (L.) Kuntze"]
+  n693  [label="Tragia"]
+  n693 -> n324
+  n324  [label="Tragia urens L."]
+  n611  [label="Triantha"]
+  n611 -> n163
+  n163  [label="Triantha racemosa (Walter) Small"]
+  n664  [label="Trilisa"]
+  n664 -> n277
+  n664 -> n278
+  n277  [label="Trilisa odoratissima (J.F.Gmel.) Cass."]
+  n278  [label="Trilisa paniculata (J.F.Gmel.) Cass."]
+  n612  [label="Trillium"]
+  n612 -> n164
+  n164  [label="Trillium pusillum var. pusillum Michx."]
+  n728  [label="Utricularia"]
+  n728 -> n407
+  n728 -> n406
+  n406  [label="Utricularia juncea Vahl"]
+  n407  [label="Utricularia subulata L."]
+  n613  [label="Uvularia"]
+  n613 -> n165
+  n165  [label="Uvularia puberula Michx."]
+  n688  [label="Vaccinium"]
+  n688 -> n315
+  n688 -> n316
+  n688 -> n317
+  n688 -> n318
+  n688 -> n319
+  n688 -> n314
+  n314  [label="Vaccinium arboreum Marshall"]
+  n315  [label="Vaccinium crassifolium Andrews"]
+  n316  [label="Vaccinium formosum Andrews"]
+  n317  [label="Vaccinium fuscatum Aiton"]
+  n318  [label="Vaccinium stamineum L."]
+  n319  [label="Vaccinium tenellum Aiton"]
+  n569  [label="Veratrum"]
+  n569 -> n40
+  n40  [label="Veratrum virginicum (L.) W.T.Aiton"]
+  n665  [label="Vernonia"]
+  n665 -> n279
+  n665 -> n280
+  n279  [label="Vernonia angustifolia Michx."]
+  n280  [label="Vernonia noveboracensis (L.) Michx."]
+  n616  [label="Viburnum"]
+  n616 -> n180
+  n180  [label="Viburnum nudum L."]
+  n775  [label="Viola"]
+  n775 -> n502
+  n775 -> n501
+  n775 -> n500
+  n775 -> n499
+  n775 -> n496
+  n775 -> n497
+  n775 -> n495
+  n495  [label="Viola brittoniana Pollard"]
+  n499  [label="Viola primulifolia L."]
+  n501  [label="Viola septemloba Leconte"]
+  n496  [label="Viola lanceolata var. lanceolata L."]
+  n497  [label="Viola lanceolata var. vittata (Greene) Weath. & Griscom"]
+  n500  [label="Viola sagittata var. sagittata Aiton"]
+  n502  [label="Viola sororia var. missouriensis (Greene) L.E.McKinney"]
+  n777  [label="Vitis"]
+  n777 -> n504
+  n504  [label="Vitis rotundifolia var. rotundifolia Michx."]
+  n638  [label="Woodwardia"]
+  n638 -> n332
+  n638 -> n221
+  n221  [label="Woodwardia areolata (L.) Moore"]
+  n332  [label="Woodwardia virginica (L.) Sm."]
+  n614  [label="Xyris"]
+  n614 -> n166
+  n614 -> n167
+  n614 -> n168
+  n614 -> n169
+  n614 -> n170
+  n614 -> n171
+  n614 -> n172
+  n614 -> n173
+  n614 -> n174
+  n614 -> n175
+  n614 -> n177
+  n614 -> n178
+  n166  [label="Xyris ambigua Beyr. ex Kunth"]
+  n167  [label="Xyris baldwiniana Schult."]
+  n168  [label="Xyris brevifolia Michx."]
+  n169  [label="Xyris caroliniana Walter"]
+  n170  [label="Xyris curtissii Malme"]
+  n171  [label="Xyris fimbriata Elliott"]
+  n172  [label="Xyris flabelliformis Chapm."]
+  n173  [label="Xyris floridana (Kral) E.L.Bridges & Orzell"]
+  n174  [label="Xyris iridifolia Chapm."]
+  n175  [label="Xyris jupicai Rich."]
+  n177  [label="Xyris scabrifolia R.M.Harper"]
+  n178  [label="Xyris species"]
+  n594  [label="Yucca"]
+  n594 -> n121
+  n121  [label="Yucca filamentosa L."]
+  n690  [label="Zenobia"]
+  n690 -> n321
+  n321  [label="Zenobia pulverulenta (W.Bartram ex Willd.) Pollard"]
+  n570  [label="Zigadenus"]
+  n570 -> n41
+  n41  [label="Zigadenus glaberrimus Michx."]
+  n708  [label="Zornia"]
+  n708 -> n351
+  n351  [label="Zornia bracteata J.F.Gmel."]
+  n179  [label="Taxon"]
+  n21  [label="Taxon"]
+  n109  [label="Taxon"]
+  n110  [label="Taxon"]
+}
