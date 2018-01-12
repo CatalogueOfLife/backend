@@ -1,37 +1,28 @@
 package org.col.resources;
 
-import java.util.List;
-
-import javax.validation.Valid;
-import javax.ws.rs.BeanParam;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-
+import com.codahale.metrics.annotation.Timed;
 import org.apache.ibatis.session.SqlSession;
-import org.col.api.Page;
-import org.col.api.PagingResultSet;
-import org.col.api.Taxon;
-import org.col.api.TaxonInfo;
+import org.col.api.*;
 import org.col.dao.TaxonDao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.codahale.metrics.annotation.Timed;
+import javax.validation.Valid;
+import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import java.util.List;
 
 @Path("/taxon")
 @Produces(MediaType.APPLICATION_JSON)
+@SuppressWarnings("static-method")
 public class TaxonResource {
 
 	@SuppressWarnings("unused")
 	private static final Logger LOG = LoggerFactory.getLogger(TaxonResource.class);
 
-	@GET
-	public PagingResultSet<Taxon> list(@QueryParam("datasetKey") Integer datasetKey,
+  @GET
+	public ResultPage<Taxon> list(@QueryParam("datasetKey") Integer datasetKey,
 	    @Valid @BeanParam Page page,
 	    @Context SqlSession session) {
 		TaxonDao dao = new TaxonDao(session);
@@ -81,5 +72,12 @@ public class TaxonResource {
 		TaxonDao dao = new TaxonDao(session);
 		return dao.getTaxonInfo(key);
 	}
+
+  @GET
+  @Path("{key}/verbatim")
+  public VerbatimRecord getVerbatim(@PathParam("key") int key, @Context SqlSession session) {
+    TaxonDao dao = new TaxonDao(session);
+    return dao.getVerbatim(key);
+  }
 
 }

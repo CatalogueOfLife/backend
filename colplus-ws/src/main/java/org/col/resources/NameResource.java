@@ -1,42 +1,29 @@
 package org.col.resources;
 
-import java.util.List;
-
-import javax.validation.Valid;
-import javax.ws.rs.BeanParam;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-
+import com.codahale.metrics.annotation.Timed;
 import org.apache.ibatis.session.SqlSession;
-import org.col.api.Name;
-import org.col.api.NameAct;
-import org.col.api.NameSearch;
-import org.col.api.NameSearchResult;
-import org.col.api.Page;
-import org.col.api.PagedReference;
-import org.col.api.PagingResultSet;
-import org.col.api.VerbatimRecord;
+import org.col.api.*;
 import org.col.dao.NameDao;
 import org.col.db.mapper.NameActMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.codahale.metrics.annotation.Timed;
+import javax.validation.Valid;
+import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import java.util.List;
 
 @Path("/name")
 @Produces(MediaType.APPLICATION_JSON)
+@SuppressWarnings("static-method")
 public class NameResource {
 
 	@SuppressWarnings("unused")
 	private static final Logger LOG = LoggerFactory.getLogger(NameResource.class);
 
-	@GET
-	public PagingResultSet<Name> list(@QueryParam("datasetKey") Integer datasetKey,
+  @GET
+	public ResultPage<Name> list(@QueryParam("datasetKey") Integer datasetKey,
 	    @Valid @BeanParam Page page,
 	    @Context SqlSession session) {
 		NameDao dao = new NameDao(session);
@@ -46,7 +33,7 @@ public class NameResource {
 	@GET
 	@Timed
 	@Path("search")
-	public PagingResultSet<NameSearchResult> search(@BeanParam NameSearch query,
+	public ResultPage<NameSearchResult> search(@BeanParam NameSearch query,
 	    @Valid @BeanParam Page page,
 	    @Context SqlSession session) {
 		NameDao dao = new NameDao(session);
@@ -54,7 +41,6 @@ public class NameResource {
 	}
 
 	@GET
-	@Timed
 	@Path("{id}/{datasetKey}")
 	public Integer lookupKey(@PathParam("id") String id,
 	    @PathParam("datasetKey") int datasetKey,
@@ -64,7 +50,6 @@ public class NameResource {
 	}
 
 	@GET
-	@Timed
 	@Path("{key}")
 	public Name get(@PathParam("key") int key, @Context SqlSession session) {
 		NameDao dao = new NameDao(session);
@@ -80,7 +65,6 @@ public class NameResource {
 	}
 
 	@GET
-	@Timed
 	@Path("{key}/publishedIn")
 	public PagedReference getPublishedIn(@PathParam("key") int key, @Context SqlSession session) {
 		NameDao dao = new NameDao(session);
@@ -88,7 +72,6 @@ public class NameResource {
 	}
 
 	@GET
-	@Timed
 	@Path("{key}/verbatim")
 	public VerbatimRecord getVerbatim(@PathParam("key") int key, @Context SqlSession session) {
 		NameDao dao = new NameDao(session);
@@ -96,7 +79,7 @@ public class NameResource {
 	}
 
 	@GET
-	@Timed
+  @Timed
 	@Path("{key}/acts")
 	public List<NameAct> getActs(@PathParam("key") int key,
 	    @QueryParam("homotypic") Boolean homotypic,

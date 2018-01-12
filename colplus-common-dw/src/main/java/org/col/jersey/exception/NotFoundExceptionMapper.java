@@ -1,12 +1,11 @@
 package org.col.jersey.exception;
 
-import org.col.db.NotFoundException;
-
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.Provider;
+import org.col.db.NotFoundException;
 
 /**
- * Converts a NotFoundException into a 404.
+ * Converts a {@link NotFoundException} into a 404.
  */
 @Provider
 public class NotFoundExceptionMapper extends JsonExceptionMapperBase<NotFoundException> {

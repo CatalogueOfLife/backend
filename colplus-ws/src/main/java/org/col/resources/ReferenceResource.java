@@ -3,7 +3,7 @@ package org.col.resources;
 import com.codahale.metrics.annotation.Timed;
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.Page;
-import org.col.api.PagingResultSet;
+import org.col.api.ResultPage;
 import org.col.api.Reference;
 import org.col.dao.ReferenceDao;
 import org.slf4j.Logger;
@@ -22,7 +22,7 @@ public class ReferenceResource {
 	private static final Logger LOG = LoggerFactory.getLogger(ReferenceResource.class);
 
 	@GET
-	public PagingResultSet<Reference> list(@QueryParam("datasetKey") Integer datasetKey,
+	public ResultPage<Reference> list(@QueryParam("datasetKey") Integer datasetKey,
 	    @Valid @BeanParam Page page,
 	    @Context SqlSession session) {
 		ReferenceDao dao = new ReferenceDao(session);

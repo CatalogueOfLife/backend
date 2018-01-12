@@ -3,6 +3,10 @@ package org.col.resources;
 import com.google.common.collect.Lists;
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.*;
+import org.col.api.Dataset;
+import org.col.api.DatasetImport;
+import org.col.api.Page;
+import org.col.api.ResultPage;
 import org.col.dao.DatasetDao;
 import org.col.db.mapper.DatasetImportMapper;
 import org.col.db.mapper.DatasetMapper;
@@ -26,7 +30,7 @@ public class DatasetResource {
   private static final Logger LOG = LoggerFactory.getLogger(DatasetResource.class);
 
   @GET
-  public PagingResultSet<Dataset> list(@Valid @BeanParam Page page, @QueryParam("q") String q,
+  public ResultPage<Dataset> list(@Valid @BeanParam Page page, @QueryParam("q") String q,
       @Context SqlSession session) {
     return new DatasetDao(session).search(q, page);
   }
@@ -81,11 +85,11 @@ public class DatasetResource {
 
   @GET
   @Path("{key}/verbatim")
-  public PagingResultSet<VerbatimRecord> list(@PathParam("key") Integer datasetKey,
+  public ResultPage<VerbatimRecord> list(@PathParam("key") Integer datasetKey,
                                               @Valid @BeanParam Page page,
                                               @Context SqlSession session) {
     VerbatimRecordMapper mapper = session.getMapper(VerbatimRecordMapper.class);
-    return new PagingResultSet<VerbatimRecord>(page, mapper.count(datasetKey), mapper.list(datasetKey, page));
+    return new ResultPage<VerbatimRecord>(page, mapper.count(datasetKey), mapper.list(datasetKey, page));
   }
 
   @GET

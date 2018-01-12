@@ -67,15 +67,13 @@
     <select id="getByName" resultMap="verbatimResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
-            JOIN name n ON n.key=v.name_key
-        WHERE n.key = #{nameKey}
+        WHERE v.name_key = #{nameKey}
     </select>
 
     <select id="getByTaxon" resultMap="verbatimResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
-          JOIN taxon t ON t.key=v.taxon_key
-        WHERE t.dataset_key = #{datasetKey} AND t.id = #{id}
+        WHERE v.taxon_key = #{taxonKey}
     </select>
 
     <insert id="create" parameterType="map">

@@ -74,7 +74,7 @@ public class VerbatimRecordMapperTest extends MapperTestBase<VerbatimRecordMappe
     VerbatimRecord r2 = mapper().getByName(1);
     assertEquals(r1, r2);
 
-    VerbatimRecord r3 = mapper().getByTaxon(r1.getDataset().getKey(), "root-1");
+    VerbatimRecord r3 = mapper().getByTaxon(1);
     assertEquals(r1, r3);
 
   }
