@@ -1,12 +1,14 @@
 package org.col.task;
 
+import com.codahale.metrics.MetricRegistry;
 import io.dropwizard.cli.Cli;
 import io.dropwizard.cli.Command;
+import io.dropwizard.logging.LoggingFactory;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.util.JarLocation;
-import org.col.task.common.TaskServerConfig;
 import org.col.command.initdb.InitDbCmd;
 import org.col.db.mapper.PgSetupRule;
+import org.col.task.common.TaskServerConfig;
 import org.col.util.YamlUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -49,11 +51,11 @@ public abstract class CmdTestBase {
     cfg.db = PgSetupRule.getCfg();
     // somehow serde doesnt work with the inherited Configuration props, set them to null to ignore them
     cfg.client = null;
-    cfg.setLoggingFactory(null);
     cfg.setServerFactory(null);
     cfg.setMetricsFactory(null);
+    // Since DW 1.2 the logging factory is created lazily and cannot be set to null.
+    cfg.setLoggingFactory(new DevNullLoggingFactory());
     YamlUtils.write(cfg, tempDbCfg);
-
 
     // Setup necessary mock
     final JarLocation location = mock(JarLocation.class);
@@ -71,9 +73,23 @@ public abstract class CmdTestBase {
     cli = new Cli(location, bootstrap, System.out, System.err);
   }
 
+  /**
+   * Only here to avoid meaningful serialization of the logging settings.
+   * Since DW 1.2 the logging factory is created lazily and cannot be set to null.
+   */
+  public static class DevNullLoggingFactory implements LoggingFactory {
+    @Override
+    public void configure(MetricRegistry metricRegistry, String name) { }
+    @Override
+    public void stop() {}
+    @Override
+    public void reset() { }
+  }
+
   @After
   public void teardown() {
-    tempDbCfg.delete();
+    System.out.println(tempDbCfg.getAbsolutePath());
+    //tempDbCfg.delete();
   }
 
   /**
