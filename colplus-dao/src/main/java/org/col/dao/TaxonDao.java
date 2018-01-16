@@ -52,9 +52,12 @@ public class TaxonDao {
     return mapper.classification(key);
   }
 
-  public List<Taxon> getChildren(int key, Page page) {
+  public ResultPage<Taxon> getChildren(int key, Page page) {
+    Page p = page == null ? new Page() : page;
     TaxonMapper mapper = session.getMapper(TaxonMapper.class);
-    return mapper.children(key, page);
+    int total = mapper.countChildren(key);
+    List<Taxon> result = mapper.children(key, p);
+    return new ResultPage<>(p, total, result);
   }
 
   public void create(Taxon taxon) {

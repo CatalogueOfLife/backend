@@ -87,32 +87,55 @@ public class TaxonMapperTest extends MapperTestBase<TaxonMapper> {
 
 	}
 
-	@Test
-	public void children() throws Exception {
-		Taxon parent = TestEntityGenerator.newTaxon("parent-1");
-		mapper().create(parent);
+  @Test
+  public void countChildren() throws Exception {
+    Taxon parent = TestEntityGenerator.newTaxon("parent-1");
+    mapper().create(parent);
 
-		Taxon c1 = TestEntityGenerator.newTaxon("child-1");
-		c1.setParentKey(parent.getKey());
-		mapper().create(c1);
+    Taxon c1 = TestEntityGenerator.newTaxon("child-1");
+    c1.setParentKey(parent.getKey());
+    mapper().create(c1);
 
-		Taxon c2 = TestEntityGenerator.newTaxon("child-2");
-		c2.setParentKey(parent.getKey());
-		mapper().create(c2);
+    Taxon c2 = TestEntityGenerator.newTaxon("child-2");
+    c2.setParentKey(parent.getKey());
+    mapper().create(c2);
 
-		Taxon c3 = TestEntityGenerator.newTaxon("child-3");
-		c3.setParentKey(parent.getKey());
-		mapper().create(c3);
+    Taxon c3 = TestEntityGenerator.newTaxon("child-3");
+    c3.setParentKey(parent.getKey());
+    mapper().create(c3);
 
-		commit();
+    commit();
 
-		List<Taxon> res = mapper().children(parent.getKey(), new Page(0, 5));
-		assertEquals("01", 3, res.size());
-		assertEquals("02", c1, res.get(0));
-		assertEquals("03", c2, res.get(1));
-		assertEquals("04", c3, res.get(2));
+    int res = mapper().countChildren(parent.getKey());
+    assertEquals("01", 3, res);
+  }
 
-	}
+  @Test
+  public void children() throws Exception {
+    Taxon parent = TestEntityGenerator.newTaxon("parent-1");
+    mapper().create(parent);
+
+    Taxon c1 = TestEntityGenerator.newTaxon("child-1");
+    c1.setParentKey(parent.getKey());
+    mapper().create(c1);
+
+    Taxon c2 = TestEntityGenerator.newTaxon("child-2");
+    c2.setParentKey(parent.getKey());
+    mapper().create(c2);
+
+    Taxon c3 = TestEntityGenerator.newTaxon("child-3");
+    c3.setParentKey(parent.getKey());
+    mapper().create(c3);
+
+    commit();
+
+    List<Taxon> res = mapper().children(parent.getKey(), new Page(0, 5));
+    assertEquals("01", 3, res.size());
+    assertEquals("02", c1, res.get(0));
+    assertEquals("03", c2, res.get(1));
+    assertEquals("04", c3, res.get(2));
+
+  }
 
 	@Test
 	public void classification() throws Exception {

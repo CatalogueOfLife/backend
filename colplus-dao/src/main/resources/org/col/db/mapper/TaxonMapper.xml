@@ -201,6 +201,12 @@
         WHERE t.key = #{key}
     </select>
 
+    <select id="countChildren"  parameterType="map" resultType="Integer">
+        SELECT count(*)
+        FROM taxon
+        WHERE parent_key = #{key}
+    </select>
+
     <select id="children" resultMap="taxonResultMap">
         SELECT
         <include refid="SELECT" />
