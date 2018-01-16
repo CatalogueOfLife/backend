@@ -7,7 +7,7 @@ import org.col.api.Dataset;
 import org.col.api.Page;
 import org.col.api.vocab.DataFormat;
 import org.col.api.vocab.License;
-import org.col.task.common.GbifConfig;
+import org.col.config.GbifConfig;
 import org.col.parser.LicenseParser;
 import org.col.parser.SafeParser;
 import org.col.parser.UriParser;
@@ -74,6 +74,10 @@ public class DatasetPager {
     return datasets
         .queryParam("offset", page.getOffset())
         .queryParam("limit", page.getLimit());
+  }
+
+  public int currPageNumber() {
+    return 1 + page.getOffset() / page.getLimit();
   }
 
   private String publisher(final UUID key) {

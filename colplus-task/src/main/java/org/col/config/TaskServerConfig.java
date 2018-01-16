@@ -1,4 +1,4 @@
-package org.col.task.common;
+package org.col.config;
 
 import io.dropwizard.client.JerseyClientConfiguration;
 import org.col.PgAppConfig;

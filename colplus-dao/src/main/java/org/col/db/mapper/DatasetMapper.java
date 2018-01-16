@@ -17,12 +17,18 @@ public interface DatasetMapper {
 	List<Dataset> search(@Nullable @Param("q") String q, @Param("page") Page page);
 
 	/**
-	 * Page through all datasets, listing datasets which have not been imported
-	 * before.
+	 * list datasets which have not been imported before, ordered by date created.
+   * @param limit maximum of datasets to return
 	 */
-	List<Dataset> listEmpty(@Param("page") Page page);
+	List<Dataset> listNeverImported(int limit);
 
-	Dataset get(@Param("key") int key);
+  /**
+   * list datasets which have already been imported before, but need a refresh.
+   * @param limit maximum of datasets to return
+   */
+  List<Dataset> listToBeImported(int limit);
+
+  Dataset get(@Param("key") int key);
 
 	Dataset getByGBIF(@Param("key") UUID key);
 

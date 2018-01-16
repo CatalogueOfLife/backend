@@ -6,7 +6,7 @@ import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.jdbc.ScriptRunner;
-import org.col.task.common.TaskServerConfig;
+import org.col.config.TaskServerConfig;
 import org.col.db.PgConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

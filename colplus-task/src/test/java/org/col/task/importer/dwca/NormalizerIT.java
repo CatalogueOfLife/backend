@@ -5,7 +5,7 @@ import com.google.common.collect.Sets;
 import com.google.common.io.Files;
 import org.apache.commons.io.FileUtils;
 import org.col.api.Taxon;
-import org.col.task.common.NormalizerConfig;
+import org.col.config.NormalizerConfig;
 import org.col.task.importer.neo.NeoDbFactory;
 import org.col.task.importer.neo.NormalizerStore;
 import org.col.task.importer.neo.NotUniqueRuntimeException;

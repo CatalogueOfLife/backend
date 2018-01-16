@@ -1,7 +1,7 @@
 package org.col.task.importer.neo;
 
 import com.google.common.io.Files;
-import org.col.task.common.NormalizerConfig;
+import org.col.config.NormalizerConfig;
 import org.col.util.CleanupUtils;
 import org.mapdb.DBMaker;
 import org.neo4j.graphdb.factory.GraphDatabaseBuilder;

@@ -134,7 +134,32 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
 		assertEquals(ds.subList(4,7), res);
 	}
 
-	@Test
+  @Test
+  public void listNeverImported() throws Exception {
+    List<Dataset> ds = Lists.newArrayList();
+    ds.add(mapper().get(1));
+    ds.add(mapper().get(2));
+    ds.add(create());
+    ds.add(create());
+    ds.add(create());
+    ds.add(create());
+    ds.add(create());
+
+    for (Dataset d : ds) {
+      if (d.getKey() == null) {
+        mapper().create(d);
+      }
+    }
+    commit();
+
+    List<Dataset> never = mapper().listNeverImported(3);
+    assertEquals(3, never.size());
+
+    List<Dataset> tobe = mapper().listToBeImported(3);
+    assertEquals(0, tobe.size());
+  }
+
+  @Test
 	public void countSearchResults() throws Exception {
 		createSearchableDataset("BIZ", "CUIT", "A sentence with worms and stuff");
 		createSearchableDataset("ITIS", "ITIS", "Also contains worms");

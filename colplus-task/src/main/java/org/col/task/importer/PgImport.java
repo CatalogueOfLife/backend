@@ -10,7 +10,7 @@ import org.col.api.Dataset;
 import org.col.api.Distribution;
 import org.col.api.VernacularName;
 import org.col.api.vocab.Origin;
-import org.col.task.common.ImporterConfig;
+import org.col.config.ImporterConfig;
 import org.col.task.importer.neo.NeoDb;
 import org.col.task.importer.neo.NormalizerStore;
 import org.col.task.importer.neo.model.Labels;

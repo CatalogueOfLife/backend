@@ -7,6 +7,7 @@ import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Test;
 
+import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Random;
@@ -34,6 +35,7 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     d.setState(ImportState.RUNNING);
     d.setStarted(LocalDateTime.now());
     d.setFinished(LocalDateTime.now());
+    d.setDownloadUri(URI.create("http://rs.gbif.org/datasets/nub.zip"));
     d.setDownload(LocalDateTime.now());
     d.setVerbatimCount(5748923);
     d.setNameCount(65432);
@@ -69,7 +71,7 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     d1.setAttempt(d2.getAttempt());
     assertEquals(d1, d2);
 
-    d1.setState(ImportState.SUCCESS);
+    d1.setState(ImportState.FINISHED);
     d1.setError("no error at all");
     mapper().update(d1);
     assertNotEquals(d1, d2);

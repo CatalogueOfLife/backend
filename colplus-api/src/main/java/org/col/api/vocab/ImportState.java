@@ -6,14 +6,9 @@ package org.col.api.vocab;
 public enum ImportState {
 
   /**
-   * Import still running and should not be picked up by some other thread.
+   * Currently running import.
    */
   RUNNING,
-
-  /**
-   * Successfully completed the import.
-   */
-  SUCCESS,
 
   /**
    * Sources have not been changed since last import. Imported stopped.
@@ -21,28 +16,19 @@ public enum ImportState {
   UNCHANGED,
 
   /**
+   * Successfully completed the import.
+   */
+  FINISHED,
+
+  /**
    * Manually aborted import, e.g. system was shut down.
    */
-  ABORTED,
+  CANCELED,
 
   /**
-   * Import failed due to errors while downloading source files.
+   * Import failed due to errors.
    */
-  FAILED_DOWNLOAD,
 
-  /**
-   * Import failed due to errors while normalizing data in neo4j.
-   */
-  FAILED_NORMALIZER,
-
-  /**
-   * Import failed due to errors while importing neo4j into postgres.
-   */
-  FAILED_PGIMPORT,
-
-  /**
-   * Import failed due to errors while building import metrics.
-   */
-  FAILED_METRICS
+  FAILED
 
 }

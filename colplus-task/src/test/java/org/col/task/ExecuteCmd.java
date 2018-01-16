@@ -1,5 +1,6 @@
 package org.col.task;
 
+import org.col.TaskServer;
 import org.junit.Ignore;
 import org.junit.Test;
 

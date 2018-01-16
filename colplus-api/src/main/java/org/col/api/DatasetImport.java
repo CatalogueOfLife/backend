@@ -5,6 +5,7 @@ import org.col.api.vocab.*;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 
+import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Objects;
@@ -23,6 +24,8 @@ public class DatasetImport {
    * State of the import, indicating if still running, success or failure.
    */
   private ImportState state;
+
+  private URI downloadUri;
 
   /**
    * Last modification date of the downloaded file
@@ -75,6 +78,14 @@ public class DatasetImport {
 
   public void setState(ImportState state) {
     this.state = state;
+  }
+
+  public URI getDownloadUri() {
+    return downloadUri;
+  }
+
+  public void setDownloadUri(URI downloadUri) {
+    this.downloadUri = downloadUri;
   }
 
   public LocalDateTime getDownload() {
@@ -202,9 +213,10 @@ public class DatasetImport {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     DatasetImport that = (DatasetImport) o;
-    return state == that.state &&
+    return Objects.equals(datasetKey, that.datasetKey) &&
         Objects.equals(attempt, that.attempt) &&
-        Objects.equals(datasetKey, that.datasetKey) &&
+        state == that.state &&
+        Objects.equals(downloadUri, that.downloadUri) &&
         Objects.equals(download, that.download) &&
         Objects.equals(started, that.started) &&
         Objects.equals(finished, that.finished) &&
@@ -224,7 +236,7 @@ public class DatasetImport {
 
   @Override
   public int hashCode() {
-    return Objects.hash(attempt, datasetKey, state, download, started, finished, error, verbatimCount, nameCount, taxonCount, vernacularCount, distributionCount, issuesCount, namesByRankCount, namesByTypeCount, vernacularsByLanguageCount, distributionsByGazetteerCount, namesByOriginCount);
+    return Objects.hash(datasetKey, attempt, state, downloadUri, download, started, finished, error, verbatimCount, nameCount, taxonCount, vernacularCount, distributionCount, issuesCount, namesByRankCount, namesByTypeCount, vernacularsByLanguageCount, distributionsByGazetteerCount, namesByOriginCount);
   }
 
   @Override

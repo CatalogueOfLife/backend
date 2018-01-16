@@ -79,7 +79,7 @@ public class DatasetResource {
     if (all == null || !all) {
       return Lists.newArrayList(mapper.lastSuccessful(key));
     } else {
-      return mapper.list(key);
+      return mapper.listByDataset(key);
     }
   }
 

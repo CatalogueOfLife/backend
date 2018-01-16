@@ -1,4 +1,4 @@
-package org.col.task.common;
+package org.col.config;
 
 import org.apache.commons.io.FileUtils;
 import org.neo4j.graphdb.factory.GraphDatabaseBuilder;
