@@ -5,7 +5,6 @@ import org.col.api.*;
 import org.col.db.KeyNotFoundException;
 import org.col.db.NotInDatasetException;
 import org.col.db.mapper.*;
-
 import java.util.List;
 
 public class TaxonDao {
@@ -16,16 +15,12 @@ public class TaxonDao {
     this.session = sqlSession;
   }
 
-  public int count(int datasetKey) {
-    TaxonMapper mapper = session.getMapper(TaxonMapper.class);
-    return mapper.count(datasetKey);
-  }
-
-  public ResultPage<Taxon> list(Integer datasetKey, Page page) {
+  public ResultPage<Taxon> list(Integer datasetKey, Boolean root, Page page) {
     Page p = page == null ? new Page() : page;
+    Boolean r = root == null ? Boolean.FALSE : root;
     TaxonMapper mapper = session.getMapper(TaxonMapper.class);
-    int total = mapper.count(datasetKey);
-    List<Taxon> result = mapper.list(datasetKey, p);
+    int total = mapper.count(datasetKey, r);
+    List<Taxon> result = mapper.list(datasetKey, r, p);
     return new ResultPage<>(p, total, result);
   }
 

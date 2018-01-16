@@ -163,8 +163,9 @@
     <select id="count" parameterType="map" resultType="Integer">
         SELECT count(*)
         FROM taxon
-        <if test="datasetKey != null">
-            WHERE dataset_key = #{datasetKey}
+        WHERE dataset_key = #{datasetKey}
+        <if test="root">
+            AND parent_key IS NULL
         </if>
     </select>
 
@@ -173,8 +174,9 @@
         <include refid="SELECT" />
         FROM
         <include refid="FROM" />
-        <if test="datasetKey != null">
-            WHERE t.dataset_key = #{datasetKey}
+        WHERE t.dataset_key = #{datasetKey}
+        <if test="root">
+            AND t.parent_key IS NULL
         </if>
         ORDER BY key
         <include refid="org.col.db.mapper.Common.limit" />

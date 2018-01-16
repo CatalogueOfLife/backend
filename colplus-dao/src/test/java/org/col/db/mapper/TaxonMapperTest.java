@@ -40,14 +40,14 @@ public class TaxonMapperTest extends MapperTestBase<TaxonMapper> {
 
 	@Test
 	public void count() throws Exception {
-		int i = mapper().count(TestEntityGenerator.DATASET1.getKey());
+		int i = mapper().count(TestEntityGenerator.DATASET1.getKey(),false);
 		// Just to make sure we understand our environment
 		// 2 Taxa pre-inserted through InitMybatisRule.squirrels()
 		assertEquals(2, i);
 		mapper().create(TestEntityGenerator.newTaxon("t2"));
 		mapper().create(TestEntityGenerator.newTaxon("t3"));
 		mapper().create(TestEntityGenerator.newTaxon("t4"));
-		assertEquals(5, mapper().count(TestEntityGenerator.DATASET1.getKey()));
+		assertEquals(5, mapper().count(TestEntityGenerator.DATASET1.getKey(),false));
 	}
 
 	@Test
@@ -70,7 +70,7 @@ public class TaxonMapperTest extends MapperTestBase<TaxonMapper> {
 		// get first page
 		Page p = new Page(0, 3);
 
-		List<Taxon> res = mapper().list(TestEntityGenerator.DATASET1.getKey(), p);
+		List<Taxon> res = mapper().list(TestEntityGenerator.DATASET1.getKey(), false, p);
 		assertEquals(3, res.size());
 		// First 2 taxa in dataset D1 are pre-inserted taxa:
 		assertTrue(TestEntityGenerator.TAXON1.getKey().equals(res.get(0).getKey()));
@@ -79,7 +79,7 @@ public class TaxonMapperTest extends MapperTestBase<TaxonMapper> {
 		assertTrue(taxa.get(0).getKey().equals(res.get(2).getKey()));
 
 		p.next();
-		res = mapper().list(TestEntityGenerator.DATASET1.getKey(), p);
+		res = mapper().list(TestEntityGenerator.DATASET1.getKey(), false, p);
 		assertEquals(3, res.size());
 		assertTrue(taxa.get(1).getKey().equals(res.get(0).getKey()));
 		assertTrue(taxa.get(2).getKey().equals(res.get(1).getKey()));
