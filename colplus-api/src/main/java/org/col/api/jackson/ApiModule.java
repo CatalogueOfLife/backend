@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.gbif.nameparser.api.Authorship;
+import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.ParsedName;
 
 /**
@@ -28,7 +29,12 @@ public class ApiModule extends SimpleModule {
     @JsonIgnore abstract boolean isIndetermined();
     @JsonIgnore abstract boolean isConsistent();
     @JsonIgnore abstract boolean getTerminalEpithet();
+    @JsonIgnore abstract String canonicalName();
+    @JsonIgnore abstract String canonicalNameWithoutAuthorship();
+    @JsonIgnore abstract String canonicalNameMinimal();
+    @JsonIgnore abstract String canonicalNameComplete();
     @JsonProperty("authorship") abstract String authorshipComplete();
+    @JsonProperty("nomenclaturalCode") abstract NomCode getCode();
   }
 
   abstract class AuthorshipMixIn {
