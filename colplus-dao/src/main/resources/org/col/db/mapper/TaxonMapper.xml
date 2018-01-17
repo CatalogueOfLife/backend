@@ -167,6 +167,9 @@
         <if test="root">
             AND parent_key IS NULL
         </if>
+        <if test="nameKey != null">
+            AND t.name_key = #{nameKey}
+        </if>
     </select>
 
     <select id="list" parameterType="map" resultMap="taxonResultMap">
@@ -177,6 +180,9 @@
         WHERE t.dataset_key = #{datasetKey}
         <if test="root">
             AND t.parent_key IS NULL
+        </if>
+        <if test="nameKey != null">
+            AND t.name_key = #{nameKey}
         </if>
         ORDER BY key
         <include refid="org.col.db.mapper.Common.limit" />

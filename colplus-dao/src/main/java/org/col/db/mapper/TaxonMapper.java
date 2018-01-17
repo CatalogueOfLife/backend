@@ -10,10 +10,11 @@ import java.util.List;
  */
 public interface TaxonMapper {
 
-  int count(@Param("datasetKey") Integer datasetKey, @Param("root") Boolean root);
+  int count(@Param("datasetKey") Integer datasetKey, @Param("root") Boolean root,
+      @Param("nameKey") Integer nameKey);
 
   List<Taxon> list(@Param("datasetKey") Integer datasetKey, @Param("root") Boolean root,
-      @Param("page") Page page);
+      @Param("nameKey") Integer nameKey, @Param("page") Page page);
 
   Integer lookupKey(@Param("id") String id, @Param("datasetKey") int datasetKey);
 

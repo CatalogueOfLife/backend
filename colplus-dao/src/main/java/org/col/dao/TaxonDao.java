@@ -1,11 +1,22 @@
 package org.col.dao;
 
+import java.util.List;
 import org.apache.ibatis.session.SqlSession;
-import org.col.api.*;
+import org.col.api.Distribution;
+import org.col.api.Page;
+import org.col.api.PagedReference;
+import org.col.api.ResultPage;
+import org.col.api.Taxon;
+import org.col.api.TaxonInfo;
+import org.col.api.VerbatimRecord;
+import org.col.api.VernacularName;
 import org.col.db.KeyNotFoundException;
 import org.col.db.NotInDatasetException;
-import org.col.db.mapper.*;
-import java.util.List;
+import org.col.db.mapper.DistributionMapper;
+import org.col.db.mapper.ReferenceMapper;
+import org.col.db.mapper.TaxonMapper;
+import org.col.db.mapper.VerbatimRecordMapper;
+import org.col.db.mapper.VernacularNameMapper;
 
 public class TaxonDao {
 
@@ -15,12 +26,12 @@ public class TaxonDao {
     this.session = sqlSession;
   }
 
-  public ResultPage<Taxon> list(Integer datasetKey, Boolean root, Page page) {
+  public ResultPage<Taxon> list(Integer datasetKey, Boolean root, Integer nameKey, Page page) {
     Page p = page == null ? new Page() : page;
     Boolean r = root == null ? Boolean.FALSE : root;
     TaxonMapper mapper = session.getMapper(TaxonMapper.class);
-    int total = mapper.count(datasetKey, r);
-    List<Taxon> result = mapper.list(datasetKey, r, p);
+    int total = mapper.count(datasetKey, r, nameKey);
+    List<Taxon> result = mapper.list(datasetKey, r, nameKey, p);
     return new ResultPage<>(p, total, result);
   }
 

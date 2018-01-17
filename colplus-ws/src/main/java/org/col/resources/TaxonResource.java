@@ -22,9 +22,10 @@ public class TaxonResource {
 
   @GET
   public ResultPage<Taxon> list(@QueryParam("datasetKey") Integer datasetKey,
-      @QueryParam("root") Boolean root, @Valid @BeanParam Page page, @Context SqlSession session) {
+      @QueryParam("root") Boolean root, @QueryParam("nameKey") Integer nameKey,
+      @Valid @BeanParam Page page, @Context SqlSession session) {
     TaxonDao dao = new TaxonDao(session);
-    return dao.list(datasetKey, root, page);
+    return dao.list(datasetKey, root, nameKey, page);
   }
 
   @GET
