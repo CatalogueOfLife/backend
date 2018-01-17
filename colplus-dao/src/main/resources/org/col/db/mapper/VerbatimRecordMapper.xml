@@ -22,7 +22,7 @@
 
     <sql id="PROPS">
       #{rec.id},
-      #{rec.dataset.key},
+      #{rec.datasetKey},
       #{nameKey},
       #{taxonKey},
       #{rec.terms, typeHandler=org.col.db.type.VerbatimRecordTermsTypeHandler}::jsonb
@@ -37,9 +37,6 @@
     <resultMap id="verbatimResultMap" type="VerbatimRecord" autoMapping="true">
         <id property="id" column="id"/>
         <result property="terms" column="terms" typeHandler="org.col.db.type.VerbatimRecordTermsTypeHandler"/>
-        <association property="dataset" javaType="Dataset">
-            <id property="key" column="dataset_key"/>
-        </association>
     </resultMap>
 
 

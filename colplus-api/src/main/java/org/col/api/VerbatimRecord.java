@@ -1,16 +1,14 @@
 package org.col.api;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
-import org.gbif.dwc.terms.Term;
-
-import javax.annotation.Nullable;
+import static com.google.common.base.Preconditions.checkNotNull;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-
-import static com.google.common.base.Preconditions.checkNotNull;
+import javax.annotation.Nullable;
+import org.gbif.dwc.terms.Term;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 
 /**
  *
@@ -21,22 +19,19 @@ public class VerbatimRecord {
    */
   private String id;
 
-  /**
-   * Key to dataset instance. Defines context of the core id.
-   */
-  private Dataset dataset;
+  private Integer datasetKey;
 
   /**
    * The actual verbatim terms keyed on dwc terms.
    */
   private VerbatimRecordTerms terms = new VerbatimRecordTerms();
 
-  public Dataset getDataset() {
-    return dataset;
+  public Integer getDatasetKey() {
+    return datasetKey;
   }
 
-  public void setDataset(Dataset dataset) {
-    this.dataset = dataset;
+  public void setDatasetKey(Integer datasetKey) {
+    this.datasetKey = datasetKey;
   }
 
   public VerbatimRecordTerms getTerms() {
@@ -69,10 +64,11 @@ public class VerbatimRecord {
 
   /**
    * Get the first non blank term for a list of terms.
+   * 
    * @param terms list to try
    */
   @Nullable
-  public String getFirst(Term ... terms) {
+  public String getFirst(Term... terms) {
     return this.terms.getCore().getFirst(terms);
   }
 
@@ -108,7 +104,8 @@ public class VerbatimRecord {
    */
   public boolean hasExtension(Term rowType) {
     checkNotNull(rowType, "term can't be null");
-    return terms.getExtensions().containsKey(rowType) && !terms.getExtensions().get(rowType).isEmpty();
+    return terms.getExtensions().containsKey(rowType)
+        && !terms.getExtensions().get(rowType).isEmpty();
   }
 
   /**
@@ -120,7 +117,8 @@ public class VerbatimRecord {
   }
 
   /**
-   * Sets all extension records for a given rowType, replacing anything that might have existed for that rowType.
+   * Sets all extension records for a given rowType, replacing anything that might have existed for
+   * that rowType.
    */
   public void setExtensionRecords(Term rowType, List<TermRecord> extensionRecords) {
     checkNotNull(rowType, "term can't be null");
@@ -140,16 +138,17 @@ public class VerbatimRecord {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+    if (this == o)
+      return true;
+    if (o == null || getClass() != o.getClass())
+      return false;
     VerbatimRecord that = (VerbatimRecord) o;
-    return Objects.equals(id, that.id) &&
-        Objects.equals(dataset, that.dataset) &&
-        Objects.equals(terms, that.terms);
+    return Objects.equals(id, that.id) && Objects.equals(datasetKey, that.datasetKey)
+        && Objects.equals(terms, that.terms);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, dataset, terms);
+    return Objects.hash(id, datasetKey, terms);
   }
 }

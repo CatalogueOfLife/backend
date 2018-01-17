@@ -28,7 +28,7 @@ public class VerbatimRecordMapperTest extends MapperTestBase<VerbatimRecordMappe
 
   private VerbatimRecord create() throws Exception {
     VerbatimRecord v = new VerbatimRecord();
-    v.setDataset(TestEntityGenerator.DATASET1);
+    v.setDatasetKey(TestEntityGenerator.DATASET1.getKey());
     v.setId(RandomUtils.randomString(8));
     v.setTerms(new VerbatimRecordTerms());
     // core

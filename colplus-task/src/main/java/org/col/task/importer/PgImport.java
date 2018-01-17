@@ -203,7 +203,7 @@ public class PgImport implements Runnable {
               t.name.canonicalNameComplete()
           );
           if (t.verbatim != null) {
-            t.verbatim.setDataset(dataset);
+            t.verbatim.setDatasetKey(dataset.getKey());
             verbatimMapper.create(t.verbatim, taxonKey, t.name.getKey());
 
           } else if (t.name.getOrigin().equals(Origin.SOURCE)) {
