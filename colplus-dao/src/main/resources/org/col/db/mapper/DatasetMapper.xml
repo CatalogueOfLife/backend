@@ -96,18 +96,28 @@
         <include refid="org.col.db.mapper.Common.limit"/>
     </select>
 
-    <select id="listEmpty" parameterType="map" resultMap="datasetResultMap">
+    <select id="listNeverImported" parameterType="map" resultMap="datasetResultMap">
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" /> d
+          LEFT JOIN dataset_import di ON di.dataset_key=d.key
+        WHERE d.deleted IS NULL
+          AND di.attempt IS NULL
+        ORDER BY d.key ASC
+        LIMIT #{limit}
+    </select>
+
+    <select id="listToBeImported" parameterType="map" resultMap="datasetResultMap">
         SELECT *
         FROM (
-            SELECT DISTINCT ON (d.key) di.verbatim_count, <include refid="SELECT" />
-            FROM <include refid="FROM" />
-            LEFT JOIN dataset_import di ON di.dataset_key=d.key
-            WHERE d.deleted IS NULL
+            SELECT DISTINCT ON (d.key) di.state, di.finished, <include refid="SELECT" />
+            FROM <include refid="FROM" /> d
+              LEFT JOIN dataset_import di ON di.dataset_key=d.key
+            WHERE d.deleted IS NULL AND di.finished IS NOT NULL
             ORDER BY d.key, di.attempt DESC
         ) AS latest
-        WHERE COALESCE (verbatim_count,0) = 0
-        ORDER BY key
-        <include refid="org.col.db.mapper.Common.limit"/>
+        WHERE state != 0 AND finished + interval '1 week' &lt;  now()
+        ORDER BY finished ASC
+        LIMIT #{limit}
     </select>
 
     <select id="search" parameterType="map" resultMap="datasetResultMap">

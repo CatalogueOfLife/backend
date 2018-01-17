@@ -2,6 +2,7 @@ package org.col.db.mapper;
 
 import org.apache.ibatis.annotations.Param;
 import org.col.api.DatasetImport;
+import org.col.api.Page;
 
 import java.util.List;
 
@@ -14,7 +15,11 @@ public interface DatasetImportMapper {
 
   DatasetImport lastSuccessful(@Param("key") int datasetKey);
 
-  List<DatasetImport> list(@Param("key") int datasetKey);
+  int count();
+
+  List<DatasetImport> list(@Param("page") Page page);
+
+  List<DatasetImport> listByDataset(@Param("key") int datasetKey);
 
   /**
    * Generates new dataset metrics based on the current data.

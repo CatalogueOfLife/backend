@@ -1,4 +1,4 @@
-package org.col.task;
+package org.col;
 
 import io.dropwizard.client.DropwizardApacheConnector;
 import io.dropwizard.client.HttpClientBuilder;
@@ -9,13 +9,13 @@ import io.dropwizard.setup.Environment;
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.col.PgApp;
 import org.col.command.initdb.InitDbCmd;
 import org.col.command.neoshell.ShellCmd;
-import org.col.task.common.TaskServerConfig;
-import org.col.task.gbifsync.GbifSyncTask;
-import org.col.task.hello.HelloTask;
-import org.col.task.importer.ImporterTask;
+import org.col.config.TaskServerConfig;
+import org.col.resources.ImporterResource;
+import org.col.task.gbifsync.GbifSync;
+import org.col.task.importer.ContinousImporter;
+import org.col.task.importer.ImportManager;
 import org.glassfish.jersey.client.rx.RxClient;
 import org.glassfish.jersey.client.rx.java8.RxCompletionStageInvoker;
 import org.glassfish.jersey.client.spi.ConnectorProvider;
@@ -25,6 +25,7 @@ import org.slf4j.bridge.SLF4JBridgeHandler;
 
 public class TaskServer extends PgApp<TaskServerConfig> {
   private static final Logger LOG = LoggerFactory.getLogger(TaskServer.class);
+  public static final String MDC_KEY_TASK = "task";
 
   public static void main(final String[] args) throws Exception {
     SLF4JBridgeHandler.install();
@@ -60,11 +61,23 @@ public class TaskServer extends PgApp<TaskServerConfig> {
         .using((ConnectorProvider) (cl, runtimeConfig) -> new DropwizardApacheConnector(hc, requestConfig(cfg.client), cfg.client.isChunkedEncodingEnabled()))
         .buildRx(getName(), RxCompletionStageInvoker.class);
 
-    // tasks
-    LOG.debug("Adding tasks");
-    env.admin().addTask(new HelloTask());
-    env.admin().addTask(new GbifSyncTask(cfg.gbif, getSqlSessionFactory(), client));
-    env.admin().addTask(new ImporterTask(cfg, getSqlSessionFactory(), hc));
+    // setup async importer
+    final ImportManager importManager = new ImportManager(cfg, hc, getSqlSessionFactory());
+    env.lifecycle().manage(importManager);
+    env.jersey().register(new ImporterResource(importManager, getSqlSessionFactory()));
+
+    if (cfg.importer.continousImportPolling > 0) {
+      LOG.info("Enable continuous importing");
+      env.lifecycle().manage(new ContinousImporter(cfg.importer, importManager, getSqlSessionFactory()));
+    }
+
+    // activate gbif sync?
+    if (cfg.gbif.syncFrequency > 0) {
+      LOG.info("Enable GBIF dataset sync");
+      env.lifecycle().manage(new GbifSync(cfg.gbif, getSqlSessionFactory(), client));
+    } else {
+      LOG.warn("GBIF registry sync is deactivated. Please configure server with a positive gbif.syncFrequency");
+    }
   }
 
   /**

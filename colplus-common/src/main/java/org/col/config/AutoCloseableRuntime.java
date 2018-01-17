@@ -1,4 +1,4 @@
-package org.col.common;
+package org.col.config;
 
 /**
  * AutoCloseable interface not throwing any checked exception.

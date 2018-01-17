@@ -11,6 +11,7 @@
       error,
       started,
       finished,
+      download_uri,
       download,
       verbatim_count,
       name_count,
@@ -31,6 +32,7 @@
       error,
       started,
       finished,
+      download_uri,
       download,
       verbatim_count,
       name_count,
@@ -51,6 +53,7 @@
       #{di.error},
       #{di.started},
       #{di.finished},
+      #{di.downloadUri},
       #{di.download},
       #{di.verbatimCount},
       #{di.nameCount},
@@ -81,6 +84,10 @@
     </resultMap>
 
 
+    <select id="count" parameterType="map" resultType="Integer">
+        SELECT count(*) FROM <include refid="FROM" />
+    </select>
+
     <select id="last" parameterType="map" resultMap="datasetImportResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
@@ -98,6 +105,13 @@
     </select>
 
     <select id="list" parameterType="map" resultMap="datasetImportResultMap">
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
+        ORDER BY started DESC
+        <include refid="org.col.db.mapper.Common.limit" />
+    </select>
+
+    <select id="listByDataset" parameterType="map" resultMap="datasetImportResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
         WHERE dataset_key = #{key}

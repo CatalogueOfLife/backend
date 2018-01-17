@@ -4,7 +4,7 @@ import org.col.api.Dataset;
 import org.col.api.Reference;
 import org.col.task.importer.neo.model.Labels;
 import org.col.task.importer.neo.model.NeoTaxon;
-import org.col.common.AutoCloseableRuntime;
+import org.col.config.AutoCloseableRuntime;
 import org.gbif.nameparser.api.Rank;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;

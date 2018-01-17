@@ -1,20 +1,16 @@
 package org.col.dao;
 
-import java.time.LocalDateTime;
-import java.util.List;
-import javax.annotation.Nullable;
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.Dataset;
-import org.col.api.DatasetImport;
 import org.col.api.Page;
 import org.col.api.ResultPage;
-import org.col.api.vocab.ImportState;
 import org.col.db.KeyNotFoundException;
-import org.col.db.mapper.DatasetImportMapper;
 import org.col.db.mapper.DatasetMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.google.common.base.Preconditions;
+
+import javax.annotation.Nullable;
+import java.util.List;
 
 public class DatasetDao {
 
@@ -23,12 +19,10 @@ public class DatasetDao {
 
   private final SqlSession session;
   private final DatasetMapper mapper;
-  private final DatasetImportMapper diMapper;
 
   public DatasetDao(SqlSession sqlSession) {
     this.session = sqlSession;
     mapper = session.getMapper(DatasetMapper.class);
-    diMapper = session.getMapper(DatasetImportMapper.class);
   }
 
   public Dataset get(int key) {
@@ -47,60 +41,4 @@ public class DatasetDao {
     return new ResultPage<>(page, total, result);
   }
 
-  /**
-   * Creates a new successful dataset import instance with metrics
-   */
-  public DatasetImport startImport(Dataset dataset) {
-    // build new import
-    DatasetImport di = new DatasetImport();
-    di.setDatasetKey(dataset.getKey());
-    di.setStarted(LocalDateTime.now());
-    di.setState(ImportState.RUNNING);
-    diMapper.create(di);
-    return di;
-  }
-
-  /**
-   * Updates a running dataset import instance with metrics and success state.
-   */
-  public void updateImportSuccess(DatasetImport di) {
-    // generate new count metrics
-    DatasetImport m = diMapper.metrics(di.getDatasetKey());
-    // update metrics instance with existing infos
-    m.setDatasetKey(di.getDatasetKey());
-    m.setAttempt(di.getAttempt());
-    m.setStarted(di.getStarted());
-    m.setDownload(di.getDownload());
-    m.setFinished(LocalDateTime.now());
-    m.setState(ImportState.SUCCESS);
-    m.setError(null);
-    update(m);
-  }
-
-  /**
-   * Creates a new dataset import instance without metrics for a failed import.
-   */
-  public void updateImportFailure(DatasetImport di, ImportState state, Exception e) {
-    di.setFinished(LocalDateTime.now());
-    di.setState(state);
-    // System.out.println(ExceptionUtils.getMessage(e));
-    di.setError(e.getMessage());
-    update(di);
-  }
-
-  /**
-   * Creates a new dataset import instance without metrics for a failed import.
-   */
-  public void updateImportUnchanged(DatasetImport di) {
-    di.setFinished(LocalDateTime.now());
-    di.setState(ImportState.UNCHANGED);
-    di.setError(null);
-    update(di);
-  }
-
-  private void update(DatasetImport di) {
-    Preconditions.checkNotNull(di.getDatasetKey(), "datasetKey required for update");
-    Preconditions.checkNotNull(di.getAttempt(), "attempt required for update");
-    diMapper.update(di);
-  }
 }

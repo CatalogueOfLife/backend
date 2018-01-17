@@ -4,7 +4,7 @@ import com.google.common.io.Files;
 import org.col.api.RandomUtils;
 import org.col.api.Taxon;
 import org.col.api.vocab.TaxonomicStatus;
-import org.col.task.common.NormalizerConfig;
+import org.col.config.NormalizerConfig;
 import org.col.task.importer.neo.model.Labels;
 import org.col.task.importer.neo.model.NeoTaxon;
 import org.col.task.importer.neo.model.RelType;

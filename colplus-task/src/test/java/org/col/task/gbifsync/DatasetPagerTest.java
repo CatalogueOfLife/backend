@@ -3,7 +3,7 @@ package org.col.task.gbifsync;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
-import org.col.task.common.GbifConfig;
+import org.col.config.GbifConfig;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.rx.Rx;
 import org.glassfish.jersey.client.rx.RxClient;

@@ -3,7 +3,7 @@ package org.col.command.neoshell;
 import io.dropwizard.cli.ConfiguredCommand;
 import io.dropwizard.setup.Bootstrap;
 import net.sourceforge.argparse4j.inf.Namespace;
-import org.col.task.common.TaskServerConfig;
+import org.col.config.TaskServerConfig;
 
 /**
  * Basic task to showcase hello world

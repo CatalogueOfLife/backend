@@ -141,6 +141,7 @@ CREATE TABLE dataset_import (
   error TEXT,
   started TIMESTAMP WITHOUT TIME ZONE,
   finished TIMESTAMP WITHOUT TIME ZONE,
+  download_uri TEXT,
   download TIMESTAMP WITHOUT TIME ZONE,
   verbatim_count INTEGER,
   name_count INTEGER,

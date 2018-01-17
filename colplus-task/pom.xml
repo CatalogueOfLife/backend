@@ -13,7 +13,7 @@
     <name>Clearinghouse task server (Task)</name>
 
     <properties>
-        <mainClass>org.col.task.TaskServer</mainClass>
+        <mainClass>org.col.TaskServer</mainClass>
     </properties>
 
     <dependencies>
