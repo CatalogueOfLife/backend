@@ -3,6 +3,7 @@ package org.col.resources;
 import com.codahale.metrics.annotation.Timed;
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.*;
+import org.col.dao.NameDao;
 import org.col.dao.TaxonDao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,6 +53,14 @@ public class TaxonResource {
       @Context SqlSession session) {
     TaxonDao dao = new TaxonDao(session);
     return dao.getChildren(key, page);
+  }
+
+  @GET
+  @Timed
+  @Path("{key}/children")
+  public Synonymy synonyms(@PathParam("key") int key, @Context SqlSession session) {
+    NameDao nameDao = new NameDao(session);
+    return nameDao.getSynonymy(key);
   }
 
   @GET
