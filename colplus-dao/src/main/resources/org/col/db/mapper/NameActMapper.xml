@@ -55,6 +55,14 @@
     ORDER BY na.key
   </select>
 
+  <select id="listByReference" parameterType="map" resultMap="nameActResultMap">
+    SELECT
+    <include refid="SELECT" />
+    FROM name_act na
+    WHERE na.reference_key = #{referenceKey}
+    ORDER BY na.key
+  </select>
+
   <!-- Get all name acts associated with the basionym of the provided name id and all names referencing that basionym -->
   <select id="listByHomotypicGroup" parameterType="map" resultMap="nameActResultMap">
     SELECT

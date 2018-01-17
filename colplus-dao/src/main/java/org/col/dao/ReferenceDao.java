@@ -2,12 +2,14 @@ package org.col.dao;
 
 import java.util.List;
 import org.apache.ibatis.session.SqlSession;
+import org.col.api.NameAct;
 import org.col.api.Page;
-import org.col.api.ResultPage;
 import org.col.api.Reference;
+import org.col.api.ResultPage;
 import org.col.api.Taxon;
 import org.col.db.KeyNotFoundException;
 import org.col.db.NotInDatasetException;
+import org.col.db.mapper.NameActMapper;
 import org.col.db.mapper.ReferenceMapper;
 
 public class ReferenceDao {
@@ -46,6 +48,11 @@ public class ReferenceDao {
       throw new KeyNotFoundException(Reference.class, key);
     }
     return result;
+  }
+
+  public List<NameAct> getNameActs(int referenceKey) {
+    NameActMapper naMapper = session.getMapper(NameActMapper.class);
+    return naMapper.listByReference(referenceKey);
   }
 
   public void create(Reference ref) {
