@@ -153,7 +153,6 @@ public class NameParserTest {
     assertNoName("\\");
     assertNoName(".");
     assertNoName("a");
-    assertNoName("von");
     assertNoName("X");
     assertNoName("@");
     assertNoName("&nbsp;");
