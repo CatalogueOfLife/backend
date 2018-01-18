@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -88,11 +89,11 @@ public class GbifSync implements Managed {
            *  - organization (publisher)
            *  - homepage
            */
-            if (!gbif.getDataAccess().equals(curr.getDataAccess()) ||
-                !gbif.getLicense().equals(curr.getLicense()) ||
-                !gbif.getOrganisation().equals(curr.getOrganisation()) ||
-                !gbif.getHomepage().equals(curr.getHomepage())
-                ) {
+            if (!Objects.equals(gbif.getDataAccess(), curr.getDataAccess()) ||
+                !Objects.equals(gbif.getLicense(), curr.getLicense()) ||
+                !Objects.equals(gbif.getOrganisation(), curr.getOrganisation()) ||
+                !Objects.equals(gbif.getHomepage(), curr.getHomepage())
+              ) {
               curr.setDataAccess(gbif.getDataAccess());
               curr.setLicense(gbif.getLicense());
               curr.setOrganisation(gbif.getOrganisation());
