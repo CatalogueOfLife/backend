@@ -34,7 +34,7 @@ public class AdminServer extends PgApp<AdminServerConfig> {
 
   @Override
   public String getName() {
-    return "task-server";
+    return "admin-server";
   }
 
   @Override
