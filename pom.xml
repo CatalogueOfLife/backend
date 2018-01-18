@@ -127,7 +127,7 @@
     <module>colplus-dao</module>
     <module>colplus-dwca</module>
     <module>colplus-parser</module>
-    <module>colplus-task</module>
+    <module>colplus-admin</module>
     <module>colplus-ws</module>
   </modules>
 

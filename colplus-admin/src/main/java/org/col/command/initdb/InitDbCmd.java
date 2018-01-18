@@ -6,7 +6,7 @@ import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.jdbc.ScriptRunner;
-import org.col.config.TaskServerConfig;
+import org.col.config.AdminServerConfig;
 import org.col.db.PgConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Command to initialise a new database schema.
  */
-public class InitDbCmd extends ConfiguredCommand<TaskServerConfig> {
+public class InitDbCmd extends ConfiguredCommand<AdminServerConfig> {
   private static final Logger LOG = LoggerFactory.getLogger(InitDbCmd.class);
   private static final URI COL_DATASETS_URI = URI.create("https://raw.githubusercontent.com/Sp2000/colplus-repo/master/AC2017/datasets.sql");
 
@@ -44,7 +44,7 @@ public class InitDbCmd extends ConfiguredCommand<TaskServerConfig> {
   }
 
   @Override
-  protected void run(Bootstrap<TaskServerConfig> bootstrap, Namespace namespace, TaskServerConfig cfg) throws Exception {
+  protected void run(Bootstrap<AdminServerConfig> bootstrap, Namespace namespace, AdminServerConfig cfg) throws Exception {
     final int prompt = namespace.getInt("prompt");
     if (prompt > 0) {
       System.out.format("Initialising database %s on %s.\n", cfg.db.database, cfg.db.host);
@@ -55,7 +55,7 @@ public class InitDbCmd extends ConfiguredCommand<TaskServerConfig> {
     execute(cfg);
   }
 
-  private void execute(TaskServerConfig cfg) throws Exception {
+  private void execute(AdminServerConfig cfg) throws Exception {
     try (Connection con = cfg.db.connect()) {
       LOG.info("Starting database initialisation");
       ScriptRunner runner = new ScriptRunner(con);

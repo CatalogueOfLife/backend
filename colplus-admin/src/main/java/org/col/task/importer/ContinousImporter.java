@@ -13,7 +13,7 @@ import org.slf4j.MDC;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static org.col.TaskServer.MDC_KEY_TASK;
+import static org.col.AdminServer.MDC_KEY_TASK;
 
 /**
  * A scheduler for new import jobs that runs continously in the background

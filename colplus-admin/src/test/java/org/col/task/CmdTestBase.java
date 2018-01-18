@@ -6,10 +6,10 @@ import io.dropwizard.cli.Command;
 import io.dropwizard.logging.LoggingFactory;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.util.JarLocation;
-import org.col.TaskServer;
+import org.col.AdminServer;
 import org.col.command.initdb.InitDbCmd;
 import org.col.db.mapper.PgSetupRule;
-import org.col.config.TaskServerConfig;
+import org.col.config.AdminServerConfig;
 import org.col.util.YamlUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -29,17 +29,17 @@ import static org.mockito.Mockito.when;
  */
 public abstract class CmdTestBase {
   protected Cli cli;
-  private final TaskServerConfig cfg;
+  private final AdminServerConfig cfg;
 
   @ClassRule
   public static PgSetupRule pgSetupRule = new PgSetupRule();
   private File tempDbCfg;
 
   public CmdTestBase() {
-    this.cfg = new TaskServerConfig();
+    this.cfg = new AdminServerConfig();
   }
 
-  public CmdTestBase(TaskServerConfig cfg) {
+  public CmdTestBase(AdminServerConfig cfg) {
     this.cfg = cfg;
   }
 
@@ -63,7 +63,7 @@ public abstract class CmdTestBase {
     when(location.getVersion()).thenReturn(Optional.of("1.0-SNAPSHOT"));
 
     // Add commands you want to test
-    final Bootstrap<TaskServerConfig> bootstrap = new Bootstrap<>(new TaskServer());
+    final Bootstrap<AdminServerConfig> bootstrap = new Bootstrap<>(new AdminServer());
     bootstrap.addCommand(new InitDbCmd());
     Command cmd = registerCommand();
     if (cmd != null) {

@@ -3,7 +3,7 @@ package org.col.config;
 import io.dropwizard.client.JerseyClientConfiguration;
 import org.col.PgAppConfig;
 
-public class TaskServerConfig extends PgAppConfig {
+public class AdminServerConfig extends PgAppConfig {
 
   public NormalizerConfig normalizer = new NormalizerConfig();
   public ImporterConfig importer = new ImporterConfig();

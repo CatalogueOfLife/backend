@@ -1,6 +1,6 @@
 package org.col.task;
 
-import org.col.TaskServer;
+import org.col.AdminServer;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -14,7 +14,7 @@ public class ExecuteCmd {
   @Test
   public void test() throws Exception {
     // to run a command that needs configs please point the second argument to a matching yaml file
-    new TaskServer().run(new String[]{"hello", "/Users/markus/Desktop/config.yml", "-n", "John"});
+    new AdminServer().run(new String[]{"hello", "/Users/markus/Desktop/config.yml", "-n", "John"});
     //new CliApp().run(new String[]{"gbifsync", "/Users/markus/Desktop/config.yml"});
     //new CliApp().run(new String[]{"hello"});
   }

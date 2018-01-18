@@ -9,7 +9,7 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.Dataset;
 import org.col.api.DatasetImport;
-import org.col.config.TaskServerConfig;
+import org.col.config.AdminServerConfig;
 import org.col.db.mapper.DatasetMapper;
 import org.gbif.nameparser.utils.NamedThreadFactory;
 import org.gbif.utils.concurrent.ExecutorUtils;
@@ -32,7 +32,7 @@ public class ImportManager implements Managed {
   private ExecutorService exec;
   private final Map<Integer, Future> futures = Maps.newConcurrentMap();
   private final LinkedBlockingQueue<Runnable> queue;
-  private final TaskServerConfig cfg;
+  private final AdminServerConfig cfg;
   private final DownloadUtil downloader;
   private final SqlSessionFactory factory;
 
@@ -57,7 +57,7 @@ public class ImportManager implements Managed {
     }
   }
 
-  public ImportManager(TaskServerConfig cfg, CloseableHttpClient client, SqlSessionFactory factory) {
+  public ImportManager(AdminServerConfig cfg, CloseableHttpClient client, SqlSessionFactory factory) {
     this.cfg = cfg;
     this.factory = factory;
     this.downloader = new DownloadUtil(client);

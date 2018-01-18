@@ -5,7 +5,7 @@ import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.Dataset;
 import org.col.api.DatasetImport;
-import org.col.config.TaskServerConfig;
+import org.col.config.AdminServerConfig;
 import org.col.dao.DatasetImportDao;
 import org.col.task.importer.dwca.Normalizer;
 import org.col.task.importer.neo.NeoDbFactory;
@@ -20,7 +20,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.concurrent.Callable;
 
-import static org.col.TaskServer.MDC_KEY_TASK;
+import static org.col.AdminServer.MDC_KEY_TASK;
 
 /**
  * Base task setting up MDC logging properties.
@@ -33,12 +33,12 @@ public class ImportJob implements Callable<DatasetImport> {
   private final boolean force;
   private final Dataset dataset;
   private DatasetImport di;
-  private final TaskServerConfig cfg;
+  private final AdminServerConfig cfg;
   private final DownloadUtil downloader;
   private final SqlSessionFactory factory;
   private final DatasetImportDao dao;
 
-  ImportJob(Dataset d, boolean force, TaskServerConfig cfg, DownloadUtil downloader, SqlSessionFactory factory) {
+  ImportJob(Dataset d, boolean force, AdminServerConfig cfg, DownloadUtil downloader, SqlSessionFactory factory) {
     this.datasetKey = d.getKey();
     this.dataset = d;
     this.force = force;

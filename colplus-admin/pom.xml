@@ -8,12 +8,12 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>colplus-task</artifactId>
+    <artifactId>colplus-admin</artifactId>
 
-    <name>Clearinghouse task server (Task)</name>
+    <name>Clearinghouse admin server (Admin)</name>
 
     <properties>
-        <mainClass>org.col.TaskServer</mainClass>
+        <mainClass>org.col.AdminServer</mainClass>
     </properties>
 
     <dependencies>

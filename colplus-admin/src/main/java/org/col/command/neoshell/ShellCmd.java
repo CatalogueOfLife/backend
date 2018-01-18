@@ -3,12 +3,12 @@ package org.col.command.neoshell;
 import io.dropwizard.cli.ConfiguredCommand;
 import io.dropwizard.setup.Bootstrap;
 import net.sourceforge.argparse4j.inf.Namespace;
-import org.col.config.TaskServerConfig;
+import org.col.config.AdminServerConfig;
 
 /**
  * Basic task to showcase hello world
  */
-public class ShellCmd extends ConfiguredCommand<TaskServerConfig> {
+public class ShellCmd extends ConfiguredCommand<AdminServerConfig> {
   private static final int PORT = 1337;
 
   public ShellCmd() {
@@ -16,7 +16,7 @@ public class ShellCmd extends ConfiguredCommand<TaskServerConfig> {
   }
 
   @Override
-  protected void run(Bootstrap<TaskServerConfig> bootstrap, Namespace namespace, TaskServerConfig configuration) throws Exception {
+  protected void run(Bootstrap<AdminServerConfig> bootstrap, Namespace namespace, AdminServerConfig configuration) throws Exception {
     System.out.format("Opening neo4j shell on port %s to dataset %s.\n" +
             "Open another dataset or post with key=null to close the shell.\n",
         PORT, 1234);

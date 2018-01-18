@@ -19,7 +19,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import static org.col.TaskServer.MDC_KEY_TASK;
+import static org.col.AdminServer.MDC_KEY_TASK;
 
 /**
  * Syncs datasets from the GBIF registry

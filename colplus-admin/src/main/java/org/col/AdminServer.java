@@ -11,7 +11,7 @@ import org.apache.http.client.config.RequestConfig;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.col.command.initdb.InitDbCmd;
 import org.col.command.neoshell.ShellCmd;
-import org.col.config.TaskServerConfig;
+import org.col.config.AdminServerConfig;
 import org.col.resources.ImporterResource;
 import org.col.task.gbifsync.GbifSync;
 import org.col.task.importer.ContinousImporter;
@@ -23,13 +23,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
-public class TaskServer extends PgApp<TaskServerConfig> {
-  private static final Logger LOG = LoggerFactory.getLogger(TaskServer.class);
+public class AdminServer extends PgApp<AdminServerConfig> {
+  private static final Logger LOG = LoggerFactory.getLogger(AdminServer.class);
   public static final String MDC_KEY_TASK = "task";
 
   public static void main(final String[] args) throws Exception {
     SLF4JBridgeHandler.install();
-    new TaskServer().run(args);
+    new AdminServer().run(args);
   }
 
   @Override
@@ -38,7 +38,7 @@ public class TaskServer extends PgApp<TaskServerConfig> {
   }
 
   @Override
-  public void initialize(Bootstrap<TaskServerConfig> bootstrap) {
+  public void initialize(Bootstrap<AdminServerConfig> bootstrap) {
     super.initialize(bootstrap);
 
     // add some cli commands not accessible via the admin interface
@@ -47,7 +47,7 @@ public class TaskServer extends PgApp<TaskServerConfig> {
   }
 
   @Override
-  public void run(TaskServerConfig cfg, Environment env) {
+  public void run(AdminServerConfig cfg, Environment env) {
     super.run(cfg, env);
 
     // http client pool is managed via DW lifecycle already
