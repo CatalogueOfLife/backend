@@ -6,8 +6,8 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.Dataset;
 import org.col.config.GbifConfig;
 import org.col.db.mapper.DatasetMapper;
+import org.col.util.concurrent.ExecutorUtils;
 import org.gbif.nameparser.utils.NamedThreadFactory;
-import org.gbif.utils.concurrent.ExecutorUtils;
 import org.glassfish.jersey.client.rx.RxClient;
 import org.glassfish.jersey.client.rx.java8.RxCompletionStageInvoker;
 import org.slf4j.Logger;
@@ -118,6 +118,6 @@ public class GbifSync implements Managed {
 
   @Override
   public void stop() throws Exception {
-    ExecutorUtils.stop(scheduler);
+    ExecutorUtils.shutdown(scheduler);
   }
 }
