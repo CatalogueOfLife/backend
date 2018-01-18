@@ -82,7 +82,7 @@ public class ContinousImporter implements Managed {
           running = false;
         }
       }
-
+      MDC.remove(MDC_KEY_TASK);
     }
 
     /**

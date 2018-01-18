@@ -99,7 +99,7 @@
     <select id="lastSuccessful" parameterType="map" resultMap="datasetImportResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
-        WHERE dataset_key = #{key} AND state = 1
+        WHERE dataset_key = #{key} AND state = 2
         ORDER BY attempt DESC
         LIMIT 1
     </select>
