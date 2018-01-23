@@ -1,6 +1,6 @@
 # set host to null to use the embedded pg server
-host: ${pg-test.host}
+host: ${db.host}
 port: 5432
-database: ${pg-test.database}
-user: ${pg-test.user}
-password: ${pg-test.password}
+database: ${db.database}
+user: ${db.user}
+password: ${db.password}

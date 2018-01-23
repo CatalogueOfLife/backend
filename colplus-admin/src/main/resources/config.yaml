@@ -1,0 +1,24 @@
+logging:
+  level: INFO
+  loggers:
+    "org.col": DEBUG
+  appenders:
+    - type: console
+db:
+  # set host to null to use the embedded pg server
+  host: ${db.host}
+  port: 5432
+  database: ${db.database}
+  user: ${db.user}
+  password: ${db.password}
+normalizer:
+  directory: /tmp/colplus
+client:
+  timeout: 10000ms
+  connectionTimeout: 5000ms
+  timeToLive: 1h
+  cookiesEnabled: false
+  maxConnections: 64
+  maxConnectionsPerRoute: 16
+  keepAlive: 0ms
+  retries: 1
