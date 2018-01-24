@@ -16,7 +16,6 @@ import java.util.List;
 
 @Path("/importer")
 @Produces(MediaType.APPLICATION_JSON)
-@SuppressWarnings("static-method")
 public class ImporterResource {
 
   @SuppressWarnings("unused")

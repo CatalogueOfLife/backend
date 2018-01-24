@@ -160,7 +160,7 @@
         </association>
     </resultMap>
 
-    <resultMap id="nameSearchResultMap" type="org.col.db.mapper.temp.NameSearchResultTemp" extends="nameResultMap">
+    <resultMap id="nameSearchResultMap" type="org.col.db.mapper.temp.NameSearchResultTemp" extends="nameResultMap" autoMapping="true">
         <association property="taxonOfThisName" javaType="Taxon">
             <id property="key" column="mytaxon_key" />
             <result property="id" column="mytaxon_id" />
