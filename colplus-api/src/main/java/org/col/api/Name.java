@@ -89,7 +89,7 @@ public class Name extends ParsedName {
 		setStrain(pn.getStrain());
 		setCandidatus(pn.isCandidatus());
 		setNotho(pn.getNotho());
-		setSensu(pn.getSensu());
+		setTaxonomicNote(pn.getTaxonomicNote());
 		setNomenclaturalNotes(pn.getNomenclaturalNotes());
 		setRemarks(pn.getRemarks());
 		setType(pn.getType());

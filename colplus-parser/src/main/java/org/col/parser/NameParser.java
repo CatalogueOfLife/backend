@@ -34,7 +34,7 @@ public class NameParser implements Parser<Name> {
     try {
       n = new Name(PARSER_INTERNAL.parse(name, rank));
       n.setScientificName(n.canonicalNameWithoutAuthorship());
-      if (!n.getState().isAuthorshipParsed()) {
+      if (!n.getState().isParsed()) {
         n.addIssue(Issue.UNPARSABLE_NAME);
       }
 

@@ -629,7 +629,7 @@ public class Normalizer implements Runnable {
   private RankedName lookupByName(DwcTerm term, NeoTaxon t, Origin createdOrigin) {
     if (t.verbatim.hasCoreTerm(term)) {
       Name nameTmp = NameParser.PARSER.parse(t.verbatim.getCoreTerm(term)).get();
-      if (!nameTmp.getState().isAuthorshipParsed() && nameTmp.getType().isParsable()) {
+      if (!nameTmp.getState().isParsed() && nameTmp.getType().isParsable()) {
         LOG.warn("Unable to parse [{}]: {}", nameTmp.getState(), t.verbatim.getCoreTerm(term));
         nameTmp.addIssue(Issue.UNPARSABLE_NAME);
       }
