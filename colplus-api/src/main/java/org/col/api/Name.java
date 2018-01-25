@@ -142,14 +142,6 @@ public class Name {
    */
   private NameType type;
 
-  /**
-   * Indicates some doubts that this is a name of the given type.
-   * Usually indicates the existance of unusual characters not normally found in scientific names.
-   */
-  private boolean doubtful;
-
-  private ParsedName.State parsed = ParsedName.State.NONE;
-
 	private URI sourceUrl;
 
 	/**
@@ -193,36 +185,9 @@ public class Name {
     pn.setNotho(n.getNotho());
     pn.setRemarks(n.getRemarks());
     pn.setType(n.getType());
-    pn.setDoubtful(pn.isDoubtful());
-    pn.setState(n.getParsed());
     return pn;
   }
 
-  public static Name fromParsedName(ParsedName pn) {
-    Name n = new Name();
-    n.setUninomial(pn.getUninomial());
-    n.setGenus(pn.getGenus());
-    n.setInfragenericEpithet(pn.getInfragenericEpithet());
-    n.setSpecificEpithet(pn.getSpecificEpithet());
-    n.setInfraspecificEpithet(pn.getInfraspecificEpithet());
-    n.setCultivarEpithet(pn.getCultivarEpithet());
-    n.setStrain(pn.getStrain());
-    n.setCombinationAuthorship(pn.getCombinationAuthorship());
-    n.setBasionymAuthorship(pn.getBasionymAuthorship());
-    n.setSanctioningAuthor(pn.getSanctioningAuthor());
-    n.setRank(pn.getRank());
-    n.setCode(pn.getCode());
-    n.setCandidatus(pn.isCandidatus());
-    n.setNotho(pn.getNotho());
-    n.setRemarks(pn.getRemarks());
-    n.setType(pn.getType());
-    n.setDoubtful(pn.isDoubtful());
-    n.setParsed(pn.getState());
-    //ignore taxonomic note
-    //TODO: try to convert nom notes to enumeration. Add to remarks for now
-    n.addRemark(pn.getNomenclaturalNotes());
-    return n;
-  }
 	/**
 	 * //TODO Copy constructor. Creates shallow copy.
 	 */
@@ -480,28 +445,12 @@ public class Name {
     }
   }
 
-  public ParsedName.State getParsed() {
-    return parsed;
-  }
-
-  public void setParsed(ParsedName.State parsed) {
-    this.parsed = parsed;
-  }
-
   public NameType getType() {
     return type;
   }
 
   public void setType(NameType type) {
     this.type = type;
-  }
-
-  public boolean isDoubtful() {
-    return doubtful;
-  }
-
-  public void setDoubtful(boolean doubtful) {
-    this.doubtful = doubtful;
   }
 
   /**
@@ -625,7 +574,6 @@ public class Name {
     if (o == null || getClass() != o.getClass()) return false;
     Name name = (Name) o;
     return candidatus == name.candidatus &&
-        doubtful == name.doubtful &&
         Objects.equals(key, name.key) &&
         Objects.equals(id, name.id) &&
         Objects.equals(datasetKey, name.datasetKey) &&
@@ -646,7 +594,6 @@ public class Name {
         Objects.equals(sanctioningAuthor, name.sanctioningAuthor) &&
         code == name.code &&
         type == name.type &&
-        parsed == name.parsed &&
         origin == name.origin &&
         Objects.equals(sourceUrl, name.sourceUrl) &&
         Objects.equals(fossil, name.fossil) &&
@@ -657,7 +604,7 @@ public class Name {
 
   @Override
   public int hashCode() {
-    return Objects.hash(key, id, datasetKey, basionymKey, scientificNameID, scientificName, rank, uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, strain, candidatus, notho, combinationAuthorship, basionymAuthorship, sanctioningAuthor, code, type, doubtful, parsed, origin, sourceUrl, fossil, status, remarks, issues);
+    return Objects.hash(key, id, datasetKey, basionymKey, scientificNameID, scientificName, rank, uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, strain, candidatus, notho, combinationAuthorship, basionymAuthorship, sanctioningAuthor, code, type, origin, sourceUrl, fossil, status, remarks, issues);
   }
 
   @Override

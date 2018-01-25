@@ -209,8 +209,6 @@ CREATE TABLE name (
   status INTEGER,
   origin INTEGER NOT NULL,
   type INTEGER NOT NULL,
-  doubtful BOOLEAN,
-  parsed INTEGER,
   source_url TEXT,
   fossil BOOLEAN,
   remarks TEXT,

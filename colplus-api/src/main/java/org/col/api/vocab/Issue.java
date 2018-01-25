@@ -15,6 +15,11 @@ public enum Issue {
   UNPARSABLE_AUTHORSHIP,
 
   /**
+   * The name has been classified as doubtful by the parser.
+   */
+  DOUBTFUL_NAME,
+
+  /**
    * Authorship found in scientificName and scientificNameAuthorship differ.
    */
   INCONSISTENT_AUTHORSHIP,
@@ -31,9 +36,64 @@ public enum Issue {
   UNUSUAL_CHARACTERS,
 
   /**
-   * At least one epithet equals "null" or "none".
+   * At least one epithet equals literal value "null" or "none".
    */
   NULL_EPITHET,
+
+  /**
+   * Name was considered species but contains infraspecific epithet
+   */
+  SUBSPECIES_ASSIGNED,
+
+  /**
+   * lower case monomial match
+   */
+  LC_MONOMIAL,
+
+  /**
+   * indetermined cultivar without cultivar epithet
+   */
+  INDET_CULTIVAR,
+
+  /**
+   * indetermined species without specific epithet
+   */
+  INDET_SPECIES,
+
+  /**
+   * indetermined infraspecies without infraspecific epithet
+   */
+  INDET_INFRASPECIES,
+
+  /**
+   * binomial with rank higher than species aggregate
+   */
+  HIGHER_RANK_BINOMIAL,
+
+  /**
+   * question marks removed
+   */
+  QUESTION_MARKS_REMOVED,
+
+  /**
+   * removed enclosing quotes
+   */
+  REPL_ENCLOSING_QUOTE,
+
+  /**
+   * epithet without genus
+   */
+  MISSING_GENUS,
+
+  /**
+   * html entities unescaped
+   */
+  HTML_ENTITIES,
+
+  /**
+   * xml entities removed
+   */
+  XML_ENTITIES,
 
   /**
    * dwc:nomenclaturalStatus could not be interpreted
