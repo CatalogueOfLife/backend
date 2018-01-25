@@ -169,10 +169,8 @@ public class TestEntityGenerator {
 		n.setCultivarEpithet("Red Rose");
 		n.setStrain("ACTT 675213");
 		n.setSourceUrl(URI.create("http://gbif.org"));
-		n.setParsed(ParsedName.State.COMPLETE);
 		n.setNotho(NamePart.SPECIFIC);
 		n.setFossil(true);
-		n.setDoubtful(true);
 		n.setRank(Rank.SPECIES);
 		n.setOrigin(Origin.SOURCE);
 		n.setType(NameType.SCIENTIFIC);

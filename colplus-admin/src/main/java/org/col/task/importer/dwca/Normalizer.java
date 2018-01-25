@@ -9,15 +9,14 @@ import org.col.api.VerbatimRecord;
 import org.col.api.vocab.Issue;
 import org.col.api.vocab.Origin;
 import org.col.api.vocab.TaxonomicStatus;
+import org.col.parser.NameParser;
 import org.col.task.importer.neo.NeoDb;
 import org.col.task.importer.neo.NormalizerStore;
 import org.col.task.importer.neo.NotUniqueRuntimeException;
 import org.col.task.importer.neo.model.*;
 import org.col.task.importer.neo.traverse.Traversals;
-import org.col.parser.NameParser;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.nameparser.api.NameType;
-import org.gbif.nameparser.api.ParsedName;
 import org.gbif.nameparser.api.Rank;
 import org.neo4j.graphdb.*;
 import org.neo4j.helpers.collection.Iterables;
@@ -44,7 +43,6 @@ public class Normalizer implements Runnable {
     PLACEHOLDER.setRank(Rank.UNRANKED);
     PLACEHOLDER.setType(NameType.PLACEHOLDER);
     PLACEHOLDER.setOrigin(Origin.OTHER);
-    PLACEHOLDER.setParsed(ParsedName.State.NONE);
   }
   private static final List<Splitter> COMMON_SPLITTER = Lists.newArrayList();
   static {
@@ -629,11 +627,6 @@ public class Normalizer implements Runnable {
   private RankedName lookupByName(DwcTerm term, NeoTaxon t, Origin createdOrigin) {
     if (t.verbatim.hasCoreTerm(term)) {
       Name nameTmp = NameParser.PARSER.parse(t.verbatim.getCoreTerm(term)).get();
-      if (!nameTmp.getParsed().isParsed() && nameTmp.getType().isParsable()) {
-        LOG.warn("Unable to parse [{}]: {}", nameTmp.getParsed(), t.verbatim.getCoreTerm(term));
-        nameTmp.addIssue(Issue.UNPARSABLE_NAME);
-      }
-
       final Name name = nameTmp;
       if (!name.getScientificName().equalsIgnoreCase(t.name.getScientificName())) {
         List<Node> matches = store.byScientificName(name.getScientificName());
