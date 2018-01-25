@@ -32,9 +32,9 @@ public class NameParser implements Parser<Name> {
 
     Name n;
     try {
-      n = new Name(PARSER_INTERNAL.parse(name, rank));
+      n = Name.fromParsedName(PARSER_INTERNAL.parse(name, rank));
       n.setScientificName(n.canonicalNameWithoutAuthorship());
-      if (!n.getState().isParsed()) {
+      if (!n.getParsed().isParsed()) {
         n.addIssue(Issue.UNPARSABLE_NAME);
       }
 
@@ -43,7 +43,7 @@ public class NameParser implements Parser<Name> {
       n.setRank(rank);
       n.setScientificName(e.getName());
       n.setType(e.getType());
-      n.setState(ParsedName.State.NONE);
+      n.setParsed(ParsedName.State.NONE);
       // adds an issue in case the type indicates a parsable name
       if (n.getType().isParsable()) {
         n.addIssue(Issue.UNPARSABLE_NAME);

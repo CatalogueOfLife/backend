@@ -1,4 +1,9 @@
-package org.col.api;
+package org.col.api.util;
+
+import org.col.api.Dataset;
+import org.col.api.Name;
+import org.col.api.Reference;
+import org.col.api.Taxon;
 
 import java.util.Objects;
 

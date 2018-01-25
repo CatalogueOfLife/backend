@@ -2,8 +2,8 @@ package org.col.resources;
 
 import com.codahale.metrics.annotation.Timed;
 import com.google.common.collect.Lists;
+import org.col.api.Name;
 import org.col.parser.NameParser;
-import org.gbif.nameparser.api.ParsedName;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,7 +33,7 @@ public class ParserResource {
    */
   @GET
   @Timed
-  public List<ParsedName> parseGet(@QueryParam("name") List<String> names) {
+  public List<Name> parseGet(@QueryParam("name") List<String> names) {
     return parse(names.stream());
   }
 
@@ -42,7 +42,7 @@ public class ParserResource {
    */
   @POST
   @Consumes(MediaType.APPLICATION_JSON)
-  public List<ParsedName> parseJson(List<String> names) {
+  public List<Name> parseJson(List<String> names) {
     return parse(names.stream());
   }
 
@@ -54,7 +54,7 @@ public class ParserResource {
    */
   @POST
   @Consumes(MediaType.MULTIPART_FORM_DATA)
-  public List<ParsedName> parseFile(@FormDataParam("names") InputStream file) throws UnsupportedEncodingException {
+  public List<Name> parseFile(@FormDataParam("names") InputStream file) throws UnsupportedEncodingException {
     if (file == null) {
       LOG.debug("No names file uploaded");
       return Lists.newArrayList();
@@ -73,13 +73,13 @@ public class ParserResource {
    */
   @POST
   @Consumes(MediaType.TEXT_PLAIN)
-  public List<ParsedName> parsePlainText(InputStream names) throws UnsupportedEncodingException {
+  public List<Name> parsePlainText(InputStream names) throws UnsupportedEncodingException {
     return parseFile(names);
   }
 
 
   @Timed
-  private List<ParsedName> parse(Stream<String> names) {
+  private List<Name> parse(Stream<String> names) {
     return names
         .peek(n -> LOG.info("Parse: {}", n))
         .map(parser::parse)

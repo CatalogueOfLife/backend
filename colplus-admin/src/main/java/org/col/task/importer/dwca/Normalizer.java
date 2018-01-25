@@ -44,7 +44,7 @@ public class Normalizer implements Runnable {
     PLACEHOLDER.setRank(Rank.UNRANKED);
     PLACEHOLDER.setType(NameType.PLACEHOLDER);
     PLACEHOLDER.setOrigin(Origin.OTHER);
-    PLACEHOLDER.setState(ParsedName.State.NONE);
+    PLACEHOLDER.setParsed(ParsedName.State.NONE);
   }
   private static final List<Splitter> COMMON_SPLITTER = Lists.newArrayList();
   static {
@@ -629,8 +629,8 @@ public class Normalizer implements Runnable {
   private RankedName lookupByName(DwcTerm term, NeoTaxon t, Origin createdOrigin) {
     if (t.verbatim.hasCoreTerm(term)) {
       Name nameTmp = NameParser.PARSER.parse(t.verbatim.getCoreTerm(term)).get();
-      if (!nameTmp.getState().isParsed() && nameTmp.getType().isParsable()) {
-        LOG.warn("Unable to parse [{}]: {}", nameTmp.getState(), t.verbatim.getCoreTerm(term));
+      if (!nameTmp.getParsed().isParsed() && nameTmp.getType().isParsable()) {
+        LOG.warn("Unable to parse [{}]: {}", nameTmp.getParsed(), t.verbatim.getCoreTerm(term));
         nameTmp.addIssue(Issue.UNPARSABLE_NAME);
       }
 

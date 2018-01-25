@@ -3,10 +3,7 @@ package org.col;
 import com.google.common.base.Splitter;
 import org.col.api.*;
 import org.col.api.vocab.*;
-import org.gbif.nameparser.api.Authorship;
-import org.gbif.nameparser.api.NamePart;
-import org.gbif.nameparser.api.NameType;
-import org.gbif.nameparser.api.Rank;
+import org.gbif.nameparser.api.*;
 
 import java.net.URI;
 import java.time.LocalDate;
@@ -168,8 +165,14 @@ public class TestEntityGenerator {
 		n.setSpecificEpithet(tokens.get(1));
 		n.setInfragenericEpithet("Igen");
 		n.setInfraspecificEpithet(null);
+		n.setCandidatus(true);
+		n.setCultivarEpithet("Red Rose");
+		n.setStrain("ACTT 675213");
+		n.setSourceUrl(URI.create("http://gbif.org"));
+		n.setParsed(ParsedName.State.COMPLETE);
 		n.setNotho(NamePart.SPECIFIC);
 		n.setFossil(true);
+		n.setDoubtful(true);
 		n.setRank(Rank.SPECIES);
 		n.setOrigin(Origin.SOURCE);
 		n.setType(NameType.SCIENTIFIC);
