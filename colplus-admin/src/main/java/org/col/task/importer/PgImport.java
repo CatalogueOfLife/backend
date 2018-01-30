@@ -52,7 +52,6 @@ public class PgImport implements Runnable {
 		insertReferences();
 		insertBasionyms();
 		insertTaxaAndNames();
-    insertVerbatim();
 
 		updateMetadata();
 	}
@@ -235,11 +234,5 @@ public class PgImport implements Runnable {
 		}
 	}
 
-  /**
-   * Inserts the verbatim record together with links to derived name & taxon
-   */
-  private void insertVerbatim() {
-
-  }
 
 }
