@@ -337,3 +337,48 @@ IMMUTABLE;
 
 -- INDICES
 CREATE index ON dataset (gbif_key);
+
+CREATE index ON dataset_import (dataset_key, finished);
+CREATE index ON dataset_import (started);
+
+CREATE UNIQUE index ON name (id, dataset_key);
+CREATE index ON name (dataset_key);
+CREATE index ON name (rank);
+CREATE index ON name (status);
+CREATE index ON name (type);
+CREATE index ON name (basionym_key);
+CREATE index ON name USING GIN(issues);
+
+CREATE index ON name_act (name_key, type);
+CREATE index ON name_act (reference_key);
+
+CREATE UNIQUE index ON taxon (id, dataset_key);
+CREATE index ON taxon (dataset_key);
+CREATE index ON taxon (parent_key);
+CREATE index ON taxon (name_key);
+
+CREATE UNIQUE index ON reference (id, dataset_key);
+CREATE index ON reference (dataset_key);
+
+CREATE index ON verbatim_record (dataset_key);
+CREATE index ON verbatim_record (name_key);
+CREATE index ON verbatim_record (taxon_key);
+
+CREATE index ON distribution (dataset_key);
+CREATE index ON distribution (taxon_key);
+
+CREATE index ON vernacular_name (dataset_key);
+CREATE index ON vernacular_name (taxon_key);
+
+CREATE index ON synonym (name_key);
+
+CREATE index ON taxon_reference(reference_key);
+
+CREATE index ON vernacular_name_reference(reference_key);
+
+CREATE index ON distribution_reference(reference_key);
+
+
+
+
+
