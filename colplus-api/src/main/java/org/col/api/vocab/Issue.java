@@ -5,9 +5,16 @@ package org.col.api.vocab;
  */
 public enum Issue {
   /**
-   * The name string could not be parsed.
+   * The scientific name string could not be parsed at all, but appears to be a parsable name type,
+   * i.e. it is not classified as a virus or hybrid formula.
    */
   UNPARSABLE_NAME,
+
+  /**
+   * The beginning of the scientific name string was parsed,
+   * but there is additional information in the string that was not understood.
+   */
+  PARTIALLY_PARSABLE_NAME,
 
   /**
    * The authorship string could not be parsed.

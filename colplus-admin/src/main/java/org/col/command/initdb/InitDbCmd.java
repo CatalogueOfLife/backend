@@ -53,6 +53,7 @@ public class InitDbCmd extends ConfiguredCommand<AdminServerConfig> {
     }
 
     execute(cfg);
+    System.out.println("Done !!!");
   }
 
   private void execute(AdminServerConfig cfg) throws Exception {
@@ -62,7 +63,6 @@ public class InitDbCmd extends ConfiguredCommand<AdminServerConfig> {
       runner.setSendFullScript(true);
       // run sql files
       exec(PgConfig.SCHEMA_FILE, runner, con, Resources.getResourceAsReader(PgConfig.SCHEMA_FILE));
-
       try (BufferedReader datasets = new BufferedReader(new InputStreamReader(COL_DATASETS_URI.toURL().openStream()))) {
         exec(COL_DATASETS_URI.toString(), runner, con, datasets);
       }
@@ -72,6 +72,7 @@ public class InitDbCmd extends ConfiguredCommand<AdminServerConfig> {
   private void exec(String name, ScriptRunner runner, Connection con, Reader reader) throws IOException, SQLException {
     try {
       LOG.info("Execute {}", name);
+      System.out.println("Execute " + name);
       runner.runScript(reader);
       con.commit();
     } catch (Exception e) {

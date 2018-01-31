@@ -1,5 +1,6 @@
 package org.col.api;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.col.api.vocab.Issue;
@@ -456,6 +457,7 @@ public class Name {
   /**
    * @return the terminal epithet. Infraspecific epithet if existing, the species epithet or null
    */
+  @JsonIgnore
   public String getTerminalEpithet() {
     return infraspecificEpithet == null ? specificEpithet : infraspecificEpithet;
   }
@@ -463,10 +465,12 @@ public class Name {
   /**
    * @return true if any kind of authorship exists
    */
+  @JsonIgnore
   public boolean hasAuthorship() {
     return combinationAuthorship.exists() || basionymAuthorship.exists();
   }
 
+  @JsonIgnore
   public boolean isAutonym() {
     return specificEpithet != null && infraspecificEpithet != null && specificEpithet.equals(infraspecificEpithet);
   }
@@ -474,6 +478,7 @@ public class Name {
   /**
    * @return true if the name is a bi- or trinomial with at least a genus and species epithet given.
    */
+  @JsonIgnore
   public boolean isBinomial() {
     return genus != null && specificEpithet != null;
   }
@@ -481,10 +486,12 @@ public class Name {
   /**
    * @return true if the name is a trinomial with at least a genus, species and infraspecific epithet given.
    */
+  @JsonIgnore
   public boolean isTrinomial() {
     return isBinomial() && infraspecificEpithet!= null;
   }
 
+  @JsonIgnore
   public boolean isIndetermined() {
     return rank.isInfragenericStrictly() && infragenericEpithet == null && specificEpithet == null
         || rank.isSpeciesOrBelow() && specificEpithet == null
@@ -497,6 +504,7 @@ public class Name {
    * rank matches populated properties and available properties make sense
    * together.
    */
+  @JsonIgnore
   public boolean isConsistent() {
     if (specificEpithet != null && genus == null) {
       return false;
