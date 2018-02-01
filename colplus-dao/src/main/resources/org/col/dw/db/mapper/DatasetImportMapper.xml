@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.col.dw.db.mapper.DatasetImportMapper">
+
+    <sql id="SELECT">
+      dataset_key,
+      attempt,
+      state,
+      error,
+      started,
+      finished,
+      download_uri,
+      download,
+      verbatim_count,
+      name_count,
+      taxon_count,
+      vernacular_count,
+      distribution_count,
+      issues_count,
+      names_by_rank_count,
+      names_by_type_count,
+      vernaculars_by_language_count,
+      distributions_by_gazetteer_count,
+      names_by_origin_count
+    </sql>
+
+    <sql id="COLS">
+      dataset_key,
+      state,
+      error,
+      started,
+      finished,
+      download_uri,
+      download,
+      verbatim_count,
+      name_count,
+      taxon_count,
+      vernacular_count,
+      distribution_count,
+      issues_count,
+      names_by_rank_count,
+      names_by_type_count,
+      vernaculars_by_language_count,
+      distributions_by_gazetteer_count,
+      names_by_origin_count
+    </sql>
+
+    <sql id="PROPS">
+      #{di.datasetKey},
+      #{di.state},
+      #{di.error},
+      #{di.started},
+      #{di.finished},
+      #{di.downloadUri},
+      #{di.download},
+      #{di.verbatimCount},
+      #{di.nameCount},
+      #{di.taxonCount},
+      #{di.vernacularCount},
+      #{di.distributionCount},
+      #{di.issuesCount, typeHandler=org.col.db.type2.HstoreIssueCountTypeHandler}::hstore,
+      #{di.namesByRankCount, typeHandler=org.col.db.type2.HstoreRankCountTypeHandler}::hstore,
+      #{di.namesByTypeCount, typeHandler=org.col.db.type2.HstoreNameTypeCountTypeHandler}::hstore,
+      #{di.vernacularsByLanguageCount, typeHandler=org.col.db.type2.HstoreLanguageCountTypeHandler}::hstore,
+      #{di.distributionsByGazetteerCount, typeHandler=org.col.db.type2.HstoreGazetteerCountTypeHandler}::hstore,
+      #{di.namesByOriginCount, typeHandler=org.col.db.type2.HstoreOriginCountTypeHandler}::hstore
+    </sql>
+
+    <sql id="FROM">
+      dataset_import
+    </sql>
+
+    <!--  A mapping to Name, mostly auto mapped -->
+    <resultMap id="datasetImportResultMap" type="DatasetImport" autoMapping="true">
+        <result property="issuesCount" column="issues_count" typeHandler="org.col.dw.db.type2.HstoreIssueCountTypeHandler"/>
+        <result property="namesByRankCount" column="names_by_rank_count" typeHandler="org.col.dw.db.type2.HstoreRankCountTypeHandler"/>
+        <result property="namesByTypeCount" column="names_by_type_count" typeHandler="org.col.dw.db.type2.HstoreNameTypeCountTypeHandler"/>
+        <result property="vernacularsByLanguageCount" column="vernaculars_by_language_count" typeHandler="org.col.dw.db.type2.HstoreLanguageCountTypeHandler"/>
+        <result property="distributionsByGazetteerCount" column="distributions_by_gazetteer_count" typeHandler="org.col.dw.db.type2.HstoreGazetteerCountTypeHandler"/>
+        <result property="namesByOriginCount" column="names_by_origin_count" typeHandler="org.col.dw.db.type2.HstoreOriginCountTypeHandler"/>
+
+    </resultMap>
+
+
+    <select id="count" parameterType="map" resultType="Integer">
+        SELECT count(*) FROM <include refid="FROM" />
+    </select>
+
+    <select id="last" parameterType="map" resultMap="datasetImportResultMap">
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
+        WHERE dataset_key = #{key}
+        ORDER BY attempt DESC
+        LIMIT 1
+    </select>
+
+    <select id="lastSuccessful" parameterType="map" resultMap="datasetImportResultMap">
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
+        WHERE dataset_key = #{key} AND state = 2
+        ORDER BY attempt DESC
+        LIMIT 1
+    </select>
+
+    <select id="list" parameterType="map" resultMap="datasetImportResultMap">
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
+        ORDER BY started DESC
+        <include refid="org.col.dw.db.mapper.Common.limit" />
+    </select>
+
+    <select id="listByDataset" parameterType="map" resultMap="datasetImportResultMap">
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
+        WHERE dataset_key = #{key}
+        ORDER BY attempt DESC
+    </select>
+
+    <select id="metrics" parameterType="map" resultMap="datasetImportResultMap">
+        SELECT #{key} AS datasetKey,
+        (SELECT count(*) FROM verbatim_record WHERE dataset_key=#{key}) AS verbatimCount,
+        (SELECT count(*) FROM name WHERE dataset_key=#{key}) AS nameCount,
+        (SELECT count(*) FROM taxon WHERE dataset_key=#{key}) AS taxonCount,
+        (SELECT count(*) FROM vernacular_name WHERE dataset_key=#{key}) AS vernacularCount,
+        (SELECT count(*) FROM distribution WHERE dataset_key=#{key}) AS distributionCount,
+
+        (SELECT array_to_string(array_agg( key || '=>' || cnt), ', ')::hstore FROM
+            (SELECT iss AS key, count(*)::text AS cnt FROM (
+              SELECT unnest(issues) iss from name WHERE dataset_key=#{key}
+              ) AS dis GROUP BY key
+            ) AS issues
+        ) AS issues_count,
+        (SELECT array_to_string(array_agg( key || '=>' || cnt), ', ')::hstore FROM
+          (SELECT rank AS key, count(*)::text AS cnt FROM name
+           WHERE dataset_key=#{key}
+           GROUP BY rank
+           ) AS ranks
+        ) AS names_by_rank_count,
+        (SELECT array_to_string(array_agg( key || '=>' || cnt), ', ')::hstore FROM
+          (SELECT type AS key, count(*)::text AS cnt FROM name
+           WHERE dataset_key=#{key}
+           GROUP BY type
+           ) AS types
+        ) AS names_by_type_count,
+        (SELECT array_to_string(array_agg( key || '=>' || cnt), ', ')::hstore FROM
+          (SELECT language AS key, count(*)::text AS cnt
+           FROM vernacular_name
+           WHERE dataset_key=#{key}
+           GROUP BY language
+           ) AS languages
+        ) AS vernaculars_by_language_count,
+        (SELECT array_to_string(array_agg( key || '=>' || cnt), ', ')::hstore FROM
+          (SELECT area_standard AS key, count(*)::text AS cnt
+           FROM distribution
+           WHERE dataset_key=#{key}
+           GROUP BY area_standard
+           ) AS area_standards
+        ) AS distributions_by_gazetteer_count,
+        (SELECT array_to_string(array_agg( key || '=>' || cnt), ', ')::hstore FROM
+          (SELECT origin AS key, count(*)::text AS cnt
+           FROM name
+           WHERE dataset_key=#{key}
+           GROUP BY origin
+           ) AS origins
+        ) AS names_by_origin_count
+    </select>
+
+    <insert id="create" parameterType="DatasetImport">
+        <selectKey keyProperty="di.attempt" resultType="int" order="BEFORE" >
+            SELECT coalesce(max(attempt)+1, 1)
+            FROM dataset_import
+            WHERE dataset_key=#{di.datasetKey}
+        </selectKey>
+        INSERT INTO dataset_import (<include refid="COLS" />, attempt)
+          VALUES (<include refid="PROPS" />, #{di.attempt})
+    </insert>
+
+    <update id="update" parameterType="DatasetImport">
+        UPDATE dataset_import
+        SET (<include refid="COLS" />) = (<include refid="PROPS" />)
+        WHERE dataset_key=#{di.datasetKey} AND attempt=#{di.attempt}
+    </update>
+
+</mapper>
