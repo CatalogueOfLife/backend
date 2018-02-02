@@ -35,18 +35,22 @@
             Check for available updates: mvn versions:display-dependency-updates
         -->
         <commmons-lang.version>3.6</commmons-lang.version>
-        <dropwizard.version>1.2.2</dropwizard.version>
+        <dropwizard.version>1.2.3</dropwizard.version>
         <dwc-api.version>1.17</dwc-api.version>
-        <dwca-io.version>1.31</dwca-io.version>
+        <dwca-io.version>1.32</dwca-io.version>
         <fastutil.version>8.1.0</fastutil.version>
         <gbif-api.version>0.60</gbif-api.version>
         <gbif-common.version>0.36</gbif-common.version>
-        <gbif-parser.version>0.31</gbif-parser.version>
-        <guava.version>23.1-jre</guava.version>
+        <gbif-parser.version>0.32</gbif-parser.version>
+        <guava.version>23.5-jre</guava.version>
         <hikaricp.version>2.7.1</hikaricp.version>
         <hk2.version>2.5.0-b32</hk2.version>
-        <!-- make sure jackson matches dropwizards version -->
-        <jackson2.version>2.9.1</jackson2.version>
+        <!--
+        make sure jackson matches dropwizards version
+        see Dropwizard BOM for help:
+        https://github.com/dropwizard/dropwizard/blob/v1.2.3/dropwizard-bom/pom.xml
+        -->
+        <jackson2.version>2.9.3</jackson2.version>
         <javax.ws.rs-api.version>2.0.1</javax.ws.rs-api.version>
         <javers.version>3.7.5</javers.version>
         <!-- make sure jersey matches dropwizards version -->
@@ -63,7 +67,7 @@
         <name-parser.version>3.1.2-SNAPSHOT</name-parser.version>
         <neo4j.version>3.2.3</neo4j.version>
         <postgresql.version>42.1.4</postgresql.version>
-        <postgresql-embedded.version>2.5</postgresql-embedded.version>
+        <postgresql-embedded.version>2.6</postgresql-embedded.version>
         <slf4j.version>1.7.25</slf4j.version>
         <validation-api.version>2.0.0.Final</validation-api.version>
 
