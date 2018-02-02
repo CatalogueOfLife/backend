@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.col.db.mapper.TaxonMapper">
+
+    <sql id="SELECT">
+        t.key,
+        t.id,
+        t.dataset_key,
+        t.parent_key,
+        t.name_key as n_key,
+        t.status,
+        t.origin,
+        t.according_to,
+        t.according_to_date,
+        t.fossil,
+        t.recent,
+        t.lifezones,
+        t.dataset_url,
+        t.species_estimate,
+        t.species_estimate_reference_key,
+        t.remarks,
+        t.issues,
+
+        n.id as n_id,
+        n.dataset_key as n_dataset_key,
+        n.scientific_name as n_scientific_name,
+        n.rank as n_rank,
+        n.uninomial as n_uninomial,
+        n.genus as n_genus,
+        n.infrageneric_epithet as n_infrageneric_epithet,
+        n.specific_epithet as n_specific_epithet,
+        n.infraspecific_epithet as n_infraspecific_epithet,
+        n.notho as n_notho,
+        n.basionym_authors as n_basionym_authors,
+        n.basionym_ex_authors as n_basionym_ex_authors,
+        n.basionym_year as n_basionym_year,
+        n.combination_authors as n_combination_authors,
+        n.combination_ex_authors as n_combination_ex_authors,
+        n.combination_year as n_combination_year,
+        n.sanctioning_author as n_sanctioning_author,
+        n.code as n_code,
+        n.status as n_status,
+        n.origin as n_origin,
+        n.type as n_type,
+        n.fossil as n_fossil,
+        n.basionym_key
+        as n_basionym_key,
+        n.remarks as n_remarks,
+        n.issues as n_issues
+    </sql>
+
+    <!-- Used just for the WITH RECURSIVE query' we might want to try and parametrize table aliases -->
+    <sql id="SELECT2">
+        t2.key,
+        t2.id,
+        t2.dataset_key,
+        t2.parent_key,
+        t2.name_key as n_key,
+        t2.status,
+        t2.origin,
+        t2.according_to,
+        t2.according_to_date,
+        t2.fossil,
+        t2.recent,
+        t2.lifezones,
+        t2.dataset_url,
+        t2.species_estimate,
+        t2.species_estimate_reference_key,
+        t2.remarks,
+        t2.issues,
+
+        n2.id as n_id,
+        n2.dataset_key as n_dataset_key,
+        n2.scientific_name as n_scientific_name,
+        n2.rank as n_rank,
+        n2.uninomial as n_uninomial,
+        n2.genus as n_genus,
+        n2.infrageneric_epithet as n_infrageneric_epithet,
+        n2.specific_epithet as n_specific_epithet,
+        n2.infraspecific_epithet as n_infraspecific_epithet,
+        n2.notho as n_notho,
+        n2.basionym_authors as n_basionym_authors,
+        n2.basionym_ex_authors as n_basionym_ex_authors,
+        n2.basionym_year as n_basionym_year,
+        n2.combination_authors as n_combination_authors,
+        n2.combination_ex_authors as n_combination_ex_authors,
+        n2.combination_year as n_combination_year,
+        n2.sanctioning_author as n_sanctioning_author,
+        n2.code as n_code,
+        n2.status as n_status,
+        n2.origin as n_origin,
+        n2.type as n_type,
+        n2.fossil as n_fossil,
+        n2.basionym_key as n_basionym_key,
+        n2.remarks as n_remarks,
+        n2.issues as n_issues
+    </sql>
+
+    <sql id="COLS">
+        id,
+        dataset_key,
+        parent_key,
+        name_key,
+        status,
+        origin,
+        according_to,
+        according_to_date,
+        fossil,
+        recent,
+        lifezones,
+        dataset_url,
+        species_estimate,
+        species_estimate_reference_key,
+        remarks,
+        issues
+    </sql>
+
+    <sql id="PROPS">
+        #{id},
+        #{datasetKey},
+        #{parentKey},
+        #{name.key},
+        #{status},
+        #{origin},
+        #{accordingTo},
+        #{accordingToDate},
+        #{fossil},
+        #{recent},
+        #{lifezones, typeHandler=org.col.db.type.LifezoneSetTypeHandler},
+        #{datasetUrl, typeHandler=org.col.db.type.UriTypeHandler},
+        #{speciesEstimate},
+        #{speciesEstimateReferenceKey},
+        #{remarks},
+        #{issues, typeHandler=org.col.db.type2.IssueSetTypeHandler}::int[]
+    </sql>
+
+    <sql id="FROM">
+        taxon t JOIN name n ON (t.name_key=n.key)
+    </sql>
+
+    <sql id="FROM2">
+        taxon t2 JOIN name n2 ON (t2.name_key=n2.key)
+    </sql>
+
+    <!-- A mapping to Name, mostly auto mapped -->
+    <resultMap id="taxonResultMap" type="Taxon" autoMapping="true">
+        <id property="key" column="key" />
+        <result property="id" column="id" />
+        <result property="lifezones" column="lifezones" typeHandler="org.col.db.type.LifezoneSetTypeHandler" />
+        <result property="issues" column="issues" typeHandler="org.col.db.type2.IssueSetTypeHandler" />
+        <association property="name" javaType="Name" resultMap="org.col.db.mapper.NameMapper.nameResultMap" columnPrefix="n_" />
+    </resultMap>
+
+
+    <select id="lookupKey" resultType="Integer">
+        SELECT key
+        FROM taxon
+        WHERE id = #{id} AND dataset_key = #{datasetKey}
+    </select>
+
+    <select id="count" parameterType="map" resultType="Integer">
+        SELECT count(*)
+        FROM taxon
+        WHERE dataset_key = #{datasetKey}
+        <if test="root">
+            AND parent_key IS NULL
+        </if>
+        <if test="nameKey != null">
+            AND t.name_key = #{nameKey}
+        </if>
+    </select>
+
+    <select id="list" parameterType="map" resultMap="taxonResultMap">
+        SELECT
+        <include refid="SELECT" />
+        FROM
+        <include refid="FROM" />
+        WHERE t.dataset_key = #{datasetKey}
+        <if test="root">
+            AND t.parent_key IS NULL
+        </if>
+        <if test="nameKey != null">
+            AND t.name_key = #{nameKey}
+        </if>
+        ORDER BY key
+        <include refid="org.col.db.mapper.Common.limit" />
+    </select>
+
+    <select id="getAcceptedNames">
+        SELECT
+        <include refid="SELECT" />
+        , s.name_key as synonym_name_key
+        FROM
+        <include refid="FROM" />
+        JOIN synonym s ON (t.key = s.taxon_key)
+        WHERE s.name_key IN
+        <foreach item="nameKey" collection="nameKeys" separator="," open="(" close=")">
+            #{nameKey}
+        </foreach>
+    </select>
+
+    <select id="get" resultMap="taxonResultMap">
+        SELECT
+        <include refid="SELECT" />
+        FROM
+        <include refid="FROM" />
+        WHERE t.key = #{key}
+    </select>
+
+    <select id="countChildren"  parameterType="map" resultType="Integer">
+        SELECT count(*)
+        FROM taxon
+        WHERE parent_key = #{key}
+    </select>
+
+    <select id="children" resultMap="taxonResultMap">
+        SELECT
+        <include refid="SELECT" />
+        FROM
+        <include refid="FROM" />
+        WHERE t.parent_key = #{key}
+        ORDER BY key
+        <include refid="org.col.db.mapper.Common.limit" />
+    </select>
+
+    <select id="classification" resultMap="taxonResultMap">
+        WITH RECURSIVE x AS(
+            SELECT <include refid="SELECT" />
+            FROM <include refid="FROM" />
+            WHERE t.key = #{key}
+            UNION
+            SELECT <include refid="SELECT2" />
+            FROM <include refid="FROM2" />, x
+            WHERE t2.key = x.parent_key
+        )
+        SELECT * FROM x
+     </select>
+
+    <insert id="create" parameterType="Taxon" useGeneratedKeys="true" keyProperty="key">
+        INSERT INTO taxon (
+        <include refid="COLS" />
+        )
+        VALUES (
+        <include refid="PROPS" />
+        )
+    </insert>
+
+</mapper>

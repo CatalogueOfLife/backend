@@ -1,4 +1,4 @@
-package org.col.dw.db;
+package org.col.db;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;

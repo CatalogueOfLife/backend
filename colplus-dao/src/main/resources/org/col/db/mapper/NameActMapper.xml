@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.col.db.mapper.NameActMapper">
+
+  <sql id="SELECT">
+    na.key,
+    na.dataset_key,
+    na.type,
+    na.status,
+    na.name_key,
+    na.related_name_key,
+    na.description,
+    na.reference_key,
+    na.reference_page
+  </sql>
+
+  <sql id="COLS">
+    dataset_key,
+    type,
+    status,
+    name_key,
+    related_name_key,
+    description,
+    reference_key,
+    reference_page
+  </sql>
+
+  <sql id="PROPS">
+    #{datasetKey},
+    #{type},
+    #{status},
+    #{nameKey},
+    #{relatedNameKey},
+    #{description},
+    #{referenceKey},
+    #{referencePage}
+  </sql>
+
+  <sql id="FROM">
+    name_act na
+  </sql>
+
+  <resultMap id="nameActResultMap" type="NameAct" autoMapping="true">
+    <id property="key" column="key" />
+  </resultMap>
+
+  <select id="listByName" parameterType="map" resultMap="nameActResultMap">
+    SELECT
+    <include refid="SELECT" />
+    FROM name_act na
+    JOIN name n ON na.name_key = n.key
+    WHERE n.key = #{nameKey}
+    ORDER BY na.key
+  </select>
+
+  <select id="listByReference" parameterType="map" resultMap="nameActResultMap">
+    SELECT
+    <include refid="SELECT" />
+    FROM name_act na
+    WHERE na.reference_key = #{referenceKey}
+    ORDER BY na.key
+  </select>
+
+  <!-- Get all name acts associated with the basionym of the provided name id and all names referencing that basionym -->
+  <select id="listByHomotypicGroup" parameterType="map" resultMap="nameActResultMap">
+    SELECT
+    <include refid="SELECT" />
+    FROM name ns
+    JOIN name n ON
+    <!-- ns was the basionym of other combinations -->
+    n.basionym_key = ns.key OR n.key = ns.key
+    <!-- ns was a combination with a basionym -->
+    OR n.key = ns.basionym_key OR n.basionym_key = ns.basionym_key
+    LEFT JOIN name bn ON n.basionym_key=bn.key
+    JOIN name_act na ON na.name_key=n.key
+    WHERE ns.key = #{nameKey}
+  </select>
+
+  <select id="get" resultMap="nameActResultMap">
+    SELECT
+    <include refid="SELECT" />
+    FROM
+    <include refid="FROM" />
+    WHERE na.key = #{key}
+  </select>
+
+  <insert id="create" parameterType="NameAct" useGeneratedKeys="true" keyProperty="key">
+    INSERT INTO name_act (
+    <include refid="COLS" />
+    )
+    VALUES (
+    <include refid="PROPS" />
+    )
+  </insert>
+
+</mapper>

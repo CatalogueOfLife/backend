@@ -9,9 +9,9 @@ import io.dropwizard.forms.MultiPartBundle;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.col.dw.api.jackson.ApiModule;
+import org.col.api.jackson.ApiModule;
 import org.col.dw.cors.CorsBundle;
-import org.col.dw.db.MybatisBundle;
+import org.col.db.MybatisBundle;
 import org.col.dw.jersey.JerseyProviderBundle;
 
 public abstract class PgApp<T extends PgAppConfig> extends Application<T> {

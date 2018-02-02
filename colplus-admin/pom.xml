@@ -13,7 +13,7 @@
     <name>Clearinghouse admin server (Admin)</name>
 
     <properties>
-        <mainClass>org.col.dw.AdminServer</mainClass>
+        <mainClass>org.col.admin.AdminServer</mainClass>
     </properties>
 
     <dependencies>

@@ -1,4 +1,4 @@
-package org.col.dw.db;
+package org.col.db;
 
 import com.zaxxer.hikari.HikariDataSource;
 import io.dropwizard.lifecycle.Managed;

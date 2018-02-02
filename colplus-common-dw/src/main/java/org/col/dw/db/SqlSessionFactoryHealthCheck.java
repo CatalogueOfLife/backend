@@ -1,10 +1,10 @@
-package org.col.dw.db;
+package org.col.db;
 
 
 import com.codahale.metrics.health.HealthCheck;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.col.dw.db.mapper.Ping;
+import org.col.db.mapper.Ping;
 
 /**
  * {@link Ping}s the database to check its health. Any non-exceptional response,

@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.col.db.mapper.VerbatimRecordMapper">
+
+    <sql id="SELECT">
+        v.id,
+        v.dataset_key,
+        v.name_key,
+        v.taxon_key,
+        v.terms
+    </sql>
+
+    <sql id="COLS">
+        id,
+        dataset_key,
+        name_key,
+        taxon_key,
+        terms
+    </sql>
+
+    <sql id="PROPS">
+      #{rec.id},
+      #{rec.datasetKey},
+      #{nameKey},
+      #{taxonKey},
+      #{rec.terms, typeHandler=org.col.db.type.VerbatimRecordTermsTypeHandler}::jsonb
+    </sql>
+
+    <sql id="FROM">
+        verbatim_record v
+    </sql>
+
+
+    <!--  A mapping to Name, mostly auto mapped -->
+    <resultMap id="verbatimResultMap" type="VerbatimRecord" autoMapping="true">
+        <id property="id" column="id"/>
+        <result property="terms" column="terms" typeHandler="org.col.db.type.VerbatimRecordTermsTypeHandler"/>
+    </resultMap>
+
+
+
+    <select id="count" parameterType="map" resultType="Integer">
+        SELECT count(*)
+        FROM verbatim_record
+        WHERE dataset_key = #{datasetKey}
+    </select>
+
+    <select id="list" parameterType="map" resultMap="verbatimResultMap">
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
+        WHERE dataset_key = #{datasetKey}
+        ORDER BY id
+        <include refid="org.col.db.mapper.Common.limit"/>
+    </select>
+
+    <select id="get" resultMap="verbatimResultMap">
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
+        WHERE dataset_key = #{datasetKey} AND id = #{id}
+    </select>
+
+    <select id="getByName" resultMap="verbatimResultMap">
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
+        WHERE v.name_key = #{nameKey}
+    </select>
+
+    <select id="getByTaxon" resultMap="verbatimResultMap">
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
+        WHERE v.taxon_key = #{taxonKey}
+    </select>
+
+    <insert id="create" parameterType="map">
+        INSERT INTO verbatim_record (<include refid="COLS" />)
+        VALUES (<include refid="PROPS" />)
+    </insert>
+
+</mapper>

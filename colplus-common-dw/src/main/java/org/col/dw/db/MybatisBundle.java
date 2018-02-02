@@ -1,10 +1,11 @@
-package org.col.dw.db;
+package org.col.db;
 
 import com.zaxxer.hikari.HikariDataSource;
 import io.dropwizard.ConfiguredBundle;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import org.apache.ibatis.session.SqlSessionFactory;
+import org.col.db.MybatisFactory;
 import org.col.dw.PgAppConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

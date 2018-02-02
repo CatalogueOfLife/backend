@@ -1,9 +1,10 @@
 package org.col.dw;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.Configuration;
 import org.col.dw.cors.CorsBundleConfiguration;
 import org.col.dw.cors.CorsConfiguration;
-import org.col.dw.db.PgConfig;
+import org.col.db.PgConfig;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -19,6 +20,7 @@ public class PgAppConfig extends Configuration implements CorsBundleConfiguratio
   private CorsConfiguration cors = new CorsConfiguration();
 
   @Override
+  @JsonIgnore
   public CorsConfiguration getCorsConfiguration() {
     return cors;
   }

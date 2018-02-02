@@ -11,7 +11,7 @@
     <name>Clearinghouse backend services (WS)</name>
 
     <properties>
-        <mainClass>org.col.dw.WsServer</mainClass>
+        <mainClass>org.col.WsServer</mainClass>
     </properties>
 
     <dependencies>

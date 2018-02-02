@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.col.db.mapper.DistributionMapper">
+
+  <sql id="SELECT">
+    d.key,
+    d.taxon_key,
+    d.area,
+    d.area_standard,
+    d.status
+  </sql>
+
+  <sql id="COLS">
+    dataset_key,
+    taxon_key,
+    area,
+    area_standard,
+    status
+  </sql>
+
+  <sql id="PROPS">
+    #{datasetKey},
+    #{taxonKey},
+    #{distribution.area},
+    #{distribution.areaStandard},
+    #{distribution.status}
+  </sql>
+
+  <sql id="FROM">
+    distribution d
+  </sql>
+
+  <!-- A mapping to Distribution, mostly auto mapped -->
+  <resultMap id="distributionResultMap" type="Distribution" autoMapping="true">
+    <id property="key" column="key" />
+  </resultMap>
+
+
+  <select id="listByTaxon" parameterType="map" resultMap="distributionResultMap">
+    SELECT
+    <include refid="SELECT" />
+    FROM
+    <include refid="FROM" />
+    WHERE d.taxon_key = #{taxonKey}
+    ORDER BY d.key
+  </select>
+
+  <select id="get" resultMap="distributionResultMap">
+    SELECT
+    <include refid="SELECT" />
+    FROM
+    <include refid="FROM" />
+    WHERE d.key = #{key}
+  </select>
+
+  <insert id="create" parameterType="Distribution" useGeneratedKeys="true" keyProperty="distribution.key">
+    INSERT INTO distribution (
+    <include refid="COLS" />
+    )
+    VALUES (
+    <include refid="PROPS" />
+    )
+  </insert>
+
+</mapper>

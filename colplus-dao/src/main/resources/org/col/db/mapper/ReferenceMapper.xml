@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.col.db.mapper.ReferenceMapper">
+
+    <sql id="SELECT">
+        r.key,
+        r.id,
+        r.dataset_key,
+        r.csl,
+        r.serial_key,
+        r.year
+    </sql>
+
+    <sql id="SELECT_WITH_PAGE">
+        r.key,
+        r.id,
+        r.dataset_key,
+        r.csl,
+        r.serial_key,
+        r.year,
+        na.reference_page as page
+    </sql>
+
+    <sql id="COLS">
+        id,
+        dataset_key,
+        csl,
+        serial_key,
+        year
+    </sql>
+
+    <sql id="PROPS">
+        #{id},
+        #{datasetKey},
+        #{csl, typeHandler=org.col.db.type.CslJsonHandler}::jsonb,
+        #{serialKey},
+        #{year}
+    </sql>
+
+    <sql id="FROM">
+        reference r
+    </sql>
+
+    <!-- A mapping to Reference, mostly auto mapped -->
+    <resultMap id="referenceResultMap" type="Reference" autoMapping="true">
+        <id property="key" column="key" />
+        <result property="csl" column="csl" typeHandler="org.col.db.type.CslJsonHandler" />
+    </resultMap>
+
+    <!-- A mapping to PagedReference, mostly auto mapped -->
+    <resultMap id="pagedReferenceResultMap" type="PagedReference" autoMapping="true">
+        <id property="key" column="key" />
+        <result property="csl" column="csl" typeHandler="org.col.db.type.CslJsonHandler" />
+    </resultMap>
+
+    <select id="count" parameterType="map" resultType="Integer">
+        SELECT count(*)
+        FROM reference
+        <if test="datasetKey != null">
+            WHERE dataset_key = #{datasetKey}
+        </if>
+    </select>
+
+    <select id="list" parameterType="map" resultMap="referenceResultMap">
+        SELECT
+        <include refid="SELECT" />
+        FROM
+        <include refid="FROM" />
+        <if test="datasetKey != null">
+            WHERE r.dataset_key = #{datasetKey}
+        </if>
+        ORDER BY key
+        <include refid="org.col.db.mapper.Common.limit" />
+    </select>
+
+    <select id="lookupKey" resultType="Integer">
+        SELECT key
+        FROM reference
+        WHERE id = #{id} AND dataset_key = #{datasetKey}
+    </select>
+
+    <select id="get" resultMap="referenceResultMap">
+        SELECT
+        <include refid="SELECT" />
+        FROM
+        <include refid="FROM" />
+        WHERE r.key = #{key}
+    </select>
+
+    <select id="listByTaxon" parameterType="map" resultMap="pagedReferenceResultMap">
+        SELECT r.key,r.id,r.dataset_key,r.csl,r.serial_key,r.year,j.reference_page,j.taxon_key as reference_for_key
+        FROM reference r
+        JOIN taxon_reference j ON (r.key = j.reference_key)
+        WHERE j.taxon_key = #{taxonKey}
+        ORDER BY key
+    </select>
+
+    <select id="listByVernacularNamesOfTaxon" parameterType="map" resultMap="pagedReferenceResultMap">
+        SELECT r.key,r.id,r.dataset_key,r.csl,r.serial_key,r.year,j.reference_page,j.vernacular_name_key as reference_for_key
+        FROM reference r
+        JOIN vernacular_name_reference j ON (r.key = j.reference_key)
+        JOIN vernacular_name v ON (j.vernacular_name_key = v.key)
+        WHERE v.taxon_key = #{taxonKey}
+        ORDER BY key
+    </select>
+
+    <select id="listByDistributionOfTaxon" parameterType="map" resultMap="pagedReferenceResultMap">
+        SELECT r.key,r.id,r.dataset_key,r.csl,r.serial_key,r.year,j.reference_page,j.distribution_key as reference_for_key
+        FROM reference r
+        JOIN distribution_reference j ON (r.key = j.reference_key)
+        JOIN distribution d ON (j.distribution_key = d.key)
+        WHERE d.taxon_key = #{taxonKey}
+        ORDER BY key
+    </select>
+
+    <select id="getPublishedIn" resultMap="pagedReferenceResultMap">
+        SELECT r.key,r.id,r.dataset_key,r.csl,r.serial_key,r.year,j.reference_page
+        FROM reference r
+        LEFT JOIN name_act j ON (r.key = j.reference_key)
+        WHERE j.name_key = #{nameKey}
+        AND j.type = 0 <!-- DESCRIPTION (not sure if this is necessary) -->
+    </select>
+
+    <insert id="create" parameterType="Reference" useGeneratedKeys="true" keyProperty="key">
+        INSERT INTO reference (
+        <include refid="COLS" />
+        )
+        VALUES (
+        <include refid="PROPS" />
+        )
+    </insert>
+
+</mapper>
