@@ -71,7 +71,7 @@ public class PgSetupRule extends ExternalResource {
 			if (cfg.host == null) {
         LOG.info("Starting embedded Postgres");
 				Instant start = Instant.now();
-				postgres = new EmbeddedPostgres(Version.V10_0);
+				postgres = new EmbeddedPostgres(Version.V10_1);
 				// assigned some free port using local socket 0
         cfg.port = new ServerSocket(0).getLocalPort();
         cfg.host = "localhost";
