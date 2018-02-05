@@ -4,17 +4,16 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.io.Files;
 import org.apache.commons.io.FileUtils;
-import org.col.admin.task.importer.dwca.Normalizer;
-import org.col.api.model.Taxon;
 import org.col.admin.config.NormalizerConfig;
-import org.col.admin.task.importer.neo.NormalizerStore;
 import org.col.admin.task.importer.neo.NeoDbFactory;
+import org.col.admin.task.importer.neo.NormalizerStore;
 import org.col.admin.task.importer.neo.NotUniqueRuntimeException;
 import org.col.admin.task.importer.neo.model.Labels;
 import org.col.admin.task.importer.neo.model.NeoProperties;
 import org.col.admin.task.importer.neo.model.NeoTaxon;
 import org.col.admin.task.importer.neo.printer.GraphFormat;
 import org.col.admin.task.importer.neo.printer.PrinterUtils;
+import org.col.api.model.Taxon;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -70,14 +69,16 @@ public class NormalizerIT {
   @Before
   public void initCfg() throws Exception {
     cfg = new NormalizerConfig();
-    cfg.directory = Files.createTempDir();
+    cfg.archiveDir = Files.createTempDir();
+    cfg.scratchDir = Files.createTempDir();
   }
 
   @After
   public void cleanup() throws Exception {
     if (store != null) {
       // store is close by Normalizer.run method already
-      FileUtils.deleteQuietly(cfg.directory);
+      FileUtils.deleteQuietly(cfg.archiveDir);
+      FileUtils.deleteQuietly(cfg.scratchDir);
     }
   }
 

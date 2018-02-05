@@ -5,17 +5,16 @@ import com.google.common.io.Files;
 import jersey.repackaged.com.google.common.collect.Maps;
 import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.session.SqlSession;
-import org.col.admin.task.importer.PgImport;
+import org.col.admin.config.ImporterConfig;
+import org.col.admin.config.NormalizerConfig;
+import org.col.admin.task.importer.dwca.Normalizer;
+import org.col.admin.task.importer.neo.NeoDbFactory;
+import org.col.admin.task.importer.neo.NormalizerStore;
 import org.col.api.model.*;
 import org.col.api.vocab.DistributionStatus;
 import org.col.api.vocab.Gazetteer;
 import org.col.api.vocab.Language;
-import org.col.admin.config.ImporterConfig;
-import org.col.admin.config.NormalizerConfig;
 import org.col.db.dao.NameDao;
-import org.col.admin.task.importer.neo.NormalizerStore;
-import org.col.admin.task.importer.dwca.Normalizer;
-import org.col.admin.task.importer.neo.NeoDbFactory;
 import org.col.db.dao.TaxonDao;
 import org.col.db.mapper.DatasetMapper;
 import org.col.db.mapper.InitMybatisRule;
@@ -51,7 +50,8 @@ public class PgImportIT {
 	@Before
 	public void initCfg() throws Exception {
 		cfg = new NormalizerConfig();
-		cfg.directory = Files.createTempDir();
+    cfg.archiveDir = Files.createTempDir();
+    cfg.scratchDir = Files.createTempDir();
 		dataset = new Dataset();
 	}
 
@@ -59,7 +59,8 @@ public class PgImportIT {
 	public void cleanup() throws Exception {
 		if (store != null) {
 			// store is close by Normalizer.run method already
-			FileUtils.deleteQuietly(cfg.directory);
+      FileUtils.deleteQuietly(cfg.archiveDir);
+      FileUtils.deleteQuietly(cfg.scratchDir);
 		}
 	}
 

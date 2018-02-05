@@ -6,9 +6,8 @@ import com.google.common.io.Files;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.col.admin.config.NormalizerConfig;
-import org.col.admin.task.importer.dwca.Normalizer;
-import org.col.admin.task.importer.neo.NormalizerStore;
 import org.col.admin.task.importer.neo.NeoDbFactory;
+import org.col.admin.task.importer.neo.NormalizerStore;
 import org.col.admin.task.importer.neo.printer.GraphFormat;
 import org.col.admin.task.importer.neo.printer.PrinterUtils;
 import org.junit.After;
@@ -68,14 +67,16 @@ public class NormalizerTreeIT {
   @Before
   public void initCfg() throws Exception {
     cfg = new NormalizerConfig();
-    cfg.directory = Files.createTempDir();
+    cfg.archiveDir = Files.createTempDir();
+    cfg.scratchDir = Files.createTempDir();
   }
 
   @After
   public void cleanup() throws Exception {
     if (store != null) {
       // store is close by Normalizer.run method already
-      FileUtils.deleteQuietly(cfg.directory);
+      FileUtils.deleteQuietly(cfg.archiveDir);
+      FileUtils.deleteQuietly(cfg.scratchDir);
     }
   }
 

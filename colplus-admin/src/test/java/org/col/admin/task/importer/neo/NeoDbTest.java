@@ -1,15 +1,13 @@
 package org.col.admin.task.importer.neo;
 
 import com.google.common.io.Files;
-import org.col.admin.task.importer.neo.NeoDb;
-import org.col.admin.task.importer.neo.NeoDbFactory;
+import org.col.admin.config.NormalizerConfig;
+import org.col.admin.task.importer.neo.model.Labels;
+import org.col.admin.task.importer.neo.model.NeoTaxon;
+import org.col.admin.task.importer.neo.model.RelType;
 import org.col.api.RandomUtils;
 import org.col.api.model.Taxon;
 import org.col.api.vocab.TaxonomicStatus;
-import org.col.admin.config.NormalizerConfig;
-import org.col.admin.task.importer.neo.model.RelType;
-import org.col.admin.task.importer.neo.model.Labels;
-import org.col.admin.task.importer.neo.model.NeoTaxon;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -37,7 +35,8 @@ public class NeoDbTest {
 
   @Parameterized.Parameters
   public static Collection<Object[]> data() {
-    cfg.directory = Files.createTempDir();
+    cfg.archiveDir = Files.createTempDir();
+    cfg.scratchDir = Files.createTempDir();
 
     return Arrays.asList(new Object[][]{
         {false},
