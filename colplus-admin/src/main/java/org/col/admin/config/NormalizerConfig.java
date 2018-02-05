@@ -21,8 +21,18 @@ public class NormalizerConfig {
 
   private static final Logger LOG = LoggerFactory.getLogger(NormalizerConfig.class);
 
+  /**
+   * Archive directory to store larger amount of data
+   */
   @NotNull
-  public File directory = new File("/tmp");
+  public File archiveDir = new File("/tmp");
+
+  /**
+   * Temporary folder for fast IO.
+   * Used primarily for neo4j dbs.
+   */
+  @NotNull
+  public File scratchDir = new File("/tmp");
 
   @NotNull
   public int batchSize = 10000;
@@ -30,23 +40,29 @@ public class NormalizerConfig {
   @Min(0)
   public int mappedMemory = 128;
 
-  public File datasetDir(int datasetKey) {
-    return new File(directory, String.valueOf(datasetKey));
+  /**
+   * The dataset source files as a single archive in original format (zip, gzip, etc).
+   * Stored in special archive directory so we can keep large amounts of data on cheap storage devices
+   * and compare files for changes.
+   */
+  public File source(int datasetKey) {
+    return new File(archiveDir, String.valueOf(datasetKey) + ".archive");
+  }
+
+
+  public File scratchDir(int datasetKey) {
+    return new File(scratchDir, String.valueOf(datasetKey));
   }
 
   public File neoDir(int datasetKey) {
-    return new File(datasetDir(datasetKey), "normalizer");
+    return new File(scratchDir(datasetKey), "normalizer");
   }
 
   /**
-   * The dataset source files as a single (zip) archive.
+   * Directory with all decompressed source files
    */
-  public File source(int datasetKey) {
-    return new File(datasetDir(datasetKey), "source.zip");
-  }
-
   public File sourceDir(int datasetKey) {
-    return new File(datasetDir(datasetKey), "source");
+    return new File(scratchDir(datasetKey), "source");
   }
 
   /**

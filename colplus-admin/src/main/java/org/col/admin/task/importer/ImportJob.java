@@ -70,18 +70,18 @@ public class ImportJob implements Callable<DatasetImport> {
       LOG.info("Start new import attempt {} for dataset {}: {}", di.getAttempt(), datasetKey, dataset.getTitle());
 
       LOG.info("Downloading sources for dataset {} from {}", datasetKey, di.getDownloadUri());
-      File dwca = cfg.normalizer.source(datasetKey);
-      dwca.getParentFile().mkdirs();
+      File source = cfg.normalizer.source(datasetKey);
+      source.getParentFile().mkdirs();
 
-      final boolean isModified = downloader.downloadIfModified(di.getDownloadUri(), dwca);
+      final boolean isModified = downloader.downloadIfModified(di.getDownloadUri(), source);
       if(isModified || force) {
         if (!isModified) {
           LOG.info("Force reimport of unchanged archive {}", datasetKey);
         }
-        di.setDownload(downloader.lastModified(dwca));
+        di.setDownload(downloader.lastModified(source));
 
         LOG.info("Extracting files from archive {}", datasetKey);
-        CompressionUtil.decompressFile(dwcaDir, dwca);
+        CompressionUtil.decompressFile(dwcaDir, source);
 
         LOG.info("Normalizing {}!", datasetKey);
         store = NeoDbFactory.create(cfg.normalizer, datasetKey);
@@ -100,7 +100,7 @@ public class ImportJob implements Callable<DatasetImport> {
 
       } else {
         LOG.info("Dataset {} sources unchanged. Stop import", datasetKey);
-        di.setDownload(downloader.lastModified(dwca));
+        di.setDownload(downloader.lastModified(source));
         dao.updateImportUnchanged(di);
       }
 
@@ -113,23 +113,15 @@ public class ImportJob implements Callable<DatasetImport> {
       // close neo store if open
       if (store != null) {
         store.close();
-        // delete it
-        File storeDir = cfg.normalizer.neoDir(datasetKey);
-        LOG.debug("Remove NormalizerStore at {}", storeDir);
-        try {
-          FileUtils.deleteDirectory(storeDir);
-        } catch (IOException e) {
-          LOG.error("Failed to remove NormalizerStore at {}", storeDir, e);
-        }
       }
-      // remove decompressed dwca folder
-      LOG.debug("Remove uncompressed dwca dir {}", dwcaDir.getAbsolutePath());
+      // remove source scratch folder with neo4j and decompressed dwca folders
+      final File scratchDir  = cfg.normalizer.scratchDir(datasetKey);
+      LOG.debug("Remove scratch dir {}", scratchDir.getAbsolutePath());
       try {
-        FileUtils.deleteDirectory(dwcaDir);
+        FileUtils.deleteDirectory(scratchDir);
       } catch (IOException e) {
-        LOG.error("Failed to remove uncompressed dwca dir {}", dwcaDir, e);
+        LOG.error("Failed to remove scratch dir {}", scratchDir, e);
       }
     }
   }
-
 }
