@@ -23,6 +23,7 @@ import java.net.URI;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
@@ -103,6 +104,7 @@ public class DatasetPager {
           })
           .thenApply(resp -> resp.results.stream()
               .map(this::convert)
+              .filter(Objects::nonNull)
               .collect(Collectors.toList())
           )
           .toCompletableFuture()
@@ -117,7 +119,14 @@ public class DatasetPager {
     }
   }
 
+  /**
+   * @return converted dataset or NULL if illegitimate
+   */
   private Dataset convert(GDataset g) {
+    if (g.parentDatasetKey != null) {
+      LOG.debug("Skip constituent dataset: {} - {}", g.key, g.title);
+    }
+
     Dataset d = new Dataset();
     d.setGbifKey(g.key);
     d.setGbifPublisherKey(g.publishingOrganizationKey);
@@ -129,7 +138,8 @@ public class DatasetPager {
       d.setDataFormat(DataFormat.DWCA);
       d.setDataAccess(uri(dwca.get().url));
     } else {
-      LOG.warn("Dataset without DWCA access: {} - {}", d.getGbifKey(), d.getTitle());
+      LOG.info("Skip dataset without DWCA access: {} - {}", d.getGbifKey(), d.getTitle());
+      return null;
     }
     d.setHomepage(uri(g.homepage));
     d.setLicense(SafeParser.parse(LicenseParser.PARSER, g.license).orElse(License.UNSPECIFIED, License.UNSUPPORTED));
@@ -157,6 +167,7 @@ public class DatasetPager {
   }
   static class GDataset {
     public UUID key;
+    public UUID parentDatasetKey;
     public UUID publishingOrganizationKey;
     public String doi;
     public String title;
