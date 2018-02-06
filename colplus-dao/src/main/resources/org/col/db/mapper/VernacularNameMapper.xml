@@ -8,7 +8,8 @@
     vn.key,
     vn.name,
     vn.language,
-    vn.country
+    vn.country,
+    vnr.reference_key
   </sql>
 
   <sql id="COLS">
@@ -28,38 +29,33 @@
   </sql>
 
   <sql id="FROM">
-    vernacular_name vn
+    vernacular_name vn LEFT JOIN vernacular_name_reference vnr ON vn.key=vnr.vernacular_name_key
   </sql>
 
   <resultMap id="vernacularNameResultMap" type="VernacularName" autoMapping="true">
     <id property="key" column="key" />
+    <collection property="referenceKeys" ofType="Integer">
+      <result column="reference_key"/>
+    </collection>
   </resultMap>
 
 
   <select id="listByTaxon" parameterType="map" resultMap="vernacularNameResultMap">
-    SELECT
-    <include refid="SELECT" />
-    FROM
-    <include refid="FROM" />
+    SELECT <include refid="SELECT" />
+    FROM <include refid="FROM" />
     WHERE vn.taxon_key = #{taxonKey}
     ORDER BY name
   </select>
 
   <select id="get" resultMap="vernacularNameResultMap">
-    SELECT
-    <include refid="SELECT" />
-    FROM
-    <include refid="FROM" />
+    SELECT <include refid="SELECT" />
+    FROM <include refid="FROM" />
     WHERE vn.key = #{key}
   </select>
 
   <insert id="create" parameterType="VernacularName" useGeneratedKeys="true" keyProperty="vernacular.key">
-    INSERT INTO vernacular_name (
-    <include refid="COLS" />
-    )
-    VALUES (
-    <include refid="PROPS" />
-    )
+    INSERT INTO vernacular_name ( <include refid="COLS" /> )
+    VALUES ( <include refid="PROPS" /> )
   </insert>
 
 </mapper>

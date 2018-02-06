@@ -2,11 +2,13 @@ package org.col.db.mapper;
 
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.col.db.TestEntityGenerator;
-import org.col.api.model.Page;
-import org.col.api.model.PagedReference;
+import com.google.common.collect.Sets;
 import org.col.api.RandomUtils;
+import org.col.api.model.Page;
+import org.col.api.model.ReferenceWithPage;
 import org.col.api.model.Reference;
+import org.col.api.vocab.Issue;
+import org.col.db.TestEntityGenerator;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -39,12 +41,12 @@ public class ReferenceMapperTest extends MapperTestBase<ReferenceMapper> {
 		int i = mapper().count(DATASET1.getKey());
 		// Just to make sure we understand our environment:
 		// we start with 2 records in reference table, inserted through
-		// squirrels, ONLY one of which belongs to DATASET1.
-		assertEquals("01", 1, i);
+		// apple, ONLY one of which belongs to DATASET1.
+		assertEquals(1, i);
 		mapper().create(create());
 		mapper().create(create());
 		mapper().create(create());
-		assertEquals("02", 4, mapper().count(DATASET1.getKey()));
+		assertEquals(4, mapper().count(DATASET1.getKey()));
 	}
 
 	@Test
@@ -55,55 +57,33 @@ public class ReferenceMapperTest extends MapperTestBase<ReferenceMapper> {
 		in.add(create());
 		in.add(create());
 		in.add(create());
-		mapper().create(in.get(0));
-		mapper().create(in.get(1));
-		mapper().create(in.get(2));
-		mapper().create(in.get(3));
-		mapper().create(in.get(4));
+		for (Reference r : in) {
+		  mapper().create(r);
+    }
+    commit();
 		// Skip first (pre-inserted) record:
 		Page p = new Page(1, 3);
 		List<Reference> out = mapper().list(DATASET1.getKey(), p);
-		assertEquals("01", 3, out.size());
-		assertTrue("02", in.get(0).equals(out.get(0)));
-		assertTrue("03", in.get(1).equals(out.get(1)));
-		assertTrue("04", in.get(2).equals(out.get(2)));
+		assertEquals(3, out.size());
+		assertTrue(in.get(0).equals(out.get(0)));
+		assertTrue(in.get(1).equals(out.get(1)));
+		assertTrue(in.get(2).equals(out.get(2)));
 		p.next();
 		out = mapper().list(DATASET1.getKey(), p);
-		assertEquals("05", 2, out.size());
+		assertEquals(2, out.size());
 	}
 
 	@Test
-	public void listByTaxon() {
-		List<PagedReference> refs = mapper().listByTaxon(1);
-		assertEquals("01", 1, refs.size());
-		assertEquals("02", "12", refs.get(0).getReferencePage());
-		refs = mapper().listByTaxon(2);
-		assertEquals("03", 2, refs.size());
-		assertEquals("04", "100", refs.get(0).getReferencePage());
-		assertEquals("05", "133", refs.get(1).getReferencePage());
-	}
-
-	@Test
-	public void listByVernacularNamesOfTaxon() {
-		List<PagedReference> refs = mapper().listByVernacularNamesOfTaxon(1);
-		assertEquals("01", 2, refs.size());
-		assertEquals("02", Integer.valueOf(1), refs.get(0).getReferenceForKey());
-		assertEquals("03", Integer.valueOf(2), refs.get(1).getReferenceForKey());
-		assertEquals("04", "145", refs.get(0).getReferencePage());
-		assertEquals("05", "145", refs.get(1).getReferencePage());
-	}
-
-	@Test
-	public void listByDistributionOfTaxon() {
-		List<PagedReference> refs = mapper().listByDistributionOfTaxon(1);
-		assertEquals("01", 3, refs.size());
+	public void listByKeys() {
+		List<Reference> refs = mapper().listByKeys(Sets.newHashSet(1,2));
+		assertEquals(2, refs.size());
 	}
 
 	@Test
 	public void getPublishedIn() {
-		PagedReference ref = mapper().getPublishedIn(NAME1.getKey());
-		assertEquals("01", REF1, ref);
-		assertEquals("02", "712", ref.getReferencePage());
+		ReferenceWithPage ref = mapper().getPublishedIn(NAME1.getKey());
+		assertEquals(REF1, ref.getReference());
+		assertEquals("712", ref.getPage());
 	}
 
 	private static Reference create() throws Exception {
@@ -112,6 +92,8 @@ public class ReferenceMapperTest extends MapperTestBase<ReferenceMapper> {
 		ref.setId(RandomUtils.randomString(8));
 		ref.setYear(1988);
 		ref.setCsl(createCsl());
+		ref.addIssue(Issue.REFERENCE_ID_INVALID);
+    ref.addIssue(Issue.RELATIONSHIP_MISSING);
 		return ref;
 	}
 
@@ -121,7 +103,7 @@ public class ReferenceMapperTest extends MapperTestBase<ReferenceMapper> {
 		csl.put("title", RandomUtils.randomString(80));
 		csl.put("container-title", RandomUtils.randomString(100));
 		csl.put("publisher", "Springer");
-		csl.put("year", "1988");
+		csl.put("year", "1988b");
 		csl.put("doi", "doi:10.1234/" + RandomUtils.randomString(20));
 		return csl;
 	}

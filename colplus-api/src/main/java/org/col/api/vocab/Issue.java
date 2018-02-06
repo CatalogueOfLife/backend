@@ -149,11 +149,14 @@ public enum Issue {
    * This might indicate that the name should rather be a recombination.
    */
   PUBLISHED_BEFORE_GENUS,
-  
-  
-  
-  
-  
+
+  /**
+   * Identifier for a reference could not be resolved.
+   */
+  REFERENCE_ID_INVALID,
+
+
+
   // TODO: TAXON ISSUES TO BE REVISED !!!
 
 

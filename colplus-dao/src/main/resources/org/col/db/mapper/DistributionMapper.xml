@@ -9,7 +9,8 @@
     d.taxon_key,
     d.area,
     d.area_standard,
-    d.status
+    d.status,
+    dr.reference_key
   </sql>
 
   <sql id="COLS">
@@ -29,39 +30,34 @@
   </sql>
 
   <sql id="FROM">
-    distribution d
+    distribution d LEFT JOIN distribution_reference dr ON d.key=dr.distribution_key
   </sql>
 
   <!-- A mapping to Distribution, mostly auto mapped -->
   <resultMap id="distributionResultMap" type="Distribution" autoMapping="true">
     <id property="key" column="key" />
+    <collection property="referenceKeys" ofType="Integer">
+        <result column="reference_key"/>
+    </collection>
   </resultMap>
 
 
   <select id="listByTaxon" parameterType="map" resultMap="distributionResultMap">
-    SELECT
-    <include refid="SELECT" />
-    FROM
-    <include refid="FROM" />
+    SELECT <include refid="SELECT" />
+    FROM <include refid="FROM" />
     WHERE d.taxon_key = #{taxonKey}
     ORDER BY d.key
   </select>
 
   <select id="get" resultMap="distributionResultMap">
-    SELECT
-    <include refid="SELECT" />
-    FROM
-    <include refid="FROM" />
+    SELECT <include refid="SELECT" />
+    FROM <include refid="FROM" />
     WHERE d.key = #{key}
   </select>
 
   <insert id="create" parameterType="Distribution" useGeneratedKeys="true" keyProperty="distribution.key">
-    INSERT INTO distribution (
-    <include refid="COLS" />
-    )
-    VALUES (
-    <include refid="PROPS" />
-    )
+    INSERT INTO distribution ( <include refid="COLS" /> )
+    VALUES ( <include refid="PROPS" /> )
   </insert>
 
 </mapper>

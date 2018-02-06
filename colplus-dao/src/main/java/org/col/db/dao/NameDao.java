@@ -119,7 +119,7 @@ public class NameDao {
     return new ResultPage<>(page, total, result);
   }
 
-  public PagedReference getPublishedIn(int nameKey) {
+  public ReferenceWithPage getPublishedIn(int nameKey) {
     ReferenceMapper mapper = session.getMapper(ReferenceMapper.class);
     return mapper.getPublishedIn(nameKey);
   }

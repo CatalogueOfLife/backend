@@ -24,35 +24,35 @@ public class TestEntityGenerator {
 	private static final Splitter SPACE_SPLITTER = Splitter.on(" ").trimResults();
 
 	/**
-	 * Corresponds exactly to 1st dataset record inserted via squirrels.sql
+	 * Corresponds exactly to 1st dataset record inserted via apple.sql
 	 */
 	public final static Dataset DATASET1 = new Dataset();
 	/**
-	 * Corresponds exactly to 2nd dataset record inserted via squirrels.sql
+	 * Corresponds exactly to 2nd dataset record inserted via apple.sql
 	 */
 	public final static Dataset DATASET2 = new Dataset();
 	/**
-	 * Corresponds exactly to 1st name record inserted via squirrels.sql
+	 * Corresponds exactly to 1st name record inserted via apple.sql
 	 */
 	public final static Name NAME1 = new Name();
 	/**
-	 * Corresponds exactly to 2nd name record inserted via squirrels.sql
+	 * Corresponds exactly to 2nd name record inserted via apple.sql
 	 */
 	public final static Name NAME2 = new Name();
 	/**
-	 * Corresponds exactly to 1st taxon record inserted via squirrels.sql
+	 * Corresponds exactly to 1st taxon record inserted via apple.sql
 	 */
 	public final static Taxon TAXON1 = new Taxon();
 	/**
-	 * Corresponds exactly to 2nd taxon record inserted via squirrels.sql
+	 * Corresponds exactly to 2nd taxon record inserted via apple.sql
 	 */
 	public final static Taxon TAXON2 = new Taxon();
 	/**
-	 * Corresponds exactly to 1st reference record inserted via squirrels.sql
+	 * Corresponds exactly to 1st reference record inserted via apple.sql
 	 */
 	public final static Reference REF1 = new Reference();
 	/**
-	 * Corresponds exactly to 2nd reference record inserted via squirrels.sql
+	 * Corresponds exactly to 2nd reference record inserted via apple.sql
 	 */
 	public final static Reference REF2 = new Reference();
 

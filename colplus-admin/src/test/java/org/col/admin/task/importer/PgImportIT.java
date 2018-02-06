@@ -8,35 +8,30 @@ import org.apache.ibatis.session.SqlSession;
 import org.col.admin.config.ImporterConfig;
 import org.col.admin.config.NormalizerConfig;
 import org.col.admin.task.importer.dwca.Normalizer;
+import org.col.admin.task.importer.neo.NeoDb;
 import org.col.admin.task.importer.neo.NeoDbFactory;
-import org.col.admin.task.importer.neo.NormalizerStore;
 import org.col.api.model.*;
 import org.col.api.vocab.DistributionStatus;
 import org.col.api.vocab.Gazetteer;
 import org.col.api.vocab.Language;
 import org.col.db.dao.NameDao;
+import org.col.db.dao.ReferenceDao;
 import org.col.db.dao.TaxonDao;
-import org.col.db.mapper.DatasetMapper;
-import org.col.db.mapper.InitMybatisRule;
-import org.col.db.mapper.PgSetupRule;
+import org.col.db.mapper.*;
 import org.junit.*;
 
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  *
  */
 public class PgImportIT {
-	private NormalizerStore store;
+	private NeoDb store;
 	private NormalizerConfig cfg;
 	private ImporterConfig icfg = new ImporterConfig();
 	private Dataset dataset;
@@ -87,7 +82,33 @@ public class PgImportIT {
 		importer.run();
 	}
 
-	@Test
+  @Test
+  public void testPublishedIn() throws Exception {
+    normalizeAndImport(0);
+
+    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+      NameDao ndao = new NameDao(session);
+      NameActMapper actMapper = session.getMapper(NameActMapper.class);
+      ReferenceMapper rMapper= session.getMapper(ReferenceMapper.class);
+      ReferenceDao rdao = new ReferenceDao(session);
+
+      Name trametes_modesta = ndao.get(ndao.lookupKey("324805", dataset.getKey()));
+
+      List<NameAct> acts = actMapper.listByName(trametes_modesta.getKey());
+      assertEquals(1, acts.size());
+      NameAct act = acts.get(0);
+      assertNotNull(act.getReferenceKey());
+
+      Reference pubIn = rdao.get(act.getReferenceKey());
+      ReferenceWithPage pubIn2 = rMapper.getPublishedIn(trametes_modesta.getKey());
+      assertEquals(pubIn, pubIn2.getReference());
+      assertEquals("Norw. Jl Bot. 19: 236 (1972)", pubIn.getTitle());
+      assertNotNull(pubIn.getKey());
+      assertNull(pubIn.getId());
+    }
+  }
+
+  @Test
 	public void testDwca1() throws Exception {
 		normalizeAndImport(1);
 

@@ -2,11 +2,11 @@ package org.col.admin.task.importer.dwca;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
+import org.col.admin.task.importer.neo.NeoDb;
+import org.col.admin.task.importer.neo.model.NeoTaxon;
 import org.col.api.model.Dataset;
 import org.col.api.model.VerbatimRecord;
 import org.col.api.vocab.DataFormat;
-import org.col.admin.task.importer.neo.NormalizerStore;
-import org.col.admin.task.importer.neo.model.NeoTaxon;
 import org.gbif.dwca.io.Archive;
 import org.gbif.dwca.io.ArchiveFactory;
 import org.gbif.dwca.record.StarRecord;
@@ -25,10 +25,10 @@ public class NormalizerInserter {
 
   private Archive arch;
   private InsertMetadata meta = new InsertMetadata();
-  private final NormalizerStore store;
+  private final NeoDb store;
   private VerbatimInterpreter interpreter;
 
-  public NormalizerInserter(NormalizerStore store) throws IOException {
+  public NormalizerInserter(NeoDb store) throws IOException {
     this.store = store;
   }
 
@@ -41,8 +41,9 @@ public class NormalizerInserter {
   public InsertMetadata insert(File dwca) throws NormalizationFailedException {
     openArchive(dwca);
     updateMetadata();
-    interpreter = new VerbatimInterpreter(meta);
+    interpreter = new VerbatimInterpreter(meta, store);
     store.startBatchMode();
+    //TODO: insert reference file first
     for (StarRecord star : arch) {
       insertStarRecord(star);
     }
@@ -84,7 +85,7 @@ public class NormalizerInserter {
 
     VerbatimRecord v = VerbatimRecordFactory.build(star);
 
-    NeoTaxon i = interpreter.interpret(v, meta.isCoreIdUsed());
+    NeoTaxon i = interpreter.interpret(v);
 
     // store interpreted record incl verbatim
     store.put(i);

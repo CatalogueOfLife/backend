@@ -1,17 +1,17 @@
 package org.col.db.mapper;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import java.util.ArrayList;
-import java.util.List;
-import org.col.db.TestEntityGenerator;
 import org.col.api.model.Page;
 import org.col.api.model.Taxon;
+import org.col.db.TestEntityGenerator;
 import org.javers.core.Javers;
 import org.javers.core.JaversBuilder;
 import org.javers.core.diff.Diff;
 import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.junit.Assert.*;
 
 /**
  *
@@ -40,7 +40,7 @@ public class TaxonMapperTest extends MapperTestBase<TaxonMapper> {
   public void count() throws Exception {
     int i = mapper().count(TestEntityGenerator.DATASET1.getKey(), false, null);
     // Just to make sure we understand our environment
-    // 2 Taxa pre-inserted through InitMybatisRule.squirrels()
+    // 2 Taxa pre-inserted through InitMybatisRule.apple()
     assertEquals(2, i);
     mapper().create(TestEntityGenerator.newTaxon("t2"));
     mapper().create(TestEntityGenerator.newTaxon("t3"));

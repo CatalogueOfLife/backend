@@ -6,8 +6,8 @@ import com.google.common.io.Files;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.col.admin.config.NormalizerConfig;
+import org.col.admin.task.importer.neo.NeoDb;
 import org.col.admin.task.importer.neo.NeoDbFactory;
-import org.col.admin.task.importer.neo.NormalizerStore;
 import org.col.admin.task.importer.neo.printer.GraphFormat;
 import org.col.admin.task.importer.neo.printer.PrinterUtils;
 import org.junit.After;
@@ -42,7 +42,7 @@ import static org.junit.Assert.assertFalse;
 public class NormalizerTreeIT {
   final static int MAX_DWCA_ID = 23;
 
-  private NormalizerStore store;
+  private NeoDb store;
   private NormalizerConfig cfg;
   private Path dwca;
 

@@ -27,9 +27,10 @@ public class NeoTaxon {
   public Taxon taxon;
   public Synonym synonym;
   public List<NameAct> acts = Lists.newArrayList();
+  // supplementary infos for a taxon
   public List<VernacularName> vernacularNames = Lists.newArrayList();
   public List<Distribution> distributions = Lists.newArrayList();
-  public List<Reference> references = Lists.newArrayList();
+  public List<Reference> bibliography = Lists.newArrayList();
   // extra stuff not covered by above for normalizer only
   public Classification classification;
   public Map<Issue, String> issues = new EnumMap(Issue.class);
@@ -89,12 +90,12 @@ public class NeoTaxon {
         Objects.equals(acts, neoTaxon.acts) &&
         Objects.equals(vernacularNames, neoTaxon.vernacularNames) &&
         Objects.equals(distributions, neoTaxon.distributions) &&
-        Objects.equals(references, neoTaxon.references);
+        Objects.equals(bibliography, neoTaxon.bibliography);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(node, verbatim, taxon, acts, vernacularNames, distributions, references);
+    return Objects.hash(node, verbatim, taxon, acts, vernacularNames, distributions, bibliography);
   }
 
   public boolean isSynonym() {

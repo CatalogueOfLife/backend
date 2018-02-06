@@ -397,7 +397,7 @@ public class NameMapperTest extends org.col.db.mapper.MapperTestBase<NameMapper>
 		commit();
 
 		// Since we have an empty NameSearch, we should just have all names;
-		// the ones created here + the ones inserted through squirrels
+		// the ones created here + the ones inserted through apple
 		List<NameSearchResultTemp> result = mapper().search(new NameSearch(), new Page());
 		assertEquals("01", 7, result.size());
 

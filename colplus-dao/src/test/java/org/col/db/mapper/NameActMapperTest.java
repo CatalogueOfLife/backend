@@ -42,7 +42,7 @@ public class NameActMapperTest extends MapperTestBase<NameActMapper> {
     commit();
     List<NameAct> nas = mapper().listByName(NAME1.getKey());
     /*
-     * NB We have one pre-inserted (squirrels.sql) NameAct record associated with NAME1; one of the
+     * NB We have one pre-inserted (apple.sql) NameAct record associated with NAME1; one of the
      * records inserted here is _not_ associated with NAME1, so we should have 3 NameAct records
      * associated with NAME1
      */

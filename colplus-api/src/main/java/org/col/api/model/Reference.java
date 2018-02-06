@@ -4,13 +4,20 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.col.api.vocab.Issue;
 
+import java.util.EnumSet;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * Simplified literature reference class linked to an optional serial container.
  */
-public class Reference {
+public class Reference implements PrimaryEntity {
+  private static String TITLE = "title";
+  private static String YEAR = "year";
+  private static String AUTHORS = "authors";
+  private static String DOI = "doi";
 
 	/**
 	 * Internal surrogate key of the reference as provided by postgres. This key is
@@ -50,23 +57,11 @@ public class Reference {
 	 */
 	private Integer year;
 
-	public Reference() {
-	}
+  /**
+   * Issues related to this reference
+   */
+  private Set<Issue> issues = EnumSet.noneOf(Issue.class);
 
-	/*
-	 * Copy constructor. Creates a shallow copy. Needed because we need to convert
-	 * PagedReference instance to Reference instance (shedding the extra fields in
-	 * PagedReference). See TaxonDao.getTaxonInfo().
-	 */
-	public Reference(Reference source) {
-		this.key = source.key;
-		this.id = source.id;
-		this.datasetKey = source.datasetKey;
-    this.citation = source.citation;
-		this.csl = source.csl;
-		this.serialKey = source.serialKey;
-		this.year = source.year;
-	}
 
 	public Integer getKey() {
 		return key;
@@ -104,7 +99,7 @@ public class Reference {
 		this.csl = csl;
 	}
 
-	public Integer getSerialKey() {
+  public Integer getSerialKey() {
 		return serialKey;
 	}
 
@@ -120,7 +115,20 @@ public class Reference {
 		this.year = year;
 	}
 
-	/**
+
+  public Set<Issue> getIssues() {
+    return issues;
+  }
+
+  public void setIssues(Set<Issue> issues) {
+    this.issues = issues;
+  }
+
+  public void addIssue(Issue issue) {
+    issues.add(issue);
+  }
+
+  /**
 	 * @return An empty reference instance with an empty csl JsonNode.
 	 */
 	public static Reference create() {
@@ -129,14 +137,14 @@ public class Reference {
 		return r;
 	}
 
-	// VARIOUS METHODS DELEGATING TO THE UNDERLYING CSL JsonObject instance
+  // VARIOUS METHODS DELEGATING TO THE UNDERLYING CSL JsonObject instance
 	@JsonIgnore
 	public String getTitle() {
-		return cslStr("title");
+		return cslStr(TITLE);
 	}
 
 	public void setTitle(String title) {
-		csl.put("title", title);
+		csl.put(TITLE, title);
 	}
 
 	private String cslStr(String path) {
@@ -151,7 +159,7 @@ public class Reference {
 	public boolean equals(Object o) {
 		if (this == o)
 			return true;
-		// use instanceof - not getClass()! See PagedReference.equals()
+		// use instanceof - not getClass()! See ReferenceWithPage.equals()
 		if (o == null || !(o instanceof Reference))
 			return false;
 		Reference reference = (Reference) o;
@@ -161,12 +169,21 @@ public class Reference {
         && Objects.equals(citation, reference.citation)
 		    && Objects.equals(csl, reference.csl)
 		    && Objects.equals(serialKey, reference.serialKey)
-		    && Objects.equals(year, reference.year);
+        && Objects.equals(year, reference.year)
+		    && Objects.equals(issues, reference.issues);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(key, datasetKey, id, citation, csl, serialKey, year);
+		return Objects.hash(key, datasetKey, id, citation, csl, serialKey, year, issues);
 	}
 
+  @Override
+  public String toString() {
+    return "Reference{" +
+        "key=" + key +
+        ", id='" + id + '\'' +
+        ", citation='" + citation + '\'' +
+        '}';
+  }
 }

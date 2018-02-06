@@ -1,22 +1,14 @@
 package org.col.db.dao;
 
-import java.util.List;
+import com.google.common.collect.Sets;
 import org.apache.ibatis.session.SqlSession;
-import org.col.api.model.Distribution;
-import org.col.api.model.Page;
-import org.col.api.model.PagedReference;
-import org.col.api.model.ResultPage;
-import org.col.api.model.Taxon;
-import org.col.api.model.TaxonInfo;
-import org.col.api.model.VerbatimRecord;
-import org.col.api.model.VernacularName;
+import org.col.api.model.*;
 import org.col.db.KeyNotFoundException;
 import org.col.db.NotInDatasetException;
-import org.col.db.mapper.DistributionMapper;
-import org.col.db.mapper.ReferenceMapper;
-import org.col.db.mapper.TaxonMapper;
-import org.col.db.mapper.VerbatimRecordMapper;
-import org.col.db.mapper.VernacularNameMapper;
+import org.col.db.mapper.*;
+
+import java.util.List;
+import java.util.Set;
 
 public class TaxonDao {
 
@@ -72,40 +64,36 @@ public class TaxonDao {
   }
 
   public TaxonInfo getTaxonInfo(int key) {
-
+    // main taxon object
     TaxonMapper tMapper = session.getMapper(TaxonMapper.class);
     Taxon taxon = tMapper.get(key);
     if (taxon == null) {
       throw new KeyNotFoundException(Taxon.class, key);
     }
+
     TaxonInfo info = new TaxonInfo();
-
     info.setTaxon(taxon);
+    info.setTaxonReferences(tMapper.taxonReferences(key));
 
+    // vernaculars
     VernacularNameMapper vMapper = session.getMapper(VernacularNameMapper.class);
-    List<VernacularName> vernaculars = vMapper.listByTaxon(taxon.getKey());
-    info.setVernacularNames(vernaculars);
+    info.setVernacularNames(vMapper.listByTaxon(taxon.getKey()));
 
+
+    // distributions
     DistributionMapper dMapper = session.getMapper(DistributionMapper.class);
-    List<Distribution> distributions = dMapper.listByTaxon(taxon.getKey());
-    info.setDistributions(distributions);
+    info.setDistributions(dMapper.listByTaxon(taxon.getKey()));
+
+    // all reference keys so we can select their details at the end
+    Set<Integer> refKeys = Sets.newHashSet();
+    refKeys.addAll(info.getTaxonReferences());
+    info.getDistributions().forEach(d -> refKeys.addAll(d.getReferenceKeys()));
+    info.getVernacularNames().forEach(d -> refKeys.addAll(d.getReferenceKeys()));
 
     ReferenceMapper rMapper = session.getMapper(ReferenceMapper.class);
-
-    List<PagedReference> refs = rMapper.listByTaxon(key);
-    info.addReferences(refs);
-    taxon.createReferences(refs);
-
-    refs = rMapper.listByVernacularNamesOfTaxon(key);
-    info.addReferences(refs);
-    for (VernacularName v : vernaculars) {
-      v.createReferences(refs);
-    }
-
-    refs = rMapper.listByDistributionOfTaxon(key);
-    info.addReferences(refs);
-    for (Distribution d : distributions) {
-      d.createReferences(refs);
+    if (!refKeys.isEmpty()) {
+      List<Reference> refs = rMapper.listByKeys(refKeys);
+      info.addReferences(refs);
     }
 
     return info;

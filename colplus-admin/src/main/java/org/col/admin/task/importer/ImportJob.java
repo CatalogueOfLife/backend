@@ -6,8 +6,8 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.admin.AdminServer;
 import org.col.admin.config.AdminServerConfig;
 import org.col.admin.task.importer.dwca.Normalizer;
+import org.col.admin.task.importer.neo.NeoDb;
 import org.col.admin.task.importer.neo.NeoDbFactory;
-import org.col.admin.task.importer.neo.NormalizerStore;
 import org.col.api.model.Dataset;
 import org.col.api.model.DatasetImport;
 import org.col.db.dao.DatasetImportDao;
@@ -63,7 +63,7 @@ public class ImportJob implements Callable<DatasetImport> {
 
   private void importDataset() {
     final File dwcaDir = cfg.normalizer.sourceDir(datasetKey);
-    NormalizerStore store = null;
+    NeoDb store = null;
 
     try {
       di = dao.createRunning(dataset);

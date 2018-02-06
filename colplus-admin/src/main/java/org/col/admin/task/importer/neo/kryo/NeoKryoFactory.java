@@ -2,16 +2,14 @@ package org.col.admin.task.importer.neo.kryo;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.pool.KryoFactory;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.databind.node.TextNode;
 import de.javakaffee.kryoserializers.UnmodifiableCollectionsSerializer;
 import de.javakaffee.kryoserializers.guava.ImmutableListSerializer;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
+import org.col.admin.task.importer.neo.model.NeoTaxon;
 import org.col.admin.task.importer.neo.model.RankedName;
 import org.col.api.model.*;
 import org.col.api.vocab.*;
-import org.col.admin.task.importer.neo.model.NeoTaxon;
 import org.gbif.dwc.terms.*;
 import org.gbif.nameparser.api.*;
 import org.neo4j.kernel.impl.core.NodeProxy;
@@ -54,9 +52,7 @@ public class NeoKryoFactory implements KryoFactory {
     kryo.register(TermRecord.class);
     kryo.register(Page.class);
     // jackson json node (e.g. csl property)
-    kryo.register(ObjectNode.class);
-    kryo.register(TextNode.class);
-    kryo.register(JsonNodeFactory.class);
+    kryo.register(ObjectNode.class, new JsonObjSerializer());
 
     // normalizer specific models
     kryo.register(NeoTaxon.class);

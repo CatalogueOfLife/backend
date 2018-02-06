@@ -1,9 +1,12 @@
 package org.col.admin.task.importer.neo;
 
 import com.esotericsoftware.kryo.pool.KryoPool;
+import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
+import com.google.common.collect.Maps;
 import com.google.common.collect.UnmodifiableIterator;
 import org.apache.commons.io.FileUtils;
+import org.col.admin.task.importer.dwca.NormalizationFailedException;
 import org.col.admin.task.importer.neo.kryo.NeoKryoFactory;
 import org.col.admin.task.importer.neo.mapdb.MapDbObjectSerializer;
 import org.col.admin.task.importer.neo.model.Labels;
@@ -13,7 +16,6 @@ import org.col.admin.task.importer.neo.model.RelType;
 import org.col.api.model.Dataset;
 import org.col.api.model.Reference;
 import org.col.api.model.Taxon;
-import org.col.admin.task.importer.dwca.NormalizationFailedException;
 import org.col.util.concurrent.ThrottledThreadPoolExecutor;
 import org.gbif.nameparser.api.Rank;
 import org.mapdb.Atomic;
@@ -46,8 +48,11 @@ import java.util.concurrent.atomic.AtomicInteger;
  * <p>
  * We use the Kryo library for a very performant binary
  * serialisation with the data keyed under the neo4j node value.
+ *
+ * TODO: separate out the reference store in its own class and use a lucene index
+ * with a suitable analyzer to lookup refs by id or title
  */
-public class NeoDb implements NormalizerStore {
+public class NeoDb implements NormalizerStore, ReferenceStore {
   private static final Logger LOG = LoggerFactory.getLogger(NeoDb.class);
   private static final Labels[] TAX_LABELS = new Labels[]{Labels.ALL, Labels.TAXON};
   private static final Labels[] SYN_LABELS = new Labels[]{Labels.ALL, Labels.SYNONYM};
@@ -56,6 +61,7 @@ public class NeoDb implements NormalizerStore {
   private final Atomic.Var<Dataset> dataset;
   private final Map<Long, NeoTaxon> taxa;
   private final Map<Integer, Reference> references;
+  private final Map<String, Reference> referenceIndex;
   private final AtomicInteger referenceSequence = new AtomicInteger(0);
   private final File neoDir;
   private final KryoPool pool;
@@ -90,6 +96,8 @@ public class NeoDb implements NormalizerStore {
           .keySerializer(Serializer.INTEGER)
           .valueSerializer(new MapDbObjectSerializer(Reference.class, pool, 128))
           .createOrOpen();
+      // TODO: replace with lucene index stored on disk
+      referenceIndex = Maps.newHashMap();
       openNeo();
 
     } catch (Exception e) {
@@ -340,7 +348,41 @@ public class NeoDb implements NormalizerStore {
       r.setKey(referenceSequence.incrementAndGet());
     }
     references.put(r.getKey(), r);
+    // update lookup index
+    if (!Strings.isNullOrEmpty(r.getId())) {
+      referenceIndex.put(normRef(r.getId()), r);
+    }
+    if (!Strings.isNullOrEmpty(r.getTitle())) {
+      referenceIndex.put(normRef(r.getTitle()), r);
+    }
     return r;
+  }
+
+  private static String normRef(String idOrTitle) {
+    return idOrTitle.replaceAll("[^\\w]+", "").toLowerCase();
+  }
+
+  @Override
+  public Iterable<Reference> refList() {
+    return references.values();
+  }
+
+  public Reference refByKey(Integer key) {
+    return references.getOrDefault(key, null);
+  }
+
+  @Override
+  public Reference refById(String id) {
+    return refByX(id);
+  }
+
+  @Override
+  public Reference refByTitle(String title) {
+    return refByX(title);
+  }
+
+  private Reference refByX(String x) {
+    return x == null ? null : referenceIndex.getOrDefault(normRef(x), null);
   }
 
   @Override

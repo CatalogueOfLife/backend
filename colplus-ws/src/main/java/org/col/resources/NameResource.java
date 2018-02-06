@@ -66,7 +66,7 @@ public class NameResource {
 
 	@GET
 	@Path("{key}/publishedIn")
-	public PagedReference getPublishedIn(@PathParam("key") int key, @Context SqlSession session) {
+	public ReferenceWithPage getPublishedIn(@PathParam("key") int key, @Context SqlSession session) {
 		NameDao dao = new NameDao(session);
 		return dao.getPublishedIn(key);
 	}

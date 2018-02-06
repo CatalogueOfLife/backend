@@ -7,23 +7,21 @@ import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.admin.config.ImporterConfig;
-import org.col.admin.task.importer.neo.NormalizerStore;
+import org.col.admin.task.importer.neo.NeoDb;
 import org.col.admin.task.importer.neo.model.Labels;
+import org.col.admin.task.importer.neo.model.NeoTaxon;
 import org.col.admin.task.importer.neo.traverse.StartEndHandler;
 import org.col.admin.task.importer.neo.traverse.TreeWalker;
-import org.col.api.model.Dataset;
-import org.col.api.model.Distribution;
-import org.col.api.model.VernacularName;
+import org.col.api.model.*;
 import org.col.api.vocab.Origin;
 import org.col.db.mapper.*;
-import org.col.admin.task.importer.neo.NeoDb;
-import org.col.admin.task.importer.neo.model.NeoTaxon;
 import org.neo4j.graphdb.Node;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.Stack;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -31,13 +29,14 @@ import java.util.Stack;
 public class PgImport implements Runnable {
 	private static final Logger LOG = LoggerFactory.getLogger(PgImport.class);
 
-	private final NormalizerStore store;
+	private final NeoDb store;
 	private final int batchSize;
 	private final SqlSessionFactory sessionFactory;
 	private final Dataset dataset;
-	private Map<Integer, Integer> originalNameKeys = Maps.newHashMap();
+	private Map<Integer, Integer> nameKeys = Maps.newHashMap();
+  private Map<Integer, Integer> referenceKeys = Maps.newHashMap();
 
-	public PgImport(int datasetKey, NormalizerStore store, SqlSessionFactory sessionFactory,
+	public PgImport(int datasetKey, NeoDb store, SqlSessionFactory sessionFactory,
                   ImporterConfig cfg) {
 		this.dataset = store.getDataset();
 		this.dataset.setKey(datasetKey);
@@ -82,6 +81,23 @@ public class PgImport implements Runnable {
 
 	private void insertReferences() {
 		LOG.warn("Inserting references not yet implemented");
+    try (final SqlSession session = sessionFactory.openSession(false)) {
+      ReferenceMapper mapper = session.getMapper(ReferenceMapper.class);
+      int counter = 0;
+      for (Reference r : store.refList()) {
+        int storeKey = r.getKey();
+        r.setDatasetKey(dataset.getKey());
+        mapper.create(r);
+        // store mapping of key used in the store to the key used in postgres
+        referenceKeys.put(storeKey, r.getKey());
+        if (counter++ % batchSize == 0) {
+          session.commit();
+          LOG.debug("Inserted {} references", counter);
+        }
+      }
+      session.commit();
+      LOG.debug("Inserted all {} references", counter);
+    }
 	}
 
 	private void insertBasionyms() {
@@ -98,7 +114,7 @@ public class PgImport implements Runnable {
 					t.name.setDatasetKey(dataset.getKey());
 					nameMapper.create(t.name);
 					// keep basionym name key map
-					originalNameKeys.put((int) t.node.getId(), t.name.getKey());
+					nameKeys.put((int) t.node.getId(), t.name.getKey());
 				}
 
 				@Override
@@ -117,6 +133,7 @@ public class PgImport implements Runnable {
 		try (SqlSession session = sessionFactory.openSession(false)) {
       LOG.info("Inserting remaining names and all taxa");
       NameMapper nameMapper = session.getMapper(NameMapper.class);
+      NameActMapper nameActMapper = session.getMapper(NameActMapper.class);
       TaxonMapper taxonMapper = session.getMapper(TaxonMapper.class);
       VerbatimRecordMapper verbatimMapper = session.getMapper(VerbatimRecordMapper.class);
       DistributionMapper distributionMapper = session.getMapper(DistributionMapper.class);
@@ -148,17 +165,34 @@ public class PgImport implements Runnable {
           }
 
           // insert name if not yet inserted (=basionym)
-          if (originalNameKeys.containsKey((int) n.getId())) {
+          if (nameKeys.containsKey((int) n.getId())) {
             // this is an original name we have already inserted, use postgres keys
-            t.name.setKey(originalNameKeys.get((int) n.getId()));
+            t.name.setKey(nameKeys.get((int) n.getId()));
             t.name.setDatasetKey(dataset.getKey());
           } else {
             // update basionym keys
             if (t.name.getBasionymKey() != null) {
-              t.name.setBasionymKey(originalNameKeys.get(t.name.getBasionymKey()));
+              t.name.setBasionymKey(nameKeys.get(t.name.getBasionymKey()));
             }
             t.name.setDatasetKey(dataset.getKey());
             nameMapper.create(t.name);
+          }
+
+          // insert name acts, e.g. published in
+          for (NameAct act : t.acts) {
+            act.setDatasetKey(dataset.getKey());
+            // update to use postgres keys
+            act.setNameKey(t.name.getKey());
+            act.setReferenceKey(referenceKeys.get(act.getReferenceKey()));
+            if (act.getRelatedNameKey() != null) {
+              if (nameKeys.containsKey(act.getRelatedNameKey())) {
+                act.setRelatedNameKey(nameKeys.get(act.getRelatedNameKey()));
+              } else {
+                //TODO: update related name key in case we dont have it yet in the db!!!
+                LOG.error("Related name in acts not yet supported! Name={}", t.name.getScientificName());
+              }
+            }
+            nameActMapper.create(act);
           }
 
           // insert accepted taxon or synonym
@@ -184,11 +218,13 @@ public class PgImport implements Runnable {
 
             // insert vernacular
             for (VernacularName vn : t.vernacularNames) {
+              updateRefKeys(vn);
               vernacularMapper.create(vn, taxonKey, dataset.getKey());
             }
 
             // insert distributions
             for (Distribution d : t.distributions) {
+              updateRefKeys(d);
               distributionMapper.create(d, taxonKey, dataset.getKey());
             }
           }
@@ -214,6 +250,17 @@ public class PgImport implements Runnable {
             session.commit();
             LOG.info("Inserted {} names and taxa", counter);
           }
+        }
+
+        /**
+         * Updates reference keys from internal store keys to postgres keys
+         */
+        private void updateRefKeys(Referenced obj) {
+          obj.setReferenceKeys(
+              obj.getReferenceKeys().stream()
+                  .map(referenceKeys::get)
+                  .collect(Collectors.toSet())
+          );
         }
 
         @Override

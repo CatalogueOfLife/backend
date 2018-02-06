@@ -5,14 +5,15 @@ import com.google.common.collect.Sets;
 import com.google.common.io.Files;
 import org.apache.commons.io.FileUtils;
 import org.col.admin.config.NormalizerConfig;
+import org.col.admin.task.importer.neo.NeoDb;
 import org.col.admin.task.importer.neo.NeoDbFactory;
-import org.col.admin.task.importer.neo.NormalizerStore;
 import org.col.admin.task.importer.neo.NotUniqueRuntimeException;
 import org.col.admin.task.importer.neo.model.Labels;
 import org.col.admin.task.importer.neo.model.NeoProperties;
 import org.col.admin.task.importer.neo.model.NeoTaxon;
 import org.col.admin.task.importer.neo.printer.GraphFormat;
 import org.col.admin.task.importer.neo.printer.PrinterUtils;
+import org.col.api.model.Reference;
 import org.col.api.model.Taxon;
 import org.junit.After;
 import org.junit.Before;
@@ -43,7 +44,7 @@ import static org.junit.Assert.*;
  *
  */
 public class NormalizerIT {
-  private NormalizerStore store;
+  private NeoDb store;
   private NormalizerConfig cfg;
   private Path dwca;
 
@@ -105,6 +106,25 @@ public class NormalizerIT {
       throw new NotUniqueRuntimeException("scientificName", name);
     }
     return store.get(nodes.get(0));
+  }
+
+  @Test
+  public void testPublishedIn() throws Exception {
+    normalize(0);
+
+    for (Reference r : store.refList()) {
+      System.out.println(r);
+    }
+
+    try (Transaction tx = store.getNeo().beginTx()) {
+      NeoTaxon trametes_modesta = byTaxonID("324805");
+      assertEquals(1, trametes_modesta.acts.size());
+
+      Reference pubIn = store.refByKey(trametes_modesta.acts.get(0).getReferenceKey());
+      assertEquals("Norw. Jl Bot. 19: 236 (1972)", pubIn.getTitle());
+      assertNotNull(pubIn.getKey());
+      assertNull(pubIn.getId());
+    }
   }
 
   @Test

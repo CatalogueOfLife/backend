@@ -12,7 +12,7 @@ import java.util.*;
 /**
  *
  */
-public class Taxon {
+public class Taxon implements PrimaryEntity {
 
 	/**
 	 * Internal surrogate key of the taxon as provided by postgres. This key is
@@ -55,7 +55,6 @@ public class Taxon {
 
 	private String remarks;
 
-	private List<ReferencePointer> references;
 
   private Set<Issue> issues = EnumSet.noneOf(Issue.class);
 
@@ -207,23 +206,6 @@ public class Taxon {
 		issues.add(issue);
 	}
 
-	public List<ReferencePointer> getReferences() {
-		return references;
-	}
-
-	public void setReferences(List<ReferencePointer> references) {
-		this.references = references;
-	}
-
-	public void createReferences(Collection<PagedReference> refs) {
-		if (!refs.isEmpty()) {
-			references = new ArrayList<>(refs.size());
-			for (PagedReference pr : refs) {
-				references.add(new ReferencePointer(pr.getKey(), pr.getReferencePage()));
-			}
-		}
-	}
-
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -246,12 +228,11 @@ public class Taxon {
         Objects.equals(speciesEstimate, taxon.speciesEstimate) &&
         Objects.equals(speciesEstimateReferenceKey, taxon.speciesEstimateReferenceKey) &&
         Objects.equals(remarks, taxon.remarks) &&
-        Objects.equals(references, taxon.references) &&
         Objects.equals(issues, taxon.issues);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(key, id, datasetKey, taxonID, name, status, origin, parentKey, accordingTo, accordingToDate, fossil, recent, lifezones, datasetUrl, speciesEstimate, speciesEstimateReferenceKey, remarks, references, issues);
+    return Objects.hash(key, id, datasetKey, taxonID, name, status, origin, parentKey, accordingTo, accordingToDate, fossil, recent, lifezones, datasetUrl, speciesEstimate, speciesEstimateReferenceKey, remarks, issues);
   }
 }

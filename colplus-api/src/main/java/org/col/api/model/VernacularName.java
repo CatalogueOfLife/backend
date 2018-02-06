@@ -1,23 +1,21 @@
 package org.col.api.model;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.collect.Sets;
 import org.col.api.vocab.Country;
 import org.col.api.vocab.Language;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.util.Objects;
+import java.util.Set;
 
-public class VernacularName {
+public class VernacularName implements Referenced {
 
 	@JsonIgnore
 	private Integer key;
 	private String name;
 	private Language language;
 	private Country country;
-	private List<ReferencePointer> references;
+	private Set<Integer> referenceKeys = Sets.newHashSet();
 
 	public Integer getKey() {
 		return key;
@@ -51,26 +49,20 @@ public class VernacularName {
 		this.country = country;
 	}
 
-	public List<ReferencePointer> getReferences() {
-		return references;
-	}
+  @Override
+  public Set<Integer> getReferenceKeys() {
+    return referenceKeys;
+  }
 
-	public void setReferences(List<ReferencePointer> references) {
-		this.references = references;
-	}
+  public void setReferenceKeys(Set<Integer> referenceKeys) {
+    this.referenceKeys = referenceKeys;
+  }
 
-	public void createReferences(Collection<PagedReference> refs) {
-		if (!refs.isEmpty()) {
-			references = new ArrayList<>();
-			for (PagedReference pr : refs) {
-				if (key.equals(pr.getReferenceForKey())) {
-					references.add(new ReferencePointer(pr.getKey(), pr.getReferencePage()));
-				}
-			}
-		}
-	}
+  public void addReferenceKey(Integer referenceKey) {
+    this.referenceKeys.add(referenceKey);
+  }
 
-	@Override
+  @Override
 	public boolean equals(Object obj) {
 		if (this == obj) {
 			return true;
@@ -82,12 +74,13 @@ public class VernacularName {
 		return Objects.equals(key, other.key)
 		    && Objects.equals(name, other.name)
 		    && Objects.equals(language, other.language)
+        && Objects.equals(referenceKeys, other.referenceKeys)
 		    && Objects.equals(country, other.country);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(key, name, language, country);
+		return Objects.hash(key, name, language, country, referenceKeys);
 	}
 
 }

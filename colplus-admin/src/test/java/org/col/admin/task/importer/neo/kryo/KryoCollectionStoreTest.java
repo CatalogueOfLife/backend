@@ -1,8 +1,6 @@
 package org.col.admin.task.importer.neo.kryo;
 
 import com.esotericsoftware.kryo.pool.KryoPool;
-import org.col.admin.task.importer.neo.kryo.KryoCollectionStore;
-import org.col.admin.task.importer.neo.kryo.NeoKryoFactory;
 import org.col.api.model.Page;
 import org.col.api.model.Reference;
 import org.gbif.utils.text.StringUtils;
@@ -50,7 +48,7 @@ public class KryoCollectionStoreTest {
   }
 
   private Reference buildRef() {
-    Reference r = Reference.create();
+    Reference r = new Reference();
     r.setTitle("Harry Belafonte");
     r.setYear(1989);
     r.setId(StringUtils.randomString(12));

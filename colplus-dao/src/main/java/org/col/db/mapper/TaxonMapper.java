@@ -21,6 +21,8 @@ public interface TaxonMapper {
 
   Taxon get(@Param("key") int key);
 
+  List<Integer> taxonReferences(@Param("key") int key);
+
   List<Taxon> classification(@Param("key") int key);
 
   int countChildren(@Param("key") int key);

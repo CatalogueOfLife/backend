@@ -20,7 +20,7 @@ import static org.gbif.nameparser.util.NameFormatter.HYBRID_MARKER;
 /**
  *
  */
-public class Name {
+public class Name implements PrimaryEntity {
 
 	/**
 	 * Internal surrogate key of the name as provided by postgres. This key is
@@ -156,7 +156,7 @@ public class Name {
   private String remarks;
 
 	/**
-	 * Issues related to this name with potential values in the map
+	 * Issues related to this name
 	 */
 	private Set<Issue> issues = EnumSet.noneOf(Issue.class);
 

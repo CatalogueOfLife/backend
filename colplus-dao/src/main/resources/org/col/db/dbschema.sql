@@ -179,7 +179,8 @@ CREATE TABLE reference (
   dataset_key INTEGER NOT NULL REFERENCES dataset,
   serial_key INTEGER REFERENCES "serial",
   csl JSONB,
-  year int
+  year int,
+  issues INT[]
 );
 
 CREATE TABLE name (
@@ -287,7 +288,6 @@ CREATE TABLE taxon_reference (
   dataset_key INTEGER NOT NULL REFERENCES dataset,
   taxon_key INTEGER NOT NULL REFERENCES taxon,
   reference_key INTEGER NOT NULL REFERENCES reference,
-  reference_page TEXT,
   PRIMARY KEY(taxon_key, reference_key)
 );
 
@@ -304,7 +304,6 @@ CREATE TABLE vernacular_name_reference (
   dataset_key INTEGER NOT NULL REFERENCES dataset,
   vernacular_name_key INTEGER NOT NULL REFERENCES vernacular_name,
   reference_key INTEGER NOT NULL REFERENCES reference,
-  reference_page TEXT,
   PRIMARY KEY(vernacular_name_key, reference_key)
 );
 
@@ -321,7 +320,6 @@ CREATE TABLE distribution_reference (
   dataset_key INTEGER NOT NULL REFERENCES dataset,
   distribution_key INTEGER NOT NULL REFERENCES distribution,
   reference_key INTEGER NOT NULL REFERENCES reference,
-  reference_page TEXT,
   PRIMARY KEY(distribution_key, reference_key)
 );
 
@@ -371,12 +369,6 @@ CREATE index ON vernacular_name (dataset_key);
 CREATE index ON vernacular_name (taxon_key);
 
 CREATE index ON synonym (name_key);
-
-CREATE index ON taxon_reference(reference_key);
-
-CREATE index ON vernacular_name_reference(reference_key);
-
-CREATE index ON distribution_reference(reference_key);
 
 
 

@@ -1,11 +1,12 @@
 package org.col.db.mapper;
 
-import java.util.List;
-
 import org.apache.ibatis.annotations.Param;
 import org.col.api.model.Page;
-import org.col.api.model.PagedReference;
 import org.col.api.model.Reference;
+import org.col.api.model.ReferenceWithPage;
+
+import java.util.List;
+import java.util.Set;
 
 /**
  *
@@ -16,20 +17,20 @@ public interface ReferenceMapper {
 
 	List<Reference> list(@Param("datasetKey") int datasetKey, @Param("page") Page page);
 
+  /**
+   * Selects a number of distinct references by their keys
+   * @param keys must contain at least one value, not allowed to be empty !!!
+   */
+  List<Reference> listByKeys(@Param("keys") Set<Integer> keys);
+
 	Integer lookupKey(String id, int datasetKey);
 
 	Reference get(@Param("key") int key);
 
-	List<PagedReference> listByTaxon(@Param("taxonKey") int taxonKey);
-
-	List<PagedReference> listByVernacularNamesOfTaxon(@Param("taxonKey") int taxonKey);
-
-	List<PagedReference> listByDistributionOfTaxon(@Param("taxonKey") int taxonKey);
-
 	/**
 	 * Returns the reference of the description act for the given name key.
 	 */
-	PagedReference getPublishedIn(@Param("nameKey") int nameKey);
+	ReferenceWithPage getPublishedIn(@Param("nameKey") int nameKey);
 
 	void create(Reference name);
 

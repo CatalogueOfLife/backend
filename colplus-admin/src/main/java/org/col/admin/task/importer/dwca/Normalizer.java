@@ -3,7 +3,7 @@ package org.col.admin.task.importer.dwca;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
-import org.col.admin.task.importer.neo.NormalizerStore;
+import org.col.admin.task.importer.neo.NeoDb;
 import org.col.admin.task.importer.neo.NotUniqueRuntimeException;
 import org.col.admin.task.importer.neo.model.*;
 import org.col.admin.task.importer.neo.traverse.Traversals;
@@ -14,7 +14,6 @@ import org.col.api.vocab.Issue;
 import org.col.api.vocab.Origin;
 import org.col.api.vocab.TaxonomicStatus;
 import org.col.parser.NameParser;
-import org.col.admin.task.importer.neo.NeoDb;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
@@ -52,10 +51,10 @@ public class Normalizer implements Runnable {
   }
 
   private final File dwca;
-  private final NormalizerStore store;
+  private final NeoDb store;
   private InsertMetadata meta;
 
-  public Normalizer(NormalizerStore store, File dwca) {
+  public Normalizer(NeoDb store, File dwca) {
     this.dwca = dwca;
     this.store = store;
   }

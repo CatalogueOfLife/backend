@@ -247,4 +247,10 @@
         )
     </insert>
 
+    <select id="taxonReferences" resultType="Integer">
+        SELECT reference_key
+        FROM taxon_reference
+        WHERE taxon_key = #{key}
+    </select>
+
 </mapper>

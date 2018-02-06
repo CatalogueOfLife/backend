@@ -27,15 +27,15 @@ public class InitMybatisRule extends ExternalResource {
 
 	public enum TestData {
 		NONE,
-		SQUIRRELS
+    APPLE
 	}
 
 	public static InitMybatisRule empty() {
 		return new InitMybatisRule(TestData.NONE);
 	}
 
-	public static InitMybatisRule squirrels() {
-		return new InitMybatisRule(TestData.SQUIRRELS);
+	public static InitMybatisRule apple() {
+		return new InitMybatisRule(TestData.APPLE);
 	}
 
 	private InitMybatisRule(TestData testData) {

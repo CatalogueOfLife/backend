@@ -16,7 +16,7 @@ public abstract class MapperTestBase<T> {
   public static PgSetupRule pgSetupRule = new PgSetupRule();
 
   @Rule
-  public InitMybatisRule initMybatisRule = InitMybatisRule.squirrels();
+  public InitMybatisRule initMybatisRule = InitMybatisRule.apple();
 
   public MapperTestBase(Class<T> mapperClazz) {
     this.mapperClazz = mapperClazz;

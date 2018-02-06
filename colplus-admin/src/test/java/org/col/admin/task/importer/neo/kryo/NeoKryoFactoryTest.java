@@ -4,14 +4,13 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import com.google.common.collect.Lists;
-import org.col.admin.task.importer.neo.kryo.NeoKryoFactory;
-import org.col.db.TestEntityGenerator;
+import org.col.admin.task.importer.neo.model.NeoTaxon;
 import org.col.api.model.*;
 import org.col.api.vocab.Issue;
-import org.col.admin.task.importer.neo.model.NeoTaxon;
-import org.gbif.nameparser.api.Rank;
 import org.col.api.vocab.TaxonomicStatus;
+import org.col.db.TestEntityGenerator;
 import org.gbif.dwc.terms.*;
+import org.gbif.nameparser.api.Rank;
 import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
@@ -48,6 +47,21 @@ public class NeoKryoFactoryTest {
     }
 
     assertSerde(t);
+  }
+
+  @Test
+  public void testReference() throws Exception {
+    Reference r = Reference.create();
+    r.setTitle("my title");
+    r.setId("1234");
+    r.setKey(123);
+    r.setYear(1984);
+    r.addIssue(Issue.ACCEPTED_NAME_MISSING);
+    r.addIssue(Issue.REFERENCE_ID_INVALID);
+    r.setDatasetKey(77);
+    r.setCitation("bla bla bla gdgfedfewfew");
+
+    assertSerde(r);
   }
 
   @Test

@@ -1,26 +1,24 @@
 package org.col.api.model;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.collect.Sets;
 import org.col.api.vocab.DistributionStatus;
 import org.col.api.vocab.Gazetteer;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  *
  */
-public class Distribution {
+public class Distribution implements Referenced {
 
 	@JsonIgnore
 	private Integer key;
 	private String area;
 	private Gazetteer areaStandard;
 	private DistributionStatus status;
-	private List<ReferencePointer> references;
+  private Set<Integer> referenceKeys = Sets.newHashSet();
 
 	public Integer getKey() {
 		return key;
@@ -54,24 +52,18 @@ public class Distribution {
 		this.status = status;
 	}
 
-	public List<ReferencePointer> getReferences() {
-		return references;
-	}
+  @Override
+  public Set<Integer> getReferenceKeys() {
+    return referenceKeys;
+  }
 
-	public void setReferences(List<ReferencePointer> references) {
-		this.references = references;
-	}
+  public void setReferenceKeys(Set<Integer> referenceKeys) {
+    this.referenceKeys = referenceKeys;
+  }
 
-	public void createReferences(Collection<PagedReference> refs) {
-		if (!refs.isEmpty()) {
-			references = new ArrayList<>();
-			for (PagedReference pr : refs) {
-				if (key.equals(pr.getReferenceForKey())) {
-					references.add(new ReferencePointer(pr.getKey(), pr.getReferencePage()));
-				}
-			}
-		}
-	}
+  public void addReferenceKey(Integer referenceKey) {
+    this.referenceKeys.add(referenceKey);
+  }
 
 	@Override
 	public boolean equals(Object obj) {

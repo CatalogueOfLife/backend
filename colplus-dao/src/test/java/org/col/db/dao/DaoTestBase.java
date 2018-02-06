@@ -12,7 +12,7 @@ public abstract class DaoTestBase {
 	public static PgSetupRule pgSetupRule = new PgSetupRule();
 
 	@Rule
-	public InitMybatisRule initMybatisRule = InitMybatisRule.squirrels();
+	public InitMybatisRule initMybatisRule = InitMybatisRule.apple();
 
 	protected SqlSession session() {
 		return initMybatisRule.getSqlSession();
