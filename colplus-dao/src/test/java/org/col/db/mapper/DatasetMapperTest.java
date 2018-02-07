@@ -39,7 +39,7 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
 		}
 		d.setContactPerson("Hans Peter");
 		d.setDataAccess(URI.create("https://api.gbif.org/v1/dataset/" + d.getGbifKey()));
-		d.setDataFormat(DataFormat.SQL);
+		d.setDataFormat(DataFormat.ACEF);
 		d.setReleaseDate(LocalDate.now());
 		d.setVersion("v123");
 		d.setHomepage(URI.create("https://www.gbif.org/dataset/" + d.getGbifKey()));

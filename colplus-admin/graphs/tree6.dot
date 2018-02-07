@@ -16,8 +16,8 @@ digraph G {
   n264 -> n265
   n265  [label="Mycosphaerellaceae"]
   n265 -> n275
-  n265 -> n271
   n265 -> n266
+  n265 -> n271
   n275  [label="Pseudocercospora"]
   n275 -> n12
   n12  [label="Pseudocercospora fici (Heald & F.A.Wolf) X.J.Liu & Y.L.Guo"]
@@ -72,250 +72,274 @@ digraph G {
   n203  [label="Zignoëlla Sacc.", fontcolor=darkgreen]
   n225 -> n203  [color=darkgreen, fontcolor=darkgreen, label=syn]
   n281  [label="Zignoëlla"]
-  n281 -> n231
-  n281 -> n230
-  n281 -> n233
-  n281 -> n232
-  n281 -> n227
-  n281 -> n226
   n281 -> n229
   n281 -> n228
-  n281 -> n223
-  n281 -> n222
+  n281 -> n231
+  n281 -> n230
   n281 -> n224
-  n281 -> n219
-  n281 -> n218
+  n281 -> n227
+  n281 -> n226
   n281 -> n221
   n281 -> n220
-  n281 -> n246
-  n281 -> n242
-  n281 -> n243
+  n281 -> n223
+  n281 -> n222
+  n281 -> n217
+  n281 -> n215
+  n281 -> n219
+  n281 -> n218
   n281 -> n244
   n281 -> n245
-  n281 -> n238
-  n281 -> n239
+  n281 -> n246
   n281 -> n240
   n281 -> n241
-  n281 -> n234
-  n281 -> n235
+  n281 -> n242
+  n281 -> n243
   n281 -> n236
   n281 -> n237
+  n281 -> n238
+  n281 -> n239
+  n281 -> n232
+  n281 -> n233
+  n281 -> n234
+  n281 -> n235
+  n281 -> n198
+  n281 -> n197
+  n281 -> n200
+  n281 -> n199
   n281 -> n202
   n281 -> n201
-  n281 -> n205
-  n281 -> n204
-  n281 -> n207
   n281 -> n206
-  n281 -> n209
+  n281 -> n205
   n281 -> n208
-  n281 -> n211
+  n281 -> n207
   n281 -> n210
-  n281 -> n213
+  n281 -> n209
   n281 -> n212
-  n281 -> n215
+  n281 -> n211
   n281 -> n214
-  n281 -> n217
-  n281 -> n216
+  n281 -> n213
+  n281 -> n177
+  n281 -> n178
+  n281 -> n179
+  n281 -> n180
+  n281 -> n181
+  n281 -> n182
+  n281 -> n183
   n281 -> n184
   n281 -> n185
   n281 -> n186
   n281 -> n187
   n281 -> n188
-  n281 -> n189
   n281 -> n190
   n281 -> n192
   n281 -> n193
   n281 -> n194
-  n281 -> n195
-  n281 -> n196
-  n281 -> n197
-  n281 -> n198
-  n281 -> n199
-  n281 -> n200
+  n281 -> n161
+  n281 -> n160
+  n281 -> n159
+  n281 -> n158
+  n281 -> n165
+  n281 -> n164
+  n281 -> n163
+  n281 -> n162
+  n281 -> n172
   n281 -> n171
   n281 -> n170
   n281 -> n169
-  n281 -> n165
+  n281 -> n176
   n281 -> n175
   n281 -> n174
   n281 -> n173
-  n281 -> n172
-  n281 -> n179
-  n281 -> n178
-  n281 -> n177
-  n281 -> n176
-  n281 -> n183
-  n281 -> n182
-  n281 -> n181
-  n281 -> n180
-  n281 -> n151
+  n281 -> n143
+  n281 -> n144
+  n281 -> n141
+  n281 -> n142
+  n281 -> n147
+  n281 -> n148
+  n281 -> n145
+  n281 -> n146
   n281 -> n152
+  n281 -> n153
   n281 -> n149
   n281 -> n150
-  n281 -> n155
   n281 -> n156
-  n281 -> n153
-  n281 -> n154
-  n281 -> n159
-  n281 -> n160
   n281 -> n157
-  n281 -> n158
-  n281 -> n163
-  n281 -> n164
-  n281 -> n161
-  n281 -> n162
+  n281 -> n154
+  n281 -> n155
+  n281 -> n128
+  n281 -> n127
+  n281 -> n131
+  n281 -> n130
+  n281 -> n122
+  n281 -> n121
+  n281 -> n126
+  n281 -> n125
   n281 -> n138
   n281 -> n137
   n281 -> n140
   n281 -> n139
   n281 -> n134
-  n281 -> n133
+  n281 -> n132
   n281 -> n136
   n281 -> n135
-  n281 -> n146
-  n281 -> n145
-  n281 -> n148
-  n281 -> n147
-  n281 -> n142
-  n281 -> n141
-  n281 -> n144
-  n281 -> n143
-  n281 -> n120
-  n281 -> n121
-  n281 -> n122
-  n281 -> n124
-  n281 -> n115
+  n281 -> n108
+  n281 -> n109
+  n281 -> n110
+  n281 -> n111
+  n281 -> n103
+  n281 -> n105
+  n281 -> n106
+  n281 -> n107
   n281 -> n116
   n281 -> n117
   n281 -> n118
-  n281 -> n129
-  n281 -> n130
-  n281 -> n131
-  n281 -> n132
-  n281 -> n125
-  n281 -> n126
-  n281 -> n127
-  n281 -> n128
-  n281 -> n106
-  n281 -> n105
-  n281 -> n104
-  n281 -> n103
+  n281 -> n120
+  n281 -> n112
+  n281 -> n113
+  n281 -> n114
+  n281 -> n115
+  n281 -> n91
+  n281 -> n89
+  n281 -> n88
+  n281 -> n87
+  n281 -> n85
+  n281 -> n84
+  n281 -> n83
+  n281 -> n82
   n281 -> n102
   n281 -> n101
-  n281 -> n100
-  n281 -> n99
-  n281 -> n114
-  n281 -> n113
-  n281 -> n112
-  n281 -> n111
-  n281 -> n110
-  n281 -> n109
-  n281 -> n108
-  n281 -> n107
-  n281 -> n89
-  n281 -> n90
-  n281 -> n87
-  n281 -> n88
-  n281 -> n85
-  n281 -> n86
-  n281 -> n83
-  n281 -> n84
-  n281 -> n97
   n281 -> n98
-  n281 -> n95
+  n281 -> n97
   n281 -> n96
-  n281 -> n93
   n281 -> n94
-  n281 -> n91
+  n281 -> n93
   n281 -> n92
-  n281 -> n75
-  n281 -> n76
-  n281 -> n77
-  n281 -> n78
-  n281 -> n79
-  n281 -> n80
-  n281 -> n81
-  n281 -> n82
-  n281 -> n67
-  n281 -> n68
-  n281 -> n69
   n281 -> n70
   n281 -> n71
-  n281 -> n72
-  n281 -> n73
-  n281 -> n74
-  n281 -> n16
-  n281 -> n21
-  n281 -> n22
-  n281 -> n23
-  n281 -> n24
-  n281 -> n17
-  n281 -> n18
-  n281 -> n19
-  n281 -> n20
-  n281 -> n29
-  n281 -> n30
-  n281 -> n31
-  n281 -> n32
-  n281 -> n25
-  n281 -> n26
-  n281 -> n27
-  n281 -> n28
-  n281 -> n38
-  n281 -> n37
-  n281 -> n40
-  n281 -> n39
-  n281 -> n34
-  n281 -> n33
-  n281 -> n36
-  n281 -> n35
-  n281 -> n46
-  n281 -> n45
-  n281 -> n49
-  n281 -> n47
-  n281 -> n42
-  n281 -> n41
-  n281 -> n44
-  n281 -> n43
-  n281 -> n57
-  n281 -> n58
-  n281 -> n55
-  n281 -> n56
-  n281 -> n52
-  n281 -> n53
-  n281 -> n50
-  n281 -> n51
+  n281 -> n68
+  n281 -> n69
   n281 -> n65
   n281 -> n66
   n281 -> n63
   n281 -> n64
-  n281 -> n61
+  n281 -> n80
+  n281 -> n17
+  n281 -> n16
+  n281 -> n23
+  n281 -> n22
+  n281 -> n25
+  n281 -> n24
+  n281 -> n19
+  n281 -> n18
+  n281 -> n21
+  n281 -> n20
+  n281 -> n33
+  n281 -> n34
+  n281 -> n31
+  n281 -> n32
+  n281 -> n29
+  n281 -> n30
+  n281 -> n27
+  n281 -> n28
+  n281 -> n41
+  n281 -> n42
+  n281 -> n39
+  n281 -> n40
+  n281 -> n37
+  n281 -> n38
+  n281 -> n35
+  n281 -> n36
+  n281 -> n52
+  n281 -> n50
+  n281 -> n49
+  n281 -> n47
+  n281 -> n46
+  n281 -> n45
+  n281 -> n44
+  n281 -> n43
   n281 -> n62
-  n281 -> n59
+  n281 -> n61
   n281 -> n60
+  n281 -> n59
+  n281 -> n57
+  n281 -> n56
+  n281 -> n55
+  n281 -> n53
+  n281 -> n74
+  n281 -> n72
+  n281 -> n76
+  n281 -> n75
+  n281 -> n79
+  n281 -> n78
+  n281 -> n81
   n38  [label="Zignoëlla subgen. Trematostoma Sacc."]
-  n231  [label="Incertae sedis"]
-  n230  [label="Incertae sedis"]
-  n233  [label="Incertae sedis"]
-  n232  [label="Incertae sedis"]
-  n227  [label="Incertae sedis"]
-  n226  [label="Incertae sedis"]
   n229  [label="Incertae sedis"]
+  n67  [label="Zignoëlla subcorticale (Cooke) Sacc.", fontcolor=darkgreen]
+  n229 -> n67  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n168  [label="Zignoëlla subcorticalis (Cooke) Sacc.", fontcolor=darkgreen]
+  n229 -> n168  [color=darkgreen, fontcolor=darkgreen, label=syn]
   n228  [label="Incertae sedis"]
-  n246  [label="Incertae sedis"]
-  n242  [label="Incertae sedis"]
-  n243  [label="Incertae sedis"]
+  n191  [label="Zignoëlla nyssaegena Ellis & Everh.", fontcolor=darkgreen]
+  n228 -> n191  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n58  [label="Zignoëlla nyssogena Ellis & Everh.", fontcolor=darkgreen]
+  n228 -> n58  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n231  [label="Incertae sedis"]
+  n77  [label="Zignoëlla pulviscula (Curr.) Sacc.", fontcolor=darkgreen]
+  n231 -> n77  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n230  [label="Incertae sedis"]
+  n73  [label="Zignoëlla fuegiana Speg.", fontcolor=darkgreen]
+  n230 -> n73  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n227  [label="Incertae sedis"]
+  n51  [label="Zignoëlla abietis Höhn.", fontcolor=darkgreen]
+  n227 -> n51  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n226  [label="Incertae sedis"]
+  n26  [label="Zignoëlla pygmaea (P.Karst.) Sacc.", fontcolor=darkgreen]
+  n226 -> n26  [color=darkgreen, fontcolor=darkgreen, label=syn]
   n244  [label="Incertae sedis"]
+  n196  [label="Zignoëlla groenendalensis Sacc., E.Bommer & M.Rousseau", fontcolor=darkgreen]
+  n244 -> n196  [color=darkgreen, fontcolor=darkgreen, label=syn]
   n245  [label="Incertae sedis"]
-  n238  [label="Incertae sedis"]
-  n239  [label="Incertae sedis"]
+  n204  [label="Zignoëlla ovoidea (Fr.) Sacc.", fontcolor=darkgreen]
+  n245 -> n204  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n246  [label="Incertae sedis"]
+  n216  [label="Zignoëlla muelleri (Duby) Sacc. & Traverso", fontcolor=darkgreen]
+  n246 -> n216  [color=darkgreen, fontcolor=darkgreen, label=syn]
   n240  [label="Incertae sedis"]
+  n133  [label="Zignoëlla antarctica Speg.", fontcolor=darkgreen]
+  n240 -> n133  [color=darkgreen, fontcolor=darkgreen, label=syn]
   n241  [label="Incertae sedis"]
-  n234  [label="Incertae sedis"]
-  n235  [label="Incertae sedis"]
+  n151  [label="Zignoëlla ordinata (Fr.) Sacc.", fontcolor=darkgreen]
+  n241 -> n151  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n242  [label="Incertae sedis"]
+  n189  [label="Zignoëlla valoniopsidis Cribb & J.W.Cribb", fontcolor=darkgreen]
+  n242 -> n189  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n243  [label="Incertae sedis"]
+  n195  [label="Zignoëlla vitis (Schulzer) Sacc.", fontcolor=darkgreen]
+  n243 -> n195  [color=darkgreen, fontcolor=darkgreen, label=syn]
   n236  [label="Incertae sedis"]
+  n100  [label="Zignoëlla crustacea Sacc.", fontcolor=darkgreen]
+  n236 -> n100  [color=darkgreen, fontcolor=darkgreen, label=syn]
   n237  [label="Incertae sedis"]
-  n51  [label="Zignoëlla abietis Höhn."]
+  n104  [label="Zignoëlla calospora Pat.", fontcolor=darkgreen]
+  n237 -> n104  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n238  [label="Incertae sedis"]
+  n124  [label="Zignoëlla corticola (Fuckel) Sacc.", fontcolor=darkgreen]
+  n238 -> n124  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n239  [label="Incertae sedis"]
+  n129  [label="Zignoëlla funicola (Ellis) Sacc.", fontcolor=darkgreen]
+  n239 -> n129  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n232  [label="Incertae sedis"]
+  n86  [label="Zignoëlla insculpta (Fr.) Sacc.", fontcolor=darkgreen]
+  n232 -> n86  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n233  [label="Incertae sedis"]
+  n90  [label="Zignoëlla ostioloidea (Cooke) Sacc.", fontcolor=darkgreen]
+  n233 -> n90  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n234  [label="Incertae sedis"]
+  n95  [label="Zignoëlla cubensis Har. & Pat.", fontcolor=darkgreen]
+  n234 -> n95  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n235  [label="Incertae sedis"]
+  n99  [label="Zignoëlla enormis Pat. & Har.", fontcolor=darkgreen]
+  n235 -> n99  [color=darkgreen, fontcolor=darkgreen, label=syn]
   n46  [label="Zignoëlla abscondita (Ellis & Everh.) Fairm."]
   n113  [label="Zignoëlla acervata Penz. & Sacc."]
   n52  [label="Zignoëlla adjuncta Pass."]
@@ -325,7 +349,6 @@ digraph G {
   n117  [label="Zignoëlla annonicola Speg."]
   n48  [label="Zignoëlla anonicola Speg.", fontcolor=darkgreen]
   n117 -> n48  [color=darkgreen, fontcolor=darkgreen, label=syn]
-  n133  [label="Zignoëlla antarctica Speg."]
   n112  [label="Zignoëlla archeri (Berk.) Sacc."]
   n41  [label="Zignoëlla arengae Rehm"]
   n158  [label="Zignoëlla arthopyrenioides Rehm"]
@@ -343,7 +366,6 @@ digraph G {
   n119  [label="Zignoëlla buttneri Rehm", fontcolor=darkgreen]
   n103 -> n119  [color=darkgreen, fontcolor=darkgreen, label=syn]
   n24  [label="Zignoëlla caesalpiniae Zimm."]
-  n104  [label="Zignoëlla calospora Pat."]
   n111  [label="Zignoëlla campi-silii Sacc."]
   n50  [label="Zignoëlla cariosa (Cooke & Ellis) Sacc."]
   n184  [label="Zignoëlla casaresiana (Gonz.Frag.) Racov."]
@@ -353,10 +375,7 @@ digraph G {
   n123  [label="Zignoëlla collabens var. curreyi (A.Bloxam) Sacc.", fontcolor=darkgreen]
   n125 -> n123  [color=darkgreen, fontcolor=darkgreen, label=syn]
   n193  [label="Zignoëlla conica (Fuckel) Sacc."]
-  n124  [label="Zignoëlla corticola (Fuckel) Sacc."]
-  n100  [label="Zignoëlla crustacea Sacc."]
   n169  [label="Zignoëlla cryptarum (Fuckel) Sacc."]
-  n95  [label="Zignoëlla cubensis Har. & Pat."]
   n22  [label="Zignoëlla culmicola Delacr."]
   n96  [label="Zignoëlla dealbata (Cooke) Sacc."]
   n93  [label="Zignoëlla diaphana (Cooke & Ellis) Sacc."]
@@ -365,7 +384,6 @@ digraph G {
   n94  [label="Zignoëlla duvauicola Speg."]
   n16  [label="Zignoëlla ebuli Malbr. & Brunaud"]
   n17  [label="Zignoëlla emergens (P.Karst.) Sacc."]
-  n99  [label="Zignoëlla enormis Pat. & Har."]
   n121  [label="Zignoëlla erumpens Cooke"]
   n120  [label="Zignoëlla eumorpha Penz. & Sacc."]
   n218  [label="Zignoëlla eutypoides Sacc."]
@@ -375,12 +393,9 @@ digraph G {
   n197  [label="Zignoëlla fallaciosa Rehm"]
   n130  [label="Zignoëlla fallax (Sacc.) Sacc."]
   n128  [label="Zignoëlla fraxinicola Lambotte & Fautrey"]
-  n73  [label="Zignoëlla fuegiana Speg."]
-  n129  [label="Zignoëlla funicola (Ellis) Sacc."]
   n214  [label="Zignoëlla fusispora (H.Wegelin) Sacc."]
   n171  [label="Zignoëlla gallica Sacc. & Flageolet"]
   n18  [label="Zignoëlla garciniae Henn."]
-  n196  [label="Zignoëlla groenendalensis Sacc., E.Bommer & M.Rousseau"]
   n200  [label="Zignoëlla hanburiana Penz. & Sacc."]
   n127  [label="Zignoëlla haynaldii Schulzer & Sacc."]
   n126  [label="Zignoëlla hederae F.Lamb. & Fautrey"]
@@ -392,7 +407,6 @@ digraph G {
   n56  [label="Zignoëlla improvisa (P.Karst.) Sacc."]
   n201  [label="Zignoëlla incerta Speg."]
   n84  [label="Zignoëlla inflata (Ellis) Sacc."]
-  n86  [label="Zignoëlla insculpta (Fr.) Sacc."]
   n108  [label="Zignoëlla insueta Chenant."]
   n85  [label="Zignoëlla intermedia Pass."]
   n82  [label="Zignoëlla interspersa Penz. & Sacc."]
@@ -419,23 +433,16 @@ digraph G {
   n69  [label="Zignoëlla minutissima (P.Karst.) Sacc."]
   n59  [label="Zignoëlla mori (Fabre) Sacc."]
   n150  [label="Zignoëlla morthieri (Fuckel) Sacc."]
-  n216  [label="Zignoëlla muelleri (Duby) Sacc. & Traverso"]
   n180  [label="Zignoëlla naumovii Gucevic"]
   n25  [label="Zignoëlla nematasca Sacc. & Speg."]
   n217  [label="Zignoëlla nitidula Sacc."]
   n208  [label="Zignoëlla nobilis Rehm"]
   n163  [label="Zignoëlla nucivora Fairm."]
-  n58  [label="Zignoëlla nyssogena Ellis & Everh."]
-  n191  [label="Zignoëlla nyssaegena Ellis & Everh.", fontcolor=darkgreen]
-  n58 -> n191  [color=darkgreen, fontcolor=darkgreen, label=syn]
   n57  [label="Zignoëlla obliqua Romell"]
   n21  [label="Zignoëlla omphalostoma Penz. & Sacc."]
-  n151  [label="Zignoëlla ordinata (Fr.) Sacc."]
   n164  [label="Zignoëlla ossaea Maire"]
   n91  [label="Zignoëlla ostiolata Dearn. & Barthol."]
-  n90  [label="Zignoëlla ostioloidea (Cooke) Sacc."]
   n222  [label="Zignoëlla oudemansii P.Karst."]
-  n204  [label="Zignoëlla ovoidea (Fr.) Sacc."]
   n156  [label="Zignoëlla pachyspora Sacc., E.Bommer & M.Rousseau"]
   n89  [label="Zignoëlla paecilostoma (Berk. & Broome) Sacc."]
   n27  [label="Zignoëlla palmicola Henn."]
@@ -454,9 +461,7 @@ digraph G {
   n212  [label="Zignoëlla potentillae Tracy & Earle"]
   n75  [label="Zignoëlla prorumpens (Rehm) Sacc."]
   n76  [label="Zignoëlla proteus (Berk. & M.A.Curtis) Sacc."]
-  n77  [label="Zignoëlla pulviscula (Curr.) Sacc."]
   n78  [label="Zignoëlla punctiformis Sacc. & Therry"]
-  n26  [label="Zignoëlla pygmaea (P.Karst.) Sacc."]
   n62  [label="Zignoëlla querceti Cooke & Massee"]
   n61  [label="Zignoëlla ramenticola Schulzer & Sacc."]
   n174  [label="Zignoëlla rhodobapha (Berk. & Broome) Sacc."]
@@ -464,7 +469,7 @@ digraph G {
   n178  [label="Zignoëlla rhois Gucevic"]
   n63  [label="Zignoëlla rhytidodes (Berk. & Broome) Sacc."]
   n33  [label="Zignoëlla roripae Rehm"]
-  n109  [label="Zignoëlla rubi"]
+  n109  [label="Zignoëlla rubi Noelli"]
   n60  [label="Zignoëlla rugosa Starbäck"]
   n80  [label="Zignoëlla sabalina Ellis & Everh."]
   n213  [label="Zignoëlla salicicola Fabre"]
@@ -488,9 +493,6 @@ digraph G {
   n64  [label="Zignoëlla sphaeroides (Schaer.) Rehm"]
   n199  [label="Zignoëlla spissiana F.Lamb. & Fautrey"]
   n165  [label="Zignoëlla subantarctica Speg."]
-  n67  [label="Zignoëlla subcorticale (Cooke) Sacc."]
-  n168  [label="Zignoëlla subcorticalis (Cooke) Sacc.", fontcolor=darkgreen]
-  n67 -> n168  [color=darkgreen, fontcolor=darkgreen, label=syn]
   n187  [label="Zignoëlla subferruginea (Fuckel) Sacc."]
   n66  [label="Zignoëlla subtilissima Rehm"]
   n68  [label="Zignoëlla subvestita (Ellis & Everh.) Berl. & Voglino"]
@@ -503,10 +505,8 @@ digraph G {
   n131  [label="Zignoëlla truncata Rehm"]
   n135  [label="Zignoëlla tuberculata Petch"]
   n134  [label="Zignoëlla ulmi F.Lamb."]
-  n189  [label="Zignoëlla valoniopsidis Cribb & J.W.Cribb"]
   n136  [label="Zignoëlla verrucarioides (P.Crouan & H.Crouan) Sacc."]
   n19  [label="Zignoëlla vincentii Cooke"]
-  n195  [label="Zignoëlla vitis (Schulzer) Sacc."]
   n154  [label="Zignoëlla ybbsitzensis Strasser"]
   n155  [label="Zignoëlla yerbae Speg."]
   n175  [label="Zignoëlla campi-silii var. campi-silii Sacc."]

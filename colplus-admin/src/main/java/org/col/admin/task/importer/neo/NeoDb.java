@@ -6,7 +6,7 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.Maps;
 import com.google.common.collect.UnmodifiableIterator;
 import org.apache.commons.io.FileUtils;
-import org.col.admin.task.importer.dwca.NormalizationFailedException;
+import org.col.admin.task.importer.NormalizationFailedException;
 import org.col.admin.task.importer.neo.kryo.NeoKryoFactory;
 import org.col.admin.task.importer.neo.mapdb.MapDbObjectSerializer;
 import org.col.admin.task.importer.neo.model.Labels;

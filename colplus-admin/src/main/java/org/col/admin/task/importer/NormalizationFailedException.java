@@ -1,4 +1,4 @@
-package org.col.admin.task.importer.dwca;
+package org.col.admin.task.importer;
 
 /**
  *

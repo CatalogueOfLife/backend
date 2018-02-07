@@ -7,10 +7,10 @@ import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.col.admin.config.ImporterConfig;
 import org.col.admin.config.NormalizerConfig;
-import org.col.admin.task.importer.dwca.Normalizer;
 import org.col.admin.task.importer.neo.NeoDb;
 import org.col.admin.task.importer.neo.NeoDbFactory;
 import org.col.api.model.*;
+import org.col.api.vocab.DataFormat;
 import org.col.api.vocab.DistributionStatus;
 import org.col.api.vocab.Gazetteer;
 import org.col.api.vocab.Language;
@@ -72,7 +72,7 @@ public class PgImportIT {
 		session.close();
 
 		// normalize
-		Normalizer norm = new Normalizer(NeoDbFactory.create(cfg, dataset.getKey()), dwca.toFile());
+		Normalizer norm = new Normalizer(NeoDbFactory.create(cfg, dataset.getKey()), dwca.toFile(), DataFormat.DWCA);
 		norm.run();
 
 		// import into postgres

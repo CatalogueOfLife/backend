@@ -5,7 +5,6 @@ import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.admin.AdminServer;
 import org.col.admin.config.AdminServerConfig;
-import org.col.admin.task.importer.dwca.Normalizer;
 import org.col.admin.task.importer.neo.NeoDb;
 import org.col.admin.task.importer.neo.NeoDbFactory;
 import org.col.api.model.Dataset;
@@ -85,7 +84,7 @@ public class ImportJob implements Callable<DatasetImport> {
 
         LOG.info("Normalizing {}!", datasetKey);
         store = NeoDbFactory.create(cfg.normalizer, datasetKey);
-        new Normalizer(store, dwcaDir).run();
+        new Normalizer(store, dwcaDir, dataset.getDataFormat()).run();
 
         LOG.info("Writing {} to Postgres!", datasetKey);
         store = NeoDbFactory.open(cfg.normalizer, datasetKey);

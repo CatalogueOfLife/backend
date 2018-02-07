@@ -15,6 +15,7 @@ package org.col.api.vocab;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.reflect.ClassPath;
+import org.gbif.dwc.terms.TermFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,6 +26,12 @@ import java.util.Optional;
 public final class VocabularyUtils {
 
   private static final Logger LOG = LoggerFactory.getLogger(VocabularyUtils.class);
+
+  public static final TermFactory TF = TermFactory.instance();
+  static {
+    TF.addTerms(AcefTerm.values(), new String[]{AcefTerm.PREFIX});
+    TF.addTerms(CoLTerm.values(), new String[]{CoLTerm.PREFIX});
+  }
 
   /**
    * Generic method to toEnum an enumeration value for a given string based on the name of the enum member.

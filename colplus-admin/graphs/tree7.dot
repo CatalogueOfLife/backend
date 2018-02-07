@@ -15,7 +15,9 @@ digraph G {
   n5  [label="Leptura nigrella Adams, 1909", fontcolor=darkgreen]
   n6 -> n5  [color=darkgreen, fontcolor=darkgreen, label=syn]
   n10  [label="Pygoleptura synomica"]
-  n7  [label="Pygoleptura tinktura Döring, 2011"]
-  n8  [label="Pygoleptura tinktura subsp. synomica Döring, 2011"]
+  n8  [label="Pygoleptura tinktura subsp. synomica Döring, 2011", fontcolor=darkgreen]
+  n10 -> n8  [color=darkgreen, fontcolor=darkgreen, label=syn]
   n9  [label="Pygoleptura"]
+  n9 -> n7
+  n7  [label="Pygoleptura tinktura Döring, 2011"]
 }

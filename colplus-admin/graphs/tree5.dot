@@ -16,8 +16,8 @@ digraph G {
   n44  [label="Coleoptera"]
   n44 -> n45
   n45  [label="Carabidae"]
-  n45 -> n11
   n45 -> n12
+  n45 -> n11
   n11  [label="Amphibia Perroud & Montrouzier, 1864"]
   n12  [label="Amphibia hybrid × formula Perroud & Montrouzier, 1864"]
   n52  [label="Diptera"]
@@ -25,12 +25,16 @@ digraph G {
   n53  [label="Phoridae"]
   n53 -> n21
   n21  [label="Acanthophorides"]
+  n4  [label="Acanthophora Borgmeier, 1922", fontcolor=darkgreen]
+  n21 -> n4  [color=darkgreen, fontcolor=darkgreen, label=syn]
   n48  [label="Lepidoptera"]
   n48 -> n51
   n48 -> n17
   n51  [label="Geometridae"]
   n51 -> n20
   n20  [label="Acanthotoca"]
+  n2  [label="Acanthophora Hulst, 1896", fontcolor=darkgreen]
+  n20 -> n2  [color=darkgreen, fontcolor=darkgreen, label=syn]
   n17  [label="Chaetognatha Felder, 1874"]
   n15  [label="Markusgenus Hannover"]
   n47  [label="Chordata"]
@@ -45,11 +49,15 @@ digraph G {
   n50  [label="Heterostropha"]
   n50 -> n19
   n19  [label="Incertae sedis"]
+  n1  [label="Tubiferidae Cossmann, 1895", fontcolor=darkgreen]
+  n19 -> n1  [color=darkgreen, fontcolor=darkgreen, label=syn]
   n54  [label="Mesogastropoda"]
   n54 -> n55
   n55  [label="Viviparidae"]
   n55 -> n22
   n22  [label="Tulotoma"]
+  n8  [label="Tulostoma Nevill, 1885", fontcolor=darkgreen]
+  n22 -> n8  [color=darkgreen, fontcolor=darkgreen, label=syn]
   n9  [label="Amphibia Berthold, 1827"]
   n33  [label="Porifera"]
   n33 -> n34
@@ -60,6 +68,8 @@ digraph G {
   n35 -> n6
   n6  [label="Acanthophora Sollas, 1873"]
   n18  [label="Incertae sedis"]
+  n0  [label="Megalithistida", fontcolor=darkgreen]
+  n18 -> n0  [color=darkgreen, fontcolor=darkgreen, label=syn]
   n36  [label="Fungi"]
   n36 -> n37
   n37  [label="Basidiomycota"]

@@ -2,6 +2,9 @@ package org.col.admin.task.importer.dwca;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
+import org.col.admin.task.importer.NeoInserter;
+import org.col.admin.task.importer.NormalizationFailedException;
+import org.col.admin.task.importer.VerbatimRecordFactory;
 import org.col.admin.task.importer.neo.NeoDb;
 import org.col.admin.task.importer.neo.model.NeoTaxon;
 import org.col.api.model.Dataset;
@@ -19,16 +22,16 @@ import java.io.IOException;
 /**
  *
  */
-public class NormalizerInserter {
+public class DwcaInserter implements NeoInserter {
 
-  private static final Logger LOG = LoggerFactory.getLogger(NormalizerInserter.class);
+  private static final Logger LOG = LoggerFactory.getLogger(DwcaInserter.class);
 
   private Archive arch;
   private InsertMetadata meta = new InsertMetadata();
   private final NeoDb store;
   private VerbatimInterpreter interpreter;
 
-  public NormalizerInserter(NeoDb store) throws IOException {
+  public DwcaInserter(NeoDb store) throws IOException {
     this.store = store;
   }
 
@@ -38,6 +41,7 @@ public class NormalizerInserter {
    *
    * Before inserting it does a quick check to see if all required dwc terms are actually mapped.
    */
+  @Override
   public InsertMetadata insert(File dwca) throws NormalizationFailedException {
     openArchive(dwca);
     updateMetadata();

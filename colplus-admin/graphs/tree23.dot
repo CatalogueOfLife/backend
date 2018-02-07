@@ -12,8 +12,8 @@ digraph G {
   n4 -> n5
   n9  [label="Gastropoda"]
   n9 -> n8
-  n9 -> n7
   n8  [label="Fissurelloidea"]
+  n8 -> n7
   n7  [label="Fissurellidae Fleming, 1822"]
   n5  [label="Mollusca not assigned"]
   n5 -> n6

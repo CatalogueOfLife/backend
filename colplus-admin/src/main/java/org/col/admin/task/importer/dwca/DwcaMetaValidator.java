@@ -2,6 +2,7 @@ package org.col.admin.task.importer.dwca;
 
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
+import org.col.admin.task.importer.NormalizationFailedException;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.GbifTerm;
 import org.gbif.dwc.terms.Term;

@@ -1,6 +1,7 @@
 package org.col.api.vocab;
 
 import org.gbif.dwc.terms.Term;
+import org.gbif.dwc.terms.TermFactory;
 
 /**
  *
@@ -12,6 +13,10 @@ public enum CoLTerm implements Term {
 
   public static final String NS = "http://rs.col.plus/terms/";
   public static final String PREFIX = "col";
+
+  static {
+    TermFactory.instance().addTerms(CoLTerm.values(), new String[]{PREFIX, "colplus", "col+"});
+  }
 
   /**
    * The full qualified term uri including the namespace.

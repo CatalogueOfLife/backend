@@ -36,7 +36,7 @@
         -->
         <commmons-lang.version>3.6</commmons-lang.version>
         <dropwizard.version>1.2.3</dropwizard.version>
-        <dwc-api.version>1.17</dwc-api.version>
+        <dwc-api.version>1.18-SNAPSHOT</dwc-api.version>
         <dwca-io.version>1.32</dwca-io.version>
         <fastutil.version>8.1.0</fastutil.version>
         <gbif-api.version>0.60</gbif-api.version>
@@ -53,7 +53,7 @@
         <jackson2.version>2.9.3</jackson2.version>
         <javax.ws.rs-api.version>2.0.1</javax.ws.rs-api.version>
         <javers.version>3.7.5</javers.version>
-        <!-- make sure jersey matches dropwizards version -->
+        <!-- makjackse sure jersey matches dropwizards version -->
         <jersey.version>2.25.1</jersey.version>
         <jsr305.version>3.0.2</jsr305.version>
         <junit.version>4.12</junit.version>
@@ -404,6 +404,11 @@
             <dependency>
                 <groupId>com.fasterxml.jackson.dataformat</groupId>
                 <artifactId>jackson-dataformat-xml</artifactId>
+                <version>${jackson2.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.dataformat</groupId>
+                <artifactId>jackson-dataformat-csv</artifactId>
                 <version>${jackson2.version}</version>
             </dependency>
 

@@ -13,7 +13,7 @@
 
     <logger name="org.apache.http" level="INFO"/>
     <logger name="org.col" level="INFO"/>
-    <logger name="org.col.task" level="DEBUG"/>
+    <logger name="org.col.admin" level="DEBUG"/>
 
     <root level="INFO">
         <appender-ref ref="CONSOLE"/>

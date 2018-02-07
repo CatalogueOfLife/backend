@@ -14,6 +14,7 @@ import java.util.Objects;
  *
  */
 public class VerbatimRecordTerms {
+
   /**
    * The verbatim core of the record
    */

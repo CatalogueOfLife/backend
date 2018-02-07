@@ -1,8 +1,11 @@
-package org.col.admin.task.importer.dwca;
+package org.col.admin.task.importer;
 
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
+import org.col.admin.task.importer.acef.ACEFInserter;
+import org.col.admin.task.importer.dwca.InsertMetadata;
+import org.col.admin.task.importer.dwca.DwcaInserter;
 import org.col.admin.task.importer.neo.NeoDb;
 import org.col.admin.task.importer.neo.NotUniqueRuntimeException;
 import org.col.admin.task.importer.neo.model.*;
@@ -10,6 +13,7 @@ import org.col.admin.task.importer.neo.traverse.Traversals;
 import org.col.api.model.Classification;
 import org.col.api.model.Name;
 import org.col.api.model.VerbatimRecord;
+import org.col.api.vocab.DataFormat;
 import org.col.api.vocab.Issue;
 import org.col.api.vocab.Origin;
 import org.col.api.vocab.TaxonomicStatus;
@@ -50,13 +54,15 @@ public class Normalizer implements Runnable {
     }
   }
 
+  private final DataFormat format;
   private final File dwca;
   private final NeoDb store;
   private InsertMetadata meta;
 
-  public Normalizer(NeoDb store, File dwca) {
+  public Normalizer(NeoDb store, File dwca, DataFormat format) {
     this.dwca = dwca;
     this.store = store;
+    this.format = format;
   }
 
   /**
@@ -78,7 +84,7 @@ public class Normalizer implements Runnable {
   public void run(boolean closeStore) throws NormalizationFailedException {
     LOG.info("Start normalization of {}", store);
     try {
-      // batch import verbatim records its own batchdb
+      // batch import verbatim records
       insertData();
       // insert normalizer db relations, create implicit nodes if needed and parse names
       normalize();
@@ -722,7 +728,17 @@ public class Normalizer implements Runnable {
   private void insertData() throws NormalizationFailedException {
     // closing the batch inserter opens the normalizer db again for regular access via the store
     try {
-      NormalizerInserter inserter = new NormalizerInserter(store);
+      NeoInserter inserter;
+      switch (format) {
+        case DWCA:
+          inserter = new DwcaInserter(store);
+          break;
+        case ACEF:
+          inserter = new ACEFInserter(store);
+          break;
+        default:
+          throw new NormalizationFailedException("Unsupported data format " + format);
+      }
       meta = inserter.insert(dwca);
 
     } catch (NotUniqueRuntimeException e) {

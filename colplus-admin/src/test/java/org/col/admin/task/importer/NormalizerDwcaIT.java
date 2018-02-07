@@ -1,4 +1,4 @@
-package org.col.admin.task.importer.dwca;
+package org.col.admin.task.importer;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -15,6 +15,7 @@ import org.col.admin.task.importer.neo.printer.GraphFormat;
 import org.col.admin.task.importer.neo.printer.PrinterUtils;
 import org.col.api.model.Reference;
 import org.col.api.model.Taxon;
+import org.col.api.vocab.DataFormat;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -43,7 +44,7 @@ import static org.junit.Assert.*;
 /**
  *
  */
-public class NormalizerIT {
+public class NormalizerDwcaIT {
   private NeoDb store;
   private NormalizerConfig cfg;
   private Path dwca;
@@ -54,13 +55,13 @@ public class NormalizerIT {
    * @return
    * @throws Exception
    */
-  private void normalize(int datasetKey) throws Exception {
+  private void normalizeDwca(int datasetKey) throws Exception {
     URL dwcaUrl = getClass().getResource("/dwca/"+datasetKey);
     dwca = Paths.get(dwcaUrl.toURI());
 
     store = NeoDbFactory.create(cfg,datasetKey);
 
-    Normalizer norm = new Normalizer(store, dwca.toFile());
+    Normalizer norm = new Normalizer(store, dwca.toFile(), DataFormat.DWCA);
     norm.run();
 
     // reopen
@@ -110,7 +111,7 @@ public class NormalizerIT {
 
   @Test
   public void testPublishedIn() throws Exception {
-    normalize(0);
+    normalizeDwca(0);
 
     for (Reference r : store.refList()) {
       System.out.println(r);
@@ -129,7 +130,7 @@ public class NormalizerIT {
 
   @Test
   public void testNeoIndices() throws Exception {
-    normalize(1);
+    normalizeDwca(1);
 
     Set<String> taxonIndices = Sets.newHashSet();
     taxonIndices.add(NeoProperties.TAXON_ID);
@@ -154,7 +155,7 @@ public class NormalizerIT {
 
   @Test
   public void testBasionym() throws Exception {
-    normalize(1);
+    normalizeDwca(1);
 
     try (Transaction tx = store.getNeo().beginTx()) {
       NeoTaxon u1 = byTaxonID("1006");
@@ -187,7 +188,7 @@ public class NormalizerIT {
 
   @Test
   public void testProParte() throws Exception {
-    normalize(8);
+    normalizeDwca(8);
 
     try (Transaction tx = store.getNeo().beginTx()) {
       NeoTaxon syn = byTaxonID("1001");

@@ -30,6 +30,7 @@ digraph G {
   n555 -> n753
   n555 -> n752
   n555 -> n765
+  n555 -> n481
   n555 -> n766
   n555 -> n767
   n555 -> n768
@@ -271,7 +272,7 @@ digraph G {
   n45  [label="Aletris lutea Small"]
   n597  [label="Allium"]
   n597 -> n132
-  n132  [label="Allium species"]
+  n132  [label="Allium spec."]
   n759  [label="Amelanchier"]
   n759 -> n472
   n759 -> n473
@@ -418,7 +419,7 @@ digraph G {
   n254  [label="Carex physorhyncha Liebm. ex Steud."]
   n265  [label="Carex striata Michx."]
   n276  [label="Carex venusta Dewey"]
-  n220  [label="Carex leptalea subsp. harperi"]
+  n220  [label="Carex leptalea subsp. harperi (Fernald) Calder & Roy L.Taylor"]
   n634  [label="Carphephorus"]
   n634 -> n212
   n634 -> n211
@@ -506,7 +507,7 @@ digraph G {
   n222  [label="Coreopsis falcata F.E.Boynton"]
   n223  [label="Coreopsis linifolia Nutt."]
   n224  [label="Coreopsis palustris Sorrie"]
-  n225  [label="Coreopsis species"]
+  n225  [label="Coreopsis spec."]
   n674  [label="Cornus"]
   n674 -> n293
   n293  [label="Cornus stricta Lam."]
@@ -575,8 +576,8 @@ digraph G {
   n115  [label="Dichanthelium mattamuskeetense (Ashe) Mohlenbr."]
   n118  [label="Dichanthelium scabriusculum (Elliott) Gould & C.A.Clark"]
   n119  [label="Dichanthelium scoparium (Lam.) Gould"]
-  n122  [label="Dichanthelium species"]
-  n120  [label="Dichanthelium species"]
+  n122  [label="Dichanthelium spec."]
+  n120  [label="Dichanthelium spec."]
   n123  [label="Dichanthelium sphaerocarpon (Elliott) Gould"]
   n126  [label="Dichanthelium tenue (Muhl.) Freckmann & Lelong"]
   n128  [label="Dichanthelium webberianum (Nash) LeBlond"]
@@ -593,9 +594,7 @@ digraph G {
   n125  [label="Dichanthelium strigosum var. strigosum (Muhl. ex Elliott) Freckmann"]
   n127  [label="Dichanthelium villosissimum var. villosissimum (Nash) Freckmann"]
   n765  [label="Diodia"]
-  n765 -> n481
   n765 -> n482
-  n481  [label="Diodia teres Walter"]
   n482  [label="Diodia virginiana L."]
   n677  [label="Dionaea"]
   n677 -> n296
@@ -1328,7 +1327,7 @@ digraph G {
   n544  [label="Scleria georgiana Core"]
   n545  [label="Scleria minor (Britton) W.Stone"]
   n546  [label="Scleria muehlenbergii Steud."]
-  n548  [label="Scleria species"]
+  n548  [label="Scleria spec."]
   n549  [label="Scleria triglomerata Michx."]
   n550  [label="Scleria verticillata Muhl. ex Willd."]
   n541  [label="Scleria ciliata var. ciliata Michx."]
@@ -1435,7 +1434,7 @@ digraph G {
   n274  [label="Symphyotrichum pilosum var. pilosum (Willd.) G.L.Nesom"]
   n772  [label="Symplocos"]
   n772 -> n492
-  n492  [label="Symplocos tinctoria"]
+  n492  [label="Symplocos tinctoria (L.) L'Hér."]
   n557  [label="Syngonanthus"]
   n557 -> n1
   n1  [label="Syngonanthus flavidulus (Michx.) Ruhland"]
@@ -1557,7 +1556,7 @@ digraph G {
   n174  [label="Xyris iridifolia Chapm."]
   n175  [label="Xyris jupicai Rich."]
   n177  [label="Xyris scabrifolia R.M.Harper"]
-  n178  [label="Xyris species"]
+  n178  [label="Xyris spec."]
   n594  [label="Yucca"]
   n594 -> n121
   n121  [label="Yucca filamentosa L."]
@@ -1570,6 +1569,7 @@ digraph G {
   n708  [label="Zornia"]
   n708 -> n351
   n351  [label="Zornia bracteata J.F.Gmel."]
+  n481  [label="Diodia Walter"]
   n179  [label="Taxon"]
   n21  [label="Taxon"]
   n109  [label="Taxon"]
