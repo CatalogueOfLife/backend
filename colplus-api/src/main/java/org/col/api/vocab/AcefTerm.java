@@ -1,6 +1,7 @@
 package org.col.api.vocab;
 
 import com.google.common.collect.ImmutableSet;
+import org.gbif.dwc.terms.AlternativeNames;
 import org.gbif.dwc.terms.Term;
 
 import java.util.Set;
@@ -8,8 +9,8 @@ import java.util.Set;
 /**
  * As per CoL Data Submission Format, ver. 4 of 29th September 2014: List of tables and fields
  */
-public enum  AcefTerm implements Term {
-  AcceptedSpecies,
+public enum  AcefTerm implements Term, AlternativeNames {
+  ACCEPTED_SPECIES,
   AcceptedTaxonID,
   Kingdom,
   Phylum,
@@ -35,19 +36,19 @@ public enum  AcefTerm implements Term {
   GSDNameGUID,
 
   //
-  AcceptedInfraSpecificTaxa,
+  ACCEPTED_INFRA_SPECIFIC_TAXA,
   ParentSpeciesID,
-  InfraSpeciesEpithet,
+  InfraSpeciesEpithet("InfraSpecies"),
   InfraSpeciesAuthorString,
   InfraSpeciesMarker,
   InfraSpeciesURL,
 
   // SYNONYMS
-  Synonyms,
+  SYNONYMS,
   ID,
 
   // COMMON NAMES
-  CommonNames,
+  COMMON_NAMES,
   CommonName,
   TransliteratedName,
   Country,
@@ -56,24 +57,24 @@ public enum  AcefTerm implements Term {
   ReferenceID,
 
   // DISTRIBUTION
-  Distribution,
+  DISTRIBUTION,
   DistributionElement,
   StandardInUse,
   DistributionStatus,
 
   // REFERENCE
-  Reference,
+  REFERENCE,
   Author,
   Year,
   Title,
   Source,
 
   // NAME REFERENCES LINKS
-  NameReferencesLinks,
+  NAME_REFERENCES_LINKS,
   ReferenceType,
 
   // SOURCE DATABASE
-  SourceDatabase,
+  SOURCE_DATABASE,
   DatabaseFullName,
   DatabaseShortName,
   DatabaseVersion,
@@ -91,14 +92,14 @@ public enum  AcefTerm implements Term {
   ContactPerson;
 
   private static Set<Term> CLASS_TERMS = ImmutableSet.of(
-      AcceptedSpecies,
-      AcceptedInfraSpecificTaxa,
-      Synonyms,
-      CommonNames,
-      Distribution,
-      Reference,
-      NameReferencesLinks,
-      SourceDatabase
+      ACCEPTED_SPECIES,
+      ACCEPTED_INFRA_SPECIFIC_TAXA,
+      SYNONYMS,
+      COMMON_NAMES,
+      DISTRIBUTION,
+      REFERENCE,
+      NAME_REFERENCES_LINKS,
+      SOURCE_DATABASE
   );
 
   public static final String NS = "http://rs.col.plus/terms/acef/";
@@ -135,6 +136,11 @@ public enum  AcefTerm implements Term {
   @Override
   public String toString() {
     return PREFIX + ":" + name();
+  }
+
+  @Override
+  public String[] alternativeNames() {
+    return this.alternatives;
   }
 
   /**

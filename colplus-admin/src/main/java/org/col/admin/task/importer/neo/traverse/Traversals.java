@@ -30,10 +30,13 @@ public class Traversals {
       .depthFirst()
       .evaluator(Evaluators.excludeStartPosition());
 
-  public static final TraversalDescription LINNEAN_PARENTS = new MonoDirectionalTraversalDescription()
+  /**
+   * Just the parents with ranks used in Classification.RANKS
+   */
+  public static final TraversalDescription CLASSIFICATION = new MonoDirectionalTraversalDescription()
       .relationships(RelType.PARENT_OF, Direction.INCOMING)
       .depthFirst()
-      .evaluator(new LinneanRankEvaluator())
+      .evaluator(new ClassificationRankEvaluator())
       .evaluator(Evaluators.excludeStartPosition());
 
   public static final TraversalDescription CHILDREN = new MonoDirectionalTraversalDescription()

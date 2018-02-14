@@ -25,6 +25,21 @@ public class VerbatimRecordFactory {
     return Strings.emptyToNull(CharMatcher.javaIsoControl().trimAndCollapseFrom(x, ' ').trim());
   }
 
+  public static VerbatimRecord build (String id, TermRecord core) {
+    VerbatimRecord v = new VerbatimRecord();
+    v.setId(id);
+
+    // set core terms
+    core.forEach((term, value) -> {
+      String val = clean(value);
+      if (val != null) {
+        v.setCoreTerm(term, val);
+      }
+    });
+
+    return v;
+  }
+
   public static VerbatimRecord build (StarRecord star) {
     VerbatimRecord v = new VerbatimRecord();
     v.setId(star.core().id());

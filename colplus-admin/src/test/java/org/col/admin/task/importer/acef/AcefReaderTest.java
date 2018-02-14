@@ -5,8 +5,6 @@ import org.col.api.vocab.AcefTerm;
 import org.gbif.utils.file.FileUtils;
 import org.junit.Test;
 
-import java.util.Iterator;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -16,12 +14,12 @@ import static org.junit.Assert.assertNotNull;
 public class AcefReaderTest {
 
   @Test
-  public void from() throws Exception {
-    AcefReader reader = AcefReader.from(FileUtils.getClasspathFile("acef/1"));
+  public void fromFolder() throws Exception {
+    AcefReader reader = AcefReader.from(FileUtils.getClasspathFile("acef/0"));
 
-    Iterator<TermRecord> iter = reader.iterator(AcefTerm.AcceptedSpecies);
-    while (iter.hasNext()) {
-      TermRecord tr = iter.next();
+    int counter = 0;
+    for (TermRecord tr : reader.read(AcefTerm.ACCEPTED_SPECIES)){
+      counter++;
       assertNotNull(tr.get(AcefTerm.AcceptedTaxonID));
       assertEquals("Fabales", tr.get(AcefTerm.Order));
       assertEquals("Fabaceae", tr.get(AcefTerm.Family));
@@ -33,16 +31,11 @@ public class AcefReaderTest {
       assertEquals("Terrestrial", tr.get(AcefTerm.LifeZone));
       assertNotNull(tr.get(AcefTerm.SpeciesURL));
       assertNotNull(tr.get(AcefTerm.GSDNameGUID));
-      if (tr.get(AcefTerm.AcceptedTaxonID).equals("695678")) {
-        assertEquals("1", tr.get(AcefTerm.IsExtinct));
-        assertEquals("1", tr.get(AcefTerm.HasPreHolocene));
-        assertEquals("0", tr.get(AcefTerm.HasModern));
-      } else {
-        assertEquals("0", tr.get(AcefTerm.IsExtinct));
-        assertEquals("0", tr.get(AcefTerm.HasPreHolocene));
-        assertEquals("1", tr.get(AcefTerm.HasModern));
-      }
+      assertEquals("0", tr.get(AcefTerm.IsExtinct));
+      assertEquals("0", tr.get(AcefTerm.HasPreHolocene));
+      assertEquals("1", tr.get(AcefTerm.HasModern));
     }
+    assertEquals(3, counter);
   }
 
 }

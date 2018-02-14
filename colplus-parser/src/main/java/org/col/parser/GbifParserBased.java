@@ -4,7 +4,8 @@ import org.gbif.common.parsers.core.Parsable;
 import org.gbif.common.parsers.core.ParseResult;
 
 /**
- *
+ * @param <T> Parser value class
+ * @param <G> GBIF value class
  */
 abstract class GbifParserBased<T, G> extends ParserBase<T> {
 

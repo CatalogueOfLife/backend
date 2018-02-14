@@ -14,11 +14,11 @@ public class NormalizationFailedException extends RuntimeException {
   }
 
   /**
-   * For exceptions when the dwca cannot be indexed, e.g. mappings miss required terms.
+   * For exceptions when the source files are broken or unusable, e.g. mappings miss required terms.
    */
-  public static class DwcaInvalidException extends NormalizationFailedException {
+  public static class SourceInvalidException extends NormalizationFailedException {
 
-    public DwcaInvalidException(String message) {
+    public SourceInvalidException(String message) {
       super(message);
     }
   }

@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -41,27 +42,33 @@ import static org.junit.Assert.assertFalse;
 @RunWith(Parameterized.class)
 @Ignore
 public class NormalizerTreeIT {
+  final static int MAX_ACEF_ID = 1;
   final static int MAX_DWCA_ID = 23;
 
   private NeoDb store;
   private NormalizerConfig cfg;
-  private Path dwca;
+  private Path source;
 
   //TODO: these 3 tests need to be checked - they do seem to create real wrong outcomes !!!
-  Set<Integer> ignore = Sets.newHashSet(10, 18, 21);
+  Set<Integer> ignoreDwca = Sets.newHashSet(10, 18, 21);
 
   @Parameterized.Parameters
   public static Collection<Object[]> data() {
-    IntStream stream = IntStream.rangeClosed(0, MAX_DWCA_ID);
-    return stream
-        .mapToObj(i -> new Object[]{i})
-        .collect(Collectors.toList());
+    IntStream acefIds = IntStream.rangeClosed(0, MAX_ACEF_ID);
+    IntStream dwcaIds = IntStream.empty();
+    //IntStream dwcaIds = IntStream.rangeClosed(0, MAX_DWCA_ID);
+    return Stream.concat(
+        acefIds.mapToObj(i -> new Object[]{DataFormat.ACEF, i}),
+        dwcaIds.mapToObj(i -> new Object[]{DataFormat.DWCA, i})
+    ).collect(Collectors.toList());
   }
 
   // test param
+  private DataFormat format;
   private int datasetKey;
 
-  public NormalizerTreeIT(int datasetKey) {
+  public NormalizerTreeIT(DataFormat format, int datasetKey) {
+    this.format = format;
     this.datasetKey = datasetKey;
   }
 
@@ -70,6 +77,9 @@ public class NormalizerTreeIT {
     cfg = new NormalizerConfig();
     cfg.archiveDir = Files.createTempDir();
     cfg.scratchDir = Files.createTempDir();
+    // make sure its empty
+    FileUtils.deleteQuietly(cfg.archiveDir);
+    FileUtils.deleteQuietly(cfg.scratchDir);
   }
 
   @After
@@ -85,19 +95,21 @@ public class NormalizerTreeIT {
    * Normalizes a dwca from the dwca test resources and checks its printed txt tree against the expected tree
    */
   @Test
-  public void testDwcaTree() throws Exception {
-    if (ignore.contains(datasetKey)) {
-      System.out.println("IGNORE NORMALIZER TEST FOR DATASET "+datasetKey);
+  public void testTree() throws Exception {
+    if (format == DataFormat.DWCA && ignoreDwca.contains(datasetKey)) {
+      System.out.println("IGNORE DWCA NORMALIZER TEST FOR DATASET "+datasetKey);
       return;
     }
 
     try {
-      URL dwcaUrl = getClass().getResource("/dwca/"+datasetKey);
-      dwca = Paths.get(dwcaUrl.toURI());
+      final String resourceDir = "/"+format.name().toLowerCase()+"/"+datasetKey;
+      URL dwcaUrl = getClass().getResource(resourceDir);
+      source = Paths.get(dwcaUrl.toURI());
+      System.out.println("TEST " + format+" " + datasetKey);
 
       store = NeoDbFactory.create(cfg,datasetKey);
 
-      Normalizer norm = new Normalizer(store, dwca.toFile(), DataFormat.DWCA);
+      Normalizer norm = new Normalizer(store, source.toFile(), format);
       try {
         norm.run();
 
@@ -108,7 +120,7 @@ public class NormalizerTreeIT {
       }
 
       // assert tree
-      InputStream tree = getClass().getResourceAsStream("/dwca/"+datasetKey+"/expected.tree");
+      InputStream tree = getClass().getResourceAsStream(resourceDir+"/expected.tree");
       String expected = IOUtils.toString(tree, Charsets.UTF_8).trim();
 
       Writer writer = new StringWriter();
@@ -120,7 +132,7 @@ public class NormalizerTreeIT {
       assertEquals(expected, neotree);
 
     } catch (Exception e) {
-      System.err.println("Failed to normalize dataset "+datasetKey);
+      System.err.println("Failed to normalize " + format + " dataset " + datasetKey);
       throw e;
     }
   }

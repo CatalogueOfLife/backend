@@ -2,6 +2,7 @@ package org.col.admin.task.importer.dwca;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
+import org.col.admin.task.importer.InsertMetadata;
 import org.col.admin.task.importer.NeoInserter;
 import org.col.admin.task.importer.NormalizationFailedException;
 import org.col.admin.task.importer.VerbatimRecordFactory;
@@ -26,13 +27,16 @@ public class DwcaInserter implements NeoInserter {
 
   private static final Logger LOG = LoggerFactory.getLogger(DwcaInserter.class);
 
+  private final File dwca;
+  private final NeoDb store;
+
   private Archive arch;
   private InsertMetadata meta = new InsertMetadata();
-  private final NeoDb store;
-  private VerbatimInterpreter interpreter;
+  private DwcInterpreter interpreter;
 
-  public DwcaInserter(NeoDb store) throws IOException {
+  public DwcaInserter(NeoDb store, File dwca) throws IOException {
     this.store = store;
+    this.dwca = dwca;
   }
 
   /**
@@ -42,10 +46,10 @@ public class DwcaInserter implements NeoInserter {
    * Before inserting it does a quick check to see if all required dwc terms are actually mapped.
    */
   @Override
-  public InsertMetadata insert(File dwca) throws NormalizationFailedException {
+  public InsertMetadata insertAll() throws NormalizationFailedException {
     openArchive(dwca);
     updateMetadata();
-    interpreter = new VerbatimInterpreter(meta, store);
+    interpreter = new DwcInterpreter(meta, store);
     store.startBatchMode();
     //TODO: insert reference file first
     for (StarRecord star : arch) {
@@ -94,15 +98,7 @@ public class DwcaInserter implements NeoInserter {
     // store interpreted record incl verbatim
     store.put(i);
 
-    meta.incRecords();
-    meta.incRank(i.name.getRank());
-    if (meta.getRecords() % (10000) == 0) {
-      LOG.info("Inserts done into neo4j: {}", meta.getRecords());
-      if (Thread.interrupted()) {
-        LOG.warn("NormalizerInserter interrupted, exit early with incomplete parsing");
-        throw new NormalizationFailedException("NormalizerInserter interrupted");
-      }
-    }
+    meta.incRecords(i.name.getRank());
   }
 
   private void openArchive(File dwca) throws NormalizationFailedException {

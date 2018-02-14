@@ -50,6 +50,8 @@ public interface NormalizerStore extends AutoCloseableRuntime {
    */
   void process(Labels label, int batchSize, NeoDb.NodeBatchProcessor callback);
 
+  Iterable<NeoTaxon> all();
+
   NeoTaxon get(Node n);
 
   void updateTaxonStoreWithRelations();

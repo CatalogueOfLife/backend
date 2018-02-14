@@ -1,25 +1,17 @@
 package org.col.admin.task.importer;
 
-import com.google.common.base.Splitter;
-import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
-import org.col.admin.task.importer.acef.ACEFInserter;
-import org.col.admin.task.importer.dwca.InsertMetadata;
+import org.col.admin.task.importer.acef.AcefInserter;
+import org.col.admin.task.importer.acef.AcefRelationInserter;
+import org.col.admin.task.importer.dwca.DwcaRelationInserter;
 import org.col.admin.task.importer.dwca.DwcaInserter;
 import org.col.admin.task.importer.neo.NeoDb;
 import org.col.admin.task.importer.neo.NotUniqueRuntimeException;
 import org.col.admin.task.importer.neo.model.*;
 import org.col.admin.task.importer.neo.traverse.Traversals;
 import org.col.api.model.Classification;
-import org.col.api.model.Name;
-import org.col.api.model.VerbatimRecord;
 import org.col.api.vocab.DataFormat;
 import org.col.api.vocab.Issue;
 import org.col.api.vocab.Origin;
-import org.col.api.vocab.TaxonomicStatus;
-import org.col.parser.NameParser;
-import org.gbif.dwc.terms.DwcTerm;
-import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 import org.neo4j.graphdb.*;
 import org.neo4j.helpers.collection.Iterables;
@@ -31,7 +23,6 @@ import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -40,27 +31,13 @@ import java.util.Set;
  */
 public class Normalizer implements Runnable {
   private static final Logger LOG = LoggerFactory.getLogger(Normalizer.class);
-  public static final Name PLACEHOLDER = new Name();
-  static {
-    PLACEHOLDER.setScientificName("Incertae sedis");
-    PLACEHOLDER.setRank(Rank.UNRANKED);
-    PLACEHOLDER.setType(NameType.PLACEHOLDER);
-    PLACEHOLDER.setOrigin(Origin.OTHER);
-  }
-  private static final List<Splitter> COMMON_SPLITTER = Lists.newArrayList();
-  static {
-    for (char del : "[|;, ]".toCharArray()) {
-      COMMON_SPLITTER.add(Splitter.on(del).trimResults().omitEmptyStrings());
-    }
-  }
-
   private final DataFormat format;
-  private final File dwca;
+  private final File sourceDir;
   private final NeoDb store;
   private InsertMetadata meta;
 
-  public Normalizer(NeoDb store, File dwca, DataFormat format) {
-    this.dwca = dwca;
+  public Normalizer(NeoDb store, File sourceDir, DataFormat format) {
+    this.sourceDir = sourceDir;
     this.store = store;
     this.format = format;
   }
@@ -109,30 +86,6 @@ public class Normalizer implements Runnable {
   }
 
   private void normalize() {
-    LOG.info("Start processing explicit relations ...");
-
-    store.process(Labels.ALL,10000, new NeoDb.NodeBatchProcessor() {
-      @Override
-      public void process(Node n) {
-        try {
-          NeoTaxon t = store.get(n);
-          insertAcceptedRel(t);
-          insertParentRel(t);
-          insertBasionymRel(t);
-          store.put(t);
-
-        } catch (Exception e) {
-          LOG.error("error processing explicit relations for {} {}", n, NeoProperties.getScientificNameWithAuthor(n), e);
-        }
-      }
-
-      @Override
-      public void commitBatch(int counter) {
-        checkInterrupted();
-        LOG.debug("Processed relations for {} nodes", counter);
-      }
-    });
-
     // cleanup synonym & parent relations
     cutSynonymCycles();
     relinkSynonymChains();
@@ -148,76 +101,6 @@ public class Normalizer implements Runnable {
     store.updateTaxonStoreWithRelations();
 
     LOG.info("Relation setup completed.");
-  }
-
-  /**
-   * Creates synonym_of relationship based on the verbatim dwc:acceptedNameUsageID and dwc:acceptedNameUsage term values.
-   * Assumes pro parte basionymGroup are dealt with before and the remaining accepted identifier refers to a single taxon only.
-   *
-   * @param t the full neotaxon to process
-   */
-  private void insertAcceptedRel(NeoTaxon t) {
-    List<RankedName> accepted = null;
-    if (t.verbatim != null && meta.isAcceptedNameMapped()) {
-      accepted = lookupByIdOrName(t, DwcTerm.acceptedNameUsageID, Issue.ACCEPTED_NAME_USAGE_ID_INVALID, DwcTerm.acceptedNameUsage, Origin.VERBATIM_ACCEPTED);
-      for (RankedName acc : accepted) {
-        createSynonymRel(t.node, acc.node);
-      }
-    }
-
-    // if status is synonym but we aint got no idea of the accepted insert an incertae sedis record of same rank
-    if ((accepted==null || accepted.isEmpty())
-        && (t.isSynonym() || t.issues.containsKey(Issue.ACCEPTED_NAME_USAGE_ID_INVALID))
-    ) {
-      t.addIssue(Issue.ACCEPTED_NAME_MISSING);
-      PLACEHOLDER.setRank(t.name.getRank());
-      RankedName acc = createDoubtfulFromSource(Origin.MISSING_ACCEPTED, PLACEHOLDER, t, t.name.getRank(), null, Issue.ACCEPTED_NAME_MISSING, t.name.getScientificName());
-      // now remove any denormed classification from this synonym as we have copied it already to the accepted placeholder
-      t.classification = null;
-      createSynonymRel(t.node, acc.node);
-    }
-  }
-
-  /**
-   * Sets up the parent relations using the parentNameUsage(ID) term values.
-   * The denormed, flat classification is used in a next step later.
-   */
-  private void insertParentRel(NeoTaxon t) {
-    if (t.verbatim != null && meta.isParentNameMapped()) {
-      RankedName parent = lookupSingleByIdOrName(t, DwcTerm.parentNameUsageID, Issue.PARENT_NAME_USAGE_ID_INVALID, DwcTerm.parentNameUsage, Origin.VERBATIM_PARENT);
-      if (parent != null) {
-        assignParent(parent.node, t.node);
-      }
-    }
-  }
-
-  private void insertBasionymRel(NeoTaxon t) {
-    if (t.verbatim != null && meta.isOriginalNameMapped()) {
-      RankedName bas = lookupSingleByIdOrName(t, DwcTerm.originalNameUsageID, Issue.ORIGINAL_NAME_USAGE_ID_INVALID, DwcTerm.originalNameUsage, Origin.VERBATIM_BASIONYM);
-      if (bas != null) {
-        bas.node.createRelationshipTo(t.node, RelType.BASIONYM_OF);
-      }
-    }
-  }
-
-  private RankedName lookupSingleByIdOrName(NeoTaxon t, DwcTerm idTerm, Issue invlidIdIssue, DwcTerm nameTerm, Origin createdNameOrigin) {
-    List<RankedName> names = lookupByIdOrName(t, false, idTerm, invlidIdIssue, nameTerm, createdNameOrigin);
-    return names.isEmpty() ? null : names.get(0);
-  }
-
-  private List<RankedName> lookupByIdOrName(NeoTaxon t, DwcTerm idTerm, Issue invlidIdIssue, DwcTerm nameTerm, Origin createdNameOrigin) {
-    return lookupByIdOrName(t, true, idTerm, invlidIdIssue, nameTerm, createdNameOrigin);
-  }
-  private List<RankedName> lookupByIdOrName(NeoTaxon t, boolean allowMultiple, DwcTerm idTerm, Issue invlidIdIssue, DwcTerm nameTerm, Origin createdNameOrigin) {
-    List<RankedName> names = lookupByTaxonID(idTerm, t, invlidIdIssue, allowMultiple);
-    if (names.isEmpty()) {
-      // try to setup rel via the name
-      RankedName n = lookupByName(nameTerm, t, createdNameOrigin);
-      if (n != null) {
-        names.add(n);
-      }
-    }
-    return names;
   }
 
   /**
@@ -312,15 +195,15 @@ public class Normalizer implements Runnable {
     // and at the very end apply that classification to the taxon.node
     Node parent = null;
     Rank parentRank = null;
-    // from kingdom to genus
-    for (Rank hr : Rank.DWC_RANKS) {
+    // from kingdom to subgenus
+    for (Rank hr : Classification.RANKS) {
       if ((taxon.rank == null || !taxon.rank.higherThan(hr)) && cl.getByRank(hr) != null) {
         // test for existing usage with that name & rank
         boolean found = false;
         for (Node n : store.byScientificName(cl.getByRank(hr), hr)) {
           if (parent == null) {
             // make sure node does also not have a higher linnean rank parent
-            Node p = Iterables.firstOrNull(Traversals.LINNEAN_PARENTS.traverse(n).nodes());
+            Node p = Iterables.firstOrNull(Traversals.CLASSIFICATION.traverse(n).nodes());
             if (p == null) {
               // aligns!
               parent = n;
@@ -344,37 +227,16 @@ public class Normalizer implements Runnable {
         }
         if (!found) {
           // persistent new higher taxon if not found
-          Node lowerParent = createAccepted(Origin.DENORMED_CLASSIFICATION, cl.getByRank(hr), hr).node;
+          Node lowerParent = store.createAccepted(Origin.DENORMED_CLASSIFICATION, cl.getByRank(hr), hr).node;
           // insert parent relationship?
-          assignParent(parent, lowerParent);
+          store.assignParent(parent, lowerParent);
           parent = lowerParent;
           parentRank = hr;
         }
       }
     }
     // finally apply lowest parent to initial node
-    assignParent(parent, taxon.node);
-  }
-
-  private void assignParent(Node parent, Node child) {
-    if (parent != null) {
-      if (child.hasRelationship(RelType.PARENT_OF, Direction.INCOMING)) {
-        // override existing parent!
-        Node oldParent=null;
-        for (Relationship r : child.getRelationships(RelType.PARENT_OF, Direction.INCOMING)){
-          oldParent = r.getOtherNode(child);
-          r.delete();
-        }
-        LOG.error("{} has already a parent {}, override with new parent {}",
-            NeoProperties.getScientificNameWithAuthor(child),
-            NeoProperties.getScientificNameWithAuthor(oldParent),
-            NeoProperties.getScientificNameWithAuthor(parent));
-
-      } else {
-        parent.createRelationshipTo(child, RelType.PARENT_OF);
-      }
-
-    }
+    store.assignParent(parent, taxon.node);
   }
 
   /**
@@ -399,8 +261,8 @@ public class Normalizer implements Runnable {
         // this is serious. Report id
         String taxonID = NeoProperties.getTaxonID(syn);
 
-        RankedName created = createPlaceholder(Origin.MISSING_ACCEPTED, Issue.CHAINED_SYNOYM, taxonID);
-        createSynonymRel(syn, created.node);
+        RankedName created = store.createPlaceholder(Origin.MISSING_ACCEPTED, Issue.CHAINED_SYNOYM, taxonID);
+        store.createSynonymRel(syn, created.node);
         sr.delete();
 
         if (counter++ % 100 == 0) {
@@ -431,7 +293,7 @@ public class Normalizer implements Runnable {
         for (Relationship sr : (Collection<Relationship>) row.get("sr")) {
           Node syn = sr.getStartNode();
           addIssue(syn, Issue.CHAINED_SYNOYM);
-          createSynonymRel(syn, acc);
+          store.createSynonymRel(syn, acc);
           sr.delete();
           counter++;
         }
@@ -475,7 +337,7 @@ public class Normalizer implements Runnable {
               // multiple accepted taxa. We will take the first, but log an issue!
               LOG.warn("{} accepted taxa for synonym {} with a child {}. Relink child to first accepted only!", accepted.size(), synonymName, NeoProperties.getScientificNameWithAuthor(child));
             }
-            assignParent(accepted.iterator().next(), child);
+            store.assignParent(accepted.iterator().next(), child);
             parentOfRelRelinked++;
             addRemark(child, "Parent relation taken from synonym " + synonymName);
           }
@@ -498,7 +360,7 @@ public class Normalizer implements Runnable {
                   String synName = NeoProperties.getScientificNameWithAuthor(syn);
                   LOG.debug("Relink parent rel of synonym {}", synName);
                   childOfRelRelinkedToAccepted++;
-                  assignParent(parent, acc);
+                  store.assignParent(parent, acc);
                   addRemark(acc, "Parent relation taken from synonym " + synName);
                 }
               }
@@ -540,206 +402,26 @@ public class Normalizer implements Runnable {
     return t;
   }
 
-  /**
-   * Creates a synonym relationship between the given synonym and the accepted node, updating labels accordingly
-   * and also moving potentially existing parent_of relations.
-   */
-  private void createSynonymRel(Node synonym, Node accepted) {
-    synonym.createRelationshipTo(accepted, RelType.SYNONYM_OF);
-    synonym.addLabel(Labels.SYNONYM);
-    synonym.removeLabel(Labels.TAXON);
-    // potentially move the parent relationship of the synonym
-    if (synonym.hasRelationship(RelType.PARENT_OF, Direction.INCOMING)) {
-      try {
-        Relationship rel = synonym.getSingleRelationship(RelType.PARENT_OF, Direction.INCOMING);
-        if (rel != null) {
-          // check if accepted has a parent relation already
-          if (!accepted.hasRelationship(RelType.PARENT_OF, Direction.INCOMING)) {
-            assignParent(rel.getStartNode(), accepted);
-          }
-        }
-      } catch (RuntimeException e) {
-        // more than one parent relationship exists, should never be the case, sth wrong!
-        LOG.error("Synonym {} has multiple parent relationships!", synonym.getId());
-        //for (Relationship r : synonym.getRelationships(RelType.PARENT_OF)) {
-        //  r.delete();
-        //}
-      }
-    }
-  }
-
-  /**
-   * Reads a verbatim given term that should represent a foreign key to another record via the taxonID.
-   * If the value is not the same as the original records taxonID it tries to split the ids into multiple keys and lookup the matching nodes.
-   *
-   * @return list of potentially split ids with their matching neo node if found, otherwise null
-   */
-  private List<RankedName> lookupByTaxonID(DwcTerm term, NeoTaxon t, Issue invalidIdIssue, boolean allowMultiple) {
-    List<RankedName> ids = Lists.newArrayList();
-    final String unsplitIds = t.verbatim.getCoreTerm(term);
-    if (unsplitIds != null && !unsplitIds.equals(t.getTaxonID())) {
-      if (allowMultiple && meta.getMultiValueDelimiters().containsKey(term)) {
-        ids.addAll(lookupRankedNames(
-            meta.getMultiValueDelimiters().get(term).splitToList(unsplitIds), t)
-        );
-      } else {
-        // match by taxonID to see if this is an existing identifier or if we should try to split it
-        Node a = store.byTaxonID(unsplitIds);
-        if (a != null) {
-          ids.add(NeoProperties.getRankedName(a));
-
-        } else if (allowMultiple){
-          for (Splitter splitter : COMMON_SPLITTER) {
-            List<String> vals = splitter.splitToList(unsplitIds);
-            if (vals.size() > 1) {
-              ids.addAll(lookupRankedNames(vals, t));
-              break;
-            }
-          }
-        }
-      }
-      // could not find anything?
-      if (ids.isEmpty()) {
-        t.addIssue(invalidIdIssue, unsplitIds);
-        LOG.warn("{} {} not existing", term.simpleName(), unsplitIds);
-      }
-    }
-    return ids;
-  }
-
-  private List<RankedName> lookupRankedNames(Iterable<String> taxonIDs, NeoTaxon t) {
-    List<RankedName> rankedNames = Lists.newArrayList();
-    for (String id : taxonIDs) {
-      if (!id.equals(t.getTaxonID())) {
-        Node n = store.byTaxonID(id);
-        if (n != null) {
-          rankedNames.add(NeoProperties.getRankedName(n));
-        }
-      }
-    }
-    return rankedNames;
-  }
-
-  /**
-   * Reads a verbatim given term that should represent a scientific name pointing to another record via the scientificName.
-   * It first tries to lookup existing records by the canonical name with author, but falls back to authorless lookup if no matches.
-   * If the name is the same as the original records scientificName it is ignored.
-   *
-   * If true names that cannot be found are created as explicit names
-   *
-   * @return the accepted node with its name. Null if no accepted name was mapped or equals the record itself
-   */
-  private RankedName lookupByName(DwcTerm term, NeoTaxon t, Origin createdOrigin) {
-    if (t.verbatim.hasCoreTerm(term)) {
-      Name nameTmp = NameParser.PARSER.parse(t.verbatim.getCoreTerm(term)).get();
-      final Name name = nameTmp;
-      if (!name.getScientificName().equalsIgnoreCase(t.name.getScientificName())) {
-        List<Node> matches = store.byScientificName(name.getScientificName());
-        // remove other authors, but allow names without authors
-        if (name.hasAuthorship()) {
-          matches.removeIf(n -> !Strings.isNullOrEmpty(NeoProperties.getAuthorship(n)) && !NeoProperties.getAuthorship(n).equalsIgnoreCase(name.authorshipComplete()));
-        }
-
-        // if multiple matches remove basionymGroup
-        if (matches.size() > 1) {
-          matches.removeIf(n -> n.hasLabel(Labels.SYNONYM));
-        }
-
-        // if we got one match, use it!
-        if (matches.isEmpty()) {
-          // create
-          LOG.debug("{} {} not existing, materialize it", term.simpleName(), name);
-          return createDoubtfulFromSource(createdOrigin, name, t, t.name.getRank(), null, null, null);
-
-        } else {
-          if (matches.size() > 1) {
-            // still multiple matches, pick first and log critical issue!
-            t.addIssue(Issue.NAME_NOT_UNIQUE, name);
-          }
-          return NeoProperties.getRankedName(matches.get(0));
-        }
-      }
-    }
-    return null;
-  }
-
-  private NeoTaxon createAccepted(Origin origin, String sciname, Rank rank) {
-    Name n = new Name();
-    n.setScientificName(sciname);
-    n.setRank(rank);
-    n.setType(NameType.SCIENTIFIC);
-    NeoTaxon t = NeoTaxon.createTaxon(origin, n, TaxonomicStatus.ACCEPTED);
-
-    // store, which creates a new neo node
-    store.put(t);
-    return t;
-  }
-
-  private RankedName createPlaceholder(Origin origin, @Nullable Issue issue, @Nullable String issueValue) {
-    PLACEHOLDER.setRank(Rank.UNRANKED);
-    return createDoubtfulFromSource(origin, PLACEHOLDER, null, Rank.GENUS,null, issue, issueValue);
-  }
-
-  /**
-   * Creates a new taxon in neo and the name usage kvp using the source usages as a template for the classification properties.
-   * Only copies the classification above genus and ignores genus and below!
-   * A verbatim usage is created with just the parentNameUsage(ID) values so they can get resolved into proper neo relations later.
-   *
-   * @param name the new name to be used
-   * @param source the taxon source to copy from
-   * @param taxonID the optional taxonID to apply to the new node
-   * @param excludeRankAndBelow the rank (and all ranks below) to exclude from the source classification
-   */
-  private RankedName createDoubtfulFromSource(Origin origin, Name name,
-                                              @Nullable NeoTaxon source, Rank excludeRankAndBelow, @Nullable String taxonID,
-                                              @Nullable Issue issue, @Nullable String issueValue) {
-    NeoTaxon t = NeoTaxon.createTaxon(origin, name, TaxonomicStatus.DOUBTFUL);
-    t.taxon.setId(taxonID);
-    // copy verbatim classification from source
-    if (source != null) {
-      if (source.classification != null) {
-        t.classification = Classification.copy(source.classification);
-        // remove lower ranks
-        t.classification.clearRankAndBelow(excludeRankAndBelow);
-      }
-      // copy parent props from source
-      t.verbatim = new VerbatimRecord();
-      t.verbatim.setCoreTerm(DwcTerm.parentNameUsageID, source.verbatim.getCoreTerm(DwcTerm.parentNameUsageID));
-      t.verbatim.setCoreTerm(DwcTerm.parentNameUsage, source.verbatim.getCoreTerm(DwcTerm.parentNameUsage));
-    }
-    // add potential issue
-    if (issue != null) {
-      t.addIssue(issue, issueValue);
-    }
-
-    // store, which creates a new neo node
-    store.put(t);
-
-    return new RankedName(t.node, t.name.getScientificName(), t.name.authorshipComplete(), t.name.getRank());
-  }
-
-  private void checkInterrupted() throws NormalizationFailedException {
-    if (Thread.interrupted()) {
-      LOG.warn("Normalizer interrupted, exit {} early with incomplete parsing", store.getDataset());
-      throw new NormalizationFailedException("Normalizer interrupted");
-    }
-  }
-
   private void insertData() throws NormalizationFailedException {
     // closing the batch inserter opens the normalizer db again for regular access via the store
     try {
       NeoInserter inserter;
+      NeoDb.NodeBatchProcessor relationProcessor;
       switch (format) {
         case DWCA:
-          inserter = new DwcaInserter(store);
+          inserter = new DwcaInserter(store, sourceDir);
+          relationProcessor = new DwcaRelationInserter(store, meta);
           break;
         case ACEF:
-          inserter = new ACEFInserter(store);
+          inserter = new AcefInserter(store, sourceDir);
+          relationProcessor = new AcefRelationInserter(store, meta);
           break;
         default:
           throw new NormalizationFailedException("Unsupported data format " + format);
       }
-      meta = inserter.insert(dwca);
+      meta = inserter.insertAll();
+      LOG.info("Start processing explicit relations ...");
+      store.process(Labels.ALL,10000, relationProcessor);
 
     } catch (NotUniqueRuntimeException e) {
       throw new NormalizationFailedException(e.getProperty() + " values not unique: " + e.getKey(), e);

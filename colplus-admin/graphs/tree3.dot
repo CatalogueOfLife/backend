@@ -2,20 +2,7 @@ digraph G {
   node [shape=plaintext]
 
   n0  [label="Animalia"]
-  n0 -> n1
   n1  [label="Arthropoda"]
-  n1 -> n2
   n2  [label="Insecta"]
-  n2 -> n3
   n3  [label="Coleoptera"]
-  n3 -> n8
-  n8  [label="Incertae sedis"]
-  n4  [label="Leptura nigrella Adams, 1909", fontcolor=darkgreen]
-  n8 -> n4  [color=darkgreen, fontcolor=darkgreen, label=syn]
-  n5  [label="Leptura nigrella Chagnon, 1917", fontcolor=darkgreen]
-  n8 -> n5  [color=darkgreen, fontcolor=darkgreen, label=syn]
-  n6  [label="Leptura nigrella Craighead, 1923", fontcolor=darkgreen]
-  n8 -> n6  [color=darkgreen, fontcolor=darkgreen, label=syn]
-  n7  [label="Pygoleptura nigrella", fontcolor=darkgreen]
-  n8 -> n7  [color=darkgreen, fontcolor=darkgreen, label=syn]
 }

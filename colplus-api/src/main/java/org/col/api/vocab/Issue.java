@@ -163,17 +163,17 @@ public enum Issue {
   /**
    * The value for dwc:parentNameUsageID could not be resolved.
    */
-  PARENT_NAME_USAGE_ID_INVALID,
+  PARENT_ID_INVALID,
 
   /**
    * The value for dwc:acceptedNameUsageID could not be resolved.
    */
-  ACCEPTED_NAME_USAGE_ID_INVALID,
+  ACCEPTED_ID_INVALID,
 
   /**
    * The value for dwc:originalNameUsageID could not be resolved.
    */
-  ORIGINAL_NAME_USAGE_ID_INVALID,
+  BASIONYM_ID_INVALID,
 
   /**
    * Synonym lacking an accepted name.

@@ -8,10 +8,9 @@ import org.col.admin.task.importer.neo.NeoDbFactory;
 import org.col.admin.task.importer.neo.NotUniqueRuntimeException;
 import org.col.admin.task.importer.neo.model.NeoProperties;
 import org.col.admin.task.importer.neo.model.NeoTaxon;
-import org.col.admin.task.importer.neo.printer.GraphFormat;
-import org.col.admin.task.importer.neo.printer.PrinterUtils;
 import org.col.api.model.Reference;
 import org.col.api.vocab.DataFormat;
+import org.gbif.nameparser.api.Rank;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -20,16 +19,12 @@ import org.neo4j.graphdb.NotFoundException;
 import org.neo4j.graphdb.Transaction;
 
 import javax.annotation.Nullable;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.PrintWriter;
-import java.io.Writer;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 /**
  *
@@ -72,13 +67,9 @@ public class NormalizerACEFIT {
     }
   }
 
-  NeoTaxon byTaxonID(String id) {
+  NeoTaxon byID(String id) {
     Node n = store.byTaxonID(id);
     return store.get(n);
-  }
-
-  NeoTaxon byName(String name) {
-    return byName(name, null);
   }
 
   NeoTaxon byName(String name, @Nullable String author) {
@@ -106,26 +97,11 @@ public class NormalizerACEFIT {
     }
 
     try (Transaction tx = store.getNeo().beginTx()) {
-      NeoTaxon trametes_modesta = byTaxonID("324805");
-      assertEquals(1, trametes_modesta.acts.size());
-
-      Reference pubIn = store.refByKey(trametes_modesta.acts.get(0).getReferenceKey());
-      assertEquals("Norw. Jl Bot. 19: 236 (1972)", pubIn.getTitle());
-      assertNotNull(pubIn.getKey());
-      assertNull(pubIn.getId());
+      NeoTaxon t = byID("14649");
+      assertEquals("Zapoteca formosa", t.name.getScientificName());
+      assertEquals("(Kunth) H.M.Hern.", t.name.authorshipComplete());
+      assertEquals(Rank.SPECIES, t.name.getRank());
     }
-  }
-
-  private void debug() throws Exception {
-    PrinterUtils.printTree(store.getNeo(), new PrintWriter(System.out), GraphFormat.TEXT);
-
-    // dump graph as DOT file for debugging
-    File dotFile = new File("graphs/dbugtree.dot");
-    Files.createParentDirs(dotFile);
-    Writer writer = new FileWriter(dotFile);
-    PrinterUtils.printTree(store.getNeo(), writer, GraphFormat.DOT);
-    writer.close();
-    System.out.println("Wrote graph to "+dotFile.getAbsolutePath());
   }
 
 }

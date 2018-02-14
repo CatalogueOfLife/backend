@@ -104,6 +104,7 @@ public class NeoKryoFactory implements KryoFactory {
 
     // term enums
     kryo.register(AcTerm.class);
+    kryo.register(AcefTerm.class);
     kryo.register(DcElement.class);
     kryo.register(DcTerm.class);
     kryo.register(DwcTerm.class);

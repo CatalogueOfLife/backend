@@ -29,7 +29,7 @@ public final class VocabularyUtils {
 
   public static final TermFactory TF = TermFactory.instance();
   static {
-    TF.addTerms(AcefTerm.values(), new String[]{AcefTerm.PREFIX});
+    TF.addAltTerms(AcefTerm.values(), new String[]{AcefTerm.PREFIX});
     TF.addTerms(CoLTerm.values(), new String[]{CoLTerm.PREFIX});
   }
 

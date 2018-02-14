@@ -1,9 +1,11 @@
-package org.col.admin.task.importer.dwca;
+package org.col.admin.task.importer;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.Maps;
-import org.gbif.nameparser.api.Rank;
 import org.gbif.dwc.terms.Term;
+import org.gbif.nameparser.api.Rank;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -12,6 +14,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Settings uses during the insert of the dwc archive into normalizer.
  */
 public class InsertMetadata {
+  private static final Logger LOG = LoggerFactory.getLogger(InsertMetadata.class);
+
   private boolean coreIdUsed;
   private boolean parsedNameMapped;
   private boolean denormedClassificationMapped;
@@ -20,7 +24,6 @@ public class InsertMetadata {
   private boolean parentNameMapped;
   private Map<Term, Splitter> multiValueDelimiters = Maps.newHashMap();
   private int records;
-  private int ignored;
   private Map<Rank, AtomicInteger> recordsByRank = Maps.newHashMap();
 
   /**
@@ -81,12 +84,22 @@ public class InsertMetadata {
     return multiValueDelimiters;
   }
 
-  public void incRank(Rank rank) {
-    if (rank != null) {
-      if (!recordsByRank.containsKey(rank)) {
-        recordsByRank.put(rank, new AtomicInteger(1));
-      } else {
-        recordsByRank.get(rank).getAndIncrement();
+  public void incRecords(Rank rank) {
+    records++;
+    if (rank == null) {
+      rank =Rank.UNRANKED;
+    }
+    if (!recordsByRank.containsKey(rank)) {
+      recordsByRank.put(rank, new AtomicInteger(1));
+    } else {
+      recordsByRank.get(rank).getAndIncrement();
+    }
+
+    if (records % (10000) == 0) {
+      LOG.info("Inserts done into neo4j: {}", records);
+      if (Thread.interrupted()) {
+        LOG.warn("NeoInserter interrupted, exit early with incomplete parsing");
+        throw new NormalizationFailedException("NeoInserter interrupted");
       }
     }
   }
@@ -95,15 +108,4 @@ public class InsertMetadata {
     return records;
   }
 
-  public void incRecords() {
-    records++;
-  }
-
-  public int getIgnored() {
-    return ignored;
-  }
-
-  public void incIgnored() {
-    ignored++;
-  }
 }

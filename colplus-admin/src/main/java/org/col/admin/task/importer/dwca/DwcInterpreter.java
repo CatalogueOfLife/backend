@@ -4,6 +4,7 @@ import com.google.common.base.CharMatcher;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.ObjectUtils;
+import org.col.admin.task.importer.InsertMetadata;
 import org.col.admin.task.importer.neo.ReferenceStore;
 import org.col.admin.task.importer.neo.model.NeoTaxon;
 import org.col.api.exception.InvalidNameException;
@@ -26,14 +27,14 @@ import java.util.Set;
 /**
  * Interprets a verbatim record and transforms it into a name, taxon and unique references.
  */
-public class VerbatimInterpreter {
-  private static final Logger LOG = LoggerFactory.getLogger(VerbatimInterpreter.class);
+public class DwcInterpreter {
+  private static final Logger LOG = LoggerFactory.getLogger(DwcInterpreter.class);
   private static final Splitter MULTIVAL = Splitter.on(CharMatcher.anyOf(";|,")).trimResults();
 
   private final InsertMetadata insertMetadata;
   private final ReferenceStore refStore;
 
-  public VerbatimInterpreter(InsertMetadata insertMetadata, ReferenceStore refStore) {
+  public DwcInterpreter(InsertMetadata insertMetadata, ReferenceStore refStore) {
     this.insertMetadata = insertMetadata;
     this.refStore = refStore;
   }
@@ -64,7 +65,7 @@ public class VerbatimInterpreter {
     // add taxon in any case - we can swap status of a synonym during normalization
     t.taxon = interpretTaxon(v, insertMetadata.isCoreIdUsed());
     // a synonym by status?
-    // we deal with relations via DwcTerm.acceptedNameUsageID and DwcTerm.acceptedNameUsage during main normalization
+    // we deal with relations via DwcTerm.acceptedNameUsageID and DwcTerm.acceptedNameUsage during relation insertion
     if(SafeParser.parse(SynonymStatusParser.PARSER, v.getCoreTerm(DwcTerm.taxonomicStatus)).orElse(false)) {
       t.synonym = new NeoTaxon.Synonym();
     }
@@ -197,7 +198,7 @@ public class VerbatimInterpreter {
         .orElse(TaxonomicStatus.DOUBTFUL)
     );
     //TODO: interpret all of Taxon via new dwca extension
-    t.setAccordingTo(null);
+    t.setAccordingTo(v.getCoreTerm(DwcTerm.nameAccordingTo));
     t.setAccordingToDate(null);
     t.setOrigin(Origin.SOURCE);
     t.setDatasetUrl(SafeParser.parse(UriParser.PARSER, v.getCoreTerm(DcTerm.references)).orNull());
@@ -290,7 +291,7 @@ public class VerbatimInterpreter {
     n.setInfraspecificEpithet(v.getCoreTerm(DwcTerm.infraspecificEpithet));
     n.setType(NameType.SCIENTIFIC);
     try {
-      n.setScientificName(n.canonicalName());
+      n.setScientificName(n.canonicalNameWithoutAuthorship());
     } catch (InvalidNameException e) {
       LOG.warn("Invalid atomised name found: {}", n);
       n.addIssue(Issue.INCONSISTENT_NAME);

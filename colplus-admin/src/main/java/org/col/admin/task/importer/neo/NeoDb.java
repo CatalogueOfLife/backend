@@ -9,14 +9,14 @@ import org.apache.commons.io.FileUtils;
 import org.col.admin.task.importer.NormalizationFailedException;
 import org.col.admin.task.importer.neo.kryo.NeoKryoFactory;
 import org.col.admin.task.importer.neo.mapdb.MapDbObjectSerializer;
-import org.col.admin.task.importer.neo.model.Labels;
-import org.col.admin.task.importer.neo.model.NeoProperties;
-import org.col.admin.task.importer.neo.model.NeoTaxon;
-import org.col.admin.task.importer.neo.model.RelType;
-import org.col.api.model.Dataset;
-import org.col.api.model.Reference;
-import org.col.api.model.Taxon;
+import org.col.admin.task.importer.neo.model.*;
+import org.col.api.model.*;
+import org.col.api.vocab.Issue;
+import org.col.api.vocab.Origin;
+import org.col.api.vocab.TaxonomicStatus;
 import org.col.util.concurrent.ThrottledThreadPoolExecutor;
+import org.gbif.dwc.terms.DwcTerm;
+import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 import org.mapdb.Atomic;
 import org.mapdb.DB;
@@ -30,6 +30,7 @@ import org.neo4j.unsafe.batchinsert.BatchInserters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -56,6 +57,14 @@ public class NeoDb implements NormalizerStore, ReferenceStore {
   private static final Logger LOG = LoggerFactory.getLogger(NeoDb.class);
   private static final Labels[] TAX_LABELS = new Labels[]{Labels.ALL, Labels.TAXON};
   private static final Labels[] SYN_LABELS = new Labels[]{Labels.ALL, Labels.SYNONYM};
+  public static final Name PLACEHOLDER = new Name();
+  static {
+    PLACEHOLDER.setScientificName("Incertae sedis");
+    PLACEHOLDER.setRank(Rank.UNRANKED);
+    PLACEHOLDER.setType(NameType.PLACEHOLDER);
+    PLACEHOLDER.setOrigin(Origin.OTHER);
+  }
+
   private final GraphDatabaseBuilder neoFactory;
   private final DB mapDb;
   private final Atomic.Var<Dataset> dataset;
@@ -363,6 +372,11 @@ public class NeoDb implements NormalizerStore, ReferenceStore {
   }
 
   @Override
+  public Iterable<NeoTaxon> all() {
+    return taxa.values();
+  }
+
+  @Override
   public Iterable<Reference> refList() {
     return references.values();
   }
@@ -505,6 +519,118 @@ public class NeoDb implements NormalizerStore, ReferenceStore {
       }
     }
   }
+
+
+
+
+
+
+
+  public void assignParent(Node parent, Node child) {
+    if (parent != null) {
+      if (child.hasRelationship(RelType.PARENT_OF, Direction.INCOMING)) {
+        // override existing parent!
+        Node oldParent=null;
+        for (Relationship r : child.getRelationships(RelType.PARENT_OF, Direction.INCOMING)){
+          oldParent = r.getOtherNode(child);
+          r.delete();
+        }
+        LOG.error("{} has already a parent {}, override with new parent {}",
+            NeoProperties.getScientificNameWithAuthor(child),
+            NeoProperties.getScientificNameWithAuthor(oldParent),
+            NeoProperties.getScientificNameWithAuthor(parent));
+
+      } else {
+        parent.createRelationshipTo(child, RelType.PARENT_OF);
+      }
+
+    }
+  }
+
+  /**
+   * Creates a synonym relationship between the given synonym and the accepted node, updating labels accordingly
+   * and also moving potentially existing parent_of relations.
+   */
+  public void createSynonymRel(Node synonym, Node accepted) {
+    synonym.createRelationshipTo(accepted, RelType.SYNONYM_OF);
+    synonym.addLabel(Labels.SYNONYM);
+    synonym.removeLabel(Labels.TAXON);
+    // potentially move the parent relationship of the synonym
+    if (synonym.hasRelationship(RelType.PARENT_OF, Direction.INCOMING)) {
+      try {
+        Relationship rel = synonym.getSingleRelationship(RelType.PARENT_OF, Direction.INCOMING);
+        if (rel != null) {
+          // check if accepted has a parent relation already
+          if (!accepted.hasRelationship(RelType.PARENT_OF, Direction.INCOMING)) {
+            assignParent(rel.getStartNode(), accepted);
+          }
+        }
+      } catch (RuntimeException e) {
+        // more than one parent relationship exists, should never be the case, sth wrong!
+        LOG.error("Synonym {} has multiple parent relationships!", synonym.getId());
+        //for (Relationship r : synonym.getRelationships(RelType.PARENT_OF)) {
+        //  r.delete();
+        //}
+      }
+    }
+  }
+
+
+  public NeoTaxon createAccepted(Origin origin, String sciname, Rank rank) {
+    Name n = new Name();
+    n.setScientificName(sciname);
+    n.setRank(rank);
+    n.setType(NameType.SCIENTIFIC);
+    NeoTaxon t = NeoTaxon.createTaxon(origin, n, TaxonomicStatus.ACCEPTED);
+
+    // store, which creates a new neo node
+    put(t);
+    return t;
+  }
+
+  public RankedName createPlaceholder(Origin origin, @Nullable Issue issue, @Nullable String issueValue) {
+    PLACEHOLDER.setRank(Rank.UNRANKED);
+    return createDoubtfulFromSource(origin, PLACEHOLDER, null, Rank.GENUS,null, issue, issueValue);
+  }
+
+  /**
+   * Creates a new taxon in neo and the name usage kvp using the source usages as a template for the classification properties.
+   * Only copies the classification above genus and ignores genus and below!
+   * A verbatim usage is created with just the parentNameUsage(ID) values so they can get resolved into proper neo relations later.
+   *
+   * @param name the new name to be used
+   * @param source the taxon source to copy from
+   * @param taxonID the optional taxonID to apply to the new node
+   * @param excludeRankAndBelow the rank (and all ranks below) to exclude from the source classification
+   */
+  public RankedName createDoubtfulFromSource(Origin origin, Name name,
+                                              @Nullable NeoTaxon source, Rank excludeRankAndBelow, @Nullable String taxonID,
+                                              @Nullable Issue issue, @Nullable String issueValue) {
+    NeoTaxon t = NeoTaxon.createTaxon(origin, name, TaxonomicStatus.DOUBTFUL);
+    t.taxon.setId(taxonID);
+    // copy verbatim classification from source
+    if (source != null) {
+      if (source.classification != null) {
+        t.classification = Classification.copy(source.classification);
+        // remove lower ranks
+        t.classification.clearRankAndBelow(excludeRankAndBelow);
+      }
+      // copy parent props from source
+      t.verbatim = new VerbatimRecord();
+      t.verbatim.setCoreTerm(DwcTerm.parentNameUsageID, source.verbatim.getCoreTerm(DwcTerm.parentNameUsageID));
+      t.verbatim.setCoreTerm(DwcTerm.parentNameUsage, source.verbatim.getCoreTerm(DwcTerm.parentNameUsage));
+    }
+    // add potential issue
+    if (issue != null) {
+      t.addIssue(issue, issueValue);
+    }
+
+    // store, which creates a new neo node
+    put(t);
+
+    return new RankedName(t.node, t.name.getScientificName(), t.name.authorshipComplete(), t.name.getRank());
+  }
+
 
 }
 

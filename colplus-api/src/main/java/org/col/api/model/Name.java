@@ -1,7 +1,6 @@
 package org.col.api.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.col.api.vocab.Issue;
 import org.col.api.vocab.NomStatus;
@@ -188,13 +187,6 @@ public class Name implements PrimaryEntity {
     pn.setType(n.getType());
     return pn;
   }
-
-	/**
-	 * //TODO Copy constructor. Creates shallow copy.
-	 */
-	public Name(Name n) {
-	  throw new NotImplementedException("");
-	}
 
 	public Integer getKey() {
 		return key;

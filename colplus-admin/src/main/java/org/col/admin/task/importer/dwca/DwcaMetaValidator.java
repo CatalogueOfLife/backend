@@ -2,6 +2,7 @@ package org.col.admin.task.importer.dwca;
 
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
+import org.col.admin.task.importer.InsertMetadata;
 import org.col.admin.task.importer.NormalizationFailedException;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.GbifTerm;
@@ -17,7 +18,7 @@ import org.slf4j.LoggerFactory;
 public class DwcaMetaValidator {
   private static final Logger LOG = LoggerFactory.getLogger(DwcaMetaValidator.class);
 
-  public static InsertMetadata check(Archive arch) throws NormalizationFailedException.DwcaInvalidException {
+  public static InsertMetadata check(Archive arch) throws NormalizationFailedException.SourceInvalidException {
     InsertMetadata meta = new InsertMetadata();
 
     // check for a minimal parsed name
@@ -32,7 +33,7 @@ public class DwcaMetaValidator {
       LOG.warn("No scientificName mapped");
       if (!meta.isParsedNameMapped()) {
         // no name to work with!!!
-        throw new NormalizationFailedException.DwcaInvalidException("No scientificName nor parsed name mapped");
+        throw new NormalizationFailedException.SourceInvalidException("No scientificName nor parsed name mapped");
       } else {
         // warn if there is no author mapped for a parsed name
         if (!arch.getCore().hasTerm(DwcTerm.scientificNameAuthorship)) {
