@@ -116,8 +116,8 @@ public class NameParserTest {
         .combAuthors(null, "Sacc.")
         .nothingElse();
 
-    assertName("subgen. Trematostoma Sacc.", "Trematostoma")
-        .monomial("Trematostoma", Rank.SUBGENUS)
+    assertName("subgen. Trematostoma Sacc.", "subgen. Trematostoma")
+        .infraGeneric(null, Rank.SUBGENUS, "Trematostoma")
         .combAuthors(null, "Sacc.")
         .nothingElse();
 
