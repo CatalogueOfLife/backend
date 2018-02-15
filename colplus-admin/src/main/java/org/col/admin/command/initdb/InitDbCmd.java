@@ -63,9 +63,12 @@ public class InitDbCmd extends ConfiguredCommand<AdminServerConfig> {
       runner.setSendFullScript(true);
       // run sql files
       exec(PgConfig.SCHEMA_FILE, runner, con, Resources.getResourceAsReader(PgConfig.SCHEMA_FILE));
+      // add COL GSDs
       try (BufferedReader datasets = new BufferedReader(new InputStreamReader(COL_DATASETS_URI.toURL().openStream()))) {
         exec(COL_DATASETS_URI.toString(), runner, con, datasets);
       }
+      // add GBIF Backbone datasets
+      exec("gbif.sql", runner, con, Resources.getResourceAsReader("org/col/db/gbif.sql"));
     }
   }
 
