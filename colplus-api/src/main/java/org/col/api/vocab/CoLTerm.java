@@ -9,13 +9,14 @@ import org.gbif.dwc.terms.TermFactory;
 public enum CoLTerm implements Term {
 
   nomenclaturalRemarks,
-  etymology;
+  etymology,
+  superfamily;
 
   public static final String NS = "http://rs.col.plus/terms/";
   public static final String PREFIX = "col";
 
   static {
-    TermFactory.instance().addTerms(CoLTerm.values(), new String[]{PREFIX, "colplus", "col+"});
+    TermFactory.instance().addTerms(CoLTerm.values(), new String[]{PREFIX, "colplus", "col+", "dwc"});
   }
 
   /**

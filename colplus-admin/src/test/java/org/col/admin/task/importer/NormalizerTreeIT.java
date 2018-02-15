@@ -24,6 +24,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -42,7 +43,7 @@ import static org.junit.Assert.assertFalse;
 @RunWith(Parameterized.class)
 @Ignore
 public class NormalizerTreeIT {
-  final static int MAX_ACEF_ID = 1;
+  final static int MAX_ACEF_ID = 3;
   final static int MAX_DWCA_ID = 23;
 
   private NeoDb store;
@@ -50,26 +51,30 @@ public class NormalizerTreeIT {
   private Path source;
 
   //TODO: these 3 tests need to be checked - they do seem to create real wrong outcomes !!!
+  Set<Integer> ignoreAcef= Sets.newHashSet(3);
   Set<Integer> ignoreDwca = Sets.newHashSet(10, 18, 21);
 
   @Parameterized.Parameters
   public static Collection<Object[]> data() {
     IntStream acefIds = IntStream.rangeClosed(0, MAX_ACEF_ID);
-    IntStream dwcaIds = IntStream.empty();
-    //IntStream dwcaIds = IntStream.rangeClosed(0, MAX_DWCA_ID);
+    IntStream dwcaIds = IntStream.rangeClosed(0, MAX_DWCA_ID);
+    //IntStream acefIds = IntStream.empty();
+    //IntStream dwcaIds = IntStream.rangeClosed(5, 8);
     return Stream.concat(
         acefIds.mapToObj(i -> new Object[]{DataFormat.ACEF, i}),
         dwcaIds.mapToObj(i -> new Object[]{DataFormat.DWCA, i})
     ).collect(Collectors.toList());
   }
 
+  private static AtomicInteger keyGen = new AtomicInteger(1);
+
   // test param
   private DataFormat format;
-  private int datasetKey;
+  private int sourceKey;
 
-  public NormalizerTreeIT(DataFormat format, int datasetKey) {
+  public NormalizerTreeIT(DataFormat format, int sourceKey) {
     this.format = format;
-    this.datasetKey = datasetKey;
+    this.sourceKey = sourceKey;
   }
 
   @Before
@@ -96,18 +101,21 @@ public class NormalizerTreeIT {
    */
   @Test
   public void testTree() throws Exception {
-    if (format == DataFormat.DWCA && ignoreDwca.contains(datasetKey)) {
-      System.out.println("IGNORE DWCA NORMALIZER TEST FOR DATASET "+datasetKey);
+    final int datasetKey = keyGen.incrementAndGet();
+
+    if (   format == DataFormat.ACEF && ignoreAcef.contains(sourceKey)
+        || format == DataFormat.DWCA && ignoreDwca.contains(sourceKey)) {
+      System.out.println("IGNORE "+format+" NORMALIZER TEST FOR SOURCE "+sourceKey);
       return;
     }
 
     try {
-      final String resourceDir = "/"+format.name().toLowerCase()+"/"+datasetKey;
+      final String resourceDir = "/"+format.name().toLowerCase()+"/"+sourceKey;
       URL dwcaUrl = getClass().getResource(resourceDir);
       source = Paths.get(dwcaUrl.toURI());
-      System.out.println("TEST " + format+" " + datasetKey);
+      System.out.println("TEST " + format+" " + sourceKey);
 
-      store = NeoDbFactory.create(cfg,datasetKey);
+      store = NeoDbFactory.create(cfg, datasetKey);
 
       Normalizer norm = new Normalizer(store, source.toFile(), format);
       try {
@@ -132,14 +140,14 @@ public class NormalizerTreeIT {
       assertEquals(expected, neotree);
 
     } catch (Exception e) {
-      System.err.println("Failed to normalize " + format + " dataset " + datasetKey);
+      System.err.println("Failed to normalize " + format + " dataset " + sourceKey);
       throw e;
     }
   }
 
   void debug() throws Exception {
     // dump graph as DOT file for debugging
-    File dotFile = new File("graphs/tree"+datasetKey+".dot");
+    File dotFile = new File("graphs/tree-"+format+sourceKey+".dot");
     Files.createParentDirs(dotFile);
     Writer writer = new FileWriter(dotFile);
     PrinterUtils.printTree(store.getNeo(), writer, GraphFormat.DOT);

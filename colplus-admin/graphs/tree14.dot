@@ -19,7 +19,7 @@ digraph G {
   n14 -> n0
   n0  [label="Aglais io (Linnaeus, 1758) "]
   n1  [label="Aglais urticae (Linnaeus, 1758) "]
-  n6  [label="Apatura ilia (Schiffermüller) 1775"]
+  n6  [label="Apatura ilia (Schiffermüller, 1775) "]
   n7  [label="Apatura iris (Linnaeus, 1758) "]
   n8  [label="Apatura metis Freyer, 1829"]
   n9  [label="Aphantopus hyperantus (Linnaeus, 1758) "]

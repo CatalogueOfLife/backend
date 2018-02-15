@@ -2,17 +2,30 @@ digraph G {
   node [shape=plaintext]
 
   n0  [label="Fungi"]
+  n0 -> n1
   n1  [label="Basidiomycota"]
+  n1 -> n2
   n2  [label="Agaricomycetes"]
+  n2 -> n3
   n3  [label="Agaricales"]
+  n3 -> n4
   n4  [label="Agaricaceae"]
+  n4 -> n13
+  n4 -> n12
+  n4 -> n9
+  n4 -> n5
   n5  [label="Tulostoma Pers."]
-  n9  [label="Tulostomakum Pers."]
+  n5 -> n8
+  n5 -> n7
+  n5 -> n6
   n6  [label="Tulostoma exasperatum Mont."]
   n7  [label="Tulostoma exasperatum var. exasperatum Mont."]
   n8  [label="Tulostoma exasperatum var. ridleyi (Massee) J.E.Wright"]
-  n12  [label="Tulostomafake fakesperatum var. fakesperatum Mnt."]
-  n13  [label="Tulostomafake fakesperatum var. ridleyi Wright"]
+  n9  [label="Tulostomakum Pers."]
+  n9 -> n11
+  n9 -> n10
   n10  [label="Tulostomakum fakesperatum var. fakesperatum Mont."]
   n11  [label="Tulostomakum fakesperatum var. ridleyi (Massee) J.E.Wright"]
+  n12  [label="Tulostomafake fakesperatum var. fakesperatum Mnt."]
+  n13  [label="Tulostomafake fakesperatum var. ridleyi Wright"]
 }

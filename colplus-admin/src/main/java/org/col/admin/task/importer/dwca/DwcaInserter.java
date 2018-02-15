@@ -2,7 +2,6 @@ package org.col.admin.task.importer.dwca;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
-import org.col.admin.task.importer.InsertMetadata;
 import org.col.admin.task.importer.NeoInserter;
 import org.col.admin.task.importer.NormalizationFailedException;
 import org.col.admin.task.importer.VerbatimRecordFactory;
@@ -19,24 +18,20 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Optional;
 
 /**
  *
  */
-public class DwcaInserter implements NeoInserter {
+public class DwcaInserter extends NeoInserter {
 
   private static final Logger LOG = LoggerFactory.getLogger(DwcaInserter.class);
 
-  private final File dwca;
-  private final NeoDb store;
-
   private Archive arch;
-  private InsertMetadata meta = new InsertMetadata();
   private DwcInterpreter interpreter;
 
   public DwcaInserter(NeoDb store, File dwca) throws IOException {
-    this.store = store;
-    this.dwca = dwca;
+    super(dwca, store);
   }
 
   /**
@@ -46,28 +41,22 @@ public class DwcaInserter implements NeoInserter {
    * Before inserting it does a quick check to see if all required dwc terms are actually mapped.
    */
   @Override
-  public InsertMetadata insertAll() throws NormalizationFailedException {
-    openArchive(dwca);
-    updateMetadata();
+  public void insert() throws NormalizationFailedException {
+    openArchive(folder);
     interpreter = new DwcInterpreter(meta, store);
-    store.startBatchMode();
     //TODO: insert reference file first
     for (StarRecord star : arch) {
       insertStarRecord(star);
     }
-    LOG.info("Data insert completed, {} nodes created", meta.getRecords());
-    store.endBatchMode();
-    LOG.info("Neo batch inserter closed, data flushed to disk. Opening regular normalizer db again ...", meta.getRecords());
-    return meta;
   }
 
   /**
    * Reads the dataset metadata and puts it into the store
    */
-  private void updateMetadata() {
+  public Optional<Dataset> readMetadata() {
     Dataset d = new Dataset();
-    d.setDataFormat(DataFormat.DWCA);
     try {
+      d.setDataFormat(DataFormat.DWCA);
       if (Strings.isNullOrEmpty(arch.getMetadataLocation())) {
         LOG.info("No dataset metadata available");
 
@@ -81,11 +70,8 @@ public class DwcaInserter implements NeoInserter {
 
     } catch (Throwable e) {
       LOG.error("Unable to read dataset metadata from dwc archive", e.getMessage());
-
-    } finally {
-      // the key will be preserved by the store
-      store.put(d);
     }
+    return Optional.ofNullable(d);
   }
 
   @VisibleForTesting
@@ -105,10 +91,14 @@ public class DwcaInserter implements NeoInserter {
     try {
       LOG.info("Reading dwc archive from {}", dwca);
       arch = ArchiveFactory.openArchive(dwca);
-      meta = DwcaMetaValidator.check(arch);
+      DwcaMetaValidator.check(arch, meta);
     } catch (IOException e) {
       throw new NormalizationFailedException("IOException opening archive " + dwca.getAbsolutePath(), e);
     }
   }
 
+  @Override
+  protected NeoDb.NodeBatchProcessor relationProcessor() {
+    return new DwcaRelationInserter(store, meta);
+  }
 }

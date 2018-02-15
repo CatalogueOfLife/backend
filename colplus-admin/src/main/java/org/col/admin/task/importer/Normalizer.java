@@ -1,8 +1,6 @@
 package org.col.admin.task.importer;
 
-import org.col.admin.task.importer.acef.AcefInserter;
-import org.col.admin.task.importer.acef.AcefRelationInserter;
-import org.col.admin.task.importer.dwca.DwcaRelationInserter;
+import org.col.admin.task.importer.acef.AcefNeoInserter;
 import org.col.admin.task.importer.dwca.DwcaInserter;
 import org.col.admin.task.importer.neo.NeoDb;
 import org.col.admin.task.importer.neo.NotUniqueRuntimeException;
@@ -406,22 +404,17 @@ public class Normalizer implements Runnable {
     // closing the batch inserter opens the normalizer db again for regular access via the store
     try {
       NeoInserter inserter;
-      NeoDb.NodeBatchProcessor relationProcessor;
       switch (format) {
         case DWCA:
           inserter = new DwcaInserter(store, sourceDir);
-          relationProcessor = new DwcaRelationInserter(store, meta);
           break;
         case ACEF:
-          inserter = new AcefInserter(store, sourceDir);
-          relationProcessor = new AcefRelationInserter(store, meta);
+          inserter = new AcefNeoInserter(store, sourceDir);
           break;
         default:
           throw new NormalizationFailedException("Unsupported data format " + format);
       }
       meta = inserter.insertAll();
-      LOG.info("Start processing explicit relations ...");
-      store.process(Labels.ALL,10000, relationProcessor);
 
     } catch (NotUniqueRuntimeException e) {
       throw new NormalizationFailedException(e.getProperty() + " values not unique: " + e.getKey(), e);

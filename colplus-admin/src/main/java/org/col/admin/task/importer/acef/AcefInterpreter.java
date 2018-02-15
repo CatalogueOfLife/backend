@@ -9,11 +9,16 @@ import org.col.admin.task.importer.neo.ReferenceStore;
 import org.col.admin.task.importer.neo.model.NeoTaxon;
 import org.col.api.exception.InvalidNameException;
 import org.col.api.model.*;
-import org.col.api.vocab.*;
+import org.col.api.vocab.Issue;
+import org.col.api.vocab.NomActType;
+import org.col.api.vocab.Origin;
+import org.col.api.vocab.TaxonomicStatus;
 import org.col.parser.*;
+import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.Term;
 import org.gbif.nameparser.api.NameType;
+import org.gbif.nameparser.api.ParsedName;
 import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Interprets a verbatim ACEF record and transforms it into a name, taxon and unique references.
@@ -133,7 +139,7 @@ public class AcefInterpreter {
     return r;
   }
 
-  protected static void updateScientificName(Name n) {
+  static void updateScientificName(Name n) {
     try {
       n.setScientificName(n.canonicalNameWithoutAuthorship());
       if (!n.isConsistent()) {
@@ -171,25 +177,20 @@ public class AcefInterpreter {
     }
 
     if (!Strings.isNullOrEmpty(authorship)) {
-      try {
-        Name nAuth = parseAuthorship(authorship);
+
+      Optional<ParsedName> optAuthorship = NameParser.PARSER.parseAuthorship(authorship);
+      if (optAuthorship.isPresent()) {
+        ParsedName nAuth = optAuthorship.get();
         n.setCombinationAuthorship(nAuth.getCombinationAuthorship());
         n.setSanctioningAuthor(nAuth.getSanctioningAuthor());
         n.setBasionymAuthorship(nAuth.getBasionymAuthorship());
 
-      } catch (UnparsableException e) {
+      } else {
         LOG.warn("Unparsable authorship {}", authorship);
         n.addIssue(Issue.UNPARSABLE_AUTHORSHIP);
       }
     }
 
     return n;
-  }
-
-  /**
-   * @return a name instance with just the parsed authorship, i.e. combination & original year & author list
-   */
-  private Name parseAuthorship(String authorship) throws UnparsableException {
-      return NameParser.PARSER.parse("Abies alba "+authorship).get();
   }
 }

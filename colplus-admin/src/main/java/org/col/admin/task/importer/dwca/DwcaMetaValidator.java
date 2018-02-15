@@ -4,6 +4,7 @@ import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import org.col.admin.task.importer.InsertMetadata;
 import org.col.admin.task.importer.NormalizationFailedException;
+import org.col.api.vocab.CoLTerm;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.GbifTerm;
 import org.gbif.dwc.terms.Term;
@@ -18,9 +19,7 @@ import org.slf4j.LoggerFactory;
 public class DwcaMetaValidator {
   private static final Logger LOG = LoggerFactory.getLogger(DwcaMetaValidator.class);
 
-  public static InsertMetadata check(Archive arch) throws NormalizationFailedException.SourceInvalidException {
-    InsertMetadata meta = new InsertMetadata();
-
+  public static void check(Archive arch, InsertMetadata meta) throws NormalizationFailedException.SourceInvalidException {
     // check for a minimal parsed name
     if ((arch.getCore().hasTerm(DwcTerm.genus) || arch.getCore().hasTerm(GbifTerm.genericName))
         && arch.getCore().hasTerm(DwcTerm.specificEpithet)
@@ -65,6 +64,9 @@ public class DwcaMetaValidator {
         break;
       }
     }
+    if (arch.getCore().hasTerm(CoLTerm.superfamily)) {
+      meta.setDenormedClassificationMapped(true);
+    }
     if (arch.getCore().hasTerm(DwcTerm.parentNameUsageID) || arch.getCore().hasTerm(DwcTerm.parentNameUsage)) {
       meta.setParentNameMapped(true);
     }
@@ -82,8 +84,6 @@ public class DwcaMetaValidator {
     //TODO: validate extensions:
     // vernacular name: vernacularName
     // distribution: some area (locationID, countryCode, etc)
-
-    return meta;
   }
 
 }

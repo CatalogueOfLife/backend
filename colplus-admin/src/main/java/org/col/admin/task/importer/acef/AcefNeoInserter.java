@@ -5,16 +5,16 @@ import com.google.common.collect.Maps;
 import org.col.admin.task.importer.NeoInserter;
 import org.col.admin.task.importer.NormalizationFailedException;
 import org.col.admin.task.importer.VerbatimRecordFactory;
-import org.col.admin.task.importer.InsertMetadata;
 import org.col.admin.task.importer.neo.NeoDb;
 import org.col.admin.task.importer.neo.model.NeoTaxon;
 import org.col.api.model.Dataset;
 import org.col.api.model.Reference;
 import org.col.api.model.TermRecord;
 import org.col.api.model.VerbatimRecord;
-import org.col.api.vocab.AcefTerm;
 import org.col.api.vocab.DataFormat;
 import org.col.api.vocab.Issue;
+import org.gbif.dwc.terms.AcefTerm;
+import org.gbif.dwc.terms.DcTerm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,22 +26,17 @@ import java.util.Optional;
 /**
  *
  */
-public class AcefInserter implements NeoInserter {
+public class AcefNeoInserter extends NeoInserter {
 
-  private static final Logger LOG = LoggerFactory.getLogger(AcefInserter.class);
+  private static final Logger LOG = LoggerFactory.getLogger(AcefNeoInserter.class);
   private static final Splitter COMMA_SPLITTER = Splitter.on(',').trimResults().omitEmptyStrings();
 
-  private final NeoDb store;
-  private final File folder;
-  private InsertMetadata meta = new InsertMetadata();
   private Map<String, Integer> refKeys = Maps.newHashMap();
-  private Map<String, Integer> taxKeys = Maps.newHashMap();
   private AcefReader reader;
   private AcefInterpreter inter;
 
-  public AcefInserter(NeoDb store, File folder) throws IOException {
-    this.store = store;
-    this.folder = folder;
+  public AcefNeoInserter(NeoDb store, File folder) throws IOException {
+    super(folder, store);
   }
 
   /**
@@ -49,32 +44,23 @@ public class AcefInserter implements NeoInserter {
    * Before inserting it does a quick check to see if all required files are existing.
    */
   @Override
-  public InsertMetadata insertAll() throws NormalizationFailedException {
+  public void insert() throws NormalizationFailedException {
     try {
       reader = AcefReader.from(folder);
       inter = new AcefInterpreter(meta, store);
-      store.startBatchMode();
 
       insertReferences();
       insertTaxaAndNames();
       insertSupplementary();
 
-      LOG.info("Data insert completed, {} nodes created", meta.getRecords());
-      store.endBatchMode();
-
-      Optional<TermRecord> metadata = reader.readFirstRow(AcefTerm.SOURCE_DATABASE);
-      if (metadata.isPresent()) {
-        updateMetadata(metadata.get());
-      } else {
-        LOG.warn("No dataset metadata found");
-      }
-
-      LOG.info("ACEF insert completed with {} records", meta.getRecords());
-      return meta;
-
     } catch (IOException e) {
       throw new NormalizationFailedException("Failed to read ACEF files");
     }
+  }
+
+  @Override
+  protected NeoDb.NodeBatchProcessor relationProcessor() {
+    return new AcefRelationInserter(store, meta);
   }
 
   private void insertSupplementary() {
@@ -102,7 +88,7 @@ public class AcefInserter implements NeoInserter {
     }
     // synonyms
     for (TermRecord rec : reader.read(AcefTerm.SYNONYMS)) {
-      VerbatimRecord v = VerbatimRecordFactory.build(rec.get(AcefTerm.ID), rec);
+      VerbatimRecord v = VerbatimRecordFactory.build(rec.get(DcTerm.identifier), rec);
       NeoTaxon t = inter.interpretTaxon(v, true);
       store.put(t);
       meta.incRecords(t.name.getRank());
@@ -123,24 +109,22 @@ public class AcefInserter implements NeoInserter {
   /**
    * Reads the dataset metadata and puts it into the store
    */
-  private void updateMetadata(TermRecord dr) {
-    Dataset d = new Dataset();
-    d.setTitle(dr.get(AcefTerm.DatabaseFullName));
-    d.setVersion(dr.get(AcefTerm.DatabaseVersion));
-    d.setDescription(dr.get(AcefTerm.Abstract));
-    d.setAuthorsAndEditors(dr.get(AcefTerm.AuthorsEditors, COMMA_SPLITTER));
-    d.setDescription(dr.get(AcefTerm.Abstract));
-    d.setHomepage(dr.getURI(AcefTerm.HomeURL));
-    d.setDataFormat(DataFormat.ACEF);
-    try {
-      LOG.info("No dataset metadata available");
-    } catch (Throwable e) {
-      LOG.error("Unable to read dataset metadata from dwc archive", e.getMessage());
-
-    } finally {
-      // the key will be preserved by the store
-      store.put(d);
+  @Override
+  protected Optional<Dataset> readMetadata() {
+    Dataset d = null;
+    Optional<TermRecord> metadata = reader.readFirstRow(AcefTerm.SOURCE_DATABASE);
+    if (metadata.isPresent()) {
+      TermRecord dr = metadata.get();
+      d = new Dataset();
+      d.setTitle(dr.get(AcefTerm.DatabaseFullName));
+      d.setVersion(dr.get(AcefTerm.DatabaseVersion));
+      d.setDescription(dr.get(AcefTerm.Abstract));
+      d.setAuthorsAndEditors(dr.get(AcefTerm.AuthorsEditors, COMMA_SPLITTER));
+      d.setDescription(dr.get(AcefTerm.Abstract));
+      d.setHomepage(dr.getURI(AcefTerm.HomeURL));
+      d.setDataFormat(DataFormat.ACEF);
     }
+    return Optional.ofNullable(d);
   }
 
 }

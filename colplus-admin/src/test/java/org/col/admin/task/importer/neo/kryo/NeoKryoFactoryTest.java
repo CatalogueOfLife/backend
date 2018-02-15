@@ -14,7 +14,6 @@ import org.gbif.nameparser.api.Rank;
 import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
-import java.net.URI;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -70,7 +69,9 @@ public class NeoKryoFactoryTest {
         DwcTerm.scientificName, DwcTerm.associatedOrganisms, DwcTerm.taxonID,
         DcTerm.title,
         GbifTerm.canonicalName,
-        IucnTerm.threatStatus, EolReferenceTerm.primaryTitle, new UnknownTerm(URI.create("http://gbif.org/abcdefg"))
+        IucnTerm.threatStatus,
+        AcefTerm.Family,
+        UnknownTerm.build("http://gbif.org/abcdefg")
     );
     assertSerde(terms);
   }

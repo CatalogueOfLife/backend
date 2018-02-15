@@ -1,251 +1,46 @@
 digraph G {
   node [shape=plaintext]
 
-  n108  [label="Fabales"]
-  n108 -> n109
-  n109  [label="Fabaceae"]
-  n109 -> n123
-  n109 -> n120
-  n109 -> n121
-  n109 -> n122
-  n109 -> n118
-  n109 -> n119
-  n109 -> n117
-  n109 -> n115
-  n109 -> n116
-  n109 -> n112
-  n109 -> n111
-  n109 -> n114
-  n109 -> n113
-  n109 -> n110
-  n113  [label="Acacia"]
-  n113 -> n24
-  n113 -> n19
-  n113 -> n3
-  n24  [label="Acacia pachyceras O.Schwartz"]
-  n24 -> n30
-  n64  [label="Acacia gerrardii var. najdensis Chaudhary", fontcolor=darkgreen]
-  n24 -> n64  [color=darkgreen, fontcolor=darkgreen, label=syn]
-  n30  [label="Acacia pachyceras var. najdensis (Chaudhary) Boulos"]
-  n3  [label="Acacia polyacantha Willd."]
-  n3 -> n35
-  n35  [label="Acacia polyacantha subsp. polyacantha"]
-  n19  [label="Acacia riparia Kunth"]
-  n19 -> n41
-  n80  [label="Acacia riparioides (Britton & Rose) Standl.", fontcolor=darkgreen]
-  n19 -> n80  [color=darkgreen, fontcolor=darkgreen, label=syn]
-  n79  [label="Senegalia riparioides Britton & Rose", fontcolor=darkgreen]
-  n19 -> n79  [color=darkgreen, fontcolor=darkgreen, label=syn]
-  n41  [label="Acacia riparia var. media Kuntze"]
-  n111  [label="Astracantha"]
-  n111 -> n8
-  n111 -> n1
-  n1  [label="Astracantha arnacantha (M.Bieb.) Podlech"]
-  n1 -> n61
-  n61  [label="Astracantha arnacantha subsp. aitosensis (Ivan.) Reer & Podlech"]
-  n8  [label="Astracantha parnassi (Boiss.) Podlech"]
-  n8 -> n50
-  n8 -> n51
-  n50  [label="Astracantha parnassi subsp. cyllenea (Boiss. & Heldr.) Podlech"]
-  n94  [label="Astracantha thracica subsp. cyllenea (Boiss. & Heldr.) Greuter", fontcolor=darkgreen]
-  n50 -> n94  [color=darkgreen, fontcolor=darkgreen, label=syn]
-  n97  [label="Astragalus parnassi var. cylleneus Boiss. & Heldr.", fontcolor=darkgreen]
-  n50 -> n97  [color=darkgreen, fontcolor=darkgreen, label=syn]
-  n51  [label="Astracantha parnassi subsp. parnassi"]
-  n96  [label="Astragalus parnassi Boiss.", fontcolor=darkgreen]
-  n51 -> n96  [color=darkgreen, fontcolor=darkgreen, label=syn]
-  n95  [label="Astragalus parnassi subsp. parnassi Boiss.", fontcolor=darkgreen]
-  n51 -> n95  [color=darkgreen, fontcolor=darkgreen, label=syn]
-  n112  [label="Astragalus"]
-  n112 -> n25
-  n112 -> n27
-  n112 -> n12
-  n112 -> n11
-  n112 -> n14
-  n112 -> n13
-  n112 -> n16
-  n112 -> n15
-  n112 -> n2
-  n12  [label="Astragalus alopecuroides L."]
-  n12 -> n49
-  n12 -> n36
-  n36  [label="Astragalus alopecuroides subsp. alopecuroides"]
-  n68  [label="Astragalus narbonensis Gouan", fontcolor=darkgreen]
-  n36 -> n68  [color=darkgreen, fontcolor=darkgreen, label=syn]
-  n87  [label="Astragalus narbonensis subsp. atlanticus Ball", fontcolor=darkgreen]
-  n36 -> n87  [color=darkgreen, fontcolor=darkgreen, label=syn]
-  n98  [label="Astragalus alopecuroides var. glabrescens (Coss.) Fern.Casas", fontcolor=darkgreen]
-  n36 -> n98  [color=darkgreen, fontcolor=darkgreen, label=syn]
-  n100  [label="Astragalus narbonensis var. africanus (Bunge) Kuntze", fontcolor=darkgreen]
-  n36 -> n100  [color=darkgreen, fontcolor=darkgreen, label=syn]
-  n49  [label="Astragalus alopecuroides subsp. grossii (Pau) Rivas Goday & Rivas Mart."]
-  n105  [label="Astragalus alopecuroides var. grossii (Pau) Fernald", fontcolor=darkgreen]
-  n49 -> n105  [color=darkgreen, fontcolor=darkgreen, label=syn]
-  n13  [label="Astragalus caprinus L."]
-  n13 -> n37
-  n37  [label="Astragalus caprinus subsp. caprinus"]
-  n85  [label="Astragalus beersabeensis Eig", fontcolor=darkgreen]
-  n37 -> n85  [color=darkgreen, fontcolor=darkgreen, label=syn]
-  n84  [label="Astragalus deserti-syriaci Eig", fontcolor=darkgreen]
-  n37 -> n84  [color=darkgreen, fontcolor=darkgreen, label=syn]
-  n82  [label="Astragalus caprinus subsp. eu-caprinus Maire", fontcolor=darkgreen]
-  n37 -> n82  [color=darkgreen, fontcolor=darkgreen, label=syn]
-  n81  [label="Astragalus caprinus subsp. lanigerus (Desf.) Maire", fontcolor=darkgreen]
-  n37 -> n81  [color=darkgreen, fontcolor=darkgreen, label=syn]
-  n83  [label="Astragalus caprinus var. hirsutus DC.", fontcolor=darkgreen]
-  n37 -> n83  [color=darkgreen, fontcolor=darkgreen, label=syn]
-  n25  [label="Astragalus elongatus Reiche"]
-  n25 -> n34
-  n67  [label="Astragalus nucleiferus Boiss.", fontcolor=darkgreen]
-  n25 -> n67  [color=darkgreen, fontcolor=darkgreen, label=syn]
-  n34  [label="Astragalus elongatus subsp. nucleiferus (Boiss.) Chamberlain"]
-  n2  [label="Astragalus exscapus L."]
-  n2 -> n52
-  n52  [label="Astragalus exscapus subsp. transsilvanicus (Schur) Nyar."]
-  n91  [label="Astragalus transsilvanicus Schur", fontcolor=darkgreen]
-  n52 -> n91  [color=darkgreen, fontcolor=darkgreen, label=syn]
-  n99  [label="Astragalus exscapus var. transsilvanicus (Schur) Gams", fontcolor=darkgreen]
-  n52 -> n99  [color=darkgreen, fontcolor=darkgreen, label=syn]
-  n11  [label="Astragalus hypoglottis L."]
-  n11 -> n63
-  n11 -> n62
-  n63  [label="Astragalus hypoglottis subsp. gremlii (Burnat) Greuter & Burdet"]
-  n62  [label="Astragalus hypoglottis subsp. hypoglottis"]
-  n106  [label="Astragalus dasyglottis var. hypoglottis (L.) Pall.", fontcolor=darkgreen]
-  n62 -> n106  [color=darkgreen, fontcolor=darkgreen, label=syn]
-  n27  [label="Astragalus macrocarpus DC."]
-  n27 -> n32
-  n32  [label="Astragalus macrocarpus subsp. lefkarensis Meikle & Kirchhoff"]
-  n16  [label="Astragalus sempervirens Lam."]
-  n16 -> n55
-  n55  [label="Astragalus sempervirens subsp. giennensis (Heywood) Malag."]
-  n15  [label="Astragalus vesicarius L."]
-  n15 -> n39
-  n39  [label="Astragalus vesicarius subsp. vesicarius L."]
-  n101  [label="Astragalus vesicarius var. multiflorus Cuatrec.", fontcolor=darkgreen]
-  n39 -> n101  [color=darkgreen, fontcolor=darkgreen, label=syn]
-  n102  [label="Astragalus vesicarius var. stenocarpus Rouy", fontcolor=darkgreen]
-  n39 -> n102  [color=darkgreen, fontcolor=darkgreen, label=syn]
-  n14  [label="Astragalus vogelii (Webb) Bornm."]
-  n14 -> n38
-  n38  [label="Astragalus vogelii subsp. vogelii"]
-  n69  [label="Astragalus vogelii subsp. prolixus (Bunge) Maire", fontcolor=darkgreen]
-  n38 -> n69  [color=darkgreen, fontcolor=darkgreen, label=syn]
-  n117  [label="Bussea"]
-  n117 -> n10
-  n10  [label="Bussea massaiensis (Taub.) Harms"]
-  n10 -> n47
-  n47  [label="Bussea massaiensis subsp. massaiensis"]
-  n119  [label="Clitoria"]
-  n119 -> n18
-  n119 -> n20
-  n119 -> n22
-  n119 -> n21
-  n18  [label="Clitoria heterophylla Lam."]
-  n18 -> n57
-  n57  [label="Clitoria heterophylla var. pedunculata (Benth.) Fantz"]
-  n22  [label="Clitoria pozuzoensis J.F.Macbr."]
-  n22 -> n58
-  n22 -> n59
-  n58  [label="Clitoria pozuzoensis var. pozuzoensis"]
-  n59  [label="Clitoria pozuzoensis var. schunkei Fantz"]
-  n21  [label="Clitoria sagotii Fantz"]
-  n21 -> n60
-  n60  [label="Clitoria sagotii var. canaliculata Fantz"]
-  n104  [label="Clitoria sagotii var. caniculata Fantz", fontcolor=darkgreen]
-  n60 -> n104  [color=darkgreen, fontcolor=darkgreen, label=syn]
-  n20  [label="Clitoria ternatea L."]
-  n20 -> n56
-  n72  [label="Ternatea vulgaris Kunth", fontcolor=darkgreen]
-  n20 -> n72  [color=darkgreen, fontcolor=darkgreen, label=syn]
-  n103  [label="Clitoria ternatea var. pilosula (Benth.) Baker", fontcolor=darkgreen]
-  n20 -> n103  [color=darkgreen, fontcolor=darkgreen, label=syn]
-  n56  [label="Clitoria ternatea var. ternatea"]
-  n114  [label="Eperua"]
-  n114 -> n6
-  n114 -> n4
-  n114 -> n7
-  n4  [label="Eperua grandiflora (Aubl.) Benth."]
-  n4 -> n40
-  n75  [label="Eperua kourouensis Benoist", fontcolor=darkgreen]
-  n4 -> n75  [color=darkgreen, fontcolor=darkgreen, label=syn]
-  n40  [label="Eperua grandiflora subsp. guyanensis Cowan"]
-  n7  [label="Eperua oleifera Ducke"]
-  n7 -> n43
-  n43  [label="Eperua oleifera var. campestris Ducke"]
-  n71  [label="Eperua campestris (Ducke) Ducke", fontcolor=darkgreen]
-  n43 -> n71  [color=darkgreen, fontcolor=darkgreen, label=syn]
-  n6  [label="Eperua rubiginosa Miq."]
-  n6 -> n44
-  n44  [label="Eperua rubiginosa var. grandiflora Pulle"]
-  n120  [label="Glycine"]
-  n120 -> n23
-  n23  [label="Glycine max (L.) Merr."]
-  n23 -> n54
-  n23 -> n53
-  n77  [label="Dolichos soja L.", fontcolor=darkgreen]
-  n23 -> n77  [color=darkgreen, fontcolor=darkgreen, label=syn]
-  n76  [label="Phaseolus max L.", fontcolor=darkgreen]
-  n23 -> n76  [color=darkgreen, fontcolor=darkgreen, label=syn]
-  n93  [label="Soja angustifolia Miq.", fontcolor=darkgreen]
-  n23 -> n93  [color=darkgreen, fontcolor=darkgreen, label=syn]
-  n53  [label="Glycine max subsp. max"]
-  n54  [label="Glycine max subsp. soja (Siebold & Zucc.) H.Ohashi"]
-  n107  [label="Glycine soja var. ovata Skvortsov", fontcolor=darkgreen]
-  n54 -> n107  [color=darkgreen, fontcolor=darkgreen, label=syn]
-  n118  [label="Goniorrhachis"]
-  n118 -> n17
-  n17  [label="Goniorrhachis marginata Taub."]
-  n17 -> n46
-  n46  [label="Goniorrhachis marginata var. marginata"]
-  n110  [label="Inga"]
-  n110 -> n0
-  n0  [label="Inga vera Willd."]
-  n0 -> n45
-  n73  [label="Feuilleea inga (L.) Kuntze", fontcolor=darkgreen]
-  n0 -> n73  [color=darkgreen, fontcolor=darkgreen, label=syn]
-  n74  [label="Inga vera subsp. lamprophylla (Benth.) Pittier", fontcolor=darkgreen]
-  n0 -> n74  [color=darkgreen, fontcolor=darkgreen, label=syn]
-  n45  [label="Inga vera subsp. eriocarpa (Benth.) Leon"]
-  n78  [label="Inga eriocarpa Benth.", fontcolor=darkgreen]
-  n45 -> n78  [color=darkgreen, fontcolor=darkgreen, label=syn]
-  n123  [label="Mimosites"]
-  n123 -> n29
-  n29  [label="Mimosites spiegeli Engelhardt"]
-  n121  [label="Ononis"]
-  n121 -> n26
-  n26  [label="Ononis angustissima Lam."]
-  n26 -> n33
-  n66  [label="Ononis longifolia Brouss. ex Willd.", fontcolor=darkgreen]
-  n26 -> n66  [color=darkgreen, fontcolor=darkgreen, label=syn]
-  n33  [label="Ononis angustissima subsp. longifolia (Willd.) Forther & Podlech"]
-  n115  [label="Sclerolobium"]
-  n115 -> n5
-  n5  [label="Sclerolobium paniculatum Vogel"]
-  n5 -> n42
-  n42  [label="Sclerolobium paniculatum var. rubiginosum (Tul.) Benth."]
-  n70  [label="Sclerolobium rubiginosum Tul.", fontcolor=darkgreen]
-  n42 -> n70  [color=darkgreen, fontcolor=darkgreen, label=syn]
-  n122  [label="Sesbania"]
-  n122 -> n28
-  n28  [label="Sesbania coccinea Poir."]
-  n28 -> n31
-  n65  [label="Sesbania atollensis St.John", fontcolor=darkgreen]
-  n28 -> n65  [color=darkgreen, fontcolor=darkgreen, label=syn]
-  n31  [label="Sesbania coccinea subsp. atollensis (St.John) Sachet"]
-  n116  [label="Zapoteca"]
-  n116 -> n9
-  n9  [label="Zapoteca formosa (Kunth) H.M.Hern."]
-  n9 -> n48
-  n90  [label="Anneslia formosa (Kunth) Britton & Millsp.", fontcolor=darkgreen]
-  n9 -> n90  [color=darkgreen, fontcolor=darkgreen, label=syn]
-  n92  [label="Calliandra formosa (Kunth) Benth.", fontcolor=darkgreen]
-  n9 -> n92  [color=darkgreen, fontcolor=darkgreen, label=syn]
-  n89  [label="Feuilleea formosa (Kunth) Kuntze", fontcolor=darkgreen]
-  n9 -> n89  [color=darkgreen, fontcolor=darkgreen, label=syn]
-  n48  [label="Zapoteca formosa subsp. rosei (Wiggins) H.M.Hern."]
-  n86  [label="Calliandra socorrensis I.M.Johnst.", fontcolor=darkgreen]
-  n48 -> n86  [color=darkgreen, fontcolor=darkgreen, label=syn]
-  n88  [label="Calliandra schottii subsp. rosei (Wiggins) Felger & C.H.Lowe", fontcolor=darkgreen]
-  n48 -> n88  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n0  [label="Plantae"]
+  n0 -> n2
+  n1  [label="Viridae", fontcolor=darkgreen]
+  n0 -> n1  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n2  [label="Asteraceae"]
+  n2 -> n4
+  n3  [label="Compositae", fontcolor=darkgreen]
+  n2 -> n3  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n4  [label="Cichorioideae"]
+  n4 -> n7
+  n4 -> n6
+  n4 -> n5
+  n5  [label="Cichorieae"]
+  n5 -> n9
+  n5 -> n8
+  n8  [label="Crepis L."]
+  n8 -> n13
+  n8 -> n12
+  n12  [label="Crepis bakeri Greene"]
+  n13  [label="Crepis occidentalis Nutt."]
+  n9  [label="Leontodon"]
+  n9 -> n15
+  n9 -> n14
+  n14  [label="Leontodon anomalus"]
+  n15  [label="Leontodon taraxacoides (Vill.) Mérat"]
+  n18  [label="Leonida taraxacoida Vill.", fontcolor=darkgreen]
+  n15 -> n18  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n15 -> n18  [color=darkgreen, fontcolor=darkgreen, label=bas]
+  n16  [label="Leontodon leysseri", fontcolor=darkgreen]
+  n15 -> n16  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n17  [label="Leontodon saxatilis", fontcolor=darkgreen]
+  n15 -> n17  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  n6  [label="Gundelieae"]
+  n6 -> n10
+  n10  [label="Gundelia L."]
+  n10 -> n20
+  n10 -> n19
+  n19  [label="Gundelia rosea L."]
+  n20  [label="Gundelia tournefortii L."]
+  n7  [label="Platycarpha"]
+  n7 -> n11
+  n11  [label="Platycarpha glomerata (Thunberg) A.P.de Candolle"]
 }

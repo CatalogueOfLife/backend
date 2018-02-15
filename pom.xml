@@ -37,7 +37,7 @@
         <commmons-lang.version>3.6</commmons-lang.version>
         <dropwizard.version>1.2.3</dropwizard.version>
         <dwc-api.version>1.18-SNAPSHOT</dwc-api.version>
-        <dwca-io.version>1.32</dwca-io.version>
+        <dwca-io.version>1.33-SNAPSHOT</dwca-io.version>
         <fastutil.version>8.1.0</fastutil.version>
         <gbif-api.version>0.60</gbif-api.version>
         <gbif-common.version>0.36</gbif-common.version>

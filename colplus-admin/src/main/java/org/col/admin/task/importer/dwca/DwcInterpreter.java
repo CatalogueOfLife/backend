@@ -16,12 +16,14 @@ import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.GbifTerm;
 import org.gbif.dwc.terms.Term;
 import org.gbif.nameparser.api.NameType;
+import org.gbif.nameparser.api.ParsedName;
 import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -221,8 +223,9 @@ public class DwcInterpreter {
     // we parse all names from the scientificName + optional authorship
     // or use the atomized parts which we also use to validate the parsing result.
     Name n;
+    String vSciname = v.getCoreTerm(DwcTerm.scientificName);
     if (v.hasCoreTerm(DwcTerm.scientificName)) {
-      n = NameParser.PARSER.parse(v.getCoreTerm(DwcTerm.scientificName), rank).get();
+      n = NameParser.PARSER.parse(vSciname, rank).get();
       // TODO: validate name against optional atomized terms!
       //Name n2 = buildNameFromVerbatimTerms(v);
 
@@ -238,8 +241,9 @@ public class DwcInterpreter {
 
     // try to add an authorship if not yet there
     if (v.hasCoreTerm(DwcTerm.scientificNameAuthorship)) {
-      try {
-        Name authorship = parseAuthorship(v.getCoreTerm(DwcTerm.scientificNameAuthorship));
+      Optional<ParsedName> optAuthorship = NameParser.PARSER.parseAuthorship(v.getCoreTerm(DwcTerm.scientificNameAuthorship));
+      if (optAuthorship.isPresent()) {
+        ParsedName authorship = optAuthorship.get();
         if (n.hasAuthorship()) {
           if (!n.authorshipComplete().equalsIgnoreCase(authorship.authorshipComplete())){
             n.addIssue(Issue.INCONSISTENT_AUTHORSHIP);
@@ -253,7 +257,7 @@ public class DwcInterpreter {
           n.setBasionymAuthorship(authorship.getBasionymAuthorship());
         }
 
-      } catch (UnparsableException e) {
+      } else {
         LOG.warn("Unparsable authorship {}", v.getCoreTerm(DwcTerm.scientificNameAuthorship));
         n.addIssue(Issue.UNPARSABLE_AUTHORSHIP);
       }
@@ -271,8 +275,6 @@ public class DwcInterpreter {
     //TODO: should we also get these through an extension, e.g. species profile or a nomenclature extension?
     n.setRemarks(v.getCoreTerm(CoLTerm.nomenclaturalRemarks));
     n.setFossil(null);
-
-    // basionym is kept purely in neo4j
 
     if (!n.isConsistent()) {
       n.addIssue(Issue.INCONSISTENT_NAME);
@@ -297,12 +299,5 @@ public class DwcInterpreter {
       n.addIssue(Issue.INCONSISTENT_NAME);
     }
     return n;
-  }
-
-  /**
-   * @return a name instance with just the parsed authorship, i.e. combination & original year & author list
-   */
-  private Name parseAuthorship(String authorship) throws UnparsableException {
-      return NameParser.PARSER.parse("Abies alba "+authorship).get();
   }
 }

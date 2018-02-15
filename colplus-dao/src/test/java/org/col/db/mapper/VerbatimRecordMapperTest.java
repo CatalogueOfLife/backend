@@ -11,7 +11,6 @@ import org.gbif.dwc.terms.GbifTerm;
 import org.gbif.dwc.terms.UnknownTerm;
 import org.junit.Test;
 
-import java.net.URI;
 import java.util.Random;
 
 import static org.junit.Assert.assertEquals;
@@ -40,7 +39,7 @@ public class VerbatimRecordMapperTest extends MapperTestBase<VerbatimRecordMappe
       if (t.isClass()) continue;
       v.setCoreTerm(t, RandomUtils.randomString(1 + rnd.nextInt(19)).toLowerCase());
     }
-    v.setCoreTerm(new UnknownTerm(URI.create("http://col.plus/terms/punk")), RandomUtils.randomString(1 + rnd.nextInt(50)));
+    v.setCoreTerm(UnknownTerm.build("http://col.plus/terms/punk"), RandomUtils.randomString(1 + rnd.nextInt(50)));
 
     // distribution
     for (int idx=0; idx < 2; idx++) {
@@ -48,7 +47,7 @@ public class VerbatimRecordMapperTest extends MapperTestBase<VerbatimRecordMappe
       rec.put(DwcTerm.countryCode, RandomUtils.randomString(2).toUpperCase());
       rec.put(DwcTerm.locality, RandomUtils.randomString(20).toLowerCase());
       rec.put(DwcTerm.occurrenceStatus, "present");
-      rec.put(new UnknownTerm(URI.create("http://col.plus/terms/punk")), "Stiv Bators");
+      rec.put(UnknownTerm.build("http://col.plus/terms/punk"), "Stiv Bators");
       v.addExtensionRecord(GbifTerm.Distribution, rec);
     }
 
@@ -58,7 +57,7 @@ public class VerbatimRecordMapperTest extends MapperTestBase<VerbatimRecordMappe
       rec.put(DwcTerm.countryCode, RandomUtils.randomString(2).toUpperCase());
       rec.put(DcTerm.language, RandomUtils.randomString(3).toLowerCase());
       rec.put(DwcTerm.vernacularName, RandomUtils.randomSpecies());
-      rec.put(new UnknownTerm(URI.create("http://col.plus/terms/punk")), "Stiv Bators");
+      rec.put(UnknownTerm.build("http://col.plus/terms/punk"), "Stiv Bators");
       v.addExtensionRecord(GbifTerm.VernacularName, rec);
     }
     return v;

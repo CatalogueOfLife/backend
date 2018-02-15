@@ -43,6 +43,19 @@ public class NameParser implements Parser<Name> {
   }
 
   /**
+   * @return a name instance with just the parsed authorship, i.e. combination & original year & author list
+   */
+  public Optional<ParsedName> parseAuthorship(String authorship) {
+    try {
+      return Optional.of(PARSER_INTERNAL.parse("Abies alba "+authorship, Rank.SPECIES));
+
+    } catch (UnparsableNameException e) {
+      return Optional.empty();
+    }
+  }
+
+
+  /**
    * Fully parses a name using #parse(String, Rank) but converts names that throw a UnparsableException
    * into ParsedName objects with the scientific name, rank and name type given.
    */

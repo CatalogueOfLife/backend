@@ -75,6 +75,10 @@ public class NameParserTest {
         .combExAuthors("Wedd.")
         .nothingElse();
 
+    assertName("Achillea millefolium subsp. pallidotegula B. Boivin var. pallidotegula", "Achillea millefolium var. pallidotegula")
+        .infraSpecies("Achillea", "millefolium", Rank.VARIETY, "pallidotegula")
+        .nothingElse();
+
   }
 
   @Test

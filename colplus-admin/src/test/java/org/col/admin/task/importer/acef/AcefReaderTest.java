@@ -1,7 +1,7 @@
 package org.col.admin.task.importer.acef;
 
 import org.col.api.model.TermRecord;
-import org.col.api.vocab.AcefTerm;
+import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.utils.file.FileUtils;
 import org.junit.Test;
 

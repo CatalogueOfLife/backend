@@ -1,0 +1,10 @@
+AcceptedTaxonID	CommonName	TransliteratedNames	Language	Country	Area	ReferenceID
+1	Aparajit		Hindi	India		3049
+1	Gokarni		Hindi	India		3372
+i1	Bhat		Hindi	India		3030
+i1	Bhatwar		Hindi	India		3030
+i1	Bhetmas		Hindi	India		3030
+i1	Ramkurthi		Hindi	India		3030
+i1	Ram Kurthi		Hindi	India		3587
+i1	Sojabona		Swedish	Sweden		4061
+i1	Tarimal Sharbuurtzag		Mongolian	Mongolia		4672

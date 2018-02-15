@@ -7,7 +7,6 @@ import org.gbif.dwc.terms.*;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.net.URI;
 import java.util.Random;
 
 import static org.junit.Assert.assertEquals;
@@ -32,7 +31,7 @@ public class TermRecordSerdeTest {
     for (Term t : GbifTerm.values()) {
       rec.put(t, RandomUtils.randomString(1 + rnd.nextInt(99)));
     }
-    rec.put(new UnknownTerm(URI.create("http://col.plus/terms/punk")), RandomUtils.randomString(1 + rnd.nextInt(99)));
+    rec.put(UnknownTerm.build("http://col.plus/terms/punk"), RandomUtils.randomString(1 + rnd.nextInt(99)));
 
     // to json
     String json = MAPPER.writeValueAsString(rec);
