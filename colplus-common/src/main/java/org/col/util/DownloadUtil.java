@@ -1,4 +1,4 @@
-package org.col.admin.task.importer;
+package org.col.util;
 
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;

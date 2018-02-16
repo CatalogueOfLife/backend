@@ -1,4 +1,4 @@
-package org.col.admin.task.importer;
+package org.col.util;
 
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;

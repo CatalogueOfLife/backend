@@ -69,14 +69,14 @@ public class AcefNeoInserter extends NeoInserter {
 
   private void insertTaxaAndNames() {
     // species
-    for (TermRecord rec : reader.read(AcefTerm.ACCEPTED_SPECIES)) {
+    for (TermRecord rec : reader.read(AcefTerm.AcceptedSpecies)) {
       VerbatimRecord v = VerbatimRecordFactory.build(rec.get(AcefTerm.AcceptedTaxonID), rec);
       NeoTaxon t = inter.interpretTaxon(v, false);
       store.put(t);
       meta.incRecords(t.name.getRank());
     }
     // infraspecies
-    for (TermRecord rec : reader.read(AcefTerm.ACCEPTED_INFRA_SPECIFIC_TAXA)) {
+    for (TermRecord rec : reader.read(AcefTerm.AcceptedInfraSpecificTaxa)) {
       VerbatimRecord v = VerbatimRecordFactory.build(rec.get(AcefTerm.AcceptedTaxonID), rec);
       NeoTaxon t = inter.interpretTaxon(v, false);
       if (!t.name.getRank().isInfraspecific()) {
@@ -87,7 +87,7 @@ public class AcefNeoInserter extends NeoInserter {
       meta.incRecords(t.name.getRank());
     }
     // synonyms
-    for (TermRecord rec : reader.read(AcefTerm.SYNONYMS)) {
+    for (TermRecord rec : reader.read(AcefTerm.Synonyms)) {
       VerbatimRecord v = VerbatimRecordFactory.build(rec.get(DcTerm.identifier), rec);
       NeoTaxon t = inter.interpretTaxon(v, true);
       store.put(t);
@@ -96,8 +96,8 @@ public class AcefNeoInserter extends NeoInserter {
   }
 
   private void insertReferences() {
-    for (TermRecord rec : reader.read(AcefTerm.REFERENCE)) {
-      Reference ref = new Reference();
+    for (TermRecord rec : reader.read(AcefTerm.Reference)) {
+      Reference ref = Reference.create();
       ref.setId(rec.get(AcefTerm.ReferenceID));
       ref.setTitle(rec.get(AcefTerm.Title));
       ref.setYear(rec.getIntDefault(AcefTerm.Year, null));
@@ -112,7 +112,7 @@ public class AcefNeoInserter extends NeoInserter {
   @Override
   protected Optional<Dataset> readMetadata() {
     Dataset d = null;
-    Optional<TermRecord> metadata = reader.readFirstRow(AcefTerm.SOURCE_DATABASE);
+    Optional<TermRecord> metadata = reader.readFirstRow(AcefTerm.SourceDatabase);
     if (metadata.isPresent()) {
       TermRecord dr = metadata.get();
       d = new Dataset();

@@ -1,24 +1,37 @@
 package org.col.admin.task.importer;
 
 import com.google.common.io.Files;
+import com.google.common.io.MoreFiles;
+import com.google.common.io.RecursiveDeleteOption;
 import org.apache.commons.io.FileUtils;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.col.admin.config.NormalizerConfig;
 import org.col.admin.task.importer.neo.NeoDb;
 import org.col.admin.task.importer.neo.NeoDbFactory;
 import org.col.admin.task.importer.neo.NotUniqueRuntimeException;
 import org.col.admin.task.importer.neo.model.NeoProperties;
 import org.col.admin.task.importer.neo.model.NeoTaxon;
+import org.col.admin.task.importer.neo.printer.GraphFormat;
+import org.col.admin.task.importer.neo.printer.PrinterUtils;
 import org.col.api.model.Reference;
 import org.col.api.vocab.DataFormat;
+import org.col.util.CompressionUtil;
+import org.col.util.DownloadUtil;
 import org.gbif.nameparser.api.Rank;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.NotFoundException;
 import org.neo4j.graphdb.Transaction;
 
 import javax.annotation.Nullable;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.Writer;
+import java.net.URI;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -40,15 +53,38 @@ public class NormalizerACEFIT {
    */
   private void normalize(int datasetKey) throws Exception {
     URL acefUrl = getClass().getResource("/acef/"+datasetKey);
-    acef = Paths.get(acefUrl.toURI());
+    normalize(Paths.get(acefUrl.toURI()));
+  }
 
-    store = NeoDbFactory.create(cfg,datasetKey);
+  private void normalize(URI url) throws Exception {
+    // download file
+    HttpClientBuilder htb = HttpClientBuilder.create();
+    File tmp = File.createTempFile("col-gsd", ".tar.gz");
+    Path source = java.nio.file.Files.createTempDirectory("col-gsd");
+    try (CloseableHttpClient hc = htb.build()) {
+      DownloadUtil down = new DownloadUtil(hc);
+      down.downloadIfModified(url, tmp);
+      // decompress into folder
+      CompressionUtil.decompressFile(source.toFile(), tmp);
+      // normalize
+      normalize(source);
+
+    } finally {
+      FileUtils.deleteQuietly(tmp);
+      MoreFiles.deleteRecursively(source, RecursiveDeleteOption.ALLOW_INSECURE);
+    }
+  }
+
+  private void normalize(Path source) throws Exception {
+    acef = source;
+
+    store = NeoDbFactory.create(cfg, 1);
 
     Normalizer norm = new Normalizer(store, acef.toFile(), DataFormat.ACEF);
     norm.run();
 
     // reopen
-    store = NeoDbFactory.open(cfg,datasetKey);
+    store = NeoDbFactory.open(cfg, 1);
   }
 
   @Before
@@ -102,6 +138,23 @@ public class NormalizerACEFIT {
       assertEquals("(Kunth) H.M.Hern.", t.name.authorshipComplete());
       assertEquals(Rank.SPECIES, t.name.getRank());
     }
+  }
+
+  @Test
+  @Ignore
+  public void testGsdGithub() throws Exception {
+    normalize(URI.create("https://raw.githubusercontent.com/Sp2000/colplus-repo/master/ACEF/assembly/73.tar.gz"));
+    writeToFile();
+  }
+
+  void writeToFile() throws Exception {
+    // dump graph as TEXT file for debugging
+    File f = new File("graphs/tree-acef.txt");
+    Files.createParentDirs(f);
+    Writer writer = new FileWriter(f);
+    PrinterUtils.printTree(store.getNeo(), writer, GraphFormat.TEXT);
+    writer.close();
+    System.out.println("Wrote graph to "+f.getAbsolutePath());
   }
 
 }

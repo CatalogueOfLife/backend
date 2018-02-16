@@ -1,0 +1,21 @@
+AcceptedTaxonID	Family	Genus	SpeciesEpithet	AuthorString
+1	Fabaceae	Inga	vera	Döring
+2	Fabaceae	Astracantha	arnacantha	(Møllæ) Padléç
+3	Fabaceae	Inga	vera	Döring
+4	Fabaceae	Astracantha	arnacantha	(Møllæ) Padléç
+5	Fabaceae	Inga	vera	Döring
+6	Fabaceae	Astracantha	arnacantha	(Møllæ) Padléç
+7	Fabaceae	Inga	vera	Döring
+8	Fabaceae	Astracantha	arnacantha	(Møllæ) Padléç
+9	Fabaceae	Inga	vera	Döring
+0	Fabaceae	Astracantha	arnacantha	(Møllæ) Padléç
+11	Fabaceae	Inga	vera	Döring
+12	Fabaceae	Astracantha	arnacantha	(Møllæ) Padléç
+13	Fabaceae	Inga	vera	Döring
+14	Fabaceae	Astracantha	arnacantha	(Møllæ) Padléç
+15	Fabaceae	Inga	vera	Döring
+16	Fabaceae	Astracantha	arnacantha	(Møllæ) Padléç
+17	Fabaceae	Inga	vera	Döring
+18	Fabaceae	Astracantha	arnacantha	(Møllæ) Padléç
+19	Fabaceae	Inga	vera	Döring
+10	Fabaceae	Astracantha	arnacantha	(Møllæ) Padléç

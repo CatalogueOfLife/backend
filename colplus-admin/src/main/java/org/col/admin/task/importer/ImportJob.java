@@ -10,6 +10,8 @@ import org.col.admin.task.importer.neo.NeoDbFactory;
 import org.col.api.model.Dataset;
 import org.col.api.model.DatasetImport;
 import org.col.db.dao.DatasetImportDao;
+import org.col.util.CompressionUtil;
+import org.col.util.DownloadUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;

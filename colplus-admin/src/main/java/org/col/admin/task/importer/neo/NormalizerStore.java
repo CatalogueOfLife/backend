@@ -3,7 +3,7 @@ package org.col.admin.task.importer.neo;
 import org.col.admin.task.importer.neo.model.Labels;
 import org.col.admin.task.importer.neo.model.NeoTaxon;
 import org.col.api.model.Dataset;
-import org.col.config.AutoCloseableRuntime;
+import org.col.lang.AutoCloseableRuntime;
 import org.gbif.nameparser.api.Rank;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;

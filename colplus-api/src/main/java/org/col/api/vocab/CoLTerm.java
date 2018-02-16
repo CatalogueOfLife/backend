@@ -9,8 +9,7 @@ import org.gbif.dwc.terms.TermFactory;
 public enum CoLTerm implements Term {
 
   nomenclaturalRemarks,
-  etymology,
-  superfamily;
+  etymology;
 
   public static final String NS = "http://rs.col.plus/terms/";
   public static final String PREFIX = "col";

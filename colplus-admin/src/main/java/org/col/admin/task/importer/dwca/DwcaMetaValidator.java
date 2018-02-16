@@ -4,7 +4,7 @@ import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import org.col.admin.task.importer.InsertMetadata;
 import org.col.admin.task.importer.NormalizationFailedException;
-import org.col.api.vocab.CoLTerm;
+import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.GbifTerm;
 import org.gbif.dwc.terms.Term;
@@ -64,7 +64,7 @@ public class DwcaMetaValidator {
         break;
       }
     }
-    if (arch.getCore().hasTerm(CoLTerm.superfamily)) {
+    if (arch.getCore().hasTerm(AcefTerm.Superfamily)) {
       meta.setDenormedClassificationMapped(true);
     }
     if (arch.getCore().hasTerm(DwcTerm.parentNameUsageID) || arch.getCore().hasTerm(DwcTerm.parentNameUsage)) {
