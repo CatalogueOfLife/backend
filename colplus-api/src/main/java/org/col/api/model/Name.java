@@ -612,4 +612,60 @@ public class Name implements PrimaryEntity {
 		return key + "[" + id + "] " + canonicalNameComplete();
 	}
 
+  public String toStringComplete() {
+    StringBuilder sb = new StringBuilder();
+
+    sb.append(key)
+        .append("/")
+        .append(id);
+
+    if (this.type != null) {
+      sb.append("[");
+      sb.append(this.type);
+      sb.append("] ");
+    }
+
+    if (this.uninomial != null) {
+      sb.append(" U:").append(this.uninomial);
+    }
+
+    if (this.genus != null) {
+      sb.append(" G:").append(this.genus);
+    }
+
+    if (this.infragenericEpithet != null) {
+      sb.append(" IG:").append(this.infragenericEpithet);
+    }
+
+    if (this.specificEpithet != null) {
+      sb.append(" S:").append(this.specificEpithet);
+    }
+
+    if (this.rank != null) {
+      sb.append(" R:").append(this.rank);
+    }
+
+    if (this.infraspecificEpithet != null) {
+      sb.append(" IS:").append(this.infraspecificEpithet);
+    }
+
+    if (this.cultivarEpithet != null) {
+      sb.append(" CV:").append(this.cultivarEpithet);
+    }
+
+    if (this.strain != null) {
+      sb.append(" STR:").append(this.strain);
+    }
+
+    if (this.combinationAuthorship != null) {
+      sb.append(" A:").append(this.combinationAuthorship);
+    }
+
+    if (this.basionymAuthorship != null) {
+      sb.append(" BA:").append(this.basionymAuthorship);
+    }
+
+    return sb.toString();
+  }
+
 }

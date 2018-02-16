@@ -139,12 +139,12 @@ public class AcefInterpreter {
     return r;
   }
 
-  static void updateScientificName(Name n) {
+  static void updateScientificName(String id, Name n) {
     try {
       n.setScientificName(n.canonicalNameWithoutAuthorship());
       if (!n.isConsistent()) {
         n.addIssue(Issue.INCONSISTENT_NAME);
-        LOG.info("Inconsistent name: {}", n);
+        LOG.info("Inconsistent name {}: {}", id, n.toStringComplete());
       }
     } catch (InvalidNameException e) {
       LOG.warn("Invalid atomised name found: {}", n);
@@ -173,7 +173,7 @@ public class AcefInterpreter {
     } else {
       n.setRank(Rank.SPECIES);
       authorship = v.getCoreTerm(AcefTerm.AuthorString);
-      updateScientificName(n);
+      updateScientificName(v.getId(), n);
     }
 
     if (!Strings.isNullOrEmpty(authorship)) {

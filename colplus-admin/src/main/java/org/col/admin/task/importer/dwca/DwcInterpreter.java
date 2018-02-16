@@ -278,7 +278,7 @@ public class DwcInterpreter {
 
     if (!n.isConsistent()) {
       n.addIssue(Issue.INCONSISTENT_NAME);
-      LOG.info("Inconsistent name: {}", n);
+      LOG.info("Inconsistent name {}: {}", v.getId(), n);
     }
 
     return n;

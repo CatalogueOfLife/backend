@@ -49,7 +49,7 @@ public class AcefRelationInserter implements NeoDb.NodeBatchProcessor {
       }
       if (t.name.getScientificName() == null) {
         // this should be an infraspecific name not yet updated in AcefInserter, do it here!
-        AcefInterpreter.updateScientificName(t.name);
+        AcefInterpreter.updateScientificName(t.verbatim.getId(), t.name);
       }
       store.put(t);
 
