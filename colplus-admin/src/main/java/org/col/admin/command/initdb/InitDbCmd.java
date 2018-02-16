@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class InitDbCmd extends ConfiguredCommand<AdminServerConfig> {
   private static final Logger LOG = LoggerFactory.getLogger(InitDbCmd.class);
-  private static final URI COL_DATASETS_URI = URI.create("https://raw.githubusercontent.com/Sp2000/colplus-repo/master/AC2017/datasets.sql");
+  private static final URI COL_DATASETS_URI = URI.create("https://raw.githubusercontent.com/Sp2000/colplus-repo/master/ACEF/datasets.sql");
 
   public InitDbCmd() {
     super("initdb", "Initialises a new database schema");
