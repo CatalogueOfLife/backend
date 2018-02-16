@@ -1,6 +1,5 @@
 package org.col.admin.task.importer.acef;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvParser;
@@ -11,7 +10,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Maps;
 import com.google.common.collect.PeekingIterator;
-import jersey.repackaged.com.google.common.base.Throwables;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOCase;
 import org.apache.commons.io.filefilter.FileFilterUtils;
@@ -96,9 +94,7 @@ public class AcefReader {
       Term rowType = VocabularyUtils.TF.findTerm(AcefTerm.PREFIX + ":" + FilenameUtils.getBaseName(df.getName()));
       LOG.debug("Detecting schema for file {}, rowType={}", df.getName(), rowType);
       if (rowType != null && rowType instanceof AcefTerm) {
-        Schema schema = null;
-        schema = buildSchema(df);
-        reader.schemas.put(rowType, schema);
+        reader.schemas.put(rowType, buildSchema(df));
       }
     }
 
@@ -114,18 +110,17 @@ public class AcefReader {
     reader = new InputStreamReader(new FileInputStream(df), charset);
     return MAPPER.readerFor(Map.class)
         .with(schema)
-        .withFeatures(DeserializationFeature.ACCEPT_EMPTY_ARRAY_AS_NULL_OBJECT)
-        .withFeatures(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT)
         .readValues(reader);
   }
 
   private static Schema buildSchema(File df) throws IOException {
-    CsvSchema schema = CsvSchema.emptySchema();
     Map<String,Term> columns = Maps.newHashMap();
-    CsvSchema baseSchema = DATA_FILE_TYPES.getOrDefault(FilenameUtils.getExtension(df.getName()).toLowerCase(), TAB_SCHEMA);
+    CsvSchema schema = DATA_FILE_TYPES.getOrDefault(FilenameUtils.getExtension(df.getName()).toLowerCase(), TAB_SCHEMA);
 
-    try (MappingIterator<Map<String,String>> it = jacksonIter(baseSchema, df)){
-      CsvSchema.Builder builder = baseSchema.rebuild();
+    MappingIterator<Map<String,String>> it = null;
+    try {
+      it = jacksonIter(schema, df);
+      CsvSchema.Builder builder = schema.rebuild();
       if (it.hasNext()) {
         Map<String,String> rowAsMap = it.next();
         // access by column name, as defined in the header row...
@@ -137,8 +132,13 @@ public class AcefReader {
         LOG.debug("Csv schema with {} column found for file {}", rowAsMap.size(), df.getName());
       }
 
-    } catch (RuntimeException e) {
+    } catch (RuntimeException | IOException e) {
       LOG.error("Failed to read schema for {}", df.getName(), e);
+
+    } finally {
+      if (it != null) {
+        it.close();
+      }
     }
 
     return new Schema(df, schema, columns);
@@ -170,7 +170,7 @@ public class AcefReader {
     for (AcefTerm t : AcefTerm.values()) {
       if (t.isClass()) {
         if (!hasData(t)) {
-          LOG.warn("{} missing from ACEF in {}", t.name(), folder);
+          LOG.info("{} missing from ACEF in {}", t.name(), folder);
         }
       }
     }
@@ -252,8 +252,8 @@ public class AcefReader {
       try {
         this.it = jacksonIter(schema.schema, schema.file);
       } catch (IOException e) {
-        // convert into runtime
-        Throwables.propagate(e);
+        LOG.error("Failed to open {}", schema.file, e);
+        it = Collections.emptyIterator();
       }
     }
 

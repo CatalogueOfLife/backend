@@ -66,10 +66,20 @@ public class AcefReaderTest {
     }
     assertEquals(3, counter);
 
+    Optional<TermRecord> row = reader.readFirstRow(AcefTerm.CommonNames);
+    assertTrue(row.isPresent());
+
+    row = reader.readFirstRow(AcefTerm.Distribution);
+    assertFalse(row.isPresent());
+
+    row = reader.readFirstRow(AcefTerm.Reference);
+    assertFalse(row.isPresent());
+
     // try to read bad file
-    Optional<TermRecord> row = reader.readFirstRow(AcefTerm.SourceDatabase);
+    row = reader.readFirstRow(AcefTerm.SourceDatabase);
     // this somehow works, puzzling but ok ...
     //assertFalse(row.isPresent());
+
   }
 
   @Test
@@ -95,4 +105,5 @@ public class AcefReaderTest {
     }
     assertTrue(expected.isEmpty());
   }
+
 }

@@ -325,6 +325,12 @@ public class CharsetDetection {
    * @return the Charset recognized or the best matching 8bit encoding of latin1, windows 1252 or macroman.
    */
   Charset detectEncoding() {
+    // require at least 2 bytes, use latin1 otherwise as there is no content anyways
+    if (buffer == null || buffer.length < 2) {
+      LOG.debug("No content, use latin1");
+      return Charsets.ISO_8859_1;
+    }
+
     // if the file has a Byte Order Marker, we can assume the file is in UTF-xx
     // otherwise, the file would not be human readable
     if (hasUTF8Bom(buffer)) {
