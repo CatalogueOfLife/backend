@@ -207,10 +207,10 @@ public class TaxonMapperTest extends MapperTestBase<TaxonMapper> {
     commit();
 
     List<Taxon> res = mapper().children(parent.getKey(), new Page(0, 5));
-    assertEquals("01", 3, res.size());
-    assertEquals("02", c1, res.get(0));
-    assertEquals("03", c2, res.get(1));
-    assertEquals("04", c3, res.get(2));
+    assertEquals(3, res.size());
+    assertEquals(c1, res.get(0));
+    assertEquals(c2, res.get(1));
+    assertEquals(c3, res.get(2));
 
   }
 

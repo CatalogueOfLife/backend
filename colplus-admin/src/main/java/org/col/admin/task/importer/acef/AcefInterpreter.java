@@ -154,7 +154,7 @@ public class AcefInterpreter {
 
   static void updateScientificName(String id, Name n) {
     try {
-      n.setScientificName(n.canonicalNameWithoutAuthorship());
+      n.updateScientificName();
       if (!n.isConsistent()) {
         n.addIssue(Issue.INCONSISTENT_NAME);
         LOG.info("Inconsistent name {}: {}", id, n.toStringComplete());

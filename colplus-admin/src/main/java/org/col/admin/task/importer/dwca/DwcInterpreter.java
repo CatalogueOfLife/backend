@@ -293,7 +293,7 @@ public class DwcInterpreter {
     n.setInfraspecificEpithet(v.getCoreTerm(DwcTerm.infraspecificEpithet));
     n.setType(NameType.SCIENTIFIC);
     try {
-      n.setScientificName(n.canonicalNameWithoutAuthorship());
+      n.updateScientificName();
     } catch (InvalidNameException e) {
       LOG.warn("Invalid atomised name found: {}", n);
       n.addIssue(Issue.INCONSISTENT_NAME);

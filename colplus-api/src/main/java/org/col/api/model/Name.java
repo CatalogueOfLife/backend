@@ -228,6 +228,13 @@ public class Name implements PrimaryEntity {
 		this.scientificName = scientificName;
 	}
 
+  /**
+   * Updates the scientific name property based on the parsed properties
+   */
+  public void updateScientificName() {
+    this.scientificName = canonicalNameWithoutAuthorship();
+  }
+
 	public Origin getOrigin() {
 		return origin;
 	}

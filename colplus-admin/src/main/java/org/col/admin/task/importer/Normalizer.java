@@ -280,7 +280,7 @@ public class Normalizer implements Runnable {
     n.setUninomial(uninomial);
     n.setRank(rank);
     n.setType(NameType.SCIENTIFIC);
-    n.setScientificName(n.canonicalNameComplete());
+    n.updateScientificName();
     NeoTaxon t = NeoTaxon.createTaxon(Origin.DENORMED_CLASSIFICATION, n, TaxonomicStatus.ACCEPTED);
 
     // store, which creates a new neo node

@@ -67,7 +67,7 @@ public class NameParser implements Parser<Name> {
     Name n;
     try {
       n = fromParsedName(PARSER_INTERNAL.parse(name, rank));
-      n.setScientificName(n.canonicalNameWithoutAuthorship());
+      n.updateScientificName();
 
     } catch (UnparsableNameException e) {
       n = new Name();

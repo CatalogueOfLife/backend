@@ -68,7 +68,7 @@ public class TestEntityGenerator {
     NAME1.setRank(Rank.SPECIES);
     NAME1.setOrigin(Origin.SOURCE);
     NAME1.setType(NameType.SCIENTIFIC);
-    NAME1.setScientificName(NAME1.canonicalNameComplete());
+    NAME1.updateScientificName();
 
     NAME2.setKey(2);
     NAME2.setId("name-2");
@@ -78,7 +78,7 @@ public class TestEntityGenerator {
     NAME2.setRank(Rank.SPECIES);
     NAME2.setOrigin(Origin.SOURCE);
     NAME2.setType(NameType.SCIENTIFIC);
-    NAME2.setScientificName(NAME2.canonicalNameComplete());
+    NAME2.updateScientificName();
 
     TAXON1.setKey(1);
     TAXON1.setId("root-1");
@@ -160,7 +160,6 @@ public class TestEntityGenerator {
 	public static Name newName() throws Exception {
 		Name n = new Name();
 		n.setDatasetKey(TestEntityGenerator.DATASET1.getKey());
-		n.setScientificName(RandomUtils.randomSpecies());
 		n.setCombinationAuthorship(createAuthorship());
     if(RND.nextBoolean()) {
       n.setBasionymAuthorship(createAuthorship());
@@ -168,7 +167,7 @@ public class TestEntityGenerator {
     if (RND.nextInt(10) == 1) {
       n.setSanctioningAuthor("Fr.");
     }
-    List<String> tokens = SPACE_SPLITTER.splitToList(n.getScientificName());
+    List<String> tokens = SPACE_SPLITTER.splitToList(RandomUtils.randomSpecies());
 		n.setGenus(tokens.get(0));
 		n.setSpecificEpithet(tokens.get(1));
 		n.setInfragenericEpithet("Igen");
@@ -184,6 +183,7 @@ public class TestEntityGenerator {
 		n.setType(NameType.SCIENTIFIC);
 		n.addIssue(Issue.ACCEPTED_NAME_MISSING);
 		n.addIssue(Issue.HOMONYM);
+    n.updateScientificName();
 		return n;
 	}
 
