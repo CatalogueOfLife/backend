@@ -537,7 +537,7 @@ public class Name implements PrimaryEntity {
    * @See NameFormatter.canonical()
    */
   public String canonicalName() {
-    return type.isParsable() ?
+    return type != null && type.isParsable() ?
         NameFormatter.canonical(toParsedName(this)) :
         getScientificName();
   }
@@ -546,7 +546,7 @@ public class Name implements PrimaryEntity {
    * @See NameFormatter.canonicalNameWithoutAuthorship()
    */
   public String canonicalNameWithoutAuthorship() {
-    return type.isParsable() ?
+    return type != null && type.isParsable() ?
         NameFormatter.canonicalWithoutAuthorship(toParsedName(this)) :
         getScientificName();
   }
@@ -555,7 +555,7 @@ public class Name implements PrimaryEntity {
    * @See NameFormatter.canonicalMinimal()
    */
   public String canonicalNameMinimal() {
-    return type.isParsable() ?
+    return type != null && type.isParsable() ?
         NameFormatter.canonicalMinimal(toParsedName(this)) :
         getScientificName();
   }
@@ -564,9 +564,10 @@ public class Name implements PrimaryEntity {
    * @See NameFormatter.canonicalComplete()
    */
   public String canonicalNameComplete() {
-    return type.isParsable() ?
-        NameFormatter.canonicalComplete(toParsedName(this)) :
-        getScientificName();
+    return type != null && type.isParsable() ?
+        getScientificName() :
+        NameFormatter.canonicalComplete(toParsedName(this));
+
   }
 
   /**
