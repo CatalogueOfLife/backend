@@ -2,6 +2,7 @@ package org.col.admin.task.importer;
 
 import com.google.common.collect.Sets;
 import com.google.common.io.Files;
+import jersey.repackaged.com.google.common.collect.Lists;
 import jersey.repackaged.com.google.common.collect.Maps;
 import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.session.SqlSession;
@@ -9,15 +10,14 @@ import org.col.admin.config.ImporterConfig;
 import org.col.admin.config.NormalizerConfig;
 import org.col.admin.task.importer.neo.NeoDb;
 import org.col.admin.task.importer.neo.NeoDbFactory;
+import org.col.admin.task.importer.neo.model.RankedName;
 import org.col.api.model.*;
-import org.col.api.vocab.DataFormat;
-import org.col.api.vocab.DistributionStatus;
-import org.col.api.vocab.Gazetteer;
-import org.col.api.vocab.Language;
+import org.col.api.vocab.*;
 import org.col.db.dao.NameDao;
 import org.col.db.dao.ReferenceDao;
 import org.col.db.dao.TaxonDao;
 import org.col.db.mapper.*;
+import org.gbif.nameparser.api.Rank;
 import org.junit.*;
 
 import java.net.URL;
@@ -26,6 +26,7 @@ import java.nio.file.Paths;
 import java.util.*;
 
 import static org.junit.Assert.*;
+import static org.col.api.vocab.DataFormat.*;
 
 /**
  *
@@ -59,12 +60,12 @@ public class PgImportIT {
 		}
 	}
 
-	void normalizeAndImport(int dwcaKey) throws Exception {
-		URL dwcaUrl = getClass().getResource("/dwca/" + dwcaKey);
-		Path dwca = Paths.get(dwcaUrl.toURI());
+	void normalizeAndImport(DataFormat format, int key) throws Exception {
+		URL resUrl = getClass().getResource("/" + format.name().toLowerCase() + "/" + key);
+		Path source = Paths.get(resUrl.toURI());
 
 		// insert dataset
-		dataset.setTitle("Test Dataset " + dwcaKey);
+		dataset.setTitle("Test Dataset " + key);
 		SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true);
 		// this creates a new datasetKey, usually 1!
 		session.getMapper(DatasetMapper.class).create(dataset);
@@ -72,7 +73,7 @@ public class PgImportIT {
 		session.close();
 
 		// normalize
-		Normalizer norm = new Normalizer(NeoDbFactory.create(cfg, dataset.getKey()), dwca.toFile(), DataFormat.DWCA);
+		Normalizer norm = new Normalizer(NeoDbFactory.create(cfg, dataset.getKey()), source.toFile(), format);
 		norm.run();
 
 		// import into postgres
@@ -84,7 +85,7 @@ public class PgImportIT {
 
   @Test
   public void testPublishedIn() throws Exception {
-    normalizeAndImport(0);
+    normalizeAndImport(DWCA, 0);
 
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       NameDao ndao = new NameDao(session);
@@ -110,7 +111,7 @@ public class PgImportIT {
 
   @Test
 	public void testDwca1() throws Exception {
-		normalizeAndImport(1);
+		normalizeAndImport(DWCA, 1);
 
 		// verify results
 		try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
@@ -134,7 +135,7 @@ public class PgImportIT {
 
 	@Test
 	public void testSupplementary() throws Exception {
-		normalizeAndImport(24);
+		normalizeAndImport(DWCA, 24);
 
 		// verify results
 		try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
@@ -188,6 +189,63 @@ public class PgImportIT {
 			assertEquals(expD, imported);
 		}
 	}
+
+  @Test
+  public void testAcef() throws Exception {
+    normalizeAndImport(ACEF, 69);
+
+    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+      NameDao ndao = new NameDao(session);
+      TaxonDao tdao = new TaxonDao(session);
+
+      Taxon t = tdao.get("Rho-144", dataset.getKey());
+      assertEquals("Afrogamasellus lokelei Daele, 1976", t.getName().canonicalNameComplete());
+
+      List<Taxon> classific = tdao.getClassification(t.getKey());
+      LinkedList<RankedName> expected = Lists.newLinkedList( Lists.newArrayList(
+          rn(Rank.KINGDOM, "Animalia"),
+          rn(Rank.PHYLUM, "Arthropoda"),
+          rn(Rank.CLASS, "Arachnida"),
+          rn(Rank.ORDER, "Mesostigmata"),
+          rn(Rank.SUPERFAMILY, "Rhodacaroidea"),
+          rn(Rank.FAMILY, "Rhodacaridae"),
+          rn(Rank.GENUS, "Afrogamasellus")
+      ));
+
+      assertEquals(expected.size(), classific.size());
+      for (Taxon ht : classific) {
+        RankedName expect = expected.removeLast();
+        assertEquals(expect.rank, ht.getName().getRank());
+        assertEquals(expect.name, ht.getName().canonicalNameComplete());
+      }
+
+      assertEquals(TaxonomicStatus.ACCEPTED, t.getStatus());
+      assertEquals("Tester", t.getAccordingTo());
+      assertEquals("2008-01-01", t.getAccordingToDate().toString());
+      assertFalse(t.isFossil());
+      assertTrue(t.isRecent());
+      assertTrue(t.getLifezones().isEmpty());
+      assertNull(t.getRemarks());
+      assertNull(t.getDatasetUrl());
+      assertNull(t.getTaxonID());
+
+
+      // test synonym
+      Name syn = ndao.get("Rho-140", dataset.getKey());
+      assertEquals("Rhodacarus guevarai Guevara-Benitez, 1974", syn.canonicalNameComplete());
+
+      List<Taxon> acc = tdao.getAccepted(syn);
+      assertEquals(1, acc.size());
+
+      t = tdao.get("Rho-61", dataset.getKey());
+      assertEquals("Multidentorhodacarus denticulatus (Berlese, 1920)", t.getName().canonicalNameComplete());
+      assertEquals(t, acc.get(0));
+    }
+  }
+
+  private static RankedName rn(Rank rank, String name) {
+	  return new RankedName(null, name, null, rank);
+  }
 
 	private Distribution dist(Gazetteer standard, String area, DistributionStatus status) {
 		Distribution d = new Distribution();

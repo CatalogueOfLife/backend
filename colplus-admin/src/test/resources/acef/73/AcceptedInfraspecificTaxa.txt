@@ -1,0 +1,749 @@
+AcceptedTaxonID	parentID	InfraSpeciesEpithet	InfraSpeciesMarker	InfraSpeciesAuthorString	GSDNameStatus	Sp2000NameStatus	IsExtinct	HasPreHolocene	HasModern	LifeZone	AdditionalData	LTSSpecialist	LTSDate	InfraSpeciesURL	GSDTaxonGUID	GSDNameGUID
+Mus-1120	Mus-1119	garamas	subsp.	(Maire) Podlech	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1121	Mus-1119	kralikii	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-103	Mus-102	aequiacutum	subsp.	Nyár.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1051	Mus-1050	aragonensis	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1052	Mus-1050	navarrana	subsp.	(P. Monts.) Vogt	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1061	Mus-1060	integrifolia	subsp.	(Hartm.) Nordal & Stabbetorp	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1062	Mus-1060	norvegica	subsp.	Nordal & Stabbetorp	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1063	Mus-1060	officinalis	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1066	Mus-1065	excelsa	subsp.	(Zahlbr. ex Fritsch) O. Schwarz	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1067	Mus-1065	pyrenaica	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1075	Mus-1074	cheiranthos	subsp.	(Vill.) Aedo, Leadlay & Muñoz Garm.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1076	Mus-1074	monensis	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1077	Mus-1074	nevadensis	subsp.	(Willk.) Leadlay	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1078	Mus-1074	orophila	subsp.	(Franco) Aedo, Leadlay & Muñoz Garm.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1079	Mus-1074	puberula	subsp.	(Pau) Leadlay	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1080	Mus-1074	recurvata	subsp.	(All.) Leadlay	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1087	Mus-1086	leptocarpa	subsp.	(Gonz.-Albo) Leadlay	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1088	Mus-1086	rupestris	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1092	Mus-1091	boissieri	subsp.	(Bornm.) Hedge	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1093	Mus-1091	vesicaria	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1169	Mus-1168	antarctica	var.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1170	Mus-1168	bonarellii	var.	O.E. Schulz	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1171	Mus-1168	patagonica	var.	(Speg.) O.E. Schulz	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1177	Mus-1176	gilgiana	var.	(Muschl.) O.E. Schulz	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1178	Mus-1176	macrorrhiza	var.	O.E. Schulz	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-118	Mus-117	condensatum	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1183	Mus-1182	cumingiana	var.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1184	Mus-1182	elegantula	var.	(Phil.) O.E. Schulz	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1185	Mus-1182	glabrescens	var.	(Speg.) O.E. Schulz	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1186	Mus-1182	tenuissima	var.	(Phil.) Reiche	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1188	Mus-1187	depressa	var.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1189	Mus-1187	pflanzii	var.	(Muschl.) O.E. Schulz	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-119	Mus-117	flexibile	subsp.	(Nyár.) T.R. Dudley	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1191	Mus-1190	cunninghamii	var.	O.E. Schulz	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1192	Mus-1190	diversifolia	var.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1202	Mus-1201	incisa	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1203	Mus-1201	paysonii	subsp.	(Detling) Rollins	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1217	Mus-1216	brachycarpa	subsp.	(Richardson) Detling	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1218	Mus-1216	glabra	subsp.	(Wooton & Standl.) Detling	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1219	Mus-1216	ochroleuca	subsp.	(Wooton) Detling	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1220	Mus-1216	pinnata	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1222	Mus-1221	briquetii	var.	(Pit.) O.E. Schulz	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1223	Mus-1221	preauxiana	var.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1250	Mus-1249	incisa	subsp.	Junussov & Kamelin	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1269	Mus-1268	brochmannii	subsp.	Rustan	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1270	Mus-1268	gorgadensis	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1274	Mus-1273	crassifolia	subsp.	(Raf.) Maire	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1275	Mus-1273	glauca	subsp.	(J.A. Schmidt) Sobrino Vesperinas	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1276	Mus-1273	harra	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1277	Mus-1273	hirta	subsp.	(A. Chev.) Sobrino Vesperinas	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1278	Mus-1273	lagascana	subsp.	(DC.) O. Bolòs & Vigo	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1283	Mus-1282	ceratophylla	subsp.	(Batt.) Mart.-Laborde	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1284	Mus-1282	muralis	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1291	Mus-1290	bipinnatifida	subsp.	(Coss.) Mart.-Laborde	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1292	Mus-1290	siifolia	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1293	Mus-1290	vicentina	subsp.	(Welw. ex Samp.) Mart.-Laborde	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1297	Mus-1296	cretacea	subsp.	(Kotov) Sobrino Vesperinas	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1298	Mus-1296	tenuifolia	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1300	Mus-1299	rupestris	subsp.	(Ball) Mart.-Laborde	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1301	Mus-1299	tenuisiliqua	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1305	Mus-1304	integrifolia	var.	Guss.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1306	Mus-1304	viminea	var.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1327	Mus-1326	aizoides	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1328	Mus-1326	beckeri	subsp.	(A. Kern.) Hörandl & Gutermann	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1354	Mus-1353	asprella	var.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1355	Mus-1353	stelligera	var.	O.E. Schulz	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1375	Mus-1374	armeniaca	subsp.	Coode & Cullen	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1376	Mus-1374	bruniifolia	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1377	Mus-1374	kurdica	subsp.	Coode & Cullen	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1378	Mus-1374	olympica	subsp.	(DC.) Coode & Cullen	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1382	Mus-1381	angusticarpa	subsp.	Elven	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1383	Mus-1381	cacuminum	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1409	Mus-1408	cuneifolia	var.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1410	Mus-1408	integrifolia	var.	S. Watson	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1411	Mus-1408	sonorae	var.	(Greene) Parish	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1457	Mus-1456	djurdjurae	subsp.	(Batt.) Greuter	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1458	Mus-1456	hispanica	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1459	Mus-1456	laderoi	subsp.	Rivas Mart., M.E. García & Penas	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1460	Mus-1456	lebrunii	subsp.	P. Monts.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1521	Mus-1520	matthioloides	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1522	Mus-1520	saundersii	subsp.	Al-Shehbaz	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1553	Mus-1552	mariae-aliciae	subsp.	Maire	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1554	Mus-1552	oreadum	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1589	Mus-1588	berryi	subsp.	Al-Shehbaz	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1590	Mus-1588	pulvinata	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-169	Mus-168	caespitosum	subsp.	(T.R. Dudley) Ancev	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-170	Mus-168	hirsutum	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1709	Mus-1708	sativa	subsp.	(Mill.) Thell.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1710	Mus-1708	vesicaria	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1733	Mus-1732	brachycarpum	subsp.	(Maire & Weiller) Gomez-Campo	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1734	Mus-1732	glabrum	subsp.	(Maire) Gomez-Campo	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1735	Mus-1732	littoreum	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1737	Mus-1736	balense	subsp.	Jonsell	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1738	Mus-1736	meruense	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1739	Mus-1736	yemenense	subsp.	Jonsell	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1741	Mus-1740	nasturtiifolium	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1742	Mus-1740	sudrei	subsp.	Vivant	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1748	Mus-1747	barbei	subsp.	Vindt	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1749	Mus-1747	mesatlanticum	subsp.	Maire & Wilczek	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1750	Mus-1747	subsiifolium	subsp.	Maire	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1751	Mus-1747	varium	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1753	Mus-1752	baeticum	subsp.	(Boiss.) Gomez-Campo	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1754	Mus-1752	brachycarpum	subsp.	(Rouy) Gomez-Campo	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1755	Mus-1752	pseudosinapis	subsp.	(Lange) Gomez-Campo	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1756	Mus-1752	virgatum	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1793	Mus-1792	candicum	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1794	Mus-1792	carpathum	subsp.	Snogerup	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1798	Mus-1797	capitatum	var.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1799	Mus-1797	purshii	var.	(Durand) Rollins	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1807	Mus-1806	altum	subsp.	Ahti	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1808	Mus-1806	cheiranthoides	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1831	Mus-1830	duriaei	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1832	Mus-1830	gorbeanum	subsp.	(Polatschek) P.W. Ball	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1833	Mus-1830	pyrenaicum	subsp.	(Nyman) P.W. Ball	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1840	Mus-1839	flavum	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1866	Mus-1865	aurigeranum	subsp.	(Jeanb. & Timb.-Lagr.) Nieto Fel.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1867	Mus-1865	incanum	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1868	Mus-1865	mairei	subsp.	(Sennen & Mauricio) Nieto Fel.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-187	Mus-186	linifolium	var.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-188	Mus-186	teheranicum	var.	Bornm.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1919	Mus-1918	collisparsum	subsp.	(Jord.) P.W. Ball	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1920	Mus-1918	fitzii	subsp.	(Polatschek) P.W. Ball	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1921	Mus-1918	gomezcampoi	subsp.	(Polatschek) P.W. Ball	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1922	Mus-1918	mediohispanicum	subsp.	(Polatschek) P.W. Ball	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1923	Mus-1918	merxmuelleri	subsp.	(Polatschek) P.W. Ball	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1924	Mus-1918	nevadense	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1925	Mus-1918	rondae	subsp.	(Polatschek) P.W. Ball	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1949	Mus-1948	atticum	subsp.	(Heldr. & Sartori ex Boiss.) P.W. Ball	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1950	Mus-1948	cephalonicum	subsp.	(Polatschek) P.W. Ball	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1951	Mus-1948	hayekii	subsp.	Jáv. & Rech.f.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1952	Mus-1948	microstylum	subsp.	(Hausskn.) Hayek	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1953	Mus-1948	pusillum	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1954	Mus-1948	rechingeri	subsp.	(Jáv.) P.W. Ball	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1968	Mus-1967	amorginum	subsp.	Snogerup	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1969	Mus-1967	icaricum	subsp.	Snogerup	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1970	Mus-1967	senoneri	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1985	Mus-1984	aurantiacum	subsp.	(Leyb.) P.W. Ball	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-1986	Mus-1984	sylvestre	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2012	Mus-2011	nubigena	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2013	Mus-2011	remyana	subsp.	(Wedd.) Al-Shehbaz	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2029	Mus-2028	aegyptia	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-203	Mus-202	ali-botuschicum	subsp.	Stoj. & Stef.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2030	Mus-2028	edgeworthii	subsp.	(Hook.f. & Thomson) Jonsell	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-204	Mus-202	brymii	subsp.	(Dostál) Dostál	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-205	Mus-202	gmelinii	subsp.	(Jord. & Fourr.) Hegi & E. Schmid	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2053	Mus-2052	boivinii	subsp.	(E. Fourn.) Jonsell	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2054	Mus-2052	speciosa	subsp.	Jonsell	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2055	Mus-2052	stenoptera	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-206	Mus-202	montanum	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-207	Mus-202	pluscanescens	subsp.	(Raim. ex Baumgartner) Trpin	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-208	Mus-202	serbicum	subsp.	Novák	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2091	Mus-2090	cossonii	subsp.	(O.E. Schulz) Hyam & Jury	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2092	Mus-2090	hederifolia	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2096	Mus-2095	longistyla	subsp.	Poulter	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2097	Mus-2095	saxifragifolia	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2109	Mus-2268	persica	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-212	Mus-211	murale	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2121	Mus-2120	acocksii	var.	Marais	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2122	Mus-2120	agtertuinensis	var.	(O.E. Schulz) Marais	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2123	Mus-2120	arenaria	var.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2124	Mus-2120	glabrescens	var.	(O.E. Schulz) Marais	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-213	Mus-211	stojanoffii	subsp.	(Nyár.) T.R. Dudley	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2137	Mus-2136	cornuta	var.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2138	Mus-2136	squamata	var.	(Schltr.) Marais	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2145	Mus-2144	diffusa	var.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2146	Mus-2144	flacca	var.	(Sond.) Marais	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-215	Mus-214	nebrodense	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2151	Mus-2150	elata	var.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2152	Mus-2150	pillansii	var.	Marais	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-216	Mus-214	tenuicaule	subsp.	Hartvig	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2165	Mus-2164	latisiliqua	var.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2166	Mus-2164	macrostylis	var.	(E. Mey. ex Sond.) Marais	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2169	Mus-2168	linearifolia	var.	(Burch. ex DC.) Marais	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2170	Mus-2168	linearis	var.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2171	Mus-2168	reticulata	var.	(Eckl. & Zeyh.) Marais	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2177	Mus-2176	meyeri	var.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2178	Mus-2176	minor	var.	Marais	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2191	Mus-2190	lanceolata	var.	(Adamson) Marais	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2192	Mus-2190	macrosperma	var.	Marais	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2193	Mus-2190	pusilla	var.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2194	Mus-2190	setacea	var.	(Schltr.) Marais	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2203	Mus-2202	aspera	var.	(Schltr.) Marais	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2204	Mus-2202	scoparia	var.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2206	Mus-2205	marlothii	var.	Marais	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2207	Mus-2205	nigellifolia	var.	(Schltr.) Marais	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2208	Mus-2205	seselifolia	var.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-222	Mus-221	helioscopioides	subsp.	Nyár.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2228	Mus-2227	balansae	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2229	Mus-2227	scabrida	subsp.	(Boiss.) F. Dvorák	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-223	Mus-221	obtusifolium	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2244	Mus-2243	laciniata	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2245	Mus-2243	secundiflora	subsp.	(Boiss. & Spruner) Breistr.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2250	Mus-2249	adzharica	subsp.	(Tzvelev) Cullen	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2251	Mus-2249	cilicica	subsp.	(Siehe ex Bornm.) Cullen	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2252	Mus-2249	cladotricha	subsp.	(Borbás) Hayek	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2253	Mus-2249	matronalis	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2254	Mus-2249	nivea	subsp.	(Baumg.) Kulcz.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2255	Mus-2249	schurii	subsp.	Soó	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2256	Mus-2249	voronovii	subsp.	(N. Busch) P.W. Ball	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2263	Mus-2262	aucheri	subsp.	(Boiss.) F. Dvorák	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2264	Mus-2262	brachytricha	subsp.	(O.E. Schulz) F. Dvorák	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2265	Mus-2262	campicarpa	subsp.	(Boiss.) F. Dvorák	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2266	Mus-2262	goerzii	subsp.	(O.E. Schulz) F. Dvorák	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2267	Mus-2262	pendula	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2269	Mus-2268	kurdica	subsp.	(Dvorák & Hadac) F. Dvorák	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2296	Mus-2295	alpina	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2297	Mus-2295	auerswaldii	subsp.	(Willk.) O. Appel	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2298	Mus-2295	austroalpina	subsp.	(Trpin) O. Appel	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2299	Mus-2295	brevicaulis	subsp.	(Spreng.) O. Appel	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-230	Mus-229	pateri	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2300	Mus-2295	font-queri	subsp.	(Sauvage) O. Appel	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2301	Mus-2295	polatschekii	subsp.	(Laínz) O. Appel	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2307	Mus-2306	brevipedicellata	subsp.	(Hedge) Al-Shehbaz & O'Kane	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2308	Mus-2306	minutiflora	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-231	Mus-229	prostratum	subsp.	(Nyár.) T.R. Dudley	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2312	Mus-2311	aurosica	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2313	Mus-2311	nana	subsp.	(All.) Moreno	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2317	Mus-2316	carnosa	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2318	Mus-2316	embergeri	subsp.	(Serve) Moreno	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2319	Mus-2316	granatensis	subsp.	(Boiss. & Reut.) Moreno	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2320	Mus-2316	lagascana	subsp.	(DC.) Mateo & Figuerola	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2322	Mus-2321	ciliata	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2323	Mus-2321	contracta	subsp.	(Pers.) Moreno	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2324	Mus-2321	welwitschii	subsp.	(Boiss.) Moreno	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2330	Mus-2329	linifolia	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2331	Mus-2329	stricta	subsp.	(Jord.) P. Fourn.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2332	Mus-2329	violletii	subsp.	(Soy.-Will. ex Godr.) Valdés	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-234	Mus-233	peltarioides	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2340	Mus-2339	microcarpa	subsp.	Franco & P. Silva	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2341	Mus-2339	procumbens	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2344	Mus-2343	cinerea	subsp.	(Poir.) Font Quer	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2345	Mus-2343	saxatilis	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-235	Mus-233	virgatiforme	subsp.	(Nyár.) T.R. Dudley	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2383	Mus-2382	alyssifolia	subsp.	(Boiss.) P.H. Davis	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2384	Mus-2382	besseri	subsp.	(Trautv.) Hedge & Lamond	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2385	Mus-2382	cappadocica	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2386	Mus-2382	macrocarpa	subsp.	(Jaub. & Spach) P.H. Davis	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2387	Mus-2382	nurihakensis	subsp.	P.H. Davis	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2388	Mus-2382	stenophylla	subsp.	(Bornm. & Gauba) Hedge & Lamond	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2389	Mus-2382	steveniana	subsp.	(Trautv.) P.H. Davis	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2390	Mus-2382	subradiata	subsp.	(Rupr.) P.H. Davis	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2408	Mus-2407	exauriculata	subsp.	(Bornm.) P.H. Davis	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2409	Mus-2407	glauca	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2410	Mus-2407	iconia	subsp.	(Boiss. & Heldr.) P.H. Davis	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-242	Mus-241	albiflorum	var.	T.R. Dudley	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-243	Mus-241	praecox	var.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2455	Mus-2454	boissieri	subsp.	(Reut.) Nyman	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2456	Mus-2454	saxatilis	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2480	Mus-2479	aletes	var.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2481	Mus-2479	integrifolium	var.	(Thell.) Boelcke	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2484	Mus-2483	alyssoides	var.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2485	Mus-2483	mexicanum	var.	Rollins	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-249	Mus-248	repens	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-250	Mus-248	trichostachyum	subsp.	(Rupr.) Hayek	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2508	Mus-2507	bonariense	var.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2509	Mus-2507	pseudovirginicum	var.	Thell.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2533	Mus-2532	densiflorum	var.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2534	Mus-2532	elongatum	var.	(Rydb.) Thell.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2535	Mus-2532	macrocarpum	var.	G.A. Mulligan	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2536	Mus-2532	pubicarpum	var.	(A. Nelson) Thell.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2537	Mus-2532	ramosum	var.	(A. Nelson) Thell.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2544	Mus-2546	divaricatum	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2545	Mus-2546	trifurcum	subsp.	(Sond.) Marais	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2561	Mus-2560	fremontii	var.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2562	Mus-2560	stipitatum	var.	Rollins	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2571	Mus-2570	atlanticum	subsp.	(Ball) Maire	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2572	Mus-2570	calycotrichum	subsp.	(Kunze) Thell.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2573	Mus-2570	dhayense	subsp.	(Munby) Thell.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2574	Mus-2570	hirtum	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2575	Mus-2570	nebrodense	subsp.	(Raf.) Thell.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2576	Mus-2570	oxyotum	subsp.	(DC.) Thell.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2577	Mus-2570	petrophilum	subsp.	(Coss.) Thell.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2578	Mus-2570	rifanum	subsp.	Emb. & Maire	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2579	Mus-2570	stylatum	subsp.	(Lag. & Rodr.) Thell.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2597	Mus-2596	lasiocarpum	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2608	Mus-2607	meyeri	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2609	Mus-2607	turczaninowii	subsp.	(Lipsky) Schmalh.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2636	Mus-2635	arianum	subsp.	Hedge	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2637	Mus-2635	macrocarpum	subsp.	Hedge	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2638	Mus-2635	persicum	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2639	Mus-2635	trifidum	subsp.	Hedge	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2676	Mus-2675	calyx-persistente	var.	Boelcke	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2677	Mus-2675	racemosum	var.	(Griseb.) Boelcke	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2678	Mus-2675	spicatum	var.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2698	Mus-2697	anticarium	subsp.	(Valdés Berm. & G. López) Hern.-Berm.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2699	Mus-2697	villarsii	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2701	Mus-2700	virginicum	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2710	Mus-2709	canariensis	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2711	Mus-2709	fruticosa	subsp.	(Webb ex H. Christ) L. Borgen	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2712	Mus-2709	intermedia	subsp.	(Webb & Berthel.) L. Borgen	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2713	Mus-2709	marginata	subsp.	(Webb ex Coss.) L. Borgen	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2714	Mus-2709	microsperma	subsp.	L. Borgen	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2715	Mus-2709	palmensis	subsp.	(Webb ex H. Christ) L. Borgen	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2716	Mus-2709	rosula-venti	subsp.	(Svent.) L. Borgen	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2717	Mus-2709	spathulata	subsp.	(J.A. Schmidt) L. Borgen	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2718	Mus-2709	succulenta	subsp.	L. Borgen	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2721	Mus-2720	columbretensis	subsp.	R. Fern.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2722	Mus-2720	maritima	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2724	Mus-2723	annua	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2725	Mus-2723	pachyrhiza	subsp.	(Borbás) Hayek	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2742	Mus-2741	bicolor	subsp.	(Boiss. & Heldr.) Stork	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2743	Mus-2741	graeca	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2744	Mus-2741	hydraea	subsp.	(Heldr. & Halácsy) Stork	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2753	Mus-2752	macrocalyx	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2754	Mus-2752	scyria	subsp.	(Rech.f.) P.W. Ball	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2759	Mus-2758	angulifolia	subsp.	(Boiss. & Orph.) Stork	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2760	Mus-2758	orsiniana	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2785	Mus-2784	densifolia	var.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2786	Mus-2784	stylosa	var.	Rollins	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2813	Mus-2812	fruticulosa	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2814	Mus-2812	valesiaca	subsp.	(J. Gay ex Gaudin) P.W. Ball	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2819	Mus-2818	incana	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2820	Mus-2818	melitensis	subsp.	Brullo, Lanfr., Pavone & Ronsisvalle	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2821	Mus-2818	rupestris	subsp.	(Raf.) Nyman	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2823	Mus-2822	aspera	subsp.	(Boiss.) Greuter & Burdet	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2824	Mus-2822	hirta	subsp.	(Conti) Greuter & Burdet	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2825	Mus-2822	kralikii	subsp.	(Pomel) Maire	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2826	Mus-2822	livida	subsp.	(Delile) Maire	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2827	Mus-2822	longipetala	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2828	Mus-2822	pumilio	subsp.	(Sm.) P.W. Ball	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2829	Mus-2822	viridis	subsp.	(Conti) Maire	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-283	Mus-282	caliacrae	subsp.	(Nyár.) Stoj. & Stef.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-284	Mus-282	cretaceum	subsp.	Kotov	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-285	Mus-282	savranicum	subsp.	(Andrz.) Nyár.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2852	Mus-2851	pseudoxyceras	subsp.	(Conti) Jafri	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2853	Mus-2851	tricuspidata	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-286	Mus-282	tortuosum	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2877	Mus-2876	famatinensis	var.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2878	Mus-2876	sphaerocarpa	var.	(Boelcke) Rollins	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2880	Mus-2879	filifolia	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2910	Mus-2909	baetica	subsp.	(Boiss. & Reut.) Sobrino Vesperinas	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2911	Mus-2909	cavanillesiana	subsp.	(Font Quer & A. Bolòs) Greuter & Burdet	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2912	Mus-2909	giennensis	subsp.	Valdés Berm.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2913	Mus-2909	moricandioides	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2951	Mus-2950	linearifolia	var.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2952	Mus-2950	mexicana	var.	J.D. Bacon	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2954	Mus-2953	paniculata	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2955	Mus-2953	thracica	subsp.	(Velen.) Bornm.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2983	Mus-2982	austroamericana	var.	Boelcke	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-2984	Mus-2982	graminifolia	var.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-302	Mus-301	canescens	subsp.	(Hausskn. & Bornm. ex Bornm.) Coode & Cullen	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-303	Mus-301	cilicicum	subsp.	(Siehe ex Bornm.) Coode & Cullen	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-304	Mus-301	elichrysifolium	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-305	Mus-301	glandulosum	subsp.	Coode & Cullen	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-306	Mus-301	persicum	subsp.	(DC.) Coode & Cullen	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-307	Mus-301	villosum	subsp.	Coode & Cullen	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3085	Mus-3084	newberryi	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3102	Mus-3101	clavata	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3103	Mus-3101	tourneuxii	subsp.	(Coss.) Maire	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3137	Mus-3136	landra	subsp.	(Moretti ex DC.) Bonnier & Layens	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3138	Mus-3136	raphanistrum	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3139	Mus-3136	rostratus	subsp.	(DC.) Thell.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3141	Mus-3140	caudatus	var.	(L.) Hook.f. & T. Anderson	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3142	Mus-3140	sativus	var.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3163	Mus-3162	costaricensis	var.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3164	Mus-3162	storkii	var.	(Standl.) Rollins	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3189	Mus-3188	bonariensis	var.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3190	Mus-3188	burkartii	var.	Mart.-Laborde	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3191	Mus-3188	chacoensis	var.	Mart.-Laborde	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3197	Mus-3196	clandestina	var.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3198	Mus-3196	sodiroi	var.	(O.E. Schulz) J.F. Macbr.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3214	Mus-3213	caledonica	var.	(Sond.) Marais	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3215	Mus-3213	fluviatilis	var.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-322	Mus-321	arenosa	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3228	Mus-3227	dogadovae	subsp.	(Tzvelev) Jonsell	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3229	Mus-3227	islandica	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-323	Mus-321	borbasii	subsp.	(Zapal.) O'Kane & Al-Shehbaz	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3233	Mus-3232	laurentii	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3234	Mus-3232	tsaratananae	subsp.	Jonsell	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3248	Mus-3247	hispida	subsp.	(Desv.) Jonsell	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3266	Mus-3265	kerneri	subsp.	(Menyh.) Soó	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3267	Mus-3265	sylvestris	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3274	Mus-3273	armena	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3275	Mus-3273	flaccida	subsp.	Jafri	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-328	Mus-327	gemmifera	subsp.	(Matsum.) O'Kane & Al-Shehbaz	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3289	Mus-3288	globosa	subsp.	Jafri	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-329	Mus-327	halleri	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3290	Mus-3288	longistyla	subsp.	(Boiss. & Reut.) Maire	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3291	Mus-3288	parviflora	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3294	Mus-3293	arabica	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3295	Mus-3293	persica	subsp.	(Boiss.) Hadac & Chrtek	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-330	Mus-327	ovirensis	subsp.	(Wulfen) O'Kane & Al-Shehbaz	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3310	Mus-3309	purpurea	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3311	Mus-3309	schimperi	subsp.	(Jaub. & Spach) Muschl.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-332	Mus-331	kamchatica	subsp.	(Fisch. ex DC.) O'Kane & Al-Shehbaz	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3326	Mus-3325	frutescens	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3327	Mus-3325	succulentum	subsp.	(Lowe) Rustan	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-333	Mus-331	lyrata	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3331	Mus-3330	alba	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3332	Mus-3330	dissecta	subsp.	(Lag.) Simonk.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3333	Mus-3330	mairei	subsp.	(H. Lindb.) Maire	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3335	Mus-3334	allionii	subsp.	(Jacq.) Baillarg.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3336	Mus-3334	arvensis	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-334	Mus-331	petraea	subsp.	(L.) O'Kane & Al-Shehbaz	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3340	Mus-3339	aristidis	subsp.	(Pomel) Maire & Weiller	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3341	Mus-3339	indurata	subsp.	(Coss.) Batt.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3342	Mus-3339	pubescens	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3344	Mus-3343	aspera	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3345	Mus-3343	munbyana	subsp.	(Boiss. & Reut.) Greuter & Burdet	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3346	Mus-3343	praeterita	subsp.	Heywood	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3358	Mus-3357	austriacum	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3359	Mus-3357	chrysanthum	subsp.	(Jord.) Rouy & Foucaud	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3360	Mus-3357	contortum	subsp.	(Cav.) Rouy & Foucaud	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3361	Mus-3357	hispanicum	subsp.	(Jacq.) P.W. Ball & Heywood	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3363	Mus-3365	burchellii	var.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3364	Mus-3365	dinteri	var.	(O.E. Schulz) Marais	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-342	Mus-341	alpina	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-343	Mus-341	brevifolia	subsp.	(DC.) Greuter & Burdet	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3443	Mus-3442	integrifolia	var.	(C. James) Rollins	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3444	Mus-3442	pinnata	var.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3462	Mus-3461	glandulosum	subsp.	Hub.-Mor. & Reese	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3463	Mus-3461	sulphureum	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3480	Mus-3479	arizonicus	subsp.	(S. Watson) Kruckeb., Rodman & Worth.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3481	Mus-3479	carinatus	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3489	Mus-3488	glandulosus	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3490	Mus-3488	pulchellus	subsp.	(Greene) Kruckeb.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3491	Mus-3488	secundus	subsp.	(Greene) Kruckeb.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3498	Mus-3497	insignis	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3499	Mus-3497	lyonii	subsp.	Kruckeb. & J.L. Morrison	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3524	Mus-3523	americana	subsp.	G.A. Mulligan & Calder	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3525	Mus-3523	aquatica	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3547	Mus-3546	ambigua	var.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3548	Mus-3546	erecta	var.	Rollins	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3562	Mus-3561	parviflora	var.	Rollins	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3563	Mus-3561	wootonii	var.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3569	Mus-3568	howellii	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3570	Mus-3568	spectabilis	subsp.	(M. Peck) Al-Shehbaz	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3572	Mus-3571	affine	subsp.	(Greene) Al-Shehbaz	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3573	Mus-3571	complanatum	subsp.	Al-Shehbaz	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3574	Mus-3571	gracilipes	subsp.	(B.L. Rob.) Al-Shehbaz	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3575	Mus-3571	integrifolium	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3576	Mus-3571	longicarpum	subsp.	Al-Shehbaz	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3585	Mus-3584	ovalifolium	subsp.	(Rydb.) Al-Shehbaz	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3586	Mus-3584	sagittatum	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3605	Mus-3604	eigii	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3606	Mus-3604	samuelssonii	subsp.	(F.K. Mey.) Greuter & Burdet	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3643	Mus-3748	microcarpa	subsp.	(K.C. Kuan) Al-Shehbaz, G. Yang, L.L. Lu & T.Y. Cheo	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3644	Mus-3748	wilsonii	subsp.	(O.E. Schulz) Al-Shehbaz, G. Yang, L.L. Lu & T.Y. Cheo	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3653	Mus-3652	rupicola	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3654	Mus-3652	shuangpaiensis	subsp.	(Z.Y. Li) Al-Shehbaz, G. Yang, L.L. Lu & T.Y. Cheo	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3656	Mus-3655	qianwuensis	subsp.	(Y.H. Zhang) Al-Shehbaz, G. Yang, L.L. Lu & T.Y. Cheo	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3657	Mus-3655	sinuata	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3663	Mus-3662	biparmata	subsp.	(O.E. Schulz) Maire & Weiller	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3664	Mus-3662	costata	subsp.	Maire & Weiller	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3665	Mus-3662	spinosa	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3668	Mus-3045	scapiflorum	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3669	Mus-3045	robustum	subsp.	(O.E. Schulz) Al-Shehbaz, T.Y. Cheo, L.L. Lu & G. Yang	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3672	Mus-3671	pinnatifidus	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3673	Mus-3671	linearifolius	subsp.	(Maxim.) Al-Shehbaz & H. Ohba	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3701	Mus-3700	glabrata	subsp.	Greuter	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3702	Mus-3700	paui	subsp.	Gomez-Campo	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3703	Mus-3700	pseudocytisus	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3734	Mus-3733	chitralica	subsp.	Jafri	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3735	Mus-3733	patrinoides	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3740	Mus-3739	contracta	var.	(Speg.) O.E. Schulz	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3741	Mus-3739	lycopodioides	var.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3746	Mus-3745	microphylla	var.	(Gilg) O.E. Schulz	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3747	Mus-3745	pycnophylloides	var.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3749	Mus-3748	acutangula	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3777	Mus-1839	altaicum	subsp.	(C.A. Mey.) Polozhij	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3784	Mus-378	kawachiensis	var.	S. Fujii	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3785	Mus-799	pyrenaea	subsp.	Sennen	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3786	Mus-799	austriaca	subsp.	Marhold	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3796	Mus-2894	hirsuta	subsp.	(Rollins) A. Prina	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3797	Mus-2894	longipes	subsp.	(Rollins) A. Prina	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3798	Mus-2894	scapigera	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3829	Mus-3828	berlanderii	subsp.	(A. Gray) O'Kane & Al-Shehbaz	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3830	Mus-3828	heterochroma	subsp.	(S. Watson) O'Kane & Al-Shehbaz	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3835	Mus-3828	lasiocarpa	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-384	Mus-383	brownii	var.	(Jord.) Titz	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-385	Mus-383	cordata	var.	Neilr.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3852	Mus-3851	arenosa	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3853	Mus-3851	argillosa	subsp.	(Rollins & E.A. Shaw) O'Kane & Al-Shehbaz	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3854	Mus-3885	hitchcockii	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3855	Mus-3885	rubicundula	subsp.	(Rollins) O'Kane & Al-Shehbaz	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3859	Mus-3858	argyraea	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-386	Mus-383	glaberrima	var.	Wahlenb.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3860	Mus-3858	diffusa	subsp.	(Rollins) O'Kane & Al-Shehbaz	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-387	Mus-383	hirsuta	var.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-388	Mus-383	nipponica	var.	(Franch. & Sav.) C.C. Yuan & T.Y. Cheo	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3880	Mus-3879	gracilis	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3881	Mus-3879	nuttallii	subsp.	(Torr. & A. Gray) O'Kane & Al-Shehbaz	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3883	Mus-3882	hemiphysaria	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3884	Mus-3882	lucens	subsp.	(S.L. Welsh & Reveal) O'Kane & Al-Shehbaz	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-389	Mus-383	purpurea	var.	Y.C. Lan & T.Y. Cheo	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3892	Mus-3891	bernardina	subsp.	(Munz) O'Kane & Al-Shehbaz	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3893	Mus-3891	diversifolia	subsp.	(Greene) O'Kane & Al-Shehbaz	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3894	Mus-3891	cobrensis	subsp.	(Rollins & E.A. Shaw) O'Kane & Al-Shehbaz	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3895	Mus-3891	kingii	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3896	Mus-3891	latifolia	subsp.	(A. Nelson) O'Kane & Al-Shehbaz	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-390	Mus-383	subalpestris	var.	Ahlfv.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3911	Mus-3910	cinerascens	subsp.	(Maguire & A. Holmgren) O'Kane & Al-Shehbaz	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3912	Mus-3910	occidentalis	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3914	Mus-3913	alba	subsp.	(Goodman) O'Kane & Al-Shehbaz	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3915	Mus-3913	ovalifolia	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3930	Mus-3929	perotensis	subsp.	(Rollins) O'Kane & Al-Shehbaz	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3931	Mus-3929	rosei	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3942	Mus-3870	douglasii	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3943	Mus-3870	tuplashensis	subsp.	(Rollins, K.A. Beck & Caplow) O'Kane & Al-Shehbaz	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3958	Mus-1114	hispanica	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3959	Mus-1114	abyssinica	subsp.	(Hochst ex. R.E. Fr.) A. Prina	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-3960	Mus-1114	glabrata	subsp.	(DC.) Cout.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4007	Mus-4006	bursifolia	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4008	Mus-4006	virgata	subsp.	(Nutt.) Al-Shehbaz & O'Kane	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4082	Mus-4081	californica	subsp.	(S. Watson) Al-Shehbaz & M. Koch	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4083	Mus-4081	glauca	subsp.	(A. Nelson) Al-Shehbaz & M. Koch	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4084	Mus-4081	idahoense	subsp.	(Payson) Al-Shehbaz & M. Koch	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4085	Mus-4081	siskiyouense	subsp.	(P. Holmgren) Al-Shehbaz & M. Koch	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4096	Mus-4113	brachypetala	subsp.	(Jord.) Tzvelev	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4097	Mus-4113	calaminaris	subsp.	(Lej.) Holub	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-410	Mus-409	iberica	subsp.	Rivas Mart. ex Talavera	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-411	Mus-409	nova	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4143	Mus-432	adpressipilis	var.	M. Hopkins	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4150	Mus-2962	montenegrina	subsp.	F.K. Mey.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4193	Mus-4073	gaillardotii	subsp.	F.K. Mey.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4201	Mus-2822	brachyloma	var.	Zohary	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-421	Mus-420	nemorensis	subsp.	(Wolf ex Hoffm.) Soják	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-422	Mus-420	planisiliqua	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4220	Mus-3442	texana	var.	B.L. Turner	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4225	Mus-794	africana	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4226	Mus-847	depressa	var.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4227	Mus-861	fulcrata	var.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4228	Mus-938	prorepens	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4232	Mus-4113	caerulescens	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4234	Mus-4073	natolicum	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4235	Mus-4073	sporadium	subsp.	F.K. Mey.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4236	Mus-4073	longistylum	subsp.	(G.E. Post) F.K. Mey.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4238	Mus-2962	dacica	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4259	Mus-4258	fontanum	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4260	Mus-4258	microspermum	subsp.	(Al-Shehbaz & G. Yang) Al-Shehbaz & S.I. Warwick	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-427	Mus-426	decumbens	subsp.	Ball	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4275	Mus-4081	fendleri	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4279	Mus-4113	tatrense	subsp.	(Zapal.) F.K. Mey.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-428	Mus-426	leucanthemifolia	subsp.	(Pau & Font Quer) Maire	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-429	Mus-426	pubescens	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4308	Mus-2382	kurdica	subsp.	Sajedi & Sharifnia	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4310	Mus-1740	benacense	subsp.	F. Martini & F. Fen.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4353	Mus-2879	marticorenae	subsp.	Al-Shehbaz	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4378	Mus-3950	shastaensis	subsp.	Windham & Al-Shehbaz	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4381	Mus-3965	vivariensis	subsp.	(S.L. Welsh) Windham & Al-Shehbaz	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4396	Mus-3950	breweri	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4397	Mus-3965	fernaldiana	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4398	Mus-730	ellesmerensis	subsp.	J.G. Harris	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4399	Mus-730	maccallae	subsp.	J.G. Harris	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4400	Mus-730	porsildii	subsp.	J.G. Harris	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4401	Mus-729	prostrata	subsp.	J.G. Harris	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4402	Mus-737	glabrata	subsp.	J.G. Harris	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4403	Mus-730	humilis	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4404	Mus-729	glabella	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4405	Mus-729	purpurascens	subsp.	(R.Br.) W.J. Cody	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4406	Mus-737	thorild-wulffii	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-443	Mus-442	soyeri	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-444	Mus-442	subcoriacea	subsp.	(Gren. ex Nyman) Breistr.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4465	Mus-4161	crassum	subsp.	(P.H. Davis) Parolly	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4467	Mus-513	anfractuosa	subsp.	(Hartvig & Strid) Parolly & Eren	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4468	Mus-513	robusta	subsp.	(Coode & Cullen) Parolly & Eren	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4472	Mus-4161	sintenisii	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4473	Mus-1321	gubanovii	subsp.	D. German	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4474	Mus-3866	paysonii	subsp.	(Rollins) O'Kane & Al-Shehbaz	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4475	Mus-3866	pulchella	subsp.	(Rollins) O'Kane & Al-Shehbaz	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4476	Mus-3077	lanata	subsp.	(A. Nelson) O'Kane	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4477	Mus-3077	lyrata	subsp.	(C.L. Hitchcock) O'Kane	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4478	Mus-3080	osterhoutii	subsp.	(Payson) O'Kane	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4479	Mus-3081	purpurea	subsp.	(Rollins) O'Kane	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4480	Mus-3885	confluens	subsp.	(Maguire & A.H. Holmgren) O'Kane	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4481	Mus-3891	kaibabensis	subsp.	(Rollins) O'Kane	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4482	Mus-3891	utahensis	subsp.	(Rydberg) O'Kane	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4483	Mus-3083	membranacea	subsp.	(Rollins) O'Kane	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4484	Mus-3084	yesicola	subsp.	(R.C. Sivinski) O'Kane	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4485	Mus-3089	dentata	subsp.	(Rollins) O'Kane	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4488	Mus-3488	albidus	subsp.	(Greene) Al-Shehbaz, M. Mayer & D.W. Taylor	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4489	Mus-3488	hoffmanii	subsp.	(Kruckeberg) M. Mayer & D.W. Taylor	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4490	Mus-3488	josephinensis	subsp.	Al-Shehbaz & M. Mayer	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4491	Mus-3488	niger	subsp.	(Greene) Al-Shehbaz, M. Mayer & D.W. Taylor	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4492	Mus-3488	sonomensis	subsp.	(Kruckeberg) M. Mayer & D.W. Taylor	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4507	Mus-1108	fruticosa	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4508	Mus-1108	pinnatifida	subsp.	(Lowe) A. Prina & Mart.-Laborde	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4514	Mus-2596	palmeri	subsp.	(S. Watson) Thell.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4515	Mus-2596	wrightii	subsp.	(A. Gray) Thell.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4516	Mus-2700	menziesii	subsp.	(DC) Thell.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4517	Mus-3077	didymocarpa	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4518	Mus-3080	floribunda	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4519	Mus-3081	geyeri	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4520	Mus-3083	lepidota	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4521	Mus-3089	saximontana	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4522	Mus-3866	carinata	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4523	Mus-3247	palustris	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4524	Mus-3482	cordatus	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4525	Mus-3482	piutensis	subsp.	(J. Howell) D.W. Taylor	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4526	Mus-3641	hitchcockii	var.	Munz	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4527	Mus-3641	laciniatus	var.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4528	Mus-3641	rigidus	var.	Munz	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4531	Mus-58	speciosum	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4532	Mus-102	borzaeanum	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4533	Mus-378	flagellosa	var.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4534	Mus-432	pycnocarpa	var.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4535	Mus-796	albertii	var.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4536	Mus-888	leucantha	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4537	Mus-1249	fedtschenkoana	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-4538	Mus-1321	senilis	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-469	Mus-468	pringlei	var.	(O.E. Schulz) Rollins	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-470	Mus-468	schaffneri	var.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-476	Mus-475	columnae	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-477	Mus-475	croatica	subsp.	(Schott, Nyman & Kotschy) Mattf.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-478	Mus-475	italica	subsp.	(Boiss.) Mattf.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-479	Mus-475	pirinica	subsp.	Assenov	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-483	Mus-482	glabrescens	subsp.	(Turrill) Akeroyd	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-484	Mus-482	gracilis	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-485	Mus-482	scardica	subsp.	(Wettst.) Phitos	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-49	Mus-48	athoum	subsp.	(Griseb.) Hayek	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-499	Mus-498	cyclocarpa	subsp.	(Boiss.) Cullen & T.R. Dudley	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-50	Mus-48	creticum	subsp.	(Boiss. & Heldr.) I.A. Andersson & al.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-500	Mus-498	rupestris	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-502	Mus-501	megalocarpa	subsp.	(Hausskn.) T.R. Dudley	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-503	Mus-501	orientalis	subsp.	(Ard.) T.R. Dudley	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-504	Mus-501	saxatilis	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-51	Mus-48	graecum	subsp.	(Boiss. & Spruner) Hayek	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-52	Mus-48	latifolium	subsp.	H. Lindb.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-53	Mus-48	ovalifolium	subsp.	(DC.) Nyman	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-54	Mus-48	saxatile	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-55	Mus-48	scopulorum	subsp.	(Ronniger) I.A. Andersson & al.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-557	Mus-556	applanata	subsp.	(Mach.-Laur.) Hadac & Chrtek	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-558	Mus-556	apula	subsp.	(L.) Nyman	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-559	Mus-556	didyma	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-560	Mus-556	dunensis	subsp.	Chrtek & B. Slavík	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-574	Mus-573	australis	subsp.	Raffaelli & Baldoin	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-643	Mus-639	pinnatifida	subsp.	(Schmalh.) Greuter & Burdet	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-644	Mus-639	subscaposa	subsp.	(Maire & Weiller) Maire	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-646	Mus-645	cossoniana	subsp.	(Boiss. & Reut.) Maire	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-647	Mus-645	fruticulosa	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-575	Mus-573	austriaca	subsp.	(Jord.) Mach.-Laur.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-576	Mus-573	hispidissima	subsp.	(Posp.) Raffaelli & Baldoin	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-577	Mus-573	hungarica	subsp.	Soó	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-578	Mus-573	kerneri	subsp.	Mach.-Laur.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-579	Mus-573	laevigata	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-580	Mus-573	ossolana	subsp.	Raffaelli & Baldoin	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-581	Mus-573	prinzerae	subsp.	Raffaelli & Baldoin	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-582	Mus-573	varia	subsp.	(Dumort.) Rouy & Foucaud	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-59	Mus-58	compactum	subsp.	Hartvig & Strid	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-592	Mus-591	ilvensis	subsp.	Raffaelli	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-593	Mus-591	pichiana	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-600	Mus-599	sempervirens	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-601	Mus-599	vincentina	subsp.	(Samp.) Malag.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-630	Mus-629	aegaea	subsp.	(Heldr. & Halácsy) Snogerup, M.A. Gust. & Bothmer	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-631	Mus-629	cretica	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-632	Mus-629	laconica	subsp.	M.A. Gust. & Snogerup	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-634	Mus-633	deflexa	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-635	Mus-633	leptocarpa	subsp.	(Boiss.) Hedge	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-640	Mus-639	elongata	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-641	Mus-639	imdrhasiana	subsp.	Quézel	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-642	Mus-639	integrifolia	subsp.	(Boiss.) Breistr.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-648	Mus-645	glaberrima	subsp.	(Pomel) Batt.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-649	Mus-645	mauritanica	subsp.	(Coss.) Maire	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-650	Mus-645	numidica	subsp.	(Coss.) Maire	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-651	Mus-645	pomeliana	subsp.	Maire ex Greuter	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-652	Mus-645	radicata	subsp.	(Desf.) Batt.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-653	Mus-645	rifana	subsp.	(Emb. & Maire) Maire	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-659	Mus-658	integrifolia	subsp.	(H. West) Thell.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-660	Mus-658	juncea	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-661	Mus-658	napiformis	subsp.	(Pailleux & Bois) Gladis	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-662	Mus-658	tsatsai	subsp.	P.I. Mao	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-667	Mus-666	napus	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-668	Mus-666	rapifera	subsp.	Metzg. ex Sinskaya	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-670	Mus-669	hispida	subsp.	(O.E. Schulz) Gladis	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-671	Mus-669	nigra	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-673	Mus-672	jordanoffii	subsp.	(O.E. Schulz) Akeroyd & Leadlay	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-674	Mus-672	nivalis	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-676	Mus-675	alboglabra	var.	(L.H. Bailey) Sun	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-677	Mus-675	botrytis	var.	L.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-678	Mus-675	capitata	var.	L.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-679	Mus-675	gemmifera	var.	DC.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-680	Mus-675	gongylodes	var.	L.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-681	Mus-675	italica	var.	Plenck	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-682	Mus-675	oleracea	var.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-683	Mus-675	ramosa	var.	DC.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-684	Mus-675	sabauda	var.	L.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-685	Mus-675	sabellica	var.	L.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-686	Mus-675	viridis	var.	L.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-690	Mus-689	chinensis	subsp.	(L.) Hanelt	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-691	Mus-689	dichotoma	subsp.	(Roxb.) Hanelt	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-692	Mus-689	japonica	subsp.	(Thunb.) Shebalina	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-693	Mus-689	narinosa	subsp.	(L.H. Bailey) Hanelt	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-694	Mus-689	nipposinica	subsp.	(L.H. Bailey) Hanelt	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-695	Mus-689	oleifera	subsp.	(DC.) Metzg.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-696	Mus-689	pekinensis	subsp.	(Lour.) Hanelt	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-697	Mus-689	rapa	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-698	Mus-689	rapifera	subsp.	Metzg.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-699	Mus-689	trilocularis	subsp.	(Roxb.) Hanelt	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-701	Mus-700	africana	subsp.	(Maire) Greuter & Burdet	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-702	Mus-700	almeriensis	subsp.	Gomez-Campo	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-703	Mus-700	blancoana	subsp.	(Boiss.) Heywood	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-704	Mus-700	cadevallii	subsp.	(Font Quer) Heywood	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-705	Mus-700	cantabrica	subsp.	(Font Quer) Heywood	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-706	Mus-700	confusa	subsp.	(Emb. & Maire) Heywood	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-707	Mus-700	dertosensis	subsp.	Molero & Rovira	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-708	Mus-700	galissieri	subsp.	(Giraudias) Heywood	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-709	Mus-700	glabrescens	subsp.	(Poldini) Gomez-Campo	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-710	Mus-700	gypsicola	subsp.	Gomez-Campo	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-711	Mus-700	latisiliqua	subsp.	(Boiss. & Reut.) Heywood	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-712	Mus-700	maritima	subsp.	(Rouy ex Willk.) Heywood	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-713	Mus-700	repanda	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-714	Mus-700	saxatilis	subsp.	(DC.) Heywood	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-715	Mus-700	silenifolia	subsp.	(Emb.) Greuter & Burdet	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-716	Mus-700	turbonis	subsp.	(P. Monts.) M. Gruber ex J.M. Monts. & Romo	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-720	Mus-719	amplexicaulis	subsp.	(Desf.) Greuter & Burdet	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-721	Mus-719	souliei	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-739	Mus-738	alpaminae	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-740	Mus-738	smithii	subsp.	Al-Shehbaz	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-743	Mus-742	colombiana	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-744	Mus-742	ecuadoriana	subsp.	Al-Shehbaz	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-756	Mus-753	harperi	subsp.	(Small) Rodman	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-759	Mus-758	alacranensis	subsp.	(Millsp.) Rodman	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-760	Mus-758	fusiformis	subsp.	(Greene) Rodman	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-761	Mus-758	lanceolata	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-762	Mus-758	pseudoconstricta	subsp.	Rodman	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-764	Mus-763	baltica	subsp.	(Jord. ex Rouy & Foucaud) Hyl. ex P.W. Ball	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-765	Mus-763	euxina	subsp.	(Pobed.) Nyár.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-766	Mus-763	islandica	subsp.	(Gand.) Elven	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-767	Mus-763	maritima	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-773	Mus-772	alyssum	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-774	Mus-772	integerrima	subsp.	(Celak.) Smejkal	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-778	Mus-777	hispida	var.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-779	Mus-777	lasiocarpa	var.	(Boiss. & Blanche) Post	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-784	Mus-783	rumelica	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-795	Mus-794	borbonica	subsp.	(Pers.) O.E. Schulz	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-785	Mus-783	transcaspica	subsp.	(Fritsch) Hedge	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-797	Mus-796	minor	var.	O.E. Schulz	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-800	Mus-799	amara	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-801	Mus-799	balcanica	subsp.	Marhold, Ancev & Kit Tan	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-802	Mus-799	olotensis	subsp.	O. Bolòs	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-803	Mus-799	opicii	subsp.	(J. Presl & C. Presl) Celak.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-83	Mus-675	costata	var.	DC.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-848	Mus-847	stellata	var.	(Hook.f.) Hook.f.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-862	Mus-861	scabra	var.	O.E. Schulz	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-889	Mus-888	tomentella	subsp.	Vorosch.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-915	Mus-914	obliqua	var.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-916	Mus-914	stylosa	var.	Rollins	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-934	Mus-933	matthioli	subsp.	(Moretti) Nyman	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-935	Mus-933	paludosa	subsp.	(Knaf) Celak.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-936	Mus-933	pratensis	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-937	Mus-933	rivularis	subsp.	(Schur) Nyman	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-939	Mus-938	roseiflora	subsp.	(Vorosch.) Vorosch.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-945	Mus-944	acris	subsp.	(Griseb.) O.E. Schulz	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-946	Mus-944	barbareoides	subsp.	(Halácsy) Strid	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-947	Mus-944	gallaecica	subsp.	S.J. Laínz	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-948	Mus-944	raphanifolia	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-97	Mus-96	bertolonii	subsp.	\N	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N
+Mus-98	Mus-96	scutarinum	subsp.	Nyár.	\N	accepted name	0	0	1	\N	\N	\N	2009	\N	\N	\N

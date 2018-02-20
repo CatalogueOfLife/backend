@@ -1,6 +1,7 @@
 package org.col.admin.task.importer;
 
 import com.google.common.base.CharMatcher;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import org.col.api.model.TermRecord;
 import org.col.api.model.VerbatimRecord;
@@ -27,6 +28,7 @@ public class VerbatimRecordFactory {
 
   public static VerbatimRecord build (String id, TermRecord core) {
     VerbatimRecord v = new VerbatimRecord();
+    Preconditions.checkNotNull(id, "ID required");
     v.setId(id);
 
     // set core terms

@@ -38,6 +38,7 @@ import java.nio.file.Paths;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 /**
  *
@@ -137,6 +138,13 @@ public class NormalizerACEFIT {
       assertEquals("Zapoteca formosa", t.name.getScientificName());
       assertEquals("(Kunth) H.M.Hern.", t.name.authorshipComplete());
       assertEquals(Rank.SPECIES, t.name.getRank());
+      assertEquals("Fabaceae", t.classification.getFamily());
+
+      t = byName("Fabaceae",null);
+      assertEquals("Fabaceae", t.name.getScientificName());
+      assertEquals("Fabaceae", t.name.canonicalNameComplete());
+      assertNull(t.name.authorshipComplete());
+      assertEquals(Rank.FAMILY, t.name.getRank());
     }
   }
 

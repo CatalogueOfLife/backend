@@ -45,9 +45,17 @@ public class TaxonDao {
     return result;
   }
 
+  public Taxon get(String id, int datasetKey) {
+    return get(lookupKey(id, datasetKey));
+  }
+
   public List<Taxon> getClassification(int key) {
     TaxonMapper mapper = session.getMapper(TaxonMapper.class);
     return mapper.classification(key);
+  }
+
+  public List<Taxon> getAccepted(Name n) {
+    return session.getMapper(TaxonMapper.class).accepted(n.getKey());
   }
 
   public ResultPage<Taxon> getChildren(int key, Page page) {

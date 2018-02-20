@@ -7,9 +7,12 @@ import org.col.admin.task.importer.neo.NotUniqueRuntimeException;
 import org.col.admin.task.importer.neo.model.*;
 import org.col.admin.task.importer.neo.traverse.Traversals;
 import org.col.api.model.Classification;
+import org.col.api.model.Name;
 import org.col.api.vocab.DataFormat;
 import org.col.api.vocab.Issue;
 import org.col.api.vocab.Origin;
+import org.col.api.vocab.TaxonomicStatus;
+import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 import org.neo4j.graphdb.*;
 import org.neo4j.helpers.collection.Iterables;
@@ -120,7 +123,6 @@ public class Normalizer implements Runnable {
       @Override
       public void process(Node n) {
         if (n.hasLabel(Labels.TAXON)) {
-          RankedName rn = NeoProperties.getRankedName(n);
           // the highest current parent of n
           RankedName highest = findHighestParent(n);
           // only need to apply classification if highest exists and is not already a kingdom, the denormed classification cannot add to it anymore!
@@ -225,7 +227,7 @@ public class Normalizer implements Runnable {
         }
         if (!found) {
           // persistent new higher taxon if not found
-          Node lowerParent = store.createAccepted(Origin.DENORMED_CLASSIFICATION, cl.getByRank(hr), hr).node;
+          Node lowerParent = createHigherTaxon(cl.getByRank(hr), hr).node;
           // insert parent relationship?
           store.assignParent(parent, lowerParent);
           parent = lowerParent;
@@ -259,7 +261,7 @@ public class Normalizer implements Runnable {
         // this is serious. Report id
         String taxonID = NeoProperties.getTaxonID(syn);
 
-        RankedName created = store.createPlaceholder(Origin.MISSING_ACCEPTED, Issue.CHAINED_SYNOYM, taxonID);
+        RankedName created = store.createPlaceholder(Origin.MISSING_ACCEPTED, Issue.CHAINED_SYNOYM);
         store.createSynonymRel(syn, created.node);
         sr.delete();
 
@@ -271,6 +273,19 @@ public class Normalizer implements Runnable {
       tx.success();
     }
     LOG.info("{} synonym cycles resolved", counter);
+  }
+
+  private NeoTaxon createHigherTaxon(String uninomial, Rank rank) {
+    Name n = new Name();
+    n.setUninomial(uninomial);
+    n.setRank(rank);
+    n.setType(NameType.SCIENTIFIC);
+    n.setScientificName(n.canonicalNameComplete());
+    NeoTaxon t = NeoTaxon.createTaxon(Origin.DENORMED_CLASSIFICATION, n, TaxonomicStatus.ACCEPTED);
+
+    // store, which creates a new neo node
+    store.put(t);
+    return t;
   }
 
   /**

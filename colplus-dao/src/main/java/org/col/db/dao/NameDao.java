@@ -56,6 +56,10 @@ public class NameDao {
     return result;
   }
 
+  public Name get(String id, int datasetKey) {
+    return get(lookupKey(id, datasetKey));
+  }
+
   public void create(Name name) {
     NameMapper mapper = session.getMapper(NameMapper.class);
     mapper.create(name);

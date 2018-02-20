@@ -9,14 +9,12 @@ import org.col.admin.task.importer.neo.ReferenceStore;
 import org.col.admin.task.importer.neo.model.NeoTaxon;
 import org.col.api.exception.InvalidNameException;
 import org.col.api.model.*;
-import org.col.api.vocab.Issue;
-import org.col.api.vocab.NomActType;
-import org.col.api.vocab.Origin;
-import org.col.api.vocab.TaxonomicStatus;
+import org.col.api.vocab.*;
 import org.col.parser.*;
 import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.Term;
+import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.ParsedName;
 import org.gbif.nameparser.api.Rank;
@@ -28,6 +26,8 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+import static org.col.parser.SafeParser.parse;
+
 /**
  * Interprets a verbatim ACEF record and transforms it into a name, taxon and unique references.
  */
@@ -35,11 +35,9 @@ public class AcefInterpreter {
   private static final Logger LOG = LoggerFactory.getLogger(AcefInterpreter.class);
   private static final Splitter MULTIVAL = Splitter.on(CharMatcher.anyOf(";|,")).trimResults();
 
-  private final InsertMetadata meta;
   private final ReferenceStore refStore;
 
   public AcefInterpreter(InsertMetadata metadata, ReferenceStore refStore) {
-    this.meta = metadata;
     this.refStore = refStore;
     // turn on normalization of flat classification
     metadata.setDenormedClassificationMapped(true);
@@ -56,19 +54,30 @@ public class AcefInterpreter {
     t.taxon = new Taxon();
     t.taxon.setId(v.getId());
     t.taxon.setOrigin(Origin.SOURCE);
-    t.taxon.setStatus(SafeParser.parse(TaxonomicStatusParser.PARSER, v.getCoreTerm(AcefTerm.Sp2000NameStatus))
+    t.taxon.setStatus(parse(TaxonomicStatusParser.PARSER, v.getCoreTerm(AcefTerm.Sp2000NameStatus))
         .orElse(TaxonomicStatus.ACCEPTED)
     );
     t.taxon.setAccordingTo(v.getCoreTerm(AcefTerm.LTSSpecialist));
-    t.taxon.setAccordingToDate(date(v, AcefTerm.LTSDate));
+    t.taxon.setAccordingToDate(date(t, Issue.ACCORDING_TO_DATE_INVALID, AcefTerm.LTSDate));
     t.taxon.setOrigin(Origin.SOURCE);
-    t.taxon.setDatasetUrl(uri(v, AcefTerm.InfraSpeciesURL, AcefTerm.SpeciesURL));
-    t.taxon.setFossil(null);
-    t.taxon.setRecent(null);
-    //t.setLifezones();
+    t.taxon.setDatasetUrl(uri(t, Issue.URL_INVALID, AcefTerm.InfraSpeciesURL, AcefTerm.SpeciesURL));
+    t.taxon.setFossil(bool(t, Issue.IS_FOSSIL_INVALID, AcefTerm.IsFossil, AcefTerm.HasPreHolocene));
+    t.taxon.setRecent(bool(t, Issue.IS_RECENT_INVALID, AcefTerm.IsRecent, AcefTerm.HasModern));
+    t.taxon.setRemarks(v.getCoreTerm(AcefTerm.AdditionalData));
+
+    //lifezones
+    String raw = t.verbatim.getCoreTerm(AcefTerm.LifeZone);
+    if (raw != null) {
+      for (String lzv : MULTIVAL.split(raw)) {
+        Lifezone lz = parse(LifezoneParser.PARSER, lzv).orNull(Issue.LIFEZONE_INVALID, t.issues);
+        if (lz != null) {
+          t.taxon.getLifezones().add(lz);
+        }
+      }
+    }
+
     t.taxon.setSpeciesEstimate(null);
     t.taxon.setSpeciesEstimateReferenceKey(null);
-    t.taxon.setRemarks(v.getCoreTerm(AcefTerm.AdditionalData));
 
     // synonym
     if (synonym) {
@@ -83,12 +92,16 @@ public class AcefInterpreter {
     return t;
   }
 
-  private static LocalDate date(VerbatimRecord v, Term term) {
-    return SafeParser.parse(DateParser.PARSER, v.getCoreTerm(term)).orNull();
+  private static LocalDate date(NeoTaxon t, Issue invalidIssue, Term term) {
+    return parse(DateParser.PARSER, t.verbatim.getCoreTerm(term)).orNull(invalidIssue, t.issues);
   }
 
-  private static URI uri(VerbatimRecord v, Term ... term) {
-    return SafeParser.parse(UriParser.PARSER, v.getFirst(term)).orNull();
+  private static URI uri(NeoTaxon t, Issue invalidIssue, Term ... term) {
+    return parse(UriParser.PARSER, t.verbatim.getFirst(term)).orNull(invalidIssue, t.issues);
+  }
+
+  private static Boolean bool(NeoTaxon t, Issue invalidIssue, Term ... term) {
+    return parse(BooleanParser.PARSER, t.verbatim.getFirst(term)).orNull(invalidIssue, t.issues);
   }
 
   private Classification interpretClassification(VerbatimRecord v) {
@@ -154,6 +167,7 @@ public class AcefInterpreter {
 
   private Name interpretName(VerbatimRecord v) {
     Name n = new Name();
+    n.setId(v.getId());
     n.setType(NameType.SCIENTIFIC);
     n.setOrigin(Origin.SOURCE);
     n.setGenus(v.getCoreTerm(AcefTerm.Genus));
@@ -163,7 +177,7 @@ public class AcefInterpreter {
     String authorship;
     if (v.hasCoreTerm(AcefTerm.InfraSpeciesEpithet)) {
       n.setInfraspecificEpithet(v.getCoreTerm(AcefTerm.InfraSpeciesEpithet));
-      n.setRank(SafeParser.parse(RankParser.PARSER, v.getCoreTerm(AcefTerm.InfraSpeciesMarker))
+      n.setRank(parse(RankParser.PARSER, v.getCoreTerm(AcefTerm.InfraSpeciesMarker))
           .orElse(Rank.INFRASPECIFIC_NAME, Issue.RANK_INVALID, n.getIssues())
       );
       authorship = v.getCoreTerm(AcefTerm.InfraSpeciesAuthorString);
@@ -188,6 +202,9 @@ public class AcefInterpreter {
       } else {
         LOG.warn("Unparsable authorship {}", authorship);
         n.addIssue(Issue.UNPARSABLE_AUTHORSHIP);
+        Authorship unparsed = new Authorship();
+        unparsed.getAuthors().add(authorship);
+        n.setCombinationAuthorship(unparsed);
       }
     }
 

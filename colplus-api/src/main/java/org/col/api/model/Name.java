@@ -537,28 +537,36 @@ public class Name implements PrimaryEntity {
    * @See NameFormatter.canonical()
    */
   public String canonicalName() {
-    return NameFormatter.canonical(toParsedName(this));
+    return type.isParsable() ?
+        NameFormatter.canonical(toParsedName(this)) :
+        getScientificName();
   }
 
   /**
    * @See NameFormatter.canonicalNameWithoutAuthorship()
    */
   public String canonicalNameWithoutAuthorship() {
-    return NameFormatter.canonicalWithoutAuthorship(toParsedName(this));
+    return type.isParsable() ?
+        NameFormatter.canonicalWithoutAuthorship(toParsedName(this)) :
+        getScientificName();
   }
 
   /**
    * @See NameFormatter.canonicalMinimal()
    */
   public String canonicalNameMinimal() {
-    return NameFormatter.canonicalMinimal(toParsedName(this));
+    return type.isParsable() ?
+        NameFormatter.canonicalMinimal(toParsedName(this)) :
+        getScientificName();
   }
 
   /**
    * @See NameFormatter.canonicalComplete()
    */
   public String canonicalNameComplete() {
-    return NameFormatter.canonicalComplete(toParsedName(this));
+    return type.isParsable() ?
+        NameFormatter.canonicalComplete(toParsedName(this)) :
+        getScientificName();
   }
 
   /**

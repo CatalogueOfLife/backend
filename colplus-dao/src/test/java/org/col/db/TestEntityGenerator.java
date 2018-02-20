@@ -118,7 +118,7 @@ public class TestEntityGenerator {
 		return newTaxon(DATASET1, id);
 	}
 
-	/*
+  /*
 	 * Creates a new taxon with the specified id, belonging to the specified
 	 * dataset.
 	 */

@@ -575,23 +575,12 @@ public class NeoDb implements NormalizerStore, ReferenceStore {
     }
   }
 
-
-  public NeoTaxon createAccepted(Origin origin, String sciname, Rank rank) {
-    Name n = new Name();
-    n.setScientificName(sciname);
-    n.setRank(rank);
-    n.setType(NameType.SCIENTIFIC);
-    NeoTaxon t = NeoTaxon.createTaxon(origin, n, TaxonomicStatus.ACCEPTED);
-
-    // store, which creates a new neo node
-    put(t);
-    return t;
-  }
-
-  public RankedName createPlaceholder(Origin origin, @Nullable Issue issue, @Nullable String issueValue) {
+  public RankedName createPlaceholder(Origin origin, @Nullable Issue issue) {
     PLACEHOLDER.setRank(Rank.UNRANKED);
-    return createDoubtfulFromSource(origin, PLACEHOLDER, null, Rank.GENUS,null, issue, issueValue);
+    return createDoubtfulFromSource(origin, PLACEHOLDER, null, Rank.GENUS,null, issue);
   }
+
+
 
   /**
    * Creates a new taxon in neo and the name usage kvp using the source usages as a template for the classification properties.
@@ -605,7 +594,7 @@ public class NeoDb implements NormalizerStore, ReferenceStore {
    */
   public RankedName createDoubtfulFromSource(Origin origin, Name name,
                                               @Nullable NeoTaxon source, Rank excludeRankAndBelow, @Nullable String taxonID,
-                                              @Nullable Issue issue, @Nullable String issueValue) {
+                                              @Nullable Issue issue) {
     NeoTaxon t = NeoTaxon.createTaxon(origin, name, TaxonomicStatus.DOUBTFUL);
     t.taxon.setId(taxonID);
     // copy verbatim classification from source
@@ -622,7 +611,7 @@ public class NeoDb implements NormalizerStore, ReferenceStore {
     }
     // add potential issue
     if (issue != null) {
-      t.addIssue(issue, issueValue);
+      t.addIssue(issue);
     }
 
     // store, which creates a new neo node

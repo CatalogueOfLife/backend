@@ -1,5 +1,6 @@
 package org.col.db.mapper;
 
+import com.google.common.collect.Lists;
 import org.col.api.model.Page;
 import org.col.api.model.Taxon;
 import org.col.db.TestEntityGenerator;
@@ -9,6 +10,7 @@ import org.javers.core.diff.Diff;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -211,6 +213,24 @@ public class TaxonMapperTest extends MapperTestBase<TaxonMapper> {
 
   }
 
+  private LinkedList<Taxon> createClassification(Taxon root, String ... ids) throws Exception {
+    LinkedList<Taxon> taxa = Lists.newLinkedList();
+    taxa.add(root);
+    Taxon p = root;
+    for (String id : ids) {
+      p = createChild(p, id);
+      taxa.add(p);
+    }
+    return taxa;
+  }
+
+  private Taxon createChild(Taxon parent, String id) throws Exception {
+    Taxon t = TestEntityGenerator.newTaxon(id);
+    t.setParentKey(parent.getKey());
+    mapper().create(t);
+    return t;
+  }
+
   @Test
   public void classification() throws Exception {
 
@@ -219,35 +239,18 @@ public class TaxonMapperTest extends MapperTestBase<TaxonMapper> {
     kingdom.setParentKey(null);
     mapper().create(kingdom);
 
-    Taxon phylum = TestEntityGenerator.newTaxon("phylum-01"); // 2
-    phylum.setParentKey(kingdom.getKey());
-    mapper().create(phylum);
-
-    Taxon clazz = TestEntityGenerator.newTaxon("class-01"); // 3
-    clazz.setParentKey(phylum.getKey());
-    mapper().create(clazz);
-
-    Taxon order = TestEntityGenerator.newTaxon("order-01"); // 4
-    order.setParentKey(clazz.getKey());
-    mapper().create(order);
-
-    Taxon family = TestEntityGenerator.newTaxon("family-01"); // 5
-    family.setParentKey(order.getKey());
-    mapper().create(family);
-
-    Taxon genus = TestEntityGenerator.newTaxon("genus-01"); // 6
-    genus.setParentKey(family.getKey());
-    mapper().create(genus);
-
-    Taxon species = TestEntityGenerator.newTaxon("species-01"); // 7
-    species.setParentKey(genus.getKey());
-    mapper().create(species);
+    LinkedList<Taxon> parents = createClassification(kingdom, "p1", "c1", "o1", "sf1", "f1", "g1", "sg1", "s1");
 
     commit();
 
-    List<Taxon> res = mapper().classification(species.getKey());
-    assertEquals("01", 7, res.size());
+    Taxon sp = parents.removeLast();
+    List<Taxon> classification = mapper().classification(sp.getKey());
+    assertEquals(parents.size(), classification.size());
 
+    for (Taxon ht : classification) {
+      Taxon p = parents.removeLast();
+      assertEquals(p.getId(), ht.getId());
+    }
   }
 
 }

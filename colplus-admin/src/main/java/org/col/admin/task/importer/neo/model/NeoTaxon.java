@@ -7,10 +7,7 @@ import org.col.api.vocab.Origin;
 import org.col.api.vocab.TaxonomicStatus;
 import org.neo4j.graphdb.Node;
 
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * Simple wrapper to hold a normalizer node together with all data for a record
@@ -33,7 +30,8 @@ public class NeoTaxon {
   public List<Reference> bibliography = Lists.newArrayList();
   // extra stuff not covered by above for normalizer only
   public Classification classification;
-  public Map<Issue, String> issues = new EnumMap(Issue.class);
+  public Set<Issue> issues = EnumSet.noneOf(Issue.class);
+
   public List<String> remarks = Lists.newArrayList();
 
   public static NeoTaxon createTaxon(Origin origin, Name name, TaxonomicStatus status) {
@@ -68,11 +66,7 @@ public class NeoTaxon {
   }
 
   public void addIssue(Issue issue) {
-    issues.put(issue, null);
-  }
-
-  public void addIssue(Issue issue, Object value) {
-    issues.put(issue, value.toString());
+    issues.add(issue);
   }
 
   public void addRemark(String remark) {

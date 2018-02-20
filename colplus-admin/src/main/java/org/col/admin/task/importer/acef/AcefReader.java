@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvParser;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
@@ -104,9 +105,13 @@ public class AcefReader {
   }
 
   private static MappingIterator<Map<String,String>> jacksonIter(CsvSchema schema, File df) throws IOException {
-    InputStreamReader reader = null;
+    InputStreamReader reader;
     Charset charset = CharsetDetection.detectEncoding(df);
-    LOG.debug("Using character encoding {} for file {}", charset, df.getName());
+    if (charset.equals(Charsets.UTF_8)) {
+      LOG.debug("Using encoding {} for file {}", charset, df.getName());
+    } else {
+      LOG.warn("Using non standard encoding {} for file {}", charset, df.getName());
+    }
     reader = new InputStreamReader(new FileInputStream(df), charset);
     return MAPPER.readerFor(Map.class)
         .with(schema)

@@ -203,7 +203,7 @@ public class DwcInterpreter {
     t.setAccordingTo(v.getCoreTerm(DwcTerm.nameAccordingTo));
     t.setAccordingToDate(null);
     t.setOrigin(Origin.SOURCE);
-    t.setDatasetUrl(SafeParser.parse(UriParser.PARSER, v.getCoreTerm(DcTerm.references)).orNull());
+    t.setDatasetUrl(SafeParser.parse(UriParser.PARSER, v.getCoreTerm(DcTerm.references)).orNull(Issue.URL_INVALID, t.getIssues()));
     t.setFossil(null);
     t.setRecent(null);
     //t.setLifezones();

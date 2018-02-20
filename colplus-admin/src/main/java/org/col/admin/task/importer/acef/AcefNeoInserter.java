@@ -14,7 +14,6 @@ import org.col.api.model.VerbatimRecord;
 import org.col.api.vocab.DataFormat;
 import org.col.api.vocab.Issue;
 import org.gbif.dwc.terms.AcefTerm;
-import org.gbif.dwc.terms.DcTerm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -88,7 +87,7 @@ public class AcefNeoInserter extends NeoInserter {
     }
     // synonyms
     for (TermRecord rec : reader.read(AcefTerm.Synonyms)) {
-      VerbatimRecord v = VerbatimRecordFactory.build(rec.get(DcTerm.identifier), rec);
+      VerbatimRecord v = VerbatimRecordFactory.build(rec.get(AcefTerm.ID), rec);
       NeoTaxon t = inter.interpretTaxon(v, true);
       store.put(t);
       meta.incRecords(t.name.getRank());

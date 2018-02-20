@@ -70,11 +70,11 @@ public class DwcaRelationInserter implements NeoDb.NodeBatchProcessor {
 
     // if status is synonym but we aint got no idea of the accepted insert an incertae sedis record of same rank
     if ((accepted == null || accepted.isEmpty())
-        && (t.isSynonym() || t.issues.containsKey(Issue.ACCEPTED_ID_INVALID))
+        && (t.isSynonym() || t.issues.contains(Issue.ACCEPTED_ID_INVALID))
         ) {
       t.addIssue(Issue.ACCEPTED_NAME_MISSING);
       NeoDb.PLACEHOLDER.setRank(t.name.getRank());
-      RankedName acc = store.createDoubtfulFromSource(Origin.MISSING_ACCEPTED, NeoDb.PLACEHOLDER, t, t.name.getRank(), null, Issue.ACCEPTED_NAME_MISSING, t.name.getScientificName());
+      RankedName acc = store.createDoubtfulFromSource(Origin.MISSING_ACCEPTED, NeoDb.PLACEHOLDER, t, t.name.getRank(), null, Issue.ACCEPTED_NAME_MISSING);
       // now remove any denormed classification from this synonym as we have copied it already to the accepted placeholder
       t.classification = null;
       store.createSynonymRel(t.node, acc.node);
@@ -156,7 +156,7 @@ public class DwcaRelationInserter implements NeoDb.NodeBatchProcessor {
       }
       // could not find anything?
       if (ids.isEmpty()) {
-        t.addIssue(invalidIdIssue, unsplitIds);
+        t.addIssue(invalidIdIssue);
         LOG.warn("{} {} not existing", term.simpleName(), unsplitIds);
       }
     }
@@ -206,12 +206,12 @@ public class DwcaRelationInserter implements NeoDb.NodeBatchProcessor {
         if (matches.isEmpty()) {
           // create
           LOG.debug("{} {} not existing, materialize it", term.simpleName(), name);
-          return store.createDoubtfulFromSource(createdOrigin, name, t, t.name.getRank(), null, null, null);
+          return store.createDoubtfulFromSource(createdOrigin, name, t, t.name.getRank(), null, null);
 
         } else {
           if (matches.size() > 1) {
             // still multiple matches, pick first and log critical issue!
-            t.addIssue(Issue.NAME_NOT_UNIQUE, name);
+            t.addIssue(Issue.NAME_NOT_UNIQUE);
           }
           return NeoProperties.getRankedName(matches.get(0));
         }

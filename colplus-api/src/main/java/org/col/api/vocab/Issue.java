@@ -191,6 +191,31 @@ public enum Issue {
   TAXONOMIC_STATUS_INVALID,
 
   /**
+   * acef:lifezone contains values that cannot be interpreted
+   */
+  LIFEZONE_INVALID,
+
+  /**
+   * acef:IsFossil or acef:HasPreHolocene contains values that cannot be interpreted
+   */
+  IS_FOSSIL_INVALID,
+
+  /**
+   * acef:IsRecent or acef:HasModern contains values that cannot be interpreted
+   */
+  IS_RECENT_INVALID,
+
+  /**
+   * dc:references, acef:InfraSpeciesURL or acef:SpeciesURL cannot be interpreted into a valid URL
+   */
+  URL_INVALID,
+
+  /**
+   * acef:LTSDate cannot be interpreted into a date
+   */
+  ACCORDING_TO_DATE_INVALID,
+
+  /**
    * If a synonym points to another synonym as its accepted taxon the chain is resolved.
    */
   CHAINED_SYNOYM,

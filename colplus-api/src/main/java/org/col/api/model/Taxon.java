@@ -45,7 +45,7 @@ public class Taxon implements PrimaryEntity {
 
 	private Boolean recent;
 
-	private Set<Lifezone> lifezones;
+	private Set<Lifezone> lifezones = EnumSet.noneOf(Lifezone.class);
 
 	private URI datasetUrl;
 
@@ -138,7 +138,7 @@ public class Taxon implements PrimaryEntity {
 		this.accordingToDate = accordingToDate;
 	}
 
-	public Boolean getFossil() {
+	public Boolean isFossil() {
 		return fossil;
 	}
 
@@ -146,7 +146,7 @@ public class Taxon implements PrimaryEntity {
 		this.fossil = fossil;
 	}
 
-	public Boolean getRecent() {
+	public Boolean isRecent() {
 		return recent;
 	}
 

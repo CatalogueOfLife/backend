@@ -208,6 +208,8 @@ public class PgImport implements Runnable {
             if (!parentKeys.empty()) {
               // use parent postgres key from stack, but keep it there
               t.taxon.setParentKey(parentKeys.peek());
+            } else if (!n.hasLabel(Labels.ROOT)) {
+              throw new IllegalStateException("Non root node " + n.getId() + " with an accepted taxon without parent found: " + t.name.getScientificName());
             }
             t.taxon.setDatasetKey(dataset.getKey());
             t.taxon.setName(t.name);
@@ -230,7 +232,7 @@ public class PgImport implements Runnable {
           }
 
           // insert verbatim rec
-          LOG.debug("{}{} tax={} name={}:{}",
+          LOG.debug("verbatim {}{} tax={} name={}:{}",
               t.name.getOrigin(),
               t.verbatim==null? "" : " "+t.verbatim.getId(),
               taxonKey,

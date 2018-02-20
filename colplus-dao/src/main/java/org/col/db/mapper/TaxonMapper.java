@@ -21,8 +21,16 @@ public interface TaxonMapper {
 
   Taxon get(@Param("key") int key);
 
+  /**
+   * @return the accepted taxa for a given name key regardless if its a synonym or accepted name
+   */
+  List<Taxon> accepted(@Param("nkey") int nameKey);
+
   List<Integer> taxonReferences(@Param("key") int key);
 
+  /**
+   * @return list of all parents starting with the immediate parent
+   */
   List<Taxon> classification(@Param("key") int key);
 
   int countChildren(@Param("key") int key);
