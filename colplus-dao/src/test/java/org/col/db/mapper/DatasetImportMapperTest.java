@@ -109,20 +109,20 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
   @Test
   public void generate() throws Exception {
     DatasetImport d = mapper().metrics(DATASET1.getKey());
-    assertEquals((Integer) 2, d.getNameCount());
+    assertEquals((Integer) 4, d.getNameCount());
     assertEquals((Integer) 2, d.getTaxonCount());
     assertEquals((Integer) 0, d.getVerbatimCount());
     assertEquals((Integer) 3, d.getVernacularCount());
     assertEquals((Integer) 3, d.getDistributionCount());
 
     assertEquals( 1, d.getNamesByRankCount().size());
-    assertEquals((Integer) 2, d.getNamesByRankCount().get(Rank.SPECIES));
+    assertEquals((Integer) 4, d.getNamesByRankCount().get(Rank.SPECIES));
 
     assertEquals( 1, d.getNamesByOriginCount().size());
-    assertEquals((Integer) 2, d.getNamesByOriginCount().get(Origin.SOURCE));
+    assertEquals((Integer) 4, d.getNamesByOriginCount().get(Origin.SOURCE));
 
     assertEquals( 1, d.getNamesByTypeCount().size());
-    assertEquals((Integer) 2, d.getNamesByTypeCount().get(NameType.SCIENTIFIC));
+    assertEquals((Integer) 4, d.getNamesByTypeCount().get(NameType.SCIENTIFIC));
 
     assertEquals( 1, d.getDistributionsByGazetteerCount().size());
     assertEquals((Integer) 3, d.getDistributionsByGazetteerCount().get(Gazetteer.TEXT));

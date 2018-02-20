@@ -57,47 +57,51 @@ public class TestEntityGenerator {
 	public final static Reference REF2 = new Reference();
 
 	static {
-		DATASET1.setKey(1);
+    DATASET1.setKey(1);
     DATASET2.setKey(2);
 
-		NAME1.setKey(1);
-		NAME1.setId("name-1");
-		NAME1.setDatasetKey(DATASET1.getKey());
-		NAME1.setScientificName("Malus sylvestris");
+    NAME1.setKey(1);
+    NAME1.setId("name-1");
+    NAME1.setDatasetKey(DATASET1.getKey());
+    NAME1.setGenus("Malus");
+    NAME1.setSpecificEpithet("sylvestris");
     NAME1.setRank(Rank.SPECIES);
     NAME1.setOrigin(Origin.SOURCE);
     NAME1.setType(NameType.SCIENTIFIC);
+    NAME1.setScientificName(NAME1.canonicalNameComplete());
 
-		NAME2.setKey(2);
-		NAME2.setId("name-2");
-		NAME2.setDatasetKey(DATASET1.getKey());
-		NAME2.setScientificName("Larus fuscus");
+    NAME2.setKey(2);
+    NAME2.setId("name-2");
+    NAME2.setDatasetKey(DATASET1.getKey());
+    NAME2.setGenus("Larus");
+    NAME2.setSpecificEpithet("fuscus");
     NAME2.setRank(Rank.SPECIES);
     NAME2.setOrigin(Origin.SOURCE);
     NAME2.setType(NameType.SCIENTIFIC);
+    NAME2.setScientificName(NAME2.canonicalNameComplete());
 
-		TAXON1.setKey(1);
-		TAXON1.setId("root-1");
-		TAXON1.setDatasetKey(DATASET1.getKey());
-		TAXON1.setName(NAME1);
+    TAXON1.setKey(1);
+    TAXON1.setId("root-1");
+    TAXON1.setDatasetKey(DATASET1.getKey());
+    TAXON1.setName(NAME1);
     TAXON1.setOrigin(Origin.SOURCE);
     TAXON1.setStatus(TaxonomicStatus.ACCEPTED);
 
-		TAXON2.setKey(2);
-		TAXON2.setId("root-2");
-		TAXON2.setDatasetKey(DATASET1.getKey());
-		TAXON2.setName(NAME2);
+    TAXON2.setKey(2);
+    TAXON2.setId("root-2");
+    TAXON2.setDatasetKey(DATASET1.getKey());
+    TAXON2.setName(NAME2);
     TAXON2.setOrigin(Origin.SOURCE);
     TAXON2.setStatus(TaxonomicStatus.ACCEPTED);
 
-		REF1.setKey(1);
-		REF1.setId("ref-1");
-		REF1.setDatasetKey(DATASET1.getKey());
+    REF1.setKey(1);
+    REF1.setId("ref-1");
+    REF1.setDatasetKey(DATASET1.getKey());
 
-		REF2.setKey(2);
-		REF2.setId("ref-2");
-		REF2.setDatasetKey(DATASET2.getKey());
-	}
+    REF2.setKey(2);
+    REF2.setId("ref-2");
+    REF2.setDatasetKey(DATASET2.getKey());
+  }
 
 	/*
 	 * Creates a VernacularName using the specified vernacular name, belonging to

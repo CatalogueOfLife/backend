@@ -34,6 +34,7 @@ public class TaxonMapperTest extends MapperTestBase<TaxonMapper> {
 
     Javers javers = JaversBuilder.javers().build();
     Diff diff = javers.compare(in, out);
+    System.out.println(diff);
     assertEquals(0, diff.getChanges().size());
     assertEquals(in, out);
   }

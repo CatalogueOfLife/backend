@@ -110,12 +110,12 @@ public class NameMapperTest extends org.col.db.mapper.MapperTestBase<NameMapper>
 
 	@Test
 	public void count() throws Exception {
-		assertEquals(2, mapper().count(TestEntityGenerator.DATASET1.getKey()));
+		assertEquals(4, mapper().count(TestEntityGenerator.DATASET1.getKey()));
 
 		mapper().create(TestEntityGenerator.newName());
 		mapper().create(TestEntityGenerator.newName());
 		commit();
-		assertEquals(4, mapper().count(TestEntityGenerator.DATASET1.getKey()));
+		assertEquals(6, mapper().count(TestEntityGenerator.DATASET1.getKey()));
 	}
 
 	// @Test
@@ -399,7 +399,7 @@ public class NameMapperTest extends org.col.db.mapper.MapperTestBase<NameMapper>
 		// Since we have an empty NameSearch, we should just have all names;
 		// the ones created here + the ones inserted through apple
 		List<NameSearchResultTemp> result = mapper().search(new NameSearch(), new Page());
-		assertEquals("01", 7, result.size());
+		assertEquals(9, result.size());
 
 	}
 
