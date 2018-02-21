@@ -6,6 +6,7 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.Maps;
 import com.google.common.collect.UnmodifiableIterator;
 import org.apache.commons.io.FileUtils;
+import org.col.admin.task.importer.ImportJob;
 import org.col.admin.task.importer.NormalizationFailedException;
 import org.col.admin.task.importer.neo.kryo.NeoKryoFactory;
 import org.col.admin.task.importer.neo.mapdb.MapDbObjectSerializer;
@@ -66,6 +67,7 @@ public class NeoDb implements NormalizerStore, ReferenceStore {
     PLACEHOLDER.setOrigin(Origin.OTHER);
   }
 
+  private final int datasetKey;
   private final GraphDatabaseBuilder neoFactory;
   private final DB mapDb;
   private final Atomic.Var<Dataset> dataset;
@@ -85,7 +87,8 @@ public class NeoDb implements NormalizerStore, ReferenceStore {
    * @param neoDir
    * @param neoFactory
    */
-  NeoDb(DB mapDb, File neoDir, GraphDatabaseBuilder neoFactory, int batchSize) throws Exception {
+  NeoDb(int datasetKey, DB mapDb, File neoDir, GraphDatabaseBuilder neoFactory, int batchSize) throws Exception {
+    this.datasetKey = datasetKey;
     this.neoFactory = neoFactory;
     this.neoDir = neoDir;
     this.mapDb = mapDb;
@@ -211,7 +214,7 @@ public class NeoDb implements NormalizerStore, ReferenceStore {
       while (batchIter.hasNext()) {
         List<Node> batch = batchIter.next();
         // execute batch processing in separate thread to not create nested flat transactions
-        service.submit(new BatchCallback(neo, callback, batch));
+        service.submit(new BatchCallback(datasetKey, neo, callback, batch));
         counter++;
       }
       // await termination
@@ -229,12 +232,14 @@ public class NeoDb implements NormalizerStore, ReferenceStore {
   }
 
   static class BatchCallback implements Runnable {
-    AtomicInteger counter = new AtomicInteger();
+    private final int datasetKey;
+    private AtomicInteger counter = new AtomicInteger();
     private final GraphDatabaseService neo;
     private final NodeBatchProcessor callback;
     private final List<Node> batch;
 
-    public BatchCallback(GraphDatabaseService neo, NodeBatchProcessor callback, List<Node> batch) {
+    BatchCallback(int datasetKey, GraphDatabaseService neo, NodeBatchProcessor callback, List<Node> batch) {
+      this.datasetKey = datasetKey;
       this.neo = neo;
       this.callback = callback;
       this.batch = batch;
@@ -242,6 +247,7 @@ public class NeoDb implements NormalizerStore, ReferenceStore {
 
     @Override
     public void run() {
+      ImportJob.setMDC(datasetKey);
       try (Transaction tx = neo.beginTx()) {
         LOG.debug("Start new neo processing batch with {}", batch.get(0));
         for (Node n : batch) {
@@ -250,6 +256,8 @@ public class NeoDb implements NormalizerStore, ReferenceStore {
         }
         tx.success();
         callback.commitBatch(counter.get());
+      } finally {
+        ImportJob.removeMDC();
       }
     }
   }

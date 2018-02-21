@@ -62,13 +62,13 @@ public class NormalizerACEFIT {
     try {
       acef = source;
 
-      store = NeoDbFactory.create(cfg, 1);
+      store = NeoDbFactory.create(1, cfg);
 
       Normalizer norm = new Normalizer(store, acef.toFile(), DataFormat.ACEF);
       norm.run();
 
       // reopen
-      store = NeoDbFactory.open(cfg, 1);
+      store = NeoDbFactory.open(1, cfg);
 
     } catch (IOException e) {
       Throwables.propagate(e);

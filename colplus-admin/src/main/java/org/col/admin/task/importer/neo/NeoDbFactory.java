@@ -23,14 +23,14 @@ public class NeoDbFactory {
    *
    * @param mappedMemory used for the neo4j db
    */
-  public static NeoDb temporaryDb(int mappedMemory) {
+  public static NeoDb temporaryDb(int datasetKey, int mappedMemory) {
     LOG.debug("Create new in memory NormalizerStore");
     File storeDir = Files.createTempDir();
     NormalizerConfig cfg = new NormalizerConfig();
     cfg.mappedMemory = mappedMemory;
     CleanupUtils.registerCleanupHook(storeDir);
 
-    return create(cfg, storeDir, false, DBMaker.memoryDB());
+    return create(datasetKey, cfg, storeDir, false, DBMaker.memoryDB());
   }
 
   /**
@@ -45,7 +45,7 @@ public class NeoDbFactory {
     DBMaker.Maker dbMaker = DBMaker
         .fileDB(mapDbFile)
         .fileMmapEnableIfSupported();
-    return create(cfg, storeDir, eraseExisting, dbMaker);
+    return create(datasetKey, cfg, storeDir, eraseExisting, dbMaker);
   }
 
   /**
@@ -53,7 +53,7 @@ public class NeoDbFactory {
    *
    * @param eraseExisting if true erases any previous data files
    */
-  private static NeoDb create(NormalizerConfig cfg, File storeDir, boolean eraseExisting, DBMaker.Maker dbMaker) {
+  private static NeoDb create(int datasetKey, NormalizerConfig cfg, File storeDir, boolean eraseExisting, DBMaker.Maker dbMaker) {
     try {
       GraphDatabaseBuilder builder = cfg.newEmbeddedDb(storeDir, eraseExisting, null);
 
@@ -61,7 +61,7 @@ public class NeoDbFactory {
       if (!storeDir.exists()) {
         storeDir.mkdirs();
       }
-      return new NeoDb(dbMaker.make(), storeDir, builder, cfg.batchSize);
+      return new NeoDb(datasetKey, dbMaker.make(), storeDir, builder, cfg.batchSize);
 
     } catch (Exception e) {
       throw new IllegalStateException("Failed to init NormalizerStore at " + storeDir, e);
@@ -71,14 +71,14 @@ public class NeoDbFactory {
   /**
    * @return the neodb for an existing, persistent db
    */
-  public static NeoDb open(NormalizerConfig cfg, int datasetKey) throws IOException {
+  public static NeoDb open(int datasetKey, NormalizerConfig cfg) throws IOException {
     return persistentDb(cfg, datasetKey, false);
   }
 
   /**
    * @return creates a new, empty, persistent dao wiping any data that might have existed for that dataset
    */
-  public static NeoDb create(NormalizerConfig cfg, int datasetKey) throws IOException {
+  public static NeoDb create(int datasetKey, NormalizerConfig cfg) throws IOException {
     return persistentDb(cfg, datasetKey, true);
   }
 

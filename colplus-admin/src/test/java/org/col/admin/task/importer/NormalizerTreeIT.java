@@ -115,7 +115,7 @@ public class NormalizerTreeIT {
       source = Paths.get(dwcaUrl.toURI());
       System.out.println("TEST " + format+" " + sourceKey);
 
-      store = NeoDbFactory.create(cfg, datasetKey);
+      store = NeoDbFactory.create(datasetKey, cfg);
 
       Normalizer norm = new Normalizer(store, source.toFile(), format);
       try {
@@ -123,7 +123,7 @@ public class NormalizerTreeIT {
 
       } finally {
         // reopen the neo db
-        store = NeoDbFactory.open(cfg,datasetKey);
+        store = NeoDbFactory.open(datasetKey, cfg);
         debug();
       }
 

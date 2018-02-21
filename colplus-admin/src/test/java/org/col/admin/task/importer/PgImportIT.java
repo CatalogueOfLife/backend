@@ -81,11 +81,11 @@ public class PgImportIT {
       session.close();
 
       // normalize
-      Normalizer norm = new Normalizer(NeoDbFactory.create(cfg, dataset.getKey()), source.toFile(), dataset.getDataFormat());
+      Normalizer norm = new Normalizer(NeoDbFactory.create(dataset.getKey(), cfg), source.toFile(), dataset.getDataFormat());
       norm.run();
 
       // import into postgres
-      store = NeoDbFactory.open(cfg, dataset.getKey());
+      store = NeoDbFactory.open(dataset.getKey(), cfg);
       PgImport importer = new PgImport(dataset.getKey(), store, PgSetupRule.getSqlSessionFactory(),
           icfg);
       importer.run();

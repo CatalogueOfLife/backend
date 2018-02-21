@@ -54,9 +54,9 @@ public class NeoDbTest {
   @Before
   public void init() throws IOException {
     if (persistent) {
-      db = NeoDbFactory.create(cfg, DATASET_KEY);
+      db = NeoDbFactory.create(DATASET_KEY, cfg);
     } else {
-      db = NeoDbFactory.temporaryDb(10);
+      db = NeoDbFactory.temporaryDb(1, 10);
     }
   }
 

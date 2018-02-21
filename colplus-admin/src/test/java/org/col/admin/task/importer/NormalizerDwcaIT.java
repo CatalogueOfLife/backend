@@ -59,13 +59,13 @@ public class NormalizerDwcaIT {
     URL dwcaUrl = getClass().getResource("/dwca/"+datasetKey);
     dwca = Paths.get(dwcaUrl.toURI());
 
-    store = NeoDbFactory.create(cfg,datasetKey);
+    store = NeoDbFactory.create(datasetKey, cfg);
 
     Normalizer norm = new Normalizer(store, dwca.toFile(), DataFormat.DWCA);
     norm.run();
 
     // reopen
-    store = NeoDbFactory.open(cfg,datasetKey);
+    store = NeoDbFactory.open(datasetKey, cfg);
   }
 
   @Before

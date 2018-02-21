@@ -48,16 +48,23 @@ public class ImportJob implements Callable<DatasetImport> {
     dao = new DatasetImportDao(factory);
   }
 
+  public static void setMDC(int datasetKey) {
+    MDC.put(AdminServer.MDC_KEY_TASK, ImportJob.class.getSimpleName());
+    MDC.put(MDC_KEY_DATASET, String.valueOf(datasetKey));
+  }
+
+  public static void removeMDC() {
+    MDC.remove(AdminServer.MDC_KEY_TASK);
+    MDC.remove(MDC_KEY_DATASET);
+  }
+
   @Override
   public DatasetImport call() {
-    MDC.put(AdminServer.MDC_KEY_TASK, getClass().getSimpleName());
-    MDC.put(MDC_KEY_DATASET, String.valueOf(datasetKey));
-
+    setMDC(datasetKey);
     try {
       importDataset();
     } finally {
-      MDC.remove(AdminServer.MDC_KEY_TASK);
-      MDC.remove(MDC_KEY_DATASET);
+      removeMDC();
     }
     return di;
   }
@@ -85,11 +92,11 @@ public class ImportJob implements Callable<DatasetImport> {
         CompressionUtil.decompressFile(dwcaDir, source);
 
         LOG.info("Normalizing {}!", datasetKey);
-        store = NeoDbFactory.create(cfg.normalizer, datasetKey);
+        store = NeoDbFactory.create(datasetKey, cfg.normalizer);
         new Normalizer(store, dwcaDir, dataset.getDataFormat()).run();
 
         LOG.info("Writing {} to Postgres!", datasetKey);
-        store = NeoDbFactory.open(cfg.normalizer, datasetKey);
+        store = NeoDbFactory.open(datasetKey, cfg.normalizer);
         new PgImport(datasetKey, store, factory, cfg.importer).run();
 
         LOG.info("Build import metrics for dataset {}", datasetKey);
