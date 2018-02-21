@@ -2,6 +2,7 @@ package org.col.api;
 
 import org.col.api.model.Name;
 import org.gbif.nameparser.api.NamePart;
+import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Test;
 
@@ -45,9 +46,10 @@ public class NameTest {
     assertFalse(n.isConsistent());
 
     n.setRank(Rank.SUBGENUS);
-    // should we not also check if scientificName property makes sense???
-    assertTrue(n.isConsistent());
+    // uninomial is not allowed!
+    assertFalse(n.isConsistent());
 
+    n.setUninomial(null);
     n.setGenus("Abies");
     assertTrue(n.isConsistent());
 
@@ -55,7 +57,7 @@ public class NameTest {
     assertFalse(n.isConsistent());
 
     n.setRank(Rank.SPECIES);
-    assertFalse(n.isConsistent());
+    assertTrue(n.isConsistent());
 
     n.setInfragenericEpithet(null);
     assertTrue(n.isConsistent());
@@ -74,6 +76,23 @@ public class NameTest {
 
     n.setSpecificEpithet(null);
     assertFalse(n.isConsistent());
+  }
+
+  /**
+   * logger_name:org.col.admin.task.importer.acef.AcefInterpreter
+   * message:Inconsistent name W-Msc-1005056: null/W-Msc-1005056[SCIENTIFIC] G:Marmorana IG:Ambigua S:saxetana R:SUBSPECIES IS:forsythi A:null BA:null
+   */
+  @Test
+  public void isConsistent2() throws Exception {
+    Name n = new Name();
+    n.setType(NameType.SCIENTIFIC);
+    n.setGenus("Marmorana");
+    n.setInfragenericEpithet("Ambigua");
+    n.setSpecificEpithet("saxetana");
+    n.setInfraspecificEpithet("forsythi");
+    n.setRank(Rank.SUBSPECIES);
+
+    assertTrue(n.isConsistent());
   }
 
   @Test

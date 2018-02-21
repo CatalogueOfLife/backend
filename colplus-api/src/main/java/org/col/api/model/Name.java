@@ -75,8 +75,8 @@ public class Name implements PrimaryEntity {
   private String genus;
 
   /**
-   * The infrageneric epithet. Used only as the terminal epithet for names at
-   * infrageneric ranks, not for species
+   * The infrageneric epithet.
+   * Used as the terminal epithet for names at infrageneric ranks and optionally also for binomials
    */
   private String infragenericEpithet;
 
@@ -505,13 +505,13 @@ public class Name implements PrimaryEntity {
    */
   @JsonIgnore
   public boolean isConsistent() {
-    if (specificEpithet != null && genus == null) {
+    if (uninomial != null && (genus != null || infragenericEpithet != null || specificEpithet != null || infraspecificEpithet != null)) {
       return false;
 
-    } else if (infraspecificEpithet != null && specificEpithet == null) {
+    } else if (genus == null && (specificEpithet != null || infragenericEpithet != null)) {
       return false;
 
-    } else if (infragenericEpithet != null && specificEpithet != null) {
+    } else if (specificEpithet == null && infraspecificEpithet != null) {
       return false;
 
     }
@@ -523,6 +523,8 @@ public class Name implements PrimaryEntity {
 
       } else if (rank.isInfrageneric() && rank.isSupraspecific()) {
         if (infragenericEpithet == null)
+          return false;
+        if (specificEpithet != null || infraspecificEpithet != null)
           return false;
 
       } else if (rank.isSpeciesOrBelow()) {
