@@ -63,6 +63,7 @@ public class DatasetImportDao {
       m.setDatasetKey(di.getDatasetKey());
       m.setAttempt(di.getAttempt());
       m.setStarted(di.getStarted());
+      m.setDownloadUri(di.getDownloadUri());
       m.setDownload(di.getDownload());
       m.setFinished(LocalDateTime.now());
       m.setState(ImportState.FINISHED);

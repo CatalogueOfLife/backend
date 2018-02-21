@@ -27,8 +27,8 @@ To see your applications health enter url `http://localhost:8081/healthcheck`
 ### colplus-api
 The main API with model classes.
 
-### colplus-cli
-Command line tools including tools to normalize and load in Darin Core archives.
+### colplus-admin
+Admin server which allows to load ACEF and Darwin Core Archive datasets, sync with the GBIF registry and more.
 
 ### colplus-common
 Shared common classes like utilities.
@@ -36,10 +36,32 @@ Shared common classes like utilities.
 ### colplus-dao
 The postgres persistence layer.
 
-### colplus-dwca
-An extension to dwca-io for dealing with CoL+ Darwin Core archives containing extra normalized data about references.
-
 ### colplus-ws
 The Dropwizard based JSON webservices.
 
 
+## Dataset imports
+The admin server should be used to import known datasets from their registered data access URL.
+Imports are scheduled in an internal, non persistent queue. 
+Scheduling a dataset for importing is done by POSTing a dataset key to the importer resource like this:
+
+```curl -X POST "http://localhost/importer?force=true&key=$1"```
+
+The force parameter overrides the default behavior to stop importing if the exact same archive has been imported before.
+
+### Data Normalizer
+All data is normalized prior to inserting it into the database.
+This includes transforming a flat classification into a parent child hierarchy 
+with just a single record for a uniue higher taxon.
+ 
+### Import behaviour
+We have built the importer to fail early when encountering issue to not overwrite existing good data.
+Examples of data errors that cause the importer to abort are:
+ 
+ - unreadable data files (we only support UTF8, 16 and Latin1, Windows1552 & MacRoman as 8bit encodings)
+ - missing required fields (e.g. AcceptedSpeciesID or the scientific name)
+ - declared accepted taxa are missing in the sources (e.g. a synonym declaring an AcceptedSpeciesID which does not exist)
+ 
+
+The importer does gracefully handle empty lines and skip lines with less columns than expected 
+(this shows as warning logs as bad delimiter escaping is often the root cause).
