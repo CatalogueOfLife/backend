@@ -541,10 +541,25 @@ public class Name implements PrimaryEntity {
   }
 
   /**
+   * @return true if there is any parsed content
+   */
+  public boolean isParsed() {
+    return uninomial != null || genus != null || infragenericEpithet!= null || specificEpithet != null || infraspecificEpithet!= null;
+  }
+
+  /**
+   * @return true if there is no parsed content or a scientific name. All canonical name methods should return null in this case!
+   */
+  @JsonIgnore
+  public boolean isEmpty() {
+    return scientificName == null && !isParsed();
+  }
+
+  /**
    * @See NameFormatter.canonical()
    */
   public String canonicalName() {
-    return type != null && type.isParsable() ?
+    return isParsed() ?
         NameFormatter.canonical(toParsedName(this)) :
         getScientificName();
   }
@@ -553,7 +568,7 @@ public class Name implements PrimaryEntity {
    * @See NameFormatter.canonicalNameWithoutAuthorship()
    */
   public String canonicalNameWithoutAuthorship() {
-    return type != null && type.isParsable() ?
+    return isParsed() ?
         NameFormatter.canonicalWithoutAuthorship(toParsedName(this)) :
         getScientificName();
   }
@@ -562,7 +577,7 @@ public class Name implements PrimaryEntity {
    * @See NameFormatter.canonicalMinimal()
    */
   public String canonicalNameMinimal() {
-    return type != null && type.isParsable() ?
+    return isParsed() ?
         NameFormatter.canonicalMinimal(toParsedName(this)) :
         getScientificName();
   }
@@ -571,7 +586,7 @@ public class Name implements PrimaryEntity {
    * @See NameFormatter.canonicalComplete()
    */
   public String canonicalNameComplete() {
-    return type != null && type.isParsable() ?
+    return isParsed() ?
         NameFormatter.canonicalComplete(toParsedName(this)) :
         getScientificName();
   }
