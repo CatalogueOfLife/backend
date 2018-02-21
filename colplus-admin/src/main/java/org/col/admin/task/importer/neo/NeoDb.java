@@ -36,6 +36,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -196,8 +197,8 @@ public class NeoDb implements NormalizerStore, ReferenceStore {
   }
 
   @Override
-  public Dataset getDataset() {
-    return dataset.get();
+  public Optional<Dataset> getDataset() {
+    return Optional.ofNullable(dataset.get());
   }
 
   @Override

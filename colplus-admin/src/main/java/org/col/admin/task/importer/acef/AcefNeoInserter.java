@@ -38,6 +38,16 @@ public class AcefNeoInserter extends NeoInserter {
     super(folder, store);
   }
 
+  private void initReader() {
+    if (reader == null) {
+      try {
+        reader = AcefReader.from(folder);
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    }
+  }
+
   /**
    * Inserts ACEF data from a source folder into the normalizer store.
    * Before inserting it does a quick check to see if all required files are existing.
@@ -45,14 +55,14 @@ public class AcefNeoInserter extends NeoInserter {
   @Override
   public void insert() throws NormalizationFailedException {
     try {
-      reader = AcefReader.from(folder);
+      initReader();
       inter = new AcefInterpreter(meta, store);
 
       insertReferences();
       insertTaxaAndNames();
       insertSupplementary();
 
-    } catch (IOException e) {
+    } catch (RuntimeException e) {
       throw new NormalizationFailedException("Failed to read ACEF files");
     }
   }
@@ -111,6 +121,7 @@ public class AcefNeoInserter extends NeoInserter {
   @Override
   protected Optional<Dataset> readMetadata() {
     Dataset d = null;
+    initReader();
     Optional<TermRecord> metadata = reader.readFirstRow(AcefTerm.SourceDatabase);
     if (metadata.isPresent()) {
       TermRecord dr = metadata.get();

@@ -9,6 +9,7 @@ import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  *
@@ -26,7 +27,7 @@ public interface NormalizerStore extends AutoCloseableRuntime {
 
   List<Node> byScientificName(String scientificName, Rank rank);
 
-  Dataset getDataset();
+  Optional<Dataset> getDataset();
 
   void startBatchMode();
 

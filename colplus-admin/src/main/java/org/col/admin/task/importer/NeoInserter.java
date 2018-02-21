@@ -26,6 +26,10 @@ public abstract class NeoInserter {
 
 
   public InsertMetadata insertAll() throws NormalizationFailedException {
+    // the key will be preserved by the store
+    Optional<Dataset> d = readMetadata();
+    d.ifPresent(store::put);
+
     store.startBatchMode();
     insert();
     LOG.info("Data insert completed, {} nodes created", meta.getRecords());
@@ -34,10 +38,6 @@ public abstract class NeoInserter {
 
     LOG.info("Start processing explicit relations ...");
     store.process(Labels.ALL,10000, relationProcessor());
-
-    // the key will be preserved by the store
-    Optional<Dataset> d = readMetadata();
-    d.ifPresent(store::put);
 
     return meta;
   }

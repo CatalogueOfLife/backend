@@ -36,6 +36,7 @@ import java.util.stream.Stream;
  */
 public class AcefReader {
   private static final Logger LOG = LoggerFactory.getLogger(AcefReader.class);
+  private static final Pattern EMPTY = Pattern.compile("^[, \t\r\n\f\"]*$");
   private static final Splitter TAB = Splitter.on('\t').trimResults();
   private static final Splitter CSV = Splitter.on(',').trimResults();
   private static final Map<String, Splitter> DATA_FILE_TYPES = ImmutableMap.<String, Splitter>builder()
@@ -192,8 +193,7 @@ public class AcefReader {
   }
 
   private Stream<TermRecord> read(final Schema s) {
-    AtomicInteger line = new AtomicInteger(0);
-    final Pattern EMPTY = Pattern.compile("^[, \t\r\n\f\"]*$");
+    final AtomicInteger line = new AtomicInteger(0);
     final String filename = PathUtils.getFilename(s.file);
     final int cols = s.columns.size();
 
@@ -207,8 +207,8 @@ public class AcefReader {
     }
 
     return lines
-        // header
-        .skip(1)
+        // ignore header
+        .skip(s.header ? 1 : 0)
         // inc line number & skip whitespace only rows
         .filter(row -> {
           line.incrementAndGet();
@@ -225,7 +225,9 @@ public class AcefReader {
             return false;
           }
           return true;
-        }).map(row -> {
+        })
+        // convert into TermRecord
+        .map(row -> {
           TermRecord tr = new TermRecord();
           for (int i = 0; i<cols; i++) {
             Term t = s.columns.get(i);

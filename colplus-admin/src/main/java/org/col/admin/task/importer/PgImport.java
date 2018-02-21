@@ -21,6 +21,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.Stack;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /**
@@ -35,10 +36,16 @@ public class PgImport implements Runnable {
 	private final Dataset dataset;
 	private Map<Integer, Integer> nameKeys = Maps.newHashMap();
   private Map<Integer, Integer> referenceKeys = Maps.newHashMap();
+  private final AtomicInteger verbatimCounter = new AtomicInteger(0);
+  private final AtomicInteger nCounter = new AtomicInteger(0);
+  private final AtomicInteger tCounter = new AtomicInteger(0);
+  private final AtomicInteger rCounter = new AtomicInteger(0);
+  private final AtomicInteger dCounter = new AtomicInteger(0);
+  private final AtomicInteger vCounter = new AtomicInteger(0);
 
 	public PgImport(int datasetKey, NeoDb store, SqlSessionFactory sessionFactory,
                   ImporterConfig cfg) {
-		this.dataset = store.getDataset();
+		this.dataset = store.getDataset().orElse(new Dataset());
 		this.dataset.setKey(datasetKey);
 		this.store = store;
 		this.batchSize = cfg.batchSize;
@@ -53,6 +60,11 @@ public class PgImport implements Runnable {
 		insertTaxaAndNames();
 
 		updateMetadata();
+
+		LOG.info("Completed dataset {} insert with {} verbatim records, " +
+        "{} names, {} taxa, {} references, {} vernaculars and {} distributions",
+        dataset.getKey(), verbatimCounter,
+        nCounter, tCounter, rCounter, vCounter, dCounter);
 	}
 
   private void truncate(){
@@ -80,7 +92,6 @@ public class PgImport implements Runnable {
 	}
 
 	private void insertReferences() {
-		LOG.warn("Inserting references not yet implemented");
     try (final SqlSession session = sessionFactory.openSession(false)) {
       ReferenceMapper mapper = session.getMapper(ReferenceMapper.class);
       int counter = 0;
@@ -88,6 +99,7 @@ public class PgImport implements Runnable {
         int storeKey = r.getKey();
         r.setDatasetKey(dataset.getKey());
         mapper.create(r);
+        rCounter.incrementAndGet();
         // store mapping of key used in the store to the key used in postgres
         referenceKeys.put(storeKey, r.getKey());
         if (counter++ % batchSize == 0) {
@@ -113,6 +125,7 @@ public class PgImport implements Runnable {
 					NeoTaxon t = store.get(n);
 					t.name.setDatasetKey(dataset.getKey());
 					nameMapper.create(t.name);
+          nCounter.incrementAndGet();
 					// keep basionym name key map
 					nameKeys.put((int) t.node.getId(), t.name.getKey());
 				}
@@ -176,6 +189,7 @@ public class PgImport implements Runnable {
             }
             t.name.setDatasetKey(dataset.getKey());
             nameMapper.create(t.name);
+            nCounter.incrementAndGet();
           }
 
           // insert name acts, e.g. published in
@@ -214,6 +228,7 @@ public class PgImport implements Runnable {
             t.taxon.setDatasetKey(dataset.getKey());
             t.taxon.setName(t.name);
             taxonMapper.create(t.taxon);
+            tCounter.incrementAndGet();
             taxonKey = t.taxon.getKey();
             // push new postgres key onto stack for this taxon as we traverse in depth first
             parentKeys.push(taxonKey);
@@ -222,12 +237,14 @@ public class PgImport implements Runnable {
             for (VernacularName vn : t.vernacularNames) {
               updateRefKeys(vn);
               vernacularMapper.create(vn, taxonKey, dataset.getKey());
+              vCounter.incrementAndGet();
             }
 
             // insert distributions
             for (Distribution d : t.distributions) {
               updateRefKeys(d);
               distributionMapper.create(d, taxonKey, dataset.getKey());
+              dCounter.incrementAndGet();
             }
           }
 
@@ -242,6 +259,7 @@ public class PgImport implements Runnable {
           if (t.verbatim != null) {
             t.verbatim.setDatasetKey(dataset.getKey());
             verbatimMapper.create(t.verbatim, taxonKey, t.name.getKey());
+            verbatimCounter.incrementAndGet();
 
           } else if (t.name.getOrigin().equals(Origin.SOURCE)) {
             LOG.warn("No verbatim record for {}", t.name);
@@ -274,14 +292,12 @@ public class PgImport implements Runnable {
         }
       });
       session.commit();
-      LOG.debug("Inserted all names and taxa");
+      LOG.debug("Inserted {} names and {} taxa", nCounter, tCounter);
 
 		} catch (Exception e) {
-      LOG.error("Fatal error during names and taxa insert", e);
+      LOG.error("Fatal error during names and taxa insert for dataset {}", dataset.getKey(), e);
       throw e;
-
 		}
 	}
-
 
 }
