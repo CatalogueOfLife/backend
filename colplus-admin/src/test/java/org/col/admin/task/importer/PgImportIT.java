@@ -2,6 +2,7 @@ package org.col.admin.task.importer;
 
 import com.google.common.collect.Sets;
 import com.google.common.io.Files;
+import jersey.repackaged.com.google.common.base.Throwables;
 import jersey.repackaged.com.google.common.collect.Lists;
 import jersey.repackaged.com.google.common.collect.Maps;
 import org.apache.commons.io.FileUtils;
@@ -20,13 +21,15 @@ import org.col.db.mapper.*;
 import org.gbif.nameparser.api.Rank;
 import org.junit.*;
 
+import java.net.URI;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
+import static org.col.api.vocab.DataFormat.ACEF;
+import static org.col.api.vocab.DataFormat.DWCA;
 import static org.junit.Assert.*;
-import static org.col.api.vocab.DataFormat.*;
 
 /**
  *
@@ -60,28 +63,43 @@ public class PgImportIT {
 		}
 	}
 
-	void normalizeAndImport(DataFormat format, int key) throws Exception {
-		URL resUrl = getClass().getResource("/" + format.name().toLowerCase() + "/" + key);
-		Path source = Paths.get(resUrl.toURI());
+  void normalizeAndImport(DataFormat format, int key) throws Exception {
+    URL url = getClass().getResource("/" + format.name().toLowerCase() + "/" + key);
+    dataset.setDataFormat(format);
+    normalizeAndImport(Paths.get(url.toURI()));
+  }
 
-		// insert dataset
-		dataset.setTitle("Test Dataset " + key);
-		SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true);
-		// this creates a new datasetKey, usually 1!
-		session.getMapper(DatasetMapper.class).create(dataset);
-		session.commit();
-		session.close();
+	void normalizeAndImport(Path source) {
+    try {
+      // insert dataset
+      dataset.setTitle("Test Dataset " + source.toString());
 
-		// normalize
-		Normalizer norm = new Normalizer(NeoDbFactory.create(cfg, dataset.getKey()), source.toFile(), format);
-		norm.run();
+      SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true);
+      // this creates a new datasetKey, usually 1!
+      session.getMapper(DatasetMapper.class).create(dataset);
+      session.commit();
+      session.close();
 
-		// import into postgres
-		store = NeoDbFactory.open(cfg, dataset.getKey());
-		PgImport importer = new PgImport(dataset.getKey(), store, PgSetupRule.getSqlSessionFactory(),
-		    icfg);
-		importer.run();
-	}
+      // normalize
+      Normalizer norm = new Normalizer(NeoDbFactory.create(cfg, dataset.getKey()), source.toFile(), dataset.getDataFormat());
+      norm.run();
+
+      // import into postgres
+      store = NeoDbFactory.open(cfg, dataset.getKey());
+      PgImport importer = new PgImport(dataset.getKey(), store, PgSetupRule.getSqlSessionFactory(),
+          icfg);
+      importer.run();
+
+    } catch (Exception e) {
+      throw Throwables.propagate(e);
+    }
+  }
+
+  void normalizeAndImport(URI url, DataFormat format) throws Exception {
+    dataset.setDataFormat(format);
+    // download an decompress
+    ExternalSourceUtil.consumeSource(url, this::normalizeAndImport);
+  }
 
   @Test
   public void testPublishedIn() throws Exception {
@@ -241,6 +259,12 @@ public class PgImportIT {
       assertEquals("Multidentorhodacarus denticulatus (Berlese, 1920)", t.getName().canonicalNameComplete());
       assertEquals(t, acc.get(0));
     }
+  }
+
+  @Test
+  @Ignore
+  public void testGsdGithub() throws Exception {
+    normalizeAndImport(URI.create("https://raw.githubusercontent.com/Sp2000/colplus-repo/master/ACEF/assembly/73.tar.gz"), DataFormat.ACEF);
   }
 
   private static RankedName rn(Rank rank, String name) {

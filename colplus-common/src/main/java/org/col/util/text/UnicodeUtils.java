@@ -1,4 +1,4 @@
-package org.col.util;
+package org.col.util.text;
 
 import org.apache.commons.lang3.StringUtils;
 

@@ -1,11 +1,8 @@
 package org.col.admin.task.importer;
 
 import com.google.common.io.Files;
-import com.google.common.io.MoreFiles;
-import com.google.common.io.RecursiveDeleteOption;
+import jersey.repackaged.com.google.common.base.Throwables;
 import org.apache.commons.io.FileUtils;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
 import org.col.admin.config.NormalizerConfig;
 import org.col.admin.task.importer.neo.NeoDb;
 import org.col.admin.task.importer.neo.NeoDbFactory;
@@ -16,8 +13,6 @@ import org.col.admin.task.importer.neo.printer.GraphFormat;
 import org.col.admin.task.importer.neo.printer.PrinterUtils;
 import org.col.api.model.Reference;
 import org.col.api.vocab.DataFormat;
-import org.col.util.CompressionUtil;
-import org.col.util.DownloadUtil;
 import org.gbif.nameparser.api.Rank;
 import org.junit.After;
 import org.junit.Before;
@@ -30,6 +25,7 @@ import org.neo4j.graphdb.Transaction;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.Writer;
 import java.net.URI;
 import java.net.URL;
@@ -58,34 +54,25 @@ public class NormalizerACEFIT {
   }
 
   private void normalize(URI url) throws Exception {
-    // download file
-    HttpClientBuilder htb = HttpClientBuilder.create();
-    File tmp = File.createTempFile("col-gsd", ".tar.gz");
-    Path source = java.nio.file.Files.createTempDirectory("col-gsd");
-    try (CloseableHttpClient hc = htb.build()) {
-      DownloadUtil down = new DownloadUtil(hc);
-      down.downloadIfModified(url, tmp);
-      // decompress into folder
-      CompressionUtil.decompressFile(source.toFile(), tmp);
-      // normalize
-      normalize(source);
-
-    } finally {
-      FileUtils.deleteQuietly(tmp);
-      MoreFiles.deleteRecursively(source, RecursiveDeleteOption.ALLOW_INSECURE);
-    }
+    // download an decompress
+    ExternalSourceUtil.consumeSource(url, this::normalize);
   }
 
-  private void normalize(Path source) throws Exception {
-    acef = source;
+  private void normalize(Path source) {
+    try {
+      acef = source;
 
-    store = NeoDbFactory.create(cfg, 1);
+      store = NeoDbFactory.create(cfg, 1);
 
-    Normalizer norm = new Normalizer(store, acef.toFile(), DataFormat.ACEF);
-    norm.run();
+      Normalizer norm = new Normalizer(store, acef.toFile(), DataFormat.ACEF);
+      norm.run();
 
-    // reopen
-    store = NeoDbFactory.open(cfg, 1);
+      // reopen
+      store = NeoDbFactory.open(cfg, 1);
+
+    } catch (IOException e) {
+      Throwables.propagate(e);
+    }
   }
 
   @Before

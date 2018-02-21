@@ -68,14 +68,14 @@ public class AcefNeoInserter extends NeoInserter {
 
   private void insertTaxaAndNames() {
     // species
-    for (TermRecord rec : reader.read(AcefTerm.AcceptedSpecies)) {
+    reader.read(AcefTerm.AcceptedSpecies).forEach( rec -> {
       VerbatimRecord v = VerbatimRecordFactory.build(rec.get(AcefTerm.AcceptedTaxonID), rec);
       NeoTaxon t = inter.interpretTaxon(v, false);
       store.put(t);
       meta.incRecords(t.name.getRank());
-    }
+    });
     // infraspecies
-    for (TermRecord rec : reader.read(AcefTerm.AcceptedInfraSpecificTaxa)) {
+    reader.read(AcefTerm.AcceptedInfraSpecificTaxa).forEach( rec -> {
       VerbatimRecord v = VerbatimRecordFactory.build(rec.get(AcefTerm.AcceptedTaxonID), rec);
       NeoTaxon t = inter.interpretTaxon(v, false);
       if (!t.name.getRank().isInfraspecific()) {
@@ -84,25 +84,25 @@ public class AcefNeoInserter extends NeoInserter {
       }
       store.put(t);
       meta.incRecords(t.name.getRank());
-    }
+    });
     // synonyms
-    for (TermRecord rec : reader.read(AcefTerm.Synonyms)) {
+    reader.read(AcefTerm.Synonyms).forEach( rec -> {
       VerbatimRecord v = VerbatimRecordFactory.build(rec.get(AcefTerm.ID), rec);
       NeoTaxon t = inter.interpretTaxon(v, true);
       store.put(t);
       meta.incRecords(t.name.getRank());
-    }
+    });
   }
 
   private void insertReferences() {
-    for (TermRecord rec : reader.read(AcefTerm.Reference)) {
+    reader.read(AcefTerm.Reference).forEach( rec -> {
       Reference ref = Reference.create();
       ref.setId(rec.get(AcefTerm.ReferenceID));
       ref.setTitle(rec.get(AcefTerm.Title));
       ref.setYear(rec.getIntDefault(AcefTerm.Year, null));
       store.put(ref);
       refKeys.put(ref.getId(), ref.getKey());
-    }
+    });
   }
 
   /**

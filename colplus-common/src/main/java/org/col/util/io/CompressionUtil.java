@@ -1,4 +1,4 @@
-package org.col.util;
+package org.col.util.io;
 
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;

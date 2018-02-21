@@ -1,4 +1,4 @@
-package org.col.util;
+package org.col.util.io;
 
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;

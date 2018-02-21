@@ -22,4 +22,14 @@ public class NormalizationFailedException extends RuntimeException {
       super(message);
     }
   }
+
+  /**
+   * For exceptions when required fields are missing.
+   */
+  public static class MissingDataException extends NormalizationFailedException {
+
+    public MissingDataException(String message) {
+      super(message);
+    }
+  }
 }

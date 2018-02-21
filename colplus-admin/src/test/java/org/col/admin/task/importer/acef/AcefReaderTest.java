@@ -9,6 +9,7 @@ import org.junit.Test;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.Assert.*;
 
@@ -21,9 +22,9 @@ public class AcefReaderTest {
   public void fromFolder() throws Exception {
     AcefReader reader = AcefReader.from(FileUtils.getClasspathFile("acef/0"));
 
-    int counter = 0;
-    for (TermRecord tr : reader.read(AcefTerm.AcceptedSpecies)){
-      counter++;
+    AtomicInteger counter = new AtomicInteger(0);
+    reader.read(AcefTerm.AcceptedSpecies).forEach(tr -> {
+      counter.incrementAndGet();
       assertNotNull(tr.get(AcefTerm.AcceptedTaxonID));
       assertEquals("Fabales", tr.get(AcefTerm.Order));
       assertEquals("Fabaceae", tr.get(AcefTerm.Family));
@@ -38,17 +39,17 @@ public class AcefReaderTest {
       assertEquals("0", tr.get(AcefTerm.IsExtinct));
       assertEquals("0", tr.get(AcefTerm.HasPreHolocene));
       assertEquals("1", tr.get(AcefTerm.HasModern));
-    }
-    assertEquals(3, counter);
+    });
+    assertEquals(3, counter.get());
   }
 
   @Test
   public void corruptFiles() throws Exception {
     AcefReader reader = AcefReader.from(FileUtils.getClasspathFile("acef/corrupt"));
 
-    int counter = 0;
-    for (TermRecord tr : reader.read(AcefTerm.AcceptedSpecies)){
-      counter++;
+    AtomicInteger counter = new AtomicInteger(0);
+    reader.read(AcefTerm.AcceptedSpecies).forEach(tr -> {
+      counter.incrementAndGet();
       assertNotNull(tr.get(AcefTerm.AcceptedTaxonID));
       assertEquals("Fabales", tr.get(AcefTerm.Order));
       assertEquals("Fabaceae", tr.get(AcefTerm.Family));
@@ -63,8 +64,8 @@ public class AcefReaderTest {
       assertEquals("0", tr.get(AcefTerm.IsExtinct));
       assertEquals("0", tr.get(AcefTerm.HasPreHolocene));
       assertEquals("1", tr.get(AcefTerm.HasModern));
-    }
-    assertEquals(3, counter);
+    });
+    assertEquals(3, counter.get());
 
     Optional<TermRecord> row = reader.readFirstRow(AcefTerm.CommonNames);
     assertTrue(row.isPresent());
@@ -87,23 +88,24 @@ public class AcefReaderTest {
   public void encodings() throws Exception {
     AcefReader reader = AcefReader.from(FileUtils.getClasspathFile("acef/encodings"));
 
-    List<String> expected = Lists.newArrayList("Döring", "(Møllæ) Padléç");
-    for (TermRecord tr : reader.read(AcefTerm.AcceptedSpecies)){
+    final List<String> expected = Lists.newArrayList("Döring", "(Møllæ) Padléç");
+    reader.read(AcefTerm.AcceptedSpecies).forEach(tr -> {
       String author = tr.get(AcefTerm.AuthorString);
       System.out.println(author);
-      assertTrue(expected.remove(author));
-      if (expected.isEmpty()) break;
-    }
+      if (!expected.isEmpty()) {
+        assertTrue(expected.remove(author));
+      }
+    });
 
     Optional<TermRecord> row = reader.readFirstRow(AcefTerm.SourceDatabase);
     assertTrue(row.isPresent());
     assertEquals("Brassicacee species Chöklœst ænd database", row.get().get(AcefTerm.DatabaseFullName));
 
-    expected = Lists.newArrayList("Aparajit", "Gokarni", "Dientón", "Trinchã", "Moingué", "鐮狀狼牙脂鯉");
-    for (TermRecord tr : reader.read(AcefTerm.CommonNames)){
-      assertTrue(expected.remove(tr.get(AcefTerm.CommonName)));
-    }
-    assertTrue(expected.isEmpty());
+    final List<String> expected2 = Lists.newArrayList("Aparajit", "Gokarni", "Dientón", "Trinchã", "Moingué", "鐮狀狼牙脂鯉");
+    reader.read(AcefTerm.CommonNames).forEach(tr -> {
+      assertTrue(expected2.remove(tr.get(AcefTerm.CommonName)));
+    });
+    assertTrue(expected2.isEmpty());
   }
 
 }

@@ -6,8 +6,7 @@ import org.col.admin.task.importer.neo.NeoDb;
 import org.col.admin.task.importer.neo.NotUniqueRuntimeException;
 import org.col.admin.task.importer.neo.model.*;
 import org.col.admin.task.importer.neo.traverse.Traversals;
-import org.col.api.model.Classification;
-import org.col.api.model.Name;
+import org.col.api.model.*;
 import org.col.api.vocab.DataFormat;
 import org.col.api.vocab.Issue;
 import org.col.api.vocab.Origin;
@@ -66,6 +65,8 @@ public class Normalizer implements Runnable {
       insertData();
       // insert normalizer db relations, create implicit nodes if needed and parse names
       normalize();
+      // verify and fail before we do expensive matching or even db imports
+      verify();
       // matches names and taxon concepts and builds metrics per name/taxon
       matchAndCount();
       LOG.info("Normalization succeeded");
@@ -79,6 +80,70 @@ public class Normalizer implements Runnable {
         store.close();
         LOG.info("Normalizer store shut down");
       }
+    }
+  }
+
+  private void verify() {
+    for (NeoTaxon t : store.all()) {
+      String id;
+      // is it a source with verbatim data?
+      require(t.name.getOrigin(), "name origin");
+      if (t.taxon.getOrigin() == Origin.SOURCE) {
+        id = require(t.verbatim.getId(), "verbatim id");
+      } else {
+        id = String.format("%s %s %s", t.taxon.getOrigin().name(), t.name.getRank(), t.name.getScientificName());
+      }
+
+      // check for required fields to avoid pg exceptions
+      require(t.name.getScientificName(), "scientific name", id);
+      require(t.name.getRank(), "rank", id);
+      require(t.name.getType(), "name type", id);
+      // acts
+      for (NameAct act : t.acts) {
+        require(act.getType(), "act type", id);
+      }
+
+      // taxon or synonym
+      if (t.isSynonym()) {
+        notEmpty(t.synonym.accepted, "accepted taxa", id);
+        for (Taxon acc : t.synonym.accepted) {
+          require(acc.getKey(), "accepted key", id);
+        }
+      } else {
+        require(t.taxon.getOrigin(), "taxon origin", id);
+        require(t.taxon.getStatus(), "taxon origin", id);
+      }
+      require(t.issues, "issues", id);
+
+      // vernacular
+      for (VernacularName v : t.vernacularNames) {
+        require(v.getName(), "vernacular name", id);
+      }
+
+      // distribution
+      for (Distribution d : t.distributions) {
+        require(d.getAreaStandard(), "distribution area standard", id);
+        require(d.getArea(), "distribution area", id);
+      }
+    }
+  }
+
+  private static <T> T require(T obj, String fieldName) {
+    return require(obj, fieldName, null);
+  }
+
+  private static <T> T require(T obj, String fieldName, String id) {
+    if (obj == null) {
+      String msg = String.format("%s missing for record %s", fieldName, id == null ? " without ID" : id);
+      throw new NormalizationFailedException.MissingDataException(msg);
+    }
+    return obj;
+  }
+
+  private static void notEmpty(Collection<?> obj, String fieldName, String id) {
+    if (obj.isEmpty()) {
+      String msg = String.format("%s missing for record %s", fieldName, id == null ? " without ID" : id);
+      throw new NormalizationFailedException.MissingDataException(msg);
     }
   }
 

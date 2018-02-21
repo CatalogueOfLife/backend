@@ -1,59 +1,49 @@
 package org.col.admin.task.importer.acef;
 
-import com.fasterxml.jackson.databind.MappingIterator;
-import com.fasterxml.jackson.dataformat.csv.CsvMapper;
-import com.fasterxml.jackson.dataformat.csv.CsvParser;
-import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Iterators;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.PeekingIterator;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.IOCase;
-import org.apache.commons.io.filefilter.FileFilterUtils;
-import org.apache.commons.io.filefilter.HiddenFileFilter;
 import org.col.admin.task.importer.NormalizationFailedException;
 import org.col.admin.task.importer.VerbatimRecordFactory;
 import org.col.api.model.TermRecord;
 import org.col.api.vocab.VocabularyUtils;
-import org.col.util.CharsetDetection;
+import org.col.util.io.CharsetDetection;
+import org.col.util.io.PathUtils;
 import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.dwc.terms.Term;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 /**
  *
  */
 public class AcefReader {
   private static final Logger LOG = LoggerFactory.getLogger(AcefReader.class);
-  private static final CsvMapper MAPPER = new CsvMapper()
-      .enable(CsvParser.Feature.WRAP_AS_ARRAY);
-
-  private static final CsvSchema TAB_SCHEMA = CsvSchema.emptySchema()
-      .withQuoteChar('"')
-      .withColumnSeparator('\t')
-      .withHeader();
-  private static final CsvSchema CSV_SCHEMA = CsvSchema.emptySchema()
-      .withQuoteChar('"')
-      .withColumnSeparator(',')
-      .withHeader();
-
-
-  private static final Map<String, CsvSchema> DATA_FILE_TYPES = ImmutableMap.<String, CsvSchema>builder()
-      .put("csv", CSV_SCHEMA)
-      .put("txt", TAB_SCHEMA)
-      .put("tsv", TAB_SCHEMA)
-      .put("tab", TAB_SCHEMA)
-      .put("text", TAB_SCHEMA)
+  private static final Splitter TAB = Splitter.on('\t').trimResults();
+  private static final Splitter CSV = Splitter.on(',').trimResults();
+  private static final Map<String, Splitter> DATA_FILE_TYPES = ImmutableMap.<String, Splitter>builder()
+      .put("csv",  CSV)
+      .put("txt",  TAB)
+      .put("tsv",  TAB)
+      .put("tab",  TAB)
+      .put("text", TAB)
       .build();
 
   private final File folder;
@@ -64,18 +54,24 @@ public class AcefReader {
   }
 
   private static class Schema {
-    final File file;
-    final CsvSchema schema;
-    final Map<String, Term> columns;
+    final Path file;
+    final Charset encoding;
+    final Splitter splitter;
+    final boolean quoted;
+    final boolean header;
+    final List<Term> columns;
 
-    private Schema(File file, CsvSchema schema, Map<String, Term> columns) {
+    private Schema(Path file, Charset encoding, Splitter splitter, List<Term> columns) {
       this.file = file;
-      this.schema = schema;
+      this.encoding = encoding;
+      this.splitter = splitter;
       this.columns = columns;
+      this.quoted = false;
+      this.header = true;
     }
 
     public boolean isEmpty() {
-      return schema.size() == 0;
+      return columns.isEmpty();
     }
   }
 
@@ -91,11 +87,14 @@ public class AcefReader {
     }
 
     AcefReader reader = new AcefReader(folder);
-    for (File df : listDataFiles(folder)) {
-      Term rowType = VocabularyUtils.TF.findTerm(AcefTerm.PREFIX + ":" + FilenameUtils.getBaseName(df.getName()));
-      LOG.debug("Detecting schema for file {}, rowType={}", df.getName(), rowType);
+    for (Path df : listDataFiles(folder)) {
+      Term rowType = VocabularyUtils.TF.findTerm(AcefTerm.PREFIX + ":" + PathUtils.getBasename(df));
+      LOG.debug("Detecting schema for file {}, rowType={}", PathUtils.getFilename(df), rowType);
       if (rowType != null && rowType instanceof AcefTerm) {
-        reader.schemas.put(rowType, buildSchema(df));
+        Schema s = buildSchema(df);
+        if (s != null) {
+          reader.schemas.put(rowType, s);
+        }
       }
     }
 
@@ -104,60 +103,48 @@ public class AcefReader {
     return reader;
   }
 
-  private static MappingIterator<Map<String,String>> jacksonIter(CsvSchema schema, File df) throws IOException {
-    InputStreamReader reader;
-    Charset charset = CharsetDetection.detectEncoding(df);
-    if (charset.equals(Charsets.UTF_8)) {
-      LOG.debug("Using encoding {} for file {}", charset, df.getName());
-    } else {
-      LOG.warn("Using non standard encoding {} for file {}", charset, df.getName());
-    }
-    reader = new InputStreamReader(new FileInputStream(df), charset);
-    return MAPPER.readerFor(Map.class)
-        .with(schema)
-        .readValues(reader);
-  }
+  private static Schema buildSchema(Path df) {
 
-  private static Schema buildSchema(File df) throws IOException {
-    Map<String,Term> columns = Maps.newHashMap();
-    CsvSchema schema = DATA_FILE_TYPES.getOrDefault(FilenameUtils.getExtension(df.getName()).toLowerCase(), TAB_SCHEMA);
-
-    MappingIterator<Map<String,String>> it = null;
+    Charset charset = null;
     try {
-      it = jacksonIter(schema, df);
-      CsvSchema.Builder builder = schema.rebuild();
-      if (it.hasNext()) {
-        Map<String,String> rowAsMap = it.next();
-        // access by column name, as defined in the header row...
-        for (String name : rowAsMap.keySet()) {
-          builder.addColumn(name);
-          columns.put(name, VocabularyUtils.TF.findTerm("acef:" + name));
+      charset = CharsetDetection.detectEncoding(df);
+      if (charset.equals(Charsets.UTF_8)) {
+        LOG.debug("Using encoding {} for file {}", charset, df);
+      } else {
+        LOG.warn("Using non standard encoding {} for file {}", charset, df);
+      }
+
+      Optional<String> header = Files.lines(df, charset).findFirst();
+      if (!header.isPresent()) {
+        throw new IllegalArgumentException("Header rows with ACEF terms required for " + df);
+
+      } else {
+        List<Term> columns = Lists.newArrayList();
+        Splitter splitter = DATA_FILE_TYPES.getOrDefault(FilenameUtils.getExtension(df.toFile().getName()).toLowerCase(), TAB);
+        for (String col : splitter.split(header.get())) {
+          Term term = VocabularyUtils.TF.findTerm("acef:" + col);
+          columns.add(term);
+          if (!(term instanceof AcefTerm)) {
+            LOG.warn("Non ACEF Term found: {}", term.qualifiedName());
+          }
         }
-        schema = builder.build();
-        LOG.debug("Csv schema with {} column found for file {}", rowAsMap.size(), df.getName());
+        LOG.debug("{} file schema with {} column found for file {}", splitter.equals(TAB) ? "TAB" : "CSV", columns.size(), df);
+        return new Schema(df, charset, splitter, columns);
       }
 
     } catch (RuntimeException | IOException e) {
-      LOG.error("Failed to read schema for {}", df.getName(), e);
-
-    } finally {
-      if (it != null) {
-        it.close();
-      }
+      LOG.error("Failed to read schema for {}", df, e);
     }
-
-    return new Schema(df, schema, columns);
+    return null;
   }
 
-  private static List<File> listDataFiles(File folder) {
-    List<File> dataFiles = new ArrayList<>();
-    for (String suffix : DATA_FILE_TYPES.keySet()) {
-      FileFilter ff = FileFilterUtils.and(
-          FileFilterUtils.suffixFileFilter("."+suffix, IOCase.INSENSITIVE), HiddenFileFilter.VISIBLE
-      );
-      dataFiles.addAll(Arrays.asList(folder.listFiles(ff)));
-    }
-    return dataFiles;
+  private static Iterable<Path> listDataFiles(File folder) throws IOException {
+    return Files.newDirectoryStream(folder.toPath(), new DirectoryStream.Filter<Path>() {
+      @Override
+      public boolean accept(Path p) throws IOException {
+        return Files.isRegularFile(p) && DATA_FILE_TYPES.containsKey(PathUtils.getFileExtension(p));
+      }
+    });
   }
 
   private static String filename(AcefTerm rowType) {
@@ -167,7 +154,7 @@ public class AcefReader {
     return rowType.name().toLowerCase() + ".txt";
   }
 
-  public void validate() throws NormalizationFailedException.SourceInvalidException {
+  private void validate() throws NormalizationFailedException.SourceInvalidException {
     if (!hasData(AcefTerm.AcceptedSpecies)) {
       throw new NormalizationFailedException.SourceInvalidException(filename(AcefTerm.AcceptedSpecies) + " file required but missing from " + folder);
     }
@@ -185,101 +172,72 @@ public class AcefReader {
     return schemas.containsKey(rowType);
   }
 
-  public Iterable<TermRecord> read(Term rowType) {
+  public Stream<TermRecord> read(AcefTerm rowType) {
     Preconditions.checkArgument(rowType.isClass(), "RowType "+rowType+" is not a class term");
     if (schemas.containsKey(rowType)) {
-      return new TermRecIterable(schemas.get(rowType));
+      return read(schemas.get(rowType));
     } else {
-      return Collections.EMPTY_LIST;
+      return Stream.empty();
     }
   }
 
   /**
    * Returns the first row of the given data file
    */
-  public Optional<TermRecord> readFirstRow(Term rowType) {
+  public Optional<TermRecord> readFirstRow(AcefTerm rowType) {
     if (schemas.containsKey(rowType)) {
-      TermRecIterator iter = new TermRecIterator(schemas.get(rowType));
-      if (iter.hasNext()) {
-        return Optional.of(iter.next());
-      }
+      return read(schemas.get(rowType)).findFirst();
     }
     return Optional.empty();
   }
 
-  private static class TermRecIterable implements Iterable<TermRecord> {
-    private final Schema schema;
+  private Stream<TermRecord> read(final Schema s) {
+    AtomicInteger line = new AtomicInteger(0);
+    final Pattern EMPTY = Pattern.compile("^[, \t\r\n\f\"]*$");
+    final String filename = PathUtils.getFilename(s.file);
+    final int cols = s.columns.size();
 
-    private TermRecIterable(Schema schema) {
-      this.schema = schema;
+    Stream<String> lines;
+    try {
+      lines = Files.lines(s.file, s.encoding);
+
+    } catch (IOException e) {
+      LOG.error("Filed to read {}", s.file, e);
+      return Stream.empty();
     }
 
-    @NotNull
-    @Override
-    public Iterator<TermRecord> iterator() {
-      return new NonEmptyTermRecIterator(schema);
+    return lines
+        // header
+        .skip(1)
+        // inc line number & skip whitespace only rows
+        .filter(row -> {
+          line.incrementAndGet();
+          if (EMPTY.matcher(row).find()) {
+            LOG.debug("Skip empty row. {} line {}", filename, line);
+            return false;
+          }
+          return true;
+        })
+        .map(s.splitter::splitToList)
+        .filter(row -> {
+          if (row.size() < cols) {
+            LOG.warn("Skip row with {} columns not {}. {} line {}", row.size(), s.columns.size(), filename, line);
+            return false;
+          }
+          return true;
+        }).map(row -> {
+          TermRecord tr = new TermRecord();
+          for (int i = 0; i<cols; i++) {
+            Term t = s.columns.get(i);
+            if (t != null) {
+              if (!Strings.isNullOrEmpty(row.get(i))) {
+                String val = VerbatimRecordFactory.clean(row.get(i));
+                tr.put(t, val);
+              }
+            }
+          }
+          return tr;
+        });
     }
-  }
-
-  private static class NonEmptyTermRecIterator implements Iterator<TermRecord> {
-    private final PeekingIterator<TermRecord> it;
-
-    private NonEmptyTermRecIterator(Schema schema) {
-      it = Iterators.peekingIterator(new TermRecIterator(schema));
-      skipEmptyRows();
-    }
-
-    @Override
-    public boolean hasNext() {
-      return it.hasNext();
-    }
-
-    private void skipEmptyRows() {
-      while (it.hasNext() && it.peek().isEmpty()) {
-        it.next();
-      }
-    }
-
-    @Override
-    public TermRecord next() {
-      TermRecord tr = it.next();
-      skipEmptyRows();
-      return tr;
-    }
-  }
-
-  private static class TermRecIterator implements Iterator<TermRecord> {
-    private Iterator<Map<String,String>> it;
-    private Schema schema;
-
-    private TermRecIterator(Schema schema) {
-      this.schema = schema;
-      try {
-        this.it = jacksonIter(schema.schema, schema.file);
-      } catch (IOException e) {
-        LOG.error("Failed to open {}", schema.file, e);
-        it = Collections.emptyIterator();
-      }
-    }
-
-    @Override
-    public boolean hasNext() {
-      return it.hasNext();
-    }
-
-    @Override
-    public TermRecord next() {
-      Map<String,String> row = it.next();
-      TermRecord tr = new TermRecord();
-      for (Map.Entry<String, String> col : row.entrySet()) {
-        Term t = schema.columns.get(col.getKey());
-        String val = VerbatimRecordFactory.clean(col.getValue());
-        if (t != null && !Strings.isNullOrEmpty(val)) {
-          tr.put(t, val);
-        }
-      }
-      return tr;
-    }
-  }
 
 }

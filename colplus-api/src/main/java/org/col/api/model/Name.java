@@ -572,9 +572,8 @@ public class Name implements PrimaryEntity {
    */
   public String canonicalNameComplete() {
     return type != null && type.isParsable() ?
-        getScientificName() :
-        NameFormatter.canonicalComplete(toParsedName(this));
-
+        NameFormatter.canonicalComplete(toParsedName(this)) :
+        getScientificName();
   }
 
   /**
