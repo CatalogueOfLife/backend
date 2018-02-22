@@ -133,7 +133,7 @@ public class DwcInterpreter {
             if (area != null) {
               addDistribution(t, area.area, area.standard, rec);
             } else {
-              t.addIssue(Issue.DISTRIBUTION_UNPARSABLE_AREA);
+              t.addIssue(Issue.DISTRIBUTION_AREA_INVALID);
             }
           }
 
@@ -143,7 +143,7 @@ public class DwcInterpreter {
             if (country != null) {
               addDistribution(t, country.getIso2LetterCode(), Gazetteer.ISO, rec);
             } else {
-              t.addIssue(Issue.DISTRIBUTION_UNPARSABLE_COUNTRY);
+              t.addIssue(Issue.DISTRIBUTION_COUNTRY_INVALID);
             }
           }
 

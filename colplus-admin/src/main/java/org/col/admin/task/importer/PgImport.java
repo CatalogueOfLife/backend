@@ -258,11 +258,14 @@ public class PgImport implements Runnable {
           );
           if (t.verbatim != null) {
             t.verbatim.setDatasetKey(dataset.getKey());
+            //TODO: add reference verbatim data
             verbatimMapper.create(t.verbatim, taxonKey, t.name.getKey(), null);
             verbatimCounter.incrementAndGet();
 
           } else if (t.name.getOrigin().equals(Origin.SOURCE)) {
-            LOG.warn("No verbatim record for {}", t.name);
+            LOG.warn("Missing verbatim record for name {}", t.name);
+          } else if (t.taxon != null && t.taxon.getOrigin().equals(Origin.SOURCE)) {
+            LOG.warn("Missing verbatim record for taxon {}", t.name);
           }
 
           // commit in batches

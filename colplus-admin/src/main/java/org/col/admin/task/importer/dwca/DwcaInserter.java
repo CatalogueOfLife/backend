@@ -40,7 +40,7 @@ public class DwcaInserter extends NeoInserter {
    * Before inserting it does a quick check to see if all required dwc terms are actually mapped.
    */
   @Override
-  public void insert() throws NormalizationFailedException {
+  public void batchInsert() throws NormalizationFailedException {
     openArchive(folder);
     interpreter = new DwcInterpreter(meta, store);
     //TODO: insert reference file first
@@ -49,9 +49,14 @@ public class DwcaInserter extends NeoInserter {
     }
   }
 
-  /**
-   * Reads the dataset metadata and puts it into the store
-   */
+  @Override
+  public void insert() throws NormalizationFailedException {
+    // nothing for dwca
+  }
+
+    /**
+     * Reads the dataset metadata and puts it into the store
+     */
   public Optional<Dataset> readMetadata() {
     Dataset d = new Dataset();
     try {

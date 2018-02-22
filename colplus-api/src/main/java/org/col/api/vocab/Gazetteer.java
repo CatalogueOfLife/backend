@@ -55,4 +55,18 @@ public enum Gazetteer {
    * Free text not following any standard
    */
   TEXT;
+
+  /**
+   * @return a prefix for the standard suitable to build a joined locationID of the form STANDARD:AREA
+   */
+  public String prefix() {
+    return name().toLowerCase();
+  }
+
+  /**
+   * @return a locationID of the form STANDARD:AREA
+   */
+  public String locationID(String area) {
+    return prefix() + ":" + area;
+  }
 }

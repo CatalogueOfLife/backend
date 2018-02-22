@@ -1,5 +1,6 @@
 package org.col.admin.task.importer;
 
+import com.google.common.collect.Sets;
 import com.google.common.io.Files;
 import jersey.repackaged.com.google.common.base.Throwables;
 import org.apache.commons.io.FileUtils;
@@ -11,8 +12,12 @@ import org.col.admin.task.importer.neo.model.NeoProperties;
 import org.col.admin.task.importer.neo.model.NeoTaxon;
 import org.col.admin.task.importer.neo.printer.GraphFormat;
 import org.col.admin.task.importer.neo.printer.PrinterUtils;
+import org.col.api.model.Distribution;
 import org.col.api.model.Reference;
+import org.col.api.model.VernacularName;
 import org.col.api.vocab.DataFormat;
+import org.col.api.vocab.Gazetteer;
+import org.col.api.vocab.Language;
 import org.gbif.nameparser.api.Rank;
 import org.junit.After;
 import org.junit.Before;
@@ -32,9 +37,11 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  *
@@ -127,6 +134,23 @@ public class NormalizerACEFIT {
       assertEquals(Rank.SPECIES, t.name.getRank());
       assertEquals("Fabaceae", t.classification.getFamily());
 
+      // distributions
+      assertEquals(3, t.distributions.size());
+      Set<String> areas = Sets.newHashSet("AGE-BA", "BZC-MS", "BZC-MT");
+      for (Distribution d : t.distributions) {
+        assertEquals(Gazetteer.TDWG, d.getAreaStandard());
+        assertTrue(areas.remove(d.getArea()));
+      }
+
+      // vernacular
+      assertEquals(3, t.vernacularNames.size());
+      Set<String> names = Sets.newHashSet("Ramkurthi", "Ram Kurthi", "отчество");
+      for (VernacularName v : t.vernacularNames) {
+        assertEquals(v.getName().startsWith("R") ? Language.HINDI : Language.RUSSIAN, v.getLanguage());
+        assertTrue(names.remove(v.getName()));
+      }
+
+      // denormed family
       t = byName("Fabaceae",null);
       assertEquals("Fabaceae", t.name.getScientificName());
       assertEquals("Fabaceae", t.name.canonicalNameComplete());

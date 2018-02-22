@@ -124,7 +124,7 @@ public class AcefReader {
         List<Term> columns = Lists.newArrayList();
         Splitter splitter = DATA_FILE_TYPES.getOrDefault(FilenameUtils.getExtension(df.toFile().getName()).toLowerCase(), TAB);
         for (String col : splitter.split(header.get())) {
-          Term term = VocabularyUtils.TF.findTerm("acef:" + col);
+          Term term = VocabularyUtils.TF.findTerm("acef:" + col, false);
           columns.add(term);
           if (!(term instanceof AcefTerm)) {
             LOG.warn("Non ACEF Term found: {}", term.qualifiedName());
@@ -157,6 +157,24 @@ public class AcefReader {
   }
 
   private void validate() throws NormalizationFailedException.SourceInvalidException {
+    // mandatory terms.
+    // Fail early, if missing ignore file alltogether!!!
+    require(AcefTerm.CommonNames, AcefTerm.AcceptedTaxonID);
+    require(AcefTerm.CommonNames, AcefTerm.CommonName);
+    require(AcefTerm.Distribution, AcefTerm.AcceptedTaxonID);
+    require(AcefTerm.Distribution, AcefTerm.DistributionElement);
+    require(AcefTerm.Synonyms, AcefTerm.AcceptedTaxonID);
+    require(AcefTerm.Synonyms, AcefTerm.Genus);
+    require(AcefTerm.Synonyms, AcefTerm.SpeciesEpithet);
+    require(AcefTerm.AcceptedSpecies, AcefTerm.AcceptedTaxonID);
+    require(AcefTerm.AcceptedSpecies, AcefTerm.Genus);
+    require(AcefTerm.AcceptedSpecies, AcefTerm.SpeciesEpithet);
+    require(AcefTerm.AcceptedInfraSpecificTaxa, AcefTerm.AcceptedTaxonID);
+    require(AcefTerm.AcceptedInfraSpecificTaxa, AcefTerm.ParentSpeciesID);
+    require(AcefTerm.AcceptedInfraSpecificTaxa, AcefTerm.InfraSpeciesEpithet);
+    require(AcefTerm.AcceptedInfraSpecificTaxa, AcefTerm.InfraSpeciesMarker);
+
+    // require at least the main accepted species file
     if (!hasData(AcefTerm.AcceptedSpecies)) {
       throw new NormalizationFailedException.SourceInvalidException(filename(AcefTerm.AcceptedSpecies) + " file required but missing from " + folder);
     }
@@ -170,6 +188,16 @@ public class AcefReader {
     }
   }
 
+  private void require(Term rowType, Term term) {
+    Schema s = schemas.get(rowType);
+    if (s != null) {
+      if (!s.columns.contains(term)) {
+        LOG.warn("Required term {} missing. Ignore file {}!", term, s.file);
+        schemas.remove(rowType);
+      }
+    }
+  }
+
   public boolean hasData(Term rowType) {
     return schemas.containsKey(rowType);
   }
@@ -177,7 +205,7 @@ public class AcefReader {
   public Stream<TermRecord> read(AcefTerm rowType) {
     Preconditions.checkArgument(rowType.isClass(), "RowType "+rowType+" is not a class term");
     if (schemas.containsKey(rowType)) {
-      return read(schemas.get(rowType));
+      return read(rowType, schemas.get(rowType));
     } else {
       return Stream.empty();
     }
@@ -188,12 +216,12 @@ public class AcefReader {
    */
   public Optional<TermRecord> readFirstRow(AcefTerm rowType) {
     if (schemas.containsKey(rowType)) {
-      return read(schemas.get(rowType)).findFirst();
+      return read(rowType, schemas.get(rowType)).findFirst();
     }
     return Optional.empty();
   }
 
-  private Stream<TermRecord> read(final Schema s) {
+  private Stream<TermRecord> read(final Term rowType, final Schema s) {
     final String filename = PathUtils.getFilename(s.file);
     final int cols = s.columns.size();
 
@@ -231,7 +259,7 @@ public class AcefReader {
         })
         // convert into TermRecord
         .map(row -> {
-          TermRecord tr = new TermRecord(row.rowNum, filename);
+          TermRecord tr = new TermRecord(row.rowNum, filename, rowType);
           for (int i = 0; i<cols; i++) {
             Term t = s.columns.get(i);
             if (t != null) {

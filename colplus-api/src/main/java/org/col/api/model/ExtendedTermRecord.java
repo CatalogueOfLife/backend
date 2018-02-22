@@ -7,6 +7,7 @@ import org.gbif.dwc.terms.Term;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -64,11 +65,11 @@ public class ExtendedTermRecord extends TermRecord {
   }
 
   /**
-   * @return true if at least one extension record exists
+   * never null
    */
   public List<TermRecord> getExtensionRecords(Term rowType) {
     checkNotNull(rowType, "term can't be null");
-    return extensions.get(rowType);
+    return extensions.getOrDefault(rowType, Lists.newArrayList());
   }
 
   /**
@@ -89,5 +90,31 @@ public class ExtendedTermRecord extends TermRecord {
       extensions.put(rowType, Lists.newArrayList());
     }
     extensions.get(rowType).add(extensionRecord);
+  }
+
+  /**
+   * @return the total number of all extension records
+   */
+  public int extendedSize() {
+    return extensions.values().stream().mapToInt(List::size).sum();
+  }
+
+  @Override
+  public String toString() {
+    return "ExtendedRecord{" + getFile() + "#" + getLine()+", "+ size() + " terms, "+extendedSize()+" ext.rec";
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    if (!super.equals(o)) return false;
+    ExtendedTermRecord that = (ExtendedTermRecord) o;
+    return Objects.equals(extensions, that.extensions);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(super.hashCode(), extensions);
   }
 }

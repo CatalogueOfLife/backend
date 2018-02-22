@@ -11,9 +11,7 @@ import org.col.api.exception.InvalidNameException;
 import org.col.api.model.*;
 import org.col.api.vocab.*;
 import org.col.parser.*;
-import org.gbif.dwc.terms.AcefTerm;
-import org.gbif.dwc.terms.DwcTerm;
-import org.gbif.dwc.terms.Term;
+import org.gbif.dwc.terms.*;
 import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.ParsedName;
@@ -25,6 +23,7 @@ import java.net.URI;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.col.parser.SafeParser.parse;
 
@@ -92,6 +91,79 @@ public class AcefInterpreter {
     return t;
   }
 
+  void interpretVernaculars(NeoTaxon t) {
+    for (TermRecord rec : t.verbatim.getExtensionRecords(AcefTerm.CommonNames)) {
+      if (rec.hasTerm(AcefTerm.CommonName)) {
+        VernacularName vn = new VernacularName();
+        vn.setName(rec.get(AcefTerm.CommonName));
+        vn.setLanguage(SafeParser.parse(LanguageParser.PARSER, rec.get(AcefTerm.Language)).orNull());
+        vn.setCountry(SafeParser.parse(CountryParser.PARSER, rec.get(AcefTerm.Country)).orNull());
+        addReferences(vn, rec, t.issues);
+        t.vernacularNames.add(vn);
+      } else {
+        // vernacular names required
+        t.addIssue(Issue.VERNACULAR_NAME_INVALID);
+      }
+    }
+  }
+
+  void interpretDistributions(NeoTaxon t) {
+    for (TermRecord rec : t.verbatim.getExtensionRecords(AcefTerm.Distribution)) {
+      // require location
+      if (rec.hasTerm(AcefTerm.DistributionElement)) {
+        Distribution d = new Distribution();
+
+        // which standard?
+        d.setAreaStandard(parse(GazetteerParser.PARSER, rec.get(AcefTerm.StandardInUse))
+            .orElse(Gazetteer.TEXT, Issue.DISTRIBUTION_GAZETEER_INVALID, t.issues)
+        );
+
+        // TODO: try to split location into several distributions...
+        String loc = rec.get(AcefTerm.DistributionElement);
+        if (d.getAreaStandard() == Gazetteer.TEXT) {
+          d.setArea(loc);
+        } else {
+          // only parse area if other than text
+          AreaParser.Area textArea = new AreaParser.Area(loc, Gazetteer.TEXT);
+          if (loc.indexOf(':')<0) {
+            loc = d.getAreaStandard().locationID(loc);
+          }
+          AreaParser.Area area = SafeParser.parse(AreaParser.PARSER, loc)
+              .orElse(textArea, Issue.DISTRIBUTION_AREA_INVALID, t.issues);
+          d.setArea(area.area);
+          // check if we have contradicting extracted a gazetteer
+          if (area.standard != Gazetteer.TEXT && area.standard != d.getAreaStandard()) {
+            LOG.info("Area standard {} found in area {} different from explicitly given standard {} for taxon {}",
+                area.standard, area.area, d.getAreaStandard(), t.getTaxonID());
+          }
+        }
+
+        // status
+        d.setStatus(parse(DistributionStatusParser.PARSER, rec.get(AcefTerm.DistributionStatus))
+                .orElse(DistributionStatus.NATIVE, Issue.DISTRIBUTION_STATUS_INVALID, t.issues)
+        );
+        addReferences(d, rec, t.issues);
+        t.distributions.add(d);
+
+      } else {
+        t.addIssue(Issue.DISTRIBUTION_INVALID);
+      }
+    }
+  }
+
+  private void addReferences(Referenced obj, TermRecord v, Set<Issue> issueCollector) {
+    if (v.hasTerm(AcefTerm.ReferenceID)) {
+      Reference r = refStore.refById(v.get(AcefTerm.ReferenceID));
+      if (r != null) {
+        obj.addReferenceKey(r.getKey());
+      } else {
+        LOG.info("ReferenceID {} not existing but referred from {} for taxon {}",
+            v.get(AcefTerm.ReferenceID), obj.getClass().getSimpleName(), v.get(AcefTerm.AcceptedTaxonID));
+        issueCollector.add(Issue.REFERENCE_ID_INVALID);
+      }
+    }
+  }
+
   private static LocalDate date(NeoTaxon t, Issue invalidIssue, Term term) {
     return parse(DateParser.PARSER, t.verbatim.getTerm(term)).orNull(invalidIssue, t.issues);
   }
@@ -138,7 +210,7 @@ public class AcefInterpreter {
   private Reference lookupReferenceTitleID(String id, String title) {
     // first try by id
     Reference r = refStore.refById(id);
-    if (r == null) {
+    if (r == null && title != null) {
       // then try by title
       r = refStore.refByTitle(title);
       if (r == null) {

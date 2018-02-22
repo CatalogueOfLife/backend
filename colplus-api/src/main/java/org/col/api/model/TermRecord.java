@@ -212,6 +212,6 @@ public class TermRecord {
 
   @Override
   public String toString() {
-    return "TermRecord{#" + line + " " + file + ": "+ terms.size() + " terms";
+    return "TermRecord{" + file + "#" + line +", "+ terms.size() + " terms";
   }
 }

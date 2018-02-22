@@ -1,6 +1,6 @@
 package org.col.admin.task.importer;
 
-import org.col.admin.task.importer.acef.AcefNeoInserter;
+import org.col.admin.task.importer.acef.AcefInserter;
 import org.col.admin.task.importer.dwca.DwcaInserter;
 import org.col.admin.task.importer.neo.NeoDb;
 import org.col.admin.task.importer.neo.NotUniqueRuntimeException;
@@ -489,7 +489,7 @@ public class Normalizer implements Runnable {
           inserter = new DwcaInserter(store, sourceDir);
           break;
         case ACEF:
-          inserter = new AcefNeoInserter(store, sourceDir);
+          inserter = new AcefInserter(store, sourceDir);
           break;
         default:
           throw new NormalizationFailedException("Unsupported data format " + format);

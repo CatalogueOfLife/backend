@@ -209,7 +209,37 @@ public class PgImportIT {
 	}
 
   @Test
-  public void testAcef() throws Exception {
+  public void testAcef1() throws Exception {
+    normalizeAndImport(ACEF, 1);
+
+    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+      TaxonDao tdao = new TaxonDao(session);
+
+      Taxon t = tdao.get("14649", dataset.getKey());
+      assertEquals("Zapoteca formosa (Kunth) H.M.Hern.", t.getName().canonicalNameComplete());
+      assertEquals(Rank.SPECIES, t.getName().getRank());
+
+      TaxonInfo info = tdao.getTaxonInfo(t.getKey());
+      // distributions
+      assertEquals(3, info.getDistributions().size());
+      Set<String> areas = Sets.newHashSet("AGE-BA", "BZC-MS", "BZC-MT");
+      for (Distribution d : info.getDistributions()) {
+        assertEquals(Gazetteer.TDWG, d.getAreaStandard());
+        assertTrue(areas.remove(d.getArea()));
+      }
+
+      // vernacular
+      assertEquals(3, info.getVernacularNames().size());
+      Set<String> names = Sets.newHashSet("Ramkurthi", "Ram Kurthi", "отчество");
+      for (VernacularName v : info.getVernacularNames()) {
+        assertEquals(v.getName().startsWith("R") ? Language.HINDI : Language.RUSSIAN, v.getLanguage());
+        assertTrue(names.remove(v.getName()));
+      }
+    }
+  }
+
+  @Test
+  public void testAcef69() throws Exception {
     normalizeAndImport(ACEF, 69);
 
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {

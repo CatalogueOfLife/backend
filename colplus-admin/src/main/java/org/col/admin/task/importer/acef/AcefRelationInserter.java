@@ -20,10 +20,12 @@ public class AcefRelationInserter implements NeoDb.NodeBatchProcessor {
 
   private final NeoDb store;
   private final InsertMetadata meta;
+  private final AcefInterpreter inter;
 
-  public AcefRelationInserter(NeoDb store, InsertMetadata meta) {
+  public AcefRelationInserter(NeoDb store, InsertMetadata meta, AcefInterpreter inter) {
     this.store = store;
     this.meta = meta;
+    this.inter = inter;
   }
 
   @Override
@@ -51,6 +53,11 @@ public class AcefRelationInserter implements NeoDb.NodeBatchProcessor {
         // this should be an infraspecific name not yet updated in AcefInserter, do it here!
         AcefInterpreter.updateScientificName(t.verbatim.getId(), t.name);
       }
+      // interpret distributions
+      inter.interpretDistributions(t);
+      // interpret vernaculars
+      inter.interpretVernaculars(t);
+
       store.put(t);
 
     } catch (Exception e) {

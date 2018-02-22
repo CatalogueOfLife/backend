@@ -18,7 +18,7 @@ abstract class ParserBase<T> implements Parser<T> {
 
   @Override
   public Optional<T> parse(String value) throws UnparsableException {
-    String x = StringUtils.digitOrAsciiLetters(value);
+    String x = normalize(value);
     if (x == null) {
       // check if we had any not invisible characters - throw Unparsable in such cases
       if (value != null && VISIBLE.matchesAnyOf(value)) {
@@ -33,6 +33,13 @@ abstract class ParserBase<T> implements Parser<T> {
     }
 
     throw new UnparsableException(valueClass, value);
+  }
+
+  /**
+   * Default normalizer function that can be overridden for specific parsers.
+   */
+  String normalize(String x) {
+    return StringUtils.digitOrAsciiLetters(x);
   }
 
   abstract T parseKnownValues(String upperCaseValue) throws UnparsableException;

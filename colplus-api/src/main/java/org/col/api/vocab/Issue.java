@@ -254,8 +254,10 @@ public enum Issue {
    */
   DISTRIBUTION_INVALID,
 
-  DISTRIBUTION_UNPARSABLE_AREA,
-  DISTRIBUTION_UNPARSABLE_COUNTRY,
+  DISTRIBUTION_AREA_INVALID,
+  DISTRIBUTION_COUNTRY_INVALID,
+  DISTRIBUTION_STATUS_INVALID,
+  DISTRIBUTION_GAZETEER_INVALID,
 
   /**
    * At least one species profile extension record attached to this name usage is invalid.

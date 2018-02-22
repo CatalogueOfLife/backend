@@ -4,7 +4,6 @@ import com.google.common.base.Enums;
 import com.google.common.base.Optional;
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
-import org.col.util.text.StringUtils;
 import org.gbif.utils.file.csv.CSVReader;
 import org.gbif.utils.file.csv.CSVReaderFactory;
 import org.slf4j.Logger;
@@ -69,10 +68,19 @@ abstract class EnumParser<T extends Enum> extends ParserBase<T> {
    * Blank strings and null values will be ignored!
    */
   public void add(String key, T value) {
-    key = StringUtils.digitOrAsciiLetters(key);
+    key = normalize(key);
     if (key != null) {
       this.mapping.put(key, value);
     }
+  }
+
+  @Override
+  String normalize(String x) {
+    x = super.normalize(x);
+    if (x != null) {
+      return x.replaceAll(" +", "");
+    }
+    return null;
   }
 
   @Override

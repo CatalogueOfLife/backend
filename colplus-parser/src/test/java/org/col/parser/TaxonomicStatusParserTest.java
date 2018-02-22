@@ -18,6 +18,8 @@ public class TaxonomicStatusParserTest extends ParserTestBase<TaxonomicStatus> {
   @Test
   public void parse() throws Exception {
     assertParse(TaxonomicStatus.ACCEPTED, "valid");
+    assertParse(TaxonomicStatus.ACCEPTED, "Valid");
+    assertParse(TaxonomicStatus.ACCEPTED, "VALID");
   }
 
   @Override

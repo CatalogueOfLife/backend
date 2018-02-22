@@ -14,6 +14,7 @@ import org.col.api.model.VerbatimRecord;
 import org.col.api.vocab.DataFormat;
 import org.col.api.vocab.Issue;
 import org.gbif.dwc.terms.AcefTerm;
+import org.neo4j.graphdb.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,16 +26,16 @@ import java.util.Optional;
 /**
  *
  */
-public class AcefNeoInserter extends NeoInserter {
+public class AcefInserter extends NeoInserter {
 
-  private static final Logger LOG = LoggerFactory.getLogger(AcefNeoInserter.class);
+  private static final Logger LOG = LoggerFactory.getLogger(AcefInserter.class);
   private static final Splitter COMMA_SPLITTER = Splitter.on(',').trimResults().omitEmptyStrings();
 
   private Map<String, Integer> refKeys = Maps.newHashMap();
   private AcefReader reader;
   private AcefInterpreter inter;
 
-  public AcefNeoInserter(NeoDb store, File folder) throws IOException {
+  public AcefInserter(NeoDb store, File folder) throws IOException {
     super(folder, store);
   }
 
@@ -53,27 +54,48 @@ public class AcefNeoInserter extends NeoInserter {
    * Before inserting it does a quick check to see if all required files are existing.
    */
   @Override
-  public void insert() throws NormalizationFailedException {
+  public void batchInsert() throws NormalizationFailedException {
     try {
       initReader();
       inter = new AcefInterpreter(meta, store);
 
       insertReferences();
       insertTaxaAndNames();
-      insertSupplementary();
 
     } catch (RuntimeException e) {
-      throw new NormalizationFailedException("Failed to read ACEF files");
+      throw new NormalizationFailedException("Failed to read ACEF files", e);
+    }
+  }
+
+  @Override
+  public void insert() throws NormalizationFailedException {
+    try (Transaction tx = store.getNeo().beginTx()){
+      reader.read(AcefTerm.Distribution).forEach(this::addVerbatimRecord);
+      reader.read(AcefTerm.CommonNames).forEach(this::addVerbatimRecord);
+
+    } catch (RuntimeException e) {
+      throw new NormalizationFailedException("Failed to read ACEF files", e);
     }
   }
 
   @Override
   protected NeoDb.NodeBatchProcessor relationProcessor() {
-    return new AcefRelationInserter(store, meta);
+    return new AcefRelationInserter(store, meta, inter);
   }
 
-  private void insertSupplementary() {
+  private void addVerbatimRecord(TermRecord rec) {
+    String id = rec.get(AcefTerm.AcceptedTaxonID);
+    NeoTaxon t = store.getByTaxonID(id);
+    if (t == null) {
+      LOG.warn("Non existing taxonID {} found in {} record line {}, {}", id, rec.getType().simpleName(), rec.getLine(), rec.getFile());
 
+    } else if(t.verbatim == null){
+      LOG.warn("No verbatim data found for taxonID{} in {} record {} line {}, {}", id, rec.getType().simpleName(), rec.getLine(), rec.getFile());
+
+    } else {
+      t.verbatim.addExtensionRecord(rec.getType(), rec);
+      store.update(t);
+    }
   }
 
   private void insertTaxaAndNames() {

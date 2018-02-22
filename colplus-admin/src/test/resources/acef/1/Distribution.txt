@@ -1,4 +1,4 @@
-AcceptedTaxonID	DistributionElemen	StandardInUse	DistributionStatus
+AcceptedTaxonID	DistributionElement	StandardInUse	DistributionStatus
 2	From Egypt through	Text	Native
 11	French Polynesia:	Text	Native
 28	Cyprus: near the	Text	Native

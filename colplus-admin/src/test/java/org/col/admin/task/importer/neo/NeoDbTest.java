@@ -7,7 +7,12 @@ import org.col.admin.task.importer.neo.model.NeoTaxon;
 import org.col.admin.task.importer.neo.model.RelType;
 import org.col.api.RandomUtils;
 import org.col.api.model.Taxon;
+import org.col.api.model.TermRecord;
+import org.col.api.model.VerbatimRecord;
 import org.col.api.vocab.TaxonomicStatus;
+import org.gbif.dwc.terms.AcefTerm;
+import org.gbif.dwc.terms.DcTerm;
+import org.gbif.dwc.terms.DwcTerm;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -128,12 +133,44 @@ public class NeoDbTest {
     });
   }
 
+  @Test
+  public void updateTaxon() throws Exception {
+    try (Transaction tx = db.getNeo().beginTx()) {
+      NeoTaxon t = db.put(taxon("id1"));
+      tx.success();
+    }
+    db.updateLabels();
+    db.updateTaxonStoreWithRelations();
+
+    TermRecord tr = new TermRecord("123");
+    tr.setType(AcefTerm.Distribution);
+    tr.put(AcefTerm.DistributionElement, "Asia");
+
+    try (Transaction tx = db.getNeo().beginTx()) {
+      NeoTaxon t = db.getByTaxonID("id1");
+      t.verbatim.getTerms().addExtensionRecord(AcefTerm.Distribution, tr);
+
+      db.update(t);
+    }
+
+    try (Transaction tx = db.getNeo().beginTx()) {
+      NeoTaxon t = db.getByTaxonID("id1");
+      assertEquals(1, t.verbatim.getExtensionRecords(AcefTerm.Distribution).size());
+      assertEquals(tr, t.verbatim.getExtensionRecords(AcefTerm.Distribution).get(0));
+    }
+
+  }
+
   public static NeoTaxon taxon(String id) {
     NeoTaxon t = new NeoTaxon();
     t.name = RandomUtils.randomName();
     t.taxon = new Taxon();
     t.taxon.setId(id);
     t.taxon.setStatus(TaxonomicStatus.ACCEPTED);
+    t.verbatim = new VerbatimRecord();
+    t.verbatim.setId(id);
+    t.verbatim.getTerms().put(DwcTerm.scientificName, "Abies alba");
+    t.verbatim.getTerms().put(DcTerm.title, "Abies alba");
     return t;
   }
 }

@@ -1,6 +1,7 @@
 package org.col.admin.task.importer.neo;
 
 import com.esotericsoftware.kryo.pool.KryoPool;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Maps;
@@ -170,6 +171,14 @@ public class NeoDb implements NormalizerStore, ReferenceStore {
       t.node = n;
     }
     return t;
+  }
+
+  public NeoTaxon getByTaxonID(String taxonID) {
+    Node n = byTaxonID(taxonID);
+    if (n != null) {
+      return get(n);
+    }
+    return null;
   }
 
   /**
@@ -356,6 +365,15 @@ public class NeoDb implements NormalizerStore, ReferenceStore {
     t.name.setKey(t.taxon.getKey());
 
     return t;
+  }
+
+  /**
+   * Updates the taxon object only in the  KVP store, keeping neo4j as it is.
+   * throws is taxon did not exist before.
+   */
+  public void update(NeoTaxon t) {
+    Preconditions.checkNotNull(t.node);
+    taxa.put(t.node.getId(), t);
   }
 
   private Labels[] getNeoLabels(NeoTaxon t) {

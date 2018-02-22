@@ -30,7 +30,7 @@ public class AreaParser implements Parser<AreaParser.Area> {
     Map<String, Gazetteer> gaz = Maps.newHashMap();
     // load resources
     try {
-      CSVReader reader = CSVReaderFactory.build(getClass().getResourceAsStream("/parser/dicts/gazateers.csv"), "UTF8", ",", null, 0);
+      CSVReader reader = CSVReaderFactory.build(getClass().getResourceAsStream("/parser/dicts/gazetteer.csv"), "UTF8", ",", null, 0);
       while (reader.hasNext()) {
         String[] row = reader.next();
         if (row.length == 2 && !Strings.isNullOrEmpty(row[1])) {
@@ -42,7 +42,7 @@ public class AreaParser implements Parser<AreaParser.Area> {
       }
       reader.close();
     } catch (IOException e) {
-      throw new IllegalStateException("Failed to load Area parser gazateer mappings", e);
+      throw new IllegalStateException("Failed to load Area parser gazetteer mappings", e);
     }
 
     // overlay enum
