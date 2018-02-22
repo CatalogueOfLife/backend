@@ -1,4 +1,4 @@
-package org.col.db;
+package org.col.dw.db;
 
 
 import com.codahale.metrics.health.HealthCheck;
