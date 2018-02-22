@@ -25,6 +25,9 @@ public class TermSerde {
 
     @Override
     public Object deserializeKey(String key, DeserializationContext ctxt) throws IOException {
+      if (key.length() == 0) { // [JACKSON-360]
+        return null;
+      }
       return TERMFACTORY.findTerm(key);
     }
   }

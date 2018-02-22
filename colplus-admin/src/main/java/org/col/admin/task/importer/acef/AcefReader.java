@@ -9,7 +9,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.commons.io.FilenameUtils;
 import org.col.admin.task.importer.NormalizationFailedException;
-import org.col.admin.task.importer.VerbatimRecordFactory;
+import org.col.admin.task.importer.dwca.VerbatimRecordFactory;
 import org.col.api.model.TermRecord;
 import org.col.api.vocab.VocabularyUtils;
 import org.col.util.io.CharsetDetection;
@@ -28,6 +28,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
@@ -89,7 +90,7 @@ public class AcefReader {
 
     AcefReader reader = new AcefReader(folder);
     for (Path df : listDataFiles(folder)) {
-      Term rowType = VocabularyUtils.TF.findTerm(AcefTerm.PREFIX + ":" + PathUtils.getBasename(df));
+      Term rowType = VocabularyUtils.TF.findTerm("acef:" + PathUtils.getBasename(df));
       LOG.debug("Detecting schema for file {}, rowType={}", PathUtils.getFilename(df), rowType);
       if (rowType != null && rowType instanceof AcefTerm) {
         Schema s = buildSchema(df);
@@ -193,7 +194,6 @@ public class AcefReader {
   }
 
   private Stream<TermRecord> read(final Schema s) {
-    final AtomicInteger line = new AtomicInteger(0);
     final String filename = PathUtils.getFilename(s.file);
     final int cols = s.columns.size();
 
@@ -206,34 +206,37 @@ public class AcefReader {
       return Stream.empty();
     }
 
+    final LineSupplier lineSupplier = new LineSupplier(s.header);
+    final ColListSupplier splitter = new ColListSupplier(s.splitter);
     return lines
         // ignore header
         .skip(s.header ? 1 : 0)
-        // inc line number & skip whitespace only rows
-        .filter(row -> {
-          line.incrementAndGet();
-          if (EMPTY.matcher(row).find()) {
-            LOG.debug("Skip empty row. {} line {}", filename, line);
+        // inc rowNum number & keep it with the row
+        .map(lineSupplier)
+        // skip whitespace only rows
+        .filter(line -> {
+          if (EMPTY.matcher(line.obj).find()) {
+            LOG.debug("Skip empty row. {} line {}", filename, line.rowNum);
             return false;
           }
           return true;
         })
-        .map(s.splitter::splitToList)
+        .map(splitter)
         .filter(row -> {
-          if (row.size() < cols) {
-            LOG.warn("Skip row with {} columns not {}. {} line {}", row.size(), s.columns.size(), filename, line);
+          if (row.obj.size() < cols) {
+            LOG.warn("Skip row with {} columns not {}. {} line {}", row.obj.size(), s.columns.size(), filename, row.rowNum);
             return false;
           }
           return true;
         })
         // convert into TermRecord
         .map(row -> {
-          TermRecord tr = new TermRecord();
+          TermRecord tr = new TermRecord(row.rowNum, filename);
           for (int i = 0; i<cols; i++) {
             Term t = s.columns.get(i);
             if (t != null) {
-              if (!Strings.isNullOrEmpty(row.get(i))) {
-                String val = VerbatimRecordFactory.clean(row.get(i));
+              if (!Strings.isNullOrEmpty(row.obj.get(i))) {
+                String val = VerbatimRecordFactory.clean(row.obj.get(i));
                 tr.put(t, val);
               }
             }
@@ -242,4 +245,58 @@ public class AcefReader {
         });
     }
 
+  static class ColListSupplier implements Function<LineObject<String>, LineObject<List<String>>> {
+    private final Splitter splitter;
+
+    ColListSupplier(Splitter splitter) {
+      this.splitter = splitter;
+    }
+
+    @Override
+    public LineObject<List<String>> apply(LineObject<String> line) {
+      return new LineObject<List<String>>(line.rowNum, splitter.splitToList(line.obj));
+    }
+  }
+
+  static class LineSupplier implements Function<String, LineObject<String>> {
+    final AtomicInteger rowNum;
+
+    LineSupplier(boolean header) {
+      this.rowNum = new AtomicInteger(header ? 1 : 0);;
+    }
+
+    @Override
+    public LineObject<String> apply(String obj) {
+      return new LineObject<String>(rowNum.incrementAndGet(), obj);
+    }
+  }
+
+  static class LineObject<T> {
+      final int rowNum;
+      final T obj;
+
+      LineObject(int rowNum, T obj) {
+        this.rowNum = rowNum;
+        this.obj = obj;
+      }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) return true;
+      if (o == null || getClass() != o.getClass()) return false;
+      LineObject<?> that = (LineObject<?>) o;
+      return rowNum == that.rowNum &&
+          Objects.equals(obj, that.obj);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(rowNum, obj);
+    }
+
+    @Override
+    public String toString() {
+      return "#" + rowNum + ": " + obj;
+    }
+  }
 }

@@ -1,17 +1,20 @@
 package org.col.db.mapper;
 
+import com.google.common.collect.MapDifference;
+import com.google.common.collect.Maps;
 import org.col.api.RandomUtils;
+import org.col.api.model.ExtendedTermRecord;
 import org.col.api.model.TermRecord;
 import org.col.api.model.VerbatimRecord;
-import org.col.api.model.VerbatimRecordTerms;
 import org.col.db.TestEntityGenerator;
-import org.gbif.dwc.terms.DcTerm;
-import org.gbif.dwc.terms.DwcTerm;
-import org.gbif.dwc.terms.GbifTerm;
-import org.gbif.dwc.terms.UnknownTerm;
+import org.gbif.dwc.terms.*;
+import org.javers.common.collections.Sets;
 import org.junit.Test;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 
@@ -29,17 +32,17 @@ public class VerbatimRecordMapperTest extends MapperTestBase<VerbatimRecordMappe
     VerbatimRecord v = new VerbatimRecord();
     v.setDatasetKey(TestEntityGenerator.DATASET1.getKey());
     v.setId(RandomUtils.randomString(8));
-    v.setTerms(new VerbatimRecordTerms());
+    v.setTerms(new ExtendedTermRecord());
     // core
     for (DwcTerm t : DwcTerm.values()) {
       if (t.isClass()) continue;
-      //v.setCoreTerm(t, StringUtils.randomString(1 + rnd.nextInt(99)).toLowerCase());
+      v.setTerm(t, RandomUtils.randomString(1 + rnd.nextInt(99)).toLowerCase());
     }
     for (GbifTerm t : GbifTerm.values()) {
       if (t.isClass()) continue;
-      v.setCoreTerm(t, RandomUtils.randomString(1 + rnd.nextInt(19)).toLowerCase());
+      v.setTerm(t, RandomUtils.randomString(1 + rnd.nextInt(19)).toLowerCase());
     }
-    v.setCoreTerm(UnknownTerm.build("http://col.plus/terms/punk"), RandomUtils.randomString(1 + rnd.nextInt(50)));
+    v.setTerm(UnknownTerm.build("http://col.plus/terms/punk"), RandomUtils.randomString(1 + rnd.nextInt(50)));
 
     // distribution
     for (int idx=0; idx < 2; idx++) {
@@ -66,11 +69,14 @@ public class VerbatimRecordMapperTest extends MapperTestBase<VerbatimRecordMappe
   @Test
   public void roundtrip() throws Exception {
     VerbatimRecord r1 = create();
-    mapper().create(r1, 1, 1);
+    mapper().create(r1, 1, 1, 1);
 
     commit();
 
     VerbatimRecord r2 = mapper().getByName(1);
+
+    diff(r1, r2);
+
     assertEquals(r1, r2);
 
     VerbatimRecord r3 = mapper().getByTaxon(1);
@@ -78,4 +84,14 @@ public class VerbatimRecordMapperTest extends MapperTestBase<VerbatimRecordMappe
 
   }
 
+  static void diff(VerbatimRecord v1, VerbatimRecord v2) {
+    System.out.println("DIFF core:");
+    Set<Map.Entry<Term, String>> diff = Sets.difference(v1.getTerms().termValues(), v2.getTerms().termValues());
+    System.out.println(diff);
+
+    System.out.println("DIFF extensions:");
+    MapDifference<Term, List<TermRecord>> diff2 = Maps.difference(v1.getExtensions(), v2.getExtensions());
+    System.out.println(diff2);
+
+  }
 }

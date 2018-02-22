@@ -44,8 +44,8 @@ public class DwcInterpreter {
   private static String first(VerbatimRecord v, Term... terms) {
     for (Term t : terms) {
       // verbatim data is cleaned already and all empty strings are removed from the terms map
-      if (v.hasCoreTerm(t)) {
-        return v.getCoreTerm(t);
+      if (v.hasTerm(t)) {
+        return v.getTerm(t);
       }
     }
     return null;
@@ -62,13 +62,13 @@ public class DwcInterpreter {
     // flat classification
     t.classification = new Classification();
     for (DwcTerm dwc : DwcTerm.HIGHER_RANKS) {
-      t.classification.setByTerm(dwc, v.getCoreTerm(dwc));
+      t.classification.setByTerm(dwc, v.getTerm(dwc));
     }
     // add taxon in any case - we can swap status of a synonym during normalization
     t.taxon = interpretTaxon(v, insertMetadata.isCoreIdUsed());
     // a synonym by status?
     // we deal with relations via DwcTerm.acceptedNameUsageID and DwcTerm.acceptedNameUsage during relation insertion
-    if(SafeParser.parse(SynonymStatusParser.PARSER, v.getCoreTerm(DwcTerm.taxonomicStatus)).orElse(false)) {
+    if(SafeParser.parse(SynonymStatusParser.PARSER, v.getTerm(DwcTerm.taxonomicStatus)).orElse(false)) {
       t.synonym = new NeoTaxon.Synonym();
     }
     // supplementary infos
@@ -83,13 +83,13 @@ public class DwcInterpreter {
     List<NameAct> acts = Lists.newArrayList();
 
     // publication of name
-    if (v.hasCoreTerm(DwcTerm.namePublishedInID) || v.hasCoreTerm(DwcTerm.namePublishedIn)) {
+    if (v.hasTerm(DwcTerm.namePublishedInID) || v.hasTerm(DwcTerm.namePublishedIn)) {
       NameAct act = new NameAct();
       act.setType(NomActType.DESCRIPTION);
       act.setReferenceKey(
           lookupReferenceTitleID(
-            v.getCoreTerm(DwcTerm.namePublishedInID),
-            v.getCoreTerm(DwcTerm.namePublishedIn)
+            v.getTerm(DwcTerm.namePublishedInID),
+            v.getTerm(DwcTerm.namePublishedIn)
           ).getKey()
       );
       acts.add(act);
@@ -195,21 +195,21 @@ public class DwcInterpreter {
   private Taxon interpretTaxon(VerbatimRecord v, boolean useCoreIdForTaxonID) {
     // and it keeps the taxonID for resolution of relations
     Taxon t = new Taxon();
-    t.setId(useCoreIdForTaxonID ? v.getId() : v.getCoreTerm(DwcTerm.taxonID));
-    t.setStatus(SafeParser.parse(TaxonomicStatusParser.PARSER, v.getCoreTerm(DwcTerm.taxonomicStatus))
+    t.setId(useCoreIdForTaxonID ? v.getId() : v.getTerm(DwcTerm.taxonID));
+    t.setStatus(SafeParser.parse(TaxonomicStatusParser.PARSER, v.getTerm(DwcTerm.taxonomicStatus))
         .orElse(TaxonomicStatus.DOUBTFUL)
     );
     //TODO: interpret all of Taxon via new dwca extension
-    t.setAccordingTo(v.getCoreTerm(DwcTerm.nameAccordingTo));
+    t.setAccordingTo(v.getTerm(DwcTerm.nameAccordingTo));
     t.setAccordingToDate(null);
     t.setOrigin(Origin.SOURCE);
-    t.setDatasetUrl(SafeParser.parse(UriParser.PARSER, v.getCoreTerm(DcTerm.references)).orNull(Issue.URL_INVALID, t.getIssues()));
+    t.setDatasetUrl(SafeParser.parse(UriParser.PARSER, v.getTerm(DcTerm.references)).orNull(Issue.URL_INVALID, t.getIssues()));
     t.setFossil(null);
     t.setRecent(null);
     //t.setLifezones();
     t.setSpeciesEstimate(null);
     t.setSpeciesEstimateReferenceKey(null);
-    t.setRemarks(v.getCoreTerm(DwcTerm.taxonRemarks));
+    t.setRemarks(v.getTerm(DwcTerm.taxonRemarks));
     return t;
   }
 
@@ -223,8 +223,8 @@ public class DwcInterpreter {
     // we parse all names from the scientificName + optional authorship
     // or use the atomized parts which we also use to validate the parsing result.
     Name n;
-    String vSciname = v.getCoreTerm(DwcTerm.scientificName);
-    if (v.hasCoreTerm(DwcTerm.scientificName)) {
+    String vSciname = v.getTerm(DwcTerm.scientificName);
+    if (v.hasTerm(DwcTerm.scientificName)) {
       n = NameParser.PARSER.parse(vSciname, rank).get();
       // TODO: validate name against optional atomized terms!
       //Name n2 = buildNameFromVerbatimTerms(v);
@@ -240,8 +240,8 @@ public class DwcInterpreter {
     }
 
     // try to add an authorship if not yet there
-    if (v.hasCoreTerm(DwcTerm.scientificNameAuthorship)) {
-      Optional<ParsedName> optAuthorship = NameParser.PARSER.parseAuthorship(v.getCoreTerm(DwcTerm.scientificNameAuthorship));
+    if (v.hasTerm(DwcTerm.scientificNameAuthorship)) {
+      Optional<ParsedName> optAuthorship = NameParser.PARSER.parseAuthorship(v.getTerm(DwcTerm.scientificNameAuthorship));
       if (optAuthorship.isPresent()) {
         ParsedName authorship = optAuthorship.get();
         if (n.hasAuthorship()) {
@@ -258,22 +258,22 @@ public class DwcInterpreter {
         }
 
       } else {
-        LOG.warn("Unparsable authorship {}", v.getCoreTerm(DwcTerm.scientificNameAuthorship));
+        LOG.warn("Unparsable authorship {}", v.getTerm(DwcTerm.scientificNameAuthorship));
         n.addIssue(Issue.UNPARSABLE_AUTHORSHIP);
       }
     }
 
     n.setId(ObjectUtils.firstNonNull(v.getFirst(DwcTerm.scientificNameID, DwcTerm.taxonID), v.getId()));
     n.setOrigin(Origin.SOURCE);
-    n.setSourceUrl(SafeParser.parse(UriParser.PARSER, v.getCoreTerm(DcTerm.references)).orNull());
-    n.setStatus(SafeParser.parse(NomStatusParser.PARSER, v.getCoreTerm(DwcTerm.nomenclaturalStatus))
+    n.setSourceUrl(SafeParser.parse(UriParser.PARSER, v.getTerm(DcTerm.references)).orNull());
+    n.setStatus(SafeParser.parse(NomStatusParser.PARSER, v.getTerm(DwcTerm.nomenclaturalStatus))
         .orElse(null, Issue.NOMENCLATURAL_STATUS_INVALID, n.getIssues())
     );
-    n.setCode(SafeParser.parse(NomCodeParser.PARSER, v.getCoreTerm(DwcTerm.nomenclaturalCode))
+    n.setCode(SafeParser.parse(NomCodeParser.PARSER, v.getTerm(DwcTerm.nomenclaturalCode))
         .orElse(null, Issue.NOMENCLATURAL_CODE_INVALID, n.getIssues())
     );
     //TODO: should we also get these through an extension, e.g. species profile or a nomenclature extension?
-    n.setRemarks(v.getCoreTerm(CoLTerm.nomenclaturalRemarks));
+    n.setRemarks(v.getTerm(CoLTerm.nomenclaturalRemarks));
     n.setFossil(null);
 
     if (!n.isConsistent()) {
@@ -288,9 +288,9 @@ public class DwcInterpreter {
     Name n = new Name();
     // named hybrids in epithets are detected by setters
     n.setGenus(v.getFirst(GbifTerm.genericName, DwcTerm.genus));
-    n.setInfragenericEpithet(v.getCoreTerm(DwcTerm.subgenus));
-    n.setSpecificEpithet(v.getCoreTerm(DwcTerm.specificEpithet));
-    n.setInfraspecificEpithet(v.getCoreTerm(DwcTerm.infraspecificEpithet));
+    n.setInfragenericEpithet(v.getTerm(DwcTerm.subgenus));
+    n.setSpecificEpithet(v.getTerm(DwcTerm.specificEpithet));
+    n.setInfraspecificEpithet(v.getTerm(DwcTerm.infraspecificEpithet));
     n.setType(NameType.SCIENTIFIC);
     try {
       n.updateScientificName();

@@ -28,9 +28,6 @@ public final class VocabularyUtils {
   private static final Logger LOG = LoggerFactory.getLogger(VocabularyUtils.class);
 
   public static final TermFactory TF = TermFactory.instance();
-  static {
-    TF.addTerms(CoLTerm.values(), new String[]{CoLTerm.PREFIX});
-  }
 
   /**
    * Generic method to toEnum an enumeration value for a given string based on the name of the enum member.

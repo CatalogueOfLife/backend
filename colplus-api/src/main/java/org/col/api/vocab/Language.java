@@ -15,11 +15,8 @@
  */
 package org.col.api.vocab;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
-import org.col.api.jackson.LanguageSerde;
 
 import java.util.List;
 import java.util.Locale;
@@ -31,8 +28,6 @@ import java.util.Locale;
  * @see <a href="http://en.wikipedia.org/wiki/ISO_639">Wikipedia on ISO-639</a>
  * @see <a href="http://docs.oracle.com/javase/6/docs/api/java/util/Locale.html">Locale javadoc</a>
  */
-@JsonSerialize(using = LanguageSerde.Serializer.class)
-@JsonDeserialize(using = LanguageSerde.Deserializer.class)
 public enum Language {
 
   /**

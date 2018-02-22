@@ -42,7 +42,7 @@ public class NeoKryoFactoryTest {
 
     t.verbatim = new VerbatimRecord();
     for (Term term : GbifTerm.values()) {
-      t.verbatim.setCoreTerm(term, term.simpleName());
+      t.verbatim.setTerm(term, term.simpleName());
     }
 
     assertSerde(t);

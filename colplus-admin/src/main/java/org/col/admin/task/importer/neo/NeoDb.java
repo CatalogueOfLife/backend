@@ -617,8 +617,8 @@ public class NeoDb implements NormalizerStore, ReferenceStore {
       }
       // copy parent props from source
       t.verbatim = new VerbatimRecord();
-      t.verbatim.setCoreTerm(DwcTerm.parentNameUsageID, source.verbatim.getCoreTerm(DwcTerm.parentNameUsageID));
-      t.verbatim.setCoreTerm(DwcTerm.parentNameUsage, source.verbatim.getCoreTerm(DwcTerm.parentNameUsage));
+      t.verbatim.setTerm(DwcTerm.parentNameUsageID, source.verbatim.getTerm(DwcTerm.parentNameUsageID));
+      t.verbatim.setTerm(DwcTerm.parentNameUsage, source.verbatim.getTerm(DwcTerm.parentNameUsage));
     }
     // add potential issue
     if (issue != null) {

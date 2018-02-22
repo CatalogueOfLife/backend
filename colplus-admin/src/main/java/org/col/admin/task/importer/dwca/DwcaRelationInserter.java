@@ -132,7 +132,7 @@ public class DwcaRelationInserter implements NeoDb.NodeBatchProcessor {
    */
   private List<RankedName> lookupByTaxonID(DwcTerm term, NeoTaxon t, Issue invalidIdIssue, boolean allowMultiple) {
     List<RankedName> ids = Lists.newArrayList();
-    final String unsplitIds = t.verbatim.getCoreTerm(term);
+    final String unsplitIds = t.verbatim.getTerm(term);
     if (unsplitIds != null && !unsplitIds.equals(t.getTaxonID())) {
       if (allowMultiple && meta.getMultiValueDelimiters().containsKey(term)) {
         ids.addAll(lookupRankedNames(
@@ -187,8 +187,8 @@ public class DwcaRelationInserter implements NeoDb.NodeBatchProcessor {
    * @return the accepted node with its name. Null if no accepted name was mapped or equals the record itself
    */
   private RankedName lookupByName(DwcTerm term, NeoTaxon t, Origin createdOrigin) {
-    if (t.verbatim.hasCoreTerm(term)) {
-      Name nameTmp = NameParser.PARSER.parse(t.verbatim.getCoreTerm(term)).get();
+    if (t.verbatim.hasTerm(term)) {
+      Name nameTmp = NameParser.PARSER.parse(t.verbatim.getTerm(term)).get();
       final Name name = nameTmp;
       if (!name.getScientificName().equalsIgnoreCase(t.name.getScientificName())) {
         List<Node> matches = store.byScientificName(name.getScientificName());

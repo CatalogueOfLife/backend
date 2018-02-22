@@ -2,12 +2,10 @@ package org.col.api.jackson;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.col.api.vocab.Country;
 
 import java.io.IOException;
@@ -17,12 +15,6 @@ import java.io.IOException;
  * that uses the ISO 2 letter codes instead of enum names.
  */
 public class CountrySerde {
-
-  public static final SimpleModule MODULE = new SimpleModule();
-  static {
-    MODULE.addSerializer(Country.class, new Serializer());
-    MODULE.addDeserializer(Country.class, new Deserializer());
-  }
 
   /**
    * Jackson {@link JsonSerializer} for {@link Country}.
@@ -46,11 +38,17 @@ public class CountrySerde {
 
     @Override
     public Country deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException {
-      if (jp.getCurrentToken() == JsonToken.VALUE_STRING) {
-        return Country.fromIsoCode(jp.getText());
+      try {
+        if (jp != null && jp.getTextLength() > 0) {
+          return Country.fromIsoCode(jp.getText());
+        } else {
+          return Country.UNKNOWN; // none provided
+        }
+      } catch (RuntimeException e) {
+        return (Country) ctxt.handleUnexpectedToken(Country.class, jp.getCurrentToken(), jp, "Unable to deserialize country from provided value (not an ISO 2 character?): "+jp.getText());
       }
-      throw ctxt.mappingException("Expected String");
     }
+
   }
 
 }

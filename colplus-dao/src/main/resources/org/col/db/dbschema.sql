@@ -280,6 +280,7 @@ CREATE TABLE verbatim_record (
   dataset_key INTEGER NOT NULL REFERENCES dataset,
   taxon_key INTEGER REFERENCES taxon,
   name_key INTEGER REFERENCES name,
+  reference_key INTEGER REFERENCES reference,
   terms jsonb,
   PRIMARY KEY(dataset_key, id)
 );
@@ -361,6 +362,7 @@ CREATE index ON reference (dataset_key);
 CREATE index ON verbatim_record (dataset_key);
 CREATE index ON verbatim_record (name_key);
 CREATE index ON verbatim_record (taxon_key);
+CREATE index ON verbatim_record (reference_key);
 
 CREATE index ON distribution (dataset_key);
 CREATE index ON distribution (taxon_key);

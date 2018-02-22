@@ -66,7 +66,7 @@ public class AcefRelationInserter implements NeoDb.NodeBatchProcessor {
    */
   private Node lookupByTaxonID(Term term, NeoTaxon t, Issue issueIfNotFound) {
     Node n = null;
-    final String id = t.verbatim.getCoreTerm(term);
+    final String id = t.verbatim.getTerm(term);
     if (id != null && !id.equals(t.getTaxonID())) {
       n = store.byTaxonID(id);
       if (n == null) {

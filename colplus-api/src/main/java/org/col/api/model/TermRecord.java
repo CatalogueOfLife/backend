@@ -1,30 +1,72 @@
 package org.col.api.model;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import org.apache.commons.lang3.StringUtils;
-import org.col.api.jackson.RecTermsSerde;
-import org.col.api.jackson.TermSerde;
+import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.Term;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.net.URI;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  *
  */
-@JsonSerialize(using = RecTermsSerde.Serializer.class)
-@JsonDeserialize(keyUsing = TermSerde.TermKeyDeserializer.class, using = RecTermsSerde.Deserializer.class)
-public class TermRecord extends HashMap<Term, String> {
-  private static final Logger LOG = LoggerFactory.getLogger(TermRecord.class);
+public class TermRecord {
+  private int line;
+  private String file;
+  private Term type;
+  private Map<Term, String> terms = new HashMap<>();
+
+  public TermRecord() {
+    this(null);
+  }
+
+  public TermRecord(String file) {
+    this(-1, file);
+  }
+
+  public TermRecord(Integer line, String file) {
+    this(line, file, DwcTerm.Taxon);
+  }
+
+  public TermRecord(int line, String file, Term type) {
+    this.line = line;
+    this.file = file;
+    this.type = type;
+  }
+
+  /**
+   * @return line number this record represents in the underlying source file
+   */
+  public int getLine() {
+    return line;
+  }
+
+  public void setLine(int line) {
+    this.line = line;
+  }
+
+  public void setFile(String file) {
+    this.file = file;
+  }
+
+  public String getFile() {
+    return file;
+  }
+
+  public Term getType() {
+    return type;
+  }
+
+  public void setType(Term type) {
+    this.type = type;
+  }
 
   /**
    * @return true if a term exists and is not null or an empty string
@@ -34,27 +76,77 @@ public class TermRecord extends HashMap<Term, String> {
     return !Strings.isNullOrEmpty(get(term));
   }
 
-  public String get(Term key) {
-    String val = super.get(key);
+  public String get(Term term) {
+    checkNotNull(term, "term can't be null");
+    String val = terms.get(term);
     if (!StringUtils.isBlank(val)) {
       return val;
     }
     return null;
   }
 
-  public URI getURI(Term key) {
-    String val = super.get(key);
+  public URI getURI(Term term) {
+    String val = terms.get(term);
     if (!StringUtils.isBlank(val)) {
       return URI.create(val);
     }
     return null;
   }
 
+  public int size() {
+    return terms.size();
+  }
+
+  public boolean isEmpty() {
+    return terms.isEmpty();
+  }
+
+  public String remove(Term term) {
+    return terms.remove(term);
+  }
+
+  public void clear() {
+    terms.clear();
+  }
+
+  public Set<Term> terms() {
+    return terms.keySet();
+  }
+
+  public Set<Map.Entry<Term, String>> termValues() {
+    return terms.entrySet();
+  }
+
+  public String getOrDefault(Term term, String defaultValue) {
+    return terms.getOrDefault(term, defaultValue);
+  }
+
+  public void forEach(BiConsumer<? super Term, ? super String> action) {
+    terms.forEach(action);
+  }
+
+  public void put(Term term, String value) {
+    checkNotNull(term, "term can't be null");
+    terms.put(term, value);
+  }
+
+  public void putAll(Map<? extends Term, ? extends String> m) {
+    terms.putAll(m);
+  }
+
+  public String putIfAbsent(Term term, String value) {
+    return terms.putIfAbsent(term, value);
+  }
+
+  public String merge(Term term, String value, BiFunction<? super String, ? super String, ? extends String> remappingFunction) {
+    return terms.merge(term, value, remappingFunction);
+  }
+
   /**
    * Returns a parsed integer for a term value, throwing NumberFormatException if the value cannot be parsed.
    */
-  public Integer getInt(Term key) throws NumberFormatException {
-    String val = super.get(key);
+  public Integer getInt(Term term) throws NumberFormatException {
+    String val = terms.get(term);
     if (!StringUtils.isBlank(val)) {
       return Integer.valueOf(val);
     }
@@ -66,10 +158,10 @@ public class TermRecord extends HashMap<Term, String> {
    * If no value is found it the value cannot be parsed the default value is returned
    * and no exception is thrown.
    */
-  public Integer getIntDefault(Term key, Integer defaultValue) {
+  public Integer getIntDefault(Term term, Integer defaultValue) {
     Integer i = null;
     try {
-      i = getInt(key);
+      i = getInt(term);
     } catch (NumberFormatException e) {
       // swallow
     }
@@ -101,5 +193,25 @@ public class TermRecord extends HashMap<Term, String> {
       return splitter.splitToList(val);
     }
     return null;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    TermRecord that = (TermRecord) o;
+    return Objects.equals(terms, that.terms) &&
+        Objects.equals(line, that.line) &&
+        Objects.equals(file, that.file);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(terms, line, file);
+  }
+
+  @Override
+  public String toString() {
+    return "TermRecord{#" + line + " " + file + ": "+ terms.size() + " terms";
   }
 }

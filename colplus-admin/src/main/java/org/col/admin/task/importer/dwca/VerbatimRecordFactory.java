@@ -1,4 +1,4 @@
-package org.col.admin.task.importer;
+package org.col.admin.task.importer.dwca;
 
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Preconditions;
@@ -35,7 +35,7 @@ public class VerbatimRecordFactory {
     core.forEach((term, value) -> {
       String val = clean(value);
       if (val != null) {
-        v.setCoreTerm(term, val);
+        v.setTerm(term, val);
       }
     });
 
@@ -51,7 +51,7 @@ public class VerbatimRecordFactory {
     for (Term t : core.terms()) {
       String val = clean(core.value(t));
       if (val != null) {
-        v.setCoreTerm(t, val);
+        v.setTerm(t, val);
       }
     }
 
@@ -66,7 +66,7 @@ public class VerbatimRecordFactory {
   }
 
   private static TermRecord buildTermRec(Record eRec) {
-    TermRecord tr = new TermRecord();
+    TermRecord tr = new TermRecord(-1, null);
     for (Term t : eRec.terms()) {
       String val = clean(eRec.value(t));
       if (val != null) {

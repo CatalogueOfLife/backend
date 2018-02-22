@@ -5,11 +5,12 @@
 <mapper namespace="org.col.db.mapper.VerbatimRecordMapper">
 
     <sql id="SELECT">
-        v.id,
-        v.dataset_key,
-        v.name_key,
-        v.taxon_key,
-        v.terms
+        id,
+        dataset_key,
+        name_key,
+        taxon_key,
+        reference_key,
+        terms
     </sql>
 
     <sql id="COLS">
@@ -17,6 +18,7 @@
         dataset_key,
         name_key,
         taxon_key,
+        reference_key,
         terms
     </sql>
 
@@ -25,7 +27,8 @@
       #{rec.datasetKey},
       #{nameKey},
       #{taxonKey},
-      #{rec.terms, typeHandler=org.col.db.type.VerbatimRecordTermsTypeHandler}::jsonb
+      #{referenceKey},
+      #{rec.terms, typeHandler=org.col.db.type.ExtendedTermRecordTypeHandler}::jsonb
     </sql>
 
     <sql id="FROM">
@@ -36,7 +39,7 @@
     <!--  A mapping to Name, mostly auto mapped -->
     <resultMap id="verbatimResultMap" type="VerbatimRecord" autoMapping="true">
         <id property="id" column="id"/>
-        <result property="terms" column="terms" typeHandler="org.col.db.type.VerbatimRecordTermsTypeHandler"/>
+        <result property="terms" column="terms" javaType="TermRecord" typeHandler="org.col.db.type.ExtendedTermRecordTypeHandler"/>
     </resultMap>
 
 
@@ -55,22 +58,28 @@
         <include refid="org.col.db.mapper.Common.limit"/>
     </select>
 
-    <select id="get" resultMap="verbatimResultMap">
+    <select id="get" parameterType="map" resultMap="verbatimResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
         WHERE dataset_key = #{datasetKey} AND id = #{id}
     </select>
 
-    <select id="getByName" resultMap="verbatimResultMap">
+    <select id="getByName" parameterType="map" resultMap="verbatimResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
         WHERE v.name_key = #{nameKey}
     </select>
 
-    <select id="getByTaxon" resultMap="verbatimResultMap">
+    <select id="getByTaxon" parameterType="map" resultMap="verbatimResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
         WHERE v.taxon_key = #{taxonKey}
+    </select>
+
+    <select id="getByReference" parameterType="map" resultMap="verbatimResultMap">
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
+        WHERE v.reference_key = #{referenceKey}
     </select>
 
     <insert id="create" parameterType="map">

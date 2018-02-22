@@ -21,9 +21,12 @@ public interface VerbatimRecordMapper {
 
   VerbatimRecord getByTaxon(@Param("taxonKey") int taxonKey);
 
+  VerbatimRecord getByReference(@Param("referenceKey") int referenceKey);
+
   void create(@Param("rec") VerbatimRecord record,
               @Param("taxonKey") Integer taxonKey,
-              @Param("nameKey") int nameKey
+              @Param("nameKey") Integer nameKey,
+              @Param("referenceKey") Integer referenceKey
   );
 
 }

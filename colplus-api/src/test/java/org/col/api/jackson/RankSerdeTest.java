@@ -18,6 +18,6 @@ import org.gbif.nameparser.api.Rank;
 public class RankSerdeTest extends SerdeTestBase<Rank> {
 
   public RankSerdeTest() {
-    super(Rank.class, RankSerde.MODULE);
+    super(Rank.class);
   }
 }

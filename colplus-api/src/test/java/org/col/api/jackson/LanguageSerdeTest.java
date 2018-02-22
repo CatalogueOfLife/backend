@@ -22,13 +22,14 @@ import static org.junit.Assert.assertEquals;
 public class LanguageSerdeTest extends SerdeTestBase<Language> {
 
   public LanguageSerdeTest() {
-    super(Language.class, LanguageSerde.MODULE);
+    super(Language.class);
   }
 
   @Test
   public void testLowerCase() throws JsonProcessingException {
-    Wrapper<Language> wrapper = new Wrapper<Language>(Language.SUNDANESE);
-    String json = MAPPER.writeValueAsString(wrapper);
+    Wrapper<Language> wrapper = new Wrapper<Language>(Language.GERMAN);
+    String json = ApiModule.MAPPER.writeValueAsString(wrapper);
     assertEquals("Only lower case letters allowed for language iso codes", json.toLowerCase(), json);
+    assertEquals("{\"value\":\"deu\"}", json);
   }
 }

@@ -1,7 +1,6 @@
 package org.col.admin.task.importer.dwca;
 
 import com.google.common.collect.*;
-import org.col.admin.task.importer.VerbatimRecordFactory;
 import org.col.api.model.VerbatimRecord;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.GbifTerm;

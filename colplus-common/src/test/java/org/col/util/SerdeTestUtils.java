@@ -4,6 +4,7 @@ package org.col.util;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import org.col.api.jackson.ApiModule;
 
 import java.io.IOException;
 
@@ -14,6 +15,7 @@ public class SerdeTestUtils {
   private static final ObjectMapper MAPPER = new ObjectMapper();
 
   static {
+    MAPPER.registerModule(new ApiModule());
     MAPPER.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     MAPPER.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
     MAPPER.enable(SerializationFeature.INDENT_OUTPUT);

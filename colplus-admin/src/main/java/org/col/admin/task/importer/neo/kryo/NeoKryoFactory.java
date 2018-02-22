@@ -38,6 +38,7 @@ public class NeoKryoFactory implements KryoFactory {
     kryo.register(Dataset.class);
     kryo.register(DatasetImport.class);
     kryo.register(Distribution.class);
+    kryo.register(ExtendedTermRecord.class);
     kryo.register(Name.class);
     kryo.register(NameAct.class);
     kryo.register(ParsedName.class);
@@ -48,7 +49,6 @@ public class NeoKryoFactory implements KryoFactory {
     kryo.register(Taxon.class);
     kryo.register(VernacularName.class);
     kryo.register(VerbatimRecord.class);
-    kryo.register(VerbatimRecordTerms.class);
     kryo.register(TermRecord.class);
     kryo.register(Page.class);
     // jackson json node (e.g. csl property)

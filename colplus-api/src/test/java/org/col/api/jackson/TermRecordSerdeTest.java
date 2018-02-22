@@ -1,6 +1,5 @@
 package org.col.api.jackson;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.col.api.RandomUtils;
 import org.col.api.model.TermRecord;
 import org.gbif.dwc.terms.*;
@@ -16,12 +15,10 @@ import static org.junit.Assert.assertEquals;
  */
 public class TermRecordSerdeTest {
 
-  private static final ObjectMapper MAPPER = new ObjectMapper();
-
   @Test
   public void testRoundtrip() throws IOException {
     Random rnd = new Random();
-    TermRecord rec = new TermRecord();
+    TermRecord rec = new TermRecord(11, "myFile.txt");
     for (Term t : DwcTerm.values()) {
       rec.put(t, RandomUtils.randomString(1 + rnd.nextInt(99)).toLowerCase());
     }
@@ -34,8 +31,9 @@ public class TermRecordSerdeTest {
     rec.put(UnknownTerm.build("http://col.plus/terms/punk"), RandomUtils.randomString(1 + rnd.nextInt(99)));
 
     // to json
-    String json = MAPPER.writeValueAsString(rec);
-    TermRecord rec2 = MAPPER.readValue(json, TermRecord.class);
+    String json = ApiModule.MAPPER.writeValueAsString(rec);
+    System.out.println(json);
+    TermRecord rec2 = ApiModule.MAPPER.readValue(json, TermRecord.class);
     assertEquals(rec2, rec);
   }
 }

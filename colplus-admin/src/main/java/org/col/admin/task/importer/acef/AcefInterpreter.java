@@ -54,19 +54,19 @@ public class AcefInterpreter {
     t.taxon = new Taxon();
     t.taxon.setId(v.getId());
     t.taxon.setOrigin(Origin.SOURCE);
-    t.taxon.setStatus(parse(TaxonomicStatusParser.PARSER, v.getCoreTerm(AcefTerm.Sp2000NameStatus))
+    t.taxon.setStatus(parse(TaxonomicStatusParser.PARSER, v.getTerm(AcefTerm.Sp2000NameStatus))
         .orElse(TaxonomicStatus.ACCEPTED)
     );
-    t.taxon.setAccordingTo(v.getCoreTerm(AcefTerm.LTSSpecialist));
+    t.taxon.setAccordingTo(v.getTerm(AcefTerm.LTSSpecialist));
     t.taxon.setAccordingToDate(date(t, Issue.ACCORDING_TO_DATE_INVALID, AcefTerm.LTSDate));
     t.taxon.setOrigin(Origin.SOURCE);
     t.taxon.setDatasetUrl(uri(t, Issue.URL_INVALID, AcefTerm.InfraSpeciesURL, AcefTerm.SpeciesURL));
     t.taxon.setFossil(bool(t, Issue.IS_FOSSIL_INVALID, AcefTerm.IsFossil, AcefTerm.HasPreHolocene));
     t.taxon.setRecent(bool(t, Issue.IS_RECENT_INVALID, AcefTerm.IsRecent, AcefTerm.HasModern));
-    t.taxon.setRemarks(v.getCoreTerm(AcefTerm.AdditionalData));
+    t.taxon.setRemarks(v.getTerm(AcefTerm.AdditionalData));
 
     //lifezones
-    String raw = t.verbatim.getCoreTerm(AcefTerm.LifeZone);
+    String raw = t.verbatim.getTerm(AcefTerm.LifeZone);
     if (raw != null) {
       for (String lzv : MULTIVAL.split(raw)) {
         Lifezone lz = parse(LifezoneParser.PARSER, lzv).orNull(Issue.LIFEZONE_INVALID, t.issues);
@@ -93,7 +93,7 @@ public class AcefInterpreter {
   }
 
   private static LocalDate date(NeoTaxon t, Issue invalidIssue, Term term) {
-    return parse(DateParser.PARSER, t.verbatim.getCoreTerm(term)).orNull(invalidIssue, t.issues);
+    return parse(DateParser.PARSER, t.verbatim.getTerm(term)).orNull(invalidIssue, t.issues);
   }
 
   private static URI uri(NeoTaxon t, Issue invalidIssue, Term ... term) {
@@ -106,14 +106,14 @@ public class AcefInterpreter {
 
   private Classification interpretClassification(VerbatimRecord v) {
     Classification cl = new Classification();
-    cl.setKingdom(v.getCoreTerm(AcefTerm.Kingdom));
-    cl.setPhylum(v.getCoreTerm(AcefTerm.Phylum));
-    cl.setClass_(v.getCoreTerm(AcefTerm.Class));
-    cl.setOrder(v.getCoreTerm(AcefTerm.Order));
-    cl.setSuperfamily(v.getCoreTerm(AcefTerm.Superfamily));
-    cl.setFamily(v.getCoreTerm(AcefTerm.Family));
-    cl.setGenus(v.getCoreTerm(AcefTerm.Genus));
-    cl.setSubgenus(v.getCoreTerm(AcefTerm.SubGenusName));
+    cl.setKingdom(v.getTerm(AcefTerm.Kingdom));
+    cl.setPhylum(v.getTerm(AcefTerm.Phylum));
+    cl.setClass_(v.getTerm(AcefTerm.Class));
+    cl.setOrder(v.getTerm(AcefTerm.Order));
+    cl.setSuperfamily(v.getTerm(AcefTerm.Superfamily));
+    cl.setFamily(v.getTerm(AcefTerm.Family));
+    cl.setGenus(v.getTerm(AcefTerm.Genus));
+    cl.setSubgenus(v.getTerm(AcefTerm.SubGenusName));
     return cl;
   }
 
@@ -121,13 +121,13 @@ public class AcefInterpreter {
     List<NameAct> acts = Lists.newArrayList();
 
     // publication of name
-    if (v.hasCoreTerm(DwcTerm.namePublishedInID) || v.hasCoreTerm(DwcTerm.namePublishedIn)) {
+    if (v.hasTerm(DwcTerm.namePublishedInID) || v.hasTerm(DwcTerm.namePublishedIn)) {
       NameAct act = new NameAct();
       act.setType(NomActType.DESCRIPTION);
       act.setReferenceKey(
           lookupReferenceTitleID(
-            v.getCoreTerm(DwcTerm.namePublishedInID),
-            v.getCoreTerm(DwcTerm.namePublishedIn)
+            v.getTerm(DwcTerm.namePublishedInID),
+            v.getTerm(DwcTerm.namePublishedIn)
           ).getKey()
       );
       acts.add(act);
@@ -170,23 +170,23 @@ public class AcefInterpreter {
     n.setId(v.getId());
     n.setType(NameType.SCIENTIFIC);
     n.setOrigin(Origin.SOURCE);
-    n.setGenus(v.getCoreTerm(AcefTerm.Genus));
-    n.setInfragenericEpithet(v.getCoreTerm(AcefTerm.SubGenusName));
-    n.setSpecificEpithet(v.getCoreTerm(AcefTerm.SpeciesEpithet));
+    n.setGenus(v.getTerm(AcefTerm.Genus));
+    n.setInfragenericEpithet(v.getTerm(AcefTerm.SubGenusName));
+    n.setSpecificEpithet(v.getTerm(AcefTerm.SpeciesEpithet));
 
     String authorship;
-    if (v.hasCoreTerm(AcefTerm.InfraSpeciesEpithet)) {
-      n.setInfraspecificEpithet(v.getCoreTerm(AcefTerm.InfraSpeciesEpithet));
-      n.setRank(parse(RankParser.PARSER, v.getCoreTerm(AcefTerm.InfraSpeciesMarker))
+    if (v.hasTerm(AcefTerm.InfraSpeciesEpithet)) {
+      n.setInfraspecificEpithet(v.getTerm(AcefTerm.InfraSpeciesEpithet));
+      n.setRank(parse(RankParser.PARSER, v.getTerm(AcefTerm.InfraSpeciesMarker))
           .orElse(Rank.INFRASPECIFIC_NAME, Issue.RANK_INVALID, n.getIssues())
       );
-      authorship = v.getCoreTerm(AcefTerm.InfraSpeciesAuthorString);
+      authorship = v.getTerm(AcefTerm.InfraSpeciesAuthorString);
       // accepted infraspecific names in ACEF have no genus or species but a link to their parent species ID.
       // so we cannot update the scientific name yet - we do this in the relation inserter instead!
 
     } else {
       n.setRank(Rank.SPECIES);
-      authorship = v.getCoreTerm(AcefTerm.AuthorString);
+      authorship = v.getTerm(AcefTerm.AuthorString);
       updateScientificName(v.getId(), n);
     }
 

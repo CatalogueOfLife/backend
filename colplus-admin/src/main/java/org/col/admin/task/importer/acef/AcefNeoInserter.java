@@ -4,7 +4,7 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.Maps;
 import org.col.admin.task.importer.NeoInserter;
 import org.col.admin.task.importer.NormalizationFailedException;
-import org.col.admin.task.importer.VerbatimRecordFactory;
+import org.col.admin.task.importer.dwca.VerbatimRecordFactory;
 import org.col.admin.task.importer.neo.NeoDb;
 import org.col.admin.task.importer.neo.model.NeoTaxon;
 import org.col.api.model.Dataset;

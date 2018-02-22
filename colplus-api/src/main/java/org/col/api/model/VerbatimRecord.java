@@ -1,14 +1,14 @@
 package org.col.api.model;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import javax.annotation.Nullable;
-import org.gbif.dwc.terms.Term;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
+import org.gbif.dwc.terms.Term;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  *
@@ -21,26 +21,7 @@ public class VerbatimRecord {
 
   private Integer datasetKey;
 
-  /**
-   * The actual verbatim terms keyed on dwc terms.
-   */
-  private VerbatimRecordTerms terms = new VerbatimRecordTerms();
-
-  public Integer getDatasetKey() {
-    return datasetKey;
-  }
-
-  public void setDatasetKey(Integer datasetKey) {
-    this.datasetKey = datasetKey;
-  }
-
-  public VerbatimRecordTerms getTerms() {
-    return terms;
-  }
-
-  public void setTerms(VerbatimRecordTerms terms) {
-    this.terms = terms;
-  }
+  private ExtendedTermRecord terms;
 
   /**
    * @return The dwca coreId
@@ -53,13 +34,28 @@ public class VerbatimRecord {
     this.id = id;
   }
 
+  public Integer getDatasetKey() {
+    return datasetKey;
+  }
+
+  public void setDatasetKey(Integer datasetKey) {
+    this.datasetKey = datasetKey;
+  }
+
+  public ExtendedTermRecord getTerms() {
+    return terms;
+  }
+
+  public void setTerms(ExtendedTermRecord terms) {
+    this.terms = terms;
+  }
+
   /**
    * Get the value of a specific term.
    */
   @Nullable
-  public String getCoreTerm(Term term) {
-    checkNotNull(term, "term can't be null");
-    return terms.getCore().get(term);
+  public String getTerm(Term term) {
+    return terms.get(term);
   }
 
   /**
@@ -69,15 +65,14 @@ public class VerbatimRecord {
    */
   @Nullable
   public String getFirst(Term... terms) {
-    return this.terms.getCore().getFirst(terms);
+    return this.terms.getFirst(terms);
   }
 
   /**
    * @return true if a verbatim term exists and is not null or an empty string
    */
-  public boolean hasCoreTerm(Term term) {
-    checkNotNull(term, "term can't be null");
-    return !Strings.isNullOrEmpty(terms.getCore().get(term));
+  public boolean hasTerm(Term term) {
+    return !Strings.isNullOrEmpty(terms.get(term));
   }
 
   /**
@@ -86,65 +81,47 @@ public class VerbatimRecord {
    * @param term the term to set
    * @param value the term's value
    */
-  public void setCoreTerm(Term term, @Nullable String value) {
-    checkNotNull(term, "term can't be null");
-    terms.getCore().put(term, value);
+  public void setTerm(Term term, @Nullable String value) {
+    terms.put(term, value);
   }
 
-  /**
-   * @return list of extension row types
-   */
+  public Map<Term, List<TermRecord>> getExtensions() {
+    return terms.getExtensions();
+  }
+
+  public void setExtensions(Map<Term, List<TermRecord>> extensions) {
+    terms.setExtensions(extensions);
+  }
+
   @JsonIgnore
   public Set<Term> getExtensionRowTypes() {
-    return terms.getExtensions().keySet();
+    return terms.getExtensionRowTypes();
   }
 
-  /**
-   * @return true if at least one extension record exists
-   */
   public boolean hasExtension(Term rowType) {
-    checkNotNull(rowType, "term can't be null");
-    return terms.getExtensions().containsKey(rowType)
-        && !terms.getExtensions().get(rowType).isEmpty();
+    return terms.hasExtension(rowType);
   }
 
-  /**
-   * @return true if at least one extension record exists
-   */
   public List<TermRecord> getExtensionRecords(Term rowType) {
-    checkNotNull(rowType, "term can't be null");
-    return terms.getExtensions().get(rowType);
+    return terms.getExtensionRecords(rowType);
   }
 
-  /**
-   * Sets all extension records for a given rowType, replacing anything that might have existed for
-   * that rowType.
-   */
   public void setExtensionRecords(Term rowType, List<TermRecord> extensionRecords) {
-    checkNotNull(rowType, "term can't be null");
-    terms.getExtensions().put(rowType, extensionRecords);
+    terms.setExtensionRecords(rowType, extensionRecords);
   }
 
-  /**
-   * Adds a new extension record for the given rowType
-   */
   public void addExtensionRecord(Term rowType, TermRecord extensionRecord) {
-    checkNotNull(rowType, "term can't be null");
-    if (!terms.getExtensions().containsKey(rowType)) {
-      terms.getExtensions().put(rowType, Lists.newArrayList());
-    }
-    terms.getExtensions().get(rowType).add(extensionRecord);
+    terms.addExtensionRecord(rowType, extensionRecord);
   }
 
   @Override
   public boolean equals(Object o) {
-    if (this == o)
-      return true;
-    if (o == null || getClass() != o.getClass())
-      return false;
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
     VerbatimRecord that = (VerbatimRecord) o;
-    return Objects.equals(id, that.id) && Objects.equals(datasetKey, that.datasetKey)
-        && Objects.equals(terms, that.terms);
+    return Objects.equals(id, that.id) &&
+        Objects.equals(datasetKey, that.datasetKey) &&
+        Objects.equals(terms, that.terms);
   }
 
   @Override

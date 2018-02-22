@@ -13,11 +13,22 @@
 package org.col.api.jackson;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.col.api.vocab.Country;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 public class CountrySerdeTest extends SerdeTestBase<Country> {
 
   public CountrySerdeTest() {
-    super(Country.class, CountrySerde.MODULE);
+    super(Country.class);
+  }
+
+  @Test
+  public void testLowerCase() throws JsonProcessingException {
+    Wrapper<Country> wrapper = new Wrapper<Country>(Country.GERMANY);
+    String json = ApiModule.MAPPER.writeValueAsString(wrapper);
+    assertEquals("{\"value\":\"DE\"}", json);
   }
 }
