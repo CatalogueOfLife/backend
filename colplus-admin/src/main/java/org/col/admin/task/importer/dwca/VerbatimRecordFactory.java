@@ -48,6 +48,7 @@ public class VerbatimRecordFactory {
 
     // set core terms
     Record core = star.core();
+    v.getTerms().setType(core.rowType());
     for (Term t : core.terms()) {
       String val = clean(core.value(t));
       if (val != null) {
@@ -67,6 +68,7 @@ public class VerbatimRecordFactory {
 
   private static TermRecord buildTermRec(Record eRec) {
     TermRecord tr = new TermRecord(-1, null);
+    tr.setType(eRec.rowType());
     for (Term t : eRec.terms()) {
       String val = clean(eRec.value(t));
       if (val != null) {

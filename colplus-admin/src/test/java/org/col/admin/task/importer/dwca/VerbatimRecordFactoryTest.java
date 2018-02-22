@@ -40,7 +40,7 @@ public class VerbatimRecordFactoryTest {
 
     @Override
     public Term rowType() {
-      return null;
+      return rowType;
     }
 
     @Override
