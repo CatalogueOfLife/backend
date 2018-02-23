@@ -47,12 +47,12 @@ public class ApiModule extends SimpleModule {
 
     // then key deserializers
     addKeyDeserializer(Term.class, new TermSerde.TermKeyDeserializer());
-    addKeyDeserializer(TermRecord.class, new TermSerde.TermKeyDeserializer());
+    addKeyDeserializer(Language.class, new LanguageSerde.KeyDeserializer());
 
     // then key serializers
     addKeySerializer(Term.class, new TermSerde.FieldSerializer());
     addKeySerializer(Country.class, new CountrySerde.Serializer());
-    addKeySerializer(Language.class, new LanguageSerde.Serializer());
+    addKeySerializer(Language.class, new LanguageSerde.FieldSerializer());
 
     // by default jackson uses a LinkedHashMap to deserialize maps
     //addAbstractTypeMapping(Map.class, HashMap.class);

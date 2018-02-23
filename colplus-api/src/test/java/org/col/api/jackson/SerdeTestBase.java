@@ -12,7 +12,7 @@ import static org.junit.Assert.assertEquals;
  */
 public class SerdeTestBase<T extends Enum> {
 
-  private Class<T> enumClass;
+  Class<T> enumClass;
   private final JavaType type;
 
   public SerdeTestBase(Class<T> enumClass) {

@@ -1,2 +1,0 @@
-DatabaseFullName	DatabaseShortName	DatabaseVersion	ReleaseDate	AuthorsEditors	TaxonomicCoverage	GroupNameInEnglish	Abstract	Organisation	HomeURL	Coverage	Completeness	Confidence	LogoFileName	ContactPerson
-ILDIS World	ILDIS	12, May 2014	05-May-2014	Roskov Y.R.,	Plantae -	Legumes	The International	International	http://www.ildis.o	Global	96	4	ILDIS.gif	YR Roskov & JL

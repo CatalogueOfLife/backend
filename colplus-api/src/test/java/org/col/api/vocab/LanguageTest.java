@@ -43,7 +43,6 @@ public class LanguageTest {
     }
     assertEquals("en", Language.ENGLISH.getIso2LetterCode());
     assertEquals("de", Language.GERMAN.getIso2LetterCode());
-    assertEquals("", Language.UNKNOWN.getIso2LetterCode());
   }
 
   @Test
@@ -55,7 +54,6 @@ public class LanguageTest {
     }
     assertEquals("eng", Language.ENGLISH.getIso3LetterCode());
     assertEquals("deu", Language.GERMAN.getIso3LetterCode());
-    assertEquals("", Language.UNKNOWN.getIso3LetterCode());
   }
 
   @Test
@@ -66,7 +64,6 @@ public class LanguageTest {
     }
     assertEquals(Locale.ENGLISH, Language.ENGLISH.getLocale());
     assertEquals(Locale.GERMAN, Language.GERMAN.getLocale());
-    assertEquals(Locale.ROOT, Language.UNKNOWN.getLocale());
   }
 
   @Test
@@ -76,7 +73,6 @@ public class LanguageTest {
     }
     assertEquals("English", Language.ENGLISH.getTitleEnglish());
     assertEquals("German", Language.GERMAN.getTitleEnglish());
-    assertEquals("", Language.UNKNOWN.getTitleEnglish());
   }
 
   @Test
@@ -86,7 +82,6 @@ public class LanguageTest {
     }
     assertEquals("English", Language.ENGLISH.getTitleNative());
     assertEquals("Deutsch", Language.GERMAN.getTitleNative());
-    assertEquals("", Language.UNKNOWN.getTitleNative());
   }
 
 }

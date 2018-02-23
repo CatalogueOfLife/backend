@@ -20,10 +20,11 @@ import com.google.common.collect.ImmutableList;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 
 /**
  * Enumeration for all ISO 639-1 language codes using 2 lower case letters.
- * The enumeration maps to 3 letter codes and Locales.
+ * The enumeration maps to 3 letter codes and Locales using the system defaults.
  *
  * @see <a href="http://en.wikipedia.org/wiki/ISO_639">Wikipedia on ISO-639</a>
  * @see <a href="http://docs.oracle.com/javase/6/docs/api/java/util/Locale.html">Locale javadoc</a>
@@ -953,12 +954,7 @@ public enum Language {
   /**
    * Zulu.
    */
-  ZULU("zu"),
-
-  /**
-   * Unknown or Invalid language.
-   */
-  UNKNOWN("");
+  ZULU("zu");
 
   public static final List<Language> LANGUAGES;
 
@@ -970,26 +966,26 @@ public enum Language {
 
   /**
    * @param code the case insensitive 2 or 3 letter codes
-   * @return the matching language or UNKNOWN
+   * @return the matching language
    */
-  public static Language fromIsoCode(String code) {
+  public static Optional<Language> fromIsoCode(String code) {
     if (!Strings.isNullOrEmpty(code)) {
       String codeLower = code.toLowerCase().trim();
       if (codeLower.length() == 2) {
         for (Language language : Language.values()) {
           if (codeLower.equals(language.getIso2LetterCode())) {
-            return language;
+            return Optional.of(language);
           }
         }
       } else if (codeLower.length() == 3) {
         for (Language language : Language.values()) {
           if (codeLower.equals(language.getIso3LetterCode())) {
-            return language;
+            return Optional.of(language);
           }
         }
       }
     }
-    return UNKNOWN;
+    return Optional.empty();
   }
 
   Language(String code) {

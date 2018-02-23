@@ -19,7 +19,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-public class CountrySerdeTest extends SerdeTestBase<Country> {
+public class CountrySerdeTest extends SerdeMapKeyTestBase<Country> {
 
   public CountrySerdeTest() {
     super(Country.class);

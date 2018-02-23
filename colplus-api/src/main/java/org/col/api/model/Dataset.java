@@ -5,6 +5,7 @@ import org.col.api.vocab.DataFormat;
 import org.col.api.vocab.DatasetType;
 import org.col.api.vocab.Frequency;
 import org.col.api.vocab.License;
+import org.gbif.nameparser.api.NomCode;
 
 import javax.validation.constraints.NotEmpty;
 import java.net.URI;
@@ -25,6 +26,7 @@ public class Dataset {
 	private UUID gbifKey;
   private UUID gbifPublisherKey;
 	private String description;
+  private NomCode code;
 	private String organisation;
 	private String contactPerson;
 	private List<String> authorsAndEditors = Lists.newArrayList();
@@ -98,6 +100,20 @@ public class Dataset {
 	public void setDescription(String description) {
 		this.description = description;
 	}
+
+  /**
+   * The nomenclatural code followed in this dataset.
+   * It will be used mostly as a hint to format names accordingly.
+   * If the dataset contains mixed data from multiple codes keep this field null.
+   * @return the nomenclatural code applying to all data in this dataset or null
+   */
+  public NomCode getCode() {
+    return code;
+  }
+
+  public void setCode(NomCode code) {
+    this.code = code;
+  }
 
   public List<String> getAuthorsAndEditors() {
     return authorsAndEditors;
@@ -222,6 +238,7 @@ public class Dataset {
         Objects.equals(gbifKey, dataset.gbifKey) &&
         Objects.equals(gbifPublisherKey, dataset.gbifPublisherKey) &&
         Objects.equals(description, dataset.description) &&
+        code == dataset.code &&
         Objects.equals(organisation, dataset.organisation) &&
         Objects.equals(contactPerson, dataset.contactPerson) &&
         Objects.equals(authorsAndEditors, dataset.authorsAndEditors) &&
@@ -240,7 +257,7 @@ public class Dataset {
 
   @Override
   public int hashCode() {
-    return Objects.hash(key, type, title, gbifKey, gbifPublisherKey, description, organisation, contactPerson, authorsAndEditors, license, version, releaseDate, homepage, dataFormat, dataAccess, importFrequency, notes, created, modified, deleted);
+    return Objects.hash(key, type, title, gbifKey, gbifPublisherKey, description, code, organisation, contactPerson, authorsAndEditors, license, version, releaseDate, homepage, dataFormat, dataAccess, importFrequency, notes, created, modified, deleted);
   }
 
   @Override

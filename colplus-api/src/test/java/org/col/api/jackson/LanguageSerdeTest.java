@@ -14,15 +14,41 @@ package org.col.api.jackson;
 
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import org.apache.commons.lang3.ArrayUtils;
 import org.col.api.vocab.Language;
 import org.junit.Test;
 
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import static org.junit.Assert.assertEquals;
 
-public class LanguageSerdeTest extends SerdeTestBase<Language> {
+public class LanguageSerdeTest extends SerdeMapKeyTestBase<Language> {
 
   public LanguageSerdeTest() {
     super(Language.class);
+  }
+
+  @Test
+  public void testMapEquality() throws JsonProcessingException {
+    Map<Language, Integer> hm = new HashMap<>();
+    Map<Language, Integer> lm = new LinkedHashMap<>();
+    for (Language l : Language.values()) {
+      hm.put(l, l.ordinal());
+      lm.put(l, l.ordinal());
+    }
+    assertEquals(hm, lm);
+
+    // try different order to make sure its the same
+    Map<Language, Integer> lm2 = new LinkedHashMap<>();
+    Language[] langs = Language.values();
+    ArrayUtils.reverse(langs);
+    for (Language l : langs) {
+      lm2.put(l, l.ordinal());
+    }
+    assertEquals(hm, lm2);
+    assertEquals(lm, lm2);
   }
 
   @Test
