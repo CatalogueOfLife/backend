@@ -14,7 +14,7 @@ public class CountryTypeHandler extends BaseEnumTypeHandler<String, Country> {
 
   @Override
   public String fromEnum(Country value) {
-    return value == null || value == Country.UNKNOWN ? null : value.getIso2LetterCode();
+    return value == null ? null : value.getIso2LetterCode();
   }
 
   /**
@@ -26,11 +26,6 @@ public class CountryTypeHandler extends BaseEnumTypeHandler<String, Country> {
    */
   @Override
   public Country toEnum(String key) {
-    if (key == null) {
-      return null;
-    } else {
-      Country c = Country.fromIsoCode(key);
-      return c == null ? Country.UNKNOWN : c;
-    }
+    return Country.fromIsoCode(key).orElse(null);
   }
 }

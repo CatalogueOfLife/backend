@@ -19,6 +19,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -1308,15 +1309,7 @@ public enum Country {
    *
    * @see <a href="http://en.wikipedia.org/wiki/Common_Locale_Data_Repository">Unicode Common Locale Data Repository</a>
    */
-  OCEANIA("QO", "QOO", 902, "Oceania"),
-
-
-  /**
-   * Unknown or Invalid territory.
-   *
-   * @see <a href="http://en.wikipedia.org/wiki/Common_Locale_Data_Repository">Unicode Common Locale Data Repository</a>
-   */
-  UNKNOWN("ZZ", "ZZZ", 999, "unknown or invalid");
+  OCEANIA("QO", "QOO", 902, "Oceania");
 
   /**
    * A set of all 2 and 3 letter codes that are reserved by ISO for custom application specific usages.
@@ -1376,16 +1369,16 @@ public enum Country {
    * @param code the case insensitive 2 or 3 letter codes
    * @return the matching country or null
    */
-  public static Country fromIsoCode(String code) {
+  public static Optional<Country> fromIsoCode(String code) {
     if (!Strings.isNullOrEmpty(code)) {
       String codeUpper = code.toUpperCase().trim();
       for (Country c : Country.values()) {
         if (codeUpper.equals(c.getIso2LetterCode()) || codeUpper.equals(c.getIso3LetterCode())) {
-          return c;
+          return Optional.of(c);
         }
       }
     }
-    return null;
+    return Optional.empty();
   }
 
   /**
@@ -1457,7 +1450,7 @@ public enum Country {
    * @return true if its a non user defined, current ISO 3166-1 alpha2 code.
    */
   public boolean isOfficial() {
-    return !(this == UNKNOWN || this == USER_DEFINED || this == INTERNATIONAL_WATERS || this == OCEANIA);
+    return !(this == USER_DEFINED || this == INTERNATIONAL_WATERS || this == OCEANIA);
   }
 
 }

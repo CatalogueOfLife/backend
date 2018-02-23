@@ -26,12 +26,12 @@ public class LanguageTest {
 
   @Test
   public void testFromIsoCode() throws Exception {
-    assertEquals(Language.ENGLISH, Language.fromIsoCode("en"));
-    assertEquals(Language.ESTONIAN, Language.fromIsoCode("et"));
-    assertEquals(Language.ZULU, Language.fromIsoCode("ZU"));
-    assertEquals(Language.GERMAN, Language.fromIsoCode("de"));
-    assertEquals(Language.GERMAN, Language.fromIsoCode("DEU"));
-    assertEquals(Language.GERMAN, Language.fromIsoCode("Deu"));
+    assertEquals(Language.ENGLISH, Language.fromIsoCode("en").get());
+    assertEquals(Language.ESTONIAN, Language.fromIsoCode("et").get());
+    assertEquals(Language.ZULU, Language.fromIsoCode("ZU").get());
+    assertEquals(Language.GERMAN, Language.fromIsoCode("de").get());
+    assertEquals(Language.GERMAN, Language.fromIsoCode("DEU").get());
+    assertEquals(Language.GERMAN, Language.fromIsoCode("Deu").get());
   }
 
   @Test

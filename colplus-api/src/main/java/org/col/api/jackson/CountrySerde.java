@@ -7,8 +7,11 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import org.col.api.vocab.Country;
+import org.col.api.vocab.Language;
+import org.gbif.dwc.terms.Term;
 
 import java.io.IOException;
+import java.util.Optional;
 
 /**
  * Jackson {@link JsonSerializer} and Jackson {@link JsonDeserializer} classes for {@link Country}
@@ -32,21 +35,46 @@ public class CountrySerde {
   }
 
   /**
+   * Serializes a language as 3 letter codes into a json field.
+   */
+  public static class FieldSerializer extends JsonSerializer<Country> {
+
+    @Override
+    public void serialize(Country lang, JsonGenerator jgen, SerializerProvider provider) throws IOException {
+      if (lang == null) {
+        jgen.writeNull();
+      } else {
+        jgen.writeFieldName(lang.getIso2LetterCode());
+      }
+    }
+  }
+
+  /**
+   * Deserializer for {@link Term} in key values.
+   */
+  public static class KeyDeserializer extends com.fasterxml.jackson.databind.KeyDeserializer {
+
+    @Override
+    public Object deserializeKey(String key, DeserializationContext ctxt) throws IOException {
+      if (key.length() == 0) { // [JACKSON-360]
+        return null;
+      }
+      Optional<Country> lang = Country.fromIsoCode(key);
+      if (lang.isPresent()){
+        return lang.get();
+      }
+      return ctxt.handleWeirdKey(Language.class, key, "Expected valid ISO 3 letter code");
+    }
+  }
+
+  /**
    * Deserializes the value from a 2 (or 3) letter ISO format.
    */
   public static class Deserializer extends JsonDeserializer<Country> {
 
     @Override
     public Country deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException {
-      try {
-        if (jp != null && jp.getTextLength() > 0) {
-          return Country.fromIsoCode(jp.getText());
-        } else {
-          return Country.UNKNOWN; // none provided
-        }
-      } catch (RuntimeException e) {
-        return (Country) ctxt.handleUnexpectedToken(Country.class, jp.getCurrentToken(), jp, "Unable to deserialize country from provided value (not an ISO 2 character?): "+jp.getText());
-      }
+      return Country.fromIsoCode(jp.getText()).orElse(null);
     }
 
   }
