@@ -67,8 +67,12 @@ public class AcefReaderTest {
     });
     assertEquals(3, counter.get());
 
-    Optional<TermRecord> row = reader.readFirstRow(AcefTerm.CommonNames);
+    Optional<TermRecord> row = reader.readFirstRow(AcefTerm.NameReferencesLinks);
     assertTrue(row.isPresent());
+
+    // missing required column
+    row = reader.readFirstRow(AcefTerm.CommonNames);
+    assertFalse(row.isPresent());
 
     row = reader.readFirstRow(AcefTerm.Distribution);
     assertFalse(row.isPresent());
