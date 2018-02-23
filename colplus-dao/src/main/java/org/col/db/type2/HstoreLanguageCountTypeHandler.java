@@ -10,6 +10,6 @@ public class HstoreLanguageCountTypeHandler extends HstoreCountTypeHandlerBase<L
 
   @Override
   Language toKeyAlt(String key) throws IllegalArgumentException {
-    return Language.fromIsoCode(key);
+    return Language.fromIsoCode(key).orElse(null);
   }
 }
