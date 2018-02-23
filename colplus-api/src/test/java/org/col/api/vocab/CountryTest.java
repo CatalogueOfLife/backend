@@ -23,8 +23,8 @@ public class CountryTest {
 
   @Test
   public void testFromIsoCode() throws Exception {
-    assertEquals(Country.ARGENTINA, Country.fromIsoCode("ar"));
-    assertEquals(Country.ARGENTINA, Country.fromIsoCode("AR"));
+    assertEquals(Country.ARGENTINA, Country.fromIsoCode("ar").get());
+    assertEquals(Country.ARGENTINA, Country.fromIsoCode("AR").get());
   }
 
   @Test
