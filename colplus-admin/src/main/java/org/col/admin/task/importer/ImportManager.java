@@ -1,7 +1,6 @@
 package org.col.admin.task.importer;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterators;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import io.dropwizard.lifecycle.Managed;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -31,8 +30,8 @@ public class ImportManager implements Managed {
   public static final String THREAD_NAME = "dataset-importer";
 
   private ExecutorService exec;
+  private final List<ImportRequest> queue = Lists.newArrayList();
   private final Map<Integer, Future> futures = Maps.newConcurrentMap();
-  private final LinkedBlockingQueue<Runnable> queue;
   private final AdminServerConfig cfg;
   private final DownloadUtil downloader;
   private final SqlSessionFactory factory;
@@ -40,6 +39,7 @@ public class ImportManager implements Managed {
   public class ImportRequest implements Callable<ImportJob> {
     public final int datasetKey;
     public final boolean force;
+    public boolean running = false;
     public final LocalDateTime created = LocalDateTime.now();
 
     public ImportRequest(int datasetKey, boolean force) {
@@ -53,6 +53,7 @@ public class ImportManager implements Managed {
         if (d == null) {
           throw new IllegalArgumentException("Dataset with key " + datasetKey + " does not exist");
         }
+        running = true;
         return new ImportJob(d, force, cfg, downloader, factory);
       }
     }
@@ -62,14 +63,13 @@ public class ImportManager implements Managed {
     this.cfg = cfg;
     this.factory = factory;
     this.downloader = new DownloadUtil(client);
-    queue = new LinkedBlockingQueue<>(cfg.importer.maxQueue);
   }
 
   /**
    * Lists the current queue
    */
   public List<ImportRequest> list() {
-    return ImmutableList.copyOf(Iterators.filter(queue.iterator(), ImportRequest.class));
+    return queue;
   }
 
   /**
@@ -89,6 +89,7 @@ public class ImportManager implements Managed {
   public ImportRequest submit(final int datasetKey, final boolean force) {
     LOG.info("Queue new import for dataset {}", datasetKey);
     ImportRequest req = new ImportRequest(datasetKey, force);
+    queue.add(req);
     futures.put(datasetKey, CompletableFuture
         .supplyAsync(() -> req, exec)
         .thenApply(ImportRequest::call)
@@ -103,6 +104,7 @@ public class ImportManager implements Managed {
             LOG.error("Dataset import {}, attempt {} failed.", req.datasetKey);
           }
           futures.remove(req.datasetKey);
+          queue.remove(req);
         })
     );
     return req;
@@ -119,7 +121,7 @@ public class ImportManager implements Managed {
   public void start() throws Exception {
     exec = new ThreadPoolExecutor(0, cfg.importer.threads,
         10L, TimeUnit.SECONDS,
-        queue,
+        new LinkedBlockingQueue<>(cfg.importer.maxQueue),
         new NamedThreadFactory(THREAD_NAME, Thread.NORM_PRIORITY, true),
         new ThreadPoolExecutor.AbortPolicy());
     ;
