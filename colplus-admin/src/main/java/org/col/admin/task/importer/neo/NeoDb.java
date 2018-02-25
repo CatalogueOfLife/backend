@@ -214,7 +214,7 @@ public class NeoDb implements NormalizerStore, ReferenceStore {
   }
 
   @Override
-  public void process(Labels label, final int batchSize, NodeBatchProcessor callback) {
+  public int process(Labels label, final int batchSize, NodeBatchProcessor callback) {
     ExecutorService service =  ThrottledThreadPoolExecutor.newFixedThreadPool(1, 3);
     final AtomicInteger counter = new AtomicInteger();
     try (Transaction tx = neo.beginTx()){
@@ -238,6 +238,7 @@ public class NeoDb implements NormalizerStore, ReferenceStore {
       LOG.error("Neo processing with {} failed", callback.getClass(), e);
       throw e;
     }
+    return counter.get();
   }
 
   static class BatchCallback implements Runnable {
@@ -634,7 +635,7 @@ public class NeoDb implements NormalizerStore, ReferenceStore {
         t.classification.clearRankAndBelow(excludeRankAndBelow);
       }
       // copy parent props from source
-      t.verbatim = new VerbatimRecord();
+      t.verbatim = VerbatimRecord.create();
       t.verbatim.setTerm(DwcTerm.parentNameUsageID, source.verbatim.getTerm(DwcTerm.parentNameUsageID));
       t.verbatim.setTerm(DwcTerm.parentNameUsage, source.verbatim.getTerm(DwcTerm.parentNameUsage));
     }

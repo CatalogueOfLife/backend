@@ -27,7 +27,7 @@ public class VerbatimRecordFactory {
   }
 
   public static VerbatimRecord build (String id, TermRecord core) {
-    VerbatimRecord v = new VerbatimRecord();
+    VerbatimRecord v = VerbatimRecord.create();
     Preconditions.checkNotNull(id, "ID required");
     v.setId(id);
 
@@ -43,7 +43,7 @@ public class VerbatimRecordFactory {
   }
 
   public static VerbatimRecord build (StarRecord star) {
-    VerbatimRecord v = new VerbatimRecord();
+    VerbatimRecord v = VerbatimRecord.create();
     v.setId(star.core().id());
 
     // set core terms
@@ -60,14 +60,14 @@ public class VerbatimRecordFactory {
     for (Map.Entry<Term, List<Record>> ext : star.extensions().entrySet()) {
       Term rowType = ext.getKey();
       for (Record eRec : ext.getValue()) {
-        v.addExtensionRecord(rowType, buildTermRec(eRec));
+        v.addExtensionRecord(rowType, buildTermRec(eRec, rowType));
       }
     }
     return v;
   }
 
-  private static TermRecord buildTermRec(Record eRec) {
-    TermRecord tr = new TermRecord(-1, null);
+  private static TermRecord buildTermRec(Record eRec, Term rowType) {
+    TermRecord tr = new TermRecord(-1, null, rowType);
     tr.setType(eRec.rowType());
     for (Term t : eRec.terms()) {
       String val = clean(eRec.value(t));

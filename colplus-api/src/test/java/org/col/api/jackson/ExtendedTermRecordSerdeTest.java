@@ -22,7 +22,7 @@ public class ExtendedTermRecordSerdeTest {
   public void testRoundtrip() throws IOException {
     Random rnd = new Random();
 
-    ExtendedTermRecord rec = new ExtendedTermRecord(11, "myFile.txt");
+    ExtendedTermRecord rec = new ExtendedTermRecord(11, "myFile.txt", DwcTerm.Taxon);
 
     rec.put(DwcTerm.scientificName, RandomUtils.randomString(1 + rnd.nextInt(99)));
     rec.put(DwcTerm.taxonID, RandomUtils.randomString(1 + rnd.nextInt(99)));
@@ -33,7 +33,7 @@ public class ExtendedTermRecordSerdeTest {
       List<TermRecord> erecs = Lists.newArrayList();
       rec.getExtensions().put(rowType, erecs);
       for (int i = 1; i < 6; i++) {
-        TermRecord erec = new TermRecord(i, fn);
+        TermRecord erec = new TermRecord(i, fn, rowType);
         erec.put(GbifTerm.canonicalName, RandomUtils.randomString(1 + rnd.nextInt(99)));
         erec.put(AcefTerm.AcceptedSpecies, RandomUtils.randomString(1 + rnd.nextInt(99)));
         erec.put(DcTerm.title, RandomUtils.randomString(1 + rnd.nextInt(99)));

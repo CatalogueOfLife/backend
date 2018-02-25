@@ -105,7 +105,7 @@ public class Normalizer implements Runnable {
 
       // taxon or synonym
       if (t.isSynonym()) {
-        notEmpty(t.synonym.accepted, "accepted taxa", id);
+        //notEmpty(t.synonym.accepted, "accepted taxa", id);
         for (Taxon acc : t.synonym.accepted) {
           require(acc.getKey(), "accepted key", id);
         }

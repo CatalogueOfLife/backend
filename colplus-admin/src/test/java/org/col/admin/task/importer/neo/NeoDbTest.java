@@ -13,6 +13,7 @@ import org.col.api.vocab.TaxonomicStatus;
 import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.dwc.terms.DcTerm;
 import org.gbif.dwc.terms.DwcTerm;
+import org.gbif.dwc.terms.GbifTerm;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -142,7 +143,7 @@ public class NeoDbTest {
     db.updateLabels();
     db.updateTaxonStoreWithRelations();
 
-    TermRecord tr = new TermRecord("123");
+    TermRecord tr = new TermRecord(123, "bla.txt", GbifTerm.VernacularName);
     tr.setType(AcefTerm.Distribution);
     tr.put(AcefTerm.DistributionElement, "Asia");
 
@@ -167,7 +168,7 @@ public class NeoDbTest {
     t.taxon = new Taxon();
     t.taxon.setId(id);
     t.taxon.setStatus(TaxonomicStatus.ACCEPTED);
-    t.verbatim = new VerbatimRecord();
+    t.verbatim = VerbatimRecord.create();
     t.verbatim.setId(id);
     t.verbatim.getTerms().put(DwcTerm.scientificName, "Abies alba");
     t.verbatim.getTerms().put(DcTerm.title, "Abies alba");

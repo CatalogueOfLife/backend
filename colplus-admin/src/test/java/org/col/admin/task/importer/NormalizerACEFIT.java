@@ -17,6 +17,7 @@ import org.col.api.model.Reference;
 import org.col.api.model.VernacularName;
 import org.col.api.vocab.DataFormat;
 import org.col.api.vocab.Gazetteer;
+import org.col.api.vocab.Issue;
 import org.col.api.vocab.Language;
 import org.gbif.nameparser.api.Rank;
 import org.junit.After;
@@ -117,6 +118,29 @@ public class NormalizerACEFIT {
       throw new NotUniqueRuntimeException("scientificName", name);
     }
     return store.get(nodes.get(0));
+  }
+
+  @Test
+  public void testAcef0() throws Exception {
+    normalize(0);
+
+    for (Reference r : store.refList()) {
+      System.out.println(r);
+    }
+
+    try (Transaction tx = store.getNeo().beginTx()) {
+      NeoTaxon t = byID("s7");
+      assertEquals("Astragalus nonexistus", t.name.getScientificName());
+      assertEquals("DC.", t.name.authorshipComplete());
+      assertEquals(Rank.SPECIES, t.name.getRank());
+      assertTrue(t.issues.contains(Issue.ACCEPTED_ID_INVALID));
+      assertTrue(t.classification.isEmpty());
+
+      // vernacular
+      assertEquals(1, t.vernacularNames.size());
+      VernacularName v = t.vernacularNames.get(0);
+      assertEquals("Non exiusting bean", v.getName());
+    }
   }
 
   @Test

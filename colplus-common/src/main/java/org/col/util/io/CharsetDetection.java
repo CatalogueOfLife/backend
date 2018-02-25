@@ -2,22 +2,27 @@ package org.col.util.io;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableMap;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.EnumSet;
+import java.util.Map;
 import java.util.function.Predicate;
 
 /**
@@ -42,7 +47,7 @@ public class CharsetDetection {
 
   private static final Logger LOG = LoggerFactory.getLogger(CharsetDetection.class);
 
-  private static final int CHARSET_DETECTION_BUFFER_LENGTH = 16*1024; // 16kB
+  private static final int CHARSET_DETECTION_BUFFER_LENGTH = 8*1024; // 8kB
   private static final int UNDEFINED_PENALTY = 100;
   private static final char[] COMMON_NON_ASCII_CHARS;
 
@@ -56,9 +61,17 @@ public class CharsetDetection {
     COMMON_NON_ASCII_CHARS = cbuf.array();
   }
 
-  private static final Charset LATIN1 = Charsets.ISO_8859_1;
-  private static final Charset WINDOWS1252;
-  private static final Charset MACROMAN;
+  private static final Map<Charset, byte[]> BOMS = ImmutableMap.<Charset, byte[]>builder()
+      .put(StandardCharsets.UTF_8, toBytes(new int[]{0xEF, 0xBB, 0xBF}))
+      .put(StandardCharsets.UTF_16BE, toBytes(new int[]{0xFE, 0xFF}))
+      .put(StandardCharsets.UTF_16LE, toBytes(new int[]{0xFF, 0xFE}))
+      .put(Charset.forName("UTF_32BE"), toBytes(new int[]{0, 0, 0xFE, 0xFF}))
+      .put(Charset.forName("UTF_32LE"), toBytes(new int[]{0xFF, 0xFE, 0, 0}))
+      .build();
+
+  public static final Charset LATIN1 = Charsets.ISO_8859_1;
+  public static final Charset WINDOWS1252;
+  public static final Charset MACROMAN;
 
   static {
     Charset cs = null;
@@ -92,9 +105,29 @@ public class CharsetDetection {
    * Detect a file encoding using up to 16kB of a file
    */
   public static Charset detectEncoding(InputStream stream) throws IOException {
+    InputStreamReader r = buildReader(stream);
+    Charset c = Charset.forName(r.getEncoding());
+    r.close();
+    return c;
+  }
+
+  /**
+   * Detect a file encoding and build a reader with that encoding for immediate use.
+   */
+  public static InputStreamReader buildReader(InputStream stream) throws IOException {
     byte[] bytes = new byte[CHARSET_DETECTION_BUFFER_LENGTH];
-    int size = IOUtils.read(stream, bytes, 0, CHARSET_DETECTION_BUFFER_LENGTH);
-    return detectEncoding(ByteBuffer.wrap(bytes, 0, size));
+
+    BufferedInputStream bis = new BufferedInputStream(stream, CHARSET_DETECTION_BUFFER_LENGTH);
+    bis.mark(CHARSET_DETECTION_BUFFER_LENGTH);
+    //read your bufferdInputStream
+    int size = IOUtils.read(bis, bytes, 0, CHARSET_DETECTION_BUFFER_LENGTH);
+
+    Charset charset = detectEncoding(ByteBuffer.wrap(bytes, 0, size));
+    bis.reset();
+
+    skipBom(bis, charset);
+
+    return new InputStreamReader(bis, charset);
   }
 
   /**
@@ -128,44 +161,63 @@ public class CharsetDetection {
     return charset;
   }
 
-  /**
-   * Has a Byte Order Marker for UTF-16 Big Endian
-   * (utf-16 and ucs-2).
-   *
-   * @return true if the buffer has a BOM for UTF-16 Big Endian.
-   */
-  private boolean hasUTF16BEBom() {
+  private boolean hasBOM(byte ... bytes) {
     buffer.rewind();
-    return buffer.remaining() > 1
-        && buffer.get() == -2
-        && buffer.get() == -1;
+    if (buffer.remaining() > bytes.length) {
+      for (int b : bytes) {
+        if (buffer.get() != (byte) b) {
+          return false;
+        }
+      }
+    }
+    return true;
   }
 
   /**
-   * Has a Byte Order Marker for UTF-16 Low Endian
-   * (ucs-2le, ucs-4le, and ucs-16le).
-   *
-   * @return true if the buffer has a BOM for UTF-16 Low Endian.
+   * Checks if a UTF8, 16 or 32 LE/BE BOM is present
+   * @return the BOM detected charset or null
    */
-  private boolean hasUTF16LEBom() {
-    buffer.rewind();
-    return buffer.remaining() > 1
-        && buffer.get() == -1
-        && buffer.get() == -2;
+  private Charset detectBOM() {
+    if (buffer.remaining() > 3) {
+      for (Map.Entry<Charset, byte[]> bom : BOMS.entrySet()) {
+        if (hasBOM(bom.getValue())) {
+          LOG.debug("BOM found for character encoding " + bom.getKey());
+          return bom.getKey();
+        }
+      }
+    }
+    return null;
+  }
+
+  private static byte[] toBytes(int... ints) { // helper function
+    byte[] result = new byte[ints.length];
+    for (int i = 0; i < ints.length; i++) {
+      result[i] = (byte) ints[i];
+    }
+    return result;
   }
 
   /**
-   * Looks for a Byte Order Marker for UTF-8 in the buffer
-   * (Used by Microsoft's Notepad and other editors).
-   *
-   * @return true if the buffer has a BOM for UTF8.
+   * Skip BOM bytes in stream
+   * @param bis
    */
-  private boolean hasUTF8Bom() {
-    buffer.rewind();
-    return buffer.remaining() > 2
-        && buffer.get() == -17
-        && buffer.get() == -69
-        && buffer.get() == -65;
+  private static void skipBom(BufferedInputStream bis, Charset charset) throws IOException {
+    if (BOMS.containsKey(charset)) {
+      byte[] bom = BOMS.get(charset);
+      bis.mark(4);
+      boolean bomFound = true;
+      for (int b : bom) {
+        if ((byte) bis.read() != b) {
+          // no BOM, rewind & break
+          bomFound = false;
+          bis.reset();
+          break;
+        }
+      }
+      if (bomFound) {
+        LOG.debug("Skipped BOM for {}", charset);
+      }
+    }
   }
 
   private static boolean isCommonChar(char c) {
@@ -282,14 +334,9 @@ public class CharsetDetection {
 
     // if the file has a Byte Order Marker, we can assume the file is in UTF-xx
     // otherwise, the file would not be human readable
-    if (hasUTF8Bom()) {
-      return Charsets.UTF_8;
-    }
-    if (hasUTF16LEBom()) {
-      return Charsets.UTF_16LE;
-    }
-    if (hasUTF16BEBom()) {
-      return Charsets.UTF_16BE;
+    Charset charset = detectBOM();
+    if (charset != null) {
+      return charset;
     }
 
     // if it's not UTF-8 or a BOM present check for UTF16 zeros

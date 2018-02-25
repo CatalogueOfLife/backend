@@ -18,7 +18,7 @@ public class TermRecordSerdeTest {
   @Test
   public void testRoundtrip() throws IOException {
     Random rnd = new Random();
-    TermRecord rec = new TermRecord(11, "myFile.txt");
+    TermRecord rec = new TermRecord(11, "myFile.txt", DwcTerm.Taxon);
     for (Term t : DwcTerm.values()) {
       rec.put(t, RandomUtils.randomString(1 + rnd.nextInt(99)).toLowerCase());
     }

@@ -21,7 +21,13 @@ public class VerbatimRecord {
 
   private Integer datasetKey;
 
-  private ExtendedTermRecord terms = new ExtendedTermRecord();
+  private ExtendedTermRecord terms;
+
+  public static VerbatimRecord create() {
+    VerbatimRecord v = new VerbatimRecord();
+    v.terms = new ExtendedTermRecord();
+    return v;
+  }
 
   /**
    * @return The dwca coreId

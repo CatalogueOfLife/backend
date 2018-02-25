@@ -86,7 +86,7 @@ public class AcefInterpreter {
     // acts
     t.acts = interpretActs(v);
     // flat classification
-    t.classification = interpretClassification(v);
+    t.classification = interpretClassification(v, synonym);
 
     return t;
   }
@@ -176,7 +176,7 @@ public class AcefInterpreter {
     return parse(BooleanParser.PARSER, t.verbatim.getFirst(term)).orNull(invalidIssue, t.issues);
   }
 
-  private Classification interpretClassification(VerbatimRecord v) {
+  private Classification interpretClassification(VerbatimRecord v, boolean isSynonym) {
     Classification cl = new Classification();
     cl.setKingdom(v.getTerm(AcefTerm.Kingdom));
     cl.setPhylum(v.getTerm(AcefTerm.Phylum));
@@ -184,8 +184,10 @@ public class AcefInterpreter {
     cl.setOrder(v.getTerm(AcefTerm.Order));
     cl.setSuperfamily(v.getTerm(AcefTerm.Superfamily));
     cl.setFamily(v.getTerm(AcefTerm.Family));
-    cl.setGenus(v.getTerm(AcefTerm.Genus));
-    cl.setSubgenus(v.getTerm(AcefTerm.SubGenusName));
+    if (!isSynonym) {
+      cl.setGenus(v.getTerm(AcefTerm.Genus));
+      cl.setSubgenus(v.getTerm(AcefTerm.SubGenusName));
+    }
     return cl;
   }
 

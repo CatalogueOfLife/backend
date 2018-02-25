@@ -48,8 +48,9 @@ public interface NormalizerStore extends AutoCloseableRuntime {
    * @param label neo4j node label to select nodes by. Use Labels.ALL for all nodes
    * @param batchSize
    * @param callback
+   * @return total number of processed nodes.
    */
-  void process(Labels label, int batchSize, NeoDb.NodeBatchProcessor callback);
+  int process(Labels label, int batchSize, NeoDb.NodeBatchProcessor callback);
 
   Iterable<NeoTaxon> all();
 

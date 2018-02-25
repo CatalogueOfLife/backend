@@ -26,7 +26,7 @@ public class VerbatimRecordSerdeTest {
     VerbatimRecord v = new VerbatimRecord();
     v.setId("12345678");
     v.setDatasetKey(31);
-    ExtendedTermRecord rec = new ExtendedTermRecord(11, "myFile.txt");
+    ExtendedTermRecord rec = new ExtendedTermRecord(11, "myFile.txt", DwcTerm.Taxon);
     v.setTerms(rec);
 
     rec.put(DwcTerm.scientificName, RandomUtils.randomString(1 + rnd.nextInt(99)));
@@ -38,7 +38,7 @@ public class VerbatimRecordSerdeTest {
       List<TermRecord> erecs = Lists.newArrayList();
       rec.getExtensions().put(rowType, erecs);
       for (int i = 0; i < 4; i++) {
-        TermRecord erec = new TermRecord(11, fn);
+        TermRecord erec = new TermRecord(11, fn, rowType);
         erec.put(GbifTerm.canonicalName, RandomUtils.randomString(1 + rnd.nextInt(99)));
         erec.put(AcefTerm.AcceptedSpecies, RandomUtils.randomString(1 + rnd.nextInt(99)));
         erec.put(DcTerm.title, RandomUtils.randomString(1 + rnd.nextInt(99)));

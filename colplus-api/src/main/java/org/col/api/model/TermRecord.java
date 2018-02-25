@@ -3,7 +3,6 @@ package org.col.api.model;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import org.apache.commons.lang3.StringUtils;
-import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.Term;
 
 import javax.annotation.Nullable;
@@ -18,24 +17,15 @@ import static com.google.common.base.Preconditions.checkNotNull;
  *
  */
 public class TermRecord {
-  private int line;
+  private long line;
   private String file;
   private Term type;
   private Map<Term, String> terms = new HashMap<>();
 
   public TermRecord() {
-    this(null);
   }
 
-  public TermRecord(String file) {
-    this(-1, file);
-  }
-
-  public TermRecord(Integer line, String file) {
-    this(line, file, DwcTerm.Taxon);
-  }
-
-  public TermRecord(int line, String file, Term type) {
+  public TermRecord(long line, String file, Term type) {
     this.line = line;
     this.file = file;
     this.type = type;
@@ -44,11 +34,11 @@ public class TermRecord {
   /**
    * @return line number this record represents in the underlying source file
    */
-  public int getLine() {
+  public long getLine() {
     return line;
   }
 
-  public void setLine(int line) {
+  public void setLine(long line) {
     this.line = line;
   }
 

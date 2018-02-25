@@ -14,6 +14,7 @@ import org.col.admin.task.importer.neo.NeoDbFactory;
 import org.col.admin.task.importer.neo.model.RankedName;
 import org.col.api.model.*;
 import org.col.api.vocab.*;
+import org.col.db.NotFoundException;
 import org.col.db.dao.NameDao;
 import org.col.db.dao.ReferenceDao;
 import org.col.db.dao.TaxonDao;
@@ -207,6 +208,32 @@ public class PgImportIT {
 			assertEquals(expD, imported);
 		}
 	}
+
+  @Test
+  public void testAcef0() throws Exception {
+    normalizeAndImport(ACEF, 0);
+
+    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+      TaxonDao tdao = new TaxonDao(session);
+      NameDao ndao = new NameDao(session);
+
+      Name n = ndao.get("s7", dataset.getKey());
+      assertEquals("Astragalus nonexistus DC.", n.canonicalNameComplete());
+      assertEquals("Astragalus nonexistus", n.getScientificName());
+      assertEquals("DC.", n.authorshipComplete());
+      assertEquals(Rank.SPECIES, n.getRank());
+      assertTrue(n.getIssues().contains(Issue.ACCEPTED_ID_INVALID));
+
+      assertTrue(tdao.getAccepted(n).isEmpty());
+
+      try {
+        tdao.get("s7", dataset.getKey());
+        fail("Expected to throw as taxon s7 should not exist");
+      } catch (NotFoundException e) {
+        // expected
+      }
+    }
+  }
 
   @Test
   public void testAcef1() throws Exception {

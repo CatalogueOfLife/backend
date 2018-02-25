@@ -40,7 +40,7 @@ public class NeoKryoFactoryTest {
       t.taxon.addIssue(issue);
     }
 
-    t.verbatim = new VerbatimRecord();
+    t.verbatim = VerbatimRecord.create();
     for (Term term : GbifTerm.values()) {
       t.verbatim.setTerm(term, term.simpleName());
     }

@@ -24,14 +24,7 @@ public class ExtendedTermRecord extends TermRecord {
   private Map<Term, List<TermRecord>> extensions = Maps.newHashMap();
 
   public ExtendedTermRecord() {
-  }
 
-  public ExtendedTermRecord(String file) {
-    super(file);
-  }
-
-  public ExtendedTermRecord(Integer line, String file) {
-    super(line, file);
   }
 
   public ExtendedTermRecord(int line, String file, Term type) {

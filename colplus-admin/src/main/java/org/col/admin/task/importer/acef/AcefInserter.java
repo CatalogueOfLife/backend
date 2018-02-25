@@ -90,7 +90,7 @@ public class AcefInserter extends NeoInserter {
       LOG.warn("Non existing taxonID {} found in {} record line {}, {}", id, rec.getType().simpleName(), rec.getLine(), rec.getFile());
 
     } else if(t.verbatim == null){
-      LOG.warn("No verbatim data found for taxonID{} in {} record {} line {}, {}", id, rec.getType().simpleName(), rec.getLine(), rec.getFile());
+      LOG.warn("No verbatim data found for taxonID {} in {} record {} line {}, {}", id, rec.getType().simpleName(), rec.getLine(), rec.getFile());
 
     } else {
       t.verbatim.addExtensionRecord(rec.getType(), rec);

@@ -166,4 +166,12 @@ public class Classification {
     return null;
   }
 
+  public boolean isEmpty() {
+    for (Rank r : RANKS) {
+      if (getByRank(r) != null) {
+        return false;
+      }
+    }
+    return true;
+  }
 }

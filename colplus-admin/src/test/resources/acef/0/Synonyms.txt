@@ -5,3 +5,4 @@ s3	2	Astragalus		caprinus	L.	eu-caprinus	subsp.	Maire	Synonym	Synonym	urn:lsid:i
 s4	2	Astragalus		caprinus	L.	hirsutus	var.	DC.	Synonym	Synonym	urn:lsid:ildis.org:TaxonName:34779785
 s5	2	Astragalus		deserti-syriaci	Eig				Synonym	Synonym	urn:lsid:ildis.org:TaxonName:34767978
 s6	2	Astragalus		beersabeensis	Eig				Synonym	Synonym	urn:lsid:ildis.org:TaxonName:38377856
+s7	22	Astragalus		nonexistus	DC.				Synonym	Synonym	urn:lsid:ildis.org:TaxonName:38377856321
