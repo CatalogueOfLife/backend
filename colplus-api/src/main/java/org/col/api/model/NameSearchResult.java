@@ -1,7 +1,5 @@
 package org.col.api.model;
 
-import org.apache.commons.lang3.NotImplementedException;
-
 import java.util.List;
 
 public class NameSearchResult extends Name {
@@ -14,7 +12,7 @@ public class NameSearchResult extends Name {
 	}
 
 	public NameSearchResult(Name n) {
-    throw new NotImplementedException("");
+	  super(n);
 	}
 
 	/**
