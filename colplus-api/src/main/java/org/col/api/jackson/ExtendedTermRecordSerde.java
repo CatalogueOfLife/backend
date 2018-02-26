@@ -36,13 +36,15 @@ public class ExtendedTermRecordSerde {
       } else {
         jgen.writeStartObject();
           // first the core as a normal term record
-          tr.serializeFields(value, jgen);
+          tr.serializeFields(value, jgen, true);
           // now extensions
           jgen.writeObjectFieldStart(TermRecordSerde.EXT_KEY);
           for (Term rt : value.getExtensionRowTypes()) {
             jgen.writeArrayFieldStart(rt.prefixedName());
             for (TermRecord rec : value.getExtensionRecords(rt)) {
-              tr.serialize(rec, jgen, provider);
+              jgen.writeStartObject();
+              tr.serializeFields(rec, jgen, false);
+              jgen.writeEndObject();
             }
             jgen.writeEndArray();
           }
@@ -67,13 +69,14 @@ public class ExtendedTermRecordSerde {
     void handleExtensions(ExtendedTermRecord rec, JsonParser jp, DeserializationContext ctxt) throws IOException {
       nextToken(jp, JsonToken.START_OBJECT, ctxt);
       while( (jp.nextToken()) == JsonToken.FIELD_NAME ) {
-        Term rowType = TF.findTerm(jp.getText(), true);
+        Term rowType = TF.findClassTerm(jp.getText());
 
         nextToken(jp, JsonToken.START_ARRAY, ctxt);
         List<TermRecord> erecs = Lists.newArrayList();
         while ((jp.nextToken()) == JsonToken.START_OBJECT) {
-          erecs.add(tr.deserialize(TermRecord.class, new TermRecord(), jp, ctxt));
-          //nextToken(jp, JsonToken.END_OBJECT, ctxt);
+          TermRecord erec = tr.deserialize(TermRecord.class, new TermRecord(), jp, ctxt);
+          erec.setType(rowType);
+          erecs.add(erec);
         }
         rec.setExtensionRecords(rowType, erecs);
       }

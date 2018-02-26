@@ -3,7 +3,10 @@ package org.col.util.text;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Charsets;
 import com.google.common.base.Strings;
+import org.apache.commons.io.IOUtils;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.CharsetDecoder;
@@ -22,6 +25,11 @@ public class StringUtils {
   private static final char[] hexCode = "0123456789ABCDEF".toCharArray();
 
   private StringUtils() {
+  }
+
+  public static String hexStream(InputStream stream) throws IOException {
+    byte[] bytes = IOUtils.toByteArray(stream);
+    return StringUtils.hexString(bytes);
   }
 
   public static String hexString(byte[] data){

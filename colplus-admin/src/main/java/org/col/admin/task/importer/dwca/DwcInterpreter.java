@@ -184,9 +184,6 @@ public class DwcInterpreter {
           vn.setCountry(SafeParser.parse(CountryParser.PARSER, rec.getFirst(DwcTerm.countryCode, DwcTerm.country)).orNull());
           addReferences(vn, rec);
           t.vernacularNames.add(vn);
-        } else {
-          // vernacular names required
-          t.addIssue(Issue.VERNACULAR_NAME_INVALID);
         }
       }
     }

@@ -16,7 +16,7 @@ import java.util.Map;
  * {@link TermRecord} that renders terms with their prefixed term name or full URI if no prefix is known.
  */
 public class TermRecordSerde {
-  private static final String KEY_TYPE = "_type";
+  private static final String KEY_TYPE = "rowType";
   private static final String KEY_FILE = "_file";
   private static final String KEY_ROWNUM = "_line";
   static final String EXT_KEY = "extensions";
@@ -37,19 +37,21 @@ public class TermRecordSerde {
 
       } else {
         jgen.writeStartObject();
-        serializeFields(value, jgen);
+        serializeFields(value, jgen, true);
         jgen.writeEndObject();
       }
     }
 
-    void serializeFields(TermRecord value, JsonGenerator jgen) throws IOException {
-      if (value.getType() != null) {
+    void serializeFields(TermRecord value, JsonGenerator jgen, boolean serializeRowType) throws IOException {
+      if (serializeRowType && value.getType() != null) {
         jgen.writeStringField(KEY_TYPE, value.getType().prefixedName());
       }
       if (value.getFile() != null) {
         jgen.writeStringField(KEY_FILE, value.getFile());
       }
-      jgen.writeNumberField(KEY_ROWNUM, value.getLine());
+      if (value.getLine() >= 0) {
+        jgen.writeNumberField(KEY_ROWNUM, value.getLine());
+      }
       for (Map.Entry<Term, String> entry : value.termValues()) {
         jgen.writeStringField(entry.getKey().prefixedName(), entry.getValue());
       }

@@ -1,14 +1,13 @@
 package org.col.util.io;
 
+import com.google.common.base.Preconditions;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.BOMInputStream;
 import org.col.util.text.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 
@@ -21,16 +20,27 @@ public class CharsetDetectingStream extends InputStream {
   private static final Logger LOG = LoggerFactory.getLogger(CharsetDetectingStream.class);
   private Charset charset;
   private final InputStream input;
-  private final static int debugHexSize = 128;
+  private final static int debugHexSize = 16;
 
   private CharsetDetectingStream(InputStream in, Charset charset) {
     this.input = in;
     this.charset = charset;
   }
 
+  /**
+   * Creates a buffered reader skipping potential bom start sequences
+   */
+  public static BufferedReader createReader(InputStream in, Charset charset) throws IOException {
+    Preconditions.checkNotNull(in);
+    Preconditions.checkNotNull(charset);
+    return new BufferedReader(new InputStreamReader(new BOMInputStream(in), charset));
+  }
+
   public static CharsetDetectingStream create(InputStream in) throws IOException {
+    Preconditions.checkNotNull(in);
     BOMInputStream bom = new BOMInputStream(in);
     if (bom.hasBOM()) {
+      LOG.debug("{} BOM found", bom.getBOMCharsetName());
       return new CharsetDetectingStream(bom, Charset.forName(bom.getBOMCharsetName()));
 
     } else {
@@ -42,7 +52,7 @@ public class CharsetDetectingStream extends InputStream {
       if (LOG.isDebugEnabled()) {
         byte[] start = new byte[debugHexSize];
         System.arraycopy(bytes, 0, start, 0, debugHexSize);
-        LOG.debug("Buffered {} bytes, starting with\n{}", size, StringUtils.hexString(start));
+        LOG.debug("Buffered {} bytes, starting with {}", size, StringUtils.hexString(start));
       }
       bis.reset();
       // detect from buffer and create wrapped stream

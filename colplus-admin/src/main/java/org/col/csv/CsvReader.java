@@ -11,7 +11,6 @@ import com.univocity.parsers.common.ParsingContext;
 import com.univocity.parsers.common.ResultIterator;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
-import org.apache.commons.io.input.BOMInputStream;
 import org.col.api.model.TermRecord;
 import org.col.api.vocab.VocabularyUtils;
 import org.col.util.io.CharsetDetectingStream;
@@ -23,7 +22,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
-import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -220,9 +218,8 @@ public class CsvReader {
       cols = schema.columns.size();
       CsvParser parser = new CsvParser(schema.settings);
 
-      BOMInputStream in = new BOMInputStream(Files.newInputStream(schema.file));
       IterableResult<String[], ParsingContext> it = parser.iterate(
-          new BufferedReader(new InputStreamReader(in, schema.encoding))
+          CharsetDetectingStream.createReader(Files.newInputStream(schema.file), schema.encoding)
       );
       this.iter = it.iterator();
       nextRow();
