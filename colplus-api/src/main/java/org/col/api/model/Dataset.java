@@ -1,5 +1,6 @@
 package org.col.api.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.Lists;
 import org.col.api.vocab.DataFormat;
 import org.col.api.vocab.DatasetType;
@@ -222,6 +223,11 @@ public class Dataset {
 	public LocalDateTime getDeleted() {
 		return deleted;
 	}
+
+	@JsonIgnore
+  public boolean isDeleted() {
+    return deleted != null;
+  }
 
 	public void setDeleted(LocalDateTime deleted) {
 		this.deleted = deleted;
