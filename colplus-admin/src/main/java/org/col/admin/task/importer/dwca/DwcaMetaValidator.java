@@ -9,6 +9,7 @@ import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.GbifTerm;
 import org.gbif.dwc.terms.Term;
 import org.gbif.dwca.io.Archive;
+import org.gbif.dwca.io.ArchiveField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,6 +73,16 @@ public class DwcaMetaValidator {
     }
     if (arch.getCore().hasTerm(DwcTerm.acceptedNameUsageID) || arch.getCore().hasTerm(DwcTerm.acceptedNameUsage)) {
       meta.setAcceptedNameMapped(true);
+    } else {
+      if (arch.getCore().hasTerm(AcefTerm.AcceptedTaxonID)) {
+        // this sometimes gets confused with dwc - translate into dwc as we read dwc archives here
+        ArchiveField af = arch.getCore().getField(AcefTerm.AcceptedTaxonID);
+        af.setTerm(DwcTerm.acceptedNameUsageID);
+        arch.getCore().addField(af);
+        meta.setAcceptedNameMapped(true);
+      } else {
+        LOG.warn("No accepted name terms mapped");
+      }
     }
     if (arch.getCore().hasTerm(DwcTerm.originalNameUsageID) || arch.getCore().hasTerm(DwcTerm.originalNameUsage)) {
       meta.setOriginalNameMapped(true);
