@@ -1,8 +1,8 @@
-package org.col.admin.task.importer.acef;
+package org.col.csv;
 
 import org.col.api.model.TermRecord;
-import org.col.util.io.PathUtils;
 import org.gbif.dwc.terms.AcefTerm;
+import org.gbif.utils.file.FileUtils;
 import org.junit.Test;
 
 import java.util.Optional;
@@ -13,11 +13,11 @@ import static org.junit.Assert.*;
 /**
  *
  */
-public class AcefReaderTest {
+public class CsvReaderTest {
 
   @Test
   public void fromFolder() throws Exception {
-    AcefReader reader = AcefReader.from(PathUtils.classPathTestRes("acef/0"));
+    CsvReader reader = CsvReader.from(FileUtils.getClasspathFile("acef/0").toPath());
 
     AtomicInteger counter = new AtomicInteger(0);
     reader.stream(AcefTerm.AcceptedSpecies).forEach(tr -> {
@@ -42,7 +42,7 @@ public class AcefReaderTest {
 
   @Test
   public void corruptFiles() throws Exception {
-    AcefReader reader = AcefReader.from(PathUtils.classPathTestRes("acef/corrupt"));
+    CsvReader reader = CsvReader.from(FileUtils.getClasspathFile("acef/corrupt").toPath());
 
     AtomicInteger counter = new AtomicInteger(0);
     reader.stream(AcefTerm.AcceptedSpecies).forEach(tr -> {
@@ -64,12 +64,8 @@ public class AcefReaderTest {
     });
     assertEquals(3, counter.get());
 
-    Optional<TermRecord> row = reader.readFirstRow(AcefTerm.NameReferencesLinks);
+    Optional<TermRecord> row = reader.readFirstRow(AcefTerm.CommonNames);
     assertTrue(row.isPresent());
-
-    // missing required column
-    row = reader.readFirstRow(AcefTerm.CommonNames);
-    assertFalse(row.isPresent());
 
     row = reader.readFirstRow(AcefTerm.Distribution);
     assertFalse(row.isPresent());
@@ -81,7 +77,6 @@ public class AcefReaderTest {
     row = reader.readFirstRow(AcefTerm.SourceDatabase);
     // this somehow works, puzzling but ok ...
     //assertFalse(row.isPresent());
-
   }
 
 }

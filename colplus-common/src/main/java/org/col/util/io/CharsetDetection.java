@@ -1,16 +1,10 @@
 package org.col.util.io;
 
-import com.google.common.base.Charsets;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.channels.SeekableByteChannel;
@@ -47,7 +41,7 @@ public class CharsetDetection {
 
   private static final Logger LOG = LoggerFactory.getLogger(CharsetDetection.class);
 
-  private static final int CHARSET_DETECTION_BUFFER_LENGTH = 8*1024; // 8kB
+  public static final int BUFFER_SIZE = 8*1024; // 8kB
   private static final int UNDEFINED_PENALTY = 100;
   private static final char[] COMMON_NON_ASCII_CHARS;
 
@@ -69,10 +63,8 @@ public class CharsetDetection {
       .put(Charset.forName("UTF_32LE"), toBytes(new int[]{0xFF, 0xFE, 0, 0}))
       .build();
 
-  public static final Charset LATIN1 = Charsets.ISO_8859_1;
   public static final Charset WINDOWS1252;
-  public static final Charset MACROMAN;
-
+  private static final Charset MACROMAN;
   static {
     Charset cs = null;
     try {
@@ -92,7 +84,7 @@ public class CharsetDetection {
   }
 
   private final ByteBuffer buffer;
-  public static final int FIRST_BIT_MASK = 1 << 8;
+  private static final int FIRST_BIT_MASK = 1 << 8;
 
   /**
    * @param buffer the byte buffer of which we want to know the encoding.
@@ -104,58 +96,22 @@ public class CharsetDetection {
   /**
    * Detect a file encoding using up to 16kB of a file
    */
-  public static Charset detectEncoding(InputStream stream) throws IOException {
-    InputStreamReader r = buildReader(stream);
-    Charset c = Charset.forName(r.getEncoding());
-    r.close();
-    return c;
-  }
-
-  /**
-   * Detect a file encoding and build a reader with that encoding for immediate use.
-   */
-  public static InputStreamReader buildReader(InputStream stream) throws IOException {
-    byte[] bytes = new byte[CHARSET_DETECTION_BUFFER_LENGTH];
-
-    BufferedInputStream bis = new BufferedInputStream(stream, CHARSET_DETECTION_BUFFER_LENGTH);
-    bis.mark(CHARSET_DETECTION_BUFFER_LENGTH);
-    //read your bufferdInputStream
-    int size = IOUtils.read(bis, bytes, 0, CHARSET_DETECTION_BUFFER_LENGTH);
-
-    Charset charset = detectEncoding(ByteBuffer.wrap(bytes, 0, size));
-    bis.reset();
-
-    skipBom(bis, charset);
-
-    return new InputStreamReader(bis, charset);
-  }
-
-  /**
-   * Detect a file encoding using up to 16kB of a file
-   */
   public static Charset detectEncoding(Path path) throws IOException {
-    return detectEncoding(path, CHARSET_DETECTION_BUFFER_LENGTH);
+    return detectEncoding(readBuffer(path));
   }
 
-  /**
-   * @param bufferLength number of bytes to read in for the detection
-   */
-  public static Charset detectEncoding(Path path, int bufferLength) throws IOException {
-    return detectEncoding(readBuffer(path, bufferLength));
-  }
-
-  private static ByteBuffer readBuffer(Path file, int length) throws IOException {
-    Preconditions.checkArgument(length>1, "Number of bytes to read must be positive");
+  private static ByteBuffer readBuffer(Path file) throws IOException {
     try (SeekableByteChannel sbc = Files.newByteChannel(file, EnumSet.of(StandardOpenOption.READ))) {
-      ByteBuffer buff = ByteBuffer.allocate(length);
+      ByteBuffer buff = ByteBuffer.allocate(BUFFER_SIZE);
       // Position is set to 0
       buff.clear();
       sbc.read(buff);
+      buff.flip();
       return buff;
     }
   }
 
-  private static Charset detectEncoding(ByteBuffer buffer) throws IOException {
+  public static Charset detectEncoding(ByteBuffer buffer) {
     Charset charset = new CharsetDetection(buffer).detectEncoding();
     LOG.debug("Detected character encoding " + charset.displayName());
     return charset;
@@ -195,29 +151,6 @@ public class CharsetDetection {
       result[i] = (byte) ints[i];
     }
     return result;
-  }
-
-  /**
-   * Skip BOM bytes in stream
-   * @param bis
-   */
-  private static void skipBom(BufferedInputStream bis, Charset charset) throws IOException {
-    if (BOMS.containsKey(charset)) {
-      byte[] bom = BOMS.get(charset);
-      bis.mark(4);
-      boolean bomFound = true;
-      for (int b : bom) {
-        if ((byte) bis.read() != b) {
-          // no BOM, rewind & break
-          bomFound = false;
-          bis.reset();
-          break;
-        }
-      }
-      if (bomFound) {
-        LOG.debug("Skipped BOM for {}", charset);
-      }
-    }
   }
 
   private static boolean isCommonChar(char c) {
@@ -271,7 +204,7 @@ public class CharsetDetection {
     long suspicousChars;
 
     // the best guess so far
-    Charset bestEncoding = LATIN1;
+    Charset bestEncoding = StandardCharsets.ISO_8859_1;
 
     if (WINDOWS1252 != null) {
       suspicousChars = testWindows1252();
@@ -329,7 +262,7 @@ public class CharsetDetection {
     // require at least 2 bytes, use latin1 otherwise as there is no content anyways
     if (buffer.remaining() < 2) {
       LOG.debug("No content, use latin1");
-      return Charsets.ISO_8859_1;
+      return StandardCharsets.ISO_8859_1;
     }
 
     // if the file has a Byte Order Marker, we can assume the file is in UTF-xx
@@ -345,11 +278,21 @@ public class CharsetDetection {
       return cs;
     }
 
+    cs = detectUtf8();
+    if (cs != null) {
+      return cs;
+    }
+
+    // finally it must be some 8bit encoding we try to detect statistically
+    return detectCharacterEncoding8bit();
+  }
+
+  private Charset detectUtf8() {
     // if the file is in UTF-8, high order bytes must have a certain value, in order to be valid
     // if it's not the case, we can assume the encoding is some 8 bit one
-    boolean validU8Char = true;
 
-    final ByteBuffer charBytes = ByteBuffer.allocate(6);
+    final ByteBuffer contBytes = ByteBuffer.allocate(6);
+    buffer.rewind();
     while (buffer.hasRemaining()) {
       byte b = buffer.get();
       if (b < 0) {
@@ -357,14 +300,13 @@ public class CharsetDetection {
         // read expected continuation bytes
         int expBytes= bytesSequenceLength(b);
         if (expBytes > 0 && buffer.remaining() >= expBytes) {
-          charBytes.clear();
+          contBytes.clear();
           while (expBytes-- > 0) {
-            charBytes.put(buffer.get());
+            contBytes.put(buffer.get());
           }
-          charBytes.flip();
-          if (!isContinuation(charBytes)) {
-            validU8Char = false;
-            break;
+          contBytes.flip();
+          if (!isContinuation(contBytes)) {
+            return null;
           }
         }
       }
@@ -372,26 +314,20 @@ public class CharsetDetection {
 
     // if no invalid UTF-8 were encountered, we can assume the encoding is UTF-8,
     // otherwise the file would not be human readable
-    if (validU8Char) {
-      return Charsets.UTF_8;
-    }
-
-    // finally it must be some 8bit encoding we try to detect statistically
-    return detectCharacterEncoding8bit();
+    return StandardCharsets.UTF_8;
   }
 
   private Charset detectUtf16() {
 
-    // first try to see if we got a little or big endian, i.e. lots of zeros as the first byte or second byte if we deal
-    // with latin characters at least
+    // first try to see if we got a little or big endian,
+    // i.e. lots of zeros as the first byte or second byte if we deal with latin characters at least
     int zerosLE = 0;
     int zerosBE = 0;
-    boolean even = true;
+    boolean even = false;
 
+    buffer.rewind();
     while (buffer.hasRemaining()) {
-      byte b = buffer.get();
-      even = !even;
-      if (b == 0x00) {
+      if (buffer.get() == 0x00) {
         // zero occurr a lot in utf16 with latin characters
         if (even) {
           zerosLE++;
@@ -399,13 +335,14 @@ public class CharsetDetection {
           zerosBE++;
         }
       }
+      even = !even;
     }
 
     // a UTF16 encoding with many latin characters would have either lots of even or uneven bytes as zero - but not both
     buffer.rewind();
     int min = buffer.remaining() / 10;
     if ((zerosBE > min || zerosLE > min) && Math.abs(zerosBE - zerosLE) > min) {
-      Charset charset = zerosBE > zerosLE ? Charsets.UTF_16BE : Charsets.UTF_16LE;
+      Charset charset = zerosBE > zerosLE ? StandardCharsets.UTF_16BE : StandardCharsets.UTF_16LE;
 
       // now try to decode the whole lot just to make sure
       try {
@@ -416,7 +353,7 @@ public class CharsetDetection {
 
       } catch (CharacterCodingException e) {
         // finally try with the plain UTF16 encoding
-        charset = Charsets.UTF_16;
+        charset = StandardCharsets.UTF_16;
         try {
           CharsetDecoder decoder = charset.newDecoder();
           buffer.rewind();
@@ -461,7 +398,7 @@ public class CharsetDetection {
   }
 
   private long testLatin1() {
-    return testDecoder(LATIN1.newDecoder(), b ->
+    return testDecoder(StandardCharsets.ISO_8859_1.newDecoder(), b ->
         // range 7f-9f undefined, see http://de.wikipedia.org/wiki/ISO_8859-1
         (b >= (byte) 0x80 && b <= (byte) 0x9f)
     );

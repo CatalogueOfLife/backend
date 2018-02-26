@@ -6,7 +6,7 @@ import org.col.api.model.Dataset;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
+import java.nio.file.Path;
 import java.util.Optional;
 
 /**
@@ -16,10 +16,10 @@ public abstract class NeoInserter {
   private static final Logger LOG = LoggerFactory.getLogger(NeoInserter.class);
 
   protected final NeoDb store;
-  protected final File folder;
+  protected final Path folder;
   protected final InsertMetadata meta = new InsertMetadata();
 
-  public NeoInserter(File folder, NeoDb store) {
+  public NeoInserter(Path folder, NeoDb store) {
     this.folder = folder;
     this.store = store;
   }

@@ -1,0 +1,62 @@
+package org.col.util.io;
+
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.input.BOMInputStream;
+import org.col.util.text.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
+
+import static org.col.util.io.CharsetDetection.BUFFER_SIZE;
+
+/**
+ *
+ */
+public class CharsetDetectingStream extends InputStream {
+  private static final Logger LOG = LoggerFactory.getLogger(CharsetDetectingStream.class);
+  private Charset charset;
+  private final InputStream input;
+  private final static int debugHexSize = 128;
+
+  private CharsetDetectingStream(InputStream in, Charset charset) {
+    this.input = in;
+    this.charset = charset;
+  }
+
+  public static CharsetDetectingStream create(InputStream in) throws IOException {
+    BOMInputStream bom = new BOMInputStream(in);
+    if (bom.hasBOM()) {
+      return new CharsetDetectingStream(bom, Charset.forName(bom.getBOMCharsetName()));
+
+    } else {
+      // if we cannot find a BOM try to detect heuristically extracting a larger byte buffer first
+      BufferedInputStream bis = new BufferedInputStream(bom, BUFFER_SIZE);
+      bis.mark(BUFFER_SIZE);
+      byte[] bytes = new byte[BUFFER_SIZE];
+      int size = IOUtils.read(bis, bytes, 0, BUFFER_SIZE);
+      if (LOG.isDebugEnabled()) {
+        byte[] start = new byte[debugHexSize];
+        System.arraycopy(bytes, 0, start, 0, debugHexSize);
+        LOG.debug("Buffered {} bytes, starting with\n{}", size, StringUtils.hexString(start));
+      }
+      bis.reset();
+      // detect from buffer and create wrapped stream
+      Charset cs = CharsetDetection.detectEncoding(ByteBuffer.wrap(bytes, 0, size));
+      return new CharsetDetectingStream(bis, cs);
+    }
+  }
+
+  public Charset getCharset() {
+    return charset;
+  }
+
+  @Override
+  public int read() throws IOException {
+    return input.read();
+  }
+}

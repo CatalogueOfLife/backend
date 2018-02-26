@@ -19,8 +19,25 @@ public class StringUtils {
   private static Pattern MARKER = Pattern.compile("\\p{M}");
   private static final Pattern OCT = Pattern.compile("^[0-7]+$");
   private static final Pattern HEX = Pattern.compile("^[0-9abcdefABCDEF]+$");
+  private static final char[] hexCode = "0123456789ABCDEF".toCharArray();
 
   private StringUtils() {
+  }
+
+  public static String hexString(byte[] data){
+    StringBuilder r = new StringBuilder(data.length * 2);
+    int counter = 0;
+    for (byte b : data) {
+      r.append(hexCode[(b >> 4) & 0xF]);
+      r.append(hexCode[(b & 0xF)]);
+      counter++;
+      if (counter % 16 == 0) {
+        r.append("\n");
+      } else if (counter % 2 == 0) {
+        r.append(" ");
+      }
+    }
+    return r.toString();
   }
 
   /**

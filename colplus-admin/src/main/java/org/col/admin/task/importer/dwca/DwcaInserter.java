@@ -15,8 +15,8 @@ import org.gbif.dwca.record.StarRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Optional;
 
 /**
@@ -29,7 +29,7 @@ public class DwcaInserter extends NeoInserter {
   private Archive arch;
   private DwcInterpreter interpreter;
 
-  public DwcaInserter(NeoDb store, File dwca) throws IOException {
+  public DwcaInserter(NeoDb store, Path dwca) throws IOException {
     super(dwca, store);
   }
 
@@ -91,13 +91,13 @@ public class DwcaInserter extends NeoInserter {
     meta.incRecords(i.name.getRank());
   }
 
-  private void openArchive(File dwca) throws NormalizationFailedException {
+  private void openArchive(Path dwca) throws NormalizationFailedException {
     try {
       LOG.info("Reading dwc archive from {}", dwca);
-      arch = ArchiveFactory.openArchive(dwca);
+      arch = ArchiveFactory.openArchive(dwca.toFile());
       DwcaMetaValidator.check(arch, meta);
     } catch (IOException e) {
-      throw new NormalizationFailedException("IOException opening archive " + dwca.getAbsolutePath(), e);
+      throw new NormalizationFailedException("IOException opening archive " + dwca, e);
     }
   }
 

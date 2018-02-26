@@ -1,10 +1,15 @@
 package org.col.util;
 
-import com.google.common.base.Charsets;
 import org.col.util.io.CharsetDetection;
+import org.col.util.io.PathUtils;
 import org.junit.Test;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.charset.Charset;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import static org.junit.Assert.assertEquals;
 
@@ -15,10 +20,33 @@ public class CharsetDetectionTest {
 
   @Test
   public void detectEncoding() throws Exception {
-    assertEquals(Charsets.UTF_8, CharsetDetection.detectEncoding(getClass().getResource("/utf8.txt").openStream()));
-    assertEquals(Charsets.UTF_16BE, CharsetDetection.detectEncoding(getClass().getResource("/UTF16BE.txt").openStream()));
-    assertEquals(Charsets.ISO_8859_1, CharsetDetection.detectEncoding(getClass().getResource("/latin1.txt").openStream()));
-    assertEquals(Charset.forName("windows-1252"), CharsetDetection.detectEncoding(getClass().getResource("/windows.txt").openStream()));
+    for (Path p : testFiles()) {
+      System.out.println("\n***** " + PathUtils.getFilename(p) + " *****");
+      Charset expected = expectedCharset(p);
+      Charset detected = CharsetDetection.detectEncoding(p);
+      System.out.println(" -> " + detected);
+      assertEquals(PathUtils.getFilename(p), expected, detected);
+    }
+  }
+
+  public static Iterable<Path> testFiles() throws IOException, URISyntaxException {
+    Path folder = PathUtils.classPathTestRes("charsets");
+
+    return Files.newDirectoryStream(folder, new DirectoryStream.Filter<Path>() {
+      @Override
+      public boolean accept(Path p) throws IOException {
+        return Files.isRegularFile(p);
+      }
+    });
+  }
+
+  public static Charset expectedCharset(Path p) throws URISyntaxException {
+    String name = PathUtils.getBasename(p);
+    int idx = name.indexOf("_");
+    if (idx > 0) {
+      name = name.substring(0, idx);
+    }
+    return Charset.forName(name);
   }
 
   private static void showBits(byte param) {

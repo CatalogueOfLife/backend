@@ -117,7 +117,7 @@ public class NormalizerTreeIT {
 
       store = NeoDbFactory.create(datasetKey, cfg);
 
-      Normalizer norm = new Normalizer(store, source.toFile(), format);
+      Normalizer norm = new Normalizer(store, source, format);
       try {
         norm.run();
 

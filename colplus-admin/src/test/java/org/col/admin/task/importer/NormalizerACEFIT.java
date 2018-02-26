@@ -72,7 +72,7 @@ public class NormalizerACEFIT {
 
       store = NeoDbFactory.create(1, cfg);
 
-      Normalizer norm = new Normalizer(store, acef.toFile(), DataFormat.ACEF);
+      Normalizer norm = new Normalizer(store, acef, DataFormat.ACEF);
       norm.run();
 
       // reopen

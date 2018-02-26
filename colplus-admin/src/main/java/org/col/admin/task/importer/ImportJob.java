@@ -18,6 +18,7 @@ import org.slf4j.MDC;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.concurrent.Callable;
@@ -70,7 +71,7 @@ public class ImportJob implements Callable<DatasetImport> {
   }
 
   private void importDataset() {
-    final File dwcaDir = cfg.normalizer.sourceDir(datasetKey);
+    final Path dwcaDir = cfg.normalizer.sourceDir(datasetKey).toPath();
     NeoDb store = null;
 
     try {
@@ -89,7 +90,7 @@ public class ImportJob implements Callable<DatasetImport> {
         di.setDownload(downloader.lastModified(source));
 
         LOG.info("Extracting files from archive {}", datasetKey);
-        CompressionUtil.decompressFile(dwcaDir, source);
+        CompressionUtil.decompressFile(dwcaDir.toFile(), source);
 
         LOG.info("Normalizing {}!", datasetKey);
         store = NeoDbFactory.create(datasetKey, cfg.normalizer);

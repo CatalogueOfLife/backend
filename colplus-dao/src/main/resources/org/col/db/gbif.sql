@@ -95,3 +95,5 @@ INSERT INTO dataset (data_format, gbif_key, data_access, title) VALUES (0, '0b36
 INSERT INTO dataset (data_format, gbif_key, data_access, title) VALUES (0, '2204aafd-c27c-4ebb-a5a1-2614679cb215', 'http://services.snsb.info/DTNtaxonlists/rest/v0.1/lists/DiversityTaxonNames_Insecta/865/dwc',    'Taxon list of Dictyoptera from Germany compiled in the context of the GBOL project');
 INSERT INTO dataset (data_format, gbif_key, data_access, title) VALUES (0, 'd2c9167d-cd03-4589-9323-f36fdbf14be4', 'http://services.snsb.info/DTNtaxonlists/rest/v0.1/lists/DiversityTaxonNames_Insecta/381/dwc',    'Taxon list of Orthoptera (Grashoppers) from Germany compiled at the SNSB');
 -- Plazi is excluded as its too large and changes constantly. Use the GBIF sync feature instead!
+-- non backbone lists
+INSERT INTO dataset (data_format, gbif_key, data_access, title) VALUES (0, '8067e0a2-a26d-4831-8a1e-21b9118a299c', 'https://github.com/mdoering/ggi-families/archive/master.zip', 'Families of Living Organisms (FALO)');

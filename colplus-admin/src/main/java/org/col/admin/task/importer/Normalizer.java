@@ -20,8 +20,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
@@ -32,11 +32,11 @@ import java.util.Set;
 public class Normalizer implements Runnable {
   private static final Logger LOG = LoggerFactory.getLogger(Normalizer.class);
   private final DataFormat format;
-  private final File sourceDir;
+  private final Path sourceDir;
   private final NeoDb store;
   private InsertMetadata meta;
 
-  public Normalizer(NeoDb store, File sourceDir, DataFormat format) {
+  public Normalizer(NeoDb store, Path sourceDir, DataFormat format) {
     this.sourceDir = sourceDir;
     this.store = store;
     this.format = format;
@@ -105,7 +105,6 @@ public class Normalizer implements Runnable {
 
       // taxon or synonym
       if (t.isSynonym()) {
-        //notEmpty(t.synonym.accepted, "accepted taxa", id);
         for (Taxon acc : t.synonym.accepted) {
           require(acc.getKey(), "accepted key", id);
         }

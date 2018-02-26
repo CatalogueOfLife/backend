@@ -82,7 +82,7 @@ public class PgImportIT {
       session.close();
 
       // normalize
-      Normalizer norm = new Normalizer(NeoDbFactory.create(dataset.getKey(), cfg), source.toFile(), dataset.getDataFormat());
+      Normalizer norm = new Normalizer(NeoDbFactory.create(dataset.getKey(), cfg), source, dataset.getDataFormat());
       norm.run();
 
       // import into postgres

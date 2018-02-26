@@ -15,6 +15,7 @@
     <logger name="org.col" level="INFO"/>
     <logger name="org.col.admin" level="DEBUG"/>
     <logger name="org.col.csv" level="DEBUG"/>
+    <logger name="org.col.util.io" level="DEBUG"/>
 
     <root level="INFO">
         <appender-ref ref="CONSOLE"/>

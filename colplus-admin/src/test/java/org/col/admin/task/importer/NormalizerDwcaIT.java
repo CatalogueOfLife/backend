@@ -61,7 +61,7 @@ public class NormalizerDwcaIT {
 
     store = NeoDbFactory.create(datasetKey, cfg);
 
-    Normalizer norm = new Normalizer(store, dwca.toFile(), DataFormat.DWCA);
+    Normalizer norm = new Normalizer(store, dwca, DataFormat.DWCA);
     norm.run();
 
     // reopen
@@ -119,12 +119,24 @@ public class NormalizerDwcaIT {
 
     try (Transaction tx = store.getNeo().beginTx()) {
       NeoTaxon trametes_modesta = byTaxonID("324805");
+      trametes_modesta = byTaxonID("324805");
+      assertFalse(trametes_modesta.isSynonym());
       assertEquals(1, trametes_modesta.acts.size());
 
       Reference pubIn = store.refByKey(trametes_modesta.acts.get(0).getReferenceKey());
       assertEquals("Norw. Jl Bot. 19: 236 (1972)", pubIn.getTitle());
       assertNotNull(pubIn.getKey());
       assertNull(pubIn.getId());
+
+      NeoTaxon Polystictus_substipitatus = byTaxonID("140283");
+      assertTrue(Polystictus_substipitatus.isSynonym());
+      assertEquals(1, Polystictus_substipitatus.synonym.accepted.size());
+      assertEquals(1, Polystictus_substipitatus.acts.size());
+
+      NeoTaxon Polyporus_modestus = byTaxonID("198666");
+      assertTrue(Polyporus_modestus.isSynonym());
+      assertEquals(1, Polyporus_modestus.synonym.accepted.size());
+      assertEquals(1, Polyporus_modestus.acts.size());
     }
   }
 

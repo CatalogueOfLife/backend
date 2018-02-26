@@ -18,8 +18,8 @@ import org.neo4j.graphdb.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Map;
 import java.util.Optional;
 
@@ -35,7 +35,7 @@ public class AcefInserter extends NeoInserter {
   private AcefReader reader;
   private AcefInterpreter inter;
 
-  public AcefInserter(NeoDb store, File folder) throws IOException {
+  public AcefInserter(NeoDb store, Path folder) throws IOException {
     super(folder, store);
   }
 
@@ -70,8 +70,8 @@ public class AcefInserter extends NeoInserter {
   @Override
   public void insert() throws NormalizationFailedException {
     try (Transaction tx = store.getNeo().beginTx()){
-      reader.read(AcefTerm.Distribution).forEach(this::addVerbatimRecord);
-      reader.read(AcefTerm.CommonNames).forEach(this::addVerbatimRecord);
+      reader.stream(AcefTerm.Distribution).forEach(this::addVerbatimRecord);
+      reader.stream(AcefTerm.CommonNames).forEach(this::addVerbatimRecord);
 
     } catch (RuntimeException e) {
       throw new NormalizationFailedException("Failed to read ACEF files", e);
@@ -100,14 +100,14 @@ public class AcefInserter extends NeoInserter {
 
   private void insertTaxaAndNames() {
     // species
-    reader.read(AcefTerm.AcceptedSpecies).forEach( rec -> {
+    reader.stream(AcefTerm.AcceptedSpecies).forEach( rec -> {
       VerbatimRecord v = VerbatimRecordFactory.build(rec.get(AcefTerm.AcceptedTaxonID), rec);
       NeoTaxon t = inter.interpretTaxon(v, false);
       store.put(t);
       meta.incRecords(t.name.getRank());
     });
     // infraspecies
-    reader.read(AcefTerm.AcceptedInfraSpecificTaxa).forEach( rec -> {
+    reader.stream(AcefTerm.AcceptedInfraSpecificTaxa).forEach( rec -> {
       VerbatimRecord v = VerbatimRecordFactory.build(rec.get(AcefTerm.AcceptedTaxonID), rec);
       NeoTaxon t = inter.interpretTaxon(v, false);
       if (!t.name.getRank().isInfraspecific()) {
@@ -118,7 +118,7 @@ public class AcefInserter extends NeoInserter {
       meta.incRecords(t.name.getRank());
     });
     // synonyms
-    reader.read(AcefTerm.Synonyms).forEach( rec -> {
+    reader.stream(AcefTerm.Synonyms).forEach( rec -> {
       VerbatimRecord v = VerbatimRecordFactory.build(rec.get(AcefTerm.ID), rec);
       NeoTaxon t = inter.interpretTaxon(v, true);
       store.put(t);
@@ -127,7 +127,7 @@ public class AcefInserter extends NeoInserter {
   }
 
   private void insertReferences() {
-    reader.read(AcefTerm.Reference).forEach( rec -> {
+    reader.stream(AcefTerm.Reference).forEach( rec -> {
       Reference ref = Reference.create();
       ref.setId(rec.get(AcefTerm.ReferenceID));
       ref.setTitle(rec.get(AcefTerm.Title));
