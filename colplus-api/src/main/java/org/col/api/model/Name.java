@@ -7,13 +7,11 @@ import org.col.api.vocab.NomStatus;
 import org.col.api.vocab.Origin;
 import org.gbif.nameparser.api.*;
 import org.gbif.nameparser.util.NameFormatter;
-
 import javax.annotation.Nonnull;
 import java.net.URI;
 import java.util.EnumSet;
 import java.util.Objects;
 import java.util.Set;
-
 import static org.gbif.nameparser.util.NameFormatter.HYBRID_MARKER;
 
 /**
@@ -21,41 +19,40 @@ import static org.gbif.nameparser.util.NameFormatter.HYBRID_MARKER;
  */
 public class Name implements PrimaryEntity {
 
-	/**
-	 * Internal surrogate key of the name as provided by postgres. This key is
-	 * unique across all datasets but not exposed in the API.
-	 */
-	private Integer key;
+  /**
+   * Internal surrogate key of the name as provided by postgres. This key is unique across all
+   * datasets but not exposed in the API.
+   */
+  private Integer key;
 
-	/**
-	 * Primary key of the name as given in the dataset dwc:scientificNameID. Only
-	 * guaranteed to be unique within a dataset and can follow any kind of schema.
-	 */
-	private String id;
+  /**
+   * Primary key of the name as given in the dataset dwc:scientificNameID. Only guaranteed to be
+   * unique within a dataset and can follow any kind of schema.
+   */
+  private String id;
 
-	/**
-	 * Key to dataset instance. Defines context of the name key.
-	 */
-	private Integer datasetKey;
+  /**
+   * Key to dataset instance. Defines context of the name key.
+   */
+  private Integer datasetKey;
 
   /**
    * Link to the original combination. In case of [replacement
-   * names](https://en.wikipedia.org/wiki/Nomen_novum) it points back to the
-   * replaced synonym.
+   * names](https://en.wikipedia.org/wiki/Nomen_novum) it points back to the replaced synonym.
    */
   private Integer basionymKey;
 
-	/**
-	 * Global name identifier from a nomenclator or the clearinghouse
-	 */
-	private String scientificNameID;
+  /**
+   * Global name identifier from a nomenclator or the clearinghouse
+   */
+  private String scientificNameID;
 
-	/**
-	 * Entire canonical name string with a rank marker for infragenerics and
-	 * infraspecfics, but excluding the authorship. For uninomials, e.g. families or
-	 * names at higher ranks, this is just the uninomial.
-	 */
-	private String scientificName;
+  /**
+   * Entire canonical name string with a rank marker for infragenerics and infraspecfics, but
+   * excluding the authorship. For uninomials, e.g. families or names at higher ranks, this is just
+   * the uninomial.
+   */
+  private String scientificName;
 
   /**
    * Rank of the name from enumeration
@@ -64,19 +61,20 @@ public class Name implements PrimaryEntity {
   private Rank rank = Rank.UNRANKED;
 
   /**
-   * Represents the monomial for genus, families or names at higher ranks which do not have further epithets.
+   * Represents the monomial for genus, families or names at higher ranks which do not have further
+   * epithets.
    */
   private String uninomial;
 
   /**
-   * The genus part of a bi- or trinomial name. Not used for genus names which are
-   * represented by the scientificName alone.
+   * The genus part of a bi- or trinomial name. Not used for genus names which are represented by
+   * the scientificName alone.
    */
   private String genus;
 
   /**
-   * The infrageneric epithet.
-   * Used as the terminal epithet for names at infrageneric ranks and optionally also for binomials
+   * The infrageneric epithet. Used as the terminal epithet for names at infrageneric ranks and
+   * optionally also for binomials
    */
   private String infragenericEpithet;
 
@@ -89,18 +87,16 @@ public class Name implements PrimaryEntity {
   private String strain;
 
   /**
-   * A bacterial candidate name.
-   * Candidatus is a provisional status for incompletely described procaryotes
-   * (e.g. that cannot be maintained in a Bacteriology Culture Collection)
-   * which was published in the January 1995.
-   * The category Candidatus is not covered by the Rules of the Bacteriological Code but is a taxonomic assignment.
+   * A bacterial candidate name. Candidatus is a provisional status for incompletely described
+   * procaryotes (e.g. that cannot be maintained in a Bacteriology Culture Collection) which was
+   * published in the January 1995. The category Candidatus is not covered by the Rules of the
+   * Bacteriological Code but is a taxonomic assignment.
    *
-   * The names included in the category Candidatus are usually written as follows:
-   * Candidatus (in italics), the subsequent name(s) in roman type and the entire name in quotation marks.
-   * For example, "Candidatus Phytoplasma", "Candidatus Phytoplasma allocasuarinae".
+   * The names included in the category Candidatus are usually written as follows: Candidatus (in
+   * italics), the subsequent name(s) in roman type and the entire name in quotation marks. For
+   * example, "Candidatus Phytoplasma", "Candidatus Phytoplasma allocasuarinae".
    *
-   * See http://www.bacterio.net/-candidatus.html
-   * and https://en.wikipedia.org/wiki/Candidatus
+   * See http://www.bacterio.net/-candidatus.html and https://en.wikipedia.org/wiki/Candidatus
    */
   private boolean candidatus;
 
@@ -110,8 +106,8 @@ public class Name implements PrimaryEntity {
   private NamePart notho;
 
   /**
-   * Authorship with years of the name, but excluding any basionym authorship.
-   * For binomials the combination authors.
+   * Authorship with years of the name, but excluding any basionym authorship. For binomials the
+   * combination authors.
    */
   private Authorship combinationAuthorship = new Authorship();
 
@@ -121,53 +117,81 @@ public class Name implements PrimaryEntity {
   private Authorship basionymAuthorship = new Authorship();
 
   /**
-   * The sanctioning author for sanctioned fungal names.
-   * Fr. or Pers.
+   * The sanctioning author for sanctioned fungal names. Fr. or Pers.
    */
   private String sanctioningAuthor;
 
   private NomCode code;
 
   /**
-   * Current nomenclatural status of the name taking into account all known
-   * nomenclatural acts.
+   * Current nomenclatural status of the name taking into account all known nomenclatural acts.
    */
   private NomStatus status;
 
   private Origin origin;
 
   /**
-   * The kind of name classified in broad catagories based on their syntactical
-   * structure
+   * The kind of name classified in broad catagories based on their syntactical structure
    */
   private NameType type;
 
-	private URI sourceUrl;
+  private URI sourceUrl;
 
-	/**
-	 * true if the type specimen of the name is a fossil
-	 */
-	private Boolean fossil;
+  /**
+   * true if the type specimen of the name is a fossil
+   */
+  private Boolean fossil;
 
   /**
    * Any informal remarks found in the name
    */
   private String remarks;
 
-	/**
-	 * Issues related to this name
-	 */
-	private Set<Issue> issues = EnumSet.noneOf(Issue.class);
+  /**
+   * Issues related to this name
+   */
+  private Set<Issue> issues = EnumSet.noneOf(Issue.class);
 
+  public Name() {}
 
-
-  public Name() {
-	}
+  /**
+   * Creates a shallow copy of the provided Name instance.
+   * @param n
+   */
+  public Name(Name n) {
+    this.key = n.key;
+    this.id = n.id;
+    this.datasetKey = n.datasetKey;
+    this.basionymKey = n.basionymKey;
+    this.scientificNameID = n.scientificNameID;
+    this.scientificName = n.scientificName;
+    this.rank = n.rank;
+    this.uninomial = n.uninomial;
+    this.genus = n.genus;
+    this.infragenericEpithet = n.infragenericEpithet;
+    this.specificEpithet = n.specificEpithet;
+    this.infraspecificEpithet = n.infraspecificEpithet;
+    this.cultivarEpithet = n.cultivarEpithet;
+    this.strain = n.strain;
+    this.candidatus = n.candidatus;
+    this.notho = n.notho;
+    this.combinationAuthorship = n.combinationAuthorship;
+    this.basionymAuthorship = n.basionymAuthorship;
+    this.sanctioningAuthor = n.sanctioningAuthor;
+    this.code = n.code;
+    this.status = n.status;
+    this.origin = n.origin;
+    this.type = n.type;
+    this.sourceUrl = n.sourceUrl;
+    this.fossil = n.fossil;
+    this.remarks = n.remarks;
+    this.issues = n.issues;
+  }
 
   /**
    * @return a ParsedName instance representing this name
    */
-	public static ParsedName toParsedName(Name n) {
+  public static ParsedName toParsedName(Name n) {
     ParsedName pn = new ParsedName();
     pn.setUninomial(n.getUninomial());
     pn.setGenus(n.getGenus());
@@ -188,45 +212,45 @@ public class Name implements PrimaryEntity {
     return pn;
   }
 
-	public Integer getKey() {
-		return key;
-	}
+  public Integer getKey() {
+    return key;
+  }
 
-	public void setKey(Integer key) {
-		this.key = key;
-	}
+  public void setKey(Integer key) {
+    this.key = key;
+  }
 
-	public String getId() {
-		return id;
-	}
+  public String getId() {
+    return id;
+  }
 
-	public void setId(String id) {
-		this.id = id;
-	}
+  public void setId(String id) {
+    this.id = id;
+  }
 
-	public Integer getDatasetKey() {
-		return datasetKey;
-	}
+  public Integer getDatasetKey() {
+    return datasetKey;
+  }
 
-	public void setDatasetKey(Integer key) {
-		this.datasetKey = key;
-	}
+  public void setDatasetKey(Integer key) {
+    this.datasetKey = key;
+  }
 
-	public String getScientificNameID() {
-		return scientificNameID;
-	}
+  public String getScientificNameID() {
+    return scientificNameID;
+  }
 
-	public void setScientificNameID(String scientificNameID) {
-		this.scientificNameID = scientificNameID;
-	}
+  public void setScientificNameID(String scientificNameID) {
+    this.scientificNameID = scientificNameID;
+  }
 
-	public String getScientificName() {
-		return scientificName;
-	}
+  public String getScientificName() {
+    return scientificName;
+  }
 
-	public void setScientificName(String scientificName) {
-		this.scientificName = scientificName;
-	}
+  public void setScientificName(String scientificName) {
+    this.scientificName = scientificName;
+  }
 
   /**
    * Updates the scientific name property based on the parsed properties
@@ -235,61 +259,57 @@ public class Name implements PrimaryEntity {
     this.scientificName = canonicalNameWithoutAuthorship();
   }
 
-	public Origin getOrigin() {
-		return origin;
-	}
+  public Origin getOrigin() {
+    return origin;
+  }
 
-	public void setOrigin(Origin origin) {
-		this.origin = origin;
-	}
+  public void setOrigin(Origin origin) {
+    this.origin = origin;
+  }
 
-	public Integer getBasionymKey() {
-		return basionymKey;
-	}
+  public Integer getBasionymKey() {
+    return basionymKey;
+  }
 
-	public void setBasionymKey(Integer key) {
-		this.basionymKey = key;
-	}
+  public void setBasionymKey(Integer key) {
+    this.basionymKey = key;
+  }
 
-	public Boolean getFossil() {
-		return fossil;
-	}
+  public Boolean getFossil() {
+    return fossil;
+  }
 
-	public void setFossil(Boolean fossil) {
-		this.fossil = fossil;
-	}
+  public void setFossil(Boolean fossil) {
+    this.fossil = fossil;
+  }
 
-	public NomStatus getStatus() {
-		return status;
-	}
+  public NomStatus getStatus() {
+    return status;
+  }
 
-	public void setStatus(NomStatus status) {
-		this.status = status;
-	}
+  public void setStatus(NomStatus status) {
+    this.status = status;
+  }
 
-	public URI getSourceUrl() {
-		return sourceUrl;
-	}
+  public URI getSourceUrl() {
+    return sourceUrl;
+  }
 
-	public void setSourceUrl(URI sourceUrl) {
-		this.sourceUrl = sourceUrl;
-	}
+  public void setSourceUrl(URI sourceUrl) {
+    this.sourceUrl = sourceUrl;
+  }
 
-	public Set<Issue> getIssues() {
-		return issues;
-	}
+  public Set<Issue> getIssues() {
+    return issues;
+  }
 
-	public void setIssues(Set<Issue> issues) {
-		this.issues = issues;
-	}
+  public void setIssues(Set<Issue> issues) {
+    this.issues = issues;
+  }
 
-	public void addIssue(Issue issue) {
-		issues.add(issue);
-	}
-
-
-
-
+  public void addIssue(Issue issue) {
+    issues.add(issue);
+  }
 
   public Authorship getCombinationAuthorship() {
     return combinationAuthorship;
@@ -471,7 +491,8 @@ public class Name implements PrimaryEntity {
 
   @JsonIgnore
   public boolean isAutonym() {
-    return specificEpithet != null && infraspecificEpithet != null && specificEpithet.equals(infraspecificEpithet);
+    return specificEpithet != null && infraspecificEpithet != null
+        && specificEpithet.equals(infraspecificEpithet);
   }
 
   /**
@@ -483,11 +504,12 @@ public class Name implements PrimaryEntity {
   }
 
   /**
-   * @return true if the name is a trinomial with at least a genus, species and infraspecific epithet given.
+   * @return true if the name is a trinomial with at least a genus, species and infraspecific
+   *         epithet given.
    */
   @JsonIgnore
   public boolean isTrinomial() {
-    return isBinomial() && infraspecificEpithet!= null;
+    return isBinomial() && infraspecificEpithet != null;
   }
 
   @JsonIgnore
@@ -499,13 +521,13 @@ public class Name implements PrimaryEntity {
   }
 
   /**
-   * Validates consistency of name properties. This method checks if the given
-   * rank matches populated properties and available properties make sense
-   * together.
+   * Validates consistency of name properties. This method checks if the given rank matches
+   * populated properties and available properties make sense together.
    */
   @JsonIgnore
   public boolean isConsistent() {
-    if (uninomial != null && (genus != null || infragenericEpithet != null || specificEpithet != null || infraspecificEpithet != null)) {
+    if (uninomial != null && (genus != null || infragenericEpithet != null
+        || specificEpithet != null || infraspecificEpithet != null)) {
       return false;
 
     } else if (genus == null && (specificEpithet != null || infragenericEpithet != null)) {
@@ -546,11 +568,13 @@ public class Name implements PrimaryEntity {
    * @return true if there is any parsed content
    */
   public boolean isParsed() {
-    return uninomial != null || genus != null || infragenericEpithet!= null || specificEpithet != null || infraspecificEpithet!= null;
+    return uninomial != null || genus != null || infragenericEpithet != null
+        || specificEpithet != null || infraspecificEpithet != null;
   }
 
   /**
-   * @return true if there is no parsed content or a scientific name. All canonical name methods should return null in this case!
+   * @return true if there is no parsed content or a scientific name. All canonical name methods
+   *         should return null in this case!
    */
   @JsonIgnore
   public boolean isEmpty() {
@@ -561,36 +585,29 @@ public class Name implements PrimaryEntity {
    * @See NameFormatter.canonical()
    */
   public String canonicalName() {
-    return isParsed() ?
-        NameFormatter.canonical(toParsedName(this)) :
-        getScientificName();
+    return isParsed() ? NameFormatter.canonical(toParsedName(this)) : getScientificName();
   }
 
   /**
    * @See NameFormatter.canonicalNameWithoutAuthorship()
    */
   public String canonicalNameWithoutAuthorship() {
-    return isParsed() ?
-        NameFormatter.canonicalWithoutAuthorship(toParsedName(this)) :
-        getScientificName();
+    return isParsed() ? NameFormatter.canonicalWithoutAuthorship(toParsedName(this))
+        : getScientificName();
   }
 
   /**
    * @See NameFormatter.canonicalMinimal()
    */
   public String canonicalNameMinimal() {
-    return isParsed() ?
-        NameFormatter.canonicalMinimal(toParsedName(this)) :
-        getScientificName();
+    return isParsed() ? NameFormatter.canonicalMinimal(toParsedName(this)) : getScientificName();
   }
 
   /**
    * @See NameFormatter.canonicalComplete()
    */
   public String canonicalNameComplete() {
-    return isParsed() ?
-        NameFormatter.canonicalComplete(toParsedName(this)) :
-        getScientificName();
+    return isParsed() ? NameFormatter.canonicalComplete(toParsedName(this)) : getScientificName();
   }
 
   /**
@@ -602,54 +619,47 @@ public class Name implements PrimaryEntity {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+    if (this == o)
+      return true;
+    if (o == null || getClass() != o.getClass())
+      return false;
     Name name = (Name) o;
-    return candidatus == name.candidatus &&
-        Objects.equals(key, name.key) &&
-        Objects.equals(id, name.id) &&
-        Objects.equals(datasetKey, name.datasetKey) &&
-        Objects.equals(basionymKey, name.basionymKey) &&
-        Objects.equals(scientificNameID, name.scientificNameID) &&
-        Objects.equals(scientificName, name.scientificName) &&
-        rank == name.rank &&
-        Objects.equals(uninomial, name.uninomial) &&
-        Objects.equals(genus, name.genus) &&
-        Objects.equals(infragenericEpithet, name.infragenericEpithet) &&
-        Objects.equals(specificEpithet, name.specificEpithet) &&
-        Objects.equals(infraspecificEpithet, name.infraspecificEpithet) &&
-        Objects.equals(cultivarEpithet, name.cultivarEpithet) &&
-        Objects.equals(strain, name.strain) &&
-        notho == name.notho &&
-        Objects.equals(combinationAuthorship, name.combinationAuthorship) &&
-        Objects.equals(basionymAuthorship, name.basionymAuthorship) &&
-        Objects.equals(sanctioningAuthor, name.sanctioningAuthor) &&
-        code == name.code &&
-        type == name.type &&
-        origin == name.origin &&
-        Objects.equals(sourceUrl, name.sourceUrl) &&
-        Objects.equals(fossil, name.fossil) &&
-        status == name.status &&
-        Objects.equals(remarks, name.remarks) &&
-        Objects.equals(issues, name.issues);
+    return candidatus == name.candidatus && Objects.equals(key, name.key)
+        && Objects.equals(id, name.id) && Objects.equals(datasetKey, name.datasetKey)
+        && Objects.equals(basionymKey, name.basionymKey)
+        && Objects.equals(scientificNameID, name.scientificNameID)
+        && Objects.equals(scientificName, name.scientificName) && rank == name.rank
+        && Objects.equals(uninomial, name.uninomial) && Objects.equals(genus, name.genus)
+        && Objects.equals(infragenericEpithet, name.infragenericEpithet)
+        && Objects.equals(specificEpithet, name.specificEpithet)
+        && Objects.equals(infraspecificEpithet, name.infraspecificEpithet)
+        && Objects.equals(cultivarEpithet, name.cultivarEpithet)
+        && Objects.equals(strain, name.strain) && notho == name.notho
+        && Objects.equals(combinationAuthorship, name.combinationAuthorship)
+        && Objects.equals(basionymAuthorship, name.basionymAuthorship)
+        && Objects.equals(sanctioningAuthor, name.sanctioningAuthor) && code == name.code
+        && type == name.type && origin == name.origin && Objects.equals(sourceUrl, name.sourceUrl)
+        && Objects.equals(fossil, name.fossil) && status == name.status
+        && Objects.equals(remarks, name.remarks) && Objects.equals(issues, name.issues);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(key, id, datasetKey, basionymKey, scientificNameID, scientificName, rank, uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, strain, candidatus, notho, combinationAuthorship, basionymAuthorship, sanctioningAuthor, code, type, origin, sourceUrl, fossil, status, remarks, issues);
+    return Objects.hash(key, id, datasetKey, basionymKey, scientificNameID, scientificName, rank,
+        uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet,
+        cultivarEpithet, strain, candidatus, notho, combinationAuthorship, basionymAuthorship,
+        sanctioningAuthor, code, type, origin, sourceUrl, fossil, status, remarks, issues);
   }
 
   @Override
-	public String toString() {
-		return key + "[" + id + "] " + canonicalNameComplete();
-	}
+  public String toString() {
+    return key + "[" + id + "] " + canonicalNameComplete();
+  }
 
   public String toStringComplete() {
     StringBuilder sb = new StringBuilder();
 
-    sb.append(key)
-        .append("/")
-        .append(id);
+    sb.append(key).append("/").append(id);
 
     if (this.type != null) {
       sb.append("[");
