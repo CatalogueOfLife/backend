@@ -319,19 +319,27 @@ public class NeoDb implements NormalizerStore, ReferenceStore {
 
     openNeo();
     // now try to add a taxonID unique constraint. If it fails we will remove offending records
-    try (Transaction tx = neo.beginTx()){
-      LOG.info("Building lucene index taxonID ...");
-      neo.schema().constraintFor(Labels.ALL).assertPropertyIsUnique(NeoProperties.TAXON_ID).create();
-
+    try {
+      buildIdIndex();
     } catch (ConstraintViolationException e) {
       LOG.warn("The inserted dataset contains duplicate taxonID! Only the first record will be used");
       removeDuplicateKeys();
-      try (Transaction tx2 = neo.beginTx()){
-        neo.schema().constraintFor(Labels.ALL).assertPropertyIsUnique(NeoProperties.TAXON_ID).create();
-      }
+      buildIdIndex();
     }
 
     inserter = null;
+  }
+
+  private void buildIdIndex() {
+    try (Transaction tx = neo.beginTx()){
+      LOG.info("Building lucene index taxonID ...");
+      neo.schema().constraintFor(Labels.ALL).assertPropertyIsUnique(NeoProperties.TAXON_ID).create();
+      tx.success();
+    }
+    try (Transaction tx = neo.beginTx()){
+      neo.schema().awaitIndexesOnline(1, TimeUnit.HOURS);
+      LOG.debug("Done building lucene index taxonID");
+    }
   }
 
   private void removeDuplicateKeys() {

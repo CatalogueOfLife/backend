@@ -12,6 +12,7 @@ import org.col.admin.task.importer.neo.model.NeoProperties;
 import org.col.admin.task.importer.neo.model.NeoTaxon;
 import org.col.admin.task.importer.neo.printer.GraphFormat;
 import org.col.admin.task.importer.neo.printer.PrinterUtils;
+import org.col.api.model.Dataset;
 import org.col.api.model.Distribution;
 import org.col.api.model.Reference;
 import org.col.api.model.VernacularName;
@@ -40,9 +41,7 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  *
@@ -198,6 +197,25 @@ public class NormalizerACEFIT {
 
       // vernacular
       assertEquals(2, t.vernacularNames.size());
+    }
+  }
+
+  @Test
+  public void acef5Datasource() throws Exception {
+    normalize(5);
+
+    Dataset d = store.getDataset().get();
+    assertEquals("Systema Dipterorum", d.getTitle());
+  }
+
+  @Test
+  @Ignore
+  public void acef101() throws Exception {
+    normalize(101);
+    try (Transaction tx = store.getNeo().beginTx()) {
+      NeoTaxon t = byID("Sys-2476");
+      assertNotNull(t);
+      assertEquals("Chagasia maculata", t.name.getScientificName());
     }
   }
 

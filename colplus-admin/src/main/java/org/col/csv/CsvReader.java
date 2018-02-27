@@ -45,6 +45,8 @@ public class CsvReader {
   private static final CsvParserSettings CSV = new CsvParserSettings();
   static {
     CSV.detectFormatAutomatically();
+    // try with tabs as default if autoconfig fails
+    CSV.getFormat().setDelimiter('\t');
     CSV.setSkipEmptyLines(true);
     CSV.trimValues(true);
     CSV.setReadInputOnSeparateThread(false);

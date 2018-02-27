@@ -1,0 +1,6 @@
+AcceptedTaxonID	Kingdom	Phylum	Class	Order	Superfamily	Family	Genus	SubGenusName	SpeciesEpithet	AuthorString	GSDNameStatus	Sp2000NameStatus	IsExtinct	HasPreHolocene	HasModern	LifeZone	AdditionalData	LTSSpecialist	LTSDate	SpeciesURL	GSDTaxonGUID	GSDNameGUID
+Sys-201145	Animalia	Arthropoda	Insecta	Diptera	\N	Brachystomatidae	Trichopeza	\N	pia	Plant, 2009	\N	accepted name	0	0	1	\N	\N	\N	2010	\N	\N	\N
+Sys-201144	Animalia	Arthropoda	Insecta	Diptera	\N	Brachystomatidae	Trichopeza	\N	chaomek	Plant, 2009	\N	accepted name	0	0	1	\N	\N	\N	2010	\N	\N	\N
+Sys-201595	Animalia	Arthropoda	Insecta	Diptera	\N	Calliphoridae	Lucilia	\N	fayeae	Whitworth, 2010	\N	accepted name	0	0	1	\N	\N	\N	2010	\N	\N	\N
+Sys-201164	Animalia	Arthropoda	Insecta	Diptera	\N	Calliphoridae	Eumesembrinella	\N	quadrilineata	(Fabricius, 1805)	\N	accepted name	0	0	1	\N	\N	\N	2010	\N	\N	\N
+Sys-200874	Animalia	Arthropoda	Insecta	Diptera	\N	Calliphoridae	Onesia	\N	franzosternita	Xue & Dong, 2009	\N	accepted name	0	0	1	\N	\N	\N	2010	\N	\N	\N
