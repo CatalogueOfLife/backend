@@ -107,6 +107,9 @@
     <select id="list" parameterType="map" resultMap="datasetImportResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
+        <if test="state != null">
+          WHERE state = #{state}
+        </if>
         ORDER BY started DESC
         <include refid="org.col.db.mapper.Common.limit" />
     </select>

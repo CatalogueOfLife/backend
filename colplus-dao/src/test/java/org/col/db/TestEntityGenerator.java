@@ -110,7 +110,8 @@ public class TestEntityGenerator {
 	public static VernacularName newVernacularName(String name) throws Exception {
 		VernacularName vn = new VernacularName();
 		vn.setName(name);
-		vn.setLanguage(Language.ENGLISH);
+    vn.setLatin(name);
+    vn.setLanguage(Language.ENGLISH);
 		vn.setCountry(Country.UNITED_KINGDOM);
 		return vn;
 	}

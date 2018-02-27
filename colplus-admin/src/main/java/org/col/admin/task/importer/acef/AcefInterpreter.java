@@ -96,6 +96,7 @@ public class AcefInterpreter {
       if (rec.hasTerm(AcefTerm.CommonName)) {
         VernacularName vn = new VernacularName();
         vn.setName(rec.get(AcefTerm.CommonName));
+        vn.setLatin(latinName(t, vn.getName(), rec));
         vn.setLanguage(SafeParser.parse(LanguageParser.PARSER, rec.get(AcefTerm.Language)).orNull());
         vn.setCountry(SafeParser.parse(CountryParser.PARSER, rec.get(AcefTerm.Country)).orNull());
         addReferences(vn, rec, t.issues);
@@ -105,6 +106,17 @@ public class AcefInterpreter {
         t.addIssue(Issue.VERNACULAR_NAME_INVALID);
       }
     }
+  }
+
+  private String latinName(NeoTaxon t, String name, TermRecord rec) {
+    String latin = rec.get(AcefTerm.TransliteratedName);
+    String genLatin = name;
+    if (latin == null && genLatin != null) {
+      latin = genLatin;
+      8765432
+      t.addIssue(Issue.VERNACULAR_NAME_TRANSLITERATED);
+    }
+    return latin;
   }
 
   void interpretDistributions(NeoTaxon t) {

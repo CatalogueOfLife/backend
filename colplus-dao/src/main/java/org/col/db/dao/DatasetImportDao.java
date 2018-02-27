@@ -26,10 +26,10 @@ public class DatasetImportDao {
     this.factory = factory;
   }
 
-  public ResultPage<DatasetImport> list(Page page) {
+  public ResultPage<DatasetImport> list(ImportState state, Page page) {
     try (SqlSession session = factory.openSession(true)){
       DatasetImportMapper mapper = session.getMapper(DatasetImportMapper.class);
-      return new ResultPage<>(page, mapper.count(), mapper.list(page));
+      return new ResultPage<>(page, mapper.count(), mapper.list(state, page));
     }
   }
 

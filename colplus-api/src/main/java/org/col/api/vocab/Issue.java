@@ -249,6 +249,10 @@ public enum Issue {
   VERNACULAR_NAME_INVALID,
 
   /**
+   * Transliterated vernacular name missing and generated automatically.
+   */
+  VERNACULAR_NAME_TRANSLITERATED,
+  /**
    * At least one description extension record attached to this name usage is invalid.
    */
   DESCRIPTION_INVALID,

@@ -7,6 +7,7 @@
   <sql id="SELECT">
     vn.key,
     vn.name,
+    vn.latin,
     vn.language,
     vn.country,
     vnr.reference_key
@@ -16,6 +17,7 @@
     dataset_key,
     taxon_key,
     name,
+    latin,
     language,
     country
   </sql>
@@ -24,6 +26,7 @@
     #{datasetKey},
     #{taxonKey},
     #{vernacular.name},
+    #{vernacular.latin},
     #{vernacular.language},
     #{vernacular.country}
   </sql>

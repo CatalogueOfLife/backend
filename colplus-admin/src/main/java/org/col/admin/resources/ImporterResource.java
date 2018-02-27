@@ -4,6 +4,7 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.model.DatasetImport;
 import org.col.api.model.Page;
 import org.col.api.model.ResultPage;
+import org.col.api.vocab.ImportState;
 import org.col.db.dao.DatasetImportDao;
 import org.col.admin.task.importer.ImportManager;
 import org.slf4j.Logger;
@@ -29,8 +30,8 @@ public class ImporterResource {
   }
 
   @GET
-  public ResultPage<DatasetImport> list(@Valid @BeanParam Page page) {
-    return dao.list(page);
+  public ResultPage<DatasetImport> list(@QueryParam("state") ImportState state, @Valid @BeanParam Page page) {
+    return dao.list(state, page);
   }
 
   @POST

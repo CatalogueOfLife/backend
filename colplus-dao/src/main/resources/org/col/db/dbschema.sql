@@ -297,6 +297,7 @@ CREATE TABLE vernacular_name (
   dataset_key INTEGER NOT NULL REFERENCES dataset,
   taxon_key INTEGER NOT NULL REFERENCES taxon,
   name TEXT NOT NULL,
+  latin TEXT,
   language CHAR(3),
   country CHAR(2)
 );

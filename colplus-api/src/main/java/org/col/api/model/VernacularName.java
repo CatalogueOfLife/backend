@@ -13,6 +13,7 @@ public class VernacularName implements Referenced {
 	@JsonIgnore
 	private Integer key;
 	private String name;
+  private String latin;
 	private Language language;
 	private Country country;
 	private Set<Integer> referenceKeys = Sets.newHashSet();
@@ -33,7 +34,18 @@ public class VernacularName implements Referenced {
 		this.name = name;
 	}
 
-	public Language getLanguage() {
+  /**
+   * Transliterated name into the latin script.
+   */
+  public String getLatin() {
+    return latin;
+  }
+
+  public void setLatin(String latin) {
+    this.latin = latin;
+  }
+
+  public Language getLanguage() {
 		return language;
 	}
 
@@ -63,24 +75,20 @@ public class VernacularName implements Referenced {
   }
 
   @Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
-		}
-		if (obj == null || getClass() != obj.getClass()) {
-			return false;
-		}
-		VernacularName other = (VernacularName) obj;
-		return Objects.equals(key, other.key)
-		    && Objects.equals(name, other.name)
-		    && Objects.equals(language, other.language)
-        && Objects.equals(referenceKeys, other.referenceKeys)
-		    && Objects.equals(country, other.country);
-	}
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    VernacularName that = (VernacularName) o;
+    return Objects.equals(key, that.key) &&
+        Objects.equals(name, that.name) &&
+        Objects.equals(latin, that.latin) &&
+        language == that.language &&
+        country == that.country &&
+        Objects.equals(referenceKeys, that.referenceKeys);
+  }
 
-	@Override
-	public int hashCode() {
-		return Objects.hash(key, name, language, country, referenceKeys);
-	}
-
+  @Override
+  public int hashCode() {
+    return Objects.hash(key, name, latin, language, country, referenceKeys);
+  }
 }

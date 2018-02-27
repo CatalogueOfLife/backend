@@ -3,6 +3,7 @@ package org.col.db.mapper;
 import org.apache.ibatis.annotations.Param;
 import org.col.api.model.DatasetImport;
 import org.col.api.model.Page;
+import org.col.api.vocab.ImportState;
 
 import java.util.List;
 
@@ -17,7 +18,7 @@ public interface DatasetImportMapper {
 
   int count();
 
-  List<DatasetImport> list(@Param("page") Page page);
+  List<DatasetImport> list(@Param("state") ImportState state, @Param("page") Page page);
 
   List<DatasetImport> listByDataset(@Param("key") int datasetKey);
 
