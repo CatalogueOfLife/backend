@@ -17,8 +17,7 @@ public class BooleanParserTest extends ParserTestBase<Boolean> {
   @Test
   public void parse() throws Exception {
     assertParse(true, "true");
-    assertParse(true, "-1-");
-    assertParse(true, "yes!");
+    assertParse(true, "yes");
     assertParse(true, " t    ");
     assertParse(true, "T");
     assertParse(true, "si");
@@ -30,6 +29,7 @@ public class BooleanParserTest extends ParserTestBase<Boolean> {
     assertParse(false,"f");
     assertParse(false,"no");
     assertParse(false,"nein");
+    assertParse(false, "-1");
   }
 
   @Override
