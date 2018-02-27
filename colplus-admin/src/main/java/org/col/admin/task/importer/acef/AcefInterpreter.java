@@ -4,6 +4,8 @@ import com.google.common.base.CharMatcher;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
+import com.ibm.icu.text.Transliterator;
+import org.apache.commons.lang3.StringUtils;
 import org.col.admin.task.importer.InsertMetadata;
 import org.col.admin.task.importer.neo.ReferenceStore;
 import org.col.admin.task.importer.neo.model.NeoTaxon;
@@ -11,7 +13,9 @@ import org.col.api.exception.InvalidNameException;
 import org.col.api.model.*;
 import org.col.api.vocab.*;
 import org.col.parser.*;
-import org.gbif.dwc.terms.*;
+import org.gbif.dwc.terms.AcefTerm;
+import org.gbif.dwc.terms.DwcTerm;
+import org.gbif.dwc.terms.Term;
 import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.ParsedName;
@@ -33,6 +37,8 @@ import static org.col.parser.SafeParser.parse;
 public class AcefInterpreter {
   private static final Logger LOG = LoggerFactory.getLogger(AcefInterpreter.class);
   private static final Splitter MULTIVAL = Splitter.on(CharMatcher.anyOf(";|,")).trimResults();
+  private static final Transliterator transLatin = Transliterator.getInstance("Any-Latin");
+  private static final Transliterator transAscii = Transliterator.getInstance("Latin-ASCII");
 
   private final ReferenceStore refStore;
 
@@ -108,12 +114,18 @@ public class AcefInterpreter {
     }
   }
 
+  static String latinName(String name) {
+    return transLatin.transform(name);
+  }
+
+  static String asciiName(String name) {
+    return transAscii.transform(latinName(name));
+  }
+
   private String latinName(NeoTaxon t, String name, TermRecord rec) {
     String latin = rec.get(AcefTerm.TransliteratedName);
-    String genLatin = name;
-    if (latin == null && genLatin != null) {
-      latin = genLatin;
-      8765432
+    if (StringUtils.isBlank(latin) && !StringUtils.isBlank(name)) {
+      latin = latinName(name);
       t.addIssue(Issue.VERNACULAR_NAME_TRANSLITERATED);
     }
     return latin;

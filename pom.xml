@@ -50,6 +50,7 @@
         <!-- make sure http client matches dropwizards version, see Dropwizard BOM:
              https://github.com/dropwizard/dropwizard/blob/v1.2.3/dropwizard-bom/pom.xml -->
         <httpclient.version>4.5.3</httpclient.version>
+        <icu4j.version>60.2</icu4j.version>
         <!-- make sure jackson matches dropwizards version, see Dropwizard BOM:
              https://github.com/dropwizard/dropwizard/blob/v1.2.3/dropwizard-bom/pom.xml -->
         <jackson2.version>2.9.3</jackson2.version>
@@ -71,6 +72,7 @@
         <postgresql.version>42.1.4</postgresql.version>
         <postgresql-embedded.version>2.6</postgresql-embedded.version>
         <slf4j.version>1.7.25</slf4j.version>
+        <stax2.version>3.1.4</stax2.version>
         <validation-api.version>2.0.0.Final</validation-api.version>
         <woodstox.version>4.4.1</woodstox.version>
         <!-- Maven plugin versions.
@@ -382,6 +384,13 @@
                 <version>${kryo-serializers.version}</version>
             </dependency>
 
+            <!-- unicode, transliterations -->
+            <dependency>
+                <groupId>com.ibm.icu</groupId>
+                <artifactId>icu4j</artifactId>
+                <version>${icu4j.version}</version>
+            </dependency>
+
             <!-- logging -->
             <dependency>
                 <groupId>org.slf4j</groupId>
@@ -454,6 +463,12 @@
                 <artifactId>woodstox-core-asl</artifactId>
                 <version>${woodstox.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.codehaus.woodstox</groupId>
+                <artifactId>stax2-api</artifactId>
+                <version>${stax2.version}</version>
+            </dependency>
+
             <dependency>
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
