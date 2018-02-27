@@ -208,8 +208,10 @@ public class NormalizerACEFIT {
     assertEquals("Systema Dipterorum", d.getTitle());
   }
 
+  /**
+   * Full Systema Diptera dataset with 170.000 names. Takes 2 minutes, be patient
+   */
   @Test
-  @Ignore
   public void acef101() throws Exception {
     normalize(101);
     try (Transaction tx = store.getNeo().beginTx()) {

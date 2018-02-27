@@ -51,6 +51,8 @@ public class CsvReader {
     CSV.trimValues(true);
     CSV.setReadInputOnSeparateThread(false);
     CSV.setNullValue(null);
+    CSV.setMaxColumns(256);
+    CSV.setMaxCharsPerColumn(1024*16);
   }
   private static final Set<String> SUFFICES = ImmutableSet.of("csv", "tsv", "tab", "txt", "text");
   private static final Pattern NULL_PATTERN = Pattern.compile("^\\s*(\\\\N|\\\\?NULL)\\s*$");
