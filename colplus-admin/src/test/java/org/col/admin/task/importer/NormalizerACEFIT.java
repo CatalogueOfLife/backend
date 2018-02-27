@@ -121,7 +121,7 @@ public class NormalizerACEFIT {
   }
 
   @Test
-  public void testAcef0() throws Exception {
+  public void acef0() throws Exception {
     normalize(0);
 
     for (Reference r : store.refList()) {
@@ -144,7 +144,7 @@ public class NormalizerACEFIT {
   }
 
   @Test
-  public void testAcefSample() throws Exception {
+  public void acefSample() throws Exception {
     normalize(1);
 
     for (Reference r : store.refList()) {
@@ -180,6 +180,24 @@ public class NormalizerACEFIT {
       assertEquals("Fabaceae", t.name.canonicalNameComplete());
       assertNull(t.name.authorshipComplete());
       assertEquals(Rank.FAMILY, t.name.getRank());
+    }
+  }
+
+  @Test
+  public void acef4NonUnique() throws Exception {
+    normalize(4);
+
+    try (Transaction tx = store.getNeo().beginTx()) {
+      NeoTaxon t = byID("1");
+      assertEquals("Inga vera", t.name.getScientificName());
+      assertEquals("Willd.", t.name.authorshipComplete());
+      assertEquals(Rank.SPECIES, t.name.getRank());
+      assertTrue(t.issues.contains(Issue.ID_NOT_UNIQUE));
+      assertEquals("Fabaceae", t.classification.getFamily());
+      assertEquals("Plantae", t.classification.getKingdom());
+
+      // vernacular
+      assertEquals(2, t.vernacularNames.size());
     }
   }
 

@@ -183,7 +183,7 @@ public class Normalizer implements Runnable {
       return;
     }
 
-    store.process(Labels.ALL,10000, new NeoDb.NodeBatchProcessor() {
+    store.process(Labels.ALL, store.batchSize, new NeoDb.NodeBatchProcessor() {
       @Override
       public void process(Node n) {
         if (n.hasLabel(Labels.TAXON)) {

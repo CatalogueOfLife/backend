@@ -8,7 +8,6 @@ import org.col.admin.task.importer.neo.NeoDb;
 import org.col.admin.task.importer.neo.model.NeoTaxon;
 import org.col.api.model.Dataset;
 import org.col.api.model.VerbatimRecord;
-import org.col.api.vocab.DataFormat;
 import org.gbif.dwca.io.Archive;
 import org.gbif.dwca.io.ArchiveFactory;
 import org.gbif.dwca.record.StarRecord;
@@ -25,6 +24,7 @@ import java.util.Optional;
 public class DwcaInserter extends NeoInserter {
 
   private static final Logger LOG = LoggerFactory.getLogger(DwcaInserter.class);
+  private static final EmlParser emlParser = new EmlParser();
 
   private Archive arch;
   private DwcInterpreter interpreter;
@@ -58,24 +58,18 @@ public class DwcaInserter extends NeoInserter {
      * Reads the dataset metadata and puts it into the store
      */
   public Optional<Dataset> readMetadata() {
-    Dataset d = new Dataset();
     try {
-      d.setDataFormat(DataFormat.DWCA);
       if (Strings.isNullOrEmpty(arch.getMetadataLocation())) {
         LOG.info("No dataset metadata available");
 
       } else {
-        //TODO: replace with a leaner CoL dataset parser for EML that can handle specific CoL extensions
-        org.gbif.api.model.registry.Dataset gbif = arch.getMetadata();
-        d.setTitle(gbif.getTitle());
-        d.setDescription(gbif.getDescription());
-        d.setHomepage(gbif.getHomepage());
+        return emlParser.parse(arch.getMetadataLocationFile().toPath());
       }
 
     } catch (Throwable e) {
       LOG.error("Unable to read dataset metadata from dwc archive", e.getMessage());
     }
-    return Optional.ofNullable(d);
+    return Optional.empty();
   }
 
   @VisibleForTesting

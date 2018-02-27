@@ -1,0 +1,4 @@
+AcceptedTaxonID	Kingdom	Family	Genus	SpeciesEpithet	AuthorString
+1	Plantae	Fabaceae	Inga	vera	Willd.
+1	Plantae	Fabaceae	Astracantha	arnacantha	(M.Bieb.)Podlech
+3	Plantae	Fabaceae	Astragalus	exscapus	L.

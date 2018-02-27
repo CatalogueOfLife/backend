@@ -34,6 +34,9 @@ public class NormalizerConfig {
   @NotNull
   public File scratchDir = new File("/tmp");
 
+  /**
+   * Batchsize to use when processing all nodes, e.g. for normalising the flat classification
+   */
   @NotNull
   public int batchSize = 10000;
 

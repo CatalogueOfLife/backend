@@ -26,7 +26,6 @@ import org.mapdb.Serializer;
 import org.neo4j.graphdb.*;
 import org.neo4j.graphdb.factory.GraphDatabaseBuilder;
 import org.neo4j.helpers.collection.Iterators;
-import org.neo4j.kernel.api.exceptions.index.IndexEntryConflictException;
 import org.neo4j.unsafe.batchinsert.BatchInserter;
 import org.neo4j.unsafe.batchinsert.BatchInserters;
 import org.slf4j.Logger;
@@ -79,7 +78,7 @@ public class NeoDb implements NormalizerStore, ReferenceStore {
   private final File neoDir;
   private final KryoPool pool;
   private BatchInserter inserter;
-  private final int batchSize;
+  public final int batchSize;
 
   private GraphDatabaseService neo;
 
@@ -307,32 +306,64 @@ public class NeoDb implements NormalizerStore, ReferenceStore {
   @Override
   public void endBatchMode() throws NotUniqueRuntimeException {
     try {
-      try {
-        // define indices
-        LOG.info("Building lucene index taxonID ...");
-        inserter.createDeferredConstraint(Labels.ALL).assertPropertyIsUnique(NeoProperties.TAXON_ID).create();
-        LOG.info("Building lucene index scientificName ...");
-        inserter.createDeferredSchemaIndex(Labels.ALL).on(NeoProperties.SCIENTIFIC_NAME).create();
-        LOG.info("Building lucene index scientificNameID ...");
-        inserter.createDeferredSchemaIndex(Labels.ALL).on(NeoProperties.NAME_ID).create();
-      } finally {
-        // this is when lucene indices are build and thus throws RuntimeExceptions when unique constraints are broken
-        // we catch these exceptions below
-        inserter.shutdown();
-      }
-    } catch (RuntimeException e) {
-      Throwable t = e.getCause();
-      // check if the cause was a broken unique constraint which can only be taxonID in our case
-      if (t != null && t instanceof IndexEntryConflictException) {
-        IndexEntryConflictException pe = (IndexEntryConflictException) t;
-        LOG.error("TaxonID not unique. Value {} used for both node {} and {}", pe.getSinglePropertyValue(), pe.getExistingNodeId(), pe.getAddedNodeId());
-        throw new NotUniqueRuntimeException("TaxonID", pe.getSinglePropertyValue());
-      } else {
-        throw e;
+      // define indices
+      LOG.info("Building lucene index scientificName ...");
+      inserter.createDeferredSchemaIndex(Labels.ALL).on(NeoProperties.SCIENTIFIC_NAME).create();
+      LOG.info("Building lucene index scientificNameID ...");
+      inserter.createDeferredSchemaIndex(Labels.ALL).on(NeoProperties.NAME_ID).create();
+    } finally {
+      // this is when lucene indices are build and thus throws RuntimeExceptions when unique constraints are broken
+      // we catch these exceptions below
+      inserter.shutdown();
+    }
+
+    openNeo();
+    // now try to add a taxonID unique constraint. If it fails we will remove offending records
+    try (Transaction tx = neo.beginTx()){
+      LOG.info("Building lucene index taxonID ...");
+      neo.schema().constraintFor(Labels.ALL).assertPropertyIsUnique(NeoProperties.TAXON_ID).create();
+
+    } catch (ConstraintViolationException e) {
+      LOG.warn("The inserted dataset contains duplicate taxonID! Only the first record will be used");
+      removeDuplicateKeys();
+      try (Transaction tx2 = neo.beginTx()){
+        neo.schema().constraintFor(Labels.ALL).assertPropertyIsUnique(NeoProperties.TAXON_ID).create();
       }
     }
-    openNeo();
+
     inserter = null;
+  }
+
+  private void removeDuplicateKeys() {
+    try (Transaction tx = neo.beginTx()){
+      Result res = neo.execute("MATCH (n:ALL) WITH n."+NeoProperties.TAXON_ID+" as id, collect(n) AS nodes WHERE size(nodes) >  1 RETURN nodes");
+      res.accept(new Result.ResultVisitor<Exception>() {
+        @Override
+        public boolean visit(Result.ResultRow row) throws Exception {
+          List<Node> nodes = (List<Node>) row.get("nodes");
+          Node first = nodes.get(0);
+          LOG.info("keep {} {}", first, NeoProperties.getScientificNameWithAuthor(first));
+          NeoTaxon t = get(first);
+          t.addIssue(Issue.ID_NOT_UNIQUE);
+          update(t);
+
+          for (Node n : nodes) {
+            if (n.getId() != first.getId()) {
+              LOG.info("remove {} with duplicate ID {}", NeoProperties.getTaxonID(n), n);
+              n.delete();
+              taxa.remove(n.getId());
+            }
+          }
+          // continue to visit other nodes
+          return true;
+        }
+      });
+      tx.success();
+
+    } catch (Exception e) {
+      LOG.error("Failed to remove duplicate records with the same taxonID ", e);
+      throw new NotUniqueRuntimeException("TaxonID");
+    }
   }
 
   @Override

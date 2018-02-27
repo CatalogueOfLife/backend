@@ -155,7 +155,11 @@ public enum Issue {
    */
   REFERENCE_ID_INVALID,
 
-
+  /**
+   * A taxon, name or reference with duplicate ids.
+   * We remove the subsequent records but flag the first record with this issue.
+   */
+  ID_NOT_UNIQUE,
 
   // TODO: TAXON ISSUES TO BE REVISED !!!
 
