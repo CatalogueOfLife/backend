@@ -225,7 +225,7 @@ public class Dataset {
 	}
 
 	@JsonIgnore
-  public boolean isDeleted() {
+  public boolean hasDeletedDate() {
     return deleted != null;
   }
 

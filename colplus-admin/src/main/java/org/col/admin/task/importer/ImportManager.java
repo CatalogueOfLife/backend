@@ -52,7 +52,7 @@ public class ImportManager implements Managed {
         Dataset d = session.getMapper(DatasetMapper.class).get(datasetKey);
         if (d == null) {
           throw new IllegalArgumentException("Dataset with key " + datasetKey + " does not exist");
-        } else if (d.isDeleted()) {
+        } else if (d.hasDeletedDate()) {
           throw new IllegalArgumentException("Dataset with key " + datasetKey + " is deleted");
         }
         running = true;
