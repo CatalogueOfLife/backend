@@ -85,7 +85,11 @@
 
 
     <select id="count" parameterType="map" resultType="Integer">
-        SELECT count(*) FROM <include refid="FROM" />
+        SELECT count(*)
+        FROM <include refid="FROM" />
+        <if test="state != null">
+            WHERE state = #{state}
+        </if>
     </select>
 
     <select id="last" parameterType="map" resultMap="datasetImportResultMap">

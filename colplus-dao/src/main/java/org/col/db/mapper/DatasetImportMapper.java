@@ -16,7 +16,7 @@ public interface DatasetImportMapper {
 
   DatasetImport lastSuccessful(@Param("key") int datasetKey);
 
-  int count();
+  int count(@Param("state") ImportState state);
 
   List<DatasetImport> list(@Param("state") ImportState state, @Param("page") Page page);
 
