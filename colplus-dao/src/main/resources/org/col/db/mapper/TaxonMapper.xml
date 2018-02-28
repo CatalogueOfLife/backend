@@ -131,7 +131,7 @@
         <include refid="FROM" />
         WHERE 1 = 1
         <if test="datasetKey != null">
-        	AND dataset_key = #{datasetKey}
+        	AND t.dataset_key = #{datasetKey}
         </if>
         <if test="root">
             AND t.parent_key IS NULL
