@@ -1,17 +1,20 @@
 package org.col.api.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.StringUtils;
 import org.col.api.vocab.Issue;
 import org.col.api.vocab.NomStatus;
 import org.col.api.vocab.Origin;
 import org.gbif.nameparser.api.*;
 import org.gbif.nameparser.util.NameFormatter;
+
 import javax.annotation.Nonnull;
 import java.net.URI;
 import java.util.EnumSet;
 import java.util.Objects;
 import java.util.Set;
+
 import static org.gbif.nameparser.util.NameFormatter.HYBRID_MARKER;
 
 /**
@@ -613,6 +616,7 @@ public class Name implements PrimaryEntity {
   /**
    * @See NameFormatter.authorshipComplete()
    */
+  @JsonProperty("authorship")
   public String authorshipComplete() {
     return NameFormatter.authorshipComplete(toParsedName(this));
   }

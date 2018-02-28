@@ -2,7 +2,6 @@ package org.col.api.jackson;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.col.api.model.ExtendedTermRecord;
@@ -11,8 +10,6 @@ import org.col.api.vocab.Country;
 import org.col.api.vocab.Language;
 import org.gbif.dwc.terms.Term;
 import org.gbif.nameparser.api.Authorship;
-import org.gbif.nameparser.api.NomCode;
-import org.gbif.nameparser.api.ParsedName;
 import org.gbif.nameparser.api.Rank;
 
 /**
@@ -64,23 +61,7 @@ public class ApiModule extends SimpleModule {
     // required to properly register serdes
     super.setupModule(ctxt);
 
-    ctxt.setMixInAnnotations(ParsedName.class, ParsedNameMixIn.class);
     ctxt.setMixInAnnotations(Authorship.class, AuthorshipMixIn.class);
-  }
-
-  abstract class ParsedNameMixIn {
-    @JsonIgnore abstract boolean isAutonym();
-    @JsonIgnore abstract boolean isBinomial();
-    @JsonIgnore abstract boolean isTrinomial();
-    @JsonIgnore abstract boolean isIndetermined();
-    @JsonIgnore abstract boolean isConsistent();
-    @JsonIgnore abstract boolean getTerminalEpithet();
-    @JsonIgnore abstract String canonicalName();
-    @JsonIgnore abstract String canonicalNameWithoutAuthorship();
-    @JsonIgnore abstract String canonicalNameMinimal();
-    @JsonIgnore abstract String canonicalNameComplete();
-    @JsonProperty("authorship") abstract String authorshipComplete();
-    @JsonProperty("nomenclaturalCode") abstract NomCode getCode();
   }
 
   abstract class AuthorshipMixIn {

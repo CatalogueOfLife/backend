@@ -54,9 +54,9 @@ public class DwcaInserter extends NeoInserter {
     // nothing for dwca
   }
 
-    /**
-     * Reads the dataset metadata and puts it into the store
-     */
+  /**
+   * Reads the dataset metadata and puts it into the store
+   */
   public Optional<Dataset> readMetadata() {
     try {
       if (Strings.isNullOrEmpty(arch.getMetadataLocation())) {
