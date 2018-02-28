@@ -60,8 +60,18 @@ Examples of data errors that cause the importer to abort are:
  
  - unreadable data files (we only support UTF8, 16 and Latin1, Windows1552 & MacRoman as 8bit encodings)
  - missing required fields (e.g. AcceptedSpeciesID or the scientific name)
- - declared accepted taxa are missing in the sources (e.g. a synonym declaring an AcceptedSpeciesID which does not exist)
  
 
 The importer does gracefully handle empty lines and skip lines with less columns than expected 
 (this shows as warning logs as bad delimiter escaping is often the root cause).
+
+### Issue flagging
+The dataset import flags records that have problems. 
+For each entire dataset import aggregate metrics are stored and can be retrieved even for historic versions for comparison and change analytics.
+
+All potential issues that are handled can be found here:
+https://github.com/Sp2000/colplus-backend/blob/master/colplus-api/src/main/java/org/col/api/vocab/Issue.java#L6
+
+For example:
+
+ - declared accepted taxa are missing in the sources (e.g. a synonym declaring an AcceptedSpeciesID which does not exist)

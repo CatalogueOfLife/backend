@@ -14,10 +14,21 @@ package org.col.api.jackson;
 
 
 import org.gbif.nameparser.api.Rank;
+import org.junit.Test;
+
+import java.io.IOException;
+
+import static org.junit.Assert.assertEquals;
 
 public class RankSerdeTest extends SerdeTestBase<Rank> {
 
   public RankSerdeTest() {
     super(Rank.class);
   }
-}
+
+  @Test
+  public void testValues() throws IOException {
+    for (Rank r : Rank.LINNEAN_RANKS) {
+      assertEquals('"' + r.name().toLowerCase() + '"', ApiModule.MAPPER.writeValueAsString(r));
+    }
+  }}

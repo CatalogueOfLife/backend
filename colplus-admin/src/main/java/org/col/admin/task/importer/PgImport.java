@@ -76,15 +76,23 @@ public class PgImport implements Runnable {
   }
 
 	private void updateMetadata() {
-		// TODO: update last crawled, modified etc...
 		try (SqlSession session = sessionFactory.openSession(false)) {
 			LOG.info("Updating dataset metadata for {}: {}", dataset.getKey(), dataset.getTitle());
 			DatasetMapper mapper = session.getMapper(DatasetMapper.class);
-			// TODO: merge new dataset with old one...
 			Dataset old = mapper.get(dataset.getKey());
 			if (dataset.getTitle() != null) {
+			  // make sure we keep a title even if old
         old.setTitle(dataset.getTitle());
 			}
+      old.setAuthorsAndEditors(dataset.getAuthorsAndEditors());
+      old.setContactPerson(dataset.getContactPerson());
+      old.setDescription(dataset.getDescription());
+      old.setHomepage(dataset.getHomepage());
+      old.setLicense(dataset.getLicense());
+      old.setOrganisation(dataset.getOrganisation());
+      old.setReleaseDate(dataset.getReleaseDate());
+      old.setVersion(dataset.getVersion());
+
 			mapper.update(old);
 			session.commit();
 		}
