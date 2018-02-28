@@ -129,9 +129,13 @@ public class AcefInserter extends NeoInserter {
   private void insertReferences() {
     reader.stream(AcefTerm.Reference).forEach( rec -> {
       Reference ref = Reference.create();
+
       ref.setId(rec.get(AcefTerm.ReferenceID));
-      ref.setTitle(rec.get(AcefTerm.Title));
+      ref.setTitle(rec.get(AcefTerm.Author));
       ref.setYear(rec.getIntDefault(AcefTerm.Year, null));
+      ref.setTitle(rec.get(AcefTerm.Title));
+      ref.setTitle(rec.get(AcefTerm.Details));
+      ref.setTitle(rec.get(AcefTerm.Source));
       store.put(ref);
       refKeys.put(ref.getId(), ref.getKey());
     });

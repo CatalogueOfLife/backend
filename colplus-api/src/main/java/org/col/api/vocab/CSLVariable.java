@@ -369,25 +369,26 @@ public enum CSLVariable {
    **/
   TRANSLATOR(TYPE.NAME);
 
-  private enum TYPE {STRING, NUMBER, DATE, NAME}
+  public enum TYPE {STRING, NUMBER, DATE, NAME}
 
-  ;
-
-  final private TYPE type;
+  public final TYPE type;
 
   private CSLVariable() {
-    this.type = TYPE.STRING;
+    this(TYPE.STRING);
   }
 
   private CSLVariable(TYPE type) {
     this.type = type;
   }
 
-  public String toCSL() {
+  /**
+   * @return the CSL compliant json field name
+   */
+  public String fieldName() {
     return name().toLowerCase().replaceAll("_", "-");
   }
 
-  public static CSLVariable fromCSL(String type) {
-    return CSLVariable.valueOf(type.toUpperCase().replaceAll("-", "_"));
+  public static CSLVariable fromFieldName(String fieldName) {
+    return CSLVariable.valueOf(fieldName.toUpperCase().replaceAll("-", "_"));
   }
 }

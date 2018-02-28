@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.col.api.vocab.CSLVariable;
 import org.col.api.vocab.Issue;
 
 import java.util.EnumSet;
@@ -14,10 +15,6 @@ import java.util.Set;
  * Simplified literature reference class linked to an optional serial container.
  */
 public class Reference implements PrimaryEntity {
-  private static String TITLE = "title";
-  private static String YEAR = "year";
-  private static String AUTHORS = "authors";
-  private static String DOI = "doi";
 
 	/**
 	 * Internal surrogate key of the reference as provided by postgres. This key is
@@ -140,20 +137,15 @@ public class Reference implements PrimaryEntity {
   // VARIOUS METHODS DELEGATING TO THE UNDERLYING CSL JsonObject instance
 	@JsonIgnore
 	public String getTitle() {
-		return cslStr(TITLE);
+		return cslValue(CSLVariable.TITLE).toString();
 	}
 
-	public void setTitle(String title) {
-		csl.put(TITLE, title);
-	}
-
-	private String cslStr(String path) {
-		if (csl.has(path)) {
-			JsonNode node = csl.get(path);
-			return node.asText();
-		}
-		return null;
-	}
+  public String cslString(CSLVariable var) {
+    if (csl.has(var.fieldName())) {
+      return csl.get(var.fieldName()).asText();
+    }
+    return null;
+  }
 
 	@Override
 	public boolean equals(Object o) {
