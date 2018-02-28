@@ -112,12 +112,15 @@
     <select id="count" parameterType="map" resultType="Integer">
         SELECT count(*)
         FROM taxon
-        WHERE dataset_key = #{datasetKey}
+        WHERE 1 = 1
+        <if test="datasetKey != null">
+        	AND dataset_key = #{datasetKey}
+        </if>
         <if test="root">
             AND parent_key IS NULL
         </if>
         <if test="nameKey != null">
-            AND t.name_key = #{nameKey}
+            AND name_key = #{nameKey}
         </if>
     </select>
 
@@ -126,7 +129,10 @@
         <include refid="SELECT" />
         FROM
         <include refid="FROM" />
-        WHERE t.dataset_key = #{datasetKey}
+        WHERE 1 = 1
+        <if test="datasetKey != null">
+        	AND dataset_key = #{datasetKey}
+        </if>
         <if test="root">
             AND t.parent_key IS NULL
         </if>
