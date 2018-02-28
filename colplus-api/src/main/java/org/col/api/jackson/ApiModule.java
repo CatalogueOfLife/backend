@@ -2,7 +2,6 @@ package org.col.api.jackson;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.col.api.model.ExtendedTermRecord;
@@ -21,7 +20,6 @@ public class ApiModule extends SimpleModule {
   public static final ObjectMapper MAPPER = new ObjectMapper();
   static {
     MAPPER.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
-    MAPPER.enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS);
     MAPPER.registerModule(new ApiModule());
   }
 

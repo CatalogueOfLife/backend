@@ -5,7 +5,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.reflect.ClassPath;
 import org.col.api.vocab.AreaStandard;
-import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,15 +31,11 @@ public class VocabResource {
   public VocabResource() {
     Map<String, Class<Enum<?>>> enums = Maps.newHashMap();
     try {
-      for (Package p : Lists.newArrayList(AreaStandard.class.getPackage(), Rank.class.getPackage())) {
-        LOG.debug("Scan package {} for enums", p);
-        for (ClassPath.ClassInfo info : ClassPath.from(getClass().getClassLoader()).getTopLevelClasses(p.getName())) {
-          Class<?> clazz = info.load();
-          if (clazz.isEnum()) {
-            LOG.debug("Adding enum {} to vocabularies", clazz.getSimpleName());
-            Class<Enum<?>> enumClazz = (Class<Enum<?>>) clazz;
-            enums.put(enumClazz.getSimpleName().toLowerCase(), enumClazz);
-          }
+      for (ClassPath.ClassInfo info : ClassPath.from(getClass().getClassLoader()).getTopLevelClasses(AreaStandard.class.getPackage().getName())) {
+        Class<?> clazz = info.load();
+        if (clazz.isEnum()) {
+          Class<Enum<?>> enumClazz = (Class<Enum<?>>) clazz;
+          enums.put(enumClazz.getSimpleName().toLowerCase(), enumClazz);
         }
       }
     } catch (IOException e) {
