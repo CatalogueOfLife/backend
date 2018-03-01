@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Path("/vocab")
@@ -50,8 +51,8 @@ public class VocabResource {
   }
 
   @GET
-  public List<Class<Enum<?>>> list() {
-    return Lists.newArrayList(vocabs.values());
+  public Set<String> list() {
+    return vocabs.keySet();
   }
 
   @GET
