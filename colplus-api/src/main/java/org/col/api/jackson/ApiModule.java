@@ -4,8 +4,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.introspect.NopAnnotationIntrospector;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.col.api.model.ExtendedTermRecord;
 import org.col.api.model.TermRecord;
 import org.col.api.vocab.Country;
@@ -22,6 +24,8 @@ public class ApiModule extends SimpleModule {
   static {
     MAPPER.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
     MAPPER.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+    MAPPER.registerModule(new JavaTimeModule());
+    MAPPER.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
     MAPPER.registerModule(new ApiModule());
   }
 
