@@ -369,11 +369,11 @@ public enum CSLVariable {
    **/
   TRANSLATOR(TYPE.NAME);
 
-  private enum TYPE {STRING, NUMBER, DATE, NAME}
+  public enum TYPE {STRING, NUMBER, DATE, NAME}
 
   ;
 
-  final private TYPE type;
+  public final TYPE type;
 
   private CSLVariable() {
     this.type = TYPE.STRING;
@@ -383,7 +383,7 @@ public enum CSLVariable {
     this.type = type;
   }
 
-  public String toCSL() {
+  public String fieldName() {
     return name().toLowerCase().replaceAll("_", "-");
   }
 

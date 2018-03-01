@@ -12,9 +12,9 @@ import static org.junit.Assert.assertEquals;
 /**
  *
  */
-public class SerdeMapKeyTestBase<T extends Enum> extends SerdeTestBase<T> {
+public class SerdeMapEnumKeyTestBase<T extends Enum> extends EnumSerdeTestBase<T> {
 
-  public SerdeMapKeyTestBase(Class<T> enumClass) {
+  public SerdeMapEnumKeyTestBase(Class<T> enumClass) {
     super(enumClass);
   }
 
@@ -24,19 +24,19 @@ public class SerdeMapKeyTestBase<T extends Enum> extends SerdeTestBase<T> {
 
   @Test
   public void testMapKey() throws IOException {
-    JavaType type = ApiModule.MAPPER.getTypeFactory().constructParametricType(MapWrapper.class, enumClass);
+    JavaType type = ApiModule.MAPPER.getTypeFactory().constructParametricType(MapWrapper.class, clazz);
     MapWrapper<T> wrapper = new MapWrapper<T>();
 
     // check empty first
     testRoundtrip(wrapper, type);
 
     // check with one entry first
-    T val = enumClass.getEnumConstants()[0];
+    T val = clazz.getEnumConstants()[0];
     wrapper.map.put(val, val);
     testRoundtrip(wrapper, type);
 
     // now add all values as keys
-    for (T e : enumClass.getEnumConstants()) {
+    for (T e : clazz.getEnumConstants()) {
       wrapper.map.put(e, e);
     }
     testRoundtrip(wrapper, type);

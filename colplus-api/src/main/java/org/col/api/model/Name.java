@@ -570,6 +570,7 @@ public class Name implements PrimaryEntity {
   /**
    * @return true if there is any parsed content
    */
+  @JsonProperty(access = JsonProperty.Access.READ_ONLY)
   public boolean isParsed() {
     return uninomial != null || genus != null || infragenericEpithet != null
         || specificEpithet != null || infraspecificEpithet != null;
@@ -616,7 +617,7 @@ public class Name implements PrimaryEntity {
   /**
    * @See NameFormatter.authorshipComplete()
    */
-  @JsonProperty("authorship")
+  @JsonProperty(value = "authorship", access = JsonProperty.Access.READ_ONLY)
   public String authorshipComplete() {
     return NameFormatter.authorshipComplete(toParsedName(this));
   }

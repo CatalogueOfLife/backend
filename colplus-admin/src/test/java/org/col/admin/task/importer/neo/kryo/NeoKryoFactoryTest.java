@@ -8,7 +8,7 @@ import org.col.admin.task.importer.neo.model.NeoTaxon;
 import org.col.api.model.*;
 import org.col.api.vocab.Issue;
 import org.col.api.vocab.TaxonomicStatus;
-import org.col.db.TestEntityGenerator;
+import org.col.api.TestEntityGenerator;
 import org.gbif.dwc.terms.*;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Test;

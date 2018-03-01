@@ -3,21 +3,19 @@ package org.col.api.jackson;
 import com.fasterxml.jackson.databind.JavaType;
 import org.junit.Test;
 
-import java.io.IOException;
-
 import static org.junit.Assert.assertEquals;
 
 /**
  *
  */
-public class SerdeTestBase<T extends Enum> {
+abstract class SerdeTestBase<T> {
 
-  Class<T> enumClass;
-  private final JavaType type;
+  Class<T> clazz;
+  protected final JavaType type;
 
-  public SerdeTestBase(Class<T> enumClass) {
-    this.enumClass = enumClass;
-    type = ApiModule.MAPPER.getTypeFactory().constructParametricType(Wrapper.class, enumClass);
+  public SerdeTestBase(Class<T> clazz) {
+    this.clazz = clazz;
+    type = ApiModule.MAPPER.getTypeFactory().constructParametricType(Wrapper.class, clazz);
   }
 
   public static class Wrapper<T> {
@@ -30,15 +28,18 @@ public class SerdeTestBase<T extends Enum> {
     }
   }
 
+  abstract T genTestValue() throws Exception;
+
   @Test
-  public void testRoundtrip() throws IOException {
-    for (T e : enumClass.getEnumConstants()) {
-      Wrapper<T> wrapper = new Wrapper<T>(e);
-      String json = ApiModule.MAPPER.writeValueAsString(wrapper);
-      System.out.println(json);
-      Wrapper<T> wrapper2 = ApiModule.MAPPER.readValue(json, type);
-      assertEquals(wrapper.value, wrapper2.value);
-    }
+  public void testRoundtrip() throws Exception {
+    testRoundtrip(genTestValue());
   }
 
+  protected  void testRoundtrip(T value) throws Exception {
+    Wrapper<T> wrapper = new Wrapper<T>(value);
+    String json = ApiModule.MAPPER.writeValueAsString(wrapper);
+    System.out.println(json);
+    Wrapper<T> wrapper2 = ApiModule.MAPPER.readValue(json, type);
+    assertEquals(wrapper.value, wrapper2.value);
+  }
 }

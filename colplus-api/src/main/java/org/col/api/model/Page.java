@@ -1,5 +1,7 @@
 package org.col.api.model;
 
+import com.google.common.base.Preconditions;
+
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.ws.rs.DefaultValue;
@@ -34,6 +36,8 @@ public class Page {
   }
 
   public Page(int offset, int limit) {
+    Preconditions.checkArgument(offset >= 0, "offset needs to be positive");
+    Preconditions.checkArgument(limit >= 0 && limit <= MAX_LIMIT, "limit needs to be between 0-1000");
     this.offset = offset;
     this.limit = limit;
   }

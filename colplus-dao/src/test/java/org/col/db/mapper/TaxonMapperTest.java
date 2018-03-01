@@ -3,7 +3,7 @@ package org.col.db.mapper;
 import com.google.common.collect.Lists;
 import org.col.api.model.Page;
 import org.col.api.model.Taxon;
-import org.col.db.TestEntityGenerator;
+import org.col.api.TestEntityGenerator;
 import org.javers.core.Javers;
 import org.javers.core.JaversBuilder;
 import org.javers.core.diff.Diff;

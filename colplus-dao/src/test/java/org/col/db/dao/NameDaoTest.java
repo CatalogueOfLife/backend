@@ -1,7 +1,7 @@
 package org.col.db.dao;
 
 import org.apache.ibatis.session.SqlSession;
-import org.col.db.TestEntityGenerator;
+import org.col.api.TestEntityGenerator;
 import org.col.api.model.Name;
 import org.col.api.model.Synonymy;
 import org.junit.Test;
@@ -61,7 +61,7 @@ public class NameDaoTest extends DaoTestBase {
 			synonymy = dao.getSynonymy(accKey);
 			assertFalse(synonymy.isEmpty());
 			assertEquals(1, synonymy.size());
-			assertEquals(1, synonymy.listHomotypicGroups().size());
+			assertEquals(1, synonymy.getHomotypicGroups().size());
 
 			dao.addSynonym(datasetKey, accKey, syn2bas.getKey());
 			dao.addSynonym(datasetKey, accKey, syn21.getKey());
@@ -72,7 +72,7 @@ public class NameDaoTest extends DaoTestBase {
 
 			synonymy = dao.getSynonymy(accKey);
 			assertEquals(6, synonymy.size());
-			assertEquals(3, synonymy.listHomotypicGroups().size());
+			assertEquals(3, synonymy.getHomotypicGroups().size());
 		}
 	}
 }

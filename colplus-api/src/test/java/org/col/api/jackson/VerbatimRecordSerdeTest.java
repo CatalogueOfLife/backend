@@ -6,21 +6,21 @@ import org.col.api.model.ExtendedTermRecord;
 import org.col.api.model.TermRecord;
 import org.col.api.model.VerbatimRecord;
 import org.gbif.dwc.terms.*;
-import org.junit.Test;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Random;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  *
  */
-public class VerbatimRecordSerdeTest {
+public class VerbatimRecordSerdeTest extends  SerdeTestBase<VerbatimRecord> {
 
-  @Test
-  public void testRoundtrip() throws IOException {
+  public VerbatimRecordSerdeTest() {
+    super(VerbatimRecord.class);
+  }
+
+  @Override
+  VerbatimRecord genTestValue() throws Exception {
     Random rnd = new Random();
 
     VerbatimRecord v = new VerbatimRecord();
@@ -46,12 +46,7 @@ public class VerbatimRecordSerdeTest {
         erecs.add(erec);
       }
     }
-
-    // to json
-    String json = ApiModule.MAPPER.writeValueAsString(v);
-    System.out.println(json);
-    VerbatimRecord v2 = ApiModule.MAPPER.readValue(json, VerbatimRecord.class);
-    assertEquals(v2, v);
-
+    return v;
   }
+
 }

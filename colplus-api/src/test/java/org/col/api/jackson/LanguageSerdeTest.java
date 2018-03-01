@@ -24,7 +24,7 @@ import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 
-public class LanguageSerdeTest extends SerdeMapKeyTestBase<Language> {
+public class LanguageSerdeTest extends SerdeMapEnumKeyTestBase<Language> {
 
   public LanguageSerdeTest() {
     super(Language.class);

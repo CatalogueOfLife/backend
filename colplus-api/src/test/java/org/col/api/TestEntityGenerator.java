@@ -1,7 +1,7 @@
-package org.col.db;
+package org.col.api;
 
 import com.google.common.base.Splitter;
-import org.col.api.RandomUtils;
+import com.google.common.collect.Lists;
 import org.col.api.model.*;
 import org.col.api.vocab.*;
 import org.gbif.nameparser.api.Authorship;
@@ -107,7 +107,7 @@ public class TestEntityGenerator {
 	 * Creates a VernacularName using the specified vernacular name, belonging to
 	 * the specified taxon and dataset DATASET1.
 	 */
-	public static VernacularName newVernacularName(String name) throws Exception {
+	public static VernacularName newVernacularName(String name) {
 		VernacularName vn = new VernacularName();
 		vn.setName(name);
     vn.setLatin(name);
@@ -119,7 +119,7 @@ public class TestEntityGenerator {
 	/*
 	 * Creates a new taxon with the specified id, belonging to dataset DATASET1.
 	 */
-	public static Taxon newTaxon(String id) throws Exception {
+	public static Taxon newTaxon(String id) {
 		return newTaxon(DATASET1, id);
 	}
 
@@ -127,7 +127,7 @@ public class TestEntityGenerator {
 	 * Creates a new taxon with the specified id, belonging to the specified
 	 * dataset.
 	 */
-	public static Taxon newTaxon(Dataset dataset, String id) throws Exception {
+	public static Taxon newTaxon(Dataset dataset, String id) {
 		Taxon t = new Taxon();
 		t.setAccordingTo("Foo");
 		t.setAccordingToDate(LocalDate.of(2010, 11, 24));
@@ -152,13 +152,13 @@ public class TestEntityGenerator {
 	/*
 	 * Creates a new name with the specified id, belonging to the specified dataset.
 	 */
-	public static Name newName(String id) throws Exception {
+	public static Name newName(String id) {
 		Name n = newName();
 		n.setId(id);
 		return n;
 	}
 
-	public static Name newName() throws Exception {
+	public static Name newName() {
 		Name n = new Name();
 		n.setDatasetKey(TestEntityGenerator.DATASET1.getKey());
 		n.setCombinationAuthorship(createAuthorship());
@@ -188,7 +188,35 @@ public class TestEntityGenerator {
 		return n;
 	}
 
-	public static Authorship createAuthorship() throws Exception {
+	public static List<Name> newNames(int size) {
+    List<Name> names = Lists.newArrayList();
+    while (size-- > 0) {
+      names.add(newName());
+    }
+    return names;
+  }
+
+  public static Synonymy newSynonymy() {
+    Synonymy s = new Synonymy();
+    s.addHomotypicGroup(newNames(1+RND.nextInt(3)));
+    while (RND.nextBoolean() || RND.nextBoolean()) {
+      s.addHomotypicGroup(newNames(1+RND.nextInt(6)));
+    }
+    return s;
+  }
+
+  public static Reference newReference() {
+    return newReference(RandomUtils.randomString(25));
+  }
+
+  public static Reference newReference(String title) {
+    Reference r = Reference.create();
+    r.setDatasetKey(TestEntityGenerator.DATASET1.getKey());
+    r.setTitle(title);
+    return r;
+  }
+
+  public static Authorship createAuthorship() {
 		Authorship a = new Authorship();
 		while (a.getAuthors().size() < 2 || RND.nextBoolean()) {
 			a.getAuthors().add(RandomUtils.randomAuthor());

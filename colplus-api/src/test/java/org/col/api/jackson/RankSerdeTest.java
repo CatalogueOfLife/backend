@@ -20,7 +20,7 @@ import java.io.IOException;
 
 import static org.junit.Assert.assertEquals;
 
-public class RankSerdeTest extends SerdeTestBase<Rank> {
+public class RankSerdeTest extends EnumSerdeTestBase<Rank> {
 
   public RankSerdeTest() {
     super(Rank.class);
@@ -31,4 +31,5 @@ public class RankSerdeTest extends SerdeTestBase<Rank> {
     for (Rank r : Rank.LINNEAN_RANKS) {
       assertEquals('"' + r.name().toLowerCase() + '"', ApiModule.MAPPER.writeValueAsString(r));
     }
-  }}
+  }
+}

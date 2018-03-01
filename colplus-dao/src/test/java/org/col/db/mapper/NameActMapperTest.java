@@ -11,7 +11,7 @@ import org.junit.Test;
 
 import java.util.List;
 
-import static org.col.db.TestEntityGenerator.*;
+import static org.col.api.TestEntityGenerator.*;
 import static org.junit.Assert.*;
 
 /**

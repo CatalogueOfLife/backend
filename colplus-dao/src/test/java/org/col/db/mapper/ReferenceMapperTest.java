@@ -8,13 +8,13 @@ import org.col.api.model.Page;
 import org.col.api.model.ReferenceWithPage;
 import org.col.api.model.Reference;
 import org.col.api.vocab.Issue;
-import org.col.db.TestEntityGenerator;
+import org.col.api.TestEntityGenerator;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.col.db.TestEntityGenerator.*;
+import static org.col.api.TestEntityGenerator.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 

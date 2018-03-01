@@ -7,7 +7,7 @@ import org.col.api.vocab.Issue;
 import org.col.api.vocab.NomStatus;
 import org.col.api.vocab.Origin;
 import org.col.api.vocab.TaxonomicStatus;
-import org.col.db.TestEntityGenerator;
+import org.col.api.TestEntityGenerator;
 import org.col.db.mapper.temp.NameSearchResultTemp;
 import org.col.util.BeanPrinter;
 import org.gbif.nameparser.api.NameType;

@@ -6,7 +6,7 @@ import org.col.api.RandomUtils;
 import org.col.api.model.ExtendedTermRecord;
 import org.col.api.model.TermRecord;
 import org.col.api.model.VerbatimRecord;
-import org.col.db.TestEntityGenerator;
+import org.col.api.TestEntityGenerator;
 import org.gbif.dwc.terms.*;
 import org.javers.common.collections.Sets;
 import org.junit.Test;

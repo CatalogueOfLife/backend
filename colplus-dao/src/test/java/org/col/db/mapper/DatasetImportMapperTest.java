@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Random;
 
-import static org.col.db.TestEntityGenerator.DATASET1;
+import static org.col.api.TestEntityGenerator.DATASET1;
 import static org.junit.Assert.*;
 
 
