@@ -9,6 +9,7 @@ import org.col.dw.jersey.exception.QueryParam400Mapper;
 import org.col.dw.jersey.exception.UnsupportedOperationExceptionMapper;
 import org.col.dw.jersey.exception.ValidationExceptionMapper;
 import org.col.dw.jersey.filter.CreatedResponseFilter;
+import org.col.dw.jersey.filter.Null404ResponseFilter;
 
 /**
  * Various custom jersey providers bundled together for CoL.
@@ -24,6 +25,7 @@ public class JerseyProviderBundle implements Bundle {
   public void run(Environment env) {
     // filter
     env.jersey().register(CreatedResponseFilter.class);
+    env.jersey().register(Null404ResponseFilter.class);
 
     // exception mapper
     env.jersey().register(QueryParam400Mapper.class);
