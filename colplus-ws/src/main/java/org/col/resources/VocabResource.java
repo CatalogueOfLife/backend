@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.reflect.ClassPath;
+import org.col.api.jackson.ApiModule;
 import org.col.api.vocab.AreaStandard;
 import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
@@ -60,7 +61,7 @@ public class VocabResource {
   public List<String> values(@PathParam("name") String name) {
     if (name != null && vocabs.containsKey(name.toLowerCase())) {
       return Arrays.stream(vocabs.get(name.toLowerCase()).getEnumConstants())
-          .map(Enum::name)
+          .map(ApiModule::enumValueName)
           .collect(Collectors.toList());
     }
     return Lists.newArrayList();

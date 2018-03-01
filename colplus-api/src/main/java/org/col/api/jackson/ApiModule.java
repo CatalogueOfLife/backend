@@ -80,10 +80,14 @@ public class ApiModule extends SimpleModule {
     public String[] findEnumValues(Class<?> enumType, Enum<?>[] enumValues, String[] names) {
       int idx = 0;
       for (Enum<?> e : enumValues) {
-        names[idx++] = e.name().toLowerCase().replaceAll("_+", " ");
+        names[idx++] = enumValueName(e);
       }
       return names;
     }
+  }
+
+  public static String enumValueName(Enum<?> val) {
+    return val.name().toLowerCase().replaceAll("_+", " ");
   }
 
 }
