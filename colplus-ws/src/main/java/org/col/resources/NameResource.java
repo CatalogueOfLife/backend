@@ -82,7 +82,7 @@ public class NameResource {
   @Timed
 	@Path("{key}/acts")
 	public List<NameAct> getActs(@PathParam("key") int key,
-                               @QueryParam("homotypic") Boolean homotypic,
+                               @QueryParam("homotypic") @DefaultValue("false") boolean homotypic,
                                @Context SqlSession session) {
 		NameActMapper mapper = session.getMapper(NameActMapper.class);
 		return homotypic ? mapper.listByHomotypicGroup(key) : mapper.listByName(key);

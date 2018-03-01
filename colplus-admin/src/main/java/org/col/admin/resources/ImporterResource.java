@@ -35,7 +35,7 @@ public class ImporterResource {
   }
 
   @POST
-  public ImportManager.ImportRequest schedule(@QueryParam("key") Integer datasetKey, @QueryParam("force") Boolean force) {
+  public ImportManager.ImportRequest schedule(@QueryParam("key") Integer datasetKey, @QueryParam("force") boolean force) {
     return importManager.submit(datasetKey, force);
   }
 

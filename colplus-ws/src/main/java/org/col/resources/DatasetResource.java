@@ -69,13 +69,13 @@ public class DatasetResource {
   @GET
   @Path("{key}/import")
   public List<DatasetImport> getImports(@PathParam("key") Integer key,
-                                        @QueryParam("all") Boolean all,
+                                        @QueryParam("all") boolean all,
                                         @Context SqlSession session) {
     DatasetImportMapper mapper = session.getMapper(DatasetImportMapper.class);
-    if (all == null || !all) {
-      return Lists.newArrayList(mapper.lastSuccessful(key));
-    } else {
+    if (all) {
       return mapper.listByDataset(key);
+    } else {
+      return Lists.newArrayList(mapper.lastSuccessful(key));
     }
   }
 
