@@ -67,7 +67,7 @@ public class DwcaInserter extends NeoInserter {
       }
 
     } catch (Throwable e) {
-      LOG.error("Unable to read dataset metadata from dwc archive", e.getMessage());
+      LOG.error("Unable to read dataset metadata from dwc archive: {}", e.getMessage(), e);
     }
     return Optional.empty();
   }

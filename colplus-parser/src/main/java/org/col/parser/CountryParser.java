@@ -15,7 +15,11 @@ public class CountryParser extends GbifParserBased<Country, org.gbif.api.vocabul
 
   @Override
   Country convertFromGbif(org.gbif.api.vocabulary.Country value) {
-    return VocabularyUtils.convertEnum(Country.class, value);
+    switch (value) {
+      case UNKNOWN:
+        return null;
+      default:
+        return VocabularyUtils.convertEnum(Country.class, value);
+    }
   }
-
 }

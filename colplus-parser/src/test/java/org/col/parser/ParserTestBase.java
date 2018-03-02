@@ -1,8 +1,6 @@
 package org.col.parser;
 
 import com.google.common.collect.Lists;
-import org.col.parser.Parser;
-import org.col.parser.UnparsableException;
 import org.junit.Test;
 
 import java.util.Collections;
@@ -23,7 +21,17 @@ abstract class ParserTestBase<T> {
   }
 
   void assertParse(T expected, String input) throws UnparsableException {
-    assertEquals(Optional.of(expected), parser.parse(input));
+    assertEquals(Optional.ofNullable(expected), parser.parse(input));
+  }
+
+  void assertUnparsable(String x) throws UnparsableException {
+    try {
+      Optional<T> val = parser.parse(x);
+      // we should never reach here
+      fail("Expected "+x+" to be unparsable but was "+ (val.isPresent() ? val.get() : "EMPTY"));
+    } catch (UnparsableException e) {
+      // expected
+    }
   }
 
   @Test
@@ -40,13 +48,7 @@ abstract class ParserTestBase<T> {
     values.addAll(additionalUnparsableValues());
 
     for (String x : values) {
-      try {
-        Optional<T> val = parser.parse(x);
-        // we should never reach here
-        fail("Expected "+x+" to be unparsable but was "+ (val.isPresent() ? val.get() : "EMPTY"));
-      } catch (UnparsableException e) {
-        // expected
-      }
+      assertUnparsable(x);
     }
   }
 

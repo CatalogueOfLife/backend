@@ -20,10 +20,13 @@ public class CountryParserTest extends ParserTestBase<Country> {
     assertParse(Country.GERMANY, "deu");
     assertParse(Country.GERMANY, "deutschland");
     assertParse(Country.GERMANY, "GER");
+
+    assertUnparsable("unknown");
+    assertUnparsable("zz");
   }
 
   @Override
   List<String> additionalUnparsableValues() {
-    return Lists.newArrayList("term", "deuter");
+    return Lists.newArrayList("term", "deuter", "unknown");
   }
 }

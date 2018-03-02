@@ -27,7 +27,11 @@ abstract class GbifParserBased<T, G> implements Parser<T> {
 
     ParseResult<G> gbifResult = gbifParser.parse(value);
     if (gbifResult.isSuccessful()) {
-      return Optional.of(convertFromGbif(gbifResult.getPayload()));
+      Optional<T> converted = Optional.ofNullable(convertFromGbif(gbifResult.getPayload()));
+      if (!converted.isPresent()) {
+        throw new UnparsableException(valueClass, value);
+      }
+      return converted;
 
     } else if (gbifResult.getStatus().equals(ParseResult.STATUS.ERROR)) {
       throw new UnparsableException("Error while parsing " + valueClass.getSimpleName(), gbifResult.getError());
@@ -40,5 +44,5 @@ abstract class GbifParserBased<T, G> implements Parser<T> {
   /**
    * @param value never null!
    */
-  abstract T convertFromGbif(G value);
+  abstract T convertFromGbif(G value) throws UnparsableException;
 }
