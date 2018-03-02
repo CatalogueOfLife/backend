@@ -1,6 +1,5 @@
 package org.col.admin.task.importer.dwca;
 
-import com.ctc.wstx.sax.WstxSAXParserFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.col.api.model.Dataset;
 import org.col.parser.DateParser;
@@ -8,11 +7,7 @@ import org.col.parser.SafeParser;
 import org.col.util.io.CharsetDetectingStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xml.sax.SAXException;
 
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
@@ -31,19 +26,9 @@ import java.util.Optional;
  */
 public class EmlParser {
   private static final Logger LOG = LoggerFactory.getLogger(EmlParser.class);
-  private static final SAXParser SAX;
+  private static final XMLInputFactory factory;
   static {
-    SAXParserFactory factory = WstxSAXParserFactory.newInstance();
-    factory.setNamespaceAware(false);
-    factory.setValidating(false);
-    SAXParser p = null;
-    try {
-      p = factory.newSAXParser();
-      LOG.debug("Create SAX Parser {}", p.getClass());
-    } catch (ParserConfigurationException | SAXException e) {
-      LOG.error("Failed to create SAX Parser", e);
-    }
-    SAX = p;
+    factory = XMLInputFactory.newInstance();
   }
 
   Optional<Dataset> parse(Path file) throws IOException {
@@ -58,7 +43,6 @@ public class EmlParser {
 
   Optional<Dataset> parse(InputStream stream, Charset encoding) {
     try {
-      XMLInputFactory factory = XMLInputFactory.newInstance();
       XMLStreamReader parser = factory.createXMLStreamReader(stream, encoding.name());
 
       final Dataset d = new Dataset();

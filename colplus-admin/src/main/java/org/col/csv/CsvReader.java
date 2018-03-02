@@ -42,7 +42,7 @@ import java.util.stream.StreamSupport;
  */
 public class CsvReader {
   private static final Logger LOG = LoggerFactory.getLogger(CsvReader.class);
-  private static final CsvParserSettings CSV = new CsvParserSettings();
+  protected static final CsvParserSettings CSV = new CsvParserSettings();
   static {
     CSV.detectFormatAutomatically();
     // try with tabs as default if autoconfig fails
@@ -56,12 +56,12 @@ public class CsvReader {
   }
   private static final Set<String> SUFFICES = ImmutableSet.of("csv", "tsv", "tab", "txt", "text");
   private static final Pattern NULL_PATTERN = Pattern.compile("^\\s*(\\\\N|\\\\?NULL)\\s*$");
+  private static final int STREAM_CHARACTERISTICS = Spliterator.ORDERED | Spliterator.DISTINCT | Spliterator.NONNULL | Spliterator.IMMUTABLE;
 
   protected final Path folder;
-  protected final Map<Term, Schema> schemas;
+  protected final Map<Term, Schema> schemas = Maps.newHashMap();
 
   /**
-   * @param termPrefix optional preferred term namespace prefix to use when looking up class & property terms
    * @param folder
    */
   protected CsvReader(Path folder, String termPrefix) throws IOException {
@@ -69,13 +69,29 @@ public class CsvReader {
       throw new FileNotFoundException("Folder does not exist: " + folder);
     }
     this.folder = folder;
-    schemas = Maps.newHashMap();
+    discoverSchemas(termPrefix);
+  }
+
+  /**
+   *
+   * @param termPrefix optional preferred term namespace prefix to use when looking up class & property terms
+   * @throws IOException
+   */
+  protected void discoverSchemas(String termPrefix) throws IOException {
     for (Path df : listDataFiles(folder)) {
       Schema s = buildSchema(df, termPrefix);
       if (s != null) {
         schemas.put(s.rowType, s);
       }
     }
+  }
+
+  /**
+   * Returns a path within the folder for a given relative file or path.
+   * @param filename to resolve
+   */
+  protected Path resolve(String filename) {
+    return folder.resolve(filename);
   }
 
   /**
@@ -86,7 +102,7 @@ public class CsvReader {
   }
 
   public static CsvReader from(Path folder) throws IOException {
-    return new CsvReader(folder, null);
+    return from(folder, null);
   }
 
   protected void require(Term rowType, Term term) {
@@ -106,16 +122,21 @@ public class CsvReader {
     public final CsvParserSettings settings;
     public final List<Term> columns;
 
-    private Schema(Path file, Term rowType, Charset encoding, CsvParserSettings settings, List<Term> columns) {
+    public Schema(Path file, Term rowType, Charset encoding, CsvParserSettings settings, List<Term> columns) {
       this.file = file;
       this.rowType = rowType;
       this.encoding = encoding;
       this.settings = settings;
-      this.columns = columns;
+      this.columns = Collections.unmodifiableList(columns);
     }
 
     public boolean isEmpty() {
       return columns.isEmpty();
+    }
+
+    @Override
+    public String toString() {
+      return rowType + " [" + PathUtils.getFilename(file) + ", " + columns.size() + "]";
     }
   }
 
@@ -126,10 +147,8 @@ public class CsvReader {
     return VocabularyUtils.TF.findTerm(name, isClassTerm);
   }
 
-  private static Schema buildSchema(Path df, @Nullable String termPrefix) {
-    final Term rowType = findTerm(termPrefix, PathUtils.getBasename(df), true);
-    LOG.debug("Detecting schema for file {}, rowType={}", PathUtils.getFilename(df), rowType);
-
+  private Schema buildSchema(Path df, @Nullable String termPrefix) {
+    LOG.debug("Detecting schema for file {}", PathUtils.getFilename(df));
     try {
       CsvParserSettings set = CSV.clone();
       CsvParser parser = new CsvParser(set);
@@ -162,6 +181,9 @@ public class CsvReader {
           }
           // ignore header row - needs changed if we parse the settings externally
           set.setNumberOfRowsToSkip(1);
+
+          final Term rowType = detectRowType(df, termPrefix, columns);
+
           LOG.info("CSV {} schema with {} columns found for {} encoded file {}", rowType.prefixedName(), columns.size(), charset, PathUtils.getFilename(df));
           return new Schema(df, rowType, charset, set, columns);
         }
@@ -173,6 +195,10 @@ public class CsvReader {
     return null;
   }
 
+  protected Term detectRowType(Path df, String termPrefix, List<Term> columns) {
+    return findTerm(termPrefix, PathUtils.getBasename(df), true);
+  }
+
   private static Iterable<Path> listDataFiles(Path folder) throws IOException {
     return Files.newDirectoryStream(folder, new DirectoryStream.Filter<Path>() {
       @Override
@@ -182,8 +208,30 @@ public class CsvReader {
     });
   }
 
+  public Set<Term> rowTypes() {
+    return schemas.keySet();
+  }
+
+  public Collection<Schema> schemas() {
+    return schemas.values();
+  }
+
   public boolean hasData(Term rowType) {
     return schemas.containsKey(rowType);
+  }
+
+  /**
+   * @return number of available schemas
+   */
+  public int size() {
+    return schemas.size();
+  }
+
+  /**
+   * @return true if no schema is mapped
+   */
+  public boolean isEmpty() {
+    return schemas.isEmpty();
   }
 
   public Optional<Schema> schema(Term rowType) {
@@ -285,10 +333,9 @@ public class CsvReader {
   }
 
   private Stream<TermRecord> stream(final Schema s) {
-    final int character = Spliterator.ORDERED | Spliterator.DISTINCT | Spliterator.NONNULL | Spliterator.IMMUTABLE;
     try {
       return StreamSupport.stream(
-          Spliterators.spliteratorUnknownSize(new TermRecIterator(s), character), false);
+          Spliterators.spliteratorUnknownSize(new TermRecIterator(s), STREAM_CHARACTERISTICS), false);
 
     } catch (IOException | RuntimeException e) {
       LOG.error("Failed to read {}", s.file, e);

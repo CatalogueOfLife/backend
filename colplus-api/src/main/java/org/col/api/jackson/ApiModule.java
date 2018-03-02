@@ -20,13 +20,18 @@ import org.gbif.nameparser.api.Authorship;
  */
 public class ApiModule extends SimpleModule {
 
-  public static final ObjectMapper MAPPER = new ObjectMapper();
-  static {
-    MAPPER.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
-    MAPPER.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-    MAPPER.registerModule(new JavaTimeModule());
-    MAPPER.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-    MAPPER.registerModule(new ApiModule());
+  public static final ObjectMapper MAPPER = configureMapper(new ObjectMapper());
+
+  public static ObjectMapper configureMapper(ObjectMapper mapper) {
+    mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
+    mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+
+    mapper.registerModule(new JavaTimeModule());
+    mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
+    mapper.registerModule(new ApiModule());
+
+    return mapper;
   }
 
   public ApiModule() {

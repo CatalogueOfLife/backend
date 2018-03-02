@@ -1,7 +1,7 @@
 -- all datasets from https://github.com/gbif/checklistbank/blob/master/checklistbank-nub/nub-sources.tsv
 -- excluding CoL, the GBIF patches and entire organisation or installations which we add below as lists of datasets
 INSERT INTO dataset (data_format, gbif_key, data_access, title) VALUES (0, '00e791be-36ae-40ee-8165-0b2cb0b8c84f', 'https://github.com/mdoering/famous-organism/archive/master.zip', 'Species named after famous people');
-INSERT INTO dataset (data_format, gbif_key, data_access, title) VALUES (0, '046bbc50-cae2-47ff-aa43-729fbf53f7c5', 'http://rs.gbif.org/datasets/ipni.zip', 'International Plant Names Index');
+INSERT INTO dataset (data_format, gbif_key, data_access, title) VALUES (0, '046bbc50-cae2-47ff-aa43-729fbf53f7c5', 'http://rs.gbif.org/datasets/ipni-new.zip', 'International Plant Names Index');
 INSERT INTO dataset (data_format, gbif_key, data_access, title) VALUES (0, '0938172b-2086-439c-a1dd-c21cb0109ed5', 'http://www.irmng.org/export/IRMNG_genera_DwCA.zip', 'The Interim Register of Marine and Nonmarine Genera');
 INSERT INTO dataset (data_format, gbif_key, data_access, title) VALUES (0, '0e61f8fe-7d25-4f81-ada7-d970bbb2c6d6', 'http://ipt.gbif.fr/archive.do?r=taxref-test', 'TAXREF');
 INSERT INTO dataset (data_format, gbif_key, data_access, title) VALUES (0, '1c1f2cfc-8370-414f-9202-9f00ccf51413', 'http://rs.gbif.org/datasets/protected/euro_med.zip', 'Euro+Med PlantBase data sample');

@@ -2,13 +2,13 @@ taxonID	locationID	locality	countryCode	country	occurrenceStatus	source
 1000				Deutschland	present	
 1000				France	present	
 1000		All of Austria and the alps			present	
-1000			DK,UK		present	
-1000				Nigeria,Kenia	present	
+1000			DK,UK			
+1000				Nigeria,Kenia		
 1000	TDWG:AGS				present	
 1000	FISHING:37.4.1				present	
 1000	TDWG:MOR-MO,TDWG:MOR-CE,TDWG:MOR-ME				present	
 1000	tdwg:cpp; tdwg:of; tdwg:nam				present	
-1000	iso:it-82				present	
+1000	iso:it-82					
 1000	ISO:ES-CN				present	
-1000	ISO:FR-H				present	
+1000	ISO:FR-H					
 1000	ISO:FM-PNI				present	
