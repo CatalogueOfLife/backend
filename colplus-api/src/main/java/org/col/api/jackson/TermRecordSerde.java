@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.*;
 import org.col.api.model.TermRecord;
 import org.gbif.dwc.terms.Term;
 import org.gbif.dwc.terms.TermFactory;
+import org.gbif.dwc.terms.UnknownTerm;
 
 import java.io.IOException;
 import java.util.Map;
@@ -53,7 +54,11 @@ public class TermRecordSerde {
         jgen.writeNumberField(KEY_ROWNUM, value.getLine());
       }
       for (Map.Entry<Term, String> entry : value.termValues()) {
-        jgen.writeStringField(entry.getKey().prefixedName(), entry.getValue());
+        if (entry.getKey() instanceof UnknownTerm) {
+          jgen.writeStringField(entry.getKey().qualifiedName(), entry.getValue());
+        } else {
+          jgen.writeStringField(entry.getKey().prefixedName(), entry.getValue());
+        }
       }
     }
   }
@@ -92,7 +97,7 @@ public class TermRecordSerde {
 
           } else if (key.equals(KEY_TYPE)) {
             jp.nextToken();
-            rec.setType(TF.findTerm(jp.getText(), true));
+            rec.setType(TF.findClassTerm(jp.getText()));
 
           } else if (key.equals(KEY_FILE)) {
             jp.nextToken();
@@ -103,7 +108,7 @@ public class TermRecordSerde {
             rec.setLine(jp.getIntValue());
 
           } else {
-            Term term = TF.findTerm(key);
+            Term term = TF.findPropertyTerm(key);
             if (term == null && ctxt.getConfig().isEnabled(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)) {
               ctxt.handleUnknownProperty(jp, this, rec, key);
             }

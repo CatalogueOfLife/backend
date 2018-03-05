@@ -40,7 +40,7 @@ public class VerbatimRecordSerdeTest extends  SerdeTestBase<VerbatimRecord> {
       for (int i = 0; i < 4; i++) {
         TermRecord erec = new TermRecord(11, fn, rowType);
         erec.put(GbifTerm.canonicalName, RandomUtils.randomString(1 + rnd.nextInt(99)));
-        erec.put(AcefTerm.AcceptedSpecies, RandomUtils.randomString(1 + rnd.nextInt(99)));
+        erec.put(AcefTerm.AcceptedTaxonID, RandomUtils.randomString(1 + rnd.nextInt(99)));
         erec.put(DcTerm.title, RandomUtils.randomString(1 + rnd.nextInt(99)));
         erec.put(UnknownTerm.build("http://col.plus/terms/epunk"), RandomUtils.randomString(1 + rnd.nextInt(99)));
         erecs.add(erec);

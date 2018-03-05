@@ -6,6 +6,7 @@ import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.*;
 import org.gbif.dwc.terms.Term;
 import org.gbif.dwc.terms.TermFactory;
+import org.gbif.dwc.terms.UnknownTerm;
 
 import java.io.IOException;
 
@@ -42,7 +43,11 @@ public class TermSerde {
       if (value == null) {
         jgen.writeNull();
       } else {
-        jgen.writeString(value.toString());
+        if (value instanceof UnknownTerm) {
+          jgen.writeString(value.qualifiedName());
+        } else {
+          jgen.writeString(value.prefixedName());
+        }
       }
     }
   }
@@ -57,7 +62,11 @@ public class TermSerde {
       if (value == null) {
         jgen.writeNull();
       } else {
-        jgen.writeFieldName(value.toString());
+        if (value instanceof UnknownTerm) {
+          jgen.writeFieldName(value.qualifiedName());
+        } else {
+          jgen.writeFieldName(value.prefixedName());
+        }
       }
     }
   }

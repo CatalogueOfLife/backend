@@ -190,14 +190,15 @@ public class TermRecord {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     TermRecord that = (TermRecord) o;
-    return Objects.equals(terms, that.terms) &&
-        Objects.equals(line, that.line) &&
-        Objects.equals(file, that.file);
+    return line == that.line &&
+        Objects.equals(file, that.file) &&
+        Objects.equals(type, that.type) &&
+        Objects.equals(terms, that.terms);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(terms, line, file);
+    return Objects.hash(line, file, type, terms);
   }
 
   @Override
