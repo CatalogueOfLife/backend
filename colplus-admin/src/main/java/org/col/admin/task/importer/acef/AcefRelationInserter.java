@@ -1,6 +1,5 @@
 package org.col.admin.task.importer.acef;
 
-import org.col.admin.task.importer.InsertMetadata;
 import org.col.admin.task.importer.NormalizationFailedException;
 import org.col.admin.task.importer.neo.NeoDb;
 import org.col.admin.task.importer.neo.model.NeoProperties;
@@ -19,12 +18,10 @@ public class AcefRelationInserter implements NeoDb.NodeBatchProcessor {
   private static final Logger LOG = LoggerFactory.getLogger(AcefRelationInserter.class);
 
   private final NeoDb store;
-  private final InsertMetadata meta;
   private final AcefInterpreter inter;
 
-  public AcefRelationInserter(NeoDb store, InsertMetadata meta, AcefInterpreter inter) {
+  public AcefRelationInserter(NeoDb store, AcefInterpreter inter) {
     this.store = store;
-    this.meta = meta;
     this.inter = inter;
   }
 
@@ -33,13 +30,13 @@ public class AcefRelationInserter implements NeoDb.NodeBatchProcessor {
     try {
       NeoTaxon t = store.get(n);
       if (t.synonym != null) {
-        Node acc = lookupByTaxonID(AcefTerm.AcceptedTaxonID, t, Issue.ACCEPTED_ID_INVALID);
+        Node acc = lookupByID(AcefTerm.AcceptedTaxonID, t, Issue.ACCEPTED_ID_INVALID);
         if (acc != null) {
           store.createSynonymRel(t.node, acc);
         }
 
       } else {
-        Node p = lookupByTaxonID(AcefTerm.ParentSpeciesID, t, Issue.PARENT_ID_INVALID);
+        Node p = lookupByID(AcefTerm.ParentSpeciesID, t, Issue.PARENT_ID_INVALID);
         if (p != null) {
           store.assignParent(p, t.node);
           // update infraspecific name with species
@@ -71,11 +68,11 @@ public class AcefRelationInserter implements NeoDb.NodeBatchProcessor {
    *
    * @return list of potentially split ids with their matching neo node if found, otherwise null
    */
-  private Node lookupByTaxonID(Term term, NeoTaxon t, Issue issueIfNotFound) {
+  private Node lookupByID(Term term, NeoTaxon t, Issue issueIfNotFound) {
     Node n = null;
     final String id = t.verbatim.getTerm(term);
-    if (id != null && !id.equals(t.getTaxonID())) {
-      n = store.byTaxonID(id);
+    if (id != null && !id.equals(t.getID())) {
+      n = store.byID(id);
       if (n == null) {
         t.addIssue(issueIfNotFound);
       }

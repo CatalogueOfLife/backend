@@ -323,7 +323,7 @@ public class Normalizer implements Runnable {
         su.addIssue(Issue.PARENT_CYCLE);
         store.put(su);
         // this is serious. Report id
-        String taxonID = NeoProperties.getTaxonID(syn);
+        String taxonID = NeoProperties.getID(syn);
 
         RankedName created = store.createPlaceholder(Origin.MISSING_ACCEPTED, Issue.CHAINED_SYNOYM);
         store.createSynonymRel(syn, created.node);

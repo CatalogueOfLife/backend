@@ -33,10 +33,12 @@ public class DwcaRelationInserter implements NeoDb.NodeBatchProcessor {
 
   private final NeoDb store;
   private final InsertMetadata meta;
-  
-  public DwcaRelationInserter(NeoDb store, InsertMetadata meta) {
+  private final DwcInterpreter inter;
+
+  public DwcaRelationInserter(NeoDb store, InsertMetadata meta, DwcInterpreter inter) {
     this.store = store;
     this.meta = meta;
+    this.inter = inter;
   }
 
   @Override
@@ -46,6 +48,12 @@ public class DwcaRelationInserter implements NeoDb.NodeBatchProcessor {
       insertAcceptedRel(t);
       insertParentRel(t);
       insertBasionymRel(t);
+
+      // supplementary infos
+      inter.interpretBibliography(t);
+      inter.interpretVernacularNames(t);
+      inter.interpretDistributions(t);
+
       store.put(t);
 
     } catch (Exception e) {
@@ -168,7 +176,7 @@ public class DwcaRelationInserter implements NeoDb.NodeBatchProcessor {
     List<RankedName> rankedNames = Lists.newArrayList();
     for (String id : taxonIDs) {
       if (!id.equals(t.getTaxonID())) {
-        Node n = store.byTaxonID(id);
+        Node n = store.byID(id);
         if (n != null) {
           rankedNames.add(NeoProperties.getRankedName(n));
         }

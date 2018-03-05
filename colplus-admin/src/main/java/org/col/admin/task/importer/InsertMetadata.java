@@ -16,7 +16,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class InsertMetadata {
   private static final Logger LOG = LoggerFactory.getLogger(InsertMetadata.class);
 
-  private boolean coreIdUsed;
+  private boolean taxonId;
   private boolean parsedNameMapped;
   private boolean denormedClassificationMapped;
   private boolean originalNameMapped;
@@ -27,14 +27,15 @@ public class InsertMetadata {
   private Map<Rank, AtomicInteger> recordsByRank = Maps.newHashMap();
 
   /**
-   * @return true if the coreID of the core records is used instead of a column mapped to the taxonID term.
+   * @return true if taxonID exists as a distinct property from the ID property
+   * and should be used to resolve taxonomic relationships based on taxonID terms.
    */
-  public boolean isCoreIdUsed() {
-    return coreIdUsed;
+  public boolean hasTaxonId() {
+    return taxonId;
   }
 
-  public void setCoreIdUsed(boolean coreIdUsed) {
-    this.coreIdUsed = coreIdUsed;
+  public void setTaxonId(boolean taxonId) {
+    this.taxonId = taxonId;
   }
 
   /**

@@ -68,11 +68,11 @@ public class NeoDbUtils {
 
   public static Map<String, Object> neo4jProps(NeoTaxon tax) {
     Map<String, Object> props = Maps.newHashMap();
+    putIfNotNull(props, NeoProperties.ID, tax.getID());
+    putIfNotNull(props, NeoProperties.TAXON_ID, tax.getTaxonID());
     putIfNotNull(props, NeoProperties.SCIENTIFIC_NAME, tax.name.getScientificName());
     putIfNotNull(props, NeoProperties.AUTHORSHIP, tax.name.authorshipComplete());
     putIfNotNull(props, NeoProperties.RANK, tax.name.getRank());
-    putIfNotNull(props, NeoProperties.NAME_ID, tax.name.getId());
-    putIfNotNull(props, NeoProperties.TAXON_ID, tax.getTaxonID());
     return props;
   }
 }

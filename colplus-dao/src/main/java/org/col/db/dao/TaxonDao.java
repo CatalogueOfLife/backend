@@ -3,8 +3,7 @@ package org.col.db.dao;
 import com.google.common.collect.Sets;
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.model.*;
-import org.col.db.KeyNotFoundException;
-import org.col.db.NotInDatasetException;
+import org.col.db.NotFoundException;
 import org.col.db.mapper.*;
 
 import java.util.List;
@@ -27,11 +26,11 @@ public class TaxonDao {
     return new ResultPage<>(p, total, result);
   }
 
-  public int lookupKey(String id, int datasetKey) throws NotInDatasetException {
+  public int lookupKey(String id, int datasetKey) throws NotFoundException {
     TaxonMapper mapper = session.getMapper(TaxonMapper.class);
     Integer key = mapper.lookupKey(id, datasetKey);
     if (key == null) {
-      throw new NotInDatasetException(Taxon.class, datasetKey, id);
+      throw NotFoundException.idNotFound(Taxon.class, datasetKey, id);
     }
     return key;
   }
@@ -40,7 +39,7 @@ public class TaxonDao {
     TaxonMapper mapper = session.getMapper(TaxonMapper.class);
     Taxon result = mapper.get(key);
     if (result == null) {
-      throw new KeyNotFoundException(Taxon.class, key);
+      throw NotFoundException.keyNotFound(Taxon.class, key);
     }
     return result;
   }
@@ -76,7 +75,7 @@ public class TaxonDao {
     TaxonMapper tMapper = session.getMapper(TaxonMapper.class);
     Taxon taxon = tMapper.get(key);
     if (taxon == null) {
-      throw new KeyNotFoundException(Taxon.class, key);
+      throw NotFoundException.keyNotFound(Taxon.class, key);
     }
 
     TaxonInfo info = new TaxonInfo();

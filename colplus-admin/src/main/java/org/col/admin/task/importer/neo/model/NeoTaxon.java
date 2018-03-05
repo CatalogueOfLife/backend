@@ -96,6 +96,10 @@ public class NeoTaxon {
     return synonym != null;
   }
 
+  public String getID() {
+    return verbatim == null ? null : verbatim.getId();
+  }
+
   public String getTaxonID() {
     return taxon.getId();
   }

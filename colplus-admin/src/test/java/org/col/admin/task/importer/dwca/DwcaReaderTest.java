@@ -15,14 +15,15 @@ import static org.junit.Assert.*;
  *
  */
 public class DwcaReaderTest {
+
   @Test
   public void metaIF() throws Exception {
     DwcaReader reader = DwcaReader.from(PathUtils.classPathTestRes("dwca/0"));
 
     assertEquals(1, reader.size());
     assertEquals(DwcTerm.Taxon, reader.coreRowType());
-    assertEquals(17, reader.coreSchema().columns.size());
-    assertTrue(reader.coreSchema().columns.contains(DwcaReader.DWCA_ID));
+    assertEquals(15, reader.coreSchema().columns.size());
+    assertTrue(reader.coreSchema().hasTerm(DwcaReader.DWCA_ID));
 
     AtomicInteger counter = new AtomicInteger(0);
     reader.stream(DwcTerm.Taxon).forEach(tr -> {
@@ -38,13 +39,13 @@ public class DwcaReaderTest {
 
     assertEquals(1, reader.size());
     assertEquals(DwcTerm.Taxon, reader.coreRowType());
-    assertEquals(6, reader.coreSchema().columns.size());
-    assertTrue(reader.coreSchema().columns.contains(DwcTerm.taxonID));
-    assertTrue(reader.coreSchema().columns.contains(DwcTerm.parentNameUsageID));
-    assertTrue(reader.coreSchema().columns.contains(DwcTerm.acceptedNameUsageID));
-    assertTrue(reader.coreSchema().columns.contains(DwcTerm.originalNameUsageID));
-    assertTrue(reader.coreSchema().columns.contains(DwcTerm.scientificName));
-    assertTrue(reader.coreSchema().columns.contains(DwcTerm.taxonRank));
+    assertEquals(7, reader.coreSchema().size());
+    assertTrue(reader.coreSchema().hasTerm(DwcTerm.taxonID));
+    assertTrue(reader.coreSchema().hasTerm(DwcTerm.parentNameUsageID));
+    assertTrue(reader.coreSchema().hasTerm(DwcTerm.acceptedNameUsageID));
+    assertTrue(reader.coreSchema().hasTerm(DwcTerm.originalNameUsageID));
+    assertTrue(reader.coreSchema().hasTerm(DwcTerm.scientificName));
+    assertTrue(reader.coreSchema().hasTerm(DwcTerm.taxonRank));
 
     AtomicInteger counter = new AtomicInteger(0);
     reader.stream(DwcTerm.Taxon).forEach(tr -> {
@@ -63,8 +64,8 @@ public class DwcaReaderTest {
 
     assertEquals(1, reader.size());
     assertEquals(DwcTerm.Taxon, reader.coreRowType());
-    assertEquals(17, reader.coreSchema().columns.size());
-    assertTrue(reader.coreSchema().columns.contains(DwcaReader.DWCA_ID));
+    assertEquals(15, reader.coreSchema().size());
+    assertTrue(reader.coreSchema().hasTerm(DwcaReader.DWCA_ID));
 
     AtomicInteger counter = new AtomicInteger(0);
     reader.stream(DwcTerm.Taxon).forEach(tr -> {
@@ -74,8 +75,8 @@ public class DwcaReaderTest {
     });
     assertEquals(226, counter.get());
 
-    assertTrue(reader.coreSchema().columns.contains(DwcTerm.scientificName));
-    assertTrue(reader.coreSchema().columns.contains(DwcTerm.taxonRank));
+    assertTrue(reader.coreSchema().hasTerm(DwcTerm.scientificName));
+    assertTrue(reader.coreSchema().hasTerm(DwcTerm.taxonRank));
   }
 
   @Test
@@ -85,9 +86,9 @@ public class DwcaReaderTest {
     assertEquals(2, reader.size());
     assertEquals(DwcTerm.Taxon, reader.coreRowType());
     assertTrue(reader.hasData(DwcTerm.MeasurementOrFact));
-    assertEquals(19, reader.coreSchema().columns.size());
-    assertTrue(reader.coreSchema().columns.contains(DwcaReader.DWCA_ID));
-    assertEquals(9, reader.schema(DwcTerm.MeasurementOrFact).get().columns.size());
+    assertEquals(19, reader.coreSchema().size());
+    assertTrue(reader.coreSchema().hasTerm(DwcaReader.DWCA_ID));
+    assertEquals(9, reader.schema(DwcTerm.MeasurementOrFact).get().size());
 
     final AtomicInteger counter = new AtomicInteger(0);
     reader.stream(DwcTerm.Taxon).forEach(tr -> {
@@ -112,14 +113,14 @@ public class DwcaReaderTest {
 
     assertEquals(3, reader.size());
     assertEquals(DwcTerm.Taxon, reader.coreRowType());
-    assertEquals(6, reader.coreSchema().columns.size());
-    assertTrue(reader.coreSchema().columns.contains(DwcaReader.DWCA_ID));
+    assertEquals(7, reader.coreSchema().size());
+    assertTrue(reader.coreSchema().hasTerm(DwcaReader.DWCA_ID));
 
     assertTrue(reader.hasData(GbifTerm.Distribution));
-    assertEquals(7, reader.schema(GbifTerm.Distribution).get().columns.size());
+    assertEquals(8, reader.schema(GbifTerm.Distribution).get().size());
 
     assertTrue(reader.hasData(GbifTerm.VernacularName));
-    assertEquals(4, reader.schema(GbifTerm.VernacularName).get().columns.size());
+    assertEquals(6, reader.schema(GbifTerm.VernacularName).get().size());
 
     final AtomicInteger counter = new AtomicInteger(0);
     reader.stream(DwcTerm.Taxon).forEach(tr -> {

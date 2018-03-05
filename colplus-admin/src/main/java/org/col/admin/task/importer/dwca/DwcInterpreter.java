@@ -3,7 +3,6 @@ package org.col.admin.task.importer.dwca;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
-import org.apache.commons.lang3.ObjectUtils;
 import org.col.admin.task.importer.InsertMetadata;
 import org.col.admin.task.importer.neo.ReferenceStore;
 import org.col.admin.task.importer.neo.model.NeoTaxon;
@@ -65,16 +64,12 @@ public class DwcInterpreter {
       t.classification.setByTerm(dwc, v.getTerm(dwc));
     }
     // add taxon in any case - we can swap status of a synonym during normalization
-    t.taxon = interpretTaxon(v, insertMetadata.isCoreIdUsed());
+    t.taxon = interpretTaxon(v);
     // a synonym by status?
     // we deal with relations via DwcTerm.acceptedNameUsageID and DwcTerm.acceptedNameUsage during relation insertion
     if(SafeParser.parse(SynonymStatusParser.PARSER, v.getTerm(DwcTerm.taxonomicStatus)).orElse(false)) {
       t.synonym = new NeoTaxon.Synonym();
     }
-    // supplementary infos
-    interpretBibliography(t);
-    interpretVernacularNames(t);
-    interpretDistributions(t);
 
     return t;
   }
@@ -114,7 +109,7 @@ public class DwcInterpreter {
     return r;
   }
 
-  private void interpretBibliography(NeoTaxon t) {
+  void interpretBibliography(NeoTaxon t) {
     if (t.verbatim.hasExtension(GbifTerm.Reference)) {
       for (TermRecord rec : t.verbatim.getExtensionRecords(GbifTerm.Reference)) {
         //TODO: create / lookup references
@@ -123,7 +118,7 @@ public class DwcInterpreter {
     }
   }
 
-  private void interpretDistributions(NeoTaxon t) {
+  void interpretDistributions(NeoTaxon t) {
     if (t.verbatim.hasExtension(GbifTerm.Distribution)) {
       for (TermRecord rec : t.verbatim.getExtensionRecords(GbifTerm.Distribution)) {
         // try to figure out an area
@@ -157,7 +152,7 @@ public class DwcInterpreter {
     }
   }
 
-  private void addDistribution(NeoTaxon t, String area, Gazetteer standard, TermRecord rec) {
+  void addDistribution(NeoTaxon t, String area, Gazetteer standard, TermRecord rec) {
     Distribution d = new Distribution();
     d.setArea(area);
     d.setAreaStandard(standard);
@@ -174,7 +169,7 @@ public class DwcInterpreter {
     }
   }
 
-  private void interpretVernacularNames(NeoTaxon t) {
+  void interpretVernacularNames(NeoTaxon t) {
     if (t.verbatim.hasExtension(GbifTerm.VernacularName)) {
       for (TermRecord rec : t.verbatim.getExtensionRecords(GbifTerm.VernacularName)) {
         if (rec.hasTerm(DwcTerm.vernacularName)) {
@@ -189,10 +184,11 @@ public class DwcInterpreter {
     }
   }
 
-  private Taxon interpretTaxon(VerbatimRecord v, boolean useCoreIdForTaxonID) {
+  private Taxon interpretTaxon(VerbatimRecord v) {
     // and it keeps the taxonID for resolution of relations
     Taxon t = new Taxon();
-    t.setId(useCoreIdForTaxonID ? v.getId() : v.getTerm(DwcTerm.taxonID));
+    t.setId(v.getFirst(DwcTerm.taxonID, DwcaReader.DWCA_ID));
+
     t.setStatus(SafeParser.parse(TaxonomicStatusParser.PARSER, v.getTerm(DwcTerm.taxonomicStatus))
         .orElse(TaxonomicStatus.DOUBTFUL)
     );
@@ -260,7 +256,7 @@ public class DwcInterpreter {
       }
     }
 
-    n.setId(ObjectUtils.firstNonNull(v.getFirst(DwcTerm.scientificNameID, DwcTerm.taxonID), v.getId()));
+    n.setId(v.getFirst(DwcTerm.scientificNameID, DwcTerm.taxonID, DwcaReader.DWCA_ID));
     n.setOrigin(Origin.SOURCE);
     n.setSourceUrl(SafeParser.parse(UriParser.PARSER, v.getTerm(DcTerm.references)).orNull());
     n.setStatus(SafeParser.parse(NomStatusParser.PARSER, v.getTerm(DwcTerm.nomenclaturalStatus))

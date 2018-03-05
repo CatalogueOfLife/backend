@@ -55,7 +55,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * TODO: separate out the reference store in its own class and use a lucene index
  * with a suitable analyzer to lookup refs by id or title
  */
-public class NeoDb implements NormalizerStore, ReferenceStore {
+public class NeoDb implements ReferenceStore {
   private static final Logger LOG = LoggerFactory.getLogger(NeoDb.class);
   private static final Labels[] TAX_LABELS = new Labels[]{Labels.ALL, Labels.TAXON};
   private static final Labels[] SYN_LABELS = new Labels[]{Labels.ALL, Labels.SYNONYM};
@@ -123,7 +123,6 @@ public class NeoDb implements NormalizerStore, ReferenceStore {
   /**
    * Fully closes the dao leaving any potentially existing persistence files untouched.
    */
-  @Override
   public void close() {
     try {
       if (mapDb != null && !mapDb.isClosed()) {
@@ -163,7 +162,6 @@ public class NeoDb implements NormalizerStore, ReferenceStore {
     return neo;
   }
 
-  @Override
   public NeoTaxon get(Node n) {
     NeoTaxon t = taxa.get(n.getId());
     if (t != null) {
@@ -172,8 +170,8 @@ public class NeoDb implements NormalizerStore, ReferenceStore {
     return t;
   }
 
-  public NeoTaxon getByTaxonID(String taxonID) {
-    Node n = byTaxonID(taxonID);
+  public NeoTaxon getByID(String id) {
+    Node n = byID(id);
     if (n != null) {
       return get(n);
     }
@@ -183,36 +181,67 @@ public class NeoDb implements NormalizerStore, ReferenceStore {
   /**
    * @return the single matching node with the taxonID or null
    */
-  @Override
+  public Node byID(String id) {
+    try {
+      return Iterators.singleOrNull(neo.findNodes(Labels.ALL, NeoProperties.ID, id));
+    } catch (NoSuchElementException e) {
+      throw new NotUniqueRuntimeException(NeoProperties.ID, id);
+    }
+  }
+
+  /**
+   * get taxon by its unique taxonID
+   */
+  public NeoTaxon getByTaxonID(String taxonID) {
+    Node n = byID(taxonID);
+    if (n != null) {
+      return get(n);
+    }
+    return null;
+  }
+
+  /**
+   * @return the single matching node with the taxonID or null
+   */
   public Node byTaxonID(String taxonID) {
     try {
       return Iterators.singleOrNull(neo.findNodes(Labels.ALL, NeoProperties.TAXON_ID, taxonID));
+
     } catch (NoSuchElementException e) {
-      throw new NotUniqueRuntimeException(NeoProperties.TAXON_ID, taxonID);
+      throw new NotUniqueRuntimeException(NeoProperties.ID, taxonID);
     }
   }
 
   /**
    * @return the matching nodes with the scientificName
    */
-  @Override
   public List<Node> byScientificName(String scientificName) {
     return Iterators.asList(neo.findNodes(Labels.ALL, NeoProperties.SCIENTIFIC_NAME, scientificName));
   }
 
-  @Override
   public List<Node> byScientificName(String scientificName, Rank rank) {
     List<Node> names = byScientificName(scientificName);
     names.removeIf(n -> !NeoProperties.getRank(n, Rank.UNRANKED).equals(rank));
     return names;
   }
 
-  @Override
   public Optional<Dataset> getDataset() {
     return Optional.ofNullable(dataset.get());
   }
 
-  @Override
+  /**
+   * Process all nodes in batches with the given callback handler.
+   * Every batch is processed in a single transaction which is committed at the end of the batch.
+   *
+   * If new nodes are created within a batch transaction this will be also be returned to the callback handler at the very end.
+   *
+   * Iteration is by node value starting from node value 1 to highest.
+   *
+   * @param label neo4j node label to select nodes by. Use Labels.ALL for all nodes
+   * @param batchSize
+   * @param callback
+   * @return total number of processed nodes.
+   */
   public int process(Labels label, final int batchSize, NodeBatchProcessor callback) {
     ExecutorService service =  ThrottledThreadPoolExecutor.newFixedThreadPool(1, 3);
     final AtomicInteger counter = new AtomicInteger();
@@ -289,7 +318,6 @@ public class NeoDb implements NormalizerStore, ReferenceStore {
    * While batch mode is active only writes will be accepted and reads from the store
    * will throw exceptions.
    */
-  @Override
   public void startBatchMode() {
     try {
       closeNeo();
@@ -303,14 +331,13 @@ public class NeoDb implements NormalizerStore, ReferenceStore {
     return inserter != null;
   }
 
-  @Override
   public void endBatchMode() throws NotUniqueRuntimeException {
     try {
       // define indices
       LOG.info("Building lucene index scientificName ...");
       inserter.createDeferredSchemaIndex(Labels.ALL).on(NeoProperties.SCIENTIFIC_NAME).create();
-      LOG.info("Building lucene index scientificNameID ...");
-      inserter.createDeferredSchemaIndex(Labels.ALL).on(NeoProperties.NAME_ID).create();
+      LOG.info("Building lucene index taxonID ...");
+      inserter.createDeferredSchemaIndex(Labels.ALL).on(NeoProperties.TAXON_ID).create();
     } finally {
       // this is when lucene indices are build and thus throws RuntimeExceptions when unique constraints are broken
       // we catch these exceptions below
@@ -320,31 +347,31 @@ public class NeoDb implements NormalizerStore, ReferenceStore {
     openNeo();
     // now try to add a taxonID unique constraint. If it fails we will remove offending records
     try {
-      buildIdIndex();
+      buildPrimaryKeyIndex();
     } catch (ConstraintViolationException e) {
-      LOG.warn("The inserted dataset contains duplicate taxonID! Only the first record will be used");
+      LOG.warn("The inserted dataset contains duplicate ID! Only the first record will be used");
       removeDuplicateKeys();
-      buildIdIndex();
+      buildPrimaryKeyIndex();
     }
 
     inserter = null;
   }
 
-  private void buildIdIndex() {
+  private void buildPrimaryKeyIndex() {
     try (Transaction tx = neo.beginTx()){
-      LOG.info("Building lucene index taxonID ...");
-      neo.schema().constraintFor(Labels.ALL).assertPropertyIsUnique(NeoProperties.TAXON_ID).create();
+      LOG.info("Building lucene index ID ...");
+      neo.schema().constraintFor(Labels.ALL).assertPropertyIsUnique(NeoProperties.ID).create();
       tx.success();
     }
     try (Transaction tx = neo.beginTx()){
       neo.schema().awaitIndexesOnline(1, TimeUnit.HOURS);
-      LOG.debug("Done building lucene index taxonID");
+      LOG.debug("Done building lucene index ID");
     }
   }
 
   private void removeDuplicateKeys() {
     try (Transaction tx = neo.beginTx()){
-      Result res = neo.execute("MATCH (n:ALL) WITH n."+NeoProperties.TAXON_ID+" as id, collect(n) AS nodes WHERE size(nodes) >  1 RETURN nodes");
+      Result res = neo.execute("MATCH (n:ALL) WITH n."+NeoProperties.ID +" as id, collect(n) AS nodes WHERE size(nodes) >  1 RETURN nodes");
       res.accept(new Result.ResultVisitor<Exception>() {
         @Override
         public boolean visit(Result.ResultRow row) throws Exception {
@@ -357,7 +384,7 @@ public class NeoDb implements NormalizerStore, ReferenceStore {
 
           for (Node n : nodes) {
             if (n.getId() != first.getId()) {
-              LOG.info("remove {} with duplicate ID {}", NeoProperties.getTaxonID(n), n);
+              LOG.info("remove {} with duplicate ID {}", NeoProperties.getID(n), n);
               n.delete();
               taxa.remove(n.getId());
             }
@@ -369,12 +396,11 @@ public class NeoDb implements NormalizerStore, ReferenceStore {
       tx.success();
 
     } catch (Exception e) {
-      LOG.error("Failed to remove duplicate records with the same taxonID ", e);
-      throw new NotUniqueRuntimeException("TaxonID");
+      LOG.error("Failed to remove duplicate records with the same ID ", e);
+      throw new NotUniqueRuntimeException("ID");
     }
   }
 
-  @Override
   public NeoTaxon put(NeoTaxon t) {
     // extract references into ref store before store them
     for (Reference r : t.listReferences()) {
@@ -440,7 +466,6 @@ public class NeoDb implements NormalizerStore, ReferenceStore {
     return idOrTitle.replaceAll("[^\\w]+", "").toLowerCase();
   }
 
-  @Override
   public Iterable<NeoTaxon> all() {
     return taxa.values();
   }
@@ -468,7 +493,6 @@ public class NeoDb implements NormalizerStore, ReferenceStore {
     return x == null ? null : referenceIndex.getOrDefault(normRef(x), null);
   }
 
-  @Override
   public Dataset put(Dataset d) {
     // keep existing dataset key
     Dataset old = dataset.get();
@@ -482,7 +506,6 @@ public class NeoDb implements NormalizerStore, ReferenceStore {
   /**
    * overlay neo4j relations to NeoTaxon instances
    */
-  @Override
   public void updateTaxonStoreWithRelations() {
     try (Transaction tx = getNeo().beginTx()) {
       for (Node n : getNeo().getAllNodes()) {
@@ -533,20 +556,22 @@ public class NeoDb implements NormalizerStore, ReferenceStore {
 
     } catch (NotFoundException e) {
       // thrown in case of multiple relations, debug
-      LOG.debug("Multiple {} {} relations found for {}: {} - {}", dir, type, n, NeoProperties.getTaxonID(n), NeoProperties.getScientificNameWithAuthor(n));
+      LOG.debug("Multiple {} {} relations found for {}: {} - {}", dir, type, n, NeoProperties.getID(n), NeoProperties.getScientificNameWithAuthor(n));
       for (Relationship rel : n.getRelationships(type, dir)) {
         Node other = rel.getOtherNode(n);
         LOG.debug("  {} {}/{} - {}",
             dir == Direction.INCOMING ? "<-- "+type.abbrev+" --" : "-- "+type.abbrev+" -->",
             other,
-            NeoProperties.getTaxonID(other), NeoProperties.getScientificNameWithAuthor(other));
+            NeoProperties.getID(other), NeoProperties.getScientificNameWithAuthor(other));
       }
       throw new NormalizationFailedException("Multiple "+dir+" "+type+" relations found for "+NeoProperties.getScientificNameWithAuthor(n), e);
     }
     return null;
   }
 
-  @Override
+  /**
+   * Set correct ROOT, PROPARTE and BASIONYM labels for easier access
+   */
   public void updateLabels() {
     // set ROOT
     LOG.info("Labelling root nodes");

@@ -4,7 +4,6 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.Maps;
 import org.col.admin.task.importer.NeoInserter;
 import org.col.admin.task.importer.NormalizationFailedException;
-import org.col.admin.task.importer.dwca.VerbatimRecordFactory;
 import org.col.admin.task.importer.neo.NeoDb;
 import org.col.admin.task.importer.neo.model.NeoTaxon;
 import org.col.api.model.Dataset;
@@ -80,35 +79,24 @@ public class AcefInserter extends NeoInserter {
 
   @Override
   protected NeoDb.NodeBatchProcessor relationProcessor() {
-    return new AcefRelationInserter(store, meta, inter);
+    return new AcefRelationInserter(store, inter);
   }
 
   private void addVerbatimRecord(TermRecord rec) {
-    String id = rec.get(AcefTerm.AcceptedTaxonID);
-    NeoTaxon t = store.getByTaxonID(id);
-    if (t == null) {
-      LOG.warn("Non existing taxonID {} found in {} record line {}, {}", id, rec.getType().simpleName(), rec.getLine(), rec.getFile());
-
-    } else if(t.verbatim == null){
-      LOG.warn("No verbatim data found for taxonID {} in {} record {} line {}, {}", id, rec.getType().simpleName(), rec.getLine(), rec.getFile());
-
-    } else {
-      t.verbatim.addExtensionRecord(rec.getType(), rec);
-      store.update(t);
-    }
+    super.addVerbatimRecord(AcefTerm.AcceptedTaxonID, rec);
   }
 
   private void insertTaxaAndNames() {
     // species
     reader.stream(AcefTerm.AcceptedSpecies).forEach( rec -> {
-      VerbatimRecord v = VerbatimRecordFactory.build(rec.get(AcefTerm.AcceptedTaxonID), rec);
+      VerbatimRecord v = build(rec.get(AcefTerm.AcceptedTaxonID), rec);
       NeoTaxon t = inter.interpretTaxon(v, false);
       store.put(t);
       meta.incRecords(t.name.getRank());
     });
     // infraspecies
     reader.stream(AcefTerm.AcceptedInfraSpecificTaxa).forEach( rec -> {
-      VerbatimRecord v = VerbatimRecordFactory.build(rec.get(AcefTerm.AcceptedTaxonID), rec);
+      VerbatimRecord v = build(rec.get(AcefTerm.AcceptedTaxonID), rec);
       NeoTaxon t = inter.interpretTaxon(v, false);
       if (!t.name.getRank().isInfraspecific()) {
         LOG.info("Expected infraspecific taxon but found {} for name {}: {}", t.name.getRank(), t.getTaxonID(), t.name.getScientificName());
@@ -119,7 +107,7 @@ public class AcefInserter extends NeoInserter {
     });
     // synonyms
     reader.stream(AcefTerm.Synonyms).forEach( rec -> {
-      VerbatimRecord v = VerbatimRecordFactory.build(rec.get(AcefTerm.ID), rec);
+      VerbatimRecord v = build(rec.get(AcefTerm.ID), rec);
       NeoTaxon t = inter.interpretTaxon(v, true);
       store.put(t);
       meta.incRecords(t.name.getRank());

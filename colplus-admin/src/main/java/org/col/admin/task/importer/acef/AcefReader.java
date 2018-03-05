@@ -2,6 +2,7 @@ package org.col.admin.task.importer.acef;
 
 import org.col.admin.task.importer.NormalizationFailedException;
 import org.col.csv.CsvReader;
+import org.col.csv.Schema;
 import org.gbif.dwc.terms.AcefTerm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -99,7 +99,7 @@ public class NormalizerACEFIT {
   }
 
   NeoTaxon byID(String id) {
-    Node n = store.byTaxonID(id);
+    Node n = store.byID(id);
     return store.get(n);
   }
 

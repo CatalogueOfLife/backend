@@ -1,7 +1,6 @@
 package org.col.admin.task.importer.neo.model;
 
 import com.google.common.base.Strings;
-import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.nameparser.api.Rank;
 import org.neo4j.graphdb.Node;
 
@@ -11,8 +10,8 @@ import org.neo4j.graphdb.Node;
  */
 public class NeoProperties {
   // properties used in NeoTaxon
-  public static final String NAME_ID = DwcTerm.scientificNameID.simpleName();
-  public static final String TAXON_ID = DwcTerm.taxonID.simpleName();
+  public static final String ID = "id";
+  public static final String TAXON_ID = "taxonID";
   public static final String RANK = "rank";
   public static final String SCIENTIFIC_NAME = "scientificName";
   public static final String AUTHORSHIP = "authorship";
@@ -27,6 +26,10 @@ public class NeoProperties {
       return Rank.values()[(int) n.getProperty(NeoProperties.RANK)];
     }
     return defaultValue;
+  }
+
+  public static String getID(Node n) {
+    return (String) n.getProperty(NeoProperties.ID, null);
   }
 
   public static String getTaxonID(Node n) {

@@ -3,8 +3,7 @@ package org.col.db.dao;
 import com.google.common.collect.Lists;
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.model.*;
-import org.col.db.KeyNotFoundException;
-import org.col.db.NotInDatasetException;
+import org.col.db.NotFoundException;
 import org.col.db.mapper.NameMapper;
 import org.col.db.mapper.ReferenceMapper;
 import org.col.db.mapper.VerbatimRecordMapper;
@@ -38,11 +37,11 @@ public class NameDao {
     return new ResultPage<>(page, total, result);
   }
 
-  public Integer lookupKey(String id, int datasetKey) throws NotInDatasetException {
+  public Integer lookupKey(String id, int datasetKey) throws NotFoundException {
     NameMapper mapper = session.getMapper(NameMapper.class);
     Integer key = mapper.lookupKey(id, datasetKey);
     if (key == null) {
-      throw new NotInDatasetException(Name.class, datasetKey, id);
+      throw NotFoundException.idNotFound(Name.class, datasetKey, id);
     }
     return key;
   }
@@ -51,7 +50,7 @@ public class NameDao {
     NameMapper mapper = session.getMapper(NameMapper.class);
     Name result = mapper.get(key);
     if (result == null) {
-      throw new KeyNotFoundException(Name.class, key);
+      throw NotFoundException.keyNotFound(Name.class, key);
     }
     return result;
   }

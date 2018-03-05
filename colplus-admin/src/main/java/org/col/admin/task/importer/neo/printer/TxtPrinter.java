@@ -90,7 +90,7 @@ public class TxtPrinter implements TreePrinter {
           writer.write("; ");
           writer.write(String.valueOf(n.getId()));
           writer.write("; ");
-          writer.write(NeoProperties.getTaxonID(n));
+          writer.write(NeoProperties.getID(n));
         }
         writer.write("]");
       }

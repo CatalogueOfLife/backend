@@ -1,20 +1,24 @@
 package org.col.admin.task.importer.dwca;
 
 import com.google.common.base.Joiner;
-import com.google.common.collect.*;
+import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 import com.univocity.parsers.csv.CsvParserSettings;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.codehaus.stax2.XMLInputFactory2;
 import org.codehaus.stax2.XMLStreamReader2;
+import org.col.admin.task.importer.InsertMetadata;
 import org.col.admin.task.importer.NormalizationFailedException;
 import org.col.api.model.TermRecord;
 import org.col.api.vocab.VocabularyUtils;
 import org.col.csv.CsvReader;
+import org.col.csv.Schema;
 import org.col.util.io.CharsetDetectingStream;
 import org.col.util.io.PathUtils;
-import org.gbif.dwc.terms.DwcTerm;
-import org.gbif.dwc.terms.Term;
-import org.gbif.dwc.terms.UnknownTerm;
+import org.gbif.dwc.terms.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,7 +29,9 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 /**
@@ -50,23 +56,7 @@ public class DwcaReader extends CsvReader {
       .put(DwcTerm.MeasurementOrFact, DwcTerm.measurementID)
       .build();
   private Term coreRowType;
-  private Map<Term, List<Field>> defaultValues;
-  private Map<Term, Map<Term, Term>> aliases;
   private Path metadataFile;
-
-  private static class Field {
-    final Term term;
-    final String value;
-    final Integer index;
-    final String delimiter;
-
-    public Field(Term term, String value, Integer index, String delimiter) {
-      this.term = term;
-      this.value = value;
-      this.index = index;
-      this.delimiter = delimiter;
-    }
-  }
 
   private DwcaReader(Path folder) throws IOException {
     super(folder, "dwc");
@@ -85,8 +75,8 @@ public class DwcaReader extends CsvReader {
     return coreRowType;
   }
 
-  public Path getMetadataFile() {
-    return metadataFile;
+  public Optional<Path> getMetadataFile() {
+    return Optional.ofNullable(metadataFile);
   }
 
   /**
@@ -97,14 +87,29 @@ public class DwcaReader extends CsvReader {
    */
   @Override
   protected void discoverSchemas(String termPrefix) throws IOException {
-    defaultValues = Maps.newHashMap();
-    aliases = Maps.newHashMap();
     Path meta = resolve(META_FN);
     if (Files.exists(meta)) {
+      LOG.info("Found DwC-A descriptor");
       readFromMeta(meta);
 
     } else {
       super.discoverSchemas(termPrefix);
+
+      // add artificial id terms for known rowType id pairs
+      for (Schema s : schemas.values()) {
+        if (!s.hasTerm(DWCA_ID)) {
+          Optional<Term> idTerm = Optional.ofNullable(ROW_TYPE_TO_ID.getOrDefault(s.rowType, null));
+          if (idTerm.isPresent() && s.hasTerm(idTerm.get())) {
+            // create another id field with the same index
+            Schema.Field id = new Schema.Field(DWCA_ID, s.field(idTerm.get()).index);
+            List<Schema.Field> columns = Lists.newArrayList(s.columns);
+            columns.add(id);
+            Schema s2 = new Schema(s.file, s.rowType, s.encoding, s.settings, columns);
+            putSchema(s2);
+          }
+        }
+      }
+
 
       // select core
       if (size() == 1) {
@@ -126,18 +131,22 @@ public class DwcaReader extends CsvReader {
   }
 
   @Override
-  protected Term detectRowType(Path df, String termPrefix, List<Term> columns) {
+  protected Optional<Term> detectRowType(Schema schema, String termPrefix) {
     // we only end up here when there is no meta descriptor
-    Term rowType = super.detectRowType(df, termPrefix, columns);
-    if (rowType instanceof UnknownTerm) {
-      // look at columns
-      for (Map.Entry<Term, Term> e : ROW_TYPE_TO_ID.entrySet()) {
-        if (columns.contains(e.getValue())) {
-          return e.getKey();
-        }
+    // the default impl derives the rowType from the file name - not very trustworthy
+    Optional<Term> rowTypeFile = super.detectRowType(schema, termPrefix);
+    // so we check columns for exisiting id terms first
+    Optional<Term> rowTypeCol = Optional.empty();
+    for (Map.Entry<Term, Term> e : ROW_TYPE_TO_ID.entrySet()) {
+      if (schema.hasTerm(e.getValue())) {
+        rowTypeCol = Optional.of(e.getKey());
+        break;
       }
     }
-    return rowType;
+    if (rowTypeCol.isPresent() && !rowTypeCol.equals(rowTypeFile)) {
+      LOG.info("Different rowType detected for file {}: {} (filename) vs {} (id terms)", PathUtils.getFilename(schema.file), rowTypeFile, rowTypeCol.get());
+    }
+    return rowTypeCol.isPresent() ? rowTypeCol : rowTypeFile;
   }
 
   private void buildSchema(XMLStreamReader2 parser, boolean core) throws XMLStreamException, IOException {
@@ -151,7 +160,7 @@ public class DwcaReader extends CsvReader {
     String enc = attr(parser, "encoding");
 
     // delimiter
-    CsvParserSettings set = CSV.clone();
+    final CsvParserSettings set = CSV.clone();
 
     String val = unescapeBackslash(attr(parser, "fieldsTerminatedBy"));
     set.setDelimiterDetectionEnabled(true);
@@ -161,6 +170,7 @@ public class DwcaReader extends CsvReader {
       } else {
         set.setDelimiterDetectionEnabled(false);
         set.getFormat().setDelimiter(val.charAt(0));
+        LOG.debug("Use delimiter {} for {}", StringEscapeUtils.escapeJava(val), rowType);
       }
     }
     val = unescapeBackslash(attr(parser, "fieldsEnclosedBy"));
@@ -169,7 +179,8 @@ public class DwcaReader extends CsvReader {
       if (val.length() != 1) {
         throw new IllegalArgumentException("fieldsEnclosedBy needs to be a single char");
       } else {
-        set.getFormat().setDelimiter(val.charAt(0));
+        LOG.debug("Use quote char {} for {}", val, rowType);
+        set.getFormat().setQuote(val.charAt(0));
       }
     }
     // we ignore linesTerminatedBy
@@ -188,7 +199,7 @@ public class DwcaReader extends CsvReader {
 
     // parse fields & file
     Path file = resolve(attr(parser, "encoding"));
-    List<Field> fields = Lists.newArrayList();
+    List<Schema.Field> fields = Lists.newArrayList();
     int event;
     boolean stop = false;
     StringBuilder text = new StringBuilder();
@@ -204,7 +215,7 @@ public class DwcaReader extends CsvReader {
             case "coreid":
               id = true;
             case "field":
-              fields.add(buildField(parser, id));
+              buildField(parser, id).ifPresent(fields::add);
               break;
           }
           break;
@@ -226,38 +237,6 @@ public class DwcaReader extends CsvReader {
           break;
       }
     }
-    // convert fields to columns list
-
-    Optional<Integer> maxColIdx = fields.stream().map(f->f.index).filter(Objects::nonNull).reduce(Integer::max);
-    Term[] columns;
-    if (maxColIdx.isPresent()) {
-      if (maxColIdx.get() > 100) {
-        LOG.warn("Suspicously high max column index found: {}", maxColIdx.get());
-      }
-      columns = new Term[maxColIdx.get()+1];
-      for (Field f : fields) {
-        if (f.index != null) {
-          if (f.index < 0) {
-            LOG.warn("Ignoring illegal negative column index for term {}", f.term);
-          } else {
-            if (columns[f.index] != null) {
-              // we have multiple terms mapped to the same column. Remember alias terms
-              if (!aliases.containsKey(rowType)) {
-                aliases.put(rowType, Maps.newHashMap());
-              }
-              aliases.get(rowType).put(f.term, columns[f.index]);
-            } else {
-              columns[f.index] = f.term;
-            }
-          }
-        }
-        // defaults
-        addDefault(rowType, f);
-      }
-    } else {
-      columns = new Term[0];
-      LOG.warn("No columns mapped from file for rowType {}", rowType);
-    }
 
     // final encoding
     Charset charset;
@@ -271,31 +250,27 @@ public class DwcaReader extends CsvReader {
       LOG.warn("Bad charset encoding {} specified, using {}", enc, charset);
     }
 
-    Schema s = new Schema(file, rowType, charset, set, Lists.newArrayList(columns));
+    Schema s = new Schema(file, rowType, charset, set, fields);
     LOG.debug("Found schema {}", s);
     schemas.put(rowType, s);
   }
 
-  private void addDefault(Term rowType, Field f) {
-    if (f.value != null){
-      if (!defaultValues.containsKey(rowType)) {
-        defaultValues.put(rowType, Lists.newArrayList());
-      }
-      defaultValues.get(rowType).add(f);
-    }
-  }
-
-  private Field buildField(XMLStreamReader2 parser, boolean id) {
+  private Optional<Schema.Field> buildField(XMLStreamReader2 parser, boolean id) {
     final Term term = id ? DWCA_ID : VocabularyUtils.TF.findPropertyTerm(attr(parser, "term"));
-    String value = attr(parser, "default");
-    // let bad errors be thrown up
-    Integer index = null;
-    String indexAsString = attr(parser, "index");
-    if (indexAsString != null) {
-      index = Integer.parseInt(indexAsString);
+    try {
+      String value = attr(parser, "default");
+      Integer index = null;
+      String indexAsString = attr(parser, "index");
+      if (indexAsString != null) {
+        index = Integer.parseInt(indexAsString);
+      }
+      String delimiter = attr(parser, "delimitedBy");
+      return Optional.of(new Schema.Field(term, value, index, delimiter));
+
+    } catch (IllegalArgumentException e) {
+      LOG.error("DwC-A descriptor with bad {} field: {}", term, e.getMessage());
+      return Optional.empty();
     }
-    String delimiter = attr(parser, "delimitedBy");
-    return new Field(term, value, index, delimiter);
   }
 
   private static String unescapeBackslash(String x) {
@@ -347,32 +322,17 @@ public class DwcaReader extends CsvReader {
    */
   @Override
   public Stream<TermRecord> stream(Term rowType) {
-    final List<Field> defaults = ImmutableList.copyOf(defaultValues.getOrDefault(rowType, Collections.emptyList()));
-    final Optional<Map<Term, Term>> alias = Optional.ofNullable(aliases.getOrDefault(rowType, null));
     final Optional<Term> idTerm = Optional.ofNullable(ROW_TYPE_TO_ID.getOrDefault(rowType, null));
-    if (!defaults.isEmpty() || idTerm.isPresent() || alias.isPresent()) {
+    final Optional<Schema> schema = schema(rowType);
+    if (schema.isPresent() && !schema.get().hasTerm(DWCA_ID) && idTerm.isPresent()) {
       return super.stream(rowType)
           .map(row -> {
-            for (Field df : defaults) {
-              if (!row.hasTerm(df.term)) {
-                row.put(df.term, df.value);
-              }
-            }
-            // include dwca id term
+            // add dwca id columns
             idTerm.ifPresent(term -> row.put(DWCA_ID, row.get(term)));
-            // include optional aliases (same column mapped to several terms)
-            alias.ifPresent(aliasMap -> {
-              for (Map.Entry<Term, Term> ali : aliasMap.entrySet()) {
-                if (row.hasTerm(ali.getKey())) {
-                  row.put(ali.getValue(), row.get(ali.getKey()));
-                }
-              }
-            });
             return row;
           });
-
     } else {
-      // no defaults and no id column, return original stream
+      // no extra id column needed, return original stream
       return super.stream(rowType);
     }
   }
@@ -383,8 +343,93 @@ public class DwcaReader extends CsvReader {
       throw new NormalizationFailedException.SourceInvalidException("No data files found in " + folder);
     }
     if (coreRowType == null) {
-      throw new IllegalStateException("No core rowType set");
+      throw new NormalizationFailedException.SourceInvalidException("No core rowType set");
     }
+  }
+
+  public void validate(InsertMetadata meta) throws NormalizationFailedException.SourceInvalidException {
+    // check for a minimal parsed name
+    Optional<Schema> optCore = schema(DwcTerm.Taxon);
+    if (!optCore.isPresent()) {
+      throw new NormalizationFailedException.SourceInvalidException("No Taxon core, not a checklist?");
+    }
+    final Schema core = optCore.get();
+    if ((core.hasTerm(DwcTerm.genus) || core.hasTerm(GbifTerm.genericName))
+        && core.hasTerm(DwcTerm.specificEpithet)
+        ) {
+      meta.setParsedNameMapped(true);
+    }
+
+    // make sure either scientificName or genus & specificEpithet are mapped
+    if (!core.hasTerm(DwcTerm.scientificName)) {
+      LOG.warn("No scientificName mapped");
+      if (!meta.isParsedNameMapped()) {
+        // no name to work with!!!
+        throw new NormalizationFailedException.SourceInvalidException("No scientificName nor parsed name mapped");
+      } else {
+        // warn if there is no author mapped for a parsed name
+        if (!core.hasTerm(DwcTerm.scientificNameAuthorship)) {
+          LOG.warn("No scientificNameAuthorship mapped for parsed name");
+        }
+      }
+    }
+
+    // warn if highly recommended terms are missing
+    if (!core.hasTerm(DwcTerm.taxonRank)) {
+      LOG.warn("No taxonRank mapped");
+    }
+
+    // check if taxonID should be used, not the generic ID
+    if (core.hasTerm(DwcTerm.taxonID) && !core.field(DWCA_ID).index.equals(core.field(DwcTerm.taxonID).index)) {
+      LOG.info("Use taxonID instead of ID");
+      meta.setTaxonId(true);
+    }
+    // multi values in use, e.g. for acceptedID?
+    for (Schema.Field f : core.columns) {
+      if (!Strings.isNullOrEmpty(f.delimiter)) {
+        meta.getMultiValueDelimiters().put(f.term, Splitter.on(f.delimiter).omitEmptyStrings());
+      }
+    }
+    for (Term t : DwcTerm.HIGHER_RANKS) {
+      if (core.hasTerm(t)) {
+        meta.setDenormedClassificationMapped(true);
+        break;
+      }
+    }
+    if (core.hasTerm(AcefTerm.Superfamily)) {
+      meta.setDenormedClassificationMapped(true);
+    }
+    if (core.hasTerm(DwcTerm.parentNameUsageID) || core.hasTerm(DwcTerm.parentNameUsage)) {
+      meta.setParentNameMapped(true);
+    }
+    if (core.hasTerm(DwcTerm.acceptedNameUsageID) || core.hasTerm(DwcTerm.acceptedNameUsage)) {
+      meta.setAcceptedNameMapped(true);
+    } else {
+      if (core.hasTerm(AcefTerm.AcceptedTaxonID)) {
+        // this sometimes gets confused with dwc - translate into dwc as we read dwc archives here
+        // as schema and all fields are final we create a copy of the entire schema here
+        Schema.Field f = core.field(AcefTerm.AcceptedTaxonID);
+        Schema.Field f2 = new Schema.Field(DwcTerm.acceptedNameUsageID, f.value, f.index, f.delimiter);
+        List<Schema.Field> updatedColumns = Lists.newArrayList(core.columns);
+        updatedColumns.set(updatedColumns.indexOf(f), f2);
+        Schema s2 = new Schema(core.file, core.rowType, core.encoding, core.settings, updatedColumns);
+        putSchema(s2);
+        meta.setAcceptedNameMapped(true);
+      } else {
+        LOG.warn("No accepted name terms mapped");
+      }
+    }
+    if (core.hasTerm(DwcTerm.originalNameUsageID) || core.hasTerm(DwcTerm.originalNameUsage)) {
+      meta.setOriginalNameMapped(true);
+    }
+    // any classification?
+    if (!meta.isParentNameMapped() && !meta.isDenormedClassificationMapped()) {
+      LOG.warn("No higher classification mapped");
+    }
+
+    //TODO: validate extensions:
+    // vernacular name: vernacularName
+    // distribution: some area (locationID, countryCode, etc)
   }
 
 }

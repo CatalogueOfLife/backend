@@ -92,10 +92,10 @@ public class NeoDbTest {
     db.updateTaxonStoreWithRelations();
 
     try (Transaction tx = db.getNeo().beginTx()) {
-      NeoTaxon t1b = db.get(db.byTaxonID("12"));
+      NeoTaxon t1b = db.get(db.byID("12"));
       assertEquals(t1, t1b);
 
-      NeoTaxon t2b = db.get(db.byTaxonID("13"));
+      NeoTaxon t2b = db.get(db.byID("13"));
       assertEquals((long) t2b.name.getBasionymKey(), t1.node.getId());
     }
   }
@@ -148,14 +148,14 @@ public class NeoDbTest {
     tr.put(AcefTerm.DistributionElement, "Asia");
 
     try (Transaction tx = db.getNeo().beginTx()) {
-      NeoTaxon t = db.getByTaxonID("id1");
+      NeoTaxon t = db.getByID("id1");
       t.verbatim.getTerms().addExtensionRecord(AcefTerm.Distribution, tr);
 
       db.update(t);
     }
 
     try (Transaction tx = db.getNeo().beginTx()) {
-      NeoTaxon t = db.getByTaxonID("id1");
+      NeoTaxon t = db.getByID("id1");
       assertEquals(1, t.verbatim.getExtensionRecords(AcefTerm.Distribution).size());
       assertEquals(tr, t.verbatim.getExtensionRecords(AcefTerm.Distribution).get(0));
     }

@@ -6,7 +6,7 @@ import org.col.api.model.NameAct;
 import org.col.api.model.Page;
 import org.col.api.model.Reference;
 import org.col.api.model.ResultPage;
-import org.col.db.KeyNotFoundException;
+import org.col.db.NotFoundException;
 import org.col.db.dao.ReferenceDao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,7 +48,7 @@ public class ReferenceResource {
     ReferenceDao dao = new ReferenceDao(session);
     Reference r = dao.get(key);
     if (r == null) {
-      throw new KeyNotFoundException(Reference.class, key);
+      throw NotFoundException.keyNotFound(Reference.class, key);
     }
     return r;
   }
