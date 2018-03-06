@@ -20,9 +20,17 @@ public class CountryParserTest extends ParserTestBase<Country> {
     assertParse(Country.GERMANY, "deu");
     assertParse(Country.GERMANY, "deutschland");
     assertParse(Country.GERMANY, "GER");
+    assertParse(Country.GERMANY, "276");
 
+    // user defined codes
+    assertParse(Country.INTERNATIONAL_WATERS, "xz");
+
+    // other user defined codes
+    assertUnparsable("Oceania");
+    assertUnparsable("QO");
+    assertUnparsable("AA");
+    assertUnparsable("XAZ");
     assertUnparsable("unknown");
-    assertUnparsable("zz");
   }
 
   @Override

@@ -5,7 +5,7 @@ import com.google.common.collect.ImmutableMap;
 
 import java.util.Map;
 
-public class NotFoundException extends IllegalArgumentException {
+public class NotFoundException extends RuntimeException {
 
   private final static Joiner.MapJoiner PARAM_JOINER = Joiner.on(", ")
       .withKeyValueSeparator("=")

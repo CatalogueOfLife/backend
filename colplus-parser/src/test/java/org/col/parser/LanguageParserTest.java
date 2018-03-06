@@ -21,6 +21,9 @@ public class LanguageParserTest extends ParserTestBase<Language> {
     assertParse(Language.GERMAN, "deu");
     assertParse(Language.GERMAN, "deutsch");
     assertParse(Language.GERMAN, "GER");
+
+    assertUnparsable("unknown");
+    assertUnparsable("zz");
   }
 
   @Override

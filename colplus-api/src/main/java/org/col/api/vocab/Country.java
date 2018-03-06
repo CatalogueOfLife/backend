@@ -23,10 +23,20 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
- * Enumeration for all current ISO 3166-1 ALPHA2 country codes using 2 letters, with the exception of PS and TW which
- * are overridden by GBIF.
- * Older country codes will be supported soon, @see #isDeprecated().
- * All user assigned codes (e.g. XX and QS) are mapped to the single enum USER_DEFINED.
+ * Enumeration for all current ISO 3166-1 ALPHA2 country codes using 2 letters,
+ * with the exception of PS and TW which are overridden by GBIF.
+ *
+ * INTERNATIONAL_WATERS and OCEANIA are additional wellknown entries.
+ *
+ * User-assigned code elements are ignored.
+ * These are codes at the disposal of users who need to add further names
+ * of countries, territories, or other geographical entities to their in-house application of ISO 3166-1,
+ * and the ISO 3166/MA will never use these codes in the updating process of the standard.
+ * The following codes can be user-assigned:
+ * Alpha-2: AA, QM to QZ, XA to XZ, and ZZ
+ * Alpha-3: AAA to AAZ, QMA to QZZ, XAA to XZZ, and ZZA to ZZZ
+ * Numeric: 900 to 999
+ *
  * The enumeration maps to ALPHA3 3-letter codes.
  *
  * @see <a href="https://www.iso.org/obp/ui/#home">ISO Online Browsing Platform</a>
@@ -34,7 +44,6 @@ import java.util.Set;
  * @see <a href="http://en.wikipedia.org/wiki/ISO_3166-1_alpha-2">ISO 3166-1 alpha2 on Wikipedia</a>
  * @see <a href="http://en.wikipedia.org/wiki/ISO_3166-3">ISO_3166-3 on Wikipedia</a>
  * <p>
- * TODO: deal with outdated codes from ISO_3166-3
  */
 
 public enum Country {
@@ -1285,31 +1294,9 @@ public enum Country {
   ZIMBABWE("ZW", "ZWE", 716, "Zimbabwe", Continent.AFRICA),
 
   /**
-   * Bucket for all user defined codes not managed by GBIF.
-   * User-assigned code elements are codes at the disposal of users who need to add further names
-   * of countries, territories, or other geographical entities to their in-house application of ISO 3166-1,
-   * and the ISO 3166/MA will never use these codes in the updating process of the standard.
-   * The following codes can be user-assigned:
-   * Alpha-2: AA, QM to QZ, XA to XZ, and ZZ
-   * Alpha-3: AAA to AAZ, QMA to QZZ, XAA to XZZ, and ZZA to ZZZ
-   * Numeric: 900 to 999
-   */
-  USER_DEFINED("AA", "AAA", 900, "user defined"),
-
-  /**
    * @see <a href="http://en.wikipedia.org/wiki/UN/LOCODE">UN/LOCODE</a>
    */
-  INTERNATIONAL_WATERS("XZ", "XZZ", 901, "international waters"),
-
-  /**
-   * A multi-territory region containing Antarctica, Bouvet Island, the Cocos (Keeling) Islands, Christmas Island,
-   * South Georgia and the South Sandwich Islands, Heard Island and McDonald Islands,
-   * the British Indian Ocean Territory, the French Southern Territories, and the United States Minor Outlying
-   * Islands).
-   *
-   * @see <a href="http://en.wikipedia.org/wiki/Common_Locale_Data_Repository">Unicode Common Locale Data Repository</a>
-   */
-  OCEANIA("QO", "QOO", 902, "Oceania");
+  INTERNATIONAL_WATERS("XZ", "XZZ", 901, "international waters");
 
   /**
    * A set of all 2 and 3 letter codes that are reserved by ISO for custom application specific usages.
@@ -1450,7 +1437,7 @@ public enum Country {
    * @return true if its a non user defined, current ISO 3166-1 alpha2 code.
    */
   public boolean isOfficial() {
-    return !(this == USER_DEFINED || this == INTERNATIONAL_WATERS || this == OCEANIA);
+    return !(this == INTERNATIONAL_WATERS);
   }
 
 }

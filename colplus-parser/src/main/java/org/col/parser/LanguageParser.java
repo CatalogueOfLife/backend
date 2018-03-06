@@ -15,7 +15,15 @@ public class LanguageParser extends GbifParserBased<Language, org.gbif.api.vocab
 
   @Override
   Language convertFromGbif(org.gbif.api.vocabulary.Language value) {
-    return VocabularyUtils.convertEnum(Language.class, value);
+    switch (value) {
+      case UNKNOWN:
+        return null;
+      default:
+        if (value.getIso2LetterCode() == null) {
+          return null;
+        }
+        return VocabularyUtils.convertEnum(Language.class, value);
+    }
   }
 
 }
