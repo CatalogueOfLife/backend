@@ -185,6 +185,9 @@ public class TestEntityGenerator {
 		n.addIssue(Issue.ACCEPTED_NAME_MISSING);
 		n.addIssue(Issue.HOMONYM);
     n.updateScientificName();
+    n.setTaxonomicNote("non Döring 1999");
+    n.addRemark("my first note");
+    n.addRemark("my second note");
 		return n;
 	}
 

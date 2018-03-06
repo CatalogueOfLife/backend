@@ -5,6 +5,7 @@ import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import com.google.common.collect.Lists;
 import org.col.admin.task.importer.neo.model.NeoTaxon;
+import org.col.admin.task.importer.neo.model.UnescapedVerbatimRecord;
 import org.col.api.model.*;
 import org.col.api.vocab.Issue;
 import org.col.api.vocab.TaxonomicStatus;
@@ -40,7 +41,7 @@ public class NeoKryoFactoryTest {
       t.taxon.addIssue(issue);
     }
 
-    t.verbatim = VerbatimRecord.create();
+    t.verbatim = UnescapedVerbatimRecord.create();
     for (Term term : GbifTerm.values()) {
       t.verbatim.setTerm(term, term.simpleName());
     }

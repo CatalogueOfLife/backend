@@ -146,9 +146,15 @@ public class Name implements PrimaryEntity {
   private Boolean fossil;
 
   /**
-   * Any informal remarks found in the name
+   * Any informal note about the nomecnlatural status found in the name
    */
   private String remarks;
+
+  /**
+   * Any informal note found in the name that informs about the taxonomic concept.
+   * For example "sensu latu"
+   */
+  private String taxonomicNote;
 
   /**
    * Issues related to this name
@@ -183,12 +189,13 @@ public class Name implements PrimaryEntity {
     this.sanctioningAuthor = n.sanctioningAuthor;
     this.code = n.code;
     this.status = n.status;
+    this.taxonomicNote = n.taxonomicNote;
     this.origin = n.origin;
     this.type = n.type;
     this.sourceUrl = n.sourceUrl;
     this.fossil = n.fossil;
-    this.remarks = n.remarks;
     this.issues = n.issues;
+    this.remarks = n.remarks;
   }
 
   /**
@@ -454,6 +461,14 @@ public class Name implements PrimaryEntity {
     this.notho = notho;
   }
 
+  public String getTaxonomicNote() {
+    return taxonomicNote;
+  }
+
+  public void setTaxonomicNote(String taxonomicNote) {
+    this.taxonomicNote = taxonomicNote;
+  }
+
   public String getRemarks() {
     return remarks;
   }
@@ -645,6 +660,7 @@ public class Name implements PrimaryEntity {
         && Objects.equals(sanctioningAuthor, name.sanctioningAuthor) && code == name.code
         && type == name.type && origin == name.origin && Objects.equals(sourceUrl, name.sourceUrl)
         && Objects.equals(fossil, name.fossil) && status == name.status
+        && Objects.equals(taxonomicNote, name.taxonomicNote)
         && Objects.equals(remarks, name.remarks) && Objects.equals(issues, name.issues);
   }
 
@@ -653,7 +669,8 @@ public class Name implements PrimaryEntity {
     return Objects.hash(key, id, datasetKey, basionymKey, scientificNameID, scientificName, rank,
         uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet,
         cultivarEpithet, strain, candidatus, notho, combinationAuthorship, basionymAuthorship,
-        sanctioningAuthor, code, type, origin, sourceUrl, fossil, status, remarks, issues);
+        sanctioningAuthor, code, type, origin, sourceUrl, fossil, status, taxonomicNote,
+        remarks, issues);
   }
 
   @Override

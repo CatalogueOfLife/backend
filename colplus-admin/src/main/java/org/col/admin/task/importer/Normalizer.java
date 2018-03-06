@@ -65,7 +65,7 @@ public class Normalizer implements Runnable {
       insertData();
       // insert normalizer db relations, create implicit nodes if needed and parse names
       normalize();
-      // verify and fail before we do expensive matching or even db imports
+      // verify, derive issues and fail before we do expensive matching or even db imports
       verify();
       // matches names and taxon concepts and builds metrics per name/taxon
       matchAndCount();
@@ -90,6 +90,10 @@ public class Normalizer implements Runnable {
       require(t.name.getOrigin(), "name origin");
       if (t.taxon.getOrigin() == Origin.SOURCE) {
         id = require(t.verbatim.getId(), "verbatim id");
+        // did we unescape verbatim data?
+        if (t.verbatim.isModified()) {
+          t.addIssue(Issue.ESCAPED_CHARACTERS);
+        }
       } else {
         id = String.format("%s %s %s", t.taxon.getOrigin().name(), t.name.getRank(), t.name.getScientificName());
       }
@@ -110,7 +114,7 @@ public class Normalizer implements Runnable {
         }
       } else {
         require(t.taxon.getOrigin(), "taxon origin", id);
-        require(t.taxon.getStatus(), "taxon origin", id);
+        require(t.taxon.getStatus(), "taxon status", id);
       }
       require(t.issues, "issues", id);
 

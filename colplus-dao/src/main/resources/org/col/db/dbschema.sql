@@ -213,6 +213,7 @@ CREATE TABLE name (
   source_url TEXT,
   fossil BOOLEAN,
   remarks TEXT,
+  taxonomic_note TEXT,
   issues INT[],
   doc tsvector
 );
@@ -223,9 +224,11 @@ CREATE OR REPLACE FUNCTION name_doc_update() RETURNS trigger AS $$
 BEGIN
     NEW.doc :=
       setweight(to_tsvector('simple2', coalesce(NEW.scientific_name,'')), 'A') ||
-      setweight(to_tsvector('simple2', array_to_string(NEW.combination_authors,'')), 'C') ||
+      setweight(to_tsvector('simple2', coalesce(NEW.taxonomic_note,'')), 'C') ||
+      setweight(to_tsvector('simple2', coalesce(NEW.remarks,'')), 'D') ||
+      setweight(to_tsvector('simple2', array_to_string(NEW.combination_authors,'')), 'B') ||
       setweight(to_tsvector('simple2', array_to_string(NEW.combination_ex_authors,'')), 'D') ||
-      setweight(to_tsvector('simple2', array_to_string(NEW.basionym_authors,'')), 'C') ||
+      setweight(to_tsvector('simple2', array_to_string(NEW.basionym_authors,'')), 'B') ||
       setweight(to_tsvector('simple2', array_to_string(NEW.basionym_ex_authors,'')), 'D');
     RETURN NEW;
 END

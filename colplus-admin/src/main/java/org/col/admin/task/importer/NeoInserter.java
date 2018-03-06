@@ -6,9 +6,9 @@ import com.google.common.base.Strings;
 import org.col.admin.task.importer.neo.NeoDb;
 import org.col.admin.task.importer.neo.model.Labels;
 import org.col.admin.task.importer.neo.model.NeoTaxon;
+import org.col.admin.task.importer.neo.model.UnescapedVerbatimRecord;
 import org.col.api.model.Dataset;
 import org.col.api.model.TermRecord;
-import org.col.api.model.VerbatimRecord;
 import org.gbif.dwc.terms.Term;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,8 +41,8 @@ public abstract class NeoInserter {
     return Strings.emptyToNull(CharMatcher.javaIsoControl().trimAndCollapseFrom(x, ' ').trim());
   }
 
-  protected VerbatimRecord build (String id, TermRecord core) {
-    VerbatimRecord v = VerbatimRecord.create();
+  protected UnescapedVerbatimRecord build (String id, TermRecord core) {
+    UnescapedVerbatimRecord v = UnescapedVerbatimRecord.create();
     Preconditions.checkNotNull(id, "ID required");
     v.setId(id);
 

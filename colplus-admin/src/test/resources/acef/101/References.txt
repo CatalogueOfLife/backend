@@ -390,7 +390,7 @@ Sys-11313	Disney, R. H. L.	1979	\N	Longirostrum beaveri n. gen., n. sp. from Mal
 Sys-11310	Disney, R. H. L.	1978	\N	A new species of scuttle fly (Diptera: Phoridae) from Gloucestershire. Ent. Gazette 29: 153-155.
 Sys-11309	Disney, R. H. L.	1978	\N	A new species of Megaselia Rondani (Diptera: Phoridae) from Norfolk. Ent. Record J. Var. 90: 170-172.
 Sys-11308	Disney, R. H. L.	1978	\N	A new species of Afrotropical Megaselia (Diptera: Phoridae), with a re-evaluation of the genus Plastophora. Zeitschr. Angewandte Zool. 65: 313-319.
-Sys-11307	Delage, A. & Lauraire, M. C.	1970	\N	Trois nouvelles especes de Phoridae (Dipteres, Brachyceres, Cyclorrhaphes), trouv'es · Peyresq (Alpes de Provence). Bull. recherches agron. Gembloux 5:450-458.
+Sys-11307	Delage, A. & Lauraire, M. C.	1970	\N	Trois nouvelles especes de Phoridae (Dipteres, Brachyceres, Cyclorrhaphes), trouv'es ï¿½ Peyresq (Alpes de Provence). Bull. recherches agron. Gembloux 5:450-458.
 Sys-11306	Delachambre, J.	1966	\N	Recherches sur les Termitoxeniidae (Diptera). II. Description de deux nouvelles especes africaines. Insectes Sociaux  13: 105-116. [1966.06.??]
 Sys-11305	Delachambre, J.	1965	\N	Recherches sur les Termitoxeniidae (Diptera). I. Description d'une nouvelle espece africaine et de sa larve. Insectes Sociaux 12: 73-83.
 Sys-11304	Compton, S. G. & Disney, R. H. L.	1991	\N	New species of Megaselia (Diptera: Phoridae) whose larvae live in fig syconia (Urticales: Moraceae), and adults prey on fig wasps (Hymenoptera: Agaonidae). J. Nat. Hist. 25: 203-219. [1991.??.??]
@@ -3448,7 +3448,7 @@ Sys-2874	Walker, F.	1853	\N	Diptera. Part IV, pp. 253-474, pls. 7-8.In [Saunders
 Sys-2867	Walker, F.	1835-37	\N	Notes on Diptera. Ent. Mag. (1836) 3: 178-182 [1835.07.??]; 4: 113-117 [1836.10.??]; 4: 226-230 [1837.01.??].
 Sys-2869	Walker, F.	1848	\N	List of the specimens of dipterous insects in the collection of the British Museum. part 1, 1-229. [1848.12.09]
 Sys-2861	Wahlgren, E.	1917	\N	Fam. 5-12. Svensk Insektfauna 11 (Diptera), 2 (Cyclorapha): 113-224. [1917.??.??]
-Sys-2850	Waga, A.	1843	\N	Adapsilia genre de dipteres, appartenant à la sous-tribudolichoceres de Macquart, voisin de Sepedon et Tetanocera. Ann.Soc. Ent. Fr. (1) 11: 279-82. [1843.01.??]
+Sys-2850	Waga, A.	1843	\N	Adapsilia genre de dipteres, appartenant ï¿½ la sous-tribudolichoceres de Macquart, voisin de Sepedon et Tetanocera. Ann.Soc. Ent. Fr. (1) 11: 279-82. [1843.01.??]
 Sys-2845	Vockeroth, J. R.	1971	\N	Some changes in the use of the generic names in the tribe Cerioidini (Diptera:Syrphidae). Can. Ent. 103: 282-283. [1971.02.05]
 Sys-2849	Waga, A.	1842	\N	[Notices tres-interessantes sur un crustace et plusieurs insectes de divers ordres.] Revue Zool. Soc. Cuvier. 5(2): 91-94. [1842.09.??]
 Sys-2844	Vockeroth, John Richard	1965	\N	Subfamily Scatophaginae (Scatomyzidae, Scopeumatidae, Cordiluridae). Cat. Dipt. Am. N.Mex.: 826-842. [1965.08.23]
@@ -3506,7 +3506,7 @@ Sys-2478	Shillito, JamesFrancis	1971	\N	The genera of Diopsidae (Insecta: Dipter
 Sys-2491	Skuhrava, M.	1986	\N	Family Cecidomyiidae. Cat.Palaearct. Dipt. 4: 72-297. [1986.12.01]
 Sys-2477	Shewell, G. E.	1991	\N	[book review] "Blowflies (Diptera, Calliphoridae) of Fennoscandia andDenmark." Ent. Scand. 22: 364. [1991.11.??]
 Sys-2474	Shaw, F. R. & Fisher, E. G.	1952	\N	Family Fungivoridae (=Mycetophilidae). In Guide to the insects of Connecticut. Part VI.The Diptera or true flies of Connecticut, Fifth fascicle: Midgesand gnats [part]. Bull. Conn. St. Geol. Nat. Hist. Surv. 80:177-231. [1952.??.??]
-Sys-2440	Seguy, E.	1941	\N	Etudes sur les mouches parasites. 2.Conopidae, calliphorines (suite), sarcophagines et rhinophorines del'Europe occidentale et meridionale. Recherches sur la morphologie et la distribution geographique des dipteres à larves parasites.Encycl. Ent. (A) 21: 5-436. [1941.??.??]
+Sys-2440	Seguy, E.	1941	\N	Etudes sur les mouches parasites. 2.Conopidae, calliphorines (suite), sarcophagines et rhinophorines del'Europe occidentale et meridionale. Recherches sur la morphologie et la distribution geographique des dipteres ï¿½ larves parasites.Encycl. Ent. (A) 21: 5-436. [1941.??.??]
 Sys-2429	Seebold, Teodoro	1903	\N	Dipteros de los alredores de Bilbao. Bol. R. Soc. Esp. Hist. Nat. 3: 145-148.[1903.??.??]
 Sys-2437	Seguy, E.	1937	\N	VIII. Dipteres. La Faune de la France. Perrier, Paris. 216 pp. [1937.??.??]
 Sys-2428	Scudder, S. H.	1895	\N	The Miocene insect-fauna of Oeningen, Baden. Geol. Mag. (n.s.) 4(2): 116-122, pl. 6.[1895.03.??]
@@ -3571,7 +3571,7 @@ Sys-2121	Pont, A. C.	1986	\N	Family Muscidae. [also a note in bibliography.] Cat
 Sys-2120	Pont, A. C.	1981	\N	The Linnaean species of the familiesFanniidae, Anthomyiidae and Muscidae (Insecta: Diptera). Biol. J.Linn. Soc. 15: 165-175. [1981.02.23]
 Sys-2116	Pokorny, E.	1893	\N	Bemerkungen und Zusatze zu Prof. G. Strobl's 'Die Anthomyinen Steiermarks'. Abh. Zool.-Bot. Ges. Wien 43: 526-544. [1893.??.??]
 Sys-2113	Pleske, Th.	1925	\N	Revision des especes palearctiques des familles Erinnidae et Coenomyiidae. Encycl. Ent. (B), II Diptera 2: 161-184. [1925.10.15]
-Sys-2112	Pleske, Th.	1925	\N	Description d'un diptere appartenant à une nouvelle sous-famille. Bull. Soc. Ent. Fr. 1925(10): 166-167. [1925.07.10]
+Sys-2112	Pleske, Th.	1925	\N	Description d'un diptere appartenant ï¿½ une nouvelle sous-famille. Bull. Soc. Ent. Fr. 1925(10): 166-167. [1925.07.10]
 Sys-2108	Pitkin, B.	1989	\N	Family Heleomyzidae. Cat. Dipt. Austr. Reg.: 594-599. [1989.08.23]
 Sys-2099	Philip, C. B.	1941	\N	Comments on the supra-specific categories of Nearctic Tabanidae. Can. Ent. 73: 2-14. [1941.??.??]
 Sys-2097	Petrunkevitch, A.	1956	\N	Eohelea stridulans, a striking example of paramorphism in a Baltic amber gnat. Science123: 675. [1956.04.20]
@@ -3844,7 +3844,7 @@ Sys-993	Guimaraes, J. H.	1990	\N	Revision of the subfamily Rogenhoferinae stat. 
 Sys-992	Guimaraes, J. H.	1977	\N	A systematic revision of the Mesembrinellidae, stat. nov. (Diptera, Cyclorrhapha). Arq. Zool. 29: 1-109. [1977.01.20]
 Sys-990	Guimaraes, J. H.	1971	\N	Family Tachinidae (Larvaevoridae). Cat. Dipt. Am. S. U.S. 104, 333 pp. [1971.12.06]
 Sys-989	Guimaraes, J. H.	1967	\N	Family Cuterebridae. Cat. Dipt. Am. S. U.S. 105, 11pp. [1967.02.28]
-Sys-988	Guettard, J. E.	1762	\N	Observations qui peuvent servir à former quelques caracteres de coquillages. Mem. Acad. R. Sci. Paris 1756: 145-183. [1762.??.??]
+Sys-988	Guettard, J. E.	1762	\N	Observations qui peuvent servir ï¿½ former quelques caracteres de coquillages. Mem. Acad. R. Sci. Paris 1756: 145-183. [1762.??.??]
 Sys-987	Guerin-Meneville, F. E.	1838	\N	Histoire naturelle des crustaces, arachnides et insectes ... In Duperrey, L. I. (ed.), Voyage ... la corvette La Coquille ... Zoologie. Tome 2, 2e partie.  xii + 319 pp. Bertrand, Paris [after 1838.11.??]
 Sys-986	Guerin-Meneville, F. E.	1833	\N	Insectes. Pp. 441-512. In Belanger, C., Voyage aux Indes-Orientales ... H. Bertrand, Paris. [1833.08.31]
 Sys-985	Guerin-Meneville, F. E.	1831	\N	Plates 20 [1831.07.25]-21 [1831.09.05] (= livrs. 23-24, part). In Duperrey, L. I. (ed.), Voyage autour du monde sur la corvette de sa majeste La Coquille. Zoologie. Atlas. Insectes. [1831.07.25]
@@ -4048,7 +4048,7 @@ Sys-686	Edwards, F. W	1925	\N	British fungus gnats (Diptera, Mycetophilidae), wi
 Sys-674	Edwards, F. W	1912	\N	A synopsis of the species of African Culicidae, other than Anopheles. Bull. Ent. Res.3: 1-53. [1912.05.??]
 Sys-673	Eaton, A. E.	1912	\N	Telmatoscopus rothschildii, a new species of psychodid Diptera found in London. Ent. Mon. Mag. 48: 7-9. [1912.11.??]
 Sys-670	Dyte, C. E. & Smith, K. G.V.	1980	\N	Family Dolichophididae. Cat. Dipt. Afrotr. Reg.: 443-463.[1980.07.10]
-Sys-662	Dupuis, C.	1958	\N	Contributions à l'etude des Phasiinaecimicophages (Diptera Larvaevoridae). Cah. Nat. (Bull.) (n.s.)(1957) 13: 71-79. [1958.01.25]
+Sys-662	Dupuis, C.	1958	\N	Contributions ï¿½ l'etude des Phasiinaecimicophages (Diptera Larvaevoridae). Cah. Nat. (Bull.) (n.s.)(1957) 13: 71-79. [1958.01.25]
 Sys-661	Dupuis, C.	1950	\N	Notes synonymiques et systematiques sur les Phasiinae (Dipteres Larvaevoridae). Bull. Mus. Natl. Hist. Nat. Paris (2)21: 553-557. [1950.01.17]
 Sys-657	Duponchel, P.	1845	\N	Exoprosope, p.545 [before 1845.02.17]. In d'Orbigny, C., Dictionnaire universel d'histoire naturelle ... Vol. 5, 768 pp.
 Sys-643	Dumeril, A. M. C.	1804	\N	Traite elementaire d'histoire naturelle. [Ed. 1.]. Impr. de Crapelot,Paris. xii + 394 pp. [before 1804.09.21]
@@ -4106,7 +4106,7 @@ Sys-4751	Steyskal, G. C.	1984	\N	A synoptic revision of the genus Aciurina Curra
 Sys-2608	Tavares, J. S.	1916	\N	Cecidomyias novas do Brazil.Broteria (Zool.) 14: 36-57. [1916.??.??]
 Sys-2605	Targioni-Tozzetti, Adolfo	1870	\N	Rivista entomologica. Boll. Soc. Ent. Ital. 2: 83-99.[1870.??.??]
 Sys-2602	Swainson,W.	1840	\N	Diptera. Pp. 366-380. In Swainson, Wm. & Shuckard, W.E., On the history and natural arrangement of insects. [Lardner's Cabinet Cyclopaedia] 406 pp. [after 1840.11.??, preface date]
-Sys-2601	Suster, P. M.	1930	\N	Contributions à l'etude des Tachinaires en Roumaine. Ann. Sci. Univ. Jassy 16: 57-249. [1930.03.??]
+Sys-2601	Suster, P. M.	1930	\N	Contributions ï¿½ l'etude des Tachinaires en Roumaine. Ann. Sci. Univ. Jassy 16: 57-249. [1930.03.??]
 Sys-2588	Stuckenberg, B. R.	1956	\N	New species of Atherimorpha White from South Africa (Diptera: Errinidae). Proc. R. Ent. Soc. London (B) 25: 142-148.[1956.08.17]
 Sys-2599	Surcouf, J. M. R.	1921-2	\N	Diptera. Fam. Tabanidae. Genera Insectorum 175,  182 pp. [1921.06.01] & Suppl. 183-205 [1922.09.04].
 Sys-2587	Strom, H.	1768	\N	Beskriveise over Norske Insecter. Andot Stykke. K. norske Vidensk. Selsk. Skr. 4:  313-371. [1768.??.??]
@@ -4226,7 +4226,7 @@ Sys-1908	Monticelli, Francesco Saverio	1898	\N	Di un' altra specie del genere'As
 Sys-1904	Miyatake, M.	1965	\N	Megamerinidae. Pp.220. In Asahina, Syoziro, Ishihara, Tamotsu & Yasumatsu, Keizo(eds.), Iconographia Insectorum Japonicorum. Colore naturali edita.Volumen 3, 358 pp. Hokuryukan, Tokyo. [1965.05.20]
 Sys-1900	Miskimen, G. W.& Bond, Richard M.	1970	\N	The insect fauna of St. Croix, UnitedStates Virgin Islands. Sci. Surv. Porto Rico Virgin Is. 13(1):11-114. [1970.05.04]
 Sys-1898	Mikolajczyk, Waldemar	1991	\N	Scathopsidae -- Bibionidae. Pp. 130-132. In Razowski, Josef (ed.), Checklist ofanimals of Poland. Polska Akad. Nauk, Inst. Syst. Ewol. Zwier.,Wroclaw. Vol. II, 342 pp. [1991.??.??] [In Polish &English]
-Sys-1881	Meunier, F.	1908	\N	Contribution à la faune dipterologique des environs d'Anvers. IIe partie. Ann. Soc. Sci. Brux. (Mem.) 32: 267-271. [1908.??.??]
+Sys-1881	Meunier, F.	1908	\N	Contribution ï¿½ la faune dipterologique des environs d'Anvers. IIe partie. Ann. Soc. Sci. Brux. (Mem.) 32: 267-271. [1908.??.??]
 Sys-1873	Meunier, Fernand	1895	\N	Observations sur Schoenomyza littorella Fallen. Bull. Soc. Ent. Fr. 1895: ccxciii.[1895.??.??]
 Sys-1851	Mesnil, L. P.	1946	\N	Revision des Phorocerinide l'Ancien Monde (Larvaevoridae). Encycl. Ent. (B) II 10: 37-80.[1946.12.15]
 Sys-1850	Mesnil, L. P.	1944-1975	\N	64g. Larvaevorinae (Tachininae). Flieg. Palaearkt. Reg. 8: 1-48, pls. 1-2 (153) [1944.03.17]; 49-104 (161) [1949.10.25]; 105-160, pls. 6-7 (164) [1951.06.12]; 161-208, pls. 3-5 (166) [1951.07.26]; 209-256, pls. 8-9 (168) [1952.06.25]; 257-304 (172) [1953.03.17]; 305-368 (175) [1954.05.28]; 369-416(179) [1954.12.03]; 417-464 (186) [1955.11.17]; 465-512, pls. 10-14 (189) [1956.04.24]; 513-560, pls. 15-17 (192) [1956.10.02]; 561-608 (210) [1960.05.04]; 609-656 (212) [1960.09.21]; 657-704 (219) [1961.07.27]; 705-752 (221) [1962.01.26]; 753-800 (224) [1962.03.02]; 801-848 (235) [1963.07.07]; 849-864 (?) [1964.03.23]; 865-879 (?) [1965.05.31]; 881-928 (263) [1966.02.01]; 929-976 (?) [1970.10.26]; 977-1024 (286) [1971.07.21]; 1025-1064 (290) [1972.07.25]; 1065-1112 (293) [1972.11.28]; 1113-1168 (298) [1973.06.27]; 1169-1232 (299) [1973.09.25]; 1233-1304 (304) [1974.07.19]; 1305-1384 (309) [1975.03.25]; 1385-1435 (?) [1975.11.10]
@@ -4245,7 +4245,7 @@ Sys-1777	McAlpine, D. K.	1973	\N	The Australian Platystomatidae (Diptera, Schizo
 Sys-1776	McAlpine, D. K.	1968	\N	The genus Cairnsimyia Malloch (Diptera, Heleomyzidae, Rhinotorini). Rec. Aust. Mus. 27: 263-283. [1968.07.29]
 Sys-1774	McAlpine, D. K.	1966	\N	Description and biology of an Australian species of Cypselosomatidae (Diptera),with a discussion of family relationships. Aust. J. Zool. 14:673-685. [1966.10.??]
 Sys-1772	Mayer, K.	1934	\N	Die Metamorphose der Ceratopogonidae (Dipt.). Ein Beitrag zur Morphologie, Systematik, Okologie und Biologie der Jugendstadien dieser Dipterenfamilie. Arch. Naturgesch. (n.f.) 3: 205-288. [1934.??.??]
-Sys-1761	Matile, L.	1962	\N	Dipteres (2e note). Pp. 21-27. In Beaucornu, J. E. & Matile, L., Contribution àinventaire faunistique des cavites souterraines de l'Ouest de laFrance. Bull. Soc. Sci. Nat. Ouest Fr. (1961) 18: 21-27. [1962.02.??]
+Sys-1761	Matile, L.	1962	\N	Dipteres (2e note). Pp. 21-27. In Beaucornu, J. E. & Matile, L., Contribution ï¿½inventaire faunistique des cavites souterraines de l'Ouest de laFrance. Bull. Soc. Sci. Nat. Ouest Fr. (1961) 18: 21-27. [1962.02.??]
 Sys-1760	Mathis, W. N. & Zatwarnicki,T.	1995	\N	World catalog of shore flies (Diptera: Ephydridae). Mem. Ent. Int. 4, 423 pp. [1995.10.01]
 Sys-1754	Mathis, W. N.	1982	\N	Studies of Canacidae. Smithson. Contrib. Zool. 347, 29 pp. [1982.04.23]
 Sys-1751	Maslov, A. V.	1964	\N	On the systematic of bloodsucking mosquitoes of the group Culiseta (Diptera, Culicidae). Ent. Obozr. 43: 193-217. [1964.??.??] [InRussian]
@@ -6688,13 +6688,13 @@ Sys-15870	Bohart, R. M.	1957	\N	Diptera: Culicidae. Insects Micronesia 12: 1-85.
 Sys-15871	Bohart, R. M. & Ingram, R. L.	1946	\N	Mosquitoes of Okinawa and islands in the central Pacific. U.S. Navmed. 1055, 110 p. [1946.??.??]
 Sys-15872	Bonne-Wepster, J.	1930	\N	Het geslacht Taeniorhynchus (Arribalzaga) in Nederlandisch Oost-Indie. Tweede gedeelte. Ondergeslacht Coquillettidia Dyar. Meded. Dienst. Volksgezondh. Ned.-Indie 19: 615-628. [1930.??.??]
 Sys-15873	Bonne-Wepster, J.	1930	\N	The genus Taeniorhynchus Arribalzaga in the Dutch East Indies. Part II. Subgenus Coquillettidia Dyar. Meded. Dienst. Volksgezondh. Ned.-Indie (Foreign edition) 19: 387-399. [1930.??.??]
-Sys-15874	Bonne-Wepster, J.	1931	\N	Het geslacht Taeniorhynchus Arribßlzaga in N.O.I. Tweede gedeelte. Ondergeslacht Coquillettidia Dyar. Meded. Dienst. Volksgezondh. Ned.-Indië 3: 260-276. [1931.03.??]
-Sys-15875	Bonne-Wepster, J.	1937	\N	Notes on mosquitoes from the Netherlands Indies. A new Culex and two new finlaya's from New-Guinea. Meded. Dienst. Volksgezondh. Ned.-Indië (Foreign edition) 26: 92-98. [1937.??.??]
+Sys-15874	Bonne-Wepster, J.	1931	\N	Het geslacht Taeniorhynchus Arribï¿½lzaga in N.O.I. Tweede gedeelte. Ondergeslacht Coquillettidia Dyar. Meded. Dienst. Volksgezondh. Ned.-Indiï¿½ 3: 260-276. [1931.03.??]
+Sys-15875	Bonne-Wepster, J.	1937	\N	Notes on mosquitoes from the Netherlands Indies. A new Culex and two new finlaya's from New-Guinea. Meded. Dienst. Volksgezondh. Ned.-Indiï¿½ (Foreign edition) 26: 92-98. [1937.??.??]
 Sys-15876	Bonne-Wepster, J.	1938	\N	Notes on mosquitoes from the Netherlands Indies. A new Culex from New Guinea: Culex (Culex) solitarius nov. sp. Description of male terminalia of Culex (C) miraculosus B.-W. Meded. Dienst. Volksgezondh. Ned.-Indie (Foreign edition) 27: 394-396. [1938.??.??]
-Sys-15877	Bonne-Wepster, J.	1940	\N	Notes on mosquitoes from the Netherlands Indies: a new Finlaya from New-Guinea. Meded. Dienst. Volksgezondh. Ned.-Indië (Foreign edition) 29: 158-159. [1940.??.??]
+Sys-15877	Bonne-Wepster, J.	1940	\N	Notes on mosquitoes from the Netherlands Indies: a new Finlaya from New-Guinea. Meded. Dienst. Volksgezondh. Ned.-Indiï¿½ (Foreign edition) 29: 158-159. [1940.??.??]
 Sys-15878	Bonne-Wepster, J.	1948	\N	Results of the third Archbold Expedition 1938-1939. Diptera Culicidae. Notes on mosquitoes collected by the Neth. Indian--American Expedition to Central and North New Guinea. Treubia 19: 305-322. [1948.05.??]
 Sys-15879	Bonne-Wepster, J.	1951	\N	Notes on Oriental and Australasian mosquitoes of the Malay Archipelago. Doc. Neerl. Indones. Morbis. Trop. 3: 67-74. [1951.03.??]
-Sys-15880	Bonne-Wepster, J. & Brug, S.L.	1932	\N	The subgenus Stegomyia in Netherland India. Bijbl. Geneeskd. Tijdschr. Ned.-Indië 2: 39-119. [1932.04.??].
+Sys-15880	Bonne-Wepster, J. & Brug, S.L.	1932	\N	The subgenus Stegomyia in Netherland India. Bijbl. Geneeskd. Tijdschr. Ned.-Indiï¿½ 2: 39-119. [1932.04.??].
 Sys-15881	Borgmeier, T.	1961	\N	Two new phorid flies from eastern Asia (Diptera: Phoridae). Pan-Pac. Ent. 37: 235-238. [1961.11.07]
 Sys-15882	Borgmeier, T.	1967	\N	Studies on Indo-Australian phorid flies, based mainly on material of the Museum of Comparative Zoology and the United States National Museum (Diptera, Phoridae). Stud. Ent. 9: 129-328. [1967.01.30]
 Sys-15883	Borgmeier, T.	1967	\N	A new Megaselia from Hawaii (Diptera: Phoridae). Proc. Hawaii. Ent. Soc. 19: 373-374. [1967.12.31]
@@ -6857,7 +6857,7 @@ Sys-16079	Meijere, J. C. H. de	1922	\N	Zur Kenntnis javanischer Agromyzinen. Bij
 Sys-16080	Meijere, J. C. H. de	1923	\N	Ceratopogon-Arten als Ectoparasiten anderer Insekten. Tijdschr. Ent. 66: 137-142. [1923.12.??]
 Sys-16081	Meijere, J. C. H. de	1924	\N	[Glabellula arctica Zett. fn. n. sp. in nest van Formica exsecta Nyl.]. Tijdschr. Ent. 67: xxxiv-xxxvi. [1924.12.15]
 Sys-16082	Meijere, J. C. H. de	1929	\N	Fauna Buruana. Syrphiden nebst einigen Brachyceren Orthorrhaphen. Treubia 7: 378-387. [1929.04.??]
-Sys-16083	Meijere, J. C. H. de	1929	\N	Fauna Buruana. Syrphiden nebst einigen Brachyceren Orthorrhaphen. In: Boeroe-Expeditie 1921 - 1922. Resultats zoologiques de l'Expedition Scientifique Neerlandaise à l'île de Buru en 1921 et 1922. Vol. II Insecta Livr. 5. [Archipel Drukkerij] Buitenzorg [= Bogor]. P. 408-417. [1929.04.??]
+Sys-16083	Meijere, J. C. H. de	1929	\N	Fauna Buruana. Syrphiden nebst einigen Brachyceren Orthorrhaphen. In: Boeroe-Expeditie 1921 - 1922. Resultats zoologiques de l'Expedition Scientifique Neerlandaise ï¿½ l'ï¿½le de Buru en 1921 et 1922. Vol. II Insecta Livr. 5. [Archipel Drukkerij] Buitenzorg [= Bogor]. P. 408-417. [1929.04.??]
 Sys-16084	Meijere, J. C. H. de	1934	\N	Die Larven der Agromyzinen. Zweiter Nachtrag. Tijdschr. Ent. 77: 244-290. [1934.11.??]
 Sys-16085	Meijere, J. C. H. de	1940	\N	Uber Melanagromyza centrosematis n. sp. aus Java nebst Bemerkungen uber andere tropische Melanagromyzen (Dipter. Agrom.). Tijdschr. Ent. 83: 128-131. [1940.05.??]
 Sys-16086	Meillon, B. de & Wirth, W. W.	1979	\N	A taxonomic review of the subgenus Phytohelea of Forcipomyia (Diptera: Ceratopogonidae). Proc. Ent. Soc. Wash. 81: 178-206. [1979.06.26]
@@ -7016,12 +7016,12 @@ Sys-16274	Ferrar, P.	1979	\N	The immature stages of dung-breeding muscoid flies 
 Sys-16275	Ferris, G. F.	1924	\N	Report upon a collection of insect ectoparasites from Australian and Tasmanian mammals. (Diptera Pupipara. Siphonaptera). Am. Mus. Novit. 110, 7 p. [1924.04.21]
 Sys-16276	Ferris, G.F.	1927	\N	Hippoboscidae. Ins. Samoa 6: 10-21. [1927.07.23]
 Sys-16277	Ferris, G.F.	1927	\N	Fifth report upon Diptera Pupipara from the Philippine Islands. Philipp. J. Sci. 34: 207-233. [1927.11.09]
-Sys-16278	Fischer von Waldheim, G.	1819	\N	Programme d'invitation à la seance publique de la Societe Imperial des Naturalistes, qui aura lieu le 15 decembre, contenant une notice d'une mouche carnivore, accompagnee d'une planche. Universite Imperial Moscou [= Moscow]. 11 p. [1819.12.15]
+Sys-16278	Fischer von Waldheim, G.	1819	\N	Programme d'invitation ï¿½ la seance publique de la Societe Imperial des Naturalistes, qui aura lieu le 15 decembre, contenant une notice d'une mouche carnivore, accompagnee d'une planche. Universite Imperial Moscou [= Moscow]. 11 p. [1819.12.15]
 Sys-16281	Fogg, S.S.	1859	\N	Contribution to the insect fauna of Van Diemen's Land, (now Tasmania), with particular reference to the geographical distribution of insects. Pap. Proc. R. Soc. Tas. 3: 298-338. [1859.??.??]
 Sys-16283	Foote, B.A., Neff, S.E. & Berg, C.O.	1960	\N	Biology and immature stages of Atrichomelina pubera (Diptera: Sciomyzidae). Ann. Ent. Soc. Am. 53: 192-199. [1960.03.31]
 Sys-16286	Forsyth, D.J.	1978	\N	Benthic macroinvertebrates in seven New Zealand lakes. N.Z. J. Mar. Freshwater Res. 12: 41-49. [1978.03.??]
-Sys-16287	França, C.	1919	\N	Observations sur le genre Phlebotomus. [I.] Broteria (Zool.) 17: 102-160. [1919.08.01]
-Sys-16289	Franca, C. & Parrot, L.	1920	\N	Introduction à l'etude systematique des dipteres du genre Phlebotomus. Bull. Soc. Pathol. Exot. 13: 695-708. [1920.10.??]
+Sys-16287	Franï¿½a, C.	1919	\N	Observations sur le genre Phlebotomus. [I.] Broteria (Zool.) 17: 102-160. [1919.08.01]
+Sys-16289	Franca, C. & Parrot, L.	1920	\N	Introduction ï¿½ l'etude systematique des dipteres du genre Phlebotomus. Bull. Soc. Pathol. Exot. 13: 695-708. [1920.10.??]
 Sys-16291	Frey, R.	1924-25	\N	Philippinische Dipteren. II. Fam. Dolichopodidae. Notul. Ent. 4: 115-123 [1924.??.??], 5: 15-27. [1925.04.01]
 Sys-16293	Frey, R.	1934	\N	Diptera Brachycera von den Sunda-Inseln und Nord-Australien. Revue Suisse Zool. 41: 299-339. [1934.03.??]
 Sys-16295	Frick, K.E.	1952	\N	Four new Hawaiian Liriomyza species and notes on other Hawaiian Agromyzidae (Diptera). Proc. Hawaii. Ent. Soc. 14: 509-518. [1952.03.12]
@@ -7044,7 +7044,7 @@ Sys-16314	Gillespie, J.M.	1971	\N	The larval and pupal habitats of Thaumalea spp
 Sys-16316	Glibert, M.	1971	\N	Resultats scientifiques du voyage aux Indes orientales Neerlandaises de LL. AA. RR. le Prince et la Princesse Leopold de Belgique. Table analytique. Mem. Inst. R. Sci. Nat. Belg. (hors serie), 48 p. [1971.12.31]
 Sys-16317	Glover, B.	1973	\N	The Tanytarsini (Diptera: Chironomidae) of Australia. Aust. J. Zool. Suppl. Ser. 23: 403-478. [1973.09.28]
 Sys-16318	Glukhova, V.M.	1977	\N	[On the subgeneric classification of the genus Culicoides Latreille, 1809 (Diptera: Ceratopogonidae) considering morphological structures of larvae]. Parazitol. Sb. 27: 112-118. [In Russian.] [1977.02.03]
-Sys-16319	Goetghebuer, M.	1923	\N	Nouveaux materiàux pour l'etude de la faune de chironomides de Belgique. Ann. Biol. Lacustre 12: 103-120. [1922.??.??]
+Sys-16319	Goetghebuer, M.	1923	\N	Nouveaux materiï¿½ux pour l'etude de la faune de chironomides de Belgique. Ann. Biol. Lacustre 12: 103-120. [1922.??.??]
 Sys-16320	Goetghebuer, M.	1942	\N	Ceratopogonidae et chironomides nouveaux ou peu connus d'Europe, (11e note). Bull. Mus. R. Hist. Nat. Belg. 18(46), 16 p. [1942.10.??]
 Sys-16321	Goffe, E.R.	1946	\N	The genera in Syrphidae of Lioy, 1864 (Diptera). J. Soc. Br. Ent. 3: 27-30. [1946.06.25]
 Sys-16322	Goureau, C.C.	1848	\N	[Notes pour servir a l'histoire des dipteres dont les larves minent les feuilles des plantes]. Revue Zool. Soc. Cuvier. 1848: 185. [1848.06.??]
@@ -7074,7 +7074,7 @@ Sys-16346	Grunberg, K.	1913	\N	Zur Kenntnis der Culiciden-Fauna von Samoa. Ent. 
 Sys-16350	Hackman, W.	1962	\N	On Hawaiian Scaptomyza species (Dipt., Drosophilidae). Not. Ent. 42: 33-42. [1962.06.21]
 Sys-16351	Hackman, W.	1982	\N	The relation between the genera Scaptomyza and Drosophila (Diptera, Drosophilidae). Ann. Ent. Fenn. 48: 97-104. [1982.12.14]
 Sys-16352	Hackman, W. & Meinander, M.	1979	\N	Diptera feeding as larvae on macro-fungi in Finland. Ann. Zool. Fenn. 16: 50-83. [1979.05.25]
-Sys-16353	Haga, J.	1930	\N	Tabellen voor determinatie der in Nederlandsch-Oost-Indië voorkomende anophelinen. Geneeskd.-Tijdschr. Ned.-Indië 70: 363-382. [1930.??.??]
+Sys-16353	Haga, J.	1930	\N	Tabellen voor determinatie der in Nederlandsch-Oost-Indiï¿½ voorkomende anophelinen. Geneeskd.-Tijdschr. Ned.-Indiï¿½ 70: 363-382. [1930.??.??]
 Sys-16354	Hagan, C.E. & Reye, E.J.	1986	\N	Description of the adult, pupa and larva of Culicoides longior sp. n. and a description of C. ornatus Taylor (Diptera: Ceratopogonidae). J. Aust. Ent. Soc. 25: 339-352. [1986.11.28]
 Sys-16355	Haglund, W.A. & Milne, D.W., Jr.	1973	\N	Nematode dissemination in commerical mushroom houses. Phytopathology 63: 1455-1458. [1973.12.27]
 Sys-16356	Hall, D.G. & Bohart, G.E.	1948	\N	The Sarcophagidae of Guam (Diptera). Proc. Ent. Soc. Wash. 50: 127-135. [1948.05.14]
@@ -7272,7 +7272,7 @@ Sys-21836	Grichanov, I. Y.	1998	\N	Afrotropical species of the genus Lichtwardti
 Sys-21838	Grichanov, I. Y.	1997	\N	A brief review of the Afrotropical fauna of the subfamily Sciapodinae (Diptera: Dolichopodidae) with descriptions of new species. Int. J. Dipterol. Res. 8: 43-50. [1997.04.10]
 Sys-16503	Ismay, J. W.	1984	\N	New species of Dicraeus (Diptera, Chloropidae) from New Guinea and New Ireland. Esakia 21: 5-17. [1984.02.15]
 Sys-16504	Ismay, J. W.	1986	\N	New Psilacrum from the Old World (Diptera, Chloropidae). Esakia 24: 19-35. [1986.01.31]
-Sys-16505	Iwasa, M.	1986	\N	Notes on the genus Toxopoda in the Oriental Region and Papua New Guinea, with descriptions of two new species (Diptera, Sepsidae). Kontyû 54: 654-660. [1986.12.25]"
+Sys-16505	Iwasa, M.	1986	\N	Notes on the genus Toxopoda in the Oriental Region and Papua New Guinea, with descriptions of two new species (Diptera, Sepsidae). Kontyï¿½ 54: 654-660. [1986.12.25]"
 Sys-16506	Jacobs, J.-C.	1906	\N	Bibionidae, Chironomidae, Culicidae, Tipulidae, Syrphidae, Muscidae, Rhyphidae, Anthomyidae, p. 67-71. In: Resultats du voyage du S.Y. Belgica en 1897-1898-1899 sous les commandement de A. de Gerlache de Gomery. Rapports Scientifiques. Zoologie. Dipteres. Buschmann, Anvers. [1906.04.20]
 Sys-16508	James, M. T.	1950	\N	Some Stratiomyidae (Diptera) from Okinawa and Guam. Pac. Sci. 4: 184-187. [1950.07.24]
 Sys-16509	James, M. T.	1950	\N	The Stratiomyidae (Diptera) of New Caledonia and the New Hebrides with notes on the Solomon Islands forms. J. Wash. Acad. Sci. 40: 248-260. [1950.08.15]
@@ -7541,7 +7541,7 @@ Sys-16887	Megnin, P.	1878	\N	[Quelques dipteres rapportes de la Nouvelle-Caledon
 Sys-16888	Megnin, P.	1879	\N	[Quelques dipteres rapportes de la Nouvelle-Caledonie par M. Germain, veterinaire militaire, qui a sejourne un certain temps dans cette colonie] [part]. Bull. Soc. Ent. Fr. (5) 8: cxlv. [1879.03.26]
 Sys-16890	Melander, A. L.	1952	\N	Drapetis insularis a new species from Oahu (Diptera: Empididae). Proc. Hawaii. Ent. Soc. 14: 419-420. [1952.03.12]
 Sys-16891	Mesnil, L.P.	1947	\N	Revision des Phorocerini de l'-Ancien Monde (Larvaevoridae). Encycl. Ent. (B) II 10: 37-80. [1947.03.26]
-Sys-16892	Mesnil, L.P.	1959	\N	Une nouvelle forme de Lydella Robineau-Desvoidy parasite de la pyrale du maïs en Oceanie. Bull. Ann. Soc. R. Ent. Belg. 95: 38-39. [1959.04.30]
+Sys-16892	Mesnil, L.P.	1959	\N	Une nouvelle forme de Lydella Robineau-Desvoidy parasite de la pyrale du maï¿½s en Oceanie. Bull. Ann. Soc. R. Ent. Belg. 95: 38-39. [1959.04.30]
 Sys-16893	Mesnil, L.P.	1964	\N	Appendix I. Two new species of Tachinidae from Bougainville Island, p. 47. In: Paine, R.W. The banana scab moth, Nacoleia ostasema (Meyrick): its distribution, ecology, and control. South Pac. Comm. Tech. Pap. 145, vi + 70 p. [1964.07.??]
 Sys-16894	Mesnil, L.P.	1966	\N	Note de nomenclature (Dipt. Tachinidae). Bull. Soc. Ent. Fr. 70: 232. [1966.01.14]
 Sys-16895	Mesnil, L.P.	1969	\N	Quelques tachinaires nouveaux de Melanesie (Dipt. Tachinidae). Entomophaga 13: 203-208. [1969.01.23]
@@ -7570,7 +7570,7 @@ Sys-16919	Miller, D.W.	1924	\N	Material for a monograph on the Diptera fauna of 
 Sys-16920	Miller, D.W.	1939	\N	Blow-flies (Calliphoridae) and their associates in New Zealand. Cawthron Inst. Monogr. 2, 75 p [1939.03.??]
 Sys-16921	Miller, D.W.	1956	\N	Bibliography of New Zealand Entomology 1775-1952 (with annotations). N.Z. Dep. Sci. Indust. Res. Bull. 120, xxiv + 492 p. [1956.??.??]
 Sys-16924	Miranda-Ribeiro, A. de	1907	\N	Alguns Dipteros interessantes. Arch. Mus. Nac. Rio de Janeiro 14: 229-239. [1907.??.??]
-Sys-16925	Miyagi, I.	1966	\N	Descriptions of three new species of Ephydridae, with one unrecorded species from Japan (Diptera, Ephydridae). Kontyû 34: 136-140. [1966.06.10]
+Sys-16925	Miyagi, I.	1966	\N	Descriptions of three new species of Ephydridae, with one unrecorded species from Japan (Diptera, Ephydridae). Kontyï¿½ 34: 136-140. [1966.06.10]
 Sys-16926	Miyagi, I.	1975	\N	A new species of the genus Corethrella Coquillett from Japan (Diptera: Chaoboridae). Jpn. J. Sanit. Zool. 26: 25-29. [1975.05.15]
 Sys-16927	Montagu, G.	1813	\N	Description of several new and rare animals principally marine, discovered on the south coast of Devonshire. Trans. Linn. Soc. Lond. 11: 1-26. [1813.05.20]
 Sys-16928	Montgomery, S.L.	1975	\N	Comparative breeding site ecology and the adaptive radiation of picture-winged Drosophila (Diptera, Drosophilidae) in Hawaii. Proc. Hawaii. Ent. Soc. 22: 65-103. [1975.08.31]
@@ -7595,7 +7595,7 @@ Sys-16947	Nagatomi, A.	1970	\N	Rachiceridae (Diptera) from the Oriental and Pale
 Sys-16948	Nagatomi, A.	1982	\N	Notes on Rachiceridae (Diptera). Mem. Kagoshima Univ. Res. Cent. South Pac. 3: 39-65. [1982.09.06]
 Sys-16949	Nagatomi, A.	1984	\N	Notes on Athericidae (Diptera). Mem. Kagoshima Univ. Res. Cent. South Pac. 5: 87-106. [1984.03.30]
 Sys-16950	Nagatomi, A.	1985	\N	Additional notes on male genitalia of Rachiceridae (Diptera). Int. J. Ent. 27: 246-253. [1985.09.10]
-Sys-16951	Nagatomi, A. & Kushigemachi, K.	1965	\N	Life History of Sepedon sauteri Hendel (Diptera, Sciomyzidae). Kontyû 33: 35-38. [In Japanese with English summary.] [1965.03.15]
+Sys-16951	Nagatomi, A. & Kushigemachi, K.	1965	\N	Life History of Sepedon sauteri Hendel (Diptera, Sciomyzidae). Kontyï¿½ 33: 35-38. [In Japanese with English summary.] [1965.03.15]
 Sys-16952	Nagatomi, A. & Soroida, K.	1985	\N	The structure of the mouth-parts of the orthorrhaphous Brachycera (Diptera) with special reference to blood-sucking. Beitr. Ent. 35: 263-368. [1985.11.12]
 Sys-16953	Nagatomi, A. & Yukawa, J.	1968	\N	The genus Inopus (= Metoponia, Altermetoponia) (Diptera: Stratiomyidae). Pac. Insects 10: 521-528. [1968.12.25]
 Sys-16954	Nagatomi, A. & Yukawa, J.	1969	\N	The Chiromyzinae from New Guinea (Diptera: Stratiomyidae). Pac. Insects 11: 633-643. [1969.12.30]
@@ -7674,9 +7674,9 @@ Sys-17051	Paramonov, S.J.	1964	\N	Notes on Australian Diptera (XXXVII-XL). Notes
 Sys-17052	Paramonov, S.J.	1967	\N	A review of the Australian species of Ligyra Newman (Hyperalonia olim) (Bombyliidae: Diptera). Aust. J. Zool. 15: 123-144. [1967.02.??]
 Sys-17053	Paramonov, S.J.	1968	\N	A review of the tribe Rutiliini (Diptera: Tachinidae) I. Genera other than Rutilia Robineau-Desvoidy and Formosia Guerin-Meneville. Aust. J. Zool. 16: 349-404. [1968.05.??]
 Sys-17054	Parent, O.	1926	\N	Notes synonymiques sur les especes de Macquart (Dolichopodides). Ann. Soc. Sci. Bruxelles (B) 46: 205-229. [1926.05.21]
-Sys-17055	Parent, O.	1932	\N	Contribution à la faune dipterologique (Dolichopodidae) d'Australie-Tasmanie. Mem. Soc. Sci. Bruxelles (B) 52: 105-176. [1932.03.19]
+Sys-17055	Parent, O.	1932	\N	Contribution ï¿½ la faune dipterologique (Dolichopodidae) d'Australie-Tasmanie. Mem. Soc. Sci. Bruxelles (B) 52: 105-176. [1932.03.19]
 Sys-17056	Parent, O.	1932	\N	Dolichopodides du l'expedition de Dr Rensch aux petites iles de la Sonde. Encycl. Ent. (B) II 6: 103-123. [1932.08.14]
-Sys-17057	Parent, O.	1932	\N	Sur quelques dipteres dolichopodides, la plupart appartenant à la collection L. Oldenberg. Notes et descriptions. (Dipt.). Stett. Ent. Ztg. 93: 220-241. [1932.11.??]
+Sys-17057	Parent, O.	1932	\N	Sur quelques dipteres dolichopodides, la plupart appartenant ï¿½ la collection L. Oldenberg. Notes et descriptions. (Dipt.). Stett. Ent. Ztg. 93: 220-241. [1932.11.??]
 Sys-17058	Parent, O.	1932	\N	Etude sur quelques types de Macquart (dipteres dolichopodides) conserves au Museum National d'Histoire Naturelle, Paris. Bull. Mus. Natl. Hist. Nat., Paris (2) 4: 872-881. [1932.11.??]
 Sys-17059	Parent, O.	1932	\N	Fauna Buruana. Diptera, fam. Dolichopodidae. Treubia 7(Suppl.): 349-353. [1932.11.??]
 Sys-17060	Parent, O.	1932	\N	Fauna Buruana. Diptera fam. Dolichopodidae. Boeroe Expeditie 1921-1922. Volume II, Insecta, Livr. 8. Archipel Drukkerij, Buitenzorg [= Bogor]. P. 579-617. [1932.11.??]
@@ -7760,12 +7760,12 @@ Sys-17150	Roback, S.S.	1965	\N	A new subgenus and species of Symbiocladius from 
 Sys-17152	Roback, S.S.	1982	\N	The Tanypodinae (Diptera: Chironomidae) of Australia II. Proc. Acad. Nat. Sci. Phila. 134: 80-112. [1982.12.30]
 Sys-17153	Roberts, F.H.S.	1928	\N	A revision of the Australian Bombyliidae (Diptera). Part i. Proc. Linn. Soc. N.S.W. 53: 90-144. [1928.05.15]
 Sys-17154	Roberts, F.H.S.	1928	\N	A revision of the Australian Bombyliidae (Diptera). Part ii. Proc. Linn. Soc. N.S.W. 53: 413-455. [1928.10.15]
-Sys-17155	Robineau-Desvoidy, J.B.	1849	\N	[Memoire où M. Leon Dufour donne la description de la larve et des moeurs d'une muscide, larve qui vit du sang de petites hirondelles]. Bull. Soc. Ent. Fr. (2) 7: iv-v. [1849.07.11]
+Sys-17155	Robineau-Desvoidy, J.B.	1849	\N	[Memoire oï¿½ M. Leon Dufour donne la description de la larve et des moeurs d'une muscide, larve qui vit du sang de petites hirondelles]. Bull. Soc. Ent. Fr. (2) 7: iv-v. [1849.07.11]
 Sys-17157	Robinson, H.	1963	\N	A new species of Acropsilus from the Solomon Islands (Diptera: Dolichopodidae). Can. Ent. 95: 830-831. [1963.10.08]
 Sys-17158	Robinson, H.	1975	\N	Bredin-Archbold-Smithsonian Biological Survey of Dominica. The family Dolichopodidae with some related Antillean and Panamanian species. Smithson. Contrib. Zool. 185, 141 p. [1975.09.10]
 Sys-17159	Robinson, W.H.	1971	\N	Old and new biologies of Megaselia species (Diptera, Phoridae). Stud. Ent. 14: 321-348. [1971.11.??]
-Sys-17160	Rodenwaldt, E.	1925	\N	Entomologische notities. III. Geneeskd. Tijdschr. Ned.-Indië 65: 173-201. [before 1925.07.??]
-Sys-17161	Rodenwaldt, E.	1926	\N	Entomologische notities IV. Geneeskd. Tijdschr. Ned.-Indië 66: 787-799. [before 1926.05.??]
+Sys-17160	Rodenwaldt, E.	1925	\N	Entomologische notities. III. Geneeskd. Tijdschr. Ned.-Indiï¿½ 65: 173-201. [before 1925.07.??]
+Sys-17161	Rodenwaldt, E.	1926	\N	Entomologische notities IV. Geneeskd. Tijdschr. Ned.-Indiï¿½ 66: 787-799. [before 1926.05.??]
 Sys-17162	Rodenwaldt, E.	1927	\N	Entomological notes IV. Meded. Dienst. Volksgezondh. Ned.-Indie 16: 514-523. [1927.??.??]
 Sys-17163	Roder, V. von	1881	\N	Aphestia chalybaea n. sp. Stett. Ent. Ztg. 42: 386-387. [1881.06.??]
 Sys-17164	Roder, V. von	1883	\N	Ueber die Gattung Brachyrrhopala Mcq. Wien. Ent. Ztg. 2: 273-276. [1883.11.??]
@@ -7856,7 +7856,7 @@ Sys-17262	Senior-White, R.A.	1923	\N	The Muscidae testacea of the Oriental Regio
 Sys-17263	Senior-White, R.A.	1924	\N	New and little known Oriental Tachinidae. Spolia Zeylan. 13: 103-119. [1924.09.16]
 Sys-17264	Senior-White, R.A.	1926	\N	A revision of the sub-family Calliphorinae in the Oriental Region. Rec. Indian Mus. 28: 127-140. [1926.07.27]
 Sys-17265	Senior-White, R.A., Aubertin, D. & Smart, J.	1940	\N	Diptera. Family Calliphoridae. In: Sewell, R.B.S., ed., The fauna of British India, including the remainder of the Oriental Region. Diptera. Vol. VI. Family Calliphoridae. Taylor & Francis, Ltd., London. xii + 288 p. [1940.03.28]
-Sys-17266	Serra-Tosio, B.	1986	\N	Un nouveau chironomide antarctique des îles Crozet, Parochlus crozetenis n. sp. (Diptera, Nematocera). Nouv. Revue Ent. (N.S.) 3: 149-159. [1986.10.20]
+Sys-17266	Serra-Tosio, B.	1986	\N	Un nouveau chironomide antarctique des ï¿½les Crozet, Parochlus crozetenis n. sp. (Diptera, Nematocera). Nouv. Revue Ent. (N.S.) 3: 149-159. [1986.10.20]
 Sys-17267	Shannon, R.C.	1926	\N	A new Lucilia from Hawaii. Bernice P. Bishop Mus. Bull. 31: 72. [1926.12.23]
 Sys-17268	Shannon, R.C.	1927	\N	Notes on and descriptions of syrphid flies of the subfamily Cerioidinae. J. Wash. Acad. Sci. 17: 38-53. [1927.01.18]
 Sys-17269	Shannon, R.C.	1927	\N	A review of the South American two-winged flies of the family Syrphidae. Proc. U.S. Natl. Mus. 70(9)[= No. 2658], 34 p. [1927.04.29]
@@ -7885,7 +7885,7 @@ Sys-17291	Shima, H. & Chao, C.-m.	1988	\N	A new genus and six new species of the
 Sys-17292	Shinonaga, S.	1978	\N	[Natural history of the Izu-mariana Arc (II).] Calypterate muscoid flies of the Ogasawara Islands. Mem. Natl. Sci. Mus. Tokyo 11: 163-168. [1978.12.20]
 Sys-17293	Shinonaga, S. & Kano, R.	1984	\N	Eleven new Helina species collected on wet stones along mountain streams in Papua New Guinea (Diptera: Muscidae). Esakia 21: 19-29. [1984.02.15]
 Sys-17294	Shinonaga, J. & Kurahashi, H.	1969	\N	New species of Sarcosolomonia Baranov from New Guinea and the Solomons (Diptera, Sarcophagidae). Pac. Insects 11: 755-761. [1969.12.30]
-Sys-17295	Shinonaga, S. & Pont, A.C.	1988	\N	A revision of Melanesian Heliographa (Diptera, Muscidae). Kontyû 56: 115-143. [1988.03.25]
+Sys-17295	Shinonaga, S. & Pont, A.C.	1988	\N	A revision of Melanesian Heliographa (Diptera, Muscidae). Kontyï¿½ 56: 115-143. [1988.03.25]
 Sys-17296	Shiraki, T.	1935	\N	Simuliidae of the Japanese Empire. Mem. Fac. Sci. Agric., Taihoku Imp. Univ. 16, 90 p. [1935.07.30]
 Sys-17297	Shiraki, T.	1963	\N	Diptera: Syrphidae. Insects Micronesia 13: 129-187. [1963.06.14]
 Sys-17298	Shuter, E. & McAlpine, D.K.	1985	\N	First larvae of Teratomyzidae (Diptera). News Bull. Aust. Ent. Soc. 21: 26. [1985.02.??]
@@ -7918,9 +7918,9 @@ Sys-17324	Smith, K.G.V. & Taylor, E.	1966	\N	Anisopus larvae (Diptera) in cases 
 Sys-17325	Smith, R.O.A.	1929	\N	Two species of Culicoides which feed on man. Indian J. Med. Res. 17: 255-257. [1929.07.??]
 Sys-17326	Smith, W.W.	1896	\N	Enemies of humble-bees in New Zealand. Entomologist 29: 210-212. [1896.07.??]
 Sys-17327	Snellen van Vollenhoven, S.C.	1862	\N	Beschrijving van eenige nieuwe soorten van Diptera. Versl. Meded. K. Akad. Wet. Amsterdam 15: 8-18. [1862.10.25]
-Sys-17328	Soesilo, R.	1932	\N	Anopheles (Bironella) walchi n. sp. Geneeskd. Tijdschr. Ned.-Indië 72: 1035-1036. [1932.08.02]
-Sys-17329	Soesilo, R. & van Slooten, J.	1931	\N	Verspreide aantenkeningen over Anophelinen in den Oost-Indischen Archipel. Geneeskd. Tijdschr. Ned.-Indië 71: 1254-1259. [1931.08.??]
-Sys-17330	Soesilo, R. & van Slooten, J.	1931	\N	Miscellaneous notes on anopheline mosquitoes in the Dutch East Indies. Meded. Dienst Volksgezondh. Ned.-Indië (Foreign edition) 20: 124-128. [1931.??.??]
+Sys-17328	Soesilo, R.	1932	\N	Anopheles (Bironella) walchi n. sp. Geneeskd. Tijdschr. Ned.-Indiï¿½ 72: 1035-1036. [1932.08.02]
+Sys-17329	Soesilo, R. & van Slooten, J.	1931	\N	Verspreide aantenkeningen over Anophelinen in den Oost-Indischen Archipel. Geneeskd. Tijdschr. Ned.-Indiï¿½ 71: 1254-1259. [1931.08.??]
+Sys-17330	Soesilo, R. & van Slooten, J.	1931	\N	Miscellaneous notes on anopheline mosquitoes in the Dutch East Indies. Meded. Dienst Volksgezondh. Ned.-Indiï¿½ (Foreign edition) 20: 124-128. [1931.??.??]
 Sys-17331	Soos, A.	1962	\N	New genera and species of Clusiidae (Diptera: Acalyptrata). Acta. Zool. Acad. Sci. Hung. 8: 135-149. [1962.02.26]
 Sys-17332	Speiser, P.	1900	\N	Ubersicht der Dipterengattung Cyclopodia Kol. Ent. Nachr. 26: 289-293. [1900.10.??]
 Sys-17334	Speiser, P.	1904	\N	Studien uber Hippobosciden. II. Ann. Mus. Civ. Stor. Nat. Genova 41: 332-350. [1904.12.05]
@@ -7975,8 +7975,8 @@ Sys-17401	Sugerman, B.B.	1972	\N	Insects and other arthropods from Kwajalein Ato
 Sys-17402	Sugerman, B.B.	1979	\N	Addition to the list of insects and other arthropods from Kwajalein Atoll (Marshall Islands). Proc. Hawaii. Ent. Soc. 23: 147-151. [1979.05.31]
 Sys-17404	Summers, S.L.M.	1912	\N	Entomological notes from the London School of Tropical Medicine.--No. IV. Blood-sucking Diptera from Port Darwin, Australia. Ann. Mag. Nat. Hist. (8) 10: 222-228. [1912.08.??]
 Sys-17405	Surcouf, J.M.R.	1920	\N	Revision des Muscidae testaceae. Nouv. Arch. Mus. Hist. Nat. Paris (5) 6: 27-124. [1920.05.??]
-Sys-17407	Swellengrebel, N.H.	1914	\N	Een nieuwe anopheline voor Deli: Myzorhynchus argyropus n. sp. (met autoreferaat). Geneeskd. Tijdschr. Ned.-Indië 54: 334-337. [1914.??.??]
-Sys-17409	Swellengrebel, N.H. & Swellengrebel-de Graaf, J.M.N.	1920	\N	Lijst van anopheline uit het oosten van den Archipel, met andere beschrijving van de voor Ned.-Indië nieuwe vorman. Geneeskd. Tijdschr. Ned.-Indie 60: 26-43. [before 1920.09.??]
+Sys-17407	Swellengrebel, N.H.	1914	\N	Een nieuwe anopheline voor Deli: Myzorhynchus argyropus n. sp. (met autoreferaat). Geneeskd. Tijdschr. Ned.-Indiï¿½ 54: 334-337. [1914.??.??]
+Sys-17409	Swellengrebel, N.H. & Swellengrebel-de Graaf, J.M.N.	1920	\N	Lijst van anopheline uit het oosten van den Archipel, met andere beschrijving van de voor Ned.-Indiï¿½ nieuwe vorman. Geneeskd. Tijdschr. Ned.-Indie 60: 26-43. [before 1920.09.??]
 Sys-17411	Swezey, O.H.	1940	\N	Records of immigrant insects for the year 1939. Proc. Hawaii. Ent. Soc. 10: 374. [1940.08.??]
 Sys-17412	Swezey, O.H.	1946	\N	[Insects of Guam--II.] Some miscellaneous Diptera of Guam. Bernice P. Bishop Mus. Bull. 189: 195-200. [1946.12.20]
 Sys-17413	Takada, H.	1970	\N	Scaptomyza (Parascaptomyza) pallida (Zetterstedt) and two related new species, S. (P.) elmoi n.sp. and S. (P.) himalayana n.sp. (Diptera: Drosophilidae). Annot. Zool. Jpn. 43: 142-147. [1970.09.10]
@@ -10288,7 +10288,7 @@ Sys-20715	Krivosheina, N. P.	1979	\N	New data on parasitic Diptera of the genus 
 Sys-20716	MacGowan, I. & Rotheray, G. E.	2004	\N	Odinia rossi MacGowan & Rotheray, 2004, a new name for Odinia betulae MacGowan & Rotheray, 2002 (Diptera, Odiniidae). Dipterists Digest 11: 24. [2004.07.25]
 Sys-20717	Carles-Tolra, M.	1996	\N	Odinia trifida sp.n., a new odiniid species from Spain (Diptera: Odiniidae). Stuttg. Beitr. Naturkd. (A) 545: 1-3. [1996.10.15]
 Sys-20718	Krivosheina, N. P. & Krivosheina, M. G.	1996	\N	New data on the taxonomy and biology of the flies from the genus Turanodinia Stackelberg (Diptera, Odiniidae). Dipt. Res. 7(2): 141-146. [1996.05.10]
-Sys-20719	Papp, L.	1987	\N	Sphaeroceridae, Periscelididae, Asteiidae, Aulacigastridae, Curtonotidae, Camiliidae, Drosophilidae, Odiniidae, Acartophthalmidae, Gasterophilidae, Oestridae and Hypodermatidae (Diptera) of the Kiskungßg National Park. In Mahunka, S. (ed.), The fauna of the Kiskunsßg National Park 2: 277-290. AdadTmiai Kiad=, Budapest.
+Sys-20719	Papp, L.	1987	\N	Sphaeroceridae, Periscelididae, Asteiidae, Aulacigastridae, Curtonotidae, Camiliidae, Drosophilidae, Odiniidae, Acartophthalmidae, Gasterophilidae, Oestridae and Hypodermatidae (Diptera) of the Kiskungï¿½g National Park. In Mahunka, S. (ed.), The fauna of the Kiskunsï¿½g National Park 2: 277-290. AdadTmiai Kiad=, Budapest.
 Sys-20720	Papp, L.	2002	\N	Additions and corrections to the "Checklist of the Diptera of Hungary." Folia Ent. Hung. 63: 139-147.
 Sys-20721	Kato, S.	1952	\N	Odiniidae of Japan, with descriptions of a new species and a new subspecies. Insecta Matsumurana 18(1-2): 1-8. [1952.12.??]
 Sys-20722	Shatalkin, A. I.	1981	\N	Notes on the Odiniidae (Diptera) of USSR with description of a new subspecies. Ekologo-faunisticeskie issledovaniia. Izdatelstvo Moskovskogo Universiteta, Moskva: 39-45. [In Russian.]. [1981.
@@ -10356,7 +10356,7 @@ Sys-20795	Lee, T. J.	1959	\N	On a new species, "Drosophila clarofinis" sp. nov. 
 Sys-20797	Tsacas, L. & Chassagnard, M. T.	1999	\N	Les especes afrotropicales du sous-genre Gitonides Knab du genre Cacoxenus Loew a larves predatrices de cochenilles (Diptera: Drosophilidae). Ann. Soc. Ent. Fr. (N.S.) 35: 91-121. [1999.03.??]
 Sys-20799	Tsacas, L.	1980	\N	L'identite de Zaprionus vittiger Coquillett et revision des especes afrotropicales affines (Dipt. Drosophilidae). Bull. Soc. Ent. Fr. 85: 141-154. [1980.07.18]
 Sys-20800	Lemeunier, F., Aulard, S., Arienti, M., Jallon, J.-M., Cariou, M.-L. & Tsacas, L.	1997	\N	The ercepeae complex: new cases of insular speciation within the Drosophila ananassae species subgroup (melanogaster group) and descriptions to two new species (Diptera: Drosophilidae). Ann. Ent. Soc. Am. 90: 28-42. [1997.01.??]
-Sys-20801	Staeger, R. C.	1844	\N	[Bemµrkninger til slµgten Drosophila. [Notes on the genus Drosophila.]] - Pp. 16-18 in: J.C. Schiodte: Forhandlinger i det skandinaviske entomologiske Selskab. Naturh. Tidsskr. [2] 1: 16-70.
+Sys-20801	Staeger, R. C.	1844	\N	[Bemï¿½rkninger til slï¿½gten Drosophila. [Notes on the genus Drosophila.]] - Pp. 16-18 in: J.C. Schiodte: Forhandlinger i det skandinaviske entomologiske Selskab. Naturh. Tidsskr. [2] 1: 16-70.
 Sys-20802	Papp, L.	2000	\N	Two new species of Drosophilidae (Diptera) from Central Europe. Acta Zool. Acad. Sci. Hung. 46: 249-257. [2000.??.??]
 Sys-20803	Takada, H., Momma, E. & Shima, T.	1973	\N	Distribution and population constitution of Drosophila in South East Asia and Oceania. I. Drosophilidae at Mt. Kinabalu, East Malaysia. J. Fac. Sci. Hokkaido Univ. (6) (Zool.) 19: 73-94.  [1973.10.??]
 Sys-20804	Kaneshiro, K. Y. & Kambysellis, M. P.	1999	\N	Description of a new allopatric sibling species of Hawaiian picture-Winged Drosophila. Pac. Sci. 53: 208-213. [1999.04.??]
@@ -10369,7 +10369,7 @@ Sys-20811	Tsacas, L. & Chassagnard, M.-T.	1994	\N	Le genre Drosophila s.str. en 
 Sys-20812	Lambkin, C. L., Recsei, J. M. & Yeates, D. K.	2005	\N	Systematic revision of Johnmannia Irwin and Lyneborg (Diptera: Therevidae): Atypical metallic stiletto flies from Australian mesic habitats. Zootaxa 866: 1-28. [2005.02.23]
 Sys-20813	Jaschhof, M. & Hippa, H.	2005	\N	The genus Manota in Costa Rica (Diptera: Mycetophilidae). Zootaxa 1011: 1-54. [2005.06.24]
 Sys-20814	Chvala, M.	1981	\N	Revision of Central European species of the genus Oedalea (Diptera, Empididae). Acta Ent. Bohemoslovaca 78: 122-139. [1981.03.31]
-Sys-20815	Frivaldszky, J.	1877	\N	Adatok Temes Ts Krass= megyTk faunßjßhoz. Data ad faunam Hungariae meridionalis comitatuum Temes et Krass=. Mat. Termeszett. Kozl. 13: 285-378. [1877.??.??]
+Sys-20815	Frivaldszky, J.	1877	\N	Adatok Temes Ts Krass= megyTk faunï¿½jï¿½hoz. Data ad faunam Hungariae meridionalis comitatuum Temes et Krass=. Mat. Termeszett. Kozl. 13: 285-378. [1877.??.??]
 Sys-20817	Jezek, J.	1995	\N	Moth flies (Diptera, Psychodidae) inhabiting Prague city and adjacent localities with descriptions of five new species. Acta Ent. Mus. Natl. Prag.  44: 125-165. [1995.
 Sys-20818	Barkalov, A. V. & Cheng, X.-Y.	2004	\N	Revision of the genus Cheilosia Meigen, 1822 (Diptera: Syrphidae) of China. Contr. Ent. Intern. 5: 267-416. [2004.11.30]
 Sys-20819	Barkalov, A. V. & Gharaei, B.	2004	\N	Description of a new species of the genus Eumerus (Diptera, Syrphidae) from Iran. Volucella 7: 105-109. [2004.12.01]
@@ -10433,7 +10433,7 @@ Sys-20886	Yang, D.	2001	\N	Diptera: Dolichopodidae. Pp. 428-441. In  Wu, H. & Pa
 Sys-20887	Sasa, M. & Suzuki, H.	1997	\N	Studies on the Chironomidae (Diptera, Insecta) collected in Mongolia. Jap. J. trop. Med. Hyg. 15: 149-189.
 Sys-20888	Sasa, M. & Suzuki, H.	1997	\N	Studies on the chironomid species (Diptera, Insecta) collected in Kyushu. Bull. Toyama Pref. Envir. Poll. Res. Centre 1997: 75-105.
 Sys-20889	Malloch, J. R.	1941	\N	Notes on Australian Diptera. XXXIX. Family Chloropidae, part iii. Proc. Linn. Soc. N.S.W. 66: 41-64. [1941.05.15]
-Sys-20890	Py Daniel, V. & Moreira Sampaio, R	1994	\N	Jalacingomyia gen. n.(Culicomorpha): a ressurreitpo de Gymnopaidinae; a eliminatpo do nfvel tribal; apresentatpo ; a  novos caracteres e a redescritpo dos estßgios larval e pupal de Simulium colombaschense (Fabricius, 1787) (Diptera: Simuliidae). Mem CAICET (Venezuela) 4: 101-148.
+Sys-20890	Py Daniel, V. & Moreira Sampaio, R	1994	\N	Jalacingomyia gen. n.(Culicomorpha): a ressurreitpo de Gymnopaidinae; a eliminatpo do nfvel tribal; apresentatpo ; a  novos caracteres e a redescritpo dos estï¿½gios larval e pupal de Simulium colombaschense (Fabricius, 1787) (Diptera: Simuliidae). Mem CAICET (Venezuela) 4: 101-148.
 Sys-20891	Dufour, L.	1847	\N	Histoire des metamorphoses du Subula citripes et de quelques especes de ce genre de Dipteres. Ann. Sci. nat. (3rd, Zool.) 7: 5-14.
 Sys-20892	Hull, F. M.	1945	\N	Notes upon flies of the genus Solva Walker. Ent. News 55: 263-265. [1945.01.25]
 Sys-20893	Krivosheina, N. P.	1988	\N	Family Xylomyidae. Cat. Palaearct. Dipt. 5: 38-42. [1988.01.01]
@@ -10482,7 +10482,7 @@ Sys-20941	Lopes, S. M. & Khouri, M.	1996	\N	Descricao de uma especie nova de Pal
 Sys-20942	Albuquerque, D. de O.	1951	\N	Quinta nota sobre os tipos de Macquart (Diptera-Muscidae), existentes no Musca Museu Nacional de Historia Natural de Paris e descricao de uma especie nova, proveniemte do Chile. Bol. Mus. Nac. Rio de Janeiro (Zool.) 105, 17  pp. [1951.12.31]
 Sys-20943	Carvalho, C. J. B. de, Couri, M. S., Pont, A. C., Pamplona, D. & Lopes, S. M.	2005	\N	A catalogue of the Muscidae (Diptera) of the Neotropical Region. ZooTaxa 860, 282 pp. [2005.02.16]
 Sys-20944	Xue, Wan-qi & Xiang,	1994	\N	Two new genus and two new species of Muscidae from China (Diptera: Muscidae). Acta Zootax. Sinica 19: 487-489. [1994.??.??]
-Sys-20945	Couri, M.S. & Carvalho, C.J.B. de	1995	\N	Hypsomyia nebulicola, gen n., sp. n. de Limnophorini do Pico da Neblina, Brasil (Diptera, Muscidae, Coenosiinae). Revta Brasil. Biol. 54: 569û573.
+Sys-20945	Couri, M.S. & Carvalho, C.J.B. de	1995	\N	Hypsomyia nebulicola, gen n., sp. n. de Limnophorini do Pico da Neblina, Brasil (Diptera, Muscidae, Coenosiinae). Revta Brasil. Biol. 54: 569ï¿½573.
 Sys-20946	Couri, M.S. & Carvalho, C.J.B. de	1997	\N	Homonymy note in Muscidae (Diptera). Revta Brasil. Zool. 13 [1996]: 1091.
 Sys-20947	Dahl, F.	1912	\N	Tierwelt. In Conwentz, v. H. & A (eds), Das Plagefenn bei Chorin. Beitr. NaturDenkmalPflege, Berlin 3: 339-638.
 Sys-20949	Scarbrough, A. G., Perez-Gelabert, D. E. & Page, S. H.	2005	\N	Synopsis of Leptogastrine Asilids (Diptera) from Hispaniola. Trans. Amer. Ent. Soc. 131: 29-67. [2005.
@@ -10714,7 +10714,7 @@ Sys-21242	Mathis, W. N. & McAlpine, D. K.	2009	\N	World Catalog and Conspectus o
 Sys-21243	Brake, I.	2010	\N	World Catalog of the Family Carnidae (Diptera, Schizophora). Myia 12, in press.
 Sys-21244	Mathis, W. N.	2009	\N	World Catalog and Conspectus on the Family Helcomyzidae (Diptera: Schizophora). Myia 12, in press.
 Sys-21246	Gaimari, S. D. & Mathis, W. N.	2009	\N	World Catalog and Conspectus on the Family Odiniidae (Diptera: Schizophora). Myia 12, in press.
-Sys-21247	Pont, A. C.	2009	\N	A review of the Diptera described by Ferdinand Kowarz (1838-1914) or described from KowarzÆs collecting. Myia 12, in press.
+Sys-21247	Pont, A. C.	2009	\N	A review of the Diptera described by Ferdinand Kowarz (1838-1914) or described from Kowarzï¿½s collecting. Myia 12, in press.
 Sys-21248	Woodley, N. E.	2009	\N	A World Catalog of the Xylomyidae (Insecta: Diptera). Myia 12, in press.
 Sys-21249	Woodley, N. E.	2009	\N	A World Catalog of the Xylophagidae (Insecta: Diptera). Myia 12, in press.
 Sys-21250	Bachli, G.	2005	\N	TaxoDros - The database on Taxonomy of Drosophilidae. http://www.taxodros.unizh.ch/. Version 2005/01
@@ -11007,7 +11007,7 @@ Sys-21668	Illingworth, J. F.	1929	\N	Milichiella circularis Aldrich [Note]. Proc
 Sys-21669	Gerstaecker, A.	1863	\N	Eine neue Oestriden-Art, Aulacocephala badia. Verh. zool.-bot. Ges. Wien 13: 1033-1036. [1863. ????
 Sys-21670	Gerstaecker, A.	1864	\N	Einige neue Dolichopodiden aus dem Bayerischen Hochgebirge. Stettin. ent. Ztg 25: 145-154. [1864: ????
 Sys-21671	Gerstaecker, A.	1861	\N	Hr W. Peters legte eine Mittheilung des Hrn. Gerstaecker uber eine Sammlung von Raubfliegen (Diptera, Asilina) aus Griechenland vor, welch das zoologische Museum neuerdings von Hrn. Dr. Kruper erworben hat. Mber. dt. Akad. Wiss. Berlin 1861: 1010-1013. [1861: ????
-Sys-21672	Py-Daniel, V.	1989	\N	Simuliidae (Diptera: Culicomorpha) no Brasil. X- Descritpo de Simulium(Psaroniocompsa) guaporense. Revista de Sa·de P·blica, Spo Paulo, 23: 502û508.
+Sys-21672	Py-Daniel, V.	1989	\N	Simuliidae (Diptera: Culicomorpha) no Brasil. X- Descritpo de Simulium(Psaroniocompsa) guaporense. Revista de Saï¿½de Pï¿½blica, Spo Paulo, 23: 502ï¿½508.
 Sys-21673	Hamada, N., Hernandez, L. M. & Luz. S. L. B.	2006	\N	Taxonomy of Simulium guaporense Py-Daniel (Diptera: Simuliidae)from Brazil, with the first description of males and females. Zootaxa 1104: 23-24. [2006.01.05]
 Sys-21674	Carles-Tolra, M. & Blasco-Zumeta, J.	2001	\N	Estudio comparativo de veintinueve familias de Dipteros colectados en un sabinar de Juniperus thurifera L. en Los Monegros (Zaragoza) (Diptera: Orthorrhapha y Cyclorrhapha). Bol. Soc. Ent. Aragonesa 29: 49-64. [2001.
 Sys-21675	Lehrer, A. Z.	2005	\N	Deux Sarcophaginae pour la faune du Togo (Diptera, Sarcophagidae). Bull. Soc. ent. Mulhouse 61: 26-30.
@@ -11295,10 +11295,10 @@ Sys-22108	Maia, V. C. & Fernandes, G. W.	2006	\N	A new genus and species of gall
 Sys-22111	Staeger, R. C	1842	\N	[Beskrivelse og afbildning af larven og nymphen til Dixa nigra Stgr.]. Pp. 202-204 in: J.C. Schiodte: Forhandlinger i Det Skandinaviske entomologiske Selskab. Naturh. Tidsskr. [1] 4: 202-216. [Description and illustration of the larva and the nymph of Dexia nigra Stgr.]
 Sys-22112	Staeger, R. C	1843	\N	[En for vor fauna ny antliat, Oxyrhina frontalis.]. P. 315 in: J.C. Schiodte: Forhandlinger i Det Skandinaviske entomologiske Selskab. Naturh. Tidsskr. [1] 4: 315-360. [An antliate new to our fauna, Oxyrhina frontalis.]
 Sys-22113	Staeger, R. C	1843	\N	[Meddelelse om Anthomyia triqvetra Wiedm.]. Pp. 318-320 in: J.C. Schiodte: Forhandlinger i Det Skandinaviske entomologiske Selskab. Naturh. Tidsskr. [1] 4: 318-360. [Note on Anthomyia triqvetra Wiedm.]
-Sys-22115	Staeger, R. C	1843	\N	[Oversigt over [dolichopod] slµgternes begrµndsning.]. Pp. 340-344 in: J.C. Schiodte: Forhandlinger i Det Skandinaviske entomologiske Selskab. Naturh. Tidsskr. [1] 4: 318-360. [Review of the delimitation of the [dolichopodid] genera.]
+Sys-22115	Staeger, R. C	1843	\N	[Oversigt over [dolichopod] slï¿½gternes begrï¿½ndsning.]. Pp. 340-344 in: J.C. Schiodte: Forhandlinger i Det Skandinaviske entomologiske Selskab. Naturh. Tidsskr. [1] 4: 318-360. [Review of the delimitation of the [dolichopodid] genera.]
 Sys-22116	Staeger, R. C	1844	\N	Bemerkungen nber Musca hypoleon. Stett. Ent. Zeitg. 5: 403-410.
-Sys-22117	Staeger, R. C	1844	\N	[Systematisk fremstilling af den danske faunas arter af antliatslµgten Sepsis.]. [Systematic conspectus of the species of the antliate genus Sepsis in the Danish fauna.] Pp. 22-36 in: J.C. Schiodte: Forhandlinger i Det Skandinaviske entomologiske Selskab. Naturh. Tidsskr. [2] 1: 16-70.
-Sys-22118	Staeger, R. C	1844	\N	[Forsog til en n°jagtigere bestemmelse af Scatophaga spurca Meig.]. [Attempt of a more exact identification of Scatophaga spurca Meig.] Pp. 36-38 in: J.C. Schidte: Forhandlinger i Det Skandinaviske entomologiske Selskab. Naturh. Tidsskr. [2] 1: 16-70.
+Sys-22117	Staeger, R. C	1844	\N	[Systematisk fremstilling af den danske faunas arter af antliatslï¿½gten Sepsis.]. [Systematic conspectus of the species of the antliate genus Sepsis in the Danish fauna.] Pp. 22-36 in: J.C. Schiodte: Forhandlinger i Det Skandinaviske entomologiske Selskab. Naturh. Tidsskr. [2] 1: 16-70.
+Sys-22118	Staeger, R. C	1844	\N	[Forsog til en nï¿½jagtigere bestemmelse af Scatophaga spurca Meig.]. [Attempt of a more exact identification of Scatophaga spurca Meig.] Pp. 36-38 in: J.C. Schidte: Forhandlinger i Det Skandinaviske entomologiske Selskab. Naturh. Tidsskr. [2] 1: 16-70.
 Sys-22119	Staeger, R. C	1844	\N	[Cordylura tibiella Zett. og Ptychoptera paludosa Meig. som danske.]. [Cordylura tibiella Zett. and Ptychoptera paludosa Meig. as Danish.] P. 41 in: J.C. Schiodte: Forhandlinger i Det Skandinaviske entomologiske Selskab. Naturh. Tidsskr. [2] 1: 16-70.
 Sys-22120	Chen, H.-Z.	1994	\N	Five new species and a new record of drosophilid flies (Diptera, Drosophilidae) from Sichuan province, China. J. Fudan Univ. Nat. Sci. 62: 537-554. [1994.09.25]
 Sys-22121	Edwards, M. A.	1995	\N	Diptera. Zoological Record 131 (13C), ??? pp. [1995.12.??]

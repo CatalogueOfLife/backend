@@ -699,7 +699,7 @@ public class NeoDb implements ReferenceStore {
         t.classification.clearRankAndBelow(excludeRankAndBelow);
       }
       // copy parent props from source
-      t.verbatim = VerbatimRecord.create();
+      t.verbatim = UnescapedVerbatimRecord.create();
       t.verbatim.setTerm(DwcTerm.parentNameUsageID, source.verbatim.getTerm(DwcTerm.parentNameUsageID));
       t.verbatim.setTerm(DwcTerm.parentNameUsage, source.verbatim.getTerm(DwcTerm.parentNameUsage));
     }

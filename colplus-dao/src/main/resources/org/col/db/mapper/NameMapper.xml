@@ -34,6 +34,7 @@
         n.source_url,
         n.fossil,
         n.remarks,
+        n.taxonomic_note,
         n.issues
     </sql>
 
@@ -81,6 +82,7 @@
         source_url,
         fossil,
         remarks,
+        taxonomic_note,
         issues
     </sql>
 
@@ -114,6 +116,7 @@
         #{sourceUrl},
         #{fossil},
         #{remarks},
+        #{taxonomicNote},
         #{issues, typeHandler=org.col.db.type2.IssueSetTypeHandler}::int[]
     </sql>
 

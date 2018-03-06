@@ -17,7 +17,8 @@ import java.util.*;
  */
 public class NeoTaxon {
   public Node node;
-  public VerbatimRecord verbatim;
+  // the unescaped verbatim record to be used for further interpretation
+  public UnescapedVerbatimRecord verbatim;
   // we keep the name distinct from the Taxon here so we can also accomodate basionymGroup which do not have a taxon instance!
   public Name name;
   // either a taxon or a synonym, never both!

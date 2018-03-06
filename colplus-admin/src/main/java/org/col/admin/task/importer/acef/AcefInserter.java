@@ -6,10 +6,10 @@ import org.col.admin.task.importer.NeoInserter;
 import org.col.admin.task.importer.NormalizationFailedException;
 import org.col.admin.task.importer.neo.NeoDb;
 import org.col.admin.task.importer.neo.model.NeoTaxon;
+import org.col.admin.task.importer.neo.model.UnescapedVerbatimRecord;
 import org.col.api.model.Dataset;
 import org.col.api.model.Reference;
 import org.col.api.model.TermRecord;
-import org.col.api.model.VerbatimRecord;
 import org.col.api.vocab.DataFormat;
 import org.col.api.vocab.Issue;
 import org.gbif.dwc.terms.AcefTerm;
@@ -89,14 +89,14 @@ public class AcefInserter extends NeoInserter {
   private void insertTaxaAndNames() {
     // species
     reader.stream(AcefTerm.AcceptedSpecies).forEach( rec -> {
-      VerbatimRecord v = build(rec.get(AcefTerm.AcceptedTaxonID), rec);
+      UnescapedVerbatimRecord v = build(rec.get(AcefTerm.AcceptedTaxonID), rec);
       NeoTaxon t = inter.interpretTaxon(v, false);
       store.put(t);
       meta.incRecords(t.name.getRank());
     });
     // infraspecies
     reader.stream(AcefTerm.AcceptedInfraSpecificTaxa).forEach( rec -> {
-      VerbatimRecord v = build(rec.get(AcefTerm.AcceptedTaxonID), rec);
+      UnescapedVerbatimRecord v = build(rec.get(AcefTerm.AcceptedTaxonID), rec);
       NeoTaxon t = inter.interpretTaxon(v, false);
       if (!t.name.getRank().isInfraspecific()) {
         LOG.info("Expected infraspecific taxon but found {} for name {}: {}", t.name.getRank(), t.getTaxonID(), t.name.getScientificName());
@@ -107,7 +107,7 @@ public class AcefInserter extends NeoInserter {
     });
     // synonyms
     reader.stream(AcefTerm.Synonyms).forEach( rec -> {
-      VerbatimRecord v = build(rec.get(AcefTerm.ID), rec);
+      UnescapedVerbatimRecord v = build(rec.get(AcefTerm.ID), rec);
       NeoTaxon t = inter.interpretTaxon(v, true);
       store.put(t);
       meta.incRecords(t.name.getRank());

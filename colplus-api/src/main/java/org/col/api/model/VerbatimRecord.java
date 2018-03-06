@@ -1,14 +1,11 @@
 package org.col.api.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Strings;
 import org.gbif.dwc.terms.Term;
 
 import javax.annotation.Nullable;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 
 /**
  *
@@ -22,12 +19,6 @@ public class VerbatimRecord {
   private Integer datasetKey;
 
   private ExtendedTermRecord terms;
-
-  public static VerbatimRecord create() {
-    VerbatimRecord v = new VerbatimRecord();
-    v.terms = new ExtendedTermRecord();
-    return v;
-  }
 
   /**
    * @return The dwca coreId
@@ -91,29 +82,12 @@ public class VerbatimRecord {
     terms.put(term, value);
   }
 
-  public Map<Term, List<TermRecord>> getExtensions() {
-    return terms.getExtensions();
-  }
-
-  public void setExtensions(Map<Term, List<TermRecord>> extensions) {
-    terms.setExtensions(extensions);
-  }
-
-  @JsonIgnore
-  public Set<Term> getExtensionRowTypes() {
-    return terms.getExtensionRowTypes();
-  }
-
   public boolean hasExtension(Term rowType) {
     return terms.hasExtension(rowType);
   }
 
   public List<TermRecord> getExtensionRecords(Term rowType) {
     return terms.getExtensionRecords(rowType);
-  }
-
-  public void setExtensionRecords(Term rowType, List<TermRecord> extensionRecords) {
-    terms.setExtensionRecords(rowType, extensionRecords);
   }
 
   public void addExtensionRecord(Term rowType, TermRecord extensionRecord) {

@@ -38,6 +38,7 @@
         <commons-lang.version>3.7</commons-lang.version>
         <commons-compress.version>1.10</commons-compress.version>
         <commons-io.version>2.4</commons-io.version>
+        <commons-text.version>1.2</commons-text.version>
         <dropwizard.version>1.2.3</dropwizard.version>
         <dwc-api.version>1.18-SNAPSHOT</dwc-api.version>
         <dwca-io.version>1.33-SNAPSHOT</dwca-io.version>
@@ -455,6 +456,11 @@
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-compress</artifactId>
                 <version>${commons-compress.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-text</artifactId>
+                <version>${commons-text.version}</version>
             </dependency>
 
             <!-- other -->

@@ -6,6 +6,7 @@ import com.google.common.collect.Lists;
 import org.col.admin.task.importer.InsertMetadata;
 import org.col.admin.task.importer.neo.ReferenceStore;
 import org.col.admin.task.importer.neo.model.NeoTaxon;
+import org.col.admin.task.importer.neo.model.UnescapedVerbatimRecord;
 import org.col.api.exception.InvalidNameException;
 import org.col.api.model.*;
 import org.col.api.vocab.*;
@@ -50,7 +51,7 @@ public class DwcInterpreter {
     return null;
   }
 
-  public NeoTaxon interpret(VerbatimRecord v) {
+  public NeoTaxon interpret(UnescapedVerbatimRecord v) {
     NeoTaxon t = new NeoTaxon();
     // verbatim
     t.verbatim = v;
@@ -266,7 +267,7 @@ public class DwcInterpreter {
         .orElse(null, Issue.NOMENCLATURAL_CODE_INVALID, n.getIssues())
     );
     //TODO: should we also get these through an extension, e.g. species profile or a nomenclature extension?
-    n.setRemarks(v.getTerm(CoLTerm.nomenclaturalRemarks));
+    n.setRemarks(v.getTerm(DwcTerm.nomenclaturalStatus));
     n.setFossil(null);
 
     if (!n.isConsistent()) {

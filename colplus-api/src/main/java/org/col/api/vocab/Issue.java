@@ -93,14 +93,14 @@ public enum Issue {
   MISSING_GENUS,
 
   /**
-   * html entities unescaped
+   * Escaped characters such as html entities have been unescaped during interpretation.
+   * The following escaped character formats are recognized:
+   * 1) named, decimal or hexadecimal xml & html entities
+   * 2) unicode entities U+0026
+   * 3) hexadecimal or octal java unicode entites
+   * 4) CSS & ECMA Javascript entities
    */
-  HTML_ENTITIES,
-
-  /**
-   * xml entities removed
-   */
-  XML_ENTITIES,
+  ESCAPED_CHARACTERS,
 
   /**
    * dwc:nomenclaturalStatus could not be interpreted

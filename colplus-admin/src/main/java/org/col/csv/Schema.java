@@ -3,7 +3,7 @@ package org.col.csv;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.univocity.parsers.csv.CsvParserSettings;
-import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.col.util.io.PathUtils;
 import org.gbif.dwc.terms.Term;
 

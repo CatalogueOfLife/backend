@@ -4,9 +4,9 @@ import org.col.admin.task.importer.NeoInserter;
 import org.col.admin.task.importer.NormalizationFailedException;
 import org.col.admin.task.importer.neo.NeoDb;
 import org.col.admin.task.importer.neo.model.NeoTaxon;
+import org.col.admin.task.importer.neo.model.UnescapedVerbatimRecord;
 import org.col.api.model.Dataset;
 import org.col.api.model.TermRecord;
-import org.col.api.model.VerbatimRecord;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.GbifTerm;
 import org.neo4j.graphdb.Transaction;
@@ -83,7 +83,7 @@ public class DwcaInserter extends NeoInserter {
     // taxon
     reader.stream(DwcTerm.Taxon).forEach(rec -> {
       if (rec.hasTerm(DwcaReader.DWCA_ID)) {
-        VerbatimRecord v = build(rec.get(DwcaReader.DWCA_ID), rec);
+        UnescapedVerbatimRecord v = build(rec.get(DwcaReader.DWCA_ID), rec);
         NeoTaxon t = inter.interpret(v);
         store.put(t);
         meta.incRecords(t.name.getRank());

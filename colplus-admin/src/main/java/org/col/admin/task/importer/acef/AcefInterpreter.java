@@ -9,6 +9,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.col.admin.task.importer.InsertMetadata;
 import org.col.admin.task.importer.neo.ReferenceStore;
 import org.col.admin.task.importer.neo.model.NeoTaxon;
+import org.col.admin.task.importer.neo.model.UnescapedVerbatimRecord;
 import org.col.api.exception.InvalidNameException;
 import org.col.api.model.*;
 import org.col.api.vocab.*;
@@ -48,7 +49,7 @@ public class AcefInterpreter {
     metadata.setDenormedClassificationMapped(true);
   }
 
-  public NeoTaxon interpretTaxon(VerbatimRecord v, boolean synonym) {
+  public NeoTaxon interpretTaxon(UnescapedVerbatimRecord v, boolean synonym) {
     NeoTaxon t = new NeoTaxon();
     // verbatim
     t.verbatim = v;

@@ -34,8 +34,8 @@ public class NameParser implements Parser<Name> {
       .put(Warnings.QUESTION_MARKS_REMOVED, Issue.QUESTION_MARKS_REMOVED)
       .put(Warnings.REPL_ENCLOSING_QUOTE, Issue.REPL_ENCLOSING_QUOTE)
       .put(Warnings.MISSING_GENUS, Issue.MISSING_GENUS)
-      .put(Warnings.HTML_ENTITIES, Issue.HTML_ENTITIES)
-      .put(Warnings.XML_ENTITIES, Issue.XML_ENTITIES)
+      .put(Warnings.HTML_ENTITIES, Issue.ESCAPED_CHARACTERS)
+      .put(Warnings.XML_TAGS, Issue.ESCAPED_CHARACTERS)
       .build();
 
   public Optional<Name> parse(String name) {
@@ -98,6 +98,7 @@ public class NameParser implements Parser<Name> {
     n.setCode(pn.getCode());
     n.setCandidatus(pn.isCandidatus());
     n.setNotho(pn.getNotho());
+    n.setTaxonomicNote(pn.getTaxonomicNote());
     n.setRemarks(pn.getRemarks());
     n.setType(pn.getType());
     // issues
@@ -115,7 +116,6 @@ public class NameParser implements Parser<Name> {
         LOG.debug("Unknown parser warning: {}", warn);
       }
     }
-    //ignore taxonomic note
     //TODO: try to convert nom notes to enumeration. Add to remarks for now
     n.addRemark(pn.getNomenclaturalNotes());
     return n;
