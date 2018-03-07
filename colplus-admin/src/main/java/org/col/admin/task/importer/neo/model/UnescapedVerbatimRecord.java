@@ -13,10 +13,13 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  * Thin wrapper around a verbatim record that deals with unescaping character entities
  * on read methods without altering the underlying original verbatim data.
+ *
+ * It also strips simple xml/html tags without attributes such as <i> or </b>
  *
  * When a value is altered during unescaping the record keeps track that it had been modified.
  *
@@ -26,11 +29,13 @@ import java.util.Map;
  *    hex &#x0026;
  *    decimal &#38;
  * 2) Hexadecimal and octal escapes as used in Java, CSS & ECMA Javascript:
- *    Hexadecimal unicode escapes started by "\\u": \\u00A9
- *    TODO: support Unicode code point escapes indicated by "\\u{}": \\u{2F804}
+ *    Hexadecimal unicode escapes started by  "\\u": \\u00A9
+ *    Unicode code point escapes indicated by "\\u{}": \\u{2F80}
  */
 public class UnescapedVerbatimRecord extends VerbatimRecord {
   private static final Logger LOG = LoggerFactory.getLogger(UnescapedVerbatimRecord.class);
+  private static final Pattern REMOVE_TAGS = Pattern.compile("</? *[a-z][a-z1-5]{0,5} *>", Pattern.CASE_INSENSITIVE);
+  private static final Pattern ECMA_UNICODE = Pattern.compile("\\\\u\\{([0-9a-f]{4})}", Pattern.CASE_INSENSITIVE);
 
   private boolean modified;
 
@@ -49,9 +54,9 @@ public class UnescapedVerbatimRecord extends VerbatimRecord {
       return null;
     }
     try {
-      String unescaped = StringEscapeUtils.unescapeEcmaScript(
-          StringEscapeUtils.unescapeHtml4(x)
-      );
+      String unescaped = ECMA_UNICODE.matcher(x).replaceAll("\\\\u$1");
+      unescaped = StringEscapeUtils.unescapeEcmaScript(StringEscapeUtils.unescapeHtml4(unescaped));
+      unescaped = REMOVE_TAGS.matcher(unescaped).replaceAll("");
       if (!modified && !x.equals(unescaped)) {
         modified = true;
       }
