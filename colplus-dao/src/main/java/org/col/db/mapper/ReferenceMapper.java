@@ -13,9 +13,9 @@ import java.util.Set;
  */
 public interface ReferenceMapper {
 
-	int count(@Param("datasetKey") int datasetKey);
+	int count(@Param("datasetKey") Integer datasetKey);
 
-	List<Reference> list(@Param("datasetKey") int datasetKey, @Param("page") Page page);
+	List<Reference> list(@Param("datasetKey") Integer datasetKey, @Param("page") Page page);
 
   /**
    * Selects a number of distinct references by their keys
