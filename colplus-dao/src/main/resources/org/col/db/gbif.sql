@@ -43,6 +43,7 @@ INSERT INTO dataset (data_format, gbif_key, data_access, title) VALUES (0, 'e1c9
 INSERT INTO dataset (data_format, gbif_key, data_access, title) VALUES (0, 'e402255a-aed1-4701-9b96-14368e1b5d6b', 'http://ctap.inhs.uiuc.edu/dmitriev/DwCArchive.zip', '3i - Typhlocybinae Database');
 INSERT INTO dataset (data_format, gbif_key, data_access, title) VALUES (0, 'e768b669-5f12-42b3-9bc7-ede76e4436fa', 'http://plazi.cs.umb.edu/GgServer/dwca/61134126326DC5BE0901E529D48F9481.zip', 'Carabodes cephalotes');
 INSERT INTO dataset (data_format, gbif_key, data_access, title) VALUES (0, 'f43069fe-38c1-43e3-8293-37583dcf5547', 'https://svampe.databasen.org/dwc/DMS_Fun_taxa.zip', 'Danish Mycological Society - Checklist of Fungi');
+INSERT INTO dataset (data_format, gbif_key, data_access, title) VALUES (0, '56c83fd9-533b-4b77-a67a-cf521816866e', 'http://ipt.pensoft.net/archive.do?r=tenebrionidae_north_america', 'Catalogue of Tenebrionidae (Coleoptera) of North America');
 -- Species Files
 -- select d.key, e.url, d.title from dataset d join dataset_endpoint de on de.dataset_key=d.key JOIN endpoint e on e.key=de.endpoint_key and e.type='DWC_ARCHIVE' where deleted is null and d.publishing_organization_key='47a779a6-a230-4edd-b787-19c3d2c80ab5';
 INSERT INTO dataset (data_format, gbif_key, data_access, title) VALUES (0, '3e812f13-bd5f-46b6-9bae-710766be526d', 'http://IPT.speciesfile.org:8080/archive.do?r=blattodea', 'Cockroach Species File');
