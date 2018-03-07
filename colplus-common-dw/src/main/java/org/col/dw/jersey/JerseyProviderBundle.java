@@ -29,12 +29,12 @@ public class JerseyProviderBundle implements Bundle {
     env.jersey().register(Null404ResponseFilter.class);
 
     // exception mapper
-    env.jersey().register(QueryParam400Mapper.class);
-    env.jersey().register(ValidationExceptionMapper.class);
-    env.jersey().register(UnsupportedOperationExceptionMapper.class);
     env.jersey().register(IllegalArgumentExceptionMapper.class);
     env.jersey().register(JsonProcessingExceptionMapper.class);
     env.jersey().register(NotFoundExceptionMapper.class);
+    env.jersey().register(QueryParam400Mapper.class);
+    env.jersey().register(UnsupportedOperationExceptionMapper.class);
+    env.jersey().register(ValidationExceptionMapper.class);
   }
 
 }
