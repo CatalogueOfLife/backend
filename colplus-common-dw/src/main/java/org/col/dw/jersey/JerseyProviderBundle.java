@@ -5,6 +5,7 @@ import io.dropwizard.jersey.jackson.JsonProcessingExceptionMapper;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import org.col.dw.jersey.exception.IllegalArgumentExceptionMapper;
+import org.col.dw.jersey.exception.NotFoundExceptionMapper;
 import org.col.dw.jersey.exception.QueryParam400Mapper;
 import org.col.dw.jersey.exception.UnsupportedOperationExceptionMapper;
 import org.col.dw.jersey.exception.ValidationExceptionMapper;
@@ -33,6 +34,7 @@ public class JerseyProviderBundle implements Bundle {
     env.jersey().register(UnsupportedOperationExceptionMapper.class);
     env.jersey().register(IllegalArgumentExceptionMapper.class);
     env.jersey().register(JsonProcessingExceptionMapper.class);
+    env.jersey().register(NotFoundExceptionMapper.class);
   }
 
 }
