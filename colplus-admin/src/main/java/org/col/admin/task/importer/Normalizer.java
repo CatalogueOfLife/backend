@@ -85,6 +85,7 @@ public class Normalizer implements Runnable {
 
   private void verify() {
     for (NeoTaxon t : store.all()) {
+      boolean modified = false;
       String id;
       // is it a source with verbatim data?
       require(t.name.getOrigin(), "name origin");
@@ -93,6 +94,7 @@ public class Normalizer implements Runnable {
         // did we unescape verbatim data?
         if (t.verbatim.isModified()) {
           t.addIssue(Issue.ESCAPED_CHARACTERS);
+          modified = true;
         }
       } else {
         id = String.format("%s %s %s", t.taxon.getOrigin().name(), t.name.getRank(), t.name.getScientificName());
@@ -127,6 +129,11 @@ public class Normalizer implements Runnable {
       for (Distribution d : t.distributions) {
         require(d.getAreaStandard(), "distribution area standard", id);
         require(d.getArea(), "distribution area", id);
+      }
+
+      // update stored copy?
+      if (modified) {
+        store.update(t);
       }
     }
   }
