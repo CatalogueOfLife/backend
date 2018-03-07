@@ -193,6 +193,12 @@
 
         DELETE FROM name
         WHERE dataset_key = #{key};
+
+        DELETE FROM reference
+        WHERE dataset_key = #{key};
+
+        DELETE FROM serial
+        WHERE dataset_key = #{key};
     </delete>
 
 </mapper>

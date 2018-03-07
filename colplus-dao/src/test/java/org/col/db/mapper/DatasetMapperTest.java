@@ -81,6 +81,17 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
 		assertNotNull(d.getDeleted());
 	}
 
+  @Test
+  public void truncate() throws Exception {
+    Dataset d1 = create();
+    mapper().create(d1);
+
+    commit();
+
+    // truncate tables
+    mapper().truncateDatasetData(d1.getKey());
+  }
+
 	@Test
 	public void count() throws Exception {
 		assertEquals(2, mapper().count(null));
