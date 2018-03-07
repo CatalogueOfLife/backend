@@ -68,6 +68,8 @@ public class NameDao {
    * Lists all homotypic basionymGroup based on the same basionym
    */
   public List<Name> basionymGroup(int key) {
+    // Allow 404 to be thrown:
+    get(key);
     NameMapper mapper = session.getMapper(NameMapper.class);
     return mapper.basionymGroup(key);
   }
