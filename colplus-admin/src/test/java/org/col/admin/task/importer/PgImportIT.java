@@ -251,7 +251,7 @@ public class PgImportIT {
       assertEquals(3, info.getDistributions().size());
       Set<String> areas = Sets.newHashSet("AGE-BA", "BZC-MS", "BZC-MT");
       for (Distribution d : info.getDistributions()) {
-        assertEquals(Gazetteer.TDWG, d.getAreaStandard());
+        assertEquals(Gazetteer.TDWG, d.getGazetteer());
         assertTrue(areas.remove(d.getArea()));
       }
 
@@ -331,7 +331,7 @@ public class PgImportIT {
 	private Distribution dist(Gazetteer standard, String area, DistributionStatus status) {
 		Distribution d = new Distribution();
 		d.setArea(area);
-		d.setAreaStandard(standard);
+		d.setGazetteer(standard);
 		d.setStatus(status);
 		return d;
 	}

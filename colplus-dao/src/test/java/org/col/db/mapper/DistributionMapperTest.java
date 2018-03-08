@@ -34,7 +34,7 @@ public class DistributionMapperTest extends MapperTestBase<DistributionMapper> {
 	private static Distribution newDistribution(String area) {
 		Distribution d = new Distribution();
 		d.setArea(area);
-		d.setAreaStandard(Gazetteer.TDWG);
+		d.setGazetteer(Gazetteer.TDWG);
 		d.setStatus(DistributionStatus.NATIVE);
 		return d;
 	}

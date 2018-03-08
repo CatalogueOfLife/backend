@@ -43,13 +43,13 @@ public class TaxonDaoTest extends DaoTestBase {
 		  switch (d.getKey()) {
         case 1:
 		      assertEquals("Berlin", d.getArea());
-          assertEquals(Gazetteer.TEXT, d.getAreaStandard());
+          assertEquals(Gazetteer.TEXT, d.getGazetteer());
           assertNull(d.getStatus());
           assertEquals(d.getReferenceKeys(), Sets.newHashSet(1, 2));
           break;
         case 2:
           assertEquals("Leiden", d.getArea());
-          assertEquals(Gazetteer.TEXT, d.getAreaStandard());
+          assertEquals(Gazetteer.TEXT, d.getGazetteer());
           assertNull(d.getStatus());
           assertEquals(d.getReferenceKeys(), Sets.newHashSet(2));
           break;

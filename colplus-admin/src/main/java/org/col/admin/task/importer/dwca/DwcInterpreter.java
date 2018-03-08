@@ -156,7 +156,7 @@ public class DwcInterpreter {
   void addDistribution(NeoTaxon t, String area, Gazetteer standard, TermRecord rec) {
     Distribution d = new Distribution();
     d.setArea(area);
-    d.setAreaStandard(standard);
+    d.setGazetteer(standard);
     addReferences(d, rec);
     //TODO: parse status!!!
     d.setStatus(DistributionStatus.NATIVE);

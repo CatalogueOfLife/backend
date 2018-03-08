@@ -215,7 +215,7 @@ public class NormalizerDwcaIT {
   private Distribution dist(Gazetteer standard, String area, DistributionStatus status) {
     Distribution d = new Distribution();
     d.setArea(area);
-    d.setAreaStandard(standard);
+    d.setGazetteer(standard);
     d.setStatus(status);
     return d;
   }

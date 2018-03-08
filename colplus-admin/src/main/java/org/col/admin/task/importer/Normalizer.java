@@ -127,7 +127,7 @@ public class Normalizer implements Runnable {
 
       // distribution
       for (Distribution d : t.distributions) {
-        require(d.getAreaStandard(), "distribution area standard", id);
+        require(d.getGazetteer(), "distribution area standard", id);
         require(d.getArea(), "distribution area", id);
       }
 

@@ -161,7 +161,7 @@ public class NormalizerACEFIT {
       assertEquals(3, t.distributions.size());
       Set<String> areas = Sets.newHashSet("AGE-BA", "BZC-MS", "BZC-MT");
       for (Distribution d : t.distributions) {
-        assertEquals(Gazetteer.TDWG, d.getAreaStandard());
+        assertEquals(Gazetteer.TDWG, d.getGazetteer());
         assertTrue(areas.remove(d.getArea()));
       }
 

@@ -16,7 +16,7 @@ public class Distribution implements Referenced {
 	@JsonIgnore
 	private Integer key;
 	private String area;
-	private Gazetteer areaStandard;
+	private Gazetteer gazetteer;
 	private DistributionStatus status;
   private Set<Integer> referenceKeys = Sets.newHashSet();
 
@@ -36,12 +36,12 @@ public class Distribution implements Referenced {
 		this.area = area;
 	}
 
-	public Gazetteer getAreaStandard() {
-		return areaStandard;
+	public Gazetteer getGazetteer() {
+		return gazetteer;
 	}
 
-	public void setAreaStandard(Gazetteer areaStandard) {
-		this.areaStandard = areaStandard;
+	public void setGazetteer(Gazetteer gazetteer) {
+		this.gazetteer = gazetteer;
 	}
 
 	public DistributionStatus getStatus() {
@@ -76,16 +76,16 @@ public class Distribution implements Referenced {
 		Distribution other = (Distribution) obj;
 		return Objects.equals(key, other.key)
 		    && Objects.equals(area, other.area)
-		    && areaStandard == other.areaStandard
+		    && gazetteer == other.gazetteer
 		    && status == other.status;
 	}
 
 	public int hashCode() {
-		return Objects.hash(key, area, areaStandard, status);
+		return Objects.hash(key, area, gazetteer, status);
 	}
 
 	@Override
 	public String toString() {
-		return status == null ? "Unknown" : status + " in " + areaStandard + ":" + area;
+		return status == null ? "Unknown" : status + " in " + gazetteer + ":" + area;
 	}
 }

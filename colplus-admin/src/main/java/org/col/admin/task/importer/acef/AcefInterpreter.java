@@ -139,27 +139,27 @@ public class AcefInterpreter {
         Distribution d = new Distribution();
 
         // which standard?
-        d.setAreaStandard(parse(GazetteerParser.PARSER, rec.get(AcefTerm.StandardInUse))
+        d.setGazetteer(parse(GazetteerParser.PARSER, rec.get(AcefTerm.StandardInUse))
             .orElse(Gazetteer.TEXT, Issue.DISTRIBUTION_GAZETEER_INVALID, t.issues)
         );
 
         // TODO: try to split location into several distributions...
         String loc = rec.get(AcefTerm.DistributionElement);
-        if (d.getAreaStandard() == Gazetteer.TEXT) {
+        if (d.getGazetteer() == Gazetteer.TEXT) {
           d.setArea(loc);
         } else {
           // only parse area if other than text
           AreaParser.Area textArea = new AreaParser.Area(loc, Gazetteer.TEXT);
           if (loc.indexOf(':')<0) {
-            loc = d.getAreaStandard().locationID(loc);
+            loc = d.getGazetteer().locationID(loc);
           }
           AreaParser.Area area = SafeParser.parse(AreaParser.PARSER, loc)
               .orElse(textArea, Issue.DISTRIBUTION_AREA_INVALID, t.issues);
           d.setArea(area.area);
           // check if we have contradicting extracted a gazetteer
-          if (area.standard != Gazetteer.TEXT && area.standard != d.getAreaStandard()) {
+          if (area.standard != Gazetteer.TEXT && area.standard != d.getGazetteer()) {
             LOG.info("Area standard {} found in area {} different from explicitly given standard {} for taxon {}",
-                area.standard, area.area, d.getAreaStandard(), t.getTaxonID());
+                area.standard, area.area, d.getGazetteer(), t.getTaxonID());
           }
         }
 
