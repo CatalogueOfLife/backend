@@ -159,11 +159,11 @@
            ) AS languages
         ) AS vernaculars_by_language_count,
         (SELECT array_to_string(array_agg( key || '=>' || cnt), ', ')::hstore FROM
-          (SELECT area_standard AS key, count(*)::text AS cnt
+          (SELECT gazetteer AS key, count(*)::text AS cnt
            FROM distribution
            WHERE dataset_key=#{key}
-           GROUP BY area_standard
-           ) AS area_standards
+           GROUP BY gazetteer
+           ) AS gazetteers
         ) AS distributions_by_gazetteer_count,
         (SELECT array_to_string(array_agg( key || '=>' || cnt), ', ')::hstore FROM
           (SELECT origin AS key, count(*)::text AS cnt
