@@ -1,0 +1,25 @@
+unknown	INCERTAE_SEDIS
+
+animal	ANIMALIA
+animals	ANIMALIA
+metazoa	ANIMALIA
+animals	ANIMALIA
+
+archaebacteria	ARCHAEA
+
+eubacteria	BACTERIA
+monera	BACTERIA
+prokaryota	BACTERIA
+
+chromista	CHROMISTA
+fungi	FUNGI
+
+plant	PLANTAE
+plants	PLANTAE
+vegetabilia	PLANTAE
+viridiplantae	PLANTAE
+
+archezoa	PROTOZOA
+protista	PROTOZOA
+
+virus	VIRUSES
