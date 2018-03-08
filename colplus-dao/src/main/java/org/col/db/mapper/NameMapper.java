@@ -1,12 +1,13 @@
 package org.col.db.mapper;
 
-import java.util.List;
-
 import org.apache.ibatis.annotations.Param;
+import org.col.api.model.HomotypicGroup;
 import org.col.api.model.Name;
 import org.col.api.model.NameSearch;
 import org.col.api.model.Page;
 import org.col.db.mapper.temp.NameSearchResultTemp;
+
+import java.util.List;
 
 /**
  *
@@ -35,11 +36,11 @@ public interface NameMapper {
 	List<Name> synonyms(@Param("key") int taxonKey);
 
 	/**
-	 * Lists all homotypic basionymGroup based on the same basionym
+	 * Lists all homotypic names based on the same homotypic group key
 	 * 
 	 * @return
 	 */
-	List<Name> basionymGroup(@Param("key") int key);
+  HomotypicGroup homotypicGroup(@Param("key") int key);
 
 	int countSearchResults(@Param("nameSearch") NameSearch nameSearch);
 

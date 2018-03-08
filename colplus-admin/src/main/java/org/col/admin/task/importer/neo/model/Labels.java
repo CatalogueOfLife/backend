@@ -22,7 +22,7 @@ public enum Labels implements Label {
   SYNONYM,
 
   /**
-   * Proparte basionymGroup which have at least 2 SYNONYM_OF relations, subclass of SYNONYM
+   * Proparte synonyms which have at least 2 SYNONYM_OF relations, subclass of SYNONYM
    */
   PROPARTE_SYNONYM,
 

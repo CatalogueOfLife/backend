@@ -12,24 +12,24 @@ import java.util.Objects;
  * A taxonomic synonymy list, ordering names in homotypic groups.
  */
 public class Synonymy {
-  private final List<List<Name>> synonyms;
+  private final List<HomotypicGroup> synonyms;
 
   public Synonymy() {
     this.synonyms = Lists.newArrayList();
   }
 
   @JsonCreator
-  public Synonymy(List<List<Name>> synonyms) {
+  public Synonymy(List<HomotypicGroup> synonyms) {
     this.synonyms = synonyms;
   }
 
   @JsonValue
-  public List<List<Name>> getHomotypicGroups() {
+  public List<HomotypicGroup> getHomotypicGroups() {
     return synonyms;
   }
 
-  public void addHomotypicGroup(List<Name> synonyms) {
-    this.synonyms.add(synonyms);
+  public void addHomotypicGroup(HomotypicGroup group) {
+    this.synonyms.add(group);
   }
 
   @JsonIgnore
@@ -39,7 +39,7 @@ public class Synonymy {
 
   public int size() {
     return synonyms.stream()
-        .mapToInt(List::size)
+        .mapToInt(HomotypicGroup::size)
         .sum();
   }
 

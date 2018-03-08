@@ -185,7 +185,7 @@ public class Normalizer implements Runnable {
    * We need to be careful as the classification coming in first via the parentNameUsage(ID) terms
    * is variable and must not always include a rank.
    *
-   * The classification is not applied to basionymGroup!
+   * The classification is not applied to synonyms!
    */
   private void applyDenormedClassification() {
     LOG.info("Start processing higher denormalized classification ...");
@@ -258,7 +258,7 @@ public class Normalizer implements Runnable {
     if (!taxon.node.hasLabel(Labels.SYNONYM) && taxon.rank != null) {
       cl.setByRank(taxon.rank, null);
     }
-    // ignore genus and below for basionymGroup
+    // ignore genus and below for synonyms
     // http://dev.gbif.org/issues/browse/POR-2992
     if (taxon.node.hasLabel(Labels.SYNONYM)) {
       cl.setGenus(null);
@@ -364,7 +364,7 @@ public class Normalizer implements Runnable {
   }
 
   /**
-   * Sanitizes synonym relations relinking synonym of basionymGroup to make sure basionymGroup always point to a direct accepted taxon.
+   * Sanitizes synonym relations relinking synonym of synonyms to make sure synonyms always point to a direct accepted taxon.
    */
   private void relinkSynonymChains() {
     LOG.info("Relink synonym chains to single accepted");
@@ -398,8 +398,8 @@ public class Normalizer implements Runnable {
 
   /**
    * Sanitizes relations by preferring synonym relations over parent rels.
-   * (Re)move parent relationship for basionymGroup.
-   * If basionymGroup are parents of other taxa relinks relationship to the accepted
+   * (Re)move parent relationship for synonyms.
+   * If synonyms are parents of other taxa relinks relationship to the accepted
    * presence of both confuses subsequent imports, see http://dev.gbif.org/issues/browse/POR-2755
    */
   private void preferSynonymOverParentRel() {
@@ -430,7 +430,7 @@ public class Normalizer implements Runnable {
             addRemark(child, "Parent relation taken from synonym " + synonymName);
           }
         }
-        // remove parent rel for basionymGroup
+        // remove parent rel for synonyms
         for (Relationship pRel : syn.getRelationships(RelType.PARENT_OF, Direction.INCOMING)) {
           // before we delete the relation make sure the accepted nodes have a parent rel or is ROOT
           for (Node acc : accepted) {

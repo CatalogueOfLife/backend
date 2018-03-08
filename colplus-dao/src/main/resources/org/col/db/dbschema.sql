@@ -187,7 +187,7 @@ CREATE TABLE name (
   key serial PRIMARY KEY,
   id TEXT,
   dataset_key INTEGER REFERENCES dataset,
-  basionym_key INTEGER REFERENCES name,
+  homotypic_key INTEGER REFERENCES homotypic_group,
   scientific_name TEXT NOT NULL,
   rank rank NOT NULL,
   uninomial TEXT,
@@ -238,6 +238,11 @@ LANGUAGE plpgsql;
 CREATE TRIGGER name_trigger BEFORE INSERT OR UPDATE
   ON name FOR EACH ROW EXECUTE PROCEDURE name_doc_update();
 
+CREATE TABLE homotypic_group (
+  key serial PRIMARY KEY,
+  basionym_key INTEGER REFERENCES name,
+  dataset_key INTEGER NOT NULL REFERENCES dataset
+);
 
 CREATE TABLE name_act (
   key serial PRIMARY KEY,
@@ -349,8 +354,10 @@ CREATE index ON name (dataset_key);
 CREATE index ON name (rank);
 CREATE index ON name (status);
 CREATE index ON name (type);
-CREATE index ON name (basionym_key);
+CREATE index ON name (homotypic_key);
 CREATE index ON name USING GIN(issues);
+
+CREATE index ON homotypic_group (basionym_key) ;
 
 CREATE index ON name_act (name_key, type);
 CREATE index ON name_act (reference_key);
