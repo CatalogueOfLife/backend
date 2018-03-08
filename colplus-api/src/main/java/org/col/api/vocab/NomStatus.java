@@ -186,6 +186,15 @@ public enum NomStatus {
   MANUSCRIPT("manuscript name", "ms.", "manuscript name"),
 
   /**
+   * A misapplied name that contains a taxonomicNote that informs about the authority that misapplied the name.
+   * Should only be applied to synonyms.
+   *
+   * A misapplied name is a name used in a different (taxonomic) sense from that intended by the original author.
+   * It has been widely and persistently used for a taxon or taxa not including its type.
+   */
+  MISAPPLIED ("misapplied name", null, "misapplied name"),
+
+  /**
    * A name usage erroneously cited without a sec/sensu indication so it appears to be a published homonym with a different authority.
    * See https://en.wikipedia.org/wiki/Chresonym
    */
@@ -230,7 +239,7 @@ public enum NomStatus {
    * @return true if the name status indicates that it is validly published / available.
    */
   public boolean isAvailable() {
-    return this != CHRESONYM && this != MANUSCRIPT && this != NAKED && this != UNAVAILABLE;
+    return this != CHRESONYM && this != MANUSCRIPT && this != NAKED && this != UNAVAILABLE && this != MISAPPLIED;
   }
 
   /**
