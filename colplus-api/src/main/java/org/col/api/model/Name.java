@@ -1,8 +1,10 @@
 package org.col.api.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.StringUtils;
+import org.col.api.jackson.IsEmptyFilter;
 import org.col.api.vocab.Issue;
 import org.col.api.vocab.NomStatus;
 import org.col.api.vocab.Origin;
@@ -112,11 +114,13 @@ public class Name implements PrimaryEntity {
    * Authorship with years of the name, but excluding any basionym authorship. For binomials the
    * combination authors.
    */
+  @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = IsEmptyFilter.class)
   private Authorship combinationAuthorship = new Authorship();
 
   /**
    * Basionym authorship with years of the name
    */
+  @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = IsEmptyFilter.class)
   private Authorship basionymAuthorship = new Authorship();
 
   /**
