@@ -83,8 +83,11 @@ public class Normalizer implements Runnable {
     }
   }
 
+  /**
+   * Mostly checks for required attributes so that subsequent postgres imports do not fail.
+   */
   private void verify() {
-    for (NeoTaxon t : store.all()) {
+    store.all().forEach(t -> {
       boolean modified = false;
       String id;
       // is it a source with verbatim data?
@@ -135,7 +138,7 @@ public class Normalizer implements Runnable {
       if (modified) {
         store.update(t);
       }
-    }
+    });
   }
 
   private static <T> T require(T obj, String fieldName) {
@@ -150,7 +153,7 @@ public class Normalizer implements Runnable {
     return obj;
   }
 
-  private static void notEmpty(Collection<?> obj, String fieldName, String id) {
+  private static void requireNotEmpty(Collection<?> obj, String fieldName, String id) {
     if (obj.isEmpty()) {
       String msg = String.format("%s missing for record %s", fieldName, id == null ? " without ID" : id);
       throw new NormalizationFailedException.MissingDataException(msg);

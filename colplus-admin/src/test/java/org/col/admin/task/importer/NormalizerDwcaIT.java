@@ -23,6 +23,7 @@ import org.col.api.vocab.Gazetteer;
 import org.col.api.vocab.Language;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.NotFoundException;
@@ -33,10 +34,7 @@ import org.neo4j.helpers.collection.Iterables;
 import org.neo4j.helpers.collection.Iterators;
 
 import javax.annotation.Nullable;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.PrintWriter;
-import java.io.Writer;
+import java.io.*;
 import java.net.URI;
 import java.net.URL;
 import java.nio.file.Path;
@@ -61,17 +59,29 @@ public class NormalizerDwcaIT {
    * @return
    * @throws Exception
    */
-  private void normalizeDwca(int datasetKey) throws Exception {
+  private void normalize(int datasetKey) throws Exception {
     URL dwcaUrl = getClass().getResource("/dwca/"+datasetKey);
-    dwca = Paths.get(dwcaUrl.toURI());
+    normalize(Paths.get(dwcaUrl.toURI()));
+  }
 
-    store = NeoDbFactory.create(datasetKey, cfg);
+  private void normalize(URI url) throws Exception {
+    // download an decompress
+    ExternalSourceUtil.consumeSource(url, this::normalize);
+  }
 
-    Normalizer norm = new Normalizer(store, dwca, DataFormat.DWCA);
-    norm.run();
+  private void normalize(Path dwca) {
+    try {
+      store = NeoDbFactory.create(1, cfg);
 
-    // reopen
-    store = NeoDbFactory.open(datasetKey, cfg);
+      Normalizer norm = new Normalizer(store, dwca, DataFormat.DWCA);
+      norm.run();
+
+      // reopen
+      store = NeoDbFactory.open(1, cfg);
+
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Before
@@ -117,7 +127,7 @@ public class NormalizerDwcaIT {
 
   @Test
   public void testBdjCsv() throws Exception {
-    normalizeDwca(17);
+    normalize(17);
 
     try (Transaction tx = store.getNeo().beginTx()) {
       NeoTaxon t = byID("1099-sp16");
@@ -129,7 +139,7 @@ public class NormalizerDwcaIT {
 
   @Test
   public void testPublishedIn() throws Exception {
-    normalizeDwca(0);
+    normalize(0);
 
     for (Reference r : store.refList()) {
       System.out.println(r);
@@ -160,7 +170,7 @@ public class NormalizerDwcaIT {
 
   @Test
   public void testSupplementary() throws Exception {
-    normalizeDwca(24);
+    normalize(24);
 
     // verify results
     try (Transaction tx = store.getNeo().beginTx()) {
@@ -222,7 +232,7 @@ public class NormalizerDwcaIT {
 
   @Test
   public void testNeoIndices() throws Exception {
-    normalizeDwca(1);
+    normalize(1);
 
     Set<String> taxonIndices = Sets.newHashSet();
     taxonIndices.add(NeoProperties.ID);
@@ -247,7 +257,7 @@ public class NormalizerDwcaIT {
 
   @Test
   public void testBasionym() throws Exception {
-    normalizeDwca(1);
+    normalize(1);
 
     try (Transaction tx = store.getNeo().beginTx()) {
       NeoTaxon u1 = byID("1006");
@@ -280,7 +290,7 @@ public class NormalizerDwcaIT {
 
   @Test
   public void testProParte() throws Exception {
-    normalizeDwca(8);
+    normalize(8);
 
     try (Transaction tx = store.getNeo().beginTx()) {
       NeoTaxon syn = byID("1001");
@@ -295,6 +305,33 @@ public class NormalizerDwcaIT {
         assertEquals(expectedAccepted.remove(acc.getId()), acc.getName().getScientificName());
       }
       assertTrue(expectedAccepted.isEmpty());
+    }
+  }
+
+  @Test
+  @Ignore
+  public void testExternal() throws Exception {
+    normalize(URI.create("http://services.snsb.info/DTNtaxonlists/rest/v0.1/lists/DiversityTaxonNames_Fungi/1140/dwc"));
+    print("Diversity", GraphFormat.TEXT, false);
+  }
+
+  void print(String id, GraphFormat format, boolean file) throws Exception {
+    // dump graph as DOT file for debugging
+    File dotFile = new File("graphs/tree-dwca-"+id+"."+format.suffix);
+    Files.createParentDirs(dotFile);
+    Writer writer;
+    if (file) {
+      writer = new FileWriter(dotFile);
+    } else {
+      writer = new StringWriter();
+    }
+    PrinterUtils.printTree(store.getNeo(), writer, GraphFormat.DOT);
+    writer.close();
+
+    if (file) {
+      System.out.println("Wrote graph to "+dotFile.getAbsolutePath());
+    } else {
+      System.out.println(writer.toString());
     }
   }
 

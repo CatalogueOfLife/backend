@@ -317,7 +317,7 @@ CREATE TABLE distribution (
   dataset_key INTEGER NOT NULL REFERENCES dataset,
   taxon_key INTEGER NOT NULL REFERENCES taxon,
   area TEXT NOT NULL,
-  area_standard INTEGER NOT NULL,
+  gazetteer INTEGER NOT NULL,
   status INTEGER
 );
 

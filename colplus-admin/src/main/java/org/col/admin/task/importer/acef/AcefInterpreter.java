@@ -1,22 +1,17 @@
 package org.col.admin.task.importer.acef;
 
-import com.google.common.base.CharMatcher;
-import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
-import com.ibm.icu.text.Transliterator;
-import org.apache.commons.lang3.StringUtils;
 import org.col.admin.task.importer.InsertMetadata;
+import org.col.admin.task.importer.InterpreterBase;
 import org.col.admin.task.importer.neo.ReferenceStore;
 import org.col.admin.task.importer.neo.model.NeoTaxon;
 import org.col.admin.task.importer.neo.model.UnescapedVerbatimRecord;
-import org.col.api.exception.InvalidNameException;
 import org.col.api.model.*;
 import org.col.api.vocab.*;
 import org.col.parser.*;
 import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.dwc.terms.DwcTerm;
-import org.gbif.dwc.terms.Term;
 import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.ParsedName;
@@ -24,8 +19,6 @@ import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.URI;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -35,16 +28,11 @@ import static org.col.parser.SafeParser.parse;
 /**
  * Interprets a verbatim ACEF record and transforms it into a name, taxon and unique references.
  */
-public class AcefInterpreter {
+public class AcefInterpreter extends InterpreterBase {
   private static final Logger LOG = LoggerFactory.getLogger(AcefInterpreter.class);
-  private static final Splitter MULTIVAL = Splitter.on(CharMatcher.anyOf(";|,")).trimResults();
-  private static final Transliterator transLatin = Transliterator.getInstance("Any-Latin");
-  private static final Transliterator transAscii = Transliterator.getInstance("Latin-ASCII");
-
-  private final ReferenceStore refStore;
 
   public AcefInterpreter(InsertMetadata metadata, ReferenceStore refStore) {
-    this.refStore = refStore;
+    super(refStore);
     // turn on normalization of flat classification
     metadata.setDenormedClassificationMapped(true);
   }
@@ -100,36 +88,14 @@ public class AcefInterpreter {
 
   void interpretVernaculars(NeoTaxon t) {
     for (TermRecord rec : t.verbatim.getExtensionRecords(AcefTerm.CommonNames)) {
-      if (rec.hasTerm(AcefTerm.CommonName)) {
-        VernacularName vn = new VernacularName();
-        vn.setName(rec.get(AcefTerm.CommonName));
-        vn.setLatin(latinName(t, vn.getName(), rec));
-        vn.setLanguage(SafeParser.parse(LanguageParser.PARSER, rec.get(AcefTerm.Language)).orNull());
-        vn.setCountry(SafeParser.parse(CountryParser.PARSER, rec.get(AcefTerm.Country)).orNull());
-        addReferences(vn, rec, t.issues);
-        t.vernacularNames.add(vn);
-      } else {
-        // vernacular names required
-        t.addIssue(Issue.VERNACULAR_NAME_INVALID);
-      }
+      VernacularName vn = new VernacularName();
+      vn.setName(rec.get(AcefTerm.CommonName));
+      vn.setLanguage(SafeParser.parse(LanguageParser.PARSER, rec.get(AcefTerm.Language)).orNull());
+      vn.setCountry(SafeParser.parse(CountryParser.PARSER, rec.get(AcefTerm.Country)).orNull());
+      vn.setLatin(rec.get(AcefTerm.TransliteratedName));
+      addReferences(vn, rec, t.issues);
+      addAndTransliterate(t, vn);
     }
-  }
-
-  static String latinName(String name) {
-    return transLatin.transform(name);
-  }
-
-  static String asciiName(String name) {
-    return transAscii.transform(latinName(name));
-  }
-
-  private String latinName(NeoTaxon t, String name, TermRecord rec) {
-    String latin = rec.get(AcefTerm.TransliteratedName);
-    if (StringUtils.isBlank(latin) && !StringUtils.isBlank(name)) {
-      latin = latinName(name);
-      t.addIssue(Issue.VERNACULAR_NAME_TRANSLITERATED);
-    }
-    return latin;
   }
 
   void interpretDistributions(NeoTaxon t) {
@@ -189,18 +155,6 @@ public class AcefInterpreter {
     }
   }
 
-  private static LocalDate date(NeoTaxon t, Issue invalidIssue, Term term) {
-    return parse(DateParser.PARSER, t.verbatim.getTerm(term)).orNull(invalidIssue, t.issues);
-  }
-
-  private static URI uri(NeoTaxon t, Issue invalidIssue, Term ... term) {
-    return parse(UriParser.PARSER, t.verbatim.getFirst(term)).orNull(invalidIssue, t.issues);
-  }
-
-  private static Boolean bool(NeoTaxon t, Issue invalidIssue, Term ... term) {
-    return parse(BooleanParser.PARSER, t.verbatim.getFirst(term)).orNull(invalidIssue, t.issues);
-  }
-
   private Classification interpretClassification(VerbatimRecord v, boolean isSynonym) {
     Classification cl = new Classification();
     cl.setKingdom(v.getTerm(AcefTerm.Kingdom));
@@ -232,36 +186,6 @@ public class AcefInterpreter {
       acts.add(act);
     }
     return acts;
-  }
-
-  private Reference lookupReferenceTitleID(String id, String title) {
-    // first try by id
-    Reference r = refStore.refById(id);
-    if (r == null && title != null) {
-      // then try by title
-      r = refStore.refByTitle(title);
-      if (r == null) {
-        // lastly create a new reference
-        r = Reference.create();
-        r.setId(id);
-        r.setTitle(title);
-        refStore.put(r);
-      }
-    }
-    return r;
-  }
-
-  static void updateScientificName(String id, Name n) {
-    try {
-      n.updateScientificName();
-      if (!n.isConsistent()) {
-        n.addIssue(Issue.INCONSISTENT_NAME);
-        LOG.info("Inconsistent name {}: {}", id, n.toStringComplete());
-      }
-    } catch (InvalidNameException e) {
-      LOG.warn("Invalid atomised name found: {}", n);
-      n.addIssue(Issue.INCONSISTENT_NAME);
-    }
   }
 
   private Name interpretName(VerbatimRecord v) {

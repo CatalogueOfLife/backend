@@ -26,6 +26,7 @@ import org.mapdb.Serializer;
 import org.neo4j.graphdb.*;
 import org.neo4j.graphdb.factory.GraphDatabaseBuilder;
 import org.neo4j.helpers.collection.Iterators;
+import org.neo4j.kernel.impl.core.NodeProxy;
 import org.neo4j.unsafe.batchinsert.BatchInserter;
 import org.neo4j.unsafe.batchinsert.BatchInserters;
 import org.slf4j.Logger;
@@ -41,6 +42,7 @@ import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Stream;
 
 /**
  * A persistence mechanism for storing core taxonomy & names properties and relations in an embedded
@@ -466,8 +468,18 @@ public class NeoDb implements ReferenceStore {
     return idOrTitle.replaceAll("[^\\w]+", "").toLowerCase();
   }
 
-  public Iterable<NeoTaxon> all() {
-    return taxa.values();
+  /**
+   * Return all NeoTaxa incl a node property to work with the nodeId.
+   * Note though that it is not a real neo4j node but just a dummy that contains the id!!!
+   * No other neo operations can be done on this node - it would need to be retrieved from the store
+   * individually.
+   */
+  public Stream<NeoTaxon> all() {
+    return taxa.entrySet().stream().map(e -> {
+      NeoTaxon t = e.getValue();
+      t.node = new NodeProxy(null, e.getKey());
+      return t;
+    });
   }
 
   @Override

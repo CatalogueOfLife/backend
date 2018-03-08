@@ -42,7 +42,7 @@ import static org.junit.Assert.assertFalse;
  */
 @RunWith(Parameterized.class)
 @Ignore
-public class NormalizerTreeIT {
+public class  NormalizerTreeIT {
   final static int MAX_ACEF_ID = 4;
   final static int MAX_DWCA_ID = 23;
 

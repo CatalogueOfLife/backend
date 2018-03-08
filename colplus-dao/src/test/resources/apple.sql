@@ -28,9 +28,9 @@ INSERT INTO name_act (key, dataset_key, type, status, name_key, related_name_key
 INSERT INTO name_act(key, dataset_key, type, name_key, reference_key, reference_page) VALUES (2, 1, 0, 1, 1, '712');
 ALTER SEQUENCE name_act_key_seq RESTART WITH 1000;
 
-INSERT INTO distribution(key, dataset_key, taxon_key, area, area_standard) VALUES (1, 1, 1, 'Berlin', 6);
-INSERT INTO distribution(key, dataset_key, taxon_key, area, area_standard) VALUES (2, 1, 1, 'Leiden', 6);
-INSERT INTO distribution(key, dataset_key, taxon_key, area, area_standard) VALUES (3, 1, 2, 'New York', 6);
+INSERT INTO distribution(key, dataset_key, taxon_key, area, gazetteer) VALUES (1, 1, 1, 'Berlin', 6);
+INSERT INTO distribution(key, dataset_key, taxon_key, area, gazetteer) VALUES (2, 1, 1, 'Leiden', 6);
+INSERT INTO distribution(key, dataset_key, taxon_key, area, gazetteer) VALUES (3, 1, 2, 'New York', 6);
 ALTER SEQUENCE distribution_key_seq RESTART WITH 1000;
 
 

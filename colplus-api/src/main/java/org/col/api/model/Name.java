@@ -539,50 +539,6 @@ public class Name implements PrimaryEntity {
   }
 
   /**
-   * Validates consistency of name properties. This method checks if the given rank matches
-   * populated properties and available properties make sense together.
-   */
-  @JsonIgnore
-  public boolean isConsistent() {
-    if (uninomial != null && (genus != null || infragenericEpithet != null
-        || specificEpithet != null || infraspecificEpithet != null)) {
-      return false;
-
-    } else if (genus == null && (specificEpithet != null || infragenericEpithet != null)) {
-      return false;
-
-    } else if (specificEpithet == null && infraspecificEpithet != null) {
-      return false;
-
-    }
-    // verify ranks
-    if (rank.notOtherOrUnranked()) {
-      if (rank.isGenusOrSuprageneric()) {
-        if (genus != null || uninomial == null)
-          return false;
-
-      } else if (rank.isInfrageneric() && rank.isSupraspecific()) {
-        if (infragenericEpithet == null)
-          return false;
-        if (specificEpithet != null || infraspecificEpithet != null)
-          return false;
-
-      } else if (rank.isSpeciesOrBelow()) {
-        if (specificEpithet == null)
-          return false;
-        if (!rank.isInfraspecific() && infraspecificEpithet != null)
-          return false;
-      }
-
-      if (rank.isInfraspecific()) {
-        if (infraspecificEpithet == null)
-          return false;
-      }
-    }
-    return true;
-  }
-
-  /**
    * @return true if there is any parsed content
    */
   @JsonProperty(access = JsonProperty.Access.READ_ONLY)

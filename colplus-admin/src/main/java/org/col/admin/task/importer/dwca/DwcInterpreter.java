@@ -1,20 +1,17 @@
 package org.col.admin.task.importer.dwca;
 
-import com.google.common.base.CharMatcher;
-import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import org.col.admin.task.importer.InsertMetadata;
+import org.col.admin.task.importer.InterpreterBase;
 import org.col.admin.task.importer.neo.ReferenceStore;
 import org.col.admin.task.importer.neo.model.NeoTaxon;
 import org.col.admin.task.importer.neo.model.UnescapedVerbatimRecord;
-import org.col.api.exception.InvalidNameException;
 import org.col.api.model.*;
 import org.col.api.vocab.*;
 import org.col.parser.*;
 import org.gbif.dwc.terms.DcTerm;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.GbifTerm;
-import org.gbif.dwc.terms.Term;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.ParsedName;
 import org.gbif.nameparser.api.Rank;
@@ -29,26 +26,14 @@ import java.util.Set;
 /**
  * Interprets a verbatim record and transforms it into a name, taxon and unique references.
  */
-public class DwcInterpreter {
+public class DwcInterpreter extends InterpreterBase {
   private static final Logger LOG = LoggerFactory.getLogger(DwcInterpreter.class);
-  private static final Splitter MULTIVAL = Splitter.on(CharMatcher.anyOf(";|,")).trimResults();
 
   private final InsertMetadata insertMetadata;
-  private final ReferenceStore refStore;
 
   public DwcInterpreter(InsertMetadata insertMetadata, ReferenceStore refStore) {
+    super(refStore);
     this.insertMetadata = insertMetadata;
-    this.refStore = refStore;
-  }
-
-  private static String first(VerbatimRecord v, Term... terms) {
-    for (Term t : terms) {
-      // verbatim data is cleaned already and all empty strings are removed from the terms map
-      if (v.hasTerm(t)) {
-        return v.getTerm(t);
-      }
-    }
-    return null;
   }
 
   public NeoTaxon interpret(UnescapedVerbatimRecord v) {
@@ -91,23 +76,6 @@ public class DwcInterpreter {
       acts.add(act);
     }
     return acts;
-  }
-
-  private Reference lookupReferenceTitleID(String id, String title) {
-    // first try by id
-    Reference r = refStore.refById(id);
-    if (r == null) {
-      // then try by title
-      r = refStore.refByTitle(title);
-      if (r == null) {
-        // lastly create a new reference
-        r = Reference.create();
-        r.setId(id);
-        r.setTitle(title);
-        refStore.put(r);
-      }
-    }
-    return r;
   }
 
   void interpretBibliography(NeoTaxon t) {
@@ -173,14 +141,12 @@ public class DwcInterpreter {
   void interpretVernacularNames(NeoTaxon t) {
     if (t.verbatim.hasExtension(GbifTerm.VernacularName)) {
       for (TermRecord rec : t.verbatim.getExtensionRecords(GbifTerm.VernacularName)) {
-        if (rec.hasTerm(DwcTerm.vernacularName)) {
-          VernacularName vn = new VernacularName();
-          vn.setName(rec.get(DwcTerm.vernacularName));
-          vn.setLanguage(SafeParser.parse(LanguageParser.PARSER, rec.get(DcTerm.language)).orNull());
-          vn.setCountry(SafeParser.parse(CountryParser.PARSER, rec.getFirst(DwcTerm.countryCode, DwcTerm.country)).orNull());
-          addReferences(vn, rec);
-          t.vernacularNames.add(vn);
-        }
+        VernacularName vn = new VernacularName();
+        vn.setName(rec.get(DwcTerm.vernacularName));
+        vn.setLanguage(SafeParser.parse(LanguageParser.PARSER, rec.get(DcTerm.language)).orNull());
+        vn.setCountry(SafeParser.parse(CountryParser.PARSER, rec.getFirst(DwcTerm.countryCode, DwcTerm.country)).orNull());
+        addReferences(vn, rec);
+        addAndTransliterate(t, vn);
       }
     }
   }
@@ -270,10 +236,8 @@ public class DwcInterpreter {
     n.setRemarks(v.getTerm(DwcTerm.nomenclaturalStatus));
     n.setFossil(null);
 
-    if (!n.isConsistent()) {
-      n.addIssue(Issue.INCONSISTENT_NAME);
-      LOG.info("Inconsistent name {}: {}", v.getId(), n);
-    }
+
+    updateScientificName(v.getId(), n);
 
     return n;
   }
@@ -286,12 +250,6 @@ public class DwcInterpreter {
     n.setSpecificEpithet(v.getTerm(DwcTerm.specificEpithet));
     n.setInfraspecificEpithet(v.getTerm(DwcTerm.infraspecificEpithet));
     n.setType(NameType.SCIENTIFIC);
-    try {
-      n.updateScientificName();
-    } catch (InvalidNameException e) {
-      LOG.warn("Invalid atomised name found: {}", n);
-      n.addIssue(Issue.INCONSISTENT_NAME);
-    }
     return n;
   }
 }

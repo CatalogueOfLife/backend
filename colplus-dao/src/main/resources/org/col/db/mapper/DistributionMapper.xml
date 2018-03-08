@@ -8,7 +8,7 @@
     d.key,
     d.taxon_key,
     d.area,
-    d.area_standard,
+    d.gazetteer,
     d.status,
     dr.reference_key
   </sql>
@@ -17,7 +17,7 @@
     dataset_key,
     taxon_key,
     area,
-    area_standard,
+    gazetteer,
     status
   </sql>
 
