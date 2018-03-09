@@ -231,7 +231,7 @@ public class DwcaRelationInserter implements NeoDb.NodeBatchProcessor {
   @Override
   public void commitBatch(int counter) {
     if (Thread.interrupted()) {
-      LOG.warn("Normalizer interrupted, exit dataset {} early with incomplete parsing", store.getDataset().isPresent() ? store.getDataset().get().getKey() : "?");
+      LOG.warn("Normalizer interrupted, exit dataset {} early with incomplete parsing", store.getDataset().getKey());
       throw new NormalizationFailedException("Normalizer interrupted");
     }
     LOG.debug("Processed relations for {} nodes", counter);

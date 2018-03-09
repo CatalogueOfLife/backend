@@ -1,0 +1,1 @@
+"ID","AcceptedTaxonID","Genus","SubGenusName","SpeciesEpithet","AuthorString","InfraSpeciesEpithet","InfraSpeciesMarker","InfraSpeciesAuthorString","GSDNameStatus","Sp2000NameStatus","GSDNameGUID"

@@ -48,7 +48,7 @@ public class DwcaInserter extends NeoInserter {
   public void batchInsert() throws NormalizationFailedException {
     try {
       initReader();
-      inter = new DwcInterpreter(meta, store);
+      inter = new DwcInterpreter(store.getDataset(), meta, store);
 
       insertReferences();
       insertTaxaAndNames();

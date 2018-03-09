@@ -94,7 +94,8 @@ public class ImportJob implements Callable<DatasetImport> {
 
         LOG.info("Normalizing {}!", datasetKey);
         store = NeoDbFactory.create(datasetKey, cfg.normalizer);
-        new Normalizer(store, dwcaDir, dataset.getDataFormat()).run();
+        store.put(dataset);
+        new Normalizer(store, dwcaDir).run();
 
         LOG.info("Writing {} to Postgres!", datasetKey);
         store = NeoDbFactory.open(datasetKey, cfg.normalizer);

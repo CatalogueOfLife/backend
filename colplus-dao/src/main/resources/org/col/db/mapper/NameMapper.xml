@@ -221,21 +221,19 @@
 
     <select id="countSearchResults" parameterType="map" resultType="Integer">
         SELECT COUNT(*)
-        FROM
-        <include refid="FROM" />
-        WHERE
-        <include refid="SEARCH_WHERE" />
+        FROM name n
+        WHERE <include refid="SEARCH_WHERE" />
     </select>
 
     <select id="search" parameterType="map" resultMap="nameSearchResultMap">
-        SELECT
-        <include refid="SEARCH_SELECT" />
-        FROM
-        <include refid="SEARCH_FROM" />
-        WHERE
-        <include refid="SEARCH_WHERE" />
+        SELECT <include refid="SEARCH_SELECT" />
+        FROM <include refid="SEARCH_FROM" />
+        WHERE <include refid="SEARCH_WHERE" />
         <choose>
-            <when test="nameSearch.sortBy == null or nameSearch.sortBy.toString() == 'NAME'">
+            <when test="nameSearch.sortBy.toString() == 'KEY'">
+                ORDER BY n.key
+            </when>
+            <when test="nameSearch.sortBy.toString() == 'NAME'">
                 ORDER BY n.scientific_name ASC
             </when>
             <otherwise>

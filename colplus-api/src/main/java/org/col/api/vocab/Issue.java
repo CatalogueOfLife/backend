@@ -38,6 +38,12 @@ public enum Issue {
   INCONSISTENT_NAME,
 
   /**
+   * The parsed scientific name string results in a different name
+   * then was given as already atomized parts.
+   */
+  PARSED_NAME_DIFFERS,
+
+  /**
    * The name parts contain unusual characters.
    */
   UNUSUAL_CHARACTERS,

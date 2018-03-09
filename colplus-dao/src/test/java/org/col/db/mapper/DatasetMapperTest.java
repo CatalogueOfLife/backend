@@ -6,6 +6,7 @@ import org.col.api.model.Page;
 import org.col.api.RandomUtils;
 import org.col.api.vocab.DataFormat;
 import org.col.api.vocab.License;
+import org.gbif.nameparser.api.NomCode;
 import org.javers.core.Javers;
 import org.javers.core.JaversBuilder;
 import org.javers.core.diff.Diff;
@@ -44,6 +45,7 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
 		d.setVersion("v123");
 		d.setHomepage(URI.create("https://www.gbif.org/dataset/" + d.getGbifKey()));
 		d.setNotes("my notes");
+		d.setCode(NomCode.ZOOLOGICAL);
 		d.setOrganisation("my org");
 		return d;
 	}

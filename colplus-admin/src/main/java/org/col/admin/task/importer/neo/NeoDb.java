@@ -38,7 +38,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -227,8 +226,8 @@ public class NeoDb implements ReferenceStore {
     return names;
   }
 
-  public Optional<Dataset> getDataset() {
-    return Optional.ofNullable(dataset.get());
+  public Dataset getDataset() {
+    return dataset.get();
   }
 
   /**
@@ -430,7 +429,9 @@ public class NeoDb implements ReferenceStore {
 
     // use neo4j node ids as keys for both name and taxon
     t.taxon.setKey((int)nodeId);
-    t.name.setKey(t.taxon.getKey());
+    if (t.name != null) {
+      t.name.setKey(t.taxon.getKey());
+    }
 
     return t;
   }
@@ -506,10 +507,11 @@ public class NeoDb implements ReferenceStore {
   }
 
   public Dataset put(Dataset d) {
-    // keep existing dataset key
+    // keep existing dataset key & settings
     Dataset old = dataset.get();
     if (old != null) {
       d.setKey(old.getKey());
+      d.setCode(old.getCode());
     }
     dataset.set(d);
     return d;

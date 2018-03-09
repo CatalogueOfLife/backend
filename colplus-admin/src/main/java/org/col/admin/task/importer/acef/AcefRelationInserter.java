@@ -4,6 +4,7 @@ import org.col.admin.task.importer.NormalizationFailedException;
 import org.col.admin.task.importer.neo.NeoDb;
 import org.col.admin.task.importer.neo.model.NeoProperties;
 import org.col.admin.task.importer.neo.model.NeoTaxon;
+import org.col.api.model.VerbatimRecord;
 import org.col.api.vocab.Issue;
 import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.dwc.terms.Term;
@@ -39,16 +40,17 @@ public class AcefRelationInserter implements NeoDb.NodeBatchProcessor {
         Node p = lookupByID(AcefTerm.ParentSpeciesID, t, Issue.PARENT_ID_INVALID);
         if (p != null) {
           store.assignParent(p, t.node);
-          // update infraspecific name with species
+          // finally we have all pieces to also interpret infraspecific names
           NeoTaxon sp = store.get(p);
-          t.name.setGenus(sp.name.getGenus());
-          t.name.setInfragenericEpithet(sp.name.getInfragenericEpithet());
-          t.name.setSpecificEpithet(sp.name.getSpecificEpithet());
+          VerbatimRecord v = t.verbatim;
+          t.name = inter.interpretName(v.getId(), v.getTerm(AcefTerm.InfraSpeciesMarker), null, v.getTerm(AcefTerm.InfraSpeciesAuthorString),
+              sp.name.getGenus(), sp.name.getInfragenericEpithet(), sp.name.getSpecificEpithet(), v.getTerm(AcefTerm.InfraSpeciesEpithet),
+              null, v.getTerm(AcefTerm.GSDNameStatus), null, null);
+          if (!t.name.getRank().isInfraspecific()) {
+            LOG.info("Expected infraspecific taxon but found {} for name {}: {}", t.name.getRank(), v.getId(), t.name.getScientificName());
+            t.addIssue(Issue.INCONSISTENT_NAME);
+          }
         }
-      }
-      if (t.name.getScientificName() == null) {
-        // this should be an infraspecific name not yet updated in AcefInserter, do it here!
-        inter.updateScientificName(t.verbatim.getId(), t.name);
       }
       // interpret distributions
       inter.interpretDistributions(t);
@@ -85,7 +87,7 @@ public class AcefRelationInserter implements NeoDb.NodeBatchProcessor {
   @Override
   public void commitBatch(int counter) {
     if (Thread.interrupted()) {
-      LOG.warn("Normalizer interrupted, exit dataset {} early with incomplete parsing", store.getDataset().isPresent() ? store.getDataset().get().getKey() : "?");
+      LOG.warn("Normalizer interrupted, exit dataset {} early with incomplete parsing", store.getDataset().getKey());
       throw new NormalizationFailedException("Normalizer interrupted");
     }
     LOG.debug("Processed relations for {} nodes", counter);

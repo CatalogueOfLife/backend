@@ -108,6 +108,7 @@ CREATE TABLE dataset (
   data_format INTEGER,
   data_access TEXT,
   import_frequency INTEGER,
+  code INTEGER,
   notes text,
   created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),

@@ -1,28 +1,32 @@
 package org.col.admin.task.importer;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
 import com.ibm.icu.text.Transliterator;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.col.admin.task.importer.neo.ReferenceStore;
 import org.col.admin.task.importer.neo.model.NeoTaxon;
 import org.col.api.exception.InvalidNameException;
+import org.col.api.model.Dataset;
 import org.col.api.model.Name;
 import org.col.api.model.Reference;
 import org.col.api.model.VernacularName;
 import org.col.api.vocab.Issue;
-import org.col.parser.BooleanParser;
-import org.col.parser.DateParser;
-import org.col.parser.UriParser;
+import org.col.api.vocab.Origin;
+import org.col.parser.*;
 import org.gbif.dwc.terms.Term;
 import org.gbif.nameparser.api.NameType;
+import org.gbif.nameparser.api.ParsedName;
 import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.time.LocalDate;
+import java.util.EnumSet;
+import java.util.Set;
 
 import static org.col.parser.SafeParser.parse;
 
@@ -34,10 +38,11 @@ public class InterpreterBase {
   protected static final Splitter MULTIVAL = Splitter.on(CharMatcher.anyOf(";|,")).trimResults();
   private static final Transliterator transLatin = Transliterator.getInstance("Any-Latin");
   private static final Transliterator transAscii = Transliterator.getInstance("Latin-ASCII");
-
+  protected final Dataset dataset;
   protected final ReferenceStore refStore;
 
-  public InterpreterBase(ReferenceStore refStore) {
+  public InterpreterBase(Dataset dataset, ReferenceStore refStore) {
+    this.dataset = dataset;
     this.refStore = refStore;
   }
 
@@ -96,82 +101,99 @@ public class InterpreterBase {
     return r;
   }
 
-  public void updateScientificName(String id, Name n) {
+  private boolean equal(Name n1, Name n2) {
+    return true;
+  }
+
+  public Name interpretName(String id, String vrank, String sciname, String authorship,
+                            String genus, String infraGenus, String species, String infraspecies,
+                            String nomCode, String nomStatus, String link, String remarks
+  ) {
+    final Set<Issue> issues = EnumSet.noneOf(Issue.class);
+    final boolean isAtomized = ObjectUtils.anyNotNull(genus, infraGenus, species, infraspecies);
+
+    Name n;
+
+    Name atom = new Name();
+    atom.setType(NameType.SCIENTIFIC);
+    atom.setGenus(genus);
+    atom.setInfragenericEpithet(infraGenus);
+    atom.setSpecificEpithet(species);
+    atom.setInfraspecificEpithet(infraspecies);
+
+    // parse rank
+    Rank rank = SafeParser.parse(RankParser.PARSER, vrank).orElse(Rank.UNRANKED, Issue.RANK_INVALID, issues);
+    atom.setRank(rank);
+
+    // we can get the scientific name in various ways.
+    // we parse all names from the scientificName + optional authorship
+    // or use the atomized parts which we also use to validate the parsing result.
+    if (sciname != null) {
+      n = NameParser.PARSER.parse(sciname, rank).get();
+      // try to add an authorship if not yet there
+      if (!Strings.isNullOrEmpty(authorship)) {
+        ParsedName pnAuthorship = NameParser.PARSER.parseAuthorship(authorship).orElseGet(()-> {
+          LOG.warn("Unparsable authorship {}", authorship);
+          n.addIssue(Issue.UNPARSABLE_AUTHORSHIP);
+          // add the full, unparsed authorship in this case to not lose it
+          ParsedName pn = new ParsedName();
+          pn.getCombinationAuthorship().getAuthors().add(authorship);
+          return pn;
+        });
+
+        if (n.hasAuthorship()) {
+          // we did already parse an authorship from the scientificName string.
+          // Does it match up?
+          if (!n.authorshipComplete().equalsIgnoreCase(pnAuthorship.authorshipComplete())){
+            n.addIssue(Issue.INCONSISTENT_AUTHORSHIP);
+            LOG.warn("Different authorship found in dwc:scientificName=[{}] and dwc:scientificNameAuthorship=[{}]",
+                n.authorshipComplete(),
+                pnAuthorship.authorshipComplete()
+            );
+          }
+        } else {
+          n.setCombinationAuthorship(pnAuthorship.getCombinationAuthorship());
+          n.setSanctioningAuthor(pnAuthorship.getSanctioningAuthor());
+          n.setBasionymAuthorship(pnAuthorship.getBasionymAuthorship());
+        }
+      }
+
+    } else if (!isAtomized){
+      LOG.warn("No name given for {}", id);
+      return null;
+
+    } else {
+      // parse the reconstructed name with authorship
+      // cant use the atomized name just like that cause we would miss name type detection (virus, hybrid, placeholder, garbage)
+      n = NameParser.PARSER.parse(atom.canonicalNameComplete() + " " + authorship, rank).get();
+    }
+
+    // common basics
+    n.setId(id);
+    n.setOrigin(Origin.SOURCE);
+    n.setSourceUrl(SafeParser.parse(UriParser.PARSER, link).orNull());
+    n.setStatus(SafeParser.parse(NomStatusParser.PARSER, nomStatus).orElse(null, Issue.NOMENCLATURAL_STATUS_INVALID, n.getIssues()));
+    // applies default dataset code if we cannot find or parse any
+    // Always make sure this happens BEFORE we update the canonical scientific name
+    n.setCode(SafeParser.parse(NomCodeParser.PARSER, nomCode).orElse(dataset.getCode(), Issue.NOMENCLATURAL_CODE_INVALID, n.getIssues()));
+    n.setRemarks(remarks);
+
+    // assign best rank
+    if (rank.notOtherOrUnranked() || n.getRank() == null) {
+      //TODO: check ACEF ranks...
+      n.setRank(rank);
+    }
+
+    // finally update the scientificName with the canonical form if we can
     try {
       n.updateScientificName();
-      if (isInconsistent(id, n)) {
-        n.addIssue(Issue.INCONSISTENT_NAME);
-      }
     } catch (InvalidNameException e) {
       LOG.warn("Invalid atomised name found: {}", n);
       n.addIssue(Issue.INCONSISTENT_NAME);
     }
-  }
+    n.getIssues().addAll(issues);
 
-
-  /**
-   * Validates consistency of name properties. This method checks if the given rank matches
-   * populated properties and available properties make sense together.
-   */
-  @VisibleForTesting
-  protected static boolean isInconsistent(String id, Name n) {
-    // only check for type scientific
-    if (n.getType() == NameType.SCIENTIFIC) {
-      final Rank rank = n.getRank();
-      if (n.getUninomial() != null && (n.getGenus() != null || n.getInfragenericEpithet() != null
-          || n.getSpecificEpithet() != null || n.getInfraspecificEpithet() != null)) {
-        LOG.info("Uninomial with further epithets in name {}: {}", id, n.toStringComplete());
-        return true;
-
-      } else if (n.getGenus() == null && (n.getSpecificEpithet() != null || n.getInfragenericEpithet() != null)) {
-        LOG.info("Missing genus in name {}: {}", id, n.toStringComplete());
-        return true;
-
-      } else if (n.getSpecificEpithet() == null && n.getInfraspecificEpithet() != null) {
-        LOG.info("Missing specific epither in infraspecific name {}: {}", id, n.toStringComplete());
-        return true;
-      }
-
-      // verify ranks
-      if (rank.notOtherOrUnranked()) {
-        if (rank.isGenusOrSuprageneric()) {
-          if (n.getGenus() != null || n.getUninomial() == null) {
-            LOG.info("Missing genus or uninomial for {} {}: {}", n.getRank(), id, n.toStringComplete());
-            return true;
-          }
-
-        } else if (rank.isInfrageneric() && rank.isSupraspecific()) {
-          if (n.getInfragenericEpithet() == null) {
-            LOG.info("Missing infrageneric epithet for {} {}: {}", n.getRank(), id, n.toStringComplete());
-            return true;
-          }
-
-          if (n.getSpecificEpithet() != null || n.getInfraspecificEpithet() != null) {
-            LOG.info("Species or infraspecific epithet for {} {}: {}", n.getRank(), id, n.toStringComplete());
-            return true;
-          }
-
-        } else if (rank.isSpeciesOrBelow()) {
-          if (n.getSpecificEpithet() == null) {
-            LOG.info("Missing specific epithet for {} {}: {}", n.getRank(), id, n.toStringComplete());
-            return true;
-          }
-
-          if (!rank.isInfraspecific() && n.getInfraspecificEpithet() != null) {
-            LOG.info("Infraspecific epithet found for {} {}: {}", n.getRank(), id, n.toStringComplete());
-            return true;
-          }
-        }
-
-        if (rank.isInfraspecific()) {
-          if (n.getInfraspecificEpithet() == null) {
-            LOG.info("Missing infraspecific epithet for {} {}: {}", n.getRank(), id, n.toStringComplete());
-            return true;
-          }
-        }
-      }
-    }
-    return false;
+    return n;
   }
 
 }

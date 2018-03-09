@@ -10,9 +10,10 @@ import javax.ws.rs.QueryParam;
 
 public class NameSearch {
 
-	public static enum SortBy {
+  public static enum SortBy {
 		RELEVANCE,
-		NAME
+		NAME,
+    KEY
 	}
 
 	@QueryParam("q")
@@ -40,7 +41,7 @@ public class NameSearch {
 	private NameType type;
 
 	@QueryParam("sortBy")
-	private SortBy sortBy;
+	private SortBy sortBy = SortBy.NAME;
 
 	public String getQ() {
 		return q;
@@ -113,5 +114,6 @@ public class NameSearch {
 	public void setSortBy(SortBy sortBy) {
 		this.sortBy = sortBy;
 	}
+
 
 }

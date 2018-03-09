@@ -44,7 +44,7 @@ public class PgImport implements Runnable {
 
 	public PgImport(int datasetKey, NeoDb store, SqlSessionFactory sessionFactory,
                   ImporterConfig cfg) {
-		this.dataset = store.getDataset().orElse(new Dataset());
+		this.dataset = store.getDataset();
 		this.dataset.setKey(datasetKey);
 		this.store = store;
 		this.batchSize = cfg.batchSize;

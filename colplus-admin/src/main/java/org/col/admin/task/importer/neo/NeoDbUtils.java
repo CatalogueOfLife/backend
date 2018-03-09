@@ -49,24 +49,7 @@ public class NeoDbUtils {
     }
   }
 
-  static <T> T readEnum(Node n, String property, Class<T> vocab, T defaultValue) {
-    Object val = n.getProperty(property, null);
-    if (val != null) {
-      int idx = (Integer) val;
-      return (T) vocab.getEnumConstants()[idx];
-    }
-    return defaultValue;
-  }
-
-  static void storeEnum(Node n, String property, Enum value) {
-    if (value == null) {
-      n.removeProperty(property);
-    } else {
-      n.setProperty(property, value.ordinal());
-    }
-  }
-
-  public static Map<String, Object> neo4jProps(NeoTaxon tax) {
+  static Map<String, Object> neo4jProps(NeoTaxon tax) {
     Map<String, Object> props = Maps.newHashMap();
     putIfNotNull(props, NeoProperties.ID, tax.getID());
     putIfNotNull(props, NeoProperties.TAXON_ID, tax.getTaxonID());

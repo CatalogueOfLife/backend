@@ -3,6 +3,7 @@ package org.col.api.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.col.api.jackson.IsEmptyFilter;
 import org.col.api.vocab.Issue;
@@ -14,6 +15,7 @@ import org.gbif.nameparser.util.NameFormatter;
 import javax.annotation.Nonnull;
 import java.net.URI;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -558,6 +560,17 @@ public class Name implements PrimaryEntity {
   @JsonIgnore
   public boolean isEmpty() {
     return scientificName == null && !isParsed();
+  }
+
+  /**
+   * Lists all non empty atomized name parts for parsed names.
+   * Cultivar epithets, authorship and strains are excluded.
+   * @return all non null name parts
+   */
+  public List<String> nameParts() {
+    List<String> parts = Lists.newArrayList(uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet);
+    parts.removeIf(Objects::isNull);
+    return parts;
   }
 
   /**

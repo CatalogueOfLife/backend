@@ -1,6 +1,5 @@
 package org.col.admin.task.importer.acef;
 
-import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import org.col.admin.task.importer.InsertMetadata;
 import org.col.admin.task.importer.InterpreterBase;
@@ -12,15 +11,11 @@ import org.col.api.vocab.*;
 import org.col.parser.*;
 import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.dwc.terms.DwcTerm;
-import org.gbif.nameparser.api.Authorship;
-import org.gbif.nameparser.api.NameType;
-import org.gbif.nameparser.api.ParsedName;
 import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 import static org.col.parser.SafeParser.parse;
@@ -31,19 +26,18 @@ import static org.col.parser.SafeParser.parse;
 public class AcefInterpreter extends InterpreterBase {
   private static final Logger LOG = LoggerFactory.getLogger(AcefInterpreter.class);
 
-  public AcefInterpreter(InsertMetadata metadata, ReferenceStore refStore) {
-    super(refStore);
+  public AcefInterpreter(Dataset dataset, InsertMetadata metadata, ReferenceStore refStore) {
+    super(dataset, refStore);
     // turn on normalization of flat classification
     metadata.setDenormedClassificationMapped(true);
   }
 
-  public NeoTaxon interpretTaxon(UnescapedVerbatimRecord v, boolean synonym) {
+  public NeoTaxon interpretTaxon(UnescapedVerbatimRecord v, boolean synonym, boolean skipName) {
     NeoTaxon t = new NeoTaxon();
     // verbatim
     t.verbatim = v;
     // name
     t.name = interpretName(v);
-    t.name.setOrigin(Origin.SOURCE);
     // taxon
     t.taxon = new Taxon();
     t.taxon.setId(v.getId());
@@ -189,48 +183,25 @@ public class AcefInterpreter extends InterpreterBase {
   }
 
   private Name interpretName(VerbatimRecord v) {
-    Name n = new Name();
-    n.setId(v.getId());
-    n.setType(NameType.SCIENTIFIC);
-    n.setOrigin(Origin.SOURCE);
-    n.setGenus(v.getTerm(AcefTerm.Genus));
-    n.setInfragenericEpithet(v.getTerm(AcefTerm.SubGenusName));
-    n.setSpecificEpithet(v.getTerm(AcefTerm.SpeciesEpithet));
-
     String authorship;
+    String rank;
     if (v.hasTerm(AcefTerm.InfraSpeciesEpithet)) {
-      n.setInfraspecificEpithet(v.getTerm(AcefTerm.InfraSpeciesEpithet));
-      n.setRank(parse(RankParser.PARSER, v.getTerm(AcefTerm.InfraSpeciesMarker))
-          .orElse(Rank.INFRASPECIFIC_NAME, Issue.RANK_INVALID, n.getIssues())
-      );
+      rank = v.getTerm(AcefTerm.InfraSpeciesMarker);
       authorship = v.getTerm(AcefTerm.InfraSpeciesAuthorString);
-      // accepted infraspecific names in ACEF have no genus or species but a link to their parent species ID.
-      // so we cannot update the scientific name yet - we do this in the relation inserter instead!
-
     } else {
-      n.setRank(Rank.SPECIES);
+      rank = "species";
       authorship = v.getTerm(AcefTerm.AuthorString);
-      updateScientificName(v.getId(), n);
     }
 
-    if (!Strings.isNullOrEmpty(authorship)) {
-
-      Optional<ParsedName> optAuthorship = NameParser.PARSER.parseAuthorship(authorship);
-      if (optAuthorship.isPresent()) {
-        ParsedName nAuth = optAuthorship.get();
-        n.setCombinationAuthorship(nAuth.getCombinationAuthorship());
-        n.setSanctioningAuthor(nAuth.getSanctioningAuthor());
-        n.setBasionymAuthorship(nAuth.getBasionymAuthorship());
-
-      } else {
-        LOG.warn("Unparsable authorship {}", authorship);
-        n.addIssue(Issue.UNPARSABLE_AUTHORSHIP);
-        Authorship unparsed = new Authorship();
-        unparsed.getAuthors().add(authorship);
-        n.setCombinationAuthorship(unparsed);
-      }
+    if (v.getTerms().getType() == AcefTerm.AcceptedInfraSpecificTaxa) {
+      // preliminary name with just id and rank
+      Name n = new Name();
+      n.setId(v.getId());
+      n.setRank(SafeParser.parse(RankParser.PARSER, rank).orElse(Rank.INFRASPECIFIC_NAME));
+      return n;
     }
-
-    return n;
+    return interpretName(v.getId(), rank, null, authorship,
+        v.getTerm(AcefTerm.Genus), v.getTerm(AcefTerm.SubGenusName), v.getTerm(AcefTerm.SpeciesEpithet), v.getTerm(AcefTerm.InfraSpeciesEpithet),
+        null, v.getTerm(AcefTerm.GSDNameStatus), null, null);
   }
 }

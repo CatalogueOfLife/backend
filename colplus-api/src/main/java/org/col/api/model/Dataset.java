@@ -27,7 +27,6 @@ public class Dataset {
 	private UUID gbifKey;
   private UUID gbifPublisherKey;
 	private String description;
-  private NomCode code;
 	private String organisation;
 	private String contactPerson;
 	private List<String> authorsAndEditors = Lists.newArrayList();
@@ -38,8 +37,9 @@ public class Dataset {
 	private DataFormat dataFormat;
 	private URI dataAccess;
 	private Frequency importFrequency;
+  private NomCode code;
 	private String notes;
-	private LocalDateTime created;
+  private LocalDateTime created;
 	private LocalDateTime modified;
 	private LocalDateTime deleted;
 

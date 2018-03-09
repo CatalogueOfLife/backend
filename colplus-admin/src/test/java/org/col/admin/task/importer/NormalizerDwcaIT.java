@@ -13,10 +13,7 @@ import org.col.admin.task.importer.neo.model.NeoProperties;
 import org.col.admin.task.importer.neo.model.NeoTaxon;
 import org.col.admin.task.importer.neo.printer.GraphFormat;
 import org.col.admin.task.importer.neo.printer.PrinterUtils;
-import org.col.api.model.Distribution;
-import org.col.api.model.Reference;
-import org.col.api.model.Taxon;
-import org.col.api.model.VernacularName;
+import org.col.api.model.*;
 import org.col.api.vocab.DataFormat;
 import org.col.api.vocab.DistributionStatus;
 import org.col.api.vocab.Gazetteer;
@@ -72,8 +69,11 @@ public class NormalizerDwcaIT {
   private void normalize(Path dwca) {
     try {
       store = NeoDbFactory.create(1, cfg);
-
-      Normalizer norm = new Normalizer(store, dwca, DataFormat.DWCA);
+      Dataset d = new Dataset();
+      d.setKey(1);
+      d.setDataFormat(DataFormat.DWCA);
+      store.put(d);
+      Normalizer norm = new Normalizer(store, dwca);
       norm.run();
 
       // reopen

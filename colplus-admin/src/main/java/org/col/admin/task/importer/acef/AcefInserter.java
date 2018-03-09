@@ -11,7 +11,6 @@ import org.col.api.model.Dataset;
 import org.col.api.model.Reference;
 import org.col.api.model.TermRecord;
 import org.col.api.vocab.DataFormat;
-import org.col.api.vocab.Issue;
 import org.gbif.dwc.terms.AcefTerm;
 import org.neo4j.graphdb.Transaction;
 import org.slf4j.Logger;
@@ -56,7 +55,7 @@ public class AcefInserter extends NeoInserter {
   public void batchInsert() throws NormalizationFailedException {
     try {
       initReader();
-      inter = new AcefInterpreter(meta, store);
+      inter = new AcefInterpreter(store.getDataset(), meta, store);
 
       insertReferences();
       insertTaxaAndNames();
@@ -90,25 +89,23 @@ public class AcefInserter extends NeoInserter {
     // species
     reader.stream(AcefTerm.AcceptedSpecies).forEach( rec -> {
       UnescapedVerbatimRecord v = build(rec.get(AcefTerm.AcceptedTaxonID), rec);
-      NeoTaxon t = inter.interpretTaxon(v, false);
+      NeoTaxon t = inter.interpretTaxon(v, false, false);
       store.put(t);
       meta.incRecords(t.name.getRank());
     });
     // infraspecies
     reader.stream(AcefTerm.AcceptedInfraSpecificTaxa).forEach( rec -> {
       UnescapedVerbatimRecord v = build(rec.get(AcefTerm.AcceptedTaxonID), rec);
-      NeoTaxon t = inter.interpretTaxon(v, false);
-      if (!t.name.getRank().isInfraspecific()) {
-        LOG.info("Expected infraspecific taxon but found {} for name {}: {}", t.name.getRank(), t.getTaxonID(), t.name.getScientificName());
-        t.addIssue(Issue.INCONSISTENT_NAME);
-      }
+      // accepted infraspecific names in ACEF have no genus or species but a link to their parent species ID.
+      // so we cannot update the scientific name yet - we do this in the relation inserter instead!
+      NeoTaxon t = inter.interpretTaxon(v, false, true);
       store.put(t);
       meta.incRecords(t.name.getRank());
     });
     // synonyms
     reader.stream(AcefTerm.Synonyms).forEach( rec -> {
       UnescapedVerbatimRecord v = build(rec.get(AcefTerm.ID), rec);
-      NeoTaxon t = inter.interpretTaxon(v, true);
+      NeoTaxon t = inter.interpretTaxon(v, true, false);
       store.put(t);
       meta.incRecords(t.name.getRank());
     });

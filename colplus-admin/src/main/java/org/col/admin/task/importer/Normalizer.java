@@ -7,7 +7,6 @@ import org.col.admin.task.importer.neo.NotUniqueRuntimeException;
 import org.col.admin.task.importer.neo.model.*;
 import org.col.admin.task.importer.neo.traverse.Traversals;
 import org.col.api.model.*;
-import org.col.api.vocab.DataFormat;
 import org.col.api.vocab.Issue;
 import org.col.api.vocab.Origin;
 import org.col.api.vocab.TaxonomicStatus;
@@ -31,15 +30,15 @@ import java.util.Set;
  */
 public class Normalizer implements Runnable {
   private static final Logger LOG = LoggerFactory.getLogger(Normalizer.class);
-  private final DataFormat format;
+  private final Dataset dataset;
   private final Path sourceDir;
   private final NeoDb store;
   private InsertMetadata meta;
 
-  public Normalizer(NeoDb store, Path sourceDir, DataFormat format) {
+  public Normalizer(NeoDb store, Path sourceDir) {
     this.sourceDir = sourceDir;
     this.store = store;
-    this.format = format;
+    this.dataset = store.getDataset();
   }
 
   /**
@@ -102,6 +101,9 @@ public class Normalizer implements Runnable {
       } else {
         id = String.format("%s %s %s", t.taxon.getOrigin().name(), t.name.getRank(), t.name.getScientificName());
       }
+
+      // verify name and flag issues
+      modified = NameValidator.flagIssues(t.name);
 
       // check for required fields to avoid pg exceptions
       require(t.name.getScientificName(), "scientific name", id);
@@ -497,7 +499,7 @@ public class Normalizer implements Runnable {
     // closing the batch inserter opens the normalizer db again for regular access via the store
     try {
       NeoInserter inserter;
-      switch (format) {
+      switch (dataset.getDataFormat()) {
         case DWCA:
           inserter = new DwcaInserter(store, sourceDir);
           break;
@@ -505,7 +507,7 @@ public class Normalizer implements Runnable {
           inserter = new AcefInserter(store, sourceDir);
           break;
         default:
-          throw new NormalizationFailedException("Unsupported data format " + format);
+          throw new NormalizationFailedException("Unsupported data format " + dataset.getDataFormat());
       }
       meta = inserter.insertAll();
 

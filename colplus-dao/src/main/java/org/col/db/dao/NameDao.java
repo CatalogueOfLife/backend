@@ -115,6 +115,9 @@ public class NameDao {
   public ResultPage<NameSearchResult> search(NameSearch query, Page page) {
     if (query.getQ() != null) {
       query.setQ(query.getQ() + ":*");
+    } else if (query.getDatasetKey() == null && query.getRank() == null && query.getType() == null && query.getIssue() == null){
+      // require key ordering for quicker results
+      query.setSortBy(NameSearch.SortBy.KEY);
     }
     NameMapper mapper = session.getMapper(NameMapper.class);
     int total = mapper.countSearchResults(query);

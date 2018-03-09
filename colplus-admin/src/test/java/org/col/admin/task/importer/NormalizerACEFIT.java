@@ -14,12 +14,9 @@ import org.col.admin.task.importer.neo.printer.GraphFormat;
 import org.col.admin.task.importer.neo.printer.PrinterUtils;
 import org.col.api.model.Dataset;
 import org.col.api.model.Distribution;
-import org.col.api.model.Reference;
 import org.col.api.model.VernacularName;
-import org.col.api.vocab.DataFormat;
-import org.col.api.vocab.Gazetteer;
-import org.col.api.vocab.Issue;
-import org.col.api.vocab.Language;
+import org.col.api.vocab.*;
+import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 import org.junit.After;
 import org.junit.Before;
@@ -70,8 +67,12 @@ public class NormalizerACEFIT {
       acef = source;
 
       store = NeoDbFactory.create(1, cfg);
+      Dataset d = new Dataset();
+      d.setKey(1);
+      d.setDataFormat(DataFormat.ACEF);
+      store.put(d);
 
-      Normalizer norm = new Normalizer(store, acef, DataFormat.ACEF);
+      Normalizer norm = new Normalizer(store, acef);
       norm.run();
 
       // reopen
@@ -122,11 +123,6 @@ public class NormalizerACEFIT {
   @Test
   public void acef0() throws Exception {
     normalize(0);
-
-    for (Reference r : store.refList()) {
-      System.out.println(r);
-    }
-
     try (Transaction tx = store.getNeo().beginTx()) {
       NeoTaxon t = byID("s7");
       assertEquals("Astragalus nonexistus", t.name.getScientificName());
@@ -145,11 +141,6 @@ public class NormalizerACEFIT {
   @Test
   public void acefSample() throws Exception {
     normalize(1);
-
-    for (Reference r : store.refList()) {
-      System.out.println(r);
-    }
-
     try (Transaction tx = store.getNeo().beginTx()) {
       NeoTaxon t = byID("14649");
       assertEquals("Zapoteca formosa", t.name.getScientificName());
@@ -185,7 +176,6 @@ public class NormalizerACEFIT {
   @Test
   public void acef4NonUnique() throws Exception {
     normalize(4);
-
     try (Transaction tx = store.getNeo().beginTx()) {
       NeoTaxon t = byID("1");
       assertEquals("Inga vera", t.name.getScientificName());
@@ -204,14 +194,45 @@ public class NormalizerACEFIT {
   public void acef5Datasource() throws Exception {
     normalize(5);
 
-    Dataset d = store.getDataset().get();
+    Dataset d = store.getDataset();
     assertEquals("Systema Dipterorum", d.getTitle());
+  }
+
+  /**
+   * ICTV GSD with "parsed" virus names
+   * https://github.com/Sp2000/colplus-backend/issues/65
+   */
+  @Test
+  public void acef14virus() throws Exception {
+    normalize(14);
+    try (Transaction tx = store.getNeo().beginTx()) {
+      NeoTaxon t = byID("Vir-96");
+      assertEquals("Phikmvlikevirus: Pseudomonas phage LKA1 ICTV", t.name.getScientificName());
+
+      store.all().forEach(nt -> {
+        if (nt.name.getOrigin() == Origin.SOURCE) {
+          if (nt.getID().equalsIgnoreCase("Vir-999")) {
+            assertEquals(NameType.PLACEHOLDER, nt.name.getType());
+            assertEquals("Unassigned: Banana virus X ICTV", nt.name.getScientificName());
+            assertFalse(nt.name.isParsed());
+            assertFalse(nt.name.hasAuthorship());
+
+          } else {
+            assertEquals(NameType.VIRUS, nt.name.getType());
+            assertNotNull(nt.name.getScientificName());
+            assertFalse(nt.name.isParsed());
+            assertFalse(nt.name.hasAuthorship());
+          }
+        }
+      });
+    }
   }
 
   /**
    * Full Systema Diptera dataset with 170.000 names. Takes 2 minutes, be patient
    */
   @Test
+  @Ignore("large dataset that takes a long time")
   public void acef101() throws Exception {
     normalize(101);
     try (Transaction tx = store.getNeo().beginTx()) {
@@ -224,7 +245,7 @@ public class NormalizerACEFIT {
   @Test
   @Ignore("external dependency")
   public void testGsdGithub() throws Exception {
-    normalize(URI.create("https://raw.githubusercontent.com/Sp2000/colplus-repo/master/ACEF/assembly/73.tar.gz"));
+    normalize(URI.create("https://raw.githubusercontent.com/Sp2000/colplus-repo/master/ACEF/assembly/14.tar.gz"));
     writeToFile();
   }
 

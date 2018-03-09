@@ -12,16 +12,10 @@ import org.col.parser.*;
 import org.gbif.dwc.terms.DcTerm;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.GbifTerm;
-import org.gbif.nameparser.api.NameType;
-import org.gbif.nameparser.api.ParsedName;
-import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.EnumSet;
 import java.util.List;
-import java.util.Optional;
-import java.util.Set;
 
 /**
  * Interprets a verbatim record and transforms it into a name, taxon and unique references.
@@ -31,8 +25,8 @@ public class DwcInterpreter extends InterpreterBase {
 
   private final InsertMetadata insertMetadata;
 
-  public DwcInterpreter(InsertMetadata insertMetadata, ReferenceStore refStore) {
-    super(refStore);
+  public DwcInterpreter(Dataset dataset, InsertMetadata insertMetadata, ReferenceStore refStore) {
+    super(dataset, refStore);
     this.insertMetadata = insertMetadata;
   }
 
@@ -174,82 +168,21 @@ public class DwcInterpreter extends InterpreterBase {
   }
 
   private Name interpretName(VerbatimRecord v) {
-    Set<Issue> issues = EnumSet.noneOf(Issue.class);
-
-    // parse rank
-    Rank rank = SafeParser.parse(RankParser.PARSER, v.getFirst(DwcTerm.taxonRank, DwcTerm.verbatimTaxonRank))
-        .orElse(Rank.UNRANKED, Issue.RANK_INVALID, issues);
-    // we can get the scientific name in various ways.
-    // we parse all names from the scientificName + optional authorship
-    // or use the atomized parts which we also use to validate the parsing result.
-    Name n;
-    String vSciname = v.getTerm(DwcTerm.scientificName);
-    if (v.hasTerm(DwcTerm.scientificName)) {
-      n = NameParser.PARSER.parse(vSciname, rank).get();
-      // TODO: validate name against optional atomized terms!
-      //Name n2 = buildNameFromVerbatimTerms(v);
-
-    } else {
-      n = buildNameFromVerbatimTerms(v);
-    }
-    n.getIssues().addAll(issues);
-
-    // assign best rank
-    if (rank.notOtherOrUnranked() || n.getRank() == null) {
-      n.setRank(rank);
-    }
-
-    // try to add an authorship if not yet there
-    if (v.hasTerm(DwcTerm.scientificNameAuthorship)) {
-      Optional<ParsedName> optAuthorship = NameParser.PARSER.parseAuthorship(v.getTerm(DwcTerm.scientificNameAuthorship));
-      if (optAuthorship.isPresent()) {
-        ParsedName authorship = optAuthorship.get();
-        if (n.hasAuthorship()) {
-          if (!n.authorshipComplete().equalsIgnoreCase(authorship.authorshipComplete())){
-            n.addIssue(Issue.INCONSISTENT_AUTHORSHIP);
-            LOG.warn("Different authorship found in dwc:scientificName=[{}] and dwc:scientificNameAuthorship=[{}]",
-                n.authorshipComplete(),
-                authorship.authorshipComplete());
-          }
-        } else {
-          n.setCombinationAuthorship(authorship.getCombinationAuthorship());
-          n.setSanctioningAuthor(authorship.getSanctioningAuthor());
-          n.setBasionymAuthorship(authorship.getBasionymAuthorship());
-        }
-
-      } else {
-        LOG.warn("Unparsable authorship {}", v.getTerm(DwcTerm.scientificNameAuthorship));
-        n.addIssue(Issue.UNPARSABLE_AUTHORSHIP);
-      }
-    }
-
-    n.setId(v.getFirst(DwcTerm.scientificNameID, DwcTerm.taxonID, DwcaReader.DWCA_ID));
-    n.setOrigin(Origin.SOURCE);
-    n.setSourceUrl(SafeParser.parse(UriParser.PARSER, v.getTerm(DcTerm.references)).orNull());
-    n.setStatus(SafeParser.parse(NomStatusParser.PARSER, v.getTerm(DwcTerm.nomenclaturalStatus))
-        .orElse(null, Issue.NOMENCLATURAL_STATUS_INVALID, n.getIssues())
+    //TODO: or use v.getID() ???
+    //TODO: should we also get remarks through an extension, e.g. species profile or a nomenclature extension?
+    return interpretName(v.getFirst(DwcTerm.scientificNameID, DwcTerm.taxonID, DwcaReader.DWCA_ID),
+        v.getFirst(DwcTerm.taxonRank, DwcTerm.verbatimTaxonRank),
+        v.getTerm(DwcTerm.scientificName),
+        v.getTerm(DwcTerm.scientificNameAuthorship),
+        v.getFirst(GbifTerm.genericName, DwcTerm.genus),
+        v.getTerm(DwcTerm.subgenus),
+        v.getTerm(DwcTerm.specificEpithet),
+        v.getTerm(DwcTerm.infraspecificEpithet),
+        v.getTerm(DwcTerm.nomenclaturalCode),
+        v.getTerm(DwcTerm.nomenclaturalStatus),
+        v.getTerm(DcTerm.references),
+        v.getTerm(DwcTerm.nomenclaturalStatus)
     );
-    n.setCode(SafeParser.parse(NomCodeParser.PARSER, v.getTerm(DwcTerm.nomenclaturalCode))
-        .orElse(null, Issue.NOMENCLATURAL_CODE_INVALID, n.getIssues())
-    );
-    //TODO: should we also get these through an extension, e.g. species profile or a nomenclature extension?
-    n.setRemarks(v.getTerm(DwcTerm.nomenclaturalStatus));
-    n.setFossil(null);
-
-
-    updateScientificName(v.getId(), n);
-
-    return n;
   }
 
-  private Name buildNameFromVerbatimTerms(VerbatimRecord v) {
-    Name n = new Name();
-    // named hybrids in epithets are detected by setters
-    n.setGenus(v.getFirst(GbifTerm.genericName, DwcTerm.genus));
-    n.setInfragenericEpithet(v.getTerm(DwcTerm.subgenus));
-    n.setSpecificEpithet(v.getTerm(DwcTerm.specificEpithet));
-    n.setInfraspecificEpithet(v.getTerm(DwcTerm.infraspecificEpithet));
-    n.setType(NameType.SCIENTIFIC);
-    return n;
-  }
 }

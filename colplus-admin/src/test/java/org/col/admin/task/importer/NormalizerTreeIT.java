@@ -10,6 +10,7 @@ import org.col.admin.task.importer.neo.NeoDb;
 import org.col.admin.task.importer.neo.NeoDbFactory;
 import org.col.admin.task.importer.neo.printer.GraphFormat;
 import org.col.admin.task.importer.neo.printer.PrinterUtils;
+import org.col.api.model.Dataset;
 import org.col.api.vocab.DataFormat;
 import org.junit.After;
 import org.junit.Before;
@@ -116,8 +117,12 @@ public class  NormalizerTreeIT {
       System.out.println("TEST " + format+" " + sourceKey);
 
       store = NeoDbFactory.create(datasetKey, cfg);
+      Dataset d = new Dataset();
+      d.setKey(datasetKey);
+      d.setDataFormat(format);
+      store.put(d);
 
-      Normalizer norm = new Normalizer(store, source, format);
+      Normalizer norm = new Normalizer(store, source);
       try {
         norm.run();
 
