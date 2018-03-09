@@ -4,9 +4,12 @@ import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import org.apache.commons.lang3.StringUtils;
 import org.gbif.dwc.terms.Term;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
@@ -17,6 +20,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
  *
  */
 public class TermRecord {
+  private static final Logger LOG = LoggerFactory.getLogger(TermRecord.class);
+
   private long line;
   private String file;
   private Term type;
@@ -78,7 +83,11 @@ public class TermRecord {
   public URI getURI(Term term) {
     String val = terms.get(term);
     if (!StringUtils.isBlank(val)) {
-      return URI.create(val);
+      try {
+        return URI.create(val);
+      } catch (IllegalArgumentException e) {
+        LOG.info("Invalid URI: {}", val);
+      }
     }
     return null;
   }

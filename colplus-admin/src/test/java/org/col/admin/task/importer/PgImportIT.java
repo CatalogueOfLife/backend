@@ -323,8 +323,8 @@ public class PgImportIT {
   @Test
   @Ignore
   public void testGsdGithub() throws Exception {
-    normalizeAndImport(URI.create("https://github.com/mdoering/famous-organism/archive/master.zip"), DataFormat.DWCA);
-    //normalizeAndImport(URI.create("https://raw.githubusercontent.com/Sp2000/colplus-repo/master/ACEF/assembly/73.tar.gz"), DataFormat.ACEF);
+    //normalizeAndImport(URI.create("https://github.com/mdoering/famous-organism/archive/master.zip"), DataFormat.DWCA);
+    normalizeAndImport(URI.create("https://raw.githubusercontent.com/Sp2000/colplus-repo/master/ACEF/assembly/18.tar.gz"), DataFormat.ACEF);
   }
 
   private static RankedName rn(Rank rank, String name) {
