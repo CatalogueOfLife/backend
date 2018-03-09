@@ -54,7 +54,7 @@ public class DwcaInserter extends NeoInserter {
       insertTaxaAndNames();
 
     } catch (RuntimeException e) {
-      throw new NormalizationFailedException("Failed to read DwC-A files", e);
+      throw new NormalizationFailedException("Failed to batch insert DwC-A data", e);
     }
   }
 
@@ -66,7 +66,7 @@ public class DwcaInserter extends NeoInserter {
       reader.stream(GbifTerm.Reference).forEach(this::addVerbatimRecord);
 
     } catch (RuntimeException e) {
-      throw new NormalizationFailedException("Failed to read DwC-A files", e);
+      throw new NormalizationFailedException("Failed to insert DwC-A data", e);
     }
   }
 

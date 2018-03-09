@@ -37,7 +37,7 @@ public class DwcInterpreter extends InterpreterBase {
     // name
     t.name = interpretName(v);
     // acts
-    t.acts = interpretActs(v);
+    t.acts = interpretActs(t, v);
     // flat classification
     t.classification = new Classification();
     for (DwcTerm dwc : DwcTerm.HIGHER_RANKS) {
@@ -54,20 +54,20 @@ public class DwcInterpreter extends InterpreterBase {
     return t;
   }
 
-  private List<NameAct> interpretActs(VerbatimRecord v) {
+  private List<NameAct> interpretActs(NeoTaxon t, VerbatimRecord v) {
     List<NameAct> acts = Lists.newArrayList();
 
     // publication of name
     if (v.hasTerm(DwcTerm.namePublishedInID) || v.hasTerm(DwcTerm.namePublishedIn)) {
-      NameAct act = new NameAct();
-      act.setType(NomActType.DESCRIPTION);
-      act.setReferenceKey(
-          lookupReferenceTitleID(
-            v.getTerm(DwcTerm.namePublishedInID),
-            v.getTerm(DwcTerm.namePublishedIn)
-          ).getKey()
-      );
-      acts.add(act);
+      lookupReferenceTitleID(t,
+          v.getTerm(DwcTerm.namePublishedInID),
+          v.getTerm(DwcTerm.namePublishedIn)
+      ).ifPresent(r -> {
+        NameAct act = new NameAct();
+        act.setType(NomActType.DESCRIPTION);
+        act.setReferenceKey(r.getKey());
+        acts.add(act);
+      });
     }
     return acts;
   }
@@ -119,16 +119,18 @@ public class DwcInterpreter extends InterpreterBase {
     Distribution d = new Distribution();
     d.setArea(area);
     d.setGazetteer(standard);
-    addReferences(d, rec);
+    addReferences(t, d, rec);
     //TODO: parse status!!!
     d.setStatus(DistributionStatus.NATIVE);
     t.distributions.add(d);
   }
 
-  private void addReferences(Referenced obj, TermRecord v) {
+  private void addReferences(NeoTaxon t, Referenced obj, TermRecord v) {
     if (v.hasTerm(DcTerm.source)) {
       //TODO: test for multiple
-      obj.addReferenceKey(lookupReferenceTitleID(null, v.get(DcTerm.source)).getKey());
+      lookupReferenceTitleID(t, null, v.get(DcTerm.source)).ifPresent(r -> {
+        obj.addReferenceKey(r.getKey());
+      });
     }
   }
 
@@ -139,7 +141,7 @@ public class DwcInterpreter extends InterpreterBase {
         vn.setName(rec.get(DwcTerm.vernacularName));
         vn.setLanguage(SafeParser.parse(LanguageParser.PARSER, rec.get(DcTerm.language)).orNull());
         vn.setCountry(SafeParser.parse(CountryParser.PARSER, rec.getFirst(DwcTerm.countryCode, DwcTerm.country)).orNull());
-        addReferences(vn, rec);
+        addReferences(t, vn, rec);
         addAndTransliterate(t, vn);
       }
     }

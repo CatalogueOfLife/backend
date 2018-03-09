@@ -10,12 +10,10 @@ import org.col.api.model.*;
 import org.col.api.vocab.*;
 import org.col.parser.*;
 import org.gbif.dwc.terms.AcefTerm;
-import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
 import java.util.Set;
 
 import static org.col.parser.SafeParser.parse;
@@ -73,7 +71,8 @@ public class AcefInterpreter extends InterpreterBase {
     }
 
     // acts
-    t.acts = interpretActs(v);
+    //TODO: https://github.com/Sp2000/colplus-backend/issues/18
+    t.acts = Lists.newArrayList();
     // flat classification
     t.classification = interpretClassification(v, synonym);
 
@@ -162,24 +161,6 @@ public class AcefInterpreter extends InterpreterBase {
       cl.setSubgenus(v.getTerm(AcefTerm.SubGenusName));
     }
     return cl;
-  }
-
-  private List<NameAct> interpretActs(VerbatimRecord v) {
-    List<NameAct> acts = Lists.newArrayList();
-
-    // publication of name
-    if (v.hasTerm(DwcTerm.namePublishedInID) || v.hasTerm(DwcTerm.namePublishedIn)) {
-      NameAct act = new NameAct();
-      act.setType(NomActType.DESCRIPTION);
-      act.setReferenceKey(
-          lookupReferenceTitleID(
-            v.getTerm(DwcTerm.namePublishedInID),
-            v.getTerm(DwcTerm.namePublishedIn)
-          ).getKey()
-      );
-      acts.add(act);
-    }
-    return acts;
   }
 
   private Name interpretName(VerbatimRecord v) {

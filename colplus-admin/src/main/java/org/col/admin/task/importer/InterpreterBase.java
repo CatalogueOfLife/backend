@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.EnumSet;
+import java.util.Optional;
 import java.util.Set;
 
 import static org.col.parser.SafeParser.parse;
@@ -84,10 +85,18 @@ public class InterpreterBase {
     return parse(BooleanParser.PARSER, t.verbatim.getFirst(term)).orNull(invalidIssue, t.issues);
   }
 
-  protected Reference lookupReferenceTitleID(String id, String title) {
+  protected Optional<Reference> lookupReferenceTitleID(NeoTaxon t, String id, String title) {
+    Reference r;
     // first try by id
-    Reference r = refStore.refById(id);
-    if (r == null && title != null) {
+    if (id != null) {
+      r = refStore.refById(id);
+      if (r != null) {
+        return Optional.of(r);
+      }
+      LOG.info("Invalid reference id {} in record {} for {}", id, t.getID(), title);
+      t.addIssue(Issue.REFERENCE_ID_INVALID);
+    }
+    if (title != null) {
       // then try by title
       r = refStore.refByTitle(title);
       if (r == null) {
@@ -97,8 +106,9 @@ public class InterpreterBase {
         r.setTitle(title);
         refStore.put(r);
       }
+      return Optional.of(r);
     }
-    return r;
+    return Optional.empty();
   }
 
   private boolean equal(Name n1, Name n2) {
@@ -146,7 +156,7 @@ public class InterpreterBase {
           // Does it match up?
           if (!n.authorshipComplete().equalsIgnoreCase(pnAuthorship.authorshipComplete())){
             n.addIssue(Issue.INCONSISTENT_AUTHORSHIP);
-            LOG.warn("Different authorship found in dwc:scientificName=[{}] and dwc:scientificNameAuthorship=[{}]",
+            LOG.info("Different authorship found in dwc:scientificName=[{}] and dwc:scientificNameAuthorship=[{}]",
                 n.authorshipComplete(),
                 pnAuthorship.authorshipComplete()
             );
@@ -188,7 +198,7 @@ public class InterpreterBase {
     try {
       n.updateScientificName();
     } catch (InvalidNameException e) {
-      LOG.warn("Invalid atomised name found: {}", n);
+      LOG.info("Invalid atomised name found: {}", n);
       n.addIssue(Issue.INCONSISTENT_NAME);
     }
     n.getIssues().addAll(issues);
