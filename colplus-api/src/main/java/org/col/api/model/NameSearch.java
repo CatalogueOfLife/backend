@@ -115,5 +115,14 @@ public class NameSearch {
 		this.sortBy = sortBy;
 	}
 
-
+  public boolean isEmpty() {
+	  return q == null
+        && datasetKey == null
+        && key == null
+        && rank == null
+        && nomstatus == null
+        && taxstatus == null
+        && issue == null
+        && type == null;
+  }
 }

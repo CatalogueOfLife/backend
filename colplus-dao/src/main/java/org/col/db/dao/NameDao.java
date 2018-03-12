@@ -113,11 +113,14 @@ public class NameDao {
   }
 
   public ResultPage<NameSearchResult> search(NameSearch query, Page page) {
+    if (query.isEmpty()) {
+      // default to order by key for large, unfiltered resultssets
+      query.setSortBy(NameSearch.SortBy.KEY);
+    } else if (query.getSortBy() == null) {
+      query.setSortBy(NameSearch.SortBy.NAME);
+    }
     if (query.getQ() != null) {
       query.setQ(query.getQ() + ":*");
-    } else if (query.getDatasetKey() == null && query.getRank() == null && query.getType() == null && query.getIssue() == null){
-      // require key ordering for quicker results
-      query.setSortBy(NameSearch.SortBy.KEY);
     }
     NameMapper mapper = session.getMapper(NameMapper.class);
     int total = mapper.countSearchResults(query);
