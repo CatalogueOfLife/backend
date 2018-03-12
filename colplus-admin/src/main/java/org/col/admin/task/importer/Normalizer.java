@@ -91,7 +91,7 @@ public class Normalizer implements Runnable {
       String id;
       // is it a source with verbatim data?
       require(t.name.getOrigin(), "name origin");
-      if (t.taxon.getOrigin() == Origin.SOURCE) {
+      if (t.name.getOrigin() == Origin.SOURCE) {
         id = require(t.verbatim.getId(), "verbatim id");
         // did we unescape verbatim data?
         if (t.verbatim.isModified()) {
@@ -103,7 +103,7 @@ public class Normalizer implements Runnable {
       }
 
       // verify name and flag issues
-      modified = NameValidator.flagIssues(t.name);
+      modified = modified || NameValidator.flagIssues(t.name);
 
       // check for required fields to avoid pg exceptions
       require(t.name.getScientificName(), "scientific name", id);
