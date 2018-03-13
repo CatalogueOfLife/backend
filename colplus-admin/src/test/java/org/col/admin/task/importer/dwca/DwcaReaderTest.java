@@ -152,4 +152,26 @@ public class DwcaReaderTest {
     assertEquals(7, counter.get());
   }
 
+  /**
+   * WoRMS meta.xml
+   */
+  @Test
+  public void dwca25() throws Exception {
+    DwcaReader reader = DwcaReader.from(PathUtils.classPathTestRes("dwca/25"));
+
+    assertEquals(2, reader.size());
+    assertEquals(DwcTerm.Taxon, reader.coreRowType());
+    assertEquals('\0', reader.coreSchema().settings.getFormat().getQuote());
+    assertEquals(30, reader.coreSchema().size());
+    assertTrue(reader.coreSchema().hasTerm(DwcaReader.DWCA_ID));
+
+
+    final AtomicInteger counter = new AtomicInteger(0);
+    reader.stream(DwcTerm.Taxon).forEach(tr -> {
+      counter.incrementAndGet();
+      assertNotNull(tr.get(DwcTerm.scientificName));
+      assertEquals(tr.get(DwcaReader.DWCA_ID), tr.get(DwcTerm.taxonID));
+    });
+    assertEquals(9, counter.get());
+  }
 }

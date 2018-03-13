@@ -311,8 +311,9 @@ public class NormalizerDwcaIT {
   @Test
   @Ignore
   public void testExternal() throws Exception {
-    normalize(URI.create("http://services.snsb.info/DTNtaxonlists/rest/v0.1/lists/DiversityTaxonNames_Fungi/1140/dwc"));
-    print("Diversity", GraphFormat.TEXT, false);
+    normalize(Paths.get("/Users/markus/Desktop/worms"));
+    //normalize(URI.create("http://www.marinespecies.org/dwca/WoRMS_DwC-A.zip"));
+    //print("Diversity", GraphFormat.TEXT, false);
   }
 
   void print(String id, GraphFormat format, boolean file) throws Exception {

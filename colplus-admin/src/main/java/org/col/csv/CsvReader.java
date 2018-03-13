@@ -66,7 +66,8 @@ public class CsvReader {
   protected final Path folder;
   protected final Map<Term, Schema> schemas = Maps.newHashMap();
   private Character[] delimiterCandidates = {'\t', ',', ';', '|'};
-  private Character[] quoteCandidates     = {'"', '\''};
+  // we also use \0 for hopefully no quote...
+  private Character[] quoteCandidates     = {'\0', '"', '\''};
 
   /**
    * @param folder

@@ -93,26 +93,23 @@ public class InterpreterBase {
       if (r != null) {
         return Optional.of(r);
       }
-      LOG.info("Invalid reference id {} in record {} for {}", id, t.getID(), title);
-      t.addIssue(Issue.REFERENCE_ID_INVALID);
     }
     if (title != null) {
       // then try by title
       r = refStore.refByTitle(title);
-      if (r == null) {
-        // lastly create a new reference
-        r = Reference.create();
-        r.setId(id);
-        r.setTitle(title);
-        refStore.put(r);
+      if (r != null) {
+        return Optional.of(r);
       }
+    }
+    // lastly create a new reference
+    if (id != null || title != null) {
+      r = Reference.create();
+      r.setId(id);
+      r.setTitle(title);
+      refStore.put(r);
       return Optional.of(r);
     }
     return Optional.empty();
-  }
-
-  private boolean equal(Name n1, Name n2) {
-    return true;
   }
 
   public Name interpretName(String id, String vrank, String sciname, String authorship,

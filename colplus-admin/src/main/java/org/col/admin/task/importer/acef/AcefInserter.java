@@ -1,7 +1,6 @@
 package org.col.admin.task.importer.acef;
 
 import com.google.common.base.Splitter;
-import com.google.common.collect.Maps;
 import org.col.admin.task.importer.NeoInserter;
 import org.col.admin.task.importer.NormalizationFailedException;
 import org.col.admin.task.importer.neo.NeoDb;
@@ -18,7 +17,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -29,7 +27,6 @@ public class AcefInserter extends NeoInserter {
   private static final Logger LOG = LoggerFactory.getLogger(AcefInserter.class);
   private static final Splitter COMMA_SPLITTER = Splitter.on(',').trimResults().omitEmptyStrings();
 
-  private Map<String, Integer> refKeys = Maps.newHashMap();
   private AcefReader reader;
   private AcefInterpreter inter;
 
@@ -118,7 +115,6 @@ public class AcefInserter extends NeoInserter {
       ref.setTitle(rec.get(AcefTerm.Title));
       ref.setYear(rec.getIntDefault(AcefTerm.Year, null));
       store.put(ref);
-      refKeys.put(ref.getId(), ref.getKey());
     });
   }
 
