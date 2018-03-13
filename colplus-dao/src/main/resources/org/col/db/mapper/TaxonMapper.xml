@@ -45,8 +45,7 @@
         n.origin as n_origin,
         n.type as n_type,
         n.fossil as n_fossil,
-        n.basionym_key
-        as n_basionym_key,
+        n.basionym_key as n_basionym_key,
         n.remarks as n_remarks,
         n.issues as n_issues
     </sql>
@@ -163,7 +162,7 @@
         FROM
         <include refid="FROM" />
         WHERE t.parent_key = #{key}
-        ORDER BY key
+        ORDER BY n.rank, t.key
         <include refid="org.col.db.mapper.Common.limit" />
     </select>
 
