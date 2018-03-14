@@ -323,8 +323,8 @@ public class PgImportIT {
   @Test
   @Ignore
   public void testGsdGithub() throws Exception {
-    normalizeAndImport(URI.create("http://services.snsb.info/DTNtaxonlists/rest/v0.1/lists/DiversityTaxonNames_Fossils/1154/dwc"), DataFormat.DWCA);
-    //normalizeAndImport(URI.create("https://raw.githubusercontent.com/Sp2000/colplus-repo/master/ACEF/assembly/18.tar.gz"), DataFormat.ACEF);
+    //normalizeAndImport(URI.create("http://services.snsb.info/DTNtaxonlists/rest/v0.1/lists/DiversityTaxonNames_Fossils/1154/dwc"), DataFormat.DWCA);
+    normalizeAndImport(URI.create("https://raw.githubusercontent.com/Sp2000/colplus-repo/master/ACEF/assembly/73.tar.gz"), DataFormat.ACEF);
   }
 
   private static RankedName rn(Rank rank, String name) {

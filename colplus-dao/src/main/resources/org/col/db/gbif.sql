@@ -40,7 +40,7 @@ INSERT INTO dataset (data_format, gbif_key, code, data_access, title) VALUES (0,
 INSERT INTO dataset (data_format, gbif_key, code, data_access, title) VALUES (0, 'da38f103-4410-43d1-b716-ea6b1b92bbac', 4, 'http://ipt.saiab.ac.za/archive.do?r=catalogueofafrotropicalbees', 'Catalogue of Afrotropical Bees');
 INSERT INTO dataset (data_format, gbif_key, code, data_access, title) VALUES (0, 'de8934f4-a136-481c-a87a-b0b202b80a31', null, 'http://www.gbif.se/ipt/archive.do?r=test', 'Dyntaxa. Svensk taxonomisk databas');
 INSERT INTO dataset (data_format, gbif_key, code, data_access, title) VALUES (0, 'ded724e7-3fde-49c5-bfa3-03b4045c4c5f', 1, 'http://wp5.e-taxonomy.eu/download/data/dwca/cichorieae.zip', 'International Cichorieae Network (ICN): Cichorieae Portal');
-INSERT INTO dataset (data_format, gbif_key, code, data_access, title) VALUES (0, 'e01b0cbb-a10a-420c-b5f3-a3b20cc266ad', 3, 'https://www.dropbox.com/s/dctkflufbnzy8do/ictv.zip?dl=0', 'ICTV Master Species List');
+INSERT INTO dataset (data_format, gbif_key, code, data_access, title) VALUES (0, 'e01b0cbb-a10a-420c-b5f3-a3b20cc266ad', 3, 'http://rs.gbif.org/datasets/ictv.zip', 'ICTV Master Species List');
 INSERT INTO dataset (data_format, gbif_key, code, data_access, title) VALUES (0, 'e1c9e885-9d8c-45b5-9f7d-b710ac2b303b', null, 'http://ipt.taibif.tw/archive.do?r=taibnet_endemic', 'Endemic species in Taiwan');
 INSERT INTO dataset (data_format, gbif_key, code, data_access, title) VALUES (0, 'e402255a-aed1-4701-9b96-14368e1b5d6b', 4, 'http://ctap.inhs.uiuc.edu/dmitriev/DwCArchive.zip', '3i - Typhlocybinae Database');
 INSERT INTO dataset (data_format, gbif_key, code, data_access, title) VALUES (0, 'e768b669-5f12-42b3-9bc7-ede76e4436fa', 4, 'http://plazi.cs.umb.edu/GgServer/dwca/61134126326DC5BE0901E529D48F9481.zip', 'Carabodes cephalotes');
@@ -100,3 +100,4 @@ INSERT INTO dataset (data_format, gbif_key, code, data_access, title) VALUES (0,
 -- Plazi is excluded as its too large and changes constantly. Use the GBIF sync feature instead!1,
 -- non backbone lists
 INSERT INTO dataset (data_format, gbif_key, data_access, title) VALUES (0, '8067e0a2-a26d-4831-8a1e-21b9118a299c', 'https://github.com/mdoering/ggi-families/archive/master.zip', 'Families of Living Organisms (FALO)');
+INSERT INTO dataset (data_format, gbif_key, data_access, title) VALUES (0, 'fa8ab13c-52ed-4754-b838-aeff74c79718', 'https://github.com/Sp2000/dwca-apg/archive/master.zip', 'Angiosperm phylogeny classification of flowering plants (APG IV)');

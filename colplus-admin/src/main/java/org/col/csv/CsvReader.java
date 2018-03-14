@@ -55,7 +55,7 @@ public class CsvReader {
     CSV.setReadInputOnSeparateThread(false);
     CSV.setNullValue(null);
     CSV.setMaxColumns(256);
-    CSV.setMaxCharsPerColumn(1024*16);
+    CSV.setMaxCharsPerColumn(1024*256);
   }
   private static final Set<String> SUFFICES = ImmutableSet.of("csv", "tsv", "tab", "txt", "text");
   private static final Pattern NULL_PATTERN = Pattern.compile("^\\s*(\\\\N|\\\\?NULL)\\s*$");
@@ -66,7 +66,8 @@ public class CsvReader {
   protected final Path folder;
   protected final Map<Term, Schema> schemas = Maps.newHashMap();
   private Character[] delimiterCandidates = {'\t', ',', ';', '|'};
-  private Character[] quoteCandidates     = {'"', '\''};
+  // we also use \0 for hopefully no quote...
+  private Character[] quoteCandidates     = {'\0', '"', '\''};
 
   /**
    * @param folder
@@ -146,6 +147,7 @@ public class CsvReader {
         cfg.getFormat().setDelimiter(del);
         cfg.setDelimiterDetectionEnabled(false);
         cfg.getFormat().setQuote(quote);
+        cfg.getFormat().setQuoteEscape(quote);
         cfg.setQuoteDetectionEnabled(false);
 
         CsvParser parser = new CsvParser(cfg);

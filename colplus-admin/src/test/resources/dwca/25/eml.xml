@@ -1,0 +1,283 @@
+<eml:eml xmlns:eml="eml://ecoinformatics.org/eml-2.1.1"
+    xmlns:md="eml://ecoinformatics.org/methods-2.1.1"
+    xmlns:proj="eml://ecoinformatics.org/project-2.1.1"
+    xmlns:d="eml://ecoinformatics.org/dataset-2.1.1"
+    xmlns:res="eml://ecoinformatics.org/resource-2.1.1"
+    xmlns:dc="http://purl.org/dc/terms/"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="eml://ecoinformatics.org/eml-2.1.1 http://rs.gbif.org/schema/eml-gbif-profile/1.0.1/eml.xsd"
+    packageId="WoRMS_export_2018-03-01" system="http://gbif.org" scope="system" xml:lang="eng">
+    <dataset id="http://dx.doi.org/10.14284/170">
+<alternateIdentifier system="doi.org">doi:10.14284/170</alternateIdentifier>
+	  <title xml:lang="eng">World Register of Marine Species</title>
+	  <creator>
+    	<organizationName>WoRMS Editorial Board</organizationName>
+    	<electronicMailAddress>info@marinespecies.org</electronicMailAddress>
+   	    <address>
+   	     <city></city>
+   	     <country></country>
+   	    </address>
+   	    <onlineUrl>http://www.marinespecies.org</onlineUrl>
+      </creator>
+      <metadataProvider>
+		<organizationName>WoRMS Data Management Team (DMT)</organizationName>
+    	<electronicMailAddress>info@marinespecies.org</electronicMailAddress>
+   	    <address>
+   	     <city>Ostend</city>
+   	     <postalCode>8400</postalCode>
+   	     <country>BE</country>
+   	    </address>
+   	    <onlineUrl>http://www.marinespecies.org</onlineUrl>
+      </metadataProvider>
+      <associatedParty>
+    <individualName>
+      <givenName>Leen</givenName>
+      <surName>Vandepitte</surName>
+    </individualName>
+    <organizationName>Vlaams Instituut voor de Zee</organizationName>
+    <address>
+      <country>Belgium</country>
+    </address>
+    <electronicMailAddress>leen.vandepitte@vliz.be</electronicMailAddress>
+    <role>custodianSteward</role>
+      </associatedParty>
+<associatedParty>
+    <individualName>
+      <givenName></givenName>
+      <surName></surName>
+    </individualName>
+    <organizationName>WoRMS Steering Committee</organizationName>
+    <address>
+      <country></country>
+    </address>
+    <electronicMailAddress>info@marinespecies.org</electronicMailAddress>
+    <role>owner</role>
+      </associatedParty>
+<associatedParty>
+    <individualName>
+      <givenName>Tammy</givenName>
+      <surName>Horton</surName>
+    </individualName>
+    <organizationName>University of Southampton; National Oceanography Centre, Southampton; Ocean Biogeochemistry and Ecosystems</organizationName>
+    <address>
+      <country>UK</country>
+    </address>
+    <electronicMailAddress>tammy.horton@noc.ac.uk</electronicMailAddress>
+    <role>editor</role>
+      </associatedParty>
+<associatedParty>
+    <individualName>
+      <givenName>Andreas</givenName>
+      <surName>Kroh</surName>
+    </individualName>
+    <organizationName>Natural History Museum Vienna</organizationName>
+    <address>
+      <country>Austria</country>
+    </address>
+    <electronicMailAddress>andreas.kroh@nhm-wien.ac.at</electronicMailAddress>
+    <role>editor</role>
+      </associatedParty>
+<associatedParty>
+    <individualName>
+      <givenName>Shane</givenName>
+      <surName>Ahyong</surName>
+    </individualName>
+    <organizationName>Australian Museum; Marine Invertebrates</organizationName>
+    <address>
+      <country>Australia</country>
+    </address>
+    <electronicMailAddress>Shane.Ahyong@austmus.gov.au</electronicMailAddress>
+    <role>editor</role>
+      </associatedParty>
+<associatedParty>
+    <individualName>
+      <givenName>Nicolas</givenName>
+      <surName>Bailly</surName>
+    </individualName>
+    <organizationName>Hellenic Centre for Marine Research</organizationName>
+    <address>
+      <country>Greece</country>
+    </address>
+    <electronicMailAddress>nbailly@hcmr.gr</electronicMailAddress>
+    <role>editor</role>
+      </associatedParty>
+<associatedParty>
+    <individualName>
+      <givenName>Nicole</givenName>
+      <surName>Boury-Esnault</surName>
+    </individualName>
+    <organizationName>WoRMS Steering Committee</organizationName>
+    <address>
+      <country></country>
+    </address>
+    <electronicMailAddress>info@marinespecies.org</electronicMailAddress>
+    <role>editor</role>
+      </associatedParty>
+<associatedParty>
+    <individualName>
+      <givenName>Simone-N.</givenName>
+      <surName>Brandão</surName>
+    </individualName>
+    <organizationName>Universidade Federal do Rio Grande do Norte; Departamento de Geologia; Laboratorio de Geologia e Geofisica Marinha e Monitoramento Ambiental</organizationName>
+    <address>
+      <country>Brasil</country>
+    </address>
+    <electronicMailAddress>brandao.sn.100@gmail.com</electronicMailAddress>
+    <role>editor</role>
+      </associatedParty>
+<associatedParty>
+    <individualName>
+      <givenName>Mark J.</givenName>
+      <surName>Costello</surName>
+    </individualName>
+    <organizationName>University of Auckland; Leigh Marine Laboratory</organizationName>
+    <address>
+      <country>New Zealand</country>
+    </address>
+    <electronicMailAddress>m.costello@auckland.ac.nz</electronicMailAddress>
+    <role>editor</role>
+      </associatedParty>
+<associatedParty>
+    <individualName>
+      <givenName>Serge</givenName>
+      <surName>Gofas</surName>
+    </individualName>
+    <organizationName>University of Málaga; Faculty of Sciences; Departamento de Biología Animal</organizationName>
+    <address>
+      <country>Spain</country>
+    </address>
+    <electronicMailAddress>sgofas@uma.es</electronicMailAddress>
+    <role>editor</role>
+      </associatedParty>
+<associatedParty>
+    <individualName>
+      <givenName>Francisco</givenName>
+      <surName>Hernandez</surName>
+    </individualName>
+    <organizationName>Vlaams Instituut voor de Zee</organizationName>
+    <address>
+      <country>Belgium</country>
+    </address>
+    <electronicMailAddress>francisco.hernandez@vliz.be</electronicMailAddress>
+    <role>editor</role>
+      </associatedParty>
+<associatedParty>
+    <individualName>
+      <givenName>Jan</givenName>
+      <surName>Mees</surName>
+    </individualName>
+    <organizationName>Vlaams Instituut voor de Zee</organizationName>
+    <address>
+      <country>Belgium</country>
+    </address>
+    <electronicMailAddress>jan.mees@vliz.be</electronicMailAddress>
+    <role>editor</role>
+      </associatedParty>
+<associatedParty>
+    <individualName>
+      <givenName>Gustav</givenName>
+      <surName>Paulay</surName>
+    </individualName>
+    <organizationName>University of Florida; Florida Museum of Natural History</organizationName>
+    <address>
+      <country>USA</country>
+    </address>
+    <electronicMailAddress>paulay@flmnh.ufl.edu</electronicMailAddress>
+    <role>editor</role>
+      </associatedParty>
+<associatedParty>
+    <individualName>
+      <givenName>Gary C.B.</givenName>
+      <surName>Poore</surName>
+    </individualName>
+    <organizationName>Museum Victoria, Melbourne</organizationName>
+    <address>
+      <country>Australia</country>
+    </address>
+    <electronicMailAddress>gpoore@museum.vic.gov.au</electronicMailAddress>
+    <role>editor</role>
+      </associatedParty>
+<associatedParty>
+    <individualName>
+      <givenName>Gary</givenName>
+      <surName>Rosenberg</surName>
+    </individualName>
+    <organizationName>Drexel University; Academy of Natural Sciences</organizationName>
+    <address>
+      <country>USA</country>
+    </address>
+    <electronicMailAddress>rosenberg.ansp@drexel.edu</electronicMailAddress>
+    <role>editor</role>
+      </associatedParty>
+
+	  <pubDate>
+      	2018-03-01
+      </pubDate>
+      <language>eng</language>
+      <abstract>
+        <para>With WoRMS we aim to provide the most authoritative list of names of all marine species globally, ever published</para>
+      </abstract>
+      <keywordSet>
+	   <keyword>taxonomic</keyword>
+	   <keyword>database</keyword>
+	   <keyword>online</keyword>
+	   <keyword>marine</keyword>
+	   <keyword>species</keyword>
+	   <keywordThesaurus />
+  	  </keywordSet>
+  	  <keywordSet>
+  	   <keyword>checklist</keyword>
+  	   <keywordThesaurus>GBIF Dataset Type Vocabulary: http://rs.gbif.org/vocabulary/gbif/dataset_type.xml</keywordThesaurus>
+  	  </keywordSet>
+  	  <keywordSet>
+  	   <keyword>taxonomicAuthority</keyword>
+  	   <keyword>globalSpeciesDataset</keyword>
+	   <keyword>inventoryThematic</keyword>
+  	   <keywordThesaurus>GBIF Dataset Subtype Vocabulary: http://rs.gbif.org/vocabulary/gbif/dataset_subtype.xml</keywordThesaurus>
+  	  </keywordSet>
+      <intellectualRights>
+        <para>CC-by</para>
+      </intellectualRights>
+      <distribution scope="document">
+        <online>
+          <url function="information">http://www.marinespecies.org/</url>
+        </online>
+      </distribution>
+      <coverage>
+        <taxonomicCoverage>
+         <generalTaxonomicCoverage>Biota</generalTaxonomicCoverage>
+         <taxonomicClassification>
+          <taxonRankName>superdomain</taxonRankName>
+          <taxonRankValue>Biota</taxonRankValue>
+         </taxonomicClassification>
+        </taxonomicCoverage>
+		<geographicCoverage>
+          <geographicDescription>World Oceans</geographicDescription>
+          <boundingCoordinates>
+            <westBoundingCoordinate>-180</westBoundingCoordinate>
+            <eastBoundingCoordinate>180</eastBoundingCoordinate>
+            <northBoundingCoordinate>90</northBoundingCoordinate>
+            <southBoundingCoordinate>-90</southBoundingCoordinate>
+          </boundingCoordinates>
+        </geographicCoverage>
+        <temporalCoverage>
+        	<beginDate><calendarDate>1758</calendarDate></beginDate>
+        	<endDate><calendarDate>2018-03-01</calendarDate></endDate>
+        </temporalCoverage>
+      </coverage>
+      <contact>
+    	<organizationName>World Register of Marine Species (WoRMS)</organizationName>
+    	<electronicMailAddress>info@marinespecies.org</electronicMailAddress>
+      </contact>
+    </dataset>
+    <additionalMetadata>
+     <metadata>
+      <gbif>
+        <dateStamp>2018-03-01T15:36:36+01:00</dateStamp>
+        <hierarchyLevel>dataset</hierarchyLevel>
+        <citation>&lt;b&gt;WoRMS Editorial Board&lt;/b&gt; (2018). World Register of Marine Species. Available from http://www.marinespecies.org at VLIZ. Accessed 2018-03-01. doi:10.14284/170</citation>
+		<resourceLogoUrl>http://www.marinespecies.org/documents/WoRMS%20branding/WoRMS_logo_blue_negative.png</resourceLogoUrl>
+      </gbif>
+     </metadata>
+    </additionalMetadata>
+</eml:eml>

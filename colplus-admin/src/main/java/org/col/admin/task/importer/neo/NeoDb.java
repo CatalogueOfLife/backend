@@ -494,15 +494,15 @@ public class NeoDb implements ReferenceStore {
 
   @Override
   public Reference refById(String id) {
-    return refByX(id);
+    return refByAny(id);
   }
 
   @Override
   public Reference refByTitle(String title) {
-    return refByX(title);
+    return refByAny(title);
   }
 
-  private Reference refByX(String x) {
+  private Reference refByAny(String x) {
     return x == null ? null : referenceIndex.getOrDefault(normRef(x), null);
   }
 

@@ -175,13 +175,14 @@ public class DwcaReader extends CsvReader {
     }
     val = unescapeBackslash(attr(parser, "fieldsEnclosedBy"));
     set.setQuoteDetectionEnabled(false);
-    if (val != null) {
-      if (val.length() != 1) {
-        throw new IllegalArgumentException("fieldsEnclosedBy needs to be a single char");
-      } else {
-        LOG.debug("Use quote char {} for {}", val, rowType);
-        set.getFormat().setQuote(val.charAt(0));
-      }
+    if (val == null) {
+      val = String.valueOf('\0');
+    }
+    if (val.length() != 1) {
+      throw new IllegalArgumentException("fieldsEnclosedBy needs to be a single char");
+    } else {
+      LOG.debug("Use quote char {} for {}", val, rowType);
+      set.getFormat().setQuote(val.charAt(0));
     }
     // we ignore linesTerminatedBy
     // Its quite often wrong and people dont really use anything else than \n \r!

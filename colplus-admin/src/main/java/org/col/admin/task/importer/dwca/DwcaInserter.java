@@ -1,5 +1,6 @@
 package org.col.admin.task.importer.dwca;
 
+import com.google.common.collect.Lists;
 import org.col.admin.task.importer.NeoInserter;
 import org.col.admin.task.importer.NormalizationFailedException;
 import org.col.admin.task.importer.neo.NeoDb;
@@ -9,6 +10,7 @@ import org.col.api.model.Dataset;
 import org.col.api.model.TermRecord;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.GbifTerm;
+import org.gbif.dwc.terms.Term;
 import org.neo4j.graphdb.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,13 +62,12 @@ public class DwcaInserter extends NeoInserter {
 
   @Override
   public void insert() throws NormalizationFailedException {
-    try (Transaction tx = store.getNeo().beginTx()){
-      reader.stream(GbifTerm.Distribution).forEach(this::addVerbatimRecord);
-      reader.stream(GbifTerm.VernacularName).forEach(this::addVerbatimRecord);
-      reader.stream(GbifTerm.Reference).forEach(this::addVerbatimRecord);
-
-    } catch (RuntimeException e) {
-      throw new NormalizationFailedException("Failed to insert DwC-A data", e);
+    for (Term rowType : Lists.newArrayList(GbifTerm.Reference, GbifTerm.Distribution, GbifTerm.VernacularName)) {
+      try (Transaction tx = store.getNeo().beginTx()){
+        reader.stream(rowType).forEach(this::addVerbatimRecord);
+      } catch (RuntimeException e) {
+        LOG.error("Failed to insert DwC-A {} data. Skip all {}s", rowType, rowType, e);
+      }
     }
   }
 
