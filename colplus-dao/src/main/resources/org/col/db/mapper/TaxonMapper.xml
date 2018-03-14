@@ -162,7 +162,7 @@
         FROM
         <include refid="FROM" />
         WHERE t.parent_key = #{key}
-        ORDER BY n.rank, t.key
+        ORDER BY n.rank, n.scientific_name
         <include refid="org.col.db.mapper.Common.limit" />
     </select>
 

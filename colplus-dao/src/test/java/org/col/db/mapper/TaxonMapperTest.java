@@ -197,7 +197,8 @@ public class TaxonMapperTest extends MapperTestBase<TaxonMapper> {
 
     NameMapper nameMapper = initMybatisRule.getMapper(NameMapper.class);
 
-    Name n1 = TestEntityGenerator.newName("child-name-1");
+    Name n1 = TestEntityGenerator.newName("XXX");
+    n1.setScientificName("XXX");
     n1.setRank(Rank.SUBGENUS);
     nameMapper.create(n1);
     
@@ -206,7 +207,8 @@ public class TaxonMapperTest extends MapperTestBase<TaxonMapper> {
     c1.setParentKey(parent.getKey());
     mapper().create(c1);
 
-    Name n2 = TestEntityGenerator.newName("child-name-2");
+    Name n2 = TestEntityGenerator.newName("YYY");
+    n1.setScientificName("YYY");
     n2.setRank(Rank.FAMILY);
     nameMapper.create(n2);
 
@@ -215,7 +217,8 @@ public class TaxonMapperTest extends MapperTestBase<TaxonMapper> {
     c2.setParentKey(parent.getKey());
     mapper().create(c2);
 
-    Name n3 = TestEntityGenerator.newName("child-name-3");
+    Name n3 = TestEntityGenerator.newName("ZZZ");
+    n3.setScientificName("ZZZ");
     n3.setRank(Rank.INFRASPECIFIC_NAME);
     nameMapper.create(n3);
 
@@ -224,7 +227,8 @@ public class TaxonMapperTest extends MapperTestBase<TaxonMapper> {
     c3.setParentKey(parent.getKey());
     mapper().create(c3);
 
-    Name n4 = TestEntityGenerator.newName("child-name-4");
+    Name n4 = TestEntityGenerator.newName("AAA");
+    n4.setScientificName("AAA");
     n4.setRank(Rank.SUBGENUS);
     nameMapper.create(n4);
 
@@ -238,11 +242,10 @@ public class TaxonMapperTest extends MapperTestBase<TaxonMapper> {
     List<Taxon> res = mapper().children(parent.getKey(), new Page(0, 5));   
     
     assertEquals("01", 4, res.size());
-    // order by rank first, then taxon key
-    assertEquals("02", c2.getKey(), res.get(0).getKey());
-    assertEquals("03", c1.getKey(), res.get(1).getKey());
-    assertEquals("04", c4.getKey(), res.get(2).getKey());
-    assertEquals("05", c3.getKey(), res.get(3).getKey());
+    assertEquals("02", c2.getKey(), res.get(0).getKey()); // Family YYY
+    assertEquals("03", c4.getKey(), res.get(1).getKey()); // Subgenus AAA
+    assertEquals("04", c1.getKey(), res.get(2).getKey()); // Subgenus XXX
+    assertEquals("05", c3.getKey(), res.get(3).getKey()); // Infraspecific ZZZ
 
   }
 
