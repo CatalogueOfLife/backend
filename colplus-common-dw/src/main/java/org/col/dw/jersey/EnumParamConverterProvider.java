@@ -1,6 +1,7 @@
 package org.col.dw.jersey;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.collect.Maps;
 import org.col.api.jackson.ApiModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,6 +13,7 @@ import javax.ws.rs.ext.Provider;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
+import java.util.Map;
 
 /**
  * Jersey parameter converter & provider that uses our jackson Mapper
@@ -19,13 +21,17 @@ import java.lang.reflect.Type;
  */
 @Provider
 public class EnumParamConverterProvider implements ParamConverterProvider {
+  private final Map<Class, EnumParamConverter> converter = Maps.newHashMap();
 
   @Override
   public <T> ParamConverter<T> getConverter(Class<T> rawType, Type genericType, Annotation[] antns) {
     if (!rawType.isEnum()) {
       return null;
     }
-    return new EnumParamConverter<T>(rawType);
+    if (!converter.containsKey(rawType)) {
+      converter.put(rawType, new EnumParamConverter<T>(rawType));
+    }
+    return converter.get(rawType);
   }
 
   static class EnumParamConverter<T> implements ParamConverter<T> {
