@@ -12,7 +12,7 @@ public class EnumSerdeTestBase<T extends Enum> extends SerdeTestBase<T> {
   }
 
   @Override
-  T genTestValue() throws Exception {
+  public T genTestValue() throws Exception {
     return clazz.getEnumConstants()[0];
   }
 

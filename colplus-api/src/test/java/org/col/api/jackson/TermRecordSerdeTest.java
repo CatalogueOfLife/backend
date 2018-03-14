@@ -18,7 +18,7 @@ public class TermRecordSerdeTest extends SerdeTestBase<TermRecord> {
   }
 
   @Override
-  TermRecord genTestValue() throws Exception {
+  public TermRecord genTestValue() throws Exception {
     Random rnd = new Random();
     TermRecord rec = new TermRecord(11, "myFile.txt", DwcTerm.Taxon);
     for (Term t : DwcTerm.values()) {

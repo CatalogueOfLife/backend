@@ -20,7 +20,7 @@ public class VerbatimRecordSerdeTest extends  SerdeTestBase<VerbatimRecord> {
   }
 
   @Override
-  VerbatimRecord genTestValue() throws Exception {
+  public VerbatimRecord genTestValue() throws Exception {
     Random rnd = new Random();
 
     VerbatimRecord v = new VerbatimRecord();

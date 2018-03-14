@@ -8,7 +8,7 @@ import static org.junit.Assert.assertEquals;
 /**
  *
  */
-abstract class SerdeTestBase<T> {
+public abstract class SerdeTestBase<T> {
 
   Class<T> clazz;
   protected final JavaType type;
@@ -28,7 +28,7 @@ abstract class SerdeTestBase<T> {
     }
   }
 
-  abstract T genTestValue() throws Exception;
+  public abstract T genTestValue() throws Exception;
 
   @Test
   public void testRoundtrip() throws Exception {

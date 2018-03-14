@@ -13,7 +13,7 @@ public class DwcTermSerdeTest extends SerdeTestBase<Term> {
   }
 
   @Override
-  Term genTestValue() throws Exception {
+  public Term genTestValue() throws Exception {
     return DwcTerm.scientificName;
   }
 }

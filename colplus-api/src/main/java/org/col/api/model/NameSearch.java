@@ -7,6 +7,7 @@ import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 
 import javax.ws.rs.QueryParam;
+import java.util.Objects;
 
 public class NameSearch {
 
@@ -124,5 +125,26 @@ public class NameSearch {
         && taxstatus == null
         && issue == null
         && type == null;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    NameSearch that = (NameSearch) o;
+    return Objects.equals(q, that.q) &&
+        Objects.equals(datasetKey, that.datasetKey) &&
+        Objects.equals(key, that.key) &&
+        rank == that.rank &&
+        nomstatus == that.nomstatus &&
+        taxstatus == that.taxstatus &&
+        issue == that.issue &&
+        type == that.type &&
+        sortBy == that.sortBy;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(q, datasetKey, key, rank, nomstatus, taxstatus, issue, type, sortBy);
   }
 }
