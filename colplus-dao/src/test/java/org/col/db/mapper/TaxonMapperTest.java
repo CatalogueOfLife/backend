@@ -1,8 +1,11 @@
 package org.col.db.mapper;
 
 import com.google.common.collect.Lists;
+import org.col.api.model.Name;
 import org.col.api.model.Page;
 import org.col.api.model.Taxon;
+import org.gbif.nameparser.api.Rank;
+import org.apache.http.io.SessionInputBuffer;
 import org.col.api.TestEntityGenerator;
 import org.javers.core.Javers;
 import org.javers.core.JaversBuilder;
@@ -192,25 +195,57 @@ public class TaxonMapperTest extends MapperTestBase<TaxonMapper> {
     Taxon parent = TestEntityGenerator.newTaxon("parent-1");
     mapper().create(parent);
 
+    NameMapper nameMapper = initMybatisRule.getMapper(NameMapper.class);
+
+    Name n1 = TestEntityGenerator.newName("XXX");
+    n1.setScientificName("XXX");
+    n1.setRank(Rank.SUBGENUS);
+    nameMapper.create(n1);
+    
     Taxon c1 = TestEntityGenerator.newTaxon("child-1");
+    c1.setName(n1);
     c1.setParentKey(parent.getKey());
     mapper().create(c1);
 
+    Name n2 = TestEntityGenerator.newName("YYY");
+    n1.setScientificName("YYY");
+    n2.setRank(Rank.FAMILY);
+    nameMapper.create(n2);
+
     Taxon c2 = TestEntityGenerator.newTaxon("child-2");
+    c2.setName(n2);
     c2.setParentKey(parent.getKey());
     mapper().create(c2);
 
+    Name n3 = TestEntityGenerator.newName("ZZZ");
+    n3.setScientificName("ZZZ");
+    n3.setRank(Rank.INFRASPECIFIC_NAME);
+    nameMapper.create(n3);
+
     Taxon c3 = TestEntityGenerator.newTaxon("child-3");
+    c3.setName(n3);
     c3.setParentKey(parent.getKey());
     mapper().create(c3);
 
+    Name n4 = TestEntityGenerator.newName("AAA");
+    n4.setScientificName("AAA");
+    n4.setRank(Rank.SUBGENUS);
+    nameMapper.create(n4);
+
+    Taxon c4 = TestEntityGenerator.newTaxon("child-4");
+    c4.setName(n4);
+    c4.setParentKey(parent.getKey());
+    mapper().create(c4);
+
     commit();
 
-    List<Taxon> res = mapper().children(parent.getKey(), new Page(0, 5));
-    assertEquals(3, res.size());
-    assertEquals(c1, res.get(0));
-    assertEquals(c2, res.get(1));
-    assertEquals(c3, res.get(2));
+    List<Taxon> res = mapper().children(parent.getKey(), new Page(0, 5));   
+    
+    assertEquals("01", 4, res.size());
+    assertEquals("02", c2.getKey(), res.get(0).getKey()); // Family YYY
+    assertEquals("03", c4.getKey(), res.get(1).getKey()); // Subgenus AAA
+    assertEquals("04", c1.getKey(), res.get(2).getKey()); // Subgenus XXX
+    assertEquals("05", c3.getKey(), res.get(3).getKey()); // Infraspecific ZZZ
 
   }
 
