@@ -13,7 +13,7 @@ public class TaxonSerdeTest extends SerdeTestBase<Taxon> {
   }
 
   @Override
-  Taxon genTestValue() throws Exception {
+  public Taxon genTestValue() throws Exception {
     return TestEntityGenerator.newTaxon("alpha7");
   }
 

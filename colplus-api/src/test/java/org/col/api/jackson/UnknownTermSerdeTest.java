@@ -13,7 +13,7 @@ public class UnknownTermSerdeTest extends SerdeTestBase<Term> {
   }
 
   @Override
-  UnknownTerm genTestValue() throws Exception {
+  public UnknownTerm genTestValue() throws Exception {
     return UnknownTerm.build("http://col.plus/terms/punk");
   }
 }

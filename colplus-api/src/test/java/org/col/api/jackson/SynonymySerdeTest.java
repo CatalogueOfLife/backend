@@ -13,7 +13,7 @@ public class SynonymySerdeTest extends SerdeTestBase<Synonymy> {
   }
 
   @Override
-  Synonymy genTestValue() throws Exception {
+  public Synonymy genTestValue() throws Exception {
     return TestEntityGenerator.newSynonymy();
   }
 

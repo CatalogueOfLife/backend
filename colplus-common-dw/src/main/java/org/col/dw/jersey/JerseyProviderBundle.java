@@ -24,6 +24,9 @@ public class JerseyProviderBundle implements Bundle {
 
   @Override
   public void run(Environment env) {
+    // param converters
+    env.jersey().register(EnumParamConverterProvider.class);
+
     // filter
     env.jersey().register(CreatedResponseFilter.class);
     env.jersey().register(Null404ResponseFilter.class);

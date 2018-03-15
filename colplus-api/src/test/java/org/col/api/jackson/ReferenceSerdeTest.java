@@ -13,7 +13,7 @@ public class ReferenceSerdeTest extends SerdeTestBase<Reference> {
   }
 
   @Override
-  Reference genTestValue() throws Exception {
+  public Reference genTestValue() throws Exception {
     return TestEntityGenerator.newReference();
   }
 

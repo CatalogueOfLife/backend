@@ -128,6 +128,10 @@
         <include refid="SELECT" />
         FROM
         <include refid="FROM" />
+        <if test="nameKey != null">
+        	LEFT JOIN synonym syn ON (syn.taxon_key = t.key)
+        	LEFT JOIN name homotypic ON (n.key = homotypic.basionym_key)
+        </if>
         WHERE 1 = 1
         <if test="datasetKey != null">
         	AND t.dataset_key = #{datasetKey}
@@ -136,7 +140,7 @@
             AND t.parent_key IS NULL
         </if>
         <if test="nameKey != null">
-            AND t.name_key = #{nameKey}
+            AND (t.name_key = #{nameKey} OR syn.name_key = #{nameKey} OR homotypic.key = #{nameKey})
         </if>
         ORDER BY key
         <include refid="org.col.db.mapper.Common.limit" />

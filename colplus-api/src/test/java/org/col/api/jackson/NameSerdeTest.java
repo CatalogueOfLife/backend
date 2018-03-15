@@ -19,7 +19,7 @@ public class NameSerdeTest extends SerdeTestBase<Name> {
   }
 
   @Override
-  Name genTestValue() throws Exception {
+  public Name genTestValue() throws Exception {
     return TestEntityGenerator.newName();
   }
 
