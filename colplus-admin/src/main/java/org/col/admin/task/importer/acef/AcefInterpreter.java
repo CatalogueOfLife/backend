@@ -101,7 +101,7 @@ public class AcefInterpreter extends InterpreterBase {
   }
 
   protected LocalDate date(NeoTaxon t, Issue invalidIssue, Term term) {
-    return parse(AcefDateParser.PARSER, t.verbatim.getTerm(term)).orNull(invalidIssue, t.issues);
+    return parse(DateParser.PARSER, t.verbatim.getTerm(term)).orNull(invalidIssue, t.issues);
   }
 
   void interpretVernaculars(NeoTaxon t) {

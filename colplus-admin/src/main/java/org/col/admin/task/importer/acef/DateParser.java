@@ -4,7 +4,11 @@ import java.time.LocalDate;
 import java.time.Year;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
+import java.time.temporal.ChronoField;
+import java.time.temporal.TemporalAccessor;
+import java.time.temporal.TemporalField;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -16,15 +20,26 @@ import org.col.parser.Parser;
  * could allow for more date patterns (e.g. month not case sensitive), or even allow the patterns to
  * be settable.
  */
-public class AcefDateParser implements Parser<LocalDate> {
+public class DateParser implements Parser<LocalDate> {
+  
+  public static void main(String[] args) {
+    String pattern = "[MMM-][dd-]yyyy";
+    DateTimeFormatter dtf = new DateTimeFormatterBuilder().appendPattern(pattern).parseCaseInsensitive().toFormatter();
+    TemporalAccessor ta = dtf.parse("Apr-1972'T'18:20");
+    System.out.println("XXX: " + ta.getClass());
+    System.out.println("XXX: " + ta.isSupported(ChronoField.YEAR));
+    System.out.println("XXX: " + ta.isSupported(ChronoField.MONTH_OF_YEAR));
+    System.out.println("XXX: " + ta.isSupported(ChronoField.DAY_OF_MONTH));
+    System.out.println("XXX: " + ta.isSupported(ChronoField.SECOND_OF_MINUTE));
+  }
 
-  public static final AcefDateParser PARSER = new AcefDateParser();
+  public static final DateParser PARSER = new DateParser();
 
   private List<DateTimeFormatter> allowedYearPatterns;
   private List<DateTimeFormatter> allowedYearMonthPatterns;
   private List<DateTimeFormatter> allowedLocalDatePatterns;
 
-  private AcefDateParser() {
+  private DateParser() {
     allowedYearPatterns = Arrays.asList(DateTimeFormatter.ofPattern("yyyy"));
     allowedYearMonthPatterns = Arrays.asList(DateTimeFormatter.ofPattern("MMM-yyyy"));
     allowedLocalDatePatterns = Arrays.asList(DateTimeFormatter.ofPattern("dd-MMM-yyyy"),
