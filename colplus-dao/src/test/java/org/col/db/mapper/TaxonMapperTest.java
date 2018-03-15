@@ -1,22 +1,21 @@
 package org.col.db.mapper;
 
-import com.google.common.collect.Lists;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import org.col.api.TestEntityGenerator;
 import org.col.api.model.Name;
 import org.col.api.model.Page;
 import org.col.api.model.Taxon;
 import org.gbif.nameparser.api.Rank;
-import org.apache.http.io.SessionInputBuffer;
-import org.col.api.TestEntityGenerator;
 import org.javers.core.Javers;
 import org.javers.core.JaversBuilder;
 import org.javers.core.diff.Diff;
 import org.junit.Test;
-
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-
-import static org.junit.Assert.*;
+import com.google.common.collect.Lists;
 
 /**
  *
@@ -168,6 +167,90 @@ public class TaxonMapperTest extends MapperTestBase<TaxonMapper> {
   }
 
   @Test
+  public void list5() throws Exception {
+
+    NameMapper nameMapper = initMybatisRule.getMapper(NameMapper.class);
+
+    Name accepted1 = TestEntityGenerator.newName("accepted-1");
+    nameMapper.create(accepted1);
+
+    Name accepted2 = TestEntityGenerator.newName("accepted-2");
+    nameMapper.create(accepted2);
+
+    Taxon taxon1 = TestEntityGenerator.newTaxon("taxon-1");
+    taxon1.setName(accepted1);
+    mapper().create(taxon1);
+
+    Taxon taxon2 = TestEntityGenerator.newTaxon("taxon-2");
+    taxon2.setName(accepted2);
+    mapper().create(taxon2);
+
+    Name heterotypic1 = TestEntityGenerator.newName("hetereotypic-1");
+    Name heterotypic2 = TestEntityGenerator.newName("hetereotypic-2");
+    Name heterotypic3 = TestEntityGenerator.newName("hetereotypic-3");
+
+    nameMapper.create(heterotypic1);
+    nameMapper.create(heterotypic2);
+    nameMapper.create(heterotypic3);
+
+    int dKey = accepted1.getDatasetKey();
+
+    // heterotypic1 is p.p. synonym for accepted1 and accepted2
+    // 2 taxa should come back when querying on heterotypic1's
+    // name key
+    nameMapper.addSynonym(dKey, taxon1.getKey(), heterotypic1.getKey());
+    nameMapper.addSynonym(dKey, taxon2.getKey(), heterotypic1.getKey());
+    
+    nameMapper.addSynonym(dKey, taxon1.getKey(), heterotypic2.getKey());
+    nameMapper.addSynonym(dKey, taxon1.getKey(), heterotypic3.getKey());
+
+    Name homotypic1 = TestEntityGenerator.newName("homotypic-1");
+    homotypic1.setBasionymKey(accepted1.getKey());
+    
+    // homotypic 2/3/4/5 just noise to make sure no unexpected
+    // result becayse of table joins.
+    Name homotypic2 = TestEntityGenerator.newName("homotypic-2");
+    homotypic2.setBasionymKey(accepted1.getKey());
+    Name homotypic3 = TestEntityGenerator.newName("homotypic-3");
+    homotypic3.setBasionymKey(accepted1.getKey());
+    Name homotypic4 = TestEntityGenerator.newName("homotypic-4");
+    homotypic4.setBasionymKey(accepted2.getKey());
+    Name homotypic5 = TestEntityGenerator.newName("homotypic-5");
+    homotypic5.setBasionymKey(null);
+
+    nameMapper.create(homotypic1);
+    nameMapper.create(homotypic2);
+    nameMapper.create(homotypic3);
+    nameMapper.create(homotypic4);
+    nameMapper.create(homotypic5);
+
+    commit();
+
+    // get first page
+    Page p = new Page(0, 1000);
+
+    List<Taxon> res = mapper().list(null, false, accepted1.getKey(), p);
+
+    assertEquals("01", 1, res.size());
+
+    // heterotypic1 is p.p. synonym for accepted1 and accepted2
+    // 2 taxa should come back when querying on heterotypic1's
+    // name key
+    res = mapper().list(null, false, heterotypic1.getKey(), p);
+    assertEquals("02", 2, res.size());
+    
+    res = mapper().list(null, false, heterotypic2.getKey(), p);
+    assertEquals("02", 1, res.size());
+
+    res = mapper().list(null, false, homotypic1.getKey(), p);
+    assertEquals("03", 1, res.size());
+
+    res = mapper().list(null, false, homotypic5.getKey(), p);
+    assertEquals("04", 0, res.size());
+
+  }
+
+  @Test
   public void countChildren() throws Exception {
     Taxon parent = TestEntityGenerator.newTaxon("parent-1");
     mapper().create(parent);
@@ -201,7 +284,7 @@ public class TaxonMapperTest extends MapperTestBase<TaxonMapper> {
     n1.setScientificName("XXX");
     n1.setRank(Rank.SUBGENUS);
     nameMapper.create(n1);
-    
+
     Taxon c1 = TestEntityGenerator.newTaxon("child-1");
     c1.setName(n1);
     c1.setParentKey(parent.getKey());
@@ -239,8 +322,8 @@ public class TaxonMapperTest extends MapperTestBase<TaxonMapper> {
 
     commit();
 
-    List<Taxon> res = mapper().children(parent.getKey(), new Page(0, 5));   
-    
+    List<Taxon> res = mapper().children(parent.getKey(), new Page(0, 5));
+
     assertEquals("01", 4, res.size());
     assertEquals("02", c2.getKey(), res.get(0).getKey()); // Family YYY
     assertEquals("03", c4.getKey(), res.get(1).getKey()); // Subgenus AAA
@@ -249,7 +332,7 @@ public class TaxonMapperTest extends MapperTestBase<TaxonMapper> {
 
   }
 
-  private LinkedList<Taxon> createClassification(Taxon root, String ... ids) throws Exception {
+  private LinkedList<Taxon> createClassification(Taxon root, String... ids) throws Exception {
     LinkedList<Taxon> taxa = Lists.newLinkedList();
     taxa.add(root);
     Taxon p = root;
@@ -275,7 +358,8 @@ public class TaxonMapperTest extends MapperTestBase<TaxonMapper> {
     kingdom.setParentKey(null);
     mapper().create(kingdom);
 
-    LinkedList<Taxon> parents = createClassification(kingdom, "p1", "c1", "o1", "sf1", "f1", "g1", "sg1", "s1");
+    LinkedList<Taxon> parents =
+        createClassification(kingdom, "p1", "c1", "o1", "sf1", "f1", "g1", "sg1", "s1");
 
     commit();
 
