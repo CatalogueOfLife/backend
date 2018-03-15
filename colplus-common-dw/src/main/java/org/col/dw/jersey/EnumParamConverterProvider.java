@@ -13,6 +13,7 @@ import javax.ws.rs.ext.Provider;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
+import java.util.regex.Pattern;
 
 /**
  * Jersey parameter converter & provider that uses our jackson Mapper
@@ -30,6 +31,7 @@ public class EnumParamConverterProvider implements ParamConverterProvider {
   }
 
   static class EnumParamConverter<T> implements ParamConverter<T> {
+    private static final Pattern REMOVE_QUOTES = Pattern.compile("^\"|\"$");
     private static final Logger LOG = LoggerFactory.getLogger(EnumParamConverter.class);
     private final Class<T> type;
 
@@ -39,8 +41,11 @@ public class EnumParamConverterProvider implements ParamConverterProvider {
 
     @Override
     public T fromString(String value) {
+      if (Strings.isNullOrEmpty(value)) return null;
       try {
-        return Strings.isNullOrEmpty(value) ? null : ApiModule.MAPPER.readValue(value, type);
+        // we need to quote the value so it looks like a json value
+        return ApiModule.MAPPER.readValue('"' + value.trim() + '"', type);
+
       } catch (IOException e) {
         LOG.debug("Failed to convert {} into {}", value, type, e);
         throw new IllegalArgumentException("Invalid "+type.getSimpleName()+" value: " + value);
@@ -51,7 +56,8 @@ public class EnumParamConverterProvider implements ParamConverterProvider {
     public String toString(T value) {
       if (value == null) return null;
       try {
-        return ApiModule.MAPPER.writeValueAsString(value);
+        String json = ApiModule.MAPPER.writeValueAsString(value);
+        return REMOVE_QUOTES.matcher(json).replaceAll("") ;
 
       } catch (JsonProcessingException e) {
         throw new WebApplicationException("Failed to serialize "+type.getSimpleName()+" value "+value, e);

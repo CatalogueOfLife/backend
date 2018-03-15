@@ -14,17 +14,11 @@ package org.col.api.jackson;
 
 
 import org.col.api.vocab.Issue;
-import org.junit.Test;
 
 public class IssueSerdeTest extends EnumSerdeTestBase<Issue> {
 
   public IssueSerdeTest() {
     super(Issue.class);
   }
-
-  @Test
-  public void testSpaces() throws Exception {
-    testRoundtrip(Issue.ESCAPED_CHARACTERS);
-  }
-
+  
 }
