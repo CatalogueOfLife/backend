@@ -1,11 +1,6 @@
 package org.col.db.mapper;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
+import com.google.common.collect.Lists;
 import org.col.api.TestEntityGenerator;
 import org.col.api.model.Name;
 import org.col.api.model.Page;
@@ -15,7 +10,12 @@ import org.javers.core.Javers;
 import org.javers.core.JaversBuilder;
 import org.javers.core.diff.Diff;
 import org.junit.Test;
-import com.google.common.collect.Lists;
+
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+
+import static org.junit.Assert.*;
 
 /**
  *
@@ -213,6 +213,7 @@ public class TaxonMapperTest extends MapperTestBase<TaxonMapper> {
     homotypic2.setBasionymKey(accepted1.getKey());
     Name homotypic3 = TestEntityGenerator.newName("homotypic-3");
     homotypic3.setBasionymKey(accepted1.getKey());
+
     Name homotypic4 = TestEntityGenerator.newName("homotypic-4");
     homotypic4.setBasionymKey(accepted2.getKey());
     Name homotypic5 = TestEntityGenerator.newName("homotypic-5");
@@ -226,28 +227,39 @@ public class TaxonMapperTest extends MapperTestBase<TaxonMapper> {
 
     commit();
 
-    // get first page
-    Page p = new Page(0, 1000);
-
-    List<Taxon> res = mapper().list(null, false, accepted1.getKey(), p);
-
-    assertEquals("01", 1, res.size());
-
     // heterotypic1 is p.p. synonym for accepted1 and accepted2
     // 2 taxa should come back when querying on heterotypic1's
     // name key
-    res = mapper().list(null, false, heterotypic1.getKey(), p);
-    assertEquals("02", 2, res.size());
-    
-    res = mapper().list(null, false, heterotypic2.getKey(), p);
-    assertEquals("02", 1, res.size());
+    Page p = new Page(10);
+    List<Taxon> taxa = mapper().list(null, false, heterotypic1.getKey(), p);
+    assertEquals(2, taxa.size());
 
-    res = mapper().list(null, false, homotypic1.getKey(), p);
-    assertEquals("03", 1, res.size());
+    taxa = mapper().list(null, false, heterotypic2.getKey(), p);
+    assertEquals(1, taxa.size());
 
-    res = mapper().list(null, false, homotypic5.getKey(), p);
-    assertEquals("04", 0, res.size());
+    // none of the homotypic names have been linked as synonyms yet, so no results!
+    taxa = mapper().list(null, false, homotypic1.getKey(), p);
+    assertTrue(taxa.isEmpty());
 
+    taxa = mapper().list(null, false, homotypic5.getKey(), p);
+    assertTrue(taxa.isEmpty());
+
+    // add homotypic synonyms
+    nameMapper.addSynonym(dKey, taxon1.getKey(), homotypic1.getKey());
+    nameMapper.addSynonym(dKey, taxon1.getKey(), homotypic2.getKey());
+    nameMapper.addSynonym(dKey, taxon1.getKey(), homotypic3.getKey());
+
+    taxa = mapper().list(null, false, heterotypic2.getKey(), p);
+    assertEquals(1, taxa.size());
+
+    taxa = mapper().list(null, false, homotypic1.getKey(), p);
+    assertEquals(1, taxa.size());
+
+    taxa = mapper().list(null, false, homotypic3.getKey(), p);
+    assertEquals(1, taxa.size());
+
+    taxa = mapper().list(null, false, homotypic5.getKey(), p);
+    assertTrue(taxa.isEmpty());
   }
 
   @Test
