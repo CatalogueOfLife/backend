@@ -1,5 +1,9 @@
 package org.col.admin.task.importer.acef;
 
+import org.apache.commons.lang3.StringUtils;
+import org.col.parser.Parser;
+import org.col.parser.UnparsableException;
+
 import java.time.LocalDate;
 import java.time.Year;
 import java.time.YearMonth;
@@ -8,8 +12,6 @@ import java.time.format.DateTimeParseException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import org.apache.commons.lang3.StringUtils;
-import org.col.parser.Parser;
 
 /*
  * Currently allows only exactly for those patterns actually encountered in the ACEF sources. We
@@ -31,7 +33,8 @@ public class AcefDateParser implements Parser<LocalDate> {
         DateTimeFormatter.ofPattern("dd-MMM-yy"));
   }
 
-  public Optional<LocalDate> parse(String value) {
+  @Override
+  public Optional<LocalDate> parse(String value) throws UnparsableException {
     if (StringUtils.isBlank(value)) {
       return Optional.empty();
     }
@@ -45,7 +48,7 @@ public class AcefDateParser implements Parser<LocalDate> {
     if (null != (date = parseAsYear(value))) {
       return Optional.of(date);
     }
-    throw new IllegalArgumentException("Unsupported date: " + value);
+    throw new UnparsableException("Unsupported date: " + value);
   }
 
   private LocalDate parseAsYearMonthDay(String value) {
