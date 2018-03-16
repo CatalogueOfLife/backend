@@ -6,6 +6,7 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.admin.AdminServer;
 import org.col.admin.config.GbifConfig;
 import org.col.api.model.Dataset;
+import org.col.api.model.Page;
 import org.col.db.mapper.DatasetMapper;
 import org.col.util.concurrent.ExecutorUtils;
 import org.gbif.nameparser.utils.NamedThreadFactory;
@@ -39,6 +40,11 @@ public class GbifSync implements Managed {
     private final RxClient<RxCompletionStageInvoker> rxClient;
     private final SqlSessionFactory sessionFactory;
     private final GbifConfig gbif;
+    private int created;
+    private int updated;
+    private int deleted;
+    private DatasetMapper mapper;
+    private DatasetPager pager;
 
     public GbifSyncJob(GbifConfig gbif, RxClient<RxCompletionStageInvoker> rxClient, SqlSessionFactory sessionFactory) {
       this.gbif = gbif;
@@ -50,11 +56,15 @@ public class GbifSync implements Managed {
     public void run() {
       MDC.put(AdminServer.MDC_KEY_TASK, getClass().getSimpleName());
       try (SqlSession session = sessionFactory.openSession(true)) {
-        DatasetPager pager = new DatasetPager(rxClient, gbif);
-        DatasetMapper mapper = session.getMapper(DatasetMapper.class);
-        LOG.info("Syncing datasets from GBIF registry {}", gbif.api);
-        sync(pager, mapper);
+        pager = new DatasetPager(rxClient, gbif);
+        mapper = session.getMapper(DatasetMapper.class);
+        if (gbif.insert) {
+          syncAll();
+        } else {
+          updateExisting();
+        }
         session.commit();
+        LOG.info("{} datasets added, {} updated, {} deleted", created, updated, deleted);
 
       } catch (Exception e) {
         LOG.error("Failed to sync with GBIF", e);
@@ -62,48 +72,60 @@ public class GbifSync implements Managed {
       MDC.remove(AdminServer.MDC_KEY_TASK);
     }
 
-    private void sync(DatasetPager pager, DatasetMapper mapper) throws Exception {
-      int created = 0;
-      int updated = 0;
-      int deleted = 0;
 
+    private void syncAll() throws Exception {
+      LOG.info("Syncing all datasets from GBIF registry {}", gbif.api);
       while (pager.hasNext()) {
         List<Dataset> page = pager.next();
         LOG.debug("Received page " + pager.currPageNumber() + " with " + page.size() + " datasets from GBIF");
-
         for (Dataset gbif : page) {
-          Dataset curr = mapper.getByGBIF(gbif.getGbifKey());
-          if (curr == null) {
-            // create new dataset
-            mapper.create(gbif);
-            created++;
-            LOG.info("New dataset {} added from GBIF: {}", gbif.getKey(), gbif.getTitle());
-
-          } else
-          /**
-           * we modify core metadata (title, description, contacts, version) via the dwc archive metadata
-           * gbif syncs only change one of the following
-           *  - dwca access url
-           *  - license
-           *  - organization (publisher)
-           *  - homepage
-           */
-            if (!Objects.equals(gbif.getDataAccess(), curr.getDataAccess()) ||
-                !Objects.equals(gbif.getLicense(), curr.getLicense()) ||
-                !Objects.equals(gbif.getOrganisation(), curr.getOrganisation()) ||
-                !Objects.equals(gbif.getHomepage(), curr.getHomepage())
-              ) {
-              curr.setDataAccess(gbif.getDataAccess());
-              curr.setLicense(gbif.getLicense());
-              curr.setOrganisation(gbif.getOrganisation());
-              curr.setHomepage(gbif.getHomepage());
-              mapper.update(curr);
-              updated++;
-            }
+          sync(gbif, mapper.getByGBIF(gbif.getGbifKey()));
         }
       }
       //TODO: delete datasets no longer in GBIF
-      LOG.info("{} datasets added, {} updated, {} deleted", created, updated, deleted);
+    }
+
+    private void updateExisting() throws Exception {
+      LOG.info("Syncing existing datasets with GBIF registry {}", gbif.api);
+      Page page = new Page(100);
+      List<Dataset> datasets = null;
+      while (datasets == null || !datasets.isEmpty()) {
+        datasets = mapper.list(page);
+        for (Dataset d : datasets) {
+          if (d.getGbifKey() != null) {
+            Dataset gbif = pager.get(d.getGbifKey());
+            sync(gbif, d);
+          }
+        }
+        page.next();
+      }
+    }
+
+    private void sync(Dataset gbif, Dataset curr) throws Exception {
+      if (curr == null) {
+        // create new dataset
+        mapper.create(gbif);
+        created++;
+        LOG.info("New dataset {} added from GBIF: {}", gbif.getKey(), gbif.getTitle());
+
+      } else if (!Objects.equals(gbif.getDataAccess(), curr.getDataAccess()) ||
+            !Objects.equals(gbif.getLicense(), curr.getLicense()) ||
+            !Objects.equals(gbif.getOrganisation(), curr.getOrganisation()) ||
+            !Objects.equals(gbif.getHomepage(), curr.getHomepage())
+      ) {
+        //we modify core metadata (title, description, contacts, version) via the dwc archive metadata
+        //gbif syncs only change one of the following
+        // - dwca access url
+        // - license
+        // - organization (publisher)
+        // - homepage
+        curr.setDataAccess(gbif.getDataAccess());
+        curr.setLicense(gbif.getLicense());
+        curr.setOrganisation(gbif.getOrganisation());
+        curr.setHomepage(gbif.getHomepage());
+        mapper.update(curr);
+        updated++;
+      }
     }
   }
 

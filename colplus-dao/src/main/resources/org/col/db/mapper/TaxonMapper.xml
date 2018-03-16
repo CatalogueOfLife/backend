@@ -111,7 +111,7 @@
     <select id="count" parameterType="map" resultType="Integer">
         SELECT count(*)
         FROM taxon
-        WHERE 1 = 1
+        WHERE TRUE
         <if test="datasetKey != null">
         	AND dataset_key = #{datasetKey}
         </if>
@@ -130,9 +130,8 @@
         <include refid="FROM" />
         <if test="nameKey != null">
         	LEFT JOIN synonym syn ON (syn.taxon_key = t.key)
-        	LEFT JOIN name homotypic ON (n.key = homotypic.basionym_key)
         </if>
-        WHERE 1 = 1
+        WHERE TRUE
         <if test="datasetKey != null">
         	AND t.dataset_key = #{datasetKey}
         </if>
@@ -140,7 +139,7 @@
             AND t.parent_key IS NULL
         </if>
         <if test="nameKey != null">
-            AND (t.name_key = #{nameKey} OR syn.name_key = #{nameKey} OR homotypic.key = #{nameKey})
+            AND (t.name_key = #{nameKey} OR syn.name_key = #{nameKey})
         </if>
         ORDER BY key
         <include refid="org.col.db.mapper.Common.limit" />

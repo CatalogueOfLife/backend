@@ -78,10 +78,10 @@ public class ImportJob implements Callable<DatasetImport> {
       di = dao.createRunning(dataset);
       LOG.info("Start new import attempt {} for dataset {}: {}", di.getAttempt(), datasetKey, dataset.getTitle());
 
-      LOG.info("Downloading sources for dataset {} from {}", datasetKey, di.getDownloadUri());
       File source = cfg.normalizer.source(datasetKey);
       source.getParentFile().mkdirs();
 
+      LOG.info("Downloading sources for dataset {} from {} to {}", datasetKey, di.getDownloadUri(), source);
       final boolean isModified = downloader.downloadIfModified(di.getDownloadUri(), source);
       if(isModified || force) {
         if (!isModified) {
@@ -92,7 +92,7 @@ public class ImportJob implements Callable<DatasetImport> {
         LOG.info("Extracting files from archive {}", datasetKey);
         CompressionUtil.decompressFile(dwcaDir.toFile(), source);
 
-        LOG.info("Normalizing {}!", datasetKey);
+        LOG.info("Normalizing {}", datasetKey);
         store = NeoDbFactory.create(datasetKey, cfg.normalizer);
         store.put(dataset);
         new Normalizer(store, dwcaDir).run();
