@@ -36,31 +36,6 @@ public class ImportManager implements Managed {
   private final DownloadUtil downloader;
   private final SqlSessionFactory factory;
 
-  public class ImportRequest implements Callable<ImportJob> {
-    public final int datasetKey;
-    public final boolean force;
-    public boolean running = false;
-    public final LocalDateTime created = LocalDateTime.now();
-
-    public ImportRequest(int datasetKey, boolean force) {
-      this.datasetKey = datasetKey;
-      this.force = force;
-    }
-    @Override
-    public ImportJob call() {
-      try (SqlSession session = factory.openSession(true)){
-        Dataset d = session.getMapper(DatasetMapper.class).get(datasetKey);
-        if (d == null) {
-          throw new IllegalArgumentException("Dataset with key " + datasetKey + " does not exist");
-        } else if (d.hasDeletedDate()) {
-          throw new IllegalArgumentException("Dataset with key " + datasetKey + " is deleted");
-        }
-        running = true;
-        return new ImportJob(d, force, cfg, downloader, factory);
-      }
-    }
-  }
-
   public ImportManager(AdminServerConfig cfg, CloseableHttpClient client, SqlSessionFactory factory) {
     this.cfg = cfg;
     this.factory = factory;
@@ -90,26 +65,41 @@ public class ImportManager implements Managed {
 
   public ImportRequest submit(final int datasetKey, final boolean force) {
     LOG.info("Queue new import for dataset {}", datasetKey);
-    ImportRequest req = new ImportRequest(datasetKey, force);
+    final ImportRequest req = new ImportRequest(datasetKey, force);
     queue.add(req);
     futures.put(datasetKey, CompletableFuture
-        .supplyAsync(() -> req, exec)
-        .thenApply(ImportRequest::call)
-        .whenComplete((job, err) -> {
-          if (job != null) {
-            DatasetImport di = job.call();
+        .supplyAsync(() -> req)
+        .thenApplyAsync(this::runImport, exec)
+        .whenComplete((di, err) -> {
+          if (err != null) {
+            LOG.error("Dataset import {} failed: {}", req.datasetKey, err);
+
+          } else {
             Duration durQueued = Duration.between(req.created, di.getStarted());
             Duration durRun = Duration.between(di.getStarted(), LocalDateTime.now());
             LOG.info("Dataset import {}, attempt {} finished. {} min queued, {} min to execute", req.datasetKey, di.getAttempt(), durQueued.toMinutes(), durRun.toMinutes());
-
-          } else {
-            LOG.error("Dataset import {}, attempt {} failed.", req.datasetKey);
           }
           futures.remove(req.datasetKey);
           queue.remove(req);
         })
     );
+    LOG.info("Queued import for dataset {}", datasetKey);
     return req;
+  }
+
+  private DatasetImport runImport(ImportRequest req) {
+    try (SqlSession session = factory.openSession(true)) {
+      Dataset d = session.getMapper(DatasetMapper.class).get(req.datasetKey);
+      if (d == null) {
+        throw new IllegalArgumentException("Dataset " + req.datasetKey + " does not exist");
+
+      } else if (d.hasDeletedDate()) {
+        throw new IllegalArgumentException("Dataset " + req.datasetKey + " is deleted");
+      }
+      ImportJob job = new ImportJob(d, req.force, cfg, downloader, factory);
+      req.start();
+      return job.call();
+    }
   }
 
   /**
@@ -121,6 +111,7 @@ public class ImportManager implements Managed {
 
   @Override
   public void start() throws Exception {
+    LOG.info("Starting import manager with {} import threads.", cfg.importer.threads);
     exec = new ThreadPoolExecutor(0, cfg.importer.threads,
         10L, TimeUnit.SECONDS,
         new LinkedBlockingQueue<>(cfg.importer.maxQueue),

@@ -6,6 +6,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.univocity.parsers.csv.CsvFormat;
 import com.univocity.parsers.csv.CsvParserSettings;
 import org.apache.commons.text.StringEscapeUtils;
 import org.codehaus.stax2.XMLInputFactory2;
@@ -89,7 +90,6 @@ public class DwcaReader extends CsvReader {
   protected void discoverSchemas(String termPrefix) throws IOException {
     Path meta = resolve(META_FN);
     if (Files.exists(meta)) {
-      LOG.info("Found DwC-A descriptor");
       readFromMeta(meta);
 
     } else {
@@ -128,6 +128,9 @@ public class DwcaReader extends CsvReader {
         }
       }
     }
+    CsvFormat format = coreSchema().settings.getFormat();
+    LOG.info("Found {} core [delim={} quote={}] and {} extensions",
+        coreRowType, format.getDelimiter(), format.getQuote(), size()-1);
   }
 
   @Override
@@ -286,6 +289,7 @@ public class DwcaReader extends CsvReader {
   }
 
   private void readFromMeta(Path meta) {
+    LOG.info("Reading DwC-A descriptor");
     try (CharsetDetectingStream stream = CharsetDetectingStream.create(Files.newInputStream(meta))){
       XMLStreamReader2 parser = (XMLStreamReader2) factory.createXMLStreamReader(stream, stream.getCharset().name());
 
@@ -315,7 +319,6 @@ public class DwcaReader extends CsvReader {
       LOG.error("Failed to parse DwC-A descriptor: {}", e.getMessage(), e);
       throw new NormalizationFailedException.SourceInvalidException("Failed to parse DwC-A descriptor");
     }
-    LOG.info("Read DwC-A descriptor with {} core and {} extensions", coreRowType, size()-1);
   }
 
   /**

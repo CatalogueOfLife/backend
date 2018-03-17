@@ -70,6 +70,14 @@ public class ImportJob implements Callable<DatasetImport> {
     return di;
   }
 
+  public int getDatasetKey() {
+    return datasetKey;
+  }
+
+  public Integer getAttempt() {
+    return di == null ? null : di.getAttempt();
+  }
+
   private void importDataset() {
     final Path dwcaDir = cfg.normalizer.sourceDir(datasetKey).toPath();
     NeoDb store = null;
