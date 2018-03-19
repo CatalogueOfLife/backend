@@ -1,6 +1,7 @@
 package org.col.admin.resources;
 
 import org.apache.ibatis.session.SqlSessionFactory;
+import org.col.admin.task.importer.ImportRequest;
 import org.col.api.model.DatasetImport;
 import org.col.api.model.Page;
 import org.col.api.model.ResultPage;
@@ -35,13 +36,13 @@ public class ImporterResource {
   }
 
   @POST
-  public ImportManager.ImportRequest schedule(@QueryParam("key") Integer datasetKey, @QueryParam("force") boolean force) {
+  public ImportRequest schedule(@QueryParam("key") Integer datasetKey, @QueryParam("force") boolean force) {
     return importManager.submit(datasetKey, force);
   }
 
   @GET
   @Path("/queue")
-  public List<ImportManager.ImportRequest> queue() {
+  public List<ImportRequest> queue() {
     return importManager.list();
   }
 

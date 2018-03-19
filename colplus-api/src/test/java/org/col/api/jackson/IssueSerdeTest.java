@@ -20,5 +20,5 @@ public class IssueSerdeTest extends EnumSerdeTestBase<Issue> {
   public IssueSerdeTest() {
     super(Issue.class);
   }
-  
+
 }

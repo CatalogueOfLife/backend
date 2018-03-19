@@ -37,6 +37,7 @@ public class DatasetPager {
 
   private final Page page = new Page(100);
   private boolean hasNext = true;
+  final RxWebTarget<RxCompletionStageInvoker> dataset;
   final RxWebTarget<RxCompletionStageInvoker> datasets;
   final RxWebTarget<RxCompletionStageInvoker> publisher;
   final RxClient<RxCompletionStageInvoker> client;
@@ -44,6 +45,8 @@ public class DatasetPager {
 
   public DatasetPager(RxClient<RxCompletionStageInvoker> client, GbifConfig gbif) {
     this.client = client;
+    dataset = client
+        .target(UriBuilder.fromUri(gbif.api).path("/dataset"));
     datasets = client
         .target(UriBuilder.fromUri(gbif.api).path("/dataset"))
         .queryParam("type", "CHECKLIST");
@@ -88,6 +91,18 @@ public class DatasetPager {
       LOG.error("Failed to retrieve publisher {} from cache", key, e);
       throw new IllegalStateException(e);
     }
+  }
+
+  public Dataset get(UUID gbifKey) {
+    LOG.debug("retrieve {}", gbifKey);
+    return dataset.path(gbifKey.toString())
+        .request()
+        .accept(MediaType.APPLICATION_JSON_TYPE)
+        .rx()
+        .get(GDataset.class)
+        .thenApply(this::convert)
+        .toCompletableFuture()
+        .join();
   }
 
   public List<Dataset> next() {
