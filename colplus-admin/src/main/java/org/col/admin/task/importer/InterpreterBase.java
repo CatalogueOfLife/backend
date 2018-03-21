@@ -1,9 +1,11 @@
 package org.col.admin.task.importer;
 
-import com.google.common.base.CharMatcher;
-import com.google.common.base.Splitter;
-import com.google.common.base.Strings;
-import com.ibm.icu.text.Transliterator;
+import static org.col.parser.SafeParser.parse;
+import java.net.URI;
+import java.time.LocalDate;
+import java.util.EnumSet;
+import java.util.Optional;
+import java.util.Set;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.col.admin.task.importer.neo.ReferenceStore;
@@ -15,21 +17,26 @@ import org.col.api.model.Reference;
 import org.col.api.model.VernacularName;
 import org.col.api.vocab.Issue;
 import org.col.api.vocab.Origin;
-import org.col.parser.*;
+import org.col.parser.BooleanParser;
+import org.col.parser.FuzzyDateParser;
+import org.col.parser.NameParser;
+import org.col.parser.NomCodeParser;
+import org.col.parser.NomStatusParser;
+import org.col.parser.RankParser;
+import org.col.parser.SafeParser;
+import org.col.parser.UnparsableException;
+import org.col.parser.UriParser;
+import org.col.util.date.FuzzyDate;
 import org.gbif.dwc.terms.Term;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.ParsedName;
 import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.net.URI;
-import java.time.LocalDate;
-import java.util.EnumSet;
-import java.util.Optional;
-import java.util.Set;
-
-import static org.col.parser.SafeParser.parse;
+import com.google.common.base.CharMatcher;
+import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
+import com.ibm.icu.text.Transliterator;
 
 /**
  * Base interpreter providing common methods for both ACEF and DWC
@@ -57,6 +64,7 @@ public class InterpreterBase {
 
   /**
    * Transliterates a vernacular name if its not yet existing
+   * 
    * @param t
    * @param vn
    */
@@ -74,14 +82,27 @@ public class InterpreterBase {
   }
 
   protected LocalDate date(NeoTaxon t, Issue invalidIssue, Term term) {
-    return parse(DateParser.PARSER, t.verbatim.getTerm(term)).orNull(invalidIssue, t.issues);
+    Optional<FuzzyDate> date;
+    try {
+      date = FuzzyDateParser.PARSER.parse(t.verbatim.getTerm(term));
+    } catch (UnparsableException e) {
+      t.addIssue(invalidIssue);
+      return null;
+    }
+    if (date.isPresent()) {
+      if (date.get().isPartial()) {
+        t.addIssue(Issue.PARTIAL_DATE);
+      }
+      return date.get().toLocalDate();
+    }
+    return null;
   }
 
-  protected URI uri(NeoTaxon t, Issue invalidIssue, Term ... term) {
+  protected URI uri(NeoTaxon t, Issue invalidIssue, Term... term) {
     return parse(UriParser.PARSER, t.verbatim.getFirst(term)).orNull(invalidIssue, t.issues);
   }
 
-  protected Boolean bool(NeoTaxon t, Issue invalidIssue, Term ... term) {
+  protected Boolean bool(NeoTaxon t, Issue invalidIssue, Term... term) {
     return parse(BooleanParser.PARSER, t.verbatim.getFirst(term)).orNull(invalidIssue, t.issues);
   }
 
@@ -113,9 +134,8 @@ public class InterpreterBase {
   }
 
   public Name interpretName(String id, String vrank, String sciname, String authorship,
-                            String genus, String infraGenus, String species, String infraspecies,
-                            String nomCode, String nomStatus, String link, String remarks
-  ) {
+      String genus, String infraGenus, String species, String infraspecies, String nomCode,
+      String nomStatus, String link, String remarks) {
     final Set<Issue> issues = EnumSet.noneOf(Issue.class);
     final boolean isAtomized = ObjectUtils.anyNotNull(genus, infraGenus, species, infraspecies);
 
@@ -129,7 +149,8 @@ public class InterpreterBase {
     atom.setInfraspecificEpithet(infraspecies);
 
     // parse rank
-    Rank rank = SafeParser.parse(RankParser.PARSER, vrank).orElse(Rank.UNRANKED, Issue.RANK_INVALID, issues);
+    Rank rank = SafeParser.parse(RankParser.PARSER, vrank).orElse(Rank.UNRANKED, Issue.RANK_INVALID,
+        issues);
     atom.setRank(rank);
 
     // we can get the scientific name in various ways.
@@ -139,7 +160,7 @@ public class InterpreterBase {
       n = NameParser.PARSER.parse(sciname, rank).get();
       // try to add an authorship if not yet there
       if (!Strings.isNullOrEmpty(authorship)) {
-        ParsedName pnAuthorship = NameParser.PARSER.parseAuthorship(authorship).orElseGet(()-> {
+        ParsedName pnAuthorship = NameParser.PARSER.parseAuthorship(authorship).orElseGet(() -> {
           LOG.warn("Unparsable authorship {}", authorship);
           n.addIssue(Issue.UNPARSABLE_AUTHORSHIP);
           // add the full, unparsed authorship in this case to not lose it
@@ -151,12 +172,11 @@ public class InterpreterBase {
         if (n.hasAuthorship()) {
           // we did already parse an authorship from the scientificName string.
           // Does it match up?
-          if (!n.authorshipComplete().equalsIgnoreCase(pnAuthorship.authorshipComplete())){
+          if (!n.authorshipComplete().equalsIgnoreCase(pnAuthorship.authorshipComplete())) {
             n.addIssue(Issue.INCONSISTENT_AUTHORSHIP);
-            LOG.info("Different authorship found in dwc:scientificName=[{}] and dwc:scientificNameAuthorship=[{}]",
-                n.authorshipComplete(),
-                pnAuthorship.authorshipComplete()
-            );
+            LOG.info(
+                "Different authorship found in dwc:scientificName=[{}] and dwc:scientificNameAuthorship=[{}]",
+                n.authorshipComplete(), pnAuthorship.authorshipComplete());
           }
         } else {
           n.setCombinationAuthorship(pnAuthorship.getCombinationAuthorship());
@@ -165,13 +185,14 @@ public class InterpreterBase {
         }
       }
 
-    } else if (!isAtomized){
+    } else if (!isAtomized) {
       LOG.warn("No name given for {}", id);
       return null;
 
     } else {
       // parse the reconstructed name with authorship
-      // cant use the atomized name just like that cause we would miss name type detection (virus, hybrid, placeholder, garbage)
+      // cant use the atomized name just like that cause we would miss name type detection (virus,
+      // hybrid, placeholder, garbage)
       n = NameParser.PARSER.parse(atom.canonicalNameComplete() + " " + authorship, rank).get();
     }
 
@@ -179,15 +200,17 @@ public class InterpreterBase {
     n.setId(id);
     n.setOrigin(Origin.SOURCE);
     n.setSourceUrl(SafeParser.parse(UriParser.PARSER, link).orNull());
-    n.setStatus(SafeParser.parse(NomStatusParser.PARSER, nomStatus).orElse(null, Issue.NOMENCLATURAL_STATUS_INVALID, n.getIssues()));
+    n.setStatus(SafeParser.parse(NomStatusParser.PARSER, nomStatus).orElse(null,
+        Issue.NOMENCLATURAL_STATUS_INVALID, n.getIssues()));
     // applies default dataset code if we cannot find or parse any
     // Always make sure this happens BEFORE we update the canonical scientific name
-    n.setCode(SafeParser.parse(NomCodeParser.PARSER, nomCode).orElse(dataset.getCode(), Issue.NOMENCLATURAL_CODE_INVALID, n.getIssues()));
+    n.setCode(SafeParser.parse(NomCodeParser.PARSER, nomCode).orElse(dataset.getCode(),
+        Issue.NOMENCLATURAL_CODE_INVALID, n.getIssues()));
     n.setRemarks(remarks);
 
     // assign best rank
     if (rank.notOtherOrUnranked() || n.getRank() == null) {
-      //TODO: check ACEF ranks...
+      // TODO: check ACEF ranks...
       n.setRank(rank);
     }
 

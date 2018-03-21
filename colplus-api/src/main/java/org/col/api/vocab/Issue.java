@@ -224,6 +224,11 @@ public enum Issue {
    * acef:LTSDate cannot be interpreted into a date
    */
   ACCORDING_TO_DATE_INVALID,
+  
+  /**
+   * Date string was provided a year, but month and/or day were absent
+   */
+  PARTIAL_DATE,
 
   /**
    * If a synonym points to another synonym as its accepted taxon the chain is resolved.

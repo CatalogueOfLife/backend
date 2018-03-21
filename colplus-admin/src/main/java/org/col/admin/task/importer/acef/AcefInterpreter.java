@@ -1,7 +1,6 @@
 package org.col.admin.task.importer.acef;
 
 import static org.col.parser.SafeParser.parse;
-import java.time.LocalDate;
 import java.util.Set;
 import org.col.admin.task.importer.InsertMetadata;
 import org.col.admin.task.importer.InterpreterBase;
@@ -33,8 +32,8 @@ import org.col.parser.LifezoneParser;
 import org.col.parser.RankParser;
 import org.col.parser.SafeParser;
 import org.col.parser.TaxonomicStatusParser;
+import org.col.util.date.FuzzyDate;
 import org.gbif.dwc.terms.AcefTerm;
-import org.gbif.dwc.terms.Term;
 import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -98,10 +97,6 @@ public class AcefInterpreter extends InterpreterBase {
     t.classification = interpretClassification(v, synonym);
 
     return t;
-  }
-
-  protected LocalDate date(NeoTaxon t, Issue invalidIssue, Term term) {
-    return parse(DateParser.PARSER, t.verbatim.getTerm(term)).orNull(invalidIssue, t.issues);
   }
 
   void interpretVernaculars(NeoTaxon t) {

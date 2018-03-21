@@ -1,0 +1,230 @@
+package org.col.parser;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.Year;
+import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.temporal.TemporalAccessor;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import org.col.util.date.FuzzyDate;
+import org.junit.Test;
+
+@SuppressWarnings("static-method")
+public class FuzzyDateParserTest {
+
+  /*
+   * These tests yield that, when parsing, you should always use "d-M-uuuu" as date pattern rather
+   * than "dd-MM-uuuu", because "d-M-uuuu" will match "12-04-2004", but "dd-MM-uuuu" will not match
+   * "2-4-2012"
+   */
+  @Test
+  public void test1() throws UnparsableException {
+    FuzzyDateParser parser = getParser("d-M-uuuu");
+    Optional<FuzzyDate> parsed = parser.parse("12-04-2004");
+    assertNotNull("01", parsed);
+    assertNotNull("02", parsed.get());
+    assertFalse("03", parsed.get().isPartial());
+    assertEquals("04", LocalDate.class, parsed.get().bestMatch().getClass());
+    assertEquals("05", parsed.get().toLocalDate(), LocalDate.of(2004, 4, 12));
+  }
+
+  @Test
+  public void test1b() throws UnparsableException {
+    FuzzyDateParser parser = getParser("d-M-uuuu");
+    Optional<FuzzyDate> parsed = parser.parse("22-7-2004");
+    assertNotNull("01", parsed);
+    assertNotNull("02", parsed.get());
+    assertFalse("03", parsed.get().isPartial());
+    assertEquals("04", LocalDate.class, parsed.get().bestMatch().getClass());
+    assertEquals("05", parsed.get().toLocalDate(), LocalDate.of(2004, 7, 22));
+  }
+
+  @Test
+  public void test1c() throws UnparsableException {
+    FuzzyDateParser parser = getParser("d-M-uu");
+    Optional<FuzzyDate> parsed = parser.parse("3-03-04");
+    assertNotNull("01", parsed);
+    assertNotNull("02", parsed.get());
+    assertFalse("03", parsed.get().isPartial());
+    assertEquals("04", LocalDate.class, parsed.get().bestMatch().getClass());
+    assertEquals("05", parsed.get().toLocalDate(), LocalDate.of(2004, 3, 3));
+  }
+
+  @Test(expected = UnparsableException.class)
+  public void test1d() throws UnparsableException {
+    FuzzyDateParser parser = getParser("dd-MM-uuuu");
+    parser.parse("3-5-1904");
+  }
+
+  @Test(expected = UnparsableException.class)
+  public void test1e() throws UnparsableException {
+    FuzzyDateParser parser = getParser("[[d-]M-]uuuu");
+    parser.parse("3-03-04");
+  }
+
+  /*
+   * Strangely, "04-2004" does not match "[[dd-]MM-]uuuu", but "2004" does.
+   */
+  @Test(expected = UnparsableException.class)
+  public void test2() throws UnparsableException {
+    FuzzyDateParser parser = getParser("[[d-]M-]uuuu");
+    parser.parse("04-2004");
+  }
+
+  @Test
+  public void test3() throws UnparsableException {
+    FuzzyDateParser parser = getParser("[[d-][M-]uuuu");
+    Optional<FuzzyDate> parsed = parser.parse("2004");
+    assertNotNull("01", parsed);
+    assertNotNull("02", parsed.get());
+    assertTrue("03", parsed.get().isPartial());
+    assertEquals("04", Year.class, parsed.get().bestMatch().getClass());
+    assertEquals("05", parsed.get().toLocalDate(), LocalDate.of(2004, 1, 1));
+  }
+
+  @Test
+  public void test4() throws UnparsableException {
+    FuzzyDateParser parser = getParser("[M-]uuuu");
+    Optional<FuzzyDate> parsed = parser.parse("04-2004");
+    assertNotNull("01", parsed);
+    assertNotNull("02", parsed.get());
+    assertTrue("03", parsed.get().isPartial());
+    assertEquals("04", YearMonth.class, parsed.get().bestMatch().getClass());
+    assertEquals("05", parsed.get().toLocalDate(), LocalDate.of(2004, 4, 1));
+  }
+
+  @Test
+  public void test5() throws UnparsableException {
+    FuzzyDateParser parser = getParser("uuuu-M-d'T'HH:mm[:ss]'Z'");
+    Optional<FuzzyDate> parsed = parser.parse("2007-10-13T13:02Z");
+    assertNotNull("01", parsed);
+    assertNotNull("02", parsed.get());
+    assertFalse("03", parsed.get().isPartial());
+    assertEquals("04", LocalDate.class, parsed.get().bestMatch().getClass());
+    assertEquals("05", parsed.get().toLocalDate(), LocalDate.of(2007, 10, 13));
+  }
+
+  @Test
+  public void test6() throws UnparsableException {
+    FuzzyDateParser parser = getParser("uuuu-M-d'T'HH:mm[:ss]'Z'");
+    Optional<FuzzyDate> parsed = parser.parse("2007-10-13T13:02Z");
+    assertNotNull("01", parsed);
+    assertNotNull("02", parsed.get());
+    assertFalse("03", parsed.get().isPartial());
+    assertEquals("04", LocalDate.class, parsed.get().bestMatch().getClass());
+    assertEquals("05", parsed.get().toLocalDate(), LocalDate.of(2007, 10, 13));
+  }
+
+  @Test
+  public void test7() {
+    DateTimeFormatter dtf = DateTimeFormatter.ISO_DATE_TIME;
+    TemporalAccessor ta = dtf.parse("2011-10-03T10:15:30+01:00:20", OffsetDateTime::from);
+    assertEquals("01", "2011-10-03T10:15:30+01:00:20", ta.toString());
+  }
+
+  /*
+   * ISO_DATE_TIME also takes care of date strings ending in Z
+   */
+  @Test
+  public void test7b() {
+    DateTimeFormatter dtf = DateTimeFormatter.ISO_DATE_TIME;
+    TemporalAccessor ta = dtf.parse("2011-10-03T10:15:30Z", OffsetDateTime::from);
+    assertEquals("01", "2011-10-03T10:15:30Z", ta.toString());
+  }
+
+  @Test
+  public void test8() {
+    DateTimeFormatter dtf = formatter("uuuu-M-d'T'HH:mm[:ss]X");
+    TemporalAccessor ta = dtf.parse("2011-10-03T10:15:22+0100", OffsetDateTime::from);
+    assertEquals("01", "2011-10-03T10:15:22+01:00", ta.toString());
+  }
+
+  /*
+   * uuuu-M-d'T'HH:mm[:ss]X takes care of date strings ending in Z, but also date strings with zone
+   * offsets without colon like 2011-10-03T10:15:22+0300
+   */
+  @Test
+  public void test8b() {
+    DateTimeFormatter dtf = formatter("uuuu-M-d'T'HH:mm[:ss]X");
+    TemporalAccessor ta = dtf.parse("2011-10-03T10:15:22Z", OffsetDateTime::from);
+    assertEquals("01", "2011-10-03T10:15:22Z", ta.toString());
+  }
+
+  /*
+   * Zone offset +0300
+   */
+  @Test
+  public void test8c() {
+    DateTimeFormatter dtf = formatter("uuuu-M-d'T'HH:mm[:ss]X");
+    TemporalAccessor ta = dtf.parse("2011-10-03T10:15:22+0300", OffsetDateTime::from);
+    assertEquals("01", "2011-10-03T10:15:22+03:00", ta.toString());
+  }
+
+  /*
+   * Zone offset +03; date string without seconds
+   */
+  @Test
+  public void test8d() {
+    DateTimeFormatter dtf = formatter("uuuu-M-d'T'HH:mm[:ss]X");
+    TemporalAccessor ta = dtf.parse("2011-10-03T10:15:22+03", OffsetDateTime::from);
+    assertEquals("01", "2011-10-03T10:15:22+03:00", ta.toString());
+  }
+
+  @Test
+  public void test8e() {
+    DateTimeFormatter dtf = formatter("uuuu-M-d'T'HH:mm[:ss]X");
+    TemporalAccessor ta = dtf.parse("2011-10-03T10:15+03", OffsetDateTime::from);
+    assertEquals("01", "2011-10-03T10:15+03:00", ta.toString());
+  }
+
+  @Test
+  public void test9() {
+    DateTimeFormatter dtf = formatter("uuuu-M-d'T'HH:mm[:ss]Z");
+    TemporalAccessor ta = dtf.parse("2011-10-03T10:15+0100", OffsetDateTime::from);
+    // Lesson: if seconds not present, then also not printed (not rounded to :00)
+    assertEquals("01", "2011-10-03T10:15+01:00", ta.toString());
+  }
+
+  @Test
+  public void test10() {
+    DateTimeFormatter dtf = formatter("uuuu-M-d'T'HH:mm:ss'a'");
+    TemporalAccessor ta = dtf.parse("2011-10-03T10:15:18a", LocalDateTime::from);
+    assertEquals("01", "2011-10-03T10:15:18", ta.toString());
+  }
+
+  @Test
+  public void test10b() {
+    DateTimeFormatter dtf = formatter("uuuu-M-d'T'HH:mm:ss'a'");
+    TemporalAccessor ta = dtf.parse("2011-10-03T10:15:18a", LocalDate::from);
+    assertEquals("01", "2011-10-03", ta.toString());
+  }
+
+  @Test
+  public void test11() {
+    DateTimeFormatter dtf = formatter("uuuu[/M]");
+    TemporalAccessor ta = dtf.parse("2011", Year::from);
+    System.out.println(ta);
+  }
+
+  private static FuzzyDateParser getParser(String... patterns) {
+    List<DateTimeFormatter> formatters = new ArrayList<>(patterns.length);
+    for (String p : patterns) {
+      formatters.add(formatter(p));
+    }
+    return new FuzzyDateParser(formatters);
+  }
+
+  private static DateTimeFormatter formatter(String pattern) {
+    return new DateTimeFormatterBuilder().appendPattern(pattern).toFormatter();
+  }
+
+}

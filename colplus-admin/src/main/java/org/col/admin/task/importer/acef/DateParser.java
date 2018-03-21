@@ -27,9 +27,9 @@ public class DateParser implements Parser<LocalDate> {
   public static void main(String[] args) {
     String pattern = "[MMM-][dd-]yyyy";
     DateTimeFormatter dtf = new DateTimeFormatterBuilder().appendPattern(pattern).parseCaseInsensitive().toFormatter();
-    TemporalAccessor ta = dtf.parse("Apr-1972'T'18:20");
+    TemporalAccessor ta = dtf.parse("Apr-1972");
     System.out.println("XXX: " + ta.getClass());
-    System.out.println("XXX: " + ta.isSupported(ChronoField.YEAR));
+    System.out.println("XXX: " + (ta.isSupported(ChronoField.YEAR)? Year.from(ta) : -1));
     System.out.println("XXX: " + ta.isSupported(ChronoField.MONTH_OF_YEAR));
     System.out.println("XXX: " + ta.isSupported(ChronoField.DAY_OF_MONTH));
     System.out.println("XXX: " + ta.isSupported(ChronoField.SECOND_OF_MINUTE));
