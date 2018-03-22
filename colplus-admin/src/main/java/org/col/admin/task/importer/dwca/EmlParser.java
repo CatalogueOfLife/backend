@@ -1,25 +1,24 @@
 package org.col.admin.task.importer.dwca;
 
-import org.apache.commons.lang3.StringUtils;
-import org.col.api.model.Dataset;
-import org.col.parser.DateParser;
-import org.col.parser.SafeParser;
-import org.col.util.io.CharsetDetectingStream;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.LocalDate;
 import java.util.Optional;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+import org.apache.commons.lang3.StringUtils;
+import org.col.api.model.Dataset;
+import org.col.parser.FuzzyDateParser;
+import org.col.parser.SafeParser;
+import org.col.util.date.FuzzyDate;
+import org.col.util.io.CharsetDetectingStream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -81,7 +80,7 @@ public class EmlParser {
                   d.setDescription(para.toString());
                   break;
                 case "para":
-                  if (para.length()>0) {
+                  if (para.length() > 0) {
                     para.append("\n");
                   }
                   para.append(text);
@@ -98,7 +97,10 @@ public class EmlParser {
                   d.setHomepage(url);
                   break;
                 case "pubDate":
-                  d.setReleaseDate(date(text));
+                  FuzzyDate fuzzy = date(text);
+                  if (fuzzy != null) {
+                    d.setReleaseDate(fuzzy.toLocalDate());
+                  }
                   break;
                 case "creator":
                   agent.name().ifPresent(d.getAuthorsAndEditors()::add);
@@ -121,10 +123,10 @@ public class EmlParser {
                   agent.email = text(text);
                   break;
                 case "xxx":
-                  agent.url= text(text);
+                  agent.url = text(text);
                   break;
                 case "userId":
-                  agent.orcid= text(text);
+                  agent.orcid = text(text);
                   break;
               }
             }
@@ -153,10 +155,9 @@ public class EmlParser {
     return text == null || text.length() < 1 ? null : text.toString();
   }
 
-  private static LocalDate date(StringBuilder text) {
-    return SafeParser.parse(DateParser.PARSER, text.toString()).orNull();
+  private static FuzzyDate date(StringBuilder text) {
+    return SafeParser.parse(FuzzyDateParser.PARSER, text.toString()).orNull();
   }
-
 
   static class Agent {
     public String firstname;
@@ -168,15 +169,16 @@ public class EmlParser {
 
     Optional<String> name() {
       StringBuilder sb = new StringBuilder();
-      if (firstname != null) sb.append(firstname);
+      if (firstname != null)
+        sb.append(firstname);
       if (surname != null) {
-        if (sb.length()>0) {
+        if (sb.length() > 0) {
           sb.append(" ");
         }
         sb.append(surname);
       }
       if (organization != null) {
-        if (sb.length()>0) {
+        if (sb.length() > 0) {
           sb.append(" (");
           sb.append(organization);
           sb.append(")");
@@ -184,7 +186,7 @@ public class EmlParser {
           sb.append(organization);
         }
       }
-      if (sb.length()>1) {
+      if (sb.length() > 1) {
         return Optional.of(sb.toString());
       }
       return Optional.empty();

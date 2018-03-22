@@ -32,7 +32,6 @@ import org.col.parser.LifezoneParser;
 import org.col.parser.RankParser;
 import org.col.parser.SafeParser;
 import org.col.parser.TaxonomicStatusParser;
-import org.col.util.date.FuzzyDate;
 import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
