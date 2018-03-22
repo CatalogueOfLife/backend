@@ -1,16 +1,20 @@
 package org.col.parser;
 
-import static java.time.temporal.ChronoField.DAY_OF_MONTH;
-import static java.time.temporal.ChronoField.MONTH_OF_YEAR;
 import static java.time.temporal.ChronoField.YEAR;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.time.DateTimeException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.Year;
+import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
+import java.time.format.ResolverStyle;
 import java.time.temporal.TemporalAccessor;
+import java.time.temporal.TemporalQuery;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -25,22 +29,22 @@ import org.col.util.date.FuzzyDate;
 public class FuzzyDateParser implements Parser<FuzzyDate> {
 
   /**
-   * A ParseSpec specifies how to parse a date string. Currently it just contains the
-   * DateTimeFormatter with which to parse the date string. But it is easily forseeable that we
-   * could make date parsing more sophisticated through things external to the DateTimeFormatter.
-   * For example, we could allow for an option to use a "parse best" strategy (see
-   * {@link DateTimeFormatter#parseBest(CharSequence, java.time.temporal.TemporalQuery...)
-   * DateTimeFormatter.parseBest}).
+   * A ParseSpec specifies how to parse a date string.
    */
-  public static class ParseSpec {
-    @SuppressWarnings("unused")
+  public static final class ParseSpec {
     private final DateTimeFormatter formatter;
+    private final TemporalQuery<?>[] parseInto;
 
-    public ParseSpec(DateTimeFormatter formatter) {
+    public ParseSpec(DateTimeFormatter formatter, TemporalQuery<?>[] parseInto) {
       this.formatter = formatter;
+      this.parseInto = parseInto;
     }
   }
 
+  /**
+   * A FuzzyDateParser instance capable of parsing a wide range of date string. It should at least
+   * match the parsing capabilities of the original GBIF date library.
+   */
   public static final FuzzyDateParser PARSER = new FuzzyDateParser();
 
   private final List<ParseSpec> parseSpecs;
@@ -54,7 +58,7 @@ public class FuzzyDateParser implements Parser<FuzzyDate> {
   }
 
   public FuzzyDateParser(Properties config) {
-    this(createFormatters(config));
+    this(createParseSpecs(config));
   }
 
   public FuzzyDateParser(List<ParseSpec> parseSpecs) {
@@ -65,9 +69,30 @@ public class FuzzyDateParser implements Parser<FuzzyDate> {
     if (StringUtils.isEmpty(text)) {
       return Optional.empty();
     }
-    for (DateTimeFormatter dtf : parseSpecs) {
+    for (ParseSpec parseSpec : parseSpecs) {
       try {
-        TemporalAccessor ta = dtf.parse(text);
+        TemporalAccessor ta;
+        if (parseSpec.parseInto == null || parseSpec.parseInto.length == 0) {
+          ta = parseSpec.formatter.parse(text);
+        } else {
+          try {
+            if (parseSpec.parseInto.length == 1) {
+              ta = (TemporalAccessor) parseSpec.formatter.parse(text, parseSpec.parseInto[0]);
+            } else {
+              ta = parseSpec.formatter.parseBest(text, parseSpec.parseInto);
+            }
+          } catch (DateTimeException e) {
+            /*
+             * The date string is not parsable into to specified target(s), e.g. into a YearMonth
+             * instance. However, it might still be parsable into one of java.time's hidden
+             * implementations of TemporalAccessor. For us, since we proceed from the richest
+             * patterns to to poorest, the fact that a date string matches a pattern is more
+             * important than the fact that it can be parsed into a specific implementation of
+             * TemporalAccessor.
+             */
+            ta = parseSpec.formatter.parse(text);
+          }
+        }
         if (!ta.isSupported(YEAR)) {
           throw new UnparsableException("Missing year in date string: " + text);
         }
@@ -79,59 +104,94 @@ public class FuzzyDateParser implements Parser<FuzzyDate> {
     throw new UnparsableException("Invalid date: " + text);
   }
 
-  private static List<ParseSpec> createFormatters(Properties props) {
-    String defaultCaseSensitive = props.getProperty("caseSensitive", "false");
-    List<ParseSpec> formatters = new ArrayList<>();
+  private static List<ParseSpec> createParseSpecs(Properties props) {
+    List<ParseSpec> parseSpecs = new ArrayList<>();
     String[] types = {"OffsetDateTime", "LocalDateTime", "LocalDate", "YearMonth", "Year"};
     for (String type : types) {
-      formatters.addAll(createFormattersForType(type, props));
+      parseSpecs.addAll(createParseSpecsForType(type, props));
     }
-    for (int i = 0;; i++) {
-      String property = "formatter." + i;
-      if (!props.containsKey(property)) {
-        break;
-      }
-      String pattern = props.getProperty(property);
-      String caseSensitive = props.getProperty(property + ".caseSenstive", defaultCaseSensitive);
-      DateTimeFormatterBuilder dtfb = new DateTimeFormatterBuilder();
-      dtfb.appendPattern(pattern);
-      if (caseSensitive.equalsIgnoreCase("true")) {
-        dtfb.parseCaseSensitive();
-      }
-      DateTimeFormatter dtf = dtfb.toFormatter();
-      dtf.withResolverFields(YEAR, MONTH_OF_YEAR, DAY_OF_MONTH);
-      formatters.add(new ParseSpec(dtfb.toFormatter()));
-    }
-    return formatters;
+    return parseSpecs;
   }
 
-  private static List<ParseSpec> createFormattersForType(String type, Properties props) {
-    String defaultCaseSensitive = props.getProperty("caseSensitive", "false");
-    List<ParseSpec> formatters = new ArrayList<>();
+  private static List<ParseSpec> createParseSpecsForType(String type, Properties props) {
+    List<ParseSpec> parseSpecs = new ArrayList<>();
     for (int i = 0;; i++) {
-      String name = props.getProperty(type + "." + i + ".name");
-      if (name != null) {
-        /*
-         * For example: "ISO_LOCAL_DATE_TIME", the name of a public static final field of the
-         * DateTimeFormatter class.
-         */
-        formatters.add(new ParseSpec(getNamedFormatter(name)));
-        continue;
-      }
-      String pattern = props.getProperty(type + "." + i + ".pattern");
-      if (pattern != null) {
+      String val = props.getProperty(type + "." + i + ".name");
+      if (val != null) {
+        DateTimeFormatter formatter = getNamedFormatter(val);
+        TemporalQuery<?>[] parseInto = getParseInto(type, i, props);
+        parseSpecs.add(new ParseSpec(formatter, parseInto));
+      } else {
+        val = props.getProperty(type + "." + i + ".pattern");
+        if (val == null) {
+          break;
+        }
         DateTimeFormatterBuilder dtfb = new DateTimeFormatterBuilder();
-        dtfb.appendPattern(pattern);
-        String caseSensitive =
-            props.getProperty(type + "." + i + ".caseSensitive", defaultCaseSensitive);
-        if (caseSensitive.equalsIgnoreCase("true")) {
+        dtfb.appendPattern(val);
+        if (parseCaseSensitive(type, i, props)) {
           dtfb.parseCaseSensitive();
         }
-        formatters.add(new ParseSpec(dtfb.toFormatter()));
+        ResolverStyle rs = getResolverStyle(type, i, props);
+        if (rs == ResolverStyle.LENIENT) {
+          dtfb.parseLenient();
+        } else if (rs == ResolverStyle.STRICT) {
+          dtfb.parseStrict();
+        }
+        DateTimeFormatter formatter = dtfb.toFormatter();
+        TemporalQuery<?>[] parseInto = getParseInto(type, i, props);
+        parseSpecs.add(new ParseSpec(formatter, parseInto));
       }
-      break;
     }
-    return formatters;
+    return parseSpecs;
+  }
+
+  private static boolean parseCaseSensitive(String type, int i, Properties props) {
+    String dfault = props.getProperty("caseSensitive", "false");
+    String cs = props.getProperty(type + "." + i + ".caseSensitive", dfault);
+    if (cs.isEmpty()) {
+      return false;
+    }
+    return cs.toLowerCase().equals("true");
+  }
+
+  private static ResolverStyle getResolverStyle(String type, int i, Properties props) {
+    String dfault = props.getProperty("resolverStyle", "LENIENT");
+    String style = props.getProperty(type + "." + i + ".resolverStyle", dfault);
+    if (style.isEmpty()) {
+      return ResolverStyle.LENIENT;
+    }
+    switch (style.toUpperCase()) {
+      case "SMART":
+        return ResolverStyle.SMART;
+      case "STRICT":
+        return ResolverStyle.STRICT;
+      case "LENIENT":
+      case "":
+        return ResolverStyle.LENIENT;
+      default:
+        throw new IllegalArgumentException("Invalid value for property resolvertStyle: " + style);
+    }
+  }
+
+  /*
+   * In the future we could make this more dynamic and return multiple, configurable TemporalQuery
+   * instances to be passed to DateTimeFormatter.parseBest, but for now this is OK.
+   */
+  @SuppressWarnings("unused")
+  private static TemporalQuery<?>[] getParseInto(String type, int i, Properties props) {
+    switch (type) {
+      case "OffsetDateTime":
+        return new TemporalQuery[] {OffsetDateTime::from};
+      case "LocalDateTime":
+        return new TemporalQuery[] {LocalDateTime::from};
+      case "LocalDate":
+        return new TemporalQuery[] {LocalDate::from};
+      case "YearMonth":
+        return new TemporalQuery[] {YearMonth::from};
+      case "Year":
+      default:
+        return new TemporalQuery[] {Year::from};
+    }
   }
 
   private static Properties getConfig(InputStream is) {

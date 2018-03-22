@@ -2,15 +2,18 @@ package org.col.util.date;
 
 import static java.time.temporal.ChronoField.DAY_OF_MONTH;
 import static java.time.temporal.ChronoField.MONTH_OF_YEAR;
-import static java.time.temporal.ChronoField.*;
+import static java.time.temporal.ChronoField.YEAR;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.Year;
 import java.time.YearMonth;
 import java.time.temporal.TemporalAccessor;
+import java.util.Objects;
 
 /**
- * A FuzzyDate encapsulates a {@link TemporalAccessor} instance of which at least the year is known.
- * If month or day are unknown it is said to be fuzzy.
+ * A FuzzyDate encapsulates a {@link TemporalAccessor} instance which is guaranteed to have at least
+ * its YEAR field set. Other fields may be unknown, in which case the date is said to be partial.
  * 
  * @author Ayco Holleman
  *
@@ -21,9 +24,11 @@ public final class FuzzyDate {
   private final String verbatim;
 
   public FuzzyDate(TemporalAccessor ta, String verbatim) {
+    // Won't happen when obtaining a FuzzyDate from the FuzzyDateParser, but
+    // since this is a public constructor ...
+    Objects.requireNonNull(ta, "ta");
+    Objects.requireNonNull(verbatim, "verbatim");
     if (!ta.isSupported(YEAR)) {
-      // Won't happen when obtaining a FuzzyDate from the FuzzyDateParser, but
-      // since this is a public constructor ...
       throw new IllegalArgumentException("Cannot create FuzzyDate without a year");
     }
     this.ta = ta;
@@ -36,6 +41,15 @@ public final class FuzzyDate {
    * @return
    */
   public LocalDate toLocalDate() {
+    if(ta.getClass() == LocalDate.class) {
+      return (LocalDate) ta;
+    }
+    if(ta.getClass() == OffsetDateTime.class) {
+      return ((OffsetDateTime) ta).toLocalDate();
+    }
+    if(ta.getClass() == LocalDateTime.class) {
+      return ((LocalDateTime) ta).toLocalDate();
+    }
     if (ta.isSupported(MONTH_OF_YEAR)) {
       if (ta.isSupported(DAY_OF_MONTH)) {
         return LocalDate.of(ta.get(YEAR), ta.get(MONTH_OF_YEAR), ta.get(DAY_OF_MONTH));
@@ -44,7 +58,6 @@ public final class FuzzyDate {
     }
     return LocalDate.of(ta.get(YEAR), 1, 1);
   }
-
 
   /**
    * Returns a {@link LocalDate} if year, month and day are known; a {@link YearMonth} if year and
@@ -67,8 +80,17 @@ public final class FuzzyDate {
    * 
    * @return
    */
-  public boolean isPartial() {
+  public boolean isFuzzyDate() {
     return !ta.isSupported(MONTH_OF_YEAR) || !ta.isSupported(DAY_OF_MONTH);
+  }
+
+  /**
+   * Returns the original date string from which this FuzzyDateInstance was created.
+   * 
+   * @return
+   */
+  public String getVerbatim() {
+    return verbatim;
   }
 
 }

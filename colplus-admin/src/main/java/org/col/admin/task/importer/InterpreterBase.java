@@ -90,7 +90,7 @@ public class InterpreterBase {
       return null;
     }
     if (date.isPresent()) {
-      if (date.get().isPartial()) {
+      if (date.get().isFuzzyDate()) {
         t.addIssue(Issue.PARTIAL_DATE);
       }
       return date.get().toLocalDate();
