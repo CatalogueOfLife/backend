@@ -29,16 +29,30 @@ import org.col.util.date.FuzzyDate;
 public class FuzzyDateParser implements Parser<FuzzyDate> {
 
   /**
+   * A DateStringFilter optionally transforms a date string before it is parsed by a ParseSpec's
+   * DateTimeFormatter. It's <code>filter</code> method may return null, which the FuzzyDateParser
+   * will take as a strong suggestion that the string cannot be parsed. DateStringFilter
+   * implementations must have a no-arg constructor.
+   */
+  public static interface DateStringFilter {
+    String filter(String dateString);
+  }
+
+  /**
    * A ParseSpec specifies how to parse a date string.
    */
   public static final class ParseSpec {
+    private final DateStringFilter filter;
     private final DateTimeFormatter formatter;
     private final TemporalQuery<?>[] parseInto;
 
-    public ParseSpec(DateTimeFormatter formatter, TemporalQuery<?>[] parseInto) {
+    public ParseSpec(DateStringFilter filter, DateTimeFormatter formatter,
+        TemporalQuery<?>[] parseInto) {
+      this.filter = filter;
       this.formatter = formatter;
       this.parseInto = parseInto;
     }
+
   }
 
   /**
@@ -70,16 +84,23 @@ public class FuzzyDateParser implements Parser<FuzzyDate> {
       return Optional.empty();
     }
     for (ParseSpec parseSpec : parseSpecs) {
+      String filtered = text;
+      if (parseSpec.filter != null) {
+        filtered = parseSpec.filter.filter(text);
+        if (filtered == null) {
+          continue;
+        }
+      }
       try {
         TemporalAccessor ta;
         if (parseSpec.parseInto == null || parseSpec.parseInto.length == 0) {
-          ta = parseSpec.formatter.parse(text);
+          ta = parseSpec.formatter.parse(filtered);
         } else {
           try {
             if (parseSpec.parseInto.length == 1) {
-              ta = (TemporalAccessor) parseSpec.formatter.parse(text, parseSpec.parseInto[0]);
+              ta = (TemporalAccessor) parseSpec.formatter.parse(filtered, parseSpec.parseInto[0]);
             } else {
-              ta = parseSpec.formatter.parseBest(text, parseSpec.parseInto);
+              ta = parseSpec.formatter.parseBest(filtered, parseSpec.parseInto);
             }
           } catch (DateTimeException e) {
             /*
@@ -90,7 +111,7 @@ public class FuzzyDateParser implements Parser<FuzzyDate> {
              * important than the fact that it can be parsed into a specific implementation of
              * TemporalAccessor.
              */
-            ta = parseSpec.formatter.parse(text);
+            ta = parseSpec.formatter.parse(filtered);
           }
         }
         if (!ta.isSupported(YEAR)) {
@@ -118,9 +139,10 @@ public class FuzzyDateParser implements Parser<FuzzyDate> {
     for (int i = 0;; i++) {
       String val = props.getProperty(type + "." + i + ".name");
       if (val != null) {
+        DateStringFilter filter = getFilter(type, i, props);
         DateTimeFormatter formatter = getNamedFormatter(val);
         TemporalQuery<?>[] parseInto = getParseInto(type, i, props);
-        parseSpecs.add(new ParseSpec(formatter, parseInto));
+        parseSpecs.add(new ParseSpec(filter, formatter, parseInto));
       } else {
         val = props.getProperty(type + "." + i + ".pattern");
         if (val == null) {
@@ -137,9 +159,10 @@ public class FuzzyDateParser implements Parser<FuzzyDate> {
         } else if (rs == ResolverStyle.STRICT) {
           dtfb.parseStrict();
         }
+        DateStringFilter filter = getFilter(type, i, props);
         DateTimeFormatter formatter = dtfb.toFormatter();
         TemporalQuery<?>[] parseInto = getParseInto(type, i, props);
-        parseSpecs.add(new ParseSpec(formatter, parseInto));
+        parseSpecs.add(new ParseSpec(filter, formatter, parseInto));
       }
     }
     return parseSpecs;
@@ -170,6 +193,18 @@ public class FuzzyDateParser implements Parser<FuzzyDate> {
         return ResolverStyle.LENIENT;
       default:
         throw new IllegalArgumentException("Invalid value for property resolvertStyle: " + style);
+    }
+  }
+
+  public static DateStringFilter getFilter(String type, int i, Properties props) {
+    String className = props.getProperty(type + "." + i + ".filter");
+    if (StringUtils.isBlank(className)) {
+      return null;
+    }
+    try {
+      return (DateStringFilter) Class.forName(className).newInstance();
+    } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+      throw new IllegalArgumentException("Could not create filter for : " + className);
     }
   }
 
@@ -208,8 +243,8 @@ public class FuzzyDateParser implements Parser<FuzzyDate> {
     try {
       Field f = DateTimeFormatter.class.getDeclaredField(name);
       return (DateTimeFormatter) f.get(null);
-    } catch (Exception e) {
-      throw new IllegalArgumentException(e);
+    } catch (Throwable t) {
+      throw new IllegalArgumentException(t);
     }
   }
 

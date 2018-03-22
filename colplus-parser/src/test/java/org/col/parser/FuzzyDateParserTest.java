@@ -11,12 +11,13 @@ import java.time.Year;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
-import java.time.format.ResolverStyle;
 import java.time.temporal.TemporalAccessor;
 import java.time.temporal.TemporalQuery;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import org.col.parser.FuzzyDateParser.DateStringFilter;
 import org.col.parser.FuzzyDateParser.ParseSpec;
 import org.col.util.date.FuzzyDate;
 import org.junit.Test;
@@ -31,7 +32,7 @@ public class FuzzyDateParserTest {
    */
   @Test
   public void test1() throws UnparsableException {
-    FuzzyDateParser parser = getParser("d-M-uuuu", LocalDate::from);
+    FuzzyDateParser parser = simpleParser("d-M-uuuu", LocalDate::from);
     Optional<FuzzyDate> parsed = parser.parse("12-04-2004");
     assertNotNull("01", parsed);
     assertNotNull("02", parsed.get());
@@ -42,7 +43,7 @@ public class FuzzyDateParserTest {
 
   @Test
   public void test1b() throws UnparsableException {
-    FuzzyDateParser parser = getParser("d-M-uuuu", LocalDate::from);
+    FuzzyDateParser parser = simpleParser("d-M-uuuu", LocalDate::from);
     Optional<FuzzyDate> parsed = parser.parse("22-7-2004");
     assertNotNull("01", parsed);
     assertNotNull("02", parsed.get());
@@ -53,7 +54,7 @@ public class FuzzyDateParserTest {
 
   @Test
   public void test1c() throws UnparsableException {
-    FuzzyDateParser parser = getParser("d-M-uu", LocalDate::from);
+    FuzzyDateParser parser = simpleParser("d-M-uu", LocalDate::from);
     Optional<FuzzyDate> parsed = parser.parse("3-03-04");
     assertNotNull("01", parsed);
     assertNotNull("02", parsed.get());
@@ -64,13 +65,13 @@ public class FuzzyDateParserTest {
 
   @Test(expected = UnparsableException.class)
   public void test1d() throws UnparsableException {
-    FuzzyDateParser parser = getParser("dd-MM-uuuu", LocalDate::from);
+    FuzzyDateParser parser = simpleParser("dd-MM-uuuu", LocalDate::from);
     parser.parse("3-5-1904");
   }
 
   @Test(expected = UnparsableException.class)
   public void test1e() throws UnparsableException {
-    FuzzyDateParser parser = getParser("[[d-]M-]uuuu", LocalDate::from);
+    FuzzyDateParser parser = simpleParser("[[d-]M-]uuuu", LocalDate::from);
     parser.parse("3-03-04");
   }
 
@@ -79,13 +80,13 @@ public class FuzzyDateParserTest {
    */
   @Test(expected = UnparsableException.class)
   public void test2() throws UnparsableException {
-    FuzzyDateParser parser = getParser("[[d-]M-]uuuu", LocalDate::from);
+    FuzzyDateParser parser = simpleParser("[[d-]M-]uuuu", LocalDate::from);
     parser.parse("04-2004");
   }
 
   @Test
   public void test3() throws UnparsableException {
-    FuzzyDateParser parser = getParser("[[d-][M-]uuuu", LocalDate::from);
+    FuzzyDateParser parser = simpleParser("[[d-][M-]uuuu", LocalDate::from);
     Optional<FuzzyDate> parsed = parser.parse("2004");
     assertNotNull("01", parsed);
     assertNotNull("02", parsed.get());
@@ -96,7 +97,7 @@ public class FuzzyDateParserTest {
 
   @Test
   public void test4() throws UnparsableException {
-    FuzzyDateParser parser = getParser("[M-]uuuu", LocalDate::from);
+    FuzzyDateParser parser = simpleParser("[M-]uuuu", LocalDate::from);
     Optional<FuzzyDate> parsed = parser.parse("04-2004");
     assertNotNull("01", parsed);
     assertNotNull("02", parsed.get());
@@ -108,7 +109,7 @@ public class FuzzyDateParserTest {
   @Test
   public void test5() throws UnparsableException {
     // 'Z' is just a string literal here!
-    FuzzyDateParser parser = getParser("uuuu-M-d'T'HH:mm[:ss]'Z'", LocalDateTime::from);
+    FuzzyDateParser parser = simpleParser("uuuu-M-d'T'HH:mm[:ss]'Z'", LocalDateTime::from);
     Optional<FuzzyDate> parsed = parser.parse("2007-10-13T13:02Z");
     assertNotNull("01", parsed);
     assertNotNull("02", parsed.get());
@@ -119,7 +120,7 @@ public class FuzzyDateParserTest {
 
   @Test
   public void test6() throws UnparsableException {
-    FuzzyDateParser parser = getParser("uuuu-M-d'T'HH:mm[:ss]'Z'", LocalDateTime::from);
+    FuzzyDateParser parser = simpleParser("uuuu-M-d'T'HH:mm[:ss]'Z'", LocalDateTime::from);
     Optional<FuzzyDate> parsed = parser.parse("2007-10-13T13:02Z");
     assertNotNull("01", parsed);
     assertNotNull("02", parsed.get());
@@ -219,9 +220,22 @@ public class FuzzyDateParserTest {
     assertEquals("01", Year.class, ta.getClass());
   }
 
-  ///////////////////////////////////////////////////////////////
-  // Tests with the "default" parser (using fuzzy-date.properties
-  ///////////////////////////////////////////////////////////////
+  @Test
+  public void test12() throws UnparsableException {
+    DateStringFilter filter = new YearExtractor();
+    DateTimeFormatter formatter = formatter("uuuu");
+    TemporalQuery<?>[] parseInto = new TemporalQuery[] {Year::from};
+    List<ParseSpec> parseSpecs = Arrays.asList(new ParseSpec(filter, formatter, parseInto));
+    FuzzyDateParser parser = new FuzzyDateParser(parseSpecs);
+    Optional<FuzzyDate> date = parser.parse("2008a");
+    assertTrue("01", date.get().isFuzzyDate());
+    assertEquals("02", Year.class, date.get().bestMatch().getClass());
+    assertEquals("03", date.get().toLocalDate(), LocalDate.of(2008, 1, 1));
+  }
+
+  ////////////////////////////////////////////////////////////////
+  // Tests with the "default" parser (using fuzzy-date.properties)
+  ////////////////////////////////////////////////////////////////
 
   @Test
   public void test100() throws UnparsableException {
@@ -250,16 +264,19 @@ public class FuzzyDateParserTest {
     assertEquals("03", LocalDate.of(2005, 01, 01), date.get().toLocalDate());
   }
 
-  @Test(expected = UnparsableException.class)
+  @Test
   public void test104() throws UnparsableException {
-    FuzzyDateParser.PARSER.parse("2005-08-66");
+    Optional<FuzzyDate> date = FuzzyDateParser.PARSER.parse("2005-02-29");
+    System.out.println(date.get().toLocalDate());
+    // Default is to parse lenient (no UnparsableException)
+    
   }
 
-  private static FuzzyDateParser getParser(String pattern, TemporalQuery<?> parseInto) {
+  private static FuzzyDateParser simpleParser(String pattern, TemporalQuery<?> parseInto) {
     List<ParseSpec> parseSpecs = new ArrayList<>(1);
     DateTimeFormatter formatter = formatter(pattern);
     TemporalQuery<?>[] into = new TemporalQuery[] {parseInto};
-    parseSpecs.add(new ParseSpec(formatter, into));
+    parseSpecs.add(new ParseSpec(null, formatter, into));
     return new FuzzyDateParser(parseSpecs);
   }
 
