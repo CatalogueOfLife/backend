@@ -3,8 +3,7 @@ package org.col.db.mapper;
 import org.apache.ibatis.annotations.Param;
 import org.col.api.model.Page;
 import org.col.api.model.Reference;
-import org.col.api.model.ReferenceWithPage;
-
+import org.col.db.mapper.temp.ReferenceWithPage;
 import java.util.List;
 import java.util.Set;
 

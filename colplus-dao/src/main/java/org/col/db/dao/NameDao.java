@@ -1,18 +1,26 @@
 package org.col.db.dao;
 
-import com.google.common.collect.Lists;
+import java.util.ArrayList;
+import java.util.List;
 import org.apache.ibatis.session.SqlSession;
-import org.col.api.model.*;
+import org.col.api.model.Name;
+import org.col.api.model.NameSearch;
+import org.col.api.model.NameSearchResult;
+import org.col.api.model.Page;
+import org.col.api.model.Reference;
+import org.col.api.model.ResultPage;
+import org.col.api.model.Synonymy;
+import org.col.api.model.VerbatimRecord;
 import org.col.db.NotFoundException;
 import org.col.db.mapper.NameMapper;
 import org.col.db.mapper.ReferenceMapper;
 import org.col.db.mapper.VerbatimRecordMapper;
 import org.col.db.mapper.temp.NameSearchResultTemp;
+import org.col.db.mapper.temp.ReferenceWithPage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.List;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.Lists;
 
 public class NameDao {
 
@@ -130,9 +138,15 @@ public class NameDao {
     return new ResultPage<>(page, total, result);
   }
 
-  public ReferenceWithPage getPublishedIn(int nameKey) {
+  public Reference getPublishedIn(int nameKey) {
     ReferenceMapper mapper = session.getMapper(ReferenceMapper.class);
-    return mapper.getPublishedIn(nameKey);
+    ReferenceWithPage rwp = mapper.getPublishedIn(nameKey);
+    Reference ref = rwp.getReference();
+    String page = rwp.getPage();
+    ObjectNode cls = ref.getCsl();
+    cls.put("locator", page);
+    cls.put("label", "page");
+    return ref;
   }
 
   public VerbatimRecord getVerbatim(int nameKey) {
