@@ -133,7 +133,7 @@ public class FuzzyDateParserTest {
   public void test7() {
     DateTimeFormatter dtf = DateTimeFormatter.ISO_DATE_TIME;
     TemporalAccessor ta = dtf.parse("2011-10-03T10:15:30+01:00:20", OffsetDateTime::from);
-    assertEquals("01", "2011-10-03T10:15:30+01:00:20", ta.toString());
+    assertEquals("2011-10-03T10:15:30+01:00:20", ta.toString());
   }
 
   /*
@@ -143,14 +143,14 @@ public class FuzzyDateParserTest {
   public void test7b() {
     DateTimeFormatter dtf = DateTimeFormatter.ISO_DATE_TIME;
     TemporalAccessor ta = dtf.parse("2011-10-03T10:15:30Z", OffsetDateTime::from);
-    assertEquals("01", "2011-10-03T10:15:30Z", ta.toString());
+    assertEquals("2011-10-03T10:15:30Z", ta.toString());
   }
 
   @Test
   public void test8() {
     DateTimeFormatter dtf = formatter("uuuu-M-d'T'HH:mm[:ss]X");
     TemporalAccessor ta = dtf.parse("2011-10-03T10:15:22+0100", OffsetDateTime::from);
-    assertEquals("01", "2011-10-03T10:15:22+01:00", ta.toString());
+    assertEquals("2011-10-03T10:15:22+01:00", ta.toString());
   }
 
   /*
@@ -161,7 +161,7 @@ public class FuzzyDateParserTest {
   public void test8b() {
     DateTimeFormatter dtf = formatter("uuuu-M-d'T'HH:mm[:ss]X");
     TemporalAccessor ta = dtf.parse("2011-10-03T10:15:22Z", OffsetDateTime::from);
-    assertEquals("01", "2011-10-03T10:15:22Z", ta.toString());
+    assertEquals("2011-10-03T10:15:22Z", ta.toString());
   }
 
   /*
@@ -171,7 +171,7 @@ public class FuzzyDateParserTest {
   public void test8c() {
     DateTimeFormatter dtf = formatter("uuuu-M-d'T'HH:mm[:ss]X");
     TemporalAccessor ta = dtf.parse("2011-10-03T10:15:22+0300", OffsetDateTime::from);
-    assertEquals("01", "2011-10-03T10:15:22+03:00", ta.toString());
+    assertEquals("2011-10-03T10:15:22+03:00", ta.toString());
   }
 
   /*
@@ -181,14 +181,14 @@ public class FuzzyDateParserTest {
   public void test8d() {
     DateTimeFormatter dtf = formatter("uuuu-M-d'T'HH:mm[:ss]X");
     TemporalAccessor ta = dtf.parse("2011-10-03T10:15:22+03", OffsetDateTime::from);
-    assertEquals("01", "2011-10-03T10:15:22+03:00", ta.toString());
+    assertEquals("2011-10-03T10:15:22+03:00", ta.toString());
   }
 
   @Test
   public void test8e() {
     DateTimeFormatter dtf = formatter("uuuu-M-d'T'HH:mm[:ss]X");
     TemporalAccessor ta = dtf.parse("2011-10-03T10:15+03", OffsetDateTime::from);
-    assertEquals("01", "2011-10-03T10:15+03:00", ta.toString());
+    assertEquals("2011-10-03T10:15+03:00", ta.toString());
   }
 
   @Test
@@ -196,21 +196,21 @@ public class FuzzyDateParserTest {
     DateTimeFormatter dtf = formatter("uuuu-M-d'T'HH:mm[:ss]Z");
     TemporalAccessor ta = dtf.parse("2011-10-03T10:15+0100", OffsetDateTime::from);
     // Lesson: if seconds not present, then also not printed (not rounded to :00)
-    assertEquals("01", "2011-10-03T10:15+01:00", ta.toString());
+    assertEquals("2011-10-03T10:15+01:00", ta.toString());
   }
 
   @Test
   public void test10() {
     DateTimeFormatter dtf = formatter("uuuu-M-d'T'HH:mm:ss'a'");
     TemporalAccessor ta = dtf.parse("2011-10-03T10:15:18a", LocalDateTime::from);
-    assertEquals("01", "2011-10-03T10:15:18", ta.toString());
+    assertEquals("2011-10-03T10:15:18", ta.toString());
   }
 
   @Test
   public void test10b() {
     DateTimeFormatter dtf = formatter("uuuu-M-d'T'HH:mm:ss'a'");
     TemporalAccessor ta = dtf.parse("2011-10-03T10:15:18a", LocalDate::from);
-    assertEquals("01", "2011-10-03", ta.toString());
+    assertEquals("2011-10-03", ta.toString());
   }
 
   @Test
