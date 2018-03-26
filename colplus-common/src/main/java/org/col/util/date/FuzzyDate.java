@@ -13,9 +13,7 @@ import java.util.Objects;
 
 /**
  * A FuzzyDate encapsulates a {@link TemporalAccessor} instance which is guaranteed to have at least
- * its YEAR field set. Other fields may be unknown, in which case the date is said to be partial.
- * 
- * @author Ayco Holleman
+ * its YEAR field set. Other fields may be unknown, in which case the date is said to be fuzzy.
  *
  */
 public final class FuzzyDate {
@@ -41,13 +39,13 @@ public final class FuzzyDate {
    * @return
    */
   public LocalDate toLocalDate() {
-    if(ta.getClass() == LocalDate.class) {
+    if (ta.getClass() == LocalDate.class) {
       return (LocalDate) ta;
     }
-    if(ta.getClass() == OffsetDateTime.class) {
+    if (ta.getClass() == OffsetDateTime.class) {
       return ((OffsetDateTime) ta).toLocalDate();
     }
-    if(ta.getClass() == LocalDateTime.class) {
+    if (ta.getClass() == LocalDateTime.class) {
       return ((LocalDateTime) ta).toLocalDate();
     }
     if (ta.isSupported(MONTH_OF_YEAR)) {
