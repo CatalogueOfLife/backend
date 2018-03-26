@@ -19,6 +19,7 @@ import org.col.db.dao.NameDao;
 import org.col.db.dao.ReferenceDao;
 import org.col.db.dao.TaxonDao;
 import org.col.db.mapper.*;
+import org.col.db.mapper.temp.ReferenceWithPage;
 import org.gbif.nameparser.api.Rank;
 import org.junit.*;
 

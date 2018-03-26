@@ -1,6 +1,7 @@
-package org.col.api.model;
+package org.col.db.mapper.temp;
 
 import java.util.Objects;
+import org.col.api.model.Reference;
 
 public class ReferenceWithPage {
 

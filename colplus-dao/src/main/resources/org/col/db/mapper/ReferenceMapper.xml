@@ -44,7 +44,7 @@
         <result property="issues" column="issues" typeHandler="org.col.db.type2.IssueSetTypeHandler" />
     </resultMap>
 
-    <resultMap id="referenceWithPageResultMap" type="ReferenceWithPage" autoMapping="true">
+    <resultMap id="referenceWithPageResultMap" type="org.col.db.mapper.temp.ReferenceWithPage" autoMapping="true">
         <result property="page" column="reference_page" />
         <association property="reference" resultMap="referenceResultMap"/>
     </resultMap>

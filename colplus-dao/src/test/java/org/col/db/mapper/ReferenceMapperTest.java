@@ -5,9 +5,9 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Sets;
 import org.col.api.RandomUtils;
 import org.col.api.model.Page;
-import org.col.api.model.ReferenceWithPage;
 import org.col.api.model.Reference;
 import org.col.api.vocab.Issue;
+import org.col.db.mapper.temp.ReferenceWithPage;
 import org.col.api.TestEntityGenerator;
 import org.junit.Test;
 
