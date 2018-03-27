@@ -2,7 +2,7 @@ package org.col.parser;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.col.parser.FuzzyDateParser.DateStringFilter;
+import org.col.parser.DateParser.DateStringFilter;
 
 /**
  * A DateStringFilter implementation used as a course, last ditch attempt to at least extract a year

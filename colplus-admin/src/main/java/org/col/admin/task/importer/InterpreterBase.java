@@ -18,7 +18,7 @@ import org.col.api.model.VernacularName;
 import org.col.api.vocab.Issue;
 import org.col.api.vocab.Origin;
 import org.col.parser.BooleanParser;
-import org.col.parser.FuzzyDateParser;
+import org.col.parser.DateParser;
 import org.col.parser.NameParser;
 import org.col.parser.NomCodeParser;
 import org.col.parser.NomStatusParser;
@@ -84,7 +84,7 @@ public class InterpreterBase {
   protected LocalDate date(NeoTaxon t, Issue invalidIssue, Term term) {
     Optional<FuzzyDate> date;
     try {
-      date = FuzzyDateParser.PARSER.parse(t.verbatim.getTerm(term));
+      date = DateParser.PARSER.parse(t.verbatim.getTerm(term));
     } catch (UnparsableException e) {
       t.addIssue(invalidIssue);
       return null;

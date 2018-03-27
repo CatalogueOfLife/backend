@@ -13,7 +13,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import org.apache.commons.lang3.StringUtils;
 import org.col.api.model.Dataset;
-import org.col.parser.FuzzyDateParser;
+import org.col.parser.DateParser;
 import org.col.parser.SafeParser;
 import org.col.util.date.FuzzyDate;
 import org.col.util.io.CharsetDetectingStream;
@@ -156,7 +156,7 @@ public class EmlParser {
   }
 
   private static FuzzyDate date(StringBuilder text) {
-    return SafeParser.parse(FuzzyDateParser.PARSER, text.toString()).orNull();
+    return SafeParser.parse(DateParser.PARSER, text.toString()).orNull();
   }
 
   static class Agent {
