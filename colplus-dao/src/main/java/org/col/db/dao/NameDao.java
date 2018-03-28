@@ -19,7 +19,6 @@ import org.col.db.mapper.temp.NameSearchResultTemp;
 import org.col.db.mapper.temp.ReferenceWithPage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
 
 public class NameDao {
@@ -77,6 +76,7 @@ public class NameDao {
    */
   public List<Name> basionymGroup(int key) {
     // Allow 404 to be thrown:
+    // TODO: create more light-weight EXISTS mappper method to replace get().
     get(key);
     NameMapper mapper = session.getMapper(NameMapper.class);
     return mapper.basionymGroup(key);
@@ -141,12 +141,10 @@ public class NameDao {
   public Reference getPublishedIn(int nameKey) {
     ReferenceMapper mapper = session.getMapper(ReferenceMapper.class);
     ReferenceWithPage rwp = mapper.getPublishedIn(nameKey);
-    Reference ref = rwp.getReference();
-    String page = rwp.getPage();
-    ObjectNode cls = ref.getCsl();
-    cls.put("locator", page);
-    cls.put("label", "page");
-    return ref;
+    if(rwp == null) {
+      return null;
+    }
+    return rwp.toReference();
   }
 
   public VerbatimRecord getVerbatim(int nameKey) {
