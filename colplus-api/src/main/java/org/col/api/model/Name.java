@@ -550,7 +550,7 @@ public class Name implements PrimaryEntity {
   @JsonProperty(access = JsonProperty.Access.READ_ONLY)
   public boolean isParsed() {
     return uninomial != null || genus != null || infragenericEpithet != null
-        || specificEpithet != null || infraspecificEpithet != null;
+        || specificEpithet != null || infraspecificEpithet != null || cultivarEpithet != null;
   }
 
   /**
