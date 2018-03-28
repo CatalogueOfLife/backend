@@ -222,6 +222,21 @@ public class NormalizerDwcaIT {
     }
   }
 
+  /**
+   * https://github.com/Sp2000/colplus-backend/issues/69
+   */
+  @Test
+  public void testIcznLists() throws Exception {
+    normalize(26);
+
+    // verify results
+    try (Transaction tx = store.getNeo().beginTx()) {
+      // check species name
+      NeoTaxon t = byID("10156");
+      assertEquals("'Prosthète'", t.name.getScientificName());
+    }
+  }
+
   private Distribution dist(Gazetteer standard, String area, DistributionStatus status) {
     Distribution d = new Distribution();
     d.setArea(area);
