@@ -135,7 +135,7 @@ public class Name implements PrimaryEntity {
   /**
    * Current nomenclatural status of the name taking into account all known nomenclatural acts.
    */
-  private NomStatus status;
+  private NomStatus nomStatus;
 
   private Origin origin;
 
@@ -155,12 +155,6 @@ public class Name implements PrimaryEntity {
    * Any informal note about the nomecnlatural status found in the name
    */
   private String remarks;
-
-  /**
-   * Any informal note found in the name that informs about the taxonomic concept.
-   * For example "sensu latu"
-   */
-  private String taxonomicNote;
 
   /**
    * Issues related to this name
@@ -194,8 +188,7 @@ public class Name implements PrimaryEntity {
     this.basionymAuthorship = n.basionymAuthorship;
     this.sanctioningAuthor = n.sanctioningAuthor;
     this.code = n.code;
-    this.status = n.status;
-    this.taxonomicNote = n.taxonomicNote;
+    this.nomStatus = n.nomStatus;
     this.origin = n.origin;
     this.type = n.type;
     this.sourceUrl = n.sourceUrl;
@@ -299,12 +292,12 @@ public class Name implements PrimaryEntity {
     this.fossil = fossil;
   }
 
-  public NomStatus getStatus() {
-    return status;
+  public NomStatus getNomStatus() {
+    return nomStatus;
   }
 
-  public void setStatus(NomStatus status) {
-    this.status = status;
+  public void setNomStatus(NomStatus nomStatus) {
+    this.nomStatus = nomStatus;
   }
 
   public URI getSourceUrl() {
@@ -467,14 +460,6 @@ public class Name implements PrimaryEntity {
     this.notho = notho;
   }
 
-  public String getTaxonomicNote() {
-    return taxonomicNote;
-  }
-
-  public void setTaxonomicNote(String taxonomicNote) {
-    this.taxonomicNote = taxonomicNote;
-  }
-
   public String getRemarks() {
     return remarks;
   }
@@ -632,8 +617,7 @@ public class Name implements PrimaryEntity {
         && Objects.equals(basionymAuthorship, name.basionymAuthorship)
         && Objects.equals(sanctioningAuthor, name.sanctioningAuthor) && code == name.code
         && type == name.type && origin == name.origin && Objects.equals(sourceUrl, name.sourceUrl)
-        && Objects.equals(fossil, name.fossil) && status == name.status
-        && Objects.equals(taxonomicNote, name.taxonomicNote)
+        && Objects.equals(fossil, name.fossil) && nomStatus == name.nomStatus
         && Objects.equals(remarks, name.remarks) && Objects.equals(issues, name.issues);
   }
 
@@ -642,8 +626,7 @@ public class Name implements PrimaryEntity {
     return Objects.hash(key, id, datasetKey, basionymKey, scientificNameID, scientificName, rank,
         uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet,
         cultivarEpithet, strain, candidatus, notho, combinationAuthorship, basionymAuthorship,
-        sanctioningAuthor, code, type, origin, sourceUrl, fossil, status, taxonomicNote,
-        remarks, issues);
+        sanctioningAuthor, code, type, origin, sourceUrl, fossil, nomStatus, remarks, issues);
   }
 
   @Override
@@ -678,9 +661,7 @@ public class Name implements PrimaryEntity {
       sb.append(" S:").append(this.specificEpithet);
     }
 
-    if (this.rank != null) {
-      sb.append(" R:").append(this.rank);
-    }
+    sb.append(" R:").append(this.rank);
 
     if (this.infraspecificEpithet != null) {
       sb.append(" IS:").append(this.infraspecificEpithet);

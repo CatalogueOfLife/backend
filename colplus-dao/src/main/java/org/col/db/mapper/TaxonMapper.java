@@ -37,6 +37,11 @@ public interface TaxonMapper {
 
   List<Taxon> children(@Param("key") int key, @Param("page") Page page);
 
+  /**
+   * Creates a new taxon linked to a given name.
+   * Note that the name must exist already and taxon.name.key must exist.
+   * @param taxon
+   */
   void create(Taxon taxon);
 
 }

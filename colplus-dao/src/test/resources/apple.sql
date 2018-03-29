@@ -13,8 +13,8 @@ INSERT INTO taxon (key, id, dataset_key, name_key, status, origin) VALUES (1, 'r
 INSERT INTO taxon (key, id, dataset_key, name_key, status, origin) VALUES (2, 'root-2', 1, 2, 0, 0);
 ALTER SEQUENCE taxon_key_seq RESTART WITH 1000;
 
-INSERT INTO synonym (taxon_key, name_key, dataset_key) VALUES (2, 3, 1);
-INSERT INTO synonym (taxon_key, name_key, dataset_key) VALUES (2, 4, 1);
+INSERT INTO synonym (taxon_key, name_key, dataset_key, status) VALUES (2, 3, 1, 2);
+INSERT INTO synonym (taxon_key, name_key, dataset_key, status) VALUES (2, 4, 1, 2);
 
 INSERT INTO reference(key, id, dataset_key) VALUES (1, 'ref-1', 1);
 INSERT INTO reference(key, id, dataset_key) VALUES (2, 'ref-2', 2);

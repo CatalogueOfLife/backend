@@ -12,23 +12,23 @@ import java.util.Objects;
  * A taxonomic synonymy list, ordering names in homotypic groups.
  */
 public class Synonymy {
-  private final List<List<Name>> synonyms;
+  private final List<List<Synonym>> synonyms;
 
   public Synonymy() {
     this.synonyms = Lists.newArrayList();
   }
 
   @JsonCreator
-  public Synonymy(List<List<Name>> synonyms) {
+  public Synonymy(List<List<Synonym>> synonyms) {
     this.synonyms = synonyms;
   }
 
   @JsonValue
-  public List<List<Name>> getHomotypicGroups() {
+  public List<List<Synonym>> getHomotypicGroups() {
     return synonyms;
   }
 
-  public void addHomotypicGroup(List<Name> synonyms) {
+  public void addHomotypicGroup(List<Synonym> synonyms) {
     this.synonyms.add(synonyms);
   }
 

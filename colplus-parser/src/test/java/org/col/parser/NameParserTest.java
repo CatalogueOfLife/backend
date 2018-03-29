@@ -3,6 +3,7 @@ package org.col.parser;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import org.col.api.model.Name;
+import org.col.api.model.NameAccordingTo;
 import org.gbif.nameparser.api.NamePart;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
@@ -217,10 +218,10 @@ public class NameParserTest {
   }
 
   static NameAssertion assertName(String rawName, String sciname, NameType type) throws UnparsableException {
-    Name n = parser.parse(rawName).get();
-    assertEquals(sciname, n.getScientificName());
-    assertEquals(type, n.getType());
-    return new NameAssertion(n);
+    NameAccordingTo n = parser.parse(rawName).get();
+    assertEquals(sciname, n.getName().getScientificName());
+    assertEquals(type, n.getName().getType());
+    return new NameAssertion(n.getName());
   }
 
   static class NameAssertion {

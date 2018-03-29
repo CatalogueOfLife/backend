@@ -6,6 +6,7 @@ import org.col.admin.task.importer.neo.model.NeoProperties;
 import org.col.admin.task.importer.neo.model.NeoTaxon;
 import org.col.api.model.VerbatimRecord;
 import org.col.api.vocab.Issue;
+import org.col.api.model.NameAccordingTo;
 import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.dwc.terms.Term;
 import org.neo4j.graphdb.Node;
@@ -43,9 +44,11 @@ public class AcefRelationInserter implements NeoDb.NodeBatchProcessor {
           // finally we have all pieces to also interpret infraspecific names
           NeoTaxon sp = store.get(p);
           VerbatimRecord v = t.verbatim;
-          t.name = inter.interpretName(v.getId(), v.getTerm(AcefTerm.InfraSpeciesMarker), null, v.getTerm(AcefTerm.InfraSpeciesAuthorString),
+          NameAccordingTo nat = inter.interpretName(v.getId(), v.getTerm(AcefTerm.InfraSpeciesMarker), null, v.getTerm(AcefTerm.InfraSpeciesAuthorString),
               sp.name.getGenus(), sp.name.getInfragenericEpithet(), sp.name.getSpecificEpithet(), v.getTerm(AcefTerm.InfraSpeciesEpithet),
               null, v.getTerm(AcefTerm.GSDNameStatus), null, null);
+
+          t.name = nat.getName();
           if (!t.name.getRank().isInfraspecific()) {
             LOG.info("Expected infraspecific taxon but found {} for name {}: {}", t.name.getRank(), v.getId(), t.name.getScientificName());
             t.addIssue(Issue.INCONSISTENT_NAME);

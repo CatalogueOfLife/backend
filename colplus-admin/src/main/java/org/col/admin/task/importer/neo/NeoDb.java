@@ -425,13 +425,14 @@ public class NeoDb implements ReferenceStore {
       // update neo4j props
       NeoDbUtils.setProperties(t.node, props);
     }
-    taxa.put(nodeId, t);
 
     // use neo4j node ids as keys for both name and taxon
     t.taxon.setKey((int)nodeId);
     if (t.name != null) {
       t.name.setKey(t.taxon.getKey());
     }
+
+    taxa.put(nodeId, t);
 
     return t;
   }
@@ -537,9 +538,9 @@ public class NeoDb implements ReferenceStore {
           // accepted, can be multiple
           for (Relationship synRel : t.node.getRelationships(RelType.SYNONYM_OF, Direction.OUTGOING)) {
             if (t.synonym == null) {
-              t.synonym = new NeoTaxon.Synonym();
+              t.synonym = new Synonym();
             }
-            t.synonym.accepted.add(extractTaxon(synRel.getOtherNode(t.node)));
+            t.synonym.getAccepted().add(extractTaxon(synRel.getOtherNode(t.node)));
           }
 
         } else if (!t.node.hasLabel(Labels.ROOT)){

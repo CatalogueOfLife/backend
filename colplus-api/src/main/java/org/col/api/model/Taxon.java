@@ -1,5 +1,6 @@
 package org.col.api.model;
 
+import com.google.common.base.Preconditions;
 import org.col.api.vocab.Issue;
 import org.col.api.vocab.Lifezone;
 import org.col.api.vocab.Origin;
@@ -7,12 +8,14 @@ import org.col.api.vocab.TaxonomicStatus;
 
 import java.net.URI;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.EnumSet;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  *
  */
-public class Taxon implements PrimaryEntity {
+public class Taxon implements PrimaryEntity, NameUsage {
 
 	/**
 	 * Internal surrogate key of the taxon as provided by postgres. This key is
@@ -103,6 +106,7 @@ public class Taxon implements PrimaryEntity {
 	}
 
 	public void setStatus(TaxonomicStatus status) {
+    Preconditions.checkArgument(status == null || !status.isSynonym());
 		this.status = status;
 	}
 

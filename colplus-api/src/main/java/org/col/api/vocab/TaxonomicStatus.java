@@ -26,6 +26,29 @@ public enum TaxonomicStatus {
   /**
    * Treated as accepted, but doubtful whether this is correct.
    */
-  DOUBTFUL;
+  DOUBTFUL,
+
+  /**
+   * Any kind of synonym, not specifying whether homo- or heterotypic
+   */
+  SYNONYM,
+
+  /**
+   * A pro parte synonym that has more than one accepted names.
+   */
+  AMBIGUOUS_SYNONYM,
+
+  /**
+   * A misapplied name. Usually accompanied with an accordingTo on the synonym to indicate the
+   * source the misapplication can be found in.
+   */
+  MISAPPLIED;
+
+  /**
+   * @return true for a status valid for a synonym, false if valid for an accepted taxon.
+   */
+  public boolean isSynonym(){
+    return this != ACCEPTED && this != DOUBTFUL;
+  }
 
 }

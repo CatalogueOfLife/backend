@@ -11,6 +11,7 @@ import org.col.admin.task.importer.neo.model.RankedName;
 import org.col.admin.task.importer.neo.model.UnescapedVerbatimRecord;
 import org.col.api.model.*;
 import org.col.api.vocab.*;
+import org.col.api.model.NameAccordingTo;
 import org.gbif.dwc.terms.*;
 import org.gbif.nameparser.api.*;
 import org.neo4j.kernel.impl.core.NodeProxy;
@@ -41,12 +42,14 @@ public class NeoKryoFactory implements KryoFactory {
     kryo.register(Distribution.class);
     kryo.register(ExtendedTermRecord.class);
     kryo.register(Name.class);
+    kryo.register(NameAccordingTo.class);
     kryo.register(NameAct.class);
     kryo.register(ParsedName.class);
     kryo.register(ParsedName.State.class);
     kryo.register(Reference.class);
     kryo.register(Sector.class);
     kryo.register(Serial.class);
+    kryo.register(Synonym.class);
     kryo.register(Taxon.class);
     kryo.register(VernacularName.class);
     kryo.register(VerbatimRecord.class);
@@ -58,7 +61,6 @@ public class NeoKryoFactory implements KryoFactory {
 
     // normalizer specific models
     kryo.register(NeoTaxon.class);
-    kryo.register(NeoTaxon.Synonym.class);
     kryo.register(RankedName.class);
 
     // fastutil

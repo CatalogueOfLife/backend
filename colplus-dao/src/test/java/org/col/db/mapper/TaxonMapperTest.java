@@ -5,6 +5,7 @@ import org.col.api.TestEntityGenerator;
 import org.col.api.model.Name;
 import org.col.api.model.Page;
 import org.col.api.model.Taxon;
+import org.col.db.dao.NameDao;
 import org.gbif.nameparser.api.Rank;
 import org.javers.core.Javers;
 import org.javers.core.JaversBuilder;
@@ -169,13 +170,13 @@ public class TaxonMapperTest extends MapperTestBase<TaxonMapper> {
   @Test
   public void list5() throws Exception {
 
-    NameMapper nameMapper = initMybatisRule.getMapper(NameMapper.class);
+    NameDao nameDao = new NameDao(initMybatisRule.getSqlSession());
 
     Name accepted1 = TestEntityGenerator.newName("accepted-1");
-    nameMapper.create(accepted1);
+    nameDao.create(accepted1);
 
     Name accepted2 = TestEntityGenerator.newName("accepted-2");
-    nameMapper.create(accepted2);
+    nameDao.create(accepted2);
 
     Taxon taxon1 = TestEntityGenerator.newTaxon("taxon-1");
     taxon1.setName(accepted1);
@@ -189,20 +190,20 @@ public class TaxonMapperTest extends MapperTestBase<TaxonMapper> {
     Name heterotypic2 = TestEntityGenerator.newName("hetereotypic-2");
     Name heterotypic3 = TestEntityGenerator.newName("hetereotypic-3");
 
-    nameMapper.create(heterotypic1);
-    nameMapper.create(heterotypic2);
-    nameMapper.create(heterotypic3);
+    nameDao.create(heterotypic1);
+    nameDao.create(heterotypic2);
+    nameDao.create(heterotypic3);
 
     int dKey = accepted1.getDatasetKey();
 
     // heterotypic1 is p.p. synonym for accepted1 and accepted2
     // 2 taxa should come back when querying on heterotypic1's
     // name key
-    nameMapper.addSynonym(dKey, taxon1.getKey(), heterotypic1.getKey());
-    nameMapper.addSynonym(dKey, taxon2.getKey(), heterotypic1.getKey());
-    
-    nameMapper.addSynonym(dKey, taxon1.getKey(), heterotypic2.getKey());
-    nameMapper.addSynonym(dKey, taxon1.getKey(), heterotypic3.getKey());
+    nameDao.addSynonym(NameDao.toSynonym(dKey, taxon1.getKey(), heterotypic1.getKey()));
+    nameDao.addSynonym(NameDao.toSynonym(dKey, taxon2.getKey(), heterotypic1.getKey()));
+
+    nameDao.addSynonym(NameDao.toSynonym(dKey, taxon1.getKey(), heterotypic2.getKey()));
+    nameDao.addSynonym(NameDao.toSynonym(dKey, taxon1.getKey(), heterotypic3.getKey()));
 
     Name homotypic1 = TestEntityGenerator.newName("homotypic-1");
     homotypic1.setBasionymKey(accepted1.getKey());
@@ -219,11 +220,11 @@ public class TaxonMapperTest extends MapperTestBase<TaxonMapper> {
     Name homotypic5 = TestEntityGenerator.newName("homotypic-5");
     homotypic5.setBasionymKey(null);
 
-    nameMapper.create(homotypic1);
-    nameMapper.create(homotypic2);
-    nameMapper.create(homotypic3);
-    nameMapper.create(homotypic4);
-    nameMapper.create(homotypic5);
+    nameDao.create(homotypic1);
+    nameDao.create(homotypic2);
+    nameDao.create(homotypic3);
+    nameDao.create(homotypic4);
+    nameDao.create(homotypic5);
 
     commit();
 
@@ -245,9 +246,9 @@ public class TaxonMapperTest extends MapperTestBase<TaxonMapper> {
     assertTrue(taxa.isEmpty());
 
     // add homotypic synonyms
-    nameMapper.addSynonym(dKey, taxon1.getKey(), homotypic1.getKey());
-    nameMapper.addSynonym(dKey, taxon1.getKey(), homotypic2.getKey());
-    nameMapper.addSynonym(dKey, taxon1.getKey(), homotypic3.getKey());
+    nameDao.addSynonym(NameDao.toSynonym(dKey, taxon1.getKey(), homotypic1.getKey()));
+    nameDao.addSynonym(NameDao.toSynonym(dKey, taxon1.getKey(), homotypic2.getKey()));
+    nameDao.addSynonym(NameDao.toSynonym(dKey, taxon1.getKey(), homotypic3.getKey()));
 
     taxa = mapper().list(null, false, heterotypic2.getKey(), p);
     assertEquals(1, taxa.size());
@@ -290,12 +291,12 @@ public class TaxonMapperTest extends MapperTestBase<TaxonMapper> {
     Taxon parent = TestEntityGenerator.newTaxon("parent-1");
     mapper().create(parent);
 
-    NameMapper nameMapper = initMybatisRule.getMapper(NameMapper.class);
+    NameDao nameDao = new NameDao(initMybatisRule.getSqlSession());
 
     Name n1 = TestEntityGenerator.newName("XXX");
     n1.setScientificName("XXX");
     n1.setRank(Rank.SUBGENUS);
-    nameMapper.create(n1);
+    nameDao.create(n1);
 
     Taxon c1 = TestEntityGenerator.newTaxon("child-1");
     c1.setName(n1);
@@ -305,7 +306,7 @@ public class TaxonMapperTest extends MapperTestBase<TaxonMapper> {
     Name n2 = TestEntityGenerator.newName("YYY");
     n1.setScientificName("YYY");
     n2.setRank(Rank.FAMILY);
-    nameMapper.create(n2);
+    nameDao.create(n2);
 
     Taxon c2 = TestEntityGenerator.newTaxon("child-2");
     c2.setName(n2);
@@ -315,7 +316,7 @@ public class TaxonMapperTest extends MapperTestBase<TaxonMapper> {
     Name n3 = TestEntityGenerator.newName("ZZZ");
     n3.setScientificName("ZZZ");
     n3.setRank(Rank.INFRASPECIFIC_NAME);
-    nameMapper.create(n3);
+    nameDao.create(n3);
 
     Taxon c3 = TestEntityGenerator.newTaxon("child-3");
     c3.setName(n3);
@@ -325,7 +326,7 @@ public class TaxonMapperTest extends MapperTestBase<TaxonMapper> {
     Name n4 = TestEntityGenerator.newName("AAA");
     n4.setScientificName("AAA");
     n4.setRank(Rank.SUBGENUS);
-    nameMapper.create(n4);
+    nameDao.create(n4);
 
     Taxon c4 = TestEntityGenerator.newTaxon("child-4");
     c4.setName(n4);

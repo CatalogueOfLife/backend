@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import org.apache.commons.lang3.StringUtils;
 import org.col.api.model.Name;
 import org.col.api.vocab.Issue;
+import org.col.api.model.NameAccordingTo;
 import org.gbif.nameparser.NameParserGBIF;
 import org.gbif.nameparser.Warnings;
 import org.gbif.nameparser.api.ParsedName;
@@ -18,7 +19,7 @@ import java.util.Optional;
 /**
  * Wrapper around the GBIF Name parser to deal with col Name and API.
  */
-public class NameParser implements Parser<Name> {
+public class NameParser implements Parser<NameAccordingTo> {
   private static Logger LOG = LoggerFactory.getLogger(NameParser.class);
   public static final NameParser PARSER = new NameParser();
   private static final NameParserGBIF PARSER_INTERNAL = new NameParserGBIF();
@@ -38,7 +39,7 @@ public class NameParser implements Parser<Name> {
       .put(Warnings.XML_TAGS, Issue.ESCAPED_CHARACTERS)
       .build();
 
-  public Optional<Name> parse(String name) {
+  public Optional<NameAccordingTo> parse(String name) {
     return parse(name, Rank.UNRANKED);
   }
 
@@ -59,30 +60,31 @@ public class NameParser implements Parser<Name> {
    * Fully parses a name using #parse(String, Rank) but converts names that throw a UnparsableException
    * into ParsedName objects with the scientific name, rank and name type given.
    */
-  public Optional<Name> parse(String name, Rank rank) {
+  public Optional<NameAccordingTo> parse(String name, Rank rank) {
     if (StringUtils.isBlank(name)) {
       return Optional.empty();
     }
 
-    Name n;
+    NameAccordingTo n;
     try {
       n = fromParsedName(PARSER_INTERNAL.parse(name, rank));
-      n.updateScientificName();
+      n.getName().updateScientificName();
 
     } catch (UnparsableNameException e) {
-      n = new Name();
-      n.setRank(rank);
-      n.setScientificName(e.getName());
-      n.setType(e.getType());
+      n = new NameAccordingTo();
+      n.setName(new Name());
+      n.getName().setRank(rank);
+      n.getName().setScientificName(e.getName());
+      n.getName().setType(e.getType());
       // adds an issue in case the type indicates a parsable name
-      if (n.getType().isParsable()) {
-        n.addIssue(Issue.UNPARSABLE_NAME);
+      if (n.getName().getType().isParsable()) {
+        n.getName().addIssue(Issue.UNPARSABLE_NAME);
       }
     }
     return Optional.of(n);
   }
 
-  private static Name fromParsedName(ParsedName pn) {
+  private static NameAccordingTo fromParsedName(ParsedName pn) {
     Name n = new Name();
     n.setUninomial(pn.getUninomial());
     n.setGenus(pn.getGenus());
@@ -98,7 +100,6 @@ public class NameParser implements Parser<Name> {
     n.setCode(pn.getCode());
     n.setCandidatus(pn.isCandidatus());
     n.setNotho(pn.getNotho());
-    n.setTaxonomicNote(pn.getTaxonomicNote());
     n.setRemarks(pn.getRemarks());
     n.setType(pn.getType());
     // issues
@@ -118,7 +119,12 @@ public class NameParser implements Parser<Name> {
     }
     //TODO: try to convert nom notes to enumeration. Add to remarks for now
     n.addRemark(pn.getNomenclaturalNotes());
-    return n;
+
+    NameAccordingTo nat = new NameAccordingTo();
+    nat.setName(n);
+    nat.setAccordingTo(pn.getTaxonomicNote());
+
+    return nat;
   }
 
 }

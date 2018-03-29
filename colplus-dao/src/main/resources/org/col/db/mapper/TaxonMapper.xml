@@ -41,7 +41,7 @@
         n.combination_year as n_combination_year,
         n.sanctioning_author as n_sanctioning_author,
         n.code as n_code,
-        n.status as n_status,
+        n.nom_status as n_nom_status,
         n.origin as n_origin,
         n.type as n_type,
         n.fossil as n_fossil,
@@ -95,7 +95,6 @@
     <!-- A mapping to Name, mostly auto mapped -->
     <resultMap id="taxonResultMap" type="Taxon" autoMapping="true">
         <id property="key" column="key" />
-        <result property="id" column="id" />
         <result property="lifezones" column="lifezones" typeHandler="org.col.db.type.LifezoneSetTypeHandler" />
         <result property="issues" column="issues" typeHandler="org.col.db.type2.IssueSetTypeHandler" />
         <association property="name" javaType="Name" resultMap="org.col.db.mapper.NameMapper.nameResultMap" columnPrefix="n_" />

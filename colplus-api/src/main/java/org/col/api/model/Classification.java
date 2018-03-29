@@ -6,6 +6,7 @@ import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.nameparser.api.Rank;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  *
@@ -173,5 +174,25 @@ public class Classification {
       }
     }
     return true;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    Classification that = (Classification) o;
+    return Objects.equals(kingdom, that.kingdom) &&
+        Objects.equals(phylum, that.phylum) &&
+        Objects.equals(class_, that.class_) &&
+        Objects.equals(order, that.order) &&
+        Objects.equals(superfamily, that.superfamily) &&
+        Objects.equals(family, that.family) &&
+        Objects.equals(genus, that.genus) &&
+        Objects.equals(subgenus, that.subgenus);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(kingdom, phylum, class_, order, superfamily, family, genus, subgenus);
   }
 }
