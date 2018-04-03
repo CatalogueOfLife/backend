@@ -86,7 +86,7 @@ public class AcefInserter extends NeoInserter {
     // species
     reader.stream(AcefTerm.AcceptedSpecies).forEach( rec -> {
       UnescapedVerbatimRecord v = build(rec.get(AcefTerm.AcceptedTaxonID), rec);
-      NeoTaxon t = inter.interpretTaxon(v, false, false);
+      NeoTaxon t = inter.interpretTaxon(v, false);
       store.put(t);
       meta.incRecords(t.name.getRank());
     });
@@ -95,14 +95,14 @@ public class AcefInserter extends NeoInserter {
       UnescapedVerbatimRecord v = build(rec.get(AcefTerm.AcceptedTaxonID), rec);
       // accepted infraspecific names in ACEF have no genus or species but a link to their parent species ID.
       // so we cannot update the scientific name yet - we do this in the relation inserter instead!
-      NeoTaxon t = inter.interpretTaxon(v, false, true);
+      NeoTaxon t = inter.interpretTaxon(v, false);
       store.put(t);
       meta.incRecords(t.name.getRank());
     });
     // synonyms
     reader.stream(AcefTerm.Synonyms).forEach( rec -> {
       UnescapedVerbatimRecord v = build(rec.get(AcefTerm.ID), rec);
-      NeoTaxon t = inter.interpretTaxon(v, true, false);
+      NeoTaxon t = inter.interpretTaxon(v, true);
       store.put(t);
       meta.incRecords(t.name.getRank());
     });

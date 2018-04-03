@@ -15,19 +15,13 @@ import java.util.Map;
 /**
  *
  */
-abstract class EnumParser<T extends Enum> extends ParserBase<T> {
-  private static final Logger LOG = LoggerFactory.getLogger(EnumParser.class);
-  private final Map<String, T> mapping = Maps.newHashMap();
+abstract class EnumNoteParser<T extends Enum> extends ParserBase<EnumNote<T>> {
+  private static final Logger LOG = LoggerFactory.getLogger(EnumNoteParser.class);
+  private final Map<String, EnumNote<T>> mapping = Maps.newHashMap();
   private final Class<T> enumClass;
 
-  public EnumParser(Class<T> enumClass) {
-    super(enumClass);
-    this.enumClass = enumClass;
-    addNativeEnumMappings();
-  }
-
-  public EnumParser(String mappingResourceFile, Class<T> enumClass) {
-    super(enumClass);
+  public EnumNoteParser(String mappingResourceFile, Class<T> enumClass) {
+    super(EnumNote.class);
     this.enumClass = enumClass;
     // read mappings from resource file
     try {
@@ -40,15 +34,16 @@ abstract class EnumParser<T extends Enum> extends ParserBase<T> {
           LOG.debug("Ignore unmapped value {} on line {}", row[0], reader.currLineNumber());
           continue;
         }
-        if (row.length != 2 || Strings.isNullOrEmpty(row[1])) {
-          LOG.info("Ignore invalid mapping in {}, line {} with {} columns", mappingResourceFile, reader.currLineNumber(), row.length);
+        if (row.length > 3 || Strings.isNullOrEmpty(row[1])) {
+          LOG.debug("Ignore invalid mapping in {}, line {} with {} columns", mappingResourceFile, reader.currLineNumber(), row.length);
           continue;
         }
         Optional<T> val = Enums.getIfPresent(enumClass, row[1]);
+        String note = row.length == 3 ? row[2] : null;
         if (val.isPresent()) {
-          add(row[0], val.get());
+          add(row[0], val.get(), note);
         } else {
-          LOG.warn("Value {} not present in {} enumeration. Ignore mapping to {}", row[1], enumClass.getSimpleName(), row[0]);
+          LOG.info("Value {} not present in {} enumeration. Ignore mapping to {}", row[1], enumClass.getSimpleName(), row[0]);
         }
       }
       reader.close();
@@ -61,7 +56,7 @@ abstract class EnumParser<T extends Enum> extends ParserBase<T> {
 
   private void addNativeEnumMappings() {
     for (T e : enumClass.getEnumConstants()) {
-      add(e.name(), e);
+      add(e.name(), e, null);
     }
   }
 
@@ -70,10 +65,10 @@ abstract class EnumParser<T extends Enum> extends ParserBase<T> {
    * Keys will be normalized with the same method used for parsing before inserting them to the mapping.
    * Blank strings and null values will be ignored!
    */
-  public void add(String key, T value) {
+  public void add(String key, T value, String note) {
     key = normalize(key);
     if (key != null) {
-      this.mapping.put(key, value);
+      this.mapping.put(key, new EnumNote<>(value, note));
     }
   }
 
@@ -87,7 +82,7 @@ abstract class EnumParser<T extends Enum> extends ParserBase<T> {
   }
 
   @Override
-  T parseKnownValues(String upperCaseValue) {
+  EnumNote<T> parseKnownValues(String upperCaseValue) {
     return mapping.get(upperCaseValue);
   }
 }

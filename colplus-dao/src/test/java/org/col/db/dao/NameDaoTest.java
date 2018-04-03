@@ -54,7 +54,7 @@ public class NameDaoTest extends DaoTestBase {
       assertEquals(0, synonymy.size());
 
       // now add a few synonyms
-      dao.addSynonym(datasetKey, accKey, syn1.getKey());
+      dao.addSynonym(TestEntityGenerator.newSynonym(syn1, accKey));
       session.commit();
 
       synonymy = dao.getSynonymy(accKey);
@@ -62,11 +62,11 @@ public class NameDaoTest extends DaoTestBase {
       assertEquals(1, synonymy.size());
       assertEquals(1, synonymy.getHomotypicGroups().size());
 
-      dao.addSynonym(datasetKey, accKey, syn2bas.getKey());
-      dao.addSynonym(datasetKey, accKey, syn21.getKey());
-      dao.addSynonym(datasetKey, accKey, syn22.getKey());
-      dao.addSynonym(datasetKey, accKey, syn3bas.getKey());
-      dao.addSynonym(datasetKey, accKey, syn31.getKey());
+      dao.addSynonym(TestEntityGenerator.newSynonym(syn2bas, accKey));
+      dao.addSynonym(TestEntityGenerator.newSynonym(syn21, accKey));
+      dao.addSynonym(TestEntityGenerator.newSynonym(syn22, accKey));
+      dao.addSynonym(TestEntityGenerator.newSynonym(syn3bas, accKey));
+      dao.addSynonym(TestEntityGenerator.newSynonym(syn31, accKey));
       session.commit();
 
       synonymy = dao.getSynonymy(accKey);

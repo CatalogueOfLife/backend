@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.col.db.mapper.SynonymMapper">
+
+    <sql id="SELECT">
+        s.status,
+        s.according_to,
+
+        n.key as n_key,
+        n.id as n_id,
+        n.dataset_key as n_dataset_key,
+        n.basionym_key as n_basionym_key,
+        n.scientific_name as n_scientific_name,
+        n.rank as n_rank,
+        n.uninomial as n_uninomial,
+        n.genus as n_genus,
+        n.infrageneric_epithet as n_infrageneric_epithet,
+        n.specific_epithet as n_specific_epithet,
+        n.infraspecific_epithet as n_infraspecific_epithet,
+        n.cultivar_epithet as n_cultivar_epithet,
+        n.strain as n_strain,
+        n.candidatus as n_candidatus,
+        n.notho as n_notho,
+        n.basionym_authors as n_basionym_authors,
+        n.basionym_ex_authors as n_basionym_ex_authors,
+        n.basionym_year as n_basionym_year,
+        n.combination_authors as n_combination_authors,
+        n.combination_ex_authors as n_combination_ex_authors,
+        n.combination_year as n_combination_year,
+        n.sanctioning_author as n_sanctioning_author,
+        n.code as n_code,
+        n.nom_status as n_nom_status,
+        n.origin as n_origin,
+        n.type as n_type,
+        n.source_url as n_source_url,
+        n.fossil as n_fossil,
+        n.remarks as n_remarks,
+        n.issues as n_issues,
+
+        t.key as t_key,
+        t.id as t_id,
+        t.dataset_key as t_dataset_key,
+        t.parent_key as t_parent_key,
+        t.status as t_status,
+        t.origin as t_origin,
+        t.according_to as t_according_to,
+        t.according_to_date as t_according_to_date,
+        t.fossil as t_fossil,
+        t.recent as t_recent,
+        t.lifezones as t_lifezones,
+        t.dataset_url as t_dataset_url,
+        t.species_estimate as t_species_estimate,
+        t.species_estimate_reference_key as t_species_estimate_reference_key,
+        t.remarks as t_remarks,
+        t.issues as t_issues,
+
+        tn.key as t_n_key,
+        tn.id as t_n_id,
+        tn.dataset_key as t_n_dataset_key,
+        tn.basionym_key as t_n_basionym_key,
+        tn.scientific_name as t_n_scientific_name,
+        tn.rank as t_n_rank,
+        tn.uninomial as t_n_uninomial,
+        tn.genus as t_n_genus,
+        tn.infrageneric_epithet as t_n_infrageneric_epithet,
+        tn.specific_epithet as t_n_specific_epithet,
+        tn.infraspecific_epithet as t_n_infraspecific_epithet,
+        tn.cultivar_epithet as t_n_cultivar_epithet,
+        tn.strain as t_n_strain,
+        tn.candidatus as t_n_candidatus,
+        tn.notho as t_n_notho,
+        tn.basionym_authors as t_n_basionym_authors,
+        tn.basionym_ex_authors as t_n_basionym_ex_authors,
+        tn.basionym_year as t_n_basionym_year,
+        tn.combination_authors as t_n_combination_authors,
+        tn.combination_ex_authors as t_n_combination_ex_authors,
+        tn.combination_year as t_n_combination_year,
+        tn.sanctioning_author as t_n_sanctioning_author,
+        tn.code as t_n_code,
+        tn.nom_status as t_n_nom_status,
+        tn.origin as t_n_origin,
+        tn.type as t_n_type,
+        tn.source_url as t_n_source_url,
+        tn.fossil as t_n_fossil,
+        tn.remarks as t_n_remarks,
+        tn.issues as t_n_issues
+    </sql>
+
+    <sql id="FROM">
+        synonym s
+        JOIN name n ON n.key=s.name_key
+        JOIN taxon t ON t.key=s.taxon_key
+        JOIN name tn ON tn.key=t.name_key
+    </sql>
+
+    <resultMap id="synonymResultMap" type="Synonym" autoMapping="true">
+        <association property="name" javaType="Name" resultMap="org.col.db.mapper.NameMapper.nameResultMap" columnPrefix="n_" />
+        <collection property="accepted" ofType="Taxon" resultMap="org.col.db.mapper.TaxonMapper.taxonResultMap" columnPrefix="t_" />
+    </resultMap>
+
+    <select id="get" resultMap="synonymResultMap">
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
+        WHERE n.key = #{key}
+    </select>
+
+    <select id="synonyms" resultMap="synonymResultMap">
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
+        WHERE s.taxon_key = #{key}
+        ORDER BY COALESCE(n.basionym_key, n.key)
+    </select>
+
+    <insert id="create" parameterType="Synonym">
+        INSERT INTO synonym (dataset_key, name_key, taxon_key, status, according_to)
+        VALUES
+        <foreach collection="syn.accepted" item="acc" index="idx" separator=",">
+            (#{syn.name.datasetKey}, #{syn.name.key}, #{acc.key}, #{syn.status}, #{syn.accordingTo})
+        </foreach>
+    </insert>
+
+</mapper>

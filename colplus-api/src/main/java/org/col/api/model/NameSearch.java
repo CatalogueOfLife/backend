@@ -30,10 +30,10 @@ public class NameSearch {
 	private Rank rank;
 
 	@QueryParam("nomstatus")
-	private NomStatus nomstatus;
+	private NomStatus nomStatus;
 
 	@QueryParam("taxstatus")
-	private TaxonomicStatus taxstatus;
+	private TaxonomicStatus taxStatus;
 
 	@QueryParam("issue")
 	private Issue issue;
@@ -76,23 +76,23 @@ public class NameSearch {
 		this.rank = rank;
 	}
 
-	public NomStatus getNomstatus() {
-		return nomstatus;
-	}
+  public NomStatus getNomStatus() {
+    return nomStatus;
+  }
 
-	public void setNomstatus(NomStatus nomstatus) {
-		this.nomstatus = nomstatus;
-	}
+  public void setNomStatus(NomStatus nomStatus) {
+    this.nomStatus = nomStatus;
+  }
 
-	public TaxonomicStatus getTaxstatus() {
-		return taxstatus;
-	}
+  public TaxonomicStatus getTaxStatus() {
+    return taxStatus;
+  }
 
-	public void setTaxstatus(TaxonomicStatus taxstatus) {
-		this.taxstatus = taxstatus;
-	}
+  public void setTaxStatus(TaxonomicStatus taxStatus) {
+    this.taxStatus = taxStatus;
+  }
 
-	public Issue getIssue() {
+  public Issue getIssue() {
 		return issue;
 	}
 
@@ -121,8 +121,8 @@ public class NameSearch {
         && datasetKey == null
         && key == null
         && rank == null
-        && nomstatus == null
-        && taxstatus == null
+        && nomStatus == null
+        && taxStatus == null
         && issue == null
         && type == null;
   }
@@ -136,8 +136,8 @@ public class NameSearch {
         Objects.equals(datasetKey, that.datasetKey) &&
         Objects.equals(key, that.key) &&
         rank == that.rank &&
-        nomstatus == that.nomstatus &&
-        taxstatus == that.taxstatus &&
+        nomStatus == that.nomStatus &&
+        taxStatus == that.taxStatus &&
         issue == that.issue &&
         type == that.type &&
         sortBy == that.sortBy;
@@ -145,6 +145,6 @@ public class NameSearch {
 
   @Override
   public int hashCode() {
-    return Objects.hash(q, datasetKey, key, rank, nomstatus, taxstatus, issue, type, sortBy);
+    return Objects.hash(q, datasetKey, key, rank, nomStatus, taxStatus, issue, type, sortBy);
   }
 }

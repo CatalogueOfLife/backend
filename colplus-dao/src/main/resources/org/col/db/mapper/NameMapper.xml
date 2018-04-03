@@ -28,29 +28,92 @@
         n.combination_year,
         n.sanctioning_author,
         n.code,
-        n.status,
+        n.nom_status,
         n.origin,
         n.type,
         n.source_url,
         n.fossil,
         n.remarks,
-        n.taxonomic_note,
         n.issues
     </sql>
 
     <sql id="SEARCH_SELECT">
-        <include refid="SELECT" />
-        ,
-        t.key as taxon_key,
-        t.id as taxon_id,
-        t.status as taxon_status,
-        accepted.key as accepted_key,
-        accepted.id as accepted_id,
-        accepted.scientific_name as accepted_scientific_name,
-        accepted.rank as accepted_rank,
-        mytaxon.key as mytaxon_key,
-        mytaxon.id as mytaxon_id,
-        mytaxon.status as mytaxon_status
+        CASE
+          WHEN t.key is not null THEN 1
+          WHEN s.status is not null THEN 2
+          ELSE 3
+        END AS disc,
+        <include refid="SELECT" />,
+
+        t.key AS t_key,
+        t.id AS t_id,
+        t.dataset_key AS t_dataset_key,
+        t.parent_key AS t_parent_key,
+        t.name_key AS t_name_key,
+        t.status AS t_status,
+        t.origin AS t_origin,
+        t.according_to AS t_according_to,
+        t.according_to_date AS t_according_to_date,
+        t.fossil AS t_fossil,
+        t.recent AS t_recent,
+        t.lifezones AS t_lifezones,
+        t.dataset_url AS t_dataset_url,
+        t.species_estimate AS t_species_estimate,
+        t.species_estimate_reference_key AS t_species_estimate_reference_key,
+        t.remarks AS t_remarks,
+        t.issues AS t_issues,
+
+        s.status AS s_status,
+        s.according_to AS s_according_to,
+
+        a.key AS a_key,
+        a.id AS a_id,
+        a.dataset_key AS a_dataset_key,
+        a.parent_key AS a_parent_key,
+        a.name_key AS a_name_key,
+        a.status AS a_status,
+        a.origin AS a_origin,
+        a.according_to AS a_according_to,
+        a.according_to_date AS a_according_to_date,
+        a.fossil AS a_fossil,
+        a.recent AS a_recent,
+        a.lifezones AS a_lifezones,
+        a.dataset_url AS a_dataset_url,
+        a.species_estimate AS a_species_estimate,
+        a.species_estimate_reference_key AS a_species_estimate_reference_key,
+        a.remarks AS a_remarks,
+        a.issues AS a_issues,
+
+        an.key AS a_n_key,
+        an.id AS a_n_id,
+        an.dataset_key AS a_n_dataset_key,
+        an.basionym_key AS a_n_basionym_key,
+        an.scientific_name AS a_n_scientific_name,
+        an.rank AS a_n_rank,
+        an.uninomial AS a_n_uninomial,
+        an.genus AS a_n_genus,
+        an.infrageneric_epithet AS a_n_infrageneric_epithet,
+        an.specific_epithet AS a_n_specific_epithet,
+        an.infraspecific_epithet AS a_n_infraspecific_epithet,
+        an.cultivar_epithet AS a_n_cultivar_epithet,
+        an.strain AS a_n_strain,
+        an.candidatus AS a_n_candidatus,
+        an.notho AS a_n_notho,
+        an.basionym_authors AS a_n_basionym_authors,
+        an.basionym_ex_authors AS a_n_basionym_ex_authors,
+        an.basionym_year AS a_n_basionym_year,
+        an.combination_authors AS a_n_combination_authors,
+        an.combination_ex_authors AS a_n_combination_ex_authors,
+        an.combination_year AS a_n_combination_year,
+        an.sanctioning_author AS a_n_sanctioning_author,
+        an.code AS a_n_code,
+        an.nom_status AS a_n_nom_status,
+        an.origin AS a_n_origin,
+        an.type AS a_n_type,
+        an.source_url AS a_n_source_url,
+        an.fossil AS a_n_fossil,
+        an.remarks AS a_n_remarks,
+        an.issues AS a_n_issues
     </sql>
 
     <sql id="COLS">
@@ -76,13 +139,12 @@
         combination_year,
         sanctioning_author,
         code,
-        status,
+        nom_status,
         origin,
         type,
         source_url,
         fossil,
         remarks,
-        taxonomic_note,
         issues
     </sql>
 
@@ -110,51 +172,48 @@
         #{combinationAuthorship.year},
         #{sanctioningAuthor},
         #{code},
-        #{status},
+        #{nomStatus},
         #{origin},
         #{type},
         #{sourceUrl},
         #{fossil},
         #{remarks},
-        #{taxonomicNote},
         #{issues, typeHandler=org.col.db.type2.IssueSetTypeHandler}::int[]
     </sql>
 
-    <sql id="FROM">
-        name n LEFT JOIN name bn ON n.basionym_key=bn.key
-    </sql>
+    <sql id="FROM">name n</sql>
 
     <sql id="SEARCH_FROM">
         <include refid="FROM" />
-        LEFT JOIN synonym syn on (n.key = syn.name_key)
-        LEFT JOIN taxon t on (syn.taxon_key = t.key)
-        LEFT JOIN name accepted on (t.name_key = accepted.key)
-        LEFT JOIN taxon mytaxon ON (n.key = mytaxon.name_key)
+        LEFT JOIN taxon t ON n.key = t.name_key
+        LEFT JOIN synonym s on n.key = s.name_key
+          LEFT JOIN taxon a on s.taxon_key = a.key
+          LEFT JOIN name an on a.name_key = an.key
     </sql>
 
     <!-- TODO: filter only accepted or synoynms -->
     <sql id="SEARCH_WHERE">
         TRUE
-        <if test="nameSearch.q != null">
-            AND n.doc @@ plainto_tsquery('simple2', #{nameSearch.q})
+        <if test="q.q != null">
+            AND n.doc @@ plainto_tsquery('simple2', #{q.q})
         </if>
-        <if test="nameSearch.datasetKey != null">
-            AND #{nameSearch.datasetKey} = n.dataset_key
+        <if test="q.datasetKey != null">
+            AND #{q.datasetKey} = n.dataset_key
         </if>
-        <if test="nameSearch.key != null">
-            AND #{nameSearch.key} = n.key
+        <if test="q.key != null">
+            AND #{q.key} = n.key
         </if>
-        <if test="nameSearch.rank != null">
-            AND #{nameSearch.rank}::rank = n.rank
+        <if test="q.rank != null">
+            AND #{q.rank}::rank = n.rank
         </if>
-        <if test="nameSearch.nomstatus != null">
-            AND #{nameSearch.nomstatus}::int = n.status
+        <if test="q.nomStatus != null">
+            AND #{q.nomStatus}::int = n.nom_status
         </if>
-        <if test="nameSearch.type != null">
-            AND #{nameSearch.type}::int = n.type
+        <if test="q.type != null">
+            AND #{q.type}::int = n.type
         </if>
-        <if test="nameSearch.issue != null">
-            AND n.issues @> array[#{nameSearch.issue}::int]
+        <if test="q.issue != null">
+            AND n.issues @> array[#{q.issue}::int]
         </if>
     </sql>
 
@@ -175,23 +234,39 @@
         </association>
     </resultMap>
 
-    <resultMap id="nameSearchResultMap" type="org.col.db.mapper.temp.NameSearchResultTemp" extends="nameResultMap" autoMapping="true">
-        <association property="taxonOfThisName" javaType="Taxon">
-            <id property="key" column="mytaxon_key" />
-            <result property="id" column="mytaxon_id" />
-            <result property="status" column="mytaxon_status" />
-        </association>
-        <collection property="taxaOfAcceptedNames" ofType="Taxon">
-            <id property="key" column="taxon_key" />
-            <result property="id" column="taxon_id" />
-            <result property="status" column="taxon_status" />
-            <association property="name" javaType="Name">
-                <result property="key" column="accepted_key" />
-                <result property="id" column="accepted_id" />
-                <result property="scientificName" column="accepted_scientific_name" />
-                <result property="rank" column="accepted_rank" />
-            </association>
+    <resultMap id="taxonResultMap" type="Taxon" autoMapping="true">
+        <id property="key" column="t_key" />
+        <result property="id" column="t_id" />
+        <result property="status" column="t_status" />
+        <!--
+        <result property="lifezones" column="lifezones" typeHandler="org.col.db.type.LifezoneSetTypeHandler" />
+        <result property="issues" column="issues" typeHandler="org.col.db.type2.IssueSetTypeHandler" />
+        -->
+        <association property="name" javaType="Name" resultMap="nameResultMap" />
+    </resultMap>
+    <resultMap id="synonymResultMap" type="Synonym" autoMapping="true">
+        <id column="key" />
+        <result property="status" column="s_status" />
+        <result property="accordingTo" column="s_according_to" />
+        <association property="name" javaType="Name" resultMap="nameResultMap" />
+        <collection property="accepted" ofType="Taxon" column="a_key" columnPrefix="a_" >
+            <id column="key" />
+            <result property="lifezones" column="lifezones" typeHandler="org.col.db.type.LifezoneSetTypeHandler" />
+            <result property="issues" column="issues" typeHandler="org.col.db.type2.IssueSetTypeHandler" />
+            <association property="name" javaType="Name" resultMap="nameResultMap" columnPrefix="n_" />
         </collection>
+    </resultMap>
+    <resultMap id="bareNameResultMap" type="NameAccordingTo" autoMapping="true">
+        <id column="key" />
+        <association property="name" javaType="Name" resultMap="nameResultMap" />
+    </resultMap>
+
+    <resultMap id="nameSearchResultMap" type="Object" autoMapping="true">
+        <discriminator javaType="int" column="disc">
+            <case value="1" resultType="Taxon" resultMap="taxonResultMap" />
+            <case value="2" resultType="Synonym" resultMap="synonymResultMap" />
+            <case value="3" resultType="NameAccordingTo" resultMap="bareNameResultMap" />
+        </discriminator>
     </resultMap>
 
     <select id="count" parameterType="map" resultType="Integer">
@@ -230,14 +305,14 @@
         FROM <include refid="SEARCH_FROM" />
         WHERE <include refid="SEARCH_WHERE" />
         <choose>
-            <when test="nameSearch.sortBy.toString() == 'KEY'">
+            <when test="q.sortBy.toString() == 'KEY'">
                 ORDER BY n.key
             </when>
-            <when test="nameSearch.sortBy.toString() == 'NAME'">
+            <when test="q.sortBy.toString() == 'NAME'">
                 ORDER BY n.scientific_name ASC
             </when>
             <otherwise>
-                ORDER BY ts_rank(n.doc, plainto_tsquery('simple2', #{nameSearch.q})) DESC
+                ORDER BY ts_rank(n.doc, plainto_tsquery('simple2', #{q.q})) DESC
             </otherwise>
         </choose>
         <include refid="org.col.db.mapper.Common.limit" />
@@ -264,27 +339,14 @@
         SELECT
         <include refid="SELECT" />
         FROM name ns
-        JOIN name n ON
-        <!-- ns was the basionym of other combinations -->
-        n.basionym_key=ns.key OR n.key = ns.key
-        <!-- ns was a combination with a basionym -->
-        OR n.key=ns.basionym_key OR n.basionym_key=ns.basionym_key
-        LEFT JOIN name bn ON n.basionym_key=bn.key
+          JOIN name n ON
+            <!-- ns was the basionym of other combinations -->
+            n.basionym_key=ns.key OR n.key = ns.key
+            <!-- ns was a combination with a basionym -->
+            OR n.key=ns.basionym_key OR n.basionym_key=ns.basionym_key
+          LEFT JOIN name bn ON n.basionym_key=bn.key
         WHERE ns.key=#{key}
     </select>
 
-    <insert id="addSynonym" parameterType="map">
-        INSERT INTO synonym (dataset_key, taxon_key, name_key)
-        VALUES (#{datasetKey}, #{key}, #{nameKey})
-    </insert>
 
-    <select id="synonyms" resultMap="nameResultMap">
-        SELECT
-        <include refid="SELECT" />
-        FROM
-        <include refid="FROM" />
-        JOIN synonym s ON s.name_key=n.key
-        WHERE s.taxon_key = #{key}
-        ORDER BY COALESCE(n.basionym_key, n.key)
-    </select>
 </mapper>

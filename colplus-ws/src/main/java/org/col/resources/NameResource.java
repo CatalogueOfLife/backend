@@ -31,7 +31,7 @@ public class NameResource {
   @GET
   @Timed
   @Path("search")
-  public ResultPage<NameSearchResult> search(@BeanParam NameSearch query,
+  public ResultPage<NameUsage> search(@BeanParam NameSearch query,
       @Valid @BeanParam Page page, @Context SqlSession session) {
     NameDao dao = new NameDao(session);
     return dao.search(query, page);

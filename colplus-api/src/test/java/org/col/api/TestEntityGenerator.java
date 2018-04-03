@@ -120,18 +120,18 @@ public class TestEntityGenerator {
 	 * Creates a new taxon with the specified id, belonging to dataset DATASET1.
 	 */
 	public static Taxon newTaxon(String id) {
-		return newTaxon(DATASET1, id);
+		return newTaxon(DATASET1.getKey(), id);
 	}
 
   /*
 	 * Creates a new taxon with the specified id, belonging to the specified
 	 * dataset.
 	 */
-	public static Taxon newTaxon(Dataset dataset, String id) {
+	public static Taxon newTaxon(int datasetKey, String id) {
 		Taxon t = new Taxon();
 		t.setAccordingTo("Foo");
 		t.setAccordingToDate(LocalDate.of(2010, 11, 24));
-		t.setDatasetKey(dataset.getKey());
+		t.setDatasetKey(datasetKey);
 		t.setDatasetUrl(URI.create("http://foo.com"));
 		t.setFossil(true);
 		t.setId(id);
@@ -149,7 +149,38 @@ public class TestEntityGenerator {
 		return t;
 	}
 
-	/*
+  /*
+	 * Creates a new taxon with the specified id, belonging to the specified
+	 * dataset.
+	 */
+  public static Synonym newSynonym(Name name, int... acceptedKeys) {
+    Synonym s = new Synonym();
+    s.setName(name);
+    s.setAccordingTo("non Döring 1999");
+    s.setStatus(TaxonomicStatus.MISAPPLIED);
+    for (int acc : acceptedKeys) {
+      Taxon t = new Taxon();
+      t.setKey(acc);
+      t.setDatasetKey(name.getDatasetKey());
+      t.setStatus(TaxonomicStatus.ACCEPTED);
+      s.getAccepted().add(t);
+    }
+    return s;
+  }
+
+  public static Synonym newSynonym() {
+    Synonym s = new Synonym();
+    s.setName(newName());
+    s.setAccordingTo("auct. amer.");
+    s.setStatus(TaxonomicStatus.SYNONYM);
+
+    Taxon t = newTaxon(s.getName().getDatasetKey(), RandomUtils.randomString(25));
+    t.setName(newName());
+    s.getAccepted().add(t);
+    return s;
+  }
+
+  /*
 	 * Creates a new name with the specified id, belonging to the specified dataset.
 	 */
 	public static Name newName(String id) {
@@ -185,25 +216,24 @@ public class TestEntityGenerator {
 		n.addIssue(Issue.ACCEPTED_NAME_MISSING);
 		n.addIssue(Issue.HOMONYM);
     n.updateScientificName();
-    n.setTaxonomicNote("non Döring 1999");
     n.addRemark("my first note");
     n.addRemark("my second note");
 		return n;
 	}
 
-	public static List<Name> newNames(int size) {
-    List<Name> names = Lists.newArrayList();
+	public static List<Synonym> newSynonyms(int size) {
+    List<Synonym> names = Lists.newArrayList();
     while (size-- > 0) {
-      names.add(newName());
+      names.add(newSynonym());
     }
     return names;
   }
 
   public static Synonymy newSynonymy() {
     Synonymy s = new Synonymy();
-    s.addHomotypicGroup(newNames(1+RND.nextInt(3)));
+    s.addHomotypicGroup(newSynonyms(1+RND.nextInt(3)));
     while (RND.nextBoolean() || RND.nextBoolean()) {
-      s.addHomotypicGroup(newNames(1+RND.nextInt(6)));
+      s.addHomotypicGroup(newSynonyms(1+RND.nextInt(6)));
     }
     return s;
   }

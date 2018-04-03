@@ -196,8 +196,7 @@ public class DwcaRelationInserter implements NeoDb.NodeBatchProcessor {
    */
   private RankedName lookupByName(DwcTerm term, NeoTaxon t, Origin createdOrigin) {
     if (t.verbatim.hasTerm(term)) {
-      Name nameTmp = NameParser.PARSER.parse(t.verbatim.getTerm(term)).get();
-      final Name name = nameTmp;
+      final Name name = NameParser.PARSER.parse(t.verbatim.getTerm(term)).get().getName();
       if (!name.getScientificName().equalsIgnoreCase(t.name.getScientificName())) {
         List<Node> matches = store.byScientificName(name.getScientificName());
         // remove other authors, but allow names without authors

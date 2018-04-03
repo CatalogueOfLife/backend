@@ -24,6 +24,8 @@ public class NeoTaxon {
   // either a taxon or a synonym, never both!
   public Taxon taxon;
   public Synonym synonym;
+  public boolean homotypic = false;
+
   public List<NameAct> acts = Lists.newArrayList();
   // supplementary infos for a taxon
   public List<VernacularName> vernacularNames = Lists.newArrayList();
@@ -46,10 +48,6 @@ public class NeoTaxon {
     t.taxon.setOrigin(origin);
 
     return t;
-  }
-
-  public static class Synonym {
-    public List<Taxon> accepted = Lists.newArrayList();
   }
 
   /**
@@ -79,18 +77,24 @@ public class NeoTaxon {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     NeoTaxon neoTaxon = (NeoTaxon) o;
-    return Objects.equals(node, neoTaxon.node) &&
+    return homotypic == neoTaxon.homotypic &&
+        Objects.equals(node, neoTaxon.node) &&
         Objects.equals(verbatim, neoTaxon.verbatim) &&
+        Objects.equals(name, neoTaxon.name) &&
         Objects.equals(taxon, neoTaxon.taxon) &&
+        Objects.equals(synonym, neoTaxon.synonym) &&
         Objects.equals(acts, neoTaxon.acts) &&
         Objects.equals(vernacularNames, neoTaxon.vernacularNames) &&
         Objects.equals(distributions, neoTaxon.distributions) &&
-        Objects.equals(bibliography, neoTaxon.bibliography);
+        Objects.equals(bibliography, neoTaxon.bibliography) &&
+        Objects.equals(classification, neoTaxon.classification) &&
+        Objects.equals(issues, neoTaxon.issues) &&
+        Objects.equals(remarks, neoTaxon.remarks);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(node, verbatim, taxon, acts, vernacularNames, distributions, bibliography);
+    return Objects.hash(node, verbatim, name, taxon, synonym, homotypic, acts, vernacularNames, distributions, bibliography, classification, issues, remarks);
   }
 
   public boolean isSynonym() {

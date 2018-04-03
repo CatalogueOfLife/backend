@@ -38,6 +38,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import static org.junit.Assert.*;
@@ -158,12 +159,12 @@ public class NormalizerDwcaIT {
 
       NeoTaxon Polystictus_substipitatus = byID("140283");
       assertTrue(Polystictus_substipitatus.isSynonym());
-      assertEquals(1, Polystictus_substipitatus.synonym.accepted.size());
+      assertEquals(1, Polystictus_substipitatus.synonym.getAccepted().size());
       assertEquals(1, Polystictus_substipitatus.acts.size());
 
       NeoTaxon Polyporus_modestus = byID("198666");
       assertTrue(Polyporus_modestus.isSynonym());
-      assertEquals(1, Polyporus_modestus.synonym.accepted.size());
+      assertEquals(1, Polyporus_modestus.synonym.getAccepted().size());
       assertEquals(1, Polyporus_modestus.acts.size());
     }
   }
@@ -277,16 +278,17 @@ public class NormalizerDwcaIT {
     try (Transaction tx = store.getNeo().beginTx()) {
       NeoTaxon u1 = byID("1006");
       NeoTaxon u2 = byName("Leontodon taraxacoides", "(Vill.) Mérat");
+
       assertEquals(u1, u2);
 
       NeoTaxon bas = byName("Leonida taraxacoida");
       assertEquals(u2.name.getBasionymKey(), bas.taxon.getKey());
 
       NeoTaxon syn = byName("Leontodon leysseri");
-      assertEquals(1, syn.synonym.accepted.size());
+      assertEquals(1, syn.synonym.getAccepted().size());
       NeoTaxon acc = byID("1006");
-      assertEquals(acc.taxon.getId(), syn.synonym.accepted.get(0).getId());
-      assertEquals(acc.taxon.getKey(), syn.synonym.accepted.get(0).getKey());
+      assertEquals(acc.taxon.getId(), syn.synonym.getAccepted().get(0).getId());
+      assertEquals(acc.taxon.getKey(), syn.synonym.getAccepted().get(0).getKey());
 
     }
   }
@@ -309,14 +311,14 @@ public class NormalizerDwcaIT {
 
     try (Transaction tx = store.getNeo().beginTx()) {
       NeoTaxon syn = byID("1001");
-      assertEquals(3, syn.synonym.accepted.size());
+      assertEquals(3, syn.synonym.getAccepted().size());
 
       Map<String, String> expectedAccepted = Maps.newHashMap();
       expectedAccepted.put("1000", "Calendula arvensis");
       expectedAccepted.put("10000", "Calendula incana subsp. incana");
       expectedAccepted.put("10002", "Calendula incana subsp. maderensis");
 
-      for (Taxon acc : syn.synonym.accepted) {
+      for (Taxon acc : syn.synonym.getAccepted()) {
         assertEquals(expectedAccepted.remove(acc.getId()), acc.getName().getScientificName());
       }
       assertTrue(expectedAccepted.isEmpty());

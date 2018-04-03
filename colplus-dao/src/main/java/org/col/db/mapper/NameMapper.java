@@ -1,12 +1,12 @@
 package org.col.db.mapper;
 
-import java.util.List;
-
 import org.apache.ibatis.annotations.Param;
 import org.col.api.model.Name;
 import org.col.api.model.NameSearch;
+import org.col.api.model.NameUsage;
 import org.col.api.model.Page;
-import org.col.db.mapper.temp.NameSearchResultTemp;
+
+import java.util.List;
 
 /**
  *
@@ -23,10 +23,6 @@ public interface NameMapper {
 
 	void create(Name name);
 
-	void addSynonym(@Param("datasetKey") int datasetKey,
-	    @Param("key") int taxonKey,
-	    @Param("nameKey") int synonymNameKey);
-
 	/**
 	 * @param taxonKey
 	 *          accepted taxon key
@@ -41,8 +37,8 @@ public interface NameMapper {
 	 */
 	List<Name> basionymGroup(@Param("key") int key);
 
-	int countSearchResults(@Param("nameSearch") NameSearch nameSearch);
+	int countSearchResults(@Param("q") NameSearch query);
 
-	List<NameSearchResultTemp> search(@Param("nameSearch") NameSearch nameSearch,
-	    @Param("page") Page page);
+	List<NameUsage> search(@Param("q") NameSearch query,
+                         @Param("page") Page page);
 }

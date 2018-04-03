@@ -13,6 +13,7 @@ import org.col.admin.task.importer.neo.traverse.StartEndHandler;
 import org.col.admin.task.importer.neo.traverse.TreeWalker;
 import org.col.api.model.*;
 import org.col.api.vocab.Origin;
+import org.col.db.dao.NameDao;
 import org.col.db.mapper.*;
 import org.neo4j.graphdb.Node;
 import org.slf4j.Logger;
@@ -226,7 +227,7 @@ public class PgImport implements Runnable {
 	private void insertTaxa() {
 		try (SqlSession session = sessionFactory.openSession(false)) {
       LOG.info("Inserting remaining names and all taxa");
-      NameMapper nameMapper = session.getMapper(NameMapper.class);
+      NameDao nameDao = new NameDao(session);
       TaxonMapper taxonMapper = session.getMapper(TaxonMapper.class);
       VerbatimRecordMapper verbatimMapper = session.getMapper(VerbatimRecordMapper.class);
       DistributionMapper distributionMapper = session.getMapper(DistributionMapper.class);
@@ -249,7 +250,7 @@ public class PgImport implements Runnable {
             // doublechecking - make sure this is really a synonym
             if (t.synonym != null) {
               // now add another synonym relation now that the other accepted exists in pg
-              nameMapper.addSynonym(dataset.getKey(), parentKeys.peek(), proParteNames.get(n.getId()));
+              nameDao.addSynonym(NameDao.toSynonym(dataset.getKey(), parentKeys.peek(), proParteNames.get(n.getId())));
             } else {
               LOG.warn("We have seen node {} before, but its not a pro parte synonym!", n.getId());
             }
@@ -261,11 +262,11 @@ public class PgImport implements Runnable {
           if (t.isSynonym()) {
             taxonKey = null;
             // we can have missing accepted names, so check
-            if (!t.synonym.accepted.isEmpty()) {
-              if (t.synonym.accepted.size()>1) {
+            if (!t.synonym.getAccepted().isEmpty()) {
+              if (t.synonym.getAccepted().size()>1) {
                 proParteNames.put(n.getId(), (int) t.name.getKey());
               }
-              nameMapper.addSynonym(dataset.getKey(), parentKeys.peek(), t.name.getKey());
+              nameDao.addSynonym(NameDao.toSynonym(dataset.getKey(), parentKeys.peek(), t.name.getKey()));
             }
 
           } else {

@@ -208,13 +208,12 @@ CREATE TABLE name (
   combination_year TEXT,
   sanctioning_author TEXT,
   code INTEGER,
-  status INTEGER,
+  nom_status INTEGER,
   origin INTEGER NOT NULL,
   type INTEGER NOT NULL,
   source_url TEXT,
   fossil BOOLEAN,
   remarks TEXT,
-  taxonomic_note TEXT,
   issues INT[],
   doc tsvector
 );
@@ -225,7 +224,6 @@ CREATE OR REPLACE FUNCTION name_doc_update() RETURNS trigger AS $$
 BEGIN
     NEW.doc :=
       setweight(to_tsvector('simple2', coalesce(NEW.scientific_name,'')), 'A') ||
-      setweight(to_tsvector('simple2', coalesce(NEW.taxonomic_note,'')), 'C') ||
       setweight(to_tsvector('simple2', coalesce(NEW.remarks,'')), 'D') ||
       setweight(to_tsvector('simple2', array_to_string(NEW.combination_authors,'')), 'B') ||
       setweight(to_tsvector('simple2', array_to_string(NEW.combination_ex_authors,'')), 'D') ||
@@ -276,6 +274,8 @@ CREATE TABLE synonym (
   taxon_key INTEGER REFERENCES taxon,
   name_key INTEGER REFERENCES name,
   dataset_key INTEGER NOT NULL REFERENCES dataset,
+  status INTEGER NOT NULL,
+  according_to TEXT,
   PRIMARY KEY(taxon_key, name_key)
 );
 
@@ -348,7 +348,7 @@ CREATE index ON dataset_import (started);
 CREATE UNIQUE index ON name (id, dataset_key);
 CREATE index ON name (dataset_key);
 CREATE index ON name (rank);
-CREATE index ON name (status);
+CREATE index ON name (nom_status);
 CREATE index ON name (type);
 CREATE index ON name (basionym_key);
 CREATE index ON name USING GIN(issues);

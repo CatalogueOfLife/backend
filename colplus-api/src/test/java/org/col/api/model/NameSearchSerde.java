@@ -18,7 +18,7 @@ public class NameSearchSerde extends SerdeTestBase<NameSearch> {
   public NameSearch genTestValue() throws Exception {
     NameSearch s = new NameSearch();
     s.setQ("Abies");
-    s.setNomstatus(NomStatus.MANUSCRIPT);
+    s.setNomStatus(NomStatus.MANUSCRIPT);
     s.setRank(Rank.VARIETY);
     s.setIssue(Issue.ESCAPED_CHARACTERS);
     return s;

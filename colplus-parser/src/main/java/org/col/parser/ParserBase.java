@@ -10,9 +10,9 @@ import java.util.Optional;
  */
 abstract class ParserBase<T> implements Parser<T> {
   private final static CharMatcher VISIBLE = CharMatcher.invisible().negate();
-  final Class<T> valueClass;
+  final Class valueClass;
 
-  ParserBase(Class<T> valueClass) {
+  ParserBase(Class valueClass) {
     this.valueClass = valueClass;
   }
 

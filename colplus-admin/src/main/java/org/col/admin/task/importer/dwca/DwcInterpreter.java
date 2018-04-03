@@ -9,6 +9,9 @@ import org.col.admin.task.importer.neo.model.UnescapedVerbatimRecord;
 import org.col.api.model.*;
 import org.col.api.vocab.*;
 import org.col.parser.*;
+import org.col.parser.EnumNote;
+import org.col.api.model.NameAccordingTo;
+import org.col.util.ObjectUtils;
 import org.gbif.dwc.terms.DcTerm;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.GbifTerm;
@@ -22,6 +25,7 @@ import java.util.List;
  */
 public class DwcInterpreter extends InterpreterBase {
   private static final Logger LOG = LoggerFactory.getLogger(DwcInterpreter.class);
+  private static final EnumNote<TaxonomicStatus> NO_STATUS = new EnumNote<>(TaxonomicStatus.DOUBTFUL, null);
 
   private final InsertMetadata insertMetadata;
 
@@ -35,7 +39,8 @@ public class DwcInterpreter extends InterpreterBase {
     // verbatim
     t.verbatim = v;
     // name
-    t.name = interpretName(v);
+    NameAccordingTo nat = interpretName(v);
+    t.name = nat.getName();
     // acts
     t.acts = interpretActs(t, v);
     // flat classification
@@ -44,11 +49,15 @@ public class DwcInterpreter extends InterpreterBase {
       t.classification.setByTerm(dwc, v.getTerm(dwc));
     }
     // add taxon in any case - we can swap status of a synonym during normalization
-    t.taxon = interpretTaxon(v);
+    EnumNote<TaxonomicStatus> status = SafeParser.parse(TaxonomicStatusParser.PARSER, v.getTerm(DwcTerm.taxonomicStatus)).orElse(NO_STATUS);
+    t.taxon = interpretTaxon(v, status, nat.getAccordingTo());
     // a synonym by status?
     // we deal with relations via DwcTerm.acceptedNameUsageID and DwcTerm.acceptedNameUsage during relation insertion
-    if(SafeParser.parse(SynonymStatusParser.PARSER, v.getTerm(DwcTerm.taxonomicStatus)).orElse(false)) {
-      t.synonym = new NeoTaxon.Synonym();
+    if(status.val.isSynonym()) {
+      t.synonym = new Synonym();
+      t.synonym.setStatus(status.val);
+      t.synonym.setAccordingTo(nat.getAccordingTo());
+      t.homotypic = TaxonomicStatusParser.isHomotypic(status);
     }
 
     return t;
@@ -147,16 +156,14 @@ public class DwcInterpreter extends InterpreterBase {
     }
   }
 
-  private Taxon interpretTaxon(VerbatimRecord v) {
+  private Taxon interpretTaxon(VerbatimRecord v, EnumNote<TaxonomicStatus> status, String accordingTo) {
     // and it keeps the taxonID for resolution of relations
     Taxon t = new Taxon();
     t.setId(v.getFirst(DwcTerm.taxonID, DwcaReader.DWCA_ID));
-
-    t.setStatus(SafeParser.parse(TaxonomicStatusParser.PARSER, v.getTerm(DwcTerm.taxonomicStatus))
-        .orElse(TaxonomicStatus.DOUBTFUL)
-    );
+    // this can be a synonym at this stage which the class does not accept
+    t.setStatus(status.val.isSynonym() ? TaxonomicStatus.DOUBTFUL : status.val);
     //TODO: interpret all of Taxon via new dwca extension
-    t.setAccordingTo(v.getTerm(DwcTerm.nameAccordingTo));
+    t.setAccordingTo(ObjectUtils.coalesce(v.getTerm(DwcTerm.nameAccordingTo), accordingTo));
     t.setAccordingToDate(null);
     t.setOrigin(Origin.SOURCE);
     t.setDatasetUrl(SafeParser.parse(UriParser.PARSER, v.getTerm(DcTerm.references)).orNull(Issue.URL_INVALID, t.getIssues()));
@@ -169,7 +176,7 @@ public class DwcInterpreter extends InterpreterBase {
     return t;
   }
 
-  private Name interpretName(VerbatimRecord v) {
+  private NameAccordingTo interpretName(VerbatimRecord v) {
     //TODO: or use v.getID() ???
     //TODO: should we also get remarks through an extension, e.g. species profile or a nomenclature extension?
     return interpretName(v.getFirst(DwcTerm.scientificNameID, DwcTerm.taxonID, DwcaReader.DWCA_ID),
