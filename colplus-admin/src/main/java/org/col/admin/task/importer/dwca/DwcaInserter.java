@@ -52,8 +52,17 @@ public class DwcaInserter extends NeoInserter {
       initReader();
       inter = new DwcInterpreter(store.getDataset(), meta, store);
 
-      insertReferences();
-      insertTaxaAndNames();
+      // taxon core only, extensions are interpreted later
+      reader.stream(DwcTerm.Taxon).forEach(rec -> {
+        if (rec.hasTerm(DwcaReader.DWCA_ID)) {
+          UnescapedVerbatimRecord v = build(rec.get(DwcaReader.DWCA_ID), rec);
+          NeoTaxon t = inter.interpret(v);
+          store.put(t);
+          meta.incRecords(t.name.getRank());
+        } else {
+          LOG.warn("Taxon record without id: {}", rec);
+        }
+      });
 
     } catch (RuntimeException e) {
       throw new NormalizationFailedException("Failed to batch insert DwC-A data", e);
@@ -78,23 +87,6 @@ public class DwcaInserter extends NeoInserter {
 
   private void addVerbatimRecord(TermRecord rec) {
     super.addVerbatimRecord(DwcaReader.DWCA_ID, rec);
-  }
-
-  private void insertTaxaAndNames() {
-    // taxon
-    reader.stream(DwcTerm.Taxon).forEach(rec -> {
-      if (rec.hasTerm(DwcaReader.DWCA_ID)) {
-        UnescapedVerbatimRecord v = build(rec.get(DwcaReader.DWCA_ID), rec);
-        NeoTaxon t = inter.interpret(v);
-        store.put(t);
-        meta.incRecords(t.name.getRank());
-      } else {
-        LOG.warn("Taxon record without id: {}", rec);
-      }
-    });
-  }
-
-  private void insertReferences() {
   }
 
   /**
