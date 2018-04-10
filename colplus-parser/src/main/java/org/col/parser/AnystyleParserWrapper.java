@@ -1,16 +1,21 @@
-package org.col.util.csl;
+package org.col.parser;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import org.apache.http.client.ClientProtocolException;
+import java.util.Optional;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
-public class AnystyleParserWrapper implements AutoCloseable {
+public class AnystyleParserWrapper implements AutoCloseable, Parser<ObjectNode> {
 
   public static synchronized AnystyleParserWrapper getInstance(CloseableHttpClient hc) {
     if (instance == null) {
@@ -27,15 +32,28 @@ public class AnystyleParserWrapper implements AutoCloseable {
 
   private final AnystyleWebService svc;
   private final CloseableHttpClient hc;
+  private final ObjectMapper om;
 
   private AnystyleParserWrapper(CloseableHttpClient hc) {
     this.svc = new AnystyleWebService();
     this.hc = hc;
+    this.om = new ObjectMapper();
   }
 
-  public String parse(String ref) throws ClientProtocolException, IOException, URISyntaxException {
+  public synchronized Optional<ObjectNode> parse(String ref) throws UnparsableException {
+    if (StringUtils.isAllBlank(ref)) {
+      return Optional.empty();
+    }
     try (CloseableHttpResponse response = hc.execute(request(ref))) {
-      return EntityUtils.toString(response.getEntity());
+      String json = EntityUtils.toString(response.getEntity());
+      JsonNode node = om.readTree(json);
+      if (node.isArray()) {
+        ObjectNode on = (ObjectNode) (((ArrayNode) node).get(0));
+        return Optional.of(on);
+      }
+      throw new UnparsableException("Unexpected Anystyle response (expected array)");
+    } catch (IOException | URISyntaxException e) {
+      throw new UnparsableException(e);
     }
   }
 

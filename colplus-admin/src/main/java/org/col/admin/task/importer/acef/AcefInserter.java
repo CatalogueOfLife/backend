@@ -1,6 +1,8 @@
 package org.col.admin.task.importer.acef;
 
-import com.google.common.base.Splitter;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.Optional;
 import org.col.admin.task.importer.NeoInserter;
 import org.col.admin.task.importer.NormalizationFailedException;
 import org.col.admin.task.importer.neo.NeoDb;
@@ -10,14 +12,14 @@ import org.col.api.model.Dataset;
 import org.col.api.model.Reference;
 import org.col.api.model.TermRecord;
 import org.col.api.vocab.DataFormat;
+import org.col.parser.AnystyleParserWrapper;
+import org.col.parser.UnparsableException;
 import org.gbif.dwc.terms.AcefTerm;
 import org.neo4j.graphdb.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.Optional;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.base.Splitter;
 
 /**
  *
@@ -45,8 +47,8 @@ public class AcefInserter extends NeoInserter {
   }
 
   /**
-   * Inserts ACEF data from a source folder into the normalizer store.
-   * Before inserting it does a quick check to see if all required files are existing.
+   * Inserts ACEF data from a source folder into the normalizer store. Before inserting it does a
+   * quick check to see if all required files are existing.
    */
   @Override
   public void batchInsert() throws NormalizationFailedException {
@@ -64,7 +66,7 @@ public class AcefInserter extends NeoInserter {
 
   @Override
   public void insert() throws NormalizationFailedException {
-    try (Transaction tx = store.getNeo().beginTx()){
+    try (Transaction tx = store.getNeo().beginTx()) {
       reader.stream(AcefTerm.Distribution).forEach(this::addVerbatimRecord);
       reader.stream(AcefTerm.CommonNames).forEach(this::addVerbatimRecord);
 
@@ -84,23 +86,24 @@ public class AcefInserter extends NeoInserter {
 
   private void insertTaxaAndNames() {
     // species
-    reader.stream(AcefTerm.AcceptedSpecies).forEach( rec -> {
+    reader.stream(AcefTerm.AcceptedSpecies).forEach(rec -> {
       UnescapedVerbatimRecord v = build(rec.get(AcefTerm.AcceptedTaxonID), rec);
       NeoTaxon t = inter.interpretTaxon(v, false);
       store.put(t);
       meta.incRecords(t.name.getRank());
     });
     // infraspecies
-    reader.stream(AcefTerm.AcceptedInfraSpecificTaxa).forEach( rec -> {
+    reader.stream(AcefTerm.AcceptedInfraSpecificTaxa).forEach(rec -> {
       UnescapedVerbatimRecord v = build(rec.get(AcefTerm.AcceptedTaxonID), rec);
-      // accepted infraspecific names in ACEF have no genus or species but a link to their parent species ID.
+      // accepted infraspecific names in ACEF have no genus or species but a link to their parent
+      // species ID.
       // so we cannot update the scientific name yet - we do this in the relation inserter instead!
       NeoTaxon t = inter.interpretTaxon(v, false);
       store.put(t);
       meta.incRecords(t.name.getRank());
     });
     // synonyms
-    reader.stream(AcefTerm.Synonyms).forEach( rec -> {
+    reader.stream(AcefTerm.Synonyms).forEach(rec -> {
       UnescapedVerbatimRecord v = build(rec.get(AcefTerm.ID), rec);
       NeoTaxon t = inter.interpretTaxon(v, true);
       store.put(t);
@@ -109,13 +112,21 @@ public class AcefInserter extends NeoInserter {
   }
 
   private void insertReferences() {
-    reader.stream(AcefTerm.Reference).forEach( rec -> {
-      Reference ref = Reference.create();
-      ref.setId(rec.get(AcefTerm.ReferenceID));
-      ref.setTitle(rec.get(AcefTerm.Title));
-      ref.setYear(rec.getIntDefault(AcefTerm.Year, null));
-      store.put(ref);
-    });
+    try (AnystyleParserWrapper anystyle = AnystyleParserWrapper.getInstance()) {
+      reader.stream(AcefTerm.Reference).forEach(rec -> {
+        Reference ref = Reference.create();
+        ref.setId(rec.get(AcefTerm.ReferenceID));
+        ref.setTitle(rec.get(AcefTerm.Title));
+        ref.setYear(rec.getIntDefault(AcefTerm.Year, null));
+        try {
+          Optional<ObjectNode> csl = anystyle.parse(rec.get(AcefTerm.Details));
+          ref.setCsl(csl.get());
+        } catch (UnparsableException e) {
+          throw new NormalizationFailedException(e.getMessage());
+        }
+        store.put(ref);
+      });
+    }
   }
 
   /**

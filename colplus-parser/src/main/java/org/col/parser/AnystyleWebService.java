@@ -1,4 +1,4 @@
-package org.col.util.csl;
+package org.col.parser;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -49,15 +49,16 @@ final class AnystyleWebService {
     } catch (InterruptedException e) {
       throw new RuntimeException(e);
     }
+    LOG.info("Anystyle web service stopped");
   }
-
+  
   private static String getRubyCode() {
     StringBuilderWriter w = new StringBuilderWriter(200);
     try (PrintWriter p = new PrintWriter(w)) {
       p.print("require 'anystyle/parser';");
       p.print("require 'sinatra';");
       p.print("get '/' do;");
-      p.printf("Anystyle.parse(params['%s'], :bibtex).to_json;", QUERY_PARAM_REF);
+      p.printf("Anystyle.parse(params['%s']).to_json;", QUERY_PARAM_REF);
       p.print("end");
     }
     return w.toString();
@@ -66,6 +67,7 @@ final class AnystyleWebService {
   private static void waitUntilReady() {
     for (int i = 0; i < 5; i++) {
       if (isRunning() && isListening()) {
+        LOG.info("Anystyle web service ready");
         return;
       }
       LOG.info("Waiting for Anystyle web service to come alive ...");
