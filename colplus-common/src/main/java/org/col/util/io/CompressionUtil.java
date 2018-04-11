@@ -1,5 +1,6 @@
 package org.col.util.io;
 
+import com.google.common.collect.Lists;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.io.FileUtils;
@@ -20,50 +21,13 @@ public class CompressionUtil {
     throw new UnsupportedOperationException("Can't initialize class");
   }
 
-  public static class UnsupportedCompressionType extends RuntimeException {
-
-    public UnsupportedCompressionType() {
-    }
-
-    public UnsupportedCompressionType(String message) {
-      super(message);
-    }
-
-    public UnsupportedCompressionType(String message, Throwable cause) {
-      super(message, cause);
-    }
-
-  }
-
   private static final Logger LOG = LoggerFactory.getLogger(CompressionUtil.class);
   private static final int BUFFER = 2048;
   private static final String APPLE_RESOURCE_FORK = "__MACOSX";
 
   /**
-   * Tries to decompress a file into a newly created temporary directory, trying gzip or zip regardless of the filename
-   * or its suffix.
-   *
-   * @return folder containing all decompressed files
-   */
-  public static File decompressFile(File compressedFile) throws IOException, UnsupportedCompressionType {
-    // create empty tmp dir
-    File dir = File.createTempFile("gbif-", null);
-    if (dir.exists() && !dir.delete()) {
-      throw new IOException("Couldn't delete temporary directory");
-    }
-
-    if (!dir.mkdirs()) {
-      throw new IOException("Couldn't create temporary directory for decompression");
-    }
-
-    // decompress
-    decompressFile(dir, compressedFile);
-
-    return dir;
-  }
-
-  /**
    * Tries to decompress a file trying gzip or zip regardless of the filename or its suffix.
+   * If nothing works leave file as it is.
    *
    * @param directory      directory where archive's contents will be decompressed to.
    *                       If already existing it will be wiped
@@ -73,9 +37,8 @@ public class CompressionUtil {
    *
    * @throws IOException                if problem occurred reading compressed file, or directory couldn't be written
    *                                    to
-   * @throws UnsupportedCompressionType if the compression type wasn't recognized
    */
-  public static List<File> decompressFile(File directory, File compressedFile) throws IOException, UnsupportedCompressionType {
+  public static List<File> decompressFile(File directory, File compressedFile) throws IOException {
     if (directory.exists()) {
       LOG.debug("Remove existing uncompressed dir {}", directory.getAbsolutePath());
       FileUtils.deleteDirectory(directory);
@@ -86,21 +49,28 @@ public class CompressionUtil {
     // first try zip
     try {
       files = unzipFile(directory, compressedFile);
+
     } catch (ZipException e) {
       LOG.debug("No zip compression");
-    }
-
-    // Try gzip if needed
-    if (files == null) {
+      // Try gzip if needed
       try {
         files = ungzipFile(directory, compressedFile);
-      } catch (Exception e) {
+
+      } catch (Exception e2) {
         LOG.debug("No gzip compression");
-        throw new UnsupportedCompressionType("Unknown compression type. Neither zip nor gzip", e);
+        files = copyOriginalFile(directory, compressedFile);
+        LOG.info("Assuming source file is uncompressed");
       }
     }
 
+
     return files;
+  }
+
+  private static List<File> copyOriginalFile(File directory, File sourceFile) throws IOException {
+    File targetFile = new File(directory, sourceFile.getName());
+    FileUtils.copyFile(sourceFile, targetFile);
+    return Lists.newArrayList(targetFile);
   }
 
   /**

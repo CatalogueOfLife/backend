@@ -1,8 +1,10 @@
 package org.col.admin.task.importer;
 
+import com.google.common.base.Strings;
 import com.google.common.io.MoreFiles;
 import com.google.common.io.RecursiveDeleteOption;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.col.util.io.CompressionUtil;
@@ -27,7 +29,11 @@ public class ExternalSourceUtil {
   public static void consumeSource(URI url, Consumer<Path> sourceConsumer) throws Exception {
     // download file
     HttpClientBuilder htb = HttpClientBuilder.create();
-    File tmp = File.createTempFile("col-gsd", ".tar.gz");
+    String suffix = FilenameUtils.getExtension(url.getPath());
+    if (Strings.isNullOrEmpty(suffix)) {
+      suffix = "tar.gz";
+    }
+    File tmp = File.createTempFile("col-gsd", "." + suffix);
     Path source = java.nio.file.Files.createTempDirectory("col-gsd");
     try (CloseableHttpClient hc = htb.build()) {
       DownloadUtil down = new DownloadUtil(hc);
