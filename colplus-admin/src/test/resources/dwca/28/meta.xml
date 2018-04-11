@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='utf-8'?>
+<archive xmlns="http://rs.tdwg.org/dwc/text/">
+  <core encoding="UTF-8" fieldsTerminatedBy="\t" linesTerminatedBy="\n" fieldsEnclosedBy='' ignoreHeaderLines="0" rowType="http://rs.tdwg.org/dwc/terms/Taxon">
+    <files>
+      <location>ipni.txt</location>
+    </files>
+    <id index="0" />
+    <field index="0" term="http://rs.tdwg.org/dwc/terms/taxonID"/>
+    <field index="1" term="http://rs.tdwg.org/dwc/terms/originalNameUsageID"/>
+    <field index="2" term="http://rs.tdwg.org/dwc/terms/scientificName"/>
+    <field default="Plantae" term="http://rs.tdwg.org/dwc/terms/kingdom"/>
+    <field default="ICN" term="http://rs.tdwg.org/dwc/terms/nomenclaturalCode"/>
+  </core>
+</archive>

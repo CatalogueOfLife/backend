@@ -172,6 +172,9 @@ public class Normalizer implements Runnable {
     relinkSynonymChains();
     preferSynonymOverParentRel();
 
+    // cleanup basionym rels
+    cutBasionymChains();
+
     // process the denormalized classifications of accepted taxa
     applyDenormedClassification();
 
@@ -182,6 +185,41 @@ public class Normalizer implements Runnable {
     store.updateTaxonStoreWithRelations();
 
     LOG.info("Relation setup completed.");
+  }
+
+
+  /**
+   * Sanitizes synonym relations relinking synonym of basionymGroup to make sure basionymGroup always point to a direct accepted taxon.
+   */
+  private void cutBasionymChains() {
+    LOG.info("Cut basionym chains");
+    final String query = "MATCH (b1:ALL)-[r1:BASIONYM_OF]->(b2)-[r2:BASIONYM_OF]->(x:ALL) " +
+        "RETURN b1, b2, x, r1, r2 LIMIT 1";
+
+    int counter = 0;
+    try (Transaction tx = store.getNeo().beginTx()) {
+      Result result = store.getNeo().execute(query);
+      while (result.hasNext()) {
+        Map<String, Object> row = result.next();
+        Node b1 = (Node) row.get("b1");
+        Node b2 = (Node) row.get("b2");
+
+        // count number of outgoing basionym relations
+        int d1 = b1.getDegree(RelType.BASIONYM_OF, Direction.OUTGOING);
+        int d2 = b2.getDegree(RelType.BASIONYM_OF, Direction.OUTGOING);
+
+        // remove basionym relations
+        Relationship bad = d1 <= d2 ? (Relationship) row.get("r1") : (Relationship) row.get("r2");
+        Node comb = bad.getEndNode();
+        addIssue(comb, Issue.CHAINED_BASIONYM);
+        bad.delete();
+        counter++;
+
+        result = store.getNeo().execute(query);
+      }
+      tx.success();
+    }
+    LOG.info("{} basionym chains resolved", counter);
   }
 
   /**

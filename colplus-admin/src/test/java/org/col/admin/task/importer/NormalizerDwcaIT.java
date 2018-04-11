@@ -38,7 +38,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import static org.junit.Assert.*;
@@ -220,6 +219,26 @@ public class NormalizerDwcaIT {
         System.out.println(d);
       }
       assertEquals(expD, imported);
+    }
+  }
+
+  @Test
+  public void chainedBasionyms() throws Exception {
+    normalize(28);
+
+    // verify results
+    try (Transaction tx = store.getNeo().beginTx()) {
+      NeoTaxon t1 = byID("1");
+      NeoTaxon t2 = byID("2");
+      NeoTaxon t10 = byID("10");
+      NeoTaxon t11 = byID("11");
+      NeoTaxon t12 = byID("12");
+
+      assertNotNull(t1.name.getBasionymKey());
+      assertNull(t2.name.getBasionymKey());
+      assertNull(t10.name.getBasionymKey());
+      assertNull(t11.name.getBasionymKey());
+      assertNotNull(t12.name.getBasionymKey());
     }
   }
 

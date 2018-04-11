@@ -141,6 +141,11 @@ public enum Issue {
   CONFLICTING_BASIONYM_COMBINATION,
 
   /**
+   * A basionym that claims to have itself another basionym.
+   */
+  CHAINED_BASIONYM,
+
+  /**
    * A potential orthographic variant exists in the dataset.
    */
   POTENTIAL_ORTHOGRAPHIC_VARIANT,

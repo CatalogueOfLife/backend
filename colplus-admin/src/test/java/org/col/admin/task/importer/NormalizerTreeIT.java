@@ -44,8 +44,8 @@ import static org.junit.Assert.assertFalse;
 @RunWith(Parameterized.class)
 @Ignore
 public class  NormalizerTreeIT {
-  final static int MAX_ACEF_ID = 4;
-  final static int MAX_DWCA_ID = 23;
+  final static int MAX_ACEF_ID = 5;
+  final static int MAX_DWCA_ID = 28;
 
   private NeoDb store;
   private NormalizerConfig cfg;
@@ -59,8 +59,9 @@ public class  NormalizerTreeIT {
   public static Collection<Object[]> data() {
     IntStream acefIds = IntStream.rangeClosed(0, MAX_ACEF_ID);
     IntStream dwcaIds = IntStream.rangeClosed(0, MAX_DWCA_ID);
-    //IntStream acefIds = IntStream.empty();
-    //IntStream dwcaIds = IntStream.rangeClosed(5, 8);
+
+    //acefIds = IntStream.empty();
+    //dwcaIds = IntStream.rangeClosed(23, 27);
     return Stream.concat(
         acefIds.mapToObj(i -> new Object[]{DataFormat.ACEF, i}),
         dwcaIds.mapToObj(i -> new Object[]{DataFormat.DWCA, i})

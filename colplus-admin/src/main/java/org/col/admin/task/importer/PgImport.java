@@ -131,7 +131,7 @@ public class PgImport implements Runnable {
   private void insertBasionyms() {
 		// basionyms first
 		try (final SqlSession session = sessionFactory.openSession(false)) {
-			NameMapper nameMapper = session.getMapper(NameMapper.class);
+			final NameMapper nameMapper = session.getMapper(NameMapper.class);
 			// insert original names first and remember postgres keys for subsequent
 			// combinations and taxa
 			LOG.info("Inserting basionyms");
@@ -173,7 +173,7 @@ public class PgImport implements Runnable {
 
   private void insertRecombinations() {
     try (final SqlSession session = sessionFactory.openSession(false)) {
-      NameMapper nameMapper = session.getMapper(NameMapper.class);
+      final NameMapper nameMapper = session.getMapper(NameMapper.class);
       NameActMapper nameActMapper = session.getMapper(NameActMapper.class);
       LOG.info("Inserting all other names");
       store.process(Labels.ALL, batchSize, new NeoDb.NodeBatchProcessor() {

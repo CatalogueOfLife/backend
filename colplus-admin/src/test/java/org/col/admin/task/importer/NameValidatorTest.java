@@ -31,6 +31,8 @@ public class NameValidatorTest {
   public void nonLetterPattern() throws Exception {
     assertFalse(NameValidator.NON_LETTER.matcher("").find());
     assertFalse(NameValidator.NON_LETTER.matcher("Asteraceae").find());
+    assertFalse(NameValidator.NON_LETTER.matcher("Cephaëlis").find());
+
     assertTrue(NameValidator.NON_LETTER.matcher("sax€tana").find());
     assertTrue(NameValidator.NON_LETTER.matcher("saxétana").find());
   }

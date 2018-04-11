@@ -38,8 +38,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
@@ -233,6 +232,7 @@ public class NeoDb implements ReferenceStore {
   /**
    * Process all nodes in batches with the given callback handler.
    * Every batch is processed in a single transaction which is committed at the end of the batch.
+   * To avoid nested flat transactions we execute all batches in a separate executor thread.
    *
    * If new nodes are created within a batch transaction this will be also be returned to the callback handler at the very end.
    *
@@ -249,28 +249,39 @@ public class NeoDb implements ReferenceStore {
     try (Transaction tx = neo.beginTx()){
       int batchNum = 0;
       UnmodifiableIterator<List<Node>> batchIter = com.google.common.collect.Iterators.partition(neo.findNodes(label), batchSize);
+      Future<Integer> curr = null;
       while (batchIter.hasNext()) {
         List<Node> batch = batchIter.next();
         // execute batch processing in separate thread to not create nested flat transactions
-        service.submit(new BatchCallback(datasetKey, neo, callback, batch, counter));
+        Future<Integer> f = service.submit(new BatchCallback(datasetKey, neo, callback, batch, counter));
+        if (curr != null) {
+          // wait til the last job finishes - this might throw an exception
+          curr.get();
+        }
+        curr = f;
         batchNum++;
       }
-      // await termination
+      // very last batch
+      if (curr != null) {
+        curr.get();
+      }
+      // close executor. All jobs are done so this should not take much time
       service.shutdown();
-      service.awaitTermination(10, TimeUnit.DAYS);
-      LOG.info("Neo processing of {} finished in {} batches", label, batchNum);
+      service.awaitTermination(1, TimeUnit.HOURS);
+      LOG.info("Neo processing of {} finished in {} batches with {} records", label, batchNum, counter.get());
 
     } catch (InterruptedException e) {
       LOG.error("Neo processing interrupted", e);
+      service.shutdownNow();
 
-    } catch (Exception e){
+    } catch (ExecutionException e){
       LOG.error("Neo processing with {} failed", callback.getClass(), e);
-      throw e;
+      throw new RuntimeException(e.getCause());
     }
     return counter.get();
   }
 
-  static class BatchCallback implements Runnable {
+  private static class BatchCallback implements Callable<Integer> {
     private final int datasetKey;
     private final AtomicInteger counter;
     private final GraphDatabaseService neo;
@@ -286,10 +297,10 @@ public class NeoDb implements ReferenceStore {
     }
 
     @Override
-    public void run() {
+    public Integer call() throws Exception {
       ImportJob.setMDC(datasetKey);
       try (Transaction tx = neo.beginTx()) {
-        LOG.debug("Start new neo processing batch with {}", batch.get(0));
+        LOG.debug("Start new neo processing batch with {} nodes, first={}", batch.size(), batch.get(0));
         for (Node n : batch) {
           callback.process(n);
           counter.incrementAndGet();
@@ -297,9 +308,14 @@ public class NeoDb implements ReferenceStore {
         tx.success();
         callback.commitBatch(counter.get());
 
+      } catch (Throwable e) {
+        LOG.error("Failed to process batch with {} nodes, first={}", batch.size(), batch.get(0), e);
+        throw e;
+
       } finally {
         ImportJob.removeMDC();
       }
+      return counter.get();
     }
   }
 

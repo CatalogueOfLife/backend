@@ -23,6 +23,7 @@ import org.col.db.mapper.temp.ReferenceWithPage;
 import org.gbif.nameparser.api.Rank;
 import org.junit.*;
 
+import java.io.File;
 import java.net.URI;
 import java.net.URL;
 import java.nio.file.Path;
@@ -105,6 +106,12 @@ public class PgImportIT {
     ExternalSourceUtil.consumeSource(url, this::normalizeAndImport);
   }
 
+  void normalizeAndImport(File file, DataFormat format) throws Exception {
+    dataset.setDataFormat(format);
+    // decompress
+    ExternalSourceUtil.consumeFile(file, this::normalizeAndImport);
+  }
+
   @Test
   public void testPublishedIn() throws Exception {
     normalizeAndImport(DWCA, 0);
@@ -155,7 +162,34 @@ public class PgImportIT {
 		}
 	}
 
-	@Test
+  @Test
+  public void testIpniDwca() throws Exception {
+    normalizeAndImport(DWCA, 27);
+  }
+
+  @Test
+  public void chainedBasionyms() throws Exception {
+    normalizeAndImport(DWCA, 28);
+    // verify results
+    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+      NameDao dao = new NameDao(session);
+
+      // check species name
+      Name n1 = dao.get(dao.lookupKey("1",dataset.getKey()));
+      Name n2 = dao.get(dao.lookupKey("2",dataset.getKey()));
+      Name n10 = dao.get(dao.lookupKey("10",dataset.getKey()));
+      Name n11 = dao.get(dao.lookupKey("11",dataset.getKey()));
+      Name n12 = dao.get(dao.lookupKey("12",dataset.getKey()));
+
+      assertNull(n2.getBasionymKey());
+      assertNull(n10.getBasionymKey());
+      assertNull(n11.getBasionymKey());
+      assertEquals(n2.getKey(), n1.getBasionymKey());
+      assertEquals(n10.getKey(), n12.getBasionymKey());
+    }
+	}
+
+  @Test
 	public void testSupplementary() throws Exception {
 		normalizeAndImport(DWCA, 24);
 
@@ -325,8 +359,9 @@ public class PgImportIT {
   @Ignore
   public void testGsdGithub() throws Exception {
     //normalizeAndImport(URI.create("http://services.snsb.info/DTNtaxonlists/rest/v0.1/lists/DiversityTaxonNames_Fossils/1154/dwc"), DataFormat.DWCA);
-    normalizeAndImport(URI.create("https://raw.githubusercontent.com/mdoering/ion-taxonomic-hierarchy/master/classification.tsv"), DataFormat.DWCA);
+    //normalizeAndImport(URI.create("https://raw.githubusercontent.com/mdoering/ion-taxonomic-hierarchy/master/classification.tsv"), DataFormat.DWCA);
     //normalizeAndImport(URI.create("https://github.com/gbif/iczn-lists/archive/master.zip"), DataFormat.DWCA);
+    normalizeAndImport(new File("/Users/markus/Downloads/ipni.zip"), DataFormat.DWCA);
   }
 
   private static RankedName rn(Rank rank, String name) {
