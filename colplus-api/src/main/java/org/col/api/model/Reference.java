@@ -1,23 +1,15 @@
 package org.col.api.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.col.api.vocab.Issue;
-
 import java.util.EnumSet;
 import java.util.Objects;
 import java.util.Set;
+import org.col.api.vocab.Issue;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * Simplified literature reference class linked to an optional serial container.
  */
 public class Reference implements PrimaryEntity {
-  private static String TITLE = "title";
-  private static String YEAR = "year";
-  private static String AUTHORS = "authors";
-  private static String DOI = "doi";
 
 	/**
 	 * Internal surrogate key of the reference as provided by postgres. This key is
@@ -44,7 +36,7 @@ public class Reference implements PrimaryEntity {
 	/**
 	 * Reference metadata encoded as CSL-JSON.
 	 */
-	private ObjectNode csl;
+	private CslItemData csl;
 
 	/**
 	 * Serial container, defining the CSL container properties.
@@ -91,11 +83,11 @@ public class Reference implements PrimaryEntity {
     this.citation = citation;
   }
 
-  public ObjectNode getCsl() {
+  public CslItemData getCsl() {
 		return csl;
 	}
 
-	public void setCsl(ObjectNode csl) {
+	public void setCsl(CslItemData csl) {
 		this.csl = csl;
 	}
 
@@ -133,27 +125,20 @@ public class Reference implements PrimaryEntity {
 	 */
 	public static Reference create() {
 		Reference r = new Reference();
-		r.csl = JsonNodeFactory.instance.objectNode();
+		r.csl = new CslItemData();
 		return r;
 	}
 
   // VARIOUS METHODS DELEGATING TO THE UNDERLYING CSL JsonObject instance
 	@JsonIgnore
 	public String getTitle() {
-		return cslStr(TITLE);
+		return csl.getTitle();
 	}
 
 	public void setTitle(String title) {
-		csl.put(TITLE, title);
+		csl.setTitle(title);
 	}
 
-	private String cslStr(String path) {
-		if (csl.has(path)) {
-			JsonNode node = csl.get(path);
-			return node.asText();
-		}
-		return null;
-	}
 
 	@Override
 	public boolean equals(Object o) {

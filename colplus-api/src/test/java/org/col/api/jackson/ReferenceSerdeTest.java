@@ -17,4 +17,9 @@ public class ReferenceSerdeTest extends SerdeTestBase<Reference> {
     return TestEntityGenerator.newReference();
   }
 
+  @Override
+  protected void debug(Wrapper<Reference> wrapper, Wrapper<Reference> wrapper2){
+    System.out.println("1: " + wrapper.value.getCsl());
+    System.out.println("2: " + wrapper2.value.getCsl());
+  }
 }

@@ -9,16 +9,12 @@ import org.col.admin.task.importer.neo.NeoDb;
 import org.col.admin.task.importer.neo.model.NeoTaxon;
 import org.col.admin.task.importer.neo.model.UnescapedVerbatimRecord;
 import org.col.api.model.Dataset;
-import org.col.api.model.Reference;
 import org.col.api.model.TermRecord;
 import org.col.api.vocab.DataFormat;
-import org.col.parser.AnystyleParserWrapper;
-import org.col.parser.UnparsableException;
 import org.gbif.dwc.terms.AcefTerm;
 import org.neo4j.graphdb.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Splitter;
 
 /**
@@ -112,21 +108,6 @@ public class AcefInserter extends NeoInserter {
   }
 
   private void insertReferences() {
-    try (AnystyleParserWrapper anystyle = AnystyleParserWrapper.getInstance()) {
-      reader.stream(AcefTerm.Reference).forEach(rec -> {
-        Reference ref = Reference.create();
-        ref.setId(rec.get(AcefTerm.ReferenceID));
-        ref.setTitle(rec.get(AcefTerm.Title));
-        ref.setYear(rec.getIntDefault(AcefTerm.Year, null));
-        try {
-          Optional<ObjectNode> csl = anystyle.parse(rec.get(AcefTerm.Details));
-          ref.setCsl(csl.get());
-        } catch (UnparsableException e) {
-          throw new NormalizationFailedException(e.getMessage());
-        }
-        store.put(ref);
-      });
-    }
   }
 
   /**

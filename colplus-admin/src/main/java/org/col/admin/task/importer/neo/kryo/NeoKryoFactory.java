@@ -56,8 +56,14 @@ public class NeoKryoFactory implements KryoFactory {
     kryo.register(UnescapedVerbatimRecord.class);
     kryo.register(TermRecord.class);
     kryo.register(Page.class);
-    // jackson json node (e.g. csl property)
-    kryo.register(ObjectNode.class, new JsonObjSerializer());
+
+    // CSL classes & enums
+    kryo.register(CslItemData.class);
+    kryo.register(CslName.class);
+    kryo.register(CslDate.class);
+    kryo.register(CslType.class);
+    kryo.register(String[].class);
+    //kryo.register(int[][].class);
 
     // normalizer specific models
     kryo.register(NeoTaxon.class);

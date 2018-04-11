@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Sets;
 import org.col.api.RandomUtils;
+import org.col.api.model.CslItemData;
 import org.col.api.model.Page;
 import org.col.api.model.Reference;
 import org.col.api.vocab.Issue;
@@ -97,15 +98,14 @@ public class ReferenceMapperTest extends MapperTestBase<ReferenceMapper> {
 		return ref;
 	}
 
-	private static ObjectNode createCsl() {
-		JsonNodeFactory factory = JsonNodeFactory.instance;
-		ObjectNode csl = factory.objectNode();
-		csl.put("title", RandomUtils.randomString(80));
-		csl.put("container-title", RandomUtils.randomString(100));
-		csl.put("publisher", "Springer");
-		csl.put("year", "1988b");
-		csl.put("doi", "doi:10.1234/" + RandomUtils.randomString(20));
-		return csl;
+	private static CslItemData createCsl() {
+	  CslItemData item = new CslItemData();
+	  item.setTitle(RandomUtils.randomString(80));
+	  item.setContainerTitle(RandomUtils.randomString(100));
+	  item.setPublisher("Springer");
+	  item.setYearSuffix("1988b");
+	  item.setDOI("doi:10.1234/" + RandomUtils.randomString(20));
+		return item;
 	}
 
 }

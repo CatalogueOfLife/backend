@@ -1,4 +1,4 @@
-package org.col.parser;
+package org.col.dw.anystyle;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -28,30 +28,25 @@ final class AnystyleWebService {
 
   private static final Logger LOG = LoggerFactory.getLogger(AnystyleWebService.class);
 
-  private final Process process;
+  private Process process;
 
-  AnystyleWebService() {
+  AnystyleWebService() {}
+
+  void start() throws IOException, InterruptedException {
     if (isRunning() || isListening()) {
-      throw new IllegalStateException("Another instance of the Anystyle web service is still running");
+      throw new IllegalStateException(
+          "Another instance of the Anystyle web service is still running");
     }
-    try {
-      process = new ProcessBuilder("ruby", "-e", getRubyCode()).start();
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
+    process = new ProcessBuilder("ruby", "-e", getRubyCode()).start();
     waitUntilReady();
   }
 
-  void stop() {
+  void stop() throws InterruptedException {
     process.destroy();
-    try {
-      process.waitFor();
-    } catch (InterruptedException e) {
-      throw new RuntimeException(e);
-    }
+    process.waitFor();
     LOG.info("Anystyle web service stopped");
   }
-  
+
   private static String getRubyCode() {
     StringBuilderWriter w = new StringBuilderWriter(200);
     try (PrintWriter p = new PrintWriter(w)) {
@@ -64,18 +59,14 @@ final class AnystyleWebService {
     return w.toString();
   }
 
-  private static void waitUntilReady() {
+  private static void waitUntilReady() throws InterruptedException {
     for (int i = 0; i < 5; i++) {
       if (isRunning() && isListening()) {
         LOG.info("Anystyle web service ready");
         return;
       }
       LOG.info("Waiting for Anystyle web service to come alive ...");
-      try {
-        Thread.sleep(1000);
-      } catch (InterruptedException e) {
-        throw new RuntimeException(e);
-      }
+      Thread.sleep(1000);
     }
     throw new IllegalStateException("Failed to start Anystyle web service");
   }

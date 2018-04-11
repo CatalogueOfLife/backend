@@ -1,4 +1,4 @@
-package org.col.parser;
+package org.col.dw.anystyle;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -8,24 +8,20 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.dropwizard.lifecycle.Managed;
 
-public class AnystyleParserWrapper implements AutoCloseable, Parser<ObjectNode> {
+public class AnystyleParserWrapper implements Managed {
 
-  public static synchronized AnystyleParserWrapper getInstance(CloseableHttpClient hc) {
+  public static AnystyleParserWrapper getInstance() {
     if (instance == null) {
-      instance = new AnystyleParserWrapper(hc);
+      throw new IllegalStateException("AnystyleParserWrapper not initialized yet");
     }
     return instance;
-  }
-
-  public static synchronized AnystyleParserWrapper getInstance() {
-    return getInstance(HttpClients.createDefault());
   }
 
   private static AnystyleParserWrapper instance;
@@ -40,7 +36,7 @@ public class AnystyleParserWrapper implements AutoCloseable, Parser<ObjectNode> 
     this.om = new ObjectMapper();
   }
 
-  public synchronized Optional<ObjectNode> parse(String ref) throws UnparsableException {
+  public synchronized Optional<ObjectNode> parse(String ref) {
     if (StringUtils.isAllBlank(ref)) {
       return Optional.empty();
     }
@@ -51,20 +47,21 @@ public class AnystyleParserWrapper implements AutoCloseable, Parser<ObjectNode> 
         ObjectNode on = (ObjectNode) (((ArrayNode) node).get(0));
         return Optional.of(on);
       }
-      throw new UnparsableException("Unexpected Anystyle response (expected array)");
+      throw new RuntimeException("Unexpected Anystyle response (expected array)");
     } catch (IOException | URISyntaxException e) {
-      throw new UnparsableException(e);
+      throw new RuntimeException(e);
     }
   }
 
-  /*
-   * Really important to make sure this gets called, otherwise the process containing the web
-   * service won't get killed
-   */
   @Override
-  public synchronized void close() {
+  public void start() throws Exception {
+    this.svc.start();
+    instance = this;
+  }
+
+  @Override
+  public void stop() throws Exception {
     this.svc.stop();
-    instance = null;
   }
 
   private static HttpGet request(String reference) throws URISyntaxException {

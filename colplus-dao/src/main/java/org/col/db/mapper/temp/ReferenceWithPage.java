@@ -1,8 +1,8 @@
 package org.col.db.mapper.temp;
 
 import java.util.Objects;
+import org.col.api.model.CslItemData;
 import org.col.api.model.Reference;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
 public class ReferenceWithPage {
 
@@ -28,9 +28,8 @@ public class ReferenceWithPage {
   public Reference toReference() {
     Reference ref = getReference();
     String page = getPage();
-    ObjectNode cls = ref.getCsl();
-    cls.put("locator", page);
-    cls.put("label", "page");
+    CslItemData csl = ref.getCsl();
+    csl.setPage(page);
     return ref;
   }
 

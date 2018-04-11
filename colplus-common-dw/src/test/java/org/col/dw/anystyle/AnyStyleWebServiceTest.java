@@ -1,6 +1,6 @@
-package org.col.parser;
+package org.col.dw.anystyle;
 
-import org.col.parser.AnystyleWebService;
+import org.col.dw.anystyle.AnystyleWebService;
 import org.junit.Test;
 
 @SuppressWarnings("static-method")
@@ -19,20 +19,5 @@ public class AnyStyleWebServiceTest {
   // }
   // }
 
-  @SuppressWarnings("unused")
-  @Test
-  public void test2() {
-    for(int i=0;i<2000000;i++) {
-      AnystyleWebService svc1 = null;
-      try {
-        svc1 = new AnystyleWebService();
-      } catch (Throwable t) {
-        t.printStackTrace();
-        return;
-      } finally {
-        svc1.stop();
-      }     
-    }
-  }
 
 }
