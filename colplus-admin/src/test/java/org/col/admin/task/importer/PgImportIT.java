@@ -181,11 +181,20 @@ public class PgImportIT {
       Name n11 = dao.get(dao.lookupKey("11",dataset.getKey()));
       Name n12 = dao.get(dao.lookupKey("12",dataset.getKey()));
 
-      assertNull(n2.getBasionymKey());
-      assertNull(n10.getBasionymKey());
-      assertNull(n11.getBasionymKey());
       assertEquals(n2.getKey(), n1.getBasionymKey());
+      assertFalse(n1.getIssues().contains(Issue.CHAINED_BASIONYM));
+
+      assertNull(n2.getBasionymKey());
+      assertTrue(n2.getIssues().contains(Issue.CHAINED_BASIONYM));
+
+      assertNull(n10.getBasionymKey());
+      assertTrue(n10.getIssues().contains(Issue.CHAINED_BASIONYM));
+
+      assertNull(n11.getBasionymKey());
+      assertTrue(n11.getIssues().contains(Issue.CHAINED_BASIONYM));
+
       assertEquals(n10.getKey(), n12.getBasionymKey());
+      assertFalse(n12.getIssues().contains(Issue.CHAINED_BASIONYM));
     }
 	}
 

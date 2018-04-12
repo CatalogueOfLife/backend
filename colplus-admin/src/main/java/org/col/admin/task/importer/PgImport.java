@@ -154,7 +154,7 @@ public class PgImport implements Runnable {
 
 	private int createName(NameMapper mapper, NeoTaxon t) {
     t.name.setDatasetKey(dataset.getKey());
-    t.name.setIssues(t.issues);
+    t.name.getIssues().addAll(t.issues);
     mapper.create(t.name);
     nCounter.incrementAndGet();
     // keep postgres keys in node id map
