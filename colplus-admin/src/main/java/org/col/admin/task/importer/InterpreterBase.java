@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.EnumSet;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -128,9 +129,9 @@ public class InterpreterBase {
     return Optional.empty();
   }
 
-  public NameAccordingTo interpretName(String id, String vrank, String sciname, String authorship,
-                                       String genus, String infraGenus, String species, String infraspecies, String nomCode,
-                                       String nomStatus, String link, String remarks) {
+  public NameAccordingTo interpretName(final String id, final String vrank, final String sciname, final String authorship,
+                                       final String genus, final String infraGenus, final String species, final String infraspecies,
+                                       String nomCode, String nomStatus, String link, String remarks) {
     final Set<Issue> issues = EnumSet.noneOf(Issue.class);
     final boolean isAtomized = ObjectUtils.anyNotNull(genus, infraGenus, species, infraspecies);
 
@@ -163,20 +164,17 @@ public class InterpreterBase {
           return pn;
         });
 
-        if (nat.getName().hasAuthorship()) {
-          // we did already parse an authorship from the scientificName string.
-          // Does it match up?
-          if (!nat.getName().authorshipComplete().equalsIgnoreCase(pnAuthorship.authorshipComplete())) {
-            nat.getName().addIssue(Issue.INCONSISTENT_AUTHORSHIP);
-            LOG.info(
-                "Different authorship found in dwc:scientificName=[{}] and dwc:scientificNameAuthorship=[{}]",
-                nat.getName().authorshipComplete(), pnAuthorship.authorshipComplete());
-          }
-        } else {
-          nat.getName().setCombinationAuthorship(pnAuthorship.getCombinationAuthorship());
-          nat.getName().setSanctioningAuthor(pnAuthorship.getSanctioningAuthor());
-          nat.getName().setBasionymAuthorship(pnAuthorship.getBasionymAuthorship());
+        // we did already parse an authorship from the scientificName string which does not match up?
+        if (nat.getName().hasAuthorship()
+            && !nat.getName().authorshipComplete().equalsIgnoreCase(pnAuthorship.authorshipComplete())
+            ) {
+          nat.getName().addIssue(Issue.INCONSISTENT_AUTHORSHIP);
+          LOG.info("Different authorship [{}] found in dwc:scientificName=[{}] and dwc:scientificNameAuthorship=[{}]",
+              nat.getName().authorshipComplete(), sciname, pnAuthorship.authorshipComplete());
         }
+        nat.getName().setCombinationAuthorship(pnAuthorship.getCombinationAuthorship());
+        nat.getName().setSanctioningAuthor(pnAuthorship.getSanctioningAuthor());
+        nat.getName().setBasionymAuthorship(pnAuthorship.getBasionymAuthorship());
       }
 
     } else if (!isAtomized) {
@@ -188,6 +186,17 @@ public class InterpreterBase {
       // cant use the atomized name just like that cause we would miss name type detection (virus,
       // hybrid, placeholder, garbage)
       nat = NameParser.PARSER.parse(atom.canonicalNameComplete() + " " + authorship, rank).get();
+      // if parsed compare with original atoms
+      if (nat.getName().isParsed()) {
+        if (!Objects.equals(genus, nat.getName().getGenus())
+            || !Objects.equals(infraGenus, nat.getName().getInfragenericEpithet())
+            || !Objects.equals(species, nat.getName().getSpecificEpithet())
+            || !Objects.equals(infraspecies, nat.getName().getInfraspecificEpithet())
+            ) {
+          LOG.warn("Parsed and given name atoms differ: [{}] vs [{}]", nat.getName().canonicalNameComplete(), atom.canonicalNameComplete());
+          nat.getName().addIssue(Issue.PARSED_NAME_DIFFERS);
+        }
+      }
     }
 
     // common basics

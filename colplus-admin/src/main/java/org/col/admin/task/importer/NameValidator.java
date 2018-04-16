@@ -19,7 +19,9 @@ public class NameValidator {
   private static final Logger LOG = LoggerFactory.getLogger(NameValidator.class);
   private static final Pattern WHITE = Pattern.compile("\\s");
   @VisibleForTesting
-  static final Pattern NON_LETTER = Pattern.compile("[^a-z-]", Pattern.CASE_INSENSITIVE);
+  // ë is exceptionally allowed in botanical code. See Article 60.6
+  // The diaeresis, indicating that a vowel is to be pronounced separately from the preceding vowel (as in Cephaëlis, Isoëtes), is a phonetic device that is not considered to alter the spelling; as such, its use is optional
+  static final Pattern NON_LETTER = Pattern.compile("[^a-z-ë]", Pattern.CASE_INSENSITIVE);
 
   /**
    * Validates consistency of name properties adding issues to the name if found. 

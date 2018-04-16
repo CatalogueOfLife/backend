@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<eml:eml xmlns:eml="eml://ecoinformatics.org/eml-2.1.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="eml://ecoinformatics.org/eml-2.1.1 http://rs.gbif.org/schema/eml-gbif-profile/1.1/eml.xsd" packageId="046bbc50-cae2-47ff-aa43-729fbf53f7c5" system="http://gbif.org" scope="system" xml:lang="en">
+	<dataset>
+		<alternateIdentifier>doi:10.15468/uhllmw</alternateIdentifier>
+		<title>International Plant Names Index</title>
+		<creator>
+			<organizationName>Royal Botanic Gardens Kew</organizationName>
+			<electronicMailAddress>bi@kew.org</electronicMailAddress>
+			<onlineUrl>http://www.kew.org/</onlineUrl>
+		</creator>
+		<creator>
+			<organizationName>Harvard University Herbarium</organizationName>
+			<electronicMailAddress>jmacklin@oeb.harvard.edu</electronicMailAddress>
+			<onlineUrl>http://www.huh.harvard.edu/</onlineUrl>
+		</creator>
+		<creator>
+			<organizationName>Australia National Herbarium</organizationName>
+			<onlineUrl>http://www.anbg.gov.au/cpbr/herbarium/</onlineUrl>
+		</creator>
+		<metadataProvider>
+			<individualName>
+				<givenName>Markus</givenName>
+				<surName>Döring</surName>
+			</individualName>
+			<organizationName>GBIF Secretariat</organizationName>
+			<electronicMailAddress>mdoering@gbif.org</electronicMailAddress>
+			<onlineUrl>http://www.gbif.org</onlineUrl>
+		</metadataProvider>
+		<language>en</language>
+		<pubDate>2017-11-06</pubDate>
+		<abstract>
+			<para>The International Plant Names Index (IPNI) is a database of the names and associated basic bibliographical details of seed plants, ferns and lycophytes. 
+				Its goal is to eliminate the need for repeated reference to primary sources for basic bibliographic information about plant names. 
+				The data are freely available and are gradually being standardized and checked. 
+				IPNI is a dynamic resource, depending on direct contributions by all members of the botanical community.
+				IPNI is the product of a collaboration between The Royal Botanic Gardens, Kew, The Harvard University Herbaria, and the Australian National Herbarium.
+			</para>
+		</abstract>
+		<keywordSet>
+			<keyword>Nomenclatural Synonymy</keyword>
+			<keyword>ICBfpn</keyword>
+			<keyword>Nomenclature</keyword>
+			<keyword>Nomenclator</keyword>
+		</keywordSet>
+		<intellectualRights>
+      </intellectualRights>
+		<contact>
+			<organizationName>IPNI Editors</organizationName>
+			<electronicMailAddress>ipnieditors@ipni.org</electronicMailAddress>
+			<onlineUrl>http://www.ipni.org/how_to_help.html</onlineUrl>
+		</contact>
+	</dataset>
+	<additionalMetadata>
+		<metadata>
+			<gbif>
+				<dateStamp>2017-11-10T11:03:33Z</dateStamp>
+				<citation>The International Plant Names Index Collaborators. International Plant Names Index. Checklist Dataset https://doi.org/10.15468/uhllmw accessed via GBIF.org on 2017-11-10.</citation>
+			</gbif>
+		</metadata>
+	</additionalMetadata>
+</eml:eml>
