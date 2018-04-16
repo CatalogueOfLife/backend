@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
  * <li>Sinatra is installed. Linux: sudo gem install sinatra
  * </ol>
  */
-final class AnystyleWebService {
+class AnystyleWebService {
 
   static final int HTTP_PORT = 4567;
   static final String QUERY_PARAM_REF = "ref";
@@ -42,18 +42,46 @@ final class AnystyleWebService {
   }
 
   void stop() throws InterruptedException {
-    process.destroy();
-    process.waitFor();
-    LOG.info("Anystyle web service stopped");
+    if (process != null) {
+      process.destroy();
+      process.waitFor();
+      LOG.info("Anystyle web service stopped");
+    }
   }
 
+  static boolean isRunning() {
+    try {
+      Process p = Runtime.getRuntime().exec("ps -ef");
+      LineNumberReader lnr = new LineNumberReader(new InputStreamReader(p.getInputStream()));
+      for (String line = lnr.readLine(); line != null; line = lnr.readLine()) {
+        if (line.indexOf("require 'anystyle/parser'") != -1) {
+          return true;
+        }
+      }
+      return false;
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  static boolean isListening() {
+    InetSocketAddress addr = new InetSocketAddress("localhost", HTTP_PORT);
+    try (Socket socket = new Socket()) {
+      socket.connect(addr, 2000);
+      return true;
+    } catch (IOException e) {
+      return false;
+    }
+  }
+
+  // ruby -e require 'anystyle/parser';require 'sinatra';get '/' do;Anystyle.parse(params['ref'], :citeproc).to_json;end
   private static String getRubyCode() {
     StringBuilderWriter w = new StringBuilderWriter(200);
     try (PrintWriter p = new PrintWriter(w)) {
       p.print("require 'anystyle/parser';");
       p.print("require 'sinatra';");
       p.print("get '/' do;");
-      p.printf("Anystyle.parse(params['%s']).to_json;", QUERY_PARAM_REF);
+      p.printf("Anystyle.parse(params['%s'], :citeproc).to_json;", QUERY_PARAM_REF);
       p.print("end");
     }
     return w.toString();
@@ -69,31 +97,6 @@ final class AnystyleWebService {
       Thread.sleep(1000);
     }
     throw new IllegalStateException("Failed to start Anystyle web service");
-  }
-
-  private static boolean isRunning() {
-    try {
-      Process p = Runtime.getRuntime().exec("ps -ef");
-      LineNumberReader lnr = new LineNumberReader(new InputStreamReader(p.getInputStream()));
-      for (String line = lnr.readLine(); line != null; line = lnr.readLine()) {
-        if (line.indexOf("require 'anystyle/parser'") != -1) {
-          return true;
-        }
-      }
-      return false;
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  private static boolean isListening() {
-    InetSocketAddress addr = new InetSocketAddress("localhost", HTTP_PORT);
-    try (Socket socket = new Socket()) {
-      socket.connect(addr, 2000);
-      return true;
-    } catch (IOException e) {
-      return false;
-    }
   }
 
 }

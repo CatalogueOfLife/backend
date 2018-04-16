@@ -1,6 +1,8 @@
 package org.col.api.model;
 
 import java.util.Arrays;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class CslItemData {
 
@@ -69,6 +71,7 @@ public class CslItemData {
   private String PMCID;
   private String PMID;
   private String publisher;
+  //@JsonProperty("publisher-place")
   private String publisherPlace;
   private String references;
   private String reviewedTitle;
@@ -82,7 +85,7 @@ public class CslItemData {
   private String version;
   private String volume;
   private String yearSuffix;
-
+  
   public String getId() {
     return id;
   }

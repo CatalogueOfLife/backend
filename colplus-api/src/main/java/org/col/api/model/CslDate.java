@@ -1,9 +1,11 @@
 package org.col.api.model;
 
 import java.util.Arrays;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class CslDate {
 
+  @JsonProperty("date-parts")
   private int[][] dateParts;
   private String season;
   private Boolean circa;

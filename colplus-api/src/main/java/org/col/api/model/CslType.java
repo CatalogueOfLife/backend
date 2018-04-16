@@ -1,5 +1,8 @@
 package org.col.api.model;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 public enum CslType {
   ARTICLE("article"), ARTICLE_JOURNAL("article-journal"), ARTICLE_MAGAZINE("article-magazine"),
   ARTICLE_NEWSPAPER("article-newspaper"), BILL("bill"), BOOK("book"), BROADCAST("broadcast"),
@@ -12,6 +15,19 @@ public enum CslType {
   POST_WEBLOG("post-weblog"), REPORT("report"), REVIEW("review"), REVIEW_BOOK("review-book"),
   SONG("song"), SPEECH("speech"), THESIS("thesis"), TREATY("treaty"), WEBPAGE("webpage");
 
+  @JsonCreator
+  public static CslType parse(String s) {
+    if (s == null || (s = s.trim().toLowerCase()).isEmpty()) {
+      return null;
+    }
+    for (CslType t : values()) {
+      if (t.name.equals(s)) {
+        return t;
+      }
+    }
+    throw new IllegalArgumentException("Invalid CSL type: " + s);
+  }
+
   private String name;
 
   private CslType(String name) {
@@ -19,6 +35,7 @@ public enum CslType {
   }
 
   @Override
+  @JsonValue
   public String toString() {
     return name;
   }
