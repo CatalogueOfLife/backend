@@ -9,14 +9,16 @@ import io.dropwizard.setup.Environment;
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.col.admin.task.importer.ContinousImporter;
-import org.col.dw.PgApp;
 import org.col.admin.command.initdb.InitDbCmd;
 import org.col.admin.command.neoshell.ShellCmd;
 import org.col.admin.config.AdminServerConfig;
 import org.col.admin.resources.ImporterResource;
+import org.col.admin.resources.ParserResource;
 import org.col.admin.task.gbifsync.GbifSync;
+import org.col.admin.task.importer.ContinousImporter;
 import org.col.admin.task.importer.ImportManager;
+import org.col.dw.PgApp;
+import org.col.dw.anystyle.AnystyleParserWrapper;
 import org.glassfish.jersey.client.rx.RxClient;
 import org.glassfish.jersey.client.rx.java8.RxCompletionStageInvoker;
 import org.glassfish.jersey.client.spi.ConnectorProvider;
@@ -79,6 +81,11 @@ public class AdminServer extends PgApp<AdminServerConfig> {
     } else {
       LOG.warn("GBIF registry sync is deactivated. Please configure server with a positive gbif.syncFrequency");
     }
+
+    // anystyle
+    AnystyleParserWrapper anystyle = new AnystyleParserWrapper(hc);
+    env.lifecycle().manage(anystyle);
+    env.jersey().register(new ParserResource(anystyle));
   }
 
   /**
