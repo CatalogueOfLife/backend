@@ -26,6 +26,8 @@ import org.col.api.vocab.Issue;
 import org.col.api.vocab.NomActType;
 import org.col.api.vocab.Origin;
 import org.col.api.vocab.TaxonomicStatus;
+import org.col.dw.reference.DwcReference;
+import org.col.dw.reference.ReferenceFactory;
 import org.col.parser.AreaParser;
 import org.col.parser.CountryParser;
 import org.col.parser.EnumNote;
@@ -104,15 +106,11 @@ public class DwcInterpreter extends InterpreterBase {
   }
 
   void interpretBibliography(NeoTaxon t) {
+    ReferenceFactory refFactory = new ReferenceFactory();
     if (t.verbatim.hasExtension(GbifTerm.Reference)) {
       for (TermRecord rec : t.verbatim.getExtensionRecords(GbifTerm.Reference)) {
-        Reference ref = new Reference();
-        ref.setId(rec.get(DcTerm.identifier));
-        ref.setTitle(rec.get(DcTerm.title));
-        ref.setCitation(rec.get(DcTerm.bibliographicCitation));
-        CslItemData csl = anystyle.parse(rec.get(DcTerm.bibliographicCitation));
-        ref.setCsl(csl);
-        t.bibliography.add(ref);
+        DwcReference dwc = DwcReference.fromTermRecord(rec);
+        t.bibliography.add(refFactory.fromDWC(dwc));
       }
     }
   }

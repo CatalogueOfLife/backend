@@ -8,7 +8,6 @@ import org.col.admin.task.importer.neo.ReferenceStore;
 import org.col.admin.task.importer.neo.model.NeoTaxon;
 import org.col.admin.task.importer.neo.model.UnescapedVerbatimRecord;
 import org.col.api.model.Classification;
-import org.col.api.model.CslItemData;
 import org.col.api.model.Dataset;
 import org.col.api.model.Distribution;
 import org.col.api.model.Name;
@@ -26,6 +25,8 @@ import org.col.api.vocab.Issue;
 import org.col.api.vocab.Lifezone;
 import org.col.api.vocab.Origin;
 import org.col.api.vocab.TaxonomicStatus;
+import org.col.dw.reference.AcefReference;
+import org.col.dw.reference.ReferenceFactory;
 import org.col.parser.AreaParser;
 import org.col.parser.CountryParser;
 import org.col.parser.DistributionStatusParser;
@@ -37,7 +38,6 @@ import org.col.parser.RankParser;
 import org.col.parser.SafeParser;
 import org.col.parser.TaxonomicStatusParser;
 import org.gbif.dwc.terms.AcefTerm;
-import org.gbif.dwc.terms.DcTerm;
 import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -134,16 +134,10 @@ public class AcefInterpreter extends InterpreterBase {
   }
 
   void interpretBibliography(NeoTaxon t) {
+    ReferenceFactory refFactory = new ReferenceFactory();
     for (TermRecord rec : t.verbatim.getExtensionRecords(AcefTerm.Reference)) {
-      Reference ref = new Reference();
-      ref.setId(rec.get(AcefTerm.ReferenceID));
-      ref.setTitle(rec.get(AcefTerm.Title));
-      // TODO it seems like both Source and Details might be amenable to citation string parsing ...
-      // for now settle on Details
-      ref.setCitation(rec.get(AcefTerm.Details));
-      CslItemData csl = anystyle.parse(rec.get(AcefTerm.Details));
-      ref.setCsl(csl);
-      t.bibliography.add(ref);
+      AcefReference acef = AcefReference.fromTermRecord(rec);
+      t.bibliography.add(refFactory.fromACEF(acef));
     }
   }
 
