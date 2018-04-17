@@ -24,8 +24,14 @@ public interface SynonymMapper {
   void create(@Param("syn") Synonym synonym);
 
 	/**
+   * Return misapplied names or heterotypic synonym from the synonym relation table.
+   * This does NOT include homotypic names.
+   * The Synonym.accepted property is also NOT set as it would be highly redundant
+   * and we use this call to assemble a complete synonymy
+   * and the accepted key is given as the parameter already
+   *
 	 * @param taxonKey accepted taxon key
-	 * @return list of synonym names, ordered by their basionymKey
+	 * @return list of misapplied or heterotypic synonym names
 	 */
 	List<Synonym> synonyms(@Param("key") int taxonKey);
 

@@ -34,6 +34,7 @@ public class TaxonMapperTest extends MapperTestBase<TaxonMapper> {
     assertNotNull(in.getKey());
     commit();
     Taxon out = mapper().get(in.getKey());
+    out.getName().setHomotypicNameKey(null);
 
     Javers javers = JaversBuilder.javers().build();
     Diff diff = javers.compare(in, out);
@@ -206,19 +207,19 @@ public class TaxonMapperTest extends MapperTestBase<TaxonMapper> {
     nameDao.addSynonym(NameDao.toSynonym(dKey, taxon1.getKey(), heterotypic3.getKey()));
 
     Name homotypic1 = TestEntityGenerator.newName("homotypic-1");
-    homotypic1.setBasionymKey(accepted1.getKey());
+    homotypic1.setHomotypicNameKey(accepted1.getKey());
     
     // homotypic 2/3/4/5 just noise to make sure no unexpected
     // result becayse of table joins.
     Name homotypic2 = TestEntityGenerator.newName("homotypic-2");
-    homotypic2.setBasionymKey(accepted1.getKey());
+    homotypic2.setHomotypicNameKey(accepted1.getKey());
     Name homotypic3 = TestEntityGenerator.newName("homotypic-3");
-    homotypic3.setBasionymKey(accepted1.getKey());
+    homotypic3.setHomotypicNameKey(accepted1.getKey());
 
     Name homotypic4 = TestEntityGenerator.newName("homotypic-4");
-    homotypic4.setBasionymKey(accepted2.getKey());
+    homotypic4.setHomotypicNameKey(accepted2.getKey());
     Name homotypic5 = TestEntityGenerator.newName("homotypic-5");
-    homotypic5.setBasionymKey(null);
+    homotypic5.setHomotypicNameKey(null);
 
     nameDao.create(homotypic1);
     nameDao.create(homotypic2);

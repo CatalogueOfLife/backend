@@ -1,6 +1,5 @@
 package org.col.api.model;
 
-import com.google.common.base.Preconditions;
 import org.col.api.vocab.Issue;
 import org.col.api.vocab.Lifezone;
 import org.col.api.vocab.Origin;
@@ -34,7 +33,7 @@ public class Taxon implements PrimaryEntity, NameUsage {
 
 	private Name name;
 
-	private TaxonomicStatus status;
+	private boolean doubtful = false;
 
 	private Origin origin;
 
@@ -93,6 +92,7 @@ public class Taxon implements PrimaryEntity, NameUsage {
 		this.datasetKey = key;
 	}
 
+  @Override
 	public Name getName() {
 		return name;
 	}
@@ -101,16 +101,20 @@ public class Taxon implements PrimaryEntity, NameUsage {
 		this.name = name;
 	}
 
+	@Override
 	public TaxonomicStatus getStatus() {
-		return status;
+		return doubtful ? TaxonomicStatus.DOUBTFUL : TaxonomicStatus.ACCEPTED;
 	}
 
-	public void setStatus(TaxonomicStatus status) {
-    Preconditions.checkArgument(status == null || !status.isSynonym());
-		this.status = status;
-	}
+  public boolean isDoubtful() {
+    return doubtful;
+  }
 
-	public Origin getOrigin() {
+  public void setDoubtful(boolean doubtful) {
+    this.doubtful = doubtful;
+  }
+
+  public Origin getOrigin() {
 		return origin;
 	}
 
@@ -126,6 +130,7 @@ public class Taxon implements PrimaryEntity, NameUsage {
 		this.parentKey = key;
 	}
 
+  @Override
 	public String getAccordingTo() {
 		return accordingTo;
 	}
@@ -220,7 +225,7 @@ public class Taxon implements PrimaryEntity, NameUsage {
         Objects.equals(datasetKey, taxon.datasetKey) &&
         Objects.equals(taxonID, taxon.taxonID) &&
         Objects.equals(name, taxon.name) &&
-        status == taxon.status &&
+        doubtful == taxon.doubtful &&
         origin == taxon.origin &&
         Objects.equals(parentKey, taxon.parentKey) &&
         Objects.equals(accordingTo, taxon.accordingTo) &&
@@ -237,6 +242,6 @@ public class Taxon implements PrimaryEntity, NameUsage {
 
   @Override
   public int hashCode() {
-    return Objects.hash(key, id, datasetKey, taxonID, name, status, origin, parentKey, accordingTo, accordingToDate, fossil, recent, lifezones, datasetUrl, speciesEstimate, speciesEstimateReferenceKey, remarks, issues);
+    return Objects.hash(key, id, datasetKey, taxonID, name, doubtful, origin, parentKey, accordingTo, accordingToDate, fossil, recent, lifezones, datasetUrl, speciesEstimate, speciesEstimateReferenceKey, remarks, issues);
   }
 }

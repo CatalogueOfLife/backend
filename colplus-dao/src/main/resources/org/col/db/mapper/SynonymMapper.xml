@@ -11,7 +11,7 @@
         n.key as n_key,
         n.id as n_id,
         n.dataset_key as n_dataset_key,
-        n.basionym_key as n_basionym_key,
+        n.homotypic_name_key as n_homotypic_name_key,
         n.scientific_name as n_scientific_name,
         n.rank as n_rank,
         n.uninomial as n_uninomial,
@@ -59,7 +59,7 @@
         tn.key as t_n_key,
         tn.id as t_n_id,
         tn.dataset_key as t_n_dataset_key,
-        tn.basionym_key as t_n_basionym_key,
+        tn.homotypic_name_key as t_n_homotypic_name_key,
         tn.scientific_name as t_n_scientific_name,
         tn.rank as t_n_rank,
         tn.uninomial as t_n_uninomial,
@@ -110,7 +110,7 @@
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
         WHERE s.taxon_key = #{key}
-        ORDER BY COALESCE(n.basionym_key, n.key)
+        ORDER BY COALESCE(n.homotypic_name_key, n.key)
     </select>
 
     <insert id="create" parameterType="Synonym">

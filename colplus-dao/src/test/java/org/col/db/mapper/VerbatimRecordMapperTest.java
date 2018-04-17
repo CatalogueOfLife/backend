@@ -1,5 +1,7 @@
 package org.col.db.mapper;
 
+import com.google.common.collect.MapDifference;
+import com.google.common.collect.Maps;
 import org.col.api.RandomUtils;
 import org.col.api.TestEntityGenerator;
 import org.col.api.model.ExtendedTermRecord;
@@ -10,6 +12,7 @@ import org.javers.common.collections.Sets;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
@@ -86,8 +89,10 @@ public class VerbatimRecordMapperTest extends MapperTestBase<VerbatimRecordMappe
   }
 
   static void diff(VerbatimRecord v1, VerbatimRecord v2) {
-    System.out.println("DIFF core:");
     Set<Map.Entry<Term, String>> diff = Sets.difference(v1.getTerms().termValues(), v2.getTerms().termValues());
-    System.out.println(diff);
+    System.out.println("DIFF core: " + diff);
+
+    MapDifference<Term, List<TermRecord>> diffe = Maps.difference(v1.getTerms().getExtensions(), v2.getTerms().getExtensions());
+    System.out.println("DIFF extensions: " + diffe);
   }
 }

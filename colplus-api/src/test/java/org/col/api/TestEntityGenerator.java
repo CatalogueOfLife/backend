@@ -60,6 +60,14 @@ public class TestEntityGenerator {
     DATASET1.setKey(1);
     DATASET2.setKey(2);
 
+    REF1.setKey(1);
+    REF1.setId("ref-1");
+    REF1.setDatasetKey(DATASET1.getKey());
+
+    REF2.setKey(2);
+    REF2.setId("ref-2");
+    REF2.setDatasetKey(DATASET2.getKey());
+
     NAME1.setKey(1);
     NAME1.setId("name-1");
     NAME1.setDatasetKey(DATASET1.getKey());
@@ -69,6 +77,8 @@ public class TestEntityGenerator {
     NAME1.setOrigin(Origin.SOURCE);
     NAME1.setType(NameType.SCIENTIFIC);
     NAME1.updateScientificName();
+    NAME1.setPublishedInKey(REF1.getKey());
+    NAME1.setPublishedInPage("712");
 
     NAME2.setKey(2);
     NAME2.setId("name-2");
@@ -79,28 +89,20 @@ public class TestEntityGenerator {
     NAME2.setOrigin(Origin.SOURCE);
     NAME2.setType(NameType.SCIENTIFIC);
     NAME2.updateScientificName();
+    NAME2.setPublishedInKey(null);
+    NAME2.setPublishedInPage(null);
 
     TAXON1.setKey(1);
     TAXON1.setId("root-1");
     TAXON1.setDatasetKey(DATASET1.getKey());
     TAXON1.setName(NAME1);
     TAXON1.setOrigin(Origin.SOURCE);
-    TAXON1.setStatus(TaxonomicStatus.ACCEPTED);
 
     TAXON2.setKey(2);
     TAXON2.setId("root-2");
     TAXON2.setDatasetKey(DATASET1.getKey());
     TAXON2.setName(NAME2);
     TAXON2.setOrigin(Origin.SOURCE);
-    TAXON2.setStatus(TaxonomicStatus.ACCEPTED);
-
-    REF1.setKey(1);
-    REF1.setId("ref-1");
-    REF1.setDatasetKey(DATASET1.getKey());
-
-    REF2.setKey(2);
-    REF2.setId("ref-2");
-    REF2.setDatasetKey(DATASET2.getKey());
   }
 
 	/*
@@ -139,7 +141,6 @@ public class TestEntityGenerator {
 		t.setName(NAME1);
 		t.setOrigin(Origin.SOURCE);
 		t.setParentKey(TAXON1.getKey());
-		t.setStatus(TaxonomicStatus.ACCEPTED);
 		t.setRecent(true);
 		t.setRemarks("Foo == Bar");
 		t.setSpeciesEstimate(81);
@@ -153,7 +154,7 @@ public class TestEntityGenerator {
 	 * Creates a new taxon with the specified id, belonging to the specified
 	 * dataset.
 	 */
-  public static Synonym newSynonym(Name name, int... acceptedKeys) {
+  public static Synonym newMisapplied(Name name, int... acceptedKeys) {
     Synonym s = new Synonym();
     s.setName(name);
     s.setAccordingTo("non Döring 1999");
@@ -162,7 +163,6 @@ public class TestEntityGenerator {
       Taxon t = new Taxon();
       t.setKey(acc);
       t.setDatasetKey(name.getDatasetKey());
-      t.setStatus(TaxonomicStatus.ACCEPTED);
       s.getAccepted().add(t);
     }
     return s;
@@ -221,19 +221,19 @@ public class TestEntityGenerator {
 		return n;
 	}
 
-	public static List<Synonym> newSynonyms(int size) {
-    List<Synonym> names = Lists.newArrayList();
+	public static List<Name> newNames(int size) {
+    List<Name> names = Lists.newArrayList();
     while (size-- > 0) {
-      names.add(newSynonym());
+      names.add(newName());
     }
     return names;
   }
 
   public static Synonymy newSynonymy() {
     Synonymy s = new Synonymy();
-    s.addHomotypicGroup(newSynonyms(1+RND.nextInt(3)));
+    s.addHomotypicGroup(newNames(1+RND.nextInt(3)));
     while (RND.nextBoolean() || RND.nextBoolean()) {
-      s.addHomotypicGroup(newSynonyms(1+RND.nextInt(6)));
+      s.addHomotypicGroup(newNames(1+RND.nextInt(6)));
     }
     return s;
   }

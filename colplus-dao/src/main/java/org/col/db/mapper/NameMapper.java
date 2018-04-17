@@ -1,10 +1,7 @@
 package org.col.db.mapper;
 
 import org.apache.ibatis.annotations.Param;
-import org.col.api.model.Name;
-import org.col.api.model.NameSearch;
-import org.col.api.model.NameUsage;
-import org.col.api.model.Page;
+import org.col.api.model.*;
 
 import java.util.List;
 
@@ -21,24 +18,38 @@ public interface NameMapper {
 
 	Name get(@Param("key") int key);
 
-	void create(Name name);
+  /**
+   * Creates a new name.
+   * If the homotypic group key is not yet set the newly created name key will be
+   * used to point to the name itself
+   * @param name
+   */
+  void create(Name name);
 
 	/**
-	 * @param taxonKey
-	 *          accepted taxon key
-	 * @return list of synonym names, ordered by their basionymKey
+	 * Lists all homotypic names based on the same homotypic name key
+   *
+	 * @param nameKey name key of the homotypic group
 	 */
-	List<Name> synonyms(@Param("key") int taxonKey);
+  List<Name> homotypicGroup(@Param("key") int nameKey);
 
-	/**
-	 * Lists all homotypic basionymGroup based on the same basionym
-	 * 
-	 * @return
-	 */
-	List<Name> basionymGroup(@Param("key") int key);
+  /**
+   * Lists all homotypic names based on the same homotypic name key
+   * for the given taxon key (not name key as above)
+   *
+   * @param taxonKey name key of the accepted name for the homotypic group
+   */
+  List<Name> homotypicGroupByTaxon(@Param("key") int taxonKey);
 
-	int countSearchResults(@Param("q") NameSearch query);
+  int countSearchResults(@Param("q") NameSearch query);
 
 	List<NameUsage> search(@Param("q") NameSearch query,
                          @Param("page") Page page);
+
+
+  /**
+   * Returns the list of names published in the same reference.
+   */
+  List<Name> listByReference(@Param("refKey") int publishedInKey);
+
 }

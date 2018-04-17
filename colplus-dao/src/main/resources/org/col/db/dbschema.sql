@@ -184,11 +184,13 @@ CREATE TABLE reference (
   issues INT[]
 );
 
+CREATE SEQUENCE name_key_seq;
+
 CREATE TABLE name (
-  key serial PRIMARY KEY,
+  key INTEGER DEFAULT nextval('name_key_seq') PRIMARY KEY,
   id TEXT,
   dataset_key INTEGER REFERENCES dataset,
-  basionym_key INTEGER REFERENCES name,
+  homotypic_name_key INTEGER REFERENCES name DEFAULT currval('name_key_seq'::regclass) NOT NULL ,
   scientific_name TEXT NOT NULL,
   rank rank NOT NULL,
   uninomial TEXT,
@@ -207,6 +209,8 @@ CREATE TABLE name (
   combination_ex_authors TEXT[],
   combination_year TEXT,
   sanctioning_author TEXT,
+  published_in_key int REFERENCES reference,
+  published_in_page TEXT,
   code INTEGER,
   nom_status INTEGER,
   origin INTEGER NOT NULL,
@@ -237,17 +241,13 @@ LANGUAGE plpgsql;
 CREATE TRIGGER name_trigger BEFORE INSERT OR UPDATE
   ON name FOR EACH ROW EXECUTE PROCEDURE name_doc_update();
 
-
 CREATE TABLE name_act (
   key serial PRIMARY KEY,
   dataset_key INTEGER NOT NULL REFERENCES dataset,
   type INTEGER NOT NULL,
-  status INTEGER,
   name_key INTEGER NOT NULL REFERENCES name,
   related_name_key INTEGER NULL REFERENCES name,
-  description TEXT,
-  reference_key int REFERENCES reference,
-  reference_page TEXT
+  description TEXT
 );
 
 CREATE TABLE taxon (
@@ -256,7 +256,7 @@ CREATE TABLE taxon (
   dataset_key INTEGER NOT NULL REFERENCES dataset,
   parent_key INTEGER REFERENCES taxon,
   name_key INTEGER NOT NULL REFERENCES name,
-  status INTEGER NOT NULL,
+  doubtful BOOLEAN DEFAULT FALSE NOT NULL,
   origin INTEGER NOT NULL,
   according_to TEXT,
   according_to_date DATE,
@@ -350,11 +350,11 @@ CREATE index ON name (dataset_key);
 CREATE index ON name (rank);
 CREATE index ON name (nom_status);
 CREATE index ON name (type);
-CREATE index ON name (basionym_key);
+CREATE index ON name (homotypic_name_key);
+CREATE index ON name (published_in_key);
 CREATE index ON name USING GIN(issues);
 
 CREATE index ON name_act (name_key, type);
-CREATE index ON name_act (reference_key);
 
 CREATE UNIQUE index ON taxon (id, dataset_key);
 CREATE index ON taxon (dataset_key);

@@ -1,7 +1,6 @@
 package org.col.db.dao;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.model.*;
 import org.col.api.vocab.TaxonomicStatus;
@@ -67,25 +66,24 @@ public class NameDao {
   }
 
   /**
-   * Lists all homotypic basionymGroup based on the same basionym
+   * Lists all homotypic synonyms based on the same homotypic group key
    */
-  public List<Name> basionymGroup(int key) {
-    // Allow 404 to be thrown:
-    // TODO: create more light-weight EXISTS mappper method to replace get().
-    get(key);
+  public List<Name> homotypicGroup(int key) {
     NameMapper mapper = session.getMapper(NameMapper.class);
-    return mapper.basionymGroup(key);
+    return mapper.homotypicGroup(key);
   }
 
   /**
-   * Adds a new synonym link for an existing taxon and synonym name. This link is used for both a
-   * hetero- or homotypic synonym.
+   * Adds a new synonym link for an existing taxon and synonym name,
+   * which is a heterotypic synonym or misapplied name.
+   *
+   * Only names which represent a homotypic group should be added with status=SYNONYM.
    *
    * @param synonym the synonym to create - requires and existing name with key to exist!
    */
   public void addSynonym(Synonym synonym) {
     Preconditions.checkNotNull(synonym.getName().getKey(), "Name key must exist");
-    Preconditions.checkNotNull(synonym.getName().getKey(), "Name key must exist");
+    Preconditions.checkArgument(synonym.getName().getHomotypicNameKey() == null || synonym.getName().getKey().equals(synonym.getName().getHomotypicNameKey()), "Name must be representing a homotypic group");
     SynonymMapper mapper = session.getMapper(SynonymMapper.class);
     mapper.create(synonym);
   }
@@ -107,6 +105,13 @@ public class NameDao {
     return s;
   }
 
+  private static NameAccordingTo toNameAccordingTo(Synonym s) {
+    NameAccordingTo nat = new NameAccordingTo();
+    nat.setName(s.getName());
+    nat.setAccordingTo(s.getAccordingTo());
+    return nat;
+  }
+
   /**
    * Assemble a synonymy object from the list of synonymy names for a given accepted taxon.
    */
@@ -114,22 +119,16 @@ public class NameDao {
     SynonymMapper synMapper = session.getMapper(SynonymMapper.class);
     NameMapper nMapper = session.getMapper(NameMapper.class);
     Synonymy syn = new Synonymy();
-    int lastBasKey = -1;
-    List<Synonym> homotypics = null;
+    // get homotypic synonyms for the accepted name
+    syn.getHomotypic().addAll(nMapper.homotypicGroupByTaxon(taxonKey));
+    // get all heterotypic synonyms and misapplied names
     for (Synonym s : synMapper.synonyms(taxonKey)) {
-      int basKey = s.getName().getBasionymKey() == null ? s.getName().getKey() : s.getName().getBasionymKey();
-      if (lastBasKey == -1 || basKey != lastBasKey) {
-        lastBasKey = basKey;
-        // new homotypic group
-        if (homotypics != null) {
-          syn.addHomotypicGroup(homotypics);
-        }
-        homotypics = Lists.newArrayList();
+      if (TaxonomicStatus.MISAPPLIED == s.getStatus()) {
+        syn.addMisapplied(toNameAccordingTo(s));
+      } else {
+        // get entire homotypic group
+        syn.addHomotypicGroup(nMapper.homotypicGroup(s.getName().getKey()));
       }
-      homotypics.add(s);
-    }
-    if (homotypics != null) {
-      syn.addHomotypicGroup(homotypics);
     }
     return syn;
   }
@@ -148,15 +147,6 @@ public class NameDao {
     int total = mapper.countSearchResults(query);
     List<NameUsage> result = mapper.search(query, page);
     return new ResultPage<>(page, total, result);
-  }
-
-  public Reference getPublishedIn(int nameKey) {
-    ReferenceMapper mapper = session.getMapper(ReferenceMapper.class);
-    ReferenceWithPage rwp = mapper.getPublishedIn(nameKey);
-    if(rwp == null) {
-      return null;
-    }
-    return rwp.toReference();
   }
 
   public VerbatimRecord getVerbatim(int nameKey) {

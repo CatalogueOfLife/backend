@@ -1,9 +1,8 @@
 package org.col.api.model;
 
-import java.util.Objects;
-
 import org.col.api.vocab.NomActType;
-import org.col.api.vocab.NomStatus;
+
+import java.util.Objects;
 
 /**
  * A nomenclatural act such as a species description, type designation or
@@ -13,17 +12,9 @@ public class NameAct {
 	private Integer key;
 	private Integer datasetKey;
 	private NomActType type;
-
-	/**
-	 * The new status established through this act.
-	 */
-	private NomStatus status;
-
 	private Integer nameKey;
 	private Integer relatedNameKey;
-	private String description;
-	private Integer referenceKey;
-	private String referencePage;
+	private String note;
 
 	public Integer getKey() {
 		return key;
@@ -49,14 +40,6 @@ public class NameAct {
 		this.type = type;
 	}
 
-	public NomStatus getStatus() {
-		return status;
-	}
-
-	public void setStatus(NomStatus status) {
-		this.status = status;
-	}
-
 	public Integer getNameKey() {
 		return nameKey;
 	}
@@ -73,68 +56,29 @@ public class NameAct {
 		this.relatedNameKey = key;
 	}
 
-	public String getDescription() {
-		return description;
-	}
+  public String getNote() {
+    return note;
+  }
 
-	public void setDescription(String description) {
-		this.description = description;
-	}
+  public void setNote(String note) {
+    this.note = note;
+  }
 
-	public Integer getReferenceKey() {
-		return referenceKey;
-	}
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    NameAct nameAct = (NameAct) o;
+    return Objects.equals(key, nameAct.key) &&
+        Objects.equals(datasetKey, nameAct.datasetKey) &&
+        type == nameAct.type &&
+        Objects.equals(nameKey, nameAct.nameKey) &&
+        Objects.equals(relatedNameKey, nameAct.relatedNameKey) &&
+        Objects.equals(note, nameAct.note);
+  }
 
-	public void setReferenceKey(Integer key) {
-		this.referenceKey = key;
-	}
-
-	public String getReferencePage() {
-		return referencePage;
-	}
-
-	public void setReferencePage(String referencePage) {
-		this.referencePage = referencePage;
-	}
-
-	@Override
-	public boolean equals(Object o) {
-		if (this == o)
-			return true;
-		if (o == null || getClass() != o.getClass())
-			return false;
-		NameAct nameAct = (NameAct) o;
-		return Objects.equals(key, nameAct.key)
-		    && Objects.equals(datasetKey, nameAct.datasetKey)
-		    && type == nameAct.type
-		    && status == nameAct.status
-		    && Objects.equals(nameKey, nameAct.nameKey)
-		    && Objects.equals(relatedNameKey, nameAct.relatedNameKey)
-		    && Objects.equals(description, nameAct.description)
-		    && Objects.equals(referencePage, nameAct.referencePage)
-		    && Objects.equals(referenceKey, nameAct.referenceKey);
-	}
-
-	@Override
-	public int hashCode() {
-		return Objects.hash(key, datasetKey, type, status, nameKey, relatedNameKey, referencePage,
-		    referenceKey);
-	}
-
-	// public boolean equalsShallow(NameAct nameAct) {
-	// if (this == nameAct) {
-	// return true;
-	// }
-	// if (nameAct == null) {
-	// return false;
-	// }
-	// return Objects.equals(key, nameAct.key)
-	// && type == nameAct.type
-	// && status == nameAct.status
-	// && ApiUtil.equalsShallow(dataset, nameAct.dataset)
-	// && ApiUtil.equalsShallow(name, nameAct.name)
-	// && ApiUtil.equalsShallow(relatedName, nameAct.relatedName)
-	// && ApiUtil.equalsShallow(reference, nameAct.reference)
-	// && Objects.equals(referencePage, nameAct.referencePage);
-	// }
+  @Override
+  public int hashCode() {
+    return Objects.hash(key, datasetKey, type, nameKey, relatedNameKey, note);
+  }
 }

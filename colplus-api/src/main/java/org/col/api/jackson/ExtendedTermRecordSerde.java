@@ -43,6 +43,8 @@ public class ExtendedTermRecordSerde {
             jgen.writeArrayFieldStart(rt.prefixedName());
             for (TermRecord rec : value.getExtensionRecords(rt)) {
               jgen.writeStartObject();
+              // we ignore the type for extension records as its already defined in the parent map!
+              rec.setType(null);
               tr.serializeFields(rec, jgen, false);
               jgen.writeEndObject();
             }
@@ -75,7 +77,8 @@ public class ExtendedTermRecordSerde {
         List<TermRecord> erecs = Lists.newArrayList();
         while ((jp.nextToken()) == JsonToken.START_OBJECT) {
           TermRecord erec = tr.deserialize(TermRecord.class, new TermRecord(), jp, ctxt);
-          erec.setType(rowType);
+          // dont set extension record type as its defined in the parent map and we harm the equals contract otherwise
+          //erec.setType(rowType);
           erecs.add(erec);
         }
         rec.setExtensionRecords(rowType, erecs);

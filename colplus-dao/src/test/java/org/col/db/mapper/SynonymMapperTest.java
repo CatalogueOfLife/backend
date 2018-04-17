@@ -11,7 +11,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.List;
-import java.util.Objects;
 
 import static org.junit.Assert.*;
 
@@ -40,7 +39,7 @@ public class SynonymMapperTest extends MapperTestBase<SynonymMapper> {
 
   private static Name create(final String id, final Name basionym) throws Exception {
     Name n = TestEntityGenerator.newName(id);
-    n.setBasionymKey(basionym.getKey());
+    n.setHomotypicNameKey(basionym.getKey());
     return n;
   }
 
@@ -64,11 +63,9 @@ public class SynonymMapperTest extends MapperTestBase<SynonymMapper> {
     Synonym s2 = synonymMapper.get(s1.getName().getKey());
     System.out.println("ACC NAME: " + s2.getAccepted().get(0).getName());
 
-    Name n1 = s1.getName();
-    Name n2 = s2.getName();
-
-    boolean same = Objects.equals(n1, n2);
-
+    // not present in original
+    s2.getName().setHomotypicNameKey(null);
+    s2.getAccepted().get(0).getName().setHomotypicNameKey(null);
 
     assertEquals(s1, s2);
   }
@@ -91,11 +88,11 @@ public class SynonymMapperTest extends MapperTestBase<SynonymMapper> {
     nameMapper.create(syn2bas);
 
     Name syn21 = TestEntityGenerator.newName("syn2.1");
-    syn21.setBasionymKey(syn2bas.getKey());
+    syn21.setHomotypicNameKey(syn2bas.getKey());
     nameMapper.create(syn21);
 
     Name syn22 = TestEntityGenerator.newName("syn2.2");
-    syn22.setBasionymKey(syn2bas.getKey());
+    syn22.setHomotypicNameKey(syn2bas.getKey());
     nameMapper.create(syn22);
 
     // homotypic 3
@@ -103,7 +100,7 @@ public class SynonymMapperTest extends MapperTestBase<SynonymMapper> {
     nameMapper.create(syn3bas);
 
     Name syn31 = TestEntityGenerator.newName("syn3.1");
-    syn31.setBasionymKey(syn3bas.getKey());
+    syn31.setHomotypicNameKey(syn3bas.getKey());
     nameMapper.create(syn31);
 
     commit();

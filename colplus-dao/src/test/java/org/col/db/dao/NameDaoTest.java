@@ -30,11 +30,11 @@ public class NameDaoTest extends DaoTestBase {
       dao.create(syn2bas);
 
       Name syn21 = TestEntityGenerator.newName("syn2.1");
-      syn21.setBasionymKey(syn2bas.getKey());
+      syn21.setHomotypicNameKey(syn2bas.getKey());
       dao.create(syn21);
 
       Name syn22 = TestEntityGenerator.newName("syn2.2");
-      syn22.setBasionymKey(syn2bas.getKey());
+      syn22.setHomotypicNameKey(syn2bas.getKey());
       dao.create(syn22);
 
       // homotypic 3
@@ -42,7 +42,7 @@ public class NameDaoTest extends DaoTestBase {
       dao.create(syn3bas);
 
       Name syn31 = TestEntityGenerator.newName("syn3.1");
-      syn31.setBasionymKey(syn3bas.getKey());
+      syn31.setHomotypicNameKey(syn3bas.getKey());
       dao.create(syn31);
 
       session.commit();
@@ -54,24 +54,24 @@ public class NameDaoTest extends DaoTestBase {
       assertEquals(0, synonymy.size());
 
       // now add a few synonyms
-      dao.addSynonym(TestEntityGenerator.newSynonym(syn1, accKey));
+      dao.addSynonym(TestEntityGenerator.newMisapplied(syn1, accKey));
       session.commit();
 
       synonymy = dao.getSynonymy(accKey);
       assertFalse(synonymy.isEmpty());
       assertEquals(1, synonymy.size());
-      assertEquals(1, synonymy.getHomotypicGroups().size());
+      assertEquals(1, synonymy.getMisapplied().size());
 
-      dao.addSynonym(TestEntityGenerator.newSynonym(syn2bas, accKey));
-      dao.addSynonym(TestEntityGenerator.newSynonym(syn21, accKey));
-      dao.addSynonym(TestEntityGenerator.newSynonym(syn22, accKey));
-      dao.addSynonym(TestEntityGenerator.newSynonym(syn3bas, accKey));
-      dao.addSynonym(TestEntityGenerator.newSynonym(syn31, accKey));
+      dao.addSynonym(TestEntityGenerator.newMisapplied(syn2bas, accKey));
+      dao.addSynonym(TestEntityGenerator.newMisapplied(syn21, accKey));
+      dao.addSynonym(TestEntityGenerator.newMisapplied(syn22, accKey));
+      dao.addSynonym(TestEntityGenerator.newMisapplied(syn3bas, accKey));
+      dao.addSynonym(TestEntityGenerator.newMisapplied(syn31, accKey));
       session.commit();
 
       synonymy = dao.getSynonymy(accKey);
       assertEquals(6, synonymy.size());
-      assertEquals(3, synonymy.getHomotypicGroups().size());
+      assertEquals(3, synonymy.getMisapplied().size());
     }
   }
   

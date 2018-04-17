@@ -61,9 +61,10 @@ public class Reference implements PrimaryEntity {
    * Issues related to this reference
    */
   private Set<Issue> issues = EnumSet.noneOf(Issue.class);
+  private String page;
 
 
-	public Integer getKey() {
+  public Integer getKey() {
 		return key;
 	}
 
@@ -185,5 +186,9 @@ public class Reference implements PrimaryEntity {
         ", id='" + id + '\'' +
         ", citation='" + citation + '\'' +
         '}';
+  }
+
+  public void setPage(String page) {
+    this.page = page;
   }
 }

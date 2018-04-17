@@ -44,10 +44,11 @@ public class Name implements PrimaryEntity {
   private Integer datasetKey;
 
   /**
-   * Link to the original combination. In case of [replacement
-   * names](https://en.wikipedia.org/wiki/Nomen_novum) it points back to the replaced synonym.
+   * Groups all homotypic names by referring to a single representative name of that group.
+   * This representative name is not necessarily the basionym, but often will be.
+   * For basionyms this should link to the basionym name itself, this key=homotypicNameKey
    */
-  private Integer basionymKey;
+  private Integer homotypicNameKey;
 
   /**
    * Global name identifier from a nomenclator or the clearinghouse
@@ -137,6 +138,16 @@ public class Name implements PrimaryEntity {
    */
   private NomStatus nomStatus;
 
+  /**
+   * The reference the name was originally published in.
+   */
+  private Integer publishedInKey;
+
+  /**
+   * The page(s) or other detailed location within the publishedIn reference the name was described.
+   */
+  private String publishedInPage;
+
   private Origin origin;
 
   /**
@@ -171,7 +182,7 @@ public class Name implements PrimaryEntity {
     this.key = n.key;
     this.id = n.id;
     this.datasetKey = n.datasetKey;
-    this.basionymKey = n.basionymKey;
+    this.homotypicNameKey = n.homotypicNameKey;
     this.scientificNameID = n.scientificNameID;
     this.scientificName = n.scientificName;
     this.rank = n.rank;
@@ -189,6 +200,8 @@ public class Name implements PrimaryEntity {
     this.sanctioningAuthor = n.sanctioningAuthor;
     this.code = n.code;
     this.nomStatus = n.nomStatus;
+    this.publishedInKey = n.publishedInKey;
+    this.publishedInPage = n.publishedInPage;
     this.origin = n.origin;
     this.type = n.type;
     this.sourceUrl = n.sourceUrl;
@@ -268,6 +281,22 @@ public class Name implements PrimaryEntity {
     this.scientificName = canonicalNameWithoutAuthorship();
   }
 
+  public Integer getPublishedInKey() {
+    return publishedInKey;
+  }
+
+  public void setPublishedInKey(Integer publishedInKey) {
+    this.publishedInKey = publishedInKey;
+  }
+
+  public String getPublishedInPage() {
+    return publishedInPage;
+  }
+
+  public void setPublishedInPage(String publishedInPage) {
+    this.publishedInPage = publishedInPage;
+  }
+
   public Origin getOrigin() {
     return origin;
   }
@@ -276,12 +305,12 @@ public class Name implements PrimaryEntity {
     this.origin = origin;
   }
 
-  public Integer getBasionymKey() {
-    return basionymKey;
+  public Integer getHomotypicNameKey() {
+    return homotypicNameKey;
   }
 
-  public void setBasionymKey(Integer key) {
-    this.basionymKey = key;
+  public void setHomotypicNameKey(Integer homotypicNameKey) {
+    this.homotypicNameKey = homotypicNameKey;
   }
 
   public Boolean getFossil() {
@@ -597,36 +626,43 @@ public class Name implements PrimaryEntity {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o)
-      return true;
-    if (o == null || getClass() != o.getClass())
-      return false;
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
     Name name = (Name) o;
-    return candidatus == name.candidatus && Objects.equals(key, name.key)
-        && Objects.equals(id, name.id) && Objects.equals(datasetKey, name.datasetKey)
-        && Objects.equals(basionymKey, name.basionymKey)
-        && Objects.equals(scientificNameID, name.scientificNameID)
-        && Objects.equals(scientificName, name.scientificName) && rank == name.rank
-        && Objects.equals(uninomial, name.uninomial) && Objects.equals(genus, name.genus)
-        && Objects.equals(infragenericEpithet, name.infragenericEpithet)
-        && Objects.equals(specificEpithet, name.specificEpithet)
-        && Objects.equals(infraspecificEpithet, name.infraspecificEpithet)
-        && Objects.equals(cultivarEpithet, name.cultivarEpithet)
-        && Objects.equals(strain, name.strain) && notho == name.notho
-        && Objects.equals(combinationAuthorship, name.combinationAuthorship)
-        && Objects.equals(basionymAuthorship, name.basionymAuthorship)
-        && Objects.equals(sanctioningAuthor, name.sanctioningAuthor) && code == name.code
-        && type == name.type && origin == name.origin && Objects.equals(sourceUrl, name.sourceUrl)
-        && Objects.equals(fossil, name.fossil) && nomStatus == name.nomStatus
-        && Objects.equals(remarks, name.remarks) && Objects.equals(issues, name.issues);
+    return candidatus == name.candidatus &&
+        Objects.equals(key, name.key) &&
+        Objects.equals(id, name.id) &&
+        Objects.equals(datasetKey, name.datasetKey) &&
+        Objects.equals(homotypicNameKey, name.homotypicNameKey) &&
+        Objects.equals(scientificNameID, name.scientificNameID) &&
+        Objects.equals(scientificName, name.scientificName) &&
+        rank == name.rank &&
+        Objects.equals(uninomial, name.uninomial) &&
+        Objects.equals(genus, name.genus) &&
+        Objects.equals(infragenericEpithet, name.infragenericEpithet) &&
+        Objects.equals(specificEpithet, name.specificEpithet) &&
+        Objects.equals(infraspecificEpithet, name.infraspecificEpithet) &&
+        Objects.equals(cultivarEpithet, name.cultivarEpithet) &&
+        Objects.equals(strain, name.strain) &&
+        notho == name.notho &&
+        Objects.equals(combinationAuthorship, name.combinationAuthorship) &&
+        Objects.equals(basionymAuthorship, name.basionymAuthorship) &&
+        Objects.equals(sanctioningAuthor, name.sanctioningAuthor) &&
+        code == name.code &&
+        nomStatus == name.nomStatus &&
+        Objects.equals(publishedInKey, name.publishedInKey) &&
+        Objects.equals(publishedInPage, name.publishedInPage) &&
+        origin == name.origin &&
+        type == name.type &&
+        Objects.equals(sourceUrl, name.sourceUrl) &&
+        Objects.equals(fossil, name.fossil) &&
+        Objects.equals(remarks, name.remarks) &&
+        Objects.equals(issues, name.issues);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(key, id, datasetKey, basionymKey, scientificNameID, scientificName, rank,
-        uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet,
-        cultivarEpithet, strain, candidatus, notho, combinationAuthorship, basionymAuthorship,
-        sanctioningAuthor, code, type, origin, sourceUrl, fossil, nomStatus, remarks, issues);
+    return Objects.hash(key, id, datasetKey, homotypicNameKey, scientificNameID, scientificName, rank, uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, strain, candidatus, notho, combinationAuthorship, basionymAuthorship, sanctioningAuthor, code, nomStatus, publishedInKey, publishedInPage, origin, type, sourceUrl, fossil, remarks, issues);
   }
 
   @Override
@@ -681,6 +717,13 @@ public class Name implements PrimaryEntity {
 
     if (this.basionymAuthorship != null) {
       sb.append(" BA:").append(this.basionymAuthorship);
+    }
+
+    if (this.publishedInKey != null) {
+      sb.append(" PUB:").append(this.publishedInKey);
+      if (this.publishedInPage != null) {
+        sb.append(" ").append(this.publishedInPage);
+      }
     }
 
     return sb.toString();

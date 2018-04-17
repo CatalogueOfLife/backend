@@ -57,7 +57,7 @@ public class NameResource {
   @Path("{key}/synonyms")
   public List<Name> getSynonyms(@PathParam("key") int key, @Context SqlSession session) {
     NameDao dao = new NameDao(session);
-    return dao.basionymGroup(key);
+    return dao.homotypicGroup(key);
   }
 
   @GET

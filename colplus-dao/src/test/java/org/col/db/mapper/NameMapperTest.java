@@ -20,6 +20,9 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
+import static org.col.api.TestEntityGenerator.NAME1;
+import static org.col.api.TestEntityGenerator.REF1;
+import static org.col.api.TestEntityGenerator.REF2;
 import static org.junit.Assert.*;
 
 /**
@@ -45,13 +48,14 @@ public class NameMapperTest extends org.col.db.mapper.MapperTestBase<NameMapper>
 
   private static Name create(final String id, final Name basionym) throws Exception {
     Name n = TestEntityGenerator.newName(id);
-    n.setBasionymKey(basionym.getKey());
+    n.setHomotypicNameKey(basionym.getKey());
     return n;
   }
 
   private static Name create(Dataset d) throws Exception {
     Name n = TestEntityGenerator.newName();
     n.setDatasetKey(d.getKey());
+    n.setHomotypicNameKey(NAME1.getKey());
     return n;
   }
 
@@ -66,11 +70,12 @@ public class NameMapperTest extends org.col.db.mapper.MapperTestBase<NameMapper>
     assertEquals((Integer) n1Key, n1.getKey());
 
     Name n1b = nameMapper.get(n1Key);
+    n1b.setHomotypicNameKey(null);
     assertEquals(n1, n1b);
 
-    // now with basionym
+    // with explicit homotypic group
     Name n2 = TestEntityGenerator.newName("sk2");
-    n2.setBasionymKey(n1.getKey());
+    n2.setHomotypicNameKey(n1.getKey());
     nameMapper.create(n2);
 
     commit();
@@ -142,18 +147,18 @@ public class NameMapperTest extends org.col.db.mapper.MapperTestBase<NameMapper>
 
     commit();
 
-    List<Name> s1 = nameMapper.basionymGroup(n1.getKey());
+    List<Name> s1 = mapper().homotypicGroup(n1.getKey());
     assertEquals(4, s1.size());
 
-    List<Name> s2 = nameMapper.basionymGroup(n2bas.getKey());
+    List<Name> s2 = mapper().homotypicGroup(n2bas.getKey());
     assertEquals(4, s2.size());
     assertEquals(s1, s2);
 
-    List<Name> s3 = nameMapper.basionymGroup(n3.getKey());
+    List<Name> s3 = mapper().homotypicGroup(n3.getKey());
     assertEquals(4, s3.size());
     assertEquals(s1, s3);
 
-    List<Name> s4 = nameMapper.basionymGroup(n4.getKey());
+    List<Name> s4 = mapper().homotypicGroup(n4.getKey());
     assertEquals(4, s4.size());
     assertEquals(s1, s4);
   }
@@ -166,12 +171,12 @@ public class NameMapperTest extends org.col.db.mapper.MapperTestBase<NameMapper>
   @Test
   public void basionymGroup2() throws Exception {
     Name n = TestEntityGenerator.newName("nxx");
-    nameMapper.create(n);
-    List<Name> s = nameMapper.basionymGroup(n.getKey());
-    assertNotNull("01", s);
-    s = nameMapper.basionymGroup(-1);
-    assertNotNull("02", s);
-    assertEquals("03", 0, s.size());
+    mapper().create(n);
+    List<Name> s = mapper().homotypicGroup(n.getKey());
+    assertNotNull(s);
+    s = mapper().homotypicGroup(-1);
+    assertNotNull(s);
+    assertEquals(0, s.size());
   }
 
   @Test
@@ -476,6 +481,24 @@ public class NameMapperTest extends org.col.db.mapper.MapperTestBase<NameMapper>
 
   }
 
+  @Test
+  public void listByReference() throws Exception {
+    Name acc1 = newAcceptedName("Nom uno");
+    nameMapper.create(acc1);
+    assertTrue(nameMapper.listByReference(REF2.getKey()).isEmpty());
+
+    Name acc2 = newAcceptedName("Nom duo");
+    acc2.setPublishedInKey(REF2.getKey());
+    Name acc3 = newAcceptedName("Nom tres");
+    acc3.setPublishedInKey(REF2.getKey());
+    nameMapper.create(acc2);
+    nameMapper.create(acc3);
+
+    // we have one ref from the apple.sql
+    assertEquals(1, nameMapper.listByReference(REF1.getKey()).size());
+    assertEquals(2, nameMapper.listByReference(REF2.getKey()).size());
+  }
+
   private static Synonym newSynonym(String scientificName) {
     Name n = new Name();
     n.setDatasetKey(TestEntityGenerator.DATASET1.getKey());
@@ -513,7 +536,6 @@ public class NameMapperTest extends org.col.db.mapper.MapperTestBase<NameMapper>
     t.setId(id);
     t.setName(n);
     t.setOrigin(Origin.SOURCE);
-    t.setStatus(TaxonomicStatus.ACCEPTED);
     return t;
   }
 

@@ -8,7 +8,7 @@
         n.key,
         n.id,
         n.dataset_key,
-        n.basionym_key,
+        n.homotypic_name_key,
         n.scientific_name,
         n.rank,
         n.uninomial,
@@ -27,6 +27,8 @@
         n.combination_ex_authors,
         n.combination_year,
         n.sanctioning_author,
+        n.published_in_key,
+        n.published_in_page,
         n.code,
         n.nom_status,
         n.origin,
@@ -87,7 +89,7 @@
         an.key AS a_n_key,
         an.id AS a_n_id,
         an.dataset_key AS a_n_dataset_key,
-        an.basionym_key AS a_n_basionym_key,
+        an.homotypic_name_key AS a_n_homotypic_name_key,
         an.scientific_name AS a_n_scientific_name,
         an.rank AS a_n_rank,
         an.uninomial AS a_n_uninomial,
@@ -119,7 +121,7 @@
     <sql id="COLS">
         id,
         dataset_key,
-        basionym_key,
+        homotypic_name_key,
         scientific_name,
         rank,
         uninomial,
@@ -138,6 +140,8 @@
         combination_ex_authors,
         combination_year,
         sanctioning_author,
+        published_in_key,
+        published_in_page,
         code,
         nom_status,
         origin,
@@ -151,7 +155,10 @@
     <sql id="PROPS">
         #{id},
         #{datasetKey},
-        #{basionymKey},
+        <choose>
+            <when test="homotypicNameKey != null">#{homotypicNameKey}</when>
+            <otherwise>DEFAULT</otherwise>
+        </choose>,
         #{scientificName},
         #{rank}::rank,
         #{uninomial},
@@ -171,6 +178,8 @@
         typeHandler=org.col.db.type.StringArrayTypeHandler},
         #{combinationAuthorship.year},
         #{sanctioningAuthor},
+        #{publishedInKey},
+        #{publishedInPage},
         #{code},
         #{nomStatus},
         #{origin},
@@ -277,15 +286,20 @@
     </select>
 
     <select id="list" parameterType="map" resultMap="nameResultMap">
-        SELECT
-        <include refid="SELECT" />
-        FROM
-        <include refid="FROM" />
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
         <if test="datasetKey != null">
             WHERE n.dataset_key = #{datasetKey}
         </if>
         ORDER BY key
         <include refid="org.col.db.mapper.Common.limit" />
+    </select>
+
+    <select id="listByReference" parameterType="map" resultMap="nameResultMap">
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
+        WHERE n.published_in_key = #{refKey}
+        ORDER BY key
     </select>
 
     <select id="lookupKey" resultType="Integer">
@@ -327,26 +341,23 @@
     </select>
 
     <insert id="create" parameterType="Name" useGeneratedKeys="true" keyProperty="key">
-        INSERT INTO name (
-        <include refid="COLS" />
-        )
-        VALUES (
-        <include refid="PROPS" />
-        )
+        INSERT INTO name (<include refid="COLS" />)
+        VALUES (<include refid="PROPS" />)
     </insert>
 
-    <select id="basionymGroup" resultMap="nameResultMap">
-        SELECT
-        <include refid="SELECT" />
+    <select id="homotypicGroup" resultMap="nameResultMap">
+        SELECT <include refid="SELECT" />
         FROM name ns
-          JOIN name n ON
-            <!-- ns was the basionym of other combinations -->
-            n.basionym_key=ns.key OR n.key = ns.key
-            <!-- ns was a combination with a basionym -->
-            OR n.key=ns.basionym_key OR n.basionym_key=ns.basionym_key
-          LEFT JOIN name bn ON n.basionym_key=bn.key
+          JOIN name n ON n.homotypic_name_key=ns.homotypic_name_key
         WHERE ns.key=#{key}
     </select>
 
+    <select id="homotypicGroupByTaxon" resultMap="nameResultMap">
+        SELECT <include refid="SELECT" />
+        FROM taxon t
+          JOIN name ns ON ns.key=t.name_key
+          JOIN name n ON n.homotypic_name_key=ns.homotypic_name_key AND n.key != t.name_key
+        WHERE t.key=#{key}
+    </select>
 
 </mapper>

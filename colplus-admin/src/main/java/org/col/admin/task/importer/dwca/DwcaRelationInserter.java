@@ -63,7 +63,7 @@ public class DwcaRelationInserter implements NeoDb.NodeBatchProcessor {
 
   /**
    * Creates synonym_of relationship based on the verbatim dwc:acceptedNameUsageID and dwc:acceptedNameUsage term values.
-   * Assumes pro parte basionymGroup are dealt with before and the remaining accepted identifier refers to a single taxon only.
+   * Assumes pro parte synonyms are dealt with before and the remaining accepted identifier refers to a single taxon only.
    *
    * @param t the full neotaxon to process
    */
@@ -204,7 +204,7 @@ public class DwcaRelationInserter implements NeoDb.NodeBatchProcessor {
           matches.removeIf(n -> !Strings.isNullOrEmpty(NeoProperties.getAuthorship(n)) && !NeoProperties.getAuthorship(n).equalsIgnoreCase(name.authorshipComplete()));
         }
 
-        // if multiple matches remove basionymGroup
+        // if multiple matches remove synonyms
         if (matches.size() > 1) {
           matches.removeIf(n -> n.hasLabel(Labels.SYNONYM));
         }

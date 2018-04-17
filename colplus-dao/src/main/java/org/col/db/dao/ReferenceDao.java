@@ -1,11 +1,14 @@
 package org.col.db.dao;
 
 import org.apache.ibatis.session.SqlSession;
-import org.col.api.model.*;
+import org.col.api.model.Page;
+import org.col.api.model.Reference;
+import org.col.api.model.ResultPage;
+import org.col.api.model.Taxon;
 import org.col.db.NotFoundException;
-import org.col.db.mapper.NameActMapper;
 import org.col.db.mapper.ReferenceMapper;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 public class ReferenceDao {
@@ -37,18 +40,16 @@ public class ReferenceDao {
     return key;
   }
 
-  public Reference get(int key) {
+  public Reference get(int key, @Nullable String page) {
     ReferenceMapper mapper = session.getMapper(ReferenceMapper.class);
-    Reference result = mapper.get(key);
-    if (result == null) {
+    Reference ref = mapper.get(key);
+    if (ref == null) {
       throw NotFoundException.keyNotFound(Reference.class, key);
     }
-    return result;
-  }
-
-  public List<NameAct> getNameActs(int referenceKey) {
-    NameActMapper naMapper = session.getMapper(NameActMapper.class);
-    return naMapper.listByReference(referenceKey);
+    if (page != null) {
+      ref.setPage(page);
+    }
+    return ref;
   }
 
   public void create(Reference ref) {

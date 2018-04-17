@@ -9,6 +9,7 @@ import java.util.Objects;
 
 /**
  * A taxonomic synonym, linking a name to potentially multiple taxa.
+ * Can be used for both homo-and heterotypic synonyms as well as misapplied names.
  */
 public class Synonym implements NameUsage {
 

@@ -3,7 +3,7 @@ package org.col.db.mapper;
 import org.apache.ibatis.annotations.Param;
 import org.col.api.model.Page;
 import org.col.api.model.Reference;
-import org.col.db.mapper.temp.ReferenceWithPage;
+
 import java.util.List;
 import java.util.Set;
 
@@ -26,11 +26,5 @@ public interface ReferenceMapper {
 
 	Reference get(@Param("key") int key);
 
-	/**
-	 * Returns the reference of the description act for the given name key.
-	 */
-	ReferenceWithPage getPublishedIn(@Param("nameKey") int nameKey);
-
 	void create(Reference name);
-
 }

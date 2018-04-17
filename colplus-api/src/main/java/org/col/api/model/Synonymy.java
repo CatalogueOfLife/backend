@@ -1,8 +1,6 @@
 package org.col.api.model;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.Lists;
 
 import java.util.List;
@@ -12,35 +10,45 @@ import java.util.Objects;
  * A taxonomic synonymy list, ordering names in homotypic groups.
  */
 public class Synonymy {
-  private final List<List<Synonym>> synonyms;
-
-  public Synonymy() {
-    this.synonyms = Lists.newArrayList();
-  }
-
-  @JsonCreator
-  public Synonymy(List<List<Synonym>> synonyms) {
-    this.synonyms = synonyms;
-  }
-
-  @JsonValue
-  public List<List<Synonym>> getHomotypicGroups() {
-    return synonyms;
-  }
-
-  public void addHomotypicGroup(List<Synonym> synonyms) {
-    this.synonyms.add(synonyms);
-  }
+  private final List<Name> homotypic = Lists.newArrayList();
+  private final List<List<Name>> heterotypic = Lists.newArrayList();
+  private final List<NameAccordingTo> misapplied = Lists.newArrayList();
 
   @JsonIgnore
   public boolean isEmpty() {
-    return synonyms.isEmpty();
+    return homotypic.isEmpty() && heterotypic.isEmpty() && misapplied.isEmpty();
+  }
+
+  public List<Name> getHomotypic() {
+    return homotypic;
+  }
+
+  public List<List<Name>> getHeterotypic() {
+    return heterotypic;
+  }
+
+  public List<NameAccordingTo> getMisapplied() {
+    return misapplied;
+  }
+
+  public void addMisapplied(NameAccordingTo misapplied) {
+    this.misapplied.add(misapplied);
+  }
+
+  /**
+   * Adds a new homotypic group of names to the heterotypic synonyms
+   * @param synonyms
+   */
+  public void addHomotypicGroup(List<Name> synonyms) {
+    this.heterotypic.add(synonyms);
   }
 
   public int size() {
-    return synonyms.stream()
-        .mapToInt(List::size)
-        .sum();
+    return homotypic.size()
+        + misapplied.size()
+        + heterotypic.stream()
+          .mapToInt(List::size)
+          .sum();
   }
 
   @Override
@@ -48,11 +56,13 @@ public class Synonymy {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     Synonymy synonymy = (Synonymy) o;
-    return Objects.equals(synonyms, synonymy.synonyms);
+    return Objects.equals(homotypic, synonymy.homotypic) &&
+        Objects.equals(heterotypic, synonymy.heterotypic) &&
+        Objects.equals(misapplied, synonymy.misapplied);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(synonyms);
+    return Objects.hash(homotypic, heterotypic, misapplied);
   }
 }
