@@ -11,7 +11,6 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.col.api.model.CslItemData;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
@@ -21,8 +20,8 @@ public class AnystyleParserWrapper implements Managed, AutoCloseable {
 
   /*
    * This is not a regular static factory method. It never creates an instance of
-   * AnystyleParserWrapper. The returned instance is presumed to have been created already by
-   * DropWizard or something else managing the life cycle of an AnystyleParserWrapper.
+   * AnystyleParserWrapper. The returned instance is presumed to have been created AND started
+   * already by DropWizard or something else managing the life cycle of an AnystyleParserWrapper. 
    */
   public static AnystyleParserWrapper getInstance() {
     if (instance == null) {
@@ -44,7 +43,6 @@ public class AnystyleParserWrapper implements Managed, AutoCloseable {
     this.svc = new AnystyleWebService();
     this.hc = hc;
     this.om = new ObjectMapper();
-    this.om.setSerializationInclusion(Include.NON_NULL);
   }
 
   public CslItemData parse(String ref) {
@@ -58,7 +56,6 @@ public class AnystyleParserWrapper implements Managed, AutoCloseable {
         throw new RuntimeException("Unexpected response from Anystyle");
       }
       Map<String, Object> map = raw.get(0);
-      // Copy keys to prevent ConcurrentModificationException
       for (String key : new ArrayList<>(map.keySet())) {
         if (key.indexOf('-') != -1) {
           map.put(toCamelCase(key), map.remove(key));

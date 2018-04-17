@@ -4,6 +4,7 @@ import com.google.common.collect.Sets;
 import com.google.common.io.Files;
 import jersey.repackaged.com.google.common.base.Throwables;
 import org.apache.commons.io.FileUtils;
+import org.apache.http.impl.client.HttpClients;
 import org.col.admin.config.NormalizerConfig;
 import org.col.admin.task.importer.neo.NeoDb;
 import org.col.admin.task.importer.neo.NeoDbFactory;
@@ -16,10 +17,13 @@ import org.col.api.model.Dataset;
 import org.col.api.model.Distribution;
 import org.col.api.model.VernacularName;
 import org.col.api.vocab.*;
+import org.col.dw.anystyle.AnystyleParserWrapper;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.neo4j.graphdb.Node;
@@ -44,6 +48,22 @@ import static org.junit.Assert.*;
  *
  */
 public class NormalizerACEFIT {
+  
+  
+  private static AnystyleParserWrapper anystyle;
+  
+  @BeforeClass
+  public static void init() throws Exception {
+    anystyle = new AnystyleParserWrapper(HttpClients.createDefault());
+    anystyle.start();
+  }
+  
+  @AfterClass
+  public static void tearDown() throws Exception {
+    anystyle.stop();
+  }
+  
+
   private NeoDb store;
   private NormalizerConfig cfg;
   private Path acef;

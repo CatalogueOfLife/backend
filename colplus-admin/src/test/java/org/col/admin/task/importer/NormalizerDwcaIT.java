@@ -4,6 +4,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.io.Files;
 import org.apache.commons.io.FileUtils;
+import org.apache.http.impl.client.HttpClients;
 import org.col.admin.config.NormalizerConfig;
 import org.col.admin.task.importer.neo.NeoDb;
 import org.col.admin.task.importer.neo.NeoDbFactory;
@@ -18,8 +19,11 @@ import org.col.api.vocab.DataFormat;
 import org.col.api.vocab.DistributionStatus;
 import org.col.api.vocab.Gazetteer;
 import org.col.api.vocab.Language;
+import org.col.dw.anystyle.AnystyleParserWrapper;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.neo4j.graphdb.Node;
@@ -46,6 +50,21 @@ import static org.junit.Assert.*;
  *
  */
 public class NormalizerDwcaIT {
+  
+
+  private static AnystyleParserWrapper anystyle;
+
+  @BeforeClass
+  public static void init() throws Exception {
+    anystyle = new AnystyleParserWrapper(HttpClients.createDefault());
+    anystyle.start();
+  }
+
+  @AfterClass
+  public static void tearDown() throws Exception {
+    anystyle.stop();
+  }
+
   private NeoDb store;
   private NormalizerConfig cfg;
   private Path dwca;

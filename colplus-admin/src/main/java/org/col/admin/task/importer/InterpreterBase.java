@@ -15,6 +15,7 @@ import org.col.api.model.Reference;
 import org.col.api.model.VernacularName;
 import org.col.api.vocab.Issue;
 import org.col.api.vocab.Origin;
+import org.col.dw.anystyle.AnystyleParserWrapper;
 import org.col.parser.*;
 import org.col.api.model.NameAccordingTo;
 import org.col.util.date.FuzzyDate;
@@ -38,16 +39,20 @@ import static org.col.parser.SafeParser.parse;
  * Base interpreter providing common methods for both ACEF and DWC
  */
 public class InterpreterBase {
+  
   private static final Logger LOG = LoggerFactory.getLogger(InterpreterBase.class);
   protected static final Splitter MULTIVAL = Splitter.on(CharMatcher.anyOf(";|,")).trimResults();
   private static final Transliterator transLatin = Transliterator.getInstance("Any-Latin");
   private static final Transliterator transAscii = Transliterator.getInstance("Latin-ASCII");
+  
   protected final Dataset dataset;
   protected final ReferenceStore refStore;
+  protected final AnystyleParserWrapper anystyle;
 
   public InterpreterBase(Dataset dataset, ReferenceStore refStore) {
     this.dataset = dataset;
     this.refStore = refStore;
+    this.anystyle = AnystyleParserWrapper.getInstance();
   }
 
   protected String latinName(String name) {

@@ -1,24 +1,47 @@
 package org.col.admin.task.importer.acef;
 
-import com.google.common.collect.Lists;
+import static org.col.parser.SafeParser.parse;
+import java.util.Set;
 import org.col.admin.task.importer.InsertMetadata;
 import org.col.admin.task.importer.InterpreterBase;
 import org.col.admin.task.importer.neo.ReferenceStore;
 import org.col.admin.task.importer.neo.model.NeoTaxon;
 import org.col.admin.task.importer.neo.model.UnescapedVerbatimRecord;
-import org.col.api.model.*;
-import org.col.api.vocab.*;
-import org.col.parser.*;
-import org.col.parser.EnumNote;
+import org.col.api.model.Classification;
+import org.col.api.model.CslItemData;
+import org.col.api.model.Dataset;
+import org.col.api.model.Distribution;
+import org.col.api.model.Name;
 import org.col.api.model.NameAccordingTo;
+import org.col.api.model.Reference;
+import org.col.api.model.Referenced;
+import org.col.api.model.Synonym;
+import org.col.api.model.Taxon;
+import org.col.api.model.TermRecord;
+import org.col.api.model.VerbatimRecord;
+import org.col.api.model.VernacularName;
+import org.col.api.vocab.DistributionStatus;
+import org.col.api.vocab.Gazetteer;
+import org.col.api.vocab.Issue;
+import org.col.api.vocab.Lifezone;
+import org.col.api.vocab.Origin;
+import org.col.api.vocab.TaxonomicStatus;
+import org.col.parser.AreaParser;
+import org.col.parser.CountryParser;
+import org.col.parser.DistributionStatusParser;
+import org.col.parser.EnumNote;
+import org.col.parser.GazetteerParser;
+import org.col.parser.LanguageParser;
+import org.col.parser.LifezoneParser;
+import org.col.parser.RankParser;
+import org.col.parser.SafeParser;
+import org.col.parser.TaxonomicStatusParser;
 import org.gbif.dwc.terms.AcefTerm;
+import org.gbif.dwc.terms.DcTerm;
 import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Set;
-
-import static org.col.parser.SafeParser.parse;
+import com.google.common.collect.Lists;
 
 /**
  * Interprets a verbatim ACEF record and transforms it into a name, taxon and unique references.
@@ -41,11 +64,13 @@ public class AcefInterpreter extends InterpreterBase {
     t.name = nat.getName();
 
     // status
-    TaxonomicStatus status = parse(TaxonomicStatusParser.PARSER, v.getTerm(AcefTerm.Sp2000NameStatus))
-        .orElse(new EnumNote<>(synonym ? TaxonomicStatus.SYNONYM : TaxonomicStatus.ACCEPTED, null)).val;
+    TaxonomicStatus status =
+        parse(TaxonomicStatusParser.PARSER, v.getTerm(AcefTerm.Sp2000NameStatus)).orElse(
+            new EnumNote<>(synonym ? TaxonomicStatus.SYNONYM : TaxonomicStatus.ACCEPTED, null)).val;
     if (synonym != status.isSynonym()) {
       t.taxon.addIssue(Issue.TAXONOMIC_STATUS_INVALID);
-      // override status as we require some accepted status on Taxon and some synonym status for Synonym
+      // override status as we require some accepted status on Taxon and some synonym status for
+      // Synonym
       status = synonym ? TaxonomicStatus.SYNONYM : TaxonomicStatus.DOUBTFUL;
     }
 
@@ -105,6 +130,20 @@ public class AcefInterpreter extends InterpreterBase {
       vn.setLatin(rec.get(AcefTerm.TransliteratedName));
       addReferences(vn, rec, t.issues);
       addAndTransliterate(t, vn);
+    }
+  }
+
+  void interpretBibliography(NeoTaxon t) {
+    for (TermRecord rec : t.verbatim.getExtensionRecords(AcefTerm.Reference)) {
+      Reference ref = new Reference();
+      ref.setId(rec.get(AcefTerm.ReferenceID));
+      ref.setTitle(rec.get(AcefTerm.Title));
+      // TODO it seems like both Source and Details might be amenable to citation string parsing ...
+      // for now settle on Details
+      ref.setCitation(rec.get(AcefTerm.Details));
+      CslItemData csl = anystyle.parse(rec.get(AcefTerm.Details));
+      ref.setCsl(csl);
+      t.bibliography.add(ref);
     }
   }
 
@@ -199,7 +238,8 @@ public class AcefInterpreter extends InterpreterBase {
       NameAccordingTo nat = new NameAccordingTo();
       nat.setName(new Name());
       nat.getName().setId(v.getId());
-      nat.getName().setRank(SafeParser.parse(RankParser.PARSER, rank).orElse(Rank.INFRASPECIFIC_NAME));
+      nat.getName()
+          .setRank(SafeParser.parse(RankParser.PARSER, rank).orElse(Rank.INFRASPECIFIC_NAME));
       return nat;
     }
     return interpretName(v.getId(), rank, null, authorship, v.getTerm(AcefTerm.Genus),

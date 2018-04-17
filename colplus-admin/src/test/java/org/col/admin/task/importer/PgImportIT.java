@@ -6,6 +6,7 @@ import jersey.repackaged.com.google.common.base.Throwables;
 import jersey.repackaged.com.google.common.collect.Lists;
 import jersey.repackaged.com.google.common.collect.Maps;
 import org.apache.commons.io.FileUtils;
+import org.apache.http.impl.client.HttpClients;
 import org.apache.ibatis.session.SqlSession;
 import org.col.admin.config.ImporterConfig;
 import org.col.admin.config.NormalizerConfig;
@@ -20,6 +21,7 @@ import org.col.db.dao.ReferenceDao;
 import org.col.db.dao.TaxonDao;
 import org.col.db.mapper.*;
 import org.col.db.mapper.temp.ReferenceWithPage;
+import org.col.dw.anystyle.AnystyleParserWrapper;
 import org.gbif.nameparser.api.Rank;
 import org.junit.*;
 
@@ -37,7 +39,21 @@ import static org.junit.Assert.*;
 /**
  *
  */
-public class PgImportIT {
+public class PgImportIT { 
+
+  private static AnystyleParserWrapper anystyle;
+
+  @BeforeClass
+  public static void init() throws Exception {
+    anystyle = new AnystyleParserWrapper(HttpClients.createDefault());
+    anystyle.start();
+  }
+
+  @AfterClass
+  public static void tearDown() throws Exception {
+    anystyle.stop();
+  }
+
 	private NeoDb store;
 	private NormalizerConfig cfg;
 	private ImporterConfig icfg = new ImporterConfig();
