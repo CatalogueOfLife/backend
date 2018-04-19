@@ -1,5 +1,6 @@
 package org.col.dw.reference;
 
+import static com.google.common.base.Strings.emptyToNull;
 import org.col.api.model.TermRecord;
 import org.gbif.dwc.terms.DcTerm;
 import org.gbif.dwc.terms.DwcTerm;
@@ -11,10 +12,10 @@ public final class DwcReference {
   }
 
   private DwcReference(TermRecord rec) {
-    identifier = rec.get(DcTerm.identifier);
-    title = rec.get(DcTerm.title);
-    year = rec.get(DwcTerm.year);
-    bibliographicCitation = rec.get(DcTerm.bibliographicCitation);
+    identifier = emptyToNull(rec.get(DcTerm.identifier));
+    title = emptyToNull(rec.get(DcTerm.title));
+    year = emptyToNull(rec.get(DwcTerm.year));
+    bibliographicCitation = emptyToNull(rec.get(DcTerm.bibliographicCitation));
   }
 
   private final String identifier;

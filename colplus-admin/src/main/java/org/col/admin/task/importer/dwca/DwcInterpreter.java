@@ -7,12 +7,10 @@ import org.col.admin.task.importer.neo.ReferenceStore;
 import org.col.admin.task.importer.neo.model.NeoTaxon;
 import org.col.admin.task.importer.neo.model.UnescapedVerbatimRecord;
 import org.col.api.model.Classification;
-import org.col.api.model.CslItemData;
 import org.col.api.model.Dataset;
 import org.col.api.model.Distribution;
 import org.col.api.model.NameAccordingTo;
 import org.col.api.model.NameAct;
-import org.col.api.model.Reference;
 import org.col.api.model.Referenced;
 import org.col.api.model.Synonym;
 import org.col.api.model.Taxon;
@@ -106,7 +104,7 @@ public class DwcInterpreter extends InterpreterBase {
   }
 
   void interpretBibliography(NeoTaxon t) {
-    ReferenceFactory refFactory = new ReferenceFactory();
+    ReferenceFactory refFactory = new ReferenceFactory(dataset);
     if (t.verbatim.hasExtension(GbifTerm.Reference)) {
       for (TermRecord rec : t.verbatim.getExtensionRecords(GbifTerm.Reference)) {
         DwcReference dwc = DwcReference.fromTermRecord(rec);

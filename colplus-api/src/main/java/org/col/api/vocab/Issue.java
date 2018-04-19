@@ -294,6 +294,16 @@ public enum Issue {
    * Audubon core, Simple images or multimedia or EOL media.
    */
   MULTIMEDIA_INVALID,
+  
+  /**
+   * The title extracted from the bibliographic citation does not match the directly provided title.
+   */
+  CSL_TITLE_MISMATCH,
+  
+  /**
+   * The year extracted from the bibliographic citation does not match the directly provided year.
+   */
+  CSL_YEAR_MISMATCH,
 
   /**
    * At least one bibliographic reference extension record attached to this name usage is invalid.

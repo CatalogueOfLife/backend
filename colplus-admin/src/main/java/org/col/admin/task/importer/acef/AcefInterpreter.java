@@ -12,6 +12,7 @@ import org.col.api.model.Dataset;
 import org.col.api.model.Distribution;
 import org.col.api.model.Name;
 import org.col.api.model.NameAccordingTo;
+import org.col.api.model.NameAct;
 import org.col.api.model.Reference;
 import org.col.api.model.Referenced;
 import org.col.api.model.Synonym;
@@ -134,7 +135,7 @@ public class AcefInterpreter extends InterpreterBase {
   }
 
   void interpretBibliography(NeoTaxon t) {
-    ReferenceFactory refFactory = new ReferenceFactory();
+    ReferenceFactory refFactory = new ReferenceFactory(dataset);
     for (TermRecord rec : t.verbatim.getExtensionRecords(AcefTerm.Reference)) {
       AcefReference acef = AcefReference.fromTermRecord(rec);
       t.bibliography.add(refFactory.fromACEF(acef));
