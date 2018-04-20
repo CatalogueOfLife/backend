@@ -1,5 +1,9 @@
 package org.col.api.vocab;
 
+import com.google.common.collect.ImmutableSet;
+
+import java.util.Set;
+
 /**
  * Appendix III - Types
  * http://docs.citationstyles.org/en/stable/specification.html#appendix_iii_types
@@ -41,11 +45,4 @@ public enum CSLRefType {
   TREATY,
   WEBPAGE;
 
-  public String toCSL() {
-    return name().toLowerCase().replaceAll("_", "-");
-  }
-
-  public static CSLRefType fromCSL(String type) {
-    return CSLRefType.valueOf(type.toUpperCase().replaceAll("-", "_"));
-  }
 }

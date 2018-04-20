@@ -3,7 +3,7 @@ package org.col.db.mapper;
 import com.google.common.collect.Sets;
 import org.col.api.RandomUtils;
 import org.col.api.TestEntityGenerator;
-import org.col.api.model.CslItemData;
+import org.col.api.model.CslData;
 import org.col.api.model.Page;
 import org.col.api.model.Reference;
 import org.col.api.vocab.Issue;
@@ -88,8 +88,8 @@ public class ReferenceMapperTest extends MapperTestBase<ReferenceMapper> {
 		return ref;
 	}
 
-	private static CslItemData createCsl() {
-	  CslItemData item = new CslItemData();
+	private static CslData createCsl() {
+	  CslData item = new CslData();
 	  item.setTitle(RandomUtils.randomString(80));
 	  item.setContainerTitle(RandomUtils.randomString(100));
 	  item.setPublisher("Springer");

@@ -1,9 +1,8 @@
 package org.col.admin.task.importer.reference;
 
 import com.google.common.base.Strings;
+import org.col.api.model.CslData;
 import org.col.api.model.CslDate;
-import org.col.api.model.CslItemData;
-import org.col.api.model.Dataset;
 import org.col.api.model.Reference;
 import org.col.api.vocab.Issue;
 import org.col.parser.Parser;
@@ -25,9 +24,9 @@ public class ReferenceFactory {
   private static final Pattern YEAR_PATTERN = Pattern.compile("(^|\\D+)(\\d{4})($|\\D+)");
 
   private final Integer datasetKey;
-  private final Parser<CslItemData> cslParser;
+  private final Parser<CslData> cslParser;
 
-  public ReferenceFactory(Integer datasetKey, Parser<CslItemData> cslParser) {
+  public ReferenceFactory(Integer datasetKey, Parser<CslData> cslParser) {
     this.datasetKey = datasetKey;
     this.cslParser = cslParser;
   }
@@ -127,7 +126,7 @@ public class ReferenceFactory {
 
   private void parse(Reference ref, String citation) {
     try {
-      Optional<CslItemData> csl = cslParser.parse(citation);
+      Optional<CslData> csl = cslParser.parse(citation);
       if (csl.isPresent()) {
         ref.setCsl(csl.get());
         return;
@@ -137,7 +136,7 @@ public class ReferenceFactory {
       e.printStackTrace();
     }
     ref.addIssue(Issue.REFERENCE_UNPARSABLE);
-    ref.setCsl(new CslItemData());
+    ref.setCsl(new CslData());
   }
 
   private static Reference postParse(Reference ref) {

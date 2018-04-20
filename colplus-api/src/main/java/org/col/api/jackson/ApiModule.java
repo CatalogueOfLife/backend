@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.col.api.model.ExtendedTermRecord;
 import org.col.api.model.TermRecord;
+import org.col.api.vocab.CSLRefType;
 import org.col.api.vocab.Country;
 import org.col.api.vocab.Language;
 import org.gbif.dwc.terms.Term;
@@ -43,6 +44,7 @@ public class ApiModule extends SimpleModule {
     addDeserializer(Term.class, new TermSerde.Deserializer());
     addDeserializer(TermRecord.class, new TermRecordSerde.Deserializer());
     addDeserializer(ExtendedTermRecord.class, new ExtendedTermRecordSerde.Deserializer());
+    addDeserializer(CSLRefType.class, new CSLRefTypeSerde.Deserializer());
 
     // then serializers:
     addSerializer(Country.class, new CountrySerde.Serializer());
@@ -50,6 +52,7 @@ public class ApiModule extends SimpleModule {
     addSerializer(Term.class, new TermSerde.ValueSerializer());
     addSerializer(TermRecord.class, new TermRecordSerde.Serializer());
     addSerializer(ExtendedTermRecord.class, new ExtendedTermRecordSerde.Serializer());
+    addSerializer(CSLRefType.class, new CSLRefTypeSerde.Serializer());
 
     // then key deserializers
     addKeyDeserializer(Term.class, new TermSerde.TermKeyDeserializer());

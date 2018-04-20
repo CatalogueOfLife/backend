@@ -7,7 +7,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.admin.config.AdminServerConfig;
-import org.col.api.model.CslItemData;
+import org.col.api.model.CslData;
 import org.col.api.model.Dataset;
 import org.col.api.model.DatasetImport;
 import org.col.db.mapper.DatasetMapper;
@@ -37,9 +37,9 @@ public class ImportManager implements Managed {
   private final AdminServerConfig cfg;
   private final DownloadUtil downloader;
   private final SqlSessionFactory factory;
-  private final Parser<CslItemData> cslParser;
+  private final Parser<CslData> cslParser;
 
-  public ImportManager(AdminServerConfig cfg, CloseableHttpClient client, SqlSessionFactory factory, Parser<CslItemData> cslParser) {
+  public ImportManager(AdminServerConfig cfg, CloseableHttpClient client, SqlSessionFactory factory, Parser<CslData> cslParser) {
     this.cfg = cfg;
     this.factory = factory;
     this.downloader = new DownloadUtil(client);

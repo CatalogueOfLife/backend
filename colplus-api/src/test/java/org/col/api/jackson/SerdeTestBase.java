@@ -39,11 +39,11 @@ public abstract class SerdeTestBase<T> {
     Wrapper<T> wrapper = new Wrapper<T>(value);
     String json = ApiModule.MAPPER.writeValueAsString(wrapper);
     Wrapper<T> wrapper2 = ApiModule.MAPPER.readValue(json, type);
-    debug(wrapper, wrapper2);
+    debug(json, wrapper, wrapper2);
     assertEquals(wrapper.value, wrapper2.value);
   }
 
-  protected void debug(Wrapper<T> wrapper, Wrapper<T> wrapper2){
+  protected void debug(String json, Wrapper<T> wrapper, Wrapper<T> wrapper2){
     // nothing
   }
 }

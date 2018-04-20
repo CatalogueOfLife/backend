@@ -3,12 +3,13 @@ package org.col.csl;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
+import de.undercouch.citeproc.csl.CSLItemData;
 import io.dropwizard.lifecycle.Managed;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.col.api.model.CslItemData;
+import org.col.api.model.CslData;
 import org.col.parser.Parser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,7 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-public class AnystyleParserWrapper implements Managed, AutoCloseable, Parser<CslItemData> {
+public class AnystyleParserWrapper implements Managed, AutoCloseable, Parser<CslData> {
   private static final Logger LOG = LoggerFactory.getLogger(AnystyleWebService.class);
 
   private static final TypeReference<List<Map<String, Object>>> ANYSTYLE_RESPONSE_TYPE =
@@ -37,7 +38,7 @@ public class AnystyleParserWrapper implements Managed, AutoCloseable, Parser<Csl
     this.om = new ObjectMapper();
   }
 
-  public Optional<CslItemData> parse(String ref) {
+  public Optional<CslData> parse(String ref) {
     if (Strings.isNullOrEmpty(ref)) {
       return Optional.empty();
     }
@@ -54,7 +55,7 @@ public class AnystyleParserWrapper implements Managed, AutoCloseable, Parser<Csl
           map.put(toCamelCase(key), map.remove(key));
         }
       }
-      return Optional.of(om.convertValue(map, CslItemData.class));
+      return Optional.of(om.convertValue(map, CslData.class));
     } catch (IOException | URISyntaxException e) {
       throw new RuntimeException(e);
     }

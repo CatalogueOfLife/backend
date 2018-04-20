@@ -3,8 +3,8 @@ package org.col.csl;
 import static com.fasterxml.jackson.core.util.DefaultIndenter.SYS_LF;
 import static org.junit.Assert.assertEquals;
 import org.apache.http.impl.client.HttpClients;
-import org.col.api.model.CslItemData;
-import org.col.api.model.CslType;
+import org.col.api.model.CslData;
+import org.col.api.vocab.CSLRefType;
 import org.junit.Ignore;
 import org.junit.Test;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -22,10 +22,10 @@ public class AnystyleParserWrapperTest {
     try (AnystyleParserWrapper parser = new AnystyleParserWrapper(HttpClients.createDefault())) {
       parser.start();
       String ref = "Perec, Georges. A Void. London: The Harvill Press, 1995. p.108.";
-      CslItemData item = parser.parse(ref).get();
+      CslData item = parser.parse(ref).get();
       System.out.println(pretty(item));
       assertEquals("perec1995a", item.getId());
-      assertEquals(CslType.BOOK, item.getType());
+      assertEquals(CSLRefType.BOOK, item.getType());
       assertEquals("Perec", item.getAuthor()[0].getFamily());
       assertEquals("Georges", item.getAuthor()[0].getGiven());
       assertEquals(1995, item.getIssued().getDateParts()[0][0]);

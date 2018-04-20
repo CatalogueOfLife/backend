@@ -9,7 +9,7 @@ import org.apache.ibatis.type.BaseTypeHandler;
 import org.apache.ibatis.type.JdbcType;
 import org.apache.ibatis.type.MappedJdbcTypes;
 import org.apache.ibatis.type.MappedTypes;
-import org.col.api.model.CslItemData;
+import org.col.api.model.CslData;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -22,16 +22,16 @@ import com.google.common.base.Strings;
  * As we do not map all java map types to this mybatis handler apply the handler manually for the
  * relevant hstore fields in the mapper xml.
  */
-@MappedTypes(CslItemData.class)
+@MappedTypes(CslData.class)
 @MappedJdbcTypes(JdbcType.OTHER)
-public class CslJsonHandler extends BaseTypeHandler<CslItemData> {
+public class CslJsonHandler extends BaseTypeHandler<CslData> {
   private static final ObjectMapper MAPPER = new ObjectMapper();
   static {
     MAPPER.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
   }
 
   @Override
-  public void setNonNullParameter(PreparedStatement ps, int i, CslItemData parameter,
+  public void setNonNullParameter(PreparedStatement ps, int i, CslData parameter,
       JdbcType jdbcType) throws SQLException {
     try {
       ps.setString(i, MAPPER.writeValueAsString(parameter));
@@ -41,26 +41,26 @@ public class CslJsonHandler extends BaseTypeHandler<CslItemData> {
   }
 
   @Override
-  public CslItemData getNullableResult(ResultSet rs, String columnName) throws SQLException {
+  public CslData getNullableResult(ResultSet rs, String columnName) throws SQLException {
     return fromString(rs.getString(columnName));
   }
 
   @Override
-  public CslItemData getNullableResult(ResultSet rs, int columnIndex) throws SQLException {
+  public CslData getNullableResult(ResultSet rs, int columnIndex) throws SQLException {
     return fromString(rs.getString(columnIndex));
   }
 
   @Override
-  public CslItemData getNullableResult(CallableStatement cs, int columnIndex) throws SQLException {
+  public CslData getNullableResult(CallableStatement cs, int columnIndex) throws SQLException {
     return fromString(cs.getString(columnIndex));
   }
 
-  private CslItemData fromString(String jsonb) throws SQLException {
+  private CslData fromString(String jsonb) throws SQLException {
     if (!Strings.isNullOrEmpty(jsonb)) {
       try {
-        return MAPPER.readValue(jsonb, CslItemData.class);
+        return MAPPER.readValue(jsonb, CslData.class);
       } catch (IOException e) {
-        throw new SQLException("Unable to convert JSONB to CslItemData", e);
+        throw new SQLException("Unable to convert JSONB to CslData", e);
       }
     }
     return null;

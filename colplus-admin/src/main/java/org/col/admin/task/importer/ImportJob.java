@@ -8,7 +8,7 @@ import org.col.admin.config.AdminServerConfig;
 import org.col.admin.task.importer.neo.NeoDb;
 import org.col.admin.task.importer.neo.NeoDbFactory;
 import org.col.admin.task.importer.reference.ReferenceFactory;
-import org.col.api.model.CslItemData;
+import org.col.api.model.CslData;
 import org.col.api.model.Dataset;
 import org.col.api.model.DatasetImport;
 import org.col.db.dao.DatasetImportDao;
@@ -43,7 +43,7 @@ public class ImportJob implements Callable<DatasetImport> {
   private final DatasetImportDao dao;
   private final ReferenceFactory refFactory;
 
-  ImportJob(Dataset d, boolean force, AdminServerConfig cfg, DownloadUtil downloader, SqlSessionFactory factory, Parser<CslItemData> cslParser) {
+  ImportJob(Dataset d, boolean force, AdminServerConfig cfg, DownloadUtil downloader, SqlSessionFactory factory, Parser<CslData> cslParser) {
     this.datasetKey = d.getKey();
     this.dataset = d;
     this.force = force;

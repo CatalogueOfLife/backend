@@ -2,7 +2,6 @@ package org.col.admin.task.importer.neo.kryo;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.pool.KryoFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import de.javakaffee.kryoserializers.UnmodifiableCollectionsSerializer;
 import de.javakaffee.kryoserializers.guava.ImmutableListSerializer;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
@@ -58,10 +57,10 @@ public class NeoKryoFactory implements KryoFactory {
     kryo.register(Page.class);
 
     // CSL classes & enums
-    kryo.register(CslItemData.class);
+    kryo.register(CslData.class);
     kryo.register(CslName.class);
     kryo.register(CslDate.class);
-    kryo.register(CslType.class);
+    kryo.register(CSLRefType.class);
     kryo.register(String[].class);
     //kryo.register(int[][].class);
 

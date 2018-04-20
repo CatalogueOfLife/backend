@@ -1,18 +1,19 @@
 package org.col.api.model;
 
-import java.util.Arrays;
-import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.col.api.vocab.CSLRefType;
+
+import java.util.Arrays;
 
 /**
  * Official CSL variables as defined in
  * Appendix IV - Variables
  * http://docs.citationstyles.org/en/stable/specification.html#appendix-iv-variables
  */
-public class CslItemData {
+public class CslData {
 
   private String id;
-  private CslType type;
+  private CSLRefType type;
   private String[] categories;
   private String language;
   private String journalAbbreviation;
@@ -36,6 +37,7 @@ public class CslItemData {
   private CslDate issued;
   private CslDate originalDate;
   private CslDate submitted;
+  @JsonProperty("abstract")
   private String abstrct;
   private String annote;
   private String archive;
@@ -76,7 +78,7 @@ public class CslItemData {
   private String PMCID;
   private String PMID;
   private String publisher;
-  //@JsonProperty("publisher-place")
+  @JsonProperty("publisher-place")
   private String publisherPlace;
   private String references;
   private String reviewedTitle;
@@ -99,11 +101,11 @@ public class CslItemData {
     this.id = id;
   }
 
-  public CslType getType() {
+  public CSLRefType getType() {
     return type;
   }
 
-  public void setType(CslType type) {
+  public void setType(CSLRefType type) {
     this.type = type;
   }
 
@@ -809,9 +811,9 @@ public class CslItemData {
       return true;
     if (obj == null)
       return false;
-    if (!(obj instanceof CslItemData))
+    if (!(obj instanceof CslData))
       return false;
-    CslItemData other = (CslItemData) obj;
+    CslData other = (CslData) obj;
 
     if (id == null) {
       if (other.id != null)

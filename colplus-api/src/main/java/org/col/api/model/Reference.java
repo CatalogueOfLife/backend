@@ -32,7 +32,7 @@ public class Reference implements PrimaryEntity {
 	/**
 	 * Reference metadata encoded as CSL-JSON.
 	 */
-	private CslItemData csl;
+	private CslData csl;
 
 	/**
 	 * Serial container, defining the CSL container properties.
@@ -75,11 +75,11 @@ public class Reference implements PrimaryEntity {
 		this.datasetKey = datasetKey;
 	}
 
-  public CslItemData getCsl() {
+  public CslData getCsl() {
 		return csl;
 	}
 
-	public void setCsl(CslItemData csl) {
+	public void setCsl(CslData csl) {
 		this.csl = csl;
 	}
 
@@ -116,7 +116,7 @@ public class Reference implements PrimaryEntity {
 	 */
 	public static Reference create() {
 		Reference r = new Reference();
-		r.csl = new CslItemData();
+		r.csl = new CslData();
 		return r;
 	}
 

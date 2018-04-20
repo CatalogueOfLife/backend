@@ -246,7 +246,11 @@ public class TestEntityGenerator {
   public static Reference newReference(String title) {
     Reference r = Reference.create();
     r.setDatasetKey(TestEntityGenerator.DATASET1.getKey());
+    r.getCsl().setType(CSLRefType.ARTICLE_JOURNAL);
     r.getCsl().setTitle(title);
+    r.getCsl().setContainerTitle("Nature");
+    r.getCsl().setVolume("556");
+    r.getCsl().setAbstrct("a very long article you should read");
     CslName author1 = new CslName();
     author1.setGiven("John");
     author1.setFamily("Smith");
