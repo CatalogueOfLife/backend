@@ -1,4 +1,4 @@
-package org.col.dw.anystyle;
+package org.col.csl;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -14,10 +14,10 @@ import org.slf4j.LoggerFactory;
  * Starts a ruby web service which can be accessed at port 4567. The following is assumed:
  * <ol>
  * <li>Ruby is installed. Linux: sudo apt install ruby
- * <li>ruby-dev is installed. Linux: sudo apt install ruby-dev. This is necessary because anystyle
+ * <li>ruby-dev is installed. Linux: sudo apt install ruby-dev. This is necessary because cslParser
  * depends on wapity, which needs native C headers provided by ruby-dev,
- * <li>Anystyle is installed. Linux: sudo gem install anystyle. This may hang on installing the
- * doccumentation. In that case, try: sudo gem install anystyle --no-ri --no-rdoc
+ * <li>Anystyle is installed. Linux: sudo gem install cslParser. This may hang on installing the
+ * doccumentation. In that case, try: sudo gem install cslParser --no-ri --no-rdoc
  * <li>Sinatra is installed. Linux: sudo gem install sinatra
  * </ol>
  */
@@ -54,7 +54,7 @@ class AnystyleWebService {
       Process p = Runtime.getRuntime().exec("ps -ef");
       LineNumberReader lnr = new LineNumberReader(new InputStreamReader(p.getInputStream()));
       for (String line = lnr.readLine(); line != null; line = lnr.readLine()) {
-        if (line.indexOf("require 'anystyle/parser'") != -1) {
+        if (line.indexOf("require 'cslParser/parser'") != -1) {
           return true;
         }
       }
@@ -74,11 +74,11 @@ class AnystyleWebService {
     }
   }
 
-  // ruby -e require 'anystyle/parser';require 'sinatra';get '/' do;Anystyle.parse(params['ref'], :citeproc).to_json;end
+  // ruby -e require 'cslParser/parser';require 'sinatra';get '/' do;Anystyle.parse(params['ref'], :citeproc).to_json;end
   private static String getRubyCode() {
     StringBuilderWriter w = new StringBuilderWriter(200);
     try (PrintWriter p = new PrintWriter(w)) {
-      p.print("require 'anystyle/parser';");
+      p.print("require 'cslParser/parser';");
       p.print("require 'sinatra';");
       p.print("get '/' do;");
       p.printf("Anystyle.parse(params['%s'], :citeproc).to_json;", QUERY_PARAM_REF);

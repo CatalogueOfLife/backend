@@ -1,29 +1,15 @@
 package org.col.admin.task.importer;
 
+import org.col.admin.task.importer.reference.ReferenceFactory;
 import org.col.api.model.Dataset;
-import org.col.dw.anystyle.AnystyleParserWrapper;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.col.csl.CslParserMock;
 import org.junit.Test;
+
 import static org.junit.Assert.assertEquals;
-import org.apache.http.impl.client.HttpClients;
 
 public class InterpreterBaseTest {
 
-  private static AnystyleParserWrapper anystyle;
-
-  @BeforeClass
-  public static void init() throws Exception {
-    anystyle = new AnystyleParserWrapper(HttpClients.createDefault());
-    anystyle.start();
-  }
-
-  @AfterClass
-  public static void tearDown() throws Exception {
-    anystyle.stop();
-  }
-
-  InterpreterBase inter = new InterpreterBase(new Dataset(), null);
+  InterpreterBase inter = new InterpreterBase(new Dataset(), null, new ReferenceFactory(1, new CslParserMock()));
 
   @Test
   public void latinName() throws Exception {

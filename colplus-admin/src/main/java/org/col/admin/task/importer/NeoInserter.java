@@ -7,8 +7,11 @@ import org.col.admin.task.importer.neo.NeoDb;
 import org.col.admin.task.importer.neo.model.Labels;
 import org.col.admin.task.importer.neo.model.NeoTaxon;
 import org.col.admin.task.importer.neo.model.UnescapedVerbatimRecord;
+import org.col.admin.task.importer.reference.ReferenceFactory;
+import org.col.api.model.CslItemData;
 import org.col.api.model.Dataset;
 import org.col.api.model.TermRecord;
+import org.col.parser.Parser;
 import org.gbif.dwc.terms.Term;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,10 +29,12 @@ public abstract class NeoInserter {
   protected final NeoDb store;
   protected final Path folder;
   protected final InsertMetadata meta = new InsertMetadata();
+  protected final ReferenceFactory refFactory;
 
-  public NeoInserter(Path folder, NeoDb store) {
+  public NeoInserter(Path folder, NeoDb store, ReferenceFactory refFactory) {
     this.folder = folder;
     this.store = store;
+    this.refFactory = refFactory;
   }
 
   private static final Pattern NULL_PATTERN = Pattern.compile("^\\s*(\\\\N|\\\\?NULL)\\s*$");

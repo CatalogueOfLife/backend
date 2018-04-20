@@ -10,8 +10,10 @@ import org.col.admin.task.importer.neo.NeoDb;
 import org.col.admin.task.importer.neo.NeoDbFactory;
 import org.col.admin.task.importer.neo.printer.GraphFormat;
 import org.col.admin.task.importer.neo.printer.PrinterUtils;
+import org.col.admin.task.importer.reference.ReferenceFactory;
 import org.col.api.model.Dataset;
 import org.col.api.vocab.DataFormat;
+import org.col.csl.CslParserMock;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -123,7 +125,7 @@ public class  NormalizerTreeIT {
       d.setDataFormat(format);
       store.put(d);
 
-      Normalizer norm = new Normalizer(store, source);
+      Normalizer norm = new Normalizer(store, source, new ReferenceFactory(d.getKey(), new CslParserMock()));
       try {
         norm.run();
 

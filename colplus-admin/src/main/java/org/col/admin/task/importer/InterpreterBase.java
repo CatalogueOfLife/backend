@@ -8,16 +8,12 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.col.admin.task.importer.neo.ReferenceStore;
 import org.col.admin.task.importer.neo.model.NeoTaxon;
+import org.col.admin.task.importer.reference.ReferenceFactory;
 import org.col.api.exception.InvalidNameException;
-import org.col.api.model.Dataset;
-import org.col.api.model.Name;
-import org.col.api.model.Reference;
-import org.col.api.model.VernacularName;
+import org.col.api.model.*;
 import org.col.api.vocab.Issue;
 import org.col.api.vocab.Origin;
-import org.col.dw.anystyle.AnystyleParserWrapper;
 import org.col.parser.*;
-import org.col.api.model.NameAccordingTo;
 import org.col.util.date.FuzzyDate;
 import org.gbif.dwc.terms.Term;
 import org.gbif.nameparser.api.NameType;
@@ -47,12 +43,12 @@ public class InterpreterBase {
   
   protected final Dataset dataset;
   protected final ReferenceStore refStore;
-  protected final AnystyleParserWrapper anystyle;
+  protected final ReferenceFactory refFactory;
 
-  public InterpreterBase(Dataset dataset, ReferenceStore refStore) {
+  public InterpreterBase(Dataset dataset, ReferenceStore refStore, ReferenceFactory refFactory) {
     this.dataset = dataset;
     this.refStore = refStore;
-    this.anystyle = AnystyleParserWrapper.getInstance();
+    this.refFactory = refFactory;
   }
 
   protected String latinName(String name) {

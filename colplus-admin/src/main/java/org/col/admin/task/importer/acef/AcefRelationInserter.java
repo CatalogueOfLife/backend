@@ -55,9 +55,9 @@ public class AcefRelationInserter implements NeoDb.NodeBatchProcessor {
           }
         }
       }
-      // interpret distributions
+
+      // supplementary infos
       inter.interpretDistributions(t);
-      // interpret vernaculars
       inter.interpretVernaculars(t);
 
       store.put(t);

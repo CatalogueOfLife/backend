@@ -7,9 +7,12 @@ import org.col.admin.AdminServer;
 import org.col.admin.config.AdminServerConfig;
 import org.col.admin.task.importer.neo.NeoDb;
 import org.col.admin.task.importer.neo.NeoDbFactory;
+import org.col.admin.task.importer.reference.ReferenceFactory;
+import org.col.api.model.CslItemData;
 import org.col.api.model.Dataset;
 import org.col.api.model.DatasetImport;
 import org.col.db.dao.DatasetImportDao;
+import org.col.parser.Parser;
 import org.col.util.io.CompressionUtil;
 import org.col.util.io.DownloadUtil;
 import org.slf4j.Logger;
@@ -38,14 +41,16 @@ public class ImportJob implements Callable<DatasetImport> {
   private final DownloadUtil downloader;
   private final SqlSessionFactory factory;
   private final DatasetImportDao dao;
+  private final ReferenceFactory refFactory;
 
-  ImportJob(Dataset d, boolean force, AdminServerConfig cfg, DownloadUtil downloader, SqlSessionFactory factory) {
+  ImportJob(Dataset d, boolean force, AdminServerConfig cfg, DownloadUtil downloader, SqlSessionFactory factory, Parser<CslItemData> cslParser) {
     this.datasetKey = d.getKey();
     this.dataset = d;
     this.force = force;
     this.cfg = cfg;
     this.downloader = downloader;
     this.factory = factory;
+    this.refFactory = new ReferenceFactory(d.getKey(), cslParser);
     dao = new DatasetImportDao(factory);
   }
 
@@ -103,7 +108,7 @@ public class ImportJob implements Callable<DatasetImport> {
         LOG.info("Normalizing {}", datasetKey);
         store = NeoDbFactory.create(datasetKey, cfg.normalizer);
         store.put(dataset);
-        new Normalizer(store, dwcaDir).run();
+        new Normalizer(store, dwcaDir, refFactory).run();
 
         LOG.info("Writing {} to Postgres!", datasetKey);
         store = NeoDbFactory.open(datasetKey, cfg.normalizer);

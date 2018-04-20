@@ -7,9 +7,11 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.admin.config.AdminServerConfig;
+import org.col.api.model.CslItemData;
 import org.col.api.model.Dataset;
 import org.col.api.model.DatasetImport;
 import org.col.db.mapper.DatasetMapper;
+import org.col.parser.Parser;
 import org.col.util.io.DownloadUtil;
 import org.gbif.nameparser.utils.NamedThreadFactory;
 import org.gbif.utils.concurrent.ExecutorUtils;
@@ -35,11 +37,13 @@ public class ImportManager implements Managed {
   private final AdminServerConfig cfg;
   private final DownloadUtil downloader;
   private final SqlSessionFactory factory;
+  private final Parser<CslItemData> cslParser;
 
-  public ImportManager(AdminServerConfig cfg, CloseableHttpClient client, SqlSessionFactory factory) {
+  public ImportManager(AdminServerConfig cfg, CloseableHttpClient client, SqlSessionFactory factory, Parser<CslItemData> cslParser) {
     this.cfg = cfg;
     this.factory = factory;
     this.downloader = new DownloadUtil(client);
+    this.cslParser = cslParser;
   }
 
   /**
@@ -96,7 +100,7 @@ public class ImportManager implements Managed {
       } else if (d.hasDeletedDate()) {
         throw new IllegalArgumentException("Dataset " + req.datasetKey + " is deleted");
       }
-      ImportJob job = new ImportJob(d, req.force, cfg, downloader, factory);
+      ImportJob job = new ImportJob(d, req.force, cfg, downloader, factory, cslParser);
       req.start();
       return job.call();
     }

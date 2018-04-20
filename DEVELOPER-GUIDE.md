@@ -233,9 +233,9 @@ Method declaration continuations.
 #### No tabs
 An oldie, but goodie.  We've found tab characters to cause more harm than good.
 
-#### 100 column limit
+#### 120 column limit
 You should follow the convention set by the body of code you are working with.
-We tend to use 100 columns for a balance between fewer continuation lines but still easily
+We tend to use 120 columns for a balance between fewer continuation lines but still easily
 fitting two editor tabs side-by-side on a reasonably-high resolution display.
 
 #### CamelCase for types, camelCase for variables, UPPER_SNAKE for constants

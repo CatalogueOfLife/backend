@@ -579,7 +579,7 @@ public class NameMapperTest extends org.col.db.mapper.MapperTestBase<NameMapper>
     nameMapper.create(n);
 
     Set<Issue> otherIssue = EnumSet.noneOf(Issue.class);
-    otherIssue.add(Issue.BIB_REFERENCE_INVALID);
+    otherIssue.add(Issue.REFERENCE_UNPARSABLE);
 
     n = TestEntityGenerator.newName("d");
     n.setScientificName("Foo");
@@ -603,7 +603,7 @@ public class NameMapperTest extends org.col.db.mapper.MapperTestBase<NameMapper>
     assertEquals("03", 1, names.size());
 
     search.setQ("Foo");
-    search.setIssue(Issue.BIB_REFERENCE_INVALID);
+    search.setIssue(Issue.REFERENCE_UNPARSABLE);
     names = nameMapper.search(search, new Page());
     assertEquals("04", 1, names.size());
 

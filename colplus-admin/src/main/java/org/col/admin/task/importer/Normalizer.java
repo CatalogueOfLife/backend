@@ -6,10 +6,12 @@ import org.col.admin.task.importer.neo.NeoDb;
 import org.col.admin.task.importer.neo.NotUniqueRuntimeException;
 import org.col.admin.task.importer.neo.model.*;
 import org.col.admin.task.importer.neo.traverse.Traversals;
+import org.col.admin.task.importer.reference.ReferenceFactory;
 import org.col.api.model.*;
 import org.col.api.vocab.Issue;
 import org.col.api.vocab.Origin;
 import org.col.api.vocab.TaxonomicStatus;
+import org.col.parser.Parser;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 import org.neo4j.graphdb.*;
@@ -33,12 +35,14 @@ public class Normalizer implements Runnable {
   private final Dataset dataset;
   private final Path sourceDir;
   private final NeoDb store;
+  private final ReferenceFactory refFactory;
   private InsertMetadata meta;
 
-  public Normalizer(NeoDb store, Path sourceDir) {
+  public Normalizer(NeoDb store, Path sourceDir, ReferenceFactory refFactory) {
     this.sourceDir = sourceDir;
     this.store = store;
     this.dataset = store.getDataset();
+    this.refFactory = refFactory;
   }
 
   /**
@@ -539,10 +543,10 @@ public class Normalizer implements Runnable {
       NeoInserter inserter;
       switch (dataset.getDataFormat()) {
         case DWCA:
-          inserter = new DwcaInserter(store, sourceDir);
+          inserter = new DwcaInserter(store, sourceDir, refFactory);
           break;
         case ACEF:
-          inserter = new AcefInserter(store, sourceDir);
+          inserter = new AcefInserter(store, sourceDir, refFactory);
           break;
         default:
           throw new NormalizationFailedException("Unsupported data format " + dataset.getDataFormat());

@@ -190,29 +190,6 @@ public class NeoDb implements ReferenceStore {
   }
 
   /**
-   * get taxon by its unique taxonID
-   */
-  public NeoTaxon getByTaxonID(String taxonID) {
-    Node n = byID(taxonID);
-    if (n != null) {
-      return get(n);
-    }
-    return null;
-  }
-
-  /**
-   * @return the single matching node with the taxonID or null
-   */
-  public Node byTaxonID(String taxonID) {
-    try {
-      return Iterators.singleOrNull(neo.findNodes(Labels.ALL, NeoProperties.TAXON_ID, taxonID));
-
-    } catch (NoSuchElementException e) {
-      throw new NotUniqueRuntimeException(NeoProperties.ID, taxonID);
-    }
-  }
-
-  /**
    * @return the matching nodes with the scientificName
    */
   public List<Node> byScientificName(String scientificName) {
@@ -353,8 +330,6 @@ public class NeoDb implements ReferenceStore {
       // define indices
       LOG.info("Building lucene index scientificName ...");
       inserter.createDeferredSchemaIndex(Labels.ALL).on(NeoProperties.SCIENTIFIC_NAME).create();
-      LOG.info("Building lucene index taxonID ...");
-      inserter.createDeferredSchemaIndex(Labels.ALL).on(NeoProperties.TAXON_ID).create();
     } finally {
       // this is when lucene indices are build and thus throws RuntimeExceptions when unique constraints are broken
       // we catch these exceptions below

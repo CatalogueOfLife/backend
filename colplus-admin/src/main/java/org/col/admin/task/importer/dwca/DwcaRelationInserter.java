@@ -141,14 +141,14 @@ public class DwcaRelationInserter implements NeoDb.NodeBatchProcessor {
   private List<RankedName> lookupByTaxonID(DwcTerm term, NeoTaxon t, Issue invalidIdIssue, boolean allowMultiple) {
     List<RankedName> ids = Lists.newArrayList();
     final String unsplitIds = t.verbatim.getTerm(term);
-    if (unsplitIds != null && !unsplitIds.equals(t.getTaxonID())) {
+    if (unsplitIds != null && !unsplitIds.equals(t.getID())) {
       if (allowMultiple && meta.getMultiValueDelimiters().containsKey(term)) {
         ids.addAll(lookupRankedNames(
             meta.getMultiValueDelimiters().get(term).splitToList(unsplitIds), t)
         );
       } else {
         // match by taxonID to see if this is an existing identifier or if we should try to split it
-        Node a = store.byTaxonID(unsplitIds);
+        Node a = store.byID(unsplitIds);
         if (a != null) {
           ids.add(NeoProperties.getRankedName(a));
 
@@ -175,7 +175,7 @@ public class DwcaRelationInserter implements NeoDb.NodeBatchProcessor {
   private List<RankedName> lookupRankedNames(Iterable<String> taxonIDs, NeoTaxon t) {
     List<RankedName> rankedNames = Lists.newArrayList();
     for (String id : taxonIDs) {
-      if (!id.equals(t.getTaxonID())) {
+      if (!id.equals(t.getID())) {
         Node n = store.byID(id);
         if (n != null) {
           rankedNames.add(NeoProperties.getRankedName(n));

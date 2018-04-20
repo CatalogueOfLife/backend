@@ -6,42 +6,25 @@ import org.col.admin.task.importer.InterpreterBase;
 import org.col.admin.task.importer.neo.ReferenceStore;
 import org.col.admin.task.importer.neo.model.NeoTaxon;
 import org.col.admin.task.importer.neo.model.UnescapedVerbatimRecord;
-import org.col.api.model.Classification;
-import org.col.api.model.CslItemData;
-import org.col.api.model.Dataset;
-import org.col.api.model.Distribution;
-import org.col.api.model.NameAccordingTo;
-import org.col.api.model.NameAct;
-import org.col.api.model.Reference;
-import org.col.api.model.Referenced;
-import org.col.api.model.Synonym;
-import org.col.api.model.Taxon;
-import org.col.api.model.TermRecord;
-import org.col.api.model.VerbatimRecord;
-import org.col.api.model.VernacularName;
+import org.col.api.model.*;
 import org.col.api.vocab.Country;
 import org.col.api.vocab.DistributionStatus;
 import org.col.api.vocab.Gazetteer;
 import org.col.api.vocab.Issue;
-import org.col.api.vocab.NomActType;
 import org.col.api.vocab.Origin;
 import org.col.api.vocab.TaxonomicStatus;
-import org.col.dw.reference.DwcReference;
-import org.col.dw.reference.ReferenceFactory;
-import org.col.parser.AreaParser;
-import org.col.parser.CountryParser;
-import org.col.parser.EnumNote;
-import org.col.parser.LanguageParser;
-import org.col.parser.SafeParser;
-import org.col.parser.TaxonomicStatusParser;
-import org.col.parser.UriParser;
+import org.col.admin.task.importer.reference.ReferenceFactory;
+import org.col.parser.*;
 import org.col.util.ObjectUtils;
+import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.dwc.terms.DcTerm;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.GbifTerm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.google.common.collect.Lists;
+
+import static com.google.common.base.Strings.emptyToNull;
 
 /**
  * Interprets a verbatim record and transforms it into a name, taxon and unique references.
@@ -53,8 +36,8 @@ public class DwcInterpreter extends InterpreterBase {
 
   private final InsertMetadata insertMetadata;
 
-  public DwcInterpreter(Dataset dataset, InsertMetadata insertMetadata, ReferenceStore refStore) {
-    super(dataset, refStore);
+  public DwcInterpreter(Dataset dataset, InsertMetadata insertMetadata, ReferenceStore refStore, ReferenceFactory refFactory) {
+    super(dataset, refStore, refFactory);
     this.insertMetadata = insertMetadata;
   }
 
@@ -95,11 +78,16 @@ public class DwcInterpreter extends InterpreterBase {
   }
 
   void interpretBibliography(NeoTaxon t) {
-    ReferenceFactory refFactory = new ReferenceFactory();
     if (t.verbatim.hasExtension(GbifTerm.Reference)) {
       for (TermRecord rec : t.verbatim.getExtensionRecords(GbifTerm.Reference)) {
-        DwcReference dwc = DwcReference.fromTermRecord(rec);
-        t.bibliography.add(refFactory.fromDWC(dwc));
+        t.bibliography.add(refFactory.fromDC(
+            emptyToNull(rec.get(DcTerm.identifier)),
+            emptyToNull(rec.get(DcTerm.bibliographicCitation)),
+            emptyToNull(rec.get(DcTerm.creator)),
+            emptyToNull(rec.get(DcTerm.title)),
+            emptyToNull(rec.get(DcTerm.date)),
+            emptyToNull(rec.get(DcTerm.source))
+        ));
       }
     }
   }

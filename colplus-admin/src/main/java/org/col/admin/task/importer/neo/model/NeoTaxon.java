@@ -105,10 +105,7 @@ public class NeoTaxon {
   }
 
   public String getID() {
-    return verbatim == null ? null : verbatim.getId();
-  }
-
-  public String getTaxonID() {
+    //return verbatim == null ? null : verbatim.getId();
     return taxon.getId();
   }
 

@@ -1,4 +1,4 @@
-package org.col.dw.anystyle;
+package org.col.csl;
 
 import static com.fasterxml.jackson.core.util.DefaultIndenter.SYS_LF;
 import static org.junit.Assert.assertEquals;
@@ -22,7 +22,7 @@ public class AnystyleParserWrapperTest {
     try (AnystyleParserWrapper parser = new AnystyleParserWrapper(HttpClients.createDefault())) {
       parser.start();
       String ref = "Perec, Georges. A Void. London: The Harvill Press, 1995. p.108.";
-      CslItemData item = parser.parse(ref);
+      CslItemData item = parser.parse(ref).get();
       System.out.println(pretty(item));
       assertEquals("perec1995a", item.getId());
       assertEquals(CslType.BOOK, item.getType());

@@ -6,8 +6,11 @@ import org.col.admin.task.importer.NormalizationFailedException;
 import org.col.admin.task.importer.neo.NeoDb;
 import org.col.admin.task.importer.neo.model.NeoTaxon;
 import org.col.admin.task.importer.neo.model.UnescapedVerbatimRecord;
+import org.col.admin.task.importer.reference.ReferenceFactory;
+import org.col.api.model.CslItemData;
 import org.col.api.model.Dataset;
 import org.col.api.model.TermRecord;
+import org.col.parser.Parser;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.GbifTerm;
 import org.gbif.dwc.terms.Term;
@@ -27,8 +30,8 @@ public class DwcaInserter extends NeoInserter {
   private DwcaReader reader;
   private DwcInterpreter inter;
 
-  public DwcaInserter(NeoDb store, Path folder) throws IOException {
-    super(folder, store);
+  public DwcaInserter(NeoDb store, Path folder, ReferenceFactory refFactory) throws IOException {
+    super(folder, store, refFactory);
   }
 
   private void initReader() {
@@ -50,7 +53,7 @@ public class DwcaInserter extends NeoInserter {
   public void batchInsert() throws NormalizationFailedException {
     try {
       initReader();
-      inter = new DwcInterpreter(store.getDataset(), meta, store);
+      inter = new DwcInterpreter(store.getDataset(), meta, store, refFactory);
 
       // taxon core only, extensions are interpreted later
       reader.stream(DwcTerm.Taxon).forEach(rec -> {

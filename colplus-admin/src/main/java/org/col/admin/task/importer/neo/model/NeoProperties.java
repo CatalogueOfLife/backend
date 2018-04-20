@@ -11,7 +11,6 @@ import org.neo4j.graphdb.Node;
 public class NeoProperties {
   // properties used in NeoTaxon
   public static final String ID = "id";
-  public static final String TAXON_ID = "taxonID";
   public static final String RANK = "rank";
   public static final String SCIENTIFIC_NAME = "scientificName";
   public static final String AUTHORSHIP = "authorship";
@@ -30,10 +29,6 @@ public class NeoProperties {
 
   public static String getID(Node n) {
     return (String) n.getProperty(NeoProperties.ID, null);
-  }
-
-  public static String getTaxonID(Node n) {
-    return (String) n.getProperty(NeoProperties.TAXON_ID, null);
   }
 
   public static String getScientificName(Node n) {

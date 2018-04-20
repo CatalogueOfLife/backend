@@ -2,7 +2,8 @@ package org.col.admin.resources;
 
 import com.codahale.metrics.annotation.Timed;
 import org.col.api.model.CslItemData;
-import org.col.dw.anystyle.AnystyleParserWrapper;
+import org.col.parser.Parser;
+import org.col.parser.UnparsableException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,9 +19,9 @@ public class ParserResource {
 
 	@SuppressWarnings("unused")
 	private static final Logger LOG = LoggerFactory.getLogger(ParserResource.class);
-  private final AnystyleParserWrapper parser;
+  private final Parser<CslItemData> parser;
 
-  public ParserResource(AnystyleParserWrapper parser) {
+  public ParserResource(Parser<CslItemData> parser) {
     this.parser = parser;
   }
 
@@ -29,8 +30,8 @@ public class ParserResource {
    */
   @GET
   @Timed
-  public CslItemData parse(@QueryParam("ref") String citation) {
-    return parser.parse(citation);
+  public CslItemData parse(@QueryParam("ref") String citation) throws UnparsableException {
+    return parser.parse(citation).orElse(null);
   }
 
 }

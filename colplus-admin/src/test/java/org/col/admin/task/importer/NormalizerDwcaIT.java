@@ -4,7 +4,6 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.io.Files;
 import org.apache.commons.io.FileUtils;
-import org.apache.http.impl.client.HttpClients;
 import org.col.admin.config.NormalizerConfig;
 import org.col.admin.task.importer.neo.NeoDb;
 import org.col.admin.task.importer.neo.NeoDbFactory;
@@ -14,16 +13,15 @@ import org.col.admin.task.importer.neo.model.NeoProperties;
 import org.col.admin.task.importer.neo.model.NeoTaxon;
 import org.col.admin.task.importer.neo.printer.GraphFormat;
 import org.col.admin.task.importer.neo.printer.PrinterUtils;
+import org.col.admin.task.importer.reference.ReferenceFactory;
 import org.col.api.model.*;
 import org.col.api.vocab.DataFormat;
 import org.col.api.vocab.DistributionStatus;
 import org.col.api.vocab.Gazetteer;
 import org.col.api.vocab.Language;
-import org.col.dw.anystyle.AnystyleParserWrapper;
+import org.col.csl.CslParserMock;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.neo4j.graphdb.Node;
@@ -50,20 +48,6 @@ import static org.junit.Assert.*;
  *
  */
 public class NormalizerDwcaIT {
-  
-
-  private static AnystyleParserWrapper anystyle;
-
-  @BeforeClass
-  public static void init() throws Exception {
-    anystyle = new AnystyleParserWrapper(HttpClients.createDefault());
-    anystyle.start();
-  }
-
-  @AfterClass
-  public static void tearDown() throws Exception {
-    anystyle.stop();
-  }
 
   private NeoDb store;
   private NormalizerConfig cfg;
@@ -92,7 +76,7 @@ public class NormalizerDwcaIT {
       d.setKey(1);
       d.setDataFormat(DataFormat.DWCA);
       store.put(d);
-      Normalizer norm = new Normalizer(store, dwca);
+      Normalizer norm = new Normalizer(store, dwca, new ReferenceFactory(d.getKey(), new CslParserMock()));
       norm.run();
 
       // reopen
@@ -166,9 +150,7 @@ public class NormalizerDwcaIT {
 
     try (Transaction tx = store.getNeo().beginTx()) {
       NeoTaxon trametes_modesta = byID("324805");
-      trametes_modesta = byID("324805");
       assertFalse(trametes_modesta.isSynonym());
-      assertEquals(1, trametes_modesta.acts.size());
 
       Reference pubIn = store.refByKey(trametes_modesta.name.getPublishedInKey());
       assertEquals("Norw. Jl Bot. 19: 236 (1972)", pubIn.getCsl().getTitle());
@@ -178,12 +160,14 @@ public class NormalizerDwcaIT {
       NeoTaxon Polystictus_substipitatus = byID("140283");
       assertTrue(Polystictus_substipitatus.isSynonym());
       assertEquals(1, Polystictus_substipitatus.synonym.getAccepted().size());
-      assertEquals(1, Polystictus_substipitatus.acts.size());
+      pubIn = store.refByKey(Polystictus_substipitatus.name.getPublishedInKey());
+      assertEquals("Syll. fung. (Abellini) 21: 318 (1912)", pubIn.getCsl().getTitle());
 
       NeoTaxon Polyporus_modestus = byID("198666");
       assertTrue(Polyporus_modestus.isSynonym());
       assertEquals(1, Polyporus_modestus.synonym.getAccepted().size());
-      assertEquals(1, Polyporus_modestus.acts.size());
+      pubIn = store.refByKey(Polyporus_modestus.name.getPublishedInKey());
+      assertEquals("Linnaea 5: 519 (1830)", pubIn.getCsl().getTitle());
     }
   }
 
@@ -290,7 +274,6 @@ public class NormalizerDwcaIT {
 
     Set<String> taxonIndices = Sets.newHashSet();
     taxonIndices.add(NeoProperties.ID);
-    taxonIndices.add(NeoProperties.TAXON_ID);
     taxonIndices.add(NeoProperties.SCIENTIFIC_NAME);
     try (Transaction tx = store.getNeo().beginTx()) {
       Schema schema = store.getNeo().schema();
@@ -367,7 +350,7 @@ public class NormalizerDwcaIT {
   @Ignore
   public void testExternal() throws Exception {
     normalize(Paths.get("/Users/markus/Desktop/worms"));
-    //normalize(URI.create("http://www.marinespecies.org/dwca/WoRMS_DwC-A.zip"));
+    normalize(URI.create("http://www.marinespecies.org/dwca/WoRMS_DwC-A.zip"));
     //print("Diversity", GraphFormat.TEXT, false);
   }
 

@@ -1,4 +1,4 @@
-package org.col.dw.anystyle;
+package org.col.csl;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -9,6 +9,9 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.col.api.model.CslItemData;
+import org.col.parser.Parser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,25 +19,13 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
-public class AnystyleParserWrapper implements Managed, AutoCloseable {
-
-  /*
-   * This is not a regular static factory method. It never creates an instance of
-   * AnystyleParserWrapper. The returned instance is presumed to have been created AND started
-   * already by DropWizard or something else managing the life cycle of an AnystyleParserWrapper. 
-   */
-  public static AnystyleParserWrapper getInstance() {
-    if (instance == null) {
-      throw new IllegalStateException("AnystyleParserWrapper not initialized yet");
-    }
-    return instance;
-  }
+public class AnystyleParserWrapper implements Managed, AutoCloseable, Parser<CslItemData> {
+  private static final Logger LOG = LoggerFactory.getLogger(AnystyleWebService.class);
 
   private static final TypeReference<List<Map<String, Object>>> ANYSTYLE_RESPONSE_TYPE =
       new TypeReference<List<Map<String, Object>>>() {};
-
-  private static AnystyleParserWrapper instance;
 
   private final AnystyleWebService svc;
   private final CloseableHttpClient hc;
@@ -46,14 +37,15 @@ public class AnystyleParserWrapper implements Managed, AutoCloseable {
     this.om = new ObjectMapper();
   }
 
-  public CslItemData parse(String ref) {
+  public Optional<CslItemData> parse(String ref) {
     if (Strings.isNullOrEmpty(ref)) {
-      return new CslItemData();
+      return Optional.empty();
     }
     try (CloseableHttpResponse response = hc.execute(request(ref))) {
       InputStream in = response.getEntity().getContent();
       List<Map<String, Object>> raw = om.readValue(in, ANYSTYLE_RESPONSE_TYPE);
       if (raw.size() != 1) {
+        LOG.error("Anystyle result is list of size {}", raw.size());
         throw new RuntimeException("Unexpected response from Anystyle");
       }
       Map<String, Object> map = raw.get(0);
@@ -62,7 +54,7 @@ public class AnystyleParserWrapper implements Managed, AutoCloseable {
           map.put(toCamelCase(key), map.remove(key));
         }
       }
-      return om.convertValue(map, CslItemData.class);
+      return Optional.of(om.convertValue(map, CslItemData.class));
     } catch (IOException | URISyntaxException e) {
       throw new RuntimeException(e);
     }
@@ -71,7 +63,6 @@ public class AnystyleParserWrapper implements Managed, AutoCloseable {
   @Override
   public synchronized void start() throws Exception {
     svc.start();
-    instance = this;
   }
 
   @Override

@@ -6,15 +6,16 @@ import jersey.repackaged.com.google.common.base.Throwables;
 import jersey.repackaged.com.google.common.collect.Lists;
 import jersey.repackaged.com.google.common.collect.Maps;
 import org.apache.commons.io.FileUtils;
-import org.apache.http.impl.client.HttpClients;
 import org.apache.ibatis.session.SqlSession;
 import org.col.admin.config.ImporterConfig;
 import org.col.admin.config.NormalizerConfig;
 import org.col.admin.task.importer.neo.NeoDb;
 import org.col.admin.task.importer.neo.NeoDbFactory;
 import org.col.admin.task.importer.neo.model.RankedName;
+import org.col.admin.task.importer.reference.ReferenceFactory;
 import org.col.api.model.*;
 import org.col.api.vocab.*;
+import org.col.csl.CslParserMock;
 import org.col.db.NotFoundException;
 import org.col.db.dao.NameDao;
 import org.col.db.dao.ReferenceDao;
@@ -22,7 +23,6 @@ import org.col.db.dao.TaxonDao;
 import org.col.db.mapper.DatasetMapper;
 import org.col.db.mapper.InitMybatisRule;
 import org.col.db.mapper.PgSetupRule;
-import org.col.dw.anystyle.AnystyleParserWrapper;
 import org.gbif.nameparser.api.Rank;
 import org.junit.*;
 
@@ -41,19 +41,6 @@ import static org.junit.Assert.*;
  *
  */
 public class PgImportIT { 
-
-  private static AnystyleParserWrapper anystyle;
-
-  @BeforeClass
-  public static void init() throws Exception {
-    anystyle = new AnystyleParserWrapper(HttpClients.createDefault());
-    anystyle.start();
-  }
-
-  @AfterClass
-  public static void tearDown() throws Exception {
-    anystyle.stop();
-  }
 
 	private NeoDb store;
 	private NormalizerConfig cfg;
@@ -103,7 +90,7 @@ public class PgImportIT {
       // normalize
       store = NeoDbFactory.create(dataset.getKey(), cfg);
       store.put(dataset);
-      Normalizer norm = new Normalizer(store, source);
+      Normalizer norm = new Normalizer(store, source, new ReferenceFactory(dataset.getKey(), new CslParserMock()));
       norm.run();
 
       // import into postgres

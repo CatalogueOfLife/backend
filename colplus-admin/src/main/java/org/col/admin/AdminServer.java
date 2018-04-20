@@ -18,7 +18,7 @@ import org.col.admin.task.gbifsync.GbifSync;
 import org.col.admin.task.importer.ContinousImporter;
 import org.col.admin.task.importer.ImportManager;
 import org.col.dw.PgApp;
-import org.col.dw.anystyle.AnystyleParserWrapper;
+import org.col.csl.AnystyleParserWrapper;
 import org.glassfish.jersey.client.rx.RxClient;
 import org.glassfish.jersey.client.rx.java8.RxCompletionStageInvoker;
 import org.glassfish.jersey.client.spi.ConnectorProvider;
@@ -64,8 +64,13 @@ public class AdminServer extends PgApp<AdminServerConfig> {
         .using((ConnectorProvider) (cl, runtimeConfig) -> new DropwizardApacheConnector(hc, requestConfig(cfg.client), cfg.client.isChunkedEncodingEnabled()))
         .buildRx(getName(), RxCompletionStageInvoker.class);
 
+    // cslParser
+    AnystyleParserWrapper anystyle = new AnystyleParserWrapper(hc);
+    env.lifecycle().manage(anystyle);
+    env.jersey().register(new ParserResource(anystyle));
+
     // setup async importer
-    final ImportManager importManager = new ImportManager(cfg, hc, getSqlSessionFactory());
+    final ImportManager importManager = new ImportManager(cfg, hc, getSqlSessionFactory(), anystyle);
     env.lifecycle().manage(importManager);
     env.jersey().register(new ImporterResource(importManager, getSqlSessionFactory()));
 
@@ -81,11 +86,6 @@ public class AdminServer extends PgApp<AdminServerConfig> {
     } else {
       LOG.warn("GBIF registry sync is deactivated. Please configure server with a positive gbif.syncFrequency");
     }
-
-    // anystyle
-    AnystyleParserWrapper anystyle = new AnystyleParserWrapper(hc);
-    env.lifecycle().manage(anystyle);
-    env.jersey().register(new ParserResource(anystyle));
   }
 
   /**
