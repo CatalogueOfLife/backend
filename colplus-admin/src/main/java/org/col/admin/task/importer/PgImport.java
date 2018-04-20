@@ -188,18 +188,22 @@ public class PgImport implements Runnable {
 
           } else {
             // update basionym keys
-            if (t.name.getBasionymKey() != null) {
-              t.name.setBasionymKey(nameKeys.get(t.name.getBasionymKey()));
+            if (t.name.getHomotypicNameKey() != null) {
+              t.name.setHomotypicNameKey(nameKeys.get(t.name.getHomotypicNameKey()));
             }
             createName(nameMapper, t);
           }
 
-          // insert name acts, e.g. published in
+          // update published in reference keys
+          if (t.name.getPublishedInKey() != null) {
+            t.name.setPublishedInKey(referenceKeys.get(t.name.getPublishedInKey()));
+          }
+
+          // insert name acts
           for (NameAct act : t.acts) {
             act.setDatasetKey(dataset.getKey());
             // update to use postgres keys
             act.setNameKey(t.name.getKey());
-            act.setReferenceKey(referenceKeys.get(act.getReferenceKey()));
             if (act.getRelatedNameKey() != null) {
               if (nameKeys.containsKey(act.getRelatedNameKey())) {
                 act.setRelatedNameKey(nameKeys.get(act.getRelatedNameKey()));

@@ -19,8 +19,9 @@ import org.col.db.NotFoundException;
 import org.col.db.dao.NameDao;
 import org.col.db.dao.ReferenceDao;
 import org.col.db.dao.TaxonDao;
-import org.col.db.mapper.*;
-import org.col.db.mapper.temp.ReferenceWithPage;
+import org.col.db.mapper.DatasetMapper;
+import org.col.db.mapper.InitMybatisRule;
+import org.col.db.mapper.PgSetupRule;
 import org.col.dw.anystyle.AnystyleParserWrapper;
 import org.gbif.nameparser.api.Rank;
 import org.junit.*;
@@ -134,21 +135,12 @@ public class PgImportIT {
 
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       NameDao ndao = new NameDao(session);
-      NameActMapper actMapper = session.getMapper(NameActMapper.class);
-      ReferenceMapper rMapper= session.getMapper(ReferenceMapper.class);
       ReferenceDao rdao = new ReferenceDao(session);
 
       Name trametes_modesta = ndao.get(ndao.lookupKey("324805", dataset.getKey()));
 
-      List<NameAct> acts = actMapper.listByName(trametes_modesta.getKey());
-      assertEquals(1, acts.size());
-      NameAct act = acts.get(0);
-      assertNotNull(act.getReferenceKey());
-
-      Reference pubIn = rdao.get(act.getReferenceKey());
-      ReferenceWithPage pubIn2 = rMapper.getPublishedIn(trametes_modesta.getKey());
-      assertEquals(pubIn, pubIn2.getReference());
-      assertEquals("Norw. Jl Bot. 19: 236 (1972)", pubIn.getTitle());
+      Reference pubIn = rdao.get(trametes_modesta.getPublishedInKey(), trametes_modesta.getPublishedInPage());
+      assertEquals("Norw. Jl Bot. 19: 236 (1972)", pubIn.getCsl().getTitle());
       assertNotNull(pubIn.getKey());
       assertNull(pubIn.getId());
     }
@@ -167,7 +159,7 @@ public class PgImportIT {
 			Name n1006 = ndao.get(ndao.lookupKey("1006", dataset.getKey()));
 			assertEquals("Leontodon taraxacoides", n1006.getScientificName());
 
-			Name bas = ndao.get(n1006.getBasionymKey());
+			Name bas = ndao.get(n1006.getHomotypicNameKey());
 			assertEquals("Leonida taraxacoida", bas.getScientificName());
 			assertEquals("1006-s3", bas.getId());
 
@@ -197,19 +189,19 @@ public class PgImportIT {
       Name n11 = dao.get(dao.lookupKey("11",dataset.getKey()));
       Name n12 = dao.get(dao.lookupKey("12",dataset.getKey()));
 
-      assertEquals(n2.getKey(), n1.getBasionymKey());
+      assertEquals(n2.getKey(), n1.getHomotypicNameKey());
       assertFalse(n1.getIssues().contains(Issue.CHAINED_BASIONYM));
 
-      assertNull(n2.getBasionymKey());
+      assertNull(n2.getHomotypicNameKey());
       assertTrue(n2.getIssues().contains(Issue.CHAINED_BASIONYM));
 
-      assertNull(n10.getBasionymKey());
+      assertNull(n10.getHomotypicNameKey());
       assertTrue(n10.getIssues().contains(Issue.CHAINED_BASIONYM));
 
-      assertNull(n11.getBasionymKey());
+      assertNull(n11.getHomotypicNameKey());
       assertTrue(n11.getIssues().contains(Issue.CHAINED_BASIONYM));
 
-      assertEquals(n10.getKey(), n12.getBasionymKey());
+      assertEquals(n10.getKey(), n12.getHomotypicNameKey());
       assertFalse(n12.getIssues().contains(Issue.CHAINED_BASIONYM));
     }
 	}

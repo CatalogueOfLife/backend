@@ -476,9 +476,6 @@ public class NeoDb implements ReferenceStore {
     if (!Strings.isNullOrEmpty(r.getId())) {
       referenceIndex.put(normRef(r.getId()), r);
     }
-    if (!Strings.isNullOrEmpty(r.getTitle())) {
-      referenceIndex.put(normRef(r.getTitle()), r);
-    }
     return r;
   }
 
@@ -547,7 +544,7 @@ public class NeoDb implements ReferenceStore {
         if (bn != null) {
           NeoTaxon bas = get(bn);
           bas.name.setKey((int)bn.getId());
-          t.name.setBasionymKey(bas.name.getKey());
+          t.name.setHomotypicNameKey(bas.name.getKey());
         }
 
         if (t.node.hasLabel(Labels.SYNONYM)) {
@@ -720,7 +717,7 @@ public class NeoDb implements ReferenceStore {
   public RankedName createDoubtfulFromSource(Origin origin, Name name,
                                               @Nullable NeoTaxon source, Rank excludeRankAndBelow, @Nullable String taxonID,
                                               @Nullable Issue issue) {
-    NeoTaxon t = NeoTaxon.createTaxon(origin, name, TaxonomicStatus.DOUBTFUL);
+    NeoTaxon t = NeoTaxon.createTaxon(origin, name, true);
     t.taxon.setId(taxonID);
     // copy verbatim classification from source
     if (source != null) {

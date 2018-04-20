@@ -64,9 +64,9 @@ public class AcefInterpreter extends InterpreterBase {
     t.name = nat.getName();
 
     // status
-    TaxonomicStatus status =
-        parse(TaxonomicStatusParser.PARSER, v.getTerm(AcefTerm.Sp2000NameStatus)).orElse(
-            new EnumNote<>(synonym ? TaxonomicStatus.SYNONYM : TaxonomicStatus.ACCEPTED, null)).val;
+    TaxonomicStatus status = parse(TaxonomicStatusParser.PARSER, v.getTerm(AcefTerm.Sp2000NameStatus))
+        .orElse(new EnumNote<>(synonym ? TaxonomicStatus.SYNONYM : TaxonomicStatus.ACCEPTED, null))
+        .val;
     if (synonym != status.isSynonym()) {
       t.taxon.addIssue(Issue.TAXONOMIC_STATUS_INVALID);
       // override status as we require some accepted status on Taxon and some synonym status for
@@ -109,7 +109,7 @@ public class AcefInterpreter extends InterpreterBase {
       t.homotypic = false;
 
     } else {
-      t.taxon.setStatus(status);
+      t.taxon.setDoubtful(TaxonomicStatus.DOUBTFUL == status);
     }
 
     // acts

@@ -61,13 +61,6 @@ public class NameResource {
   }
 
   @GET
-  @Path("{key}/publishedIn")
-  public Reference getPublishedIn(@PathParam("key") int key, @Context SqlSession session) {
-    NameDao dao = new NameDao(session);
-    return dao.getPublishedIn(key);
-  }
-
-  @GET
   @Path("{key}/verbatim")
   public VerbatimRecord getVerbatim(@PathParam("key") int key, @Context SqlSession session) {
     NameDao dao = new NameDao(session);

@@ -30,7 +30,7 @@ public class NeoKryoFactoryTest {
     NeoTaxon t = new NeoTaxon();
 
     t.taxon = new Taxon();
-    t.taxon.setStatus(TaxonomicStatus.DOUBTFUL);
+    t.taxon.setDoubtful(true);
 
     t.taxon.setName(new Name());
     t.taxon.getName().setScientificName("Abies alba");
@@ -52,14 +52,13 @@ public class NeoKryoFactoryTest {
   @Test
   public void testReference() throws Exception {
     Reference r = Reference.create();
-    r.setTitle("my title");
     r.setId("1234");
     r.setKey(123);
     r.setYear(1984);
     r.addIssue(Issue.ACCEPTED_NAME_MISSING);
     r.addIssue(Issue.REFERENCE_ID_INVALID);
     r.setDatasetKey(77);
-    r.setCitation("bla bla bla gdgfedfewfew");
+    r.getCsl().setTitle("my title");
 
     assertSerde(r);
   }

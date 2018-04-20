@@ -4,6 +4,11 @@ import java.util.Arrays;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+/**
+ * Official CSL variables as defined in
+ * Appendix IV - Variables
+ * http://docs.citationstyles.org/en/stable/specification.html#appendix-iv-variables
+ */
 public class CslItemData {
 
   private String id;

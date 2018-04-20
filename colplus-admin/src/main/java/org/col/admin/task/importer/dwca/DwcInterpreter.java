@@ -91,17 +91,6 @@ public class DwcInterpreter extends InterpreterBase {
 
   private List<NameAct> interpretActs(NeoTaxon t, VerbatimRecord v) {
     List<NameAct> acts = Lists.newArrayList();
-
-    // publication of name
-    if (v.hasTerm(DwcTerm.namePublishedInID) || v.hasTerm(DwcTerm.namePublishedIn)) {
-      lookupReferenceTitleID(t, v.getTerm(DwcTerm.namePublishedInID),
-          v.getTerm(DwcTerm.namePublishedIn)).ifPresent(r -> {
-            NameAct act = new NameAct();
-            act.setType(NomActType.DESCRIPTION);
-            act.setReferenceKey(r.getKey());
-            acts.add(act);
-          });
-    }
     return acts;
   }
 
@@ -162,7 +151,7 @@ public class DwcInterpreter extends InterpreterBase {
   private void addReferences(NeoTaxon t, Referenced obj, TermRecord v) {
     if (v.hasTerm(DcTerm.source)) {
       // TODO: test for multiple
-      lookupReferenceTitleID(t, null, v.get(DcTerm.source)).ifPresent(r -> {
+      lookupReferenceTitleID(null, v.get(DcTerm.source)).ifPresent(r -> {
         obj.addReferenceKey(r.getKey());
       });
     }
@@ -183,13 +172,12 @@ public class DwcInterpreter extends InterpreterBase {
     }
   }
 
-  private Taxon interpretTaxon(VerbatimRecord v, EnumNote<TaxonomicStatus> status,
-      String accordingTo) {
+  private Taxon interpretTaxon(VerbatimRecord v, EnumNote<TaxonomicStatus> status, String accordingTo) {
     // and it keeps the taxonID for resolution of relations
     Taxon t = new Taxon();
     t.setId(v.getFirst(DwcTerm.taxonID, DwcaReader.DWCA_ID));
     // this can be a synonym at this stage which the class does not accept
-    t.setStatus(status.val.isSynonym() ? TaxonomicStatus.DOUBTFUL : status.val);
+    t.setDoubtful(TaxonomicStatus.DOUBTFUL == status.val || status.val.isSynonym());
     // TODO: interpret all of Taxon via new dwca extension
     t.setAccordingTo(ObjectUtils.coalesce(v.getTerm(DwcTerm.nameAccordingTo), accordingTo));
     t.setAccordingToDate(null);
@@ -202,6 +190,7 @@ public class DwcInterpreter extends InterpreterBase {
     t.setSpeciesEstimate(null);
     t.setSpeciesEstimateReferenceKey(null);
     t.setRemarks(v.getTerm(DwcTerm.taxonRemarks));
+
     return t;
   }
 
@@ -209,13 +198,22 @@ public class DwcInterpreter extends InterpreterBase {
     // TODO: or use v.getID() ???
     // TODO: should we also get remarks through an extension, e.g. species profile or a nomenclature
     // extension?
-    return interpretName(v.getFirst(DwcTerm.scientificNameID, DwcTerm.taxonID, DwcaReader.DWCA_ID),
+    NameAccordingTo nat = interpretName(v.getFirst(DwcTerm.scientificNameID, DwcTerm.taxonID, DwcaReader.DWCA_ID),
         v.getFirst(DwcTerm.taxonRank, DwcTerm.verbatimTaxonRank), v.getTerm(DwcTerm.scientificName),
         v.getTerm(DwcTerm.scientificNameAuthorship),
         v.getFirst(GbifTerm.genericName, DwcTerm.genus), v.getTerm(DwcTerm.subgenus),
         v.getTerm(DwcTerm.specificEpithet), v.getTerm(DwcTerm.infraspecificEpithet),
         v.getTerm(DwcTerm.nomenclaturalCode), v.getTerm(DwcTerm.nomenclaturalStatus),
         v.getTerm(DcTerm.references), v.getTerm(DwcTerm.nomenclaturalStatus));
+
+    // publishedIn
+    if (v.hasTerm(DwcTerm.namePublishedInID) || v.hasTerm(DwcTerm.namePublishedIn)) {
+      lookupReferenceTitleID(v.getTerm(DwcTerm.namePublishedInID), v.getTerm(DwcTerm.namePublishedIn)).ifPresent(r -> {
+        nat.getName().setPublishedInKey(r.getKey());
+        nat.getName().setPublishedInPage(r.getPage());
+      });
+    }
+    return nat;
   }
 
 }

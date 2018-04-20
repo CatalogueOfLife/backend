@@ -44,12 +44,6 @@
         <result property="issues" column="issues" typeHandler="org.col.db.type2.IssueSetTypeHandler" />
     </resultMap>
 
-    <resultMap id="referenceWithPageResultMap" type="org.col.db.mapper.temp.ReferenceWithPage" autoMapping="true">
-        <result property="page" column="reference_page" />
-        <association property="reference" resultMap="referenceResultMap"/>
-    </resultMap>
-
-
     <select id="count" parameterType="map" resultType="Integer">
         SELECT count(*)
         FROM reference
@@ -88,14 +82,6 @@
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
         WHERE r.key = #{key}
-    </select>
-
-    <select id="getPublishedIn" resultMap="referenceWithPageResultMap">
-        SELECT <include refid="SELECT" />, a.reference_page
-        FROM name_act a
-          JOIN reference r ON r.key = a.reference_key
-        WHERE a.name_key = #{nameKey}
-          AND a.type = 0 <!-- DESCRIPTION (not sure if this is necessary) -->
     </select>
 
     <insert id="create" parameterType="Reference" useGeneratedKeys="true" keyProperty="key">

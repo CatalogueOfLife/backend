@@ -8,7 +8,7 @@ import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.NamePart;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
-import org.javers.common.collections.Arrays;
+
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.EnumSet;
@@ -246,7 +246,7 @@ public class TestEntityGenerator {
   public static Reference newReference(String title) {
     Reference r = Reference.create();
     r.setDatasetKey(TestEntityGenerator.DATASET1.getKey());
-    r.setTitle(title);
+    r.getCsl().setTitle(title);
     CslName author1 = new CslName();
     author1.setGiven("John");
     author1.setFamily("Smith");

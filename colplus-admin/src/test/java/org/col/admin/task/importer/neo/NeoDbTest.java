@@ -84,7 +84,7 @@ public class NeoDbTest {
       // now relate the 2 nodes and make sure when we read the relations the instance is changed accordingly
       t1.node.createRelationshipTo(t2.node, RelType.PARENT_OF);
       t1.node.createRelationshipTo(t2.node, RelType.BASIONYM_OF);
-      assertNull(t2.name.getBasionymKey());
+      assertNull(t2.name.getHomotypicNameKey());
 
       tx.success();
     }
@@ -96,7 +96,7 @@ public class NeoDbTest {
       assertEquals(t1, t1b);
 
       NeoTaxon t2b = db.get(db.byID("13"));
-      assertEquals((long) t2b.name.getBasionymKey(), t1.node.getId());
+      assertEquals((long) t2b.name.getHomotypicNameKey(), t1.node.getId());
     }
   }
 
@@ -167,7 +167,6 @@ public class NeoDbTest {
     t.name = RandomUtils.randomName();
     t.taxon = new Taxon();
     t.taxon.setId(id);
-    t.taxon.setStatus(TaxonomicStatus.ACCEPTED);
     t.verbatim = UnescapedVerbatimRecord.create();
     t.verbatim.setId(id);
     t.verbatim.getTerms().put(DwcTerm.scientificName, "Abies alba");

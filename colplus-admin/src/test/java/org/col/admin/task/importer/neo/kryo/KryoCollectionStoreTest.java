@@ -49,7 +49,7 @@ public class KryoCollectionStoreTest {
 
   private Reference buildRef() {
     Reference r = new Reference();
-    r.setTitle("Harry Belafonte");
+    r.getCsl().setTitle("Harry Belafonte");
     r.setYear(1989);
     r.setId(StringUtils.randomString(12));
     return r;

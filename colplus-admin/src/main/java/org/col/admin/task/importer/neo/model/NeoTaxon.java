@@ -7,7 +7,10 @@ import org.col.api.vocab.Origin;
 import org.col.api.vocab.TaxonomicStatus;
 import org.neo4j.graphdb.Node;
 
-import java.util.*;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * Simple wrapper to hold a normalizer node together with all data for a record
@@ -37,14 +40,14 @@ public class NeoTaxon {
 
   public List<String> remarks = Lists.newArrayList();
 
-  public static NeoTaxon createTaxon(Origin origin, Name name, TaxonomicStatus status) {
+  public static NeoTaxon createTaxon(Origin origin, Name name, boolean doubtful) {
     NeoTaxon t = new NeoTaxon();
 
     t.name = name;
     t.name.setOrigin(origin);
 
     t.taxon = new Taxon();
-    t.taxon.setStatus(status);
+    t.taxon.setDoubtful(doubtful);
     t.taxon.setOrigin(origin);
 
     return t;

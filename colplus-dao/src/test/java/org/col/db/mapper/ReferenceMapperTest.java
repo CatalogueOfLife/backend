@@ -1,21 +1,18 @@
 package org.col.db.mapper;
 
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Sets;
 import org.col.api.RandomUtils;
+import org.col.api.TestEntityGenerator;
 import org.col.api.model.CslItemData;
 import org.col.api.model.Page;
 import org.col.api.model.Reference;
 import org.col.api.vocab.Issue;
-import org.col.db.mapper.temp.ReferenceWithPage;
-import org.col.api.TestEntityGenerator;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.col.api.TestEntityGenerator.*;
+import static org.col.api.TestEntityGenerator.DATASET1;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -78,13 +75,6 @@ public class ReferenceMapperTest extends MapperTestBase<ReferenceMapper> {
 	public void listByKeys() {
 		List<Reference> refs = mapper().listByKeys(Sets.newHashSet(1,2));
 		assertEquals(2, refs.size());
-	}
-
-	@Test
-	public void getPublishedIn() {
-		ReferenceWithPage ref = mapper().getPublishedIn(NAME1.getKey());
-		assertEquals(REF1, ref.getReference());
-		assertEquals("712", ref.getPage());
 	}
 
 	private static Reference create() throws Exception {

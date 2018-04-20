@@ -5,7 +5,6 @@ import org.apache.ibatis.session.SqlSession;
 import org.col.api.model.Page;
 import org.col.api.model.Reference;
 import org.col.api.model.ResultPage;
-import org.col.db.NotFoundException;
 import org.col.db.dao.ReferenceDao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,13 +41,9 @@ public class ReferenceResource {
   @GET
   @Timed
   @Path("{key}")
-  public Reference get(@PathParam("key") int key, @Context SqlSession session) {
+  public Reference get(@PathParam("key") int key, @QueryParam("page") String page, @Context SqlSession session) {
     ReferenceDao dao = new ReferenceDao(session);
-    Reference r = dao.get(key);
-    if (r == null) {
-      throw NotFoundException.keyNotFound(Reference.class, key);
-    }
-    return r;
+    return dao.get(key, page);
   }
 
 }

@@ -170,8 +170,8 @@ public class NormalizerDwcaIT {
       assertFalse(trametes_modesta.isSynonym());
       assertEquals(1, trametes_modesta.acts.size());
 
-      Reference pubIn = store.refByKey(trametes_modesta.acts.get(0).getReferenceKey());
-      assertEquals("Norw. Jl Bot. 19: 236 (1972)", pubIn.getTitle());
+      Reference pubIn = store.refByKey(trametes_modesta.name.getPublishedInKey());
+      assertEquals("Norw. Jl Bot. 19: 236 (1972)", pubIn.getCsl().getTitle());
       assertNotNull(pubIn.getKey());
       assertNull(pubIn.getId());
 
@@ -253,11 +253,11 @@ public class NormalizerDwcaIT {
       NeoTaxon t11 = byID("11");
       NeoTaxon t12 = byID("12");
 
-      assertNotNull(t1.name.getBasionymKey());
-      assertNull(t2.name.getBasionymKey());
-      assertNull(t10.name.getBasionymKey());
-      assertNull(t11.name.getBasionymKey());
-      assertNotNull(t12.name.getBasionymKey());
+      assertNotNull(t1.name.getHomotypicNameKey());
+      assertNull(t2.name.getHomotypicNameKey());
+      assertNull(t10.name.getHomotypicNameKey());
+      assertNull(t11.name.getHomotypicNameKey());
+      assertNotNull(t12.name.getHomotypicNameKey());
     }
   }
 
@@ -320,7 +320,7 @@ public class NormalizerDwcaIT {
       assertEquals(u1, u2);
 
       NeoTaxon bas = byName("Leonida taraxacoida");
-      assertEquals(u2.name.getBasionymKey(), bas.taxon.getKey());
+      assertEquals(u2.name.getHomotypicNameKey(), bas.taxon.getKey());
 
       NeoTaxon syn = byName("Leontodon leysseri");
       assertEquals(1, syn.synonym.getAccepted().size());

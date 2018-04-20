@@ -107,7 +107,7 @@ public class InterpreterBase {
     return parse(BooleanParser.PARSER, t.verbatim.getFirst(term)).orNull(invalidIssue, t.issues);
   }
 
-  protected Optional<Reference> lookupReferenceTitleID(NeoTaxon t, String id, String title) {
+  protected Optional<Reference> lookupReferenceTitleID(String id, String title) {
     Reference r;
     // first try by id
     if (id != null) {
@@ -127,7 +127,7 @@ public class InterpreterBase {
     if (id != null || title != null) {
       r = Reference.create();
       r.setId(id);
-      r.setTitle(title);
+      r.getCsl().setTitle(title);
       refStore.put(r);
       return Optional.of(r);
     }

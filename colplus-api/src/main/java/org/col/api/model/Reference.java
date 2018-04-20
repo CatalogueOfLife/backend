@@ -1,13 +1,14 @@
 package org.col.api.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.col.api.vocab.Issue;
+
 import java.util.EnumSet;
 import java.util.Objects;
 import java.util.Set;
-import org.col.api.vocab.Issue;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
- * Simplified literature reference class linked to an optional serial container.
+ * Simplified citation class linked to an optional serial container.
  */
 public class Reference implements PrimaryEntity {
 
@@ -27,11 +28,6 @@ public class Reference implements PrimaryEntity {
 	 * Key to dataset instance. Defines context of the reference key.
 	 */
 	private Integer datasetKey;
-
-  /**
-   * Full reference citation as alternative to structured CSL data.
-   */
-  private String citation;
 
 	/**
 	 * Reference metadata encoded as CSL-JSON.
@@ -53,7 +49,6 @@ public class Reference implements PrimaryEntity {
    * Issues related to this reference
    */
   private Set<Issue> issues = EnumSet.noneOf(Issue.class);
-  private String page;
 
 
   public Integer getKey() {
@@ -80,10 +75,6 @@ public class Reference implements PrimaryEntity {
 		this.datasetKey = datasetKey;
 	}
 
-  public void setCitation(String citation) {
-    this.citation = citation;
-  }
-
   public CslItemData getCsl() {
 		return csl;
 	}
@@ -108,7 +99,6 @@ public class Reference implements PrimaryEntity {
 		this.year = year;
 	}
 
-
   public Set<Issue> getIssues() {
     return issues;
   }
@@ -130,17 +120,6 @@ public class Reference implements PrimaryEntity {
 		return r;
 	}
 
-  // VARIOUS METHODS DELEGATING TO THE UNDERLYING CSL JsonObject instance
-	@JsonIgnore
-	public String getTitle() {
-		return csl.getTitle();
-	}
-
-	public void setTitle(String title) {
-		csl.setTitle(title);
-	}
-
-
 	@Override
 	public boolean equals(Object o) {
 		if (this == o)
@@ -152,7 +131,6 @@ public class Reference implements PrimaryEntity {
 		return Objects.equals(key, reference.key)
 		    && Objects.equals(datasetKey, reference.datasetKey)
 		    && Objects.equals(id, reference.id)
-        && Objects.equals(citation, reference.citation)
 		    && Objects.equals(csl, reference.csl)
 		    && Objects.equals(serialKey, reference.serialKey)
         && Objects.equals(year, reference.year)
@@ -161,7 +139,7 @@ public class Reference implements PrimaryEntity {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(key, datasetKey, id, citation, csl, serialKey, year, issues);
+		return Objects.hash(key, datasetKey, id, csl, serialKey, year, issues);
 	}
 
   @Override
@@ -169,11 +147,25 @@ public class Reference implements PrimaryEntity {
     return "Reference{" +
         "key=" + key +
         ", id='" + id + '\'' +
-        ", citation='" + citation + '\'' +
+        ", csl='" + csl + '\'' +
         '}';
   }
 
+  /**
+   * Sets the exact page in the underlying CSL item.
+	 * We add this delegation method as we keep the page separate from the rest of the citation in our data model.
+   * @param page
+   */
   public void setPage(String page) {
-    this.page = page;
+	  csl.setPage(page);
   }
+
+	/**
+	 * Gets the exact page from the underlying CSL item.
+	 * We add this delegation method as we keep the page separate from the rest of the citation in our data model.
+	 */
+	public String getPage() {
+		return csl.getPage();
+	}
+
 }
