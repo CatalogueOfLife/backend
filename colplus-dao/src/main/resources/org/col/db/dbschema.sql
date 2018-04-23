@@ -247,7 +247,7 @@ CREATE TABLE name_act (
   type INTEGER NOT NULL,
   name_key INTEGER NOT NULL REFERENCES name,
   related_name_key INTEGER NULL REFERENCES name,
-  description TEXT
+  note TEXT
 );
 
 CREATE TABLE taxon (

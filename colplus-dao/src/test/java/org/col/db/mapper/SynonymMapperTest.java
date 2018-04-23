@@ -1,11 +1,13 @@
 package org.col.db.mapper;
 
 import com.google.common.base.Splitter;
+import org.col.api.RandomUtils;
 import org.col.api.TestEntityGenerator;
 import org.col.api.model.Dataset;
 import org.col.api.model.Name;
 import org.col.api.model.Synonym;
 import org.col.api.model.Taxon;
+import org.col.api.vocab.TaxonomicStatus;
 import org.col.db.dao.NameDao;
 import org.junit.Before;
 import org.junit.Test;
@@ -21,7 +23,7 @@ public class SynonymMapperTest extends MapperTestBase<SynonymMapper> {
 
   private static final Splitter SPACE_SPLITTER = Splitter.on(" ").trimResults();
 
-  private NameMapper nameMapper;
+  private NameDao nameDao;
   private SynonymMapper synonymMapper;
   private TaxonMapper taxonMapper;
 
@@ -31,7 +33,7 @@ public class SynonymMapperTest extends MapperTestBase<SynonymMapper> {
 
   @Before
   public void initMappers() {
-    nameMapper = initMybatisRule.getMapper(NameMapper.class);
+    nameDao = new NameDao(initMybatisRule.getSqlSession());
     synonymMapper = initMybatisRule.getMapper(SynonymMapper.class);
     taxonMapper = initMybatisRule.getMapper(TaxonMapper.class);
   }
@@ -51,22 +53,25 @@ public class SynonymMapperTest extends MapperTestBase<SynonymMapper> {
 
   @Test
   public void roundtrip() throws Exception {
-    Synonym s1 = TestEntityGenerator.newSynonym();
-    nameMapper.create(s1.getName());
-    for (Taxon acc : s1.getAccepted()) {
-      nameMapper.create(acc.getName());
-      taxonMapper.create(acc);
-    }
+    Name n = TestEntityGenerator.newName();
+    nameDao.create(n);
+
+    Name an = TestEntityGenerator.newName();
+    nameDao.create(an);
+    Taxon t = TestEntityGenerator.newTaxon(an.getDatasetKey(), RandomUtils.randomString(25));
+    t.setName(an);
+    taxonMapper.create(t);
+
+    Synonym s1 = TestEntityGenerator.newSynonym(TaxonomicStatus.SYNONYM, n, t);
     synonymMapper.create(s1);
     commit();
 
     Synonym s2 = synonymMapper.get(s1.getName().getKey());
     System.out.println("ACC NAME: " + s2.getAccepted().get(0).getName());
 
-    // not present in original
-    s2.getName().setHomotypicNameKey(null);
-    s2.getAccepted().get(0).getName().setHomotypicNameKey(null);
-
+    assertEquals(s1.getName(), s2.getName());
+    assertEquals(s1.getAccepted().get(0).getName(), s2.getAccepted().get(0).getName());
+    assertEquals(s1.getAccepted(), s2.getAccepted());
     assertEquals(s1, s2);
   }
 
@@ -81,27 +86,27 @@ public class SynonymMapperTest extends MapperTestBase<SynonymMapper> {
 
     // homotypic 1
     Name syn1 = TestEntityGenerator.newName("syn1");
-    nameMapper.create(syn1);
+    nameDao.create(syn1);
 
     // homotypic 2
     Name syn2bas = TestEntityGenerator.newName("syn2bas");
-    nameMapper.create(syn2bas);
+    nameDao.create(syn2bas);
 
     Name syn21 = TestEntityGenerator.newName("syn2.1");
     syn21.setHomotypicNameKey(syn2bas.getKey());
-    nameMapper.create(syn21);
+    nameDao.create(syn21);
 
     Name syn22 = TestEntityGenerator.newName("syn2.2");
     syn22.setHomotypicNameKey(syn2bas.getKey());
-    nameMapper.create(syn22);
+    nameDao.create(syn22);
 
     // homotypic 3
     Name syn3bas = TestEntityGenerator.newName("syn3bas");
-    nameMapper.create(syn3bas);
+    nameDao.create(syn3bas);
 
     Name syn31 = TestEntityGenerator.newName("syn3.1");
     syn31.setHomotypicNameKey(syn3bas.getKey());
-    nameMapper.create(syn31);
+    nameDao.create(syn31);
 
     commit();
 

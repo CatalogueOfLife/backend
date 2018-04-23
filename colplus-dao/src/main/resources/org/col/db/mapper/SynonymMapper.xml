@@ -43,7 +43,7 @@
         t.id as t_id,
         t.dataset_key as t_dataset_key,
         t.parent_key as t_parent_key,
-        t.status as t_status,
+        t.doubtful as t_doubtful,
         t.origin as t_origin,
         t.according_to as t_according_to,
         t.according_to_date as t_according_to_date,

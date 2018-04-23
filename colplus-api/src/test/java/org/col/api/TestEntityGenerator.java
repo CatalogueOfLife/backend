@@ -155,29 +155,14 @@ public class TestEntityGenerator {
 	 * Creates a new taxon with the specified id, belonging to the specified
 	 * dataset.
 	 */
-  public static Synonym newMisapplied(Name name, int... acceptedKeys) {
+  public static Synonym newSynonym(TaxonomicStatus status, Name name, Taxon... accepted) {
     Synonym s = new Synonym();
     s.setName(name);
     s.setAccordingTo("non Döring 1999");
-    s.setStatus(TaxonomicStatus.MISAPPLIED);
-    for (int acc : acceptedKeys) {
-      Taxon t = new Taxon();
-      t.setKey(acc);
-      t.setDatasetKey(name.getDatasetKey());
-      s.getAccepted().add(t);
+    s.setStatus(status);
+    for (Taxon acc : accepted) {
+      s.getAccepted().add(acc);
     }
-    return s;
-  }
-
-  public static Synonym newSynonym() {
-    Synonym s = new Synonym();
-    s.setName(newName());
-    s.setAccordingTo("auct. amer.");
-    s.setStatus(TaxonomicStatus.SYNONYM);
-
-    Taxon t = newTaxon(s.getName().getDatasetKey(), RandomUtils.randomString(25));
-    t.setName(newName());
-    s.getAccepted().add(t);
     return s;
   }
 

@@ -10,17 +10,11 @@ import java.util.List;
  */
 public interface NameActMapper {
 
-	NameAct get(@Param("key") int key);
-
   /**
-   * Returns the list of nomenclatural acts for a single name.
+   * Returns the list of nomenclatural acts for a single name,
+	 * regardless which side of the act relation the name is on.
    */
-  List<NameAct> listByName(@Param("nameKey") int nameKey);
-
-	/**
-	 * Returns the list of nomenclatural acts for a whole homotypic group.
-	 */
-	List<NameAct> listByHomotypicGroup(@Param("nameKey") int nameKey);
+  List<NameAct> list(@Param("nameKey") int nameKey);
 
 	void create(NameAct act);
 

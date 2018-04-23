@@ -4,6 +4,8 @@ import org.apache.ibatis.session.SqlSession;
 import org.col.api.TestEntityGenerator;
 import org.col.api.model.Name;
 import org.col.api.model.Synonymy;
+import org.col.api.model.Taxon;
+import org.col.api.vocab.TaxonomicStatus;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -14,10 +16,9 @@ public class NameDaoTest extends DaoTestBase {
     try (SqlSession session = session()) {
       NameDao dao = new NameDao(session());
 
-      final int accKey = TestEntityGenerator.TAXON1.getKey();
-      final int datasetKey = TestEntityGenerator.TAXON1.getDatasetKey();
+      final Taxon acc = TestEntityGenerator.TAXON1;
 
-      Synonymy synonymy = dao.getSynonymy(accKey);
+      Synonymy synonymy = dao.getSynonymy(acc.getKey());
       assertTrue(synonymy.isEmpty());
       assertEquals(0, synonymy.size());
 
@@ -49,29 +50,29 @@ public class NameDaoTest extends DaoTestBase {
 
       // no synonym links added yet, expect empty synonymy even though basionym links
       // exist!
-      synonymy = dao.getSynonymy(accKey);
+      synonymy = dao.getSynonymy(acc.getKey());
       assertTrue(synonymy.isEmpty());
       assertEquals(0, synonymy.size());
 
       // now add a few synonyms
-      dao.addSynonym(TestEntityGenerator.newMisapplied(syn1, accKey));
+      dao.addSynonym(TestEntityGenerator.newSynonym(TaxonomicStatus.SYNONYM, syn1, acc));
       session.commit();
 
-      synonymy = dao.getSynonymy(accKey);
+      synonymy = dao.getSynonymy(acc.getKey());
       assertFalse(synonymy.isEmpty());
       assertEquals(1, synonymy.size());
-      assertEquals(1, synonymy.getMisapplied().size());
+      assertEquals(0, synonymy.getMisapplied().size());
 
-      dao.addSynonym(TestEntityGenerator.newMisapplied(syn2bas, accKey));
-      dao.addSynonym(TestEntityGenerator.newMisapplied(syn21, accKey));
-      dao.addSynonym(TestEntityGenerator.newMisapplied(syn22, accKey));
-      dao.addSynonym(TestEntityGenerator.newMisapplied(syn3bas, accKey));
-      dao.addSynonym(TestEntityGenerator.newMisapplied(syn31, accKey));
+      dao.addSynonym(TestEntityGenerator.newSynonym(TaxonomicStatus.SYNONYM, syn2bas, acc));
+      dao.addSynonym(TestEntityGenerator.newSynonym(TaxonomicStatus.SYNONYM, syn3bas, acc));
+      dao.addSynonym(TestEntityGenerator.newSynonym(TaxonomicStatus.MISAPPLIED, syn21, acc));
       session.commit();
 
-      synonymy = dao.getSynonymy(accKey);
-      assertEquals(6, synonymy.size());
-      assertEquals(3, synonymy.getMisapplied().size());
+      synonymy = dao.getSynonymy(acc.getKey());
+      assertEquals(7, synonymy.size());
+      assertEquals(0, synonymy.getHomotypic().size());
+      assertEquals(3, synonymy.getHeterotypic().size());
+      assertEquals(1, synonymy.getMisapplied().size());
     }
   }
   

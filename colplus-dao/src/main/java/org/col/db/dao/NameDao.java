@@ -61,6 +61,11 @@ public class NameDao {
   public void create(Name name) {
     NameMapper mapper = session.getMapper(NameMapper.class);
     mapper.create(name);
+    // this happens in the db but is not cascaded to the instance by the mapper
+    // to avoid a reload of the instance from the db we do this manually here
+    if (name.getHomotypicNameKey() == null) {
+      name.setHomotypicNameKey(name.getKey());
+    }
   }
 
   /**
@@ -81,7 +86,9 @@ public class NameDao {
    */
   public void addSynonym(Synonym synonym) {
     Preconditions.checkNotNull(synonym.getName().getKey(), "Name key must exist");
-    Preconditions.checkArgument(synonym.getName().getHomotypicNameKey() == null || synonym.getName().getKey().equals(synonym.getName().getHomotypicNameKey()), "Name must be representing a homotypic group");
+    if (TaxonomicStatus.MISAPPLIED != synonym.getStatus()) {
+      Preconditions.checkArgument(synonym.getName().getHomotypicNameKey() == null || synonym.getName().getKey().equals(synonym.getName().getHomotypicNameKey()), "Name must be representing a homotypic group");
+    }
     SynonymMapper mapper = session.getMapper(SynonymMapper.class);
     mapper.create(synonym);
   }
