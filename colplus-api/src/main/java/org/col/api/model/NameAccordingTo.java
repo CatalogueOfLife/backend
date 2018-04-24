@@ -9,6 +9,14 @@ public class NameAccordingTo {
   private Name name;
   private String accordingTo;
 
+  public NameAccordingTo() {
+  }
+
+  public NameAccordingTo(Name name, String accordingTo) {
+    this.name = name;
+    this.accordingTo = accordingTo;
+  }
+
   public Name getName() {
     return name;
   }

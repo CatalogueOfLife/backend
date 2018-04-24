@@ -89,4 +89,10 @@
         VALUES ( <include refid="PROPS" /> )
     </insert>
 
+    <select id="taxonReferences" resultType="Integer">
+        SELECT reference_key
+        FROM taxon_reference
+        WHERE taxon_key = #{taxonKey}
+    </select>
+
 </mapper>

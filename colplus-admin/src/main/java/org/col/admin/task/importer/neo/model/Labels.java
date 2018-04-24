@@ -22,11 +22,6 @@ public enum Labels implements Label {
   SYNONYM,
 
   /**
-   * Proparte synonyms which have at least 2 SYNONYM_OF relations, subclass of SYNONYM
-   */
-  PROPARTE_SYNONYM,
-
-  /**
    * Basionym with at least one BASIONYM_OF relation
    */
   BASIONYM,

@@ -251,13 +251,8 @@ public class PgImport implements Runnable {
           t.name.setKey(nameKeys.get((int) n.getId()));
           // is this a pro parte synonym that we have processed before already?
           if (proParteNames.containsKey(n.getId())) {
-            // doublechecking - make sure this is really a synonym
-            if (t.synonym != null) {
-              // now add another synonym relation now that the other accepted exists in pg
-              nameDao.addSynonym(NameDao.toSynonym(dataset.getKey(), parentKeys.peek(), proParteNames.get(n.getId())));
-            } else {
-              LOG.warn("We have seen node {} before, but its not a pro parte synonym!", n.getId());
-            }
+            // now add another synonym relation now that the other accepted exists in pg
+            nameDao.addSynonym(NameDao.toSynonym(dataset.getKey(), parentKeys.peek(), proParteNames.get(n.getId())));
             return;
           }
 
@@ -265,13 +260,7 @@ public class PgImport implements Runnable {
           Integer taxonKey;
           if (t.isSynonym()) {
             taxonKey = null;
-            // we can have missing accepted names, so check
-            if (!t.synonym.getAccepted().isEmpty()) {
-              if (t.synonym.getAccepted().size()>1) {
-                proParteNames.put(n.getId(), (int) t.name.getKey());
-              }
-              nameDao.addSynonym(NameDao.toSynonym(dataset.getKey(), parentKeys.peek(), t.name.getKey()));
-            }
+            nameDao.addSynonym(NameDao.toSynonym(dataset.getKey(), parentKeys.peek(), t.name.getKey()));
 
           } else {
             if (!parentKeys.empty()) {

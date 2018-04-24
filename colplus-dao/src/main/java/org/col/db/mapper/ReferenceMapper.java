@@ -16,7 +16,9 @@ public interface ReferenceMapper {
 
 	List<Reference> list(@Param("datasetKey") Integer datasetKey, @Param("page") Page page);
 
-  /**
+	List<Integer> taxonReferences(@Param("taxonKey") int taxonKey);
+
+	/**
    * Selects a number of distinct references by their keys
    * @param keys must contain at least one value, not allowed to be empty !!!
    */

@@ -40,6 +40,14 @@ public class TestEntityGenerator {
    */
   public final static Name NAME2 = new Name();
   /**
+   * Corresponds exactly to 3rd name record inserted via apple.sql
+   */
+  public final static Name NAME3 = new Name();
+  /**
+   * Corresponds exactly to 4th name record inserted via apple.sql
+   */
+  public final static Name NAME4 = new Name();
+  /**
    * Corresponds exactly to 1st taxon record inserted via apple.sql
    */
   public final static Taxon TAXON1 = new Taxon();
@@ -47,6 +55,14 @@ public class TestEntityGenerator {
    * Corresponds exactly to 2nd taxon record inserted via apple.sql
    */
   public final static Taxon TAXON2 = new Taxon();
+  /**
+   * Corresponds exactly to 1st taxon record inserted via apple.sql
+   */
+  public final static Synonym SYN1 = new Synonym();
+  /**
+   * Corresponds exactly to 2nd taxon record inserted via apple.sql
+   */
+  public final static Synonym SYN2 = new Synonym();
   /**
    * Corresponds exactly to 1st reference record inserted via apple.sql
    */
@@ -92,6 +108,30 @@ public class TestEntityGenerator {
     NAME2.setPublishedInKey(null);
     NAME2.setPublishedInPage(null);
 
+    NAME3.setKey(3);
+    NAME3.setId("name-3");
+    NAME3.setDatasetKey(DATASET1.getKey());
+    NAME3.setGenus("Larus");
+    NAME3.setSpecificEpithet("fusca");
+    NAME3.setRank(Rank.SPECIES);
+    NAME3.setOrigin(Origin.SOURCE);
+    NAME3.setType(NameType.SCIENTIFIC);
+    NAME3.updateScientificName();
+    NAME3.setPublishedInKey(null);
+    NAME3.setPublishedInPage(null);
+
+    NAME4.setKey(4);
+    NAME4.setId("name-4");
+    NAME4.setDatasetKey(DATASET1.getKey());
+    NAME4.setGenus("Larus");
+    NAME4.setSpecificEpithet("erfundus");
+    NAME4.setRank(Rank.SPECIES);
+    NAME4.setOrigin(Origin.SOURCE);
+    NAME4.setType(NameType.SCIENTIFIC);
+    NAME4.updateScientificName();
+    NAME4.setPublishedInKey(null);
+    NAME4.setPublishedInPage(null);
+
     TAXON1.setKey(1);
     TAXON1.setId("root-1");
     TAXON1.setDatasetKey(DATASET1.getKey());
@@ -103,6 +143,14 @@ public class TestEntityGenerator {
     TAXON2.setDatasetKey(DATASET1.getKey());
     TAXON2.setName(NAME2);
     TAXON2.setOrigin(Origin.SOURCE);
+
+    SYN1.setName(NAME3);
+    SYN1.setAccepted(TAXON1);
+    SYN1.setStatus(TaxonomicStatus.SYNONYM);
+
+    SYN2.setName(NAME4);
+    SYN2.setAccepted(TAXON2);
+    SYN2.setStatus(TaxonomicStatus.SYNONYM);
   }
 
   /*
@@ -155,14 +203,12 @@ public class TestEntityGenerator {
 	 * Creates a new taxon with the specified id, belonging to the specified
 	 * dataset.
 	 */
-  public static Synonym newSynonym(TaxonomicStatus status, Name name, Taxon... accepted) {
+  public static Synonym newSynonym(TaxonomicStatus status, Name name, Taxon accepted) {
     Synonym s = new Synonym();
     s.setName(name);
     s.setAccordingTo("non Döring 1999");
     s.setStatus(status);
-    for (Taxon acc : accepted) {
-      s.getAccepted().add(acc);
-    }
+    s.setAccepted(accepted);
     return s;
   }
 
@@ -217,9 +263,9 @@ public class TestEntityGenerator {
 
   public static Synonymy newSynonymy() {
     Synonymy s = new Synonymy();
-    s.addHomotypicGroup(newNames(1+RND.nextInt(3)));
+    s.addHeterotypicGroup(newNames(1+RND.nextInt(3)));
     while (RND.nextBoolean() || RND.nextBoolean()) {
-      s.addHomotypicGroup(newNames(1+RND.nextInt(6)));
+      s.addHeterotypicGroup(newNames(1+RND.nextInt(6)));
     }
     return s;
   }

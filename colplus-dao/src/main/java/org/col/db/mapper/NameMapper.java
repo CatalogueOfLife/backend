@@ -43,7 +43,7 @@ public interface NameMapper {
 
   int countSearchResults(@Param("q") NameSearch query);
 
-	List<NameUsage> search(@Param("q") NameSearch query,
+	List<Name> search(@Param("q") NameSearch query,
                          @Param("page") Page page);
 
 

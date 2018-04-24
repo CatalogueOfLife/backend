@@ -163,7 +163,7 @@ public class Name implements PrimaryEntity {
   private Boolean fossil;
 
   /**
-   * Any informal note about the nomecnlatural status found in the name
+   * Any informal note about the nomenclature of the name
    */
   private String remarks;
 

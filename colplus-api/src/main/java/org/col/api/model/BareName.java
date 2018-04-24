@@ -10,6 +10,10 @@ import java.util.Objects;
 public class BareName implements NameUsage {
   private Name name;
 
+  public BareName(Name name) {
+    this.name = name;
+  }
+
   @Override
   public Name getName() {
     return name;

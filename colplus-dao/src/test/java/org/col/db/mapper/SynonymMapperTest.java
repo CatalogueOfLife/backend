@@ -66,11 +66,11 @@ public class SynonymMapperTest extends MapperTestBase<SynonymMapper> {
     synonymMapper.create(s1);
     commit();
 
-    Synonym s2 = synonymMapper.get(s1.getName().getKey());
-    System.out.println("ACC NAME: " + s2.getAccepted().get(0).getName());
+    Synonym s2 = synonymMapper.getByName(s1.getName());
+    System.out.println("ACC NAME: " + s2.getAccepted().getName());
 
     assertEquals(s1.getName(), s2.getName());
-    assertEquals(s1.getAccepted().get(0).getName(), s2.getAccepted().get(0).getName());
+    assertEquals(s1.getAccepted().getName(), s2.getAccepted().getName());
     assertEquals(s1.getAccepted(), s2.getAccepted());
     assertEquals(s1, s2);
   }

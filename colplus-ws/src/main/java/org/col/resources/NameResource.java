@@ -4,6 +4,7 @@ import com.codahale.metrics.annotation.Timed;
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.model.*;
 import org.col.db.dao.NameDao;
+import org.col.db.dao.NameUsageDao;
 import org.col.db.mapper.NameActMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,7 +34,7 @@ public class NameResource {
   @Path("search")
   public ResultPage<NameUsage> search(@BeanParam NameSearch query,
       @Valid @BeanParam Page page, @Context SqlSession session) {
-    NameDao dao = new NameDao(session);
+    NameUsageDao dao = new NameUsageDao(session);
     return dao.search(query, page);
   }
 

@@ -12,6 +12,7 @@ import org.col.admin.task.importer.NormalizationFailedException;
 import org.col.admin.task.importer.neo.kryo.NeoKryoFactory;
 import org.col.admin.task.importer.neo.mapdb.MapDbObjectSerializer;
 import org.col.admin.task.importer.neo.model.*;
+import org.col.admin.task.importer.neo.traverse.Traversals;
 import org.col.api.model.*;
 import org.col.api.vocab.Issue;
 import org.col.api.vocab.Origin;
@@ -40,6 +41,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -523,12 +525,8 @@ public class NeoDb implements ReferenceStore {
         }
 
         if (t.node.hasLabel(Labels.SYNONYM)) {
-          // accepted, can be multiple
-          for (Relationship synRel : t.node.getRelationships(RelType.SYNONYM_OF, Direction.OUTGOING)) {
-            if (t.synonym == null) {
-              t.synonym = new Synonym();
-            }
-            t.synonym.getAccepted().add(extractTaxon(synRel.getOtherNode(t.node)));
+          if (t.synonym == null) {
+            t.synonym = new Synonym();
           }
 
         } else if (!t.node.hasLabel(Labels.ROOT)){
@@ -592,17 +590,6 @@ public class NeoDb implements ReferenceStore {
         "RETURN count(b)";
     count = updateLabel(query);
     LOG.info("Labelled {} basionym nodes", count);
-
-
-    // set PROPARTE_SYNONYM
-    LOG.info("Labelling proparte synonym nodes");
-    query = "MATCH (s:SYNONYM)-[sr:SYNONYM_OF]->() " +
-        "WITH s, count(sr) AS count " +
-        "WHERE count > 1 " +
-        "SET s :PROPARTE_SYNONYM " +
-        "RETURN count";
-    count = updateLabel(query);
-    LOG.info("Labelled {} pro parte synonym nodes", count);
   }
 
   private long updateLabel(String query) {
@@ -670,6 +657,15 @@ public class NeoDb implements ReferenceStore {
         //}
       }
     }
+  }
+
+  /**
+   * List all accepted taxa of a potentially prop parte synonym
+   */
+  public List<RankedName> accepted(Node synonym) {
+    return Traversals.ACCEPTED.traverse(synonym).nodes().stream()
+        .map(NeoProperties::getRankedName)
+        .collect(Collectors.toList());
   }
 
   public RankedName createPlaceholder(Origin origin, @Nullable Issue issue) {

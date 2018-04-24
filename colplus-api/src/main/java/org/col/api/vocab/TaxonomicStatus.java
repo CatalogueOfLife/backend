@@ -29,12 +29,14 @@ public enum TaxonomicStatus {
   DOUBTFUL,
 
   /**
-   * Any kind of synonym, not specifying whether homo- or heterotypic
+   * Names which point unambiguously at one species (not specifying whether homo- or heterotypic)
+   * (synonyms, in the CoL sense, include also orthographic variants and published misspellings)
    */
   SYNONYM,
 
   /**
-   * A pro parte synonym that has more than one accepted names.
+   * Names which are ambiguous because they point at the current species and one or more others
+   * e.g. homonyms, pro-parte synonyms (in other words, names which appear more than in one place in the Catalogue).
    */
   AMBIGUOUS_SYNONYM,
 

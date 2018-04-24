@@ -52,7 +52,7 @@
         t.dataset_key AS t_dataset_key,
         t.parent_key AS t_parent_key,
         t.name_key AS t_name_key,
-        t.status AS t_status,
+        t.doubtful AS t_doubtful,
         t.origin AS t_origin,
         t.according_to AS t_according_to,
         t.according_to_date AS t_according_to_date,
@@ -73,7 +73,7 @@
         a.dataset_key AS a_dataset_key,
         a.parent_key AS a_parent_key,
         a.name_key AS a_name_key,
-        a.status AS a_status,
+        a.doubtful AS a_doubtful,
         a.origin AS a_origin,
         a.according_to AS a_according_to,
         a.according_to_date AS a_according_to_date,
@@ -108,6 +108,8 @@
         an.combination_ex_authors AS a_n_combination_ex_authors,
         an.combination_year AS a_n_combination_year,
         an.sanctioning_author AS a_n_sanctioning_author,
+        an.published_in_key AS a_n_published_in_key,
+        an.published_in_page AS a_n_published_in_page,
         an.code AS a_n_code,
         an.nom_status AS a_n_nom_status,
         an.origin AS a_n_origin,
@@ -195,9 +197,10 @@
     <sql id="SEARCH_FROM">
         <include refid="FROM" />
         LEFT JOIN taxon t ON n.key = t.name_key
-        LEFT JOIN synonym s on n.key = s.name_key
-          LEFT JOIN taxon a on s.taxon_key = a.key
-          LEFT JOIN name an on a.name_key = an.key
+        LEFT JOIN name hn ON n.homotypic_name_key = hn.name_key AND hn.key != n.key
+        LEFT JOIN synonym s ON n.homotypic_name_key = s.name_key
+          LEFT JOIN taxon a ON s.taxon_key = a.key
+          LEFT JOIN name an ON a.name_key = an.key
     </sql>
 
     <!-- TODO: filter only accepted or synoynms -->
@@ -278,7 +281,7 @@
         </discriminator>
     </resultMap>
 
-    <select id="count" parameterType="map" resultType="Integer">
+    <select id="count" parameterType="map" resultType="int">
         SELECT count(*) FROM name
         <if test="datasetKey != null">
             WHERE dataset_key = #{datasetKey}
@@ -302,21 +305,21 @@
         ORDER BY key
     </select>
 
-    <select id="lookupKey" resultType="Integer">
+    <select id="lookupKey" resultType="int">
         SELECT key
         FROM name
         WHERE id = #{id} AND dataset_key = #{datasetKey}
     </select>
 
-    <select id="countSearchResults" parameterType="map" resultType="Integer">
+    <select id="countSearchResults" parameterType="map" resultType="int">
         SELECT COUNT(*)
-        FROM name n
+        FROM <include refid="FROM" />
         WHERE <include refid="SEARCH_WHERE" />
     </select>
 
-    <select id="search" parameterType="map" resultMap="nameSearchResultMap">
-        SELECT <include refid="SEARCH_SELECT" />
-        FROM <include refid="SEARCH_FROM" />
+    <select id="search" parameterType="map" resultMap="nameResultMap">
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
         WHERE <include refid="SEARCH_WHERE" />
         <choose>
             <when test="q.sortBy.toString() == 'KEY'">

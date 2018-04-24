@@ -23,7 +23,7 @@ public enum NomActType {
 
   /**
    * The current name is a spelling correction, called emendation in zoology, of the related name.
-   * Intentional changes in the original spelling of an available name.
+   * Intentional changes in the original spelling of an available name, whether justified or unjustified.
    * The binomial authority remains unchanged.
    * Valid emendations include changes made to correct:
    *    a) typographical errors in the original work describing the species,

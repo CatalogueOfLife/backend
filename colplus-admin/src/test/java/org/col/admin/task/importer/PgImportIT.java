@@ -18,6 +18,7 @@ import org.col.api.vocab.*;
 import org.col.csl.CslParserMock;
 import org.col.db.NotFoundException;
 import org.col.db.dao.NameDao;
+import org.col.db.dao.NameUsageDao;
 import org.col.db.dao.ReferenceDao;
 import org.col.db.dao.TaxonDao;
 import org.col.db.mapper.DatasetMapper;
@@ -255,6 +256,7 @@ public class PgImportIT {
     normalizeAndImport(ACEF, 0);
 
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+      NameUsageDao udao = new NameUsageDao(session);
       TaxonDao tdao = new TaxonDao(session);
       NameDao ndao = new NameDao(session);
 
@@ -265,7 +267,7 @@ public class PgImportIT {
       assertEquals(Rank.SPECIES, n.getRank());
       assertTrue(n.getIssues().contains(Issue.ACCEPTED_ID_INVALID));
 
-      assertTrue(tdao.getAccepted(n).isEmpty());
+      assertTrue(udao.usages(n).isEmpty());
 
       try {
         tdao.get("s7", dataset.getKey());
@@ -311,6 +313,7 @@ public class PgImportIT {
     normalizeAndImport(ACEF, 69);
 
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+      NameUsageDao udao = new NameUsageDao(session);
       NameDao ndao = new NameDao(session);
       TaxonDao tdao = new TaxonDao(session);
 
@@ -350,7 +353,7 @@ public class PgImportIT {
       Name syn = ndao.get("Rho-140", dataset.getKey());
       assertEquals("Rhodacarus guevarai Guevara-Benitez, 1974", syn.canonicalNameComplete());
 
-      List<Taxon> acc = tdao.getAccepted(syn);
+      List<NameUsage> acc = udao.usages(syn);
       assertEquals(1, acc.size());
 
       t = tdao.get("Rho-61", dataset.getKey());

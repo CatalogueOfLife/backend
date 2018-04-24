@@ -37,6 +37,14 @@ public class ResultPage<T> extends Page {
     return total <= getOffset() + getLimit();
   }
 
+  public int size() {
+    return result.size();
+  }
+
+  public boolean isEmpty() {
+    return result.isEmpty();
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o)

@@ -17,12 +17,12 @@ public class TaxonDao {
     this.session = sqlSession;
   }
 
-  public ResultPage<Taxon> list(Integer datasetKey, Boolean root, Integer nameKey, Page page) {
+  public ResultPage<Taxon> list(Integer datasetKey, Boolean root, Page page) {
     Page p = page == null ? new Page() : page;
     Boolean r = root == null ? Boolean.FALSE : root;
     TaxonMapper mapper = session.getMapper(TaxonMapper.class);
-    int total = mapper.count(datasetKey, r, nameKey);
-    List<Taxon> result = mapper.list(datasetKey, r, nameKey, p);
+    int total = mapper.count(datasetKey, r);
+    List<Taxon> result = mapper.list(datasetKey, r, p);
     return new ResultPage<>(p, total, result);
   }
 
@@ -53,10 +53,6 @@ public class TaxonDao {
     return mapper.classification(key);
   }
 
-  public List<Taxon> getAccepted(Name n) {
-    return session.getMapper(TaxonMapper.class).accepted(n.getKey());
-  }
-
   public ResultPage<Taxon> getChildren(int key, Page page) {
     Page p = page == null ? new Page() : page;
     TaxonMapper mapper = session.getMapper(TaxonMapper.class);
@@ -80,12 +76,12 @@ public class TaxonDao {
 
     TaxonInfo info = new TaxonInfo();
     info.setTaxon(taxon);
-    info.setTaxonReferences(tMapper.taxonReferences(key));
+    ReferenceMapper rMapper = session.getMapper(ReferenceMapper.class);
+    info.setTaxonReferences(rMapper.taxonReferences(key));
 
     // vernaculars
     VernacularNameMapper vMapper = session.getMapper(VernacularNameMapper.class);
     info.setVernacularNames(vMapper.listByTaxon(taxon.getKey()));
-
 
     // distributions
     DistributionMapper dMapper = session.getMapper(DistributionMapper.class);
@@ -97,7 +93,6 @@ public class TaxonDao {
     info.getDistributions().forEach(d -> refKeys.addAll(d.getReferenceKeys()));
     info.getVernacularNames().forEach(d -> refKeys.addAll(d.getReferenceKeys()));
 
-    ReferenceMapper rMapper = session.getMapper(ReferenceMapper.class);
     if (!refKeys.isEmpty()) {
       List<Reference> refs = rMapper.listByKeys(refKeys);
       info.addReferences(refs);

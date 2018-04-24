@@ -16,7 +16,7 @@ public class Synonym implements NameUsage {
   private Name name;
   private TaxonomicStatus status;
   private String accordingTo;
-  private List<Taxon> accepted = Lists.newArrayList();
+  private Taxon accepted;
 
   @Override
   public Name getName() {
@@ -50,11 +50,18 @@ public class Synonym implements NameUsage {
     this.accordingTo = accordingTo;
   }
 
-  public List<Taxon> getAccepted() {
+  /**
+   * @return true if the synonym is a homotypic synonym for at least one of the accepted names.
+   */
+  public boolean isHomotypic() {
+    return name.getHomotypicNameKey().equals(accepted.getName().getHomotypicNameKey());
+  }
+
+  public Taxon getAccepted() {
     return accepted;
   }
 
-  public void setAccepted(List<Taxon> accepted) {
+  public void setAccepted(Taxon accepted) {
     this.accepted = accepted;
   }
 

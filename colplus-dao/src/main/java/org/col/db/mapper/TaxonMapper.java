@@ -1,6 +1,7 @@
 package org.col.db.mapper;
 
 import org.apache.ibatis.annotations.Param;
+import org.col.api.model.Name;
 import org.col.api.model.Page;
 import org.col.api.model.Taxon;
 
@@ -11,22 +12,18 @@ import java.util.List;
  */
 public interface TaxonMapper {
 
-  int count(@Param("datasetKey") Integer datasetKey, @Param("root") Boolean root,
-      @Param("nameKey") Integer nameKey);
+  int count(@Param("datasetKey") Integer datasetKey, @Param("root") Boolean root);
 
-  List<Taxon> list(@Param("datasetKey") Integer datasetKey, @Param("root") Boolean root,
-                   @Param("nameKey") Integer nameKey, @Param("page") Page page);
+  List<Taxon> list(@Param("datasetKey") Integer datasetKey, @Param("root") Boolean root, @Param("page") Page page);
 
   Integer lookupKey(@Param("id") String id, @Param("datasetKey") int datasetKey);
 
   Taxon get(@Param("key") int key);
 
   /**
-   * @return the accepted taxa for a given name key regardless if its a synonym or accepted name
+   * Warning, the name property is not set cause it is expected to exist already
    */
-  List<Taxon> accepted(@Param("nkey") int nameKey);
-
-  List<Integer> taxonReferences(@Param("key") int key);
+  List<Taxon> getByName(@Param("name") Name name);
 
   /**
    * @return list of all parents starting with the immediate parent

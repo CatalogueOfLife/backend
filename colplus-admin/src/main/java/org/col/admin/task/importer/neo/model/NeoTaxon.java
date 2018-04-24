@@ -26,6 +26,7 @@ public class NeoTaxon {
   public Name name;
   // either a taxon or a synonym, never both!
   public Taxon taxon;
+  // the accepted property of synonym is NOT populated
   public Synonym synonym;
   public boolean homotypic = false;
 

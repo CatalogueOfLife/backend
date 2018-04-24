@@ -105,16 +105,9 @@ public class NameDao {
     Taxon t = new Taxon();
     t.setKey(accKey);
     t.setDatasetKey(datasetKey);
-    s.getAccepted().add(t);
+    s.setAccepted(t);
 
     return s;
-  }
-
-  private static NameAccordingTo toNameAccordingTo(Synonym s) {
-    NameAccordingTo nat = new NameAccordingTo();
-    nat.setName(s.getName());
-    nat.setAccordingTo(s.getAccordingTo());
-    return nat;
   }
 
   /**
@@ -129,29 +122,13 @@ public class NameDao {
     // get all heterotypic synonyms and misapplied names
     for (Synonym s : synMapper.synonyms(taxonKey)) {
       if (TaxonomicStatus.MISAPPLIED == s.getStatus()) {
-        syn.addMisapplied(toNameAccordingTo(s));
+        syn.addMisapplied(new NameAccordingTo(s.getName(), s.getAccordingTo()));
       } else {
         // get entire homotypic group
-        syn.addHomotypicGroup(nMapper.homotypicGroup(s.getName().getKey()));
+        syn.addHeterotypicGroup(nMapper.homotypicGroup(s.getName().getKey()));
       }
     }
     return syn;
-  }
-
-  public ResultPage<NameUsage> search(NameSearch query, Page page) {
-    if (query.isEmpty()) {
-      // default to order by key for large, unfiltered resultssets
-      query.setSortBy(NameSearch.SortBy.KEY);
-    } else if (query.getSortBy() == null) {
-      query.setSortBy(NameSearch.SortBy.NAME);
-    }
-    if (query.getQ() != null) {
-      query.setQ(query.getQ() + ":*");
-    }
-    NameMapper mapper = session.getMapper(NameMapper.class);
-    int total = mapper.countSearchResults(query);
-    List<NameUsage> result = mapper.search(query, page);
-    return new ResultPage<>(page, total, result);
   }
 
   public VerbatimRecord getVerbatim(int nameKey) {

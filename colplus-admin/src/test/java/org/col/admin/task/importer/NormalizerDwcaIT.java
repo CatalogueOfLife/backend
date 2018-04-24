@@ -11,6 +11,7 @@ import org.col.admin.task.importer.neo.NotUniqueRuntimeException;
 import org.col.admin.task.importer.neo.model.Labels;
 import org.col.admin.task.importer.neo.model.NeoProperties;
 import org.col.admin.task.importer.neo.model.NeoTaxon;
+import org.col.admin.task.importer.neo.model.RankedName;
 import org.col.admin.task.importer.neo.printer.GraphFormat;
 import org.col.admin.task.importer.neo.printer.PrinterUtils;
 import org.col.admin.task.importer.reference.ReferenceFactory;
@@ -159,13 +160,13 @@ public class NormalizerDwcaIT {
 
       NeoTaxon Polystictus_substipitatus = byID("140283");
       assertTrue(Polystictus_substipitatus.isSynonym());
-      assertEquals(1, Polystictus_substipitatus.synonym.getAccepted().size());
+      assertNotNull(Polystictus_substipitatus.synonym.getAccepted());
       pubIn = store.refByKey(Polystictus_substipitatus.name.getPublishedInKey());
       assertEquals("Syll. fung. (Abellini) 21: 318 (1912)", pubIn.getCsl().getTitle());
 
       NeoTaxon Polyporus_modestus = byID("198666");
       assertTrue(Polyporus_modestus.isSynonym());
-      assertEquals(1, Polyporus_modestus.synonym.getAccepted().size());
+      assertNotNull(Polyporus_modestus.synonym.getAccepted());
       pubIn = store.refByKey(Polyporus_modestus.name.getPublishedInKey());
       assertEquals("Linnaea 5: 519 (1830)", pubIn.getCsl().getTitle());
     }
@@ -306,10 +307,10 @@ public class NormalizerDwcaIT {
       assertEquals(u2.name.getHomotypicNameKey(), bas.taxon.getKey());
 
       NeoTaxon syn = byName("Leontodon leysseri");
-      assertEquals(1, syn.synonym.getAccepted().size());
+      assertNotNull(syn.synonym.getAccepted());
       NeoTaxon acc = byID("1006");
-      assertEquals(acc.taxon.getId(), syn.synonym.getAccepted().get(0).getId());
-      assertEquals(acc.taxon.getKey(), syn.synonym.getAccepted().get(0).getKey());
+      assertEquals(acc.taxon.getId(), syn.synonym.getAccepted().getId());
+      assertEquals(acc.taxon.getKey(), syn.synonym.getAccepted().getKey());
 
     }
   }
@@ -332,15 +333,16 @@ public class NormalizerDwcaIT {
 
     try (Transaction tx = store.getNeo().beginTx()) {
       NeoTaxon syn = byID("1001");
-      assertEquals(3, syn.synonym.getAccepted().size());
+      assertNotNull(syn.synonym);
 
       Map<String, String> expectedAccepted = Maps.newHashMap();
       expectedAccepted.put("1000", "Calendula arvensis");
       expectedAccepted.put("10000", "Calendula incana subsp. incana");
       expectedAccepted.put("10002", "Calendula incana subsp. maderensis");
 
-      for (Taxon acc : syn.synonym.getAccepted()) {
-        assertEquals(expectedAccepted.remove(acc.getId()), acc.getName().getScientificName());
+
+      for (RankedName acc : store.accepted(syn.node)) {
+        assertEquals(expectedAccepted.remove(NeoProperties.getID(acc.node)), acc.name);
       }
       assertTrue(expectedAccepted.isEmpty());
     }

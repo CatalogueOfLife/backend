@@ -71,9 +71,6 @@ public class TxtPrinter implements TreePrinter {
       if (n.hasLabel(Labels.SYNONYM)) {
         writer.write(SYNONYM_SYMBOL);
       }
-      if (n.hasLabel(Labels.PROPARTE_SYNONYM)) {
-        writer.write(SYNONYM_SYMBOL);
-      }
       if (n.hasRelationship(RelType.BASIONYM_OF, Direction.OUTGOING)) {
         writer.write(BASIONYM_SYMBOL);
       }

@@ -1,15 +1,18 @@
 package org.col.api.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * A taxonomic synonymy list, ordering names in homotypic groups.
+ * All synonym names excluding misapplied names can be iterated over.
  */
-public class Synonymy {
+public class Synonymy implements Iterable<Name> {
   private final List<Name> homotypic = Lists.newArrayList();
   private final List<List<Name>> heterotypic = Lists.newArrayList();
   private final List<NameAccordingTo> misapplied = Lists.newArrayList();
@@ -39,7 +42,7 @@ public class Synonymy {
    * Adds a new homotypic group of names to the heterotypic synonyms
    * @param synonyms
    */
-  public void addHomotypicGroup(List<Name> synonyms) {
+  public void addHeterotypicGroup(List<Name> synonyms) {
     this.heterotypic.add(synonyms);
   }
 
@@ -64,5 +67,13 @@ public class Synonymy {
   @Override
   public int hashCode() {
     return Objects.hash(homotypic, heterotypic, misapplied);
+  }
+
+  @Override
+  public Iterator<Name> iterator() {
+    return Stream.concat(
+        homotypic.stream(),
+        heterotypic.stream().flatMap(Collection::stream)
+    ).iterator();
   }
 }

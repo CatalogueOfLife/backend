@@ -119,11 +119,7 @@ public class Normalizer implements Runnable {
       }
 
       // taxon or synonym
-      if (t.isSynonym()) {
-        for (Taxon acc : t.synonym.getAccepted()) {
-          require(acc.getKey(), "accepted key", id);
-        }
-      } else {
+      if (!t.isSynonym()) {
         require(t.taxon.getOrigin(), "taxon origin", id);
         require(t.taxon.getStatus(), "taxon status", id);
       }
@@ -182,7 +178,7 @@ public class Normalizer implements Runnable {
     // process the denormalized classifications of accepted taxa
     applyDenormedClassification();
 
-    // set correct ROOT and PROPARTE labels for easier access
+    // set correct ROOT and other labels for easier access
     store.updateLabels();
 
     // updates the taxon instances with infos derived from neo4j relations

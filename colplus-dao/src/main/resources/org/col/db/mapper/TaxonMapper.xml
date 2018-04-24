@@ -113,7 +113,7 @@
         WHERE id = #{id} AND dataset_key = #{datasetKey}
     </select>
 
-    <select id="count" parameterType="map" resultType="Integer">
+    <select id="count" parameterType="map" resultType="int">
         SELECT count(*)
         FROM taxon
         WHERE TRUE
@@ -123,52 +123,46 @@
         <if test="root">
             AND parent_key IS NULL
         </if>
-        <if test="nameKey != null">
-            AND name_key = #{nameKey}
-        </if>
     </select>
 
     <select id="list" parameterType="map" resultMap="taxonResultMap">
-        SELECT
-        <include refid="SELECT" />
-        FROM
-        <include refid="FROM" />
-        <if test="nameKey != null">
-        	LEFT JOIN synonym syn ON (syn.taxon_key = t.key)
-        </if>
-        WHERE TRUE
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
+        WHERE
         <if test="datasetKey != null">
-        	AND t.dataset_key = #{datasetKey}
+        	t.dataset_key = #{datasetKey}
         </if>
         <if test="root">
-            AND t.parent_key IS NULL
-        </if>
-        <if test="nameKey != null">
-            AND (t.name_key = #{nameKey} OR syn.name_key = #{nameKey})
+            <if test="datasetKey != null">
+                AND
+            </if>
+            t.parent_key IS NULL
         </if>
         ORDER BY key
         <include refid="org.col.db.mapper.Common.limit" />
     </select>
 
     <select id="get" resultMap="taxonResultMap">
-        SELECT
-        <include refid="SELECT" />
-        FROM
-        <include refid="FROM" />
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
         WHERE t.key = #{key}
     </select>
 
-    <select id="countChildren"  parameterType="map" resultType="Integer">
+    <select id="getByName" resultMap="taxonResultMap">
+        SELECT key, <include refid="COLS" />
+        FROM taxon
+        WHERE name_key = #{name.key}
+    </select>
+
+    <select id="countChildren"  parameterType="map" resultType="int">
         SELECT count(*)
         FROM taxon
         WHERE parent_key = #{key}
     </select>
 
     <select id="children" resultMap="taxonResultMap">
-        SELECT
-        <include refid="SELECT" />
-        FROM
-        <include refid="FROM" />
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
         WHERE t.parent_key = #{key}
         ORDER BY n.rank, n.scientific_name
         <include refid="org.col.db.mapper.Common.limit" />
@@ -190,28 +184,8 @@
      </select>
 
     <insert id="create" parameterType="Taxon" useGeneratedKeys="true" keyProperty="key">
-        INSERT INTO taxon (
-        <include refid="COLS" />
-        )
-        VALUES (
-        <include refid="PROPS" />
-        )
+        INSERT INTO taxon (<include refid="COLS" />)
+        VALUES (<include refid="PROPS" />)
     </insert>
-
-    <select id="taxonReferences" resultType="Integer">
-        SELECT reference_key
-        FROM taxon_reference
-        WHERE taxon_key = #{key}
-    </select>
-
-    <select id="accepted" resultMap="taxonResultMap">
-        SELECT
-        <include refid="SELECT" />
-        FROM
-        <include refid="FROM" />
-          JOIN synonym s ON (t.key = s.taxon_key)
-        WHERE s.name_key = #{nkey}
-        ORDER BY t.key
-    </select>
 
 </mapper>

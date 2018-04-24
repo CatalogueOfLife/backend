@@ -24,9 +24,9 @@ public class SynonymyTest {
   @Test
   public void size() throws Exception {
     Synonymy s = new Synonymy();
-    s.addHomotypicGroup(TestEntityGenerator.newNames(4));
-    s.addHomotypicGroup(TestEntityGenerator.newNames(1));
-    s.addHomotypicGroup(TestEntityGenerator.newNames(8));
+    s.addHeterotypicGroup(TestEntityGenerator.newNames(4));
+    s.addHeterotypicGroup(TestEntityGenerator.newNames(1));
+    s.addHeterotypicGroup(TestEntityGenerator.newNames(8));
     assertEquals(13, s.size());
   }
 

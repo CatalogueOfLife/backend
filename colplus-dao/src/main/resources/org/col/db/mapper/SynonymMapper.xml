@@ -4,7 +4,7 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="org.col.db.mapper.SynonymMapper">
 
-    <sql id="SELECT">
+    <sql id="SELECT-SYN">
         s.status,
         s.according_to,
 
@@ -37,8 +37,10 @@
         n.source_url as n_source_url,
         n.fossil as n_fossil,
         n.remarks as n_remarks,
-        n.issues as n_issues,
+        n.issues as n_issues
+    </sql>
 
+    <sql id="SELECT-ACCEPTED">
         t.key as t_key,
         t.id as t_id,
         t.dataset_key as t_dataset_key,
@@ -95,19 +97,23 @@
         JOIN name tn ON tn.key=t.name_key
     </sql>
 
+    <resultMap id="synonymOnlyResultMap" type="Synonym" autoMapping="true">
+        <association property="name" javaType="Name" resultMap="org.col.db.mapper.NameMapper.nameResultMap" columnPrefix="n_" />
+    </resultMap>
+
     <resultMap id="synonymResultMap" type="Synonym" autoMapping="true">
         <association property="name" javaType="Name" resultMap="org.col.db.mapper.NameMapper.nameResultMap" columnPrefix="n_" />
         <collection property="accepted" ofType="Taxon" resultMap="org.col.db.mapper.TaxonMapper.taxonResultMap" columnPrefix="t_" />
     </resultMap>
 
-    <select id="get" resultMap="synonymResultMap">
-        SELECT <include refid="SELECT" />
+    <select id="getByName" resultMap="synonymResultMap">
+        SELECT <include refid="SELECT-SYN" />, <include refid="SELECT-ACCEPTED" />
         FROM <include refid="FROM" />
-        WHERE n.key = #{key}
+        WHERE n.key = #{name.key}
     </select>
 
-    <select id="synonyms" resultMap="synonymResultMap">
-        SELECT <include refid="SELECT" />
+    <select id="synonyms" resultMap="synonymOnlyResultMap">
+        SELECT <include refid="SELECT-SYN" />
         FROM <include refid="FROM" />
         WHERE s.taxon_key = #{key}
         ORDER BY COALESCE(n.homotypic_name_key, n.key)
@@ -115,10 +121,7 @@
 
     <insert id="create" parameterType="Synonym">
         INSERT INTO synonym (dataset_key, name_key, taxon_key, status, according_to)
-        VALUES
-        <foreach collection="syn.accepted" item="acc" index="idx" separator=",">
-            (#{syn.name.datasetKey}, #{syn.name.key}, #{acc.key}, #{syn.status}, #{syn.accordingTo})
-        </foreach>
+        VALUES (#{syn.name.datasetKey}, #{syn.name.key}, #{syn.accepted.key}, #{syn.status}, #{syn.accordingTo})
     </insert>
 
 </mapper>

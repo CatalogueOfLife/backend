@@ -45,14 +45,14 @@ public class TaxonMapperTest extends MapperTestBase<TaxonMapper> {
 
   @Test
   public void count() throws Exception {
-    int i = mapper().count(TestEntityGenerator.DATASET1.getKey(), false, null);
+    int i = mapper().count(TestEntityGenerator.DATASET1.getKey(), false);
     // Just to make sure we understand our environment
     // 2 Taxa pre-inserted through InitMybatisRule.apple()
     assertEquals(2, i);
     mapper().create(TestEntityGenerator.newTaxon("t2"));
     mapper().create(TestEntityGenerator.newTaxon("t3"));
     mapper().create(TestEntityGenerator.newTaxon("t4"));
-    assertEquals(5, mapper().count(TestEntityGenerator.DATASET1.getKey(), false, null));
+    assertEquals(5, mapper().count(TestEntityGenerator.DATASET1.getKey(), false));
   }
 
   @Test
@@ -75,7 +75,7 @@ public class TaxonMapperTest extends MapperTestBase<TaxonMapper> {
     // get first page
     Page p = new Page(0, 3);
 
-    List<Taxon> res = mapper().list(TestEntityGenerator.DATASET1.getKey(), false, null, p);
+    List<Taxon> res = mapper().list(TestEntityGenerator.DATASET1.getKey(), false, p);
     assertEquals(3, res.size());
     // First 2 taxa in dataset D1 are pre-inserted taxa:
     assertTrue(TestEntityGenerator.TAXON1.getKey().equals(res.get(0).getKey()));
@@ -83,38 +83,12 @@ public class TaxonMapperTest extends MapperTestBase<TaxonMapper> {
     assertTrue(taxa.get(0).getKey().equals(res.get(2).getKey()));
 
     p.next();
-    res = mapper().list(TestEntityGenerator.DATASET1.getKey(), false, null, p);
+    res = mapper().list(TestEntityGenerator.DATASET1.getKey(), false, p);
     assertEquals(3, res.size());
     assertTrue(taxa.get(1).getKey().equals(res.get(0).getKey()));
     assertTrue(taxa.get(2).getKey().equals(res.get(1).getKey()));
     assertTrue(taxa.get(3).getKey().equals(res.get(2).getKey()));
 
-  }
-
-  @Test
-  public void list2() throws Exception {
-    List<Taxon> taxa = new ArrayList<>();
-    taxa.add(TestEntityGenerator.newTaxon("t1"));
-    taxa.add(TestEntityGenerator.newTaxon("t2"));
-    taxa.add(TestEntityGenerator.newTaxon("t3"));
-    taxa.add(TestEntityGenerator.newTaxon("t4"));
-    taxa.add(TestEntityGenerator.newTaxon("t5"));
-    taxa.add(TestEntityGenerator.newTaxon("t6"));
-    taxa.add(TestEntityGenerator.newTaxon("t7"));
-    taxa.add(TestEntityGenerator.newTaxon("t8"));
-    taxa.add(TestEntityGenerator.newTaxon("t9"));
-    for (Taxon t : taxa) {
-      mapper().create(t);
-    }
-    commit();
-
-    // get first page
-    Page p = new Page(0, 1000);
-
-    List<Taxon> res = mapper().list(TestEntityGenerator.DATASET1.getKey(), false,
-        TestEntityGenerator.NAME1.getKey(), p);
-    // 9 plus pre-inserted (root) taxon with this name key
-    assertEquals(10, res.size());
   }
 
   @Test
@@ -137,131 +111,9 @@ public class TaxonMapperTest extends MapperTestBase<TaxonMapper> {
     // get first page
     Page p = new Page(0, 1000);
 
-    List<Taxon> res = mapper().list(TestEntityGenerator.DATASET1.getKey(), true, null, p);
+    List<Taxon> res = mapper().list(TestEntityGenerator.DATASET1.getKey(), true, p);
     // Only the 2 pre-inserted root taxa.
     assertEquals(2, res.size());
-  }
-
-  @Test
-  public void list4() throws Exception {
-    List<Taxon> taxa = new ArrayList<>();
-    taxa.add(TestEntityGenerator.newTaxon("t1"));
-    taxa.add(TestEntityGenerator.newTaxon("t2"));
-    taxa.add(TestEntityGenerator.newTaxon("t3"));
-    taxa.add(TestEntityGenerator.newTaxon("t4"));
-    taxa.add(TestEntityGenerator.newTaxon("t5"));
-    taxa.add(TestEntityGenerator.newTaxon("t6"));
-    taxa.add(TestEntityGenerator.newTaxon("t7"));
-    taxa.add(TestEntityGenerator.newTaxon("t8"));
-    taxa.add(TestEntityGenerator.newTaxon("t9"));
-    for (Taxon t : taxa) {
-      mapper().create(t);
-    }
-    commit();
-
-    // get first page
-    Page p = new Page(0, 1000);
-
-    List<Taxon> res = mapper().list(TestEntityGenerator.DATASET1.getKey(), true,
-        TestEntityGenerator.NAME2.getKey(), p);
-    // Only 1 pre-inserted root taxon has name NAME2
-    assertEquals(1, res.size());
-  }
-
-  @Test
-  public void list5() throws Exception {
-
-    NameDao nameDao = new NameDao(initMybatisRule.getSqlSession());
-
-    Name accepted1 = TestEntityGenerator.newName("accepted-1");
-    nameDao.create(accepted1);
-
-    Name accepted2 = TestEntityGenerator.newName("accepted-2");
-    nameDao.create(accepted2);
-
-    Taxon taxon1 = TestEntityGenerator.newTaxon("taxon-1");
-    taxon1.setName(accepted1);
-    mapper().create(taxon1);
-
-    Taxon taxon2 = TestEntityGenerator.newTaxon("taxon-2");
-    taxon2.setName(accepted2);
-    mapper().create(taxon2);
-
-    Name heterotypic1 = TestEntityGenerator.newName("hetereotypic-1");
-    Name heterotypic2 = TestEntityGenerator.newName("hetereotypic-2");
-    Name heterotypic3 = TestEntityGenerator.newName("hetereotypic-3");
-
-    nameDao.create(heterotypic1);
-    nameDao.create(heterotypic2);
-    nameDao.create(heterotypic3);
-
-    int dKey = accepted1.getDatasetKey();
-
-    // heterotypic1 is p.p. synonym for accepted1 and accepted2
-    // 2 taxa should come back when querying on heterotypic1's
-    // name key
-    nameDao.addSynonym(NameDao.toSynonym(dKey, taxon1.getKey(), heterotypic1.getKey()));
-    nameDao.addSynonym(NameDao.toSynonym(dKey, taxon2.getKey(), heterotypic1.getKey()));
-
-    nameDao.addSynonym(NameDao.toSynonym(dKey, taxon1.getKey(), heterotypic2.getKey()));
-    nameDao.addSynonym(NameDao.toSynonym(dKey, taxon1.getKey(), heterotypic3.getKey()));
-
-    Name homotypic1 = TestEntityGenerator.newName("homotypic-1");
-    homotypic1.setHomotypicNameKey(accepted1.getKey());
-    
-    // homotypic 2/3/4/5 just noise to make sure no unexpected
-    // result becayse of table joins.
-    Name homotypic2 = TestEntityGenerator.newName("homotypic-2");
-    homotypic2.setHomotypicNameKey(accepted1.getKey());
-    Name homotypic3 = TestEntityGenerator.newName("homotypic-3");
-    homotypic3.setHomotypicNameKey(accepted1.getKey());
-
-    Name homotypic4 = TestEntityGenerator.newName("homotypic-4");
-    homotypic4.setHomotypicNameKey(accepted2.getKey());
-    Name homotypic5 = TestEntityGenerator.newName("homotypic-5");
-    homotypic5.setHomotypicNameKey(null);
-
-    nameDao.create(homotypic1);
-    nameDao.create(homotypic2);
-    nameDao.create(homotypic3);
-    nameDao.create(homotypic4);
-    nameDao.create(homotypic5);
-
-    commit();
-
-    // heterotypic1 is p.p. synonym for accepted1 and accepted2
-    // 2 taxa should come back when querying on heterotypic1's
-    // name key
-    Page p = new Page(10);
-    List<Taxon> taxa = mapper().list(null, false, heterotypic1.getKey(), p);
-    assertEquals(2, taxa.size());
-
-    taxa = mapper().list(null, false, heterotypic2.getKey(), p);
-    assertEquals(1, taxa.size());
-
-    // none of the homotypic names have been linked as synonyms yet, so no results!
-    taxa = mapper().list(null, false, homotypic1.getKey(), p);
-    assertTrue(taxa.isEmpty());
-
-    taxa = mapper().list(null, false, homotypic5.getKey(), p);
-    assertTrue(taxa.isEmpty());
-
-    // add homotypic synonyms
-    nameDao.addSynonym(NameDao.toSynonym(dKey, taxon1.getKey(), homotypic1.getKey()));
-    nameDao.addSynonym(NameDao.toSynonym(dKey, taxon1.getKey(), homotypic2.getKey()));
-    nameDao.addSynonym(NameDao.toSynonym(dKey, taxon1.getKey(), homotypic3.getKey()));
-
-    taxa = mapper().list(null, false, heterotypic2.getKey(), p);
-    assertEquals(1, taxa.size());
-
-    taxa = mapper().list(null, false, homotypic1.getKey(), p);
-    assertEquals(1, taxa.size());
-
-    taxa = mapper().list(null, false, homotypic3.getKey(), p);
-    assertEquals(1, taxa.size());
-
-    taxa = mapper().list(null, false, homotypic5.getKey(), p);
-    assertTrue(taxa.isEmpty());
   }
 
   @Test
