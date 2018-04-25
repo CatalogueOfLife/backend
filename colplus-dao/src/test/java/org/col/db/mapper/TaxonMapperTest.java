@@ -34,7 +34,6 @@ public class TaxonMapperTest extends MapperTestBase<TaxonMapper> {
     assertNotNull(in.getKey());
     commit();
     Taxon out = mapper().get(in.getKey());
-    out.getName().setHomotypicNameKey(null);
 
     Javers javers = JaversBuilder.javers().build();
     Diff diff = javers.compare(in, out);
