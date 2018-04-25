@@ -43,7 +43,7 @@
   </resultMap>
 
 
-  <select id="listByTaxon" parameterType="map" resultMap="vernacularNameResultMap">
+  <select id="listByTaxon" resultMap="vernacularNameResultMap">
     SELECT <include refid="SELECT" />
     FROM <include refid="FROM" />
     WHERE vn.taxon_key = #{taxonKey}

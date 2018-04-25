@@ -13,12 +13,6 @@ import java.util.List;
 public interface SynonymMapper {
 
   /**
-   * Reads a synonym (both hetero- and homotypical) by its name.
-	 * Warning, the main synonym name property is not set cause it is expected to exist already
-	 */
-  Synonym getByName(@Param("name") Name name);
-
-  /**
    * Creates a new synonym linked to a given name.
    * Note that the name and accepted taxa must exist already and have keys.
    * @param synonym
@@ -36,6 +30,12 @@ public interface SynonymMapper {
 	 * @param taxonKey accepted taxon key
 	 * @return list of misapplied or heterotypic synonym names
 	 */
-	List<Synonym> synonyms(@Param("key") int taxonKey);
+	List<Synonym> listByTaxon(@Param("taxonKey") int taxonKey);
+
+
+	/**
+	 * Reads all synonyms by the synonyms name.
+	 */
+	List<Synonym> listByName(@Param("nameKey") int nameKey);
 
 }

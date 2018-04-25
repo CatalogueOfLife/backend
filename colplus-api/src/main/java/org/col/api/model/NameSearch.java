@@ -32,8 +32,8 @@ public class NameSearch {
 	@QueryParam("nomstatus")
 	private NomStatus nomStatus;
 
-	@QueryParam("taxstatus")
-	private TaxonomicStatus taxStatus;
+	@QueryParam("status")
+	private TaxonomicStatus status;
 
 	@QueryParam("issue")
 	private Issue issue;
@@ -85,11 +85,11 @@ public class NameSearch {
   }
 
   public TaxonomicStatus getTaxStatus() {
-    return taxStatus;
+    return status;
   }
 
   public void setTaxStatus(TaxonomicStatus taxStatus) {
-    this.taxStatus = taxStatus;
+    this.status = taxStatus;
   }
 
   public Issue getIssue() {
@@ -122,7 +122,7 @@ public class NameSearch {
         && key == null
         && rank == null
         && nomStatus == null
-        && taxStatus == null
+        && status == null
         && issue == null
         && type == null;
   }
@@ -137,7 +137,7 @@ public class NameSearch {
         Objects.equals(key, that.key) &&
         rank == that.rank &&
         nomStatus == that.nomStatus &&
-        taxStatus == that.taxStatus &&
+				status == that.status &&
         issue == that.issue &&
         type == that.type &&
         sortBy == that.sortBy;
@@ -145,6 +145,6 @@ public class NameSearch {
 
   @Override
   public int hashCode() {
-    return Objects.hash(q, datasetKey, key, rank, nomStatus, taxStatus, issue, type, sortBy);
+    return Objects.hash(q, datasetKey, key, rank, nomStatus, status, issue, type, sortBy);
   }
 }

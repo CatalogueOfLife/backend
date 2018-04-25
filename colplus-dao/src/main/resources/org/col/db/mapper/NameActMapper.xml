@@ -37,7 +37,7 @@
     <id property="key" column="key" />
   </resultMap>
 
-  <select id="list" parameterType="map" resultMap="nameActResultMap">
+  <select id="list" resultMap="nameActResultMap">
     SELECT <include refid="SELECT" />
     FROM name_act na
     WHERE na.name_key = #{nameKey}

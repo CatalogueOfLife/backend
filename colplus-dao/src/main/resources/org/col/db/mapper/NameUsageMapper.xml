@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.col.db.mapper.NameUsageMapper">
+
+    <sql id="SELECT">
+        CASE
+            WHEN t.key is not null THEN 1
+            WHEN s.status is not null THEN 2
+            ELSE 3
+        END AS disc,
+        <include refid="org.col.db.mapper.NameMapper.nameCols">
+            <property name="alias" value="n"/>
+            <property name="prefix" value="n_"/>
+        </include>,
+        <include refid="org.col.db.mapper.TaxonMapper.taxonCols">
+            <property name="alias" value="t"/>
+            <property name="prefix" value=""/>
+        </include>,
+        <include refid="org.col.db.mapper.SynonymMapper.synCols">
+            <property name="alias" value="s"/>
+            <property name="prefix" value="s_"/>
+        </include>,
+        <include refid="org.col.db.mapper.TaxonMapper.taxonCols">
+            <property name="alias" value="a"/>
+            <property name="prefix" value="a_"/>
+        </include>,
+        <include refid="org.col.db.mapper.NameMapper.nameCols">
+            <property name="alias" value="an"/>
+            <property name="prefix" value="a_n_"/>
+        </include>
+    </sql>
+
+    <sql id="FROM">
+        name n
+        LEFT JOIN taxon t ON n.key = t.name_key
+        LEFT JOIN synonym s ON n.key = s.name_key
+    </sql>
+
+    <sql id="FROM-FULL">
+        <include refid="FROM"/>
+        LEFT JOIN taxon a ON s.taxon_key = a.key
+        LEFT JOIN name an ON a.name_key = an.key
+    </sql>
+
+    <!-- TODO: filter only accepted or synoynms -->
+    <sql id="WHERE">
+        TRUE
+        <if test="q.q != null">
+            AND n.doc @@ plainto_tsquery('simple2', #{q.q})
+        </if>
+        <if test="q.datasetKey != null">
+            AND #{q.datasetKey} = n.dataset_key
+        </if>
+        <if test="q.key != null">
+            AND #{q.key} = n.key
+        </if>
+        <if test="q.rank != null">
+            AND #{q.rank}::rank = n.rank
+        </if>
+        <if test="q.nomStatus != null">
+            AND #{q.nomStatus}::int = n.nom_status
+        </if>
+        <if test="q.type != null">
+            AND #{q.type}::int = n.type
+        </if>
+        <if test="q.issue != null">
+            AND n.issues @> array[#{q.issue}::int]
+        </if>
+    </sql>
+
+
+
+    <resultMap id="taxonResultMap" type="Taxon" autoMapping="true" extends="org.col.db.mapper.TaxonMapper.taxonResultMap">
+        <id column="key" />
+    </resultMap>
+
+    <resultMap id="synonymResultMap" type="Synonym" autoMapping="true" extends="org.col.db.mapper.SynonymMapper.synonymResultMap">
+        <id column="key" />
+        <result property="accordingTo" column="s_according_to" />
+        <result property="status" column="s_status" />
+    </resultMap>
+
+    <resultMap id="bareNameResultMap" type="BareName" autoMapping="true">
+        <id column="key" />
+        <association property="name" javaType="Name" resultMap="org.col.db.mapper.NameMapper.nameResultMap" columnPrefix="n_" />
+    </resultMap>
+
+    <resultMap id="nameSearchResultMap" type="Object">
+        <discriminator javaType="int" column="disc">
+            <case value="1" resultType="Taxon" resultMap="taxonResultMap" />
+            <case value="2" resultType="Synonym" resultMap="synonymResultMap" />
+            <case value="3" resultType="BareName" resultMap="bareNameResultMap" />
+        </discriminator>
+    </resultMap>
+
+
+    <select id="searchCount" resultType="integer">
+        SELECT COUNT(*)
+        FROM <include refid="FROM" />
+        WHERE <include refid="WHERE" />
+    </select>
+
+    <select id="search" resultMap="nameSearchResultMap">
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM-FULL" />
+        WHERE <include refid="WHERE" />
+        <choose>
+            <when test="q.sortBy.toString() == 'KEY'">
+                ORDER BY n.key
+            </when>
+            <when test="q.sortBy.toString() == 'NAME'">
+                ORDER BY n.scientific_name ASC
+            </when>
+            <otherwise>
+                ORDER BY ts_rank(n.doc, plainto_tsquery('simple2', #{q.q})) DESC
+            </otherwise>
+        </choose>
+        <include refid="org.col.db.mapper.Common.limit" />
+    </select>
+
+    <select id="listByName" resultMap="nameSearchResultMap">
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM-FULL" />
+        WHERE n.key=#{nameKey}
+    </select>
+
+</mapper>

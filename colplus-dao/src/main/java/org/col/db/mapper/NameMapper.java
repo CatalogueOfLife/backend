@@ -41,12 +41,6 @@ public interface NameMapper {
    */
   List<Name> homotypicGroupByTaxon(@Param("key") int taxonKey);
 
-  int countSearchResults(@Param("q") NameSearch query);
-
-	List<Name> search(@Param("q") NameSearch query,
-                         @Param("page") Page page);
-
-
   /**
    * Returns the list of names published in the same reference.
    */

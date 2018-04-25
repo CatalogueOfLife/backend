@@ -80,8 +80,8 @@ public class Traversals {
       .uniqueness(Uniqueness.NODE_PATH);
 
   /**
-   * Traversal that iterates depth first over all descendants including synonyms and the starting node.
-   * The node of pro parte synonyms will be visited multiple times.
+   * Traversal that iterates depth first over all descendants including listByTaxon and the starting node.
+   * The node of pro parte listByTaxon will be visited multiple times.
    * There is no particular order for the direct children.
    * See SORTED_TREE traversals if a taxonomic order is required!
    */
@@ -89,8 +89,8 @@ public class Traversals {
       .relationships(RelType.SYNONYM_OF, Direction.INCOMING);
 
   /**
-   * Traversal that iterates depth first over all descendants including synonyms.
-   * The node of pro parte synonyms will be visited multiple times, once for each synonym/pro_parte relationship!
+   * Traversal that iterates depth first over all descendants including listByTaxon.
+   * The node of pro parte listByTaxon will be visited multiple times, once for each synonym/pro_parte relationship!
    * There is no particular order for the direct children.
    * See SORTED_TREE if a taxonomic order is required!
    */
@@ -98,9 +98,9 @@ public class Traversals {
       .evaluator(Evaluators.excludeStartPosition());
 
   /**
-   * Traversal that iterates over all child taxa and their synonyms in a taxonomic order, i.e. by rank and secondary ordered by the name.
+   * Traversal that iterates over all child taxa and their listByTaxon in a taxonomic order, i.e. by rank and secondary ordered by the name.
    * The traversal includes the initial starting node.
-   * The node of pro parte synonyms will be visited multiple times, once for each synonym/pro_parte relationship!
+   * The node of pro parte listByTaxon will be visited multiple times, once for each synonym/pro_parte relationship!
    * <p>
    * This traversal differes from DESCENDANTS that it includes the starting node and yields the nodes in a taxonomic order.
    * The order is a bit expensive to calculate and requires more memory. So use DESCENDANTS whenever possible.
@@ -123,7 +123,7 @@ public class Traversals {
 
   /**
    * Tries to find the set of accepted nodes.
-   * Can be multiple due to pro parte synonyms.
+   * Can be multiple due to pro parte listByTaxon.
    *
    * @param syn synonym node to look for accepted nodes
    */

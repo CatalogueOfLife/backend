@@ -104,7 +104,7 @@ public class AcefInserter extends NeoInserter {
       store.put(t);
       meta.incRecords(t.name.getRank());
     });
-    // synonyms
+    // listByTaxon
     reader.stream(AcefTerm.Synonyms).forEach(rec -> {
       UnescapedVerbatimRecord v = build(rec.get(AcefTerm.ID), rec);
       NeoTaxon t = inter.interpretTaxon(v, true);

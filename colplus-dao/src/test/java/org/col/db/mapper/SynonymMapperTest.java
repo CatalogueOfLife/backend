@@ -66,8 +66,9 @@ public class SynonymMapperTest extends MapperTestBase<SynonymMapper> {
     synonymMapper.create(s1);
     commit();
 
-    Synonym s2 = synonymMapper.getByName(s1.getName());
-    System.out.println("ACC NAME: " + s2.getAccepted().getName());
+    List<Synonym> syns = synonymMapper.listByName(s1.getName().getKey());
+    assertEquals(1, syns.size());
+    Synonym s2 = syns.get(0);
 
     assertEquals(s1.getName(), s2.getName());
     assertEquals(s1.getAccepted().getName(), s2.getAccepted().getName());
@@ -80,7 +81,7 @@ public class SynonymMapperTest extends MapperTestBase<SynonymMapper> {
     final int accKey = TestEntityGenerator.TAXON1.getKey();
     final int datasetKey = TestEntityGenerator.TAXON1.getDatasetKey();
 
-    List<Synonym> synonyms = synonymMapper.synonyms(accKey);
+    List<Synonym> synonyms = synonymMapper.listByTaxon(accKey);
     assertTrue(synonyms.isEmpty());
     assertEquals(0, synonyms.size());
 
@@ -112,14 +113,14 @@ public class SynonymMapperTest extends MapperTestBase<SynonymMapper> {
 
     // no synonym links added yet, expect empty synonymy even though basionym links
     // exist!
-    synonyms = synonymMapper.synonyms(accKey);
+    synonyms = synonymMapper.listByTaxon(accKey);
     assertTrue(synonyms.isEmpty());
     assertEquals(0, synonyms.size());
 
-    // now add a few synonyms
+    // now add a few listByTaxon
     synonymMapper.create(NameDao.toSynonym(datasetKey, accKey, syn1.getKey()));
     commit();
-    synonyms = synonymMapper.synonyms(accKey);
+    synonyms = synonymMapper.listByTaxon(accKey);
     assertFalse(synonyms.isEmpty());
     assertEquals(1, synonyms.size());
 
@@ -129,7 +130,7 @@ public class SynonymMapperTest extends MapperTestBase<SynonymMapper> {
     synonymMapper.create(NameDao.toSynonym(datasetKey, accKey, syn3bas.getKey()));
     synonymMapper.create(NameDao.toSynonym(datasetKey, accKey, syn31.getKey()));
 
-    synonyms = synonymMapper.synonyms(accKey);
+    synonyms = synonymMapper.listByTaxon(accKey);
     assertEquals(6, synonyms.size());
   }
 

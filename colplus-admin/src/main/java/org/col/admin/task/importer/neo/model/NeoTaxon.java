@@ -22,7 +22,7 @@ public class NeoTaxon {
   public Node node;
   // the unescaped verbatim record to be used for further interpretation
   public UnescapedVerbatimRecord verbatim;
-  // we keep the name distinct from the Taxon here so we can also accomodate synonyms which do not have a taxon instance!
+  // we keep the name distinct from the Taxon here so we can also accomodate listByTaxon which do not have a taxon instance!
   public Name name;
   // either a taxon or a synonym, never both!
   public Taxon taxon;

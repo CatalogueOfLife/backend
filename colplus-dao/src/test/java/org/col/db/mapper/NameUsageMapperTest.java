@@ -1,8 +1,8 @@
-package org.col.db.dao;
+package org.col.db.mapper;
 
 import com.google.common.base.Splitter;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.TestEntityGenerator;
 import org.col.api.model.*;
@@ -10,32 +10,49 @@ import org.col.api.vocab.Issue;
 import org.col.api.vocab.NomStatus;
 import org.col.api.vocab.Origin;
 import org.col.api.vocab.TaxonomicStatus;
-import org.col.db.mapper.SynonymMapper;
+import org.col.db.dao.NameDao;
+import org.col.db.dao.NameUsageDao;
+import org.col.db.dao.TaxonDao;
 import org.col.util.BeanPrinter;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
+import org.javers.core.Javers;
+import org.javers.core.JaversBuilder;
+import org.javers.core.diff.Diff;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.sql.SQLException;
-import java.util.*;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
+import static org.col.api.TestEntityGenerator.*;
 import static org.junit.Assert.*;
 
-public class NameUsageDaoTest extends DaoTestBase {
+/**
+ *
+ */
+public class NameUsageMapperTest extends MapperTestBase<NameMapper> {
+  static final Javers javers = JaversBuilder.javers().build();
   static final Splitter SPACE_SPLITTER = Splitter.on(" ").trimResults();
 
-  NameUsageDao dao;
+  NameUsageMapper mapper;
   NameDao nDao;
   TaxonDao tDao;
   SynonymMapper synonymMapper;
   SqlSession session;
 
+  public NameUsageMapperTest() {
+    super(NameMapper.class);
+  }
+
   @Before
   public void init(){
-    session = session();
-    dao = new NameUsageDao(session);
+    session = initMybatisRule.getSqlSession();
+    mapper = initMybatisRule.getMapper(NameUsageMapper.class);
     nDao = new NameDao(session);
     tDao = new TaxonDao(session);
     synonymMapper = session.getMapper(SynonymMapper.class);
@@ -45,6 +62,57 @@ public class NameUsageDaoTest extends DaoTestBase {
   public void down(){
     session.close();
   }
+
+  @Test
+  public void countSearchResults() throws Exception {
+    Name n = TestEntityGenerator.newName("a");
+    n.setScientificName("Foo bar");
+    n.setGenus("Foo");
+    n.setSpecificEpithet("bar");
+    n.setRank(Rank.SPECIES);
+    nDao.create(n);
+
+    n = TestEntityGenerator.newName("b");
+    n.setScientificName("Foo baz");
+    n.setGenus("Foo");
+    n.setSpecificEpithet("baz");
+    n.setRank(Rank.SPECIES);
+    nDao.create(n);
+
+    n = TestEntityGenerator.newName("c");
+    n.setScientificName("Fee bar");
+    n.setGenus("Fee");
+    n.setSpecificEpithet("bar");
+    n.setRank(Rank.SPECIES);
+    nDao.create(n);
+
+    n = TestEntityGenerator.newName("d");
+    n.setScientificName("Foo");
+    n.setRank(Rank.PHYLUM);
+    nDao.create(n);
+
+    commit();
+
+    NameSearch search = new NameSearch();
+    search.setDatasetKey(TestEntityGenerator.DATASET1.getKey());
+    search.setQ("foo");
+    assertEquals(3, mapper.searchCount(search));
+
+    search.setRank(Rank.SPECIES);
+    assertEquals(2, mapper.searchCount(search));
+
+    search.setQ("baz");
+    assertEquals(1, mapper.searchCount(search));
+
+    search.setQ("Foo");
+    search.setRank(Rank.PHYLUM);
+    assertEquals(1, mapper.searchCount(search));
+
+    search.setRank(Rank.CLASS);
+    assertEquals(0, mapper.searchCount(search));
+  }
+
+
 
 
   @Test
@@ -81,24 +149,24 @@ public class NameUsageDaoTest extends DaoTestBase {
     NameSearch search = new NameSearch();
     search.setDatasetKey(TestEntityGenerator.DATASET1.getKey());
     search.setQ("foo");
-    ResultPage<NameUsage> names = dao.search(search, new Page());
+    List<NameUsage> names = mapper.search(search, new Page());
     assertEquals("01", 3, names.size());
 
     search.setRank(Rank.SPECIES);
-    names = dao.search(search, new Page());
+    names = mapper.search(search, new Page());
     assertEquals("02", 2, names.size());
 
     search.setQ("baz");
-    names = dao.search(search, new Page());
+    names = mapper.search(search, new Page());
     assertEquals("03", 1, names.size());
 
     search.setQ("Foo");
     search.setRank(Rank.PHYLUM);
-    names = dao.search(search, new Page());
+    names = mapper.search(search, new Page());
     assertEquals("04", 1, names.size());
 
     search.setRank(Rank.CLASS);
-    names = dao.search(search, new Page());
+    names = mapper.search(search, new Page());
     assertEquals("05", 0, names.size());
   }
 
@@ -136,24 +204,24 @@ public class NameUsageDaoTest extends DaoTestBase {
     NameSearch search = new NameSearch();
     search.setDatasetKey(TestEntityGenerator.DATASET1.getKey());
     search.setQ("foo");
-    ResultPage<NameUsage> names = dao.search(search, new Page());
+    List<NameUsage> names = mapper.search(search, new Page());
     assertEquals("01", 3, names.size());
 
     search.setType(NameType.SCIENTIFIC);
-    names = dao.search(search, new Page());
+    names = mapper.search(search, new Page());
     assertEquals("02", 2, names.size());
 
     search.setQ("baz");
-    names = dao.search(search, new Page());
+    names = mapper.search(search, new Page());
     assertEquals("03", 1, names.size());
 
     search.setQ("Foo");
     search.setType(NameType.VIRUS);
-    names = dao.search(search, new Page());
+    names = mapper.search(search, new Page());
     assertEquals("04", 1, names.size());
 
     search.setType(NameType.HYBRID_FORMULA);
-    names = dao.search(search, new Page());
+    names = mapper.search(search, new Page());
     assertEquals("05", 0, names.size());
   }
 
@@ -191,24 +259,24 @@ public class NameUsageDaoTest extends DaoTestBase {
     NameSearch search = new NameSearch();
     search.setDatasetKey(TestEntityGenerator.DATASET1.getKey());
     search.setQ("foo");
-    ResultPage<NameUsage> names = dao.search(search, new Page());
+    List<NameUsage> names = mapper.search(search, new Page());
     assertEquals("01", 3, names.size());
 
     search.setNomStatus(NomStatus.UNEVALUATED);
-    names = dao.search(search, new Page());
+    names = mapper.search(search, new Page());
     assertEquals("02", 2, names.size());
 
     search.setQ("baz");
-    names = dao.search(search, new Page());
+    names = mapper.search(search, new Page());
     assertEquals("03", 1, names.size());
 
     search.setQ("Foo");
     search.setNomStatus(NomStatus.CHRESONYM);
-    names = dao.search(search, new Page());
+    names = mapper.search(search, new Page());
     assertEquals("04", 1, names.size());
 
     search.setNomStatus(NomStatus.DOUBTFUL);
-    names = dao.search(search, new Page());
+    names = mapper.search(search, new Page());
     assertEquals("05", 0, names.size());
   }
 
@@ -251,14 +319,16 @@ public class NameUsageDaoTest extends DaoTestBase {
 
     // Since we have an empty NameSearch, we should just have all names;
     // the ones created here + the ones inserted through apple
-    ResultPage<NameUsage> result = dao.search(new NameSearch(), new Page());
+    List<NameUsage> result = mapper.search(new NameSearch(), new Page());
     assertEquals(10, result.size());
 
-    for (NameUsage u : result.getResult()) {
+    for (NameUsage u : result) {
+      System.out.println("----------");
+      System.out.println(u.getName());
       NameUsage u2 = usages.get(u.getName().getKey());
-      assertEquals(u2.getName().getKey(), u.getName().getKey());
       assertEquals(u2.getClass(), u.getClass());
-      //assertEquals(u2, u);
+      //diff(u, u2);
+      assertEquals(u2, u);
     }
   }
 
@@ -288,15 +358,27 @@ public class NameUsageDaoTest extends DaoTestBase {
     NameSearch query = new NameSearch();
     // Provide key of synonym name
     query.setKey(syn1.getName().getKey());
-    ResultPage<NameUsage> result = dao.search(query, new Page());
+    List<NameUsage> result = mapper.search(query, new Page());
     assertEquals(1, result.size());
 
-    assertTrue(result.getResult().get(0) instanceof Synonym);
-    Synonym sRes = (Synonym) result.getResult().get(0);
+    assertTrue(result.get(0) instanceof Synonym);
+    Synonym sRes = (Synonym) result.get(0);
 
     assertEquals(t1, sRes.getAccepted());
     BeanPrinter bp = new BeanPrinter();
     bp.setShowObjectIds(true);
+  }
+
+  @Test
+  public void listByName() throws Exception {
+    assertEquals(Lists.newArrayList(SYN2), mapper.listByName(NAME4.getKey()));
+    assertEquals(Lists.newArrayList(TAXON1), mapper.listByName(NAME1.getKey()));
+  }
+
+  // please keep for debugging !!!
+  static void diff(Object obj1, Object obj2){
+    Diff diff = javers.compare(obj1, obj2);
+    System.out.println(diff);
   }
 
   @Test
@@ -325,11 +407,11 @@ public class NameUsageDaoTest extends DaoTestBase {
     NameSearch query = new NameSearch();
     // Provide key of accepted name
     query.setKey(acc1.getKey());
-    ResultPage<NameUsage> result = dao.search(query, new Page());
+    List<NameUsage> result = mapper.search(query, new Page());
     assertEquals(1, result.size());
 
-    assertTrue(result.getResult().get(0) instanceof Taxon);
-    Taxon res = (Taxon) result.getResult().get(0);
+    assertTrue(result.get(0) instanceof Taxon);
+    Taxon res = (Taxon) result.get(0);
 
     assertNotNull(res);
     assertNotNull(res.getKey());
@@ -360,10 +442,10 @@ public class NameUsageDaoTest extends DaoTestBase {
 
     NameSearch query = new NameSearch();
     query.setSortBy(NameSearch.SortBy.RELEVANCE);
-    ResultPage<NameUsage> result = dao.search(query, new Page());
+    List<NameUsage> result = mapper.search(query, new Page());
 
     query.setSortBy(NameSearch.SortBy.NAME);
-    result = dao.search(query, new Page());
+    result = mapper.search(query, new Page());
   }
 
   @Test
@@ -406,27 +488,29 @@ public class NameUsageDaoTest extends DaoTestBase {
     NameSearch search = new NameSearch();
     search.setDatasetKey(TestEntityGenerator.DATASET1.getKey());
     search.setQ("foo");
-    ResultPage<NameUsage> names = dao.search(search, new Page());
+    List<NameUsage> names = mapper.search(search, new Page());
     assertEquals("01", 3, names.size());
 
     search.setIssue(Issue.UNPARSABLE_AUTHORSHIP);
-    names = dao.search(search, new Page());
+    names = mapper.search(search, new Page());
     assertEquals("02", 2, names.size());
 
     search.setQ("baz");
-    names = dao.search(search, new Page());
+    names = mapper.search(search, new Page());
     assertEquals("03", 1, names.size());
 
     search.setQ("Foo");
     search.setIssue(Issue.REFERENCE_UNPARSABLE);
-    names = dao.search(search, new Page());
+    names = mapper.search(search, new Page());
     assertEquals("04", 1, names.size());
 
     search.setIssue(Issue.ALT_IDENTIFIER_INVALID);
-    names = dao.search(search, new Page());
+    names = mapper.search(search, new Page());
     assertEquals("05", 0, names.size());
   }
 
+  
+  
 
   private static Taxon newTaxon(String id, Name n) {
     Taxon t = new Taxon();
@@ -480,4 +564,5 @@ public class NameUsageDaoTest extends DaoTestBase {
     name.setType(NameType.SCIENTIFIC);
     return name;
   }
+
 }

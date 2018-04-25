@@ -85,6 +85,7 @@ public class TestEntityGenerator {
     REF2.setDatasetKey(DATASET2.getKey());
 
     NAME1.setKey(1);
+    NAME1.setHomotypicNameKey(1);
     NAME1.setId("name-1");
     NAME1.setDatasetKey(DATASET1.getKey());
     NAME1.setGenus("Malus");
@@ -97,6 +98,7 @@ public class TestEntityGenerator {
     NAME1.setPublishedInPage("712");
 
     NAME2.setKey(2);
+    NAME2.setHomotypicNameKey(2);
     NAME2.setId("name-2");
     NAME2.setDatasetKey(DATASET1.getKey());
     NAME2.setGenus("Larus");
@@ -109,6 +111,7 @@ public class TestEntityGenerator {
     NAME2.setPublishedInPage(null);
 
     NAME3.setKey(3);
+    NAME3.setHomotypicNameKey(2);
     NAME3.setId("name-3");
     NAME3.setDatasetKey(DATASET1.getKey());
     NAME3.setGenus("Larus");
@@ -121,6 +124,7 @@ public class TestEntityGenerator {
     NAME3.setPublishedInPage(null);
 
     NAME4.setKey(4);
+    NAME4.setHomotypicNameKey(4);
     NAME4.setId("name-4");
     NAME4.setDatasetKey(DATASET1.getKey());
     NAME4.setGenus("Larus");
@@ -145,7 +149,7 @@ public class TestEntityGenerator {
     TAXON2.setOrigin(Origin.SOURCE);
 
     SYN1.setName(NAME3);
-    SYN1.setAccepted(TAXON1);
+    SYN1.setAccepted(TAXON2);
     SYN1.setStatus(TaxonomicStatus.SYNONYM);
 
     SYN2.setName(NAME4);

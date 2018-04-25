@@ -69,7 +69,7 @@ public class NameDao {
   }
 
   /**
-   * Lists all homotypic synonyms based on the same homotypic group key
+   * Lists all homotypic listByTaxon based on the same homotypic group key
    */
   public List<Name> homotypicGroup(int key) {
     NameMapper mapper = session.getMapper(NameMapper.class);
@@ -117,10 +117,10 @@ public class NameDao {
     SynonymMapper synMapper = session.getMapper(SynonymMapper.class);
     NameMapper nMapper = session.getMapper(NameMapper.class);
     Synonymy syn = new Synonymy();
-    // get homotypic synonyms for the accepted name
+    // get homotypic listByTaxon for the accepted name
     syn.getHomotypic().addAll(nMapper.homotypicGroupByTaxon(taxonKey));
-    // get all heterotypic synonyms and misapplied names
-    for (Synonym s : synMapper.synonyms(taxonKey)) {
+    // get all heterotypic listByTaxon and misapplied names
+    for (Synonym s : synMapper.listByTaxon(taxonKey)) {
       if (TaxonomicStatus.MISAPPLIED == s.getStatus()) {
         syn.addMisapplied(new NameAccordingTo(s.getName(), s.getAccordingTo()));
       } else {

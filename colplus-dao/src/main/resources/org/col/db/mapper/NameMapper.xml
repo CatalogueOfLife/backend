@@ -4,121 +4,48 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="org.col.db.mapper.NameMapper">
 
+    <sql id="nameCols">
+        ${alias}.key AS ${prefix}key,
+        ${alias}.id AS ${prefix}id,
+        ${alias}.dataset_key AS ${prefix}dataset_key,
+        ${alias}.homotypic_name_key AS ${prefix}homotypic_name_key,
+        ${alias}.scientific_name AS ${prefix}scientific_name,
+        ${alias}.rank AS ${prefix}rank,
+        ${alias}.uninomial AS ${prefix}uninomial,
+        ${alias}.genus AS ${prefix}genus,
+        ${alias}.infrageneric_epithet AS ${prefix}infrageneric_epithet,
+        ${alias}.specific_epithet AS ${prefix}specific_epithet,
+        ${alias}.infraspecific_epithet AS ${prefix}infraspecific_epithet,
+        ${alias}.cultivar_epithet AS ${prefix}cultivar_epithet,
+        ${alias}.strain AS ${prefix}strain,
+        ${alias}.candidatus AS ${prefix}candidatus,
+        ${alias}.notho AS ${prefix}notho,
+        ${alias}.basionym_authors AS ${prefix}basionym_authors,
+        ${alias}.basionym_ex_authors AS ${prefix}basionym_ex_authors,
+        ${alias}.basionym_year AS ${prefix}basionym_year,
+        ${alias}.combination_authors AS ${prefix}combination_authors,
+        ${alias}.combination_ex_authors AS ${prefix}combination_ex_authors,
+        ${alias}.combination_year AS ${prefix}combination_year,
+        ${alias}.sanctioning_author AS ${prefix}sanctioning_author,
+        ${alias}.published_in_key AS ${prefix}published_in_key,
+        ${alias}.published_in_page AS ${prefix}published_in_page,
+        ${alias}.code AS ${prefix}code,
+        ${alias}.nom_status AS ${prefix}nom_status,
+        ${alias}.origin AS ${prefix}origin,
+        ${alias}.type AS ${prefix}type,
+        ${alias}.source_url AS ${prefix}source_url,
+        ${alias}.fossil AS ${prefix}fossil,
+        ${alias}.remarks AS ${prefix}remarks,
+        ${alias}.issues AS ${prefix}issues
+    </sql>
+
     <sql id="SELECT">
-        n.key,
-        n.id,
-        n.dataset_key,
-        n.homotypic_name_key,
-        n.scientific_name,
-        n.rank,
-        n.uninomial,
-        n.genus,
-        n.infrageneric_epithet,
-        n.specific_epithet,
-        n.infraspecific_epithet,
-        n.cultivar_epithet,
-        n.strain,
-        n.candidatus,
-        n.notho,
-        n.basionym_authors,
-        n.basionym_ex_authors,
-        n.basionym_year,
-        n.combination_authors,
-        n.combination_ex_authors,
-        n.combination_year,
-        n.sanctioning_author,
-        n.published_in_key,
-        n.published_in_page,
-        n.code,
-        n.nom_status,
-        n.origin,
-        n.type,
-        n.source_url,
-        n.fossil,
-        n.remarks,
-        n.issues
+        <include refid="nameCols">
+            <property name="alias" value="n"/>
+            <property name="prefix" value=""/>
+        </include>
     </sql>
 
-    <sql id="SEARCH_SELECT">
-        CASE
-          WHEN t.key is not null THEN 1
-          WHEN s.status is not null THEN 2
-          ELSE 3
-        END AS disc,
-        <include refid="SELECT" />,
-
-        t.key AS t_key,
-        t.id AS t_id,
-        t.dataset_key AS t_dataset_key,
-        t.parent_key AS t_parent_key,
-        t.name_key AS t_name_key,
-        t.doubtful AS t_doubtful,
-        t.origin AS t_origin,
-        t.according_to AS t_according_to,
-        t.according_to_date AS t_according_to_date,
-        t.fossil AS t_fossil,
-        t.recent AS t_recent,
-        t.lifezones AS t_lifezones,
-        t.dataset_url AS t_dataset_url,
-        t.species_estimate AS t_species_estimate,
-        t.species_estimate_reference_key AS t_species_estimate_reference_key,
-        t.remarks AS t_remarks,
-        t.issues AS t_issues,
-
-        s.status AS s_status,
-        s.according_to AS s_according_to,
-
-        a.key AS a_key,
-        a.id AS a_id,
-        a.dataset_key AS a_dataset_key,
-        a.parent_key AS a_parent_key,
-        a.name_key AS a_name_key,
-        a.doubtful AS a_doubtful,
-        a.origin AS a_origin,
-        a.according_to AS a_according_to,
-        a.according_to_date AS a_according_to_date,
-        a.fossil AS a_fossil,
-        a.recent AS a_recent,
-        a.lifezones AS a_lifezones,
-        a.dataset_url AS a_dataset_url,
-        a.species_estimate AS a_species_estimate,
-        a.species_estimate_reference_key AS a_species_estimate_reference_key,
-        a.remarks AS a_remarks,
-        a.issues AS a_issues,
-
-        an.key AS a_n_key,
-        an.id AS a_n_id,
-        an.dataset_key AS a_n_dataset_key,
-        an.homotypic_name_key AS a_n_homotypic_name_key,
-        an.scientific_name AS a_n_scientific_name,
-        an.rank AS a_n_rank,
-        an.uninomial AS a_n_uninomial,
-        an.genus AS a_n_genus,
-        an.infrageneric_epithet AS a_n_infrageneric_epithet,
-        an.specific_epithet AS a_n_specific_epithet,
-        an.infraspecific_epithet AS a_n_infraspecific_epithet,
-        an.cultivar_epithet AS a_n_cultivar_epithet,
-        an.strain AS a_n_strain,
-        an.candidatus AS a_n_candidatus,
-        an.notho AS a_n_notho,
-        an.basionym_authors AS a_n_basionym_authors,
-        an.basionym_ex_authors AS a_n_basionym_ex_authors,
-        an.basionym_year AS a_n_basionym_year,
-        an.combination_authors AS a_n_combination_authors,
-        an.combination_ex_authors AS a_n_combination_ex_authors,
-        an.combination_year AS a_n_combination_year,
-        an.sanctioning_author AS a_n_sanctioning_author,
-        an.published_in_key AS a_n_published_in_key,
-        an.published_in_page AS a_n_published_in_page,
-        an.code AS a_n_code,
-        an.nom_status AS a_n_nom_status,
-        an.origin AS a_n_origin,
-        an.type AS a_n_type,
-        an.source_url AS a_n_source_url,
-        an.fossil AS a_n_fossil,
-        an.remarks AS a_n_remarks,
-        an.issues AS a_n_issues
-    </sql>
 
     <sql id="COLS">
         id,
@@ -194,42 +121,7 @@
 
     <sql id="FROM">name n</sql>
 
-    <sql id="SEARCH_FROM">
-        <include refid="FROM" />
-        LEFT JOIN taxon t ON n.key = t.name_key
-        LEFT JOIN name hn ON n.homotypic_name_key = hn.name_key AND hn.key != n.key
-        LEFT JOIN synonym s ON n.homotypic_name_key = s.name_key
-          LEFT JOIN taxon a ON s.taxon_key = a.key
-          LEFT JOIN name an ON a.name_key = an.key
-    </sql>
-
-    <!-- TODO: filter only accepted or synoynms -->
-    <sql id="SEARCH_WHERE">
-        TRUE
-        <if test="q.q != null">
-            AND n.doc @@ plainto_tsquery('simple2', #{q.q})
-        </if>
-        <if test="q.datasetKey != null">
-            AND #{q.datasetKey} = n.dataset_key
-        </if>
-        <if test="q.key != null">
-            AND #{q.key} = n.key
-        </if>
-        <if test="q.rank != null">
-            AND #{q.rank}::rank = n.rank
-        </if>
-        <if test="q.nomStatus != null">
-            AND #{q.nomStatus}::int = n.nom_status
-        </if>
-        <if test="q.type != null">
-            AND #{q.type}::int = n.type
-        </if>
-        <if test="q.issue != null">
-            AND n.issues @> array[#{q.issue}::int]
-        </if>
-    </sql>
-
-    <!-- A mapping to Name, mostly auto mapped -->
+     <!-- A mapping to Name, mostly auto mapped -->
     <resultMap id="nameResultMap" type="Name" autoMapping="true">
         <id property="key" column="key" />
         <result property="id" column="id" />
@@ -246,49 +138,15 @@
         </association>
     </resultMap>
 
-    <resultMap id="taxonResultMap" type="Taxon" autoMapping="true">
-        <id property="key" column="t_key" />
-        <result property="id" column="t_id" />
-        <result property="status" column="t_status" />
-        <!--
-        <result property="lifezones" column="lifezones" typeHandler="org.col.db.type.LifezoneSetTypeHandler" />
-        <result property="issues" column="issues" typeHandler="org.col.db.type2.IssueSetTypeHandler" />
-        -->
-        <association property="name" javaType="Name" resultMap="nameResultMap" />
-    </resultMap>
-    <resultMap id="synonymResultMap" type="Synonym" autoMapping="true">
-        <id column="key" />
-        <result property="status" column="s_status" />
-        <result property="accordingTo" column="s_according_to" />
-        <association property="name" javaType="Name" resultMap="nameResultMap" />
-        <collection property="accepted" ofType="Taxon" column="a_key" columnPrefix="a_" >
-            <id column="key" />
-            <result property="lifezones" column="lifezones" typeHandler="org.col.db.type.LifezoneSetTypeHandler" />
-            <result property="issues" column="issues" typeHandler="org.col.db.type2.IssueSetTypeHandler" />
-            <association property="name" javaType="Name" resultMap="nameResultMap" columnPrefix="n_" />
-        </collection>
-    </resultMap>
-    <resultMap id="bareNameResultMap" type="NameAccordingTo" autoMapping="true">
-        <id column="key" />
-        <association property="name" javaType="Name" resultMap="nameResultMap" />
-    </resultMap>
 
-    <resultMap id="nameSearchResultMap" type="Object" autoMapping="true">
-        <discriminator javaType="int" column="disc">
-            <case value="1" resultType="Taxon" resultMap="taxonResultMap" />
-            <case value="2" resultType="Synonym" resultMap="synonymResultMap" />
-            <case value="3" resultType="NameAccordingTo" resultMap="bareNameResultMap" />
-        </discriminator>
-    </resultMap>
-
-    <select id="count" parameterType="map" resultType="int">
+    <select id="count" resultType="integer">
         SELECT count(*) FROM name
         <if test="datasetKey != null">
             WHERE dataset_key = #{datasetKey}
         </if>
     </select>
 
-    <select id="list" parameterType="map" resultMap="nameResultMap">
+    <select id="list" resultMap="nameResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
         <if test="datasetKey != null">
@@ -298,41 +156,17 @@
         <include refid="org.col.db.mapper.Common.limit" />
     </select>
 
-    <select id="listByReference" parameterType="map" resultMap="nameResultMap">
+    <select id="listByReference" resultMap="nameResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
         WHERE n.published_in_key = #{refKey}
         ORDER BY key
     </select>
 
-    <select id="lookupKey" resultType="int">
+    <select id="lookupKey" resultType="integer">
         SELECT key
         FROM name
         WHERE id = #{id} AND dataset_key = #{datasetKey}
-    </select>
-
-    <select id="countSearchResults" parameterType="map" resultType="int">
-        SELECT COUNT(*)
-        FROM <include refid="FROM" />
-        WHERE <include refid="SEARCH_WHERE" />
-    </select>
-
-    <select id="search" parameterType="map" resultMap="nameResultMap">
-        SELECT <include refid="SELECT" />
-        FROM <include refid="FROM" />
-        WHERE <include refid="SEARCH_WHERE" />
-        <choose>
-            <when test="q.sortBy.toString() == 'KEY'">
-                ORDER BY n.key
-            </when>
-            <when test="q.sortBy.toString() == 'NAME'">
-                ORDER BY n.scientific_name ASC
-            </when>
-            <otherwise>
-                ORDER BY ts_rank(n.doc, plainto_tsquery('simple2', #{q.q})) DESC
-            </otherwise>
-        </choose>
-        <include refid="org.col.db.mapper.Common.limit" />
     </select>
 
     <select id="get" resultMap="nameResultMap">

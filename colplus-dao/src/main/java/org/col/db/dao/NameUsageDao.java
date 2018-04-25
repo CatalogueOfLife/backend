@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.model.*;
 import org.col.db.mapper.NameMapper;
+import org.col.db.mapper.NameUsageMapper;
 import org.col.db.mapper.SynonymMapper;
 import org.col.db.mapper.TaxonMapper;
 import org.slf4j.Logger;
@@ -14,6 +15,7 @@ import java.util.List;
 
 /**
  * Collection of methods dealing with name usages, i.e. a name in the context of either a Taxon, Synonym or BareName.
+ * Mostly exposed by searches.
  */
 public class NameUsageDao {
 
@@ -23,13 +25,13 @@ public class NameUsageDao {
   private final SqlSession session;
   private final TaxonMapper tMapper;
   private final SynonymMapper sMapper;
-  private final NameMapper nMapper;
+  private final NameUsageMapper mapper;
 
   public NameUsageDao(SqlSession sqlSession) {
     this.session = sqlSession;
+    mapper = session.getMapper(NameUsageMapper.class);
     tMapper = session.getMapper(TaxonMapper.class);
     sMapper = session.getMapper(SynonymMapper.class);
-    nMapper = session.getMapper(NameMapper.class);
   }
 
   public List<NameUsage> usages(Name n) {
@@ -38,7 +40,7 @@ public class NameUsageDao {
       t.setName(n);
       usages.add(t);
     }
-    Synonym s = sMapper.getByName(n);
+    Synonym s = sMapper.listByName(n.getKey()).get(0);
     if (s != null) {
       s.setName(n);
       usages.add(s);
@@ -60,16 +62,11 @@ public class NameUsageDao {
       query.setQ(query.getQ() + ":*");
     }
     int total = 0;
-    List<Name> hits = nMapper.search(query, page);
-    List<NameUsage> usage = new ArrayList<>(hits.size());
+    List<NameUsage> hits = mapper.search(query, page);
     if (!hits.isEmpty()) {
-      total = nMapper.countSearchResults(query);
-      // now lookup each name ...
-      for (Name n : hits) {
-        usage.addAll(usages(n));
-      }
+      total = mapper.searchCount(query);
     }
-    return new ResultPage<>(page, total, usage);
+    return new ResultPage<>(page, total, hits);
   }
 
 }

@@ -12,7 +12,7 @@
   </appender>
 
   <logger name="org.apache.ibatis" level="INFO"/>
-  <logger name="java.sql" level="INFO"/>
+  <logger name="java.sql" level="DEBUG"/>
   <logger name="ru.yandex.qatools.embed" level="INFO"/>
   <logger name="de.flapdoodle.embed" level="INFO"/>
 

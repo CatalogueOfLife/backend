@@ -77,7 +77,7 @@ public class TaxonDao {
     TaxonInfo info = new TaxonInfo();
     info.setTaxon(taxon);
     ReferenceMapper rMapper = session.getMapper(ReferenceMapper.class);
-    info.setTaxonReferences(rMapper.taxonReferences(key));
+    info.setTaxonReferences(rMapper.listByTaxon(key));
 
     // vernaculars
     VernacularNameMapper vMapper = session.getMapper(VernacularNameMapper.class);

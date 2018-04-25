@@ -238,7 +238,7 @@ public class PgImport implements Runnable {
       VernacularNameMapper vernacularMapper = session.getMapper(VernacularNameMapper.class);
 
       // iterate over taxonomic tree in depth first order, keeping postgres parent keys
-      // pro parte synonyms will be visited multiple times, remember their name pg key!
+      // pro parte listByTaxon will be visited multiple times, remember their name pg key!
       Long2IntMap proParteNames = new Long2IntOpenHashMap();
       TreeWalker.walkTree(store.getNeo(), new StartEndHandler() {
         int counter = 0;

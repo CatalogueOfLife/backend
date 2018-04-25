@@ -84,7 +84,7 @@
     </resultMap>
 
 
-    <select id="count" parameterType="map" resultType="Integer">
+    <select id="count" resultType="integer">
         SELECT count(*)
         FROM <include refid="FROM" />
         <if test="state != null">
@@ -92,7 +92,7 @@
         </if>
     </select>
 
-    <select id="last" parameterType="map" resultMap="datasetImportResultMap">
+    <select id="last" resultMap="datasetImportResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
         WHERE dataset_key = #{key}
@@ -100,7 +100,7 @@
         LIMIT 1
     </select>
 
-    <select id="lastSuccessful" parameterType="map" resultMap="datasetImportResultMap">
+    <select id="lastSuccessful" resultMap="datasetImportResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
         WHERE dataset_key = #{key} AND state = 2
@@ -108,7 +108,7 @@
         LIMIT 1
     </select>
 
-    <select id="list" parameterType="map" resultMap="datasetImportResultMap">
+    <select id="list" resultMap="datasetImportResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
         <if test="state != null">
@@ -118,14 +118,14 @@
         <include refid="org.col.db.mapper.Common.limit" />
     </select>
 
-    <select id="listByDataset" parameterType="map" resultMap="datasetImportResultMap">
+    <select id="listByDataset" resultMap="datasetImportResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
         WHERE dataset_key = #{key}
         ORDER BY attempt DESC
     </select>
 
-    <select id="metrics" parameterType="map" resultMap="datasetImportResultMap">
+    <select id="metrics" resultMap="datasetImportResultMap">
         SELECT #{key} AS datasetKey,
         (SELECT count(*) FROM verbatim_record WHERE dataset_key=#{key}) AS verbatimCount,
         (SELECT count(*) FROM name WHERE dataset_key=#{key}) AS nameCount,
@@ -175,7 +175,7 @@
     </select>
 
     <insert id="create" parameterType="DatasetImport">
-        <selectKey keyProperty="di.attempt" resultType="int" order="BEFORE" >
+        <selectKey keyProperty="di.attempt" resultType="integer" order="BEFORE" >
             SELECT coalesce(max(attempt)+1, 1)
             FROM dataset_import
             WHERE dataset_key=#{di.datasetKey}

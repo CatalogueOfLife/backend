@@ -54,7 +54,7 @@ public class NameDaoTest extends DaoTestBase {
       assertTrue(synonymy.isEmpty());
       assertEquals(0, synonymy.size());
 
-      // now add a few synonyms
+      // now add a few listByTaxon
       dao.addSynonym(TestEntityGenerator.newSynonym(TaxonomicStatus.SYNONYM, syn1, acc));
       session.commit();
 

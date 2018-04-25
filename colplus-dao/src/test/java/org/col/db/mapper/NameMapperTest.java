@@ -4,21 +4,13 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import org.col.api.TestEntityGenerator;
 import org.col.api.model.*;
-import org.col.api.vocab.Issue;
-import org.col.api.vocab.NomStatus;
 import org.col.api.vocab.Origin;
-import org.col.api.vocab.TaxonomicStatus;
-import org.col.util.BeanPrinter;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.EnumSet;
 import java.util.List;
-import java.util.Set;
 
 import static org.col.api.TestEntityGenerator.NAME1;
 import static org.col.api.TestEntityGenerator.REF1;
@@ -161,7 +153,7 @@ public class NameMapperTest extends org.col.db.mapper.MapperTestBase<NameMapper>
 
   /*
    * Checks difference in behaviour between providing non-existing key
-   * and providing existing key but without synonyms.
+   * and providing existing key but without listByTaxon.
    * yields null (issue #55)
    */
   @Test
@@ -191,55 +183,6 @@ public class NameMapperTest extends org.col.db.mapper.MapperTestBase<NameMapper>
     // we have one ref from the apple.sql
     assertEquals(1, nameMapper.listByReference(REF1.getKey()).size());
     assertEquals(2, nameMapper.listByReference(REF2.getKey()).size());
-  }
-
-  @Test
-  public void countSearchResults() throws Exception {
-    Name n = TestEntityGenerator.newName("a");
-    n.setScientificName("Foo bar");
-    n.setGenus("Foo");
-    n.setSpecificEpithet("bar");
-    n.setRank(Rank.SPECIES);
-    nameMapper.create(n);
-
-    n = TestEntityGenerator.newName("b");
-    n.setScientificName("Foo baz");
-    n.setGenus("Foo");
-    n.setSpecificEpithet("baz");
-    n.setRank(Rank.SPECIES);
-    nameMapper.create(n);
-
-    n = TestEntityGenerator.newName("c");
-    n.setScientificName("Fee bar");
-    n.setGenus("Fee");
-    n.setSpecificEpithet("bar");
-    n.setRank(Rank.SPECIES);
-    nameMapper.create(n);
-
-    n = TestEntityGenerator.newName("d");
-    n.setScientificName("Foo");
-    n.setRank(Rank.PHYLUM);
-    nameMapper.create(n);
-
-    commit();
-
-    NameSearch search = new NameSearch();
-    search.setDatasetKey(TestEntityGenerator.DATASET1.getKey());
-    search.setQ("foo");
-    assertEquals(3, nameMapper.countSearchResults(search));
-
-    search.setRank(Rank.SPECIES);
-    assertEquals(2, nameMapper.countSearchResults(search));
-
-    search.setQ("baz");
-    assertEquals(1, nameMapper.countSearchResults(search));
-
-    search.setQ("Foo");
-    search.setRank(Rank.PHYLUM);
-    assertEquals(1, nameMapper.countSearchResults(search));
-
-    search.setRank(Rank.CLASS);
-    assertEquals(0, nameMapper.countSearchResults(search));
   }
 
   private static Name newAcceptedName(String scientificName) {

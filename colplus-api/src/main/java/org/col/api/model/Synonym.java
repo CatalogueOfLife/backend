@@ -33,8 +33,12 @@ public class Synonym implements NameUsage {
   }
 
   public void setStatus(TaxonomicStatus status) {
+    this.status = onlySynonym(status);
+  }
+
+  private static TaxonomicStatus onlySynonym(TaxonomicStatus status){
     Preconditions.checkArgument(status != null && status.isSynonym(), "Synonym status required");
-    this.status = status;
+    return status;
   }
 
   /**

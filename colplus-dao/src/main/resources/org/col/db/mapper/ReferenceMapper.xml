@@ -44,7 +44,7 @@
         <result property="issues" column="issues" typeHandler="org.col.db.type2.IssueSetTypeHandler" />
     </resultMap>
 
-    <select id="count" parameterType="map" resultType="Integer">
+    <select id="count" resultType="integer">
         SELECT count(*)
         FROM reference
         <if test="datasetKey != null">
@@ -52,7 +52,7 @@
         </if>
     </select>
 
-    <select id="list" parameterType="map" resultMap="referenceResultMap">
+    <select id="list" resultMap="referenceResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
         <if test="datasetKey != null">
@@ -62,7 +62,7 @@
         <include refid="org.col.db.mapper.Common.limit" />
     </select>
 
-    <select id="listByKeys" parameterType="map" resultMap="referenceResultMap">
+    <select id="listByKeys" resultMap="referenceResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
         WHERE key IN
@@ -72,7 +72,7 @@
         </foreach>
     </select>
 
-    <select id="lookupKey" resultType="Integer">
+    <select id="lookupKey" resultType="integer">
         SELECT key
         FROM reference
         WHERE id = #{id} AND dataset_key = #{datasetKey}
@@ -89,7 +89,7 @@
         VALUES ( <include refid="PROPS" /> )
     </insert>
 
-    <select id="taxonReferences" resultType="Integer">
+    <select id="listByTaxon" resultType="integer">
         SELECT reference_key
         FROM taxon_reference
         WHERE taxon_key = #{taxonKey}

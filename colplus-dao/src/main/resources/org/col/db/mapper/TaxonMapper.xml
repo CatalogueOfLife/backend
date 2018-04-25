@@ -4,56 +4,34 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="org.col.db.mapper.TaxonMapper">
 
-    <sql id="SELECT">
-        t.key,
-        t.id,
-        t.dataset_key,
-        t.parent_key,
-        t.name_key as n_key,
-        t.doubtful,
-        t.origin,
-        t.according_to,
-        t.according_to_date,
-        t.fossil,
-        t.recent,
-        t.lifezones,
-        t.dataset_url,
-        t.species_estimate,
-        t.species_estimate_reference_key,
-        t.remarks,
-        t.issues,
+    <sql id="taxonCols">
+        ${alias}.key AS ${prefix}key,
+        ${alias}.id AS ${prefix}id,
+        ${alias}.dataset_key AS ${prefix}dataset_key,
+        ${alias}.parent_key AS ${prefix}parent_key,
+        ${alias}.doubtful AS ${prefix}doubtful,
+        ${alias}.origin AS ${prefix}origin,
+        ${alias}.according_to AS ${prefix}according_to,
+        ${alias}.according_to_date AS ${prefix}according_to_date,
+        ${alias}.fossil AS ${prefix}fossil,
+        ${alias}.recent AS ${prefix}recent,
+        ${alias}.lifezones AS ${prefix}lifezones,
+        ${alias}.dataset_url AS ${prefix}dataset_url,
+        ${alias}.species_estimate AS ${prefix}species_estimate,
+        ${alias}.species_estimate_reference_key AS ${prefix}species_estimate_reference_key,
+        ${alias}.remarks AS ${prefix}remarks,
+        ${alias}.issues AS ${prefix}issues
+    </sql>
 
-        n.id as n_id,
-        n.dataset_key as n_dataset_key,
-        n.homotypic_name_key as n_homotypic_name_key,
-        n.scientific_name as n_scientific_name,
-        n.rank as n_rank,
-        n.uninomial as n_uninomial,
-        n.genus as n_genus,
-        n.infrageneric_epithet as n_infrageneric_epithet,
-        n.specific_epithet as n_specific_epithet,
-        n.infraspecific_epithet as n_infraspecific_epithet,
-        n.cultivar_epithet as n_cultivar_epithet,
-        n.strain as n_strain,
-        n.candidatus as n_candidatus,
-        n.notho as n_notho,
-        n.basionym_authors as n_basionym_authors,
-        n.basionym_ex_authors as n_basionym_ex_authors,
-        n.basionym_year as n_basionym_year,
-        n.combination_authors as n_combination_authors,
-        n.combination_ex_authors as n_combination_ex_authors,
-        n.combination_year as n_combination_year,
-        n.sanctioning_author as n_sanctioning_author,
-        n.published_in_key as n_published_in_key,
-        n.published_in_page as n_published_in_page,
-        n.code as n_code,
-        n.nom_status as n_nom_status,
-        n.origin as n_origin,
-        n.type as n_type,
-        n.source_url as n_source_url,
-        n.fossil as n_fossil,
-        n.remarks as n_remarks,
-        n.issues as n_issues
+    <sql id="SELECT">
+        <include refid="taxonCols">
+            <property name="alias" value="t"/>
+            <property name="prefix" value=""/>
+        </include>,
+        <include refid="org.col.db.mapper.NameMapper.nameCols">
+            <property name="alias" value="n"/>
+            <property name="prefix" value="n_"/>
+        </include>
     </sql>
 
     <sql id="COLS">
@@ -107,13 +85,13 @@
     </resultMap>
 
 
-    <select id="lookupKey" resultType="Integer">
+    <select id="lookupKey" resultType="integer">
         SELECT key
         FROM taxon
         WHERE id = #{id} AND dataset_key = #{datasetKey}
     </select>
 
-    <select id="count" parameterType="map" resultType="int">
+    <select id="count" resultType="integer">
         SELECT count(*)
         FROM taxon
         WHERE TRUE
@@ -125,7 +103,7 @@
         </if>
     </select>
 
-    <select id="list" parameterType="map" resultMap="taxonResultMap">
+    <select id="list" resultMap="taxonResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
         WHERE
@@ -154,7 +132,7 @@
         WHERE name_key = #{name.key}
     </select>
 
-    <select id="countChildren"  parameterType="map" resultType="int">
+    <select id="countChildren"  resultType="integer">
         SELECT count(*)
         FROM taxon
         WHERE parent_key = #{key}

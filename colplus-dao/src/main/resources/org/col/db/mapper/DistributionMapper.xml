@@ -42,7 +42,7 @@
   </resultMap>
 
 
-  <select id="listByTaxon" parameterType="map" resultMap="distributionResultMap">
+  <select id="listByTaxon" resultMap="distributionResultMap">
     SELECT <include refid="SELECT" />
     FROM <include refid="FROM" />
     WHERE d.taxon_key = #{taxonKey}

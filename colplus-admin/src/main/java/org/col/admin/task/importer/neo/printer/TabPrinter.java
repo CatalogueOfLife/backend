@@ -41,7 +41,7 @@ public class TabPrinter implements TreePrinter {
       String[] row = new String[7];
       row[0] = String.valueOf(n.getId());
       if (n.hasLabel(Labels.SYNONYM)) {
-        // we can have multiple accepted parents for pro parte synonyms
+        // we can have multiple accepted parents for pro parte listByTaxon
         Set<Long> parentKeys = Sets.newHashSet();
         for (Relationship synRel : n.getRelationships(RelType.SYNONYM_OF, Direction.OUTGOING)) {
           parentKeys.add(synRel.getOtherNode(n).getId());
