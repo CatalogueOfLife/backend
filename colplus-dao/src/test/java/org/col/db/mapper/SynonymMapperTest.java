@@ -39,18 +39,6 @@ public class SynonymMapperTest extends MapperTestBase<SynonymMapper> {
   }
 
 
-  private static Name create(final String id, final Name basionym) throws Exception {
-    Name n = TestEntityGenerator.newName(id);
-    n.setHomotypicNameKey(basionym.getKey());
-    return n;
-  }
-
-  private static Name create(Dataset d) throws Exception {
-    Name n = TestEntityGenerator.newName();
-    n.setDatasetKey(d.getKey());
-    return n;
-  }
-
   @Test
   public void roundtrip() throws Exception {
     Name n = TestEntityGenerator.newName();
@@ -132,6 +120,20 @@ public class SynonymMapperTest extends MapperTestBase<SynonymMapper> {
 
     synonyms = synonymMapper.listByTaxon(accKey);
     assertEquals(6, synonyms.size());
+    assertEquals(2, synonymMapper.listByTaxon(TestEntityGenerator.TAXON2.getKey()).size());
+
+
+    // now also add a misapplied name with the same name
+    Synonym mis = new Synonym();
+    mis.setName(syn21);
+    mis.setAccepted(TestEntityGenerator.TAXON2);
+    mis.setStatus(TaxonomicStatus.MISAPPLIED);
+    mis.setAccordingTo("auct. Döring");
+    synonymMapper.create(mis);
+    commit();
+
+    assertEquals(6, synonymMapper.listByTaxon(accKey).size());
+    assertEquals(3, synonymMapper.listByTaxon(TestEntityGenerator.TAXON2.getKey()).size());
   }
 
 }

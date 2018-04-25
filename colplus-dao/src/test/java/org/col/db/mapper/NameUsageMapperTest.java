@@ -297,39 +297,53 @@ public class NameUsageMapperTest extends MapperTestBase<NameMapper> {
 
     syn1.setAccepted(t1);
     syn2.setAccepted(t3);
-    saveTaxon(t2);
-    nDao.create(n4);
 
+    saveTaxon(t1);
+    saveTaxon(t2);
+    saveTaxon(t3);
+    nDao.create(n4);
     saveSynonym(syn1);
     saveSynonym(syn2);
 
+    // now also add a misapplied name with the same name
+    Synonym mis = new Synonym();
+    mis.setName(acc2);
+    mis.setAccepted(t3);
+    mis.setStatus(TaxonomicStatus.MISAPPLIED);
+    mis.setAccordingTo("auct. Döring");
+    synonymMapper.create(mis);
+
     session.commit();
 
-    Map<Integer, NameUsage> usages = Maps.newHashMap();
-    usages.put(TestEntityGenerator.TAXON1.getName().getKey(), TestEntityGenerator.TAXON1);
-    usages.put(TestEntityGenerator.TAXON2.getName().getKey(), TestEntityGenerator.TAXON2);
-    usages.put(TestEntityGenerator.SYN1.getName().getKey(), TestEntityGenerator.SYN1);
-    usages.put(TestEntityGenerator.SYN2.getName().getKey(), TestEntityGenerator.SYN2);
-    usages.put(t1.getName().getKey(), t1);
-    usages.put(t2.getName().getKey(), t2);
-    usages.put(t3.getName().getKey(), t3);
-    usages.put(syn1.getName().getKey(), syn1);
-    usages.put(syn2.getName().getKey(), syn2);
-    usages.put(n4.getKey(), new BareName(n4));
+    List<NameUsage> expected = Lists.newArrayList(
+        TestEntityGenerator.TAXON1,
+        TestEntityGenerator.TAXON2,
+        TestEntityGenerator.SYN1,
+        TestEntityGenerator.SYN2,
+        t1,
+        mis,
+        t2,
+        t3,
+        new BareName(n4),
+        syn1,
+        syn2
+    );
 
     // Since we have an empty NameSearch, we should just have all names;
     // the ones created here + the ones inserted through apple
-    List<NameUsage> result = mapper.search(new NameSearch(), new Page());
-    assertEquals(10, result.size());
+    NameSearch search = new NameSearch();
+    search.setSortBy(NameSearch.SortBy.KEY);
+    List<NameUsage> result = mapper.search(search, new Page(25));
 
-    for (NameUsage u : result) {
-      System.out.println("----------");
-      System.out.println(u.getName());
-      NameUsage u2 = usages.get(u.getName().getKey());
-      assertEquals(u2.getClass(), u.getClass());
-      //diff(u, u2);
-      assertEquals(u2, u);
-    }
+
+    //for (int idx=0; idx<result.size(); idx++) {
+    //  System.out.println("----------");
+    //  System.out.println(result.get(idx).getClass().getSimpleName() + ": " + result.get(idx).getName());
+    //  System.out.println(expected.get(idx).getClass().getSimpleName() + ": " + expected.get(idx).getName());
+    //  diff(expected.get(idx), result.get(idx));
+    //}
+    assertEquals(expected.size(), result.size());
+    assertEquals(expected, result);
   }
 
   @Test

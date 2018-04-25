@@ -4,10 +4,13 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="org.col.db.mapper.NameUsageMapper">
 
+    <!--
+        We use an artificial discriminator to select the corresponding result mapper
+    -->
     <sql id="SELECT">
         CASE
-            WHEN t.key is not null THEN 1
-            WHEN s.status is not null THEN 2
+            WHEN t.key = s.taxon_key THEN 1
+            WHEN t.key is not null THEN 2
             ELSE 3
         END AS disc,
         <include refid="org.col.db.mapper.NameMapper.nameCols">
@@ -23,7 +26,7 @@
             <property name="prefix" value="s_"/>
         </include>,
         <include refid="org.col.db.mapper.TaxonMapper.taxonCols">
-            <property name="alias" value="a"/>
+            <property name="alias" value="t"/>
             <property name="prefix" value="a_"/>
         </include>,
         <include refid="org.col.db.mapper.NameMapper.nameCols">
@@ -34,14 +37,13 @@
 
     <sql id="FROM">
         name n
-        LEFT JOIN taxon t ON n.key = t.name_key
         LEFT JOIN synonym s ON n.key = s.name_key
+        LEFT JOIN taxon t ON n.key = t.name_key OR s.taxon_key = t.key
     </sql>
 
     <sql id="FROM-FULL">
         <include refid="FROM"/>
-        LEFT JOIN taxon a ON s.taxon_key = a.key
-        LEFT JOIN name an ON a.name_key = an.key
+        LEFT JOIN name an ON t.name_key = an.key
     </sql>
 
     <!-- TODO: filter only accepted or synoynms -->
@@ -73,24 +75,24 @@
 
 
     <resultMap id="taxonResultMap" type="Taxon" autoMapping="true" extends="org.col.db.mapper.TaxonMapper.taxonResultMap">
-        <id column="key" />
     </resultMap>
 
     <resultMap id="synonymResultMap" type="Synonym" autoMapping="true" extends="org.col.db.mapper.SynonymMapper.synonymResultMap">
-        <id column="key" />
+        <id column="n_key" />
+        <id column="a_key" />
         <result property="accordingTo" column="s_according_to" />
         <result property="status" column="s_status" />
     </resultMap>
 
     <resultMap id="bareNameResultMap" type="BareName" autoMapping="true">
-        <id column="key" />
+        <id column="n_key" />
         <association property="name" javaType="Name" resultMap="org.col.db.mapper.NameMapper.nameResultMap" columnPrefix="n_" />
     </resultMap>
 
     <resultMap id="nameSearchResultMap" type="Object">
         <discriminator javaType="int" column="disc">
-            <case value="1" resultType="Taxon" resultMap="taxonResultMap" />
-            <case value="2" resultType="Synonym" resultMap="synonymResultMap" />
+            <case value="1" resultType="Synonym" resultMap="synonymResultMap" />
+            <case value="2" resultType="Taxon" resultMap="taxonResultMap" />
             <case value="3" resultType="BareName" resultMap="bareNameResultMap" />
         </discriminator>
     </resultMap>
@@ -108,10 +110,10 @@
         WHERE <include refid="WHERE" />
         <choose>
             <when test="q.sortBy.toString() == 'KEY'">
-                ORDER BY n.key
+                ORDER BY n.key, disc
             </when>
             <when test="q.sortBy.toString() == 'NAME'">
-                ORDER BY n.scientific_name ASC
+                ORDER BY n.scientific_name ASC, disc
             </when>
             <otherwise>
                 ORDER BY ts_rank(n.doc, plainto_tsquery('simple2', #{q.q})) DESC
