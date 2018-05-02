@@ -59,8 +59,8 @@ public class TaxonResource {
   @Timed
   @Path("{key}/listByTaxon")
   public Synonymy synonyms(@PathParam("key") int key, @Context SqlSession session) {
-    NameDao nameDao = new NameDao(session);
-    return nameDao.getSynonymy(key);
+    TaxonDao dao = new TaxonDao(session);
+    return dao.getSynonymy(key);
   }
 
   @GET

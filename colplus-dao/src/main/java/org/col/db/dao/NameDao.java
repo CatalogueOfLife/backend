@@ -1,6 +1,8 @@
 package org.col.db.dao;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
+import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.model.*;
 import org.col.api.vocab.TaxonomicStatus;
@@ -19,26 +21,27 @@ public class NameDao {
   private static final Logger LOG = LoggerFactory.getLogger(NameDao.class);
 
   private final SqlSession session;
+  private final NameMapper nMapper;
+  private final SynonymMapper sMapper;
 
   public NameDao(SqlSession sqlSession) {
     this.session = sqlSession;
+    nMapper = session.getMapper(NameMapper.class);
+    sMapper = session.getMapper(SynonymMapper.class);
   }
 
   public int count(int datasetKey) {
-    NameMapper mapper = session.getMapper(NameMapper.class);
-    return mapper.count(datasetKey);
+    return nMapper.count(datasetKey);
   }
 
   public ResultPage<Name> list(Integer datasetKey, Page page) {
-    NameMapper mapper = session.getMapper(NameMapper.class);
-    int total = mapper.count(datasetKey);
-    List<Name> result = mapper.list(datasetKey, page);
+    int total = nMapper.count(datasetKey);
+    List<Name> result = nMapper.list(datasetKey, page);
     return new ResultPage<>(page, total, result);
   }
 
   public Integer lookupKey(String id, int datasetKey) throws NotFoundException {
-    NameMapper mapper = session.getMapper(NameMapper.class);
-    Integer key = mapper.lookupKey(id, datasetKey);
+    Integer key = nMapper.lookupKey(id, datasetKey);
     if (key == null) {
       throw NotFoundException.idNotFound(Name.class, datasetKey, id);
     }
@@ -46,8 +49,7 @@ public class NameDao {
   }
 
   public Name get(Integer key) {
-    NameMapper mapper = session.getMapper(NameMapper.class);
-    Name result = mapper.get(key);
+    Name result = nMapper.get(key);
     if (result == null) {
       throw NotFoundException.keyNotFound(Name.class, key);
     }
@@ -59,8 +61,7 @@ public class NameDao {
   }
 
   public void create(Name name) {
-    NameMapper mapper = session.getMapper(NameMapper.class);
-    mapper.create(name);
+    nMapper.create(name);
     // this happens in the db but is not cascaded to the instance by the mapper
     // to avoid a reload of the instance from the db we do this manually here
     if (name.getHomotypicNameKey() == null) {
@@ -72,63 +73,15 @@ public class NameDao {
    * Lists all homotypic listByTaxon based on the same homotypic group key
    */
   public List<Name> homotypicGroup(int key) {
-    NameMapper mapper = session.getMapper(NameMapper.class);
-    return mapper.homotypicGroup(key);
+    return nMapper.homotypicGroup(key);
   }
 
   /**
-   * Adds a new synonym link for an existing taxon and synonym name,
-   * which is a heterotypic synonym or misapplied name.
-   *
-   * Only names which represent a homotypic group should be added with status=SYNONYM.
-   *
-   * @param synonym the synonym to create - requires and existing name with key to exist!
+   * Adds a new synonym link for an existing taxon and synonym name
    */
-  public void addSynonym(Synonym synonym) {
-    Preconditions.checkNotNull(synonym.getName().getKey(), "Name key must exist");
-    if (TaxonomicStatus.MISAPPLIED != synonym.getStatus()) {
-      Preconditions.checkArgument(synonym.getName().getHomotypicNameKey() == null || synonym.getName().getKey().equals(synonym.getName().getHomotypicNameKey()), "Name must be representing a homotypic group");
-    }
-    SynonymMapper mapper = session.getMapper(SynonymMapper.class);
-    mapper.create(synonym);
-  }
-
-  public static Synonym toSynonym(int datasetKey, int accKey, int nameKey) {
-    Synonym s = new Synonym();
-    s.setStatus(TaxonomicStatus.SYNONYM);
-
-    Name n = new Name();
-    n.setKey(nameKey);
-    n.setDatasetKey(datasetKey);
-    s.setName(n);
-
-    Taxon t = new Taxon();
-    t.setKey(accKey);
-    t.setDatasetKey(datasetKey);
-    s.setAccepted(t);
-
-    return s;
-  }
-
-  /**
-   * Assemble a synonymy object from the list of synonymy names for a given accepted taxon.
-   */
-  public Synonymy getSynonymy(int taxonKey) {
-    SynonymMapper synMapper = session.getMapper(SynonymMapper.class);
-    NameMapper nMapper = session.getMapper(NameMapper.class);
-    Synonymy syn = new Synonymy();
-    // get homotypic listByTaxon for the accepted name
-    syn.getHomotypic().addAll(nMapper.homotypicGroupByTaxon(taxonKey));
-    // get all heterotypic listByTaxon and misapplied names
-    for (Synonym s : synMapper.listByTaxon(taxonKey)) {
-      if (TaxonomicStatus.MISAPPLIED == s.getStatus()) {
-        syn.addMisapplied(new NameAccordingTo(s.getName(), s.getAccordingTo()));
-      } else {
-        // get entire homotypic group
-        syn.addHeterotypicGroup(nMapper.homotypicGroup(s.getName().getKey()));
-      }
-    }
-    return syn;
+  public void addSynonym(int datasetKey, int nameKey, int taxonKey, TaxonomicStatus status, String accordingTo) {
+    Preconditions.checkNotNull(status, "status must exist");
+    sMapper.create(datasetKey, nameKey, taxonKey, status, accordingTo);
   }
 
   public VerbatimRecord getVerbatim(int nameKey) {

@@ -275,8 +275,7 @@ CREATE TABLE synonym (
   name_key INTEGER REFERENCES name,
   dataset_key INTEGER NOT NULL REFERENCES dataset,
   status INTEGER NOT NULL,
-  according_to TEXT,
-  PRIMARY KEY(taxon_key, name_key)
+  according_to TEXT
 );
 
 CREATE TABLE verbatim_record (
@@ -375,6 +374,7 @@ CREATE index ON distribution (taxon_key);
 CREATE index ON vernacular_name (dataset_key);
 CREATE index ON vernacular_name (taxon_key);
 
+CREATE index ON synonym (taxon_key);
 CREATE index ON synonym (name_key);
 
 

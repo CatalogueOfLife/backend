@@ -180,13 +180,13 @@ public class PgImportIT {
       assertEquals(n2.getKey(), n1.getHomotypicNameKey());
       assertFalse(n1.getIssues().contains(Issue.CHAINED_BASIONYM));
 
-      assertNull(n2.getHomotypicNameKey());
+      assertEquals(n2.getKey(), n2.getHomotypicNameKey());
       assertTrue(n2.getIssues().contains(Issue.CHAINED_BASIONYM));
 
-      assertNull(n10.getHomotypicNameKey());
+      assertEquals(n10.getKey(), n10.getHomotypicNameKey());
       assertTrue(n10.getIssues().contains(Issue.CHAINED_BASIONYM));
 
-      assertNull(n11.getHomotypicNameKey());
+      assertEquals(n11.getKey(), n11.getHomotypicNameKey());
       assertTrue(n11.getIssues().contains(Issue.CHAINED_BASIONYM));
 
       assertEquals(n10.getKey(), n12.getHomotypicNameKey());
@@ -267,7 +267,9 @@ public class PgImportIT {
       assertEquals(Rank.SPECIES, n.getRank());
       assertTrue(n.getIssues().contains(Issue.ACCEPTED_ID_INVALID));
 
-      assertTrue(udao.usages(n).isEmpty());
+      List<NameUsage> usages = udao.search(NameSearch.byNameKey(n.getKey()), new Page()).getResult();
+      assertEquals(1, usages.size());
+      assertEquals(new BareName(n), usages.get(0));
 
       try {
         tdao.get("s7", dataset.getKey());
@@ -350,15 +352,42 @@ public class PgImportIT {
 
 
       // test synonym
-      Name syn = ndao.get("Rho-140", dataset.getKey());
-      assertEquals("Rhodacarus guevarai Guevara-Benitez, 1974", syn.canonicalNameComplete());
+      Name sn = ndao.get("Rho-140", dataset.getKey());
+      assertEquals("Rhodacarus guevarai Guevara-Benitez, 1974", sn.canonicalNameComplete());
 
-      List<NameUsage> acc = udao.usages(syn);
+      List<NameUsage> acc = udao.search(NameSearch.byNameKey(sn.getKey()), new Page()).getResult();
       assertEquals(1, acc.size());
+      Synonym syn = (Synonym) acc.get(0);
 
       t = tdao.get("Rho-61", dataset.getKey());
       assertEquals("Multidentorhodacarus denticulatus (Berlese, 1920)", t.getName().canonicalNameComplete());
-      assertEquals(t, acc.get(0));
+      assertEquals(t, syn.getAccepted());
+    }
+  }
+
+  @Test
+  public void testAcefMisapplied() throws Exception {
+    normalizeAndImport(ACEF, 6);
+
+    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+      NameUsageDao udao = new NameUsageDao(session);
+      NameDao ndao = new NameDao(session);
+      TaxonDao tdao = new TaxonDao(session);
+
+      Taxon t = tdao.get("MD2", dataset.getKey());
+      assertEquals("Latrodectus mactans (Fabricius, 1775)", t.getName().canonicalNameComplete());
+
+      TaxonInfo info = tdao.getTaxonInfo(t.getKey());
+
+      Synonymy syn = tdao.getSynonymy(t.getKey());
+      assertEquals(5, syn.size());
+      assertEquals(2, syn.getMisapplied().size());
+      assertEquals(3, syn.getHeterotypic().size());
+      assertEquals(0, syn.getHomotypic().size());
+
+      Synonym s = tdao.getSynonym("s5", dataset.getKey());
+      assertEquals("auct. Whittaker 1981", s.getAccordingTo());
+      assertEquals(TaxonomicStatus.MISAPPLIED, s.getStatus());
     }
   }
 

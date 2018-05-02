@@ -88,7 +88,7 @@ public abstract class NeoInserter {
     LOG.info("Neo batch inserter closed, data flushed to disk", meta.getRecords());
 
     final int batchRec = meta.getRecords();
-    insert();
+    postBatchInsert();
     LOG.info("Regular insert completed, {} nodes created, total={}", meta.getRecords()-batchRec, meta.getRecords());
 
     LOG.info("Start processing explicit relations ...");
@@ -97,9 +97,10 @@ public abstract class NeoInserter {
     return meta;
   }
 
+
   public abstract void batchInsert() throws NormalizationFailedException;
 
-  public abstract void insert() throws NormalizationFailedException;
+  public abstract void postBatchInsert() throws NormalizationFailedException;
 
   protected abstract NeoDb.NodeBatchProcessor relationProcessor();
 

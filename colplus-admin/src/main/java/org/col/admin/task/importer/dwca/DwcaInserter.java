@@ -71,7 +71,7 @@ public class DwcaInserter extends NeoInserter {
   }
 
   @Override
-  public void insert() throws NormalizationFailedException {
+  public void postBatchInsert() throws NormalizationFailedException {
     for (Term rowType : Lists.newArrayList(GbifTerm.Reference, GbifTerm.Distribution, GbifTerm.VernacularName)) {
       try (Transaction tx = store.getNeo().beginTx()){
         reader.stream(rowType).forEach(this::addVerbatimRecord);

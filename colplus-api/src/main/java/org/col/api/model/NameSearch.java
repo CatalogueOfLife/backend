@@ -44,6 +44,18 @@ public class NameSearch {
 	@QueryParam("sortBy")
 	private SortBy sortBy = SortBy.NAME;
 
+	public static NameSearch byQuery(String query) {
+		NameSearch q = new NameSearch();
+		q.setQ(query);
+		return q;
+	}
+
+	public static NameSearch byNameKey(int key) {
+		NameSearch q = new NameSearch();
+		q.setKey(key);
+		return q;
+	}
+
 	public String getQ() {
 		return q;
 	}

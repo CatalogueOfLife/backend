@@ -311,7 +311,7 @@ public class NameUsageMapperTest extends MapperTestBase<NameMapper> {
     mis.setAccepted(t3);
     mis.setStatus(TaxonomicStatus.MISAPPLIED);
     mis.setAccordingTo("auct. Döring");
-    synonymMapper.create(mis);
+    synonymMapper.create(mis.getName().getDatasetKey(), mis.getName().getKey(), mis.getAccepted().getKey(), mis.getStatus(), mis.getAccordingTo());
 
     session.commit();
 
@@ -545,7 +545,7 @@ public class NameUsageMapperTest extends MapperTestBase<NameMapper> {
   private void saveSynonym(Synonym syn) throws SQLException {
     saveTaxon(syn.getAccepted());
     nDao.create(syn.getName());
-    synonymMapper.create(syn);
+    synonymMapper.create(syn.getName().getDatasetKey(), syn.getName().getKey(), syn.getAccepted().getKey(), syn.getStatus(), syn.getAccordingTo());
   }
 
   private static Synonym newSynonym(String scientificName) {

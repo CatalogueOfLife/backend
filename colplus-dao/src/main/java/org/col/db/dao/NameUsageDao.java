@@ -34,23 +34,6 @@ public class NameUsageDao {
     sMapper = session.getMapper(SynonymMapper.class);
   }
 
-  public List<NameUsage> usages(Name n) {
-    List<NameUsage> usages = Lists.newArrayList();
-    for (Taxon t : tMapper.getByName(n)) {
-      t.setName(n);
-      usages.add(t);
-    }
-    Synonym s = sMapper.listByName(n.getKey()).get(0);
-    if (s != null) {
-      s.setName(n);
-      usages.add(s);
-    }
-    if (usages.isEmpty()) {
-      usages.add(new BareName(n));
-    }
-    return usages;
-  }
-
   public ResultPage<NameUsage> search(NameSearch query, Page page) {
     if (query.isEmpty()) {
       // default to order by key for large, unfiltered resultssets

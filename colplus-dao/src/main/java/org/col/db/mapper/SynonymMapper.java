@@ -4,6 +4,7 @@ import org.apache.ibatis.annotations.Param;
 import org.col.api.model.Name;
 import org.col.api.model.Synonym;
 import org.col.api.model.Taxon;
+import org.col.api.vocab.TaxonomicStatus;
 
 import java.util.List;
 
@@ -13,28 +14,30 @@ import java.util.List;
 public interface SynonymMapper {
 
   /**
-   * Creates a new synonym linked to a given name.
-   * Note that the name and accepted taxa must exist already and have keys.
-   * @param synonym
+   * Creates a new synonym link for a given name to the accepted taxon.
    */
-  void create(@Param("syn") Synonym synonym);
+  void create(@Param("datasetKey") int datasetKey,
+							@Param("nameKey") int nameKey,
+							@Param("taxonKey") int taxonKey,
+							@Param("status") TaxonomicStatus status,
+							@Param("accordingTo") String accordingTo
+	);
 
 	/**
-   * Return misapplied names or heterotypic synonym from the synonym relation table.
-   * This does NOT include homotypic names and
-	 * the Synonym.accepted property is NOT set as it would be highly redundant with the accepted key being the parameter.
+   * Return synonyms including misapplied names from the synonym relation table.
+	 * The Synonym.accepted property is NOT set as it would be highly redundant with the accepted key being the parameter.
 	 *
    * We use this call to assemble a complete synonymy
    * and the accepted key is given as the parameter already
    *
 	 * @param taxonKey accepted taxon key
-	 * @return list of misapplied or heterotypic synonym names
+	 * @return list of misapplied or heterotypic synonym names ordered by status then homotypic group
 	 */
 	List<Synonym> listByTaxon(@Param("taxonKey") int taxonKey);
 
 
 	/**
-	 * Reads all synonyms by the synonyms name.
+	 * Reads all synonyms including misapplied names by the synonyms name.
 	 */
 	List<Synonym> listByName(@Param("nameKey") int nameKey);
 

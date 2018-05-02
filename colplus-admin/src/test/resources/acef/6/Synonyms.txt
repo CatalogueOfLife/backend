@@ -1,0 +1,8 @@
+ID	AcceptedTaxonID	Genus	SpeciesEpithet	AuthorString	InfraSpeciesEpithet	InfraSpeciesMarker	InfraSpeciesAuthorString	GSDNameStatus	Sp2000NameStatus
+s1	MD2	Aranea	mactans	Fabricius, 1775		species		basionym	ambigous synonym
+s2	MD2	Latrodectus	insularis	Dahl, 1902					ambigous synonym
+s3	MD2	Latrodectus	insularis	Dahl, 1902	lunulifer		Dahl, 1902		synonym
+s4	MD2	Latrodectus	tredecimguttatus			species		misident	misapplied name
+s5	MD2	Latrodectus	tredecimguttatus	auct. Whittaker 1981		species		misident	misapplied name
+s6	MD3	Aranea	mactans	Fabricius, 1775		species			ambigous synonym
+s7	MD4	Aranea	mactans	Fabricius, 1775		species			synonym

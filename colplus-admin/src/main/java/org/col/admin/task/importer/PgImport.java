@@ -13,6 +13,7 @@ import org.col.admin.task.importer.neo.traverse.StartEndHandler;
 import org.col.admin.task.importer.neo.traverse.TreeWalker;
 import org.col.api.model.*;
 import org.col.api.vocab.Origin;
+import org.col.api.vocab.TaxonomicStatus;
 import org.col.db.dao.NameDao;
 import org.col.db.mapper.*;
 import org.neo4j.graphdb.Node;
@@ -155,10 +156,16 @@ public class PgImport implements Runnable {
 	private int createName(NameMapper mapper, NeoTaxon t) {
     t.name.setDatasetKey(dataset.getKey());
     t.name.getIssues().addAll(t.issues);
+    // update published in reference keys
+    if (t.name.getPublishedInKey() != null) {
+      t.name.setPublishedInKey(referenceKeys.get(t.name.getPublishedInKey()));
+    }
+
     mapper.create(t.name);
     nCounter.incrementAndGet();
     // keep postgres keys in node id map
     nameKeys.put((int) t.node.getId(), t.name.getKey());
+
     return t.name.getKey();
   }
 
@@ -192,11 +199,6 @@ public class PgImport implements Runnable {
               t.name.setHomotypicNameKey(nameKeys.get(t.name.getHomotypicNameKey()));
             }
             createName(nameMapper, t);
-          }
-
-          // update published in reference keys
-          if (t.name.getPublishedInKey() != null) {
-            t.name.setPublishedInKey(referenceKeys.get(t.name.getPublishedInKey()));
           }
 
           // insert name acts
@@ -252,7 +254,7 @@ public class PgImport implements Runnable {
           // is this a pro parte synonym that we have processed before already?
           if (proParteNames.containsKey(n.getId())) {
             // now add another synonym relation now that the other accepted exists in pg
-            nameDao.addSynonym(NameDao.toSynonym(dataset.getKey(), parentKeys.peek(), proParteNames.get(n.getId())));
+            nameDao.addSynonym(dataset.getKey(), proParteNames.get(n.getId()), parentKeys.peek(), t.synonym.getStatus(), t.synonym.getAccordingTo());
             return;
           }
 
@@ -260,7 +262,7 @@ public class PgImport implements Runnable {
           Integer taxonKey;
           if (t.isSynonym()) {
             taxonKey = null;
-            nameDao.addSynonym(NameDao.toSynonym(dataset.getKey(), parentKeys.peek(), t.name.getKey()));
+            nameDao.addSynonym(dataset.getKey(), t.name.getKey(), parentKeys.peek(), t.synonym.getStatus(), t.synonym.getAccordingTo());
 
           } else {
             if (!parentKeys.empty()) {

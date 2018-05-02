@@ -167,6 +167,11 @@ public enum Issue {
   REFERENCE_ID_INVALID,
 
   /**
+   * Identifier for a taxon/name could not be resolved.
+   */
+  TAXON_ID_INVALID,
+
+  /**
    * A taxon, name or reference with duplicate ids.
    * We remove the subsequent records but flag the first record with this issue.
    */

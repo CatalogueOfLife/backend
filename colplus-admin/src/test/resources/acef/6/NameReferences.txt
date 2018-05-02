@@ -1,0 +1,6 @@
+ID;ReferenceType;ReferenceID
+s1;NomRef;Fabricius1775
+MD2;NomRef;Walckenaer1805
+MD2;TaxAccRef;Kaston1970
+MD2;TaxAccRef;doi:10.5431/aramit3707
+MD2;TaxAccRef;Gómez-Rodríguez2012

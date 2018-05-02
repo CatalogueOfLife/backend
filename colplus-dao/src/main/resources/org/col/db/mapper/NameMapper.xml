@@ -170,11 +170,16 @@
     </select>
 
     <select id="get" resultMap="nameResultMap">
-        SELECT
-        <include refid="SELECT" />
-        FROM
-        <include refid="FROM" />
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
         WHERE n.key = #{key}
+    </select>
+
+    <select id="getByTaxon" resultMap="nameResultMap">
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
+            JOIN taxon t ON t.name_key=n.key
+        WHERE t.key = #{taxonKey}
     </select>
 
     <insert id="create" parameterType="Name" useGeneratedKeys="true" keyProperty="key">
@@ -187,14 +192,6 @@
         FROM name ns
           JOIN name n ON n.homotypic_name_key=ns.homotypic_name_key
         WHERE ns.key=#{key}
-    </select>
-
-    <select id="homotypicGroupByTaxon" resultMap="nameResultMap">
-        SELECT <include refid="SELECT" />
-        FROM taxon t
-          JOIN name ns ON ns.key=t.name_key
-          JOIN name n ON n.homotypic_name_key=ns.homotypic_name_key AND n.key != t.name_key
-        WHERE t.key=#{key}
     </select>
 
 </mapper>

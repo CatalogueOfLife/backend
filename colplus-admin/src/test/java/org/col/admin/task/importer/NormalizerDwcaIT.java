@@ -160,13 +160,13 @@ public class NormalizerDwcaIT {
 
       NeoTaxon Polystictus_substipitatus = byID("140283");
       assertTrue(Polystictus_substipitatus.isSynonym());
-      assertNotNull(Polystictus_substipitatus.synonym.getAccepted());
+      assertTrue(Polystictus_substipitatus.synonym.getStatus().isSynonym());
       pubIn = store.refByKey(Polystictus_substipitatus.name.getPublishedInKey());
       assertEquals("Syll. fung. (Abellini) 21: 318 (1912)", pubIn.getCsl().getTitle());
 
       NeoTaxon Polyporus_modestus = byID("198666");
       assertTrue(Polyporus_modestus.isSynonym());
-      assertNotNull(Polyporus_modestus.synonym.getAccepted());
+      assertTrue(Polyporus_modestus.synonym.getStatus().isSynonym());
       pubIn = store.refByKey(Polyporus_modestus.name.getPublishedInKey());
       assertEquals("Linnaea 5: 519 (1830)", pubIn.getCsl().getTitle());
     }
@@ -306,12 +306,10 @@ public class NormalizerDwcaIT {
       NeoTaxon bas = byName("Leonida taraxacoida");
       assertEquals(u2.name.getHomotypicNameKey(), bas.taxon.getKey());
 
-      NeoTaxon syn = byName("Leontodon leysseri");
-      assertNotNull(syn.synonym.getAccepted());
-      NeoTaxon acc = byID("1006");
-      assertEquals(acc.taxon.getId(), syn.synonym.getAccepted().getId());
-      assertEquals(acc.taxon.getKey(), syn.synonym.getAccepted().getKey());
+      //TODO: check basionym act instance !!!
 
+      NeoTaxon syn = byName("Leontodon leysseri");
+      assertTrue(syn.synonym.getStatus().isSynonym());
     }
   }
 

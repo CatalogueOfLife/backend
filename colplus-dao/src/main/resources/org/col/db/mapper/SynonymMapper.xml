@@ -52,12 +52,12 @@
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
         WHERE s.taxon_key = #{taxonKey}
-        ORDER BY n.homotypic_name_key
+        ORDER BY s.status, n.homotypic_name_key, n.scientific_name
     </select>
 
     <insert id="create" parameterType="Synonym">
         INSERT INTO synonym (dataset_key, name_key, taxon_key, status, according_to)
-        VALUES (#{syn.name.datasetKey}, #{syn.name.key}, #{syn.accepted.key}, #{syn.status}, #{syn.accordingTo})
+        VALUES (#{datasetKey}, #{nameKey}, #{taxonKey}, #{status}, #{accordingTo})
     </insert>
 
 </mapper>

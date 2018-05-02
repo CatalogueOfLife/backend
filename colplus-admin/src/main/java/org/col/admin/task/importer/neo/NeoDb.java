@@ -17,6 +17,7 @@ import org.col.api.model.*;
 import org.col.api.vocab.Issue;
 import org.col.api.vocab.Origin;
 import org.col.api.vocab.TaxonomicStatus;
+import org.col.parser.TaxonomicStatusParser;
 import org.col.util.concurrent.ThrottledThreadPoolExecutor;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.nameparser.api.NameType;
@@ -527,6 +528,8 @@ public class NeoDb implements ReferenceStore {
         if (t.node.hasLabel(Labels.SYNONYM)) {
           if (t.synonym == null) {
             t.synonym = new Synonym();
+            t.synonym.setStatus(TaxonomicStatus.SYNONYM);
+            t.synonym.setAccordingTo(t.taxon.getAccordingTo());
           }
 
         } else if (!t.node.hasLabel(Labels.ROOT)){

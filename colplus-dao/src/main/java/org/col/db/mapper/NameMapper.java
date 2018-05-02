@@ -18,6 +18,8 @@ public interface NameMapper {
 
 	Name get(@Param("key") int key);
 
+	Name getByTaxon(@Param("taxonKey") int taxonKey);
+
   /**
    * Creates a new name.
    * If the homotypic group key is not yet set the newly created name key will be
@@ -32,14 +34,6 @@ public interface NameMapper {
 	 * @param nameKey name key of the homotypic group
 	 */
   List<Name> homotypicGroup(@Param("key") int nameKey);
-
-  /**
-   * Lists all homotypic names based on the same homotypic name key
-   * for the given taxon key (not name key as above)
-   *
-   * @param taxonKey name key of the accepted name for the homotypic group
-   */
-  List<Name> homotypicGroupByTaxon(@Param("key") int taxonKey);
 
   /**
    * Returns the list of names published in the same reference.
