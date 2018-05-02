@@ -226,8 +226,7 @@ public class NameUsageMapperTest extends MapperTestBase<NameMapper> {
   }
 
   @Test
-  // Test with status as extra search criterion
-  public void searchWithTaxstatus() throws Exception {
+  public void searchWithNomStatus() throws Exception {
     Name n = TestEntityGenerator.newName("a");
     n.setScientificName("Foo bar");
     n.setGenus("Foo");
@@ -523,8 +522,87 @@ public class NameUsageMapperTest extends MapperTestBase<NameMapper> {
     assertEquals("05", 0, names.size());
   }
 
-  
-  
+  @Test
+  public void searchByStatus() throws Exception {
+
+    Name acc1 = newAcceptedName("Accepted one");
+    Name acc2 = newAcceptedName("Accepted two");
+    Name acc3 = newAcceptedName("Accepted three");
+    Name n4 = newAcceptedName("Name four");
+
+    nDao.create(acc1);
+    nDao.create(acc2);
+    nDao.create(acc3);
+    nDao.create(n4);
+    session.commit();
+
+    // add taxa, synonyms and misapplied
+    Taxon t1 = newTaxon("t-01", acc1);
+    Taxon t2 = newTaxon("t-02", acc2);
+    Taxon t3 = newTaxon("t-03", acc3);
+    saveTaxon(t1);
+    saveTaxon(t2);
+    saveTaxon(t3);
+
+    Synonym syn1 = newSynonym("Syn one");
+    Synonym syn2 = newSynonym("Syn two");
+    syn1.setAccepted(t1);
+    syn2.setAccepted(t3);
+    saveSynonym(syn1);
+    saveSynonym(syn2);
+
+    // now also add a misapplied name with the same name
+    Synonym mis = new Synonym();
+    mis.setName(acc2);
+    mis.setAccepted(t3);
+    mis.setStatus(TaxonomicStatus.MISAPPLIED);
+    mis.setAccordingTo("auct. Döring");
+    synonymMapper.create(mis.getName().getDatasetKey(), mis.getName().getKey(), mis.getAccepted().getKey(), mis.getStatus(), mis.getAccordingTo());
+
+    session.commit();
+
+    NameSearch search = new NameSearch();
+    search.setSortBy(NameSearch.SortBy.KEY);
+
+    // accepted taxa only
+    search.setStatus(TaxonomicStatus.ACCEPTED);
+    List<NameUsage> results = mapper.search(search, new Page());
+    List<NameUsage> expected = Lists.newArrayList(
+        TestEntityGenerator.TAXON1,
+        TestEntityGenerator.TAXON2,
+        t1,
+        t2,
+        t3
+    );
+    assertEquals(expected, results);
+
+    // misapplied only
+    search.setStatus(TaxonomicStatus.MISAPPLIED);
+    results = mapper.search(search, new Page());
+    expected = Lists.newArrayList(mis);
+    assertEquals(expected, results);
+
+    // synonyms
+    search.setStatus(TaxonomicStatus.SYNONYM);
+    results = mapper.search(search, new Page());
+    expected = Lists.newArrayList(
+        TestEntityGenerator.SYN1,
+        TestEntityGenerator.SYN2,
+        syn1,
+        syn2
+    );
+    assertEquals(expected, results);
+
+    // ambiguous synonyms
+    search.setStatus(TaxonomicStatus.AMBIGUOUS_SYNONYM);
+    results = mapper.search(search, new Page());
+    assertTrue(results.isEmpty());
+
+    // ambiguous synonyms
+    search.setStatus(TaxonomicStatus.DOUBTFUL);
+    results = mapper.search(search, new Page());
+    assertTrue(results.isEmpty());
+  }
 
   private static Taxon newTaxon(String id, Name n) {
     Taxon t = new Taxon();
@@ -535,14 +613,16 @@ public class NameUsageMapperTest extends MapperTestBase<NameMapper> {
     return t;
   }
 
-  private void saveTaxon(Taxon t) throws SQLException {
-    if (t.getKey() == null) {
+  private void saveTaxon(Taxon t) {
+    if (t.getName().getKey() == null) {
       nDao.create(t.getName());
+    }
+    if (t.getKey() == null) {
       tDao.create(t);
     }
   }
 
-  private void saveSynonym(Synonym syn) throws SQLException {
+  private void saveSynonym(Synonym syn) {
     saveTaxon(syn.getAccepted());
     nDao.create(syn.getName());
     synonymMapper.create(syn.getName().getDatasetKey(), syn.getName().getKey(), syn.getAccepted().getKey(), syn.getStatus(), syn.getAccordingTo());

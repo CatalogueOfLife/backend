@@ -96,15 +96,15 @@ public class NameSearch {
     this.nomStatus = nomStatus;
   }
 
-  public TaxonomicStatus getTaxStatus() {
-    return status;
-  }
+	public TaxonomicStatus getStatus() {
+		return status;
+	}
 
-  public void setTaxStatus(TaxonomicStatus taxStatus) {
-    this.status = taxStatus;
-  }
+	public void setStatus(TaxonomicStatus status) {
+		this.status = status;
+	}
 
-  public Issue getIssue() {
+	public Issue getIssue() {
 		return issue;
 	}
 

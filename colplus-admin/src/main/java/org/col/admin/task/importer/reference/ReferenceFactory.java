@@ -96,6 +96,12 @@ public class ReferenceFactory {
     return sb.toString();
   }
 
+  public Reference fromCitation(String id, String citation) {
+    Reference ref = create(id);
+    parse(ref, citation);
+    return postParse(ref);
+  }
+
   public Reference fromDWC(String publishedInID, String publishedIn, String publishedInYear) {
     Reference ref = create(publishedInID);
 

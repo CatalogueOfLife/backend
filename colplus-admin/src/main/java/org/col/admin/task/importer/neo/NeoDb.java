@@ -450,7 +450,7 @@ public class NeoDb implements ReferenceStore {
       r.setKey(referenceSequence.incrementAndGet());
     }
     references.put(r.getKey(), r);
-    // update lookup index
+    // update lookup index for id and title
     if (!Strings.isNullOrEmpty(r.getId())) {
       referenceIndex.put(normRef(r.getId()), r);
     }
@@ -458,7 +458,7 @@ public class NeoDb implements ReferenceStore {
   }
 
   private static String normRef(String idOrTitle) {
-    return idOrTitle.replaceAll("[^\\w]+", "").toLowerCase();
+    return idOrTitle.trim();
   }
 
   /**
@@ -480,22 +480,14 @@ public class NeoDb implements ReferenceStore {
     return references.values();
   }
 
-  public Reference refByKey(Integer key) {
+  @Override
+  public Reference refByKey(int key) {
     return references.getOrDefault(key, null);
   }
 
   @Override
   public Reference refById(String id) {
-    return refByAny(id);
-  }
-
-  @Override
-  public Reference refByTitle(String title) {
-    return refByAny(title);
-  }
-
-  private Reference refByAny(String x) {
-    return x == null ? null : referenceIndex.getOrDefault(normRef(x), null);
+    return id == null ? null : referenceIndex.getOrDefault(normRef(id), null);
   }
 
   public Dataset put(Dataset d) {

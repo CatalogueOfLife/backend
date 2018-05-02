@@ -182,15 +182,14 @@ public class AcefInserter extends NeoInserter {
             if (ref == null) {
               LOG.debug("referenceID {} from NameReferencesLinks line {} not existing", referenceID, rec.getLine());
               t.addIssue(Issue.REFERENCE_ID_INVALID);
-              store.update(t);
 
             } else {
               //TODO: better parsing needed? Use enum???
               if (refType.equalsIgnoreCase("NomRef")) {
                 t.name.setPublishedInKey(ref.getKey());
-                //TODO: what to do with page?
-                // extract page from CSL, store in name and then remove from CSL?
-                // Deduplicate refs afterwards if page is gone ???
+                // we extract the page from CSL and also store it in the name
+                // No deduplication of refs happening
+                t.name.setPublishedInPage(ref.getCsl().getPage());
 
               } else if (refType.equalsIgnoreCase("TaxAccRef")) {
                 t.bibliography.add(ref);
@@ -203,6 +202,7 @@ public class AcefInserter extends NeoInserter {
                 LOG.debug("Unknown reference type {} used in NameReferencesLinks line {}", refType, rec.getLine());
               }
             }
+            store.update(t);
           }
         }
       });
