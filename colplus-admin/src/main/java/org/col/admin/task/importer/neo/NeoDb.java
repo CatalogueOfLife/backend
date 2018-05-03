@@ -397,12 +397,6 @@ public class NeoDb implements ReferenceStore {
   }
 
   public NeoTaxon put(NeoTaxon t) {
-    // extract references into ref store before store them
-    for (Reference r : t.listReferences()) {
-      //TODO: add reference to map if new, replace all props with just the key
-      put(r);
-    }
-
     // update neo4j properties either via batch mode or classic
     long nodeId;
     Map<String, Object> props = NeoDbUtils.neo4jProps(t);

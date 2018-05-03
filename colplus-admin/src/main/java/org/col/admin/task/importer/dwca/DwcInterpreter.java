@@ -79,14 +79,19 @@ public class DwcInterpreter extends InterpreterBase {
   void interpretBibliography(NeoTaxon t) {
     if (t.verbatim.hasExtension(GbifTerm.Reference)) {
       for (TermRecord rec : t.verbatim.getExtensionRecords(GbifTerm.Reference)) {
-        t.bibliography.add(refFactory.fromDC(
-            emptyToNull(rec.get(DcTerm.identifier)),
-            emptyToNull(rec.get(DcTerm.bibliographicCitation)),
-            emptyToNull(rec.get(DcTerm.creator)),
-            emptyToNull(rec.get(DcTerm.title)),
-            emptyToNull(rec.get(DcTerm.date)),
-            emptyToNull(rec.get(DcTerm.source))
-        ));
+        String id = emptyToNull(rec.get(DcTerm.identifier));
+        Reference ref = refStore.refById(id);
+        if (ref == null) {
+          ref = refFactory.fromDC(id,
+              emptyToNull(rec.get(DcTerm.bibliographicCitation)),
+              emptyToNull(rec.get(DcTerm.creator)),
+              emptyToNull(rec.get(DcTerm.title)),
+              emptyToNull(rec.get(DcTerm.date)),
+              emptyToNull(rec.get(DcTerm.source))
+          );
+          refStore.put(ref);
+        }
+        t.bibliography.add(ref.getKey());
       }
     }
   }
@@ -137,7 +142,6 @@ public class DwcInterpreter extends InterpreterBase {
 
   private void addReferences(NeoTaxon t, Referenced obj, TermRecord v) {
     if (v.hasTerm(DcTerm.source)) {
-      // TODO: test for multiple
       lookupReference(null, v.get(DcTerm.source)).ifPresent(r -> {
         obj.addReferenceKey(r.getKey());
       });

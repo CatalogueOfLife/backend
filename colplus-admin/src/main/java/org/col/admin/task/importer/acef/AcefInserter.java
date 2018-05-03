@@ -192,7 +192,7 @@ public class AcefInserter extends NeoInserter {
                 t.name.setPublishedInPage(ref.getCsl().getPage());
 
               } else if (refType.equalsIgnoreCase("TaxAccRef")) {
-                t.bibliography.add(ref);
+                t.bibliography.add(ref.getKey());
 
               } else if (refType.equalsIgnoreCase("ComNameRef")) {
                 // ignore here, we should see this again when parsing common names

@@ -29,4 +29,9 @@ public interface ReferenceMapper {
 	Reference get(@Param("key") int key);
 
 	void create(Reference name);
+
+	/**
+	 * Links a reference to a taxon
+	 */
+	void linkToTaxon(@Param("datasetKey") int datasetKey, @Param("taxonKey") int taxonKey, @Param("refKey") int refKey);
 }

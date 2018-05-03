@@ -48,7 +48,11 @@ public class TaxonInfo {
 	public void setDistributions(List<Distribution> distributions) {
 		this.distributions = distributions;
 	}
-	
+
+
+  public Reference getReference(Integer key) {
+    return references.getOrDefault(key, null);
+  }
 
 	public Map<Integer, Reference> getReferences() {
 		return references;
