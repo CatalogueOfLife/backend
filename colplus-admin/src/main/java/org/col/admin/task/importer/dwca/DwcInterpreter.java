@@ -16,7 +16,6 @@ import org.col.api.vocab.TaxonomicStatus;
 import org.col.admin.task.importer.reference.ReferenceFactory;
 import org.col.parser.*;
 import org.col.util.ObjectUtils;
-import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.dwc.terms.DcTerm;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.GbifTerm;
@@ -80,14 +79,19 @@ public class DwcInterpreter extends InterpreterBase {
   void interpretBibliography(NeoTaxon t) {
     if (t.verbatim.hasExtension(GbifTerm.Reference)) {
       for (TermRecord rec : t.verbatim.getExtensionRecords(GbifTerm.Reference)) {
-        t.bibliography.add(refFactory.fromDC(
-            emptyToNull(rec.get(DcTerm.identifier)),
-            emptyToNull(rec.get(DcTerm.bibliographicCitation)),
-            emptyToNull(rec.get(DcTerm.creator)),
-            emptyToNull(rec.get(DcTerm.title)),
-            emptyToNull(rec.get(DcTerm.date)),
-            emptyToNull(rec.get(DcTerm.source))
-        ));
+        String id = emptyToNull(rec.get(DcTerm.identifier));
+        Reference ref = refStore.refById(id);
+        if (ref == null) {
+          ref = refFactory.fromDC(id,
+              emptyToNull(rec.get(DcTerm.bibliographicCitation)),
+              emptyToNull(rec.get(DcTerm.creator)),
+              emptyToNull(rec.get(DcTerm.title)),
+              emptyToNull(rec.get(DcTerm.date)),
+              emptyToNull(rec.get(DcTerm.source))
+          );
+          refStore.put(ref);
+        }
+        t.bibliography.add(ref.getKey());
       }
     }
   }
@@ -138,8 +142,7 @@ public class DwcInterpreter extends InterpreterBase {
 
   private void addReferences(NeoTaxon t, Referenced obj, TermRecord v) {
     if (v.hasTerm(DcTerm.source)) {
-      // TODO: test for multiple
-      lookupReferenceTitleID(null, v.get(DcTerm.source)).ifPresent(r -> {
+      lookupReference(null, v.get(DcTerm.source)).ifPresent(r -> {
         obj.addReferenceKey(r.getKey());
       });
     }
@@ -196,7 +199,7 @@ public class DwcInterpreter extends InterpreterBase {
 
     // publishedIn
     if (v.hasTerm(DwcTerm.namePublishedInID) || v.hasTerm(DwcTerm.namePublishedIn)) {
-      lookupReferenceTitleID(v.getTerm(DwcTerm.namePublishedInID), v.getTerm(DwcTerm.namePublishedIn)).ifPresent(r -> {
+      lookupReference(v.getTerm(DwcTerm.namePublishedInID), v.getTerm(DwcTerm.namePublishedIn)).ifPresent(r -> {
         nat.getName().setPublishedInKey(r.getKey());
         nat.getName().setPublishedInPage(r.getPage());
       });

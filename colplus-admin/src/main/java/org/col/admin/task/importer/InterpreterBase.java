@@ -3,6 +3,7 @@ package org.col.admin.task.importer;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
+import com.google.common.collect.Maps;
 import com.ibm.icu.text.Transliterator;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -24,10 +25,7 @@ import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.time.LocalDate;
-import java.util.EnumSet;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import static org.col.parser.SafeParser.parse;
 
@@ -44,11 +42,14 @@ public class InterpreterBase {
   protected final Dataset dataset;
   protected final ReferenceStore refStore;
   protected final ReferenceFactory refFactory;
+  // TODO: replace with a map stored on disk or integrate in refstore
+  private final Map<String, Reference> referenceByCitation;
 
   public InterpreterBase(Dataset dataset, ReferenceStore refStore, ReferenceFactory refFactory) {
     this.dataset = dataset;
     this.refStore = refStore;
     this.refFactory = refFactory;
+    this.referenceByCitation = Maps.newHashMap();
   }
 
   protected String latinName(String name) {
@@ -103,31 +104,34 @@ public class InterpreterBase {
     return parse(BooleanParser.PARSER, t.verbatim.getFirst(term)).orNull(invalidIssue, t.issues);
   }
 
-  protected Optional<Reference> lookupReferenceTitleID(String id, String title) {
+  protected Optional<Reference> lookupReference(String id, String citation) {
     Reference r;
-    // first try by id
+    // if we have an id make sure we have a record - even if its a duplicate
     if (id != null) {
       r = refStore.refById(id);
-      if (r != null) {
-        return Optional.of(r);
+      if (r == null) {
+        r = create(id, citation);
       }
-    }
-    if (title != null) {
-      // then try by title
-      r = refStore.refByTitle(title);
-      if (r != null) {
-        return Optional.of(r);
-      }
-    }
-    // lastly create a new reference
-    if (id != null || title != null) {
-      r = Reference.create();
-      r.setId(id);
-      r.getCsl().setTitle(title);
-      refStore.put(r);
       return Optional.of(r);
+
+    } else if (citation != null){
+      // try to find matching reference based on citation
+      if (referenceByCitation.containsKey(citation)) {
+        r = referenceByCitation.get(citation);
+      } else {
+        r = create(id, citation);
+      }
+      return Optional.of(r);
+
     }
     return Optional.empty();
+  }
+
+  private Reference create(String id, String citation) {
+    Reference r = refFactory.fromCitation(id, citation);
+    refStore.put(r);
+    referenceByCitation.put(citation, r);
+    return r;
   }
 
   public NameAccordingTo interpretName(final String id, final String vrank, final String sciname, final String authorship,

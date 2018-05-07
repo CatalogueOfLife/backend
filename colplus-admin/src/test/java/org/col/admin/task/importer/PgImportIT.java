@@ -370,14 +370,24 @@ public class PgImportIT {
     normalizeAndImport(ACEF, 6);
 
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
-      NameUsageDao udao = new NameUsageDao(session);
-      NameDao ndao = new NameDao(session);
       TaxonDao tdao = new TaxonDao(session);
 
       Taxon t = tdao.get("MD2", dataset.getKey());
       assertEquals("Latrodectus mactans (Fabricius, 1775)", t.getName().canonicalNameComplete());
 
       TaxonInfo info = tdao.getTaxonInfo(t.getKey());
+      // Walckenaer1805;Walckenaer, CA;1805;Table of the aranid or essential characters of the tribes, genera, families and races contained in the genus Aranea of ​​Linnaeus, with the designation of the species included in each of these divisions . Paris, 88 pp;;
+      Reference pubIn = info.getReference(t.getName().getPublishedInKey());
+      assertEquals("Walckenaer1805", pubIn.getId());
+      // we cannot test this as our CslParserMock only populates the title...
+      //assertEquals(1805, (int) pubIn.getYear());
+      assertEquals("Walckenaer, CA 1805. Table of the aranid or essential characters of the tribes, genera, families and races contained in the genus Aranea of \u200B\u200BLinnaeus, with the designation of the species included in each of these divisions . Paris, 88 pp", pubIn.getCsl().getTitle());
+
+      assertEquals(3, info.getTaxonReferences().size());
+      for (int refKey : info.getTaxonReferences()) {
+        Reference r = info.getReference(refKey);
+        assertNotNull(r);
+      }
 
       Synonymy syn = tdao.getSynonymy(t.getKey());
       assertEquals(5, syn.size());

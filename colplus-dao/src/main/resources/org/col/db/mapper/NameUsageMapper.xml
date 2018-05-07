@@ -6,6 +6,9 @@
 
     <!--
         We use an artificial discriminator to select the corresponding result mapper
+        1=Synonym
+        2=Taxon
+        3=BareName
     -->
     <sql id="SELECT">
         CASE
@@ -46,7 +49,6 @@
         LEFT JOIN name an ON t.name_key = an.key
     </sql>
 
-    <!-- TODO: filter only accepted or synoynms -->
     <sql id="WHERE">
         TRUE
         <if test="q.q != null">
@@ -69,6 +71,32 @@
         </if>
         <if test="q.issue != null">
             AND n.issues @> array[#{q.issue}::int]
+        </if>
+        <if test="q.status != null">
+            <choose>
+                <when test='q.status.name() == "ACCEPTED"'>
+                    AND t.key is not null
+                    AND (s.taxon_key is null OR s.taxon_key != t.key)
+                    AND NOT t.doubtful
+                </when>
+                <when test="q.status.name() == 'DOUBTFUL'">
+                    AND t.key is not null
+                    AND (s.taxon_key is null OR s.taxon_key != t.key)
+                    AND t.doubtful
+                </when>
+                <when test="q.status.name() == 'SYNONYM'">
+                    AND t.key = s.taxon_key
+                    AND s.status = #{q.status}::int
+                </when>
+                <when test="q.status.name() == 'AMBIGUOUS_SYNONYM'">
+                    AND t.key = s.taxon_key
+                    AND s.status = #{q.status}::int
+                </when>
+                <when test="q.status.name() == 'MISAPPLIED'">
+                    AND t.key = s.taxon_key
+                    AND s.status = #{q.status}::int
+                </when>
+            </choose>
         </if>
     </sql>
 

@@ -74,26 +74,31 @@ public class ReferenceFactory {
 
   private static String buildCitation(String authors, String title, String year, String source, String details) {
     StringBuilder sb = new StringBuilder();
-    if (Strings.isNullOrEmpty(authors)) {
+    if (!Strings.isNullOrEmpty(authors)) {
       sb.append(authors)
-          .append(": ");
+          .append(" ");
+    }
+    if (!Strings.isNullOrEmpty(year)) {
+      sb.append(year)
+        .append(". ");
     }
     sb.append(title);
-    if (Strings.isNullOrEmpty(year)) {
-      //TODO: use dot or comma after title? Does anystyle care?
-      sb.append(" ")
-          .append(year);
-    }
-    if (Strings.isNullOrEmpty(source)) {
+    if (!Strings.isNullOrEmpty(source)) {
       // does IN confuse the parser as its normally only used for books not journals???
       sb.append(" in ")
           .append(source);
     }
-    if (Strings.isNullOrEmpty(details)) {
+    if (!Strings.isNullOrEmpty(details)) {
       sb.append(" ")
           .append(details);
     }
     return sb.toString();
+  }
+
+  public Reference fromCitation(String id, String citation) {
+    Reference ref = create(id);
+    parse(ref, citation);
+    return postParse(ref);
   }
 
   public Reference fromDWC(String publishedInID, String publishedIn, String publishedInYear) {

@@ -89,6 +89,11 @@
         VALUES ( <include refid="PROPS" /> )
     </insert>
 
+    <insert id="linkToTaxon">
+        INSERT INTO taxon_reference (dataset_key, taxon_key, reference_key)
+        VALUES ( #{datasetKey}, #{taxonKey}, #{refKey} )
+    </insert>
+
     <select id="listByTaxon" resultType="integer">
         SELECT reference_key
         FROM taxon_reference

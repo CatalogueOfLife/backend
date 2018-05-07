@@ -238,6 +238,7 @@ public class PgImport implements Runnable {
       VerbatimRecordMapper verbatimMapper = session.getMapper(VerbatimRecordMapper.class);
       DistributionMapper distributionMapper = session.getMapper(DistributionMapper.class);
       VernacularNameMapper vernacularMapper = session.getMapper(VernacularNameMapper.class);
+      ReferenceMapper refMapper = session.getMapper(ReferenceMapper.class);
 
       // iterate over taxonomic tree in depth first order, keeping postgres parent keys
       // pro parte listByTaxon will be visited multiple times, remember their name pg key!
@@ -263,6 +264,15 @@ public class PgImport implements Runnable {
           if (t.isSynonym()) {
             taxonKey = null;
             nameDao.addSynonym(dataset.getKey(), t.name.getKey(), parentKeys.peek(), t.synonym.getStatus(), t.synonym.getAccordingTo());
+            if (!t.distributions.isEmpty()) {
+              LOG.debug("Distributions found for synonym {}: {}, ignore", t.name.getKey(), t.name);
+            }
+            if (!t.vernacularNames.isEmpty()) {
+              LOG.debug("Vernacular names found for synonym {}: {}, ignore", t.name.getKey(), t.name);
+            }
+            if (!t.bibliography.isEmpty()) {
+              LOG.debug("Bibliography found for synonym {}: {}, ignore", t.name.getKey(), t.name);
+            }
 
           } else {
             if (!parentKeys.empty()) {
@@ -287,6 +297,11 @@ public class PgImport implements Runnable {
               updateRefKeys(d);
               distributionMapper.create(d, taxonKey, dataset.getKey());
               dCounter.incrementAndGet();
+            }
+
+            // link bibliography
+            for (Integer refKey : t.bibliography) {
+              refMapper.linkToTaxon(dataset.getKey(), taxonKey, referenceKeys.get(refKey));
             }
           }
 

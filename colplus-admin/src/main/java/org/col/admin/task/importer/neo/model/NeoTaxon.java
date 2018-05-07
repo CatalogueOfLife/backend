@@ -34,7 +34,7 @@ public class NeoTaxon {
   // supplementary infos for a taxon
   public List<VernacularName> vernacularNames = Lists.newArrayList();
   public List<Distribution> distributions = Lists.newArrayList();
-  public List<Reference> bibliography = Lists.newArrayList();
+  public List<Integer> bibliography = Lists.newArrayList();
   // extra stuff not covered by above for normalizer only
   public Classification classification;
   public Set<Issue> issues = EnumSet.noneOf(Issue.class);
@@ -52,20 +52,6 @@ public class NeoTaxon {
     t.taxon.setOrigin(origin);
 
     return t;
-  }
-
-  /**
-   * @return list all reference placeholders with just a key.
-   */
-  public List<Reference> listReferencePlaceholders() {
-    return Lists.newArrayList();
-  }
-
-  /**
-   * @return list all reference with actual values, i.e. no placeholders, extracted from all data of this taxon.
-   */
-  public List<Reference> listReferences() {
-    return Lists.newArrayList();
   }
 
   public void addIssue(Issue issue) {

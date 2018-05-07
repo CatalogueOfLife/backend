@@ -18,13 +18,13 @@ public interface ReferenceStore {
   Iterable<Reference> refList();
 
   /**
+   * Looks up a stored reference by the internal store assigned key
+   */
+  Reference refByKey(int key);
+
+  /**
    * Looks up a stored reference by the identifier given in the source
    */
   Reference refById(String key);
-
-  /**
-   * Looks up a stored reference by another reference instance
-   */
-  Reference refByTitle(String title);
 
 }

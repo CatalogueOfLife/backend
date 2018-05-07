@@ -10,6 +10,7 @@ import org.col.db.mapper.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -149,10 +150,13 @@ public class TaxonDao {
     info.setDistributions(dMapper.listByTaxon(taxon.getKey()));
 
     // all reference keys so we can select their details at the end
-    Set<Integer> refKeys = Sets.newHashSet();
+    Set<Integer> refKeys = new HashSet<>();
+    refKeys.add(taxon.getName().getPublishedInKey());
     refKeys.addAll(info.getTaxonReferences());
     info.getDistributions().forEach(d -> refKeys.addAll(d.getReferenceKeys()));
     info.getVernacularNames().forEach(d -> refKeys.addAll(d.getReferenceKeys()));
+    // make sure we did not add null by accident
+    refKeys.remove(null);
 
     if (!refKeys.isEmpty()) {
       List<Reference> refs = rMapper.listByKeys(refKeys);
