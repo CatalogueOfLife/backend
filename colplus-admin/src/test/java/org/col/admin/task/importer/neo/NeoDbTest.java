@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.Random;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 /**
@@ -73,7 +74,7 @@ public class NeoDbTest {
   }
 
   @Test
-  public void UpdateTaxonStoreWithRelations() throws Exception {
+  public void neoSync() throws Exception {
     NeoTaxon t1;
     NeoTaxon t2;
     try (Transaction tx = db.getNeo().beginTx()) {
@@ -83,6 +84,8 @@ public class NeoDbTest {
       // now relate the 2 nodes and make sure when we read the relations the instance is changed accordingly
       t1.node.createRelationshipTo(t2.node, RelType.PARENT_OF);
       t1.node.createRelationshipTo(t2.node, RelType.BASIONYM_OF);
+
+      assertNull(t1.name.getHomotypicNameKey());
       assertNull(t2.name.getHomotypicNameKey());
 
       tx.success();
@@ -91,10 +94,13 @@ public class NeoDbTest {
 
     try (Transaction tx = db.getNeo().beginTx()) {
       NeoTaxon t1b = db.get(db.byID("12"));
-      assertEquals(t1, t1b);
-
       NeoTaxon t2b = db.get(db.byID("13"));
-      assertEquals((long) t2b.name.getHomotypicNameKey(), t1.node.getId());
+      assertNotNull(t1b.name.getHomotypicNameKey());
+      assertNotNull(t2b.name.getHomotypicNameKey());
+
+      assertEquals(t1b.name.getHomotypicNameKey(), t2b.name.getHomotypicNameKey());
+      t1b.name.setHomotypicNameKey(null);
+      assertEquals(t1, t1b);
     }
   }
 
