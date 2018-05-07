@@ -2,11 +2,11 @@ package org.col.db.dao;
 
 import com.google.common.collect.Sets;
 import org.apache.ibatis.session.SqlSession;
+import org.col.api.BeanPrinter;
 import org.col.api.TestEntityGenerator;
 import org.col.api.model.*;
 import org.col.api.vocab.Gazetteer;
 import org.col.api.vocab.TaxonomicStatus;
-import org.col.util.BeanPrinter;
 import org.junit.Test;
 
 import java.util.HashSet;

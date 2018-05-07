@@ -1,5 +1,12 @@
 package org.col.api.jackson;
 
+import org.col.api.model.ExtendedTermRecord;
+import org.col.api.model.TermRecord;
+import org.col.api.vocab.CSLRefType;
+import org.col.api.vocab.Country;
+import org.col.api.vocab.Language;
+import org.gbif.dwc.terms.Term;
+import org.gbif.nameparser.api.Authorship;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -8,13 +15,6 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.introspect.NopAnnotationIntrospector;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import org.col.api.model.ExtendedTermRecord;
-import org.col.api.model.TermRecord;
-import org.col.api.vocab.CSLRefType;
-import org.col.api.vocab.Country;
-import org.col.api.vocab.Language;
-import org.gbif.dwc.terms.Term;
-import org.gbif.nameparser.api.Authorship;
 
 /**
  * Jackson module that defines all serde rules for all CoL API model classes.
@@ -24,7 +24,9 @@ public class ApiModule extends SimpleModule {
   public static final ObjectMapper MAPPER = configureMapper(new ObjectMapper());
 
   public static ObjectMapper configureMapper(ObjectMapper mapper) {
+
     mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
+
     mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
 
     mapper.registerModule(new JavaTimeModule());
@@ -65,7 +67,6 @@ public class ApiModule extends SimpleModule {
     addKeySerializer(Language.class, new LanguageSerde.FieldSerializer());
   }
 
-
   @Override
   public void setupModule(SetupContext ctxt) {
     // required to properly register serdes
@@ -75,12 +76,13 @@ public class ApiModule extends SimpleModule {
   }
 
   abstract class AuthorshipMixIn {
-    @JsonIgnore abstract boolean isEmpty();
+    @JsonIgnore
+    abstract boolean isEmpty();
   }
 
   /**
-   * Intercepts the way standard EnumValues are build by forcing all values to lower case and
-   * to use a space instead of underscores.
+   * Intercepts the way standard EnumValues are build by forcing all values to lower case and to use
+   * a space instead of underscores.
    */
   public static class EnumAnnotationIntrospector extends NopAnnotationIntrospector {
 
