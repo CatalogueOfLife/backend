@@ -23,6 +23,7 @@ import org.col.db.dao.ReferenceDao;
 import org.col.db.dao.TaxonDao;
 import org.col.db.mapper.DatasetMapper;
 import org.col.db.mapper.InitMybatisRule;
+import org.col.db.mapper.NameActMapper;
 import org.col.db.mapper.PgSetupRule;
 import org.gbif.nameparser.api.Rank;
 import org.junit.*;
@@ -398,6 +399,57 @@ public class PgImportIT {
       Synonym s = tdao.getSynonym("s5", dataset.getKey());
       assertEquals("auct. Whittaker 1981", s.getAccordingTo());
       assertEquals(TaxonomicStatus.MISAPPLIED, s.getStatus());
+    }
+  }
+
+  /**
+   * Homotypic keys and basionym acts.
+   */
+  @Test
+  public void testDwca29() throws Exception {
+    normalizeAndImport(DWCA, 29);
+
+    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+      TaxonDao tdao = new TaxonDao(session);
+
+      Taxon annua = tdao.get("4", dataset.getKey());
+      assertEquals("Poa annua L.", annua.getName().canonicalNameComplete());
+
+      TaxonInfo info = tdao.getTaxonInfo(annua.getKey());
+      Reference pubIn = info.getReference(annua.getName().getPublishedInKey());
+      assertEquals("Sp. Pl. 1: 68 (1753).", pubIn.getCsl().getTitle());
+
+      Synonymy syn = tdao.getSynonymy(annua.getKey());
+      assertEquals(4, syn.size());
+      assertEquals(0, syn.getMisapplied().size());
+      assertEquals(2, syn.getHeterotypic().size());
+      assertEquals(1, syn.getHomotypic().size());
+
+      for (Name n : syn.getHomotypic()) {
+        assertEquals(annua.getName().getHomotypicNameKey(), n.getHomotypicNameKey());
+      }
+      for (List<Name> group : syn.getHeterotypic()) {
+        Integer homoKey = group.get(0).getHomotypicNameKey();
+        assertNotEquals(homoKey, annua.getName().getHomotypicNameKey());
+        for (Name n : group) {
+          assertEquals(homoKey, n.getHomotypicNameKey());
+        }
+      }
+
+      NameDao ndao = new NameDao(session);
+      NameActMapper actMapper = session.getMapper(NameActMapper.class);
+      // Poa annua has not explicitly declared a basionym
+      assertTrue(actMapper.list(annua.getName().getKey()).isEmpty());
+
+      Name reptans1 = ndao.get("7", dataset.getKey());
+      Name reptans2 = ndao.get("8", dataset.getKey());
+      assertEquals(1, actMapper.list(reptans1.getKey()).size());
+      assertEquals(1, actMapper.list(reptans2.getKey()).size());
+
+      NameAct act = actMapper.list(reptans1.getKey()).get(0);
+      assertEquals(NomActType.BASIONYM, act.getType());
+      assertEquals(reptans1.getKey(), act.getNameKey());
+      assertEquals(reptans2.getKey(), act.getRelatedNameKey());
     }
   }
 

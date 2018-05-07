@@ -28,6 +28,8 @@ public interface NameMapper {
    */
   void create(Name name);
 
+	void updateHomotypicNameKey(@Param("key") int nameKey, @Param("homoKey") int homotypicNameKey);
+
 	/**
 	 * Lists all homotypic names based on the same homotypic name key
    *

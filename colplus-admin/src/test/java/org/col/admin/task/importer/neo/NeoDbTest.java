@@ -9,7 +9,6 @@ import org.col.admin.task.importer.neo.model.UnescapedVerbatimRecord;
 import org.col.api.RandomUtils;
 import org.col.api.model.Taxon;
 import org.col.api.model.TermRecord;
-import org.col.api.vocab.TaxonomicStatus;
 import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.dwc.terms.DcTerm;
 import org.gbif.dwc.terms.DwcTerm;
@@ -88,8 +87,7 @@ public class NeoDbTest {
 
       tx.success();
     }
-    db.updateLabels();
-    db.updateTaxonStoreWithRelations();
+    db.sync();
 
     try (Transaction tx = db.getNeo().beginTx()) {
       NeoTaxon t1b = db.get(db.byID("12"));
@@ -119,8 +117,7 @@ public class NeoDbTest {
       }
       tx.success();
     }
-    db.updateLabels();
-    db.updateTaxonStoreWithRelations();
+    db.sync();
     db.process(Labels.ALL, 5, new NeoDb.NodeBatchProcessor() {
       @Override
       public void process(Node n) {
@@ -140,8 +137,7 @@ public class NeoDbTest {
       NeoTaxon t = db.put(taxon("id1"));
       tx.success();
     }
-    db.updateLabels();
-    db.updateTaxonStoreWithRelations();
+    db.sync();
 
     TermRecord tr = new TermRecord(123, "bla.txt", GbifTerm.VernacularName);
     tr.setType(AcefTerm.Distribution);

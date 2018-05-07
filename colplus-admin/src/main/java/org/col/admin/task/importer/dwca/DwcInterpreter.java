@@ -47,8 +47,6 @@ public class DwcInterpreter extends InterpreterBase {
     // name
     NameAccordingTo nat = interpretName(v);
     t.name = nat.getName();
-    // acts
-    t.acts = interpretActs(t, v);
     // flat classification
     t.classification = new Classification();
     for (DwcTerm dwc : DwcTerm.HIGHER_RANKS) {
@@ -69,11 +67,6 @@ public class DwcInterpreter extends InterpreterBase {
     }
 
     return t;
-  }
-
-  private List<NameAct> interpretActs(NeoTaxon t, VerbatimRecord v) {
-    List<NameAct> acts = Lists.newArrayList();
-    return acts;
   }
 
   void interpretBibliography(NeoTaxon t) {

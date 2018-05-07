@@ -68,7 +68,6 @@ public class Traversals {
       .breadthFirst()
       .uniqueness(Uniqueness.NODE_PATH);
 
-
   /**
    * Traversal that iterates depth first over all accepted descendants including the starting node.
    * There is no particular order for the direct children.

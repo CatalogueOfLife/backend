@@ -1,26 +1,35 @@
 package org.col.admin.task.importer;
 
+import com.google.common.collect.ImmutableBiMap;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import it.unimi.dsi.fastutil.longs.Long2IntMap;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
+import jersey.repackaged.com.google.common.collect.Sets;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.admin.config.ImporterConfig;
 import org.col.admin.task.importer.neo.NeoDb;
 import org.col.admin.task.importer.neo.model.Labels;
 import org.col.admin.task.importer.neo.model.NeoTaxon;
+import org.col.admin.task.importer.neo.model.RelType;
 import org.col.admin.task.importer.neo.traverse.StartEndHandler;
 import org.col.admin.task.importer.neo.traverse.TreeWalker;
 import org.col.api.model.*;
+import org.col.api.vocab.NomActType;
 import org.col.api.vocab.Origin;
 import org.col.api.vocab.TaxonomicStatus;
 import org.col.db.dao.NameDao;
 import org.col.db.mapper.*;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.RelationshipType;
+import org.neo4j.graphdb.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -58,6 +67,7 @@ public class PgImport implements Runnable {
 	  truncate();
 		insertReferences();
     insertNames();
+    insertActs();
 		insertTaxa();
 
 		updateMetadata();
@@ -122,99 +132,49 @@ public class PgImport implements Runnable {
 	}
 
 
+  /**
+   * Inserts all names, collecting all homotypic name keys for later updates if they havent been inserted already.
+   */
   private void insertNames() {
-    // first basionyms so we can create relations to them for recombinations
-    insertBasionyms();
-    insertRecombinations();
-    LOG.info("Inserted {} name in total", nCounter.get());
-  }
-
-  private void insertBasionyms() {
-		// basionyms first
-		try (final SqlSession session = sessionFactory.openSession(false)) {
-			final NameMapper nameMapper = session.getMapper(NameMapper.class);
-			// insert original names first and remember postgres keys for subsequent
-			// combinations and taxa
-			LOG.info("Inserting basionyms");
-			store.process(Labels.BASIONYM, batchSize, new NeoDb.NodeBatchProcessor() {
-
-				@Override
-				public void process(Node n) {
-					NeoTaxon t = store.get(n);
-          createName(nameMapper, t);
-				}
-
-				@Override
-				public void commitBatch(int counter) {
-					session.commit();
-					LOG.debug("Inserted {} basionyms", counter);
-				}
-			});
-		}
-	}
-
-	private int createName(NameMapper mapper, NeoTaxon t) {
-    t.name.setDatasetKey(dataset.getKey());
-    t.name.getIssues().addAll(t.issues);
-    // update published in reference keys
-    if (t.name.getPublishedInKey() != null) {
-      t.name.setPublishedInKey(referenceKeys.get(t.name.getPublishedInKey()));
-    }
-
-    mapper.create(t.name);
-    nCounter.incrementAndGet();
-    // keep postgres keys in node id map
-    nameKeys.put((int) t.node.getId(), t.name.getKey());
-
-    return t.name.getKey();
-  }
-
-  private int createTaxon(TaxonMapper mapper, NeoTaxon t) {
-    t.taxon.setDatasetKey(dataset.getKey());
-    t.taxon.setName(t.name);
-    t.taxon.setIssues(t.issues);
-    mapper.create(t.taxon);
-    tCounter.incrementAndGet();
-    return t.taxon.getKey();
-  }
-
-  private void insertRecombinations() {
+    // key=postgres name key, value=desired homotypic name key using the temp neo4j node
+    Map<Integer, Integer> nameHomoKey = Maps.newHashMap();
     try (final SqlSession session = sessionFactory.openSession(false)) {
       final NameMapper nameMapper = session.getMapper(NameMapper.class);
-      NameActMapper nameActMapper = session.getMapper(NameActMapper.class);
-      LOG.info("Inserting all other names");
+      LOG.debug("Inserting all names");
       store.process(Labels.ALL, batchSize, new NeoDb.NodeBatchProcessor() {
         @Override
         public void process(Node n) {
           // we read all names as we also deal with acts for basionyms here
           NeoTaxon t = store.get(n);
-          // inserted the name as basionym before?
-          if (nameKeys.containsKey((int) n.getId())) {
-            // use postgres key
-            t.name.setKey(nameKeys.get((int) n.getId()));
-
-          } else {
-            // update basionym keys
-            if (t.name.getHomotypicNameKey() != null) {
+          Integer homoKey = null;
+          if (t.name.getHomotypicNameKey() != null) {
+            if (t.name.getHomotypicNameKey() == n.getId()) {
+              // pointer to itself, remove the key as the mapper expects a null in such case
+              t.name.setHomotypicNameKey(null);
+            } else if (nameKeys.containsKey(t.name.getHomotypicNameKey())) {
+              // update homotypic key directly
               t.name.setHomotypicNameKey(nameKeys.get(t.name.getHomotypicNameKey()));
+            } else {
+              // queue for later updates
+              homoKey = t.name.getHomotypicNameKey();
+              t.name.setHomotypicNameKey(null);
             }
-            createName(nameMapper, t);
+          }
+          // update published in reference keys
+          if (t.name.getPublishedInKey() != null) {
+            t.name.setPublishedInKey(referenceKeys.get(t.name.getPublishedInKey()));
           }
 
-          // insert name acts
-          for (NameAct act : t.acts) {
-            act.setDatasetKey(dataset.getKey());
-            // update to use postgres keys
-            act.setNameKey(t.name.getKey());
-            if (act.getRelatedNameKey() != null) {
-              if (nameKeys.containsKey(act.getRelatedNameKey())) {
-                act.setRelatedNameKey(nameKeys.get(act.getRelatedNameKey()));
-              } else {
-                //TODO: update related name key in case we dont have it yet in the db!!!
-                LOG.error("Related name in acts not yet supported! Name={}", t.name.getScientificName());
-              }
-            }
-            nameActMapper.create(act);
+          t.name.setDatasetKey(dataset.getKey());
+          t.name.getIssues().addAll(t.issues);
+
+          nameMapper.create(t.name);
+          nCounter.incrementAndGet();
+          // keep postgres keys in node id map
+          nameKeys.put((int) t.node.getId(), t.name.getKey());
+
+          if (homoKey != null) {
+            nameHomoKey.put(t.name.getKey(), homoKey);
           }
         }
 
@@ -224,7 +184,69 @@ public class PgImport implements Runnable {
           LOG.debug("Inserted {} other names", counter);
         }
       });
+      session.commit();
+
+      int homoUpdateCounter = 0;
+      for (Map.Entry<Integer, Integer> homo : nameHomoKey.entrySet()) {
+        nameMapper.updateHomotypicNameKey(homo.getKey(), nameKeys.get(homo.getValue()));
+        homoUpdateCounter++;
+        if (homoUpdateCounter % 1000 == 0) {
+          session.commit();
+        }
+      }
+      session.commit();
+      LOG.info("Updated homotypic name key of {} names", homoUpdateCounter);
     }
+    LOG.info("Inserted {} name in total", nCounter.get());
+  }
+
+  /**
+   * Go through all neo4j relations and convert them to name acts if the rel type matches
+   */
+  private void insertActs() {
+    // neo4j relationship types need to be compared by their name!
+    final Map<String, NomActType> actTypes = ImmutableMap.<String, NomActType>builder()
+        .put(RelType.BASIONYM_OF.name(), NomActType.BASIONYM)
+        .build();
+    final Set<NomActType> inverse = Sets.newHashSet(NomActType.BASIONYM);
+    final AtomicInteger counter = new AtomicInteger(0);
+    try (final SqlSession session = sessionFactory.openSession(false)) {
+      final NameActMapper nameActMapper = session.getMapper(NameActMapper.class);
+      LOG.debug("Inserting all name acts");
+      try (Transaction tx = store.getNeo().beginTx()) {
+        store.getNeo().getAllRelationships().stream().forEach(rel -> {
+          if (actTypes.containsKey(rel.getType().name())) {
+            NomActType actType = actTypes.get(rel.getType().name());
+            Node n1 = rel.getStartNode();
+            Node n2 = rel.getEndNode();
+            Node from = inverse.contains(actType) ? rel.getEndNode() : rel.getStartNode();
+
+            NameAct act = new NameAct();
+            act.setDatasetKey(dataset.getKey());
+            act.setType(actType);
+            act.setNameKey(nameKeys.get((int) from.getId()));
+            act.setRelatedNameKey(nameKeys.get((int) rel.getOtherNode(from).getId()));
+            //TODO: read note from rel property
+            act.setNote(null);
+            nameActMapper.create(act);
+            if (counter.incrementAndGet() % 1000 == 0) {
+              session.commit();
+            }
+          }
+        });
+      }
+      session.commit();
+    }
+    LOG.info("Inserted {} name acts", counter.get());
+  }
+
+  private int createTaxon(TaxonMapper mapper, NeoTaxon t) {
+    t.taxon.setDatasetKey(dataset.getKey());
+    t.taxon.setName(t.name);
+    t.taxon.setIssues(t.issues);
+    mapper.create(t.taxon);
+    tCounter.incrementAndGet();
+    return t.taxon.getKey();
   }
 
 	/**

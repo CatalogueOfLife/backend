@@ -1,5 +1,6 @@
 package org.col.admin.task.importer;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.io.Files;
@@ -39,9 +40,12 @@ import java.net.URI;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static org.junit.Assert.*;
 
@@ -343,6 +347,28 @@ public class NormalizerDwcaIT {
         assertEquals(expectedAccepted.remove(NeoProperties.getID(acc.node)), acc.name);
       }
       assertTrue(expectedAccepted.isEmpty());
+    }
+  }
+
+  @Test
+  public void testHomotypic() throws Exception {
+    normalize(29);
+
+    try (Transaction tx = store.getNeo().beginTx()) {
+      NeoTaxon annua1 = byID("4");
+      NeoTaxon annua2 = byID("5");
+      assertEquals(annua1.name.getHomotypicNameKey(), annua2.name.getHomotypicNameKey());
+      NeoTaxon reptans1 = byID("7");
+      NeoTaxon reptans2 = byID("8");
+      assertEquals(reptans1.name.getHomotypicNameKey(), reptans2.name.getHomotypicNameKey());
+      assertFalse(annua1.name.getHomotypicNameKey().equals(reptans1.name.getHomotypicNameKey()));
+
+      List<String> homos = Lists.newArrayList("4", "5", "7", "8");
+      store.all().forEach(t -> {
+        if (!homos.contains(t.name.getId())) {
+          assertNull(t.name.getHomotypicNameKey());
+        }
+      });
     }
   }
 

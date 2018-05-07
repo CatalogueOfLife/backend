@@ -81,16 +81,11 @@ public class AcefInterpreter extends InterpreterBase {
       t.synonym = new Synonym();
       t.synonym.setStatus(status);
       t.synonym.setAccordingTo(nat.getAccordingTo());
-      // there is no homotypic information in ACEF :(
-      t.homotypic = false;
 
     } else {
       t.taxon.setDoubtful(TaxonomicStatus.DOUBTFUL == status);
     }
 
-    // acts
-    // TODO: https://github.com/Sp2000/colplus-backend/issues/18
-    t.acts = Lists.newArrayList();
     // flat classification
     t.classification = interpretClassification(v, synonym);
 

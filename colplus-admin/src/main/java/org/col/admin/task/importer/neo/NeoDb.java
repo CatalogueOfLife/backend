@@ -17,7 +17,6 @@ import org.col.api.model.*;
 import org.col.api.vocab.Issue;
 import org.col.api.vocab.Origin;
 import org.col.api.vocab.TaxonomicStatus;
-import org.col.parser.TaxonomicStatusParser;
 import org.col.util.concurrent.ThrottledThreadPoolExecutor;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.nameparser.api.NameType;
@@ -498,19 +497,11 @@ public class NeoDb implements ReferenceStore {
   /**
    * overlay neo4j relations to NeoTaxon instances
    */
-  public void updateTaxonStoreWithRelations() {
+  private void updateTaxonStoreWithRelations() {
     try (Transaction tx = getNeo().beginTx()) {
       for (Node n : getNeo().getAllNodes()) {
         NeoTaxon t = get(n);
         t.taxon.setKey((int)n.getId());
-        // basionym
-        Node bn = getSingleRelated(t.node, RelType.BASIONYM_OF, Direction.INCOMING);
-        if (bn != null) {
-          NeoTaxon bas = get(bn);
-          bas.name.setKey((int)bn.getId());
-          t.name.setHomotypicNameKey(bas.name.getKey());
-        }
-
         if (t.node.hasLabel(Labels.SYNONYM)) {
           if (t.synonym == null) {
             t.synonym = new Synonym();
@@ -526,6 +517,73 @@ public class NeoDb implements ReferenceStore {
         // store the updated object directly in MapDB, avoiding unecessary updates to Neo
         taxa.put(t.node.getId(), t);
       }
+      tx.success();
+    }
+  }
+
+  /**
+   * Sets the same neo node id for a given cluster of homotypic names derived from basionym and synonym[homotpic=true] relations.
+   * We first go thru all synonyms with the homotypic flag to determine the keys and then add all missing basionym nodes.
+   */
+  private void updateHomotypicNameKeys() {
+    int counter = 0;
+    LOG.debug("Setting shared homotypic name keys");
+    try (Transaction tx = neo.beginTx()) {
+      // first homotypic synonym rels
+      for (Node syn : Iterators.loop(getNeo().findNodes(Labels.SYNONYM))) {
+        NeoTaxon tsyn = get(syn);
+        if (tsyn.homotypic) {
+          NeoTaxon acc = get(syn.getSingleRelationship(RelType.SYNONYM_OF, Direction.OUTGOING).getEndNode());
+          int homoKey;
+          if (acc.name.getHomotypicNameKey() == null ) {
+            homoKey = (int) acc.node.getId();
+            acc.name.setHomotypicNameKey(homoKey);
+            update(acc);
+            counter++;
+          } else {
+            homoKey = acc.name.getHomotypicNameKey();
+          }
+          tsyn.name.setHomotypicNameKey(homoKey);
+          update(tsyn);
+        }
+      }
+      LOG.info("{} homotypic groups found via homotypic synonym relations", counter);
+
+      // now basionym, reuse keys if existing
+      counter = 0;
+      for (Node bas : Iterators.loop(getNeo().findNodes(Labels.BASIONYM))) {
+        List<NeoTaxon> group = Traversals.BASIONYM_GROUP
+            .traverse(bas)
+            .nodes()
+            .stream()
+            .map(n -> get(n))
+            .collect(Collectors.toList());
+        if (!group.isEmpty()) {
+          // determine existing or new key to be shared
+          Integer homoKey = null;
+          for (NeoTaxon t : group) {
+            if (t.name.getHomotypicNameKey() != null) {
+              if (homoKey == null) {
+                homoKey = t.name.getHomotypicNameKey();
+              } else if (!homoKey.equals(t.name.getHomotypicNameKey())){
+                LOG.warn("Several homotypic name keys found in the same basionym group for {}", NeoProperties.getScientificNameWithAuthor(bas));
+              }
+            }
+          }
+          if (homoKey == null) {
+            homoKey = (int) bas.getId();
+            counter++;
+          }
+          // update entire grop with key
+          for (NeoTaxon t : group) {
+            if (t.name.getHomotypicNameKey() == null) {
+              t.name.setHomotypicNameKey(homoKey);
+              update(t);
+            }
+          }
+        }
+      }
+      LOG.info("{} additional homotypic groups found via basionym relations", counter);
     }
   }
 
@@ -560,11 +618,18 @@ public class NeoDb implements ReferenceStore {
   }
 
   /**
+   * Sync taxon KVP storee with neo4j relations, setting correct neo4j labels, homotypic keys etc
    * Set correct ROOT, PROPARTE and BASIONYM labels for easier access
    */
-  public void updateLabels() {
+  public void sync() {
+    updateLabels();
+    updateTaxonStoreWithRelations();
+    updateHomotypicNameKeys();
+  }
+
+  private void updateLabels() {
     // set ROOT
-    LOG.info("Labelling root nodes");
+    LOG.debug("Labelling root nodes");
     String query =  "MATCH (r:TAXON) " +
         "WHERE not ( ()-[:PARENT_OF]->(r) ) " +
         "SET r :ROOT " +
@@ -573,7 +638,7 @@ public class NeoDb implements ReferenceStore {
     LOG.info("Labelled {} root nodes", count);
 
     // set BASIONYM
-    LOG.info("Labelling basionym nodes");
+    LOG.debug("Labelling basionym nodes");
     query = "MATCH (b:ALL)-[:BASIONYM_OF]->() " +
         "SET b :BASIONYM " +
         "RETURN count(b)";
@@ -592,10 +657,6 @@ public class NeoDb implements ReferenceStore {
       }
     }
   }
-
-
-
-
 
 
 
@@ -623,9 +684,12 @@ public class NeoDb implements ReferenceStore {
   /**
    * Creates a synonym relationship between the given synonym and the accepted node, updating labels accordingly
    * and also moving potentially existing parent_of relations.
+   * Homotypic relation flag is not set and expected to be added if known to be homotypic.
+   *
+   * @return newly created synonym relation
    */
-  public void createSynonymRel(Node synonym, Node accepted) {
-    synonym.createRelationshipTo(accepted, RelType.SYNONYM_OF);
+  public Relationship createSynonymRel(Node synonym, Node accepted) {
+    Relationship synRel = synonym.createRelationshipTo(accepted, RelType.SYNONYM_OF);
     synonym.addLabel(Labels.SYNONYM);
     synonym.removeLabel(Labels.TAXON);
     // potentially move the parent relationship of the synonym
@@ -646,6 +710,7 @@ public class NeoDb implements ReferenceStore {
         //}
       }
     }
+    return synRel;
   }
 
   /**

@@ -13,6 +13,8 @@ public enum RelType implements RelationshipType {
 
   /**
    * Name -> Taxon
+   * with optional property "homotypic" of any non null value
+   * to indicate a homotypic synonym which results in sharing the same homotypic group key at the end
    */
   SYNONYM_OF("syn"),
 
