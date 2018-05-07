@@ -8,7 +8,6 @@ import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.NamePart;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
-
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.EnumSet;
@@ -178,35 +177,36 @@ public class TestEntityGenerator {
   }
 
   /*
-<<<<<<< HEAD
-	 * Creates a new taxon with the specified id, belonging to the specified
-	 * dataset.
-	 */
-	public static Taxon newTaxon(int datasetKey, String id) {
-		Taxon t = new Taxon();
-		t.setAccordingTo("Foo");
-		t.setAccordingToDate(LocalDate.of(2010, 11, 24));
-		t.setDatasetKey(datasetKey);
-		t.setDatasetUrl(URI.create("http://foo.com"));
-		t.setFossil(true);
-		t.setId(id);
-		t.setLifezones(EnumSet.of(Lifezone.BRACKISH, Lifezone.FRESHWATER, Lifezone.TERRESTRIAL));
-		t.setName(NAME1);
-		t.setOrigin(Origin.SOURCE);
-		t.setParentKey(TAXON1.getKey());
-		t.setRecent(true);
-		t.setRemarks("Foo == Bar");
-		t.setSpeciesEstimate(81);
-		t.setSpeciesEstimateReferenceKey(REF1.getKey());
-		t.addIssue(Issue.ACCEPTED_NAME_MISSING);
-		t.addIssue(Issue.HOMONYM);
-		return t;
-	}
+   * Creates a new taxon with the specified id, belonging to the specified dataset.
+   */
+  public static Taxon newTaxon(int datasetKey, String id) {
+    Taxon t = new Taxon();
+    t.setAccordingTo("Foo");
+    t.setAccordingToDate(LocalDate.of(2010, 11, 24));
+    t.setDatasetKey(datasetKey);
+    t.setDatasetUrl(URI.create("http://foo.com"));
+    t.setFossil(true);
+    t.setId(id);
+    t.setLifezones(EnumSet.of(Lifezone.BRACKISH, Lifezone.FRESHWATER, Lifezone.TERRESTRIAL));
+    t.setName(NAME1);
+    t.setOrigin(Origin.SOURCE);
+    t.setParentKey(TAXON1.getKey());
+    t.setRecent(true);
+    t.setRemarks("Foo == Bar");
+    t.setSpeciesEstimate(81);
+    t.setSpeciesEstimateReferenceKey(REF1.getKey());
+    t.addIssue(Issue.ACCEPTED_NAME_MISSING);
+    t.addIssue(Issue.HOMONYM);
+    return t;
+  }
+
+  public static CslData newCslData() {
+    return (CslData) new RandomInstance().create(CslData.class, CslName.class, CslDate.class);
+  }
 
   /*
-	 * Creates a new taxon with the specified id, belonging to the specified
-	 * dataset.
-	 */
+   * Creates a new taxon with the specified id, belonging to the specified dataset.
+   */
   public static Synonym newSynonym(TaxonomicStatus status, Name name, Taxon accepted) {
     Synonym s = new Synonym();
     s.setName(name);
@@ -257,7 +257,7 @@ public class TestEntityGenerator {
     return n;
   }
 
-	public static List<Name> newNames(int size) {
+  public static List<Name> newNames(int size) {
     List<Name> names = Lists.newArrayList();
     while (size-- > 0) {
       names.add(newName());
@@ -267,9 +267,9 @@ public class TestEntityGenerator {
 
   public static Synonymy newSynonymy() {
     Synonymy s = new Synonymy();
-    s.addHeterotypicGroup(newNames(1+RND.nextInt(3)));
+    s.addHeterotypicGroup(newNames(1 + RND.nextInt(3)));
     while (RND.nextBoolean() || RND.nextBoolean()) {
-      s.addHeterotypicGroup(newNames(1+RND.nextInt(6)));
+      s.addHeterotypicGroup(newNames(1 + RND.nextInt(6)));
     }
     return s;
   }

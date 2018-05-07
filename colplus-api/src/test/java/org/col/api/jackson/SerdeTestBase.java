@@ -2,8 +2,7 @@ package org.col.api.jackson;
 
 import com.fasterxml.jackson.databind.JavaType;
 import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 /**
  *
@@ -21,9 +20,9 @@ public abstract class SerdeTestBase<T> {
   public static class Wrapper<T> {
     public T value;
 
-    public Wrapper(){}
+    public Wrapper() {}
 
-    public Wrapper(T value){
+    public Wrapper(T value) {
       this.value = value;
     }
   }
@@ -35,7 +34,7 @@ public abstract class SerdeTestBase<T> {
     testRoundtrip(genTestValue());
   }
 
-  protected  void testRoundtrip(T value) throws Exception {
+  protected void testRoundtrip(T value) throws Exception {
     Wrapper<T> wrapper = new Wrapper<T>(value);
     String json = ApiModule.MAPPER.writeValueAsString(wrapper);
     Wrapper<T> wrapper2 = ApiModule.MAPPER.readValue(json, type);
@@ -43,7 +42,7 @@ public abstract class SerdeTestBase<T> {
     assertEquals(wrapper.value, wrapper2.value);
   }
 
-  protected void debug(String json, Wrapper<T> wrapper, Wrapper<T> wrapper2){
+  protected void debug(String json, Wrapper<T> wrapper, Wrapper<T> wrapper2) {
     // nothing
   }
 }

@@ -117,5 +117,11 @@ public class RandomUtils {
     int maxYear = Calendar.getInstance().get(Calendar.YEAR);
     return String.valueOf(LINNEAN_YEAR + rnd.nextInt(maxYear - LINNEAN_YEAR + 1));
   }
+  
+  public static <T> T populate(T instance) {
+    Class<T> c = (Class<T>) instance.getClass();
+    
+    return instance;
+  }
 
 }
