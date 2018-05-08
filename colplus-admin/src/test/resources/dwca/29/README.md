@@ -1,0 +1,1 @@
+Test resulting homotypic group key based on a) "homotypic synonym" value in dwc:taxonomicStatus for synonyms and b) basionym relation via dwc:originalNameUsage(ID)

@@ -3,6 +3,7 @@ package org.col.admin.task.importer.neo.model;
 import com.google.common.base.Strings;
 import org.gbif.nameparser.api.Rank;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
 
 /**
  * Property names of neo4j nodes.

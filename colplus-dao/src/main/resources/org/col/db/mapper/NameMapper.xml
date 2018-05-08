@@ -187,6 +187,13 @@
         VALUES (<include refid="PROPS" />)
     </insert>
 
+    <update id="updateHomotypicNameKey" parameterType="Name" useGeneratedKeys="true" keyProperty="key">
+        UPDATE name
+        SET homotypic_name_key = #{homoKey}
+        WHERE key = #{key}
+    </update>
+
+
     <select id="homotypicGroup" resultMap="nameResultMap">
         SELECT <include refid="SELECT" />
         FROM name ns

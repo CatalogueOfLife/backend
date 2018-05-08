@@ -10,8 +10,6 @@ import org.col.admin.task.importer.reference.ReferenceFactory;
 import org.col.api.model.*;
 import org.col.api.vocab.Issue;
 import org.col.api.vocab.Origin;
-import org.col.api.vocab.TaxonomicStatus;
-import org.col.parser.Parser;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 import org.neo4j.graphdb.*;
@@ -113,10 +111,6 @@ public class Normalizer implements Runnable {
       require(t.name.getScientificName(), "scientific name", id);
       require(t.name.getRank(), "rank", id);
       require(t.name.getType(), "name type", id);
-      // acts
-      for (NameAct act : t.acts) {
-        require(act.getType(), "act type", id);
-      }
 
       // taxon or synonym
       if (!t.isSynonym()) {
@@ -178,11 +172,8 @@ public class Normalizer implements Runnable {
     // process the denormalized classifications of accepted taxa
     applyDenormedClassification();
 
-    // set correct ROOT and other labels for easier access
-    store.updateLabels();
-
-    // updates the taxon instances with infos derived from neo4j relations
-    store.updateTaxonStoreWithRelations();
+    // sync taxon KVP storee with neo4j relations, setting correct neo4j labels, homotypic keys etc
+    store.sync();
 
     LOG.info("Relation setup completed.");
   }

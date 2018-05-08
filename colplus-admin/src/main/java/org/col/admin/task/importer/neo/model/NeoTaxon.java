@@ -30,7 +30,6 @@ public class NeoTaxon {
   public Synonym synonym;
   public boolean homotypic = false;
 
-  public List<NameAct> acts = Lists.newArrayList();
   // supplementary infos for a taxon
   public List<VernacularName> vernacularNames = Lists.newArrayList();
   public List<Distribution> distributions = Lists.newArrayList();
@@ -67,13 +66,12 @@ public class NeoTaxon {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     NeoTaxon neoTaxon = (NeoTaxon) o;
-    return homotypic == neoTaxon.homotypic &&
+    return
         Objects.equals(node, neoTaxon.node) &&
         Objects.equals(verbatim, neoTaxon.verbatim) &&
         Objects.equals(name, neoTaxon.name) &&
         Objects.equals(taxon, neoTaxon.taxon) &&
         Objects.equals(synonym, neoTaxon.synonym) &&
-        Objects.equals(acts, neoTaxon.acts) &&
         Objects.equals(vernacularNames, neoTaxon.vernacularNames) &&
         Objects.equals(distributions, neoTaxon.distributions) &&
         Objects.equals(bibliography, neoTaxon.bibliography) &&
@@ -84,7 +82,7 @@ public class NeoTaxon {
 
   @Override
   public int hashCode() {
-    return Objects.hash(node, verbatim, name, taxon, synonym, homotypic, acts, vernacularNames, distributions, bibliography, classification, issues, remarks);
+    return Objects.hash(node, verbatim, name, taxon, synonym, vernacularNames, distributions, bibliography, classification, issues, remarks);
   }
 
   public boolean isSynonym() {
