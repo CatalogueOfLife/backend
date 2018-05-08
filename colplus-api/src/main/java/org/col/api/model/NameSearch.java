@@ -1,6 +1,7 @@
 package org.col.api.model;
 
 import org.col.api.vocab.Issue;
+import org.col.api.vocab.NameField;
 import org.col.api.vocab.NomStatus;
 import org.col.api.vocab.TaxonomicStatus;
 import org.gbif.nameparser.api.NameType;
@@ -29,7 +30,7 @@ public class NameSearch {
 	@QueryParam("rank")
 	private Rank rank;
 
-	@QueryParam("nomstatus")
+	@QueryParam("nomStatus")
 	private NomStatus nomStatus;
 
 	@QueryParam("status")
@@ -40,6 +41,9 @@ public class NameSearch {
 
 	@QueryParam("type")
 	private NameType type;
+
+	@QueryParam("hasField")
+	private NameField hasField;
 
 	@QueryParam("sortBy")
 	private SortBy sortBy = SortBy.NAME;
@@ -120,6 +124,14 @@ public class NameSearch {
 		this.type = type;
 	}
 
+	public NameField getHasField() {
+		return hasField;
+	}
+
+	public void setHasField(NameField hasField) {
+		this.hasField = hasField;
+	}
+
 	public SortBy getSortBy() {
 		return sortBy;
 	}
@@ -136,27 +148,30 @@ public class NameSearch {
         && nomStatus == null
         && status == null
         && issue == null
-        && type == null;
+        && type == null
+				&& hasField == null;
   }
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
-    NameSearch that = (NameSearch) o;
-    return Objects.equals(q, that.q) &&
-        Objects.equals(datasetKey, that.datasetKey) &&
-        Objects.equals(key, that.key) &&
-        rank == that.rank &&
-        nomStatus == that.nomStatus &&
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		NameSearch that = (NameSearch) o;
+		return Objects.equals(q, that.q) &&
+				Objects.equals(datasetKey, that.datasetKey) &&
+				Objects.equals(key, that.key) &&
+				rank == that.rank &&
+				nomStatus == that.nomStatus &&
 				status == that.status &&
-        issue == that.issue &&
-        type == that.type &&
-        sortBy == that.sortBy;
-  }
+				issue == that.issue &&
+				type == that.type &&
+				Objects.equals(hasField, that.hasField) &&
+				sortBy == that.sortBy;
+	}
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(q, datasetKey, key, rank, nomStatus, status, issue, type, sortBy);
-  }
+	@Override
+	public int hashCode() {
+
+		return Objects.hash(q, datasetKey, key, rank, nomStatus, status, issue, type, hasField, sortBy);
+	}
 }
