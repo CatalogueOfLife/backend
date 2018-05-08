@@ -1,7 +1,7 @@
 package org.col.csl;
 
 import static com.fasterxml.jackson.core.util.DefaultIndenter.SYS_LF;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 import org.apache.http.impl.client.HttpClients;
 import org.col.api.model.CslData;
 import org.col.api.vocab.CSLRefType;
@@ -16,7 +16,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @SuppressWarnings("static-method")
 public class AnystyleParserWrapperTest {
 
-  @Test
+  //@Test
   @Ignore
   public void testParse01() throws Exception {
     try (AnystyleParserWrapper parser = new AnystyleParserWrapper(HttpClients.createDefault())) {
@@ -33,6 +33,18 @@ public class AnystyleParserWrapperTest {
       assertEquals("The Harvill Press", item.getPublisher());
       assertEquals("London", item.getPublisherPlace());
       assertEquals("A Void", item.getTitle());
+    }
+  }
+
+  @Test
+  @Ignore
+  // ACEF 50, PSF-50567
+  public void testParse02() throws Exception {
+    try (AnystyleParserWrapper parser = new AnystyleParserWrapper(HttpClients.createDefault())) {
+      parser.start();
+      String ref = "Bulletin of Hong Kong Entomological Society 8(1):3-7";
+      CslData item = parser.parse(ref).get();
+      System.out.println(pretty(item));
     }
   }
 

@@ -37,6 +37,7 @@ class AnystyleWebService {
       throw new IllegalStateException(
           "Another instance of the Anystyle web service is still running");
     }
+    LOG.info("Starting Anystyle web service: ruby -e \"{}\"", getRubyCode());
     process = new ProcessBuilder("ruby", "-e", getRubyCode()).start();
     waitUntilReady();
   }
@@ -54,7 +55,7 @@ class AnystyleWebService {
       Process p = Runtime.getRuntime().exec("ps -ef");
       LineNumberReader lnr = new LineNumberReader(new InputStreamReader(p.getInputStream()));
       for (String line = lnr.readLine(); line != null; line = lnr.readLine()) {
-        if (line.indexOf("require 'cslParser/parser'") != -1) {
+        if (line.indexOf("require 'anystyle/parser'") != -1) {
           return true;
         }
       }
@@ -74,11 +75,10 @@ class AnystyleWebService {
     }
   }
 
-  // ruby -e require 'cslParser/parser';require 'sinatra';get '/' do;Anystyle.parse(params['ref'], :citeproc).to_json;end
   private static String getRubyCode() {
     StringBuilderWriter w = new StringBuilderWriter(200);
     try (PrintWriter p = new PrintWriter(w)) {
-      p.print("require 'cslParser/parser';");
+      p.print("require 'anystyle/parser';");
       p.print("require 'sinatra';");
       p.print("get '/' do;");
       p.printf("Anystyle.parse(params['%s'], :citeproc).to_json;", QUERY_PARAM_REF);
