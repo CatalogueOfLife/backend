@@ -21,6 +21,6 @@ public class CslDataTest extends SerdeTestBase<CslData> {
   }
 
   protected void debug(String json, Wrapper<CslData> wrapper, Wrapper<CslData> wrapper2) {
-    System.out.println(json);
+    //System.out.println(json);
   }
 }

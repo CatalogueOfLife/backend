@@ -10,7 +10,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
-import org.apache.commons.lang3.StringUtils;
+
+import org.apache.commons.lang3.StringUtils;;
 
 public class RandomInstance {
 
@@ -37,7 +38,7 @@ public class RandomInstance {
       for (Field f : getFields(c)) {
         setCommonTypes(instance, f);
       }
-    } catch (IllegalArgumentException | IllegalAccessException e) {
+    } catch (IllegalAccessException e) {
       throw new RuntimeException(e);
     }
   }

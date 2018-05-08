@@ -6,18 +6,20 @@ import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.google.common.base.Strings;
+import io.dropwizard.lifecycle.Managed;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.col.api.jackson.ApiModule;
 import org.col.api.model.CslData;
 import org.col.parser.Parser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.google.common.base.Strings;
-import io.dropwizard.lifecycle.Managed;
+
+import static org.col.api.jackson.ApiModule.MAPPER;
 
 public class AnystyleParserWrapper implements Managed, AutoCloseable, Parser<CslData> {
   private static final Logger LOG = LoggerFactory.getLogger(AnystyleWebService.class);
@@ -39,12 +41,12 @@ public class AnystyleParserWrapper implements Managed, AutoCloseable, Parser<Csl
     }
     try (CloseableHttpResponse response = hc.execute(request(ref))) {
       InputStream in = response.getEntity().getContent();
-      List<Map<String, Object>> raw = ApiModule.MAPPER.readValue(in, ANYSTYLE_RESPONSE_TYPE);
+      List<Map<String, Object>> raw = MAPPER.readValue(in, ANYSTYLE_RESPONSE_TYPE);
       if (raw.size() != 1) {
         LOG.error("Anystyle result is list of size {}", raw.size());
         throw new RuntimeException("Unexpected response from Anystyle");
       }
-      return Optional.of(ApiModule.MAPPER.convertValue(raw.get(0), CslData.class));
+      return Optional.of(MAPPER.convertValue(raw.get(0), CslData.class));
     } catch (IOException | URISyntaxException e) {
       throw new RuntimeException(e);
     }
