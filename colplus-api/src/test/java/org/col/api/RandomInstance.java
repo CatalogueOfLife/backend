@@ -43,7 +43,7 @@ public class RandomInstance {
   }
 
   /*
-   * Instantiate and initialize commonly-typed fields. Only works if T has a no-arg constructor.
+   * Instantiate and initialize commonly-typed fields. Only works if c has a no-arg constructor.
    * Fields whose type is in the extraTypes array will also be initialized (again requires a no-arg
    * constructor for that type).
    */

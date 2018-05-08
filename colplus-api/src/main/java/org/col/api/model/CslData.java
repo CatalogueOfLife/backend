@@ -17,46 +17,64 @@ public class CslData {
   private String[] categories;
   private String language;
   private String journalAbbreviation;
-  private String shortTitle;
   private CslName[] author;
+  @JsonProperty("collection-editor")
   private CslName[] collectionEditor;
   private CslName[] composer;
+  @JsonProperty("container-author")
   private CslName[] containerAuthor;
   private CslName[] director;
   private CslName[] editor;
+  @JsonProperty("editorial-director")
   private CslName[] editorialDirector;
   private CslName[] interviewer;
   private CslName[] illustrator;
+  @JsonProperty("original-author")
   private CslName[] originalAuthor;
   private CslName[] recipient;
+  @JsonProperty("reviewed-author")
   private CslName[] reviewedAuthor;
   private CslName[] translator;
   private CslDate accessed;
   private CslDate container;
+  @JsonProperty("event-date")
   private CslDate eventDate;
   private CslDate issued;
+  @JsonProperty("original-date")
   private CslDate originalDate;
   private CslDate submitted;
   @JsonProperty("abstract")
   private String abstrct;
   private String annote;
   private String archive;
+  @JsonProperty("arhive_location")
   private String archiveLocation;
+  @JsonProperty("archive-place")
   private String archivePlace;
   private String authority;
+  @JsonProperty("call-number")
   private String callNumber;
+  @JsonProperty("chapter-number")
   private String chapterNumber;
+  @JsonProperty("citation-number")
   private String citationNumber;
+  @JsonProperty("citation-label")
   private String citationLabel;
+  @JsonProperty("collection-number")
   private String collectionNumber;
+  @JsonProperty("collection-title")
   private String collectionTitle;
+  @JsonProperty("container-title")
   private String containerTitle;
+  @JsonProperty("container-title-short")
   private String containerTitleShort;
   private String dimensions;
   private String DOI;
   private String edition;
   private String event;
+  @JsonProperty("event-place")
   private String eventPlace;
+  @JsonProperty("first-reference-note-number")
   private String firstReferenceNoteNumber;
   private String genre;
   private String ISBN;
@@ -68,12 +86,18 @@ public class CslData {
   private String medium;
   private String note;
   private String number;
+  @JsonProperty("number-of-pages")
   private String numberOfPages;
+  @JsonProperty("number-of-volumes")
   private String numberOfVolumes;
+  @JsonProperty("original-publisher")
   private String originalPublisher;
+  @JsonProperty("original-publisher-place")
   private String originalPublisherPlace;
+  @JsonProperty("original-title")
   private String originalTitle;
   private String page;
+  @JsonProperty("page-first")
   private String pageFirst;
   private String PMCID;
   private String PMID;
@@ -81,16 +105,19 @@ public class CslData {
   @JsonProperty("publisher-place")
   private String publisherPlace;
   private String references;
+  @JsonProperty("reviewed-title")
   private String reviewedTitle;
   private String scale;
   private String section;
   private String source;
   private String status;
   private String title;
+  @JsonProperty("title-short")
   private String titleShort;
   private String URL;
   private String version;
   private String volume;
+  @JsonProperty("year-suffix")
   private String yearSuffix;
   
   public String getId() {
@@ -131,14 +158,6 @@ public class CslData {
 
   public void setJournalAbbreviation(String journalAbbreviation) {
     this.journalAbbreviation = journalAbbreviation;
-  }
-
-  public String getShortTitle() {
-    return shortTitle;
-  }
-
-  public void setShortTitle(String shortTitle) {
-    this.shortTitle = shortTitle;
   }
 
   public CslName[] getAuthor() {
@@ -726,7 +745,6 @@ public class CslData {
     result = 31 * result + Arrays.hashCode(categories);
     result = 31 * result + ((language == null) ? 0 : language.hashCode());
     result = 31 * result + ((journalAbbreviation == null) ? 0 : journalAbbreviation.hashCode());
-    result = 31 * result + ((shortTitle == null) ? 0 : shortTitle.hashCode());
     result = 31 * result + Arrays.hashCode(author);
     result = 31 * result + Arrays.hashCode(collectionEditor);
     result = 31 * result + Arrays.hashCode(composer);
@@ -840,12 +858,6 @@ public class CslData {
       if (other.journalAbbreviation != null)
         return false;
     } else if (!journalAbbreviation.equals(other.journalAbbreviation))
-      return false;
-
-    if (shortTitle == null) {
-      if (other.shortTitle != null)
-        return false;
-    } else if (!shortTitle.equals(other.shortTitle))
       return false;
 
     if (!Arrays.equals(author, other.author))

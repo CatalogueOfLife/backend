@@ -364,13 +364,13 @@ public class Normalizer implements Runnable {
         Node syn = sr.getStartNode();
 
         NeoTaxon su = store.get(syn);
-        su.addIssue(Issue.CHAINED_SYNOYM);
+        su.addIssue(Issue.CHAINED_SYNONYM);
         su.addIssue(Issue.PARENT_CYCLE);
         store.put(su);
         // this is serious. Report id
         String taxonID = NeoProperties.getID(syn);
 
-        RankedName created = store.createPlaceholder(Origin.MISSING_ACCEPTED, Issue.CHAINED_SYNOYM);
+        RankedName created = store.createPlaceholder(Origin.MISSING_ACCEPTED, Issue.CHAINED_SYNONYM);
         store.createSynonymRel(syn, created.node);
         sr.delete();
 
@@ -414,7 +414,7 @@ public class Normalizer implements Runnable {
         Node acc = (Node) row.get("t");
         for (Relationship sr : (Collection<Relationship>) row.get("sr")) {
           Node syn = sr.getStartNode();
-          addIssue(syn, Issue.CHAINED_SYNOYM);
+          addIssue(syn, Issue.CHAINED_SYNONYM);
           store.createSynonymRel(syn, acc);
           sr.delete();
           counter++;

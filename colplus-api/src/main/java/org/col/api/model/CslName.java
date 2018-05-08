@@ -1,13 +1,19 @@
 package org.col.api.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class CslName {
 
   private String family;
   private String given;
+  @JsonProperty("dropping-particle")
   private String droppingParticle;
+  @JsonProperty("non-dropping-particle")
   private String nonDroppingParticle;
   private String suffix;
+  @JsonProperty("comma-prefix")
   private Boolean commaPrefix;
+  @JsonProperty("comma-suffix")
   private Boolean commaSuffix;
   private Boolean staticOrdering;
   private Boolean staticParticles;
