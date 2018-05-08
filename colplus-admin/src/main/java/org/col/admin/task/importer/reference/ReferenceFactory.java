@@ -1,5 +1,9 @@
 package org.col.admin.task.importer.reference;
 
+import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import com.google.common.base.Strings;
 import org.col.api.model.CslData;
 import org.col.api.model.CslDate;
@@ -7,10 +11,6 @@ import org.col.api.model.Reference;
 import org.col.api.vocab.Issue;
 import org.col.parser.Parser;
 import org.col.parser.UnparsableException;
-
-import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Dataset specific factory for reference instances.
@@ -103,14 +103,16 @@ public class ReferenceFactory {
 
   public Reference fromDWC(String publishedInID, String publishedIn, String publishedInYear) {
     Reference ref = create(publishedInID);
-
     parse(ref, publishedIn);
     if (ref.getCsl().getIssued() == null && publishedInYear != null) {
-      //TODO: parse publishedInYear into CSL date
-      // can we do this with a java date <-> CslDate conversion ???
-      ref.getCsl().setIssued(null);
+      Integer y = parseYear(publishedInYear);
+      if(y != null) {
+        int[][] dateParts = {{y.intValue()}};
+        CslDate cslDate = new CslDate();
+        cslDate.setDateParts(dateParts);
+        ref.getCsl().setIssued(cslDate);
+      }
     }
-
     return postParse(ref);
   }
 
