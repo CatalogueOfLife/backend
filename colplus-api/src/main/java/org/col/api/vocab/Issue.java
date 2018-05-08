@@ -243,7 +243,7 @@ public enum Issue {
   /**
    * If a synonym points to another synonym as its accepted taxon the chain is resolved.
    */
-  CHAINED_SYNOYM,
+  CHAINED_SYNONYM,
 
 
   TAXONOMIC_STATUS_MISMATCH,
