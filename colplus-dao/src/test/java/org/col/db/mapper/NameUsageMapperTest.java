@@ -7,10 +7,7 @@ import org.apache.ibatis.session.SqlSession;
 import org.col.api.BeanPrinter;
 import org.col.api.TestEntityGenerator;
 import org.col.api.model.*;
-import org.col.api.vocab.Issue;
-import org.col.api.vocab.NomStatus;
-import org.col.api.vocab.Origin;
-import org.col.api.vocab.TaxonomicStatus;
+import org.col.api.vocab.*;
 import org.col.db.dao.NameDao;
 import org.col.db.dao.NameUsageDao;
 import org.col.db.dao.TaxonDao;
@@ -110,6 +107,10 @@ public class NameUsageMapperTest extends MapperTestBase<NameMapper> {
 
     search.setRank(Rank.CLASS);
     assertEquals(0, mapper.searchCount(search));
+
+    search = new NameSearch();
+    search.setHasField(NameField.COMBINATION_AUTHORS);
+    assertEquals(4, mapper.searchCount(search));
   }
 
 
