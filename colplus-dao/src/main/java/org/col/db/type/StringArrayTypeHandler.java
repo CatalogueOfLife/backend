@@ -17,14 +17,23 @@ import org.apache.ibatis.type.BaseTypeHandler;
 import org.apache.ibatis.type.JdbcType;
 
 import java.sql.*;
+import java.util.Collections;
 import java.util.List;
 
+/**
+ * String array hanlder that avoids nulls and uses empty arrays instead.
+ */
 public class StringArrayTypeHandler extends BaseTypeHandler<List<String>> {
 
   @Override
   public void setNonNullParameter(PreparedStatement ps, int i, List<String> parameter, JdbcType jdbcType) throws SQLException {
     Array array = ps.getConnection().createArrayOf("text", parameter.toArray());
     ps.setArray(i, array);
+  }
+
+  @Override
+  public void setParameter(PreparedStatement ps, int i, List<String> parameter, JdbcType jdbcType) throws SQLException {
+    setNonNullParameter(ps, i, parameter == null ? Collections.emptyList() : parameter, jdbcType);
   }
 
   @Override

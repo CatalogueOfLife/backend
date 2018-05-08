@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 /**
  * Base class for type handlers that need to convert between columns of type
  * integer[] and fields of type Set&lt;Enum&gt;.
+ * Avoids nulls and uses empty arrays instead.
  *
  * @param <T>
  */
@@ -32,6 +33,11 @@ public abstract class EnumOrdinalSetTypeHandler<T extends Enum<T>> extends BaseT
 		}
 		Array array = ps.getConnection().createArrayOf("int", ordinals);
 		ps.setArray(i, array);
+	}
+
+	@Override
+	public void setParameter(PreparedStatement ps, int i, Set<T> parameter, JdbcType jdbcType) throws SQLException {
+		setNonNullParameter(ps, i, parameter == null ? Collections.emptySet() : parameter, jdbcType);
 	}
 
 	@Override

@@ -16,11 +16,11 @@ public enum NameField {
   STRAIN,
   CANDIDATUS,
   NOTHO,
-  BASIONYM_AUTHORS,
-  BASIONYM_EX_AUTHORS,
+  BASIONYM_AUTHORS(true),
+  BASIONYM_EX_AUTHORS(true),
   BASIONYM_YEAR,
-  COMBINATION_AUTHORS,
-  COMBINATION_EX_AUTHORS,
+  COMBINATION_AUTHORS(true),
+  COMBINATION_EX_AUTHORS(true),
   COMBINATION_YEAR,
   SANCTIONING_AUTHOR,
   NOM_STATUS,
@@ -29,7 +29,21 @@ public enum NameField {
   SOURCE_URL,
   REMARKS;
 
-  public String sql() {
-    return this.name().toLowerCase();
+  private boolean array;
+
+  NameField() {
+    this(false);
+  }
+
+  NameField(boolean array) {
+    this.array = array;
+  }
+
+  public String notNull(String alias) {
+    if (array) {
+      return "array_length(" + alias + '.' + this.name().toLowerCase() + ", 1) IS NOT NULL";
+    } else {
+      return alias + '.' + this.name().toLowerCase() + " IS NOT NULL";
+    }
   }
 }
