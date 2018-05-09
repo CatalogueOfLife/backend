@@ -1,9 +1,9 @@
 package org.col.common.concurrent;
 
+import java.util.concurrent.*;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.concurrent.*;
 
 /**
  * Throttling Task submission rate using ThreadPoolExecutor and Semaphore

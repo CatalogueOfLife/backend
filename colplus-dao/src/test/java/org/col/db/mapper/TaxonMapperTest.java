@@ -1,5 +1,9 @@
 package org.col.db.mapper;
 
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+
 import com.google.common.collect.Lists;
 import org.col.api.TestEntityGenerator;
 import org.col.api.model.Name;
@@ -11,10 +15,6 @@ import org.javers.core.Javers;
 import org.javers.core.JaversBuilder;
 import org.javers.core.diff.Diff;
 import org.junit.Test;
-
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
 
 import static org.junit.Assert.*;
 

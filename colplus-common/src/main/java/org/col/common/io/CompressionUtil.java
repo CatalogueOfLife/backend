@@ -1,5 +1,9 @@
 package org.col.common.io;
 
+import java.io.*;
+import java.util.*;
+import java.util.zip.*;
+
 import com.google.common.collect.Lists;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
@@ -10,10 +14,6 @@ import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.*;
-import java.util.*;
-import java.util.zip.*;
 
 public class CompressionUtil {
 

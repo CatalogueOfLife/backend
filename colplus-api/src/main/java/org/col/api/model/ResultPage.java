@@ -1,8 +1,8 @@
 package org.col.api.model;
 
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Objects;
+import javax.annotation.Nullable;
 
 /**
  * A generic paging response wrapping a list payload

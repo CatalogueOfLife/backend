@@ -1,5 +1,17 @@
 package org.col.admin.task.importer.dwca;
 
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Stream;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
@@ -15,25 +27,13 @@ import org.col.admin.task.importer.InsertMetadata;
 import org.col.admin.task.importer.NormalizationFailedException;
 import org.col.api.model.TermRecord;
 import org.col.api.vocab.VocabularyUtils;
-import org.col.csv.CsvReader;
-import org.col.csv.Schema;
 import org.col.common.io.CharsetDetectingStream;
 import org.col.common.io.PathUtils;
+import org.col.csv.CsvReader;
+import org.col.csv.Schema;
 import org.gbif.dwc.terms.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Stream;
 
 /**
  *

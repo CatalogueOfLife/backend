@@ -1,17 +1,17 @@
 package org.col.resources;
 
-import com.codahale.metrics.annotation.Timed;
-import org.apache.ibatis.session.SqlSession;
-import org.col.api.model.*;
-import org.col.db.dao.NameDao;
-import org.col.db.dao.TaxonDao;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.List;
 import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import java.util.List;
+
+import com.codahale.metrics.annotation.Timed;
+import org.apache.ibatis.session.SqlSession;
+import org.col.api.model.*;
+import org.col.db.dao.TaxonDao;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Path("/taxon")
 @Produces(MediaType.APPLICATION_JSON)

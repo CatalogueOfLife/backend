@@ -1,8 +1,8 @@
 package org.col.api.model;
 
-import org.col.api.vocab.TaxonomicStatus;
-
 import java.util.Objects;
+
+import org.col.api.vocab.TaxonomicStatus;
 
 /**
  *

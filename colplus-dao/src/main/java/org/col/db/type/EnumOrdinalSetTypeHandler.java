@@ -1,11 +1,14 @@
 package org.col.db.type;
 
+import java.sql.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.apache.ibatis.type.BaseTypeHandler;
 import org.apache.ibatis.type.JdbcType;
-
-import java.sql.*;
-import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Base class for type handlers that need to convert between columns of type

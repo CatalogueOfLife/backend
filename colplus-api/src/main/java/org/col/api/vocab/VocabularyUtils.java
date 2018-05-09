@@ -12,16 +12,16 @@
  */
 package org.col.api.vocab;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.reflect.ClassPath;
 import org.gbif.dwc.terms.TermFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
 public final class VocabularyUtils {
 

@@ -1,5 +1,8 @@
 package org.col.api.jackson;
 
+import java.io.IOException;
+import java.util.Optional;
+
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
@@ -9,9 +12,6 @@ import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import org.col.api.vocab.Language;
 import org.gbif.dwc.terms.Term;
-
-import java.io.IOException;
-import java.util.Optional;
 
 /**
  * Jackson {@link JsonSerializer} and Jackson {@link JsonDeserializer} classes for {@link Language}

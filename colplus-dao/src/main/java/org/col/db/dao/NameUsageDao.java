@@ -1,17 +1,17 @@
 package org.col.db.dao;
 
-import com.google.common.collect.Lists;
+import java.util.List;
+
 import org.apache.ibatis.session.SqlSession;
-import org.col.api.model.*;
-import org.col.db.mapper.NameMapper;
+import org.col.api.model.NameSearch;
+import org.col.api.model.NameUsage;
+import org.col.api.model.Page;
+import org.col.api.model.ResultPage;
 import org.col.db.mapper.NameUsageMapper;
 import org.col.db.mapper.SynonymMapper;
 import org.col.db.mapper.TaxonMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Collection of methods dealing with name usages, i.e. a name in the context of either a Taxon, Synonym or BareName.

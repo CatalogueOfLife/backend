@@ -1,5 +1,7 @@
 package org.col.db;
 
+import javax.sql.DataSource;
+
 import org.apache.ibatis.binding.MapperRegistry;
 import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -16,8 +18,6 @@ import org.col.db.type.UuidTypeHandler;
 import org.gbif.nameparser.api.ParsedName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.sql.DataSource;
 
 /**
  * Configures mybatis and provides a SqlSessionFactory for a given datasource.

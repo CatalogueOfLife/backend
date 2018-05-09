@@ -1,13 +1,13 @@
 package org.col.api;
 
+import java.util.Calendar;
+import java.util.Random;
+
 import com.google.common.base.Strings;
 import org.apache.commons.lang3.text.WordUtils;
 import org.col.api.model.Name;
 import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.Rank;
-
-import java.util.Calendar;
-import java.util.Random;
 
 
 /**

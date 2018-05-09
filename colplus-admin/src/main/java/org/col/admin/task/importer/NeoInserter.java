@@ -1,5 +1,9 @@
 package org.col.admin.task.importer;
 
+import java.nio.file.Path;
+import java.util.Optional;
+import java.util.regex.Pattern;
+
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
@@ -13,10 +17,6 @@ import org.col.api.model.TermRecord;
 import org.gbif.dwc.terms.Term;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.nio.file.Path;
-import java.util.Optional;
-import java.util.regex.Pattern;
 
 /**
  *

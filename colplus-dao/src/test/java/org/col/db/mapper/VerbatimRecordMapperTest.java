@@ -1,5 +1,10 @@
 package org.col.db.mapper;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
+
 import com.google.common.collect.MapDifference;
 import com.google.common.collect.Maps;
 import org.col.api.RandomUtils;
@@ -11,11 +16,6 @@ import org.gbif.dwc.terms.*;
 import org.javers.common.collections.Sets;
 import org.junit.Ignore;
 import org.junit.Test;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 

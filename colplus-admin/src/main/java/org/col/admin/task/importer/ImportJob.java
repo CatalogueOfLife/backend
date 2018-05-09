@@ -1,5 +1,12 @@
 package org.col.admin.task.importer;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.concurrent.Callable;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -11,20 +18,13 @@ import org.col.admin.task.importer.reference.ReferenceFactory;
 import org.col.api.model.CslData;
 import org.col.api.model.Dataset;
 import org.col.api.model.DatasetImport;
-import org.col.db.dao.DatasetImportDao;
-import org.col.parser.Parser;
 import org.col.common.io.CompressionUtil;
 import org.col.common.io.DownloadUtil;
+import org.col.db.dao.DatasetImportDao;
+import org.col.parser.Parser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.util.concurrent.Callable;
 
 /**
  * Base task setting up MDC logging properties.

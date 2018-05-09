@@ -1,9 +1,9 @@
 package org.col.common.tax;
 
+import java.util.List;
+
 import com.google.common.collect.Lists;
 import org.gbif.nameparser.api.Rank;
-
-import java.util.List;
 
 /**
  *

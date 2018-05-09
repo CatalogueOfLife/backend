@@ -1,12 +1,12 @@
 package org.col.api.model;
 
-import com.google.common.base.Preconditions;
-
+import java.util.Objects;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.QueryParam;
-import java.util.Objects;
+
+import com.google.common.base.Preconditions;
 
 /**
  * A page used for requesting or responding to a pageable service.

@@ -1,12 +1,12 @@
 package org.col.api.model;
 
+import java.util.List;
+import java.util.Objects;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.nameparser.api.Rank;
-
-import java.util.List;
-import java.util.Objects;
 
 /**
  *

@@ -1,5 +1,11 @@
 package org.col.parser;
 
+import java.io.IOException;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.regex.Pattern;
+
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Enums;
 import com.google.common.base.Strings;
@@ -9,12 +15,6 @@ import org.col.api.vocab.Country;
 import org.col.api.vocab.Gazetteer;
 import org.gbif.utils.file.csv.CSVReader;
 import org.gbif.utils.file.csv.CSVReaderFactory;
-
-import java.io.IOException;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.regex.Pattern;
 
 /**
  * A parser that tries to extract complex area information (actual area id with gazatteer its based on )

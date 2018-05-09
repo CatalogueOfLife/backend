@@ -1,14 +1,14 @@
 package org.col.db.type;
 
+import java.sql.*;
+import java.util.UUID;
+
 import com.google.common.base.Strings;
 import org.apache.ibatis.type.JdbcType;
 import org.apache.ibatis.type.MappedTypes;
 import org.apache.ibatis.type.TypeHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.sql.*;
-import java.util.UUID;
 
 /**
  * Handler for UUID types.

@@ -1,20 +1,20 @@
 package org.col.admin.resources;
 
+import java.util.List;
+import javax.validation.Valid;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+
 import org.apache.ibatis.session.SqlSessionFactory;
+import org.col.admin.task.importer.ImportManager;
 import org.col.admin.task.importer.ImportRequest;
 import org.col.api.model.DatasetImport;
 import org.col.api.model.Page;
 import org.col.api.model.ResultPage;
 import org.col.api.vocab.ImportState;
 import org.col.db.dao.DatasetImportDao;
-import org.col.admin.task.importer.ImportManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.validation.Valid;
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import java.util.List;
 
 @Path("/importer")
 @Produces(MediaType.APPLICATION_JSON)

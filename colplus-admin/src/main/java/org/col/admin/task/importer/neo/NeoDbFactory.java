@@ -1,5 +1,8 @@
 package org.col.admin.task.importer.neo;
 
+import java.io.File;
+import java.io.IOException;
+
 import com.google.common.io.Files;
 import org.col.admin.config.NormalizerConfig;
 import org.col.common.util.CleanupUtils;
@@ -7,9 +10,6 @@ import org.mapdb.DBMaker;
 import org.neo4j.graphdb.factory.GraphDatabaseBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.File;
-import java.io.IOException;
 
 /**
  * A factory for persistent & temporary, volatile neodb instances.

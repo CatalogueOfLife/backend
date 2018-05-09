@@ -13,10 +13,10 @@
 package org.col.api.jackson;
 
 
+import java.io.IOException;
+
 import org.gbif.nameparser.api.Rank;
 import org.junit.Test;
-
-import java.io.IOException;
 
 import static org.junit.Assert.assertEquals;
 

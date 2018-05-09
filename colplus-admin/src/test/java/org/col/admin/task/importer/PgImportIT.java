@@ -1,5 +1,12 @@
 package org.col.admin.task.importer;
 
+import java.io.File;
+import java.net.URI;
+import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
+
 import com.google.common.collect.Sets;
 import com.google.common.io.Files;
 import jersey.repackaged.com.google.common.base.Throwables;
@@ -27,13 +34,6 @@ import org.col.db.mapper.NameActMapper;
 import org.col.db.mapper.PgSetupRule;
 import org.gbif.nameparser.api.Rank;
 import org.junit.*;
-
-import java.io.File;
-import java.net.URI;
-import java.net.URL;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.*;
 
 import static org.col.api.vocab.DataFormat.ACEF;
 import static org.col.api.vocab.DataFormat.DWCA;

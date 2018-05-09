@@ -2,7 +2,6 @@ package org.col.common.tax;
 
 import java.util.regex.Pattern;
 
-import org.col.api.model.Name;
 import org.col.api.model.NameAccordingTo;
 
 /**

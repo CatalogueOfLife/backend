@@ -1,5 +1,10 @@
 package org.col.admin.task.importer.neo;
 
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Random;
+
 import com.google.common.io.Files;
 import org.col.admin.config.NormalizerConfig;
 import org.col.admin.task.importer.neo.model.Labels;
@@ -21,14 +26,7 @@ import org.junit.runners.Parameterized;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
 
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Random;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
 /**
  *

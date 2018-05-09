@@ -1,5 +1,8 @@
 package org.col.db.dao;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import com.google.common.collect.Sets;
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.BeanPrinter;
@@ -8,9 +11,6 @@ import org.col.api.model.*;
 import org.col.api.vocab.Gazetteer;
 import org.col.api.vocab.TaxonomicStatus;
 import org.junit.Test;
-
-import java.util.HashSet;
-import java.util.Set;
 
 import static org.junit.Assert.*;
 

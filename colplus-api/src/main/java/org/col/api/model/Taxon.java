@@ -1,15 +1,15 @@
 package org.col.api.model;
 
-import org.col.api.vocab.Issue;
-import org.col.api.vocab.Lifezone;
-import org.col.api.vocab.Origin;
-import org.col.api.vocab.TaxonomicStatus;
-
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.EnumSet;
 import java.util.Objects;
 import java.util.Set;
+
+import org.col.api.vocab.Issue;
+import org.col.api.vocab.Lifezone;
+import org.col.api.vocab.Origin;
+import org.col.api.vocab.TaxonomicStatus;
 
 /**
  *

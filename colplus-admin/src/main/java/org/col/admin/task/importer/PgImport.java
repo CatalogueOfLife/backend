@@ -1,6 +1,11 @@
 package org.col.admin.task.importer;
 
-import com.google.common.collect.ImmutableBiMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.Stack;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import it.unimi.dsi.fastutil.longs.Long2IntMap;
@@ -18,21 +23,12 @@ import org.col.admin.task.importer.neo.traverse.TreeWalker;
 import org.col.api.model.*;
 import org.col.api.vocab.NomActType;
 import org.col.api.vocab.Origin;
-import org.col.api.vocab.TaxonomicStatus;
 import org.col.db.dao.NameDao;
 import org.col.db.mapper.*;
 import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Relationship;
-import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Map;
-import java.util.Set;
-import java.util.Stack;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
 /**
  *

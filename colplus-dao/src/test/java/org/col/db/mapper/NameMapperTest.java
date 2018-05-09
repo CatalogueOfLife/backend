@@ -1,20 +1,19 @@
 package org.col.db.mapper;
 
+import java.util.List;
+
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import org.col.api.TestEntityGenerator;
-import org.col.api.model.*;
+import org.col.api.model.Dataset;
+import org.col.api.model.Name;
+import org.col.api.model.Page;
 import org.col.api.vocab.Origin;
 import org.gbif.nameparser.api.NameType;
-import org.gbif.nameparser.api.Rank;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.List;
-
-import static org.col.api.TestEntityGenerator.NAME1;
-import static org.col.api.TestEntityGenerator.REF1;
-import static org.col.api.TestEntityGenerator.REF2;
+import static org.col.api.TestEntityGenerator.*;
 import static org.junit.Assert.*;
 
 /**

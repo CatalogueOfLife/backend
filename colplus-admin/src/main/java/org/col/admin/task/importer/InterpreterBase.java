@@ -1,5 +1,9 @@
 package org.col.admin.task.importer;
 
+import java.net.URI;
+import java.time.LocalDate;
+import java.util.*;
+
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
@@ -14,18 +18,14 @@ import org.col.api.exception.InvalidNameException;
 import org.col.api.model.*;
 import org.col.api.vocab.Issue;
 import org.col.api.vocab.Origin;
-import org.col.parser.*;
 import org.col.common.date.FuzzyDate;
+import org.col.parser.*;
 import org.gbif.dwc.terms.Term;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.ParsedName;
 import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.net.URI;
-import java.time.LocalDate;
-import java.util.*;
 
 import static org.col.parser.SafeParser.parse;
 

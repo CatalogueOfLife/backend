@@ -1,10 +1,13 @@
 package org.col.db.dao;
 
+import java.util.List;
+
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
-import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.session.SqlSession;
-import org.col.api.model.*;
+import org.col.api.model.Name;
+import org.col.api.model.Page;
+import org.col.api.model.ResultPage;
+import org.col.api.model.VerbatimRecord;
 import org.col.api.vocab.TaxonomicStatus;
 import org.col.db.NotFoundException;
 import org.col.db.mapper.NameMapper;
@@ -12,8 +15,6 @@ import org.col.db.mapper.SynonymMapper;
 import org.col.db.mapper.VerbatimRecordMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.List;
 
 public class NameDao {
 

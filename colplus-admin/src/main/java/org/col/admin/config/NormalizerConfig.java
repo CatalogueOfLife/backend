@@ -1,5 +1,9 @@
 package org.col.admin.config;
 
+import java.io.File;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+
 import org.apache.commons.io.FileUtils;
 import org.neo4j.graphdb.factory.GraphDatabaseBuilder;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
@@ -8,10 +12,6 @@ import org.neo4j.logging.slf4j.Slf4jLogProvider;
 import org.neo4j.shell.ShellSettings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
-import java.io.File;
 
 /**
  *

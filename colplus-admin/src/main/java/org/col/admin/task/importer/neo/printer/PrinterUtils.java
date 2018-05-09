@@ -1,16 +1,16 @@
 package org.col.admin.task.importer.neo.printer;
 
+import java.io.Writer;
+import javax.annotation.Nullable;
+
 import com.google.common.base.Function;
-import org.col.admin.task.importer.neo.traverse.Traversals;
 import org.col.admin.task.importer.neo.NeoDb;
 import org.col.admin.task.importer.neo.model.NeoProperties;
+import org.col.admin.task.importer.neo.traverse.Traversals;
 import org.col.admin.task.importer.neo.traverse.TreeWalker;
 import org.gbif.nameparser.api.Rank;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
-
-import javax.annotation.Nullable;
-import java.io.Writer;
 
 /**
  * Printing utilities for {@link NeoDb}s

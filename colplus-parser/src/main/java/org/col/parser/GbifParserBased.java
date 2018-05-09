@@ -1,9 +1,9 @@
 package org.col.parser;
 
+import java.util.Optional;
+
 import org.gbif.common.parsers.core.Parsable;
 import org.gbif.common.parsers.core.ParseResult;
-
-import java.util.Optional;
 
 /**
  * @param <T> Parser value class

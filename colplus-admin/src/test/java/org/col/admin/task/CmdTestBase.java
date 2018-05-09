@@ -1,5 +1,10 @@
 package org.col.admin.task;
 
+import java.io.File;
+import java.nio.file.Files;
+import java.util.Arrays;
+import java.util.Optional;
+
 import com.codahale.metrics.MetricRegistry;
 import io.dropwizard.cli.Cli;
 import io.dropwizard.cli.Command;
@@ -8,17 +13,12 @@ import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.util.JarLocation;
 import org.col.admin.AdminServer;
 import org.col.admin.command.initdb.InitDbCmd;
-import org.col.db.mapper.PgSetupRule;
 import org.col.admin.config.AdminServerConfig;
 import org.col.common.util.YamlUtils;
+import org.col.db.mapper.PgSetupRule;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
-
-import java.io.File;
-import java.nio.file.Files;
-import java.util.Arrays;
-import java.util.Optional;
 
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;

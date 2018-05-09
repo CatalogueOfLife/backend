@@ -1,9 +1,9 @@
 package org.col.db.mapper;
 
+import org.col.api.TestEntityGenerator;
 import org.col.api.model.Distribution;
 import org.col.api.vocab.DistributionStatus;
 import org.col.api.vocab.Gazetteer;
-import org.col.api.TestEntityGenerator;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

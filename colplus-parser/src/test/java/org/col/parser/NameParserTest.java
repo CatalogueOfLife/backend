@@ -1,5 +1,8 @@
 package org.col.parser;
 
+import java.util.Optional;
+import java.util.Set;
+
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import org.col.api.model.Name;
@@ -8,9 +11,6 @@ import org.gbif.nameparser.api.NamePart;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Test;
-
-import java.util.Optional;
-import java.util.Set;
 
 import static org.junit.Assert.*;
 

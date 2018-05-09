@@ -1,9 +1,9 @@
 package org.col.db.mapper;
 
+import java.util.List;
+
 import org.apache.ibatis.annotations.Param;
 import org.col.api.model.VernacularName;
-
-import java.util.List;
 
 public interface VernacularNameMapper {
 

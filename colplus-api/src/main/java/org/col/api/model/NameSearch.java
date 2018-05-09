@@ -1,14 +1,14 @@
 package org.col.api.model;
 
+import java.util.Objects;
+import javax.ws.rs.QueryParam;
+
 import org.col.api.vocab.Issue;
 import org.col.api.vocab.NameField;
 import org.col.api.vocab.NomStatus;
 import org.col.api.vocab.TaxonomicStatus;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
-
-import javax.ws.rs.QueryParam;
-import java.util.Objects;
 
 public class NameSearch {
 

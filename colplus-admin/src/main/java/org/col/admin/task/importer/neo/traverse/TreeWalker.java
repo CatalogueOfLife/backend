@@ -1,5 +1,8 @@
 package org.col.admin.task.importer.neo.traverse;
 
+import java.util.List;
+import javax.annotation.Nullable;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
@@ -11,9 +14,6 @@ import org.neo4j.graphdb.*;
 import org.neo4j.graphdb.traversal.TraversalDescription;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nullable;
-import java.util.List;
 
 /**
  * A utility class to iterate over nodes in taxonomic order and execute any number of StartEndHandler while walking.

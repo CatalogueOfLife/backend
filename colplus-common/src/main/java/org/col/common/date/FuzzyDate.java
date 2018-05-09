@@ -1,15 +1,10 @@
 package org.col.common.date;
 
-import static java.time.temporal.ChronoField.DAY_OF_MONTH;
-import static java.time.temporal.ChronoField.MONTH_OF_YEAR;
-import static java.time.temporal.ChronoField.YEAR;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
-import java.time.Year;
-import java.time.YearMonth;
+import java.time.*;
 import java.time.temporal.TemporalAccessor;
 import java.util.Objects;
+
+import static java.time.temporal.ChronoField.*;
 
 /**
  * A FuzzyDate encapsulates a {@link TemporalAccessor} instance which is guaranteed to have at least

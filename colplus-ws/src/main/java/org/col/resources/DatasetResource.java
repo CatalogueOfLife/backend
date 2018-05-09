@@ -1,5 +1,12 @@
 package org.col.resources;
 
+import java.util.List;
+import javax.validation.Valid;
+import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+
 import com.google.common.collect.Lists;
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.model.*;
@@ -9,13 +16,6 @@ import org.col.db.mapper.DatasetMapper;
 import org.col.db.mapper.VerbatimRecordMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.validation.Valid;
-import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import java.util.List;
 
 @Path("/dataset")
 @Produces(MediaType.APPLICATION_JSON)

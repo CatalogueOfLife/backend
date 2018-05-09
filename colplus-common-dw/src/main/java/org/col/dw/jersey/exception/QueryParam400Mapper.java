@@ -1,9 +1,9 @@
 package org.col.dw.jersey.exception;
 
-import org.glassfish.jersey.server.ParamException;
-
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.Provider;
+
+import org.glassfish.jersey.server.ParamException;
 
 /**
  * Maps query parameter exceptions to 400 bad requests instead of the JAX-RS standard 404.

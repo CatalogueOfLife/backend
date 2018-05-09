@@ -1,12 +1,12 @@
 package org.col.common.io;
 
-import com.google.common.io.Resources;
-import org.apache.commons.io.FilenameUtils;
-
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+
+import com.google.common.io.Resources;
+import org.apache.commons.io.FilenameUtils;
 
 /**
  *

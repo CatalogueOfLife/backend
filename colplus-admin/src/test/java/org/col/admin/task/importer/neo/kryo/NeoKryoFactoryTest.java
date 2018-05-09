@@ -1,21 +1,23 @@
 package org.col.admin.task.importer.neo.kryo;
 
+import java.io.ByteArrayOutputStream;
+import java.util.List;
+
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import com.google.common.collect.Lists;
 import org.col.admin.task.importer.neo.model.NeoTaxon;
 import org.col.admin.task.importer.neo.model.UnescapedVerbatimRecord;
-import org.col.api.model.*;
-import org.col.api.vocab.Issue;
-import org.col.api.vocab.TaxonomicStatus;
 import org.col.api.TestEntityGenerator;
+import org.col.api.model.DatasetImport;
+import org.col.api.model.Name;
+import org.col.api.model.Reference;
+import org.col.api.model.Taxon;
+import org.col.api.vocab.Issue;
 import org.gbif.dwc.terms.*;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Test;
-
-import java.io.ByteArrayOutputStream;
-import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 

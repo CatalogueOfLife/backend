@@ -12,13 +12,13 @@
  */
 package org.col.db.type;
 
-import com.google.common.collect.Lists;
-import org.apache.ibatis.type.BaseTypeHandler;
-import org.apache.ibatis.type.JdbcType;
-
 import java.sql.*;
 import java.util.Collections;
 import java.util.List;
+
+import com.google.common.collect.Lists;
+import org.apache.ibatis.type.BaseTypeHandler;
+import org.apache.ibatis.type.JdbcType;
 
 /**
  * String array hanlder that avoids nulls and uses empty arrays instead.

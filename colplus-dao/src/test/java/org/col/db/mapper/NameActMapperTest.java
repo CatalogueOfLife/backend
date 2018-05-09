@@ -1,18 +1,15 @@
 package org.col.db.mapper;
 
-import org.col.api.model.Name;
+import java.util.List;
+
 import org.col.api.model.NameAct;
 import org.col.api.vocab.NomActType;
-import org.col.api.vocab.Origin;
-import org.gbif.nameparser.api.NameType;
-import org.gbif.nameparser.api.Rank;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.List;
-
 import static org.col.api.TestEntityGenerator.*;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  *

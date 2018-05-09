@@ -1,12 +1,12 @@
 package org.col.common.util;
 
 
+import java.io.IOException;
+
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import org.col.api.jackson.ApiModule;
-
-import java.io.IOException;
 
 import static org.junit.Assert.assertEquals;
 

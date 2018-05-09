@@ -1,10 +1,13 @@
 package org.col.admin.task.gbifsync;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.ws.rs.client.ClientBuilder;
+
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import org.col.admin.config.GbifConfig;
-import org.col.admin.task.gbifsync.DatasetPager;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.rx.Rx;
 import org.glassfish.jersey.client.rx.RxClient;
@@ -12,10 +15,6 @@ import org.glassfish.jersey.client.rx.java8.RxCompletionStageInvoker;
 import org.glassfish.jersey.logging.LoggingFeature;
 import org.junit.Ignore;
 import org.junit.Test;
-
-import javax.ws.rs.client.ClientBuilder;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 
 /**

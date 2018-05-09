@@ -1,17 +1,18 @@
 package org.col.csl;
 
-import static com.fasterxml.jackson.core.util.DefaultIndenter.SYS_LF;
-import static org.junit.Assert.assertEquals;
-import org.apache.http.impl.client.HttpClients;
-import org.col.api.model.CslData;
-import org.col.api.vocab.CSLRefType;
-import org.junit.Ignore;
-import org.junit.Test;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.util.DefaultIndenter;
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.http.impl.client.HttpClients;
+import org.col.api.model.CslData;
+import org.col.api.vocab.CSLRefType;
+import org.junit.Ignore;
+import org.junit.Test;
+
+import static com.fasterxml.jackson.core.util.DefaultIndenter.SYS_LF;
+import static org.junit.Assert.assertEquals;
 
 @SuppressWarnings("static-method")
 public class AnystyleParserWrapperTest {

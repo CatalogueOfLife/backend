@@ -1,8 +1,8 @@
 package org.col;
 
-import org.col.dw.PgAppConfig;
-
 import javax.validation.constraints.NotNull;
+
+import org.col.dw.PgAppConfig;
 
 public class WsServerConfig extends PgAppConfig {
 

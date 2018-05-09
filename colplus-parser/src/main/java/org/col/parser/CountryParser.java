@@ -1,10 +1,10 @@
 package org.col.parser;
 
-import org.col.api.vocab.Country;
-import org.col.api.vocab.VocabularyUtils;
-
 import java.util.Optional;
 import java.util.regex.Pattern;
+
+import org.col.api.vocab.Country;
+import org.col.api.vocab.VocabularyUtils;
 
 /**
  * CoL country parser wrapping the GBIF country parser

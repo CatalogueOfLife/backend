@@ -1,5 +1,9 @@
 package org.col.db.dao;
 
+import java.util.Iterator;
+import java.util.List;
+import java.util.function.Function;
+
 import com.google.common.base.Preconditions;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -8,10 +12,6 @@ import org.col.api.model.Page;
 import org.col.db.mapper.DatasetMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Iterator;
-import java.util.List;
-import java.util.function.Function;
 
 /**
  * Iterator over entities from paging responses that optionally filters out deleted entities.

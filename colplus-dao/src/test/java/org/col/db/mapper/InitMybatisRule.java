@@ -1,14 +1,14 @@
 package org.col.db.mapper;
 
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.SQLException;
+
 import com.google.common.base.Throwables;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.jdbc.ScriptRunner;
 import org.apache.ibatis.session.SqlSession;
 import org.junit.rules.ExternalResource;
-
-import java.io.IOException;
-import java.sql.Connection;
-import java.sql.SQLException;
 
 /**
  * A junit test rule that truncates all CoL tables, potentially loads some test

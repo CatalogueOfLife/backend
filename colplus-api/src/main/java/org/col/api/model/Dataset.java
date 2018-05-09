@@ -1,5 +1,13 @@
 package org.col.api.model;
 
+import java.net.URI;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
+import javax.validation.constraints.NotEmpty;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.Lists;
 import org.col.api.vocab.DataFormat;
@@ -7,14 +15,6 @@ import org.col.api.vocab.DatasetType;
 import org.col.api.vocab.Frequency;
 import org.col.api.vocab.License;
 import org.gbif.nameparser.api.NomCode;
-
-import javax.validation.constraints.NotEmpty;
-import java.net.URI;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
 
 /**
  *

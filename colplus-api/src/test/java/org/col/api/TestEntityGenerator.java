@@ -1,5 +1,11 @@
 package org.col.api;
 
+import java.net.URI;
+import java.time.LocalDate;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Random;
+
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import org.col.api.model.*;
@@ -8,11 +14,6 @@ import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.NamePart;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
-import java.net.URI;
-import java.time.LocalDate;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Random;
 
 /**
  * utility class to metrics new test instances to be used in tests.

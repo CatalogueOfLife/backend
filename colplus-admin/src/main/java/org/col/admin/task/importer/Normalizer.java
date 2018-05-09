@@ -1,5 +1,12 @@
 package org.col.admin.task.importer;
 
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
+import javax.annotation.Nullable;
+
 import org.col.admin.task.importer.acef.AcefInserter;
 import org.col.admin.task.importer.dwca.DwcaInserter;
 import org.col.admin.task.importer.neo.NeoDb;
@@ -19,13 +26,6 @@ import org.neo4j.helpers.collection.Iterables;
 import org.neo4j.helpers.collection.Iterators;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nullable;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
 
 /**
  *

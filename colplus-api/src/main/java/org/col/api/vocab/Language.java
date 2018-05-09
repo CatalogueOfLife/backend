@@ -15,12 +15,12 @@
  */
 package org.col.api.vocab;
 
-import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableList;
-
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
 
 /**
  * Enumeration for all ISO 639-1 language codes using 2 lower case letters.

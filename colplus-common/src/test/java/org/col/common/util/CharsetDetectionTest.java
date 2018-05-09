@@ -1,15 +1,15 @@
 package org.col.common.util;
 
-import org.col.common.io.CharsetDetection;
-import org.col.common.io.PathUtils;
-import org.junit.Test;
-
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+
+import org.col.common.io.CharsetDetection;
+import org.col.common.io.PathUtils;
+import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 

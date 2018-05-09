@@ -1,11 +1,5 @@
 package org.col.admin.task.importer.txttree;
 
-import com.google.common.collect.Lists;
-import org.apache.commons.lang3.StringUtils;
-import org.col.admin.task.importer.neo.printer.TxtPrinter;
-import org.gbif.nameparser.api.Rank;
-import org.gbif.utils.file.FileUtils;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,6 +8,12 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import com.google.common.collect.Lists;
+import org.apache.commons.lang3.StringUtils;
+import org.col.admin.task.importer.neo.printer.TxtPrinter;
+import org.gbif.nameparser.api.Rank;
+import org.gbif.utils.file.FileUtils;
 
 /**
  * Simple class to keep a taxonomy of names.

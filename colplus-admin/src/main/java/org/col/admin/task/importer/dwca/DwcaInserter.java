@@ -1,5 +1,9 @@
 package org.col.admin.task.importer.dwca;
 
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.Optional;
+
 import com.google.common.collect.Lists;
 import org.col.admin.task.importer.NeoInserter;
 import org.col.admin.task.importer.NormalizationFailedException;
@@ -15,10 +19,6 @@ import org.gbif.dwc.terms.Term;
 import org.neo4j.graphdb.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.Optional;
 
 /**
  *

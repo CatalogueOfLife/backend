@@ -1,18 +1,18 @@
 package org.col.admin.task.importer.neo.printer;
 
+import java.io.IOException;
+import java.io.Writer;
+import javax.annotation.Nullable;
+
 import com.google.common.base.Function;
 import com.google.common.base.Throwables;
 import org.col.admin.task.importer.neo.model.Labels;
+import org.col.admin.task.importer.neo.model.RelType;
 import org.col.admin.task.importer.neo.traverse.RankEvaluator;
 import org.gbif.nameparser.api.Rank;
-import org.col.admin.task.importer.neo.model.RelType;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
-
-import javax.annotation.Nullable;
-import java.io.IOException;
-import java.io.Writer;
 
 /**
  * Expects no pro parte relations in the walker!

@@ -1,10 +1,10 @@
 package org.col.parser;
 
+import java.util.List;
+
 import com.google.common.collect.Lists;
 import org.col.api.vocab.NomStatus;
 import org.junit.Test;
-
-import java.util.List;
 
 /**
  *

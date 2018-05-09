@@ -1,14 +1,14 @@
 package org.col.api.model;
 
-import com.google.common.collect.Maps;
-import org.col.api.vocab.*;
-import org.gbif.nameparser.api.NameType;
-import org.gbif.nameparser.api.Rank;
-
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Objects;
+
+import com.google.common.collect.Maps;
+import org.col.api.vocab.*;
+import org.gbif.nameparser.api.NameType;
+import org.gbif.nameparser.api.Rank;
 
 /**
  * Metrics and import details about a single dataset import event.

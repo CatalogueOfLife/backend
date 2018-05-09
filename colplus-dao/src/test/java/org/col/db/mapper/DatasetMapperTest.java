@@ -1,9 +1,14 @@
 package org.col.db.mapper;
 
+import java.net.URI;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.UUID;
+
 import com.google.common.collect.Lists;
+import org.col.api.RandomUtils;
 import org.col.api.model.Dataset;
 import org.col.api.model.Page;
-import org.col.api.RandomUtils;
 import org.col.api.vocab.DataFormat;
 import org.col.api.vocab.License;
 import org.gbif.nameparser.api.NomCode;
@@ -12,11 +17,6 @@ import org.javers.core.JaversBuilder;
 import org.javers.core.diff.Diff;
 import org.junit.Assert;
 import org.junit.Test;
-
-import java.net.URI;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.UUID;
 
 import static org.junit.Assert.*;
 

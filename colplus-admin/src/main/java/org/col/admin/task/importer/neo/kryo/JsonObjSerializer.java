@@ -1,5 +1,7 @@
 package org.col.admin.task.importer.neo.kryo;
 
+import java.io.IOException;
+
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.Serializer;
 import com.esotericsoftware.kryo.io.Input;
@@ -11,8 +13,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import jersey.repackaged.com.google.common.base.Throwables;
-
-import java.io.IOException;
 
 public class JsonObjSerializer extends Serializer<ObjectNode> {
   private static final ObjectMapper MAPPER = new ObjectMapper();

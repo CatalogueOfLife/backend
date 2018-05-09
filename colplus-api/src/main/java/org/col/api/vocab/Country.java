@@ -12,15 +12,15 @@
  */
 package org.col.api.vocab;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
 
 /**
  * Enumeration for all current ISO 3166-1 ALPHA2 country codes using 2 letters,

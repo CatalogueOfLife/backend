@@ -1,9 +1,9 @@
 package org.col.parser;
 
-import org.gbif.common.parsers.UrlParser;
-
 import java.net.URI;
 import java.util.Optional;
+
+import org.gbif.common.parsers.UrlParser;
 
 /**
  * URI parser as wrapper around the gbif url parser

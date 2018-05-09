@@ -1,5 +1,7 @@
 package org.col.db.dao;
 
+import java.time.LocalDateTime;
+
 import com.google.common.base.Preconditions;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -11,8 +13,6 @@ import org.col.api.vocab.ImportState;
 import org.col.db.mapper.DatasetImportMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.time.LocalDateTime;
 
 public class DatasetImportDao {
 

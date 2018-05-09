@@ -1,10 +1,13 @@
 package org.col.parser;
 
+import java.util.Map;
+import java.util.Optional;
+
 import com.google.common.collect.ImmutableMap;
 import org.apache.commons.lang3.StringUtils;
 import org.col.api.model.Name;
-import org.col.api.vocab.Issue;
 import org.col.api.model.NameAccordingTo;
+import org.col.api.vocab.Issue;
 import org.gbif.nameparser.NameParserGBIF;
 import org.gbif.nameparser.Warnings;
 import org.gbif.nameparser.api.ParsedName;
@@ -12,9 +15,6 @@ import org.gbif.nameparser.api.Rank;
 import org.gbif.nameparser.api.UnparsableNameException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Map;
-import java.util.Optional;
 
 /**
  * Wrapper around the GBIF Name parser to deal with col Name and API.

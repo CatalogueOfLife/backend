@@ -1,11 +1,11 @@
 package org.col.admin.task.importer.neo.kryo;
 
+import java.util.UUID;
+
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.Serializer;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
-
-import java.util.UUID;
 
 public class UUIDSerializer extends Serializer<UUID> {
 

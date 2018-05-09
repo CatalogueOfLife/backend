@@ -1,6 +1,7 @@
 package org.col.admin.task.importer.acef;
 
-import com.google.common.collect.Lists;
+import java.util.Set;
+
 import org.col.admin.task.importer.InsertMetadata;
 import org.col.admin.task.importer.InterpreterBase;
 import org.col.admin.task.importer.neo.ReferenceStore;
@@ -14,8 +15,6 @@ import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Set;
 
 import static org.col.parser.SafeParser.parse;
 

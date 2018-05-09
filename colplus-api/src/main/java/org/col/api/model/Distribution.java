@@ -1,12 +1,12 @@
 package org.col.api.model;
 
+import java.util.Objects;
+import java.util.Set;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.Sets;
 import org.col.api.vocab.DistributionStatus;
 import org.col.api.vocab.Gazetteer;
-
-import java.util.Objects;
-import java.util.Set;
 
 /**
  *

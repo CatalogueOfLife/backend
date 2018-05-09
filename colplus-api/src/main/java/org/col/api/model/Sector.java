@@ -1,12 +1,12 @@
 package org.col.api.model;
 
-import org.col.api.vocab.Coverage;
-
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+
+import org.col.api.vocab.Coverage;
 
 /**
  * A taxonomic sector definition within a dataset that is used to assemble the Catalogue of Life.

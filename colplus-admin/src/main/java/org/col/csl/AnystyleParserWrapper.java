@@ -6,6 +6,10 @@ import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.google.common.base.Strings;
+import io.dropwizard.lifecycle.Managed;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URIBuilder;
@@ -15,9 +19,6 @@ import org.col.api.model.CslData;
 import org.col.parser.Parser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.google.common.base.Strings;
-import io.dropwizard.lifecycle.Managed;
 
 public class AnystyleParserWrapper implements Managed, AutoCloseable, Parser<CslData> {
   private static final Logger LOG = LoggerFactory.getLogger(AnystyleWebService.class);

@@ -1,8 +1,10 @@
 package org.col.admin.task.importer.neo.traverse;
 
-import org.gbif.nameparser.api.Rank;
+import java.util.Set;
+
 import org.col.admin.task.importer.neo.model.NeoProperties;
 import org.col.admin.task.importer.neo.model.RelType;
+import org.gbif.nameparser.api.Rank;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
@@ -12,8 +14,6 @@ import org.neo4j.graphdb.traversal.TraversalDescription;
 import org.neo4j.graphdb.traversal.Uniqueness;
 import org.neo4j.helpers.collection.Iterators;
 import org.neo4j.kernel.impl.traversal.MonoDirectionalTraversalDescription;
-
-import java.util.Set;
 
 /**
  * Various reusable traversal descriptions for taxonomic normalizer dbs.

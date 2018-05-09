@@ -1,8 +1,8 @@
 package org.col.common.text;
 
-import org.apache.commons.lang3.StringUtils;
-
 import java.text.Normalizer;
+
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Utilities dealing with unicode strings
