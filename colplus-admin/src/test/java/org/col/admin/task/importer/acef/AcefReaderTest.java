@@ -1,7 +1,7 @@
 package org.col.admin.task.importer.acef;
 
 import org.col.api.model.TermRecord;
-import org.col.util.io.PathUtils;
+import org.col.common.io.PathUtils;
 import org.gbif.dwc.terms.AcefTerm;
 import org.junit.Test;
 

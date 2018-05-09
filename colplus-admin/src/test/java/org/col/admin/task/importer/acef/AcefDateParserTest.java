@@ -6,7 +6,7 @@ import java.time.LocalDate;
 import java.util.Optional;
 import org.col.parser.AcefDateParser;
 import org.col.parser.UnparsableException;
-import org.col.util.date.FuzzyDate;
+import org.col.common.date.FuzzyDate;
 
 @SuppressWarnings("static-method")
 public class AcefDateParserTest {

@@ -10,6 +10,8 @@ import org.col.admin.task.importer.reference.ReferenceFactory;
 import org.col.api.model.*;
 import org.col.api.vocab.Issue;
 import org.col.api.vocab.Origin;
+import org.col.api.vocab.TaxonomicStatus;
+import org.col.common.tax.MisappliedNameMatcher;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 import org.neo4j.graphdb.*;
@@ -66,6 +68,8 @@ public class Normalizer implements Runnable {
       insertData();
       // insert normalizer db relations, create implicit nodes if needed and parse names
       normalize();
+      // sync taxon KVP storee with neo4j relations, setting correct neo4j labels, homotypic keys etc
+      store.sync();
       // verify, derive issues and fail before we do expensive matching or even db imports
       verify();
       // matches names and taxon concepts and builds metrics per name/taxon
@@ -117,7 +121,6 @@ public class Normalizer implements Runnable {
         require(t.taxon.getOrigin(), "taxon origin", id);
         require(t.taxon.getStatus(), "taxon status", id);
       }
-      require(t.issues, "issues", id);
 
       // vernacular
       for (VernacularName v : t.vernacularNames) {
@@ -169,15 +172,64 @@ public class Normalizer implements Runnable {
     // cleanup basionym rels
     cutBasionymChains();
 
+    // rectify taxonomic status
+    rectifyTaxonomicStatus();
+
     // process the denormalized classifications of accepted taxa
     applyDenormedClassification();
-
-    // sync taxon KVP storee with neo4j relations, setting correct neo4j labels, homotypic keys etc
-    store.sync();
 
     LOG.info("Relation setup completed.");
   }
 
+  /**
+   * Updates the taxonomic status according to rules defined in
+   * https://github.com/Sp2000/colplus-backend/issues/93
+   *
+   * Currently only ambigous synonyms and misapplied names are derived
+   * from names data and flagged by an issue.
+   */
+  private void rectifyTaxonomicStatus() {
+    try (Transaction tx = store.getNeo().beginTx()) {
+      store.all().forEach(t -> {
+        if (t.isSynonym()) {
+          // get a real neo4j node (store.all() only populates a dummy with an id)
+          Node n = store.getNeo().getNodeById(t.node.getId());
+          boolean ambigous = n.getDegree(RelType.SYNONYM_OF, Direction.OUTGOING) > 1;
+          boolean misapplied = MisappliedNameMatcher.isMisappliedName(new NameAccordingTo(t.name, t.synonym.getAccordingTo()));
+          TaxonomicStatus status = t.synonym.getStatus();
+
+          Issue issue = null;
+          if (status == TaxonomicStatus.MISAPPLIED) {
+            if (!misapplied) {
+              issue = Issue.TAXONOMIC_STATUS_DOUBTFUL;
+            }
+
+          } else if (status == TaxonomicStatus.AMBIGUOUS_SYNONYM) {
+            if (misapplied) {
+              t.synonym.setStatus(TaxonomicStatus.MISAPPLIED);
+              issue = Issue.DERIVED_TAXONOMIC_STATUS;
+            } else if (!ambigous) {
+              issue = Issue.TAXONOMIC_STATUS_DOUBTFUL;
+            }
+
+          } else if (status == TaxonomicStatus.SYNONYM) {
+            if (misapplied) {
+              t.synonym.setStatus(TaxonomicStatus.MISAPPLIED);
+              issue = Issue.DERIVED_TAXONOMIC_STATUS;
+            } else if (ambigous) {
+              t.synonym.setStatus(TaxonomicStatus.AMBIGUOUS_SYNONYM);
+              issue = Issue.DERIVED_TAXONOMIC_STATUS;
+            }
+          }
+          // update store if modified
+          if (issue != null) {
+            t.taxon.addIssue(issue);
+            store.update(t);
+          }
+        }
+      });
+    }
+  }
 
   /**
    * Sanitizes synonym relations relinking synonym of basionymGroup to make sure basionymGroup always point to a direct accepted taxon.

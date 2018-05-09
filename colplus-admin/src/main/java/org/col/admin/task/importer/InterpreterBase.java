@@ -15,7 +15,7 @@ import org.col.api.model.*;
 import org.col.api.vocab.Issue;
 import org.col.api.vocab.Origin;
 import org.col.parser.*;
-import org.col.util.date.FuzzyDate;
+import org.col.common.date.FuzzyDate;
 import org.gbif.dwc.terms.Term;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.ParsedName;
@@ -97,11 +97,11 @@ public class InterpreterBase {
   }
 
   protected URI uri(NeoTaxon t, Issue invalidIssue, Term... term) {
-    return parse(UriParser.PARSER, t.verbatim.getFirst(term)).orNull(invalidIssue, t.issues);
+    return parse(UriParser.PARSER, t.verbatim.getFirst(term)).orNull(invalidIssue, t.taxon.getIssues());
   }
 
   protected Boolean bool(NeoTaxon t, Issue invalidIssue, Term... term) {
-    return parse(BooleanParser.PARSER, t.verbatim.getFirst(term)).orNull(invalidIssue, t.issues);
+    return parse(BooleanParser.PARSER, t.verbatim.getFirst(term)).orNull(invalidIssue, t.taxon.getIssues());
   }
 
   protected Optional<Reference> lookupReference(String id, String citation) {

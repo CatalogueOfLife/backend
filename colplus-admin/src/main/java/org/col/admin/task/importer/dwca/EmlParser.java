@@ -15,8 +15,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.col.api.model.Dataset;
 import org.col.parser.DateParser;
 import org.col.parser.SafeParser;
-import org.col.util.date.FuzzyDate;
-import org.col.util.io.CharsetDetectingStream;
+import org.col.common.date.FuzzyDate;
+import org.col.common.io.CharsetDetectingStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -367,7 +367,7 @@ public class PgImportIT {
   }
 
   @Test
-  public void testAcefMisapplied() throws Exception {
+  public void testAcef6Misapplied() throws Exception {
     normalizeAndImport(ACEF, 6);
 
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {

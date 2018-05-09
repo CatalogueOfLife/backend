@@ -17,7 +17,7 @@ import org.col.api.model.*;
 import org.col.api.vocab.Issue;
 import org.col.api.vocab.Origin;
 import org.col.api.vocab.TaxonomicStatus;
-import org.col.util.concurrent.ThrottledThreadPoolExecutor;
+import org.col.common.concurrent.ThrottledThreadPoolExecutor;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;

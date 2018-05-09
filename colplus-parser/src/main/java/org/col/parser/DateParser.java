@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 import org.apache.commons.lang3.StringUtils;
-import org.col.util.date.FuzzyDate;
+import org.col.common.date.FuzzyDate;
 
 /**
  * Parses date strings into FuzzyDate instances.

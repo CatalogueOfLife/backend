@@ -78,7 +78,7 @@ public class DwcaRelationInserter implements NeoDb.NodeBatchProcessor {
 
     // if status is synonym but we aint got no idea of the accepted insert an incertae sedis record of same rank
     if ((accepted == null || accepted.isEmpty())
-        && (t.isSynonym() || t.issues.contains(Issue.ACCEPTED_ID_INVALID))
+        && (t.isSynonym() || t.taxon.getIssues().contains(Issue.ACCEPTED_ID_INVALID))
         ) {
       t.addIssue(Issue.ACCEPTED_NAME_MISSING);
       NeoDb.PLACEHOLDER.setRank(t.name.getRank());

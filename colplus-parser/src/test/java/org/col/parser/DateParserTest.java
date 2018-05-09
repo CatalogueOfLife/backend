@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Optional;
 import org.col.parser.DateParser.DateStringFilter;
 import org.col.parser.DateParser.ParseSpec;
-import org.col.util.date.FuzzyDate;
+import org.col.common.date.FuzzyDate;
 import org.junit.Test;
 
 @SuppressWarnings("static-method")

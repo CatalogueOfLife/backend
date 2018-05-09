@@ -51,7 +51,7 @@ public class AcefRelationInserter implements NeoDb.NodeBatchProcessor {
           t.name = nat.getName();
           if (!t.name.getRank().isInfraspecific()) {
             LOG.info("Expected infraspecific taxon but found {} for name {}: {}", t.name.getRank(), v.getId(), t.name.getScientificName());
-            t.addIssue(Issue.INCONSISTENT_NAME);
+            t.name.addIssue(Issue.INCONSISTENT_NAME);
           }
         }
       }

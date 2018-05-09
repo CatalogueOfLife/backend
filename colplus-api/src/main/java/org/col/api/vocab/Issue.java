@@ -246,8 +246,6 @@ public enum Issue {
   CHAINED_SYNONYM,
 
 
-  TAXONOMIC_STATUS_MISMATCH,
-
   /**
    * The child parent classification resulted into a cycle that needed to be resolved/cut.
    */
@@ -367,6 +365,18 @@ public enum Issue {
    * A potential orthographic variant exists in the backbone.
    * GBIF backbone specific issue.
    */
-  ORTHOGRAPHIC_VARIANT;
+  ORTHOGRAPHIC_VARIANT,
+
+  /**
+   * The taxonomic status was programmatically derived.
+   * E.g. a synonym made a misapplied name or ambigous synonym based on name annotations.
+   */
+  DERIVED_TAXONOMIC_STATUS,
+
+  /**
+   * The given taxonomic status appears unlikely.
+   * E.g. a misapplied name without any taxonomic remark indicating the source it was misapplied in.
+   */
+  TAXONOMIC_STATUS_DOUBTFUL;
 
 }

@@ -36,7 +36,6 @@ public class NeoTaxon {
   public List<Integer> bibliography = Lists.newArrayList();
   // extra stuff not covered by above for normalizer only
   public Classification classification;
-  public Set<Issue> issues = EnumSet.noneOf(Issue.class);
 
   public List<String> remarks = Lists.newArrayList();
 
@@ -54,7 +53,7 @@ public class NeoTaxon {
   }
 
   public void addIssue(Issue issue) {
-    issues.add(issue);
+    taxon.addIssue(issue);
   }
 
   public void addRemark(String remark) {
@@ -76,13 +75,12 @@ public class NeoTaxon {
         Objects.equals(distributions, neoTaxon.distributions) &&
         Objects.equals(bibliography, neoTaxon.bibliography) &&
         Objects.equals(classification, neoTaxon.classification) &&
-        Objects.equals(issues, neoTaxon.issues) &&
         Objects.equals(remarks, neoTaxon.remarks);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(node, verbatim, name, taxon, synonym, vernacularNames, distributions, bibliography, classification, issues, remarks);
+    return Objects.hash(node, verbatim, name, taxon, synonym, vernacularNames, distributions, bibliography, classification, remarks);
   }
 
   public boolean isSynonym() {

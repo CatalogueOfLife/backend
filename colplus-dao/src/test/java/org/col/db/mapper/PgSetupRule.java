@@ -8,7 +8,7 @@ import org.apache.ibatis.jdbc.ScriptRunner;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.db.MybatisFactory;
 import org.col.db.PgConfig;
-import org.col.util.YamlUtils;
+import org.col.common.util.YamlUtils;
 import org.junit.rules.ExternalResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

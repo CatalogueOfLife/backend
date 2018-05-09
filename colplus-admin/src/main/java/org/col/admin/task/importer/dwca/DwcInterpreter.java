@@ -1,6 +1,5 @@
 package org.col.admin.task.importer.dwca;
 
-import java.util.List;
 import org.col.admin.task.importer.InsertMetadata;
 import org.col.admin.task.importer.InterpreterBase;
 import org.col.admin.task.importer.neo.ReferenceStore;
@@ -15,13 +14,12 @@ import org.col.api.vocab.Origin;
 import org.col.api.vocab.TaxonomicStatus;
 import org.col.admin.task.importer.reference.ReferenceFactory;
 import org.col.parser.*;
-import org.col.util.ObjectUtils;
+import org.col.common.util.ObjectUtils;
 import org.gbif.dwc.terms.DcTerm;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.GbifTerm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.google.common.collect.Lists;
 
 import static com.google.common.base.Strings.emptyToNull;
 

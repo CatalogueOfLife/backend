@@ -9,10 +9,7 @@ import org.col.admin.config.NormalizerConfig;
 import org.col.admin.task.importer.neo.NeoDb;
 import org.col.admin.task.importer.neo.NeoDbFactory;
 import org.col.admin.task.importer.neo.NotUniqueRuntimeException;
-import org.col.admin.task.importer.neo.model.Labels;
-import org.col.admin.task.importer.neo.model.NeoProperties;
-import org.col.admin.task.importer.neo.model.NeoTaxon;
-import org.col.admin.task.importer.neo.model.RankedName;
+import org.col.admin.task.importer.neo.model.*;
 import org.col.admin.task.importer.neo.printer.GraphFormat;
 import org.col.admin.task.importer.neo.printer.PrinterUtils;
 import org.col.admin.task.importer.reference.ReferenceFactory;
@@ -231,22 +228,33 @@ public class NormalizerDwcaIT {
   }
 
   @Test
+  @Ignore("circles of more than 1 name should result in a single name being the basionym related to from all others")
   public void chainedBasionyms() throws Exception {
     normalize(28);
+    debug();
 
     // verify results
     try (Transaction tx = store.getNeo().beginTx()) {
+      // 1->2->1
       NeoTaxon t1 = byID("1");
       NeoTaxon t2 = byID("2");
+
+      assertNotNull(t1.name.getHomotypicNameKey());
+      assertEquals(t2.name.getHomotypicNameKey(), t1.name.getHomotypicNameKey());
+      assertEquals(1, t1.node.getDegree(RelType.BASIONYM_OF));
+      assertEquals(1, t2.node.getDegree(RelType.BASIONYM_OF));
+
+      // 10->11->12->10
       NeoTaxon t10 = byID("10");
       NeoTaxon t11 = byID("11");
       NeoTaxon t12 = byID("12");
 
-      assertNotNull(t1.name.getHomotypicNameKey());
-      assertNull(t2.name.getHomotypicNameKey());
-      assertNull(t10.name.getHomotypicNameKey());
-      assertNull(t11.name.getHomotypicNameKey());
-      assertNotNull(t12.name.getHomotypicNameKey());
+      assertNotNull(t10.name.getHomotypicNameKey());
+      assertEquals(t10.name.getHomotypicNameKey(), t11.name.getHomotypicNameKey());
+      assertEquals(t10.name.getHomotypicNameKey(), t12.name.getHomotypicNameKey());
+      assertEquals(1, t10.node.getDegree(RelType.BASIONYM_OF));
+      assertEquals(1, t11.node.getDegree(RelType.BASIONYM_OF));
+      assertEquals(1, t12.node.getDegree(RelType.BASIONYM_OF));
     }
   }
 

@@ -166,7 +166,7 @@ public class PgImport implements Runnable {
           }
 
           t.name.setDatasetKey(dataset.getKey());
-          t.name.getIssues().addAll(t.issues);
+          t.name.getIssues().addAll(t.taxon.getIssues());
 
           nameMapper.create(t.name);
           nCounter.incrementAndGet();
@@ -243,7 +243,6 @@ public class PgImport implements Runnable {
   private int createTaxon(TaxonMapper mapper, NeoTaxon t) {
     t.taxon.setDatasetKey(dataset.getKey());
     t.taxon.setName(t.name);
-    t.taxon.setIssues(t.issues);
     mapper.create(t.taxon);
     tCounter.incrementAndGet();
     return t.taxon.getKey();

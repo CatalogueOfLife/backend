@@ -8,7 +8,7 @@ import org.col.admin.config.GbifConfig;
 import org.col.api.model.Dataset;
 import org.col.api.model.Page;
 import org.col.db.mapper.DatasetMapper;
-import org.col.util.concurrent.ExecutorUtils;
+import org.col.common.concurrent.ExecutorUtils;
 import org.gbif.nameparser.utils.NamedThreadFactory;
 import org.glassfish.jersey.client.rx.RxClient;
 import org.glassfish.jersey.client.rx.java8.RxCompletionStageInvoker;

@@ -1,7 +1,7 @@
 package org.col.parser;
 
 import com.google.common.base.CharMatcher;
-import org.col.util.text.StringUtils;
+import org.col.common.text.StringUtils;
 
 import java.util.Optional;
 

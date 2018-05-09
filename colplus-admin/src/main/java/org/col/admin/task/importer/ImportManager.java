@@ -12,7 +12,7 @@ import org.col.api.model.Dataset;
 import org.col.api.model.DatasetImport;
 import org.col.db.mapper.DatasetMapper;
 import org.col.parser.Parser;
-import org.col.util.io.DownloadUtil;
+import org.col.common.io.DownloadUtil;
 import org.gbif.nameparser.utils.NamedThreadFactory;
 import org.gbif.utils.concurrent.ExecutorUtils;
 import org.slf4j.Logger;
