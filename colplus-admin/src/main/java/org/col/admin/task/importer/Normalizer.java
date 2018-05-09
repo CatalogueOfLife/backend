@@ -250,11 +250,15 @@ public class Normalizer implements Runnable {
         // count number of outgoing basionym relations
         int d1 = b1.getDegree(RelType.BASIONYM_OF, Direction.OUTGOING);
         int d2 = b2.getDegree(RelType.BASIONYM_OF, Direction.OUTGOING);
-
+        // if both are the same use node ids to get a determiniate result
+        if (d1==d2) {
+          d1 = (int) b1.getId();
+          d2 = (int) b2.getId();
+        }
         // remove basionym relations
-        Relationship bad = d1 <= d2 ? (Relationship) row.get("r1") : (Relationship) row.get("r2");
-        Node comb = bad.getEndNode();
-        addIssue(comb, Issue.CHAINED_BASIONYM);
+        Relationship bad = d1 < d2 ? (Relationship) row.get("r1") : (Relationship) row.get("r2");
+        addIssue(bad.getStartNode(), Issue.CHAINED_BASIONYM);
+        addIssue(bad.getEndNode(), Issue.CHAINED_BASIONYM);
         bad.delete();
         counter++;
 
@@ -564,7 +568,6 @@ public class Normalizer implements Runnable {
    * Only use this method if you just have a node a no usage instance yet at hand.
    */
   private NeoTaxon addIssueRemark(Node n, @Nullable String remark, @Nullable Issue issue) {
-    //TODO: consider to store issues & remarks in neo4j so we do not have to load/store the full taxon instance
     NeoTaxon t = store.get(n);
     if (issue != null) {
       t.addIssue(issue);
@@ -572,7 +575,7 @@ public class Normalizer implements Runnable {
     if (remark != null) {
       t.addRemark(remark);
     }
-    store.put(t);
+    store.update(t);
     return t;
   }
 

@@ -36,6 +36,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.NotFoundException;
 import org.neo4j.graphdb.Transaction;
@@ -228,33 +229,34 @@ public class NormalizerDwcaIT {
   }
 
   @Test
-  @Ignore("circles of more than 1 name should result in a single name being the basionym related to from all others")
   public void chainedBasionyms() throws Exception {
     normalize(28);
-    debug();
 
     // verify results
     try (Transaction tx = store.getNeo().beginTx()) {
-      // 1->2->1
+      // 2->1->2
+      // should be: 2->1
       NeoTaxon t1 = byID("1");
       NeoTaxon t2 = byID("2");
 
-      assertNotNull(t1.name.getHomotypicNameKey());
-      assertEquals(t2.name.getHomotypicNameKey(), t1.name.getHomotypicNameKey());
       assertEquals(1, t1.node.getDegree(RelType.BASIONYM_OF));
       assertEquals(1, t2.node.getDegree(RelType.BASIONYM_OF));
+      assertEquals(t1.node, t2.node.getSingleRelationship(RelType.BASIONYM_OF, Direction.OUTGOING).getEndNode());
+      assertNotNull(t1.name.getHomotypicNameKey());
+      assertEquals(t2.name.getHomotypicNameKey(), t1.name.getHomotypicNameKey());
 
-      // 10->11->12->10
+      // 12->11->10->12
+      // should be: 12->11 10
       NeoTaxon t10 = byID("10");
       NeoTaxon t11 = byID("11");
       NeoTaxon t12 = byID("12");
 
-      assertNotNull(t10.name.getHomotypicNameKey());
-      assertEquals(t10.name.getHomotypicNameKey(), t11.name.getHomotypicNameKey());
-      assertEquals(t10.name.getHomotypicNameKey(), t12.name.getHomotypicNameKey());
-      assertEquals(1, t10.node.getDegree(RelType.BASIONYM_OF));
+      assertEquals(0, t10.node.getDegree(RelType.BASIONYM_OF));
       assertEquals(1, t11.node.getDegree(RelType.BASIONYM_OF));
       assertEquals(1, t12.node.getDegree(RelType.BASIONYM_OF));
+      assertEquals(t11.node, t12.node.getSingleRelationship(RelType.BASIONYM_OF, Direction.OUTGOING).getEndNode());
+      assertNull(t10.name.getHomotypicNameKey());
+      assertEquals(t11.name.getHomotypicNameKey(), t12.name.getHomotypicNameKey());
     }
   }
 
