@@ -13,9 +13,9 @@ import org.col.parser.Parser;
 import org.col.parser.UnparsableException;
 
 /**
- * Dataset specific factory for reference instances.
- * It mostly manages the CSL parsing and works with variously structured input forms.
- * Responsible for detecting and flagging of issues in reference.issues.
+ * Dataset specific factory for reference instances. It mostly manages the CSL parsing and works
+ * with variously structured input forms. Responsible for detecting and flagging of issues in
+ * reference.issues.
  *
  * In the future we can expect dataset specific configuration hints to be added.
  */
@@ -41,58 +41,34 @@ public class ReferenceFactory {
   /**
    * Builds a reference instance from a ACEF reference record.
    *
-   * Example: Ross, J.H. | 1979 | A conspectus of African Acacia |
-   * Mem. Bot. Surv. S. Afr. 44: 1-150 | TaxAccRef
+   * Example: Ross, J.H. | 1979 | A conspectus of African Acacia | Mem. Bot. Surv. S. Afr. 44: 1-150
+   * | TaxAccRef
    *
    * @param referenceID
    * @param authors author (or many) of publication
    * @param title of paper or book
    * @param year of publication
    * @param source title of periodicals, volume number, and other common bibliographic details
-   * @param referenceType taxonomic status of reference:
-   *    NomRef: Nomenclatural Reference (just one reference which contains the original (validating) publication of taxon name or new name combination or
-   *    TaxAccRef: Taxonomic Acceptance Reference(s) (one or more bibliographic references, where the name is mentioned in the same taxonomic status (i.e. as a species or as a synonym) or
-   *    ComNameRef: Common Name Reference(s) (one or more bibliographic references that contain common names)
+   * @param referenceType taxonomic status of reference: NomRef: Nomenclatural Reference (just one
+   *        reference which contains the original (validating) publication of taxon name or new name
+   *        combination or TaxAccRef: Taxonomic Acceptance Reference(s) (one or more bibliographic
+   *        references, where the name is mentioned in the same taxonomic status (i.e. as a species
+   *        or as a synonym) or ComNameRef: Common Name Reference(s) (one or more bibliographic
+   *        references that contain common names)
    * @param details
    * @return
    */
-  public Reference fromACEF(String referenceID, String authors, String title, String year, String source, String referenceType, String details) {
+  public Reference fromACEF(String referenceID, String authors, String title, String year,
+      String source, String referenceType, String details) {
     Reference ref = create(referenceID);
 
     if (details != null && (title == null || details.length() > title.length())) {
       // consider details to be the entire citation
       parse(ref, details);
-      //TODO verify with atomized raw data and raise issues
-
     } else {
-      // TODO: the atomised pieces contain more information than details, use them
       parse(ref, buildCitation(authors, title, year, source, details));
     }
-
     return postParse(ref);
-  }
-
-  private static String buildCitation(String authors, String title, String year, String source, String details) {
-    StringBuilder sb = new StringBuilder();
-    if (!Strings.isNullOrEmpty(authors)) {
-      sb.append(authors)
-          .append(" ");
-    }
-    if (!Strings.isNullOrEmpty(year)) {
-      sb.append(year)
-        .append(". ");
-    }
-    sb.append(title);
-    if (!Strings.isNullOrEmpty(source)) {
-      // does IN confuse the parser as its normally only used for books not journals???
-      sb.append(" in ")
-          .append(source);
-    }
-    if (!Strings.isNullOrEmpty(details)) {
-      sb.append(" ")
-          .append(details);
-    }
-    return sb.toString();
   }
 
   public Reference fromCitation(String id, String citation) {
@@ -106,7 +82,7 @@ public class ReferenceFactory {
     parse(ref, publishedIn);
     if (ref.getCsl().getIssued() == null && publishedInYear != null) {
       Integer y = parseYear(publishedInYear);
-      if(y != null) {
+      if (y != null) {
         int[][] dateParts = {{y.intValue()}};
         CslDate cslDate = new CslDate();
         cslDate.setDateParts(dateParts);
@@ -116,18 +92,15 @@ public class ReferenceFactory {
     return postParse(ref);
   }
 
-  public Reference fromDC(String identifier, String bibliographicCitation, String title, String creator, String date, String source) {
+  public Reference fromDC(String identifier, String bibliographicCitation, String title,
+      String creator, String date, String source) {
     Reference ref = create(identifier);
 
     if (bibliographicCitation != null) {
       parse(ref, bibliographicCitation);
-      //TODO verify with atomized raw data and raise issues
-
     } else {
-      // TODO: use atomised pieces
       parse(ref, buildCitation(creator, title, date, source, null));
     }
-
     return postParse(ref);
   }
 
@@ -138,12 +111,36 @@ public class ReferenceFactory {
         ref.setCsl(csl.get());
         return;
       }
-
     } catch (UnparsableException e) {
       e.printStackTrace();
     }
     ref.addIssue(Issue.REFERENCE_UNPARSABLE);
     ref.setCsl(new CslData());
+  }
+
+  private static String buildCitation(String authors, String title, String year, String source,
+      String details) {
+    StringBuilder sb = new StringBuilder();
+    if (!Strings.isNullOrEmpty(authors)) {
+      sb.append(authors).append(" ");
+    }
+    if (!Strings.isNullOrEmpty(year)) {
+      sb.append(year).append(". ");
+    }
+    sb.append(title);
+    if (!Strings.isNullOrEmpty(source)) {
+      // does IN confuse the parser as its normally only used for books not journals???
+      sb.append(" in ").append(source);
+    }
+    if (!Strings.isNullOrEmpty(details)) {
+      sb.append(" ").append(details);
+    }
+    return sb.toString();
+  }
+  
+  private static CslData buildCsl(String authors, String title, String year, String source) {
+    CslData csl = new CslData();
+    return csl;
   }
 
   private static Reference postParse(Reference ref) {

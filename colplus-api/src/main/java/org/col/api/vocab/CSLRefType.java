@@ -1,9 +1,5 @@
 package org.col.api.vocab;
 
-import com.google.common.collect.ImmutableSet;
-
-import java.util.Set;
-
 /**
  * Appendix III - Types
  * http://docs.citationstyles.org/en/stable/specification.html#appendix_iii_types
@@ -43,6 +39,7 @@ public enum CSLRefType {
   SPEECH,
   THESIS,
   TREATY,
-  WEBPAGE;
+  WEBPAGE,
+  MISC;
 
 }

@@ -27,6 +27,9 @@ public class AnystyleParserWrapper implements Managed, AutoCloseable, Parser<Csl
   private static final TypeReference<List<Map<String, Object>>> ANYSTYLE_RESPONSE_TYPE =
       new TypeReference<List<Map<String, Object>>>() {};
 
+  private static final TypeReference<List<CslData>> ANYSTYLE_RESPONSE_TYPE2 =
+      new TypeReference<List<CslData>>() {};
+
   private final AnystyleWebService svc;
   private final CloseableHttpClient hc;
 
@@ -41,12 +44,12 @@ public class AnystyleParserWrapper implements Managed, AutoCloseable, Parser<Csl
     }
     try (CloseableHttpResponse response = hc.execute(request(ref))) {
       InputStream in = response.getEntity().getContent();
-      List<Map<String, Object>> raw = MAPPER.readValue(in, ANYSTYLE_RESPONSE_TYPE);
+      List<CslData> raw = MAPPER.readValue(in, ANYSTYLE_RESPONSE_TYPE2);
       if (raw.size() != 1) {
         LOG.error("Anystyle result is list of size {}", raw.size());
         throw new RuntimeException("Unexpected response from Anystyle");
       }
-      return Optional.of(MAPPER.convertValue(raw.get(0), CslData.class));
+      return Optional.of(raw.get(0));
     } catch (IOException | URISyntaxException e) {
       throw new RuntimeException(e);
     }
@@ -75,6 +78,5 @@ public class AnystyleParserWrapper implements Managed, AutoCloseable, Parser<Csl
     ub.setParameter(AnystyleWebService.QUERY_PARAM_REF, reference);
     return new HttpGet(ub.build());
   }
-
 
 }

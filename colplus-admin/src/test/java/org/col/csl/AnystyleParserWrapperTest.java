@@ -48,6 +48,54 @@ public class AnystyleParserWrapperTest {
     }
   }
 
+  @Test
+  @Ignore
+  // ACEF 50, PSF-46401
+  public void testParse03() throws Exception {
+    try (AnystyleParserWrapper parser = new AnystyleParserWrapper(HttpClients.createDefault())) {
+      parser.start();
+      String ref = "Acta Zootaxonomica Sinica 38(3):525-527";
+      CslData item = parser.parse(ref).get();
+      System.out.println(pretty(item));
+    }
+  }
+  
+  @Test
+  @Ignore
+  // DWCA brentids, 1752
+  public void testParse04() throws Exception {
+    try (AnystyleParserWrapper parser = new AnystyleParserWrapper(HttpClients.createDefault())) {
+      parser.start();
+      String ref = "In:  Schoenherr C. J. 1840 -  Genera et species curculionidum, cum synonymia hujus familiae. Species novae aut hactenus minus cognitae, descriptionibus a Dom. Leonardo Gyllenhal, C. H. Boheman, et entomologis aliis illustratae, Vol. 5(2) Supplementum cont";
+      CslData item = parser.parse(ref).get();
+      System.out.println(pretty(item));
+    }
+  }
+  
+  @Test
+  @Ignore
+  // DWCA brentids, 1722
+  public void testParse05() throws Exception {
+    try (AnystyleParserWrapper parser = new AnystyleParserWrapper(HttpClients.createDefault())) {
+      parser.start();
+      String ref = "In:  Sforzi A. & Bartolozzi L. 2004 -  Brentidae of the world (Coleoptera, Curculionoidea), XXXIX. Monografie del Museo Regionale di Scienze Naturali, Turin(Italy). p. 19-828.\n";
+      CslData item = parser.parse(ref).get();
+      System.out.println(pretty(item));
+    }
+  }
+
+  @Test
+  // @Ignore
+  // Example from http://docs.citationstyles.org/en/stable/primer.html
+  public void testParse06() throws Exception {
+    try (AnystyleParserWrapper parser = new AnystyleParserWrapper(HttpClients.createDefault())) {
+      parser.start();
+      String ref = "Gidijala L, Bovenberg RA, Klaassen P, van der Klei IJ, Veenhuis M, et al. (2008) Production of functionally active Penicillium chrysogenum isopenicillin N synthase in the yeast Hansenula polymorpha. BMC Biotechnol 8: 29.";
+      CslData item = parser.parse(ref).get();
+      System.out.println(pretty(item));
+    }
+  }
+
   public static String pretty(Object obj) throws JsonProcessingException {
     ObjectMapper om = new ObjectMapper();
     om.setSerializationInclusion(Include.NON_NULL);
