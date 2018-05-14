@@ -1,11 +1,11 @@
 package org.col.csl;
 
+import java.util.Optional;
+
 import com.google.common.base.Strings;
 import org.col.api.model.CslData;
 import org.col.parser.Parser;
 import org.col.parser.UnparsableException;
-
-import java.util.Optional;
 
 /**
  * Mock implementation of a very simple Csl parser for tests.

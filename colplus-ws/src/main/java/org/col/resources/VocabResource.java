@@ -1,5 +1,14 @@
 package org.col.resources;
 
+import java.io.IOException;
+import java.util.Map;
+import java.util.Set;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -8,15 +17,6 @@ import org.col.api.vocab.AreaStandard;
 import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import java.io.IOException;
-import java.util.Map;
-import java.util.Set;
 
 @Path("/vocab")
 @Produces(MediaType.APPLICATION_JSON)

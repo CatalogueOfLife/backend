@@ -1,12 +1,13 @@
 package org.col.api.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.collect.Iterators;
-import com.google.common.collect.Lists;
-
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Stream;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.collect.Lists;
 
 /**
  * A taxonomic synonymy list, ordering names in homotypic groups.

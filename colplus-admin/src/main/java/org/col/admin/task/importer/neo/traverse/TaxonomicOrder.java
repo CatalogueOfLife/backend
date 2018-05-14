@@ -1,10 +1,10 @@
 package org.col.admin.task.importer.neo.traverse;
 
 
+import java.util.Comparator;
+
 import org.col.admin.task.importer.neo.model.NeoProperties;
 import org.neo4j.graphdb.Node;
-
-import java.util.Comparator;
 
 /**
  * Orders taxon nodes by their rank first, then canonical name and scientificName ultimately.

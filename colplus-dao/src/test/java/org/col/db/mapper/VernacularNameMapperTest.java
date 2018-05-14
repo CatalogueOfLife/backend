@@ -1,9 +1,9 @@
 package org.col.db.mapper;
 
+import java.util.List;
+
 import org.col.api.model.VernacularName;
 import org.junit.Test;
-
-import java.util.List;
 
 import static org.col.api.TestEntityGenerator.*;
 import static org.junit.Assert.*;

@@ -1,21 +1,21 @@
 package org.col.admin.task.importer.neo.printer;
 
+import java.io.IOException;
+import java.io.Writer;
+import java.util.Set;
+
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Sets;
 import org.col.admin.task.importer.neo.model.Labels;
-import org.gbif.nameparser.api.Rank;
 import org.col.admin.task.importer.neo.model.NeoProperties;
 import org.col.admin.task.importer.neo.model.RelType;
 import org.gbif.io.TabWriter;
+import org.gbif.nameparser.api.Rank;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
-
-import java.io.IOException;
-import java.io.Writer;
-import java.util.Set;
 
 /**
  * Dumps a normalizer db in a simple tab delimited format used by the nub integration tests.

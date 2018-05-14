@@ -1,11 +1,11 @@
 package org.col.api.model;
 
-import com.google.common.base.Strings;
-import org.gbif.dwc.terms.Term;
-
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Objects;
+import javax.annotation.Nullable;
+
+import com.google.common.base.Strings;
+import org.gbif.dwc.terms.Term;
 
 /**
  *

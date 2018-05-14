@@ -1,12 +1,10 @@
 package org.col.db.mapper;
 
-import org.apache.ibatis.annotations.Param;
-import org.col.api.model.Name;
-import org.col.api.model.Synonym;
-import org.col.api.model.Taxon;
-import org.col.api.vocab.TaxonomicStatus;
-
 import java.util.List;
+
+import org.apache.ibatis.annotations.Param;
+import org.col.api.model.Synonym;
+import org.col.api.vocab.TaxonomicStatus;
 
 /**
  *

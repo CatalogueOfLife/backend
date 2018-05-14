@@ -1,9 +1,9 @@
 package org.col.parser;
 
-import org.col.api.vocab.Issue;
-
 import java.util.Optional;
 import java.util.Set;
+
+import org.col.api.vocab.Issue;
 
 /**
  * A parsing utility class wrapping a Parser<T> instance so that no UnparsableException is thrown.

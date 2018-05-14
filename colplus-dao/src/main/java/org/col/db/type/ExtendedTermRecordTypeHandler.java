@@ -1,17 +1,17 @@
 package org.col.db.type;
 
+import java.io.IOException;
+import java.sql.CallableStatement;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import org.apache.ibatis.type.BaseTypeHandler;
 import org.apache.ibatis.type.JdbcType;
 import org.col.api.jackson.ApiModule;
 import org.col.api.model.ExtendedTermRecord;
-
-import java.io.IOException;
-import java.sql.CallableStatement;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 
 /**
  * Postgres type handler converting an entire TermRecord instance into a postgres JSONB data type.

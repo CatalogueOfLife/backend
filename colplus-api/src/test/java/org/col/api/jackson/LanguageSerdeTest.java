@@ -13,14 +13,14 @@
 package org.col.api.jackson;
 
 
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.commons.lang3.ArrayUtils;
 import org.col.api.vocab.Language;
 import org.junit.Test;
-
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 

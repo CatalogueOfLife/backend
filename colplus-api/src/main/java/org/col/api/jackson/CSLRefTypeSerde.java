@@ -1,5 +1,8 @@
 package org.col.api.jackson;
 
+import java.io.IOException;
+import java.util.Set;
+
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
@@ -9,9 +12,6 @@ import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.google.common.collect.ImmutableSet;
 import org.col.api.vocab.CSLRefType;
-
-import java.io.IOException;
-import java.util.Set;
 
 import static org.col.api.vocab.CSLRefType.*;
 

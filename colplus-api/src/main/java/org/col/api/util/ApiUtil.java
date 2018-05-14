@@ -1,11 +1,11 @@
 package org.col.api.util;
 
+import java.util.Objects;
+
 import org.col.api.model.Dataset;
 import org.col.api.model.Name;
 import org.col.api.model.Reference;
 import org.col.api.model.Taxon;
-
-import java.util.Objects;
 
 class ApiUtil {
 

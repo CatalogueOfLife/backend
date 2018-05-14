@@ -1,5 +1,15 @@
 package org.col.admin.task.importer;
 
+import java.io.*;
+import java.net.URI;
+import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import javax.annotation.Nullable;
+
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -9,14 +19,14 @@ import org.col.admin.config.NormalizerConfig;
 import org.col.admin.task.importer.neo.NeoDb;
 import org.col.admin.task.importer.neo.NeoDbFactory;
 import org.col.admin.task.importer.neo.NotUniqueRuntimeException;
-import org.col.admin.task.importer.neo.model.Labels;
-import org.col.admin.task.importer.neo.model.NeoProperties;
-import org.col.admin.task.importer.neo.model.NeoTaxon;
-import org.col.admin.task.importer.neo.model.RankedName;
+import org.col.admin.task.importer.neo.model.*;
 import org.col.admin.task.importer.neo.printer.GraphFormat;
 import org.col.admin.task.importer.neo.printer.PrinterUtils;
 import org.col.admin.task.importer.reference.ReferenceFactory;
-import org.col.api.model.*;
+import org.col.api.model.Dataset;
+import org.col.api.model.Distribution;
+import org.col.api.model.Reference;
+import org.col.api.model.VernacularName;
 import org.col.api.vocab.DataFormat;
 import org.col.api.vocab.DistributionStatus;
 import org.col.api.vocab.Gazetteer;
@@ -26,6 +36,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.NotFoundException;
 import org.neo4j.graphdb.Transaction;
@@ -33,19 +44,6 @@ import org.neo4j.graphdb.schema.IndexDefinition;
 import org.neo4j.graphdb.schema.Schema;
 import org.neo4j.helpers.collection.Iterables;
 import org.neo4j.helpers.collection.Iterators;
-
-import javax.annotation.Nullable;
-import java.io.*;
-import java.net.URI;
-import java.net.URL;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import static org.junit.Assert.*;
 
@@ -236,17 +234,29 @@ public class NormalizerDwcaIT {
 
     // verify results
     try (Transaction tx = store.getNeo().beginTx()) {
+      // 2->1->2
+      // should be: 2->1
       NeoTaxon t1 = byID("1");
       NeoTaxon t2 = byID("2");
+
+      assertEquals(1, t1.node.getDegree(RelType.BASIONYM_OF));
+      assertEquals(1, t2.node.getDegree(RelType.BASIONYM_OF));
+      assertEquals(t1.node, t2.node.getSingleRelationship(RelType.BASIONYM_OF, Direction.OUTGOING).getEndNode());
+      assertNotNull(t1.name.getHomotypicNameKey());
+      assertEquals(t2.name.getHomotypicNameKey(), t1.name.getHomotypicNameKey());
+
+      // 12->11->10->12
+      // should be: 12->11 10
       NeoTaxon t10 = byID("10");
       NeoTaxon t11 = byID("11");
       NeoTaxon t12 = byID("12");
 
-      assertNotNull(t1.name.getHomotypicNameKey());
-      assertNull(t2.name.getHomotypicNameKey());
+      assertEquals(0, t10.node.getDegree(RelType.BASIONYM_OF));
+      assertEquals(1, t11.node.getDegree(RelType.BASIONYM_OF));
+      assertEquals(1, t12.node.getDegree(RelType.BASIONYM_OF));
+      assertEquals(t11.node, t12.node.getSingleRelationship(RelType.BASIONYM_OF, Direction.OUTGOING).getEndNode());
       assertNull(t10.name.getHomotypicNameKey());
-      assertNull(t11.name.getHomotypicNameKey());
-      assertNotNull(t12.name.getHomotypicNameKey());
+      assertEquals(t11.name.getHomotypicNameKey(), t12.name.getHomotypicNameKey());
     }
   }
 

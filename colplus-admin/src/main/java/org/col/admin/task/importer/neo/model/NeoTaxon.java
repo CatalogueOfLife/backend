@@ -1,16 +1,13 @@
 package org.col.admin.task.importer.neo.model;
 
+import java.util.List;
+import java.util.Objects;
+
 import com.google.common.collect.Lists;
 import org.col.api.model.*;
 import org.col.api.vocab.Issue;
 import org.col.api.vocab.Origin;
-import org.col.api.vocab.TaxonomicStatus;
 import org.neo4j.graphdb.Node;
-
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
 
 /**
  * Simple wrapper to hold a normalizer node together with all data for a record
@@ -36,7 +33,6 @@ public class NeoTaxon {
   public List<Integer> bibliography = Lists.newArrayList();
   // extra stuff not covered by above for normalizer only
   public Classification classification;
-  public Set<Issue> issues = EnumSet.noneOf(Issue.class);
 
   public List<String> remarks = Lists.newArrayList();
 
@@ -54,7 +50,7 @@ public class NeoTaxon {
   }
 
   public void addIssue(Issue issue) {
-    issues.add(issue);
+    taxon.addIssue(issue);
   }
 
   public void addRemark(String remark) {
@@ -76,13 +72,12 @@ public class NeoTaxon {
         Objects.equals(distributions, neoTaxon.distributions) &&
         Objects.equals(bibliography, neoTaxon.bibliography) &&
         Objects.equals(classification, neoTaxon.classification) &&
-        Objects.equals(issues, neoTaxon.issues) &&
         Objects.equals(remarks, neoTaxon.remarks);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(node, verbatim, name, taxon, synonym, vernacularNames, distributions, bibliography, classification, issues, remarks);
+    return Objects.hash(node, verbatim, name, taxon, synonym, vernacularNames, distributions, bibliography, classification, remarks);
   }
 
   public boolean isSynonym() {

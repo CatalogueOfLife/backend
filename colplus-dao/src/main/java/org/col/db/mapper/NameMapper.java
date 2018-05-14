@@ -1,9 +1,10 @@
 package org.col.db.mapper;
 
-import org.apache.ibatis.annotations.Param;
-import org.col.api.model.*;
-
 import java.util.List;
+
+import org.apache.ibatis.annotations.Param;
+import org.col.api.model.Name;
+import org.col.api.model.Page;
 
 /**
  *

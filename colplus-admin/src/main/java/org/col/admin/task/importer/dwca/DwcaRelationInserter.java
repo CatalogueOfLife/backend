@@ -1,5 +1,7 @@
 package org.col.admin.task.importer.dwca;
 
+import java.util.List;
+
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
@@ -15,8 +17,6 @@ import org.gbif.dwc.terms.DwcTerm;
 import org.neo4j.graphdb.Node;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.List;
 
 /**
  *
@@ -78,7 +78,7 @@ public class DwcaRelationInserter implements NeoDb.NodeBatchProcessor {
 
     // if status is synonym but we aint got no idea of the accepted insert an incertae sedis record of same rank
     if ((accepted == null || accepted.isEmpty())
-        && (t.isSynonym() || t.issues.contains(Issue.ACCEPTED_ID_INVALID))
+        && (t.isSynonym() || t.taxon.getIssues().contains(Issue.ACCEPTED_ID_INVALID))
         ) {
       t.addIssue(Issue.ACCEPTED_NAME_MISSING);
       NeoDb.PLACEHOLDER.setRank(t.name.getRank());

@@ -1,8 +1,8 @@
 package org.col.api.model;
 
-import org.col.api.vocab.NomActType;
-
 import java.util.Objects;
+
+import org.col.api.vocab.NomActType;
 
 /**
  * A nomenclatural act such as a species description, type designation or

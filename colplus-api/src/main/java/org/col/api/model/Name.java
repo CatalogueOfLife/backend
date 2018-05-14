@@ -1,5 +1,12 @@
 package org.col.api.model;
 
+import java.net.URI;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import javax.annotation.Nonnull;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -11,13 +18,6 @@ import org.col.api.vocab.NomStatus;
 import org.col.api.vocab.Origin;
 import org.gbif.nameparser.api.*;
 import org.gbif.nameparser.util.NameFormatter;
-
-import javax.annotation.Nonnull;
-import java.net.URI;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
 
 import static org.gbif.nameparser.util.NameFormatter.HYBRID_MARKER;
 

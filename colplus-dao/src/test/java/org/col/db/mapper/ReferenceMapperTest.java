@@ -1,5 +1,8 @@
 package org.col.db.mapper;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.google.common.collect.Sets;
 import org.col.api.RandomUtils;
 import org.col.api.TestEntityGenerator;
@@ -8,9 +11,6 @@ import org.col.api.model.Page;
 import org.col.api.model.Reference;
 import org.col.api.vocab.Issue;
 import org.junit.Test;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import static org.col.api.TestEntityGenerator.DATASET1;
 import static org.junit.Assert.assertEquals;

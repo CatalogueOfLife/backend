@@ -1,12 +1,12 @@
 package org.col.csv;
 
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.col.api.model.TermRecord;
 import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.utils.file.FileUtils;
 import org.junit.Test;
-
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.Assert.*;
 

@@ -1,14 +1,14 @@
 package org.col.admin.task.importer;
 
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import com.google.common.base.Splitter;
 import com.google.common.collect.Maps;
 import org.gbif.dwc.terms.Term;
 import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Settings uses during the insert of the dwc archive into normalizer.

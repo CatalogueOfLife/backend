@@ -1,12 +1,12 @@
 package org.col.admin.task.importer.neo.kryo;
 
+import java.io.File;
+
 import com.esotericsoftware.kryo.pool.KryoPool;
 import org.col.api.model.Page;
 import org.col.api.model.Reference;
 import org.gbif.utils.text.StringUtils;
 import org.junit.Test;
-
-import java.io.File;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;

@@ -1,15 +1,17 @@
 package org.col.db.mapper;
 
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Set;
+
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.BeanPrinter;
 import org.col.api.TestEntityGenerator;
 import org.col.api.model.*;
 import org.col.api.vocab.*;
 import org.col.db.dao.NameDao;
-import org.col.db.dao.NameUsageDao;
 import org.col.db.dao.TaxonDao;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
@@ -19,12 +21,6 @@ import org.javers.core.diff.Diff;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.sql.SQLException;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import static org.col.api.TestEntityGenerator.*;
 import static org.junit.Assert.*;
@@ -91,7 +87,7 @@ public class NameUsageMapperTest extends MapperTestBase<NameMapper> {
     commit();
 
     NameSearch search = new NameSearch();
-    search.setDatasetKey(TestEntityGenerator.DATASET1.getKey());
+    search.setDatasetKey(n.getDatasetKey());
     search.setQ("foo");
     assertEquals(3, mapper.searchCount(search));
 
@@ -112,9 +108,6 @@ public class NameUsageMapperTest extends MapperTestBase<NameMapper> {
     search.setHasField(NameField.COMBINATION_AUTHORS);
     assertEquals(4, mapper.searchCount(search));
   }
-
-
-
 
   @Test
   // Test with rank as extra search criterion

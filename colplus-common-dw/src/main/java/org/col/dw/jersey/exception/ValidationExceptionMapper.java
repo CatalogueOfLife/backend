@@ -1,18 +1,18 @@
 package org.col.dw.jersey.exception;
 
+import java.util.Set;
+import javax.validation.ConstraintViolation;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.ext.ExceptionMapper;
+import javax.ws.rs.ext.Provider;
+
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import io.dropwizard.jersey.errors.ErrorMessage;
 import io.dropwizard.jersey.validation.ConstraintMessage;
 import io.dropwizard.jersey.validation.JerseyViolationException;
 import org.glassfish.jersey.server.model.Invocable;
-
-import javax.validation.ConstraintViolation;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.ExceptionMapper;
-import javax.ws.rs.ext.Provider;
-import java.util.Set;
 
 /**
  * Converts a JerseyViolationException into a http 400 or 422 if its a request based violation.

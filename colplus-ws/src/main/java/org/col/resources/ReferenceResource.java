@@ -1,5 +1,10 @@
 package org.col.resources;
 
+import javax.validation.Valid;
+import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+
 import com.codahale.metrics.annotation.Timed;
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.model.Page;
@@ -8,11 +13,6 @@ import org.col.api.model.ResultPage;
 import org.col.db.dao.ReferenceDao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.validation.Valid;
-import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
 
 @Path("/reference")
 @Produces(MediaType.APPLICATION_JSON)

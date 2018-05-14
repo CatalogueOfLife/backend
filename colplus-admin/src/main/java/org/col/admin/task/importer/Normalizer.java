@@ -1,5 +1,12 @@
 package org.col.admin.task.importer;
 
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
+import javax.annotation.Nullable;
+
 import org.col.admin.task.importer.acef.AcefInserter;
 import org.col.admin.task.importer.dwca.DwcaInserter;
 import org.col.admin.task.importer.neo.NeoDb;
@@ -10,6 +17,8 @@ import org.col.admin.task.importer.reference.ReferenceFactory;
 import org.col.api.model.*;
 import org.col.api.vocab.Issue;
 import org.col.api.vocab.Origin;
+import org.col.api.vocab.TaxonomicStatus;
+import org.col.common.tax.MisappliedNameMatcher;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 import org.neo4j.graphdb.*;
@@ -17,13 +26,6 @@ import org.neo4j.helpers.collection.Iterables;
 import org.neo4j.helpers.collection.Iterators;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nullable;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
 
 /**
  *
@@ -66,6 +68,8 @@ public class Normalizer implements Runnable {
       insertData();
       // insert normalizer db relations, create implicit nodes if needed and parse names
       normalize();
+      // sync taxon KVP storee with neo4j relations, setting correct neo4j labels, homotypic keys etc
+      store.sync();
       // verify, derive issues and fail before we do expensive matching or even db imports
       verify();
       // matches names and taxon concepts and builds metrics per name/taxon
@@ -117,7 +121,6 @@ public class Normalizer implements Runnable {
         require(t.taxon.getOrigin(), "taxon origin", id);
         require(t.taxon.getStatus(), "taxon status", id);
       }
-      require(t.issues, "issues", id);
 
       // vernacular
       for (VernacularName v : t.vernacularNames) {
@@ -169,15 +172,64 @@ public class Normalizer implements Runnable {
     // cleanup basionym rels
     cutBasionymChains();
 
+    // rectify taxonomic status
+    rectifyTaxonomicStatus();
+
     // process the denormalized classifications of accepted taxa
     applyDenormedClassification();
-
-    // sync taxon KVP storee with neo4j relations, setting correct neo4j labels, homotypic keys etc
-    store.sync();
 
     LOG.info("Relation setup completed.");
   }
 
+  /**
+   * Updates the taxonomic status according to rules defined in
+   * https://github.com/Sp2000/colplus-backend/issues/93
+   *
+   * Currently only ambigous synonyms and misapplied names are derived
+   * from names data and flagged by an issue.
+   */
+  private void rectifyTaxonomicStatus() {
+    try (Transaction tx = store.getNeo().beginTx()) {
+      store.all().forEach(t -> {
+        if (t.isSynonym()) {
+          // get a real neo4j node (store.all() only populates a dummy with an id)
+          Node n = store.getNeo().getNodeById(t.node.getId());
+          boolean ambigous = n.getDegree(RelType.SYNONYM_OF, Direction.OUTGOING) > 1;
+          boolean misapplied = MisappliedNameMatcher.isMisappliedName(new NameAccordingTo(t.name, t.synonym.getAccordingTo()));
+          TaxonomicStatus status = t.synonym.getStatus();
+
+          Issue issue = null;
+          if (status == TaxonomicStatus.MISAPPLIED) {
+            if (!misapplied) {
+              issue = Issue.TAXONOMIC_STATUS_DOUBTFUL;
+            }
+
+          } else if (status == TaxonomicStatus.AMBIGUOUS_SYNONYM) {
+            if (misapplied) {
+              t.synonym.setStatus(TaxonomicStatus.MISAPPLIED);
+              issue = Issue.DERIVED_TAXONOMIC_STATUS;
+            } else if (!ambigous) {
+              issue = Issue.TAXONOMIC_STATUS_DOUBTFUL;
+            }
+
+          } else if (status == TaxonomicStatus.SYNONYM) {
+            if (misapplied) {
+              t.synonym.setStatus(TaxonomicStatus.MISAPPLIED);
+              issue = Issue.DERIVED_TAXONOMIC_STATUS;
+            } else if (ambigous) {
+              t.synonym.setStatus(TaxonomicStatus.AMBIGUOUS_SYNONYM);
+              issue = Issue.DERIVED_TAXONOMIC_STATUS;
+            }
+          }
+          // update store if modified
+          if (issue != null) {
+            t.taxon.addIssue(issue);
+            store.update(t);
+          }
+        }
+      });
+    }
+  }
 
   /**
    * Sanitizes synonym relations relinking synonym of basionymGroup to make sure basionymGroup always point to a direct accepted taxon.
@@ -198,11 +250,15 @@ public class Normalizer implements Runnable {
         // count number of outgoing basionym relations
         int d1 = b1.getDegree(RelType.BASIONYM_OF, Direction.OUTGOING);
         int d2 = b2.getDegree(RelType.BASIONYM_OF, Direction.OUTGOING);
-
+        // if both are the same use node ids to get a determiniate result
+        if (d1==d2) {
+          d1 = (int) b1.getId();
+          d2 = (int) b2.getId();
+        }
         // remove basionym relations
-        Relationship bad = d1 <= d2 ? (Relationship) row.get("r1") : (Relationship) row.get("r2");
-        Node comb = bad.getEndNode();
-        addIssue(comb, Issue.CHAINED_BASIONYM);
+        Relationship bad = d1 < d2 ? (Relationship) row.get("r1") : (Relationship) row.get("r2");
+        addIssue(bad.getStartNode(), Issue.CHAINED_BASIONYM);
+        addIssue(bad.getEndNode(), Issue.CHAINED_BASIONYM);
         bad.delete();
         counter++;
 
@@ -512,7 +568,6 @@ public class Normalizer implements Runnable {
    * Only use this method if you just have a node a no usage instance yet at hand.
    */
   private NeoTaxon addIssueRemark(Node n, @Nullable String remark, @Nullable Issue issue) {
-    //TODO: consider to store issues & remarks in neo4j so we do not have to load/store the full taxon instance
     NeoTaxon t = store.get(n);
     if (issue != null) {
       t.addIssue(issue);
@@ -520,7 +575,7 @@ public class Normalizer implements Runnable {
     if (remark != null) {
       t.addRemark(remark);
     }
-    store.put(t);
+    store.update(t);
     return t;
   }
 

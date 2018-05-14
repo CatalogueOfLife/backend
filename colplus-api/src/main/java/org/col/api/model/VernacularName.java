@@ -1,12 +1,12 @@
 package org.col.api.model;
 
+import java.util.Objects;
+import java.util.Set;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.Sets;
 import org.col.api.vocab.Country;
 import org.col.api.vocab.Language;
-
-import java.util.Objects;
-import java.util.Set;
 
 public class VernacularName implements Referenced {
 

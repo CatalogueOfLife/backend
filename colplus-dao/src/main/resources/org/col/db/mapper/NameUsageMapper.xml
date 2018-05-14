@@ -70,7 +70,7 @@
                 AND #{q.type}::int = n.type
             </if>
             <if test="q.hasField != null">
-                AND n.${q.hasField.sql()} IS NOT NULL
+                AND ${q.hasField.notNull('n')}
             </if>
             <if test="q.issue != null">
                 AND n.issues @> array[#{q.issue}::int]

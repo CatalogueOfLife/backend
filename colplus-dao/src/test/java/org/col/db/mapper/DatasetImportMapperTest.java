@@ -1,16 +1,16 @@
 package org.col.db.mapper;
 
+import java.net.URI;
+import java.time.LocalDateTime;
+import java.util.Map;
+import java.util.Random;
+
 import com.google.common.collect.Maps;
 import org.col.api.model.DatasetImport;
 import org.col.api.vocab.*;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Test;
-
-import java.net.URI;
-import java.time.LocalDateTime;
-import java.util.Map;
-import java.util.Random;
 
 import static org.col.api.TestEntityGenerator.DATASET1;
 import static org.junit.Assert.*;

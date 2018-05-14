@@ -1,15 +1,15 @@
 package org.col.admin.task.importer.neo.printer;
 
+import java.io.IOException;
+import java.io.Writer;
+
 import com.google.common.base.Function;
 import com.google.common.base.Throwables;
 import org.col.admin.task.importer.neo.model.Labels;
 import org.col.admin.task.importer.neo.model.NeoProperties;
-import org.gbif.nameparser.api.Rank;
 import org.gbif.io.TabWriter;
+import org.gbif.nameparser.api.Rank;
 import org.neo4j.graphdb.Node;
-
-import java.io.IOException;
-import java.io.Writer;
 
 /**
  * Dumps a normalizer db in a simple tab delimited format showing the following columns:

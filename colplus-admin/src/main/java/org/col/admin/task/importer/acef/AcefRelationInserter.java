@@ -4,9 +4,9 @@ import org.col.admin.task.importer.NormalizationFailedException;
 import org.col.admin.task.importer.neo.NeoDb;
 import org.col.admin.task.importer.neo.model.NeoProperties;
 import org.col.admin.task.importer.neo.model.NeoTaxon;
+import org.col.api.model.NameAccordingTo;
 import org.col.api.model.VerbatimRecord;
 import org.col.api.vocab.Issue;
-import org.col.api.model.NameAccordingTo;
 import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.dwc.terms.Term;
 import org.neo4j.graphdb.Node;
@@ -51,7 +51,7 @@ public class AcefRelationInserter implements NeoDb.NodeBatchProcessor {
           t.name = nat.getName();
           if (!t.name.getRank().isInfraspecific()) {
             LOG.info("Expected infraspecific taxon but found {} for name {}: {}", t.name.getRank(), v.getId(), t.name.getScientificName());
-            t.addIssue(Issue.INCONSISTENT_NAME);
+            t.name.addIssue(Issue.INCONSISTENT_NAME);
           }
         }
       }

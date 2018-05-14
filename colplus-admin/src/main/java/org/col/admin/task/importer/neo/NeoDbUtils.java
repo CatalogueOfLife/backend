@@ -1,11 +1,11 @@
 package org.col.admin.task.importer.neo;
 
+import java.util.Map;
+
 import com.google.common.collect.Maps;
 import org.col.admin.task.importer.neo.model.NeoProperties;
 import org.col.admin.task.importer.neo.model.NeoTaxon;
 import org.neo4j.graphdb.Node;
-
-import java.util.Map;
 
 /**
  * Static utils for the NeoDb class

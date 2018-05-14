@@ -1,5 +1,11 @@
 package org.col.admin.task.gbifsync;
 
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
 import io.dropwizard.lifecycle.Managed;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -7,20 +13,14 @@ import org.col.admin.AdminServer;
 import org.col.admin.config.GbifConfig;
 import org.col.api.model.Dataset;
 import org.col.api.model.Page;
+import org.col.common.concurrent.ExecutorUtils;
 import org.col.db.mapper.DatasetMapper;
-import org.col.util.concurrent.ExecutorUtils;
 import org.gbif.nameparser.utils.NamedThreadFactory;
 import org.glassfish.jersey.client.rx.RxClient;
 import org.glassfish.jersey.client.rx.java8.RxCompletionStageInvoker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
-
-import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Syncs datasets from the GBIF registry

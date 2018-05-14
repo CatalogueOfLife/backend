@@ -1,15 +1,5 @@
 package org.col.resources;
 
-import com.codahale.metrics.annotation.Timed;
-import com.google.common.collect.Lists;
-import org.col.parser.NameParser;
-import org.col.api.model.NameAccordingTo;
-import org.glassfish.jersey.media.multipart.FormDataParam;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -19,6 +9,16 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+
+import com.codahale.metrics.annotation.Timed;
+import com.google.common.collect.Lists;
+import org.col.api.model.NameAccordingTo;
+import org.col.parser.NameParser;
+import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Path("/parser/name")
 @Produces(MediaType.APPLICATION_JSON)

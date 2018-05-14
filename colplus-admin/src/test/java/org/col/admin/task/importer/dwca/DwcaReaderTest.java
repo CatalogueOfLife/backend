@@ -1,13 +1,13 @@
 package org.col.admin.task.importer.dwca;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.col.api.vocab.VocabularyUtils;
-import org.col.util.io.PathUtils;
+import org.col.common.io.PathUtils;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.GbifTerm;
 import org.gbif.dwc.terms.Term;
 import org.junit.Test;
-
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.Assert.*;
 

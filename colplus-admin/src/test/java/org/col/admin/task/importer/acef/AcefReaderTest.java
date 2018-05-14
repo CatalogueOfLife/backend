@@ -1,12 +1,12 @@
 package org.col.admin.task.importer.acef;
 
-import org.col.api.model.TermRecord;
-import org.col.util.io.PathUtils;
-import org.gbif.dwc.terms.AcefTerm;
-import org.junit.Test;
-
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.col.api.model.TermRecord;
+import org.col.common.io.PathUtils;
+import org.gbif.dwc.terms.AcefTerm;
+import org.junit.Test;
 
 import static org.junit.Assert.*;
 

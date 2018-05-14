@@ -1,15 +1,14 @@
 package org.col.admin.task.importer.txttree;
 
+import java.io.StringWriter;
+
 import org.apache.commons.io.IOUtils;
-import org.col.admin.task.importer.txttree.Tree;
-import org.col.admin.task.importer.txttree.TreeNode;
 import org.gbif.nameparser.api.Rank;
 import org.gbif.utils.file.FileUtils;
 import org.junit.Test;
 
-import java.io.StringWriter;
-
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 
 public class TreeTest {

@@ -1,11 +1,9 @@
 package org.col.api.model;
 
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
-import org.col.api.vocab.TaxonomicStatus;
-
-import java.util.List;
 import java.util.Objects;
+
+import com.google.common.base.Preconditions;
+import org.col.api.vocab.TaxonomicStatus;
 
 /**
  * A taxonomic synonym, linking a name to potentially multiple taxa.

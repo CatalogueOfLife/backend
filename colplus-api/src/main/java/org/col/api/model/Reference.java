@@ -1,11 +1,11 @@
 package org.col.api.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.col.api.vocab.Issue;
-
 import java.util.EnumSet;
 import java.util.Objects;
 import java.util.Set;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.col.api.vocab.Issue;
 
 /**
  * Simplified citation class linked to an optional serial container.

@@ -1,5 +1,8 @@
 package org.col.dw.hk2;
 
+import java.util.Collection;
+import java.util.stream.Stream;
+
 import com.codahale.metrics.health.HealthCheck;
 import com.google.common.collect.Lists;
 import io.dropwizard.Application;
@@ -20,9 +23,6 @@ import org.glassfish.hk2.utilities.Binder;
 import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.servlet.ServletProperties;
-
-import java.util.Collection;
-import java.util.stream.Stream;
 
 import static org.glassfish.hk2.utilities.ServiceLocatorUtilities.bind;
 

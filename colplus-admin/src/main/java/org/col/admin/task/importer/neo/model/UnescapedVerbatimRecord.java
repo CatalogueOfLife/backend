@@ -1,5 +1,10 @@
 package org.col.admin.task.importer.neo.model;
 
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Pattern;
+import javax.annotation.Nullable;
+
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import org.apache.commons.text.StringEscapeUtils;
@@ -9,11 +14,6 @@ import org.col.api.model.VerbatimRecord;
 import org.gbif.dwc.terms.Term;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Pattern;
 
 /**
  * Thin wrapper around a verbatim record that deals with unescaping character entities

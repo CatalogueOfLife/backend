@@ -1,14 +1,14 @@
 package org.col.api.jackson;
 
+import java.util.List;
+import java.util.Random;
+
 import com.google.common.collect.Lists;
 import org.col.api.RandomUtils;
 import org.col.api.model.ExtendedTermRecord;
 import org.col.api.model.TermRecord;
 import org.col.api.model.VerbatimRecord;
 import org.gbif.dwc.terms.*;
-
-import java.util.List;
-import java.util.Random;
 
 /**
  *

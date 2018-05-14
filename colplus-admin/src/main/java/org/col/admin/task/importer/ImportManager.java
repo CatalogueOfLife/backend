@@ -1,5 +1,11 @@
 package org.col.admin.task.importer;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.*;
+
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import io.dropwizard.lifecycle.Managed;
@@ -10,19 +16,13 @@ import org.col.admin.config.AdminServerConfig;
 import org.col.api.model.CslData;
 import org.col.api.model.Dataset;
 import org.col.api.model.DatasetImport;
+import org.col.common.io.DownloadUtil;
 import org.col.db.mapper.DatasetMapper;
 import org.col.parser.Parser;
-import org.col.util.io.DownloadUtil;
 import org.gbif.nameparser.utils.NamedThreadFactory;
 import org.gbif.utils.concurrent.ExecutorUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.*;
 
 /**
  * Manages import task scheduling, removing and listing

@@ -1,19 +1,19 @@
 package org.col.dw.jersey;
 
+import java.io.IOException;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
+import java.util.regex.Pattern;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.ext.ParamConverter;
+import javax.ws.rs.ext.ParamConverterProvider;
+import javax.ws.rs.ext.Provider;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Strings;
 import org.col.api.jackson.ApiModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.ext.ParamConverter;
-import javax.ws.rs.ext.ParamConverterProvider;
-import javax.ws.rs.ext.Provider;
-import java.io.IOException;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Type;
-import java.util.regex.Pattern;
 
 /**
  * Jersey parameter converter & provider that uses our jackson Mapper

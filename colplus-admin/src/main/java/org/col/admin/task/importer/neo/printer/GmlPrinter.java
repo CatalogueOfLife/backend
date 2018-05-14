@@ -1,6 +1,11 @@
 package org.col.admin.task.importer.neo.printer;
 
 
+import java.io.IOException;
+import java.io.Writer;
+import java.util.List;
+import javax.annotation.Nullable;
+
 import com.google.common.base.Function;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
@@ -11,11 +16,6 @@ import org.gbif.nameparser.api.Rank;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
-
-import javax.annotation.Nullable;
-import java.io.IOException;
-import java.io.Writer;
-import java.util.List;
 
 /**
  * Expects no pro parte relations in the walker!

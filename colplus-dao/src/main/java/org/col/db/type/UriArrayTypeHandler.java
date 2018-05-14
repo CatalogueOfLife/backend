@@ -12,16 +12,16 @@
  */
 package org.col.db.type;
 
+import java.net.URI;
+import java.sql.*;
+import java.util.List;
+
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import org.apache.ibatis.type.BaseTypeHandler;
 import org.apache.ibatis.type.JdbcType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.net.URI;
-import java.sql.*;
-import java.util.List;
 
 public class UriArrayTypeHandler extends BaseTypeHandler<List<URI>> {
   private static final Logger LOG = LoggerFactory.getLogger(UriArrayTypeHandler.class);

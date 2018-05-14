@@ -1,14 +1,14 @@
 package org.col.db;
 
-import com.google.common.base.MoreObjects;
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
-
-import javax.validation.constraints.Min;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Objects;
+import javax.validation.constraints.Min;
+
+import com.google.common.base.MoreObjects;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 
 /**
  * A configuration for the postgres database connection pool as used by the mybatis layer.

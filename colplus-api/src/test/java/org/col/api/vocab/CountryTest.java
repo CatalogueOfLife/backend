@@ -12,10 +12,10 @@
  */
 package org.col.api.vocab;
 
+import java.util.Set;
+
 import com.google.common.collect.Sets;
 import org.junit.Test;
-
-import java.util.Set;
 
 import static org.junit.Assert.*;
 

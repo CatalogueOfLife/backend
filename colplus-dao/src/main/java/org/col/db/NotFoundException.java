@@ -1,9 +1,9 @@
 package org.col.db;
 
+import java.util.Map;
+
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableMap;
-
-import java.util.Map;
 
 public class NotFoundException extends RuntimeException {
 

@@ -1,8 +1,8 @@
 package org.col.api.model;
 
-import org.col.api.vocab.Issue;
-
 import java.util.Set;
+
+import org.col.api.vocab.Issue;
 
 /**
  *

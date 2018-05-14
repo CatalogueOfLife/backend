@@ -1,6 +1,7 @@
 package org.col.admin.task.importer.acef;
 
-import com.google.common.collect.Lists;
+import java.util.Set;
+
 import org.col.admin.task.importer.InsertMetadata;
 import org.col.admin.task.importer.InterpreterBase;
 import org.col.admin.task.importer.neo.ReferenceStore;
@@ -14,8 +15,6 @@ import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Set;
 
 import static org.col.parser.SafeParser.parse;
 
@@ -66,7 +65,7 @@ public class AcefInterpreter extends InterpreterBase {
     String raw = t.verbatim.getTerm(AcefTerm.LifeZone);
     if (raw != null) {
       for (String lzv : MULTIVAL.split(raw)) {
-        Lifezone lz = parse(LifezoneParser.PARSER, lzv).orNull(Issue.LIFEZONE_INVALID, t.issues);
+        Lifezone lz = parse(LifezoneParser.PARSER, lzv).orNull(Issue.LIFEZONE_INVALID, t.taxon.getIssues());
         if (lz != null) {
           t.taxon.getLifezones().add(lz);
         }
@@ -99,7 +98,7 @@ public class AcefInterpreter extends InterpreterBase {
       vn.setLanguage(SafeParser.parse(LanguageParser.PARSER, rec.get(AcefTerm.Language)).orNull());
       vn.setCountry(SafeParser.parse(CountryParser.PARSER, rec.get(AcefTerm.Country)).orNull());
       vn.setLatin(rec.get(AcefTerm.TransliteratedName));
-      addReferences(vn, rec, t.issues);
+      addReferences(vn, rec, t.taxon.getIssues());
       addAndTransliterate(t, vn);
     }
   }
@@ -112,7 +111,7 @@ public class AcefInterpreter extends InterpreterBase {
 
         // which standard?
         d.setGazetteer(parse(GazetteerParser.PARSER, rec.get(AcefTerm.StandardInUse))
-            .orElse(Gazetteer.TEXT, Issue.DISTRIBUTION_GAZETEER_INVALID, t.issues));
+            .orElse(Gazetteer.TEXT, Issue.DISTRIBUTION_GAZETEER_INVALID, t.taxon.getIssues()));
 
         // TODO: try to split location into several distributions...
         String loc = rec.get(AcefTerm.DistributionElement);
@@ -125,7 +124,7 @@ public class AcefInterpreter extends InterpreterBase {
             loc = d.getGazetteer().locationID(loc);
           }
           AreaParser.Area area = SafeParser.parse(AreaParser.PARSER, loc).orElse(textArea,
-              Issue.DISTRIBUTION_AREA_INVALID, t.issues);
+              Issue.DISTRIBUTION_AREA_INVALID, t.taxon.getIssues());
           d.setArea(area.area);
           // check if we have contradicting extracted a gazetteer
           if (area.standard != Gazetteer.TEXT && area.standard != d.getGazetteer()) {
@@ -137,8 +136,8 @@ public class AcefInterpreter extends InterpreterBase {
 
         // status
         d.setStatus(parse(DistributionStatusParser.PARSER, rec.get(AcefTerm.DistributionStatus))
-            .orElse(DistributionStatus.NATIVE, Issue.DISTRIBUTION_STATUS_INVALID, t.issues));
-        addReferences(d, rec, t.issues);
+            .orElse(DistributionStatus.NATIVE, Issue.DISTRIBUTION_STATUS_INVALID, t.taxon.getIssues()));
+        addReferences(d, rec, t.taxon.getIssues());
         t.distributions.add(d);
 
       } else {

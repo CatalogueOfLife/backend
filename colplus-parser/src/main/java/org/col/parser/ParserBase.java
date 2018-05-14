@@ -1,9 +1,9 @@
 package org.col.parser;
 
-import com.google.common.base.CharMatcher;
-import org.col.util.text.StringUtils;
-
 import java.util.Optional;
+
+import com.google.common.base.CharMatcher;
+import org.col.common.text.StringUtils;
 
 /**
  * A base parser implementation dealing with empty, invisible and punctuation values as empty results.

@@ -1,14 +1,14 @@
 package org.col.admin.task.importer.neo.traverse;
 
+import java.util.List;
+import javax.annotation.Nullable;
+
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Ordering;
 import org.col.admin.task.importer.neo.model.RelType;
 import org.neo4j.graphdb.*;
 import org.neo4j.graphdb.traversal.BranchState;
-
-import javax.annotation.Nullable;
-import java.util.List;
 
 /**
  * depth first, rank then scientific name order based branching.

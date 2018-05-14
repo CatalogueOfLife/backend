@@ -1,13 +1,13 @@
 package org.col.admin.task.importer.txttree;
 
+import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
+
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.col.admin.task.importer.neo.printer.TxtPrinter;
 import org.gbif.nameparser.api.Rank;
-
-import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
 
 /**
  * Simple bean for representing a node in a taxonomy trees.

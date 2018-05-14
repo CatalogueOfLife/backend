@@ -1,12 +1,5 @@
 package org.col.api.jackson;
 
-import org.col.api.model.ExtendedTermRecord;
-import org.col.api.model.TermRecord;
-import org.col.api.vocab.CSLRefType;
-import org.col.api.vocab.Country;
-import org.col.api.vocab.Language;
-import org.gbif.dwc.terms.Term;
-import org.gbif.nameparser.api.Authorship;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -15,6 +8,13 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.introspect.NopAnnotationIntrospector;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.col.api.model.ExtendedTermRecord;
+import org.col.api.model.TermRecord;
+import org.col.api.vocab.CSLRefType;
+import org.col.api.vocab.Country;
+import org.col.api.vocab.Language;
+import org.gbif.dwc.terms.Term;
+import org.gbif.nameparser.api.Authorship;
 
 /**
  * Jackson module that defines all serde rules for all CoL API model classes.

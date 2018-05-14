@@ -100,7 +100,7 @@ CREATE TABLE dataset (
   description TEXT,
   organisation TEXT,
   contact_person TEXT,
-  authors_and_editors TEXT[],
+  authors_and_editors TEXT[] DEFAULT '{}',
   license INTEGER,
   version TEXT,
   release_date DATE,
@@ -162,7 +162,7 @@ CREATE TABLE dataset_import (
 CREATE TABLE "serial" (
   key serial PRIMARY KEY,
   dataset_key INTEGER NOT NULL REFERENCES dataset,
-  aliases text[],
+  aliases text[] DEFAULT '{}',
   bph TEXT,
   call TEXT,
   tl2 TEXT,
@@ -181,7 +181,7 @@ CREATE TABLE reference (
   serial_key INTEGER REFERENCES "serial",
   csl JSONB,
   year int,
-  issues INT[]
+  issues INT[] DEFAULT '{}'
 );
 
 CREATE SEQUENCE name_key_seq;
@@ -202,11 +202,11 @@ CREATE TABLE name (
   strain TEXT,
   candidatus BOOLEAN DEFAULT FALSE,
   notho integer,
-  basionym_authors TEXT[],
-  basionym_ex_authors TEXT[],
+  basionym_authors TEXT[] DEFAULT '{}',
+  basionym_ex_authors TEXT[] DEFAULT '{}',
   basionym_year TEXT,
-  combination_authors TEXT[],
-  combination_ex_authors TEXT[],
+  combination_authors TEXT[] DEFAULT '{}',
+  combination_ex_authors TEXT[] DEFAULT '{}',
   combination_year TEXT,
   sanctioning_author TEXT,
   published_in_key int REFERENCES reference,
@@ -218,7 +218,7 @@ CREATE TABLE name (
   source_url TEXT,
   fossil BOOLEAN,
   remarks TEXT,
-  issues INT[],
+  issues INT[] DEFAULT '{}',
   doc tsvector
 );
 
@@ -227,12 +227,12 @@ CREATE INDEX ON name USING gin(doc);
 CREATE OR REPLACE FUNCTION name_doc_update() RETURNS trigger AS $$
 BEGIN
     NEW.doc :=
-      setweight(to_tsvector('simple2', coalesce(NEW.scientific_name,'')), 'A') ||
-      setweight(to_tsvector('simple2', coalesce(NEW.remarks,'')), 'D') ||
-      setweight(to_tsvector('simple2', array_to_string(NEW.combination_authors,'')), 'B') ||
-      setweight(to_tsvector('simple2', array_to_string(NEW.combination_ex_authors,'')), 'D') ||
-      setweight(to_tsvector('simple2', array_to_string(NEW.basionym_authors,'')), 'B') ||
-      setweight(to_tsvector('simple2', array_to_string(NEW.basionym_ex_authors,'')), 'D');
+      setweight(to_tsvector('simple2', coalesce(NEW.scientific_name, '')), 'A') ||
+      setweight(to_tsvector('simple2', coalesce(NEW.remarks, '')), 'D') ||
+      setweight(to_tsvector('simple2', array_to_string(NEW.combination_authors, '')), 'B') ||
+      setweight(to_tsvector('simple2', array_to_string(NEW.combination_ex_authors, '')), 'D') ||
+      setweight(to_tsvector('simple2', array_to_string(NEW.basionym_authors, '')), 'B') ||
+      setweight(to_tsvector('simple2', array_to_string(NEW.basionym_ex_authors, '')), 'D');
     RETURN NEW;
 END
 $$
@@ -262,12 +262,12 @@ CREATE TABLE taxon (
   according_to_date DATE,
   fossil BOOLEAN,
   recent BOOLEAN,
-  lifezones INTEGER[],
+  lifezones INTEGER[] DEFAULT '{}',
   dataset_url TEXT,
   species_estimate INTEGER,
   species_estimate_reference_key INTEGER REFERENCES reference,
   remarks TEXT,
-  issues INT[]
+  issues INT[] DEFAULT '{}'
 );
 
 CREATE TABLE synonym (

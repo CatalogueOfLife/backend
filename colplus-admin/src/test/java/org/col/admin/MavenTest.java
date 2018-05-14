@@ -1,6 +1,6 @@
 package org.col.admin;
 
-import org.col.util.HumanSize;
+import org.col.common.util.HumanSize;
 import org.junit.Test;
 
 /**

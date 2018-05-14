@@ -1,9 +1,9 @@
 package org.col.api.model;
 
+import java.util.Arrays;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.col.api.vocab.CSLRefType;
-
-import java.util.Arrays;
 
 /**
  * Official CSL variables as defined in

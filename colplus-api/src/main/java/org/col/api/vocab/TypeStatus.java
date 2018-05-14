@@ -1,12 +1,12 @@
 package org.col.api.vocab;
 
+import java.util.List;
+import javax.annotation.Nullable;
+
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-
-import javax.annotation.Nullable;
-import java.util.List;
 
 /**
  * A vocabulary to be used for a nomenclatural type status of a specimen or name.

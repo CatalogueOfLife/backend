@@ -1,12 +1,12 @@
 package org.col.dw.cors;
 
+import java.util.concurrent.TimeUnit;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.hibernate.validator.constraints.Range;
-
-import java.util.concurrent.TimeUnit;
 
 public class CorsConfiguration {
 

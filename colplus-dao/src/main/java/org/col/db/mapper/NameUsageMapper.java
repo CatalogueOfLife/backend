@@ -1,12 +1,11 @@
 package org.col.db.mapper;
 
+import java.util.List;
+
 import org.apache.ibatis.annotations.Param;
-import org.col.api.model.Name;
 import org.col.api.model.NameSearch;
 import org.col.api.model.NameUsage;
 import org.col.api.model.Page;
-
-import java.util.List;
 
 /**
  * Mapper dealing with methods returning teh NameUsage interface,

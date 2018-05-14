@@ -2,7 +2,8 @@ package org.col.api.jackson;
 
 import com.fasterxml.jackson.databind.JavaType;
 import org.junit.Test;
-import static org.junit.Assert.*;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  *

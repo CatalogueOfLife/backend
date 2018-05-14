@@ -1,10 +1,10 @@
 package org.col.db.mapper;
 
+import java.util.List;
+
 import org.apache.ibatis.annotations.Param;
 import org.col.api.model.Page;
 import org.col.api.model.VerbatimRecord;
-
-import java.util.List;
 
 /**
  *

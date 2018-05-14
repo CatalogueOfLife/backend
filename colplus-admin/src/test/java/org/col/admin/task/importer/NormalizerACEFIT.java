@@ -1,5 +1,17 @@
 package org.col.admin.task.importer;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Writer;
+import java.net.URI;
+import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.Set;
+import javax.annotation.Nullable;
+
 import com.google.common.collect.Sets;
 import com.google.common.io.Files;
 import jersey.repackaged.com.google.common.base.Throwables;
@@ -12,13 +24,13 @@ import org.col.admin.task.importer.neo.model.NeoProperties;
 import org.col.admin.task.importer.neo.model.NeoTaxon;
 import org.col.admin.task.importer.neo.printer.GraphFormat;
 import org.col.admin.task.importer.neo.printer.PrinterUtils;
+import org.col.admin.task.importer.neo.traverse.Traversals;
 import org.col.admin.task.importer.reference.ReferenceFactory;
 import org.col.api.model.Dataset;
 import org.col.api.model.Distribution;
 import org.col.api.model.VernacularName;
 import org.col.api.vocab.*;
 import org.col.csl.CslParserMock;
-import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 import org.junit.After;
 import org.junit.Before;
@@ -27,18 +39,6 @@ import org.junit.Test;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.NotFoundException;
 import org.neo4j.graphdb.Transaction;
-
-import javax.annotation.Nullable;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.Writer;
-import java.net.URI;
-import java.net.URL;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.List;
-import java.util.Set;
 
 import static org.junit.Assert.*;
 
@@ -131,7 +131,7 @@ public class NormalizerACEFIT {
       assertEquals("Astragalus nonexistus", t.name.getScientificName());
       assertEquals("DC.", t.name.authorshipComplete());
       assertEquals(Rank.SPECIES, t.name.getRank());
-      assertTrue(t.issues.contains(Issue.ACCEPTED_ID_INVALID));
+      assertTrue(t.taxon.getIssues().contains(Issue.ACCEPTED_ID_INVALID));
       assertTrue(t.classification.isEmpty());
 
       // vernacular
@@ -184,7 +184,7 @@ public class NormalizerACEFIT {
       assertEquals("Inga vera", t.name.getScientificName());
       assertEquals("Willd.", t.name.authorshipComplete());
       assertEquals(Rank.SPECIES, t.name.getRank());
-      assertTrue(t.issues.contains(Issue.ID_NOT_UNIQUE));
+      assertTrue(t.taxon.getIssues().contains(Issue.ID_NOT_UNIQUE));
       assertEquals("Fabaceae", t.classification.getFamily());
       assertEquals("Plantae", t.classification.getKingdom());
 
@@ -201,6 +201,32 @@ public class NormalizerACEFIT {
     assertEquals("Systema Dipterorum", d.getTitle());
   }
 
+  @Test
+  public void acef6Misapplied() throws Exception {
+    normalize(6);
+    try (Transaction tx = store.getNeo().beginTx()) {
+      NeoTaxon t = byID("MD1");
+      assertEquals("Latrodectus tredecimguttatus (Rossi, 1790)", t.name.canonicalNameComplete());
+
+      Set<String> nonMisappliedIds = Sets.newHashSet("s17", "s18");
+      int counter = 0;
+      for (Node sn : Traversals.SYNONYMS.traverse(t.node).nodes()) {
+        NeoTaxon s = store.get(sn);
+        assertTrue(s.synonym.getStatus().isSynonym());
+        if (nonMisappliedIds.remove(s.getID())) {
+          assertEquals(TaxonomicStatus.SYNONYM, s.synonym.getStatus());
+          assertFalse(s.taxon.getIssues().contains(Issue.DERIVED_TAXONOMIC_STATUS));
+        } else {
+          counter++;
+          assertEquals(TaxonomicStatus.MISAPPLIED, s.synonym.getStatus());
+          assertTrue(s.taxon.getIssues().contains(Issue.DERIVED_TAXONOMIC_STATUS));
+        }
+      }
+      assertTrue(nonMisappliedIds.isEmpty());
+      assertEquals(6, counter);
+    }
+  }
+
   /**
    * ICTV GSD with "parsed" virus names
    * https://github.com/Sp2000/colplus-backend/issues/65
@@ -211,23 +237,6 @@ public class NormalizerACEFIT {
     try (Transaction tx = store.getNeo().beginTx()) {
       NeoTaxon t = byID("Vir-96");
       assertEquals("Phikmvlikevirus: Pseudomonas phage LKA1 ICTV", t.name.getScientificName());
-
-      store.all().forEach(nt -> {
-        if (nt.name.getOrigin() == Origin.SOURCE) {
-          if (nt.getID().equalsIgnoreCase("Vir-999")) {
-            assertEquals(NameType.PLACEHOLDER, nt.name.getType());
-            assertEquals("Unassigned: Banana virus X ICTV", nt.name.getScientificName());
-            assertFalse(nt.name.isParsed());
-            assertFalse(nt.name.hasAuthorship());
-
-          } else {
-            assertEquals(NameType.VIRUS, nt.name.getType());
-            assertNotNull(nt.name.getScientificName());
-            assertFalse(nt.name.isParsed());
-            assertFalse(nt.name.hasAuthorship());
-          }
-        }
-      });
     }
   }
 

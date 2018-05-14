@@ -1,12 +1,12 @@
 package org.col.db.type;
 
-import com.google.common.collect.Lists;
-
 import java.io.IOException;
 import java.io.Writer;
 import java.nio.CharBuffer;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.google.common.collect.Lists;
 
 /**
  * A writer for native postgres copy commands that converts a pg query result of integers into a integer list

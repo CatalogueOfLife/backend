@@ -1,5 +1,9 @@
 package org.col.admin.task.importer;
 
+import java.util.EnumSet;
+import java.util.Set;
+import java.util.regex.Pattern;
+
 import com.google.common.annotations.VisibleForTesting;
 import org.col.api.model.Name;
 import org.col.api.vocab.Issue;
@@ -7,10 +11,6 @@ import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.EnumSet;
-import java.util.Set;
-import java.util.regex.Pattern;
 
 /**
  *

@@ -1,14 +1,14 @@
 package org.col.api.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import org.gbif.dwc.terms.Term;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import org.gbif.dwc.terms.Term;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
