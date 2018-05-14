@@ -5,9 +5,9 @@ import org.col.api.model.CslData;
 import org.col.api.model.CslDate;
 import org.col.api.model.CslName;
 
-public class CslDataTest extends SerdeTestBase<CslData> {
+public class CslDataSerdeTest extends SerdeTestBase<CslData> {
 
-  public CslDataTest() {
+  public CslDataSerdeTest() {
     super(CslData.class);
   }
 

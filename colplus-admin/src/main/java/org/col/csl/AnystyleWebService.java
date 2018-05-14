@@ -15,13 +15,14 @@ import org.slf4j.LoggerFactory;
  * Starts a ruby web service which can be accessed at port 4567. The following is assumed:
  * <ol>
  * <li>Ruby is installed. Linux: sudo apt install ruby
- * <li>ruby-dev is installed. Linux: sudo apt install ruby-dev. This is necessary because cslParser
- * depends on wapity, which needs native C headers provided by ruby-dev,
- * <li>Anystyle is installed. Linux: sudo gem install cslParser. This may hang on installing the
- * doccumentation. In that case, try: sudo gem install cslParser --no-ri --no-rdoc
+ * <li>ruby-dev is installed. Linux: sudo apt install ruby-dev. This is necessary because
+ * AnystyleParser depends on wapity, which needs native C headers provided by ruby-dev,
+ * <li>Anystyle is installed. Linux: sudo gem install AnystyleParser. This may hang on installing
+ * the doccumentation. In that case, try: sudo gem install AnystyleParser --no-ri --no-rdoc
  * <li>Sinatra is installed. Linux: sudo gem install sinatra
  * </ol>
  */
+@Deprecated
 class AnystyleWebService {
 
   static final int HTTP_PORT = 4567;

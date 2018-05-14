@@ -4,16 +4,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Strings;
-import io.dropwizard.lifecycle.Managed;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.col.admin.config.AnystyleConfig;
 import org.col.api.model.CslData;
 import org.col.parser.Parser;
 import org.slf4j.Logger;
@@ -21,21 +20,24 @@ import org.slf4j.LoggerFactory;
 
 import static org.col.api.jackson.ApiModule.MAPPER;
 
-public class AnystyleParserWrapper implements Managed, AutoCloseable, Parser<CslData> {
-  private static final Logger LOG = LoggerFactory.getLogger(AnystyleWebService.class);
+/*
+ * Passes citations on to a (Ruby/sinatra) web service which uses Anystyle to parse the citations
+ * and returns a list of CslData objects (JSON-formatted). The assumption is that the list will
+ * contain excatly one CslData object.
+ */
+public class AnystyleParserWrapper implements Parser<CslData> {
 
-  private static final TypeReference<List<Map<String, Object>>> ANYSTYLE_RESPONSE_TYPE =
-      new TypeReference<List<Map<String, Object>>>() {};
+  private static final Logger LOG = LoggerFactory.getLogger(AnystyleParserWrapper.class);
 
-  private static final TypeReference<List<CslData>> ANYSTYLE_RESPONSE_TYPE2 =
+  private static final TypeReference<List<CslData>> ANYSTYLE_RESPONSE_TYPE =
       new TypeReference<List<CslData>>() {};
 
-  private final AnystyleWebService svc;
   private final CloseableHttpClient hc;
+  private final AnystyleConfig cfg;
 
-  public AnystyleParserWrapper(CloseableHttpClient hc) {
-    this.svc = new AnystyleWebService();
+  public AnystyleParserWrapper(CloseableHttpClient hc, AnystyleConfig cfg) {
     this.hc = hc;
+    this.cfg = cfg;
   }
 
   public Optional<CslData> parse(String ref) {
@@ -44,7 +46,7 @@ public class AnystyleParserWrapper implements Managed, AutoCloseable, Parser<Csl
     }
     try (CloseableHttpResponse response = hc.execute(request(ref))) {
       InputStream in = response.getEntity().getContent();
-      List<CslData> raw = MAPPER.readValue(in, ANYSTYLE_RESPONSE_TYPE2);
+      List<CslData> raw = MAPPER.readValue(in, ANYSTYLE_RESPONSE_TYPE);
       if (raw.size() != 1) {
         LOG.error("Anystyle result is list of size {}", raw.size());
         throw new RuntimeException("Unexpected response from Anystyle");
@@ -55,27 +57,12 @@ public class AnystyleParserWrapper implements Managed, AutoCloseable, Parser<Csl
     }
   }
 
-  @Override
-  public synchronized void start() throws Exception {
-    svc.start();
-  }
-
-  @Override
-  public synchronized void stop() throws Exception {
-    svc.stop();
-  }
-
-  @Override
-  public void close() throws Exception {
-    stop();
-  }
-
-  private static HttpGet request(String reference) throws URISyntaxException {
+  private HttpGet request(String reference) throws URISyntaxException {
     URIBuilder ub = new URIBuilder();
     ub.setScheme("http");
-    ub.setHost("localhost");
-    ub.setPort(AnystyleWebService.HTTP_PORT);
-    ub.setParameter(AnystyleWebService.QUERY_PARAM_REF, reference);
+    ub.setHost(cfg.host);
+    ub.setPort(cfg.port);
+    ub.setParameter("ref", reference);
     return new HttpGet(ub.build());
   }
 

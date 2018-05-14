@@ -54,29 +54,28 @@ public class AdminServer extends PgApp<AdminServerConfig> {
     super.run(cfg, env);
 
     // http client pool is managed via DW lifecycle already
-    final CloseableHttpClient hc = new HttpClientBuilder(env)
-        .using(cfg.client)
-        .build(getName());
+    final CloseableHttpClient hc = new HttpClientBuilder(env).using(cfg.client).build(getName());
 
     // reuse the same http client pool also for jersey clients!
-    final RxClient<RxCompletionStageInvoker> client = new JerseyClientBuilder(env)
-        .using(cfg.client)
-        .using((ConnectorProvider) (cl, runtimeConfig) -> new DropwizardApacheConnector(hc, requestConfig(cfg.client), cfg.client.isChunkedEncodingEnabled()))
+    final RxClient<RxCompletionStageInvoker> client = new JerseyClientBuilder(env).using(cfg.client)
+        .using((ConnectorProvider) (cl, runtimeConfig) -> new DropwizardApacheConnector(hc,
+            requestConfig(cfg.client), cfg.client.isChunkedEncodingEnabled()))
         .buildRx(getName(), RxCompletionStageInvoker.class);
 
     // cslParser
-    AnystyleParserWrapper anystyle = new AnystyleParserWrapper(hc);
-    env.lifecycle().manage(anystyle);
+    AnystyleParserWrapper anystyle = new AnystyleParserWrapper(hc, cfg.anystyle);
     env.jersey().register(new ParserResource(anystyle));
 
     // setup async importer
-    final ImportManager importManager = new ImportManager(cfg, hc, getSqlSessionFactory(), anystyle);
+    final ImportManager importManager =
+        new ImportManager(cfg, hc, getSqlSessionFactory(), anystyle);
     env.lifecycle().manage(importManager);
     env.jersey().register(new ImporterResource(importManager, getSqlSessionFactory()));
 
     if (cfg.importer.continousImportPolling > 0) {
       LOG.info("Enable continuous importing");
-      env.lifecycle().manage(new ContinousImporter(cfg.importer, importManager, getSqlSessionFactory()));
+      env.lifecycle()
+          .manage(new ContinousImporter(cfg.importer, importManager, getSqlSessionFactory()));
     }
 
     // activate gbif sync?
@@ -84,7 +83,8 @@ public class AdminServer extends PgApp<AdminServerConfig> {
       LOG.info("Enable GBIF dataset sync");
       env.lifecycle().manage(new GbifSync(cfg.gbif, getSqlSessionFactory(), client));
     } else {
-      LOG.warn("GBIF registry sync is deactivated. Please configure server with a positive gbif.syncFrequency");
+      LOG.warn(
+          "GBIF registry sync is deactivated. Please configure server with a positive gbif.syncFrequency");
     }
   }
 
@@ -92,11 +92,12 @@ public class AdminServer extends PgApp<AdminServerConfig> {
    * Mostly copied from HttpClientBuilder
    */
   private static RequestConfig requestConfig(JerseyClientConfiguration cfg) {
-    final String cookiePolicy = cfg.isCookiesEnabled() ? CookieSpecs.DEFAULT : CookieSpecs.IGNORE_COOKIES;
+    final String cookiePolicy =
+        cfg.isCookiesEnabled() ? CookieSpecs.DEFAULT : CookieSpecs.IGNORE_COOKIES;
     return RequestConfig.custom().setCookieSpec(cookiePolicy)
-        .setSocketTimeout((int)cfg.getTimeout().toMilliseconds())
-        .setConnectTimeout((int)cfg.getConnectionTimeout().toMilliseconds())
-        .setConnectionRequestTimeout((int)cfg.getConnectionRequestTimeout().toMilliseconds())
+        .setSocketTimeout((int) cfg.getTimeout().toMilliseconds())
+        .setConnectTimeout((int) cfg.getConnectionTimeout().toMilliseconds())
+        .setConnectionRequestTimeout((int) cfg.getConnectionRequestTimeout().toMilliseconds())
         .build();
   }
 

@@ -9,5 +9,6 @@ public class AdminServerConfig extends PgAppConfig {
   public ImporterConfig importer = new ImporterConfig();
   public GbifConfig gbif = new GbifConfig();
   public JerseyClientConfiguration client = new JerseyClientConfiguration();
+  public AnystyleConfig anystyle = new AnystyleConfig();
 
 }
