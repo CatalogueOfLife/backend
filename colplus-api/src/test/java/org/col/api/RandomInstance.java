@@ -3,6 +3,9 @@ package org.col.api;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -12,6 +15,7 @@ import java.util.Random;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
+import org.col.api.vocab.VocabularyUtils;
 
 public class RandomInstance {
 
@@ -81,7 +85,7 @@ public class RandomInstance {
     return list;
   }
 
-  public Object[] createArray(Class<?> c, Class<?>... extraTypes) {
+  private Object[] createArray(Class<?> c, Class<?>... extraTypes) {
     int size = RND.nextInt(maxArrayLength + 1);
     Object[] arr = (Object[]) Array.newInstance(c, size);
     if (size == 0) {
@@ -125,17 +129,33 @@ public class RandomInstance {
       f.setInt(instance, RND.nextInt(maxInt + 1));
       return true;
     } else if (t == Integer.class) {
-      f.set(instance, Integer.valueOf(RND.nextInt(maxInt + 1)));
+      f.set(instance, RND.nextInt(maxInt + 1));
       return true;
     } else if (t == boolean.class) {
       f.setBoolean(instance, randomBoolean());
       return true;
     } else if (t == Boolean.class) {
-      f.set(instance, Boolean.valueOf(randomBoolean()));
+      f.set(instance, randomBoolean());
+      return true;
+    } else if (t.isEnum()) {
+      Class<Enum<?>> enumClass = (Class<Enum<?>>) t;
+      Enum<?>[] values = enumClass.getEnumConstants();
+      int idx = RND.nextInt(values.length);
+      f.set(instance, values[idx]);
+      return true;
+    } else if (t == LocalDateTime.class) {
+      f.set(instance, randomDateTime());
+      return true;
+    } else if (t == LocalDate.class) {
+      f.set(instance, randomDateTime().toLocalDate());
       return true;
     }
     // TODO more common types
     return false;
+  }
+
+  private LocalDateTime randomDateTime() {
+    return LocalDateTime.now();
   }
 
   private String randomString() {

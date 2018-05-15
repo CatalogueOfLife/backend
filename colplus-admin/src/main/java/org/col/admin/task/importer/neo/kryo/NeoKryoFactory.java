@@ -58,10 +58,11 @@ public class NeoKryoFactory implements KryoFactory {
     // CSL classes & enums
     kryo.register(CslData.class);
     kryo.register(CslName.class);
+    kryo.register(CslName[].class);
     kryo.register(CslDate.class);
     kryo.register(CSLRefType.class);
     kryo.register(String[].class);
-    //kryo.register(int[][].class);
+    kryo.register(int[][].class);
 
     // normalizer specific models
     kryo.register(NeoTaxon.class);

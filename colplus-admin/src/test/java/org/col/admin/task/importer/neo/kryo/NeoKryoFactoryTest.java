@@ -10,10 +10,7 @@ import com.google.common.collect.Lists;
 import org.col.admin.task.importer.neo.model.NeoTaxon;
 import org.col.admin.task.importer.neo.model.UnescapedVerbatimRecord;
 import org.col.api.TestEntityGenerator;
-import org.col.api.model.DatasetImport;
-import org.col.api.model.Name;
-import org.col.api.model.Reference;
-import org.col.api.model.Taxon;
+import org.col.api.model.*;
 import org.col.api.vocab.Issue;
 import org.gbif.dwc.terms.*;
 import org.gbif.nameparser.api.Rank;
@@ -60,8 +57,7 @@ public class NeoKryoFactoryTest {
     r.addIssue(Issue.ACCEPTED_NAME_MISSING);
     r.addIssue(Issue.REFERENCE_ID_INVALID);
     r.setDatasetKey(77);
-    r.getCsl().setTitle("my title");
-
+    r.setCsl(TestEntityGenerator.createCsl());
     assertSerde(r);
   }
 
