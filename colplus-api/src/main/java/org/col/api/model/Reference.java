@@ -13,10 +13,8 @@ import org.col.api.vocab.Issue;
 public class Reference implements PrimaryEntity {
 
 	/**
-	 * Internal surrogate key of the reference as provided by postgres. This key is
-	 * unique across all datasets but not exposed in the API.
+	 * Internal surrogate key of the reference as provided by postgres.
 	 */
-	@JsonIgnore
 	private Integer key;
 
 	/**
