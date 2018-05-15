@@ -20,7 +20,8 @@ import org.gbif.nameparser.api.Rank;
  */
 public class TestEntityGenerator {
 
-  public final static Random RND = new Random();
+  private final static Random RND = new Random();
+  private final static RandomInstance random = new RandomInstance();
   private static final Splitter SPACE_SPLITTER = Splitter.on(" ").trimResults();
 
   /**
@@ -309,4 +310,11 @@ public class TestEntityGenerator {
     a.setYear(RandomUtils.randomSpeciesYear());
     return a;
   }
+  public static CslData createCsl() {
+    CslData csl = (CslData) random.create(CslData.class, CslName.class, CslDate.class);
+    csl.getOriginalDate().setDateParts(new int[][] {{1752, 4, 4}, {1752, 8, 4}});
+    csl.getSubmitted().setDateParts(new int[][] {{1850, 6, 12}});
+    return csl;
+  }
+
 }
