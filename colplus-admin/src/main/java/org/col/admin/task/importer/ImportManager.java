@@ -2,6 +2,7 @@ package org.col.admin.task.importer;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.*;
@@ -16,7 +17,11 @@ import org.col.admin.config.AdminServerConfig;
 import org.col.api.model.CslData;
 import org.col.api.model.Dataset;
 import org.col.api.model.DatasetImport;
+import org.col.api.model.Page;
+import org.col.api.util.PagingUtil;
+import org.col.api.vocab.ImportState;
 import org.col.common.io.DownloadUtil;
+import org.col.db.dao.DatasetImportDao;
 import org.col.db.mapper.DatasetMapper;
 import org.col.parser.Parser;
 import org.gbif.nameparser.utils.NamedThreadFactory;
@@ -120,9 +125,21 @@ public class ImportManager implements Managed {
         10L, TimeUnit.SECONDS,
         new LinkedBlockingQueue<>(cfg.importer.maxQueue),
         new NamedThreadFactory(THREAD_NAME, Thread.NORM_PRIORITY, true),
-        new ThreadPoolExecutor.AbortPolicy());
-    ;
-    // TODO: cleanup hanging imports in db
+        new ThreadPoolExecutor.AbortPolicy()
+    );
+    // read hanging imports in db and add as new requests to the queue
+    int counter = 0;
+    DatasetImportDao dao = new DatasetImportDao(factory);
+    Iterator<DatasetImport> iter = PagingUtil.pageAll(p -> dao.list(ImportState.RUNNING, p));
+    while (iter.hasNext()) {
+      DatasetImport di = iter.next();
+      di.setState(ImportState.CANCELED);
+      dao.update(di);
+      // add back to queue
+      submit(di.getDatasetKey(), true);
+      counter++;
+    }
+    LOG.info("Canceled and resubmitted all {} dangling imports.", counter);
   }
 
   @Override
