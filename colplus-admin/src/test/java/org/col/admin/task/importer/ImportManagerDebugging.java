@@ -10,9 +10,9 @@ import org.col.csl.AnystyleParserWrapper;
 import org.col.db.mapper.PgSetupRule;
 import org.junit.*;
 
-@Ignore("manual import debugging")
+//@Ignore("manual import debugging")
 public class ImportManagerDebugging {
-
+  
   ImportManager importManager;
   CloseableHttpClient hc;
 
@@ -30,6 +30,7 @@ public class ImportManagerDebugging {
     cfg.db.host = "localhost";
     cfg.db.database = "colplus";
     cfg.db.user = "postgres";
+    cfg.db.password = "postgres";
     return cfg;
   }
 
