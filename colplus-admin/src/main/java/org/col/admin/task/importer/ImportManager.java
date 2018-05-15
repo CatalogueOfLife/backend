@@ -17,17 +17,18 @@ import org.col.admin.config.AdminServerConfig;
 import org.col.api.model.CslData;
 import org.col.api.model.Dataset;
 import org.col.api.model.DatasetImport;
-import org.col.api.model.Page;
 import org.col.api.util.PagingUtil;
 import org.col.api.vocab.ImportState;
+import org.col.common.concurrent.ExecutorUtils;
 import org.col.common.io.DownloadUtil;
 import org.col.db.dao.DatasetImportDao;
 import org.col.db.mapper.DatasetMapper;
 import org.col.parser.Parser;
 import org.gbif.nameparser.utils.NamedThreadFactory;
-import org.gbif.utils.concurrent.ExecutorUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.col.admin.AdminServer.MILLIS_TO_DIE;
 
 /**
  * Manages import task scheduling, removing and listing
@@ -144,6 +145,6 @@ public class ImportManager implements Managed {
 
   @Override
   public void stop() throws Exception {
-    ExecutorUtils.stop(exec);
+    ExecutorUtils.shutdown(exec, MILLIS_TO_DIE, TimeUnit.MILLISECONDS);
   }
 }

@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URI;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.TimeUnit;
@@ -56,7 +58,7 @@ public class InitDbCmd extends ConfiguredCommand<AdminServerConfig> {
     System.out.println("Done !!!");
   }
 
-  private void execute(AdminServerConfig cfg) throws Exception {
+  public static void execute(AdminServerConfig cfg) throws Exception {
     try (Connection con = cfg.db.connect()) {
       LOG.info("Starting database initialisation");
       ScriptRunner runner = new ScriptRunner(con);
@@ -64,7 +66,7 @@ public class InitDbCmd extends ConfiguredCommand<AdminServerConfig> {
       // run sql files
       exec(PgConfig.SCHEMA_FILE, runner, con, Resources.getResourceAsReader(PgConfig.SCHEMA_FILE));
       // add COL GSDs
-      try (BufferedReader datasets = new BufferedReader(new InputStreamReader(COL_DATASETS_URI.toURL().openStream()))) {
+      try (Reader datasets = new InputStreamReader(COL_DATASETS_URI.toURL().openStream(), StandardCharsets.UTF_8)) {
         exec(COL_DATASETS_URI.toString(), runner, con, datasets);
       }
       // add GBIF Backbone datasets
@@ -72,12 +74,13 @@ public class InitDbCmd extends ConfiguredCommand<AdminServerConfig> {
     }
   }
 
-  private void exec(String name, ScriptRunner runner, Connection con, Reader reader) throws IOException, SQLException {
+  private static void exec(String name, ScriptRunner runner, Connection con, Reader reader) {
     try {
-      LOG.info("Execute {}", name);
+      LOG.info("Executing {}", name);
       System.out.println("Execute " + name);
       runner.runScript(reader);
       con.commit();
+      LOG.info("Executed {}", name);
     } catch (Exception e) {
       throw new IllegalStateException("Fail to execute sql file: " + name, e);
     }
