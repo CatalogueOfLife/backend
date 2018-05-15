@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 import static org.col.admin.AdminServer.MDC_KEY_TASK;
+import static org.col.admin.AdminServer.MILLIS_TO_DIE;
 
 /**
  * A scheduler for new import jobs that runs continously in the background
@@ -111,6 +112,6 @@ public class ContinousImporter implements Managed {
   @Override
   public void stop() throws Exception {
     job.terminate();
-    thread.join();
+    thread.join(MILLIS_TO_DIE);
   }
 }

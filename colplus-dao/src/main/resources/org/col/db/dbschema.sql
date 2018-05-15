@@ -377,7 +377,3 @@ CREATE index ON vernacular_name (taxon_key);
 CREATE index ON synonym (taxon_key);
 CREATE index ON synonym (name_key);
 
-
-
-
-

@@ -22,6 +22,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
+import static org.col.admin.AdminServer.MILLIS_TO_DIE;
+
 /**
  * Syncs datasets from the GBIF registry
  */
@@ -140,6 +142,6 @@ public class GbifSync implements Managed {
 
   @Override
   public void stop() throws Exception {
-    ExecutorUtils.shutdown(scheduler);
+    ExecutorUtils.shutdown(scheduler, MILLIS_TO_DIE, TimeUnit.MILLISECONDS);
   }
 }

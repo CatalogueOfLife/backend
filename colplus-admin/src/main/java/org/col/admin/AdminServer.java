@@ -29,6 +29,8 @@ import org.slf4j.bridge.SLF4JBridgeHandler;
 public class AdminServer extends PgApp<AdminServerConfig> {
   private static final Logger LOG = LoggerFactory.getLogger(AdminServer.class);
   public static final String MDC_KEY_TASK = "task";
+  // milliseconds to wait during shutdown before forcing a shutdown
+  public static final int MILLIS_TO_DIE = 10000;
 
   public static void main(final String[] args) throws Exception {
     SLF4JBridgeHandler.install();
@@ -57,9 +59,10 @@ public class AdminServer extends PgApp<AdminServerConfig> {
     final CloseableHttpClient hc = new HttpClientBuilder(env).using(cfg.client).build(getName());
 
     // reuse the same http client pool also for jersey clients!
-    final RxClient<RxCompletionStageInvoker> client = new JerseyClientBuilder(env).using(cfg.client)
-        .using((ConnectorProvider) (cl, runtimeConfig) -> new DropwizardApacheConnector(hc,
-            requestConfig(cfg.client), cfg.client.isChunkedEncodingEnabled()))
+    final RxClient<RxCompletionStageInvoker> client = new JerseyClientBuilder(env)
+        .using(cfg.client)
+        .using((ConnectorProvider) (cl, runtimeConfig) ->
+            new DropwizardApacheConnector(hc, requestConfig(cfg.client), cfg.client.isChunkedEncodingEnabled()))
         .buildRx(getName(), RxCompletionStageInvoker.class);
 
     // cslParser
@@ -67,15 +70,13 @@ public class AdminServer extends PgApp<AdminServerConfig> {
     env.jersey().register(new ParserResource(anystyle));
 
     // setup async importer
-    final ImportManager importManager =
-        new ImportManager(cfg, hc, getSqlSessionFactory(), anystyle);
+    final ImportManager importManager = new ImportManager(cfg, hc, getSqlSessionFactory(), anystyle);
     env.lifecycle().manage(importManager);
     env.jersey().register(new ImporterResource(importManager, getSqlSessionFactory()));
 
     if (cfg.importer.continousImportPolling > 0) {
       LOG.info("Enable continuous importing");
-      env.lifecycle()
-          .manage(new ContinousImporter(cfg.importer, importManager, getSqlSessionFactory()));
+      env.lifecycle().manage(new ContinousImporter(cfg.importer, importManager, getSqlSessionFactory()));
     }
 
     // activate gbif sync?
@@ -83,8 +84,7 @@ public class AdminServer extends PgApp<AdminServerConfig> {
       LOG.info("Enable GBIF dataset sync");
       env.lifecycle().manage(new GbifSync(cfg.gbif, getSqlSessionFactory(), client));
     } else {
-      LOG.warn(
-          "GBIF registry sync is deactivated. Please configure server with a positive gbif.syncFrequency");
+      LOG.warn("GBIF registry sync is deactivated. Please configure server with a positive gbif.syncFrequency");
     }
   }
 

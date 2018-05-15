@@ -58,7 +58,7 @@ public class InitDbCmd extends ConfiguredCommand<AdminServerConfig> {
     System.out.println("Done !!!");
   }
 
-  private void execute(AdminServerConfig cfg) throws Exception {
+  public static void execute(AdminServerConfig cfg) throws Exception {
     try (Connection con = cfg.db.connect()) {
       LOG.info("Starting database initialisation");
       ScriptRunner runner = new ScriptRunner(con);
@@ -74,7 +74,7 @@ public class InitDbCmd extends ConfiguredCommand<AdminServerConfig> {
     }
   }
 
-  private void exec(String name, ScriptRunner runner, Connection con, Reader reader) throws IOException, SQLException {
+  private static void exec(String name, ScriptRunner runner, Connection con, Reader reader) {
     try {
       LOG.info("Executing {}", name);
       System.out.println("Execute " + name);
