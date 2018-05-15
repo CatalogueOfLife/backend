@@ -61,7 +61,9 @@ public class AnystyleParserWrapper implements Parser<CslData> {
         LOG.error("Anystyle result is list of size {}", raw.size());
         throw new RuntimeException("Unexpected response from Anystyle");
       }
-      return Optional.of(raw.get(0));
+      CslData csl = raw.get(0);
+      csl.setId(null);
+      return Optional.of(csl);
     } catch (IOException | URISyntaxException e) {
       throw new RuntimeException(e);
     }
