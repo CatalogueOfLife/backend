@@ -134,14 +134,15 @@ public class AcefInserter extends NeoInserter {
   private void insertReferences() {
     final AtomicInteger counter = new AtomicInteger(0);
     reader.stream(AcefTerm.Reference).forEach(rec -> {
+      UnescapedVerbatimRecord v = build(rec.get(AcefTerm.ReferenceID), rec);
       store.put(refFactory.fromACEF(
-          emptyToNull(rec.get(AcefTerm.ReferenceID)),
-          emptyToNull(rec.get(AcefTerm.Author)),
-          emptyToNull(rec.get(AcefTerm.Title)),
-          emptyToNull(rec.get(AcefTerm.Year)),
-          emptyToNull(rec.get(AcefTerm.Source)),
-          emptyToNull(rec.get(AcefTerm.ReferenceType)),
-          emptyToNull(rec.get(AcefTerm.Details))
+          emptyToNull(v.getTerm(AcefTerm.ReferenceID)),
+          emptyToNull(v.getTerm(AcefTerm.Author)),
+          emptyToNull(v.getTerm(AcefTerm.Title)),
+          emptyToNull(v.getTerm(AcefTerm.Year)),
+          emptyToNull(v.getTerm(AcefTerm.Source)),
+          emptyToNull(v.getTerm(AcefTerm.ReferenceType)),
+          emptyToNull(v.getTerm(AcefTerm.Details))
       ));
       counter.incrementAndGet();
     });

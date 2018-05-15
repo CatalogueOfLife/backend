@@ -99,6 +99,17 @@ public class AnystyleParserWrapperTest {
     CslData item = parser.parse(ref).get();
     System.out.println(pretty(item));
   }
+  
+  @Test
+  //@Ignore
+  // With HTML markup
+  public void testParse07() throws Exception {
+    AnystyleParserWrapper parser = new AnystyleParserWrapper(HttpClients.createDefault(), cfg);
+    String ref =
+        "Laubenfels, M.W. de. (1930). TheSponges of California. (Abstracts of dissertations for the degree of doctor of philosophy. <em>Stanford University Bulletin.</em> 5(98): 24-29.";
+    CslData item = parser.parse(ref).get();
+    System.out.println(pretty(item));
+  }
 
   public static String pretty(Object obj) throws JsonProcessingException {
     ObjectMapper om = new ObjectMapper();

@@ -138,11 +138,6 @@ public class ReferenceFactory {
     return sb.toString();
   }
   
-  private static CslData buildCsl(String authors, String title, String year, String source) {
-    CslData csl = new CslData();
-    return csl;
-  }
-
   private static Reference postParse(Reference ref) {
     // extract int year
     if (ref.getCsl().getIssued() != null) {
