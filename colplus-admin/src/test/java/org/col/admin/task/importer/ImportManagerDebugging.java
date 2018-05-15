@@ -26,7 +26,7 @@ public class ImportManagerDebugging {
     cfg.importer.threads = 1;
     cfg.normalizer.archiveDir = Files.createTempDir();
     cfg.normalizer.scratchDir = Files.createTempDir();
-    cfg.anystyle.host = "localhost";
+    cfg.anystyle.baseUrl = "http://localhost:4567";
     cfg.db.host = "localhost";
     cfg.db.database = "colplus";
     cfg.db.user = "postgres";

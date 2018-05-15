@@ -25,8 +25,7 @@ public class AnystyleParserWrapperTest {
   public static void init() {
     cfg = new AnystyleConfig();
     // TODO read from anystyle-test.yaml
-    cfg.host = "localhost";
-    cfg.port = 4567;
+    cfg.baseUrl = "http://localhost:4567";
   }
 
   @Test
@@ -129,8 +128,7 @@ public class AnystyleParserWrapperTest {
   @Ignore
   public void testParse09() throws Exception {
     AnystyleParserWrapper parser = new AnystyleParserWrapper(HttpClients.createDefault(), cfg);
-    String ref =
-        "Some species of Delphacodes (Homoptera, Fulgoridae, Delphacinae). Part IV";
+    String ref = "Some species of Delphacodes (Homoptera, Fulgoridae, Delphacinae). Part IV";
     CslData item = parser.parse(ref).get();
     System.out.println(pretty(item));
   }

@@ -70,10 +70,7 @@ public class AnystyleParserWrapper implements Parser<CslData> {
   }
 
   private HttpGet request(String reference) throws URISyntaxException {
-    URIBuilder ub = new URIBuilder();
-    ub.setScheme("http");
-    ub.setHost(cfg.host);
-    ub.setPort(cfg.port);
+    URIBuilder ub = new URIBuilder(cfg.baseUrl);
     ub.setParameter("ref", reference);
     return new HttpGet(ub.build());
   }
