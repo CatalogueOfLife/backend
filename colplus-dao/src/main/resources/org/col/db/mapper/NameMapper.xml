@@ -8,6 +8,7 @@
         ${alias}.key AS ${prefix}key,
         ${alias}.id AS ${prefix}id,
         ${alias}.dataset_key AS ${prefix}dataset_key,
+        ${alias}.verbatim_key AS ${prefix}verbatim_key,
         ${alias}.homotypic_name_key AS ${prefix}homotypic_name_key,
         ${alias}.scientific_name AS ${prefix}scientific_name,
         ${alias}.rank AS ${prefix}rank,
@@ -50,6 +51,7 @@
     <sql id="COLS">
         id,
         dataset_key,
+        verbatim_key,
         homotypic_name_key,
         scientific_name,
         rank,
@@ -84,6 +86,7 @@
     <sql id="PROPS">
         #{id},
         #{datasetKey},
+        #{verbatimKey},
         <choose>
             <when test="homotypicNameKey != null">#{homotypicNameKey}</when>
             <otherwise>DEFAULT</otherwise>

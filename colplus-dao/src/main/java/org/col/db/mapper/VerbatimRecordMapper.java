@@ -4,30 +4,23 @@ import java.util.List;
 
 import org.apache.ibatis.annotations.Param;
 import org.col.api.model.Page;
-import org.col.api.model.VerbatimRecord;
+import org.col.api.model.TermRecord;
+import org.gbif.dwc.terms.Term;
 
 /**
  *
  */
 public interface VerbatimRecordMapper {
 
-  int count(@Param("datasetKey") int datasetKey);
+  int count(@Param("datasetKey") int datasetKey, @Param("type") Term type);
 
-  List<VerbatimRecord> list(@Param("datasetKey") int datasetKey, @Param("page") Page page);
+  List<TermRecord> list(@Param("datasetKey") int datasetKey, @Param("type") Term type, @Param("page") Page page);
 
-  VerbatimRecord get(@Param("datasetKey") int datasetKey, @Param("id") String id);
+  TermRecord get(@Param("key") int key);
 
-  VerbatimRecord getByName(@Param("nameKey") int nameKey);
+  void create(TermRecord record);
 
-  VerbatimRecord getByTaxon(@Param("taxonKey") int taxonKey);
-
-  VerbatimRecord getByReference(@Param("referenceKey") int referenceKey);
-
-  void create(@Param("rec") VerbatimRecord record,
-              @Param("taxonKey") Integer taxonKey,
-              @Param("nameKey") Integer nameKey,
-              @Param("referenceKey") Integer referenceKey
-  );
+  TermRecord getByEntity(@Param("class") Class clazz, @Param("key") int key);
 
 }
 

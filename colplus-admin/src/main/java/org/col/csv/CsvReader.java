@@ -41,6 +41,10 @@ import org.slf4j.LoggerFactory;
  * A reader giving access to a set of delimited text files in a folder
  * by offering verbatim values as standard TermRecords.
  *
+ * Very basic value cleaning is done:
+ *  - NULL and \N values are considered null
+ *  - Whitespace including control characters is trimmed and collapsed to a single space
+ *
  * It forms the basis for reading both DWC and ACEF files.
  */
 public class CsvReader {
@@ -360,9 +364,13 @@ public class CsvReader {
       if (row == null) {
         // ignore this row, dont log
       } else if (row.length < maxIdx+1) {
-        if (log) LOG.info("{} skip line {} with too few columns (found {}, expected {})", filename, iter.getContext().currentLine(), row.length, maxIdx+1);
+        if (log) {
+          LOG.info("{} skip line {} with too few columns (found {}, expected {})", filename, iter.getContext().currentLine(), row.length, maxIdx+1);
+        }
       } else if (isAllNull(row)) {
-        if (log) LOG.debug("{} skip line {} with only empty columns", filename, iter.getContext().currentLine());
+        if (log) {
+          LOG.debug("{} skip line {} with only empty columns", filename, iter.getContext().currentLine());
+        }
       } else {
         return false;
       }
@@ -404,7 +412,7 @@ public class CsvReader {
     }
   }
 
-  public static String clean(String x) {
+  private static String clean(String x) {
     if (Strings.isNullOrEmpty(x) || NULL_PATTERN.matcher(x).find()) {
       return null;
     }

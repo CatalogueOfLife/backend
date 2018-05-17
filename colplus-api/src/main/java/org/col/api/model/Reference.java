@@ -4,13 +4,12 @@ import java.util.EnumSet;
 import java.util.Objects;
 import java.util.Set;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.col.api.vocab.Issue;
 
 /**
  * Simplified citation class linked to an optional serial container.
  */
-public class Reference implements PrimaryEntity {
+public class Reference implements VerbatimEntity {
 
 	/**
 	 * Internal surrogate key of the reference as provided by postgres.
@@ -26,6 +25,8 @@ public class Reference implements PrimaryEntity {
 	 * Key to dataset instance. Defines context of the reference key.
 	 */
 	private Integer datasetKey;
+
+	private Integer verbatimKey;
 
 	/**
 	 * Reference metadata encoded as CSL-JSON.
@@ -73,7 +74,17 @@ public class Reference implements PrimaryEntity {
 		this.datasetKey = datasetKey;
 	}
 
-  public CslData getCsl() {
+	@Override
+	public Integer getVerbatimKey() {
+		return verbatimKey;
+	}
+
+	@Override
+	public void setVerbatimKey(Integer verbatimKey) {
+		this.verbatimKey = verbatimKey;
+	}
+
+	public CslData getCsl() {
 		return csl;
 	}
 
@@ -120,27 +131,25 @@ public class Reference implements PrimaryEntity {
 
 	@Override
 	public boolean equals(Object o) {
-		if (this == o)
-			return true;
-		// use instanceof - not getClass()! See ReferenceWithPage.equals()
-		if (o == null || !(o instanceof Reference))
-			return false;
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
 		Reference reference = (Reference) o;
-		return Objects.equals(key, reference.key)
-		    && Objects.equals(datasetKey, reference.datasetKey)
-		    && Objects.equals(id, reference.id)
-		    && Objects.equals(csl, reference.csl)
-		    && Objects.equals(serialKey, reference.serialKey)
-        && Objects.equals(year, reference.year)
-		    && Objects.equals(issues, reference.issues);
+		return Objects.equals(key, reference.key) &&
+				Objects.equals(id, reference.id) &&
+				Objects.equals(datasetKey, reference.datasetKey) &&
+				Objects.equals(csl, reference.csl) &&
+				Objects.equals(serialKey, reference.serialKey) &&
+				Objects.equals(year, reference.year) &&
+				Objects.equals(issues, reference.issues);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(key, datasetKey, id, csl, serialKey, year, issues);
+
+		return Objects.hash(key, id, datasetKey, csl, serialKey, year, issues);
 	}
 
-  @Override
+	@Override
   public String toString() {
     return "Reference{" +
         "key=" + key +

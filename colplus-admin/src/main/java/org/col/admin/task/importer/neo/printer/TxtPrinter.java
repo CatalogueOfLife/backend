@@ -70,6 +70,10 @@ public class TxtPrinter implements TreePrinter {
       writer.write(StringUtils.repeat(' ', level * indentation));
       if (n.hasLabel(Labels.SYNONYM)) {
         writer.write(SYNONYM_SYMBOL);
+        if (n.getDegree(RelType.SYNONYM_OF, Direction.OUTGOING) > 1) {
+          // flag pro parte synonyms with an extra asterisk
+          writer.write(SYNONYM_SYMBOL);
+        }
       }
       if (n.hasRelationship(RelType.BASIONYM_OF, Direction.OUTGOING)) {
         writer.write(BASIONYM_SYMBOL);

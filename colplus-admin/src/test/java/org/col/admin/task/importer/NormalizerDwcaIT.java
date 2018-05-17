@@ -231,7 +231,7 @@ public class NormalizerDwcaIT {
   @Test
   public void chainedBasionyms() throws Exception {
     normalize(28);
-
+    debug();
     // verify results
     try (Transaction tx = store.getNeo().beginTx()) {
       // 2->1->2
@@ -245,18 +245,23 @@ public class NormalizerDwcaIT {
       assertNotNull(t1.name.getHomotypicNameKey());
       assertEquals(t2.name.getHomotypicNameKey(), t1.name.getHomotypicNameKey());
 
-      // 12->11->10->12
-      // should be: 12->11 10
+      // 10->12->11->10,13
+      // should be: 11->10,13 12
       NeoTaxon t10 = byID("10");
       NeoTaxon t11 = byID("11");
       NeoTaxon t12 = byID("12");
+      NeoTaxon t13 = byID("13");
 
-      assertEquals(0, t10.node.getDegree(RelType.BASIONYM_OF));
-      assertEquals(1, t11.node.getDegree(RelType.BASIONYM_OF));
-      assertEquals(1, t12.node.getDegree(RelType.BASIONYM_OF));
-      assertEquals(t11.node, t12.node.getSingleRelationship(RelType.BASIONYM_OF, Direction.OUTGOING).getEndNode());
-      assertNull(t10.name.getHomotypicNameKey());
-      assertEquals(t11.name.getHomotypicNameKey(), t12.name.getHomotypicNameKey());
+      assertEquals(1, t10.node.getDegree(RelType.BASIONYM_OF));
+      assertEquals(2, t11.node.getDegree(RelType.BASIONYM_OF));
+      assertEquals(0, t12.node.getDegree(RelType.BASIONYM_OF));
+      assertEquals(1, t13.node.getDegree(RelType.BASIONYM_OF));
+      assertEquals(t11.node, t10.node.getSingleRelationship(RelType.BASIONYM_OF, Direction.INCOMING).getOtherNode(t10.node));
+      assertEquals(t11.node, t13.node.getSingleRelationship(RelType.BASIONYM_OF, Direction.INCOMING).getOtherNode(t13.node));
+      assertNull(t12.name.getHomotypicNameKey());
+      assertEquals(t11.name.getKey(), t11.name.getHomotypicNameKey());
+      assertEquals(t11.name.getKey(), t10.name.getHomotypicNameKey());
+      assertEquals(t11.name.getKey(), t13.name.getHomotypicNameKey());
     }
   }
 
@@ -308,7 +313,7 @@ public class NormalizerDwcaIT {
   }
 
   @Test
-  public void testBasionym() throws Exception {
+  public void testIdRels() throws Exception {
     normalize(1);
 
     try (Transaction tx = store.getNeo().beginTx()) {

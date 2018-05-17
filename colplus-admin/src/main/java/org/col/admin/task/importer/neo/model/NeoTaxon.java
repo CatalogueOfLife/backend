@@ -1,12 +1,15 @@
 package org.col.admin.task.importer.neo.model;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import com.google.common.collect.Lists;
 import org.col.api.model.*;
 import org.col.api.vocab.Issue;
 import org.col.api.vocab.Origin;
+import org.gbif.dwc.terms.Term;
 import org.neo4j.graphdb.Node;
 
 /**
@@ -17,9 +20,7 @@ import org.neo4j.graphdb.Node;
  */
 public class NeoTaxon {
   public Node node;
-  // the unescaped verbatim record to be used for further interpretation
-  public UnescapedVerbatimRecord verbatim;
-  // we keep the name distinct from the Taxon here so we can also accomodate listByTaxon which do not have a taxon instance!
+  // we keep the name distinct from the Taxon here so we can also accommodate listByTaxon which do not have a taxon instance!
   public Name name;
   // either a taxon or a synonym, never both!
   public Taxon taxon;
@@ -64,7 +65,6 @@ public class NeoTaxon {
     NeoTaxon neoTaxon = (NeoTaxon) o;
     return
         Objects.equals(node, neoTaxon.node) &&
-        Objects.equals(verbatim, neoTaxon.verbatim) &&
         Objects.equals(name, neoTaxon.name) &&
         Objects.equals(taxon, neoTaxon.taxon) &&
         Objects.equals(synonym, neoTaxon.synonym) &&
@@ -77,7 +77,7 @@ public class NeoTaxon {
 
   @Override
   public int hashCode() {
-    return Objects.hash(node, verbatim, name, taxon, synonym, vernacularNames, distributions, bibliography, classification, remarks);
+    return Objects.hash(node, name, taxon, synonym, vernacularNames, distributions, bibliography, classification, remarks);
   }
 
   public boolean isSynonym() {
@@ -85,13 +85,12 @@ public class NeoTaxon {
   }
 
   public String getID() {
-    //return verbatim == null ? null : verbatim.getId();
     return taxon.getId();
   }
 
   @Override
   public String toString() {
-    String id = verbatim == null ? "" : verbatim.getId() + "/";
+    String id = taxon == null ? "" : taxon.getId() + "/";
     return id + node + " ## " + name + " ## " + taxon;
   }
 }

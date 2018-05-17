@@ -2,13 +2,13 @@ package org.col.api.model;
 
 import java.net.URI;
 import java.util.*;
-import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
+import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.gbif.dwc.terms.Term;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,15 +16,38 @@ import org.slf4j.LoggerFactory;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
+ * A verbatim record that offers basic value cleaning and unescaping of common character entities
+ * on read methods without altering the underlying original verbatim data.
+ *
+ * It also strips simple xml/html tags without attributes such as <i> or </b>
+ *
+ * When a value is altered during unescaping the record keeps track that it had been unescaped.
+ *
+ * The following escaped character formats are recognized:
+ * 1) html entities
+ *    named &amp;
+ *    hex &#x0026;
+ *    decimal &#38;
+ * 2) Hexadecimal and octal escapes as used in Java, CSS & ECMA Javascript:
+ *    Hexadecimal unicode escapes started by  "\\u": \\u00A9
+ *    Unicode code point escapes indicated by "\\u{}": \\u{2F80}
  *
  */
 public class TermRecord {
   private static final Logger LOG = LoggerFactory.getLogger(TermRecord.class);
+  private static final Pattern REMOVE_TAGS = Pattern.compile("</? *[a-z][a-z1-5]{0,5} *>", Pattern.CASE_INSENSITIVE);
+  private static final Pattern ECMA_UNICODE = Pattern.compile("\\\\u\\{([0-9a-f]{4})}", Pattern.CASE_INSENSITIVE);
+
+  private Integer key;
+  private Integer datasetKey;
 
   private long line;
   private String file;
   private Term type;
   private Map<Term, String> terms = new HashMap<>();
+
+  // indicates that at least one value has been unescaped
+  private boolean unescaped;
 
   public TermRecord() {
   }
@@ -33,6 +56,22 @@ public class TermRecord {
     this.line = line;
     this.file = file;
     this.type = type;
+  }
+
+  public Integer getKey() {
+    return key;
+  }
+
+  public void setKey(Integer key) {
+    this.key = key;
+  }
+
+  public Integer getDatasetKey() {
+    return datasetKey;
+  }
+
+  public void setDatasetKey(Integer datasetKey) {
+    this.datasetKey = datasetKey;
   }
 
   /**
@@ -62,31 +101,60 @@ public class TermRecord {
     this.type = type;
   }
 
+  public boolean isUnescaped() {
+    return unescaped;
+  }
+
+  public Map<Term, String> getTerms() {
+    return terms;
+  }
+
+  public void setTerms(Map<Term, String> terms) {
+    this.terms = terms;
+  }
+
+  private String unescape(String x){
+    if (Strings.isNullOrEmpty(x)) {
+      return null;
+    }
+    try {
+      String unescaped = ECMA_UNICODE.matcher(x).replaceAll("\\\\u$1");
+      unescaped = StringEscapeUtils.unescapeEcmaScript(StringEscapeUtils.unescapeHtml4(unescaped));
+      unescaped = REMOVE_TAGS.matcher(unescaped).replaceAll("");
+      if (!this.unescaped && !x.equals(unescaped)) {
+        this.unescaped = true;
+      }
+      return unescaped;
+    } catch (RuntimeException e) {
+      LOG.debug("Failed to unescape: {}", x, e);
+      return x;
+    }
+  }
+
   /**
    * @return true if a term exists and is not null or an empty string
    */
   public boolean hasTerm(Term term) {
     checkNotNull(term, "term can't be null");
-    return !Strings.isNullOrEmpty(get(term));
+    return terms.get(term) != null;
   }
 
+  /**
+   * @return the raw value without any unescaping
+   */
+  public String getRaw(Term term) {
+    checkNotNull(term, "term can't be null");
+    return terms.get(term);
+  }
+
+  /**
+   * @return the potentially unescaped value
+   */
   public String get(Term term) {
     checkNotNull(term, "term can't be null");
     String val = terms.get(term);
-    if (!StringUtils.isBlank(val)) {
-      return val;
-    }
-    return null;
-  }
-
-  public URI getURI(Term term) {
-    String val = terms.get(term);
-    if (!StringUtils.isBlank(val)) {
-      try {
-        return URI.create(val);
-      } catch (IllegalArgumentException e) {
-        LOG.info("Invalid URI: {}", val);
-      }
+    if (val != null) {
+      return unescape(val);
     }
     return null;
   }
@@ -95,32 +163,13 @@ public class TermRecord {
     return terms.size();
   }
 
+  @JsonIgnore
   public boolean isEmpty() {
     return terms.isEmpty();
   }
 
-  public String remove(Term term) {
-    return terms.remove(term);
-  }
-
-  public void clear() {
-    terms.clear();
-  }
-
   public Set<Term> terms() {
     return terms.keySet();
-  }
-
-  public Set<Map.Entry<Term, String>> termValues() {
-    return terms.entrySet();
-  }
-
-  public String getOrDefault(Term term, String defaultValue) {
-    return terms.getOrDefault(term, defaultValue);
-  }
-
-  public void forEach(BiConsumer<? super Term, ? super String> action) {
-    terms.forEach(action);
   }
 
   public void put(Term term, String value) {
@@ -128,42 +177,32 @@ public class TermRecord {
     terms.put(term, value);
   }
 
-  public void putAll(Map<? extends Term, ? extends String> m) {
-    terms.putAll(m);
-  }
-
-  public String putIfAbsent(Term term, String value) {
-    return terms.putIfAbsent(term, value);
-  }
-
-  public String merge(Term term, String value, BiFunction<? super String, ? super String, ? extends String> remappingFunction) {
-    return terms.merge(term, value, remappingFunction);
+  /**
+   * @return a URI based on the raw value without applying any unescaping or null if an invalid URI
+   */
+  public URI getURI(Term term) {
+    checkNotNull(term, "term can't be null");
+    String val = terms.get(term);
+    if (val != null) {
+      try {
+        return URI.create(val);
+      } catch (IllegalArgumentException e) {
+        LOG.debug("Invalid URI: {}", val);
+      }
+    }
+    return null;
   }
 
   /**
    * Returns a parsed integer for a term value, throwing NumberFormatException if the value cannot be parsed.
    */
   public Integer getInt(Term term) throws NumberFormatException {
-    String val = terms.get(term);
-    if (!StringUtils.isBlank(val)) {
+    checkNotNull(term, "term can't be null");
+    String val = get(term);
+    if (val != null) {
       return Integer.valueOf(val);
     }
     return null;
-  }
-
-  /**
-   * Returns a parsed integer for a term value.
-   * If no value is found it the value cannot be parsed the default value is returned
-   * and no exception is thrown.
-   */
-  public Integer getIntDefault(Term term, Integer defaultValue) {
-    Integer i = null;
-    try {
-      i = getInt(term);
-    } catch (NumberFormatException e) {
-      // swallow
-    }
-    return i == null ? defaultValue : i;
   }
 
   /**
@@ -186,6 +225,7 @@ public class TermRecord {
    */
   @Nullable
   public List<String> get(Term term, Splitter splitter) {
+    checkNotNull(term, "term can't be null");
     String val = get(term);
     if (val != null) {
       return splitter.splitToList(val);
@@ -199,6 +239,9 @@ public class TermRecord {
     if (o == null || getClass() != o.getClass()) return false;
     TermRecord that = (TermRecord) o;
     return line == that.line &&
+        unescaped == that.unescaped &&
+        Objects.equals(key, that.key) &&
+        Objects.equals(datasetKey, that.datasetKey) &&
         Objects.equals(file, that.file) &&
         Objects.equals(type, that.type) &&
         Objects.equals(terms, that.terms);
@@ -206,11 +249,12 @@ public class TermRecord {
 
   @Override
   public int hashCode() {
-    return Objects.hash(line, file, type, terms);
+
+    return Objects.hash(key, datasetKey, line, file, type, terms, unescaped);
   }
 
   @Override
   public String toString() {
-    return "TermRecord{" + file + "#" + line +", "+ terms.size() + " terms";
+    return "v"+key+"{" + file + "#" + line +", "+ terms.size() + " terms";
   }
 }

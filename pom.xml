@@ -40,7 +40,7 @@
         <commons-io.version>2.4</commons-io.version>
         <commons-text.version>1.2</commons-text.version>
         <dropwizard.version>1.2.3</dropwizard.version>
-        <dwc-api.version>1.18-SNAPSHOT</dwc-api.version>
+        <dwc-api.version>1.19-SNAPSHOT</dwc-api.version>
         <dwca-io.version>1.33-SNAPSHOT</dwca-io.version>
         <fastutil.version>8.1.0</fastutil.version>
         <gbif-api.version>0.60</gbif-api.version>
@@ -74,6 +74,7 @@
         <postgresql-embedded.version>2.6</postgresql-embedded.version>
         <slf4j.version>1.7.25</slf4j.version>
         <stax2.version>3.1.4</stax2.version>
+        <univocity-parsers.version>2.5.9</univocity-parsers.version>
         <validation-api.version>2.0.0.Final</validation-api.version>
         <woodstox.version>4.4.1</woodstox.version>
         <!-- Maven plugin versions.
@@ -190,16 +191,11 @@
             </dependency>
             <dependency>
                 <groupId>org.col</groupId>
-                <artifactId>colplus-dwca</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.col</groupId>
                 <artifactId>colplus-parser</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
-            <!-- Dropwizard Bill of materials. Imports all versions just like Dropwizard uses -->
+            <!-- Dropwizard -->
             <dependency>
                 <groupId>io.dropwizard</groupId>
                 <artifactId>dropwizard-core</artifactId>
@@ -215,6 +211,27 @@
                 <artifactId>dropwizard-forms</artifactId>
                 <version>${dropwizard.version}</version>
             </dependency>
+            <dependency>
+                <groupId>io.dropwizard</groupId>
+                <artifactId>dropwizard-jersey</artifactId>
+                <version>${dropwizard.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.dropwizard</groupId>
+                <artifactId>dropwizard-util</artifactId>
+                <version>${dropwizard.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.dropwizard</groupId>
+                <artifactId>dropwizard-lifecycle</artifactId>
+                <version>${dropwizard.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.dropwizard</groupId>
+                <artifactId>dropwizard-logging</artifactId>
+                <version>${dropwizard.version}</version>
+            </dependency>
+            <!-- Dropwizard Bill of materials. Imports all versions just like Dropwizard uses -->
             <dependency>
                 <groupId>io.dropwizard</groupId>
                 <artifactId>dropwizard-bom</artifactId>
@@ -302,18 +319,6 @@
                 <groupId>org.gbif</groupId>
                 <artifactId>gbif-parsers</artifactId>
                 <version>${gbif-parser.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.gbif</groupId>
-                <artifactId>dwca-io</artifactId>
-                <version>${dwca-io.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <!-- digester via cglib brings in an old asm version, conflicting with kryo -->
-                        <artifactId>asm</artifactId>
-                        <groupId>asm</groupId>
-                    </exclusion>
-                </exclusions>
             </dependency>
 
             <!-- mybatis / DB -->
@@ -431,11 +436,6 @@
                 <version>${jackson2.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.fasterxml.jackson.dataformat</groupId>
-                <artifactId>jackson-dataformat-csv</artifactId>
-                <version>${jackson2.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>com.fasterxml.jackson.datatype</groupId>
                 <artifactId>jackson-datatype-jsr310</artifactId>
                 <version>${jackson2.version}</version>
@@ -464,6 +464,11 @@
             </dependency>
 
             <!-- other -->
+            <dependency>
+                <groupId>com.univocity</groupId>
+                <artifactId>univocity-parsers</artifactId>
+                <version>${univocity-parsers.version}</version>
+            </dependency>
             <dependency>
                 <groupId>de.undercouch</groupId>
                 <artifactId>citeproc-java</artifactId>

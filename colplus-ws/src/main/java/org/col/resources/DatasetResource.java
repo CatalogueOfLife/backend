@@ -14,6 +14,7 @@ import org.col.db.dao.DatasetDao;
 import org.col.db.mapper.DatasetImportMapper;
 import org.col.db.mapper.DatasetMapper;
 import org.col.db.mapper.VerbatimRecordMapper;
+import org.gbif.dwc.terms.Term;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -81,19 +82,12 @@ public class DatasetResource {
 
   @GET
   @Path("{key}/verbatim")
-  public ResultPage<VerbatimRecord> list(@PathParam("key") Integer datasetKey,
-                                         @Valid @BeanParam Page page,
-                                         @Context SqlSession session) {
+  public ResultPage<TermRecord> list(@PathParam("key") Integer datasetKey,
+                                     @QueryParam("type") Term type,
+                                     @Valid @BeanParam Page page,
+                                     @Context SqlSession session) {
     VerbatimRecordMapper mapper = session.getMapper(VerbatimRecordMapper.class);
-    return new ResultPage<VerbatimRecord>(page, mapper.count(datasetKey), mapper.list(datasetKey, page));
+    return new ResultPage<TermRecord>(page, mapper.count(datasetKey, type), mapper.list(datasetKey, type, page));
   }
 
-  @GET
-  @Path("{key}/verbatim/{id}")
-  public VerbatimRecord get(@PathParam("key") Integer datasetKey,
-                            @PathParam("id") String id,
-                            @Context SqlSession session) {
-    VerbatimRecordMapper mapper = session.getMapper(VerbatimRecordMapper.class);
-    return mapper.get(datasetKey, id);
-  }
 }

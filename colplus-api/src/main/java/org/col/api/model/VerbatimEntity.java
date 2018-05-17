@@ -7,11 +7,16 @@ import org.col.api.vocab.Issue;
 /**
  *
  */
-public interface PrimaryEntity {
+public interface VerbatimEntity {
 
-  Integer getKey();
+  void setDatasetKey(Integer datasetKey);
+
+  Integer getVerbatimKey();
+
+  void setVerbatimKey(Integer verbatimKey);
 
   Set<Issue> getIssues();
 
   void addIssue(Issue issue);
+
 }

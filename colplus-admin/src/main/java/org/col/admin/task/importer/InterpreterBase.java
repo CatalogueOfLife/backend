@@ -79,29 +79,29 @@ public class InterpreterBase {
     }
   }
 
-  protected LocalDate date(NeoTaxon t, Issue invalidIssue, Term term) {
+  protected LocalDate date(TermRecord v, VerbatimEntity ent, Issue invalidIssue, Term term) {
     Optional<FuzzyDate> date;
     try {
-      date = DateParser.PARSER.parse(t.verbatim.getTerm(term));
+      date = DateParser.PARSER.parse(v.get(term));
     } catch (UnparsableException e) {
-      t.addIssue(invalidIssue);
+      ent.addIssue(invalidIssue);
       return null;
     }
     if (date.isPresent()) {
       if (date.get().isFuzzyDate()) {
-        t.addIssue(Issue.PARTIAL_DATE);
+        ent.addIssue(Issue.PARTIAL_DATE);
       }
       return date.get().toLocalDate();
     }
     return null;
   }
 
-  protected URI uri(NeoTaxon t, Issue invalidIssue, Term... term) {
-    return parse(UriParser.PARSER, t.verbatim.getFirst(term)).orNull(invalidIssue, t.taxon.getIssues());
+  protected URI uri(TermRecord v, VerbatimEntity ent, Issue invalidIssue, Term... term) {
+    return parse(UriParser.PARSER, v.getFirst(term)).orNull(invalidIssue, ent.getIssues());
   }
 
-  protected Boolean bool(NeoTaxon t, Issue invalidIssue, Term... term) {
-    return parse(BooleanParser.PARSER, t.verbatim.getFirst(term)).orNull(invalidIssue, t.taxon.getIssues());
+  protected Boolean bool(TermRecord v, VerbatimEntity ent, Issue invalidIssue, Term... term) {
+    return parse(BooleanParser.PARSER, v.getFirst(term)).orNull(invalidIssue, ent.getIssues());
   }
 
   protected Optional<Reference> lookupReference(String id, String citation) {

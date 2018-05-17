@@ -21,6 +21,7 @@ import org.col.admin.task.importer.neo.model.RelType;
 import org.col.admin.task.importer.neo.traverse.StartEndHandler;
 import org.col.admin.task.importer.neo.traverse.TreeWalker;
 import org.col.api.model.*;
+import org.col.api.vocab.Issue;
 import org.col.api.vocab.NomActType;
 import org.col.api.vocab.Origin;
 import org.col.db.dao.NameDao;
@@ -42,7 +43,7 @@ public class PgImport implements Runnable {
 	private final Dataset dataset;
 	private Map<Integer, Integer> nameKeys = Maps.newHashMap();
   private Map<Integer, Integer> referenceKeys = Maps.newHashMap();
-  private final AtomicInteger verbatimCounter = new AtomicInteger(0);
+  private Map<Integer, Integer> verbatimKeys = Maps.newHashMap();
   private final AtomicInteger nCounter = new AtomicInteger(0);
   private final AtomicInteger tCounter = new AtomicInteger(0);
   private final AtomicInteger rCounter = new AtomicInteger(0);
@@ -61,6 +62,8 @@ public class PgImport implements Runnable {
 	@Override
 	public void run() {
 	  truncate();
+
+    insertVerbatim();
 		insertReferences();
     insertNames();
     insertActs();
@@ -70,7 +73,7 @@ public class PgImport implements Runnable {
 
 		LOG.info("Completed dataset {} insert with {} verbatim records, " +
         "{} names, {} taxa, {} references, {} vernaculars and {} distributions",
-        dataset.getKey(), verbatimCounter,
+        dataset.getKey(), verbatimKeys.size(),
         nCounter, tCounter, rCounter, vCounter, dCounter);
 	}
 
@@ -106,13 +109,45 @@ public class PgImport implements Runnable {
 		}
 	}
 
+  private void insertVerbatim() {
+    try (final SqlSession session = sessionFactory.openSession(false)) {
+      VerbatimRecordMapper mapper = session.getMapper(VerbatimRecordMapper.class);
+      int counter = 0;
+      for (TermRecord v : store.verbatimList()) {
+        int storeKey = v.getKey();
+        v.setKey(null);
+        v.setDatasetKey(dataset.getKey());
+        mapper.create(v);
+        verbatimKeys.put(storeKey, v.getKey());
+        if (counter++ % batchSize == 0) {
+          session.commit();
+          LOG.debug("Inserted {} verbatim records", counter);
+        }
+      }
+      session.commit();
+      LOG.debug("Inserted all {} verbatim records", counter);
+    }
+  }
+
+  private void updateEntity(VerbatimEntity ent) {
+    ent.setDatasetKey(dataset.getKey());
+	  if (ent.getVerbatimKey() != null) {
+      TermRecord v = store.getVerbatim(ent.getVerbatimKey());
+	    ent.setVerbatimKey(verbatimKeys.get(ent.getVerbatimKey()));
+      // did we unescape verbatim data?
+      if (v.isUnescaped()) {
+        ent.addIssue(Issue.ESCAPED_CHARACTERS);
+      }
+    }
+  }
+
 	private void insertReferences() {
     try (final SqlSession session = sessionFactory.openSession(false)) {
       ReferenceMapper mapper = session.getMapper(ReferenceMapper.class);
       int counter = 0;
       for (Reference r : store.refList()) {
         int storeKey = r.getKey();
-        r.setDatasetKey(dataset.getKey());
+        updateEntity(r);
         mapper.create(r);
         rCounter.incrementAndGet();
         // store mapping of key used in the store to the key used in postgres
@@ -161,9 +196,9 @@ public class PgImport implements Runnable {
             t.name.setPublishedInKey(referenceKeys.get(t.name.getPublishedInKey()));
           }
 
-          t.name.setDatasetKey(dataset.getKey());
           t.name.getIssues().addAll(t.taxon.getIssues());
 
+          updateEntity(t.name);
           nameMapper.create(t.name);
           nCounter.incrementAndGet();
           // keep postgres keys in node id map
@@ -213,8 +248,6 @@ public class PgImport implements Runnable {
         store.getNeo().getAllRelationships().stream().forEach(rel -> {
           if (actTypes.containsKey(rel.getType().name())) {
             NomActType actType = actTypes.get(rel.getType().name());
-            Node n1 = rel.getStartNode();
-            Node n2 = rel.getEndNode();
             Node from = inverse.contains(actType) ? rel.getEndNode() : rel.getStartNode();
 
             NameAct act = new NameAct();
@@ -236,14 +269,6 @@ public class PgImport implements Runnable {
     LOG.info("Inserted {} name acts", counter.get());
   }
 
-  private int createTaxon(TaxonMapper mapper, NeoTaxon t) {
-    t.taxon.setDatasetKey(dataset.getKey());
-    t.taxon.setName(t.name);
-    mapper.create(t.taxon);
-    tCounter.incrementAndGet();
-    return t.taxon.getKey();
-  }
-
 	/**
 	 * insert taxa with all the rest
 	 */
@@ -252,7 +277,6 @@ public class PgImport implements Runnable {
       LOG.info("Inserting remaining names and all taxa");
       NameDao nameDao = new NameDao(session);
       TaxonMapper taxonMapper = session.getMapper(TaxonMapper.class);
-      VerbatimRecordMapper verbatimMapper = session.getMapper(VerbatimRecordMapper.class);
       DistributionMapper distributionMapper = session.getMapper(DistributionMapper.class);
       VernacularNameMapper vernacularMapper = session.getMapper(VernacularNameMapper.class);
       ReferenceMapper refMapper = session.getMapper(ReferenceMapper.class);
@@ -267,6 +291,13 @@ public class PgImport implements Runnable {
         @Override
         public void start(Node n) {
           NeoTaxon t = store.get(n);
+          // did we unescape verbatim data?
+          if (t.taxon.getVerbatimKey() != null) {
+            TermRecord v = store.getVerbatim(t.taxon.getVerbatimKey());
+            if (v.isUnescaped()) {
+              t.taxon.addIssue(Issue.ESCAPED_CHARACTERS);
+            }
+          }
           // use postgres name key
           t.name.setKey(nameKeys.get((int) n.getId()));
           // is this a pro parte synonym that we have processed before already?
@@ -298,7 +329,13 @@ public class PgImport implements Runnable {
             } else if (!n.hasLabel(Labels.ROOT)) {
               throw new IllegalStateException("Non root node " + n.getId() + " with an accepted taxon without parent found: " + t.name.getScientificName());
             }
-            taxonKey = createTaxon(taxonMapper, t);
+
+            t.taxon.setName(t.name);
+            updateEntity(t.taxon);
+            taxonMapper.create(t.taxon);
+            tCounter.incrementAndGet();
+            taxonKey = t.taxon.getKey();
+
             // push new postgres key onto stack for this taxon as we traverse in depth first
             parentKeys.push(taxonKey);
 
@@ -320,20 +357,6 @@ public class PgImport implements Runnable {
             for (Integer refKey : t.bibliography) {
               refMapper.linkToTaxon(dataset.getKey(), taxonKey, referenceKeys.get(refKey));
             }
-          }
-
-          // insert verbatim rec
-          LOG.debug("verbatim {}{} tax={} name={}:{}",
-              t.name.getOrigin(),
-              t.verbatim==null? "" : " "+t.verbatim.getId(),
-              taxonKey,
-              t.name.getKey(),
-              t.name.canonicalNameComplete()
-          );
-          if (t.name.getOrigin().equals(Origin.SOURCE)) {
-            t.verbatim.setDatasetKey(dataset.getKey());
-            verbatimMapper.create(t.verbatim, taxonKey, t.name.getKey(), null);
-            verbatimCounter.incrementAndGet();
           }
 
           // commit in batches

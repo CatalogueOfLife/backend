@@ -2,15 +2,10 @@ package org.col.admin.task.importer;
 
 import java.nio.file.Path;
 import java.util.Optional;
-import java.util.regex.Pattern;
 
-import com.google.common.base.CharMatcher;
-import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
 import org.col.admin.task.importer.neo.NeoDb;
 import org.col.admin.task.importer.neo.model.Labels;
 import org.col.admin.task.importer.neo.model.NeoTaxon;
-import org.col.admin.task.importer.neo.model.UnescapedVerbatimRecord;
 import org.col.admin.task.importer.reference.ReferenceFactory;
 import org.col.api.model.Dataset;
 import org.col.api.model.TermRecord;
@@ -35,46 +30,6 @@ public abstract class NeoInserter {
     this.refFactory = refFactory;
   }
 
-  private static final Pattern NULL_PATTERN = Pattern.compile("^\\s*(\\\\N|\\\\?NULL)\\s*$");
-
-  protected static String clean(String x) {
-    if (Strings.isNullOrEmpty(x) || NULL_PATTERN.matcher(x).find()) {
-      return null;
-    }
-    return Strings.emptyToNull(CharMatcher.javaIsoControl().trimAndCollapseFrom(x, ' ').trim());
-  }
-
-  protected UnescapedVerbatimRecord build (String id, TermRecord core) {
-    UnescapedVerbatimRecord v = UnescapedVerbatimRecord.create();
-    Preconditions.checkNotNull(id, "ID required");
-    v.setId(id);
-
-    // set core terms
-    core.forEach((term, value) -> {
-      String val = clean(value);
-      if (val != null) {
-        v.setTerm(term, val);
-      }
-    });
-
-    return v;
-  }
-
-  protected void addVerbatimRecord(Term idTerm, TermRecord rec) {
-    String id = rec.get(idTerm);
-    NeoTaxon t = store.getByID(id);
-    if (t == null) {
-      LOG.warn("Non existing {} {} found in {} record line {}, {}", idTerm.simpleName(), id, rec.getType().simpleName(), rec.getLine(), rec.getFile());
-
-    } else if(t.verbatim == null){
-      LOG.warn("No verbatim data found for {} {} in {} record {} line {}, {}", idTerm.simpleName(), id, rec.getType().simpleName(), rec.getLine(), rec.getFile());
-
-    } else {
-      t.verbatim.addExtensionRecord(rec.getType(), rec);
-      store.update(t);
-    }
-  }
-
   public InsertMetadata insertAll() throws NormalizationFailedException {
     // the key will be preserved by the store
     Optional<Dataset> d = readMetadata();
@@ -97,6 +52,15 @@ public abstract class NeoInserter {
     return meta;
   }
 
+  protected Optional<NeoTaxon> lookupTaxon(Term idTerm, TermRecord rec) {
+    String id = rec.getRaw(idTerm);
+    NeoTaxon t = store.getByID(id);
+    if (t == null) {
+      LOG.warn("Non existing {} {} found in {} record line {}, {}", idTerm.simpleName(), id, rec.getType().simpleName(), rec.getLine(), rec.getFile());
+      return Optional.empty();
+    }
+    return Optional.of(t);
+  }
 
   public abstract void batchInsert() throws NormalizationFailedException;
 

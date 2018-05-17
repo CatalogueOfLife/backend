@@ -10,6 +10,7 @@ import com.codahale.metrics.annotation.Timed;
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.model.*;
 import org.col.db.dao.TaxonDao;
+import org.col.db.mapper.VerbatimRecordMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -81,9 +82,9 @@ public class TaxonResource {
 
   @GET
   @Path("{key}/verbatim")
-  public VerbatimRecord getVerbatim(@PathParam("key") int key, @Context SqlSession session) {
-    TaxonDao dao = new TaxonDao(session);
-    return dao.getVerbatim(key);
+  public TermRecord getVerbatim(@PathParam("key") int key, @Context SqlSession session) {
+    VerbatimRecordMapper mapper = session.getMapper(VerbatimRecordMapper.class);
+    return mapper.getByEntity(Taxon.class, key);
   }
 
 }

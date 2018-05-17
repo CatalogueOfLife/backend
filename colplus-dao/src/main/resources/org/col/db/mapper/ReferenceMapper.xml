@@ -8,6 +8,7 @@
         r.key,
         r.id,
         r.dataset_key,
+        r.verbatim_key,
         r.csl,
         r.serial_key,
         r.year,
@@ -17,6 +18,7 @@
     <sql id="COLS">
         id,
         dataset_key,
+        verbatim_key,
         csl,
         serial_key,
         year,
@@ -26,6 +28,7 @@
     <sql id="PROPS">
         #{id},
         #{datasetKey},
+        #{verbatimKey},
         #{csl, typeHandler=org.col.db.type.CslJsonHandler}::jsonb,
         #{serialKey},
         #{year},

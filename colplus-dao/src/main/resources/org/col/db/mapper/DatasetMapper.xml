@@ -167,9 +167,6 @@
     </update>
 
     <delete id="truncateDatasetData" parameterType="map">
-        DELETE FROM verbatim_record
-        WHERE dataset_key = #{key};
-
         DELETE FROM distribution_reference
         WHERE dataset_key = #{key};
 
@@ -202,6 +199,10 @@
 
         DELETE FROM serial
         WHERE dataset_key = #{key};
+
+        DELETE FROM verbatim
+        WHERE dataset_key = #{key};
+
     </delete>
 
 </mapper>

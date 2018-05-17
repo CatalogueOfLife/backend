@@ -17,8 +17,8 @@ import org.apache.ibatis.type.MappedTypes;
 import org.col.api.model.CslData;
 
 /**
- * A mybatis type handler that translates from the typed java.util.ObjectNode to the postgres hstore
- * database type. Any non enum values in hstore are silently ignored.
+ * A mybatis type handler that translates from an CslData instance to the postgres jsonb
+ * database type.
  *
  * As we do not map all java map types to this mybatis handler apply the handler manually for the
  * relevant hstore fields in the mapper xml.

@@ -7,7 +7,7 @@ import org.apache.ibatis.session.SqlSession;
 import org.col.api.model.Name;
 import org.col.api.model.Page;
 import org.col.api.model.ResultPage;
-import org.col.api.model.VerbatimRecord;
+import org.col.api.model.TermRecord;
 import org.col.api.vocab.TaxonomicStatus;
 import org.col.db.NotFoundException;
 import org.col.db.mapper.NameMapper;
@@ -83,11 +83,6 @@ public class NameDao {
   public void addSynonym(int datasetKey, int nameKey, int taxonKey, TaxonomicStatus status, String accordingTo) {
     Preconditions.checkNotNull(status, "status must exist");
     sMapper.create(datasetKey, nameKey, taxonKey, status, accordingTo);
-  }
-
-  public VerbatimRecord getVerbatim(int nameKey) {
-    VerbatimRecordMapper mapper = session.getMapper(VerbatimRecordMapper.class);
-    return mapper.getByName(nameKey);
   }
 
 }

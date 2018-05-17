@@ -23,7 +23,6 @@ public class TaxonDao {
   private final ReferenceMapper rMapper;
   private final VernacularNameMapper vMapper;
   private final DistributionMapper dMapper;
-  private final VerbatimRecordMapper vbMapper;
 
   public TaxonDao(SqlSession sqlSession) {
     this.session = sqlSession;
@@ -33,7 +32,6 @@ public class TaxonDao {
     rMapper = session.getMapper(ReferenceMapper.class);
     vMapper = session.getMapper(VernacularNameMapper.class);
     dMapper = session.getMapper(DistributionMapper.class);
-    vbMapper = session.getMapper(VerbatimRecordMapper.class);
   }
 
   public ResultPage<Taxon> list(Integer datasetKey, Boolean root, Page page) {
@@ -165,7 +163,4 @@ public class TaxonDao {
     return info;
   }
 
-  public VerbatimRecord getVerbatim(int key) {
-    return vbMapper.getByTaxon(key);
-  }
 }

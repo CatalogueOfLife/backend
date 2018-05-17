@@ -5,7 +5,7 @@ import org.col.admin.task.importer.neo.NeoDb;
 import org.col.admin.task.importer.neo.model.NeoProperties;
 import org.col.admin.task.importer.neo.model.NeoTaxon;
 import org.col.api.model.NameAccordingTo;
-import org.col.api.model.VerbatimRecord;
+import org.col.api.model.TermRecord;
 import org.col.api.vocab.Issue;
 import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.dwc.terms.Term;
@@ -31,36 +31,34 @@ public class AcefRelationInserter implements NeoDb.NodeBatchProcessor {
   public void process(Node n) {
     try {
       NeoTaxon t = store.get(n);
-      if (t.synonym != null) {
-        Node acc = lookupByID(AcefTerm.AcceptedTaxonID, t, Issue.ACCEPTED_ID_INVALID);
-        if (acc != null) {
-          store.createSynonymRel(t.node, acc);
-        }
+      if (t.taxon.getVerbatimKey() != null) {
+        TermRecord v = store.getVerbatim(t.taxon.getVerbatimKey());
+        if (t.synonym != null) {
+          Node acc = lookupByID(AcefTerm.AcceptedTaxonID, v, t, Issue.ACCEPTED_ID_INVALID);
+          if (acc != null) {
+            store.createSynonymRel(t.node, acc);
+          }
 
-      } else {
-        Node p = lookupByID(AcefTerm.ParentSpeciesID, t, Issue.PARENT_ID_INVALID);
-        if (p != null) {
-          store.assignParent(p, t.node);
-          // finally we have all pieces to also interpret infraspecific names
-          NeoTaxon sp = store.get(p);
-          VerbatimRecord v = t.verbatim;
-          NameAccordingTo nat = inter.interpretName(v.getId(), v.getTerm(AcefTerm.InfraSpeciesMarker), null, v.getTerm(AcefTerm.InfraSpeciesAuthorString),
-              sp.name.getGenus(), sp.name.getInfragenericEpithet(), sp.name.getSpecificEpithet(), v.getTerm(AcefTerm.InfraSpeciesEpithet),
-              null, v.getTerm(AcefTerm.GSDNameStatus), null, null);
+        } else {
+          Node p = lookupByID(AcefTerm.ParentSpeciesID, v, t, Issue.PARENT_ID_INVALID);
+          if (p != null) {
+            store.assignParent(p, t.node);
+            // finally we have all pieces to also interpret infraspecific names
+            NeoTaxon sp = store.get(p);
+            NameAccordingTo nat = inter.interpretName(t.getID(), v.get(AcefTerm.InfraSpeciesMarker), null, v.get(AcefTerm.InfraSpeciesAuthorString),
+                sp.name.getGenus(), sp.name.getInfragenericEpithet(), sp.name.getSpecificEpithet(), v.get(AcefTerm.InfraSpeciesEpithet),
+                null, v.get(AcefTerm.GSDNameStatus), null, null);
 
-          t.name = nat.getName();
-          if (!t.name.getRank().isInfraspecific()) {
-            LOG.info("Expected infraspecific taxon but found {} for name {}: {}", t.name.getRank(), v.getId(), t.name.getScientificName());
-            t.name.addIssue(Issue.INCONSISTENT_NAME);
+            t.name = nat.getName();
+            if (!t.name.getRank().isInfraspecific()) {
+              LOG.info("Expected infraspecific taxon but found {} for name {}: {}", t.name.getRank(), t.getID(), t.name.getScientificName());
+              t.name.addIssue(Issue.INCONSISTENT_NAME);
+            }
           }
         }
+
+        store.put(t);
       }
-
-      // supplementary infos
-      inter.interpretDistributions(t);
-      inter.interpretVernaculars(t);
-
-      store.put(t);
 
     } catch (Exception e) {
       LOG.error("error processing explicit relations for {} {}", n, NeoProperties.getScientificNameWithAuthor(n), e);
@@ -73,9 +71,9 @@ public class AcefRelationInserter implements NeoDb.NodeBatchProcessor {
    *
    * @return list of potentially split ids with their matching neo node if found, otherwise null
    */
-  private Node lookupByID(Term term, NeoTaxon t, Issue issueIfNotFound) {
+  private Node lookupByID(Term term, TermRecord v, NeoTaxon t, Issue issueIfNotFound) {
     Node n = null;
-    final String id = t.verbatim.getTerm(term);
+    final String id = v.get(term);
     if (id != null && !id.equals(t.getID())) {
       n = store.byID(id);
       if (n == null) {

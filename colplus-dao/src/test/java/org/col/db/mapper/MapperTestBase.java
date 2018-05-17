@@ -26,6 +26,10 @@ public abstract class MapperTestBase<T> {
     return initMybatisRule.getMapper(mapperClazz);
   }
 
+  public <X> X mapper(Class<X> clazz) {
+    return initMybatisRule.getMapper(clazz);
+  }
+
   public void commit() {
     initMybatisRule.commit();
   }

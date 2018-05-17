@@ -4,18 +4,15 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Optional;
 
-import com.google.common.collect.Lists;
 import org.col.admin.task.importer.NeoInserter;
 import org.col.admin.task.importer.NormalizationFailedException;
 import org.col.admin.task.importer.neo.NeoDb;
 import org.col.admin.task.importer.neo.model.NeoTaxon;
-import org.col.admin.task.importer.neo.model.UnescapedVerbatimRecord;
 import org.col.admin.task.importer.reference.ReferenceFactory;
 import org.col.api.model.Dataset;
 import org.col.api.model.TermRecord;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.GbifTerm;
-import org.gbif.dwc.terms.Term;
 import org.neo4j.graphdb.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,7 +41,7 @@ public class DwcaInserter extends NeoInserter {
   }
 
   /**
-   * Inserts ACEF data from a source folder into the normalizer store.
+   * Inserts DWCA data from a source folder into the normalizer store.
    * Before inserting it does a quick check to see if all required files are existing.
    */
   @Override
@@ -56,8 +53,8 @@ public class DwcaInserter extends NeoInserter {
       // taxon core only, extensions are interpreted later
       reader.stream(DwcTerm.Taxon).forEach(rec -> {
         if (rec.hasTerm(DwcaReader.DWCA_ID)) {
-          UnescapedVerbatimRecord v = build(rec.get(DwcaReader.DWCA_ID), rec);
-          NeoTaxon t = inter.interpret(v);
+          store.put(rec);
+          NeoTaxon t = inter.interpret(rec);
           store.put(t);
           meta.incRecords(t.name.getRank());
         } else {
@@ -72,22 +69,43 @@ public class DwcaInserter extends NeoInserter {
 
   @Override
   public void postBatchInsert() throws NormalizationFailedException {
-    for (Term rowType : Lists.newArrayList(GbifTerm.Reference, GbifTerm.Distribution, GbifTerm.VernacularName)) {
-      try (Transaction tx = store.getNeo().beginTx()){
-        reader.stream(rowType).forEach(this::addVerbatimRecord);
-      } catch (RuntimeException e) {
-        LOG.error("Failed to insert DwC-A {} data. Skip all {}s", rowType, rowType, e);
-      }
+    try (Transaction tx = store.getNeo().beginTx()) {
+      reader.stream(GbifTerm.Distribution).forEach(this::addDistribution);
+      reader.stream(GbifTerm.VernacularName).forEach(this::addVernacular);
+      reader.stream(GbifTerm.Reference).forEach(this::addReference);
+
+    } catch (RuntimeException e) {
+      throw new NormalizationFailedException("Failed to read DWCA files", e);
     }
+  }
+
+  private void addDistribution(TermRecord rec) {
+    lookupTaxon(DwcaReader.DWCA_ID, rec).ifPresent(t -> {
+      store.put(rec);
+      inter.interpretDistribution(t, rec);
+      store.update(t);
+    });
+  }
+
+  private void addVernacular(TermRecord rec) {
+    lookupTaxon(DwcaReader.DWCA_ID, rec).ifPresent(t -> {
+      store.put(rec);
+      inter.interpretVernacularName(t, rec);
+      store.update(t);
+    });
+  }
+
+  private void addReference(TermRecord rec) {
+    lookupTaxon(DwcaReader.DWCA_ID, rec).ifPresent(t -> {
+      store.put(rec);
+      inter.interpretReference(t, rec);
+      store.update(t);
+    });
   }
 
   @Override
   protected NeoDb.NodeBatchProcessor relationProcessor() {
-    return new DwcaRelationInserter(store, meta, inter);
-  }
-
-  private void addVerbatimRecord(TermRecord rec) {
-    super.addVerbatimRecord(DwcaReader.DWCA_ID, rec);
+    return new DwcaRelationInserter(store, meta);
   }
 
   /**

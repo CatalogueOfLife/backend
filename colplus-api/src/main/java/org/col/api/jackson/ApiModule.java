@@ -8,8 +8,6 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.introspect.NopAnnotationIntrospector;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import org.col.api.model.ExtendedTermRecord;
-import org.col.api.model.TermRecord;
 import org.col.api.vocab.CSLRefType;
 import org.col.api.vocab.Country;
 import org.col.api.vocab.Language;
@@ -44,16 +42,12 @@ public class ApiModule extends SimpleModule {
     addDeserializer(Country.class, new CountrySerde.Deserializer());
     addDeserializer(Language.class, new LanguageSerde.Deserializer());
     addDeserializer(Term.class, new TermSerde.Deserializer());
-    addDeserializer(TermRecord.class, new TermRecordSerde.Deserializer());
-    addDeserializer(ExtendedTermRecord.class, new ExtendedTermRecordSerde.Deserializer());
     addDeserializer(CSLRefType.class, new CSLRefTypeSerde.Deserializer());
 
     // then serializers:
     addSerializer(Country.class, new CountrySerde.Serializer());
     addSerializer(Language.class, new LanguageSerde.Serializer());
     addSerializer(Term.class, new TermSerde.ValueSerializer());
-    addSerializer(TermRecord.class, new TermRecordSerde.Serializer());
-    addSerializer(ExtendedTermRecord.class, new ExtendedTermRecordSerde.Serializer());
     addSerializer(CSLRefType.class, new CSLRefTypeSerde.Serializer());
 
     // then key deserializers

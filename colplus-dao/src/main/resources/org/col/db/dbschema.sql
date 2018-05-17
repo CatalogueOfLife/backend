@@ -159,6 +159,15 @@ CREATE TABLE dataset_import (
   PRIMARY KEY (dataset_key, attempt)
 );
 
+CREATE TABLE verbatim (
+  key serial PRIMARY KEY,
+  dataset_key INTEGER NOT NULL REFERENCES dataset,
+  line INTEGER,
+  file TEXT,
+  type TEXT,
+  terms jsonb
+);
+
 CREATE TABLE "serial" (
   key serial PRIMARY KEY,
   dataset_key INTEGER NOT NULL REFERENCES dataset,
@@ -178,6 +187,7 @@ CREATE TABLE reference (
   key serial PRIMARY KEY,
   id TEXT,
   dataset_key INTEGER NOT NULL REFERENCES dataset,
+  verbatim_key INTEGER REFERENCES verbatim,
   serial_key INTEGER REFERENCES "serial",
   csl JSONB,
   year int,
@@ -190,6 +200,7 @@ CREATE TABLE name (
   key INTEGER DEFAULT nextval('name_key_seq') PRIMARY KEY,
   id TEXT,
   dataset_key INTEGER REFERENCES dataset,
+  verbatim_key INTEGER REFERENCES verbatim,
   homotypic_name_key INTEGER REFERENCES name DEFAULT currval('name_key_seq'::regclass) NOT NULL ,
   scientific_name TEXT NOT NULL,
   rank rank NOT NULL,
@@ -254,6 +265,7 @@ CREATE TABLE taxon (
   key serial PRIMARY KEY,
   id TEXT,
   dataset_key INTEGER NOT NULL REFERENCES dataset,
+  verbatim_key INTEGER REFERENCES verbatim,
   parent_key INTEGER REFERENCES taxon,
   name_key INTEGER NOT NULL REFERENCES name,
   doubtful BOOLEAN DEFAULT FALSE NOT NULL,
@@ -278,16 +290,6 @@ CREATE TABLE synonym (
   according_to TEXT
 );
 
-CREATE TABLE verbatim_record (
-  id TEXT NOT NULL,
-  dataset_key INTEGER NOT NULL REFERENCES dataset,
-  taxon_key INTEGER REFERENCES taxon,
-  name_key INTEGER REFERENCES name,
-  reference_key INTEGER REFERENCES reference,
-  terms jsonb,
-  PRIMARY KEY(dataset_key, id)
-);
-
 CREATE TABLE taxon_reference (
   dataset_key INTEGER NOT NULL REFERENCES dataset,
   taxon_key INTEGER NOT NULL REFERENCES taxon,
@@ -298,11 +300,13 @@ CREATE TABLE taxon_reference (
 CREATE TABLE vernacular_name (
   key serial PRIMARY KEY,
   dataset_key INTEGER NOT NULL REFERENCES dataset,
+  verbatim_key INTEGER REFERENCES verbatim,
   taxon_key INTEGER NOT NULL REFERENCES taxon,
   name TEXT NOT NULL,
   latin TEXT,
   language CHAR(3),
-  country CHAR(2)
+  country CHAR(2),
+  issues INT[] DEFAULT '{}'
 );
 
 CREATE TABLE vernacular_name_reference (
@@ -315,10 +319,12 @@ CREATE TABLE vernacular_name_reference (
 CREATE TABLE distribution (
   key serial PRIMARY KEY,
   dataset_key INTEGER NOT NULL REFERENCES dataset,
+  verbatim_key INTEGER REFERENCES verbatim,
   taxon_key INTEGER NOT NULL REFERENCES taxon,
   area TEXT NOT NULL,
   gazetteer INTEGER NOT NULL,
-  status INTEGER
+  status INTEGER,
+  issues INT[] DEFAULT '{}'
 );
 
 CREATE TABLE distribution_reference (
@@ -363,10 +369,7 @@ CREATE index ON taxon (name_key);
 CREATE UNIQUE index ON reference (id, dataset_key);
 CREATE index ON reference (dataset_key);
 
-CREATE index ON verbatim_record (dataset_key);
-CREATE index ON verbatim_record (name_key);
-CREATE index ON verbatim_record (taxon_key);
-CREATE index ON verbatim_record (reference_key);
+CREATE index ON verbatim (dataset_key);
 
 CREATE index ON distribution (dataset_key);
 CREATE index ON distribution (taxon_key);

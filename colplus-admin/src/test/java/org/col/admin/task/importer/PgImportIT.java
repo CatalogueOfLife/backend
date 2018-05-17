@@ -18,7 +18,9 @@ import org.col.admin.config.ImporterConfig;
 import org.col.admin.config.NormalizerConfig;
 import org.col.admin.task.importer.neo.NeoDb;
 import org.col.admin.task.importer.neo.NeoDbFactory;
+import org.col.admin.task.importer.neo.model.NeoTaxon;
 import org.col.admin.task.importer.neo.model.RankedName;
+import org.col.admin.task.importer.neo.model.RelType;
 import org.col.admin.task.importer.reference.ReferenceFactory;
 import org.col.api.model.*;
 import org.col.api.vocab.*;
@@ -34,6 +36,7 @@ import org.col.db.mapper.NameActMapper;
 import org.col.db.mapper.PgSetupRule;
 import org.gbif.nameparser.api.Rank;
 import org.junit.*;
+import org.neo4j.graphdb.Direction;
 
 import static org.col.api.vocab.DataFormat.ACEF;
 import static org.col.api.vocab.DataFormat.DWCA;
@@ -164,6 +167,14 @@ public class PgImportIT {
     normalizeAndImport(DWCA, 27);
   }
 
+  /**
+   * 2->1->2
+   * should be: 2->1
+   *
+   * 10->12->11->10,13
+   * should be: 11->10,13 12
+   *
+   */
   @Test
   public void chainedBasionyms() throws Exception {
     normalizeAndImport(DWCA, 28);
@@ -174,24 +185,27 @@ public class PgImportIT {
       // check species name
       Name n1 = dao.get(dao.lookupKey("1",dataset.getKey()));
       Name n2 = dao.get(dao.lookupKey("2",dataset.getKey()));
+
+      assertEquals(n2.getHomotypicNameKey(), n1.getHomotypicNameKey());
+      assertTrue(n1.getKey().equals(n2.getHomotypicNameKey()) || n2.getKey().equals(n2.getHomotypicNameKey()));
+      assertTrue(n1.getIssues().contains(Issue.CHAINED_BASIONYM));
+      assertTrue(n2.getIssues().contains(Issue.CHAINED_BASIONYM));
+
+
       Name n10 = dao.get(dao.lookupKey("10",dataset.getKey()));
       Name n11 = dao.get(dao.lookupKey("11",dataset.getKey()));
       Name n12 = dao.get(dao.lookupKey("12",dataset.getKey()));
+      Name n13 = dao.get(dao.lookupKey("13",dataset.getKey()));
 
-      assertEquals(n2.getKey(), n1.getHomotypicNameKey());
-      assertFalse(n1.getIssues().contains(Issue.CHAINED_BASIONYM));
-
-      assertEquals(n2.getKey(), n2.getHomotypicNameKey());
-      assertTrue(n2.getIssues().contains(Issue.CHAINED_BASIONYM));
-
-      assertEquals(n10.getKey(), n10.getHomotypicNameKey());
-      assertTrue(n10.getIssues().contains(Issue.CHAINED_BASIONYM));
-
+      assertEquals(n11.getKey(), n10.getHomotypicNameKey());
       assertEquals(n11.getKey(), n11.getHomotypicNameKey());
-      assertTrue(n11.getIssues().contains(Issue.CHAINED_BASIONYM));
+      assertEquals(n11.getKey(), n13.getHomotypicNameKey());
+      assertEquals(n12.getKey(), n12.getHomotypicNameKey());
 
-      assertEquals(n10.getKey(), n12.getHomotypicNameKey());
-      assertFalse(n12.getIssues().contains(Issue.CHAINED_BASIONYM));
+      assertTrue(n10.getIssues().contains(Issue.CHAINED_BASIONYM));
+      assertTrue(n11.getIssues().contains(Issue.CHAINED_BASIONYM));
+      assertTrue(n12.getIssues().contains(Issue.CHAINED_BASIONYM));
+      assertFalse(n13.getIssues().contains(Issue.CHAINED_BASIONYM));
     }
 	}
 

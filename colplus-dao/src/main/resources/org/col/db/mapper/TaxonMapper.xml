@@ -8,6 +8,7 @@
         ${alias}.key AS ${prefix}key,
         ${alias}.id AS ${prefix}id,
         ${alias}.dataset_key AS ${prefix}dataset_key,
+        ${alias}.verbatim_key AS ${prefix}verbatim_key,
         ${alias}.parent_key AS ${prefix}parent_key,
         ${alias}.doubtful AS ${prefix}doubtful,
         ${alias}.origin AS ${prefix}origin,
@@ -37,6 +38,7 @@
     <sql id="COLS">
         id,
         dataset_key,
+        verbatim_key,
         parent_key,
         name_key,
         doubtful,
@@ -56,6 +58,7 @@
     <sql id="PROPS">
         #{id},
         #{datasetKey},
+        #{verbatimKey},
         #{parentKey},
         #{name.key},
         #{doubtful},

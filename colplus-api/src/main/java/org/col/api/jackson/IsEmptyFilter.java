@@ -1,6 +1,5 @@
 package org.col.api.jackson;
 
-import org.col.api.model.IsEmpty;
 import org.gbif.nameparser.api.Authorship;
 
 /**

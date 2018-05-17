@@ -10,6 +10,7 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import org.col.api.model.*;
 import org.col.api.vocab.*;
+import org.gbif.dwc.terms.*;
 import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.NamePart;
 import org.gbif.nameparser.api.NameType;
@@ -315,6 +316,22 @@ public class TestEntityGenerator {
     csl.getOriginalDate().setDateParts(new int[][] {{1752, 4, 4}, {1752, 8, 4}});
     csl.getSubmitted().setDateParts(new int[][] {{1850, 6, 12}});
     return csl;
+  }
+
+  public static TermRecord createVerbatim() {
+    TermRecord rec = new TermRecord(11, "myFile.txt", DwcTerm.Taxon);
+    rec.setDatasetKey(TestEntityGenerator.DATASET1.getKey());
+    for (Term t : DwcTerm.values()) {
+      rec.put(t, RandomUtils.randomString(1 + RND.nextInt(23)).toLowerCase());
+    }
+    for (Term t : DcTerm.values()) {
+      rec.put(t, RandomUtils.randomString(1 + RND.nextInt(77)));
+    }
+    for (Term t : GbifTerm.values()) {
+      rec.put(t, RandomUtils.randomString(1 + RND.nextInt(8)));
+    }
+    rec.put(UnknownTerm.build("http://col.plus/terms/punk"), RandomUtils.randomString(500 + RND.nextInt(2000)));
+    return rec;
   }
 
 }

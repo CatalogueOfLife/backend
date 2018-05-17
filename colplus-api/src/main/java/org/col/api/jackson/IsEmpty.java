@@ -1,4 +1,4 @@
-package org.col.api.model;
+package org.col.api.jackson;
 
 /**
  * Allows any class to indicate it has no content.

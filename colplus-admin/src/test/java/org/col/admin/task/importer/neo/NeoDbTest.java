@@ -10,7 +10,6 @@ import org.col.admin.config.NormalizerConfig;
 import org.col.admin.task.importer.neo.model.Labels;
 import org.col.admin.task.importer.neo.model.NeoTaxon;
 import org.col.admin.task.importer.neo.model.RelType;
-import org.col.admin.task.importer.neo.model.UnescapedVerbatimRecord;
 import org.col.api.RandomUtils;
 import org.col.api.model.Taxon;
 import org.col.api.model.TermRecord;
@@ -149,15 +148,14 @@ public class NeoDbTest {
 
     try (Transaction tx = db.getNeo().beginTx()) {
       NeoTaxon t = db.getByID("id1");
-      t.verbatim.getTerms().addExtensionRecord(AcefTerm.Distribution, tr);
 
       db.update(t);
     }
 
     try (Transaction tx = db.getNeo().beginTx()) {
       NeoTaxon t = db.getByID("id1");
-      assertEquals(1, t.verbatim.getExtensionRecords(AcefTerm.Distribution).size());
-      assertEquals(tr, t.verbatim.getExtensionRecords(AcefTerm.Distribution).get(0));
+      //assertEquals(1, t.verbatim.getExtensionRecords(AcefTerm.Distribution).size());
+      //assertEquals(tr, t.verbatim.getExtensionRecords(AcefTerm.Distribution).get(0));
     }
 
   }
@@ -167,10 +165,6 @@ public class NeoDbTest {
     t.name = RandomUtils.randomName();
     t.taxon = new Taxon();
     t.taxon.setId(id);
-    t.verbatim = UnescapedVerbatimRecord.create();
-    t.verbatim.setId(id);
-    t.verbatim.getTerms().put(DwcTerm.scientificName, "Abies alba");
-    t.verbatim.getTerms().put(DcTerm.title, "Abies alba");
     return t;
   }
 }

@@ -12,6 +12,7 @@ import org.col.api.model.*;
 import org.col.db.dao.NameDao;
 import org.col.db.dao.NameUsageDao;
 import org.col.db.mapper.NameActMapper;
+import org.col.db.mapper.VerbatimRecordMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,9 +65,9 @@ public class NameResource {
 
   @GET
   @Path("{key}/verbatim")
-  public VerbatimRecord getVerbatim(@PathParam("key") int key, @Context SqlSession session) {
-    NameDao dao = new NameDao(session);
-    return dao.getVerbatim(key);
+  public TermRecord getVerbatim(@PathParam("key") int key, @Context SqlSession session) {
+    VerbatimRecordMapper mapper = session.getMapper(VerbatimRecordMapper.class);
+    return mapper.getByEntity(Name.class, key);
   }
 
   @GET

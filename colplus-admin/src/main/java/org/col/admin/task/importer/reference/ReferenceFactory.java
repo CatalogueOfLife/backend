@@ -45,28 +45,27 @@ public class ReferenceFactory {
    * | TaxAccRef
    *
    * @param referenceID
-   * @param authors author (or many) of publication
-   * @param title of paper or book
-   * @param year of publication
-   * @param source title of periodicals, volume number, and other common bibliographic details
    * @param referenceType taxonomic status of reference: NomRef: Nomenclatural Reference (just one
    *        reference which contains the original (validating) publication of taxon name or new name
    *        combination or TaxAccRef: Taxonomic Acceptance Reference(s) (one or more bibliographic
    *        references, where the name is mentioned in the same taxonomic status (i.e. as a species
    *        or as a synonym) or ComNameRef: Common Name Reference(s) (one or more bibliographic
    *        references that contain common names)
-   * @param details
+   * @param authors author (or many) of publication
+   * @param year of publication
+   * @param title of paper or book
+   * @param details title of periodicals, volume number, and other common bibliographic details
    * @return
    */
-  public Reference fromACEF(String referenceID, String authors, String title, String year,
-      String source, String referenceType, String details) {
+  public Reference fromACEF(String referenceID, String referenceType,
+                            String authors, String year, String title, String details) {
     Reference ref = create(referenceID);
 
     if (details != null && (title == null || details.length() > title.length())) {
       // consider details to be the entire citation
       parse(ref, details);
     } else {
-      parse(ref, buildCitation(authors, title, year, source, details));
+      parse(ref, buildCitation(authors, year, title, details));
     }
     return postParse(ref);
   }
@@ -99,7 +98,7 @@ public class ReferenceFactory {
     if (bibliographicCitation != null) {
       parse(ref, bibliographicCitation);
     } else {
-      parse(ref, buildCitation(creator, title, date, source, null));
+      parse(ref, buildCitation(creator, date, title, source));
     }
     return postParse(ref);
   }
@@ -118,8 +117,7 @@ public class ReferenceFactory {
     ref.setCsl(new CslData());
   }
 
-  private static String buildCitation(String authors, String title, String year, String source,
-      String details) {
+  private static String buildCitation(String authors, String year, String title, String details) {
     StringBuilder sb = new StringBuilder();
     if (!Strings.isNullOrEmpty(authors)) {
       sb.append(authors).append(" ");
@@ -128,21 +126,12 @@ public class ReferenceFactory {
       sb.append(year).append(". ");
     }
     sb.append(title);
-    if (!Strings.isNullOrEmpty(source)) {
-      // does IN confuse the parser as its normally only used for books not journals???
-      sb.append(" in ").append(source);
-    }
     if (!Strings.isNullOrEmpty(details)) {
-      sb.append(" ").append(details);
+      sb.append(". ").append(details);
     }
     return sb.toString();
   }
   
-  private static CslData buildCsl(String authors, String title, String year, String source) {
-    CslData csl = new CslData();
-    return csl;
-  }
-
   private static Reference postParse(Reference ref) {
     // extract int year
     if (ref.getCsl().getIssued() != null) {

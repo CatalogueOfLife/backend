@@ -10,14 +10,12 @@ import org.col.admin.task.importer.NeoInserter;
 import org.col.admin.task.importer.NormalizationFailedException;
 import org.col.admin.task.importer.neo.NeoDb;
 import org.col.admin.task.importer.neo.model.NeoTaxon;
-import org.col.admin.task.importer.neo.model.UnescapedVerbatimRecord;
 import org.col.admin.task.importer.reference.ReferenceFactory;
-import org.col.api.model.Dataset;
-import org.col.api.model.Reference;
-import org.col.api.model.TermRecord;
+import org.col.api.model.*;
 import org.col.api.vocab.DataFormat;
 import org.col.api.vocab.Issue;
 import org.gbif.dwc.terms.AcefTerm;
+import org.gbif.dwc.terms.Term;
 import org.neo4j.graphdb.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +32,7 @@ public class AcefInserter extends NeoInserter {
 
   private AcefReader reader;
   private AcefInterpreter inter;
+  final AtomicInteger counter = new AtomicInteger(0);
 
   public AcefInserter(NeoDb store, Path folder, ReferenceFactory refFactory) {
     super(folder, store, refFactory);
@@ -60,7 +59,23 @@ public class AcefInserter extends NeoInserter {
       inter = new AcefInterpreter(store.getDataset(), meta, store, refFactory);
 
       insertReferences();
-      insertTaxaAndNames();
+
+      // species
+      reader.stream(AcefTerm.AcceptedSpecies).forEach(this::insertTaxon);
+      LOG.info("Inserted {} species names", counter.get());
+
+      // infraspecies
+      // accepted infraspecific names in ACEF have no genus or species
+      // but a link to their parent species ID.
+      // so we cannot update the scientific name yet - we do this in the relation inserter instead!
+      counter.set(0);
+      reader.stream(AcefTerm.AcceptedInfraSpecificTaxa).forEach(this::insertTaxon);
+      LOG.info("Inserted {} infraspecific names", counter.get());
+
+      // synonyms
+      counter.set(0);
+      reader.stream(AcefTerm.Synonyms).forEach(this::insertSynonym);
+      LOG.info("Inserted {} synonym names", counter.get());
 
     } catch (RuntimeException e) {
       throw new NormalizationFailedException("Failed to read ACEF files", e);
@@ -70,14 +85,13 @@ public class AcefInserter extends NeoInserter {
   @Override
   public void postBatchInsert() throws NormalizationFailedException {
     try (Transaction tx = store.getNeo().beginTx()) {
-      reader.stream(AcefTerm.Distribution).forEach(this::addVerbatimRecord);
-      reader.stream(AcefTerm.CommonNames).forEach(this::addVerbatimRecord);
+      reader.stream(AcefTerm.Distribution).forEach(this::addDistribution);
+      reader.stream(AcefTerm.CommonNames).forEach(this::addVernacular);
+      reader.stream(AcefTerm.NameReferencesLinks).forEach(this::addReferenceLink);
 
     } catch (RuntimeException e) {
       throw new NormalizationFailedException("Failed to read ACEF files", e);
     }
-    // link references to taxa, names and vernaculars
-    insertReferenceLinks();
   }
 
   @Override
@@ -85,46 +99,34 @@ public class AcefInserter extends NeoInserter {
     return new AcefRelationInserter(store, inter);
   }
 
-  private void addVerbatimRecord(TermRecord rec) {
-    super.addVerbatimRecord(AcefTerm.AcceptedTaxonID, rec);
+  private void addDistribution(TermRecord rec) {
+    lookupTaxon(AcefTerm.AcceptedTaxonID, rec).ifPresent(t -> {
+      inter.interpretDistribution(t, rec);
+      store.update(t);
+    });
   }
 
-  private void insertTaxaAndNames() {
-    final AtomicInteger counter = new AtomicInteger(0);
-    // species
-    reader.stream(AcefTerm.AcceptedSpecies).forEach(rec -> {
-      UnescapedVerbatimRecord v = build(rec.get(AcefTerm.AcceptedTaxonID), rec);
-      NeoTaxon t = inter.interpretTaxon(v, false);
-      store.put(t);
-      counter.incrementAndGet();
-      meta.incRecords(t.name.getRank());
+  private void addVernacular(TermRecord rec) {
+    lookupTaxon(AcefTerm.AcceptedTaxonID, rec).ifPresent(t -> {
+      inter.interpretVernacular(t, rec);
+      store.update(t);
     });
-    LOG.info("Inserted {} species names", counter.get());
+  }
 
-    // infraspecies
-    counter.set(0);
-    reader.stream(AcefTerm.AcceptedInfraSpecificTaxa).forEach(rec -> {
-      UnescapedVerbatimRecord v = build(rec.get(AcefTerm.AcceptedTaxonID), rec);
-      // accepted infraspecific names in ACEF have no genus or species but a link to their parent
-      // species ID.
-      // so we cannot update the scientific name yet - we do this in the relation inserter instead!
-      NeoTaxon t = inter.interpretTaxon(v, false);
-      store.put(t);
-      counter.incrementAndGet();
-      meta.incRecords(t.name.getRank());
-    });
-    LOG.info("Inserted {} infraspecific names", counter.get());
+  private void insertTaxon(TermRecord rec) {
+    insertTaxonAndName(AcefTerm.AcceptedTaxonID, false, rec);
+  }
 
-    // synonyms
-    counter.set(0);
-    reader.stream(AcefTerm.Synonyms).forEach(rec -> {
-      UnescapedVerbatimRecord v = build(rec.get(AcefTerm.ID), rec);
-      NeoTaxon t = inter.interpretTaxon(v, true);
-      store.put(t);
-      counter.incrementAndGet();
-      meta.incRecords(t.name.getRank());
-    });
-    LOG.info("Inserted {} synonym names", counter.get());
+  private void insertSynonym(TermRecord rec) {
+    insertTaxonAndName(AcefTerm.ID, true, rec);
+  }
+
+  private void insertTaxonAndName(Term idTerm, boolean synonym, TermRecord rec) {
+    store.put(rec);
+    NeoTaxon t = inter.interpretTaxon(idTerm, rec, synonym);
+    store.put(t);
+    counter.incrementAndGet();
+    meta.incRecords(t.name.getRank());
   }
 
   /**
@@ -134,15 +136,17 @@ public class AcefInserter extends NeoInserter {
   private void insertReferences() {
     final AtomicInteger counter = new AtomicInteger(0);
     reader.stream(AcefTerm.Reference).forEach(rec -> {
-      store.put(refFactory.fromACEF(
-          emptyToNull(rec.get(AcefTerm.ReferenceID)),
-          emptyToNull(rec.get(AcefTerm.Author)),
-          emptyToNull(rec.get(AcefTerm.Title)),
-          emptyToNull(rec.get(AcefTerm.Year)),
-          emptyToNull(rec.get(AcefTerm.Source)),
-          emptyToNull(rec.get(AcefTerm.ReferenceType)),
-          emptyToNull(rec.get(AcefTerm.Details))
-      ));
+      store.put(rec);
+      Reference r = refFactory.fromACEF(
+          rec.get(AcefTerm.ReferenceID),
+          rec.get(AcefTerm.ReferenceType),
+          rec.get(AcefTerm.Author),
+          rec.get(AcefTerm.Year),
+          rec.get(AcefTerm.Title),
+          rec.get(AcefTerm.Details)
+      );
+      r.setVerbatimKey(rec.getKey());
+      store.put(r);
       counter.incrementAndGet();
     });
     LOG.info("Inserted {} references", counter.get());
@@ -158,56 +162,50 @@ public class AcefInserter extends NeoInserter {
    * As all references and names must be indexed in the store to establish the relations
    * we run this in the relation inserter
    */
-  private void insertReferenceLinks() {
-    try (Transaction tx = store.getNeo().beginTx()) {
-      reader.stream(AcefTerm.NameReferencesLinks).forEach(rec -> {
-        String taxonID = emptyToNull(rec.get(AcefTerm.ID));
-        String referenceID = emptyToNull(rec.get(AcefTerm.ReferenceID));
-        String refType = emptyToNull(rec.get(AcefTerm.ReferenceType)); // NomRef, TaxAccRef, ComNameRef
+  private void addReferenceLink(TermRecord rec) {
+    String taxonID = emptyToNull(rec.get(AcefTerm.ID));
+    String referenceID = emptyToNull(rec.get(AcefTerm.ReferenceID));
+    String refType = emptyToNull(rec.get(AcefTerm.ReferenceType)); // NomRef, TaxAccRef, ComNameRef
 
-        if (refType != null) {
-          // lookup NeoTaxon and reference
-          NeoTaxon t = store.getByID(taxonID);
-          Reference ref = store.refById(referenceID);
-          if (t == null) {
-            if (ref != null) {
-              LOG.debug("taxonID {} from NameReferencesLinks line {} not existing", taxonID, rec.getLine());
-              ref.addIssue(Issue.TAXON_ID_INVALID);
-              store.put(ref);
-            } else {
-              LOG.info("referenceID {} and taxonID {} from NameReferencesLinks line {} both not existing", referenceID, taxonID, rec.getLine());
-            }
+    if (refType != null) {
+      // lookup NeoTaxon and reference
+      NeoTaxon t = store.getByID(taxonID);
+      Reference ref = store.refById(referenceID);
+      if (t == null) {
+        if (ref != null) {
+          LOG.debug("taxonID {} from NameReferencesLinks line {} not existing", taxonID, rec.getLine());
+          ref.addIssue(Issue.TAXON_ID_INVALID);
+          store.put(ref);
+        } else {
+          LOG.info("referenceID {} and taxonID {} from NameReferencesLinks line {} both not existing", referenceID, taxonID, rec.getLine());
+        }
+
+      } else {
+        if (ref == null) {
+          LOG.debug("referenceID {} from NameReferencesLinks line {} not existing", referenceID, rec.getLine());
+          t.addIssue(Issue.REFERENCE_ID_INVALID);
+
+        } else {
+          //TODO: better parsing needed? Use enum???
+          if (refType.equalsIgnoreCase("NomRef")) {
+            t.name.setPublishedInKey(ref.getKey());
+            // we extract the page from CSL and also store it in the name
+            // No deduplication of refs happening
+            t.name.setPublishedInPage(ref.getCsl().getPage());
+
+          } else if (refType.equalsIgnoreCase("TaxAccRef")) {
+            t.bibliography.add(ref.getKey());
+
+          } else if (refType.equalsIgnoreCase("ComNameRef")) {
+            // ignore here, we should see this again when parsing common names
 
           } else {
-            if (ref == null) {
-              LOG.debug("referenceID {} from NameReferencesLinks line {} not existing", referenceID, rec.getLine());
-              t.addIssue(Issue.REFERENCE_ID_INVALID);
-
-            } else {
-              //TODO: better parsing needed? Use enum???
-              if (refType.equalsIgnoreCase("NomRef")) {
-                t.name.setPublishedInKey(ref.getKey());
-                // we extract the page from CSL and also store it in the name
-                // No deduplication of refs happening
-                t.name.setPublishedInPage(ref.getCsl().getPage());
-
-              } else if (refType.equalsIgnoreCase("TaxAccRef")) {
-                t.bibliography.add(ref.getKey());
-
-              } else if (refType.equalsIgnoreCase("ComNameRef")) {
-                // ignore here, we should see this again when parsing common names
-
-              } else {
-                // unkown type
-                LOG.debug("Unknown reference type {} used in NameReferencesLinks line {}", refType, rec.getLine());
-              }
-            }
-            store.update(t);
+            // unkown type
+            LOG.debug("Unknown reference type {} used in NameReferencesLinks line {}", refType, rec.getLine());
           }
         }
-      });
-    } catch (RuntimeException e) {
-      throw new NormalizationFailedException("Failed to read ACEF files", e);
+        store.update(t);
+      }
     }
   }
 

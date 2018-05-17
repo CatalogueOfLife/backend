@@ -10,6 +10,7 @@ import org.col.admin.task.importer.NormalizationFailedException;
 import org.col.admin.task.importer.neo.NeoDb;
 import org.col.admin.task.importer.neo.model.*;
 import org.col.api.model.Name;
+import org.col.api.model.TermRecord;
 import org.col.api.vocab.Issue;
 import org.col.api.vocab.Origin;
 import org.col.parser.NameParser;
@@ -33,26 +34,22 @@ public class DwcaRelationInserter implements NeoDb.NodeBatchProcessor {
 
   private final NeoDb store;
   private final InsertMetadata meta;
-  private final DwcInterpreter inter;
 
-  public DwcaRelationInserter(NeoDb store, InsertMetadata meta, DwcInterpreter inter) {
+  public DwcaRelationInserter(NeoDb store, InsertMetadata meta) {
     this.store = store;
     this.meta = meta;
-    this.inter = inter;
   }
 
   @Override
   public void process(Node n) {
     try {
       NeoTaxon t = store.get(n);
-      insertAcceptedRel(t);
-      insertParentRel(t);
-      insertBasionymRel(t);
-
-      // supplementary infos
-      inter.interpretBibliography(t);
-      inter.interpretVernacularNames(t);
-      inter.interpretDistributions(t);
+      if (t.taxon.getVerbatimKey() != null) {
+        TermRecord v = store.getVerbatim(t.taxon.getVerbatimKey());
+        insertAcceptedRel(t, v);
+        insertParentRel(t, v);
+        insertBasionymRel(t, v);
+      }
 
       store.put(t);
 
@@ -67,10 +64,10 @@ public class DwcaRelationInserter implements NeoDb.NodeBatchProcessor {
    *
    * @param t the full neotaxon to process
    */
-  private void insertAcceptedRel(NeoTaxon t) {
+  private void insertAcceptedRel(NeoTaxon t, TermRecord v) {
     List<RankedName> accepted = null;
-    if (t.verbatim != null && meta.isAcceptedNameMapped()) {
-      accepted = lookupByIdOrName(t, DwcTerm.acceptedNameUsageID, Issue.ACCEPTED_ID_INVALID, DwcTerm.acceptedNameUsage, Origin.VERBATIM_ACCEPTED);
+    if (v != null && meta.isAcceptedNameMapped()) {
+      accepted = lookupByIdOrName(v, t, DwcTerm.acceptedNameUsageID, Issue.ACCEPTED_ID_INVALID, DwcTerm.acceptedNameUsage, Origin.VERBATIM_ACCEPTED);
       for (RankedName acc : accepted) {
         store.createSynonymRel(t.node, acc.node);
       }
@@ -93,38 +90,38 @@ public class DwcaRelationInserter implements NeoDb.NodeBatchProcessor {
    * Sets up the parent relations using the parentNameUsage(ID) term values.
    * The denormed, flat classification is used in a next step later.
    */
-  private void insertParentRel(NeoTaxon t) {
-    if (t.verbatim != null && meta.isParentNameMapped()) {
-      RankedName parent = lookupSingleByIdOrName(t, DwcTerm.parentNameUsageID, Issue.PARENT_ID_INVALID, DwcTerm.parentNameUsage, Origin.VERBATIM_PARENT);
+  private void insertParentRel(NeoTaxon t, TermRecord v) {
+    if (v != null && meta.isParentNameMapped()) {
+      RankedName parent = lookupSingleByIdOrName(v, t, DwcTerm.parentNameUsageID, Issue.PARENT_ID_INVALID, DwcTerm.parentNameUsage, Origin.VERBATIM_PARENT);
       if (parent != null) {
         store.assignParent(parent.node, t.node);
       }
     }
   }
 
-  private void insertBasionymRel(NeoTaxon t) {
-    if (t.verbatim != null && meta.isOriginalNameMapped()) {
-      RankedName bas = lookupSingleByIdOrName(t, DwcTerm.originalNameUsageID, Issue.BASIONYM_ID_INVALID, DwcTerm.originalNameUsage, Origin.VERBATIM_BASIONYM);
+  private void insertBasionymRel(NeoTaxon t, TermRecord v) {
+    if (v != null && meta.isOriginalNameMapped()) {
+      RankedName bas = lookupSingleByIdOrName(v, t, DwcTerm.originalNameUsageID, Issue.BASIONYM_ID_INVALID, DwcTerm.originalNameUsage, Origin.VERBATIM_BASIONYM);
       if (bas != null) {
         bas.node.createRelationshipTo(t.node, RelType.BASIONYM_OF);
       }
     }
   }
 
-  private RankedName lookupSingleByIdOrName(NeoTaxon t, DwcTerm idTerm, Issue invlidIdIssue, DwcTerm nameTerm, Origin createdNameOrigin) {
-    List<RankedName> names = lookupByIdOrName(t, false, idTerm, invlidIdIssue, nameTerm, createdNameOrigin);
+  private RankedName lookupSingleByIdOrName(TermRecord v, NeoTaxon t, DwcTerm idTerm, Issue invlidIdIssue, DwcTerm nameTerm, Origin createdNameOrigin) {
+    List<RankedName> names = lookupByIdOrName(v, t, false, idTerm, invlidIdIssue, nameTerm, createdNameOrigin);
     return names.isEmpty() ? null : names.get(0);
   }
 
-  private List<RankedName> lookupByIdOrName(NeoTaxon t, DwcTerm idTerm, Issue invlidIdIssue, DwcTerm nameTerm, Origin createdNameOrigin) {
-    return lookupByIdOrName(t, true, idTerm, invlidIdIssue, nameTerm, createdNameOrigin);
+  private List<RankedName> lookupByIdOrName(TermRecord v, NeoTaxon t, DwcTerm idTerm, Issue invlidIdIssue, DwcTerm nameTerm, Origin createdNameOrigin) {
+    return lookupByIdOrName(v, t, true, idTerm, invlidIdIssue, nameTerm, createdNameOrigin);
   }
 
-  private List<RankedName> lookupByIdOrName(NeoTaxon t, boolean allowMultiple, DwcTerm idTerm, Issue invlidIdIssue, DwcTerm nameTerm, Origin createdNameOrigin) {
-    List<RankedName> names = lookupByTaxonID(idTerm, t, invlidIdIssue, allowMultiple);
+  private List<RankedName> lookupByIdOrName(TermRecord v, NeoTaxon t, boolean allowMultiple, DwcTerm idTerm, Issue invlidIdIssue, DwcTerm nameTerm, Origin createdNameOrigin) {
+    List<RankedName> names = lookupByTaxonID(idTerm, v, t, invlidIdIssue, allowMultiple);
     if (names.isEmpty()) {
       // try to setup rel via the name
-      RankedName n = lookupByName(nameTerm, t, createdNameOrigin);
+      RankedName n = lookupByName(nameTerm, v, t, createdNameOrigin);
       if (n != null) {
         names.add(n);
       }
@@ -138,9 +135,9 @@ public class DwcaRelationInserter implements NeoDb.NodeBatchProcessor {
    *
    * @return list of potentially split ids with their matching neo node if found, otherwise null
    */
-  private List<RankedName> lookupByTaxonID(DwcTerm term, NeoTaxon t, Issue invalidIdIssue, boolean allowMultiple) {
+  private List<RankedName> lookupByTaxonID(DwcTerm term, TermRecord v, NeoTaxon t, Issue invalidIdIssue, boolean allowMultiple) {
     List<RankedName> ids = Lists.newArrayList();
-    final String unsplitIds = t.verbatim.getTerm(term);
+    final String unsplitIds = v.get(term);
     if (unsplitIds != null && !unsplitIds.equals(t.getID())) {
       if (allowMultiple && meta.getMultiValueDelimiters().containsKey(term)) {
         ids.addAll(lookupRankedNames(
@@ -194,9 +191,9 @@ public class DwcaRelationInserter implements NeoDb.NodeBatchProcessor {
    *
    * @return the accepted node with its name. Null if no accepted name was mapped or equals the record itself
    */
-  private RankedName lookupByName(DwcTerm term, NeoTaxon t, Origin createdOrigin) {
-    if (t.verbatim.hasTerm(term)) {
-      final Name name = NameParser.PARSER.parse(t.verbatim.getTerm(term)).get().getName();
+  private RankedName lookupByName(DwcTerm term, TermRecord v, NeoTaxon t, Origin createdOrigin) {
+    if (v.hasTerm(term)) {
+      final Name name = NameParser.PARSER.parse(v.get(term)).get().getName();
       if (!name.getScientificName().equalsIgnoreCase(t.name.getScientificName())) {
         List<Node> matches = store.byScientificName(name.getScientificName());
         // remove other authors, but allow names without authors

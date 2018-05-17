@@ -7,10 +7,9 @@ import javax.ws.rs.core.MediaType;
 
 import com.codahale.metrics.annotation.Timed;
 import org.apache.ibatis.session.SqlSession;
-import org.col.api.model.Page;
-import org.col.api.model.Reference;
-import org.col.api.model.ResultPage;
+import org.col.api.model.*;
 import org.col.db.dao.ReferenceDao;
+import org.col.db.mapper.VerbatimRecordMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,6 +43,13 @@ public class ReferenceResource {
   public Reference get(@PathParam("key") int key, @QueryParam("page") String page, @Context SqlSession session) {
     ReferenceDao dao = new ReferenceDao(session);
     return dao.get(key, page);
+  }
+
+  @GET
+  @Path("{key}/verbatim")
+  public TermRecord getVerbatim(@PathParam("key") int key, @Context SqlSession session) {
+    VerbatimRecordMapper mapper = session.getMapper(VerbatimRecordMapper.class);
+    return mapper.getByEntity(Reference.class, key);
   }
 
 }

@@ -11,7 +11,7 @@ import com.google.common.collect.Sets;
 import org.col.admin.task.importer.neo.model.Labels;
 import org.col.admin.task.importer.neo.model.NeoProperties;
 import org.col.admin.task.importer.neo.model.RelType;
-import org.gbif.io.TabWriter;
+import org.col.common.io.TabWriter;
 import org.gbif.nameparser.api.Rank;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;

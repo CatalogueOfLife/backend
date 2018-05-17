@@ -24,7 +24,7 @@ import static org.gbif.nameparser.util.NameFormatter.HYBRID_MARKER;
 /**
  *
  */
-public class Name implements PrimaryEntity {
+public class Name implements VerbatimEntity {
 
   /**
    * Internal surrogate key of the name as provided by postgres. This key is unique across all
@@ -42,6 +42,8 @@ public class Name implements PrimaryEntity {
    * Key to dataset instance. Defines context of the name key.
    */
   private Integer datasetKey;
+
+  private Integer verbatimKey;
 
   /**
    * Groups all homotypic names by referring to a single representative name of that group.
@@ -256,6 +258,16 @@ public class Name implements PrimaryEntity {
 
   public void setDatasetKey(Integer key) {
     this.datasetKey = key;
+  }
+
+  @Override
+  public Integer getVerbatimKey() {
+    return verbatimKey;
+  }
+
+  @Override
+  public void setVerbatimKey(Integer verbatimKey) {
+    this.verbatimKey = verbatimKey;
   }
 
   public String getScientificNameID() {

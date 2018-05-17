@@ -12,7 +12,6 @@ import de.javakaffee.kryoserializers.guava.ImmutableListSerializer;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import org.col.admin.task.importer.neo.model.NeoTaxon;
 import org.col.admin.task.importer.neo.model.RankedName;
-import org.col.admin.task.importer.neo.model.UnescapedVerbatimRecord;
 import org.col.api.model.*;
 import org.col.api.vocab.*;
 import org.gbif.dwc.terms.*;
@@ -38,7 +37,6 @@ public class NeoKryoFactory implements KryoFactory {
     kryo.register(Dataset.class);
     kryo.register(DatasetImport.class);
     kryo.register(Distribution.class);
-    kryo.register(ExtendedTermRecord.class);
     kryo.register(Name.class);
     kryo.register(NameAccordingTo.class);
     kryo.register(NameAct.class);
@@ -50,8 +48,6 @@ public class NeoKryoFactory implements KryoFactory {
     kryo.register(Synonym.class);
     kryo.register(Taxon.class);
     kryo.register(VernacularName.class);
-    kryo.register(VerbatimRecord.class);
-    kryo.register(UnescapedVerbatimRecord.class);
     kryo.register(TermRecord.class);
     kryo.register(Page.class);
 

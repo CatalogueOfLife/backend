@@ -27,6 +27,22 @@
             <artifactId>dropwizard-client</artifactId>
         </dependency>
         <dependency>
+            <groupId>io.dropwizard</groupId>
+            <artifactId>dropwizard-jersey</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.dropwizard</groupId>
+            <artifactId>dropwizard-util</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.dropwizard</groupId>
+            <artifactId>dropwizard-lifecycle</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.dropwizard</groupId>
+            <artifactId>dropwizard-logging</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.glassfish.jersey.ext.rx</groupId>
             <artifactId>jersey-rx-client-java8</artifactId>
         </dependency>
@@ -49,19 +65,11 @@
         </dependency>
         <dependency>
             <groupId>org.col</groupId>
-            <artifactId>colplus-dwca</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.col</groupId>
             <artifactId>colplus-parser</artifactId>
         </dependency>
         <dependency>
             <groupId>org.col</groupId>
             <artifactId>colplus-dao</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.gbif</groupId>
-            <artifactId>dwca-io</artifactId>
         </dependency>
 
         <!-- neo4j, mapdb & kryo -->
@@ -104,8 +112,8 @@
             <artifactId>fastutil</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.fasterxml.jackson.dataformat</groupId>
-            <artifactId>jackson-dataformat-csv</artifactId>
+            <groupId>com.univocity</groupId>
+            <artifactId>univocity-parsers</artifactId>
         </dependency>
 
         <!--
@@ -136,6 +144,12 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-text</artifactId>
+        </dependency>
+
+        <!-- other -->
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
         </dependency>
 
         <!-- logging -->
@@ -180,13 +194,6 @@
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
             <scope>test</scope>
-        </dependency>
-
-
-        <dependency>
-            <groupId>com.univocity</groupId>
-            <artifactId>univocity-parsers</artifactId>
-            <version>2.5.9</version>
         </dependency>
     </dependencies>
 

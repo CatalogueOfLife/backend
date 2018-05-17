@@ -53,9 +53,6 @@ import org.slf4j.LoggerFactory;
  * <p>
  * We use the Kryo library for a very performant binary
  * serialisation with the data keyed under the neo4j node value.
- *
- * TODO: separate out the reference store in its own class and use a lucene index
- * with a suitable analyzer to lookup refs by id or title
  */
 public class NeoDb implements ReferenceStore {
   private static final Logger LOG = LoggerFactory.getLogger(NeoDb.class);
@@ -75,6 +72,8 @@ public class NeoDb implements ReferenceStore {
   private final Atomic.Var<Dataset> dataset;
   private final Map<Long, NeoTaxon> taxa;
   private final Map<Integer, Reference> references;
+  private final Map<Integer, TermRecord> verbatim;
+  private final AtomicInteger verbatimSequence = new AtomicInteger(0);
   private final Map<String, Reference> referenceIndex;
   private final AtomicInteger referenceSequence = new AtomicInteger(0);
   private final File neoDir;
@@ -110,6 +109,10 @@ public class NeoDb implements ReferenceStore {
       references = mapDb.hashMap("references")
           .keySerializer(Serializer.INTEGER)
           .valueSerializer(new MapDbObjectSerializer(Reference.class, pool, 128))
+          .createOrOpen();
+      verbatim = mapDb.hashMap("verbatim")
+          .keySerializer(Serializer.INTEGER)
+          .valueSerializer(new MapDbObjectSerializer(TermRecord.class, pool, 128))
           .createOrOpen();
       // TODO: replace with lucene index stored on disk
       referenceIndex = Maps.newHashMap();
@@ -173,9 +176,11 @@ public class NeoDb implements ReferenceStore {
   }
 
   public NeoTaxon getByID(String id) {
-    Node n = byID(id);
-    if (n != null) {
-      return get(n);
+    if (id != null) {
+      Node n = byID(id);
+      if (n != null) {
+        return get(n);
+      }
     }
     return null;
   }
@@ -437,6 +442,14 @@ public class NeoDb implements ReferenceStore {
     return t.isSynonym() ? SYN_LABELS : TAX_LABELS;
   }
 
+  public TermRecord put(TermRecord v) {
+    if (v.getKey() == null) {
+      v.setKey(verbatimSequence.incrementAndGet());
+    }
+    verbatim.put(v.getKey(), v);
+    return v;
+  }
+
   @Override
   public Reference put(Reference r) {
     if (r.getKey() == null) {
@@ -448,6 +461,10 @@ public class NeoDb implements ReferenceStore {
       referenceIndex.put(normRef(r.getId()), r);
     }
     return r;
+  }
+
+  public TermRecord getVerbatim(int key) {
+    return verbatim.get(key);
   }
 
   private static String normRef(String idOrTitle) {
@@ -471,6 +488,10 @@ public class NeoDb implements ReferenceStore {
   @Override
   public Iterable<Reference> refList() {
     return references.values();
+  }
+
+  public Iterable<TermRecord> verbatimList() {
+    return verbatim.values();
   }
 
   @Override
@@ -752,9 +773,14 @@ public class NeoDb implements ReferenceStore {
         t.classification.clearRankAndBelow(excludeRankAndBelow);
       }
       // copy parent props from source
-      t.verbatim = UnescapedVerbatimRecord.create();
-      t.verbatim.setTerm(DwcTerm.parentNameUsageID, source.verbatim.getTerm(DwcTerm.parentNameUsageID));
-      t.verbatim.setTerm(DwcTerm.parentNameUsage, source.verbatim.getTerm(DwcTerm.parentNameUsage));
+      if (t.taxon.getVerbatimKey() != null) {
+        TermRecord sourceTerms = getVerbatim(t.taxon.getVerbatimKey());
+        TermRecord copyTerms = new TermRecord();
+        copyTerms.put(DwcTerm.parentNameUsageID, sourceTerms.get(DwcTerm.parentNameUsageID));
+        copyTerms.put(DwcTerm.parentNameUsage, sourceTerms.get(DwcTerm.parentNameUsage));
+        put(copyTerms);
+        t.taxon.setVerbatimKey(copyTerms.getKey());
+      }
     }
     // add potential issue
     if (issue != null) {

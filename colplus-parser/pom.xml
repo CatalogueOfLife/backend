@@ -21,10 +21,6 @@
             <groupId>org.col</groupId>
             <artifactId>colplus-common</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.col</groupId>
-            <artifactId>colplus-dwca</artifactId>
-        </dependency>
 
         <!-- gbif-->
         <dependency>

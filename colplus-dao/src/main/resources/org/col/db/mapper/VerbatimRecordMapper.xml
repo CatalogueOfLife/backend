@@ -5,85 +5,77 @@
 <mapper namespace="org.col.db.mapper.VerbatimRecordMapper">
 
     <sql id="SELECT">
-        id,
-        dataset_key,
-        name_key,
-        taxon_key,
-        reference_key,
-        terms
+        v.key,
+        v.dataset_key,
+        v.line,
+        v.file,
+        v.type,
+        v.terms
     </sql>
 
     <sql id="COLS">
-        id,
         dataset_key,
-        name_key,
-        taxon_key,
-        reference_key,
+        line,
+        file,
+        type,
         terms
     </sql>
 
     <sql id="PROPS">
-      #{rec.id},
-      #{rec.datasetKey},
-      #{nameKey},
-      #{taxonKey},
-      #{referenceKey},
-      #{rec.terms, typeHandler=org.col.db.type.ExtendedTermRecordTypeHandler}::jsonb
+        #{datasetKey},
+        #{line},
+        #{file},
+        #{type},
+        #{terms, typeHandler=org.col.db.type2.TermMapTypeHandler}::jsonb
     </sql>
 
     <sql id="FROM">
-        verbatim_record v
+        verbatim v
+    </sql>
+
+    <sql id="WHERE">
+        WHERE dataset_key = #{datasetKey}
+        <if test="type != null">
+            AND v.type = #{type}
+        </if>
     </sql>
 
 
-    <!--  A mapping to Name, mostly auto mapped -->
-    <resultMap id="verbatimResultMap" type="VerbatimRecord" autoMapping="true">
-        <id property="id" column="id"/>
-        <result property="terms" column="terms" javaType="TermRecord" typeHandler="org.col.db.type.ExtendedTermRecordTypeHandler"/>
+    <resultMap id="verbatimResultMap" type="TermRecord" autoMapping="true">
+        <result property="terms" column="terms" typeHandler="org.col.db.type2.TermMapTypeHandler"/>
     </resultMap>
 
 
 
     <select id="count" resultType="integer">
         SELECT count(*)
-        FROM verbatim_record
-        WHERE dataset_key = #{datasetKey}
+        FROM <include refid="FROM" />
+        <include refid="WHERE" />
     </select>
 
     <select id="list" resultMap="verbatimResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
-        WHERE dataset_key = #{datasetKey}
-        ORDER BY id
+        <include refid="WHERE" />
+        ORDER BY key
         <include refid="org.col.db.mapper.Common.limit"/>
     </select>
 
     <select id="get" resultMap="verbatimResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
-        WHERE dataset_key = #{datasetKey} AND id = #{id}
+        WHERE key = #{key}
     </select>
 
-    <select id="getByName" resultMap="verbatimResultMap">
+    <select id="getByEntity" resultMap="verbatimResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
-        WHERE v.name_key = #{nameKey}
+            JOIN ${class.getSimpleName()} e ON e.verbatim_key=v.key
+        WHERE e.key = #{key}
     </select>
 
-    <select id="getByTaxon" resultMap="verbatimResultMap">
-        SELECT <include refid="SELECT" />
-        FROM <include refid="FROM" />
-        WHERE v.taxon_key = #{taxonKey}
-    </select>
-
-    <select id="getByReference" resultMap="verbatimResultMap">
-        SELECT <include refid="SELECT" />
-        FROM <include refid="FROM" />
-        WHERE v.reference_key = #{referenceKey}
-    </select>
-
-    <insert id="create" parameterType="map">
-        INSERT INTO verbatim_record (<include refid="COLS" />)
+    <insert id="create" parameterType="TermRecord"  useGeneratedKeys="true" keyProperty="key">
+        INSERT INTO verbatim (<include refid="COLS" />)
         VALUES (<include refid="PROPS" />)
     </insert>
 

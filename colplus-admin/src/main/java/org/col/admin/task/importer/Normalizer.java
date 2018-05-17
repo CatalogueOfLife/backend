@@ -98,12 +98,7 @@ public class Normalizer implements Runnable {
       // is it a source with verbatim data?
       require(t.name.getOrigin(), "name origin");
       if (t.name.getOrigin() == Origin.SOURCE) {
-        id = require(t.verbatim.getId(), "verbatim id");
-        // did we unescape verbatim data?
-        if (t.verbatim.isModified()) {
-          t.addIssue(Issue.ESCAPED_CHARACTERS);
-          modified = true;
-        }
+        id = require(t.getID(), "verbatim id");
       } else {
         id = String.format("%s %s %s", t.taxon.getOrigin().name(), t.name.getRank(), t.name.getScientificName());
       }

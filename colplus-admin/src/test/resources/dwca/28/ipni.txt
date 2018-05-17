@@ -3,3 +3,4 @@
 10	11	Xonopus uiticus (A.A.Araújo) Valls
 11	12	Xonopus compressus var. uiticus A.A.Araújo
 12	10	Conopus compressus var. uiticus (A.A.Araújo) Krill
+13	11	Conopus uiticus (A.A.Araújo) Terror

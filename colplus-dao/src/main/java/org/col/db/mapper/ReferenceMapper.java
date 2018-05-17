@@ -24,7 +24,7 @@ public interface ReferenceMapper {
    */
   List<Reference> listByKeys(@Param("keys") Set<Integer> keys);
 
-	Integer lookupKey(String id, int datasetKey);
+	Integer lookupKey(@Param("id") String id, @Param("datasetKey") int datasetKey);
 
 	Reference get(@Param("key") int key);
 

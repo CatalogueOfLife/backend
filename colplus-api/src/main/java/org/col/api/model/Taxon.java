@@ -14,7 +14,7 @@ import org.col.api.vocab.TaxonomicStatus;
 /**
  *
  */
-public class Taxon implements PrimaryEntity, NameUsage {
+public class Taxon implements NameUsage, VerbatimEntity {
 
 	/**
 	 * Internal surrogate key of the taxon as provided by postgres. This key is
@@ -26,7 +26,9 @@ public class Taxon implements PrimaryEntity, NameUsage {
 
 	private Integer datasetKey;
 
-  /**
+	private Integer verbatimKey;
+
+	/**
    * Clearinghouse taxon concept identifier based on the synonymy of the taxon and its siblings
    */
   private Integer taxonID;
@@ -92,7 +94,17 @@ public class Taxon implements PrimaryEntity, NameUsage {
 		this.datasetKey = key;
 	}
 
-  @Override
+	@Override
+	public Integer getVerbatimKey() {
+		return verbatimKey;
+	}
+
+	@Override
+	public void setVerbatimKey(Integer verbatimKey) {
+		this.verbatimKey = verbatimKey;
+	}
+
+	@Override
 	public Name getName() {
 		return name;
 	}

@@ -127,7 +127,7 @@
 
     <select id="metrics" resultMap="datasetImportResultMap">
         SELECT #{key} AS datasetKey,
-        (SELECT count(*) FROM verbatim_record WHERE dataset_key=#{key}) AS verbatimCount,
+        (SELECT count(*) FROM verbatim WHERE dataset_key=#{key}) AS verbatimCount,
         (SELECT count(*) FROM name WHERE dataset_key=#{key}) AS nameCount,
         (SELECT count(*) FROM taxon WHERE dataset_key=#{key}) AS taxonCount,
         (SELECT count(*) FROM vernacular_name WHERE dataset_key=#{key}) AS vernacularCount,
