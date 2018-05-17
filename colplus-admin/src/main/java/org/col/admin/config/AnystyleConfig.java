@@ -3,12 +3,9 @@ package org.col.admin.config;
 public class AnystyleConfig {
 
   /*
-   * Host of the Anystyle Ruby/Sinatra service
+   * Base URL for accessing the nystyle Ruby/Sinatra service. Append a query param like this:
+   * "http://localhost:4567?ref=<some_citation>"
    */
-  public String host = "localhost";
-  /*
-   * Port of the Anystyle Ruby/Sinatra service
-   */
-  public int port = 4567;
+  public String baseUrl = "http://localhost:4567";
 
 }

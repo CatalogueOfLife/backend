@@ -25,8 +25,7 @@ public class AnystyleParserWrapperTest {
   public static void init() {
     cfg = new AnystyleConfig();
     // TODO read from anystyle-test.yaml
-    cfg.host = "localhost";
-    cfg.port = 4567;
+    cfg.baseUrl = "http://localhost:4567";
   }
 
   @Test
@@ -96,6 +95,40 @@ public class AnystyleParserWrapperTest {
     AnystyleParserWrapper parser = new AnystyleParserWrapper(HttpClients.createDefault(), cfg);
     String ref =
         "Gidijala L, Bovenberg RA, Klaassen P, van der Klei IJ, Veenhuis M, et al. (2008) Production of functionally active Penicillium chrysogenum isopenicillin N synthase in the yeast Hansenula polymorpha. BMC Biotechnol 8: 29.";
+    CslData item = parser.parse(ref).get();
+    System.out.println(pretty(item));
+  }
+
+  @Test
+  @Ignore
+  // With HTML markup
+  public void testParse07() throws Exception {
+    AnystyleParserWrapper parser = new AnystyleParserWrapper(HttpClients.createDefault(), cfg);
+    String ref =
+        "Laubenfels, M.W. de. (1930). TheSponges of California. (Abstracts of dissertations for the degree of doctor of philosophy. <em>Stanford University Bulletin.</em> 5(98): 24-29.";
+    CslData item = parser.parse(ref).get();
+    System.out.println(pretty(item));
+  }
+
+  // FLO-3122","Stroinski A. & Swierczewski D.","2013","Peyrierasus gen. nov. - a new genus of
+  // Flatidae (Hemiptera: Fulgoromorpha) from Southeastern Madagascar","Annales Zoologici, 63(2):
+  // 251-262.
+
+  @Test
+  @Ignore
+  public void testParse08() throws Exception {
+    AnystyleParserWrapper parser = new AnystyleParserWrapper(HttpClients.createDefault(), cfg);
+    String ref =
+        "Bulletin de la Société d'Histoire Naturelle de l'Afrique du Nord. Alger, XIV: 173-176.";
+    CslData item = parser.parse(ref).get();
+    System.out.println(pretty(item));
+  }
+
+  @Test
+  @Ignore
+  public void testParse09() throws Exception {
+    AnystyleParserWrapper parser = new AnystyleParserWrapper(HttpClients.createDefault(), cfg);
+    String ref = "Some species of Delphacodes (Homoptera, Fulgoridae, Delphacinae). Part IV";
     CslData item = parser.parse(ref).get();
     System.out.println(pretty(item));
   }

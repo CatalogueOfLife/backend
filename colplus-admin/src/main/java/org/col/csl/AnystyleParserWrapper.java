@@ -1,17 +1,18 @@
 package org.col.csl;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Optional;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.google.common.base.Strings;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.util.EntityUtils;
 import org.col.admin.config.AnystyleConfig;
 import org.col.api.model.CslData;
 import org.col.parser.Parser;
@@ -45,23 +46,31 @@ public class AnystyleParserWrapper implements Parser<CslData> {
       return Optional.empty();
     }
     try (CloseableHttpResponse response = hc.execute(request(ref))) {
-      InputStream in = response.getEntity().getContent();
-      List<CslData> raw = MAPPER.readValue(in, ANYSTYLE_RESPONSE_TYPE);
+      String json = EntityUtils.toString(response.getEntity());
+      List<CslData> raw;
+      try {
+        raw = MAPPER.readValue(json, ANYSTYLE_RESPONSE_TYPE);
+      } catch (JsonMappingException e) {
+        String err = String.format(
+            "Error parsing citation: \"%s\". Anystyle JSON output could not be deserialized into List<CslData>: %s",
+            ref, json);
+        LOG.error(err);
+        throw new RuntimeException(err, e);
+      }
       if (raw.size() != 1) {
         LOG.error("Anystyle result is list of size {}", raw.size());
         throw new RuntimeException("Unexpected response from Anystyle");
       }
-      return Optional.of(raw.get(0));
+      CslData csl = raw.get(0);
+      csl.setId(null);
+      return Optional.of(csl);
     } catch (IOException | URISyntaxException e) {
       throw new RuntimeException(e);
     }
   }
 
   private HttpGet request(String reference) throws URISyntaxException {
-    URIBuilder ub = new URIBuilder();
-    ub.setScheme("http");
-    ub.setHost(cfg.host);
-    ub.setPort(cfg.port);
+    URIBuilder ub = new URIBuilder(cfg.baseUrl);
     ub.setParameter("ref", reference);
     return new HttpGet(ub.build());
   }

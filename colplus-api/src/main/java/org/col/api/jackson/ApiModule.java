@@ -42,13 +42,13 @@ public class ApiModule extends SimpleModule {
     addDeserializer(Country.class, new CountrySerde.Deserializer());
     addDeserializer(Language.class, new LanguageSerde.Deserializer());
     addDeserializer(Term.class, new TermSerde.Deserializer());
-    addDeserializer(CSLRefType.class, new CSLRefTypeSerde.Deserializer());
+    //addDeserializer(CSLRefType.class, new CSLRefTypeSerde.Deserializer());
 
     // then serializers:
     addSerializer(Country.class, new CountrySerde.Serializer());
     addSerializer(Language.class, new LanguageSerde.Serializer());
     addSerializer(Term.class, new TermSerde.ValueSerializer());
-    addSerializer(CSLRefType.class, new CSLRefTypeSerde.Serializer());
+    //addSerializer(CSLRefType.class, new CSLRefTypeSerde.Serializer());
 
     // then key deserializers
     addKeyDeserializer(Term.class, new TermSerde.TermKeyDeserializer());
