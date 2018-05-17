@@ -23,7 +23,6 @@ import org.col.admin.task.importer.neo.traverse.TreeWalker;
 import org.col.api.model.*;
 import org.col.api.vocab.Issue;
 import org.col.api.vocab.NomActType;
-import org.col.api.vocab.Origin;
 import org.col.db.dao.NameDao;
 import org.col.db.mapper.*;
 import org.neo4j.graphdb.Node;

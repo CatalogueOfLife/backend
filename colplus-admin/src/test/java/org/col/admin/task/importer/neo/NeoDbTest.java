@@ -14,8 +14,6 @@ import org.col.api.RandomUtils;
 import org.col.api.model.Taxon;
 import org.col.api.model.TermRecord;
 import org.gbif.dwc.terms.AcefTerm;
-import org.gbif.dwc.terms.DcTerm;
-import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.GbifTerm;
 import org.junit.After;
 import org.junit.Before;

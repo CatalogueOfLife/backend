@@ -1,4 +1,4 @@
-package org.col.dw.jersey;
+package org.col.dw.jersey.provider;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;

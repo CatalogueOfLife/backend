@@ -7,12 +7,10 @@ import org.apache.ibatis.session.SqlSession;
 import org.col.api.model.Name;
 import org.col.api.model.Page;
 import org.col.api.model.ResultPage;
-import org.col.api.model.TermRecord;
 import org.col.api.vocab.TaxonomicStatus;
 import org.col.db.NotFoundException;
 import org.col.db.mapper.NameMapper;
 import org.col.db.mapper.SynonymMapper;
-import org.col.db.mapper.VerbatimRecordMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

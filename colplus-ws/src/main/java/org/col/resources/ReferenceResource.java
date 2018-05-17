@@ -7,7 +7,10 @@ import javax.ws.rs.core.MediaType;
 
 import com.codahale.metrics.annotation.Timed;
 import org.apache.ibatis.session.SqlSession;
-import org.col.api.model.*;
+import org.col.api.model.Page;
+import org.col.api.model.Reference;
+import org.col.api.model.ResultPage;
+import org.col.api.model.TermRecord;
 import org.col.db.dao.ReferenceDao;
 import org.col.db.mapper.VerbatimRecordMapper;
 import org.slf4j.Logger;

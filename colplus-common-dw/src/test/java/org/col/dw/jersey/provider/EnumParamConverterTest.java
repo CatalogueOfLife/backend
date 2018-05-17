@@ -1,6 +1,7 @@
-package org.col.dw.jersey;
+package org.col.dw.jersey.provider;
 
 import org.col.api.vocab.Issue;
+import org.col.dw.jersey.provider.EnumParamConverterProvider;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

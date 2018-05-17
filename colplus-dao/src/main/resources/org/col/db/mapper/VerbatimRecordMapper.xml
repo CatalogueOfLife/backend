@@ -36,7 +36,7 @@
     <sql id="WHERE">
         WHERE dataset_key = #{datasetKey}
         <if test="type != null">
-            AND v.type = #{type}
+            AND v.type = #{type, typeHandler=org.col.db.type.TermTypeHandler}
         </if>
     </sql>
 

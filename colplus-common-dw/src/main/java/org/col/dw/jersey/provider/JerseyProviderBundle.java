@@ -1,4 +1,4 @@
-package org.col.dw.jersey;
+package org.col.dw.jersey.provider;
 
 import io.dropwizard.Bundle;
 import io.dropwizard.jersey.jackson.JsonProcessingExceptionMapper;
@@ -7,6 +7,7 @@ import io.dropwizard.setup.Environment;
 import org.col.dw.jersey.exception.*;
 import org.col.dw.jersey.filter.CreatedResponseFilter;
 import org.col.dw.jersey.filter.Null404ResponseFilter;
+import org.col.dw.jersey.provider.EnumParamConverterProvider;
 
 /**
  * Various custom jersey providers bundled together for CoL.
@@ -22,6 +23,7 @@ public class JerseyProviderBundle implements Bundle {
   public void run(Environment env) {
     // param converters
     env.jersey().register(EnumParamConverterProvider.class);
+    env.jersey().register(TermParamConverterProvider.class);
 
     // filter
     env.jersey().register(CreatedResponseFilter.class);

@@ -1,12 +1,7 @@
 package org.col.api.jackson;
 
-import java.util.Random;
-
-import org.col.api.RandomUtils;
 import org.col.api.TestEntityGenerator;
 import org.col.api.model.TermRecord;
-import org.gbif.dwc.terms.*;
-import org.junit.Ignore;
 
 /**
  *

@@ -8,7 +8,7 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.jackson.ApiModule;
 import org.col.dw.cors.CorsBundle;
 import org.col.dw.db.MybatisBundle;
-import org.col.dw.jersey.JerseyProviderBundle;
+import org.col.dw.jersey.provider.JerseyProviderBundle;
 
 public abstract class PgApp<T extends PgAppConfig> extends Application<T> {
 

@@ -2,7 +2,6 @@ package org.col.db.mapper;
 
 import java.util.Random;
 
-import org.apache.ibatis.annotations.Param;
 import org.col.api.TestEntityGenerator;
 import org.col.api.model.Name;
 import org.col.api.model.TermRecord;

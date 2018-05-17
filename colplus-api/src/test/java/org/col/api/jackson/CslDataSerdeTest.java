@@ -1,10 +1,7 @@
 package org.col.api.jackson;
 
-import org.col.api.RandomInstance;
 import org.col.api.TestEntityGenerator;
 import org.col.api.model.CslData;
-import org.col.api.model.CslDate;
-import org.col.api.model.CslName;
 
 public class CslDataSerdeTest extends SerdeTestBase<CslData> {
 

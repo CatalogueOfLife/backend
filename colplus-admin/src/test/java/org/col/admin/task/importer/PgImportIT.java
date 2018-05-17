@@ -18,9 +18,7 @@ import org.col.admin.config.ImporterConfig;
 import org.col.admin.config.NormalizerConfig;
 import org.col.admin.task.importer.neo.NeoDb;
 import org.col.admin.task.importer.neo.NeoDbFactory;
-import org.col.admin.task.importer.neo.model.NeoTaxon;
 import org.col.admin.task.importer.neo.model.RankedName;
-import org.col.admin.task.importer.neo.model.RelType;
 import org.col.admin.task.importer.reference.ReferenceFactory;
 import org.col.api.model.*;
 import org.col.api.vocab.*;
@@ -36,7 +34,6 @@ import org.col.db.mapper.NameActMapper;
 import org.col.db.mapper.PgSetupRule;
 import org.gbif.nameparser.api.Rank;
 import org.junit.*;
-import org.neo4j.graphdb.Direction;
 
 import static org.col.api.vocab.DataFormat.ACEF;
 import static org.col.api.vocab.DataFormat.DWCA;

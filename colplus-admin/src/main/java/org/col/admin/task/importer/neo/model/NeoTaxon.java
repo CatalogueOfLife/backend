@@ -1,15 +1,12 @@
 package org.col.admin.task.importer.neo.model;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 import com.google.common.collect.Lists;
 import org.col.api.model.*;
 import org.col.api.vocab.Issue;
 import org.col.api.vocab.Origin;
-import org.gbif.dwc.terms.Term;
 import org.neo4j.graphdb.Node;
 
 /**

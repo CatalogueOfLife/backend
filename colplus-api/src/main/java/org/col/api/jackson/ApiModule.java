@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.introspect.NopAnnotationIntrospector;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import org.col.api.vocab.CSLRefType;
 import org.col.api.vocab.Country;
 import org.col.api.vocab.Language;
 import org.gbif.dwc.terms.Term;

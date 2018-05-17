@@ -1,6 +1,5 @@
 package org.col.api.model;
 
-import org.col.api.TestEntityGenerator;
 import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.GbifTerm;

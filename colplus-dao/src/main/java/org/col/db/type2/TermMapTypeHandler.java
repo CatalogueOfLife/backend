@@ -5,7 +5,6 @@ import java.sql.CallableStatement;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -14,7 +13,6 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import org.apache.ibatis.type.BaseTypeHandler;
 import org.apache.ibatis.type.JdbcType;
 import org.col.api.jackson.ApiModule;
-import org.col.api.model.CslData;
 import org.gbif.dwc.terms.Term;
 
 /**

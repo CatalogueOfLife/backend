@@ -1,14 +1,10 @@
 package org.col.admin.command.initdb;
 
-import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URI;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.concurrent.TimeUnit;
 
 import io.dropwizard.cli.ConfiguredCommand;
