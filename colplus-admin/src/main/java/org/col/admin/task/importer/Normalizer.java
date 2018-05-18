@@ -76,10 +76,6 @@ public class Normalizer implements Runnable {
       matchAndCount();
       LOG.info("Normalization succeeded");
 
-    } catch (Exception e){
-      LOG.error("Normalizer failed", e);
-      throw e;
-
     } finally {
       if (closeStore) {
         store.close();

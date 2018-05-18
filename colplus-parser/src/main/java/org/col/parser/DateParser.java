@@ -16,6 +16,8 @@ import java.util.Properties;
 
 import org.apache.commons.lang3.StringUtils;
 import org.col.common.date.FuzzyDate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static java.time.temporal.ChronoField.YEAR;
 
@@ -24,6 +26,7 @@ import static java.time.temporal.ChronoField.YEAR;
  * 
  */
 public class DateParser implements Parser<FuzzyDate> {
+  private static final Logger LOG = LoggerFactory.getLogger(DateParser.class);
 
   /**
    * A DateStringFilter optionally transforms a date string before it is parsed by a ParseSpec's

@@ -10,9 +10,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+import com.google.common.collect.Lists;
 import org.col.common.date.FuzzyDate;
 import org.col.parser.DateParser.DateStringFilter;
 import org.col.parser.DateParser.ParseSpec;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -264,8 +266,20 @@ public class DateParserTest {
     Optional<FuzzyDate> date = DateParser.PARSER.parse("2005-02-29");
     System.out.println(date.get().toLocalDate());
     // Default is to parse lenient (no UnparsableException)
-
   }
+
+  /**
+   * https://github.com/Sp2000/colplus-backend/issues/110
+   */
+  @Test
+  @Ignore("To be fixed")
+  public void test110() throws UnparsableException {
+    for (String raw : Lists.newArrayList("1996", "May-1996", "1996/1997")) {
+      Optional<FuzzyDate> date = DateParser.PARSER.parse(raw);
+      System.out.println(date.get().toLocalDate());
+    }
+  }
+
 
   private static DateParser simpleParser(String pattern, TemporalQuery<?> parseInto) {
     List<ParseSpec> parseSpecs = new ArrayList<>(1);

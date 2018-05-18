@@ -80,9 +80,10 @@ public class ImportManager implements Managed {
     futures.put(datasetKey, CompletableFuture
         .supplyAsync(() -> req)
         .thenApplyAsync(this::runImport, exec)
-        .whenComplete((di, err) -> {
+        .handle((di, err) -> {
           if (err != null) {
-            LOG.error("Dataset import {} failed: {}", req.datasetKey, err);
+            // unwrap CompletionException error
+            LOG.error("Dataset import {} failed: {}", req.datasetKey, err.getCause().getMessage(), err.getCause());
 
           } else {
             Duration durQueued = Duration.between(req.created, di.getStarted());
@@ -91,6 +92,8 @@ public class ImportManager implements Managed {
           }
           futures.remove(req.datasetKey);
           queue.remove(req);
+          // return true if succeeded, false if error
+          return err != null;
         })
     );
     LOG.info("Queued import for dataset {}", datasetKey);

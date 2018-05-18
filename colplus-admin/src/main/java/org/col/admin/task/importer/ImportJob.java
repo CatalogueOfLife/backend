@@ -129,7 +129,7 @@ public class ImportJob implements Callable<DatasetImport> {
 
     } catch (Exception e) {
       // failed import
-      LOG.error("Dataset {} import failed. Log to pg.", datasetKey, e);
+      LOG.error("Dataset {} import failed. {}. Log to db", datasetKey, e.getMessage(), e);
       dao.updateImportFailure(di, e);
 
     } finally {

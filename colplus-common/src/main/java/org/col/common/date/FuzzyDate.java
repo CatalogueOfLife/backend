@@ -4,6 +4,9 @@ import java.time.*;
 import java.time.temporal.TemporalAccessor;
 import java.util.Objects;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import static java.time.temporal.ChronoField.*;
 
 /**
@@ -12,6 +15,7 @@ import static java.time.temporal.ChronoField.*;
  *
  */
 public final class FuzzyDate {
+  private static final Logger LOG = LoggerFactory.getLogger(FuzzyDate.class);
 
   private final TemporalAccessor ta;
   private final String verbatim;
@@ -34,22 +38,28 @@ public final class FuzzyDate {
    * @return
    */
   public LocalDate toLocalDate() {
-    if (ta.getClass() == LocalDate.class) {
-      return (LocalDate) ta;
-    }
-    if (ta.getClass() == OffsetDateTime.class) {
-      return ((OffsetDateTime) ta).toLocalDate();
-    }
-    if (ta.getClass() == LocalDateTime.class) {
-      return ((LocalDateTime) ta).toLocalDate();
-    }
-    if (ta.isSupported(MONTH_OF_YEAR)) {
-      if (ta.isSupported(DAY_OF_MONTH)) {
-        return LocalDate.of(ta.get(YEAR), ta.get(MONTH_OF_YEAR), ta.get(DAY_OF_MONTH));
+    try {
+      if (ta.getClass() == LocalDate.class) {
+        return (LocalDate) ta;
       }
-      return LocalDate.of(ta.get(YEAR), ta.get(MONTH_OF_YEAR), 1);
+      if (ta.getClass() == OffsetDateTime.class) {
+        return ((OffsetDateTime) ta).toLocalDate();
+      }
+      if (ta.getClass() == LocalDateTime.class) {
+        return ((LocalDateTime) ta).toLocalDate();
+      }
+      if (ta.isSupported(MONTH_OF_YEAR)) {
+        if (ta.isSupported(DAY_OF_MONTH)) {
+          return LocalDate.of(ta.get(YEAR), ta.get(MONTH_OF_YEAR), ta.get(DAY_OF_MONTH));
+        }
+        return LocalDate.of(ta.get(YEAR), ta.get(MONTH_OF_YEAR), 1);
+      }
+      return LocalDate.of(ta.get(YEAR), 1, 1);
+
+    } catch (Exception e) {
+      LOG.error("FuzzyDate [{}][{}] failed to convert to LocalDate", ta, verbatim);
+      throw e;
     }
-    return LocalDate.of(ta.get(YEAR), 1, 1);
   }
 
   /**
@@ -86,4 +96,18 @@ public final class FuzzyDate {
     return verbatim;
   }
 
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    FuzzyDate fuzzyDate = (FuzzyDate) o;
+    return Objects.equals(ta, fuzzyDate.ta) &&
+        Objects.equals(verbatim, fuzzyDate.verbatim);
+  }
+
+  @Override
+  public int hashCode() {
+
+    return Objects.hash(ta, verbatim);
+  }
 }
