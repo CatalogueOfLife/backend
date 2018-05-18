@@ -24,6 +24,7 @@ import com.google.common.collect.Maps;
 import com.univocity.parsers.common.IterableResult;
 import com.univocity.parsers.common.ParsingContext;
 import com.univocity.parsers.common.ResultIterator;
+import com.univocity.parsers.common.TextParsingException;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
 import org.col.api.model.TermRecord;
@@ -154,22 +155,28 @@ public class CsvReader {
         cfg.getFormat().setQuoteEscape(quote);
         cfg.setQuoteDetectionEnabled(false);
 
-        CsvParser parser = new CsvParser(cfg);
-        int cols = 0;
-        for (String[] row : parser.parseAll(new StringReader(LINE_JOIN.join(lines)))) {
-          if (isAllNull(row)) continue;
+        try {
+          CsvParser parser = new CsvParser(cfg);
+          int cols = 0;
+          for (String[] row : parser.parseAll(new StringReader(LINE_JOIN.join(lines)))) {
+            if (isAllNull(row)) continue;
 
-          if (cols == 0) {
-            cols = row.length;
-          } else if (cols != row.length) {
-            // inconsistent column number, stop this one
-            cols = -1;
-            break;
+            if (cols == 0) {
+              cols = row.length;
+            } else if (cols != row.length) {
+              // inconsistent column number, stop this one
+              cols = -1;
+              break;
+            }
           }
-        }
-        if (cols > maxCols) {
-          best = cfg;
-          maxCols = cols;
+          if (cols > maxCols) {
+            best = cfg;
+            maxCols = cols;
+          }
+
+        } catch (TextParsingException e) {
+          // parser exception, e.g. if too many columns.
+          // Swallow and simply consider failed attempt
         }
       }
     }
