@@ -57,8 +57,9 @@ public final class FuzzyDate {
       return LocalDate.of(ta.get(YEAR), 1, 1);
 
     } catch (Exception e) {
-      LOG.error("FuzzyDate [{}][{}] failed to convert to LocalDate", ta, verbatim);
-      throw e;
+      //TODO: remove this exception handling once parser produces only correct temporal accessors!!!
+      LOG.error("FuzzyDate [{}][{}] failed to convert to LocalDate", ta, verbatim, e);
+      return null;
     }
   }
 
