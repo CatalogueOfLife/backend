@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import org.apache.commons.text.StringEscapeUtils;
+import org.col.api.vocab.Issue;
 import org.gbif.dwc.terms.Term;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,6 +46,7 @@ public class TermRecord {
   private String file;
   private Term type;
   private Map<Term, String> terms = new HashMap<>();
+  private Set<Issue> issues = EnumSet.noneOf(Issue.class);
 
   // indicates that at least one value has been unescaped
   private boolean unescaped;
@@ -111,6 +113,18 @@ public class TermRecord {
 
   public void setTerms(Map<Term, String> terms) {
     this.terms = terms;
+  }
+
+  public Set<Issue> getIssues() {
+    return issues;
+  }
+
+  public void setIssues(Set<Issue> issues) {
+    this.issues = issues;
+  }
+
+  public void addIssue(Issue issue) {
+    issues.add(issue);
   }
 
   private String unescape(String x){

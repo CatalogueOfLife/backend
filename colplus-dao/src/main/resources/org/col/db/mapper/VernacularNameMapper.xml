@@ -6,6 +6,7 @@
 
   <sql id="SELECT">
     vn.key,
+    vn.verbatim_key,
     vn.name,
     vn.latin,
     vn.language,
@@ -16,6 +17,7 @@
   <sql id="COLS">
     dataset_key,
     taxon_key,
+    verbatim_key,
     name,
     latin,
     language,
@@ -25,10 +27,11 @@
   <sql id="PROPS">
     #{datasetKey},
     #{taxonKey},
-    #{vernacular.name},
-    #{vernacular.latin},
-    #{vernacular.language},
-    #{vernacular.country}
+    #{v.verbatimKey},
+    #{v.name},
+    #{v.latin},
+    #{v.language},
+    #{v.country}
   </sql>
 
   <sql id="FROM">

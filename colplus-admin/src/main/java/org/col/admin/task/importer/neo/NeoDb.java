@@ -442,10 +442,13 @@ public class NeoDb implements ReferenceStore {
     return t.isSynonym() ? SYN_LABELS : TAX_LABELS;
   }
 
-  public TermRecord put(TermRecord v) {
+  public void assignKey(TermRecord v) {
     if (v.getKey() == null) {
       v.setKey(verbatimSequence.incrementAndGet());
     }
+  }
+  public TermRecord put(TermRecord v) {
+    assignKey(v);
     verbatim.put(v.getKey(), v);
     return v;
   }

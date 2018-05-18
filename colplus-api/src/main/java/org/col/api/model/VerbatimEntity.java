@@ -9,8 +9,6 @@ import org.col.api.vocab.Issue;
  */
 public interface VerbatimEntity {
 
-  void setDatasetKey(Integer datasetKey);
-
   Integer getVerbatimKey();
 
   void setVerbatimKey(Integer verbatimKey);

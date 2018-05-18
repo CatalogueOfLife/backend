@@ -1,7 +1,9 @@
 package org.col.admin.task.importer.acef;
 
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import com.google.common.collect.Lists;
 import org.col.admin.task.importer.InsertMetadata;
 import org.col.admin.task.importer.InterpreterBase;
 import org.col.admin.task.importer.neo.ReferenceStore;
@@ -30,7 +32,26 @@ public class AcefInterpreter extends InterpreterBase {
     metadata.setDenormedClassificationMapped(true);
   }
 
-  public NeoTaxon interpretTaxon(Term idTerm, TermRecord v, boolean synonym) {
+  public Optional<Reference> interpretReference(TermRecord rec) {
+    return Optional.of(refFactory.fromACEF(
+        rec.get(AcefTerm.ReferenceID),
+        rec.get(AcefTerm.ReferenceType),
+        rec.get(AcefTerm.Author),
+        rec.get(AcefTerm.Year),
+        rec.get(AcefTerm.Title),
+        rec.get(AcefTerm.Details)
+    ));
+  }
+
+  Optional<NeoTaxon> interpretAccepted(TermRecord v) {
+    return interpretTaxon(AcefTerm.AcceptedTaxonID, v, false);
+  }
+
+  Optional<NeoTaxon> interpretSynonym(TermRecord v) {
+    return interpretTaxon(AcefTerm.ID, v, true);
+  }
+
+  private Optional<NeoTaxon> interpretTaxon(Term idTerm, TermRecord v, boolean synonym) {
     NeoTaxon t = new NeoTaxon();
     // name
     NameAccordingTo nat = interpretName(idTerm, v);
@@ -86,27 +107,29 @@ public class AcefInterpreter extends InterpreterBase {
     // flat classification
     t.classification = interpretClassification(v, synonym);
 
-    return t;
+    return Optional.of(t);
   }
 
-  void interpretVernacular(NeoTaxon t, TermRecord rec) {
+  List<VernacularName> interpretVernacular(TermRecord rec) {
     VernacularName vn = new VernacularName();
+    vn.setVerbatimKey(rec.getKey());
     vn.setName(rec.get(AcefTerm.CommonName));
     vn.setLanguage(SafeParser.parse(LanguageParser.PARSER, rec.get(AcefTerm.Language)).orNull());
     vn.setCountry(SafeParser.parse(CountryParser.PARSER, rec.get(AcefTerm.Country)).orNull());
     vn.setLatin(rec.get(AcefTerm.TransliteratedName));
-    addReferences(vn, rec, t.taxon.getIssues());
-    addAndTransliterate(t, vn);
+    addReferences(vn, vn, rec);
+    transliterate(vn);
+    return Lists.newArrayList(vn);
   }
 
-  void interpretDistribution(NeoTaxon t, TermRecord rec) {
+  List<Distribution> interpretDistribution(TermRecord rec) {
     // require location
     if (rec.hasTerm(AcefTerm.DistributionElement)) {
       Distribution d = new Distribution();
 
       // which standard?
       d.setGazetteer(parse(GazetteerParser.PARSER, rec.get(AcefTerm.StandardInUse))
-          .orElse(Gazetteer.TEXT, Issue.DISTRIBUTION_GAZETEER_INVALID, t.taxon.getIssues()));
+          .orElse(Gazetteer.TEXT, Issue.DISTRIBUTION_GAZETEER_INVALID, d.getIssues()));
 
       // TODO: try to split location into several distributions...
       String loc = rec.get(AcefTerm.DistributionElement);
@@ -119,25 +142,27 @@ public class AcefInterpreter extends InterpreterBase {
           loc = d.getGazetteer().locationID(loc);
         }
         AreaParser.Area area = SafeParser.parse(AreaParser.PARSER, loc).orElse(textArea,
-            Issue.DISTRIBUTION_AREA_INVALID, t.taxon.getIssues());
+            Issue.DISTRIBUTION_AREA_INVALID, d.getIssues());
         d.setArea(area.area);
         // check if we have contradicting extracted a gazetteer
         if (area.standard != Gazetteer.TEXT && area.standard != d.getGazetteer()) {
           LOG.info(
-              "Area standard {} found in area {} different from explicitly given standard {} for taxon {}",
-              area.standard, area.area, d.getGazetteer(), t.getID());
+              "Area standard {} found in area {} different from explicitly given standard {} for {}",
+              area.standard, area.area, d.getGazetteer(), rec);
         }
       }
 
       // status
       d.setStatus(parse(DistributionStatusParser.PARSER, rec.get(AcefTerm.DistributionStatus))
-          .orElse(DistributionStatus.NATIVE, Issue.DISTRIBUTION_STATUS_INVALID, t.taxon.getIssues()));
-      addReferences(d, rec, t.taxon.getIssues());
-      t.distributions.add(d);
+          .orElse(DistributionStatus.NATIVE, Issue.DISTRIBUTION_STATUS_INVALID, d.getIssues()));
+      addReferences(d, d, rec);
+      d.setVerbatimKey(rec.getKey());
+      return Lists.newArrayList(d);
     }
+    return Collections.emptyList();
   }
 
-  private void addReferences(Referenced obj, TermRecord v, Set<Issue> issueCollector) {
+  private void addReferences(Referenced obj, VerbatimEntity ve, TermRecord v) {
     if (v.hasTerm(AcefTerm.ReferenceID)) {
       Reference r = refStore.refById(v.get(AcefTerm.ReferenceID));
       if (r != null) {
@@ -146,7 +171,7 @@ public class AcefInterpreter extends InterpreterBase {
         LOG.info("ReferenceID {} not existing but referred from {} for taxon {}",
             v.get(AcefTerm.ReferenceID), obj.getClass().getSimpleName(),
             v.get(AcefTerm.AcceptedTaxonID));
-        issueCollector.add(Issue.REFERENCE_ID_INVALID);
+        ve.addIssue(Issue.REFERENCE_ID_INVALID);
       }
     }
   }

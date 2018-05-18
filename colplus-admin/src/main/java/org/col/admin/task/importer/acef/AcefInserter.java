@@ -3,7 +3,6 @@ package org.col.admin.task.importer.acef;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.common.base.Splitter;
 import org.col.admin.task.importer.NeoInserter;
@@ -17,7 +16,6 @@ import org.col.api.model.TermRecord;
 import org.col.api.vocab.DataFormat;
 import org.col.api.vocab.Issue;
 import org.gbif.dwc.terms.AcefTerm;
-import org.gbif.dwc.terms.Term;
 import org.neo4j.graphdb.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +32,6 @@ public class AcefInserter extends NeoInserter {
 
   private AcefReader reader;
   private AcefInterpreter inter;
-  final AtomicInteger counter = new AtomicInteger(0);
 
   public AcefInserter(NeoDb store, Path folder, ReferenceFactory refFactory) {
     super(folder, store, refFactory);
@@ -60,24 +57,42 @@ public class AcefInserter extends NeoInserter {
       initReader();
       inter = new AcefInterpreter(store.getDataset(), meta, store, refFactory);
 
-      insertReferences();
+      // This inserts the plain references from the Reference file with no links to names, taxa or distributions.
+      // Links are added afterwards in other methods when a ACEF:ReferenceID field is processed by lookup to the neo store.
+      insertEntities(reader, AcefTerm.Reference,
+          inter::interpretReference,
+          store::put
+      );
 
       // species
-      reader.stream(AcefTerm.AcceptedSpecies).forEach(this::insertTaxon);
-      LOG.info("Inserted {} species names", counter.get());
+      insertEntities(reader, AcefTerm.AcceptedSpecies,
+          inter::interpretAccepted,
+          t -> {
+            meta.incRecords(t.name.getRank());
+            store.put(t);
+          }
+      );
 
       // infraspecies
       // accepted infraspecific names in ACEF have no genus or species
       // but a link to their parent species ID.
       // so we cannot update the scientific name yet - we do this in the relation inserter instead!
-      counter.set(0);
-      reader.stream(AcefTerm.AcceptedInfraSpecificTaxa).forEach(this::insertTaxon);
-      LOG.info("Inserted {} infraspecific names", counter.get());
+      insertEntities(reader, AcefTerm.AcceptedInfraSpecificTaxa,
+          inter::interpretAccepted,
+          t -> {
+            meta.incRecords(t.name.getRank());
+            store.put(t);
+          }
+      );
 
       // synonyms
-      counter.set(0);
-      reader.stream(AcefTerm.Synonyms).forEach(this::insertSynonym);
-      LOG.info("Inserted {} synonym names", counter.get());
+      insertEntities(reader, AcefTerm.Synonyms,
+          inter::interpretSynonym,
+          t -> {
+            meta.incRecords(t.name.getRank());
+            store.put(t);
+          }
+      );
 
     } catch (RuntimeException e) {
       throw new NormalizationFailedException("Failed to read ACEF files", e);
@@ -87,8 +102,16 @@ public class AcefInserter extends NeoInserter {
   @Override
   public void postBatchInsert() throws NormalizationFailedException {
     try (Transaction tx = store.getNeo().beginTx()) {
-      reader.stream(AcefTerm.Distribution).forEach(this::addDistribution);
-      reader.stream(AcefTerm.CommonNames).forEach(this::addVernacular);
+      insertTaxonEntities(reader, AcefTerm.Distribution,
+          inter::interpretDistribution,
+          AcefTerm.AcceptedTaxonID,
+          (t, d) -> t.distributions.add(d)
+      );
+      insertTaxonEntities(reader, AcefTerm.CommonNames,
+          inter::interpretVernacular,
+          AcefTerm.AcceptedTaxonID,
+          (t, vn) -> t.vernacularNames.add(vn)
+      );
       reader.stream(AcefTerm.NameReferencesLinks).forEach(this::addReferenceLink);
 
     } catch (RuntimeException e) {
@@ -99,59 +122,6 @@ public class AcefInserter extends NeoInserter {
   @Override
   protected NeoDb.NodeBatchProcessor relationProcessor() {
     return new AcefRelationInserter(store, inter);
-  }
-
-  private void addDistribution(TermRecord rec) {
-    lookupTaxon(AcefTerm.AcceptedTaxonID, rec).ifPresent(t -> {
-      inter.interpretDistribution(t, rec);
-      store.update(t);
-    });
-  }
-
-  private void addVernacular(TermRecord rec) {
-    lookupTaxon(AcefTerm.AcceptedTaxonID, rec).ifPresent(t -> {
-      inter.interpretVernacular(t, rec);
-      store.update(t);
-    });
-  }
-
-  private void insertTaxon(TermRecord rec) {
-    insertTaxonAndName(AcefTerm.AcceptedTaxonID, false, rec);
-  }
-
-  private void insertSynonym(TermRecord rec) {
-    insertTaxonAndName(AcefTerm.ID, true, rec);
-  }
-
-  private void insertTaxonAndName(Term idTerm, boolean synonym, TermRecord rec) {
-    store.put(rec);
-    NeoTaxon t = inter.interpretTaxon(idTerm, rec, synonym);
-    store.put(t);
-    counter.incrementAndGet();
-    meta.incRecords(t.name.getRank());
-  }
-
-  /**
-   * This inserts the plain references from the Reference file with no links to names, taxa or distributions.
-   * Links are added afterwards in other methods when a ACEF:ReferenceID field is processed by lookup to the neo store.
-   */
-  private void insertReferences() {
-    final AtomicInteger counter = new AtomicInteger(0);
-    reader.stream(AcefTerm.Reference).forEach(rec -> {
-      store.put(rec);
-      Reference r = refFactory.fromACEF(
-          rec.get(AcefTerm.ReferenceID),
-          rec.get(AcefTerm.ReferenceType),
-          rec.get(AcefTerm.Author),
-          rec.get(AcefTerm.Year),
-          rec.get(AcefTerm.Title),
-          rec.get(AcefTerm.Details)
-      );
-      r.setVerbatimKey(rec.getKey());
-      store.put(r);
-      counter.incrementAndGet();
-    });
-    LOG.info("Inserted {} references", counter.get());
   }
 
   /**

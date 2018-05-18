@@ -11,6 +11,7 @@ import org.col.admin.task.importer.neo.model.NeoTaxon;
 import org.col.admin.task.importer.reference.ReferenceFactory;
 import org.col.api.model.Dataset;
 import org.col.api.model.TermRecord;
+import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.GbifTerm;
 import org.neo4j.graphdb.Transaction;
@@ -51,16 +52,13 @@ public class DwcaInserter extends NeoInserter {
       inter = new DwcInterpreter(store.getDataset(), meta, store, refFactory);
 
       // taxon core only, extensions are interpreted later
-      reader.stream(DwcTerm.Taxon).forEach(rec -> {
-        if (rec.hasTerm(DwcaReader.DWCA_ID)) {
-          store.put(rec);
-          NeoTaxon t = inter.interpret(rec);
-          store.put(t);
-          meta.incRecords(t.name.getRank());
-        } else {
-          LOG.warn("Taxon record without id: {}", rec);
-        }
-      });
+      insertEntities(reader, DwcTerm.Taxon,
+          inter::interpret,
+          t -> {
+            meta.incRecords(t.name.getRank());
+            store.put(t);
+          }
+      );
 
     } catch (RuntimeException e) {
       throw new NormalizationFailedException("Failed to batch insert DwC-A data", e);
@@ -70,37 +68,30 @@ public class DwcaInserter extends NeoInserter {
   @Override
   public void postBatchInsert() throws NormalizationFailedException {
     try (Transaction tx = store.getNeo().beginTx()) {
-      reader.stream(GbifTerm.Distribution).forEach(this::addDistribution);
-      reader.stream(GbifTerm.VernacularName).forEach(this::addVernacular);
-      reader.stream(GbifTerm.Reference).forEach(this::addReference);
+      insertTaxonEntities(reader, GbifTerm.Distribution,
+          inter::interpretDistribution,
+          DwcaReader.DWCA_ID,
+          (t, d) -> t.distributions.add(d)
+      );
+
+      insertTaxonEntities(reader, GbifTerm.VernacularName,
+          inter::interpretVernacularName,
+          DwcaReader.DWCA_ID,
+          (t, d) -> t.vernacularNames.add(d)
+      );
+
+      insertTaxonEntities(reader, GbifTerm.Reference,
+          inter::interpretReference,
+          DwcaReader.DWCA_ID,
+          (t, r) -> {
+            store.put(r);
+            t.bibliography.add(r.getKey());
+          }
+      );
 
     } catch (RuntimeException e) {
       throw new NormalizationFailedException("Failed to read DWCA files", e);
     }
-  }
-
-  private void addDistribution(TermRecord rec) {
-    lookupTaxon(DwcaReader.DWCA_ID, rec).ifPresent(t -> {
-      store.put(rec);
-      inter.interpretDistribution(t, rec);
-      store.update(t);
-    });
-  }
-
-  private void addVernacular(TermRecord rec) {
-    lookupTaxon(DwcaReader.DWCA_ID, rec).ifPresent(t -> {
-      store.put(rec);
-      inter.interpretVernacularName(t, rec);
-      store.update(t);
-    });
-  }
-
-  private void addReference(TermRecord rec) {
-    lookupTaxon(DwcaReader.DWCA_ID, rec).ifPresent(t -> {
-      store.put(rec);
-      inter.interpretReference(t, rec);
-      store.update(t);
-    });
   }
 
   @Override

@@ -1,14 +1,21 @@
 package org.col.admin.task.importer;
 
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
+import org.col.admin.task.importer.dwca.DwcaReader;
 import org.col.admin.task.importer.neo.NeoDb;
 import org.col.admin.task.importer.neo.model.Labels;
 import org.col.admin.task.importer.neo.model.NeoTaxon;
 import org.col.admin.task.importer.reference.ReferenceFactory;
-import org.col.api.model.Dataset;
-import org.col.api.model.TermRecord;
+import org.col.api.model.*;
+import org.col.csv.CsvReader;
+import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.dwc.terms.Term;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,14 +59,52 @@ public abstract class NeoInserter {
     return meta;
   }
 
-  protected Optional<NeoTaxon> lookupTaxon(Term idTerm, TermRecord rec) {
-    String id = rec.getRaw(idTerm);
-    NeoTaxon t = store.getByID(id);
-    if (t == null) {
-      LOG.warn("Non existing {} {} found in {} record line {}, {}", idTerm.simpleName(), id, rec.getType().simpleName(), rec.getLine(), rec.getFile());
-      return Optional.empty();
-    }
-    return Optional.of(t);
+  protected <T extends VerbatimEntity> void insertEntities(final CsvReader reader, final Term classTerm,
+                                                           Function<TermRecord, Optional<T>> interpret,
+                                                           Consumer<T> add
+  ) {
+    final AtomicInteger counter = new AtomicInteger(0);
+    final AtomicInteger added = new AtomicInteger(0);
+    reader.stream(classTerm).forEach(rec -> {
+      store.assignKey(rec);
+      interpret.apply(rec).ifPresent(obj -> {
+        obj.setVerbatimKey(rec.getKey());
+        add.accept(obj);
+        added.incrementAndGet();
+      });
+      store.put(rec);
+      counter.incrementAndGet();
+    });
+    LOG.info("Inserted {} verbatim, {} added {}", counter.get(), added.get(), classTerm.prefixedName());
+  }
+
+  protected <T extends VerbatimEntity> void insertTaxonEntities(final CsvReader reader, final Term classTerm,
+                                                                Function<TermRecord, List<T>> interpret,
+                                                                Term taxonIdTerm,
+                                                                BiConsumer<NeoTaxon, T> add
+  ) {
+    final AtomicInteger counter = new AtomicInteger(0);
+    final AtomicInteger added = new AtomicInteger(0);
+    reader.stream(classTerm).forEach(rec -> {
+      store.assignKey(rec);
+      interpret.apply(rec).forEach(obj -> {
+        obj.setVerbatimKey(rec.getKey());
+
+        String id = rec.getRaw(taxonIdTerm);
+        NeoTaxon t = store.getByID(id);
+        if (t != null) {
+          add.accept(t, obj);
+          store.update(t);
+          added.incrementAndGet();
+        } else {
+          LOG.warn("Non existing {} {} found in {} record line {}, {}", taxonIdTerm.simpleName(), id, rec.getType().simpleName(), rec.getLine(), rec.getFile());
+          //TODO: log issue in verbatim record and persist it!
+        }
+      });
+      store.put(rec);
+      counter.incrementAndGet();
+    });
+    LOG.info("Inserted {} verbatim, {} interpreted {}", counter.get(), added.get(), classTerm.prefixedName());
   }
 
   public abstract void batchInsert() throws NormalizationFailedException;

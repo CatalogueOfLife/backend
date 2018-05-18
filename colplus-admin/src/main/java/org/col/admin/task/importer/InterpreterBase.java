@@ -63,19 +63,17 @@ public class InterpreterBase {
   /**
    * Transliterates a vernacular name if its not yet existing
    * 
-   * @param t
    * @param vn
    */
-  protected void addAndTransliterate(NeoTaxon t, VernacularName vn) {
+  protected void transliterate(VernacularName vn) {
     if (StringUtils.isBlank(vn.getName())) {
       // vernacular names required
-      t.addIssue(Issue.VERNACULAR_NAME_INVALID);
+      vn.addIssue(Issue.VERNACULAR_NAME_INVALID);
     } else {
       if (StringUtils.isBlank(vn.getLatin()) && !StringUtils.isBlank(vn.getName())) {
         vn.setLatin(latinName(vn.getName()));
-        t.addIssue(Issue.VERNACULAR_NAME_TRANSLITERATED);
+        vn.addIssue(Issue.VERNACULAR_NAME_TRANSLITERATED);
       }
-      t.vernacularNames.add(vn);
     }
   }
 

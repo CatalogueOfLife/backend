@@ -11,8 +11,7 @@ public interface VernacularNameMapper {
 
 	VernacularName get(@Param("key") int key);
 
-	void create(@Param("vernacular") VernacularName vn,
+	void create(@Param("v") VernacularName vn,
 	    @Param("taxonKey") int taxonKey,
 	    @Param("datasetKey") int datasetKey);
-
 }

@@ -226,6 +226,7 @@ public class PgImportIT {
 			assertEquals(expV.size(), info.getVernacularNames().size());
 			for (VernacularName vn : info.getVernacularNames()) {
 				assertEquals(expV.remove(vn.getLanguage()), vn.getName());
+				assertNotNull(vn.getVerbatimKey());
 			}
 			assertTrue(expV.isEmpty());
 
@@ -252,12 +253,17 @@ public class PgImportIT {
 
 			assertEquals(expD.size(), info.getDistributions().size());
 			// remove dist keys before we check equality
-			info.getDistributions().forEach(d -> d.setKey(null));
+			info.getDistributions().forEach(d -> {
+        assertNotNull(d.getKey());
+        assertNotNull(d.getVerbatimKey());
+			  d.setKey(null);
+        d.setVerbatimKey(null);
+      });
 			Set<Distribution> imported = Sets.newHashSet(info.getDistributions());
 
 			Sets.SetView<Distribution> diff = Sets.difference(expD, imported);
 			for (Distribution d : diff) {
-				System.out.println(d);
+				//System.out.println(d);
 			}
 			assertEquals(expD, imported);
 		}

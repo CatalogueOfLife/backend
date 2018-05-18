@@ -1,5 +1,10 @@
 package org.col.admin.task.importer.dwca;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+import com.google.common.collect.Lists;
 import org.col.admin.task.importer.InsertMetadata;
 import org.col.admin.task.importer.InterpreterBase;
 import org.col.admin.task.importer.neo.ReferenceStore;
@@ -30,7 +35,7 @@ public class DwcInterpreter extends InterpreterBase {
     this.insertMetadata = insertMetadata;
   }
 
-  public NeoTaxon interpret(TermRecord v) {
+  public Optional<NeoTaxon> interpret(TermRecord v) {
     NeoTaxon t = new NeoTaxon();
     // name
     NameAccordingTo nat = interpretName(v);
@@ -55,31 +60,29 @@ public class DwcInterpreter extends InterpreterBase {
       t.homotypic = TaxonomicStatusParser.isHomotypic(status);
     }
 
-    return t;
+    return Optional.of(t);
   }
 
-  void interpretReference(NeoTaxon t, TermRecord rec) {
-    Reference ref = refFactory.fromDC(rec.get(DcTerm.identifier),
+  List<Reference> interpretReference(TermRecord rec) {
+    return Lists.newArrayList(refFactory.fromDC(rec.get(DcTerm.identifier),
         rec.get(DcTerm.bibliographicCitation),
         rec.get(DcTerm.creator),
         rec.get(DcTerm.title),
         rec.get(DcTerm.date),
         rec.get(DcTerm.source)
-    );
-    ref.setVerbatimKey(ref.getKey());
-    refStore.put(ref);
-    t.bibliography.add(ref.getKey());
+    ));
   }
 
-  void interpretDistribution(NeoTaxon t, TermRecord rec) {
+  List<Distribution> interpretDistribution(TermRecord rec) {
+    List<Distribution> distributions = new ArrayList<>();
     // try to figure out an area
     if (rec.hasTerm(DwcTerm.locationID)) {
       for (String loc : MULTIVAL.split(rec.get(DwcTerm.locationID))) {
         AreaParser.Area area = SafeParser.parse(AreaParser.PARSER, loc).orNull();
         if (area != null) {
-          addDistribution(t, area.area, area.standard, rec);
+          distributions.add(createDistribution(area.area, area.standard, rec));
         } else {
-          t.addIssue(Issue.DISTRIBUTION_AREA_INVALID);
+          rec.addIssue(Issue.DISTRIBUTION_AREA_INVALID);
         }
       }
 
@@ -87,42 +90,46 @@ public class DwcInterpreter extends InterpreterBase {
       for (String craw : MULTIVAL.split(rec.getFirst(DwcTerm.countryCode, DwcTerm.country))) {
         Country country = SafeParser.parse(CountryParser.PARSER, craw).orNull();
         if (country != null) {
-          addDistribution(t, country.getIso2LetterCode(), Gazetteer.ISO, rec);
+          distributions.add(createDistribution(country.getIso2LetterCode(), Gazetteer.ISO, rec));
         } else {
-          t.addIssue(Issue.DISTRIBUTION_COUNTRY_INVALID);
+          rec.addIssue(Issue.DISTRIBUTION_COUNTRY_INVALID);
         }
       }
 
     } else if (rec.hasTerm(DwcTerm.locality)) {
-      addDistribution(t, rec.get(DwcTerm.locality), Gazetteer.TEXT, rec);
+      distributions.add(createDistribution(rec.get(DwcTerm.locality), Gazetteer.TEXT, rec));
 
     } else {
-      t.addIssue(Issue.DISTRIBUTION_INVALID);
+      rec.addIssue(Issue.DISTRIBUTION_INVALID);
     }
+    return distributions;
   }
 
-  void interpretVernacularName(NeoTaxon t, TermRecord rec) {
+  List<VernacularName> interpretVernacularName(TermRecord rec) {
     VernacularName vn = new VernacularName();
+    vn.setVerbatimKey(rec.getKey());
     vn.setName(rec.get(DwcTerm.vernacularName));
-    vn.setLanguage(SafeParser.parse(LanguageParser.PARSER, rec.get(DcTerm.language)).orNull());
-    vn.setCountry(SafeParser
-        .parse(CountryParser.PARSER, rec.getFirst(DwcTerm.countryCode, DwcTerm.country))
+    vn.setLanguage(SafeParser.parse(LanguageParser.PARSER, rec.get(DcTerm.language))
         .orNull());
-    addReferences(t, vn, rec);
-    addAndTransliterate(t, vn);
+    vn.setCountry(SafeParser.parse(CountryParser.PARSER, rec.getFirst(DwcTerm.countryCode, DwcTerm.country))
+        .orNull());
+    addReferences(vn, rec);
+    transliterate(vn);
+    return Lists.newArrayList(vn);
   }
 
-  private void addDistribution(NeoTaxon t, String area, Gazetteer standard, TermRecord rec) {
+  private Distribution createDistribution(String area, Gazetteer standard, TermRecord rec) {
     Distribution d = new Distribution();
+    d.setVerbatimKey(rec.getKey());
     d.setArea(area);
     d.setGazetteer(standard);
-    addReferences(t, d, rec);
+    addReferences(d, rec);
     // TODO: parse status!!!
     d.setStatus(DistributionStatus.NATIVE);
-    t.distributions.add(d);
+    return d;
   }
 
-  private void addReferences(NeoTaxon t, Referenced obj, TermRecord v) {
+  private void addReferences(Referenced obj, TermRecord v) {
     if (v.hasTerm(DcTerm.source)) {
       lookupReference(null, v.get(DcTerm.source)).ifPresent(r -> {
         obj.addReferenceKey(r.getKey());
@@ -137,7 +144,6 @@ public class DwcInterpreter extends InterpreterBase {
     t.setId(v.getFirst(DwcTerm.taxonID, DwcaReader.DWCA_ID));
     // this can be a synonym at this stage which the class does not accept
     t.setDoubtful(TaxonomicStatus.DOUBTFUL == status.val || status.val.isSynonym());
-    // TODO: interpret all of Taxon via new dwca extension
     t.setAccordingTo(ObjectUtils.coalesce(v.get(DwcTerm.nameAccordingTo), accordingTo));
     t.setAccordingToDate(null);
     t.setOrigin(Origin.SOURCE);

@@ -2,6 +2,7 @@ package org.col.admin.task.importer.neo.model;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import com.google.common.collect.Lists;
 import org.col.api.model.*;
@@ -15,7 +16,7 @@ import org.neo4j.graphdb.Node;
  * <p>
  * The modified flag can be used to (manually) track if an instance has changed and needs to be persisted.
  */
-public class NeoTaxon {
+public class NeoTaxon implements VerbatimEntity{
   public Node node;
   // we keep the name distinct from the Taxon here so we can also accommodate listByTaxon which do not have a taxon instance!
   public Name name;
@@ -47,6 +48,23 @@ public class NeoTaxon {
     return t;
   }
 
+  @Override
+  public Integer getVerbatimKey() {
+    return taxon.getVerbatimKey();
+  }
+
+  @Override
+  public void setVerbatimKey(Integer verbatimKey) {
+    taxon.setVerbatimKey(verbatimKey);
+    name.setVerbatimKey(verbatimKey);
+  }
+
+  @Override
+  public Set<Issue> getIssues() {
+    return taxon.getIssues();
+  }
+
+  @Override
   public void addIssue(Issue issue) {
     taxon.addIssue(issue);
   }

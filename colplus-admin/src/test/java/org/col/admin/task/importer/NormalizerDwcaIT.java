@@ -216,8 +216,11 @@ public class NormalizerDwcaIT {
       expD.add(dist(Gazetteer.ISO, "FM-PNI", DistributionStatus.NATIVE));
 
       assertEquals(expD.size(), t.distributions.size());
-      // remove dist keys before we check equality
-      t.distributions.forEach(d -> d.setKey(null));
+      // remove keys before we check equality
+      t.distributions.forEach(d -> {
+        d.setKey(null);
+        d.setVerbatimKey(null);
+      });
       Set<Distribution> imported = Sets.newHashSet(t.distributions);
 
       Sets.SetView<Distribution> diff = Sets.difference(expD, imported);

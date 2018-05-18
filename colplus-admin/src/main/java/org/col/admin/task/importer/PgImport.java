@@ -129,7 +129,6 @@ public class PgImport implements Runnable {
   }
 
   private void updateEntity(VerbatimEntity ent) {
-    ent.setDatasetKey(dataset.getKey());
 	  if (ent.getVerbatimKey() != null) {
       TermRecord v = store.getVerbatim(ent.getVerbatimKey());
 	    ent.setVerbatimKey(verbatimKeys.get(ent.getVerbatimKey()));
@@ -146,6 +145,7 @@ public class PgImport implements Runnable {
       int counter = 0;
       for (Reference r : store.refList()) {
         int storeKey = r.getKey();
+        r.setDatasetKey(dataset.getKey());
         updateEntity(r);
         mapper.create(r);
         rCounter.incrementAndGet();
@@ -197,6 +197,7 @@ public class PgImport implements Runnable {
 
           t.name.getIssues().addAll(t.taxon.getIssues());
 
+          t.name.setDatasetKey(dataset.getKey());
           updateEntity(t.name);
           nameMapper.create(t.name);
           nCounter.incrementAndGet();
@@ -309,7 +310,6 @@ public class PgImport implements Runnable {
           // insert accepted taxon or synonym
           Integer taxonKey;
           if (t.isSynonym()) {
-            taxonKey = null;
             nameDao.addSynonym(dataset.getKey(), t.name.getKey(), parentKeys.peek(), t.synonym.getStatus(), t.synonym.getAccordingTo());
             if (!t.distributions.isEmpty()) {
               LOG.debug("Distributions found for synonym {}: {}, ignore", t.name.getKey(), t.name);
@@ -330,6 +330,7 @@ public class PgImport implements Runnable {
             }
 
             t.taxon.setName(t.name);
+            t.taxon.setDatasetKey(dataset.getKey());
             updateEntity(t.taxon);
             taxonMapper.create(t.taxon);
             tCounter.incrementAndGet();
@@ -340,6 +341,7 @@ public class PgImport implements Runnable {
 
             // insert vernacular
             for (VernacularName vn : t.vernacularNames) {
+              updateEntity(vn);
               updateRefKeys(vn);
               vernacularMapper.create(vn, taxonKey, dataset.getKey());
               vCounter.incrementAndGet();
@@ -347,6 +349,7 @@ public class PgImport implements Runnable {
 
             // insert distributions
             for (Distribution d : t.distributions) {
+              updateEntity(d);
               updateRefKeys(d);
               distributionMapper.create(d, taxonKey, dataset.getKey());
               dCounter.incrementAndGet();

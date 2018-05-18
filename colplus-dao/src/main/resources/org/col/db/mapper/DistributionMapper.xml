@@ -7,6 +7,7 @@
   <sql id="SELECT">
     d.key,
     d.taxon_key,
+    d.verbatim_key,
     d.area,
     d.gazetteer,
     d.status,
@@ -16,6 +17,7 @@
   <sql id="COLS">
     dataset_key,
     taxon_key,
+    verbatim_key,
     area,
     gazetteer,
     status
@@ -24,9 +26,10 @@
   <sql id="PROPS">
     #{datasetKey},
     #{taxonKey},
-    #{distribution.area},
-    #{distribution.gazetteer},
-    #{distribution.status}
+    #{d.verbatimKey},
+    #{d.area},
+    #{d.gazetteer},
+    #{d.status}
   </sql>
 
   <sql id="FROM">
