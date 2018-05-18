@@ -36,16 +36,6 @@ public class AcefInterpreter extends InterpreterBase {
     NameAccordingTo nat = interpretName(idTerm, v);
     t.name = nat.getName();
 
-    // status
-    TaxonomicStatus status = parse(TaxonomicStatusParser.PARSER, v.get(AcefTerm.Sp2000NameStatus))
-        .orElse(new EnumNote<>(synonym ? TaxonomicStatus.SYNONYM : TaxonomicStatus.ACCEPTED, null)).val;
-    if (synonym != status.isSynonym()) {
-      t.taxon.addIssue(Issue.TAXONOMIC_STATUS_INVALID);
-      // override status as we require some accepted status on Taxon and some synonym status for
-      // Synonym
-      status = synonym ? TaxonomicStatus.SYNONYM : TaxonomicStatus.DOUBTFUL;
-    }
-
     // taxon
     t.taxon = new Taxon();
     t.taxon.setId(v.get(idTerm));
@@ -72,6 +62,16 @@ public class AcefInterpreter extends InterpreterBase {
 
     t.taxon.setSpeciesEstimate(null);
     t.taxon.setSpeciesEstimateReferenceKey(null);
+
+    // status
+    TaxonomicStatus status = parse(TaxonomicStatusParser.PARSER, v.get(AcefTerm.Sp2000NameStatus))
+        .orElse(new EnumNote<>(synonym ? TaxonomicStatus.SYNONYM : TaxonomicStatus.ACCEPTED, null)).val;
+    if (synonym != status.isSynonym()) {
+      t.taxon.addIssue(Issue.TAXONOMIC_STATUS_INVALID);
+      // override status as we require some accepted status on Taxon and some synonym status for
+      // Synonym
+      status = synonym ? TaxonomicStatus.SYNONYM : TaxonomicStatus.DOUBTFUL;
+    }
 
     // synonym
     if (synonym) {
