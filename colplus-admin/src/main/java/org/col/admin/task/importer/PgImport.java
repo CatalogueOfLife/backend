@@ -308,18 +308,10 @@ public class PgImport implements Runnable {
           }
 
           // insert accepted taxon or synonym
-          Integer taxonKey;
+          int taxonKey;
           if (t.isSynonym()) {
-            nameDao.addSynonym(dataset.getKey(), t.name.getKey(), parentKeys.peek(), t.synonym.getStatus(), t.synonym.getAccordingTo());
-            if (!t.distributions.isEmpty()) {
-              LOG.debug("Distributions found for synonym {}: {}, ignore", t.name.getKey(), t.name);
-            }
-            if (!t.vernacularNames.isEmpty()) {
-              LOG.debug("Vernacular names found for synonym {}: {}, ignore", t.name.getKey(), t.name);
-            }
-            if (!t.bibliography.isEmpty()) {
-              LOG.debug("Bibliography found for synonym {}: {}, ignore", t.name.getKey(), t.name);
-            }
+            taxonKey = parentKeys.peek();
+            nameDao.addSynonym(dataset.getKey(), t.name.getKey(), taxonKey, t.synonym.getStatus(), t.synonym.getAccordingTo());
 
           } else {
             if (!parentKeys.empty()) {
@@ -339,32 +331,48 @@ public class PgImport implements Runnable {
             // push new postgres key onto stack for this taxon as we traverse in depth first
             parentKeys.push(taxonKey);
 
-            // insert vernacular
-            for (VernacularName vn : t.vernacularNames) {
-              updateEntity(vn);
-              updateRefKeys(vn);
-              vernacularMapper.create(vn, taxonKey, dataset.getKey());
-              vCounter.incrementAndGet();
-            }
 
-            // insert distributions
-            for (Distribution d : t.distributions) {
-              updateEntity(d);
-              updateRefKeys(d);
-              distributionMapper.create(d, taxonKey, dataset.getKey());
-              dCounter.incrementAndGet();
-            }
-
-            // link bibliography
-            for (Integer refKey : t.bibliography) {
-              refMapper.linkToTaxon(dataset.getKey(), taxonKey, referenceKeys.get(refKey));
-            }
           }
+
+          // vernacular, distributions and bib refs
+          insertTaxonRelated(taxonKey, t);
 
           // commit in batches
           if (counter++ % batchSize == 0) {
             session.commit();
             LOG.info("Inserted {} names and taxa", counter);
+          }
+        }
+
+        private void insertTaxonRelated(int taxonKey, NeoTaxon t) {
+          // insert vernacular
+          if (!t.vernacularNames.isEmpty()) {
+            LOG.debug("Vernacular names found for synonym {}: {}, ignore", t.name.getKey(), t.name);
+          }
+          for (VernacularName vn : t.vernacularNames) {
+            updateEntity(vn);
+            updateRefKeys(vn);
+            vernacularMapper.create(vn, taxonKey, dataset.getKey());
+            vCounter.incrementAndGet();
+          }
+
+          // insert distributions
+          if (!t.distributions.isEmpty()) {
+            LOG.debug("Distributions found for synonym {}: {}, ignore", t.name.getKey(), t.name);
+          }
+          for (Distribution d : t.distributions) {
+            updateEntity(d);
+            updateRefKeys(d);
+            distributionMapper.create(d, taxonKey, dataset.getKey());
+            dCounter.incrementAndGet();
+          }
+
+          // link bibliography
+          if (!t.bibliography.isEmpty()) {
+            LOG.debug("Bibliography found for synonym {}: {}, ignore", t.name.getKey(), t.name);
+          }
+          for (Integer refKey : t.bibliography) {
+            refMapper.linkToTaxon(dataset.getKey(), taxonKey, referenceKeys.get(refKey));
           }
         }
 
