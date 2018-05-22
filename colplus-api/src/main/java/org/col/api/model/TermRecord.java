@@ -235,6 +235,21 @@ public class TermRecord {
   }
 
   /**
+   * Get the first non blank term for a list of terms.
+   * @param terms list to try
+   */
+  @Nullable
+  public String getFirstRaw(Term ... terms) {
+    for (Term t : terms) {
+      String val = getRaw(t);
+      if (val != null) {
+        return val;
+      }
+    }
+    return null;
+  }
+
+  /**
    * Get the term value split by a delimiter
    */
   @Nullable

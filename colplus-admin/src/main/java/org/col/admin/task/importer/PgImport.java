@@ -330,8 +330,6 @@ public class PgImport implements Runnable {
 
             // push new postgres key onto stack for this taxon as we traverse in depth first
             parentKeys.push(taxonKey);
-
-
           }
 
           // vernacular, distributions and bib refs
