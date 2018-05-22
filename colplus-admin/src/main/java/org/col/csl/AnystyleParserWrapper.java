@@ -16,6 +16,7 @@ import org.apache.http.util.EntityUtils;
 import org.col.admin.config.AnystyleConfig;
 import org.col.api.model.CslData;
 import org.col.parser.Parser;
+import org.col.parser.UnparsableException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,32 +42,50 @@ public class AnystyleParserWrapper implements Parser<CslData> {
     this.cfg = cfg;
   }
 
-  public Optional<CslData> parse(String ref) {
+  public Optional<CslData> parse(String ref) throws UnparsableException {
     if (Strings.isNullOrEmpty(ref)) {
       return Optional.empty();
     }
+    String json = null;
     try (CloseableHttpResponse response = hc.execute(request(ref))) {
-      String json = EntityUtils.toString(response.getEntity());
+      json = EntityUtils.toString(response.getEntity());
       List<CslData> raw;
       try {
         raw = MAPPER.readValue(json, ANYSTYLE_RESPONSE_TYPE);
       } catch (JsonMappingException e) {
-        String err = String.format(
-            "Error parsing citation: \"%s\". Anystyle JSON output could not be deserialized into List<CslData>: %s",
-            ref, json);
+        String msg = "Anystyle response not deserializable into List<CslData>: " + e.getMessage();
+        String err = getError(ref, msg, json);
         LOG.error(err);
-        throw new RuntimeException(err, e);
+        throw new UnparsableException(err);
       }
       if (raw.size() != 1) {
-        LOG.error("Anystyle result is list of size {}", raw.size());
-        throw new RuntimeException("Unexpected response from Anystyle");
+        String msg = String.format("Anystyle result is list of size %s (expected 1)", raw.size());
+        String err = getError(ref, msg, json);
+        LOG.error(err);
+        throw new UnparsableException(err);
       }
       CslData csl = raw.get(0);
       csl.setId(null);
       return Optional.of(csl);
     } catch (IOException | URISyntaxException e) {
-      throw new RuntimeException(e);
+      String err = getError(ref, e.getMessage(), json);
+      LOG.error(err);
+      throw new UnparsableException(err);
     }
+  }
+
+  private static String getError(String ref, String errMsg, String json) {
+    StringBuilder sb = new StringBuilder(100);
+    sb.append("Error parsing citation: \"");
+    sb.append(ref);
+    sb.append("\": ");
+    sb.append(errMsg);
+    sb.append(".");
+    if (json != null) {
+      sb.append("Anystyle response was: ");
+      sb.append(json);
+    }
+    return sb.toString();
   }
 
   private HttpGet request(String reference) throws URISyntaxException {
@@ -74,5 +93,8 @@ public class AnystyleParserWrapper implements Parser<CslData> {
     ub.setParameter("ref", reference);
     return new HttpGet(ub.build());
   }
+
+  // ruby -e "require 'anystyle/parser';require 'sinatra';get '/' do;Anystyle.parse(params['ref'],
+  // :citeproc).to_json;end"
 
 }
