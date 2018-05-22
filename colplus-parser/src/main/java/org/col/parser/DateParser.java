@@ -96,22 +96,10 @@ public class DateParser implements Parser<FuzzyDate> {
         if (parseSpec.parseInto == null || parseSpec.parseInto.length == 0) {
           ta = parseSpec.formatter.parse(filtered);
         } else {
-          try {
-            if (parseSpec.parseInto.length == 1) {
-              ta = (TemporalAccessor) parseSpec.formatter.parse(filtered, parseSpec.parseInto[0]);
-            } else {
-              ta = parseSpec.formatter.parseBest(filtered, parseSpec.parseInto);
-            }
-          } catch (DateTimeException e) {
-            /*
-             * The date string is not parsable into to specified target(s), e.g. into a YearMonth
-             * instance. However, it might still be parsable into one of java.time's hidden
-             * implementations of TemporalAccessor. For us, since we proceed from the richest
-             * patterns to to poorest, the fact that a date string matches a pattern is more
-             * important than the fact that it can be parsed into a specific implementation of
-             * TemporalAccessor.
-             */
-            ta = parseSpec.formatter.parse(filtered);
+          if (parseSpec.parseInto.length == 1) {
+            ta = (TemporalAccessor) parseSpec.formatter.parse(filtered, parseSpec.parseInto[0]);
+          } else {
+            ta = parseSpec.formatter.parseBest(filtered, parseSpec.parseInto);
           }
         }
         if (!ta.isSupported(YEAR)) {

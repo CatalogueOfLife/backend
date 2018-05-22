@@ -1,6 +1,10 @@
 package org.col.parser;
 
-import java.time.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.Year;
+import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.TemporalAccessor;
@@ -17,7 +21,10 @@ import org.col.parser.DateParser.ParseSpec;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 @SuppressWarnings("static-method")
 public class DateParserTest {
@@ -83,7 +90,7 @@ public class DateParserTest {
 
   @Test
   public void test3() throws UnparsableException {
-    DateParser parser = simpleParser("[[d-][M-]uuuu", LocalDate::from);
+    DateParser parser = simpleParser("uuuu", Year::from);
     Optional<FuzzyDate> parsed = parser.parse("2004");
     assertNotNull("01", parsed);
     assertNotNull("02", parsed.get());
@@ -94,8 +101,8 @@ public class DateParserTest {
 
   @Test
   public void test4() throws UnparsableException {
-    DateParser parser = simpleParser("[M-]uuuu", LocalDate::from);
-    Optional<FuzzyDate> parsed = parser.parse("04-2004");
+    DateParser parser = simpleParser("uuuu-M", YearMonth::from);
+    Optional<FuzzyDate> parsed = parser.parse("2004-04");
     assertNotNull("01", parsed);
     assertNotNull("02", parsed.get());
     assertTrue("03", parsed.get().isFuzzyDate());
@@ -279,7 +286,6 @@ public class DateParserTest {
       System.out.println(date.get().toLocalDate());
     }
   }
-
 
   private static DateParser simpleParser(String pattern, TemporalQuery<?> parseInto) {
     List<ParseSpec> parseSpecs = new ArrayList<>(1);
