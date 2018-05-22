@@ -147,8 +147,7 @@ public class DwcInterpreter extends InterpreterBase {
     t.setAccordingTo(ObjectUtils.coalesce(v.get(DwcTerm.nameAccordingTo), accordingTo));
     t.setAccordingToDate(null);
     t.setOrigin(Origin.SOURCE);
-    t.setDatasetUrl(SafeParser.parse(UriParser.PARSER, v.get(DcTerm.references))
-        .orNull(Issue.URL_INVALID, t.getIssues()));
+    t.setDatasetUrl(uri(v, t, Issue.URL_INVALID, DcTerm.references));
     t.setFossil(null);
     t.setRecent(null);
     // t.setLifezones();
@@ -169,7 +168,7 @@ public class DwcInterpreter extends InterpreterBase {
         v.getFirst(GbifTerm.genericName, DwcTerm.genus), v.get(DwcTerm.subgenus),
         v.get(DwcTerm.specificEpithet), v.get(DwcTerm.infraspecificEpithet),
         v.get(DwcTerm.nomenclaturalCode), v.get(DwcTerm.nomenclaturalStatus),
-        v.get(DcTerm.references), v.get(DwcTerm.nomenclaturalStatus));
+        v.getRaw(DcTerm.references), v.get(DwcTerm.nomenclaturalStatus));
 
     // publishedIn
     if (v.hasTerm(DwcTerm.namePublishedInID) || v.hasTerm(DwcTerm.namePublishedIn)) {

@@ -95,7 +95,7 @@ public class InterpreterBase {
   }
 
   protected URI uri(TermRecord v, VerbatimEntity ent, Issue invalidIssue, Term... term) {
-    return parse(UriParser.PARSER, v.getFirst(term)).orNull(invalidIssue, ent.getIssues());
+    return parse(UriParser.PARSER, v.getFirstRaw(term)).orNull(invalidIssue, ent.getIssues());
   }
 
   protected Boolean bool(TermRecord v, VerbatimEntity ent, Issue invalidIssue, Term... term) {
