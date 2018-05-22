@@ -80,14 +80,4 @@ public class DatasetResource {
     }
   }
 
-  @GET
-  @Path("{key}/verbatim")
-  public ResultPage<TermRecord> list(@PathParam("key") Integer datasetKey,
-                                     @QueryParam("type") Term type,
-                                     @Valid @BeanParam Page page,
-                                     @Context SqlSession session) {
-    VerbatimRecordMapper mapper = session.getMapper(VerbatimRecordMapper.class);
-    return new ResultPage<TermRecord>(page, mapper.count(datasetKey, type), mapper.list(datasetKey, type, page));
-  }
-
 }
