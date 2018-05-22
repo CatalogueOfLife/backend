@@ -67,6 +67,7 @@ public class AnystyleParserWrapper implements Parser<CslData> {
       CslData csl = raw.get(0);
       csl.setId(null);
       return Optional.of(csl);
+
     } catch (IOException | URISyntaxException e) {
       String err = getError(ref, e.getMessage(), json);
       LOG.error(err);

@@ -9,8 +9,11 @@ import org.col.api.model.CslData;
 import org.col.api.model.CslDate;
 import org.col.api.model.Reference;
 import org.col.api.vocab.Issue;
+import org.col.csl.AnystyleParserWrapper;
 import org.col.parser.Parser;
 import org.col.parser.UnparsableException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Dataset specific factory for reference instances. It mostly manages the CSL parsing and works
@@ -21,6 +24,7 @@ import org.col.parser.UnparsableException;
  */
 public class ReferenceFactory {
 
+  private static final Logger LOG = LoggerFactory.getLogger(ReferenceFactory.class);
   private static final Pattern YEAR_PATTERN = Pattern.compile("(^|\\D+)(\\d{4})($|\\D+)");
 
   private final Integer datasetKey;
@@ -105,16 +109,11 @@ public class ReferenceFactory {
 
   private void parse(Reference ref, String citation) {
     try {
-      Optional<CslData> csl = cslParser.parse(citation);
-      if (csl.isPresent()) {
-        ref.setCsl(csl.get());
-        return;
-      }
+      cslParser.parse(citation).ifPresent(ref::setCsl);
     } catch (UnparsableException e) {
-      e.printStackTrace();
+      ref.addIssue(Issue.REFERENCE_UNPARSABLE);
+      ref.setCsl(new CslData());
     }
-    ref.addIssue(Issue.REFERENCE_UNPARSABLE);
-    ref.setCsl(new CslData());
   }
 
   private static String buildCitation(String authors, String year, String title, String details) {
