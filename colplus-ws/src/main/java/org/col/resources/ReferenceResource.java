@@ -48,11 +48,4 @@ public class ReferenceResource {
     return dao.get(key, page);
   }
 
-  @GET
-  @Path("{key}/verbatim")
-  public TermRecord getVerbatim(@PathParam("key") int key, @Context SqlSession session) {
-    VerbatimRecordMapper mapper = session.getMapper(VerbatimRecordMapper.class);
-    return mapper.getByEntity(Reference.class, key);
-  }
-
 }

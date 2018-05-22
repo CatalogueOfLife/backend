@@ -57,17 +57,10 @@ public class NameResource {
 
   @GET
   @Timed
-  @Path("{key}/listByTaxon")
+  @Path("{key}/synonyms")
   public List<Name> getSynonyms(@PathParam("key") int key, @Context SqlSession session) {
     NameDao dao = new NameDao(session);
     return dao.homotypicGroup(key);
-  }
-
-  @GET
-  @Path("{key}/verbatim")
-  public TermRecord getVerbatim(@PathParam("key") int key, @Context SqlSession session) {
-    VerbatimRecordMapper mapper = session.getMapper(VerbatimRecordMapper.class);
-    return mapper.getByEntity(Name.class, key);
   }
 
   @GET

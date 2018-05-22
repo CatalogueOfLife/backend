@@ -58,7 +58,7 @@ public class TaxonResource {
 
   @GET
   @Timed
-  @Path("{key}/listByTaxon")
+  @Path("{key}/synonyms")
   public Synonymy synonyms(@PathParam("key") int key, @Context SqlSession session) {
     TaxonDao dao = new TaxonDao(session);
     return dao.getSynonymy(key);
@@ -78,13 +78,6 @@ public class TaxonResource {
   public TaxonInfo info(@PathParam("key") int key, @Context SqlSession session) {
     TaxonDao dao = new TaxonDao(session);
     return dao.getTaxonInfo(key);
-  }
-
-  @GET
-  @Path("{key}/verbatim")
-  public TermRecord getVerbatim(@PathParam("key") int key, @Context SqlSession session) {
-    VerbatimRecordMapper mapper = session.getMapper(VerbatimRecordMapper.class);
-    return mapper.getByEntity(Taxon.class, key);
   }
 
 }

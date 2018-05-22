@@ -59,7 +59,7 @@
     WHERE vn.key = #{key}
   </select>
 
-  <insert id="create" parameterType="VernacularName" useGeneratedKeys="true" keyProperty="vernacular.key">
+  <insert id="create" parameterType="VernacularName" useGeneratedKeys="true" keyProperty="v.key">
     INSERT INTO vernacular_name ( <include refid="COLS" /> )
     VALUES ( <include refid="PROPS" /> )
   </insert>
