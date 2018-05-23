@@ -80,7 +80,6 @@ public class PgImport implements Runnable {
     try (SqlSession session = sessionFactory.openSession(true)) {
       LOG.info("Remove existing data for dataset {}: {}", dataset.getKey(), dataset.getTitle());
       DatasetMapper mapper = session.getMapper(DatasetMapper.class);
-      session.getConfiguration().setDefaultStatementTimeout();
       mapper.truncateDatasetData(dataset.getKey());
       session.commit();
     }
