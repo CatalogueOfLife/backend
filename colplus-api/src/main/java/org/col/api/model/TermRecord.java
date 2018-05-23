@@ -287,6 +287,10 @@ public class TermRecord {
     return "v"+key+"{" + file + "#" + line +", "+ terms.size() + " terms";
   }
 
+  public String fileLine() {
+    return file + "#" + line;
+  }
+
   /**
    * @return all terms and values as a string
    */

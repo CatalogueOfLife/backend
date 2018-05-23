@@ -3,10 +3,12 @@ package org.col.admin.task.importer;
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.function.BiConsumer;
 
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.ibm.icu.text.Transliterator;
 import org.apache.commons.lang3.ObjectUtils;
@@ -20,6 +22,7 @@ import org.col.api.vocab.Issue;
 import org.col.api.vocab.Origin;
 import org.col.common.date.FuzzyDate;
 import org.col.parser.*;
+import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.dwc.terms.Term;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.ParsedName;
@@ -60,21 +63,30 @@ public class InterpreterBase {
     return transAscii.transform(latinName(name));
   }
 
-  /**
-   * Transliterates a vernacular name if its not yet existing
-   * 
-   * @param vn
-   */
-  protected void transliterate(VernacularName vn) {
+  protected List<VernacularName> interpretVernacular(TermRecord rec, BiConsumer<VernacularName, TermRecord> addReferences, Term name, Term translit, Term lang, Term... countryTerms) {
+    VernacularName vn = new VernacularName();
+    vn.setVerbatimKey(rec.getKey());
+    vn.setName(rec.get(name));
     if (StringUtils.isBlank(vn.getName())) {
-      // vernacular names required
-      vn.addIssue(Issue.VERNACULAR_NAME_INVALID);
-    } else {
-      if (StringUtils.isBlank(vn.getLatin()) && !StringUtils.isBlank(vn.getName())) {
-        vn.setLatin(latinName(vn.getName()));
-        vn.addIssue(Issue.VERNACULAR_NAME_TRANSLITERATED);
-      }
+      rec.addIssue(Issue.VERNACULAR_NAME_INVALID);
+      return Collections.emptyList();
     }
+
+    if (translit != null) {
+      vn.setLatin(rec.get(translit));
+    }
+    if (lang != null) {
+      vn.setLanguage(SafeParser.parse(LanguageParser.PARSER, rec.get(lang)).orNull());
+    }
+    vn.setCountry(SafeParser.parse(CountryParser.PARSER, rec.getFirst(countryTerms)).orNull());
+
+    addReferences.accept(vn, rec);
+
+    if (StringUtils.isBlank(vn.getLatin())) {
+      vn.setLatin(latinName(vn.getName()));
+      vn.addIssue(Issue.VERNACULAR_NAME_TRANSLITERATED);
+    }
+    return Lists.newArrayList(vn);
   }
 
   protected LocalDate date(TermRecord v, VerbatimEntity ent, Issue invalidIssue, Term term) {

@@ -112,15 +112,28 @@ public class AcefInterpreter extends InterpreterBase {
   }
 
   List<VernacularName> interpretVernacular(TermRecord rec) {
-    VernacularName vn = new VernacularName();
-    vn.setVerbatimKey(rec.getKey());
-    vn.setName(rec.get(AcefTerm.CommonName));
-    vn.setLanguage(SafeParser.parse(LanguageParser.PARSER, rec.get(AcefTerm.Language)).orNull());
-    vn.setCountry(SafeParser.parse(CountryParser.PARSER, rec.get(AcefTerm.Country)).orNull());
-    vn.setLatin(rec.get(AcefTerm.TransliteratedName));
-    addReferences(vn, vn, rec);
-    transliterate(vn);
-    return Lists.newArrayList(vn);
+    return super.interpretVernacular(rec,
+        this::addReferences,
+        AcefTerm.CommonName,
+        AcefTerm.TransliteratedName,
+        AcefTerm.Language,
+        AcefTerm.Country
+    );
+  }
+  private void addReferences(Referenced obj, TermRecord v) {
+    if (v.hasTerm(AcefTerm.ReferenceID)) {
+      Reference r = refStore.refById(v.get(AcefTerm.ReferenceID));
+      if (r != null) {
+        obj.addReferenceKey(r.getKey());
+      } else {
+        LOG.info("ReferenceID {} not existing but referred from {} {}",
+            v.get(AcefTerm.ReferenceID),
+            obj.getClass().getSimpleName(),
+            v.fileLine()
+        );
+        v.addIssue(Issue.REFERENCE_ID_INVALID);
+      }
+    }
   }
 
   List<Distribution> interpretDistribution(TermRecord rec) {
@@ -156,25 +169,11 @@ public class AcefInterpreter extends InterpreterBase {
       // status
       d.setStatus(parse(DistributionStatusParser.PARSER, rec.get(AcefTerm.DistributionStatus))
           .orElse(DistributionStatus.NATIVE, Issue.DISTRIBUTION_STATUS_INVALID, d.getIssues()));
-      addReferences(d, d, rec);
+      addReferences(d, rec);
       d.setVerbatimKey(rec.getKey());
       return Lists.newArrayList(d);
     }
     return Collections.emptyList();
-  }
-
-  private void addReferences(Referenced obj, VerbatimEntity ve, TermRecord v) {
-    if (v.hasTerm(AcefTerm.ReferenceID)) {
-      Reference r = refStore.refById(v.get(AcefTerm.ReferenceID));
-      if (r != null) {
-        obj.addReferenceKey(r.getKey());
-      } else {
-        LOG.info("ReferenceID {} not existing but referred from {} for taxon {}",
-            v.get(AcefTerm.ReferenceID), obj.getClass().getSimpleName(),
-            v.get(AcefTerm.AcceptedTaxonID));
-        ve.addIssue(Issue.REFERENCE_ID_INVALID);
-      }
-    }
   }
 
   private Classification interpretClassification(TermRecord v, boolean isSynonym) {

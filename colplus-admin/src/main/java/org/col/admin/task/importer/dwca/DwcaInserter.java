@@ -77,7 +77,7 @@ public class DwcaInserter extends NeoInserter {
       insertTaxonEntities(reader, GbifTerm.VernacularName,
           inter::interpretVernacularName,
           DwcaReader.DWCA_ID,
-          (t, d) -> t.vernacularNames.add(d)
+          (t, vn) -> t.vernacularNames.add(vn)
       );
 
       insertTaxonEntities(reader, GbifTerm.Reference,

@@ -14,6 +14,7 @@ import org.col.api.model.*;
 import org.col.api.vocab.*;
 import org.col.common.util.ObjectUtils;
 import org.col.parser.*;
+import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.dwc.terms.DcTerm;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.GbifTerm;
@@ -107,16 +108,13 @@ public class DwcInterpreter extends InterpreterBase {
   }
 
   List<VernacularName> interpretVernacularName(TermRecord rec) {
-    VernacularName vn = new VernacularName();
-    vn.setVerbatimKey(rec.getKey());
-    vn.setName(rec.get(DwcTerm.vernacularName));
-    vn.setLanguage(SafeParser.parse(LanguageParser.PARSER, rec.get(DcTerm.language))
-        .orNull());
-    vn.setCountry(SafeParser.parse(CountryParser.PARSER, rec.getFirst(DwcTerm.countryCode, DwcTerm.country))
-        .orNull());
-    addReferences(vn, rec);
-    transliterate(vn);
-    return Lists.newArrayList(vn);
+    return super.interpretVernacular(rec,
+        this::addReferences,
+        DwcTerm.vernacularName,
+        null,
+        DcTerm.language,
+        DwcTerm.countryCode, DwcTerm.country
+    );
   }
 
   private Distribution createDistribution(String area, Gazetteer standard, TermRecord rec) {
