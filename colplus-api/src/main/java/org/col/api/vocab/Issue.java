@@ -177,9 +177,6 @@ public enum Issue {
    */
   ID_NOT_UNIQUE,
 
-  // TODO: TAXON ISSUES TO BE REVISED !!!
-
-
   /**
    * The value for dwc:parentNameUsageID could not be resolved.
    */
@@ -263,7 +260,12 @@ public enum Issue {
   CLASSIFICATION_NOT_APPLIED,
 
   /**
-   * At least one vernacular name extension record attached to this name usage is empty or clearly not a name.
+   * A verbatim record could not be interpreted at all and has been ignored.
+   */
+  NOT_INTERPRETED,
+
+  /**
+   * A vernacular name extension record attached to this name usage is empty or clearly not a name.
    */
   VERNACULAR_NAME_INVALID,
 

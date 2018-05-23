@@ -286,4 +286,27 @@ public class TermRecord {
   public String toString() {
     return "v"+key+"{" + file + "#" + line +", "+ terms.size() + " terms";
   }
+
+  /**
+   * @return all terms and values as a string
+   */
+  public String toStringComplete() {
+    StringBuilder sb = new StringBuilder();
+    sb.append(key).append(" ")
+        .append(file).append("#").append(line)
+        .append(", "+ type)
+        .append(": ");
+    boolean first = true;
+    for (Map.Entry<Term, String> te : terms.entrySet()) {
+      if (first) {
+        first = false;
+      } else {
+        sb.append(", ");
+      }
+      sb.append(te.getKey().prefixedName())
+          .append("=")
+          .append(te.getValue());
+    }
+    return sb.toString();
+  }
 }

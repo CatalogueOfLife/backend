@@ -53,12 +53,7 @@ public class TermParamConverterProvider implements ParamConverterProvider {
     @Override
     public String toString(Term value) {
       if (value == null) return null;
-
-      if (value instanceof UnknownTerm) {
-        return value.qualifiedName();
-      } else {
-        return value.prefixedName();
-      }
+      return value.prefixedName();
     }
   }
 }

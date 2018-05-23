@@ -10,10 +10,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.regex.Pattern;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import javax.annotation.Nullable;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
@@ -70,9 +73,9 @@ public class CsvReader {
 
   protected final Path folder;
   protected final Map<Term, Schema> schemas = Maps.newHashMap();
-  private Character[] delimiterCandidates = {'\t', ',', ';', '|'};
+  private static final Character[] delimiterCandidates = {'\t', ',', ';', '|'};
   // we also use \0 for hopefully no quote...
-  private Character[] quoteCandidates     = {'\0', '"', '\''};
+  private static final Character[] quoteCandidates     = {'\0', '"', '\''};
 
   /**
    * @param folder
@@ -143,9 +146,9 @@ public class CsvReader {
    * Detects the used CSV format by trying all combinations of delimiter and quote
    * and selecting the one with the most columns in a consistent manner
    */
-  private CsvParserSettings discoverFormat(List<String> lines) {
-    CsvParserSettings best = null;
-    int maxCols = 0;
+  @VisibleForTesting
+  static CsvParserSettings discoverFormat(List<String> lines) {
+    List<CsvParserSettings> candidates = Lists.newLinkedList();
     for (char del : delimiterCandidates) {
       for (char quote : quoteCandidates) {
         CsvParserSettings cfg = CSV.clone();
@@ -154,39 +157,52 @@ public class CsvReader {
         cfg.getFormat().setQuote(quote);
         cfg.getFormat().setQuoteEscape(quote);
         cfg.setQuoteDetectionEnabled(false);
-
-        try {
-          CsvParser parser = new CsvParser(cfg);
-          int cols = 0;
-          for (String[] row : parser.parseAll(new StringReader(LINE_JOIN.join(lines)))) {
-            if (isAllNull(row)) continue;
-
-            if (cols == 0) {
-              cols = row.length;
-            } else if (cols != row.length) {
-              // inconsistent column number, stop this one
-              cols = -1;
-              break;
-            }
-          }
-          if (cols > maxCols) {
-            best = cfg;
-            maxCols = cols;
-          }
-
-        } catch (TextParsingException e) {
-          // parser exception, e.g. if too many columns.
-          // Swallow and simply consider failed attempt
-        }
+        candidates.add(cfg);
       }
     }
-    if (best == null) {
-      // finally use univocitys autodetection if nothing works
-      best = CSV.clone();
-      best.setDelimiterDetectionEnabled(true);
-      best.setQuoteDetectionEnabled(true);
+    // also try univocitys autodetection if nothing works
+    CsvParserSettings univoc = CSV.clone();
+    univoc.setDelimiterDetectionEnabled(true);
+    univoc.setQuoteDetectionEnabled(true);
+    candidates.add(univoc);
+
+    // find best settings, default to autodetection if all others fail
+    CsvParserSettings best = univoc;
+    int maxCols = 0;
+    int minTotalLength = 0;
+    for (CsvParserSettings cfg : candidates) {
+      try {
+        CsvParser parser = new CsvParser(cfg);
+        int cols = 0;
+        int totalLength = 0;
+        for (String[] row : parser.parseAll(new StringReader(LINE_JOIN.join(lines)))) {
+          if (isAllNull(row)) continue;
+
+          if (cols == 0) {
+            cols = row.length;
+          } else if (cols != row.length) {
+            // inconsistent column number, stop this one
+            cols = -1;
+            break;
+          }
+          totalLength += Arrays.stream(row).mapToInt(CsvReader::nullsafeLength).sum();
+        }
+        if (cols > maxCols || cols == maxCols && totalLength < minTotalLength) {
+          best = cfg;
+          maxCols = cols;
+          minTotalLength = totalLength;
+        }
+
+      } catch (TextParsingException e) {
+        // parser exception, e.g. if too many columns.
+        // Swallow and simply consider failed attempt
+      }
     }
     return best;
+  }
+
+  private static int nullsafeLength(String x) {
+    return x == null ? 0 : x.length();
   }
 
   private Schema buildSchema(Path df, @Nullable String termPrefix) {

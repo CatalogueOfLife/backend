@@ -132,7 +132,7 @@ public class InterpreterBase {
     return r;
   }
 
-  public NameAccordingTo interpretName(final String id, final String vrank, final String sciname, final String authorship,
+  public Optional<NameAccordingTo> interpretName(final String id, final String vrank, final String sciname, final String authorship,
                                        final String genus, final String infraGenus, final String species, final String infraspecies,
                                        String nomCode, String nomStatus, String link, String remarks) {
     final Set<Issue> issues = EnumSet.noneOf(Issue.class);
@@ -181,8 +181,8 @@ public class InterpreterBase {
       }
 
     } else if (!isAtomized) {
-      LOG.warn("No name given for {}", id);
-      return null;
+      LOG.info("No name given for {}", id);
+      return Optional.empty();
 
     } else {
       // parse the reconstructed name with authorship
@@ -191,11 +191,11 @@ public class InterpreterBase {
       nat = NameParser.PARSER.parse(atom.canonicalNameComplete() + " " + authorship, rank).get();
       // if parsed compare with original atoms
       if (nat.getName().isParsed()) {
-        if (!Objects.equals(genus, nat.getName().getGenus())
-            || !Objects.equals(infraGenus, nat.getName().getInfragenericEpithet())
-            || !Objects.equals(species, nat.getName().getSpecificEpithet())
-            || !Objects.equals(infraspecies, nat.getName().getInfraspecificEpithet())
-            ) {
+        if (!Objects.equals(genus, nat.getName().getGenus()) ||
+            !Objects.equals(infraGenus, nat.getName().getInfragenericEpithet()) ||
+            !Objects.equals(species, nat.getName().getSpecificEpithet()) ||
+            !Objects.equals(infraspecies, nat.getName().getInfraspecificEpithet())
+        ) {
           LOG.warn("Parsed and given name atoms differ: [{}] vs [{}]", nat.getName().canonicalNameComplete(), atom.canonicalNameComplete());
           nat.getName().addIssue(Issue.PARSED_NAME_DIFFERS);
         }
@@ -229,7 +229,7 @@ public class InterpreterBase {
     }
     nat.getName().getIssues().addAll(issues);
 
-    return nat;
+    return Optional.of(nat);
   }
 
 }
