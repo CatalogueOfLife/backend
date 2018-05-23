@@ -34,11 +34,6 @@ public class Reference implements VerbatimEntity {
 	private CslData csl;
 
 	/**
-	 * Serial container, defining the CSL container properties.
-	 */
-	private Integer serialKey;
-
-	/**
 	 * Parsed integer of the year of publication. Extracted from CSL data, but kept
 	 * separate to allow sorting on int order.
 	 */
@@ -92,14 +87,6 @@ public class Reference implements VerbatimEntity {
 		this.csl = csl;
 	}
 
-  public Integer getSerialKey() {
-		return serialKey;
-	}
-
-	public void setSerialKey(Integer serialKey) {
-		this.serialKey = serialKey;
-	}
-
 	public Integer getYear() {
 		return year;
 	}
@@ -138,7 +125,6 @@ public class Reference implements VerbatimEntity {
 				Objects.equals(id, reference.id) &&
 				Objects.equals(datasetKey, reference.datasetKey) &&
 				Objects.equals(csl, reference.csl) &&
-				Objects.equals(serialKey, reference.serialKey) &&
 				Objects.equals(year, reference.year) &&
 				Objects.equals(issues, reference.issues);
 	}
@@ -146,7 +132,7 @@ public class Reference implements VerbatimEntity {
 	@Override
 	public int hashCode() {
 
-		return Objects.hash(key, id, datasetKey, csl, serialKey, year, issues);
+		return Objects.hash(key, id, datasetKey, csl, year, issues);
 	}
 
 	@Override

@@ -197,9 +197,6 @@
         DELETE FROM reference
         WHERE dataset_key = #{key};
 
-        DELETE FROM serial
-        WHERE dataset_key = #{key};
-
         DELETE FROM verbatim
         WHERE dataset_key = #{key};
 

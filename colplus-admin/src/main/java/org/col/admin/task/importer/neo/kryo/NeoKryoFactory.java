@@ -44,7 +44,6 @@ public class NeoKryoFactory implements KryoFactory {
     kryo.register(ParsedName.State.class);
     kryo.register(Reference.class);
     kryo.register(Sector.class);
-    kryo.register(Serial.class);
     kryo.register(Synonym.class);
     kryo.register(Taxon.class);
     kryo.register(VernacularName.class);
