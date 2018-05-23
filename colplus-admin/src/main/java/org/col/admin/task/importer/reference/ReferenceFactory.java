@@ -5,6 +5,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.google.common.base.Strings;
+import org.apache.commons.lang3.ArrayUtils;
 import org.col.api.model.CslData;
 import org.col.api.model.CslDate;
 import org.col.api.model.Reference;
@@ -86,7 +87,7 @@ public class ReferenceFactory {
     if (ref.getCsl().getIssued() == null && publishedInYear != null) {
       Integer y = parseYear(publishedInYear);
       if (y != null) {
-        int[][] dateParts = {{y.intValue()}};
+        int[][] dateParts = {{y}};
         CslDate cslDate = new CslDate();
         cslDate.setDateParts(dateParts);
         ref.getCsl().setIssued(cslDate);
@@ -145,8 +146,11 @@ public class ReferenceFactory {
   }
 
   private static Integer parseYear(CslDate date) {
-    if (date.getDateParts()[0] != null && date.getDateParts()[0][0] != 0) {
-      return Integer.valueOf(date.getDateParts()[0][0]);
+
+    if (!ArrayUtils.isEmpty(date.getDateParts()) &&
+        !ArrayUtils.isEmpty(date.getDateParts()[0]) &&
+        date.getDateParts()[0][0] != 0) {
+      return date.getDateParts()[0][0];
     }
     return null;
   }
