@@ -3,6 +3,7 @@ package org.col.admin.task.importer;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nullable;
@@ -68,7 +69,7 @@ public class Normalizer implements Runnable {
       insertData();
       // insert normalizer db relations, create implicit nodes if needed and parse names
       normalize();
-      // sync taxon KVP storee with neo4j relations, setting correct neo4j labels, homotypic keys etc
+      // sync taxon KVP store with neo4j relations, setting correct neo4j labels, homotypic keys etc
       store.sync();
       // verify, derive issues and fail before we do expensive matching or even db imports
       verify();
@@ -156,6 +157,9 @@ public class Normalizer implements Runnable {
     // rectify taxonomic status
     rectifyTaxonomicStatus();
 
+    // move synonym data to accepted
+    moveSynonymData();
+
     // process the denormalized classifications of accepted taxa
     applyDenormedClassification();
 
@@ -205,6 +209,39 @@ public class Normalizer implements Runnable {
           // update store if modified
           if (issue != null) {
             t.taxon.addIssue(issue);
+            store.update(t);
+          }
+        }
+      });
+    }
+  }
+
+  /**
+   * Moves synonym data (distributions, vernacular, bibliography) to its accepted taxon.
+   * https://github.com/Sp2000/colplus-backend/issues/108
+   */
+  private void moveSynonymData() {
+    try (Transaction tx = store.getNeo().beginTx()) {
+      store.all().forEach(t -> {
+        if (t.isSynonym()) {
+          if (!t.distributions.isEmpty() ||
+              !t.vernacularNames.isEmpty() ||
+              !t.bibliography.isEmpty()
+          ) {
+            // get a real neo4j node (store.all() only populates a dummy with an id)
+            Node n = store.getNeo().getNodeById(t.node.getId());
+            for (RankedName rn : store.accepted(n)) {
+              NeoTaxon acc = store.get(rn.node);
+              acc.distributions.addAll(t.distributions);
+              acc.vernacularNames.addAll(t.vernacularNames);
+              acc.bibliography.addAll(t.bibliography);
+              store.update(acc);
+            }
+
+            t.distributions.clear();
+            t.vernacularNames.clear();
+            t.bibliography.clear();
+            t.taxon.addIssue(Issue.SYNONYM_DATA_MOVED);
             store.update(t);
           }
         }

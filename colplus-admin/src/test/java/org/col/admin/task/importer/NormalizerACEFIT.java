@@ -22,6 +22,7 @@ import org.col.admin.task.importer.neo.NeoDbFactory;
 import org.col.admin.task.importer.neo.NotUniqueRuntimeException;
 import org.col.admin.task.importer.neo.model.NeoProperties;
 import org.col.admin.task.importer.neo.model.NeoTaxon;
+import org.col.admin.task.importer.neo.model.RankedName;
 import org.col.admin.task.importer.neo.printer.GraphFormat;
 import org.col.admin.task.importer.neo.printer.PrinterUtils;
 import org.col.admin.task.importer.neo.traverse.Traversals;
@@ -123,20 +124,37 @@ public class NormalizerACEFIT {
     return store.get(nodes.get(0));
   }
 
+  NeoTaxon accepted(Node syn) {
+    List<RankedName> accepted = store.accepted(syn);
+    if (accepted.size() != 1) {
+      throw new IllegalStateException("Synonym has "+accepted.size()+" accepted taxa");
+    }
+    return store.get(accepted.get(0).node);
+  }
+
   @Test
   public void acef0() throws Exception {
     normalize(0);
+    writeToFile();
     try (Transaction tx = store.getNeo().beginTx()) {
       NeoTaxon t = byID("s7");
+      assertTrue(t.isSynonym());
       assertEquals("Astragalus nonexistus", t.name.getScientificName());
       assertEquals("DC.", t.name.authorshipComplete());
       assertEquals(Rank.SPECIES, t.name.getRank());
       assertTrue(t.taxon.getIssues().contains(Issue.ACCEPTED_ID_INVALID));
+      assertTrue(t.taxon.getIssues().contains(Issue.SYNONYM_DATA_MOVED));
       assertTrue(t.classification.isEmpty());
+      assertEquals(0, t.vernacularNames.size());
+      assertEquals(0, t.distributions.size());
+      assertEquals(0, t.bibliography.size());
 
-      // vernacular
-      assertEquals(1, t.vernacularNames.size());
-      VernacularName v = t.vernacularNames.get(0);
+      NeoTaxon acc = accepted(t.node);
+      assertEquals(1, acc.vernacularNames.size());
+      assertEquals(2, acc.distributions.size());
+      assertEquals(0, acc.bibliography.size());
+
+      VernacularName v = acc.vernacularNames.get(0);
       assertEquals("Non exiusting bean", v.getName());
     }
   }
@@ -267,6 +285,12 @@ public class NormalizerACEFIT {
     Files.createParentDirs(f);
     Writer writer = new FileWriter(f);
     PrinterUtils.printTree(store.getNeo(), writer, GraphFormat.TEXT);
+    writer.close();
+    System.out.println("Wrote graph to "+f.getAbsolutePath());
+
+    f = new File("graphs/tree-acef.dot");
+    writer = new FileWriter(f);
+    PrinterUtils.printTree(store.getNeo(), writer, GraphFormat.DOT);
     writer.close();
     System.out.println("Wrote graph to "+f.getAbsolutePath());
   }

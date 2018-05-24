@@ -6,9 +6,11 @@ import org.col.admin.task.importer.NormalizationFailedException;
 import org.col.admin.task.importer.neo.NeoDb;
 import org.col.admin.task.importer.neo.model.NeoProperties;
 import org.col.admin.task.importer.neo.model.NeoTaxon;
+import org.col.admin.task.importer.neo.model.RankedName;
 import org.col.api.model.NameAccordingTo;
 import org.col.api.model.TermRecord;
 import org.col.api.vocab.Issue;
+import org.col.api.vocab.Origin;
 import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.dwc.terms.Term;
 import org.neo4j.graphdb.Node;
@@ -36,15 +38,27 @@ public class AcefRelationInserter implements NeoDb.NodeBatchProcessor {
       if (t.taxon.getVerbatimKey() != null) {
         TermRecord v = store.getVerbatim(t.taxon.getVerbatimKey());
         if (t.synonym != null) {
-          Node acc = lookupByID(AcefTerm.AcceptedTaxonID, v, t, Issue.ACCEPTED_ID_INVALID);
-          if (acc != null) {
-            store.createSynonymRel(t.node, acc);
+          Node an = lookupByID(AcefTerm.AcceptedTaxonID, v, t);
+          if (an != null) {
+            store.createSynonymRel(t.node, an);
+          } else {
+            t.taxon.addIssue(Issue.ACCEPTED_ID_INVALID);
+            t.taxon.addIssue(Issue.ACCEPTED_NAME_MISSING);
+            // if we aint got no idea of the accepted insert an incertae sedis record of same rank
+            NeoDb.PLACEHOLDER.setRank(t.name.getRank());
+            NeoTaxon acc = NeoTaxon.createTaxon(Origin.MISSING_ACCEPTED, NeoDb.PLACEHOLDER, true);
+            store.put(acc);
+            store.createSynonymRel(t.node, acc.node);
+            store.update(t);
           }
 
         } else {
-          Node p = lookupByID(AcefTerm.ParentSpeciesID, v, t, Issue.PARENT_ID_INVALID);
+          Node p = lookupByID(AcefTerm.ParentSpeciesID, v, t);
           if (p != null) {
             store.assignParent(p, t.node);
+          } else {
+            t.taxon.addIssue(Issue.PARENT_ID_INVALID);
+            store.update(t);
           }
 
           if (AcefTerm.AcceptedInfraSpecificTaxa == v.getType()) {
@@ -90,14 +104,11 @@ public class AcefRelationInserter implements NeoDb.NodeBatchProcessor {
    *
    * @return list of potentially split ids with their matching neo node if found, otherwise null
    */
-  private Node lookupByID(Term term, TermRecord v, NeoTaxon t, Issue issueIfNotFound) {
+  private Node lookupByID(Term term, TermRecord v, NeoTaxon t) {
     Node n = null;
     final String id = v.get(term);
     if (id != null && !id.equals(t.getID())) {
       n = store.byID(id);
-      if (n == null) {
-        t.addIssue(issueIfNotFound);
-      }
     }
     return n;
   }

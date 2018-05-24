@@ -1,11 +1,14 @@
 package org.col.admin.task.importer;
 
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import it.unimi.dsi.fastutil.longs.Long2IntMap;
@@ -25,6 +28,7 @@ import org.col.api.vocab.Issue;
 import org.col.api.vocab.NomActType;
 import org.col.db.dao.NameDao;
 import org.col.db.mapper.*;
+import org.eclipse.collections.impl.factory.BiMaps;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
 import org.slf4j.Logger;
@@ -40,9 +44,9 @@ public class PgImport implements Runnable {
 	private final int batchSize;
 	private final SqlSessionFactory sessionFactory;
 	private final Dataset dataset;
-	private Map<Integer, Integer> nameKeys = Maps.newHashMap();
-  private Map<Integer, Integer> referenceKeys = Maps.newHashMap();
-  private Map<Integer, Integer> verbatimKeys = Maps.newHashMap();
+	private BiMap<Integer, Integer> nameKeys = HashBiMap.create();
+  private BiMap<Integer, Integer> referenceKeys = HashBiMap.create();
+  private BiMap<Integer, Integer> verbatimKeys = HashBiMap.create();
   private final AtomicInteger nCounter = new AtomicInteger(0);
   private final AtomicInteger tCounter = new AtomicInteger(0);
   private final AtomicInteger rCounter = new AtomicInteger(0);
@@ -330,47 +334,33 @@ public class PgImport implements Runnable {
 
             // push new postgres key onto stack for this taxon as we traverse in depth first
             parentKeys.push(taxonKey);
-          }
 
-          // vernacular, distributions and bib refs
-          insertTaxonRelated(taxonKey, t);
+            // insert vernacular
+            for (VernacularName vn : t.vernacularNames) {
+              updateEntity(vn);
+              updateRefKeys(vn);
+              vernacularMapper.create(vn, taxonKey, dataset.getKey());
+              vCounter.incrementAndGet();
+            }
+
+            // insert distributions
+            for (Distribution d : t.distributions) {
+              updateEntity(d);
+              updateRefKeys(d);
+              distributionMapper.create(d, taxonKey, dataset.getKey());
+              dCounter.incrementAndGet();
+            }
+
+            // link bibliography
+            for (Integer k : t.bibliography) {
+              refMapper.linkToTaxon(dataset.getKey(), taxonKey, referenceKeys.get(k));
+            }
+          }
 
           // commit in batches
           if (counter++ % batchSize == 0) {
             session.commit();
             LOG.info("Inserted {} names and taxa", counter);
-          }
-        }
-
-        private void insertTaxonRelated(int taxonKey, NeoTaxon t) {
-          // insert vernacular
-          if (!t.vernacularNames.isEmpty()) {
-            LOG.debug("Vernacular names found for synonym {}: {}, ignore", t.name.getKey(), t.name);
-          }
-          for (VernacularName vn : t.vernacularNames) {
-            updateEntity(vn);
-            updateRefKeys(vn);
-            vernacularMapper.create(vn, taxonKey, dataset.getKey());
-            vCounter.incrementAndGet();
-          }
-
-          // insert distributions
-          if (!t.distributions.isEmpty()) {
-            LOG.debug("Distributions found for synonym {}: {}, ignore", t.name.getKey(), t.name);
-          }
-          for (Distribution d : t.distributions) {
-            updateEntity(d);
-            updateRefKeys(d);
-            distributionMapper.create(d, taxonKey, dataset.getKey());
-            dCounter.incrementAndGet();
-          }
-
-          // link bibliography
-          if (!t.bibliography.isEmpty()) {
-            LOG.debug("Bibliography found for synonym {}: {}, ignore", t.name.getKey(), t.name);
-          }
-          for (Integer refKey : t.bibliography) {
-            refMapper.linkToTaxon(dataset.getKey(), taxonKey, referenceKeys.get(refKey));
           }
         }
 

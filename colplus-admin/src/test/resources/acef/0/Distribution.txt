@@ -1,4 +1,4 @@
-AcceptedTaxonID	DistributionElemen	StandardInUse	DistributionStatus
+AcceptedTaxonID	DistributionElement	StandardInUse	DistributionStatus
 1	From Egypt through	Text	Native
 1	French Polynesia:	Text	Native
 3	ALA-OO	TDWG	
@@ -7,3 +7,7 @@ AcceptedTaxonID	DistributionElemen	StandardInUse	DistributionStatus
 3	BZC-MT	TDWG	
 3	BZE-AL	TDWG	
 3	BZE-BA	TDWG	
+s5	BZE-BA	TDWG	
+s6	BZE-BA	TDWG	
+s7	DE	ISO	
+s7	FR	ISO	

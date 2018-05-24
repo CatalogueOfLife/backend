@@ -379,6 +379,17 @@ public enum Issue {
    * The given taxonomic status appears unlikely.
    * E.g. a misapplied name without any taxonomic remark indicating the source it was misapplied in.
    */
-  TAXONOMIC_STATUS_DOUBTFUL;
+  TAXONOMIC_STATUS_DOUBTFUL,
+
+  /**
+   * A synonym which originally had associated data (distributions, vernacular names, bibliography)
+   * but which was moved to its accepted taxon.
+   */
+  SYNONYM_DATA_MOVED,
+
+  /**
+   * ACEF reference type values unparsable or missing
+   */
+  REFTYPE_INVALID;
 
 }

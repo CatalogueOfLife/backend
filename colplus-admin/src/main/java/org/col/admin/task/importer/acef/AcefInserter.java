@@ -15,6 +15,9 @@ import org.col.api.model.Reference;
 import org.col.api.model.TermRecord;
 import org.col.api.vocab.DataFormat;
 import org.col.api.vocab.Issue;
+import org.col.parser.LanguageParser;
+import org.col.parser.ReferenceTypeParser;
+import org.col.parser.SafeParser;
 import org.gbif.dwc.terms.AcefTerm;
 import org.neo4j.graphdb.Transaction;
 import org.slf4j.Logger;
@@ -137,47 +140,48 @@ public class AcefInserter extends NeoInserter {
   private void addReferenceLink(TermRecord rec) {
     String taxonID = emptyToNull(rec.get(AcefTerm.ID));
     String referenceID = emptyToNull(rec.get(AcefTerm.ReferenceID));
-    String refType = emptyToNull(rec.get(AcefTerm.ReferenceType)); // NomRef, TaxAccRef, ComNameRef
+    String refTypeRaw = emptyToNull(rec.get(AcefTerm.ReferenceType)); // NomRef, TaxAccRef, ComNameRef
+    ReferenceTypeParser.ReferenceType refType = SafeParser.parse(ReferenceTypeParser.PARSER, refTypeRaw).orNull();
 
-    if (refType != null) {
-      // lookup NeoTaxon and reference
-      NeoTaxon t = store.getByID(taxonID);
-      Reference ref = store.refById(referenceID);
-      if (t == null) {
-        if (ref != null) {
-          LOG.debug("taxonID {} from NameReferencesLinks line {} not existing", taxonID, rec.getLine());
-          ref.addIssue(Issue.TAXON_ID_INVALID);
-          store.put(ref);
-        } else {
-          LOG.info("referenceID {} and taxonID {} from NameReferencesLinks line {} both not existing", referenceID, taxonID, rec.getLine());
-        }
-
+    // lookup NeoTaxon and reference
+    NeoTaxon t = store.getByID(taxonID);
+    Reference ref = store.refById(referenceID);
+    if (t == null) {
+      if (ref != null) {
+        LOG.debug("taxonID {} from NameReferencesLinks line {} not existing", taxonID, rec.getLine());
+        ref.addIssue(Issue.TAXON_ID_INVALID);
+        store.put(ref);
       } else {
-        if (ref == null) {
-          LOG.debug("referenceID {} from NameReferencesLinks line {} not existing", referenceID, rec.getLine());
-          t.addIssue(Issue.REFERENCE_ID_INVALID);
+        LOG.info("referenceID {} and taxonID {} from NameReferencesLinks line {} both not existing", referenceID, taxonID, rec.getLine());
+      }
 
-        } else {
-          //TODO: better parsing needed? Use enum???
-          if (refType.equalsIgnoreCase("NomRef")) {
+    } else {
+      if (ref == null) {
+        LOG.debug("referenceID {} from NameReferencesLinks line {} not existing", referenceID, rec.getLine());
+        t.addIssue(Issue.REFERENCE_ID_INVALID);
+
+      } else if (refType == null) {
+        LOG.debug("Unknown reference type {} used in NameReferencesLinks line {}", refTypeRaw, rec.getLine());
+        ref.addIssue(Issue.REFTYPE_INVALID);
+        store.put(ref);
+        t.taxon.addIssue(Issue.REFTYPE_INVALID);
+      } else {
+        switch (refType) {
+          case NomRef:
             t.name.setPublishedInKey(ref.getKey());
             // we extract the page from CSL and also store it in the name
             // No deduplication of refs happening
             t.name.setPublishedInPage(ref.getCsl().getPage());
-
-          } else if (refType.equalsIgnoreCase("TaxAccRef")) {
+            break;
+          case TaxAccRef:
             t.bibliography.add(ref.getKey());
-
-          } else if (refType.equalsIgnoreCase("ComNameRef")) {
+            break;
+          case ComNameRef:
             // ignore here, we should see this again when parsing common names
-
-          } else {
-            // unkown type
-            LOG.debug("Unknown reference type {} used in NameReferencesLinks line {}", refType, rec.getLine());
-          }
+            break;
         }
-        store.update(t);
       }
+      store.update(t);
     }
   }
 
