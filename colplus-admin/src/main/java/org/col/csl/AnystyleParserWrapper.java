@@ -82,7 +82,7 @@ public class AnystyleParserWrapper implements Parser<CslData> {
     sb.append(errMsg);
     sb.append(".");
     if (json != null) {
-      sb.append("Anystyle response was: ");
+      sb.append(" Anystyle response was: ");
       sb.append(json);
     }
     return sb.toString();
