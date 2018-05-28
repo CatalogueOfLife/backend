@@ -8,12 +8,9 @@ import org.col.admin.command.initdb.InitDbCmd;
 import org.col.admin.config.AdminServerConfig;
 import org.col.csl.AnystyleParserWrapper;
 import org.col.db.mapper.PgSetupRule;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.*;
 
-//@Ignore("manual import debugging")
+@Ignore("manual import debugging")
 public class ImportManagerDebugging {
   
   ImportManager importManager;

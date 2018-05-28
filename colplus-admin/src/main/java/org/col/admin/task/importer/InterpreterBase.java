@@ -3,10 +3,12 @@ package org.col.admin.task.importer;
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.function.BiConsumer;
 
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.ibm.icu.text.Transliterator;
 import org.apache.commons.lang3.ObjectUtils;
@@ -20,6 +22,7 @@ import org.col.api.vocab.Issue;
 import org.col.api.vocab.Origin;
 import org.col.common.date.FuzzyDate;
 import org.col.parser.*;
+import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.dwc.terms.Term;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.ParsedName;
@@ -60,21 +63,30 @@ public class InterpreterBase {
     return transAscii.transform(latinName(name));
   }
 
-  /**
-   * Transliterates a vernacular name if its not yet existing
-   * 
-   * @param vn
-   */
-  protected void transliterate(VernacularName vn) {
+  protected List<VernacularName> interpretVernacular(TermRecord rec, BiConsumer<VernacularName, TermRecord> addReferences, Term name, Term translit, Term lang, Term... countryTerms) {
+    VernacularName vn = new VernacularName();
+    vn.setVerbatimKey(rec.getKey());
+    vn.setName(rec.get(name));
     if (StringUtils.isBlank(vn.getName())) {
-      // vernacular names required
-      vn.addIssue(Issue.VERNACULAR_NAME_INVALID);
-    } else {
-      if (StringUtils.isBlank(vn.getLatin()) && !StringUtils.isBlank(vn.getName())) {
-        vn.setLatin(latinName(vn.getName()));
-        vn.addIssue(Issue.VERNACULAR_NAME_TRANSLITERATED);
-      }
+      rec.addIssue(Issue.VERNACULAR_NAME_INVALID);
+      return Collections.emptyList();
     }
+
+    if (translit != null) {
+      vn.setLatin(rec.get(translit));
+    }
+    if (lang != null) {
+      vn.setLanguage(SafeParser.parse(LanguageParser.PARSER, rec.get(lang)).orNull());
+    }
+    vn.setCountry(SafeParser.parse(CountryParser.PARSER, rec.getFirst(countryTerms)).orNull());
+
+    addReferences.accept(vn, rec);
+
+    if (StringUtils.isBlank(vn.getLatin())) {
+      vn.setLatin(latinName(vn.getName()));
+      vn.addIssue(Issue.VERNACULAR_NAME_TRANSLITERATED);
+    }
+    return Lists.newArrayList(vn);
   }
 
   protected LocalDate date(TermRecord v, VerbatimEntity ent, Issue invalidIssue, Term term) {
@@ -132,7 +144,7 @@ public class InterpreterBase {
     return r;
   }
 
-  public NameAccordingTo interpretName(final String id, final String vrank, final String sciname, final String authorship,
+  public Optional<NameAccordingTo> interpretName(final String id, final String vrank, final String sciname, final String authorship,
                                        final String genus, final String infraGenus, final String species, final String infraspecies,
                                        String nomCode, String nomStatus, String link, String remarks) {
     final Set<Issue> issues = EnumSet.noneOf(Issue.class);
@@ -181,8 +193,8 @@ public class InterpreterBase {
       }
 
     } else if (!isAtomized) {
-      LOG.warn("No name given for {}", id);
-      return null;
+      LOG.info("No name given for {}", id);
+      return Optional.empty();
 
     } else {
       // parse the reconstructed name with authorship
@@ -191,11 +203,11 @@ public class InterpreterBase {
       nat = NameParser.PARSER.parse(atom.canonicalNameComplete() + " " + authorship, rank).get();
       // if parsed compare with original atoms
       if (nat.getName().isParsed()) {
-        if (!Objects.equals(genus, nat.getName().getGenus())
-            || !Objects.equals(infraGenus, nat.getName().getInfragenericEpithet())
-            || !Objects.equals(species, nat.getName().getSpecificEpithet())
-            || !Objects.equals(infraspecies, nat.getName().getInfraspecificEpithet())
-            ) {
+        if (!Objects.equals(genus, nat.getName().getGenus()) ||
+            !Objects.equals(infraGenus, nat.getName().getInfragenericEpithet()) ||
+            !Objects.equals(species, nat.getName().getSpecificEpithet()) ||
+            !Objects.equals(infraspecies, nat.getName().getInfraspecificEpithet())
+        ) {
           LOG.warn("Parsed and given name atoms differ: [{}] vs [{}]", nat.getName().canonicalNameComplete(), atom.canonicalNameComplete());
           nat.getName().addIssue(Issue.PARSED_NAME_DIFFERS);
         }
@@ -229,7 +241,7 @@ public class InterpreterBase {
     }
     nat.getName().getIssues().addAll(issues);
 
-    return nat;
+    return Optional.of(nat);
   }
 
 }

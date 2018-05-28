@@ -1,12 +1,21 @@
 package org.col.csv;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
+import com.google.common.base.Charsets;
+import com.univocity.parsers.csv.CsvParserSettings;
 import org.col.api.model.TermRecord;
 import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.utils.file.FileUtils;
 import org.junit.Test;
+import org.neo4j.string.UTF8;
+import scala.Char;
 
 import static org.junit.Assert.*;
 
@@ -79,4 +88,21 @@ public class CsvReaderTest {
     //assertFalse(row.isPresent());
   }
 
+  private CsvParserSettings assertFormat(String resource, char delimiter, char quote) throws IOException {
+    CsvParserSettings csv = CsvReader.discoverFormat(
+        new BufferedReader(new InputStreamReader(ClassLoader.getSystemResource(resource).openStream(), Charsets.UTF_8))
+            .lines()
+            .collect(Collectors.toList())
+    );
+    assertEquals(delimiter, csv.getFormat().getDelimiter());
+    assertEquals(quote, csv.getFormat().getQuote());
+    return csv;
+  }
+
+  @Test
+  public void discoverFormat() throws Exception {
+    assertFormat("csv/15-CommonNames.txt", ',', '"');
+    assertFormat("csv/15-References.txt", ',', '"');
+    assertFormat("csv/15-Synonyms.txt", ',', '"');
+  }
 }

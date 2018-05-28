@@ -47,7 +47,7 @@ public class NameValidator {
       issues.add(Issue.INCONSISTENT_NAME);
 
     } else if (n.getSpecificEpithet() == null && n.getInfraspecificEpithet() != null) {
-      LOG.info("Missing specific epither in infraspecific name {}", n.toStringComplete());
+      LOG.info("Missing specific epithet in infraspecific name {}", n.toStringComplete());
       issues.add(Issue.INCONSISTENT_NAME);
     }
 
@@ -69,36 +69,36 @@ public class NameValidator {
     if (rank.notOtherOrUnranked()) {
       if (rank.isGenusOrSuprageneric()) {
         if (n.getGenus() != null || n.getUninomial() == null) {
-          LOG.info("Missing genus or uninomial for {} {}", n.getRank(), n.toStringComplete());
+          LOG.info("Missing genus or uninomial for {}", n.toStringComplete());
           issues.add(Issue.INCONSISTENT_NAME);
         }
 
       } else if (rank.isInfrageneric() && rank.isSupraspecific()) {
         if (n.getInfragenericEpithet() == null) {
-          LOG.info("Missing infrageneric epithet for {} {}", n.getRank(), n.toStringComplete());
+          LOG.info("Missing infrageneric epithet for {}", n.toStringComplete());
           issues.add(Issue.INCONSISTENT_NAME);
         }
 
         if (n.getSpecificEpithet() != null || n.getInfraspecificEpithet() != null) {
-          LOG.info("Species or infraspecific epithet for {} {}", n.getRank(), n.toStringComplete());
+          LOG.info("Species or infraspecific epithet for {}", n.toStringComplete());
           issues.add(Issue.INCONSISTENT_NAME);
         }
 
       } else if (rank.isSpeciesOrBelow()) {
         if (n.getSpecificEpithet() == null) {
-          LOG.info("Missing specific epithet for {} {}", n.getRank(), n.toStringComplete());
+          LOG.info("Missing specific epithet for {}", n.toStringComplete());
           issues.add(Issue.INCONSISTENT_NAME);
         }
 
         if (!rank.isInfraspecific() && n.getInfraspecificEpithet() != null) {
-          LOG.info("Infraspecific epithet found for {} {}", n.getRank(), n.toStringComplete());
+          LOG.info("Infraspecific epithet found for {}", n.toStringComplete());
           issues.add(Issue.INCONSISTENT_NAME);
         }
       }
 
       if (rank.isInfraspecific()) {
         if (n.getInfraspecificEpithet() == null) {
-          LOG.info("Missing infraspecific epithet for {} {}", n.getRank(), n.toStringComplete());
+          LOG.info("Missing infraspecific epithet for {}", n.toStringComplete());
           issues.add(Issue.INCONSISTENT_NAME);
         }
       }

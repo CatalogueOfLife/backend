@@ -168,27 +168,11 @@ CREATE TABLE verbatim (
   terms jsonb
 );
 
-CREATE TABLE "serial" (
-  key serial PRIMARY KEY,
-  dataset_key INTEGER NOT NULL REFERENCES dataset,
-  aliases text[] DEFAULT '{}',
-  bph TEXT,
-  call TEXT,
-  tl2 TEXT,
-  oclc INTEGER,
-  bhl INTEGER,
-  firstYear INTEGER,
-  lastYear INTEGER,
-  csl JSONB,
-  remarks text
-);
-
 CREATE TABLE reference (
   key serial PRIMARY KEY,
   id TEXT,
   dataset_key INTEGER NOT NULL REFERENCES dataset,
   verbatim_key INTEGER REFERENCES verbatim,
-  serial_key INTEGER REFERENCES "serial",
   csl JSONB,
   year int,
   issues INT[] DEFAULT '{}'
@@ -350,6 +334,8 @@ CREATE index ON dataset (gbif_key);
 CREATE index ON dataset_import (dataset_key, finished);
 CREATE index ON dataset_import (started);
 
+CREATE index ON verbatim (dataset_key);
+
 CREATE UNIQUE index ON name (id, dataset_key);
 CREATE index ON name (dataset_key);
 CREATE index ON name (rank);
@@ -359,6 +345,7 @@ CREATE index ON name (homotypic_name_key);
 CREATE index ON name (published_in_key);
 CREATE index ON name USING GIN(issues);
 
+CREATE index ON name_act (dataset_key);
 CREATE index ON name_act (name_key, type);
 
 CREATE UNIQUE index ON taxon (id, dataset_key);
@@ -366,10 +353,9 @@ CREATE index ON taxon (dataset_key);
 CREATE index ON taxon (parent_key);
 CREATE index ON taxon (name_key);
 
-CREATE UNIQUE index ON reference (id, dataset_key);
-CREATE index ON reference (dataset_key);
-
-CREATE index ON verbatim (dataset_key);
+CREATE index ON synonym (dataset_key);
+CREATE index ON synonym (taxon_key);
+CREATE index ON synonym (name_key);
 
 CREATE index ON distribution (dataset_key);
 CREATE index ON distribution (taxon_key);
@@ -377,6 +363,10 @@ CREATE index ON distribution (taxon_key);
 CREATE index ON vernacular_name (dataset_key);
 CREATE index ON vernacular_name (taxon_key);
 
-CREATE index ON synonym (taxon_key);
-CREATE index ON synonym (name_key);
+CREATE UNIQUE index ON reference (id, dataset_key);
+CREATE index ON reference (dataset_key);
+
+CREATE index ON distribution_reference (dataset_key);
+CREATE index ON vernacular_name_reference (dataset_key);
+CREATE index ON taxon_reference (dataset_key);
 

@@ -14,6 +14,7 @@ import org.col.admin.task.importer.neo.model.Labels;
 import org.col.admin.task.importer.neo.model.NeoTaxon;
 import org.col.admin.task.importer.reference.ReferenceFactory;
 import org.col.api.model.*;
+import org.col.api.vocab.Issue;
 import org.col.csv.CsvReader;
 import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.dwc.terms.Term;
@@ -67,11 +68,15 @@ public abstract class NeoInserter {
     final AtomicInteger added = new AtomicInteger(0);
     reader.stream(classTerm).forEach(rec -> {
       store.assignKey(rec);
-      interpret.apply(rec).ifPresent(obj -> {
+      Optional<T> opt = interpret.apply(rec);
+      if (opt.isPresent()) {
+        T obj = opt.get();
         obj.setVerbatimKey(rec.getKey());
         add.accept(obj);
         added.incrementAndGet();
-      });
+      } else {
+        rec.addIssue(Issue.NOT_INTERPRETED);
+      }
       store.put(rec);
       counter.incrementAndGet();
     });

@@ -3,6 +3,7 @@ package org.col.admin.task.importer;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nullable;
@@ -68,7 +69,7 @@ public class Normalizer implements Runnable {
       insertData();
       // insert normalizer db relations, create implicit nodes if needed and parse names
       normalize();
-      // sync taxon KVP storee with neo4j relations, setting correct neo4j labels, homotypic keys etc
+      // sync taxon KVP store with neo4j relations, setting correct neo4j labels, homotypic keys etc
       store.sync();
       // verify, derive issues and fail before we do expensive matching or even db imports
       verify();
@@ -89,65 +90,55 @@ public class Normalizer implements Runnable {
    */
   private void verify() {
     store.all().forEach(t -> {
-      boolean modified = false;
-      String id;
-      // is it a source with verbatim data?
-      require(t.name.getOrigin(), "name origin");
       if (t.name.getOrigin() == Origin.SOURCE) {
-        id = require(t.getID(), "verbatim id");
-      } else {
-        id = String.format("%s %s %s", t.taxon.getOrigin().name(), t.name.getRank(), t.name.getScientificName());
+        require(t.name, t.getID(), "verbatim id");
       }
-
-      // verify name and flag issues
-      modified = modified || NameValidator.flagIssues(t.name);
+      // is it a source with verbatim data?
+      require(t.name, t.name.getOrigin(), "name origin");
 
       // check for required fields to avoid pg exceptions
-      require(t.name.getScientificName(), "scientific name", id);
-      require(t.name.getRank(), "rank", id);
-      require(t.name.getType(), "name type", id);
+      require(t.name, t.name.getScientificName(), "scientific name");
+      require(t.name, t.name.getRank(), "rank");
+      require(t.name, t.name.getType(), "name type");
 
       // taxon or synonym
       if (!t.isSynonym()) {
-        require(t.taxon.getOrigin(), "taxon origin", id);
-        require(t.taxon.getStatus(), "taxon status", id);
+        require(t.taxon, t.taxon.getOrigin(), "taxon origin");
+        require(t.taxon, t.taxon.getStatus(), "taxon status");
       }
 
       // vernacular
       for (VernacularName v : t.vernacularNames) {
-        require(v.getName(), "vernacular name", id);
+        require(v, v.getName(), "vernacular name");
       }
 
       // distribution
       for (Distribution d : t.distributions) {
-        require(d.getGazetteer(), "distribution area standard", id);
-        require(d.getArea(), "distribution area", id);
+        require(d, d.getGazetteer(), "distribution area standard");
+        require(d, d.getArea(), "distribution area");
       }
 
-      // update stored copy?
-      if (modified) {
+      // verify name and flag issues
+      if (NameValidator.flagIssues(t.name)) {
         store.update(t);
       }
+
     });
   }
 
-  private static <T> T require(T obj, String fieldName) {
-    return require(obj, fieldName, null);
-  }
-
-  private static <T> T require(T obj, String fieldName, String id) {
+  private <T> T require(VerbatimEntity ent, T obj, String fieldName) {
     if (obj == null) {
-      String msg = String.format("%s missing for record %s", fieldName, id == null ? " without ID" : id);
+      // in such fatal cases log the verbatim record in question for later debugging
+      if (ent.getVerbatimKey() != null) {
+        TermRecord rec = store.getVerbatim(ent.getVerbatimKey());
+        LOG.error("Missing {} of {}: {}", fieldName, ent.getClass().getSimpleName(), rec.toStringComplete());
+      } else {
+        LOG.error("Missing {} of {}. No verbatim for {}", fieldName, ent.getClass().getSimpleName(), ent);
+      }
+      String msg = String.format("%s missing for %s", fieldName, ent.getClass().getSimpleName());
       throw new NormalizationFailedException.MissingDataException(msg);
     }
     return obj;
-  }
-
-  private static void requireNotEmpty(Collection<?> obj, String fieldName, String id) {
-    if (obj.isEmpty()) {
-      String msg = String.format("%s missing for record %s", fieldName, id == null ? " without ID" : id);
-      throw new NormalizationFailedException.MissingDataException(msg);
-    }
   }
 
   private void matchAndCount() {
@@ -165,6 +156,9 @@ public class Normalizer implements Runnable {
 
     // rectify taxonomic status
     rectifyTaxonomicStatus();
+
+    // move synonym data to accepted
+    moveSynonymData();
 
     // process the denormalized classifications of accepted taxa
     applyDenormedClassification();
@@ -215,6 +209,39 @@ public class Normalizer implements Runnable {
           // update store if modified
           if (issue != null) {
             t.taxon.addIssue(issue);
+            store.update(t);
+          }
+        }
+      });
+    }
+  }
+
+  /**
+   * Moves synonym data (distributions, vernacular, bibliography) to its accepted taxon.
+   * https://github.com/Sp2000/colplus-backend/issues/108
+   */
+  private void moveSynonymData() {
+    try (Transaction tx = store.getNeo().beginTx()) {
+      store.all().forEach(t -> {
+        if (t.isSynonym()) {
+          if (!t.distributions.isEmpty() ||
+              !t.vernacularNames.isEmpty() ||
+              !t.bibliography.isEmpty()
+          ) {
+            // get a real neo4j node (store.all() only populates a dummy with an id)
+            Node n = store.getNeo().getNodeById(t.node.getId());
+            for (RankedName rn : store.accepted(n)) {
+              NeoTaxon acc = store.get(rn.node);
+              acc.distributions.addAll(t.distributions);
+              acc.vernacularNames.addAll(t.vernacularNames);
+              acc.bibliography.addAll(t.bibliography);
+              store.update(acc);
+            }
+
+            t.distributions.clear();
+            t.vernacularNames.clear();
+            t.bibliography.clear();
+            t.taxon.addIssue(Issue.SYNONYM_DATA_MOVED);
             store.update(t);
           }
         }

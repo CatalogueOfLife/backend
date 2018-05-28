@@ -249,6 +249,10 @@ public class NeoDb implements ReferenceStore {
       if (curr != null) {
         curr.get();
       }
+
+      // mark good for commit
+      tx.success();
+
       // close executor. All jobs are done so this should not take much time
       service.shutdown();
       service.awaitTermination(1, TimeUnit.HOURS);
@@ -263,6 +267,20 @@ public class NeoDb implements ReferenceStore {
       throw new RuntimeException(e.getCause());
     }
     return counter.get();
+  }
+
+  /**
+   * Removes the neo4j node with all its relations and all entities stored under this node like NeoTaxon.
+   */
+  public void remove(Node n) {
+    taxa.remove(n.getId());
+    int counter = 0;
+    for (Relationship rel : n.getRelationships()) {
+      rel.delete();
+      counter++;
+    }
+    n.delete();
+    LOG.debug("Deleted {} from store with {} relations", n, counter);
   }
 
   private static class BatchCallback implements Callable<Integer> {

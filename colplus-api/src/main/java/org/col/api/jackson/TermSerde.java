@@ -43,11 +43,7 @@ public class TermSerde {
       if (value == null) {
         jgen.writeNull();
       } else {
-        if (value instanceof UnknownTerm) {
-          jgen.writeString(value.qualifiedName());
-        } else {
-          jgen.writeString(value.prefixedName());
-        }
+        jgen.writeString(value.prefixedName());
       }
     }
   }
@@ -62,11 +58,7 @@ public class TermSerde {
       if (value == null) {
         jgen.writeNull();
       } else {
-        if (value instanceof UnknownTerm) {
-          jgen.writeFieldName(value.qualifiedName());
-        } else {
-          jgen.writeFieldName(value.prefixedName());
-        }
+        jgen.writeFieldName(value.prefixedName());
       }
     }
   }

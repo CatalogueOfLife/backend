@@ -56,6 +56,26 @@ public class PgConfig {
   public int maxLifetime = min(15);
 
   /**
+   * Postgres property lock_timeout:
+   * Abort any statement that takes more than the specified number of milliseconds,
+   * starting from the time the command arrives at the server from the client.
+   * A value of zero (the default) turns this off.
+   */
+  @Min(0)
+  public int lockTimeout = 0;
+
+  /**
+   * Postgres property idle_in_transaction_session_timeout:
+   * Terminate any session with an open transaction that has been idle for longer than the specified duration in milliseconds.
+   * This allows any locks held by that session to be released and the connection slot to be reused;
+   * it also allows tuples visible only to this transaction to be vacuumed.
+   *
+   * The default value of 0 disables this feature.
+   */
+  @Min(0)
+  public int idleInTransactionSessionTimeout = 0;
+
+  /**
    * The postgres work_mem session setting in MB that should be used for each connection.
    * A value of zero or below does not set anything and thus uses the global postgres settings
    */
@@ -107,8 +127,20 @@ public class PgConfig {
     hikari.setMinimumIdle(minimumIdle);
     hikari.setIdleTimeout(idleTimeout);
     hikari.setMaxLifetime(maxLifetime);
+
+    // connection settings
+    StringBuilder sb = new StringBuilder();
     if (workMem > 0) {
-      hikari.setConnectionInitSql("SET work_mem='" + workMem + "MB'");
+      sb.append("SET work_mem='" + workMem + "MB';");
+    }
+    if (lockTimeout > 0) {
+      sb.append("SET lock_timeout TO " + lockTimeout + ";");
+    }
+    if (idleInTransactionSessionTimeout > 0) {
+      sb.append("SET idle_in_transaction_session_timeout TO " + idleInTransactionSessionTimeout + ";");
+    }
+    if (sb.length()>0) {
+      hikari.setConnectionInitSql(sb.toString());
     }
     return hikari;
   }
@@ -125,33 +157,35 @@ public class PgConfig {
         .add("minimumIdle", minimumIdle)
         .add("idleTimeout", idleTimeout)
         .add("maxLifetime", maxLifetime)
+        .add("lockTimeout", lockTimeout)
+        .add("idleInTransactionSessionTimeout", idleInTransactionSessionTimeout)
         .add("workMem", workMem)
         .toString();
   }
 
   @Override
-  public int hashCode() {
-    return Objects.hash(host, database, user, password, maximumPoolSize, minimumIdle, idleTimeout, maxLifetime, workMem, connectionTimeout);
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    PgConfig pgConfig = (PgConfig) o;
+    return port == pgConfig.port &&
+        maximumPoolSize == pgConfig.maximumPoolSize &&
+        minimumIdle == pgConfig.minimumIdle &&
+        idleTimeout == pgConfig.idleTimeout &&
+        maxLifetime == pgConfig.maxLifetime &&
+        lockTimeout == pgConfig.lockTimeout &&
+        idleInTransactionSessionTimeout == pgConfig.idleInTransactionSessionTimeout &&
+        workMem == pgConfig.workMem &&
+        connectionTimeout == pgConfig.connectionTimeout &&
+        Objects.equals(host, pgConfig.host) &&
+        Objects.equals(database, pgConfig.database) &&
+        Objects.equals(user, pgConfig.user) &&
+        Objects.equals(password, pgConfig.password);
   }
 
   @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
-      return true;
-    }
-    if (obj == null || getClass() != obj.getClass()) {
-      return false;
-    }
-    final PgConfig other = (PgConfig) obj;
-    return Objects.equals(this.host, other.host)
-        && Objects.equals(this.database, other.database)
-        && Objects.equals(this.user, other.user)
-        && Objects.equals(this.password, other.password)
-        && Objects.equals(this.maximumPoolSize, other.maximumPoolSize)
-        && Objects.equals(this.minimumIdle, other.minimumIdle)
-        && Objects.equals(this.idleTimeout, other.idleTimeout)
-        && Objects.equals(this.maxLifetime, other.maxLifetime)
-        && Objects.equals(this.workMem, other.workMem)
-        && Objects.equals(this.connectionTimeout, other.connectionTimeout);
+  public int hashCode() {
+
+    return Objects.hash(host, port, database, user, password, maximumPoolSize, minimumIdle, idleTimeout, maxLifetime, lockTimeout, idleInTransactionSessionTimeout, workMem, connectionTimeout);
   }
 }

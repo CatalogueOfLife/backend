@@ -14,6 +14,7 @@ import org.col.api.model.*;
 import org.col.api.vocab.*;
 import org.col.common.util.ObjectUtils;
 import org.col.parser.*;
+import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.dwc.terms.DcTerm;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.GbifTerm;
@@ -36,31 +37,32 @@ public class DwcInterpreter extends InterpreterBase {
   }
 
   public Optional<NeoTaxon> interpret(TermRecord v) {
-    NeoTaxon t = new NeoTaxon();
     // name
-    NameAccordingTo nat = interpretName(v);
-    t.name = nat.getName();
-    t.name.setVerbatimKey(v.getKey());
-    // flat classification
-    t.classification = new Classification();
-    for (DwcTerm dwc : DwcTerm.HIGHER_RANKS) {
-      t.classification.setByTerm(dwc, v.get(dwc));
+    Optional<NameAccordingTo> nat = interpretName(v);
+    if (nat.isPresent()) {
+      // taxon
+      NeoTaxon t = NeoTaxon.createTaxon(Origin.SOURCE, nat.get().getName(), false);
+      // add taxon in any case - we can swap status of a synonym during normalization
+      EnumNote<TaxonomicStatus> status = SafeParser
+          .parse(TaxonomicStatusParser.PARSER, v.get(DwcTerm.taxonomicStatus)).orElse(NO_STATUS);
+      interpretTaxon(t, v, status, nat.get().getAccordingTo());
+      // a synonym by status?
+      // we deal with relations via DwcTerm.acceptedNameUsageID and DwcTerm.acceptedNameUsage during
+      // relation insertion
+      if (status.val.isSynonym()) {
+        t.synonym = new Synonym();
+        t.synonym.setStatus(status.val);
+        t.synonym.setAccordingTo(nat.get().getAccordingTo());
+        t.homotypic = TaxonomicStatusParser.isHomotypic(status);
+      }
+      // flat classification
+      t.classification = new Classification();
+      for (DwcTerm dwc : DwcTerm.HIGHER_RANKS) {
+        t.classification.setByTerm(dwc, v.get(dwc));
+      }
+      return Optional.of(t);
     }
-    // add taxon in any case - we can swap status of a synonym during normalization
-    EnumNote<TaxonomicStatus> status = SafeParser
-        .parse(TaxonomicStatusParser.PARSER, v.get(DwcTerm.taxonomicStatus)).orElse(NO_STATUS);
-    t.taxon = interpretTaxon(v, status, nat.getAccordingTo());
-    // a synonym by status?
-    // we deal with relations via DwcTerm.acceptedNameUsageID and DwcTerm.acceptedNameUsage during
-    // relation insertion
-    if (status.val.isSynonym()) {
-      t.synonym = new Synonym();
-      t.synonym.setStatus(status.val);
-      t.synonym.setAccordingTo(nat.getAccordingTo());
-      t.homotypic = TaxonomicStatusParser.isHomotypic(status);
-    }
-
-    return Optional.of(t);
+    return Optional.empty();
   }
 
   List<Reference> interpretReference(TermRecord rec) {
@@ -106,16 +108,13 @@ public class DwcInterpreter extends InterpreterBase {
   }
 
   List<VernacularName> interpretVernacularName(TermRecord rec) {
-    VernacularName vn = new VernacularName();
-    vn.setVerbatimKey(rec.getKey());
-    vn.setName(rec.get(DwcTerm.vernacularName));
-    vn.setLanguage(SafeParser.parse(LanguageParser.PARSER, rec.get(DcTerm.language))
-        .orNull());
-    vn.setCountry(SafeParser.parse(CountryParser.PARSER, rec.getFirst(DwcTerm.countryCode, DwcTerm.country))
-        .orNull());
-    addReferences(vn, rec);
-    transliterate(vn);
-    return Lists.newArrayList(vn);
+    return super.interpretVernacular(rec,
+        this::addReferences,
+        DwcTerm.vernacularName,
+        null,
+        DcTerm.language,
+        DwcTerm.countryCode, DwcTerm.country
+    );
   }
 
   private Distribution createDistribution(String area, Gazetteer standard, TermRecord rec) {
@@ -137,32 +136,26 @@ public class DwcInterpreter extends InterpreterBase {
     }
   }
 
-  private Taxon interpretTaxon(TermRecord v, EnumNote<TaxonomicStatus> status, String accordingTo) {
+  private void interpretTaxon(NeoTaxon t, TermRecord v, EnumNote<TaxonomicStatus> status, String accordingTo) {
     // and it keeps the taxonID for resolution of relations
-    Taxon t = new Taxon();
-    t.setVerbatimKey(v.getKey());
-    t.setId(v.getFirst(DwcTerm.taxonID, DwcaReader.DWCA_ID));
+    t.taxon.setVerbatimKey(v.getKey());
+    t.taxon.setId(v.getFirst(DwcTerm.taxonID, DwcaReader.DWCA_ID));
     // this can be a synonym at this stage which the class does not accept
-    t.setDoubtful(TaxonomicStatus.DOUBTFUL == status.val || status.val.isSynonym());
-    t.setAccordingTo(ObjectUtils.coalesce(v.get(DwcTerm.nameAccordingTo), accordingTo));
-    t.setAccordingToDate(null);
-    t.setOrigin(Origin.SOURCE);
-    t.setDatasetUrl(uri(v, t, Issue.URL_INVALID, DcTerm.references));
-    t.setFossil(null);
-    t.setRecent(null);
+    t.taxon.setDoubtful(TaxonomicStatus.DOUBTFUL == status.val || status.val.isSynonym());
+    t.taxon.setAccordingTo(ObjectUtils.coalesce(v.get(DwcTerm.nameAccordingTo), accordingTo));
+    t.taxon.setAccordingToDate(null);
+    t.taxon.setOrigin(Origin.SOURCE);
+    t.taxon.setDatasetUrl(uri(v, t, Issue.URL_INVALID, DcTerm.references));
+    t.taxon.setFossil(null);
+    t.taxon.setRecent(null);
     // t.setLifezones();
-    t.setSpeciesEstimate(null);
-    t.setSpeciesEstimateReferenceKey(null);
-    t.setRemarks(v.get(DwcTerm.taxonRemarks));
-
-    return t;
+    t.taxon.setSpeciesEstimate(null);
+    t.taxon.setSpeciesEstimateReferenceKey(null);
+    t.taxon.setRemarks(v.get(DwcTerm.taxonRemarks));
   }
 
-  private NameAccordingTo interpretName(TermRecord v) {
-    // TODO: or use v.getID() ???
-    // TODO: should we also get remarks through an extension, e.g. species profile or a nomenclature
-    // extension?
-    NameAccordingTo nat = interpretName(v.getFirst(DwcTerm.scientificNameID, DwcTerm.taxonID, DwcaReader.DWCA_ID),
+  private Optional<NameAccordingTo> interpretName(TermRecord v) {
+    Optional<NameAccordingTo> opt = interpretName(v.getFirst(DwcTerm.scientificNameID, DwcTerm.taxonID, DwcaReader.DWCA_ID),
         v.getFirst(DwcTerm.taxonRank, DwcTerm.verbatimTaxonRank), v.get(DwcTerm.scientificName),
         v.get(DwcTerm.scientificNameAuthorship),
         v.getFirst(GbifTerm.genericName, DwcTerm.genus), v.get(DwcTerm.subgenus),
@@ -171,13 +164,17 @@ public class DwcInterpreter extends InterpreterBase {
         v.getRaw(DcTerm.references), v.get(DwcTerm.nomenclaturalStatus));
 
     // publishedIn
-    if (v.hasTerm(DwcTerm.namePublishedInID) || v.hasTerm(DwcTerm.namePublishedIn)) {
-      lookupReference(v.get(DwcTerm.namePublishedInID), v.get(DwcTerm.namePublishedIn)).ifPresent(r -> {
-        nat.getName().setPublishedInKey(r.getKey());
-        nat.getName().setPublishedInPage(r.getPage());
-      });
+    if (opt.isPresent()) {
+      Name n = opt.get().getName();
+      n.setVerbatimKey(v.getKey());
+      if (v.hasTerm(DwcTerm.namePublishedInID) || v.hasTerm(DwcTerm.namePublishedIn)) {
+        lookupReference(v.get(DwcTerm.namePublishedInID), v.get(DwcTerm.namePublishedIn)).ifPresent(r -> {
+          n.setPublishedInKey(r.getKey());
+          n.setPublishedInPage(r.getPage());
+        });
+      }
     }
-    return nat;
+    return opt;
   }
 
 }

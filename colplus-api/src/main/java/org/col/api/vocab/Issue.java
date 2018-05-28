@@ -177,9 +177,6 @@ public enum Issue {
    */
   ID_NOT_UNIQUE,
 
-  // TODO: TAXON ISSUES TO BE REVISED !!!
-
-
   /**
    * The value for dwc:parentNameUsageID could not be resolved.
    */
@@ -263,7 +260,12 @@ public enum Issue {
   CLASSIFICATION_NOT_APPLIED,
 
   /**
-   * At least one vernacular name extension record attached to this name usage is empty or clearly not a name.
+   * A verbatim record could not be interpreted at all and has been ignored.
+   */
+  NOT_INTERPRETED,
+
+  /**
+   * A vernacular name extension record attached to this name usage is empty or clearly not a name.
    */
   VERNACULAR_NAME_INVALID,
 
@@ -377,6 +379,17 @@ public enum Issue {
    * The given taxonomic status appears unlikely.
    * E.g. a misapplied name without any taxonomic remark indicating the source it was misapplied in.
    */
-  TAXONOMIC_STATUS_DOUBTFUL;
+  TAXONOMIC_STATUS_DOUBTFUL,
+
+  /**
+   * A synonym which originally had associated data (distributions, vernacular names, bibliography)
+   * but which was moved to its accepted taxon.
+   */
+  SYNONYM_DATA_MOVED,
+
+  /**
+   * ACEF reference type values unparsable or missing
+   */
+  REFTYPE_INVALID;
 
 }

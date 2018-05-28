@@ -52,19 +52,20 @@ public class AcefInterpreter extends InterpreterBase {
   }
 
   private Optional<NeoTaxon> interpretTaxon(Term idTerm, TermRecord v, boolean synonym) {
-    NeoTaxon t = new NeoTaxon();
     // name
-    NameAccordingTo nat = interpretName(idTerm, v);
-    t.name = nat.getName();
+    Optional<NameAccordingTo> nat = interpretName(idTerm, v);
+    if (!nat.isPresent()) {
+      return Optional.empty();
+    }
+
+    NeoTaxon t = NeoTaxon.createTaxon(Origin.SOURCE, nat.get().getName(), false);
 
     // taxon
-    t.taxon = new Taxon();
     t.taxon.setId(v.get(idTerm));
     t.taxon.setOrigin(Origin.SOURCE);
     t.taxon.setVerbatimKey(v.getKey());
     t.taxon.setAccordingTo(v.get(AcefTerm.LTSSpecialist));
     t.taxon.setAccordingToDate(date(v, t.taxon, Issue.ACCORDING_TO_DATE_INVALID, AcefTerm.LTSDate));
-    t.taxon.setOrigin(Origin.SOURCE);
     t.taxon.setDatasetUrl(uri(v, t.taxon, Issue.URL_INVALID, AcefTerm.InfraSpeciesURL, AcefTerm.SpeciesURL));
     t.taxon.setFossil(bool(v, t.taxon, Issue.IS_FOSSIL_INVALID, AcefTerm.IsFossil, AcefTerm.HasPreHolocene));
     t.taxon.setRecent(bool(v, t.taxon, Issue.IS_RECENT_INVALID, AcefTerm.IsRecent, AcefTerm.HasModern));
@@ -98,7 +99,7 @@ public class AcefInterpreter extends InterpreterBase {
     if (synonym) {
       t.synonym = new Synonym();
       t.synonym.setStatus(status);
-      t.synonym.setAccordingTo(nat.getAccordingTo());
+      t.synonym.setAccordingTo(nat.get().getAccordingTo());
 
     } else {
       t.taxon.setDoubtful(TaxonomicStatus.DOUBTFUL == status);
@@ -111,15 +112,28 @@ public class AcefInterpreter extends InterpreterBase {
   }
 
   List<VernacularName> interpretVernacular(TermRecord rec) {
-    VernacularName vn = new VernacularName();
-    vn.setVerbatimKey(rec.getKey());
-    vn.setName(rec.get(AcefTerm.CommonName));
-    vn.setLanguage(SafeParser.parse(LanguageParser.PARSER, rec.get(AcefTerm.Language)).orNull());
-    vn.setCountry(SafeParser.parse(CountryParser.PARSER, rec.get(AcefTerm.Country)).orNull());
-    vn.setLatin(rec.get(AcefTerm.TransliteratedName));
-    addReferences(vn, vn, rec);
-    transliterate(vn);
-    return Lists.newArrayList(vn);
+    return super.interpretVernacular(rec,
+        this::addReferences,
+        AcefTerm.CommonName,
+        AcefTerm.TransliteratedName,
+        AcefTerm.Language,
+        AcefTerm.Country
+    );
+  }
+  private void addReferences(Referenced obj, TermRecord v) {
+    if (v.hasTerm(AcefTerm.ReferenceID)) {
+      Reference r = refStore.refById(v.get(AcefTerm.ReferenceID));
+      if (r != null) {
+        obj.addReferenceKey(r.getKey());
+      } else {
+        LOG.info("ReferenceID {} not existing but referred from {} {}",
+            v.get(AcefTerm.ReferenceID),
+            obj.getClass().getSimpleName(),
+            v.fileLine()
+        );
+        v.addIssue(Issue.REFERENCE_ID_INVALID);
+      }
+    }
   }
 
   List<Distribution> interpretDistribution(TermRecord rec) {
@@ -155,25 +169,11 @@ public class AcefInterpreter extends InterpreterBase {
       // status
       d.setStatus(parse(DistributionStatusParser.PARSER, rec.get(AcefTerm.DistributionStatus))
           .orElse(DistributionStatus.NATIVE, Issue.DISTRIBUTION_STATUS_INVALID, d.getIssues()));
-      addReferences(d, d, rec);
+      addReferences(d, rec);
       d.setVerbatimKey(rec.getKey());
       return Lists.newArrayList(d);
     }
     return Collections.emptyList();
-  }
-
-  private void addReferences(Referenced obj, VerbatimEntity ve, TermRecord v) {
-    if (v.hasTerm(AcefTerm.ReferenceID)) {
-      Reference r = refStore.refById(v.get(AcefTerm.ReferenceID));
-      if (r != null) {
-        obj.addReferenceKey(r.getKey());
-      } else {
-        LOG.info("ReferenceID {} not existing but referred from {} for taxon {}",
-            v.get(AcefTerm.ReferenceID), obj.getClass().getSimpleName(),
-            v.get(AcefTerm.AcceptedTaxonID));
-        ve.addIssue(Issue.REFERENCE_ID_INVALID);
-      }
-    }
   }
 
   private Classification interpretClassification(TermRecord v, boolean isSynonym) {
@@ -194,7 +194,7 @@ public class AcefInterpreter extends InterpreterBase {
   /**
    * @return a parsed name or in case of AcceptedInfraSpecificTaxa
    */
-  private NameAccordingTo interpretName(Term idTerm, TermRecord v) {
+  private Optional<NameAccordingTo> interpretName(Term idTerm, TermRecord v) {
     String authorship;
     String rank;
     if (v.hasTerm(AcefTerm.InfraSpeciesEpithet)) {
@@ -205,23 +205,24 @@ public class AcefInterpreter extends InterpreterBase {
       authorship = v.get(AcefTerm.AuthorString);
     }
 
-    NameAccordingTo nat;
+    Optional<NameAccordingTo> opt;
     if (v.getType() == AcefTerm.AcceptedInfraSpecificTaxa) {
       // preliminary name with just id and rank
-      nat = new NameAccordingTo();
+      NameAccordingTo nat = new NameAccordingTo();
       nat.setName(new Name());
       nat.getName().setId(v.get(idTerm));
       nat.getName().setRank(
           SafeParser.parse(RankParser.PARSER, rank).orElse(Rank.INFRASPECIFIC_NAME)
       );
+      opt = Optional.of(nat);
     } else {
-      nat = interpretName(v.get(idTerm), rank, null, authorship, v.get(AcefTerm.Genus),
+      opt = interpretName(v.get(idTerm), rank, null, authorship, v.get(AcefTerm.Genus),
           v.get(AcefTerm.SubGenusName), v.get(AcefTerm.SpeciesEpithet),
           v.get(AcefTerm.InfraSpeciesEpithet), null, v.get(AcefTerm.GSDNameStatus), null,
           null);
     }
-    nat.getName().setVerbatimKey(v.getKey());
-    return nat;
+    opt.ifPresent(nat -> nat.getName().setVerbatimKey(v.getKey()));
+    return opt;
   }
 
 }
