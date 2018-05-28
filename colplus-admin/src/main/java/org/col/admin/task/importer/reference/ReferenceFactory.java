@@ -1,16 +1,17 @@
 package org.col.admin.task.importer.reference;
 
-import java.util.Optional;
+import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.google.common.base.Strings;
+import de.undercouch.citeproc.CSL;
 import org.apache.commons.lang3.ArrayUtils;
 import org.col.api.model.CslData;
 import org.col.api.model.CslDate;
 import org.col.api.model.Reference;
 import org.col.api.vocab.Issue;
-import org.col.csl.AnystyleParserWrapper;
+import org.col.csl.ColItemDataProvider;
 import org.col.parser.Parser;
 import org.col.parser.UnparsableException;
 import org.slf4j.Logger;
@@ -30,10 +31,18 @@ public class ReferenceFactory {
 
   private final Integer datasetKey;
   private final Parser<CslData> cslParser;
+  private final ColItemDataProvider colItemDataProvider;
+  private final CSL citeproc;
 
   public ReferenceFactory(Integer datasetKey, Parser<CslData> cslParser) {
     this.datasetKey = datasetKey;
     this.cslParser = cslParser;
+    this.colItemDataProvider = new ColItemDataProvider();
+    try {
+      this.citeproc = new CSL(colItemDataProvider, "ieee");
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   private Reference create(String id) {
@@ -62,8 +71,8 @@ public class ReferenceFactory {
    * @param details title of periodicals, volume number, and other common bibliographic details
    * @return
    */
-  public Reference fromACEF(String referenceID, String referenceType,
-                            String authors, String year, String title, String details) {
+  public Reference fromACEF(String referenceID, String referenceType, String authors, String year,
+      String title, String details) {
     Reference ref = create(referenceID);
 
     if (details != null && (title == null || details.length() > title.length())) {
@@ -111,9 +120,11 @@ public class ReferenceFactory {
   private void parse(Reference ref, String citation) {
     try {
       cslParser.parse(citation).ifPresent(ref::setCsl);
+      colItemDataProvider.setCslData(ref.getCsl());
+      ref.setCitation(citeproc.toString());
     } catch (UnparsableException e) {
       ref.addIssue(Issue.REFERENCE_UNPARSABLE);
-      ref.setCsl(new CslData());
+      ref.setCitation(citation);
     }
   }
 
@@ -131,7 +142,7 @@ public class ReferenceFactory {
     }
     return sb.toString();
   }
-  
+
   private static Reference postParse(Reference ref) {
     // extract int year
     if (ref.getCsl().getIssued() != null) {
@@ -147,9 +158,8 @@ public class ReferenceFactory {
 
   private static Integer parseYear(CslDate date) {
 
-    if (!ArrayUtils.isEmpty(date.getDateParts()) &&
-        !ArrayUtils.isEmpty(date.getDateParts()[0]) &&
-        date.getDateParts()[0][0] != 0) {
+    if (!ArrayUtils.isEmpty(date.getDateParts()) && !ArrayUtils.isEmpty(date.getDateParts()[0])
+        && date.getDateParts()[0][0] != 0) {
       return date.getDateParts()[0][0];
     }
     return null;
