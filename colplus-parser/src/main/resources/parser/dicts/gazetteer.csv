@@ -4,8 +4,6 @@ country,ISO
 fao,ISO
 fish,FAO
 fishing,FAO
-globalplanet,WOEID
-gp,WOEID
 ISO 3166,ISO
 ISO 3166-1 ALPHA2,ISO
 ISO 3166-1,ISO
@@ -24,5 +22,3 @@ TDWG Level 1,TDWG
 TDWG Level 2,TDWG
 TDWG Level 3,TDWG
 TDWG Level 4,TDWG
-woe,WOEID
-yahoo,WOEID

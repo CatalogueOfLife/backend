@@ -40,7 +40,10 @@ abstract class EnumParser<T extends Enum> extends ParserBase<T> {
           LOG.debug("Ignore unmapped value {} on line {}", row[0], reader.currLineNumber());
           continue;
         }
-        if (row.length != 2 || Strings.isNullOrEmpty(row[1])) {
+        if (row.length == 2 && Strings.isNullOrEmpty(row[1])) {
+          continue;
+        }
+        if (row.length > 2) {
           LOG.info("Ignore invalid mapping in {}, line {} with {} columns", mappingResourceFile, reader.currLineNumber(), row.length);
           continue;
         }
