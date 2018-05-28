@@ -174,6 +174,7 @@ CREATE TABLE reference (
   dataset_key INTEGER NOT NULL REFERENCES dataset,
   verbatim_key INTEGER REFERENCES verbatim,
   csl JSONB,
+  citation TEXT,
   year int,
   issues INT[] DEFAULT '{}'
 );
