@@ -1,9 +1,9 @@
 package org.col.admin.task.importer;
 
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
+import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -28,7 +28,6 @@ import org.col.api.vocab.Issue;
 import org.col.api.vocab.NomActType;
 import org.col.db.dao.NameDao;
 import org.col.db.mapper.*;
-import org.eclipse.collections.impl.factory.BiMaps;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
 import org.slf4j.Logger;
@@ -37,7 +36,7 @@ import org.slf4j.LoggerFactory;
 /**
  *
  */
-public class PgImport implements Runnable {
+public class PgImport implements Callable<Boolean> {
 	private static final Logger LOG = LoggerFactory.getLogger(PgImport.class);
 
 	private final NeoDb store;
@@ -62,22 +61,38 @@ public class PgImport implements Runnable {
 		this.sessionFactory = sessionFactory;
 	}
 
+  private void checkIfCancelled() throws InterruptedException {
+    if (Thread.currentThread().isInterrupted()) {
+      throw new InterruptedException("PgImport was cancelled/interrupted");
+    }
+  }
+
 	@Override
-	public void run() {
+	public Boolean call() throws InterruptedException {
+    checkIfCancelled();
 	  truncate();
 
+    checkIfCancelled();
     insertVerbatim();
+
+    checkIfCancelled();
 		insertReferences();
+
+    checkIfCancelled();
     insertNames();
+
+    checkIfCancelled();
     insertActs();
+
+    checkIfCancelled();
 		insertTaxa();
 
 		updateMetadata();
-
 		LOG.info("Completed dataset {} insert with {} verbatim records, " +
         "{} names, {} taxa, {} references, {} vernaculars and {} distributions",
         dataset.getKey(), verbatimKeys.size(),
         nCounter, tCounter, rCounter, vCounter, dCounter);
+		return true;
 	}
 
   private void truncate(){
@@ -112,7 +127,7 @@ public class PgImport implements Runnable {
 		}
 	}
 
-  private void insertVerbatim() {
+  private void insertVerbatim() throws InterruptedException {
     try (final SqlSession session = sessionFactory.openSession(false)) {
       VerbatimRecordMapper mapper = session.getMapper(VerbatimRecordMapper.class);
       int counter = 0;
@@ -123,6 +138,7 @@ public class PgImport implements Runnable {
         mapper.create(v);
         verbatimKeys.put(storeKey, v.getKey());
         if (counter++ % batchSize == 0) {
+          checkIfCancelled();
           session.commit();
           LOG.debug("Inserted {} verbatim records", counter);
         }
@@ -143,7 +159,7 @@ public class PgImport implements Runnable {
     }
   }
 
-	private void insertReferences() {
+	private void insertReferences() throws InterruptedException {
     try (final SqlSession session = sessionFactory.openSession(false)) {
       ReferenceMapper mapper = session.getMapper(ReferenceMapper.class);
       int counter = 0;
@@ -156,6 +172,7 @@ public class PgImport implements Runnable {
         // store mapping of key used in the store to the key used in postgres
         referenceKeys.put(storeKey, r.getKey());
         if (counter++ % batchSize == 0) {
+          checkIfCancelled();
           session.commit();
           LOG.debug("Inserted {} references", counter);
         }
@@ -169,7 +186,7 @@ public class PgImport implements Runnable {
   /**
    * Inserts all names, collecting all homotypic name keys for later updates if they havent been inserted already.
    */
-  private void insertNames() {
+  private void insertNames() throws InterruptedException {
     // key=postgres name key, value=desired homotypic name key using the temp neo4j node
     Map<Integer, Integer> nameHomoKey = Maps.newHashMap();
     try (final SqlSession session = sessionFactory.openSession(false)) {
@@ -221,11 +238,13 @@ public class PgImport implements Runnable {
       });
       session.commit();
 
+      checkIfCancelled();
       int homoUpdateCounter = 0;
       for (Map.Entry<Integer, Integer> homo : nameHomoKey.entrySet()) {
         nameMapper.updateHomotypicNameKey(homo.getKey(), nameKeys.get(homo.getValue()));
         homoUpdateCounter++;
-        if (homoUpdateCounter % 1000 == 0) {
+        if (homoUpdateCounter % batchSize == 0) {
+          checkIfCancelled();
           session.commit();
         }
       }
@@ -238,7 +257,7 @@ public class PgImport implements Runnable {
   /**
    * Go through all neo4j relations and convert them to name acts if the rel type matches
    */
-  private void insertActs() {
+  private void insertActs() throws InterruptedException {
     // neo4j relationship types need to be compared by their name!
     final Map<String, NomActType> actTypes = ImmutableMap.<String, NomActType>builder()
         .put(RelType.BASIONYM_OF.name(), NomActType.BASIONYM)
@@ -262,7 +281,7 @@ public class PgImport implements Runnable {
             //TODO: read note from rel property
             act.setNote(null);
             nameActMapper.create(act);
-            if (counter.incrementAndGet() % 1000 == 0) {
+            if (counter.incrementAndGet() % batchSize == 0) {
               session.commit();
             }
           }
@@ -276,7 +295,7 @@ public class PgImport implements Runnable {
 	/**
 	 * insert taxa with all the rest
 	 */
-	private void insertTaxa() {
+	private void insertTaxa() throws InterruptedException {
 		try (SqlSession session = sessionFactory.openSession(false)) {
       LOG.info("Inserting remaining names and all taxa");
       NameDao nameDao = new NameDao(session);
@@ -286,7 +305,7 @@ public class PgImport implements Runnable {
       ReferenceMapper refMapper = session.getMapper(ReferenceMapper.class);
 
       // iterate over taxonomic tree in depth first order, keeping postgres parent keys
-      // pro parte listByTaxon will be visited multiple times, remember their name pg key!
+      // pro parte synonyms will be visited multiple times, remember their name pg key!
       Long2IntMap proParteNames = new Long2IntOpenHashMap();
       TreeWalker.walkTree(store.getNeo(), new StartEndHandler() {
         int counter = 0;
@@ -385,10 +404,6 @@ public class PgImport implements Runnable {
       });
       session.commit();
       LOG.debug("Inserted {} names and {} taxa", nCounter, tCounter);
-
-		} catch (Exception e) {
-      LOG.error("Fatal error during names and taxa insert for dataset {}", dataset.getKey(), e);
-      throw e;
 		}
 	}
 

@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.concurrent.Callable;
 
 import org.apache.commons.io.FileUtils;
@@ -27,7 +28,11 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 /**
- * Base task setting up MDC logging properties.
+ * Asynchronous import job that orchestrates the entire import process
+ * including download, normalization and insertion into Postgres.
+ *
+ * It can be cancelled by an according method at any time.
+ * Equality of instances is just based on the datasetKey which allows multiple imports for the same dataset to be easily detected.
  */
 public class ImportJob implements Callable<DatasetImport> {
   private static final Logger LOG = LoggerFactory.getLogger(ImportJob.class);
@@ -83,17 +88,24 @@ public class ImportJob implements Callable<DatasetImport> {
     return di == null ? null : di.getAttempt();
   }
 
+  private void checkIfCancelled() throws InterruptedException {
+    if (Thread.currentThread().isInterrupted()) {
+      throw new InterruptedException("Import "+ di.attempt() +" was cancelled");
+    }
+  }
+
   private void importDataset() {
     final Path dwcaDir = cfg.normalizer.sourceDir(datasetKey).toPath();
     NeoDb store = null;
 
     try {
-      di = dao.createRunning(dataset);
+      di = dao.createDownloading(dataset);
       LOG.info("Start new import attempt {} for dataset {}: {}", di.getAttempt(), datasetKey, dataset.getTitle());
 
       File source = cfg.normalizer.source(datasetKey);
       source.getParentFile().mkdirs();
 
+      checkIfCancelled();
       LOG.info("Downloading sources for dataset {} from {} to {}", datasetKey, di.getDownloadUri(), source);
       final boolean isModified = downloader.downloadIfModified(di.getDownloadUri(), source);
       if(isModified || force) {
@@ -102,18 +114,22 @@ public class ImportJob implements Callable<DatasetImport> {
         }
         di.setDownload(downloader.lastModified(source));
 
+        checkIfCancelled();
         LOG.info("Extracting files from archive {}", datasetKey);
         CompressionUtil.decompressFile(dwcaDir.toFile(), source);
 
+        checkIfCancelled();
         LOG.info("Normalizing {}", datasetKey);
         store = NeoDbFactory.create(datasetKey, cfg.normalizer);
         store.put(dataset);
-        new Normalizer(store, dwcaDir, refFactory).run();
+        new Normalizer(store, dwcaDir, refFactory).call();
 
+        checkIfCancelled();
         LOG.info("Writing {} to Postgres!", datasetKey);
         store = NeoDbFactory.open(datasetKey, cfg.normalizer);
-        new PgImport(datasetKey, store, factory, cfg.importer).run();
+        new PgImport(datasetKey, store, factory, cfg.importer).call();
 
+        checkIfCancelled();
         LOG.info("Build import metrics for dataset {}", datasetKey);
         dao.updateImportSuccess(di);
 
@@ -126,6 +142,12 @@ public class ImportJob implements Callable<DatasetImport> {
         di.setDownload(downloader.lastModified(source));
         dao.updateImportUnchanged(di);
       }
+
+
+    } catch (InterruptedException e) {
+      // cancelled import
+      LOG.error("Dataset {} import cancelled. Log to db", datasetKey, e);
+      dao.updateImportCancelled(di);
 
     } catch (Exception e) {
       // failed import
@@ -146,5 +168,18 @@ public class ImportJob implements Callable<DatasetImport> {
         LOG.error("Failed to remove scratch dir {}", scratchDir, e);
       }
     }
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    ImportJob importJob = (ImportJob) o;
+    return datasetKey == importJob.datasetKey;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(datasetKey);
   }
 }

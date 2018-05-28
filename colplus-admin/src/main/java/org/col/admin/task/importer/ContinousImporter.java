@@ -71,7 +71,11 @@ public class ContinousImporter implements Managed {
 
           } else {
             for (Dataset d : datasets) {
-              manager.submit(d.getKey(), false);
+              try {
+                manager.submit(d.getKey(), false);
+              } catch (IllegalArgumentException e) {
+                // ignore
+              }
             }
           }
         } catch (InterruptedException e) {

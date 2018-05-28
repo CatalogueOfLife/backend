@@ -30,7 +30,7 @@ public class AdminServer extends PgApp<AdminServerConfig> {
   private static final Logger LOG = LoggerFactory.getLogger(AdminServer.class);
   public static final String MDC_KEY_TASK = "task";
   // milliseconds to wait during shutdown before forcing a shutdown
-  public static final int MILLIS_TO_DIE = 10000;
+  public static final int MILLIS_TO_DIE = 12000;
 
   public static void main(final String[] args) throws Exception {
     SLF4JBridgeHandler.install();

@@ -4,14 +4,14 @@ import java.io.*;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collection;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import com.google.common.base.Charsets;
+import com.google.common.base.Joiner;
 import com.google.common.collect.Sets;
 import com.google.common.io.Files;
 import org.apache.commons.io.FileUtils;
@@ -19,21 +19,26 @@ import org.apache.commons.io.IOUtils;
 import org.col.admin.config.NormalizerConfig;
 import org.col.admin.task.importer.neo.NeoDb;
 import org.col.admin.task.importer.neo.NeoDbFactory;
+import org.col.admin.task.importer.neo.model.Labels;
+import org.col.admin.task.importer.neo.model.NeoProperties;
+import org.col.admin.task.importer.neo.model.NeoTaxon;
+import org.col.admin.task.importer.neo.model.RankedName;
 import org.col.admin.task.importer.neo.printer.GraphFormat;
 import org.col.admin.task.importer.neo.printer.PrinterUtils;
 import org.col.admin.task.importer.reference.ReferenceFactory;
 import org.col.api.model.Dataset;
+import org.col.api.model.Name;
 import org.col.api.vocab.DataFormat;
 import org.col.csl.CslParserMock;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Transaction;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.*;
 
 /**
  * Tests to normalize various dwc archives
@@ -44,8 +49,7 @@ import static org.junit.Assert.assertFalse;
  * (which is checked in a manual test in NormalizerIT instead)
  */
 @RunWith(Parameterized.class)
-@Ignore
-public class  NormalizerTreeIT {
+public class NormalizerTreeIT {
   final static int MAX_ACEF_ID = 5;
   final static int MAX_DWCA_ID = 28;
 
@@ -53,9 +57,9 @@ public class  NormalizerTreeIT {
   private NormalizerConfig cfg;
   private Path source;
 
-  //TODO: these 3 tests need to be checked - they do seem to create real wrong outcomes !!!
+  //TODO: these tests need to be checked - they do seem to create real wrong outcomes !!!
   Set<Integer> ignoreAcef= Sets.newHashSet(3);
-  Set<Integer> ignoreDwca = Sets.newHashSet(10, 18, 21);
+  Set<Integer> ignoreDwca = Sets.newHashSet(21);
 
   @Parameterized.Parameters
   public static Collection<Object[]> data() {
@@ -63,7 +67,10 @@ public class  NormalizerTreeIT {
     IntStream dwcaIds = IntStream.rangeClosed(0, MAX_DWCA_ID);
 
     //acefIds = IntStream.empty();
-    //dwcaIds = IntStream.rangeClosed(23, 27);
+    //acefIds = IntStream.of(0,1);
+    //dwcaIds = IntStream.empty();
+    //dwcaIds = IntStream.of(6,7,10,15,19,23);
+
     return Stream.concat(
         acefIds.mapToObj(i -> new Object[]{DataFormat.ACEF, i}),
         dwcaIds.mapToObj(i -> new Object[]{DataFormat.DWCA, i})
@@ -126,15 +133,19 @@ public class  NormalizerTreeIT {
       store.put(d);
 
       Normalizer norm = new Normalizer(store, source, new ReferenceFactory(d.getKey(), new CslParserMock()));
-      try {
-        norm.run();
+      norm.call();
+      // reopen the neo db
+      store = NeoDbFactory.open(datasetKey, cfg);
+      //debug();
 
-      } finally {
-        // reopen the neo db
-        store = NeoDbFactory.open(datasetKey, cfg);
-        debug();
+      try(Transaction tx = store.getNeo().beginTx()) {
+        NeoTaxon t26 = store.getByID("26");
+        for (Node n : store.byScientificName(Labels.ALL, "Discomitochondria")) {
+          NeoTaxon t = store.get(n);
+          Name na = t.name;
+        }
+
       }
-
       // assert tree
       InputStream tree = getClass().getResourceAsStream(resourceDir+"/expected.tree");
       String expected = IOUtils.toString(tree, Charsets.UTF_8).trim();
@@ -146,6 +157,24 @@ public class  NormalizerTreeIT {
 
       // compare trees
       assertEquals(expected, neotree);
+
+      // list non tree nodes
+      Set<Long> ids = store.nodeIdsOutsideTree();
+      List<String> names = new ArrayList<>(ids.size());
+      try (Transaction tx = store.getNeo().beginTx()) {
+        for (Long id : ids) {
+          names.add(NeoProperties.getRankedName(store.getNeo().getNodeById(id)).toString());
+        }
+      }
+      Collections.sort(names);
+      String namesStr = Joiner.on('\n').join(names);
+      InputStream namesFile = getClass().getResourceAsStream(resourceDir+"/expected-barenames.txt");
+      if (namesFile != null) {
+        expected = IOUtils.toString(namesFile, Charsets.UTF_8).trim();
+        assertEquals(expected, namesStr);
+      } else if (!names.isEmpty()) {
+        fail("Additional Bare Names:\n" + namesStr);
+      }
 
     } catch (Exception e) {
       System.err.println("Failed to normalize " + format + " dataset " + sourceKey);

@@ -8,4 +8,5 @@ AcceptedTaxonID	CommonName	TransliteratedNames	Language	Country	Area	ReferenceID
 3	Ram Kurthi		Hindi	India		827
 3	Sojabona		Swedish	Sweden		807
 3	Tarimal Sharbuurtzag		Mongolian	Mongolia		835
+s6	Beer bean		English	England		19
 s7	Non exiusting bean		English	England		19

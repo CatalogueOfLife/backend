@@ -2,9 +2,7 @@ package org.col.admin.task.importer;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.*;
 
 import com.google.common.collect.Lists;
@@ -17,13 +15,16 @@ import org.col.admin.config.AdminServerConfig;
 import org.col.api.model.CslData;
 import org.col.api.model.Dataset;
 import org.col.api.model.DatasetImport;
+import org.col.api.model.ResultPage;
 import org.col.api.util.PagingUtil;
 import org.col.api.vocab.ImportState;
 import org.col.common.concurrent.ExecutorUtils;
 import org.col.common.io.DownloadUtil;
 import org.col.db.dao.DatasetImportDao;
+import org.col.db.mapper.DatasetImportMapper;
 import org.col.db.mapper.DatasetMapper;
 import org.col.parser.Parser;
+import org.eclipse.jetty.util.ConcurrentHashSet;
 import org.gbif.nameparser.utils.NamedThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,8 +39,8 @@ public class ImportManager implements Managed {
   public static final String THREAD_NAME = "dataset-importer";
 
   private ExecutorService exec;
-  private final List<ImportRequest> queue = Lists.newArrayList();
-  private final Map<Integer, Future> futures = Maps.newConcurrentMap();
+  private final Queue<ImportRequest> queue = new ConcurrentLinkedQueue<ImportRequest>();
+  private final Map<Integer, Future> futures = new ConcurrentHashMap<Integer, Future>();
   private final AdminServerConfig cfg;
   private final DownloadUtil downloader;
   private final SqlSessionFactory factory;
@@ -55,7 +56,7 @@ public class ImportManager implements Managed {
   /**
    * Lists the current queue
    */
-  public List<ImportRequest> list() {
+  public Queue<ImportRequest> list() {
     return queue;
   }
 
@@ -73,7 +74,16 @@ public class ImportManager implements Managed {
     }
   }
 
-  public ImportRequest submit(final int datasetKey, final boolean force) {
+  /**
+   * @throws IllegalArgumentException if dataset was scheduled for importing already
+   */
+  public ImportRequest submit(final int datasetKey, final boolean force) throws IllegalArgumentException {
+    // is this dataset already scheduled?
+    if (futures.containsKey(datasetKey)) {
+      LOG.info("Dataset {} already queued for import", datasetKey);
+      throw new IllegalArgumentException("Dataset " + datasetKey + " already queued for import");
+    }
+
     LOG.info("Queue new import for dataset {}", datasetKey);
     final ImportRequest req = new ImportRequest(datasetKey, force);
     queue.add(req);
@@ -131,23 +141,45 @@ public class ImportManager implements Managed {
         new NamedThreadFactory(THREAD_NAME, Thread.NORM_PRIORITY, true),
         new ThreadPoolExecutor.AbortPolicy()
     );
-    // read hanging imports in db and add as new requests to the queue
+    // read hanging imports in db, truncate if half inserted and add as new requests to the queue
+    cancelAndReschedule(ImportState.DOWNLOADING, false);
+    cancelAndReschedule(ImportState.PROCESSING, false);
+    cancelAndReschedule(ImportState.INSERTING, true);
+  }
+
+  private void cancelAndReschedule(ImportState state, boolean truncate) {
     int counter = 0;
     DatasetImportDao dao = new DatasetImportDao(factory);
-    Iterator<DatasetImport> iter = PagingUtil.pageAll(p -> dao.list(ImportState.RUNNING, p));
+    Iterator<DatasetImport> iter = PagingUtil.pageAll(p -> dao.list(state, p));
     while (iter.hasNext()) {
       DatasetImport di = iter.next();
-      di.setState(ImportState.CANCELED);
-      dao.update(di);
+      dao.updateImportCancelled(di);
+      // truncate data?
+      if (truncate) {
+        try (SqlSession session = factory.openSession(true)){
+          DatasetMapper dm = session.getMapper(DatasetMapper.class);
+          LOG.info("Truncating partially imported data for dataset {}", di.getDatasetKey());
+          dm.truncateDatasetData(di.getDatasetKey());
+        }
+      }
       // add back to queue
-      submit(di.getDatasetKey(), true);
-      counter++;
+      try {
+        submit(di.getDatasetKey(), true);
+        counter++;
+      } catch (IllegalArgumentException e) {
+        // swallow
+      }
     }
-    LOG.info("Canceled and resubmitted all {} dangling imports.", counter);
+    LOG.info("Cancelled and resubmitted {} {} imports.", counter, state);
   }
 
   @Override
   public void stop() throws Exception {
+    // orderly shutdown running imports
+    for (Future f : futures.values()) {
+      f.cancel(true);
+    }
+    // fully shutdown threadpool within given time
     ExecutorUtils.shutdown(exec, MILLIS_TO_DIE, TimeUnit.MILLISECONDS);
   }
 }

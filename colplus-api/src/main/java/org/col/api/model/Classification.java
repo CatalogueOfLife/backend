@@ -191,6 +191,21 @@ public class Classification {
         Objects.equals(subgenus, that.subgenus);
   }
 
+  public boolean equalsAboveRank(Classification o, Rank lowest) {
+    if (this == o) return true;
+    if (o == null) return false;
+    for (Rank r : RANKS) {
+      if (r.higherThan(lowest)) {
+        if (!Objects.equals(this.getByRank(r), o.getByRank(r))) {
+          return false;
+        }
+      } else {
+        return true;
+      }
+    }
+    return false;
+  }
+
   @Override
   public int hashCode() {
     return Objects.hash(kingdom, phylum, class_, order, superfamily, family, genus, subgenus);

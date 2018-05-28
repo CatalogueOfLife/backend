@@ -2,9 +2,7 @@ package org.col.admin.task.importer.neo;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -18,16 +16,20 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.Maps;
 import com.google.common.collect.UnmodifiableIterator;
 import org.apache.commons.io.FileUtils;
+import org.col.admin.AdminServer;
 import org.col.admin.task.importer.ImportJob;
 import org.col.admin.task.importer.NormalizationFailedException;
 import org.col.admin.task.importer.neo.kryo.NeoKryoFactory;
 import org.col.admin.task.importer.neo.mapdb.MapDbObjectSerializer;
 import org.col.admin.task.importer.neo.model.*;
+import org.col.admin.task.importer.neo.traverse.StartEndHandler;
 import org.col.admin.task.importer.neo.traverse.Traversals;
+import org.col.admin.task.importer.neo.traverse.TreeWalker;
 import org.col.api.model.*;
 import org.col.api.vocab.Issue;
 import org.col.api.vocab.Origin;
 import org.col.api.vocab.TaxonomicStatus;
+import org.col.common.concurrent.ExecutorUtils;
 import org.col.common.concurrent.ThrottledThreadPoolExecutor;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.nameparser.api.NameType;
@@ -58,13 +60,6 @@ public class NeoDb implements ReferenceStore {
   private static final Logger LOG = LoggerFactory.getLogger(NeoDb.class);
   private static final Labels[] TAX_LABELS = new Labels[]{Labels.ALL, Labels.TAXON};
   private static final Labels[] SYN_LABELS = new Labels[]{Labels.ALL, Labels.SYNONYM};
-  public static final Name PLACEHOLDER = new Name();
-  static {
-    PLACEHOLDER.setScientificName("Incertae sedis");
-    PLACEHOLDER.setRank(Rank.UNRANKED);
-    PLACEHOLDER.setType(NameType.PLACEHOLDER);
-    PLACEHOLDER.setOrigin(Origin.OTHER);
-  }
 
   private final int datasetKey;
   private final GraphDatabaseBuilder neoFactory;
@@ -203,9 +198,23 @@ public class NeoDb implements ReferenceStore {
     return Iterators.asList(neo.findNodes(Labels.ALL, NeoProperties.SCIENTIFIC_NAME, scientificName));
   }
 
-  public List<Node> byScientificName(String scientificName, Rank rank) {
-    List<Node> names = byScientificName(scientificName);
-    names.removeIf(n -> !NeoProperties.getRank(n, Rank.UNRANKED).equals(rank));
+  /**
+   * @return the matching nodes with the scientificName and given label
+   */
+  public List<Node> byScientificName(Labels label, String scientificName) {
+    return Iterators.asList(neo.findNodes(label, NeoProperties.SCIENTIFIC_NAME, scientificName));
+  }
+
+  public List<Node> byScientificName(Labels label, String scientificName, Rank rank, boolean inclUnranked) {
+    List<Node> names = byScientificName(label, scientificName);
+    names.removeIf(n -> {
+      Rank r = NeoProperties.getRank(n, Rank.UNRANKED);
+      if (inclUnranked) {
+        return !r.equals(rank) && r != Rank.UNRANKED;
+      } else {
+        return !r.equals(rank);
+      }
+    });
     return names;
   }
 
@@ -235,6 +244,7 @@ public class NeoDb implements ReferenceStore {
       UnmodifiableIterator<List<Node>> batchIter = com.google.common.collect.Iterators.partition(neo.findNodes(label), batchSize);
       Future<Integer> curr = null;
       while (batchIter.hasNext()) {
+        checkIfInterrupted();
         List<Node> batch = batchIter.next();
         // execute batch processing in separate thread to not create nested flat transactions
         Future<Integer> f = service.submit(new BatchCallback(datasetKey, neo, callback, batch, counter));
@@ -252,10 +262,6 @@ public class NeoDb implements ReferenceStore {
 
       // mark good for commit
       tx.success();
-
-      // close executor. All jobs are done so this should not take much time
-      service.shutdown();
-      service.awaitTermination(1, TimeUnit.HOURS);
       LOG.info("Neo processing of {} finished in {} batches with {} records", label, batchNum, counter.get());
 
     } catch (InterruptedException e) {
@@ -265,8 +271,17 @@ public class NeoDb implements ReferenceStore {
     } catch (ExecutionException e){
       LOG.error("Neo processing with {} failed", callback.getClass(), e);
       throw new RuntimeException(e.getCause());
+
+    } finally {
+      ExecutorUtils.shutdown(service, AdminServer.MILLIS_TO_DIE/2, TimeUnit.MILLISECONDS);
     }
     return counter.get();
+  }
+
+  private void checkIfInterrupted() throws InterruptedException {
+    if (Thread.currentThread().isInterrupted()) {
+      throw new InterruptedException("Neo thread was cancelled/interrupted");
+    }
   }
 
   /**
@@ -329,7 +344,7 @@ public class NeoDb implements ReferenceStore {
      * @param counter the total record counter of processed records at this point
      * @return true if the batch should be committed.
      */
-    void commitBatch(int counter);
+    void commitBatch(int counter) throws InterruptedException;
   }
 
   /**
@@ -534,6 +549,29 @@ public class NeoDb implements ReferenceStore {
     }
     dataset.set(d);
     return d;
+  }
+
+  public Set<Long> nodeIdsOutsideTree() throws InterruptedException {
+    final Set<Long> treeNodes = new HashSet<>();
+    TreeWalker.walkTree(neo, new StartEndHandler() {
+      @Override
+      public void start(Node n) {
+        treeNodes.add(n.getId());
+      }
+
+      @Override
+      public void end(Node n) { }
+    });
+
+    final Set<Long> nodes = new HashSet<>();
+    try (Transaction tx = getNeo().beginTx()) {
+      for (Node n : neo.getAllNodes()) {
+        if (!treeNodes.contains(n.getId())) {
+          nodes.add(n.getId());
+        }
+      }
+    }
+    return nodes;
   }
 
   /**
@@ -764,13 +802,6 @@ public class NeoDb implements ReferenceStore {
         .collect(Collectors.toList());
   }
 
-  public RankedName createPlaceholder(Origin origin, @Nullable Issue issue) {
-    PLACEHOLDER.setRank(Rank.UNRANKED);
-    return createDoubtfulFromSource(origin, PLACEHOLDER, null, Rank.GENUS,null, issue);
-  }
-
-
-
   /**
    * Creates a new taxon in neo and the name usage kvp using the source usages as a template for the classification properties.
    * Only copies the classification above genus and ignores genus and below!
@@ -778,14 +809,10 @@ public class NeoDb implements ReferenceStore {
    *
    * @param name the new name to be used
    * @param source the taxon source to copy from
-   * @param taxonID the optional taxonID to apply to the new node
    * @param excludeRankAndBelow the rank (and all ranks below) to exclude from the source classification
    */
-  public RankedName createDoubtfulFromSource(Origin origin, Name name,
-                                              @Nullable NeoTaxon source, Rank excludeRankAndBelow, @Nullable String taxonID,
-                                              @Nullable Issue issue) {
+  public RankedName createDoubtfulFromSource(Origin origin, Name name, @Nullable NeoTaxon source, Rank excludeRankAndBelow) {
     NeoTaxon t = NeoTaxon.createTaxon(origin, name, true);
-    t.taxon.setId(taxonID);
     // copy verbatim classification from source
     if (source != null) {
       if (source.classification != null) {
@@ -803,11 +830,6 @@ public class NeoDb implements ReferenceStore {
         t.taxon.setVerbatimKey(copyTerms.getKey());
       }
     }
-    // add potential issue
-    if (issue != null) {
-      t.addIssue(issue);
-    }
-
     // store, which creates a new neo node
     put(t);
 

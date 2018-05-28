@@ -18,6 +18,7 @@ import org.col.admin.config.ImporterConfig;
 import org.col.admin.config.NormalizerConfig;
 import org.col.admin.task.importer.neo.NeoDb;
 import org.col.admin.task.importer.neo.NeoDbFactory;
+import org.col.admin.task.importer.neo.model.NeoTaxon;
 import org.col.admin.task.importer.neo.model.RankedName;
 import org.col.admin.task.importer.reference.ReferenceFactory;
 import org.col.api.model.*;
@@ -93,13 +94,13 @@ public class PgImportIT {
       store = NeoDbFactory.create(dataset.getKey(), cfg);
       store.put(dataset);
       Normalizer norm = new Normalizer(store, source, new ReferenceFactory(dataset.getKey(), new CslParserMock()));
-      norm.run();
+      norm.call();
 
       // import into postgres
       store = NeoDbFactory.open(dataset.getKey(), cfg);
       PgImport importer = new PgImport(dataset.getKey(), store, PgSetupRule.getSqlSessionFactory(),
           icfg);
-      importer.run();
+      importer.call();
 
     } catch (Exception e) {
       throw Throwables.propagate(e);
@@ -295,6 +296,25 @@ public class PgImportIT {
       } catch (NotFoundException e) {
         // expected
       }
+
+      n = ndao.get("s6", dataset.getKey());
+      assertEquals("Astragalus beersabeensis", n.getScientificName());
+      assertEquals(Rank.SPECIES, n.getRank());
+      assertTrue(n.getIssues().contains(Issue.SYNONYM_DATA_MOVED));
+
+      usages = udao.search(NameSearch.byNameKey(n.getKey()), new Page()).getResult();
+      assertEquals(1, usages.size());
+      Synonym s = (Synonym) usages.get(0);
+      assertEquals("Astracantha arnacantha", s.getAccepted().getName().getScientificName());
+
+      TaxonInfo t = tdao.getTaxonInfo(s.getAccepted().getKey());
+
+      assertEquals(1, t.getVernacularNames().size());
+      assertEquals(2, t.getDistributions().size());
+      assertEquals(2, t.getTaxonReferences().size());
+
+      VernacularName v = t.getVernacularNames().get(0);
+      assertEquals("Beer bean", v.getName());
     }
   }
 

@@ -69,7 +69,7 @@ public class NameDao {
   }
 
   /**
-   * Lists all homotypic listByTaxon based on the same homotypic group key
+   * Lists all homotypic synonyms based on the same homotypic group key
    */
   public List<Name> homotypicGroup(int key) {
     return nMapper.homotypicGroup(key);

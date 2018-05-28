@@ -20,6 +20,7 @@ import org.col.admin.config.NormalizerConfig;
 import org.col.admin.task.importer.neo.NeoDb;
 import org.col.admin.task.importer.neo.NeoDbFactory;
 import org.col.admin.task.importer.neo.NotUniqueRuntimeException;
+import org.col.admin.task.importer.neo.model.Labels;
 import org.col.admin.task.importer.neo.model.NeoProperties;
 import org.col.admin.task.importer.neo.model.NeoTaxon;
 import org.col.admin.task.importer.neo.model.RankedName;
@@ -77,12 +78,12 @@ public class NormalizerACEFIT {
       store.put(d);
 
       Normalizer norm = new Normalizer(store, acef, new ReferenceFactory(d.getKey(), new CslParserMock()));
-      norm.run();
+      norm.call();
 
       // reopen
       store = NeoDbFactory.open(1, cfg);
 
-    } catch (IOException e) {
+    } catch (IOException | InterruptedException e) {
       Throwables.propagate(e);
     }
   }
@@ -142,20 +143,33 @@ public class NormalizerACEFIT {
       assertEquals("Astragalus nonexistus", t.name.getScientificName());
       assertEquals("DC.", t.name.authorshipComplete());
       assertEquals(Rank.SPECIES, t.name.getRank());
+
+      assertTrue(t.taxon.getIssues().contains(Issue.SYNONYM_DATA_MOVED));
       assertTrue(t.taxon.getIssues().contains(Issue.ACCEPTED_ID_INVALID));
+      assertTrue(t.classification.isEmpty());
+      assertEquals(0, t.vernacularNames.size());
+      assertEquals(0, t.distributions.size());
+      assertEquals(0, t.bibliography.size());
+      // missing accepted
+      assertEquals(0, store.accepted(t.node).size());
+
+
+      t = byID("s6");
+      assertTrue(t.isSynonym());
+      assertEquals("Astragalus beersabeensis", t.name.getScientificName());
+      assertEquals(Rank.SPECIES, t.name.getRank());
       assertTrue(t.taxon.getIssues().contains(Issue.SYNONYM_DATA_MOVED));
       assertTrue(t.classification.isEmpty());
       assertEquals(0, t.vernacularNames.size());
       assertEquals(0, t.distributions.size());
       assertEquals(0, t.bibliography.size());
-
       NeoTaxon acc = accepted(t.node);
       assertEquals(1, acc.vernacularNames.size());
       assertEquals(2, acc.distributions.size());
-      assertEquals(0, acc.bibliography.size());
+      assertEquals(2, acc.bibliography.size());
 
       VernacularName v = acc.vernacularNames.get(0);
-      assertEquals("Non exiusting bean", v.getName());
+      assertEquals("Beer bean", v.getName());
     }
   }
 

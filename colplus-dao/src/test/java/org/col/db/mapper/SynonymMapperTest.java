@@ -101,7 +101,7 @@ public class SynonymMapperTest extends MapperTestBase<SynonymMapper> {
     assertTrue(synonyms.isEmpty());
     assertEquals(0, synonyms.size());
 
-    // now add a few listByTaxon
+    // now add a few synonyms
     synonymMapper.create(datasetKey,syn1.getKey(), accKey, TaxonomicStatus.SYNONYM, null);
     commit();
     synonyms = synonymMapper.listByTaxon(accKey);

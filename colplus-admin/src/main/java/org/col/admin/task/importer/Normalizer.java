@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import javax.annotation.Nullable;
 
 import org.col.admin.task.importer.acef.AcefInserter;
@@ -19,6 +20,7 @@ import org.col.api.model.*;
 import org.col.api.vocab.Issue;
 import org.col.api.vocab.Origin;
 import org.col.api.vocab.TaxonomicStatus;
+import org.col.common.collection.IterUtils;
 import org.col.common.tax.MisappliedNameMatcher;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
@@ -31,7 +33,7 @@ import org.slf4j.LoggerFactory;
 /**
  *
  */
-public class Normalizer implements Runnable {
+public class Normalizer implements Callable<Boolean> {
   private static final Logger LOG = LoggerFactory.getLogger(Normalizer.class);
   private final Dataset dataset;
   private final Path sourceDir;
@@ -50,38 +52,38 @@ public class Normalizer implements Runnable {
    * Run the normalizer and close the store at the end.
    *
    * @throws NormalizationFailedException
+   * @throws InterruptedException in case the thread got interrupted, e.g. the import got cancelled
    */
   @Override
-  public void run() throws NormalizationFailedException {
-    run(true);
-  }
-
-  /**
-   * Run the normalizer.
-   *
-   * @param closeStore Should the store be closed after running or on exception?
-   * @throws NormalizationFailedException
-   */
-  public void run(boolean closeStore) throws NormalizationFailedException {
+  public Boolean call() throws NormalizationFailedException, InterruptedException {
     LOG.info("Start normalization of {}", store);
     try {
       // batch import verbatim records
       insertData();
       // insert normalizer db relations, create implicit nodes if needed and parse names
+      checkIfCancelled();
       normalize();
       // sync taxon KVP store with neo4j relations, setting correct neo4j labels, homotypic keys etc
+      checkIfCancelled();
       store.sync();
       // verify, derive issues and fail before we do expensive matching or even db imports
+      checkIfCancelled();
       verify();
       // matches names and taxon concepts and builds metrics per name/taxon
+      checkIfCancelled();
       matchAndCount();
       LOG.info("Normalization succeeded");
 
     } finally {
-      if (closeStore) {
-        store.close();
-        LOG.info("Normalizer store shut down");
-      }
+      store.close();
+      LOG.info("Normalizer store shut down");
+    }
+    return true;
+  }
+
+  private void checkIfCancelled() throws InterruptedException {
+    if (Thread.currentThread().isInterrupted()) {
+      throw new InterruptedException("Normalizer was interrupted");
     }
   }
 
@@ -293,7 +295,7 @@ public class Normalizer implements Runnable {
    * We need to be careful as the classification coming in first via the parentNameUsage(ID) terms
    * is variable and must not always include a rank.
    *
-   * The classification is not applied to listByTaxon!
+   * The classification is not applied to synonyms!
    */
   private void applyDenormedClassification() {
     LOG.info("Start processing higher denormalized classification ...");
@@ -360,13 +362,16 @@ public class Normalizer implements Runnable {
       Rank lowest = cl.getLowestExistingRank();
       if (lowest != null && cl.getByRank(lowest).equalsIgnoreCase(taxon.name)) {
         cl.setByRank(lowest, null);
+        // apply the classification rank to unranked taxon
+        updateRank(taxon.node, lowest);
+        taxon = NeoProperties.getRankedName(taxon.node);
       }
     }
     // ignore same rank from classification if accepted
     if (!taxon.node.hasLabel(Labels.SYNONYM) && taxon.rank != null) {
       cl.setByRank(taxon.rank, null);
     }
-    // ignore genus and below for listByTaxon
+    // ignore genus and below for synonyms
     // http://dev.gbif.org/issues/browse/POR-2992
     if (taxon.node.hasLabel(Labels.SYNONYM)) {
       cl.setGenus(null);
@@ -381,18 +386,15 @@ public class Normalizer implements Runnable {
     // from kingdom to subgenus
     for (Rank hr : Classification.RANKS) {
       if ((taxon.rank == null || !taxon.rank.higherThan(hr)) && cl.getByRank(hr) != null) {
-        // test for existing usage with that name & rank
+        // test for existing usage with that name & rank (allowing also unranked names)
         boolean found = false;
-        for (Node n : store.byScientificName(cl.getByRank(hr), hr)) {
+        for (Node n : store.byScientificName(Labels.TAXON, cl.getByRank(hr), hr, true)) {
           if (parent == null) {
             // make sure node does also not have a higher linnean rank parent
             Node p = Iterables.firstOrNull(Traversals.CLASSIFICATION.traverse(n).nodes());
             if (p == null) {
               // aligns!
-              parent = n;
-              parentRank = hr;
               found = true;
-              break;
             }
 
           } else {
@@ -401,11 +403,24 @@ public class Normalizer implements Runnable {
             Node p = Traversals.parentOf(n);
             Node p2 = Traversals.parentWithRankOf(n, parentRank);
             if ((p != null && p.equals(parent)) || (p2 != null && p2.equals(parent))) {
-              parent = n;
-              parentRank = hr;
               found = true;
-              break;
+            } else if (p == null) {
+              // if the matched node has not yet been denormalized we need to compare the classification prop
+              NeoTaxon nt = store.get(n);
+              if (nt.classification != null && nt.classification.equalsAboveRank(cl, hr)) {
+                found = true;
+              }
             }
+          }
+
+          if (found) {
+            parent = n;
+            parentRank = hr;
+            // did we match against an unranked name? Then use the queried rank
+            if (Rank.UNRANKED == NeoProperties.getRank(n, Rank.UNRANKED)) {
+              updateRank(n, hr);
+            }
+            break;
           }
         }
         if (!found) {
@@ -422,6 +437,12 @@ public class Normalizer implements Runnable {
     store.assignParent(parent, taxon.node);
   }
 
+  private void updateRank(Node n, Rank r) {
+    NeoTaxon t = store.get(n);
+    t.name.setRank(r);
+    store.put(t);
+  }
+
   /**
    * Sanitizes synonym relations and cuts cycles at lowest rank
    */
@@ -435,17 +456,12 @@ public class Normalizer implements Runnable {
       while (result.hasNext()) {
         Relationship sr = (Relationship) result.next().get("sr");
 
-        Node syn = sr.getStartNode();
+        Node n = sr.getStartNode();
 
-        NeoTaxon su = store.get(syn);
-        su.addIssue(Issue.CHAINED_SYNONYM);
-        su.addIssue(Issue.PARENT_CYCLE);
-        store.put(su);
-        // this is serious. Report id
-        String taxonID = NeoProperties.getID(syn);
+        NeoTaxon syn = store.get(n);
+        syn.addIssue(Issue.CHAINED_SYNONYM);
+        store.update(syn);
 
-        RankedName created = store.createPlaceholder(Origin.MISSING_ACCEPTED, Issue.CHAINED_SYNONYM);
-        store.createSynonymRel(syn, created.node);
         sr.delete();
 
         if (counter++ % 100 == 0) {
@@ -472,7 +488,7 @@ public class Normalizer implements Runnable {
   }
 
   /**
-   * Sanitizes synonym relations relinking synonym of listByTaxon to make sure listByTaxon always point to a direct accepted taxon.
+   * Sanitizes synonym relations relinking synonym of synonyms to make sure synonyms always point to a direct accepted taxon.
    */
   private void relinkSynonymChains() {
     LOG.info("Relink synonym chains to single accepted");
@@ -506,8 +522,11 @@ public class Normalizer implements Runnable {
 
   /**
    * Sanitizes relations by preferring synonym relations over parent rels.
-   * (Re)move parent relationship for listByTaxon.
-   * If listByTaxon are parents of other taxa relinks relationship to the accepted
+   * (Re)move parent relationship for synonyms, even if no synonym relation exists
+   * but the node is just flagged to be a synonym. This happens for example when a synonym indicates
+   * a non existing accepted name.
+   *
+   * If synonyms are parents of other taxa relinks relationship to the accepted
    * presence of both confuses subsequent imports, see http://dev.gbif.org/issues/browse/POR-2755
    */
   private void preferSynonymOverParentRel() {
@@ -515,62 +534,43 @@ public class Normalizer implements Runnable {
     int parentOfRelDeleted = 0;
     int parentOfRelRelinked = 0;
     int childOfRelDeleted = 0;
-    int childOfRelRelinkedToAccepted = 0;
     try (Transaction tx = store.getNeo().beginTx()) {
       for (Node syn : Iterators.loop(store.getNeo().findNodes(Labels.SYNONYM))) {
         // if the synonym is a parent of another child taxon - relink accepted as parent of child
         Set<Node> accepted = Traversals.acceptedOf(syn);
         for (Relationship pRel : syn.getRelationships(RelType.PARENT_OF, Direction.OUTGOING)) {
           Node child = pRel.getOtherNode(syn);
+          pRel.delete();
+          addIssue(syn, Issue.SYNONYM_PARENT);
           if (accepted.contains(child)) {
             // accepted is also the parent. Simply delete the parent rel in this case
-            pRel.delete();
             parentOfRelDeleted++;
           } else {
-            pRel.delete();
             String synonymName = NeoProperties.getScientificNameWithAuthor(syn);
-            if (accepted.size() > 1) {
-              // multiple accepted taxa. We will take the first, but log an issue!
-              LOG.warn("{} accepted taxa for synonym {} with a child {}. Relink child to first accepted only!", accepted.size(), synonymName, NeoProperties.getScientificNameWithAuthor(child));
+            if (accepted.isEmpty()) {
+              LOG.info("No accepted taxon for synonym {} with a child {}. Child becomes root taxon!", synonymName, NeoProperties.getScientificNameWithAuthor(child));
+            } else {
+              if (accepted.size() > 1) {
+                // multiple accepted taxa. We will take the first, but log an issue!
+                LOG.info("{} accepted taxa for synonym {} with a child {}. Relink child to first accepted only!", accepted.size(), synonymName, NeoProperties.getScientificNameWithAuthor(child));
+              }
+              store.assignParent(IterUtils.firstOrNull(accepted), child);
+              parentOfRelRelinked++;
             }
-            store.assignParent(accepted.iterator().next(), child);
-            parentOfRelRelinked++;
-            addRemark(child, "Parent relation taken from synonym " + synonymName);
           }
         }
-        // remove parent rel for listByTaxon
+        // remove parent rel for synonyms
         for (Relationship pRel : syn.getRelationships(RelType.PARENT_OF, Direction.INCOMING)) {
-          // before we delete the relation make sure the accepted nodes have a parent rel or is ROOT
-          for (Node acc : accepted) {
-            if (acc.hasRelationship(RelType.PARENT_OF, Direction.INCOMING)) {
-              // just delete
-              childOfRelDeleted++;
-
-            } else {
-              Node parent = pRel.getOtherNode(syn);
-              // relink if parent is not the accepted and parent rank is higher than accepted or null
-              if (!parent.equals(acc)) {
-                Rank parentRank = NeoProperties.getRank(parent, Rank.UNRANKED);
-                Rank acceptedRank = NeoProperties.getRank(acc, Rank.UNRANKED);
-                if (parentRank == Rank.UNRANKED || parentRank.higherThan(acceptedRank)) {
-                  String synName = NeoProperties.getScientificNameWithAuthor(syn);
-                  LOG.debug("Relink parent rel of synonym {}", synName);
-                  childOfRelRelinkedToAccepted++;
-                  store.assignParent(parent, acc);
-                  addRemark(acc, "Parent relation taken from synonym " + synName);
-                }
-              }
-            }
-          }
           pRel.delete();
+          childOfRelDeleted++;
         }
       }
       tx.success();
     }
     LOG.info("Synonym relations cleaned up. "
-            + "{} childOf relations deleted, {} childOf rels relinked to accepted,"
-            + "{} parentOf relations deleted, {} parentOf rels moved from synonym to accepted",
-        childOfRelDeleted, childOfRelRelinkedToAccepted, parentOfRelDeleted, parentOfRelRelinked);
+            + "{} hasParent relations deleted,"
+            + "{} isParentOf relations deleted, {} isParentOf rels moved from synonym to accepted",
+        childOfRelDeleted, parentOfRelDeleted, parentOfRelRelinked);
   }
 
   private NeoTaxon addRemark(Node node, String remark) {

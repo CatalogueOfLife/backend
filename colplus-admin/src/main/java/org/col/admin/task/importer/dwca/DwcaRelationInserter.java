@@ -1,5 +1,6 @@
 package org.col.admin.task.importer.dwca;
 
+import java.util.Collections;
 import java.util.List;
 
 import com.google.common.base.Splitter;
@@ -15,6 +16,7 @@ import org.col.api.vocab.Issue;
 import org.col.api.vocab.Origin;
 import org.col.parser.NameParser;
 import org.gbif.dwc.terms.DwcTerm;
+import org.gbif.nameparser.api.Rank;
 import org.neo4j.graphdb.Node;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,29 +62,26 @@ public class DwcaRelationInserter implements NeoDb.NodeBatchProcessor {
 
   /**
    * Creates synonym_of relationship based on the verbatim dwc:acceptedNameUsageID and dwc:acceptedNameUsage term values.
-   * Assumes pro parte listByTaxon are dealt with before and the remaining accepted identifier refers to a single taxon only.
+   * Assumes pro parte synonyms are dealt with before and the remaining accepted identifier refers to a single taxon only.
    *
    * @param t the full neotaxon to process
    */
   private void insertAcceptedRel(NeoTaxon t, TermRecord v) {
-    List<RankedName> accepted = null;
-    if (v != null && meta.isAcceptedNameMapped()) {
+    List<RankedName> accepted = Collections.emptyList();
+    if (meta.isAcceptedNameMapped()) {
       accepted = lookupByIdOrName(v, t, DwcTerm.acceptedNameUsageID, Issue.ACCEPTED_ID_INVALID, DwcTerm.acceptedNameUsage, Origin.VERBATIM_ACCEPTED);
       for (RankedName acc : accepted) {
         store.createSynonymRel(t.node, acc.node);
       }
     }
 
-    // if status is synonym but we aint got no idea of the accepted insert an incertae sedis record of same rank
-    if ((accepted == null || accepted.isEmpty())
-        && (t.isSynonym() || t.taxon.getIssues().contains(Issue.ACCEPTED_ID_INVALID))
-        ) {
+    // if status is synonym but we aint got no idea of the accepted flag it
+    if (accepted.isEmpty() && (t.isSynonym() || v.hasIssue(Issue.ACCEPTED_ID_INVALID))) {
       t.addIssue(Issue.ACCEPTED_NAME_MISSING);
-      NeoDb.PLACEHOLDER.setRank(t.name.getRank());
-      RankedName acc = store.createDoubtfulFromSource(Origin.MISSING_ACCEPTED, NeoDb.PLACEHOLDER, t, t.name.getRank(), null, Issue.ACCEPTED_NAME_MISSING);
-      // now remove any denormed classification from this synonym as we have copied it already to the accepted placeholder
-      t.classification = null;
-      store.createSynonymRel(t.node, acc.node);
+      // now remove any denormed classification from this synonym to avoid parent relations
+      //t.classification = null;
+      t.node.addLabel(Labels.SYNONYM);
+      t.node.removeLabel(Labels.TAXON);
     }
   }
 
@@ -161,6 +160,7 @@ public class DwcaRelationInserter implements NeoDb.NodeBatchProcessor {
       }
       // could not find anything?
       if (ids.isEmpty()) {
+        v.addIssue(invalidIdIssue);
         t.addIssue(invalidIdIssue);
         LOG.warn("{} {} not existing", term.simpleName(), unsplitIds);
       }
@@ -194,6 +194,10 @@ public class DwcaRelationInserter implements NeoDb.NodeBatchProcessor {
   private RankedName lookupByName(DwcTerm term, TermRecord v, NeoTaxon t, Origin createdOrigin) {
     if (v.hasTerm(term)) {
       final Name name = NameParser.PARSER.parse(v.get(term)).get().getName();
+      // force unranked name for non binomials or unparsed names, avoiding wrong parser decisions
+      if (!name.isParsed() || !name.isBinomial()) {
+        name.setRank(Rank.UNRANKED);
+      }
       if (!name.getScientificName().equalsIgnoreCase(t.name.getScientificName())) {
         List<Node> matches = store.byScientificName(name.getScientificName());
         // remove other authors, but allow names without authors
@@ -201,16 +205,16 @@ public class DwcaRelationInserter implements NeoDb.NodeBatchProcessor {
           matches.removeIf(n -> !Strings.isNullOrEmpty(NeoProperties.getAuthorship(n)) && !NeoProperties.getAuthorship(n).equalsIgnoreCase(name.authorshipComplete()));
         }
 
-        // if multiple matches remove listByTaxon
+        // if multiple matches remove synonyms
         if (matches.size() > 1) {
           matches.removeIf(n -> n.hasLabel(Labels.SYNONYM));
         }
 
         // if we got one match, use it!
         if (matches.isEmpty()) {
-          // create
+          // create name
           LOG.debug("{} {} not existing, materialize it", term.simpleName(), name);
-          return store.createDoubtfulFromSource(createdOrigin, name, t, t.name.getRank(), null, null);
+          return store.createDoubtfulFromSource(createdOrigin, name, t, t.name.getRank());
 
         } else {
           if (matches.size() > 1) {

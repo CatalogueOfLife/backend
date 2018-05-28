@@ -1,7 +1,10 @@
 package org.col.admin.task.importer.dwca;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Optional;
 
 import org.col.admin.task.importer.NeoInserter;
@@ -107,10 +110,15 @@ public class DwcaInserter extends NeoInserter {
     EmlParser parser = new EmlParser();
     initReader();
     if (reader.getMetadataFile().isPresent()) {
-      try {
-        return parser.parse(reader.getMetadataFile().get());
-      } catch (IOException e) {
-        LOG.error("Unable to read dataset metadata from dwc archive: {}", e.getMessage(), e);
+      Path metadataPath = reader.getMetadataFile().get();
+      if (Files.exists(metadataPath)) {
+        try {
+          return parser.parse(metadataPath);
+        } catch (IOException e) {
+          LOG.error("Unable to read dataset metadata from dwc archive: {}", e.getMessage(), e);
+        }
+      } else {
+        LOG.warn("Declared dataset metadata file {} does not exist.", metadataPath);
       }
     } else {
       LOG.info("No dataset metadata available");

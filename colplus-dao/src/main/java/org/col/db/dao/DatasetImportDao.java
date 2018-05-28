@@ -34,13 +34,13 @@ public class DatasetImportDao {
   }
 
   /**
-   * Create a new running dataset import with the next attempt
+   * Create a new downloading dataset import with the next attempt
    */
-  public DatasetImport createRunning(Dataset d) {
+  public DatasetImport createDownloading(Dataset d) {
     // build new import
     DatasetImport di = new DatasetImport();
     di.setDatasetKey(d.getKey());
-    di.setState(ImportState.RUNNING);
+    di.setState(ImportState.DOWNLOADING);
     di.setDownloadUri(d.getDataAccess());
     di.setStarted(LocalDateTime.now());
 
@@ -70,6 +70,16 @@ public class DatasetImportDao {
       m.setError(null);
       update(m, mapper);
     }
+  }
+
+  /**
+   * Creates a new dataset import instance without metrics for a failed import.
+   */
+  public void updateImportCancelled(DatasetImport di) {
+    di.setFinished(LocalDateTime.now());
+    di.setState(ImportState.CANCELED);
+    di.setError(null);
+    update(di);
   }
 
   /**

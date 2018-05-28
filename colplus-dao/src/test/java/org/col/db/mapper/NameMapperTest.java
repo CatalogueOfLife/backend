@@ -152,7 +152,7 @@ public class NameMapperTest extends org.col.db.mapper.MapperTestBase<NameMapper>
 
   /*
    * Checks difference in behaviour between providing non-existing key
-   * and providing existing key but without listByTaxon.
+   * and providing existing key but without synonyms.
    * yields null (issue #55)
    */
   @Test

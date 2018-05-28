@@ -26,21 +26,21 @@ public class TreeWalker {
   /**
    * Walks all nodes of the taxonomic tree in a depth first order in a single transaction including multiple times the same pro parte node
    */
-  public static void walkTree(GraphDatabaseService db, StartEndHandler... handler) {
+  public static void walkTree(GraphDatabaseService db, StartEndHandler... handler) throws InterruptedException {
     walkTree(db, Traversals.TREE, handler);
   }
 
   /**
    * Walks all nodes of the taxonomic tree in a taxonomic order in a single transaction including multiple times the same pro parte node
    */
-  public static void walkSortedTree(GraphDatabaseService db, StartEndHandler... handler) {
+  public static void walkSortedTree(GraphDatabaseService db, StartEndHandler... handler) throws InterruptedException {
     walkTree(db, Traversals.SORTED_TREE, handler);
   }
 
   public static void walkTree(GraphDatabaseService db,
                                 TraversalDescription td,
                                 StartEndHandler... handler
-  ) {
+  ) throws InterruptedException {
     try (Transaction tx = db.beginTx()) {
       walkPaths(MultiRootPathIterator.create(findRoot(db, null), td), handler);
     }
@@ -51,17 +51,20 @@ public class TreeWalker {
                                 @Nullable Node root,
                                 @Nullable Rank lowestRank,
                                 StartEndHandler... handler
-  ) {
+  ) throws InterruptedException {
     try (Transaction tx = db.beginTx()) {
       walkPaths(MultiRootPathIterator.create(findRoot(db, root), filterRank(td, lowestRank)), handler);
     }
   }
 
-  private static void walkPaths(ResourceIterable<Path> paths, StartEndHandler... handler) {
+  private static void walkPaths(ResourceIterable<Path> paths, StartEndHandler... handler) throws InterruptedException {
     Path lastPath = null;
     long counter = 0;
     try (ResourceIterator<Path> iter = paths.iterator()) {
       while (iter.hasNext()) {
+        if (Thread.currentThread().isInterrupted()) {
+          throw new InterruptedException("TreeWalker thread was cancelled/interrupted");
+        }
         Path p = iter.next();
         //logPath(p);
         if (counter % reportingSize == 0) {

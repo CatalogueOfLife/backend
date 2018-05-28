@@ -19,7 +19,7 @@ import org.neo4j.graphdb.Node;
  */
 public class NeoTaxon implements VerbatimEntity{
   public Node node;
-  // we keep the name distinct from the Taxon here so we can also accommodate listByTaxon which do not have a taxon instance!
+  // we keep the name distinct from the Taxon here so we can also accommodate synonyms which do not have a taxon instance!
   public Name name;
   // either a taxon or a synonym, never both!
   public Taxon taxon;

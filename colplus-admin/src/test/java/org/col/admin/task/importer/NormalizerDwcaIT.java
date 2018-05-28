@@ -80,12 +80,12 @@ public class NormalizerDwcaIT {
       d.setDataFormat(DataFormat.DWCA);
       store.put(d);
       Normalizer norm = new Normalizer(store, dwca, new ReferenceFactory(d.getKey(), new CslParserMock()));
-      norm.run();
+      norm.call();
 
       // reopen
       store = NeoDbFactory.open(1, cfg);
 
-    } catch (IOException e) {
+    } catch (IOException | InterruptedException e) {
       throw new RuntimeException(e);
     }
   }

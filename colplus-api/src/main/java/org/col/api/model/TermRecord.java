@@ -127,6 +127,10 @@ public class TermRecord {
     issues.add(issue);
   }
 
+  public boolean hasIssue(Issue issue) {
+    return issues.contains(issue);
+  }
+
   private String unescape(String x){
     if (Strings.isNullOrEmpty(x)) {
       return null;

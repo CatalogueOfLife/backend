@@ -22,6 +22,14 @@ public class RankedName {
 
   @Override
   public String toString() {
-    return name + ' ' + author + " [" + rank + ']';
+    StringBuilder sb = new StringBuilder();
+    sb.append(name);
+    if (author != null) {
+      sb.append(' ').append(author);
+    }
+    if (rank != null) {
+      sb.append(" [").append(rank.name().toLowerCase()).append(']');
+    }
+    return sb.toString();
   }
 }

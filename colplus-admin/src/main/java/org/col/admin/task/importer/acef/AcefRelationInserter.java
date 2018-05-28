@@ -37,18 +37,14 @@ public class AcefRelationInserter implements NeoDb.NodeBatchProcessor {
       NeoTaxon t = store.get(n);
       if (t.taxon.getVerbatimKey() != null) {
         TermRecord v = store.getVerbatim(t.taxon.getVerbatimKey());
-        if (t.synonym != null) {
+        if (t.isSynonym()) {
           Node an = lookupByID(AcefTerm.AcceptedTaxonID, v, t);
           if (an != null) {
             store.createSynonymRel(t.node, an);
           } else {
-            t.taxon.addIssue(Issue.ACCEPTED_ID_INVALID);
-            t.taxon.addIssue(Issue.ACCEPTED_NAME_MISSING);
-            // if we aint got no idea of the accepted insert an incertae sedis record of same rank
-            NeoDb.PLACEHOLDER.setRank(t.name.getRank());
-            NeoTaxon acc = NeoTaxon.createTaxon(Origin.MISSING_ACCEPTED, NeoDb.PLACEHOLDER, true);
-            store.put(acc);
-            store.createSynonymRel(t.node, acc.node);
+            // if we aint got no idea of the accepted insert just the name
+            t.addIssue(Issue.ACCEPTED_ID_INVALID);
+            t.addIssue(Issue.ACCEPTED_NAME_MISSING);
             store.update(t);
           }
 
