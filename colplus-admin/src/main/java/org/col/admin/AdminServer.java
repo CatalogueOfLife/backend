@@ -66,11 +66,11 @@ public class AdminServer extends PgApp<AdminServerConfig> {
         .buildRx(getName(), RxCompletionStageInvoker.class);
 
     // cslParser
-    AnystyleParserWrapper anystyle = new AnystyleParserWrapper(hc, cfg.anystyle);
+    AnystyleParserWrapper anystyle = new AnystyleParserWrapper(hc, cfg.anystyle, env.metrics());
     env.jersey().register(new ParserResource(anystyle));
 
     // setup async importer
-    final ImportManager importManager = new ImportManager(cfg, hc, getSqlSessionFactory(), anystyle);
+    final ImportManager importManager = new ImportManager(cfg, env.metrics(), hc, getSqlSessionFactory(), anystyle);
     env.lifecycle().manage(importManager);
     env.jersey().register(new ImporterResource(importManager, getSqlSessionFactory()));
 
@@ -86,6 +86,7 @@ public class AdminServer extends PgApp<AdminServerConfig> {
     } else {
       LOG.warn("GBIF registry sync is deactivated. Please configure server with a positive gbif.syncFrequency");
     }
+
   }
 
   /**

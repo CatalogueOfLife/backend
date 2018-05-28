@@ -36,14 +36,16 @@ public class ImportManagerDebugging {
 
   @Before
   public void init() throws Exception {
+    MetricRegistry metrics = new MetricRegistry();
+
     final AdminServerConfig cfg = provideConfig();
     InitDbCmd.execute(cfg);
 
-    final CloseableHttpClient hc = new HttpClientBuilder(new MetricRegistry())
+    final CloseableHttpClient hc = new HttpClientBuilder(metrics)
         .using(cfg.client)
         .build("local");
-    AnystyleParserWrapper anystyle = new AnystyleParserWrapper(hc, cfg.anystyle);
-    importManager = new ImportManager(cfg, hc, PgSetupRule.getSqlSessionFactory(), anystyle);
+    AnystyleParserWrapper anystyle = new AnystyleParserWrapper(hc, cfg.anystyle, metrics);
+    importManager = new ImportManager(cfg, metrics, hc, PgSetupRule.getSqlSessionFactory(), anystyle);
     importManager.start();
   }
 

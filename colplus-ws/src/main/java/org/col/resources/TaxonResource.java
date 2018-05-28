@@ -31,7 +31,6 @@ public class TaxonResource {
   }
 
   @GET
-  @Timed
   @Path("{id}/{datasetKey}")
   public Integer lookupKey(@PathParam("id") String id, @PathParam("datasetKey") int datasetKey,
       @Context SqlSession session) {
@@ -40,7 +39,6 @@ public class TaxonResource {
   }
 
   @GET
-  @Timed
   @Path("{key}")
   public Taxon get(@PathParam("key") int key, @Context SqlSession session) {
     TaxonDao dao = new TaxonDao(session);
@@ -48,7 +46,6 @@ public class TaxonResource {
   }
 
   @GET
-  @Timed
   @Path("{key}/children")
   public ResultPage<Taxon> children(@PathParam("key") int key, @Valid @BeanParam Page page,
       @Context SqlSession session) {
@@ -57,7 +54,6 @@ public class TaxonResource {
   }
 
   @GET
-  @Timed
   @Path("{key}/synonyms")
   public Synonymy synonyms(@PathParam("key") int key, @Context SqlSession session) {
     TaxonDao dao = new TaxonDao(session);
@@ -65,7 +61,6 @@ public class TaxonResource {
   }
 
   @GET
-  @Timed
   @Path("{key}/classification")
   public List<Taxon> classification(@PathParam("key") int key, @Context SqlSession session) {
     TaxonDao dao = new TaxonDao(session);

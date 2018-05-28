@@ -64,7 +64,6 @@ public class NameResource {
   }
 
   @GET
-  @Timed
   @Path("{key}/acts")
   public List<NameAct> getActs(@PathParam("key") int key, @Context SqlSession session) {
     NameActMapper mapper = session.getMapper(NameActMapper.class);

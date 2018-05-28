@@ -5,6 +5,8 @@ import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Optional;
 
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Timer;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.google.common.base.Strings;
@@ -36,10 +38,12 @@ public class AnystyleParserWrapper implements Parser<CslData> {
 
   private final CloseableHttpClient hc;
   private final AnystyleConfig cfg;
+  private final Timer timer;
 
-  public AnystyleParserWrapper(CloseableHttpClient hc, AnystyleConfig cfg) {
+  public AnystyleParserWrapper(CloseableHttpClient hc, AnystyleConfig cfg, MetricRegistry metrics) {
     this.hc = hc;
     this.cfg = cfg;
+    this.timer = metrics.timer("anystyle-timer");
   }
 
   public Optional<CslData> parse(String ref) throws UnparsableException {
@@ -47,6 +51,7 @@ public class AnystyleParserWrapper implements Parser<CslData> {
       return Optional.empty();
     }
     String json = null;
+    Timer.Context ctx = timer.time();
     try (CloseableHttpResponse response = hc.execute(request(ref))) {
       json = EntityUtils.toString(response.getEntity());
       List<CslData> raw;
@@ -72,6 +77,9 @@ public class AnystyleParserWrapper implements Parser<CslData> {
       String err = getError(ref, e.getMessage(), json);
       LOG.error(err);
       throw new UnparsableException(err);
+
+    } finally {
+      ctx.stop();
     }
   }
 
