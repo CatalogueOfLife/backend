@@ -1,7 +1,8 @@
 package org.col.api.vocab;
 
 /**
- *
+ * Warning! If ordinals are changed please change also DatasetImportMapper.xml
+ * which has a hardcoded number!
  */
 public enum ImportState {
 
