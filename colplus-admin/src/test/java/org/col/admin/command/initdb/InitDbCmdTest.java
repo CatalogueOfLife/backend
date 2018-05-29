@@ -1,7 +1,7 @@
 package org.col.admin.command.initdb;
 
 import io.dropwizard.cli.Command;
-import org.col.admin.task.CmdTestBase;
+import org.col.admin.command.CmdTestBase;
 import org.junit.Test;
 
 /**

@@ -21,19 +21,22 @@ public class ExecutorUtils {
 
   public static void shutdown(ExecutorService exec, int timeout, TimeUnit unit) {
     try {
-      LOG.warn("attempt to shutdown executor within 10s");
+      LOG.debug("attempt to shutdown executor within {} {}", timeout, unit);
       exec.shutdown();
-      exec.awaitTermination(timeout, unit);
+      if (exec.awaitTermination(timeout, unit)) {
+        LOG.debug("shutdown succeeded orderly");
+      } else {
+        forceShutdown(exec);
+      }
 
     } catch (InterruptedException e) {
-      LOG.error("executor interrupted");
-
-    } finally {
-      if (!exec.isTerminated()) {
-        LOG.warn("cancel non-finished tasks");
-      }
-      exec.shutdownNow();
-      LOG.info("shutdown finished");
+      LOG.info("executor shutdown interrupted, force immediate shutdown");
+      forceShutdown(exec);
     }
+  }
+
+  private static void forceShutdown(ExecutorService exec) {
+    int count = exec.shutdownNow().size();
+    LOG.warn("forced shutdown, discarding {} queued tasks", count);
   }
 }

@@ -1,5 +1,6 @@
 package org.col.dw;
 
+import de.lhorn.dropwizard.dashboard.Dashboard;
 import io.dropwizard.Application;
 import io.dropwizard.forms.MultiPartBundle;
 import io.dropwizard.setup.Bootstrap;
@@ -8,7 +9,9 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.jackson.ApiModule;
 import org.col.dw.cors.CorsBundle;
 import org.col.dw.db.MybatisBundle;
+import org.col.dw.health.NameParserHealthCheck;
 import org.col.dw.jersey.provider.JerseyProviderBundle;
+import org.col.parser.NameParser;
 
 public abstract class PgApp<T extends PgAppConfig> extends Application<T> {
 
@@ -36,6 +39,11 @@ public abstract class PgApp<T extends PgAppConfig> extends Application<T> {
 
   @Override
   public void run(T cfg, Environment env) {
+    // name parser
+    NameParser.PARSER.register(env.metrics());
+    env.healthChecks().register("name-parser", new NameParserHealthCheck());
+
+    final Dashboard dashboard = new Dashboard(env, cfg.getDashboardConfiguration());
 	}
 
 }

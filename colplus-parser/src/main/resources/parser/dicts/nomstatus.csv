@@ -1,23 +1,23 @@
-abortivum,ABORTED
-alternative,ALTERNATIVE
-alternativum,ALTERNATIVE
-ambigua,AMBIGUOUS
-ambiguous,AMBIGUOUS
+abortivum,
+alternative,VARIANT
+alternativum,VARIANT
+ambigua,DOUBTFUL
+ambiguous,DOUBTFUL
 anticipatione,MANUSCRIPT
-available,VALIDLY_PUBLISHED
+available,LEGITIMATE
 chironym,MANUSCRIPT
 cheironym,MANUSCRIPT
 comb ined,MANUSCRIPT
 comb inval,UNAVAILABLE
-comb nov,NEWCOMBINATION
+comb nov,
 comb nov heterotypic syn,
-comb nov homotypic syn,NEWCOMBINATION
-combinatio,NEWCOMBINATION
+comb nov homotypic syn,
+combinatio,
 comb nov illegitimate name,ILLEGITIMATE
 comb nov rejected name homotypic syn,REJECTED
 comb superfl,SUPERFLUOUS
-confused,CONFUSED
-confusum,CONFUSED
+confused,DOUBTFUL
+confusum,DOUBTFUL
 conservandum,CONSERVED
 conservandumprop,CONSERVED
 conserved,CONSERVED
@@ -26,17 +26,17 @@ correctum,VARIANT
 correctum invalidum,
 correctum novum,
 correctum oppressa,
-denied,DENIED
+denied,
 doubtful,DOUBTFUL
 dubimum,DOUBTFUL
 dubimum correctum,
 dubimum correctum novum,
-dubimum invalidum,
-dubimum negatum,DENIED
+dubimum invalidum,DOUBTFUL
+dubimum negatum,
 dubimum novum,
 dubium,DOUBTFUL
 forgotten,FORGOTTEN
-gen nov,NEWGENUS
+gen nov,
 gen nov heterotypic synonym,
 gen nov homotypic synonym,
 gen nov nom illeg,
@@ -44,9 +44,7 @@ gen nov nom illeg heterotypic synonym,
 gen nov nom illeg homotypic synonym,
 gen nov nom rej,
 gen nov nom rev,
-gen nov vp,NEWGENUS
-gen nov vp, heterotypic synonym,
-gen nov vp, nom illeg,
+gen nov vp,
 homonym,ILLEGITIMATE
 homonym junior synonym,ILLEGITIMATE
 homonym synonym,ILLEGITIMATE
@@ -56,7 +54,7 @@ ined,MANUSCRIPT
 ineditus,MANUSCRIPT
 invalid,UNAVAILABLE
 invalidum,UNAVAILABLE
-invalidum negatum,DENIED
+invalidum negatum,
 invalidum novum,REPLACEMENT
 invalidum superfluum,SUPERFLUOUS
 junior homonym,ILLEGITIMATE
@@ -68,8 +66,8 @@ misapplied,
 misspelling,
 misspelling / subsequent emendation,
 mss,MANUSCRIPT
-negatum,DENIED
-new combination,NEWCOMBINATION
+negatum,
+new combination,
 nom conf,
 nom cons,CONSERVED
 nom cons des,CONSERVED
@@ -85,8 +83,8 @@ nom illeg,ILLEGITIMATE
 nom illeg,ILLEGITIMATE
 nom illeg later homonym,ILLEGITIMATE
 nom illeg nom inv,
-nom illeg nom nud,ILLEGITIMATE,NUDUM
-nom illeg nom superfl,ILLEGITIMATE,SUPERFLUOUS
+nom illeg nom nud,NAKED
+nom illeg nom superfl,SUPERFLUOUS
 nom illegit,
 nom illegit art,ILLEGITIMATE
 nom illegit art art does not apply,ILLEGITIMATE
@@ -106,64 +104,64 @@ nom inval art nom rejic art,UNAVAILABLE
 nom inval arts,UNAVAILABLE
 nom inval later homonym,
 nom inval nom rej,REJECTED
-nom inval nom subnud,SUBNUDUM
+nom inval nom subnud,NAKED
 nom inval nom superfl,SUPERFLUOUS
 nom nov illegitimate name,
 nom nov nom superfl,SUPERFLUOUS
 nom nov stat nov,
-nom nud,NUDUM
-nom nud invalid,NUDUM
-nom nud nom illeg,NUDUM
-nom nud nom illeg nom inv,NUDUM
-nom nud nom inv,NUDUM
-nom nud nom inval,NUDUM
-nom nud nom inval nom illeg,NUDUM
-nom nud unavailable invalid,NUDUM
+nom nud,NAKED
+nom nud invalid,NAKED
+nom nud nom illeg,NAKED
+nom nud nom illeg nom inv,NAKED
+nom nud nom inv,NAKED
+nom nud nom inval,NAKED
+nom nud nom inval nom illeg,NAKED
+nom nud unavailable invalid,NAKED
 nom rej,REJECTED
-nom rej prop,REJECTED_PROPOSED
+nom rej prop,REJECTED
 nom rejic,REJECTED
 nom rejic art,REJECTED
-nom rejic prop,REJECTED_PROPOSED
+nom rejic prop,REJECTED
 nom rev,
 nom rev comb nov,
 nom rev comb nov heterotypic syn,
 nom subnud,
 nom superfl,SUPERFLUOUS
 nom utique rejic,
-nomen abortivum,ABORTED
+nomen abortivum,
 nomen illegitimum,
 nomen novum,
-nomen nudum,NUDUM
+nomen nudum,NAKED
 novum,REPLACEMENT
-nudum,NUDUM
-nudum invalidum,NUDUM
-nudum invalidum novum,NUDUM
+nudum,NAKED
+nudum invalidum,NAKED
+nudum invalidum novum,NAKED
 nudum negatum,
 nudum oppressa,
 nullum,
-oblitum,
-oppressa,SUPPRESSED
+oblitum,FORGOTTEN
+oppressa,REJECTED
 oppressa invalidum,
 oppressa negatum,
 oppressa oblitum,
-opus utique oppressa,SUPPRESSED
-original combination,VALIDLY_PUBLISHED
+opus utique oppressa,REJECTED
+original combination,LEGITIMATE
 original incorrect spelling,
 original misspelling,
 original name/combination,
-orth cons,
+orth cons,CONSERVED
 orthographia,VARIANT
 orthographic variant,VARIANT
 orthographically incorrect name,VARIANT
 primary homonym,
 pro parte,
 protected,CONSERVED
-protectum,
-provisional,PROVISIONAL
-provisorium,PROVISIONAL
+protectum,PROTECTED
+provisional,
+provisorium,
 rejected,REJECTED
 rejected name non binomial work,
-rejected proposed,REJECTED_PROPOSED
+rejected proposed,REJECTED
 rejiciandum,
 rejiciendum,REJECTED
 rejiciendumprop,
@@ -172,19 +170,19 @@ rejiciendumutiqueprop,
 replacement name,
 ruhberg et al,
 secondary homonym,
-sp nov,NEW_SPECIES
-sp nov heterotypic syn,NEW_SPECIES
-sp nov homotypic syn,NEW_SPECIES
-sp nov illegitimate name,NEW_SPECIES
-sp nov illegitimate name, heterotypic syn,NEW_SPECIES
-sp nov illegitimate name, homotypic syn,NEW_SPECIES
-sp nov nom rev,NEW_SPECIES
-sp nov nom rev heterotypic syn,NEW_SPECIES
-sp nov nom rev homotypic syn,NEW_SPECIES
-sp nov rejected name,NEW_SPECIES
-sp nov rejected name heterotypic syn,NEW_SPECIES
-sp nov rejected name homotypic syn,NEW_SPECIES
-sp nov heterotypic syn,NEW_SPECIES
+sp nov,
+sp nov heterotypic syn,
+sp nov homotypic syn,
+sp nov illegitimate name,
+sp nov illegitimate name,
+sp nov illegitimate name,
+sp nov nom rev,
+sp nov nom rev heterotypic syn,
+sp nov nom rev homotypic syn,
+sp nov rejected name,
+sp nov rejected name heterotypic syn,
+sp nov rejected name homotypic syn,
+sp nov heterotypic syn,
 species,
 species heterotypic syn,
 species homotypic syn,
@@ -221,7 +219,7 @@ unavailable nomen nudum,UNAVAILABLE
 unavailable other,UNAVAILABLE
 unjustified emendation,
 unnecessary replacement name,
-utique rejected,REJECTEDOUTRIGHT
-utique rejected proposed,REJECTED_OUTRIGHT_PROPOSED
-valid,VALIDLY_PUBLISHED
-VARIANTE_ORTOGRAFICA,VARIANT
+utique rejected,REJECTED
+utique rejected proposed,REJECTED
+valid,LEGITIMATE
+variante_ortografica,VARIANT

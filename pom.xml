@@ -33,37 +33,45 @@
 
         <!-- Library dependencies
             Check for available updates: mvn versions:display-dependency-updates
+
+
+            We make use of the Dropwizard BOM (Bill of materials) to manage versions for the major libraries
+            which also imports the BOM for jersey and jackson.
+
+            Before adding a specific version here make sure it is not already covered by these BOMs
+            (use the right versions):
+
+            Main Dropwizard BOM:
+            https://github.com/dropwizard/dropwizard/blob/v1.3.2/dropwizard-bom/pom.xml
+
+            Which also imports the Jersey BOM:
+            https://github.com/jersey/jersey/blob/2.25.1/bom/pom.xml
+
+            and Jackson BOM:
+            https://github.com/FasterXML/jackson-bom/blob/jackson-bom-2.9.5/pom.xml
+
+
+            These BOMs manage dependency versions for many things including:
+            commons-lang3, guava, jersey, commons-text, servlet api, httpclient, liquibase, freemarker,
+            jetty, jackson, metrics, etc.
         -->
         <citeproc.version>1.0.1</citeproc.version>
-        <commons-lang.version>3.7</commons-lang.version>
         <commons-compress.version>1.10</commons-compress.version>
         <commons-io.version>2.4</commons-io.version>
-        <commons-text.version>1.2</commons-text.version>
-        <dropwizard.version>1.2.3</dropwizard.version>
+        <dropwizard.version>1.3.2</dropwizard.version>
         <dwc-api.version>1.19-SNAPSHOT</dwc-api.version>
         <dwca-io.version>1.33-SNAPSHOT</dwca-io.version>
         <fastutil.version>8.1.0</fastutil.version>
         <gbif-api.version>0.60</gbif-api.version>
         <gbif-parser.version>0.32</gbif-parser.version>
-        <guava.version>23.5-jre</guava.version>
         <hikaricp.version>2.7.1</hikaricp.version>
         <hk2.version>2.5.0-b32</hk2.version>
-        <!-- make sure http client matches dropwizards version, see Dropwizard BOM:
-             https://github.com/dropwizard/dropwizard/blob/v1.2.3/dropwizard-bom/pom.xml -->
-        <httpclient.version>4.5.3</httpclient.version>
         <icu4j.version>60.2</icu4j.version>
-        <!-- make sure jackson matches dropwizards version, see Dropwizard BOM:
-             https://github.com/dropwizard/dropwizard/blob/v1.2.3/dropwizard-bom/pom.xml -->
-        <jackson2.version>2.9.3</jackson2.version>
         <javax.ws.rs-api.version>2.0.1</javax.ws.rs-api.version>
         <javers.version>3.7.5</javers.version>
-        <!-- makjackse sure jersey matches dropwizards version -->
-        <jersey.version>2.25.1</jersey.version>
-        <jsr305.version>3.0.2</jsr305.version>
         <junit.version>4.12</junit.version>
         <kryo.version>4.0.1</kryo.version>
         <kryo-serializers.version>0.42</kryo-serializers.version>
-        <logback.version>1.2.3</logback.version>
         <logstash-logback.version>4.11</logstash-logback.version>
         <mapdb.version>3.0.5</mapdb.version>
         <mockito.version>2.12.0</mockito.version>
@@ -72,7 +80,6 @@
         <neo4j.version>3.3.5</neo4j.version>
         <postgresql.version>42.1.4</postgresql.version>
         <postgresql-embedded.version>2.6</postgresql-embedded.version>
-        <slf4j.version>1.7.25</slf4j.version>
         <stax2.version>3.1.4</stax2.version>
         <univocity-parsers.version>2.5.9</univocity-parsers.version>
         <validation-api.version>2.0.0.Final</validation-api.version>
@@ -231,33 +238,18 @@
                 <artifactId>dropwizard-logging</artifactId>
                 <version>${dropwizard.version}</version>
             </dependency>
-            <!-- Dropwizard Bill of materials. Imports all versions just like Dropwizard uses -->
+
+            <!--
+            Dropwizard Bill of materials.
+            Imports all versions just like Dropwizard uses.
+            See properties section above for details!
+            -->
             <dependency>
                 <groupId>io.dropwizard</groupId>
                 <artifactId>dropwizard-bom</artifactId>
                 <version>${dropwizard.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
-            </dependency>
-
-            <!-- jersey -->
-            <dependency>
-                <groupId>org.glassfish.jersey.ext.rx</groupId>
-                <artifactId>jersey-rx-client-java8</artifactId>
-                <version>${jersey.version}</version>
-            </dependency>
-
-            <!-- http client -->
-            <dependency>
-                <groupId>org.apache.httpcomponents</groupId>
-                <artifactId>httpclient</artifactId>
-                <version>${httpclient.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>commons-logging</groupId>
-                        <artifactId>commons-logging</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
 
             <!-- HK2 dependency injection - follow closely the version used by Jersey via Dropwizard -->
@@ -287,11 +279,6 @@
                 <groupId>javax.validation</groupId>
                 <artifactId>validation-api</artifactId>
                 <version>${validation-api.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.google.code.findbugs</groupId>
-                <artifactId>jsr305</artifactId>
-                <version>${jsr305.version}</version>
             </dependency>
 
             <!-- GBIF -->
@@ -399,54 +386,12 @@
 
             <!-- logging -->
             <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-api</artifactId>
-                <version>${slf4j.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>ch.qos.logback</groupId>
-                <artifactId>logback-classic</artifactId>
-                <version>${logback.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>net.logstash.logback</groupId>
                 <artifactId>logstash-logback-encoder</artifactId>
                 <version>${logstash-logback.version}</version>
             </dependency>
 
-            <!-- JACKSON2 -->
-            <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
-                <artifactId>jackson-databind</artifactId>
-                <version>${jackson2.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
-                <artifactId>jackson-annotations</artifactId>
-                <version>${jackson2.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.fasterxml.jackson.dataformat</groupId>
-                <artifactId>jackson-dataformat-yaml</artifactId>
-                <version>${jackson2.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.fasterxml.jackson.dataformat</groupId>
-                <artifactId>jackson-dataformat-xml</artifactId>
-                <version>${jackson2.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.fasterxml.jackson.datatype</groupId>
-                <artifactId>jackson-datatype-jsr310</artifactId>
-                <version>${jackson2.version}</version>
-            </dependency>
-
             <!-- commons -->
-            <dependency>
-                <groupId>org.apache.commons</groupId>
-                <artifactId>commons-lang3</artifactId>
-                <version>${commons-lang.version}</version>
-            </dependency>
             <dependency>
                 <groupId>commons-io</groupId>
                 <artifactId>commons-io</artifactId>
@@ -456,11 +401,6 @@
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-compress</artifactId>
                 <version>${commons-compress.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.commons</groupId>
-                <artifactId>commons-text</artifactId>
-                <version>${commons-text.version}</version>
             </dependency>
 
             <!-- other -->
@@ -483,12 +423,6 @@
                 <groupId>org.codehaus.woodstox</groupId>
                 <artifactId>stax2-api</artifactId>
                 <version>${stax2.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.google.guava</groupId>
-                <artifactId>guava</artifactId>
-                <version>${guava.version}</version>
             </dependency>
             <dependency>
                 <groupId>it.unimi.dsi</groupId>

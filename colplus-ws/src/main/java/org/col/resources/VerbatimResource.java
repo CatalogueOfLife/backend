@@ -1,17 +1,14 @@
 package org.col.resources;
 
-import java.util.List;
 import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
-import com.codahale.metrics.annotation.Timed;
 import org.apache.ibatis.session.SqlSession;
-import org.col.api.model.*;
-import org.col.db.dao.NameDao;
-import org.col.db.dao.NameUsageDao;
-import org.col.db.mapper.NameActMapper;
+import org.col.api.model.Page;
+import org.col.api.model.ResultPage;
+import org.col.api.model.TermRecord;
 import org.col.db.mapper.VerbatimRecordMapper;
 import org.gbif.dwc.terms.Term;
 import org.slf4j.Logger;

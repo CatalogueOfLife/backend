@@ -249,6 +249,12 @@ public enum Issue {
   PARENT_CYCLE,
 
   /**
+   * An accepted taxon which has a synonym as its parent.
+   * This relation is moved to the synonyms accepted name if possible, otherwise just removed.
+   */
+  SYNONYM_PARENT,
+
+  /**
    * The given ranks of the names in the classification hierarchy do not follow the hierarchy of ranks.
    */
   CLASSIFICATION_RANK_ORDER_INVALID,

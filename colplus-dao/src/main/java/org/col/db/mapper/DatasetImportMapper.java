@@ -1,6 +1,7 @@
 package org.col.db.mapper;
 
 import java.util.List;
+import javax.annotation.Nullable;
 
 import org.apache.ibatis.annotations.Param;
 import org.col.api.model.DatasetImport;
@@ -12,14 +13,29 @@ import org.col.api.vocab.ImportState;
  */
 public interface DatasetImportMapper {
 
+  /**
+   * Get the latest import for a dataset
+   */
   DatasetImport last(@Param("key") int datasetKey);
 
+  /**
+   * Get the latest successful import for a dataset
+   */
   DatasetImport lastSuccessful(@Param("key") int datasetKey);
 
+  /**
+   * Count all imports by their state
+   */
   int count(@Param("state") ImportState state);
 
-  List<DatasetImport> list(@Param("state") ImportState state, @Param("page") Page page);
+  /**
+   * List all imports optionally filtered by their state
+   */
+  List<DatasetImport> list(@Param("state") @Nullable ImportState state, @Param("page") Page page);
 
+  /**
+   * List all current and historical imports for a dataset
+   */
   List<DatasetImport> listByDataset(@Param("key") int datasetKey);
 
   /**

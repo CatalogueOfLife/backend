@@ -14,10 +14,7 @@ import com.google.common.collect.ImmutableSet;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.col.api.vocab.CSLRefType;
 
-import static org.col.api.vocab.CSLRefType.LEGAL_CASE;
-import static org.col.api.vocab.CSLRefType.MOTION_PICTURE;
-import static org.col.api.vocab.CSLRefType.MUSICAL_SCORE;
-import static org.col.api.vocab.CSLRefType.PERSONAL_COMMUNICATION;
+import static org.col.api.vocab.CSLRefType.*;
 
 /**
  * Jackson {@link JsonSerializer} and Jackson {@link JsonDeserializer} classes for

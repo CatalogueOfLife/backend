@@ -30,7 +30,7 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     DatasetImport d = new DatasetImport();
     d.setDatasetKey(DATASET1.getKey());
     d.setError("no error");
-    d.setState(ImportState.RUNNING);
+    d.setState(ImportState.DOWNLOADING);
     d.setStarted(LocalDateTime.now());
     d.setFinished(LocalDateTime.now());
     d.setDownloadUri(URI.create("http://rs.gbif.org/datasets/nub.zip"));
@@ -91,7 +91,7 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     assertNull(mapper().lastSuccessful(d.getDatasetKey()));
 
     d = create();
-    d.setState(ImportState.RUNNING);
+    d.setState(ImportState.DOWNLOADING);
     mapper().create(d);
     assertNull(mapper().lastSuccessful(d.getDatasetKey()));
 

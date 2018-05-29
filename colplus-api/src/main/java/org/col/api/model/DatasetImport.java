@@ -239,11 +239,14 @@ public class DatasetImport {
     return Objects.hash(datasetKey, attempt, state, downloadUri, download, started, finished, error, verbatimCount, nameCount, taxonCount, vernacularCount, distributionCount, issuesCount, namesByRankCount, namesByTypeCount, vernacularsByLanguageCount, distributionsByGazetteerCount, namesByOriginCount);
   }
 
+  public String attempt() {
+    return datasetKey + " - " + attempt;
+  }
+
   @Override
   public String toString() {
     return "DatasetImport{" +
-        datasetKey +
-        " - " + attempt +
+        attempt() +
         ": state=" + state +
         ", started=" + started +
         ", verbatim=" + verbatimCount +

@@ -1,14 +1,25 @@
 package org.col.api.vocab;
 
 /**
- *
+ * Warning! If ordinals are changed please change also DatasetImportMapper.xml
+ * which has a hardcoded number!
  */
 public enum ImportState {
 
   /**
-   * Currently running import.
+   * Downloading the latest source data, the first step of a running import.
    */
-  RUNNING,
+  DOWNLOADING,
+
+  /**
+   * Normalization of the dataset without touching the previous data in Postgres.
+   */
+  PROCESSING,
+
+  /**
+   * Inserting data into Postgres, starts by wiping any previous edition.
+   */
+  INSERTING,
 
   /**
    * Sources have not been changed since last import. Imported stopped.
@@ -28,7 +39,6 @@ public enum ImportState {
   /**
    * Import failed due to errors.
    */
-
   FAILED
 
 }

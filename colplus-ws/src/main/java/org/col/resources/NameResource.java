@@ -12,7 +12,6 @@ import org.col.api.model.*;
 import org.col.db.dao.NameDao;
 import org.col.db.dao.NameUsageDao;
 import org.col.db.mapper.NameActMapper;
-import org.col.db.mapper.VerbatimRecordMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,7 +55,6 @@ public class NameResource {
   }
 
   @GET
-  @Timed
   @Path("{key}/synonyms")
   public List<Name> getSynonyms(@PathParam("key") int key, @Context SqlSession session) {
     NameDao dao = new NameDao(session);
@@ -64,7 +62,6 @@ public class NameResource {
   }
 
   @GET
-  @Timed
   @Path("{key}/acts")
   public List<NameAct> getActs(@PathParam("key") int key, @Context SqlSession session) {
     NameActMapper mapper = session.getMapper(NameActMapper.class);

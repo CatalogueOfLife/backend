@@ -5,14 +5,11 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
-import com.codahale.metrics.annotation.Timed;
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.model.Page;
 import org.col.api.model.Reference;
 import org.col.api.model.ResultPage;
-import org.col.api.model.TermRecord;
 import org.col.db.dao.ReferenceDao;
-import org.col.db.mapper.VerbatimRecordMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,7 +29,6 @@ public class ReferenceResource {
   }
 
   @GET
-  @Timed
   @Path("{id}/{datasetKey}")
   public Integer lookupKey(@PathParam("id") String id, @PathParam("datasetKey") int datasetKey,
       @Context SqlSession session) {
@@ -41,7 +37,6 @@ public class ReferenceResource {
   }
 
   @GET
-  @Timed
   @Path("{key}")
   public Reference get(@PathParam("key") int key, @QueryParam("page") String page, @Context SqlSession session) {
     ReferenceDao dao = new ReferenceDao(session);

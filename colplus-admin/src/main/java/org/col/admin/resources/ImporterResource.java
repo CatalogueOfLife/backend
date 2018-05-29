@@ -1,13 +1,13 @@
 package org.col.admin.resources;
 
-import java.util.List;
+import java.util.Queue;
 import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.col.admin.task.importer.ImportManager;
-import org.col.admin.task.importer.ImportRequest;
+import org.col.admin.importer.ImportManager;
+import org.col.admin.importer.ImportRequest;
 import org.col.api.model.DatasetImport;
 import org.col.api.model.Page;
 import org.col.api.model.ResultPage;
@@ -42,7 +42,7 @@ public class ImporterResource {
 
   @GET
   @Path("/queue")
-  public List<ImportRequest> queue() {
+  public Queue<ImportRequest> queue() {
     return importManager.list();
   }
 

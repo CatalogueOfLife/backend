@@ -6,7 +6,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
-import com.codahale.metrics.annotation.Timed;
 import org.col.api.model.CslData;
 import org.col.parser.Parser;
 import org.col.parser.UnparsableException;
@@ -29,7 +28,6 @@ public class ParserResource {
    * Parsing citations as GET query parameters.
    */
   @GET
-  @Timed
   public CslData parse(@QueryParam("ref") String citation) throws UnparsableException {
     return parser.parse(citation).orElse(null);
   }

@@ -12,11 +12,12 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.col.admin.command.initdb.InitDbCmd;
 import org.col.admin.command.neoshell.ShellCmd;
 import org.col.admin.config.AdminServerConfig;
+import org.col.admin.gbifsync.GbifSync;
+import org.col.admin.importer.ContinousImporter;
+import org.col.admin.importer.ImportManager;
 import org.col.admin.resources.ImporterResource;
 import org.col.admin.resources.ParserResource;
-import org.col.admin.task.gbifsync.GbifSync;
-import org.col.admin.task.importer.ContinousImporter;
-import org.col.admin.task.importer.ImportManager;
+import org.col.csl.AnystyleHealthCheck;
 import org.col.csl.AnystyleParserWrapper;
 import org.col.dw.PgApp;
 import org.glassfish.jersey.client.rx.RxClient;
@@ -30,7 +31,7 @@ public class AdminServer extends PgApp<AdminServerConfig> {
   private static final Logger LOG = LoggerFactory.getLogger(AdminServer.class);
   public static final String MDC_KEY_TASK = "task";
   // milliseconds to wait during shutdown before forcing a shutdown
-  public static final int MILLIS_TO_DIE = 10000;
+  public static final int MILLIS_TO_DIE = 12000;
 
   public static void main(final String[] args) throws Exception {
     SLF4JBridgeHandler.install();
@@ -66,11 +67,12 @@ public class AdminServer extends PgApp<AdminServerConfig> {
         .buildRx(getName(), RxCompletionStageInvoker.class);
 
     // cslParser
-    AnystyleParserWrapper anystyle = new AnystyleParserWrapper(hc, cfg.anystyle);
+    AnystyleParserWrapper anystyle = new AnystyleParserWrapper(hc, cfg.anystyle, env.metrics());
     env.jersey().register(new ParserResource(anystyle));
+    env.healthChecks().register("anystyle", new AnystyleHealthCheck(anystyle));
 
     // setup async importer
-    final ImportManager importManager = new ImportManager(cfg, hc, getSqlSessionFactory(), anystyle);
+    final ImportManager importManager = new ImportManager(cfg, env.metrics(), hc, getSqlSessionFactory(), anystyle);
     env.lifecycle().manage(importManager);
     env.jersey().register(new ImporterResource(importManager, getSqlSessionFactory()));
 
