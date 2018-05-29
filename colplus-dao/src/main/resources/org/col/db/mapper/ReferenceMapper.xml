@@ -10,6 +10,7 @@
         r.dataset_key,
         r.verbatim_key,
         r.csl,
+        r.citation,
         r.year,
         r.issues
     </sql>
@@ -19,6 +20,7 @@
         dataset_key,
         verbatim_key,
         csl,
+        citation,
         year,
         issues
     </sql>
@@ -28,6 +30,7 @@
         #{datasetKey},
         #{verbatimKey},
         #{csl, typeHandler=org.col.db.type.CslJsonHandler}::jsonb,
+        #{citation},
         #{year},
         #{issues, typeHandler=org.col.db.type2.IssueSetTypeHandler}::int[]
     </sql>
