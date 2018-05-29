@@ -110,7 +110,6 @@ public class ReferenceFactory {
   private void parse(Reference ref, String citation) {
     try {
       cslParser.parse(citation).ifPresent(ref::setCsl);
-      ref.setCitation(CslUtil.buildCitation(ref));
     } catch (UnparsableException | RuntimeException e) {
       ref.addIssue(Issue.REFERENCE_UNPARSABLE);
       ref.setCitation(citation);
@@ -134,12 +133,18 @@ public class ReferenceFactory {
 
   private static Reference postParse(Reference ref) {
     // extract int year
-    if (ref.getCsl().getIssued() != null) {
-      CslDate date = ref.getCsl().getIssued();
-      if (date.getDateParts() != null) {
-        ref.setYear(parseYear(date));
-      } else {
-        ref.setYear(parseYear(ref.getCsl().getYearSuffix()));
+    if (ref.getCsl() != null) {
+      if (ref.getCsl().getIssued() != null) {
+        CslDate date = ref.getCsl().getIssued();
+        if (date.getDateParts() != null) {
+          ref.setYear(parseYear(date));
+        } else {
+          ref.setYear(parseYear(ref.getCsl().getYearSuffix()));
+        }
+      }
+      // build citation if not there
+      if (ref.getCitation() == null) {
+        ref.setCitation(CslUtil.buildCitation(ref.getCsl()));
       }
     }
     return ref;

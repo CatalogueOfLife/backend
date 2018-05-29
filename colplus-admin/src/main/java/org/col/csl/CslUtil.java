@@ -1,14 +1,11 @@
 package org.col.csl;
 
 import java.io.IOException;
-import java.util.List;
 
 import de.undercouch.citeproc.CSL;
 import de.undercouch.citeproc.ItemDataProvider;
-import de.undercouch.citeproc.ListItemDataProvider;
 import de.undercouch.citeproc.csl.CSLItemData;
 import de.undercouch.citeproc.output.Bibliography;
-import de.undercouch.citeproc.output.Citation;
 import org.col.api.model.CslData;
 import org.col.api.model.Reference;
 
@@ -26,15 +23,14 @@ public class CslUtil {
 
   static class ReferenceProvider implements ItemDataProvider {
     private static final String ID = "1";
-    private Reference ref;
+    private CslData data;
 
-    public void setRef(Reference ref) {
-      this.ref = ref;
+    public void setData(CslData data) {
+      this.data = data;
     }
 
     @Override
     public CSLItemData retrieveItem(String id) {
-      CslData data = ref.getCsl();
       final String idOrig = data.getId();
       try {
         data.setId(id);
@@ -52,8 +48,14 @@ public class CslUtil {
     }
   }
 
-  public static synchronized String buildCitation(Reference r) {
-    provider.setRef(r);
+  public static String buildCitation(Reference r) {
+    return buildCitation(r.getCsl());
+  }
+
+  public static synchronized String buildCitation(CslData data) {
+    if (data == null) return null;
+
+    provider.setData(data);
     csl.registerCitationItems(ReferenceProvider.ID);
     Bibliography bib = csl.makeBibliography();
     return bib.getEntries()[0].trim();
