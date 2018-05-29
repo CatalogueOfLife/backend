@@ -19,6 +19,7 @@ import org.col.admin.importer.reference.ReferenceFactory;
 import org.col.api.model.CslData;
 import org.col.api.model.Dataset;
 import org.col.api.model.DatasetImport;
+import org.col.api.vocab.ImportState;
 import org.col.common.io.CompressionUtil;
 import org.col.common.io.DownloadUtil;
 import org.col.db.dao.DatasetImportDao;
@@ -88,6 +89,12 @@ public class ImportJob implements Callable<DatasetImport> {
     return di == null ? null : di.getAttempt();
   }
 
+  private void updateState(ImportState state) throws InterruptedException {
+    di.setState(state);
+    dao.update(di);
+    checkIfCancelled();
+  }
+
   private void checkIfCancelled() throws InterruptedException {
     if (Thread.currentThread().isInterrupted()) {
       throw new InterruptedException("Import "+ di.attempt() +" was cancelled");
@@ -114,7 +121,7 @@ public class ImportJob implements Callable<DatasetImport> {
         }
         di.setDownload(downloader.lastModified(source));
 
-        checkIfCancelled();
+        updateState(ImportState.PROCESSING);
         LOG.info("Extracting files from archive {}", datasetKey);
         CompressionUtil.decompressFile(dwcaDir.toFile(), source);
 
@@ -124,7 +131,7 @@ public class ImportJob implements Callable<DatasetImport> {
         store.put(dataset);
         new Normalizer(store, dwcaDir, refFactory).call();
 
-        checkIfCancelled();
+        updateState(ImportState.INSERTING);
         LOG.info("Writing {} to Postgres!", datasetKey);
         store = NeoDbFactory.open(datasetKey, cfg.normalizer);
         new PgImport(datasetKey, store, factory, cfg.importer).call();
