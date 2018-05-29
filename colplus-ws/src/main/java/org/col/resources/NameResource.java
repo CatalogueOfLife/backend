@@ -55,7 +55,6 @@ public class NameResource {
   }
 
   @GET
-  @Timed
   @Path("{key}/synonyms")
   public List<Name> getSynonyms(@PathParam("key") int key, @Context SqlSession session) {
     NameDao dao = new NameDao(session);

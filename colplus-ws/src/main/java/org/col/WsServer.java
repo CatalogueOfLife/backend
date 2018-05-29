@@ -2,7 +2,6 @@ package org.col;
 
 import io.dropwizard.setup.Environment;
 import org.col.dw.PgApp;
-import org.col.parser.NameParser;
 import org.col.resources.*;
 
 public class WsServer extends PgApp<WsServerConfig> {

@@ -12,7 +12,6 @@ import java.util.stream.Stream;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
-import com.codahale.metrics.annotation.Timed;
 import com.google.common.collect.Lists;
 import org.col.api.model.NameAccordingTo;
 import org.col.parser.NameParser;
@@ -32,7 +31,6 @@ public class ParserResource {
    * Parsing names as GET query parameters.
    */
   @GET
-  @Timed
   public List<NameAccordingTo> parseGet(@QueryParam("name") List<String> names) {
     return parse(names.stream());
   }
@@ -77,8 +75,6 @@ public class ParserResource {
     return parseFile(names);
   }
 
-
-  @Timed
   private List<NameAccordingTo> parse(Stream<String> names) {
     return names
         .peek(n -> LOG.info("Parse: {}", n))
