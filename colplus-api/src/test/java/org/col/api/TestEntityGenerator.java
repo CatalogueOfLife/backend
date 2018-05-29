@@ -282,24 +282,26 @@ public class TestEntityGenerator {
   }
 
   public static Reference newReference(String title) {
-    Reference r = Reference.create();
+    Reference r = new Reference();
     r.setDatasetKey(TestEntityGenerator.DATASET1.getKey());
-    r.getCsl().setType(CSLRefType.ARTICLE_JOURNAL);
-    r.getCsl().setTitle(title);
-    r.getCsl().setContainerTitle("Nature");
-    r.getCsl().setVolume("556");
-    r.getCsl().setAbstrct("a very long article you should read");
+    CslData csl = new CslData();
+    r.setCsl(csl);
+    csl.setType(CSLRefType.ARTICLE_JOURNAL);
+    csl.setTitle(title);
+    csl.setContainerTitle("Nature");
+    csl.setVolume("556");
+    csl.setAbstrct("a very long article you should read");
     CslName author1 = new CslName();
     author1.setGiven("John");
     author1.setFamily("Smith");
     CslName author2 = new CslName();
     author2.setGiven("Betty");
     author2.setFamily("Jones");
-    r.getCsl().setAuthor(new CslName[] {author1, author2});
+    csl.setAuthor(new CslName[] {author1, author2});
     CslDate date = new CslDate();
     date.setDateParts(new int[][] {{2014, 8, 12}});
-    r.getCsl().setAccessed(date);
-    r.getCsl().setCategories(new String[] {"A", "B", "C"});
+    csl.setAccessed(date);
+    csl.setCategories(new String[] {"A", "B", "C"});
     return r;
   }
 

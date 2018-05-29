@@ -120,13 +120,8 @@ public class Reference implements VerbatimEntity {
     issues.add(issue);
   }
 
-  /**
-   * @return An empty reference instance with an empty csl JsonNode.
-   */
-  public static Reference create() {
-    Reference r = new Reference();
-    r.csl = new CslData();
-    return r;
+  public boolean isParsed() {
+    return csl != null;
   }
 
   @Override

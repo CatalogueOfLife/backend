@@ -43,7 +43,7 @@ public class NeoKryoFactoryTest {
 
   @Test
   public void testReference() throws Exception {
-    Reference r = Reference.create();
+    Reference r = new Reference();
     r.setId("1234");
     r.setKey(123);
     r.setYear(1984);
