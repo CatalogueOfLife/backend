@@ -19,6 +19,7 @@ import org.col.admin.resources.ImporterResource;
 import org.col.admin.resources.ParserResource;
 import org.col.csl.AnystyleHealthCheck;
 import org.col.csl.AnystyleParserWrapper;
+import org.col.csl.CslUtil;
 import org.col.dw.PgApp;
 import org.glassfish.jersey.client.rx.RxClient;
 import org.glassfish.jersey.client.rx.java8.RxCompletionStageInvoker;
@@ -70,6 +71,7 @@ public class AdminServer extends PgApp<AdminServerConfig> {
     AnystyleParserWrapper anystyle = new AnystyleParserWrapper(hc, cfg.anystyle, env.metrics());
     env.jersey().register(new ParserResource(anystyle));
     env.healthChecks().register("anystyle", new AnystyleHealthCheck(anystyle));
+    CslUtil.register(env.metrics());
 
     // setup async importer
     final ImportManager importManager = new ImportManager(cfg, env.metrics(), hc, getSqlSessionFactory(), anystyle);

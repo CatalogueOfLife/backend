@@ -2,6 +2,8 @@ package org.col.csl;
 
 import java.io.IOException;
 
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Timer;
 import de.undercouch.citeproc.CSL;
 import de.undercouch.citeproc.ItemDataProvider;
 import de.undercouch.citeproc.csl.CSLItemData;
@@ -12,6 +14,7 @@ import org.col.api.model.Reference;
 public class CslUtil {
   private final static ReferenceProvider provider = new ReferenceProvider();
   private final static CSL csl;
+  private static Timer timer;
   static {
     try {
       csl = new CSL(provider, "apa");
@@ -19,6 +22,10 @@ public class CslUtil {
     } catch (IOException e) {
       throw new IllegalStateException("APA CSL processor could not be created", e);
     }
+  }
+
+  public static void register(MetricRegistry registry) {
+    CslUtil.timer = registry.timer("buildCitation");
   }
 
   static class ReferenceProvider implements ItemDataProvider {
@@ -55,9 +62,17 @@ public class CslUtil {
   public static synchronized String buildCitation(CslData data) {
     if (data == null) return null;
 
+    Timer.Context ctx = null;
+    if (timer != null) {
+      ctx = timer.time();
+    }
     provider.setData(data);
     csl.registerCitationItems(ReferenceProvider.ID);
     Bibliography bib = csl.makeBibliography();
+
+    if (ctx != null) {
+      ctx.stop();
+    }
     return bib.getEntries()[0].trim();
   }
 
