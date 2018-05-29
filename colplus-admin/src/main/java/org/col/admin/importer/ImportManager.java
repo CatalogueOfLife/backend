@@ -21,6 +21,7 @@ import org.col.api.model.DatasetImport;
 import org.col.api.util.PagingUtil;
 import org.col.api.vocab.ImportState;
 import org.col.common.concurrent.ExecutorUtils;
+import org.col.common.concurrent.StartNotifier;
 import org.col.common.io.DownloadUtil;
 import org.col.db.dao.DatasetImportDao;
 import org.col.db.mapper.DatasetMapper;
@@ -69,6 +70,7 @@ public class ImportManager implements Managed {
    * Cancels a running import job by its dataset key
    */
   public void cancel(int datasetKey) {
+    queue.remove(new ImportRequest(datasetKey, false));
     Future f = futures.remove(datasetKey);
     if (f != null) {
       LOG.info("Canceled import for dataset {}", datasetKey);
@@ -80,21 +82,23 @@ public class ImportManager implements Managed {
   }
 
   /**
-   * @throws IllegalArgumentException if dataset was scheduled for importing already
+   * @throws IllegalArgumentException if dataset was scheduled for importing already or queue was full
    */
   public ImportRequest submit(final int datasetKey, final boolean force) throws IllegalArgumentException {
     // is this dataset already scheduled?
     if (futures.containsKey(datasetKey)) {
       LOG.info("Dataset {} already queued for import", datasetKey);
       throw new IllegalArgumentException("Dataset " + datasetKey + " already queued for import");
+
+    } else if (queue.size() >= cfg.importer.maxQueue) {
+      LOG.info("Import queued at max {} already. Skip dataset {}", queue.size(), datasetKey);
+      throw new IllegalArgumentException("Import queue full, skip dataset " + datasetKey);
     }
 
-    LOG.info("Queue new import for dataset {}", datasetKey);
+    LOG.debug("Queue new import for dataset {}", datasetKey);
     final ImportRequest req = new ImportRequest(datasetKey, force);
-    queue.add(req);
     futures.put(datasetKey, CompletableFuture
-        .supplyAsync(() -> req)
-        .thenApplyAsync(this::runImport, exec)
+        .runAsync(createImport(req), exec)
         .handle((di, err) -> {
           if (err != null) {
             // unwrap CompletionException error
@@ -102,22 +106,25 @@ public class ImportManager implements Managed {
             failed.inc();
 
           } else {
-            Duration durQueued = Duration.between(req.created, di.getStarted());
-            Duration durRun = Duration.between(di.getStarted(), LocalDateTime.now());
-            LOG.info("Dataset import {}, attempt {} finished. {} min queued, {} min to execute", req.datasetKey, di.getAttempt(), durQueued.toMinutes(), durRun.toMinutes());
+            Duration durQueued = Duration.between(req.created, req.started);
+            Duration durRun = Duration.between(req.started, LocalDateTime.now());
+            LOG.info("Dataset import {} finished. {} min queued, {} min to execute", req.datasetKey, durQueued.toMinutes(), durRun.toMinutes());
             importTimer.update(durRun.getSeconds(), TimeUnit.SECONDS);
           }
           futures.remove(req.datasetKey);
-          queue.remove(req);
           // return true if succeeded, false if error
           return err != null;
         })
     );
+    queue.add(req);
     LOG.info("Queued import for dataset {}", datasetKey);
     return req;
   }
 
-  private DatasetImport runImport(ImportRequest req) {
+  /**
+   * @throws IllegalArgumentException if dataset does not exist or was deleted
+   */
+  private ImportJob createImport(ImportRequest req) throws IllegalArgumentException {
     try (SqlSession session = factory.openSession(true)) {
       Dataset d = session.getMapper(DatasetMapper.class).get(req.datasetKey);
       if (d == null) {
@@ -126,9 +133,14 @@ public class ImportManager implements Managed {
       } else if (d.hasDeletedDate()) {
         throw new IllegalArgumentException("Dataset " + req.datasetKey + " is deleted");
       }
-      ImportJob job = new ImportJob(d, req.force, cfg, downloader, factory, cslParser);
-      req.start();
-      return job.call();
+      ImportJob job = new ImportJob(d, req.force, cfg, downloader, factory, cslParser, new StartNotifier() {
+        @Override
+        public void started() {
+          req.start();
+          queue.remove(req);
+        }
+      });
+      return job;
     }
   }
 
@@ -141,10 +153,13 @@ public class ImportManager implements Managed {
 
   @Override
   public void start() throws Exception {
-    LOG.info("Starting import manager with {} import threads.", cfg.importer.threads);
+    LOG.info("Starting import manager with {} import threads and a queue of {} max.",
+        cfg.importer.threads,
+        cfg.importer.maxQueue
+    );
     exec = new ThreadPoolExecutor(0, cfg.importer.threads,
-        10L, TimeUnit.SECONDS,
-        new LinkedBlockingQueue<>(cfg.importer.maxQueue),
+        60L, TimeUnit.SECONDS,
+        new SynchronousQueue<>(),
         new NamedThreadFactory(THREAD_NAME, Thread.NORM_PRIORITY, true),
         new ThreadPoolExecutor.AbortPolicy()
     );

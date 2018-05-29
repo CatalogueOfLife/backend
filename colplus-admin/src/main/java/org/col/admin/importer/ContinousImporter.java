@@ -1,6 +1,7 @@
 package org.col.admin.importer;
 
 import java.util.List;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import io.dropwizard.lifecycle.Managed;

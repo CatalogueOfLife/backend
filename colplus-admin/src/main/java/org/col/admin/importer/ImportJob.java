@@ -7,6 +7,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.concurrent.Callable;
+import java.util.function.Consumer;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.time.DurationFormatUtils;
@@ -20,6 +21,7 @@ import org.col.api.model.CslData;
 import org.col.api.model.Dataset;
 import org.col.api.model.DatasetImport;
 import org.col.api.vocab.ImportState;
+import org.col.common.concurrent.StartNotifier;
 import org.col.common.io.CompressionUtil;
 import org.col.common.io.DownloadUtil;
 import org.col.db.dao.DatasetImportDao;
@@ -35,7 +37,7 @@ import org.slf4j.MDC;
  * It can be cancelled by an according method at any time.
  * Equality of instances is just based on the datasetKey which allows multiple imports for the same dataset to be easily detected.
  */
-public class ImportJob implements Callable<DatasetImport> {
+public class ImportJob implements Runnable {
   private static final Logger LOG = LoggerFactory.getLogger(ImportJob.class);
   private static final String MDC_KEY_DATASET = "dataset";
 
@@ -48,8 +50,10 @@ public class ImportJob implements Callable<DatasetImport> {
   private final SqlSessionFactory factory;
   private final DatasetImportDao dao;
   private final ReferenceFactory refFactory;
+  private final StartNotifier notifier;
 
-  ImportJob(Dataset d, boolean force, AdminServerConfig cfg, DownloadUtil downloader, SqlSessionFactory factory, Parser<CslData> cslParser) {
+  ImportJob(Dataset d, boolean force, AdminServerConfig cfg, DownloadUtil downloader, SqlSessionFactory factory,
+            Parser<CslData> cslParser, StartNotifier notifier) {
     this.datasetKey = d.getKey();
     this.dataset = d;
     this.force = force;
@@ -58,6 +62,7 @@ public class ImportJob implements Callable<DatasetImport> {
     this.factory = factory;
     this.refFactory = new ReferenceFactory(d.getKey(), cslParser);
     dao = new DatasetImportDao(factory);
+    this.notifier = notifier;
   }
 
   public static void setMDC(int datasetKey) {
@@ -71,14 +76,14 @@ public class ImportJob implements Callable<DatasetImport> {
   }
 
   @Override
-  public DatasetImport call() {
+  public void run() {
     setMDC(datasetKey);
     try {
+      notifier.started();
       importDataset();
     } finally {
       removeMDC();
     }
-    return di;
   }
 
   public int getDatasetKey() {
