@@ -5,13 +5,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.google.common.base.Strings;
-import de.undercouch.citeproc.CSL;
 import org.apache.commons.lang3.ArrayUtils;
 import org.col.api.model.CslData;
 import org.col.api.model.CslDate;
 import org.col.api.model.Reference;
 import org.col.api.vocab.Issue;
-import org.col.csl.ColItemDataProvider;
+import org.col.csl.CslUtil;
 import org.col.parser.Parser;
 import org.col.parser.UnparsableException;
 import org.slf4j.Logger;
@@ -31,18 +30,10 @@ public class ReferenceFactory {
 
   private final Integer datasetKey;
   private final Parser<CslData> cslParser;
-  private final ColItemDataProvider colItemDataProvider;
-  private final CSL citeproc;
 
   public ReferenceFactory(Integer datasetKey, Parser<CslData> cslParser) {
     this.datasetKey = datasetKey;
     this.cslParser = cslParser;
-    this.colItemDataProvider = new ColItemDataProvider();
-    try {
-      this.citeproc = new CSL(colItemDataProvider, "ieee");
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
   }
 
   private Reference create(String id) {
@@ -120,8 +111,13 @@ public class ReferenceFactory {
   private void parse(Reference ref, String citation) {
     try {
       cslParser.parse(citation).ifPresent(ref::setCsl);
-      colItemDataProvider.setCslData(ref.getCsl());
-      ref.setCitation(citeproc.toString());
+      try {
+        ref.setCitation(CslUtil.makeBibliography(ref));
+      } catch (IOException e) {
+        // Not entirely semantically correct, but:
+        ref.addIssue(Issue.REFERENCE_UNPARSABLE);
+        ref.setCitation(citation);
+      }
     } catch (UnparsableException e) {
       ref.addIssue(Issue.REFERENCE_UNPARSABLE);
       ref.setCitation(citation);

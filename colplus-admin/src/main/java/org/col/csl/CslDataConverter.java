@@ -9,9 +9,13 @@ import org.col.api.model.CslDate;
 import org.col.api.model.CslName;
 import org.col.api.vocab.CSLRefType;
 
-public class CslDataConverter {
+/**
+ * Converrs a CslData instance to a CSLItemData instance.
+ *
+ */
+class CslDataConverter {
 
-  public static CSLItemData toCSLItemData(CslData src) {
+  static CSLItemData toCSLItemData(CslData src) {
     return new CSLItemData(src.getId(), toCSLType(src.getType()), src.getCategories(),
         src.getLanguage(), src.getJournalAbbreviation(), src.getTitleShort(),
         toCSLNames(src.getAuthor()), toCSLNames(src.getCollectionEditor()),
@@ -39,6 +43,9 @@ public class CslDataConverter {
   }
 
   private static CSLName[] toCSLNames(CslName[] src) {
+    if (src == null) {
+      return null;
+    }
     CSLName[] target = new CSLName[src.length];
     for (int i = 0; i < src.length; i++) {
       target[i] = toCSLName(src[i]);
@@ -47,16 +54,28 @@ public class CslDataConverter {
   }
 
   private static CSLName toCSLName(CslName src) {
-    // TODO Auto-generated method stub
-    return null;
+    if (src == null) {
+      return null;
+    }
+    return new CSLName(src.getFamily(), src.getGiven(), src.getDroppingParticle(),
+        src.getNonDroppingParticle(), src.getSuffix(), src.getCommaPrefix(), src.getCommaSuffix(),
+        src.getStaticOrdering(), src.getStaticParticles(), src.getLiteral(), src.getParseNames(),
+        src.getIsInstitution());
   }
 
   private static CSLDate toCSLDate(CslDate src) {
+    if (src == null) {
+      return null;
+    }
     return new CSLDate(src.getDateParts(), src.getSeason(), src.getCirca(), src.getLiteral(),
         src.getRaw());
   }
 
   private static CSLType toCSLType(CSLRefType src) {
+    if (src == null) {
+      // We must return something, otherwise citation generation by citeproc-java will fail.
+      return CSLType.ARTICLE_JOURNAL;
+    }
     return CSLType.valueOf(src.name());
   }
 
