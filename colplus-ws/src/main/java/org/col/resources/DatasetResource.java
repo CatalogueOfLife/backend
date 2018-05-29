@@ -9,12 +9,13 @@ import javax.ws.rs.core.Response;
 
 import com.google.common.collect.Lists;
 import org.apache.ibatis.session.SqlSession;
-import org.col.api.model.*;
+import org.col.api.model.Dataset;
+import org.col.api.model.DatasetImport;
+import org.col.api.model.Page;
+import org.col.api.model.ResultPage;
 import org.col.db.dao.DatasetDao;
 import org.col.db.mapper.DatasetImportMapper;
 import org.col.db.mapper.DatasetMapper;
-import org.col.db.mapper.VerbatimRecordMapper;
-import org.gbif.dwc.terms.Term;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -51,8 +51,9 @@ public class AnystyleParserWrapper implements Parser<CslData> {
       return Optional.empty();
     }
     String json = null;
-    Timer.Context ctx = timer.time();
-    try (CloseableHttpResponse response = hc.execute(request(ref))) {
+    try (Timer.Context ctx = timer.time();
+         CloseableHttpResponse response = hc.execute(request(ref))
+    ) {
       json = EntityUtils.toString(response.getEntity());
       List<CslData> raw;
       try {
@@ -78,8 +79,6 @@ public class AnystyleParserWrapper implements Parser<CslData> {
       LOG.error(err);
       throw new UnparsableException(err);
 
-    } finally {
-      ctx.stop();
     }
   }
 

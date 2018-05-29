@@ -4,6 +4,8 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import de.lhorn.dropwizard.dashboard.DashboardConfiguration;
 import io.dropwizard.Configuration;
 import org.col.db.PgConfig;
 import org.col.dw.cors.CorsBundleConfiguration;
@@ -19,9 +21,17 @@ public class PgAppConfig extends Configuration implements CorsBundleConfiguratio
   @NotNull
   private CorsConfiguration cors = new CorsConfiguration();
 
+  @JsonProperty("dashboard")
+  private DashboardConfiguration dashboard = new DashboardConfiguration();
+
   @Override
   @JsonIgnore
   public CorsConfiguration getCorsConfiguration() {
     return cors;
+  }
+
+  @JsonIgnore
+  public DashboardConfiguration getDashboardConfiguration() {
+    return dashboard;
   }
 }

@@ -1,8 +1,6 @@
 package org.col.parser;
 
 
-import org.col.api.vocab.DistributionStatus;
-
 /**
  * Parses ACEF ReferenceType values
  */

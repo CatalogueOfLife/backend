@@ -3,6 +3,8 @@ package org.col.parser;
 import java.util.Map;
 import java.util.Optional;
 
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Timer;
 import com.google.common.collect.ImmutableMap;
 import org.apache.commons.lang3.StringUtils;
 import org.col.api.model.Name;
@@ -39,6 +41,16 @@ public class NameParser implements Parser<NameAccordingTo> {
       .put(Warnings.XML_TAGS, Issue.ESCAPED_CHARACTERS)
       .build();
 
+  private Timer timer;
+
+  /**
+   * Optionally register timer metrics for name parsing events
+   * @param registry
+   */
+  public void register(MetricRegistry registry) {
+    timer = registry.timer("name-parser");
+  }
+
   public Optional<NameAccordingTo> parse(String name) {
     return parse(name, Rank.UNRANKED);
   }
@@ -66,6 +78,7 @@ public class NameParser implements Parser<NameAccordingTo> {
     }
 
     NameAccordingTo n;
+    Timer.Context ctx = timer == null ? null : timer.time();
     try {
       n = fromParsedName(PARSER_INTERNAL.parse(name, rank));
       n.getName().updateScientificName();
@@ -79,6 +92,10 @@ public class NameParser implements Parser<NameAccordingTo> {
       // adds an issue in case the type indicates a parsable name
       if (n.getName().getType().isParsable()) {
         n.getName().addIssue(Issue.UNPARSABLE_NAME);
+      }
+    } finally {
+      if (ctx != null) {
+        ctx.stop();
       }
     }
     return Optional.of(n);

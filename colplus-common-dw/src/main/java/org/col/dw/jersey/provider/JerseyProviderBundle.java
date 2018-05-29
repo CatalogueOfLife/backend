@@ -7,7 +7,6 @@ import io.dropwizard.setup.Environment;
 import org.col.dw.jersey.exception.*;
 import org.col.dw.jersey.filter.CreatedResponseFilter;
 import org.col.dw.jersey.filter.Null404ResponseFilter;
-import org.col.dw.jersey.provider.EnumParamConverterProvider;
 
 /**
  * Various custom jersey providers bundled together for CoL.

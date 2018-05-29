@@ -12,15 +12,16 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.col.admin.command.initdb.InitDbCmd;
 import org.col.admin.command.neoshell.ShellCmd;
 import org.col.admin.config.AdminServerConfig;
-import org.col.admin.health.NameParserHealthCheck;
+import org.col.admin.gbifsync.GbifSync;
+import org.col.dw.health.NameParserHealthCheck;
+import org.col.admin.importer.ContinousImporter;
+import org.col.admin.importer.ImportManager;
 import org.col.admin.resources.ImporterResource;
 import org.col.admin.resources.ParserResource;
-import org.col.admin.task.gbifsync.GbifSync;
-import org.col.admin.task.importer.ContinousImporter;
-import org.col.admin.task.importer.ImportManager;
 import org.col.csl.AnystyleHealthCheck;
 import org.col.csl.AnystyleParserWrapper;
 import org.col.dw.PgApp;
+import org.col.parser.NameParser;
 import org.glassfish.jersey.client.rx.RxClient;
 import org.glassfish.jersey.client.rx.java8.RxCompletionStageInvoker;
 import org.glassfish.jersey.client.spi.ConnectorProvider;
@@ -89,9 +90,6 @@ public class AdminServer extends PgApp<AdminServerConfig> {
     } else {
       LOG.warn("GBIF registry sync is deactivated. Please configure server with a positive gbif.syncFrequency");
     }
-
-    // other health checks
-    env.healthChecks().register("nameparser", new NameParserHealthCheck());
   }
 
   /**

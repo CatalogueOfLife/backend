@@ -7,7 +7,6 @@ import java.sql.SQLException;
 import java.time.Duration;
 import java.time.Instant;
 
-import com.google.common.base.Throwables;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.apache.ibatis.io.Resources;
@@ -99,7 +98,7 @@ public class PgSetupRule extends ExternalResource {
 			if (postgres != null) {
 				postgres.stop();
 			}
-			Throwables.propagate(e);
+			throw new RuntimeException(e);
 		}
 	}
 
@@ -113,7 +112,7 @@ public class PgSetupRule extends ExternalResource {
 			con.commit();
 
 		} catch (SQLException | IOException e) {
-			Throwables.propagate(e);
+			throw new RuntimeException(e);
 		}
 	}
 

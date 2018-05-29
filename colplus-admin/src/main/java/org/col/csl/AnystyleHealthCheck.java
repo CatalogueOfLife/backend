@@ -4,10 +4,7 @@ package org.col.csl;
 import java.util.Optional;
 
 import com.codahale.metrics.health.HealthCheck;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.model.CslData;
-import org.col.db.mapper.Ping;
 
 /**
  * Calls the anystyle service with a known citation to check its health.

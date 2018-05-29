@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import com.google.common.base.Throwables;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.jdbc.ScriptRunner;
 import org.apache.ibatis.session.SqlSession;
@@ -79,7 +78,7 @@ public class InitMybatisRule extends ExternalResource {
 			st.close();
 
 		} catch (SQLException e) {
-			Throwables.propagate(e);
+			throw new RuntimeException(e);
 		}
 	}
 
@@ -93,7 +92,7 @@ public class InitMybatisRule extends ExternalResource {
 				con.commit();
 
 			} catch (SQLException | IOException e) {
-				Throwables.propagate(e);
+				throw new RuntimeException(e);
 			}
 		}
 	}
