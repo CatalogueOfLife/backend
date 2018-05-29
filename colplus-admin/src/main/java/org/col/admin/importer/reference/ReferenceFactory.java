@@ -1,6 +1,5 @@
 package org.col.admin.importer.reference;
 
-import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -111,14 +110,8 @@ public class ReferenceFactory {
   private void parse(Reference ref, String citation) {
     try {
       cslParser.parse(citation).ifPresent(ref::setCsl);
-      try {
-        ref.setCitation(CslUtil.makeBibliography(ref));
-      } catch (IOException e) {
-        // Not entirely semantically correct, but:
-        ref.addIssue(Issue.REFERENCE_UNPARSABLE);
-        ref.setCitation(citation);
-      }
-    } catch (UnparsableException e) {
+      ref.setCitation(CslUtil.buildCitation(ref));
+    } catch (UnparsableException | RuntimeException e) {
       ref.addIssue(Issue.REFERENCE_UNPARSABLE);
       ref.setCitation(citation);
     }

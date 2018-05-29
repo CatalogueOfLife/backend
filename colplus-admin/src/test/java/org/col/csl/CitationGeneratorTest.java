@@ -31,7 +31,7 @@ public class CitationGeneratorTest {
     issued.setDateParts(new int[][] {{2008, 8, 4}});
     csl.setIssued(issued);
     r.setCsl(csl);
-    String citation = CslUtil.makeBibliography(r);
+    String citation = CslUtil.buildCitation(r);
     System.out.println(citation);
     assertEquals("Smith, J. (2008). The Art of Stuff, (4).", citation);
   }
@@ -56,7 +56,7 @@ public class CitationGeneratorTest {
     issued.setDateParts(new int[][] {{2008, 8, 4}});
     csl.setIssued(issued);
     r.setCsl(csl);
-    String citation = CslUtil.makeBibliography(r);
+    String citation = CslUtil.buildCitation(r);
     System.out.println(citation);
     assertEquals("Smith, J. (2008). The Art of Stuff.", citation);
   }
@@ -84,7 +84,7 @@ public class CitationGeneratorTest {
     issued.setDateParts(new int[][] {{2008, 8, 4}});
     csl.setIssued(issued);
     r.setCsl(csl);
-    String citation = CslUtil.makeBibliography(r);
+    String citation = CslUtil.buildCitation(r);
     System.out.println(citation);
     assertEquals("Smith, J., & Peterson, S. (2008). The Art of Stuff, (4).", citation);
   }
@@ -112,7 +112,7 @@ public class CitationGeneratorTest {
     issued.setDateParts(new int[][] {{2008, 8, 4}, {2008, 10, 5}});
     csl.setIssued(issued);
     r.setCsl(csl);
-    String citation = CslUtil.makeBibliography(r);
+    String citation = CslUtil.buildCitation(r);
     System.out.println(citation);
     assertEquals("Smith, J., & Peterson, S. (2008). The Art of Stuff, (4).", citation);
   }
@@ -144,7 +144,7 @@ public class CitationGeneratorTest {
     issued.setDateParts(new int[][] {{2008, 8, 4}, {2008, 10, 5}});
     csl.setIssued(issued);
     r.setCsl(csl);
-    String citation = CslUtil.makeBibliography(r);
+    String citation = CslUtil.buildCitation(r);
     System.out.println(citation);
     assertEquals(
         "Smith, J., & Peterson, S. (2008). The Art of Stuff. (A. Blake & A. Camus, Eds.), (4).",
