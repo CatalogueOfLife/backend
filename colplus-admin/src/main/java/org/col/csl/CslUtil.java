@@ -25,7 +25,7 @@ public class CslUtil {
   }
 
   public static void register(MetricRegistry registry) {
-    CslUtil.timer = registry.timer("buildCitation");
+    CslUtil.timer = registry.timer("org.col.csl.buildCitation");
   }
 
   static class ReferenceProvider implements ItemDataProvider {

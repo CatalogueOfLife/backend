@@ -43,7 +43,7 @@ public class AnystyleParserWrapper implements Parser<CslData> {
   public AnystyleParserWrapper(CloseableHttpClient hc, AnystyleConfig cfg, MetricRegistry metrics) {
     this.hc = hc;
     this.cfg = cfg;
-    this.timer = metrics.timer("anystyle-timer");
+    this.timer = metrics.timer("org.col.parser.anystyle");
   }
 
   public Optional<CslData> parse(String ref) throws UnparsableException {

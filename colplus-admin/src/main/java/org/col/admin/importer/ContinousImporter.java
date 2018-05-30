@@ -1,7 +1,6 @@
 package org.col.admin.importer;
 
 import java.util.List;
-import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import io.dropwizard.lifecycle.Managed;
@@ -61,13 +60,13 @@ public class ContinousImporter implements Managed {
 
       while (running) {
         try {
-          while (!manager.isIdle()) {
+          while (!manager.hasEmptyQueue()) {
             LOG.debug("Importer busy, sleep for {} minutes", cfg.continousImportPolling);
             Thread.sleep(TimeUnit.MINUTES.toMillis(cfg.continousImportPolling));
           }
           List<Dataset> datasets = fetch();
           if (datasets.isEmpty()) {
-            LOG.debug("No datasets eligable to be imported. Sleep for {} hour", WAIT_TIME_IN_HOURS);
+            LOG.info("No datasets eligable to be imported. Sleep for {} hour", WAIT_TIME_IN_HOURS);
             Thread.sleep(TimeUnit.HOURS.toMillis(WAIT_TIME_IN_HOURS));
 
           } else {
@@ -84,7 +83,7 @@ public class ContinousImporter implements Managed {
           running = false;
 
         } catch (Exception e) {
-          LOG.error("Error scheduling continuous imports. Stop", e);
+          LOG.error("Error scheduling continuous imports. Shutdown continous importer!", e);
           running = false;
         }
       }

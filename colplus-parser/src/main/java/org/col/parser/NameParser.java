@@ -48,7 +48,7 @@ public class NameParser implements Parser<NameAccordingTo> {
    * @param registry
    */
   public void register(MetricRegistry registry) {
-    timer = registry.timer("name-parser");
+    timer = registry.timer("org.col.parser.name");
   }
 
   public Optional<NameAccordingTo> parse(String name) {

@@ -59,7 +59,7 @@ public class ImportManagerDebugging {
   public void debugImport() throws Exception {
     importManager.submit(11, true);
     Thread.sleep(1000);
-    while (!importManager.isIdle()) {
+    while (!importManager.hasEmptyQueue()) {
       Thread.sleep(1000);
     }
   }

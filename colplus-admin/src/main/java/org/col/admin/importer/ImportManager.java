@@ -55,8 +55,8 @@ public class ImportManager implements Managed {
     this.factory = factory;
     this.downloader = new DownloadUtil(client);
     this.cslParser = cslParser;
-    importTimer = registry.timer("import-timer");
-    failed = registry.counter("import-failures");
+    importTimer = registry.timer("org.col.import.timer");
+    failed = registry.counter("org.col.import.failures");
   }
 
   /**
@@ -147,7 +147,7 @@ public class ImportManager implements Managed {
   /**
    * @return true if queue is empty
    */
-  public boolean isIdle() {
+  public boolean hasEmptyQueue() {
     return queue.isEmpty();
   }
 
@@ -159,7 +159,7 @@ public class ImportManager implements Managed {
     );
     exec = new ThreadPoolExecutor(0, cfg.importer.threads,
         60L, TimeUnit.SECONDS,
-        new SynchronousQueue<>(),
+        new LinkedBlockingQueue<>(cfg.importer.maxQueue),
         new NamedThreadFactory(THREAD_NAME, Thread.NORM_PRIORITY, true),
         new ThreadPoolExecutor.AbortPolicy()
     );
