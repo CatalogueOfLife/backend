@@ -36,6 +36,10 @@ public class ContinousImporter implements Managed {
 
   public ContinousImporter(ImporterConfig cfg, ImportManager manager, SqlSessionFactory factory) {
     this.job = new ContinousImporterJob(cfg, manager, factory);
+    if (cfg.maxQueue <= BATCH_SIZE) {
+      job.running=false;
+      LOG.warn("Importer queue is shorter ({}) than the amount of batches ({}) to submit. Shutdown continous importer!", cfg.maxQueue, BATCH_SIZE);
+    }
   }
 
   static class ContinousImporterJob implements Runnable {
