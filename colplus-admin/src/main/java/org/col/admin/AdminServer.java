@@ -1,7 +1,6 @@
 package org.col.admin;
 
 import com.google.common.base.Strings;
-import com.google.errorprone.annotations.DoNotMock;
 import io.dropwizard.client.DropwizardApacheConnector;
 import io.dropwizard.client.HttpClientBuilder;
 import io.dropwizard.client.JerseyClientBuilder;
@@ -20,7 +19,6 @@ import org.col.admin.importer.ImportManager;
 import org.col.admin.resources.ImporterResource;
 import org.col.admin.resources.ParserResource;
 import org.col.api.model.CslData;
-import org.col.common.text.StringUtils;
 import org.col.csl.AnystyleHealthCheck;
 import org.col.csl.AnystyleParserWrapper;
 import org.col.csl.CslParserMock;
@@ -62,6 +60,9 @@ public class AdminServer extends PgApp<AdminServerConfig> {
   @Override
   public void run(AdminServerConfig cfg, Environment env) {
     super.run(cfg, env);
+
+    // add custom index
+    env.admin().addServlet("index-menu", new IndexServlet()).addMapping("");
 
     // http client pool is managed via DW lifecycle already
     final CloseableHttpClient hc = new HttpClientBuilder(env).using(cfg.client).build(getName());

@@ -79,6 +79,7 @@ public class DownloadUtil {
    * @throws IOException if any error occurred incl all http 4xx, 5xx responses
    */
   private boolean downloadIfModifiedSince(final URI url, final ZonedDateTime lastModified, final File downloadTo) throws IOException {
+    if (url == null) return false;
 
     HttpGet get = new HttpGet(url.toString());
 
