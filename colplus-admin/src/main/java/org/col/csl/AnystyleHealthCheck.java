@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import com.codahale.metrics.health.HealthCheck;
 import org.col.api.model.CslData;
+import org.col.parser.Parser;
 
 /**
  * Calls the anystyle service with a known citation to check its health.
@@ -12,9 +13,9 @@ import org.col.api.model.CslData;
  * Any exceptional or empty response is treated as an unhealthy response.
  */
 public class AnystyleHealthCheck extends HealthCheck {
-  private final AnystyleParserWrapper anystyle;
+  private final Parser<CslData> anystyle;
 
-  public AnystyleHealthCheck(AnystyleParserWrapper anystyle) {
+  public AnystyleHealthCheck(Parser<CslData> anystyle) {
     this.anystyle = anystyle;
   }
 

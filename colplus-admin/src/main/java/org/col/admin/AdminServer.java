@@ -1,5 +1,7 @@
 package org.col.admin;
 
+import com.google.common.base.Strings;
+import com.google.errorprone.annotations.DoNotMock;
 import io.dropwizard.client.DropwizardApacheConnector;
 import io.dropwizard.client.HttpClientBuilder;
 import io.dropwizard.client.JerseyClientBuilder;
@@ -17,10 +19,14 @@ import org.col.admin.importer.ContinousImporter;
 import org.col.admin.importer.ImportManager;
 import org.col.admin.resources.ImporterResource;
 import org.col.admin.resources.ParserResource;
+import org.col.api.model.CslData;
+import org.col.common.text.StringUtils;
 import org.col.csl.AnystyleHealthCheck;
 import org.col.csl.AnystyleParserWrapper;
+import org.col.csl.CslParserMock;
 import org.col.csl.CslUtil;
 import org.col.dw.PgApp;
+import org.col.parser.Parser;
 import org.glassfish.jersey.client.rx.RxClient;
 import org.glassfish.jersey.client.rx.java8.RxCompletionStageInvoker;
 import org.glassfish.jersey.client.spi.ConnectorProvider;
@@ -68,13 +74,20 @@ public class AdminServer extends PgApp<AdminServerConfig> {
         .buildRx(getName(), RxCompletionStageInvoker.class);
 
     // cslParser
-    AnystyleParserWrapper anystyle = new AnystyleParserWrapper(hc, cfg.anystyle, env.metrics());
-    env.jersey().register(new ParserResource(anystyle));
-    env.healthChecks().register("anystyle", new AnystyleHealthCheck(anystyle));
+    Parser<CslData> cslParser;
+    if (Strings.isNullOrEmpty(cfg.anystyle.baseUrl)) {
+      cslParser = new CslParserMock();
+      LOG.error("Anystyle not configured, using mock CSL parser instead");
+    } else {
+      cslParser = new AnystyleParserWrapper(hc, cfg.anystyle, env.metrics());
+      LOG.info("Using anystyle service at {}", cfg.anystyle.baseUrl);
+    }
+    env.jersey().register(new ParserResource(cslParser));
+    env.healthChecks().register("anystyle", new AnystyleHealthCheck(cslParser));
     CslUtil.register(env.metrics());
 
     // setup async importer
-    final ImportManager importManager = new ImportManager(cfg, env.metrics(), hc, getSqlSessionFactory(), anystyle);
+    final ImportManager importManager = new ImportManager(cfg, env.metrics(), hc, getSqlSessionFactory(), cslParser);
     env.lifecycle().manage(importManager);
     env.jersey().register(new ImporterResource(importManager, getSqlSessionFactory()));
 
