@@ -11,7 +11,17 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.col.admin.config.AdminServerConfig;
+
 public class IndexServlet extends HttpServlet {
+  private final String monitorPath;
+
+  /**
+   * We configure the application context path manually as we run the servlet behind apache and rewrite paths.
+   */
+  public IndexServlet(AdminServerConfig cfg) {
+    this.monitorPath = cfg.monitorPath;
+  }
 
   @Override
   public void init(ServletConfig config) throws ServletException {

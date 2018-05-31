@@ -62,7 +62,7 @@ public class AdminServer extends PgApp<AdminServerConfig> {
     super.run(cfg, env);
 
     // add custom index
-    env.admin().addServlet("index-menu", new IndexServlet()).addMapping("");
+    env.admin().addServlet("index-menu", new IndexServlet(cfg)).addMapping("");
 
     // http client pool is managed via DW lifecycle already
     final CloseableHttpClient hc = new HttpClientBuilder(env).using(cfg.client).build(getName());
