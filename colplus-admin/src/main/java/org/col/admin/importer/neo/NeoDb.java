@@ -379,7 +379,7 @@ public class NeoDb implements ReferenceStore {
     try {
       buildPrimaryKeyIndex();
     } catch (ConstraintViolationException e) {
-      LOG.warn("The inserted dataset contains duplicate ID! Only the first record will be used");
+      LOG.warn("The inserted dataset contains duplicate IDs! Only the first record will be used");
       removeDuplicateKeys();
       buildPrimaryKeyIndex();
     }

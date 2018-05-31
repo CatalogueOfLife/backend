@@ -20,6 +20,8 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+
 @Ignore // If we switch over to the @JsonCreator & @JsonValue way of doing it
 public class CSLRefTypeSerdeTest extends EnumSerdeTestBase<CSLRefType> {
 
@@ -38,6 +40,13 @@ public class CSLRefTypeSerdeTest extends EnumSerdeTestBase<CSLRefType> {
     assertEquals(CSLRefType.PERSONAL_COMMUNICATION, ApiModule.MAPPER.readValue("\"personal-Communication\"", CSLRefType.class));
     assertEquals(CSLRefType.PERSONAL_COMMUNICATION, ApiModule.MAPPER.readValue("\"personal_communication\"", CSLRefType.class));
     assertEquals(CSLRefType.PERSONAL_COMMUNICATION, ApiModule.MAPPER.readValue("\"personal communication\"", CSLRefType.class));
+  }
+
+  @Test
+  public void testBadAnystyleValues() throws IOException {
+    assertNull(ApiModule.MAPPER.readValue("\"Misc\"", CSLRefType.class));
+    assertNull(ApiModule.MAPPER.readValue("\"III\"", CSLRefType.class));
+    assertNull(ApiModule.MAPPER.readValue("\"197\"", CSLRefType.class));
   }
 
 }

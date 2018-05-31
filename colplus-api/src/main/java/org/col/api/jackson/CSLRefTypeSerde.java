@@ -11,8 +11,9 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.google.common.collect.ImmutableSet;
-import org.codehaus.jackson.map.JsonMappingException;
 import org.col.api.vocab.CSLRefType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.col.api.vocab.CSLRefType.*;
 
@@ -20,8 +21,11 @@ import static org.col.api.vocab.CSLRefType.*;
  * Jackson {@link JsonSerializer} and Jackson {@link JsonDeserializer} classes for
  * {@link CSLRefType} enum that uses the specific underscore hyphen mappings needed for valid
  * CslJson. See http://docs.citationstyles.org/en/stable/specification.html#appendix-iii-types
+ *
+ * Unknown values will be silently converted into null and an info logged.
  */
 public class CSLRefTypeSerde {
+  private static final Logger LOG = LoggerFactory.getLogger(CSLRefTypeSerde.class);
   private static final Set<CSLRefType> useUnderscore =
       ImmutableSet.of(LEGAL_CASE, MOTION_PICTURE, MUSICAL_SCORE, PERSONAL_COMMUNICATION);
 
@@ -47,7 +51,8 @@ public class CSLRefTypeSerde {
         try {
           return CSLRefType.valueOf(jp.getText().toUpperCase().replaceAll("[_ -]+", "_"));
         } catch (IllegalArgumentException e) {
-          throw new JsonMappingException("Invalid reference type: \"" + jp.getText() + "\"");
+          LOG.info("Invalid reference type: {}", jp.getText());
+          return null;
         }
       }
       throw ctxt.mappingException("Expected String as CSLRefType");
