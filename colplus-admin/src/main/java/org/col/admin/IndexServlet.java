@@ -30,7 +30,6 @@ public class IndexServlet extends HttpServlet {
 
   @Override
   protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-    String path = req.getContextPath() + req.getServletPath();
     resp.setStatus(200);
     resp.setHeader("Cache-Control", "must-revalidate,no-cache,no-store");
     resp.setContentType("text/html");
@@ -39,7 +38,7 @@ public class IndexServlet extends HttpServlet {
     try {
       String template = getResourceAsString("/index.html", "UTF-8");
 
-      writer.println(MessageFormat.format(template, path));
+      writer.println(MessageFormat.format(template, monitorPath));
     } finally {
       writer.close();
     }

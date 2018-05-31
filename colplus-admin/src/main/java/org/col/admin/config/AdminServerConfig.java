@@ -1,5 +1,7 @@
 package org.col.admin.config;
 
+import javax.validation.constraints.Pattern;
+
 import io.dropwizard.client.JerseyClientConfiguration;
 import org.col.dw.PgAppConfig;
 
@@ -13,9 +15,10 @@ public class AdminServerConfig extends PgAppConfig {
 
   /**
    * The application context for the IndexServlet which renders the
-   * operational menu index.
+   * operational menu index. Has to be empty or start with a slash.
    * Defaults to monitor e.g. http://admin.col.plus/monitor/
    */
-  public String monitorPath = "monitor";
+  @Pattern(regexp = "^/.*")
+  public String monitorPath = "/monitor";
 
 }
