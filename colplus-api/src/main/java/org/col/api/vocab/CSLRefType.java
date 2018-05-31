@@ -40,7 +40,5 @@ public enum CSLRefType {
     SPEECH,
     THESIS,
     TREATY,
-    WEBPAGE,
-    MISC;
-
+    WEBPAGE
 }

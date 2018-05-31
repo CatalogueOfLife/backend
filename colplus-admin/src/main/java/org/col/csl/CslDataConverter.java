@@ -1,5 +1,6 @@
 package org.col.csl;
 
+import com.google.common.annotations.VisibleForTesting;
 import de.undercouch.citeproc.csl.CSLDate;
 import de.undercouch.citeproc.csl.CSLItemData;
 import de.undercouch.citeproc.csl.CSLName;
@@ -63,15 +64,16 @@ class CslDataConverter {
         src.getIsInstitution());
   }
 
-  private static CSLDate toCSLDate(CslDate src) {
+  @VisibleForTesting
+  static CSLDate toCSLDate(CslDate src) {
     if (src == null) {
       return null;
     }
-    return new CSLDate(src.getDateParts(), src.getSeason(), src.getCirca(), src.getLiteral(),
-        src.getRaw());
+    return new CSLDate(src.getDateParts(), src.getSeason(), src.getCirca(), src.getLiteral(), src.getRaw());
   }
 
-  private static CSLType toCSLType(CSLRefType src) {
+  @VisibleForTesting
+  static CSLType toCSLType(CSLRefType src) {
     if (src == null) {
       // We must return something, otherwise citation generation by citeproc-java will fail.
       return CSLType.ARTICLE_JOURNAL;
