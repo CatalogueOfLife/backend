@@ -11,7 +11,7 @@ import org.apache.ibatis.session.SqlSession;
 import org.col.api.model.*;
 import org.col.db.dao.NameDao;
 import org.col.db.dao.NameUsageDao;
-import org.col.db.mapper.NameActMapper;
+import org.col.db.mapper.NameRelationMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,8 +63,8 @@ public class NameResource {
 
   @GET
   @Path("{key}/acts")
-  public List<NameAct> getActs(@PathParam("key") int key, @Context SqlSession session) {
-    NameActMapper mapper = session.getMapper(NameActMapper.class);
+  public List<NameRelation> getActs(@PathParam("key") int key, @Context SqlSession session) {
+    NameRelationMapper mapper = session.getMapper(NameRelationMapper.class);
     return mapper.list(key);
   }
 

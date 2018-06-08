@@ -8,6 +8,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.col.api.model.CslData;
 import org.col.api.model.CslDate;
 import org.col.api.model.Reference;
+import org.col.api.vocab.CSLRefType;
 import org.col.api.vocab.Issue;
 import org.col.csl.CslUtil;
 import org.col.parser.Parser;
@@ -111,7 +112,7 @@ public class ReferenceFactory {
     try {
       cslParser.parse(citation).ifPresent(ref::setCsl);
     } catch (UnparsableException | RuntimeException e) {
-      ref.addIssue(Issue.REFERENCE_UNPARSABLE);
+      ref.addIssue(Issue.UNPARSABLE_REFERENCE);
       ref.setCitation(citation);
     }
   }
@@ -132,8 +133,13 @@ public class ReferenceFactory {
   }
 
   private static Reference postParse(Reference ref) {
-    // extract int year
     if (ref.getCsl() != null) {
+      // missing ref type?
+      if (ref.getCsl().getType() == null) {
+        ref.addIssue(Issue.UNPARSABLE_REFERENCE_TYPE);
+        ref.getCsl().setType(CSLRefType.ARTICLE);
+      }
+      // extract int year
       if (ref.getCsl().getIssued() != null) {
         CslDate date = ref.getCsl().getIssued();
         if (date.getDateParts() != null) {

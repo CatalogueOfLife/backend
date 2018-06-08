@@ -29,7 +29,7 @@ import org.col.db.dao.ReferenceDao;
 import org.col.db.dao.TaxonDao;
 import org.col.db.mapper.DatasetMapper;
 import org.col.db.mapper.InitMybatisRule;
-import org.col.db.mapper.NameActMapper;
+import org.col.db.mapper.NameRelationMapper;
 import org.col.db.mapper.PgSetupRule;
 import org.gbif.nameparser.api.Rank;
 import org.junit.*;
@@ -472,7 +472,7 @@ public class PgImportIT {
       }
 
       NameDao ndao = new NameDao(session);
-      NameActMapper actMapper = session.getMapper(NameActMapper.class);
+      NameRelationMapper actMapper = session.getMapper(NameRelationMapper.class);
       // Poa annua has not explicitly declared a basionym
       assertTrue(actMapper.list(annua.getName().getKey()).isEmpty());
 
@@ -481,8 +481,8 @@ public class PgImportIT {
       assertEquals(1, actMapper.list(reptans1.getKey()).size());
       assertEquals(1, actMapper.list(reptans2.getKey()).size());
 
-      NameAct act = actMapper.list(reptans1.getKey()).get(0);
-      assertEquals(NomActType.BASIONYM, act.getType());
+      NameRelation act = actMapper.list(reptans1.getKey()).get(0);
+      assertEquals(NomRelType.BASIONYM, act.getType());
       assertEquals(reptans1.getKey(), act.getNameKey());
       assertEquals(reptans2.getKey(), act.getRelatedNameKey());
     }

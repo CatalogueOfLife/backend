@@ -483,7 +483,7 @@ public class NameUsageMapperTest extends MapperTestBase<NameMapper> {
     nDao.create(n);
 
     Set<Issue> otherIssue = EnumSet.noneOf(Issue.class);
-    otherIssue.add(Issue.REFERENCE_UNPARSABLE);
+    otherIssue.add(Issue.UNPARSABLE_REFERENCE);
 
     n = TestEntityGenerator.newName("d");
     n.setScientificName("Foo");
@@ -507,7 +507,7 @@ public class NameUsageMapperTest extends MapperTestBase<NameMapper> {
     assertEquals("03", 1, names.size());
 
     search.setQ("Foo");
-    search.setIssue(Issue.REFERENCE_UNPARSABLE);
+    search.setIssue(Issue.UNPARSABLE_REFERENCE);
     names = mapper.search(search, new Page());
     assertEquals("04", 1, names.size());
 

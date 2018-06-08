@@ -319,7 +319,12 @@ public enum Issue {
   /**
    * The reference could not be parsed and broken down into a sensible record.
    */
-  REFERENCE_UNPARSABLE,
+  UNPARSABLE_REFERENCE,
+
+  /**
+   * The required reference type could not be parsed and a default has been assigned.
+   */
+  UNPARSABLE_REFERENCE_TYPE,
 
   /**
    * At least one alternative identifier extension record attached to this name usage is invalid.

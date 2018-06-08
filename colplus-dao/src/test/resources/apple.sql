@@ -24,8 +24,8 @@ INSERT INTO taxon_reference(dataset_key, taxon_key, reference_key) VALUES (1, 1,
 INSERT INTO taxon_reference(dataset_key, taxon_key, reference_key) VALUES (1, 2, 1);
 INSERT INTO taxon_reference(dataset_key, taxon_key, reference_key) VALUES (1, 2, 2);
 
-INSERT INTO name_act (dataset_key, type, name_key, related_name_key) VALUES (1, 0, 2, 3);
-ALTER SEQUENCE name_act_key_seq RESTART WITH 1000;
+INSERT INTO name_rel (dataset_key, type, name_key, related_name_key) VALUES (1, 0, 2, 3);
+ALTER SEQUENCE name_rel_key_seq RESTART WITH 1000;
 
 INSERT INTO distribution(key, dataset_key, taxon_key, area, gazetteer) VALUES (1, 1, 1, 'Berlin', 6);
 INSERT INTO distribution(key, dataset_key, taxon_key, area, gazetteer) VALUES (2, 1, 1, 'Leiden', 6);

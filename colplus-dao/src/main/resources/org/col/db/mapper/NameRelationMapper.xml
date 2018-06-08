@@ -2,15 +2,16 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="org.col.db.mapper.NameActMapper">
+<mapper namespace="org.col.db.mapper.NameRelationMapper">
 
   <sql id="SELECT">
-    na.key,
-    na.dataset_key,
-    na.type,
-    na.name_key,
-    na.related_name_key,
-    na.note
+    nr.key,
+    nr.dataset_key,
+    nr.type,
+    nr.name_key,
+    nr.related_name_key,
+    nr.published_in_key,
+    nr.note
   </sql>
 
   <sql id="COLS">
@@ -18,6 +19,7 @@
     type,
     name_key,
     related_name_key,
+    published_in_key,
     note
   </sql>
 
@@ -26,27 +28,28 @@
     #{type},
     #{nameKey},
     #{relatedNameKey},
+    #{publishedInKey},
     #{note}
   </sql>
 
   <sql id="FROM">
-    name_act na
+    name_rel nr
   </sql>
 
-  <resultMap id="nameActResultMap" type="NameAct" autoMapping="true">
+  <resultMap id="nameActResultMap" type="NameRelation" autoMapping="true">
     <id property="key" column="key" />
   </resultMap>
 
   <select id="list" resultMap="nameActResultMap">
     SELECT <include refid="SELECT" />
-    FROM name_act na
-    WHERE na.name_key = #{nameKey}
-      OR na.related_name_key = #{nameKey}
-    ORDER BY na.key
+    FROM name_rel nr
+    WHERE nr.name_key = #{nameKey}
+      OR nr.related_name_key = #{nameKey}
+    ORDER BY nr.key
   </select>
 
-  <insert id="create" parameterType="NameAct" useGeneratedKeys="true" keyProperty="key">
-    INSERT INTO name_act ( <include refid="COLS" /> )
+  <insert id="create" parameterType="NameRelation" useGeneratedKeys="true" keyProperty="key">
+    INSERT INTO name_rel ( <include refid="COLS" /> )
     VALUES ( <include refid="PROPS" /> )
   </insert>
 

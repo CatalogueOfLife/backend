@@ -39,7 +39,7 @@ public class NeoKryoFactory implements KryoFactory {
     kryo.register(Distribution.class);
     kryo.register(Name.class);
     kryo.register(NameAccordingTo.class);
-    kryo.register(NameAct.class);
+    kryo.register(NameRelation.class);
     kryo.register(ParsedName.class);
     kryo.register(ParsedName.State.class);
     kryo.register(Reference.class);
@@ -98,7 +98,7 @@ public class NeoKryoFactory implements KryoFactory {
     kryo.register(Lifezone.class);
     kryo.register(NamePart.class);
     kryo.register(NameType.class);
-    kryo.register(NomActType.class);
+    kryo.register(NomRelType.class);
     kryo.register(NomCode.class);
     kryo.register(NomStatus.class);
     kryo.register(Origin.class);

@@ -237,12 +237,13 @@ LANGUAGE plpgsql;
 CREATE TRIGGER name_trigger BEFORE INSERT OR UPDATE
   ON name FOR EACH ROW EXECUTE PROCEDURE name_doc_update();
 
-CREATE TABLE name_act (
+CREATE TABLE name_rel (
   key serial PRIMARY KEY,
   dataset_key INTEGER NOT NULL REFERENCES dataset,
   type INTEGER NOT NULL,
   name_key INTEGER NOT NULL REFERENCES name,
   related_name_key INTEGER NULL REFERENCES name,
+  published_in_key int REFERENCES reference,
   note TEXT
 );
 
@@ -346,8 +347,8 @@ CREATE index ON name (homotypic_name_key);
 CREATE index ON name (published_in_key);
 CREATE index ON name USING GIN(issues);
 
-CREATE index ON name_act (dataset_key);
-CREATE index ON name_act (name_key, type);
+CREATE index ON name_rel (dataset_key);
+CREATE index ON name_rel (name_key, type);
 
 CREATE UNIQUE index ON taxon (id, dataset_key);
 CREATE index ON taxon (dataset_key);

@@ -188,7 +188,7 @@
         DELETE FROM taxon
         WHERE dataset_key = #{key};
 
-        DELETE FROM name_act
+        DELETE FROM name_rel
         WHERE dataset_key = #{key};
 
         DELETE FROM name

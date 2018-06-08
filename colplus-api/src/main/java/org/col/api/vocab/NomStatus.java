@@ -20,15 +20,43 @@ import javax.annotation.Nullable;
 /**
  * Vocabulary for the nomenclatural status of a name.
  *
+ * Distilled to the most important entries relevant for both codes and leaving the detailed
+ * status and argmumentation to free text and the name relations instead.
+ *
+ * As valid/invalid is very overloaded in used for different things in both codes we avoid the term entirely.
+ *
+ * The main purpose for this enumeration is to differ between available/unavailable and legitimate/illegitimate names
+ * that can be used as a correct/"valid" name.
+ *
  * See WFO Contributor Guidelines,
- * @see <a href="http://dev.e-taxonomy.eu/trac/wiki/NomenclaturalStatus">EDIT CDM</a>
+ * @see <a href="https://dev.e-taxonomy.eu/redmine/projects/edit/wiki/NomenclaturalStatus">EDIT CDM</a>
  * @see <a href="http://wiki.tdwg.org/twiki/bin/view/UBIF/LinneanCoreNomenclaturalStatus">TDWG LinneanCoreNomenclaturalStatus</a>
  * @see <a href="http://www.biologybrowser.org/nomglos">Nomenclatural Glossary for Zoology</a>
  * @see <a href="http://www.northernontarioflora.ca/definitions.cfm">Northern Ontario plant database</a>
  * @see <a href="http://rs.gbif.org/vocabulary/gbif/nomenclatural_status.xml">rs.gbif.org vocabulary</a>
  * @see <a href="http://darwin.eeb.uconn.edu/systsem/table.html">Nomenclatural equivalences</a>
+ * @see <a href="https://github.com/SpeciesFileGroup/nomen">NOMEN ontology</a>
+ *
  */
 public enum NomStatus {
+
+  /**
+   * A name that was not validly published according to the rules of the code,
+   * or a name that was not accepted by the author in the original publication, for example,
+   * if the name was suggested as a synonym of an accepted name.
+   * In zoology referred to as an unavailable name.
+   *
+   * There are many reasons for a name to be unavailable.
+   * The exact reason should be indicated in the Names remarks field, e.g.:
+   *  - published as synonym (pro syn.) ICN Art 36
+   *  - nomen nudum (nom. nud.) published without an adequate description
+   *  - not latin (ICN Art 32)
+   *  - provisional/manuscript names
+   *  - suppressed publication
+   *  - tautonym (ICN)
+   *
+   */
+  UNAVAILABLE("nomen invalidum", "nom. inval.", "unavailable"),
 
   /**
    * Botany: Names that are validly published and legitimate
@@ -38,111 +66,23 @@ public enum NomStatus {
   LEGITIMATE("nomen legitimum", null, "potentially valid"),
 
   /**
-   * Orthographic variant. An alternative or corrected spelling for the name.
+   * An available name and thus has nomenclatural standing.
+   * But one that objectively contravenes some of the rules laid down by nomenclatural codes
+   * and thus cannot be used as a name for an accepted taxon.
    *
-   * In botanical nomenclature, an orthographical variant (abbreviated orth. var.) is a variant spelling
-   * of the same name. For example, Hieronima and Hyeronima are orthographical variants of Hieronyma.
-   * One of the spellings must be treated as the correct one. In this case, the spelling Hieronyma has been conserved
-   * and is to be used as the correct spelling.
-   * <p>
-   * An inadvertent use of one of the other spellings has no consequences:
-   * the name is to be treated as if it were correctly spelled.
-   * Any subsequent use is to be corrected. Orthographical variants are treated in Art 61 of the ICBN.
-   * <p>
-   * In zoology, orthographical variants in the formal sense do not exist;
-   * a misspelling or orthographic error is treated as a lapsus, a form of inadvertent error.
-   * The first reviser is allowed to choose one variant for mandatory further use, but in other ways,
-   * these errors generally have no further formal standing.
-   * Inadvertent misspellings are treated in Art. 32-33 of the ICZN.
-   */
-  VARIANT("nomen orthographia", "orth. var.", "spelling variant"),
-
-  /**
-   * A nomen novum, replacement name or new substitute name indicates a scientific name
-   * that is created specifically to replace another preoccupied name,
-   * but only when this other name can not be used for technical, nomenclatural reasons.
-   * It automatically inherits the same type and type locality and is commonly applied
-   * to names proposed to replace junior homonyms.
-   */
-  REPLACEMENT("nomen novum", "nom. nov.", "replacement name"),
-
-  /**
-   * A scientific name that enjoys special nomenclatural protection, i.e. a name conserved in respective code.
-   * Names classed as available and valid by action of the ICZN or ICBN exercising its Plenary Powers .
-   * Includes rulings to conserve junior/later synonyms in place of rejected forgotten names (nomen oblitum).
-   * Such names are entered on the Official Lists.
-   *
-   * Conservation is possible only for botanical names at the rank of family, genus or species.
-   *
-   * Conserved names are a more generalized definition than the one for nomen protectum,
-   * which is specifically a conserved name that is either a junior synonym or homonym that is in use
-   * because the senior synonym or homonym has been made a nomen oblitum ("forgotten name").
-   */
-  CONSERVED("nomen conservandum", "nom. cons.", "conserved name"),
-
-  /**
-   * A zoological name protected via "Reversal of Precedence" in accordance with ICZN Article 23.9.1
-   * A conserved name that is either a junior synonym or homonym that is in use
-   * because the senior synonym or homonym has been made a nomen oblitum ("forgotten name").
-   */
-  PROTECTED("nomen protectum", "nom. prot.", "protected name"),
-
-  /**
-   * A name that was not validly published according to the rules of the code,
-   * or a name that was not accepted by the author in the original publication, for example,
-   * if the name was suggested as a synonym of an accepted name.
-   * In zoology referred to as an unavailable name.
-   * Example: Linaria vulgaris Hill, nom. inval.
-   * Many names published by John Hill between 1753 and 1757 were not accepted as validly published.
-   */
-  UNAVAILABLE("nomen invalidum", "nom. inval.", "unavailable"),
-
-  /**
-   * The term is used to indicate a designation which looks exactly like a scientific name of an organism,
-   * and may have originally been intended to be a scientific name, but fails to be one
-   * because it has not (or has not yet) been published with an adequate description (or a reference to such a description),
-   * and thus is a "bare" or "naked" name, one which cannot be accepted as it currently stands.
-   * <p>
-   * Because a nomen nudum fails to qualify as a formal scientific name,
-   * a later author can publish a real scientific name that is identical in spelling.
-   * If one and the same author puts a name in print, first as a nomen nudum and later publishes the name
-   * accompanied by a description that meets the formal requirements,
-   * then the date of publication of the latter, formally correct, publication becomes the name's date of establishment.
-   * <p>
-   * According to the rules of zoological nomenclature a nomen nudum is unavailable.
-   * According to the rules of botanical nomenclature a nomen nudum is not validly published.
-   */
-  NAKED("nomen nudum", "nom. nud.", "naked name"),
-
-  /**
-   * A name which has been overlooked (literally, forgotten), has not been in use after 1899 and is no longer valid.
-   * The name is turned invalid in favor of the nomen protectum.
-   * ICZN Article 23.9.1
-   */
-  FORGOTTEN("nomen oblitum", "nom. obl.", "forgotten name"),
-
-  /**
-   * A nomen illegitimum is a validly published name, but one that contravenes some of the articles laid down by
-   * the International Botanical Congress. The name could be illegitimate because:
+   * The name could be illegitimate because:
    * <ul>
-   * <li>(article 52) it was superfluous at its time of publication, i.e., the taxon (as represented by the type) already has a name</li>
-   * <li>(articles 53 and 54) the name has already been applied to another plant (a homonym)</li>
+   *  <li>Botany: superfluous at its time of publication (article 52), i.e., the taxon (as represented by the type) already has a name</li>
+   *  <li>Botany: the name has already been applied to another plant (a homonym) articles 53 and 54</li>
+   *  <li>Zoology: junior homonym or objective synonyms</li>
+   *  <li>Zoology: nomen oblitum</li>
+   *  <li>Zoology: suppressed name</li>
    * </ul>
-   *
-   * Zoology: Available, but objectively invalid names, e.g. junior homonym or objective synonyms
    */
   ILLEGITIMATE("nomen illegitimum", "nom. illeg.", "objectively invalid"),
 
-  /**
-   * A name that was superfluous at its time of publication,
-   * i. e. it was based on the same type as another, previously published name (ICN article 52).
-   */
-  SUPERFLUOUS("nomen superfluum", "nom. superfl.", "superfluous name"),
 
-  /**
-   * Rejected / suppressed name. Inverse of conserved. Outright rejection is possible for a name at any rank.
-   */
-  REJECTED("nomen rejiciendum", "nom. rej.", "rejected"),
+
 
   /**
    * A name of uncertain sense, of doubtful validity.
@@ -163,7 +103,7 @@ public enum NomStatus {
   DOUBTFUL("nomen dubium", "nom. dub.", "doubtful"),
 
   /**
-   * An unpublished name that was given a temporary placeholder name to work with.
+   * An unpublished, provisional name that was given a temporary placeholder name to work with.
    * Sometimes these names do not get properly published for decades and can be cited in other works.
    * Example: Genoplesium vernalis D.L. Jones ms.
    *
@@ -184,15 +124,6 @@ public enum NomStatus {
    * Some zoologists use a similar convention, but it is not done so universally.
    */
   MANUSCRIPT("manuscript name", "ms.", "manuscript name"),
-
-  /**
-   * A misapplied name that contains a taxonomicNote that informs about the authority that misapplied the name.
-   * Should only be applied to synonyms.
-   *
-   * A misapplied name is a name used in a different (taxonomic) sense from that intended by the original author.
-   * It has been widely and persistently used for a taxon or taxa not including its type.
-   */
-  MISAPPLIED ("misapplied name", null, "misapplied name"),
 
   /**
    * A name usage erroneously cited without a sec/sensu indication so it appears to be a published homonym with a different authority.
@@ -239,7 +170,7 @@ public enum NomStatus {
    * @return true if the name status indicates that it is validly published / available.
    */
   public boolean isAvailable() {
-    return this != CHRESONYM && this != MANUSCRIPT && this != NAKED && this != UNAVAILABLE && this != MISAPPLIED;
+    return this != CHRESONYM && this != MANUSCRIPT && this != UNAVAILABLE;
   }
 
   /**
@@ -247,6 +178,6 @@ public enum NomStatus {
    * It excludes doubtful or unevaluated names.
    */
   public boolean isLegitimate() {
-    return this == LEGITIMATE || this == CONSERVED || this == PROTECTED || this == REPLACEMENT || this == VARIANT;
+    return this == LEGITIMATE;
   }
 }

@@ -25,7 +25,7 @@ import org.col.admin.importer.neo.traverse.StartEndHandler;
 import org.col.admin.importer.neo.traverse.TreeWalker;
 import org.col.api.model.*;
 import org.col.api.vocab.Issue;
-import org.col.api.vocab.NomActType;
+import org.col.api.vocab.NomRelType;
 import org.col.db.dao.NameDao;
 import org.col.db.mapper.*;
 import org.neo4j.graphdb.Node;
@@ -259,28 +259,28 @@ public class PgImport implements Callable<Boolean> {
    */
   private void insertActs() throws InterruptedException {
     // neo4j relationship types need to be compared by their name!
-    final Map<String, NomActType> actTypes = ImmutableMap.<String, NomActType>builder()
-        .put(RelType.BASIONYM_OF.name(), NomActType.BASIONYM)
+    final Map<String, NomRelType> actTypes = ImmutableMap.<String, NomRelType>builder()
+        .put(RelType.BASIONYM_OF.name(), NomRelType.BASIONYM)
         .build();
-    final Set<NomActType> inverse = Sets.newHashSet(NomActType.BASIONYM);
+    final Set<NomRelType> inverse = Sets.newHashSet(NomRelType.BASIONYM);
     final AtomicInteger counter = new AtomicInteger(0);
     try (final SqlSession session = sessionFactory.openSession(false)) {
-      final NameActMapper nameActMapper = session.getMapper(NameActMapper.class);
+      final NameRelationMapper nameRelationMapper = session.getMapper(NameRelationMapper.class);
       LOG.debug("Inserting all name acts");
       try (Transaction tx = store.getNeo().beginTx()) {
         store.getNeo().getAllRelationships().stream().forEach(rel -> {
           if (actTypes.containsKey(rel.getType().name())) {
-            NomActType actType = actTypes.get(rel.getType().name());
+            NomRelType actType = actTypes.get(rel.getType().name());
             Node from = inverse.contains(actType) ? rel.getEndNode() : rel.getStartNode();
 
-            NameAct act = new NameAct();
+            NameRelation act = new NameRelation();
             act.setDatasetKey(dataset.getKey());
             act.setType(actType);
             act.setNameKey(nameKeys.get((int) from.getId()));
             act.setRelatedNameKey(nameKeys.get((int) rel.getOtherNode(from).getId()));
             //TODO: read note from rel property
             act.setNote(null);
-            nameActMapper.create(act);
+            nameRelationMapper.create(act);
             if (counter.incrementAndGet() % batchSize == 0) {
               session.commit();
             }
