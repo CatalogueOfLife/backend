@@ -22,7 +22,7 @@ public enum Labels implements Label {
   SYNONYM,
 
   /**
-   * Basionym with at least one BASIONYM_OF relation
+   * Basionym with at least one HAS_BASIONYM relation
    */
   BASIONYM,
 

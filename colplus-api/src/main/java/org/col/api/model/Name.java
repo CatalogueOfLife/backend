@@ -108,7 +108,7 @@ public class Name implements VerbatimEntity {
    *
    * See http://www.bacterio.net/-candidatus.html and https://en.wikipedia.org/wiki/Candidatus
    */
-  private boolean candidatus;
+  private Boolean candidatus;
 
   /**
    * The part of the named hybrid which is considered a hybrid
@@ -485,11 +485,11 @@ public class Name implements VerbatimEntity {
     this.strain = strain;
   }
 
-  public boolean isCandidatus() {
+  public Boolean isCandidatus() {
     return candidatus;
   }
 
-  public void setCandidatus(boolean candidatus) {
+  public void setCandidatus(Boolean candidatus) {
     this.candidatus = candidatus;
   }
 
@@ -577,6 +577,22 @@ public class Name implements VerbatimEntity {
   public boolean isParsed() {
     return uninomial != null || genus != null || infragenericEpithet != null
         || specificEpithet != null || infraspecificEpithet != null || cultivarEpithet != null;
+  }
+
+  /**
+   * @return true if the name status is potentiall available
+   */
+  @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+  public boolean isAvailable() {
+    return nomStatus == null || nomStatus.isAvailable();
+  }
+
+  /**
+   * @return true if the name status is potentiall legitimate
+   */
+  @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+  public boolean isLegitimate() {
+    return nomStatus == null || nomStatus.isLegitimate();
   }
 
   /**

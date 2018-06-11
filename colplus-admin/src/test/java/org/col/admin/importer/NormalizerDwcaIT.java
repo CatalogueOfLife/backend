@@ -237,34 +237,34 @@ public class NormalizerDwcaIT {
     debug();
     // verify results
     try (Transaction tx = store.getNeo().beginTx()) {
-      // 2->1->2
-      // should be: 2->1
+      // 1->2->1
+      // should be: 1->2
       NeoTaxon t1 = byID("1");
       NeoTaxon t2 = byID("2");
 
-      assertEquals(1, t1.node.getDegree(RelType.BASIONYM_OF));
-      assertEquals(1, t2.node.getDegree(RelType.BASIONYM_OF));
-      assertEquals(t1.node, t2.node.getSingleRelationship(RelType.BASIONYM_OF, Direction.OUTGOING).getEndNode());
+      assertEquals(1, t1.node.getDegree(RelType.HAS_BASIONYM));
+      assertEquals(1, t2.node.getDegree(RelType.HAS_BASIONYM));
+      assertEquals(t2.node, t1.node.getSingleRelationship(RelType.HAS_BASIONYM, Direction.OUTGOING).getEndNode());
       assertNotNull(t1.name.getHomotypicNameKey());
       assertEquals(t2.name.getHomotypicNameKey(), t1.name.getHomotypicNameKey());
 
-      // 10->12->11->10,13
-      // should be: 11->10,13 12
+      // 10->11->12->10, 13->11
+      // should be: 10,13->11 12
       NeoTaxon t10 = byID("10");
       NeoTaxon t11 = byID("11");
       NeoTaxon t12 = byID("12");
       NeoTaxon t13 = byID("13");
 
-      assertEquals(1, t10.node.getDegree(RelType.BASIONYM_OF));
-      assertEquals(2, t11.node.getDegree(RelType.BASIONYM_OF));
-      assertEquals(0, t12.node.getDegree(RelType.BASIONYM_OF));
-      assertEquals(1, t13.node.getDegree(RelType.BASIONYM_OF));
-      assertEquals(t11.node, t10.node.getSingleRelationship(RelType.BASIONYM_OF, Direction.INCOMING).getOtherNode(t10.node));
-      assertEquals(t11.node, t13.node.getSingleRelationship(RelType.BASIONYM_OF, Direction.INCOMING).getOtherNode(t13.node));
+      assertEquals(1, t10.node.getDegree(RelType.HAS_BASIONYM));
+      assertEquals(2, t11.node.getDegree(RelType.HAS_BASIONYM));
+      assertEquals(0, t12.node.getDegree(RelType.HAS_BASIONYM));
+      assertEquals(1, t13.node.getDegree(RelType.HAS_BASIONYM));
+      assertEquals(t11.node, t10.node.getSingleRelationship(RelType.HAS_BASIONYM, Direction.OUTGOING).getOtherNode(t10.node));
+      assertEquals(t11.node, t13.node.getSingleRelationship(RelType.HAS_BASIONYM, Direction.OUTGOING).getOtherNode(t13.node));
       assertNull(t12.name.getHomotypicNameKey());
-      assertEquals(t11.name.getKey(), t11.name.getHomotypicNameKey());
-      assertEquals(t11.name.getKey(), t10.name.getHomotypicNameKey());
-      assertEquals(t11.name.getKey(), t13.name.getHomotypicNameKey());
+      assertEquals(t10.name.getKey(), t11.name.getHomotypicNameKey());
+      assertEquals(t10.name.getKey(), t10.name.getHomotypicNameKey());
+      assertEquals(t10.name.getKey(), t13.name.getHomotypicNameKey());
     }
   }
 
@@ -326,9 +326,7 @@ public class NormalizerDwcaIT {
       assertEquals(u1, u2);
 
       NeoTaxon bas = byName("Leonida taraxacoida");
-      assertEquals(u2.name.getHomotypicNameKey(), bas.taxon.getKey());
-
-      //TODO: check basionym act instance !!!
+      assertEquals(u2.name.getHomotypicNameKey(), bas.name.getHomotypicNameKey());
 
       NeoTaxon syn = byName("Leontodon leysseri");
       assertTrue(syn.synonym.getStatus().isSynonym());
@@ -336,13 +334,13 @@ public class NormalizerDwcaIT {
   }
 
   private void debug() throws Exception {
-    PrinterUtils.printTree(store.getNeo(), new PrintWriter(System.out), GraphFormat.TEXT);
+    PrinterUtils.printTree(store.getNeo(), new PrintWriter(System.out), GraphFormat.TEXT, true);
 
     // dump graph as DOT file for debugging
     File dotFile = new File("graphs/dbugtree.dot");
     Files.createParentDirs(dotFile);
     Writer writer = new FileWriter(dotFile);
-    PrinterUtils.printTree(store.getNeo(), writer, GraphFormat.DOT);
+    PrinterUtils.printTree(store.getNeo(), writer, GraphFormat.DOT, true);
     writer.close();
     System.out.println("Wrote graph to "+dotFile.getAbsolutePath());
   }

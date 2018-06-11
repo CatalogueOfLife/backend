@@ -53,7 +53,7 @@ public enum NomStatus {
    *  - not latin (ICN Art 32)
    *  - provisional/manuscript names
    *  - suppressed publication
-   *  - tautonym (ICN)
+   *  - tautonym (ICN) e.g. Opuntia opuntia H.Karst.
    *
    */
   UNAVAILABLE("nomen invalidum", "nom. inval.", "unavailable"),

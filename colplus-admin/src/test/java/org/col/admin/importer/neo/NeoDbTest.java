@@ -78,7 +78,7 @@ public class NeoDbTest {
 
       // now relate the 2 nodes and make sure when we read the relations the instance is changed accordingly
       t1.node.createRelationshipTo(t2.node, RelType.PARENT_OF);
-      t1.node.createRelationshipTo(t2.node, RelType.BASIONYM_OF);
+      t2.node.createRelationshipTo(t1.node, RelType.HAS_BASIONYM);
 
       assertNull(t1.name.getHomotypicNameKey());
       assertNull(t2.name.getHomotypicNameKey());

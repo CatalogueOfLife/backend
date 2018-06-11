@@ -51,8 +51,8 @@ public class TabPrinter implements TreePrinter {
           row[1] = String.valueOf(n.getSingleRelationship(RelType.PARENT_OF, Direction.INCOMING).getOtherNode(n).getId());
         }
       }
-      if (n.hasRelationship(RelType.BASIONYM_OF, Direction.INCOMING)) {
-        row[2] = String.valueOf(n.getSingleRelationship(RelType.BASIONYM_OF, Direction.INCOMING).getOtherNode(n).getId());
+      if (n.hasRelationship(RelType.HAS_BASIONYM, Direction.OUTGOING)) {
+        row[2] = String.valueOf(n.getSingleRelationship(RelType.HAS_BASIONYM, Direction.OUTGOING).getOtherNode(n).getId());
       }
       if (n.hasProperty(NeoProperties.RANK)) {
         row[3] = Rank.values()[(Integer) n.getProperty(NeoProperties.RANK)].name();

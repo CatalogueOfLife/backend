@@ -3,6 +3,7 @@ package org.col.admin.importer.neo.printer;
 import java.io.IOException;
 import java.io.Writer;
 
+import org.apache.commons.lang3.ObjectUtils;
 import org.col.admin.importer.neo.model.Labels;
 import org.col.admin.importer.neo.model.NeoProperties;
 import org.col.admin.importer.neo.model.RelType;
@@ -74,7 +75,7 @@ public class TxtPrinter implements TreePrinter {
           writer.write(SYNONYM_SYMBOL);
         }
       }
-      if (n.hasRelationship(RelType.BASIONYM_OF, Direction.OUTGOING)) {
+      if (n.hasRelationship(RelType.HAS_BASIONYM, Direction.INCOMING)) {
         writer.write(BASIONYM_SYMBOL);
       }
       writer.write(NeoProperties.getScientificName(n));
@@ -90,7 +91,7 @@ public class TxtPrinter implements TreePrinter {
           writer.write("; ");
           writer.write(String.valueOf(n.getId()));
           writer.write("; ");
-          writer.write(NeoProperties.getID(n));
+          writer.write(ObjectUtils.firstNonNull(NeoProperties.getID(n), ""));
         }
         writer.write("]");
       }

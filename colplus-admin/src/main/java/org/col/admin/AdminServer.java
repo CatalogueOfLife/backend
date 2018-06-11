@@ -19,12 +19,14 @@ import org.col.admin.importer.ImportManager;
 import org.col.admin.resources.ImporterResource;
 import org.col.admin.resources.ParserResource;
 import org.col.api.model.CslData;
+import org.col.api.vocab.ColTerm;
 import org.col.csl.AnystyleHealthCheck;
 import org.col.csl.AnystyleParserWrapper;
 import org.col.csl.CslParserMock;
 import org.col.csl.CslUtil;
 import org.col.dw.PgApp;
 import org.col.parser.Parser;
+import org.gbif.dwc.terms.TermFactory;
 import org.glassfish.jersey.client.rx.RxClient;
 import org.glassfish.jersey.client.rx.java8.RxCompletionStageInvoker;
 import org.glassfish.jersey.client.spi.ConnectorProvider;
@@ -60,6 +62,9 @@ public class AdminServer extends PgApp<AdminServerConfig> {
   @Override
   public void run(AdminServerConfig cfg, Environment env) {
     super.run(cfg, env);
+
+    // register CoLTerms
+    TermFactory.instance().addAltTerms(ColTerm.values());
 
     // add custom index
     env.admin().addServlet("index-menu", new IndexServlet(cfg)).addMapping("");

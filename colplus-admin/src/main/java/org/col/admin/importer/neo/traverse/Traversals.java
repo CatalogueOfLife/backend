@@ -61,12 +61,17 @@ public class Traversals {
       .uniqueness(Uniqueness.NODE_PATH);
 
   /**
-   * Finds all nodes connected via a basionym_of relation regardless of the direction.
+   * Finds all nodes connected via homotypic name relations regardless of the direction.
    */
-  public static final TraversalDescription BASIONYM_GROUP = new MonoDirectionalTraversalDescription()
-      .relationships(RelType.BASIONYM_OF)
+  public static final TraversalDescription HOMOTYPIC_GROUP = new MonoDirectionalTraversalDescription()
+      .relationships(RelType.HAS_BASIONYM)
+      .relationships(RelType.BASED_ON)
+      .relationships(RelType.REPLACEMENT_NAME_OF)
+      .relationships(RelType.SPELLING_CORRECTION_OF)
       .breadthFirst()
-      .uniqueness(Uniqueness.NODE_PATH);
+      .uniqueness(Uniqueness.NODE_RECENT)
+      .evaluator(Evaluators.excludeStartPosition());
+      ;
 
   /**
    * Traversal that iterates depth first over all accepted descendants including the starting node.

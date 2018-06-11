@@ -484,6 +484,20 @@ public class NeoDb implements ReferenceStore {
     return v;
   }
 
+  /**
+   * Creates a new name relation linking the 2 given nodes.
+   * The note and publishedInKey values are stored as relation properties
+   */
+  public void createNameRel(Node n1, RelType relType, Node n2, Integer refKey, String note) {
+    Relationship rel = n1.createRelationshipTo(n2, relType);
+    if (refKey != null) {
+      rel.setProperty(NeoProperties.REF_KEY, refKey);
+    }
+    if (note != null) {
+      rel.setProperty(NeoProperties.NOTE, note);
+    }
+  }
+
   @Override
   public Reference put(Reference r) {
     if (r.getKey() == null) {
@@ -600,7 +614,7 @@ public class NeoDb implements ReferenceStore {
   }
 
   /**
-   * Sets the same neo node id for a given cluster of homotypic names derived from basionym and synonym[homotpic=true] relations.
+   * Sets the same neo node id for a given cluster of homotypic names derived from name relations and synonym[homotpic=true] relations.
    * We first go thru all synonyms with the homotypic flag to determine the keys and then add all missing basionym nodes.
    */
   private void updateHomotypicNameKeys() {
@@ -627,16 +641,24 @@ public class NeoDb implements ReferenceStore {
       }
       LOG.info("{} homotypic groups found via homotypic synonym relations", counter);
 
-      // now basionym, reuse keys if existing
+      // now name relations, reuse keys if existing
       counter = 0;
-      for (Node bas : Iterators.loop(getNeo().findNodes(Labels.BASIONYM))) {
-        List<NeoTaxon> group = Traversals.BASIONYM_GROUP
-            .traverse(bas)
+      for (Node n : getNeo().getAllNodes()) {
+        // check if this node has a homotypic group already in which case we can skip it
+        NeoTaxon start = get(n);
+        if (start.name.getHomotypicNameKey() != null) {
+          continue;
+        }
+        // query homotypic group excluding start node
+        List<NeoTaxon> group = Traversals.HOMOTYPIC_GROUP
+            .traverse(n)
             .nodes()
             .stream()
-            .map(n -> get(n))
+            .map(this::get)
             .collect(Collectors.toList());
         if (!group.isEmpty()) {
+          // we have more than the starting node so we do process, add starting node too
+          group.add(start);
           // determine existing or new key to be shared
           Integer homoKey = null;
           for (NeoTaxon t : group) {
@@ -644,15 +666,15 @@ public class NeoDb implements ReferenceStore {
               if (homoKey == null) {
                 homoKey = t.name.getHomotypicNameKey();
               } else if (!homoKey.equals(t.name.getHomotypicNameKey())){
-                LOG.warn("Several homotypic name keys found in the same basionym group for {}", NeoProperties.getScientificNameWithAuthor(bas));
+                LOG.warn("Several homotypic name keys found in the same homotypic name group for {}", NeoProperties.getScientificNameWithAuthor(n));
               }
             }
           }
           if (homoKey == null) {
-            homoKey = (int) bas.getId();
+            homoKey = (int) n.getId();
             counter++;
           }
-          // update entire grop with key
+          // update entire group with key
           for (NeoTaxon t : group) {
             if (t.name.getHomotypicNameKey() == null) {
               t.name.setHomotypicNameKey(homoKey);
@@ -661,7 +683,7 @@ public class NeoDb implements ReferenceStore {
           }
         }
       }
-      LOG.info("{} additional homotypic groups found via basionym relations", counter);
+      LOG.info("{} additional homotypic groups found via name relations", counter);
     }
   }
 
@@ -717,7 +739,7 @@ public class NeoDb implements ReferenceStore {
 
     // set BASIONYM
     LOG.debug("Labelling basionym nodes");
-    query = "MATCH (b:ALL)-[:BASIONYM_OF]->() " +
+    query = "MATCH (b:ALL)<-[:HAS_BASIONYM]-() " +
         "SET b :BASIONYM " +
         "RETURN count(b)";
     count = updateLabel(query);
@@ -736,7 +758,15 @@ public class NeoDb implements ReferenceStore {
     }
   }
 
-
+  /**
+   * Returns an iterator over all relations of a given type.
+   * Requires a valid neo transaction to exist outside of this method call.
+   */
+  public ResourceIterator<Relationship> iterRelations(RelType type) {
+    String query = "MATCH ()-[rel:" + type.name() + "]->() RETURN rel";
+    Result result = neo.execute(query);
+    return result.columnAs("rel");
+  }
 
   public void assignParent(Node parent, Node child) {
     if (parent != null) {

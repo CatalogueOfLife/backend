@@ -1,7 +1,6 @@
 package org.col.admin.importer;
 
 import java.util.Map;
-import java.util.Set;
 import java.util.Stack;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -9,23 +8,21 @@ import java.util.stream.Collectors;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import it.unimi.dsi.fastutil.longs.Long2IntMap;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
-import jersey.repackaged.com.google.common.collect.Sets;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.admin.config.ImporterConfig;
 import org.col.admin.importer.neo.NeoDb;
 import org.col.admin.importer.neo.model.Labels;
+import org.col.admin.importer.neo.model.NeoProperties;
 import org.col.admin.importer.neo.model.NeoTaxon;
 import org.col.admin.importer.neo.model.RelType;
 import org.col.admin.importer.neo.traverse.StartEndHandler;
 import org.col.admin.importer.neo.traverse.TreeWalker;
 import org.col.api.model.*;
 import org.col.api.vocab.Issue;
-import org.col.api.vocab.NomRelType;
 import org.col.db.dao.NameDao;
 import org.col.db.mapper.*;
 import org.neo4j.graphdb.Node;
@@ -82,7 +79,7 @@ public class PgImport implements Callable<Boolean> {
     insertNames();
 
     checkIfCancelled();
-    insertActs();
+    insertNameRelations();
 
     checkIfCancelled();
 		insertTaxa();
@@ -257,39 +254,34 @@ public class PgImport implements Callable<Boolean> {
   /**
    * Go through all neo4j relations and convert them to name acts if the rel type matches
    */
-  private void insertActs() throws InterruptedException {
-    // neo4j relationship types need to be compared by their name!
-    final Map<String, NomRelType> actTypes = ImmutableMap.<String, NomRelType>builder()
-        .put(RelType.BASIONYM_OF.name(), NomRelType.BASIONYM)
-        .build();
-    final Set<NomRelType> inverse = Sets.newHashSet(NomRelType.BASIONYM);
-    final AtomicInteger counter = new AtomicInteger(0);
-    try (final SqlSession session = sessionFactory.openSession(false)) {
-      final NameRelationMapper nameRelationMapper = session.getMapper(NameRelationMapper.class);
-      LOG.debug("Inserting all name acts");
-      try (Transaction tx = store.getNeo().beginTx()) {
-        store.getNeo().getAllRelationships().stream().forEach(rel -> {
-          if (actTypes.containsKey(rel.getType().name())) {
-            NomRelType actType = actTypes.get(rel.getType().name());
-            Node from = inverse.contains(actType) ? rel.getEndNode() : rel.getStartNode();
+  private void insertNameRelations() throws InterruptedException {
+    for (RelType rt : RelType.values()) {
+      if (rt.nomRelType == null) continue;
 
-            NameRelation act = new NameRelation();
-            act.setDatasetKey(dataset.getKey());
-            act.setType(actType);
-            act.setNameKey(nameKeys.get((int) from.getId()));
-            act.setRelatedNameKey(nameKeys.get((int) rel.getOtherNode(from).getId()));
-            //TODO: read note from rel property
-            act.setNote(null);
-            nameRelationMapper.create(act);
+      final AtomicInteger counter = new AtomicInteger(0);
+      try (final SqlSession session = sessionFactory.openSession(false)) {
+        final NameRelationMapper nameRelationMapper = session.getMapper(NameRelationMapper.class);
+        LOG.debug("Inserting all {} relations", rt);
+        try (Transaction tx = store.getNeo().beginTx()) {
+          store.iterRelations(rt).stream().forEach(rel -> {
+            NameRelation nr = new NameRelation();
+            nr.setType(rt.nomRelType);
+            nr.setDatasetKey(dataset.getKey());
+            nr.setNameKey( nameKeys.get( (int) rel.getStartNode().getId()));
+            nr.setRelatedNameKey( nameKeys.get( (int) rel.getEndNode().getId()));
+            nr.setNote( (String) rel.getProperty(NeoProperties.NOTE, null));
+            nr.setPublishedInKey( (Integer) rel.getProperty(NeoProperties.REF_KEY, null));
+
+            nameRelationMapper.create(nr);
             if (counter.incrementAndGet() % batchSize == 0) {
               session.commit();
             }
-          }
-        });
+          });
+        }
+        session.commit();
       }
-      session.commit();
+      LOG.info("Inserted {} {} relations", counter.get(), rt);
     }
-    LOG.info("Inserted {} name acts", counter.get());
   }
 
 	/**

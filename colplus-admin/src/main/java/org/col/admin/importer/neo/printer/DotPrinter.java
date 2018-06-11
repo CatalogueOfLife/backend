@@ -75,22 +75,17 @@ public class DotPrinter implements TreePrinter {
       for (Relationship rel : n.getRelationships(Direction.OUTGOING)) {
         if (rankEvaluator.evaluateNode(rel.getOtherNode(n))) {
           //n1 -> n16 [type=parent_of]
-          long start;
-          long end;
+          long start = rel.getStartNode().getId();
+          long end = rel.getEndNode().getId();
           String type = null;
           if (rel.isType(RelType.PARENT_OF)) {
-            start = rel.getStartNode().getId();
-            end = rel.getEndNode().getId();
+            type = null;
+          } else if (rel.isType(RelType.SYNONYM_OF)) {
+            type = "acc";
+          } else if (rel.isType(RelType.HAS_BASIONYM)) {
+            type = "bas";
           } else {
-            start = rel.getEndNode().getId();
-            end = rel.getStartNode().getId();
-            if (rel.isType(RelType.SYNONYM_OF)) {
-              type = "syn";
-            } else if (rel.isType(RelType.BASIONYM_OF)) {
-              type = "bas";
-            } else {
-              type = rel.getType().name().toLowerCase().replace("_of", "");
-            }
+            type = rel.getType().name().toLowerCase().replace("_of", "");
           }
           writer.append("  n");
           writer.append(String.valueOf(start));

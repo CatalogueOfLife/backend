@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.apache.ibatis.annotations.Param;
 import org.col.api.model.NameRelation;
+import org.col.api.vocab.NomRelType;
 
 /**
  *
@@ -16,6 +17,11 @@ public interface NameRelationMapper {
    */
   List<NameRelation> list(@Param("nameKey") int nameKey);
 
-	void create(NameRelation rel);
+  /**
+   * Returns the list of related names of a given type for a single name on the nameKey side of the relation only.
+   */
+  List<NameRelation> listByType(@Param("nameKey") int nameKey, @Param("type") NomRelType type);
+
+  void create(NameRelation rel);
 
 }

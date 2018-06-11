@@ -251,12 +251,15 @@ public class Normalizer implements Callable<Boolean> {
   }
 
   /**
-   * Sanitizes synonym relations relinking synonym of basionymGroup to make sure basionymGroup always point to a direct accepted taxon.
+   * Sanitizes basionym relations, cutting chains of basionym relations
+   * by preferring basionyms referred to more often.
    */
   private void cutBasionymChains() {
     LOG.info("Cut basionym chains");
-    final String query = "MATCH (b1:ALL)-[r1:BASIONYM_OF]->(b2)-[r2:BASIONYM_OF]->(x:ALL) " +
-        "RETURN b1, b2, x, r1, r2 LIMIT 1";
+    final String query = "MATCH (x)-[r1:HAS_BASIONYM]->(b1)-[r2:HAS_BASIONYM]->(b2:ALL) " +
+        "RETURN b1, b2, r1, r2 " +
+        "ORDER BY x.id " +
+        "LIMIT 1";
 
     int counter = 0;
     try (Transaction tx = store.getNeo().beginTx()) {
@@ -266,18 +269,25 @@ public class Normalizer implements Callable<Boolean> {
         Node b1 = (Node) row.get("b1");
         Node b2 = (Node) row.get("b2");
 
-        // count number of outgoing basionym relations
-        int d1 = b1.getDegree(RelType.BASIONYM_OF, Direction.OUTGOING);
-        int d2 = b2.getDegree(RelType.BASIONYM_OF, Direction.OUTGOING);
-        // if both are the same use node ids to get a determiniate result
-        if (d1==d2) {
-          d1 = (int) b1.getId();
-          d2 = (int) b2.getId();
+        // pick the bad relation to delete.
+        // count number of incoming basionym relations = combinations
+        int d1 = b1.getDegree(RelType.HAS_BASIONYM, Direction.INCOMING);
+        int d2 = b2.getDegree(RelType.HAS_BASIONYM, Direction.INCOMING);
+
+        // default to remove b2 with the "higher" sorting id property to get a determine result
+        String badRelAlias;
+        // but prefer r1 in case it links to a more used basionym
+        if (d1 < d2) {
+          badRelAlias = "r1";
+        } else {
+          badRelAlias = "r2";
         }
+        Relationship bad = (Relationship) row.get(badRelAlias);
+
         // remove basionym relations
-        Relationship bad = d1 < d2 ? (Relationship) row.get("r1") : (Relationship) row.get("r2");
         addIssue(bad.getStartNode(), Issue.CHAINED_BASIONYM);
         addIssue(bad.getEndNode(), Issue.CHAINED_BASIONYM);
+        LOG.debug("Delete rel {}-{}>{}", bad.getStartNodeId(), bad.getType().name(), bad.getEndNodeId());
         bad.delete();
         counter++;
 

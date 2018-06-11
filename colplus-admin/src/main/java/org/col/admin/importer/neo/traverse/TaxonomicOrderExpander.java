@@ -42,7 +42,7 @@ public class TaxonomicOrderExpander implements PathExpander {
         @Nullable
         @Override
         public Boolean apply(Relationship rel) {
-          return rel.getStartNode().hasRelationship(RelType.BASIONYM_OF, Direction.OUTGOING);
+          return rel.getStartNode().hasRelationship(RelType.HAS_BASIONYM, Direction.INCOMING);
         }
       }
   ).compound(

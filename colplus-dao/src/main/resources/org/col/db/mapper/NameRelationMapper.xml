@@ -36,15 +36,23 @@
     name_rel nr
   </sql>
 
-  <resultMap id="nameActResultMap" type="NameRelation" autoMapping="true">
+  <resultMap id="nameRelResultMap" type="NameRelation" autoMapping="true">
     <id property="key" column="key" />
   </resultMap>
 
-  <select id="list" resultMap="nameActResultMap">
+  <select id="list" resultMap="nameRelResultMap">
     SELECT <include refid="SELECT" />
     FROM name_rel nr
     WHERE nr.name_key = #{nameKey}
       OR nr.related_name_key = #{nameKey}
+    ORDER BY nr.key
+  </select>
+
+  <select id="listByType" resultMap="nameRelResultMap">
+    SELECT <include refid="SELECT" />
+    FROM name_rel nr
+    WHERE nr.type=#{type}
+      AND nr.name_key = #{nameKey}
     ORDER BY nr.key
   </select>
 

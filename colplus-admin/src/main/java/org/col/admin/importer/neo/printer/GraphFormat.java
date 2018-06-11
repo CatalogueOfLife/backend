@@ -10,11 +10,6 @@ public enum GraphFormat {
   TEXT("txt"),
 
   /**
-   * Taxonomic tree as xml
-   */
-  XML("xml"),
-
-  /**
    * Graph modelling language
    * See http://www.fim.uni-passau.de/fileadmin/files/lehrstuhl/brandenburg/projekte/gml/gml-technical-report.pdf
    */

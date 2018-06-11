@@ -147,14 +147,15 @@ public class PgImportIT {
 			Name n1006 = ndao.get(ndao.lookupKey("1006", dataset.getKey()));
 			assertEquals("Leontodon taraxacoides", n1006.getScientificName());
 
-			Name bas = ndao.get(n1006.getHomotypicNameKey());
-			assertEquals("Leonida taraxacoida", bas.getScientificName());
-			assertEquals("1006-s3", bas.getId());
+      List<NameRelation> rels = ndao.relations(n1006.getKey());
+      assertEquals(1, rels.size());
+
+      Name bas = ndao.getBasionym( n1006.getKey() );
+      assertEquals("Leonida taraxacoida", bas.getScientificName());
+      assertEquals(n1006.getHomotypicNameKey(), bas.getHomotypicNameKey());
 
 			// check taxon parents
 			assertParents(tdao, "1006", "102", "30", "20", "10", "1");
-
-			// TODO: check synonym
 		}
 	}
 
@@ -164,11 +165,11 @@ public class PgImportIT {
   }
 
   /**
-   * 2->1->2
-   * should be: 2->1
+   * 1->2->1
+   * should be: 1->2
    *
-   * 10->12->11->10,13
-   * should be: 11->10,13 12
+   * 10->11->12->10, 13->11
+   * should be: 10,13->11 12
    *
    */
   @Test
@@ -193,9 +194,9 @@ public class PgImportIT {
       Name n12 = dao.get(dao.lookupKey("12",dataset.getKey()));
       Name n13 = dao.get(dao.lookupKey("13",dataset.getKey()));
 
-      assertEquals(n11.getKey(), n10.getHomotypicNameKey());
-      assertEquals(n11.getKey(), n11.getHomotypicNameKey());
-      assertEquals(n11.getKey(), n13.getHomotypicNameKey());
+      assertEquals(n10.getKey(), n10.getHomotypicNameKey());
+      assertEquals(n10.getKey(), n11.getHomotypicNameKey());
+      assertEquals(n10.getKey(), n13.getHomotypicNameKey());
       assertEquals(n12.getKey(), n12.getHomotypicNameKey());
 
       assertTrue(n10.getIssues().contains(Issue.CHAINED_BASIONYM));

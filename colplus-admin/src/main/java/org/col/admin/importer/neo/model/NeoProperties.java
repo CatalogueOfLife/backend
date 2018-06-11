@@ -5,7 +5,7 @@ import org.gbif.nameparser.api.Rank;
 import org.neo4j.graphdb.Node;
 
 /**
- * Property names of neo4j nodes.
+ * Property names of neo4j nodes and relations.
  * Any property we store in normalizer should be listed here to avoid overlaps or other confusion.
  */
 public class NeoProperties {
@@ -14,6 +14,8 @@ public class NeoProperties {
   public static final String RANK = "rank";
   public static final String SCIENTIFIC_NAME = "scientificName";
   public static final String AUTHORSHIP = "authorship";
+  public static final String NOTE = "note";
+  public static final String REF_KEY = "refkey";
 
   public static final String NULL_NAME = "???";
 
