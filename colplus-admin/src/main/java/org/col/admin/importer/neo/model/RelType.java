@@ -1,5 +1,10 @@
 package org.col.admin.importer.neo.model;
 
+import java.util.Arrays;
+import java.util.Map;
+import java.util.function.Function;
+
+import com.google.common.collect.ImmutableMap;
 import org.col.api.vocab.NomRelType;
 import org.neo4j.graphdb.RelationshipType;
 
@@ -7,7 +12,6 @@ import org.neo4j.graphdb.RelationshipType;
  *
  */
 public enum RelType implements RelationshipType {
-
   /**
    * Taxon -> Taxon
    */
@@ -47,5 +51,13 @@ public enum RelType implements RelationshipType {
   RelType(String abbrev, NomRelType type) {
     this.abbrev = abbrev;
     this.nomRelType = type;
+  }
+
+  private final static Map<NomRelType, RelType> MAP = Arrays.stream(values())
+      .filter(relType -> relType.nomRelType != null)
+      .collect(ImmutableMap.toImmutableMap(rt -> rt.nomRelType, Function.identity()));
+
+  public static RelType from(NomRelType rt) {
+    return MAP.get(rt);
   }
 }

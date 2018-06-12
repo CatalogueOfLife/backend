@@ -1,14 +1,17 @@
 package org.col.api.model;
 
 import java.util.Objects;
+import java.util.Set;
 
+import org.col.api.vocab.Issue;
 import org.col.api.vocab.NomRelType;
 
 /**
  * A nomenclatural name relation between two names pointing back in time from the nameKey to the relatedNameKey.
  */
-public class NameRelation {
+public class NameRelation implements VerbatimEntity {
 	private Integer key;
+	private Integer verbatimKey;
 	private Integer datasetKey;
 	private NomRelType type;
 	private Integer nameKey;
@@ -22,6 +25,26 @@ public class NameRelation {
 
 	public void setKey(Integer key) {
 		this.key = key;
+	}
+
+	@Override
+	public Integer getVerbatimKey() {
+		return verbatimKey;
+	}
+
+	@Override
+	public void setVerbatimKey(Integer verbatimKey) {
+		this.verbatimKey = verbatimKey;
+	}
+
+	@Override
+	public Set<Issue> getIssues() {
+		return null;
+	}
+
+	@Override
+	public void addIssue(Issue issue) {
+
 	}
 
 	public Integer getDatasetKey() {
@@ -78,6 +101,7 @@ public class NameRelation {
 		if (o == null || getClass() != o.getClass()) return false;
 		NameRelation that = (NameRelation) o;
 		return Objects.equals(key, that.key) &&
+				Objects.equals(verbatimKey, that.verbatimKey) &&
 				Objects.equals(datasetKey, that.datasetKey) &&
 				type == that.type &&
 				Objects.equals(nameKey, that.nameKey) &&
@@ -89,6 +113,6 @@ public class NameRelation {
 	@Override
 	public int hashCode() {
 
-		return Objects.hash(key, datasetKey, type, nameKey, relatedNameKey, publishedInKey, note);
+		return Objects.hash(key, verbatimKey, datasetKey, type, nameKey, relatedNameKey, publishedInKey, note);
 	}
 }

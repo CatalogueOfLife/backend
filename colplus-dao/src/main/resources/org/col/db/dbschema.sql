@@ -239,6 +239,7 @@ CREATE TRIGGER name_trigger BEFORE INSERT OR UPDATE
 
 CREATE TABLE name_rel (
   key serial PRIMARY KEY,
+  verbatim_key INTEGER REFERENCES verbatim,
   dataset_key INTEGER NOT NULL REFERENCES dataset,
   type INTEGER NOT NULL,
   name_key INTEGER NOT NULL REFERENCES name,

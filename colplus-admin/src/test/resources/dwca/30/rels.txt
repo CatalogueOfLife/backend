@@ -1,0 +1,5 @@
+id	relatedID	type	publishedIn	remarks
+11	10	basedOn	publication1	no remarks
+226	225	correction	publication2	Correction of epithet gender, rule 23.5
+124	123	later homonym		
+125	123	superfluous		

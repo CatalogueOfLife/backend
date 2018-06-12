@@ -1,0 +1,16 @@
+has_basionym,BASIONYM
+emendation,SPELLING_CORRECTION
+correction,SPELLING_CORRECTION
+correction_of,SPELLING_CORRECTION
+spelling_correction_of,SPELLING_CORRECTION
+based,BASED_ON
+nomen novum,REPLACEMENT_NAME
+replacement,REPLACEMENT_NAME
+replacement_name_of,REPLACEMENT_NAME
+protected,CONSERVED
+sanctioned,CONSERVED
+conserved_against,CONSERVED
+homonym,LATER_HOMONYM
+homonym_of,LATER_HOMONYM
+later_homonym_of,LATER_HOMONYM
+superfluous_because_of,SUPERFLUOUS

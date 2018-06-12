@@ -107,16 +107,10 @@ public class NeoKryoFactory implements KryoFactory {
     kryo.register(TypeStatus.class);
 
     // term enums
-    kryo.register(AcTerm.class);
-    kryo.register(AcefTerm.class);
-    kryo.register(DcElement.class);
-    kryo.register(DcTerm.class);
-    kryo.register(DwcTerm.class);
-    kryo.register(GbifInternalTerm.class);
-    kryo.register(GbifTerm.class);
-    kryo.register(IucnTerm.class);
-    kryo.register(XmpRightsTerm.class);
-    kryo.register(XmpTerm.class);
+    TermFactory.instance().registerTermEnum(ColTerm.class);
+    for (Class cl : TermFactory.instance().listRegisteredTermEnums()) {
+      kryo.register(cl);
+    }
     kryo.register(UnknownTerm.class, new TermSerializer());
 
     // ignore normalizer node proxies and set them to null upon read:

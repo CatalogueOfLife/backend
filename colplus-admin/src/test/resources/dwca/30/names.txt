@@ -1,0 +1,8 @@
+id	scientificName	namePublishedIn
+10	Gossypium tomentosum Nutt.	pubA
+11	Gossypium tomentosum Nutt. ex Seem.	pubA
+225	Persicaria segetum (Kunth) Small (1903)	pubA
+226	Persicaria segeta (Kunth) Small (1903)	pubA
+123	Pedicularis inconspicua P.C. Tsoong	pub26
+124	Pedicularis inconspicua Vved.	pub27
+125	Pedicularis inconspicua P.C. Tsoong	pub28

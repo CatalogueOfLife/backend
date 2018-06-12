@@ -23,14 +23,8 @@ import org.col.admin.importer.neo.model.*;
 import org.col.admin.importer.neo.printer.GraphFormat;
 import org.col.admin.importer.neo.printer.PrinterUtils;
 import org.col.admin.importer.reference.ReferenceFactory;
-import org.col.api.model.Dataset;
-import org.col.api.model.Distribution;
-import org.col.api.model.Reference;
-import org.col.api.model.VernacularName;
-import org.col.api.vocab.DataFormat;
-import org.col.api.vocab.DistributionStatus;
-import org.col.api.vocab.Gazetteer;
-import org.col.api.vocab.Language;
+import org.col.api.model.*;
+import org.col.api.vocab.*;
 import org.col.csl.CslParserMock;
 import org.junit.After;
 import org.junit.Before;
@@ -385,6 +379,20 @@ public class NormalizerDwcaIT {
           assertNull(t.name.getHomotypicNameKey());
         }
       });
+    }
+  }
+
+  @Test
+  public void testNameRelations() throws Exception {
+    normalize(30);
+
+    try (Transaction tx = store.getNeo().beginTx()) {
+      NeoTaxon t10 = byID("10");
+      NeoTaxon t11 = byID("11");
+      assertEquals(t10.name.getHomotypicNameKey(), t11.name.getHomotypicNameKey());
+      List<NameRelation> rels = store.relations(t10.node);
+      assertEquals(1, rels.size());
+      assertEquals(NomRelType.BASED_ON, rels.get(0).getType());
     }
   }
 

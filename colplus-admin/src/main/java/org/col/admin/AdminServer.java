@@ -54,6 +54,9 @@ public class AdminServer extends PgApp<AdminServerConfig> {
   public void initialize(Bootstrap<AdminServerConfig> bootstrap) {
     super.initialize(bootstrap);
 
+    // register CoLTerms
+    TermFactory.instance().registerTermEnum(ColTerm.class);
+
     // add some cli commands not accessible via the admin interface
     bootstrap.addCommand(new InitDbCmd());
     bootstrap.addCommand(new ShellCmd());
@@ -62,9 +65,6 @@ public class AdminServer extends PgApp<AdminServerConfig> {
   @Override
   public void run(AdminServerConfig cfg, Environment env) {
     super.run(cfg, env);
-
-    // register CoLTerms
-    TermFactory.instance().addAltTerms(ColTerm.values());
 
     // add custom index
     env.admin().addServlet("index-menu", new IndexServlet(cfg)).addMapping("");

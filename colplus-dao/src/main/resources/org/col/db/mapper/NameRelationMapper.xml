@@ -6,6 +6,7 @@
 
   <sql id="SELECT">
     nr.key,
+    nr.verbatim_key,
     nr.dataset_key,
     nr.type,
     nr.name_key,
@@ -15,6 +16,7 @@
   </sql>
 
   <sql id="COLS">
+    verbatim_key,
     dataset_key,
     type,
     name_key,
@@ -24,6 +26,7 @@
   </sql>
 
   <sql id="PROPS">
+    #{verbatimKey},
     #{datasetKey},
     #{type},
     #{nameKey},

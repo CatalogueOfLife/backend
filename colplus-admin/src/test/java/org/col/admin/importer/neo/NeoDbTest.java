@@ -19,12 +19,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import org.neo4j.graphalgo.UnionFindProc;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Result;
 import org.neo4j.graphdb.Transaction;
-import org.neo4j.kernel.impl.proc.Procedures;
-import org.neo4j.kernel.internal.GraphDatabaseAPI;
 
 import static org.junit.Assert.*;
 
@@ -107,9 +104,6 @@ public class NeoDbTest {
         db.getNeo().execute(createGraph).close();
         tx.success();
       }
-
-    GraphDatabaseAPI gdb = (GraphDatabaseAPI) db.getNeo();
-    gdb.getDependencyResolver().resolveDependency(Procedures.class).registerProcedure(UnionFindProc.class);
 
     // graphImpl: Heavy, Light, Huge, Kernel
     String graphImpl = "Heavy";

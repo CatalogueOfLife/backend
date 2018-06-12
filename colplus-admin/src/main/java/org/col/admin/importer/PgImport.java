@@ -267,10 +267,13 @@ public class PgImport implements Callable<Boolean> {
             NameRelation nr = new NameRelation();
             nr.setType(rt.nomRelType);
             nr.setDatasetKey(dataset.getKey());
-            nr.setNameKey( nameKeys.get( (int) rel.getStartNode().getId()));
-            nr.setRelatedNameKey( nameKeys.get( (int) rel.getEndNode().getId()));
+            nr.setNameKey( nameKeys.get( (int) rel.getStartNodeId()));
+            nr.setRelatedNameKey( nameKeys.get( (int) rel.getEndNodeId()));
             nr.setNote( (String) rel.getProperty(NeoProperties.NOTE, null));
             nr.setPublishedInKey( (Integer) rel.getProperty(NeoProperties.REF_KEY, null));
+            if (rel.hasProperty(NeoProperties.VERBATIM_KEY)) {
+              nr.setVerbatimKey(verbatimKeys.get((Integer)rel.getProperty(NeoProperties.VERBATIM_KEY)));
+            }
 
             nameRelationMapper.create(nr);
             if (counter.incrementAndGet() % batchSize == 0) {

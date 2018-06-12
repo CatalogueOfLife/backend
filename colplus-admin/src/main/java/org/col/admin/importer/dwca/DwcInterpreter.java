@@ -8,7 +8,9 @@ import com.google.common.collect.Lists;
 import org.col.admin.importer.InsertMetadata;
 import org.col.admin.importer.InterpreterBase;
 import org.col.admin.importer.neo.ReferenceStore;
+import org.col.admin.importer.neo.model.NeoNameRel;
 import org.col.admin.importer.neo.model.NeoTaxon;
+import org.col.admin.importer.neo.model.RelType;
 import org.col.admin.importer.reference.ReferenceFactory;
 import org.col.api.model.*;
 import org.col.api.vocab.*;
@@ -60,6 +62,22 @@ public class DwcInterpreter extends InterpreterBase {
         t.classification.setByTerm(dwc, v.get(dwc));
       }
       return Optional.of(t);
+    }
+    return Optional.empty();
+  }
+
+  Optional<NeoNameRel> interpretNameRelations(TermRecord rec) {
+    NeoNameRel rel = new NeoNameRel();
+    SafeParser<NomRelType> type = SafeParser.parse(NomRelTypeParser.PARSER, rec.get(ColTerm.relationType));
+    if (type.isPresent()) {
+      rel.setType(RelType.from(type.get()));
+      rel.setNote(rec.get(ColTerm.relationRemarks));
+      if (rec.hasTerm(ColTerm.publishedIn)) {
+        Reference ref = refFactory.fromDWC(rec.get(ColTerm.publishedInID), rec.get(ColTerm.publishedIn), null);
+        refStore.put(ref);
+        rel.setRefKey(ref.getKey());
+      }
+      return Optional.of(rel);
     }
     return Optional.empty();
   }

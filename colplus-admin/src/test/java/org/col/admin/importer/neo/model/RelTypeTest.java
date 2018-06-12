@@ -10,14 +10,9 @@ public class RelTypeTest {
   @Test
   public void testRelTypeCompleteness() {
     for (NomRelType nrt : NomRelType.values()) {
-      boolean exists = false;
-      for (RelType rt : RelType.values()) {
-        if (rt.nomRelType == nrt) {
-          exists = true;
-          break;
-        }
-      }
-      assertTrue("Neo4j relation for "+nrt+" missing ", exists);
+      RelType rt = RelType.from(nrt);
+      assertNotNull("Neo4j relation for "+nrt+" missing ", rt);
+      assertEquals(nrt, rt.nomRelType);
     }
   }
 

@@ -50,7 +50,7 @@ import static org.junit.Assert.*;
 @RunWith(Parameterized.class)
 public class NormalizerTreeIT {
   final static int MAX_ACEF_ID = 5;
-  final static int MAX_DWCA_ID = 28;
+  final static int MAX_DWCA_ID = 30;
 
   private NeoDb store;
   private NormalizerConfig cfg;

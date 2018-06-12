@@ -9,6 +9,7 @@ import org.col.api.vocab.Issue;
  * A parsing utility class wrapping a Parser<T> instance so that no UnparsableException is thrown.
  * It offers accesors to the parsing result similar to the Optional class.
  */
+@SuppressWarnings("ALL")
 public class SafeParser<T> {
   private final Optional<T> result;
 
@@ -45,6 +46,14 @@ public class SafeParser<T> {
    */
   public boolean isEmpty() {
     return result != null && !result.isPresent();
+  }
+
+  /**
+   * Returns a value and throws if it is not present.
+   * Make sure it is present before calling this!
+   */
+  public T get() {
+    return result.get();
   }
 
   /**

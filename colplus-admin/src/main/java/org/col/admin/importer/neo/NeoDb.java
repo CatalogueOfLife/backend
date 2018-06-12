@@ -35,10 +35,16 @@ import org.gbif.nameparser.api.Rank;
 import org.mapdb.Atomic;
 import org.mapdb.DB;
 import org.mapdb.Serializer;
+import org.neo4j.graphalgo.LabelPropagationProc;
+import org.neo4j.graphalgo.UnionFindProc;
 import org.neo4j.graphdb.*;
 import org.neo4j.graphdb.factory.GraphDatabaseBuilder;
+import org.neo4j.helpers.collection.Iterables;
 import org.neo4j.helpers.collection.Iterators;
+import org.neo4j.kernel.api.exceptions.KernelException;
 import org.neo4j.kernel.impl.core.NodeProxy;
+import org.neo4j.kernel.impl.proc.Procedures;
+import org.neo4j.kernel.internal.GraphDatabaseAPI;
 import org.neo4j.unsafe.batchinsert.BatchInserter;
 import org.neo4j.unsafe.batchinsert.BatchInserters;
 import org.slf4j.Logger;
@@ -144,6 +150,15 @@ public class NeoDb implements ReferenceStore {
   private void openNeo() {
     LOG.debug("Starting embedded neo4j database from {}", neoDir.getAbsolutePath());
     neo = neoFactory.newGraphDatabase();
+
+    try {
+      GraphDatabaseAPI gdb = (GraphDatabaseAPI) neo;
+      gdb.getDependencyResolver().resolveDependency(Procedures.class).registerProcedure(UnionFindProc.class);
+      gdb.getDependencyResolver().resolveDependency(Procedures.class).registerProcedure(LabelPropagationProc.class);
+
+    } catch (KernelException e) {
+      LOG.warn("Unable to register neo4j algorithms", e);
+    }
   }
 
   private void closeNeo() {
@@ -176,6 +191,27 @@ public class NeoDb implements ReferenceStore {
       }
     }
     return null;
+  }
+
+  /**
+   * @return a collection of all name relations with name key using node ids.
+   */
+  public List<NameRelation> relations(Node n) {
+    return Iterables.stream(n.getRelationships())
+        .filter(r -> RelType.valueOf(r.getType().name()).nomRelType != null)
+        .map(r -> {
+          NameRelation nr = new NameRelation();
+          nr.setType(RelType.valueOf(r.getType().name()).nomRelType);
+          nr.setNameKey( (int) r.getStartNodeId());
+          nr.setRelatedNameKey( (int) r.getEndNodeId());
+          nr.setNote( (String) r.getProperty(NeoProperties.NOTE, null));
+          nr.setPublishedInKey( (Integer) r.getProperty(NeoProperties.REF_KEY, null));
+          if (r.hasProperty(NeoProperties.VERBATIM_KEY)) {
+            nr.setVerbatimKey((Integer)r.getProperty(NeoProperties.VERBATIM_KEY));
+          }
+          return nr;
+        })
+        .collect(Collectors.toList());
   }
 
   /**
@@ -488,13 +524,16 @@ public class NeoDb implements ReferenceStore {
    * Creates a new name relation linking the 2 given nodes.
    * The note and publishedInKey values are stored as relation properties
    */
-  public void createNameRel(Node n1, RelType relType, Node n2, Integer refKey, String note) {
-    Relationship rel = n1.createRelationshipTo(n2, relType);
-    if (refKey != null) {
-      rel.setProperty(NeoProperties.REF_KEY, refKey);
+  public void createNameRel(Node n1, Node n2, NeoNameRel rel) {
+    Relationship r = n1.createRelationshipTo(n2, rel.getType());
+    if (rel.getVerbatimKey() != null) {
+      r.setProperty(NeoProperties.VERBATIM_KEY, rel.getVerbatimKey());
     }
-    if (note != null) {
-      rel.setProperty(NeoProperties.NOTE, note);
+    if (rel.getRefKey() != null) {
+      r.setProperty(NeoProperties.REF_KEY, rel.getRefKey());
+    }
+    if (rel.getNote() != null) {
+      r.setProperty(NeoProperties.NOTE, rel.getNote());
     }
   }
 
