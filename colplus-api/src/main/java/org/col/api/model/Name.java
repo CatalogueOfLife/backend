@@ -108,7 +108,7 @@ public class Name implements VerbatimEntity {
    *
    * See http://www.bacterio.net/-candidatus.html and https://en.wikipedia.org/wiki/Candidatus
    */
-  private Boolean candidatus;
+  private boolean candidatus;
 
   /**
    * The part of the named hybrid which is considered a hybrid
@@ -485,11 +485,11 @@ public class Name implements VerbatimEntity {
     this.strain = strain;
   }
 
-  public Boolean isCandidatus() {
+  public boolean isCandidatus() {
     return candidatus;
   }
 
-  public void setCandidatus(Boolean candidatus) {
+  public void setCandidatus(boolean candidatus) {
     this.candidatus = candidatus;
   }
 

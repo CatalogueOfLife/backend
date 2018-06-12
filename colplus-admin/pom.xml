@@ -102,6 +102,11 @@
             <groupId>org.neo4j</groupId>
             <artifactId>neo4j-slf4j</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.neo4j</groupId>
+            <artifactId>graph-algorithms-algo</artifactId>
+        </dependency>
+
         <!-- we use kryo to serialize data into binary which is > 10 times faster than jackson even with
           smile -->
         <dependency>

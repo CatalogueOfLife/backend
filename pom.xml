@@ -358,6 +358,11 @@
                 <artifactId>neo4j-slf4j</artifactId>
                 <version>${neo4j.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.neo4j</groupId>
+                <artifactId>graph-algorithms-algo</artifactId>
+                <version>${neo4j.version}.0</version>
+            </dependency>
 
             <!-- mapdb & kryo-->
             <dependency>

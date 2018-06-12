@@ -3,7 +3,6 @@ package org.col.admin.importer.neo;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Random;
 
 import com.google.common.io.Files;
 import org.col.admin.config.NormalizerConfig;
@@ -20,8 +19,12 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.neo4j.graphalgo.UnionFindProc;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Result;
 import org.neo4j.graphdb.Transaction;
+import org.neo4j.kernel.impl.proc.Procedures;
+import org.neo4j.kernel.internal.GraphDatabaseAPI;
 
 import static org.junit.Assert.*;
 
@@ -30,7 +33,6 @@ import static org.junit.Assert.*;
  */
 @RunWith(Parameterized.class)
 public class NeoDbTest {
-  private final static Random RND = new Random();
   private final static int DATASET_KEY = 123;
   private final static NormalizerConfig cfg = new NormalizerConfig();
 
@@ -66,6 +68,56 @@ public class NeoDbTest {
     if (db != null) {
       db.closeAndDelete();
     }
+  }
+
+  /**
+   * Tests inclusion of external cypher procedures for common graph algorithms.
+   * See https://github.com/neo4j-contrib/neo4j-graph-algorithms/blob/3.3/tests/src/test/java/org/neo4j/graphalgo/algo/UnionFindProcIntegrationTest.java
+   */
+  @Test
+  public void testUnionFind() throws Exception {
+    String createGraph =
+        "CREATE (nA:Label)\n" +
+            "CREATE (nB:Label)\n" +
+            "CREATE (nC:Label)\n" +
+            "CREATE (nD:Label)\n" +
+            "CREATE (nE)\n" +
+            "CREATE (nF)\n" +
+            "CREATE (nG)\n" +
+            "CREATE (nH)\n" +
+            "CREATE (nI)\n" +
+            "CREATE (nJ)\n" + // {J}
+            "CREATE\n" +
+
+            // {A, B, C, D}
+            "  (nA)-[:TYPE]->(nB),\n" +
+            "  (nB)-[:TYPE]->(nC),\n" +
+            "  (nC)-[:TYPE]->(nD),\n" +
+
+            "  (nD)-[:TYPE {cost:4.2}]->(nE),\n" + // threshold UF should split here
+
+            // {E, F, G}
+            "  (nE)-[:TYPE]->(nF),\n" +
+            "  (nF)-[:TYPE]->(nG),\n" +
+
+            // {H, I}
+            "  (nH)-[:TYPE]->(nI)";
+
+      try (Transaction tx = db.getNeo().beginTx()) {
+        db.getNeo().execute(createGraph).close();
+        tx.success();
+      }
+
+    GraphDatabaseAPI gdb = (GraphDatabaseAPI) db.getNeo();
+    gdb.getDependencyResolver().resolveDependency(Procedures.class).registerProcedure(UnionFindProc.class);
+
+    // graphImpl: Heavy, Light, Huge, Kernel
+    String graphImpl = "Heavy";
+    db.getNeo().execute("CALL algo.unionFind('', '',{graph:'" + graphImpl + "'}) YIELD setCount")
+        .accept((Result.ResultVisitor<Exception>) row -> {
+          assertEquals(3L, row.getNumber("setCount"));
+          return true;
+        });
   }
 
   @Test
