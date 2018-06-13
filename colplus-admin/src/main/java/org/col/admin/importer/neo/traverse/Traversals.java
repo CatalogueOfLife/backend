@@ -63,16 +63,18 @@ public class Traversals {
   /**
    * Finds all nodes connected via homotypic name relations regardless of the direction.
    */
-  public static final TraversalDescription HOMOTYPIC_GROUP = new MonoDirectionalTraversalDescription()
-      .breadthFirst()
-      .uniqueness(Uniqueness.NODE_RECENT)
-      .evaluator(Evaluators.excludeStartPosition());
+  public static final TraversalDescription HOMOTYPIC_GROUP;
   static {
+    TraversalDescription td = new MonoDirectionalTraversalDescription();
     for (RelType rt : RelType.values()) {
-      if (rt.nomRelType != null && rt.nomRelType.isHomotypic()) {
-        HOMOTYPIC_GROUP.relationships(rt);
+      if (rt.nomRelType != null && Boolean.TRUE.equals(rt.nomRelType.isHomotypic())) {
+        td = td.relationships(rt);
       }
     }
+    HOMOTYPIC_GROUP = td
+        .breadthFirst()
+        .uniqueness(Uniqueness.NODE_RECENT)
+        .evaluator(Evaluators.excludeStartPosition());
   }
 
 
