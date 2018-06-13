@@ -42,7 +42,7 @@ public enum NomRelType {
    * The first reviser is allowed to choose one variant for mandatory further use, but in other ways,
    * these errors generally have no further formal standing.
    */
-  SPELLING_CORRECTION(true),
+  SPELLING_CORRECTION(true, null, null),
 
   /**
    * The current name has a basionym and therefore is either
@@ -50,7 +50,7 @@ public enum NomRelType {
    *  (and the name pointed to is not, itself, a recombination),
    * or a change in rank (status novus, stat. nov.).
    */
-  BASIONYM(true),
+  BASIONYM(true, null, null),
 
   /**
    * The current name is the validation of a name that was not fully published before.
@@ -59,7 +59,7 @@ public enum NomRelType {
    * ICN Art. 46.4: e.g. if this name object represents G. tomentosum Nutt. ex Seem.
    * then the related name should be G. tomentosum Nutt.
    */
-  BASED_ON(true),
+  BASED_ON(true, null, NomStatus.UNAVAILABLE),
 
   /**
    *  Current name is replacement for the related name.
@@ -67,7 +67,7 @@ public enum NomRelType {
    *  ICN: Article 7.3
    *  ICZN: Article 60.3.
    */
-  REPLACEMENT_NAME(true),
+  REPLACEMENT_NAME(true, null, NomStatus.ILLEGITIMATE),
 
   /**
    *  The current name or spelling is conserved / protected against the related name
@@ -84,12 +84,12 @@ public enum NomRelType {
    *        or suppression via plenary power Article 81.
    *
    */
-  CONSERVED(),
+  CONSERVED(null, NomStatus.LEGITIMATE, NomStatus.ILLEGITIMATE),
 
   /**
    *  Current name has same spelling as related name
-   *  but was published later and has priority over it (unless conserved or sanctioned).
-   *  Called a junior homonym in zoology.
+   *  but was published later and has priority over it (unless conserved or sanctioned)
+   *  and is based on a different type. Called a junior homonym in zoology.
    *
    *  This includes botanical parahomonyms which differ slightly in spelling
    *  but are similar enough that they are likely to be confused (Art 53.3).
@@ -98,27 +98,41 @@ public enum NomRelType {
    *  When acts of conservation or suppression have occurred then the terms 'Conserved Later Homonym'
    *  and 'Rejected Earlier Homonym' should be used.
    *
+   *  Two identical and homotypic names (isonyms) should be indicated with the superfluous relation type.
+   *
    *  ICN: Article 53
    *  ICZN: Chapter 12, Article 52.
    */
-  LATER_HOMONYM(false),
+  LATER_HOMONYM(false, NomStatus.ILLEGITIMATE, null),
 
   /**
    * Current name was superfluous at its time of publication,
    * i. e. it was based on the same type as the related, previously published name (ICN article 52).
    * The current, superfluous name is available but illegitimate.
+   *
+   * Includes the special case of isonyms which are identical names.
    */
-  SUPERFLUOUS(true);
+  SUPERFLUOUS(true, NomStatus.ILLEGITIMATE, null),
 
-  
+
+  /**
+   * A relation indicating two homotypic names, i.e. objective or nomenclatural synonymy, but not further specifying why.
+   */
+  HOMOTYPIC(true, null, null);
+
+
   private final Boolean homotypic;
+  private final NomStatus from;
+  private final NomStatus to;
 
   NomRelType() {
-    this(null);
+    this(null, null, null);
   }
 
-  NomRelType(Boolean homotypic) {
+  NomRelType(Boolean homotypic, NomStatus from, NomStatus to) {
     this.homotypic = homotypic;
+    this.from = from;
+    this.to = to;
   }
 
   /**
@@ -126,5 +140,19 @@ public enum NomRelType {
    */
   public Boolean isHomotypic() {
     return homotypic;
+  }
+
+  /**
+   * @return implicit status of the name having this outgoing relation
+   */
+  public NomStatus getStatusFrom() {
+    return from;
+  }
+
+  /**
+   * @return implicit status of the related name having this incoming relation
+   */
+  public NomStatus getStatusTo() {
+    return to;
   }
 }

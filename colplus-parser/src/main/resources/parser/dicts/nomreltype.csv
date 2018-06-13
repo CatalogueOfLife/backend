@@ -14,3 +14,5 @@ homonym,LATER_HOMONYM
 homonym_of,LATER_HOMONYM
 later_homonym_of,LATER_HOMONYM
 superfluous_because_of,SUPERFLUOUS
+objective synonym,HOMOTYPIC
+nomenclatural synonym,HOMOTYPIC

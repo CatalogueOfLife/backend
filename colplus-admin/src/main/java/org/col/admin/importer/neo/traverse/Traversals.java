@@ -64,14 +64,17 @@ public class Traversals {
    * Finds all nodes connected via homotypic name relations regardless of the direction.
    */
   public static final TraversalDescription HOMOTYPIC_GROUP = new MonoDirectionalTraversalDescription()
-      .relationships(RelType.HAS_BASIONYM)
-      .relationships(RelType.BASED_ON)
-      .relationships(RelType.REPLACEMENT_NAME_OF)
-      .relationships(RelType.SPELLING_CORRECTION_OF)
       .breadthFirst()
       .uniqueness(Uniqueness.NODE_RECENT)
       .evaluator(Evaluators.excludeStartPosition());
-      ;
+  static {
+    for (RelType rt : RelType.values()) {
+      if (rt.nomRelType != null && rt.nomRelType.isHomotypic()) {
+        HOMOTYPIC_GROUP.relationships(rt);
+      }
+    }
+  }
+
 
   /**
    * Traversal that iterates depth first over all accepted descendants including the starting node.
