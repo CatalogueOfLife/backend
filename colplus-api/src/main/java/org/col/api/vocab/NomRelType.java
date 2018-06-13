@@ -84,7 +84,7 @@ public enum NomRelType {
    *        or suppression via plenary power Article 81.
    *
    */
-  CONSERVED(null, NomStatus.LEGITIMATE, NomStatus.ILLEGITIMATE),
+  CONSERVED(null, NomStatus.CONSERVED, NomStatus.REJECTED),
 
   /**
    *  Current name has same spelling as related name

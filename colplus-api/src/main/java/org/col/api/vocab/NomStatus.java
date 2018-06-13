@@ -81,8 +81,26 @@ public enum NomStatus {
    */
   ILLEGITIMATE("nomen illegitimum", "nom. illeg.", "objectively invalid"),
 
+  /**
+   * A scientific name that enjoys special nomenclatural protection,
+   * i.e. a name conserved, protected or sanctioned in respective code.
+   * Names classified as available and valid by action of the ICZN or ICBN exercising its Plenary Powers .
+   * Includes rulings to conserve junior/later synonyms in place of rejected forgotten names (nomen oblitum)
+   * via "Reversal of Precedence" in accordance with ICZN Article 23.9.1.
+   * Such names are entered on the Official Lists.
+   *
+   * Conservation of botanical names is only possible at the rank of family, genus or species.
+   *
+   * Conserved names are a more generalized definition than the one for nomen protectum,
+   * which is specifically a conserved name that is either a junior synonym or homonym that is in use
+   * because the senior synonym or homonym has been made an available, but invalid nomen oblitum ("forgotten name").
+   */
+  CONSERVED("nomen conservandum", "nom. cons.", "conserved name"),
 
-
+  /**
+   * Rejected / suppressed name. Inverse of conserved. Outright rejection is possible for a name at any rank.
+   */
+  REJECTED("nomen rejiciendum", "nom. rej.", "rejected"),
 
   /**
    * A name of uncertain sense, of doubtful validity.
@@ -178,6 +196,6 @@ public enum NomStatus {
    * It excludes doubtful or unevaluated names.
    */
   public boolean isLegitimate() {
-    return this == LEGITIMATE;
+    return this == LEGITIMATE || this == CONSERVED;
   }
 }

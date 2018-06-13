@@ -1,6 +1,6 @@
 abortivum,
-alternative,VARIANT
-alternativum,VARIANT
+alternative,
+alternativum,
 ambigua,DOUBTFUL
 ambiguous,DOUBTFUL
 anticipatione,MANUSCRIPT
@@ -15,15 +15,15 @@ comb nov homotypic syn,
 combinatio,
 comb nov illegitimate name,ILLEGITIMATE
 comb nov rejected name homotypic syn,REJECTED
-comb superfl,SUPERFLUOUS
+comb superfl,ILLEGITIMATE
 confused,DOUBTFUL
 confusum,DOUBTFUL
 conservandum,CONSERVED
 conservandumprop,CONSERVED
 conserved,CONSERVED
 conserved proposed,CONSERVED
-correctum,VARIANT
-correctum invalidum,
+correctum,
+correctum invalidum,UNAVAILABLE
 correctum novum,
 correctum oppressa,
 denied,
@@ -31,18 +31,18 @@ doubtful,DOUBTFUL
 dubimum,DOUBTFUL
 dubimum correctum,
 dubimum correctum novum,
-dubimum invalidum,DOUBTFUL
+dubimum invalidum,UNAVAILABLE
 dubimum negatum,
 dubimum novum,
 dubium,DOUBTFUL
-forgotten,FORGOTTEN
+forgotten,REJECTED
 gen nov,
 gen nov heterotypic synonym,
 gen nov homotypic synonym,
-gen nov nom illeg,
-gen nov nom illeg heterotypic synonym,
-gen nov nom illeg homotypic synonym,
-gen nov nom rej,
+gen nov nom illeg,ILLEGITIMATE
+gen nov nom illeg heterotypic synonym,ILLEGITIMATE
+gen nov nom illeg homotypic synonym,ILLEGITIMATE
+gen nov nom rej,REJECTED
 gen nov nom rev,
 gen nov vp,
 homonym,ILLEGITIMATE
@@ -54,11 +54,11 @@ ined,MANUSCRIPT
 ineditus,MANUSCRIPT
 invalid,UNAVAILABLE
 invalidum,UNAVAILABLE
-invalidum negatum,
-invalidum novum,REPLACEMENT
-invalidum superfluum,SUPERFLUOUS
+invalidum negatum,UNAVAILABLE
+invalidum novum,UNAVAILABLE
+invalidum superfluum,UNAVAILABLE
 junior homonym,ILLEGITIMATE
-justified emendation,
+justified emendation,LEGITIMATE
 later homonym,ILLEGITIMATE
 later usage,ILLEGITIMATE
 legitimate,LEGITIMATE
@@ -77,25 +77,25 @@ nom cons nom rej see art,CONSERVED
 nom cons orth cons,CONSERVED
 nom cons prop,CONSERVED
 nom cons typ cons see art,CONSERVED
-nom cons, see art,CONSERVED
+nom cons see art,CONSERVED
 nom et orth c,CONSERVED
 nom illeg,ILLEGITIMATE
 nom illeg,ILLEGITIMATE
 nom illeg later homonym,ILLEGITIMATE
-nom illeg nom inv,
-nom illeg nom nud,NAKED
-nom illeg nom superfl,SUPERFLUOUS
-nom illegit,
+nom illeg nom inv,UNAVAILABLE
+nom illeg nom nud,UNAVAILABLE
+nom illeg nom superfl,ILLEGITIMATE
+nom illegit,ILLEGITIMATE
 nom illegit art,ILLEGITIMATE
 nom illegit art art does not apply,ILLEGITIMATE
 nom illegit art nom rejic see art,ILLEGITIMATE
 nom illegit arts,ILLEGITIMATE
 nom illegit nom inval,UNAVAILABLE
-nom illegit nom nov,REPLACEMENT
-nom illegit nom nov nom superfl,SUPERFLUOUS
+nom illegit nom nov,ILLEGITIMATE
+nom illegit nom nov nom superfl,ILLEGITIMATE
 nom ilval art,
-nom ined,
-nom ined nom inv,
+nom ined,MANUSCRIPT
+nom ined nom inv,MANUSCRIPT
 nom inv,UNAVAILABLE
 nom inval,UNAVAILABLE
 nom inval art,UNAVAILABLE
@@ -104,19 +104,19 @@ nom inval art nom rejic art,UNAVAILABLE
 nom inval arts,UNAVAILABLE
 nom inval later homonym,
 nom inval nom rej,REJECTED
-nom inval nom subnud,NAKED
-nom inval nom superfl,SUPERFLUOUS
-nom nov illegitimate name,
-nom nov nom superfl,SUPERFLUOUS
+nom inval nom subnud,UNAVAILABLE
+nom inval nom superfl,UNAVAILABLE
+nom nov illegitimate name,ILLEGITIMATE
+nom nov nom superfl,ILLEGITIMATE
 nom nov stat nov,
-nom nud,NAKED
-nom nud invalid,NAKED
-nom nud nom illeg,NAKED
-nom nud nom illeg nom inv,NAKED
-nom nud nom inv,NAKED
-nom nud nom inval,NAKED
-nom nud nom inval nom illeg,NAKED
-nom nud unavailable invalid,NAKED
+nom nud,UNAVAILABLE
+nom nud invalid,UNAVAILABLE
+nom nud nom illeg,UNAVAILABLE
+nom nud nom illeg nom inv,UNAVAILABLE
+nom nud nom inv,UNAVAILABLE
+nom nud nom inval,UNAVAILABLE
+nom nud nom inval nom illeg,UNAVAILABLE
+nom nud unavailable invalid,UNAVAILABLE
 nom rej,REJECTED
 nom rej prop,REJECTED
 nom rejic,REJECTED
@@ -126,20 +126,20 @@ nom rev,
 nom rev comb nov,
 nom rev comb nov heterotypic syn,
 nom subnud,
-nom superfl,SUPERFLUOUS
+nom superfl,ILLEGITIMATE
 nom utique rejic,
 nomen abortivum,
 nomen illegitimum,
 nomen novum,
-nomen nudum,NAKED
-novum,REPLACEMENT
-nudum,NAKED
-nudum invalidum,NAKED
-nudum invalidum novum,NAKED
-nudum negatum,
-nudum oppressa,
+nomen nudum,UNAVAILABLE
+novum,LEGITIMATE
+nudum,UNAVAILABLE
+nudum invalidum,UNAVAILABLE
+nudum invalidum novum,UNAVAILABLE
+nudum negatum,UNAVAILABLE
+nudum oppressa,UNAVAILABLE
 nullum,
-oblitum,FORGOTTEN
+oblitum,REJECTED
 oppressa,REJECTED
 oppressa invalidum,
 oppressa negatum,
@@ -150,62 +150,59 @@ original incorrect spelling,
 original misspelling,
 original name/combination,
 orth cons,CONSERVED
-orthographia,VARIANT
-orthographic variant,VARIANT
-orthographically incorrect name,VARIANT
+orthographia,
+orthographic variant,
+orthographically incorrect name,
 primary homonym,
 pro parte,
 protected,CONSERVED
-protectum,PROTECTED
+protectum,CONSERVED
 provisional,
 provisorium,
 rejected,REJECTED
 rejected name non binomial work,
 rejected proposed,REJECTED
-rejiciandum,
+rejiciandum,REJECTED
 rejiciendum,REJECTED
-rejiciendumprop,
-rejiciendumutique,
-rejiciendumutiqueprop,
+rejiciendumprop,REJECTED
+rejiciendumutique,REJECTED
+rejiciendumutiqueprop,REJECTED
 replacement name,
-ruhberg et al,
-secondary homonym,
+secondary homonym,ILLEGITIMATE
 sp nov,
 sp nov heterotypic syn,
 sp nov homotypic syn,
-sp nov illegitimate name,
-sp nov illegitimate name,
-sp nov illegitimate name,
+sp nov illegitimate name,ILLEGITIMATE
+sp nov illegitimate name,ILLEGITIMATE
+sp nov illegitimate name,ILLEGITIMATE
 sp nov nom rev,
 sp nov nom rev heterotypic syn,
 sp nov nom rev homotypic syn,
-sp nov rejected name,
-sp nov rejected name heterotypic syn,
-sp nov rejected name homotypic syn,
+sp nov rejected name,REJECTED
+sp nov rejected name heterotypic syn,REJECTED
+sp nov rejected name homotypic syn,REJECTED
 sp nov heterotypic syn,
-species,
 species heterotypic syn,
 species homotypic syn,
-species rejected name,
-species rejected name heterotypic syn,
-species rejected name homotypic syn,
-subnudum,NAKED
-subsequent name/combination,
+species rejected name,REJECTED
+species rejected name heterotypic syn,REJECTED
+species rejected name homotypic syn,REJECTED
+subnudum,UNAVAILABLE
 subsequent use of valid name,
 subsp nov,
 subsp nov heterotypic syn,
 subsp nov homotypic syn,
 subsp nov nom rev,
-subsp nov nom rev illegitimate name,
+subsp nov nom rev illegitimate name,ILLEGITIMATE
 subspecies,
 subspecies heterotypic syn,
 subspecies homotypic syn,
-superf,SUPERFLUOUS
-superf nom illeg,SUPERFLUOUS
-superf nom inval,SUPERFLUOUS
-superfluous,SUPERFLUOUS
-superfluum,SUPERFLUOUS
-superfluum novum,SUPERFLUOUS
+superf,ILLEGITIMATE
+superf nom illeg,ILLEGITIMATE
+superf nom inval,ILLEGITIMATE
+superfluous,ILLEGITIMATE
+superfluum,ILLEGITIMATE
+superfluum novum,ILLEGITIMATE
 type cons,
 type designation,
 unavailable,UNAVAILABLE
@@ -222,4 +219,4 @@ unnecessary replacement name,
 utique rejected,REJECTED
 utique rejected proposed,REJECTED
 valid,LEGITIMATE
-variante_ortografica,VARIANT
+variante_ortografica,

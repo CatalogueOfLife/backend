@@ -1,4 +1,6 @@
 has_basionym,BASIONYM
+alternative,SPELLING_CORRECTION
+alternativum,SPELLING_CORRECTION
 emendation,SPELLING_CORRECTION
 correction,SPELLING_CORRECTION
 correction_of,SPELLING_CORRECTION
