@@ -62,8 +62,8 @@
         <dwc-api.version>1.19-SNAPSHOT</dwc-api.version>
         <dwca-io.version>1.33-SNAPSHOT</dwca-io.version>
         <fastutil.version>8.1.0</fastutil.version>
-        <gbif-api.version>0.60</gbif-api.version>
-        <gbif-parser.version>0.32</gbif-parser.version>
+        <gbif-api.version>0.67</gbif-api.version>
+        <gbif-parser.version>0.34</gbif-parser.version>
         <hikaricp.version>2.7.1</hikaricp.version>
         <hk2.version>2.5.0-b32</hk2.version>
         <icu4j.version>60.2</icu4j.version>
@@ -76,7 +76,7 @@
         <mapdb.version>3.0.5</mapdb.version>
         <mockito.version>2.12.0</mockito.version>
         <mybatis.version>3.4.5</mybatis.version>
-        <name-parser.version>3.1.2-SNAPSHOT</name-parser.version>
+        <name-parser.version>3.1.6-SNAPSHOT</name-parser.version>
         <neo4j.version>3.3.5</neo4j.version>
         <postgresql.version>42.1.4</postgresql.version>
         <postgresql-embedded.version>2.6</postgresql-embedded.version>
