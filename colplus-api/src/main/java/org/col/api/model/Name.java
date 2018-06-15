@@ -1,10 +1,8 @@
 package org.col.api.model;
 
 import java.net.URI;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 import javax.annotation.Nonnull;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -13,7 +11,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.col.api.jackson.IsEmptyFilter;
-import org.col.api.vocab.Issue;
 import org.col.api.vocab.NomStatus;
 import org.col.api.vocab.Origin;
 import org.gbif.nameparser.api.*;
@@ -169,11 +166,6 @@ public class Name implements VerbatimEntity {
    */
   private String remarks;
 
-  /**
-   * Issues related to this name
-   */
-  private Set<Issue> issues = EnumSet.noneOf(Issue.class);
-
   public Name() {}
 
   /**
@@ -208,7 +200,6 @@ public class Name implements VerbatimEntity {
     this.type = n.type;
     this.sourceUrl = n.sourceUrl;
     this.fossil = n.fossil;
-    this.issues = n.issues;
     this.remarks = n.remarks;
   }
 
@@ -347,18 +338,6 @@ public class Name implements VerbatimEntity {
 
   public void setSourceUrl(URI sourceUrl) {
     this.sourceUrl = sourceUrl;
-  }
-
-  public Set<Issue> getIssues() {
-    return issues;
-  }
-
-  public void setIssues(Set<Issue> issues) {
-    this.issues = issues;
-  }
-
-  public void addIssue(Issue issue) {
-    issues.add(issue);
   }
 
   public Authorship getCombinationAuthorship() {
@@ -684,13 +663,12 @@ public class Name implements VerbatimEntity {
         type == name.type &&
         Objects.equals(sourceUrl, name.sourceUrl) &&
         Objects.equals(fossil, name.fossil) &&
-        Objects.equals(remarks, name.remarks) &&
-        Objects.equals(issues, name.issues);
+        Objects.equals(remarks, name.remarks);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(key, id, datasetKey, homotypicNameKey, scientificNameID, scientificName, rank, uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, strain, candidatus, notho, combinationAuthorship, basionymAuthorship, sanctioningAuthor, code, nomStatus, publishedInKey, publishedInPage, origin, type, sourceUrl, fossil, remarks, issues);
+    return Objects.hash(key, id, datasetKey, homotypicNameKey, scientificNameID, scientificName, rank, uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, strain, candidatus, notho, combinationAuthorship, basionymAuthorship, sanctioningAuthor, code, nomStatus, publishedInKey, publishedInPage, origin, type, sourceUrl, fossil, remarks);
   }
 
   @Override

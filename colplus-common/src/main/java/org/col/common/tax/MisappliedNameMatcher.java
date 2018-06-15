@@ -23,7 +23,7 @@ public class MisappliedNameMatcher {
    * @return true if a misapplied name format was detected
    */
   public static boolean isMisappliedName(NameAccordingTo nat) {
-    if (nat != null && nat.getName() != null && nat.getAccordingTo() != null && nat.getName().getRank().isSpeciesAggregateOrBelow()) {
+    if (nat != null && nat.getName() != null && nat.getAccordingTo() != null && nat.getName().getRank().isSpeciesOrBelow()) {
       return MIS_PATTERN.matcher(nat.getAccordingTo()).find();
     }
     return false;

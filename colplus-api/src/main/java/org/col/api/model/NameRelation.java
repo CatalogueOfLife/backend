@@ -1,9 +1,7 @@
 package org.col.api.model;
 
 import java.util.Objects;
-import java.util.Set;
 
-import org.col.api.vocab.Issue;
 import org.col.api.vocab.NomRelType;
 
 /**
@@ -35,16 +33,6 @@ public class NameRelation implements VerbatimEntity {
 	@Override
 	public void setVerbatimKey(Integer verbatimKey) {
 		this.verbatimKey = verbatimKey;
-	}
-
-	@Override
-	public Set<Issue> getIssues() {
-		return null;
-	}
-
-	@Override
-	public void addIssue(Issue issue) {
-
 	}
 
 	public Integer getDatasetKey() {

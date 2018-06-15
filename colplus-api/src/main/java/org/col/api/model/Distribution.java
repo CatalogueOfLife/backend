@@ -1,6 +1,5 @@
 package org.col.api.model;
 
-import java.util.EnumSet;
 import java.util.Objects;
 import java.util.Set;
 
@@ -8,7 +7,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.Sets;
 import org.col.api.vocab.DistributionStatus;
 import org.col.api.vocab.Gazetteer;
-import org.col.api.vocab.Issue;
 
 /**
  *
@@ -22,7 +20,6 @@ public class Distribution implements Referenced, VerbatimEntity {
 	private Gazetteer gazetteer;
 	private DistributionStatus status;
   private Set<Integer> referenceKeys = Sets.newHashSet();
-	private Set<Issue> issues = EnumSet.noneOf(Issue.class);
 
 	public Integer getKey() {
 		return key;
@@ -79,18 +76,6 @@ public class Distribution implements Referenced, VerbatimEntity {
     this.referenceKeys.add(referenceKey);
   }
 
-	public Set<Issue> getIssues() {
-		return issues;
-	}
-
-	public void setIssues(Set<Issue> issues) {
-		this.issues = issues;
-	}
-
-	public void addIssue(Issue issue) {
-		issues.add(issue);
-	}
-
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
@@ -101,14 +86,13 @@ public class Distribution implements Referenced, VerbatimEntity {
 				Objects.equals(area, that.area) &&
 				gazetteer == that.gazetteer &&
 				status == that.status &&
-				Objects.equals(referenceKeys, that.referenceKeys) &&
-				Objects.equals(issues, that.issues);
+				Objects.equals(referenceKeys, that.referenceKeys);
 	}
 
 	@Override
 	public int hashCode() {
 
-		return Objects.hash(key, verbatimKey, area, gazetteer, status, referenceKeys, issues);
+		return Objects.hash(key, verbatimKey, area, gazetteer, status, referenceKeys);
 	}
 
 	@Override
