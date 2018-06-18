@@ -1,13 +1,11 @@
 package org.col.api.model;
 
-import java.util.EnumSet;
 import java.util.Objects;
 import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.Sets;
 import org.col.api.vocab.Country;
-import org.col.api.vocab.Issue;
 import org.col.api.vocab.Language;
 
 public class VernacularName implements Referenced, VerbatimEntity {
@@ -20,7 +18,6 @@ public class VernacularName implements Referenced, VerbatimEntity {
 	private Language language;
 	private Country country;
 	private Set<Integer> referenceKeys = Sets.newHashSet();
-  private Set<Issue> issues = EnumSet.noneOf(Issue.class);
 
 	public Integer getKey() {
 		return key;
@@ -88,17 +85,6 @@ public class VernacularName implements Referenced, VerbatimEntity {
     this.referenceKeys.add(referenceKey);
   }
 
-  public Set<Issue> getIssues() {
-    return issues;
-  }
-
-  public void setIssues(Set<Issue> issues) {
-    this.issues = issues;
-  }
-
-  public void addIssue(Issue issue) {
-    issues.add(issue);
-  }
 
   @Override
   public boolean equals(Object o) {
@@ -111,13 +97,12 @@ public class VernacularName implements Referenced, VerbatimEntity {
         Objects.equals(latin, that.latin) &&
         language == that.language &&
         country == that.country &&
-        Objects.equals(referenceKeys, that.referenceKeys) &&
-        Objects.equals(issues, that.issues);
+        Objects.equals(referenceKeys, that.referenceKeys);
   }
 
   @Override
   public int hashCode() {
 
-    return Objects.hash(key, verbatimKey, name, latin, language, country, referenceKeys, issues);
+    return Objects.hash(key, verbatimKey, name, latin, language, country, referenceKeys);
   }
 }

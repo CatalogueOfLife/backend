@@ -1,8 +1,6 @@
 package org.col.db.mapper;
 
-import java.util.EnumSet;
 import java.util.List;
-import java.util.Set;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
@@ -36,6 +34,7 @@ public class NameUsageMapperTest extends MapperTestBase<NameMapper> {
   NameDao nDao;
   TaxonDao tDao;
   SynonymMapper synonymMapper;
+  VerbatimRecordMapper verbatimMapper;
   SqlSession session;
 
   public NameUsageMapperTest() {
@@ -49,6 +48,7 @@ public class NameUsageMapperTest extends MapperTestBase<NameMapper> {
     nDao = new NameDao(session);
     tDao = new TaxonDao(session);
     synonymMapper = session.getMapper(SynonymMapper.class);
+    verbatimMapper = session.getMapper(VerbatimRecordMapper.class);
   }
 
   @After
@@ -304,7 +304,7 @@ public class NameUsageMapperTest extends MapperTestBase<NameMapper> {
     mis.setAccepted(t3);
     mis.setStatus(TaxonomicStatus.MISAPPLIED);
     mis.setAccordingTo("auct. Döring");
-    synonymMapper.create(mis.getName().getDatasetKey(), mis.getName().getKey(), mis.getAccepted().getKey(), mis.getStatus(), mis.getAccordingTo());
+    synonymMapper.create(mis.getName().getDatasetKey(), mis.getName().getKey(), mis.getAccepted().getKey(), mis);
 
     session.commit();
 
@@ -458,36 +458,41 @@ public class NameUsageMapperTest extends MapperTestBase<NameMapper> {
   @Test
   // Test with issue as extra search criterion
   public void searchWithIssue() throws Exception {
-    Set<Issue> issue = EnumSet.noneOf(Issue.class);
-    issue.add(Issue.UNPARSABLE_AUTHORSHIP);
-
     Name n = TestEntityGenerator.newName("a");
+
+    TermRecord v = new TermRecord();
+    v.setDatasetKey(n.getDatasetKey());
+    v.addIssue(Issue.UNPARSABLE_AUTHORSHIP);
+    verbatimMapper.create(v);
+
     n.setScientificName("Foo bar");
     n.setGenus("Foo");
     n.setSpecificEpithet("bar");
-    n.setIssues(issue);
+    n.setVerbatimKey(v.getKey());
     nDao.create(n);
 
     n = TestEntityGenerator.newName("b");
     n.setScientificName("Foo baz");
     n.setGenus("Foo");
     n.setSpecificEpithet("baz");
-    n.setIssues(issue);
+    n.setVerbatimKey(v.getKey());
     nDao.create(n);
 
     n = TestEntityGenerator.newName("c");
     n.setScientificName("Fee bar");
     n.setGenus("Fee");
     n.setSpecificEpithet("bar");
-    n.setIssues(issue);
+    n.setVerbatimKey(v.getKey());
     nDao.create(n);
 
-    Set<Issue> otherIssue = EnumSet.noneOf(Issue.class);
-    otherIssue.add(Issue.UNPARSABLE_REFERENCE);
+    TermRecord v2 = new TermRecord();
+    v2.addIssue(Issue.UNPARSABLE_REFERENCE);
+    v2.setDatasetKey(n.getDatasetKey());
+    verbatimMapper.create(v2);
 
     n = TestEntityGenerator.newName("d");
     n.setScientificName("Foo");
-    n.setIssues(otherIssue);
+    n.setVerbatimKey(v2.getKey());
     nDao.create(n);
 
     session.commit();
@@ -496,24 +501,24 @@ public class NameUsageMapperTest extends MapperTestBase<NameMapper> {
     search.setDatasetKey(TestEntityGenerator.DATASET1.getKey());
     search.setQ("foo");
     List<NameUsage> names = mapper.search(search, new Page());
-    assertEquals("01", 3, names.size());
+    assertEquals(3, names.size());
 
     search.setIssue(Issue.UNPARSABLE_AUTHORSHIP);
     names = mapper.search(search, new Page());
-    assertEquals("02", 2, names.size());
+    assertEquals(2, names.size());
 
     search.setQ("baz");
     names = mapper.search(search, new Page());
-    assertEquals("03", 1, names.size());
+    assertEquals(1, names.size());
 
     search.setQ("Foo");
     search.setIssue(Issue.UNPARSABLE_REFERENCE);
     names = mapper.search(search, new Page());
-    assertEquals("04", 1, names.size());
+    assertEquals(1, names.size());
 
     search.setIssue(Issue.ALT_IDENTIFIER_INVALID);
     names = mapper.search(search, new Page());
-    assertEquals("05", 0, names.size());
+    assertEquals(0, names.size());
   }
 
   @Test
@@ -551,7 +556,7 @@ public class NameUsageMapperTest extends MapperTestBase<NameMapper> {
     mis.setAccepted(t3);
     mis.setStatus(TaxonomicStatus.MISAPPLIED);
     mis.setAccordingTo("auct. Döring");
-    synonymMapper.create(mis.getName().getDatasetKey(), mis.getName().getKey(), mis.getAccepted().getKey(), mis.getStatus(), mis.getAccordingTo());
+    synonymMapper.create(mis.getName().getDatasetKey(), mis.getName().getKey(), mis.getAccepted().getKey(), mis);
 
     session.commit();
 
@@ -619,7 +624,7 @@ public class NameUsageMapperTest extends MapperTestBase<NameMapper> {
   private void saveSynonym(Synonym syn) {
     saveTaxon(syn.getAccepted());
     nDao.create(syn.getName());
-    synonymMapper.create(syn.getName().getDatasetKey(), syn.getName().getKey(), syn.getAccepted().getKey(), syn.getStatus(), syn.getAccordingTo());
+    synonymMapper.create(syn.getName().getDatasetKey(), syn.getName().getKey(), syn.getAccepted().getKey(), syn);
   }
 
   private static Synonym newSynonym(String scientificName) {

@@ -107,7 +107,9 @@ public class TaxonDaoTest extends DaoTestBase {
       assertEquals(0, synonymy.size());
 
       // now add a single synonym relation
-      nDao.addSynonym(datasetKey, syn1.getKey(), acc.getKey(), TaxonomicStatus.SYNONYM, null);
+      Synonym syn = new Synonym();
+      syn.setStatus(TaxonomicStatus.SYNONYM);
+      nDao.addSynonym(datasetKey, syn1.getKey(), acc.getKey(), syn);
       session.commit();
 
       synonymy = tDao.getSynonymy(acc.getKey());
@@ -116,9 +118,10 @@ public class TaxonDaoTest extends DaoTestBase {
       assertEquals(0, synonymy.getMisapplied().size());
       assertEquals(0, synonymy.getHomotypic().size());
 
-      nDao.addSynonym(datasetKey, syn2bas.getKey(), acc.getKey(), TaxonomicStatus.SYNONYM, null);
-      nDao.addSynonym(datasetKey, syn3bas.getKey(), acc.getKey(), TaxonomicStatus.SYNONYM, null);
-      nDao.addSynonym(datasetKey, syn21.getKey(), acc.getKey(), TaxonomicStatus.MISAPPLIED, null);
+      nDao.addSynonym(datasetKey, syn2bas.getKey(), acc.getKey(), syn);
+      nDao.addSynonym(datasetKey, syn3bas.getKey(), acc.getKey(), syn);
+      syn.setStatus(TaxonomicStatus.MISAPPLIED);
+      nDao.addSynonym(datasetKey, syn21.getKey(), acc.getKey(), syn);
       session.commit();
 
       // at this stage we have 4 explicit synonym relations
@@ -129,9 +132,10 @@ public class TaxonDaoTest extends DaoTestBase {
       assertEquals(1, synonymy.getMisapplied().size());
 
       // add the remaining homotypic names as synonyms
-      nDao.addSynonym(datasetKey, syn21.getKey(), acc.getKey(), TaxonomicStatus.SYNONYM, null);
-      nDao.addSynonym(datasetKey, syn22.getKey(), acc.getKey(), TaxonomicStatus.SYNONYM, null);
-      nDao.addSynonym(datasetKey, syn31.getKey(), acc.getKey(), TaxonomicStatus.SYNONYM, null);
+      syn.setStatus(TaxonomicStatus.SYNONYM);
+      nDao.addSynonym(datasetKey, syn21.getKey(), acc.getKey(), syn);
+      nDao.addSynonym(datasetKey, syn22.getKey(), acc.getKey(), syn);
+      nDao.addSynonym(datasetKey, syn31.getKey(), acc.getKey(), syn);
 
       synonymy = tDao.getSynonymy(acc.getKey());
       assertEquals(7, synonymy.size());

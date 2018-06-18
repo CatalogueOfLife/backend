@@ -11,8 +11,7 @@
         r.verbatim_key,
         r.csl,
         r.citation,
-        r.year,
-        r.issues
+        r.year
     </sql>
 
     <sql id="COLS">
@@ -21,8 +20,7 @@
         verbatim_key,
         csl,
         citation,
-        year,
-        issues
+        year
     </sql>
 
     <sql id="PROPS">
@@ -31,8 +29,7 @@
         #{verbatimKey},
         #{csl, typeHandler=org.col.db.type.CslJsonHandler}::jsonb,
         #{citation},
-        #{year},
-        #{issues, typeHandler=org.col.db.type2.IssueSetTypeHandler}::int[]
+        #{year}
     </sql>
 
     <sql id="FROM">
@@ -44,7 +41,6 @@
         <id property="key" column="key" />
         <result property="year" column="year" />
         <result property="csl" column="csl" typeHandler="org.col.db.type.CslJsonHandler" />
-        <result property="issues" column="issues" typeHandler="org.col.db.type2.IssueSetTypeHandler" />
     </resultMap>
 
     <select id="count" resultType="integer">

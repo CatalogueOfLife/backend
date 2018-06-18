@@ -165,7 +165,8 @@ CREATE TABLE verbatim (
   line INTEGER,
   file TEXT,
   type TEXT,
-  terms jsonb
+  terms jsonb,
+  issues INT[] DEFAULT '{}'
 );
 
 CREATE TABLE reference (
@@ -175,8 +176,7 @@ CREATE TABLE reference (
   verbatim_key INTEGER REFERENCES verbatim,
   csl JSONB,
   citation TEXT,
-  year int,
-  issues INT[] DEFAULT '{}'
+  year int
 );
 
 CREATE SEQUENCE name_key_seq;
@@ -265,14 +265,14 @@ CREATE TABLE taxon (
   dataset_url TEXT,
   species_estimate INTEGER,
   species_estimate_reference_key INTEGER REFERENCES reference,
-  remarks TEXT,
-  issues INT[] DEFAULT '{}'
+  remarks TEXT
 );
 
 CREATE TABLE synonym (
   taxon_key INTEGER REFERENCES taxon,
   name_key INTEGER REFERENCES name,
   dataset_key INTEGER NOT NULL REFERENCES dataset,
+  verbatim_key INTEGER REFERENCES verbatim,
   status INTEGER NOT NULL,
   according_to TEXT
 );
@@ -292,8 +292,7 @@ CREATE TABLE vernacular_name (
   name TEXT NOT NULL,
   latin TEXT,
   language CHAR(3),
-  country CHAR(2),
-  issues INT[] DEFAULT '{}'
+  country CHAR(2)
 );
 
 CREATE TABLE vernacular_name_reference (
@@ -310,8 +309,7 @@ CREATE TABLE distribution (
   taxon_key INTEGER NOT NULL REFERENCES taxon,
   area TEXT NOT NULL,
   gazetteer INTEGER NOT NULL,
-  status INTEGER,
-  issues INT[] DEFAULT '{}'
+  status INTEGER
 );
 
 CREATE TABLE distribution_reference (
@@ -338,6 +336,7 @@ CREATE index ON dataset_import (dataset_key, finished);
 CREATE index ON dataset_import (started);
 
 CREATE index ON verbatim (dataset_key);
+CREATE index ON verbatim USING GIN(issues);
 
 CREATE UNIQUE index ON name (id, dataset_key);
 CREATE index ON name (dataset_key);
@@ -346,28 +345,34 @@ CREATE index ON name (nom_status);
 CREATE index ON name (type);
 CREATE index ON name (homotypic_name_key);
 CREATE index ON name (published_in_key);
-CREATE index ON name USING GIN(issues);
+CREATE index ON name (verbatim_key);
 
 CREATE index ON name_rel (dataset_key);
 CREATE index ON name_rel (name_key, type);
+CREATE index ON name_rel (verbatim_key);
 
 CREATE UNIQUE index ON taxon (id, dataset_key);
 CREATE index ON taxon (dataset_key);
 CREATE index ON taxon (parent_key);
 CREATE index ON taxon (name_key);
+CREATE index ON taxon (verbatim_key);
 
 CREATE index ON synonym (dataset_key);
 CREATE index ON synonym (taxon_key);
 CREATE index ON synonym (name_key);
+CREATE index ON synonym (verbatim_key);
 
 CREATE index ON distribution (dataset_key);
 CREATE index ON distribution (taxon_key);
+CREATE index ON distribution (verbatim_key);
 
 CREATE index ON vernacular_name (dataset_key);
 CREATE index ON vernacular_name (taxon_key);
+CREATE index ON vernacular_name (verbatim_key);
 
 CREATE UNIQUE index ON reference (id, dataset_key);
 CREATE index ON reference (dataset_key);
+CREATE index ON reference (verbatim_key);
 
 CREATE index ON distribution_reference (dataset_key);
 CREATE index ON vernacular_name_reference (dataset_key);

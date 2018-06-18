@@ -44,6 +44,12 @@
         LEFT JOIN taxon t ON n.key = t.name_key OR s.taxon_key = t.key
     </sql>
 
+    <sql id="FROM-VERBATIM">
+        <if test="q.issue != null">
+            LEFT JOIN verbatim v ON n.verbatim_key = v.key
+        </if>
+    </sql>
+
     <sql id="FROM-FULL">
         <include refid="FROM"/>
         LEFT JOIN name an ON t.name_key = an.key
@@ -73,7 +79,7 @@
                 AND ${q.hasField.notNull('n')}
             </if>
             <if test="q.issue != null">
-                AND n.issues @> array[#{q.issue}::int]
+                AND v.issues @> array[#{q.issue}::int]
             </if>
             <if test="q.status != null">
                 <choose>
@@ -133,12 +139,14 @@
     <select id="searchCount" resultType="integer">
         SELECT COUNT(*)
         FROM <include refid="FROM" />
+             <include refid="FROM-VERBATIM" />
         <include refid="WHERE" />
     </select>
 
     <select id="search" resultMap="nameSearchResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM-FULL" />
+             <include refid="FROM-VERBATIM" />
         <include refid="WHERE" />
         <choose>
             <when test="q.sortBy.toString() == 'KEY'">

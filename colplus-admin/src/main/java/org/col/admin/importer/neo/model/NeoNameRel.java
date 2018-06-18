@@ -1,10 +1,8 @@
 package org.col.admin.importer.neo.model;
 
 import java.util.Objects;
-import java.util.Set;
 
 import org.col.api.model.VerbatimEntity;
-import org.col.api.vocab.Issue;
 
 public class NeoNameRel implements VerbatimEntity {
   private Integer verbatimKey;
@@ -20,16 +18,6 @@ public class NeoNameRel implements VerbatimEntity {
   @Override
   public void setVerbatimKey(Integer verbatimKey) {
     this.verbatimKey = verbatimKey;
-  }
-
-  @Override
-  public Set<Issue> getIssues() {
-    return null;
-  }
-
-  @Override
-  public void addIssue(Issue issue) {
-
   }
 
   public RelType getType() {

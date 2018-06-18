@@ -50,7 +50,7 @@ public class SynonymMapperTest extends MapperTestBase<SynonymMapper> {
     taxonMapper.create(t);
 
     Synonym s1 = TestEntityGenerator.newSynonym(TaxonomicStatus.SYNONYM, n, t);
-    synonymMapper.create(n.getDatasetKey(), s1.getName().getKey(), s1.getAccepted().getKey(), s1.getStatus(), s1.getAccordingTo());
+    synonymMapper.create(n.getDatasetKey(), s1.getName().getKey(), s1.getAccepted().getKey(), s1);
     commit();
 
     List<Synonym> syns = synonymMapper.listByName(s1.getName().getKey());
@@ -102,17 +102,19 @@ public class SynonymMapperTest extends MapperTestBase<SynonymMapper> {
     assertEquals(0, synonyms.size());
 
     // now add a few synonyms
-    synonymMapper.create(datasetKey,syn1.getKey(), accKey, TaxonomicStatus.SYNONYM, null);
+    Synonym syn = new Synonym();
+    syn.setStatus(TaxonomicStatus.SYNONYM);
+    synonymMapper.create(datasetKey,syn1.getKey(), accKey, syn);
     commit();
     synonyms = synonymMapper.listByTaxon(accKey);
     assertFalse(synonyms.isEmpty());
     assertEquals(1, synonyms.size());
 
-    synonymMapper.create(datasetKey, syn2bas.getKey(), accKey, TaxonomicStatus.SYNONYM, null);
-    synonymMapper.create(datasetKey, syn21.getKey(), accKey, TaxonomicStatus.SYNONYM, null);
-    synonymMapper.create(datasetKey, syn22.getKey(), accKey, TaxonomicStatus.SYNONYM, null);
-    synonymMapper.create(datasetKey, syn3bas.getKey(), accKey, TaxonomicStatus.SYNONYM, null);
-    synonymMapper.create(datasetKey, syn31.getKey(), accKey, TaxonomicStatus.SYNONYM, null);
+    synonymMapper.create(datasetKey, syn2bas.getKey(), accKey, syn);
+    synonymMapper.create(datasetKey, syn21.getKey(), accKey, syn);
+    synonymMapper.create(datasetKey, syn22.getKey(), accKey, syn);
+    synonymMapper.create(datasetKey, syn3bas.getKey(), accKey, syn);
+    synonymMapper.create(datasetKey, syn31.getKey(), accKey, syn);
 
     synonyms = synonymMapper.listByTaxon(accKey);
     assertEquals(6, synonyms.size());
@@ -120,7 +122,9 @@ public class SynonymMapperTest extends MapperTestBase<SynonymMapper> {
 
 
     // now also add a misapplied name with the same name
-    synonymMapper.create(datasetKey, syn21.getKey(), TestEntityGenerator.TAXON2.getKey(), TaxonomicStatus.MISAPPLIED, "auct. Döring");
+    syn.setStatus(TaxonomicStatus.MISAPPLIED);
+    syn.setAccordingTo("auct. Döring");
+    synonymMapper.create(datasetKey, syn21.getKey(), TestEntityGenerator.TAXON2.getKey(), syn);
     commit();
 
     assertEquals(6, synonymMapper.listByTaxon(accKey).size());

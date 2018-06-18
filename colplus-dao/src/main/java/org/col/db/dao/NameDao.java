@@ -4,12 +4,8 @@ import java.util.List;
 
 import com.google.common.base.Preconditions;
 import org.apache.ibatis.session.SqlSession;
-import org.col.api.model.Name;
-import org.col.api.model.NameRelation;
-import org.col.api.model.Page;
-import org.col.api.model.ResultPage;
+import org.col.api.model.*;
 import org.col.api.vocab.NomRelType;
-import org.col.api.vocab.TaxonomicStatus;
 import org.col.db.NotFoundException;
 import org.col.db.mapper.NameMapper;
 import org.col.db.mapper.NameRelationMapper;
@@ -109,9 +105,9 @@ public class NameDao {
   /**
    * Adds a new synonym link for an existing taxon and synonym name
    */
-  public void addSynonym(int datasetKey, int nameKey, int taxonKey, TaxonomicStatus status, String accordingTo) {
-    Preconditions.checkNotNull(status, "status must exist");
-    sMapper.create(datasetKey, nameKey, taxonKey, status, accordingTo);
+  public void addSynonym(int datasetKey, int nameKey, int taxonKey, Synonym syn) {
+    Preconditions.checkNotNull(syn.getStatus(), "status must exist");
+    sMapper.create(datasetKey, nameKey, taxonKey, syn);
   }
 
 }

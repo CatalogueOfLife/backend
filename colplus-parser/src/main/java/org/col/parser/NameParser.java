@@ -7,6 +7,7 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.google.common.collect.ImmutableMap;
 import org.apache.commons.lang3.StringUtils;
+import org.col.api.model.IssueContainer;
 import org.col.api.model.Name;
 import org.col.api.model.NameAccordingTo;
 import org.col.api.vocab.Issue;
@@ -30,9 +31,7 @@ public class NameParser implements Parser<NameAccordingTo> {
       .put(Warnings.UNUSUAL_CHARACTERS, Issue.UNUSUAL_CHARACTERS)
       .put(Warnings.SUBSPECIES_ASSIGNED, Issue.SUBSPECIES_ASSIGNED)
       .put(Warnings.LC_MONOMIAL, Issue.LC_MONOMIAL)
-      .put(Warnings.INDET_CULTIVAR, Issue.INDET_CULTIVAR)
-      .put(Warnings.INDET_SPECIES, Issue.INDET_SPECIES)
-      .put(Warnings.INDET_INFRASPECIES, Issue.INDET_INFRASPECIES)
+      .put(Warnings.INDETERMINED, Issue.INDETERMINED)
       .put(Warnings.HIGHER_RANK_BINOMIAL, Issue.HIGHER_RANK_BINOMIAL)
       .put(Warnings.QUESTION_MARKS_REMOVED, Issue.QUESTION_MARKS_REMOVED)
       .put(Warnings.REPL_ENCLOSING_QUOTE, Issue.REPL_ENCLOSING_QUOTE)
@@ -52,7 +51,7 @@ public class NameParser implements Parser<NameAccordingTo> {
   }
 
   public Optional<NameAccordingTo> parse(String name) {
-    return parse(name, Rank.UNRANKED);
+    return parse(name, Rank.UNRANKED, IssueContainer.VOID);
   }
 
   /**
@@ -72,7 +71,7 @@ public class NameParser implements Parser<NameAccordingTo> {
    * Fully parses a name using #parse(String, Rank) but converts names that throw a UnparsableException
    * into ParsedName objects with the scientific name, rank and name type given.
    */
-  public Optional<NameAccordingTo> parse(String name, Rank rank) {
+  public Optional<NameAccordingTo> parse(String name, Rank rank, IssueContainer issues) {
     if (StringUtils.isBlank(name)) {
       return Optional.empty();
     }
@@ -80,7 +79,7 @@ public class NameParser implements Parser<NameAccordingTo> {
     NameAccordingTo n;
     Timer.Context ctx = timer == null ? null : timer.time();
     try {
-      n = fromParsedName(PARSER_INTERNAL.parse(name, rank));
+      n = fromParsedName(PARSER_INTERNAL.parse(name, rank), issues);
       n.getName().updateScientificName();
 
     } catch (UnparsableNameException e) {
@@ -91,7 +90,7 @@ public class NameParser implements Parser<NameAccordingTo> {
       n.getName().setType(e.getType());
       // adds an issue in case the type indicates a parsable name
       if (n.getName().getType().isParsable()) {
-        n.getName().addIssue(Issue.UNPARSABLE_NAME);
+        issues.addIssue(Issue.UNPARSABLE_NAME);
       }
     } finally {
       if (ctx != null) {
@@ -101,7 +100,7 @@ public class NameParser implements Parser<NameAccordingTo> {
     return Optional.of(n);
   }
 
-  private static NameAccordingTo fromParsedName(ParsedName pn) {
+  private static NameAccordingTo fromParsedName(ParsedName pn, IssueContainer issues) {
     Name n = new Name();
     n.setUninomial(pn.getUninomial());
     n.setGenus(pn.getGenus());
@@ -121,15 +120,15 @@ public class NameParser implements Parser<NameAccordingTo> {
     n.setType(pn.getType());
     // issues
     if (!pn.getState().isParsed()) {
-      n.addIssue(Issue.UNPARSABLE_NAME);
+      issues.addIssue(Issue.UNPARSABLE_NAME);
     }
     if (pn.isDoubtful()) {
-      n.addIssue(Issue.DOUBTFUL_NAME);
+      issues.addIssue(Issue.DOUBTFUL_NAME);
     }
     // translate warnings into issues
     for (String warn : pn.getWarnings()) {
       if (WARN_TO_ISSUE.containsKey(warn)) {
-        n.addIssue(WARN_TO_ISSUE.get(warn));
+        issues.addIssue(WARN_TO_ISSUE.get(warn));
       } else {
         LOG.debug("Unknown parser warning: {}", warn);
       }

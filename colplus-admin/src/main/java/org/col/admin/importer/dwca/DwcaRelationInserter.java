@@ -51,6 +51,7 @@ public class DwcaRelationInserter implements NeoDb.NodeBatchProcessor {
         insertAcceptedRel(t, v);
         insertParentRel(t, v);
         insertBasionymRel(t, v);
+        store.put(v);
       }
 
       store.put(t);
@@ -77,7 +78,7 @@ public class DwcaRelationInserter implements NeoDb.NodeBatchProcessor {
 
     // if status is synonym but we aint got no idea of the accepted flag it
     if (accepted.isEmpty() && (t.isSynonym() || v.hasIssue(Issue.ACCEPTED_ID_INVALID))) {
-      t.addIssue(Issue.ACCEPTED_NAME_MISSING);
+      v.addIssue(Issue.ACCEPTED_NAME_MISSING);
       // now remove any denormed classification from this synonym to avoid parent relations
       //t.classification = null;
       t.node.addLabel(Labels.SYNONYM);
@@ -164,7 +165,6 @@ public class DwcaRelationInserter implements NeoDb.NodeBatchProcessor {
       // could not find anything?
       if (ids.isEmpty()) {
         v.addIssue(invalidIdIssue);
-        t.addIssue(invalidIdIssue);
         LOG.warn("{} {} not existing", term.simpleName(), unsplitIds);
       }
     }
@@ -222,7 +222,7 @@ public class DwcaRelationInserter implements NeoDb.NodeBatchProcessor {
         } else {
           if (matches.size() > 1) {
             // still multiple matches, pick first and log critical issue!
-            t.addIssue(Issue.NAME_NOT_UNIQUE);
+            v.addIssue(Issue.NAME_NOT_UNIQUE);
           }
           return NeoProperties.getRankedName(matches.get(0));
         }

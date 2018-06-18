@@ -1,8 +1,8 @@
 package org.col.parser;
 
 import java.util.Optional;
-import java.util.Set;
 
+import org.col.api.model.IssueContainer;
 import org.col.api.vocab.Issue;
 
 /**
@@ -84,7 +84,7 @@ public class SafeParser<T> {
    * If the value was unparsable an issue is added to the issue collector.
    * @return the parsed value if present, null if empty or unparsable
    */
-  public T orNull(Issue unparsableIssue, Set<Issue> issueCollector) {
+  public T orNull(Issue unparsableIssue, IssueContainer issueCollector) {
     return orElse(null, unparsableIssue, issueCollector);
   }
 
@@ -93,12 +93,12 @@ public class SafeParser<T> {
    * If the value was unparsable an issue is added to the issue collector.
    * @return the parsed value if present, other if empty or unparsable
    */
-  public T orElse(T other, Issue unparsableIssue, Set<Issue> issueCollector) {
+  public T orElse(T other, Issue unparsableIssue, IssueContainer issueCollector) {
     if (isParsable()) {
       return result.orElse(other);
 
     } else {
-      issueCollector.add(unparsableIssue);
+      issueCollector.addIssue(unparsableIssue);
       return other;
     }
   }

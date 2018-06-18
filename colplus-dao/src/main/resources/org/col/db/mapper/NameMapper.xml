@@ -36,8 +36,7 @@
         ${alias}.type AS ${prefix}type,
         ${alias}.source_url AS ${prefix}source_url,
         ${alias}.fossil AS ${prefix}fossil,
-        ${alias}.remarks AS ${prefix}remarks,
-        ${alias}.issues AS ${prefix}issues
+        ${alias}.remarks AS ${prefix}remarks
     </sql>
 
     <sql id="SELECT">
@@ -79,8 +78,7 @@
         type,
         source_url,
         fossil,
-        remarks,
-        issues
+        remarks
     </sql>
 
     <sql id="PROPS">
@@ -118,8 +116,7 @@
         #{type},
         #{sourceUrl},
         #{fossil},
-        #{remarks},
-        #{issues, typeHandler=org.col.db.type2.IssueSetTypeHandler}::int[]
+        #{remarks}
     </sql>
 
     <sql id="FROM">name n</sql>
@@ -128,7 +125,6 @@
     <resultMap id="nameResultMap" type="Name" autoMapping="true">
         <id property="key" column="key" />
         <result property="id" column="id" />
-        <result property="issues" column="issues" typeHandler="org.col.db.type2.IssueSetTypeHandler" />
         <association property="combinationAuthorship" javaType="Authorship">
             <result property="authors" column="combination_authors" typeHandler="org.col.db.type.StringArrayTypeHandler" />
             <result property="exAuthors" column="combination_ex_authors" typeHandler="org.col.db.type.StringArrayTypeHandler" />

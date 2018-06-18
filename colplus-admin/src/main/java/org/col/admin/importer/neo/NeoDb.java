@@ -444,10 +444,9 @@ public class NeoDb implements ReferenceStore {
           List<Node> nodes = (List<Node>) row.get("nodes");
           Node first = nodes.get(0);
           LOG.info("keep {} {}", first, NeoProperties.getScientificNameWithAuthor(first));
-          NeoTaxon t = get(first);
-          t.addIssue(Issue.ID_NOT_UNIQUE);
-          update(t);
 
+          NeoTaxon t = get(first);
+          addIssues(t.name, Issue.ID_NOT_UNIQUE);
           for (Node n : nodes) {
             if (n.getId() != first.getId()) {
               LOG.info("remove {} with duplicate ID {}", NeoProperties.getID(n), n);
@@ -514,10 +513,11 @@ public class NeoDb implements ReferenceStore {
       v.setKey(verbatimSequence.incrementAndGet());
     }
   }
-  public TermRecord put(TermRecord v) {
-    assignKey(v);
-    verbatim.put(v.getKey(), v);
-    return v;
+  public void put(TermRecord v) {
+    if (v.hasChanged()) {
+      assignKey(v);
+      verbatim.put(v.getKey(), v);
+    }
   }
 
   /**
@@ -550,8 +550,29 @@ public class NeoDb implements ReferenceStore {
     return r;
   }
 
+  /**
+   * @return the verbatim key as assigned from verbatimSequence
+   */
   public TermRecord getVerbatim(int key) {
-    return verbatim.get(key);
+    TermRecord rec = verbatim.get(key);
+    if (rec != null) {
+      rec.setHashCode();
+    }
+    return rec;
+  }
+
+  public void addIssues(VerbatimEntity ent, Issue... issue) {
+    if (issue != null) {
+      TermRecord v = getVerbatim(ent.getVerbatimKey());
+      if (v == null) {
+        LOG.warn("No verbatim exists for {} with verbatim key {}", ent.getClass().getSimpleName(), ent.getVerbatimKey());
+      } else {
+        for (Issue is : issue) {
+          v.addIssue(is);
+        }
+        put(v);
+      }
+    }
   }
 
   private static String normRef(String idOrTitle) {

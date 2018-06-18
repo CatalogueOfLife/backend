@@ -6,7 +6,6 @@ import java.util.EnumSet;
 import java.util.Objects;
 import java.util.Set;
 
-import org.col.api.vocab.Issue;
 import org.col.api.vocab.Lifezone;
 import org.col.api.vocab.Origin;
 import org.col.api.vocab.TaxonomicStatus;
@@ -58,9 +57,6 @@ public class Taxon implements NameUsage, VerbatimEntity {
 	private Integer speciesEstimateReferenceKey;
 
 	private String remarks;
-
-
-  private Set<Issue> issues = EnumSet.noneOf(Issue.class);
 
 	public Integer getKey() {
 		return key;
@@ -215,18 +211,6 @@ public class Taxon implements NameUsage, VerbatimEntity {
 		this.remarks = remarks;
 	}
 
-	public Set<Issue> getIssues() {
-		return issues;
-	}
-
-	public void setIssues(Set<Issue> issues) {
-		this.issues = issues;
-	}
-
-	public void addIssue(Issue issue) {
-		issues.add(issue);
-	}
-
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -248,12 +232,11 @@ public class Taxon implements NameUsage, VerbatimEntity {
         Objects.equals(datasetUrl, taxon.datasetUrl) &&
         Objects.equals(speciesEstimate, taxon.speciesEstimate) &&
         Objects.equals(speciesEstimateReferenceKey, taxon.speciesEstimateReferenceKey) &&
-        Objects.equals(remarks, taxon.remarks) &&
-        Objects.equals(issues, taxon.issues);
+        Objects.equals(remarks, taxon.remarks);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(key, id, datasetKey, taxonID, name, doubtful, origin, parentKey, accordingTo, accordingToDate, fossil, recent, lifezones, datasetUrl, speciesEstimate, speciesEstimateReferenceKey, remarks, issues);
+    return Objects.hash(key, id, datasetKey, taxonID, name, doubtful, origin, parentKey, accordingTo, accordingToDate, fossil, recent, lifezones, datasetUrl, speciesEstimate, speciesEstimateReferenceKey, remarks);
   }
 }

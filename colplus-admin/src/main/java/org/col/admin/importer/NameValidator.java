@@ -1,10 +1,9 @@
 package org.col.admin.importer;
 
-import java.util.EnumSet;
-import java.util.Set;
 import java.util.regex.Pattern;
 
 import com.google.common.annotations.VisibleForTesting;
+import org.col.api.model.IssueContainer;
 import org.col.api.model.Name;
 import org.col.api.vocab.Issue;
 import org.gbif.nameparser.api.NameType;
@@ -29,26 +28,26 @@ public class NameValidator {
    * populated properties and available properties make sense together.
    * @return true if any issue have been added
    */
-  public static boolean flagIssues(Name n) {
+  public static boolean flagIssues(Name n, IssueContainer issues) {
     // only check for type scientific which is parsable
     if (n.getType() != NameType.SCIENTIFIC) {
       return false;
     }
 
-    final Set<Issue> issues = EnumSet.noneOf(Issue.class);
+    final int startSize = issues.getIssues().size();
     final Rank rank = n.getRank();
     if (n.getUninomial() != null && (n.getGenus() != null || n.getInfragenericEpithet() != null
         || n.getSpecificEpithet() != null || n.getInfraspecificEpithet() != null)) {
       LOG.info("Uninomial with further epithets in name {}", n.toStringComplete());
-      issues.add(Issue.INCONSISTENT_NAME);
+      issues.addIssue(Issue.INCONSISTENT_NAME);
 
     } else if (n.getGenus() == null && (n.getSpecificEpithet() != null || n.getInfragenericEpithet() != null)) {
       LOG.info("Missing genus in name {}", n.toStringComplete());
-      issues.add(Issue.INCONSISTENT_NAME);
+      issues.addIssue(Issue.INCONSISTENT_NAME);
 
     } else if (n.getSpecificEpithet() == null && n.getInfraspecificEpithet() != null) {
       LOG.info("Missing specific epithet in infraspecific name {}", n.toStringComplete());
-      issues.add(Issue.INCONSISTENT_NAME);
+      issues.addIssue(Issue.INCONSISTENT_NAME);
     }
 
     // verify epithets
@@ -56,12 +55,12 @@ public class NameValidator {
       // no whitespace
       if (WHITE.matcher(epithet).find()) {
         LOG.info("Name part contains whitespace {}", n.toStringComplete());
-        issues.add(Issue.UNUSUAL_CHARACTERS);
+        issues.addIssue(Issue.UNUSUAL_CHARACTERS);
       }
       // non ascii chars
       if (NON_LETTER.matcher(epithet).find()) {
         LOG.info("Name part contains non ASCII letters {}", n.toStringComplete());
-        issues.add(Issue.UNUSUAL_CHARACTERS);
+        issues.addIssue(Issue.UNUSUAL_CHARACTERS);
       }
     }
 
@@ -70,45 +69,43 @@ public class NameValidator {
       if (rank.isGenusOrSuprageneric()) {
         if (n.getGenus() != null || n.getUninomial() == null) {
           LOG.info("Missing genus or uninomial for {}", n.toStringComplete());
-          issues.add(Issue.INCONSISTENT_NAME);
+          issues.addIssue(Issue.INCONSISTENT_NAME);
         }
 
       } else if (rank.isInfrageneric() && rank.isSupraspecific()) {
         if (n.getInfragenericEpithet() == null) {
           LOG.info("Missing infrageneric epithet for {}", n.toStringComplete());
-          issues.add(Issue.INCONSISTENT_NAME);
+          issues.addIssue(Issue.INCONSISTENT_NAME);
         }
 
         if (n.getSpecificEpithet() != null || n.getInfraspecificEpithet() != null) {
           LOG.info("Species or infraspecific epithet for {}", n.toStringComplete());
-          issues.add(Issue.INCONSISTENT_NAME);
+          issues.addIssue(Issue.INCONSISTENT_NAME);
         }
 
       } else if (rank.isSpeciesOrBelow()) {
         if (n.getSpecificEpithet() == null) {
           LOG.info("Missing specific epithet for {}", n.toStringComplete());
-          issues.add(Issue.INCONSISTENT_NAME);
+          issues.addIssue(Issue.INCONSISTENT_NAME);
         }
 
         if (!rank.isInfraspecific() && n.getInfraspecificEpithet() != null) {
           LOG.info("Infraspecific epithet found for {}", n.toStringComplete());
-          issues.add(Issue.INCONSISTENT_NAME);
+          issues.addIssue(Issue.INCONSISTENT_NAME);
         }
       }
 
       if (rank.isInfraspecific()) {
         if (n.getInfraspecificEpithet() == null) {
           LOG.info("Missing infraspecific epithet for {}", n.toStringComplete());
-          issues.add(Issue.INCONSISTENT_NAME);
+          issues.addIssue(Issue.INCONSISTENT_NAME);
         }
       }
     }
 
-    if (issues.isEmpty()) {
-      return false;
-    } else {
-      n.getIssues().addAll(issues);
+    if (issues.getIssues().size() > startSize) {
       return true;
     }
+    return false;
   }
 }

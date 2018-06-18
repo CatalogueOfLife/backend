@@ -35,9 +35,6 @@ public class NeoKryoFactoryTest {
     t.taxon.getName().setCombinationAuthorship(TestEntityGenerator.createAuthorship());
     t.taxon.getName().setBasionymAuthorship(TestEntityGenerator.createAuthorship());
     t.taxon.getName().setRank(Rank.SPECIES);
-    for (Issue issue : Issue.values()) {
-      t.taxon.addIssue(issue);
-    }
     assertSerde(t);
   }
 
@@ -47,15 +44,13 @@ public class NeoKryoFactoryTest {
     r.setId("1234");
     r.setKey(123);
     r.setYear(1984);
-    r.addIssue(Issue.ACCEPTED_NAME_MISSING);
-    r.addIssue(Issue.REFERENCE_ID_INVALID);
     r.setDatasetKey(77);
     r.setCsl(TestEntityGenerator.createCsl());
     assertSerde(r);
   }
 
   @Test
-  public void testTerms() throws Exception {
+  public void testVerbatim() throws Exception {
     List<Term> terms = Lists.newArrayList(
         DwcTerm.scientificName, DwcTerm.associatedOrganisms, DwcTerm.taxonID,
         DcTerm.title,
@@ -67,6 +62,9 @@ public class NeoKryoFactoryTest {
     assertSerde(terms);
 
     TermRecord rec = TestEntityGenerator.createVerbatim();
+    for (Issue issue : Issue.values()) {
+      rec.addIssue(issue);
+    }
     assertSerde(rec);
   }
 

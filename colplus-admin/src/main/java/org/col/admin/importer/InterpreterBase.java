@@ -82,7 +82,7 @@ public class InterpreterBase {
 
     if (StringUtils.isBlank(vn.getLatin())) {
       vn.setLatin(latinName(vn.getName()));
-      vn.addIssue(Issue.VERNACULAR_NAME_TRANSLITERATED);
+      rec.addIssue(Issue.VERNACULAR_NAME_TRANSLITERATED);
     }
     return Lists.newArrayList(vn);
   }
@@ -92,12 +92,12 @@ public class InterpreterBase {
     try {
       date = DateParser.PARSER.parse(v.get(term));
     } catch (UnparsableException e) {
-      ent.addIssue(invalidIssue);
+      v.addIssue(invalidIssue);
       return null;
     }
     if (date.isPresent()) {
       if (date.get().isFuzzyDate()) {
-        ent.addIssue(Issue.PARTIAL_DATE);
+        v.addIssue(Issue.PARTIAL_DATE);
       }
       return date.get().toLocalDate();
     }
@@ -105,20 +105,20 @@ public class InterpreterBase {
   }
 
   protected URI uri(TermRecord v, VerbatimEntity ent, Issue invalidIssue, Term... term) {
-    return parse(UriParser.PARSER, v.getFirstRaw(term)).orNull(invalidIssue, ent.getIssues());
+    return parse(UriParser.PARSER, v.getFirstRaw(term)).orNull(invalidIssue, v);
   }
 
   protected Boolean bool(TermRecord v, VerbatimEntity ent, Issue invalidIssue, Term... term) {
-    return parse(BooleanParser.PARSER, v.getFirst(term)).orNull(invalidIssue, ent.getIssues());
+    return parse(BooleanParser.PARSER, v.getFirst(term)).orNull(invalidIssue, v);
   }
 
-  protected Optional<Reference> lookupReference(String id, String citation) {
+  protected Optional<Reference> lookupReference(String id, String citation, IssueContainer issues) {
     Reference r;
     // if we have an id make sure we have a record - even if its a duplicate
     if (id != null) {
       r = refStore.refById(id);
       if (r == null) {
-        r = create(id, citation);
+        r = create(id, citation, issues);
       }
       return Optional.of(r);
 
@@ -127,7 +127,7 @@ public class InterpreterBase {
       if (referenceByCitation.containsKey(citation)) {
         r = referenceByCitation.get(citation);
       } else {
-        r = create(id, citation);
+        r = create(id, citation, issues);
       }
       return Optional.of(r);
 
@@ -135,8 +135,8 @@ public class InterpreterBase {
     return Optional.empty();
   }
 
-  private Reference create(String id, String citation) {
-    Reference r = refFactory.fromCitation(id, citation);
+  private Reference create(String id, String citation, IssueContainer issues) {
+    Reference r = refFactory.fromCitation(id, citation, issues);
     refStore.put(r);
     referenceByCitation.put(citation, r);
     return r;
@@ -144,8 +144,7 @@ public class InterpreterBase {
 
   public Optional<NameAccordingTo> interpretName(final String id, final String vrank, final String sciname, final String authorship,
                                        final String genus, final String infraGenus, final String species, final String infraspecies,
-                                       String nomCode, String nomStatus, String link, String remarks) {
-    final Set<Issue> issues = EnumSet.noneOf(Issue.class);
+                                       String nomCode, String nomStatus, String link, String remarks, TermRecord v) {
     final boolean isAtomized = ObjectUtils.anyNotNull(genus, infraGenus, species, infraspecies);
 
     NameAccordingTo nat;
@@ -158,19 +157,20 @@ public class InterpreterBase {
     atom.setInfraspecificEpithet(infraspecies);
 
     // parse rank
-    Rank rank = SafeParser.parse(RankParser.PARSER, vrank).orElse(Rank.UNRANKED, Issue.RANK_INVALID, issues);
+    Rank rank = SafeParser.parse(RankParser.PARSER, vrank).orElse(Rank.UNRANKED, Issue.RANK_INVALID, v);
     atom.setRank(rank);
 
     // we can get the scientific name in various ways.
     // we parse all names from the scientificName + optional authorship
     // or use the atomized parts which we also use to validate the parsing result.
     if (sciname != null) {
-      nat = NameParser.PARSER.parse(sciname, rank).get();
+      nat = NameParser.PARSER.parse(sciname, rank, v).get();
+
       // try to add an authorship if not yet there
       if (!Strings.isNullOrEmpty(authorship)) {
         ParsedName pnAuthorship = NameParser.PARSER.parseAuthorship(authorship).orElseGet(() -> {
           LOG.warn("Unparsable authorship {}", authorship);
-          nat.getName().addIssue(Issue.UNPARSABLE_AUTHORSHIP);
+          v.addIssue(Issue.UNPARSABLE_AUTHORSHIP);
           // add the full, unparsed authorship in this case to not lose it
           ParsedName pn = new ParsedName();
           pn.getCombinationAuthorship().getAuthors().add(authorship);
@@ -181,7 +181,7 @@ public class InterpreterBase {
         if (nat.getName().hasAuthorship()
             && !nat.getName().authorshipComplete().equalsIgnoreCase(pnAuthorship.authorshipComplete())
             ) {
-          nat.getName().addIssue(Issue.INCONSISTENT_AUTHORSHIP);
+          v.addIssue(Issue.INCONSISTENT_AUTHORSHIP);
           LOG.info("Different authorship [{}] found in dwc:scientificName=[{}] and dwc:scientificNameAuthorship=[{}]",
               nat.getName().authorshipComplete(), sciname, pnAuthorship.authorshipComplete());
         }
@@ -198,7 +198,7 @@ public class InterpreterBase {
       // parse the reconstructed name with authorship
       // cant use the atomized name just like that cause we would miss name type detection (virus,
       // hybrid, placeholder, garbage)
-      nat = NameParser.PARSER.parse(atom.canonicalNameComplete() + " " + authorship, rank).get();
+      nat = NameParser.PARSER.parse(atom.canonicalNameComplete() + " " + authorship, rank, v).get();
       // if parsed compare with original atoms
       if (nat.getName().isParsed()) {
         if (!Objects.equals(genus, nat.getName().getGenus()) ||
@@ -207,21 +207,20 @@ public class InterpreterBase {
             !Objects.equals(infraspecies, nat.getName().getInfraspecificEpithet())
         ) {
           LOG.warn("Parsed and given name atoms differ: [{}] vs [{}]", nat.getName().canonicalNameComplete(), atom.canonicalNameComplete());
-          nat.getName().addIssue(Issue.PARSED_NAME_DIFFERS);
+          v.addIssue(Issue.PARSED_NAME_DIFFERS);
         }
       }
     }
 
     // common basics
     nat.getName().setId(id);
+    nat.getName().setVerbatimKey(v.getKey());
     nat.getName().setOrigin(Origin.SOURCE);
     nat.getName().setSourceUrl(SafeParser.parse(UriParser.PARSER, link).orNull());
-    nat.getName().setNomStatus(SafeParser.parse(NomStatusParser.PARSER, nomStatus).orElse(null,
-        Issue.NOMENCLATURAL_STATUS_INVALID, nat.getName().getIssues()));
+    nat.getName().setNomStatus(SafeParser.parse(NomStatusParser.PARSER, nomStatus).orElse(null, Issue.NOMENCLATURAL_STATUS_INVALID, v));
     // applies default dataset code if we cannot find or parse any
     // Always make sure this happens BEFORE we update the canonical scientific name
-    nat.getName().setCode(SafeParser.parse(NomCodeParser.PARSER, nomCode).orElse(dataset.getCode(),
-        Issue.NOMENCLATURAL_CODE_INVALID, nat.getName().getIssues()));
+    nat.getName().setCode(SafeParser.parse(NomCodeParser.PARSER, nomCode).orElse(dataset.getCode(), Issue.NOMENCLATURAL_CODE_INVALID, v));
     nat.getName().setRemarks(remarks);
 
     // assign best rank
@@ -235,9 +234,8 @@ public class InterpreterBase {
       nat.getName().updateScientificName();
     } catch (InvalidNameException e) {
       LOG.info("Invalid atomised name found: {}", nat.getName());
-      nat.getName().addIssue(Issue.INCONSISTENT_NAME);
+      v.addIssue(Issue.INCONSISTENT_NAME);
     }
-    nat.getName().getIssues().addAll(issues);
 
     return Optional.of(nat);
   }

@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.apache.ibatis.annotations.Param;
 import org.col.api.model.Synonym;
-import org.col.api.vocab.TaxonomicStatus;
 
 /**
  *
@@ -17,8 +16,7 @@ public interface SynonymMapper {
   void create(@Param("datasetKey") int datasetKey,
 							@Param("nameKey") int nameKey,
 							@Param("taxonKey") int taxonKey,
-							@Param("status") TaxonomicStatus status,
-							@Param("accordingTo") String accordingTo
+							@Param("syn") Synonym syn
 	);
 
 	/**

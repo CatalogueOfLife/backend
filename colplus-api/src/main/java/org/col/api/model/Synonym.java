@@ -9,12 +9,13 @@ import org.col.api.vocab.TaxonomicStatus;
  * A taxonomic synonym, linking a name to potentially multiple taxa.
  * Can be used for both homo-and heterotypic synonyms as well as misapplied names.
  */
-public class Synonym implements NameUsage {
+public class Synonym implements NameUsage, VerbatimEntity {
 
   private Name name;
   private TaxonomicStatus status;
   private String accordingTo;
   private Taxon accepted;
+  private Integer verbatimKey;
 
   @Override
   public Name getName() {
@@ -65,6 +66,16 @@ public class Synonym implements NameUsage {
 
   public void setAccepted(Taxon accepted) {
     this.accepted = accepted;
+  }
+
+  @Override
+  public Integer getVerbatimKey() {
+    return verbatimKey;
+  }
+
+  @Override
+  public void setVerbatimKey(Integer verbatimKey) {
+    this.verbatimKey = verbatimKey;
   }
 
   @Override

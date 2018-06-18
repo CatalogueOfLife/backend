@@ -1,10 +1,6 @@
 package org.col.api.model;
 
-import java.util.EnumSet;
 import java.util.Objects;
-import java.util.Set;
-
-import org.col.api.vocab.Issue;
 
 /**
  * Simplified citation class linked to an optional serial container.
@@ -45,10 +41,6 @@ public class Reference implements VerbatimEntity {
    */
   private Integer year;
 
-  /**
-   * Issues related to this reference
-   */
-  private Set<Issue> issues = EnumSet.noneOf(Issue.class);
 
   public Integer getKey() {
     return key;
@@ -108,18 +100,6 @@ public class Reference implements VerbatimEntity {
     this.year = year;
   }
 
-  public Set<Issue> getIssues() {
-    return issues;
-  }
-
-  public void setIssues(Set<Issue> issues) {
-    this.issues = issues;
-  }
-
-  public void addIssue(Issue issue) {
-    issues.add(issue);
-  }
-
   public boolean isParsed() {
     return csl != null;
   }
@@ -133,14 +113,13 @@ public class Reference implements VerbatimEntity {
     Reference reference = (Reference) o;
     return Objects.equals(key, reference.key) && Objects.equals(id, reference.id)
         && Objects.equals(datasetKey, reference.datasetKey) && Objects.equals(csl, reference.csl)
-        && Objects.equals(citation, reference.citation) && Objects.equals(year, reference.year)
-        && Objects.equals(issues, reference.issues);
+        && Objects.equals(citation, reference.citation) && Objects.equals(year, reference.year);
   }
 
   @Override
   public int hashCode() {
 
-    return Objects.hash(key, id, datasetKey, csl, year, issues);
+    return Objects.hash(key, id, datasetKey, csl, year);
   }
 
   @Override

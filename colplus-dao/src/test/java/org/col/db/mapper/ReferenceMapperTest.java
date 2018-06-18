@@ -9,7 +9,6 @@ import org.col.api.TestEntityGenerator;
 import org.col.api.model.CslData;
 import org.col.api.model.Page;
 import org.col.api.model.Reference;
-import org.col.api.vocab.Issue;
 import org.junit.Test;
 
 import static org.col.api.TestEntityGenerator.DATASET1;
@@ -83,8 +82,6 @@ public class ReferenceMapperTest extends MapperTestBase<ReferenceMapper> {
 		ref.setId(RandomUtils.randomString(8));
 		ref.setYear(1988);
 		ref.setCsl(createCsl());
-		ref.addIssue(Issue.REFERENCE_ID_INVALID);
-    ref.addIssue(Issue.RELATIONSHIP_MISSING);
 		return ref;
 	}
 

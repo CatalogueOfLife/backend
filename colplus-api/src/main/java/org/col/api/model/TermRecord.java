@@ -34,22 +34,21 @@ import static com.google.common.base.Preconditions.checkNotNull;
  *    Unicode code point escapes indicated by "\\u{}": \\u{2F80}
  *
  */
-public class TermRecord {
+public class TermRecord implements IssueContainer {
   private static final Logger LOG = LoggerFactory.getLogger(TermRecord.class);
   private static final Pattern REMOVE_TAGS = Pattern.compile("</? *[a-z][a-z1-5]{0,5} *>", Pattern.CASE_INSENSITIVE);
   private static final Pattern ECMA_UNICODE = Pattern.compile("\\\\u\\{([0-9a-f]{4})}", Pattern.CASE_INSENSITIVE);
 
   private Integer key;
   private Integer datasetKey;
+  // instance hash created on load to see if the instance has been changed
+  private int _hashKeyOnLoad;
 
   private long line;
   private String file;
   private Term type;
   private Map<Term, String> terms = new HashMap<>();
   private Set<Issue> issues = EnumSet.noneOf(Issue.class);
-
-  // indicates that at least one value has been unescaped
-  private boolean unescaped;
 
   public TermRecord() {
   }
@@ -103,10 +102,6 @@ public class TermRecord {
     this.type = type;
   }
 
-  public boolean isUnescaped() {
-    return unescaped;
-  }
-
   public Map<Term, String> getTerms() {
     return terms;
   }
@@ -115,18 +110,22 @@ public class TermRecord {
     this.terms = terms;
   }
 
+  @Override
   public Set<Issue> getIssues() {
     return issues;
   }
 
+  @Override
   public void setIssues(Set<Issue> issues) {
     this.issues = issues;
   }
 
+  @Override
   public void addIssue(Issue issue) {
     issues.add(issue);
   }
 
+  @Override
   public boolean hasIssue(Issue issue) {
     return issues.contains(issue);
   }
@@ -139,8 +138,8 @@ public class TermRecord {
       String unescaped = ECMA_UNICODE.matcher(x).replaceAll("\\\\u$1");
       unescaped = StringEscapeUtils.unescapeEcmaScript(StringEscapeUtils.unescapeHtml4(unescaped));
       unescaped = REMOVE_TAGS.matcher(unescaped).replaceAll("");
-      if (!this.unescaped && !x.equals(unescaped)) {
-        this.unescaped = true;
+      if (!x.equals(unescaped)) {
+        issues.add(Issue.ESCAPED_CHARACTERS);
       }
       return unescaped;
     } catch (RuntimeException e) {
@@ -266,24 +265,19 @@ public class TermRecord {
     return null;
   }
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
-    TermRecord that = (TermRecord) o;
-    return line == that.line &&
-        unescaped == that.unescaped &&
-        Objects.equals(key, that.key) &&
-        Objects.equals(datasetKey, that.datasetKey) &&
-        Objects.equals(file, that.file) &&
-        Objects.equals(type, that.type) &&
-        Objects.equals(terms, that.terms);
+
+  /**
+   * Stores the current state of the instance for subsequent hasChanged() tests.
+   */
+  public void setHashCode() {
+    _hashKeyOnLoad = hashCode();
   }
 
-  @Override
-  public int hashCode() {
-
-    return Objects.hash(key, datasetKey, line, file, type, terms, unescaped);
+  /**
+   * @return true if the instance has been modified since the last time setHashCode was executed.
+   */
+  public boolean hasChanged() {
+    return _hashKeyOnLoad != hashCode();
   }
 
   @Override
@@ -295,7 +289,28 @@ public class TermRecord {
     return file + "#" + line;
   }
 
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    TermRecord that = (TermRecord) o;
+    return line == that.line &&
+        Objects.equals(key, that.key) &&
+        Objects.equals(datasetKey, that.datasetKey) &&
+        Objects.equals(file, that.file) &&
+        Objects.equals(type, that.type) &&
+        Objects.equals(terms, that.terms) &&
+        Objects.equals(issues, that.issues);
+  }
+
+  @Override
+  public int hashCode() {
+
+    return Objects.hash(key, datasetKey, line, file, type, terms, issues);
+  }
+
   /**
+
    * @return all terms and values as a string
    */
   public String toStringComplete() {

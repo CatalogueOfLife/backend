@@ -27,10 +27,7 @@ import org.col.db.dao.NameDao;
 import org.col.db.dao.NameUsageDao;
 import org.col.db.dao.ReferenceDao;
 import org.col.db.dao.TaxonDao;
-import org.col.db.mapper.DatasetMapper;
-import org.col.db.mapper.InitMybatisRule;
-import org.col.db.mapper.NameRelationMapper;
-import org.col.db.mapper.PgSetupRule;
+import org.col.db.mapper.*;
 import org.gbif.nameparser.api.Rank;
 import org.junit.*;
 
@@ -47,6 +44,7 @@ public class PgImportIT {
 	private NormalizerConfig cfg;
 	private ImporterConfig icfg = new ImporterConfig();
 	private Dataset dataset;
+  private VerbatimRecordMapper vMapper;
 
 	@ClassRule
 	public static PgSetupRule pgSetupRule = new PgSetupRule();
@@ -178,6 +176,7 @@ public class PgImportIT {
     // verify results
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       NameDao dao = new NameDao(session);
+      vMapper = session.getMapper(VerbatimRecordMapper.class);
 
       // check species name
       Name n1 = dao.get(dao.lookupKey("1",dataset.getKey()));
@@ -185,8 +184,8 @@ public class PgImportIT {
 
       assertEquals(n2.getHomotypicNameKey(), n1.getHomotypicNameKey());
       assertTrue(n1.getKey().equals(n2.getHomotypicNameKey()) || n2.getKey().equals(n2.getHomotypicNameKey()));
-      assertTrue(n1.getIssues().contains(Issue.CHAINED_BASIONYM));
-      assertTrue(n2.getIssues().contains(Issue.CHAINED_BASIONYM));
+      assertIssue(n1, Issue.CHAINED_BASIONYM);
+      assertIssue(n2, Issue.CHAINED_BASIONYM);
 
 
       Name n10 = dao.get(dao.lookupKey("10",dataset.getKey()));
@@ -199,12 +198,21 @@ public class PgImportIT {
       assertEquals(n10.getKey(), n13.getHomotypicNameKey());
       assertEquals(n12.getKey(), n12.getHomotypicNameKey());
 
-      assertTrue(n10.getIssues().contains(Issue.CHAINED_BASIONYM));
-      assertTrue(n11.getIssues().contains(Issue.CHAINED_BASIONYM));
-      assertTrue(n12.getIssues().contains(Issue.CHAINED_BASIONYM));
-      assertFalse(n13.getIssues().contains(Issue.CHAINED_BASIONYM));
+      assertIssue(n10, Issue.CHAINED_BASIONYM);
+      assertIssue(n11, Issue.CHAINED_BASIONYM);
+      assertIssue(n12, Issue.CHAINED_BASIONYM);
+      assertNoIssue(n13, Issue.CHAINED_BASIONYM);
     }
 	}
+
+	private void assertIssue(VerbatimEntity ent, Issue issue) {
+    TermRecord v = vMapper.get(ent.getVerbatimKey());
+    assertTrue(v.hasIssue(issue));
+  }
+  private void assertNoIssue(VerbatimEntity ent, Issue issue) {
+    TermRecord v = vMapper.get(ent.getVerbatimKey());
+    assertFalse(v.hasIssue(issue));
+  }
 
   @Test
 	public void testSupplementary() throws Exception {
@@ -277,13 +285,14 @@ public class PgImportIT {
       NameUsageDao udao = new NameUsageDao(session);
       TaxonDao tdao = new TaxonDao(session);
       NameDao ndao = new NameDao(session);
+      vMapper = session.getMapper(VerbatimRecordMapper.class);
 
       Name n = ndao.get("s7", dataset.getKey());
       assertEquals("Astragalus nonexistus DC.", n.canonicalNameComplete());
       assertEquals("Astragalus nonexistus", n.getScientificName());
       assertEquals("DC.", n.authorshipComplete());
       assertEquals(Rank.SPECIES, n.getRank());
-      assertTrue(n.getIssues().contains(Issue.ACCEPTED_ID_INVALID));
+      assertIssue(n, Issue.ACCEPTED_ID_INVALID);
 
       List<NameUsage> usages = udao.search(NameSearch.byNameKey(n.getKey()), new Page()).getResult();
       assertEquals(1, usages.size());
@@ -299,7 +308,7 @@ public class PgImportIT {
       n = ndao.get("s6", dataset.getKey());
       assertEquals("Astragalus beersabeensis", n.getScientificName());
       assertEquals(Rank.SPECIES, n.getRank());
-      assertTrue(n.getIssues().contains(Issue.SYNONYM_DATA_MOVED));
+      assertIssue(n, Issue.SYNONYM_DATA_MOVED);
 
       usages = udao.search(NameSearch.byNameKey(n.getKey()), new Page()).getResult();
       assertEquals(1, usages.size());

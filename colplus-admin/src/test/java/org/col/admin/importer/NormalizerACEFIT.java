@@ -26,9 +26,7 @@ import org.col.admin.importer.neo.printer.GraphFormat;
 import org.col.admin.importer.neo.printer.PrinterUtils;
 import org.col.admin.importer.neo.traverse.Traversals;
 import org.col.admin.importer.reference.ReferenceFactory;
-import org.col.api.model.Dataset;
-import org.col.api.model.Distribution;
-import org.col.api.model.VernacularName;
+import org.col.api.model.*;
 import org.col.api.vocab.*;
 import org.col.csl.CslParserMock;
 import org.gbif.nameparser.api.Rank;
@@ -131,6 +129,14 @@ public class NormalizerACEFIT {
     return store.get(accepted.get(0).node);
   }
 
+  private boolean hasIssues(VerbatimEntity ent, Issue... issues) {
+    IssueContainer ic = store.getVerbatim(ent.getVerbatimKey());
+    for (Issue is : issues) {
+      if (!ic.hasIssue(is)) return false;
+    }
+    return true;
+  }
+
   @Test
   public void acef0() throws Exception {
     normalize(0);
@@ -142,8 +148,8 @@ public class NormalizerACEFIT {
       assertEquals("DC.", t.name.authorshipComplete());
       assertEquals(Rank.SPECIES, t.name.getRank());
 
-      assertTrue(t.taxon.getIssues().contains(Issue.SYNONYM_DATA_MOVED));
-      assertTrue(t.taxon.getIssues().contains(Issue.ACCEPTED_ID_INVALID));
+      assertTrue(hasIssues(t, Issue.SYNONYM_DATA_MOVED));
+      assertTrue(hasIssues(t, Issue.ACCEPTED_ID_INVALID));
       assertTrue(t.classification.isEmpty());
       assertEquals(0, t.vernacularNames.size());
       assertEquals(0, t.distributions.size());
@@ -156,7 +162,7 @@ public class NormalizerACEFIT {
       assertTrue(t.isSynonym());
       assertEquals("Astragalus beersabeensis", t.name.getScientificName());
       assertEquals(Rank.SPECIES, t.name.getRank());
-      assertTrue(t.taxon.getIssues().contains(Issue.SYNONYM_DATA_MOVED));
+      assertTrue(hasIssues(t, Issue.SYNONYM_DATA_MOVED));
       assertTrue(t.classification.isEmpty());
       assertEquals(0, t.vernacularNames.size());
       assertEquals(0, t.distributions.size());
@@ -214,7 +220,7 @@ public class NormalizerACEFIT {
       assertEquals("Inga vera", t.name.getScientificName());
       assertEquals("Willd.", t.name.authorshipComplete());
       assertEquals(Rank.SPECIES, t.name.getRank());
-      assertTrue(t.taxon.getIssues().contains(Issue.ID_NOT_UNIQUE));
+      assertTrue(hasIssues(t, Issue.ID_NOT_UNIQUE));
       assertEquals("Fabaceae", t.classification.getFamily());
       assertEquals("Plantae", t.classification.getKingdom());
 
@@ -245,11 +251,11 @@ public class NormalizerACEFIT {
         assertTrue(s.synonym.getStatus().isSynonym());
         if (nonMisappliedIds.remove(s.getID())) {
           assertEquals(TaxonomicStatus.SYNONYM, s.synonym.getStatus());
-          assertFalse(s.taxon.getIssues().contains(Issue.DERIVED_TAXONOMIC_STATUS));
+          assertFalse(hasIssues(s, Issue.DERIVED_TAXONOMIC_STATUS));
         } else {
           counter++;
           assertEquals(TaxonomicStatus.MISAPPLIED, s.synonym.getStatus());
-          assertTrue(s.taxon.getIssues().contains(Issue.DERIVED_TAXONOMIC_STATUS));
+          assertTrue(hasIssues(s, Issue.DERIVED_TAXONOMIC_STATUS));
         }
       }
       assertTrue(nonMisappliedIds.isEmpty());

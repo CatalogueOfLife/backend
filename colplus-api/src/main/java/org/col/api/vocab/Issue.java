@@ -64,19 +64,9 @@ public enum Issue {
   LC_MONOMIAL,
 
   /**
-   * indetermined cultivar without cultivar epithet
+   * indetermined species name with "lower" rank than epithets
    */
-  INDET_CULTIVAR,
-
-  /**
-   * indetermined species without specific epithet
-   */
-  INDET_SPECIES,
-
-  /**
-   * indetermined infraspecies without infraspecific epithet
-   */
-  INDET_INFRASPECIES,
+  INDETERMINED,
 
   /**
    * binomial with rank higher than species aggregate

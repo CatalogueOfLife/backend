@@ -198,8 +198,6 @@ public class TestEntityGenerator {
     t.setRemarks("Foo == Bar");
     t.setSpeciesEstimate(81);
     t.setSpeciesEstimateReferenceKey(REF1.getKey());
-    t.addIssue(Issue.ACCEPTED_NAME_MISSING);
-    t.addIssue(Issue.HOMONYM);
     return t;
   }
 
@@ -252,8 +250,6 @@ public class TestEntityGenerator {
     n.setRank(Rank.SPECIES);
     n.setOrigin(Origin.SOURCE);
     n.setType(NameType.SCIENTIFIC);
-    n.addIssue(Issue.ACCEPTED_NAME_MISSING);
-    n.addIssue(Issue.HOMONYM);
     n.updateScientificName();
     n.addRemark("my first note");
     n.addRemark("my second note");
@@ -333,6 +329,8 @@ public class TestEntityGenerator {
       rec.put(t, RandomUtils.randomString(1 + RND.nextInt(8)));
     }
     rec.put(UnknownTerm.build("http://col.plus/terms/punk"), RandomUtils.randomString(500 + RND.nextInt(2000)));
+    rec.addIssue(Issue.ACCEPTED_NAME_MISSING);
+    rec.addIssue(Issue.HOMONYM);
     return rec;
   }
 

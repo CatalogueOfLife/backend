@@ -145,10 +145,11 @@ public class AcefInserter extends NeoInserter {
     // lookup NeoTaxon and reference
     NeoTaxon t = store.getByID(taxonID);
     Reference ref = store.refById(referenceID);
+    Issue issue = null;
     if (t == null) {
       if (ref != null) {
         LOG.debug("taxonID {} from NameReferencesLinks line {} not existing", taxonID, rec.getLine());
-        ref.addIssue(Issue.TAXON_ID_INVALID);
+        issue = Issue.TAXON_ID_INVALID;
         store.put(ref);
       } else {
         LOG.info("referenceID {} and taxonID {} from NameReferencesLinks line {} both not existing", referenceID, taxonID, rec.getLine());
@@ -157,13 +158,12 @@ public class AcefInserter extends NeoInserter {
     } else {
       if (ref == null) {
         LOG.debug("referenceID {} from NameReferencesLinks line {} not existing", referenceID, rec.getLine());
-        t.addIssue(Issue.REFERENCE_ID_INVALID);
+        issue = Issue.REFERENCE_ID_INVALID;
 
       } else if (refType == null) {
         LOG.debug("Unknown reference type {} used in NameReferencesLinks line {}", refTypeRaw, rec.getLine());
-        ref.addIssue(Issue.REFTYPE_INVALID);
+        issue = Issue.REFTYPE_INVALID;
         store.put(ref);
-        t.taxon.addIssue(Issue.REFTYPE_INVALID);
       } else {
         switch (refType) {
           case NomRef:
@@ -181,6 +181,11 @@ public class AcefInserter extends NeoInserter {
         }
       }
       store.update(t);
+    }
+    // persist new issue?
+    if (issue != null) {
+      rec.addIssue(issue);
+      store.put(rec);
     }
   }
 

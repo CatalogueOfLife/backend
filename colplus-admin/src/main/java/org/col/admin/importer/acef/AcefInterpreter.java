@@ -40,7 +40,8 @@ public class AcefInterpreter extends InterpreterBase {
         rec.get(AcefTerm.Author),
         rec.get(AcefTerm.Year),
         rec.get(AcefTerm.Title),
-        rec.get(AcefTerm.Details)
+        rec.get(AcefTerm.Details),
+        rec
     ));
   }
 
@@ -76,7 +77,7 @@ public class AcefInterpreter extends InterpreterBase {
     String raw = v.get(AcefTerm.LifeZone);
     if (raw != null) {
       for (String lzv : MULTIVAL.split(raw)) {
-        Lifezone lz = parse(LifezoneParser.PARSER, lzv).orNull(Issue.LIFEZONE_INVALID, t.taxon.getIssues());
+        Lifezone lz = parse(LifezoneParser.PARSER, lzv).orNull(Issue.LIFEZONE_INVALID, v);
         if (lz != null) {
           t.taxon.getLifezones().add(lz);
         }
@@ -90,7 +91,7 @@ public class AcefInterpreter extends InterpreterBase {
     TaxonomicStatus status = parse(TaxonomicStatusParser.PARSER, v.get(AcefTerm.Sp2000NameStatus))
         .orElse(new EnumNote<>(synonym ? TaxonomicStatus.SYNONYM : TaxonomicStatus.ACCEPTED, null)).val;
     if (synonym != status.isSynonym()) {
-      t.taxon.addIssue(Issue.TAXONOMIC_STATUS_INVALID);
+      v.addIssue(Issue.TAXONOMIC_STATUS_INVALID);
       // override status as we require some accepted status on Taxon and some synonym status for
       // Synonym
       status = synonym ? TaxonomicStatus.SYNONYM : TaxonomicStatus.DOUBTFUL;
@@ -101,6 +102,7 @@ public class AcefInterpreter extends InterpreterBase {
       t.synonym = new Synonym();
       t.synonym.setStatus(status);
       t.synonym.setAccordingTo(nat.get().getAccordingTo());
+      t.synonym.setVerbatimKey(v.getKey());
 
     } else {
       t.taxon.setDoubtful(TaxonomicStatus.DOUBTFUL == status);
@@ -144,7 +146,7 @@ public class AcefInterpreter extends InterpreterBase {
 
       // which standard?
       d.setGazetteer(parse(GazetteerParser.PARSER, rec.get(AcefTerm.StandardInUse))
-          .orElse(Gazetteer.TEXT, Issue.DISTRIBUTION_GAZETEER_INVALID, d.getIssues()));
+          .orElse(Gazetteer.TEXT, Issue.DISTRIBUTION_GAZETEER_INVALID, rec));
 
       // TODO: try to split location into several distributions...
       String loc = rec.get(AcefTerm.DistributionElement);
@@ -157,7 +159,7 @@ public class AcefInterpreter extends InterpreterBase {
           loc = d.getGazetteer().locationID(loc);
         }
         AreaParser.Area area = SafeParser.parse(AreaParser.PARSER, loc).orElse(textArea,
-            Issue.DISTRIBUTION_AREA_INVALID, d.getIssues());
+            Issue.DISTRIBUTION_AREA_INVALID, rec);
         d.setArea(area.area);
         // check if we have contradicting extracted a gazetteer
         if (area.standard != Gazetteer.TEXT && area.standard != d.getGazetteer()) {
@@ -169,7 +171,7 @@ public class AcefInterpreter extends InterpreterBase {
 
       // status
       d.setStatus(parse(DistributionStatusParser.PARSER, rec.get(AcefTerm.DistributionStatus))
-          .orElse(DistributionStatus.NATIVE, Issue.DISTRIBUTION_STATUS_INVALID, d.getIssues()));
+          .orElse(DistributionStatus.NATIVE, Issue.DISTRIBUTION_STATUS_INVALID, rec));
       addReferences(d, rec);
       d.setVerbatimKey(rec.getKey());
       return Lists.newArrayList(d);
@@ -220,9 +222,8 @@ public class AcefInterpreter extends InterpreterBase {
       opt = interpretName(v.get(idTerm), rank, null, authorship, v.get(AcefTerm.Genus),
           v.get(AcefTerm.SubGenusName), v.get(AcefTerm.SpeciesEpithet),
           v.get(AcefTerm.InfraSpeciesEpithet), null, v.get(AcefTerm.GSDNameStatus), null,
-          null);
+          null, v);
     }
-    opt.ifPresent(nat -> nat.getName().setVerbatimKey(v.getKey()));
     return opt;
   }
 

@@ -22,7 +22,6 @@ import org.col.admin.importer.neo.model.RelType;
 import org.col.admin.importer.neo.traverse.StartEndHandler;
 import org.col.admin.importer.neo.traverse.TreeWalker;
 import org.col.api.model.*;
-import org.col.api.vocab.Issue;
 import org.col.db.dao.NameDao;
 import org.col.db.mapper.*;
 import org.neo4j.graphdb.Node;
@@ -134,25 +133,20 @@ public class PgImport implements Callable<Boolean> {
         v.setDatasetKey(dataset.getKey());
         mapper.create(v);
         verbatimKeys.put(storeKey, v.getKey());
-        if (counter++ % batchSize == 0) {
+        if (++counter % batchSize == 0) {
           checkIfCancelled();
           session.commit();
-          LOG.debug("Inserted {} verbatim records", counter);
+          LOG.debug("Inserted {} verbatim records so far", counter);
         }
       }
       session.commit();
-      LOG.debug("Inserted all {} verbatim records", counter);
+      LOG.info("Inserted {} verbatim records", counter);
     }
   }
 
-  private void updateEntity(VerbatimEntity ent) {
-	  if (ent.getVerbatimKey() != null) {
-      TermRecord v = store.getVerbatim(ent.getVerbatimKey());
+  private void updateVerbatimEntity(VerbatimEntity ent) {
+	  if (ent != null && ent.getVerbatimKey() != null) {
 	    ent.setVerbatimKey(verbatimKeys.get(ent.getVerbatimKey()));
-      // did we unescape verbatim data?
-      if (v.isUnescaped()) {
-        ent.addIssue(Issue.ESCAPED_CHARACTERS);
-      }
     }
   }
 
@@ -163,7 +157,7 @@ public class PgImport implements Callable<Boolean> {
       for (Reference r : store.refList()) {
         int storeKey = r.getKey();
         r.setDatasetKey(dataset.getKey());
-        updateEntity(r);
+        updateVerbatimEntity(r);
         mapper.create(r);
         rCounter.incrementAndGet();
         // store mapping of key used in the store to the key used in postgres
@@ -213,10 +207,8 @@ public class PgImport implements Callable<Boolean> {
             t.name.setPublishedInKey(referenceKeys.get(t.name.getPublishedInKey()));
           }
 
-          t.name.getIssues().addAll(t.taxon.getIssues());
-
           t.name.setDatasetKey(dataset.getKey());
-          updateEntity(t.name);
+          updateVerbatimEntity(t.name);
           nameMapper.create(t.name);
           nCounter.incrementAndGet();
           // keep postgres keys in node id map
@@ -309,19 +301,15 @@ public class PgImport implements Callable<Boolean> {
         @Override
         public void start(Node n) {
           NeoTaxon t = store.get(n);
-          // did we unescape verbatim data?
-          if (t.taxon.getVerbatimKey() != null) {
-            TermRecord v = store.getVerbatim(t.taxon.getVerbatimKey());
-            if (v.isUnescaped()) {
-              t.taxon.addIssue(Issue.ESCAPED_CHARACTERS);
-            }
-          }
-          // use postgres name key
+          // use postgres keys
           t.name.setKey(nameKeys.get((int) n.getId()));
+          updateVerbatimEntity(t.synonym);
+          updateVerbatimEntity(t.taxon);
+
           // is this a pro parte synonym that we have processed before already?
           if (proParteNames.containsKey(n.getId())) {
             // now add another synonym relation now that the other accepted exists in pg
-            nameDao.addSynonym(dataset.getKey(), proParteNames.get(n.getId()), parentKeys.peek(), t.synonym.getStatus(), t.synonym.getAccordingTo());
+            nameDao.addSynonym(dataset.getKey(), proParteNames.get(n.getId()), parentKeys.peek(), t.synonym);
             return;
           }
 
@@ -329,7 +317,7 @@ public class PgImport implements Callable<Boolean> {
           int taxonKey;
           if (t.isSynonym()) {
             taxonKey = parentKeys.peek();
-            nameDao.addSynonym(dataset.getKey(), t.name.getKey(), taxonKey, t.synonym.getStatus(), t.synonym.getAccordingTo());
+            nameDao.addSynonym(dataset.getKey(), t.name.getKey(), taxonKey, t.synonym);
 
           } else {
             if (!parentKeys.empty()) {
@@ -341,7 +329,6 @@ public class PgImport implements Callable<Boolean> {
 
             t.taxon.setName(t.name);
             t.taxon.setDatasetKey(dataset.getKey());
-            updateEntity(t.taxon);
             taxonMapper.create(t.taxon);
             tCounter.incrementAndGet();
             taxonKey = t.taxon.getKey();
@@ -351,7 +338,7 @@ public class PgImport implements Callable<Boolean> {
 
             // insert vernacular
             for (VernacularName vn : t.vernacularNames) {
-              updateEntity(vn);
+              updateVerbatimEntity(vn);
               updateRefKeys(vn);
               vernacularMapper.create(vn, taxonKey, dataset.getKey());
               vCounter.incrementAndGet();
@@ -359,7 +346,7 @@ public class PgImport implements Callable<Boolean> {
 
             // insert distributions
             for (Distribution d : t.distributions) {
-              updateEntity(d);
+              updateVerbatimEntity(d);
               updateRefKeys(d);
               distributionMapper.create(d, taxonKey, dataset.getKey());
               dCounter.incrementAndGet();

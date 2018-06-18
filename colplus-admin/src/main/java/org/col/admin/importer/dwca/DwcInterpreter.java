@@ -54,6 +54,7 @@ public class DwcInterpreter extends InterpreterBase {
         t.synonym = new Synonym();
         t.synonym.setStatus(status.val);
         t.synonym.setAccordingTo(nat.get().getAccordingTo());
+        t.synonym.setVerbatimKey(v.getKey());
         t.homotypic = TaxonomicStatusParser.isHomotypic(status);
       }
       // flat classification
@@ -73,7 +74,7 @@ public class DwcInterpreter extends InterpreterBase {
       rel.setType(RelType.from(type.get()));
       rel.setNote(rec.get(ColTerm.relationRemarks));
       if (rec.hasTerm(ColTerm.publishedIn)) {
-        Reference ref = refFactory.fromDWC(rec.get(ColTerm.publishedInID), rec.get(ColTerm.publishedIn), null);
+        Reference ref = refFactory.fromDWC(rec.get(ColTerm.publishedInID), rec.get(ColTerm.publishedIn), null, rec);
         refStore.put(ref);
         rel.setRefKey(ref.getKey());
       }
@@ -88,7 +89,8 @@ public class DwcInterpreter extends InterpreterBase {
         rec.get(DcTerm.creator),
         rec.get(DcTerm.title),
         rec.get(DcTerm.date),
-        rec.get(DcTerm.source)
+        rec.get(DcTerm.source),
+        rec
     ));
   }
 
@@ -147,7 +149,7 @@ public class DwcInterpreter extends InterpreterBase {
 
   private void addReferences(Referenced obj, TermRecord v) {
     if (v.hasTerm(DcTerm.source)) {
-      lookupReference(null, v.get(DcTerm.source)).ifPresent(r -> {
+      lookupReference(null, v.get(DcTerm.source), v).ifPresent(r -> {
         obj.addReferenceKey(r.getKey());
       });
     }
@@ -178,14 +180,13 @@ public class DwcInterpreter extends InterpreterBase {
         v.getFirst(GbifTerm.genericName, DwcTerm.genus), v.get(DwcTerm.subgenus),
         v.get(DwcTerm.specificEpithet), v.get(DwcTerm.infraspecificEpithet),
         v.get(DwcTerm.nomenclaturalCode), v.get(DwcTerm.nomenclaturalStatus),
-        v.getRaw(DcTerm.references), v.get(DwcTerm.nomenclaturalStatus));
+        v.getRaw(DcTerm.references), v.get(DwcTerm.nomenclaturalStatus), v);
 
     // publishedIn
     if (opt.isPresent()) {
       Name n = opt.get().getName();
-      n.setVerbatimKey(v.getKey());
       if (v.hasTerm(DwcTerm.namePublishedInID) || v.hasTerm(DwcTerm.namePublishedIn)) {
-        lookupReference(v.get(DwcTerm.namePublishedInID), v.get(DwcTerm.namePublishedIn)).ifPresent(r -> {
+        lookupReference(v.get(DwcTerm.namePublishedInID), v.get(DwcTerm.namePublishedIn), v).ifPresent(r -> {
           n.setPublishedInKey(r.getKey());
           n.setPublishedInPage(r.getPage());
         });

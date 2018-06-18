@@ -7,6 +7,7 @@ import com.google.common.base.Strings;
 import org.apache.commons.lang3.ArrayUtils;
 import org.col.api.model.CslData;
 import org.col.api.model.CslDate;
+import org.col.api.model.IssueContainer;
 import org.col.api.model.Reference;
 import org.col.api.vocab.CSLRefType;
 import org.col.api.vocab.Issue;
@@ -63,27 +64,27 @@ public class ReferenceFactory {
    * @return
    */
   public Reference fromACEF(String referenceID, String referenceType, String authors, String year,
-      String title, String details) {
+      String title, String details, IssueContainer issues) {
     Reference ref = create(referenceID);
 
     if (details != null && (title == null || details.length() > title.length())) {
       // consider details to be the entire citation
-      parse(ref, details);
+      parse(ref, details, issues);
     } else {
-      parse(ref, buildCitation(authors, year, title, details));
+      parse(ref, buildCitation(authors, year, title, details), issues);
     }
-    return postParse(ref);
+    return postParse(ref, issues);
   }
 
-  public Reference fromCitation(String id, String citation) {
+  public Reference fromCitation(String id, String citation, IssueContainer issues) {
     Reference ref = create(id);
-    parse(ref, citation);
-    return postParse(ref);
+    parse(ref, citation, issues);
+    return postParse(ref, issues);
   }
 
-  public Reference fromDWC(String publishedInID, String publishedIn, String publishedInYear) {
+  public Reference fromDWC(String publishedInID, String publishedIn, String publishedInYear, IssueContainer issues) {
     Reference ref = create(publishedInID);
-    parse(ref, publishedIn);
+    parse(ref, publishedIn, issues);
     if (ref.getCsl().getIssued() == null && publishedInYear != null) {
       Integer y = parseYear(publishedInYear);
       if (y != null) {
@@ -93,26 +94,26 @@ public class ReferenceFactory {
         ref.getCsl().setIssued(cslDate);
       }
     }
-    return postParse(ref);
+    return postParse(ref, issues);
   }
 
   public Reference fromDC(String identifier, String bibliographicCitation, String title,
-      String creator, String date, String source) {
+      String creator, String date, String source, IssueContainer issues) {
     Reference ref = create(identifier);
 
     if (bibliographicCitation != null) {
-      parse(ref, bibliographicCitation);
+      parse(ref, bibliographicCitation, issues);
     } else {
-      parse(ref, buildCitation(creator, date, title, source));
+      parse(ref, buildCitation(creator, date, title, source), issues);
     }
-    return postParse(ref);
+    return postParse(ref, issues);
   }
 
-  private void parse(Reference ref, String citation) {
+  private void parse(Reference ref, String citation, IssueContainer issues) {
     try {
       cslParser.parse(citation).ifPresent(ref::setCsl);
     } catch (UnparsableException | RuntimeException e) {
-      ref.addIssue(Issue.UNPARSABLE_REFERENCE);
+      issues.addIssue(Issue.UNPARSABLE_REFERENCE);
       ref.setCitation(citation);
     }
   }
@@ -132,11 +133,11 @@ public class ReferenceFactory {
     return sb.toString();
   }
 
-  private static Reference postParse(Reference ref) {
+  private static Reference postParse(Reference ref, IssueContainer issues) {
     if (ref.getCsl() != null) {
       // missing ref type?
       if (ref.getCsl().getType() == null) {
-        ref.addIssue(Issue.UNPARSABLE_REFERENCE_TYPE);
+        issues.addIssue(Issue.UNPARSABLE_REFERENCE_TYPE);
         ref.getCsl().setType(CSLRefType.ARTICLE);
       }
       // extract int year

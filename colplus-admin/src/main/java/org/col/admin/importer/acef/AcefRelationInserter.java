@@ -34,24 +34,26 @@ public class AcefRelationInserter implements NeoDb.NodeBatchProcessor {
     try {
       NeoTaxon t = store.get(n);
       if (t.taxon.getVerbatimKey() != null) {
-        TermRecord v = store.getVerbatim(t.taxon.getVerbatimKey());
+        TermRecord v;
         if (t.isSynonym()) {
+          v = store.getVerbatim(t.synonym.getVerbatimKey());
           Node an = lookupByID(AcefTerm.AcceptedTaxonID, v, t);
           if (an != null) {
             store.createSynonymRel(t.node, an);
           } else {
             // if we aint got no idea of the accepted insert just the name
-            t.addIssue(Issue.ACCEPTED_ID_INVALID);
-            t.addIssue(Issue.ACCEPTED_NAME_MISSING);
+            v.addIssue(Issue.ACCEPTED_ID_INVALID);
+            v.addIssue(Issue.ACCEPTED_NAME_MISSING);
             store.update(t);
           }
 
         } else {
+          v = store.getVerbatim(t.taxon.getVerbatimKey());
           Node p = lookupByID(AcefTerm.ParentSpeciesID, v, t);
           if (p != null) {
             store.assignParent(p, t.node);
           } else {
-            t.taxon.addIssue(Issue.PARENT_ID_INVALID);
+            v.addIssue(Issue.PARENT_ID_INVALID);
             store.update(t);
           }
 
@@ -69,13 +71,13 @@ public class AcefRelationInserter implements NeoDb.NodeBatchProcessor {
             }
             Optional<NameAccordingTo> opt = inter.interpretName(t.getID(), v.get(AcefTerm.InfraSpeciesMarker), null, v.get(AcefTerm.InfraSpeciesAuthorString),
                 genus, infragenericEpithet, specificEpithet, v.get(AcefTerm.InfraSpeciesEpithet),
-                null, v.get(AcefTerm.GSDNameStatus), null, null);
+                null, v.get(AcefTerm.GSDNameStatus), null, null, v);
 
             if (opt.isPresent()) {
               t.name = opt.get().getName();
               if (!t.name.getRank().isInfraspecific()) {
                 LOG.info("Expected infraspecific taxon but found {} for name {}: {}", t.name.getRank(), t.getID(), t.name.getScientificName());
-                t.name.addIssue(Issue.INCONSISTENT_NAME);
+                v.addIssue(Issue.INCONSISTENT_NAME);
               }
               store.put(t);
 
@@ -85,6 +87,7 @@ public class AcefRelationInserter implements NeoDb.NodeBatchProcessor {
             }
           }
         }
+        store.put(v);
       }
 
     } catch (Exception e) {

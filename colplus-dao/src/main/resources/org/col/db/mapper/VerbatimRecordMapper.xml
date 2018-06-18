@@ -10,7 +10,8 @@
         v.line,
         v.file,
         v.type,
-        v.terms
+        v.terms,
+        v.issues
     </sql>
 
     <sql id="COLS">
@@ -18,7 +19,8 @@
         line,
         file,
         type,
-        terms
+        terms,
+        issues
     </sql>
 
     <sql id="PROPS">
@@ -26,7 +28,8 @@
         #{line},
         #{file},
         #{type},
-        #{terms, typeHandler=org.col.db.type2.TermMapTypeHandler}::jsonb
+        #{terms, typeHandler=org.col.db.type2.TermMapTypeHandler}::jsonb,
+        #{issues, typeHandler=org.col.db.type2.IssueSetTypeHandler}::int[]
     </sql>
 
     <sql id="FROM">
@@ -43,6 +46,7 @@
 
     <resultMap id="verbatimResultMap" type="TermRecord" autoMapping="true">
         <result property="terms" column="terms" typeHandler="org.col.db.type2.TermMapTypeHandler"/>
+        <result property="issues" column="issues" typeHandler="org.col.db.type2.IssueSetTypeHandler" />
     </resultMap>
 
 

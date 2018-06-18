@@ -7,7 +7,6 @@ import java.util.Set;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import org.col.api.model.*;
-import org.col.api.vocab.Issue;
 import org.col.api.vocab.Origin;
 import org.neo4j.graphdb.Node;
 
@@ -58,16 +57,6 @@ public class NeoTaxon implements VerbatimEntity{
   public void setVerbatimKey(Integer verbatimKey) {
     taxon.setVerbatimKey(verbatimKey);
     name.setVerbatimKey(verbatimKey);
-  }
-
-  @Override
-  public Set<Issue> getIssues() {
-    return taxon.getIssues();
-  }
-
-  @Override
-  public void addIssue(Issue issue) {
-    taxon.addIssue(issue);
   }
 
   public void addRemark(String remark) {

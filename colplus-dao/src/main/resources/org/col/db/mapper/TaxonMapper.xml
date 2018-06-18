@@ -20,8 +20,7 @@
         ${alias}.dataset_url AS ${prefix}dataset_url,
         ${alias}.species_estimate AS ${prefix}species_estimate,
         ${alias}.species_estimate_reference_key AS ${prefix}species_estimate_reference_key,
-        ${alias}.remarks AS ${prefix}remarks,
-        ${alias}.issues AS ${prefix}issues
+        ${alias}.remarks AS ${prefix}remarks
     </sql>
 
     <sql id="SELECT">
@@ -51,8 +50,7 @@
         dataset_url,
         species_estimate,
         species_estimate_reference_key,
-        remarks,
-        issues
+        remarks
     </sql>
 
     <sql id="PROPS">
@@ -71,8 +69,7 @@
         #{datasetUrl, typeHandler=org.col.db.type.UriTypeHandler},
         #{speciesEstimate},
         #{speciesEstimateReferenceKey},
-        #{remarks},
-        #{issues, typeHandler=org.col.db.type2.IssueSetTypeHandler}::int[]
+        #{remarks}
     </sql>
 
     <sql id="FROM">
@@ -83,7 +80,6 @@
     <resultMap id="taxonResultMap" type="Taxon" autoMapping="true">
         <id property="key" column="key" />
         <result property="lifezones" column="lifezones" typeHandler="org.col.db.type.LifezoneSetTypeHandler" />
-        <result property="issues" column="issues" typeHandler="org.col.db.type2.IssueSetTypeHandler" />
         <association property="name" javaType="Name" resultMap="org.col.db.mapper.NameMapper.nameResultMap" columnPrefix="n_" />
     </resultMap>
 

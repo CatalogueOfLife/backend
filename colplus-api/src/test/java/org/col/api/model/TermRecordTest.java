@@ -1,5 +1,6 @@
 package org.col.api.model;
 
+import org.col.api.vocab.Issue;
 import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.GbifTerm;
@@ -31,60 +32,60 @@ public class TermRecordTest {
   public void getTerm() throws Exception {
     assertEquals("Abies alba", v.get(DwcTerm.scientificName));
     assertEquals("Abies alba", v.getRaw(DwcTerm.scientificName));
-    assertFalse(v.isUnescaped());
+    assertFalse(v.hasIssue(Issue.ESCAPED_CHARACTERS));
 
     assertEquals("D&ouml;ring & M&#246;glich", v.getRaw(DwcTerm.scientificNameAuthorship));
     assertEquals("Döring & Möglich", v.get(DwcTerm.scientificNameAuthorship));
-    assertTrue(v.isUnescaped());
+    assertTrue(v.hasIssue(Issue.ESCAPED_CHARACTERS));
 
     init();
-    assertFalse(v.isUnescaped());
+    assertFalse(v.hasIssue(Issue.ESCAPED_CHARACTERS));
     assertEquals("Döring & Möglich", v.get(DwcTerm.nameAccordingTo));
-    assertTrue(v.isUnescaped());
+    assertTrue(v.hasIssue(Issue.ESCAPED_CHARACTERS));
 
     init();
-    assertFalse(v.isUnescaped());
+    assertFalse(v.hasIssue(Issue.ESCAPED_CHARACTERS));
     assertEquals("Döring & Möglich", v.get(DwcTerm.namePublishedIn));
-    assertTrue(v.isUnescaped());
+    assertTrue(v.hasIssue(Issue.ESCAPED_CHARACTERS));
 
     init();
-    assertFalse(v.isUnescaped());
+    assertFalse(v.hasIssue(Issue.ESCAPED_CHARACTERS));
     assertEquals("A new species of Neamia (Perciformes: Apogonidae) from the West Pacific Ocean.", v.get(AcefTerm.Title));
-    assertTrue(v.isUnescaped());
+    assertTrue(v.hasIssue(Issue.ESCAPED_CHARACTERS));
 
     init();
-    assertFalse(v.isUnescaped());
+    assertFalse(v.hasIssue(Issue.ESCAPED_CHARACTERS));
     assertEquals("Keihäsluuhauki", v.get(DwcTerm.vernacularName));
-    assertTrue(v.isUnescaped());
+    assertTrue(v.hasIssue(Issue.ESCAPED_CHARACTERS));
   }
 
   @Test
   public void getFirst() throws Exception {
     assertEquals("Abies alba", v.getFirst(GbifTerm.canonicalName, DwcTerm.scientificName));
-    assertFalse(v.isUnescaped());
+    assertFalse(v.hasIssue(Issue.ESCAPED_CHARACTERS));
 
     assertEquals("Döring & Möglich", v.getFirst(GbifTerm.canonicalName, DwcTerm.scientificNameAuthorship));
-    assertTrue(v.isUnescaped());
+    assertTrue(v.hasIssue(Issue.ESCAPED_CHARACTERS));
 
     init();
-    assertFalse(v.isUnescaped());
+    assertFalse(v.hasIssue(Issue.ESCAPED_CHARACTERS));
     assertEquals("Döring & Möglich", v.getFirst(GbifTerm.canonicalName, DwcTerm.nameAccordingTo));
-    assertTrue(v.isUnescaped());
+    assertTrue(v.hasIssue(Issue.ESCAPED_CHARACTERS));
 
     init();
-    assertFalse(v.isUnescaped());
+    assertFalse(v.hasIssue(Issue.ESCAPED_CHARACTERS));
     assertEquals("Döring & Möglich", v.getFirst(GbifTerm.canonicalName, DwcTerm.namePublishedIn));
-    assertTrue(v.isUnescaped());
+    assertTrue(v.hasIssue(Issue.ESCAPED_CHARACTERS));
 
     init();
-    assertFalse(v.isUnescaped());
+    assertFalse(v.hasIssue(Issue.ESCAPED_CHARACTERS));
     assertEquals("A new species of Neamia (Perciformes: Apogonidae) from the West Pacific Ocean.", v.getFirst(GbifTerm.canonicalName, AcefTerm.Title));
-    assertTrue(v.isUnescaped());
+    assertTrue(v.hasIssue(Issue.ESCAPED_CHARACTERS));
 
     init();
-    assertFalse(v.isUnescaped());
+    assertFalse(v.hasIssue(Issue.ESCAPED_CHARACTERS));
     assertEquals("Keihäsluuhauki", v.getFirst(GbifTerm.canonicalName, DwcTerm.vernacularName));
-    assertTrue(v.isUnescaped());
+    assertTrue(v.hasIssue(Issue.ESCAPED_CHARACTERS));
   }
 
 }

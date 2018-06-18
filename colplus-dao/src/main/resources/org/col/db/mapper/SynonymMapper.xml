@@ -5,6 +5,7 @@
 <mapper namespace="org.col.db.mapper.SynonymMapper">
 
     <sql id="synCols">
+        ${alias}.verbatim_key AS ${prefix}verbatim_key,
         ${alias}.status AS ${prefix}status,
         ${alias}.according_to AS ${prefix}according_to
     </sql>
@@ -55,9 +56,9 @@
         ORDER BY s.status, n.homotypic_name_key, n.scientific_name
     </select>
 
-    <insert id="create" parameterType="Synonym">
-        INSERT INTO synonym (dataset_key, name_key, taxon_key, status, according_to)
-        VALUES (#{datasetKey}, #{nameKey}, #{taxonKey}, #{status}, #{accordingTo})
+    <insert id="create">
+        INSERT INTO synonym (dataset_key, name_key, taxon_key, verbatim_key, status, according_to)
+        VALUES (#{datasetKey}, #{nameKey}, #{taxonKey}, #{syn.verbatimKey}, #{syn.status}, #{syn.accordingTo})
     </insert>
 
 </mapper>

@@ -6,7 +6,6 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
-import javax.annotation.Nullable;
 
 import org.col.admin.importer.acef.AcefInserter;
 import org.col.admin.importer.dwca.DwcaInserter;
@@ -119,9 +118,12 @@ public class Normalizer implements Callable<Boolean> {
         require(d, d.getArea(), "distribution area");
       }
 
-      // verify name and flag issues
-      if (NameValidator.flagIssues(t.name)) {
-        store.update(t);
+      // verify source name and flag issues
+      if (t.name.getVerbatimKey() != null) {
+        IssueContainer issues = store.getVerbatim(t.name.getVerbatimKey());
+        if (NameValidator.flagIssues(t.name, issues)) {
+          store.update(t);
+        }
       }
 
     });
@@ -184,33 +186,30 @@ public class Normalizer implements Callable<Boolean> {
           boolean misapplied = MisappliedNameMatcher.isMisappliedName(new NameAccordingTo(t.name, t.synonym.getAccordingTo()));
           TaxonomicStatus status = t.synonym.getStatus();
 
-          Issue issue = null;
           if (status == TaxonomicStatus.MISAPPLIED) {
             if (!misapplied) {
-              issue = Issue.TAXONOMIC_STATUS_DOUBTFUL;
+              store.addIssues(t.taxon, Issue.TAXONOMIC_STATUS_DOUBTFUL);
             }
 
           } else if (status == TaxonomicStatus.AMBIGUOUS_SYNONYM) {
             if (misapplied) {
               t.synonym.setStatus(TaxonomicStatus.MISAPPLIED);
-              issue = Issue.DERIVED_TAXONOMIC_STATUS;
+              store.addIssues(t.taxon, Issue.DERIVED_TAXONOMIC_STATUS);
+              store.update(t);
             } else if (!ambigous) {
-              issue = Issue.TAXONOMIC_STATUS_DOUBTFUL;
+              store.addIssues(t.taxon, Issue.TAXONOMIC_STATUS_DOUBTFUL);
             }
 
           } else if (status == TaxonomicStatus.SYNONYM) {
             if (misapplied) {
               t.synonym.setStatus(TaxonomicStatus.MISAPPLIED);
-              issue = Issue.DERIVED_TAXONOMIC_STATUS;
+              store.addIssues(t.taxon, Issue.DERIVED_TAXONOMIC_STATUS);
+              store.update(t);
             } else if (ambigous) {
               t.synonym.setStatus(TaxonomicStatus.AMBIGUOUS_SYNONYM);
-              issue = Issue.DERIVED_TAXONOMIC_STATUS;
+              store.addIssues(t.taxon, Issue.DERIVED_TAXONOMIC_STATUS);
+              store.update(t);
             }
-          }
-          // update store if modified
-          if (issue != null) {
-            t.taxon.addIssue(issue);
-            store.update(t);
           }
         }
       });
@@ -242,7 +241,7 @@ public class Normalizer implements Callable<Boolean> {
             t.distributions.clear();
             t.vernacularNames.clear();
             t.bibliography.clear();
-            t.taxon.addIssue(Issue.SYNONYM_DATA_MOVED);
+            store.addIssues(t.synonym, Issue.SYNONYM_DATA_MOVED);
             store.update(t);
           }
         }
@@ -285,8 +284,8 @@ public class Normalizer implements Callable<Boolean> {
         Relationship bad = (Relationship) row.get(badRelAlias);
 
         // remove basionym relations
-        addIssue(bad.getStartNode(), Issue.CHAINED_BASIONYM);
-        addIssue(bad.getEndNode(), Issue.CHAINED_BASIONYM);
+        addNameIssue(bad.getStartNode(), Issue.CHAINED_BASIONYM);
+        addNameIssue(bad.getEndNode(), Issue.CHAINED_BASIONYM);
         LOG.debug("Delete rel {}-{}>{}", bad.getStartNodeId(), bad.getType().name(), bad.getEndNodeId());
         bad.delete();
         counter++;
@@ -348,7 +347,7 @@ public class Normalizer implements Callable<Boolean> {
           && !highest.rank.notOtherOrUnranked()
       ) {
         LOG.debug("Node {} already has a classification which ends in an uncomparable rank.", n.getId());
-        addIssueRemark(n, null, Issue.CLASSIFICATION_NOT_APPLIED);
+        addTaxonIssue(n, Issue.CLASSIFICATION_NOT_APPLIED);
         return null;
       }
     }
@@ -466,11 +465,7 @@ public class Normalizer implements Callable<Boolean> {
         Relationship sr = (Relationship) result.next().get("sr");
 
         Node n = sr.getStartNode();
-
-        NeoTaxon syn = store.get(n);
-        syn.addIssue(Issue.CHAINED_SYNONYM);
-        store.update(syn);
-
+        addTaxonIssue(n, Issue.CHAINED_SYNONYM);
         sr.delete();
 
         if (counter++ % 100 == 0) {
@@ -513,7 +508,7 @@ public class Normalizer implements Callable<Boolean> {
         Node acc = (Node) row.get("t");
         for (Relationship sr : (Collection<Relationship>) row.get("sr")) {
           Node syn = sr.getStartNode();
-          addIssue(syn, Issue.CHAINED_SYNONYM);
+          addTaxonIssue(syn, Issue.CHAINED_SYNONYM);
           store.createSynonymRel(syn, acc);
           sr.delete();
           counter++;
@@ -550,7 +545,7 @@ public class Normalizer implements Callable<Boolean> {
         for (Relationship pRel : syn.getRelationships(RelType.PARENT_OF, Direction.OUTGOING)) {
           Node child = pRel.getOtherNode(syn);
           pRel.delete();
-          addIssue(syn, Issue.SYNONYM_PARENT);
+          addTaxonIssue(syn, Issue.SYNONYM_PARENT);
           if (accepted.contains(child)) {
             // accepted is also the parent. Simply delete the parent rel in this case
             parentOfRelDeleted++;
@@ -582,28 +577,13 @@ public class Normalizer implements Callable<Boolean> {
         childOfRelDeleted, parentOfRelDeleted, parentOfRelRelinked);
   }
 
-  private NeoTaxon addRemark(Node node, String remark) {
-    return addIssueRemark(node, remark, null);
+  private void addNameIssue(Node node, Issue issue) {
+    NeoTaxon t = store.get(node);
+    store.addIssues(t.name, issue);
   }
-
-  private NeoTaxon addIssue(Node node, Issue issue) {
-    return addIssueRemark(node, null, issue);
-  }
-
-  /**
-   * Reads a name usage from the kvp store, adds issues and or remarks and persists it again.
-   * Only use this method if you just have a node a no usage instance yet at hand.
-   */
-  private NeoTaxon addIssueRemark(Node n, @Nullable String remark, @Nullable Issue issue) {
-    NeoTaxon t = store.get(n);
-    if (issue != null) {
-      t.addIssue(issue);
-    }
-    if (remark != null) {
-      t.addRemark(remark);
-    }
-    store.update(t);
-    return t;
+  private void addTaxonIssue(Node node, Issue issue) {
+    NeoTaxon t = store.get(node);
+    store.addIssues(t.taxon, issue);
   }
 
   private void insertData() throws NormalizationFailedException {
