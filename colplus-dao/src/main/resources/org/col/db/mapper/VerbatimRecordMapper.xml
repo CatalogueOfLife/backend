@@ -71,13 +71,6 @@
         WHERE key = #{key}
     </select>
 
-    <select id="getByEntity" resultMap="verbatimResultMap">
-        SELECT <include refid="SELECT" />
-        FROM <include refid="FROM" />
-            JOIN ${class.getSimpleName()} e ON e.verbatim_key=v.key
-        WHERE e.key = #{key}
-    </select>
-
     <insert id="create" parameterType="TermRecord"  useGeneratedKeys="true" keyProperty="key">
         INSERT INTO verbatim (<include refid="COLS" />)
         VALUES (<include refid="PROPS" />)

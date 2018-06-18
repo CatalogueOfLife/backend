@@ -20,7 +20,5 @@ public interface VerbatimRecordMapper {
 
   void create(TermRecord record);
 
-  TermRecord getByEntity(@Param("class") Class clazz, @Param("key") int key);
-
 }
 
