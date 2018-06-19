@@ -1,4 +1,4 @@
-package org.col.admin.importer.neo.mapdb;
+package org.col.common.mapdb;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

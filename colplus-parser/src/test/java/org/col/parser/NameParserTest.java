@@ -7,9 +7,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import org.col.api.model.Name;
 import org.col.api.model.NameAccordingTo;
-import org.gbif.nameparser.api.NamePart;
-import org.gbif.nameparser.api.NameType;
-import org.gbif.nameparser.api.Rank;
+import org.gbif.nameparser.api.*;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -20,6 +18,12 @@ import static org.junit.Assert.*;
  */
 public class NameParserTest {
   static final NameParser parser = new NameParser();
+
+  @Test
+  public void parseAuthorship() throws Exception {
+    assertAuthorship("L.f", null, "L.f");
+    assertAuthorship("DC.", null, "DC.");
+  }
 
   @Test
   public void parseSubgenera() throws Exception {
@@ -212,6 +216,16 @@ public class NameParserTest {
 
 
 
+
+  static void assertAuthorship(String authorship, String year, String... authors) throws UnparsableException {
+    ParsedName pn = parser.parseAuthorship(authorship).get();
+    Authorship a = new Authorship();
+    a.setYear(year);
+    for (String x : authors) {
+      a.getAuthors().add(x);
+    }
+    assertEquals(a, pn.getCombinationAuthorship());
+  }
 
   static NameAssertion assertName(String rawName, String sciname) throws UnparsableException {
     return assertName(rawName, sciname, NameType.SCIENTIFIC);

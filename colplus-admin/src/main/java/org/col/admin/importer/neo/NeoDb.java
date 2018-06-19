@@ -18,8 +18,6 @@ import org.apache.commons.io.FileUtils;
 import org.col.admin.AdminServer;
 import org.col.admin.importer.ImportJob;
 import org.col.admin.importer.NormalizationFailedException;
-import org.col.admin.importer.neo.kryo.NeoKryoFactory;
-import org.col.admin.importer.neo.mapdb.MapDbObjectSerializer;
 import org.col.admin.importer.neo.model.*;
 import org.col.admin.importer.neo.traverse.StartEndHandler;
 import org.col.admin.importer.neo.traverse.Traversals;
@@ -30,6 +28,7 @@ import org.col.api.vocab.Origin;
 import org.col.api.vocab.TaxonomicStatus;
 import org.col.common.concurrent.ExecutorUtils;
 import org.col.common.concurrent.ThrottledThreadPoolExecutor;
+import org.col.common.mapdb.MapDbObjectSerializer;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.nameparser.api.Rank;
 import org.mapdb.Atomic;
@@ -103,7 +102,7 @@ public class NeoDb implements ReferenceStore {
           .createOrOpen();
       taxa = mapDb.hashMap("taxa")
           .keySerializer(Serializer.LONG)
-          .valueSerializer(new MapDbObjectSerializer(NeoTaxon.class, pool, 256))
+          .valueSerializer(new MapDbObjectSerializer<>(NeoTaxon.class, pool, 256))
           .createOrOpen();
       references = mapDb.hashMap("references")
           .keySerializer(Serializer.INTEGER)

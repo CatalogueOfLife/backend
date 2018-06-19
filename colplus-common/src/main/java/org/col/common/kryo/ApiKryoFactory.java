@@ -1,4 +1,4 @@
-package org.col.admin.importer.neo.kryo;
+package org.col.common.kryo;
 
 import java.net.URI;
 import java.time.LocalDate;
@@ -9,14 +9,11 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.pool.KryoFactory;
 import de.javakaffee.kryoserializers.UnmodifiableCollectionsSerializer;
 import de.javakaffee.kryoserializers.guava.ImmutableListSerializer;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
-import org.col.admin.importer.neo.model.NeoTaxon;
-import org.col.admin.importer.neo.model.RankedName;
 import org.col.api.model.*;
 import org.col.api.vocab.*;
-import org.gbif.dwc.terms.*;
+import org.gbif.dwc.terms.TermFactory;
+import org.gbif.dwc.terms.UnknownTerm;
 import org.gbif.nameparser.api.*;
-import org.neo4j.kernel.impl.core.NodeProxy;
 
 
 /**
@@ -24,7 +21,7 @@ import org.neo4j.kernel.impl.core.NodeProxy;
  * We use Kryo for extremely fast byte serialization of temporary objects.
  * It is used to serialize various information in kvp stores during checklist indexing and nub builds.
  */
-public class NeoKryoFactory implements KryoFactory {
+public class ApiKryoFactory implements KryoFactory {
 
   @Override
   public Kryo create() {
@@ -58,13 +55,6 @@ public class NeoKryoFactory implements KryoFactory {
     kryo.register(CSLRefType.class);
     kryo.register(String[].class);
     kryo.register(int[][].class);
-
-    // normalizer specific models
-    kryo.register(NeoTaxon.class);
-    kryo.register(RankedName.class);
-
-    // fastutil
-    kryo.register(IntArrayList.class);
 
     // java & commons
     kryo.register(LocalDateTime.class);
@@ -112,9 +102,6 @@ public class NeoKryoFactory implements KryoFactory {
       kryo.register(cl);
     }
     kryo.register(UnknownTerm.class, new TermSerializer());
-
-    // ignore normalizer node proxies and set them to null upon read:
-    kryo.register(NodeProxy.class, new NullSerializer());
 
     return kryo;
   }

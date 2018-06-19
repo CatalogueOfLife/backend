@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import org.apache.commons.lang3.StringUtils;
 import org.col.api.model.IssueContainer;
@@ -58,6 +59,7 @@ public class NameParser implements Parser<NameAccordingTo> {
    * @return a name instance with just the parsed authorship, i.e. combination & original year & author list
    */
   public Optional<ParsedName> parseAuthorship(String authorship) {
+    if (Strings.isNullOrEmpty(authorship)) return Optional.of(new ParsedName());
     try {
       return Optional.of(PARSER_INTERNAL.parse("Abies alba "+authorship, Rank.SPECIES));
 

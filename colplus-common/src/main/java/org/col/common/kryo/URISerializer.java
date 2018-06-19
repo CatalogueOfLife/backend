@@ -1,4 +1,4 @@
-package org.col.admin.importer.neo.kryo;
+package org.col.common.kryo;
 
 import java.net.URI;
 

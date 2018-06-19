@@ -1,11 +1,10 @@
-package org.col.admin.importer.neo.kryo;
+package org.col.common.kryo;
 
 import java.io.File;
 
 import com.esotericsoftware.kryo.pool.KryoPool;
 import org.col.api.model.Page;
 import org.col.api.model.Reference;
-import org.gbif.utils.text.StringUtils;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -19,7 +18,7 @@ public class KryoCollectionStoreTest {
   @Test
   public void storeReferences() throws Exception {
 
-    KryoPool pool = new KryoPool.Builder(new NeoKryoFactory())
+    KryoPool pool = new KryoPool.Builder(new ApiKryoFactory())
         .softReferences()
         .build();
 
@@ -51,7 +50,7 @@ public class KryoCollectionStoreTest {
     Reference r = new Reference();
     r.getCsl().setTitle("Harry Belafonte");
     r.setYear(1989);
-    r.setId(StringUtils.randomString(12));
+    r.setId("randomString(12)");
     return r;
   }
 
