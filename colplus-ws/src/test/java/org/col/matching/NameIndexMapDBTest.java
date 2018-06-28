@@ -2,7 +2,6 @@ package org.col.matching;
 
 import java.io.File;
 import java.util.List;
-import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -76,7 +75,6 @@ public class NameIndexMapDBTest {
     System.out.println("Writes: "+ watch.elapsed().toMillis()+"ms");
 
     watch.reset();
-    Random rnd = new Random();
     Name n = name(0);
     watch.start();
     for (int q = 1; q<SIZE; q++) {

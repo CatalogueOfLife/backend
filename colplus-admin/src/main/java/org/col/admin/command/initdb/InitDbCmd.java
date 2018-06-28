@@ -2,7 +2,6 @@ package org.col.admin.command.initdb;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.util.concurrent.TimeUnit;
@@ -23,7 +22,6 @@ import org.slf4j.LoggerFactory;
  */
 public class InitDbCmd extends ConfiguredCommand<AdminServerConfig> {
   private static final Logger LOG = LoggerFactory.getLogger(InitDbCmd.class);
-  private static final URI COL_DATASETS_URI = URI.create("https://raw.githubusercontent.com/Sp2000/colplus-repo/master/ACEF/datasets.sql");
 
   public InitDbCmd() {
     super("initdb", "Initialises a new database schema");
@@ -59,14 +57,16 @@ public class InitDbCmd extends ConfiguredCommand<AdminServerConfig> {
       LOG.info("Starting database initialisation");
       ScriptRunner runner = new ScriptRunner(con);
       runner.setSendFullScript(true);
-      // run sql files
+      // run sql schema
       exec(PgConfig.SCHEMA_FILE, runner, con, Resources.getResourceAsReader(PgConfig.SCHEMA_FILE));
+      // add common data
+      exec(PgConfig.DATA_FILE, runner, con, Resources.getResourceAsReader(PgConfig.DATA_FILE));
       // add COL GSDs
-      try (Reader datasets = new InputStreamReader(COL_DATASETS_URI.toURL().openStream(), StandardCharsets.UTF_8)) {
-        exec(COL_DATASETS_URI.toString(), runner, con, datasets);
+      try (Reader datasets = new InputStreamReader(PgConfig.COL_DATASETS_URI.toURL().openStream(), StandardCharsets.UTF_8)) {
+        exec(PgConfig.COL_DATASETS_URI.toString(), runner, con, datasets);
       }
       // add GBIF Backbone datasets
-      exec("gbif.sql", runner, con, Resources.getResourceAsReader("org/col/db/gbif.sql"));
+      exec(PgConfig.GBIF_DATASETS_FILE, runner, con, Resources.getResourceAsReader(PgConfig.GBIF_DATASETS_FILE));
     }
   }
 

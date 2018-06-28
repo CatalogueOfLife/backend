@@ -1,5 +1,6 @@
 package org.col.db;
 
+import java.net.URI;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -16,6 +17,9 @@ import com.zaxxer.hikari.HikariDataSource;
 @SuppressWarnings("PublicField")
 public class PgConfig {
   public static final String SCHEMA_FILE = "org/col/db/dbschema.sql";
+  public static final String DATA_FILE = "org/col/db/data.sql";
+  public static final String GBIF_DATASETS_FILE = "org/col/db/gbif.sql";
+  public static final URI COL_DATASETS_URI = URI.create("https://raw.githubusercontent.com/Sp2000/colplus-repo/master/ACEF/datasets.sql");
 
   /**
    * Use null to indicate an embedded postgres server

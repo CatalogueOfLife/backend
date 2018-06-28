@@ -1,12 +1,16 @@
 package org.col.db.mapper;
 
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.SQLException;
 
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.jdbc.ScriptRunner;
 import org.apache.ibatis.session.SqlSession;
+import org.col.db.PgConfig;
 import org.junit.rules.ExternalResource;
 
 /**
@@ -26,7 +30,12 @@ public class InitMybatisRule extends ExternalResource {
 
 	public enum TestData {
 		NONE,
-    APPLE
+    APPLE,
+
+		/**
+		 * Inits the datasets table with real col data from colplusthe -repo
+		 */
+		DATASETS
 	}
 
 	public static InitMybatisRule empty() {
@@ -35,6 +44,10 @@ public class InitMybatisRule extends ExternalResource {
 
 	public static InitMybatisRule apple() {
 		return new InitMybatisRule(TestData.APPLE);
+	}
+
+	public static InitMybatisRule datasets() {
+		return new InitMybatisRule(TestData.DATASETS);
 	}
 
 	private InitMybatisRule(TestData testData) {
@@ -88,7 +101,24 @@ public class InitMybatisRule extends ExternalResource {
 			try (Connection con = PgSetupRule.getConnection()) {
 				con.setAutoCommit(false);
 				ScriptRunner runner = new ScriptRunner(con);
-				runner.runScript(Resources.getResourceAsReader(testData.name().toLowerCase() + ".sql"));
+				runner.setSendFullScript(true);
+
+				switch (testData) {
+					case DATASETS:
+						// common data
+						runner.runScript(Resources.getResourceAsReader(PgConfig.DATA_FILE));
+						con.commit();
+						// COL GSDs
+						try (Reader datasets = new InputStreamReader(PgConfig.COL_DATASETS_URI.toURL().openStream(), StandardCharsets.UTF_8)) {
+							runner.runScript(datasets);
+							con.commit();
+						}
+						// GBIF Backbone datasets
+						runner.runScript(Resources.getResourceAsReader(PgConfig.GBIF_DATASETS_FILE));
+						break;
+					default:
+						runner.runScript(Resources.getResourceAsReader(testData.name().toLowerCase() + ".sql"));
+				}
 				con.commit();
 
 			} catch (SQLException | IOException e) {
