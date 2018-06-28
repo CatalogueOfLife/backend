@@ -1,4 +1,4 @@
-package org.col.authorship;
+package org.col.matching.authorship;
 
 /**
  * **********************************************************************

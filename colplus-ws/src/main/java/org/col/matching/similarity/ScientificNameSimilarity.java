@@ -20,9 +20,7 @@ public class ScientificNameSimilarity implements StringSimilarity {
   @Override
   public double getSimilarity(String x1, String x2) {
     if (x1.equals(x2)) return 100d;
-
-    LOG.debug("‘{}’\twas previously {}% like ‘{}’", x1, mdl3.getSimilarity(x1, x2), x2);
-
+    
     x1 = SciNameNormalizer.normalize(x1);
     x2 = SciNameNormalizer.normalize(x2);
 
@@ -32,7 +30,7 @@ public class ScientificNameSimilarity implements StringSimilarity {
     // Compare the whole name if they don't have the same number of tokens.
     if (x1s.length != x2s.length) {
       double sim = mdl3.getSimilarity(x1, x2);
-      LOG.debug("‘{}’\tis {}% like ‘{}’ (but lengths differ)\n", x1, sim, x2);
+      LOG.debug("'{}' is {}% like '{}' (but lengths differ)", x1, sim, x2);
       return sim;
     }
 
@@ -56,24 +54,24 @@ public class ScientificNameSimilarity implements StringSimilarity {
       overallSim = 5;
     }
 
-    LOG.debug("‘{}’\tis {}% like ‘{}’\n", x1, overallSim, x2);
+    LOG.debug("'{}' is {}% like '{}'", x1, overallSim, x2);
     return overallSim;
   }
 
   private double similarity(String x1, String x2) {
-    // First letter much match
+    // First letter must match
     if (x1.charAt(0) != x2.charAt(0)) {
-      LOG.debug("\t‘{}’\tis not at all like ‘{}’ (‘{}’≠‘{}’)", x1, x2, x1.charAt(0), x2.charAt(0));
+      LOG.debug("'{}' is not at all like '{}' ('{}'≠'{}')", x1, x2, x1.charAt(0), x2.charAt(0));
       return 0;
     }
 
     // Very short epithets must match exactly
     if (x1.length() < MUST_MATCH || x2.length() < MUST_MATCH) {
       if (x1.equals(x2)) {
-        LOG.debug("\t‘{}’\tis short and exactly like ‘{}’", x1, x2);
+        LOG.debug("'{}' is short and exactly like '{}'", x1, x2);
         return 100;
       } else {
-        LOG.debug("\t‘{}’\tis short and nothing like ‘{}’", x1, x2);
+        LOG.debug("'{}' is short and nothing like '{}'", x1, x2);
         return 0;
       }
     }
@@ -84,7 +82,7 @@ public class ScientificNameSimilarity implements StringSimilarity {
     String x2head = x2.substring(0, MUST_MATCH);
     int dist;
     if ((dist = mdl1.getEditDistance(x1head, x2head)) > 1) {
-      LOG.debug("\t‘{}’\tis nothing like ‘{}’ (‘{}’≠‘{}’, dist={})", x1, x2, x1head, x2head, dist);
+      LOG.debug("'{}' is nothing like '{}' ('{}'≠'{}', dist={})", x1, x2, x1head, x2head, dist);
       return 0;
     }
 
@@ -93,7 +91,7 @@ public class ScientificNameSimilarity implements StringSimilarity {
     dist = mdl1.getEditDistance(x1, x2);
     double r = (dist == 0 ? 100 : (dist == 1 ? 90 : (dist <= 2 ? 80 : 0)));
 
-    LOG.debug("\t‘{}’\tis {}% like ‘{}’", x1, r, x2);
+    LOG.debug("'{}' is {}% like '{}'", x1, r, x2);
     return r;
   }
 //

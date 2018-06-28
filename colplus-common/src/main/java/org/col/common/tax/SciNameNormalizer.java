@@ -30,8 +30,9 @@ public class SciNameNormalizer {
   }
 
   /**
-   * Normalizes and entire scientific name, keeping monomials or the first genus part rather unchanged,
+   * Normalizes the entire scientific name, keeping monomials or the first genus part rather unchanged,
    * applying the more drastic normalization incl stemming to the remainder of the name only.
+   * The return will be a strictly ASCII encoded string.
    */
   public static String normalize(String s) {
     return normalize(s, false, true);

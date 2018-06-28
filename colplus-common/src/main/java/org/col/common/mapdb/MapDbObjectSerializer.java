@@ -6,7 +6,6 @@ import java.io.IOException;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
-import com.esotericsoftware.kryo.pool.KryoFactory;
 import com.esotericsoftware.kryo.pool.KryoPool;
 import org.apache.commons.lang3.NotImplementedException;
 import org.mapdb.DataIO;
@@ -23,10 +22,6 @@ public class MapDbObjectSerializer<T> extends GroupSerializerObjectArray<T> {
   private final KryoPool pool;
   private final int bufferSize;
   private final Class<T> clazz;
-
-  public MapDbObjectSerializer(Class<T> clazz, KryoFactory kryoFactory) {
-    this(clazz, new KryoPool.Builder(kryoFactory).softReferences().build(), 256);
-  }
 
   public MapDbObjectSerializer(Class<T> clazz, KryoPool pool, int bufferSize) {
     this.pool = pool;

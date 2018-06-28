@@ -1,4 +1,4 @@
-package org.col.authorship;
+package org.col.matching.authorship;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

@@ -1,4 +1,4 @@
-package org.col.authorship;
+package org.col.matching.authorship;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -67,11 +67,7 @@ public class AuthorComparator {
       map.put(row[0], row[2]);
       map.put(row[1], row[2]);
     });
-    return createWithAuthormap(map);
-  }
-
-  public static AuthorComparator createWithAuthormap(Map<String, String> authorMap) {
-    return new AuthorComparator(authorMap);
+    return new AuthorComparator(map);
   }
 
   /**
