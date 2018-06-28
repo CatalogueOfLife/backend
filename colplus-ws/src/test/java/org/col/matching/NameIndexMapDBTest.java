@@ -50,7 +50,7 @@ public class NameIndexMapDBTest {
         .fileMmapEnableIfSupported();
     //dbMaker = DBMaker.memoryDB();
 
-    ni = new NameIndex(dbMaker, AuthorComparator.createWithAuthormap(), datasetKey);
+    ni = new NameIndex(dbMaker, AuthorComparator.createWithAuthormap(), 1, null);
   }
 
   @After
@@ -80,7 +80,7 @@ public class NameIndexMapDBTest {
     Name n = name(0);
     watch.start();
     for (int q = 1; q<SIZE; q++) {
-      NameMatch match = ni.match(upd(n, q), false);
+      NameMatch match = ni.match(upd(n, q), false, false);
     }
     watch.stop();
     System.out.println("Reads: "+ watch.elapsed().toMillis()+"ms");
