@@ -14,7 +14,9 @@ public enum ColTerm implements Term, AlternativeNames {
   relationType,
   publishedIn,
   publishedInID,
-  relationRemarks;
+  relationRemarks,
+  speciesEstimate,
+  speciesEstimateReference;
 
   private static final String PREFIX = "col";
   private static final String NS = "http://rs.col.plus/terms/";

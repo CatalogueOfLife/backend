@@ -211,6 +211,19 @@ public class TermRecord implements IssueContainer {
   }
 
   /**
+   * Returns a parsed integer for a term value, adding the invalidIssue to the verbatim record issues
+   * if the value cannot be parsed, returning null in that case.
+   */
+  public Integer getInt(Term term, Issue invalidIssue) {
+    try {
+      return getInt(term);
+    } catch (NumberFormatException e) {
+      issues.add(invalidIssue);
+      return null;
+    }
+  }
+
+  /**
    * Returns a parsed integer for a term value, throwing NumberFormatException if the value cannot be parsed.
    */
   public Integer getInt(Term term) throws NumberFormatException {

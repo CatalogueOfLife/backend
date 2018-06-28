@@ -168,8 +168,21 @@ public class DwcInterpreter extends InterpreterBase {
     t.taxon.setFossil(null);
     t.taxon.setRecent(null);
     // t.setLifezones();
-    t.taxon.setSpeciesEstimate(null);
-    t.taxon.setSpeciesEstimateReferenceKey(null);
+    if (v.hasTerm(ColTerm.speciesEstimate)) {
+      Integer est = v.getInt(ColTerm.speciesEstimate, Issue.ESTIMATES_INVALID);
+      if (est != null && est != 0) {
+        if (est < 0) {
+          v.addIssue(Issue.ESTIMATES_INVALID);
+        } else {
+          t.taxon.setSpeciesEstimate(est);
+          if (v.hasTerm(ColTerm.speciesEstimateReference)) {
+            lookupReference(null, v.get(ColTerm.speciesEstimateReference), v).ifPresent(r -> {
+              t.taxon.setSpeciesEstimateReferenceKey(r.getKey());
+            });
+          }
+        }
+      }
+    }
     t.taxon.setRemarks(v.get(DwcTerm.taxonRemarks));
   }
 

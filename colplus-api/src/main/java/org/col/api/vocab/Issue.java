@@ -391,6 +391,11 @@ public enum Issue {
   /**
    * ACEF reference type values unparsable or missing
    */
-  REFTYPE_INVALID;
+  REFTYPE_INVALID,
+
+  /**
+   * The given species estimates are no parsable, positive integer numbers
+   */
+  ESTIMATES_INVALID;
 
 }
