@@ -162,6 +162,16 @@
         ORDER BY key
     </select>
 
+    <!--  select all names of a dataset
+     Using a optimal fetchsize to enable low memory footprint while keeping good performance using a resulthandler
+    -->
+    <select id="processDataset" parameterType="map" resultMap="nameResultMap" resultOrdered="true"
+            fetchSize="10000" resultSetType="FORWARD_ONLY">
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
+        WHERE n.dataset_key = #{datasetKey}
+    </select>
+
     <select id="lookupKey" resultType="integer">
         SELECT key
         FROM name
