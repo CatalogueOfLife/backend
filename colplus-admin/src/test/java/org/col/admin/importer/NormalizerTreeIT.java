@@ -50,7 +50,7 @@ import static org.junit.Assert.*;
 @RunWith(Parameterized.class)
 public class NormalizerTreeIT {
   final static int MAX_ACEF_ID = 5;
-  final static int MAX_DWCA_ID = 30;
+  final static int MAX_DWCA_ID = 31;
 
   private NeoDb store;
   private NormalizerConfig cfg;
@@ -68,7 +68,7 @@ public class NormalizerTreeIT {
     //acefIds = IntStream.empty();
     //acefIds = IntStream.of(0,1);
     //dwcaIds = IntStream.empty();
-    //dwcaIds = IntStream.of(6,7,10,15,19,23);
+    //dwcaIds = IntStream.of(31);
 
     return Stream.concat(
         acefIds.mapToObj(i -> new Object[]{DataFormat.ACEF, i}),

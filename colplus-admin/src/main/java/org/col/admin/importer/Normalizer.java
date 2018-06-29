@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
@@ -86,6 +87,19 @@ public class Normalizer implements Callable<Boolean> {
   }
 
   /**
+   * @return true if year1 is considered to be before year2 with at least 1 year difference
+   */
+  private static boolean isBefore(String year1, String year2) {
+    try {
+      int y1 = Integer.parseInt(year1.trim());
+      int y2 = Integer.parseInt(year2.trim());
+      return y1+1 < y2;
+
+    } catch (IllegalArgumentException e) {
+      return false;
+    }
+  }
+  /**
    * Mostly checks for required attributes so that subsequent postgres imports do not fail.
    */
   private void verify() {
@@ -127,6 +141,50 @@ public class Normalizer implements Callable<Boolean> {
       }
 
     });
+
+    // flag PARENT_NAME_MISMATCH & PUBLISHED_BEFORE_GENUS for accepted names
+    store.process(Labels.TAXON, store.batchSize, new NeoDb.NodeBatchProcessor() {
+      @Override
+      public void process(Node n) {
+        RankedName rn = NeoProperties.getRankedName(n);
+        if (rn.rank.isSpeciesOrBelow()) {
+          NeoTaxon sp = store.get(n);
+          Node gn = Traversals.parentWithRankOf(sp.node, Rank.GENUS);
+          if (gn != null) {
+            NeoTaxon g = store.get(gn);
+            // does the genus name match up?
+            if (sp.name.isParsed() && g.name.isParsed() && !Objects.equals(sp.name.getGenus(), g.name.getUninomial())) {
+              store.addIssues(sp.name, Issue.PARENT_NAME_MISMATCH);
+            }
+            // compare combination authorship years if existing
+            if (sp.name.getCombinationAuthorship().getYear() != null && g.name.getCombinationAuthorship().getYear() != null) {
+              if (isBefore(sp.name.getCombinationAuthorship().getYear(), g.name.getCombinationAuthorship().getYear())) {
+                store.addIssues(sp.name, Issue.PUBLISHED_BEFORE_GENUS);
+              }
+
+            } else if (sp.name.getPublishedInKey() != null && g.name.getPublishedInKey() != null) {
+              // compare publication years if existing
+              Reference spr = store.refByKey(sp.name.getPublishedInKey());
+              Reference gr = store.refByKey(g.name.getPublishedInKey());
+              if (spr.getYear() != null && gr.getYear() != null && spr.getYear() < gr.getYear()) {
+                store.addIssues(sp.name, Issue.PUBLISHED_BEFORE_GENUS);
+              }
+            }
+          }
+        }
+      }
+
+      @Override
+      public void commitBatch(int counter) {
+        LOG.debug("{} taxa verified", counter);
+      }
+    });
+
+    // TODO: https://github.com/Sp2000/colplus-backend/issues/117
+    // Issue.POTENTIAL_CHRESONYM;
+
+    // TODO: https://github.com/Sp2000/colplus-backend/issues/114
+    // Issue.POTENTIAL_VARIANT;
   }
 
   private <T> T require(VerbatimEntity ent, T obj, String fieldName) {
@@ -312,25 +370,23 @@ public class Normalizer implements Callable<Boolean> {
       return;
     }
 
-    store.process(Labels.ALL, store.batchSize, new NeoDb.NodeBatchProcessor() {
+    store.process(Labels.TAXON, store.batchSize, new NeoDb.NodeBatchProcessor() {
       @Override
       public void process(Node n) {
-        if (n.hasLabel(Labels.TAXON)) {
-          // the highest current parent of n
-          RankedName highest = findHighestParent(n);
-          // only need to apply classification if highest exists and is not already a kingdom, the denormed classification cannot add to it anymore!
-          if (highest != null && highest.rank != Rank.KINGDOM) {
-            NeoTaxon t = store.get(n);
-            if (t.classification != null) {
-              applyClassification(highest, t.classification);
-            }
+        // the highest current parent of n
+        RankedName highest = findHighestParent(n);
+        // only need to apply classification if highest exists and is not already a kingdom, the denormed classification cannot add to it anymore!
+        if (highest != null && highest.rank != Rank.KINGDOM) {
+          NeoTaxon t = store.get(n);
+          if (t.classification != null) {
+            applyClassification(highest, t.classification);
           }
         }
       }
 
       @Override
       public void commitBatch(int counter) {
-        LOG.info("Higher classifications processed for {} taxa", counter);
+        LOG.debug("Higher classifications processed for {} taxa", counter);
       }
     });
   }

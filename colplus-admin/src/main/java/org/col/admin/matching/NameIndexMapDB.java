@@ -37,6 +37,7 @@ public class NameIndexMapDB implements NameIndex {
 
   private final DB db;
   private final KryoPool pool;
+  private int counter = 0;
   private final Map<String, NameList> names;
   private final AuthorComparator authComp;
   private final int datasetKey;
@@ -79,7 +80,7 @@ public class NameIndexMapDB implements NameIndex {
     names = db.hashMap("names")
         .keySerializer(Serializer.STRING_ASCII)
         .valueSerializer(new MapDbObjectSerializer<>(NameList.class, pool, 128))
-        .counterEnable()
+        //.counterEnable()
         //.valueInline()
         //.valuesOutsideNodesEnable()
         .createOrOpen();
@@ -237,7 +238,7 @@ public class NameIndexMapDB implements NameIndex {
 
   @Override
   public int size() {
-    return names.size();
+    return counter;
   }
 
   @Override
@@ -251,6 +252,7 @@ public class NameIndexMapDB implements NameIndex {
     }
     group.add(name);
     names.put(key, group);
+    counter++;
   }
 
   @Override

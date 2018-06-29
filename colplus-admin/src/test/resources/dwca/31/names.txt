@@ -1,0 +1,17 @@
+taxonID	parentNameUsageID	taxonRank	scientificName	namePublishedIn	namePublishedInYear
+1		kingdom	Plantae		
+2	1	order	Asterales		
+3	2	family	Asteraceae		
+4	2	phylum	Asterophyta		
+5	3	genus	Aster	pubXYZ	1900
+6	3	subgenus	Euaster	pubXYZ	1898
+7	6	genus	Gossypium		
+8	5	species	Gossypium tomentosum Nutt. ex Seem.		
+9	5	species	Aster tomentosum DC.	pubXYZ	1888
+10	9	subspecies	Aster tomentosum subsp. alpina DC.		
+11	10	variety	Euaster tomentosum var. kaukasia DC.	pubXYZ	1896
+100		kingdom	Animalia		
+101	100	family	Pedicularidae		
+102	101	genus	Pedicularis Tsoong, 1903		
+103	102	species	Pedicularis inconspicua P.C. Tsoong, 1903		
+104	102	species	Pedicularis conspicua P.C. Tsoong, 1901		

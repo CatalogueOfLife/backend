@@ -133,7 +133,7 @@ public class NameValidatorTest {
     verify(n);
 
     n.setSpecificEpithet("sax€tana");
-    verify(n, Issue.UNUSUAL_CHARACTERS);
+    verify(n, Issue.UNUSUAL_NAME_CHARACTERS);
 
     n.setSpecificEpithet("saxetana");
     verify(n);
@@ -143,6 +143,6 @@ public class NameValidatorTest {
     verify(n);
 
     n.setInfraspecificEpithet("for sythi");
-    verify(n, Issue.UNUSUAL_CHARACTERS);
+    verify(n, Issue.UNUSUAL_NAME_CHARACTERS);
   }
 }

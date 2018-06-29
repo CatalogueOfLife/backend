@@ -516,7 +516,7 @@ public class NameUsageMapperTest extends MapperTestBase<NameMapper> {
     names = mapper.search(search, new Page());
     assertEquals(1, names.size());
 
-    search.setIssue(Issue.ALT_IDENTIFIER_INVALID);
+    search.setIssue(Issue.VERNACULAR_NAME_INVALID);
     names = mapper.search(search, new Page());
     assertEquals(0, names.size());
   }

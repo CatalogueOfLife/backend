@@ -330,7 +330,7 @@ public class TestEntityGenerator {
     }
     rec.put(UnknownTerm.build("http://col.plus/terms/punk"), RandomUtils.randomString(500 + RND.nextInt(2000)));
     rec.addIssue(Issue.ACCEPTED_NAME_MISSING);
-    rec.addIssue(Issue.HOMONYM);
+    rec.addIssue(Issue.POTENTIAL_VARIANT);
     return rec;
   }
 

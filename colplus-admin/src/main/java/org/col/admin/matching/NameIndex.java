@@ -16,7 +16,7 @@ public interface NameIndex extends AutoCloseable {
   NameMatch match(Name name, boolean allowInserts, boolean verbose);
 
   /**
-   * @return the number of unique name keys in the index
+   * @return the number of names in the index
    */
   int size();
 

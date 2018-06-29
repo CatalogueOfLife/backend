@@ -29,7 +29,7 @@ public class NameParser implements Parser<NameAccordingTo> {
   private static final NameParserGBIF PARSER_INTERNAL = new NameParserGBIF();
   private static final Map<String, Issue> WARN_TO_ISSUE = ImmutableMap.<String, Issue>builder()
       .put(Warnings.NULL_EPITHET, Issue.NULL_EPITHET)
-      .put(Warnings.UNUSUAL_CHARACTERS, Issue.UNUSUAL_CHARACTERS)
+      .put(Warnings.UNUSUAL_CHARACTERS, Issue.UNUSUAL_NAME_CHARACTERS)
       .put(Warnings.SUBSPECIES_ASSIGNED, Issue.SUBSPECIES_ASSIGNED)
       .put(Warnings.LC_MONOMIAL, Issue.LC_MONOMIAL)
       .put(Warnings.INDETERMINED, Issue.INDETERMINED)

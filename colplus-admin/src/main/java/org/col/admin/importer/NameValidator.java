@@ -55,12 +55,12 @@ public class NameValidator {
       // no whitespace
       if (WHITE.matcher(epithet).find()) {
         LOG.info("Name part contains whitespace {}", n.toStringComplete());
-        issues.addIssue(Issue.UNUSUAL_CHARACTERS);
+        issues.addIssue(Issue.UNUSUAL_NAME_CHARACTERS);
       }
       // non ascii chars
       if (NON_LETTER.matcher(epithet).find()) {
         LOG.info("Name part contains non ASCII letters {}", n.toStringComplete());
-        issues.addIssue(Issue.UNUSUAL_CHARACTERS);
+        issues.addIssue(Issue.UNUSUAL_NAME_CHARACTERS);
       }
     }
 

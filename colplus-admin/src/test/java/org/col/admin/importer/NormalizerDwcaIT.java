@@ -100,6 +100,11 @@ public class NormalizerDwcaIT {
     }
   }
 
+  TermRecord vByID(String id) {
+    NeoTaxon t = byID(id);
+    return store.getVerbatim(t.name.getVerbatimKey());
+  }
+
   NeoTaxon byID(String id) {
     Node n = store.byID(id);
     return store.get(n);
@@ -393,6 +398,28 @@ public class NormalizerDwcaIT {
       List<NameRelation> rels = store.relations(t10.node);
       assertEquals(1, rels.size());
       assertEquals(NomRelType.BASED_ON, rels.get(0).getType());
+    }
+  }
+
+  @Test
+  public void testIssueFlagging() throws Exception {
+    normalize(31);
+
+    try (Transaction tx = store.getNeo().beginTx()) {
+      TermRecord t9 = vByID("9");
+      //TODO: fix https://github.com/Sp2000/colplus-backend/issues/118
+      //assertTrue(t9.hasIssue(Issue.PUBLISHED_BEFORE_GENUS));
+      assertFalse(t9.hasIssue(Issue.PARENT_NAME_MISMATCH));
+
+      TermRecord t11 = vByID("11");
+      assertTrue(t11.hasIssue(Issue.PARENT_NAME_MISMATCH));
+
+      TermRecord t103 = vByID("103");
+      assertFalse(t103.hasIssue(Issue.PUBLISHED_BEFORE_GENUS));
+      assertFalse(t103.hasIssue(Issue.PARENT_NAME_MISMATCH));
+
+      TermRecord t104 = vByID("104");
+      assertTrue(t104.hasIssue(Issue.PUBLISHED_BEFORE_GENUS));
     }
   }
 

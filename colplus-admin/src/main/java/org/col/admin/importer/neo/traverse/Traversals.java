@@ -163,8 +163,12 @@ public class Traversals {
     try (ResourceIterator<Node> parents = Traversals.PARENTS.traverse(start).nodes().iterator()) {
       while (parents.hasNext()) {
         Node p = parents.next();
-        if ((int) p.getProperty(NeoProperties.RANK, -1) == rank.ordinal()) {
+        int rankOrd = (int) p.getProperty(NeoProperties.RANK, -1);
+        if (rankOrd == rank.ordinal()) {
           return p;
+        } else if (!rank.isUncomparable() && rankOrd > 0 && rankOrd < rank.ordinal()) {
+          // we are already passed the requested rank
+          break;
         }
       }
     }
