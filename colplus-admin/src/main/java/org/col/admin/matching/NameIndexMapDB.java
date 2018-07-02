@@ -16,6 +16,8 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.admin.matching.authorship.AuthorComparator;
 import org.col.api.model.Name;
+import org.col.api.model.NameMatch;
+import org.col.api.vocab.MatchType;
 import org.col.common.func.Predicates;
 import org.col.common.kryo.ApiKryoFactory;
 import org.col.common.mapdb.MapDbObjectSerializer;

@@ -1,10 +1,10 @@
-package org.col.admin.matching;
+package org.col.api.model;
 
 import java.util.List;
 import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.col.api.model.Name;
+import org.col.api.vocab.MatchType;
 
 
 public class NameMatch {

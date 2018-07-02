@@ -5,6 +5,7 @@ import java.io.File;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.admin.matching.authorship.AuthorComparator;
 import org.col.api.model.Name;
+import org.col.api.model.NameMatch;
 import org.mapdb.DBMaker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

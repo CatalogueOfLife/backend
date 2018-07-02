@@ -8,7 +8,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
 import org.col.admin.matching.NameIndex;
-import org.col.admin.matching.NameMatch;
+import org.col.api.model.NameMatch;
 import org.col.api.model.IssueContainer;
 import org.col.api.model.Name;
 import org.col.api.model.NameAccordingTo;

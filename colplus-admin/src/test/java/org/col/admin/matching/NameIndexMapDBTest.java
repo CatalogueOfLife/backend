@@ -9,6 +9,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import org.col.api.model.IssueContainer;
 import org.col.api.model.Name;
+import org.col.api.model.NameMatch;
+import org.col.api.vocab.MatchType;
 import org.col.db.mapper.InitMybatisRule;
 import org.col.db.mapper.PgSetupRule;
 import org.col.parser.NameParser;

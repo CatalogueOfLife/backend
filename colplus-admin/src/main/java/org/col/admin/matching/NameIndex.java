@@ -1,6 +1,7 @@
 package org.col.admin.matching;
 
 import org.col.api.model.Name;
+import org.col.api.model.NameMatch;
 
 public interface NameIndex extends AutoCloseable {
 

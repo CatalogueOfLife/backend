@@ -1,4 +1,4 @@
-package org.col.admin.matching;
+package org.col.api.vocab;
 
 public enum MatchType {
   /*
