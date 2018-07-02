@@ -51,6 +51,12 @@ public class NameIndexMapDBTest {
     assertMatch(2, "Larus fuscus", Rank.SPECIES, null);
   }
 
+  @Test
+  public void insertNewNames() throws SQLException {
+    assertInsert("Larus fundatus", Rank.SPECIES, null);
+    assertInsert("Puma concolor", Rank.SPECIES, NomCode.ZOOLOGICAL);
+  }
+
   void addTestData() {
     Collection<Name> names = Lists.newArrayList(
         name(1,  "Animalia", Rank.KINGDOM, NomCode.ZOOLOGICAL),
@@ -194,7 +200,13 @@ public class NameIndexMapDBTest {
       System.out.println(alt.toStringComplete());
     }
   }
-  
+
+  private NameMatch assertInsert(String name, Rank rank, NomCode code) {
+    NameMatch m = ni.match(name(null, name, rank, code), true, false);
+    assertEquals(MatchType.INSERTED, m.getType());
+    return m;
+  }
+
   private NameMatch match(String name, Rank rank, NomCode code) {
     return ni.match(name(null, name, rank, code), false, true);
   }

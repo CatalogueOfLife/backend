@@ -77,6 +77,10 @@ public enum Origin {
   EX_AUTHOR_SYNONYM,
 
   /**
+   * A name in the names index introduced by name matching
+   */
+  NAME_MATCHING,
+  /**
    * Any other origin not covered by the above.
    */
   OTHER;

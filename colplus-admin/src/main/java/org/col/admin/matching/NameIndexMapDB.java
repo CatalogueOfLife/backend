@@ -18,6 +18,7 @@ import org.col.admin.matching.authorship.AuthorComparator;
 import org.col.api.model.Name;
 import org.col.api.model.NameMatch;
 import org.col.api.vocab.MatchType;
+import org.col.api.vocab.Origin;
 import org.col.common.func.Predicates;
 import org.col.common.kryo.ApiKryoFactory;
 import org.col.common.mapdb.MapDbObjectSerializer;
@@ -282,6 +283,7 @@ public class NameIndexMapDB implements NameIndex {
     name.setHomotypicNameKey(null);
     name.setScientificNameID(null);
     name.setDatasetKey(datasetKey);
+    name.setOrigin(Origin.NAME_MATCHING);
     // insert into postgres dataset
     //TODO: consider to make this async and collect for batch inserts
     try (SqlSession s = sqlFactory.openSession()) {
