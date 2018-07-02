@@ -2,12 +2,12 @@ package org.col.admin.matching.authorship;
 
 import java.util.List;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import org.col.admin.matching.Equality;
 import org.col.api.model.Name;
 import org.col.parser.NameParser;
 import org.gbif.nameparser.api.Authorship;
-import org.gbif.nameparser.api.ParsedName;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -16,20 +16,14 @@ public class AuthorComparatorTest {
   AuthorComparator comp = AuthorComparator.createWithAuthormap();
 
   public static Authorship parse(String x) {
-    return parse(x, null);
+    return NameParser.PARSER.parseAuthorship(x).get().getCombinationAuthorship();
   }
+
   public static Authorship parse(String x, String year) {
-    StringBuilder sb = new StringBuilder();
-    if (x != null) {
-      sb.append(x);
-    }
     if (year != null) {
-      sb.append(" " + year);
+      x = Strings.nullToEmpty(x) + " " + year;
     }
-    ParsedName pn = NameParser.PARSER.parseAuthorship(sb.toString().trim()).get();
-    Authorship auth = NameParser.PARSER.parseAuthorship(x).get().getCombinationAuthorship();
-    auth.setYear(year);
-    return auth;
+    return parse(x);
   }
 
   @Test
@@ -235,6 +229,14 @@ public class AuthorComparatorTest {
     p1.getBasionymAuthorship().setAuthors(Lists.newArrayList("Mill."));
     p2.setBasionymAuthorship(parse("Mill. : Pers."));
     assertEquals(Equality.EQUAL, comp.compare(p1, p2));
+  }
+
+  @Test
+  public void testCompareOptYear() throws Exception {
+    assertAuth("Pallas, 1771", Equality.EQUAL, "1771");
+    assertAuth("Pallas, 1771", Equality.EQUAL, "Pallas");
+    assertAuth("Pallas, 1771", Equality.DIFFERENT, "1778");
+    assertAuth("Pallas", Equality.UNKNOWN, "1771");
   }
 
   @Test
@@ -538,6 +540,10 @@ public class AuthorComparatorTest {
 
   private void assertAuth(String a1, String y1, Equality eq, String a2, String y2) {
     assertEquals(eq, comp.compare(parse(a1, y1), parse(a2, y2)));
+  }
+
+  private void assertAuth(String a1, Equality eq, String a2) {
+    assertEquals(eq, comp.compare(parse(a1), parse(a2)));
   }
 
   private void assertAuthStrict(String a1, String y1, boolean eq, String a2, String y2) {

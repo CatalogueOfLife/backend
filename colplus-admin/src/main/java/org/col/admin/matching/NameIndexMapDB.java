@@ -1,7 +1,6 @@
 package org.col.admin.matching;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -9,12 +8,15 @@ import java.util.concurrent.atomic.AtomicInteger;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.pool.KryoPool;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 import org.apache.ibatis.session.ResultContext;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.admin.matching.authorship.AuthorComparator;
 import org.col.api.model.Name;
+import org.col.common.func.Predicates;
 import org.col.common.kryo.ApiKryoFactory;
 import org.col.common.mapdb.MapDbObjectSerializer;
 import org.col.common.tax.SciNameNormalizer;
@@ -112,6 +114,7 @@ public class NameIndexMapDB implements NameIndex {
   @Override
   public NameMatch match(Name name, boolean allowInserts, boolean verbose) {
     NameMatch m;
+    System.out.println("\nMatch "+name.canonicalNameComplete());
     NameList candidates = names.get(key(name));
     if (candidates != null) {
       m = matchCandidates(name, candidates);
@@ -145,23 +148,53 @@ public class NameIndexMapDB implements NameIndex {
     final boolean compareRank = query.getRank() != null && query.getRank() != Rank.UNRANKED;
     final boolean compareAuthorship = query.hasAuthorship();
     final boolean compareCode = query.getCode() != null;
-    // filter by rank, nomCode & authorship
-    List<Name> matches = new ArrayList<>(candidates);
-    Iterator<Name> iter = matches.iterator();
-    while (iter.hasNext()) {
-      Name n = iter.next();
-      // by rank
+    final String queryname = SciNameNormalizer.normalizedAscii(query.canonicalNameWithoutAuthorship());
+    final String queryfullname = SciNameNormalizer.normalizedAscii(query.canonicalName());
+    final String queryauthorship = Strings.nullToEmpty(SciNameNormalizer.normalizedAscii(query.authorshipComplete()));
+    // calculate score by rank, nomCode & authorship
+    // immediately filtering no matches with a negative score
+    int bestScore = 0;
+    final List<Name> matches = Lists.newArrayList();
+    for (Name n : candidates) {
+      // 0 to 5
+      int score = 0;
+
+      // make sure rank match up exactly if part of query
       if (compareRank && !match(query.getRank(), n.getRank())) {
-        iter.remove();
-
-      // by authorship
-      } else if (compareAuthorship && authComp.compare(query, n) == Equality.DIFFERENT) {
-        iter.remove();
-
-      // nom code
-      } else if (compareCode && !match(query.getCode(), n.getCode())) {
-        iter.remove();
+        continue;
       }
+
+      // make sure nom code match up exactly if part of query
+      if (compareCode && !match(query.getCode(), n.getCode())) {
+        continue;
+      }
+
+      // exact full name match: =5
+      if (queryfullname.equalsIgnoreCase(SciNameNormalizer.normalizedAscii(n.canonicalName()))) {
+        score = 5;
+
+      } else {
+        // remove different authorships or
+        // 0 for unknown match
+        // +1 for equal authorships
+        // +2 for exact equal authorship strings
+        Equality aeq = compareAuthorship ? authComp.compare(query, n) : Equality.UNKNOWN;
+        if (aeq == Equality.DIFFERENT) {
+          continue;
+        }
+
+        if (queryauthorship.equalsIgnoreCase(SciNameNormalizer.normalizedAscii(n.authorshipComplete()))) {
+          score += 2;
+        } else if (aeq == Equality.EQUAL) {
+          score += 1;
+        }
+
+        // exact canonical name match: +1
+        if (queryname.equalsIgnoreCase(SciNameNormalizer.normalizedAscii(n.canonicalNameWithoutAuthorship()))) {
+          score += 1;
+        }
+      }
+      bestScore = addOrRemove(score, n, bestScore, matches);
     }
 
     if (matches.isEmpty()) {
@@ -171,19 +204,42 @@ public class NameIndexMapDB implements NameIndex {
       return buildMatch(query, matches.get(0));
 
     } else {
-      // prefer exact matches
-      Name exact = exactMatch(query, matches);
-      if (exact != null) {
-        LOG.debug("{} matches, but only 1 exact match {} for {}", matches.size(), exact.getKey(), query.canonicalName());
-        return buildMatch(query, exact);
-      }
-      // still more matches, TODO: remove deleted ones and try again with exact match
+      // multiple, ambiguous matches
       LOG.debug("Ambiguous match ({} hits) for {}", matches.size(), query.canonicalNameComplete());
       NameMatch m = new NameMatch();
       m.setType(MatchType.AMBIGUOUS);
       m.setAlternatives(matches);
       return m;
     }
+  }
+
+  /**
+   * @return new best score
+   */
+  private int addOrRemove(int score ,Name n, int bestScore, List<Name> matches) {
+    if (score < bestScore) {
+      System.out.println("Worse match "+score+"<"+bestScore+": "+n.canonicalNameComplete());
+      return bestScore;
+    }
+
+    if (score > bestScore) {
+      System.out.println("Better match "+score+">"+bestScore+": "+n.canonicalNameComplete());
+      matches.clear();
+    }
+    matches.add(n);
+    return score;
+  }
+
+  /**
+   * Removes matches for names without any authorship whatsoever
+   * provided there is at least one match with authorship!
+   * @return true if authorless matches were removed
+   */
+  private boolean removeAuthorlessMatches(List<Name> matches) {
+    if (matches.stream().anyMatch(Name::hasAuthorship)) {
+      return matches.removeIf(Predicates.not(Name::hasAuthorship));
+    }
+    return false;
   }
 
   private static NameMatch buildMatch(Name query, Name match) {
@@ -202,8 +258,9 @@ public class NameIndexMapDB implements NameIndex {
    */
   private Name exactMatch(Name query, List<Name> candidates) {
     Name match = null;
+    String queryname = SciNameNormalizer.normalizedAscii(query.canonicalName());
     for (Name cn : candidates) {
-      if (query.canonicalName().equalsIgnoreCase(cn.canonicalName())) {
+      if (queryname.equalsIgnoreCase(SciNameNormalizer.normalizedAscii(cn.canonicalName()))) {
         // did we have a match already?
         if (match != null) {
           return null;

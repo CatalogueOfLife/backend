@@ -14,19 +14,35 @@ public class SciNameNormalizer {
   private static final Pattern suffix_i = Pattern.compile("ei$");
   private static final Pattern i = Pattern.compile("(?<!\\b)[jyi]+");
   private static final Pattern trh = Pattern.compile("([gtr])h", Pattern.CASE_INSENSITIVE);
-  private static final Pattern white = Pattern.compile("\\s{2,}");
-  private static final Pattern empty = Pattern.compile("['_-]");
   private static final Pattern removeRepeatedLetter = Pattern.compile("(\\p{L})\\1+");
   private static final Pattern removeHybridSignGenus = Pattern.compile("^\\s*[×xX]\\s*([A-Z])");
   private static final Pattern removeHybridSignEpithet = Pattern.compile("(?:^|\\s)(?:×\\s*|[xX]\\s+)([^A-Z])");
+  private static final Pattern empty = Pattern.compile("[?!\"'`_-]");
+  private static final Pattern punct = Pattern.compile("[,.:;]");
+  private static final Pattern white = Pattern.compile("\\s{2,}");
 
   // dont use guava or commons so we dont have to bundle it for the solr cloud plugin ...
   public static boolean hasContent(String s) {
     return s != null && !(s.trim().isEmpty());
   }
 
-  public static String nullToEmpty(String s) {
-    return (s == null) ? "" : s;
+  /**
+   * Folds a name into its ASCII equivalent,
+   * replaces all punctuation with space
+   * removes hyphens and apostrophes
+   * and finally trims and normalizes whitespace to a single ASCII space.
+   */
+  public static String normalizedAscii(String s) {
+    if (s == null) return null;
+
+    // Normalize letters and ligatures to their ASCII equivalent
+    s = foldToAscii(s);
+
+    // normalize whitespace
+    s = empty.matcher(s).replaceAll("");
+    s = punct.matcher(s).replaceAll(" ");
+    s = white.matcher(s).replaceAll(" ");
+    return s.trim();
   }
 
   /**
@@ -53,28 +69,14 @@ public class SciNameNormalizer {
     return normalize(s, true, true);
   }
 
-  /**
-   * Normalizes an entire name string including monomials and genus parts of a name.
-   */
-  public static String normalizeAll(String s, boolean stemming) {
-    return normalize(s, true, stemming);
-  }
-
   private static String normalize(String s, boolean normMonomials, boolean stemming) {
     if (!hasContent(s)) return "";
 
-    s = s.trim();
+    s = normalizedAscii(s);
 
     // Remove a hybrid cross, or a likely hybrid cross.
     s = removeHybridSignGenus.matcher(s).replaceAll("$1");
     s = removeHybridSignEpithet.matcher(s).replaceAll(" $1");
-
-    // Normalize letters and ligatures to their ASCII equivalent
-    s = foldToAscii(s);
-
-    // normalize whitespace
-    s = empty.matcher(s).replaceAll("");
-    s = white.matcher(s).replaceAll(" ");
 
     // Only for bi/trinomials, otherwise we mix up ranks.
     if (normMonomials) {
