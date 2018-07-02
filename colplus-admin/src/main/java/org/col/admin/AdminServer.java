@@ -16,10 +16,14 @@ import org.col.admin.config.AdminServerConfig;
 import org.col.admin.gbifsync.GbifSync;
 import org.col.admin.importer.ContinousImporter;
 import org.col.admin.importer.ImportManager;
+import org.col.admin.matching.NameIndex;
+import org.col.admin.matching.NameIndexFactory;
 import org.col.admin.resources.ImporterResource;
+import org.col.admin.resources.MatchingResource;
 import org.col.admin.resources.ParserResource;
 import org.col.api.model.CslData;
 import org.col.api.vocab.ColTerm;
+import org.col.api.vocab.Datasets;
 import org.col.csl.AnystyleHealthCheck;
 import org.col.csl.AnystyleParserWrapper;
 import org.col.csl.CslParserMock;
@@ -91,6 +95,17 @@ public class AdminServer extends PgApp<AdminServerConfig> {
     env.jersey().register(new ParserResource(cslParser));
     env.healthChecks().register("anystyle", new AnystyleHealthCheck(cslParser));
     CslUtil.register(env.metrics());
+
+    // name index
+    NameIndex ni;
+    if (cfg.namesIndexFile == null) {
+      LOG.info("Using volatile in memory names index");
+      ni = NameIndexFactory.memory(Datasets.PROV_CAT, getSqlSessionFactory());
+    } else {
+      LOG.info("Using names index at {}", cfg.namesIndexFile.getAbsolutePath());
+      ni = NameIndexFactory.persistent(Datasets.PROV_CAT, cfg.namesIndexFile, getSqlSessionFactory());
+    }
+    env.jersey().register(new MatchingResource(ni));
 
     // setup async importer
     final ImportManager importManager = new ImportManager(cfg, env.metrics(), hc, getSqlSessionFactory(), cslParser);

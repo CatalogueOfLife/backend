@@ -1,5 +1,6 @@
 package org.col.admin.config;
 
+import java.io.File;
 import javax.validation.constraints.Pattern;
 
 import io.dropwizard.client.JerseyClientConfiguration;
@@ -20,5 +21,11 @@ public class AdminServerConfig extends PgAppConfig {
    */
   @Pattern(regexp = "^/.*")
   public String monitorPath = "/monitor";
+
+  /**
+   * Names index kvp file to persist map on disk.
+   * If empty will use a volatile memory index.
+   */
+  public File namesIndexFile;
 
 }
