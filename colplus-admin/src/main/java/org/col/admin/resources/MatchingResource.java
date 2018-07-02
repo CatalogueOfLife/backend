@@ -8,10 +8,10 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
 import org.col.admin.matching.NameIndex;
-import org.col.api.model.NameMatch;
 import org.col.api.model.IssueContainer;
 import org.col.api.model.Name;
 import org.col.api.model.NameAccordingTo;
+import org.col.api.model.NameMatch;
 import org.col.parser.NameParser;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
@@ -41,7 +41,10 @@ public class MatchingResource {
                          @QueryParam("verbose") boolean verbose) {
     // TODO: remove trusted param - this is for tests only at this stage
     // trusted inserts should only happen during imports, not exposing public webservices.
-    return ni.match(name(q, rank, code), trusted, verbose);
+    Name n = name(q, rank, code);
+    NameMatch m = ni.match(n, trusted, verbose);
+    LOG.debug("Matching {} to {}", n.canonicalNameComplete(), m);
+    return m;
   }
 
   static Name name(String name, Rank rank, NomCode code) {

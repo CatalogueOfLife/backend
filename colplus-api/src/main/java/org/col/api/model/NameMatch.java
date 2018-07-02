@@ -61,4 +61,33 @@ public class NameMatch {
   public int hashCode() {
     return Objects.hash(name, type, alternatives);
   }
+
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    sb.append(type.name())
+        .append(" match");
+    switch (type) {
+      case NONE:
+        break;
+      case AMBIGUOUS:
+        sb.append(": [");
+        boolean first = true;
+        for (Name a : alternatives) {
+          sb.append(a.canonicalNameComplete());
+          if (first) {
+            first = false;
+          } else {
+            sb.append("; ");
+          }
+        }
+        sb.append("]");
+        break;
+      default:
+        sb.append(": ")
+          .append(name.canonicalNameComplete());
+    }
+
+    return sb.toString();
+  }
 }

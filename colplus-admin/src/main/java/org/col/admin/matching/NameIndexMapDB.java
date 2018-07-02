@@ -18,8 +18,8 @@ import org.col.admin.matching.authorship.AuthorComparator;
 import org.col.api.model.Name;
 import org.col.api.model.NameMatch;
 import org.col.api.vocab.MatchType;
+import org.col.api.vocab.NomStatus;
 import org.col.api.vocab.Origin;
-import org.col.common.func.Predicates;
 import org.col.common.kryo.ApiKryoFactory;
 import org.col.common.mapdb.MapDbObjectSerializer;
 import org.col.common.tax.SciNameNormalizer;
@@ -117,7 +117,7 @@ public class NameIndexMapDB implements NameIndex {
   @Override
   public NameMatch match(Name name, boolean allowInserts, boolean verbose) {
     NameMatch m;
-    System.out.println("\nMatch "+name.canonicalNameComplete());
+    LOG.debug("Matching {}", name.canonicalNameComplete());
     NameList candidates = names.get(key(name));
     if (candidates != null) {
       m = matchCandidates(name, candidates);
@@ -221,29 +221,20 @@ public class NameIndexMapDB implements NameIndex {
    */
   private int addOrRemove(int score ,Name n, int bestScore, List<Name> matches) {
     if (score < bestScore) {
-      System.out.println("Worse match "+score+"<"+bestScore+": "+n.canonicalNameComplete());
+      LOG.debug("Worse match {}<{}: {}", score, bestScore, n.canonicalNameComplete());
       return bestScore;
     }
 
     if (score > bestScore) {
-      System.out.println("Better match "+score+">"+bestScore+": "+n.canonicalNameComplete());
+      LOG.debug("Better match {}>{}: {}", score, bestScore, n.canonicalNameComplete());
       matches.clear();
+    } else {
+      LOG.debug("Same match {}={}: {}", score, bestScore, n.canonicalNameComplete());
     }
     matches.add(n);
     return score;
   }
 
-  /**
-   * Removes matches for names without any authorship whatsoever
-   * provided there is at least one match with authorship!
-   * @return true if authorless matches were removed
-   */
-  private boolean removeAuthorlessMatches(List<Name> matches) {
-    if (matches.stream().anyMatch(Name::hasAuthorship)) {
-      return matches.removeIf(Predicates.not(Name::hasAuthorship));
-    }
-    return false;
-  }
 
   private static NameMatch buildMatch(Name query, Name match) {
     NameMatch m = new NameMatch();
@@ -256,25 +247,6 @@ public class NameIndexMapDB implements NameIndex {
     return m;
   }
 
-  /**
-   * Checks candidates for a single unambigous exact match
-   */
-  private Name exactMatch(Name query, List<Name> candidates) {
-    Name match = null;
-    String queryname = SciNameNormalizer.normalizedAscii(query.canonicalName());
-    for (Name cn : candidates) {
-      if (queryname.equalsIgnoreCase(SciNameNormalizer.normalizedAscii(cn.canonicalName()))) {
-        // did we have a match already?
-        if (match != null) {
-          return null;
-        }
-        // no, keep it
-        match = cn;
-      }
-    }
-    return match;
-  }
-
   private Name insert(Name name) {
     // reset all keys
     name.setKey(null);
@@ -284,6 +256,7 @@ public class NameIndexMapDB implements NameIndex {
     name.setScientificNameID(null);
     name.setDatasetKey(datasetKey);
     name.setOrigin(Origin.NAME_MATCHING);
+    name.setNomStatus(NomStatus.UNEVALUATED);
     // insert into postgres dataset
     //TODO: consider to make this async and collect for batch inserts
     try (SqlSession s = sqlFactory.openSession()) {

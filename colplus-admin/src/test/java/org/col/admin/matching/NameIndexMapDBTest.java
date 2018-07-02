@@ -170,7 +170,7 @@ public class NameIndexMapDBTest {
   private NameMatch assertMatchType(MatchType expected, String name, Rank rank, NomCode code) {
     NameMatch m = match(name, rank, code);
     if (expected != m.getType()) {
-      debug(m);
+      System.out.println(m);
     }
     assertEquals("No match expected but got "+m.getType(),
         expected, m.getType()
@@ -181,7 +181,7 @@ public class NameIndexMapDBTest {
   private NameMatch assertMatch(int key, String name, Rank rank, NomCode code) {
     NameMatch m = match(name, rank, code);
     if (!m.hasMatch() || key != m.getName().getKey()) {
-      debug(m);
+      System.out.println(m);
     }
     assertEquals("Expected "+key+" but got "+m.getType(),
         key, (int) m.getName().getKey()
@@ -189,17 +189,6 @@ public class NameIndexMapDBTest {
     return m;
   }
 
-  private void debug(NameMatch m) {
-    if (m.hasMatch()) {
-      System.out.println("Match: " + m.getName().toStringComplete());
-    } else {
-      System.out.println(m.getType());
-    }
-    System.out.println("Alternatives");
-    for (Name alt : m.getAlternatives()) {
-      System.out.println(alt.toStringComplete());
-    }
-  }
 
   private NameMatch assertInsert(String name, Rank rank, NomCode code) {
     NameMatch m = ni.match(name(null, name, rank, code), true, false);
@@ -208,6 +197,7 @@ public class NameIndexMapDBTest {
   }
 
   private NameMatch match(String name, Rank rank, NomCode code) {
-    return ni.match(name(null, name, rank, code), false, true);
+    NameMatch m = ni.match(name(null, name, rank, code), false, true);
+    return m;
   }
 }
