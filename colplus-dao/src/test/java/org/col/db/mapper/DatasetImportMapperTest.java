@@ -1,6 +1,5 @@
 package org.col.db.mapper;
 
-import java.lang.reflect.Method;
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -14,7 +13,6 @@ import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.dwc.terms.Term;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.col.api.TestEntityGenerator.DATASET1;
@@ -24,7 +22,6 @@ import static org.junit.Assert.*;
 /**
  *
  */
-@Ignore
 public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper> {
   private static Random rnd = new Random();
 
@@ -65,7 +62,7 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
   private static <T extends Enum> Map<T, Integer> mockCount(Class<T> clazz) {
     Map<T, Integer> cnt = Maps.newHashMap(); 
     for (T val : clazz.getEnumConstants()) {
-      cnt.put(val, rnd.nextInt());
+      cnt.put(val, rnd.nextInt(Integer.MAX_VALUE));
     }
     return cnt;
   }
@@ -80,16 +77,6 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     DatasetImport d2 = mapper().last(d1.getDatasetKey());
     assertNotNull(d2.getAttempt());
     d1.setAttempt(d2.getAttempt());
-
-    for (Method m : DatasetImport.class.getMethods()) {
-      if (m.getName().startsWith("get")) {
-        System.out.println("\n" + m.getName());
-        System.out.println(m.invoke(d1));
-        System.out.println(m.invoke(d2));
-        System.out.println(m.invoke(d1).equals(m.invoke(d2)));
-      }
-    }
-
     assertEquals(d1, d2);
 
     d1.setState(ImportState.FINISHED);

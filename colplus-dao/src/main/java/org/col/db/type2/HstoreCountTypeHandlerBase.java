@@ -76,8 +76,15 @@ public abstract class HstoreCountTypeHandlerBase<KEY extends Enum> extends BaseT
           LOG.warn("Illegal enum {} value found in hstore: {}", enumClass.getSimpleName(), entry.getKey());
         }
       }
+      if (typedMap.size() != rawMap.size()) {
+        LOG.error("BAD TYPE!!!");
+      }
     }
-    return sortMap(typedMap);
+    Map<KEY, Integer> sorted = sortMap(typedMap);
+    if (typedMap.size() != sorted.size()) {
+      LOG.error("BAD SORTED!!!");
+    }
+    return sorted;
   }
 
   /**
