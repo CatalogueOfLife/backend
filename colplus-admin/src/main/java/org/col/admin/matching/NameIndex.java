@@ -1,9 +1,15 @@
 package org.col.admin.matching;
 
+import java.util.Collection;
+
 import org.col.api.model.Name;
 import org.col.api.model.NameMatch;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public interface NameIndex extends AutoCloseable {
+
+  Logger LOG = LoggerFactory.getLogger(NameIndex.class);
 
   /**
    * Tries to match a parsed name against the names index.
@@ -30,7 +36,8 @@ public interface NameIndex extends AutoCloseable {
   /**
    * Adds a batch of names to the index
    */
-  default void addAll(Iterable<Name> names) {
+  default void addAll(Collection<Name> names) {
+    LOG.info("Adding {} names", names.size());
     for (Name n : names) {
       add(n);
     }

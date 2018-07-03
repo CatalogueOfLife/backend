@@ -300,13 +300,6 @@ public class NameIndexMapDB implements NameIndex {
     counter++;
   }
 
-  @Override
-  public void addAll(Iterable<Name> names) {
-    for (Name n : names) {
-      add(n);
-    }
-  }
-
   private static String key(Name n) {
     return SciNameNormalizer.normalize(n.getScientificName());
   }

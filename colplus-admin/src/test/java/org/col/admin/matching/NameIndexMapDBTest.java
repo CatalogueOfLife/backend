@@ -1,7 +1,5 @@
 package org.col.admin.matching;
 
-import java.io.IOException;
-import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Set;
 
@@ -10,17 +8,19 @@ import com.google.common.collect.Sets;
 import org.col.api.model.IssueContainer;
 import org.col.api.model.Name;
 import org.col.api.model.NameMatch;
+import org.col.api.vocab.Datasets;
 import org.col.api.vocab.MatchType;
 import org.col.db.mapper.InitMybatisRule;
 import org.col.db.mapper.PgSetupRule;
 import org.col.parser.NameParser;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
-import org.junit.*;
+import org.junit.After;
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class NameIndexMapDBTest {
   NameIndex ni;
@@ -31,33 +31,17 @@ public class NameIndexMapDBTest {
   @Rule
   public InitMybatisRule initMybatisRule = InitMybatisRule.apple();
 
-  @Before
-  public void init() throws Exception {
-    ni = NameIndexFactory.memory(1, PgSetupRule.getSqlSessionFactory());
-  }
-
   @After
   public void stop() throws Exception {
     ni.close();
   }
 
-  @Test
-  public void loadApple() throws SQLException {
-    assertEquals(4, ni.size());
-
-    assertMatch(4, "Larus erfundus", Rank.SPECIES, null);
-    assertMatch(4, "Larus erfunda", Rank.SPECIES, null);
-    assertMatch(3, "Larus fusca", Rank.SPECIES, null);
-    assertMatch(2, "Larus fuscus", Rank.SPECIES, null);
+  void setupApple() throws Exception {
+    ni = NameIndexFactory.memory(11, PgSetupRule.getSqlSessionFactory());
   }
 
-  @Test
-  public void insertNewNames() throws SQLException {
-    assertInsert("Larus fundatus", Rank.SPECIES, null);
-    assertInsert("Puma concolor", Rank.SPECIES, NomCode.ZOOLOGICAL);
-  }
-
-  void addTestData() {
+  void setupTest() throws Exception {
+    ni = NameIndexFactory.memory(Datasets.PROV_CAT, PgSetupRule.getSqlSessionFactory());
     Collection<Name> names = Lists.newArrayList(
         name(1,  "Animalia", Rank.KINGDOM, NomCode.ZOOLOGICAL),
 
@@ -85,14 +69,32 @@ public class NameIndexMapDBTest {
     );
     ni.addAll(names);
   }
-  
+
   @Test
-  public void testLookup() throws IOException, SQLException {
-    addTestData();
+  public void loadApple() throws Exception {
+    setupApple();
+    assertEquals(4, ni.size());
+
+    assertMatch(4, "Larus erfundus", Rank.SPECIES, null);
+    assertMatch(4, "Larus erfunda", Rank.SPECIES, null);
+    assertMatch(3, "Larus fusca", Rank.SPECIES, null);
+    assertMatch(2, "Larus fuscus", Rank.SPECIES, null);
+  }
+
+  @Test
+  public void insertNewNames() throws Exception {
+    setupApple();
+    assertInsert("Larus fundatus", Rank.SPECIES, null);
+    assertInsert("Puma concolor", Rank.SPECIES, NomCode.ZOOLOGICAL);
+  }
+
+  @Test
+  public void testLookup() throws Exception {
+    setupTest();
 
     assertMatch(3, "Œnanthe 1771", Rank.GENUS, null);
 
-    assertEquals(21, ni.size());
+    assertEquals(17, ni.size());
     assertMatch(1, "Animalia", Rank.KINGDOM, NomCode.ZOOLOGICAL);
 
     assertMatch(21, "Rodentia", Rank.ORDER, NomCode.ZOOLOGICAL);
