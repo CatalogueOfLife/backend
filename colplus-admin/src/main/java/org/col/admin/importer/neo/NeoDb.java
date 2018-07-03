@@ -563,15 +563,19 @@ public class NeoDb implements ReferenceStore {
 
   public void addIssues(VerbatimEntity ent, Issue... issue) {
     if (issue != null && ent.getVerbatimKey() != null) {
-      TermRecord v = getVerbatim(ent.getVerbatimKey());
-      if (v == null) {
-        LOG.warn("No verbatim exists for {} with verbatim key {}", ent.getClass().getSimpleName(), ent.getVerbatimKey());
-      } else {
-        for (Issue is : issue) {
-          v.addIssue(is);
-        }
-        put(v);
+      addIssues(ent.getVerbatimKey(), issue);
+    }
+  }
+
+  public void addIssues(int verbatimKey, Issue... issue) {
+    TermRecord v = getVerbatim(verbatimKey);
+    if (v == null) {
+      LOG.warn("No verbatim exists for verbatim key {}", verbatimKey);
+    } else {
+      for (Issue is : issue) {
+        v.addIssue(is);
       }
+      put(v);
     }
   }
 

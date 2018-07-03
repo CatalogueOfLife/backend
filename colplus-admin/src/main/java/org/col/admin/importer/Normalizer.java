@@ -2,10 +2,7 @@ package org.col.admin.importer;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -222,11 +219,26 @@ public class Normalizer implements Callable<Boolean> {
     for (MatchType mt : MatchType.values()) {
       counts.put(mt, new AtomicInteger(0));
     }
+    // track duplicates, map index name keys to verbatim key set
+    //TODO: use mapdb to prevend OOMs?
+    Map<Integer, Set<Integer>> nameKeys = Maps.newHashMap();
+
     store.all().forEach(t -> {
       NameMatch m = index.match(t.name, dataset.isTrusted(), false);
       if (m.hasMatch()) {
         t.name.setIndexNameKey(m.getName().getKey());
         store.update(t);
+        // track duplicates if taxon
+        if (!t.isSynonym()) {
+          Set<Integer> nodes;
+          if (nameKeys.containsKey(m.getName().getKey())) {
+            nodes = nameKeys.get(m.getName().getKey());
+          } else {
+            nodes = new HashSet<>();
+            nameKeys.put(m.getName().getKey(), nodes);
+          }
+          nodes.add(t.name.getVerbatimKey());
+        }
       }
       if (MATCH_ISSUES.containsKey(m.getType())) {
         store.addIssues(t.name, MATCH_ISSUES.get(m.getType()));
@@ -234,6 +246,14 @@ public class Normalizer implements Callable<Boolean> {
       counts.get(m.getType()).incrementAndGet();
     });
     LOG.info("Matched all {} names: {}", MapUtils.sumValues(counts), Joiner.on(',').withKeyValueSeparator("=").join(counts));
+
+    for (Map.Entry<Integer, Set<Integer>> entry : nameKeys.entrySet()) {
+      if (entry.getValue().size() > 1) {
+        for (Integer verbatimKey : entry.getValue()) {
+          store.addIssues(verbatimKey, Issue.POTENTIAL_VARIANT);
+        }
+      }
+    }
   }
 
   private void normalize() {
