@@ -39,6 +39,7 @@ public class Dataset {
 	private Frequency importFrequency;
   private NomCode code;
 	private String notes;
+	private boolean trusted;
   private LocalDateTime created;
 	private LocalDateTime modified;
 	private LocalDateTime deleted;
@@ -202,6 +203,18 @@ public class Dataset {
 
 	public void setNotes(String notes) {
 		this.notes = notes;
+	}
+
+	/**
+	 * If trusted the dataset will be used to build the provisional catalogue and
+	 * names from the dataset will be inserted into the names index.
+	 */
+	public boolean isTrusted() {
+		return trusted;
+	}
+
+	public void setTrusted(boolean trusted) {
+		this.trusted = trusted;
 	}
 
 	public LocalDateTime getCreated() {

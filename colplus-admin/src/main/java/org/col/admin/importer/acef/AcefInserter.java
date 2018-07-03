@@ -69,10 +69,7 @@ public class AcefInserter extends NeoInserter {
       // species
       insertEntities(reader, AcefTerm.AcceptedSpecies,
           inter::interpretAccepted,
-          t -> {
-            meta.incRecords(t.name.getRank());
-            store.put(t);
-          }
+          store::put
       );
 
       // infraspecies
@@ -81,19 +78,13 @@ public class AcefInserter extends NeoInserter {
       // so we cannot update the scientific name yet - we do this in the relation inserter instead!
       insertEntities(reader, AcefTerm.AcceptedInfraSpecificTaxa,
           inter::interpretAccepted,
-          t -> {
-            meta.incRecords(t.name.getRank());
-            store.put(t);
-          }
+          store::put
       );
 
       // synonyms
       insertEntities(reader, AcefTerm.Synonyms,
           inter::interpretSynonym,
-          t -> {
-            meta.incRecords(t.name.getRank());
-            store.put(t);
-          }
+          store::put
       );
 
     } catch (RuntimeException e) {

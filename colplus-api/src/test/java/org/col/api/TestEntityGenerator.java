@@ -26,11 +26,11 @@ public class TestEntityGenerator {
   private static final Splitter SPACE_SPLITTER = Splitter.on(" ").trimResults();
 
   /**
-   * Corresponds exactly to 1st dataset record inserted via apple.sql
+   * Corresponds exactly to dataset record inserted via apple.sql with key=11
    */
   public final static Dataset DATASET1 = new Dataset();
   /**
-   * Corresponds exactly to 2nd dataset record inserted via apple.sql
+   * Corresponds exactly to dataset record inserted via apple.sql with key=12
    */
   public final static Dataset DATASET2 = new Dataset();
   /**
@@ -75,8 +75,8 @@ public class TestEntityGenerator {
   public final static Reference REF2 = new Reference();
 
   static {
-    DATASET1.setKey(1);
-    DATASET2.setKey(2);
+    DATASET1.setKey(11);
+    DATASET2.setKey(12);
 
     REF1.setKey(1);
     REF1.setId("ref-1");

@@ -174,6 +174,14 @@ public enum Issue {
    */
   NAME_NOT_UNIQUE(Group.NAME, Level.ERROR),
 
+  NAME_MATCH_VARIANT(Group.NAME, Level.WARNING),
+
+  NAME_MATCH_INSERTED(Group.NAME, Level.WARNING),
+
+  NAME_MATCH_AMBIGUOUS(Group.NAME, Level.WARNING),
+
+  NAME_MATCH_NONE(Group.NAME, Level.WARNING),
+
   /**
    * A potential chresonym exists in the dataset.
    */

@@ -60,4 +60,8 @@ public class MapUtils {
   public static <K, V> V getOrDefault(Map<K,V> map, K key, V defaultValue) {
     return map.containsKey(key) ? map.get(key) : defaultValue;
   }
+
+  public static long sumValues(Map<?, ? extends Number> map) {
+    return map.values().stream().mapToLong(Number::longValue).sum();
+  }
 }

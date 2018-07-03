@@ -7,9 +7,11 @@ import java.util.UUID;
 
 import com.google.common.collect.Lists;
 import org.col.api.RandomUtils;
+import org.col.api.TestEntityGenerator;
 import org.col.api.model.Dataset;
 import org.col.api.model.Page;
 import org.col.api.vocab.DataFormat;
+import org.col.api.vocab.Datasets;
 import org.col.api.vocab.License;
 import org.gbif.nameparser.api.NomCode;
 import org.javers.core.Javers;
@@ -96,29 +98,35 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
 
 	@Test
 	public void count() throws Exception {
-		assertEquals(2, mapper().count(null));
+		assertEquals(4, mapper().count(null));
 
 		mapper().create(create());
 		mapper().create(create());
 		// even thogh not committed we are in the same session so we see the new
 		// datasets already
-		assertEquals(4, mapper().count(null));
+		assertEquals(6, mapper().count(null));
 
 		commit();
-		assertEquals(4, mapper().count(null));
+		assertEquals(6, mapper().count(null));
+	}
+
+	private List<Dataset> createExpected() throws Exception {
+		List<Dataset> ds = Lists.newArrayList();
+		ds.add(mapper().get(Datasets.SCRUT_CAT));
+		ds.add(mapper().get(Datasets.PROV_CAT));
+		ds.add(mapper().get(TestEntityGenerator.DATASET1.getKey()));
+		ds.add(mapper().get(TestEntityGenerator.DATASET2.getKey()));
+		ds.add(create());
+		ds.add(create());
+		ds.add(create());
+		ds.add(create());
+		ds.add(create());
+		return ds;
 	}
 
 	@Test
 	public void list() throws Exception {
-		List<Dataset> ds = Lists.newArrayList();
-		ds.add(mapper().get(1));
-		ds.add(mapper().get(2));
-		ds.add(create());
-		ds.add(create());
-		ds.add(create());
-		ds.add(create());
-		ds.add(create());
-
+		List<Dataset> ds = createExpected();
 		for (Dataset d : ds) {
 			if (d.getKey() == null) {
 				mapper().create(d);
@@ -140,24 +148,22 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
     assertEquals(0, diff.getChanges().size());
     assertEquals(ds.subList(0,4), res);
 
-		// next page
+		// next page (d5-8)
 		p.next();
 		res = removeCreated(mapper().list(p));
-		assertEquals(3, res.size());
-		assertEquals(ds.subList(4,7), res);
+		assertEquals(4, res.size());
+		assertEquals(ds.subList(4,8), res);
+
+		// next page (d9)
+		p.next();
+		res = removeCreated(mapper().list(p));
+		assertEquals(1, res.size());
+		assertEquals(ds.subList(8,9), res);
 	}
 
   @Test
   public void listNeverImported() throws Exception {
-    List<Dataset> ds = Lists.newArrayList();
-    ds.add(mapper().get(1));
-    ds.add(mapper().get(2));
-    ds.add(create());
-    ds.add(create());
-    ds.add(create());
-    ds.add(create());
-    ds.add(create());
-
+		List<Dataset> ds = createExpected();
     for (Dataset d : ds) {
       if (d.getKey() == null) {
         mapper().create(d);

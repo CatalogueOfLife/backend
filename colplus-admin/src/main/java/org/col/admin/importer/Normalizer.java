@@ -7,7 +7,11 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import org.col.admin.importer.acef.AcefInserter;
 import org.col.admin.importer.dwca.DwcaInserter;
 import org.col.admin.importer.neo.NeoDb;
@@ -15,11 +19,14 @@ import org.col.admin.importer.neo.NotUniqueRuntimeException;
 import org.col.admin.importer.neo.model.*;
 import org.col.admin.importer.neo.traverse.Traversals;
 import org.col.admin.importer.reference.ReferenceFactory;
+import org.col.admin.matching.NameIndex;
 import org.col.api.model.*;
 import org.col.api.vocab.Issue;
+import org.col.api.vocab.MatchType;
 import org.col.api.vocab.Origin;
 import org.col.api.vocab.TaxonomicStatus;
 import org.col.common.collection.IterUtils;
+import org.col.common.collection.MapUtils;
 import org.col.common.tax.MisappliedNameMatcher;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
@@ -34,17 +41,25 @@ import org.slf4j.LoggerFactory;
  */
 public class Normalizer implements Callable<Boolean> {
   private static final Logger LOG = LoggerFactory.getLogger(Normalizer.class);
+  private static final Map<MatchType, Issue> MATCH_ISSUES = ImmutableMap.of(
+      MatchType.VARIANT, Issue.NAME_MATCH_VARIANT,
+      MatchType.INSERTED, Issue.NAME_MATCH_INSERTED,
+      MatchType.AMBIGUOUS, Issue.NAME_MATCH_AMBIGUOUS,
+      MatchType.NONE, Issue.NAME_MATCH_NONE
+  );
   private final Dataset dataset;
   private final Path sourceDir;
   private final NeoDb store;
   private final ReferenceFactory refFactory;
+  private final NameIndex index;
   private InsertMetadata meta;
 
-  public Normalizer(NeoDb store, Path sourceDir, ReferenceFactory refFactory) {
+  public Normalizer(NeoDb store, Path sourceDir, ReferenceFactory refFactory, NameIndex index) {
     this.sourceDir = sourceDir;
     this.store = store;
     this.dataset = store.getDataset();
     this.refFactory = refFactory;
+    this.index = index;
   }
 
   /**
@@ -203,7 +218,22 @@ public class Normalizer implements Callable<Boolean> {
   }
 
   private void matchAndCount() {
-
+    final Map<MatchType, AtomicInteger> counts = Maps.newHashMap();
+    for (MatchType mt : MatchType.values()) {
+      counts.put(mt, new AtomicInteger(0));
+    }
+    store.all().forEach(t -> {
+      NameMatch m = index.match(t.name, dataset.isTrusted(), false);
+      if (m.hasMatch()) {
+        t.name.setIndexNameKey(m.getName().getKey());
+        store.update(t);
+      }
+      if (MATCH_ISSUES.containsKey(m.getType())) {
+        store.addIssues(t.name, MATCH_ISSUES.get(m.getType()));
+      }
+      counts.get(m.getType()).incrementAndGet();
+    });
+    LOG.info("Matched all {} names: {}", MapUtils.sumValues(counts), Joiner.on(',').withKeyValueSeparator("=").join(counts));
   }
 
   private void normalize() {

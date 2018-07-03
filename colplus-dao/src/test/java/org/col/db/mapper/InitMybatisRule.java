@@ -96,35 +96,36 @@ public class InitMybatisRule extends ExternalResource {
 	}
 
 	private void loadData() {
-		if (testData != TestData.NONE) {
-			System.out.format("Load %s test data\n\n", testData);
 			try (Connection con = PgSetupRule.getConnection()) {
 				con.setAutoCommit(false);
 				ScriptRunner runner = new ScriptRunner(con);
 				runner.setSendFullScript(true);
 
-				switch (testData) {
-					case DATASETS:
-						// common data
-						runner.runScript(Resources.getResourceAsReader(PgConfig.DATA_FILE));
-						con.commit();
-						// COL GSDs
-						try (Reader datasets = new InputStreamReader(PgConfig.COL_DATASETS_URI.toURL().openStream(), StandardCharsets.UTF_8)) {
-							runner.runScript(datasets);
-							con.commit();
-						}
-						// GBIF Backbone datasets
-						runner.runScript(Resources.getResourceAsReader(PgConfig.GBIF_DATASETS_FILE));
-						break;
-					default:
-						runner.runScript(Resources.getResourceAsReader(testData.name().toLowerCase() + ".sql"));
+				// common data for all tests and even the empty one
+				runner.runScript(Resources.getResourceAsReader(PgConfig.DATA_FILE));
+				con.commit();
+
+				if (testData != TestData.NONE) {
+					System.out.format("Load %s test data\n\n", testData);
+					switch (testData) {
+						case DATASETS:
+							// COL GSDs
+							try (Reader datasets = new InputStreamReader(PgConfig.COL_DATASETS_URI.toURL().openStream(), StandardCharsets.UTF_8)) {
+								runner.runScript(datasets);
+								con.commit();
+							}
+							// GBIF Backbone datasets
+							runner.runScript(Resources.getResourceAsReader(PgConfig.GBIF_DATASETS_FILE));
+							break;
+						default:
+							runner.runScript(Resources.getResourceAsReader(testData.name().toLowerCase() + ".sql"));
+					}
 				}
 				con.commit();
 
 			} catch (SQLException | IOException e) {
 				throw new RuntimeException(e);
 			}
-		}
 	}
 
 }

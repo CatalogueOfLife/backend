@@ -25,6 +25,7 @@ import org.col.admin.importer.neo.model.NeoTaxon;
 import org.col.admin.importer.neo.printer.GraphFormat;
 import org.col.admin.importer.neo.printer.PrinterUtils;
 import org.col.admin.importer.reference.ReferenceFactory;
+import org.col.admin.matching.NameIndexFactory;
 import org.col.api.model.Dataset;
 import org.col.api.model.Name;
 import org.col.api.vocab.DataFormat;
@@ -131,7 +132,7 @@ public class NormalizerTreeIT {
       d.setDataFormat(format);
       store.put(d);
 
-      Normalizer norm = new Normalizer(store, source, new ReferenceFactory(d.getKey(), new CslParserMock()));
+      Normalizer norm = new Normalizer(store, source, new ReferenceFactory(d.getKey(), new CslParserMock()), NameIndexFactory.passThru());
       norm.call();
       // reopen the neo db
       store = NeoDbFactory.open(datasetKey, cfg);

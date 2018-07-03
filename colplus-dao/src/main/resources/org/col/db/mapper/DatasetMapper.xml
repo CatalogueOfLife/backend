@@ -23,6 +23,7 @@
       import_frequency,
       code,
       notes,
+      trusted,
       created,
       modified,
       deleted
@@ -45,7 +46,8 @@
       data_access,
       import_frequency,
       code,
-      notes
+      notes,
+      trusted
     </sql>
 
     <sql id="PROPS">
@@ -65,7 +67,8 @@
       #{dataAccess},
       #{importFrequency},
       #{code},
-      #{notes}
+      #{notes},
+      #{trusted}
     </sql>
 
     <sql id="FROM">

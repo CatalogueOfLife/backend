@@ -23,6 +23,7 @@ import org.col.admin.importer.neo.model.*;
 import org.col.admin.importer.neo.printer.GraphFormat;
 import org.col.admin.importer.neo.printer.PrinterUtils;
 import org.col.admin.importer.reference.ReferenceFactory;
+import org.col.admin.matching.NameIndexFactory;
 import org.col.api.model.*;
 import org.col.api.vocab.*;
 import org.col.csl.CslParserMock;
@@ -73,7 +74,7 @@ public class NormalizerDwcaIT {
       d.setKey(1);
       d.setDataFormat(DataFormat.DWCA);
       store.put(d);
-      Normalizer norm = new Normalizer(store, dwca, new ReferenceFactory(d.getKey(), new CslParserMock()));
+      Normalizer norm = new Normalizer(store, dwca, new ReferenceFactory(d.getKey(), new CslParserMock()), NameIndexFactory.passThru());
       norm.call();
 
       // reopen

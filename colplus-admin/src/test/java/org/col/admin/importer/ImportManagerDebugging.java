@@ -6,6 +6,7 @@ import io.dropwizard.client.HttpClientBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.col.admin.command.initdb.InitDbCmd;
 import org.col.admin.config.AdminServerConfig;
+import org.col.admin.matching.NameIndexFactory;
 import org.col.csl.AnystyleParserWrapper;
 import org.col.db.mapper.PgSetupRule;
 import org.junit.*;
@@ -45,7 +46,7 @@ public class ImportManagerDebugging {
         .using(cfg.client)
         .build("local");
     AnystyleParserWrapper anystyle = new AnystyleParserWrapper(hc, cfg.anystyle, metrics);
-    importManager = new ImportManager(cfg, metrics, hc, PgSetupRule.getSqlSessionFactory(), anystyle);
+    importManager = new ImportManager(cfg, metrics, hc, PgSetupRule.getSqlSessionFactory(), anystyle, NameIndexFactory.passThru());
     importManager.start();
   }
 

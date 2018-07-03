@@ -6,8 +6,6 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Objects;
-import java.util.concurrent.Callable;
-import java.util.function.Consumer;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.time.DurationFormatUtils;
@@ -17,6 +15,7 @@ import org.col.admin.config.AdminServerConfig;
 import org.col.admin.importer.neo.NeoDb;
 import org.col.admin.importer.neo.NeoDbFactory;
 import org.col.admin.importer.reference.ReferenceFactory;
+import org.col.admin.matching.NameIndex;
 import org.col.api.model.CslData;
 import org.col.api.model.Dataset;
 import org.col.api.model.DatasetImport;
@@ -50,16 +49,18 @@ public class ImportJob implements Runnable {
   private final SqlSessionFactory factory;
   private final DatasetImportDao dao;
   private final ReferenceFactory refFactory;
+  private final NameIndex index;
   private final StartNotifier notifier;
 
   ImportJob(Dataset d, boolean force, AdminServerConfig cfg, DownloadUtil downloader, SqlSessionFactory factory,
-            Parser<CslData> cslParser, StartNotifier notifier) {
+            Parser<CslData> cslParser, NameIndex index, StartNotifier notifier) {
     this.datasetKey = d.getKey();
     this.dataset = d;
     this.force = force;
     this.cfg = cfg;
     this.downloader = downloader;
     this.factory = factory;
+    this.index = index;
     this.refFactory = new ReferenceFactory(d.getKey(), cslParser);
     dao = new DatasetImportDao(factory);
     this.notifier = notifier;
@@ -134,7 +135,7 @@ public class ImportJob implements Runnable {
         LOG.info("Normalizing {}", datasetKey);
         store = NeoDbFactory.create(datasetKey, cfg.normalizer);
         store.put(dataset);
-        new Normalizer(store, dwcaDir, refFactory).call();
+        new Normalizer(store, dwcaDir, refFactory, index).call();
 
         updateState(ImportState.INSERTING);
         LOG.info("Writing {} to Postgres!", datasetKey);

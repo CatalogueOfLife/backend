@@ -11,6 +11,7 @@ import org.apache.ibatis.session.SqlSession;
 import org.col.api.model.*;
 import org.col.db.dao.NameDao;
 import org.col.db.dao.NameUsageDao;
+import org.col.db.mapper.NameMapper;
 import org.col.db.mapper.NameRelationMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,4 +69,12 @@ public class NameResource {
     return mapper.list(key);
   }
 
+  /**
+   * TODO: this is really a names index / prov catalogue specific method. Move it to a dedicated web resource
+   */
+  @GET
+  @Path("{key}/group")
+  public List<Name> getIndexGroup(@PathParam("key") int key, @Context SqlSession session) {
+    return session.getMapper(NameMapper.class).indexGroup(key);
+  }
 }

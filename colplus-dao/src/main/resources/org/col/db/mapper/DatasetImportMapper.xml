@@ -16,6 +16,7 @@
       verbatim_count,
       name_count,
       taxon_count,
+      reference_count,
       vernacular_count,
       distribution_count,
       issues_count,
@@ -23,7 +24,11 @@
       names_by_type_count,
       vernaculars_by_language_count,
       distributions_by_gazetteer_count,
-      names_by_origin_count
+      names_by_origin_count,
+      usages_by_status_count,
+      names_by_status_count,
+      name_relations_by_type_count,
+      verbatim_by_type_count
     </sql>
 
     <sql id="COLS">
@@ -37,6 +42,7 @@
       verbatim_count,
       name_count,
       taxon_count,
+      reference_count,
       vernacular_count,
       distribution_count,
       issues_count,
@@ -44,7 +50,11 @@
       names_by_type_count,
       vernaculars_by_language_count,
       distributions_by_gazetteer_count,
-      names_by_origin_count
+      names_by_origin_count,
+      usages_by_status_count,
+      names_by_status_count,
+      name_relations_by_type_count,
+      verbatim_by_type_count
     </sql>
 
     <sql id="PROPS">
@@ -58,6 +68,7 @@
       #{di.verbatimCount},
       #{di.nameCount},
       #{di.taxonCount},
+      #{di.referenceCount},
       #{di.vernacularCount},
       #{di.distributionCount},
       #{di.issuesCount, typeHandler=org.col.db.type2.HstoreIssueCountTypeHandler}::hstore,
@@ -65,7 +76,11 @@
       #{di.namesByTypeCount, typeHandler=org.col.db.type2.HstoreNameTypeCountTypeHandler}::hstore,
       #{di.vernacularsByLanguageCount, typeHandler=org.col.db.type2.HstoreLanguageCountTypeHandler}::hstore,
       #{di.distributionsByGazetteerCount, typeHandler=org.col.db.type2.HstoreGazetteerCountTypeHandler}::hstore,
-      #{di.namesByOriginCount, typeHandler=org.col.db.type2.HstoreOriginCountTypeHandler}::hstore
+      #{di.namesByOriginCount, typeHandler=org.col.db.type2.HstoreOriginCountTypeHandler}::hstore,
+      #{di.usagesByStatusCount, typeHandler=org.col.db.type2.HstoreTaxStatusCountTypeHandler}::hstore,
+      #{di.namesByStatusCount, typeHandler=org.col.db.type2.HstoreNomStatusCountTypeHandler}::hstore,
+      #{di.nameRelationsByTypeCount, typeHandler=org.col.db.type2.HstoreNameRelCountTypeHandler}::hstore,
+      #{di.verbatimByTypeCount, typeHandler=org.col.db.type2.HstoreTermCountTypeHandler}::hstore
     </sql>
 
     <sql id="FROM">
@@ -80,9 +95,11 @@
         <result property="vernacularsByLanguageCount" column="vernaculars_by_language_count" typeHandler="org.col.db.type2.HstoreLanguageCountTypeHandler"/>
         <result property="distributionsByGazetteerCount" column="distributions_by_gazetteer_count" typeHandler="org.col.db.type2.HstoreGazetteerCountTypeHandler"/>
         <result property="namesByOriginCount" column="names_by_origin_count" typeHandler="org.col.db.type2.HstoreOriginCountTypeHandler"/>
-
+        <result property="usagesByStatusCount" column="usages_by_status_count" typeHandler="org.col.db.type2.HstoreTaxStatusCountTypeHandler"/>
+        <result property="namesByStatusCount" column="names_by_status_count" typeHandler="org.col.db.type2.HstoreNomStatusCountTypeHandler"/>
+        <result property="nameRelationsByTypeCount" column="name_relations_by_type_count" typeHandler="org.col.db.type2.HstoreNameRelCountTypeHandler"/>
+        <result property="verbatimByTypeCount" column="verbatim_by_type_count" typeHandler="org.col.db.type2.HstoreTermCountTypeHandler"/>
     </resultMap>
-
 
     <select id="count" resultType="integer">
         SELECT count(*)
@@ -130,6 +147,7 @@
         (SELECT count(*) FROM verbatim WHERE dataset_key=#{key}) AS verbatimCount,
         (SELECT count(*) FROM name WHERE dataset_key=#{key}) AS nameCount,
         (SELECT count(*) FROM taxon WHERE dataset_key=#{key}) AS taxonCount,
+        (SELECT count(*) FROM reference WHERE dataset_key=#{key}) AS referenceCount,
         (SELECT count(*) FROM vernacular_name WHERE dataset_key=#{key}) AS vernacularCount,
         (SELECT count(*) FROM distribution WHERE dataset_key=#{key}) AS distributionCount,
 
@@ -139,18 +157,21 @@
               ) AS dis GROUP BY key
             ) AS issues
         ) AS issues_count,
+
         (SELECT array_to_string(array_agg( key || '=>' || cnt), ', ')::hstore FROM
           (SELECT rank AS key, count(*)::text AS cnt FROM name
            WHERE dataset_key=#{key}
            GROUP BY rank
            ) AS ranks
         ) AS names_by_rank_count,
+
         (SELECT array_to_string(array_agg( key || '=>' || cnt), ', ')::hstore FROM
           (SELECT type AS key, count(*)::text AS cnt FROM name
            WHERE dataset_key=#{key}
            GROUP BY type
            ) AS types
         ) AS names_by_type_count,
+
         (SELECT array_to_string(array_agg( key || '=>' || cnt), ', ')::hstore FROM
           (SELECT language AS key, count(*)::text AS cnt
            FROM vernacular_name
@@ -158,6 +179,7 @@
            GROUP BY language
            ) AS languages
         ) AS vernaculars_by_language_count,
+
         (SELECT array_to_string(array_agg( key || '=>' || cnt), ', ')::hstore FROM
           (SELECT gazetteer AS key, count(*)::text AS cnt
            FROM distribution
@@ -165,13 +187,51 @@
            GROUP BY gazetteer
            ) AS gazetteers
         ) AS distributions_by_gazetteer_count,
+
         (SELECT array_to_string(array_agg( key || '=>' || cnt), ', ')::hstore FROM
           (SELECT origin AS key, count(*)::text AS cnt
            FROM name
            WHERE dataset_key=#{key}
            GROUP BY origin
            ) AS origins
-        ) AS names_by_origin_count
+        ) AS names_by_origin_count,
+
+        (SELECT array_to_string(array_agg( key || '=>' || cnt), ', ')::hstore FROM
+            (SELECT CASE WHEN doubtful THEN 1 ELSE 0 END AS key, count(*)::text AS cnt
+                FROM taxon
+                WHERE dataset_key=#{key}
+                GROUP BY doubtful
+            UNION
+            SELECT status AS key, count(*)::text AS cnt
+                FROM synonym
+                WHERE dataset_key=#{key}
+                GROUP BY status
+            ) AS taxstatus
+        ) AS usages_by_status_count,
+
+        (SELECT array_to_string(array_agg( key || '=>' || cnt), ', ')::hstore FROM
+            (SELECT nom_status AS key, count(*)::text AS cnt
+            FROM name
+            WHERE dataset_key=#{key}
+            GROUP BY nom_status
+            ) AS nom_status
+        ) AS names_by_status_count,
+
+        (SELECT array_to_string(array_agg( key || '=>' || cnt), ', ')::hstore FROM
+            (SELECT type AS key, count(*)::text AS cnt
+            FROM name_rel
+            WHERE dataset_key=#{key}
+            GROUP BY type
+            ) AS reltypes
+        ) AS name_relations_by_type_count,
+
+        (SELECT array_to_string(array_agg( key || '=>' || cnt), ', ')::hstore FROM
+            (SELECT type AS key, count(*)::text AS cnt
+            FROM verbatim
+            WHERE dataset_key=#{key}
+            GROUP BY type
+            ) AS vtypes
+        ) AS verbatim_by_type_count
     </select>
 
     <insert id="create" parameterType="DatasetImport">

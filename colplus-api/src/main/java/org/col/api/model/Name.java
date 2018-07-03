@@ -50,9 +50,9 @@ public class Name implements VerbatimEntity {
   private Integer homotypicNameKey;
 
   /**
-   * Global name identifier from a nomenclator or the clearinghouse
+   * Key from the names index grouping all distinct scientific names
    */
-  private String scientificNameID;
+  private Integer indexNameKey;
 
   /**
    * Entire canonical name string with a rank marker for infragenerics and infraspecfics, but
@@ -177,7 +177,7 @@ public class Name implements VerbatimEntity {
     this.id = n.id;
     this.datasetKey = n.datasetKey;
     this.homotypicNameKey = n.homotypicNameKey;
-    this.scientificNameID = n.scientificNameID;
+    this.indexNameKey = n.indexNameKey;
     this.scientificName = n.scientificName;
     this.rank = n.rank;
     this.uninomial = n.uninomial;
@@ -261,12 +261,12 @@ public class Name implements VerbatimEntity {
     this.verbatimKey = verbatimKey;
   }
 
-  public String getScientificNameID() {
-    return scientificNameID;
+  public Integer getIndexNameKey() {
+    return indexNameKey;
   }
 
-  public void setScientificNameID(String scientificNameID) {
-    this.scientificNameID = scientificNameID;
+  public void setIndexNameKey(Integer indexNameKey) {
+    this.indexNameKey = indexNameKey;
   }
 
   public String getScientificName() {
@@ -641,7 +641,7 @@ public class Name implements VerbatimEntity {
         Objects.equals(id, name.id) &&
         Objects.equals(datasetKey, name.datasetKey) &&
         Objects.equals(homotypicNameKey, name.homotypicNameKey) &&
-        Objects.equals(scientificNameID, name.scientificNameID) &&
+        Objects.equals(indexNameKey, name.indexNameKey) &&
         Objects.equals(scientificName, name.scientificName) &&
         rank == name.rank &&
         Objects.equals(uninomial, name.uninomial) &&
@@ -668,7 +668,7 @@ public class Name implements VerbatimEntity {
 
   @Override
   public int hashCode() {
-    return Objects.hash(key, id, datasetKey, homotypicNameKey, scientificNameID, scientificName, rank, uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, strain, candidatus, notho, combinationAuthorship, basionymAuthorship, sanctioningAuthor, code, nomStatus, publishedInKey, publishedInPage, origin, type, sourceUrl, fossil, remarks);
+    return Objects.hash(key, id, datasetKey, homotypicNameKey, indexNameKey, scientificName, rank, uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, strain, candidatus, notho, combinationAuthorship, basionymAuthorship, sanctioningAuthor, code, nomStatus, publishedInKey, publishedInPage, origin, type, sourceUrl, fossil, remarks);
   }
 
   @Override

@@ -52,4 +52,11 @@ public interface NameMapper {
    */
   List<Name> listByReference(@Param("refKey") int publishedInKey);
 
+	/**
+	 * Lists all names with the same index name key
+	 * across all datasets.
+	 *
+	 * @param nameKey from the names index
+	 */
+	List<Name> indexGroup(@Param("key") int nameKey);
 }

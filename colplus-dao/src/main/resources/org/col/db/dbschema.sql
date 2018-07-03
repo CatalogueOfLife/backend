@@ -110,6 +110,7 @@ CREATE TABLE dataset (
   import_frequency INTEGER,
   code INTEGER,
   notes text,
+  trusted BOOLEAN DEFAULT FALSE,
   created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   deleted TIMESTAMP WITHOUT TIME ZONE,
@@ -147,6 +148,7 @@ CREATE TABLE dataset_import (
   verbatim_count INTEGER,
   name_count INTEGER,
   taxon_count INTEGER,
+  reference_count INTEGER,
   vernacular_count INTEGER,
   distribution_count INTEGER,
   issues_count HSTORE,
@@ -155,7 +157,10 @@ CREATE TABLE dataset_import (
   vernaculars_by_language_count HSTORE,
   distributions_by_gazetteer_count HSTORE,
   names_by_origin_count HSTORE,
-
+  usages_by_status_count HSTORE,
+  names_by_status_count HSTORE,
+  name_relations_by_type_count HSTORE,
+  verbatim_by_type_count HSTORE,
   PRIMARY KEY (dataset_key, attempt)
 );
 
@@ -187,6 +192,7 @@ CREATE TABLE name (
   dataset_key INTEGER REFERENCES dataset,
   verbatim_key INTEGER REFERENCES verbatim,
   homotypic_name_key INTEGER REFERENCES name DEFAULT currval('name_key_seq'::regclass) NOT NULL ,
+  index_name_key INTEGER REFERENCES name,
   scientific_name TEXT NOT NULL,
   rank rank NOT NULL,
   uninomial TEXT,
@@ -344,6 +350,7 @@ CREATE index ON name (rank);
 CREATE index ON name (nom_status);
 CREATE index ON name (type);
 CREATE index ON name (homotypic_name_key);
+CREATE index ON name (index_name_key);
 CREATE index ON name (published_in_key);
 CREATE index ON name (verbatim_key);
 

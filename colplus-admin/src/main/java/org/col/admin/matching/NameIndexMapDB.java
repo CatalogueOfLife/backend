@@ -3,12 +3,14 @@ package org.col.admin.matching;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.pool.KryoPool;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import org.apache.ibatis.session.ResultContext;
 import org.apache.ibatis.session.ResultHandler;
@@ -25,6 +27,7 @@ import org.col.common.mapdb.MapDbObjectSerializer;
 import org.col.common.tax.SciNameNormalizer;
 import org.col.db.dao.NameDao;
 import org.col.db.mapper.NameMapper;
+import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 import org.mapdb.DB;
@@ -39,6 +42,9 @@ import org.slf4j.LoggerFactory;
  */
 public class NameIndexMapDB implements NameIndex {
   private static final Logger LOG = LoggerFactory.getLogger(NameIndexMapDB.class);
+  private static final Set<NameType> INDEX_NAME_TYPES = ImmutableSet.of(
+      NameType.SCIENTIFIC, NameType.HYBRID_FORMULA, NameType.VIRUS, NameType.OTU
+  );
 
   private final DB db;
   private final KryoPool pool;
@@ -117,7 +123,6 @@ public class NameIndexMapDB implements NameIndex {
   @Override
   public NameMatch match(Name name, boolean allowInserts, boolean verbose) {
     NameMatch m;
-    LOG.debug("Matching {}", name.canonicalNameComplete());
     NameList candidates = names.get(key(name));
     if (candidates != null) {
       m = matchCandidates(name, candidates);
@@ -134,13 +139,16 @@ public class NameIndexMapDB implements NameIndex {
 
     if (!m.hasMatch() && allowInserts) {
       if (MatchType.AMBIGUOUS == m.getType()) {
-        LOG.debug("Do not insert {} with ambiguous name matches into the names index", name.canonicalNameComplete());
-      } else {
-        insert(name);
-        m.setName(name);
+        LOG.debug("Do not insert ambiguous name match: {}", name.canonicalNameComplete());
+      } else if (INDEX_NAME_TYPES.contains(name.getType())) {
+        m.setName(insert(name));
         m.setType(MatchType.INSERTED);
+        LOG.debug("Inserted: {}", m.getName().canonicalNameComplete());
+      } else {
+        LOG.debug("Do not insert {} name: {}", name.getType(), name.canonicalNameComplete());
       }
     }
+    LOG.debug("Matched {} => {}", name.canonicalNameComplete(), m);
     return m;
   }
 
@@ -221,15 +229,15 @@ public class NameIndexMapDB implements NameIndex {
    */
   private int addOrRemove(int score ,Name n, int bestScore, List<Name> matches) {
     if (score < bestScore) {
-      LOG.debug("Worse match {}<{}: {}", score, bestScore, n.canonicalNameComplete());
+      //LOG.debug("Worse match {}<{}: {}", score, bestScore, n.canonicalNameComplete());
       return bestScore;
     }
 
     if (score > bestScore) {
-      LOG.debug("Better match {}>{}: {}", score, bestScore, n.canonicalNameComplete());
+      //LOG.debug("Better match {}>{}: {}", score, bestScore, n.canonicalNameComplete());
       matches.clear();
     } else {
-      LOG.debug("Same match {}={}: {}", score, bestScore, n.canonicalNameComplete());
+      //LOG.debug("Same match {}={}: {}", score, bestScore, n.canonicalNameComplete());
     }
     matches.add(n);
     return score;
@@ -247,16 +255,19 @@ public class NameIndexMapDB implements NameIndex {
     return m;
   }
 
-  private Name insert(Name name) {
+  private Name insert(Name orig) {
+    Name name = new Name(orig);
     // reset all keys
     name.setKey(null);
     name.setId(null);
     name.setVerbatimKey(null);
     name.setHomotypicNameKey(null);
-    name.setScientificNameID(null);
+    name.setIndexNameKey(null);
     name.setDatasetKey(datasetKey);
     name.setOrigin(Origin.NAME_MATCHING);
     name.setNomStatus(NomStatus.UNEVALUATED);
+    name.setPublishedInKey(null);
+    name.setPublishedInPage(null);
     // insert into postgres dataset
     //TODO: consider to make this async and collect for batch inserts
     try (SqlSession s = sqlFactory.openSession()) {

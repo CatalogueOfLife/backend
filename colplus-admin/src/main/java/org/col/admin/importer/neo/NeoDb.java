@@ -103,6 +103,7 @@ public class NeoDb implements ReferenceStore {
       taxa = mapDb.hashMap("taxa")
           .keySerializer(Serializer.LONG)
           .valueSerializer(new MapDbObjectSerializer<>(NeoTaxon.class, pool, 256))
+          .counterEnable()
           .createOrOpen();
       references = mapDb.hashMap("references")
           .keySerializer(Serializer.INTEGER)
@@ -784,6 +785,13 @@ public class NeoDb implements ReferenceStore {
     updateLabels();
     updateTaxonStoreWithRelations();
     updateHomotypicNameKeys();
+  }
+
+  /**
+   * @return the number of neo4j nodes, ie number of NeoTaxon objects stored
+   */
+  public int size() {
+    return taxa.size();
   }
 
   private void updateLabels() {

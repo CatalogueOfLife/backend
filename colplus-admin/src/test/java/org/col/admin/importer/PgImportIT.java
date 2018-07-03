@@ -19,6 +19,7 @@ import org.col.admin.importer.neo.NeoDb;
 import org.col.admin.importer.neo.NeoDbFactory;
 import org.col.admin.importer.neo.model.RankedName;
 import org.col.admin.importer.reference.ReferenceFactory;
+import org.col.admin.matching.NameIndexFactory;
 import org.col.api.model.*;
 import org.col.api.vocab.*;
 import org.col.csl.CslParserMock;
@@ -58,6 +59,7 @@ public class PgImportIT {
     cfg.archiveDir = Files.createTempDir();
     cfg.scratchDir = Files.createTempDir();
 		dataset = new Dataset();
+    dataset.setTrusted(true);
 	}
 
 	@After
@@ -77,11 +79,11 @@ public class PgImportIT {
 
 	void normalizeAndImport(Path source) {
     try {
-      // insert dataset
+      // insert trusted dataset
       dataset.setTitle("Test Dataset " + source.toString());
 
       SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true);
-      // this creates a new datasetKey, usually 1!
+      // this creates a new datasetKey, usually 2000!
       session.getMapper(DatasetMapper.class).create(dataset);
       session.commit();
       session.close();
@@ -89,13 +91,12 @@ public class PgImportIT {
       // normalize
       store = NeoDbFactory.create(dataset.getKey(), cfg);
       store.put(dataset);
-      Normalizer norm = new Normalizer(store, source, new ReferenceFactory(dataset.getKey(), new CslParserMock()));
+      Normalizer norm = new Normalizer(store, source, new ReferenceFactory(dataset.getKey(), new CslParserMock()), NameIndexFactory.memory(Datasets.PROV_CAT, PgSetupRule.getSqlSessionFactory()));
       norm.call();
 
       // import into postgres
       store = NeoDbFactory.open(dataset.getKey(), cfg);
-      PgImport importer = new PgImport(dataset.getKey(), store, PgSetupRule.getSqlSessionFactory(),
-          icfg);
+      PgImport importer = new PgImport(dataset.getKey(), store, PgSetupRule.getSqlSessionFactory(), icfg);
       importer.call();
 
     } catch (Exception e) {

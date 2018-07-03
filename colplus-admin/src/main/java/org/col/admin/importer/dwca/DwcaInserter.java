@@ -53,10 +53,7 @@ public class DwcaInserter extends NeoInserter {
       // taxon core only, extensions are interpreted later
       insertEntities(reader, DwcTerm.Taxon,
           inter::interpret,
-          t -> {
-            meta.incRecords(t.name.getRank());
-            store.put(t);
-          }
+          store::put
       );
 
     } catch (RuntimeException e) {

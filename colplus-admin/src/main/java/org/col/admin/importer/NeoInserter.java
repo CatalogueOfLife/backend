@@ -33,6 +33,7 @@ public abstract class NeoInserter {
   protected final Path folder;
   protected final InsertMetadata meta = new InsertMetadata();
   protected final ReferenceFactory refFactory;
+  private int vcounter;
 
   public NeoInserter(Path folder, NeoDb store, ReferenceFactory refFactory) {
     this.folder = folder;
@@ -40,29 +41,35 @@ public abstract class NeoInserter {
     this.refFactory = refFactory;
   }
 
-  public InsertMetadata insertAll() throws NormalizationFailedException {
+  final InsertMetadata insertAll() throws NormalizationFailedException {
     // the key will be preserved by the store
     Optional<Dataset> d = readMetadata();
     d.ifPresent(store::put);
 
     store.startBatchMode();
     batchInsert();
-    LOG.info("Batch insert completed, {} nodes created", meta.getRecords());
+    LOG.info("Batch insert completed, {} verbatim records processed, {} nodes created", vcounter, store.size());
 
     store.endBatchMode();
-    LOG.info("Neo batch inserter closed, data flushed to disk", meta.getRecords());
+    LOG.info("Neo batch inserter closed, data flushed to disk");
 
-    final int batchRec = meta.getRecords();
+    final int batchV = vcounter;
+    final int batchRec = store.size();
     postBatchInsert();
-    LOG.info("Regular insert completed, {} nodes created, total={}", meta.getRecords()-batchRec, meta.getRecords());
+    LOG.info("Post batch insert completed, {} verbatim records processed creating {} new nodes", batchV, store.size()-batchRec);
 
-    LOG.info("Start processing explicit relations ...");
+    LOG.debug("Start processing explicit relations ...");
     store.process(Labels.ALL,10000, relationProcessor());
 
+    LOG.info("Insert of {} verbatim records and {} nodes completed", vcounter, store.size());
     return meta;
   }
 
   private void processVerbatim(final CsvReader reader, final Term classTerm, Function<TermRecord, Boolean> proc) {
+    if (Thread.interrupted()) {
+      LOG.warn("NeoInserter interrupted, exit early with incomplete import");
+      throw new NormalizationFailedException("NeoInserter interrupted");
+    }
     final AtomicInteger counter = new AtomicInteger(0);
     final AtomicInteger success = new AtomicInteger(0);
     reader.stream(classTerm).forEach(rec -> {
@@ -76,6 +83,7 @@ public abstract class NeoInserter {
       counter.incrementAndGet();
     });
     LOG.info("Inserted {} verbatim, {} successfully processed {}", counter.get(), success.get(), classTerm.prefixedName());
+    vcounter += counter.get();
   }
 
   protected <T extends VerbatimEntity> void insertEntities(final CsvReader reader, final Term classTerm,

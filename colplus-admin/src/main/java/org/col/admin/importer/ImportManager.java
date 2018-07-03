@@ -15,6 +15,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.admin.config.AdminServerConfig;
+import org.col.admin.matching.NameIndex;
 import org.col.api.model.CslData;
 import org.col.api.model.Dataset;
 import org.col.api.model.DatasetImport;
@@ -46,15 +47,17 @@ public class ImportManager implements Managed {
   private final DownloadUtil downloader;
   private final SqlSessionFactory factory;
   private final Parser<CslData> cslParser;
+  private final NameIndex index;
   private final Timer importTimer;
   private final Counter failed;
 
   public ImportManager(AdminServerConfig cfg, MetricRegistry registry, CloseableHttpClient client,
-                       SqlSessionFactory factory, Parser<CslData> cslParser) {
+                       SqlSessionFactory factory, Parser<CslData> cslParser, NameIndex index) {
     this.cfg = cfg;
     this.factory = factory;
     this.downloader = new DownloadUtil(client);
     this.cslParser = cslParser;
+    this.index = index;
     importTimer = registry.timer("org.col.import.timer");
     failed = registry.counter("org.col.import.failures");
   }
@@ -133,7 +136,7 @@ public class ImportManager implements Managed {
       } else if (d.hasDeletedDate()) {
         throw new IllegalArgumentException("Dataset " + req.datasetKey + " is deleted");
       }
-      ImportJob job = new ImportJob(d, req.force, cfg, downloader, factory, cslParser, new StartNotifier() {
+      ImportJob job = new ImportJob(d, req.force, cfg, downloader, factory, cslParser, index, new StartNotifier() {
         @Override
         public void started() {
           req.start();

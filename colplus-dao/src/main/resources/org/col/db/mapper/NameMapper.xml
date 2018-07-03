@@ -210,4 +210,10 @@
         WHERE ns.key=#{key}
     </select>
 
+    <select id="indexGroup" resultMap="nameResultMap">
+        SELECT <include refid="SELECT" />
+        FROM name n
+        WHERE n.index_name_Key=#{key}
+    </select>
+
 </mapper>

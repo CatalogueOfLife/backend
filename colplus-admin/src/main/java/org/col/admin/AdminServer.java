@@ -108,7 +108,7 @@ public class AdminServer extends PgApp<AdminServerConfig> {
     env.jersey().register(new MatchingResource(ni));
 
     // setup async importer
-    final ImportManager importManager = new ImportManager(cfg, env.metrics(), hc, getSqlSessionFactory(), cslParser);
+    final ImportManager importManager = new ImportManager(cfg, env.metrics(), hc, getSqlSessionFactory(), cslParser, ni);
     env.lifecycle().manage(importManager);
     env.jersey().register(new ImporterResource(importManager, getSqlSessionFactory()));
 

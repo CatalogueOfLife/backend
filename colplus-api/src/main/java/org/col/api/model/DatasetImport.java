@@ -7,6 +7,7 @@ import java.util.Objects;
 
 import com.google.common.collect.Maps;
 import org.col.api.vocab.*;
+import org.gbif.dwc.terms.Term;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 
@@ -47,6 +48,7 @@ public class DatasetImport {
   private Integer verbatimCount;
   private Integer nameCount;
   private Integer taxonCount;
+  private Integer referenceCount;
   private Integer vernacularCount;
   private Integer distributionCount;
   private Map<Issue, Integer> issuesCount = Maps.newHashMap();
@@ -55,6 +57,10 @@ public class DatasetImport {
   private Map<Language, Integer> vernacularsByLanguageCount = Maps.newHashMap();
   private Map<Gazetteer, Integer> distributionsByGazetteerCount = Maps.newHashMap();
   private Map<Origin, Integer> namesByOriginCount = Maps.newHashMap();
+  private Map<TaxonomicStatus, Integer> usagesByStatusCount = Maps.newHashMap();
+  private Map<NomStatus, Integer> namesByStatusCount = Maps.newHashMap();
+  private Map<NomRelType, Integer> nameRelationsByTypeCount = Maps.newHashMap();
+  private Map<Term, Integer> verbatimByTypeCount = Maps.newHashMap();
 
   public Integer getAttempt() {
     return attempt;
@@ -144,6 +150,14 @@ public class DatasetImport {
     this.taxonCount = taxonCount;
   }
 
+  public Integer getReferenceCount() {
+    return referenceCount;
+  }
+
+  public void setReferenceCount(Integer referenceCount) {
+    this.referenceCount = referenceCount;
+  }
+
   public Integer getVernacularCount() {
     return vernacularCount;
   }
@@ -208,6 +222,38 @@ public class DatasetImport {
     this.namesByOriginCount = namesByOriginCount;
   }
 
+  public Map<TaxonomicStatus, Integer> getUsagesByStatusCount() {
+    return usagesByStatusCount;
+  }
+
+  public void setUsagesByStatusCount(Map<TaxonomicStatus, Integer> usagesByStatusCount) {
+    this.usagesByStatusCount = usagesByStatusCount;
+  }
+
+  public Map<NomStatus, Integer> getNamesByStatusCount() {
+    return namesByStatusCount;
+  }
+
+  public void setNamesByStatusCount(Map<NomStatus, Integer> namesByStatusCount) {
+    this.namesByStatusCount = namesByStatusCount;
+  }
+
+  public Map<NomRelType, Integer> getNameRelationsByTypeCount() {
+    return nameRelationsByTypeCount;
+  }
+
+  public void setNameRelationsByTypeCount(Map<NomRelType, Integer> nameRelationsByTypeCount) {
+    this.nameRelationsByTypeCount = nameRelationsByTypeCount;
+  }
+
+  public Map<Term, Integer> getVerbatimByTypeCount() {
+    return verbatimByTypeCount;
+  }
+
+  public void setVerbatimByTypeCount(Map<Term, Integer> verbatimByTypeCount) {
+    this.verbatimByTypeCount = verbatimByTypeCount;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -224,6 +270,7 @@ public class DatasetImport {
         Objects.equals(verbatimCount, that.verbatimCount) &&
         Objects.equals(nameCount, that.nameCount) &&
         Objects.equals(taxonCount, that.taxonCount) &&
+        Objects.equals(referenceCount, that.referenceCount) &&
         Objects.equals(vernacularCount, that.vernacularCount) &&
         Objects.equals(distributionCount, that.distributionCount) &&
         Objects.equals(issuesCount, that.issuesCount) &&
@@ -231,12 +278,17 @@ public class DatasetImport {
         Objects.equals(namesByTypeCount, that.namesByTypeCount) &&
         Objects.equals(vernacularsByLanguageCount, that.vernacularsByLanguageCount) &&
         Objects.equals(distributionsByGazetteerCount, that.distributionsByGazetteerCount) &&
-        Objects.equals(namesByOriginCount, that.namesByOriginCount);
+        Objects.equals(namesByOriginCount, that.namesByOriginCount) &&
+        Objects.equals(usagesByStatusCount, that.usagesByStatusCount) &&
+        Objects.equals(namesByStatusCount, that.namesByStatusCount) &&
+        Objects.equals(nameRelationsByTypeCount, that.nameRelationsByTypeCount) &&
+        Objects.equals(verbatimByTypeCount, that.verbatimByTypeCount);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(datasetKey, attempt, state, downloadUri, download, started, finished, error, verbatimCount, nameCount, taxonCount, vernacularCount, distributionCount, issuesCount, namesByRankCount, namesByTypeCount, vernacularsByLanguageCount, distributionsByGazetteerCount, namesByOriginCount);
+
+    return Objects.hash(datasetKey, attempt, state, downloadUri, download, started, finished, error, verbatimCount, nameCount, taxonCount, referenceCount, vernacularCount, distributionCount, issuesCount, namesByRankCount, namesByTypeCount, vernacularsByLanguageCount, distributionsByGazetteerCount, namesByOriginCount, usagesByStatusCount, namesByStatusCount, nameRelationsByTypeCount, verbatimByTypeCount);
   }
 
   public String attempt() {
