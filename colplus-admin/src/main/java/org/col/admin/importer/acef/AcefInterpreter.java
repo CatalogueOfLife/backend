@@ -4,9 +4,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import org.col.admin.importer.InsertMetadata;
 import org.col.admin.importer.InterpreterBase;
+import org.col.admin.importer.NameValidator;
 import org.col.admin.importer.neo.ReferenceStore;
 import org.col.admin.importer.neo.model.NeoTaxon;
 import org.col.admin.importer.reference.ReferenceFactory;
@@ -26,6 +28,7 @@ import static org.col.parser.SafeParser.parse;
  */
 public class AcefInterpreter extends InterpreterBase {
   private static final Logger LOG = LoggerFactory.getLogger(AcefInterpreter.class);
+  private static final int ACEF_AUTHOR_MAX = 100;
 
   public AcefInterpreter(Dataset dataset, InsertMetadata metadata, ReferenceStore refStore, ReferenceFactory refFactory) {
     super(dataset, refStore, refFactory);
@@ -206,6 +209,14 @@ public class AcefInterpreter extends InterpreterBase {
     } else {
       rank = "species";
       authorship = v.get(AcefTerm.AuthorString);
+    }
+
+    // spot potential truncated authorstrings. CoL assembly db uses a max length of 100
+    if (NameValidator.hasUnmatchedBrackets(authorship)) {
+      v.addIssue(Issue.UNMATCHED_NAME_BRACKETS);
+    }
+    if (Strings.nullToEmpty(authorship).length() == ACEF_AUTHOR_MAX) {
+      v.addIssue(Issue.TRUNCATED_NAME);
     }
 
     Optional<NameAccordingTo> opt;

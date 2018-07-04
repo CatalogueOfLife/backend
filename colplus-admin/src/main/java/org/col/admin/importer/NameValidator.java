@@ -3,6 +3,8 @@ package org.col.admin.importer;
 import java.util.regex.Pattern;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.CharMatcher;
+import com.google.common.base.Strings;
 import org.col.api.model.IssueContainer;
 import org.col.api.model.Name;
 import org.col.api.vocab.Issue;
@@ -21,6 +23,8 @@ public class NameValidator {
   // ë is exceptionally allowed in botanical code. See Article 60.6
   // The diaeresis, indicating that a vowel is to be pronounced separately from the preceding vowel (as in Cephaëlis, Isoëtes), is a phonetic device that is not considered to alter the spelling; as such, its use is optional
   static final Pattern NON_LETTER = Pattern.compile("[^a-z-ë]", Pattern.CASE_INSENSITIVE);
+  static final CharMatcher OPEN_BRACKETS = CharMatcher.anyOf("[({");
+  static final CharMatcher CLOSE_BRACKETS = CharMatcher.anyOf("])}");
 
   /**
    * Validates consistency of name properties adding issues to the name if found. 
@@ -29,12 +33,27 @@ public class NameValidator {
    * @return true if any issue have been added
    */
   public static boolean flagIssues(Name n, IssueContainer issues) {
+    final int startSize = issues.getIssues().size();
+
+
     // only check for type scientific which is parsable
-    if (n.getType() != NameType.SCIENTIFIC) {
-      return false;
+    if (n.getType() == NameType.SCIENTIFIC && n.isParsed()) {
+      flagParsedIssues(n, issues);
+    } else {
+      // flag issues on the full name for unparsed names
+      if (hasUnmatchedBrackets(n.getScientificName())) {
+        issues.addIssue(Issue.UNMATCHED_NAME_BRACKETS);
+      }
     }
 
-    final int startSize = issues.getIssues().size();
+    return issues.getIssues().size() > startSize;
+  }
+
+  public static boolean hasUnmatchedBrackets(String x) {
+    return !Strings.isNullOrEmpty(x) && OPEN_BRACKETS.countIn(x) != CLOSE_BRACKETS.countIn(x);
+  }
+
+  private static void flagParsedIssues(Name n, IssueContainer issues) {
     final Rank rank = n.getRank();
     if (n.getUninomial() != null && (n.getGenus() != null || n.getInfragenericEpithet() != null
         || n.getSpecificEpithet() != null || n.getInfraspecificEpithet() != null)) {
@@ -48,6 +67,11 @@ public class NameValidator {
     } else if (n.getSpecificEpithet() == null && n.getInfraspecificEpithet() != null) {
       LOG.info("Missing specific epithet in infraspecific name {}", n.toStringComplete());
       issues.addIssue(Issue.INCONSISTENT_NAME);
+    }
+
+    // look for truncated authorship
+    if (hasUnmatchedBrackets(n.authorshipComplete())) {
+      issues.addIssue(Issue.UNMATCHED_NAME_BRACKETS);
     }
 
     // verify epithets
@@ -102,10 +126,5 @@ public class NameValidator {
         }
       }
     }
-
-    if (issues.getIssues().size() > startSize) {
-      return true;
-    }
-    return false;
   }
 }

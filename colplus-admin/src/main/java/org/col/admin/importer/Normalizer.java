@@ -146,9 +146,9 @@ public class Normalizer implements Callable<Boolean> {
 
       // verify source name and flag issues
       if (t.name.getVerbatimKey() != null) {
-        IssueContainer issues = store.getVerbatim(t.name.getVerbatimKey());
-        if (NameValidator.flagIssues(t.name, issues)) {
-          store.update(t);
+        TermRecord v = store.getVerbatim(t.name.getVerbatimKey());
+        if (NameValidator.flagIssues(t.name, v)) {
+          store.put(v);
         }
       }
 
@@ -197,6 +197,13 @@ public class Normalizer implements Callable<Boolean> {
 
     // TODO: https://github.com/Sp2000/colplus-backend/issues/114
     // Issue.POTENTIAL_VARIANT;
+
+    // verify reference truncation
+    for (Reference r : store.refList()) {
+      if (NameValidator.hasUnmatchedBrackets(r.getCitation())) {
+        store.addIssues(r, Issue.UNMATCHED_REFERENCE_BRACKETS);
+      }
+    }
   }
 
   private <T> T require(VerbatimEntity ent, T obj, String fieldName) {

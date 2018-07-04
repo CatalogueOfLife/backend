@@ -40,6 +40,20 @@ public class NameValidatorTest {
   }
 
   @Test
+  public void unmatchedBrackets() throws Exception {
+    assertFalse(NameValidator.hasUnmatchedBrackets(null));
+    assertFalse(NameValidator.hasUnmatchedBrackets(""));
+    assertFalse(NameValidator.hasUnmatchedBrackets("a"));
+    assertFalse(NameValidator.hasUnmatchedBrackets(" "));
+    assertFalse(NameValidator.hasUnmatchedBrackets("Ay (Du)"));
+
+    assertTrue(NameValidator.hasUnmatchedBrackets("Ay (Du"));
+    assertTrue(NameValidator.hasUnmatchedBrackets("Ay [ick?] (Du la"));
+    assertFalse(NameValidator.hasUnmatchedBrackets("Ay [ick?] (Du) la"));
+  }
+
+
+  @Test
   public void testIsInconsistent() throws Exception {
     Name n = new Name();
     n.setId("#1");

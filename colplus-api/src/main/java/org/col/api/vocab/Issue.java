@@ -203,7 +203,16 @@ public enum Issue {
    */
   RANK_INVALID(Group.NAME, Level.ERROR),
 
+  /**
+   * The name (authorship) contains unmatched brackets, i.e. it misses closing brackets
+   * usually indicating truncated data.
+   */
+  UNMATCHED_NAME_BRACKETS(Group.NAME, Level.ERROR),
 
+  /**
+   * The name or its authorship appears to be truncated.
+   */
+  TRUNCATED_NAME(Group.NAME, Level.WARNING),
 
 //
 // TAXON ISSUES
@@ -371,8 +380,14 @@ public enum Issue {
   /**
    * The required reference type could not be parsed and a default has been assigned.
    */
-  UNPARSABLE_REFERENCE_TYPE(Group.REFERENCE);
+  UNPARSABLE_REFERENCE_TYPE(Group.REFERENCE),
 
+
+  /**
+   * The name (authorship) contains unmatched brackets, i.e. it misses closing brackets
+   * usually indicating truncated data.
+   */
+  UNMATCHED_REFERENCE_BRACKETS(Group.REFERENCE, Level.WARNING);
 
 
 
