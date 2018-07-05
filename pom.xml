@@ -42,13 +42,13 @@
             (use the right versions):
 
             Main Dropwizard BOM:
-            https://github.com/dropwizard/dropwizard/blob/v1.3.2/dropwizard-bom/pom.xml
+            https://github.com/dropwizard/dropwizard/blob/v1.3.5/dropwizard-bom/pom.xml
 
             Which also imports the Jersey BOM:
             https://github.com/jersey/jersey/blob/2.25.1/bom/pom.xml
 
             and Jackson BOM:
-            https://github.com/FasterXML/jackson-bom/blob/jackson-bom-2.9.5/pom.xml
+            https://github.com/FasterXML/jackson-bom/blob/jackson-bom-2.9.6/pom.xml
 
 
             These BOMs manage dependency versions for many things including:
@@ -56,32 +56,33 @@
             jetty, jackson, metrics, etc.
         -->
         <citeproc.version>1.0.1</citeproc.version>
-        <commons-compress.version>1.10</commons-compress.version>
-        <commons-io.version>2.4</commons-io.version>
-        <dropwizard.version>1.3.2</dropwizard.version>
-        <dwc-api.version>1.19-SNAPSHOT</dwc-api.version>
+        <commons-compress.version>1.17</commons-compress.version>
+        <commons-io.version>2.6</commons-io.version>
+        <dropwizard.version>1.3.5</dropwizard.version>
+        <dwc-api.version>1.19</dwc-api.version>
         <dwca-io.version>1.33-SNAPSHOT</dwca-io.version>
-        <fastutil.version>8.1.0</fastutil.version>
-        <gbif-api.version>0.67</gbif-api.version>
-        <gbif-parser.version>0.34</gbif-parser.version>
-        <hikaricp.version>2.7.1</hikaricp.version>
+        <fastutil.version>8.2.1</fastutil.version>
+        <gbif-api.version>0.68</gbif-api.version>
+        <gbif-parser.version>0.35</gbif-parser.version>
+        <hikaricp.version>3.2.0</hikaricp.version>
         <hk2.version>2.5.0-b32</hk2.version>
-        <icu4j.version>60.2</icu4j.version>
+        <icu4j.version>62.1</icu4j.version>
         <javax.ws.rs-api.version>2.0.1</javax.ws.rs-api.version>
-        <javers.version>3.7.5</javers.version>
+        <javers.version>3.10.0</javers.version>
         <junit.version>4.12</junit.version>
         <kryo.version>4.0.1</kryo.version>
         <kryo-serializers.version>0.42</kryo-serializers.version>
-        <logstash-logback.version>4.11</logstash-logback.version>
+        <logstash-logback.version>5.1</logstash-logback.version>
         <mapdb.version>3.0.5</mapdb.version>
         <mockito.version>2.12.0</mockito.version>
-        <mybatis.version>3.4.5</mybatis.version>
+        <mybatis.version>3.4.6</mybatis.version>
         <name-parser.version>3.1.7-SNAPSHOT</name-parser.version>
-        <neo4j.version>3.3.5</neo4j.version>
-        <postgresql.version>42.1.4</postgresql.version>
-        <postgresql-embedded.version>2.6</postgresql-embedded.version>
+        <neo4j.version>3.4.3</neo4j.version>
+        <neo4j-algorithms.version>3.4.0.0</neo4j-algorithms.version>
+        <postgresql.version>42.2.2</postgresql.version>
+        <postgresql-embedded.version>2.9</postgresql-embedded.version>
         <stax2.version>3.1.4</stax2.version>
-        <univocity-parsers.version>2.5.9</univocity-parsers.version>
+        <univocity-parsers.version>2.6.4</univocity-parsers.version>
         <validation-api.version>2.0.0.Final</validation-api.version>
         <woodstox.version>4.4.1</woodstox.version>
         <!-- Maven plugin versions.
@@ -361,7 +362,7 @@
             <dependency>
                 <groupId>org.neo4j</groupId>
                 <artifactId>graph-algorithms-algo</artifactId>
-                <version>${neo4j.version}.0</version>
+                <version>${neo4j-algorithms.version}</version>
             </dependency>
 
             <!-- mapdb & kryo-->
