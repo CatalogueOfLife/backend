@@ -264,6 +264,23 @@ public class NormalizerACEFIT {
     }
   }
 
+  @Test
+  public void acef7Nulls() throws Exception {
+    normalize(7);
+    try (Transaction tx = store.getNeo().beginTx()) {
+      NeoTaxon t = byID("CIP-S-902");
+      assertEquals("Lutzomyia preclara", t.name.canonicalNameComplete());
+
+      t = byID("2");
+      assertEquals("Latrodectus spec.", t.name.canonicalNameComplete());
+      assertEquals("(Fabricius, 1775)", t.name.authorshipComplete().trim());
+
+      t = byID("3");
+      assertEquals("Null bactus", t.name.canonicalNameComplete());
+      assertTrue(store.getVerbatim(t.name.getVerbatimKey()).hasIssue(Issue.NULL_EPITHET));
+    }
+  }
+
   /**
    * ICTV GSD with "parsed" virus names
    * https://github.com/Sp2000/colplus-backend/issues/65

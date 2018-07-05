@@ -64,7 +64,7 @@ public class CsvReader {
     CSV.setMaxCharsPerColumn(1024*256);
   }
   private static final Set<String> SUFFICES = ImmutableSet.of("csv", "tsv", "tab", "txt", "text");
-  private static final Pattern NULL_PATTERN = Pattern.compile("^\\s*(\\\\N|\\\\?NULL)\\s*$");
+  private static final Pattern NULL_PATTERN = Pattern.compile("^\\s*(\\\\N|\\\\?NULL|null)\\s*$");
   private static final int STREAM_CHARACTERISTICS = Spliterator.ORDERED | Spliterator.DISTINCT | Spliterator.NONNULL | Spliterator.IMMUTABLE;
 
   private static final Joiner LINE_JOIN = Joiner.on('\n');
@@ -413,7 +413,9 @@ public class CsvReader {
           if (val == null && f.value != null) {
             val = f.value;
           }
-          tr.put(f.term, val);
+          if (val != null) {
+            tr.put(f.term, val);
+          }
         }
       }
       // load next non empty row

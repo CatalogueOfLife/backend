@@ -1,0 +1,4 @@
+AcceptedTaxonID	ParentSpeciesID	InfraSpeciesEpithet	InfraSpeciesAuthorString	InfraSpeciesMarker	Sp2000NameStatus
+i1	1	najdensis	null	var.	Accepted name
+i2	1	null	(St.John) Sachet	subsp.	Accepted name
+i3	1	atollensis	(St.John) Sachet	NULL	Accepted name

@@ -166,30 +166,6 @@ public class InterpreterBase {
     if (sciname != null) {
       nat = NameParser.PARSER.parse(sciname, rank, v).get();
 
-      // try to add an authorship if not yet there
-      if (!Strings.isNullOrEmpty(authorship)) {
-        ParsedName pnAuthorship = NameParser.PARSER.parseAuthorship(authorship).orElseGet(() -> {
-          LOG.warn("Unparsable authorship {}", authorship);
-          v.addIssue(Issue.UNPARSABLE_AUTHORSHIP);
-          // add the full, unparsed authorship in this case to not lose it
-          ParsedName pn = new ParsedName();
-          pn.getCombinationAuthorship().getAuthors().add(authorship);
-          return pn;
-        });
-
-        // we did already parse an authorship from the scientificName string which does not match up?
-        if (nat.getName().hasAuthorship()
-            && !nat.getName().authorshipComplete().equalsIgnoreCase(pnAuthorship.authorshipComplete())
-            ) {
-          v.addIssue(Issue.INCONSISTENT_AUTHORSHIP);
-          LOG.info("Different authorship [{}] found in dwc:scientificName=[{}] and dwc:scientificNameAuthorship=[{}]",
-              nat.getName().authorshipComplete(), sciname, pnAuthorship.authorshipComplete());
-        }
-        nat.getName().setCombinationAuthorship(pnAuthorship.getCombinationAuthorship());
-        nat.getName().setSanctioningAuthor(pnAuthorship.getSanctioningAuthor());
-        nat.getName().setBasionymAuthorship(pnAuthorship.getBasionymAuthorship());
-      }
-
     } else if (!isAtomized) {
       LOG.info("No name given for {}", id);
       return Optional.empty();
@@ -198,7 +174,7 @@ public class InterpreterBase {
       // parse the reconstructed name with authorship
       // cant use the atomized name just like that cause we would miss name type detection (virus,
       // hybrid, placeholder, garbage)
-      nat = NameParser.PARSER.parse(atom.canonicalNameComplete() + " " + authorship, rank, v).get();
+      nat = NameParser.PARSER.parse(atom.canonicalNameComplete(), rank, v).get();
       // if parsed compare with original atoms
       if (nat.getName().isParsed()) {
         if (!Objects.equals(genus, nat.getName().getGenus()) ||
@@ -210,6 +186,29 @@ public class InterpreterBase {
           v.addIssue(Issue.PARSED_NAME_DIFFERS);
         }
       }
+    }
+
+    // try to add an authorship if not yet there
+    if (!Strings.isNullOrEmpty(authorship)) {
+      ParsedName pnAuthorship = NameParser.PARSER.parseAuthorship(authorship).orElseGet(() -> {
+        LOG.warn("Unparsable authorship {}", authorship);
+        v.addIssue(Issue.UNPARSABLE_AUTHORSHIP);
+        // add the full, unparsed authorship in this case to not lose it
+        ParsedName pn = new ParsedName();
+        pn.getCombinationAuthorship().getAuthors().add(authorship);
+        return pn;
+      });
+
+      // we might have already parsed an authorship from the scientificName string which does not match up?
+      if (nat.getName().hasAuthorship() &&
+         !nat.getName().authorshipComplete().equalsIgnoreCase(pnAuthorship.authorshipComplete())) {
+        v.addIssue(Issue.INCONSISTENT_AUTHORSHIP);
+        LOG.info("Different authorship [{}] found in dwc:scientificName=[{}] and dwc:scientificNameAuthorship=[{}]",
+            nat.getName().authorshipComplete(), sciname, pnAuthorship.authorshipComplete());
+      }
+      nat.getName().setCombinationAuthorship(pnAuthorship.getCombinationAuthorship());
+      nat.getName().setSanctioningAuthor(pnAuthorship.getSanctioningAuthor());
+      nat.getName().setBasionymAuthorship(pnAuthorship.getBasionymAuthorship());
     }
 
     // common basics

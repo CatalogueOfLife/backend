@@ -1,0 +1,3 @@
+ID	AcceptedTaxonID	Genus	SpeciesEpithet	AuthorString	InfraSpeciesEpithet	InfraSpeciesMarker	InfraSpeciesAuthorString	GSDNameStatus	Sp2000NameStatus
+s1	1	Aranea	null	Fabricius, 1775		species		basionym	synonym
+CIP-S-902	1	Lutzomyia	preclara						synonym

@@ -191,7 +191,11 @@ public class TermRecord implements IssueContainer {
 
   public void put(Term term, String value) {
     checkNotNull(term, "term can't be null");
-    terms.put(term, value);
+    if (value == null) {
+      terms.remove(term);
+    } else {
+      terms.put(term, value);
+    }
   }
 
   /**
