@@ -23,12 +23,12 @@ import org.col.admin.matching.NameIndexFactory;
 import org.col.api.model.*;
 import org.col.api.vocab.*;
 import org.col.csl.CslParserMock;
-import org.col.db.NotFoundException;
 import org.col.db.dao.NameDao;
 import org.col.db.dao.NameUsageDao;
 import org.col.db.dao.ReferenceDao;
 import org.col.db.dao.TaxonDao;
 import org.col.db.mapper.*;
+import org.col.dw.jersey.exception.NotFoundException;
 import org.gbif.nameparser.api.Rank;
 import org.junit.*;
 

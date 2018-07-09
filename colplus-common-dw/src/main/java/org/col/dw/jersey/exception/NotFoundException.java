@@ -1,4 +1,4 @@
-package org.col.db;
+package org.col.dw.jersey.exception;
 
 import java.util.Map;
 

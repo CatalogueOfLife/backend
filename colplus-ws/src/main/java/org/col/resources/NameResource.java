@@ -9,11 +9,11 @@ import javax.ws.rs.core.MediaType;
 import com.codahale.metrics.annotation.Timed;
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.model.*;
-import org.col.db.NotFoundException;
 import org.col.db.dao.NameDao;
 import org.col.db.dao.NameUsageDao;
 import org.col.db.mapper.NameMapper;
 import org.col.db.mapper.NameRelationMapper;
+import org.col.dw.jersey.exception.NotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

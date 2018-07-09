@@ -22,10 +22,10 @@ import org.col.api.model.Dataset;
 import org.col.api.model.DatasetImport;
 import org.col.api.model.Page;
 import org.col.api.model.ResultPage;
-import org.col.db.NotFoundException;
 import org.col.db.dao.DatasetDao;
 import org.col.db.mapper.DatasetImportMapper;
 import org.col.db.mapper.DatasetMapper;
+import org.col.dw.jersey.exception.NotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
