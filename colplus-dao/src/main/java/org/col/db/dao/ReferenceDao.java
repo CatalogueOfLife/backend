@@ -1,14 +1,13 @@
 package org.col.db.dao;
 
 import java.util.List;
+
 import javax.annotation.Nullable;
 
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.model.Page;
 import org.col.api.model.Reference;
 import org.col.api.model.ResultPage;
-import org.col.api.model.Taxon;
-import org.col.db.NotFoundException;
 import org.col.db.mapper.ReferenceMapper;
 
 public class ReferenceDao {
@@ -31,20 +30,16 @@ public class ReferenceDao {
     return new ResultPage<>(page, total, result);
   }
 
-  public Integer lookupKey(String id, int datasetKey) throws NotFoundException {
+  public Integer lookupKey(String id, int datasetKey) {
     ReferenceMapper mapper = session.getMapper(ReferenceMapper.class);
-    Integer key = mapper.lookupKey(id, datasetKey);
-    if (key == null) {
-      throw NotFoundException.idNotFound(Taxon.class, datasetKey, id);
-    }
-    return key;
+    return mapper.lookupKey(id, datasetKey);
   }
 
   public Reference get(int key, @Nullable String page) {
     ReferenceMapper mapper = session.getMapper(ReferenceMapper.class);
     Reference ref = mapper.get(key);
     if (ref == null) {
-      throw NotFoundException.keyNotFound(Reference.class, key);
+      return null;
     }
     if (page != null) {
       ref.setPage(page);
