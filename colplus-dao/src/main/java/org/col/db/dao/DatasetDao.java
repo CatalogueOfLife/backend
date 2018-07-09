@@ -1,13 +1,13 @@
 package org.col.db.dao;
 
 import java.util.List;
+
 import javax.annotation.Nullable;
 
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.model.Dataset;
 import org.col.api.model.Page;
 import org.col.api.model.ResultPage;
-import org.col.db.NotFoundException;
 import org.col.db.mapper.DatasetMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,11 +26,7 @@ public class DatasetDao {
   }
 
   public Dataset get(int key) {
-    Dataset result = mapper.get(key);
-    if (result == null) {
-      throw NotFoundException.keyNotFound(Dataset.class, key);
-    }
-    return result;
+    return mapper.get(key);
   }
 
   public ResultPage<Dataset> search(String q, @Nullable Page page) {

@@ -1,8 +1,17 @@
 package org.col.resources;
 
 import java.util.List;
+
 import javax.validation.Valid;
-import javax.ws.rs.*;
+import javax.ws.rs.BeanParam;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -13,6 +22,7 @@ import org.col.api.model.Dataset;
 import org.col.api.model.DatasetImport;
 import org.col.api.model.Page;
 import org.col.api.model.ResultPage;
+import org.col.db.NotFoundException;
 import org.col.db.dao.DatasetDao;
 import org.col.db.mapper.DatasetImportMapper;
 import org.col.db.mapper.DatasetMapper;
@@ -43,7 +53,12 @@ public class DatasetResource {
   @GET
   @Path("{key}")
   public Dataset get(@PathParam("key") Integer key, @Context SqlSession session) {
-    return session.getMapper(DatasetMapper.class).get(key);
+    DatasetDao dao = new DatasetDao(session);
+    Dataset d = dao.get(key);
+    if(d == null) {
+      throw NotFoundException.keyNotFound(Dataset.class, key);
+    }
+    return d;
   }
 
   @PUT
@@ -76,9 +91,8 @@ public class DatasetResource {
     DatasetImportMapper mapper = session.getMapper(DatasetImportMapper.class);
     if (all) {
       return mapper.listByDataset(key);
-    } else {
-      return Lists.newArrayList(mapper.lastSuccessful(key));
     }
+    return Lists.newArrayList(mapper.lastSuccessful(key));
   }
 
 }
