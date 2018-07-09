@@ -9,6 +9,7 @@ import javax.ws.rs.core.MediaType;
 import com.codahale.metrics.annotation.Timed;
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.model.*;
+import org.col.db.NotFoundException;
 import org.col.db.dao.NameDao;
 import org.col.db.dao.NameUsageDao;
 import org.col.db.mapper.NameMapper;
@@ -34,8 +35,8 @@ public class NameResource {
   @GET
   @Timed
   @Path("search")
-  public ResultPage<NameUsage> search(@BeanParam NameSearch query,
-      @Valid @BeanParam Page page, @Context SqlSession session) {
+  public ResultPage<NameUsage> search(@BeanParam NameSearch query, @Valid @BeanParam Page page,
+      @Context SqlSession session) {
     NameUsageDao dao = new NameUsageDao(session);
     return dao.search(query, page);
   }
@@ -45,14 +46,22 @@ public class NameResource {
   public Integer lookupKey(@PathParam("id") String id, @PathParam("datasetKey") int datasetKey,
       @Context SqlSession session) {
     NameDao dao = new NameDao(session);
-    return dao.lookupKey(id, datasetKey);
+    Integer key = dao.lookupKey(id, datasetKey);
+    if (key == null) {
+      throw NotFoundException.idNotFound(Name.class, datasetKey, id);
+    }
+    return key;
   }
 
   @GET
   @Path("{key}")
   public Name get(@PathParam("key") int key, @Context SqlSession session) {
     NameDao dao = new NameDao(session);
-    return dao.get(key);
+    Name name = dao.get(key);
+    if (name == null) {
+      throw NotFoundException.keyNotFound(Name.class, key);
+    }
+    return name;
   }
 
   @GET
@@ -70,7 +79,8 @@ public class NameResource {
   }
 
   /**
-   * TODO: this is really a names index / prov catalogue specific method. Move it to a dedicated web resource
+   * TODO: this is really a names index / prov catalogue specific method. Move it to a dedicated web
+   * resource
    */
   @GET
   @Path("{key}/group")

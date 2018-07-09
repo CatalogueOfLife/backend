@@ -6,10 +6,22 @@ import java.util.Set;
 
 import com.google.common.collect.Lists;
 import org.apache.ibatis.session.SqlSession;
-import org.col.api.model.*;
+import org.col.api.model.Name;
+import org.col.api.model.NameAccordingTo;
+import org.col.api.model.Page;
+import org.col.api.model.Reference;
+import org.col.api.model.ResultPage;
+import org.col.api.model.Synonym;
+import org.col.api.model.Synonymy;
+import org.col.api.model.Taxon;
+import org.col.api.model.TaxonInfo;
 import org.col.api.vocab.TaxonomicStatus;
-import org.col.db.NotFoundException;
-import org.col.db.mapper.*;
+import org.col.db.mapper.DistributionMapper;
+import org.col.db.mapper.NameMapper;
+import org.col.db.mapper.ReferenceMapper;
+import org.col.db.mapper.SynonymMapper;
+import org.col.db.mapper.TaxonMapper;
+import org.col.db.mapper.VernacularNameMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,7 +54,7 @@ public class TaxonDao {
     return new ResultPage<>(p, total, result);
   }
 
-  public Integer lookupKey(String id, int datasetKey) throws NotFoundException {
+  public Integer lookupKey(String id, int datasetKey) {
     return tMapper.lookupKey(id, datasetKey);
   }
 

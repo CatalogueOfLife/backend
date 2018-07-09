@@ -6,7 +6,6 @@ import com.google.common.base.Preconditions;
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.model.*;
 import org.col.api.vocab.NomRelType;
-import org.col.db.NotFoundException;
 import org.col.db.mapper.NameMapper;
 import org.col.db.mapper.NameRelationMapper;
 import org.col.db.mapper.SynonymMapper;
@@ -40,20 +39,12 @@ public class NameDao {
     return new ResultPage<>(page, total, result);
   }
 
-  public Integer lookupKey(String id, int datasetKey) throws NotFoundException {
-    Integer key = nMapper.lookupKey(id, datasetKey);
-    if (key == null) {
-      throw NotFoundException.idNotFound(Name.class, datasetKey, id);
-    }
-    return key;
+  public Integer lookupKey(String id, int datasetKey) {
+    return nMapper.lookupKey(id, datasetKey);
   }
 
   public Name get(Integer key) {
-    Name result = nMapper.get(key);
-    if (result == null) {
-      throw NotFoundException.keyNotFound(Name.class, key);
-    }
-    return result;
+    return nMapper.get(key);
   }
 
   public Name getBasionym(Integer key) {
@@ -99,8 +90,6 @@ public class NameDao {
   public List<NameRelation> relations(int nameKey) {
     return nrMapper.list(nameKey);
   }
-
-
 
   /**
    * Adds a new synonym link for an existing taxon and synonym name
