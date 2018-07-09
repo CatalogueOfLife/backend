@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory;
  * <li>ruby-dev is installed. Linux: sudo apt install ruby-dev. This is necessary because
  * AnystyleParser depends on wapity, which needs native C headers provided by ruby-dev,
  * <li>Anystyle is installed. Linux: sudo gem install AnystyleParser. This may hang on installing
- * the doccumentation. In that case, try: sudo gem install AnystyleParser --no-ri --no-rdoc
+ * the doccumentation. In that case, try: sudo gem install anystyle-parser --no-ri --no-rdoc
  * <li>Sinatra is installed. Linux: sudo gem install sinatra
  * </ol>
  */

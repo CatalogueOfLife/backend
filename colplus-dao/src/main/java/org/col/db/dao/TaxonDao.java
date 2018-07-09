@@ -42,26 +42,17 @@ public class TaxonDao {
     return new ResultPage<>(p, total, result);
   }
 
-  public int lookupKey(String id, int datasetKey) throws NotFoundException {
-    Integer key = tMapper.lookupKey(id, datasetKey);
-    if (key == null) {
-      throw NotFoundException.idNotFound(Taxon.class, datasetKey, id);
-    }
-    return key;
+  public Integer lookupKey(String id, int datasetKey) throws NotFoundException {
+    return tMapper.lookupKey(id, datasetKey);
   }
 
   public Taxon get(int key) {
-    Taxon result = tMapper.get(key);
-    if (result == null) {
-      throw NotFoundException.keyNotFound(Taxon.class, key);
-    }
-    return result;
+    return tMapper.get(key);
   }
 
   public Taxon get(String id, int datasetKey) {
     return get(lookupKey(id, datasetKey));
   }
-
 
   public List<Synonym> getSynonyms(int nameKey) {
     return sMapper.listByName(nameKey);
@@ -73,7 +64,7 @@ public class TaxonDao {
       List<Synonym> syny = sMapper.listByName(nameKey);
       if (syny.isEmpty()) {
         return null;
-      } else if (syny.size() > 1){
+      } else if (syny.size() > 1) {
         LOG.debug("Multiple synonyms found for name ID {}", ID);
       }
       return syny.get(0);
@@ -97,7 +88,8 @@ public class TaxonDao {
         if (accName.getHomotypicNameKey().equals(s.getName().getHomotypicNameKey())) {
           syn.getHomotypic().add(s.getName());
         } else {
-          if (!group.isEmpty() && !group.get(0).getHomotypicNameKey().equals(s.getName().getHomotypicNameKey())) {
+          if (!group.isEmpty()
+              && !group.get(0).getHomotypicNameKey().equals(s.getName().getHomotypicNameKey())) {
             // new heterotypic group
             syn.addHeterotypicGroup(group);
             group = Lists.newArrayList();
@@ -133,7 +125,7 @@ public class TaxonDao {
     // main taxon object
     Taxon taxon = tMapper.get(key);
     if (taxon == null) {
-      throw NotFoundException.keyNotFound(Taxon.class, key);
+      return null;
     }
 
     TaxonInfo info = new TaxonInfo();

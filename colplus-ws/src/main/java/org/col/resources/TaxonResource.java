@@ -9,6 +9,7 @@ import javax.ws.rs.core.MediaType;
 import com.codahale.metrics.annotation.Timed;
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.model.*;
+import org.col.db.NotFoundException;
 import org.col.db.dao.TaxonDao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,8 +24,7 @@ public class TaxonResource {
 
   @GET
   public ResultPage<Taxon> list(@QueryParam("datasetKey") Integer datasetKey,
-                                @QueryParam("root") boolean root,
-                                @Valid @BeanParam Page page, @Context SqlSession session) {
+      @QueryParam("root") boolean root, @Valid @BeanParam Page page, @Context SqlSession session) {
     TaxonDao dao = new TaxonDao(session);
     return dao.list(datasetKey, root, page);
   }
@@ -34,13 +34,21 @@ public class TaxonResource {
   public Integer lookupKey(@PathParam("id") String id, @PathParam("datasetKey") int datasetKey,
       @Context SqlSession session) {
     TaxonDao dao = new TaxonDao(session);
-    return dao.lookupKey(id, datasetKey);
+    Integer key = dao.lookupKey(id, datasetKey);
+    if (key == null) {
+      throw NotFoundException.idNotFound(Taxon.class, datasetKey, id);
+    }
+    return key;
   }
 
   @GET
   @Path("{key}")
   public Taxon get(@PathParam("key") int key, @Context SqlSession session) {
     TaxonDao dao = new TaxonDao(session);
+    Taxon t = dao.get(key);
+    if (t == null) {
+      throw NotFoundException.keyNotFound(Taxon.class, key);
+    }
     return dao.get(key);
   }
 
@@ -71,7 +79,11 @@ public class TaxonResource {
   @Path("{key}/info")
   public TaxonInfo info(@PathParam("key") int key, @Context SqlSession session) {
     TaxonDao dao = new TaxonDao(session);
-    return dao.getTaxonInfo(key);
+    TaxonInfo info = dao.getTaxonInfo(key);
+    if (info == null) {
+      throw NotFoundException.keyNotFound(Taxon.class, key);
+    }
+    return info;
   }
 
 }
