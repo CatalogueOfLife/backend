@@ -142,7 +142,7 @@ public class Reference implements VerbatimEntity {
    * page separate from the rest of the citation in our data model.
    */
   public String getPage() {
-    return csl.getPage();
+    return csl == null ? null : csl.getPage();
   }
 
 }
