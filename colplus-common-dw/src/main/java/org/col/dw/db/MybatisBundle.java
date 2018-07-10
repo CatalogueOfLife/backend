@@ -1,5 +1,6 @@
 package org.col.dw.db;
 
+import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import io.dropwizard.ConfiguredBundle;
 import io.dropwizard.setup.Bootstrap;
@@ -30,8 +31,14 @@ public class MybatisBundle implements ConfiguredBundle<PgAppConfig> {
 	 */
 	@Override
 	public void run(PgAppConfig cfg, Environment environment) throws Exception {
+		HikariConfig hik = cfg.db.hikariConfig();
+		// pool healthchecks
+		hik.setHealthCheckRegistry(environment.healthChecks());
+		// expose pool metrics
+		hik.setMetricRegistry(environment.metrics());
 		// create datasource
-		HikariDataSource ds = cfg.db.pool();
+		HikariDataSource ds = new HikariDataSource(hik);
+
 		// manage datasource
 		ManagedHikariPool managedDs = new ManagedHikariPool(ds);
 		environment.lifecycle().manage(managedDs);
@@ -39,10 +46,6 @@ public class MybatisBundle implements ConfiguredBundle<PgAppConfig> {
 		// create mybatis sqlsessionfactory
 		sqlSessionFactory = MybatisFactory.configure(ds, environment.getName());
 
-		// expose pool metrics
-		ds.setMetricRegistry(environment.metrics());
-		// pool healthchecks
-		ds.setHealthCheckRegistry(environment.healthChecks());
 		environment.healthChecks().register("db-ping",
 		    new SqlSessionFactoryHealthCheck(sqlSessionFactory));
 

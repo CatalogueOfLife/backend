@@ -239,6 +239,16 @@
                 <artifactId>dropwizard-logging</artifactId>
                 <version>${dropwizard.version}</version>
             </dependency>
+            <dependency>
+                <groupId>io.dropwizard</groupId>
+                <artifactId>dropwizard-testing</artifactId>
+                <version>${dropwizard.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.dropwizard</groupId>
+                <artifactId>dropwizard-client</artifactId>
+                <version>${dropwizard.version}</version>
+            </dependency>
 
             <!--
             Dropwizard Bill of materials.

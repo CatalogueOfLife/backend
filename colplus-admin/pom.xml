@@ -206,6 +206,11 @@
             <artifactId>mockito-core</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>io.dropwizard</groupId>
+            <artifactId>dropwizard-testing</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -215,6 +220,16 @@
             <testResource>
                 <directory>src/test/resources</directory>
                 <filtering>false</filtering>
+                <excludes>
+                    <exclude>config-test.yaml</exclude>
+                </excludes>
+            </testResource>
+            <testResource>
+                <directory>src/test/resources</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>config-test.yaml</include>
+                </includes>
             </testResource>
         </testResources>
 

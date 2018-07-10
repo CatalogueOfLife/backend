@@ -34,7 +34,7 @@ public class MatchingResource {
    * Parsing citations as GET query parameters.
    */
   @GET
-  public NameMatch parse(@QueryParam("q") String q,
+  public NameMatch match(@QueryParam("q") String q,
                          @QueryParam("rank") Rank rank,
                          @QueryParam("code") NomCode code,
                          @QueryParam("trusted") boolean trusted,
