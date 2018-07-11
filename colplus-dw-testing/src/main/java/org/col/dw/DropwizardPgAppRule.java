@@ -11,6 +11,13 @@ import org.col.db.EmbeddedColPg;
 import org.col.db.PgConfig;
 import org.col.db.PgSetupRule;
 
+/**
+ * An adaptation of the generic DropwizardAppRule that can be used as a junit class rule
+ * to create integration tests against a running dropwizard instance.
+ *
+ * DropwizardPgAppRule spins up an embedded postgres server
+ * and updates the PgConfig with the matching config parameters to access it via the MyBatisModule.
+ */
 public class DropwizardPgAppRule<C extends PgAppConfig> extends DropwizardAppRule<C> {
 
   private static final EmbeddedColPg pg = new EmbeddedColPg();
