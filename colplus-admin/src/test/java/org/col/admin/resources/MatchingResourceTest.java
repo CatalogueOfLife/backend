@@ -20,7 +20,6 @@ import static org.junit.Assert.assertNotNull;
 
 public class MatchingResourceTest {
 
-
   @ClassRule
   public static final DropwizardPgAppRule<AdminServerConfig> RULE =
       new DropwizardPgAppRule<>(AdminServer.class, ResourceHelpers.resourceFilePath("config-test.yaml"));
@@ -28,6 +27,9 @@ public class MatchingResourceTest {
   @Test
   public void match() {
     Client client = new JerseyClientBuilder(RULE.getEnvironment()).build("test client");
+
+    AdminServerConfig cfg = RULE.getConfiguration();
+    int port = RULE.getLocalPort();
 
     NameMatch match = client.target(
         String.format("http://localhost:%d/name/matching", RULE.getLocalPort()))
