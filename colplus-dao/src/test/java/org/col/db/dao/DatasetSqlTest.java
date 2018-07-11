@@ -1,7 +1,7 @@
 package org.col.db.dao;
 
 import org.col.db.mapper.InitMybatisRule;
-import org.col.db.mapper.PgSetupRule;
+import org.col.db.PgSetupRule;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;

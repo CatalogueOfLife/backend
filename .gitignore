@@ -1,10 +1,10 @@
-*.iml
-target
-.idea
+**/*.iml
+**/target
+**/.idea
 colplus-admin/graphs/
 
 
-/.project
-/.classpath
-/.settings/
-/bin/
+**/.project
+**/.classpath
+**/.settings/
+**/bin/

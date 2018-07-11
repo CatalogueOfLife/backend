@@ -1,11 +1,8 @@
-package org.col.db.mapper;
+package org.col.db;
 
 import java.io.IOException;
-import java.net.ServerSocket;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.time.Duration;
-import java.time.Instant;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
@@ -13,13 +10,10 @@ import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.jdbc.ScriptRunner;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.common.util.YamlUtils;
-import org.col.db.MybatisFactory;
-import org.col.db.PgConfig;
 import org.junit.rules.ExternalResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.yandex.qatools.embed.postgresql.EmbeddedPostgres;
-import ru.yandex.qatools.embed.postgresql.distribution.Version;
 
 /**
  * A junit test rule that starts up an {@link EmbeddedPostgres} server together
@@ -36,13 +30,13 @@ import ru.yandex.qatools.embed.postgresql.distribution.Version;
 public class PgSetupRule extends ExternalResource {
   private static final Logger LOG = LoggerFactory.getLogger(PgSetupRule.class);
 
-	private static EmbeddedPostgres postgres;
+	private static EmbeddedColPg postgres;
 	private static HikariDataSource dataSource;
 	private static SqlSessionFactory sqlSessionFactory;
   private static PgConfig cfg;
 	private boolean startedHere = false;
 
-  public static PgConfig getCfg() throws SQLException {
+  public static PgConfig getCfg() {
     return cfg;
   }
 
@@ -50,7 +44,7 @@ public class PgSetupRule extends ExternalResource {
 		return dataSource.getConnection();
 	}
 
-	public static SqlSessionFactory getSqlSessionFactory() throws SQLException {
+	public static SqlSessionFactory getSqlSessionFactory() {
 		return sqlSessionFactory;
 	}
 
@@ -60,7 +54,7 @@ public class PgSetupRule extends ExternalResource {
 		if (postgres == null) {
 			startDb();
 			startedHere = true;
-			initDb();
+			initDb(cfg);
 		}
 	}
 
@@ -68,15 +62,8 @@ public class PgSetupRule extends ExternalResource {
 		try {
       cfg = YamlUtils.read(PgConfig.class, "/pg-test.yaml");
 			if (cfg.host == null) {
-        LOG.info("Starting embedded Postgres");
-				Instant start = Instant.now();
-				postgres = new EmbeddedPostgres(Version.V10_3);
-				// assigned some free port using local socket 0
-        cfg.port = new ServerSocket(0).getLocalPort();
-        cfg.host = "localhost";
-        cfg.maximumPoolSize = 2;
-				postgres.start(cfg.host, cfg.port, cfg.database, cfg.user, cfg.password);
-        LOG.info("Pg startup time: {} ms", Duration.between(start, Instant.now()).toMillis());
+				postgres = new EmbeddedColPg(cfg);
+        postgres.start();
 
 			} else {
 				LOG.info("Use external Postgres server {}/{}", cfg.host, cfg.database);
@@ -102,8 +89,8 @@ public class PgSetupRule extends ExternalResource {
 		}
 	}
 
-  private void initDb() {
-		try (Connection con = dataSource.getConnection()) {
+	public static void initDb(PgConfig cfg) {
+		try (Connection con = cfg.connect()) {
 			System.out.println("Init empty database schema\n");
 			ScriptRunner runner = new ScriptRunner(con);
 			// needed to honor the $$ escapes in pg functions

@@ -11,7 +11,7 @@ import org.col.api.model.NameMatch;
 import org.col.api.vocab.Datasets;
 import org.col.api.vocab.MatchType;
 import org.col.db.mapper.InitMybatisRule;
-import org.col.db.mapper.PgSetupRule;
+import org.col.db.PgSetupRule;
 import org.col.parser.NameParser;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;

@@ -1,5 +1,6 @@
 package org.col.db.mapper;
 
+import org.col.db.PgSetupRule;
 import org.junit.ClassRule;
 import org.junit.Rule;
 

@@ -4,6 +4,7 @@ import javax.validation.constraints.NotNull;
 
 import org.col.dw.PgAppConfig;
 
+
 public class WsServerConfig extends PgAppConfig {
 
   @NotNull

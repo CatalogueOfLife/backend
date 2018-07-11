@@ -6,11 +6,11 @@ import javax.ws.rs.core.GenericType;
 
 import io.dropwizard.client.JerseyClientBuilder;
 import io.dropwizard.testing.ResourceHelpers;
-import io.dropwizard.testing.junit.DropwizardAppRule;
 import org.col.WsServer;
 import org.col.WsServerConfig;
 import org.col.api.model.Name;
 import org.col.api.model.NameAccordingTo;
+import org.col.dw.DropwizardPgAppRule;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 import org.junit.ClassRule;
@@ -21,8 +21,8 @@ import static org.junit.Assert.assertEquals;
 public class ParserResourceTest {
 
   @ClassRule
-  public static final DropwizardAppRule<WsServerConfig> RULE =
-      new DropwizardAppRule<>(WsServer.class, ResourceHelpers.resourceFilePath("config-test.yaml"));
+  public static final DropwizardPgAppRule<WsServerConfig> RULE =
+      new DropwizardPgAppRule<>(WsServer.class, ResourceHelpers.resourceFilePath("config-test.yaml"));
 
   GenericType<List<NameAccordingTo>> PARSER_TYPE = new GenericType<List<NameAccordingTo>>(){};
 

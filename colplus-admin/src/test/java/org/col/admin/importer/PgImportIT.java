@@ -23,6 +23,7 @@ import org.col.admin.matching.NameIndexFactory;
 import org.col.api.model.*;
 import org.col.api.vocab.*;
 import org.col.csl.CslParserMock;
+import org.col.db.PgSetupRule;
 import org.col.db.dao.NameDao;
 import org.col.db.dao.NameUsageDao;
 import org.col.db.dao.ReferenceDao;

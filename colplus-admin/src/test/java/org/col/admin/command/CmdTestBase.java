@@ -15,7 +15,7 @@ import org.col.admin.AdminServer;
 import org.col.admin.command.initdb.InitDbCmd;
 import org.col.admin.config.AdminServerConfig;
 import org.col.common.util.YamlUtils;
-import org.col.db.mapper.PgSetupRule;
+import org.col.db.PgSetupRule;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;

@@ -11,6 +11,7 @@ import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.jdbc.ScriptRunner;
 import org.apache.ibatis.session.SqlSession;
 import org.col.db.PgConfig;
+import org.col.db.PgSetupRule;
 import org.junit.rules.ExternalResource;
 
 /**

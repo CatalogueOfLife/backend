@@ -8,7 +8,7 @@ import org.col.admin.command.initdb.InitDbCmd;
 import org.col.admin.config.AdminServerConfig;
 import org.col.admin.matching.NameIndexFactory;
 import org.col.csl.AnystyleParserWrapper;
-import org.col.db.mapper.PgSetupRule;
+import org.col.db.PgSetupRule;
 import org.junit.*;
 
 @Ignore("manual import debugging")

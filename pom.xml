@@ -142,7 +142,8 @@
     <modules>
         <module>colplus-api</module>
         <module>colplus-common</module>
-        <module>colplus-common-dw</module>
+        <module>colplus-dw</module>
+        <module>colplus-dw-testing</module>
         <module>colplus-dao</module>
         <module>colplus-parser</module>
         <module>colplus-admin</module>
@@ -182,8 +183,14 @@
             </dependency>
             <dependency>
                 <groupId>org.col</groupId>
-                <artifactId>colplus-common-dw</artifactId>
+                <artifactId>colplus-dw</artifactId>
                 <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.col</groupId>
+                <artifactId>colplus-dw-testing</artifactId>
+                <version>${project.version}</version>
+                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.col</groupId>

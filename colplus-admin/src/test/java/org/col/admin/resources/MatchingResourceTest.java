@@ -4,12 +4,12 @@ import javax.ws.rs.client.Client;
 
 import io.dropwizard.client.JerseyClientBuilder;
 import io.dropwizard.testing.ResourceHelpers;
-import io.dropwizard.testing.junit.DropwizardAppRule;
 import org.col.admin.AdminServer;
 import org.col.admin.config.AdminServerConfig;
 import org.col.api.model.Name;
 import org.col.api.model.NameMatch;
 import org.col.api.vocab.MatchType;
+import org.col.dw.DropwizardPgAppRule;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 import org.junit.ClassRule;
@@ -20,9 +20,10 @@ import static org.junit.Assert.assertNotNull;
 
 public class MatchingResourceTest {
 
+
   @ClassRule
-  public static final DropwizardAppRule<AdminServerConfig> RULE =
-      new DropwizardAppRule<>(AdminServer.class, ResourceHelpers.resourceFilePath("config-test.yaml"));
+  public static final DropwizardPgAppRule<AdminServerConfig> RULE =
+      new DropwizardPgAppRule<>(AdminServer.class, ResourceHelpers.resourceFilePath("config-test.yaml"));
 
   @Test
   public void match() {
