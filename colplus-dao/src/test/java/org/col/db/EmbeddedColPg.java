@@ -51,10 +51,10 @@ public class EmbeddedColPg {
 			cfg.host = "localhost";
 			cfg.maximumPoolSize = 2;
 			postgres.start(cfg.host, cfg.port, cfg.database, cfg.user, cfg.password);
-			LOG.info("Pg startup time: {} ms", Duration.between(start, Instant.now()).toMillis());
+			LOG.info("Pg started on port {}. Startup time: {} ms", cfg.port, Duration.between(start, Instant.now()).toMillis());
 
 		} catch (Exception e) {
-      LOG.error("Pg startup error: {}", e.getMessage(), e);
+      LOG.error("Pg startup error, port {}: {}", cfg.port, e.getMessage(), e);
 
 			if (postgres != null) {
 				postgres.stop();
@@ -65,6 +65,7 @@ public class EmbeddedColPg {
 
 	public void stop() {
 		if (postgres != null) {
+			LOG.info("Stopping embedded Postgres");
 			postgres.stop();
 		}
 	}
