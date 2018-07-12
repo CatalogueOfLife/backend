@@ -79,9 +79,9 @@ genusclade,GENUS
 gn,GENUS
 gnero,GENUS
 grex sect,GREX
-group,CULTIVAR_GROUP
+group,SPECIES_AGGREGATE
 groupgenus,GENUS
-groupspecies,SPECIES
+groupspecies,SPECIES_AGGREGATE
 higher taxon,SUPRAGENERIC_NAME
 imperium,KINGDOM
 infraclassis,INFRACLASS
@@ -221,6 +221,8 @@ superordo,SUPERORDER
 superphyl,SUPERPHYLUM
 superregnum,SUPERKINGDOM
 superser,SUPERSERIES
+supersp,SPECIES_AGGREGATE
+superspecies,SPECIES_AGGREGATE
 supersubtrib
 supersubtribe
 supertrib,SUPERTRIBE
