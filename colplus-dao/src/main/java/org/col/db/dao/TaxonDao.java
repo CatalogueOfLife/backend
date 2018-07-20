@@ -58,7 +58,8 @@ public class TaxonDao {
     return tMapper.lookupKey(id, datasetKey);
   }
 
-  public Taxon get(int key) {
+  public Taxon get(Integer key) {
+    if (key == null) return null;
     return tMapper.get(key);
   }
 

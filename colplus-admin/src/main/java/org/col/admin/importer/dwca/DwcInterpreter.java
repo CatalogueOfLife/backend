@@ -7,7 +7,6 @@ import java.util.Optional;
 import com.google.common.collect.Lists;
 import org.col.admin.importer.InsertMetadata;
 import org.col.admin.importer.InterpreterBase;
-import org.col.admin.importer.neo.ReferenceStore;
 import org.col.admin.importer.neo.model.NeoNameRel;
 import org.col.admin.importer.neo.model.NeoTaxon;
 import org.col.admin.importer.neo.model.RelType;
@@ -32,8 +31,8 @@ public class DwcInterpreter extends InterpreterBase {
 
   private final InsertMetadata insertMetadata;
 
-  public DwcInterpreter(Dataset dataset, InsertMetadata insertMetadata, ReferenceStore refStore, ReferenceFactory refFactory) {
-    super(dataset, refStore, refFactory);
+  public DwcInterpreter(Dataset dataset, InsertMetadata insertMetadata, ReferenceFactory refFactory) {
+    super(dataset, refFactory);
     this.insertMetadata = insertMetadata;
   }
 
@@ -75,7 +74,6 @@ public class DwcInterpreter extends InterpreterBase {
       rel.setNote(rec.get(ColTerm.relationRemarks));
       if (rec.hasTerm(ColTerm.publishedIn)) {
         Reference ref = refFactory.fromDWC(rec.get(ColTerm.publishedInID), rec.get(ColTerm.publishedIn), null, rec);
-        refStore.put(ref);
         rel.setRefKey(ref.getKey());
       }
       return Optional.of(rel);
@@ -87,8 +85,8 @@ public class DwcInterpreter extends InterpreterBase {
     return Lists.newArrayList(refFactory.fromDC(rec.get(DcTerm.identifier),
         rec.get(DcTerm.bibliographicCitation),
         rec.get(DcTerm.creator),
-        rec.get(DcTerm.title),
         rec.get(DcTerm.date),
+        rec.get(DcTerm.title),
         rec.get(DcTerm.source),
         rec
     ));
@@ -149,9 +147,8 @@ public class DwcInterpreter extends InterpreterBase {
 
   private void addReferences(Referenced obj, TermRecord v) {
     if (v.hasTerm(DcTerm.source)) {
-      lookupReference(null, v.get(DcTerm.source), v).ifPresent(r -> {
-        obj.addReferenceKey(r.getKey());
-      });
+      Reference ref = refFactory.fromCitation(null, v.get(DcTerm.source), v);
+      setRefKey(obj, ref);
     }
   }
 
@@ -176,9 +173,10 @@ public class DwcInterpreter extends InterpreterBase {
         } else {
           t.taxon.setSpeciesEstimate(est);
           if (v.hasTerm(ColTerm.speciesEstimateReference)) {
-            lookupReference(null, v.get(ColTerm.speciesEstimateReference), v).ifPresent(r -> {
-              t.taxon.setSpeciesEstimateReferenceKey(r.getKey());
-            });
+            Reference ref = refFactory.fromCitation(null, v.get(ColTerm.speciesEstimateReference), v);
+            if (ref != null) {
+              t.taxon.setSpeciesEstimateReferenceKey(ref.getKey());
+            }
           }
         }
       }
@@ -199,10 +197,11 @@ public class DwcInterpreter extends InterpreterBase {
     if (opt.isPresent()) {
       Name n = opt.get().getName();
       if (v.hasTerm(DwcTerm.namePublishedInID) || v.hasTerm(DwcTerm.namePublishedIn)) {
-        lookupReference(v.get(DwcTerm.namePublishedInID), v.get(DwcTerm.namePublishedIn), v).ifPresent(r -> {
-          n.setPublishedInKey(r.getKey());
-          n.setPublishedInPage(r.getPage());
-        });
+        Reference ref = refFactory.fromCitation(v.get(DwcTerm.namePublishedInID), v.get(DwcTerm.namePublishedIn), v);
+        if (ref != null) {
+          n.setPublishedInKey(ref.getKey());
+          n.setPublishedInPage(ref.getPage());
+        }
       }
     }
     return opt;

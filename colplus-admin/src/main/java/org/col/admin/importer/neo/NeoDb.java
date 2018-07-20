@@ -12,7 +12,6 @@ import javax.annotation.Nullable;
 import com.esotericsoftware.kryo.pool.KryoPool;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
-import com.google.common.collect.Maps;
 import com.google.common.collect.UnmodifiableIterator;
 import org.apache.commons.io.FileUtils;
 import org.col.admin.AdminServer;
@@ -22,6 +21,7 @@ import org.col.admin.importer.neo.model.*;
 import org.col.admin.importer.neo.traverse.StartEndHandler;
 import org.col.admin.importer.neo.traverse.Traversals;
 import org.col.admin.importer.neo.traverse.TreeWalker;
+import org.col.admin.importer.reference.ReferenceStore;
 import org.col.api.model.*;
 import org.col.api.vocab.Issue;
 import org.col.api.vocab.Origin;
@@ -29,6 +29,7 @@ import org.col.api.vocab.TaxonomicStatus;
 import org.col.common.concurrent.ExecutorUtils;
 import org.col.common.concurrent.ThrottledThreadPoolExecutor;
 import org.col.common.mapdb.MapDbObjectSerializer;
+import org.col.common.text.StringUtils;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.nameparser.api.Rank;
 import org.mapdb.Atomic;
@@ -70,9 +71,10 @@ public class NeoDb implements ReferenceStore {
   private final Atomic.Var<Dataset> dataset;
   private final Map<Long, NeoTaxon> taxa;
   private final Map<Integer, Reference> references;
+  private final Map<String, Integer> refIndexId;
+  private final Map<String, Integer> refIndexCitation;
   private final Map<Integer, TermRecord> verbatim;
   private final AtomicInteger verbatimSequence = new AtomicInteger(0);
-  private final Map<String, Reference> referenceIndex;
   private final AtomicInteger referenceSequence = new AtomicInteger(0);
   private final File neoDir;
   private final KryoPool pool;
@@ -105,16 +107,22 @@ public class NeoDb implements ReferenceStore {
           .valueSerializer(new MapDbObjectSerializer<>(NeoTaxon.class, pool, 256))
           .counterEnable()
           .createOrOpen();
-      references = mapDb.hashMap("references")
-          .keySerializer(Serializer.INTEGER)
-          .valueSerializer(new MapDbObjectSerializer(Reference.class, pool, 128))
-          .createOrOpen();
       verbatim = mapDb.hashMap("verbatim")
           .keySerializer(Serializer.INTEGER)
           .valueSerializer(new MapDbObjectSerializer(TermRecord.class, pool, 128))
           .createOrOpen();
-      // TODO: replace with lucene index stored on disk
-      referenceIndex = Maps.newHashMap();
+      references = mapDb.hashMap("references")
+          .keySerializer(Serializer.INTEGER)
+          .valueSerializer(new MapDbObjectSerializer(Reference.class, pool, 128))
+          .createOrOpen();
+      refIndexId = mapDb.hashMap("refIndexId")
+          .keySerializer(Serializer.STRING)
+          .valueSerializer(Serializer.INTEGER)
+          .createOrOpen();
+      refIndexCitation = mapDb.hashMap("refIndexCitation")
+          .keySerializer(Serializer.STRING_ASCII)
+          .valueSerializer(Serializer.INTEGER)
+          .createOrOpen();
       openNeo();
 
     } catch (Exception e) {
@@ -545,7 +553,11 @@ public class NeoDb implements ReferenceStore {
     references.put(r.getKey(), r);
     // update lookup index for id and title
     if (!Strings.isNullOrEmpty(r.getId())) {
-      referenceIndex.put(normRef(r.getId()), r);
+      refIndexId.put(r.getId(), r.getKey());
+    }
+    String normedCit = StringUtils.digitOrAsciiLetters(r.getCitation());
+    if (normedCit != null) {
+      refIndexCitation.put(normedCit, r.getKey());
     }
     return r;
   }
@@ -579,10 +591,6 @@ public class NeoDb implements ReferenceStore {
     }
   }
 
-  private static String normRef(String idOrTitle) {
-    return idOrTitle.trim();
-  }
-
   /**
    * Return all NeoTaxa incl a node property to work with the nodeId.
    * Note though that it is not a real neo4j node but just a dummy that contains the id!!!
@@ -613,7 +621,19 @@ public class NeoDb implements ReferenceStore {
 
   @Override
   public Reference refById(String id) {
-    return id == null ? null : referenceIndex.getOrDefault(normRef(id), null);
+    if (id != null && refIndexId.containsKey(id)) {
+      return references.get(refIndexId.get(id));
+    }
+    return null;
+  }
+
+  @Override
+  public Reference refByCitation(String citation) {
+    String normedCit = StringUtils.digitOrAsciiLetters(citation);
+    if (normedCit != null && refIndexCitation.containsKey(normedCit)) {
+      return references.get(refIndexCitation.get(normedCit));
+    }
+    return null;
   }
 
   public Dataset put(Dataset d) {

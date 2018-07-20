@@ -25,7 +25,6 @@ import org.col.admin.importer.neo.model.RankedName;
 import org.col.admin.importer.neo.printer.GraphFormat;
 import org.col.admin.importer.neo.printer.PrinterUtils;
 import org.col.admin.importer.neo.traverse.Traversals;
-import org.col.admin.importer.reference.ReferenceFactory;
 import org.col.admin.matching.NameIndexFactory;
 import org.col.api.model.*;
 import org.col.api.vocab.*;
@@ -74,7 +73,7 @@ public class NormalizerACEFIT {
       d.setDataFormat(DataFormat.ACEF);
       store.put(d);
 
-      Normalizer norm = new Normalizer(store, acef, new ReferenceFactory(d.getKey(), new CslParserMock()), NameIndexFactory.passThru());
+      Normalizer norm = new Normalizer(store, acef, new CslParserMock(), NameIndexFactory.passThru());
       norm.call();
 
       // reopen

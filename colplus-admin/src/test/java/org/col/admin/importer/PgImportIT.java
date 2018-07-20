@@ -18,7 +18,6 @@ import org.col.admin.config.NormalizerConfig;
 import org.col.admin.importer.neo.NeoDb;
 import org.col.admin.importer.neo.NeoDbFactory;
 import org.col.admin.importer.neo.model.RankedName;
-import org.col.admin.importer.reference.ReferenceFactory;
 import org.col.admin.matching.NameIndexFactory;
 import org.col.api.model.*;
 import org.col.api.vocab.*;
@@ -28,8 +27,10 @@ import org.col.db.dao.NameDao;
 import org.col.db.dao.NameUsageDao;
 import org.col.db.dao.ReferenceDao;
 import org.col.db.dao.TaxonDao;
-import org.col.db.mapper.*;
-import org.col.dw.jersey.exception.NotFoundException;
+import org.col.db.mapper.DatasetMapper;
+import org.col.db.mapper.InitMybatisRule;
+import org.col.db.mapper.NameRelationMapper;
+import org.col.db.mapper.VerbatimRecordMapper;
 import org.gbif.nameparser.api.Rank;
 import org.junit.*;
 
@@ -92,7 +93,7 @@ public class PgImportIT {
       // normalize
       store = NeoDbFactory.create(dataset.getKey(), cfg);
       store.put(dataset);
-      Normalizer norm = new Normalizer(store, source, new ReferenceFactory(dataset.getKey(), new CslParserMock()), NameIndexFactory.memory(Datasets.PROV_CAT, PgSetupRule.getSqlSessionFactory()));
+      Normalizer norm = new Normalizer(store, source, new CslParserMock(), NameIndexFactory.memory(Datasets.PROV_CAT, PgSetupRule.getSqlSessionFactory()));
       norm.call();
 
       // import into postgres
@@ -300,12 +301,7 @@ public class PgImportIT {
       assertEquals(1, usages.size());
       assertEquals(new BareName(n), usages.get(0));
 
-      try {
-        tdao.get("s7", dataset.getKey());
-        fail("Expected to throw as taxon s7 should not exist");
-      } catch (NotFoundException e) {
-        // expected
-      }
+      assertNull( tdao.get("s7", dataset.getKey()) );
 
       n = ndao.get("s6", dataset.getKey());
       assertEquals("Astragalus beersabeensis", n.getScientificName());
@@ -503,11 +499,12 @@ public class PgImportIT {
   @Test
   @Ignore
   public void testGsdGithub() throws Exception {
-    normalizeAndImport(URI.create("https://raw.githubusercontent.com/Sp2000/colplus-repo/master/ACEF/assembly/15.tar.gz"), DataFormat.ACEF);
+    dataset.setTrusted(false);
+    //normalizeAndImport(URI.create("https://raw.githubusercontent.com/Sp2000/colplus-repo/master/ACEF/assembly/15.tar.gz"), DataFormat.ACEF);
     //normalizeAndImport(URI.create("http://services.snsb.info/DTNtaxonlists/rest/v0.1/lists/DiversityTaxonNames_Fossils/1154/dwc"), DataFormat.DWCA);
     //normalizeAndImport(URI.create("https://raw.githubusercontent.com/mdoering/ion-taxonomic-hierarchy/master/classification.tsv"), DataFormat.DWCA);
     //normalizeAndImport(URI.create("https://github.com/gbif/iczn-lists/archive/master.zip"), DataFormat.DWCA);
-    //normalizeAndImport(new File("/Users/markus/Downloads/ipni.zip"), DataFormat.DWCA);
+    normalizeAndImport(new File("/Users/markus/Downloads/WoRMS_DwC-A.zip"), DataFormat.DWCA);
   }
 
   private static RankedName rn(Rank rank, String name) {

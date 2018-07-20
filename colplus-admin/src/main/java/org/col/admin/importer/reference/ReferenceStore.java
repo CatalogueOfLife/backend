@@ -1,4 +1,4 @@
-package org.col.admin.importer.neo;
+package org.col.admin.importer.reference;
 
 import org.col.api.model.Reference;
 
@@ -27,4 +27,5 @@ public interface ReferenceStore {
    */
   Reference refById(String key);
 
+  Reference refByCitation(String citation);
 }

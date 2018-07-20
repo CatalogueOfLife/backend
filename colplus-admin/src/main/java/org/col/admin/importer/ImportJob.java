@@ -14,7 +14,6 @@ import org.col.admin.AdminServer;
 import org.col.admin.config.AdminServerConfig;
 import org.col.admin.importer.neo.NeoDb;
 import org.col.admin.importer.neo.NeoDbFactory;
-import org.col.admin.importer.reference.ReferenceFactory;
 import org.col.admin.matching.NameIndex;
 import org.col.api.model.CslData;
 import org.col.api.model.Dataset;
@@ -48,9 +47,9 @@ public class ImportJob implements Runnable {
   private final DownloadUtil downloader;
   private final SqlSessionFactory factory;
   private final DatasetImportDao dao;
-  private final ReferenceFactory refFactory;
   private final NameIndex index;
   private final StartNotifier notifier;
+  private final Parser<CslData> cslParser;
 
   ImportJob(Dataset d, boolean force, AdminServerConfig cfg, DownloadUtil downloader, SqlSessionFactory factory,
             Parser<CslData> cslParser, NameIndex index, StartNotifier notifier) {
@@ -61,9 +60,9 @@ public class ImportJob implements Runnable {
     this.downloader = downloader;
     this.factory = factory;
     this.index = index;
-    this.refFactory = new ReferenceFactory(d.getKey(), cslParser);
     dao = new DatasetImportDao(factory);
     this.notifier = notifier;
+    this.cslParser = cslParser;
   }
 
   public static void setMDC(int datasetKey) {
@@ -135,7 +134,8 @@ public class ImportJob implements Runnable {
         LOG.info("Normalizing {}", datasetKey);
         store = NeoDbFactory.create(datasetKey, cfg.normalizer);
         store.put(dataset);
-        new Normalizer(store, dwcaDir, refFactory, index).call();
+
+        new Normalizer(store, dwcaDir, cslParser, index).call();
 
         updateState(ImportState.INSERTING);
         LOG.info("Writing {} to Postgres!", datasetKey);

@@ -279,9 +279,12 @@ public class Name implements VerbatimEntity {
 
   /**
    * Updates the scientific name property based on the parsed properties
+   * for parsed names only.
    */
   public void updateScientificName() {
-    this.scientificName = canonicalNameWithoutAuthorship();
+    if (isParsed()) {
+      this.scientificName = canonicalNameWithoutAuthorship();
+    }
   }
 
   public Integer getPublishedInKey() {

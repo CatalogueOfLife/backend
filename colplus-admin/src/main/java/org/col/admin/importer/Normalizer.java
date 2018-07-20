@@ -25,6 +25,7 @@ import org.col.api.vocab.TaxonomicStatus;
 import org.col.common.collection.IterUtils;
 import org.col.common.collection.MapUtils;
 import org.col.common.tax.MisappliedNameMatcher;
+import org.col.parser.Parser;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 import org.neo4j.graphdb.*;
@@ -51,11 +52,11 @@ public class Normalizer implements Callable<Boolean> {
   private final NameIndex index;
   private InsertMetadata meta;
 
-  public Normalizer(NeoDb store, Path sourceDir, ReferenceFactory refFactory, NameIndex index) {
+  public Normalizer(NeoDb store, Path sourceDir, Parser<CslData> cslParser, NameIndex index) {
     this.sourceDir = sourceDir;
     this.store = store;
     this.dataset = store.getDataset();
-    this.refFactory = refFactory;
+    refFactory = new ReferenceFactory(dataset.getKey(), cslParser, store);
     this.index = index;
   }
 

@@ -1,15 +1,20 @@
 package org.col.admin.importer;
 
 import org.col.admin.importer.reference.ReferenceFactory;
+import org.col.admin.importer.reference.ReferenceStore;
 import org.col.api.model.Dataset;
 import org.col.csl.CslParserMock;
 import org.junit.Test;
+import org.mockito.Mock;
 
 import static org.junit.Assert.assertEquals;
 
 public class InterpreterBaseTest {
 
-  InterpreterBase inter = new InterpreterBase(new Dataset(), null, new ReferenceFactory(1, new CslParserMock()));
+  @Mock
+  ReferenceStore refStore;
+
+  InterpreterBase inter = new InterpreterBase(new Dataset(), new ReferenceFactory(1, new CslParserMock(), refStore));
 
   @Test
   public void latinName() throws Exception {

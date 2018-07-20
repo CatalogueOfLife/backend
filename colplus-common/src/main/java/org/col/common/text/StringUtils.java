@@ -23,6 +23,7 @@ public class StringUtils {
   private static final Pattern OCT = Pattern.compile("^[0-7]+$");
   private static final Pattern HEX = Pattern.compile("^[0-9abcdefABCDEF]+$");
   private static final char[] hexCode = "0123456789ABCDEF".toCharArray();
+  private static final CharMatcher NON_DIGITLETTER = CharMatcher.javaLetterOrDigit().negate();
 
   private StringUtils() {
   }
@@ -310,20 +311,18 @@ public class StringUtils {
   }
 
   /**
-   * Generic string cleaning that replaces all non digit or letter characters with a single space and finally trims to null;
-   * replaces all non digit or letter characters with a single space, including invisible control characters, underscore and dashes;
-   * converts the string to upper case;
-   * finally folds the string to pure ASCII characters
+   * Returns an uppercase ASCII string for the given input.
+   * Replaces all non digit or letter characters with a single space, including invisible control characters, underscore,
+   * dashes and punctuation and converts that to upper case and trims and normalizes whitespace;
    *
    * @param x any input string used for parsing a single value
    * @return the cleaned, normalized string
    */
   public static String digitOrAsciiLetters(String x) {
-    CharMatcher cm = CharMatcher.javaLetterOrDigit().negate();
     if (x == null) return null;
-    x = cm.trimAndCollapseFrom(x, ' ');
-    x = x.toUpperCase();
+    x = NON_DIGITLETTER.trimAndCollapseFrom(x, ' ');
     x = foldToAscii(x);
+    x = x.toUpperCase();
     return Strings.emptyToNull(x);
   }
 }

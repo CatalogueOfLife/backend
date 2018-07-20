@@ -2,18 +2,19 @@ package org.col.admin.importer;
 
 import java.net.URI;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.ibm.icu.text.Transliterator;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.col.admin.importer.neo.ReferenceStore;
 import org.col.admin.importer.reference.ReferenceFactory;
 import org.col.api.exception.InvalidNameException;
 import org.col.api.model.*;
@@ -41,16 +42,11 @@ public class InterpreterBase {
   private static final Transliterator transAscii = Transliterator.getInstance("Latin-ASCII");
   
   protected final Dataset dataset;
-  protected final ReferenceStore refStore;
   protected final ReferenceFactory refFactory;
-  // TODO: replace with a map stored on disk or integrate in refstore
-  private final Map<String, Reference> referenceByCitation;
 
-  public InterpreterBase(Dataset dataset, ReferenceStore refStore, ReferenceFactory refFactory) {
+  public InterpreterBase(Dataset dataset, ReferenceFactory refFactory) {
     this.dataset = dataset;
-    this.refStore = refStore;
     this.refFactory = refFactory;
-    this.referenceByCitation = Maps.newHashMap();
   }
 
   protected String latinName(String name) {
@@ -112,36 +108,6 @@ public class InterpreterBase {
     return parse(BooleanParser.PARSER, v.getFirst(term)).orNull(invalidIssue, v);
   }
 
-  protected Optional<Reference> lookupReference(String id, String citation, IssueContainer issues) {
-    Reference r;
-    // if we have an id make sure we have a record - even if its a duplicate
-    if (id != null) {
-      r = refStore.refById(id);
-      if (r == null) {
-        r = create(id, citation, issues);
-      }
-      return Optional.of(r);
-
-    } else if (citation != null){
-      // try to find matching reference based on citation
-      if (referenceByCitation.containsKey(citation)) {
-        r = referenceByCitation.get(citation);
-      } else {
-        r = create(id, citation, issues);
-      }
-      return Optional.of(r);
-
-    }
-    return Optional.empty();
-  }
-
-  private Reference create(String id, String citation, IssueContainer issues) {
-    Reference r = refFactory.fromCitation(id, citation, issues);
-    refStore.put(r);
-    referenceByCitation.put(citation, r);
-    return r;
-  }
-
   public Optional<NameAccordingTo> interpretName(final String id, final String vrank, final String sciname, final String authorship,
                                        final String genus, final String infraGenus, final String species, final String infraspecies,
                                        String nomCode, String nomStatus, String link, String remarks, TermRecord v) {
@@ -171,7 +137,7 @@ public class InterpreterBase {
       return Optional.empty();
 
     } else {
-      // parse the reconstructed name with authorship
+      // parse the reconstructed name without authorship
       // cant use the atomized name just like that cause we would miss name type detection (virus,
       // hybrid, placeholder, garbage)
       nat = NameParser.PARSER.parse(atom.canonicalNameComplete(), rank, v).get();
@@ -185,11 +151,15 @@ public class InterpreterBase {
           LOG.warn("Parsed and given name atoms differ: [{}] vs [{}]", nat.getName().canonicalNameComplete(), atom.canonicalNameComplete());
           v.addIssue(Issue.PARSED_NAME_DIFFERS);
         }
+      } else if (!Strings.isNullOrEmpty(authorship)){
+        // append authorship to unparsed scientificName
+        String fullname = nat.getName().getScientificName().trim() + " " + authorship.trim();
+        nat.getName().setScientificName(fullname);
       }
     }
 
     // try to add an authorship if not yet there
-    if (!Strings.isNullOrEmpty(authorship)) {
+    if (nat.getName().isParsed() && !Strings.isNullOrEmpty(authorship)) {
       ParsedName pnAuthorship = NameParser.PARSER.parseAuthorship(authorship).orElseGet(() -> {
         LOG.warn("Unparsable authorship {}", authorship);
         v.addIssue(Issue.UNPARSABLE_AUTHORSHIP);
@@ -237,6 +207,12 @@ public class InterpreterBase {
     }
 
     return Optional.of(nat);
+  }
+
+  protected void setRefKey(Referenced obj, Reference r) {
+    if (r != null) {
+      obj.addReferenceKey(r.getKey());
+    }
   }
 
 }

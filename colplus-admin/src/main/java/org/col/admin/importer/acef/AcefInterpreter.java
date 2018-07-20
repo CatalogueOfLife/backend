@@ -9,7 +9,6 @@ import com.google.common.collect.Lists;
 import org.col.admin.importer.InsertMetadata;
 import org.col.admin.importer.InterpreterBase;
 import org.col.admin.importer.NameValidator;
-import org.col.admin.importer.neo.ReferenceStore;
 import org.col.admin.importer.neo.model.NeoTaxon;
 import org.col.admin.importer.reference.ReferenceFactory;
 import org.col.api.model.*;
@@ -30,8 +29,8 @@ public class AcefInterpreter extends InterpreterBase {
   private static final Logger LOG = LoggerFactory.getLogger(AcefInterpreter.class);
   private static final int ACEF_AUTHOR_MAX = 100;
 
-  public AcefInterpreter(Dataset dataset, InsertMetadata metadata, ReferenceStore refStore, ReferenceFactory refFactory) {
-    super(dataset, refStore, refFactory);
+  public AcefInterpreter(Dataset dataset, InsertMetadata metadata, ReferenceFactory refFactory) {
+    super(dataset, refFactory);
     // turn on normalization of flat classification
     metadata.setDenormedClassificationMapped(true);
   }
@@ -39,7 +38,6 @@ public class AcefInterpreter extends InterpreterBase {
   public Optional<Reference> interpretReference(TermRecord rec) {
     return Optional.of(refFactory.fromACEF(
         rec.get(AcefTerm.ReferenceID),
-        rec.get(AcefTerm.ReferenceType),
         rec.get(AcefTerm.Author),
         rec.get(AcefTerm.Year),
         rec.get(AcefTerm.Title),
@@ -128,7 +126,7 @@ public class AcefInterpreter extends InterpreterBase {
   }
   private void addReferences(Referenced obj, TermRecord v) {
     if (v.hasTerm(AcefTerm.ReferenceID)) {
-      Reference r = refStore.refById(v.get(AcefTerm.ReferenceID));
+      Reference r = refFactory.find(v.get(AcefTerm.ReferenceID), null);
       if (r != null) {
         obj.addReferenceKey(r.getKey());
       } else {

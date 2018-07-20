@@ -102,7 +102,4 @@ public class AnystyleParserWrapper implements Parser<CslData> {
     return new HttpGet(ub.build());
   }
 
-  // ruby -e "require 'anystyle/parser';require 'sinatra';get '/' do;Anystyle.parse(params['ref'],
-  // :citeproc).to_json;end"
-
 }

@@ -5,6 +5,7 @@ import java.util.regex.Pattern;
 
 import com.google.common.base.Strings;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.col.api.model.CslData;
 import org.col.api.model.CslDate;
 import org.col.api.model.IssueContainer;
@@ -31,13 +32,31 @@ public class ReferenceFactory {
 
   private final Integer datasetKey;
   private final Parser<CslData> cslParser;
+  private ReferenceStore store;
 
-  public ReferenceFactory(Integer datasetKey, Parser<CslData> cslParser) {
+  public ReferenceFactory(Integer datasetKey, Parser<CslData> cslParser, ReferenceStore store) {
     this.datasetKey = datasetKey;
     this.cslParser = cslParser;
+    this.store = store;
   }
 
-  private Reference create(String id) {
+
+  /**
+   * Tries to find an existing reference by its id or exact citation.
+   * Returns null if not found
+   */
+  public Reference find(String id, String citation) {
+    Reference r = null;
+    if (!StringUtils.isBlank(id)) {
+      r = store.refById(id);
+    }
+    if (r == null && !StringUtils.isBlank(citation)) {
+      r = store.refByCitation(citation);
+    }
+    return r;
+  }
+
+  private Reference newRef(String id) {
     Reference ref = new Reference();
     ref.setDatasetKey(datasetKey);
     ref.setId(id);
@@ -51,89 +70,105 @@ public class ReferenceFactory {
    * | TaxAccRef
    *
    * @param referenceID
-   * @param referenceType taxonomic status of reference: NomRef: Nomenclatural Reference (just one
-   *        reference which contains the original (validating) publication of taxon name or new name
-   *        combination or TaxAccRef: Taxonomic Acceptance Reference(s) (one or more bibliographic
-   *        references, where the name is mentioned in the same taxonomic status (i.e. as a species
-   *        or as a synonym) or ComNameRef: Common Name Reference(s) (one or more bibliographic
-   *        references that contain common names)
    * @param authors author (or many) of publication
    * @param year of publication
    * @param title of paper or book
    * @param details title of periodicals, volume number, and other common bibliographic details
    * @return
    */
-  public Reference fromACEF(String referenceID, String referenceType, String authors, String year,
-      String title, String details, IssueContainer issues) {
-    Reference ref = create(referenceID);
-
-    if (details != null && (title == null || details.length() > title.length())) {
-      // consider details to be the entire citation
-      parse(ref, details, issues);
-    } else {
-      parse(ref, buildCitation(authors, year, title, details), issues);
+  public Reference fromACEF(String referenceID, String authors, String year, String title, String details, IssueContainer issues) {
+    Reference ref = find(referenceID, null);
+    if (ref == null) {
+      ref = parse(referenceID, buildCitation(authors, year, details), issues);
+      ref.getCsl().setTitle(title);
+      postParse(ref, issues);
     }
-    return postParse(ref, issues);
+    return ref;
   }
 
   public Reference fromCitation(String id, String citation, IssueContainer issues) {
-    Reference ref = create(id);
-    parse(ref, citation, issues);
-    return postParse(ref, issues);
+    Reference ref = find(id, citation);
+    if (ref == null) {
+      ref = parse(id, citation, issues);
+      postParse(ref, issues);
+    }
+    return ref;
   }
 
   public Reference fromDWC(String publishedInID, String publishedIn, String publishedInYear, IssueContainer issues) {
-    Reference ref = create(publishedInID);
-    parse(ref, publishedIn, issues);
-    if (ref.getCsl().getIssued() == null && publishedInYear != null) {
-      Integer y = parseYear(publishedInYear);
-      if (y != null) {
-        int[][] dateParts = {{y}};
-        CslDate cslDate = new CslDate();
-        cslDate.setDateParts(dateParts);
-        ref.getCsl().setIssued(cslDate);
+    Reference ref = find(publishedInID, publishedIn);
+    if (ref == null) {
+      ref = parse(publishedInID, publishedIn, issues);
+      if (ref.getCsl().getIssued() == null && publishedInYear != null) {
+        Integer y = parseYear(publishedInYear);
+        if (y != null) {
+          int[][] dateParts = {{y}};
+          CslDate cslDate = new CslDate();
+          cslDate.setDateParts(dateParts);
+          ref.getCsl().setIssued(cslDate);
+        }
       }
+      postParse(ref, issues);
     }
-    return postParse(ref, issues);
+    return ref;
   }
 
-  public Reference fromDC(String identifier, String bibliographicCitation, String title,
-      String creator, String date, String source, IssueContainer issues) {
-    Reference ref = create(identifier);
-
-    if (bibliographicCitation != null) {
-      parse(ref, bibliographicCitation, issues);
-    } else {
-      parse(ref, buildCitation(creator, date, title, source), issues);
+  /**
+   * Very similar to fromACEF but optionally providing a full citation given as bibliographicCitation
+   * @param identifier
+   * @param bibliographicCitation
+   * @param creator
+   * @param date
+   * @param title
+   * @param source
+   * @param issues
+   * @return
+   */
+  public Reference fromDC(String identifier, String bibliographicCitation, String creator, String date, String title, String source, IssueContainer issues) {
+    Reference ref = find(identifier, bibliographicCitation);
+    if (ref == null) {
+      if (bibliographicCitation != null) {
+        ref = parse(identifier, bibliographicCitation, issues);
+      } else {
+        ref = parse(identifier, buildCitation(creator, date, source), issues);
+        ref.getCsl().setTitle(title);
+      }
+      postParse(ref, issues);
     }
-    return postParse(ref, issues);
+    return ref;
   }
 
-  private void parse(Reference ref, String citation, IssueContainer issues) {
+  private Reference parse(String id, String citation, IssueContainer issues) {
+    Reference ref = newRef(id);
     try {
       cslParser.parse(citation).ifPresent(ref::setCsl);
     } catch (UnparsableException | RuntimeException e) {
       issues.addIssue(Issue.UNPARSABLE_REFERENCE);
       ref.setCitation(citation);
     }
+    return ref;
   }
 
-  private static String buildCitation(String authors, String year, String title, String details) {
+  private static String buildCitation(String authors, String year, String details) {
     StringBuilder sb = new StringBuilder();
     if (!Strings.isNullOrEmpty(authors)) {
-      sb.append(authors).append(" ");
+      sb.append(authors)
+        .append(" ");
     }
     if (!Strings.isNullOrEmpty(year)) {
-      sb.append(year).append(". ");
+      sb.append("(")
+        .append(year)
+        .append(")");
     }
-    sb.append(title);
+    //TODO: add dummy title???
     if (!Strings.isNullOrEmpty(details)) {
-      sb.append(". ").append(details);
+      sb.append(". ")
+        .append(details);
     }
     return sb.toString();
   }
 
-  private static Reference postParse(Reference ref, IssueContainer issues) {
+  private Reference postParse(Reference ref, IssueContainer issues) {
     if (ref.getCsl() != null) {
       // missing ref type?
       if (ref.getCsl().getType() == null) {
@@ -153,7 +188,11 @@ public class ReferenceFactory {
       if (ref.getCitation() == null) {
         ref.setCitation(CslUtil.buildCitation(ref.getCsl()));
       }
+      //
     }
+    // TODO lookup by citation once again to avoid duplicates???
+    // persist
+    store.put(ref);
     return ref;
   }
 
