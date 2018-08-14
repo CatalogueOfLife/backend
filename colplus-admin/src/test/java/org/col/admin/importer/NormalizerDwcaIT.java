@@ -155,7 +155,7 @@ public class NormalizerDwcaIT {
       assertFalse(trametes_modesta.isSynonym());
 
       Reference pubIn = store.refByKey(trametes_modesta.name.getPublishedInKey());
-      assertEquals("Norw. Jl Bot. 19: 236 (1972)", pubIn.getCsl().getTitle());
+      assertEquals("Norw. Jl Bot. 19: 236 (1972)", pubIn.getCitation());
       assertNotNull(pubIn.getKey());
       assertNull(pubIn.getId());
 
@@ -163,13 +163,13 @@ public class NormalizerDwcaIT {
       assertTrue(Polystictus_substipitatus.isSynonym());
       assertTrue(Polystictus_substipitatus.synonym.getStatus().isSynonym());
       pubIn = store.refByKey(Polystictus_substipitatus.name.getPublishedInKey());
-      assertEquals("Syll. fung. (Abellini) 21: 318 (1912)", pubIn.getCsl().getTitle());
+      assertEquals("Syll. fung. (Abellini) 21: 318 (1912)", pubIn.getCitation());
 
       NeoTaxon Polyporus_modestus = byID("198666");
       assertTrue(Polyporus_modestus.isSynonym());
       assertTrue(Polyporus_modestus.synonym.getStatus().isSynonym());
       pubIn = store.refByKey(Polyporus_modestus.name.getPublishedInKey());
-      assertEquals("Linnaea 5: 519 (1830)", pubIn.getCsl().getTitle());
+      assertEquals("Linnaea 5: 519 (1830)", pubIn.getCitation());
     }
   }
 

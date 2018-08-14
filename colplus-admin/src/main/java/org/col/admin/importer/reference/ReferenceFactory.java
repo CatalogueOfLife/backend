@@ -139,13 +139,11 @@ public class ReferenceFactory {
     Reference ref = find(publishedInID, publishedIn);
     if (ref == null) {
       ref = newReference(publishedInID);
+      if (!StringUtils.isEmpty(publishedIn)) {
+        ref.setCitation(publishedIn);
+        issues.addIssue(Issue.CITATION_UNPARSED);
+      }   
       ref.setYear(parseYear(publishedInYear));
-      if (!allEmpty(publishedIn, publishedInYear)) {
-        CslData csl = new CslData();
-        ref.setCsl(csl);
-        csl.setTitle(publishedIn);
-        csl.setIssued(yearToDate(ref.getYear()));
-      }
       store.put(ref);
     }
     return ref;

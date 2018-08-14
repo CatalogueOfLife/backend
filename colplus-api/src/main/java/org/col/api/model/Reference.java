@@ -41,7 +41,6 @@ public class Reference implements VerbatimEntity {
    */
   private Integer year;
 
-
   public Integer getKey() {
     return key;
   }
@@ -134,6 +133,9 @@ public class Reference implements VerbatimEntity {
    * @param page
    */
   public void setPage(String page) {
+    if (csl == null) {
+      csl = new CslData();
+    }
     csl.setPage(page);
   }
 
