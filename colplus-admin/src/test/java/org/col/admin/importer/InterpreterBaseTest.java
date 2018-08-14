@@ -3,7 +3,6 @@ package org.col.admin.importer;
 import org.col.admin.importer.reference.ReferenceFactory;
 import org.col.admin.importer.reference.ReferenceStore;
 import org.col.api.model.Dataset;
-import org.col.csl.CslParserMock;
 import org.junit.Test;
 import org.mockito.Mock;
 
@@ -14,7 +13,7 @@ public class InterpreterBaseTest {
   @Mock
   ReferenceStore refStore;
 
-  InterpreterBase inter = new InterpreterBase(new Dataset(), new ReferenceFactory(1, new CslParserMock(), refStore));
+  InterpreterBase inter = new InterpreterBase(new Dataset(), new ReferenceFactory(1, refStore));
 
   @Test
   public void latinName() throws Exception {

@@ -56,7 +56,7 @@ public class Normalizer implements Callable<Boolean> {
     this.sourceDir = sourceDir;
     this.store = store;
     this.dataset = store.getDataset();
-    refFactory = new ReferenceFactory(dataset.getKey(), cslParser, store);
+    refFactory = new ReferenceFactory(dataset.getKey(), store);
     this.index = index;
   }
 
