@@ -147,7 +147,7 @@ public class DwcaReader extends CsvReader {
     // we only end up here when there is no meta descriptor
     // the default impl derives the rowType from the file name - not very trustworthy
     Optional<Term> rowTypeFile = super.detectRowType(schema, termPrefix);
-    // so we check columns for exisiting id terms first
+    // so we check columns for existing id terms first
     Optional<Term> rowTypeCol = Optional.empty();
     for (Map.Entry<Term, Term> e : ROW_TYPE_TO_ID.entrySet()) {
       if (schema.hasTerm(e.getValue())) {
@@ -156,7 +156,7 @@ public class DwcaReader extends CsvReader {
       }
     }
     if (rowTypeCol.isPresent() && !rowTypeCol.equals(rowTypeFile)) {
-      LOG.info("Different rowType detected for file {}: {} (filename) vs {} (id terms)", PathUtils.getFilename(schema.file), rowTypeFile, rowTypeCol.get());
+      LOG.info("Different rowType detected for file {}: {} (filename) vs {} (id terms)", PathUtils.getFilename(schema.file), rowTypeFile.get(), rowTypeCol.get());
     }
     return rowTypeCol.isPresent() ? rowTypeCol : rowTypeFile;
   }

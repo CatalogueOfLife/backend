@@ -413,8 +413,7 @@ public class NeoDb implements ReferenceStore {
       LOG.info("Building lucene index scientificName ...");
       inserter.createDeferredSchemaIndex(Labels.ALL).on(NeoProperties.SCIENTIFIC_NAME).create();
     } finally {
-      // this is when lucene indices are build and thus throws RuntimeExceptions when unique constraints are broken
-      // we catch these exceptions below
+      // this is when lucene indices are build
       inserter.shutdown();
     }
 
@@ -445,6 +444,7 @@ public class NeoDb implements ReferenceStore {
 
   private void removeDuplicateKeys() {
     try (Transaction tx = neo.beginTx()){
+      final AtomicInteger counter = new AtomicInteger(0);
       Result res = neo.execute("MATCH (n:ALL) WITH n."+NeoProperties.ID +" as id, collect(n) AS nodes WHERE size(nodes) >  1 RETURN nodes");
       res.accept(new Result.ResultVisitor<Exception>() {
         @Override
@@ -460,6 +460,7 @@ public class NeoDb implements ReferenceStore {
               LOG.info("remove {} with duplicate ID {}", NeoProperties.getID(n), n);
               n.delete();
               taxa.remove(n.getId());
+              counter.incrementAndGet();
             }
           }
           // continue to visit other nodes
@@ -467,6 +468,7 @@ public class NeoDb implements ReferenceStore {
         }
       });
       tx.success();
+      LOG.info("Remove {} duplicate records in total", counter.get());
 
     } catch (Exception e) {
       LOG.error("Failed to remove duplicate records with the same ID ", e);
