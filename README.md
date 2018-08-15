@@ -22,6 +22,7 @@ by executing the main `ColApp.java` class and passing it the right arguments `se
 To see your applications health enter url `http://localhost:8081/healthcheck`
 
 
+
 ## Maven modules
 
 ### colplus-api
