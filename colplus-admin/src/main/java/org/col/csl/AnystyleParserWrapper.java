@@ -29,6 +29,7 @@ import static org.col.api.jackson.ApiModule.MAPPER;
  * and returns a list of CslData objects (JSON-formatted). The assumption is that the list will
  * contain excatly one CslData object.
  */
+@Deprecated
 public class AnystyleParserWrapper implements Parser<CslData> {
 
   private static final Logger LOG = LoggerFactory.getLogger(AnystyleParserWrapper.class);

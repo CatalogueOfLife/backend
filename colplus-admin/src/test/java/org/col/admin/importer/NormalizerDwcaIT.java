@@ -1,6 +1,11 @@
 package org.col.admin.importer;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.net.URI;
 import java.net.URL;
 import java.nio.file.Path;
@@ -8,6 +13,7 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import javax.annotation.Nullable;
 
 import com.google.common.collect.Lists;
@@ -19,13 +25,26 @@ import org.col.admin.config.NormalizerConfig;
 import org.col.admin.importer.neo.NeoDb;
 import org.col.admin.importer.neo.NeoDbFactory;
 import org.col.admin.importer.neo.NotUniqueRuntimeException;
-import org.col.admin.importer.neo.model.*;
+import org.col.admin.importer.neo.model.Labels;
+import org.col.admin.importer.neo.model.NeoProperties;
+import org.col.admin.importer.neo.model.NeoTaxon;
+import org.col.admin.importer.neo.model.RankedName;
+import org.col.admin.importer.neo.model.RelType;
 import org.col.admin.importer.neo.printer.GraphFormat;
 import org.col.admin.importer.neo.printer.PrinterUtils;
 import org.col.admin.matching.NameIndexFactory;
-import org.col.api.model.*;
-import org.col.api.vocab.*;
-import org.col.csl.CslParserMock;
+import org.col.api.model.Dataset;
+import org.col.api.model.Distribution;
+import org.col.api.model.NameRelation;
+import org.col.api.model.Reference;
+import org.col.api.model.TermRecord;
+import org.col.api.model.VernacularName;
+import org.col.api.vocab.DataFormat;
+import org.col.api.vocab.DistributionStatus;
+import org.col.api.vocab.Gazetteer;
+import org.col.api.vocab.Issue;
+import org.col.api.vocab.Language;
+import org.col.api.vocab.NomRelType;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -39,7 +58,11 @@ import org.neo4j.graphdb.schema.Schema;
 import org.neo4j.helpers.collection.Iterables;
 import org.neo4j.helpers.collection.Iterators;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  *
@@ -51,13 +74,15 @@ public class NormalizerDwcaIT {
   private Path dwca;
 
   /**
-   * Normalizes a dwca from the dwca test resources and checks its printed txt tree against the expected tree
+   * Normalizes a dwca from the dwca test resources and checks its printed txt tree against the
+   * expected tree
+   * 
    * @param datasetKey
    * @return
    * @throws Exception
    */
   private void normalize(int datasetKey) throws Exception {
-    URL dwcaUrl = getClass().getResource("/dwca/"+datasetKey);
+    URL dwcaUrl = getClass().getResource("/dwca/" + datasetKey);
     normalize(Paths.get(dwcaUrl.toURI()));
   }
 
@@ -73,7 +98,7 @@ public class NormalizerDwcaIT {
       d.setKey(1);
       d.setDataFormat(DataFormat.DWCA);
       store.put(d);
-      Normalizer norm = new Normalizer(store, dwca, new CslParserMock(), NameIndexFactory.passThru());
+      Normalizer norm = new Normalizer(store, dwca, NameIndexFactory.passThru());
       norm.call();
 
       // reopen
@@ -124,7 +149,7 @@ public class NormalizerDwcaIT {
     if (nodes.isEmpty()) {
       throw new NotFoundException();
     }
-    if (nodes.size()>1) {
+    if (nodes.size() > 1) {
       throw new NotUniqueRuntimeException("scientificName", name);
     }
     return store.get(nodes.get(0));
@@ -243,7 +268,8 @@ public class NormalizerDwcaIT {
 
       assertEquals(1, t1.node.getDegree(RelType.HAS_BASIONYM));
       assertEquals(1, t2.node.getDegree(RelType.HAS_BASIONYM));
-      assertEquals(t2.node, t1.node.getSingleRelationship(RelType.HAS_BASIONYM, Direction.OUTGOING).getEndNode());
+      assertEquals(t2.node,
+          t1.node.getSingleRelationship(RelType.HAS_BASIONYM, Direction.OUTGOING).getEndNode());
       assertNotNull(t1.name.getHomotypicNameKey());
       assertEquals(t2.name.getHomotypicNameKey(), t1.name.getHomotypicNameKey());
 
@@ -258,8 +284,10 @@ public class NormalizerDwcaIT {
       assertEquals(2, t11.node.getDegree(RelType.HAS_BASIONYM));
       assertEquals(0, t12.node.getDegree(RelType.HAS_BASIONYM));
       assertEquals(1, t13.node.getDegree(RelType.HAS_BASIONYM));
-      assertEquals(t11.node, t10.node.getSingleRelationship(RelType.HAS_BASIONYM, Direction.OUTGOING).getOtherNode(t10.node));
-      assertEquals(t11.node, t13.node.getSingleRelationship(RelType.HAS_BASIONYM, Direction.OUTGOING).getOtherNode(t13.node));
+      assertEquals(t11.node, t10.node
+          .getSingleRelationship(RelType.HAS_BASIONYM, Direction.OUTGOING).getOtherNode(t10.node));
+      assertEquals(t11.node, t13.node
+          .getSingleRelationship(RelType.HAS_BASIONYM, Direction.OUTGOING).getOtherNode(t13.node));
       assertNull(t12.name.getHomotypicNameKey());
       assertEquals(t10.name.getKey(), t11.name.getHomotypicNameKey());
       assertEquals(t10.name.getKey(), t10.name.getHomotypicNameKey());
@@ -306,11 +334,15 @@ public class NormalizerDwcaIT {
       }
 
       // 1001, Crepis bakeri Greene
-      assertNotNull(Iterators.singleOrNull(store.getNeo().findNodes(Labels.TAXON, NeoProperties.ID, "1001")));
-      assertNotNull(Iterators.singleOrNull(store.getNeo().findNodes(Labels.TAXON, NeoProperties.SCIENTIFIC_NAME, "Crepis bakeri")));
+      assertNotNull(
+          Iterators.singleOrNull(store.getNeo().findNodes(Labels.TAXON, NeoProperties.ID, "1001")));
+      assertNotNull(Iterators.singleOrNull(
+          store.getNeo().findNodes(Labels.TAXON, NeoProperties.SCIENTIFIC_NAME, "Crepis bakeri")));
 
-      assertNull(Iterators.singleOrNull(store.getNeo().findNodes(Labels.TAXON, NeoProperties.ID, "x1001")));
-      assertNull(Iterators.singleOrNull(store.getNeo().findNodes(Labels.TAXON, NeoProperties.SCIENTIFIC_NAME, "xCrepis bakeri")));
+      assertNull(Iterators
+          .singleOrNull(store.getNeo().findNodes(Labels.TAXON, NeoProperties.ID, "x1001")));
+      assertNull(Iterators.singleOrNull(
+          store.getNeo().findNodes(Labels.TAXON, NeoProperties.SCIENTIFIC_NAME, "xCrepis bakeri")));
     }
   }
 
@@ -341,7 +373,7 @@ public class NormalizerDwcaIT {
     Writer writer = new FileWriter(dotFile);
     PrinterUtils.printTree(store.getNeo(), writer, GraphFormat.DOT, true);
     writer.close();
-    System.out.println("Wrote graph to "+dotFile.getAbsolutePath());
+    System.out.println("Wrote graph to " + dotFile.getAbsolutePath());
   }
 
   @Test
@@ -356,7 +388,6 @@ public class NormalizerDwcaIT {
       expectedAccepted.put("1000", "Calendula arvensis");
       expectedAccepted.put("10000", "Calendula incana subsp. incana");
       expectedAccepted.put("10002", "Calendula incana subsp. maderensis");
-
 
       for (RankedName acc : store.accepted(syn.node)) {
         assertEquals(expectedAccepted.remove(NeoProperties.getID(acc.node)), acc.name);
@@ -407,8 +438,8 @@ public class NormalizerDwcaIT {
 
     try (Transaction tx = store.getNeo().beginTx()) {
       TermRecord t9 = vByID("9");
-      //TODO: fix https://github.com/Sp2000/colplus-backend/issues/118
-      //assertTrue(t9.hasIssue(Issue.PUBLISHED_BEFORE_GENUS));
+      // TODO: fix https://github.com/Sp2000/colplus-backend/issues/118
+      // assertTrue(t9.hasIssue(Issue.PUBLISHED_BEFORE_GENUS));
       assertFalse(t9.hasIssue(Issue.PARENT_NAME_MISMATCH));
 
       TermRecord t11 = vByID("11");
@@ -428,12 +459,12 @@ public class NormalizerDwcaIT {
   public void testExternal() throws Exception {
     normalize(Paths.get("/Users/markus/Desktop/worms"));
     normalize(URI.create("http://www.marinespecies.org/dwca/WoRMS_DwC-A.zip"));
-    //print("Diversity", GraphFormat.TEXT, false);
+    // print("Diversity", GraphFormat.TEXT, false);
   }
 
   void print(String id, GraphFormat format, boolean file) throws Exception {
     // dump graph as DOT file for debugging
-    File dotFile = new File("graphs/tree-dwca-"+id+"."+format.suffix);
+    File dotFile = new File("graphs/tree-dwca-" + id + "." + format.suffix);
     Files.createParentDirs(dotFile);
     Writer writer;
     if (file) {
@@ -445,7 +476,7 @@ public class NormalizerDwcaIT {
     writer.close();
 
     if (file) {
-      System.out.println("Wrote graph to "+dotFile.getAbsolutePath());
+      System.out.println("Wrote graph to " + dotFile.getAbsolutePath());
     } else {
       System.out.println(writer.toString());
     }

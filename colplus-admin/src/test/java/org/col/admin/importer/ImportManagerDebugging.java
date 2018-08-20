@@ -7,13 +7,16 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.col.admin.command.initdb.InitDbCmd;
 import org.col.admin.config.AdminServerConfig;
 import org.col.admin.matching.NameIndexFactory;
-import org.col.csl.AnystyleParserWrapper;
 import org.col.db.PgSetupRule;
-import org.junit.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Ignore;
+import org.junit.Test;
 
 @Ignore("manual import debugging")
 public class ImportManagerDebugging {
-  
+
   ImportManager importManager;
   CloseableHttpClient hc;
 
@@ -27,7 +30,6 @@ public class ImportManagerDebugging {
     cfg.importer.threads = 1;
     cfg.normalizer.archiveDir = Files.createTempDir();
     cfg.normalizer.scratchDir = Files.createTempDir();
-    cfg.anystyle.baseUrl = "http://localhost:4567";
     cfg.db.host = "localhost";
     cfg.db.database = "colplus";
     cfg.db.user = "postgres";
@@ -42,11 +44,9 @@ public class ImportManagerDebugging {
     final AdminServerConfig cfg = provideConfig();
     InitDbCmd.execute(cfg);
 
-    final CloseableHttpClient hc = new HttpClientBuilder(metrics)
-        .using(cfg.client)
-        .build("local");
-    AnystyleParserWrapper anystyle = new AnystyleParserWrapper(hc, cfg.anystyle, metrics);
-    importManager = new ImportManager(cfg, metrics, hc, PgSetupRule.getSqlSessionFactory(), anystyle, NameIndexFactory.passThru());
+    final CloseableHttpClient hc = new HttpClientBuilder(metrics).using(cfg.client).build("local");
+    importManager = new ImportManager(cfg, metrics, hc, PgSetupRule.getSqlSessionFactory(),
+        NameIndexFactory.passThru());
     importManager.start();
   }
 

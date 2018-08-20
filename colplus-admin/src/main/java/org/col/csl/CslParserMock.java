@@ -11,6 +11,7 @@ import org.col.parser.UnparsableException;
  * Mock implementation of a very simple Csl parser for tests.
  * The parser only populates the title attribute with the full citation given.
  */
+@Deprecated
 public class CslParserMock implements Parser<CslData> {
 
   @Override

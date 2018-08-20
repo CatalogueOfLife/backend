@@ -5,7 +5,11 @@ import java.net.URI;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import com.google.common.collect.Sets;
 import com.google.common.io.Files;
@@ -19,9 +23,30 @@ import org.col.admin.importer.neo.NeoDb;
 import org.col.admin.importer.neo.NeoDbFactory;
 import org.col.admin.importer.neo.model.RankedName;
 import org.col.admin.matching.NameIndexFactory;
-import org.col.api.model.*;
-import org.col.api.vocab.*;
-import org.col.csl.CslParserMock;
+import org.col.api.model.BareName;
+import org.col.api.model.Dataset;
+import org.col.api.model.Distribution;
+import org.col.api.model.Name;
+import org.col.api.model.NameRelation;
+import org.col.api.model.NameSearch;
+import org.col.api.model.NameUsage;
+import org.col.api.model.Page;
+import org.col.api.model.Reference;
+import org.col.api.model.Synonym;
+import org.col.api.model.Synonymy;
+import org.col.api.model.Taxon;
+import org.col.api.model.TaxonInfo;
+import org.col.api.model.TermRecord;
+import org.col.api.model.VerbatimEntity;
+import org.col.api.model.VernacularName;
+import org.col.api.vocab.DataFormat;
+import org.col.api.vocab.Datasets;
+import org.col.api.vocab.DistributionStatus;
+import org.col.api.vocab.Gazetteer;
+import org.col.api.vocab.Issue;
+import org.col.api.vocab.Language;
+import org.col.api.vocab.NomRelType;
+import org.col.api.vocab.TaxonomicStatus;
 import org.col.db.PgSetupRule;
 import org.col.db.dao.NameDao;
 import org.col.db.dao.NameUsageDao;
@@ -32,46 +57,56 @@ import org.col.db.mapper.InitMybatisRule;
 import org.col.db.mapper.NameRelationMapper;
 import org.col.db.mapper.VerbatimRecordMapper;
 import org.gbif.nameparser.api.Rank;
-import org.junit.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Ignore;
+import org.junit.Rule;
+import org.junit.Test;
 
 import static org.col.api.vocab.DataFormat.ACEF;
 import static org.col.api.vocab.DataFormat.DWCA;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  *
  */
-public class PgImportIT { 
+public class PgImportIT {
 
-	private NeoDb store;
-	private NormalizerConfig cfg;
-	private ImporterConfig icfg = new ImporterConfig();
-	private Dataset dataset;
+  private NeoDb store;
+  private NormalizerConfig cfg;
+  private ImporterConfig icfg = new ImporterConfig();
+  private Dataset dataset;
   private VerbatimRecordMapper vMapper;
 
-	@ClassRule
-	public static PgSetupRule pgSetupRule = new PgSetupRule();
+  @ClassRule
+  public static PgSetupRule pgSetupRule = new PgSetupRule();
 
-	@Rule
-	public InitMybatisRule initMybatisRule = InitMybatisRule.empty();
+  @Rule
+  public InitMybatisRule initMybatisRule = InitMybatisRule.empty();
 
-	@Before
-	public void initCfg() throws Exception {
-		cfg = new NormalizerConfig();
+  @Before
+  public void initCfg() throws Exception {
+    cfg = new NormalizerConfig();
     cfg.archiveDir = Files.createTempDir();
     cfg.scratchDir = Files.createTempDir();
-		dataset = new Dataset();
+    dataset = new Dataset();
     dataset.setTrusted(true);
-	}
+  }
 
-	@After
-	public void cleanup() throws Exception {
-		if (store != null) {
-			// store is close by Normalizer.run method already
+  @After
+  public void cleanup() throws Exception {
+    if (store != null) {
+      // store is close by Normalizer.run method already
       FileUtils.deleteQuietly(cfg.archiveDir);
       FileUtils.deleteQuietly(cfg.scratchDir);
-		}
-	}
+    }
+  }
 
   void normalizeAndImport(DataFormat format, int key) throws Exception {
     URL url = getClass().getResource("/" + format.name().toLowerCase() + "/" + key);
@@ -79,7 +114,7 @@ public class PgImportIT {
     normalizeAndImport(Paths.get(url.toURI()));
   }
 
-	void normalizeAndImport(Path source) {
+  void normalizeAndImport(Path source) {
     try {
       // insert trusted dataset
       dataset.setTitle("Test Dataset " + source.toString());
@@ -93,12 +128,14 @@ public class PgImportIT {
       // normalize
       store = NeoDbFactory.create(dataset.getKey(), cfg);
       store.put(dataset);
-      Normalizer norm = new Normalizer(store, source, new CslParserMock(), NameIndexFactory.memory(Datasets.PROV_CAT, PgSetupRule.getSqlSessionFactory()));
+      Normalizer norm = new Normalizer(store, source,
+          NameIndexFactory.memory(Datasets.PROV_CAT, PgSetupRule.getSqlSessionFactory()));
       norm.call();
 
       // import into postgres
       store = NeoDbFactory.open(dataset.getKey(), cfg);
-      PgImport importer = new PgImport(dataset.getKey(), store, PgSetupRule.getSqlSessionFactory(), icfg);
+      PgImport importer =
+          new PgImport(dataset.getKey(), store, PgSetupRule.getSqlSessionFactory(), icfg);
       importer.call();
 
     } catch (Exception e) {
@@ -128,7 +165,8 @@ public class PgImportIT {
 
       Name trametes_modesta = ndao.get(ndao.lookupKey("324805", dataset.getKey()));
 
-      Reference pubIn = rdao.get(trametes_modesta.getPublishedInKey(), trametes_modesta.getPublishedInPage());
+      Reference pubIn =
+          rdao.get(trametes_modesta.getPublishedInKey(), trametes_modesta.getPublishedInPage());
       assertEquals("Norw. Jl Bot. 19: 236 (1972)", pubIn.getCitation());
       assertNotNull(pubIn.getKey());
       assertNull(pubIn.getId());
@@ -136,29 +174,29 @@ public class PgImportIT {
   }
 
   @Test
-	public void testDwca1() throws Exception {
-		normalizeAndImport(DWCA, 1);
+  public void testDwca1() throws Exception {
+    normalizeAndImport(DWCA, 1);
 
-		// verify results
-		try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
-			TaxonDao tdao = new TaxonDao(session);
-			NameDao ndao = new NameDao(session);
+    // verify results
+    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+      TaxonDao tdao = new TaxonDao(session);
+      NameDao ndao = new NameDao(session);
 
-			// check basionym
-			Name n1006 = ndao.get(ndao.lookupKey("1006", dataset.getKey()));
-			assertEquals("Leontodon taraxacoides", n1006.getScientificName());
+      // check basionym
+      Name n1006 = ndao.get(ndao.lookupKey("1006", dataset.getKey()));
+      assertEquals("Leontodon taraxacoides", n1006.getScientificName());
 
       List<NameRelation> rels = ndao.relations(n1006.getKey());
       assertEquals(1, rels.size());
 
-      Name bas = ndao.getBasionym( n1006.getKey() );
+      Name bas = ndao.getBasionym(n1006.getKey());
       assertEquals("Leonida taraxacoida", bas.getScientificName());
       assertEquals(n1006.getHomotypicNameKey(), bas.getHomotypicNameKey());
 
-			// check taxon parents
-			assertParents(tdao, "1006", "102", "30", "20", "10", "1");
-		}
-	}
+      // check taxon parents
+      assertParents(tdao, "1006", "102", "30", "20", "10", "1");
+    }
+  }
 
   @Test
   public void testIpniDwca() throws Exception {
@@ -166,11 +204,9 @@ public class PgImportIT {
   }
 
   /**
-   * 1->2->1
-   * should be: 1->2
+   * 1->2->1 should be: 1->2
    *
-   * 10->11->12->10, 13->11
-   * should be: 10,13->11 12
+   * 10->11->12->10, 13->11 should be: 10,13->11 12
    *
    */
   @Test
@@ -182,19 +218,19 @@ public class PgImportIT {
       vMapper = session.getMapper(VerbatimRecordMapper.class);
 
       // check species name
-      Name n1 = dao.get(dao.lookupKey("1",dataset.getKey()));
-      Name n2 = dao.get(dao.lookupKey("2",dataset.getKey()));
+      Name n1 = dao.get(dao.lookupKey("1", dataset.getKey()));
+      Name n2 = dao.get(dao.lookupKey("2", dataset.getKey()));
 
       assertEquals(n2.getHomotypicNameKey(), n1.getHomotypicNameKey());
-      assertTrue(n1.getKey().equals(n2.getHomotypicNameKey()) || n2.getKey().equals(n2.getHomotypicNameKey()));
+      assertTrue(n1.getKey().equals(n2.getHomotypicNameKey())
+          || n2.getKey().equals(n2.getHomotypicNameKey()));
       assertIssue(n1, Issue.CHAINED_BASIONYM);
       assertIssue(n2, Issue.CHAINED_BASIONYM);
 
-
-      Name n10 = dao.get(dao.lookupKey("10",dataset.getKey()));
-      Name n11 = dao.get(dao.lookupKey("11",dataset.getKey()));
-      Name n12 = dao.get(dao.lookupKey("12",dataset.getKey()));
-      Name n13 = dao.get(dao.lookupKey("13",dataset.getKey()));
+      Name n10 = dao.get(dao.lookupKey("10", dataset.getKey()));
+      Name n11 = dao.get(dao.lookupKey("11", dataset.getKey()));
+      Name n12 = dao.get(dao.lookupKey("12", dataset.getKey()));
+      Name n13 = dao.get(dao.lookupKey("13", dataset.getKey()));
 
       assertEquals(n10.getKey(), n10.getHomotypicNameKey());
       assertEquals(n10.getKey(), n11.getHomotypicNameKey());
@@ -206,79 +242,80 @@ public class PgImportIT {
       assertIssue(n12, Issue.CHAINED_BASIONYM);
       assertNoIssue(n13, Issue.CHAINED_BASIONYM);
     }
-	}
+  }
 
-	private void assertIssue(VerbatimEntity ent, Issue issue) {
+  private void assertIssue(VerbatimEntity ent, Issue issue) {
     TermRecord v = vMapper.get(ent.getVerbatimKey());
     assertTrue(v.hasIssue(issue));
   }
+
   private void assertNoIssue(VerbatimEntity ent, Issue issue) {
     TermRecord v = vMapper.get(ent.getVerbatimKey());
     assertFalse(v.hasIssue(issue));
   }
 
   @Test
-	public void testSupplementary() throws Exception {
-		normalizeAndImport(DWCA, 24);
+  public void testSupplementary() throws Exception {
+    normalizeAndImport(DWCA, 24);
 
-		// verify results
-		try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
-			TaxonDao tdao = new TaxonDao(session);
+    // verify results
+    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+      TaxonDao tdao = new TaxonDao(session);
 
-			// check species name
-			Taxon tax = tdao.get(tdao.lookupKey("1000",dataset.getKey()));
-			assertEquals("Crepis pulchra", tax.getName().getScientificName());
+      // check species name
+      Taxon tax = tdao.get(tdao.lookupKey("1000", dataset.getKey()));
+      assertEquals("Crepis pulchra", tax.getName().getScientificName());
 
-			TaxonInfo info = tdao.getTaxonInfo(tax.getKey());
-			// check vernaculars
-			Map<Language, String> expV = Maps.newHashMap();
-			expV.put(Language.GERMAN, "Schöner Pippau");
-			expV.put(Language.ENGLISH, "smallflower hawksbeard");
-			assertEquals(expV.size(), info.getVernacularNames().size());
-			for (VernacularName vn : info.getVernacularNames()) {
-				assertEquals(expV.remove(vn.getLanguage()), vn.getName());
-				assertNotNull(vn.getVerbatimKey());
-			}
-			assertTrue(expV.isEmpty());
+      TaxonInfo info = tdao.getTaxonInfo(tax.getKey());
+      // check vernaculars
+      Map<Language, String> expV = Maps.newHashMap();
+      expV.put(Language.GERMAN, "Schöner Pippau");
+      expV.put(Language.ENGLISH, "smallflower hawksbeard");
+      assertEquals(expV.size(), info.getVernacularNames().size());
+      for (VernacularName vn : info.getVernacularNames()) {
+        assertEquals(expV.remove(vn.getLanguage()), vn.getName());
+        assertNotNull(vn.getVerbatimKey());
+      }
+      assertTrue(expV.isEmpty());
 
-			// check distributions
-			Set<Distribution> expD = Sets.newHashSet();
-			expD.add(dist(Gazetteer.TEXT, "All of Austria and the alps", DistributionStatus.NATIVE));
-			expD.add(dist(Gazetteer.ISO, "DE", DistributionStatus.NATIVE));
-			expD.add(dist(Gazetteer.ISO, "FR", DistributionStatus.NATIVE));
-			expD.add(dist(Gazetteer.ISO, "DK", DistributionStatus.NATIVE));
-			expD.add(dist(Gazetteer.ISO, "GB", DistributionStatus.NATIVE));
-			expD.add(dist(Gazetteer.ISO, "NG", DistributionStatus.NATIVE));
-			expD.add(dist(Gazetteer.ISO, "KE", DistributionStatus.NATIVE));
-			expD.add(dist(Gazetteer.TDWG, "AGS", DistributionStatus.NATIVE));
-			expD.add(dist(Gazetteer.FAO, "37.4.1", DistributionStatus.NATIVE));
-			expD.add(dist(Gazetteer.TDWG, "MOR-MO", DistributionStatus.NATIVE));
-			expD.add(dist(Gazetteer.TDWG, "MOR-CE", DistributionStatus.NATIVE));
-			expD.add(dist(Gazetteer.TDWG, "MOR-ME", DistributionStatus.NATIVE));
-			expD.add(dist(Gazetteer.TDWG, "CPP", DistributionStatus.NATIVE));
-			expD.add(dist(Gazetteer.TDWG, "NAM", DistributionStatus.NATIVE));
-			expD.add(dist(Gazetteer.ISO, "IT-82", DistributionStatus.NATIVE));
-			expD.add(dist(Gazetteer.ISO, "ES-CN", DistributionStatus.NATIVE));
-			expD.add(dist(Gazetteer.ISO, "FR-H", DistributionStatus.NATIVE));
-			expD.add(dist(Gazetteer.ISO, "FM-PNI", DistributionStatus.NATIVE));
+      // check distributions
+      Set<Distribution> expD = Sets.newHashSet();
+      expD.add(dist(Gazetteer.TEXT, "All of Austria and the alps", DistributionStatus.NATIVE));
+      expD.add(dist(Gazetteer.ISO, "DE", DistributionStatus.NATIVE));
+      expD.add(dist(Gazetteer.ISO, "FR", DistributionStatus.NATIVE));
+      expD.add(dist(Gazetteer.ISO, "DK", DistributionStatus.NATIVE));
+      expD.add(dist(Gazetteer.ISO, "GB", DistributionStatus.NATIVE));
+      expD.add(dist(Gazetteer.ISO, "NG", DistributionStatus.NATIVE));
+      expD.add(dist(Gazetteer.ISO, "KE", DistributionStatus.NATIVE));
+      expD.add(dist(Gazetteer.TDWG, "AGS", DistributionStatus.NATIVE));
+      expD.add(dist(Gazetteer.FAO, "37.4.1", DistributionStatus.NATIVE));
+      expD.add(dist(Gazetteer.TDWG, "MOR-MO", DistributionStatus.NATIVE));
+      expD.add(dist(Gazetteer.TDWG, "MOR-CE", DistributionStatus.NATIVE));
+      expD.add(dist(Gazetteer.TDWG, "MOR-ME", DistributionStatus.NATIVE));
+      expD.add(dist(Gazetteer.TDWG, "CPP", DistributionStatus.NATIVE));
+      expD.add(dist(Gazetteer.TDWG, "NAM", DistributionStatus.NATIVE));
+      expD.add(dist(Gazetteer.ISO, "IT-82", DistributionStatus.NATIVE));
+      expD.add(dist(Gazetteer.ISO, "ES-CN", DistributionStatus.NATIVE));
+      expD.add(dist(Gazetteer.ISO, "FR-H", DistributionStatus.NATIVE));
+      expD.add(dist(Gazetteer.ISO, "FM-PNI", DistributionStatus.NATIVE));
 
-			assertEquals(expD.size(), info.getDistributions().size());
-			// remove dist keys before we check equality
-			info.getDistributions().forEach(d -> {
+      assertEquals(expD.size(), info.getDistributions().size());
+      // remove dist keys before we check equality
+      info.getDistributions().forEach(d -> {
         assertNotNull(d.getKey());
         assertNotNull(d.getVerbatimKey());
-			  d.setKey(null);
+        d.setKey(null);
         d.setVerbatimKey(null);
       });
-			Set<Distribution> imported = Sets.newHashSet(info.getDistributions());
+      Set<Distribution> imported = Sets.newHashSet(info.getDistributions());
 
-			Sets.SetView<Distribution> diff = Sets.difference(expD, imported);
-			for (Distribution d : diff) {
-				//System.out.println(d);
-			}
-			assertEquals(expD, imported);
-		}
-	}
+      Sets.SetView<Distribution> diff = Sets.difference(expD, imported);
+      for (Distribution d : diff) {
+        // System.out.println(d);
+      }
+      assertEquals(expD, imported);
+    }
+  }
 
   @Test
   public void testAcef0() throws Exception {
@@ -297,11 +334,12 @@ public class PgImportIT {
       assertEquals(Rank.SPECIES, n.getRank());
       assertIssue(n, Issue.ACCEPTED_ID_INVALID);
 
-      List<NameUsage> usages = udao.search(NameSearch.byNameKey(n.getKey()), new Page()).getResult();
+      List<NameUsage> usages =
+          udao.search(NameSearch.byNameKey(n.getKey()), new Page()).getResult();
       assertEquals(1, usages.size());
       assertEquals(new BareName(n), usages.get(0));
 
-      assertNull( tdao.get("s7", dataset.getKey()) );
+      assertNull(tdao.get("s7", dataset.getKey()));
 
       n = ndao.get("s6", dataset.getKey());
       assertEquals("Astragalus beersabeensis", n.getScientificName());
@@ -348,7 +386,8 @@ public class PgImportIT {
       assertEquals(3, info.getVernacularNames().size());
       Set<String> names = Sets.newHashSet("Ramkurthi", "Ram Kurthi", "отчество");
       for (VernacularName v : info.getVernacularNames()) {
-        assertEquals(v.getName().startsWith("R") ? Language.HINDI : Language.RUSSIAN, v.getLanguage());
+        assertEquals(v.getName().startsWith("R") ? Language.HINDI : Language.RUSSIAN,
+            v.getLanguage());
         assertTrue(names.remove(v.getName()));
       }
     }
@@ -367,15 +406,11 @@ public class PgImportIT {
       assertEquals("Afrogamasellus lokelei Daele, 1976", t.getName().canonicalNameComplete());
 
       List<Taxon> classific = tdao.getClassification(t.getKey());
-      LinkedList<RankedName> expected = Lists.newLinkedList( Lists.newArrayList(
-          rn(Rank.KINGDOM, "Animalia"),
-          rn(Rank.PHYLUM, "Arthropoda"),
-          rn(Rank.CLASS, "Arachnida"),
-          rn(Rank.ORDER, "Mesostigmata"),
-          rn(Rank.SUPERFAMILY, "Rhodacaroidea"),
-          rn(Rank.FAMILY, "Rhodacaridae"),
-          rn(Rank.GENUS, "Afrogamasellus")
-      ));
+      LinkedList<RankedName> expected =
+          Lists.newLinkedList(Lists.newArrayList(rn(Rank.KINGDOM, "Animalia"),
+              rn(Rank.PHYLUM, "Arthropoda"), rn(Rank.CLASS, "Arachnida"),
+              rn(Rank.ORDER, "Mesostigmata"), rn(Rank.SUPERFAMILY, "Rhodacaroidea"),
+              rn(Rank.FAMILY, "Rhodacaridae"), rn(Rank.GENUS, "Afrogamasellus")));
 
       assertEquals(expected.size(), classific.size());
       for (Taxon ht : classific) {
@@ -394,7 +429,6 @@ public class PgImportIT {
       assertNull(t.getDatasetUrl());
       assertNull(t.getTaxonID());
 
-
       // test synonym
       Name sn = ndao.get("Rho-140", dataset.getKey());
       assertEquals("Rhodacarus guevarai Guevara-Benitez, 1974", sn.canonicalNameComplete());
@@ -404,7 +438,8 @@ public class PgImportIT {
       Synonym syn = (Synonym) acc.get(0);
 
       t = tdao.get("Rho-61", dataset.getKey());
-      assertEquals("Multidentorhodacarus denticulatus (Berlese, 1920)", t.getName().canonicalNameComplete());
+      assertEquals("Multidentorhodacarus denticulatus (Berlese, 1920)",
+          t.getName().canonicalNameComplete());
       assertEquals(t, syn.getAccepted());
     }
   }
@@ -420,12 +455,17 @@ public class PgImportIT {
       assertEquals("Latrodectus mactans (Fabricius, 1775)", t.getName().canonicalNameComplete());
 
       TaxonInfo info = tdao.getTaxonInfo(t.getKey());
-      // Walckenaer1805;Walckenaer, CA;1805;Table of the aranid or essential characters of the tribes, genera, families and races contained in the genus Aranea of ​​Linnaeus, with the designation of the species included in each of these divisions . Paris, 88 pp;;
+      // Walckenaer1805;Walckenaer, CA;1805;Table of the aranid or essential characters of the
+      // tribes, genera, families and races contained in the genus Aranea of ​​Linnaeus, with the
+      // designation of the species included in each of these divisions . Paris, 88 pp;;
       Reference pubIn = info.getReference(t.getName().getPublishedInKey());
       assertEquals("Walckenaer1805", pubIn.getId());
       // we cannot test this as our CslParserMock only populates the title...
-      //assertEquals(1805, (int) pubIn.getYear());
-      //assertEquals("Walckenaer, CA 1805. Table of the aranid or essential characters of the tribes, genera, families and races contained in the genus Aranea of \u200B\u200BLinnaeus, with the designation of the species included in each of these divisions . Paris, 88 pp", pubIn.getCsl().getTitle());
+      // assertEquals(1805, (int) pubIn.getYear());
+      // assertEquals("Walckenaer, CA 1805. Table of the aranid or essential characters of the
+      // tribes, genera, families and races contained in the genus Aranea of \u200B\u200BLinnaeus,
+      // with the designation of the species included in each of these divisions . Paris, 88 pp",
+      // pubIn.getCsl().getTitle());
 
       assertEquals(3, info.getTaxonReferences().size());
       for (int refKey : info.getTaxonReferences()) {
@@ -440,7 +480,7 @@ public class PgImportIT {
       assertEquals(0, syn.getHomotypic().size());
 
       Synonym s = tdao.getSynonym("s5", dataset.getKey());
-      //assertEquals("auct. Whittaker 1981", s.getAccordingTo());
+      // assertEquals("auct. Whittaker 1981", s.getAccordingTo());
       assertEquals(TaxonomicStatus.MISAPPLIED, s.getStatus());
     }
   }
@@ -500,34 +540,38 @@ public class PgImportIT {
   @Ignore
   public void testGsdGithub() throws Exception {
     dataset.setTrusted(false);
-    //normalizeAndImport(URI.create("https://raw.githubusercontent.com/Sp2000/colplus-repo/master/ACEF/assembly/15.tar.gz"), DataFormat.ACEF);
-    //normalizeAndImport(URI.create("http://services.snsb.info/DTNtaxonlists/rest/v0.1/lists/DiversityTaxonNames_Fossils/1154/dwc"), DataFormat.DWCA);
-    //normalizeAndImport(URI.create("https://raw.githubusercontent.com/mdoering/ion-taxonomic-hierarchy/master/classification.tsv"), DataFormat.DWCA);
-    //normalizeAndImport(URI.create("https://github.com/gbif/iczn-lists/archive/master.zip"), DataFormat.DWCA);
+    // normalizeAndImport(URI.create("https://raw.githubusercontent.com/Sp2000/colplus-repo/master/ACEF/assembly/15.tar.gz"),
+    // DataFormat.ACEF);
+    // normalizeAndImport(URI.create("http://services.snsb.info/DTNtaxonlists/rest/v0.1/lists/DiversityTaxonNames_Fossils/1154/dwc"),
+    // DataFormat.DWCA);
+    // normalizeAndImport(URI.create("https://raw.githubusercontent.com/mdoering/ion-taxonomic-hierarchy/master/classification.tsv"),
+    // DataFormat.DWCA);
+    // normalizeAndImport(URI.create("https://github.com/gbif/iczn-lists/archive/master.zip"),
+    // DataFormat.DWCA);
     normalizeAndImport(new File("/Users/markus/Downloads/WoRMS_DwC-A.zip"), DataFormat.DWCA);
   }
 
   private static RankedName rn(Rank rank, String name) {
-	  return new RankedName(null, name, null, rank);
+    return new RankedName(null, name, null, rank);
   }
 
-	private Distribution dist(Gazetteer standard, String area, DistributionStatus status) {
-		Distribution d = new Distribution();
-		d.setArea(area);
-		d.setGazetteer(standard);
-		d.setStatus(status);
-		return d;
-	}
+  private Distribution dist(Gazetteer standard, String area, DistributionStatus status) {
+    Distribution d = new Distribution();
+    d.setArea(area);
+    d.setGazetteer(standard);
+    d.setStatus(status);
+    return d;
+  }
 
-	private void assertParents(TaxonDao tdao, String taxonID, String... parentIds) {
-		final LinkedList<String> expected = new LinkedList<String>(Arrays.asList(parentIds));
-		Taxon t = tdao.get(tdao.lookupKey(taxonID,dataset.getKey()));
-		while (t.getParentKey() != null) {
-			Taxon parent = tdao.get(t.getParentKey());
-			assertEquals(expected.pop(), parent.getId());
-			t = parent;
-		}
-		assertTrue(expected.isEmpty());
-	}
+  private void assertParents(TaxonDao tdao, String taxonID, String... parentIds) {
+    final LinkedList<String> expected = new LinkedList<String>(Arrays.asList(parentIds));
+    Taxon t = tdao.get(tdao.lookupKey(taxonID, dataset.getKey()));
+    while (t.getParentKey() != null) {
+      Taxon parent = tdao.get(t.getParentKey());
+      assertEquals(expected.pop(), parent.getId());
+      t = parent;
+    }
+    assertTrue(expected.isEmpty());
+  }
 
 }

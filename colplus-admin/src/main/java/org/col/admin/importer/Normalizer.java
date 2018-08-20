@@ -2,7 +2,11 @@ package org.col.admin.importer;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -13,11 +17,24 @@ import org.col.admin.importer.acef.AcefInserter;
 import org.col.admin.importer.dwca.DwcaInserter;
 import org.col.admin.importer.neo.NeoDb;
 import org.col.admin.importer.neo.NotUniqueRuntimeException;
-import org.col.admin.importer.neo.model.*;
+import org.col.admin.importer.neo.model.Labels;
+import org.col.admin.importer.neo.model.NeoProperties;
+import org.col.admin.importer.neo.model.NeoTaxon;
+import org.col.admin.importer.neo.model.RankedName;
+import org.col.admin.importer.neo.model.RelType;
 import org.col.admin.importer.neo.traverse.Traversals;
 import org.col.admin.importer.reference.ReferenceFactory;
 import org.col.admin.matching.NameIndex;
-import org.col.api.model.*;
+import org.col.api.model.Classification;
+import org.col.api.model.Dataset;
+import org.col.api.model.Distribution;
+import org.col.api.model.Name;
+import org.col.api.model.NameAccordingTo;
+import org.col.api.model.NameMatch;
+import org.col.api.model.Reference;
+import org.col.api.model.TermRecord;
+import org.col.api.model.VerbatimEntity;
+import org.col.api.model.VernacularName;
 import org.col.api.vocab.Issue;
 import org.col.api.vocab.MatchType;
 import org.col.api.vocab.Origin;
@@ -25,10 +42,13 @@ import org.col.api.vocab.TaxonomicStatus;
 import org.col.common.collection.IterUtils;
 import org.col.common.collection.MapUtils;
 import org.col.common.tax.MisappliedNameMatcher;
-import org.col.parser.Parser;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
-import org.neo4j.graphdb.*;
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.Result;
+import org.neo4j.graphdb.Transaction;
 import org.neo4j.helpers.collection.Iterables;
 import org.neo4j.helpers.collection.Iterators;
 import org.slf4j.Logger;
@@ -52,7 +72,7 @@ public class Normalizer implements Callable<Boolean> {
   private final NameIndex index;
   private InsertMetadata meta;
 
-  public Normalizer(NeoDb store, Path sourceDir, Parser<CslData> cslParser, NameIndex index) {
+  public Normalizer(NeoDb store, Path sourceDir, NameIndex index) {
     this.sourceDir = sourceDir;
     this.store = store;
     this.dataset = store.getDataset();

@@ -49,10 +49,9 @@ public class ImportJob implements Runnable {
   private final DatasetImportDao dao;
   private final NameIndex index;
   private final StartNotifier notifier;
-  private final Parser<CslData> cslParser;
 
   ImportJob(Dataset d, boolean force, AdminServerConfig cfg, DownloadUtil downloader, SqlSessionFactory factory,
-            Parser<CslData> cslParser, NameIndex index, StartNotifier notifier) {
+             NameIndex index, StartNotifier notifier) {
     this.datasetKey = d.getKey();
     this.dataset = d;
     this.force = force;
@@ -62,7 +61,6 @@ public class ImportJob implements Runnable {
     this.index = index;
     dao = new DatasetImportDao(factory);
     this.notifier = notifier;
-    this.cslParser = cslParser;
   }
 
   public static void setMDC(int datasetKey) {
@@ -135,7 +133,7 @@ public class ImportJob implements Runnable {
         store = NeoDbFactory.create(datasetKey, cfg.normalizer);
         store.put(dataset);
 
-        new Normalizer(store, dwcaDir, cslParser, index).call();
+        new Normalizer(store, dwcaDir, index).call();
 
         updateState(ImportState.INSERTING);
         LOG.info("Writing {} to Postgres!", datasetKey);
