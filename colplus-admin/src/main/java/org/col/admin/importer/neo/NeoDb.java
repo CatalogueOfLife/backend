@@ -288,7 +288,7 @@ public class NeoDb implements ReferenceStore {
 
       while (batchIter.hasNext()) {
         checkIfInterrupted();
-        queue.add(batchIter.next());
+        queue.put(batchIter.next());
       }
       // this blocks until all batches are processed
       consumer.shutdown();
