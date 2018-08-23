@@ -14,7 +14,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.UnmodifiableIterator;
 import org.apache.commons.io.FileUtils;
-import org.col.admin.AdminServer;
 import org.col.admin.importer.ImportJob;
 import org.col.admin.importer.NormalizationFailedException;
 import org.col.admin.importer.neo.model.*;
@@ -26,8 +25,7 @@ import org.col.api.model.*;
 import org.col.api.vocab.Issue;
 import org.col.api.vocab.Origin;
 import org.col.api.vocab.TaxonomicStatus;
-import org.col.common.concurrent.ExecutorUtils;
-import org.col.common.concurrent.ThrottledThreadPoolExecutor;
+import org.col.common.concurrent.NamedThreadFactory;
 import org.col.common.mapdb.MapDbObjectSerializer;
 import org.col.common.text.StringUtils;
 import org.gbif.dwc.terms.DwcTerm;
@@ -64,6 +62,7 @@ public class NeoDb implements ReferenceStore {
   private static final Logger LOG = LoggerFactory.getLogger(NeoDb.class);
   private static final Labels[] TAX_LABELS = new Labels[]{Labels.ALL, Labels.TAXON};
   private static final Labels[] SYN_LABELS = new Labels[]{Labels.ALL, Labels.SYNONYM};
+  private static final ThreadFactory NAMED_THREAD_FACTORY = new NamedThreadFactory("neodb-processor");
 
   private final int datasetKey;
   private final GraphDatabaseBuilder neoFactory;
@@ -267,7 +266,7 @@ public class NeoDb implements ReferenceStore {
   /**
    * Process all nodes in batches with the given callback handler.
    * Every batch is processed in a single transaction which is committed at the end of the batch.
-   * To avoid nested flat transactions we execute all batches in a separate executor thread.
+   * To avoid nested flat transactions we execute all batches in a separate consumer thread.
    *
    * If new nodes are created within a batch transaction this will be also be returned to the callback handler at the very end.
    *
@@ -279,45 +278,38 @@ public class NeoDb implements ReferenceStore {
    * @return total number of processed nodes.
    */
   public int process(Labels label, final int batchSize, NodeBatchProcessor callback) {
-    ExecutorService service =  ThrottledThreadPoolExecutor.newFixedThreadPool(1, 3);
-    final AtomicInteger counter = new AtomicInteger();
+    BatchConsumer consumer = new BatchConsumer(datasetKey, neo, callback);
+    BlockingQueue<List<Node>> queue = consumer.queue;
+    Thread consThread = new Thread(consumer, "neodb-processor-"+datasetKey);
+    consThread.start();
+
     try (Transaction tx = neo.beginTx()){
-      int batchNum = 0;
       UnmodifiableIterator<List<Node>> batchIter = com.google.common.collect.Iterators.partition(neo.findNodes(label), batchSize);
-      Future<Integer> curr = null;
+
       while (batchIter.hasNext()) {
         checkIfInterrupted();
-        List<Node> batch = batchIter.next();
-        // execute batch processing in separate thread to not create nested flat transactions
-        Future<Integer> f = service.submit(new BatchCallback(datasetKey, neo, callback, batch, counter));
-        if (curr != null) {
-          // wait til the last job finishes - this might throw an exception
-          curr.get();
-        }
-        curr = f;
-        batchNum++;
+        queue.add(batchIter.next());
       }
-      // very last batch
-      if (curr != null) {
-        curr.get();
+      // this blocks until all batches are processed
+      consumer.shutdown();
+
+      if (consumer.hasError()) {
+        throw consumer.error;
       }
 
       // mark good for commit
       tx.success();
-      LOG.info("Neo processing of {} finished in {} batches with {} records", label, batchNum, counter.get());
+      LOG.info("Neo processing of {} finished in {} batches with {} records", label, consumer.batchCounter, consumer.recordCounter);
+
 
     } catch (InterruptedException e) {
       LOG.error("Neo processing interrupted", e);
-      service.shutdownNow();
-
-    } catch (ExecutionException e){
-      LOG.error("Neo processing with {} failed", callback.getClass(), e);
-      throw new RuntimeException(e.getCause());
+      consumer.shutdownNow();
 
     } finally {
-      ExecutorUtils.shutdown(service, AdminServer.MILLIS_TO_DIE/2, TimeUnit.MILLISECONDS);
+      consThread.interrupt();
     }
-    return counter.get();
+    return consumer.recordCounter;
   }
 
   private void checkIfInterrupted() throws InterruptedException {
@@ -340,41 +332,86 @@ public class NeoDb implements ReferenceStore {
     LOG.debug("Deleted {} from store with {} relations", n, counter);
   }
 
-  private static class BatchCallback implements Callable<Integer> {
+  private static class BatchConsumer implements Runnable {
     private final int datasetKey;
-    private final AtomicInteger counter;
     private final GraphDatabaseService neo;
     private final NodeBatchProcessor callback;
-    private final List<Node> batch;
+    private final BlockingQueue<List<Node>> queue = new ArrayBlockingQueue<List<Node>>(1, true);
+    private boolean running;
+    private volatile int batchCounter = 0;
+    private volatile int recordCounter = 0;
+    private volatile RuntimeException error = null;
 
-    BatchCallback(int datasetKey, GraphDatabaseService neo, NodeBatchProcessor callback, List<Node> batch, AtomicInteger counter) {
+    BatchConsumer(int datasetKey, GraphDatabaseService neo, NodeBatchProcessor callback) {
       this.datasetKey = datasetKey;
-      this.counter = counter;
       this.neo = neo;
       this.callback = callback;
-      this.batch = batch;
     }
 
     @Override
-    public Integer call() throws Exception {
-      ImportJob.setMDC(datasetKey);
-      try (Transaction tx = neo.beginTx()) {
-        LOG.debug("Start new neo processing batch with {} nodes, first={}", batch.size(), batch.get(0));
-        for (Node n : batch) {
-          callback.process(n);
-          counter.incrementAndGet();
+    public void run() {
+      running = true;
+      while(running || !queue.isEmpty()){
+        try {
+          final List<Node> batch = queue.take();
+          if (batch.isEmpty()) {
+            continue;
+          }
+          batchCounter++;
+          ImportJob.setMDC(datasetKey);
+          try (Transaction tx = neo.beginTx()) {
+            LOG.debug("Start new neo processing batch {} with {} nodes, first={}", batchCounter, batch.size(), batch.get(0));
+            for (Node n : batch) {
+              callback.process(n);
+              recordCounter++;
+            }
+            tx.success();
+            callback.commitBatch(recordCounter);
+
+          } catch (Throwable e) {
+            LOG.error("Failed to process batch {} with {} nodes, first={}", batchCounter, batch.size(), batch.get(0), e);
+            throw e;
+
+          } finally {
+            ImportJob.removeMDC();
+          }
+
+        } catch (InterruptedException ex) {
+          LOG.error("Interrupted batch consumer for {}, clearing {} remaining batches", callback, queue.size(), ex);
+          shutdownNow();
+
+        } catch (RuntimeException e) {
+          error = e;
+          LOG.error("Error processing batch {} for {}, clearing {} remaining batches", batchCounter, callback, queue.size(), e);
+          shutdownNow();
         }
-        tx.success();
-        callback.commitBatch(counter.get());
-
-      } catch (Throwable e) {
-        LOG.error("Failed to process batch with {} nodes, first={}", batch.size(), batch.get(0), e);
-        throw e;
-
-      } finally {
-        ImportJob.removeMDC();
       }
-      return counter.get();
+      LOG.debug("Batch processor stopped for {}", callback);
+    }
+
+    /**
+     * Shuts down consumer thread and waits until the queue is empty and processed.
+     * If the queue is still growing this might never finish, so make sure the queue does not get enlarged
+     */
+    void shutdown() {
+      running = false;
+      try {
+        // block until all queue batches are processed
+        queue.put(Collections.EMPTY_LIST);
+        queue.put(Collections.EMPTY_LIST);
+      } catch (InterruptedException e) {
+        queue.clear();
+        queue.add(Collections.EMPTY_LIST);
+      }
+    }
+
+    void shutdownNow() {
+      queue.clear();
+      shutdown();
+    }
+
+    boolean hasError() {
+      return error != null;
     }
   }
 

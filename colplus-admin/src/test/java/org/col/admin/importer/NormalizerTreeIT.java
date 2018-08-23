@@ -100,7 +100,7 @@ public class NormalizerTreeIT {
   @After
   public void cleanup() throws Exception {
     if (store != null) {
-      // store is close by Normalizer.run method already
+      store.closeAndDelete();
       FileUtils.deleteQuietly(cfg.archiveDir);
       FileUtils.deleteQuietly(cfg.scratchDir);
     }
