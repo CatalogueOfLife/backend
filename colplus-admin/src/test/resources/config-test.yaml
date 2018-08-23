@@ -30,5 +30,3 @@ client:
   maxConnectionsPerRoute: 16
   keepAlive: 0ms
   retries: 1
-anystyle:
-  baseUrl:

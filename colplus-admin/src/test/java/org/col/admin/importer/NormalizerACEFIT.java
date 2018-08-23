@@ -10,6 +10,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Set;
+
 import javax.annotation.Nullable;
 
 import com.google.common.collect.Sets;
@@ -26,9 +27,16 @@ import org.col.admin.importer.neo.printer.GraphFormat;
 import org.col.admin.importer.neo.printer.PrinterUtils;
 import org.col.admin.importer.neo.traverse.Traversals;
 import org.col.admin.matching.NameIndexFactory;
-import org.col.api.model.*;
-import org.col.api.vocab.*;
-import org.col.csl.CslParserMock;
+import org.col.api.model.Dataset;
+import org.col.api.model.Distribution;
+import org.col.api.model.IssueContainer;
+import org.col.api.model.VerbatimEntity;
+import org.col.api.model.VernacularName;
+import org.col.api.vocab.DataFormat;
+import org.col.api.vocab.Gazetteer;
+import org.col.api.vocab.Issue;
+import org.col.api.vocab.Language;
+import org.col.api.vocab.TaxonomicStatus;
 import org.gbif.nameparser.api.Rank;
 import org.junit.After;
 import org.junit.Before;
@@ -38,23 +46,29 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.NotFoundException;
 import org.neo4j.graphdb.Transaction;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  *
  */
 public class NormalizerACEFIT {
-  
+
   private NeoDb store;
   private NormalizerConfig cfg;
   private Path acef;
 
   /**
-   * Normalizes a ACEF folder from the test resources and checks its printed txt tree against the expected tree
+   * Normalizes a ACEF folder from the test resources and checks its printed txt tree against the
+   * expected tree
+   * 
    * @param datasetKey
    */
   private void normalize(int datasetKey) throws Exception {
-    URL acefUrl = getClass().getResource("/acef/"+datasetKey);
+    URL acefUrl = getClass().getResource("/acef/" + datasetKey);
     normalize(Paths.get(acefUrl.toURI()));
   }
 
@@ -73,7 +87,7 @@ public class NormalizerACEFIT {
       d.setDataFormat(DataFormat.ACEF);
       store.put(d);
 
-      Normalizer norm = new Normalizer(store, acef, new CslParserMock(), NameIndexFactory.passThru());
+      Normalizer norm = new Normalizer(store, acef, NameIndexFactory.passThru());
       norm.call();
 
       // reopen
@@ -115,7 +129,7 @@ public class NormalizerACEFIT {
     if (nodes.isEmpty()) {
       throw new NotFoundException();
     }
-    if (nodes.size()>1) {
+    if (nodes.size() > 1) {
       throw new NotUniqueRuntimeException("scientificName", name);
     }
     return store.get(nodes.get(0));
@@ -124,7 +138,7 @@ public class NormalizerACEFIT {
   NeoTaxon accepted(Node syn) {
     List<RankedName> accepted = store.accepted(syn);
     if (accepted.size() != 1) {
-      throw new IllegalStateException("Synonym has "+accepted.size()+" accepted taxa");
+      throw new IllegalStateException("Synonym has " + accepted.size() + " accepted taxa");
     }
     return store.get(accepted.get(0).node);
   }
@@ -132,7 +146,8 @@ public class NormalizerACEFIT {
   private boolean hasIssues(VerbatimEntity ent, Issue... issues) {
     IssueContainer ic = store.getVerbatim(ent.getVerbatimKey());
     for (Issue is : issues) {
-      if (!ic.hasIssue(is)) return false;
+      if (!ic.hasIssue(is))
+        return false;
     }
     return true;
   }
@@ -156,7 +171,6 @@ public class NormalizerACEFIT {
       assertEquals(0, t.bibliography.size());
       // missing accepted
       assertEquals(0, store.accepted(t.node).size());
-
 
       t = byID("s6");
       assertTrue(t.isSynonym());
@@ -199,12 +213,13 @@ public class NormalizerACEFIT {
       assertEquals(3, t.vernacularNames.size());
       Set<String> names = Sets.newHashSet("Ramkurthi", "Ram Kurthi", "отчество");
       for (VernacularName v : t.vernacularNames) {
-        assertEquals(v.getName().startsWith("R") ? Language.HINDI : Language.RUSSIAN, v.getLanguage());
+        assertEquals(v.getName().startsWith("R") ? Language.HINDI : Language.RUSSIAN,
+            v.getLanguage());
         assertTrue(names.remove(v.getName()));
       }
 
       // denormed family
-      t = byName("Fabaceae",null);
+      t = byName("Fabaceae", null);
       assertEquals("Fabaceae", t.name.getScientificName());
       assertEquals("Fabaceae", t.name.canonicalNameComplete());
       assertNull(t.name.authorshipComplete());
@@ -254,8 +269,8 @@ public class NormalizerACEFIT {
           assertFalse(hasIssues(s, Issue.DERIVED_TAXONOMIC_STATUS));
         } else {
           counter++;
-          //assertEquals(TaxonomicStatus.MISAPPLIED, s.synonym.getStatus());
-          //assertTrue(hasIssues(s, Issue.DERIVED_TAXONOMIC_STATUS));
+          // assertEquals(TaxonomicStatus.MISAPPLIED, s.synonym.getStatus());
+          // assertTrue(hasIssues(s, Issue.DERIVED_TAXONOMIC_STATUS));
         }
       }
       assertTrue(nonMisappliedIds.isEmpty());
@@ -281,8 +296,7 @@ public class NormalizerACEFIT {
   }
 
   /**
-   * ICTV GSD with "parsed" virus names
-   * https://github.com/Sp2000/colplus-backend/issues/65
+   * ICTV GSD with "parsed" virus names https://github.com/Sp2000/colplus-backend/issues/65
    */
   @Test
   public void acef14virus() throws Exception {
@@ -310,7 +324,8 @@ public class NormalizerACEFIT {
   @Test
   @Ignore("external dependency")
   public void testGsdGithub() throws Exception {
-    normalize(URI.create("https://raw.githubusercontent.com/Sp2000/colplus-repo/master/ACEF/assembly/15.tar.gz"));
+    normalize(URI.create(
+        "https://raw.githubusercontent.com/Sp2000/colplus-repo/master/ACEF/assembly/15.tar.gz"));
     writeToFile();
   }
 
@@ -321,13 +336,13 @@ public class NormalizerACEFIT {
     Writer writer = new FileWriter(f);
     PrinterUtils.printTree(store.getNeo(), writer, GraphFormat.TEXT);
     writer.close();
-    System.out.println("Wrote graph to "+f.getAbsolutePath());
+    System.out.println("Wrote graph to " + f.getAbsolutePath());
 
     f = new File("graphs/tree-acef.dot");
     writer = new FileWriter(f);
     PrinterUtils.printTree(store.getNeo(), writer, GraphFormat.DOT);
     writer.close();
-    System.out.println("Wrote graph to "+f.getAbsolutePath());
+    System.out.println("Wrote graph to " + f.getAbsolutePath());
   }
 
 }

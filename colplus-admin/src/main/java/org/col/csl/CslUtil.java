@@ -11,6 +11,7 @@ import de.undercouch.citeproc.output.Bibliography;
 import org.col.api.model.CslData;
 import org.col.api.model.Reference;
 
+@Deprecated // for now
 public class CslUtil {
   private final static ReferenceProvider provider = new ReferenceProvider();
   private final static CSL csl;
@@ -51,7 +52,7 @@ public class CslUtil {
 
     @Override
     public String[] getIds() {
-      return new String[]{ID};
+      return new String[] {ID};
     }
   }
 
@@ -60,7 +61,8 @@ public class CslUtil {
   }
 
   public static synchronized String buildCitation(CslData data) {
-    if (data == null) return null;
+    if (data == null)
+      return null;
 
     Timer.Context ctx = null;
     if (timer != null) {

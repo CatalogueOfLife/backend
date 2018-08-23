@@ -1,10 +1,18 @@
 package org.col.admin.importer;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.InputStream;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -28,7 +36,6 @@ import org.col.admin.matching.NameIndexFactory;
 import org.col.api.model.Dataset;
 import org.col.api.model.Name;
 import org.col.api.vocab.DataFormat;
-import org.col.csl.CslParserMock;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -37,14 +44,16 @@ import org.junit.runners.Parameterized;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.fail;
 
 /**
- * Tests to normalize various dwc archives
- * and compare the results from the resulting neo store with an expected text tree representation stored as files.
+ * Tests to normalize various dwc archives and compare the results from the resulting neo store with
+ * an expected text tree representation stored as files.
  *
- * This exactly compares the parent_of and synonym_of relations, implicitly created names/taxa
- * and verifies that basionym relations are existing, but does not very the actual basionym itself
+ * This exactly compares the parent_of and synonym_of relations, implicitly created names/taxa and
+ * verifies that basionym relations are existing, but does not very the actual basionym itself
  * (which is checked in a manual test in NormalizerIT instead)
  */
 @RunWith(Parameterized.class)
@@ -56,8 +65,8 @@ public class NormalizerTreeIT {
   private NormalizerConfig cfg;
   private Path source;
 
-  //TODO: these tests need to be checked - they do seem to create real wrong outcomes !!!
-  Set<Integer> ignoreAcef= Sets.newHashSet(3);
+  // TODO: these tests need to be checked - they do seem to create real wrong outcomes !!!
+  Set<Integer> ignoreAcef = Sets.newHashSet(3);
   Set<Integer> ignoreDwca = Sets.newHashSet(21);
 
   @Parameterized.Parameters
@@ -65,15 +74,13 @@ public class NormalizerTreeIT {
     IntStream acefIds = IntStream.rangeClosed(0, MAX_ACEF_ID);
     IntStream dwcaIds = IntStream.rangeClosed(0, MAX_DWCA_ID);
 
-    //acefIds = IntStream.empty();
-    //acefIds = IntStream.of(6,7);
-    //dwcaIds = IntStream.empty();
-    //dwcaIds = IntStream.of(31);
+    // acefIds = IntStream.empty();
+    // acefIds = IntStream.of(6,7);
+    // dwcaIds = IntStream.empty();
+    // dwcaIds = IntStream.of(31);
 
-    return Stream.concat(
-        acefIds.mapToObj(i -> new Object[]{DataFormat.ACEF, i}),
-        dwcaIds.mapToObj(i -> new Object[]{DataFormat.DWCA, i})
-    ).collect(Collectors.toList());
+    return Stream.concat(acefIds.mapToObj(i -> new Object[] {DataFormat.ACEF, i}),
+        dwcaIds.mapToObj(i -> new Object[] {DataFormat.DWCA, i})).collect(Collectors.toList());
   }
 
   private static AtomicInteger keyGen = new AtomicInteger(1);
@@ -107,23 +114,24 @@ public class NormalizerTreeIT {
   }
 
   /**
-   * Normalizes a dwca from the dwca test resources and checks its printed txt tree against the expected tree
+   * Normalizes a dwca from the dwca test resources and checks its printed txt tree against the
+   * expected tree
    */
   @Test
   public void testTree() throws Exception {
     final int datasetKey = keyGen.incrementAndGet();
 
-    if (   format == DataFormat.ACEF && ignoreAcef.contains(sourceKey)
+    if (format == DataFormat.ACEF && ignoreAcef.contains(sourceKey)
         || format == DataFormat.DWCA && ignoreDwca.contains(sourceKey)) {
-      System.out.println("IGNORE "+format+" NORMALIZER TEST FOR SOURCE "+sourceKey);
+      System.out.println("IGNORE " + format + " NORMALIZER TEST FOR SOURCE " + sourceKey);
       return;
     }
 
     try {
-      final String resourceDir = "/"+format.name().toLowerCase()+"/"+sourceKey;
+      final String resourceDir = "/" + format.name().toLowerCase() + "/" + sourceKey;
       URL dwcaUrl = getClass().getResource(resourceDir);
       source = Paths.get(dwcaUrl.toURI());
-      System.out.println("TEST " + format+" " + sourceKey);
+      System.out.println("TEST " + format + " " + sourceKey);
 
       store = NeoDbFactory.create(datasetKey, cfg);
       Dataset d = new Dataset();
@@ -131,13 +139,13 @@ public class NormalizerTreeIT {
       d.setDataFormat(format);
       store.put(d);
 
-      Normalizer norm = new Normalizer(store, source, new CslParserMock(), NameIndexFactory.passThru());
+      Normalizer norm = new Normalizer(store, source, NameIndexFactory.passThru());
       norm.call();
       // reopen the neo db
       store = NeoDbFactory.open(datasetKey, cfg);
-      //debug();
+      // debug();
 
-      try(Transaction tx = store.getNeo().beginTx()) {
+      try (Transaction tx = store.getNeo().beginTx()) {
         NeoTaxon t26 = store.getByID("26");
         for (Node n : store.byScientificName(Labels.ALL, "Discomitochondria")) {
           NeoTaxon t = store.get(n);
@@ -146,7 +154,7 @@ public class NormalizerTreeIT {
 
       }
       // assert tree
-      InputStream tree = getClass().getResourceAsStream(resourceDir+"/expected.tree");
+      InputStream tree = getClass().getResourceAsStream(resourceDir + "/expected.tree");
       String expected = IOUtils.toString(tree, Charsets.UTF_8).trim();
 
       Writer writer = new StringWriter();
@@ -167,7 +175,8 @@ public class NormalizerTreeIT {
       }
       Collections.sort(names);
       String namesStr = Joiner.on('\n').join(names);
-      InputStream namesFile = getClass().getResourceAsStream(resourceDir+"/expected-barenames.txt");
+      InputStream namesFile =
+          getClass().getResourceAsStream(resourceDir + "/expected-barenames.txt");
       if (namesFile != null) {
         expected = IOUtils.toString(namesFile, Charsets.UTF_8).trim();
         assertEquals(expected, namesStr);
@@ -183,12 +192,12 @@ public class NormalizerTreeIT {
 
   void debug() throws Exception {
     // dump graph as DOT file for debugging
-    File dotFile = new File("graphs/tree-"+format+sourceKey+".dot");
+    File dotFile = new File("graphs/tree-" + format + sourceKey + ".dot");
     Files.createParentDirs(dotFile);
     Writer writer = new FileWriter(dotFile);
     PrinterUtils.printTree(store.getNeo(), writer, GraphFormat.DOT);
     writer.close();
-    System.out.println("Wrote graph to "+dotFile.getAbsolutePath());
+    System.out.println("Wrote graph to " + dotFile.getAbsolutePath());
   }
 
 }

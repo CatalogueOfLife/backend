@@ -1,6 +1,5 @@
 package org.col.admin;
 
-import com.google.common.base.Strings;
 import io.dropwizard.client.DropwizardApacheConnector;
 import io.dropwizard.client.HttpClientBuilder;
 import io.dropwizard.client.JerseyClientBuilder;
@@ -20,16 +19,9 @@ import org.col.admin.matching.NameIndex;
 import org.col.admin.matching.NameIndexFactory;
 import org.col.admin.resources.ImporterResource;
 import org.col.admin.resources.MatchingResource;
-import org.col.admin.resources.ParserResource;
-import org.col.api.model.CslData;
 import org.col.api.vocab.ColTerm;
 import org.col.api.vocab.Datasets;
-import org.col.csl.AnystyleHealthCheck;
-import org.col.csl.AnystyleParserWrapper;
-import org.col.csl.CslParserMock;
-import org.col.csl.CslUtil;
 import org.col.dw.PgApp;
-import org.col.parser.Parser;
 import org.gbif.dwc.terms.TermFactory;
 import org.glassfish.jersey.client.rx.RxClient;
 import org.glassfish.jersey.client.rx.java8.RxCompletionStageInvoker;
@@ -77,24 +69,11 @@ public class AdminServer extends PgApp<AdminServerConfig> {
     final CloseableHttpClient hc = new HttpClientBuilder(env).using(cfg.client).build(getName());
 
     // reuse the same http client pool also for jersey clients!
-    final RxClient<RxCompletionStageInvoker> client = new JerseyClientBuilder(env)
-        .using(cfg.client)
-        .using((ConnectorProvider) (cl, runtimeConfig) ->
-            new DropwizardApacheConnector(hc, requestConfig(cfg.client), cfg.client.isChunkedEncodingEnabled()))
+    final RxClient<RxCompletionStageInvoker> client = new JerseyClientBuilder(env).using(cfg.client)
+        .using((ConnectorProvider) (cl, runtimeConfig) -> new DropwizardApacheConnector(hc,
+            requestConfig(cfg.client), cfg.client.isChunkedEncodingEnabled()))
         .buildRx(getName(), RxCompletionStageInvoker.class);
 
-    // cslParser
-    Parser<CslData> cslParser;
-    if (Strings.isNullOrEmpty(cfg.anystyle.baseUrl)) {
-      cslParser = new CslParserMock();
-      LOG.error("Anystyle not configured, using mock CSL parser instead");
-    } else {
-      cslParser = new AnystyleParserWrapper(hc, cfg.anystyle, env.metrics());
-      LOG.info("Using anystyle service at {}", cfg.anystyle.baseUrl);
-    }
-    env.jersey().register(new ParserResource(cslParser));
-    env.healthChecks().register("anystyle", new AnystyleHealthCheck(cslParser));
-    CslUtil.register(env.metrics());
 
     // name index
     NameIndex ni;
@@ -103,18 +82,21 @@ public class AdminServer extends PgApp<AdminServerConfig> {
       ni = NameIndexFactory.memory(Datasets.PROV_CAT, getSqlSessionFactory());
     } else {
       LOG.info("Using names index at {}", cfg.namesIndexFile.getAbsolutePath());
-      ni = NameIndexFactory.persistent(Datasets.PROV_CAT, cfg.namesIndexFile, getSqlSessionFactory());
+      ni = NameIndexFactory.persistent(Datasets.PROV_CAT, cfg.namesIndexFile,
+          getSqlSessionFactory());
     }
     env.jersey().register(new MatchingResource(ni));
 
     // setup async importer
-    final ImportManager importManager = new ImportManager(cfg, env.metrics(), hc, getSqlSessionFactory(), cslParser, ni);
+    final ImportManager importManager =
+        new ImportManager(cfg, env.metrics(), hc, getSqlSessionFactory(), ni);
     env.lifecycle().manage(importManager);
     env.jersey().register(new ImporterResource(importManager, getSqlSessionFactory()));
 
     if (cfg.importer.continousImportPolling > 0) {
       LOG.info("Enable continuous importing");
-      env.lifecycle().manage(new ContinousImporter(cfg.importer, importManager, getSqlSessionFactory()));
+      env.lifecycle()
+          .manage(new ContinousImporter(cfg.importer, importManager, getSqlSessionFactory()));
     }
 
     // activate gbif sync?
@@ -122,7 +104,8 @@ public class AdminServer extends PgApp<AdminServerConfig> {
       LOG.info("Enable GBIF dataset sync");
       env.lifecycle().manage(new GbifSync(cfg.gbif, getSqlSessionFactory(), client));
     } else {
-      LOG.warn("GBIF registry sync is deactivated. Please configure server with a positive gbif.syncFrequency");
+      LOG.warn(
+          "GBIF registry sync is deactivated. Please configure server with a positive gbif.syncFrequency");
     }
   }
 

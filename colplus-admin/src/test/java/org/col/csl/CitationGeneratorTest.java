@@ -7,11 +7,13 @@ import org.col.api.model.CslDate;
 import org.col.api.model.CslName;
 import org.col.api.model.Reference;
 import org.col.api.vocab.CSLRefType;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
 @SuppressWarnings("static-method")
+@Ignore
 public class CitationGeneratorTest {
 
   @Test

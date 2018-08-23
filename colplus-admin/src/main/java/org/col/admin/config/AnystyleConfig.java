@@ -1,5 +1,6 @@
 package org.col.admin.config;
 
+@Deprecated
 public class AnystyleConfig {
 
   /*

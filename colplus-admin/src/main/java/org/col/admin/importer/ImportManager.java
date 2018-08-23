@@ -46,17 +46,16 @@ public class ImportManager implements Managed {
   private final AdminServerConfig cfg;
   private final DownloadUtil downloader;
   private final SqlSessionFactory factory;
-  private final Parser<CslData> cslParser;
+  //private final Parser<CslData> cslParser;
   private final NameIndex index;
   private final Timer importTimer;
   private final Counter failed;
 
   public ImportManager(AdminServerConfig cfg, MetricRegistry registry, CloseableHttpClient client,
-                       SqlSessionFactory factory, Parser<CslData> cslParser, NameIndex index) {
+                       SqlSessionFactory factory,  NameIndex index) {
     this.cfg = cfg;
     this.factory = factory;
     this.downloader = new DownloadUtil(client);
-    this.cslParser = cslParser;
     this.index = index;
     importTimer = registry.timer("org.col.import.timer");
     failed = registry.counter("org.col.import.failures");
@@ -136,7 +135,7 @@ public class ImportManager implements Managed {
       } else if (d.hasDeletedDate()) {
         throw new IllegalArgumentException("Dataset " + req.datasetKey + " is deleted");
       }
-      ImportJob job = new ImportJob(d, req.force, cfg, downloader, factory, cslParser, index, new StartNotifier() {
+      ImportJob job = new ImportJob(d, req.force, cfg, downloader, factory, index, new StartNotifier() {
         @Override
         public void started() {
           req.start();
