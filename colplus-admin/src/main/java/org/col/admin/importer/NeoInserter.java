@@ -9,6 +9,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 import org.col.admin.importer.neo.NeoDb;
+import org.col.admin.importer.neo.NodeBatchProcessor;
 import org.col.admin.importer.neo.model.Labels;
 import org.col.admin.importer.neo.model.NeoNameRel;
 import org.col.admin.importer.neo.model.NeoTaxon;
@@ -147,7 +148,7 @@ public abstract class NeoInserter {
 
   public abstract void postBatchInsert() throws NormalizationFailedException;
 
-  protected abstract NeoDb.NodeBatchProcessor relationProcessor();
+  protected abstract NodeBatchProcessor relationProcessor();
 
   protected abstract Optional<Dataset> readMetadata();
 

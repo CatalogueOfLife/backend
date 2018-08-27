@@ -8,6 +8,7 @@ import java.util.Optional;
 import org.col.admin.importer.NeoInserter;
 import org.col.admin.importer.NormalizationFailedException;
 import org.col.admin.importer.neo.NeoDb;
+import org.col.admin.importer.neo.NodeBatchProcessor;
 import org.col.admin.importer.reference.ReferenceFactory;
 import org.col.api.model.Dataset;
 import org.col.api.vocab.ColTerm;
@@ -98,7 +99,7 @@ public class DwcaInserter extends NeoInserter {
   }
 
   @Override
-  protected NeoDb.NodeBatchProcessor relationProcessor() {
+  protected NodeBatchProcessor relationProcessor() {
     return new DwcaRelationInserter(store, meta);
   }
 

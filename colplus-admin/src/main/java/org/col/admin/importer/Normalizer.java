@@ -16,6 +16,7 @@ import com.google.common.collect.Maps;
 import org.col.admin.importer.acef.AcefInserter;
 import org.col.admin.importer.dwca.DwcaInserter;
 import org.col.admin.importer.neo.NeoDb;
+import org.col.admin.importer.neo.NodeBatchProcessor;
 import org.col.admin.importer.neo.NotUniqueRuntimeException;
 import org.col.admin.importer.neo.model.Labels;
 import org.col.admin.importer.neo.model.NeoProperties;
@@ -176,7 +177,7 @@ public class Normalizer implements Callable<Boolean> {
     });
 
     // flag PARENT_NAME_MISMATCH & PUBLISHED_BEFORE_GENUS for accepted names
-    store.process(Labels.TAXON, store.batchSize, new NeoDb.NodeBatchProcessor() {
+    store.process(Labels.TAXON, store.batchSize, new NodeBatchProcessor() {
       @Override
       public void process(Node n) {
         RankedName rn = NeoProperties.getRankedName(n);
@@ -448,7 +449,7 @@ public class Normalizer implements Callable<Boolean> {
       return;
     }
 
-    store.process(Labels.TAXON, store.batchSize, new NeoDb.NodeBatchProcessor() {
+    store.process(Labels.TAXON, store.batchSize, new NodeBatchProcessor() {
       @Override
       public void process(Node n) {
         // the highest current parent of n

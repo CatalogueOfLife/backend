@@ -145,7 +145,13 @@ public class NeoDbTest {
     }
   }
 
-  @Test
+  static class BatchProcException extends RuntimeException {
+    public BatchProcException(String message) {
+      super(message);
+    }
+  }
+
+  @Test(expected = BatchProcException.class)
   public void batchProcessing() throws Exception {
     try (Transaction tx = db.getNeo().beginTx()) {
       NeoTaxon p = null;
@@ -165,10 +171,27 @@ public class NeoDbTest {
       tx.success();
     }
     db.sync();
-    db.process(Labels.ALL, 5, new NeoDb.NodeBatchProcessor() {
+
+    db.process(Labels.ALL, 10, new NodeBatchProcessor() {
       @Override
       public void process(Node n) {
         System.out.println("process " + n);
+      }
+
+      @Override
+      public void commitBatch(int counter) {
+        System.out.println("commitBatch "+counter);
+      }
+    });
+
+    // now try with error throwing processor
+    db.process(Labels.ALL, 10, new NodeBatchProcessor() {
+      @Override
+      public void process(Node n) {
+        System.out.println("process " + n);
+        if (n.getId() > 10) {
+          throw new BatchProcException("I cannot count over ten!");
+        }
       }
 
       @Override

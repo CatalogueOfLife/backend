@@ -3,7 +3,9 @@ package org.col.admin.importer.neo;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -14,8 +16,8 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.UnmodifiableIterator;
 import org.apache.commons.io.FileUtils;
-import org.col.admin.importer.ImportJob;
 import org.col.admin.importer.NormalizationFailedException;
+import org.col.admin.importer.neo.NodeBatchProcessor.BatchConsumer;
 import org.col.admin.importer.neo.model.*;
 import org.col.admin.importer.neo.traverse.StartEndHandler;
 import org.col.admin.importer.neo.traverse.Traversals;
@@ -25,7 +27,6 @@ import org.col.api.model.*;
 import org.col.api.vocab.Issue;
 import org.col.api.vocab.Origin;
 import org.col.api.vocab.TaxonomicStatus;
-import org.col.common.concurrent.NamedThreadFactory;
 import org.col.common.mapdb.MapDbObjectSerializer;
 import org.col.common.text.StringUtils;
 import org.gbif.dwc.terms.DwcTerm;
@@ -62,7 +63,6 @@ public class NeoDb implements ReferenceStore {
   private static final Logger LOG = LoggerFactory.getLogger(NeoDb.class);
   private static final Labels[] TAX_LABELS = new Labels[]{Labels.ALL, Labels.TAXON};
   private static final Labels[] SYN_LABELS = new Labels[]{Labels.ALL, Labels.SYNONYM};
-  private static final ThreadFactory NAMED_THREAD_FACTORY = new NamedThreadFactory("neodb-processor");
 
   private final int datasetKey;
   private final GraphDatabaseBuilder neoFactory;
@@ -278,38 +278,41 @@ public class NeoDb implements ReferenceStore {
    * @return total number of processed nodes.
    */
   public int process(Labels label, final int batchSize, NodeBatchProcessor callback) {
-    BatchConsumer consumer = new BatchConsumer(datasetKey, neo, callback);
-    BlockingQueue<List<Node>> queue = consumer.queue;
+    final BlockingQueue<List<Node>> queue = new LinkedBlockingQueue<>(3);
+    BatchConsumer consumer = new BatchConsumer(datasetKey, neo, callback, queue, Thread.currentThread());
     Thread consThread = new Thread(consumer, "neodb-processor-"+datasetKey);
     consThread.start();
 
     try (Transaction tx = neo.beginTx()){
       UnmodifiableIterator<List<Node>> batchIter = com.google.common.collect.Iterators.partition(neo.findNodes(label), batchSize);
 
-      while (batchIter.hasNext()) {
+      while (batchIter.hasNext() && consThread.isAlive()) {
         checkIfInterrupted();
-        queue.put(batchIter.next());
+        queue.offer(batchIter.next(), 10, TimeUnit.MINUTES);
       }
-      // this blocks until all batches are processed
-      consumer.shutdown();
-
-      if (consumer.hasError()) {
-        throw consumer.error;
+      if (consThread.isAlive()) {
+        queue.put(BatchConsumer.POISON_PILL);
       }
+      consThread.join();
 
       // mark good for commit
       tx.success();
-      LOG.info("Neo processing of {} finished in {} batches with {} records", label, consumer.batchCounter, consumer.recordCounter);
-
+      LOG.info("Neo processing of {} finished in {} batches with {} records", label, consumer.getBatchCounter(), consumer.getRecordCounter());
 
     } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();  // set interrupt flag back
       LOG.error("Neo processing interrupted", e);
-      consumer.shutdownNow();
 
-    } finally {
-      consThread.interrupt();
+      if (consThread.isAlive()) {
+        consThread.interrupt();
+      }
     }
-    return consumer.recordCounter;
+
+    if (consumer.hasError()) {
+      throw consumer.getError();
+    }
+
+    return consumer.getRecordCounter();
   }
 
   private void checkIfInterrupted() throws InterruptedException {
@@ -332,99 +335,6 @@ public class NeoDb implements ReferenceStore {
     LOG.debug("Deleted {} from store with {} relations", n, counter);
   }
 
-  private static class BatchConsumer implements Runnable {
-    private final int datasetKey;
-    private final GraphDatabaseService neo;
-    private final NodeBatchProcessor callback;
-    private final BlockingQueue<List<Node>> queue = new ArrayBlockingQueue<List<Node>>(1, true);
-    private boolean running;
-    private volatile int batchCounter = 0;
-    private volatile int recordCounter = 0;
-    private volatile RuntimeException error = null;
-
-    BatchConsumer(int datasetKey, GraphDatabaseService neo, NodeBatchProcessor callback) {
-      this.datasetKey = datasetKey;
-      this.neo = neo;
-      this.callback = callback;
-    }
-
-    @Override
-    public void run() {
-      running = true;
-      while(running || !queue.isEmpty()){
-        try {
-          final List<Node> batch = queue.take();
-          if (batch.isEmpty()) {
-            continue;
-          }
-          batchCounter++;
-          ImportJob.setMDC(datasetKey);
-          try (Transaction tx = neo.beginTx()) {
-            LOG.debug("Start new neo processing batch {} with {} nodes, first={}", batchCounter, batch.size(), batch.get(0));
-            for (Node n : batch) {
-              callback.process(n);
-              recordCounter++;
-            }
-            tx.success();
-            callback.commitBatch(recordCounter);
-
-          } catch (Throwable e) {
-            LOG.error("Failed to process batch {} with {} nodes, first={}", batchCounter, batch.size(), batch.get(0), e);
-            throw e;
-
-          } finally {
-            ImportJob.removeMDC();
-          }
-
-        } catch (InterruptedException ex) {
-          LOG.error("Interrupted batch consumer for {}, clearing {} remaining batches", callback, queue.size(), ex);
-          shutdownNow();
-
-        } catch (RuntimeException e) {
-          error = e;
-          LOG.error("Error processing batch {} for {}, clearing {} remaining batches", batchCounter, callback, queue.size(), e);
-          shutdownNow();
-        }
-      }
-      LOG.debug("Batch processor stopped for {}", callback);
-    }
-
-    /**
-     * Shuts down consumer thread and waits until the queue is empty and processed.
-     * If the queue is still growing this might never finish, so make sure the queue does not get enlarged
-     */
-    void shutdown() {
-      running = false;
-      try {
-        // block until all queue batches are processed
-        queue.put(Collections.EMPTY_LIST);
-        queue.put(Collections.EMPTY_LIST);
-      } catch (InterruptedException e) {
-        queue.clear();
-        queue.add(Collections.EMPTY_LIST);
-      }
-    }
-
-    void shutdownNow() {
-      queue.clear();
-      shutdown();
-    }
-
-    boolean hasError() {
-      return error != null;
-    }
-  }
-
-  public interface NodeBatchProcessor {
-    void process(Node n);
-
-    /**
-     * Indicates whether the batch should be committed or not
-     * @param counter the total record counter of processed records at this point
-     * @return true if the batch should be committed.
-     */
-    void commitBatch(int counter) throws InterruptedException;
-  }
 
   /**
    * Shuts down the regular neo4j db and opens up neo4j in batch mode.

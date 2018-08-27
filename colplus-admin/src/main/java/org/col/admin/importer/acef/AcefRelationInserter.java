@@ -4,6 +4,7 @@ import java.util.Optional;
 
 import org.col.admin.importer.NormalizationFailedException;
 import org.col.admin.importer.neo.NeoDb;
+import org.col.admin.importer.neo.NodeBatchProcessor;
 import org.col.admin.importer.neo.model.NeoProperties;
 import org.col.admin.importer.neo.model.NeoTaxon;
 import org.col.api.model.NameAccordingTo;
@@ -18,7 +19,7 @@ import org.slf4j.LoggerFactory;
 /**
  *
  */
-public class AcefRelationInserter implements NeoDb.NodeBatchProcessor {
+public class AcefRelationInserter implements NodeBatchProcessor {
   private static final Logger LOG = LoggerFactory.getLogger(AcefRelationInserter.class);
 
   private final NeoDb store;

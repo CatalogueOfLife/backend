@@ -88,15 +88,15 @@ public class AdminServer extends PgApp<AdminServerConfig> {
     env.jersey().register(new MatchingResource(ni));
 
     // setup async importer
-    final ImportManager importManager =
-        new ImportManager(cfg, env.metrics(), hc, getSqlSessionFactory(), ni);
+    final ImportManager importManager = new ImportManager(cfg, env.metrics(), hc, getSqlSessionFactory(), ni);
     env.lifecycle().manage(importManager);
     env.jersey().register(new ImporterResource(importManager, getSqlSessionFactory()));
 
     if (cfg.importer.continousImportPolling > 0) {
       LOG.info("Enable continuous importing");
-      env.lifecycle()
-          .manage(new ContinousImporter(cfg.importer, importManager, getSqlSessionFactory()));
+      env.lifecycle().manage(new ContinousImporter(cfg.importer, importManager, getSqlSessionFactory()));
+    } else {
+      LOG.warn("Disable continuous importing");
     }
 
     // activate gbif sync?
@@ -104,8 +104,7 @@ public class AdminServer extends PgApp<AdminServerConfig> {
       LOG.info("Enable GBIF dataset sync");
       env.lifecycle().manage(new GbifSync(cfg.gbif, getSqlSessionFactory(), client));
     } else {
-      LOG.warn(
-          "GBIF registry sync is deactivated. Please configure server with a positive gbif.syncFrequency");
+      LOG.warn("Disable GBIF dataset sync");
     }
   }
 

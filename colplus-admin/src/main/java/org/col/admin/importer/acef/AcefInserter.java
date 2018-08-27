@@ -8,6 +8,7 @@ import com.google.common.base.Splitter;
 import org.col.admin.importer.NeoInserter;
 import org.col.admin.importer.NormalizationFailedException;
 import org.col.admin.importer.neo.NeoDb;
+import org.col.admin.importer.neo.NodeBatchProcessor;
 import org.col.admin.importer.neo.model.NeoTaxon;
 import org.col.admin.importer.reference.ReferenceFactory;
 import org.col.api.model.Dataset;
@@ -113,7 +114,7 @@ public class AcefInserter extends NeoInserter {
   }
 
   @Override
-  protected NeoDb.NodeBatchProcessor relationProcessor() {
+  protected NodeBatchProcessor relationProcessor() {
     return new AcefRelationInserter(store, inter);
   }
 

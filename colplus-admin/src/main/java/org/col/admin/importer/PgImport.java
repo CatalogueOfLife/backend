@@ -15,6 +15,7 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.admin.config.ImporterConfig;
 import org.col.admin.importer.neo.NeoDb;
+import org.col.admin.importer.neo.NodeBatchProcessor;
 import org.col.admin.importer.neo.model.Labels;
 import org.col.admin.importer.neo.model.NeoProperties;
 import org.col.admin.importer.neo.model.NeoTaxon;
@@ -183,7 +184,7 @@ public class PgImport implements Callable<Boolean> {
     try (final SqlSession session = sessionFactory.openSession(false)) {
       final NameMapper nameMapper = session.getMapper(NameMapper.class);
       LOG.debug("Inserting all names");
-      store.process(Labels.ALL, batchSize, new NeoDb.NodeBatchProcessor() {
+      store.process(Labels.ALL, batchSize, new NodeBatchProcessor() {
         @Override
         public void process(Node n) {
           // we read all names as we also deal with acts for basionyms here

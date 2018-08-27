@@ -114,6 +114,9 @@ public class ContinousImporter implements Managed {
   @Override
   public void start() throws Exception {
     thread = new Thread(job, THREAD_NAME);
+    LOG.info("Start continuous importing in batches of {}, polling every {} minutes",
+        job.cfg.batchSize, job.cfg.continousImportPolling
+    );
     thread.start();
   }
 

@@ -12,6 +12,7 @@ import org.col.parser.Parser;
  * Any non-exceptional and non-empty response, in any amount of time, is treated as a healthy response.
  * Any exceptional or empty response is treated as an unhealthy response.
  */
+@Deprecated
 public class AnystyleHealthCheck extends HealthCheck {
   private final Parser<CslData> anystyle;
 

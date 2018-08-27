@@ -9,6 +9,7 @@ import com.google.common.collect.Lists;
 import org.col.admin.importer.InsertMetadata;
 import org.col.admin.importer.NormalizationFailedException;
 import org.col.admin.importer.neo.NeoDb;
+import org.col.admin.importer.neo.NodeBatchProcessor;
 import org.col.admin.importer.neo.model.*;
 import org.col.api.model.Name;
 import org.col.api.model.TermRecord;
@@ -24,7 +25,7 @@ import org.slf4j.LoggerFactory;
 /**
  *
  */
-public class DwcaRelationInserter implements NeoDb.NodeBatchProcessor {
+public class DwcaRelationInserter implements NodeBatchProcessor {
   private static final Logger LOG = LoggerFactory.getLogger(DwcaRelationInserter.class);
 
   private static final List<Splitter> COMMON_SPLITTER = Lists.newArrayList();
