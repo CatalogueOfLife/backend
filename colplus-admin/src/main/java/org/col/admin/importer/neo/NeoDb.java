@@ -288,7 +288,10 @@ public class NeoDb implements ReferenceStore {
 
       while (batchIter.hasNext() && consThread.isAlive()) {
         checkIfInterrupted();
-        queue.offer(batchIter.next(), 10, TimeUnit.MINUTES);
+        if (!queue.offer(batchIter.next(), 15, TimeUnit.MINUTES)) {
+          LOG.error("Failed to offer new batch within 15 minutes for neodb processing via {}", callback);
+          throw new RuntimeException("Failed to offer new batch for neodb processing via " + callback.getClass().getSimpleName());
+        };
       }
       if (consThread.isAlive()) {
         queue.put(BatchConsumer.POISON_PILL);

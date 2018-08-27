@@ -15,7 +15,6 @@ import org.col.admin.config.AdminServerConfig;
 import org.col.admin.importer.neo.NeoDb;
 import org.col.admin.importer.neo.NeoDbFactory;
 import org.col.admin.matching.NameIndex;
-import org.col.api.model.CslData;
 import org.col.api.model.Dataset;
 import org.col.api.model.DatasetImport;
 import org.col.api.vocab.ImportState;
@@ -23,7 +22,6 @@ import org.col.common.concurrent.StartNotifier;
 import org.col.common.io.CompressionUtil;
 import org.col.common.io.DownloadUtil;
 import org.col.db.dao.DatasetImportDao;
-import org.col.parser.Parser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -192,5 +190,13 @@ public class ImportJob implements Runnable {
   @Override
   public int hashCode() {
     return Objects.hash(datasetKey);
+  }
+
+  @Override
+  public String toString() {
+    return "ImportJob{" +
+        "datasetKey=" + datasetKey +
+        ", force=" + force +
+        '}';
   }
 }

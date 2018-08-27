@@ -36,4 +36,12 @@ public class ImportRequest {
   public int hashCode() {
     return Objects.hash(datasetKey);
   }
+
+  @Override
+  public String toString() {
+    return "ImportRequest{" +
+        "datasetKey=" + datasetKey +
+        ", force=" + force +
+        '}';
+  }
 }

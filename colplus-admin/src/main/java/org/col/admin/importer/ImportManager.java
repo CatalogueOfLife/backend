@@ -16,7 +16,6 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.admin.config.AdminServerConfig;
 import org.col.admin.matching.NameIndex;
-import org.col.api.model.CslData;
 import org.col.api.model.Dataset;
 import org.col.api.model.DatasetImport;
 import org.col.api.util.PagingUtil;
@@ -26,7 +25,6 @@ import org.col.common.concurrent.StartNotifier;
 import org.col.common.io.DownloadUtil;
 import org.col.db.dao.DatasetImportDao;
 import org.col.db.mapper.DatasetMapper;
-import org.col.parser.Parser;
 import org.gbif.nameparser.utils.NamedThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,7 +38,7 @@ public class ImportManager implements Managed {
   private static final Logger LOG = LoggerFactory.getLogger(ImportManager.class);
   public static final String THREAD_NAME = "dataset-importer";
 
-  private ExecutorService exec;
+  private ThreadPoolExecutor exec;
   private final Queue<ImportRequest> queue = new ConcurrentLinkedQueue<ImportRequest>();
   private final Map<Integer, Future> futures = new ConcurrentHashMap<Integer, Future>();
   private final AdminServerConfig cfg;
@@ -97,8 +95,9 @@ public class ImportManager implements Managed {
       throw new IllegalArgumentException("Import queue full, skip dataset " + datasetKey);
     }
 
-    LOG.debug("Queue new import for dataset {}", datasetKey);
     final ImportRequest req = new ImportRequest(datasetKey, force);
+    LOG.debug("Queue new import for dataset {}", datasetKey);
+    queue.add(req);
     futures.put(datasetKey, CompletableFuture
         .runAsync(createImport(req), exec)
         .handle((di, err) -> {
@@ -118,7 +117,6 @@ public class ImportManager implements Managed {
           return err != null;
         })
     );
-    queue.add(req);
     LOG.info("Queued import for dataset {}", datasetKey);
     return req;
   }
@@ -153,18 +151,27 @@ public class ImportManager implements Managed {
     return queue.isEmpty();
   }
 
+  /**
+   * @return true if imports are running
+   */
+  public boolean hasRunning() {
+    return !futures.isEmpty();
+  }
+
   @Override
   public void start() throws Exception {
     LOG.info("Starting import manager with {} import threads and a queue of {} max.",
         cfg.importer.threads,
         cfg.importer.maxQueue
     );
-    exec = new ThreadPoolExecutor(0, cfg.importer.threads,
+    exec = new ThreadPoolExecutor(cfg.importer.threads, cfg.importer.threads,
         60L, TimeUnit.SECONDS,
         new LinkedBlockingQueue<>(cfg.importer.maxQueue),
         new NamedThreadFactory(THREAD_NAME, Thread.NORM_PRIORITY, true),
         new ThreadPoolExecutor.AbortPolicy()
     );
+    exec.allowCoreThreadTimeOut(true);
+
     // read hanging imports in db, truncate if half inserted and add as new requests to the queue
     cancelAndReschedule(ImportState.DOWNLOADING, false);
     cancelAndReschedule(ImportState.PROCESSING, false);

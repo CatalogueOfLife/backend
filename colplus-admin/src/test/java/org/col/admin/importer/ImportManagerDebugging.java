@@ -8,11 +8,7 @@ import org.col.admin.command.initdb.InitDbCmd;
 import org.col.admin.config.AdminServerConfig;
 import org.col.admin.matching.NameIndexFactory;
 import org.col.db.PgSetupRule;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.*;
 
 @Ignore("manual import debugging")
 public class ImportManagerDebugging {
@@ -27,7 +23,7 @@ public class ImportManagerDebugging {
     AdminServerConfig cfg = new AdminServerConfig();
     cfg.gbif.syncFrequency = 0;
     cfg.importer.continousImportPolling = 0;
-    cfg.importer.threads = 1;
+    cfg.importer.threads = 3;
     cfg.normalizer.archiveDir = Files.createTempDir();
     cfg.normalizer.scratchDir = Files.createTempDir();
     cfg.db.host = "localhost";
@@ -44,7 +40,7 @@ public class ImportManagerDebugging {
     final AdminServerConfig cfg = provideConfig();
     InitDbCmd.execute(cfg);
 
-    final CloseableHttpClient hc = new HttpClientBuilder(metrics).using(cfg.client).build("local");
+    hc = new HttpClientBuilder(metrics).using(cfg.client).build("local");
     importManager = new ImportManager(cfg, metrics, hc, PgSetupRule.getSqlSessionFactory(),
         NameIndexFactory.passThru());
     importManager.start();
@@ -56,11 +52,26 @@ public class ImportManagerDebugging {
     hc.close();
   }
 
+  /**
+   * Try with 3 small parallel datasets
+   */
+  @Test
+  public void debugParalle() throws Exception {
+    importManager.submit(1000, true);
+    importManager.submit(1006, true);
+    importManager.submit(1007, true);
+
+    Thread.sleep(1000);
+    while (importManager.hasRunning()) {
+      Thread.sleep(1000);
+    }
+  }
+
   @Test
   public void debugImport() throws Exception {
     importManager.submit(11, true);
     Thread.sleep(1000);
-    while (!importManager.hasEmptyQueue()) {
+    while (importManager.hasRunning()) {
       Thread.sleep(1000);
     }
   }
