@@ -455,6 +455,15 @@ public class NormalizerDwcaIT {
   }
 
   @Test
+  @Ignore("No testing yet")
+  public void testWormsParents() throws Exception {
+    normalize(32);
+
+    try (Transaction tx = store.getNeo().beginTx()) {
+    }
+  }
+
+  @Test
   @Ignore
   public void testExternal() throws Exception {
     normalize(Paths.get("/Users/markus/Desktop/worms"));
