@@ -12,6 +12,7 @@ import org.col.api.vocab.MatchType;
 import org.col.dw.DropwizardPgAppRule;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
+import org.glassfish.jersey.client.ClientProperties;
 import org.junit.ClassRule;
 import org.junit.Test;
 
@@ -26,10 +27,10 @@ public class MatchingResourceTest {
 
   @Test
   public void match() {
-    Client client = new JerseyClientBuilder(RULE.getEnvironment()).build("test client");
-
-    AdminServerConfig cfg = RULE.getConfiguration();
-    int port = RULE.getLocalPort();
+    Client client = new JerseyClientBuilder(RULE.getEnvironment())
+        .withProperty(ClientProperties.CONNECT_TIMEOUT, 5000)
+        .withProperty(ClientProperties.READ_TIMEOUT, 2000)
+        .build("test client");
 
     NameMatch match = client.target(
         String.format("http://localhost:%d/name/matching", RULE.getLocalPort()))
