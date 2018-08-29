@@ -68,7 +68,7 @@
     <select id="get" resultMap="verbatimResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
-        WHERE key = #{key}
+        WHERE dataset_key = #{datasetKey} AND key = #{key}
     </select>
 
     <insert id="create" parameterType="TermRecord"  useGeneratedKeys="true" keyProperty="key">

@@ -245,12 +245,12 @@ public class PgImportIT {
   }
 
   private void assertIssue(VerbatimEntity ent, Issue issue) {
-    TermRecord v = vMapper.get(ent.getVerbatimKey());
+    TermRecord v = vMapper.get(dataset.getKey(), ent.getVerbatimKey());
     assertTrue(v.hasIssue(issue));
   }
 
   private void assertNoIssue(VerbatimEntity ent, Issue issue) {
-    TermRecord v = vMapper.get(ent.getVerbatimKey());
+    TermRecord v = vMapper.get(dataset.getKey(), ent.getVerbatimKey());
     assertFalse(v.hasIssue(issue));
   }
 

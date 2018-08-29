@@ -820,7 +820,7 @@ public class NeoDb implements ReferenceStore {
           oldParent = r.getOtherNode(child);
           r.delete();
         }
-        LOG.error("{} has already a parent {}, override with new parent {}",
+        LOG.warn("{} has already a parent {}, override with new parent {}",
             NeoProperties.getScientificNameWithAuthor(child),
             NeoProperties.getScientificNameWithAuthor(oldParent),
             NeoProperties.getScientificNameWithAuthor(parent));

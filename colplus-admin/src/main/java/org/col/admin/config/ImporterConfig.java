@@ -20,7 +20,7 @@ public class ImporterConfig {
   /**
    * Max size of queued import jobs before rejecting
    */
-  @Min(10)
+  @Min(100)
   public int maxQueue = 1000;
 
   /**

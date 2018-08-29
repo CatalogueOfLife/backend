@@ -165,24 +165,24 @@ CREATE TABLE dataset_import (
 );
 
 CREATE TABLE verbatim (
-  key serial PRIMARY KEY,
-  dataset_key INTEGER NOT NULL REFERENCES dataset,
+  key serial,
+  dataset_key INTEGER NOT NULL,
   line INTEGER,
   file TEXT,
   type TEXT,
   terms jsonb,
   issues INT[] DEFAULT '{}'
-);
+) PARTITION BY LIST (dataset_key);
 
 CREATE TABLE reference (
-  key serial PRIMARY KEY,
+  key serial NOT NULL,
   id TEXT,
-  dataset_key INTEGER NOT NULL REFERENCES dataset,
-  verbatim_key INTEGER REFERENCES verbatim,
+  dataset_key INTEGER NOT NULL,
+  verbatim_key INTEGER,
   csl JSONB,
   citation TEXT,
   year int
-);
+) PARTITION BY LIST (dataset_key);
 
 CREATE SEQUENCE name_key_seq;
 
@@ -190,7 +190,7 @@ CREATE TABLE name (
   key INTEGER DEFAULT nextval('name_key_seq') PRIMARY KEY,
   id TEXT,
   dataset_key INTEGER REFERENCES dataset,
-  verbatim_key INTEGER REFERENCES verbatim,
+  verbatim_key INTEGER,
   homotypic_name_key INTEGER REFERENCES name DEFAULT currval('name_key_seq'::regclass) NOT NULL ,
   index_name_key INTEGER REFERENCES name,
   scientific_name TEXT NOT NULL,
@@ -211,7 +211,7 @@ CREATE TABLE name (
   combination_ex_authors TEXT[] DEFAULT '{}',
   combination_year TEXT,
   sanctioning_author TEXT,
-  published_in_key int REFERENCES reference,
+  published_in_key int,
   published_in_page TEXT,
   code INTEGER,
   nom_status INTEGER,
@@ -244,23 +244,23 @@ CREATE TRIGGER name_trigger BEFORE INSERT OR UPDATE
   ON name FOR EACH ROW EXECUTE PROCEDURE name_doc_update();
 
 CREATE TABLE name_rel (
-  key serial PRIMARY KEY,
-  verbatim_key INTEGER REFERENCES verbatim,
-  dataset_key INTEGER NOT NULL REFERENCES dataset,
+  key serial NOT NULL,
+  verbatim_key INTEGER,
+  dataset_key INTEGER NOT NULL,
   type INTEGER NOT NULL,
-  name_key INTEGER NOT NULL REFERENCES name,
-  related_name_key INTEGER NULL REFERENCES name,
-  published_in_key int REFERENCES reference,
+  name_key INTEGER NOT NULL,
+  related_name_key INTEGER NULL,
+  published_in_key int,
   note TEXT
-);
+) PARTITION BY LIST (dataset_key);
 
 CREATE TABLE taxon (
-  key serial PRIMARY KEY,
+  key serial NOT NULL,
   id TEXT,
-  dataset_key INTEGER NOT NULL REFERENCES dataset,
-  verbatim_key INTEGER REFERENCES verbatim,
-  parent_key INTEGER REFERENCES taxon,
-  name_key INTEGER NOT NULL REFERENCES name,
+  dataset_key INTEGER NOT NULL,
+  verbatim_key INTEGER,
+  parent_key INTEGER,
+  name_key INTEGER NOT NULL,
   doubtful BOOLEAN DEFAULT FALSE NOT NULL,
   origin INTEGER NOT NULL,
   according_to TEXT,
@@ -270,60 +270,57 @@ CREATE TABLE taxon (
   lifezones INTEGER[] DEFAULT '{}',
   dataset_url TEXT,
   species_estimate INTEGER,
-  species_estimate_reference_key INTEGER REFERENCES reference,
+  species_estimate_reference_key INTEGER,
   remarks TEXT
-);
+) PARTITION BY LIST (dataset_key);
 
 CREATE TABLE synonym (
-  taxon_key INTEGER REFERENCES taxon,
-  name_key INTEGER REFERENCES name,
-  dataset_key INTEGER NOT NULL REFERENCES dataset,
-  verbatim_key INTEGER REFERENCES verbatim,
+  taxon_key INTEGER,
+  name_key INTEGER,
+  dataset_key INTEGER NOT NULL,
+  verbatim_key INTEGER,
   status INTEGER NOT NULL,
   according_to TEXT
-);
+) PARTITION BY LIST (dataset_key);
 
 CREATE TABLE taxon_reference (
-  dataset_key INTEGER NOT NULL REFERENCES dataset,
-  taxon_key INTEGER NOT NULL REFERENCES taxon,
-  reference_key INTEGER NOT NULL REFERENCES reference,
-  PRIMARY KEY(taxon_key, reference_key)
-);
+  dataset_key INTEGER NOT NULL,
+  taxon_key INTEGER NOT NULL,
+  reference_key INTEGER NOT NULL
+) PARTITION BY LIST (dataset_key);
 
 CREATE TABLE vernacular_name (
-  key serial PRIMARY KEY,
-  dataset_key INTEGER NOT NULL REFERENCES dataset,
-  verbatim_key INTEGER REFERENCES verbatim,
-  taxon_key INTEGER NOT NULL REFERENCES taxon,
+  key serial NOT NULL,
+  dataset_key INTEGER NOT NULL,
+  verbatim_key INTEGER,
+  taxon_key INTEGER NOT NULL,
   name TEXT NOT NULL,
   latin TEXT,
   language CHAR(3),
   country CHAR(2)
-);
+) PARTITION BY LIST (dataset_key);
 
 CREATE TABLE vernacular_name_reference (
-  dataset_key INTEGER NOT NULL REFERENCES dataset,
-  vernacular_name_key INTEGER NOT NULL REFERENCES vernacular_name,
-  reference_key INTEGER NOT NULL REFERENCES reference,
-  PRIMARY KEY(vernacular_name_key, reference_key)
-);
+  dataset_key INTEGER NOT NULL,
+  vernacular_name_key INTEGER NOT NULL,
+  reference_key INTEGER NOT NULL
+) PARTITION BY LIST (dataset_key);
 
 CREATE TABLE distribution (
-  key serial PRIMARY KEY,
-  dataset_key INTEGER NOT NULL REFERENCES dataset,
-  verbatim_key INTEGER REFERENCES verbatim,
-  taxon_key INTEGER NOT NULL REFERENCES taxon,
+  key serial NOT NULL,
+  dataset_key INTEGER NOT NULL,
+  verbatim_key INTEGER,
+  taxon_key INTEGER NOT NULL,
   area TEXT NOT NULL,
   gazetteer INTEGER NOT NULL,
   status INTEGER
-);
+) PARTITION BY LIST (dataset_key);
 
 CREATE TABLE distribution_reference (
-  dataset_key INTEGER NOT NULL REFERENCES dataset,
-  distribution_key INTEGER NOT NULL REFERENCES distribution,
-  reference_key INTEGER NOT NULL REFERENCES reference,
-  PRIMARY KEY(distribution_key, reference_key)
-);
+  dataset_key INTEGER NOT NULL,
+  distribution_key INTEGER NOT NULL,
+  reference_key INTEGER NOT NULL
+) PARTITION BY LIST (dataset_key);
 
 
 
@@ -341,11 +338,7 @@ CREATE index ON dataset (gbif_key);
 CREATE index ON dataset_import (dataset_key, finished);
 CREATE index ON dataset_import (started);
 
-CREATE index ON verbatim (dataset_key);
-CREATE index ON verbatim USING GIN(issues);
-
 CREATE UNIQUE index ON name (id, dataset_key);
-CREATE index ON name (dataset_key);
 CREATE index ON name (rank);
 CREATE index ON name (nom_status);
 CREATE index ON name (type);
@@ -353,35 +346,4 @@ CREATE index ON name (homotypic_name_key);
 CREATE index ON name (index_name_key);
 CREATE index ON name (published_in_key);
 CREATE index ON name (verbatim_key);
-
-CREATE index ON name_rel (dataset_key);
-CREATE index ON name_rel (name_key, type);
-CREATE index ON name_rel (verbatim_key);
-
-CREATE UNIQUE index ON taxon (id, dataset_key);
-CREATE index ON taxon (dataset_key);
-CREATE index ON taxon (parent_key);
-CREATE index ON taxon (name_key);
-CREATE index ON taxon (verbatim_key);
-
-CREATE index ON synonym (dataset_key);
-CREATE index ON synonym (taxon_key);
-CREATE index ON synonym (name_key);
-CREATE index ON synonym (verbatim_key);
-
-CREATE index ON distribution (dataset_key);
-CREATE index ON distribution (taxon_key);
-CREATE index ON distribution (verbatim_key);
-
-CREATE index ON vernacular_name (dataset_key);
-CREATE index ON vernacular_name (taxon_key);
-CREATE index ON vernacular_name (verbatim_key);
-
-CREATE UNIQUE index ON reference (id, dataset_key);
-CREATE index ON reference (dataset_key);
-CREATE index ON reference (verbatim_key);
-
-CREATE index ON distribution_reference (dataset_key);
-CREATE index ON vernacular_name_reference (dataset_key);
-CREATE index ON taxon_reference (dataset_key);
 

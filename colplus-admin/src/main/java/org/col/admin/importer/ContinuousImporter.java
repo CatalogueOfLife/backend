@@ -17,7 +17,7 @@ import static org.col.admin.AdminServer.MDC_KEY_TASK;
 import static org.col.admin.AdminServer.MILLIS_TO_DIE;
 
 /**
- * A scheduler for new import jobs that runs continously in the background
+ * A scheduler for new import jobs that runs continuously in the background
  * and submits new import jobs to the ImportManager if it is idle.
  *
  * New jobs are selected by priority according to the following criteria:
@@ -25,20 +25,21 @@ import static org.col.admin.AdminServer.MILLIS_TO_DIE;
  *  - never imported datasets first
  *  - the datasets configured indexing frequency
  */
-public class ContinousImporter implements Managed {
-  private static final Logger LOG = LoggerFactory.getLogger(ContinousImporter.class);
-  private static final String THREAD_NAME = "continous-importer";
-  private static final int BATCH_SIZE = 10;
+public class ContinuousImporter implements Managed {
+  private static final Logger LOG = LoggerFactory.getLogger(ContinuousImporter.class);
+  private static final String THREAD_NAME = "continuous-importer";
+  private static final int MIN_SIZE = 10;
+  private static final int BATCH_SIZE = 50;
   private static final int WAIT_TIME_IN_HOURS = 1;
 
   private Thread thread;
   private final ContinousImporterJob job;
 
-  public ContinousImporter(ImporterConfig cfg, ImportManager manager, SqlSessionFactory factory) {
+  public ContinuousImporter(ImporterConfig cfg, ImportManager manager, SqlSessionFactory factory) {
     this.job = new ContinousImporterJob(cfg, manager, factory);
     if (cfg.maxQueue < BATCH_SIZE) {
       job.running=false;
-      LOG.warn("Importer queue is shorter ({}) than the amount of batches ({}) to submit. Shutdown continous importer!", cfg.maxQueue, BATCH_SIZE);
+      LOG.warn("Importer queue is shorter ({}) than the amount of batches ({}) to submit. Shutdown continuous importer!", cfg.maxQueue, BATCH_SIZE);
     }
   }
 
@@ -64,14 +65,14 @@ public class ContinousImporter implements Managed {
 
       while (running) {
         try {
-          while (!manager.hasEmptyQueue()) {
+          while (manager.list().size() > MIN_SIZE) {
             LOG.debug("Importer busy, sleep for {} minutes", cfg.continousImportPolling);
-            Thread.sleep(TimeUnit.MINUTES.toMillis(cfg.continousImportPolling));
+            TimeUnit.MINUTES.sleep(cfg.continousImportPolling);
           }
           List<Dataset> datasets = fetch();
           if (datasets.isEmpty()) {
             LOG.info("No datasets eligable to be imported. Sleep for {} hour", WAIT_TIME_IN_HOURS);
-            Thread.sleep(TimeUnit.HOURS.toMillis(WAIT_TIME_IN_HOURS));
+            TimeUnit.HOURS.sleep(WAIT_TIME_IN_HOURS);
 
           } else {
             for (Dataset d : datasets) {

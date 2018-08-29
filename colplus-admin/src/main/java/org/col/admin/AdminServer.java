@@ -13,7 +13,7 @@ import org.col.admin.command.initdb.InitDbCmd;
 import org.col.admin.command.neoshell.ShellCmd;
 import org.col.admin.config.AdminServerConfig;
 import org.col.admin.gbifsync.GbifSync;
-import org.col.admin.importer.ContinousImporter;
+import org.col.admin.importer.ContinuousImporter;
 import org.col.admin.importer.ImportManager;
 import org.col.admin.matching.NameIndex;
 import org.col.admin.matching.NameIndexFactory;
@@ -94,7 +94,7 @@ public class AdminServer extends PgApp<AdminServerConfig> {
 
     if (cfg.importer.continousImportPolling > 0) {
       LOG.info("Enable continuous importing");
-      env.lifecycle().manage(new ContinousImporter(cfg.importer, importManager, getSqlSessionFactory()));
+      env.lifecycle().manage(new ContinuousImporter(cfg.importer, importManager, getSqlSessionFactory()));
     } else {
       LOG.warn("Disable continuous importing");
     }

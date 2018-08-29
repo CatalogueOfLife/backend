@@ -35,5 +35,8 @@ public abstract class MapperTestBase<T> {
     initMybatisRule.commit();
   }
 
+  public void createPartition(int datasetKey) {
+    initMybatisRule.getMapper(DatasetPartitionMapper.class).create(datasetKey);
+  }
 
 }
