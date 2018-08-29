@@ -24,13 +24,13 @@ public class TaxonDaoTest extends DaoTestBase {
 		BeanPrinter.out(info);
 
 		// See apple.sql
-		assertEquals("01", "root-1", info.getTaxon().getId());
-		assertEquals("02", 1, info.getTaxonReferences().size());
-		assertEquals("04", 3, info.getVernacularNames().size());
-		assertEquals("05", 2, info.getReferences().size());
+		assertEquals("root-1", info.getTaxon().getId());
+		assertEquals(1, info.getTaxonReferences().size());
+		assertEquals(3, info.getVernacularNames().size());
+		assertEquals(2, info.getReferences().size());
 
 		Set<Integer> refKeys1 = new HashSet<>();
-		info.getReferences().values().forEach(e -> refKeys1.add(e.getKey()));
+		info.getReferences().values().forEach(r -> refKeys1.add(r.getKey()));
 
 		Set<Integer> refKeys2 = new HashSet<>();
 		refKeys2.addAll(info.getTaxonReferences());
@@ -39,7 +39,7 @@ public class TaxonDaoTest extends DaoTestBase {
 		info.getDistributions().forEach(d -> refKeys2.addAll(d.getReferenceKeys()));
     info.getVernacularNames().forEach(d -> refKeys2.addAll(d.getReferenceKeys()));
 
-		assertEquals("06", refKeys1, refKeys2);
+		assertEquals(refKeys1, refKeys2);
 
     assertEquals(2, info.getDistributions().size());
 		for (Distribution d : info.getDistributions()) {

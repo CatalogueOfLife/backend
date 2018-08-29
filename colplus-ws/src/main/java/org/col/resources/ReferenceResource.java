@@ -19,7 +19,7 @@ import org.col.dw.jersey.exception.NotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Path("/reference")
+@Path("/dataset/{datasetKey}/reference")
 @Produces(MediaType.APPLICATION_JSON)
 @SuppressWarnings("static-method")
 public class ReferenceResource {
@@ -28,16 +28,14 @@ public class ReferenceResource {
   private static final Logger LOG = LoggerFactory.getLogger(ReferenceResource.class);
 
   @GET
-  public ResultPage<Reference> list(@QueryParam("datasetKey") Integer datasetKey,
-      @Valid @BeanParam Page page, @Context SqlSession session) {
+  public ResultPage<Reference> list(@PathParam("datasetKey") int datasetKey, @Valid @BeanParam Page page, @Context SqlSession session) {
     ReferenceDao dao = new ReferenceDao(session);
     return dao.list(datasetKey, page);
   }
 
   @GET
-  @Path("{id}/{datasetKey}")
-  public Integer lookupKey(@PathParam("id") String id, @PathParam("datasetKey") int datasetKey,
-      @Context SqlSession session) {
+  @Path("id/{id}")
+  public Integer lookupKey(@PathParam("datasetKey") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
     ReferenceDao dao = new ReferenceDao(session);
     Integer key = dao.lookupKey(id, datasetKey);
     if(key == null) {
@@ -48,10 +46,10 @@ public class ReferenceResource {
 
   @GET
   @Path("{key}")
-  public Reference get(@PathParam("key") int key, @QueryParam("page") String page,
+  public Reference get(@PathParam("datasetKey") int datasetKey, @PathParam("key") int key, @QueryParam("page") String page,
       @Context SqlSession session) {
     ReferenceDao dao = new ReferenceDao(session);
-    Reference ref = dao.get(key, page);
+    Reference ref = dao.get(datasetKey, key, page);
     if (ref == null) {
       throw NotFoundException.keyNotFound(Reference.class, key);
     }

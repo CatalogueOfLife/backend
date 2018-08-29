@@ -3,7 +3,8 @@ INSERT INTO dataset (key, title, created) VALUES (11, 'First dataset', now());
 INSERT INTO dataset (key, title, created) VALUES (12, 'Second dataset', now());
 
 INSERT INTO reference(key, id, dataset_key) VALUES (1, 'ref-1', 11);
-INSERT INTO reference(key, id, dataset_key) VALUES (2, 'ref-2', 12);
+INSERT INTO reference(key, id, dataset_key) VALUES (2, 'ref-1b', 11);
+INSERT INTO reference(key, id, dataset_key) VALUES (3, 'ref-2', 12);
 ALTER SEQUENCE reference_key_seq RESTART WITH 1000;
 
 INSERT INTO name (key, dataset_key, id, homotypic_name_key, scientific_name, genus, specific_epithet, rank, origin, type, published_in_key, published_in_page) VALUES (1, 11, 'name-1', 1, 'Malus sylvestris', 'Malus', 'sylvestris', 'species'::rank, 0, 0, 1, '712');

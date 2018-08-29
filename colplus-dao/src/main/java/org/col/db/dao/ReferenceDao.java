@@ -23,7 +23,7 @@ public class ReferenceDao {
     return mapper.count(datasetKey);
   }
 
-  public ResultPage<Reference> list(Integer datasetKey, Page page) {
+  public ResultPage<Reference> list(int datasetKey, Page page) {
     ReferenceMapper mapper = session.getMapper(ReferenceMapper.class);
     int total = mapper.count(datasetKey);
     List<Reference> result = mapper.list(datasetKey, page);

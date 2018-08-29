@@ -13,7 +13,7 @@ public class ReferenceDaoTest extends DaoTestBase {
   public void list() {
     try (SqlSession session = session()) {
       ReferenceDao dao = new ReferenceDao(session);
-      dao.list(null, new Page());
+      dao.list(11, new Page());
     }
   }
 

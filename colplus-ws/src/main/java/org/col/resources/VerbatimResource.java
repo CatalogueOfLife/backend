@@ -14,7 +14,7 @@ import org.gbif.dwc.terms.Term;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Path("/dataset/{dkey}/verbatim")
+@Path("/dataset/{datasetKey}/verbatim")
 @Produces(MediaType.APPLICATION_JSON)
 @SuppressWarnings("static-method")
 public class VerbatimResource {

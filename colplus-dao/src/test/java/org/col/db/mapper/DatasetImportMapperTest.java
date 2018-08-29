@@ -121,7 +121,7 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     DatasetImport d = mapper().metrics(DATASET1.getKey());
     assertEquals((Integer) 4, d.getNameCount());
     assertEquals((Integer) 2, d.getTaxonCount());
-    assertEquals((Integer) 1, d.getReferenceCount());
+    assertEquals((Integer) 2, d.getReferenceCount());
     assertEquals((Integer) 0, d.getVerbatimCount());
     assertEquals((Integer) 3, d.getVernacularCount());
     assertEquals((Integer) 3, d.getDistributionCount());

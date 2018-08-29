@@ -17,7 +17,7 @@ import org.col.dw.jersey.exception.NotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Path("/name")
+@Path("/dataset/{datasetKey}/name")
 @Produces(MediaType.APPLICATION_JSON)
 @SuppressWarnings("static-method")
 public class NameResource {
@@ -26,7 +26,7 @@ public class NameResource {
   private static final Logger LOG = LoggerFactory.getLogger(NameResource.class);
 
   @GET
-  public ResultPage<Name> list(@QueryParam("datasetKey") Integer datasetKey,
+  public ResultPage<Name> list(@PathParam("datasetKey") Integer datasetKey,
       @Valid @BeanParam Page page, @Context SqlSession session) {
     NameDao dao = new NameDao(session);
     return dao.list(datasetKey, page);
@@ -42,9 +42,8 @@ public class NameResource {
   }
 
   @GET
-  @Path("{id}/{datasetKey}")
-  public Integer lookupKey(@PathParam("id") String id, @PathParam("datasetKey") int datasetKey,
-      @Context SqlSession session) {
+  @Path("id/{id}")
+  public Integer lookupKey(@PathParam("datasetKey") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
     NameDao dao = new NameDao(session);
     Integer key = dao.lookupKey(id, datasetKey);
     if (key == null) {
@@ -55,7 +54,7 @@ public class NameResource {
 
   @GET
   @Path("{key}")
-  public Name get(@PathParam("key") int key, @Context SqlSession session) {
+  public Name get(@PathParam("datasetKey") int datasetKey, @PathParam("key") int key, @Context SqlSession session) {
     NameDao dao = new NameDao(session);
     Name name = dao.get(key);
     if (name == null) {
@@ -73,9 +72,9 @@ public class NameResource {
 
   @GET
   @Path("{key}/acts")
-  public List<NameRelation> getActs(@PathParam("key") int key, @Context SqlSession session) {
+  public List<NameRelation> getActs(@PathParam("datasetKey") int datasetKey, @PathParam("key") int key, @Context SqlSession session) {
     NameRelationMapper mapper = session.getMapper(NameRelationMapper.class);
-    return mapper.list(key);
+    return mapper.list(datasetKey, key);
   }
 
   /**

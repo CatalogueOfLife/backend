@@ -126,6 +126,10 @@ public class TaxonDao {
     return syn;
   }
 
+  public List<Taxon> getClassification(Taxon taxon) {
+    return getClassification(taxon.getDatasetKey(), taxon.getKey());
+  }
+
   public List<Taxon> getClassification(int datasetKey, int key) {
     return tMapper.classification(datasetKey, key);
   }
@@ -142,21 +146,24 @@ public class TaxonDao {
   }
 
   public TaxonInfo getTaxonInfo(int datasetKey, int key) {
+    return getTaxonInfo(tMapper.get(datasetKey, key));
+  }
+
+  public TaxonInfo getTaxonInfo(final Taxon taxon) {
     // main taxon object
-    Taxon taxon = tMapper.get(datasetKey, key);
     if (taxon == null) {
       return null;
     }
 
     TaxonInfo info = new TaxonInfo();
     info.setTaxon(taxon);
-    info.setTaxonReferences(rMapper.listByTaxon(datasetKey, key));
+    info.setTaxonReferences(rMapper.listByTaxon(taxon.getDatasetKey(), taxon.getKey()));
 
     // vernaculars
-    info.setVernacularNames(vMapper.listByTaxon(datasetKey, taxon.getKey()));
+    info.setVernacularNames(vMapper.listByTaxon(taxon.getDatasetKey(), taxon.getKey()));
 
     // distributions
-    info.setDistributions(dMapper.listByTaxon(datasetKey, taxon.getKey()));
+    info.setDistributions(dMapper.listByTaxon(taxon.getDatasetKey(), taxon.getKey()));
 
     // all reference keys so we can select their details at the end
     Set<Integer> refKeys = new HashSet<>();
@@ -168,7 +175,7 @@ public class TaxonDao {
     refKeys.remove(null);
 
     if (!refKeys.isEmpty()) {
-      List<Reference> refs = rMapper.listByKeys(datasetKey, refKeys);
+      List<Reference> refs = rMapper.listByKeys(taxon.getDatasetKey(), refKeys);
       info.addReferences(refs);
     }
 
