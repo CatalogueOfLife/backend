@@ -87,6 +87,15 @@
       dataset_import
     </sql>
 
+    <sql id="WHERE_STATES">
+        <if test="states != null &amp;&amp; !states.isEmpty()">
+            WHERE state IN
+            <foreach item="state" index="idx" collection="states" open="(" separator="," close=")">
+                #{state}
+            </foreach>
+        </if>
+    </sql>
+
     <!--  A mapping to Name, mostly auto mapped -->
     <resultMap id="datasetImportResultMap" type="DatasetImport" autoMapping="true">
         <result property="issuesCount" column="issues_count" typeHandler="org.col.db.type2.HstoreIssueCountTypeHandler"/>
@@ -104,9 +113,7 @@
     <select id="count" resultType="integer">
         SELECT count(*)
         FROM <include refid="FROM" />
-        <if test="state != null">
-            WHERE state = #{state}
-        </if>
+        <include refid="WHERE_STATES" />
     </select>
 
     <select id="last" resultMap="datasetImportResultMap">
@@ -128,9 +135,7 @@
     <select id="list" resultMap="datasetImportResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
-        <if test="state != null">
-          WHERE state = #{state}
-        </if>
+        <include refid="WHERE_STATES" />
         ORDER BY started DESC
         <include refid="org.col.db.mapper.Common.limit" />
     </select>

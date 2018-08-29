@@ -1,6 +1,7 @@
 package org.col.db.dao;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 
 import com.google.common.base.Preconditions;
 import org.apache.ibatis.session.SqlSession;
@@ -26,10 +27,10 @@ public class DatasetImportDao {
     this.factory = factory;
   }
 
-  public ResultPage<DatasetImport> list(ImportState state, Page page) {
+  public ResultPage<DatasetImport> list(Collection<ImportState> states, Page page) {
     try (SqlSession session = factory.openSession(true)){
       DatasetImportMapper mapper = session.getMapper(DatasetImportMapper.class);
-      return new ResultPage<>(page, mapper.count(state), mapper.list(state, page));
+      return new ResultPage<>(page, mapper.count(states), mapper.list(states, page));
     }
   }
 

@@ -6,8 +6,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.col.api.model.DatasetImport;
+import org.col.api.model.Page;
 import org.col.api.vocab.*;
 import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.dwc.terms.Term;
@@ -29,11 +31,11 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     super(DatasetImportMapper.class);
   }
 
-  private static DatasetImport create() throws Exception {
+  private static DatasetImport create(ImportState state) throws Exception {
     DatasetImport d = new DatasetImport();
     d.setDatasetKey(DATASET1.getKey());
     d.setError("no error");
-    d.setState(ImportState.DOWNLOADING);
+    d.setState(state);
     d.setStarted(LocalDateTime.now());
     d.setFinished(LocalDateTime.now());
     d.setDownloadUri(URI.create("http://rs.gbif.org/datasets/nub.zip"));
@@ -59,8 +61,12 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     return d;
   }
 
+  private static DatasetImport create() throws Exception {
+    return create(ImportState.DOWNLOADING);
+  }
+
   private static <T extends Enum> Map<T, Integer> mockCount(Class<T> clazz) {
-    Map<T, Integer> cnt = Maps.newHashMap(); 
+    Map<T, Integer> cnt = Maps.newHashMap();
     for (T val : clazz.getEnumConstants()) {
       cnt.put(val, rnd.nextInt(Integer.MAX_VALUE));
     }
@@ -114,6 +120,25 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     mapper().create(d);
     assertNotNull(mapper().lastSuccessful(d.getDatasetKey()));
     commit();
+  }
+
+  @Test
+  public void listCount() throws Exception {
+    mapper().create(create(ImportState.FAILED));
+    mapper().create(create(ImportState.FINISHED));
+    mapper().create(create(ImportState.PROCESSING));
+    mapper().create(create(ImportState.FINISHED));
+    mapper().create(create(ImportState.CANCELED));
+    mapper().create(create(ImportState.INSERTING));
+    mapper().create(create(ImportState.FINISHED));
+
+    assertEquals(7, mapper().count(null));
+    assertEquals(7, mapper().count(Lists.newArrayList()));
+    assertEquals(1, mapper().count(Lists.newArrayList(ImportState.FAILED)));
+    assertEquals(3, mapper().count(Lists.newArrayList(ImportState.FINISHED)));
+    assertEquals(2, mapper().count(Lists.newArrayList(ImportState.PROCESSING, ImportState.INSERTING)));
+
+    assertEquals(2, mapper().list(Lists.newArrayList(ImportState.PROCESSING, ImportState.INSERTING), new Page()).size());
   }
 
   @Test

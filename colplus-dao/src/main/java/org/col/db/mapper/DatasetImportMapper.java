@@ -1,5 +1,6 @@
 package org.col.db.mapper;
 
+import java.util.Collection;
 import java.util.List;
 import javax.annotation.Nullable;
 
@@ -26,12 +27,12 @@ public interface DatasetImportMapper {
   /**
    * Count all imports by their state
    */
-  int count(@Param("state") ImportState state);
+  int count(@Param("states") Collection<ImportState> states);
 
   /**
    * List all imports optionally filtered by their state
    */
-  List<DatasetImport> list(@Param("state") @Nullable ImportState state, @Param("page") Page page);
+  List<DatasetImport> list(@Param("states") @Nullable Collection<ImportState> states, @Param("page") Page page);
 
   /**
    * List all current and historical imports for a dataset

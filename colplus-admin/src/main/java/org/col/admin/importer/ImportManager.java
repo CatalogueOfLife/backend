@@ -10,6 +10,7 @@ import java.util.concurrent.*;
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
+import com.google.common.collect.Lists;
 import io.dropwizard.lifecycle.Managed;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSession;
@@ -181,7 +182,7 @@ public class ImportManager implements Managed {
   private void cancelAndReschedule(ImportState state, boolean truncate) {
     int counter = 0;
     DatasetImportDao dao = new DatasetImportDao(factory);
-    Iterator<DatasetImport> iter = PagingUtil.pageAll(p -> dao.list(state, p));
+    Iterator<DatasetImport> iter = PagingUtil.pageAll(p -> dao.list(Lists.newArrayList(state), p));
     while (iter.hasNext()) {
       DatasetImport di = iter.next();
       dao.updateImportCancelled(di);

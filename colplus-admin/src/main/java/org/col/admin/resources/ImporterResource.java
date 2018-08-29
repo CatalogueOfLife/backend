@@ -1,5 +1,6 @@
 package org.col.admin.resources;
 
+import java.util.List;
 import java.util.Queue;
 import javax.validation.Valid;
 import javax.ws.rs.*;
@@ -31,8 +32,8 @@ public class ImporterResource {
   }
 
   @GET
-  public ResultPage<DatasetImport> list(@QueryParam("state") ImportState state, @Valid @BeanParam Page page) {
-    return dao.list(state, page);
+  public ResultPage<DatasetImport> list(@QueryParam("state") List<ImportState> states, @Valid @BeanParam Page page) {
+    return dao.list(states, page);
   }
 
   @POST
