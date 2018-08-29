@@ -29,12 +29,12 @@ public interface SynonymMapper {
 	 * @param taxonKey accepted taxon key
 	 * @return list of misapplied or heterotypic synonym names ordered by status then homotypic group
 	 */
-	List<Synonym> listByTaxon(@Param("taxonKey") int taxonKey);
+	List<Synonym> listByTaxon(@Param("datasetKey") int datasetKey, @Param("taxonKey") int taxonKey);
 
 
 	/**
 	 * Reads all synonyms including misapplied names by the synonyms name.
 	 */
-	List<Synonym> listByName(@Param("nameKey") int nameKey);
+	List<Synonym> listByName(@Param("datasetKey") int datasetKey, @Param("nameKey") int nameKey);
 
 }

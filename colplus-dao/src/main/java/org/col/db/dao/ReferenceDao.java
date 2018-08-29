@@ -35,9 +35,9 @@ public class ReferenceDao {
     return mapper.lookupKey(id, datasetKey);
   }
 
-  public Reference get(int key, @Nullable String page) {
+  public Reference get(int datasetKey, int key, @Nullable String page) {
     ReferenceMapper mapper = session.getMapper(ReferenceMapper.class);
-    Reference ref = mapper.get(key);
+    Reference ref = mapper.get(datasetKey, key);
     if (ref == null) {
       return null;
     }

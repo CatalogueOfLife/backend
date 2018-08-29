@@ -18,8 +18,9 @@ public class TaxonDaoTest extends DaoTestBase {
 
 	@Test
 	public void testInfo() throws Exception {
+	  final int datasetKey = 11;
 		TaxonDao dao = new TaxonDao(session());
-		TaxonInfo info = dao.getTaxonInfo(1);
+		TaxonInfo info = dao.getTaxonInfo(datasetKey, 1);
 		BeanPrinter.out(info);
 
 		// See apple.sql
@@ -70,7 +71,7 @@ public class TaxonDaoTest extends DaoTestBase {
       final Taxon acc = TestEntityGenerator.TAXON1;
       final int datasetKey = acc.getDatasetKey();
 
-      Synonymy synonymy = tDao.getSynonymy(acc.getKey());
+      Synonymy synonymy = tDao.getSynonymy(acc);
       assertTrue(synonymy.isEmpty());
       assertEquals(0, synonymy.size());
 
@@ -102,7 +103,7 @@ public class TaxonDaoTest extends DaoTestBase {
 
       // no synonym links added yet, expect empty synonymy even though basionym links
       // exist!
-      synonymy = tDao.getSynonymy(acc.getKey());
+      synonymy = tDao.getSynonymy(acc);
       assertTrue(synonymy.isEmpty());
       assertEquals(0, synonymy.size());
 
@@ -112,7 +113,7 @@ public class TaxonDaoTest extends DaoTestBase {
       nDao.addSynonym(datasetKey, syn1.getKey(), acc.getKey(), syn);
       session.commit();
 
-      synonymy = tDao.getSynonymy(acc.getKey());
+      synonymy = tDao.getSynonymy(acc);
       assertFalse(synonymy.isEmpty());
       assertEquals(1, synonymy.size());
       assertEquals(0, synonymy.getMisapplied().size());
@@ -125,7 +126,7 @@ public class TaxonDaoTest extends DaoTestBase {
       session.commit();
 
       // at this stage we have 4 explicit synonym relations
-      synonymy = tDao.getSynonymy(acc.getKey());
+      synonymy = tDao.getSynonymy(acc);
       assertEquals(4, synonymy.size());
       assertEquals(0, synonymy.getHomotypic().size());
       assertEquals(3, synonymy.getHeterotypic().size());
@@ -137,7 +138,7 @@ public class TaxonDaoTest extends DaoTestBase {
       nDao.addSynonym(datasetKey, syn22.getKey(), acc.getKey(), syn);
       nDao.addSynonym(datasetKey, syn31.getKey(), acc.getKey(), syn);
 
-      synonymy = tDao.getSynonymy(acc.getKey());
+      synonymy = tDao.getSynonymy(acc);
       assertEquals(7, synonymy.size());
       assertEquals(0, synonymy.getHomotypic().size());
       // still the same number of heterotypic synonym groups

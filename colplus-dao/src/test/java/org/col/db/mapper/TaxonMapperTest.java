@@ -33,7 +33,7 @@ public class TaxonMapperTest extends MapperTestBase<TaxonMapper> {
     mapper().create(in);
     assertNotNull(in.getKey());
     commit();
-    Taxon out = mapper().get(in.getKey());
+    Taxon out = mapper().get(in.getDatasetKey(), in.getKey());
 
     Javers javers = JaversBuilder.javers().build();
     Diff diff = javers.compare(in, out);
@@ -134,7 +134,7 @@ public class TaxonMapperTest extends MapperTestBase<TaxonMapper> {
 
     commit();
 
-    int res = mapper().countChildren(parent.getKey());
+    int res = mapper().countChildren(parent.getDatasetKey(), parent.getKey());
     assertEquals("01", 3, res);
   }
 
@@ -187,7 +187,7 @@ public class TaxonMapperTest extends MapperTestBase<TaxonMapper> {
 
     commit();
 
-    List<Taxon> res = mapper().children(parent.getKey(), new Page(0, 5));
+    List<Taxon> res = mapper().children(parent.getDatasetKey(), parent.getKey(), new Page(0, 5));
 
     assertEquals("01", 4, res.size());
     assertEquals("02", c2.getKey(), res.get(0).getKey()); // Family YYY
@@ -229,7 +229,7 @@ public class TaxonMapperTest extends MapperTestBase<TaxonMapper> {
     commit();
 
     Taxon sp = parents.removeLast();
-    List<Taxon> classification = mapper().classification(sp.getKey());
+    List<Taxon> classification = mapper().classification(sp.getDatasetKey(), sp.getKey());
     assertEquals(parents.size(), classification.size());
 
     for (Taxon ht : classification) {

@@ -20,13 +20,14 @@ public class DistributionMapperTest extends MapperTestBase<DistributionMapper> {
 
 	@Test
 	public void roundtrip() throws Exception {
+		final int datasetKey = TestEntityGenerator.DATASET1.getKey();
 		Distribution in = newDistribution("Europe");
 		for (DistributionStatus status : DistributionStatus.values()) {
 			in.setStatus(status);
-			mapper().create(in, TestEntityGenerator.TAXON1.getKey(), TestEntityGenerator.DATASET1.getKey());
+			mapper().create(in, TestEntityGenerator.TAXON1.getKey(), datasetKey);
 			assertNotNull(in.getKey());
 			commit();
-			Distribution out = mapper().get(in.getKey());
+			Distribution out = mapper().get(datasetKey, in.getKey());
 			assertEquals("01", in, out);
 		}
 	}

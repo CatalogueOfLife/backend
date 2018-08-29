@@ -73,7 +73,7 @@
     </sql>
 
     <sql id="FROM">
-        taxon t JOIN name n ON (t.name_key=n.key)
+        taxon t JOIN name n ON (t.name_key=n.key AND t.dataset_key=n.dataset_key)
     </sql>
 
     <!-- A mapping to Name, mostly auto mapped -->
@@ -93,10 +93,7 @@
     <select id="count" resultType="integer">
         SELECT count(*)
         FROM taxon
-        WHERE TRUE
-        <if test="datasetKey != null">
-        	AND dataset_key = #{datasetKey}
-        </if>
+        WHERE dataset_key = #{datasetKey}
         <if test="root">
             AND parent_key IS NULL
         </if>
@@ -105,15 +102,9 @@
     <select id="list" resultMap="taxonResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
-        WHERE
-        <if test="datasetKey != null">
-        	t.dataset_key = #{datasetKey}
-        </if>
+        WHERE t.dataset_key = #{datasetKey}
         <if test="root">
-            <if test="datasetKey != null">
-                AND
-            </if>
-            t.parent_key IS NULL
+            AND t.parent_key IS NULL
         </if>
         ORDER BY key
         <include refid="org.col.db.mapper.Common.limit" />
@@ -122,25 +113,29 @@
     <select id="get" resultMap="taxonResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
-        WHERE t.key = #{key}
+        WHERE t.dataset_key = #{datasetKey}
+            AND t.key = #{key}
     </select>
 
     <select id="getByName" resultMap="taxonResultMap">
         SELECT key, <include refid="COLS" />
         FROM taxon
-        WHERE name_key = #{name.key}
+        WHERE dataset_key = #{datasetKey}
+            AND name_key = #{name.key}
     </select>
 
     <select id="countChildren"  resultType="integer">
         SELECT count(*)
         FROM taxon
-        WHERE parent_key = #{key}
+        WHERE dataset_key = #{datasetKey}
+            AND parent_key = #{key}
     </select>
 
     <select id="children" resultMap="taxonResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
-        WHERE t.parent_key = #{key}
+        WHERE t.dataset_key = #{datasetKey}
+            AND t.parent_key = #{key}
         ORDER BY n.rank, n.scientific_name
         <include refid="org.col.db.mapper.Common.limit" />
     </select>
@@ -149,11 +144,13 @@
         WITH RECURSIVE x AS(
             SELECT <include refid="SELECT" />
             FROM <include refid="FROM" />
-            WHERE t.key = #{key}
+            WHERE t.dataset_key = #{datasetKey}
+                AND t.key = #{key}
         UNION
             SELECT <include refid="SELECT" />
             FROM <include refid="FROM" />, x
-            WHERE t.key = x.parent_key
+            WHERE t.dataset_key = #{datasetKey}
+                AND t.key = x.parent_key
         )
         SELECT *
         FROM x

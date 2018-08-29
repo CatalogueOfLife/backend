@@ -12,21 +12,21 @@ import org.col.api.model.Reference;
  */
 public interface ReferenceMapper {
 
-	int count(@Param("datasetKey") Integer datasetKey);
+	int count(@Param("datasetKey") int datasetKey);
 
-	List<Reference> list(@Param("datasetKey") Integer datasetKey, @Param("page") Page page);
+	List<Reference> list(@Param("datasetKey") int datasetKey, @Param("page") Page page);
 
-	List<Integer> listByTaxon(@Param("taxonKey") int taxonKey);
+	List<Integer> listByTaxon(@Param("datasetKey") int datasetKey, @Param("taxonKey") int taxonKey);
 
 	/**
-   * Selects a number of distinct references by their keys
+   * Selects a number of distinct references from a single dataset by their keys
    * @param keys must contain at least one value, not allowed to be empty !!!
    */
-  List<Reference> listByKeys(@Param("keys") Set<Integer> keys);
+  List<Reference> listByKeys(@Param("datasetKey") int datasetKey, @Param("keys") Set<Integer> keys);
 
 	Integer lookupKey(@Param("id") String id, @Param("datasetKey") int datasetKey);
 
-	Reference get(@Param("key") int key);
+	Reference get(@Param("datasetKey") int datasetKey, @Param("key") int key);
 
 	void create(Reference name);
 

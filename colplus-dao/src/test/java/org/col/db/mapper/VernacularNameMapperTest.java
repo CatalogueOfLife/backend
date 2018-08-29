@@ -19,11 +19,13 @@ public class VernacularNameMapperTest extends MapperTestBase<VernacularNameMappe
 
 	@Test
 	public void roundtrip() throws Exception {
+		final int datasetKey = 2;
+
 		VernacularName in = newVernacularName("cat");
-		mapper().create(in, 1, 1);
+		mapper().create(in, 1, datasetKey);
 		assertNotNull(in.getKey());
 		commit();
-		VernacularName out = mapper().get(in.getKey());
+		VernacularName out = mapper().get(datasetKey, in.getKey());
 		assertTrue(in.equals(out));
 	}
 
@@ -36,7 +38,7 @@ public class VernacularNameMapperTest extends MapperTestBase<VernacularNameMappe
 		VernacularName a = newVernacularName("a");
 		mapper().create(a, TAXON2.getKey(), DATASET1.getKey());
 
-		List<VernacularName> list = mapper().listByTaxon(TAXON2.getKey());
+		List<VernacularName> list = mapper().listByTaxon(TAXON2.getDatasetKey(), TAXON2.getKey());
 		assertEquals(3, list.size());
 		assertTrue(a.equals(list.get(0)));
 		assertTrue(b.equals(list.get(1)));

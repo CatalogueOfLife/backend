@@ -29,7 +29,7 @@ public class ReferenceMapperTest extends MapperTestBase<ReferenceMapper> {
 		Reference r1 = create();
 		mapper().create(r1);
 		commit();
-		Reference r2 = mapper().get(r1.getKey());
+		Reference r2 = mapper().get(r1.getDatasetKey(), r1.getKey());
 		assertEquals(r1, r2);
 	}
 
@@ -72,8 +72,8 @@ public class ReferenceMapperTest extends MapperTestBase<ReferenceMapper> {
 
 	@Test
 	public void listByKeys() {
-		List<Reference> refs = mapper().listByKeys(Sets.newHashSet(1,2));
-		assertEquals(2, refs.size());
+		assertEquals(1, mapper().listByKeys(11, Sets.newHashSet(1)));
+		assertEquals(1, mapper().listByKeys(12, Sets.newHashSet(2)));
 	}
 
 	private static Reference create() throws Exception {
