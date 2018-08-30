@@ -537,7 +537,7 @@ public class PgImportIT {
   }
 
   @Test
-  @Ignore
+  //@Ignore
   public void testGsdGithub() throws Exception {
     dataset.setTrusted(false);
     // normalizeAndImport(URI.create("https://raw.githubusercontent.com/Sp2000/colplus-repo/master/ACEF/assembly/15.tar.gz"),
@@ -548,7 +548,7 @@ public class PgImportIT {
     // DataFormat.DWCA);
     // normalizeAndImport(URI.create("https://github.com/gbif/iczn-lists/archive/master.zip"),
     // DataFormat.DWCA);
-    normalizeAndImport(new File("/Users/markus/Downloads/WoRMS_DwC-A.zip"), DataFormat.DWCA);
+    normalizeAndImport(new File("/home/ayco/tmp/DWCA/DTNtaxonlist_DiversityTaxonNames_Plants_1129.zip"), DataFormat.DWCA);
   }
 
   private static RankedName rn(Rank rank, String name) {

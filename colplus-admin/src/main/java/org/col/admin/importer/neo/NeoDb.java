@@ -661,7 +661,12 @@ public class NeoDb implements ReferenceStore {
       for (Node syn : Iterators.loop(getNeo().findNodes(Labels.SYNONYM))) {
         NeoTaxon tsyn = get(syn);
         if (tsyn.homotypic) {
-          NeoTaxon acc = get(syn.getSingleRelationship(RelType.SYNONYM_OF, Direction.OUTGOING).getEndNode());
+          Relationship r = syn.getSingleRelationship(RelType.SYNONYM_OF, Direction.OUTGOING);
+          if(r == null) {
+            addIssues(tsyn, Issue.ACCEPTED_NAME_MISSING);
+            continue;
+          }
+          NeoTaxon acc = get(r.getEndNode());
           int homoKey;
           if (acc.name.getHomotypicNameKey() == null ) {
             homoKey = (int) acc.node.getId();
