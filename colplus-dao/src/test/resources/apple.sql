@@ -1,6 +1,6 @@
 -- test data
-INSERT INTO dataset (key, title, created) VALUES (11, 'First dataset', now());
-INSERT INTO dataset (key, title, created) VALUES (12, 'Second dataset', now());
+INSERT INTO dataset (key, title, import_frequency, created) VALUES (11, 'First dataset',  -1, now());
+INSERT INTO dataset (key, title, import_frequency, created) VALUES (12, 'Second dataset', -1, now());
 
 INSERT INTO reference(key, id, dataset_key) VALUES (1, 'ref-1', 11);
 INSERT INTO reference(key, id, dataset_key) VALUES (2, 'ref-1b', 11);
