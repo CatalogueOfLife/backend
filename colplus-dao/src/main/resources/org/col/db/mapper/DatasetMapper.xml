@@ -65,7 +65,7 @@
       #{homepage},
       #{dataFormat},
       #{dataAccess},
-      #{importFrequency},
+      #{importFrequency, typeHandler=org.col.db.type.FrequencyTypeHandler},
       #{code},
       #{notes},
       #{trusted}
@@ -86,6 +86,7 @@
     <resultMap id="datasetResultMap" type="Dataset" autoMapping="true">
         <id property="key" column="key" />
         <result property="authorsAndEditors" column="authors_and_editors" typeHandler="org.col.db.type.StringArrayTypeHandler" />
+        <result property="importFrequency" column="import_frequency" typeHandler="org.col.db.type.FrequencyTypeHandler" />
     </resultMap>
 
     <select id="count" resultType="integer">
@@ -107,6 +108,7 @@
         FROM <include refid="FROM" /> d
           LEFT JOIN dataset_import di ON di.dataset_key=d.key
         WHERE d.deleted IS NULL
+          AND d.import_frequency >= 0
           AND di.attempt IS NULL
         ORDER BY d.key ASC
         LIMIT #{limit}
@@ -118,10 +120,12 @@
             SELECT DISTINCT ON (d.key) di.state, di.finished, <include refid="SELECT" />
             FROM <include refid="FROM" /> d
               LEFT JOIN dataset_import di ON di.dataset_key=d.key
-            WHERE d.deleted IS NULL AND di.finished IS NOT NULL
-            ORDER BY d.key, di.attempt DESC
+            WHERE d.deleted IS NULL
+                AND di.finished IS NOT NULL
+                AND d.import_frequency > 0
+        ORDER BY d.key, di.attempt DESC
         ) AS latest
-        WHERE state != 0 AND finished + interval '1 week' &lt;  now()
+        WHERE state != 0 AND (finished + d.import_frequency * interval '1 day') &lt;  now()
         ORDER BY finished ASC
         LIMIT #{limit}
     </select>

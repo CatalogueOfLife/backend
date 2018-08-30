@@ -103,4 +103,7 @@ INSERT INTO dataset (gbif_key, data_access, title) VALUES ('8067e0a2-a26d-4831-8
 INSERT INTO dataset (gbif_key, data_access, title) VALUES ('fa8ab13c-52ed-4754-b838-aeff74c79718', 'https://github.com/Sp2000/dwca-apg/archive/master.zip', 'Angiosperm phylogeny classification of flowering plants (APG IV)');
 
 
-UPDATE dataset set trusted=true, data_format=0 where gbif_key is not NULL;
+UPDATE dataset set trusted=true,
+    data_format=0,
+    import_frequency = 7,
+    WHERE gbif_key is not NULL;

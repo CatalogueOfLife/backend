@@ -24,6 +24,7 @@ public interface DatasetMapper {
 
   /**
    * list datasets which have already been imported before, but need a refresh.
+	 * The dataset.importFrequency is respected for rescheduling an already imported dataset
    * @param limit maximum of datasets to return
    */
   List<Dataset> listToBeImported(int limit);

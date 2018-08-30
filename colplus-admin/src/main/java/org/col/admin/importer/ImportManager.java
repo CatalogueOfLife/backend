@@ -83,7 +83,7 @@ public class ImportManager implements Managed {
   }
 
   /**
-   * @throws IllegalArgumentException if dataset was scheduled for importing already or queue was full
+   * @throws IllegalArgumentException if dataset was scheduled for importing already, queue was full or dataset does not exist
    */
   public ImportRequest submit(final int datasetKey, final boolean force) throws IllegalArgumentException {
     // is this dataset already scheduled?
@@ -98,9 +98,10 @@ public class ImportManager implements Managed {
 
     final ImportRequest req = new ImportRequest(datasetKey, force);
     LOG.debug("Queue new import for dataset {}", datasetKey);
+    final ImportJob job = createImport(req);
     queue.add(req);
     futures.put(datasetKey, CompletableFuture
-        .runAsync(createImport(req), exec)
+        .runAsync(job, exec)
         .handle((di, err) -> {
           if (err != null) {
             // unwrap CompletionException error
