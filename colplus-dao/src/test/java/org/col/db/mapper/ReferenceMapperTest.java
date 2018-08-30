@@ -29,7 +29,7 @@ public class ReferenceMapperTest extends MapperTestBase<ReferenceMapper> {
 		Reference r1 = create();
 		mapper().create(r1);
 		commit();
-		Reference r2 = mapper().get(r1.getKey());
+		Reference r2 = mapper().get(r1.getDatasetKey(), r1.getKey());
 		assertEquals(r1, r2);
 	}
 
@@ -37,13 +37,13 @@ public class ReferenceMapperTest extends MapperTestBase<ReferenceMapper> {
 	public void count() throws Exception {
 		int i = mapper().count(DATASET1.getKey());
 		// Just to make sure we understand our environment:
-		// we start with 2 records in reference table, inserted through
-		// apple, ONLY one of which belongs to DATASET1.
-		assertEquals(1, i);
+		// we start with 3 records in reference table, inserted through
+		// apple, only two of which belong to DATASET1.
+		assertEquals(2, i);
 		mapper().create(create());
 		mapper().create(create());
 		mapper().create(create());
-		assertEquals(4, mapper().count(DATASET1.getKey()));
+		assertEquals(5, mapper().count(DATASET1.getKey()));
 	}
 
 	@Test
@@ -58,8 +58,8 @@ public class ReferenceMapperTest extends MapperTestBase<ReferenceMapper> {
 		  mapper().create(r);
     }
     commit();
-		// Skip first (pre-inserted) record:
-		Page p = new Page(1, 3);
+		// Skip first two (pre-inserted) record:
+		Page p = new Page(2, 3);
 		List<Reference> out = mapper().list(DATASET1.getKey(), p);
 		assertEquals(3, out.size());
 		assertTrue(in.get(0).equals(out.get(0)));
@@ -72,8 +72,11 @@ public class ReferenceMapperTest extends MapperTestBase<ReferenceMapper> {
 
 	@Test
 	public void listByKeys() {
-		List<Reference> refs = mapper().listByKeys(Sets.newHashSet(1,2));
-		assertEquals(2, refs.size());
+		assertEquals(2, mapper().listByKeys(11, Sets.newHashSet(1,2)).size());
+		assertEquals(1, mapper().listByKeys(11, Sets.newHashSet(1,3)).size());
+		assertEquals(1, mapper().listByKeys(11, Sets.newHashSet(2)).size());
+		assertEquals(0, mapper().listByKeys(12, Sets.newHashSet(2)).size());
+		assertEquals(1, mapper().listByKeys(12, Sets.newHashSet(3)).size());
 	}
 
 	private static Reference create() throws Exception {

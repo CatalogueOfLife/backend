@@ -53,7 +53,7 @@ public class SynonymMapperTest extends MapperTestBase<SynonymMapper> {
     synonymMapper.create(n.getDatasetKey(), s1.getName().getKey(), s1.getAccepted().getKey(), s1);
     commit();
 
-    List<Synonym> syns = synonymMapper.listByName(s1.getName().getKey());
+    List<Synonym> syns = synonymMapper.listByName(s1.getName().getDatasetKey(), s1.getName().getKey());
     assertEquals(1, syns.size());
     Synonym s2 = syns.get(0);
 
@@ -65,7 +65,7 @@ public class SynonymMapperTest extends MapperTestBase<SynonymMapper> {
     final int accKey = TestEntityGenerator.TAXON1.getKey();
     final int datasetKey = TestEntityGenerator.TAXON1.getDatasetKey();
 
-    List<Synonym> synonyms = synonymMapper.listByTaxon(accKey);
+    List<Synonym> synonyms = synonymMapper.listByTaxon(datasetKey, accKey);
     assertTrue(synonyms.isEmpty());
     assertEquals(0, synonyms.size());
 
@@ -97,7 +97,7 @@ public class SynonymMapperTest extends MapperTestBase<SynonymMapper> {
 
     // no synonym links added yet, expect empty synonymy even though basionym links
     // exist!
-    synonyms = synonymMapper.listByTaxon(accKey);
+    synonyms = synonymMapper.listByTaxon(datasetKey, accKey);
     assertTrue(synonyms.isEmpty());
     assertEquals(0, synonyms.size());
 
@@ -106,7 +106,7 @@ public class SynonymMapperTest extends MapperTestBase<SynonymMapper> {
     syn.setStatus(TaxonomicStatus.SYNONYM);
     synonymMapper.create(datasetKey,syn1.getKey(), accKey, syn);
     commit();
-    synonyms = synonymMapper.listByTaxon(accKey);
+    synonyms = synonymMapper.listByTaxon(datasetKey, accKey);
     assertFalse(synonyms.isEmpty());
     assertEquals(1, synonyms.size());
 
@@ -116,9 +116,9 @@ public class SynonymMapperTest extends MapperTestBase<SynonymMapper> {
     synonymMapper.create(datasetKey, syn3bas.getKey(), accKey, syn);
     synonymMapper.create(datasetKey, syn31.getKey(), accKey, syn);
 
-    synonyms = synonymMapper.listByTaxon(accKey);
+    synonyms = synonymMapper.listByTaxon(datasetKey, accKey);
     assertEquals(6, synonyms.size());
-    assertEquals(2, synonymMapper.listByTaxon(TestEntityGenerator.TAXON2.getKey()).size());
+    assertEquals(2, synonymMapper.listByTaxon(datasetKey, TestEntityGenerator.TAXON2.getKey()).size());
 
 
     // now also add a misapplied name with the same name
@@ -127,8 +127,8 @@ public class SynonymMapperTest extends MapperTestBase<SynonymMapper> {
     synonymMapper.create(datasetKey, syn21.getKey(), TestEntityGenerator.TAXON2.getKey(), syn);
     commit();
 
-    assertEquals(6, synonymMapper.listByTaxon(accKey).size());
-    assertEquals(3, synonymMapper.listByTaxon(TestEntityGenerator.TAXON2.getKey()).size());
+    assertEquals(6, synonymMapper.listByTaxon(datasetKey, accKey).size());
+    assertEquals(3, synonymMapper.listByTaxon(datasetKey, TestEntityGenerator.TAXON2.getKey()).size());
   }
 
 }

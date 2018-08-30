@@ -6,7 +6,10 @@ import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Collections;
+import java.util.Set;
 
+import com.google.common.collect.ImmutableSet;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.jdbc.ScriptRunner;
 import org.apache.ibatis.session.SqlSession;
@@ -30,13 +33,23 @@ public class InitMybatisRule extends ExternalResource {
 	private SqlSession session;
 
 	public enum TestData {
-		NONE,
-    APPLE,
+		NONE(2),
+    APPLE(2, 11, 12),
 
 		/**
-		 * Inits the datasets table with real col data from colplusthe -repo
+		 * Inits the datasets table with real col data from colplus-repo
 		 */
-		DATASETS
+		DATASETS(2);
+
+		final Set<Integer> datasetKeys;
+
+		TestData(Integer... datasetKeys) {
+			if (datasetKeys == null) {
+				this.datasetKeys = Collections.EMPTY_SET;
+			} else {
+				this.datasetKeys = ImmutableSet.copyOf(datasetKeys);
+			}
+		}
 	}
 
 	public static InitMybatisRule empty() {
@@ -70,16 +83,27 @@ public class InitMybatisRule extends ExternalResource {
 	@Override
 	protected void before() throws Throwable {
 		super.before();
-		truncate();
-		loadData();
 		System.out.println("Open new mybatis session");
 		session = PgSetupRule.getSqlSessionFactory().openSession(false);
+		partition();
+		truncate();
+		loadData();
 	}
 
 	@Override
 	protected void after() {
 		super.after();
 		session.close();
+	}
+
+	private void partition() {
+		final DatasetPartitionMapper pm = getMapper(DatasetPartitionMapper.class);
+		for (Integer dk : testData.datasetKeys) {
+			pm.delete(dk);
+			pm.create(dk);
+			pm.buildIndices(dk);
+			session.commit();
+		}
 	}
 
 	private void truncate() {

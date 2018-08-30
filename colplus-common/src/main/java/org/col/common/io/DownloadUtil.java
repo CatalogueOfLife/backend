@@ -46,9 +46,9 @@ public class DownloadUtil {
    *
    * @return true if changed or false if unmodified since lastModified
    *
-   * @throws IOException if any error occurred incl all http 4xx, 5xx responses
+   * @throws DownloadException if any error occurred incl all http 4xx, 5xx responses
    */
-  public boolean downloadIfModified(URI url, File downloadTo) throws IOException {
+  public boolean downloadIfModified(URI url, File downloadTo) throws DownloadException {
     ZonedDateTime lastModified = null;
     if (downloadTo.exists()) {
       lastModified = ZonedDateTime.ofInstant(
@@ -76,9 +76,9 @@ public class DownloadUtil {
    *
    * @return true if changed or false if unmodified since lastModified
    *
-   * @throws IOException if any error occurred incl all http 4xx, 5xx responses
+   * @throws DownloadException if any error occurred incl all http 4xx, 5xx responses
    */
-  private boolean downloadIfModifiedSince(final URI url, final ZonedDateTime lastModified, final File downloadTo) throws IOException {
+  private boolean downloadIfModifiedSince(final URI url, final ZonedDateTime lastModified, final File downloadTo) throws DownloadException {
     if (url == null) return false;
 
     HttpGet get = new HttpGet(url.toString());
@@ -113,8 +113,11 @@ public class DownloadUtil {
             .append(status.getReasonPhrase())
             .append(" for URL ")
             .append(url);
-        throw new IOException(sb.toString());
+        throw new DownloadException(url, sb.toString());
       }
+
+    } catch (IOException e) {
+      throw new DownloadException(url, e);
     }
   }
 

@@ -8,8 +8,6 @@ import org.col.api.model.NameUsage;
 import org.col.api.model.Page;
 import org.col.api.model.ResultPage;
 import org.col.db.mapper.NameUsageMapper;
-import org.col.db.mapper.SynonymMapper;
-import org.col.db.mapper.TaxonMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,15 +21,11 @@ public class NameUsageDao {
   private static final Logger LOG = LoggerFactory.getLogger(NameUsageDao.class);
 
   private final SqlSession session;
-  private final TaxonMapper tMapper;
-  private final SynonymMapper sMapper;
   private final NameUsageMapper mapper;
 
   public NameUsageDao(SqlSession sqlSession) {
     this.session = sqlSession;
     mapper = session.getMapper(NameUsageMapper.class);
-    tMapper = session.getMapper(TaxonMapper.class);
-    sMapper = session.getMapper(SynonymMapper.class);
   }
 
   public ResultPage<NameUsage> search(NameSearch query, Page page) {

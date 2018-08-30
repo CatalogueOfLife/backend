@@ -14,7 +14,7 @@ import org.col.dw.jersey.exception.NotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Path("/taxon")
+@Path("/dataset/{datasetKey}/taxon")
 @Produces(MediaType.APPLICATION_JSON)
 @SuppressWarnings("static-method")
 public class TaxonResource {
@@ -23,16 +23,15 @@ public class TaxonResource {
   private static final Logger LOG = LoggerFactory.getLogger(TaxonResource.class);
 
   @GET
-  public ResultPage<Taxon> list(@QueryParam("datasetKey") Integer datasetKey,
-      @QueryParam("root") boolean root, @Valid @BeanParam Page page, @Context SqlSession session) {
+  public ResultPage<Taxon> list(@PathParam("datasetKey") int datasetKey, @QueryParam("root") boolean root,
+                                @Valid @BeanParam Page page, @Context SqlSession session) {
     TaxonDao dao = new TaxonDao(session);
     return dao.list(datasetKey, root, page);
   }
 
   @GET
-  @Path("{id}/{datasetKey}")
-  public Integer lookupKey(@PathParam("id") String id, @PathParam("datasetKey") int datasetKey,
-      @Context SqlSession session) {
+  @Path("id/{id}")
+  public Integer lookupKey(@PathParam("datasetKey") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
     TaxonDao dao = new TaxonDao(session);
     Integer key = dao.lookupKey(id, datasetKey);
     if (key == null) {
@@ -43,43 +42,43 @@ public class TaxonResource {
 
   @GET
   @Path("{key}")
-  public Taxon get(@PathParam("key") int key, @Context SqlSession session) {
+  public Taxon get(@PathParam("datasetKey") int datasetKey, @PathParam("key") int key, @Context SqlSession session) {
     TaxonDao dao = new TaxonDao(session);
-    Taxon t = dao.get(key);
+    Taxon t = dao.get(datasetKey, key);
     if (t == null) {
       throw NotFoundException.keyNotFound(Taxon.class, key);
     }
-    return dao.get(key);
+    return dao.get(datasetKey, key);
   }
 
   @GET
   @Path("{key}/children")
-  public ResultPage<Taxon> children(@PathParam("key") int key, @Valid @BeanParam Page page,
+  public ResultPage<Taxon> children(@PathParam("datasetKey") int datasetKey, @PathParam("key") int key, @Valid @BeanParam Page page,
       @Context SqlSession session) {
     TaxonDao dao = new TaxonDao(session);
-    return dao.getChildren(key, page);
+    return dao.getChildren(datasetKey, key, page);
   }
 
   @GET
   @Path("{key}/synonyms")
-  public Synonymy synonyms(@PathParam("key") int key, @Context SqlSession session) {
+  public Synonymy synonyms(@PathParam("datasetKey") int datasetKey, @PathParam("key") int key, @Context SqlSession session) {
     TaxonDao dao = new TaxonDao(session);
-    return dao.getSynonymy(key);
+    return dao.getSynonymy(datasetKey, key);
   }
 
   @GET
   @Path("{key}/classification")
-  public List<Taxon> classification(@PathParam("key") int key, @Context SqlSession session) {
+  public List<Taxon> classification(@PathParam("datasetKey") int datasetKey, @PathParam("key") int key, @Context SqlSession session) {
     TaxonDao dao = new TaxonDao(session);
-    return dao.getClassification(key);
+    return dao.getClassification(datasetKey, key);
   }
 
   @GET
   @Timed
   @Path("{key}/info")
-  public TaxonInfo info(@PathParam("key") int key, @Context SqlSession session) {
+  public TaxonInfo info(@PathParam("datasetKey") int datasetKey, @PathParam("key") int key, @Context SqlSession session) {
     TaxonDao dao = new TaxonDao(session);
-    TaxonInfo info = dao.getTaxonInfo(key);
+    TaxonInfo info = dao.getTaxonInfo(datasetKey, key);
     if (info == null) {
       throw NotFoundException.keyNotFound(Taxon.class, key);
     }

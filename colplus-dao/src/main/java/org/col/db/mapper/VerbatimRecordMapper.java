@@ -16,7 +16,7 @@ public interface VerbatimRecordMapper {
 
   List<TermRecord> list(@Param("datasetKey") int datasetKey, @Param("type") Term type, @Param("page") Page page);
 
-  TermRecord get(@Param("key") int key);
+  TermRecord get(@Param("datasetKey") int datasetKey, @Param("key") int key);
 
   void create(TermRecord record);
 

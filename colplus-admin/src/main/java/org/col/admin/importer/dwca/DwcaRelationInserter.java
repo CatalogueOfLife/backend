@@ -77,7 +77,7 @@ public class DwcaRelationInserter implements NodeBatchProcessor {
       }
     }
 
-    // if status is synonym but we aint got no idea of the accepted flag it
+    // if status is synonym but we ain't got no idea of the accepted flag it
     if (accepted.isEmpty() && (t.isSynonym() || v.hasIssue(Issue.ACCEPTED_ID_INVALID))) {
       v.addIssue(Issue.ACCEPTED_NAME_MISSING);
       // now remove any denormed classification from this synonym to avoid parent relations

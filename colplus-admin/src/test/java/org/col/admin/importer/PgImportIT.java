@@ -165,8 +165,7 @@ public class PgImportIT {
 
       Name trametes_modesta = ndao.get(ndao.lookupKey("324805", dataset.getKey()));
 
-      Reference pubIn =
-          rdao.get(trametes_modesta.getPublishedInKey(), trametes_modesta.getPublishedInPage());
+      Reference pubIn = rdao.get(dataset.getKey(), trametes_modesta.getPublishedInKey(), trametes_modesta.getPublishedInPage());
       assertEquals("Norw. Jl Bot. 19: 236 (1972)", pubIn.getCitation());
       assertNotNull(pubIn.getKey());
       assertNull(pubIn.getId());
@@ -186,10 +185,10 @@ public class PgImportIT {
       Name n1006 = ndao.get(ndao.lookupKey("1006", dataset.getKey()));
       assertEquals("Leontodon taraxacoides", n1006.getScientificName());
 
-      List<NameRelation> rels = ndao.relations(n1006.getKey());
+      List<NameRelation> rels = ndao.relations(dataset.getKey(), n1006.getKey());
       assertEquals(1, rels.size());
 
-      Name bas = ndao.getBasionym(n1006.getKey());
+      Name bas = ndao.getBasionym(dataset.getKey(), n1006.getKey());
       assertEquals("Leonida taraxacoida", bas.getScientificName());
       assertEquals(n1006.getHomotypicNameKey(), bas.getHomotypicNameKey());
 
@@ -245,12 +244,12 @@ public class PgImportIT {
   }
 
   private void assertIssue(VerbatimEntity ent, Issue issue) {
-    TermRecord v = vMapper.get(ent.getVerbatimKey());
+    TermRecord v = vMapper.get(dataset.getKey(), ent.getVerbatimKey());
     assertTrue(v.hasIssue(issue));
   }
 
   private void assertNoIssue(VerbatimEntity ent, Issue issue) {
-    TermRecord v = vMapper.get(ent.getVerbatimKey());
+    TermRecord v = vMapper.get(dataset.getKey(), ent.getVerbatimKey());
     assertFalse(v.hasIssue(issue));
   }
 
@@ -263,10 +262,10 @@ public class PgImportIT {
       TaxonDao tdao = new TaxonDao(session);
 
       // check species name
-      Taxon tax = tdao.get(tdao.lookupKey("1000", dataset.getKey()));
+      Taxon tax = tdao.get(dataset.getKey(), tdao.lookupKey("1000", dataset.getKey()));
       assertEquals("Crepis pulchra", tax.getName().getScientificName());
 
-      TaxonInfo info = tdao.getTaxonInfo(tax.getKey());
+      TaxonInfo info = tdao.getTaxonInfo(dataset.getKey(), tax.getKey());
       // check vernaculars
       Map<Language, String> expV = Maps.newHashMap();
       expV.put(Language.GERMAN, "Schöner Pippau");
@@ -351,7 +350,7 @@ public class PgImportIT {
       Synonym s = (Synonym) usages.get(0);
       assertEquals("Astracantha arnacantha", s.getAccepted().getName().getScientificName());
 
-      TaxonInfo t = tdao.getTaxonInfo(s.getAccepted().getKey());
+      TaxonInfo t = tdao.getTaxonInfo(s.getAccepted());
 
       assertEquals(1, t.getVernacularNames().size());
       assertEquals(2, t.getDistributions().size());
@@ -373,7 +372,7 @@ public class PgImportIT {
       assertEquals("Zapoteca formosa (Kunth) H.M.Hern.", t.getName().canonicalNameComplete());
       assertEquals(Rank.SPECIES, t.getName().getRank());
 
-      TaxonInfo info = tdao.getTaxonInfo(t.getKey());
+      TaxonInfo info = tdao.getTaxonInfo(t);
       // distributions
       assertEquals(3, info.getDistributions().size());
       Set<String> areas = Sets.newHashSet("AGE-BA", "BZC-MS", "BZC-MT");
@@ -405,7 +404,7 @@ public class PgImportIT {
       Taxon t = tdao.get("Rho-144", dataset.getKey());
       assertEquals("Afrogamasellus lokelei Daele, 1976", t.getName().canonicalNameComplete());
 
-      List<Taxon> classific = tdao.getClassification(t.getKey());
+      List<Taxon> classific = tdao.getClassification(t);
       LinkedList<RankedName> expected =
           Lists.newLinkedList(Lists.newArrayList(rn(Rank.KINGDOM, "Animalia"),
               rn(Rank.PHYLUM, "Arthropoda"), rn(Rank.CLASS, "Arachnida"),
@@ -454,7 +453,7 @@ public class PgImportIT {
       Taxon t = tdao.get("MD2", dataset.getKey());
       assertEquals("Latrodectus mactans (Fabricius, 1775)", t.getName().canonicalNameComplete());
 
-      TaxonInfo info = tdao.getTaxonInfo(t.getKey());
+      TaxonInfo info = tdao.getTaxonInfo(t);
       // Walckenaer1805;Walckenaer, CA;1805;Table of the aranid or essential characters of the
       // tribes, genera, families and races contained in the genus Aranea of ​​Linnaeus, with the
       // designation of the species included in each of these divisions . Paris, 88 pp;;
@@ -473,7 +472,7 @@ public class PgImportIT {
         assertNotNull(r);
       }
 
-      Synonymy syn = tdao.getSynonymy(t.getKey());
+      Synonymy syn = tdao.getSynonymy(t);
       assertEquals(5, syn.size());
       assertEquals(2, syn.getMisapplied().size());
       assertEquals(3, syn.getHeterotypic().size());
@@ -498,11 +497,11 @@ public class PgImportIT {
       Taxon annua = tdao.get("4", dataset.getKey());
       assertEquals("Poa annua L.", annua.getName().canonicalNameComplete());
 
-      TaxonInfo info = tdao.getTaxonInfo(annua.getKey());
+      TaxonInfo info = tdao.getTaxonInfo(annua);
       Reference pubIn = info.getReference(annua.getName().getPublishedInKey());
       assertEquals("Sp. Pl. 1: 68 (1753).", pubIn.getCitation());
 
-      Synonymy syn = tdao.getSynonymy(annua.getKey());
+      Synonymy syn = tdao.getSynonymy(annua);
       assertEquals(4, syn.size());
       assertEquals(0, syn.getMisapplied().size());
       assertEquals(2, syn.getHeterotypic().size());
@@ -522,14 +521,14 @@ public class PgImportIT {
       NameDao ndao = new NameDao(session);
       NameRelationMapper actMapper = session.getMapper(NameRelationMapper.class);
       // Poa annua has not explicitly declared a basionym
-      assertTrue(actMapper.list(annua.getName().getKey()).isEmpty());
+      assertTrue(actMapper.list(dataset.getKey(), annua.getName().getKey()).isEmpty());
 
       Name reptans1 = ndao.get("7", dataset.getKey());
       Name reptans2 = ndao.get("8", dataset.getKey());
-      assertEquals(1, actMapper.list(reptans1.getKey()).size());
-      assertEquals(1, actMapper.list(reptans2.getKey()).size());
+      assertEquals(1, actMapper.list(dataset.getKey(), reptans1.getKey()).size());
+      assertEquals(1, actMapper.list(dataset.getKey(), reptans2.getKey()).size());
 
-      NameRelation act = actMapper.list(reptans1.getKey()).get(0);
+      NameRelation act = actMapper.list(dataset.getKey(), reptans1.getKey()).get(0);
       assertEquals(NomRelType.BASIONYM, act.getType());
       assertEquals(reptans1.getKey(), act.getNameKey());
       assertEquals(reptans2.getKey(), act.getRelatedNameKey());
@@ -565,9 +564,9 @@ public class PgImportIT {
 
   private void assertParents(TaxonDao tdao, String taxonID, String... parentIds) {
     final LinkedList<String> expected = new LinkedList<String>(Arrays.asList(parentIds));
-    Taxon t = tdao.get(tdao.lookupKey(taxonID, dataset.getKey()));
+    Taxon t = tdao.get(dataset.getKey(), tdao.lookupKey(taxonID, dataset.getKey()));
     while (t.getParentKey() != null) {
-      Taxon parent = tdao.get(t.getParentKey());
+      Taxon parent = tdao.get(dataset.getKey(), t.getParentKey());
       assertEquals(expected.pop(), parent.getId());
       t = parent;
     }

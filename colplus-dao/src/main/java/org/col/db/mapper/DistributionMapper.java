@@ -7,9 +7,9 @@ import org.col.api.model.Distribution;
 
 public interface DistributionMapper {
 
-	List<Distribution> listByTaxon(@Param("taxonKey") int taxonKey);
+	List<Distribution> listByTaxon(@Param("datasetKey") int datasetKey, @Param("taxonKey") int taxonKey);
 
-	Distribution get(@Param("key") int ikey);
+	Distribution get(@Param("datasetKey") int datasetKey, @Param("key") int key);
 
 	void create(@Param("d") Distribution distribution,
 	    @Param("taxonKey") int taxonKey,

@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.col.db.mapper.DatasetPartitionMapper">
+
+    <update id="create" parameterType="map">
+        CREATE TABLE verbatim_d${key}
+            PARTITION OF verbatim FOR VALUES IN ( ${key} );
+        CREATE TABLE reference_d${key}
+            PARTITION OF reference FOR VALUES IN ( ${key} );
+        CREATE TABLE name_rel_d${key}
+            PARTITION OF name_rel FOR VALUES IN ( ${key} );
+        CREATE TABLE taxon_d${key}
+            PARTITION OF taxon FOR VALUES IN ( ${key} );
+        CREATE TABLE synonym_d${key}
+            PARTITION OF synonym FOR VALUES IN ( ${key} );
+        CREATE TABLE taxon_reference_d${key}
+            PARTITION OF taxon_reference FOR VALUES IN ( ${key} );
+        CREATE TABLE distribution_d${key}
+            PARTITION OF distribution FOR VALUES IN ( ${key} );
+        CREATE TABLE distribution_reference_d${key}
+            PARTITION OF distribution_reference FOR VALUES IN ( ${key} );
+        CREATE TABLE vernacular_name_d${key}
+            PARTITION OF vernacular_name FOR VALUES IN ( ${key} );
+        CREATE TABLE vernacular_name_reference_d${key}
+            PARTITION OF vernacular_name_reference FOR VALUES IN ( ${key} );
+    </update>
+
+    <update id="buildIndices" parameterType="map">
+        ALTER TABLE verbatim_d${key} ADD PRIMARY KEY (key);
+        CREATE index ON verbatim_d${key} USING GIN(issues);
+
+        ALTER TABLE name_rel_d${key} ADD PRIMARY KEY (key);
+        CREATE index ON name_rel_d${key} (name_key, type);
+        CREATE index ON name_rel_d${key} (verbatim_key);
+
+        ALTER TABLE taxon_d${key} ADD PRIMARY KEY (key);
+        CREATE UNIQUE index ON taxon_d${key} (id);
+        CREATE index ON taxon_d${key} (parent_key);
+        CREATE index ON taxon_d${key} (name_key);
+        CREATE index ON taxon_d${key} (verbatim_key);
+
+        CREATE index ON synonym_d${key} (taxon_key);
+        CREATE index ON synonym_d${key} (name_key);
+        CREATE index ON synonym_d${key} (verbatim_key);
+
+        ALTER TABLE reference_d${key} ADD PRIMARY KEY (key);
+        CREATE UNIQUE index ON reference_d${key} (id);
+        CREATE index ON reference_d${key} (verbatim_key);
+
+        ALTER TABLE distribution_d${key} ADD PRIMARY KEY (key);
+        CREATE index ON distribution_d${key} (taxon_key);
+        CREATE index ON distribution_d${key} (verbatim_key);
+
+        ALTER TABLE vernacular_name_d${key} ADD PRIMARY KEY (key);
+        CREATE index ON vernacular_name_d${key} (taxon_key);
+        CREATE index ON vernacular_name_d${key} (verbatim_key);
+    </update>
+
+    <update id="delete" parameterType="map">
+        DROP TABLE IF EXISTS verbatim_d${key};
+        DROP TABLE IF EXISTS reference_d${key};
+        DROP TABLE IF EXISTS name_rel_d${key};
+        DROP TABLE IF EXISTS taxon_d${key};
+        DROP TABLE IF EXISTS synonym_d${key};
+        DROP TABLE IF EXISTS taxon_reference_d${key};
+        DROP TABLE IF EXISTS distribution_d${key};
+        DROP TABLE IF EXISTS distribution_reference_d${key};
+        DROP TABLE IF EXISTS vernacular_name_d${key};
+        DROP TABLE IF EXISTS vernacular_name_reference_d${key};
+    </update>
+
+    <delete id="truncateDatasetData" parameterType="map">
+        DELETE FROM name
+        WHERE dataset_key = #{key}
+    </delete>
+
+</mapper>

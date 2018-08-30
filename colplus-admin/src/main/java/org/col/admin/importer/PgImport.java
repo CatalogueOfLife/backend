@@ -67,7 +67,7 @@ public class PgImport implements Callable<Boolean> {
 	@Override
 	public Boolean call() throws InterruptedException {
     checkIfCancelled();
-	  truncate();
+	  partition();
 
     checkIfCancelled();
     insertVerbatim();
@@ -84,7 +84,10 @@ public class PgImport implements Callable<Boolean> {
     checkIfCancelled();
 		insertTaxa();
 
-		updateMetadata();
+    checkIfCancelled();
+    buildIndices();
+
+    updateMetadata();
 		LOG.info("Completed dataset {} insert with {} verbatim records, " +
         "{} names, {} taxa, {} references, {} vernaculars and {} distributions",
         dataset.getKey(), verbatimKeys.size(),
@@ -92,11 +95,22 @@ public class PgImport implements Callable<Boolean> {
 		return true;
 	}
 
-  private void truncate(){
+  private void partition(){
     try (SqlSession session = sessionFactory.openSession(true)) {
-      LOG.info("Remove existing data for dataset {}: {}", dataset.getKey(), dataset.getTitle());
-      DatasetMapper mapper = session.getMapper(DatasetMapper.class);
+      LOG.info("Create empty partition for dataset {}: {}", dataset.getKey(), dataset.getTitle());
+      DatasetPartitionMapper mapper = session.getMapper(DatasetPartitionMapper.class);
+      mapper.delete(dataset.getKey());
+      mapper.create(dataset.getKey());
       mapper.truncateDatasetData(dataset.getKey());
+      session.commit();
+    }
+  }
+
+  private void buildIndices(){
+    try (SqlSession session = sessionFactory.openSession(true)) {
+      LOG.info("Build partition indices for dataset {}: {}", dataset.getKey(), dataset.getTitle());
+      DatasetPartitionMapper mapper = session.getMapper(DatasetPartitionMapper.class);
+      mapper.buildIndices(dataset.getKey());
       session.commit();
     }
   }

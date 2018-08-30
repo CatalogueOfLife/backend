@@ -26,6 +26,7 @@ import org.col.common.concurrent.StartNotifier;
 import org.col.common.io.DownloadUtil;
 import org.col.db.dao.DatasetImportDao;
 import org.col.db.mapper.DatasetMapper;
+import org.col.db.mapper.DatasetPartitionMapper;
 import org.gbif.nameparser.utils.NamedThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -83,7 +84,7 @@ public class ImportManager implements Managed {
   }
 
   /**
-   * @throws IllegalArgumentException if dataset was scheduled for importing already or queue was full
+   * @throws IllegalArgumentException if dataset was scheduled for importing already, queue was full or dataset does not exist
    */
   public ImportRequest submit(final int datasetKey, final boolean force) throws IllegalArgumentException {
     // is this dataset already scheduled?
@@ -98,9 +99,10 @@ public class ImportManager implements Managed {
 
     final ImportRequest req = new ImportRequest(datasetKey, force);
     LOG.debug("Queue new import for dataset {}", datasetKey);
+    final ImportJob job = createImport(req);
     queue.add(req);
     futures.put(datasetKey, CompletableFuture
-        .runAsync(createImport(req), exec)
+        .runAsync(job, exec)
         .handle((di, err) -> {
           if (err != null) {
             // unwrap CompletionException error
@@ -189,9 +191,9 @@ public class ImportManager implements Managed {
       // truncate data?
       if (truncate) {
         try (SqlSession session = factory.openSession(true)){
-          DatasetMapper dm = session.getMapper(DatasetMapper.class);
-          LOG.info("Truncating partially imported data for dataset {}", di.getDatasetKey());
-          dm.truncateDatasetData(di.getDatasetKey());
+          DatasetPartitionMapper dm = session.getMapper(DatasetPartitionMapper.class);
+          LOG.info("Drop partially imported data for dataset {}", di.getDatasetKey());
+          dm.delete(di.getDatasetKey());
         }
       }
       // add back to queue

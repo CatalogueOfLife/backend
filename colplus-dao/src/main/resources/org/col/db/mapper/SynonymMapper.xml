@@ -31,9 +31,9 @@
 
     <sql id="FROM">
         synonym s
-        JOIN name n ON n.key=s.name_key
-        JOIN taxon a ON a.key=s.taxon_key
-        JOIN name an ON an.key=a.name_key
+        JOIN name n ON n.key=s.name_key AND s.dataset_key = n.dataset_key
+        JOIN taxon a ON a.key=s.taxon_key AND s.dataset_key = a.dataset_key
+        JOIN name an ON an.key=a.name_key AND s.dataset_key = an.dataset_key
     </sql>
 
 
@@ -46,6 +46,7 @@
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
         WHERE n.key = #{nameKey}
+            AND s.dataset_key = #{datasetKey}
     </select>
 
 
@@ -53,6 +54,7 @@
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
         WHERE s.taxon_key = #{taxonKey}
+            AND s.dataset_key = #{datasetKey}
         ORDER BY s.status, n.homotypic_name_key, n.scientific_name
     </select>
 

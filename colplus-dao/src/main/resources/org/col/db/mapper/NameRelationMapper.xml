@@ -46,15 +46,16 @@
   <select id="list" resultMap="nameRelResultMap">
     SELECT <include refid="SELECT" />
     FROM name_rel nr
-    WHERE nr.name_key = #{nameKey}
-      OR nr.related_name_key = #{nameKey}
+    WHERE nr.dataset_key = #{datasetKey}
+      AND (nr.name_key = #{nameKey} OR nr.related_name_key = #{nameKey})
     ORDER BY nr.key
   </select>
 
   <select id="listByType" resultMap="nameRelResultMap">
     SELECT <include refid="SELECT" />
     FROM name_rel nr
-    WHERE nr.type=#{type}
+    WHERE nr.dataset_key = #{datasetKey}
+      AND nr.type=#{type}
       AND nr.name_key = #{nameKey}
     ORDER BY nr.key
   </select>

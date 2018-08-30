@@ -48,14 +48,14 @@
   <select id="listByTaxon" resultMap="distributionResultMap">
     SELECT <include refid="SELECT" />
     FROM <include refid="FROM" />
-    WHERE d.taxon_key = #{taxonKey}
+    WHERE d.taxon_key = #{taxonKey} AND d.dataset_key = #{datasetKey}
     ORDER BY d.key
   </select>
 
   <select id="get" resultMap="distributionResultMap">
     SELECT <include refid="SELECT" />
     FROM <include refid="FROM" />
-    WHERE d.key = #{key}
+    WHERE d.key = #{key} AND d.dataset_key = #{datasetKey}
   </select>
 
   <insert id="create" parameterType="Distribution" useGeneratedKeys="true" keyProperty="d.key">

@@ -759,7 +759,7 @@ public class NeoDb implements ReferenceStore {
   }
 
   /**
-   * Sync taxon KVP storee with neo4j relations, setting correct neo4j labels, homotypic keys etc
+   * Sync taxon KVP store with neo4j relations, setting correct neo4j labels, homotypic keys etc
    * Set correct ROOT, PROPARTE and BASIONYM labels for easier access
    */
   public void sync() {
@@ -825,7 +825,7 @@ public class NeoDb implements ReferenceStore {
           oldParent = r.getOtherNode(child);
           r.delete();
         }
-        LOG.error("{} has already a parent {}, override with new parent {}",
+        LOG.warn("{} has already a parent {}, override with new parent {}",
             NeoProperties.getScientificNameWithAuthor(child),
             NeoProperties.getScientificNameWithAuthor(oldParent),
             NeoProperties.getScientificNameWithAuthor(parent));

@@ -24,6 +24,7 @@ public interface DatasetMapper {
 
   /**
    * list datasets which have already been imported before, but need a refresh.
+	 * The dataset.importFrequency is respected for rescheduling an already imported dataset
    * @param limit maximum of datasets to return
    */
   List<Dataset> listToBeImported(int limit);
@@ -43,11 +44,4 @@ public interface DatasetMapper {
 	 */
 	int delete(@Param("key") int key);
 
-	/**
-	 * Truncates all data from a dataset cascading to all entities incl names, taxa
-	 * and references.
-	 * 
-	 * @param key
-	 */
-	void truncateDatasetData(@Param("key") int key);
 }

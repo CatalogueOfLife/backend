@@ -46,17 +46,13 @@
     <select id="count" resultType="integer">
         SELECT count(*)
         FROM reference
-        <if test="datasetKey != null">
-            WHERE dataset_key = #{datasetKey}
-        </if>
+        WHERE dataset_key = #{datasetKey}
     </select>
 
     <select id="list" resultMap="referenceResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
-        <if test="datasetKey != null">
-            WHERE r.dataset_key = #{datasetKey}
-        </if>
+        WHERE r.dataset_key = #{datasetKey}
         ORDER BY key
         <include refid="org.col.db.mapper.Common.limit" />
     </select>
@@ -64,7 +60,7 @@
     <select id="listByKeys" resultMap="referenceResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
-        WHERE key IN
+        WHERE r.dataset_key = #{datasetKey} AND key IN
         <foreach item="k" index="idx" collection="keys"
                  open="(" separator="," close=")">
             #{k}
@@ -80,7 +76,7 @@
     <select id="get" resultMap="referenceResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
-        WHERE r.key = #{key}
+        WHERE r.key = #{key} AND r.dataset_key = #{datasetKey}
     </select>
 
     <insert id="create" parameterType="Reference" useGeneratedKeys="true" keyProperty="key">
@@ -96,7 +92,8 @@
     <select id="listByTaxon" resultType="integer">
         SELECT reference_key
         FROM taxon_reference
-        WHERE taxon_key = #{taxonKey}
+        WHERE dataset_key = #{datasetKey}
+            AND taxon_key = #{taxonKey}
     </select>
 
 </mapper>

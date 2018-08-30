@@ -14,7 +14,7 @@ import org.gbif.dwc.terms.Term;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Path("/verbatim")
+@Path("/dataset/{datasetKey}/verbatim")
 @Produces(MediaType.APPLICATION_JSON)
 @SuppressWarnings("static-method")
 public class VerbatimResource {
@@ -23,7 +23,7 @@ public class VerbatimResource {
   private static final Logger LOG = LoggerFactory.getLogger(VerbatimResource.class);
 
   @GET
-  public ResultPage<TermRecord> list(@QueryParam("datasetKey") Integer datasetKey,
+  public ResultPage<TermRecord> list(@PathParam("dkey") int datasetKey,
                                      @QueryParam("type") Term type,
                                      @Valid @BeanParam Page page,
                                      @Context SqlSession session) {
@@ -33,9 +33,9 @@ public class VerbatimResource {
 
   @GET
   @Path("{key}")
-  public TermRecord get(@PathParam("key") int key, @Context SqlSession session) {
+  public TermRecord get(@PathParam("dkey") int datasetKey, @PathParam("key") int key, @Context SqlSession session) {
     VerbatimRecordMapper mapper = session.getMapper(VerbatimRecordMapper.class);
-    return mapper.get(key);
+    return mapper.get(datasetKey, key);
   }
 
 }

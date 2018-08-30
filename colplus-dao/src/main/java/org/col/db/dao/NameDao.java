@@ -47,8 +47,8 @@ public class NameDao {
     return nMapper.get(key);
   }
 
-  public Name getBasionym(Integer key) {
-    List<NameRelation> rels = nrMapper.listByType(key, NomRelType.BASIONYM);
+  public Name getBasionym(int datasetKey, int key) {
+    List<NameRelation> rels = nrMapper.listByType(datasetKey, key, NomRelType.BASIONYM);
     if (rels.size() == 1) {
       return nMapper.get(rels.get(0).getRelatedNameKey());
     } else if (rels.size() > 1) {
@@ -80,15 +80,15 @@ public class NameDao {
   /**
    * Lists all relations for a given name and type
    */
-  public List<NameRelation> relations(int nameKey, NomRelType type) {
-    return nrMapper.listByType(nameKey, type);
+  public List<NameRelation> relations(int datasetKey, int nameKey, NomRelType type) {
+    return nrMapper.listByType(datasetKey, nameKey, type);
   }
 
   /**
    * Lists all relations for a given name
    */
-  public List<NameRelation> relations(int nameKey) {
-    return nrMapper.list(nameKey);
+  public List<NameRelation> relations(int datasetKey, int nameKey) {
+    return nrMapper.list(datasetKey, nameKey);
   }
 
   /**

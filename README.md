@@ -6,7 +6,7 @@ For source code contributions please see our [developer guide](DEVELOPER-GUIDE.m
 ## Prerequisites
 1. Java 8 JDK
 1. Maven 3
-1. Postgres 9.6 or later.
+1. Postgres 10 or later.
 
 ## Run the CoL application locally
 1. create a local [config.yml](config.yml) file

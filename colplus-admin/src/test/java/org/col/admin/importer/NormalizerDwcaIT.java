@@ -458,6 +458,7 @@ public class NormalizerDwcaIT {
   @Ignore("No testing yet")
   public void testWormsParents() throws Exception {
     normalize(32);
+    print("worms", GraphFormat.DOT, false);
 
     try (Transaction tx = store.getNeo().beginTx()) {
     }
