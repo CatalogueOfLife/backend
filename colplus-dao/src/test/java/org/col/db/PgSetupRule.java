@@ -30,11 +30,10 @@ import ru.yandex.qatools.embed.postgresql.EmbeddedPostgres;
 public class PgSetupRule extends ExternalResource {
   private static final Logger LOG = LoggerFactory.getLogger(PgSetupRule.class);
 
-	private static EmbeddedColPg postgres;
 	private static HikariDataSource dataSource;
 	private static SqlSessionFactory sqlSessionFactory;
   private static PgConfig cfg;
-	private boolean startedHere = false;
+	private EmbeddedColPg postgres;
 
   public static PgConfig getCfg() {
     return cfg;
@@ -51,11 +50,8 @@ public class PgSetupRule extends ExternalResource {
 	@Override
 	protected void before() throws Throwable {
 		super.before();
-		if (postgres == null) {
-			startDb();
-			startedHere = true;
-			initDb(cfg);
-		}
+		startDb();
+		initDb(cfg);
 	}
 
 	private void startDb() {
@@ -78,13 +74,7 @@ public class PgSetupRule extends ExternalResource {
 
 		} catch (Exception e) {
       LOG.error("Pg startup error: {}", e.getMessage(), e);
-
-			if (dataSource != null) {
-				dataSource.close();
-			}
-			if (postgres != null) {
-				postgres.stop();
-			}
+			shutdown();
 			throw new RuntimeException(e);
 		}
 	}
@@ -105,13 +95,17 @@ public class PgSetupRule extends ExternalResource {
 
 	@Override
 	public void after() {
-		if (startedHere) {
+		shutdown();
+	}
+
+	private void shutdown() {
+		if (dataSource != null) {
 			System.out.println("Shutdown dbpool");
 			dataSource.close();
-			if (postgres != null) {
-				System.out.println("Stopping Postgres");
-				postgres.stop();
-			}
+		}
+		if (postgres != null) {
+			System.out.println("Stopping Postgres");
+			postgres.stop();
 		}
 	}
 

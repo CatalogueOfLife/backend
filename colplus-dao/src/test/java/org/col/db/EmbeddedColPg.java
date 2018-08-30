@@ -1,9 +1,11 @@
 package org.col.db;
 
+import java.io.File;
 import java.net.ServerSocket;
 import java.time.Duration;
 import java.time.Instant;
 
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.yandex.qatools.embed.postgresql.EmbeddedPostgres;
@@ -64,9 +66,13 @@ public class EmbeddedColPg {
 	}
 
 	public void stop() {
-		if (postgres != null) {
+		if (postgres != null && postgres.getProcess().isPresent()) {
 			LOG.info("Stopping embedded Postgres");
 			postgres.stop();
+
+			File dir = postgres.getConfig().get().storage().dbDir();
+			LOG.info("Removing Postgres data directory {}", dir.getAbsolutePath());
+			FileUtils.deleteQuietly(dir);
 		}
 	}
 
