@@ -101,7 +101,7 @@ CREATE TABLE dataset (
   organisation TEXT,
   contact_person TEXT,
   authors_and_editors TEXT[] DEFAULT '{}',
-  license INTEGER,DatasetMapperTest.list
+  license INTEGER,
   version TEXT,
   release_date DATE,
   homepage TEXT,
