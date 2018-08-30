@@ -12,6 +12,7 @@ import org.col.api.model.Dataset;
 import org.col.api.model.Page;
 import org.col.api.vocab.DataFormat;
 import org.col.api.vocab.Datasets;
+import org.col.api.vocab.Frequency;
 import org.col.api.vocab.License;
 import org.gbif.nameparser.api.NomCode;
 import org.javers.core.Javers;
@@ -37,6 +38,7 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
 		d.setTitle(RandomUtils.randomString(80));
 		d.setDescription(RandomUtils.randomString(500));
 		d.setLicense(License.CC0);
+		d.setImportFrequency(Frequency.MONTHLY);
 		for (int i = 0; i < 8; i++) {
 			d.getAuthorsAndEditors().add(RandomUtils.randomString(100));
 		}

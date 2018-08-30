@@ -125,7 +125,7 @@
                 AND d.import_frequency > 0
         ORDER BY d.key, di.attempt DESC
         ) AS latest
-        WHERE state != 0 AND (finished + d.import_frequency * interval '1 day') &lt;  now()
+        WHERE state != 0 AND (finished + import_frequency * interval '1 day') &lt;  now()
         ORDER BY finished ASC
         LIMIT #{limit}
     </select>
