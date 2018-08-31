@@ -61,7 +61,7 @@ public class NeoDbFactory {
       if (!storeDir.exists()) {
         storeDir.mkdirs();
       }
-      return new NeoDb(datasetKey, dbMaker.make(), storeDir, builder, cfg.batchSize);
+      return new NeoDb(datasetKey, dbMaker.make(), storeDir, builder, cfg.batchSize, cfg.batchTimeout);
 
     } catch (Exception e) {
       throw new IllegalStateException("Failed to init NormalizerStore at " + storeDir, e);

@@ -27,6 +27,7 @@ import org.col.api.model.*;
 import org.col.api.vocab.Issue;
 import org.col.api.vocab.Origin;
 import org.col.api.vocab.TaxonomicStatus;
+import org.col.common.collection.LRUCache;
 import org.col.common.mapdb.MapDbObjectSerializer;
 import org.col.common.text.StringUtils;
 import org.gbif.dwc.terms.DwcTerm;
@@ -79,6 +80,11 @@ public class NeoDb implements ReferenceStore {
   private final KryoPool pool;
   private BatchInserter inserter;
   public final int batchSize;
+  public final int batchTimeout;
+  // monomial lookup cache to speed up lookups by scientific name
+  // taking up 99% of time for denormalization of higher taxa
+  private final LRUCache<String, List<Node>> monomialCache = new LRUCache<String, List<Node>>(10000);
+  private final LRUCache<String, List<Node>> idCache = new LRUCache<String, List<Node>>(10000);
 
   private GraphDatabaseService neo;
 
@@ -86,13 +92,15 @@ public class NeoDb implements ReferenceStore {
    * @param mapDb
    * @param neoDir
    * @param neoFactory
+   * @param batchTimeout in minutes
    */
-  NeoDb(int datasetKey, DB mapDb, File neoDir, GraphDatabaseBuilder neoFactory, int batchSize) throws Exception {
+  NeoDb(int datasetKey, DB mapDb, File neoDir, GraphDatabaseBuilder neoFactory, int batchSize, int batchTimeout) {
     this.datasetKey = datasetKey;
     this.neoFactory = neoFactory;
     this.neoDir = neoDir;
     this.mapDb = mapDb;
     this.batchSize = batchSize;
+    this.batchTimeout = batchTimeout;
 
     try {
       pool = new KryoPool.Builder(new NeoKryoFactory())
@@ -129,7 +137,7 @@ public class NeoDb implements ReferenceStore {
       close();
       throw e;
     }
-  };
+  }
 
   /**
    * Fully closes the dao leaving any potentially existing persistence files untouched.
@@ -157,7 +165,7 @@ public class NeoDb implements ReferenceStore {
   private void openNeo() {
     LOG.debug("Starting embedded neo4j database from {}", neoDir.getAbsolutePath());
     neo = neoFactory.newGraphDatabase();
-
+    clearCaches();
     try {
       GraphDatabaseAPI gdb = (GraphDatabaseAPI) neo;
       gdb.getDependencyResolver().resolveDependency(Procedures.class).registerProcedure(UnionFindProc.class);
@@ -168,8 +176,15 @@ public class NeoDb implements ReferenceStore {
     }
   }
 
+  private void clearCaches() {
+    LOG.debug("Clearing caches (monomial={}, id={})", monomialCache.size(), idCache.size());
+    monomialCache.clear();
+    idCache.clear();
+  }
+
   private void closeNeo() {
     try {
+      clearCaches();
       if (neo != null) {
         neo.shutdown();
       }
@@ -236,13 +251,26 @@ public class NeoDb implements ReferenceStore {
    * @return the matching nodes with the scientificName
    */
   public List<Node> byScientificName(String scientificName) {
-    return Iterators.asList(neo.findNodes(Labels.ALL, NeoProperties.SCIENTIFIC_NAME, scientificName));
+    return byScientificName(Labels.ALL, scientificName);
   }
 
   /**
+   * Lookup nodes by their scientific name.
+   * This method caches monomials for quick subsequent lookups
    * @return the matching nodes with the scientificName and given label
    */
-  public List<Node> byScientificName(Labels label, String scientificName) {
+  public List<Node> byScientificName(final Labels label, final String scientificName) {
+    if (scientificName.contains(" ")) {
+      return lookupByScientificName(label, scientificName);
+    } else {
+      return new ArrayList<>(monomialCache.computeIfAbsent(scientificName, sn -> lookupByScientificName(label, sn)));
+    }
+  }
+
+  /**
+   * uncached internal version
+   */
+  private List<Node> lookupByScientificName(Labels label, String scientificName) {
     return Iterators.asList(neo.findNodes(label, NeoProperties.SCIENTIFIC_NAME, scientificName));
   }
 
@@ -288,10 +316,15 @@ public class NeoDb implements ReferenceStore {
 
       while (batchIter.hasNext() && consThread.isAlive()) {
         checkIfInterrupted();
-        if (!queue.offer(batchIter.next(), 15, TimeUnit.MINUTES)) {
-          LOG.error("Failed to offer new batch within 15 minutes for neodb processing via {}", callback);
-          throw new RuntimeException("Failed to offer new batch for neodb processing via " + callback.getClass().getSimpleName());
-        };
+        List<Node> batch = batchIter.next();
+        if (!queue.offer(batch, batchTimeout, TimeUnit.MINUTES)) {
+          LOG.error("Failed to offer new batch {} of size {} within {} minutes for neodb processing by {}", consumer.getBatchCounter(), batch.size(), batchTimeout, callback);
+          LOG.info("Nodes: {}", batch.stream()
+              .map(NeoProperties::getScientificNameWithAuthor)
+              .collect(Collectors.joining( "; " ))
+          );
+          throw new RuntimeException("Failed to offer new batch for neodb processing by " + callback);
+        }
       }
       if (consThread.isAlive()) {
         queue.put(BatchConsumer.POISON_PILL);
@@ -398,7 +431,7 @@ public class NeoDb implements ReferenceStore {
       Result res = neo.execute("MATCH (n:ALL) WITH n."+NeoProperties.ID +" as id, collect(n) AS nodes WHERE size(nodes) >  1 RETURN nodes");
       res.accept(new Result.ResultVisitor<Exception>() {
         @Override
-        public boolean visit(Result.ResultRow row) throws Exception {
+        public boolean visit(Result.ResultRow row) {
           List<Node> nodes = (List<Node>) row.get("nodes");
           Node first = nodes.get(0);
           LOG.info("keep {} {}", first, NeoProperties.getScientificNameWithAuthor(first));
@@ -442,6 +475,12 @@ public class NeoDb implements ReferenceStore {
       nodeId = t.node.getId();
       // update neo4j props
       NeoDbUtils.setProperties(t.node, props);
+      // clear monomial lookup monomialCache
+      //noinspection SuspiciousMethodCalls
+      String sn = (String) props.get(NeoProperties.SCIENTIFIC_NAME);
+      if (!sn.contains(" ")) {
+        monomialCache.remove(sn);
+      }
     }
 
     // use neo4j node ids as keys for both name and taxon
@@ -911,7 +950,6 @@ public class NeoDb implements ReferenceStore {
 
     return new RankedName(t.node, t.name.getScientificName(), t.name.authorshipComplete(), t.name.getRank());
   }
-
 
 }
 

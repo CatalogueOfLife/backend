@@ -324,8 +324,7 @@ public class NormalizerACEFIT {
   @Test
   @Ignore("external dependency")
   public void testGsdGithub() throws Exception {
-    normalize(URI.create(
-        "https://raw.githubusercontent.com/Sp2000/colplus-repo/master/ACEF/assembly/15.tar.gz"));
+    normalize(URI.create("https://raw.githubusercontent.com/Sp2000/colplus-repo/master/ACEF/19.tar.gz"));
     writeToFile();
   }
 

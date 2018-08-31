@@ -40,6 +40,12 @@ public class NormalizerConfig {
   @NotNull
   public int batchSize = 10000;
 
+  /**
+   * Timeout in minutes to wait before stopping processing a batch in neodb and fail the normalizer / import
+   */
+  @NotNull
+  public int batchTimeout = 30;
+
   @Min(0)
   public int mappedMemory = 128;
 
