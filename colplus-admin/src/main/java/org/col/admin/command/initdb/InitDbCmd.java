@@ -55,8 +55,8 @@ public class InitDbCmd extends ConfiguredCommand<AdminServerConfig> {
   public static void execute(AdminServerConfig cfg) throws Exception {
     try (Connection con = cfg.db.connect()) {
       LOG.info("Starting database initialisation");
-      ScriptRunner runner = new ScriptRunner(con);
-      runner.setSendFullScript(true);
+      ScriptRunner runner = PgConfig.scriptRunner(con);
+
       // run sql schema
       exec(PgConfig.SCHEMA_FILE, runner, con, Resources.getResourceAsReader(PgConfig.SCHEMA_FILE));
       // add common data
@@ -73,12 +73,15 @@ public class InitDbCmd extends ConfiguredCommand<AdminServerConfig> {
   private static void exec(String name, ScriptRunner runner, Connection con, Reader reader) {
     try {
       LOG.info("Executing {}", name);
-      System.out.println("Execute " + name);
       runner.runScript(reader);
       con.commit();
+    } catch (RuntimeException e) {
+      LOG.error("Failed to execute {}", name);
+      throw e;
+
     } catch (Exception e) {
       LOG.error("Failed to execute {}", name);
-      throw new IllegalStateException("Fail to execute sql file: " + name, e);
+      throw new RuntimeException("Fail to execute sql file: " + name, e);
     }
   }
 }

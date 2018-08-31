@@ -19,6 +19,8 @@ import org.col.db.PgSetupRule;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -28,6 +30,7 @@ import static org.mockito.Mockito.when;
  *
  */
 public abstract class CmdTestBase {
+  private static final Logger LOG = LoggerFactory.getLogger(CmdTestBase.class);
   protected Cli cli;
   private final AdminServerConfig cfg;
 
@@ -89,8 +92,8 @@ public abstract class CmdTestBase {
 
   @After
   public void teardown() {
-    System.out.println(tempDbCfg.getAbsolutePath());
-    //tempDbCfg.delete();
+    LOG.debug("Remove tmp db configs at {}", tempDbCfg.getAbsolutePath());
+    tempDbCfg.delete();
   }
 
   /**
@@ -99,7 +102,7 @@ public abstract class CmdTestBase {
   public void run(boolean initdb, String ... args) throws Exception {
     // first run initdb?
     if (initdb) {
-      cli.run("initdb", "--prompt", "0", tempDbCfg.getAbsolutePath());
+      assertTrue(cli.run("initdb", "--prompt", "0", tempDbCfg.getAbsolutePath()));
     }
 
     // now run the real arg
@@ -107,6 +110,7 @@ public abstract class CmdTestBase {
     args = Arrays.copyOf(args, N + 1);
     args[N] = tempDbCfg.getAbsolutePath();
 
+    // make sure the cli run fine
     assertTrue(cli.run(args));
   }
 }

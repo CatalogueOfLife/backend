@@ -10,6 +10,7 @@ import javax.validation.constraints.Min;
 import com.google.common.base.MoreObjects;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import org.apache.ibatis.jdbc.ScriptRunner;
 
 /**
  * A configuration for the postgres database connection pool as used by the mybatis layer.
@@ -147,6 +148,15 @@ public class PgConfig {
       hikari.setConnectionInitSql(sb.toString());
     }
     return hikari;
+  }
+
+  public static ScriptRunner scriptRunner(Connection con) {
+    ScriptRunner runner = new ScriptRunner(con);
+    // needed to honor the $$ escapes in pg functions
+    runner.setSendFullScript(true);
+    runner.setStopOnError(true);
+    runner.setLogWriter(null);
+    return runner;
   }
 
   @Override

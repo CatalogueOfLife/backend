@@ -81,10 +81,8 @@ public class PgSetupRule extends ExternalResource {
 
 	public static void initDb(PgConfig cfg) {
 		try (Connection con = cfg.connect()) {
-			System.out.println("Init empty database schema\n");
-			ScriptRunner runner = new ScriptRunner(con);
-			// needed to honor the $$ escapes in pg functions
-      runner.setSendFullScript(true);
+			LOG.info("Init empty database schema");
+			ScriptRunner runner = PgConfig.scriptRunner(con);
       runner.runScript(Resources.getResourceAsReader(PgConfig.SCHEMA_FILE));
 			con.commit();
 
@@ -100,11 +98,10 @@ public class PgSetupRule extends ExternalResource {
 
 	private void shutdown() {
 		if (dataSource != null) {
-			System.out.println("Shutdown dbpool");
+			LOG.info("Shutdown dbpool");
 			dataSource.close();
 		}
 		if (postgres != null) {
-			System.out.println("Stopping Postgres");
 			postgres.stop();
 		}
 	}

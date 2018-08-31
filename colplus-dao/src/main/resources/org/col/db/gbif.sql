@@ -104,5 +104,5 @@ INSERT INTO dataset (gbif_key, import_frequency, data_access, title) VALUES ('fa
 
 
 UPDATE dataset set trusted=true,
-    data_format=0,
+    data_format=0
     WHERE gbif_key is not NULL;
