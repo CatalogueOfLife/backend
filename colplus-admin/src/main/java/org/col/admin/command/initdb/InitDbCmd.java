@@ -76,8 +76,8 @@ public class InitDbCmd extends ConfiguredCommand<AdminServerConfig> {
       System.out.println("Execute " + name);
       runner.runScript(reader);
       con.commit();
-      LOG.info("Executed {}", name);
     } catch (Exception e) {
+      LOG.error("Failed to execute {}", name);
       throw new IllegalStateException("Fail to execute sql file: " + name, e);
     }
   }

@@ -107,7 +107,7 @@ CREATE TABLE dataset (
   homepage TEXT,
   data_format INTEGER,
   data_access TEXT,
-  import_frequency INTEGER NOT NULL,
+  import_frequency INTEGER NOT NULL DEFAULT 7,
   code INTEGER,
   notes text,
   trusted BOOLEAN DEFAULT FALSE,
