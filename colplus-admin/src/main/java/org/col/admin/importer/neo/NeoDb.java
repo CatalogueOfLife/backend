@@ -84,7 +84,7 @@ public class NeoDb implements ReferenceStore {
   // monomial lookup cache to speed up lookups by scientific name
   // taking up 99% of time for denormalization of higher taxa
   private final LRUCache<String, List<Node>> monomialCache = new LRUCache<String, List<Node>>(10000);
-  private final LRUCache<String, List<Node>> idCache = new LRUCache<String, List<Node>>(10000);
+  private final LRUCache<String, Node> idCache = new LRUCache<String, Node>(10000);
 
   private GraphDatabaseService neo;
 
@@ -241,7 +241,7 @@ public class NeoDb implements ReferenceStore {
    */
   public Node byID(String id) {
     try {
-      return Iterators.singleOrNull(neo.findNodes(Labels.ALL, NeoProperties.ID, id));
+      return idCache.computeIfAbsent(id, x -> Iterators.singleOrNull(neo.findNodes(Labels.ALL, NeoProperties.ID, x)));
     } catch (NoSuchElementException e) {
       throw new NotUniqueRuntimeException(NeoProperties.ID, id);
     }
