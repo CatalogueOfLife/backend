@@ -1,10 +1,9 @@
 package org.col.common.kryo;
 
-import java.io.File;
-
 import com.esotericsoftware.kryo.pool.KryoPool;
 import org.col.api.model.Page;
 import org.col.api.model.Reference;
+import org.col.common.io.TempFile;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -22,7 +21,8 @@ public class KryoCollectionStoreTest {
         .softReferences()
         .build();
 
-    try (KryoCollectionStore<Page> store = new KryoCollectionStore(Page.class, File.createTempFile("kryo-",".bin"), pool)) {
+    try (TempFile tf = new TempFile("kryo-",".bin");
+         KryoCollectionStore<Page> store = new KryoCollectionStore(Page.class, tf.file, pool)) {
 
       for (int i = 0; i < 100; i++) {
         Page r = buildPage();

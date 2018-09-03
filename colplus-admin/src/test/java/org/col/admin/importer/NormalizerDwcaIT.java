@@ -73,10 +73,26 @@ public class NormalizerDwcaIT {
   private NormalizerConfig cfg;
   private Path dwca;
 
+  @Before
+  public void initCfg() throws Exception {
+    cfg = new NormalizerConfig();
+    cfg.archiveDir = Files.createTempDir();
+    cfg.scratchDir = Files.createTempDir();
+  }
+
+  @After
+  public void cleanup() throws Exception {
+    if (store != null) {
+      store.closeAndDelete();
+    }
+    FileUtils.deleteQuietly(cfg.archiveDir);
+    FileUtils.deleteQuietly(cfg.scratchDir);
+  }
+
   /**
    * Normalizes a dwca from the dwca test resources and checks its printed txt tree against the
    * expected tree
-   * 
+   *
    * @param datasetKey
    * @return
    * @throws Exception
@@ -106,22 +122,6 @@ public class NormalizerDwcaIT {
 
     } catch (IOException | InterruptedException e) {
       throw new RuntimeException(e);
-    }
-  }
-
-  @Before
-  public void initCfg() throws Exception {
-    cfg = new NormalizerConfig();
-    cfg.archiveDir = Files.createTempDir();
-    cfg.scratchDir = Files.createTempDir();
-  }
-
-  @After
-  public void cleanup() throws Exception {
-    if (store != null) {
-      store.closeAndDelete();
-      FileUtils.deleteQuietly(cfg.archiveDir);
-      FileUtils.deleteQuietly(cfg.scratchDir);
     }
   }
 

@@ -3,9 +3,7 @@ package org.col.admin.importer.neo;
 import java.io.File;
 import java.io.IOException;
 
-import com.google.common.io.Files;
 import org.col.admin.config.NormalizerConfig;
-import org.col.common.util.CleanupUtils;
 import org.mapdb.DBMaker;
 import org.neo4j.graphdb.factory.GraphDatabaseBuilder;
 import org.slf4j.Logger;
@@ -16,22 +14,6 @@ import org.slf4j.LoggerFactory;
  */
 public class NeoDbFactory {
   private static final Logger LOG = LoggerFactory.getLogger(NeoDbFactory.class);
-
-  /**
-   * A memory based backend which is erased after the JVM exits.
-   * Useful for short lived tests. Neo4j always persists some files which are cleaned up afterwards automatically
-   *
-   * @param mappedMemory used for the neo4j db
-   */
-  public static NeoDb temporaryDb(int datasetKey, int mappedMemory) {
-    LOG.debug("Create new in memory NormalizerStore");
-    File storeDir = Files.createTempDir();
-    NormalizerConfig cfg = new NormalizerConfig();
-    cfg.mappedMemory = mappedMemory;
-    CleanupUtils.registerCleanupHook(storeDir);
-
-    return create(datasetKey, cfg, storeDir, false, DBMaker.memoryDB());
-  }
 
   /**
    * A backend that is stored in files inside the configured normalizer directory.

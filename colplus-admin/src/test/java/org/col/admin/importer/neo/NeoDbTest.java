@@ -1,10 +1,9 @@
 package org.col.admin.importer.neo;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collection;
 
 import com.google.common.io.Files;
+import org.apache.commons.io.FileUtils;
 import org.col.admin.config.NormalizerConfig;
 import org.col.admin.importer.neo.model.Labels;
 import org.col.admin.importer.neo.model.NeoTaxon;
@@ -14,50 +13,29 @@ import org.col.api.model.Taxon;
 import org.col.api.model.TermRecord;
 import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.dwc.terms.GbifTerm;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.*;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Result;
 import org.neo4j.graphdb.Transaction;
 
 import static org.junit.Assert.*;
 
-/**
- *
- */
-@RunWith(Parameterized.class)
+
 public class NeoDbTest {
-  private final static int DATASET_KEY = 123;
+  private final static int DATASET_KEY = 77;
   private final static NormalizerConfig cfg = new NormalizerConfig();
 
-  @Parameterized.Parameters
-  public static Collection<Object[]> data() {
-    cfg.archiveDir = Files.createTempDir();
-    cfg.scratchDir = Files.createTempDir();
-
-    return Arrays.asList(new Object[][]{
-        {false},
-        {true}
-    });
-  }
-
-  boolean persistent;
   NeoDb db;
 
-  public NeoDbTest(boolean persistent) {
-    this.persistent = persistent;
+  @BeforeClass
+  public static void initRepo() {
+    cfg.archiveDir = Files.createTempDir();
+    cfg.scratchDir = Files.createTempDir();
   }
 
   @Before
   public void init() throws IOException {
-    if (persistent) {
-      db = NeoDbFactory.create(DATASET_KEY, cfg);
-    } else {
-      db = NeoDbFactory.temporaryDb(1, 10);
-    }
+    db = NeoDbFactory.create(DATASET_KEY, cfg);
   }
 
   @After
@@ -65,6 +43,12 @@ public class NeoDbTest {
     if (db != null) {
       db.closeAndDelete();
     }
+  }
+
+  @AfterClass
+  public static void destroyRepo() {
+    FileUtils.deleteQuietly(cfg.archiveDir);
+    FileUtils.deleteQuietly(cfg.scratchDir);
   }
 
   /**

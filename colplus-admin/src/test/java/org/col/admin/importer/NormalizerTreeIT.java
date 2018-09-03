@@ -36,9 +36,7 @@ import org.col.admin.matching.NameIndexFactory;
 import org.col.api.model.Dataset;
 import org.col.api.model.Name;
 import org.col.api.vocab.DataFormat;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.neo4j.graphdb.Node;
@@ -61,8 +59,8 @@ public class NormalizerTreeIT {
   final static int MAX_ACEF_ID = 7;
   final static int MAX_DWCA_ID = 31;
 
+  private static NormalizerConfig cfg;
   private NeoDb store;
-  private NormalizerConfig cfg;
   private Path source;
 
   // TODO: these tests need to be checked - they do seem to create real wrong outcomes !!!
@@ -94,12 +92,19 @@ public class NormalizerTreeIT {
     this.sourceKey = sourceKey;
   }
 
-  @Before
-  public void initCfg() throws Exception {
+  @BeforeClass
+  public static void initCfg() throws Exception {
     cfg = new NormalizerConfig();
     cfg.archiveDir = Files.createTempDir();
     cfg.scratchDir = Files.createTempDir();
     // make sure its empty
+    FileUtils.cleanDirectory(cfg.archiveDir);
+    FileUtils.cleanDirectory(cfg.scratchDir);
+  }
+
+  @AfterClass
+  public static void cleanupRepo() throws Exception {
+    System.out.println("Removing temp test repo");
     FileUtils.deleteQuietly(cfg.archiveDir);
     FileUtils.deleteQuietly(cfg.scratchDir);
   }
@@ -108,8 +113,6 @@ public class NormalizerTreeIT {
   public void cleanup() throws Exception {
     if (store != null) {
       store.closeAndDelete();
-      FileUtils.deleteQuietly(cfg.archiveDir);
-      FileUtils.deleteQuietly(cfg.scratchDir);
     }
   }
 

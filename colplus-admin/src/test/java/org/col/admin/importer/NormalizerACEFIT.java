@@ -10,7 +10,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Set;
-
 import javax.annotation.Nullable;
 
 import com.google.common.collect.Sets;
@@ -27,16 +26,8 @@ import org.col.admin.importer.neo.printer.GraphFormat;
 import org.col.admin.importer.neo.printer.PrinterUtils;
 import org.col.admin.importer.neo.traverse.Traversals;
 import org.col.admin.matching.NameIndexFactory;
-import org.col.api.model.Dataset;
-import org.col.api.model.Distribution;
-import org.col.api.model.IssueContainer;
-import org.col.api.model.VerbatimEntity;
-import org.col.api.model.VernacularName;
-import org.col.api.vocab.DataFormat;
-import org.col.api.vocab.Gazetteer;
-import org.col.api.vocab.Issue;
-import org.col.api.vocab.Language;
-import org.col.api.vocab.TaxonomicStatus;
+import org.col.api.model.*;
+import org.col.api.vocab.*;
 import org.gbif.nameparser.api.Rank;
 import org.junit.After;
 import org.junit.Before;
@@ -46,11 +37,7 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.NotFoundException;
 import org.neo4j.graphdb.Transaction;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  *
@@ -60,6 +47,23 @@ public class NormalizerACEFIT {
   private NeoDb store;
   private NormalizerConfig cfg;
   private Path acef;
+
+  @Before
+  public void initCfg() throws Exception {
+    cfg = new NormalizerConfig();
+    cfg.archiveDir = Files.createTempDir();
+    cfg.scratchDir = Files.createTempDir();
+  }
+
+  @After
+  public void cleanup() throws Exception {
+    if (store != null) {
+      store.closeAndDelete();
+    }
+    FileUtils.deleteQuietly(cfg.archiveDir);
+    FileUtils.deleteQuietly(cfg.scratchDir);
+  }
+
 
   /**
    * Normalizes a ACEF folder from the test resources and checks its printed txt tree against the
@@ -95,22 +99,6 @@ public class NormalizerACEFIT {
 
     } catch (IOException | InterruptedException e) {
       throw new RuntimeException(e);
-    }
-  }
-
-  @Before
-  public void initCfg() throws Exception {
-    cfg = new NormalizerConfig();
-    cfg.archiveDir = Files.createTempDir();
-    cfg.scratchDir = Files.createTempDir();
-  }
-
-  @After
-  public void cleanup() throws Exception {
-    if (store != null) {
-      store.closeAndDelete();
-      FileUtils.deleteQuietly(cfg.archiveDir);
-      FileUtils.deleteQuietly(cfg.scratchDir);
     }
   }
 
