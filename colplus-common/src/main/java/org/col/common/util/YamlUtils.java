@@ -1,6 +1,7 @@
 package org.col.common.util;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -20,11 +21,24 @@ public class YamlUtils {
   }
 
   /**
+   * Deserializes an object from a yaml input stream.
+   */
+  public static <T> T read(Class<T> objClass, InputStream configStream) throws IOException {
+    return OM.readValue(configStream, objClass);
+  }
+
+  /**
    * Deserializes an object from a yaml resource located by the system classloader.
    */
   public static <T> T read(Class<T> objClass, String resourceFile) throws IOException {
-    InputStream in = System.class.getResourceAsStream(resourceFile);
-    return OM.readValue(in, objClass);
+    return read(objClass, System.class.getResourceAsStream(resourceFile));
+  }
+
+  /**
+   * Deserializes an object from a yaml resource located by the system classloader.
+   */
+  public static <T> T read(Class<T> objClass, File configFile) throws IOException {
+    return read(objClass, new FileInputStream(configFile));
   }
 
   /**

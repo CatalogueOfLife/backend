@@ -1,7 +1,10 @@
 package org.col.common.io;
 
+import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.DirectoryNotEmptyException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -26,6 +29,21 @@ public class PathUtils {
     return FilenameUtils.getName(p.toString());
   }
 
+  public static void removeFileAndParentsIfEmpty(Path p) throws IOException {
+    if (p == null) return;
+
+    if (Files.isRegularFile(p)) {
+      Files.deleteIfExists(p);
+
+    } else if(Files.isDirectory(p)) {
+      try {
+        Files.delete(p);
+      } catch(DirectoryNotEmptyException e) {
+        return;
+      }
+    }
+    removeFileAndParentsIfEmpty(p.getParent());
+  }
 
   /**
    * Read a classpath resource at test time as a Path.

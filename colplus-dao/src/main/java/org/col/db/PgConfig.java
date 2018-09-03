@@ -23,7 +23,8 @@ public class PgConfig {
   public static final URI COL_DATASETS_URI = URI.create("https://raw.githubusercontent.com/Sp2000/colplus-repo/master/datasets.sql");
 
   /**
-   * Use null to indicate an embedded postgres server
+   * Use null or an absolute file path starting with / to indicate an embedded postgres server
+   * If a path is given it is used to cache the postgres server installation, but not its data.
    */
   public String host;
   public int port = 5432;

@@ -104,11 +104,11 @@
 
         <!--
         default maven properties to define the postgres server for running tests
-        host=null indicates an embedded postgres
+        It uses an embedded, cached postgres server in mavens build directory
 
         To use a different server please activate a personal profile
         -->
-        <db.host>null</db.host>
+        <db.host>${project.build.directory}/pg-colplus</db.host>
         <db.database>colplus</db.database>
         <db.user>postgres</db.user>
         <db.password>postgres</db.password>

@@ -1,14 +1,16 @@
 package org.col.db;
 
-import org.junit.Test;
+import java.io.IOException;
 
-import static org.junit.Assert.*;
+import org.col.common.util.YamlUtils;
+import org.junit.Test;
 
 public class EmbeddedColPgTest {
 
   @Test
-  public void startStop() {
-    EmbeddedColPg pg = new EmbeddedColPg();
+  public void startStop() throws IOException {
+    PgConfig cfg = YamlUtils.read(PgConfig.class, "/pg-test.yaml");
+    EmbeddedColPg pg = new EmbeddedColPg(cfg);
     pg.start();
     pg.stop();
   }

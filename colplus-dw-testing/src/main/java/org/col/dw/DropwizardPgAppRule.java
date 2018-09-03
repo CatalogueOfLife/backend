@@ -1,14 +1,15 @@
 package org.col.dw;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.List;
-import javax.annotation.Nullable;
 
 import com.google.common.collect.Lists;
 import io.dropwizard.Application;
 import io.dropwizard.testing.ConfigOverride;
 import io.dropwizard.testing.junit.DropwizardAppRule;
+import org.col.common.util.YamlUtils;
 import org.col.db.EmbeddedColPg;
 import org.col.db.PgConfig;
 import org.col.db.PgSetupRule;
@@ -26,24 +27,34 @@ import org.slf4j.LoggerFactory;
  */
 public class DropwizardPgAppRule<C extends PgAppConfig> extends DropwizardAppRule<C> {
   private static final Logger LOG = LoggerFactory.getLogger(DropwizardPgAppRule.class);
-  private static final EmbeddedColPg pg = new EmbeddedColPg();
+  private static EmbeddedColPg pg;
 
-  public DropwizardPgAppRule(Class<? extends Application<C>> applicationClass, @Nullable String configPath,
-                             ConfigOverride... configOverrides) {
-    super(applicationClass, configPath, setupPg(configOverrides));
+  public DropwizardPgAppRule(Class<? extends Application<C>> applicationClass,
+                             String configPath, ConfigOverride... configOverrides) {
+    super(applicationClass, configPath, setupPg(configPath, configOverrides));
   }
 
-  static ConfigOverride[] setupPg(ConfigOverride... configOverrides) {
-    pg.start();
-    PgConfig cfg = pg.getCfg();
-    PgSetupRule.initDb(cfg);
+  static class PgConfigInApp {
+    public PgConfig db = new PgConfig();
+  }
 
+  static ConfigOverride[] setupPg(String configPath, ConfigOverride... configOverrides) {
     List<ConfigOverride> overrides = Lists.newArrayList(configOverrides);
-    overrides.add(ConfigOverride.config("db.host", cfg.host));
-    overrides.add(ConfigOverride.config("db.port", String.valueOf(cfg.port)));
-    overrides.add(ConfigOverride.config("db.database", cfg.database));
-    overrides.add(ConfigOverride.config("db.user", cfg.user));
-    overrides.add(ConfigOverride.config("db.password", cfg.password));
+    try {
+      PgConfigInApp cfg = YamlUtils.read(PgConfigInApp.class, new File(configPath));
+      pg = new EmbeddedColPg(cfg.db);
+      pg.start();
+      PgSetupRule.initDb(cfg.db);
+
+      overrides.add(ConfigOverride.config("db.host", cfg.db.host));
+      overrides.add(ConfigOverride.config("db.port", String.valueOf(cfg.db.port)));
+      overrides.add(ConfigOverride.config("db.database", cfg.db.database));
+      overrides.add(ConfigOverride.config("db.user", cfg.db.user));
+      overrides.add(ConfigOverride.config("db.password", cfg.db.password));
+
+    } catch (IOException e) {
+      throw new RuntimeException("Failed to read popstgres configuration from " + configPath, e);
+    }
 
     // select free DW port
     try {
