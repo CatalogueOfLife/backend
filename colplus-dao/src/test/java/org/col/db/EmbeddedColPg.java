@@ -7,13 +7,14 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Collections;
+import java.util.List;
 import java.util.Random;
 
 import de.flapdoodle.embed.process.config.IRuntimeConfig;
 import de.flapdoodle.embed.process.io.directories.FixedPath;
 import de.flapdoodle.embed.process.store.PostgresArtifactStoreBuilder;
 import org.apache.commons.io.FileUtils;
+import org.col.common.lang.Exceptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.yandex.qatools.embed.postgresql.Command;
@@ -23,6 +24,8 @@ import ru.yandex.qatools.embed.postgresql.config.PostgresDownloadConfigBuilder;
 import ru.yandex.qatools.embed.postgresql.config.RuntimeConfigBuilder;
 import ru.yandex.qatools.embed.postgresql.distribution.Version;
 
+import static java.util.Arrays.asList;
+
 /**
  * An {@link EmbeddedPostgres} server that can be start up and inits a minimal CoL+ db.
  * If PgConfig.host is pointing to an absolute path it will be used to reuse a already unzipped, cached server instance,
@@ -30,6 +33,12 @@ import ru.yandex.qatools.embed.postgresql.distribution.Version;
  */
 public class EmbeddedColPg {
   private static final Logger LOG = LoggerFactory.getLogger(EmbeddedColPg.class);
+
+	private static final List<String> DEFAULT_ADD_PARAMS = asList(
+			"-E", "SQL_ASCII",
+			"--locale=C",
+			"--lc-collate=C",
+			"--lc-ctype=C");
 
 	private EmbeddedPostgres postgres;
   private final PgConfig cfg;
@@ -94,13 +103,18 @@ public class EmbeddedColPg {
 			cfg.port = new ServerSocket(0).getLocalPort();
 			cfg.host = "localhost";
 			cfg.maximumPoolSize = 2;
-			postgres.start(rtCfg, cfg.host, cfg.port, cfg.database, cfg.user, cfg.password, Collections.EMPTY_LIST);
-			LOG.info("Pg started on port {}. Startup time: {} ms", cfg.port, Duration.between(start, Instant.now()).toMillis());
+			String con = postgres.start(rtCfg, cfg.host, cfg.port, cfg.database, cfg.user, cfg.password, DEFAULT_ADD_PARAMS);
+			LOG.debug("Postgres connection: {}", con);
+			if (postgres.getProcess().isPresent()) {
+				LOG.info("Pg started on port {}. Startup time: {} ms", cfg.port, Duration.between(start, Instant.now()).toMillis());
+			} else {
+				throw new IllegalStateException("Embedded postgres failed to startup");
+			}
 
 		} catch (Exception e) {
-      LOG.error("Pg startup error, port {}: {}", cfg.port, e.getMessage(), e);
+      LOG.error("Pg startup error {}: {}", e.getMessage(), cfg, e);
 			stop();
-			throw new RuntimeException(e);
+			Exceptions.throwRuntime(e);
 		}
 	}
 
