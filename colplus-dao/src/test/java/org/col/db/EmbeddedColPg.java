@@ -71,6 +71,7 @@ public class EmbeddedColPg {
 		final FixedPath cachedDir = new FixedPath(serverDir.toString());
 		return new RuntimeConfigBuilder()
 				.defaults(cmd)
+				.daemonProcess(false)
 				.artifactStore(new PostgresArtifactStoreBuilder()
 						.defaults(cmd)
 						.tempDir(cachedDir)

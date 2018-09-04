@@ -91,6 +91,13 @@ public class PgConfig {
   public int connectionTimeout = sec(5);
 
   /**
+   * @return true if an embedded database should be used
+   */
+  public boolean embedded() {
+    return host == null || host.startsWith("/");
+  }
+
+  /**
    * @return converted minutes in milliseconds
    */
   private static int min(int minutes) {

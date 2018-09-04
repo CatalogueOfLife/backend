@@ -57,7 +57,7 @@ public class PgSetupRule extends ExternalResource {
 	private void startDb() {
 		try {
       cfg = YamlUtils.read(PgConfig.class, "/pg-test.yaml");
-			if (cfg.host == null || cfg.host.startsWith("/")) {
+			if (cfg.embedded()) {
 				postgres = new EmbeddedColPg(cfg);
         postgres.start();
 
