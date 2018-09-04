@@ -68,19 +68,25 @@ public class EmbeddedColPg {
 		try {
 			LOG.info("Starting embedded Postgres");
 			Instant start = Instant.now();
-			// use a cached server directory to not unzip postgres binaries on every run
+			// cached server directory to not unzip postgres binaries on every run is flawed:
+			// https://github.com/yandex-qatools/postgresql-embedded/issues/142
+
+			// use workaround with system property instead!
 			tmpServerDir = cfg.host == null;
 			serverDir = tmpServerDir ? Files.createTempDirectory("colplus-pg-") : Paths.get(cfg.host);
+			System.setProperty("de.flapdoodle.embed.io.tmpdir", serverDir.toString());
 			LOG.debug("Use embedded Postgres, server dir={}", serverDir);
+
 			postgres = new EmbeddedPostgres(Version.V10_3);
 			// assigned some free port using local socket 0
 			cfg.port = new ServerSocket(0).getLocalPort();
 			cfg.host = "localhost";
-			cfg.maximumPoolSize = 4;
-			postgres.start(EmbeddedPostgres.cachedRuntimeConfig(serverDir),
-					cfg.host, cfg.port, cfg.database, cfg.user, cfg.password,
-					DEFAULT_ADD_PARAMS
-			);
+			cfg.maximumPoolSize = 3;
+			//postgres.start(EmbeddedPostgres.defaultRuntimeConfig(),
+			//		cfg.host, cfg.port, cfg.database, cfg.user, cfg.password,
+			//		DEFAULT_ADD_PARAMS
+			//);
+			postgres.start(cfg.host, cfg.port, cfg.database, cfg.user, cfg.password);
 			if (postgres.getProcess().isPresent()) {
 				LOG.info("Pg started on port {}. Startup time: {} ms", cfg.port, Duration.between(start, Instant.now()).toMillis());
 			} else {
@@ -107,7 +113,7 @@ public class EmbeddedColPg {
 				} catch (IllegalArgumentException | IOException e) {
 					LOG.warn("Failed to remove Postgres server directory {}", serverDir, e);
 				}
-			} else {
+			} else if (dataDir.exists()) {
 				try {
 					FileUtils.deleteDirectory(dataDir);
 					PathUtils.removeFileAndParentsIfEmpty(dataDir.toPath());
@@ -115,6 +121,8 @@ public class EmbeddedColPg {
 				} catch (IllegalArgumentException | IOException e) {
 					LOG.warn("Failed to remove Postgres data directory {}", dataDir, e);
 				}
+			} else {
+				LOG.info("Postgres data directory {} already removed, server dir {} preserved for subsequent runs", dataDir, serverDir);
 			}
 		}
 
