@@ -103,8 +103,7 @@ public class EmbeddedColPg {
 			cfg.port = new ServerSocket(0).getLocalPort();
 			cfg.host = "localhost";
 			cfg.maximumPoolSize = 2;
-			String con = postgres.start(rtCfg, cfg.host, cfg.port, cfg.database, cfg.user, cfg.password, DEFAULT_ADD_PARAMS);
-			LOG.debug("Postgres connection: {}", con);
+			postgres.start(rtCfg, cfg.host, cfg.port, cfg.database, cfg.user, cfg.password, DEFAULT_ADD_PARAMS);
 			if (postgres.getProcess().isPresent()) {
 				LOG.info("Pg started on port {}. Startup time: {} ms", cfg.port, Duration.between(start, Instant.now()).toMillis());
 			} else {
