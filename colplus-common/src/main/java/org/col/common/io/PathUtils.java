@@ -34,7 +34,6 @@ public class PathUtils {
 
     if (Files.isRegularFile(p)) {
       Files.deleteIfExists(p);
-
     } else if(Files.isDirectory(p)) {
       try {
         Files.delete(p);

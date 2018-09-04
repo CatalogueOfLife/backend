@@ -1,5 +1,6 @@
 package org.col.db;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.nio.file.Files;
@@ -8,9 +9,9 @@ import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
-import java.util.Random;
 
 import org.apache.commons.io.FileUtils;
+import org.col.common.io.PathUtils;
 import org.col.common.lang.Exceptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +36,6 @@ public class EmbeddedColPg {
 
 	private EmbeddedPostgres postgres;
   private final PgConfig cfg;
-	private Path dataDir;
 	private Path serverDir;
 	private boolean tmpServerDir;
 
@@ -71,10 +71,8 @@ public class EmbeddedColPg {
 			// use a cached server directory to not unzip postgres binaries on every run
 			tmpServerDir = cfg.host == null;
 			serverDir = tmpServerDir ? Files.createTempDirectory("colplus-pg-") : Paths.get(cfg.host);
-			dataDir = serverDir.resolve("data/"+String.valueOf(new Random().nextInt()));
-			Files.createDirectories(dataDir);
-			LOG.debug("Use embedded Postgres, server dir={}, data dir={}", serverDir, dataDir);
-			postgres = new EmbeddedPostgres(Version.V10_3, dataDir.toString());
+			LOG.debug("Use embedded Postgres, server dir={}", serverDir);
+			postgres = new EmbeddedPostgres(Version.V10_3);
 			// assigned some free port using local socket 0
 			cfg.port = new ServerSocket(0).getLocalPort();
 			cfg.host = "localhost";
@@ -98,15 +96,9 @@ public class EmbeddedColPg {
 
 	public void stop() {
 		if (postgres != null && postgres.getProcess().isPresent()) {
-			LOG.info("Stopping embedded Postgres in {}", serverDir);
+			final File dataDir = postgres.getConfig().get().storage().dbDir();
+			LOG.info("Stopping embedded Postgres server={}, data={}", serverDir, dataDir);
 			postgres.stop();
-
-			try {
-				FileUtils.deleteDirectory(dataDir.toFile());
-				LOG.info("Removed Postgres data directory {}", dataDir);
-			} catch (IllegalArgumentException | IOException e) {
-				LOG.warn("Failed to remove Postgres data directory {}", dataDir, e);
-			}
 
 			if (tmpServerDir) {
 				try {
@@ -114,6 +106,14 @@ public class EmbeddedColPg {
 					LOG.info("Removed Postgres server directory {}", serverDir);
 				} catch (IllegalArgumentException | IOException e) {
 					LOG.warn("Failed to remove Postgres server directory {}", serverDir, e);
+				}
+			} else {
+				try {
+					FileUtils.deleteDirectory(dataDir);
+					PathUtils.removeFileAndParentsIfEmpty(dataDir.toPath());
+					LOG.info("Removed Postgres data directory {}", dataDir);
+				} catch (IllegalArgumentException | IOException e) {
+					LOG.warn("Failed to remove Postgres data directory {}", dataDir, e);
 				}
 			}
 		}
