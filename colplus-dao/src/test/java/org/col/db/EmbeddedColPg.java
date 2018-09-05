@@ -37,7 +37,6 @@ public class EmbeddedColPg {
 	private EmbeddedPostgres postgres;
   private final PgConfig cfg;
 	private Path serverDir;
-	private boolean tmpServerDir;
 
 	@Deprecated
 	public EmbeddedColPg() {
@@ -70,11 +69,8 @@ public class EmbeddedColPg {
 			Instant start = Instant.now();
 			// cached server directory to not unzip postgres binaries on every run is flawed:
 			// https://github.com/yandex-qatools/postgresql-embedded/issues/142
-
-			// use workaround with system property instead!
-			tmpServerDir = cfg.host == null;
-			serverDir = tmpServerDir ? Files.createTempDirectory("colplus-pg-") : Paths.get(cfg.host);
-			System.setProperty("de.flapdoodle.embed.io.tmpdir", serverDir.toString());
+			// so we we delete the known server dir each time until thats fixed
+			serverDir = cfg.host == null ? Files.createTempDirectory("colplus-pg-") : Paths.get(cfg.host);
 			LOG.debug("Use embedded Postgres, server dir={}", serverDir);
 
 			postgres = new EmbeddedPostgres(Version.V10_3);
@@ -82,11 +78,10 @@ public class EmbeddedColPg {
 			cfg.port = new ServerSocket(0).getLocalPort();
 			cfg.host = "localhost";
 			cfg.maximumPoolSize = 3;
-			//postgres.start(EmbeddedPostgres.defaultRuntimeConfig(),
-			//		cfg.host, cfg.port, cfg.database, cfg.user, cfg.password,
-			//		DEFAULT_ADD_PARAMS
-			//);
-			postgres.start(cfg.host, cfg.port, cfg.database, cfg.user, cfg.password);
+			postgres.start(EmbeddedPostgres.cachedRuntimeConfig(serverDir),
+					cfg.host, cfg.port, cfg.database, cfg.user, cfg.password,
+					DEFAULT_ADD_PARAMS
+			);
 			if (postgres.getProcess().isPresent()) {
 				LOG.info("Pg started on port {}. Startup time: {} ms", cfg.port, Duration.between(start, Instant.now()).toMillis());
 			} else {
@@ -106,26 +101,23 @@ public class EmbeddedColPg {
 			LOG.info("Stopping embedded Postgres server={}, data={}", serverDir, dataDir);
 			postgres.stop();
 
-			if (tmpServerDir) {
-				try {
-					FileUtils.deleteDirectory(serverDir.toFile());
-					LOG.info("Removed Postgres server directory {}", serverDir);
-				} catch (IllegalArgumentException | IOException e) {
-					LOG.warn("Failed to remove Postgres server directory {}", serverDir, e);
-				}
-			} else if (dataDir.exists()) {
-				try {
-					FileUtils.deleteDirectory(dataDir);
-					PathUtils.removeFileAndParentsIfEmpty(dataDir.toPath());
-					LOG.info("Removed Postgres data directory {}", dataDir);
-				} catch (IllegalArgumentException | IOException e) {
-					LOG.warn("Failed to remove Postgres data directory {}", dataDir, e);
-				}
-			} else {
-				LOG.info("Postgres data directory {} already removed, server dir {} preserved for subsequent runs", dataDir, serverDir);
+			try {
+				FileUtils.deleteDirectory(serverDir.toFile());
+				LOG.info("Removed Postgres server directory {}", serverDir);
+			} catch (IllegalArgumentException | IOException e) {
+				LOG.warn("Failed to remove Postgres server directory {}", serverDir, e);
 			}
-		}
 
+      if (dataDir.exists()) {
+        try {
+          FileUtils.deleteDirectory(dataDir);
+          PathUtils.removeFileAndParentsIfEmpty(dataDir.toPath());
+          LOG.info("Removed Postgres data directory {}", dataDir);
+        } catch (IllegalArgumentException | IOException e) {
+          LOG.warn("Failed to remove Postgres data directory {}", dataDir, e);
+        }
+      }
+		}
 	}
 
 }
