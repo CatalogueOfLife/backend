@@ -4,6 +4,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
+import java.sql.Statement;
 import java.util.concurrent.TimeUnit;
 
 import io.dropwizard.cli.ConfiguredCommand;
@@ -53,10 +54,20 @@ public class InitDbCmd extends ConfiguredCommand<AdminServerConfig> {
   }
 
   public static void execute(AdminServerConfig cfg) throws Exception {
-    try (Connection con = cfg.db.connect()) {
-      LOG.info("Starting database initialisation");
-      ScriptRunner runner = PgConfig.scriptRunner(con);
+    LOG.info("Starting database initialisation");
+    try (Connection con = cfg.db.connect(cfg.adminDb);
+         Statement st = con.createStatement()
+    ) {
+      LOG.info("Drop existing database {}", cfg.db.database);
+      st.execute("DROP DATABASE IF EXISTS " + cfg.db.database);
 
+      LOG.info("Create new database {}", cfg.db.database);
+      st.execute("CREATE DATABASE " + cfg.db.database + " WITH OWNER " + cfg.db.user);
+      //con.commit();
+    }
+
+    try (Connection con = cfg.db.connect()) {
+      ScriptRunner runner = PgConfig.scriptRunner(con);
       // run sql schema
       exec(PgConfig.SCHEMA_FILE, runner, con, Resources.getResourceAsReader(PgConfig.SCHEMA_FILE));
       // add common data

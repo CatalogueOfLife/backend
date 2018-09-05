@@ -1,8 +1,4 @@
 
--- this will remove all existing tables
-DROP SCHEMA public CASCADE;
-CREATE SCHEMA public;
-
 CREATE EXTENSION IF NOT EXISTS hstore;
 
 CREATE EXTENSION IF NOT EXISTS unaccent;

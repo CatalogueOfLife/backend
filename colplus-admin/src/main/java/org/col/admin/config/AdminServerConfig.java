@@ -1,14 +1,15 @@
 package org.col.admin.config;
 
 import java.io.File;
-
 import javax.validation.constraints.Pattern;
 
 import io.dropwizard.client.JerseyClientConfiguration;
+import org.col.db.PgDbConfig;
 import org.col.dw.PgAppConfig;
 
 public class AdminServerConfig extends PgAppConfig {
 
+  public PgDbConfig adminDb = new PgDbConfig();
   public NormalizerConfig normalizer = new NormalizerConfig();
   public ImporterConfig importer = new ImporterConfig();
   public GbifConfig gbif = new GbifConfig();
