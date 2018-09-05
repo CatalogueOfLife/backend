@@ -22,7 +22,6 @@ import org.junit.ClassRule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -31,11 +30,11 @@ import static org.mockito.Mockito.when;
  */
 public abstract class CmdTestBase {
   private static final Logger LOG = LoggerFactory.getLogger(CmdTestBase.class);
-  private final AdminServerConfig cfg;
+  protected final AdminServerConfig cfg;
   private final Command cmd;
 
   private Cli cli;
-  private File tempDbCfg;
+  protected File tempDbCfg;
 
   public CmdTestBase(Command cmd) {
     this.cmd = cmd;
@@ -95,13 +94,13 @@ public abstract class CmdTestBase {
   /**
    * Executes the cli with the given arguments, adding a final argument to the test config file.
    */
-  public void run(String ... args) throws Exception {
-    run(false, args);
+  public boolean run(String ... args) throws Exception {
+    return run(false, args);
   }
   /**
    * Executes the cli with the given arguments, adding a final argument to the test config file.
    */
-  public void run(boolean initdb, String ... args) throws Exception {
+  public boolean run(boolean initdb, String ... args) throws Exception {
     // first run initdb?
     if (initdb) {
       InitDbCmd.execute(cfg);
@@ -113,6 +112,6 @@ public abstract class CmdTestBase {
     args[N] = tempDbCfg.getAbsolutePath();
 
     // make sure the cli run fine
-    assertTrue(cli.run(args));
+    return cli.run(args);
   }
 }
