@@ -59,7 +59,7 @@
   </select>
 
   <insert id="create" parameterType="Distribution" useGeneratedKeys="true" keyProperty="d.key">
-    INSERT INTO distribution ( <include refid="COLS" /> )
+    INSERT INTO distribution_${datasetKey} ( <include refid="COLS" /> )
     VALUES ( <include refid="PROPS" /> )
   </insert>
 

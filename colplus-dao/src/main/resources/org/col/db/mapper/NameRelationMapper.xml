@@ -61,7 +61,7 @@
   </select>
 
   <insert id="create" parameterType="NameRelation" useGeneratedKeys="true" keyProperty="key">
-    INSERT INTO name_rel ( <include refid="COLS" /> )
+    INSERT INTO name_rel_${datasetKey} ( <include refid="COLS" /> )
     VALUES ( <include refid="PROPS" /> )
   </insert>
 

@@ -5,60 +5,60 @@
 <mapper namespace="org.col.db.mapper.DatasetPartitionMapper">
 
     <update id="create" parameterType="map">
-        CREATE TABLE verbatim_d${key} PARTITION OF verbatim FOR VALUES IN ( ${key} );
-        CREATE TABLE reference_d${key} PARTITION OF reference FOR VALUES IN ( ${key} );
-        CREATE TABLE name_rel_d${key} PARTITION OF name_rel FOR VALUES IN ( ${key} );
-        CREATE TABLE taxon_d${key} PARTITION OF taxon FOR VALUES IN ( ${key} );
-        CREATE TABLE synonym_d${key} PARTITION OF synonym FOR VALUES IN ( ${key} );
-        CREATE TABLE taxon_reference_d${key} PARTITION OF taxon_reference FOR VALUES IN ( ${key} );
-        CREATE TABLE distribution_d${key} PARTITION OF distribution FOR VALUES IN ( ${key} );
-        CREATE TABLE distribution_reference_d${key} PARTITION OF distribution_reference FOR VALUES IN ( ${key} );
-        CREATE TABLE vernacular_name_d${key} PARTITION OF vernacular_name FOR VALUES IN ( ${key} );
-        CREATE TABLE vernacular_name_reference_d${key} PARTITION OF vernacular_name_reference FOR VALUES IN ( ${key} );
+        CREATE TABLE verbatim_${key} PARTITION OF verbatim FOR VALUES IN ( ${key} );
+        CREATE TABLE reference_${key} PARTITION OF reference FOR VALUES IN ( ${key} );
+        CREATE TABLE name_rel_${key} PARTITION OF name_rel FOR VALUES IN ( ${key} );
+        CREATE TABLE taxon_${key} PARTITION OF taxon FOR VALUES IN ( ${key} );
+        CREATE TABLE synonym_${key} PARTITION OF synonym FOR VALUES IN ( ${key} );
+        CREATE TABLE taxon_reference_${key} PARTITION OF taxon_reference FOR VALUES IN ( ${key} );
+        CREATE TABLE distribution_${key} PARTITION OF distribution FOR VALUES IN ( ${key} );
+        CREATE TABLE distribution_reference_${key} PARTITION OF distribution_reference FOR VALUES IN ( ${key} );
+        CREATE TABLE vernacular_name_${key} PARTITION OF vernacular_name FOR VALUES IN ( ${key} );
+        CREATE TABLE vernacular_name_reference_${key} PARTITION OF vernacular_name_reference FOR VALUES IN ( ${key} );
     </update>
 
     <update id="buildIndices" parameterType="map">
-        ALTER TABLE verbatim_d${key} ADD PRIMARY KEY (key);
-        CREATE index ON verbatim_d${key} USING GIN(issues);
+        ALTER TABLE verbatim_${key} ADD PRIMARY KEY (key);
+        CREATE index ON verbatim_${key} USING GIN(issues);
 
-        ALTER TABLE name_rel_d${key} ADD PRIMARY KEY (key);
-        CREATE index ON name_rel_d${key} (name_key, type);
-        CREATE index ON name_rel_d${key} (verbatim_key);
+        ALTER TABLE name_rel_${key} ADD PRIMARY KEY (key);
+        CREATE index ON name_rel_${key} (name_key, type);
+        CREATE index ON name_rel_${key} (verbatim_key);
 
-        ALTER TABLE taxon_d${key} ADD PRIMARY KEY (key);
-        CREATE UNIQUE index ON taxon_d${key} (id);
-        CREATE index ON taxon_d${key} (parent_key);
-        CREATE index ON taxon_d${key} (name_key);
-        CREATE index ON taxon_d${key} (verbatim_key);
+        ALTER TABLE taxon_${key} ADD PRIMARY KEY (key);
+        CREATE UNIQUE index ON taxon_${key} (id);
+        CREATE index ON taxon_${key} (parent_key);
+        CREATE index ON taxon_${key} (name_key);
+        CREATE index ON taxon_${key} (verbatim_key);
 
-        CREATE index ON synonym_d${key} (taxon_key);
-        CREATE index ON synonym_d${key} (name_key);
-        CREATE index ON synonym_d${key} (verbatim_key);
+        CREATE index ON synonym_${key} (taxon_key);
+        CREATE index ON synonym_${key} (name_key);
+        CREATE index ON synonym_${key} (verbatim_key);
 
-        ALTER TABLE reference_d${key} ADD PRIMARY KEY (key);
-        CREATE UNIQUE index ON reference_d${key} (id);
-        CREATE index ON reference_d${key} (verbatim_key);
+        ALTER TABLE reference_${key} ADD PRIMARY KEY (key);
+        CREATE UNIQUE index ON reference_${key} (id);
+        CREATE index ON reference_${key} (verbatim_key);
 
-        ALTER TABLE distribution_d${key} ADD PRIMARY KEY (key);
-        CREATE index ON distribution_d${key} (taxon_key);
-        CREATE index ON distribution_d${key} (verbatim_key);
+        ALTER TABLE distribution_${key} ADD PRIMARY KEY (key);
+        CREATE index ON distribution_${key} (taxon_key);
+        CREATE index ON distribution_${key} (verbatim_key);
 
-        ALTER TABLE vernacular_name_d${key} ADD PRIMARY KEY (key);
-        CREATE index ON vernacular_name_d${key} (taxon_key);
-        CREATE index ON vernacular_name_d${key} (verbatim_key);
+        ALTER TABLE vernacular_name_${key} ADD PRIMARY KEY (key);
+        CREATE index ON vernacular_name_${key} (taxon_key);
+        CREATE index ON vernacular_name_${key} (verbatim_key);
     </update>
 
     <update id="delete" parameterType="map">
-        DROP TABLE IF EXISTS verbatim_d${key};
-        DROP TABLE IF EXISTS reference_d${key};
-        DROP TABLE IF EXISTS name_rel_d${key};
-        DROP TABLE IF EXISTS taxon_d${key};
-        DROP TABLE IF EXISTS synonym_d${key};
-        DROP TABLE IF EXISTS taxon_reference_d${key};
-        DROP TABLE IF EXISTS distribution_d${key};
-        DROP TABLE IF EXISTS distribution_reference_d${key};
-        DROP TABLE IF EXISTS vernacular_name_d${key};
-        DROP TABLE IF EXISTS vernacular_name_reference_d${key};
+        DROP TABLE IF EXISTS verbatim_${key};
+        DROP TABLE IF EXISTS reference_${key};
+        DROP TABLE IF EXISTS name_rel_${key};
+        DROP TABLE IF EXISTS taxon_${key};
+        DROP TABLE IF EXISTS synonym_${key};
+        DROP TABLE IF EXISTS taxon_reference_${key};
+        DROP TABLE IF EXISTS distribution_${key};
+        DROP TABLE IF EXISTS distribution_reference_${key};
+        DROP TABLE IF EXISTS vernacular_name_${key};
+        DROP TABLE IF EXISTS vernacular_name_reference_${key};
     </update>
 
     <delete id="truncateDatasetData" parameterType="map">

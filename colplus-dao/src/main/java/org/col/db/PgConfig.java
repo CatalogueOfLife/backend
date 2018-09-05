@@ -8,6 +8,7 @@ import java.util.Objects;
 import javax.validation.constraints.Min;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Strings;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.apache.ibatis.jdbc.ScriptRunner;
@@ -119,7 +120,7 @@ public class PgConfig extends PgDbConfig {
    * @return a new simple postgres jdbc connection to the given db on this pg server
    */
   public Connection connect(PgDbConfig db) throws SQLException {
-    return DriverManager.getConnection(jdbcUrl(db), db.user, db.password);
+    return DriverManager.getConnection(jdbcUrl(db), Strings.emptyToNull(db.user), Strings.emptyToNull(db.password));
   }
 
   private String jdbcUrl(PgDbConfig db) {

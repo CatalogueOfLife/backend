@@ -1,12 +1,15 @@
 
+-- this will remove all existing tables
+DROP SCHEMA public CASCADE;
+CREATE SCHEMA public;
+
 CREATE EXTENSION IF NOT EXISTS hstore;
 
 CREATE EXTENSION IF NOT EXISTS unaccent;
 
 -- use unaccent by default for all simple search
 CREATE TEXT SEARCH CONFIGURATION public.simple2 ( COPY = pg_catalog.simple );
-ALTER TEXT SEARCH CONFIGURATION simple2 ALTER MAPPING
-FOR hword, hword_part, word WITH unaccent;
+ALTER TEXT SEARCH CONFIGURATION simple2 ALTER MAPPING FOR hword, hword_part, word WITH unaccent;
 
 CREATE TYPE rank AS ENUM (
   'domain',

@@ -63,7 +63,7 @@
   </select>
 
   <insert id="create" parameterType="VernacularName" useGeneratedKeys="true" keyProperty="v.key">
-    INSERT INTO vernacular_name ( <include refid="COLS" /> )
+    INSERT INTO vernacular_name_${datasetKey} ( <include refid="COLS" /> )
     VALUES ( <include refid="PROPS" /> )
   </insert>
 

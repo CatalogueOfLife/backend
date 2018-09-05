@@ -59,7 +59,7 @@
     </select>
 
     <insert id="create">
-        INSERT INTO synonym (dataset_key, name_key, taxon_key, verbatim_key, status, according_to)
+        INSERT INTO synonym_${datasetKey} (dataset_key, name_key, taxon_key, verbatim_key, status, according_to)
         VALUES (#{datasetKey}, #{nameKey}, #{taxonKey}, #{syn.verbatimKey}, #{syn.status}, #{syn.accordingTo})
     </insert>
 
