@@ -10,6 +10,7 @@ import com.google.common.collect.Lists;
 import org.apache.ibatis.session.SqlSession;
 import org.col.common.concurrent.ExecutorUtils;
 import org.col.db.PgSetupRule;
+import org.col.db.mapper.DatasetPartitionMapper;
 import org.col.db.mapper.InitMybatisRule;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -39,6 +40,11 @@ public class PgImportTest {
     public Boolean call() throws Exception {
       try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
         PgImport.partition(session, datasetKey);
+
+        DatasetPartitionMapper mapper = session.getMapper(DatasetPartitionMapper.class);
+        mapper.buildIndices(datasetKey);
+        mapper.attach(datasetKey);
+        session.commit();
       }
       return true;
     }
@@ -47,21 +53,24 @@ public class PgImportTest {
   @Test
   public void testConcurrentPartitioning() throws Exception {
     ExecutorService exec = Executors.newFixedThreadPool(4);
-    List<Future<Boolean>> tasks = Lists.newArrayList();
     try {
-      for (int k=1000; k<1025; k++) {
-        tasks.add(exec.submit(new PartitionJob(k)));
-        tasks.add(exec.submit(new PartitionJob(k+1)));
-        tasks.add(exec.submit(new PartitionJob(k+10)));
-      }
+      testConcurrentPartitioningOnce(exec);
+      // run same dataset keys again so we have to delete the previous ones
+      testConcurrentPartitioningOnce(exec);
       exec.shutdown();
-
-      for (Future<Boolean> f : tasks) {
-        assertTrue(f.get());
-      }
 
     } finally {
       ExecutorUtils.shutdown(exec);
+    }
+  }
+
+  private void testConcurrentPartitioningOnce(ExecutorService exec) throws Exception {
+    List<Future<Boolean>> tasks = Lists.newArrayList();
+    for (int k=3; k<25; k++) {
+      tasks.add(exec.submit(new PartitionJob(k)));
+    }
+    for (Future<Boolean> f : tasks) {
+      assertTrue(f.get());
     }
   }
 

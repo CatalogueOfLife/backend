@@ -5,16 +5,29 @@
 <mapper namespace="org.col.db.mapper.DatasetPartitionMapper">
 
     <update id="create" parameterType="map">
-        CREATE TABLE verbatim_${key} PARTITION OF verbatim FOR VALUES IN ( ${key} );
-        CREATE TABLE reference_${key} PARTITION OF reference FOR VALUES IN ( ${key} );
-        CREATE TABLE name_rel_${key} PARTITION OF name_rel FOR VALUES IN ( ${key} );
-        CREATE TABLE taxon_${key} PARTITION OF taxon FOR VALUES IN ( ${key} );
-        CREATE TABLE synonym_${key} PARTITION OF synonym FOR VALUES IN ( ${key} );
-        CREATE TABLE taxon_reference_${key} PARTITION OF taxon_reference FOR VALUES IN ( ${key} );
-        CREATE TABLE distribution_${key} PARTITION OF distribution FOR VALUES IN ( ${key} );
-        CREATE TABLE distribution_reference_${key} PARTITION OF distribution_reference FOR VALUES IN ( ${key} );
-        CREATE TABLE vernacular_name_${key} PARTITION OF vernacular_name FOR VALUES IN ( ${key} );
-        CREATE TABLE vernacular_name_reference_${key} PARTITION OF vernacular_name_reference FOR VALUES IN ( ${key} );
+        CREATE TABLE verbatim_${key} (LIKE verbatim INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
+        CREATE TABLE reference_${key} (LIKE reference INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
+        CREATE TABLE name_rel_${key} (LIKE name_rel INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
+        CREATE TABLE taxon_${key} (LIKE taxon INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
+        CREATE TABLE synonym_${key} (LIKE synonym INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
+        CREATE TABLE taxon_reference_${key} (LIKE taxon_reference INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
+        CREATE TABLE distribution_${key} (LIKE distribution INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
+        CREATE TABLE distribution_reference_${key} (LIKE distribution_reference INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
+        CREATE TABLE vernacular_name_${key} (LIKE vernacular_name INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
+        CREATE TABLE vernacular_name_reference_${key} (LIKE vernacular_name_reference INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
+    </update>
+
+    <update id="attach" parameterType="map">
+        ALTER TABLE verbatim ATTACH PARTITION verbatim_${key} FOR VALUES IN ( ${key} );
+        ALTER TABLE reference ATTACH PARTITION reference_${key} FOR VALUES IN ( ${key} );
+        ALTER TABLE name_rel ATTACH PARTITION name_rel_${key} FOR VALUES IN ( ${key} );
+        ALTER TABLE taxon ATTACH PARTITION taxon_${key} FOR VALUES IN ( ${key} );
+        ALTER TABLE synonym ATTACH PARTITION synonym_${key} FOR VALUES IN ( ${key} );
+        ALTER TABLE taxon_reference ATTACH PARTITION taxon_reference_${key} FOR VALUES IN ( ${key} );
+        ALTER TABLE distribution ATTACH PARTITION distribution_${key} FOR VALUES IN ( ${key} );
+        ALTER TABLE distribution_reference ATTACH PARTITION distribution_reference_${key} FOR VALUES IN ( ${key} );
+        ALTER TABLE vernacular_name ATTACH PARTITION vernacular_name_${key} FOR VALUES IN ( ${key} );
+        ALTER TABLE vernacular_name_reference ATTACH PARTITION vernacular_name_reference_${key} FOR VALUES IN ( ${key} );
     </update>
 
     <update id="buildIndices" parameterType="map">

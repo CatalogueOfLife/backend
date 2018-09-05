@@ -85,7 +85,7 @@ public class PgImport implements Callable<Boolean> {
 		insertTaxa();
 
     checkIfCancelled();
-    buildIndices();
+    attach();
 
     updateMetadata();
 		LOG.info("Completed dataset {} insert with {} verbatim records, " +
@@ -119,11 +119,18 @@ public class PgImport implements Callable<Boolean> {
     session.commit();
   }
 
-  private void buildIndices(){
+  /**
+   * Builds indices and finally attaches partitions to main tables.
+   */
+  private void attach(){
     try (SqlSession session = sessionFactory.openSession(true)) {
       LOG.info("Build partition indices for dataset {}: {}", dataset.getKey(), dataset.getTitle());
       DatasetPartitionMapper mapper = session.getMapper(DatasetPartitionMapper.class);
+
       mapper.buildIndices(dataset.getKey());
+      session.commit();
+
+      mapper.attach(dataset.getKey());
       session.commit();
     }
   }
