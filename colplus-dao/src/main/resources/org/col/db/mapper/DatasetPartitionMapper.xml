@@ -5,26 +5,16 @@
 <mapper namespace="org.col.db.mapper.DatasetPartitionMapper">
 
     <update id="create" parameterType="map">
-        CREATE TABLE verbatim_d${key}
-            PARTITION OF verbatim FOR VALUES IN ( ${key} );
-        CREATE TABLE reference_d${key}
-            PARTITION OF reference FOR VALUES IN ( ${key} );
-        CREATE TABLE name_rel_d${key}
-            PARTITION OF name_rel FOR VALUES IN ( ${key} );
-        CREATE TABLE taxon_d${key}
-            PARTITION OF taxon FOR VALUES IN ( ${key} );
-        CREATE TABLE synonym_d${key}
-            PARTITION OF synonym FOR VALUES IN ( ${key} );
-        CREATE TABLE taxon_reference_d${key}
-            PARTITION OF taxon_reference FOR VALUES IN ( ${key} );
-        CREATE TABLE distribution_d${key}
-            PARTITION OF distribution FOR VALUES IN ( ${key} );
-        CREATE TABLE distribution_reference_d${key}
-            PARTITION OF distribution_reference FOR VALUES IN ( ${key} );
-        CREATE TABLE vernacular_name_d${key}
-            PARTITION OF vernacular_name FOR VALUES IN ( ${key} );
-        CREATE TABLE vernacular_name_reference_d${key}
-            PARTITION OF vernacular_name_reference FOR VALUES IN ( ${key} );
+        CREATE TABLE verbatim_d${key} PARTITION OF verbatim FOR VALUES IN ( ${key} );
+        CREATE TABLE reference_d${key} PARTITION OF reference FOR VALUES IN ( ${key} );
+        CREATE TABLE name_rel_d${key} PARTITION OF name_rel FOR VALUES IN ( ${key} );
+        CREATE TABLE taxon_d${key} PARTITION OF taxon FOR VALUES IN ( ${key} );
+        CREATE TABLE synonym_d${key} PARTITION OF synonym FOR VALUES IN ( ${key} );
+        CREATE TABLE taxon_reference_d${key} PARTITION OF taxon_reference FOR VALUES IN ( ${key} );
+        CREATE TABLE distribution_d${key} PARTITION OF distribution FOR VALUES IN ( ${key} );
+        CREATE TABLE distribution_reference_d${key} PARTITION OF distribution_reference FOR VALUES IN ( ${key} );
+        CREATE TABLE vernacular_name_d${key} PARTITION OF vernacular_name FOR VALUES IN ( ${key} );
+        CREATE TABLE vernacular_name_reference_d${key} PARTITION OF vernacular_name_reference FOR VALUES IN ( ${key} );
     </update>
 
     <update id="buildIndices" parameterType="map">
@@ -72,8 +62,7 @@
     </update>
 
     <delete id="truncateDatasetData" parameterType="map">
-        DELETE FROM name
-        WHERE dataset_key = #{key}
+        DELETE FROM name WHERE dataset_key = #{key}
     </delete>
 
 </mapper>
