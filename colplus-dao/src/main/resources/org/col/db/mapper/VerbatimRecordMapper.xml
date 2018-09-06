@@ -72,7 +72,7 @@
     </select>
 
     <insert id="create" parameterType="TermRecord"  useGeneratedKeys="true" keyProperty="key">
-        INSERT INTO verbatim (<include refid="COLS" />)
+        INSERT INTO verbatim_${datasetKey} (<include refid="COLS" />)
         VALUES (<include refid="PROPS" />)
     </insert>
 

@@ -15,9 +15,9 @@ public class DatasetPartitionMapperTest extends MapperTestBase<DatasetPartitionM
     mapper().delete(Datasets.SCRUT_CAT);
     mapper().create(Datasets.SCRUT_CAT);
     mapper().buildIndices(Datasets.SCRUT_CAT);
+    mapper().attach(Datasets.SCRUT_CAT);
 
     mapper().delete(Datasets.SCRUT_CAT);
     mapper().truncateDatasetData(Datasets.SCRUT_CAT);
-
   }
 }

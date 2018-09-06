@@ -85,7 +85,7 @@ public class PgImport implements Callable<Boolean> {
 		insertTaxa();
 
     checkIfCancelled();
-    buildIndices();
+    attach();
 
     updateMetadata();
 		LOG.info("Completed dataset {} insert with {} verbatim records, " +
@@ -96,21 +96,41 @@ public class PgImport implements Callable<Boolean> {
 	}
 
   private void partition(){
-    try (SqlSession session = sessionFactory.openSession(true)) {
-      LOG.info("Create empty partition for dataset {}: {}", dataset.getKey(), dataset.getTitle());
-      DatasetPartitionMapper mapper = session.getMapper(DatasetPartitionMapper.class);
-      mapper.delete(dataset.getKey());
-      mapper.create(dataset.getKey());
-      mapper.truncateDatasetData(dataset.getKey());
-      session.commit();
+    try (SqlSession session = sessionFactory.openSession(false)) {
+      partition(session, dataset.getKey());
     }
   }
 
-  private void buildIndices(){
+  /**
+   * Creates all dataset partitions needed, removing any previous partition and data for the given datasetKey.
+   * To avoid table deadlocks we synchronize this method!
+   * See https://github.com/Sp2000/colplus-backend/issues/127
+   */
+  static synchronized void partition(SqlSession session, int datasetKey){
+    LOG.info("Create empty partition for dataset {}", datasetKey);
+    DatasetPartitionMapper mapper = session.getMapper(DatasetPartitionMapper.class);
+    // first remove
+    mapper.delete(datasetKey);
+    mapper.truncateDatasetData(datasetKey);
+    session.commit();
+
+    // then create
+    mapper.create(datasetKey);
+    session.commit();
+  }
+
+  /**
+   * Builds indices and finally attaches partitions to main tables.
+   */
+  private void attach(){
     try (SqlSession session = sessionFactory.openSession(true)) {
       LOG.info("Build partition indices for dataset {}: {}", dataset.getKey(), dataset.getTitle());
       DatasetPartitionMapper mapper = session.getMapper(DatasetPartitionMapper.class);
+
       mapper.buildIndices(dataset.getKey());
+      session.commit();
+
+      mapper.attach(dataset.getKey());
       session.commit();
     }
   }

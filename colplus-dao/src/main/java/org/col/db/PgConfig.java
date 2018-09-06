@@ -8,6 +8,7 @@ import java.util.Objects;
 import javax.validation.constraints.Min;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Strings;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.apache.ibatis.jdbc.ScriptRunner;
@@ -16,7 +17,7 @@ import org.apache.ibatis.jdbc.ScriptRunner;
  * A configuration for the postgres database connection pool as used by the mybatis layer.
  */
 @SuppressWarnings("PublicField")
-public class PgConfig {
+public class PgConfig extends PgDbConfig {
   public static final String SCHEMA_FILE = "org/col/db/dbschema.sql";
   public static final String DATA_FILE = "org/col/db/data.sql";
   public static final String GBIF_DATASETS_FILE = "org/col/db/gbif.sql";
@@ -28,9 +29,6 @@ public class PgConfig {
    */
   public String host;
   public int port = 5432;
-  public String database;
-  public String user;
-  public String password;
 
   @Min(1)
   public int maximumPoolSize = 8;
@@ -91,6 +89,13 @@ public class PgConfig {
   public int connectionTimeout = sec(5);
 
   /**
+   * @return true if an embedded database should be used
+   */
+  public boolean embedded() {
+    return host == null || host.startsWith("/");
+  }
+
+  /**
    * @return converted minutes in milliseconds
    */
   private static int min(int minutes) {
@@ -108,11 +113,18 @@ public class PgConfig {
    * @return a new simple postgres jdbc connection
    */
   public Connection connect() throws SQLException {
-    return DriverManager.getConnection(jdbcUrl(), user, password);
+    return connect(this);
   }
 
-  private String jdbcUrl() {
-    return "jdbc:postgresql://" + host + ":" + port + "/" + database;
+  /**
+   * @return a new simple postgres jdbc connection to the given db on this pg server
+   */
+  public Connection connect(PgDbConfig db) throws SQLException {
+    return DriverManager.getConnection(jdbcUrl(db), Strings.emptyToNull(db.user), Strings.emptyToNull(db.password));
+  }
+
+  private String jdbcUrl(PgDbConfig db) {
+    return "jdbc:postgresql://" + host + ":" + port + "/" + db.database;
   }
 
   /**
@@ -124,7 +136,7 @@ public class PgConfig {
 
   public HikariConfig hikariConfig() {
     HikariConfig hikari = new HikariConfig();
-    hikari.setJdbcUrl(jdbcUrl());
+    hikari.setJdbcUrl(jdbcUrl(this));
     //hikari.setDataSourceClassName("org.postgresql.ds.PGSimpleDataSource");
     hikari.setUsername(user);
     hikari.setPassword(password);
@@ -200,7 +212,6 @@ public class PgConfig {
 
   @Override
   public int hashCode() {
-
     return Objects.hash(host, port, database, user, password, maximumPoolSize, minimumIdle, idleTimeout, maxLifetime, lockTimeout, idleInTransactionSessionTimeout, workMem, connectionTimeout);
   }
 }

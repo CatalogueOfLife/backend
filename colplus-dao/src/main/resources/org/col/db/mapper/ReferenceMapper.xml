@@ -80,12 +80,12 @@
     </select>
 
     <insert id="create" parameterType="Reference" useGeneratedKeys="true" keyProperty="key">
-        INSERT INTO reference ( <include refid="COLS" /> )
+        INSERT INTO reference_${datasetKey} ( <include refid="COLS" /> )
         VALUES ( <include refid="PROPS" /> )
     </insert>
 
     <insert id="linkToTaxon">
-        INSERT INTO taxon_reference (dataset_key, taxon_key, reference_key)
+        INSERT INTO taxon_reference_${datasetKey} (dataset_key, taxon_key, reference_key)
         VALUES ( #{datasetKey}, #{taxonKey}, #{refKey} )
     </insert>
 

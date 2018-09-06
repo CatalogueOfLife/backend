@@ -22,7 +22,6 @@ import org.junit.ClassRule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -31,28 +30,28 @@ import static org.mockito.Mockito.when;
  */
 public abstract class CmdTestBase {
   private static final Logger LOG = LoggerFactory.getLogger(CmdTestBase.class);
-  protected Cli cli;
-  private final AdminServerConfig cfg;
+  protected final AdminServerConfig cfg;
+  private final Command cmd;
 
-  @ClassRule
-  public static PgSetupRule pgSetupRule = new PgSetupRule();
-  private File tempDbCfg;
+  private Cli cli;
+  protected File tempDbCfg;
 
-  public CmdTestBase() {
+  public CmdTestBase(Command cmd) {
+    this.cmd = cmd;
     this.cfg = new AdminServerConfig();
   }
 
-  public CmdTestBase(AdminServerConfig cfg) {
-    this.cfg = cfg;
-  }
-
-  public abstract Command registerCommand();
+  @ClassRule
+  public static PgSetupRule pgSetupRule = new PgSetupRule(true);
 
   @Before
   public void setUp() throws Exception {
     // swap out db configs for the ones used by the PgSetupRule
     tempDbCfg = Files.createTempFile("colplus-db", ".yaml").toFile();
     cfg.db = PgSetupRule.getCfg();
+    cfg.adminDb.user = cfg.db.user;
+    cfg.adminDb.password = cfg.db.password;
+
     // somehow serde doesnt work with the inherited Configuration props, set them to null to ignore them
     cfg.client = null;
     cfg.setServerFactory(null);
@@ -65,13 +64,9 @@ public abstract class CmdTestBase {
     final JarLocation location = mock(JarLocation.class);
     when(location.getVersion()).thenReturn(Optional.of("1.0-SNAPSHOT"));
 
-    // Add commands you want to test
+    // Add the command we want to test
     final Bootstrap<AdminServerConfig> bootstrap = new Bootstrap<>(new AdminServer());
-    bootstrap.addCommand(new InitDbCmd());
-    Command cmd = registerCommand();
-    if (cmd != null) {
-      bootstrap.addCommand(cmd);
-    }
+    bootstrap.addCommand(cmd);
 
     // Build what'll run the command and interpret arguments
     cli = new Cli(location, bootstrap, System.out, System.err);
@@ -99,10 +94,16 @@ public abstract class CmdTestBase {
   /**
    * Executes the cli with the given arguments, adding a final argument to the test config file.
    */
-  public void run(boolean initdb, String ... args) throws Exception {
+  public boolean run(String ... args) throws Exception {
+    return run(false, args);
+  }
+  /**
+   * Executes the cli with the given arguments, adding a final argument to the test config file.
+   */
+  public boolean run(boolean initdb, String ... args) throws Exception {
     // first run initdb?
     if (initdb) {
-      assertTrue(cli.run("initdb", "--prompt", "0", tempDbCfg.getAbsolutePath()));
+      InitDbCmd.execute(cfg);
     }
 
     // now run the real arg
@@ -111,6 +112,6 @@ public abstract class CmdTestBase {
     args[N] = tempDbCfg.getAbsolutePath();
 
     // make sure the cli run fine
-    assertTrue(cli.run(args));
+    return cli.run(args);
   }
 }

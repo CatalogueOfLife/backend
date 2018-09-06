@@ -101,7 +101,7 @@ public class InitMybatisRule extends ExternalResource {
 		for (Integer dk : testData.datasetKeys) {
 			pm.delete(dk);
 			pm.create(dk);
-			pm.buildIndices(dk);
+			pm.attach(dk);
 			session.commit();
 		}
 	}

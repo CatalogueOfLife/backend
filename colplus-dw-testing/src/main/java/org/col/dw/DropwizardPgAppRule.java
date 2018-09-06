@@ -52,7 +52,7 @@ public class DropwizardPgAppRule<C extends PgAppConfig> extends DropwizardAppRul
       overrides.add(ConfigOverride.config("db.user", cfg.db.user));
       overrides.add(ConfigOverride.config("db.password", cfg.db.password));
 
-    } catch (IOException e) {
+    } catch (Exception e) {
       throw new RuntimeException("Failed to read popstgres configuration from " + configPath, e);
     }
 

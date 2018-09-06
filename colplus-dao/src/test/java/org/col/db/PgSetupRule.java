@@ -34,8 +34,20 @@ public class PgSetupRule extends ExternalResource {
 	private static SqlSessionFactory sqlSessionFactory;
   private static PgConfig cfg;
 	private EmbeddedColPg postgres;
+	private final boolean serverOnly;
 
-  public static PgConfig getCfg() {
+	public PgSetupRule() {
+		this(false);
+	}
+
+	/**
+	 * @param serverOnly if true just provides a postgres server but does not connect to it or init a colplus database
+	 */
+	public PgSetupRule(boolean serverOnly) {
+		this.serverOnly = serverOnly;
+	}
+
+	public static PgConfig getCfg() {
     return cfg;
   }
 
@@ -50,44 +62,46 @@ public class PgSetupRule extends ExternalResource {
 	@Override
 	protected void before() throws Throwable {
 		super.before();
-		startDb();
-		initDb(cfg);
-	}
-
-	private void startDb() {
 		try {
-      cfg = YamlUtils.read(PgConfig.class, "/pg-test.yaml");
-			if (cfg.host == null || cfg.host.startsWith("/")) {
-				postgres = new EmbeddedColPg(cfg);
-        postgres.start();
-
-			} else {
-				LOG.info("Use external Postgres server {}/{}", cfg.host, cfg.database);
+			startDb();
+			if (!serverOnly) {
+				connect();
+				initDb(cfg);
 			}
-
-			HikariConfig hikari = cfg.hikariConfig();
-			hikari.setAutoCommit(false);
-			dataSource = new HikariDataSource(hikari);
-
-			// configure single mybatis session factory
-			sqlSessionFactory = MybatisFactory.configure(dataSource, "test");
-
 		} catch (Exception e) {
-      LOG.error("Pg startup error: {}", e.getMessage(), e);
+			LOG.error("Pg setup error: {}", e.getMessage(), e);
 			shutdown();
 			throw new RuntimeException(e);
 		}
 	}
 
-	public static void initDb(PgConfig cfg) {
+	private void startDb() throws IOException {
+		cfg = YamlUtils.read(PgConfig.class, "/pg-test.yaml");
+		if (cfg.embedded()) {
+			postgres = new EmbeddedColPg(cfg);
+			postgres.start();
+
+		} else {
+			LOG.info("Use external Postgres server {}/{}", cfg.host, cfg.database);
+		}
+	}
+
+	private void connect() {
+		LOG.debug("Setup connection pool");
+		HikariConfig hikari = cfg.hikariConfig();
+		hikari.setAutoCommit(false);
+		dataSource = new HikariDataSource(hikari);
+
+		// configure single mybatis session factory
+		sqlSessionFactory = MybatisFactory.configure(dataSource, "test");
+	}
+
+	public static void initDb(PgConfig cfg) throws Exception {
 		try (Connection con = cfg.connect()) {
 			LOG.info("Init empty database schema");
 			ScriptRunner runner = PgConfig.scriptRunner(con);
       runner.runScript(Resources.getResourceAsReader(PgConfig.SCHEMA_FILE));
 			con.commit();
-
-		} catch (SQLException | IOException e) {
-			throw new RuntimeException(e);
 		}
 	}
 
