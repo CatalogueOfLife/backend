@@ -85,6 +85,8 @@
         <univocity-parsers.version>2.6.4</univocity-parsers.version>
         <validation-api.version>2.0.0.Final</validation-api.version>
         <woodstox.version>4.4.1</woodstox.version>
+        <elasticsearch.version>5.1.2</elasticsearch.version>
+        
         <!-- Maven plugin versions.
             Check for available updates: mvn versions:display-plugin-updates
         -->
@@ -399,6 +401,19 @@
                 <artifactId>kryo-serializers</artifactId>
                 <version>${kryo-serializers.version}</version>
             </dependency>
+            
+           <!-- Elasticsearch / Lucene -->
+			<dependency>
+				<groupId>org.elasticsearch.client</groupId>
+				<artifactId>transport</artifactId>
+				<version>${elasticsearch.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.elasticsearch</groupId>
+				<artifactId>elasticsearch</artifactId>
+				<version>${elasticsearch.version}</version>
+			</dependency>
+            
 
             <!-- unicode, transliterations -->
             <dependency>

@@ -22,6 +22,7 @@ client:
   maxConnectionsPerRoute: 16
   keepAlive: 0ms
   retries: 1
-anystyle:
+es:
   host: localhost
-  port: 4567
+  post: 9300
+  cluster: ayco-cluster
