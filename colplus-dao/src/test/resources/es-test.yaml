@@ -1,0 +1,3 @@
+host: ${es.host}
+port: 9300
+cluster: ${es.cluster}
