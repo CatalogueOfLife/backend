@@ -1,0 +1,10 @@
+60212	60212	urn:lsid:indexfungorum.org:names:90154	Fungi				60212	accepted	kingdom	Svamp	R.T. Moore	https://svampe.databasen.org/taxon/60212
+60043	60043	urn:lsid:indexfungorum.org:names:90031	Ascomycota			60212	60043	accepted	phylum	sæksvampe	Caval.-Sm.	https://svampe.databasen.org/taxon/60043
+66091	66091	urn:lsid:indexfungorum.org:names:501468	Pezizomycotina			60043	66091	accepted	subphylum		O.E. Erikss. & Winka	https://svampe.databasen.org/taxon/66091
+66109	66109	urn:lsid:indexfungorum.org:names:501486	Lecanoromycetes			66091	66109	accepted	class		O.E. Erikss. & Winka	https://svampe.databasen.org/taxon/66109
+60294	60294	urn:lsid:indexfungorum.org:names:501290	Lecanoromycetidae			66109	60294	accepted	subclass	skivelavsvampe	P.M. Kirk, P.F. Cannon, J.C. David & Stalpers ex Miądl., Lutzoni & Lumbsch	https://svampe.databasen.org/taxon/60294
+60293	60293	urn:lsid:indexfungorum.org:names:90480	Lecanorales			60294	60293	accepted	order	skivelavordenen	Nannf.	https://svampe.databasen.org/taxon/60293
+60234	60234	urn:lsid:indexfungorum.org:names:80830	Haematommataceae			60293	60234	accepted	family		Hafellner	https://svampe.databasen.org/taxon/60234
+62162	62162	urn:lsid:indexfungorum.org:names:2196	Haematomma			60234	62162	accepted	genus		A. Massal.	https://svampe.databasen.org/taxon/62162
+43382	43382	urn:lsid:indexfungorum.org:names:350713	Haematomma ochroleucum	ochroleucum		62162	30405	synonym	species	gul trådkantlav	(Neck.) J.R. Laundon	https://svampe.databasen.org/taxon/43382
+30405	30405	urn:lsid:indexfungorum.org:names:350713	Haematomma ochroleucum var. porphyrium		porphyrium	43382	30405	accepted	variety	grå trådkantlav	(Pers.) J.R. Laundon	https://svampe.databasen.org/taxon/30405

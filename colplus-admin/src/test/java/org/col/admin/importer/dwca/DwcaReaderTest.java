@@ -1,5 +1,6 @@
 package org.col.admin.importer.dwca;
 
+import java.nio.file.Paths;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.col.api.vocab.VocabularyUtils;
@@ -7,6 +8,7 @@ import org.col.common.io.PathUtils;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.GbifTerm;
 import org.gbif.dwc.terms.Term;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -173,5 +175,20 @@ public class DwcaReaderTest {
       assertEquals(tr.get(DwcaReader.DWCA_ID), tr.get(DwcTerm.taxonID));
     });
     assertEquals(9, counter.get());
+  }
+
+  @Test
+  @Ignore("manual test to check local archives")
+  public void testLocalFile() throws Exception {
+    DwcaReader reader = DwcaReader.from(Paths.get("/Users/markus/Downloads/classification.tsv"));
+
+    assertEquals(DwcTerm.Taxon, reader.coreRowType());
+    assertTrue(reader.coreSchema().hasTerm(DwcaReader.DWCA_ID));
+
+    reader.stream(DwcTerm.Taxon).forEach(tr -> {
+      assertNotNull(tr.get(DwcaReader.DWCA_ID));
+      assertNotNull(tr.get(DwcTerm.taxonID));
+      assertNotNull(tr.get(DwcTerm.scientificName));
+    });
   }
 }

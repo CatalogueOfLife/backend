@@ -185,7 +185,7 @@ public class DwcInterpreter extends InterpreterBase {
   }
 
   private Optional<NameAccordingTo> interpretName(TermRecord v) {
-    Optional<NameAccordingTo> opt = interpretName(v.getFirst(DwcTerm.scientificNameID, DwcTerm.taxonID, DwcaReader.DWCA_ID),
+    Optional<NameAccordingTo> opt = interpretName(v.getFirst(DwcTerm.taxonID, DwcaReader.DWCA_ID),
         v.getFirst(DwcTerm.taxonRank, DwcTerm.verbatimTaxonRank), v.get(DwcTerm.scientificName),
         v.get(DwcTerm.scientificNameAuthorship),
         v.getFirst(GbifTerm.genericName, DwcTerm.genus), v.get(DwcTerm.subgenus),
