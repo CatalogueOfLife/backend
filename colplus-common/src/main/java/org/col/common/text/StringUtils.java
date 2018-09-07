@@ -26,6 +26,23 @@ public class StringUtils {
 
   private StringUtils() {}
 
+  /**
+   * Concatenates the given parts with a space, skipping any null or empty strings
+   */
+  public static String concat(String... parts) {
+    if (parts == null) return null;
+    StringBuilder sb = new StringBuilder();
+    for (String p : parts) {
+      if (!org.apache.commons.lang3.StringUtils.isBlank(p)) {
+        if (sb.length()>0) {
+          sb.append(" ");
+        }
+        sb.append(p.trim());
+      }
+    }
+    return sb.toString();
+  }
+
   public static String hexStream(InputStream stream) throws IOException {
     byte[] bytes = IOUtils.toByteArray(stream);
     return StringUtils.hexString(bytes);

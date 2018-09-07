@@ -140,21 +140,29 @@ public class InterpreterBase {
       // parse the reconstructed name without authorship
       // cant use the atomized name just like that cause we would miss name type detection (virus,
       // hybrid, placeholder, garbage)
-      nat = NameParser.PARSER.parse(atom.canonicalNameComplete(), rank, v).get();
-      // if parsed compare with original atoms
-      if (nat.getName().isParsed()) {
-        if (!Objects.equals(genus, nat.getName().getGenus()) ||
-            !Objects.equals(infraGenus, nat.getName().getInfragenericEpithet()) ||
-            !Objects.equals(species, nat.getName().getSpecificEpithet()) ||
-            !Objects.equals(infraspecies, nat.getName().getInfraspecificEpithet())
-        ) {
-          LOG.warn("Parsed and given name atoms differ: [{}] vs [{}]", nat.getName().canonicalNameComplete(), atom.canonicalNameComplete());
-          v.addIssue(Issue.PARSED_NAME_DIFFERS);
+      Optional<NameAccordingTo> natFromAtom = NameParser.PARSER.parse(atom.canonicalNameComplete(), rank, v);
+      if (!natFromAtom.isPresent()) {
+        LOG.warn("Failed to parse {} {} ({}) from given atoms. Use name atoms directly: {}/{}/{}/{}", rank, atom.canonicalNameComplete(), id, genus, infraGenus, species, infraspecies);
+        v.addIssue(Issue.PARSED_NAME_DIFFERS);
+        nat = new NameAccordingTo();
+        nat.setName(atom);
+      } else {
+        nat = natFromAtom.get();
+        // if parsed compare with original atoms
+        if (nat.getName().isParsed()) {
+          if (!Objects.equals(genus, nat.getName().getGenus()) ||
+              !Objects.equals(infraGenus, nat.getName().getInfragenericEpithet()) ||
+              !Objects.equals(species, nat.getName().getSpecificEpithet()) ||
+              !Objects.equals(infraspecies, nat.getName().getInfraspecificEpithet())
+          ) {
+            LOG.warn("Parsed and given name atoms differ: [{}] vs [{}]", nat.getName().canonicalNameComplete(), atom.canonicalNameComplete());
+            v.addIssue(Issue.PARSED_NAME_DIFFERS);
+          }
+        } else if (!Strings.isNullOrEmpty(authorship)){
+          // append authorship to unparsed scientificName
+          String fullname = nat.getName().getScientificName().trim() + " " + authorship.trim();
+          nat.getName().setScientificName(fullname);
         }
-      } else if (!Strings.isNullOrEmpty(authorship)){
-        // append authorship to unparsed scientificName
-        String fullname = nat.getName().getScientificName().trim() + " " + authorship.trim();
-        nat.getName().setScientificName(fullname);
       }
     }
 
@@ -204,6 +212,12 @@ public class InterpreterBase {
     } catch (InvalidNameException e) {
       LOG.info("Invalid atomised name found: {}", nat.getName());
       v.addIssue(Issue.INCONSISTENT_NAME);
+      if (isAtomized) {
+        nat.getName().setScientificName(org.col.common.text.StringUtils.concat(genus, infraGenus, species, infraspecies));
+        v.addIssue(Issue.DOUBTFUL_NAME);
+      } else {
+        return Optional.empty();
+      }
     }
 
     return Optional.of(nat);

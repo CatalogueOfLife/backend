@@ -523,8 +523,8 @@ public class PgImportIT {
     dataset.setTrusted(true);
     // normalizeAndImport(URI.create("https://raw.githubusercontent.com/Sp2000/colplus-repo/master/ACEF/assembly/15.tar.gz"), DataFormat.ACEF);
     // normalizeAndImport(URI.create("http://services.snsb.info/DTNtaxonlists/rest/v0.1/lists/DiversityTaxonNames_Fossils/1154/dwc"), DataFormat.DWCA);
-    //normalizeAndImport(URI.create("https://raw.githubusercontent.com/mdoering/ion-taxonomic-hierarchy/master/classification.tsv"), DataFormat.DWCA);
-    normalizeAndImport(URI.create("https://svampe.databasen.org/dwc/DMS_Fun_taxa.zip"), DataFormat.DWCA);
+    normalizeAndImport(URI.create("https://raw.githubusercontent.com/Sp2000/colplus-repo/master/ACEF/177.tar.gz"), DataFormat.ACEF);
+    //normalizeAndImport(URI.create("https://svampe.databasen.org/dwc/DMS_Fun_taxa.zip"), DataFormat.DWCA);
     // normalizeAndImport(new File("/home/ayco/tmp/DWCA/DTNtaxonlist_DiversityTaxonNames_Plants_1129.zip"), DataFormat.DWCA);
   }
 
