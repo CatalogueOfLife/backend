@@ -1,3 +1,5 @@
 host: ${es.host}
 port: 9300
 cluster: ${es.cluster}
+indices:
+  - {name: name_usaged_it, modelClass: NameUsage, numShards: 1, numReplicas: 0}

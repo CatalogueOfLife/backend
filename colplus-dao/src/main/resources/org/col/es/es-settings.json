@@ -1,0 +1,31 @@
+{
+	"analysis": {
+		"analyzer": {
+			"case_insensitive_analyzer": {
+				"tokenizer": "keyword",
+				"filter": "lowercase"
+			},
+			"ngram0_analyzer": {
+				"tokenizer": "ngram0",
+				"filter": "lowercase"
+			}
+		},
+		"tokenizer": {
+			"ngram0": {
+				"type": "nGram",
+				"min_gram": 3,
+				"max_gram": 15,
+				"token_chars": []
+			}
+		}
+	},
+	"index": {
+		"mapping" : {
+			"nested_fields" : {
+				"limit" : 75
+			}
+		},
+		"refresh_interval": -1,
+		"max_result_window": 50000
+	}
+}

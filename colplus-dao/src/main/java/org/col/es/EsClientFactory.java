@@ -27,7 +27,7 @@ public class EsClientFactory {
     try {
       host = InetAddress.getByName(cfg.host);
     } catch (UnknownHostException e) {
-      throw new RuntimeException(e);
+      throw new EsException(e);
     }
     InetSocketTransportAddress addr = new InetSocketTransportAddress(host, cfg.port);
     client.addTransportAddress(addr);
