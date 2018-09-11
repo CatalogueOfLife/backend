@@ -1,32 +1,19 @@
 package org.col.admin.importer;
 
-import static org.col.api.vocab.DataFormat.ACEF;
-import static org.col.api.vocab.DataFormat.DWCA;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.net.URI;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-<<<<<<< HEAD
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-=======
-import java.util.*;
 
 import com.google.common.collect.Sets;
 import com.google.common.io.Files;
-import jersey.repackaged.com.google.common.collect.Lists;
-import jersey.repackaged.com.google.common.collect.Maps;
->>>>>>> master
+
 import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.col.admin.config.ImporterConfig;
@@ -35,8 +22,30 @@ import org.col.admin.importer.neo.NeoDb;
 import org.col.admin.importer.neo.NeoDbFactory;
 import org.col.admin.importer.neo.model.RankedName;
 import org.col.admin.matching.NameIndexFactory;
-import org.col.api.model.*;
-import org.col.api.vocab.*;
+import org.col.api.model.BareName;
+import org.col.api.model.Dataset;
+import org.col.api.model.Distribution;
+import org.col.api.model.Name;
+import org.col.api.model.NameRelation;
+import org.col.api.model.NameSearch;
+import org.col.api.model.NameUsage;
+import org.col.api.model.Page;
+import org.col.api.model.Reference;
+import org.col.api.model.Synonym;
+import org.col.api.model.Synonymy;
+import org.col.api.model.Taxon;
+import org.col.api.model.TaxonInfo;
+import org.col.api.model.TermRecord;
+import org.col.api.model.VerbatimEntity;
+import org.col.api.model.VernacularName;
+import org.col.api.vocab.DataFormat;
+import org.col.api.vocab.Datasets;
+import org.col.api.vocab.DistributionStatus;
+import org.col.api.vocab.Gazetteer;
+import org.col.api.vocab.Issue;
+import org.col.api.vocab.Language;
+import org.col.api.vocab.NomRelType;
+import org.col.api.vocab.TaxonomicStatus;
 import org.col.db.PgSetupRule;
 import org.col.db.dao.NameDao;
 import org.col.db.dao.NameUsageDao;
@@ -47,24 +56,23 @@ import org.col.db.mapper.InitMybatisRule;
 import org.col.db.mapper.NameRelationMapper;
 import org.col.db.mapper.VerbatimRecordMapper;
 import org.gbif.nameparser.api.Rank;
-<<<<<<< HEAD
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
-import com.google.common.collect.Sets;
-import com.google.common.io.Files;
+
 import jersey.repackaged.com.google.common.collect.Lists;
 import jersey.repackaged.com.google.common.collect.Maps;
-=======
-import org.junit.*;
 
 import static org.col.api.vocab.DataFormat.ACEF;
 import static org.col.api.vocab.DataFormat.DWCA;
-import static org.junit.Assert.*;
->>>>>>> master
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  *
