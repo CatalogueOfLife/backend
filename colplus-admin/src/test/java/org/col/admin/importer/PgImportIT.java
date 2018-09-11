@@ -59,6 +59,7 @@ import org.gbif.nameparser.api.Rank;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -555,7 +556,7 @@ public class PgImportIT {
   }
 
   @Test
-  //@Ignore
+  @Ignore
   public void testGsdGithub() throws Exception {
     dataset.setTrusted(true);
     // normalizeAndImport(URI.create("https://raw.githubusercontent.com/Sp2000/colplus-repo/master/ACEF/assembly/15.tar.gz"), DataFormat.ACEF);
