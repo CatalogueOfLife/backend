@@ -467,8 +467,9 @@ public class NormalizerDwcaIT {
   @Test
   @Ignore
   public void testExternal() throws Exception {
-    normalize(Paths.get("/Users/markus/Desktop/worms"));
-    normalize(URI.create("http://www.marinespecies.org/dwca/WoRMS_DwC-A.zip"));
+    //normalize(URI.create("http://www.marinespecies.org/dwca/WoRMS_DwC-A.zip"));
+    normalize(Paths.get("/Users/markus/Downloads/ipni-dwca"));
+    //normalize(URI.create("http://www.marinespecies.org/dwca/WoRMS_DwC-A.zip"));
     // print("Diversity", GraphFormat.TEXT, false);
   }
 
@@ -482,7 +483,7 @@ public class NormalizerDwcaIT {
     } else {
       writer = new StringWriter();
     }
-    PrinterUtils.printTree(store.getNeo(), writer, GraphFormat.DOT);
+    PrinterUtils.printTree(store.getNeo(), writer, format);
     writer.close();
 
     if (file) {

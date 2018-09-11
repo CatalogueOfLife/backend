@@ -60,7 +60,7 @@ public abstract class NeoInserter {
     LOG.info("Post batch insert completed, {} verbatim records processed creating {} new nodes", batchV, store.size()-batchRec);
 
     LOG.debug("Start processing explicit relations ...");
-    store.process(Labels.ALL,10000, relationProcessor());
+    store.process(Labels.ALL,5000, relationProcessor());
 
     LOG.info("Insert of {} verbatim records and {} nodes completed", vcounter, store.size());
     return meta;

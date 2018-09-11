@@ -13,11 +13,20 @@ import java.net.URI;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+<<<<<<< HEAD
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+=======
+import java.util.*;
+
+import com.google.common.collect.Sets;
+import com.google.common.io.Files;
+import jersey.repackaged.com.google.common.collect.Lists;
+import jersey.repackaged.com.google.common.collect.Maps;
+>>>>>>> master
 import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.col.admin.config.ImporterConfig;
@@ -26,30 +35,8 @@ import org.col.admin.importer.neo.NeoDb;
 import org.col.admin.importer.neo.NeoDbFactory;
 import org.col.admin.importer.neo.model.RankedName;
 import org.col.admin.matching.NameIndexFactory;
-import org.col.api.model.BareName;
-import org.col.api.model.Dataset;
-import org.col.api.model.Distribution;
-import org.col.api.model.Name;
-import org.col.api.model.NameRelation;
-import org.col.api.model.NameSearch;
-import org.col.api.model.NameUsage;
-import org.col.api.model.Page;
-import org.col.api.model.Reference;
-import org.col.api.model.Synonym;
-import org.col.api.model.Synonymy;
-import org.col.api.model.Taxon;
-import org.col.api.model.TaxonInfo;
-import org.col.api.model.TermRecord;
-import org.col.api.model.VerbatimEntity;
-import org.col.api.model.VernacularName;
-import org.col.api.vocab.DataFormat;
-import org.col.api.vocab.Datasets;
-import org.col.api.vocab.DistributionStatus;
-import org.col.api.vocab.Gazetteer;
-import org.col.api.vocab.Issue;
-import org.col.api.vocab.Language;
-import org.col.api.vocab.NomRelType;
-import org.col.api.vocab.TaxonomicStatus;
+import org.col.api.model.*;
+import org.col.api.vocab.*;
 import org.col.db.PgSetupRule;
 import org.col.db.dao.NameDao;
 import org.col.db.dao.NameUsageDao;
@@ -60,6 +47,7 @@ import org.col.db.mapper.InitMybatisRule;
 import org.col.db.mapper.NameRelationMapper;
 import org.col.db.mapper.VerbatimRecordMapper;
 import org.gbif.nameparser.api.Rank;
+<<<<<<< HEAD
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -70,6 +58,13 @@ import com.google.common.collect.Sets;
 import com.google.common.io.Files;
 import jersey.repackaged.com.google.common.collect.Lists;
 import jersey.repackaged.com.google.common.collect.Maps;
+=======
+import org.junit.*;
+
+import static org.col.api.vocab.DataFormat.ACEF;
+import static org.col.api.vocab.DataFormat.DWCA;
+import static org.junit.Assert.*;
+>>>>>>> master
 
 /**
  *
@@ -533,19 +528,33 @@ public class PgImportIT {
     }
   }
 
+  /**
+   * duplicate scientificNameID s should not bring down the importer
+   */
   @Test
-  @Ignore
+  public void testSwampsSciNameIDs() throws Exception {
+    normalizeAndImport(DWCA, 33);
+    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+      NameDao ndao = new NameDao(session);
+      Name n = ndao.get("30405", dataset.getKey());
+      assertEquals("Haematomma ochroleucum var. porphyrium", n.getScientificName());
+      assertEquals("30405", n.getId());
+
+      TaxonDao tdao = new TaxonDao(session);
+      // this is buggy normalization of bad data - should really be just one...
+      assertEquals(2, tdao.list(dataset.getKey(), true, new Page()).getResult().size());
+    }
+  }
+
+  @Test
+  //@Ignore
   public void testGsdGithub() throws Exception {
-    dataset.setTrusted(false);
-    // normalizeAndImport(URI.create("https://raw.githubusercontent.com/Sp2000/colplus-repo/master/ACEF/assembly/15.tar.gz"),
-    // DataFormat.ACEF);
-    // normalizeAndImport(URI.create("http://services.snsb.info/DTNtaxonlists/rest/v0.1/lists/DiversityTaxonNames_Fossils/1154/dwc"),
-    // DataFormat.DWCA);
-    // normalizeAndImport(URI.create("https://raw.githubusercontent.com/mdoering/ion-taxonomic-hierarchy/master/classification.tsv"),
-    // DataFormat.DWCA);
-    // normalizeAndImport(URI.create("https://github.com/gbif/iczn-lists/archive/master.zip"),
-    // DataFormat.DWCA);
-    normalizeAndImport(new File("/home/ayco/tmp/ACEF/6.tar.gz"), DataFormat.ACEF);
+    dataset.setTrusted(true);
+    // normalizeAndImport(URI.create("https://raw.githubusercontent.com/Sp2000/colplus-repo/master/ACEF/assembly/15.tar.gz"), DataFormat.ACEF);
+    // normalizeAndImport(URI.create("http://services.snsb.info/DTNtaxonlists/rest/v0.1/lists/DiversityTaxonNames_Fossils/1154/dwc"), DataFormat.DWCA);
+    normalizeAndImport(URI.create("https://raw.githubusercontent.com/Sp2000/colplus-repo/master/ACEF/177.tar.gz"), DataFormat.ACEF);
+    //normalizeAndImport(URI.create("https://svampe.databasen.org/dwc/DMS_Fun_taxa.zip"), DataFormat.DWCA);
+    // normalizeAndImport(new File("/home/ayco/tmp/DWCA/DTNtaxonlist_DiversityTaxonNames_Plants_1129.zip"), DataFormat.DWCA);
   }
 
   private static RankedName rn(Rank rank, String name) {

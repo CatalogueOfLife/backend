@@ -478,7 +478,7 @@ public class NeoDb implements ReferenceStore {
       // clear monomial lookup monomialCache
       //noinspection SuspiciousMethodCalls
       String sn = (String) props.get(NeoProperties.SCIENTIFIC_NAME);
-      if (!sn.contains(" ")) {
+      if (sn != null && !sn.contains(" ")) {
         monomialCache.remove(sn);
       }
     }
