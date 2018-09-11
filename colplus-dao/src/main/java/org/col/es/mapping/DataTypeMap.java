@@ -24,11 +24,7 @@ import java.util.Set;
  */
 class DataTypeMap {
 
-  private static final DataTypeMap INSTANCE = new DataTypeMap();
-
-  static DataTypeMap getInstance() {
-    return INSTANCE;
-  }
+  static final DataTypeMap INSTANCE = new DataTypeMap();
 
   private final HashMap<Class<?>, ESDataType> java2es = new HashMap<>();
   private final EnumMap<ESDataType, Set<Class<?>>> es2java = new EnumMap<>(ESDataType.class);

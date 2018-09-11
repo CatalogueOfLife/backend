@@ -5,17 +5,22 @@ import org.junit.rules.ExternalResource;
 
 public class EsSetupRule extends ExternalResource {
 
+  private EsConfig cfg;
   private EsClientFactory esClientFactory;
 
   @Override
   protected void before() throws Throwable {
     super.before();
-    EsConfig cfg = YamlUtils.read(EsConfig.class, "/es-test.yaml");
+    cfg = YamlUtils.read(EsConfig.class, "/es-test.yaml");
     esClientFactory = new EsClientFactory(cfg);
   }
 
-  public EsClientFactory getClientFactory() {
+  public  EsClientFactory getClientFactory() {
     return esClientFactory;
+  }
+
+  public EsConfig getEsConfig() {
+    return cfg;
   }
 
   @Override

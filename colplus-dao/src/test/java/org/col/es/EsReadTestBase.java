@@ -13,6 +13,10 @@ public class EsReadTestBase {
   @ClassRule
   public static EsSetupRule esSetupRule = new EsSetupRule();
 
+  protected EsConfig getEsConfig() {
+    return esSetupRule.getEsConfig();
+  }
+
   protected Client getEsClient() {
     return esSetupRule.getClientFactory().getEsClient();
   }

@@ -1,5 +1,13 @@
 package org.col.admin.importer;
 
+import static org.col.api.vocab.DataFormat.ACEF;
+import static org.col.api.vocab.DataFormat.DWCA;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.net.URI;
 import java.net.URL;
@@ -10,11 +18,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import com.google.common.collect.Sets;
-import com.google.common.io.Files;
-import jersey.repackaged.com.google.common.collect.Lists;
-import jersey.repackaged.com.google.common.collect.Maps;
 import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.col.admin.config.ImporterConfig;
@@ -63,15 +66,10 @@ import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
-
-import static org.col.api.vocab.DataFormat.ACEF;
-import static org.col.api.vocab.DataFormat.DWCA;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import com.google.common.collect.Sets;
+import com.google.common.io.Files;
+import jersey.repackaged.com.google.common.collect.Lists;
+import jersey.repackaged.com.google.common.collect.Maps;
 
 /**
  *
@@ -547,7 +545,7 @@ public class PgImportIT {
     // DataFormat.DWCA);
     // normalizeAndImport(URI.create("https://github.com/gbif/iczn-lists/archive/master.zip"),
     // DataFormat.DWCA);
-    normalizeAndImport(new File("/home/ayco/tmp/DWCA/DTNtaxonlist_DiversityTaxonNames_Plants_1129.zip"), DataFormat.DWCA);
+    normalizeAndImport(new File("/home/ayco/tmp/ACEF/6.tar.gz"), DataFormat.ACEF);
   }
 
   private static RankedName rn(Rank rank, String name) {

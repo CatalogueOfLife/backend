@@ -35,7 +35,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class MappingFactory<T> {
 
   private static final HashMap<Class<?>, Mapping<?>> cache = new HashMap<>();
-  private static final DataTypeMap dataTypeMap = DataTypeMap.getInstance();
+  // private static final DataTypeMap dataTypeMap = DataTypeMap.getInstance();
 
   /**
    * Creates a document type mapping for the specified class.
@@ -47,7 +47,7 @@ public class MappingFactory<T> {
     @SuppressWarnings("unchecked")
     Mapping<T> mapping = (Mapping<T>) cache.get(type);
     if (mapping == null) {
-      mapping = new Mapping<T>(type);
+      mapping = new Mapping<>(type);
       addFieldsToDocument(mapping, type, newTree(new HashSet<>(0), type));
       cache.put(type, mapping);
     }
@@ -79,7 +79,7 @@ public class MappingFactory<T> {
   private static ESField createESField(Field field, HashSet<Class<?>> ancestors) {
     Class<?> realType = field.getType();
     Class<?> mapToType = mapType(realType, field.getGenericType());
-    ESDataType esType = dataTypeMap.getESType(mapToType);
+    ESDataType esType = DataTypeMap.INSTANCE.getESType(mapToType);
     if (esType == null) {
       /*
        * Then the Java type does not map to a simple Elasticsearch type; the Elastichsearch type is
@@ -97,7 +97,7 @@ public class MappingFactory<T> {
   private static ESField createESField(Method method, HashSet<Class<?>> ancestors) {
     Class<?> realType = method.getReturnType();
     Class<?> mapToType = mapType(realType, method.getGenericReturnType());
-    ESDataType esType = dataTypeMap.getESType(mapToType);
+    ESDataType esType = DataTypeMap.INSTANCE.getESType(mapToType);
     if (esType == null) {
       if (ancestors.contains(mapToType)) {
         throw new ClassCircularityException(method, mapToType);
