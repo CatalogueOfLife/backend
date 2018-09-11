@@ -44,7 +44,6 @@ public class MappingFactory<T> {
    * @return
    */
   public Mapping<T> getMapping(Class<T> type) {
-
     @SuppressWarnings("unchecked")
     Mapping<T> mapping = (Mapping<T>) cache.get(type);
     if (mapping == null) {
@@ -58,7 +57,7 @@ public class MappingFactory<T> {
   private static void addFieldsToDocument(ComplexField document, Class<?> type,
       HashSet<Class<?>> ancestors) {
     for (Field javaField : getFields(type)) {
-      System.out.println("Mapping field " + javaField);
+      // System.out.println("Mapping field " + javaField.getName());
       ESField esField = createESField(javaField, ancestors);
       esField.setName(javaField.getName());
       esField.setParent(document);
@@ -91,7 +90,8 @@ public class MappingFactory<T> {
       }
       return createDocument(field, mapToType, newTree(ancestors, mapToType));
     }
-    return createSimpleField(field, esType, mapToType.isEnum());
+    boolean forEnum = isOrContainsEnum(realType, field.getGenericType());
+    return createSimpleField(field, esType, forEnum);
   }
 
   private static ESField createESField(Method method, HashSet<Class<?>> ancestors) {
@@ -104,7 +104,8 @@ public class MappingFactory<T> {
       }
       return createDocument(method, mapToType, newTree(ancestors, mapToType));
     }
-    return createSimpleField(method, esType, mapToType.isEnum());
+    boolean forEnum = isOrContainsEnum(realType, method.getGenericReturnType());
+    return createSimpleField(method, esType, forEnum);
   }
 
   private static SimpleField createSimpleField(AnnotatedElement fm, ESDataType esType,
@@ -168,12 +169,12 @@ public class MappingFactory<T> {
    * Returns false if the Java field does not contain the @Analyzers annotation. Otherwise it
    * returns true.
    */
-  private static boolean addMultiFields(KeywordField af, AnnotatedElement fm, boolean isEnum) {
+  private static boolean addMultiFields(KeywordField kf, AnnotatedElement fm, boolean forEnum) {
     Analyzers annotation = fm.getAnnotation(Analyzers.class);
     if (annotation == null) {
-      af.addMultiField(CI_MULTIFIELD);
-      if (!isEnum) {
-        af.addMultiField(DEFAULT_MULTIFIELD);
+      kf.addMultiField(CI_MULTIFIELD);
+      if (!forEnum) {
+        kf.addMultiField(DEFAULT_MULTIFIELD);
       }
       return false;
     }
@@ -185,13 +186,13 @@ public class MappingFactory<T> {
     for (Analyzer a : analyzers) {
       switch (a) {
         case CASE_INSENSITIVE:
-          af.addMultiField(CI_MULTIFIELD);
+          kf.addMultiField(CI_MULTIFIELD);
           break;
         case DEFAULT:
-          af.addMultiField(DEFAULT_MULTIFIELD);
+          kf.addMultiField(DEFAULT_MULTIFIELD);
           break;
         case NGRAM0:
-          af.addMultiField(NGRAM0_MULTIFIELD);
+          kf.addMultiField(NGRAM0_MULTIFIELD);
           break;
         default:
           break;
@@ -211,9 +212,26 @@ public class MappingFactory<T> {
       return type.getComponentType();
     if (isA(type, Collection.class))
       return getClassForTypeArgument(typeArg);
-    if (isA(type, Enum.class))
+    if (type.isEnum())
       return String.class;
     return type;
+  }
+
+  /*
+   * Whether or not the specified type is an enum or an array/collection of enums. If so the
+   * corresponding Elasticsearch field will not be indexed for full-text search.
+   */
+  private static boolean isOrContainsEnum(Class<?> type, Type typeArg) {
+    if (type.isEnum()) {
+      return true;
+    }
+    if (type.isArray()) {
+      return type.getComponentType().isEnum();
+    }
+    if (isA(type, Collection.class)) {
+      return getClassForTypeArgument(typeArg).isEnum();
+    }
+    return false;
   }
 
   private static boolean isMultiValued(Field f) {

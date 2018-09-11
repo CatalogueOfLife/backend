@@ -3,9 +3,9 @@ package org.col.es.mapping;
 import java.util.LinkedHashMap;
 
 /**
- * A {@code KeywordField} is a {@link SimpleField} with Elasticsearch data type
- * {@link ESDataType#KEYWORD keyword}. String fields in API model classes will always be mapped to
- * Elasticsearch document fields of type "keyword".
+ * A {@code KeywordField} is a {@link SimpleField} with Elasticsearch data type "keyword". String
+ * and enum fields in API model classes will always be mapped to Elasticsearch fields of type
+ * "keyword", meaning they will always at least be indexed as-is.
  */
 public class KeywordField extends SimpleField {
 

@@ -11,8 +11,8 @@ import static org.col.es.mapping.ESDataType.LONG;
 import static org.col.es.mapping.ESDataType.SHORT;
 import java.net.URI;
 import java.net.URL;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -59,7 +59,7 @@ class DataTypeMap {
     java2es.put(Boolean.class, BOOLEAN);
     /* Date types */
     java2es.put(LocalDateTime.class, DATE);
-    java2es.put(OffsetDateTime.class, DATE);
+    java2es.put(LocalDate.class, DATE);
 
     /* Create reverse map */
     for (Map.Entry<Class<?>, ESDataType> entry : java2es.entrySet()) {
