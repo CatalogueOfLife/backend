@@ -298,7 +298,7 @@ public class PgImportIT {
       assertIssue(n, Issue.ACCEPTED_ID_INVALID);
 
       List<NameUsage> usages =
-          udao.search(NameSearch.byNameKey(n.getKey()), new Page()).getResult();
+          udao.search(NameSearchRequest.byNameKey(n.getKey()), new Page()).getResult();
       assertEquals(1, usages.size());
       assertEquals(new BareName(n), usages.get(0));
 
@@ -309,7 +309,7 @@ public class PgImportIT {
       assertEquals(Rank.SPECIES, n.getRank());
       assertIssue(n, Issue.SYNONYM_DATA_MOVED);
 
-      usages = udao.search(NameSearch.byNameKey(n.getKey()), new Page()).getResult();
+      usages = udao.search(NameSearchRequest.byNameKey(n.getKey()), new Page()).getResult();
       assertEquals(1, usages.size());
       Synonym s = (Synonym) usages.get(0);
       assertEquals("Astracantha arnacantha", s.getAccepted().getName().getScientificName());
@@ -396,7 +396,7 @@ public class PgImportIT {
       Name sn = ndao.get("Rho-140", dataset.getKey());
       assertEquals("Rhodacarus guevarai Guevara-Benitez, 1974", sn.canonicalNameComplete());
 
-      List<NameUsage> acc = udao.search(NameSearch.byNameKey(sn.getKey()), new Page()).getResult();
+      List<NameUsage> acc = udao.search(NameSearchRequest.byNameKey(sn.getKey()), new Page()).getResult();
       assertEquals(1, acc.size());
       Synonym syn = (Synonym) acc.get(0);
 

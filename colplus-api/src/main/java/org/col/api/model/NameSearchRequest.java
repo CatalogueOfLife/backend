@@ -1,6 +1,8 @@
 package org.col.api.model;
 
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 import javax.ws.rs.QueryParam;
 
 import org.col.api.vocab.Issue;
@@ -10,13 +12,15 @@ import org.col.api.vocab.TaxonomicStatus;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 
-public class NameSearch {
+public class NameSearchRequest {
 
   public static enum SortBy {
 		RELEVANCE,
 		NAME,
     KEY
 	}
+
+	private Set<NameSearchFacet> facets = new HashSet<>();
 
 	@QueryParam("q")
 	private String q;
@@ -48,16 +52,24 @@ public class NameSearch {
 	@QueryParam("sortBy")
 	private SortBy sortBy = SortBy.NAME;
 
-	public static NameSearch byQuery(String query) {
-		NameSearch q = new NameSearch();
+	public static NameSearchRequest byQuery(String query) {
+		NameSearchRequest q = new NameSearchRequest();
 		q.setQ(query);
 		return q;
 	}
 
-	public static NameSearch byNameKey(int key) {
-		NameSearch q = new NameSearch();
+	public static NameSearchRequest byNameKey(int key) {
+		NameSearchRequest q = new NameSearchRequest();
 		q.setKey(key);
 		return q;
+	}
+
+	public void addFacet(NameSearchFacet f) {
+		facets.add(f);
+	}
+
+	public Set<NameSearchFacet> getFacets() {
+		return facets;
 	}
 
 	public String getQ() {
@@ -142,6 +154,7 @@ public class NameSearch {
 
   public boolean isEmpty() {
 	  return q == null
+				&& facets.isEmpty()
         && datasetKey == null
         && key == null
         && rank == null
@@ -156,8 +169,9 @@ public class NameSearch {
 	public boolean equals(Object o) {
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
-		NameSearch that = (NameSearch) o;
-		return Objects.equals(q, that.q) &&
+		NameSearchRequest that = (NameSearchRequest) o;
+		return Objects.equals(facets, that.facets) &&
+				Objects.equals(q, that.q) &&
 				Objects.equals(datasetKey, that.datasetKey) &&
 				Objects.equals(key, that.key) &&
 				rank == that.rank &&
@@ -165,13 +179,13 @@ public class NameSearch {
 				status == that.status &&
 				issue == that.issue &&
 				type == that.type &&
-				Objects.equals(hasField, that.hasField) &&
+				hasField == that.hasField &&
 				sortBy == that.sortBy;
 	}
 
 	@Override
 	public int hashCode() {
 
-		return Objects.hash(q, datasetKey, key, rank, nomStatus, status, issue, type, hasField, sortBy);
+		return Objects.hash(facets, q, datasetKey, key, rank, nomStatus, status, issue, type, hasField, sortBy);
 	}
 }

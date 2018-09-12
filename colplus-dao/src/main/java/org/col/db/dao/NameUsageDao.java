@@ -3,7 +3,7 @@ package org.col.db.dao;
 import java.util.List;
 
 import org.apache.ibatis.session.SqlSession;
-import org.col.api.model.NameSearch;
+import org.col.api.model.NameSearchRequest;
 import org.col.api.model.NameUsage;
 import org.col.api.model.Page;
 import org.col.api.model.ResultPage;
@@ -28,12 +28,12 @@ public class NameUsageDao {
     mapper = session.getMapper(NameUsageMapper.class);
   }
 
-  public ResultPage<NameUsage> search(NameSearch query, Page page) {
+  public ResultPage<NameUsage> search(NameSearchRequest query, Page page) {
     if (query.isEmpty()) {
-      // default to order by key for large, unfiltered resultssets
-      query.setSortBy(NameSearch.SortBy.KEY);
+      // default to order by key for large, unfiltered resultsets
+      query.setSortBy(NameSearchRequest.SortBy.KEY);
     } else if (query.getSortBy() == null) {
-      query.setSortBy(NameSearch.SortBy.NAME);
+      query.setSortBy(NameSearchRequest.SortBy.NAME);
     }
     if (query.getQ() != null) {
       query.setQ(query.getQ() + ":*");

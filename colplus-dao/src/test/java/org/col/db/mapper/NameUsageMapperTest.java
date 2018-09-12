@@ -86,7 +86,7 @@ public class NameUsageMapperTest extends MapperTestBase<NameMapper> {
 
     commit();
 
-    NameSearch search = new NameSearch();
+    NameSearchRequest search = new NameSearchRequest();
     search.setDatasetKey(n.getDatasetKey());
     search.setQ("foo");
     assertEquals(3, mapper.searchCount(search));
@@ -104,7 +104,7 @@ public class NameUsageMapperTest extends MapperTestBase<NameMapper> {
     search.setRank(Rank.CLASS);
     assertEquals(0, mapper.searchCount(search));
 
-    search = new NameSearch();
+    search = new NameSearchRequest();
     search.setHasField(NameField.COMBINATION_AUTHORS);
     assertEquals(4, mapper.searchCount(search));
   }
@@ -140,7 +140,7 @@ public class NameUsageMapperTest extends MapperTestBase<NameMapper> {
 
     session.commit();
 
-    NameSearch search = new NameSearch();
+    NameSearchRequest search = new NameSearchRequest();
     search.setDatasetKey(TestEntityGenerator.DATASET1.getKey());
     search.setQ("foo");
     List<NameUsage> names = mapper.search(search, new Page());
@@ -195,7 +195,7 @@ public class NameUsageMapperTest extends MapperTestBase<NameMapper> {
 
     session.commit();
 
-    NameSearch search = new NameSearch();
+    NameSearchRequest search = new NameSearchRequest();
     search.setDatasetKey(TestEntityGenerator.DATASET1.getKey());
     search.setQ("foo");
     List<NameUsage> names = mapper.search(search, new Page());
@@ -249,7 +249,7 @@ public class NameUsageMapperTest extends MapperTestBase<NameMapper> {
 
     session.commit();
 
-    NameSearch search = new NameSearch();
+    NameSearchRequest search = new NameSearchRequest();
     search.setDatasetKey(TestEntityGenerator.DATASET1.getKey());
     search.setQ("foo");
     List<NameUsage> names = mapper.search(search, new Page());
@@ -324,8 +324,8 @@ public class NameUsageMapperTest extends MapperTestBase<NameMapper> {
 
     // Since we have an empty NameSearch, we should just have all names;
     // the ones created here + the ones inserted through apple
-    NameSearch search = new NameSearch();
-    search.setSortBy(NameSearch.SortBy.KEY);
+    NameSearchRequest search = new NameSearchRequest();
+    search.setSortBy(NameSearchRequest.SortBy.KEY);
     List<NameUsage> result = mapper.search(search, new Page(25));
 
 
@@ -362,7 +362,7 @@ public class NameUsageMapperTest extends MapperTestBase<NameMapper> {
 
     session.commit();
 
-    NameSearch query = new NameSearch();
+    NameSearchRequest query = new NameSearchRequest();
     // Provide key of synonym name
     query.setKey(syn1.getName().getKey());
     List<NameUsage> result = mapper.search(query, new Page());
@@ -411,7 +411,7 @@ public class NameUsageMapperTest extends MapperTestBase<NameMapper> {
 
     session.commit();
 
-    NameSearch query = new NameSearch();
+    NameSearchRequest query = new NameSearchRequest();
     // Provide key of accepted name
     query.setKey(acc1.getKey());
     List<NameUsage> result = mapper.search(query, new Page());
@@ -447,11 +447,11 @@ public class NameUsageMapperTest extends MapperTestBase<NameMapper> {
 
     session.commit();
 
-    NameSearch query = new NameSearch();
-    query.setSortBy(NameSearch.SortBy.RELEVANCE);
+    NameSearchRequest query = new NameSearchRequest();
+    query.setSortBy(NameSearchRequest.SortBy.RELEVANCE);
     List<NameUsage> result = mapper.search(query, new Page());
 
-    query.setSortBy(NameSearch.SortBy.NAME);
+    query.setSortBy(NameSearchRequest.SortBy.NAME);
     result = mapper.search(query, new Page());
   }
 
@@ -497,7 +497,7 @@ public class NameUsageMapperTest extends MapperTestBase<NameMapper> {
 
     session.commit();
 
-    NameSearch search = new NameSearch();
+    NameSearchRequest search = new NameSearchRequest();
     search.setDatasetKey(TestEntityGenerator.DATASET1.getKey());
     search.setQ("foo");
     List<NameUsage> names = mapper.search(search, new Page());
@@ -560,8 +560,8 @@ public class NameUsageMapperTest extends MapperTestBase<NameMapper> {
 
     session.commit();
 
-    NameSearch search = new NameSearch();
-    search.setSortBy(NameSearch.SortBy.KEY);
+    NameSearchRequest search = new NameSearchRequest();
+    search.setSortBy(NameSearchRequest.SortBy.KEY);
 
     // accepted taxa only
     search.setStatus(TaxonomicStatus.ACCEPTED);

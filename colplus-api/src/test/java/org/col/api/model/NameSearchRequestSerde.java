@@ -8,15 +8,15 @@ import org.gbif.nameparser.api.Rank;
 /**
  *
  */
-public class NameSearchSerde extends SerdeTestBase<NameSearch> {
+public class NameSearchRequestSerde extends SerdeTestBase<NameSearchRequest> {
 
-  public NameSearchSerde() {
-    super(NameSearch.class);
+  public NameSearchRequestSerde() {
+    super(NameSearchRequest.class);
   }
 
   @Override
-  public NameSearch genTestValue() throws Exception {
-    NameSearch s = new NameSearch();
+  public NameSearchRequest genTestValue() throws Exception {
+    NameSearchRequest s = new NameSearchRequest();
     s.setQ("Abies");
     s.setNomStatus(NomStatus.MANUSCRIPT);
     s.setRank(Rank.VARIETY);

@@ -1,0 +1,38 @@
+package org.col.api.model;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
+public class NameSearchResponse extends ResultPage<NameUsage> {
+  private Map<NameSearchFacet, List<FacetCount>> facets;
+
+  public NameSearchResponse(Page page, int total, List<NameUsage> result) {
+    this(page, total, result, new HashMap<>());
+  }
+
+  public NameSearchResponse(Page page, int total, List<NameUsage> result, Map<NameSearchFacet, List<FacetCount>> facets) {
+    super(page, total, result);
+    this.facets = facets;
+  }
+
+  public Map<NameSearchFacet, List<FacetCount>> getFacets() {
+    return facets;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    if (!super.equals(o)) return false;
+    NameSearchResponse that = (NameSearchResponse) o;
+    return Objects.equals(facets, that.facets);
+  }
+
+  @Override
+  public int hashCode() {
+
+    return Objects.hash(super.hashCode(), facets);
+  }
+}
