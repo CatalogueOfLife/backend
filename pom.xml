@@ -71,7 +71,7 @@
 		<univocity-parsers.version>2.6.4</univocity-parsers.version>
 		<validation-api.version>2.0.0.Final</validation-api.version>
 		<woodstox.version>4.4.1</woodstox.version>
-		<elasticsearch.version>5.1.2</elasticsearch.version>
+		<elasticsearch.version>6.4.0</elasticsearch.version>
 		<log4j.version>2.7</log4j.version>
 
 		<!-- Maven plugin versions. Check for available updates: mvn versions:display-plugin-updates -->
@@ -386,22 +386,14 @@
 			<!-- Elasticsearch / Lucene -->
 			<dependency>
 				<groupId>org.elasticsearch.client</groupId>
-				<artifactId>transport</artifactId>
+				<artifactId>elasticsearch-rest-client</artifactId>
 				<version>${elasticsearch.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.elasticsearch</groupId>
-				<artifactId>elasticsearch</artifactId>
+				<artifactId>elasticsearch-core</artifactId>
 				<version>${elasticsearch.version}</version>
 			</dependency>
-			<dependency>
-				<!-- (so far) only needed when depending on Elasticsearch, which doesn't 
-					pull it in transitively -->
-				<groupId>org.apache.logging.log4j</groupId>
-				<artifactId>log4j-api</artifactId>
-				<version>${log4j.version}</version>
-			</dependency>
-
 
 			<!-- unicode, transliterations -->
 			<dependency>
