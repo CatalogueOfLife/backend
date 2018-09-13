@@ -3,7 +3,7 @@ package org.col.db.mapper;
 import java.util.Random;
 
 import org.col.api.TestEntityGenerator;
-import org.col.api.model.TermRecord;
+import org.col.api.model.VerbatimRecord;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -20,12 +20,12 @@ public class VerbatimRecordMapperTest extends MapperTestBase<VerbatimRecordMappe
 
   @Test
   public void roundtrip() {
-    TermRecord r1 = TestEntityGenerator.createVerbatim();
+    VerbatimRecord r1 = TestEntityGenerator.createVerbatim();
     mapper().create(r1);
 
     commit();
 
-    TermRecord r2 = mapper().get(r1.getDatasetKey(), r1.getKey());
+    VerbatimRecord r2 = mapper().get(r1.getDatasetKey(), r1.getKey());
 
     assertEquals(r1, r2);
   }

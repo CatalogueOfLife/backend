@@ -316,8 +316,8 @@ public class TestEntityGenerator {
     return csl;
   }
 
-  public static TermRecord createVerbatim() {
-    TermRecord rec = new TermRecord(11, "myFile.txt", DwcTerm.Taxon);
+  public static VerbatimRecord createVerbatim() {
+    VerbatimRecord rec = new VerbatimRecord(11, "myFile.txt", DwcTerm.Taxon);
     rec.setDatasetKey(TestEntityGenerator.DATASET1.getKey());
     for (Term t : DwcTerm.values()) {
       rec.put(t, RandomUtils.randomString(1 + RND.nextInt(23)).toLowerCase());

@@ -33,7 +33,7 @@ import org.col.api.model.Name;
 import org.col.api.model.NameAccordingTo;
 import org.col.api.model.NameMatch;
 import org.col.api.model.Reference;
-import org.col.api.model.TermRecord;
+import org.col.api.model.VerbatimRecord;
 import org.col.api.model.VerbatimEntity;
 import org.col.api.model.VernacularName;
 import org.col.api.vocab.Issue;
@@ -168,7 +168,7 @@ public class Normalizer implements Callable<Boolean> {
 
       // verify source name and flag issues
       if (t.name.getVerbatimKey() != null) {
-        TermRecord v = store.getVerbatim(t.name.getVerbatimKey());
+        VerbatimRecord v = store.getVerbatim(t.name.getVerbatimKey());
         if (NameValidator.flagIssues(t.name, v)) {
           store.put(v);
         }
@@ -232,7 +232,7 @@ public class Normalizer implements Callable<Boolean> {
     if (obj == null) {
       // in such fatal cases log the verbatim record in question for later debugging
       if (ent.getVerbatimKey() != null) {
-        TermRecord rec = store.getVerbatim(ent.getVerbatimKey());
+        VerbatimRecord rec = store.getVerbatim(ent.getVerbatimKey());
         LOG.error("Missing {} of {}: {}", fieldName, ent.getClass().getSimpleName(), rec.toStringComplete());
       } else {
         LOG.error("Missing {} of {}. No verbatim for {}", fieldName, ent.getClass().getSimpleName(), ent);

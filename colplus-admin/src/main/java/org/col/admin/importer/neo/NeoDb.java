@@ -73,7 +73,7 @@ public class NeoDb implements ReferenceStore {
   private final Map<Integer, Reference> references;
   private final Map<String, Integer> refIndexId;
   private final Map<String, Integer> refIndexCitation;
-  private final Map<Integer, TermRecord> verbatim;
+  private final Map<Integer, VerbatimRecord> verbatim;
   private final AtomicInteger verbatimSequence = new AtomicInteger(0);
   private final AtomicInteger referenceSequence = new AtomicInteger(0);
   private final File neoDir;
@@ -116,7 +116,7 @@ public class NeoDb implements ReferenceStore {
           .createOrOpen();
       verbatim = mapDb.hashMap("verbatim")
           .keySerializer(Serializer.INTEGER)
-          .valueSerializer(new MapDbObjectSerializer(TermRecord.class, pool, 128))
+          .valueSerializer(new MapDbObjectSerializer(VerbatimRecord.class, pool, 128))
           .createOrOpen();
       references = mapDb.hashMap("references")
           .keySerializer(Serializer.INTEGER)
@@ -507,12 +507,12 @@ public class NeoDb implements ReferenceStore {
     return t.isSynonym() ? SYN_LABELS : TAX_LABELS;
   }
 
-  public void assignKey(TermRecord v) {
+  public void assignKey(VerbatimRecord v) {
     if (v.getKey() == null) {
       v.setKey(verbatimSequence.incrementAndGet());
     }
   }
-  public void put(TermRecord v) {
+  public void put(VerbatimRecord v) {
     if (v.hasChanged()) {
       assignKey(v);
       verbatim.put(v.getKey(), v);
@@ -556,8 +556,8 @@ public class NeoDb implements ReferenceStore {
   /**
    * @return the verbatim key as assigned from verbatimSequence
    */
-  public TermRecord getVerbatim(int key) {
-    TermRecord rec = verbatim.get(key);
+  public VerbatimRecord getVerbatim(int key) {
+    VerbatimRecord rec = verbatim.get(key);
     if (rec != null) {
       rec.setHashCode();
     }
@@ -570,7 +570,7 @@ public class NeoDb implements ReferenceStore {
 
   public void addIssues(Integer verbatimKey, Issue... issue) {
     if (verbatimKey != null) {
-      TermRecord v = getVerbatim(verbatimKey);
+      VerbatimRecord v = getVerbatim(verbatimKey);
       if (v == null) {
         LOG.warn("No verbatim exists for verbatim key {}", verbatimKey);
       } else {
@@ -601,7 +601,7 @@ public class NeoDb implements ReferenceStore {
     return references.values();
   }
 
-  public Iterable<TermRecord> verbatimList() {
+  public Iterable<VerbatimRecord> verbatimList() {
     return verbatim.values();
   }
 
@@ -937,8 +937,8 @@ public class NeoDb implements ReferenceStore {
       }
       // copy parent props from source
       if (t.taxon.getVerbatimKey() != null) {
-        TermRecord sourceTerms = getVerbatim(t.taxon.getVerbatimKey());
-        TermRecord copyTerms = new TermRecord();
+        VerbatimRecord sourceTerms = getVerbatim(t.taxon.getVerbatimKey());
+        VerbatimRecord copyTerms = new VerbatimRecord();
         copyTerms.put(DwcTerm.parentNameUsageID, sourceTerms.get(DwcTerm.parentNameUsageID));
         copyTerms.put(DwcTerm.parentNameUsage, sourceTerms.get(DwcTerm.parentNameUsage));
         put(copyTerms);

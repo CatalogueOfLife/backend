@@ -62,7 +62,7 @@ public class NeoKryoFactoryTest {
     );
     assertSerde(terms);
 
-    TermRecord rec = TestEntityGenerator.createVerbatim();
+    VerbatimRecord rec = TestEntityGenerator.createVerbatim();
     for (Issue issue : Issue.values()) {
       rec.addIssue(issue);
     }

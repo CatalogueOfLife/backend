@@ -35,7 +35,7 @@ public class AcefInterpreter extends InterpreterBase {
     metadata.setDenormedClassificationMapped(true);
   }
 
-  public Optional<Reference> interpretReference(TermRecord rec) {
+  public Optional<Reference> interpretReference(VerbatimRecord rec) {
     return Optional.of(refFactory.fromACEF(
         rec.get(AcefTerm.ReferenceID),
         rec.get(AcefTerm.Author),
@@ -46,15 +46,15 @@ public class AcefInterpreter extends InterpreterBase {
     ));
   }
 
-  Optional<NeoTaxon> interpretAccepted(TermRecord v) {
+  Optional<NeoTaxon> interpretAccepted(VerbatimRecord v) {
     return interpretTaxon(AcefTerm.AcceptedTaxonID, v, false);
   }
 
-  Optional<NeoTaxon> interpretSynonym(TermRecord v) {
+  Optional<NeoTaxon> interpretSynonym(VerbatimRecord v) {
     return interpretTaxon(AcefTerm.ID, v, true);
   }
 
-  private Optional<NeoTaxon> interpretTaxon(Term idTerm, TermRecord v, boolean synonym) {
+  private Optional<NeoTaxon> interpretTaxon(Term idTerm, VerbatimRecord v, boolean synonym) {
     // name
     Optional<NameAccordingTo> nat = interpretName(idTerm, v);
     if (!nat.isPresent()) {
@@ -115,7 +115,7 @@ public class AcefInterpreter extends InterpreterBase {
     return Optional.of(t);
   }
 
-  List<VernacularName> interpretVernacular(TermRecord rec) {
+  List<VernacularName> interpretVernacular(VerbatimRecord rec) {
     return super.interpretVernacular(rec,
         this::addReferences,
         AcefTerm.CommonName,
@@ -124,7 +124,7 @@ public class AcefInterpreter extends InterpreterBase {
         AcefTerm.Country
     );
   }
-  private void addReferences(Referenced obj, TermRecord v) {
+  private void addReferences(Referenced obj, VerbatimRecord v) {
     if (v.hasTerm(AcefTerm.ReferenceID)) {
       Reference r = refFactory.find(v.get(AcefTerm.ReferenceID), null);
       if (r != null) {
@@ -140,7 +140,7 @@ public class AcefInterpreter extends InterpreterBase {
     }
   }
 
-  List<Distribution> interpretDistribution(TermRecord rec) {
+  List<Distribution> interpretDistribution(VerbatimRecord rec) {
     // require location
     if (rec.hasTerm(AcefTerm.DistributionElement)) {
       Distribution d = new Distribution();
@@ -180,7 +180,7 @@ public class AcefInterpreter extends InterpreterBase {
     return Collections.emptyList();
   }
 
-  private Classification interpretClassification(TermRecord v, boolean isSynonym) {
+  private Classification interpretClassification(VerbatimRecord v, boolean isSynonym) {
     Classification cl = new Classification();
     cl.setKingdom(v.get(AcefTerm.Kingdom));
     cl.setPhylum(v.get(AcefTerm.Phylum));
@@ -198,7 +198,7 @@ public class AcefInterpreter extends InterpreterBase {
   /**
    * @return a parsed name or in case of AcceptedInfraSpecificTaxa
    */
-  private Optional<NameAccordingTo> interpretName(Term idTerm, TermRecord v) {
+  private Optional<NameAccordingTo> interpretName(Term idTerm, VerbatimRecord v) {
     String authorship;
     String rank;
     if (v.hasTerm(AcefTerm.InfraSpeciesEpithet)) {

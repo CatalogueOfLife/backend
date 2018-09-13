@@ -34,8 +34,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
  *    Unicode code point escapes indicated by "\\u{}": \\u{2F80}
  *
  */
-public class TermRecord implements IssueContainer {
-  private static final Logger LOG = LoggerFactory.getLogger(TermRecord.class);
+public class VerbatimRecord implements IssueContainer {
+  private static final Logger LOG = LoggerFactory.getLogger(VerbatimRecord.class);
   private static final Pattern REMOVE_TAGS = Pattern.compile("</? *[a-z][a-z1-5]{0,5} *>", Pattern.CASE_INSENSITIVE);
   private static final Pattern ECMA_UNICODE = Pattern.compile("\\\\u\\{([0-9a-f]{4})}", Pattern.CASE_INSENSITIVE);
 
@@ -50,10 +50,10 @@ public class TermRecord implements IssueContainer {
   private Map<Term, String> terms = new HashMap<>();
   private Set<Issue> issues = EnumSet.noneOf(Issue.class);
 
-  public TermRecord() {
+  public VerbatimRecord() {
   }
 
-  public TermRecord(long line, String file, Term type) {
+  public VerbatimRecord(long line, String file, Term type) {
     this.line = line;
     this.file = file;
     this.type = type;
@@ -310,7 +310,7 @@ public class TermRecord implements IssueContainer {
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
-    TermRecord that = (TermRecord) o;
+    VerbatimRecord that = (VerbatimRecord) o;
     return line == that.line &&
         Objects.equals(key, that.key) &&
         Objects.equals(datasetKey, that.datasetKey) &&

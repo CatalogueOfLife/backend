@@ -15,7 +15,7 @@ import org.col.admin.importer.neo.model.NeoNameRel;
 import org.col.admin.importer.neo.model.NeoTaxon;
 import org.col.admin.importer.reference.ReferenceFactory;
 import org.col.api.model.Dataset;
-import org.col.api.model.TermRecord;
+import org.col.api.model.VerbatimRecord;
 import org.col.api.model.VerbatimEntity;
 import org.col.api.vocab.Issue;
 import org.col.csv.CsvReader;
@@ -66,7 +66,7 @@ public abstract class NeoInserter {
     return meta;
   }
 
-  private void processVerbatim(final CsvReader reader, final Term classTerm, Function<TermRecord, Boolean> proc) {
+  private void processVerbatim(final CsvReader reader, final Term classTerm, Function<VerbatimRecord, Boolean> proc) {
     if (Thread.interrupted()) {
       LOG.warn("NeoInserter interrupted, exit early with incomplete import");
       throw new NormalizationFailedException("NeoInserter interrupted");
@@ -88,7 +88,7 @@ public abstract class NeoInserter {
   }
 
   protected <T extends VerbatimEntity> void insertEntities(final CsvReader reader, final Term classTerm,
-                                                           Function<TermRecord, Optional<T>> interpret,
+                                                           Function<VerbatimRecord, Optional<T>> interpret,
                                                            Consumer<T> add
   ) {
     processVerbatim(reader, classTerm, rec -> {
@@ -104,7 +104,7 @@ public abstract class NeoInserter {
   }
 
   protected <T extends VerbatimEntity> void insertTaxonEntities(final CsvReader reader, final Term classTerm,
-                                                                Function<TermRecord, List<T>> interpret,
+                                                                Function<VerbatimRecord, List<T>> interpret,
                                                                 Term taxonIdTerm,
                                                                 BiConsumer<NeoTaxon, T> add
   ) {
@@ -129,7 +129,7 @@ public abstract class NeoInserter {
   }
 
   protected void insertNameRelations(final CsvReader reader, final Term classTerm,
-                                                                Function<TermRecord, Optional<NeoNameRel>> interpret,
+                                                                Function<VerbatimRecord, Optional<NeoNameRel>> interpret,
                                                                 Term nameIdTerm, Term relatedNameIdTerm
   ) {
     processVerbatim(reader, classTerm, rec -> {

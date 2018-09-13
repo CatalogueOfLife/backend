@@ -37,7 +37,7 @@ import org.col.api.model.Dataset;
 import org.col.api.model.Distribution;
 import org.col.api.model.NameRelation;
 import org.col.api.model.Reference;
-import org.col.api.model.TermRecord;
+import org.col.api.model.VerbatimRecord;
 import org.col.api.model.VernacularName;
 import org.col.api.vocab.DataFormat;
 import org.col.api.vocab.DistributionStatus;
@@ -125,7 +125,7 @@ public class NormalizerDwcaIT {
     }
   }
 
-  TermRecord vByID(String id) {
+  VerbatimRecord vByID(String id) {
     NeoTaxon t = byID(id);
     return store.getVerbatim(t.name.getVerbatimKey());
   }
@@ -437,19 +437,19 @@ public class NormalizerDwcaIT {
     normalize(31);
 
     try (Transaction tx = store.getNeo().beginTx()) {
-      TermRecord t9 = vByID("9");
+      VerbatimRecord t9 = vByID("9");
       // TODO: fix https://github.com/Sp2000/colplus-backend/issues/118
       // assertTrue(t9.hasIssue(Issue.PUBLISHED_BEFORE_GENUS));
       assertFalse(t9.hasIssue(Issue.PARENT_NAME_MISMATCH));
 
-      TermRecord t11 = vByID("11");
+      VerbatimRecord t11 = vByID("11");
       assertTrue(t11.hasIssue(Issue.PARENT_NAME_MISMATCH));
 
-      TermRecord t103 = vByID("103");
+      VerbatimRecord t103 = vByID("103");
       assertFalse(t103.hasIssue(Issue.PUBLISHED_BEFORE_GENUS));
       assertFalse(t103.hasIssue(Issue.PARENT_NAME_MISMATCH));
 
-      TermRecord t104 = vByID("104");
+      VerbatimRecord t104 = vByID("104");
       assertTrue(t104.hasIssue(Issue.PUBLISHED_BEFORE_GENUS));
     }
   }

@@ -162,7 +162,7 @@ public class PgImport implements Callable<Boolean> {
     try (final SqlSession session = sessionFactory.openSession(false)) {
       VerbatimRecordMapper mapper = session.getMapper(VerbatimRecordMapper.class);
       int counter = 0;
-      for (TermRecord v : store.verbatimList()) {
+      for (VerbatimRecord v : store.verbatimList()) {
         int storeKey = v.getKey();
         v.setKey(null);
         v.setDatasetKey(dataset.getKey());

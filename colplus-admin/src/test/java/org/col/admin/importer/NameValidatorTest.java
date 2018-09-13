@@ -2,7 +2,7 @@ package org.col.admin.importer;
 
 import org.col.api.model.IssueContainer;
 import org.col.api.model.Name;
-import org.col.api.model.TermRecord;
+import org.col.api.model.VerbatimRecord;
 import org.col.api.vocab.Issue;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
@@ -17,7 +17,7 @@ import static org.junit.Assert.assertTrue;
 public class NameValidatorTest {
 
   private void verify(Name n, Issue ... expected) {
-    IssueContainer issues = new TermRecord();
+    IssueContainer issues = new VerbatimRecord();
     if (expected.length == 0) {
       assertFalse( NameValidator.flagIssues(n, issues) );
 

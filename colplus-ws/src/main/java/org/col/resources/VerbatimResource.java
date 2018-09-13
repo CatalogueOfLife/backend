@@ -8,7 +8,7 @@ import javax.ws.rs.core.MediaType;
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.model.Page;
 import org.col.api.model.ResultPage;
-import org.col.api.model.TermRecord;
+import org.col.api.model.VerbatimRecord;
 import org.col.db.mapper.VerbatimRecordMapper;
 import org.gbif.dwc.terms.Term;
 import org.slf4j.Logger;
@@ -23,17 +23,17 @@ public class VerbatimResource {
   private static final Logger LOG = LoggerFactory.getLogger(VerbatimResource.class);
 
   @GET
-  public ResultPage<TermRecord> list(@PathParam("dkey") int datasetKey,
-                                     @QueryParam("type") Term type,
-                                     @Valid @BeanParam Page page,
-                                     @Context SqlSession session) {
+  public ResultPage<VerbatimRecord> list(@PathParam("datasetKey") int datasetKey,
+                                         @QueryParam("type") Term type,
+                                         @Valid @BeanParam Page page,
+                                         @Context SqlSession session) {
     VerbatimRecordMapper mapper = session.getMapper(VerbatimRecordMapper.class);
-    return new ResultPage<TermRecord>(page, mapper.count(datasetKey, type), mapper.list(datasetKey, type, page));
+    return new ResultPage<VerbatimRecord>(page, mapper.count(datasetKey, type), mapper.list(datasetKey, type, page));
   }
 
   @GET
   @Path("{key}")
-  public TermRecord get(@PathParam("dkey") int datasetKey, @PathParam("key") int key, @Context SqlSession session) {
+  public VerbatimRecord get(@PathParam("datasetKey") int datasetKey, @PathParam("key") int key, @Context SqlSession session) {
     VerbatimRecordMapper mapper = session.getMapper(VerbatimRecordMapper.class);
     return mapper.get(datasetKey, key);
   }

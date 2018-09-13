@@ -13,7 +13,7 @@ import org.col.admin.importer.neo.model.NeoTaxon;
 import org.col.admin.importer.reference.ReferenceFactory;
 import org.col.api.model.Dataset;
 import org.col.api.model.Reference;
-import org.col.api.model.TermRecord;
+import org.col.api.model.VerbatimRecord;
 import org.col.api.vocab.DataFormat;
 import org.col.api.vocab.Issue;
 import org.col.parser.ReferenceTypeParser;
@@ -128,7 +128,7 @@ public class AcefInserter extends NeoInserter {
    * As all references and names must be indexed in the store to establish the relations
    * we run this in the relation inserter
    */
-  private void addReferenceLink(TermRecord rec) {
+  private void addReferenceLink(VerbatimRecord rec) {
     String taxonID = emptyToNull(rec.get(AcefTerm.ID));
     String referenceID = emptyToNull(rec.get(AcefTerm.ReferenceID));
     String refTypeRaw = emptyToNull(rec.get(AcefTerm.ReferenceType)); // NomRef, TaxAccRef, ComNameRef
@@ -189,9 +189,9 @@ public class AcefInserter extends NeoInserter {
   protected Optional<Dataset> readMetadata() {
     Dataset d = null;
     initReader();
-    Optional<TermRecord> metadata = reader.readFirstRow(AcefTerm.SourceDatabase);
+    Optional<VerbatimRecord> metadata = reader.readFirstRow(AcefTerm.SourceDatabase);
     if (metadata.isPresent()) {
-      TermRecord dr = metadata.get();
+      VerbatimRecord dr = metadata.get();
       d = new Dataset();
       d.setTitle(dr.get(AcefTerm.DatabaseFullName));
       d.setVersion(dr.get(AcefTerm.DatabaseVersion));

@@ -3,7 +3,7 @@ package org.col.admin.importer.acef;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.col.api.model.TermRecord;
+import org.col.api.model.VerbatimRecord;
 import org.col.common.io.PathUtils;
 import org.gbif.dwc.terms.AcefTerm;
 import org.junit.Test;
@@ -64,7 +64,7 @@ public class AcefReaderTest {
     });
     assertEquals(3, counter.get());
 
-    Optional<TermRecord> row = reader.readFirstRow(AcefTerm.NameReferencesLinks);
+    Optional<VerbatimRecord> row = reader.readFirstRow(AcefTerm.NameReferencesLinks);
     assertTrue(row.isPresent());
 
     // missing required column

@@ -44,7 +44,7 @@
     </sql>
 
 
-    <resultMap id="verbatimResultMap" type="TermRecord" autoMapping="true">
+    <resultMap id="verbatimResultMap" type="VerbatimRecord" autoMapping="true">
         <result property="terms" column="terms" typeHandler="org.col.db.type2.TermMapTypeHandler"/>
         <result property="issues" column="issues" typeHandler="org.col.db.type2.IssueSetTypeHandler" />
     </resultMap>
@@ -71,7 +71,7 @@
         WHERE dataset_key = #{datasetKey} AND key = #{key}
     </select>
 
-    <insert id="create" parameterType="TermRecord"  useGeneratedKeys="true" keyProperty="key">
+    <insert id="create" parameterType="VerbatimRecord" useGeneratedKeys="true" keyProperty="key">
         INSERT INTO verbatim_${datasetKey} (<include refid="COLS" />)
         VALUES (<include refid="PROPS" />)
     </insert>

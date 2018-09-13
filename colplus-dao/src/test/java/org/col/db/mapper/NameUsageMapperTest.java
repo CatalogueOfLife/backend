@@ -460,7 +460,7 @@ public class NameUsageMapperTest extends MapperTestBase<NameMapper> {
   public void searchWithIssue() throws Exception {
     Name n = TestEntityGenerator.newName("a");
 
-    TermRecord v = new TermRecord();
+    VerbatimRecord v = new VerbatimRecord();
     v.setDatasetKey(n.getDatasetKey());
     v.addIssue(Issue.UNPARSABLE_AUTHORSHIP);
     verbatimMapper.create(v);
@@ -485,7 +485,7 @@ public class NameUsageMapperTest extends MapperTestBase<NameMapper> {
     n.setVerbatimKey(v.getKey());
     nDao.create(n);
 
-    TermRecord v2 = new TermRecord();
+    VerbatimRecord v2 = new VerbatimRecord();
     v2.addIssue(Issue.UNPARSABLE_REFERENCE);
     v2.setDatasetKey(n.getDatasetKey());
     verbatimMapper.create(v2);

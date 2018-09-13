@@ -8,7 +8,7 @@ import org.col.admin.importer.neo.NodeBatchProcessor;
 import org.col.admin.importer.neo.model.NeoProperties;
 import org.col.admin.importer.neo.model.NeoTaxon;
 import org.col.api.model.NameAccordingTo;
-import org.col.api.model.TermRecord;
+import org.col.api.model.VerbatimRecord;
 import org.col.api.vocab.Issue;
 import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.dwc.terms.Term;
@@ -35,7 +35,7 @@ public class AcefRelationInserter implements NodeBatchProcessor {
     try {
       NeoTaxon t = store.get(n);
       if (t.taxon.getVerbatimKey() != null) {
-        TermRecord v;
+        VerbatimRecord v;
         if (t.isSynonym()) {
           v = store.getVerbatim(t.synonym.getVerbatimKey());
           Node an = lookupByID(AcefTerm.AcceptedTaxonID, v, t);
@@ -102,7 +102,7 @@ public class AcefRelationInserter implements NodeBatchProcessor {
    *
    * @return list of potentially split ids with their matching neo node if found, otherwise null
    */
-  private Node lookupByID(Term term, TermRecord v, NeoTaxon t) {
+  private Node lookupByID(Term term, VerbatimRecord v, NeoTaxon t) {
     Node n = null;
     final String id = v.get(term);
     if (id != null && !id.equals(t.getID())) {

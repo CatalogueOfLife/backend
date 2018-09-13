@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 
 import com.google.common.base.Charsets;
 import com.univocity.parsers.csv.CsvParserSettings;
-import org.col.api.model.TermRecord;
+import org.col.api.model.VerbatimRecord;
 import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.utils.file.FileUtils;
 import org.junit.Test;
@@ -70,7 +70,7 @@ public class CsvReaderTest {
     });
     assertEquals(3, counter.get());
 
-    Optional<TermRecord> row = reader.readFirstRow(AcefTerm.CommonNames);
+    Optional<VerbatimRecord> row = reader.readFirstRow(AcefTerm.CommonNames);
     assertTrue(row.isPresent());
 
     row = reader.readFirstRow(AcefTerm.Distribution);

@@ -10,7 +10,7 @@ import org.col.admin.importer.neo.model.NeoTaxon;
 import org.col.admin.importer.neo.model.RelType;
 import org.col.api.RandomUtils;
 import org.col.api.model.Taxon;
-import org.col.api.model.TermRecord;
+import org.col.api.model.VerbatimRecord;
 import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.dwc.terms.GbifTerm;
 import org.junit.*;
@@ -193,7 +193,7 @@ public class NeoDbTest {
     }
     db.sync();
 
-    TermRecord tr = new TermRecord(123, "bla.txt", GbifTerm.VernacularName);
+    VerbatimRecord tr = new VerbatimRecord(123, "bla.txt", GbifTerm.VernacularName);
     tr.setType(AcefTerm.Distribution);
     tr.put(AcefTerm.DistributionElement, "Asia");
 
