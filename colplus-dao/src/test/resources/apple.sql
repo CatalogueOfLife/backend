@@ -2,6 +2,12 @@
 INSERT INTO dataset (key, title, import_frequency, created) VALUES (11, 'First dataset',  -1, now());
 INSERT INTO dataset (key, title, import_frequency, created) VALUES (12, 'Second dataset', -1, now());
 
+INSERT INTO verbatim(key, dataset_key, issues) VALUES (1, 11, '{1,2,3,4}');
+INSERT INTO verbatim(key, dataset_key, issues) VALUES (2, 11, '{10}');
+INSERT INTO verbatim(key, dataset_key, issues) VALUES (3, 11, '{2,13}');
+INSERT INTO verbatim(key, dataset_key, issues) VALUES (4, 11, '{}');
+INSERT INTO verbatim(key, dataset_key, issues) VALUES (5, 11, null);
+
 INSERT INTO reference(key, id, dataset_key) VALUES (1, 'ref-1', 11);
 INSERT INTO reference(key, id, dataset_key) VALUES (2, 'ref-1b', 11);
 INSERT INTO reference(key, id, dataset_key) VALUES (3, 'ref-2', 12);

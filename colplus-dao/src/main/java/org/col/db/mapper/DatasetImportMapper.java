@@ -20,9 +20,9 @@ public interface DatasetImportMapper {
   DatasetImport last(@Param("key") int datasetKey);
 
   /**
-   * Get the latest successful import for a dataset
+   * Get the latest import for a dataset with given state
    */
-  DatasetImport lastSuccessful(@Param("key") int datasetKey);
+  DatasetImport lastByState(@Param("state") ImportState state, @Param("key") int datasetKey);
 
   /**
    * Count all imports by their state

@@ -99,26 +99,26 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
   public void lastSuccessful() throws Exception {
     DatasetImport d = create();
     mapper().create(d);
-    assertNull(mapper().lastSuccessful(d.getDatasetKey()));
+    assertNull(mapper().lastByState(ImportState.FINISHED, d.getDatasetKey()));
 
     d.setState(ImportState.FAILED);
     d.setError("damn error");
     mapper().update(d);
-    assertNull(mapper().lastSuccessful(d.getDatasetKey()));
+    assertNull(mapper().lastByState(ImportState.FINISHED, d.getDatasetKey()));
 
     d = create();
     d.setState(ImportState.DOWNLOADING);
     mapper().create(d);
-    assertNull(mapper().lastSuccessful(d.getDatasetKey()));
+    assertNull(mapper().lastByState(ImportState.FINISHED, d.getDatasetKey()));
 
     d.setState(ImportState.FINISHED);
     mapper().update(d);
-    assertNotNull(mapper().lastSuccessful(d.getDatasetKey()));
+    assertNotNull(mapper().lastByState(ImportState.FINISHED, d.getDatasetKey()));
 
     d = create();
     d.setState(ImportState.CANCELED);
     mapper().create(d);
-    assertNotNull(mapper().lastSuccessful(d.getDatasetKey()));
+    assertNotNull(mapper().lastByState(ImportState.FINISHED, d.getDatasetKey()));
     commit();
   }
 
@@ -147,9 +147,19 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     assertEquals((Integer) 4, d.getNameCount());
     assertEquals((Integer) 2, d.getTaxonCount());
     assertEquals((Integer) 2, d.getReferenceCount());
-    assertEquals((Integer) 0, d.getVerbatimCount());
+    assertEquals((Integer) 5, d.getVerbatimCount());
     assertEquals((Integer) 3, d.getVernacularCount());
     assertEquals((Integer) 3, d.getDistributionCount());
+
+    assertEquals( 6, d.getIssuesCount().keySet().size());
+    assertEquals((Integer) 1, d.getIssuesCount().get(Issue.ESCAPED_CHARACTERS));
+    assertEquals((Integer) 2, d.getIssuesCount().get(Issue.REFERENCE_ID_INVALID));
+    assertEquals((Integer) 1, d.getIssuesCount().get(Issue.ID_NOT_UNIQUE));
+    assertEquals((Integer) 1, d.getIssuesCount().get(Issue.URL_INVALID));
+    assertEquals((Integer) 1, d.getIssuesCount().get(Issue.INCONSISTENT_AUTHORSHIP));
+    assertEquals((Integer) 1, d.getIssuesCount().get(Issue.UNUSUAL_NAME_CHARACTERS));
+    assertFalse(d.getIssuesCount().containsKey(Issue.NOT_INTERPRETED));
+    assertFalse(d.getIssuesCount().containsKey(Issue.NULL_EPITHET));
 
     assertEquals( 1, d.getNamesByRankCount().size());
     assertEquals((Integer) 4, d.getNamesByRankCount().get(Rank.SPECIES));

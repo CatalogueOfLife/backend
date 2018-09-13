@@ -17,7 +17,7 @@ import org.col.api.vocab.License;
 import org.gbif.nameparser.api.NomCode;
 
 /**
- *
+ * Metadata about a dataset or a subset of it if parentKey is given.
  */
 public class Dataset {
 	private Integer key;
