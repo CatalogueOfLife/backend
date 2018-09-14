@@ -98,8 +98,9 @@
                 WHERE dataset_key = #{datasetKey} AND parent_key IS NULL
             </when>
             <otherwise>
-                SELECT taxon_count
-                <include refid="org.col.db.mapper.Common.fromFinishedDatasetImport"/>
+                <include refid="org.col.db.mapper.Common.countFromFinishedDatasetImport">
+                    <property name="column" value="taxon_count"/>
+                </include>
             </otherwise>
         </choose>
     </select>

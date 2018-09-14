@@ -21,4 +21,8 @@ public abstract class DaoTestBase {
 	public <T> T mapper(Class<T> mapperClazz) {
 		return session().getMapper(mapperClazz);
 	}
+
+	public void commit() {
+		initMybatisRule.commit();
+	}
 }

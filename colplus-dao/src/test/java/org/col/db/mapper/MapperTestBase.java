@@ -49,7 +49,5 @@ public abstract class MapperTestBase<T> {
     d.setStarted(LocalDateTime.now());
     d.setFinished(LocalDateTime.now());
     dim.create(d);
-
-    commit();
   }
 }

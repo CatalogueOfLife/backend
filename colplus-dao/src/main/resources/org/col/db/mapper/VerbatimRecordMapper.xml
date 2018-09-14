@@ -49,15 +49,18 @@
     </resultMap>
 
     <select id="count" resultType="integer">
+        SELECT coalesce(
+        (SELECT
         <choose>
             <when test="type != null">
-                SELECT coalesce(verbatim_by_type_count->#{type, typeHandler=org.col.db.type.TermTypeHandler}, '0')
+                (verbatim_by_type_count->#{type, typeHandler=org.col.db.type.TermTypeHandler})::int
             </when>
             <otherwise>
-                SELECT verbatim_count
+                verbatim_count
             </otherwise>
         </choose>
         <include refid="org.col.db.mapper.Common.fromFinishedDatasetImport"/>
+        ), 0)
     </select>
 
     <select id="list" resultMap="verbatimResultMap">

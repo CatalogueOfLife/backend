@@ -111,7 +111,6 @@ public class PgImport implements Callable<Boolean> {
     DatasetPartitionMapper mapper = session.getMapper(DatasetPartitionMapper.class);
     // first remove
     mapper.delete(datasetKey);
-    mapper.truncateDatasetData(datasetKey);
     session.commit();
 
     // then create

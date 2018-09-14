@@ -4,9 +4,7 @@ import java.util.List;
 
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.session.ResultHandler;
-import org.col.api.model.NameSearchRequest;
 import org.col.api.model.NameUsage;
-import org.col.api.model.Page;
 
 /**
  * Mapper dealing with methods returning teh NameUsage interface,
@@ -18,11 +16,6 @@ import org.col.api.model.Page;
 public interface NameUsageMapper {
 
 	List<NameUsage> listByName(@Param("nameKey") int nameKey);
-
-	int searchCount(@Param("q") NameSearchRequest query);
-
-	List<NameUsage> search(@Param("q") NameSearchRequest query,
-												 @Param("page") Page page);
 
 	/**
 	 * Iterates over all name usages of a given dataset and processes them with the supplied handler.

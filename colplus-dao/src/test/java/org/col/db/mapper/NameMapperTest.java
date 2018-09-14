@@ -102,7 +102,7 @@ public class NameMapperTest extends org.col.db.mapper.MapperTestBase<NameMapper>
 
     // next page
     p.next();
-    res = nameMapper.list(TestEntityGenerator.DATASET12.getKey(), p);
+    res = nameMapper.list(DATASET12.getKey(), p);
     assertEquals(2, res.size());
     List<Name> l2 = Lists.partition(names, 3).get(1);
     assertEquals(l2, res);
@@ -110,12 +110,16 @@ public class NameMapperTest extends org.col.db.mapper.MapperTestBase<NameMapper>
 
   @Test
   public void count() throws Exception {
-    assertEquals(4, nameMapper.count(TestEntityGenerator.DATASET11.getKey()));
+    generateDatasetImport(DATASET11.getKey());
+    commit();
+    assertEquals(4, nameMapper.count(DATASET11.getKey()));
 
     nameMapper.create(TestEntityGenerator.newName());
     nameMapper.create(TestEntityGenerator.newName());
+    generateDatasetImport(DATASET11.getKey());
     commit();
-    assertEquals(6, nameMapper.count(TestEntityGenerator.DATASET11.getKey()));
+
+    assertEquals(6, nameMapper.count(DATASET11.getKey()));
   }
 
   @Test

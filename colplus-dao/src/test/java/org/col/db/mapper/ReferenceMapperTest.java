@@ -35,14 +35,14 @@ public class ReferenceMapperTest extends MapperTestBase<ReferenceMapper> {
 
 	@Test
 	public void count() throws Exception {
-		int i = mapper().count(DATASET11.getKey());
-		// Just to make sure we understand our environment:
 		// we start with 3 records in reference table, inserted through
 		// apple, only two of which belong to DATASET11.
-		assertEquals(2, i);
 		mapper().create(create());
 		mapper().create(create());
 		mapper().create(create());
+		generateDatasetImport(DATASET11.getKey());
+		commit();
+
 		assertEquals(5, mapper().count(DATASET11.getKey()));
 	}
 

@@ -137,10 +137,10 @@
         </association>
     </resultMap>
 
-
     <select id="count" resultType="integer">
-        SELECT name_count
-        <include refid="org.col.db.mapper.Common.fromFinishedDatasetImport"/>
+        <include refid="org.col.db.mapper.Common.countFromFinishedDatasetImport">
+            <property name="column" value="name_count"/>
+        </include>
     </select>
 
     <select id="list" resultMap="nameResultMap">

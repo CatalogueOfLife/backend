@@ -44,8 +44,9 @@
     </resultMap>
 
     <select id="count" resultType="integer">
-        SELECT reference_count
-        <include refid="org.col.db.mapper.Common.fromFinishedDatasetImport"/>
+        <include refid="org.col.db.mapper.Common.countFromFinishedDatasetImport">
+            <property name="column" value="reference_count"/>
+        </include>
     </select>
 
     <select id="list" resultMap="referenceResultMap">

@@ -16,6 +16,7 @@ import org.javers.core.JaversBuilder;
 import org.javers.core.diff.Diff;
 import org.junit.Test;
 
+import static org.col.api.TestEntityGenerator.DATASET11;
 import static org.junit.Assert.*;
 
 /**
@@ -44,14 +45,13 @@ public class TaxonMapperTest extends MapperTestBase<TaxonMapper> {
 
   @Test
   public void count() throws Exception {
-    int i = mapper().count(TestEntityGenerator.DATASET11.getKey(), false);
-    // Just to make sure we understand our environment
     // 2 Taxa pre-inserted through InitMybatisRule.apple()
-    assertEquals(2, i);
     mapper().create(TestEntityGenerator.newTaxon("t2"));
     mapper().create(TestEntityGenerator.newTaxon("t3"));
     mapper().create(TestEntityGenerator.newTaxon("t4"));
-    assertEquals(5, mapper().count(TestEntityGenerator.DATASET11.getKey(), false));
+    generateDatasetImport(DATASET11.getKey());
+
+    assertEquals(5, mapper().count(DATASET11.getKey(), false));
   }
 
   @Test
@@ -74,7 +74,7 @@ public class TaxonMapperTest extends MapperTestBase<TaxonMapper> {
     // get first page
     Page p = new Page(0, 3);
 
-    List<Taxon> res = mapper().list(TestEntityGenerator.DATASET11.getKey(), false, p);
+    List<Taxon> res = mapper().list(DATASET11.getKey(), false, p);
     assertEquals(3, res.size());
     // First 2 taxa in dataset D1 are pre-inserted taxa:
     assertTrue(TestEntityGenerator.TAXON1.getKey().equals(res.get(0).getKey()));
@@ -82,7 +82,7 @@ public class TaxonMapperTest extends MapperTestBase<TaxonMapper> {
     assertTrue(taxa.get(0).getKey().equals(res.get(2).getKey()));
 
     p.next();
-    res = mapper().list(TestEntityGenerator.DATASET11.getKey(), false, p);
+    res = mapper().list(DATASET11.getKey(), false, p);
     assertEquals(3, res.size());
     assertTrue(taxa.get(1).getKey().equals(res.get(0).getKey()));
     assertTrue(taxa.get(2).getKey().equals(res.get(1).getKey()));
@@ -110,7 +110,7 @@ public class TaxonMapperTest extends MapperTestBase<TaxonMapper> {
     // get first page
     Page p = new Page(0, 1000);
 
-    List<Taxon> res = mapper().list(TestEntityGenerator.DATASET11.getKey(), true, p);
+    List<Taxon> res = mapper().list(DATASET11.getKey(), true, p);
     // Only the 2 pre-inserted root taxa.
     assertEquals(2, res.size());
   }

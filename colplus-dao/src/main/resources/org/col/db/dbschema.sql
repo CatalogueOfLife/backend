@@ -186,12 +186,12 @@ CREATE TABLE reference (
 CREATE SEQUENCE name_key_seq;
 
 CREATE TABLE name (
-  key INTEGER DEFAULT nextval('name_key_seq') PRIMARY KEY,
+  key INTEGER DEFAULT nextval('name_key_seq'),
   id TEXT,
-  dataset_key INTEGER REFERENCES dataset,
+  dataset_key INTEGER NOT NULL,
   verbatim_key INTEGER,
-  homotypic_name_key INTEGER REFERENCES name DEFAULT currval('name_key_seq'::regclass) NOT NULL ,
-  index_name_key INTEGER REFERENCES name,
+  homotypic_name_key INTEGER DEFAULT currval('name_key_seq'::regclass) NOT NULL,
+  index_name_key INTEGER,
   scientific_name TEXT NOT NULL,
   rank rank NOT NULL,
   uninomial TEXT,
@@ -219,28 +219,8 @@ CREATE TABLE name (
   source_url TEXT,
   fossil BOOLEAN,
   remarks TEXT,
-  issues INT[] DEFAULT '{}',
-  doc tsvector
-);
-
-CREATE INDEX ON name USING gin(doc);
-
-CREATE OR REPLACE FUNCTION name_doc_update() RETURNS trigger AS $$
-BEGIN
-    NEW.doc :=
-      setweight(to_tsvector('simple2', coalesce(NEW.scientific_name, '')), 'A') ||
-      setweight(to_tsvector('simple2', coalesce(NEW.remarks, '')), 'D') ||
-      setweight(to_tsvector('simple2', array_to_string(NEW.combination_authors, '')), 'B') ||
-      setweight(to_tsvector('simple2', array_to_string(NEW.combination_ex_authors, '')), 'D') ||
-      setweight(to_tsvector('simple2', array_to_string(NEW.basionym_authors, '')), 'B') ||
-      setweight(to_tsvector('simple2', array_to_string(NEW.basionym_ex_authors, '')), 'D');
-    RETURN NEW;
-END
-$$
-LANGUAGE plpgsql;
-
-CREATE TRIGGER name_trigger BEFORE INSERT OR UPDATE
-  ON name FOR EACH ROW EXECUTE PROCEDURE name_doc_update();
+  issues INT[] DEFAULT '{}'
+) PARTITION BY LIST (dataset_key);
 
 CREATE TABLE name_rel (
   key serial NOT NULL,
@@ -337,12 +317,4 @@ CREATE index ON dataset (gbif_key);
 CREATE index ON dataset_import (dataset_key, finished);
 CREATE index ON dataset_import (started);
 
-CREATE UNIQUE index ON name (id, dataset_key);
-CREATE index ON name (rank);
-CREATE index ON name (nom_status);
-CREATE index ON name (type);
-CREATE index ON name (homotypic_name_key);
-CREATE index ON name (index_name_key);
-CREATE index ON name (published_in_key);
-CREATE index ON name (verbatim_key);
 

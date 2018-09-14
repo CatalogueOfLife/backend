@@ -187,7 +187,8 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     assertEquals( 1, d.getNameRelationsByTypeCount().size());
     assertEquals((Integer) 1, d.getNameRelationsByTypeCount().get(NomRelType.SPELLING_CORRECTION));
 
-    assertEquals( 0, d.getVerbatimByTypeCount().size());
+    assertEquals( 2, d.getVerbatimByTypeCount().size());
+    assertEquals((Integer) 3, d.getVerbatimByTypeCount().get(AcefTerm.AcceptedSpecies));
   }
 
 }

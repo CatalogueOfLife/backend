@@ -14,5 +14,13 @@
         ORDER BY attempt DESC
         LIMIT 1
     </sql>
+
+    <!-- selects the last successful import, i.e. the one that imported data -->
+    <sql id="countFromFinishedDatasetImport">
+        SELECT coalesce(
+            (SELECT ${column} <include refid="org.col.db.mapper.Common.fromFinishedDatasetImport"/>)
+        , 0)
+    </sql>
+
 </mapper>
 

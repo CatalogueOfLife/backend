@@ -32,12 +32,4 @@ public interface DatasetPartitionMapper {
 	 * @param key
 	 */
 	void attach(@Param("key") int key);
-
-	/**
-	 * Truncates all data from a dataset cascading to all entities incl names, taxa
-	 * and references.
-	 *
-	 * @param key
-	 */
-	void truncateDatasetData(@Param("key") int key);
 }
