@@ -17,8 +17,8 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
 
   @Test
   public void listByName() throws Exception {
-    assertEquals(Lists.newArrayList(SYN2), mapper().listByName(NAME4.getKey()));
-    assertEquals(Lists.newArrayList(TAXON1), mapper().listByName(NAME1.getKey()));
+    assertEquals(Lists.newArrayList(SYN2), mapper().listByName(NAME4.getDatasetKey(), NAME4.getKey()));
+    assertEquals(Lists.newArrayList(TAXON1), mapper().listByName(NAME1.getDatasetKey(), NAME1.getKey()));
   }
 
 }

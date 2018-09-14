@@ -10,7 +10,6 @@ import com.codahale.metrics.annotation.Timed;
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.model.*;
 import org.col.db.dao.NameDao;
-import org.col.db.dao.NameUsageDao;
 import org.col.db.mapper.NameMapper;
 import org.col.db.mapper.NameRelationMapper;
 import org.col.dw.jersey.exception.NotFoundException;
@@ -37,8 +36,7 @@ public class NameResource {
   @Path("search")
   public ResultPage<NameUsage> search(@BeanParam NameSearchRequest query, @Valid @BeanParam Page page,
                                       @Context SqlSession session) {
-    NameUsageDao dao = new NameUsageDao(session);
-    return dao.search(query, page);
+    throw new NotSupportedException("Awaiting Elastic Search");
   }
 
   @GET

@@ -42,74 +42,8 @@
         name n
         LEFT JOIN synonym s ON n.key = s.name_key
         LEFT JOIN taxon t ON n.key = t.name_key OR s.taxon_key = t.key
-    </sql>
-
-    <sql id="FROM-VERBATIM">
-        <if test="q.issue != null">
-            LEFT JOIN verbatim v ON n.verbatim_key = v.key
-        </if>
-    </sql>
-
-    <sql id="FROM-FULL">
-        <include refid="FROM"/>
         LEFT JOIN name an ON t.name_key = an.key
     </sql>
-
-    <sql id="WHERE">
-        <where>
-            <if test="q.q != null">
-                n.doc @@ plainto_tsquery('simple2', #{q.q})
-            </if>
-            <if test="q.datasetKey != null">
-                AND #{q.datasetKey} = n.dataset_key
-            </if>
-            <if test="q.key != null">
-                AND #{q.key} = n.key
-            </if>
-            <if test="q.rank != null">
-                AND #{q.rank}::rank = n.rank
-            </if>
-            <if test="q.nomStatus != null">
-                AND #{q.nomStatus}::int = n.nom_status
-            </if>
-            <if test="q.type != null">
-                AND #{q.type}::int = n.type
-            </if>
-            <if test="q.hasField != null">
-                AND ${q.hasField.notNull('n')}
-            </if>
-            <if test="q.issue != null">
-                AND v.issues @> array[#{q.issue}::int]
-            </if>
-            <if test="q.status != null">
-                <choose>
-                    <when test='q.status.name() == "ACCEPTED"'>
-                        AND t.key is not null
-                        AND (s.taxon_key is null OR s.taxon_key != t.key)
-                        AND NOT t.doubtful
-                    </when>
-                    <when test="q.status.name() == 'DOUBTFUL'">
-                        AND t.key is not null
-                        AND (s.taxon_key is null OR s.taxon_key != t.key)
-                        AND t.doubtful
-                    </when>
-                    <when test="q.status.name() == 'SYNONYM'">
-                        AND t.key = s.taxon_key
-                        AND s.status = #{q.status}::int
-                    </when>
-                    <when test="q.status.name() == 'AMBIGUOUS_SYNONYM'">
-                        AND t.key = s.taxon_key
-                        AND s.status = #{q.status}::int
-                    </when>
-                    <when test="q.status.name() == 'MISAPPLIED'">
-                        AND t.key = s.taxon_key
-                        AND s.status = #{q.status}::int
-                    </when>
-                </choose>
-            </if>
-        </where>
-    </sql>
-
 
 
     <resultMap id="taxonResultMap" type="Taxon" autoMapping="true" extends="org.col.db.mapper.TaxonMapper.taxonResultMap">
@@ -135,37 +69,10 @@
         </discriminator>
     </resultMap>
 
-
-    <select id="searchCount" resultType="integer">
-        SELECT COUNT(*)
-        FROM <include refid="FROM" />
-             <include refid="FROM-VERBATIM" />
-        <include refid="WHERE" />
-    </select>
-
-    <select id="search" resultMap="nameSearchResultMap">
-        SELECT <include refid="SELECT" />
-        FROM <include refid="FROM-FULL" />
-             <include refid="FROM-VERBATIM" />
-        <include refid="WHERE" />
-        <choose>
-            <when test="q.sortBy.toString() == 'KEY'">
-                ORDER BY n.key, disc
-            </when>
-            <when test="q.sortBy.toString() == 'NAME'">
-                ORDER BY n.scientific_name ASC, disc
-            </when>
-            <otherwise>
-                ORDER BY ts_rank(n.doc, plainto_tsquery('simple2', #{q.q})) DESC
-            </otherwise>
-        </choose>
-        <include refid="org.col.db.mapper.Common.limit" />
-    </select>
-
     <select id="listByName" resultMap="nameSearchResultMap">
         SELECT <include refid="SELECT" />
-        FROM <include refid="FROM-FULL" />
-        WHERE n.key=#{nameKey}
+        FROM <include refid="FROM" />
+        WHERE n.dataset_key = #{datasetKey} AND n.key=#{nameKey}
     </select>
 
     <!--  select all name usages of a dataset
@@ -174,7 +81,7 @@
     <select id="processDataset" parameterType="map" resultMap="nameSearchResultMap" resultOrdered="true"
             fetchSize="10000" resultSetType="FORWARD_ONLY">
         SELECT <include refid="SELECT" />
-        FROM <include refid="FROM-FULL" />
+        FROM <include refid="FROM" />
         WHERE n.dataset_key = #{datasetKey}
     </select>
 

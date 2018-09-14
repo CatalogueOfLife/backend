@@ -1,12 +1,10 @@
 package org.col.db.dao;
 
-import java.util.Collections;
+import java.util.List;
 
 import org.apache.ibatis.session.SqlSession;
-import org.col.api.model.NameSearchRequest;
+import org.col.api.model.Name;
 import org.col.api.model.NameUsage;
-import org.col.api.model.Page;
-import org.col.api.model.ResultPage;
 import org.col.db.mapper.NameUsageMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,12 +26,12 @@ public class NameUsageDao {
     mapper = session.getMapper(NameUsageMapper.class);
   }
 
-  /**
-   * THIS IS NOT IMPLEMENTED YET AND
-   * AWAITS FOR THE ELASTIC SEARCH IMPLEMENTATION !!!
-   */
-  public ResultPage<NameUsage> search(NameSearchRequest query, Page page) {
-    return new ResultPage<>(page, 0, Collections.emptyList());
+  public List<NameUsage> byName(Name name) {
+    return byNameKey(name.getDatasetKey(), name.getKey());
+  }
+
+  public List<NameUsage> byNameKey(int datasetKey, int nameKey) {
+    return mapper.listByName(datasetKey, nameKey);
   }
 
 }

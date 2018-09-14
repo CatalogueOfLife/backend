@@ -12,14 +12,15 @@ import org.col.api.vocab.Gazetteer;
 import org.col.api.vocab.TaxonomicStatus;
 import org.junit.Test;
 
+import static org.col.api.TestEntityGenerator.DATASET11;
 import static org.junit.Assert.*;
 
 public class TaxonDaoTest extends DaoTestBase {
 
 	@Test
 	public void testInfo() throws Exception {
-	  final int datasetKey = 11;
-		TaxonDao dao = new TaxonDao(session());
+	  final int datasetKey = DATASET11.getKey();
+		TaxonDao dao = new TaxonDao(session);
 		TaxonInfo info = dao.getTaxonInfo(datasetKey, 1);
 		BeanPrinter.out(info);
 
