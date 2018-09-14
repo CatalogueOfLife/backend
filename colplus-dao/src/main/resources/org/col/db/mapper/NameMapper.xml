@@ -188,12 +188,12 @@
     </select>
 
     <insert id="create" parameterType="Name" useGeneratedKeys="true" keyProperty="key">
-        INSERT INTO name (<include refid="COLS" />)
+        INSERT INTO name_${datasetKey} (<include refid="COLS" />)
         VALUES (<include refid="PROPS" />)
     </insert>
 
     <update id="updateHomotypicNameKey" parameterType="Name" useGeneratedKeys="true" keyProperty="key">
-        UPDATE name
+        UPDATE name_${datasetKey}
         SET homotypic_name_key = #{homoKey}
         WHERE key = #{key}
     </update>

@@ -5,12 +5,9 @@ import org.apache.ibatis.annotations.Param;
 public interface DatasetPartitionMapper {
 
 	/**
-	 * Creates a new dataset partition for all data tables if not already existing
-	 * Indices are not created yet which should happen after the data is inserted by calling attach
-	 *
-	 * Warning! We create many tables and attach them to the partitioned table in one transaction.
-	 * This can easily lead to table deadlocks, see https://github.com/Sp2000/colplus-backend/issues/127
-	 * Only use this mapper through the corresponding DAO which guarantees single threaded access!
+	 * Creates a new dataset partition for all data tables if not already existing.
+	 * The tables are not attached to the main partitioned table yet, see attach().
+	 * Indices are not created yet which should happen after the data is inserted.
 	 */
 	void create(@Param("key") int key);
 

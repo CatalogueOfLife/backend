@@ -264,7 +264,7 @@ public class PgImport implements Callable<Boolean> {
       checkIfCancelled();
       int homoUpdateCounter = 0;
       for (Map.Entry<Integer, Integer> homo : nameHomoKey.entrySet()) {
-        nameMapper.updateHomotypicNameKey(homo.getKey(), nameKeys.get(homo.getValue()));
+        nameMapper.updateHomotypicNameKey(dataset.getKey(), homo.getKey(), nameKeys.get(homo.getValue()));
         homoUpdateCounter++;
         if (homoUpdateCounter % batchSize == 0) {
           checkIfCancelled();
