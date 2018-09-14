@@ -1,5 +1,9 @@
 package org.col.db.mapper;
 
+import java.time.LocalDateTime;
+
+import org.col.api.model.DatasetImport;
+import org.col.api.vocab.ImportState;
 import org.col.db.PgSetupRule;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -35,5 +39,17 @@ public abstract class MapperTestBase<T> {
     initMybatisRule.commit();
   }
 
+  public void generateDatasetImport(int datasetKey) {
+    DatasetImportMapper dim = mapper(DatasetImportMapper.class);
 
+    DatasetImport d = dim.metrics(datasetKey);
+    d.setDatasetKey(datasetKey);
+    d.setState(ImportState.FINISHED);
+    d.setDownload(LocalDateTime.now());
+    d.setStarted(LocalDateTime.now());
+    d.setFinished(LocalDateTime.now());
+    dim.create(d);
+
+    commit();
+  }
 }

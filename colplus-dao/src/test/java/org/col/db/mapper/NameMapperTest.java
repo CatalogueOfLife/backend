@@ -53,7 +53,7 @@ public class NameMapperTest extends org.col.db.mapper.MapperTestBase<NameMapper>
     assertNotNull(n1.getKey());
     commit();
 
-    int n1Key = nameMapper.lookupKey(n1.getId(), TestEntityGenerator.DATASET1.getKey());
+    int n1Key = nameMapper.lookupKey(n1.getId(), TestEntityGenerator.DATASET11.getKey());
     assertEquals((Integer) n1Key, n1.getKey());
 
     Name n1b = nameMapper.get(n1Key);
@@ -73,7 +73,7 @@ public class NameMapperTest extends org.col.db.mapper.MapperTestBase<NameMapper>
     // n1.setId(n2.getBasionymKey());
     // n2.setBasionymKey(n1);
 
-    int n2Key = nameMapper.lookupKey(n2.getId(), TestEntityGenerator.DATASET1.getKey());
+    int n2Key = nameMapper.lookupKey(n2.getId(), TestEntityGenerator.DATASET11.getKey());
     assertEquals((Integer) n2Key, n2.getKey());
     Name n2b = nameMapper.get(n2Key);
     assertEquals(n2, n2b);
@@ -82,11 +82,11 @@ public class NameMapperTest extends org.col.db.mapper.MapperTestBase<NameMapper>
   @Test
   public void list() throws Exception {
     List<Name> names = Lists.newArrayList();
-    names.add(create(TestEntityGenerator.DATASET2));
-    names.add(create(TestEntityGenerator.DATASET2));
-    names.add(create(TestEntityGenerator.DATASET2));
-    names.add(create(TestEntityGenerator.DATASET2));
-    names.add(create(TestEntityGenerator.DATASET2));
+    names.add(create(TestEntityGenerator.DATASET12));
+    names.add(create(TestEntityGenerator.DATASET12));
+    names.add(create(TestEntityGenerator.DATASET12));
+    names.add(create(TestEntityGenerator.DATASET12));
+    names.add(create(TestEntityGenerator.DATASET12));
 
     for (Name n : names) {
       nameMapper.create(n);
@@ -96,13 +96,13 @@ public class NameMapperTest extends org.col.db.mapper.MapperTestBase<NameMapper>
     // get first page
     Page p = new Page(0, 3);
 
-    List<Name> res = nameMapper.list(TestEntityGenerator.DATASET2.getKey(), p);
+    List<Name> res = nameMapper.list(TestEntityGenerator.DATASET12.getKey(), p);
     assertEquals(3, res.size());
     assertEquals(Lists.partition(names, 3).get(0), res);
 
     // next page
     p.next();
-    res = nameMapper.list(TestEntityGenerator.DATASET2.getKey(), p);
+    res = nameMapper.list(TestEntityGenerator.DATASET12.getKey(), p);
     assertEquals(2, res.size());
     List<Name> l2 = Lists.partition(names, 3).get(1);
     assertEquals(l2, res);
@@ -110,12 +110,12 @@ public class NameMapperTest extends org.col.db.mapper.MapperTestBase<NameMapper>
 
   @Test
   public void count() throws Exception {
-    assertEquals(4, nameMapper.count(TestEntityGenerator.DATASET1.getKey()));
+    assertEquals(4, nameMapper.count(TestEntityGenerator.DATASET11.getKey()));
 
     nameMapper.create(TestEntityGenerator.newName());
     nameMapper.create(TestEntityGenerator.newName());
     commit();
-    assertEquals(6, nameMapper.count(TestEntityGenerator.DATASET1.getKey()));
+    assertEquals(6, nameMapper.count(TestEntityGenerator.DATASET11.getKey()));
   }
 
   @Test
@@ -186,7 +186,7 @@ public class NameMapperTest extends org.col.db.mapper.MapperTestBase<NameMapper>
 
   private static Name newAcceptedName(String scientificName) {
     Name name = new Name();
-    name.setDatasetKey(TestEntityGenerator.DATASET1.getKey());
+    name.setDatasetKey(TestEntityGenerator.DATASET11.getKey());
     name.setId(scientificName.toLowerCase().replace(' ', '-'));
     name.setScientificName(scientificName);
     List<String> tokens = SPACE_SPLITTER.splitToList(scientificName);

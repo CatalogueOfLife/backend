@@ -28,11 +28,11 @@ public class TestEntityGenerator {
   /**
    * Corresponds exactly to dataset record inserted via apple.sql with key=11
    */
-  public final static Dataset DATASET1 = new Dataset();
+  public final static Dataset DATASET11 = new Dataset();
   /**
    * Corresponds exactly to dataset record inserted via apple.sql with key=12
    */
-  public final static Dataset DATASET2 = new Dataset();
+  public final static Dataset DATASET12 = new Dataset();
   /**
    * Corresponds exactly to 1st name record inserted via apple.sql
    */
@@ -75,21 +75,21 @@ public class TestEntityGenerator {
   public final static Reference REF2 = new Reference();
 
   static {
-    DATASET1.setKey(11);
-    DATASET2.setKey(12);
+    DATASET11.setKey(11);
+    DATASET12.setKey(12);
 
     REF1.setKey(1);
     REF1.setId("ref-1");
-    REF1.setDatasetKey(DATASET1.getKey());
+    REF1.setDatasetKey(DATASET11.getKey());
 
     REF2.setKey(2);
     REF2.setId("ref-2");
-    REF2.setDatasetKey(DATASET2.getKey());
+    REF2.setDatasetKey(DATASET12.getKey());
 
     NAME1.setKey(1);
     NAME1.setHomotypicNameKey(1);
     NAME1.setId("name-1");
-    NAME1.setDatasetKey(DATASET1.getKey());
+    NAME1.setDatasetKey(DATASET11.getKey());
     NAME1.setGenus("Malus");
     NAME1.setSpecificEpithet("sylvestris");
     NAME1.setRank(Rank.SPECIES);
@@ -102,7 +102,7 @@ public class TestEntityGenerator {
     NAME2.setKey(2);
     NAME2.setHomotypicNameKey(2);
     NAME2.setId("name-2");
-    NAME2.setDatasetKey(DATASET1.getKey());
+    NAME2.setDatasetKey(DATASET11.getKey());
     NAME2.setGenus("Larus");
     NAME2.setSpecificEpithet("fuscus");
     NAME2.setRank(Rank.SPECIES);
@@ -115,7 +115,7 @@ public class TestEntityGenerator {
     NAME3.setKey(3);
     NAME3.setHomotypicNameKey(2);
     NAME3.setId("name-3");
-    NAME3.setDatasetKey(DATASET1.getKey());
+    NAME3.setDatasetKey(DATASET11.getKey());
     NAME3.setGenus("Larus");
     NAME3.setSpecificEpithet("fusca");
     NAME3.setRank(Rank.SPECIES);
@@ -128,7 +128,7 @@ public class TestEntityGenerator {
     NAME4.setKey(4);
     NAME4.setHomotypicNameKey(4);
     NAME4.setId("name-4");
-    NAME4.setDatasetKey(DATASET1.getKey());
+    NAME4.setDatasetKey(DATASET11.getKey());
     NAME4.setGenus("Larus");
     NAME4.setSpecificEpithet("erfundus");
     NAME4.setRank(Rank.SPECIES);
@@ -140,13 +140,13 @@ public class TestEntityGenerator {
 
     TAXON1.setKey(1);
     TAXON1.setId("root-1");
-    TAXON1.setDatasetKey(DATASET1.getKey());
+    TAXON1.setDatasetKey(DATASET11.getKey());
     TAXON1.setName(NAME1);
     TAXON1.setOrigin(Origin.SOURCE);
 
     TAXON2.setKey(2);
     TAXON2.setId("root-2");
-    TAXON2.setDatasetKey(DATASET1.getKey());
+    TAXON2.setDatasetKey(DATASET11.getKey());
     TAXON2.setName(NAME2);
     TAXON2.setOrigin(Origin.SOURCE);
 
@@ -161,7 +161,7 @@ public class TestEntityGenerator {
 
   /*
    * Creates a VernacularName using the specified vernacular name, belonging to the specified taxon
-   * and dataset DATASET1.
+   * and dataset DATASET11.
    */
   public static VernacularName newVernacularName(String name) {
     VernacularName vn = new VernacularName();
@@ -173,10 +173,10 @@ public class TestEntityGenerator {
   }
 
   /*
-   * Creates a new taxon with the specified id, belonging to dataset DATASET1.
+   * Creates a new taxon with the specified id, belonging to dataset DATASET11.
    */
   public static Taxon newTaxon(String id) {
-    return newTaxon(DATASET1.getKey(), id);
+    return newTaxon(DATASET11.getKey(), id);
   }
 
   /*
@@ -228,7 +228,7 @@ public class TestEntityGenerator {
 
   public static Name newName() {
     Name n = new Name();
-    n.setDatasetKey(TestEntityGenerator.DATASET1.getKey());
+    n.setDatasetKey(TestEntityGenerator.DATASET11.getKey());
     n.setCombinationAuthorship(createAuthorship());
     if (RND.nextBoolean()) {
       n.setBasionymAuthorship(createAuthorship());
@@ -279,7 +279,7 @@ public class TestEntityGenerator {
 
   public static Reference newReference(String title) {
     Reference r = new Reference();
-    r.setDatasetKey(TestEntityGenerator.DATASET1.getKey());
+    r.setDatasetKey(TestEntityGenerator.DATASET11.getKey());
     CslData csl = new CslData();
     r.setCsl(csl);
     csl.setType(CSLRefType.ARTICLE_JOURNAL);
@@ -318,7 +318,7 @@ public class TestEntityGenerator {
 
   public static VerbatimRecord createVerbatim() {
     VerbatimRecord rec = new VerbatimRecord(11, "myFile.txt", DwcTerm.Taxon);
-    rec.setDatasetKey(TestEntityGenerator.DATASET1.getKey());
+    rec.setDatasetKey(TestEntityGenerator.DATASET11.getKey());
     for (Term t : DwcTerm.values()) {
       rec.put(t, RandomUtils.randomString(1 + RND.nextInt(23)).toLowerCase());
     }

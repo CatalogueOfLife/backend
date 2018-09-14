@@ -44,9 +44,8 @@
     </resultMap>
 
     <select id="count" resultType="integer">
-        SELECT count(*)
-        FROM reference
-        WHERE dataset_key = #{datasetKey}
+        SELECT reference_count
+        <include refid="org.col.db.mapper.Common.fromFinishedDatasetImport"/>
     </select>
 
     <select id="list" resultMap="referenceResultMap">

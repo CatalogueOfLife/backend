@@ -139,18 +139,14 @@
 
 
     <select id="count" resultType="integer">
-        SELECT count(*) FROM name
-        <if test="datasetKey != null">
-            WHERE dataset_key = #{datasetKey}
-        </if>
+        SELECT name_count
+        <include refid="org.col.db.mapper.Common.fromFinishedDatasetImport"/>
     </select>
 
     <select id="list" resultMap="nameResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
-        <if test="datasetKey != null">
-            WHERE n.dataset_key = #{datasetKey}
-        </if>
+        WHERE n.dataset_key = #{datasetKey}
         ORDER BY key
         <include refid="org.col.db.mapper.Common.limit" />
     </select>

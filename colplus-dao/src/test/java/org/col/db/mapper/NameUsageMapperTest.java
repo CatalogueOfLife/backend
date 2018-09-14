@@ -141,7 +141,7 @@ public class NameUsageMapperTest extends MapperTestBase<NameMapper> {
     session.commit();
 
     NameSearchRequest search = new NameSearchRequest();
-    search.setDatasetKey(TestEntityGenerator.DATASET1.getKey());
+    search.setDatasetKey(TestEntityGenerator.DATASET11.getKey());
     search.setQ("foo");
     List<NameUsage> names = mapper.search(search, new Page());
     assertEquals("01", 3, names.size());
@@ -196,7 +196,7 @@ public class NameUsageMapperTest extends MapperTestBase<NameMapper> {
     session.commit();
 
     NameSearchRequest search = new NameSearchRequest();
-    search.setDatasetKey(TestEntityGenerator.DATASET1.getKey());
+    search.setDatasetKey(TestEntityGenerator.DATASET11.getKey());
     search.setQ("foo");
     List<NameUsage> names = mapper.search(search, new Page());
     assertEquals("01", 3, names.size());
@@ -250,7 +250,7 @@ public class NameUsageMapperTest extends MapperTestBase<NameMapper> {
     session.commit();
 
     NameSearchRequest search = new NameSearchRequest();
-    search.setDatasetKey(TestEntityGenerator.DATASET1.getKey());
+    search.setDatasetKey(TestEntityGenerator.DATASET11.getKey());
     search.setQ("foo");
     List<NameUsage> names = mapper.search(search, new Page());
     assertEquals("01", 3, names.size());
@@ -498,7 +498,7 @@ public class NameUsageMapperTest extends MapperTestBase<NameMapper> {
     session.commit();
 
     NameSearchRequest search = new NameSearchRequest();
-    search.setDatasetKey(TestEntityGenerator.DATASET1.getKey());
+    search.setDatasetKey(TestEntityGenerator.DATASET11.getKey());
     search.setQ("foo");
     List<NameUsage> names = mapper.search(search, new Page());
     assertEquals(3, names.size());
@@ -605,7 +605,7 @@ public class NameUsageMapperTest extends MapperTestBase<NameMapper> {
 
   private static Taxon newTaxon(String id, Name n) {
     Taxon t = new Taxon();
-    t.setDatasetKey(TestEntityGenerator.DATASET1.getKey());
+    t.setDatasetKey(TestEntityGenerator.DATASET11.getKey());
     t.setId(id);
     t.setName(n);
     t.setOrigin(Origin.SOURCE);
@@ -629,7 +629,7 @@ public class NameUsageMapperTest extends MapperTestBase<NameMapper> {
 
   private static Synonym newSynonym(String scientificName) {
     Name n = new Name();
-    n.setDatasetKey(TestEntityGenerator.DATASET1.getKey());
+    n.setDatasetKey(TestEntityGenerator.DATASET11.getKey());
     n.setId(scientificName.toLowerCase().replace(' ', '-'));
     n.setScientificName(scientificName);
 
@@ -647,7 +647,7 @@ public class NameUsageMapperTest extends MapperTestBase<NameMapper> {
 
   private static Name newAcceptedName(String scientificName) {
     Name name = new Name();
-    name.setDatasetKey(TestEntityGenerator.DATASET1.getKey());
+    name.setDatasetKey(TestEntityGenerator.DATASET11.getKey());
     name.setId(scientificName.toLowerCase().replace(' ', '-'));
     name.setScientificName(scientificName);
     List<String> tokens = SPACE_SPLITTER.splitToList(scientificName);

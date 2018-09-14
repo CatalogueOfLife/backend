@@ -11,7 +11,7 @@ import org.col.api.model.Page;
 import org.col.api.model.Reference;
 import org.junit.Test;
 
-import static org.col.api.TestEntityGenerator.DATASET1;
+import static org.col.api.TestEntityGenerator.DATASET11;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -35,15 +35,15 @@ public class ReferenceMapperTest extends MapperTestBase<ReferenceMapper> {
 
 	@Test
 	public void count() throws Exception {
-		int i = mapper().count(DATASET1.getKey());
+		int i = mapper().count(DATASET11.getKey());
 		// Just to make sure we understand our environment:
 		// we start with 3 records in reference table, inserted through
-		// apple, only two of which belong to DATASET1.
+		// apple, only two of which belong to DATASET11.
 		assertEquals(2, i);
 		mapper().create(create());
 		mapper().create(create());
 		mapper().create(create());
-		assertEquals(5, mapper().count(DATASET1.getKey()));
+		assertEquals(5, mapper().count(DATASET11.getKey()));
 	}
 
 	@Test
@@ -60,13 +60,13 @@ public class ReferenceMapperTest extends MapperTestBase<ReferenceMapper> {
     commit();
 		// Skip first two (pre-inserted) record:
 		Page p = new Page(2, 3);
-		List<Reference> out = mapper().list(DATASET1.getKey(), p);
+		List<Reference> out = mapper().list(DATASET11.getKey(), p);
 		assertEquals(3, out.size());
 		assertTrue(in.get(0).equals(out.get(0)));
 		assertTrue(in.get(1).equals(out.get(1)));
 		assertTrue(in.get(2).equals(out.get(2)));
 		p.next();
-		out = mapper().list(DATASET1.getKey(), p);
+		out = mapper().list(DATASET11.getKey(), p);
 		assertEquals(2, out.size());
 	}
 
@@ -81,7 +81,7 @@ public class ReferenceMapperTest extends MapperTestBase<ReferenceMapper> {
 
 	private static Reference create() throws Exception {
 		Reference ref = new Reference();
-		ref.setDatasetKey(TestEntityGenerator.DATASET1.getKey());
+		ref.setDatasetKey(TestEntityGenerator.DATASET11.getKey());
 		ref.setId(RandomUtils.randomString(8));
 		ref.setYear(1988);
 		ref.setCsl(createCsl());

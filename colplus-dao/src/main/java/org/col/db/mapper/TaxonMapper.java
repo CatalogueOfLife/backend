@@ -12,9 +12,9 @@ import org.col.api.model.Taxon;
  */
 public interface TaxonMapper {
 
-  int count(@Param("datasetKey") int datasetKey, @Param("root") Boolean root);
+  int count(@Param("datasetKey") int datasetKey, @Param("root") boolean root);
 
-  List<Taxon> list(@Param("datasetKey") int datasetKey, @Param("root") Boolean root, @Param("page") Page page);
+  List<Taxon> list(@Param("datasetKey") int datasetKey, @Param("root") boolean root, @Param("page") Page page);
 
   Integer lookupKey(@Param("id") String id, @Param("datasetKey") int datasetKey);
 

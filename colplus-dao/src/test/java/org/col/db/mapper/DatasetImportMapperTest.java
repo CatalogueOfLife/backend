@@ -17,7 +17,7 @@ import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Test;
 
-import static org.col.api.TestEntityGenerator.DATASET1;
+import static org.col.api.TestEntityGenerator.DATASET11;
 import static org.junit.Assert.*;
 
 
@@ -33,7 +33,7 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
 
   private static DatasetImport create(ImportState state) throws Exception {
     DatasetImport d = new DatasetImport();
-    d.setDatasetKey(DATASET1.getKey());
+    d.setDatasetKey(DATASET11.getKey());
     d.setError("no error");
     d.setState(state);
     d.setStarted(LocalDateTime.now());
@@ -143,7 +143,7 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
 
   @Test
   public void generate() throws Exception {
-    DatasetImport d = mapper().metrics(DATASET1.getKey());
+    DatasetImport d = mapper().metrics(DATASET11.getKey());
     assertEquals((Integer) 4, d.getNameCount());
     assertEquals((Integer) 2, d.getTaxonCount());
     assertEquals((Integer) 2, d.getReferenceCount());

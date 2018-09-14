@@ -60,7 +60,7 @@ public class NameRelationMapperTest extends MapperTestBase<NameRelationMapper> {
 
   private static NameRelation newNameAct(NomRelType type) {
     NameRelation na = new NameRelation();
-    na.setDatasetKey(DATASET1.getKey());
+    na.setDatasetKey(DATASET11.getKey());
     na.setType(type);
     na.setNameKey(NAME1.getKey());
     na.setRelatedNameKey(NAME2.getKey());

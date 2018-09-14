@@ -6,5 +6,13 @@
     <sql id="limit">
         LIMIT #{page.limit} OFFSET #{page.offset}
     </sql>
+
+    <!-- selects the last successful import, i.e. the one that imported data -->
+    <sql id="fromFinishedDatasetImport">
+        FROM dataset_import
+        WHERE dataset_key = #{datasetKey} AND state = 4
+        ORDER BY attempt DESC
+        LIMIT 1
+    </sql>
 </mapper>
 

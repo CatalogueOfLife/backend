@@ -2,11 +2,11 @@
 INSERT INTO dataset (key, title, import_frequency, created) VALUES (11, 'First dataset',  -1, now());
 INSERT INTO dataset (key, title, import_frequency, created) VALUES (12, 'Second dataset', -1, now());
 
-INSERT INTO verbatim(key, dataset_key, issues) VALUES (1, 11, '{1,2,3,4}');
-INSERT INTO verbatim(key, dataset_key, issues) VALUES (2, 11, '{10}');
-INSERT INTO verbatim(key, dataset_key, issues) VALUES (3, 11, '{2,13}');
-INSERT INTO verbatim(key, dataset_key, issues) VALUES (4, 11, '{}');
-INSERT INTO verbatim(key, dataset_key, issues) VALUES (5, 11, null);
+INSERT INTO verbatim(key, dataset_key, issues, type) VALUES (1, 11, '{1,2,3,4}', 'acef:AcceptedSpecies');
+INSERT INTO verbatim(key, dataset_key, issues, type) VALUES (2, 11, '{10}', 'acef:AcceptedSpecies');
+INSERT INTO verbatim(key, dataset_key, issues, type) VALUES (3, 11, '{2,13}', 'acef:Synonyms');
+INSERT INTO verbatim(key, dataset_key, issues, type) VALUES (4, 11, '{}', 'acef:Synonyms');
+INSERT INTO verbatim(key, dataset_key, issues, type) VALUES (5, 11, null, 'acef:AcceptedSpecies');
 ALTER SEQUENCE verbatim_key_seq RESTART WITH 100;
 
 INSERT INTO reference(key, id, dataset_key) VALUES (1, 'ref-1', 11);

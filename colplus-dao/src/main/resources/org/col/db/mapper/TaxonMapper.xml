@@ -91,12 +91,17 @@
     </select>
 
     <select id="count" resultType="integer">
-        SELECT count(*)
-        FROM taxon
-        WHERE dataset_key = #{datasetKey}
-        <if test="root">
-            AND parent_key IS NULL
-        </if>
+        <choose>
+            <when test="root">
+                SELECT count(*)
+                FROM taxon
+                WHERE dataset_key = #{datasetKey} AND parent_key IS NULL
+            </when>
+            <otherwise>
+                SELECT taxon_count
+                <include refid="org.col.db.mapper.Common.fromFinishedDatasetImport"/>
+            </otherwise>
+        </choose>
     </select>
 
     <select id="list" resultMap="taxonResultMap">

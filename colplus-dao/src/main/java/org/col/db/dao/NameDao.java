@@ -33,7 +33,7 @@ public class NameDao {
     return nMapper.count(datasetKey);
   }
 
-  public ResultPage<Name> list(Integer datasetKey, Page page) {
+  public ResultPage<Name> list(int datasetKey, Page page) {
     int total = nMapper.count(datasetKey);
     List<Name> result = nMapper.list(datasetKey, page);
     return new ResultPage<>(page, total, result);

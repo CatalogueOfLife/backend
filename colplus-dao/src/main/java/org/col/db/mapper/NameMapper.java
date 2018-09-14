@@ -12,9 +12,9 @@ import org.col.api.model.Page;
  */
 public interface NameMapper {
 
-	int count(@Param("datasetKey") Integer datasetKey);
+	int count(@Param("datasetKey") int datasetKey);
 
-	List<Name> list(@Param("datasetKey") Integer datasetKey, @Param("page") Page page);
+	List<Name> list(@Param("datasetKey") int datasetKey, @Param("page") Page page);
 
 	/**
 	 * Iterates over all names of a given dataset and processes them with the supplied handler.

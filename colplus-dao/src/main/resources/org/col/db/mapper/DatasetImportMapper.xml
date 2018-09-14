@@ -127,7 +127,7 @@
     <select id="lastByState" resultMap="datasetImportResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
-        WHERE dataset_key = #{key} AND state = 4
+        WHERE dataset_key = #{key} AND state = #{state}
         ORDER BY attempt DESC
         LIMIT 1
     </select>

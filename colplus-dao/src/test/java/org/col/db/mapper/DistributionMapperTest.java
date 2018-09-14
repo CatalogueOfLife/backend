@@ -20,7 +20,7 @@ public class DistributionMapperTest extends MapperTestBase<DistributionMapper> {
 
 	@Test
 	public void roundtrip() throws Exception {
-		final int datasetKey = TestEntityGenerator.DATASET1.getKey();
+		final int datasetKey = TestEntityGenerator.DATASET11.getKey();
 		Distribution in = newDistribution("Europe");
 		for (DistributionStatus status : DistributionStatus.values()) {
 			in.setStatus(status);
