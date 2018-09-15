@@ -24,7 +24,7 @@ public class DistributionMapperTest extends MapperTestBase<DistributionMapper> {
 		Distribution in = newDistribution("Europe");
 		for (DistributionStatus status : DistributionStatus.values()) {
 			in.setStatus(status);
-			mapper().create(in, TestEntityGenerator.TAXON1.getKey(), datasetKey);
+			mapper().create(in, TestEntityGenerator.TAXON1.getId(), datasetKey);
 			assertNotNull(in.getKey());
 			commit();
 			Distribution out = mapper().get(datasetKey, in.getKey());

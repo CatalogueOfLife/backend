@@ -174,8 +174,7 @@ CREATE TABLE verbatim (
 ) PARTITION BY LIST (dataset_key);
 
 CREATE TABLE reference (
-  key serial NOT NULL,
-  id TEXT,
+  id TEXT NOT NULL,
   dataset_key INTEGER NOT NULL,
   verbatim_key INTEGER,
   csl JSONB,
@@ -186,12 +185,11 @@ CREATE TABLE reference (
 CREATE SEQUENCE name_key_seq;
 
 CREATE TABLE name (
-  key INTEGER DEFAULT nextval('name_key_seq'),
-  id TEXT,
+  id TEXT NOT NULL,
   dataset_key INTEGER NOT NULL,
   verbatim_key INTEGER,
-  homotypic_name_key INTEGER DEFAULT currval('name_key_seq'::regclass) NOT NULL,
-  index_name_key INTEGER,
+  homotypic_name_id TEXT NOT NULL,
+  index_name_id TEXT,
   scientific_name TEXT NOT NULL,
   rank rank NOT NULL,
   uninomial TEXT,
@@ -210,7 +208,7 @@ CREATE TABLE name (
   combination_ex_authors TEXT[] DEFAULT '{}',
   combination_year TEXT,
   sanctioning_author TEXT,
-  published_in_key int,
+  published_in_id TEXT,
   published_in_page TEXT,
   code INTEGER,
   nom_status INTEGER,
@@ -218,8 +216,7 @@ CREATE TABLE name (
   type INTEGER NOT NULL,
   source_url TEXT,
   fossil BOOLEAN,
-  remarks TEXT,
-  issues INT[] DEFAULT '{}'
+  remarks TEXT
 ) PARTITION BY LIST (dataset_key);
 
 CREATE TABLE name_rel (
@@ -227,19 +224,18 @@ CREATE TABLE name_rel (
   verbatim_key INTEGER,
   dataset_key INTEGER NOT NULL,
   type INTEGER NOT NULL,
-  name_key INTEGER NOT NULL,
-  related_name_key INTEGER NULL,
-  published_in_key int,
+  name_id TEXT NOT NULL,
+  related_name_id TEXT NULL,
+  published_in_id TEXT,
   note TEXT
 ) PARTITION BY LIST (dataset_key);
 
 CREATE TABLE taxon (
-  key serial NOT NULL,
-  id TEXT,
+  id TEXT NOT NULL,
   dataset_key INTEGER NOT NULL,
   verbatim_key INTEGER,
-  parent_key INTEGER,
-  name_key INTEGER NOT NULL,
+  parent_id TEXT,
+  name_id TEXT NOT NULL,
   doubtful BOOLEAN DEFAULT FALSE NOT NULL,
   origin INTEGER NOT NULL,
   according_to TEXT,
@@ -249,13 +245,13 @@ CREATE TABLE taxon (
   lifezones INTEGER[] DEFAULT '{}',
   dataset_url TEXT,
   species_estimate INTEGER,
-  species_estimate_reference_key INTEGER,
+  species_estimate_reference_id TEXT,
   remarks TEXT
 ) PARTITION BY LIST (dataset_key);
 
 CREATE TABLE synonym (
-  taxon_key INTEGER,
-  name_key INTEGER,
+  taxon_id TEXT,
+  name_id TEXT,
   dataset_key INTEGER NOT NULL,
   verbatim_key INTEGER,
   status INTEGER NOT NULL,
@@ -264,15 +260,15 @@ CREATE TABLE synonym (
 
 CREATE TABLE taxon_reference (
   dataset_key INTEGER NOT NULL,
-  taxon_key INTEGER NOT NULL,
-  reference_key INTEGER NOT NULL
+  taxon_id TEXT NOT NULL,
+  reference_id TEXT NOT NULL
 ) PARTITION BY LIST (dataset_key);
 
 CREATE TABLE vernacular_name (
   key serial NOT NULL,
   dataset_key INTEGER NOT NULL,
   verbatim_key INTEGER,
-  taxon_key INTEGER NOT NULL,
+  taxon_id TEXT NOT NULL,
   name TEXT NOT NULL,
   latin TEXT,
   language CHAR(3),
@@ -282,14 +278,14 @@ CREATE TABLE vernacular_name (
 CREATE TABLE vernacular_name_reference (
   dataset_key INTEGER NOT NULL,
   vernacular_name_key INTEGER NOT NULL,
-  reference_key INTEGER NOT NULL
+  reference_id TEXT NOT NULL
 ) PARTITION BY LIST (dataset_key);
 
 CREATE TABLE distribution (
   key serial NOT NULL,
   dataset_key INTEGER NOT NULL,
   verbatim_key INTEGER,
-  taxon_key INTEGER NOT NULL,
+  taxon_id TEXT NOT NULL,
   area TEXT NOT NULL,
   gazetteer INTEGER NOT NULL,
   status INTEGER
@@ -298,7 +294,7 @@ CREATE TABLE distribution (
 CREATE TABLE distribution_reference (
   dataset_key INTEGER NOT NULL,
   distribution_key INTEGER NOT NULL,
-  reference_key INTEGER NOT NULL
+  reference_id TEXT NOT NULL
 ) PARTITION BY LIST (dataset_key);
 
 
@@ -313,8 +309,5 @@ IMMUTABLE;
 
 -- INDICES
 CREATE index ON dataset (gbif_key);
-
-CREATE index ON dataset_import (dataset_key, finished);
 CREATE index ON dataset_import (started);
-
 

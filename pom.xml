@@ -64,6 +64,7 @@
         <fastutil.version>8.2.1</fastutil.version>
         <gbif-api.version>0.68</gbif-api.version>
         <gbif-parser.version>0.35</gbif-parser.version>
+        <hashids.version>1.0.3</hashids.version>
         <hikaricp.version>3.2.0</hikaricp.version>
         <hk2.version>2.5.0-b32</hk2.version>
         <icu4j.version>62.1</icu4j.version>
@@ -427,6 +428,11 @@
             </dependency>
 
             <!-- other -->
+            <dependency>
+                <groupId>org.hashids</groupId>
+                <artifactId>hashids</artifactId>
+                <version>${hashids.version}</version>
+            </dependency>
             <dependency>
                 <groupId>com.univocity</groupId>
                 <artifactId>univocity-parsers</artifactId>

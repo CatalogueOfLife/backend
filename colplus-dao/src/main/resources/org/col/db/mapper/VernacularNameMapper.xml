@@ -11,12 +11,12 @@
     vn.latin,
     vn.language,
     vn.country,
-    vnr.reference_key
+    vnr.reference_id
   </sql>
 
   <sql id="COLS">
     dataset_key,
-    taxon_key,
+    taxon_id,
     verbatim_key,
     name,
     latin,
@@ -26,7 +26,7 @@
 
   <sql id="PROPS">
     #{datasetKey},
-    #{taxonKey},
+    #{taxonId},
     #{v.verbatimKey},
     #{v.name},
     #{v.latin},
@@ -41,8 +41,8 @@
 
   <resultMap id="vernacularNameResultMap" type="VernacularName" autoMapping="true">
     <id property="key" column="key" />
-    <collection property="referenceKeys" ofType="Integer">
-      <result column="reference_key"/>
+    <collection property="referenceIds" ofType="String">
+      <result column="reference_id"/>
     </collection>
   </resultMap>
 
@@ -51,7 +51,7 @@
     SELECT <include refid="SELECT" />
     FROM <include refid="FROM" />
     WHERE vn.dataset_key = #{datasetKey}
-      AND vn.taxon_key = #{taxonKey}
+      AND vn.taxon_id = #{taxonId}
     ORDER BY name
   </select>
 

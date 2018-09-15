@@ -27,11 +27,11 @@ public class NameUsageDao {
   }
 
   public List<NameUsage> byName(Name name) {
-    return byNameKey(name.getDatasetKey(), name.getKey());
+    return byNameId(name.getDatasetKey(), name.getId());
   }
 
-  public List<NameUsage> byNameKey(int datasetKey, int nameKey) {
-    return mapper.listByName(datasetKey, nameKey);
+  public List<NameUsage> byNameId(int datasetKey, String nameId) {
+    return mapper.listByName(datasetKey, nameId);
   }
 
 }

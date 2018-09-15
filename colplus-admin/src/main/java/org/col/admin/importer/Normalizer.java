@@ -138,9 +138,9 @@ public class Normalizer implements Callable<Boolean> {
    */
   private void verify() {
     store.all().forEach(t -> {
-      if (t.name.getOrigin() == Origin.SOURCE) {
-        require(t.name, t.getID(), "verbatim id");
-      }
+      require(t.name, t.name.getId(), "name id");
+      require(t.name, t.getID(), "verbatim id");
+
       // is it a source with verbatim data?
       require(t.name, t.name.getOrigin(), "name origin");
 
@@ -196,10 +196,10 @@ public class Normalizer implements Callable<Boolean> {
                 store.addIssues(sp.name, Issue.PUBLISHED_BEFORE_GENUS);
               }
 
-            } else if (sp.name.getPublishedInKey() != null && g.name.getPublishedInKey() != null) {
+            } else if (sp.name.getPublishedInId() != null && g.name.getPublishedInId() != null) {
               // compare publication years if existing
-              Reference spr = store.refByKey(sp.name.getPublishedInKey());
-              Reference gr = store.refByKey(g.name.getPublishedInKey());
+              Reference spr = store.refById(sp.name.getPublishedInId());
+              Reference gr = store.refById(g.name.getPublishedInId());
               if (spr.getYear() != null && gr.getYear() != null && spr.getYear() < gr.getYear()) {
                 store.addIssues(sp.name, Issue.PUBLISHED_BEFORE_GENUS);
               }
@@ -250,21 +250,21 @@ public class Normalizer implements Callable<Boolean> {
     }
     // track duplicates, map index name keys to verbatim key set
     //TODO: use mapdb to prevend OOMs?
-    Map<Integer, Set<Integer>> nameKeys = Maps.newHashMap();
+    Map<String, Set<Integer>> nameIds = Maps.newHashMap();
 
     store.all().forEach(t -> {
       NameMatch m = index.match(t.name, dataset.isTrusted(), false);
       if (m.hasMatch()) {
-        t.name.setIndexNameKey(m.getName().getKey());
+        t.name.setIndexNameId(m.getName().getId());
         store.update(t);
         // track duplicates if taxon
         if (!t.isSynonym()) {
           Set<Integer> nodes;
-          if (nameKeys.containsKey(m.getName().getKey())) {
-            nodes = nameKeys.get(m.getName().getKey());
+          if (nameIds.containsKey(m.getName().getId())) {
+            nodes = nameIds.get(m.getName().getId());
           } else {
             nodes = new HashSet<>();
-            nameKeys.put(m.getName().getKey(), nodes);
+            nameIds.put(m.getName().getId(), nodes);
           }
           nodes.add(t.name.getVerbatimKey());
         }
@@ -276,7 +276,7 @@ public class Normalizer implements Callable<Boolean> {
     });
     LOG.info("Matched all {} names: {}", MapUtils.sumValues(counts), Joiner.on(',').withKeyValueSeparator("=").join(counts));
 
-    for (Map.Entry<Integer, Set<Integer>> entry : nameKeys.entrySet()) {
+    for (Map.Entry<String, Set<Integer>> entry : nameIds.entrySet()) {
       if (entry.getValue().size() > 1) {
         for (Integer verbatimKey : entry.getValue()) {
           store.addIssues(verbatimKey, Issue.POTENTIAL_VARIANT);

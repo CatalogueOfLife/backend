@@ -23,15 +23,15 @@ public class NameUsageDaoTest extends DaoTestBase {
 
   @Test
   public void byName() throws Exception {
-    List<NameUsage> usages = dao.byNameKey(NAME1.getDatasetKey(), NAME1.getKey());
+    List<NameUsage> usages = dao.byNameId(NAME1.getDatasetKey(), NAME1.getId());
     assertEquals(1, usages.size());
     assertEquals(Taxon.class, usages.get(0).getClass());
-    assertEquals(NAME1.getKey(), ((Taxon)usages.get(0)).getName().getKey());
+    assertEquals(NAME1.getId(), (usages.get(0)).getName().getId());
 
     usages = dao.byName(NAME3);
     assertEquals(1, usages.size());
     assertEquals(Synonym.class, usages.get(0).getClass());
-    assertEquals((Integer)2, ((Synonym)usages.get(0)).getAccepted().getKey());
+    assertEquals("root-2", ((Synonym)usages.get(0)).getAccepted().getId());
   }
 
 }

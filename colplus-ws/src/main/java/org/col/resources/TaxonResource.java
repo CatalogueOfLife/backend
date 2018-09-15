@@ -30,57 +30,46 @@ public class TaxonResource {
   }
 
   @GET
-  @Path("id/{id}")
-  public Integer lookupKey(@PathParam("datasetKey") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
+  @Path("{id}")
+  public Taxon get(@PathParam("datasetKey") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
     TaxonDao dao = new TaxonDao(session);
-    Integer key = dao.lookupKey(id, datasetKey);
-    if (key == null) {
+    Taxon t = dao.get(datasetKey, id);
+    if (t == null) {
       throw NotFoundException.idNotFound(Taxon.class, datasetKey, id);
     }
-    return key;
+    return dao.get(datasetKey, id);
   }
 
   @GET
-  @Path("{key}")
-  public Taxon get(@PathParam("datasetKey") int datasetKey, @PathParam("key") int key, @Context SqlSession session) {
-    TaxonDao dao = new TaxonDao(session);
-    Taxon t = dao.get(datasetKey, key);
-    if (t == null) {
-      throw NotFoundException.keyNotFound(Taxon.class, key);
-    }
-    return dao.get(datasetKey, key);
-  }
-
-  @GET
-  @Path("{key}/children")
-  public ResultPage<Taxon> children(@PathParam("datasetKey") int datasetKey, @PathParam("key") int key, @Valid @BeanParam Page page,
+  @Path("{id}/children")
+  public ResultPage<Taxon> children(@PathParam("datasetKey") int datasetKey, @PathParam("id") String id, @Valid @BeanParam Page page,
       @Context SqlSession session) {
     TaxonDao dao = new TaxonDao(session);
-    return dao.getChildren(datasetKey, key, page);
+    return dao.getChildren(datasetKey, id, page);
   }
 
   @GET
-  @Path("{key}/synonyms")
-  public Synonymy synonyms(@PathParam("datasetKey") int datasetKey, @PathParam("key") int key, @Context SqlSession session) {
+  @Path("{id}/synonyms")
+  public Synonymy synonyms(@PathParam("datasetKey") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
     TaxonDao dao = new TaxonDao(session);
-    return dao.getSynonymy(datasetKey, key);
+    return dao.getSynonymy(datasetKey, id);
   }
 
   @GET
-  @Path("{key}/classification")
-  public List<Taxon> classification(@PathParam("datasetKey") int datasetKey, @PathParam("key") int key, @Context SqlSession session) {
+  @Path("{id}/classification")
+  public List<Taxon> classification(@PathParam("datasetKey") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
     TaxonDao dao = new TaxonDao(session);
-    return dao.getClassification(datasetKey, key);
+    return dao.getClassification(datasetKey, id);
   }
 
   @GET
   @Timed
-  @Path("{key}/info")
-  public TaxonInfo info(@PathParam("datasetKey") int datasetKey, @PathParam("key") int key, @Context SqlSession session) {
+  @Path("{id}/info")
+  public TaxonInfo info(@PathParam("datasetKey") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
     TaxonDao dao = new TaxonDao(session);
-    TaxonInfo info = dao.getTaxonInfo(datasetKey, key);
+    TaxonInfo info = dao.getTaxonInfo(datasetKey, id);
     if (info == null) {
-      throw NotFoundException.keyNotFound(Taxon.class, key);
+      throw NotFoundException.idNotFound(Taxon.class, datasetKey, id);
     }
     return info;
   }

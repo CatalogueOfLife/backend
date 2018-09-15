@@ -5,7 +5,6 @@
 <mapper namespace="org.col.db.mapper.ReferenceMapper">
 
     <sql id="SELECT">
-        r.key,
         r.id,
         r.dataset_key,
         r.verbatim_key,
@@ -38,7 +37,7 @@
 
     <!-- A mapping to Reference, mostly auto mapped -->
     <resultMap id="referenceResultMap" type="Reference" autoMapping="true">
-        <id property="key" column="key" />
+        <id property="id" column="id" />
         <result property="year" column="year" />
         <result property="csl" column="csl" typeHandler="org.col.db.type.CslJsonHandler" />
     </resultMap>
@@ -53,30 +52,24 @@
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
         WHERE r.dataset_key = #{datasetKey}
-        ORDER BY key
+        ORDER BY id
         <include refid="org.col.db.mapper.Common.limit" />
     </select>
 
-    <select id="listByKeys" resultMap="referenceResultMap">
+    <select id="listByIds" resultMap="referenceResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
-        WHERE r.dataset_key = #{datasetKey} AND key IN
-        <foreach item="k" index="idx" collection="keys"
+        WHERE r.dataset_key = #{datasetKey} AND id IN
+        <foreach item="k" index="idx" collection="ids"
                  open="(" separator="," close=")">
             #{k}
         </foreach>
     </select>
 
-    <select id="lookupKey" resultType="integer">
-        SELECT key
-        FROM reference
-        WHERE id = #{id} AND dataset_key = #{datasetKey}
-    </select>
-
     <select id="get" resultMap="referenceResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
-        WHERE r.key = #{key} AND r.dataset_key = #{datasetKey}
+        WHERE r.id = #{id} AND r.dataset_key = #{datasetKey}
     </select>
 
     <insert id="create" parameterType="Reference" useGeneratedKeys="true" keyProperty="key">
@@ -85,15 +78,15 @@
     </insert>
 
     <insert id="linkToTaxon">
-        INSERT INTO taxon_reference_${datasetKey} (dataset_key, taxon_key, reference_key)
-        VALUES ( #{datasetKey}, #{taxonKey}, #{refKey} )
+        INSERT INTO taxon_reference_${datasetKey} (dataset_key, taxon_id, reference_id)
+        VALUES ( #{datasetKey}, #{taxonId}, #{refId} )
     </insert>
 
-    <select id="listByTaxon" resultType="integer">
-        SELECT reference_key
+    <select id="listByTaxon" resultType="string">
+        SELECT reference_id
         FROM taxon_reference
         WHERE dataset_key = #{datasetKey}
-            AND taxon_key = #{taxonKey}
+            AND taxon_id = #{taxonId}
     </select>
 
 </mapper>

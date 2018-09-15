@@ -1,6 +1,9 @@
 package org.col.db.mapper;
 
+import java.util.List;
+
 import com.google.common.collect.Lists;
+import org.col.api.model.NameUsage;
 import org.junit.Test;
 
 import static org.col.api.TestEntityGenerator.*;
@@ -17,8 +20,9 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
 
   @Test
   public void listByName() throws Exception {
-    assertEquals(Lists.newArrayList(SYN2), mapper().listByName(NAME4.getDatasetKey(), NAME4.getKey()));
-    assertEquals(Lists.newArrayList(TAXON1), mapper().listByName(NAME1.getDatasetKey(), NAME1.getKey()));
+    List<NameUsage> x = mapper().listByName(NAME4.getDatasetKey(), NAME4.getId());
+    assertEquals(Lists.newArrayList(SYN2), mapper().listByName(NAME4.getDatasetKey(), NAME4.getId()));
+    assertEquals(Lists.newArrayList(TAXON1), mapper().listByName(NAME1.getDatasetKey(), NAME1.getId()));
   }
 
 }

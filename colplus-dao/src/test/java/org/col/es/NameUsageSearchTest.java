@@ -26,6 +26,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import static org.col.api.TestEntityGenerator.DATASET11;
 import static org.junit.Assert.*;
 
 @Ignore("Old code from postgres search, needs ported to elastic!")
@@ -142,7 +143,7 @@ public class NameUsageSearchTest extends DaoTestBase {
     session.commit();
 
     NameSearchRequest search = new NameSearchRequest();
-    search.setDatasetKey(TestEntityGenerator.DATASET11.getKey());
+    search.setDatasetKey(DATASET11.getKey());
     search.setQ("foo");
     List<NameUsage> names = search(search);
     assertEquals("01", 3, names.size());
@@ -197,7 +198,7 @@ public class NameUsageSearchTest extends DaoTestBase {
     session.commit();
 
     NameSearchRequest search = new NameSearchRequest();
-    search.setDatasetKey(TestEntityGenerator.DATASET11.getKey());
+    search.setDatasetKey(DATASET11.getKey());
     search.setQ("foo");
     List<NameUsage> names = search(search);
     assertEquals("01", 3, names.size());
@@ -251,7 +252,7 @@ public class NameUsageSearchTest extends DaoTestBase {
     session.commit();
 
     NameSearchRequest search = new NameSearchRequest();
-    search.setDatasetKey(TestEntityGenerator.DATASET11.getKey());
+    search.setDatasetKey(DATASET11.getKey());
     search.setQ("foo");
     List<NameUsage> names = search(search);
     assertEquals("01", 3, names.size());
@@ -305,7 +306,7 @@ public class NameUsageSearchTest extends DaoTestBase {
     mis.setAccepted(t3);
     mis.setStatus(TaxonomicStatus.MISAPPLIED);
     mis.setAccordingTo("auct. Döring");
-    synonymMapper.create(mis.getName().getDatasetKey(), mis.getName().getKey(), mis.getAccepted().getKey(), mis);
+    synonymMapper.create(mis.getName().getDatasetKey(), mis.getName().getId(), mis.getAccepted().getId(), mis);
 
     session.commit();
 
@@ -365,7 +366,7 @@ public class NameUsageSearchTest extends DaoTestBase {
 
     NameSearchRequest query = new NameSearchRequest();
     // Provide key of synonym name
-    query.setKey(syn1.getName().getKey());
+    query.setId(syn1.getName().getId());
     List<NameUsage> result = search(query);
     assertEquals(1, result.size());
 
@@ -402,7 +403,7 @@ public class NameUsageSearchTest extends DaoTestBase {
 
     NameSearchRequest query = new NameSearchRequest();
     // Provide key of accepted name
-    query.setKey(acc1.getKey());
+    query.setId(acc1.getId());
     List<NameUsage> result = search(query);
     assertEquals(1, result.size());
 
@@ -410,7 +411,7 @@ public class NameUsageSearchTest extends DaoTestBase {
     Taxon res = (Taxon) result.get(0);
 
     assertNotNull(res);
-    assertNotNull(res.getKey());
+    assertNotNull(res.getId());
   }
 
   @Test
@@ -487,7 +488,7 @@ public class NameUsageSearchTest extends DaoTestBase {
     session.commit();
 
     NameSearchRequest search = new NameSearchRequest();
-    search.setDatasetKey(TestEntityGenerator.DATASET11.getKey());
+    search.setDatasetKey(DATASET11.getKey());
     search.setQ("foo");
     List<NameUsage> names = search(search);
     assertEquals(3, names.size());
@@ -545,7 +546,7 @@ public class NameUsageSearchTest extends DaoTestBase {
     mis.setAccepted(t3);
     mis.setStatus(TaxonomicStatus.MISAPPLIED);
     mis.setAccordingTo("auct. Döring");
-    synonymMapper.create(mis.getName().getDatasetKey(), mis.getName().getKey(), mis.getAccepted().getKey(), mis);
+    synonymMapper.create(mis.getName().getDatasetKey(), mis.getName().getId(), mis.getAccepted().getId(), mis);
 
     session.commit();
 
@@ -595,17 +596,17 @@ public class NameUsageSearchTest extends DaoTestBase {
 
 
   private void saveTaxon(Taxon t) {
-    if (t.getName().getKey() == null) {
+    if (t.getName().getId() == null) {
       nDao.create(t.getName());
     }
-    if (t.getKey() == null) {
+    if (t.getId() == null) {
       tDao.create(t);
     }
   }
 
   private static Taxon newTaxon(String id, Name n) {
     Taxon t = new Taxon();
-    t.setDatasetKey(TestEntityGenerator.DATASET11.getKey());
+    t.setDatasetKey(DATASET11.getKey());
     t.setId(id);
     t.setName(n);
     t.setOrigin(Origin.SOURCE);
@@ -615,12 +616,12 @@ public class NameUsageSearchTest extends DaoTestBase {
   private void saveSynonym(Synonym syn) {
     saveTaxon(syn.getAccepted());
     nDao.create(syn.getName());
-    synonymMapper.create(syn.getName().getDatasetKey(), syn.getName().getKey(), syn.getAccepted().getKey(), syn);
+    synonymMapper.create(syn.getName().getDatasetKey(), syn.getName().getId(), syn.getAccepted().getId(), syn);
   }
 
   private static Synonym newSynonym(String scientificName) {
     Name n = new Name();
-    n.setDatasetKey(TestEntityGenerator.DATASET11.getKey());
+    n.setDatasetKey(DATASET11.getKey());
     n.setId(scientificName.toLowerCase().replace(' ', '-'));
     n.setScientificName(scientificName);
 
@@ -638,7 +639,7 @@ public class NameUsageSearchTest extends DaoTestBase {
 
   private static Name newAcceptedName(String scientificName) {
     Name name = new Name();
-    name.setDatasetKey(TestEntityGenerator.DATASET11.getKey());
+    name.setDatasetKey(DATASET11.getKey());
     name.setId(scientificName.toLowerCase().replace(' ', '-'));
     name.setScientificName(scientificName);
     List<String> tokens = SPACE_SPLITTER.splitToList(scientificName);

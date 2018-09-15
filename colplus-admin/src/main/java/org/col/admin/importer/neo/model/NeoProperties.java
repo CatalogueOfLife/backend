@@ -15,7 +15,7 @@ public class NeoProperties {
   public static final String SCIENTIFIC_NAME = "scientificName";
   public static final String AUTHORSHIP = "authorship";
   public static final String NOTE = "note";
-  public static final String REF_KEY = "refkey";
+  public static final String REF_ID = "refid";
   public static final String VERBATIM_KEY = "vkey";
 
   public static final String NULL_NAME = "???";

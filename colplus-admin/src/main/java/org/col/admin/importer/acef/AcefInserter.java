@@ -159,13 +159,13 @@ public class AcefInserter extends NeoInserter {
       } else {
         switch (refType) {
           case NomRef:
-            t.name.setPublishedInKey(ref.getKey());
+            t.name.setPublishedInId(ref.getId());
             // we extract the page from CSL and also store it in the name
             // No deduplication of refs happening
             t.name.setPublishedInPage(ref.getCsl().getPage());
             break;
           case TaxAccRef:
-            t.bibliography.add(ref.getKey());
+            t.bibliography.add(ref.getId());
             break;
           case ComNameRef:
             // ignore here, we should see this again when parsing common names

@@ -28,8 +28,8 @@ public class NameSearchRequest {
 	@QueryParam("datasetKey")
 	private Integer datasetKey;
 
-	@QueryParam("key")
-	private Integer key;
+	@QueryParam("id")
+	private String id;
 
 	@QueryParam("rank")
 	private Rank rank;
@@ -58,9 +58,9 @@ public class NameSearchRequest {
 		return q;
 	}
 
-	public static NameSearchRequest byNameKey(int key) {
+	public static NameSearchRequest byId(String id) {
 		NameSearchRequest q = new NameSearchRequest();
-		q.setKey(key);
+		q.setId(id);
 		return q;
 	}
 
@@ -88,12 +88,12 @@ public class NameSearchRequest {
 		this.datasetKey = datasetKey;
 	}
 
-	public Integer getKey() {
-		return key;
+	public String getId() {
+		return id;
 	}
 
-	public void setKey(Integer key) {
-		this.key = key;
+	public void setId(String id) {
+		this.id = id;
 	}
 
 	public Rank getRank() {
@@ -156,7 +156,7 @@ public class NameSearchRequest {
 	  return q == null
 				&& facets.isEmpty()
         && datasetKey == null
-        && key == null
+        && id == null
         && rank == null
         && nomStatus == null
         && status == null
@@ -173,7 +173,7 @@ public class NameSearchRequest {
 		return Objects.equals(facets, that.facets) &&
 				Objects.equals(q, that.q) &&
 				Objects.equals(datasetKey, that.datasetKey) &&
-				Objects.equals(key, that.key) &&
+				Objects.equals(id, that.id) &&
 				rank == that.rank &&
 				nomStatus == that.nomStatus &&
 				status == that.status &&
@@ -186,6 +186,6 @@ public class NameSearchRequest {
 	@Override
 	public int hashCode() {
 
-		return Objects.hash(facets, q, datasetKey, key, rank, nomStatus, status, issue, type, hasField, sortBy);
+		return Objects.hash(facets, q, datasetKey, id, rank, nomStatus, status, issue, type, hasField, sortBy);
 	}
 }

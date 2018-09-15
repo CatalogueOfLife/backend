@@ -12,8 +12,8 @@
     -->
     <sql id="SELECT">
         CASE
-            WHEN t.key = s.taxon_key THEN 1
-            WHEN t.key is not null THEN 2
+            WHEN t.id = s.taxon_id THEN 1
+            WHEN t.id is not null THEN 2
             ELSE 3
         END AS disc,
         <include refid="org.col.db.mapper.NameMapper.nameCols">
@@ -40,9 +40,9 @@
 
     <sql id="FROM">
         name n
-        LEFT JOIN synonym s ON n.key = s.name_key
-        LEFT JOIN taxon t ON n.key = t.name_key OR s.taxon_key = t.key
-        LEFT JOIN name an ON t.name_key = an.key
+        LEFT JOIN synonym s ON n.id = s.name_id
+        LEFT JOIN taxon t ON n.id = t.name_id OR s.taxon_id = t.id
+        LEFT JOIN name an ON t.name_id = an.id
     </sql>
 
 
@@ -50,8 +50,8 @@
     </resultMap>
 
     <resultMap id="synonymResultMap" type="Synonym" autoMapping="true" extends="org.col.db.mapper.SynonymMapper.synonymResultMap">
-        <id column="n_key" />
-        <id column="a_key" />
+        <id column="n_id" />
+        <id column="a_id" />
         <result property="accordingTo" column="s_according_to" />
         <result property="status" column="s_status" />
     </resultMap>
@@ -72,7 +72,7 @@
     <select id="listByName" resultMap="nameSearchResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
-        WHERE n.dataset_key = #{datasetKey} AND n.key=#{nameKey}
+        WHERE n.dataset_key = #{datasetKey} AND n.id=#{nameId}
     </select>
 
     <!--  select all name usages of a dataset

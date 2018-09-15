@@ -127,11 +127,11 @@ public class PgImportIT {
       NameDao ndao = new NameDao(session);
       ReferenceDao rdao = new ReferenceDao(session);
 
-      Name trametes_modesta = ndao.get(ndao.lookupKey("324805", dataset.getKey()));
+      Name trametes_modesta = ndao.get(dataset.getKey(), "324805");
 
-      Reference pubIn = rdao.get(dataset.getKey(), trametes_modesta.getPublishedInKey(), trametes_modesta.getPublishedInPage());
+      Reference pubIn = rdao.get(dataset.getKey(), trametes_modesta.getPublishedInId(), trametes_modesta.getPublishedInPage());
       assertEquals("Norw. Jl Bot. 19: 236 (1972)", pubIn.getCitation());
-      assertNotNull(pubIn.getKey());
+      assertNotNull(pubIn.getId());
       assertNull(pubIn.getId());
     }
   }
@@ -146,15 +146,15 @@ public class PgImportIT {
       NameDao ndao = new NameDao(session);
 
       // check basionym
-      Name n1006 = ndao.get(ndao.lookupKey("1006", dataset.getKey()));
+      Name n1006 = ndao.get(dataset.getKey(), "1006");
       assertEquals("Leontodon taraxacoides", n1006.getScientificName());
 
-      List<NameRelation> rels = ndao.relations(dataset.getKey(), n1006.getKey());
+      List<NameRelation> rels = ndao.relations(dataset.getKey(), n1006.getId());
       assertEquals(1, rels.size());
 
-      Name bas = ndao.getBasionym(dataset.getKey(), n1006.getKey());
+      Name bas = ndao.getBasionym(dataset.getKey(), n1006.getId());
       assertEquals("Leonida taraxacoida", bas.getScientificName());
-      assertEquals(n1006.getHomotypicNameKey(), bas.getHomotypicNameKey());
+      assertEquals(n1006.getHomotypicNameId(), bas.getHomotypicNameId());
 
       // check taxon parents
       assertParents(tdao, "1006", "102", "30", "20", "10", "1");
@@ -181,24 +181,24 @@ public class PgImportIT {
       vMapper = session.getMapper(VerbatimRecordMapper.class);
 
       // check species name
-      Name n1 = dao.get(dao.lookupKey("1", dataset.getKey()));
-      Name n2 = dao.get(dao.lookupKey("2", dataset.getKey()));
+      Name n1 = dao.get(dataset.getKey(), "1");
+      Name n2 = dao.get(dataset.getKey(), "2");
 
-      assertEquals(n2.getHomotypicNameKey(), n1.getHomotypicNameKey());
-      assertTrue(n1.getKey().equals(n2.getHomotypicNameKey())
-          || n2.getKey().equals(n2.getHomotypicNameKey()));
+      assertEquals(n2.getHomotypicNameId(), n1.getHomotypicNameId());
+      assertTrue(n1.getId().equals(n2.getHomotypicNameId())
+          || n2.getId().equals(n2.getHomotypicNameId()));
       assertIssue(n1, Issue.CHAINED_BASIONYM);
       assertIssue(n2, Issue.CHAINED_BASIONYM);
 
-      Name n10 = dao.get(dao.lookupKey("10", dataset.getKey()));
-      Name n11 = dao.get(dao.lookupKey("11", dataset.getKey()));
-      Name n12 = dao.get(dao.lookupKey("12", dataset.getKey()));
-      Name n13 = dao.get(dao.lookupKey("13", dataset.getKey()));
+      Name n10 = dao.get(dataset.getKey(), "10");
+      Name n11 = dao.get(dataset.getKey(), "11");
+      Name n12 = dao.get(dataset.getKey(), "12");
+      Name n13 = dao.get(dataset.getKey(), "13");
 
-      assertEquals(n10.getKey(), n10.getHomotypicNameKey());
-      assertEquals(n10.getKey(), n11.getHomotypicNameKey());
-      assertEquals(n10.getKey(), n13.getHomotypicNameKey());
-      assertEquals(n12.getKey(), n12.getHomotypicNameKey());
+      assertEquals(n10.getId(), n10.getHomotypicNameId());
+      assertEquals(n10.getId(), n11.getHomotypicNameId());
+      assertEquals(n10.getId(), n13.getHomotypicNameId());
+      assertEquals(n12.getId(), n12.getHomotypicNameId());
 
       assertIssue(n10, Issue.CHAINED_BASIONYM);
       assertIssue(n11, Issue.CHAINED_BASIONYM);
@@ -226,10 +226,10 @@ public class PgImportIT {
       TaxonDao tdao = new TaxonDao(session);
 
       // check species name
-      Taxon tax = tdao.get(dataset.getKey(), tdao.lookupKey("1000", dataset.getKey()));
+      Taxon tax = tdao.get(dataset.getKey(), "1000");
       assertEquals("Crepis pulchra", tax.getName().getScientificName());
 
-      TaxonInfo info = tdao.getTaxonInfo(dataset.getKey(), tax.getKey());
+      TaxonInfo info = tdao.getTaxonInfo(dataset.getKey(), tax.getId());
       // check vernaculars
       Map<Language, String> expV = Maps.newHashMap();
       expV.put(Language.GERMAN, "Schöner Pippau");
@@ -290,25 +290,25 @@ public class PgImportIT {
       NameDao ndao = new NameDao(session);
       vMapper = session.getMapper(VerbatimRecordMapper.class);
 
-      Name n = ndao.get("s7", dataset.getKey());
+      Name n = ndao.get(dataset.getKey(), "s7");
       assertEquals("Astragalus nonexistus DC.", n.canonicalNameComplete());
       assertEquals("Astragalus nonexistus", n.getScientificName());
       assertEquals("DC.", n.authorshipComplete());
       assertEquals(Rank.SPECIES, n.getRank());
       assertIssue(n, Issue.ACCEPTED_ID_INVALID);
 
-      List<NameUsage> usages = udao.byNameKey(dataset.getKey(), n.getKey());
+      List<NameUsage> usages = udao.byNameId(dataset.getKey(), n.getId());
       assertEquals(1, usages.size());
       assertEquals(new BareName(n), usages.get(0));
 
-      assertNull(tdao.get("s7", dataset.getKey()));
+      assertNull(tdao.get(dataset.getKey(), "s7"));
 
-      n = ndao.get("s6", dataset.getKey());
+      n = ndao.get(dataset.getKey(), "s6");
       assertEquals("Astragalus beersabeensis", n.getScientificName());
       assertEquals(Rank.SPECIES, n.getRank());
       assertIssue(n, Issue.SYNONYM_DATA_MOVED);
 
-      usages = udao.byNameKey(dataset.getKey(), n.getKey());
+      usages = udao.byNameId(dataset.getKey(), n.getId());
       assertEquals(1, usages.size());
       Synonym s = (Synonym) usages.get(0);
       assertEquals("Astracantha arnacantha", s.getAccepted().getName().getScientificName());
@@ -331,7 +331,7 @@ public class PgImportIT {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       TaxonDao tdao = new TaxonDao(session);
 
-      Taxon t = tdao.get("14649", dataset.getKey());
+      Taxon t = tdao.get(dataset.getKey(), "14649");
       assertEquals("Zapoteca formosa (Kunth) H.M.Hern.", t.getName().canonicalNameComplete());
       assertEquals(Rank.SPECIES, t.getName().getRank());
 
@@ -364,7 +364,7 @@ public class PgImportIT {
       NameDao ndao = new NameDao(session);
       TaxonDao tdao = new TaxonDao(session);
 
-      Taxon t = tdao.get("Rho-144", dataset.getKey());
+      Taxon t = tdao.get(dataset.getKey(), "Rho-144");
       assertEquals("Afrogamasellus lokelei Daele, 1976", t.getName().canonicalNameComplete());
 
       List<Taxon> classific = tdao.getClassification(t);
@@ -389,17 +389,16 @@ public class PgImportIT {
       assertTrue(t.getLifezones().isEmpty());
       assertNull(t.getRemarks());
       assertNull(t.getDatasetUrl());
-      assertNull(t.getTaxonID());
 
       // test synonym
-      Name sn = ndao.get("Rho-140", dataset.getKey());
+      Name sn = ndao.get(dataset.getKey(), "Rho-140");
       assertEquals("Rhodacarus guevarai Guevara-Benitez, 1974", sn.canonicalNameComplete());
 
-      List<NameUsage> acc = udao.byNameKey(dataset.getKey(), sn.getKey());
+      List<NameUsage> acc = udao.byNameId(dataset.getKey(), sn.getId());
       assertEquals(1, acc.size());
       Synonym syn = (Synonym) acc.get(0);
 
-      t = tdao.get("Rho-61", dataset.getKey());
+      t = tdao.get(dataset.getKey(), "Rho-61");
       assertEquals("Multidentorhodacarus denticulatus (Berlese, 1920)",
           t.getName().canonicalNameComplete());
       assertEquals(t, syn.getAccepted());
@@ -413,14 +412,14 @@ public class PgImportIT {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       TaxonDao tdao = new TaxonDao(session);
 
-      Taxon t = tdao.get("MD2", dataset.getKey());
+      Taxon t = tdao.get(dataset.getKey(), "MD2");
       assertEquals("Latrodectus mactans (Fabricius, 1775)", t.getName().canonicalNameComplete());
 
       TaxonInfo info = tdao.getTaxonInfo(t);
       // Walckenaer1805;Walckenaer, CA;1805;Table of the aranid or essential characters of the
       // tribes, genera, families and races contained in the genus Aranea of ​​Linnaeus, with the
       // designation of the species included in each of these divisions . Paris, 88 pp;;
-      Reference pubIn = info.getReference(t.getName().getPublishedInKey());
+      Reference pubIn = info.getReference(t.getName().getPublishedInId());
       assertEquals("Walckenaer1805", pubIn.getId());
       // we cannot test this as our CslParserMock only populates the title...
       // assertEquals(1805, (int) pubIn.getYear());
@@ -430,8 +429,8 @@ public class PgImportIT {
       // pubIn.getCsl().getTitle());
 
       assertEquals(3, info.getTaxonReferences().size());
-      for (int refKey : info.getTaxonReferences()) {
-        Reference r = info.getReference(refKey);
+      for (String refId : info.getTaxonReferences()) {
+        Reference r = info.getReference(refId);
         assertNotNull(r);
       }
 
@@ -441,7 +440,7 @@ public class PgImportIT {
       assertEquals(3, syn.getHeterotypic().size());
       assertEquals(0, syn.getHomotypic().size());
 
-      Synonym s = tdao.getSynonym("s5", dataset.getKey());
+      Synonym s = tdao.getSynonym(dataset.getKey(), "s5");
       // assertEquals("auct. Whittaker 1981", s.getAccordingTo());
       assertEquals(TaxonomicStatus.MISAPPLIED, s.getStatus());
     }
@@ -457,11 +456,11 @@ public class PgImportIT {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       TaxonDao tdao = new TaxonDao(session);
 
-      Taxon annua = tdao.get("4", dataset.getKey());
+      Taxon annua = tdao.get(dataset.getKey(), "4");
       assertEquals("Poa annua L.", annua.getName().canonicalNameComplete());
 
       TaxonInfo info = tdao.getTaxonInfo(annua);
-      Reference pubIn = info.getReference(annua.getName().getPublishedInKey());
+      Reference pubIn = info.getReference(annua.getName().getPublishedInId());
       assertEquals("Sp. Pl. 1: 68 (1753).", pubIn.getCitation());
 
       Synonymy syn = tdao.getSynonymy(annua);
@@ -471,30 +470,30 @@ public class PgImportIT {
       assertEquals(1, syn.getHomotypic().size());
 
       for (Name n : syn.getHomotypic()) {
-        assertEquals(annua.getName().getHomotypicNameKey(), n.getHomotypicNameKey());
+        assertEquals(annua.getName().getHomotypicNameId(), n.getHomotypicNameId());
       }
       for (List<Name> group : syn.getHeterotypic()) {
-        Integer homoKey = group.get(0).getHomotypicNameKey();
-        assertNotEquals(homoKey, annua.getName().getHomotypicNameKey());
+        String homoKey = group.get(0).getHomotypicNameId();
+        assertNotEquals(homoKey, annua.getName().getHomotypicNameId());
         for (Name n : group) {
-          assertEquals(homoKey, n.getHomotypicNameKey());
+          assertEquals(homoKey, n.getHomotypicNameId());
         }
       }
 
       NameDao ndao = new NameDao(session);
       NameRelationMapper actMapper = session.getMapper(NameRelationMapper.class);
       // Poa annua has not explicitly declared a basionym
-      assertTrue(actMapper.list(dataset.getKey(), annua.getName().getKey()).isEmpty());
+      assertTrue(actMapper.list(dataset.getKey(), annua.getName().getId()).isEmpty());
 
-      Name reptans1 = ndao.get("7", dataset.getKey());
-      Name reptans2 = ndao.get("8", dataset.getKey());
-      assertEquals(1, actMapper.list(dataset.getKey(), reptans1.getKey()).size());
-      assertEquals(1, actMapper.list(dataset.getKey(), reptans2.getKey()).size());
+      Name reptans1 = ndao.get(dataset.getKey(), "7");
+      Name reptans2 = ndao.get(dataset.getKey(), "8");
+      assertEquals(1, actMapper.list(dataset.getKey(), reptans1.getId()).size());
+      assertEquals(1, actMapper.list(dataset.getKey(), reptans2.getId()).size());
 
-      NameRelation act = actMapper.list(dataset.getKey(), reptans1.getKey()).get(0);
+      NameRelation act = actMapper.list(dataset.getKey(), reptans1.getId()).get(0);
       assertEquals(NomRelType.BASIONYM, act.getType());
-      assertEquals(reptans1.getKey(), act.getNameKey());
-      assertEquals(reptans2.getKey(), act.getRelatedNameKey());
+      assertEquals(reptans1.getId(), act.getNameId());
+      assertEquals(reptans2.getId(), act.getRelatedNameId());
     }
   }
 
@@ -506,7 +505,7 @@ public class PgImportIT {
     normalizeAndImport(DWCA, 33);
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       NameDao ndao = new NameDao(session);
-      Name n = ndao.get("30405", dataset.getKey());
+      Name n = ndao.get(dataset.getKey(), "30405");
       assertEquals("Haematomma ochroleucum var. porphyrium", n.getScientificName());
       assertEquals("30405", n.getId());
 
@@ -541,9 +540,9 @@ public class PgImportIT {
 
   private void assertParents(TaxonDao tdao, String taxonID, String... parentIds) {
     final LinkedList<String> expected = new LinkedList<String>(Arrays.asList(parentIds));
-    Taxon t = tdao.get(dataset.getKey(), tdao.lookupKey(taxonID, dataset.getKey()));
-    while (t.getParentKey() != null) {
-      Taxon parent = tdao.get(dataset.getKey(), t.getParentKey());
+    Taxon t = tdao.get(dataset.getKey(), taxonID);
+    while (t.getParentId() != null) {
+      Taxon parent = tdao.get(dataset.getKey(), t.getParentId());
       assertEquals(expected.pop(), parent.getId());
       t = parent;
     }

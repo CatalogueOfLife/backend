@@ -13,7 +13,6 @@ import javax.annotation.Nullable;
 
 import com.esotericsoftware.kryo.pool.KryoPool;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
 import com.google.common.collect.UnmodifiableIterator;
 import org.apache.commons.io.FileUtils;
 import org.col.admin.importer.NormalizationFailedException;
@@ -70,9 +69,8 @@ public class NeoDb implements ReferenceStore {
   private final DB mapDb;
   private final Atomic.Var<Dataset> dataset;
   private final Map<Long, NeoTaxon> taxa;
-  private final Map<Integer, Reference> references;
-  private final Map<String, Integer> refIndexId;
-  private final Map<String, Integer> refIndexCitation;
+  private final Map<String, Reference> references;
+  private final Map<String, String> refIndexCitation;
   private final Map<Integer, VerbatimRecord> verbatim;
   private final AtomicInteger verbatimSequence = new AtomicInteger(0);
   private final AtomicInteger referenceSequence = new AtomicInteger(0);
@@ -119,16 +117,12 @@ public class NeoDb implements ReferenceStore {
           .valueSerializer(new MapDbObjectSerializer(VerbatimRecord.class, pool, 128))
           .createOrOpen();
       references = mapDb.hashMap("references")
-          .keySerializer(Serializer.INTEGER)
-          .valueSerializer(new MapDbObjectSerializer(Reference.class, pool, 128))
-          .createOrOpen();
-      refIndexId = mapDb.hashMap("refIndexId")
           .keySerializer(Serializer.STRING)
-          .valueSerializer(Serializer.INTEGER)
+          .valueSerializer(new MapDbObjectSerializer(Reference.class, pool, 128))
           .createOrOpen();
       refIndexCitation = mapDb.hashMap("refIndexCitation")
           .keySerializer(Serializer.STRING_ASCII)
-          .valueSerializer(Serializer.INTEGER)
+          .valueSerializer(Serializer.STRING)
           .createOrOpen();
       openNeo();
 
@@ -224,10 +218,10 @@ public class NeoDb implements ReferenceStore {
         .map(r -> {
           NameRelation nr = new NameRelation();
           nr.setType(RelType.valueOf(r.getType().name()).nomRelType);
-          nr.setNameKey( (int) r.getStartNodeId());
-          nr.setRelatedNameKey( (int) r.getEndNodeId());
+          nr.setNameId(NeoProperties.getID(r.getStartNode()));
+          nr.setRelatedNameId(NeoProperties.getID(r.getEndNode()));
           nr.setNote( (String) r.getProperty(NeoProperties.NOTE, null));
-          nr.setPublishedInKey( (Integer) r.getProperty(NeoProperties.REF_KEY, null));
+          nr.setPublishedInId( (String) r.getProperty(NeoProperties.REF_ID, null));
           if (r.hasProperty(NeoProperties.VERBATIM_KEY)) {
             nr.setVerbatimKey((Integer)r.getProperty(NeoProperties.VERBATIM_KEY));
           }
@@ -483,12 +477,6 @@ public class NeoDb implements ReferenceStore {
       }
     }
 
-    // use neo4j node ids as keys for both name and taxon
-    t.taxon.setKey((int)nodeId);
-    if (t.name != null) {
-      t.name.setKey(t.taxon.getKey());
-    }
-
     taxa.put(nodeId, t);
 
     return t;
@@ -528,8 +516,8 @@ public class NeoDb implements ReferenceStore {
     if (rel.getVerbatimKey() != null) {
       r.setProperty(NeoProperties.VERBATIM_KEY, rel.getVerbatimKey());
     }
-    if (rel.getRefKey() != null) {
-      r.setProperty(NeoProperties.REF_KEY, rel.getRefKey());
+    if (rel.getRefId() != null) {
+      r.setProperty(NeoProperties.REF_ID, rel.getRefId());
     }
     if (rel.getNote() != null) {
       r.setProperty(NeoProperties.NOTE, rel.getNote());
@@ -538,17 +526,14 @@ public class NeoDb implements ReferenceStore {
 
   @Override
   public Reference put(Reference r) {
-    if (r.getKey() == null) {
-      r.setKey(referenceSequence.incrementAndGet());
+    if (r.getId() == null) {
+      r.setId(".ref." + referenceSequence.incrementAndGet());
     }
-    references.put(r.getKey(), r);
-    // update lookup index for id and title
-    if (!Strings.isNullOrEmpty(r.getId())) {
-      refIndexId.put(r.getId(), r.getKey());
-    }
+    references.put(r.getId(), r);
+    // update lookup index for title
     String normedCit = StringUtils.digitOrAsciiLetters(r.getCitation());
     if (normedCit != null) {
-      refIndexCitation.put(normedCit, r.getKey());
+      refIndexCitation.put(normedCit, r.getId());
     }
     return r;
   }
@@ -606,14 +591,9 @@ public class NeoDb implements ReferenceStore {
   }
 
   @Override
-  public Reference refByKey(int key) {
-    return references.getOrDefault(key, null);
-  }
-
-  @Override
   public Reference refById(String id) {
-    if (id != null && refIndexId.containsKey(id)) {
-      return references.get(refIndexId.get(id));
+    if (id != null) {
+      return references.getOrDefault(id, null);
     }
     return null;
   }
@@ -668,7 +648,6 @@ public class NeoDb implements ReferenceStore {
     try (Transaction tx = getNeo().beginTx()) {
       for (Node n : getNeo().getAllNodes()) {
         NeoTaxon t = get(n);
-        t.taxon.setKey((int)n.getId());
         if (t.node.hasLabel(Labels.SYNONYM)) {
           if (t.synonym == null) {
             t.synonym = new Synonym();
@@ -679,7 +658,7 @@ public class NeoDb implements ReferenceStore {
         } else if (!t.node.hasLabel(Labels.ROOT)){
           // parent
           Node p = getSingleRelated(t.node, RelType.PARENT_OF, Direction.INCOMING);
-          t.taxon.setParentKey(extractTaxon(p).getKey());
+          t.taxon.setParentId(extractTaxon(p).getId());
         }
         // store the updated object directly in MapDB, avoiding unecessary updates to Neo
         taxa.put(t.node.getId(), t);
@@ -689,7 +668,7 @@ public class NeoDb implements ReferenceStore {
   }
 
   /**
-   * Sets the same neo node id for a given cluster of homotypic names derived from name relations and synonym[homotpic=true] relations.
+   * Sets the same name id for a given cluster of homotypic names derived from name relations and synonym[homotpic=true] relations.
    * We first go thru all synonyms with the homotypic flag to determine the keys and then add all missing basionym nodes.
    */
   private void updateHomotypicNameKeys() {
@@ -706,16 +685,16 @@ public class NeoDb implements ReferenceStore {
             continue;
           }
           NeoTaxon acc = get(r.getEndNode());
-          int homoKey;
-          if (acc.name.getHomotypicNameKey() == null ) {
-            homoKey = (int) acc.node.getId();
-            acc.name.setHomotypicNameKey(homoKey);
+          String homoId;
+          if (acc.name.getHomotypicNameId() == null ) {
+            homoId = acc.name.getId();
+            acc.name.setHomotypicNameId(homoId);
             update(acc);
             counter++;
           } else {
-            homoKey = acc.name.getHomotypicNameKey();
+            homoId = acc.name.getHomotypicNameId();
           }
-          tsyn.name.setHomotypicNameKey(homoKey);
+          tsyn.name.setHomotypicNameId(homoId);
           update(tsyn);
         }
       }
@@ -726,7 +705,7 @@ public class NeoDb implements ReferenceStore {
       for (Node n : getNeo().getAllNodes()) {
         // check if this node has a homotypic group already in which case we can skip it
         NeoTaxon start = get(n);
-        if (start.name.getHomotypicNameKey() != null) {
+        if (start.name.getHomotypicNameId() != null) {
           continue;
         }
         // query homotypic group excluding start node
@@ -740,24 +719,24 @@ public class NeoDb implements ReferenceStore {
           // we have more than the starting node so we do process, add starting node too
           group.add(start);
           // determine existing or new key to be shared
-          Integer homoKey = null;
+          String homoId = null;
           for (NeoTaxon t : group) {
-            if (t.name.getHomotypicNameKey() != null) {
-              if (homoKey == null) {
-                homoKey = t.name.getHomotypicNameKey();
-              } else if (!homoKey.equals(t.name.getHomotypicNameKey())){
+            if (t.name.getHomotypicNameId() != null) {
+              if (homoId == null) {
+                homoId = t.name.getHomotypicNameId();
+              } else if (!homoId.equals(t.name.getHomotypicNameId())){
                 LOG.warn("Several homotypic name keys found in the same homotypic name group for {}", NeoProperties.getScientificNameWithAuthor(n));
               }
             }
           }
-          if (homoKey == null) {
-            homoKey = (int) n.getId();
+          if (homoId == null) {
+            homoId = start.name.getId();
             counter++;
           }
           // update entire group with key
           for (NeoTaxon t : group) {
-            if (t.name.getHomotypicNameKey() == null) {
-              t.name.setHomotypicNameKey(homoKey);
+            if (t.name.getHomotypicNameId() == null) {
+              t.name.setHomotypicNameId(homoId);
               update(t);
             }
           }
@@ -770,8 +749,6 @@ public class NeoDb implements ReferenceStore {
   private Taxon extractTaxon(Node n) {
     NeoTaxon t = get(n);
     t.taxon.setName(t.name);
-    // use neo4j node as key
-    t.taxon.setKey((int)n.getId());
     return t.taxon;
   }
 

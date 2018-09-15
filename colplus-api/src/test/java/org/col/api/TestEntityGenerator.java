@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
@@ -24,6 +25,7 @@ public class TestEntityGenerator {
   private final static Random RND = new Random();
   private final static RandomInstance random = new RandomInstance();
   private static final Splitter SPACE_SPLITTER = Splitter.on(" ").trimResults();
+  private static final AtomicInteger ID_GEN = new AtomicInteger(10000);
 
   /**
    * Corresponds exactly to dataset record inserted via apple.sql with key=11
@@ -73,22 +75,23 @@ public class TestEntityGenerator {
    * Corresponds exactly to 2nd reference record inserted via apple.sql
    */
   public final static Reference REF2 = new Reference();
+  public final static Reference REF3 = new Reference();
 
   static {
     DATASET11.setKey(11);
     DATASET12.setKey(12);
 
-    REF1.setKey(1);
     REF1.setId("ref-1");
     REF1.setDatasetKey(DATASET11.getKey());
 
-    REF2.setKey(2);
-    REF2.setId("ref-2");
-    REF2.setDatasetKey(DATASET12.getKey());
+    REF2.setId("ref-1b");
+    REF2.setDatasetKey(DATASET11.getKey());
 
-    NAME1.setKey(1);
-    NAME1.setHomotypicNameKey(1);
+    REF3.setId("ref-2");
+    REF3.setDatasetKey(DATASET12.getKey());
+
     NAME1.setId("name-1");
+    NAME1.setHomotypicNameId(NAME1.getId());
     NAME1.setDatasetKey(DATASET11.getKey());
     NAME1.setGenus("Malus");
     NAME1.setSpecificEpithet("sylvestris");
@@ -96,12 +99,11 @@ public class TestEntityGenerator {
     NAME1.setOrigin(Origin.SOURCE);
     NAME1.setType(NameType.SCIENTIFIC);
     NAME1.updateScientificName();
-    NAME1.setPublishedInKey(REF1.getKey());
+    NAME1.setPublishedInId(REF1.getId());
     NAME1.setPublishedInPage("712");
 
-    NAME2.setKey(2);
-    NAME2.setHomotypicNameKey(2);
     NAME2.setId("name-2");
+    NAME2.setHomotypicNameId(NAME2.getId());
     NAME2.setDatasetKey(DATASET11.getKey());
     NAME2.setGenus("Larus");
     NAME2.setSpecificEpithet("fuscus");
@@ -109,12 +111,11 @@ public class TestEntityGenerator {
     NAME2.setOrigin(Origin.SOURCE);
     NAME2.setType(NameType.SCIENTIFIC);
     NAME2.updateScientificName();
-    NAME2.setPublishedInKey(null);
+    NAME2.setPublishedInId(null);
     NAME2.setPublishedInPage(null);
 
-    NAME3.setKey(3);
-    NAME3.setHomotypicNameKey(2);
     NAME3.setId("name-3");
+    NAME3.setHomotypicNameId(NAME2.getId());
     NAME3.setDatasetKey(DATASET11.getKey());
     NAME3.setGenus("Larus");
     NAME3.setSpecificEpithet("fusca");
@@ -122,12 +123,11 @@ public class TestEntityGenerator {
     NAME3.setOrigin(Origin.SOURCE);
     NAME3.setType(NameType.SCIENTIFIC);
     NAME3.updateScientificName();
-    NAME3.setPublishedInKey(null);
+    NAME3.setPublishedInId(null);
     NAME3.setPublishedInPage(null);
 
-    NAME4.setKey(4);
-    NAME4.setHomotypicNameKey(4);
     NAME4.setId("name-4");
+    NAME4.setHomotypicNameId(NAME4.getId());
     NAME4.setDatasetKey(DATASET11.getKey());
     NAME4.setGenus("Larus");
     NAME4.setSpecificEpithet("erfundus");
@@ -135,16 +135,14 @@ public class TestEntityGenerator {
     NAME4.setOrigin(Origin.SOURCE);
     NAME4.setType(NameType.SCIENTIFIC);
     NAME4.updateScientificName();
-    NAME4.setPublishedInKey(null);
+    NAME4.setPublishedInId(null);
     NAME4.setPublishedInPage(null);
 
-    TAXON1.setKey(1);
     TAXON1.setId("root-1");
     TAXON1.setDatasetKey(DATASET11.getKey());
     TAXON1.setName(NAME1);
     TAXON1.setOrigin(Origin.SOURCE);
 
-    TAXON2.setKey(2);
     TAXON2.setId("root-2");
     TAXON2.setDatasetKey(DATASET11.getKey());
     TAXON2.setName(NAME2);
@@ -173,6 +171,12 @@ public class TestEntityGenerator {
   }
 
   /*
+   * Creates a new taxon with a generated id
+   */
+  public static Taxon newTaxon() {
+    return newTaxon(DATASET11.getKey(), "t"+ID_GEN.getAndIncrement());
+  }
+  /*
    * Creates a new taxon with the specified id, belonging to dataset DATASET11.
    */
   public static Taxon newTaxon(String id) {
@@ -193,11 +197,11 @@ public class TestEntityGenerator {
     t.setLifezones(EnumSet.of(Lifezone.BRACKISH, Lifezone.FRESHWATER, Lifezone.TERRESTRIAL));
     t.setName(NAME1);
     t.setOrigin(Origin.SOURCE);
-    t.setParentKey(TAXON1.getKey());
+    t.setParentId(TAXON1.getId());
     t.setRecent(true);
     t.setRemarks("Foo == Bar");
     t.setSpeciesEstimate(81);
-    t.setSpeciesEstimateReferenceKey(REF1.getKey());
+    t.setSpeciesEstimateReferenceId(REF1.getId());
     return t;
   }
 
@@ -221,14 +225,24 @@ public class TestEntityGenerator {
    * Creates a new name with the specified id, belonging to the specified dataset.
    */
   public static Name newName(String id) {
-    Name n = newName();
-    n.setId(id);
-    return n;
+    return newName(id, RandomUtils.randomSpecies());
   }
 
-  public static Name newName() {
+  /*
+   * Creates a new name with the specified id, belonging to the specified dataset.
+   */
+  public static Name newName(String id, String scientificName) {
+    return newName(DATASET11.getKey(), id, scientificName);
+  }
+
+  /*
+   * Creates a new name with the specified id, belonging to the specified dataset.
+   */
+  public static Name newName(int datasetKey, String id, String scientificName) {
     Name n = new Name();
-    n.setDatasetKey(TestEntityGenerator.DATASET11.getKey());
+    n.setId(id);
+    n.setHomotypicNameId(id);
+    n.setDatasetKey(datasetKey);
     n.setCombinationAuthorship(createAuthorship());
     if (RND.nextBoolean()) {
       n.setBasionymAuthorship(createAuthorship());
@@ -236,7 +250,7 @@ public class TestEntityGenerator {
     if (RND.nextInt(10) == 1) {
       n.setSanctioningAuthor("Fr.");
     }
-    List<String> tokens = SPACE_SPLITTER.splitToList(RandomUtils.randomSpecies());
+    List<String> tokens = SPACE_SPLITTER.splitToList(scientificName);
     n.setGenus(tokens.get(0));
     n.setSpecificEpithet(tokens.get(1));
     n.setInfragenericEpithet("Igen");
@@ -254,6 +268,14 @@ public class TestEntityGenerator {
     n.addRemark("my first note");
     n.addRemark("my second note");
     return n;
+  }
+
+  /**
+   * Creates a new name instance with an id generated by the static id generator from this class
+   * which will not overlap
+   */
+  public static Name newName() {
+    return newName("n"+ID_GEN.getAndIncrement());
   }
 
   public static List<Name> newNames(int size) {
@@ -279,6 +301,7 @@ public class TestEntityGenerator {
 
   public static Reference newReference(String title) {
     Reference r = new Reference();
+    r.setId("r"+ID_GEN.getAndIncrement());
     r.setDatasetKey(TestEntityGenerator.DATASET11.getKey());
     CslData csl = new CslData();
     r.setCsl(csl);

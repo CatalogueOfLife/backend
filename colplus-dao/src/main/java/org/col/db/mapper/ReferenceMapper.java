@@ -16,22 +16,20 @@ public interface ReferenceMapper {
 
 	List<Reference> list(@Param("datasetKey") int datasetKey, @Param("page") Page page);
 
-	List<Integer> listByTaxon(@Param("datasetKey") int datasetKey, @Param("taxonKey") int taxonKey);
+	List<String> listByTaxon(@Param("datasetKey") int datasetKey, @Param("taxonId") String taxonId);
 
 	/**
    * Selects a number of distinct references from a single dataset by their keys
-   * @param keys must contain at least one value, not allowed to be empty !!!
+   * @param ids must contain at least one value, not allowed to be empty !!!
    */
-  List<Reference> listByKeys(@Param("datasetKey") int datasetKey, @Param("keys") Set<Integer> keys);
+  List<Reference> listByIds(@Param("datasetKey") int datasetKey, @Param("ids") Set<String> ids);
 
-	Integer lookupKey(@Param("id") String id, @Param("datasetKey") int datasetKey);
-
-	Reference get(@Param("datasetKey") int datasetKey, @Param("key") int key);
+	Reference get(@Param("datasetKey") int datasetKey, @Param("id") String id);
 
 	void create(Reference name);
 
 	/**
 	 * Links a reference to a taxon
 	 */
-	void linkToTaxon(@Param("datasetKey") int datasetKey, @Param("taxonKey") int taxonKey, @Param("refKey") int refKey);
+	void linkToTaxon(@Param("datasetKey") int datasetKey, @Param("taxonId") String taxonId, @Param("refId") String refId);
 }

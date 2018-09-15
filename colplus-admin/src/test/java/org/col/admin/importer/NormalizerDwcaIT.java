@@ -179,21 +179,20 @@ public class NormalizerDwcaIT {
       NeoTaxon trametes_modesta = byID("324805");
       assertFalse(trametes_modesta.isSynonym());
 
-      Reference pubIn = store.refByKey(trametes_modesta.name.getPublishedInKey());
+      Reference pubIn = store.refById(trametes_modesta.name.getPublishedInId());
       assertEquals("Norw. Jl Bot. 19: 236 (1972)", pubIn.getCitation());
-      assertNotNull(pubIn.getKey());
-      assertNull(pubIn.getId());
+      assertNotNull(pubIn.getId());
 
       NeoTaxon Polystictus_substipitatus = byID("140283");
       assertTrue(Polystictus_substipitatus.isSynonym());
       assertTrue(Polystictus_substipitatus.synonym.getStatus().isSynonym());
-      pubIn = store.refByKey(Polystictus_substipitatus.name.getPublishedInKey());
+      pubIn = store.refById(Polystictus_substipitatus.name.getPublishedInId());
       assertEquals("Syll. fung. (Abellini) 21: 318 (1912)", pubIn.getCitation());
 
       NeoTaxon Polyporus_modestus = byID("198666");
       assertTrue(Polyporus_modestus.isSynonym());
       assertTrue(Polyporus_modestus.synonym.getStatus().isSynonym());
-      pubIn = store.refByKey(Polyporus_modestus.name.getPublishedInKey());
+      pubIn = store.refById(Polyporus_modestus.name.getPublishedInId());
       assertEquals("Linnaea 5: 519 (1830)", pubIn.getCitation());
     }
   }
@@ -270,8 +269,8 @@ public class NormalizerDwcaIT {
       assertEquals(1, t2.node.getDegree(RelType.HAS_BASIONYM));
       assertEquals(t2.node,
           t1.node.getSingleRelationship(RelType.HAS_BASIONYM, Direction.OUTGOING).getEndNode());
-      assertNotNull(t1.name.getHomotypicNameKey());
-      assertEquals(t2.name.getHomotypicNameKey(), t1.name.getHomotypicNameKey());
+      assertNotNull(t1.name.getHomotypicNameId());
+      assertEquals(t2.name.getHomotypicNameId(), t1.name.getHomotypicNameId());
 
       // 10->11->12->10, 13->11
       // should be: 10,13->11 12
@@ -288,10 +287,10 @@ public class NormalizerDwcaIT {
           .getSingleRelationship(RelType.HAS_BASIONYM, Direction.OUTGOING).getOtherNode(t10.node));
       assertEquals(t11.node, t13.node
           .getSingleRelationship(RelType.HAS_BASIONYM, Direction.OUTGOING).getOtherNode(t13.node));
-      assertNull(t12.name.getHomotypicNameKey());
-      assertEquals(t10.name.getKey(), t11.name.getHomotypicNameKey());
-      assertEquals(t10.name.getKey(), t10.name.getHomotypicNameKey());
-      assertEquals(t10.name.getKey(), t13.name.getHomotypicNameKey());
+      assertNull(t12.name.getHomotypicNameId());
+      assertEquals(t10.name.getId(), t11.name.getHomotypicNameId());
+      assertEquals(t10.name.getId(), t10.name.getHomotypicNameId());
+      assertEquals(t10.name.getId(), t13.name.getHomotypicNameId());
     }
   }
 
@@ -357,7 +356,7 @@ public class NormalizerDwcaIT {
       assertEquals(u1, u2);
 
       NeoTaxon bas = byName("Leonida taraxacoida");
-      assertEquals(u2.name.getHomotypicNameKey(), bas.name.getHomotypicNameKey());
+      assertEquals(u2.name.getHomotypicNameId(), bas.name.getHomotypicNameId());
 
       NeoTaxon syn = byName("Leontodon leysseri");
       assertTrue(syn.synonym.getStatus().isSynonym());
@@ -403,16 +402,16 @@ public class NormalizerDwcaIT {
     try (Transaction tx = store.getNeo().beginTx()) {
       NeoTaxon annua1 = byID("4");
       NeoTaxon annua2 = byID("5");
-      assertEquals(annua1.name.getHomotypicNameKey(), annua2.name.getHomotypicNameKey());
+      assertEquals(annua1.name.getHomotypicNameId(), annua2.name.getHomotypicNameId());
       NeoTaxon reptans1 = byID("7");
       NeoTaxon reptans2 = byID("8");
-      assertEquals(reptans1.name.getHomotypicNameKey(), reptans2.name.getHomotypicNameKey());
-      assertFalse(annua1.name.getHomotypicNameKey().equals(reptans1.name.getHomotypicNameKey()));
+      assertEquals(reptans1.name.getHomotypicNameId(), reptans2.name.getHomotypicNameId());
+      assertFalse(annua1.name.getHomotypicNameId().equals(reptans1.name.getHomotypicNameId()));
 
       List<String> homos = Lists.newArrayList("4", "5", "7", "8");
       store.all().forEach(t -> {
         if (!homos.contains(t.name.getId())) {
-          assertNull(t.name.getHomotypicNameKey());
+          assertNull(t.name.getHomotypicNameId());
         }
       });
     }
@@ -425,7 +424,7 @@ public class NormalizerDwcaIT {
     try (Transaction tx = store.getNeo().beginTx()) {
       NeoTaxon t10 = byID("10");
       NeoTaxon t11 = byID("11");
-      assertEquals(t10.name.getHomotypicNameKey(), t11.name.getHomotypicNameKey());
+      assertEquals(t10.name.getHomotypicNameId(), t11.name.getHomotypicNameId());
       List<NameRelation> rels = store.relations(t10.node);
       assertEquals(1, rels.size());
       assertEquals(NomRelType.BASED_ON, rels.get(0).getType());

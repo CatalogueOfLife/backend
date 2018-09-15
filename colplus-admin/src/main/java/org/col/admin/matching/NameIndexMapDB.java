@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.pool.KryoPool;
@@ -30,6 +30,7 @@ import org.col.db.mapper.NameMapper;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
+import org.hashids.Hashids;
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
 import org.mapdb.Serializer;
@@ -48,11 +49,13 @@ public class NameIndexMapDB implements NameIndex {
 
   private final DB db;
   private final KryoPool pool;
-  private int counter = 0;
+  private final AtomicLong counter = new AtomicLong(0);
   private final Map<String, NameList> names;
   private final AuthorComparator authComp;
   private final int datasetKey;
   private final SqlSessionFactory sqlFactory;
+  static final Hashids HASHIDS = new Hashids("fg5w6", 6,
+      "0123456789abcdefghijklmnopqrstuvwxyz.-_+$");
 
 
   static class NameList extends ArrayList<Name> {
@@ -98,19 +101,22 @@ public class NameIndexMapDB implements NameIndex {
 
     if (names.size() == 0) {
       loadFromPg();
+    } else {
+      // init counter which we use for id generation
+      counter.set(names.size());
     }
+    LOG.info("Started name index mapdb with {} names", counter.get());
   }
 
   private void loadFromPg(){
     LOG.info("Loading names from postgres into names index");
     try (SqlSession s = sqlFactory.openSession()) {
       NameMapper mapper = s.getMapper(NameMapper.class);
-      final AtomicInteger counter = new AtomicInteger(0);
       ResultHandler<Name> handler = new ResultHandler<Name>() {
         @Override
         public void handleResult(ResultContext<? extends Name> ctx) {
           add(ctx.getResultObject());
-          if (counter.incrementAndGet() % 1000 == 0) {
+          if (counter.get() % 1000 == 0) {
             LOG.debug("Added {} names", counter.get());
           }
         }
@@ -255,19 +261,23 @@ public class NameIndexMapDB implements NameIndex {
     return m;
   }
 
+  private String newId() {
+    return HASHIDS.encode(counter.incrementAndGet());
+  }
+
   private Name insert(Name orig) {
     Name name = new Name(orig);
-    // reset all keys
-    name.setKey(null);
-    name.setId(null);
+    // reset all other keys
     name.setVerbatimKey(null);
-    name.setHomotypicNameKey(null);
-    name.setIndexNameKey(null);
+    name.setHomotypicNameId(null);
+    name.setIndexNameId(null);
     name.setDatasetKey(datasetKey);
     name.setOrigin(Origin.NAME_MATCHING);
     name.setNomStatus(NomStatus.UNEVALUATED);
-    name.setPublishedInKey(null);
+    name.setPublishedInId(null);
     name.setPublishedInPage(null);
+    // add to index map
+    add(name);
     // insert into postgres dataset
     //TODO: consider to make this async and collect for batch inserts
     try (SqlSession s = sqlFactory.openSession()) {
@@ -276,18 +286,19 @@ public class NameIndexMapDB implements NameIndex {
       dao.create(name);
       s.commit();
     }
-    // add to index map
-    add(name);
     return name;
   }
 
   @Override
   public int size() {
-    return counter;
+    return (int) counter.get();
   }
 
   @Override
   public void add(Name name) {
+    // generate new id
+    name.setId(newId());
+
     String key = key(name);
     NameList group;
     if (names.containsKey(key)) {
@@ -297,7 +308,6 @@ public class NameIndexMapDB implements NameIndex {
     }
     group.add(name);
     names.put(key, group);
-    counter++;
   }
 
   private static String key(Name n) {

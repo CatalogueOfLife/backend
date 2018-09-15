@@ -28,7 +28,6 @@ public class ApiKryoFactoryTest {
   public void testReference() throws Exception {
     Reference r = new Reference();
     r.setId("1234");
-    r.setKey(123);
     r.setYear(1984);
     r.setDatasetKey(77);
     r.setCsl(TestEntityGenerator.createCsl());

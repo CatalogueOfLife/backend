@@ -22,7 +22,7 @@ public class VernacularNameMapperTest extends MapperTestBase<VernacularNameMappe
 		final int datasetKey = 2;
 
 		VernacularName in = newVernacularName("cat");
-		mapper().create(in, 1, datasetKey);
+		mapper().create(in, TAXON1.getId(), datasetKey);
 		assertNotNull(in.getKey());
 		commit();
 		VernacularName out = mapper().get(datasetKey, in.getKey());
@@ -32,13 +32,13 @@ public class VernacularNameMapperTest extends MapperTestBase<VernacularNameMappe
 	@Test
 	public void testListByTaxon() throws Exception {
 		VernacularName b = newVernacularName("b");
-		mapper().create(b, TAXON2.getKey(), DATASET11.getKey());
+		mapper().create(b, TAXON2.getId(), DATASET11.getKey());
 		VernacularName c = newVernacularName("c");
-		mapper().create(c, TAXON2.getKey(), DATASET11.getKey());
+		mapper().create(c, TAXON2.getId(), DATASET11.getKey());
 		VernacularName a = newVernacularName("a");
-		mapper().create(a, TAXON2.getKey(), DATASET11.getKey());
+		mapper().create(a, TAXON2.getId(), DATASET11.getKey());
 
-		List<VernacularName> list = mapper().listByTaxon(TAXON2.getDatasetKey(), TAXON2.getKey());
+		List<VernacularName> list = mapper().listByTaxon(TAXON2.getDatasetKey(), TAXON2.getId());
 		assertEquals(3, list.size());
 		assertTrue(a.equals(list.get(0)));
 		assertTrue(b.equals(list.get(1)));

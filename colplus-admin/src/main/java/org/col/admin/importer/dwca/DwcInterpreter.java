@@ -74,7 +74,7 @@ public class DwcInterpreter extends InterpreterBase {
       rel.setNote(rec.get(ColTerm.relationRemarks));
       if (rec.hasTerm(ColTerm.publishedIn)) {
         Reference ref = refFactory.fromDWC(rec.get(ColTerm.publishedInID), rec.get(ColTerm.publishedIn), null, rec);
-        rel.setRefKey(ref.getKey());
+        rel.setRefId(ref.getId());
       }
       return Optional.of(rel);
     }
@@ -175,7 +175,7 @@ public class DwcInterpreter extends InterpreterBase {
           if (v.hasTerm(ColTerm.speciesEstimateReference)) {
             Reference ref = refFactory.fromCitation(null, v.get(ColTerm.speciesEstimateReference), v);
             if (ref != null) {
-              t.taxon.setSpeciesEstimateReferenceKey(ref.getKey());
+              t.taxon.setSpeciesEstimateReferenceId(ref.getId());
             }
           }
         }
@@ -199,7 +199,7 @@ public class DwcInterpreter extends InterpreterBase {
       if (v.hasTerm(DwcTerm.namePublishedInID) || v.hasTerm(DwcTerm.namePublishedIn)) {
         Reference ref = refFactory.fromCitation(v.get(DwcTerm.namePublishedInID), v.get(DwcTerm.namePublishedIn), v);
         if (ref != null) {
-          n.setPublishedInKey(ref.getKey());
+          n.setPublishedInId(ref.getId());
           n.setPublishedInPage(ref.getPage());
         }
       }

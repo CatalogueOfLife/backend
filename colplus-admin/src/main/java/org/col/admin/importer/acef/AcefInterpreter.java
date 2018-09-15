@@ -86,7 +86,7 @@ public class AcefInterpreter extends InterpreterBase {
     }
 
     t.taxon.setSpeciesEstimate(null);
-    t.taxon.setSpeciesEstimateReferenceKey(null);
+    t.taxon.setSpeciesEstimateReferenceId(null);
 
     // status
     TaxonomicStatus status = parse(TaxonomicStatusParser.PARSER, v.get(AcefTerm.Sp2000NameStatus))
@@ -128,7 +128,7 @@ public class AcefInterpreter extends InterpreterBase {
     if (v.hasTerm(AcefTerm.ReferenceID)) {
       Reference r = refFactory.find(v.get(AcefTerm.ReferenceID), null);
       if (r != null) {
-        obj.addReferenceKey(r.getKey());
+        obj.addReferenceId(r.getId());
       } else {
         LOG.info("ReferenceID {} not existing but referred from {} {}",
             v.get(AcefTerm.ReferenceID),

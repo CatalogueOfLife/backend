@@ -57,7 +57,7 @@ public class Synonym implements NameUsage, VerbatimEntity {
    * @return true if the synonym is a homotypic synonym for at least one of the accepted names.
    */
   public boolean isHomotypic() {
-    return name.getHomotypicNameKey().equals(accepted.getName().getHomotypicNameKey());
+    return name.getHomotypicNameId().equals(accepted.getName().getHomotypicNameId());
   }
 
   public Taxon getAccepted() {

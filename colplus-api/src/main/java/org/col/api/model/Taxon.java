@@ -15,22 +15,11 @@ import org.col.api.vocab.TaxonomicStatus;
  */
 public class Taxon implements NameUsage, VerbatimEntity {
 
-	/**
-	 * Internal surrogate key of the taxon as provided by postgres. This key is
-	 * unique across all datasets but not exposed in the API.
-	 */
-	private Integer key;
-
 	private String id;
 
 	private Integer datasetKey;
 
 	private Integer verbatimKey;
-
-	/**
-   * Clearinghouse taxon concept identifier based on the synonymy of the taxon and its siblings
-   */
-  private Integer taxonID;
 
 	private Name name;
 
@@ -38,7 +27,7 @@ public class Taxon implements NameUsage, VerbatimEntity {
 
 	private Origin origin;
 
-	private Integer parentKey;
+	private String parentId;
 
 	private String accordingTo;
 
@@ -54,17 +43,9 @@ public class Taxon implements NameUsage, VerbatimEntity {
 
 	private Integer speciesEstimate;
 
-	private Integer speciesEstimateReferenceKey;
+	private String speciesEstimateReferenceId;
 
 	private String remarks;
-
-	public Integer getKey() {
-		return key;
-	}
-
-	public void setKey(Integer key) {
-		this.key = key;
-	}
 
 	public String getId() {
 		return id;
@@ -73,14 +54,6 @@ public class Taxon implements NameUsage, VerbatimEntity {
 	public void setId(String id) {
 		this.id = id;
 	}
-
-  public Integer getTaxonID() {
-    return taxonID;
-  }
-
-  public void setTaxonID(Integer taxonID) {
-    this.taxonID = taxonID;
-  }
 
   public Integer getDatasetKey() {
 		return datasetKey;
@@ -130,12 +103,12 @@ public class Taxon implements NameUsage, VerbatimEntity {
 		this.origin = origin;
 	}
 
-	public Integer getParentKey() {
-		return parentKey;
+	public String getParentId() {
+		return parentId;
 	}
 
-	public void setParentKey(Integer key) {
-		this.parentKey = key;
+	public void setParentId(String key) {
+		this.parentId = key;
 	}
 
   @Override
@@ -195,12 +168,12 @@ public class Taxon implements NameUsage, VerbatimEntity {
 		this.speciesEstimate = speciesEstimate;
 	}
 
-	public Integer getSpeciesEstimateReferenceKey() {
-		return speciesEstimateReferenceKey;
+	public String getSpeciesEstimateReferenceId() {
+		return speciesEstimateReferenceId;
 	}
 
-	public void setSpeciesEstimateReferenceKey(Integer speciesEstimateReferenceKey) {
-		this.speciesEstimateReferenceKey = speciesEstimateReferenceKey;
+	public void setSpeciesEstimateReferenceId(String speciesEstimateReferenceId) {
+		this.speciesEstimateReferenceId = speciesEstimateReferenceId;
 	}
 
 	public String getRemarks() {
@@ -216,14 +189,12 @@ public class Taxon implements NameUsage, VerbatimEntity {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     Taxon taxon = (Taxon) o;
-    return Objects.equals(key, taxon.key) &&
-        Objects.equals(id, taxon.id) &&
+    return Objects.equals(id, taxon.id) &&
         Objects.equals(datasetKey, taxon.datasetKey) &&
-        Objects.equals(taxonID, taxon.taxonID) &&
         Objects.equals(name, taxon.name) &&
         doubtful == taxon.doubtful &&
         origin == taxon.origin &&
-        Objects.equals(parentKey, taxon.parentKey) &&
+        Objects.equals(parentId, taxon.parentId) &&
         Objects.equals(accordingTo, taxon.accordingTo) &&
         Objects.equals(accordingToDate, taxon.accordingToDate) &&
         Objects.equals(fossil, taxon.fossil) &&
@@ -231,12 +202,12 @@ public class Taxon implements NameUsage, VerbatimEntity {
         Objects.equals(lifezones, taxon.lifezones) &&
         Objects.equals(datasetUrl, taxon.datasetUrl) &&
         Objects.equals(speciesEstimate, taxon.speciesEstimate) &&
-        Objects.equals(speciesEstimateReferenceKey, taxon.speciesEstimateReferenceKey) &&
+        Objects.equals(speciesEstimateReferenceId, taxon.speciesEstimateReferenceId) &&
         Objects.equals(remarks, taxon.remarks);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(key, id, datasetKey, taxonID, name, doubtful, origin, parentKey, accordingTo, accordingToDate, fossil, recent, lifezones, datasetUrl, speciesEstimate, speciesEstimateReferenceKey, remarks);
+    return Objects.hash(id, datasetKey, name, doubtful, origin, parentId, accordingTo, accordingToDate, fossil, recent, lifezones, datasetUrl, speciesEstimate, speciesEstimateReferenceId, remarks);
   }
 }

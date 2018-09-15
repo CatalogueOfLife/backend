@@ -15,7 +15,7 @@ import org.col.api.model.NameUsage;
  */
 public interface NameUsageMapper {
 
-	List<NameUsage> listByName(@Param("datasetKey") int datasetKey, @Param("nameKey") int nameKey);
+	List<NameUsage> listByName(@Param("datasetKey") int datasetKey, @Param("nameId") String nameId);
 
 	/**
 	 * Iterates over all name usages of a given dataset and processes them with the supplied handler.

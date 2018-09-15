@@ -5,11 +5,10 @@
 <mapper namespace="org.col.db.mapper.TaxonMapper">
 
     <sql id="taxonCols">
-        ${alias}.key AS ${prefix}key,
         ${alias}.id AS ${prefix}id,
         ${alias}.dataset_key AS ${prefix}dataset_key,
         ${alias}.verbatim_key AS ${prefix}verbatim_key,
-        ${alias}.parent_key AS ${prefix}parent_key,
+        ${alias}.parent_id AS ${prefix}parent_id,
         ${alias}.doubtful AS ${prefix}doubtful,
         ${alias}.origin AS ${prefix}origin,
         ${alias}.according_to AS ${prefix}according_to,
@@ -19,7 +18,7 @@
         ${alias}.lifezones AS ${prefix}lifezones,
         ${alias}.dataset_url AS ${prefix}dataset_url,
         ${alias}.species_estimate AS ${prefix}species_estimate,
-        ${alias}.species_estimate_reference_key AS ${prefix}species_estimate_reference_key,
+        ${alias}.species_estimate_reference_id AS ${prefix}species_estimate_reference_id,
         ${alias}.remarks AS ${prefix}remarks
     </sql>
 
@@ -38,8 +37,8 @@
         id,
         dataset_key,
         verbatim_key,
-        parent_key,
-        name_key,
+        parent_id,
+        name_id,
         doubtful,
         origin,
         according_to,
@@ -49,7 +48,7 @@
         lifezones,
         dataset_url,
         species_estimate,
-        species_estimate_reference_key,
+        species_estimate_reference_id,
         remarks
     </sql>
 
@@ -57,8 +56,8 @@
         #{id},
         #{datasetKey},
         #{verbatimKey},
-        #{parentKey},
-        #{name.key},
+        #{parentId},
+        #{name.id},
         #{doubtful},
         #{origin},
         #{accordingTo},
@@ -68,34 +67,27 @@
         #{lifezones, typeHandler=org.col.db.type.LifezoneSetTypeHandler},
         #{datasetUrl, typeHandler=org.col.db.type.UriTypeHandler},
         #{speciesEstimate},
-        #{speciesEstimateReferenceKey},
+        #{speciesEstimateReferenceId},
         #{remarks}
     </sql>
 
     <sql id="FROM">
-        taxon t JOIN name n ON (t.name_key=n.key AND t.dataset_key=n.dataset_key)
+        taxon t JOIN name n ON (t.name_id=n.id AND t.dataset_key=n.dataset_key)
     </sql>
 
     <!-- A mapping to Name, mostly auto mapped -->
     <resultMap id="taxonResultMap" type="Taxon" autoMapping="true">
-        <id property="key" column="key" />
+        <id property="id" column="id" />
         <result property="lifezones" column="lifezones" typeHandler="org.col.db.type.LifezoneSetTypeHandler" />
         <association property="name" javaType="Name" resultMap="org.col.db.mapper.NameMapper.nameResultMap" columnPrefix="n_" />
     </resultMap>
-
-
-    <select id="lookupKey" resultType="integer">
-        SELECT key
-        FROM taxon
-        WHERE id = #{id} AND dataset_key = #{datasetKey}
-    </select>
 
     <select id="count" resultType="integer">
         <choose>
             <when test="root">
                 SELECT count(*)
                 FROM taxon
-                WHERE dataset_key = #{datasetKey} AND parent_key IS NULL
+                WHERE dataset_key = #{datasetKey} AND parent_id IS NULL
             </when>
             <otherwise>
                 <include refid="org.col.db.mapper.Common.countFromFinishedDatasetImport">
@@ -110,9 +102,9 @@
         FROM <include refid="FROM" />
         WHERE t.dataset_key = #{datasetKey}
         <if test="root">
-            AND t.parent_key IS NULL
+            AND t.parent_id IS NULL
         </if>
-        ORDER BY key
+        ORDER BY id
         <include refid="org.col.db.mapper.Common.limit" />
     </select>
 
@@ -120,28 +112,28 @@
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
         WHERE t.dataset_key = #{datasetKey}
-            AND t.key = #{key}
+            AND t.id = #{id}
     </select>
 
     <select id="getByName" resultMap="taxonResultMap">
-        SELECT key, <include refid="COLS" />
+        SELECT id, <include refid="COLS" />
         FROM taxon
         WHERE dataset_key = #{datasetKey}
-            AND name_key = #{name.key}
+            AND name_id = #{name.id}
     </select>
 
     <select id="countChildren"  resultType="integer">
         SELECT count(*)
         FROM taxon
         WHERE dataset_key = #{datasetKey}
-            AND parent_key = #{key}
+            AND parent_id = #{id}
     </select>
 
     <select id="children" resultMap="taxonResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
         WHERE t.dataset_key = #{datasetKey}
-            AND t.parent_key = #{key}
+            AND t.parent_id = #{id}
         ORDER BY n.rank, n.scientific_name
         <include refid="org.col.db.mapper.Common.limit" />
     </select>
@@ -151,19 +143,19 @@
             SELECT <include refid="SELECT" />
             FROM <include refid="FROM" />
             WHERE t.dataset_key = #{datasetKey}
-                AND t.key = #{key}
+                AND t.id = #{id}
         UNION
             SELECT <include refid="SELECT" />
             FROM <include refid="FROM" />, x
             WHERE t.dataset_key = #{datasetKey}
-                AND t.key = x.parent_key
+                AND t.id = x.parent_id
         )
         SELECT *
         FROM x
-        WHERE x.key != #{key}
+        WHERE x.id != #{id}
      </select>
 
-    <insert id="create" parameterType="Taxon" useGeneratedKeys="true" keyProperty="key">
+    <insert id="create" parameterType="Taxon" useGeneratedKeys="false" keyProperty="id">
         INSERT INTO taxon_${datasetKey} (<include refid="COLS" />)
         VALUES (<include refid="PROPS" />)
     </insert>

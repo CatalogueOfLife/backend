@@ -9,48 +9,45 @@ INSERT INTO verbatim(key, dataset_key, issues, type) VALUES (4, 11, '{}', 'acef:
 INSERT INTO verbatim(key, dataset_key, issues, type) VALUES (5, 11, null, 'acef:AcceptedSpecies');
 ALTER SEQUENCE verbatim_key_seq RESTART WITH 100;
 
-INSERT INTO reference(key, id, dataset_key) VALUES (1, 'ref-1', 11);
-INSERT INTO reference(key, id, dataset_key) VALUES (2, 'ref-1b', 11);
-INSERT INTO reference(key, id, dataset_key) VALUES (3, 'ref-2', 12);
-ALTER SEQUENCE reference_key_seq RESTART WITH 1000;
+INSERT INTO reference(id, dataset_key) VALUES ('ref-1', 11);
+INSERT INTO reference(id, dataset_key) VALUES ('ref-1b', 11);
+INSERT INTO reference(id, dataset_key) VALUES ('ref-2', 12);
 
-INSERT INTO name (key, dataset_key, id, homotypic_name_key, scientific_name, genus, specific_epithet, rank, origin, type, published_in_key, published_in_page) VALUES (1, 11, 'name-1', 1, 'Malus sylvestris', 'Malus', 'sylvestris', 'species'::rank, 0, 0, 1, '712');
-INSERT INTO name (key, dataset_key, id, homotypic_name_key, scientific_name, genus, specific_epithet, rank, origin, type) VALUES (2, 11, 'name-2', 2, 'Larus fuscus', 'Larus', 'fuscus', 'species'::rank, 0, 0);
-INSERT INTO name (key, dataset_key, id, homotypic_name_key, scientific_name, genus, specific_epithet, rank, origin, type) VALUES (3, 11, 'name-3', 2, 'Larus fusca', 'Larus', 'fusca', 'species'::rank, 0, 0);
-INSERT INTO name (key, dataset_key, id, homotypic_name_key, scientific_name, genus, specific_epithet, rank, origin, type) VALUES (4, 11, 'name-4', 4, 'Larus erfundus', 'Larus', 'erfundus', 'species'::rank, 0, 0);
-ALTER SEQUENCE name_key_seq RESTART WITH 1000;
+INSERT INTO name (dataset_key, id, homotypic_name_id, scientific_name, genus, specific_epithet, rank, origin, type, published_in_id, published_in_page) VALUES (11, 'name-1', 'name-1', 'Malus sylvestris', 'Malus', 'sylvestris', 'species'::rank, 0, 0, 'ref-1', '712');
+INSERT INTO name (dataset_key, id, homotypic_name_id, scientific_name, genus, specific_epithet, rank, origin, type) VALUES (11, 'name-2', 'name-2', 'Larus fuscus', 'Larus', 'fuscus', 'species'::rank, 0, 0);
+INSERT INTO name (dataset_key, id, homotypic_name_id, scientific_name, genus, specific_epithet, rank, origin, type) VALUES (11, 'name-3', 'name-2', 'Larus fusca', 'Larus', 'fusca', 'species'::rank, 0, 0);
+INSERT INTO name (dataset_key, id, homotypic_name_id, scientific_name, genus, specific_epithet, rank, origin, type) VALUES (11, 'name-4', 'name-4', 'Larus erfundus', 'Larus', 'erfundus', 'species'::rank, 0, 0);
 
-INSERT INTO taxon (key, id, dataset_key, name_key, origin) VALUES (1, 'root-1', 11, 1, 0);
-INSERT INTO taxon (key, id, dataset_key, name_key, origin) VALUES (2, 'root-2', 11, 2, 0);
-ALTER SEQUENCE taxon_key_seq RESTART WITH 1000;
+INSERT INTO taxon (id, dataset_key, name_id, origin) VALUES ('root-1', 11, 'name-1', 0);
+INSERT INTO taxon (id, dataset_key, name_id, origin) VALUES ('root-2', 11, 'name-2', 0);
 
-INSERT INTO synonym (taxon_key, name_key, dataset_key, status) VALUES (2, 3, 11, 2);
-INSERT INTO synonym (taxon_key, name_key, dataset_key, status) VALUES (2, 4, 11, 2);
+INSERT INTO synonym (taxon_id, name_id, dataset_key, status) VALUES ('root-2', 'name-3', 11, 2);
+INSERT INTO synonym (taxon_id, name_id, dataset_key, status) VALUES ('root-2', 'name-4', 11, 2);
 
-INSERT INTO taxon_reference(dataset_key, taxon_key, reference_key) VALUES (11, 1, 1);
-INSERT INTO taxon_reference(dataset_key, taxon_key, reference_key) VALUES (11, 2, 1);
-INSERT INTO taxon_reference(dataset_key, taxon_key, reference_key) VALUES (11, 2, 2);
+INSERT INTO taxon_reference(dataset_key, taxon_id, reference_id) VALUES (11, 'root-1', 'ref-1');
+INSERT INTO taxon_reference(dataset_key, taxon_id, reference_id) VALUES (11, 'root-2', 'ref-1');
+INSERT INTO taxon_reference(dataset_key, taxon_id, reference_id) VALUES (11, 'root-2', 'ref-1b');
 
-INSERT INTO name_rel (key, dataset_key, type, name_key, related_name_key) VALUES (1, 11, 0, 2, 3);
+INSERT INTO name_rel (key, dataset_key, type, name_id, related_name_id) VALUES (1, 11, 0, 'name-2', 'name-3');
 ALTER SEQUENCE name_rel_key_seq RESTART WITH 1000;
 
-INSERT INTO distribution(key, dataset_key, taxon_key, area, gazetteer) VALUES (1, 11, 1, 'Berlin', 6);
-INSERT INTO distribution(key, dataset_key, taxon_key, area, gazetteer) VALUES (2, 11, 1, 'Leiden', 6);
-INSERT INTO distribution(key, dataset_key, taxon_key, area, gazetteer) VALUES (3, 11, 2, 'New York', 6);
+INSERT INTO distribution(key, dataset_key, taxon_id, area, gazetteer) VALUES (1, 11, 'root-1', 'Berlin', 6);
+INSERT INTO distribution(key, dataset_key, taxon_id, area, gazetteer) VALUES (2, 11, 'root-1', 'Leiden', 6);
+INSERT INTO distribution(key, dataset_key, taxon_id, area, gazetteer) VALUES (3, 11, 'root-2', 'New York', 6);
 ALTER SEQUENCE distribution_key_seq RESTART WITH 1000;
 
 
-INSERT INTO distribution_reference(dataset_key,distribution_key,reference_key) VALUES (11, 1, 1);
-INSERT INTO distribution_reference(dataset_key,distribution_key,reference_key) VALUES (11, 1, 2);
-INSERT INTO distribution_reference(dataset_key,distribution_key,reference_key) VALUES (11, 2, 2);
+INSERT INTO distribution_reference(dataset_key,distribution_key,reference_id) VALUES (11, 1, 'ref-1');
+INSERT INTO distribution_reference(dataset_key,distribution_key,reference_id) VALUES (11, 1, 'ref-1b');
+INSERT INTO distribution_reference(dataset_key,distribution_key,reference_id) VALUES (11, 2, 'ref-1b');
 
-INSERT INTO vernacular_name(key,dataset_key,taxon_key,name,language) VALUES (1, 11, 1, 'Apple', 'en');
-INSERT INTO vernacular_name(key,dataset_key,taxon_key,name,language) VALUES (2, 11, 1, 'Apfel', 'de');
-INSERT INTO vernacular_name(key,dataset_key,taxon_key,name,language) VALUES (3, 11, 1, 'Meeuw', 'nl');
+INSERT INTO vernacular_name(key,dataset_key,taxon_id,name,language) VALUES (1, 11, 'root-1', 'Apple', 'en');
+INSERT INTO vernacular_name(key,dataset_key,taxon_id,name,language) VALUES (2, 11, 'root-1', 'Apfel', 'de');
+INSERT INTO vernacular_name(key,dataset_key,taxon_id,name,language) VALUES (3, 11, 'root-1', 'Meeuw', 'nl');
 ALTER SEQUENCE vernacular_name_key_seq RESTART WITH 1000;
 
-INSERT INTO vernacular_name_reference(dataset_key,vernacular_name_key,reference_key) VALUES (11, 1, 1);
-INSERT INTO vernacular_name_reference(dataset_key,vernacular_name_key,reference_key) VALUES (11, 2, 1);
+INSERT INTO vernacular_name_reference(dataset_key,vernacular_name_key,reference_id) VALUES (11, 1, 'ref-1');
+INSERT INTO vernacular_name_reference(dataset_key,vernacular_name_key,reference_id) VALUES (11, 2, 'ref-1');
 
 
 

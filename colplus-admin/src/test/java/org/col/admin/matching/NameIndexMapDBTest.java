@@ -33,7 +33,9 @@ public class NameIndexMapDBTest {
 
   @After
   public void stop() throws Exception {
-    ni.close();
+    if (ni != null) {
+      ni.close();
+    }
   }
 
   void setupApple() throws Exception {
@@ -53,6 +55,8 @@ public class NameIndexMapDBTest {
         name(6,  "Oenanthe aquatica Poir.", Rank.SPECIES, NomCode.BOTANICAL),
         name(7,  "Oenanthe aquatica Senser, 1957", Rank.SPECIES, NomCode.BOTANICAL),
 
+        name(8,  "Natting tosee", Rank.SPECIES, NomCode.BOTANICAL),
+
         name(9,  "Abies alba", Rank.SPECIES, NomCode.BOTANICAL),
         name(10, "Abies alba Mumpf.", Rank.SPECIES, NomCode.BOTANICAL),
         name(11, "Abies alba 1778", Rank.SPECIES, NomCode.BOTANICAL),
@@ -62,10 +66,15 @@ public class NameIndexMapDBTest {
         name(14, "Carex cayouettei", Rank.SPECIES, NomCode.BOTANICAL),
         name(15, "Carex comosa × Carex lupulina", Rank.SPECIES, NomCode.BOTANICAL),
 
+        name(16,  "Natting tosee2", Rank.SPECIES, NomCode.BOTANICAL),
+        name(17,  "Natting tosee3", Rank.SPECIES, NomCode.BOTANICAL),
+        name(18,  "Natting tosee4", Rank.SPECIES, NomCode.BOTANICAL),
+        name(19,  "Natting tosee5", Rank.SPECIES, NomCode.BOTANICAL),
+
         name(20,  "Rodentia", Rank.GENUS, NomCode.ZOOLOGICAL),
         name(21,  "Rodentia Bowdich, 1821", Rank.ORDER, NomCode.ZOOLOGICAL),
 
-        name(100, "Aeropyrum coil-shaped virus", Rank.UNRANKED, NomCode.VIRUS)
+        name(22, "Aeropyrum coil-shaped virus", Rank.UNRANKED, NomCode.VIRUS)
     );
     ni.addAll(names);
   }
@@ -82,6 +91,18 @@ public class NameIndexMapDBTest {
   }
 
   @Test
+  public void testHasids() throws Exception {
+    assertEquals("l5w5nl",  NameIndexMapDB.HASHIDS.encode(1000));
+    assertEquals("l5r34.",  NameIndexMapDB.HASHIDS.encode(10000));
+    assertEquals("l54--r",  NameIndexMapDB.HASHIDS.encode(100000));
+    assertEquals("5wb-9m",  NameIndexMapDB.HASHIDS.encode(1000000));
+    assertEquals("575-qx",  NameIndexMapDB.HASHIDS.encode(10000000));
+    assertEquals("5w4-q$n", NameIndexMapDB.HASHIDS.encode(20000000));
+    assertEquals("5qaej9m",  NameIndexMapDB.HASHIDS.encode(50000000));
+    assertEquals("9q5+9_ry", NameIndexMapDB.HASHIDS.encode(Integer.MAX_VALUE));
+  }
+
+  @Test
   public void insertNewNames() throws Exception {
     setupApple();
     assertInsert("Larus fundatus", Rank.SPECIES, null);
@@ -94,7 +115,7 @@ public class NameIndexMapDBTest {
 
     assertMatch(3, "Œnanthe 1771", Rank.GENUS, null);
 
-    assertEquals(17, ni.size());
+    assertEquals(22, ni.size());
     assertMatch(1, "Animalia", Rank.KINGDOM, NomCode.ZOOLOGICAL);
 
     assertMatch(21, "Rodentia", Rank.ORDER, NomCode.ZOOLOGICAL);
@@ -138,8 +159,8 @@ public class NameIndexMapDBTest {
     // try unparsable names
     assertMatch(14, "Carex cayouettei", Rank.SPECIES, NomCode.BOTANICAL);
     assertMatch(15, "Carex comosa × Carex lupulina",Rank.SPECIES, NomCode.BOTANICAL);
-    assertMatch(100, "Aeropyrum coil-shaped virus", Rank.UNRANKED, NomCode.VIRUS);
-    assertMatch(100, "Aeropyrum coil-shaped virus", Rank.SPECIES, NomCode.VIRUS);
+    assertMatch(22, "Aeropyrum coil-shaped virus", Rank.UNRANKED, NomCode.VIRUS);
+    assertMatch(22, "Aeropyrum coil-shaped virus", Rank.SPECIES, NomCode.VIRUS);
     assertNoMatch("Aeropyrum coil-shaped virus", Rank.UNRANKED, NomCode.BOTANICAL);
 
   }
@@ -147,7 +168,9 @@ public class NameIndexMapDBTest {
 
   static Name name(Integer key, String name, Rank rank, NomCode code) {
     Name n = NameParser.PARSER.parse(name, rank, IssueContainer.VOID).get().getName();
-    n.setKey(key);
+    if (key != null) {
+      n.setId(NameIndexMapDB.HASHIDS.encode(key));
+    }
     n.setRank(rank);
     n.setCode(code);
     return n;
@@ -181,12 +204,12 @@ public class NameIndexMapDBTest {
   }
   
   private NameMatch assertMatch(int key, String name, Rank rank, NomCode code) {
+    final String id = NameIndexMapDB.HASHIDS.encode(key);
     NameMatch m = match(name, rank, code);
-    if (!m.hasMatch() || key != m.getName().getKey()) {
+    if (!m.hasMatch() || !id.equals(m.getName().getId())) {
       System.out.println(m);
     }
-    assertEquals("Expected "+key+" but got "+m.getType(),
-        key, (int) m.getName().getKey()
+    assertEquals("Expected "+id+" but got "+m.getType(), id, m.getName().getId()
     );
     return m;
   }
