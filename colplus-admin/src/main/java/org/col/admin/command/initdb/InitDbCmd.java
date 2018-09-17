@@ -85,7 +85,7 @@ public class InitDbCmd extends ConfiguredCommand<AdminServerConfig> {
       // add GBIF Backbone datasets
       exec(PgConfig.GBIF_DATASETS_FILE, runner, con, Resources.getResourceAsReader(PgConfig.GBIF_DATASETS_FILE));
     }
-    
+
     // add col & names index partitions
     setupStandardPartitions(cfg.db);
   }
