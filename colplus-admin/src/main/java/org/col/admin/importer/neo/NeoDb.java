@@ -15,6 +15,7 @@ import com.esotericsoftware.kryo.pool.KryoPool;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.UnmodifiableIterator;
 import org.apache.commons.io.FileUtils;
+import org.col.admin.importer.IdGenerator;
 import org.col.admin.importer.NormalizationFailedException;
 import org.col.admin.importer.neo.NodeBatchProcessor.BatchConsumer;
 import org.col.admin.importer.neo.model.*;
@@ -73,7 +74,6 @@ public class NeoDb implements ReferenceStore {
   private final Map<String, String> refIndexCitation;
   private final Map<Integer, VerbatimRecord> verbatim;
   private final AtomicInteger verbatimSequence = new AtomicInteger(0);
-  private final AtomicInteger referenceSequence = new AtomicInteger(0);
   private final File neoDir;
   private final KryoPool pool;
   private BatchInserter inserter;
@@ -84,6 +84,7 @@ public class NeoDb implements ReferenceStore {
   private final LRUCache<String, List<Node>> monomialCache = new LRUCache<String, List<Node>>(10000);
   private final LRUCache<String, Node> idCache = new LRUCache<String, Node>(10000);
 
+  private IdGenerator idGen = IdGenerator.prefixed("neodb.");
   private GraphDatabaseService neo;
 
   /**
@@ -189,6 +190,10 @@ public class NeoDb implements ReferenceStore {
 
   public GraphDatabaseService getNeo() {
     return neo;
+  }
+
+  public void setIdGenerator(IdGenerator idGen) {
+    this.idGen = Preconditions.checkNotNull(idGen);
   }
 
   public NeoTaxon get(Node n) {
@@ -453,7 +458,18 @@ public class NeoDb implements ReferenceStore {
     }
   }
 
+  /**
+   * Persists a NeoTaxon instance, creating missing name & taxon ids de novo
+   */
   public NeoTaxon put(NeoTaxon t) {
+    // create missing ids, sharing the same id between name & taxon
+    if (t.taxon.getId() == null) {
+      t.taxon.setId(idGen.next());
+    }
+    if (t.name.getId() == null){
+      t.name.setId(t.taxon.getId());
+    }
+
     // update neo4j properties either via batch mode or classic
     long nodeId;
     Map<String, Object> props = NeoDbUtils.neo4jProps(t);
@@ -524,10 +540,14 @@ public class NeoDb implements ReferenceStore {
     }
   }
 
+  /**
+   * Persists a Reference instance, creating a missing id de novo
+   */
   @Override
   public Reference put(Reference r) {
+    // create missing id
     if (r.getId() == null) {
-      r.setId(".ref." + referenceSequence.incrementAndGet());
+      r.setId(idGen.next());
     }
     references.put(r.getId(), r);
     // update lookup index for title
@@ -584,6 +604,10 @@ public class NeoDb implements ReferenceStore {
   @Override
   public Iterable<Reference> refList() {
     return references.values();
+  }
+
+  public Set<String> refIds() {
+    return references.keySet();
   }
 
   public Iterable<VerbatimRecord> verbatimList() {
@@ -898,12 +922,16 @@ public class NeoDb implements ReferenceStore {
    * Creates a new taxon in neo and the name usage kvp using the source usages as a template for the classification properties.
    * Only copies the classification above genus and ignores genus and below!
    * A verbatim usage is created with just the parentNameUsage(ID) values so they can get resolved into proper neo relations later.
+   * Name and taxon ids are generated de novo.
    *
    * @param name the new name to be used
    * @param source the taxon source to copy from
    * @param excludeRankAndBelow the rank (and all ranks below) to exclude from the source classification
    */
-  public RankedName createDoubtfulFromSource(Origin origin, Name name, @Nullable NeoTaxon source, Rank excludeRankAndBelow) {
+  public RankedName createDoubtfulFromSource(Origin origin,
+                                             Name name,
+                                             @Nullable NeoTaxon source,
+                                             Rank excludeRankAndBelow) {
     NeoTaxon t = NeoTaxon.createTaxon(origin, name, true);
     // copy verbatim classification from source
     if (source != null) {
@@ -922,6 +950,7 @@ public class NeoDb implements ReferenceStore {
         t.taxon.setVerbatimKey(copyTerms.getKey());
       }
     }
+
     // store, which creates a new neo node
     put(t);
 

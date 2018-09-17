@@ -131,8 +131,7 @@ public class PgImportIT {
 
       Reference pubIn = rdao.get(dataset.getKey(), trametes_modesta.getPublishedInId(), trametes_modesta.getPublishedInPage());
       assertEquals("Norw. Jl Bot. 19: 236 (1972)", pubIn.getCitation());
-      assertNotNull(pubIn.getId());
-      assertNull(pubIn.getId());
+      assertEquals("neodb.943L", pubIn.getId());
     }
   }
 
