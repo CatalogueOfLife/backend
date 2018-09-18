@@ -7,14 +7,15 @@ import javax.annotation.Nullable;
 import org.apache.ibatis.annotations.Param;
 import org.col.api.model.Dataset;
 import org.col.api.model.Page;
+import org.col.api.search.DatasetSearchRequest;
 
 public interface DatasetMapper {
 
-	int count(@Nullable @Param("q") String q);
+	int count(@Param("req") DatasetSearchRequest request);
+
+	List<Dataset> search(@Param("req") DatasetSearchRequest request, @Param("page") Page page);
 
 	List<Dataset> list(@Param("page") Page page);
-
-	List<Dataset> search(@Nullable @Param("q") String q, @Param("page") Page page);
 
 	/**
 	 * list datasets which have not been imported before, ordered by date created.
@@ -28,6 +29,11 @@ public interface DatasetMapper {
    * @param limit maximum of datasets to return
    */
   List<Dataset> listToBeImported(int limit);
+
+	/**
+	 * @return dataset key if dataset exists and is not deleted, null otherwise
+	 */
+	Integer exists(@Param("key") int key);
 
   Dataset get(@Param("key") int key);
 

@@ -79,7 +79,7 @@
 
     <insert id="linkToTaxon">
         INSERT INTO taxon_reference_${datasetKey} (dataset_key, taxon_id, reference_id)
-        VALUES ( #{datasetKey}, #{taxonId}, #{refId} )
+        VALUES ( #{datasetKey}, #{taxonId}, #{publishedIn} )
     </insert>
 
     <select id="listByTaxon" resultType="string">

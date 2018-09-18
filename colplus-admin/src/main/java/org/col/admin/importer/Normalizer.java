@@ -255,7 +255,7 @@ public class Normalizer implements Callable<Boolean> {
     Map<String, Set<Integer>> nameIds = Maps.newHashMap();
 
     store.all().forEach(t -> {
-      NameMatch m = index.match(t.name, dataset.isTrusted(), false);
+      NameMatch m = index.match(t.name, dataset.getCatalogue()!=null, false);
       if (m.hasMatch()) {
         t.name.setIndexNameId(m.getName().getId());
         store.update(t);

@@ -9,6 +9,7 @@ import org.apache.ibatis.session.SqlSession;
 import org.col.api.BeanPrinter;
 import org.col.api.TestEntityGenerator;
 import org.col.api.model.*;
+import org.col.api.search.NameSearchRequest;
 import org.col.api.vocab.*;
 import org.col.db.dao.DaoTestBase;
 import org.col.db.dao.NameDao;

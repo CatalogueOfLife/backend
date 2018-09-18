@@ -150,7 +150,7 @@
     <select id="listByReference" resultMap="nameResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
-        WHERE n.published_in_id = #{refId}
+        WHERE n.published_in_id = #{publishedIn}
         ORDER BY id
     </select>
 

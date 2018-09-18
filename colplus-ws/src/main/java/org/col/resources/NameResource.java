@@ -9,10 +9,11 @@ import javax.ws.rs.core.MediaType;
 import com.codahale.metrics.annotation.Timed;
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.model.*;
+import org.col.api.search.NameSearchRequest;
 import org.col.db.dao.NameDao;
 import org.col.db.mapper.NameMapper;
 import org.col.db.mapper.NameRelationMapper;
-import org.col.dw.jersey.exception.NotFoundException;
+import org.col.api.exception.NotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,8 +59,8 @@ public class NameResource {
   }
 
   @GET
-  @Path("{id}/acts")
-  public List<NameRelation> getActs(@PathParam("datasetKey") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
+  @Path("{id}/relations")
+  public List<NameRelation> getRelations(@PathParam("datasetKey") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
     NameRelationMapper mapper = session.getMapper(NameRelationMapper.class);
     return mapper.list(datasetKey, id);
   }

@@ -16,14 +16,14 @@
       authors_and_editors,
       license,
       version,
-      release_date,
+      released,
       homepage,
       data_format,
       data_access,
       import_frequency,
       code,
       notes,
-      trusted,
+      catalogue,
       created,
       modified,
       deleted
@@ -40,14 +40,14 @@
       authors_and_editors,
       license,
       version,
-      release_date,
+      released,
       homepage,
       data_format,
       data_access,
       import_frequency,
       code,
       notes,
-      trusted
+      catalogue
     </sql>
 
     <sql id="PROPS">
@@ -61,14 +61,14 @@
       #{authorsAndEditors, typeHandler=org.col.db.type.StringArrayTypeHandler},
       #{license},
       #{version},
-      #{releaseDate},
+      #{released},
       #{homepage},
       #{dataFormat},
       #{dataAccess},
       #{importFrequency, typeHandler=org.col.db.type.FrequencyTypeHandler},
       #{code},
       #{notes},
-      #{trusted}
+      #{catalogue}
     </sql>
 
     <sql id="FROM">
@@ -77,8 +77,22 @@
 
     <sql id="SEARCH_WHERE">
         deleted IS NULL
-        <if test="q != null">
-            AND doc @@ plainto_tsquery('simple2', #{q})
+        <if test="req != null">
+            <if test="req.q != null">
+                AND doc @@ plainto_tsquery('simple2', #{req.q})
+            </if>
+            <if test="req.code != null">
+                AND code=#{req.code})
+            </if>
+            <if test="req.catalogue != null">
+                AND catalogue &lt;= #{req.catalogue})
+            </if>
+            <if test="req.format != null">
+                AND data_format=#{req.format})
+            </if>
+            <if test="req.type != null">
+                AND type=#{req.type})
+            </if>
         </if>
     </sql>
 
@@ -93,6 +107,28 @@
         SELECT COUNT(*)
         FROM <include refid="FROM" />
         WHERE <include refid="SEARCH_WHERE" />
+    </select>
+
+    <select id="search" resultMap="datasetResultMap">
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
+        WHERE <include refid="SEARCH_WHERE" />
+        ORDER BY
+        <choose>
+            <when test="req.sortBy == null">
+                key
+            </when>
+            <when test="req.sortBy.name() == 'RELEVANCE'">
+                ts_rank_cd(doc, plainto_tsquery('simple2', #{req.q})) DESC
+            </when>
+            <when test="req.sortBy.name() == 'SIZE'">
+                key
+            </when>
+            <otherwise>
+                ${req.sortBy.name().toLowerCase()}
+            </otherwise>
+        </choose>
+        <include refid="org.col.db.mapper.Common.limit"/>
     </select>
 
     <select id="list" resultMap="datasetResultMap">
@@ -130,19 +166,10 @@
         LIMIT #{limit}
     </select>
 
-    <select id="search" resultMap="datasetResultMap">
-        SELECT <include refid="SELECT" />
-        FROM <include refid="FROM" />
-        WHERE <include refid="SEARCH_WHERE" />
-        <choose>
-            <when test="q == null">
-                ORDER BY key
-            </when>
-            <otherwise>
-                ORDER BY ts_rank_cd(doc, plainto_tsquery('simple2', #{q})) DESC
-            </otherwise>
-        </choose>
-        <include refid="org.col.db.mapper.Common.limit"/>
+    <select id="exists" resultType="integer">
+        SELECT key
+        FROM dataset
+        WHERE key = #{key} AND deleted IS NULL
     </select>
 
     <select id="get" resultMap="datasetResultMap">

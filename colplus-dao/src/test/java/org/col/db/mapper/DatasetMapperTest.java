@@ -10,10 +10,8 @@ import org.col.api.RandomUtils;
 import org.col.api.TestEntityGenerator;
 import org.col.api.model.Dataset;
 import org.col.api.model.Page;
-import org.col.api.vocab.DataFormat;
-import org.col.api.vocab.Datasets;
-import org.col.api.vocab.Frequency;
-import org.col.api.vocab.License;
+import org.col.api.search.DatasetSearchRequest;
+import org.col.api.vocab.*;
 import org.gbif.nameparser.api.NomCode;
 import org.javers.core.Javers;
 import org.javers.core.JaversBuilder;
@@ -34,6 +32,7 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
 
 	private static Dataset create() throws Exception {
 		Dataset d = new Dataset();
+		d.setType(DatasetType.TAXONOMIC);
 		d.setGbifKey(UUID.randomUUID());
 		d.setTitle(RandomUtils.randomString(80));
 		d.setDescription(RandomUtils.randomString(500));
@@ -45,7 +44,7 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
 		d.setContactPerson("Hans Peter");
 		d.setDataAccess(URI.create("https://api.gbif.org/v1/dataset/" + d.getGbifKey()));
 		d.setDataFormat(DataFormat.ACEF);
-		d.setReleaseDate(LocalDate.now());
+		d.setReleased(LocalDate.now());
 		d.setVersion("v123");
 		d.setHomepage(URI.create("https://www.gbif.org/dataset/" + d.getGbifKey()));
 		d.setNotes("my notes");
@@ -176,7 +175,7 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
 		createSearchableDataset("WORMS", "WORMS", "The Worms dataset");
 		createSearchableDataset("FOO", "BAR", null);
 		commit();
-		int count = mapper().count("worms");
+		int count = mapper().count(DatasetSearchRequest.byQuery("worms"));
 		assertEquals("01", 3, count);
 	}
 
@@ -187,7 +186,7 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
 		createSearchableDataset("WORMS", "WORMS", "The Worms dataset");
 		createSearchableDataset("FOO", "BAR", null);
 		commit();
-		List<Dataset> datasets = mapper().search("worms", new Page());
+		List<Dataset> datasets = mapper().search(DatasetSearchRequest.byQuery("worms"), new Page());
 		assertEquals("01", 3, datasets.size());
 		// check order by rank:
 		assertEquals("02", "WORMS", datasets.get(0).getTitle());

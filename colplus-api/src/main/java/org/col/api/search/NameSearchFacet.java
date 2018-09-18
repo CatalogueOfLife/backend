@@ -1,4 +1,4 @@
-package org.col.api.model;
+package org.col.api.search;
 
 public enum NameSearchFacet {
   DATASET_KEY,

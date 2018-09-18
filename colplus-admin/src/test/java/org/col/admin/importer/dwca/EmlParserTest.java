@@ -29,7 +29,7 @@ public class EmlParserTest {
     //assertEquals("Species named after famous people", d.getLicense());
     assertEquals("Markus Döring (GBIF)", d.getContactPerson());
     assertEquals("[Markus Döring (GBIF)]", d.getAuthorsAndEditors().toString());
-    assertEquals("2017-01-19", d.getReleaseDate().toString());
+    assertEquals("2017-01-19", d.getReleased().toString());
   }
 
   @Test
@@ -43,7 +43,7 @@ public class EmlParserTest {
     //assertEquals("Species named after famous people", d.getLicense());
     assertEquals("Markus Döring (GBIF)", d.getContactPerson());
     assertEquals("[Markus Döring (GBIF)]", d.getAuthorsAndEditors().toString());
-    assertEquals("2017-01-19", d.getReleaseDate().toString());
+    assertEquals("2017-01-19", d.getReleased().toString());
   }
 
   @Test
@@ -57,7 +57,7 @@ public class EmlParserTest {
     //assertEquals("Species named after famous people", d.getLicense());
     assertEquals("Markus Döring (GBIF)", d.getContactPerson());
     assertEquals("[Markus Döring (GBIF)]", d.getAuthorsAndEditors().toString());
-    assertEquals("2017-01-19", d.getReleaseDate().toString());
+    assertEquals("2017-01-19", d.getReleased().toString());
   }
 
   @Test
@@ -71,7 +71,7 @@ public class EmlParserTest {
     //assertEquals("Species named after famous people", d.getLicense());
     assertEquals("Markus Döring (GBIF)", d.getContactPerson());
     assertEquals("[Markus Döring (GBIF)]", d.getAuthorsAndEditors().toString());
-    assertEquals("2017-01-19", d.getReleaseDate().toString());
+    assertEquals("2017-01-19", d.getReleased().toString());
   }
 
 }

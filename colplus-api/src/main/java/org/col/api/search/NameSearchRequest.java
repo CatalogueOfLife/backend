@@ -1,4 +1,4 @@
-package org.col.api.model;
+package org.col.api.search;
 
 import java.util.HashSet;
 import java.util.Objects;
@@ -20,6 +20,7 @@ public class NameSearchRequest {
     KEY
 	}
 
+	@QueryParam("facet")
 	private Set<NameSearchFacet> facets = new HashSet<>();
 
 	@QueryParam("q")
@@ -45,6 +46,9 @@ public class NameSearchRequest {
 
 	@QueryParam("type")
 	private NameType type;
+
+	@QueryParam("publishedIn")
+	private String publishedIn;
 
 	@QueryParam("hasField")
 	private NameField hasField;
@@ -104,7 +108,15 @@ public class NameSearchRequest {
 		this.rank = rank;
 	}
 
-  public NomStatus getNomStatus() {
+	public String getPublishedIn() {
+		return publishedIn;
+	}
+
+	public void setPublishedIn(String publishedIn) {
+		this.publishedIn = publishedIn;
+	}
+
+	public NomStatus getNomStatus() {
     return nomStatus;
   }
 
@@ -179,6 +191,7 @@ public class NameSearchRequest {
 				status == that.status &&
 				issue == that.issue &&
 				type == that.type &&
+				Objects.equals(publishedIn, that.publishedIn) &&
 				hasField == that.hasField &&
 				sortBy == that.sortBy;
 	}
@@ -186,6 +199,6 @@ public class NameSearchRequest {
 	@Override
 	public int hashCode() {
 
-		return Objects.hash(facets, q, datasetKey, id, rank, nomStatus, status, issue, type, hasField, sortBy);
+		return Objects.hash(facets, q, datasetKey, id, rank, nomStatus, status, issue, type, publishedIn, hasField, sortBy);
 	}
 }

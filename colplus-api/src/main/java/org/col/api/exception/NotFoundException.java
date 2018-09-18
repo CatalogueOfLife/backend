@@ -1,4 +1,4 @@
-package org.col.dw.jersey.exception;
+package org.col.api.exception;
 
 import java.util.Map;
 

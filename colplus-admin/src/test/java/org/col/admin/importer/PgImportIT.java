@@ -60,7 +60,7 @@ public class PgImportIT {
     cfg.archiveDir = Files.createTempDir();
     cfg.scratchDir = Files.createTempDir();
     dataset = new Dataset();
-    dataset.setTrusted(true);
+    dataset.setCatalogue(Catalogue.PROVISIONAL);
   }
 
 	@After
@@ -517,7 +517,7 @@ public class PgImportIT {
   @Test
   @Ignore
   public void testGsdGithub() throws Exception {
-    dataset.setTrusted(true);
+    dataset.setCatalogue(Catalogue.PROVISIONAL);
     // normalizeAndImport(URI.create("https://raw.githubusercontent.com/Sp2000/colplus-repo/master/ACEF/assembly/15.tar.gz"), DataFormat.ACEF);
     // normalizeAndImport(URI.create("http://services.snsb.info/DTNtaxonlists/rest/v0.1/lists/DiversityTaxonNames_Fossils/1154/dwc"), DataFormat.DWCA);
     normalizeAndImport(URI.create("https://raw.githubusercontent.com/Sp2000/colplus-repo/master/ACEF/177.tar.gz"), DataFormat.ACEF);
