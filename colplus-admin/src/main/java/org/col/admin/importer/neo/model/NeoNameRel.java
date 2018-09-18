@@ -7,7 +7,7 @@ import org.col.api.model.VerbatimEntity;
 public class NeoNameRel implements VerbatimEntity {
   private Integer verbatimKey;
   private RelType type;
-  private Integer refKey;
+  private String refId;
   private String note;
 
   @Override
@@ -28,12 +28,12 @@ public class NeoNameRel implements VerbatimEntity {
     this.type = type;
   }
 
-  public Integer getRefKey() {
-    return refKey;
+  public String getRefId() {
+    return refId;
   }
 
-  public void setRefKey(Integer refKey) {
-    this.refKey = refKey;
+  public void setRefId(String refId) {
+    this.refId = refId;
   }
 
   public String getNote() {
@@ -51,13 +51,13 @@ public class NeoNameRel implements VerbatimEntity {
     NeoNameRel that = (NeoNameRel) o;
     return Objects.equals(verbatimKey, that.verbatimKey) &&
         type == that.type &&
-        Objects.equals(refKey, that.refKey) &&
+        Objects.equals(refId, that.refId) &&
         Objects.equals(note, that.note);
   }
 
   @Override
   public int hashCode() {
 
-    return Objects.hash(verbatimKey, type, refKey, note);
+    return Objects.hash(verbatimKey, type, refId, note);
   }
 }

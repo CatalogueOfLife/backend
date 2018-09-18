@@ -29,7 +29,7 @@ public class NeoTaxon implements VerbatimEntity{
   // supplementary infos for a taxon
   public List<VernacularName> vernacularNames = Lists.newArrayList();
   public List<Distribution> distributions = Lists.newArrayList();
-  public Set<Integer> bibliography = Sets.newHashSet();
+  public Set<String> bibliography = Sets.newHashSet();
   // extra stuff not covered by above for normalizer only
   public Classification classification;
 

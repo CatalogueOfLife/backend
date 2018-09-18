@@ -25,7 +25,7 @@ import org.codehaus.stax2.XMLInputFactory2;
 import org.codehaus.stax2.XMLStreamReader2;
 import org.col.admin.importer.InsertMetadata;
 import org.col.admin.importer.NormalizationFailedException;
-import org.col.api.model.TermRecord;
+import org.col.api.model.VerbatimRecord;
 import org.col.api.vocab.ColTerm;
 import org.col.api.vocab.VocabularyUtils;
 import org.col.common.io.CharsetDetectingStream;
@@ -334,7 +334,7 @@ public class DwcaReader extends CsvReader {
    * Override to add dwca default values for missing values
    */
   @Override
-  public Stream<TermRecord> stream(Term rowType) {
+  public Stream<VerbatimRecord> stream(Term rowType) {
     final Optional<Term> idTerm = Optional.ofNullable(ROW_TYPE_TO_ID.getOrDefault(rowType, null));
     final Optional<Schema> schema = schema(rowType);
     if (schema.isPresent() && !schema.get().hasTerm(DWCA_ID) && idTerm.isPresent()) {

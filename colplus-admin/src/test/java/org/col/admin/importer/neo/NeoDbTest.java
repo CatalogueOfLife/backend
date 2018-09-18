@@ -10,7 +10,7 @@ import org.col.admin.importer.neo.model.NeoTaxon;
 import org.col.admin.importer.neo.model.RelType;
 import org.col.api.RandomUtils;
 import org.col.api.model.Taxon;
-import org.col.api.model.TermRecord;
+import org.col.api.model.VerbatimRecord;
 import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.dwc.terms.GbifTerm;
 import org.junit.*;
@@ -110,8 +110,8 @@ public class NeoDbTest {
       t1.node.createRelationshipTo(t2.node, RelType.PARENT_OF);
       t2.node.createRelationshipTo(t1.node, RelType.HAS_BASIONYM);
 
-      assertNull(t1.name.getHomotypicNameKey());
-      assertNull(t2.name.getHomotypicNameKey());
+      assertNull(t1.name.getHomotypicNameId());
+      assertNull(t2.name.getHomotypicNameId());
 
       tx.success();
     }
@@ -120,11 +120,11 @@ public class NeoDbTest {
     try (Transaction tx = db.getNeo().beginTx()) {
       NeoTaxon t1b = db.get(db.byID("12"));
       NeoTaxon t2b = db.get(db.byID("13"));
-      assertNotNull(t1b.name.getHomotypicNameKey());
-      assertNotNull(t2b.name.getHomotypicNameKey());
+      assertNotNull(t1b.name.getHomotypicNameId());
+      assertNotNull(t2b.name.getHomotypicNameId());
 
-      assertEquals(t1b.name.getHomotypicNameKey(), t2b.name.getHomotypicNameKey());
-      t1b.name.setHomotypicNameKey(null);
+      assertEquals(t1b.name.getHomotypicNameId(), t2b.name.getHomotypicNameId());
+      t1b.name.setHomotypicNameId(null);
       assertEquals(t1, t1b);
     }
   }
@@ -193,7 +193,7 @@ public class NeoDbTest {
     }
     db.sync();
 
-    TermRecord tr = new TermRecord(123, "bla.txt", GbifTerm.VernacularName);
+    VerbatimRecord tr = new VerbatimRecord(123, "bla.txt", GbifTerm.VernacularName);
     tr.setType(AcefTerm.Distribution);
     tr.put(AcefTerm.DistributionElement, "Asia");
 

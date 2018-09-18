@@ -88,7 +88,7 @@ public class DwcaInserter extends NeoInserter {
           DwcaReader.DWCA_ID,
           (t, r) -> {
             store.put(r);
-            t.bibliography.add(r.getKey());
+            t.bibliography.add(r.getId());
           }
       );
       tx.success();

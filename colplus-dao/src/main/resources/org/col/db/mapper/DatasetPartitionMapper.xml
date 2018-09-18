@@ -7,6 +7,7 @@
     <update id="create" parameterType="map">
         CREATE TABLE verbatim_${key} (LIKE verbatim INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
         CREATE TABLE reference_${key} (LIKE reference INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
+        CREATE TABLE name_${key} (LIKE name INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
         CREATE TABLE name_rel_${key} (LIKE name_rel INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
         CREATE TABLE taxon_${key} (LIKE taxon INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
         CREATE TABLE synonym_${key} (LIKE synonym INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
@@ -20,6 +21,7 @@
     <update id="attach" parameterType="map">
         ALTER TABLE verbatim ATTACH PARTITION verbatim_${key} FOR VALUES IN ( ${key} );
         ALTER TABLE reference ATTACH PARTITION reference_${key} FOR VALUES IN ( ${key} );
+        ALTER TABLE name ATTACH PARTITION name_${key} FOR VALUES IN ( ${key} );
         ALTER TABLE name_rel ATTACH PARTITION name_rel_${key} FOR VALUES IN ( ${key} );
         ALTER TABLE taxon ATTACH PARTITION taxon_${key} FOR VALUES IN ( ${key} );
         ALTER TABLE synonym ATTACH PARTITION synonym_${key} FOR VALUES IN ( ${key} );
@@ -34,36 +36,41 @@
         ALTER TABLE verbatim_${key} ADD PRIMARY KEY (key);
         CREATE index ON verbatim_${key} USING GIN(issues);
 
+        ALTER TABLE name_${key} ADD PRIMARY KEY (id);
+        CREATE index ON name_${key} (verbatim_key);
+        CREATE index ON name_${key} (homotypic_name_id);
+        CREATE index ON name_${key} (index_name_id);
+        CREATE index ON name_${key} (published_in_id);
+
         ALTER TABLE name_rel_${key} ADD PRIMARY KEY (key);
-        CREATE index ON name_rel_${key} (name_key, type);
+        CREATE index ON name_rel_${key} (name_id, type);
         CREATE index ON name_rel_${key} (verbatim_key);
 
-        ALTER TABLE taxon_${key} ADD PRIMARY KEY (key);
-        CREATE UNIQUE index ON taxon_${key} (id);
-        CREATE index ON taxon_${key} (parent_key);
-        CREATE index ON taxon_${key} (name_key);
+        ALTER TABLE taxon_${key} ADD PRIMARY KEY (id);
+        CREATE index ON taxon_${key} (parent_id);
+        CREATE index ON taxon_${key} (name_id);
         CREATE index ON taxon_${key} (verbatim_key);
 
-        CREATE index ON synonym_${key} (taxon_key);
-        CREATE index ON synonym_${key} (name_key);
+        CREATE index ON synonym_${key} (taxon_id);
+        CREATE index ON synonym_${key} (name_id);
         CREATE index ON synonym_${key} (verbatim_key);
 
-        ALTER TABLE reference_${key} ADD PRIMARY KEY (key);
-        CREATE UNIQUE index ON reference_${key} (id);
+        ALTER TABLE reference_${key} ADD PRIMARY KEY (id);
         CREATE index ON reference_${key} (verbatim_key);
 
         ALTER TABLE distribution_${key} ADD PRIMARY KEY (key);
-        CREATE index ON distribution_${key} (taxon_key);
+        CREATE index ON distribution_${key} (taxon_id);
         CREATE index ON distribution_${key} (verbatim_key);
 
         ALTER TABLE vernacular_name_${key} ADD PRIMARY KEY (key);
-        CREATE index ON vernacular_name_${key} (taxon_key);
+        CREATE index ON vernacular_name_${key} (taxon_id);
         CREATE index ON vernacular_name_${key} (verbatim_key);
     </update>
 
     <update id="delete" parameterType="map">
         DROP TABLE IF EXISTS verbatim_${key};
         DROP TABLE IF EXISTS reference_${key};
+        DROP TABLE IF EXISTS name_${key};
         DROP TABLE IF EXISTS name_rel_${key};
         DROP TABLE IF EXISTS taxon_${key};
         DROP TABLE IF EXISTS synonym_${key};
@@ -73,9 +80,5 @@
         DROP TABLE IF EXISTS vernacular_name_${key};
         DROP TABLE IF EXISTS vernacular_name_reference_${key};
     </update>
-
-    <delete id="truncateDatasetData" parameterType="map">
-        DELETE FROM name WHERE dataset_key = #{key}
-    </delete>
 
 </mapper>

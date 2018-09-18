@@ -8,11 +8,6 @@ import java.util.Objects;
 public class Reference implements VerbatimEntity {
 
   /**
-   * Internal surrogate key of the reference as provided by postgres.
-   */
-  private Integer key;
-
-  /**
    * Original key as provided by the dataset.
    */
   private String id;
@@ -40,14 +35,6 @@ public class Reference implements VerbatimEntity {
    * sorting on int order.
    */
   private Integer year;
-
-  public Integer getKey() {
-    return key;
-  }
-
-  public void setKey(Integer key) {
-    this.key = key;
-  }
 
   public String getId() {
     return id;
@@ -110,7 +97,7 @@ public class Reference implements VerbatimEntity {
     if (o == null || getClass() != o.getClass())
       return false;
     Reference reference = (Reference) o;
-    return Objects.equals(key, reference.key) && Objects.equals(id, reference.id)
+    return Objects.equals(id, reference.id)
         && Objects.equals(datasetKey, reference.datasetKey) && Objects.equals(csl, reference.csl)
         && Objects.equals(citation, reference.citation) && Objects.equals(year, reference.year);
   }
@@ -118,12 +105,12 @@ public class Reference implements VerbatimEntity {
   @Override
   public int hashCode() {
 
-    return Objects.hash(key, id, datasetKey, csl, year);
+    return Objects.hash(id, datasetKey, csl, year);
   }
 
   @Override
   public String toString() {
-    return "Reference{" + "key=" + key + ", id='" + id + '\'' + ", csl='" + csl + '\'' + '}';
+    return "Reference{" + "id='" + id + '\'' + ", csl='" + csl + '\'' + '}';
   }
 
   /**

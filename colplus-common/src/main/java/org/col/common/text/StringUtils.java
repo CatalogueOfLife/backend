@@ -6,6 +6,8 @@ import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.CharsetDecoder;
 import java.text.Normalizer;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import com.google.common.base.CharMatcher;
@@ -350,5 +352,20 @@ public class StringUtils {
     x = foldToAscii(x);
     x = x.toUpperCase();
     return Strings.emptyToNull(x);
+  }
+
+  /**
+   * <p> Converts a string to a Set. Breaks the string to characters and store
+   * each character in a Set.
+   *
+   * @param string the string to convert
+   * @return a <code>Set</code> containing all characters in the text string parameter
+   */
+  public static Set<Character> charSet(String string) {
+    Set<Character> chars = new HashSet<>();
+    for (int i = 0; i < string.length(); i++) {
+      chars.add(string.charAt(i));
+    }
+    return chars;
   }
 }

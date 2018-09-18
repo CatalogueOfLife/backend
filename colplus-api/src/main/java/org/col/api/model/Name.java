@@ -24,12 +24,6 @@ import static org.gbif.nameparser.util.NameFormatter.HYBRID_MARKER;
 public class Name implements VerbatimEntity {
 
   /**
-   * Internal surrogate key of the name as provided by postgres. This key is unique across all
-   * datasets but not exposed in the API.
-   */
-  private Integer key;
-
-  /**
    * Primary key of the name as given in the dataset dwc:scientificNameID. Only guaranteed to be
    * unique within a dataset and can follow any kind of schema.
    */
@@ -45,14 +39,14 @@ public class Name implements VerbatimEntity {
   /**
    * Groups all homotypic names by referring to a single representative name of that group.
    * This representative name is not necessarily the basionym, but often will be.
-   * For basionyms this should link to the basionym name itself, this key=homotypicNameKey
+   * For basionyms this should link to the basionym name itself, this id=homotypicNameId
    */
-  private Integer homotypicNameKey;
+  private String homotypicNameId;
 
   /**
-   * Key from the names index grouping all distinct scientific names
+   * Id from the names index grouping all distinct scientific names
    */
-  private Integer indexNameKey;
+  private String indexNameId;
 
   /**
    * Entire canonical name string with a rank marker for infragenerics and infraspecfics, but
@@ -140,7 +134,7 @@ public class Name implements VerbatimEntity {
   /**
    * The reference the name was originally published in.
    */
-  private Integer publishedInKey;
+  private String publishedInId;
 
   /**
    * The page(s) or other detailed location within the publishedIn reference the name was described.
@@ -173,11 +167,10 @@ public class Name implements VerbatimEntity {
    * @param n
    */
   public Name(Name n) {
-    this.key = n.key;
     this.id = n.id;
     this.datasetKey = n.datasetKey;
-    this.homotypicNameKey = n.homotypicNameKey;
-    this.indexNameKey = n.indexNameKey;
+    this.homotypicNameId = n.homotypicNameId;
+    this.indexNameId = n.indexNameId;
     this.scientificName = n.scientificName;
     this.rank = n.rank;
     this.uninomial = n.uninomial;
@@ -194,7 +187,7 @@ public class Name implements VerbatimEntity {
     this.sanctioningAuthor = n.sanctioningAuthor;
     this.code = n.code;
     this.nomStatus = n.nomStatus;
-    this.publishedInKey = n.publishedInKey;
+    this.publishedInId = n.publishedInId;
     this.publishedInPage = n.publishedInPage;
     this.origin = n.origin;
     this.type = n.type;
@@ -227,14 +220,6 @@ public class Name implements VerbatimEntity {
     return pn;
   }
 
-  public Integer getKey() {
-    return key;
-  }
-
-  public void setKey(Integer key) {
-    this.key = key;
-  }
-
   public String getId() {
     return id;
   }
@@ -261,12 +246,12 @@ public class Name implements VerbatimEntity {
     this.verbatimKey = verbatimKey;
   }
 
-  public Integer getIndexNameKey() {
-    return indexNameKey;
+  public String getIndexNameId() {
+    return indexNameId;
   }
 
-  public void setIndexNameKey(Integer indexNameKey) {
-    this.indexNameKey = indexNameKey;
+  public void setIndexNameId(String indexNameId) {
+    this.indexNameId = indexNameId;
   }
 
   public String getScientificName() {
@@ -287,12 +272,12 @@ public class Name implements VerbatimEntity {
     }
   }
 
-  public Integer getPublishedInKey() {
-    return publishedInKey;
+  public String getPublishedInId() {
+    return publishedInId;
   }
 
-  public void setPublishedInKey(Integer publishedInKey) {
-    this.publishedInKey = publishedInKey;
+  public void setPublishedInId(String publishedInId) {
+    this.publishedInId = publishedInId;
   }
 
   public String getPublishedInPage() {
@@ -311,12 +296,12 @@ public class Name implements VerbatimEntity {
     this.origin = origin;
   }
 
-  public Integer getHomotypicNameKey() {
-    return homotypicNameKey;
+  public String getHomotypicNameId() {
+    return homotypicNameId;
   }
 
-  public void setHomotypicNameKey(Integer homotypicNameKey) {
-    this.homotypicNameKey = homotypicNameKey;
+  public void setHomotypicNameId(String homotypicNameId) {
+    this.homotypicNameId = homotypicNameId;
   }
 
   public Boolean getFossil() {
@@ -640,11 +625,10 @@ public class Name implements VerbatimEntity {
     if (o == null || getClass() != o.getClass()) return false;
     Name name = (Name) o;
     return candidatus == name.candidatus &&
-        Objects.equals(key, name.key) &&
         Objects.equals(id, name.id) &&
         Objects.equals(datasetKey, name.datasetKey) &&
-        Objects.equals(homotypicNameKey, name.homotypicNameKey) &&
-        Objects.equals(indexNameKey, name.indexNameKey) &&
+        Objects.equals(homotypicNameId, name.homotypicNameId) &&
+        Objects.equals(indexNameId, name.indexNameId) &&
         Objects.equals(scientificName, name.scientificName) &&
         rank == name.rank &&
         Objects.equals(uninomial, name.uninomial) &&
@@ -660,7 +644,7 @@ public class Name implements VerbatimEntity {
         Objects.equals(sanctioningAuthor, name.sanctioningAuthor) &&
         code == name.code &&
         nomStatus == name.nomStatus &&
-        Objects.equals(publishedInKey, name.publishedInKey) &&
+        Objects.equals(publishedInId, name.publishedInId) &&
         Objects.equals(publishedInPage, name.publishedInPage) &&
         origin == name.origin &&
         type == name.type &&
@@ -671,18 +655,18 @@ public class Name implements VerbatimEntity {
 
   @Override
   public int hashCode() {
-    return Objects.hash(key, id, datasetKey, homotypicNameKey, indexNameKey, scientificName, rank, uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, strain, candidatus, notho, combinationAuthorship, basionymAuthorship, sanctioningAuthor, code, nomStatus, publishedInKey, publishedInPage, origin, type, sourceUrl, fossil, remarks);
+    return Objects.hash(id, datasetKey, homotypicNameId, indexNameId, scientificName, rank, uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, strain, candidatus, notho, combinationAuthorship, basionymAuthorship, sanctioningAuthor, code, nomStatus, publishedInId, publishedInPage, origin, type, sourceUrl, fossil, remarks);
   }
 
   @Override
   public String toString() {
-    return key + "[" + id + "] " + canonicalNameComplete();
+    return id + " " + canonicalNameComplete();
   }
 
   public String toStringComplete() {
     StringBuilder sb = new StringBuilder();
 
-    sb.append(key).append("/").append(id);
+    sb.append(id);
 
     if (this.type != null) {
       sb.append("[");
@@ -728,8 +712,8 @@ public class Name implements VerbatimEntity {
       sb.append(" BA:").append(this.basionymAuthorship);
     }
 
-    if (this.publishedInKey != null) {
-      sb.append(" PUB:").append(this.publishedInKey);
+    if (this.publishedInId != null) {
+      sb.append(" PUB:").append(this.publishedInId);
       if (this.publishedInPage != null) {
         sb.append(" ").append(this.publishedInPage);
       }

@@ -171,6 +171,10 @@
 
         <!-- other -->
         <dependency>
+            <groupId>org.hashids</groupId>
+            <artifactId>hashids</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
         </dependency>

@@ -31,9 +31,6 @@ public class MappingFactoryTest extends EsReadTestBase {
     assertNull(nested.getType()); // a.k.a. Elasticsearch type "object"
 
     properties = nested.getProperties();
-    assertTrue(properties.containsKey("key"));
-    SimpleField sf = (SimpleField) properties.get("key");
-    assertEquals(ESDataType.INTEGER, sf.getType());
 
     assertTrue(properties.containsKey("rank"));
     kf = (KeywordField) properties.get("rank");

@@ -9,16 +9,16 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-public class TermRecordTest {
-  private TermRecord v;
+public class VerbatimRecordTest {
+  private VerbatimRecord v;
 
   @Before
   public void init() {
-    v = new TermRecord(11, "myFile.txt", DwcTerm.Taxon);
+    v = new VerbatimRecord(11, "myFile.txt", DwcTerm.Taxon);
     initRecord(v);
   }
 
-  private static void initRecord(TermRecord rec) {
+  private static void initRecord(VerbatimRecord rec) {
     rec.put(DwcTerm.scientificName, "Abies alba");
     rec.put(DwcTerm.scientificNameAuthorship, "D&ouml;ring & M&#246;glich");
     rec.put(DwcTerm.nameAccordingTo, "D\\u00f6ring &amp; M\\366glich");

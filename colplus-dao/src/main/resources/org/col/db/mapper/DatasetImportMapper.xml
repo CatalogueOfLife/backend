@@ -124,10 +124,10 @@
         LIMIT 1
     </select>
 
-    <select id="lastSuccessful" resultMap="datasetImportResultMap">
+    <select id="lastByState" resultMap="datasetImportResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
-        WHERE dataset_key = #{key} AND state = 4
+        WHERE dataset_key = #{key} AND state = #{state}
         ORDER BY attempt DESC
         LIMIT 1
     </select>
@@ -158,7 +158,7 @@
 
         (SELECT array_to_string(array_agg( key || '=>' || cnt), ', ')::hstore FROM
             (SELECT iss AS key, count(*)::text AS cnt FROM (
-              SELECT unnest(issues) iss from name WHERE dataset_key=#{key}
+              SELECT unnest(issues) iss from verbatim WHERE dataset_key=#{key}
               ) AS dis GROUP BY key
             ) AS issues
         ) AS issues_count,

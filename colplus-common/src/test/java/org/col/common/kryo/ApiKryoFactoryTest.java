@@ -10,7 +10,7 @@ import com.google.common.collect.Lists;
 import org.col.api.TestEntityGenerator;
 import org.col.api.model.DatasetImport;
 import org.col.api.model.Reference;
-import org.col.api.model.TermRecord;
+import org.col.api.model.VerbatimRecord;
 import org.col.api.vocab.Issue;
 import org.gbif.dwc.terms.*;
 import org.junit.Test;
@@ -28,7 +28,6 @@ public class ApiKryoFactoryTest {
   public void testReference() throws Exception {
     Reference r = new Reference();
     r.setId("1234");
-    r.setKey(123);
     r.setYear(1984);
     r.setDatasetKey(77);
     r.setCsl(TestEntityGenerator.createCsl());
@@ -47,7 +46,7 @@ public class ApiKryoFactoryTest {
     );
     assertSerde(terms);
 
-    TermRecord rec = TestEntityGenerator.createVerbatim();
+    VerbatimRecord rec = TestEntityGenerator.createVerbatim();
     for (Issue issue : Issue.values()) {
       rec.addIssue(issue);
     }

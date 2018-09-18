@@ -54,33 +54,24 @@ public class TaxonDao {
     return new ResultPage<>(p, total, result);
   }
 
-  public Integer lookupKey(String id, int datasetKey) {
-    return tMapper.lookupKey(id, datasetKey);
+  public Taxon get(int datasetKey, String id) {
+    if (id == null) return null;
+    return tMapper.get(datasetKey, id);
   }
 
-  public Taxon get(int datasetKey, Integer key) {
-    if (key == null) return null;
-    return tMapper.get(datasetKey, key);
+  public List<Synonym> getSynonyms(int datasetKey, String nameId) {
+    return sMapper.listByName(datasetKey, nameId);
   }
 
-  public Taxon get(String id, int datasetKey) {
-    return get(datasetKey, lookupKey(id, datasetKey));
-  }
-
-  public List<Synonym> getSynonyms(int datasetKey, int nameKey) {
-    return sMapper.listByName(datasetKey, nameKey);
-  }
-
-  public Synonym getSynonym(String ID, int datasetKey) {
-    Integer nameKey = nMapper.lookupKey(ID, datasetKey);
-    if (nameKey != null) {
-      List<Synonym> syny = sMapper.listByName(datasetKey, nameKey);
-      if (syny.isEmpty()) {
+  public Synonym getSynonym(int datasetKey, String id) {
+    if (id != null) {
+      List<Synonym> syns = sMapper.listByName(datasetKey, id);
+      if (syns.isEmpty()) {
         return null;
-      } else if (syny.size() > 1) {
-        LOG.debug("Multiple synonyms found for name ID {}", ID);
+      } else if (syns.size() > 1) {
+        LOG.debug("Multiple synonyms found for nameID {}", id);
       }
-      return syny.get(0);
+      return syns.get(0);
     }
     return null;
   }
@@ -89,27 +80,27 @@ public class TaxonDao {
    * Assemble a synonymy object from the list of synonymy names for a given accepted taxon.
    */
   public Synonymy getSynonymy(Taxon taxon) {
-    return getSynonymy(taxon.getDatasetKey(), taxon.getKey());
+    return getSynonymy(taxon.getDatasetKey(), taxon.getId());
   }
 
   /**
    * Assemble a synonymy object from the list of synonymy names for a given accepted taxon.
    */
-  public Synonymy getSynonymy(int datasetKey, int taxonKey) {
-    Name accName = nMapper.getByTaxon(taxonKey);
+  public Synonymy getSynonymy(int datasetKey, String taxonId) {
+    Name accName = nMapper.getByTaxon(taxonId);
     Synonymy syn = new Synonymy();
     // get all synonyms and misapplied name
     // they come ordered by status, then homotypic group so its easy to arrange them
     List<Name> group = Lists.newArrayList();
-    for (Synonym s : sMapper.listByTaxon(datasetKey, taxonKey)) {
+    for (Synonym s : sMapper.listByTaxon(datasetKey, taxonId)) {
       if (TaxonomicStatus.MISAPPLIED == s.getStatus()) {
         syn.addMisapplied(new NameAccordingTo(s.getName(), s.getAccordingTo()));
       } else {
-        if (accName.getHomotypicNameKey().equals(s.getName().getHomotypicNameKey())) {
+        if (accName.getHomotypicNameId().equals(s.getName().getHomotypicNameId())) {
           syn.getHomotypic().add(s.getName());
         } else {
           if (!group.isEmpty()
-              && !group.get(0).getHomotypicNameKey().equals(s.getName().getHomotypicNameKey())) {
+              && !group.get(0).getHomotypicNameId().equals(s.getName().getHomotypicNameId())) {
             // new heterotypic group
             syn.addHeterotypicGroup(group);
             group = Lists.newArrayList();
@@ -127,14 +118,14 @@ public class TaxonDao {
   }
 
   public List<Taxon> getClassification(Taxon taxon) {
-    return getClassification(taxon.getDatasetKey(), taxon.getKey());
+    return getClassification(taxon.getDatasetKey(), taxon.getId());
   }
 
-  public List<Taxon> getClassification(int datasetKey, int key) {
+  public List<Taxon> getClassification(int datasetKey, String key) {
     return tMapper.classification(datasetKey, key);
   }
 
-  public ResultPage<Taxon> getChildren(int datasetKey, int key, Page page) {
+  public ResultPage<Taxon> getChildren(int datasetKey, String key, Page page) {
     Page p = page == null ? new Page() : page;
     int total = tMapper.countChildren(datasetKey, key);
     List<Taxon> result = tMapper.children(datasetKey, key, p);
@@ -145,7 +136,7 @@ public class TaxonDao {
     tMapper.create(taxon);
   }
 
-  public TaxonInfo getTaxonInfo(int datasetKey, int key) {
+  public TaxonInfo getTaxonInfo(int datasetKey, String key) {
     return getTaxonInfo(tMapper.get(datasetKey, key));
   }
 
@@ -157,25 +148,25 @@ public class TaxonDao {
 
     TaxonInfo info = new TaxonInfo();
     info.setTaxon(taxon);
-    info.setTaxonReferences(rMapper.listByTaxon(taxon.getDatasetKey(), taxon.getKey()));
+    info.setTaxonReferences(rMapper.listByTaxon(taxon.getDatasetKey(), taxon.getId()));
 
     // vernaculars
-    info.setVernacularNames(vMapper.listByTaxon(taxon.getDatasetKey(), taxon.getKey()));
+    info.setVernacularNames(vMapper.listByTaxon(taxon.getDatasetKey(), taxon.getId()));
 
     // distributions
-    info.setDistributions(dMapper.listByTaxon(taxon.getDatasetKey(), taxon.getKey()));
+    info.setDistributions(dMapper.listByTaxon(taxon.getDatasetKey(), taxon.getId()));
 
     // all reference keys so we can select their details at the end
-    Set<Integer> refKeys = new HashSet<>();
-    refKeys.add(taxon.getName().getPublishedInKey());
-    refKeys.addAll(info.getTaxonReferences());
-    info.getDistributions().forEach(d -> refKeys.addAll(d.getReferenceKeys()));
-    info.getVernacularNames().forEach(d -> refKeys.addAll(d.getReferenceKeys()));
+    Set<String> refIds = new HashSet<>();
+    refIds.add(taxon.getName().getPublishedInId());
+    refIds.addAll(info.getTaxonReferences());
+    info.getDistributions().forEach(d -> refIds.addAll(d.getReferenceIds()));
+    info.getVernacularNames().forEach(d -> refIds.addAll(d.getReferenceIds()));
     // make sure we did not add null by accident
-    refKeys.remove(null);
+    refIds.remove(null);
 
-    if (!refKeys.isEmpty()) {
-      List<Reference> refs = rMapper.listByKeys(taxon.getDatasetKey(), refKeys);
+    if (!refIds.isEmpty()) {
+      List<Reference> refs = rMapper.listByIds(taxon.getDatasetKey(), refIds);
       info.addReferences(refs);
     }
 

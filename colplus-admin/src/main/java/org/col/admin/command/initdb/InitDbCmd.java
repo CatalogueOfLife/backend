@@ -7,14 +7,21 @@ import java.sql.Connection;
 import java.sql.Statement;
 import java.util.concurrent.TimeUnit;
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import io.dropwizard.cli.ConfiguredCommand;
 import io.dropwizard.setup.Bootstrap;
 import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.jdbc.ScriptRunner;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.admin.config.AdminServerConfig;
+import org.col.api.vocab.Datasets;
+import org.col.db.MybatisFactory;
 import org.col.db.PgConfig;
+import org.col.db.mapper.DatasetPartitionMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,7 +70,6 @@ public class InitDbCmd extends ConfiguredCommand<AdminServerConfig> {
 
       LOG.info("Create new database {}", cfg.db.database);
       st.execute("CREATE DATABASE " + cfg.db.database + " WITH OWNER " + cfg.db.user);
-      //con.commit();
     }
 
     try (Connection con = cfg.db.connect()) {
@@ -78,6 +84,27 @@ public class InitDbCmd extends ConfiguredCommand<AdminServerConfig> {
       }
       // add GBIF Backbone datasets
       exec(PgConfig.GBIF_DATASETS_FILE, runner, con, Resources.getResourceAsReader(PgConfig.GBIF_DATASETS_FILE));
+    }
+
+    // add col & names index partitions
+    setupStandardPartitions(cfg.db);
+  }
+
+  private static void setupStandardPartitions(PgConfig cfg){
+    HikariConfig hikari = cfg.hikariConfig();
+    try (HikariDataSource dataSource = new HikariDataSource(hikari)) {
+      // configure single mybatis session factory
+      SqlSessionFactory factory = MybatisFactory.configure(dataSource, "init");
+      SqlSession session = factory.openSession();
+      DatasetPartitionMapper pm = session.getMapper(DatasetPartitionMapper.class);
+      for (int key : new int[]{Datasets.SCRUT_CAT, Datasets.PROV_CAT}) {
+        LOG.info("Create catalogue partition {}", key);
+        pm.create(key);
+        pm.buildIndices(key);
+        pm.attach(key);
+      }
+      session.commit();
+      session.close();
     }
   }
 

@@ -19,7 +19,7 @@ public class Distribution implements Referenced, VerbatimEntity {
 	private String area;
 	private Gazetteer gazetteer;
 	private DistributionStatus status;
-  private Set<Integer> referenceKeys = Sets.newHashSet();
+  private Set<String> referenceIds = Sets.newHashSet();
 
 	public Integer getKey() {
 		return key;
@@ -64,16 +64,18 @@ public class Distribution implements Referenced, VerbatimEntity {
 	}
 
   @Override
-  public Set<Integer> getReferenceKeys() {
-    return referenceKeys;
+  public Set<String> getReferenceIds() {
+    return referenceIds;
   }
 
-  public void setReferenceKeys(Set<Integer> referenceKeys) {
-    this.referenceKeys = referenceKeys;
+	@Override
+  public void setReferenceIds(Set<String> referenceIds) {
+    this.referenceIds = referenceIds;
   }
 
-  public void addReferenceKey(Integer referenceKey) {
-    this.referenceKeys.add(referenceKey);
+	@Override
+  public void addReferenceId(String referenceId) {
+    this.referenceIds.add(referenceId);
   }
 
 	@Override
@@ -86,13 +88,13 @@ public class Distribution implements Referenced, VerbatimEntity {
 				Objects.equals(area, that.area) &&
 				gazetteer == that.gazetteer &&
 				status == that.status &&
-				Objects.equals(referenceKeys, that.referenceKeys);
+				Objects.equals(referenceIds, that.referenceIds);
 	}
 
 	@Override
 	public int hashCode() {
 
-		return Objects.hash(key, verbatimKey, area, gazetteer, status, referenceKeys);
+		return Objects.hash(key, verbatimKey, area, gazetteer, status, referenceIds);
 	}
 
 	@Override

@@ -43,18 +43,24 @@
         </if>
     </sql>
 
-
-    <resultMap id="verbatimResultMap" type="TermRecord" autoMapping="true">
+    <resultMap id="verbatimResultMap" type="VerbatimRecord" autoMapping="true">
         <result property="terms" column="terms" typeHandler="org.col.db.type2.TermMapTypeHandler"/>
         <result property="issues" column="issues" typeHandler="org.col.db.type2.IssueSetTypeHandler" />
     </resultMap>
 
-
-
     <select id="count" resultType="integer">
-        SELECT count(*)
-        FROM <include refid="FROM" />
-        <include refid="WHERE" />
+        SELECT coalesce(
+        (SELECT
+        <choose>
+            <when test="type != null">
+                (verbatim_by_type_count->#{type, typeHandler=org.col.db.type.TermTypeHandler})::int
+            </when>
+            <otherwise>
+                verbatim_count
+            </otherwise>
+        </choose>
+        <include refid="org.col.db.mapper.Common.fromFinishedDatasetImport"/>
+        ), 0)
     </select>
 
     <select id="list" resultMap="verbatimResultMap">
@@ -71,7 +77,7 @@
         WHERE dataset_key = #{datasetKey} AND key = #{key}
     </select>
 
-    <insert id="create" parameterType="TermRecord"  useGeneratedKeys="true" keyProperty="key">
+    <insert id="create" parameterType="VerbatimRecord" useGeneratedKeys="true" keyProperty="key">
         INSERT INTO verbatim_${datasetKey} (<include refid="COLS" />)
         VALUES (<include refid="PROPS" />)
     </insert>

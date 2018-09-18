@@ -8,8 +8,6 @@ import org.col.api.TestEntityGenerator;
 import org.col.api.model.Dataset;
 import org.col.api.model.Name;
 import org.col.api.model.Page;
-import org.col.api.vocab.Origin;
-import org.gbif.nameparser.api.NameType;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -35,14 +33,14 @@ public class NameMapperTest extends org.col.db.mapper.MapperTestBase<NameMapper>
 
   private static Name create(final String id, final Name basionym) throws Exception {
     Name n = TestEntityGenerator.newName(id);
-    n.setHomotypicNameKey(basionym.getKey());
+    n.setHomotypicNameId(basionym.getId());
     return n;
   }
 
   private static Name create(Dataset d) throws Exception {
     Name n = TestEntityGenerator.newName();
     n.setDatasetKey(d.getKey());
-    n.setHomotypicNameKey(NAME1.getKey());
+    n.setHomotypicNameId(NAME1.getId());
     return n;
   }
 
@@ -50,19 +48,15 @@ public class NameMapperTest extends org.col.db.mapper.MapperTestBase<NameMapper>
   public void roundtrip() throws Exception {
     Name n1 = TestEntityGenerator.newName("sk1");
     nameMapper.create(n1);
-    assertNotNull(n1.getKey());
+    assertNotNull(n1.getId());
     commit();
 
-    int n1Key = nameMapper.lookupKey(n1.getId(), TestEntityGenerator.DATASET1.getKey());
-    assertEquals((Integer) n1Key, n1.getKey());
-
-    Name n1b = nameMapper.get(n1Key);
-    n1b.setHomotypicNameKey(null);
+    Name n1b = nameMapper.get(DATASET11.getKey(), n1.getId());
     assertEquals(n1, n1b);
 
     // with explicit homotypic group
     Name n2 = TestEntityGenerator.newName("sk2");
-    n2.setHomotypicNameKey(n1.getKey());
+    n2.setHomotypicNameId(n1.getId());
     nameMapper.create(n2);
 
     commit();
@@ -73,20 +67,18 @@ public class NameMapperTest extends org.col.db.mapper.MapperTestBase<NameMapper>
     // n1.setId(n2.getBasionymKey());
     // n2.setBasionymKey(n1);
 
-    int n2Key = nameMapper.lookupKey(n2.getId(), TestEntityGenerator.DATASET1.getKey());
-    assertEquals((Integer) n2Key, n2.getKey());
-    Name n2b = nameMapper.get(n2Key);
+    Name n2b = nameMapper.get(DATASET11.getKey(), n2.getId());
     assertEquals(n2, n2b);
   }
 
   @Test
   public void list() throws Exception {
     List<Name> names = Lists.newArrayList();
-    names.add(create(TestEntityGenerator.DATASET2));
-    names.add(create(TestEntityGenerator.DATASET2));
-    names.add(create(TestEntityGenerator.DATASET2));
-    names.add(create(TestEntityGenerator.DATASET2));
-    names.add(create(TestEntityGenerator.DATASET2));
+    names.add(create(TestEntityGenerator.DATASET12));
+    names.add(create(TestEntityGenerator.DATASET12));
+    names.add(create(TestEntityGenerator.DATASET12));
+    names.add(create(TestEntityGenerator.DATASET12));
+    names.add(create(TestEntityGenerator.DATASET12));
 
     for (Name n : names) {
       nameMapper.create(n);
@@ -96,13 +88,13 @@ public class NameMapperTest extends org.col.db.mapper.MapperTestBase<NameMapper>
     // get first page
     Page p = new Page(0, 3);
 
-    List<Name> res = nameMapper.list(TestEntityGenerator.DATASET2.getKey(), p);
+    List<Name> res = nameMapper.list(TestEntityGenerator.DATASET12.getKey(), p);
     assertEquals(3, res.size());
     assertEquals(Lists.partition(names, 3).get(0), res);
 
     // next page
     p.next();
-    res = nameMapper.list(TestEntityGenerator.DATASET2.getKey(), p);
+    res = nameMapper.list(DATASET12.getKey(), p);
     assertEquals(2, res.size());
     List<Name> l2 = Lists.partition(names, 3).get(1);
     assertEquals(l2, res);
@@ -110,12 +102,16 @@ public class NameMapperTest extends org.col.db.mapper.MapperTestBase<NameMapper>
 
   @Test
   public void count() throws Exception {
-    assertEquals(4, nameMapper.count(TestEntityGenerator.DATASET1.getKey()));
+    generateDatasetImport(DATASET11.getKey());
+    commit();
+    assertEquals(4, nameMapper.count(DATASET11.getKey()));
 
     nameMapper.create(TestEntityGenerator.newName());
     nameMapper.create(TestEntityGenerator.newName());
+    generateDatasetImport(DATASET11.getKey());
     commit();
-    assertEquals(6, nameMapper.count(TestEntityGenerator.DATASET1.getKey()));
+
+    assertEquals(6, nameMapper.count(DATASET11.getKey()));
   }
 
   @Test
@@ -134,18 +130,18 @@ public class NameMapperTest extends org.col.db.mapper.MapperTestBase<NameMapper>
 
     commit();
 
-    List<Name> s1 = mapper().homotypicGroup(n1.getKey());
+    List<Name> s1 = mapper().homotypicGroup(n1.getDatasetKey(), n1.getId());
     assertEquals(4, s1.size());
 
-    List<Name> s2 = mapper().homotypicGroup(n2bas.getKey());
+    List<Name> s2 = mapper().homotypicGroup(n2bas.getDatasetKey(), n2bas.getId());
     assertEquals(4, s2.size());
     assertEquals(s1, s2);
 
-    List<Name> s3 = mapper().homotypicGroup(n3.getKey());
+    List<Name> s3 = mapper().homotypicGroup(n3.getDatasetKey(), n3.getId());
     assertEquals(4, s3.size());
     assertEquals(s1, s3);
 
-    List<Name> s4 = mapper().homotypicGroup(n4.getKey());
+    List<Name> s4 = mapper().homotypicGroup(n4.getDatasetKey(), n4.getId());
     assertEquals(4, s4.size());
     assertEquals(s1, s4);
   }
@@ -159,9 +155,9 @@ public class NameMapperTest extends org.col.db.mapper.MapperTestBase<NameMapper>
   public void basionymGroup2() throws Exception {
     Name n = TestEntityGenerator.newName("nxx");
     mapper().create(n);
-    List<Name> s = mapper().homotypicGroup(n.getKey());
+    List<Name> s = mapper().homotypicGroup(n.getDatasetKey(), n.getId());
     assertNotNull(s);
-    s = mapper().homotypicGroup(-1);
+    s = mapper().homotypicGroup(11, "-1");
     assertNotNull(s);
     assertEquals(0, s.size());
   }
@@ -170,31 +166,22 @@ public class NameMapperTest extends org.col.db.mapper.MapperTestBase<NameMapper>
   public void listByReference() throws Exception {
     Name acc1 = newAcceptedName("Nom uno");
     nameMapper.create(acc1);
-    assertTrue(nameMapper.listByReference(REF2.getKey()).isEmpty());
+    assertTrue(nameMapper.listByReference(REF2.getDatasetKey(), REF2.getId()).isEmpty());
 
     Name acc2 = newAcceptedName("Nom duo");
-    acc2.setPublishedInKey(REF2.getKey());
+    acc2.setPublishedInId(REF2.getId());
     Name acc3 = newAcceptedName("Nom tres");
-    acc3.setPublishedInKey(REF2.getKey());
+    acc3.setPublishedInId(REF2.getId());
     nameMapper.create(acc2);
     nameMapper.create(acc3);
 
     // we have one ref from the apple.sql
-    assertEquals(1, nameMapper.listByReference(REF1.getKey()).size());
-    assertEquals(2, nameMapper.listByReference(REF2.getKey()).size());
+    assertEquals(1, nameMapper.listByReference(REF1.getDatasetKey(), REF1.getId()).size());
+    assertEquals(2, nameMapper.listByReference(REF2.getDatasetKey(), REF2.getId()).size());
   }
 
   private static Name newAcceptedName(String scientificName) {
-    Name name = new Name();
-    name.setDatasetKey(TestEntityGenerator.DATASET1.getKey());
-    name.setId(scientificName.toLowerCase().replace(' ', '-'));
-    name.setScientificName(scientificName);
-    List<String> tokens = SPACE_SPLITTER.splitToList(scientificName);
-    name.setGenus(tokens.get(0));
-    name.setSpecificEpithet(tokens.get(1));
-    name.setOrigin(Origin.SOURCE);
-    name.setType(NameType.SCIENTIFIC);
-    return name;
+    return newName(DATASET11.getKey(), scientificName.toLowerCase().replace(' ', '-'), scientificName);
   }
 
 }

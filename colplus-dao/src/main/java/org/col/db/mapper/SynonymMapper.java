@@ -14,8 +14,8 @@ public interface SynonymMapper {
    * Creates a new synonym link for a given name to the accepted taxon.
    */
   void create(@Param("datasetKey") int datasetKey,
-							@Param("nameKey") int nameKey,
-							@Param("taxonKey") int taxonKey,
+							@Param("nameId") String nameId,
+							@Param("taxonId") String taxonId,
 							@Param("syn") Synonym syn
 	);
 
@@ -26,15 +26,15 @@ public interface SynonymMapper {
    * We use this call to assemble a complete synonymy
    * and the accepted key is given as the parameter already
    *
-	 * @param taxonKey accepted taxon key
+	 * @param taxonId accepted taxon id
 	 * @return list of misapplied or heterotypic synonym names ordered by status then homotypic group
 	 */
-	List<Synonym> listByTaxon(@Param("datasetKey") int datasetKey, @Param("taxonKey") int taxonKey);
+	List<Synonym> listByTaxon(@Param("datasetKey") int datasetKey, @Param("taxonId") String taxonId);
 
 
 	/**
 	 * Reads all synonyms including misapplied names by the synonyms name.
 	 */
-	List<Synonym> listByName(@Param("datasetKey") int datasetKey, @Param("nameKey") int nameKey);
+	List<Synonym> listByName(@Param("datasetKey") int datasetKey, @Param("nameId") String nameId);
 
 }

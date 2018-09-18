@@ -28,7 +28,7 @@ import com.univocity.parsers.common.ResultIterator;
 import com.univocity.parsers.common.TextParsingException;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
-import org.col.api.model.TermRecord;
+import org.col.api.model.VerbatimRecord;
 import org.col.api.vocab.VocabularyUtils;
 import org.col.common.io.CharsetDetectingStream;
 import org.col.common.io.PathUtils;
@@ -325,7 +325,7 @@ public class CsvReader {
     return Optional.ofNullable(schemas.get(rowType));
   }
 
-  public Stream<TermRecord> stream(Term rowType) {
+  public Stream<VerbatimRecord> stream(Term rowType) {
     Preconditions.checkArgument(rowType.isClass(), "RowType "+rowType+" is not a class term");
     if (schemas.containsKey(rowType)) {
       return stream(schemas.get(rowType));
@@ -337,14 +337,14 @@ public class CsvReader {
   /**
    * Returns the first content row of the given data file, skipping any header if existing.
    */
-  public Optional<TermRecord> readFirstRow(AcefTerm rowType) {
+  public Optional<VerbatimRecord> readFirstRow(AcefTerm rowType) {
     if (schemas.containsKey(rowType)) {
       return stream(schemas.get(rowType)).findFirst();
     }
     return Optional.empty();
   }
 
-  private class TermRecIterator implements Iterator<TermRecord> {
+  private class TermRecIterator implements Iterator<VerbatimRecord> {
     private final ResultIterator<String[], ParsingContext> iter;
     private final Schema s;
     private final int maxIdx;
@@ -399,8 +399,8 @@ public class CsvReader {
     }
 
     @Override
-    public TermRecord next() {
-      TermRecord tr = new TermRecord(iter.getContext().currentLine()-1, filename, s.rowType);
+    public VerbatimRecord next() {
+      VerbatimRecord tr = new VerbatimRecord(iter.getContext().currentLine()-1, filename, s.rowType);
       for (Schema.Field f : s.columns) {
         if (f != null) {
           String val = null;
@@ -424,7 +424,7 @@ public class CsvReader {
     }
   }
 
-  private Stream<TermRecord> stream(final Schema s) {
+  private Stream<VerbatimRecord> stream(final Schema s) {
     try {
       return StreamSupport.stream(
           Spliterators.spliteratorUnknownSize(new TermRecIterator(s), STREAM_CHARACTERISTICS), false);

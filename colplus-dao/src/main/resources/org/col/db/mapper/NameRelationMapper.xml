@@ -9,9 +9,9 @@
     nr.verbatim_key,
     nr.dataset_key,
     nr.type,
-    nr.name_key,
-    nr.related_name_key,
-    nr.published_in_key,
+    nr.name_id,
+    nr.related_name_id,
+    nr.published_in_id,
     nr.note
   </sql>
 
@@ -19,9 +19,9 @@
     verbatim_key,
     dataset_key,
     type,
-    name_key,
-    related_name_key,
-    published_in_key,
+    name_id,
+    related_name_id,
+    published_in_id,
     note
   </sql>
 
@@ -29,9 +29,9 @@
     #{verbatimKey},
     #{datasetKey},
     #{type},
-    #{nameKey},
-    #{relatedNameKey},
-    #{publishedInKey},
+    #{nameId},
+    #{relatedNameId},
+    #{publishedInId},
     #{note}
   </sql>
 
@@ -47,7 +47,7 @@
     SELECT <include refid="SELECT" />
     FROM name_rel nr
     WHERE nr.dataset_key = #{datasetKey}
-      AND (nr.name_key = #{nameKey} OR nr.related_name_key = #{nameKey})
+      AND (nr.name_id = #{nameId} OR nr.related_name_id = #{nameId})
     ORDER BY nr.key
   </select>
 
@@ -56,7 +56,7 @@
     FROM name_rel nr
     WHERE nr.dataset_key = #{datasetKey}
       AND nr.type=#{type}
-      AND nr.name_key = #{nameKey}
+      AND nr.name_id = #{nameId}
     ORDER BY nr.key
   </select>
 

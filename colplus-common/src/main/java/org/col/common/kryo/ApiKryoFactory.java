@@ -44,7 +44,7 @@ public class ApiKryoFactory implements KryoFactory {
     kryo.register(Synonym.class);
     kryo.register(Taxon.class);
     kryo.register(VernacularName.class);
-    kryo.register(TermRecord.class);
+    kryo.register(VerbatimRecord.class);
     kryo.register(Page.class);
 
     // CSL classes & enums

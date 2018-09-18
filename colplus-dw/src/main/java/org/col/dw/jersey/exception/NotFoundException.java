@@ -21,6 +21,7 @@ public class NotFoundException extends RuntimeException {
   public static NotFoundException keyNotFound(Class<?> entity, int key) {
     return new NotFoundException(entity, ImmutableMap.of("key", key));
   }
+
   public static NotFoundException idNotFound(Class<?> entity, int datasetKey, String id) {
     return new NotFoundException(entity, ImmutableMap.of("datasetKey", datasetKey, "id", id));
   }

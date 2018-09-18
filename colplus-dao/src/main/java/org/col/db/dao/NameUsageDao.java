@@ -3,10 +3,8 @@ package org.col.db.dao;
 import java.util.List;
 
 import org.apache.ibatis.session.SqlSession;
-import org.col.api.model.NameSearch;
+import org.col.api.model.Name;
 import org.col.api.model.NameUsage;
-import org.col.api.model.Page;
-import org.col.api.model.ResultPage;
 import org.col.db.mapper.NameUsageMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,22 +26,12 @@ public class NameUsageDao {
     mapper = session.getMapper(NameUsageMapper.class);
   }
 
-  public ResultPage<NameUsage> search(NameSearch query, Page page) {
-    if (query.isEmpty()) {
-      // default to order by key for large, unfiltered resultssets
-      query.setSortBy(NameSearch.SortBy.KEY);
-    } else if (query.getSortBy() == null) {
-      query.setSortBy(NameSearch.SortBy.NAME);
-    }
-    if (query.getQ() != null) {
-      query.setQ(query.getQ() + ":*");
-    }
-    int total = 0;
-    List<NameUsage> hits = mapper.search(query, page);
-    if (!hits.isEmpty()) {
-      total = mapper.searchCount(query);
-    }
-    return new ResultPage<>(page, total, hits);
+  public List<NameUsage> byName(Name name) {
+    return byNameId(name.getDatasetKey(), name.getId());
+  }
+
+  public List<NameUsage> byNameId(int datasetKey, String nameId) {
+    return mapper.listByName(datasetKey, nameId);
   }
 
 }

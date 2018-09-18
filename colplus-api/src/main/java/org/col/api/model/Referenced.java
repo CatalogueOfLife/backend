@@ -6,10 +6,10 @@ import java.util.Set;
  *
  */
 public interface Referenced {
-  Set<Integer> getReferenceKeys();
+  Set<String> getReferenceIds();
 
-  void setReferenceKeys(Set<Integer> referenceKeys);
+  void setReferenceIds(Set<String> referenceIds);
 
-  void addReferenceKey(Integer referenceKey);
+  void addReferenceId(String referenceId);
 
 }

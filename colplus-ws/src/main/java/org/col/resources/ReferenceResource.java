@@ -34,24 +34,13 @@ public class ReferenceResource {
   }
 
   @GET
-  @Path("id/{id}")
-  public Integer lookupKey(@PathParam("datasetKey") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
-    ReferenceDao dao = new ReferenceDao(session);
-    Integer key = dao.lookupKey(id, datasetKey);
-    if(key == null) {
-      throw NotFoundException.idNotFound(Reference.class, datasetKey, id);
-    }
-    return key;
-  }
-
-  @GET
-  @Path("{key}")
-  public Reference get(@PathParam("datasetKey") int datasetKey, @PathParam("key") int key, @QueryParam("page") String page,
+  @Path("{id}")
+  public Reference get(@PathParam("datasetKey") int datasetKey, @PathParam("id") String id, @QueryParam("page") String page,
       @Context SqlSession session) {
     ReferenceDao dao = new ReferenceDao(session);
-    Reference ref = dao.get(datasetKey, key, page);
+    Reference ref = dao.get(datasetKey, id, page);
     if (ref == null) {
-      throw NotFoundException.keyNotFound(Reference.class, key);
+      throw NotFoundException.idNotFound(Reference.class, datasetKey, id);
     }
     return ref;
   }

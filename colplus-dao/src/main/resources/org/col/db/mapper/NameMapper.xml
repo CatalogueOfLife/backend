@@ -5,11 +5,10 @@
 <mapper namespace="org.col.db.mapper.NameMapper">
 
     <sql id="nameCols">
-        ${alias}.key AS ${prefix}key,
         ${alias}.id AS ${prefix}id,
         ${alias}.dataset_key AS ${prefix}dataset_key,
         ${alias}.verbatim_key AS ${prefix}verbatim_key,
-        ${alias}.homotypic_name_key AS ${prefix}homotypic_name_key,
+        ${alias}.homotypic_name_id AS ${prefix}homotypic_name_id,
         ${alias}.scientific_name AS ${prefix}scientific_name,
         ${alias}.rank AS ${prefix}rank,
         ${alias}.uninomial AS ${prefix}uninomial,
@@ -28,7 +27,7 @@
         ${alias}.combination_ex_authors AS ${prefix}combination_ex_authors,
         ${alias}.combination_year AS ${prefix}combination_year,
         ${alias}.sanctioning_author AS ${prefix}sanctioning_author,
-        ${alias}.published_in_key AS ${prefix}published_in_key,
+        ${alias}.published_in_id AS ${prefix}published_in_id,
         ${alias}.published_in_page AS ${prefix}published_in_page,
         ${alias}.code AS ${prefix}code,
         ${alias}.nom_status AS ${prefix}nom_status,
@@ -51,7 +50,7 @@
         id,
         dataset_key,
         verbatim_key,
-        homotypic_name_key,
+        homotypic_name_id,
         scientific_name,
         rank,
         uninomial,
@@ -70,7 +69,7 @@
         combination_ex_authors,
         combination_year,
         sanctioning_author,
-        published_in_key,
+        published_in_id,
         published_in_page,
         code,
         nom_status,
@@ -85,10 +84,7 @@
         #{id},
         #{datasetKey},
         #{verbatimKey},
-        <choose>
-            <when test="homotypicNameKey != null">#{homotypicNameKey}</when>
-            <otherwise>DEFAULT</otherwise>
-        </choose>,
+        #{homotypicNameId},
         #{scientificName},
         #{rank}::rank,
         #{uninomial},
@@ -108,7 +104,7 @@
         typeHandler=org.col.db.type.StringArrayTypeHandler},
         #{combinationAuthorship.year},
         #{sanctioningAuthor},
-        #{publishedInKey},
+        #{publishedInId},
         #{publishedInPage},
         #{code},
         #{nomStatus},
@@ -137,29 +133,25 @@
         </association>
     </resultMap>
 
-
     <select id="count" resultType="integer">
-        SELECT count(*) FROM name
-        <if test="datasetKey != null">
-            WHERE dataset_key = #{datasetKey}
-        </if>
+        <include refid="org.col.db.mapper.Common.countFromFinishedDatasetImport">
+            <property name="column" value="name_count"/>
+        </include>
     </select>
 
     <select id="list" resultMap="nameResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
-        <if test="datasetKey != null">
-            WHERE n.dataset_key = #{datasetKey}
-        </if>
-        ORDER BY key
+        WHERE n.dataset_key = #{datasetKey}
+        ORDER BY id
         <include refid="org.col.db.mapper.Common.limit" />
     </select>
 
     <select id="listByReference" resultMap="nameResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
-        WHERE n.published_in_key = #{refKey}
-        ORDER BY key
+        WHERE n.published_in_id = #{refId}
+        ORDER BY id
     </select>
 
     <!--  select all names of a dataset
@@ -170,50 +162,45 @@
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
         WHERE n.dataset_key = #{datasetKey}
-    </select>
-
-    <select id="lookupKey" resultType="integer">
-        SELECT key
-        FROM name
-        WHERE id = #{id} AND dataset_key = #{datasetKey}
+        ORDER BY id
     </select>
 
     <select id="get" resultMap="nameResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
-        WHERE n.key = #{key}
+        WHERE n.id = #{id}
     </select>
 
     <select id="getByTaxon" resultMap="nameResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
-            JOIN taxon t ON t.name_key=n.key
-        WHERE t.key = #{taxonKey}
+            JOIN taxon t ON t.name_id=n.id
+        WHERE t.id = #{taxonId}
     </select>
 
     <insert id="create" parameterType="Name" useGeneratedKeys="true" keyProperty="key">
-        INSERT INTO name (<include refid="COLS" />)
+        INSERT INTO name_${datasetKey} (<include refid="COLS" />)
         VALUES (<include refid="PROPS" />)
     </insert>
 
     <update id="updateHomotypicNameKey" parameterType="Name" useGeneratedKeys="true" keyProperty="key">
-        UPDATE name
-        SET homotypic_name_key = #{homoKey}
-        WHERE key = #{key}
+        UPDATE name_${datasetKey}
+        SET homotypic_name_id = #{homoId}
+        WHERE id = #{id}
     </update>
 
 
     <select id="homotypicGroup" resultMap="nameResultMap">
         SELECT <include refid="SELECT" />
         FROM name ns
-          JOIN name n ON n.homotypic_name_key=ns.homotypic_name_key
-        WHERE ns.key=#{key}
+          JOIN name n ON n.homotypic_name_id=ns.homotypic_name_id
+        WHERE ns.id=#{id}
     </select>
 
     <select id="indexGroup" resultMap="nameResultMap">
         SELECT <include refid="SELECT" />
         FROM name n
-        WHERE n.index_name_Key=#{key}
+        WHERE n.index_name_id=#{id}
     </select>
 
 </mapper>

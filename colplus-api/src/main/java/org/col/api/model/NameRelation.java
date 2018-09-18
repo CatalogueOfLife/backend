@@ -5,16 +5,16 @@ import java.util.Objects;
 import org.col.api.vocab.NomRelType;
 
 /**
- * A nomenclatural name relation between two names pointing back in time from the nameKey to the relatedNameKey.
+ * A nomenclatural name relation between two names pointing back in time from the nameId to the relatedNameId.
  */
 public class NameRelation implements VerbatimEntity {
 	private Integer key;
 	private Integer verbatimKey;
 	private Integer datasetKey;
 	private NomRelType type;
-	private Integer nameKey;
-	private Integer relatedNameKey;
-	private Integer publishedInKey;
+	private String nameId;
+	private String relatedNameId;
+	private String publishedInId;
 	private String note;
 
 	public Integer getKey() {
@@ -51,28 +51,28 @@ public class NameRelation implements VerbatimEntity {
 		this.type = type;
 	}
 
-	public Integer getNameKey() {
-		return nameKey;
+	public String getNameId() {
+		return nameId;
 	}
 
-	public void setNameKey(Integer nameKey) {
-		this.nameKey = nameKey;
+	public void setNameId(String nameId) {
+		this.nameId = nameId;
 	}
 
-	public Integer getRelatedNameKey() {
-		return relatedNameKey;
+	public String getRelatedNameId() {
+		return relatedNameId;
 	}
 
-	public void setRelatedNameKey(Integer key) {
-		this.relatedNameKey = key;
+	public void setRelatedNameId(String key) {
+		this.relatedNameId = key;
 	}
 
-	public Integer getPublishedInKey() {
-		return publishedInKey;
+	public String getPublishedInId() {
+		return publishedInId;
 	}
 
-	public void setPublishedInKey(Integer publishedInKey) {
-		this.publishedInKey = publishedInKey;
+	public void setPublishedInId(String publishedInId) {
+		this.publishedInId = publishedInId;
 	}
 
 	public String getNote() {
@@ -92,15 +92,15 @@ public class NameRelation implements VerbatimEntity {
 				Objects.equals(verbatimKey, that.verbatimKey) &&
 				Objects.equals(datasetKey, that.datasetKey) &&
 				type == that.type &&
-				Objects.equals(nameKey, that.nameKey) &&
-				Objects.equals(relatedNameKey, that.relatedNameKey) &&
-				Objects.equals(publishedInKey, that.publishedInKey) &&
+				Objects.equals(nameId, that.nameId) &&
+				Objects.equals(relatedNameId, that.relatedNameId) &&
+				Objects.equals(publishedInId, that.publishedInId) &&
 				Objects.equals(note, that.note);
 	}
 
 	@Override
 	public int hashCode() {
 
-		return Objects.hash(key, verbatimKey, datasetKey, type, nameKey, relatedNameKey, publishedInKey, note);
+		return Objects.hash(key, verbatimKey, datasetKey, type, nameId, relatedNameId, publishedInId, note);
 	}
 }

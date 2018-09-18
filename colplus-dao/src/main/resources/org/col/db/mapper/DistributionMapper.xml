@@ -6,17 +6,17 @@
 
   <sql id="SELECT">
     d.key,
-    d.taxon_key,
+    d.taxon_id,
     d.verbatim_key,
     d.area,
     d.gazetteer,
     d.status,
-    dr.reference_key
+    dr.reference_id
   </sql>
 
   <sql id="COLS">
     dataset_key,
-    taxon_key,
+    taxon_id,
     verbatim_key,
     area,
     gazetteer,
@@ -25,7 +25,7 @@
 
   <sql id="PROPS">
     #{datasetKey},
-    #{taxonKey},
+    #{taxonId},
     #{d.verbatimKey},
     #{d.area},
     #{d.gazetteer},
@@ -39,8 +39,8 @@
   <!-- A mapping to Distribution, mostly auto mapped -->
   <resultMap id="distributionResultMap" type="Distribution" autoMapping="true">
     <id property="key" column="key" />
-    <collection property="referenceKeys" ofType="Integer">
-        <result column="reference_key"/>
+    <collection property="referenceIds" ofType="String">
+        <result column="reference_id"/>
     </collection>
   </resultMap>
 
@@ -48,7 +48,7 @@
   <select id="listByTaxon" resultMap="distributionResultMap">
     SELECT <include refid="SELECT" />
     FROM <include refid="FROM" />
-    WHERE d.taxon_key = #{taxonKey} AND d.dataset_key = #{datasetKey}
+    WHERE d.taxon_id = #{taxonId} AND d.dataset_key = #{datasetKey}
     ORDER BY d.key
   </select>
 

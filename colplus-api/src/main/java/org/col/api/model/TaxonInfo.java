@@ -9,13 +9,13 @@ public class TaxonInfo {
 
 	private Taxon taxon;
 
-  private List<Integer> taxonReferences;
+  private List<String> taxonReferences;
 
 	private List<Distribution> distributions;
 
   private List<VernacularName> vernacularNames;
 
-	private Map<Integer, Reference> references = new HashMap<>();
+	private Map<String, Reference> references = new HashMap<>();
 
 	public Taxon getTaxon() {
 		return taxon;
@@ -25,11 +25,11 @@ public class TaxonInfo {
 		this.taxon = taxon;
 	}
 
-  public List<Integer> getTaxonReferences() {
+  public List<String> getTaxonReferences() {
     return taxonReferences;
   }
 
-  public void setTaxonReferences(List<Integer> taxonReferences) {
+  public void setTaxonReferences(List<String> taxonReferences) {
     this.taxonReferences = taxonReferences;
   }
 
@@ -50,28 +50,28 @@ public class TaxonInfo {
 	}
 
 
-  public Reference getReference(Integer key) {
-    return references.getOrDefault(key, null);
+  public Reference getReference(String id) {
+    return references.getOrDefault(id, null);
   }
 
-	public Map<Integer, Reference> getReferences() {
+	public Map<String, Reference> getReferences() {
 		return references;
 	}
 
-	public void setReferences(Map<Integer, Reference> references) {
+	public void setReferences(Map<String, Reference> references) {
 		this.references = references;
 	}
 
   public void addReference(Reference ref) {
-    if (!references.containsKey(ref.getKey())) {
-      references.put(ref.getKey(), ref);
+    if (!references.containsKey(ref.getId())) {
+      references.put(ref.getId(), ref);
     }
   }
 
   public void addReferences(Iterable<? extends Reference> refs) {
     for (Reference r : refs) {
-      if (!references.containsKey(r.getKey())) {
-        references.put(r.getKey(), r);
+      if (!references.containsKey(r.getId())) {
+        references.put(r.getId(), r);
       }
     }
   }

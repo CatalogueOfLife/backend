@@ -7,11 +7,11 @@ import org.col.api.model.VernacularName;
 
 public interface VernacularNameMapper {
 
-	List<VernacularName> listByTaxon(@Param("datasetKey") int datasetKey, @Param("taxonKey") int taxonKey);
+	List<VernacularName> listByTaxon(@Param("datasetKey") int datasetKey, @Param("taxonId") String taxonId);
 
 	VernacularName get(@Param("datasetKey") int datasetKey, @Param("key") int key);
 
 	void create(@Param("v") VernacularName vn,
-	    @Param("taxonKey") int taxonKey,
+	    @Param("taxonId") String taxonId,
 	    @Param("datasetKey") int datasetKey);
 }

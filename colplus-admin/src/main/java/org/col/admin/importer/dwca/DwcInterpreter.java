@@ -36,7 +36,7 @@ public class DwcInterpreter extends InterpreterBase {
     this.insertMetadata = insertMetadata;
   }
 
-  public Optional<NeoTaxon> interpret(TermRecord v) {
+  public Optional<NeoTaxon> interpret(VerbatimRecord v) {
     // name
     Optional<NameAccordingTo> nat = interpretName(v);
     if (nat.isPresent()) {
@@ -66,7 +66,7 @@ public class DwcInterpreter extends InterpreterBase {
     return Optional.empty();
   }
 
-  Optional<NeoNameRel> interpretNameRelations(TermRecord rec) {
+  Optional<NeoNameRel> interpretNameRelations(VerbatimRecord rec) {
     NeoNameRel rel = new NeoNameRel();
     SafeParser<NomRelType> type = SafeParser.parse(NomRelTypeParser.PARSER, rec.get(ColTerm.relationType));
     if (type.isPresent()) {
@@ -74,14 +74,14 @@ public class DwcInterpreter extends InterpreterBase {
       rel.setNote(rec.get(ColTerm.relationRemarks));
       if (rec.hasTerm(ColTerm.publishedIn)) {
         Reference ref = refFactory.fromDWC(rec.get(ColTerm.publishedInID), rec.get(ColTerm.publishedIn), null, rec);
-        rel.setRefKey(ref.getKey());
+        rel.setRefId(ref.getId());
       }
       return Optional.of(rel);
     }
     return Optional.empty();
   }
 
-  List<Reference> interpretReference(TermRecord rec) {
+  List<Reference> interpretReference(VerbatimRecord rec) {
     return Lists.newArrayList(refFactory.fromDC(rec.get(DcTerm.identifier),
         rec.get(DcTerm.bibliographicCitation),
         rec.get(DcTerm.creator),
@@ -92,7 +92,7 @@ public class DwcInterpreter extends InterpreterBase {
     ));
   }
 
-  List<Distribution> interpretDistribution(TermRecord rec) {
+  List<Distribution> interpretDistribution(VerbatimRecord rec) {
     List<Distribution> distributions = new ArrayList<>();
     // try to figure out an area
     if (rec.hasTerm(DwcTerm.locationID)) {
@@ -124,7 +124,7 @@ public class DwcInterpreter extends InterpreterBase {
     return distributions;
   }
 
-  List<VernacularName> interpretVernacularName(TermRecord rec) {
+  List<VernacularName> interpretVernacularName(VerbatimRecord rec) {
     return super.interpretVernacular(rec,
         this::addReferences,
         DwcTerm.vernacularName,
@@ -134,7 +134,7 @@ public class DwcInterpreter extends InterpreterBase {
     );
   }
 
-  private Distribution createDistribution(String area, Gazetteer standard, TermRecord rec) {
+  private Distribution createDistribution(String area, Gazetteer standard, VerbatimRecord rec) {
     Distribution d = new Distribution();
     d.setVerbatimKey(rec.getKey());
     d.setArea(area);
@@ -145,14 +145,14 @@ public class DwcInterpreter extends InterpreterBase {
     return d;
   }
 
-  private void addReferences(Referenced obj, TermRecord v) {
+  private void addReferences(Referenced obj, VerbatimRecord v) {
     if (v.hasTerm(DcTerm.source)) {
       Reference ref = refFactory.fromCitation(null, v.get(DcTerm.source), v);
       setRefKey(obj, ref);
     }
   }
 
-  private void interpretTaxon(NeoTaxon t, TermRecord v, EnumNote<TaxonomicStatus> status, String accordingTo) {
+  private void interpretTaxon(NeoTaxon t, VerbatimRecord v, EnumNote<TaxonomicStatus> status, String accordingTo) {
     // and it keeps the taxonID for resolution of relations
     t.taxon.setVerbatimKey(v.getKey());
     t.taxon.setId(v.getFirst(DwcTerm.taxonID, DwcaReader.DWCA_ID));
@@ -175,7 +175,7 @@ public class DwcInterpreter extends InterpreterBase {
           if (v.hasTerm(ColTerm.speciesEstimateReference)) {
             Reference ref = refFactory.fromCitation(null, v.get(ColTerm.speciesEstimateReference), v);
             if (ref != null) {
-              t.taxon.setSpeciesEstimateReferenceKey(ref.getKey());
+              t.taxon.setSpeciesEstimateReferenceId(ref.getId());
             }
           }
         }
@@ -184,7 +184,7 @@ public class DwcInterpreter extends InterpreterBase {
     t.taxon.setRemarks(v.get(DwcTerm.taxonRemarks));
   }
 
-  private Optional<NameAccordingTo> interpretName(TermRecord v) {
+  private Optional<NameAccordingTo> interpretName(VerbatimRecord v) {
     Optional<NameAccordingTo> opt = interpretName(v.getFirst(DwcTerm.taxonID, DwcaReader.DWCA_ID),
         v.getFirst(DwcTerm.taxonRank, DwcTerm.verbatimTaxonRank), v.get(DwcTerm.scientificName),
         v.get(DwcTerm.scientificNameAuthorship),
@@ -199,7 +199,7 @@ public class DwcInterpreter extends InterpreterBase {
       if (v.hasTerm(DwcTerm.namePublishedInID) || v.hasTerm(DwcTerm.namePublishedIn)) {
         Reference ref = refFactory.fromCitation(v.get(DwcTerm.namePublishedInID), v.get(DwcTerm.namePublishedIn), v);
         if (ref != null) {
-          n.setPublishedInKey(ref.getKey());
+          n.setPublishedInId(ref.getId());
           n.setPublishedInPage(ref.getPage());
         }
       }

@@ -33,70 +33,60 @@ public class NameDao {
     return nMapper.count(datasetKey);
   }
 
-  public ResultPage<Name> list(Integer datasetKey, Page page) {
+  public ResultPage<Name> list(int datasetKey, Page page) {
     int total = nMapper.count(datasetKey);
     List<Name> result = nMapper.list(datasetKey, page);
     return new ResultPage<>(page, total, result);
   }
 
-  public Integer lookupKey(String id, int datasetKey) {
-    return nMapper.lookupKey(id, datasetKey);
+  public Name get(int datasetKey, String id) {
+    return nMapper.get(datasetKey, id);
   }
 
-  public Name get(Integer key) {
-    return nMapper.get(key);
-  }
-
-  public Name getBasionym(int datasetKey, int key) {
-    List<NameRelation> rels = nrMapper.listByType(datasetKey, key, NomRelType.BASIONYM);
+  public Name getBasionym(int datasetKey, String id) {
+    List<NameRelation> rels = nrMapper.listByType(datasetKey, id, NomRelType.BASIONYM);
     if (rels.size() == 1) {
-      return nMapper.get(rels.get(0).getRelatedNameKey());
+      return nMapper.get(datasetKey, rels.get(0).getRelatedNameId());
     } else if (rels.size() > 1) {
-      throw new IllegalStateException("Multiple basionyms found for name " + key);
+      throw new IllegalStateException("Multiple basionyms found for name " + id);
     }
     return null;
   }
 
-  public Name get(String id, int datasetKey) {
-    return get(lookupKey(id, datasetKey));
-  }
-
   public void create(Name name) {
-    nMapper.create(name);
-    // this happens in the db but is not cascaded to the instance by the mapper
-    // to avoid a reload of the instance from the db we do this manually here
-    if (name.getHomotypicNameKey() == null) {
-      name.setHomotypicNameKey(name.getKey());
+    if (name.getHomotypicNameId() == null) {
+      name.setHomotypicNameId(name.getId());
     }
+    nMapper.create(name);
   }
 
   /**
    * Lists all homotypic synonyms based on the same homotypic group key
    */
-  public List<Name> homotypicGroup(int key) {
-    return nMapper.homotypicGroup(key);
+  public List<Name> homotypicGroup(int datasetKey, String id) {
+    return nMapper.homotypicGroup(datasetKey, id);
   }
 
   /**
    * Lists all relations for a given name and type
    */
-  public List<NameRelation> relations(int datasetKey, int nameKey, NomRelType type) {
-    return nrMapper.listByType(datasetKey, nameKey, type);
+  public List<NameRelation> relations(int datasetKey, String id, NomRelType type) {
+    return nrMapper.listByType(datasetKey, id, type);
   }
 
   /**
    * Lists all relations for a given name
    */
-  public List<NameRelation> relations(int datasetKey, int nameKey) {
-    return nrMapper.list(datasetKey, nameKey);
+  public List<NameRelation> relations(int datasetKey, String id) {
+    return nrMapper.list(datasetKey, id);
   }
 
   /**
    * Adds a new synonym link for an existing taxon and synonym name
    */
-  public void addSynonym(int datasetKey, int nameKey, int taxonKey, Synonym syn) {
+  public void addSynonym(int datasetKey, String nameId, String taxonId, Synonym syn) {
     Preconditions.checkNotNull(syn.getStatus(), "status must exist");
-    sMapper.create(datasetKey, nameKey, taxonKey, syn);
+    sMapper.create(datasetKey, nameId, taxonId, syn);
   }
 
 }

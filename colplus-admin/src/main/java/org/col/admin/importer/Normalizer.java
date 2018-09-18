@@ -2,13 +2,10 @@ package org.col.admin.importer;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Stream;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableMap;
@@ -18,24 +15,11 @@ import org.col.admin.importer.dwca.DwcaInserter;
 import org.col.admin.importer.neo.NeoDb;
 import org.col.admin.importer.neo.NodeBatchProcessor;
 import org.col.admin.importer.neo.NotUniqueRuntimeException;
-import org.col.admin.importer.neo.model.Labels;
-import org.col.admin.importer.neo.model.NeoProperties;
-import org.col.admin.importer.neo.model.NeoTaxon;
-import org.col.admin.importer.neo.model.RankedName;
-import org.col.admin.importer.neo.model.RelType;
+import org.col.admin.importer.neo.model.*;
 import org.col.admin.importer.neo.traverse.Traversals;
 import org.col.admin.importer.reference.ReferenceFactory;
 import org.col.admin.matching.NameIndex;
-import org.col.api.model.Classification;
-import org.col.api.model.Dataset;
-import org.col.api.model.Distribution;
-import org.col.api.model.Name;
-import org.col.api.model.NameAccordingTo;
-import org.col.api.model.NameMatch;
-import org.col.api.model.Reference;
-import org.col.api.model.TermRecord;
-import org.col.api.model.VerbatimEntity;
-import org.col.api.model.VernacularName;
+import org.col.api.model.*;
 import org.col.api.vocab.Issue;
 import org.col.api.vocab.MatchType;
 import org.col.api.vocab.Origin;
@@ -45,11 +29,7 @@ import org.col.common.collection.MapUtils;
 import org.col.common.tax.MisappliedNameMatcher;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
-import org.neo4j.graphdb.Direction;
-import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Relationship;
-import org.neo4j.graphdb.Result;
-import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.*;
 import org.neo4j.helpers.collection.Iterables;
 import org.neo4j.helpers.collection.Iterators;
 import org.slf4j.Logger;
@@ -73,6 +53,7 @@ public class Normalizer implements Callable<Boolean> {
   private final NameIndex index;
   private InsertMetadata meta;
 
+
   public Normalizer(NeoDb store, Path sourceDir, NameIndex index) {
     this.sourceDir = sourceDir;
     this.store = store;
@@ -93,6 +74,8 @@ public class Normalizer implements Callable<Boolean> {
     try {
       // batch import verbatim records
       insertData();
+      // create new id generator being aware of existing ids
+      setupIdGenerator();
       // insert normalizer db relations, create implicit nodes if needed and parse names
       checkIfCancelled();
       normalize();
@@ -112,6 +95,19 @@ public class Normalizer implements Callable<Boolean> {
       LOG.info("Normalizer store shut down");
     }
     return true;
+  }
+
+  private void setupIdGenerator() {
+    IdGenerator idGen = IdGenerator.prefixed(
+        Stream.concat(
+            store.refIds().stream(),
+            store.all()
+                .map(t-> new String[]{t.name.getId(), t.taxon.getId()})
+                .flatMap(Arrays::stream)
+        )
+    );
+    store.setIdGenerator(idGen);
+    LOG.info("ID generator created with unique prefix {}", idGen.getPrefix());
   }
 
   private void checkIfCancelled() throws InterruptedException {
@@ -137,10 +133,17 @@ public class Normalizer implements Callable<Boolean> {
    * Mostly checks for required attributes so that subsequent postgres imports do not fail.
    */
   private void verify() {
+    // verify uniqueness of name ids which are not covered by neo4j indices
+    final Set<String> nameIds = new HashSet<>(store.size());
     store.all().forEach(t -> {
-      if (t.name.getOrigin() == Origin.SOURCE) {
-        require(t.name, t.getID(), "verbatim id");
+      require(t.name, t.name.getId(), "name id");
+      require(t.name, t.taxon.getId(), "taxon id");
+      if (!nameIds.add(t.name.getId())) {
+        String msg = "Duplicate nameID "+ t.name.getId();
+        LOG.error(msg);
+        throw new NormalizationFailedException(msg);
       }
+
       // is it a source with verbatim data?
       require(t.name, t.name.getOrigin(), "name origin");
 
@@ -168,12 +171,11 @@ public class Normalizer implements Callable<Boolean> {
 
       // verify source name and flag issues
       if (t.name.getVerbatimKey() != null) {
-        TermRecord v = store.getVerbatim(t.name.getVerbatimKey());
+        VerbatimRecord v = store.getVerbatim(t.name.getVerbatimKey());
         if (NameValidator.flagIssues(t.name, v)) {
           store.put(v);
         }
       }
-
     });
 
     // flag PARENT_NAME_MISMATCH & PUBLISHED_BEFORE_GENUS for accepted names
@@ -196,10 +198,10 @@ public class Normalizer implements Callable<Boolean> {
                 store.addIssues(sp.name, Issue.PUBLISHED_BEFORE_GENUS);
               }
 
-            } else if (sp.name.getPublishedInKey() != null && g.name.getPublishedInKey() != null) {
+            } else if (sp.name.getPublishedInId() != null && g.name.getPublishedInId() != null) {
               // compare publication years if existing
-              Reference spr = store.refByKey(sp.name.getPublishedInKey());
-              Reference gr = store.refByKey(g.name.getPublishedInKey());
+              Reference spr = store.refById(sp.name.getPublishedInId());
+              Reference gr = store.refById(g.name.getPublishedInId());
               if (spr.getYear() != null && gr.getYear() != null && spr.getYear() < gr.getYear()) {
                 store.addIssues(sp.name, Issue.PUBLISHED_BEFORE_GENUS);
               }
@@ -232,7 +234,7 @@ public class Normalizer implements Callable<Boolean> {
     if (obj == null) {
       // in such fatal cases log the verbatim record in question for later debugging
       if (ent.getVerbatimKey() != null) {
-        TermRecord rec = store.getVerbatim(ent.getVerbatimKey());
+        VerbatimRecord rec = store.getVerbatim(ent.getVerbatimKey());
         LOG.error("Missing {} of {}: {}", fieldName, ent.getClass().getSimpleName(), rec.toStringComplete());
       } else {
         LOG.error("Missing {} of {}. No verbatim for {}", fieldName, ent.getClass().getSimpleName(), ent);
@@ -250,21 +252,21 @@ public class Normalizer implements Callable<Boolean> {
     }
     // track duplicates, map index name keys to verbatim key set
     //TODO: use mapdb to prevend OOMs?
-    Map<Integer, Set<Integer>> nameKeys = Maps.newHashMap();
+    Map<String, Set<Integer>> nameIds = Maps.newHashMap();
 
     store.all().forEach(t -> {
       NameMatch m = index.match(t.name, dataset.isTrusted(), false);
       if (m.hasMatch()) {
-        t.name.setIndexNameKey(m.getName().getKey());
+        t.name.setIndexNameId(m.getName().getId());
         store.update(t);
         // track duplicates if taxon
         if (!t.isSynonym()) {
           Set<Integer> nodes;
-          if (nameKeys.containsKey(m.getName().getKey())) {
-            nodes = nameKeys.get(m.getName().getKey());
+          if (nameIds.containsKey(m.getName().getId())) {
+            nodes = nameIds.get(m.getName().getId());
           } else {
             nodes = new HashSet<>();
-            nameKeys.put(m.getName().getKey(), nodes);
+            nameIds.put(m.getName().getId(), nodes);
           }
           nodes.add(t.name.getVerbatimKey());
         }
@@ -276,7 +278,7 @@ public class Normalizer implements Callable<Boolean> {
     });
     LOG.info("Matched all {} names: {}", MapUtils.sumValues(counts), Joiner.on(',').withKeyValueSeparator("=").join(counts));
 
-    for (Map.Entry<Integer, Set<Integer>> entry : nameKeys.entrySet()) {
+    for (Map.Entry<String, Set<Integer>> entry : nameIds.entrySet()) {
       if (entry.getValue().size() > 1) {
         for (Integer verbatimKey : entry.getValue()) {
           store.addIssues(verbatimKey, Issue.POTENTIAL_VARIANT);
@@ -620,7 +622,6 @@ public class Normalizer implements Callable<Boolean> {
     n.setType(NameType.SCIENTIFIC);
     n.updateScientificName();
     NeoTaxon t = NeoTaxon.createTaxon(Origin.DENORMED_CLASSIFICATION, n, false);
-
     // store, which creates a new neo node
     store.put(t);
     return t;

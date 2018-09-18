@@ -16,6 +16,7 @@ import org.javers.core.JaversBuilder;
 import org.javers.core.diff.Diff;
 import org.junit.Test;
 
+import static org.col.api.TestEntityGenerator.DATASET11;
 import static org.junit.Assert.*;
 
 /**
@@ -31,9 +32,9 @@ public class TaxonMapperTest extends MapperTestBase<TaxonMapper> {
   public void roundtrip() throws Exception {
     Taxon in = TestEntityGenerator.newTaxon("t1");
     mapper().create(in);
-    assertNotNull(in.getKey());
+    assertNotNull(in.getId());
     commit();
-    Taxon out = mapper().get(in.getDatasetKey(), in.getKey());
+    Taxon out = mapper().get(in.getDatasetKey(), in.getId());
 
     Javers javers = JaversBuilder.javers().build();
     Diff diff = javers.compare(in, out);
@@ -44,14 +45,13 @@ public class TaxonMapperTest extends MapperTestBase<TaxonMapper> {
 
   @Test
   public void count() throws Exception {
-    int i = mapper().count(TestEntityGenerator.DATASET1.getKey(), false);
-    // Just to make sure we understand our environment
     // 2 Taxa pre-inserted through InitMybatisRule.apple()
-    assertEquals(2, i);
     mapper().create(TestEntityGenerator.newTaxon("t2"));
     mapper().create(TestEntityGenerator.newTaxon("t3"));
     mapper().create(TestEntityGenerator.newTaxon("t4"));
-    assertEquals(5, mapper().count(TestEntityGenerator.DATASET1.getKey(), false));
+    generateDatasetImport(DATASET11.getKey());
+
+    assertEquals(5, mapper().count(DATASET11.getKey(), false));
   }
 
   @Test
@@ -74,19 +74,19 @@ public class TaxonMapperTest extends MapperTestBase<TaxonMapper> {
     // get first page
     Page p = new Page(0, 3);
 
-    List<Taxon> res = mapper().list(TestEntityGenerator.DATASET1.getKey(), false, p);
+    List<Taxon> res = mapper().list(DATASET11.getKey(), false, p);
     assertEquals(3, res.size());
     // First 2 taxa in dataset D1 are pre-inserted taxa:
-    assertTrue(TestEntityGenerator.TAXON1.getKey().equals(res.get(0).getKey()));
-    assertTrue(TestEntityGenerator.TAXON2.getKey().equals(res.get(1).getKey()));;
-    assertTrue(taxa.get(0).getKey().equals(res.get(2).getKey()));
+    assertEquals(TestEntityGenerator.TAXON1.getId(), res.get(0).getId());
+    assertEquals(TestEntityGenerator.TAXON2.getId(), res.get(1).getId());
+    assertEquals(taxa.get(0).getId(), res.get(2).getId());
 
     p.next();
-    res = mapper().list(TestEntityGenerator.DATASET1.getKey(), false, p);
+    res = mapper().list(DATASET11.getKey(), false, p);
     assertEquals(3, res.size());
-    assertTrue(taxa.get(1).getKey().equals(res.get(0).getKey()));
-    assertTrue(taxa.get(2).getKey().equals(res.get(1).getKey()));
-    assertTrue(taxa.get(3).getKey().equals(res.get(2).getKey()));
+    assertEquals(taxa.get(1).getId(), res.get(0).getId());
+    assertEquals(taxa.get(2).getId(), res.get(1).getId());
+    assertEquals(taxa.get(3).getId(), res.get(2).getId());
 
   }
 
@@ -110,7 +110,7 @@ public class TaxonMapperTest extends MapperTestBase<TaxonMapper> {
     // get first page
     Page p = new Page(0, 1000);
 
-    List<Taxon> res = mapper().list(TestEntityGenerator.DATASET1.getKey(), true, p);
+    List<Taxon> res = mapper().list(DATASET11.getKey(), true, p);
     // Only the 2 pre-inserted root taxa.
     assertEquals(2, res.size());
   }
@@ -121,20 +121,20 @@ public class TaxonMapperTest extends MapperTestBase<TaxonMapper> {
     mapper().create(parent);
 
     Taxon c1 = TestEntityGenerator.newTaxon("child-1");
-    c1.setParentKey(parent.getKey());
+    c1.setParentId(parent.getId());
     mapper().create(c1);
 
     Taxon c2 = TestEntityGenerator.newTaxon("child-2");
-    c2.setParentKey(parent.getKey());
+    c2.setParentId(parent.getId());
     mapper().create(c2);
 
     Taxon c3 = TestEntityGenerator.newTaxon("child-3");
-    c3.setParentKey(parent.getKey());
+    c3.setParentId(parent.getId());
     mapper().create(c3);
 
     commit();
 
-    int res = mapper().countChildren(parent.getDatasetKey(), parent.getKey());
+    int res = mapper().countChildren(parent.getDatasetKey(), parent.getId());
     assertEquals("01", 3, res);
   }
 
@@ -152,7 +152,7 @@ public class TaxonMapperTest extends MapperTestBase<TaxonMapper> {
 
     Taxon c1 = TestEntityGenerator.newTaxon("child-1");
     c1.setName(n1);
-    c1.setParentKey(parent.getKey());
+    c1.setParentId(parent.getId());
     mapper().create(c1);
 
     Name n2 = TestEntityGenerator.newName("YYY");
@@ -162,7 +162,7 @@ public class TaxonMapperTest extends MapperTestBase<TaxonMapper> {
 
     Taxon c2 = TestEntityGenerator.newTaxon("child-2");
     c2.setName(n2);
-    c2.setParentKey(parent.getKey());
+    c2.setParentId(parent.getId());
     mapper().create(c2);
 
     Name n3 = TestEntityGenerator.newName("ZZZ");
@@ -172,7 +172,7 @@ public class TaxonMapperTest extends MapperTestBase<TaxonMapper> {
 
     Taxon c3 = TestEntityGenerator.newTaxon("child-3");
     c3.setName(n3);
-    c3.setParentKey(parent.getKey());
+    c3.setParentId(parent.getId());
     mapper().create(c3);
 
     Name n4 = TestEntityGenerator.newName("AAA");
@@ -182,18 +182,18 @@ public class TaxonMapperTest extends MapperTestBase<TaxonMapper> {
 
     Taxon c4 = TestEntityGenerator.newTaxon("child-4");
     c4.setName(n4);
-    c4.setParentKey(parent.getKey());
+    c4.setParentId(parent.getId());
     mapper().create(c4);
 
     commit();
 
-    List<Taxon> res = mapper().children(parent.getDatasetKey(), parent.getKey(), new Page(0, 5));
+    List<Taxon> res = mapper().children(parent.getDatasetKey(), parent.getId(), new Page(0, 5));
 
     assertEquals("01", 4, res.size());
-    assertEquals("02", c2.getKey(), res.get(0).getKey()); // Family YYY
-    assertEquals("03", c4.getKey(), res.get(1).getKey()); // Subgenus AAA
-    assertEquals("04", c1.getKey(), res.get(2).getKey()); // Subgenus XXX
-    assertEquals("05", c3.getKey(), res.get(3).getKey()); // Infraspecific ZZZ
+    assertEquals(c2.getId(), res.get(0).getId()); // Family YYY
+    assertEquals(c4.getId(), res.get(1).getId()); // Subgenus AAA
+    assertEquals(c1.getId(), res.get(2).getId()); // Subgenus XXX
+    assertEquals(c3.getId(), res.get(3).getId()); // Infraspecific ZZZ
 
   }
 
@@ -210,7 +210,7 @@ public class TaxonMapperTest extends MapperTestBase<TaxonMapper> {
 
   private Taxon createChild(Taxon parent, String id) throws Exception {
     Taxon t = TestEntityGenerator.newTaxon(id);
-    t.setParentKey(parent.getKey());
+    t.setParentId(parent.getId());
     mapper().create(t);
     return t;
   }
@@ -220,7 +220,7 @@ public class TaxonMapperTest extends MapperTestBase<TaxonMapper> {
 
     Taxon kingdom = TestEntityGenerator.newTaxon("kingdom-01"); // 1
     // Explicitly set to null to override TestEntityGenerator
-    kingdom.setParentKey(null);
+    kingdom.setParentId(null);
     mapper().create(kingdom);
 
     LinkedList<Taxon> parents =
@@ -229,7 +229,7 @@ public class TaxonMapperTest extends MapperTestBase<TaxonMapper> {
     commit();
 
     Taxon sp = parents.removeLast();
-    List<Taxon> classification = mapper().classification(sp.getDatasetKey(), sp.getKey());
+    List<Taxon> classification = mapper().classification(sp.getDatasetKey(), sp.getId());
     assertEquals(parents.size(), classification.size());
 
     for (Taxon ht : classification) {

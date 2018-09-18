@@ -57,7 +57,7 @@ public class InterpreterBase {
     return transAscii.transform(latinName(name));
   }
 
-  protected List<VernacularName> interpretVernacular(TermRecord rec, BiConsumer<VernacularName, TermRecord> addReferences, Term name, Term translit, Term lang, Term... countryTerms) {
+  protected List<VernacularName> interpretVernacular(VerbatimRecord rec, BiConsumer<VernacularName, VerbatimRecord> addReferences, Term name, Term translit, Term lang, Term... countryTerms) {
     VernacularName vn = new VernacularName();
     vn.setVerbatimKey(rec.getKey());
     vn.setName(rec.get(name));
@@ -83,7 +83,7 @@ public class InterpreterBase {
     return Lists.newArrayList(vn);
   }
 
-  protected LocalDate date(TermRecord v, VerbatimEntity ent, Issue invalidIssue, Term term) {
+  protected LocalDate date(VerbatimRecord v, VerbatimEntity ent, Issue invalidIssue, Term term) {
     Optional<FuzzyDate> date;
     try {
       date = DateParser.PARSER.parse(v.get(term));
@@ -100,17 +100,17 @@ public class InterpreterBase {
     return null;
   }
 
-  protected URI uri(TermRecord v, VerbatimEntity ent, Issue invalidIssue, Term... term) {
+  protected URI uri(VerbatimRecord v, VerbatimEntity ent, Issue invalidIssue, Term... term) {
     return parse(UriParser.PARSER, v.getFirstRaw(term)).orNull(invalidIssue, v);
   }
 
-  protected Boolean bool(TermRecord v, VerbatimEntity ent, Issue invalidIssue, Term... term) {
+  protected Boolean bool(VerbatimRecord v, VerbatimEntity ent, Issue invalidIssue, Term... term) {
     return parse(BooleanParser.PARSER, v.getFirst(term)).orNull(invalidIssue, v);
   }
 
   public Optional<NameAccordingTo> interpretName(final String id, final String vrank, final String sciname, final String authorship,
                                        final String genus, final String infraGenus, final String species, final String infraspecies,
-                                       String nomCode, String nomStatus, String link, String remarks, TermRecord v) {
+                                       String nomCode, String nomStatus, String link, String remarks, VerbatimRecord v) {
     final boolean isAtomized = ObjectUtils.anyNotNull(genus, infraGenus, species, infraspecies);
 
     NameAccordingTo nat;
@@ -225,7 +225,7 @@ public class InterpreterBase {
 
   protected void setRefKey(Referenced obj, Reference r) {
     if (r != null) {
-      obj.addReferenceKey(r.getKey());
+      obj.addReferenceId(r.getId());
     }
   }
 

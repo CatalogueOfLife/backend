@@ -17,7 +17,7 @@ import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Test;
 
-import static org.col.api.TestEntityGenerator.DATASET1;
+import static org.col.api.TestEntityGenerator.DATASET11;
 import static org.junit.Assert.*;
 
 
@@ -33,7 +33,7 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
 
   private static DatasetImport create(ImportState state) throws Exception {
     DatasetImport d = new DatasetImport();
-    d.setDatasetKey(DATASET1.getKey());
+    d.setDatasetKey(DATASET11.getKey());
     d.setError("no error");
     d.setState(state);
     d.setStarted(LocalDateTime.now());
@@ -99,26 +99,26 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
   public void lastSuccessful() throws Exception {
     DatasetImport d = create();
     mapper().create(d);
-    assertNull(mapper().lastSuccessful(d.getDatasetKey()));
+    assertNull(mapper().lastByState(ImportState.FINISHED, d.getDatasetKey()));
 
     d.setState(ImportState.FAILED);
     d.setError("damn error");
     mapper().update(d);
-    assertNull(mapper().lastSuccessful(d.getDatasetKey()));
+    assertNull(mapper().lastByState(ImportState.FINISHED, d.getDatasetKey()));
 
     d = create();
     d.setState(ImportState.DOWNLOADING);
     mapper().create(d);
-    assertNull(mapper().lastSuccessful(d.getDatasetKey()));
+    assertNull(mapper().lastByState(ImportState.FINISHED, d.getDatasetKey()));
 
     d.setState(ImportState.FINISHED);
     mapper().update(d);
-    assertNotNull(mapper().lastSuccessful(d.getDatasetKey()));
+    assertNotNull(mapper().lastByState(ImportState.FINISHED, d.getDatasetKey()));
 
     d = create();
     d.setState(ImportState.CANCELED);
     mapper().create(d);
-    assertNotNull(mapper().lastSuccessful(d.getDatasetKey()));
+    assertNotNull(mapper().lastByState(ImportState.FINISHED, d.getDatasetKey()));
     commit();
   }
 
@@ -143,13 +143,23 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
 
   @Test
   public void generate() throws Exception {
-    DatasetImport d = mapper().metrics(DATASET1.getKey());
+    DatasetImport d = mapper().metrics(DATASET11.getKey());
     assertEquals((Integer) 4, d.getNameCount());
     assertEquals((Integer) 2, d.getTaxonCount());
     assertEquals((Integer) 2, d.getReferenceCount());
-    assertEquals((Integer) 0, d.getVerbatimCount());
+    assertEquals((Integer) 5, d.getVerbatimCount());
     assertEquals((Integer) 3, d.getVernacularCount());
     assertEquals((Integer) 3, d.getDistributionCount());
+
+    assertEquals( 6, d.getIssuesCount().keySet().size());
+    assertEquals((Integer) 1, d.getIssuesCount().get(Issue.ESCAPED_CHARACTERS));
+    assertEquals((Integer) 2, d.getIssuesCount().get(Issue.REFERENCE_ID_INVALID));
+    assertEquals((Integer) 1, d.getIssuesCount().get(Issue.ID_NOT_UNIQUE));
+    assertEquals((Integer) 1, d.getIssuesCount().get(Issue.URL_INVALID));
+    assertEquals((Integer) 1, d.getIssuesCount().get(Issue.INCONSISTENT_AUTHORSHIP));
+    assertEquals((Integer) 1, d.getIssuesCount().get(Issue.UNUSUAL_NAME_CHARACTERS));
+    assertFalse(d.getIssuesCount().containsKey(Issue.NOT_INTERPRETED));
+    assertFalse(d.getIssuesCount().containsKey(Issue.NULL_EPITHET));
 
     assertEquals( 1, d.getNamesByRankCount().size());
     assertEquals((Integer) 4, d.getNamesByRankCount().get(Rank.SPECIES));
@@ -177,7 +187,8 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     assertEquals( 1, d.getNameRelationsByTypeCount().size());
     assertEquals((Integer) 1, d.getNameRelationsByTypeCount().get(NomRelType.SPELLING_CORRECTION));
 
-    assertEquals( 0, d.getVerbatimByTypeCount().size());
+    assertEquals( 2, d.getVerbatimByTypeCount().size());
+    assertEquals((Integer) 3, d.getVerbatimByTypeCount().get(AcefTerm.AcceptedSpecies));
   }
 
 }

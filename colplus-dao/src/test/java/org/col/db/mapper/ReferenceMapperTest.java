@@ -5,15 +5,13 @@ import java.util.List;
 
 import com.google.common.collect.Sets;
 import org.col.api.RandomUtils;
-import org.col.api.TestEntityGenerator;
 import org.col.api.model.CslData;
 import org.col.api.model.Page;
 import org.col.api.model.Reference;
 import org.junit.Test;
 
-import static org.col.api.TestEntityGenerator.DATASET1;
+import static org.col.api.TestEntityGenerator.*;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 /**
  *
@@ -29,21 +27,21 @@ public class ReferenceMapperTest extends MapperTestBase<ReferenceMapper> {
 		Reference r1 = create();
 		mapper().create(r1);
 		commit();
-		Reference r2 = mapper().get(r1.getDatasetKey(), r1.getKey());
+		Reference r2 = mapper().get(r1.getDatasetKey(), r1.getId());
 		assertEquals(r1, r2);
 	}
 
 	@Test
 	public void count() throws Exception {
-		int i = mapper().count(DATASET1.getKey());
-		// Just to make sure we understand our environment:
 		// we start with 3 records in reference table, inserted through
-		// apple, only two of which belong to DATASET1.
-		assertEquals(2, i);
+		// apple, only two of which belong to DATASET11.
 		mapper().create(create());
 		mapper().create(create());
 		mapper().create(create());
-		assertEquals(5, mapper().count(DATASET1.getKey()));
+		generateDatasetImport(DATASET11.getKey());
+		commit();
+
+		assertEquals(5, mapper().count(DATASET11.getKey()));
 	}
 
 	@Test
@@ -58,34 +56,32 @@ public class ReferenceMapperTest extends MapperTestBase<ReferenceMapper> {
 		  mapper().create(r);
     }
     commit();
-		// Skip first two (pre-inserted) record:
-		Page p = new Page(2, 3);
-		List<Reference> out = mapper().list(DATASET1.getKey(), p);
-		assertEquals(3, out.size());
-		assertTrue(in.get(0).equals(out.get(0)));
-		assertTrue(in.get(1).equals(out.get(1)));
-		assertTrue(in.get(2).equals(out.get(2)));
-		p.next();
-		out = mapper().list(DATASET1.getKey(), p);
-		assertEquals(2, out.size());
+		// list is sorted by id. From apple we get 2 records for dataset 11 that sort last:
+		//r10001
+		//r10002
+		//r10003
+		//r10004
+		//r10005
+		//ref-1
+		//ref-1b
+		in.add(REF1);
+		in.add(REF2);
+		List<Reference> out = mapper().list(DATASET11.getKey(), new Page());
+		assertEquals(7, out.size());
+		assertEquals(in, out);
 	}
 
 	@Test
-	public void listByKeys() {
-		assertEquals(2, mapper().listByKeys(11, Sets.newHashSet(1,2)).size());
-		assertEquals(1, mapper().listByKeys(11, Sets.newHashSet(1,3)).size());
-		assertEquals(1, mapper().listByKeys(11, Sets.newHashSet(2)).size());
-		assertEquals(0, mapper().listByKeys(12, Sets.newHashSet(2)).size());
-		assertEquals(1, mapper().listByKeys(12, Sets.newHashSet(3)).size());
+	public void listByIds() {
+		assertEquals(2, mapper().listByIds(11, Sets.newHashSet("ref-1","ref-1b")).size());
+		assertEquals(1, mapper().listByIds(11, Sets.newHashSet("ref-1","ref-2")).size());
+		assertEquals(1, mapper().listByIds(11, Sets.newHashSet("ref-1b")).size());
+		assertEquals(0, mapper().listByIds(12, Sets.newHashSet("ref-1b")).size());
+		assertEquals(1, mapper().listByIds(12, Sets.newHashSet("ref-2")).size());
 	}
 
 	private static Reference create() throws Exception {
-		Reference ref = new Reference();
-		ref.setDatasetKey(TestEntityGenerator.DATASET1.getKey());
-		ref.setId(RandomUtils.randomString(8));
-		ref.setYear(1988);
-		ref.setCsl(createCsl());
-		return ref;
+		return newReference();
 	}
 
 	private static CslData createCsl() {

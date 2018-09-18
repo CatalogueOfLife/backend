@@ -10,7 +10,6 @@ import com.codahale.metrics.annotation.Timed;
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.model.*;
 import org.col.db.dao.NameDao;
-import org.col.db.dao.NameUsageDao;
 import org.col.db.mapper.NameMapper;
 import org.col.db.mapper.NameRelationMapper;
 import org.col.dw.jersey.exception.NotFoundException;
@@ -35,46 +34,34 @@ public class NameResource {
   @GET
   @Timed
   @Path("search")
-  public ResultPage<NameUsage> search(@BeanParam NameSearch query, @Valid @BeanParam Page page,
-      @Context SqlSession session) {
-    NameUsageDao dao = new NameUsageDao(session);
-    return dao.search(query, page);
+  public ResultPage<NameUsage> search(@BeanParam NameSearchRequest query, @Valid @BeanParam Page page,
+                                      @Context SqlSession session) {
+    throw new NotSupportedException("Awaiting Elastic Search");
   }
 
   @GET
-  @Path("id/{id}")
-  public Integer lookupKey(@PathParam("datasetKey") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
+  @Path("{id}")
+  public Name get(@PathParam("datasetKey") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
     NameDao dao = new NameDao(session);
-    Integer key = dao.lookupKey(id, datasetKey);
-    if (key == null) {
-      throw NotFoundException.idNotFound(Name.class, datasetKey, id);
-    }
-    return key;
-  }
-
-  @GET
-  @Path("{key}")
-  public Name get(@PathParam("datasetKey") int datasetKey, @PathParam("key") int key, @Context SqlSession session) {
-    NameDao dao = new NameDao(session);
-    Name name = dao.get(key);
+    Name name = dao.get(datasetKey, id);
     if (name == null) {
-      throw NotFoundException.keyNotFound(Name.class, key);
+      throw NotFoundException.idNotFound(Name.class, datasetKey, id);
     }
     return name;
   }
 
   @GET
-  @Path("{key}/synonyms")
-  public List<Name> getSynonyms(@PathParam("key") int key, @Context SqlSession session) {
+  @Path("{id}/synonyms")
+  public List<Name> getSynonyms(@PathParam("datasetKey") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
     NameDao dao = new NameDao(session);
-    return dao.homotypicGroup(key);
+    return dao.homotypicGroup(datasetKey, id);
   }
 
   @GET
-  @Path("{key}/acts")
-  public List<NameRelation> getActs(@PathParam("datasetKey") int datasetKey, @PathParam("key") int key, @Context SqlSession session) {
+  @Path("{id}/acts")
+  public List<NameRelation> getActs(@PathParam("datasetKey") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
     NameRelationMapper mapper = session.getMapper(NameRelationMapper.class);
-    return mapper.list(datasetKey, key);
+    return mapper.list(datasetKey, id);
   }
 
   /**
@@ -82,8 +69,8 @@ public class NameResource {
    * resource
    */
   @GET
-  @Path("{key}/group")
-  public List<Name> getIndexGroup(@PathParam("key") int key, @Context SqlSession session) {
-    return session.getMapper(NameMapper.class).indexGroup(key);
+  @Path("{id}/group")
+  public List<Name> getIndexGroup(@PathParam("id") String id, @Context SqlSession session) {
+    return session.getMapper(NameMapper.class).indexGroup(id);
   }
 }

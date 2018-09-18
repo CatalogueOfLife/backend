@@ -12,9 +12,9 @@ import org.col.api.model.Page;
  */
 public interface NameMapper {
 
-	int count(@Param("datasetKey") Integer datasetKey);
+	int count(@Param("datasetKey") int datasetKey);
 
-	List<Name> list(@Param("datasetKey") Integer datasetKey, @Param("page") Page page);
+	List<Name> list(@Param("datasetKey") int datasetKey, @Param("page") Page page);
 
 	/**
 	 * Iterates over all names of a given dataset and processes them with the supplied handler.
@@ -24,11 +24,9 @@ public interface NameMapper {
 	 */
 	void processDataset(@Param("datasetKey") int datasetKey, ResultHandler<Name> handler);
 
-	Integer lookupKey(@Param("id") String id, @Param("datasetKey") int datasetKey);
+	Name get(@Param("datasetKey") int datasetKey, @Param("id") String id);
 
-	Name get(@Param("key") int key);
-
-	Name getByTaxon(@Param("taxonKey") int taxonKey);
+	Name getByTaxon(@Param("taxonId") String taxonId);
 
   /**
    * Creates a new name.
@@ -38,25 +36,23 @@ public interface NameMapper {
    */
   void create(Name name);
 
-	void updateHomotypicNameKey(@Param("key") int nameKey, @Param("homoKey") int homotypicNameKey);
-
 	/**
 	 * Lists all homotypic names based on the same homotypic name key
    *
-	 * @param nameKey name key of the homotypic group
+	 * @param nameId name id of the homotypic group
 	 */
-  List<Name> homotypicGroup(@Param("key") int nameKey);
+  List<Name> homotypicGroup(@Param("datasetKey") int datasetKey, @Param("id") String nameId);
 
   /**
    * Returns the list of names published in the same reference.
    */
-  List<Name> listByReference(@Param("refKey") int publishedInKey);
+  List<Name> listByReference(@Param("datasetKey") int datasetKey, @Param("refId") String publishedInId);
 
 	/**
 	 * Lists all names with the same index name key
 	 * across all datasets.
 	 *
-	 * @param nameKey from the names index
+	 * @param nameId from the names index
 	 */
-	List<Name> indexGroup(@Param("key") int nameKey);
+	List<Name> indexGroup(@Param("id") String nameId);
 }

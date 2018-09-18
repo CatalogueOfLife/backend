@@ -17,7 +17,7 @@ public class VernacularName implements Referenced, VerbatimEntity {
   private String latin;
 	private Language language;
 	private Country country;
-	private Set<Integer> referenceKeys = Sets.newHashSet();
+	private Set<String> referenceIds = Sets.newHashSet();
 
 	public Integer getKey() {
 		return key;
@@ -73,16 +73,16 @@ public class VernacularName implements Referenced, VerbatimEntity {
 	}
 
   @Override
-  public Set<Integer> getReferenceKeys() {
-    return referenceKeys;
+  public Set<String> getReferenceIds() {
+    return referenceIds;
   }
 
-  public void setReferenceKeys(Set<Integer> referenceKeys) {
-    this.referenceKeys = referenceKeys;
+  public void setReferenceIds(Set<String> referenceIds) {
+    this.referenceIds = referenceIds;
   }
 
-  public void addReferenceKey(Integer referenceKey) {
-    this.referenceKeys.add(referenceKey);
+  public void addReferenceId(String referenceId) {
+    this.referenceIds.add(referenceId);
   }
 
 
@@ -97,12 +97,12 @@ public class VernacularName implements Referenced, VerbatimEntity {
         Objects.equals(latin, that.latin) &&
         language == that.language &&
         country == that.country &&
-        Objects.equals(referenceKeys, that.referenceKeys);
+        Objects.equals(referenceIds, that.referenceIds);
   }
 
   @Override
   public int hashCode() {
 
-    return Objects.hash(key, verbatimKey, name, latin, language, country, referenceKeys);
+    return Objects.hash(key, verbatimKey, name, latin, language, country, referenceIds);
   }
 }

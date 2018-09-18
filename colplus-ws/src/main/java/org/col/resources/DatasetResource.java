@@ -89,10 +89,7 @@ public class DatasetResource {
                                         @QueryParam("all") boolean all,
                                         @Context SqlSession session) {
     DatasetImportMapper mapper = session.getMapper(DatasetImportMapper.class);
-    if (all) {
-      return mapper.listByDataset(key);
-    }
-    return Lists.newArrayList(mapper.lastSuccessful(key));
+    return all ? mapper.listByDataset(key) : Lists.newArrayList(mapper.last(key));
   }
 
 }

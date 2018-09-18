@@ -31,9 +31,9 @@
 
     <sql id="FROM">
         synonym s
-        JOIN name n ON n.key=s.name_key AND s.dataset_key = n.dataset_key
-        JOIN taxon a ON a.key=s.taxon_key AND s.dataset_key = a.dataset_key
-        JOIN name an ON an.key=a.name_key AND s.dataset_key = an.dataset_key
+        JOIN name n ON n.id=s.name_id AND s.dataset_key = n.dataset_key
+        JOIN taxon a ON a.id=s.taxon_id AND s.dataset_key = a.dataset_key
+        JOIN name an ON an.id=a.name_id AND s.dataset_key = an.dataset_key
     </sql>
 
 
@@ -45,7 +45,7 @@
     <select id="listByName" resultMap="synonymResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
-        WHERE n.key = #{nameKey}
+        WHERE n.id = #{nameId}
             AND s.dataset_key = #{datasetKey}
     </select>
 
@@ -53,14 +53,14 @@
     <select id="listByTaxon" resultMap="synonymResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
-        WHERE s.taxon_key = #{taxonKey}
+        WHERE s.taxon_id = #{taxonId}
             AND s.dataset_key = #{datasetKey}
-        ORDER BY s.status, n.homotypic_name_key, n.scientific_name
+        ORDER BY s.status, n.homotypic_name_id, n.scientific_name
     </select>
 
     <insert id="create">
-        INSERT INTO synonym_${datasetKey} (dataset_key, name_key, taxon_key, verbatim_key, status, according_to)
-        VALUES (#{datasetKey}, #{nameKey}, #{taxonKey}, #{syn.verbatimKey}, #{syn.status}, #{syn.accordingTo})
+        INSERT INTO synonym_${datasetKey} (dataset_key, name_id, taxon_id, verbatim_key, status, according_to)
+        VALUES (#{datasetKey}, #{nameId}, #{taxonId}, #{syn.verbatimKey}, #{syn.status}, #{syn.accordingTo})
     </insert>
 
 </mapper>
