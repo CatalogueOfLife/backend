@@ -14,17 +14,12 @@
 			"ngram0": {
 				"type": "nGram",
 				"min_gram": 3,
-				"max_gram": 15,
+				"max_gram": 4,
 				"token_chars": []
 			}
 		}
 	},
 	"index": {
-		"mapping" : {
-			"nested_fields" : {
-				"limit" : 75
-			}
-		},
 		"refresh_interval": -1,
 		"max_result_window": 50000
 	}

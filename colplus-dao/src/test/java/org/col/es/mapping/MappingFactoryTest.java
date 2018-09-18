@@ -6,7 +6,6 @@ import org.col.api.model.Taxon;
 import org.col.es.EsReadTestBase;
 import org.junit.Test;
 
-@SuppressWarnings("static-method")
 public class MappingFactoryTest extends EsReadTestBase {
 
   @Test

@@ -16,6 +16,7 @@ import org.col.es.mapping.MappingFactory;
 import org.col.es.mapping.MappingSerializer;
 import org.elasticsearch.client.Request;
 import org.elasticsearch.client.Response;
+import org.elasticsearch.client.ResponseException;
 import org.elasticsearch.client.RestClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,9 +64,8 @@ public class EsUtil {
   public static <T> void createIndex(RestClient client, IndexConfig cfg) throws EsException {
     LOG.info("Creating index {}", cfg.name);
     Map<String, Object> indexSpec = new HashMap<>();
-    // First load index-independent configuration (ngram definitions etc.)
-    String resource = "es-settings.json";
-    InputStream is = EsUtil.class.getResourceAsStream(resource);
+    // First load static configuration (ngram definitions etc.)
+    InputStream is = EsUtil.class.getResourceAsStream("es-settings.json");
     ObjectMapper om = new ObjectMapper();
     TypeReference<Map<String, Object>> tr = new TypeReference<Map<String, Object>>() {};
     Map<String, Object> settings;
@@ -76,8 +76,8 @@ public class EsUtil {
     }
     // Add index-specific settings
     Map<String, Object> indexSettings = (Map<String, Object>) settings.get("index");
-    indexSettings.put("number_of_shards", cfg.numShards);
-    indexSettings.put("number_of_replicas", cfg.numReplicas);
+    indexSettings.put("number_of_shards", Integer.parseInt(cfg.numShards));
+    indexSettings.put("number_of_replicas", Integer.parseInt(cfg.numReplicas));
     indexSpec.put("settings", settings);
     // Now add type mapping
     Class<T> c;
@@ -94,10 +94,9 @@ public class EsUtil {
     indexSpec.put("mappings", mappings);
     Mapping<T> mapping = new MappingFactory<T>().getMapping(c);
     mappings.put(DEFAULT_TYPE_NAME, new MappingSerializer<>(mapping).asMap());
-    if (LOG.isDebugEnabled()) {
-      LOG.debug(serialize(indexSpec));
-    }
+    // LOG.debug(serialize(indexSpec));
     Request request = new Request("PUT", cfg.name);
+    request.setJsonEntity(serialize(indexSpec));
     Response response;
     try {
       response = client.performRequest(request);
@@ -109,23 +108,12 @@ public class EsUtil {
     }
   }
 
-  private static String serialize(Map<String, Object> map) {
-    ObjectMapper om = new ObjectMapper();
-    om.setSerializationInclusion(Include.NON_NULL);
-    om.enable(SerializationFeature.WRITE_ENUMS_USING_TO_STRING);
-    try {
-      return om.writerWithDefaultPrettyPrinter().writeValueAsString(map);
-    } catch (JsonProcessingException e) {
-      throw new AssertionError("Serialization failure", e);
-    }
-  }
-
   /**
    * Deletes all indices associated with the specified model class.
    *
    * @param cfg
    * @param modelClass
-   * @throws EsException 
+   * @throws EsException
    */
   public static void deleteIndex(EsConfig cfg, Class<?> modelClass) throws EsException {
     try (RestClient client = new EsClientFactory(cfg).createClient()) {
@@ -164,14 +152,31 @@ public class EsUtil {
   public static void deleteIndex(RestClient client, IndexConfig cfg) throws EsException {
     LOG.info("Deleting index {}", cfg.name);
     Request request = new Request("DELETE", cfg.name);
-    Response response;
+    Response response = null;
     try {
       response = client.performRequest(request);
+    } catch (ResponseException e) {
+      if (e.getResponse().getStatusLine().getStatusCode() == 404) {
+        LOG.info("No such index: {} (nothing deleted)", cfg.name);
+        return;
+      }
+      throw new EsException(e);
     } catch (IOException e) {
       throw new EsException(e);
     }
     if (response.getStatusLine().getStatusCode() != 200) {
       throw new EsException(response.getStatusLine().getReasonPhrase());
+    }
+  }
+
+  private static String serialize(Map<String, Object> map) {
+    ObjectMapper om = new ObjectMapper();
+    om.setSerializationInclusion(Include.NON_NULL);
+    om.enable(SerializationFeature.WRITE_ENUMS_USING_TO_STRING);
+    try {
+      return om.writerWithDefaultPrettyPrinter().writeValueAsString(map);
+    } catch (JsonProcessingException e) {
+      throw new AssertionError("Serialization failure", e);
     }
   }
 
