@@ -84,7 +84,8 @@ public class NeoDb implements ReferenceStore {
   private final LRUCache<String, List<Node>> monomialCache = new LRUCache<String, List<Node>>(10000);
   private final LRUCache<String, Node> idCache = new LRUCache<String, Node>(10000);
 
-  private IdGenerator idGen = IdGenerator.prefixed("neodb.");
+  private final String idGenPrefix = ".neodb.";
+  private IdGenerator idGen = new IdGenerator(idGenPrefix);
   private GraphDatabaseService neo;
 
   /**
@@ -192,8 +193,13 @@ public class NeoDb implements ReferenceStore {
     return neo;
   }
 
-  public void setIdGenerator(IdGenerator idGen) {
+  public void setIdGeneratorPrefix(String prefix) {
+    if (this.idGen.getCounter() > 0) {
+      // we had issues ids already with the previous generator, continue with its
+
+    }
     this.idGen = Preconditions.checkNotNull(idGen);
+    // update previous ids
   }
 
   public NeoTaxon get(Node n) {
@@ -957,5 +963,20 @@ public class NeoDb implements ReferenceStore {
     return new RankedName(t.node, t.name.getScientificName(), t.name.authorshipComplete(), t.name.getRank());
   }
 
+  public void updateIdGeneratorPrefix() {
+    idGen.setPrefix(
+        Stream.concat(
+            refIds().stream(),
+            all()
+                .map(t-> new String[]{t.name.getId(), t.taxon.getId()})
+                .flatMap(Arrays::stream)
+        )
+    );
+    if (idGen.getCounter() > 0) {
+      // TODO: update references, anything else should have source ids at this point
+
+    }
+    LOG.info("ID generator updated with unique prefix {}", idGen.getPrefix());
+  }
 }
 

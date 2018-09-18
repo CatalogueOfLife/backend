@@ -31,5 +31,5 @@ public interface ReferenceMapper {
 	/**
 	 * Links a reference to a taxon
 	 */
-	void linkToTaxon(@Param("datasetKey") int datasetKey, @Param("taxonId") String taxonId, @Param("refId") String refId);
+	void linkToTaxon(@Param("datasetKey") int datasetKey, @Param("taxonId") String taxonId, @Param("referenceId") String referenceId);
 }

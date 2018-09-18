@@ -11,19 +11,14 @@ import org.hashids.Hashids;
 public class IdGenerator {
   private static final String availChars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ.-_!$";
   private final AtomicLong counter = new AtomicLong(0);
-  private final String prefix;
   private final Hashids hashids = new Hashids("dvr4.", 4, availChars);
+  private String prefix;
 
-  private IdGenerator(String prefix) {
+  public IdGenerator() {
+    this.prefix = "";
+  }
+  public IdGenerator(String prefix) {
     this.prefix = prefix;
-  }
-
-  public static IdGenerator prefixed(String prefix) {
-    return new IdGenerator(prefix);
-  }
-
-  public static IdGenerator prefixed(Stream<String> existingIds) {
-    return new IdGenerator(smallestNonExistingPrefix(existingIds));
   }
 
   private static String smallestNonExistingPrefix(Stream<String> existingIds) {
@@ -50,8 +45,17 @@ public class IdGenerator {
     return prefix.toString();
   }
 
+  public long getCounter() {
+    return counter.get();
+  }
+
   public String getPrefix() {
     return prefix;
+  }
+
+  public IdGenerator setPrefix(Stream<String> existingIds) {
+    this.prefix = smallestNonExistingPrefix(existingIds);
+    return this;
   }
 
   public String next(){
