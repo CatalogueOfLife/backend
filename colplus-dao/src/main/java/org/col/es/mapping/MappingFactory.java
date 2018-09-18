@@ -35,7 +35,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class MappingFactory<T> {
 
   private static final HashMap<Class<?>, Mapping<?>> cache = new HashMap<>();
-  // private static final DataTypeMap dataTypeMap = DataTypeMap.getInstance();
 
   /**
    * Creates a document type mapping for the specified class.

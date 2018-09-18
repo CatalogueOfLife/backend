@@ -15,7 +15,7 @@ public class EsSetupRule extends ExternalResource {
     esClientFactory = new EsClientFactory(cfg);
   }
 
-  public  EsClientFactory getClientFactory() {
+  public EsClientFactory getClientFactory() {
     return esClientFactory;
   }
 

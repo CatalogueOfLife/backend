@@ -6,10 +6,10 @@ import org.junit.Test;
 public class EsUtilTest extends EsReadTestBase {
 
   @Test
-  public void createAndDeleteIndices() {
-    EsUtil.deleteIndices(getEsConfig(), Taxon.class); // OK if index does not exist
-    EsUtil.createIndices(getEsConfig(), Taxon.class);
-    EsUtil.deleteIndices(getEsConfig(), Taxon.class);
+  public void createAndDeleteIndices() throws EsException {
+    EsUtil.deleteIndex(getEsConfig(), Taxon.class); // OK if index does not exist
+    EsUtil.createIndex(getEsConfig(), Taxon.class);
+    EsUtil.deleteIndex(getEsConfig(), Taxon.class);
   }
 
 }

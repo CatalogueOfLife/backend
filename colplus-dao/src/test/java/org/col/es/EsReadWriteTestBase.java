@@ -1,7 +1,6 @@
 package org.col.es;
 
 import org.col.db.dao.DaoTestBase;
-import org.elasticsearch.client.Client;
 import org.junit.ClassRule;
 
 /**
@@ -13,8 +12,8 @@ public class EsReadWriteTestBase extends DaoTestBase {
   @ClassRule
   public static EsSetupRule esSetupRule = new EsSetupRule();
 
-  protected Client getEsClient() {
-    return esSetupRule.getClientFactory().getEsClient();
-  }
+//  protected Client getEsClient() {
+//    return esSetupRule.getClientFactory().getEsClient();
+//  }
 
 }

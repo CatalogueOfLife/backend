@@ -12,11 +12,12 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 /**
  * Serializes a {@link Mapping} instance to JSON, which is then used to actually create the document
  * type mapping within Elasticsearch. N.B. The way we serialize Mapping instances may (and probably
- * will) diverge from the way we serialize model objects. Therefore we don't use the ApiModule class.
+ * will) diverge from the way we serialize model objects. Therefore we don't use the ApiModule
+ * class.
  */
 public class MappingSerializer<T> {
 
-  private static final ObjectMapper om = configureMapper();
+  public static final ObjectMapper OBJECT_MAPPER = configureMapper();
 
   private final Mapping<T> mapping;
   private final boolean pretty;
@@ -31,15 +32,15 @@ public class MappingSerializer<T> {
   }
 
   public Map<String, Object> asMap() {
-    return om.convertValue(mapping, new TypeReference<Map<String, Object>>() {});
+    return OBJECT_MAPPER.convertValue(mapping, new TypeReference<Map<String, Object>>() {});
   }
 
   public String serialize() {
     try {
       if (pretty) {
-        return om.writerWithDefaultPrettyPrinter().writeValueAsString(mapping);
+        return OBJECT_MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(mapping);
       }
-      return om.writeValueAsString(mapping);
+      return OBJECT_MAPPER.writeValueAsString(mapping);
     } catch (JsonProcessingException e) {
       throw new RuntimeException(e);
     }

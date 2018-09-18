@@ -23,6 +23,6 @@ client:
   keepAlive: 0ms
   retries: 1
 es:
-  host: localhost
-  post: 9300
-  cluster: ayco-cluster
+  # comma-separated strings of hosts and ports (numbers must match)
+  hosts: ${es.hosts}
+  ports: ${es.ports}

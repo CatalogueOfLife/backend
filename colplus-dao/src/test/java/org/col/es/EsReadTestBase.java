@@ -1,6 +1,6 @@
 package org.col.es;
 
-import org.elasticsearch.client.Client;
+import org.elasticsearch.client.RestClient;
 import org.junit.ClassRule;
 
 /**
@@ -17,8 +17,8 @@ public class EsReadTestBase {
     return esSetupRule.getEsConfig();
   }
 
-  protected Client getEsClient() {
-    return esSetupRule.getClientFactory().getEsClient();
+  protected RestClient getEsClient() {
+    return esSetupRule.getClientFactory().createClient();
   }
 
 }

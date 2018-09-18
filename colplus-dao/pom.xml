@@ -81,8 +81,8 @@
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
 		</dependency>
-		
-		
+
+
 		<dependency>
 			<groupId>javax.validation</groupId>
 			<artifactId>validation-api</artifactId>
@@ -92,24 +92,18 @@
 			<artifactId>dwc-api</artifactId>
 		</dependency>
 
-		<dependency>
+		<!--dependency>
 			<groupId>org.elasticsearch</groupId>
 			<artifactId>elasticsearch-core</artifactId>
-		</dependency>
+		</dependency-->
 		<dependency>
 			<groupId>org.elasticsearch.client</groupId>
 			<artifactId>elasticsearch-rest-client</artifactId>
 		</dependency>
 
 		<!-- Also needed when depending on Elasticsearch: -->
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>log4j-over-slf4j</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.logging.log4j</groupId>
-			<artifactId>log4j-api</artifactId>
-		</dependency>
+		<!--dependency> <groupId>org.slf4j</groupId> <artifactId>log4j-over-slf4j</artifactId> </dependency> 
+			<dependency> <groupId>org.apache.logging.log4j</groupId> <artifactId>log4j-api</artifactId> </dependency -->
 
 
 		<!-- TEST SCOPE -->

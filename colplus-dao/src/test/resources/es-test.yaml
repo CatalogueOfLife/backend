@@ -1,5 +1,4 @@
-host: ${es.host}
-port: 9300
-cluster: ${es.cluster}
+hosts: ${es.hosts}
+ports: ${es.ports}
 indices:
   - {name: name_usaged_it, modelClass: Taxon, numShards: 1, numReplicas: 0}
