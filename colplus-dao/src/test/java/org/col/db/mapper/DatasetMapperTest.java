@@ -181,16 +181,37 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
 
 	@Test
 	public void search() throws Exception {
-		createSearchableDataset("BIZ", "CUIT", "A sentence with worms and stuff");
-		createSearchableDataset("ITIS", "ITIS", "Also contains worms");
-		createSearchableDataset("WORMS", "WORMS", "The Worms dataset");
-		createSearchableDataset("FOO", "BAR", null);
+		final Integer d1 = createSearchableDataset("ITIS", "ITIS", "Also contains worms");
+		final Integer d2 = createSearchableDataset("BIZ", "CUIT", "A sentence with worms and stuff");
+		final Integer d3 = createSearchableDataset("WORMS", "WORMS", "The Worms dataset");
+		final Integer d4 = createSearchableDataset("FOO", "BAR", null);
+		final Integer d5 = createSearchableDataset("WORMS worms", "WORMS", "Worms with even more worms than worms");
+		mapper().delete(d5);
 		commit();
-		List<Dataset> datasets = mapper().search(DatasetSearchRequest.byQuery("worms"), new Page());
-		assertEquals("01", 3, datasets.size());
-		// check order by rank:
-		assertEquals("02", "WORMS", datasets.get(0).getTitle());
-		datasets.forEach(c -> Assert.assertNotEquals("03", "FOO", c.getTitle()));
+		DatasetSearchRequest query = DatasetSearchRequest.byQuery("worms");
+		// check different orderings
+		for (DatasetSearchRequest.SortBy by : DatasetSearchRequest.SortBy.values()) {
+			query.setSortBy(by);
+			List<Dataset> datasets = mapper().search(query, new Page());
+			assertEquals(3, datasets.size());
+			datasets.forEach(c -> Assert.assertNotEquals("FOO", c.getTitle()));
+			switch (by) {
+				case RELEVANCE:
+					assertEquals("Bad ordering by "+by, d3, datasets.get(0).getKey());
+					break;
+				case TITLE:
+					assertEquals("Bad ordering by "+by, d2, datasets.get(0).getKey());
+					assertEquals("Bad ordering by "+by, d3, datasets.get(2).getKey());
+					break;
+				case CREATED:
+				case KEY:
+				case SIZE:
+				case MODIFIED:
+					assertEquals("Bad ordering by "+by, d1, datasets.get(0).getKey());
+					assertEquals("Bad ordering by "+by, d2, datasets.get(1).getKey());
+					assertEquals("Bad ordering by "+by, d3, datasets.get(2).getKey());
+			}
+		}
 	}
 
 	private static List<Dataset> removeCreated(List<Dataset> ds) {
@@ -202,11 +223,14 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
 		return ds;
 	}
 
-	private void createSearchableDataset(String title, String organisation, String description) {
+	private int createSearchableDataset(String title, String organisation, String description) {
 		Dataset ds = new Dataset();
 		ds.setTitle(title);
 		ds.setOrganisation(organisation);
 		ds.setDescription(description);
+		ds.setType(DatasetType.TAXONOMIC);
+		ds.setCatalogue(Catalogue.PROVISIONAL);
 		mapper().create(ds);
+		return ds.getKey();
 	}
 }

@@ -110,8 +110,8 @@ CREATE TABLE dataset (
   code INTEGER,
   notes text,
   catalogue INTEGER,
+  last_data_import_attempt INTEGER,
   created TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW(),
-  modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   deleted TIMESTAMP WITHOUT TIME ZONE,
   doc tsvector
 );

@@ -2,7 +2,6 @@ package org.col.db.mapper;
 
 import java.util.List;
 import java.util.UUID;
-import javax.annotation.Nullable;
 
 import org.apache.ibatis.annotations.Param;
 import org.col.api.model.Dataset;
@@ -42,6 +41,8 @@ public interface DatasetMapper {
 	void create(Dataset dataset);
 
 	int update(Dataset dataset);
+
+	int updateLastImport(@Param("key") int key, @Param("attempt") int attempt);
 
 	/**
 	 * Marks a dataset as deleted

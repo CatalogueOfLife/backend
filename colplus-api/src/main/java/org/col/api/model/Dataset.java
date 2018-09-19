@@ -36,6 +36,7 @@ public class Dataset {
 	private URI dataAccess;
 	private Frequency importFrequency;
   private NomCode code;
+	private Integer size;
 	private String notes;
 	private Catalogue catalogue;
   private LocalDateTime created;
@@ -194,6 +195,14 @@ public class Dataset {
 
 	public void setNotes(String notes) {
 		this.notes = notes;
+	}
+
+	public Integer getSize() {
+		return size;
+	}
+
+	public void setSize(Integer size) {
+		this.size = size;
 	}
 
 	/**

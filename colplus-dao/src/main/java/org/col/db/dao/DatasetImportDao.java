@@ -72,6 +72,7 @@ public class DatasetImportDao {
 
   /**
    * Updates a running dataset import instance with metrics and success state.
+   * Updates the dataset to point to the imports attempt.
    */
   public void updateImportSuccess(DatasetImport di) {
     try (SqlSession session = factory.openSession(true)){
@@ -88,6 +89,8 @@ public class DatasetImportDao {
       m.setState(ImportState.FINISHED);
       m.setError(null);
       update(m, mapper);
+
+      session.getMapper(DatasetMapper.class).updateLastImport(di.getDatasetKey(), di.getAttempt());
     }
   }
 

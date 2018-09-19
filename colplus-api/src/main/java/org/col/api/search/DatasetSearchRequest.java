@@ -2,6 +2,7 @@ package org.col.api.search;
 
 import javax.ws.rs.QueryParam;
 
+import com.google.common.base.Preconditions;
 import org.col.api.vocab.*;
 import org.gbif.nameparser.api.NomCode;
 
@@ -85,6 +86,6 @@ public class DatasetSearchRequest {
 	}
 
 	public void setSortBy(SortBy sortBy) {
-		this.sortBy = sortBy;
+		this.sortBy = Preconditions.checkNotNull(sortBy);
 	}
 }
