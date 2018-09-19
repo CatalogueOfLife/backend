@@ -1,4 +1,6 @@
 hosts: ${es.hosts}
 ports: ${es.ports}
-indices:
-  - {name: name_usaged_it, modelClass: Taxon, numShards: 1, numReplicas: 0}
+nameUsage:
+  modelClass: org.col.es.model.EsNameUsage
+  numShards: 1
+  numReplicas: 0

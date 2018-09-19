@@ -23,46 +23,12 @@ import org.slf4j.LoggerFactory;
 
 public class EsUtil {
 
-  /**
-   * The default name of the type created within an index. Multiple types per index are deprecated
-   * in ES 6.x, so the name of the type created within an index can basically be arbitrary.
-   */
-  public static final String DEFAULT_TYPE_NAME = "doc";
-
   private static final Logger LOG = LoggerFactory.getLogger(EsUtil.class);
-  private static final String MODEL_PACKAGE = "org.col.api.model";
-
-  /**
-   * Creates all indices for the specified model class. In priniple a model class may be persisted
-   * to multiple indices (e.g. in case sharding/partitioning seems like a good idea).
-   *
-   * @param cfg
-   * @param modelClass
-   * @throws EsException
-   */
-  public static void createIndex(EsConfig cfg, Class<?> modelClass) throws EsException {
-    try (RestClient client = new EsClientFactory(cfg).createClient()) {
-      for (IndexConfig idxCfg : cfg.indices) {
-        String s;
-        if (idxCfg.modelClass.contains(".")) {
-          s = idxCfg.modelClass;
-        } else {
-          s = MODEL_PACKAGE + "." + idxCfg.modelClass;
-        }
-        if (s.equals(modelClass.getName())) {
-          createIndex(client, idxCfg);
-          return;
-        }
-      }
-    } catch (IOException e) {
-      throw new EsException(e);
-    }
-    throw new EsException("Missing configuration for class " + modelClass.getName());
-  }
 
   @SuppressWarnings("unchecked")
-  public static <T> void createIndex(RestClient client, IndexConfig cfg) throws EsException {
-    LOG.info("Creating index {}", cfg.name);
+  public static <T> void createIndex(RestClient client, String name, IndexConfig cfg)
+      throws EsException {
+    LOG.info("Creating index {}", name);
     Map<String, Object> indexSpec = new HashMap<>();
     // First load static configuration (ngram definitions etc.)
     InputStream is = EsUtil.class.getResourceAsStream("es-settings.json");
@@ -82,20 +48,16 @@ public class EsUtil {
     // Now add type mapping
     Class<T> c;
     try {
-      if (cfg.modelClass.contains(".")) {
-        c = (Class<T>) Class.forName(cfg.modelClass);
-      } else {
-        c = (Class<T>) Class.forName(MODEL_PACKAGE + "." + cfg.modelClass);
-      }
+      c = (Class<T>) Class.forName(cfg.modelClass);
     } catch (ClassNotFoundException e) {
       throw new EsException("Configuration error. No such model class: " + cfg.modelClass, e);
     }
     Map<String, Object> mappings = new HashMap<>();
     indexSpec.put("mappings", mappings);
     Mapping<T> mapping = new MappingFactory<T>().getMapping(c);
-    mappings.put(DEFAULT_TYPE_NAME, new MappingSerializer<>(mapping).asMap());
+    mappings.put(EsConfig.DEFAULT_TYPE_NAME, new MappingSerializer<>(mapping).asMap());
     // LOG.debug(serialize(indexSpec));
-    Request request = new Request("PUT", cfg.name);
+    Request request = new Request("PUT", name);
     request.setJsonEntity(serialize(indexSpec));
     Response response;
     try {
@@ -108,56 +70,15 @@ public class EsUtil {
     }
   }
 
-  /**
-   * Deletes all indices associated with the specified model class.
-   *
-   * @param cfg
-   * @param modelClass
-   * @throws EsException
-   */
-  public static void deleteIndex(EsConfig cfg, Class<?> modelClass) throws EsException {
-    try (RestClient client = new EsClientFactory(cfg).createClient()) {
-      for (IndexConfig idxCfg : cfg.indices) {
-        String s;
-        if (idxCfg.modelClass.contains(".")) {
-          s = idxCfg.modelClass;
-        } else {
-          s = MODEL_PACKAGE + "." + idxCfg.modelClass;
-        }
-        if (s.equals(modelClass.getName())) {
-          deleteIndex(client, idxCfg);
-          return;
-        }
-      }
-    } catch (IOException e) {
-      throw new EsException(e);
-    }
-    throw new EsException("Missing configuration for class " + modelClass.getName());
-  }
-
-  public static void deleteIndex(EsConfig cfg, String indexName) throws EsException {
-    try (RestClient client = new EsClientFactory(cfg).createClient()) {
-      for (IndexConfig idxCfg : cfg.indices) {
-        if (idxCfg.name.equals(indexName)) {
-          deleteIndex(client, idxCfg);
-          return;
-        }
-      }
-    } catch (IOException e) {
-      throw new EsException(e);
-    }
-    throw new EsException("Missing configuration for index " + indexName);
-  }
-
-  public static void deleteIndex(RestClient client, IndexConfig cfg) throws EsException {
-    LOG.info("Deleting index {}", cfg.name);
-    Request request = new Request("DELETE", cfg.name);
-    Response response = null;
+  public static void deleteIndex(RestClient client, String name) throws EsException {
+    LOG.info("Deleting index {}", name);
+    Request request = new Request("DELETE", name);
+    Response response;
     try {
       response = client.performRequest(request);
     } catch (ResponseException e) {
-      if (e.getResponse().getStatusLine().getStatusCode() == 404) {
-        LOG.info("No such index: {} (nothing deleted)", cfg.name);
+      if (e.getResponse().getStatusLine().getStatusCode() == 404) { // That's OK
+        LOG.info("No such index: {} (nothing deleted)", name);
         return;
       }
       throw new EsException(e);
@@ -167,6 +88,43 @@ public class EsUtil {
     if (response.getStatusLine().getStatusCode() != 200) {
       throw new EsException(response.getStatusLine().getReasonPhrase());
     }
+  }
+
+  public static void refreshIndex(RestClient client, String name) throws EsException {
+    LOG.info("Refreshing index {}", name);
+    Request request = new Request("POST", name + "/_refresh");
+    Response response;
+    try {
+      response = client.performRequest(request);
+    } catch (IOException e) {
+      throw new EsException(e);
+    }
+    if (response.getStatusLine().getStatusCode() != 200) {
+      throw new EsException(response.getStatusLine().getReasonPhrase());
+    }
+  }
+
+  public static int count(RestClient client, String name) throws EsException {
+    LOG.info("Refreshing index {}", name);
+    Request request = new Request("GET", name + "/_doc/_count");
+    Response response;
+    try {
+      response = client.performRequest(request);
+    } catch (IOException e) {
+      throw new EsException(e);
+    }
+    if (response.getStatusLine().getStatusCode() != 200) {
+      throw new EsException(response.getStatusLine().getReasonPhrase());
+    }
+    TypeReference<Map<String, Object>> tr = new TypeReference<Map<String, Object>>() {};
+    ObjectMapper om = new ObjectMapper();
+    Map<String, Object> map;
+    try {
+      map = om.readValue(response.getEntity().getContent(), tr);
+    } catch (UnsupportedOperationException | IOException e) {
+      throw new EsException(e);
+    }
+    return (Integer) map.get("count");
   }
 
   private static String serialize(Map<String, Object> map) {
