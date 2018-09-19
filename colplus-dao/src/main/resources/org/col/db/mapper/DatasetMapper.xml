@@ -83,16 +83,16 @@
                 AND doc @@ plainto_tsquery('simple2', #{req.q})
             </if>
             <if test="req.code != null">
-                AND code=#{req.code})
+                AND code=#{req.code}
             </if>
             <if test="req.catalogue != null">
-                AND catalogue &lt;= #{req.catalogue})
+                AND catalogue &lt;= #{req.catalogue}
             </if>
             <if test="req.format != null">
-                AND data_format=#{req.format})
+                AND data_format=#{req.format}
             </if>
             <if test="req.type != null">
-                AND type=#{req.type})
+                AND type=#{req.type}
             </if>
         </if>
     </sql>

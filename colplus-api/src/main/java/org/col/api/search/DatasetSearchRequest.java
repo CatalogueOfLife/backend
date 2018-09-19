@@ -3,6 +3,7 @@ package org.col.api.search;
 import javax.ws.rs.QueryParam;
 
 import com.google.common.base.Preconditions;
+import org.apache.commons.lang3.StringUtils;
 import org.col.api.vocab.*;
 import org.gbif.nameparser.api.NomCode;
 
@@ -33,7 +34,7 @@ public class DatasetSearchRequest {
 	private DatasetType type;
 
 	@QueryParam("sortBy")
-	private SortBy sortBy = SortBy.RELEVANCE;
+	private SortBy sortBy;
 
 	public static DatasetSearchRequest byQuery(String query) {
 		DatasetSearchRequest q = new DatasetSearchRequest();
@@ -41,6 +42,9 @@ public class DatasetSearchRequest {
 		return q;
 	}
 
+	public boolean isEmpty() {
+		return StringUtils.isBlank(q) && code==null && catalogue==null && format==null && type==null && sortBy==null;
+	}
 	public String getQ() {
 		return q;
 	}

@@ -3,6 +3,7 @@ package org.col.db.dao;
 import java.util.List;
 import javax.annotation.Nullable;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.exception.NotFoundException;
 import org.col.api.model.Dataset;
@@ -36,8 +37,17 @@ public class DatasetDao {
 
   public ResultPage<Dataset> search(@Nullable DatasetSearchRequest req, @Nullable Page page) {
     page = page == null ? new Page() : page;
-    req = req == null ? new DatasetSearchRequest() : req;
-
+    req = req == null || req.isEmpty() ? new DatasetSearchRequest() : req;
+    if (req.getSortBy() == null) {
+      if (!StringUtils.isBlank(req.getQ())) {
+        req.setSortBy(DatasetSearchRequest.SortBy.RELEVANCE);
+      } else {
+        req.setSortBy(DatasetSearchRequest.SortBy.KEY);
+      }
+    } else if (req.getSortBy() == DatasetSearchRequest.SortBy.RELEVANCE && StringUtils.isBlank(req.getQ())) {
+      req.setQ(null);
+      req.setSortBy(DatasetSearchRequest.SortBy.KEY);
+    }
     int total = mapper.count(req);
     List<Dataset> result = mapper.search(req, page);
     return new ResultPage<>(page, total, result);
