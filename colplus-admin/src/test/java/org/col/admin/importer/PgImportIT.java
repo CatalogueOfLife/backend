@@ -37,6 +37,7 @@ import org.col.api.model.TaxonInfo;
 import org.col.api.model.VerbatimEntity;
 import org.col.api.model.VerbatimRecord;
 import org.col.api.model.VernacularName;
+import org.col.api.vocab.Catalogue;
 import org.col.api.vocab.DataFormat;
 import org.col.api.vocab.Datasets;
 import org.col.api.vocab.DistributionStatus;
