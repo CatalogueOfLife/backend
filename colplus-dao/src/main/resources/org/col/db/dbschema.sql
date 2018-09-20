@@ -92,7 +92,7 @@ CREATE TYPE rank AS ENUM (
 
 CREATE TABLE dataset (
   key serial PRIMARY KEY,
-  type INTEGER,
+  type INTEGER NOT NULL DEFAULT 4,
   title TEXT NOT NULL,
   gbif_key UUID,
   gbif_publisher_key UUID,
@@ -102,16 +102,16 @@ CREATE TABLE dataset (
   authors_and_editors TEXT[] DEFAULT '{}',
   license INTEGER,
   version TEXT,
-  release_date DATE,
+  released DATE,
   homepage TEXT,
   data_format INTEGER,
   data_access TEXT,
   import_frequency INTEGER NOT NULL DEFAULT 7,
   code INTEGER,
   notes text,
-  trusted BOOLEAN DEFAULT FALSE,
-  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
-  modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  catalogue INTEGER,
+  last_data_import_attempt INTEGER,
+  created TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW(),
   deleted TIMESTAMP WITHOUT TIME ZONE,
   doc tsvector
 );

@@ -10,10 +10,8 @@ import org.col.api.RandomUtils;
 import org.col.api.TestEntityGenerator;
 import org.col.api.model.Dataset;
 import org.col.api.model.Page;
-import org.col.api.vocab.DataFormat;
-import org.col.api.vocab.Datasets;
-import org.col.api.vocab.Frequency;
-import org.col.api.vocab.License;
+import org.col.api.search.DatasetSearchRequest;
+import org.col.api.vocab.*;
 import org.gbif.nameparser.api.NomCode;
 import org.javers.core.Javers;
 import org.javers.core.JaversBuilder;
@@ -34,6 +32,7 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
 
 	private static Dataset create() throws Exception {
 		Dataset d = new Dataset();
+		d.setType(DatasetType.TAXONOMIC);
 		d.setGbifKey(UUID.randomUUID());
 		d.setTitle(RandomUtils.randomString(80));
 		d.setDescription(RandomUtils.randomString(500));
@@ -45,7 +44,7 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
 		d.setContactPerson("Hans Peter");
 		d.setDataAccess(URI.create("https://api.gbif.org/v1/dataset/" + d.getGbifKey()));
 		d.setDataFormat(DataFormat.ACEF);
-		d.setReleaseDate(LocalDate.now());
+		d.setReleased(LocalDate.now());
 		d.setVersion("v123");
 		d.setHomepage(URI.create("https://www.gbif.org/dataset/" + d.getGbifKey()));
 		d.setNotes("my notes");
@@ -176,22 +175,43 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
 		createSearchableDataset("WORMS", "WORMS", "The Worms dataset");
 		createSearchableDataset("FOO", "BAR", null);
 		commit();
-		int count = mapper().count("worms");
+		int count = mapper().count(DatasetSearchRequest.byQuery("worms"));
 		assertEquals("01", 3, count);
 	}
 
 	@Test
 	public void search() throws Exception {
-		createSearchableDataset("BIZ", "CUIT", "A sentence with worms and stuff");
-		createSearchableDataset("ITIS", "ITIS", "Also contains worms");
-		createSearchableDataset("WORMS", "WORMS", "The Worms dataset");
-		createSearchableDataset("FOO", "BAR", null);
+		final Integer d1 = createSearchableDataset("ITIS", "ITIS", "Also contains worms");
+		final Integer d2 = createSearchableDataset("BIZ", "CUIT", "A sentence with worms and stuff");
+		final Integer d3 = createSearchableDataset("WORMS", "WORMS", "The Worms dataset");
+		final Integer d4 = createSearchableDataset("FOO", "BAR", null);
+		final Integer d5 = createSearchableDataset("WORMS worms", "WORMS", "Worms with even more worms than worms");
+		mapper().delete(d5);
 		commit();
-		List<Dataset> datasets = mapper().search("worms", new Page());
-		assertEquals("01", 3, datasets.size());
-		// check order by rank:
-		assertEquals("02", "WORMS", datasets.get(0).getTitle());
-		datasets.forEach(c -> Assert.assertNotEquals("03", "FOO", c.getTitle()));
+		DatasetSearchRequest query = DatasetSearchRequest.byQuery("worms");
+		// check different orderings
+		for (DatasetSearchRequest.SortBy by : DatasetSearchRequest.SortBy.values()) {
+			query.setSortBy(by);
+			List<Dataset> datasets = mapper().search(query, new Page());
+			assertEquals(3, datasets.size());
+			datasets.forEach(c -> Assert.assertNotEquals("FOO", c.getTitle()));
+			switch (by) {
+				case RELEVANCE:
+					assertEquals("Bad ordering by "+by, d3, datasets.get(0).getKey());
+					break;
+				case TITLE:
+					assertEquals("Bad ordering by "+by, d2, datasets.get(0).getKey());
+					assertEquals("Bad ordering by "+by, d3, datasets.get(2).getKey());
+					break;
+				case CREATED:
+				case KEY:
+				case SIZE:
+				case MODIFIED:
+					assertEquals("Bad ordering by "+by, d1, datasets.get(0).getKey());
+					assertEquals("Bad ordering by "+by, d2, datasets.get(1).getKey());
+					assertEquals("Bad ordering by "+by, d3, datasets.get(2).getKey());
+			}
+		}
 	}
 
 	private static List<Dataset> removeCreated(List<Dataset> ds) {
@@ -203,11 +223,14 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
 		return ds;
 	}
 
-	private void createSearchableDataset(String title, String organisation, String description) {
+	private int createSearchableDataset(String title, String organisation, String description) {
 		Dataset ds = new Dataset();
 		ds.setTitle(title);
 		ds.setOrganisation(organisation);
 		ds.setDescription(description);
+		ds.setType(DatasetType.TAXONOMIC);
+		ds.setCatalogue(Catalogue.PROVISIONAL);
 		mapper().create(ds);
+		return ds.getKey();
 	}
 }

@@ -144,7 +144,7 @@ public class PgImport implements Callable<Boolean> {
       old.setHomepage(dataset.getHomepage());
       old.setLicense(dataset.getLicense());
       old.setOrganisation(dataset.getOrganisation());
-      old.setReleaseDate(dataset.getReleaseDate());
+      old.setReleased(dataset.getReleased());
       old.setVersion(dataset.getVersion());
 
 			mapper.update(old);

@@ -9,11 +9,9 @@ import java.util.UUID;
 import javax.validation.constraints.NotEmpty;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
-import org.col.api.vocab.DataFormat;
-import org.col.api.vocab.DatasetType;
-import org.col.api.vocab.Frequency;
-import org.col.api.vocab.License;
+import org.col.api.vocab.*;
 import org.gbif.nameparser.api.NomCode;
 
 /**
@@ -21,7 +19,7 @@ import org.gbif.nameparser.api.NomCode;
  */
 public class Dataset {
 	private Integer key;
-	private DatasetType type;
+	private DatasetType type = DatasetType.OTHER;
 	@NotEmpty
 	private String title;
 	private UUID gbifKey;
@@ -32,28 +30,18 @@ public class Dataset {
 	private List<String> authorsAndEditors = Lists.newArrayList();
 	private License license;
 	private String version;
-	private LocalDate releaseDate;
+	private LocalDate released;
 	private URI homepage;
 	private DataFormat dataFormat;
 	private URI dataAccess;
 	private Frequency importFrequency;
   private NomCode code;
+	private Integer size;
 	private String notes;
-	private boolean trusted;
+	private Catalogue catalogue;
   private LocalDateTime created;
 	private LocalDateTime modified;
 	private LocalDateTime deleted;
-
-	public Dataset() {
-	}
-
-	/**
-	 * A key only dataset often used to represent just a foreign key to a dataset in
-	 * other classes.
-	 */
-	public Dataset(Integer key) {
-		this.key = key;
-	}
 
 	public Integer getKey() {
 		return key;
@@ -64,7 +52,7 @@ public class Dataset {
   }
 
   public void setType(DatasetType type) {
-    this.type = type;
+    this.type = Preconditions.checkNotNull(type);
   }
 
   public void setKey(Integer key) {
@@ -157,12 +145,16 @@ public class Dataset {
 		this.version = version;
 	}
 
-	public LocalDate getReleaseDate() {
-		return releaseDate;
+	/**
+	 * Release date of the source data.
+	 * The date can usually only be taken from metadata explicitly given by the source.
+	 */
+	public LocalDate getReleased() {
+		return released;
 	}
 
-	public void setReleaseDate(LocalDate releaseDate) {
-		this.releaseDate = releaseDate;
+	public void setReleased(LocalDate released) {
+		this.released = released;
 	}
 
 	public URI getHomepage() {
@@ -205,16 +197,26 @@ public class Dataset {
 		this.notes = notes;
 	}
 
-	/**
-	 * If trusted the dataset will be used to build the provisional catalogue and
-	 * names from the dataset will be inserted into the names index.
-	 */
-	public boolean isTrusted() {
-		return trusted;
+	public Integer getSize() {
+		return size;
 	}
 
-	public void setTrusted(boolean trusted) {
-		this.trusted = trusted;
+	public void setSize(Integer size) {
+		this.size = size;
+	}
+
+	/**
+	 * If the dataset participates in any of the 2 catalouge assemblies
+	 * this is indicated here. All scrutinized sources will also be included as provisional ones.
+	 *
+	 * Dataset used to build the provisional catalogue will be trusted and insert their names into the names index.
+	 */
+	public Catalogue getCatalogue() {
+		return catalogue;
+	}
+
+	public void setCatalogue(Catalogue catalogue) {
+		this.catalogue = catalogue;
 	}
 
 	public LocalDateTime getCreated() {
@@ -246,40 +248,42 @@ public class Dataset {
 		this.deleted = deleted;
 	}
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
-    Dataset dataset = (Dataset) o;
-    return Objects.equals(key, dataset.key) &&
-        type == dataset.type &&
-        Objects.equals(title, dataset.title) &&
-        Objects.equals(gbifKey, dataset.gbifKey) &&
-        Objects.equals(gbifPublisherKey, dataset.gbifPublisherKey) &&
-        Objects.equals(description, dataset.description) &&
-        code == dataset.code &&
-        Objects.equals(organisation, dataset.organisation) &&
-        Objects.equals(contactPerson, dataset.contactPerson) &&
-        Objects.equals(authorsAndEditors, dataset.authorsAndEditors) &&
-        license == dataset.license &&
-        Objects.equals(version, dataset.version) &&
-        Objects.equals(releaseDate, dataset.releaseDate) &&
-        Objects.equals(homepage, dataset.homepage) &&
-        dataFormat == dataset.dataFormat &&
-        Objects.equals(dataAccess, dataset.dataAccess) &&
-        importFrequency == dataset.importFrequency &&
-        Objects.equals(notes, dataset.notes) &&
-        Objects.equals(created, dataset.created) &&
-        Objects.equals(modified, dataset.modified) &&
-        Objects.equals(deleted, dataset.deleted);
-  }
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		Dataset dataset = (Dataset) o;
+		return Objects.equals(key, dataset.key) &&
+				type == dataset.type &&
+				Objects.equals(title, dataset.title) &&
+				Objects.equals(gbifKey, dataset.gbifKey) &&
+				Objects.equals(gbifPublisherKey, dataset.gbifPublisherKey) &&
+				Objects.equals(description, dataset.description) &&
+				Objects.equals(organisation, dataset.organisation) &&
+				Objects.equals(contactPerson, dataset.contactPerson) &&
+				Objects.equals(authorsAndEditors, dataset.authorsAndEditors) &&
+				license == dataset.license &&
+				Objects.equals(version, dataset.version) &&
+				Objects.equals(released, dataset.released) &&
+				Objects.equals(homepage, dataset.homepage) &&
+				dataFormat == dataset.dataFormat &&
+				Objects.equals(dataAccess, dataset.dataAccess) &&
+				importFrequency == dataset.importFrequency &&
+				code == dataset.code &&
+				Objects.equals(notes, dataset.notes) &&
+				catalogue == dataset.catalogue &&
+				Objects.equals(created, dataset.created) &&
+				Objects.equals(modified, dataset.modified) &&
+				Objects.equals(deleted, dataset.deleted);
+	}
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(key, type, title, gbifKey, gbifPublisherKey, description, code, organisation, contactPerson, authorsAndEditors, license, version, releaseDate, homepage, dataFormat, dataAccess, importFrequency, notes, created, modified, deleted);
-  }
+	@Override
+	public int hashCode() {
 
-  @Override
+		return Objects.hash(key, type, title, gbifKey, gbifPublisherKey, description, organisation, contactPerson, authorsAndEditors, license, version, released, homepage, dataFormat, dataAccess, importFrequency, code, notes, catalogue, created, modified, deleted);
+	}
+
+	@Override
 	public String toString() {
 		return "Dataset " + key + ": " + title;
 	}

@@ -20,7 +20,7 @@ public class WsServer extends PgApp<WsServerConfig> {
     super.run(cfg, env);
 
     env.jersey().register(new DocsResource(cfg));
-    env.jersey().register(new DatasetResource());
+    env.jersey().register(new DatasetResource(getSqlSessionFactory()));
     env.jersey().register(new ReferenceResource());
     env.jersey().register(new NameResource());
     env.jersey().register(new TaxonResource());

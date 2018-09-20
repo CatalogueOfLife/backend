@@ -1,6 +1,7 @@
 package org.col.api.model;
 
 import org.col.api.jackson.SerdeTestBase;
+import org.col.api.search.NameSearchRequest;
 import org.col.api.vocab.Issue;
 import org.col.api.vocab.NomStatus;
 import org.gbif.nameparser.api.Rank;

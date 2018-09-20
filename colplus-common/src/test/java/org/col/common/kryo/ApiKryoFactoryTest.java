@@ -8,9 +8,7 @@ import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import com.google.common.collect.Lists;
 import org.col.api.TestEntityGenerator;
-import org.col.api.model.DatasetImport;
-import org.col.api.model.Reference;
-import org.col.api.model.VerbatimRecord;
+import org.col.api.model.*;
 import org.col.api.vocab.Issue;
 import org.gbif.dwc.terms.*;
 import org.junit.Test;
@@ -55,7 +53,10 @@ public class ApiKryoFactoryTest {
 
   @Test
   public void testEmptyModels() throws Exception {
+    assertSerde(new Taxon());
+    assertSerde(new Name());
     assertSerde(new Reference());
+    assertSerde(new Dataset());
     assertSerde(new DatasetImport());
   }
 

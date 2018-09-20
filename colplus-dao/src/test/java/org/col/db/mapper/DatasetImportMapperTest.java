@@ -80,7 +80,7 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     commit();
     assertEquals((Integer)1, d1.getAttempt());
 
-    DatasetImport d2 = mapper().last(d1.getDatasetKey());
+    DatasetImport d2 = mapper().listByDataset(d1.getDatasetKey(), null, 100).get(0);
     assertNotNull(d2.getAttempt());
     d1.setAttempt(d2.getAttempt());
     assertEquals(d1, d2);
@@ -90,7 +90,7 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     mapper().update(d1);
     assertNotEquals(d1, d2);
 
-    d2 = mapper().last(d1.getDatasetKey());
+    d2 = mapper().listByDataset(d1.getDatasetKey(), null, 100).get(0);
     assertEquals(d1, d2);
     commit();
   }
@@ -99,26 +99,26 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
   public void lastSuccessful() throws Exception {
     DatasetImport d = create();
     mapper().create(d);
-    assertNull(mapper().lastByState(ImportState.FINISHED, d.getDatasetKey()));
+    assertTrue(mapper().listByDataset(d.getDatasetKey(), ImportState.FINISHED, 10).isEmpty());
 
     d.setState(ImportState.FAILED);
     d.setError("damn error");
     mapper().update(d);
-    assertNull(mapper().lastByState(ImportState.FINISHED, d.getDatasetKey()));
+    assertTrue(mapper().listByDataset(d.getDatasetKey(), ImportState.FINISHED, 10).isEmpty());
 
     d = create();
     d.setState(ImportState.DOWNLOADING);
     mapper().create(d);
-    assertNull(mapper().lastByState(ImportState.FINISHED, d.getDatasetKey()));
+    assertTrue(mapper().listByDataset(d.getDatasetKey(), ImportState.FINISHED, 10).isEmpty());
 
     d.setState(ImportState.FINISHED);
     mapper().update(d);
-    assertNotNull(mapper().lastByState(ImportState.FINISHED, d.getDatasetKey()));
+    assertFalse(mapper().listByDataset(d.getDatasetKey(), ImportState.FINISHED, 10).isEmpty());
 
     d = create();
     d.setState(ImportState.CANCELED);
     mapper().create(d);
-    assertNotNull(mapper().lastByState(ImportState.FINISHED, d.getDatasetKey()));
+    assertFalse(mapper().listByDataset(d.getDatasetKey(), ImportState.FINISHED, 10).isEmpty());
     commit();
   }
 

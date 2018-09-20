@@ -97,7 +97,7 @@ public class PgImportIT {
     cfg.archiveDir = Files.createTempDir();
     cfg.scratchDir = Files.createTempDir();
     dataset = new Dataset();
-    dataset.setTrusted(true);
+    dataset.setCatalogue(Catalogue.PROVISIONAL);
   }
 
 	@After
@@ -168,7 +168,7 @@ public class PgImportIT {
 
       Reference pubIn = rdao.get(dataset.getKey(), trametes_modesta.getPublishedInId(), trametes_modesta.getPublishedInPage());
       assertEquals("Norw. Jl Bot. 19: 236 (1972)", pubIn.getCitation());
-      assertEquals("neodb.943L", pubIn.getId());
+      assertEquals(".neodb.94QL", pubIn.getId());
     }
   }
 
@@ -554,7 +554,7 @@ public class PgImportIT {
   @Test
   @Ignore
   public void testGsdGithub() throws Exception {
-    dataset.setTrusted(true);
+    dataset.setCatalogue(Catalogue.PROVISIONAL);
     // normalizeAndImport(URI.create("https://raw.githubusercontent.com/Sp2000/colplus-repo/master/ACEF/assembly/15.tar.gz"), DataFormat.ACEF);
     // normalizeAndImport(URI.create("http://services.snsb.info/DTNtaxonlists/rest/v0.1/lists/DiversityTaxonNames_Fossils/1154/dwc"), DataFormat.DWCA);
     normalizeAndImport(URI.create("https://raw.githubusercontent.com/Sp2000/colplus-repo/master/ACEF/177.tar.gz"), DataFormat.ACEF);

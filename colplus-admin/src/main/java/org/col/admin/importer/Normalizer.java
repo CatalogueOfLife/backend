@@ -75,7 +75,7 @@ public class Normalizer implements Callable<Boolean> {
       // batch import verbatim records
       insertData();
       // create new id generator being aware of existing ids
-      setupIdGenerator();
+      store.updateIdGeneratorPrefix();
       // insert normalizer db relations, create implicit nodes if needed and parse names
       checkIfCancelled();
       normalize();
@@ -95,19 +95,6 @@ public class Normalizer implements Callable<Boolean> {
       LOG.info("Normalizer store shut down");
     }
     return true;
-  }
-
-  private void setupIdGenerator() {
-    IdGenerator idGen = IdGenerator.prefixed(
-        Stream.concat(
-            store.refIds().stream(),
-            store.all()
-                .map(t-> new String[]{t.name.getId(), t.taxon.getId()})
-                .flatMap(Arrays::stream)
-        )
-    );
-    store.setIdGenerator(idGen);
-    LOG.info("ID generator created with unique prefix {}", idGen.getPrefix());
   }
 
   private void checkIfCancelled() throws InterruptedException {
@@ -255,7 +242,7 @@ public class Normalizer implements Callable<Boolean> {
     Map<String, Set<Integer>> nameIds = Maps.newHashMap();
 
     store.all().forEach(t -> {
-      NameMatch m = index.match(t.name, dataset.isTrusted(), false);
+      NameMatch m = index.match(t.name, dataset.getCatalogue()!=null, false);
       if (m.hasMatch()) {
         t.name.setIndexNameId(m.getName().getId());
         store.update(t);

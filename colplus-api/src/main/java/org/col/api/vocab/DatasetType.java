@@ -7,5 +7,6 @@ public enum DatasetType {
   NOMENCLATOR,
   TAXONOMIC,
   NATIONAL,
+  PERSONAL,
   OTHER;
 }

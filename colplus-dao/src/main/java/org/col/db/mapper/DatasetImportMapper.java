@@ -15,16 +15,6 @@ import org.col.api.vocab.ImportState;
 public interface DatasetImportMapper {
 
   /**
-   * Get the latest import for a dataset
-   */
-  DatasetImport last(@Param("key") int datasetKey);
-
-  /**
-   * Get the latest import for a dataset with given state
-   */
-  DatasetImport lastByState(@Param("state") ImportState state, @Param("key") int datasetKey);
-
-  /**
    * Count all imports by their state
    */
   int count(@Param("states") Collection<ImportState> states);
@@ -35,9 +25,10 @@ public interface DatasetImportMapper {
   List<DatasetImport> list(@Param("states") @Nullable Collection<ImportState> states, @Param("page") Page page);
 
   /**
-   * List all current and historical imports for a dataset
+   * List current and historical imports for a dataset ordered by attempt from last to historical.
+   * Optionally filtered and limited, e.g. by one to get the last only.
    */
-  List<DatasetImport> listByDataset(@Param("key") int datasetKey);
+  List<DatasetImport> listByDataset(@Param("key") int datasetKey, @Param("state") @Nullable ImportState state, @Param("limit") int limit);
 
   /**
    * Generates new dataset metrics based on the current data.

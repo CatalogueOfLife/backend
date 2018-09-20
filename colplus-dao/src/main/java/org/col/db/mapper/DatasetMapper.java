@@ -2,19 +2,19 @@ package org.col.db.mapper;
 
 import java.util.List;
 import java.util.UUID;
-import javax.annotation.Nullable;
 
 import org.apache.ibatis.annotations.Param;
 import org.col.api.model.Dataset;
 import org.col.api.model.Page;
+import org.col.api.search.DatasetSearchRequest;
 
 public interface DatasetMapper {
 
-	int count(@Nullable @Param("q") String q);
+	int count(@Param("req") DatasetSearchRequest request);
+
+	List<Dataset> search(@Param("req") DatasetSearchRequest request, @Param("page") Page page);
 
 	List<Dataset> list(@Param("page") Page page);
-
-	List<Dataset> search(@Nullable @Param("q") String q, @Param("page") Page page);
 
 	/**
 	 * list datasets which have not been imported before, ordered by date created.
@@ -29,6 +29,11 @@ public interface DatasetMapper {
    */
   List<Dataset> listToBeImported(int limit);
 
+	/**
+	 * @return dataset key if dataset exists and is not deleted, null otherwise
+	 */
+	Integer exists(@Param("key") int key);
+
   Dataset get(@Param("key") int key);
 
 	Dataset getByGBIF(@Param("key") UUID key);
@@ -36,6 +41,8 @@ public interface DatasetMapper {
 	void create(Dataset dataset);
 
 	int update(Dataset dataset);
+
+	int updateLastImport(@Param("key") int key, @Param("attempt") int attempt);
 
 	/**
 	 * Marks a dataset as deleted

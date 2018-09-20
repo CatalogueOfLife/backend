@@ -1,9 +1,13 @@
-package org.col.api.model;
+package org.col.api.search;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+
+import org.col.api.model.NameUsage;
+import org.col.api.model.Page;
+import org.col.api.model.ResultPage;
 
 public class NameSearchResponse extends ResultPage<NameUsage> {
   private Map<NameSearchFacet, List<FacetCount>> facets;

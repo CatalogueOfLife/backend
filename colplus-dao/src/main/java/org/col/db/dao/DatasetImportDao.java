@@ -2,16 +2,20 @@ package org.col.db.dao;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.List;
+import javax.annotation.Nullable;
 
 import com.google.common.base.Preconditions;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
+import org.col.api.exception.NotFoundException;
 import org.col.api.model.Dataset;
 import org.col.api.model.DatasetImport;
 import org.col.api.model.Page;
 import org.col.api.model.ResultPage;
 import org.col.api.vocab.ImportState;
 import org.col.db.mapper.DatasetImportMapper;
+import org.col.db.mapper.DatasetMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,6 +29,20 @@ public class DatasetImportDao {
 
   public DatasetImportDao(SqlSessionFactory factory) {
     this.factory = factory;
+  }
+
+  public List<DatasetImport> listByDataset(int key, @Nullable ImportState state, int limit) {
+    try (SqlSession session = factory.openSession(true)){
+      DatasetImportMapper mapper = session.getMapper(DatasetImportMapper.class);
+      List<DatasetImport> imports = mapper.listByDataset(key, state, limit);
+      if (imports.isEmpty()) {
+        // check if dataset even exists
+        if (session.getMapper(DatasetMapper.class).exists(key) == null) {
+          throw NotFoundException.keyNotFound(Dataset.class, key);
+        }
+      }
+      return imports;
+    }
   }
 
   public ResultPage<DatasetImport> list(Collection<ImportState> states, Page page) {
@@ -54,6 +72,7 @@ public class DatasetImportDao {
 
   /**
    * Updates a running dataset import instance with metrics and success state.
+   * Updates the dataset to point to the imports attempt.
    */
   public void updateImportSuccess(DatasetImport di) {
     try (SqlSession session = factory.openSession(true)){
@@ -70,6 +89,8 @@ public class DatasetImportDao {
       m.setState(ImportState.FINISHED);
       m.setError(null);
       update(m, mapper);
+
+      session.getMapper(DatasetMapper.class).updateLastImport(di.getDatasetKey(), di.getAttempt());
     }
   }
 

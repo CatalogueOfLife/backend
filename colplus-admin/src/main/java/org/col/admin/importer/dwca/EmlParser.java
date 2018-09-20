@@ -100,7 +100,7 @@ public class EmlParser {
                 case "pubDate":
                   FuzzyDate fuzzy = date(text);
                   if (fuzzy != null) {
-                    d.setReleaseDate(fuzzy.toLocalDate());
+                    d.setReleased(fuzzy.toLocalDate());
                   }
                   break;
                 case "creator":

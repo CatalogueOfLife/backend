@@ -125,10 +125,6 @@ public enum NomRelType {
   private final NomStatus from;
   private final NomStatus to;
 
-  NomRelType() {
-    this(null, null, null);
-  }
-
   NomRelType(Boolean homotypic, NomStatus from, NomStatus to) {
     this.homotypic = homotypic;
     this.from = from;
