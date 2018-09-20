@@ -16,108 +16,120 @@ import org.slf4j.LoggerFactory;
 import ru.yandex.qatools.embed.postgresql.EmbeddedPostgres;
 
 /**
- * A junit test rule that starts up an {@link EmbeddedPostgres} server together
- * with a {@link HikariDataSource} and stops both at the end. The rule was
- * designed to share the server across all tests of a test class if it runs as a
- * static {@link org.junit.ClassRule}.
+ * A junit test rule that starts up an {@link EmbeddedPostgres} server together with a
+ * {@link HikariDataSource} and stops both at the end. The rule was designed to share the server
+ * across all tests of a test class if it runs as a static {@link org.junit.ClassRule}.
  *
- * It can even be used to share the same postgres server across several test
- * classes if it is used in as a {@link org.junit.ClassRule} in a TestSuite.
+ * It can even be used to share the same postgres server across several test classes if it is used
+ * in as a {@link org.junit.ClassRule} in a TestSuite.
  *
- * By default it uses an embedded postgres server.
- * Setting the System variable "" to true enables the use of
+ * By default it uses an embedded postgres server. Setting the System variable "" to true enables
+ * the use of
  */
 public class PgSetupRule extends ExternalResource {
   private static final Logger LOG = LoggerFactory.getLogger(PgSetupRule.class);
 
-	private static HikariDataSource dataSource;
-	private static SqlSessionFactory sqlSessionFactory;
+  private static HikariDataSource dataSource;
+  private static SqlSessionFactory sqlSessionFactory;
   private static PgConfig cfg;
-	private EmbeddedColPg postgres;
-	private final boolean serverOnly;
+  private EmbeddedColPg postgres;
+  private final boolean serverOnly;
+  private final boolean doInitDb;
 
-	public PgSetupRule() {
-		this(false);
-	}
+  public PgSetupRule() {
+    this(false, true);
+  }
 
-	/**
-	 * @param serverOnly if true just provides a postgres server but does not connect to it or init a colplus database
-	 */
-	public PgSetupRule(boolean serverOnly) {
-		this.serverOnly = serverOnly;
-	}
+  /**
+   * @param serverOnly if true just provides a postgres server but does not connect to it or init a
+   *        colplus database
+   */
+  public PgSetupRule(boolean serverOnly) {
+    this(serverOnly, true);
+  }
 
-	public static PgConfig getCfg() {
+  /**
+   * @param serverOnly if true just provides a postgres server and connects to it but does not init
+   *        the colplus db; can be handy for ad hoc (@Ignore) tests where you want to work with a
+   *        good chunk of data.
+   */
+  public PgSetupRule(boolean serverOnly, boolean doInitDb) {
+    this.serverOnly = serverOnly;
+    this.doInitDb = doInitDb;
+  }
+
+  public static PgConfig getCfg() {
     return cfg;
   }
 
   public static Connection getConnection() throws SQLException {
-		return dataSource.getConnection();
-	}
+    return dataSource.getConnection();
+  }
 
-	public static SqlSessionFactory getSqlSessionFactory() {
-		return sqlSessionFactory;
-	}
+  public static SqlSessionFactory getSqlSessionFactory() {
+    return sqlSessionFactory;
+  }
 
-	@Override
-	protected void before() throws Throwable {
-		super.before();
-		try {
-			startDb();
-			if (!serverOnly) {
-				connect();
-				initDb(cfg);
-			}
-		} catch (Exception e) {
-			LOG.error("Pg setup error: {}", e.getMessage(), e);
-			shutdown();
-			throw new RuntimeException(e);
-		}
-	}
+  @Override
+  protected void before() throws Throwable {
+    super.before();
+    try {
+      startDb();
+      if (!serverOnly) {
+        connect();
+        if (doInitDb) {
+          initDb(cfg);
+        }
+      }
+    } catch (Exception e) {
+      LOG.error("Pg setup error: {}", e.getMessage(), e);
+      shutdown();
+      throw new RuntimeException(e);
+    }
+  }
 
-	private void startDb() throws IOException {
-		cfg = YamlUtils.read(PgConfig.class, "/pg-test.yaml");
-		if (cfg.embedded()) {
-			postgres = new EmbeddedColPg(cfg);
-			postgres.start();
+  private void startDb() throws IOException {
+    cfg = YamlUtils.read(PgConfig.class, "/pg-test.yaml");
+    if (cfg.embedded()) {
+      postgres = new EmbeddedColPg(cfg);
+      postgres.start();
 
-		} else {
-			LOG.info("Use external Postgres server {}/{}", cfg.host, cfg.database);
-		}
-	}
+    } else {
+      LOG.info("Use external Postgres server {}/{}", cfg.host, cfg.database);
+    }
+  }
 
-	private void connect() {
-		LOG.debug("Setup connection pool");
-		HikariConfig hikari = cfg.hikariConfig();
-		hikari.setAutoCommit(false);
-		dataSource = new HikariDataSource(hikari);
+  private void connect() {
+    LOG.debug("Setup connection pool");
+    HikariConfig hikari = cfg.hikariConfig();
+    hikari.setAutoCommit(false);
+    dataSource = new HikariDataSource(hikari);
+    // configure single mybatis session factory
+    sqlSessionFactory = MybatisFactory.configure(dataSource, "test");
+  }
 
-		// configure single mybatis session factory
-		sqlSessionFactory = MybatisFactory.configure(dataSource, "test");
-	}
-
-	public static void initDb(PgConfig cfg) throws Exception {
-		try (Connection con = cfg.connect()) {
-			LOG.info("Init empty database schema");
-			ScriptRunner runner = PgConfig.scriptRunner(con);
+  public static void initDb(PgConfig cfg) throws Exception {
+    try (Connection con = cfg.connect()) {
+      LOG.info("Init empty database schema");
+      ScriptRunner runner = PgConfig.scriptRunner(con);
       runner.runScript(Resources.getResourceAsReader(PgConfig.SCHEMA_FILE));
-			con.commit();
-		}
-	}
+      con.commit();
+    }
+  }
 
-	@Override
-	public void after() {
-		shutdown();
-	}
+  @Override
+  public void after() {
+    shutdown();
+  }
 
-	private void shutdown() {
-		if (dataSource != null) {
-			LOG.info("Shutdown dbpool");
-			dataSource.close();
-		}
-		if (postgres != null) {
-			postgres.stop();
-		}
-	}
+  private void shutdown() {
+    if (dataSource != null) {
+      LOG.info("Shutdown dbpool");
+      dataSource.close();
+    }
+    if (postgres != null) {
+      postgres.stop();
+    }
+  }
 
 }
