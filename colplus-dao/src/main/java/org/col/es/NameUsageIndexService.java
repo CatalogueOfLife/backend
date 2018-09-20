@@ -113,9 +113,13 @@ public class NameUsageIndexService {
     });
   }
 
-  private void execute(Request req, String index, List<NameUsage> usages)
-      throws IOException {
-    Response reponse = client.performRequest(req);
+  private void execute(Request req, String index, List<NameUsage> usages) {
+    Response reponse;
+    try {
+      reponse = client.performRequest(req);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
     if (reponse.getStatusLine().getStatusCode() == 200) {
       LOG.debug("Successfully inserted {} name usages into index {}", usages.size(), index);
     } else {

@@ -1,11 +1,5 @@
 package org.col.admin;
 
-import io.dropwizard.client.DropwizardApacheConnector;
-import io.dropwizard.client.HttpClientBuilder;
-import io.dropwizard.client.JerseyClientBuilder;
-import io.dropwizard.client.JerseyClientConfiguration;
-import io.dropwizard.setup.Bootstrap;
-import io.dropwizard.setup.Environment;
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -22,6 +16,9 @@ import org.col.admin.resources.MatchingResource;
 import org.col.api.vocab.ColTerm;
 import org.col.api.vocab.Datasets;
 import org.col.dw.PgApp;
+import org.col.dw.es.ManagedEsClient;
+import org.col.es.EsClientFactory;
+import org.elasticsearch.client.RestClient;
 import org.gbif.dwc.terms.TermFactory;
 import org.glassfish.jersey.client.rx.RxClient;
 import org.glassfish.jersey.client.rx.java8.RxCompletionStageInvoker;
@@ -29,6 +26,13 @@ import org.glassfish.jersey.client.spi.ConnectorProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
+
+import io.dropwizard.client.DropwizardApacheConnector;
+import io.dropwizard.client.HttpClientBuilder;
+import io.dropwizard.client.JerseyClientBuilder;
+import io.dropwizard.client.JerseyClientConfiguration;
+import io.dropwizard.setup.Bootstrap;
+import io.dropwizard.setup.Environment;
 
 public class AdminServer extends PgApp<AdminServerConfig> {
   private static final Logger LOG = LoggerFactory.getLogger(AdminServer.class);
@@ -74,7 +78,6 @@ public class AdminServer extends PgApp<AdminServerConfig> {
             requestConfig(cfg.client), cfg.client.isChunkedEncodingEnabled()))
         .buildRx(getName(), RxCompletionStageInvoker.class);
 
-
     // name index
     NameIndex ni;
     if (cfg.namesIndexFile == null) {
@@ -87,14 +90,19 @@ public class AdminServer extends PgApp<AdminServerConfig> {
     }
     env.jersey().register(new MatchingResource(ni));
 
+    RestClient esClient = new EsClientFactory(cfg.es).createClient();
+    env.lifecycle().manage(new ManagedEsClient(esClient));
+
     // setup async importer
-    final ImportManager importManager = new ImportManager(cfg, env.metrics(), hc, getSqlSessionFactory(), ni);
+    final ImportManager importManager =
+        new ImportManager(cfg, env.metrics(), hc, getSqlSessionFactory(), ni, esClient);
     env.lifecycle().manage(importManager);
     env.jersey().register(new ImporterResource(importManager, getSqlSessionFactory()));
 
     if (cfg.importer.continousImportPolling > 0) {
       LOG.info("Enable continuous importing");
-      env.lifecycle().manage(new ContinuousImporter(cfg.importer, importManager, getSqlSessionFactory()));
+      env.lifecycle()
+          .manage(new ContinuousImporter(cfg.importer, importManager, getSqlSessionFactory()));
     } else {
       LOG.warn("Disable continuous importing");
     }

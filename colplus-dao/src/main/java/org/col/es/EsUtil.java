@@ -42,8 +42,8 @@ public class EsUtil {
     }
     // Add index-specific settings
     Map<String, Object> indexSettings = (Map<String, Object>) settings.get("index");
-    indexSettings.put("number_of_shards", Integer.parseInt(cfg.numShards));
-    indexSettings.put("number_of_replicas", Integer.parseInt(cfg.numReplicas));
+    indexSettings.put("number_of_shards", cfg.numShards);
+    indexSettings.put("number_of_replicas", cfg.numReplicas);
     indexSpec.put("settings", settings);
     // Now add type mapping
     Class<T> c;

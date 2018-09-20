@@ -6,8 +6,8 @@ public class IndexConfig {
    * The model class corresponding to the type.
    */
   public String modelClass;
-  public String numShards;
-  public String numReplicas;
+  public int numShards = 1;
+  public int numReplicas = 0;
   /**
    * Batch size for bulk request
    */

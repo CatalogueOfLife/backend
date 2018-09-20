@@ -22,16 +22,18 @@ import org.col.common.concurrent.StartNotifier;
 import org.col.common.io.CompressionUtil;
 import org.col.common.io.DownloadUtil;
 import org.col.db.dao.DatasetImportDao;
+import org.col.es.NameUsageIndexService;
+import org.elasticsearch.client.RestClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 /**
- * Asynchronous import job that orchestrates the entire import process
- * including download, normalization and insertion into Postgres.
+ * Asynchronous import job that orchestrates the entire import process including download,
+ * normalization and insertion into Postgres.
  *
- * It can be cancelled by an according method at any time.
- * Equality of instances is just based on the datasetKey which allows multiple imports for the same dataset to be easily detected.
+ * It can be cancelled by an according method at any time. Equality of instances is just based on
+ * the datasetKey which allows multiple imports for the same dataset to be easily detected.
  */
 public class ImportJob implements Runnable {
   private static final Logger LOG = LoggerFactory.getLogger(ImportJob.class);
@@ -46,10 +48,11 @@ public class ImportJob implements Runnable {
   private final SqlSessionFactory factory;
   private final DatasetImportDao dao;
   private final NameIndex index;
+  private final RestClient esClient;
   private final StartNotifier notifier;
 
-  ImportJob(Dataset d, boolean force, AdminServerConfig cfg, DownloadUtil downloader, SqlSessionFactory factory,
-             NameIndex index, StartNotifier notifier) {
+  ImportJob(Dataset d, boolean force, AdminServerConfig cfg, DownloadUtil downloader,
+      SqlSessionFactory factory, NameIndex index, RestClient esClient, StartNotifier notifier) {
     this.datasetKey = d.getKey();
     this.dataset = d;
     this.force = force;
@@ -57,6 +60,7 @@ public class ImportJob implements Runnable {
     this.downloader = downloader;
     this.factory = factory;
     this.index = index;
+    this.esClient = esClient;
     dao = new DatasetImportDao(factory);
     this.notifier = notifier;
   }
@@ -98,7 +102,7 @@ public class ImportJob implements Runnable {
 
   private void checkIfCancelled() throws InterruptedException {
     if (Thread.currentThread().isInterrupted()) {
-      throw new InterruptedException("Import "+ di.attempt() +" was cancelled");
+      throw new InterruptedException("Import " + di.attempt() + " was cancelled");
     }
   }
 
@@ -108,15 +112,17 @@ public class ImportJob implements Runnable {
 
     try {
       di = dao.createDownloading(dataset);
-      LOG.info("Start new import attempt {} for dataset {}: {}", di.getAttempt(), datasetKey, dataset.getTitle());
+      LOG.info("Start new import attempt {} for dataset {}: {}", di.getAttempt(), datasetKey,
+          dataset.getTitle());
 
       File source = cfg.normalizer.source(datasetKey);
       source.getParentFile().mkdirs();
 
       checkIfCancelled();
-      LOG.info("Downloading sources for dataset {} from {} to {}", datasetKey, di.getDownloadUri(), source);
+      LOG.info("Downloading sources for dataset {} from {} to {}", datasetKey, di.getDownloadUri(),
+          source);
       final boolean isModified = downloader.downloadIfModified(di.getDownloadUri(), source);
-      if(isModified || force) {
+      if (isModified || force) {
         if (!isModified) {
           LOG.info("Force reimport of unchanged archive {}", datasetKey);
         }
@@ -142,16 +148,14 @@ public class ImportJob implements Runnable {
         LOG.info("Build import metrics for dataset {}", datasetKey);
         dao.updateImportSuccess(di);
 
-        LOG.info("Dataset import {} completed in {}", datasetKey,
-            DurationFormatUtils.formatDurationHMS(Duration.between(di.getStarted(), LocalDateTime.now()).toMillis())
-        );
+        LOG.info("Dataset import {} completed in {}", datasetKey, DurationFormatUtils
+            .formatDurationHMS(Duration.between(di.getStarted(), LocalDateTime.now()).toMillis()));
 
       } else {
         LOG.info("Dataset {} sources unchanged. Stop import", datasetKey);
         di.setDownload(downloader.lastModified(source));
         dao.updateImportUnchanged(di);
       }
-
 
     } catch (InterruptedException e) {
       // cancelled import
@@ -169,7 +173,7 @@ public class ImportJob implements Runnable {
         store.close();
       }
       // remove source scratch folder with neo4j and decompressed dwca folders
-      final File scratchDir  = cfg.normalizer.scratchDir(datasetKey);
+      final File scratchDir = cfg.normalizer.scratchDir(datasetKey);
       LOG.debug("Remove scratch dir {}", scratchDir.getAbsolutePath());
       try {
         FileUtils.deleteDirectory(scratchDir);
@@ -177,12 +181,21 @@ public class ImportJob implements Runnable {
         LOG.error("Failed to remove scratch dir {}", scratchDir, e);
       }
     }
+
+    try {
+      NameUsageIndexService svc = new NameUsageIndexService(esClient, cfg.es, factory);
+      svc.indexDataset(datasetKey);
+    } catch (Throwable t) {
+      LOG.error("Failure while creating Elasticsearch index for dataset {}: {}", datasetKey, t);
+    }
   }
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+    if (this == o)
+      return true;
+    if (o == null || getClass() != o.getClass())
+      return false;
     ImportJob importJob = (ImportJob) o;
     return datasetKey == importJob.datasetKey;
   }
@@ -194,9 +207,6 @@ public class ImportJob implements Runnable {
 
   @Override
   public String toString() {
-    return "ImportJob{" +
-        "datasetKey=" + datasetKey +
-        ", force=" + force +
-        '}';
+    return "ImportJob{" + "datasetKey=" + datasetKey + ", force=" + force + '}';
   }
 }

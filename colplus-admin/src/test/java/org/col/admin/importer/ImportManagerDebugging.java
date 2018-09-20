@@ -8,6 +8,8 @@ import org.col.admin.command.initdb.InitDbCmd;
 import org.col.admin.config.AdminServerConfig;
 import org.col.admin.matching.NameIndexFactory;
 import org.col.db.PgSetupRule;
+import org.col.es.EsClientFactory;
+import org.elasticsearch.client.RestClient;
 import org.junit.*;
 
 @Ignore("manual import debugging")
@@ -15,6 +17,7 @@ public class ImportManagerDebugging {
 
   ImportManager importManager;
   CloseableHttpClient hc;
+  RestClient esClient;
 
   @ClassRule
   public static PgSetupRule pgSetupRule = new PgSetupRule();
@@ -30,6 +33,10 @@ public class ImportManagerDebugging {
     cfg.db.database = "colplus";
     cfg.db.user = "postgres";
     cfg.db.password = "postgres";
+    cfg.es.hosts = "localhost";
+    cfg.es.ports = "9200";
+    cfg.es.nameUsage.modelClass = "org.col.es.model.EsNameUsage";
+
     return cfg;
   }
 
@@ -40,9 +47,11 @@ public class ImportManagerDebugging {
     final AdminServerConfig cfg = provideConfig();
     InitDbCmd.execute(cfg);
 
+    RestClient esClient = new EsClientFactory(cfg.es).createClient();
+
     hc = new HttpClientBuilder(metrics).using(cfg.client).build("local");
     importManager = new ImportManager(cfg, metrics, hc, PgSetupRule.getSqlSessionFactory(),
-        NameIndexFactory.passThru());
+        NameIndexFactory.passThru(),esClient);
     importManager.start();
   }
 
@@ -50,6 +59,7 @@ public class ImportManagerDebugging {
   public void shutdown() throws Exception {
     importManager.stop();
     hc.close();
+    esClient.close();
   }
 
   /**

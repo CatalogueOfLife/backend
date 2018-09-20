@@ -118,16 +118,13 @@
             <artifactId>kryo-serializers</artifactId>
         </dependency>
         
-        
-        <!--dependency>
-			<groupId>org.elasticsearch.client</groupId>
-			<artifactId>transport</artifactId>
-		</dependency>
+		<!-- Elasticsearch / Lucene -->
 		<dependency>
-			<groupId>org.elasticsearch</groupId>
-			<artifactId>elasticsearch</artifactId>
-		</dependency-->
-        
+			<groupId>org.elasticsearch.client</groupId>
+			<artifactId>elasticsearch-rest-client</artifactId>
+			<version>${elasticsearch.version}</version>
+		</dependency>
+                
 
         <!-- collections & CSV -->
         <dependency>
