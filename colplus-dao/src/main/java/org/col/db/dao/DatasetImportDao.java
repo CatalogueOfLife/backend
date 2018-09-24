@@ -1,11 +1,13 @@
 package org.col.db.dao;
 
 import java.time.LocalDateTime;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
+import java.util.function.Function;
 import javax.annotation.Nullable;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.exception.NotFoundException;
@@ -13,9 +15,15 @@ import org.col.api.model.Dataset;
 import org.col.api.model.DatasetImport;
 import org.col.api.model.Page;
 import org.col.api.model.ResultPage;
-import org.col.api.vocab.ImportState;
+import org.col.api.vocab.*;
 import org.col.db.mapper.DatasetImportMapper;
 import org.col.db.mapper.DatasetMapper;
+import org.col.db.type2.IntCount;
+import org.col.db.type2.StringCount;
+import org.gbif.dwc.terms.Term;
+import org.gbif.dwc.terms.TermFactory;
+import org.gbif.nameparser.api.NameType;
+import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -77,21 +85,68 @@ public class DatasetImportDao {
   public void updateImportSuccess(DatasetImport di) {
     try (SqlSession session = factory.openSession(true)){
       DatasetImportMapper mapper = session.getMapper(DatasetImportMapper.class);
-      // generate new count metrics
-      DatasetImport m = mapper.metrics(di.getDatasetKey());
-      // update metrics instance with existing infos
-      m.setDatasetKey(di.getDatasetKey());
-      m.setAttempt(di.getAttempt());
-      m.setStarted(di.getStarted());
-      m.setDownloadUri(di.getDownloadUri());
-      m.setDownload(di.getDownload());
-      m.setFinished(LocalDateTime.now());
-      m.setState(ImportState.FINISHED);
-      m.setError(null);
-      update(m, mapper);
+      // update count metrics
+      updateMetrics(mapper, di);
+      di.setFinished(LocalDateTime.now());
+      di.setState(ImportState.FINISHED);
+      di.setError(null);
+      update(di, mapper);
 
       session.getMapper(DatasetMapper.class).updateLastImport(di.getDatasetKey(), di.getAttempt());
     }
+  }
+
+  @VisibleForTesting
+  protected void updateMetrics(DatasetImportMapper mapper, DatasetImport di) {
+    final int key = di.getDatasetKey();
+
+    di.setDistributionCount(mapper.countDistribution(key));
+    di.setNameCount(mapper.countName(key));
+    di.setReferenceCount(mapper.countReference(key));
+    di.setTaxonCount(mapper.countTaxon(key));
+    di.setVerbatimCount(mapper.countVerbatim(key));
+    di.setVernacularCount(mapper.countVernacular(key));
+
+    di.setDistributionsByGazetteerCount(DatasetImportDao.countMap(Gazetteer.class, mapper.countDistributionsByGazetteer(key)));
+    di.setIssuesCount(DatasetImportDao.countMap(Issue.class, mapper.countIssues(key)));
+    di.setNameRelationsByTypeCount(DatasetImportDao.countMap(NomRelType.class, mapper.countNameRelationsByType(key)));
+    di.setNamesByOriginCount(DatasetImportDao.countMap(Origin.class, mapper.countNamesByOrigin(key)));
+    di.setNamesByRankCount(countMap(DatasetImportDao::parseRank, mapper.countNamesByRank(key)));
+    di.setNamesByStatusCount(DatasetImportDao.countMap(NomStatus.class, mapper.countNamesByStatus(key)));
+    di.setNamesByTypeCount(DatasetImportDao.countMap(NameType.class, mapper.countNamesByType(key)));
+    di.setUsagesByStatusCount(DatasetImportDao.countMap(TaxonomicStatus.class, mapper.countUsagesByStatus(key)));
+    di.setVerbatimByTypeCount(countMap(DatasetImportDao::parseTerm, mapper.countVerbatimByType(key)));
+    di.setVernacularsByLanguageCount(countMap(Language::fromIsoCode, mapper.countVernacularsByLanguage(key)));
+  }
+
+  private static <K extends Enum> Map<K, Integer> countMap(Class<K> clazz, List<IntCount> counts) {
+    K[] values = clazz.getEnumConstants();
+    Map<K, Integer> map = new HashMap<>(counts.size());
+    for (IntCount cnt : counts) {
+      if (cnt.getKey() != null) {
+        map.put(values[cnt.getKey()], cnt.getCount());
+      }
+    }
+    return map;
+  }
+
+  private static <K> Map<K, Integer> countMap(Function<String, Optional<K>> converter, List<StringCount> counts) {
+    Map<K, Integer> map = new HashMap<>(counts.size());
+    for (StringCount cnt : counts) {
+      if (!Strings.isNullOrEmpty(cnt.getKey())) {
+        Optional<K> opt = converter.apply(cnt.getKey());
+        opt.ifPresent(k -> map.put(k, cnt.getCount()));
+      }
+    }
+    return map;
+  }
+
+  private static Optional<Rank> parseRank(String rank) {
+    return Optional.of(Rank.valueOf(rank.toUpperCase()));
+  }
+
+  private static Optional<Term> parseTerm(String term) {
+    return Optional.of(TermFactory.instance().findClassTerm(term));
   }
 
   /**

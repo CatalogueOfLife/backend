@@ -42,7 +42,7 @@ public abstract class MapperTestBase<T> {
   public void generateDatasetImport(int datasetKey) {
     DatasetImportMapper dim = mapper(DatasetImportMapper.class);
 
-    DatasetImport d = dim.metrics(datasetKey);
+    DatasetImport d = null;//dim.metrics(datasetKey);
     d.setDatasetKey(datasetKey);
     d.setState(ImportState.FINISHED);
     d.setDownload(LocalDateTime.now());

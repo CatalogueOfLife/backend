@@ -2,12 +2,19 @@ package org.col.db.mapper;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import javax.annotation.Nullable;
 
+import org.apache.ibatis.annotations.MapKey;
 import org.apache.ibatis.annotations.Param;
 import org.col.api.model.DatasetImport;
 import org.col.api.model.Page;
-import org.col.api.vocab.ImportState;
+import org.col.api.vocab.*;
+import org.col.db.type2.IntCount;
+import org.col.db.type2.StringCount;
+import org.gbif.dwc.terms.Term;
+import org.gbif.nameparser.api.NameType;
+import org.gbif.nameparser.api.Rank;
 
 /**
  * The MyBatis mapper interface for DatasetImport.
@@ -30,13 +37,27 @@ public interface DatasetImportMapper {
    */
   List<DatasetImport> listByDataset(@Param("key") int datasetKey, @Param("state") @Nullable ImportState state, @Param("limit") int limit);
 
-  /**
-   * Generates new dataset metrics based on the current data.
-   * This method will only populate the count fields but no other fields.
-   */
-  DatasetImport metrics(@Param("key") int datasetKey);
-
   void create(@Param("di") DatasetImport datasetImport);
 
   void update(@Param("di") DatasetImport datasetImport);
+
+  Integer countDistribution(@Param("key") int datasetKey);
+  Integer countName(@Param("key") int datasetKey);
+  Integer countReference(@Param("key") int datasetKey);
+  Integer countTaxon(@Param("key") int datasetKey);
+  Integer countVerbatim(@Param("key") int datasetKey);
+  Integer countVernacular(@Param("key") int datasetKey);
+
+  List<IntCount> countDistributionsByGazetteer(@Param("key") int datasetKey);
+  List<IntCount> countIssues(@Param("key") int datasetKey);
+  List<IntCount> countNameRelationsByType(@Param("key") int datasetKey);
+  List<IntCount> countNamesByOrigin(@Param("key") int datasetKey);
+  List<StringCount> countNamesByRank(@Param("key") int datasetKey);
+  List<IntCount> countNamesByStatus(@Param("key") int datasetKey);
+  List<IntCount> countNamesByType(@Param("key") int datasetKey);
+  List<IntCount> countUsagesByStatus(@Param("key") int datasetKey);
+  List<StringCount> countVerbatimByType(@Param("key") int datasetKey);
+  List<StringCount> countVernacularsByLanguage(@Param("key") int datasetKey);
+
+
 }

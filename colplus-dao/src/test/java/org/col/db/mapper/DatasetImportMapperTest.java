@@ -2,15 +2,15 @@ package org.col.db.mapper;
 
 import java.net.URI;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.col.api.model.DatasetImport;
 import org.col.api.model.Page;
 import org.col.api.vocab.*;
+import org.col.db.type2.IntCount;
+import org.col.db.type2.StringCount;
 import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.dwc.terms.Term;
 import org.gbif.nameparser.api.NameType;
@@ -142,53 +142,72 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
   }
 
   @Test
-  public void generate() throws Exception {
-    DatasetImport d = mapper().metrics(DATASET11.getKey());
-    assertEquals((Integer) 4, d.getNameCount());
-    assertEquals((Integer) 2, d.getTaxonCount());
-    assertEquals((Integer) 2, d.getReferenceCount());
-    assertEquals((Integer) 5, d.getVerbatimCount());
-    assertEquals((Integer) 3, d.getVernacularCount());
-    assertEquals((Integer) 3, d.getDistributionCount());
+  public void counts() throws Exception {
+    assertEquals((Integer) 4, mapper().countName(DATASET11.getKey()));
+    assertEquals((Integer) 2, mapper().countTaxon(DATASET11.getKey()));
+    assertEquals((Integer) 2, mapper().countReference(DATASET11.getKey()));
+    assertEquals((Integer) 5, mapper().countVerbatim(DATASET11.getKey()));
+    assertEquals((Integer) 3, mapper().countVernacular(DATASET11.getKey()));
+    assertEquals((Integer) 3, mapper().countDistribution(DATASET11.getKey()));
+  }
+  @Test
+  public void countMaps() throws Exception {
+    Set<IntCount> expected = new HashSet<>();
+    expected.add(new IntCount(Issue.ESCAPED_CHARACTERS, 1));
+    expected.add(new IntCount(Issue.REFERENCE_ID_INVALID, 2));
+    expected.add(new IntCount(Issue.ID_NOT_UNIQUE, 1));
+    expected.add(new IntCount(Issue.URL_INVALID, 1));
+    expected.add(new IntCount(Issue.INCONSISTENT_AUTHORSHIP, 1));
+    expected.add(new IntCount(Issue.UNUSUAL_NAME_CHARACTERS, 1));
+    assertCounts(expected, mapper().countIssues(DATASET11.getKey()));
 
-    assertEquals( 6, d.getIssuesCount().keySet().size());
-    assertEquals((Integer) 1, d.getIssuesCount().get(Issue.ESCAPED_CHARACTERS));
-    assertEquals((Integer) 2, d.getIssuesCount().get(Issue.REFERENCE_ID_INVALID));
-    assertEquals((Integer) 1, d.getIssuesCount().get(Issue.ID_NOT_UNIQUE));
-    assertEquals((Integer) 1, d.getIssuesCount().get(Issue.URL_INVALID));
-    assertEquals((Integer) 1, d.getIssuesCount().get(Issue.INCONSISTENT_AUTHORSHIP));
-    assertEquals((Integer) 1, d.getIssuesCount().get(Issue.UNUSUAL_NAME_CHARACTERS));
-    assertFalse(d.getIssuesCount().containsKey(Issue.NOT_INTERPRETED));
-    assertFalse(d.getIssuesCount().containsKey(Issue.NULL_EPITHET));
+    Set<StringCount> expected2 = new HashSet<>();
+    expected2.add(new StringCount(Rank.SPECIES.name().toLowerCase(), 4));
+    assertCounts(expected2, mapper().countNamesByRank(DATASET11.getKey()));
 
-    assertEquals( 1, d.getNamesByRankCount().size());
-    assertEquals((Integer) 4, d.getNamesByRankCount().get(Rank.SPECIES));
+    expected.clear();
+    expected.add(new IntCount(Origin.SOURCE, 4));
+    assertCounts(expected, mapper().countNamesByOrigin(DATASET11.getKey()));
 
-    assertEquals( 1, d.getNamesByOriginCount().size());
-    assertEquals((Integer) 4, d.getNamesByOriginCount().get(Origin.SOURCE));
+    expected.clear();
+    expected.add(new IntCount(NameType.SCIENTIFIC, 4));
+    assertCounts(expected, mapper().countNamesByType(DATASET11.getKey()));
 
-    assertEquals( 1, d.getNamesByTypeCount().size());
-    assertEquals((Integer) 4, d.getNamesByTypeCount().get(NameType.SCIENTIFIC));
+    expected.clear();
+    expected.add(new IntCount(Gazetteer.TEXT, 3));
+    assertCounts(expected, mapper().countDistributionsByGazetteer(DATASET11.getKey()));
 
-    assertEquals( 1, d.getDistributionsByGazetteerCount().size());
-    assertEquals((Integer) 3, d.getDistributionsByGazetteerCount().get(Gazetteer.TEXT));
+    expected2.clear();
+    expected2.add(new StringCount(Language.GERMAN.getIso2LetterCode(), 1));
+    expected2.add(new StringCount(Language.ENGLISH.getIso2LetterCode(), 1));
+    expected2.add(new StringCount(Language.DUTCH.getIso2LetterCode(), 1));
+    assertCounts(expected2, mapper().countVernacularsByLanguage(DATASET11.getKey()));
 
-    assertEquals( 3, d.getVernacularsByLanguageCount().size());
-    assertEquals((Integer) 1, d.getVernacularsByLanguageCount().get(Language.GERMAN));
-    assertEquals((Integer) 1, d.getVernacularsByLanguageCount().get(Language.ENGLISH));
-    assertEquals((Integer) 1, d.getVernacularsByLanguageCount().get(Language.DUTCH));
+    expected.clear();
+    expected.add(new IntCount(TaxonomicStatus.ACCEPTED, 2));
+    expected.add(new IntCount(TaxonomicStatus.SYNONYM, 2));
+    assertCounts(expected, mapper().countUsagesByStatus(DATASET11.getKey()));
 
-    assertEquals( 2, d.getUsagesByStatusCount().size());
-    assertEquals((Integer) 2, d.getUsagesByStatusCount().get(TaxonomicStatus.ACCEPTED));
-    assertEquals((Integer) 2, d.getUsagesByStatusCount().get(TaxonomicStatus.SYNONYM));
+    assertEmpty(mapper().countNamesByStatus(DATASET11.getKey()));
 
-    assertEquals( 0, d.getNamesByStatusCount().size());
+    expected.clear();
+    expected.add(new IntCount(NomRelType.SPELLING_CORRECTION, 1));
+    assertCounts(expected, mapper().countNameRelationsByType(DATASET11.getKey()));
 
-    assertEquals( 1, d.getNameRelationsByTypeCount().size());
-    assertEquals((Integer) 1, d.getNameRelationsByTypeCount().get(NomRelType.SPELLING_CORRECTION));
+    expected2.clear();
+    expected2.add(new StringCount(AcefTerm.AcceptedSpecies.prefixedName(), 3));
+    expected2.add(new StringCount(AcefTerm.Synonyms.prefixedName(), 2));
+    assertCounts(expected2, mapper().countVerbatimByType(DATASET11.getKey()));
+  }
 
-    assertEquals( 2, d.getVerbatimByTypeCount().size());
-    assertEquals((Integer) 3, d.getVerbatimByTypeCount().get(AcefTerm.AcceptedSpecies));
+  private static <T> void assertCounts(Set<T> expected, List<T> actual){
+    assertEquals(expected, new HashSet<>(actual));
+  }
+  private static <T> void assertEmpty(List<IntCount> actual){
+    if (actual.isEmpty()) return;
+    for (IntCount cnt : actual) {
+      assertNull(cnt.getKey());
+    }
   }
 
 }
