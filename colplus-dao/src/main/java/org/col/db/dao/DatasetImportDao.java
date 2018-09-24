@@ -5,7 +5,6 @@ import java.util.*;
 import java.util.function.Function;
 import javax.annotation.Nullable;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import org.apache.ibatis.session.SqlSession;
@@ -96,8 +95,7 @@ public class DatasetImportDao {
     }
   }
 
-  @VisibleForTesting
-  protected void updateMetrics(DatasetImportMapper mapper, DatasetImport di) {
+  public void updateMetrics(DatasetImportMapper mapper, DatasetImport di) {
     final int key = di.getDatasetKey();
 
     di.setDistributionCount(mapper.countDistribution(key));
