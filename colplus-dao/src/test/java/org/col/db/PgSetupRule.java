@@ -86,7 +86,7 @@ public class PgSetupRule extends ExternalResource {
 		}
 	}
 
-	private void connect() {
+	public void connect() {
 		LOG.debug("Setup connection pool");
 		HikariConfig hikari = cfg.hikariConfig();
 		hikari.setAutoCommit(false);

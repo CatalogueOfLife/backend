@@ -17,9 +17,9 @@ public class ImportManagerDebugging {
   CloseableHttpClient hc;
 
   @ClassRule
-  public static PgSetupRule pgSetupRule = new PgSetupRule();
+  public static PgSetupRule pgSetupRule = new PgSetupRule(true);
 
-  private AdminServerConfig provideConfig() {
+  private static AdminServerConfig provideConfig() {
     AdminServerConfig cfg = new AdminServerConfig();
     cfg.gbif.syncFrequency = 0;
     cfg.importer.continousImportPolling = 0;
@@ -39,6 +39,7 @@ public class ImportManagerDebugging {
 
     final AdminServerConfig cfg = provideConfig();
     InitDbCmd.execute(cfg);
+    pgSetupRule.connect();
 
     hc = new HttpClientBuilder(metrics).using(cfg.client).build("local");
     importManager = new ImportManager(cfg, metrics, hc, PgSetupRule.getSqlSessionFactory(),
@@ -56,7 +57,7 @@ public class ImportManagerDebugging {
    * Try with 3 small parallel datasets
    */
   @Test
-  public void debugParalle() throws Exception {
+  public void debugParallel() throws Exception {
     importManager.submit(1000, true);
     importManager.submit(1006, true);
     importManager.submit(1007, true);
@@ -69,7 +70,7 @@ public class ImportManagerDebugging {
 
   @Test
   public void debugImport() throws Exception {
-    importManager.submit(11, true);
+    importManager.submit(2020, true);
     Thread.sleep(1000);
     while (importManager.hasRunning()) {
       Thread.sleep(1000);
