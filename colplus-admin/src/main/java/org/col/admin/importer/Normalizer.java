@@ -238,30 +238,32 @@ public class Normalizer implements Callable<Boolean> {
     }
     // track duplicates, map index name ids to first verbatim key
     // if synonym negate the verbatim key to track status without needing more memory
-    Map<String, Integer> nameIds = new HashMap<>();
+    final Map<String, Integer> nameIds = new HashMap<>();
     store.all().forEach(t -> {
       NameMatch m = index.match(t.name, dataset.getCatalogue()!=null, false);
       if (m.hasMatch()) {
         t.name.setIndexNameId(m.getName().getId());
         store.update(t);
-        // track duplicates regardless of status
-        if (nameIds.containsKey(m.getName().getId())) {
-          Issue variant = null;
-          Integer vKey = nameIds.get(m.getName().getId());
-          if (!t.isSynonym()) {
-            if (vKey < 0) {
-              // first name was a synonym, this one is accepted. track accepted from now on instead
-              nameIds.put(m.getName().getId(), t.name.getVerbatimKey());
-            } else {
-              // first name was also accepted, flag another issue on both
-              variant = Issue.POTENTIAL_VARIANT;
+        // track duplicates regardless of status - but only for verbatim records!
+        if (t.name.getVerbatimKey() != null) {
+          if (nameIds.containsKey(m.getName().getId())) {
+            Issue variant = null;
+            Integer vKey = nameIds.get(m.getName().getId());
+            if (!t.isSynonym()) {
+              if (vKey < 0) {
+                // first name was a synonym, this one is accepted. track accepted from now on instead
+                nameIds.put(m.getName().getId(), t.name.getVerbatimKey());
+              } else {
+                // first name was also accepted, flag another issue on both
+                variant = Issue.POTENTIAL_VARIANT;
+              }
             }
+            store.addIssues(Math.abs(vKey), Issue.DUPLICATE_NAME, variant);
+            store.addIssues(t.name, Issue.DUPLICATE_NAME, variant);
+          } else {
+            Integer vKey = t.isSynonym() ? -1 * t.name.getVerbatimKey() : t.name.getVerbatimKey();
+            nameIds.put(m.getName().getId(), vKey);
           }
-          store.addIssues(Math.abs(vKey), Issue.DUPLICATE_NAME, variant);
-          store.addIssues(t.name, Issue.DUPLICATE_NAME, variant);
-        } else {
-          Integer vKey = t.isSynonym() ? -1 * t.name.getVerbatimKey() : t.name.getVerbatimKey();
-          nameIds.put(m.getName().getId(), vKey);
         }
       }
       if (MATCH_ISSUES.containsKey(m.getType())) {
