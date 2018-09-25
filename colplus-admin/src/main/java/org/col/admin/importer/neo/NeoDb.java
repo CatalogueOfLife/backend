@@ -586,7 +586,9 @@ public class NeoDb implements ReferenceStore {
         LOG.warn("No verbatim exists for verbatim key {}", verbatimKey);
       } else {
         for (Issue is : issue) {
-          v.addIssue(is);
+          if (is != null) {
+            v.addIssue(is);
+          }
         }
         put(v);
       }
