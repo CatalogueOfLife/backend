@@ -114,6 +114,8 @@
         <db.database>colplus</db.database>
         <db.user>postgres</db.user>
         <db.password>postgres</db.password>
+        
+        <es.hosts>${project.build.directory}/es-colplus</es.hosts>
     </properties>
 
     <licenses>

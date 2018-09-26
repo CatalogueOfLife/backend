@@ -17,7 +17,3 @@ db:
   database: ${db.database}
   user: ${db.user}
   password: ${db.password}
-es:
-  host: ${es.host}
-  port: 9300
-  cluster: ${es.cluster}

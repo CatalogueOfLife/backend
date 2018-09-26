@@ -22,7 +22,7 @@ public class EsReadWriteTestBase extends ExternalResource {
   }
 
   protected RestClient getEsClient() {
-    return esSetupRule.getClientFactory().createClient();
+    return esSetupRule.getEsClient();
   }
 
   @Override

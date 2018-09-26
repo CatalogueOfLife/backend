@@ -18,7 +18,7 @@ public class EsReadTestBase {
   }
 
   protected RestClient getEsClient() {
-    return esSetupRule.getClientFactory().createClient();
+    return esSetupRule.getEsClient();
   }
 
 }
