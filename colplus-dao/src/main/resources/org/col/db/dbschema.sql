@@ -271,7 +271,7 @@ CREATE TABLE vernacular_name (
   taxon_id TEXT NOT NULL,
   name TEXT NOT NULL,
   latin TEXT,
-  language CHAR(3),
+  language CHAR(2),
   country CHAR(2)
 ) PARTITION BY LIST (dataset_key);
 

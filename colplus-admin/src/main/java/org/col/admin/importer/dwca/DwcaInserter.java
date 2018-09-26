@@ -115,7 +115,8 @@ public class DwcaInserter extends NeoInserter {
       if (Files.exists(metadataPath)) {
         try {
           return parser.parse(metadataPath);
-        } catch (IOException e) {
+
+        } catch (IOException | RuntimeException e) {
           LOG.error("Unable to read dataset metadata from dwc archive: {}", e.getMessage(), e);
         }
       } else {

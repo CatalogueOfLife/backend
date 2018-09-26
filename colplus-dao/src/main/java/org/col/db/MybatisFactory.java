@@ -15,6 +15,8 @@ import org.col.api.model.Name;
 import org.col.db.mapper.NameMapper;
 import org.col.db.type.RankTypeHandler;
 import org.col.db.type.UuidTypeHandler;
+import org.col.db.type2.IntCount;
+import org.col.db.type2.StringCount;
 import org.gbif.nameparser.api.ParsedName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,6 +52,7 @@ public class MybatisFactory {
 		// aliases
 		registerTypeAliases(mybatisCfg.getTypeAliasRegistry());
 
+
 		// type handler
 		registerTypeHandlers(mybatisCfg.getTypeHandlerRegistry());
 
@@ -69,6 +72,8 @@ public class MybatisFactory {
 		// register all aliases from the api packages
 		registry.registerAliases(Name.class.getPackage().getName());
     registry.registerAliases(ParsedName.class.getPackage().getName());
+		registry.registerAlias(IntCount.class);
+		registry.registerAlias(StringCount.class);
 	}
 
 	private static void registerTypeHandlers(TypeHandlerRegistry registry) {

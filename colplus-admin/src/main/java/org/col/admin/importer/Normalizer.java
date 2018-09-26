@@ -5,7 +5,6 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Stream;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableMap;
@@ -237,25 +236,34 @@ public class Normalizer implements Callable<Boolean> {
     for (MatchType mt : MatchType.values()) {
       counts.put(mt, new AtomicInteger(0));
     }
-    // track duplicates, map index name keys to verbatim key set
-    //TODO: use mapdb to prevend OOMs?
-    Map<String, Set<Integer>> nameIds = Maps.newHashMap();
-
+    // track duplicates, map index name ids to first verbatim key
+    // if synonym negate the verbatim key to track status without needing more memory
+    final Map<String, Integer> nameIds = new HashMap<>();
     store.all().forEach(t -> {
       NameMatch m = index.match(t.name, dataset.getCatalogue()!=null, false);
       if (m.hasMatch()) {
         t.name.setIndexNameId(m.getName().getId());
         store.update(t);
-        // track duplicates if taxon
-        if (!t.isSynonym()) {
-          Set<Integer> nodes;
+        // track duplicates regardless of status - but only for verbatim records!
+        if (t.name.getVerbatimKey() != null) {
           if (nameIds.containsKey(m.getName().getId())) {
-            nodes = nameIds.get(m.getName().getId());
+            Issue variant = null;
+            Integer vKey = nameIds.get(m.getName().getId());
+            if (!t.isSynonym()) {
+              if (vKey < 0) {
+                // first name was a synonym, this one is accepted. track accepted from now on instead
+                nameIds.put(m.getName().getId(), t.name.getVerbatimKey());
+              } else {
+                // first name was also accepted, flag another issue on both
+                variant = Issue.POTENTIAL_VARIANT;
+              }
+            }
+            store.addIssues(Math.abs(vKey), Issue.DUPLICATE_NAME, variant);
+            store.addIssues(t.name, Issue.DUPLICATE_NAME, variant);
           } else {
-            nodes = new HashSet<>();
-            nameIds.put(m.getName().getId(), nodes);
+            Integer vKey = t.isSynonym() ? -1 * t.name.getVerbatimKey() : t.name.getVerbatimKey();
+            nameIds.put(m.getName().getId(), vKey);
           }
-          nodes.add(t.name.getVerbatimKey());
         }
       }
       if (MATCH_ISSUES.containsKey(m.getType())) {
@@ -264,14 +272,6 @@ public class Normalizer implements Callable<Boolean> {
       counts.get(m.getType()).incrementAndGet();
     });
     LOG.info("Matched all {} names: {}", MapUtils.sumValues(counts), Joiner.on(',').withKeyValueSeparator("=").join(counts));
-
-    for (Map.Entry<String, Set<Integer>> entry : nameIds.entrySet()) {
-      if (entry.getValue().size() > 1) {
-        for (Integer verbatimKey : entry.getValue()) {
-          store.addIssues(verbatimKey, Issue.POTENTIAL_VARIANT);
-        }
-      }
-    }
   }
 
   private void normalize() {

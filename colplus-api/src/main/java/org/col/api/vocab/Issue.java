@@ -211,6 +211,11 @@ public enum Issue {
      */
     TRUNCATED_NAME(Group.NAME, Level.WARNING),
 
+    /**
+     * Same name appears several time in dataset.
+     */
+    DUPLICATE_NAME(Group.TAXON, Level.INFO),
+
     //
     // TAXON ISSUES
     //

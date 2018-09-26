@@ -63,7 +63,7 @@ public class CsvReader {
     CSV.setMaxColumns(256);
     CSV.setMaxCharsPerColumn(1024*256);
   }
-  private static final Set<String> SUFFICES = ImmutableSet.of("csv", "tsv", "tab", "txt", "text");
+  private static final Set<String> SUFFICES = ImmutableSet.of("csv", "tsv", "tab", "txt", "text", "archive", "dwca");
   private static final Pattern NULL_PATTERN = Pattern.compile("^\\s*(\\\\N|\\\\?NULL|null)\\s*$");
   private static final int STREAM_CHARACTERISTICS = Spliterator.ORDERED | Spliterator.DISTINCT | Spliterator.NONNULL | Spliterator.IMMUTABLE;
 

@@ -135,96 +135,80 @@
         LIMIT #{limit}
     </select>
 
-    <select id="metrics" resultMap="datasetImportResultMap">
-        SELECT #{key} AS datasetKey,
-        (SELECT count(*) FROM verbatim WHERE dataset_key=#{key}) AS verbatimCount,
-        (SELECT count(*) FROM name WHERE dataset_key=#{key}) AS nameCount,
-        (SELECT count(*) FROM taxon WHERE dataset_key=#{key}) AS taxonCount,
-        (SELECT count(*) FROM reference WHERE dataset_key=#{key}) AS referenceCount,
-        (SELECT count(*) FROM vernacular_name WHERE dataset_key=#{key}) AS vernacularCount,
-        (SELECT count(*) FROM distribution WHERE dataset_key=#{key}) AS distributionCount,
 
-        (SELECT array_to_string(array_agg( key || '=>' || cnt), ', ')::hstore FROM
-            (SELECT iss AS key, count(*)::text AS cnt FROM (
-              SELECT unnest(issues) iss from verbatim WHERE dataset_key=#{key}
-              ) AS dis GROUP BY key
-            ) AS issues
-        ) AS issues_count,
+    <select id="countDistribution" resultType="integer">
+        SELECT count(*) FROM distribution_${key}
+    </select>
+    <select id="countName" resultType="integer">
+        SELECT count(*) FROM name_${key}
+    </select>
+    <select id="countReference" resultType="integer">
+        SELECT count(*) FROM reference_${key}
+    </select>
+    <select id="countTaxon" resultType="integer">
+        SELECT count(*) FROM taxon_${key}
+    </select>
+    <select id="countVerbatim" resultType="integer">
+        SELECT count(*) FROM verbatim_${key}
+    </select>
+    <select id="countVernacular" resultType="integer">
+        SELECT count(*) FROM vernacular_name_${key}
+    </select>
 
-        (SELECT array_to_string(array_agg( key || '=>' || cnt), ', ')::hstore FROM
-          (SELECT rank AS key, count(*)::text AS cnt FROM name
-           WHERE dataset_key=#{key}
-           GROUP BY rank
-           ) AS ranks
-        ) AS names_by_rank_count,
-
-        (SELECT array_to_string(array_agg( key || '=>' || cnt), ', ')::hstore FROM
-          (SELECT type AS key, count(*)::text AS cnt FROM name
-           WHERE dataset_key=#{key}
-           GROUP BY type
-           ) AS types
-        ) AS names_by_type_count,
-
-        (SELECT array_to_string(array_agg( key || '=>' || cnt), ', ')::hstore FROM
-          (SELECT language AS key, count(*)::text AS cnt
-           FROM vernacular_name
-           WHERE dataset_key=#{key}
-           GROUP BY language
-           ) AS languages
-        ) AS vernaculars_by_language_count,
-
-        (SELECT array_to_string(array_agg( key || '=>' || cnt), ', ')::hstore FROM
-          (SELECT gazetteer AS key, count(*)::text AS cnt
-           FROM distribution
-           WHERE dataset_key=#{key}
-           GROUP BY gazetteer
-           ) AS gazetteers
-        ) AS distributions_by_gazetteer_count,
-
-        (SELECT array_to_string(array_agg( key || '=>' || cnt), ', ')::hstore FROM
-          (SELECT origin AS key, count(*)::text AS cnt
-           FROM name
-           WHERE dataset_key=#{key}
-           GROUP BY origin
-           ) AS origins
-        ) AS names_by_origin_count,
-
-        (SELECT array_to_string(array_agg( key || '=>' || cnt), ', ')::hstore FROM
-            (SELECT CASE WHEN doubtful THEN 1 ELSE 0 END AS key, count(*)::text AS cnt
-                FROM taxon
-                WHERE dataset_key=#{key}
-                GROUP BY doubtful
-            UNION
-            SELECT status AS key, count(*)::text AS cnt
-                FROM synonym
-                WHERE dataset_key=#{key}
-                GROUP BY status
-            ) AS taxstatus
-        ) AS usages_by_status_count,
-
-        (SELECT array_to_string(array_agg( key || '=>' || cnt), ', ')::hstore FROM
-            (SELECT nom_status AS key, count(*)::text AS cnt
-            FROM name
-            WHERE dataset_key=#{key}
-            GROUP BY nom_status
-            ) AS nom_status
-        ) AS names_by_status_count,
-
-        (SELECT array_to_string(array_agg( key || '=>' || cnt), ', ')::hstore FROM
-            (SELECT type AS key, count(*)::text AS cnt
-            FROM name_rel
-            WHERE dataset_key=#{key}
-            GROUP BY type
-            ) AS reltypes
-        ) AS name_relations_by_type_count,
-
-        (SELECT array_to_string(array_agg( key || '=>' || cnt), ', ')::hstore FROM
-            (SELECT type AS key, count(*)::text AS cnt
-            FROM verbatim
-            WHERE dataset_key=#{key}
-            GROUP BY type
-            ) AS vtypes
-        ) AS verbatim_by_type_count
+    <select id="countDistributionsByGazetteer" resultType="IntCount">
+      SELECT gazetteer AS key, count(*) AS count
+      FROM distribution_${key}
+      GROUP BY gazetteer
+    </select>
+    <select id="countIssues" resultType="IntCount">
+        SELECT iss AS key, count(*) AS count FROM (
+         SELECT unnest(issues) iss from verbatim_${key}
+        ) AS dis
+        GROUP BY iss
+    </select>
+    <select id="countNamesByType" resultType="IntCount">
+        SELECT type AS key, count(*) AS count
+        FROM name_${key}
+        GROUP BY type
+    </select>
+    <select id="countNameRelationsByType" resultType="IntCount">
+        SELECT type AS key, count(*) AS count
+        FROM name_rel_${key}
+        GROUP BY type
+    </select>
+    <select id="countNamesByStatus" resultType="IntCount">
+        SELECT nom_status AS key, count(*) AS count
+        FROM name_${key}
+        GROUP BY nom_status
+    </select>
+    <select id="countNamesByOrigin" resultType="IntCount">
+        SELECT origin AS key, count(*) AS count
+        FROM name_${key}
+        GROUP BY origin
+    </select>
+    <select id="countNamesByRank" resultType="StringCount">
+        SELECT rank AS key, count(*) AS count
+        FROM name_${key}
+        GROUP BY rank
+    </select>
+    <select id="countUsagesByStatus" resultType="IntCount">
+        SELECT CASE WHEN doubtful THEN 1 ELSE 0 END AS key, count(*) AS count
+        FROM taxon_${key}
+        GROUP BY doubtful
+        UNION
+        SELECT status AS key, count(*) AS count
+        FROM synonym_${key}
+        GROUP BY status
+    </select>
+    <select id="countVerbatimByType" resultType="StringCount">
+        SELECT type AS key, count(*) AS count
+        FROM verbatim_${key}
+        GROUP BY type
+    </select>
+    <select id="countVernacularsByLanguage" resultType="StringCount">
+        SELECT language AS key, count(*) AS count
+        FROM vernacular_name_${key}
+        GROUP BY language
     </select>
 
     <insert id="create" parameterType="DatasetImport">

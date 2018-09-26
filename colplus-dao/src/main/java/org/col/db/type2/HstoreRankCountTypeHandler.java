@@ -8,8 +8,4 @@ public class HstoreRankCountTypeHandler extends HstoreCountTypeHandlerBase<Rank>
     super(Rank.class);
   }
 
-  @Override
-  Rank toKeyAlt(String key) throws IllegalArgumentException {
-    return Rank.valueOf(key.toUpperCase());
-  }
 }

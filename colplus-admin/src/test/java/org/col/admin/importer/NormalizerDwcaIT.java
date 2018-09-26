@@ -467,8 +467,8 @@ public class NormalizerDwcaIT {
   @Ignore
   public void testExternal() throws Exception {
     //normalize(URI.create("http://www.marinespecies.org/dwca/WoRMS_DwC-A.zip"));
-    normalize(Paths.get("/Users/markus/Downloads/ipni-dwca"));
-    //normalize(URI.create("http://www.marinespecies.org/dwca/WoRMS_DwC-A.zip"));
+    //normalize(Paths.get("/Users/markus/Downloads/ipni-dwca"));
+    normalize(URI.create("https://raw.githubusercontent.com/mdoering/ion-taxonomic-hierarchy/master/classification.tsv"));
     // print("Diversity", GraphFormat.TEXT, false);
   }
 

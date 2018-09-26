@@ -99,11 +99,12 @@ public class PgSetupRule extends ExternalResource {
     }
   }
 
-  private void connect() {
+  public void connect() {
     LOG.debug("Setup connection pool");
     HikariConfig hikari = cfg.hikariConfig();
     hikari.setAutoCommit(false);
     dataSource = new HikariDataSource(hikari);
+
     // configure single mybatis session factory
     sqlSessionFactory = MybatisFactory.configure(dataSource, "test");
   }

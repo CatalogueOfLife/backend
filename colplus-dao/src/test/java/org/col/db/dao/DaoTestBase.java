@@ -1,6 +1,7 @@
 package org.col.db.dao;
 
 import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.db.PgSetupRule;
 import org.col.db.mapper.InitMybatisRule;
 import org.junit.After;
@@ -26,6 +27,10 @@ public abstract class DaoTestBase {
 	@After
 	public void closeSession(){
 		session.close();
+	}
+
+	protected SqlSessionFactory factory() {
+		return pgSetupRule.getSqlSessionFactory();
 	}
 
 	protected SqlSession session() {

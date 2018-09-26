@@ -27,15 +27,13 @@ import org.slf4j.LoggerFactory;
  * As we do not map all java map types to this mybatis handler apply the handler manually for the relevant hstore fields
  * in the mapper xml, for example see DatasetImportMapper.xml.
  */
-public abstract class HstoreCountTypeHandlerBase<KEY extends Enum> extends BaseTypeHandler<Map<KEY, Integer>> {
+abstract class HstoreCountTypeHandlerBase<KEY extends Enum> extends BaseTypeHandler<Map<KEY, Integer>> {
   private static final Logger LOG = LoggerFactory.getLogger(HstoreCountTypeHandlerBase.class);
 
   private final Class<KEY> enumClass;
-  private final KEY[] values;
 
   public HstoreCountTypeHandlerBase(Class<KEY> enumClass) {
     this.enumClass = enumClass;
-    values = enumClass.getEnumConstants();
   }
 
   @Override
@@ -68,7 +66,7 @@ public abstract class HstoreCountTypeHandlerBase<KEY extends Enum> extends BaseT
           int val = Integer.parseInt(entry.getValue());
           if (val > 0) {
             if (!Strings.isNullOrEmpty(entry.getKey())) {
-              typedMap.put(toKey(entry.getKey()), val);
+              typedMap.put((KEY) Enum.valueOf(enumClass, entry.getKey()), val);
             }
           }
         } catch (IllegalArgumentException e) {
@@ -80,11 +78,7 @@ public abstract class HstoreCountTypeHandlerBase<KEY extends Enum> extends BaseT
         LOG.error("BAD TYPE!!!");
       }
     }
-    Map<KEY, Integer> sorted = sortMap(typedMap);
-    if (typedMap.size() != sorted.size()) {
-      LOG.error("BAD SORTED!!!");
-    }
-    return sorted;
+    return sortMap(typedMap);
   }
 
   /**
@@ -104,25 +98,6 @@ public abstract class HstoreCountTypeHandlerBase<KEY extends Enum> extends BaseT
             .onResultOf(Functions.forMap(map, null)) // natural for values
             .compound(Ordering.natural()); // secondary - natural ordering of keys
     return ImmutableSortedMap.copyOf(map, reverseValuesAndNaturalKeysOrdering);
-  }
-
-  private KEY toKey(String key) throws IllegalArgumentException {
-    try {
-      return (KEY) Enum.valueOf(enumClass, key);
-    } catch (IllegalArgumentException e) {
-      // in case we just generated new metrics we do not yet have the final enum names
-      // but the simple enum conversion whatever that is for the specific type
-      return toKeyAlt(key);
-    }
-  }
-
-  /**
-   * Default that tries to resolve via ordinals.
-   * Override in case the enum is stored in other forms for simple values, e.g. 2 char country codes
-   */
-  KEY toKeyAlt(String key) throws IllegalArgumentException {
-    Integer ord = Integer.parseInt(key);
-    return values[ord];
   }
 
 }
