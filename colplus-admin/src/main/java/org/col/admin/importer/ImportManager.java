@@ -5,13 +5,19 @@ import java.time.LocalDateTime;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Queue;
-import java.util.concurrent.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.google.common.collect.Lists;
-import io.dropwizard.lifecycle.Managed;
+
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -27,9 +33,12 @@ import org.col.common.io.DownloadUtil;
 import org.col.db.dao.DatasetImportDao;
 import org.col.db.mapper.DatasetMapper;
 import org.col.db.mapper.DatasetPartitionMapper;
+import org.elasticsearch.client.RestClient;
 import org.gbif.nameparser.utils.NamedThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.dropwizard.lifecycle.Managed;
 
 import static org.col.admin.AdminServer.MILLIS_TO_DIE;
 
@@ -46,17 +55,19 @@ public class ImportManager implements Managed {
   private final AdminServerConfig cfg;
   private final DownloadUtil downloader;
   private final SqlSessionFactory factory;
-  //private final Parser<CslData> cslParser;
+  // private final Parser<CslData> cslParser;
   private final NameIndex index;
+  private final RestClient esClient;
   private final Timer importTimer;
   private final Counter failed;
 
   public ImportManager(AdminServerConfig cfg, MetricRegistry registry, CloseableHttpClient client,
-                       SqlSessionFactory factory,  NameIndex index) {
+      SqlSessionFactory factory, NameIndex index, RestClient esClient) {
     this.cfg = cfg;
     this.factory = factory;
     this.downloader = new DownloadUtil(client);
     this.index = index;
+    this.esClient = esClient;
     importTimer = registry.timer("org.col.import.timer");
     failed = registry.counter("org.col.import.failures");
   }
@@ -84,9 +95,11 @@ public class ImportManager implements Managed {
   }
 
   /**
-   * @throws IllegalArgumentException if dataset was scheduled for importing already, queue was full or dataset does not exist
+   * @throws IllegalArgumentException if dataset was scheduled for importing already, queue was full
+   *         or dataset does not exist
    */
-  public ImportRequest submit(final int datasetKey, final boolean force) throws IllegalArgumentException {
+  public ImportRequest submit(final int datasetKey, final boolean force)
+      throws IllegalArgumentException {
     // is this dataset already scheduled?
     if (futures.containsKey(datasetKey)) {
       LOG.info("Dataset {} already queued for import", datasetKey);
@@ -101,25 +114,24 @@ public class ImportManager implements Managed {
     LOG.debug("Queue new import for dataset {}", datasetKey);
     final ImportJob job = createImport(req);
     queue.add(req);
-    futures.put(datasetKey, CompletableFuture
-        .runAsync(job, exec)
-        .handle((di, err) -> {
-          if (err != null) {
-            // unwrap CompletionException error
-            LOG.error("Dataset import {} failed: {}", req.datasetKey, err.getCause().getMessage(), err.getCause());
-            failed.inc();
+    futures.put(datasetKey, CompletableFuture.runAsync(job, exec).handle((di, err) -> {
+      if (err != null) {
+        // unwrap CompletionException error
+        LOG.error("Dataset import {} failed: {}", req.datasetKey, err.getCause().getMessage(),
+            err.getCause());
+        failed.inc();
 
-          } else {
-            Duration durQueued = Duration.between(req.created, req.started);
-            Duration durRun = Duration.between(req.started, LocalDateTime.now());
-            LOG.info("Dataset import {} finished. {} min queued, {} min to execute", req.datasetKey, durQueued.toMinutes(), durRun.toMinutes());
-            importTimer.update(durRun.getSeconds(), TimeUnit.SECONDS);
-          }
-          futures.remove(req.datasetKey);
-          // return true if succeeded, false if error
-          return err != null;
-        })
-    );
+      } else {
+        Duration durQueued = Duration.between(req.created, req.started);
+        Duration durRun = Duration.between(req.started, LocalDateTime.now());
+        LOG.info("Dataset import {} finished. {} min queued, {} min to execute", req.datasetKey,
+            durQueued.toMinutes(), durRun.toMinutes());
+        importTimer.update(durRun.getSeconds(), TimeUnit.SECONDS);
+      }
+      futures.remove(req.datasetKey);
+      // return true if succeeded, false if error
+      return err != null;
+    }));
     LOG.info("Queued import for dataset {}", datasetKey);
     return req;
   }
@@ -136,13 +148,14 @@ public class ImportManager implements Managed {
       } else if (d.hasDeletedDate()) {
         throw new IllegalArgumentException("Dataset " + req.datasetKey + " is deleted");
       }
-      ImportJob job = new ImportJob(d, req.force, cfg, downloader, factory, index, new StartNotifier() {
-        @Override
-        public void started() {
-          req.start();
-          queue.remove(req);
-        }
-      });
+      ImportJob job = new ImportJob(d, req.force, cfg, downloader, factory, index, esClient,
+          new StartNotifier() {
+            @Override
+            public void started() {
+              req.start();
+              queue.remove(req);
+            }
+          });
       return job;
     }
   }
@@ -164,15 +177,11 @@ public class ImportManager implements Managed {
   @Override
   public void start() throws Exception {
     LOG.info("Starting import manager with {} import threads and a queue of {} max.",
-        cfg.importer.threads,
-        cfg.importer.maxQueue
-    );
-    exec = new ThreadPoolExecutor(cfg.importer.threads, cfg.importer.threads,
-        60L, TimeUnit.SECONDS,
+        cfg.importer.threads, cfg.importer.maxQueue);
+    exec = new ThreadPoolExecutor(cfg.importer.threads, cfg.importer.threads, 60L, TimeUnit.SECONDS,
         new LinkedBlockingQueue<>(cfg.importer.maxQueue),
         new NamedThreadFactory(THREAD_NAME, Thread.NORM_PRIORITY, true),
-        new ThreadPoolExecutor.AbortPolicy()
-    );
+        new ThreadPoolExecutor.AbortPolicy());
     exec.allowCoreThreadTimeOut(true);
 
     // read hanging imports in db, truncate if half inserted and add as new requests to the queue
@@ -190,7 +199,7 @@ public class ImportManager implements Managed {
       dao.updateImportCancelled(di);
       // truncate data?
       if (truncate) {
-        try (SqlSession session = factory.openSession(true)){
+        try (SqlSession session = factory.openSession(true)) {
           DatasetPartitionMapper dm = session.getMapper(DatasetPartitionMapper.class);
           LOG.info("Drop partially imported data for dataset {}", di.getDatasetKey());
           dm.delete(di.getDatasetKey());
