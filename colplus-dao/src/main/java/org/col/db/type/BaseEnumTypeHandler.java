@@ -15,7 +15,7 @@ import org.apache.ibatis.type.TypeHandler;
  * @param <T> the enumeration to be handled
  * @param <D> the db storage value type
  */
-abstract class BaseEnumTypeHandler<D, T extends Enum<?>> implements TypeHandler<T> {
+public abstract class BaseEnumTypeHandler<D, T extends Enum<?>> implements TypeHandler<T> {
 
   @Override
   public void setParameter(PreparedStatement ps, int i, T parameter, JdbcType jdbcType) throws SQLException {
@@ -37,7 +37,7 @@ abstract class BaseEnumTypeHandler<D, T extends Enum<?>> implements TypeHandler<
     return toEnum((D) cs.getObject(columnIndex));
   }
 
-  abstract T toEnum(D dbValue);
+  protected abstract T toEnum(D dbValue);
 
-  abstract D fromEnum(T enumValue);
+  protected abstract D fromEnum(T enumValue);
 }

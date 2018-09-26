@@ -24,7 +24,7 @@
     <!-- A mapping to Name, mostly auto mapped -->
     <resultMap id="treeResultMap" type="TreeNode" autoMapping="true">
         <id property="id" column="id" />
-        <result property="status" column="doubtful" typeHandler="org.col.db.type.TaxonStatusTypeHandler" />
+        <result property="status" column="doubtful" typeHandler="org.col.db.type2.TaxonStatusTypeHandler" />
     </resultMap>
 
     <select id="root" resultMap="treeResultMap">
