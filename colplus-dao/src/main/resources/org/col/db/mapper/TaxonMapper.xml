@@ -30,7 +30,8 @@
         <include refid="org.col.db.mapper.NameMapper.nameCols">
             <property name="alias" value="n"/>
             <property name="prefix" value="n_"/>
-        </include>
+        </include>,
+        (select count(*) from taxon_${datasetKey} where parent_id=t.id) AS child_count
     </sql>
 
     <sql id="COLS">
@@ -82,6 +83,11 @@
         <association property="name" javaType="Name" resultMap="org.col.db.mapper.NameMapper.nameResultMap" columnPrefix="n_" />
     </resultMap>
 
+    <select id="countChildren" resultType="integer">
+        SELECT count(*) AS cnt FROM taxon_${datasetKey}
+        WHERE parent_id = #{id}
+    </select>
+
     <select id="count" resultType="integer">
         <choose>
             <when test="root">
@@ -120,13 +126,6 @@
         FROM taxon
         WHERE dataset_key = #{datasetKey}
             AND name_id = #{name.id}
-    </select>
-
-    <select id="countChildren"  resultType="integer">
-        SELECT count(*)
-        FROM taxon
-        WHERE dataset_key = #{datasetKey}
-            AND parent_id = #{id}
     </select>
 
     <select id="children" resultMap="taxonResultMap">

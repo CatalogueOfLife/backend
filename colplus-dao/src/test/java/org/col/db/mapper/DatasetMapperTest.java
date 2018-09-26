@@ -32,7 +32,7 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
 
 	private static Dataset create() throws Exception {
 		Dataset d = new Dataset();
-		d.setType(DatasetType.TAXONOMIC);
+		d.setType(DatasetType.GLOBAL);
 		d.setGbifKey(UUID.randomUUID());
 		d.setTitle(RandomUtils.randomString(80));
 		d.setDescription(RandomUtils.randomString(500));
@@ -228,7 +228,7 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
 		ds.setTitle(title);
 		ds.setOrganisation(organisation);
 		ds.setDescription(description);
-		ds.setType(DatasetType.TAXONOMIC);
+		ds.setType(DatasetType.GLOBAL);
 		ds.setCatalogue(Catalogue.PROVISIONAL);
 		mapper().create(ds);
 		return ds.getKey();

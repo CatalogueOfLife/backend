@@ -41,6 +41,8 @@ public class Taxon implements NameUsage, VerbatimEntity {
 
 	private URI datasetUrl;
 
+	private Integer childCount;
+
 	private Integer speciesEstimate;
 
 	private String speciesEstimateReferenceId;
@@ -160,6 +162,14 @@ public class Taxon implements NameUsage, VerbatimEntity {
 		this.datasetUrl = datasetUrl;
 	}
 
+	public Integer getChildCount() {
+		return childCount;
+	}
+
+	public void setChildCount(Integer childCount) {
+		this.childCount = childCount;
+	}
+
 	public Integer getSpeciesEstimate() {
 		return speciesEstimate;
 	}
@@ -184,30 +194,33 @@ public class Taxon implements NameUsage, VerbatimEntity {
 		this.remarks = remarks;
 	}
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
-    Taxon taxon = (Taxon) o;
-    return Objects.equals(id, taxon.id) &&
-        Objects.equals(datasetKey, taxon.datasetKey) &&
-        Objects.equals(name, taxon.name) &&
-        doubtful == taxon.doubtful &&
-        origin == taxon.origin &&
-        Objects.equals(parentId, taxon.parentId) &&
-        Objects.equals(accordingTo, taxon.accordingTo) &&
-        Objects.equals(accordingToDate, taxon.accordingToDate) &&
-        Objects.equals(fossil, taxon.fossil) &&
-        Objects.equals(recent, taxon.recent) &&
-        Objects.equals(lifezones, taxon.lifezones) &&
-        Objects.equals(datasetUrl, taxon.datasetUrl) &&
-        Objects.equals(speciesEstimate, taxon.speciesEstimate) &&
-        Objects.equals(speciesEstimateReferenceId, taxon.speciesEstimateReferenceId) &&
-        Objects.equals(remarks, taxon.remarks);
-  }
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		Taxon taxon = (Taxon) o;
+		return doubtful == taxon.doubtful &&
+				Objects.equals(id, taxon.id) &&
+				Objects.equals(datasetKey, taxon.datasetKey) &&
+				Objects.equals(verbatimKey, taxon.verbatimKey) &&
+				Objects.equals(name, taxon.name) &&
+				origin == taxon.origin &&
+				Objects.equals(parentId, taxon.parentId) &&
+				Objects.equals(accordingTo, taxon.accordingTo) &&
+				Objects.equals(accordingToDate, taxon.accordingToDate) &&
+				Objects.equals(fossil, taxon.fossil) &&
+				Objects.equals(recent, taxon.recent) &&
+				Objects.equals(lifezones, taxon.lifezones) &&
+				Objects.equals(datasetUrl, taxon.datasetUrl) &&
+				Objects.equals(childCount, taxon.childCount) &&
+				Objects.equals(speciesEstimate, taxon.speciesEstimate) &&
+				Objects.equals(speciesEstimateReferenceId, taxon.speciesEstimateReferenceId) &&
+				Objects.equals(remarks, taxon.remarks);
+	}
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(id, datasetKey, name, doubtful, origin, parentId, accordingTo, accordingToDate, fossil, recent, lifezones, datasetUrl, speciesEstimate, speciesEstimateReferenceId, remarks);
-  }
+	@Override
+	public int hashCode() {
+
+		return Objects.hash(id, datasetKey, verbatimKey, name, doubtful, origin, parentId, accordingTo, accordingToDate, fossil, recent, lifezones, datasetUrl, childCount, speciesEstimate, speciesEstimateReferenceId, remarks);
+	}
 }
