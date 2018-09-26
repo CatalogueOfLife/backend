@@ -1,6 +1,7 @@
 package org.col.es;
 
 import java.io.File;
+import java.util.concurrent.TimeUnit;
 
 import org.col.common.util.YamlUtils;
 import org.elasticsearch.client.RestClient;
@@ -26,7 +27,8 @@ public class EsSetupRule extends ExternalResource {
     if (cfg.embedded()) {
       LOG.info("Starting embedded Elasticsearch");
       try {
-        ee = EmbeddedElastic.builder().withInstallationDirectory(new File(cfg.hosts)).withElasticVersion(ES_VERSION).build().start();
+        ee = EmbeddedElastic.builder().withInstallationDirectory(new File(cfg.hosts))
+            .withElasticVersion(ES_VERSION).withStartTimeout(15, TimeUnit.SECONDS).build().start();
       } catch (Exception e) {
         throw new RuntimeException(e);
       }

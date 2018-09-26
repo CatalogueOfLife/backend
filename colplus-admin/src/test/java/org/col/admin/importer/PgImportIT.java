@@ -56,6 +56,7 @@ import org.col.db.mapper.InitMybatisRule;
 import org.col.db.mapper.NameRelationMapper;
 import org.col.db.mapper.VerbatimRecordMapper;
 import org.col.es.EsSetupRule;
+import org.col.es.NameUsageIndexService;
 import org.gbif.nameparser.api.Rank;
 import org.junit.After;
 import org.junit.Before;
@@ -143,6 +144,9 @@ public class PgImportIT {
       PgImport importer =
           new PgImport(dataset.getKey(), store, PgSetupRule.getSqlSessionFactory(), icfg);
       importer.call();
+      
+      NameUsageIndexService svc = new NameUsageIndexService(esSetupRule.getEsClient(), esSetupRule.getEsConfig(), PgSetupRule.getSqlSessionFactory());
+      svc.indexDataset(dataset.getKey());
 
     } catch (Exception e) {
       throw new RuntimeException(e);
