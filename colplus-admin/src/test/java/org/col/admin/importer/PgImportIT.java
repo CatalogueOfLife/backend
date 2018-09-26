@@ -55,6 +55,7 @@ import org.col.db.mapper.DatasetMapper;
 import org.col.db.mapper.InitMybatisRule;
 import org.col.db.mapper.NameRelationMapper;
 import org.col.db.mapper.VerbatimRecordMapper;
+import org.col.es.EsSetupRule;
 import org.gbif.nameparser.api.Rank;
 import org.junit.After;
 import org.junit.Before;
@@ -88,6 +89,9 @@ public class PgImportIT {
 
   @ClassRule
   public static PgSetupRule pgSetupRule = new PgSetupRule();
+  
+  @ClassRule
+  public static EsSetupRule esSetupRule = new EsSetupRule();
 
   @Rule
   public InitMybatisRule initMybatisRule = InitMybatisRule.empty();

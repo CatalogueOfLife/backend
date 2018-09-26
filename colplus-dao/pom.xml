@@ -130,7 +130,6 @@
 		<dependency>
 			<groupId>pl.allegro.tech</groupId>
 			<artifactId>embedded-elasticsearch</artifactId>
-			<version>2.7.0</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
