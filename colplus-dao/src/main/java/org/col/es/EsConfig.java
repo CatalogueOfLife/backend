@@ -12,8 +12,16 @@ public class EsConfig {
    */
   public static final String DEFAULT_TYPE_NAME = "_doc";
 
+  /**
+   * Comma separated list of hosts with ES nodes
+   */
   public String hosts;
+
+  /**
+   * Comma separated list of ports matching the hosts list
+   */
   public String ports;
+
   public IndexConfig nameUsage;
 
   /**

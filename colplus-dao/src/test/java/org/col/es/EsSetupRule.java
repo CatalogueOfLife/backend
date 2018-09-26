@@ -1,15 +1,17 @@
 package org.col.es;
 
 import java.io.File;
+import java.net.ServerSocket;
 import java.util.concurrent.TimeUnit;
 
+import com.google.common.base.Strings;
 import org.col.common.util.YamlUtils;
 import org.elasticsearch.client.RestClient;
 import org.junit.rules.ExternalResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import pl.allegro.tech.embeddedelasticsearch.EmbeddedElastic;
+import pl.allegro.tech.embeddedelasticsearch.PopularProperties;
 
 public class EsSetupRule extends ExternalResource {
 
@@ -27,8 +29,24 @@ public class EsSetupRule extends ExternalResource {
     if (cfg.embedded()) {
       LOG.info("Starting embedded Elasticsearch");
       try {
-        ee = EmbeddedElastic.builder().withInstallationDirectory(new File(cfg.hosts))
-            .withElasticVersion(ES_VERSION).withStartTimeout(15, TimeUnit.SECONDS).build().start();
+        // use configured port or assign free ports using local socket 0
+        int httpPort;
+        if (Strings.isNullOrEmpty(cfg.ports)) {
+          httpPort = new ServerSocket(0).getLocalPort();
+          cfg.ports = String.valueOf(httpPort);
+        } else {
+          httpPort = Integer.parseInt(cfg.ports);
+        }
+        int tcpPort = new ServerSocket(0).getLocalPort();
+        ee = EmbeddedElastic.builder()
+            .withInstallationDirectory(new File(cfg.hosts))
+            .withElasticVersion(ES_VERSION)
+            .withStartTimeout(60, TimeUnit.SECONDS)
+            .withSetting(PopularProperties.TRANSPORT_TCP_PORT, tcpPort)
+            .withSetting(PopularProperties.HTTP_PORT, httpPort)
+            //.withEsJavaOpts("-Xms128m -Xmx512m")
+            .build()
+            .start();
       } catch (Exception e) {
         throw new RuntimeException(e);
       }

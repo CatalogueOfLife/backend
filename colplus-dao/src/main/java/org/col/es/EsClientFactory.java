@@ -1,5 +1,6 @@
 package org.col.es;
 
+import com.google.common.base.Preconditions;
 import org.apache.http.HttpHost;
 import org.elasticsearch.client.RestClient;
 
@@ -8,12 +9,13 @@ public class EsClientFactory {
   private final EsConfig cfg;
 
   public EsClientFactory(EsConfig cfg) {
-    this.cfg = cfg;
+    this.cfg = Preconditions.checkNotNull(cfg, "ES config required");
   }
 
   public RestClient createClient() {
-    if (cfg == null || cfg.embedded()) {
-      return RestClient.builder(new HttpHost("127.0.0.1", 9200)).build();
+    if (cfg.embedded()) {
+      int port = Integer.parseInt(cfg.ports);
+      return RestClient.builder(new HttpHost("127.0.0.1", port)).build();
     }
     String[] hosts = cfg.hosts.split(",");
     String[] ports = cfg.ports == null ? new String[] {"9200"} : cfg.ports.split(",");
