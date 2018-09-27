@@ -1,19 +1,15 @@
 package org.col.es;
 
 import java.io.File;
-import java.io.IOException;
-import java.net.BindException;
-import java.net.ServerSocket;
 import java.util.concurrent.TimeUnit;
 
 import com.google.common.base.Strings;
-
+import org.col.common.io.PortUtil;
 import org.col.common.util.YamlUtils;
 import org.elasticsearch.client.RestClient;
 import org.junit.rules.ExternalResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import pl.allegro.tech.embeddedelasticsearch.EmbeddedElastic;
 import pl.allegro.tech.embeddedelasticsearch.PopularProperties;
 
@@ -36,12 +32,12 @@ public class EsSetupRule extends ExternalResource {
         // use configured port or assign free ports using local socket 0
         int httpPort;
         if (Strings.isNullOrEmpty(cfg.ports)) {
-          httpPort = getFreePort();
+          httpPort = PortUtil.findFreePort();
           cfg.ports = String.valueOf(httpPort);
         } else {
           httpPort = Integer.parseInt(cfg.ports);
         }
-        int tcpPort = getFreePort();
+        int tcpPort = PortUtil.findFreePort();
         ee = EmbeddedElastic.builder().withInstallationDirectory(new File(cfg.hosts))
             .withElasticVersion(ES_VERSION).withStartTimeout(60, TimeUnit.SECONDS)
             .withSetting(PopularProperties.TRANSPORT_TCP_PORT, tcpPort)
@@ -69,14 +65,6 @@ public class EsSetupRule extends ExternalResource {
     super.after();
     if (ee != null) {
       ee.stop();
-    }
-  }
-  
-  private static int getFreePort() {
-    try(ServerSocket ss = new ServerSocket(0)) {
-      return ss.getLocalPort();
-    } catch (IOException e) {
-      throw new RuntimeException(e);
     }
   }
 

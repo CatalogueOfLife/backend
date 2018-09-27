@@ -2,13 +2,13 @@ package org.col.dw;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.ServerSocket;
 import java.util.List;
 
 import com.google.common.collect.Lists;
 import io.dropwizard.Application;
 import io.dropwizard.testing.ConfigOverride;
 import io.dropwizard.testing.junit.DropwizardAppRule;
+import org.col.common.io.PortUtil;
 import org.col.common.util.YamlUtils;
 import org.col.db.EmbeddedColPg;
 import org.col.db.PgConfig;
@@ -58,8 +58,8 @@ public class DropwizardPgAppRule<C extends PgAppConfig> extends DropwizardAppRul
 
     // select free DW port
     try {
-      int dwPort = new ServerSocket(0).getLocalPort();
-      int dwPortAdmin = new ServerSocket(0).getLocalPort();
+      int dwPort = PortUtil.findFreePort();
+      int dwPortAdmin = PortUtil.findFreePort();
       LOG.info("Configure DW ports application={}, admin={}", dwPort, dwPortAdmin);
       overrides.add(ConfigOverride.config("server.applicationConnectors[0].port", String.valueOf(dwPort)));
       overrides.add(ConfigOverride.config("server.adminConnectors[0].port", String.valueOf(dwPortAdmin)));
