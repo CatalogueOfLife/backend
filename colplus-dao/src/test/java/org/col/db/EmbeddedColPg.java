@@ -2,7 +2,6 @@ package org.col.db;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.ServerSocket;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -12,6 +11,7 @@ import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.col.common.io.PathUtils;
+import org.col.common.io.PortUtil;
 import org.col.common.lang.Exceptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,7 +75,7 @@ public class EmbeddedColPg {
 
 			postgres = new EmbeddedPostgres(Version.V10_3);
 			// assigned some free port using local socket 0
-			cfg.port = new ServerSocket(0).getLocalPort();
+			cfg.port = PortUtil.findFreePort();
 			cfg.host = "localhost";
 			cfg.maximumPoolSize = 3;
 			postgres.start(EmbeddedPostgres.cachedRuntimeConfig(serverDir),
