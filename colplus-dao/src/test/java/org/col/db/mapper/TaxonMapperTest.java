@@ -31,6 +31,8 @@ public class TaxonMapperTest extends MapperTestBase<TaxonMapper> {
   @Test
   public void roundtrip() throws Exception {
     Taxon in = TestEntityGenerator.newTaxon("t1");
+    // manually set the child count which is populated on read only
+    in.setChildCount(0);
     mapper().create(in);
     assertNotNull(in.getId());
     commit();
