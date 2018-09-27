@@ -4,6 +4,7 @@ import java.util.LinkedHashMap;
 
 import org.col.es.EsReadTestBase;
 import org.col.es.model.EsNameUsage;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -11,6 +12,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+@Ignore("Embedded ES not working on jenkins yet")
 public class MappingFactoryTest extends EsReadTestBase {
 
   @Test
