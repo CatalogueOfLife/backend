@@ -10,7 +10,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Base class to write exception mappers that return json error messages.
+ * Base class to write exception mappers that return json error messages
+ * with fixed http codes.
  */
 public class JsonExceptionMapperBase<T extends Throwable> implements ExceptionMapper<T> {
 
@@ -21,14 +22,18 @@ public class JsonExceptionMapperBase<T extends Throwable> implements ExceptionMa
     this.errorCode = errorCode;
   }
 
-  @Override
-  public Response toResponse(T exception) {
-    LOG.info(exception.getMessage(), exception);
+  static Response jsonErrorResponse(Response.StatusType errorCode, String message) {
     return Response
         .status(errorCode)
         .type(MediaType.APPLICATION_JSON_TYPE)
-        .entity(new ErrorMessage(errorCode.getStatusCode(), message(exception)))
+        .entity(new ErrorMessage(errorCode.getStatusCode(), message))
         .build();
+  }
+
+  @Override
+  public Response toResponse(T exception) {
+    LOG.info(exception.getMessage(), exception);
+    return jsonErrorResponse(errorCode, message(exception));
   }
 
   String message(T e) {
