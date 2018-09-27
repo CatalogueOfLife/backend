@@ -80,20 +80,5 @@ public class EsSetupRule extends ExternalResource {
     }
   }
 
-//  private static int getFreePort(int preferredPort) {
-//    for (int i = 0; i < 100; i++) {
-//      preferredPort += i;
-//      try {
-//        ServerSocket ss = new ServerSocket(preferredPort);
-//        ss.close();
-//        return preferredPort;
-//      } catch (BindException e) {
-//        // ...
-//      } catch (IOException e) {
-//        throw new RuntimeException(e);
-//      }
-//    }
-//    throw new RuntimeException("No free port available after 100 attempts");
-//  }
 
 }
