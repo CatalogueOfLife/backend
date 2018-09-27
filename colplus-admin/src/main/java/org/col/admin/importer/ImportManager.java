@@ -5,19 +5,13 @@ import java.time.LocalDateTime;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Queue;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.Future;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.google.common.collect.Lists;
-
+import io.dropwizard.lifecycle.Managed;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -33,12 +27,11 @@ import org.col.common.io.DownloadUtil;
 import org.col.db.dao.DatasetImportDao;
 import org.col.db.mapper.DatasetMapper;
 import org.col.db.mapper.DatasetPartitionMapper;
+import org.col.es.NameUsageIndexService;
 import org.elasticsearch.client.RestClient;
 import org.gbif.nameparser.utils.NamedThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import io.dropwizard.lifecycle.Managed;
 
 import static org.col.admin.AdminServer.MILLIS_TO_DIE;
 
@@ -57,7 +50,7 @@ public class ImportManager implements Managed {
   private final SqlSessionFactory factory;
   // private final Parser<CslData> cslParser;
   private final NameIndex index;
-  private final RestClient esClient;
+  private final NameUsageIndexService indexService;
   private final Timer importTimer;
   private final Counter failed;
 
@@ -67,7 +60,7 @@ public class ImportManager implements Managed {
     this.factory = factory;
     this.downloader = new DownloadUtil(client);
     this.index = index;
-    this.esClient = esClient;
+    this.indexService = new NameUsageIndexService(esClient, cfg.es, factory);;
     importTimer = registry.timer("org.col.import.timer");
     failed = registry.counter("org.col.import.failures");
   }
@@ -148,7 +141,7 @@ public class ImportManager implements Managed {
       } else if (d.hasDeletedDate()) {
         throw new IllegalArgumentException("Dataset " + req.datasetKey + " is deleted");
       }
-      ImportJob job = new ImportJob(d, req.force, cfg, downloader, factory, index, esClient,
+      ImportJob job = new ImportJob(d, req.force, cfg, downloader, factory, index, indexService,
           new StartNotifier() {
             @Override
             public void started() {

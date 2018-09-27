@@ -1,5 +1,11 @@
 package org.col.admin;
 
+import io.dropwizard.client.DropwizardApacheConnector;
+import io.dropwizard.client.HttpClientBuilder;
+import io.dropwizard.client.JerseyClientBuilder;
+import io.dropwizard.client.JerseyClientConfiguration;
+import io.dropwizard.setup.Bootstrap;
+import io.dropwizard.setup.Environment;
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -26,13 +32,6 @@ import org.glassfish.jersey.client.spi.ConnectorProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
-
-import io.dropwizard.client.DropwizardApacheConnector;
-import io.dropwizard.client.HttpClientBuilder;
-import io.dropwizard.client.JerseyClientBuilder;
-import io.dropwizard.client.JerseyClientConfiguration;
-import io.dropwizard.setup.Bootstrap;
-import io.dropwizard.setup.Environment;
 
 public class AdminServer extends PgApp<AdminServerConfig> {
   private static final Logger LOG = LoggerFactory.getLogger(AdminServer.class);

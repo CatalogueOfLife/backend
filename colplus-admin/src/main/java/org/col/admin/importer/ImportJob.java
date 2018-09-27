@@ -23,7 +23,6 @@ import org.col.common.io.CompressionUtil;
 import org.col.common.io.DownloadUtil;
 import org.col.db.dao.DatasetImportDao;
 import org.col.es.NameUsageIndexService;
-import org.elasticsearch.client.RestClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -48,11 +47,12 @@ public class ImportJob implements Runnable {
   private final SqlSessionFactory factory;
   private final DatasetImportDao dao;
   private final NameIndex index;
-  private final RestClient esClient;
+  private final NameUsageIndexService indexService;
+
   private final StartNotifier notifier;
 
   ImportJob(Dataset d, boolean force, AdminServerConfig cfg, DownloadUtil downloader,
-      SqlSessionFactory factory, NameIndex index, RestClient esClient, StartNotifier notifier) {
+      SqlSessionFactory factory, NameIndex index, NameUsageIndexService indexService, StartNotifier notifier) {
     this.datasetKey = d.getKey();
     this.dataset = d;
     this.force = force;
@@ -60,7 +60,7 @@ public class ImportJob implements Runnable {
     this.downloader = downloader;
     this.factory = factory;
     this.index = index;
-    this.esClient = esClient;
+    this.indexService = indexService;
     dao = new DatasetImportDao(factory);
     this.notifier = notifier;
   }
@@ -148,6 +148,9 @@ public class ImportJob implements Runnable {
         LOG.info("Build import metrics for dataset {}", datasetKey);
         dao.updateImportSuccess(di);
 
+        LOG.info("Build search index for dataset {}", datasetKey);
+        indexService.indexDataset(datasetKey);
+
         LOG.info("Dataset import {} completed in {}", datasetKey, DurationFormatUtils
             .formatDurationHMS(Duration.between(di.getStarted(), LocalDateTime.now()).toMillis()));
 
@@ -180,13 +183,6 @@ public class ImportJob implements Runnable {
       } catch (IOException e) {
         LOG.error("Failed to remove scratch dir {}", scratchDir, e);
       }
-    }
-
-    try {
-      NameUsageIndexService svc = new NameUsageIndexService(esClient, cfg.es, factory);
-      svc.indexDataset(datasetKey);
-    } catch (Throwable t) {
-      LOG.error("Failure while creating Elasticsearch index for dataset {}: {}", datasetKey, t);
     }
   }
 
