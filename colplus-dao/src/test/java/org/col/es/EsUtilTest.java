@@ -3,7 +3,7 @@ package org.col.es;
 import org.junit.Ignore;
 import org.junit.Test;
 
-@Ignore("Embedded ES not working on jenkins yet")
+//@Ignore("Embedded ES not working on jenkins yet")
 public class EsUtilTest extends EsReadTestBase {
 
   @Test
