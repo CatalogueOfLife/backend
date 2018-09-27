@@ -398,8 +398,8 @@ public class PgImportIT {
       Synonym syn = (Synonym) acc.get(0);
 
       t = tdao.get(dataset.getKey(), "Rho-61");
-      assertEquals("Multidentorhodacarus denticulatus (Berlese, 1920)",
-          t.getName().canonicalNameComplete());
+      assertEquals("Multidentorhodacarus denticulatus (Berlese, 1920)", t.getName().canonicalNameComplete());
+      t.setChildCount(null);
       assertEquals(t, syn.getAccepted());
     }
   }
