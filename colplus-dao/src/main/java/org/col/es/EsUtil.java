@@ -105,7 +105,7 @@ public class EsUtil {
   }
 
   public static int count(RestClient client, String name) throws EsException {
-    LOG.info("Refreshing index {}", name);
+    LOG.info("Counting index {}", name);
     Request request = new Request("GET", name + "/_doc/_count");
     Response response;
     try {

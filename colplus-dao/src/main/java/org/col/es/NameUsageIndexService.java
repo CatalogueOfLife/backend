@@ -11,6 +11,7 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.jackson.ApiModule;
 import org.col.api.model.NameUsage;
+import org.col.common.lang.Exceptions;
 import org.col.db.mapper.BatchResultHandler;
 import org.col.db.mapper.NameUsageMapper;
 import org.elasticsearch.client.Request;
@@ -26,7 +27,7 @@ import static org.col.es.EsConfig.NAME_USAGE_BASE;
 public class NameUsageIndexService {
 
   private static final Logger LOG = LoggerFactory.getLogger(NameUsageIndexService.class);
-  private static final ObjectWriter writer = ApiModule.MAPPER.writerFor(NameUsage.class);
+  private static final ObjectWriter WRITER = ApiModule.MAPPER.writerFor(NameUsage.class);
 
   private final RestClient client;
   private final EsConfig esConfig;
@@ -54,7 +55,7 @@ public class NameUsageIndexService {
    * Main method to index an entire dataset from postgres into ElasticSearch using the bulk API.
    */
   public void indexDataset(final int datasetKey) throws EsException {
-    String index = NAME_USAGE_BASE + datasetKey;
+    final String index = NAME_USAGE_BASE + datasetKey;
     EsUtil.deleteIndex(client, index);
     EsUtil.createIndex(client, index, esConfig.nameUsage);
     final AtomicInteger counter = new AtomicInteger();
@@ -81,7 +82,7 @@ public class NameUsageIndexService {
     try {
       for (NameUsage nu : usages) {
         body.append(actionMetaData);
-        body.append(writer.writeValueAsString(nu));
+        body.append(WRITER.writeValueAsString(nu));
         body.append("\n");
       }
       Request request = new Request("POST", "/_bulk");
@@ -92,7 +93,7 @@ public class NameUsageIndexService {
         execute(request, index, usages);
       }
     } catch (Exception e) {
-      smash(e);
+      Exceptions.throwRuntime(e);
     }
   }
 
@@ -108,7 +109,7 @@ public class NameUsageIndexService {
       public void onFailure(Exception e) {
         // No point in going on
         LOG.error("Error while populating index {}: {}", index, e.getMessage());
-        smash(e);
+        Exceptions.throwRuntime(e);
       }
     });
   }
@@ -133,13 +134,6 @@ public class NameUsageIndexService {
   private static String indexActionMetaData(String index) {
     String fmt = "{ \"index\" : { \"_index\" : \"%s\", \"_type\" : \"%s\" } }%n";
     return String.format(fmt, index, DEFAULT_TYPE_NAME);
-  }
-
-  private static void smash(Exception e) {
-    if (e instanceof RuntimeException) {
-      throw (RuntimeException) e;
-    }
-    throw new RuntimeException(e);
   }
 
 }
