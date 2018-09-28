@@ -19,118 +19,117 @@ import static com.google.common.base.Preconditions.checkNotNull;
 /**
  * A verbatim record that offers basic value cleaning and unescaping of common character entities
  * on read methods without altering the underlying original verbatim data.
- *
+ * <p>
  * It also strips simple xml/html tags without attributes such as <i> or </b>
- *
+ * <p>
  * When a value is altered during unescaping the record keeps track that it had been unescaped.
- *
+ * <p>
  * The following escaped character formats are recognized:
  * 1) html entities
- *    named &amp;
- *    hex &#x0026;
- *    decimal &#38;
+ * named &amp;
+ * hex &#x0026;
+ * decimal &#38;
  * 2) Hexadecimal and octal escapes as used in Java, CSS & ECMA Javascript:
- *    Hexadecimal unicode escapes started by  "\\u": \\u00A9
- *    Unicode code point escapes indicated by "\\u{}": \\u{2F80}
- *
+ * Hexadecimal unicode escapes started by  "\\u": \\u00A9
+ * Unicode code point escapes indicated by "\\u{}": \\u{2F80}
  */
 public class VerbatimRecord implements IssueContainer {
   private static final Logger LOG = LoggerFactory.getLogger(VerbatimRecord.class);
   private static final Pattern REMOVE_TAGS = Pattern.compile("</? *[a-z][a-z1-5]{0,5} *>", Pattern.CASE_INSENSITIVE);
   private static final Pattern ECMA_UNICODE = Pattern.compile("\\\\u\\{([0-9a-f]{4})}", Pattern.CASE_INSENSITIVE);
-
+  
   private Integer key;
   private Integer datasetKey;
   // instance hash created on load to see if the instance has been changed
   private int _hashKeyOnLoad;
-
+  
   private long line;
   private String file;
   private Term type;
   private Map<Term, String> terms = new HashMap<>();
   private Set<Issue> issues = EnumSet.noneOf(Issue.class);
-
+  
   public VerbatimRecord() {
   }
-
+  
   public VerbatimRecord(long line, String file, Term type) {
     this.line = line;
     this.file = file;
     this.type = type;
   }
-
+  
   public Integer getKey() {
     return key;
   }
-
+  
   public void setKey(Integer key) {
     this.key = key;
   }
-
+  
   public Integer getDatasetKey() {
     return datasetKey;
   }
-
+  
   public void setDatasetKey(Integer datasetKey) {
     this.datasetKey = datasetKey;
   }
-
+  
   /**
    * @return line number this record represents in the underlying source file
    */
   public long getLine() {
     return line;
   }
-
+  
   public void setLine(long line) {
     this.line = line;
   }
-
+  
   public void setFile(String file) {
     this.file = file;
   }
-
+  
   public String getFile() {
     return file;
   }
-
+  
   public Term getType() {
     return type;
   }
-
+  
   public void setType(Term type) {
     this.type = type;
   }
-
+  
   public Map<Term, String> getTerms() {
     return terms;
   }
-
+  
   public void setTerms(Map<Term, String> terms) {
     this.terms = terms;
   }
-
+  
   @Override
   public Set<Issue> getIssues() {
     return issues;
   }
-
+  
   @Override
   public void setIssues(Set<Issue> issues) {
     this.issues = issues;
   }
-
+  
   @Override
   public void addIssue(Issue issue) {
     issues.add(issue);
   }
-
+  
   @Override
   public boolean hasIssue(Issue issue) {
     return issues.contains(issue);
   }
-
-  private String unescape(String x){
+  
+  private String unescape(String x) {
     if (Strings.isNullOrEmpty(x)) {
       return null;
     }
@@ -147,7 +146,7 @@ public class VerbatimRecord implements IssueContainer {
       return x;
     }
   }
-
+  
   /**
    * @return true if a term exists and is not null or an empty string
    */
@@ -155,7 +154,7 @@ public class VerbatimRecord implements IssueContainer {
     checkNotNull(term, "term can't be null");
     return terms.get(term) != null;
   }
-
+  
   /**
    * @return the raw value without any unescaping
    */
@@ -163,7 +162,7 @@ public class VerbatimRecord implements IssueContainer {
     checkNotNull(term, "term can't be null");
     return terms.get(term);
   }
-
+  
   /**
    * @return the potentially unescaped value
    */
@@ -175,20 +174,20 @@ public class VerbatimRecord implements IssueContainer {
     }
     return null;
   }
-
+  
   public int size() {
     return terms.size();
   }
-
+  
   @JsonIgnore
   public boolean isEmpty() {
     return terms.isEmpty();
   }
-
+  
   public Set<Term> terms() {
     return terms.keySet();
   }
-
+  
   public void put(Term term, String value) {
     checkNotNull(term, "term can't be null");
     if (value == null) {
@@ -197,7 +196,7 @@ public class VerbatimRecord implements IssueContainer {
       terms.put(term, value);
     }
   }
-
+  
   /**
    * @return a URI based on the raw value without applying any unescaping or null if an invalid URI
    */
@@ -213,7 +212,7 @@ public class VerbatimRecord implements IssueContainer {
     }
     return null;
   }
-
+  
   /**
    * Returns a parsed integer for a term value, adding the invalidIssue to the verbatim record issues
    * if the value cannot be parsed, returning null in that case.
@@ -226,7 +225,7 @@ public class VerbatimRecord implements IssueContainer {
       return null;
     }
   }
-
+  
   /**
    * Returns a parsed integer for a term value, throwing NumberFormatException if the value cannot be parsed.
    */
@@ -238,13 +237,14 @@ public class VerbatimRecord implements IssueContainer {
     }
     return null;
   }
-
+  
   /**
    * Get the first non blank term for a list of terms.
+   *
    * @param terms list to try
    */
   @Nullable
-  public String getFirst(Term ... terms) {
+  public String getFirst(Term... terms) {
     for (Term t : terms) {
       String val = get(t);
       if (val != null) {
@@ -253,13 +253,14 @@ public class VerbatimRecord implements IssueContainer {
     }
     return null;
   }
-
+  
   /**
    * Get the first non blank term for a list of terms.
+   *
    * @param terms list to try
    */
   @Nullable
-  public String getFirstRaw(Term ... terms) {
+  public String getFirstRaw(Term... terms) {
     for (Term t : terms) {
       String val = getRaw(t);
       if (val != null) {
@@ -268,7 +269,7 @@ public class VerbatimRecord implements IssueContainer {
     }
     return null;
   }
-
+  
   /**
    * Get the term value split by a delimiter
    */
@@ -281,31 +282,31 @@ public class VerbatimRecord implements IssueContainer {
     }
     return null;
   }
-
-
+  
+  
   /**
    * Stores the current state of the instance for subsequent hasChanged() tests.
    */
   public void setHashCode() {
     _hashKeyOnLoad = hashCode();
   }
-
+  
   /**
    * @return true if the instance has been modified since the last time setHashCode was executed.
    */
   public boolean hasChanged() {
     return _hashKeyOnLoad != hashCode();
   }
-
+  
   @Override
   public String toString() {
-    return "v"+key+"{" + file + "#" + line +", "+ terms.size() + " terms";
+    return "v" + key + "{" + file + "#" + line + ", " + terms.size() + " terms";
   }
-
+  
   public String fileLine() {
     return file + "#" + line;
   }
-
+  
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -319,22 +320,21 @@ public class VerbatimRecord implements IssueContainer {
         Objects.equals(terms, that.terms) &&
         Objects.equals(issues, that.issues);
   }
-
+  
   @Override
   public int hashCode() {
-
+    
     return Objects.hash(key, datasetKey, line, file, type, terms, issues);
   }
-
+  
   /**
-
    * @return all terms and values as a string
    */
   public String toStringComplete() {
     StringBuilder sb = new StringBuilder();
     sb.append(key).append(" ")
         .append(file).append("#").append(line)
-        .append(", "+ type)
+        .append(", " + type)
         .append(": ");
     boolean first = true;
     for (Map.Entry<Term, String> te : terms.entrySet()) {

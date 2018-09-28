@@ -6,45 +6,45 @@ import javax.annotation.Nullable;
 
 /**
  * A generic paging response wrapping a list payload
- * 
+ *
  * @param <T> the type of the paging content
  */
 public class ResultPage<T> extends Page {
   private final int total;
   private final List<T> result;
-
+  
   public ResultPage(Page page, int total, List<T> result) {
     this.setOffset(page.getOffset());
     this.setLimit(page.getLimit());
     this.total = total;
     this.result = result;
   }
-
+  
   @Nullable
   public int getTotal() {
     return total;
   }
-
+  
   public List<T> getResult() {
     return result;
   }
-
+  
   /**
    * @return true if this is the last page and there are no more pages with content if the offset is
-   *         increased.
+   * increased.
    */
   public boolean isLast() {
     return total <= getOffset() + getLimit();
   }
-
+  
   public int size() {
     return result.size();
   }
-
+  
   public boolean isEmpty() {
     return result.isEmpty();
   }
-
+  
   @Override
   public boolean equals(Object o) {
     if (this == o)
@@ -54,7 +54,7 @@ public class ResultPage<T> extends Page {
     ResultPage<?> other = (ResultPage<?>) o;
     return total == other.total && Objects.equals(result, other.result);
   }
-
+  
   @Override
   public int hashCode() {
     return Objects.hash(total, result);

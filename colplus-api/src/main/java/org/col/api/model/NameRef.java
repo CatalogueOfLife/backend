@@ -14,47 +14,47 @@ public class NameRef {
   private String name;
   private String authorship;
   private Rank rank;
-
+  
   public String getId() {
     return id;
   }
-
+  
   public void setId(String id) {
     this.id = id;
   }
-
+  
   public String getIndexNameId() {
     return indexNameId;
   }
-
+  
   public void setIndexNameId(String indexNameId) {
     this.indexNameId = indexNameId;
   }
-
+  
   public String getName() {
     return name;
   }
-
+  
   public void setName(String name) {
     this.name = name;
   }
-
+  
   public String getAuthorship() {
     return authorship;
   }
-
+  
   public void setAuthorship(String authorship) {
     this.authorship = authorship;
   }
-
+  
   public Rank getRank() {
     return rank;
   }
-
+  
   public void setRank(Rank rank) {
     this.rank = rank;
   }
-
+  
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -66,12 +66,12 @@ public class NameRef {
         Objects.equals(authorship, nameRef.authorship) &&
         rank == nameRef.rank;
   }
-
+  
   @Override
   public int hashCode() {
     return Objects.hash(id, indexNameId, name, authorship, rank);
   }
-
+  
   @Override
   public String toString() {
     return id + " " + rank + " " + name + ' ' + authorship;

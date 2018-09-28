@@ -9,83 +9,83 @@ import org.col.api.vocab.Country;
 import org.col.api.vocab.Language;
 
 public class VernacularName implements Referenced, VerbatimEntity {
-
-	@JsonIgnore
-	private Integer key;
+  
+  @JsonIgnore
+  private Integer key;
   private Integer verbatimKey;
-	private String name;
+  private String name;
   private String latin;
-	private Language language;
-	private Country country;
-	private Set<String> referenceIds = Sets.newHashSet();
-
-	public Integer getKey() {
-		return key;
-	}
-
-	public void setKey(Integer key) {
-		this.key = key;
-	}
-
+  private Language language;
+  private Country country;
+  private Set<String> referenceIds = Sets.newHashSet();
+  
+  public Integer getKey() {
+    return key;
+  }
+  
+  public void setKey(Integer key) {
+    this.key = key;
+  }
+  
   @Override
   public Integer getVerbatimKey() {
     return verbatimKey;
   }
-
+  
   @Override
   public void setVerbatimKey(Integer verbatimKey) {
     this.verbatimKey = verbatimKey;
   }
-
+  
   public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
-
+    return name;
+  }
+  
+  public void setName(String name) {
+    this.name = name;
+  }
+  
   /**
    * Transliterated name into the latin script.
    */
   public String getLatin() {
     return latin;
   }
-
+  
   public void setLatin(String latin) {
     this.latin = latin;
   }
-
+  
   public Language getLanguage() {
-		return language;
-	}
-
-	public void setLanguage(Language language) {
-		this.language = language;
-	}
-
-	public Country getCountry() {
-		return country;
-	}
-
-	public void setCountry(Country country) {
-		this.country = country;
-	}
-
+    return language;
+  }
+  
+  public void setLanguage(Language language) {
+    this.language = language;
+  }
+  
+  public Country getCountry() {
+    return country;
+  }
+  
+  public void setCountry(Country country) {
+    this.country = country;
+  }
+  
   @Override
   public Set<String> getReferenceIds() {
     return referenceIds;
   }
-
+  
   public void setReferenceIds(Set<String> referenceIds) {
     this.referenceIds = referenceIds;
   }
-
+  
   public void addReferenceId(String referenceId) {
     this.referenceIds.add(referenceId);
   }
-
-
+  
+  
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -99,10 +99,10 @@ public class VernacularName implements Referenced, VerbatimEntity {
         country == that.country &&
         Objects.equals(referenceIds, that.referenceIds);
   }
-
+  
   @Override
   public int hashCode() {
-
+    
     return Objects.hash(key, verbatimKey, name, latin, language, country, referenceIds);
   }
 }

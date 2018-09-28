@@ -8,31 +8,31 @@ import java.util.Objects;
 public class NameAccordingTo {
   private Name name;
   private String accordingTo;
-
+  
   public NameAccordingTo() {
   }
-
+  
   public NameAccordingTo(Name name, String accordingTo) {
     this.name = name;
     this.accordingTo = accordingTo;
   }
-
+  
   public Name getName() {
     return name;
   }
-
+  
   public void setName(Name name) {
     this.name = name;
   }
-
+  
   public String getAccordingTo() {
     return accordingTo;
   }
-
+  
   public void setAccordingTo(String accordingTo) {
     this.accordingTo = accordingTo;
   }
-
+  
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -41,10 +41,10 @@ public class NameAccordingTo {
     return Objects.equals(name, that.name) &&
         Objects.equals(accordingTo, that.accordingTo);
   }
-
+  
   @Override
   public int hashCode() {
     return Objects.hash(name, accordingTo);
   }
-
+  
 }

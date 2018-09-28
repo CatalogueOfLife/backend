@@ -10,82 +10,82 @@ import org.col.api.vocab.TaxonomicStatus;
  * within a given CoL sector.
  */
 public class EditorialDecision {
-	private Integer key;
+  private Integer key;
   private Integer sectorKey;
   private NameRef subject;
   private TaxonomicStatus status;
   private String name;
   private String authorship;
-	private LocalDateTime created;
-	private LocalDateTime deleted;
-
+  private LocalDateTime created;
+  private LocalDateTime deleted;
+  
   /**
    * Primary key
    */
   public Integer getKey() {
     return key;
   }
-
+  
   public void setKey(Integer key) {
     this.key = key;
   }
-
+  
   public Integer getSectorKey() {
     return sectorKey;
   }
-
+  
   public void setSectorKey(Integer sectorKey) {
     this.sectorKey = sectorKey;
   }
-
+  
   public NameRef getSubject() {
     return subject;
   }
-
+  
   public void setSubject(NameRef subject) {
     this.subject = subject;
   }
-
+  
   public TaxonomicStatus getStatus() {
     return status;
   }
-
+  
   public void setStatus(TaxonomicStatus status) {
     this.status = status;
   }
-
+  
   public String getName() {
     return name;
   }
-
+  
   public void setName(String name) {
     this.name = name;
   }
-
+  
   public String getAuthorship() {
     return authorship;
   }
-
+  
   public void setAuthorship(String authorship) {
     this.authorship = authorship;
   }
-
+  
   public LocalDateTime getCreated() {
     return created;
   }
-
+  
   public void setCreated(LocalDateTime created) {
     this.created = created;
   }
-
+  
   public LocalDateTime getDeleted() {
     return deleted;
   }
-
+  
   public void setDeleted(LocalDateTime deleted) {
     this.deleted = deleted;
   }
-
+  
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -100,12 +100,12 @@ public class EditorialDecision {
         Objects.equals(created, that.created) &&
         Objects.equals(deleted, that.deleted);
   }
-
+  
   @Override
   public int hashCode() {
     return Objects.hash(key, sectorKey, subject, status, name, authorship, created, deleted);
   }
-
+  
   @Override
   public String toString() {
     return "EditorialDecision{" + key + " on " + subject + '}';
