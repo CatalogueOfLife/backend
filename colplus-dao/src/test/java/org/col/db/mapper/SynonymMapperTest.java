@@ -36,7 +36,7 @@ public class SynonymMapperTest extends MapperTestBase<SynonymMapper> {
 
 
   @Test
-  public void roundtrip() throws Exception {
+  public void roundtrip() {
     Name n = TestEntityGenerator.newName();
     nameDao.create(n);
 
@@ -54,6 +54,8 @@ public class SynonymMapperTest extends MapperTestBase<SynonymMapper> {
     assertEquals(1, syns.size());
     Synonym s2 = syns.get(0);
 
+    // remove child count for comparison
+    t.setChildCount(null);
     assertEquals(s1, s2);
   }
 

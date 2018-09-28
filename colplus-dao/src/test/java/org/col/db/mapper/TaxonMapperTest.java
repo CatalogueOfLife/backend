@@ -137,7 +137,7 @@ public class TaxonMapperTest extends MapperTestBase<TaxonMapper> {
     commit();
 
     int res = mapper().countChildren(parent.getDatasetKey(), parent.getId());
-    assertEquals("01", 3, res);
+    assertEquals(3, res);
   }
 
   @Test
