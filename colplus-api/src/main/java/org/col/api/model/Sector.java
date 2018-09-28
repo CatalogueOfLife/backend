@@ -2,45 +2,25 @@ package org.col.api.model;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Objects;
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
-
-import org.col.api.vocab.Coverage;
 
 /**
  * A taxonomic sector definition within a dataset that is used to assemble the Catalogue of Life.
- * TODO: add definition of root taxa and optional exclusion filter (by rank, name or group) - will also serve to show the taxonomic coverage in the CoL AC
+ * Sectors will also serve to show the taxonomic coverage in the CoL portal.
  *
  */
 public class Sector {
 	private Integer key;
-  private Integer datasetKey;
-  /**
-   * English name for the group defined by this sector
-   */
-	private String groupName;
-  private String alias;
-	private String title;
-	private String description;
-	private List<String> authorsAndEditors;
-	private String organisation;
-	private String contactPerson;
-  private Coverage coverage;
-	@Max(100)
-	@Min(0)
-	private Integer completeness;
-	@Max(5)
-	@Min(1)
-	private Integer confidence;
-	private String notes;
+  private Integer colSourceKey;
+  private NameRef root;
+  private List<NameRef> exclude;
+  private NameRef attachment;
+  private List<NameRef> suppress;
 	private LocalDateTime created;
 	private LocalDateTime modified;
-	private LocalDateTime deleted;
 
-	public Sector() {
-	}
-
+  /**
+   * Primary key
+   */
   public Integer getKey() {
     return key;
   }
@@ -49,100 +29,62 @@ public class Sector {
     this.key = key;
   }
 
-  public Integer getDatasetKey() {
-    return datasetKey;
+  /**
+   * The col source the root of this sector originates from
+   */
+  public Integer getColSourceKey() {
+    return colSourceKey;
   }
 
-  public void setDatasetKey(Integer datasetKey) {
-    this.datasetKey = datasetKey;
+  public void setColSourceKey(Integer colSourceKey) {
+    this.colSourceKey = colSourceKey;
   }
 
-  public String getGroupName() {
-    return groupName;
+  /**
+   * A reference to the single root taxon from the col source for this sector.
+   * Can even be a species, but usually some higher taxon.
+   */
+  public NameRef getRoot() {
+    return root;
   }
 
-  public void setGroupName(String groupName) {
-    this.groupName = groupName;
+  public void setRoot(NameRef root) {
+    this.root = root;
   }
 
-  public String getAlias() {
-    return alias;
+  /**
+   * Optional list of taxa within the descendants of root to exclude from this sector definition
+   */
+  public List<NameRef> getExclude() {
+    return exclude;
   }
 
-  public void setAlias(String alias) {
-    this.alias = alias;
+  public void setExclude(List<NameRef> exclude) {
+    this.exclude = exclude;
   }
 
-  public String getTitle() {
-    return title;
+  /**
+   * The attachment point in the CoL tree, i.e. the CoL parent taxon for the sector root
+   */
+  public NameRef getAttachment() {
+    return attachment;
   }
 
-  public void setTitle(String title) {
-    this.title = title;
+  public void setAttachment(NameRef attachment) {
+    this.attachment = attachment;
   }
 
-  public String getDescription() {
-    return description;
+  /**
+   * Optional list of CoL tree taxa that should be suppressed when this sector is attached.
+   * E.g. the CoL management classification might define an alternative taxonomy that uses
+   * different taxa which are covered by this sector already.
+   */
+  public List<NameRef> getSuppress() {
+    return suppress;
   }
 
-  public void setDescription(String description) {
-    this.description = description;
-  }
-
-  public List<String> getAuthorsAndEditors() {
-    return authorsAndEditors;
-  }
-
-  public void setAuthorsAndEditors(List<String> authorsAndEditors) {
-    this.authorsAndEditors = authorsAndEditors;
-  }
-
-  public String getOrganisation() {
-    return organisation;
-  }
-
-  public void setOrganisation(String organisation) {
-    this.organisation = organisation;
-  }
-
-  public String getContactPerson() {
-    return contactPerson;
-  }
-
-  public void setContactPerson(String contactPerson) {
-    this.contactPerson = contactPerson;
-  }
-
-  public Coverage getCoverage() {
-    return coverage;
-  }
-
-  public void setCoverage(Coverage coverage) {
-    this.coverage = coverage;
-  }
-
-  public Integer getCompleteness() {
-    return completeness;
-  }
-
-  public void setCompleteness(Integer completeness) {
-    this.completeness = completeness;
-  }
-
-  public Integer getConfidence() {
-    return confidence;
-  }
-
-  public void setConfidence(Integer confidence) {
-    this.confidence = confidence;
-  }
-
-  public String getNotes() {
-    return notes;
-  }
-
-  public void setNotes(String notes) {
-    this.notes = notes;
+  public void setSuppress(List<NameRef> suppress) {
+    this.suppress = suppress;
   }
 
   public LocalDateTime getCreated() {
@@ -153,47 +95,14 @@ public class Sector {
     this.created = created;
   }
 
+  /**
+   * Time the data of this sector was last changed in the Catalogue of Life.
+   */
   public LocalDateTime getModified() {
     return modified;
   }
 
   public void setModified(LocalDateTime modified) {
     this.modified = modified;
-  }
-
-  public LocalDateTime getDeleted() {
-    return deleted;
-  }
-
-  public void setDeleted(LocalDateTime deleted) {
-    this.deleted = deleted;
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
-    Sector sector = (Sector) o;
-    return Objects.equals(key, sector.key) &&
-        Objects.equals(datasetKey, sector.datasetKey) &&
-        Objects.equals(groupName, sector.groupName) &&
-        Objects.equals(alias, sector.alias) &&
-        Objects.equals(title, sector.title) &&
-        Objects.equals(description, sector.description) &&
-        Objects.equals(authorsAndEditors, sector.authorsAndEditors) &&
-        Objects.equals(organisation, sector.organisation) &&
-        Objects.equals(contactPerson, sector.contactPerson) &&
-        coverage == sector.coverage &&
-        Objects.equals(completeness, sector.completeness) &&
-        Objects.equals(confidence, sector.confidence) &&
-        Objects.equals(notes, sector.notes) &&
-        Objects.equals(created, sector.created) &&
-        Objects.equals(modified, sector.modified) &&
-        Objects.equals(deleted, sector.deleted);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(key, datasetKey, groupName, alias, title, description, authorsAndEditors, organisation, contactPerson, coverage, completeness, confidence, notes, created, modified, deleted);
   }
 }

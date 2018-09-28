@@ -225,6 +225,7 @@ public class DwcaReader extends CsvReader {
           boolean id = false;
           switch (parser.getLocalName()) {
             case "id":
+            case "coreId":
             case "coreid":
               id = true;
             case "field":

@@ -104,6 +104,7 @@ CREATE TABLE dataset (
   version TEXT,
   released DATE,
   homepage TEXT,
+  logo TEXT,
   data_format INTEGER,
   data_access TEXT,
   import_frequency INTEGER NOT NULL DEFAULT 7,

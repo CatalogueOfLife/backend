@@ -17,7 +17,7 @@ import org.gbif.nameparser.api.NomCode;
 /**
  * Metadata about a dataset or a subset of it if parentKey is given.
  */
-public class Dataset {
+public class Dataset implements SourceMetadata {
 	private Integer key;
 	private DatasetType type = DatasetType.OTHER;
 	@NotEmpty
@@ -32,6 +32,7 @@ public class Dataset {
 	private String version;
 	private LocalDate released;
 	private URI homepage;
+	private URI logo;
 	private DataFormat dataFormat;
 	private URI dataAccess;
 	private Frequency importFrequency;
@@ -59,10 +60,12 @@ public class Dataset {
 		this.key = key;
 	}
 
+	@Override
 	public String getTitle() {
 		return title;
 	}
 
+	@Override
 	public void setTitle(String title) {
 		this.title = title;
 	}
@@ -83,10 +86,12 @@ public class Dataset {
     this.gbifPublisherKey = gbifPublisherKey;
   }
 
-  public String getDescription() {
+  @Override
+	public String getDescription() {
 		return description;
 	}
 
+	@Override
 	public void setDescription(String description) {
 		this.description = description;
 	}
@@ -105,26 +110,32 @@ public class Dataset {
     this.code = code;
   }
 
-  public List<String> getAuthorsAndEditors() {
+  @Override
+	public List<String> getAuthorsAndEditors() {
     return authorsAndEditors;
   }
 
-  public void setAuthorsAndEditors(List<String> authorsAndEditors) {
+  @Override
+	public void setAuthorsAndEditors(List<String> authorsAndEditors) {
     this.authorsAndEditors = authorsAndEditors;
   }
 
-  public String getOrganisation() {
+  @Override
+	public String getOrganisation() {
 		return organisation;
 	}
 
+	@Override
 	public void setOrganisation(String organisation) {
 		this.organisation = organisation;
 	}
 
+	@Override
 	public String getContactPerson() {
 		return contactPerson;
 	}
 
+	@Override
 	public void setContactPerson(String contactPerson) {
 		this.contactPerson = contactPerson;
 	}
@@ -137,32 +148,42 @@ public class Dataset {
     this.license = license;
   }
 
-  public String getVersion() {
+  @Override
+	public String getVersion() {
 		return version;
 	}
 
+	@Override
 	public void setVersion(String version) {
 		this.version = version;
 	}
 
-	/**
-	 * Release date of the source data.
-	 * The date can usually only be taken from metadata explicitly given by the source.
-	 */
+	@Override
 	public LocalDate getReleased() {
 		return released;
 	}
 
+	@Override
 	public void setReleased(LocalDate released) {
 		this.released = released;
 	}
 
+	@Override
 	public URI getHomepage() {
 		return homepage;
 	}
 
+	@Override
 	public void setHomepage(URI homepage) {
 		this.homepage = homepage;
+	}
+
+	public URI getLogo() {
+		return logo;
+	}
+
+	public void setLogo(URI logo) {
+		this.logo = logo;
 	}
 
 	public DataFormat getDataFormat() {
@@ -227,6 +248,10 @@ public class Dataset {
 		this.created = created;
 	}
 
+	/**
+	 * Time the data of the dataset was last changed in the Clearinghouse,
+	 * i.e. time of the last import that changed at least one record.
+	 */
 	public LocalDateTime getModified() {
 		return modified;
 	}
@@ -266,10 +291,12 @@ public class Dataset {
 				Objects.equals(version, dataset.version) &&
 				Objects.equals(released, dataset.released) &&
 				Objects.equals(homepage, dataset.homepage) &&
+				Objects.equals(logo, dataset.logo) &&
 				dataFormat == dataset.dataFormat &&
 				Objects.equals(dataAccess, dataset.dataAccess) &&
 				importFrequency == dataset.importFrequency &&
 				code == dataset.code &&
+				Objects.equals(size, dataset.size) &&
 				Objects.equals(notes, dataset.notes) &&
 				catalogue == dataset.catalogue &&
 				Objects.equals(created, dataset.created) &&
@@ -280,7 +307,7 @@ public class Dataset {
 	@Override
 	public int hashCode() {
 
-		return Objects.hash(key, type, title, gbifKey, gbifPublisherKey, description, organisation, contactPerson, authorsAndEditors, license, version, released, homepage, dataFormat, dataAccess, importFrequency, code, notes, catalogue, created, modified, deleted);
+		return Objects.hash(key, type, title, gbifKey, gbifPublisherKey, description, organisation, contactPerson, authorsAndEditors, license, version, released, homepage, logo, dataFormat, dataAccess, importFrequency, code, size, notes, catalogue, created, modified, deleted);
 	}
 
 	@Override
