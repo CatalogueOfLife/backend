@@ -2,6 +2,7 @@ package org.col.api.model;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * A taxonomic sector definition within a dataset that is used to assemble the Catalogue of Life.
@@ -104,5 +105,33 @@ public class Sector {
 
   public void setModified(LocalDateTime modified) {
     this.modified = modified;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    Sector sector = (Sector) o;
+    return Objects.equals(key, sector.key) &&
+        Objects.equals(colSourceKey, sector.colSourceKey) &&
+        Objects.equals(root, sector.root) &&
+        Objects.equals(exclude, sector.exclude) &&
+        Objects.equals(attachment, sector.attachment) &&
+        Objects.equals(suppress, sector.suppress) &&
+        Objects.equals(created, sector.created) &&
+        Objects.equals(modified, sector.modified);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(key, colSourceKey, root, exclude, attachment, suppress, created, modified);
+  }
+
+  @Override
+  public String toString() {
+    return "Sector{" + key +
+        ", colSourceKey=" + colSourceKey +
+        ", root=" + root +
+        '}';
   }
 }

@@ -8,8 +8,7 @@ import java.util.Objects;
 import javax.validation.constraints.NotEmpty;
 
 import com.google.common.collect.Lists;
-import org.col.api.vocab.Coverage;
-import org.col.api.vocab.License;
+import org.col.api.vocab.DatasetType;
 
 /**
  * A citable source for a CoL data provider
@@ -24,13 +23,11 @@ public class ColSource implements SourceMetadata {
 	private String organisation;
 	private String contactPerson;
 	private List<String> authorsAndEditors = Lists.newArrayList();
-	private License license;
 	private String version;
 	private LocalDate released;
 	private URI homepage;
-	private URI logo;
 	private String group;
-	private Coverage coverage;
+	private DatasetType coverage;
 	private String citation;
 	private Integer livingSpeciesCount;
 	private Integer livingInfraspecificCount;
@@ -40,7 +37,6 @@ public class ColSource implements SourceMetadata {
 	private Integer vernacularsCount;
 	private Integer namesCount;
   private LocalDateTime created;
-	private LocalDateTime modified;
 
 	public Integer getKey() {
 		return key;
@@ -116,14 +112,6 @@ public class ColSource implements SourceMetadata {
 		this.authorsAndEditors = authorsAndEditors;
 	}
 
-	public License getLicense() {
-		return license;
-	}
-
-	public void setLicense(License license) {
-		this.license = license;
-	}
-
 	@Override
 	public String getVersion() {
 		return version;
@@ -154,14 +142,6 @@ public class ColSource implements SourceMetadata {
 		this.homepage = homepage;
 	}
 
-	public URI getLogo() {
-		return logo;
-	}
-
-	public void setLogo(URI logo) {
-		this.logo = logo;
-	}
-
 	/**
 	 * English name for the taxonomic group dealt by this source
 	 */
@@ -173,11 +153,11 @@ public class ColSource implements SourceMetadata {
 		this.group = group;
 	}
 
-	public Coverage getCoverage() {
+	public DatasetType getCoverage() {
 		return coverage;
 	}
 
-	public void setCoverage(Coverage coverage) {
+	public void setCoverage(DatasetType coverage) {
 		this.coverage = coverage;
 	}
 
@@ -253,14 +233,6 @@ public class ColSource implements SourceMetadata {
 		this.created = created;
 	}
 
-	public LocalDateTime getModified() {
-		return modified;
-	}
-
-	public void setModified(LocalDateTime modified) {
-		this.modified = modified;
-	}
-
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
@@ -274,11 +246,9 @@ public class ColSource implements SourceMetadata {
 				Objects.equals(organisation, colSource.organisation) &&
 				Objects.equals(contactPerson, colSource.contactPerson) &&
 				Objects.equals(authorsAndEditors, colSource.authorsAndEditors) &&
-				license == colSource.license &&
 				Objects.equals(version, colSource.version) &&
 				Objects.equals(released, colSource.released) &&
 				Objects.equals(homepage, colSource.homepage) &&
-				Objects.equals(logo, colSource.logo) &&
 				Objects.equals(group, colSource.group) &&
 				coverage == colSource.coverage &&
 				Objects.equals(citation, colSource.citation) &&
@@ -289,14 +259,13 @@ public class ColSource implements SourceMetadata {
 				Objects.equals(synonymsCount, colSource.synonymsCount) &&
 				Objects.equals(vernacularsCount, colSource.vernacularsCount) &&
 				Objects.equals(namesCount, colSource.namesCount) &&
-				Objects.equals(created, colSource.created) &&
-				Objects.equals(modified, colSource.modified);
+				Objects.equals(created, colSource.created);
 	}
 
 	@Override
 	public int hashCode() {
 
-		return Objects.hash(key, datasetKey, title, alias, description, organisation, contactPerson, authorsAndEditors, license, version, released, homepage, logo, group, coverage, citation, livingSpeciesCount, livingInfraspecificCount, extinctSpeciesCount, extinctInfraspecificCount, synonymsCount, vernacularsCount, namesCount, created, modified);
+		return Objects.hash(key, datasetKey, title, alias, description, organisation, contactPerson, authorsAndEditors, version, released, homepage, group, coverage, citation, livingSpeciesCount, livingInfraspecificCount, extinctSpeciesCount, extinctInfraspecificCount, synonymsCount, vernacularsCount, namesCount, created);
 	}
 
 	@Override

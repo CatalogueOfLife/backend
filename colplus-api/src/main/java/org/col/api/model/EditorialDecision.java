@@ -1,6 +1,7 @@
 package org.col.api.model;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 import org.col.api.vocab.TaxonomicStatus;
 
@@ -12,9 +13,9 @@ public class EditorialDecision {
 	private Integer key;
   private Integer sectorKey;
   private NameRef subject;
-  private TaxonomicStatus statusChange;
-  private String nameChange;
-  private String authorshipChange;
+  private TaxonomicStatus status;
+  private String name;
+  private String authorship;
 	private LocalDateTime created;
 	private LocalDateTime deleted;
 
@@ -45,28 +46,28 @@ public class EditorialDecision {
     this.subject = subject;
   }
 
-  public TaxonomicStatus getStatusChange() {
-    return statusChange;
+  public TaxonomicStatus getStatus() {
+    return status;
   }
 
-  public void setStatusChange(TaxonomicStatus statusChange) {
-    this.statusChange = statusChange;
+  public void setStatus(TaxonomicStatus status) {
+    this.status = status;
   }
 
-  public String getNameChange() {
-    return nameChange;
+  public String getName() {
+    return name;
   }
 
-  public void setNameChange(String nameChange) {
-    this.nameChange = nameChange;
+  public void setName(String name) {
+    this.name = name;
   }
 
-  public String getAuthorshipChange() {
-    return authorshipChange;
+  public String getAuthorship() {
+    return authorship;
   }
 
-  public void setAuthorshipChange(String authorshipChange) {
-    this.authorshipChange = authorshipChange;
+  public void setAuthorship(String authorship) {
+    this.authorship = authorship;
   }
 
   public LocalDateTime getCreated() {
@@ -83,5 +84,30 @@ public class EditorialDecision {
 
   public void setDeleted(LocalDateTime deleted) {
     this.deleted = deleted;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    EditorialDecision that = (EditorialDecision) o;
+    return Objects.equals(key, that.key) &&
+        Objects.equals(sectorKey, that.sectorKey) &&
+        Objects.equals(subject, that.subject) &&
+        status == that.status &&
+        Objects.equals(name, that.name) &&
+        Objects.equals(authorship, that.authorship) &&
+        Objects.equals(created, that.created) &&
+        Objects.equals(deleted, that.deleted);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(key, sectorKey, subject, status, name, authorship, created, deleted);
+  }
+
+  @Override
+  public String toString() {
+    return "EditorialDecision{" + key + " on " + subject + '}';
   }
 }

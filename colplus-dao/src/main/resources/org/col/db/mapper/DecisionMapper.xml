@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.col.db.mapper.DecisionMapper">
+
+  <sql id="SELECT">
+    ed.key,
+    ed.sector_key,
+    ed.subject_id,
+    ed.subject_index_name_id,
+    ed.subject_name,
+    ed.subject_authorship,
+    ed.subject_rank,
+    ed.status,
+    ed.name,
+    ed.authorship,
+    ed.created,
+    ed.deleted
+  </sql>
+
+  <sql id="COLS">
+    sector_key,
+    subject_id,
+    subject_index_name_id,
+    subject_name,
+    subject_authorship,
+    subject_rank,
+    status,
+    name,
+    authorship,
+    deleted
+  </sql>
+
+  <sql id="PROPS">
+    #{sectorKey},
+    #{subject.id},
+    #{subject.indexNameId},
+    #{subject.name},
+    #{subject.authorship},
+    #{subject.rank}::rank,
+    #{status},
+    #{name},
+    #{authorship},
+    #{deleted}
+  </sql>
+
+  <sql id="FROM">
+    decision ed
+  </sql>
+
+  <resultMap id="decisionResultMap" type="EditorialDecision" autoMapping="true">
+    <id property="key" column="key" />
+    <association property="subject" javaType="NameRef" resultMap="org.col.db.mapper.SectorMapper.refResultMap" columnPrefix="subject_" />
+  </resultMap>
+
+
+  <select id="listBySector" resultMap="decisionResultMap">
+    SELECT <include refid="SELECT" />
+    FROM <include refid="FROM" />
+    WHERE sector_key = #{key}
+    ORDER BY key
+  </select>
+
+  <select id="listByDataset" resultMap="decisionResultMap">
+    SELECT <include refid="SELECT" />
+    FROM <include refid="FROM" />
+      JOIN sector s ON s.key=ed.sector_key
+    WHERE s.dataset_key = #{key}
+    ORDER BY key
+  </select>
+
+  <select id="get" resultMap="decisionResultMap">
+    SELECT <include refid="SELECT" />
+    FROM <include refid="FROM" />
+    WHERE key = #{key}
+  </select>
+
+  <insert id="create" parameterType="Sector" useGeneratedKeys="true" keyProperty="key">
+    INSERT INTO decision ( <include refid="COLS" /> )
+    VALUES ( <include refid="PROPS" /> )
+  </insert>
+
+  <update id="update" parameterType="Sector">
+    UPDATE decision
+    SET (<include refid="COLS" />) = (<include refid="PROPS" />)
+    WHERE key = #{key}
+  </update>
+
+  <delete id="delete" parameterType="map">
+    DELETE FROM decision
+    WHERE key = #{key}
+  </delete>
+
+</mapper>

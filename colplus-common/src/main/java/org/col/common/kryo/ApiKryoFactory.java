@@ -72,7 +72,6 @@ public class ApiKryoFactory implements KryoFactory {
 
     // enums
     kryo.register(Catalogue.class);
-    kryo.register(Coverage.class);
     kryo.register(Country.class);
     kryo.register(DataFormat.class);
     kryo.register(DatasetType.class);

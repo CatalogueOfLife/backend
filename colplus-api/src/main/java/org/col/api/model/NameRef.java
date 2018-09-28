@@ -69,7 +69,11 @@ public class NameRef {
 
   @Override
   public int hashCode() {
-
     return Objects.hash(id, indexNameId, name, authorship, rank);
+  }
+
+  @Override
+  public String toString() {
+    return id + " " + rank + " " + name + ' ' + authorship;
   }
 }
