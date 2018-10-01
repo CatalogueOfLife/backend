@@ -13,7 +13,6 @@ import org.col.api.search.NameSearchRequest;
 import org.col.api.vocab.*;
 import org.col.db.dao.DaoTestBase;
 import org.col.db.dao.NameDao;
-import org.col.db.dao.NameUsageDao;
 import org.col.db.dao.TaxonDao;
 import org.col.db.mapper.SynonymMapper;
 import org.col.db.mapper.VerbatimRecordMapper;
@@ -37,7 +36,6 @@ public class NameUsageSearchTest extends DaoTestBase {
 
   NameDao nDao;
   TaxonDao tDao;
-  NameUsageDao dao;
   SynonymMapper synonymMapper;
   VerbatimRecordMapper verbatimMapper;
   SqlSession session;
@@ -47,7 +45,6 @@ public class NameUsageSearchTest extends DaoTestBase {
     session = initMybatisRule.getSqlSession();
     nDao = new NameDao(session);
     tDao = new TaxonDao(session);
-    dao = new NameUsageDao(session);
     synonymMapper = session.getMapper(SynonymMapper.class);
     verbatimMapper = session.getMapper(VerbatimRecordMapper.class);
   }

@@ -10,20 +10,20 @@ public enum Frequency {
   WEEKLY(7),
   MONTHLY(30),
   YEARLY(365);
-
+  
   private final int days;
-
+  
   Frequency(int days) {
     this.days = days;
   }
-
+  
   /**
    * @return frequency interval represented as number of days
    */
   public int getDays() {
     return days;
   }
-
+  
   public static Frequency fromDays(Integer days) {
     if (days == null) return WEEKLY;
     for (Frequency f : Frequency.values()) {

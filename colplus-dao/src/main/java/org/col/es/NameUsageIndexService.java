@@ -6,11 +6,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.annotations.VisibleForTesting;
-
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.jackson.ApiModule;
 import org.col.api.model.NameUsage;
+import org.col.api.model.TaxonVernacularUsage;
 import org.col.common.lang.Exceptions;
 import org.col.db.mapper.BatchResultHandler;
 import org.col.db.mapper.NameUsageMapper;
@@ -60,12 +60,12 @@ public class NameUsageIndexService {
     EsUtil.createIndex(client, index, esConfig.nameUsage);
     final AtomicInteger counter = new AtomicInteger();
     try (SqlSession session = factory.openSession();
-        BatchResultHandler<NameUsage> handler = new BatchResultHandler<NameUsage>(batch -> {
+        BatchResultHandler<TaxonVernacularUsage> handler = new BatchResultHandler<TaxonVernacularUsage>(batch -> {
           indexBulk(index, batch);
           counter.addAndGet(batch.size());
         }, esConfig.nameUsage.batchSize)) {
       NameUsageMapper mapper = session.getMapper(NameUsageMapper.class);
-      mapper.processDataset(datasetKey, handler);
+      mapper.processDatasetTaxa(datasetKey, handler);
     } catch (Exception e) {
       throw new EsException(e);
     } finally {
@@ -76,7 +76,7 @@ public class NameUsageIndexService {
   }
 
   @VisibleForTesting
-  void indexBulk(String index, List<NameUsage> usages) {
+  void indexBulk(String index, List<? extends NameUsage> usages) {
     String actionMetaData = indexActionMetaData(index);
     StringBuilder body = new StringBuilder();
     try {
@@ -97,7 +97,7 @@ public class NameUsageIndexService {
     }
   }
 
-  private void executeAsync(Request req, String index, List<NameUsage> usages) {
+  private void executeAsync(Request req, String index, List<? extends NameUsage> usages) {
     client.performRequestAsync(req, new ResponseListener() {
 
       @Override
@@ -114,7 +114,7 @@ public class NameUsageIndexService {
     });
   }
 
-  private void execute(Request req, String index, List<NameUsage> usages) {
+  private void execute(Request req, String index, List<? extends NameUsage> usages) {
     Response reponse;
     try {
       reponse = client.performRequest(req);

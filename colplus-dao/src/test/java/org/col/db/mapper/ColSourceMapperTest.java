@@ -24,7 +24,7 @@ public class ColSourceMapperTest extends MapperTestBase<ColSourceMapper> {
 
     commit();
 
-    ColSource d2 = mapper().get(d1.getKey(), false);
+    ColSource d2 = mapper().getEditable(d1.getKey());
     // remove newly set property
     d2.setCreated(null);
 
@@ -39,12 +39,12 @@ public class ColSourceMapperTest extends MapperTestBase<ColSourceMapper> {
     commit();
 
     // not deleted yet
-    ColSource d = mapper().get(d1.getKey(), false);
+    ColSource d = mapper().get(d1.getKey());
     assertNotNull(d.getCreated());
 
     // physically delete
     mapper().delete(d1.getKey());
-    assertNull(mapper().get(d1.getKey(), false));
+    assertNull(mapper().get(d1.getKey()));
   }
 
   public static ColSource create() {

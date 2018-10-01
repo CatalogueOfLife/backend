@@ -16,7 +16,6 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-//@Ignore("Embedded ES not working on jenkins yet")
 public class NameUsageIndexServiceTest extends EsReadWriteTestBase {
 
   private static final String NAME_USAGE_TEST = "name_usage_test";

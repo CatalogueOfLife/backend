@@ -113,18 +113,18 @@
         <include refid="org.col.db.mapper.Common.limit" />
     </select>
 
+    <select id="listByName" resultMap="taxonResultMap">
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
+        WHERE t.dataset_key = #{datasetKey} AND t.name_id=#{nameId}
+        ORDER BY id
+    </select>
+
     <select id="get" resultMap="taxonResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
         WHERE t.dataset_key = #{datasetKey}
             AND t.id = #{id}
-    </select>
-
-    <select id="getByName" resultMap="taxonResultMap">
-        SELECT id, <include refid="COLS" />
-        FROM taxon
-        WHERE dataset_key = #{datasetKey}
-            AND name_id = #{name.id}
     </select>
 
     <select id="children" resultMap="taxonResultMap">
