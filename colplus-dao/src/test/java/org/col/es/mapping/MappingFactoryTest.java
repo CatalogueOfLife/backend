@@ -2,9 +2,7 @@ package org.col.es.mapping;
 
 import java.util.LinkedHashMap;
 
-import org.col.es.EsReadTestBase;
 import org.col.es.model.EsNameUsage;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -12,12 +10,13 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-//@Ignore("Embedded ES not working on jenkins yet")
-public class MappingFactoryTest extends EsReadTestBase {
+public class MappingFactoryTest {
 
   @Test
   public void getMapping1() {
     Mapping<EsNameUsage> mapping = new MappingFactory<EsNameUsage>().getMapping(EsNameUsage.class);
+    MappingSerializer<EsNameUsage> s = new MappingSerializer<>(mapping, true);
+    System.out.println(s.serialize());
     assertEquals("strict", mapping.getDynamic());
     assertEquals(EsNameUsage.class, mapping.getMappedClass());
     LinkedHashMap<String, ESField> properties = mapping.getProperties();

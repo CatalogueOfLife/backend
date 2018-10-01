@@ -2,7 +2,7 @@ package org.col.es.mapping;
 
 import static org.col.es.mapping.ESDataType.KEYWORD;
 import static org.col.es.mapping.ESDataType.NESTED;
-import static org.col.es.mapping.MappingUtil.extractFieldFromGetter;
+import static org.col.es.mapping.MappingUtil.extractProperty;
 import static org.col.es.mapping.MappingUtil.getClassForTypeArgument;
 import static org.col.es.mapping.MappingUtil.getFields;
 import static org.col.es.mapping.MappingUtil.getMappedProperties;
@@ -56,7 +56,7 @@ public class MappingFactory<T> {
   private static void addFieldsToDocument(ComplexField document, Class<?> type,
       HashSet<Class<?>> ancestors) {
     for (Field javaField : getFields(type)) {
-      // System.out.println("Mapping field " + javaField.getName());
+      //System.out.println("Mapping field " + javaField.getName());
       ESField esField = createESField(javaField, ancestors);
       esField.setName(javaField.getName());
       esField.setParent(document);
@@ -64,9 +64,9 @@ public class MappingFactory<T> {
       document.addField(javaField.getName(), esField);
     }
     for (Method javaMethod : getMappedProperties(type)) {
-      // System.out.println("Mapping method " + javaMethod);
+      //System.out.println("Mapping method " + javaMethod);
       String methodName = javaMethod.getName();
-      String fieldName = extractFieldFromGetter(methodName);
+      String fieldName = extractProperty(methodName);
       ESField esField = createESField(javaMethod, ancestors);
       esField.setName(fieldName);
       esField.setParent(document);

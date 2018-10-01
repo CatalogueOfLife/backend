@@ -1,13 +1,17 @@
 package org.col.es.mapping;
 
-import static java.lang.Character.isUpperCase;
-import static java.lang.Character.toLowerCase;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.HashSet;
+import java.util.Set;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import static java.lang.Character.isUpperCase;
+import static java.lang.Character.toLowerCase;
 
 class MappingUtil {
 
@@ -25,86 +29,73 @@ class MappingUtil {
     }
   }
 
-  /*
-   * Returns all non-static fields of the specified class and its superclasses, not including
-   * Object.
-   */
   static ArrayList<Field> getFields(Class<?> cls) {
-    ArrayList<Class<?>> hierarchy = new ArrayList<>(3);
-    Class<?> c = cls;
-    while (c != Object.class) {
-       hierarchy.add(c);
-      c = c.getSuperclass();
-    }
+    Set<String> names = new HashSet<>();
     ArrayList<Field> allFields = new ArrayList<>();
-    for (int i = hierarchy.size() - 1; i >= 0; i--) {
-      c = hierarchy.get(i);
-      Field[] fields = c.getDeclaredFields();
+    while (cls != Object.class) {
+      Field[] fields = cls.getDeclaredFields();
       for (Field f : fields) {
         if (Modifier.isStatic(f.getModifiers()))
           continue;
+        if (f.getAnnotation(JsonIgnore.class) != null)
+          continue;
+        if (names.contains(f.getName()))
+          continue;
+        if (!Modifier.isPublic(f.getModifiers()))
+          continue;
+        names.add(f.getName());
         allFields.add(f);
       }
+      cls = cls.getSuperclass();
     }
     return allFields;
   }
 
-  /*
-   * Returns all getter methods of the specified class and its superclasses (not including Object)
-   * that are to be mapped to the document store.
-   */
   static ArrayList<Method> getMappedProperties(Class<?> cls) {
-    ArrayList<Class<?>> hierarchy = new ArrayList<>(3);
+    Set<String> names = new HashSet<>();
+    ArrayList<Method> allMethods = new ArrayList<>();
     while (cls != Object.class) {
-      hierarchy.add(cls);
-      cls = cls.getSuperclass();
-    }
-    ArrayList<Method> props = new ArrayList<>(4);
-    for (int i = hierarchy.size() - 1; i >= 0; i--) {
-      cls = hierarchy.get(i);
       Method[] methods = cls.getDeclaredMethods();
       for (Method m : methods) {
-        if (isMappedProperty(m)) {
-          props.add(m);
-        }
+        if (Modifier.isStatic(m.getModifiers()))
+          continue;
+        if (m.getAnnotation(JsonIgnore.class) != null)
+          continue;
+        if (names.contains(m.getName()))
+          continue;
+        if (!Modifier.isPublic(m.getModifiers()))
+          continue;
+        if (m.getReturnType() == Void.class)
+          continue;
+        if (m.getParameterCount() != 0)
+          continue;
+        if (!isGetter(m))
+          continue;
+
+        names.add(m.getName());
+        allMethods.add(m);
       }
+      cls = cls.getSuperclass();
     }
-    return props;
+    return allMethods;
   }
 
-  /*
-   * Checks whether the method is a getter method and is annotated with @JsonProperty.
-   */
-  private static boolean isMappedProperty(Method m) {
-    if (Modifier.isStatic(m.getModifiers()))
+  private static boolean isGetter(Method m) {
+    if (m.getReturnType() == Void.class)
       return false;
-    if (m.getParameters().length != 0)
+    if (m.getParameterCount() != 0)
       return false;
-    Class<?> rt = m.getReturnType();
-    if (rt == void.class)
-      return false;
-    if (m.getAnnotation(JsonProperty.class) != null) {
-      String name = m.getName();
-      if (name.startsWith("get")) {
-        return isUpperCase(name.charAt(3));
-      }
-      if ((rt == boolean.class || rt == Boolean.class) && name.startsWith("is")) {
-        return isUpperCase(name.charAt(2));
-      }
-    }
-    return false;
+    return extractProperty(m.getName()) != null;
   }
 
-  /*
-   * Chops off the first two or three characters of a getter method name (depending on whether it
-   * starts with "is" or "get"), makes the first of the remaining characters lowercase, and returns
-   * the result.
-   */
-  static String extractFieldFromGetter(String getter) {
-    if (getter.startsWith("get")) {
+  static String extractProperty(String getter) {
+    if (getter.startsWith("get") && getter.length() > 3 && isUpperCase(getter.charAt(3))) {
       return toLowerCase(getter.charAt(3)) + getter.substring(4);
     }
-    return toLowerCase(getter.charAt(2)) + getter.substring(3);
+    if (getter.startsWith("is") && getter.length() > 2 && isUpperCase(getter.charAt(2))) {
+      return toLowerCase(getter.charAt(2)) + getter.substring(3);
+    }
+    return null;
   }
 
 }
