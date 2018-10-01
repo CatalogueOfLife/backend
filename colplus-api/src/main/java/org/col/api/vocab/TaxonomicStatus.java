@@ -20,37 +20,37 @@ package org.col.api.vocab;
  * For synonyms only a nomenclatural status is allowed.
  */
 public enum TaxonomicStatus {
-
+  
   ACCEPTED,
-
+  
   /**
    * Treated as accepted, but doubtful whether this is correct.
    */
   DOUBTFUL,
-
+  
   /**
    * Names which point unambiguously at one species (not specifying whether homo- or heterotypic)
    * (synonyms, in the CoL sense, include also orthographic variants and published misspellings)
    */
   SYNONYM,
-
+  
   /**
    * Names which are ambiguous because they point at the current species and one or more others
    * e.g. homonyms, pro-parte synonyms (in other words, names which appear more than in one place in the Catalogue).
    */
   AMBIGUOUS_SYNONYM,
-
+  
   /**
    * A misapplied name. Usually accompanied with an accordingTo on the synonym to indicate the
    * source the misapplication can be found in.
    */
   MISAPPLIED;
-
+  
   /**
    * @return true for a status valid for a synonym, false if valid for an accepted taxon.
    */
-  public boolean isSynonym(){
+  public boolean isSynonym() {
     return this != ACCEPTED && this != DOUBTFUL;
   }
-
+  
 }

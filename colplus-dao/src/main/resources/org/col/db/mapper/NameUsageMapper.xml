@@ -4,49 +4,7 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="org.col.db.mapper.NameUsageMapper">
 
-    <!--
-        We use an artificial discriminator to select the corresponding result mapper
-        1=Synonym
-        2=Taxon
-        3=BareName
-    -->
-    <sql id="SELECT">
-        CASE
-            WHEN t.id = s.taxon_id THEN 1
-            WHEN t.id is not null THEN 2
-            ELSE 3
-        END AS disc,
-        <include refid="org.col.db.mapper.NameMapper.nameCols">
-            <property name="alias" value="n"/>
-            <property name="prefix" value="n_"/>
-        </include>,
-        <include refid="org.col.db.mapper.TaxonMapper.taxonCols">
-            <property name="alias" value="t"/>
-            <property name="prefix" value=""/>
-        </include>,
-        <include refid="org.col.db.mapper.SynonymMapper.synCols">
-            <property name="alias" value="s"/>
-            <property name="prefix" value="s_"/>
-        </include>,
-        <include refid="org.col.db.mapper.TaxonMapper.taxonCols">
-            <property name="alias" value="t"/>
-            <property name="prefix" value="a_"/>
-        </include>,
-        <include refid="org.col.db.mapper.NameMapper.nameCols">
-            <property name="alias" value="an"/>
-            <property name="prefix" value="a_n_"/>
-        </include>
-    </sql>
-
-    <sql id="FROM">
-        name n
-        LEFT JOIN synonym s ON n.id = s.name_id
-        LEFT JOIN taxon t ON n.id = t.name_id OR s.taxon_id = t.id
-        LEFT JOIN name an ON t.name_id = an.id
-    </sql>
-
-
-    <resultMap id="taxonResultMap" type="Taxon" autoMapping="true" extends="org.col.db.mapper.TaxonMapper.taxonResultMap">
+    <resultMap id="taxonResultMap" type="TaxonVernacularUsage" autoMapping="true" extends="org.col.db.mapper.TaxonMapper.taxonResultMap">
     </resultMap>
 
     <resultMap id="synonymResultMap" type="Synonym" autoMapping="true" extends="org.col.db.mapper.SynonymMapper.synonymResultMap">
@@ -61,42 +19,63 @@
         <association property="name" javaType="Name" resultMap="org.col.db.mapper.NameMapper.nameResultMap" columnPrefix="n_" />
     </resultMap>
 
-    <resultMap id="nameSearchResultMap" type="Object">
-        <discriminator javaType="int" column="disc">
-            <case value="1" resultType="Synonym" resultMap="synonymResultMap" />
-            <case value="2" resultType="Taxon" resultMap="taxonResultMap" />
-            <case value="3" resultType="BareName" resultMap="bareNameResultMap" />
-        </discriminator>
-    </resultMap>
-
-    <select id="listByName" resultMap="nameSearchResultMap">
-        SELECT <include refid="SELECT" />
-        FROM <include refid="FROM" />
-        WHERE n.dataset_key = #{datasetKey} AND n.id=#{nameId}
-    </select>
-
     <!--  select all name usages of a dataset
         Using a optimal fetchsize to enable low memory footprint while keeping good performance using a resulthandler
     -->
-    <select id="processDatasetTaxa" parameterType="map" resultMap="nameSearchResultMap" resultOrdered="true"
+    <select id="processDatasetTaxa" parameterType="map" resultMap="taxonResultMap" resultOrdered="true"
             fetchSize="10000" resultSetType="FORWARD_ONLY">
-        SELECT <include refid="SELECT" />
-        FROM <include refid="FROM" />
+        SELECT
+        <include refid="org.col.db.mapper.NameMapper.nameCols">
+            <property name="alias" value="n"/>
+            <property name="prefix" value="n_"/>
+        </include>,
+        <include refid="org.col.db.mapper.TaxonMapper.taxonCols">
+            <property name="alias" value="t"/>
+            <property name="prefix" value=""/>
+        </include>
+        FROM name n
+            JOIN taxon t ON n.id = t.name_id AND t.dataset_key = #{datasetKey}
         WHERE n.dataset_key = #{datasetKey}
     </select>
 
-    <select id="processDatasetSynonyms" parameterType="map" resultMap="nameSearchResultMap" resultOrdered="true"
+    <select id="processDatasetSynonyms" parameterType="map" resultMap="synonymResultMap" resultOrdered="true"
             fetchSize="10000" resultSetType="FORWARD_ONLY">
-        SELECT <include refid="SELECT" />
-        FROM <include refid="FROM" />
+        SELECT
+        <include refid="org.col.db.mapper.NameMapper.nameCols">
+            <property name="alias" value="n"/>
+            <property name="prefix" value="n_"/>
+        </include>,
+        <include refid="org.col.db.mapper.SynonymMapper.synCols">
+            <property name="alias" value="s"/>
+            <property name="prefix" value="s_"/>
+        </include>,
+        <include refid="org.col.db.mapper.TaxonMapper.taxonCols">
+            <property name="alias" value="t"/>
+            <property name="prefix" value="a_"/>
+        </include>,
+        <include refid="org.col.db.mapper.NameMapper.nameCols">
+            <property name="alias" value="an"/>
+            <property name="prefix" value="a_n_"/>
+        </include>
+        FROM name n
+            JOIN synonym s ON n.id = s.name_id AND s.dataset_key = #{datasetKey}
+            JOIN taxon t ON s.taxon_id = t.id AND t.dataset_key = #{datasetKey}
+            JOIN name an ON t.name_id = an.id  AND an.dataset_key = #{datasetKey}
         WHERE n.dataset_key = #{datasetKey}
     </select>
 
-    <select id="processDatasetBareNames" parameterType="map" resultMap="nameSearchResultMap" resultOrdered="true"
+    <select id="processDatasetBareNames" parameterType="map" resultMap="bareNameResultMap" resultOrdered="true"
             fetchSize="10000" resultSetType="FORWARD_ONLY">
-        SELECT <include refid="SELECT" />
-        FROM <include refid="FROM" />
+        SELECT
+        <include refid="org.col.db.mapper.NameMapper.nameCols">
+            <property name="alias" value="n"/>
+            <property name="prefix" value="n_"/>
+        </include>
+        FROM name n
+            LEFT JOIN synonym s ON n.id = s.name_id AND s.dataset_key = #{datasetKey}
+            LEFT JOIN taxon t ON n.id = t.name_id AND t.dataset_key = #{datasetKey}
         WHERE n.dataset_key = #{datasetKey}
+            AND t.id IS NULL
+            AND s.taxon_id IS NULL
     </select>
-
 </mapper>

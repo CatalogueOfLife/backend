@@ -21,16 +21,16 @@ import static org.col.api.vocab.CSLRefType.*;
  * Jackson {@link JsonSerializer} and Jackson {@link JsonDeserializer} classes for
  * {@link CSLRefType} enum that uses the specific underscore hyphen mappings needed for valid
  * CslJson. See http://docs.citationstyles.org/en/stable/specification.html#appendix-iii-types
- *
+ * <p>
  * Unknown values will be silently converted into null and an info logged.
  */
 public class CSLRefTypeSerde {
   private static final Logger LOG = LoggerFactory.getLogger(CSLRefTypeSerde.class);
   private static final Set<CSLRefType> useUnderscore =
       ImmutableSet.of(LEGAL_CASE, MOTION_PICTURE, MUSICAL_SCORE, PERSONAL_COMMUNICATION);
-
+  
   public static class Serializer extends JsonSerializer<CSLRefType> {
-
+    
     @Override
     public void serialize(CSLRefType value, JsonGenerator jgen, SerializerProvider provider)
         throws IOException {
@@ -42,9 +42,9 @@ public class CSLRefTypeSerde {
       }
     }
   }
-
+  
   public static class Deserializer extends JsonDeserializer<CSLRefType> {
-
+    
     @Override
     public CSLRefType deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException {
       if (jp.getCurrentToken() == JsonToken.VALUE_STRING) {

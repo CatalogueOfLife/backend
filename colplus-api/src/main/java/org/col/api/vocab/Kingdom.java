@@ -19,7 +19,7 @@ package org.col.api.vocab;
  * A simple enumeration of all kingdoms found in the GBIF Backbone Taxonomy and also Catalogue of Life.
  */
 public enum Kingdom {
-
+  
   INCERTAE_SEDIS,
   ANIMALIA,
   ARCHAEA,
@@ -29,7 +29,7 @@ public enum Kingdom {
   PLANTAE,
   PROTOZOA,
   VIRUSES;
-
+  
   /**
    * Looks up a kingdom by its nub usage key.
    *
@@ -43,7 +43,7 @@ public enum Kingdom {
       throw new IllegalArgumentException("There is no kingdom with usage key " + usageKey);
     }
   }
-
+  
   /**
    * @return a unique single capital char representing the kingdom.
    */
@@ -51,11 +51,11 @@ public enum Kingdom {
     String lower = name().replaceAll("_", " ").toLowerCase();
     return this == INCERTAE_SEDIS ? lower : Character.toUpperCase(lower.charAt(0)) + lower.substring(1);
   }
-
+  
   public int nubUsageKey() {
     return ordinal();
   }
-
+  
   /**
    * @deprecated please use nubUsageKey() instead
    */
@@ -63,7 +63,7 @@ public enum Kingdom {
   public Integer nubUsageID() {
     return nubUsageKey();
   }
-
+  
   /**
    * @deprecated please use byNubUsageId(int) instead
    */

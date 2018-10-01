@@ -13,7 +13,6 @@ import java.util.Collection;
  * that the annotated field is an exception to this rule. Fields that are NOT arrays or collections
  * are never mapped to the "nested" datatype, so they don't need the <code>&#64;NotNested</code>
  * annotation.
- *
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.FIELD, ElementType.METHOD})

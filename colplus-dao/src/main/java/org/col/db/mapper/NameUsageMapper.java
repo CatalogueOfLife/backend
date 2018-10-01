@@ -1,25 +1,20 @@
 package org.col.db.mapper;
 
-import java.util.List;
-
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.session.ResultHandler;
 import org.col.api.model.BareName;
-import org.col.api.model.NameUsage;
 import org.col.api.model.Synonym;
 import org.col.api.model.TaxonVernacularUsage;
 
 /**
- * Mapper dealing with methods returning teh NameUsage interface,
- * i.e. a name in the context of either a Taxon, Synonym or BareName.
+ * Mapper dealing with methods returning the NameUsage interface,
+ * i.e. a name in the context of either a Taxon, TaxonVernacularUsage, Synonym or BareName.
  *
  * Mapper sql should be reusing sql fragments from the 3 concrete implementations as much as possible
  * avoiding duplication.
  */
 public interface NameUsageMapper {
-
-	List<NameUsage> listByName(@Param("datasetKey") int datasetKey, @Param("nameId") String nameId);
-
+	
 	/**
 	 * Iterates over all taxa with their vernaculars for a given dataset
 	 * and processes them with the supplied handler.

@@ -24,11 +24,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public final class VocabularyUtils {
-
+  
   private static final Logger LOG = LoggerFactory.getLogger(VocabularyUtils.class);
-
+  
   public static final TermFactory TF = TermFactory.instance();
-
+  
   /**
    * Generic method to toEnum an enumeration value for a given string based on the name of the enum member.
    * The toEnum is case insensitive and ignore whitespaces, underscores and dashes.
@@ -54,7 +54,7 @@ public final class VocabularyUtils {
     }
     throw new IllegalArgumentException("Cannot parse " + name + " into a known " + vocab.getSimpleName());
   }
-
+  
   /**
    * Same as {@link #lookupEnum(String, Class)} } without IllegalArgumentException.
    * On failure, this method will return Optional.absent().
@@ -72,7 +72,7 @@ public final class VocabularyUtils {
     } catch (IllegalArgumentException iaEx) {/*ignore*/}
     return Optional.ofNullable(result);
   }
-
+  
   /**
    * Looks up an enumeration by class name. One can get the classname using the likes of:
    * <p/>
@@ -101,7 +101,7 @@ public final class VocabularyUtils {
     }
     return null;
   }
-
+  
   /**
    * Utility method to get a map of all enumerations within a package.
    * The map will use the enumeration class simple name as key and the enum itself as value.
@@ -112,7 +112,7 @@ public final class VocabularyUtils {
     try {
       ClassPath cp = ClassPath.from(VocabularyUtils.class.getClassLoader());
       ImmutableMap.Builder<String, Enum<?>[]> builder = ImmutableMap.builder();
-
+      
       List<ClassPath.ClassInfo> infos = cp.getTopLevelClasses(packageName).asList();
       for (ClassPath.ClassInfo info : infos) {
         Class<? extends Enum<?>> vocab = lookupVocabulary(info.getName());
@@ -127,13 +127,13 @@ public final class VocabularyUtils {
       return ImmutableMap.<String, Enum<?>[]>of(); // empty
     }
   }
-
+  
   /**
    * A static utils class.
    */
   private VocabularyUtils() {
   }
-
+  
   /**
    * Converts an enumeration value into a constant with the exact same name from a different enumeration class.
    * In case the enumeration constant name does not exist an error is thrown.
@@ -145,5 +145,5 @@ public final class VocabularyUtils {
   public static <G extends Enum<G>> G convertEnum(Class<G> targetClass, Enum<?> value) {
     return value == null ? null : Enum.valueOf(targetClass, value.name());
   }
-
+  
 }

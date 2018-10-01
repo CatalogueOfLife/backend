@@ -3,7 +3,6 @@ package org.col.db.mapper;
 import java.util.List;
 
 import org.apache.ibatis.annotations.Param;
-import org.col.api.model.Name;
 import org.col.api.model.Page;
 import org.col.api.model.Taxon;
 
@@ -15,14 +14,11 @@ public interface TaxonMapper {
   int count(@Param("datasetKey") int datasetKey, @Param("root") boolean root);
 
   List<Taxon> list(@Param("datasetKey") int datasetKey, @Param("root") boolean root, @Param("page") Page page);
+  
+  List<Taxon> listByName(@Param("datasetKey") int datasetKey, @Param("nameId") String nameId);
 
   Taxon get(@Param("datasetKey") int datasetKey, @Param("id") String id);
-
-  /**
-   * Warning, the name property is not set cause it is expected to exist already
-   */
-  List<Taxon> getByName(@Param("datasetKey") int datasetKey, @Param("name") Name name);
-
+  
   /**
    * @return list of all parents starting with the immediate parent
    */

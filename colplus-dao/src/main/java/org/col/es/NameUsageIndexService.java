@@ -6,11 +6,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.annotations.VisibleForTesting;
-
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.jackson.ApiModule;
 import org.col.api.model.NameUsage;
+import org.col.api.model.TaxonVernacularUsage;
 import org.col.common.lang.Exceptions;
 import org.col.db.mapper.BatchResultHandler;
 import org.col.db.mapper.NameUsageMapper;

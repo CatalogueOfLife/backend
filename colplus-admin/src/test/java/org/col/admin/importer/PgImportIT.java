@@ -23,13 +23,9 @@ import org.col.api.model.*;
 import org.col.api.vocab.*;
 import org.col.db.PgSetupRule;
 import org.col.db.dao.NameDao;
-import org.col.db.dao.NameUsageDao;
 import org.col.db.dao.ReferenceDao;
 import org.col.db.dao.TaxonDao;
-import org.col.db.mapper.DatasetMapper;
-import org.col.db.mapper.InitMybatisRule;
-import org.col.db.mapper.NameRelationMapper;
-import org.col.db.mapper.VerbatimRecordMapper;
+import org.col.db.mapper.*;
 import org.gbif.nameparser.api.Rank;
 import org.junit.*;
 
@@ -284,9 +280,10 @@ public class PgImportIT {
     normalizeAndImport(ACEF, 0);
 
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
-      NameUsageDao udao = new NameUsageDao(session);
       TaxonDao tdao = new TaxonDao(session);
       NameDao ndao = new NameDao(session);
+      TaxonMapper taxMapper = session.getMapper(TaxonMapper.class);
+      SynonymMapper synMapper = session.getMapper(SynonymMapper.class);
       vMapper = session.getMapper(VerbatimRecordMapper.class);
 
       Name n = ndao.get(dataset.getKey(), "s7");
@@ -296,20 +293,19 @@ public class PgImportIT {
       assertEquals(Rank.SPECIES, n.getRank());
       assertIssue(n, Issue.ACCEPTED_ID_INVALID);
 
-      List<NameUsage> usages = udao.byNameId(dataset.getKey(), n.getId());
-      assertEquals(1, usages.size());
-      assertEquals(new BareName(n), usages.get(0));
-
+      // a bare name
+      assertTrue(taxMapper.listByName(dataset.getKey(), n.getId()).isEmpty());
+      assertTrue(synMapper.listByName(dataset.getKey(), n.getId()).isEmpty());
       assertNull(tdao.get(dataset.getKey(), "s7"));
 
       n = ndao.get(dataset.getKey(), "s6");
       assertEquals("Astragalus beersabeensis", n.getScientificName());
       assertEquals(Rank.SPECIES, n.getRank());
       assertIssue(n, Issue.SYNONYM_DATA_MOVED);
-
-      usages = udao.byNameId(dataset.getKey(), n.getId());
-      assertEquals(1, usages.size());
-      Synonym s = (Synonym) usages.get(0);
+  
+      List<Synonym> syns = synMapper.listByName(dataset.getKey(), n.getId());
+      assertEquals(1, syns.size());
+      Synonym s = syns.get(0);
       assertEquals("Astracantha arnacantha", s.getAccepted().getName().getScientificName());
 
       TaxonInfo t = tdao.getTaxonInfo(s.getAccepted());
@@ -359,9 +355,9 @@ public class PgImportIT {
     normalizeAndImport(ACEF, 69);
 
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
-      NameUsageDao udao = new NameUsageDao(session);
       NameDao ndao = new NameDao(session);
       TaxonDao tdao = new TaxonDao(session);
+      SynonymMapper synMapper = session.getMapper(SynonymMapper.class);
 
       Taxon t = tdao.get(dataset.getKey(), "Rho-144");
       assertEquals("Afrogamasellus lokelei Daele, 1976", t.getName().canonicalNameComplete());
@@ -392,15 +388,14 @@ public class PgImportIT {
       // test synonym
       Name sn = ndao.get(dataset.getKey(), "Rho-140");
       assertEquals("Rhodacarus guevarai Guevara-Benitez, 1974", sn.canonicalNameComplete());
-
-      List<NameUsage> acc = udao.byNameId(dataset.getKey(), sn.getId());
-      assertEquals(1, acc.size());
-      Synonym syn = (Synonym) acc.get(0);
+  
+      List<Synonym> syns = synMapper.listByName(dataset.getKey(), sn.getId());
+      assertEquals(1, syns.size());
 
       t = tdao.get(dataset.getKey(), "Rho-61");
       assertEquals("Multidentorhodacarus denticulatus (Berlese, 1920)", t.getName().canonicalNameComplete());
       t.setChildCount(null);
-      assertEquals(t, syn.getAccepted());
+      assertEquals(t, syns.get(0).getAccepted());
     }
   }
 
