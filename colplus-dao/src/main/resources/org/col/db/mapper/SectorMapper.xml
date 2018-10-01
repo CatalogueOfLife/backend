@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.col.db.mapper.SectorMapper">
+
+  <sql id="SELECT">
+    key,
+    col_source_key,
+    root_id,
+    root_index_name_id,
+    root_name,
+    root_authorship,
+    root_rank,
+    attach_id,
+    attach_index_name_id,
+    attach_name,
+    attach_authorship,
+    attach_rank,
+    created,
+    modified
+  </sql>
+
+  <sql id="COLS">
+    col_source_key,
+    root_id,
+    root_index_name_id,
+    root_name,
+    root_authorship,
+    root_rank,
+    attach_id,
+    attach_index_name_id,
+    attach_name,
+    attach_authorship,
+    attach_rank,
+    modified
+  </sql>
+
+  <sql id="PROPS">
+    #{colSourceKey},
+    #{root.id},
+    #{root.indexNameId},
+    #{root.name},
+    #{root.authorship},
+    #{root.rank}::rank,
+    #{attachment.id},
+    #{attachment.indexNameId},
+    #{attachment.name},
+    #{attachment.authorship},
+    #{attachment.rank}::rank,
+    #{modified}
+  </sql>
+
+  <sql id="FROM">
+    sector
+  </sql>
+
+  <!-- A mapping to Distribution, mostly auto mapped -->
+  <resultMap id="sectorResultMap" type="Sector" autoMapping="true">
+    <id property="key" column="key" />
+    <association property="root" javaType="NameRef" resultMap="org.col.db.mapper.SectorMapper.refResultMap" columnPrefix="root_" />
+    <association property="attachment" javaType="NameRef" resultMap="org.col.db.mapper.SectorMapper.refResultMap" columnPrefix="attach_" />
+  </resultMap>
+
+  <resultMap id="refResultMap" type="NameRef" autoMapping="true">
+  </resultMap>
+
+
+  <select id="list" resultMap="sectorResultMap">
+    SELECT <include refid="SELECT" />
+    FROM <include refid="FROM" />
+    WHERE col_source_key = #{key}
+    ORDER BY key
+  </select>
+
+  <select id="get" resultMap="sectorResultMap">
+    SELECT <include refid="SELECT" />
+    FROM <include refid="FROM" />
+    WHERE key = #{key}
+  </select>
+
+  <insert id="create" parameterType="Sector" useGeneratedKeys="true" keyProperty="key">
+    INSERT INTO sector ( <include refid="COLS" /> )
+    VALUES ( <include refid="PROPS" /> )
+  </insert>
+
+  <update id="update" parameterType="Sector">
+    UPDATE sector
+    SET (<include refid="COLS" />) = (<include refid="PROPS" />)
+    WHERE key = #{key}
+  </update>
+
+  <delete id="delete" parameterType="map">
+    DELETE FROM sector
+    WHERE key = #{key}
+  </delete>
+
+</mapper>

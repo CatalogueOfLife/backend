@@ -104,6 +104,7 @@ CREATE TABLE dataset (
   version TEXT,
   released DATE,
   homepage TEXT,
+  logo TEXT,
   data_format INTEGER,
   data_access TEXT,
   import_frequency INTEGER NOT NULL DEFAULT 7,
@@ -134,6 +135,64 @@ LANGUAGE plpgsql;
 
 CREATE TRIGGER dataset_trigger BEFORE INSERT OR UPDATE
   ON dataset FOR EACH ROW EXECUTE PROCEDURE dataset_doc_update();
+
+
+CREATE TABLE col_source (
+  key serial PRIMARY KEY,
+  dataset_key INTEGER NOT NULL REFERENCES dataset,
+  title TEXT,
+  alias TEXT NOT NULL,
+  description TEXT,
+  organisation TEXT,
+  contact_person TEXT,
+  authors_and_editors TEXT[] DEFAULT '{}',
+  version TEXT,
+  released DATE,
+  homepage TEXT,
+  "group" TEXT,
+  coverage INTEGER,
+  citation TEXT,
+  living_species_count INTEGER,
+  living_infraspecific_count INTEGER,
+  extinct_species_count INTEGER,
+  extinct_infraspecific_count INTEGER,
+  synonyms_count INTEGER,
+  vernaculars_count INTEGER,
+  names_count INTEGER,
+  created TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE sector (
+  key serial PRIMARY KEY,
+  col_source_key INTEGER NOT NULL REFERENCES col_source,
+  root_id TEXT,
+  root_index_name_id TEXT,
+  root_name TEXT,
+  root_authorship TEXT,
+  root_rank rank,
+  attach_id TEXT,
+  attach_index_name_id TEXT,
+  attach_name TEXT,
+  attach_authorship TEXT,
+  attach_rank rank,
+  created TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW(),
+  modified TIMESTAMP WITHOUT TIME ZONE
+);
+
+CREATE TABLE decision (
+  key serial PRIMARY KEY,
+  sector_key INTEGER NOT NULL REFERENCES sector,
+  subject_id TEXT,
+  subject_index_name_id TEXT,
+  subject_name TEXT,
+  subject_authorship TEXT,
+  subject_rank rank,
+  status INTEGER,
+  name TEXT,
+  authorship TEXT,
+  created TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW(),
+  deleted TIMESTAMP WITHOUT TIME ZONE
+);
 
 CREATE TABLE dataset_import (
   dataset_key INTEGER NOT NULL REFERENCES dataset,

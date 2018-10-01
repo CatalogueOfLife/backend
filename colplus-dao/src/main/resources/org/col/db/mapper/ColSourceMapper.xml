@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.col.db.mapper.ColSourceMapper">
+
+    <sql id="SELECT">
+      key,
+      dataset_key,
+      title,
+      alias,
+      description,
+      organisation,
+      contact_person,
+      authors_and_editors,
+      version,
+      released,
+      homepage,
+      "group",
+      coverage,
+      citation,
+      living_species_count,
+      living_infraspecific_count,
+      extinct_species_count,
+      extinct_infraspecific_count,
+      synonyms_count,
+      vernaculars_count,
+      names_count,
+      created
+    </sql>
+
+    <sql id="SELECT-FULL">
+        s.key,
+        s.dataset_key,
+        coalesce(s.title, d.title),
+        s.alias,
+        coalesce(s.description, d.description),
+        coalesce(s.organisation, d.organisation),
+        coalesce(s.contact_person, d.contact_person),
+        coalesce(s.authors_and_editors, d.authors_and_editors),
+        coalesce(s.version, d.version),
+        coalesce(s.released, d.released),
+        coalesce(s.homepage, d.homepage),
+        s.group,
+        coalesce(s.coverage, d.type),
+        s.citation,
+        s.living_species_count,
+        s.living_infraspecific_count,
+        s.extinct_species_count,
+        s.extinct_infraspecific_count,
+        s.synonyms_count,
+        s.vernaculars_count,
+        s.names_count,
+        s.created
+    </sql>
+
+    <sql id="COLS">
+        dataset_key,
+        title,
+        alias,
+        description,
+        organisation,
+        contact_person,
+        authors_and_editors,
+        version,
+        released,
+        homepage,
+        "group",
+        coverage,
+        citation,
+        living_species_count,
+        living_infraspecific_count,
+        extinct_species_count,
+        extinct_infraspecific_count,
+        synonyms_count,
+        vernaculars_count,
+        names_count
+    </sql>
+
+    <sql id="PROPS">
+      #{datasetKey},
+      #{title},
+      #{alias},
+      #{description},
+      #{organisation},
+      #{contactPerson},
+      #{authorsAndEditors, typeHandler=org.col.db.type.StringArrayTypeHandler},
+      #{version},
+      #{released},
+      #{homepage},
+      #{group},
+      #{coverage},
+      #{citation},
+      #{livingSpeciesCount},
+      #{livingInfraspecificCount},
+      #{extinctSpeciesCount},
+      #{extinctInfraspecificCount},
+      #{synonymsCount},
+      #{vernacularsCount},
+      #{namesCount}
+    </sql>
+
+    <sql id="FROM">
+        col_source s
+    </sql>
+    <sql id="FROM-FULL">
+        col_source s JOIN dataset d ON d.key=s.dataset_key
+    </sql>
+
+    <!--  A mapping to Name, mostly auto mapped -->
+    <resultMap id="sourceResultMap" type="ColSource" autoMapping="true">
+        <id property="key" column="key" />
+        <result property="authorsAndEditors" column="authors_and_editors" typeHandler="org.col.db.type.StringArrayTypeHandler" />
+    </resultMap>
+
+
+
+    <select id="list" resultMap="sourceResultMap">
+        SELECT <include refid="SELECT-FULL" />
+        FROM <include refid="FROM-FULL" />
+        WHERE s.deleted IS NULL
+        <if test="key!=null">
+            AND s.dataset_key=#{key}
+        </if>
+        ORDER BY s.key
+    </select>
+
+    <select id="get" resultMap="sourceResultMap">
+        SELECT <include refid="SELECT-FULL" />
+        FROM <include refid="FROM-FULL" />
+        WHERE s.key = #{key}
+    </select>
+
+    <select id="getEditable" resultMap="sourceResultMap">
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
+        WHERE s.key = #{key}
+    </select>
+
+    <insert id="create" parameterType="ColSource" useGeneratedKeys="true" keyProperty="key">
+      INSERT INTO col_source (<include refid="COLS" />, created)
+             VALUES (<include refid="PROPS" />, now())
+    </insert>
+
+    <update id="update" parameterType="ColSource">
+        UPDATE col_source
+        SET (<include refid="COLS" />) = (<include refid="PROPS" />)
+        WHERE key = #{key}
+    </update>
+
+    <delete id="delete" parameterType="map">
+        DELETE FROM col_source
+        WHERE key = #{key}
+    </delete>
+
+</mapper>

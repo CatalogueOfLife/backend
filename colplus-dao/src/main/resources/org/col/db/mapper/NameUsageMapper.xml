@@ -78,7 +78,21 @@
     <!--  select all name usages of a dataset
         Using a optimal fetchsize to enable low memory footprint while keeping good performance using a resulthandler
     -->
-    <select id="processDataset" parameterType="map" resultMap="nameSearchResultMap" resultOrdered="true"
+    <select id="processDatasetTaxa" parameterType="map" resultMap="nameSearchResultMap" resultOrdered="true"
+            fetchSize="10000" resultSetType="FORWARD_ONLY">
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
+        WHERE n.dataset_key = #{datasetKey}
+    </select>
+
+    <select id="processDatasetSynonyms" parameterType="map" resultMap="nameSearchResultMap" resultOrdered="true"
+            fetchSize="10000" resultSetType="FORWARD_ONLY">
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
+        WHERE n.dataset_key = #{datasetKey}
+    </select>
+
+    <select id="processDatasetBareNames" parameterType="map" resultMap="nameSearchResultMap" resultOrdered="true"
             fetchSize="10000" resultSetType="FORWARD_ONLY">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />

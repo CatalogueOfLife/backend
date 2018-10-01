@@ -22,14 +22,6 @@
         ${alias}.remarks AS ${prefix}remarks
     </sql>
 
-    <sql id="CHILD-COUNT">
-        SELECT count(*) FROM taxon_${datasetKey} where parent_id=t.id
-    </sql>
-
-    <sql id="CHILD-COUNT-PROP">
-        (<include refid="CHILD-COUNT" />) AS child_count
-    </sql>
-
     <sql id="SELECT">
         <include refid="taxonCols">
             <property name="alias" value="t"/>
@@ -39,7 +31,7 @@
             <property name="alias" value="n"/>
             <property name="prefix" value="n_"/>
         </include>,
-        <include refid="CHILD-COUNT-PROP" />
+        (SELECT count(*) FROM taxon_${datasetKey} where parent_id=t.id) AS child_count
     </sql>
 
     <sql id="COLS">
@@ -92,7 +84,7 @@
     </resultMap>
 
     <select id="countChildren" resultType="integer">
-        <include refid="CHILD-COUNT" />
+        SELECT count(*) FROM taxon_${datasetKey} where parent_id=#{id}
     </select>
 
     <select id="count" resultType="integer">

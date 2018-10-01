@@ -10,36 +10,36 @@ import org.col.api.vocab.TaxonomicStatus;
  * Can be used for both homo-and heterotypic synonyms as well as misapplied names.
  */
 public class Synonym implements NameUsage, VerbatimEntity {
-
+  
   private Name name;
   private TaxonomicStatus status;
   private String accordingTo;
   private Taxon accepted;
   private Integer verbatimKey;
-
+  
   @Override
   public Name getName() {
     return name;
   }
-
+  
   public void setName(Name name) {
     this.name = name;
   }
-
+  
   @Override
   public TaxonomicStatus getStatus() {
     return status;
   }
-
+  
   public void setStatus(TaxonomicStatus status) {
     this.status = onlySynonym(status);
   }
-
-  private static TaxonomicStatus onlySynonym(TaxonomicStatus status){
+  
+  private static TaxonomicStatus onlySynonym(TaxonomicStatus status) {
     Preconditions.checkArgument(status != null && status.isSynonym(), "Synonym status required");
     return status;
   }
-
+  
   /**
    * Any informal note found in the name that informs about the taxonomic concept.
    * For example "sensu latu"
@@ -48,36 +48,36 @@ public class Synonym implements NameUsage, VerbatimEntity {
   public String getAccordingTo() {
     return accordingTo;
   }
-
+  
   public void setAccordingTo(String accordingTo) {
     this.accordingTo = accordingTo;
   }
-
+  
   /**
    * @return true if the synonym is a homotypic synonym for at least one of the accepted names.
    */
   public boolean isHomotypic() {
     return name.getHomotypicNameId().equals(accepted.getName().getHomotypicNameId());
   }
-
+  
   public Taxon getAccepted() {
     return accepted;
   }
-
+  
   public void setAccepted(Taxon accepted) {
     this.accepted = accepted;
   }
-
+  
   @Override
   public Integer getVerbatimKey() {
     return verbatimKey;
   }
-
+  
   @Override
   public void setVerbatimKey(Integer verbatimKey) {
     this.verbatimKey = verbatimKey;
   }
-
+  
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -88,7 +88,7 @@ public class Synonym implements NameUsage, VerbatimEntity {
         Objects.equals(accordingTo, synonym.accordingTo) &&
         Objects.equals(accepted, synonym.accepted);
   }
-
+  
   @Override
   public int hashCode() {
     return Objects.hash(name, status, accordingTo, accepted);
