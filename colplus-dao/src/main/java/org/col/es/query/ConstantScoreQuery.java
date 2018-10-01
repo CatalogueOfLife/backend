@@ -1,18 +1,20 @@
 package org.col.es.query;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class ConstantScoreQuery implements Query {
+public class ConstantScoreQuery extends AbstractQuery {
 
   @JsonProperty("constant_score")
-  private Query query;
+  private final Filter filter;
 
-  public Query getQuery() {
-    return query;
+  @JsonCreator
+  public ConstantScoreQuery(Filter filter) {
+    this.filter = filter;
   }
 
-  public void setQuery(Query query) {
-    this.query = query;
+  public Filter getFilter() {
+    return filter;
   }
 
 }
