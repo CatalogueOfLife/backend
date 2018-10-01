@@ -11,7 +11,7 @@ import org.col.api.vocab.Gazetteer;
 /**
  *
  */
-public class Distribution implements Referenced, VerbatimEntity {
+public class Distribution implements Referenced, VerbatimEntity, IntKey {
   
   @JsonIgnore
   private Integer key;

@@ -9,7 +9,7 @@ import org.col.api.vocab.TaxonomicStatus;
  * A single, persisted editorial decision about a single name/taxon
  * within a given CoL sector.
  */
-public class EditorialDecision {
+public class EditorialDecision implements IntKey {
   private Integer key;
   private Integer sectorKey;
   private NameRef subject;

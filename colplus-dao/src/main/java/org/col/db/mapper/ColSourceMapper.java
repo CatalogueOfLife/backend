@@ -6,24 +6,14 @@ import javax.annotation.Nullable;
 import org.apache.ibatis.annotations.Param;
 import org.col.api.model.ColSource;
 
-public interface ColSourceMapper {
+public interface ColSourceMapper extends CRUDMapper<ColSource> {
 
 	List<ColSource> list(@Param("key") @Nullable Integer datasetKey);
 
 	/**
-	 * @param incDefaults if true uses defaults from dataset for null properties
+	 * Returns the source without any defaults from dataset for null properties.
+	 * Suitable for editing the entity.
 	 */
-	ColSource get(@Param("key") int key, @Param("full") boolean incDefaults);
-
-	void create(ColSource source);
-
-	int update(ColSource source);
-
-	/**
-	 * Marks a source as deleted
-	 * 
-	 * @param key
-	 */
-	int delete(@Param("key") int key);
+	ColSource getEditable(@Param("key") int key);
 
 }

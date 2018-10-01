@@ -8,7 +8,7 @@ import com.google.common.collect.Sets;
 import org.col.api.vocab.Country;
 import org.col.api.vocab.Language;
 
-public class VernacularName implements Referenced, VerbatimEntity {
+public class VernacularName implements Referenced, VerbatimEntity, IntKey {
   
   @JsonIgnore
   private Integer key;

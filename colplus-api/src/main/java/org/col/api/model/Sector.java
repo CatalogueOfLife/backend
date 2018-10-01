@@ -8,7 +8,7 @@ import java.util.Objects;
  * A taxonomic sector definition within a dataset that is used to assemble the Catalogue of Life.
  * Sectors will also serve to show the taxonomic coverage in the CoL portal.
  */
-public class Sector {
+public class Sector implements IntKey {
   private Integer key;
   private Integer colSourceKey;
   private NameRef root;

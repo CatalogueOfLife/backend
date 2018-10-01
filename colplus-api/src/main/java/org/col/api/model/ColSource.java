@@ -13,7 +13,7 @@ import org.col.api.vocab.DatasetType;
 /**
  * A citable source for a CoL data provider
  */
-public class ColSource implements SourceMetadata {
+public class ColSource implements SourceMetadata, IntKey {
   private Integer key;
   private Integer datasetKey;
   @NotEmpty

@@ -17,7 +17,7 @@ import org.gbif.nameparser.api.NomCode;
 /**
  * Metadata about a dataset or a subset of it if parentKey is given.
  */
-public class Dataset implements SourceMetadata {
+public class Dataset implements SourceMetadata, IntKey {
   private Integer key;
   private DatasetType type = DatasetType.OTHER;
   @NotEmpty

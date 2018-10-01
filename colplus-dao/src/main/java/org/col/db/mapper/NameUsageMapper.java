@@ -4,7 +4,10 @@ import java.util.List;
 
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.session.ResultHandler;
+import org.col.api.model.BareName;
 import org.col.api.model.NameUsage;
+import org.col.api.model.Synonym;
+import org.col.api.model.TaxonVernacularUsage;
 
 /**
  * Mapper dealing with methods returning teh NameUsage interface,
@@ -18,9 +21,23 @@ public interface NameUsageMapper {
 	List<NameUsage> listByName(@Param("datasetKey") int datasetKey, @Param("nameId") String nameId);
 
 	/**
-	 * Iterates over all name usages of a given dataset and processes them with the supplied handler.
+	 * Iterates over all taxa with their vernaculars for a given dataset
+	 * and processes them with the supplied handler.
 	 * This allows a single query to efficiently stream all its values without keeping them in memory.
 	 */
-	void processDataset(@Param("datasetKey") int datasetKey, ResultHandler<NameUsage> handler);
-
+	void processDatasetTaxa(@Param("datasetKey") int datasetKey, ResultHandler<TaxonVernacularUsage> handler);
+	
+	/**
+	 * Iterates over all synonyms for a given dataset
+	 * and processes them with the supplied handler.
+	 * This allows a single query to efficiently stream all its values without keeping them in memory.
+	 */
+	void processDatasetSynonyms(@Param("datasetKey") int datasetKey, ResultHandler<Synonym> handler);
+	
+	/**
+	 * Iterates over all bare names not linked to a synonym or taxon for a given dataset
+	 * and processes them with the supplied handler.
+	 * This allows a single query to efficiently stream all its values without keeping them in memory.
+	 */
+	void processDatasetBareNames(@Param("datasetKey") int datasetKey, ResultHandler<BareName> handler);
 }

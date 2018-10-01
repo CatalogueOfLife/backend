@@ -126,19 +126,16 @@
     </select>
 
     <select id="get" resultMap="sourceResultMap">
-        <choose>
-            <when test="full">
-                SELECT <include refid="SELECT-FULL" />
-                FROM <include refid="FROM-FULL" />
-            </when>
-            <otherwise>
-                SELECT <include refid="SELECT" />
-                FROM <include refid="FROM" />
-            </otherwise>
-        </choose>
-      WHERE s.key = #{key}
+        SELECT <include refid="SELECT-FULL" />
+        FROM <include refid="FROM-FULL" />
+        WHERE s.key = #{key}
     </select>
 
+    <select id="getEditable" resultMap="sourceResultMap">
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
+        WHERE s.key = #{key}
+    </select>
 
     <insert id="create" parameterType="ColSource" useGeneratedKeys="true" keyProperty="key">
       INSERT INTO col_source (<include refid="COLS" />, created)

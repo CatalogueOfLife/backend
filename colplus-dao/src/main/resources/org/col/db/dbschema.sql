@@ -140,7 +140,7 @@ CREATE TRIGGER dataset_trigger BEFORE INSERT OR UPDATE
 CREATE TABLE col_source (
   key serial PRIMARY KEY,
   dataset_key INTEGER NOT NULL REFERENCES dataset,
-  title TEXT NOT NULL,
+  title TEXT,
   alias TEXT NOT NULL,
   description TEXT,
   organisation TEXT,
