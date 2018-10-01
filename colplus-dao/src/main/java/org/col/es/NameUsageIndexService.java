@@ -39,7 +39,7 @@ public class NameUsageIndexService {
   private final boolean async;
 
   public NameUsageIndexService(RestClient client, EsConfig esConfig, SqlSessionFactory factory) {
-    this(client, esConfig, factory, true);
+    this(client, esConfig, factory, false);
   }
 
   @VisibleForTesting
@@ -56,16 +56,24 @@ public class NameUsageIndexService {
    */
   public void indexDataset(final int datasetKey) throws EsException {
     final String index = NAME_USAGE_BASE + datasetKey;
+    final int batchSize = esConfig.nameUsage.batchSize;
     EsUtil.deleteIndex(client, index);
     EsUtil.createIndex(client, index, esConfig.nameUsage);
     final AtomicInteger counter = new AtomicInteger();
-    try (SqlSession session = factory.openSession();
-        BatchResultHandler<NameUsage> handler = new BatchResultHandler<NameUsage>(batch -> {
-          indexBulk(index, batch);
-          counter.addAndGet(batch.size());
-        }, esConfig.nameUsage.batchSize)) {
+    try (SqlSession session = factory.openSession()) {
       NameUsageMapper mapper = session.getMapper(NameUsageMapper.class);
-      mapper.processDataset(datasetKey, handler);
+      mapper.processDatasetBareNames(datasetKey, new BatchResultHandler<>(batch -> {
+        indexBulk(index, batch);
+        counter.addAndGet(batch.size());
+      }, batchSize));
+      mapper.processDatasetSynonyms(datasetKey, new BatchResultHandler<>(batch -> {
+        indexBulk(index, batch);
+        counter.addAndGet(batch.size());
+      }, batchSize));
+      mapper.processDatasetTaxa(datasetKey, new BatchResultHandler<>(batch -> {
+        indexBulk(index, batch);
+        counter.addAndGet(batch.size());
+      }, batchSize));
     } catch (Exception e) {
       throw new EsException(e);
     } finally {
@@ -76,7 +84,7 @@ public class NameUsageIndexService {
   }
 
   @VisibleForTesting
-  void indexBulk(String index, List<NameUsage> usages) {
+  void indexBulk(String index, List<? extends NameUsage> usages) {
     String actionMetaData = indexActionMetaData(index);
     StringBuilder body = new StringBuilder();
     try {
@@ -97,7 +105,7 @@ public class NameUsageIndexService {
     }
   }
 
-  private void executeAsync(Request req, String index, List<NameUsage> usages) {
+  private void executeAsync(Request req, String index, List<? extends NameUsage> usages) {
     client.performRequestAsync(req, new ResponseListener() {
 
       @Override
@@ -114,7 +122,7 @@ public class NameUsageIndexService {
     });
   }
 
-  private void execute(Request req, String index, List<NameUsage> usages) {
+  private void execute(Request req, String index, List<? extends NameUsage> usages) {
     Response reponse;
     try {
       reponse = client.performRequest(req);
