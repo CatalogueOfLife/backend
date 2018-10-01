@@ -5,6 +5,10 @@
 <mapper namespace="org.col.db.mapper.NameUsageMapper">
 
     <resultMap id="taxonResultMap" type="TaxonVernacularUsage" autoMapping="true" extends="org.col.db.mapper.TaxonMapper.taxonResultMap">
+        <id property="id" column="id" />
+        <collection property="vernacularNames" ofType="VernacularName" autoMapping="true">
+            <id property="key" column="v_key"/>
+        </collection>
     </resultMap>
 
     <resultMap id="synonymResultMap" type="Synonym" autoMapping="true" extends="org.col.db.mapper.SynonymMapper.synonymResultMap">
@@ -32,9 +36,11 @@
         <include refid="org.col.db.mapper.TaxonMapper.taxonCols">
             <property name="alias" value="t"/>
             <property name="prefix" value=""/>
-        </include>
+        </include>,
+        v.key as v_key, v.name, v.latin, v.language
         FROM name n
-            JOIN taxon t ON n.id = t.name_id AND t.dataset_key = #{datasetKey}
+            JOIN taxon t ON n.id = t.name_id AND t.dataset_key = n.dataset_key
+            LEFT JOIN vernacular_name v ON v.taxon_id=t.id AND v.dataset_key = n.dataset_key
         WHERE n.dataset_key = #{datasetKey}
     </select>
 
@@ -58,9 +64,9 @@
             <property name="prefix" value="a_n_"/>
         </include>
         FROM name n
-            JOIN synonym s ON n.id = s.name_id AND s.dataset_key = #{datasetKey}
-            JOIN taxon t ON s.taxon_id = t.id AND t.dataset_key = #{datasetKey}
-            JOIN name an ON t.name_id = an.id  AND an.dataset_key = #{datasetKey}
+            JOIN synonym s ON n.id = s.name_id AND s.dataset_key = n.dataset_key
+            JOIN taxon t ON s.taxon_id = t.id AND t.dataset_key = n.dataset_key
+            JOIN name an ON t.name_id = an.id  AND an.dataset_key = n.dataset_key
         WHERE n.dataset_key = #{datasetKey}
     </select>
 
@@ -72,8 +78,8 @@
             <property name="prefix" value="n_"/>
         </include>
         FROM name n
-            LEFT JOIN synonym s ON n.id = s.name_id AND s.dataset_key = #{datasetKey}
-            LEFT JOIN taxon t ON n.id = t.name_id AND t.dataset_key = #{datasetKey}
+            LEFT JOIN synonym s ON n.id = s.name_id AND s.dataset_key = n.dataset_key
+            LEFT JOIN taxon t ON n.id = t.name_id AND t.dataset_key = n.dataset_key
         WHERE n.dataset_key = #{datasetKey}
             AND t.id IS NULL
             AND s.taxon_id IS NULL
