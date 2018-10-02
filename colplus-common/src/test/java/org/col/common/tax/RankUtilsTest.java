@@ -1,6 +1,5 @@
-package org.col.common.util;
+package org.col.common.tax;
 
-import org.col.common.tax.RankUtils;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Test;
 

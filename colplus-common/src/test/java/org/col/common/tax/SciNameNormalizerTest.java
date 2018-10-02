@@ -1,6 +1,5 @@
-package org.col.common.util;
+package org.col.common.tax;
 
-import org.col.common.tax.SciNameNormalizer;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
