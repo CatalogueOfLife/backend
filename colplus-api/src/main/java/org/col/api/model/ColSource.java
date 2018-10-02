@@ -5,9 +5,11 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
-import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 
 import com.google.common.collect.Lists;
+import org.col.api.constraints.AbsoluteURI;
+import org.col.api.constraints.NotBlank;
 import org.col.api.vocab.DatasetType;
 
 /**
@@ -15,9 +17,10 @@ import org.col.api.vocab.DatasetType;
  */
 public class ColSource implements SourceMetadata, IntKey {
   private Integer key;
+  @NotNull
   private Integer datasetKey;
-  @NotEmpty
   private String title;
+  @NotBlank
   private String alias;
   private String description;
   private String organisation;
@@ -25,6 +28,7 @@ public class ColSource implements SourceMetadata, IntKey {
   private List<String> authorsAndEditors = Lists.newArrayList();
   private String version;
   private LocalDate released;
+  @AbsoluteURI
   private URI homepage;
   private String group;
   private DatasetType coverage;
