@@ -1,7 +1,9 @@
 package org.col.resources;
 
+import java.net.URI;
 import java.util.List;
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -13,6 +15,8 @@ import org.col.api.model.DatasetImport;
 import org.col.api.model.Page;
 import org.col.api.model.ResultPage;
 import org.col.api.search.DatasetSearchRequest;
+import org.col.api.vocab.DataFormat;
+import org.col.api.vocab.DatasetType;
 import org.col.api.vocab.ImportState;
 import org.col.db.dao.DatasetDao;
 import org.col.db.dao.DatasetImportDao;
@@ -41,6 +45,20 @@ public class DatasetResource {
   @POST
   public Integer create(Dataset dataset, @Context SqlSession session) {
     return new DatasetDao(session).create(dataset);
+  }
+  
+  @POST
+  @Path("register")
+  public Integer register(@Context SqlSession session,
+                          @QueryParam("url") @NotNull String url,
+                          @QueryParam("format") @DefaultValue("ACEF") DataFormat format,
+                          @QueryParam("type") @DefaultValue("OTHER") DatasetType type
+                          ) {
+    Dataset d = new Dataset();
+    d.setType(type);
+    d.setDataFormat(format);
+    d.setDataAccess(URI.create(url));
+    return new DatasetDao(session).create(d);
   }
 
   @GET
