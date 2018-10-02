@@ -6,11 +6,13 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
-import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
+import org.col.api.constraints.AbsoluteURI;
+import org.col.api.constraints.NotBlank;
 import org.col.api.vocab.*;
 import org.gbif.nameparser.api.NomCode;
 
@@ -19,8 +21,10 @@ import org.gbif.nameparser.api.NomCode;
  */
 public class Dataset implements SourceMetadata, IntKey {
   private Integer key;
+  @NotNull
   private DatasetType type = DatasetType.OTHER;
-  @NotEmpty
+  @NotNull
+  @NotBlank
   private String title;
   private UUID gbifKey;
   private UUID gbifPublisherKey;
@@ -31,9 +35,12 @@ public class Dataset implements SourceMetadata, IntKey {
   private License license;
   private String version;
   private LocalDate released;
+  @AbsoluteURI
   private URI homepage;
+  @AbsoluteURI
   private URI logo;
   private DataFormat dataFormat;
+  @AbsoluteURI
   private URI dataAccess;
   private Frequency importFrequency;
   private NomCode code;

@@ -8,7 +8,7 @@ import org.col.api.model.Dataset;
 import org.col.api.model.Page;
 import org.col.api.search.DatasetSearchRequest;
 
-public interface DatasetMapper {
+public interface DatasetMapper extends CRUDMapper<Dataset> {
 
 	int count(@Param("req") DatasetSearchRequest request);
 
@@ -34,21 +34,8 @@ public interface DatasetMapper {
 	 */
 	Integer exists(@Param("key") int key);
 
-  Dataset get(@Param("key") int key);
-
 	Dataset getByGBIF(@Param("key") UUID key);
 
-	void create(Dataset dataset);
-
-	int update(Dataset dataset);
-
 	int updateLastImport(@Param("key") int key, @Param("attempt") int attempt);
-
-	/**
-	 * Marks a dataset as deleted
-	 * 
-	 * @param key
-	 */
-	int delete(@Param("key") int key);
 
 }

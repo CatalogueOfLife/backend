@@ -1,5 +1,6 @@
 package org.col.resources;
 
+import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -12,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Produces(MediaType.APPLICATION_JSON)
+@Consumes(MediaType.APPLICATION_JSON)
 @SuppressWarnings("static-method")
 public abstract class CRUDResource<T extends IntKey> {
 
@@ -30,7 +32,7 @@ public abstract class CRUDResource<T extends IntKey> {
    * @return the primary key of the object. Together with the CreatedResponseFilter will return a 201 location
    */
   @POST
-  public Integer create(T obj, @Context SqlSession session) {
+  public Integer create(@Valid T obj, @Context SqlSession session) {
     session.getMapper(mapperClass).create(obj);
     session.commit();
     return obj.getKey();
