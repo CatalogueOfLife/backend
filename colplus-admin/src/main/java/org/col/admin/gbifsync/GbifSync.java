@@ -9,11 +9,11 @@ import java.util.concurrent.TimeUnit;
 import io.dropwizard.lifecycle.Managed;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.col.admin.AdminServer;
 import org.col.admin.config.GbifConfig;
 import org.col.api.model.Dataset;
 import org.col.api.model.Page;
 import org.col.common.concurrent.ExecutorUtils;
+import org.col.common.util.LoggingUtils;
 import org.col.db.mapper.DatasetMapper;
 import org.gbif.nameparser.utils.NamedThreadFactory;
 import org.glassfish.jersey.client.rx.RxClient;
@@ -56,7 +56,7 @@ public class GbifSync implements Managed {
 
     @Override
     public void run() {
-      MDC.put(AdminServer.MDC_KEY_TASK, getClass().getSimpleName());
+      MDC.put(LoggingUtils.MDC_KEY_TASK, getClass().getSimpleName());
       try (SqlSession session = sessionFactory.openSession(true)) {
         pager = new DatasetPager(rxClient, gbif);
         mapper = session.getMapper(DatasetMapper.class);
@@ -71,7 +71,7 @@ public class GbifSync implements Managed {
       } catch (Exception e) {
         LOG.error("Failed to sync with GBIF", e);
       }
-      MDC.remove(AdminServer.MDC_KEY_TASK);
+      MDC.remove(LoggingUtils.MDC_KEY_TASK);
     }
 
 

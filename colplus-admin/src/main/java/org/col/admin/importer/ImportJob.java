@@ -10,7 +10,6 @@ import java.util.Objects;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.col.admin.AdminServer;
 import org.col.admin.config.AdminServerConfig;
 import org.col.admin.importer.neo.NeoDb;
 import org.col.admin.importer.neo.NeoDbFactory;
@@ -21,11 +20,11 @@ import org.col.api.vocab.ImportState;
 import org.col.common.concurrent.StartNotifier;
 import org.col.common.io.CompressionUtil;
 import org.col.common.io.DownloadUtil;
+import org.col.common.util.LoggingUtils;
 import org.col.db.dao.DatasetImportDao;
 import org.col.es.NameUsageIndexService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 
 /**
  * Asynchronous import job that orchestrates the entire import process including download,
@@ -36,8 +35,6 @@ import org.slf4j.MDC;
  */
 public class ImportJob implements Runnable {
   private static final Logger LOG = LoggerFactory.getLogger(ImportJob.class);
-  private static final String MDC_KEY_DATASET = "dataset";
-
   private final int datasetKey;
   private final boolean force;
   private final Dataset dataset;
@@ -65,24 +62,14 @@ public class ImportJob implements Runnable {
     this.notifier = notifier;
   }
 
-  public static void setMDC(int datasetKey) {
-    MDC.put(AdminServer.MDC_KEY_TASK, ImportJob.class.getSimpleName());
-    MDC.put(MDC_KEY_DATASET, String.valueOf(datasetKey));
-  }
-
-  public static void removeMDC() {
-    MDC.remove(AdminServer.MDC_KEY_TASK);
-    MDC.remove(MDC_KEY_DATASET);
-  }
-
   @Override
   public void run() {
-    setMDC(datasetKey);
+    LoggingUtils.setMDC(datasetKey, getClass());
     try {
       notifier.started();
       importDataset();
     } finally {
-      removeMDC();
+      LoggingUtils.removeMDC();
     }
   }
 

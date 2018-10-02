@@ -3,17 +3,18 @@ package org.col.admin.importer;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import io.dropwizard.lifecycle.Managed;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.admin.config.ImporterConfig;
 import org.col.api.model.Dataset;
+import org.col.common.util.LoggingUtils;
 import org.col.db.mapper.DatasetMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
-import static org.col.admin.AdminServer.MDC_KEY_TASK;
+import io.dropwizard.lifecycle.Managed;
+
 import static org.col.admin.AdminServer.MILLIS_TO_DIE;
 
 /**
@@ -61,7 +62,7 @@ public class ContinuousImporter implements Managed {
 
     @Override
     public void run() {
-      MDC.put(MDC_KEY_TASK, getClass().getSimpleName());
+      MDC.put(LoggingUtils.MDC_KEY_TASK, getClass().getSimpleName());
 
       while (running) {
         try {
@@ -92,7 +93,7 @@ public class ContinuousImporter implements Managed {
           running = false;
         }
       }
-      MDC.remove(MDC_KEY_TASK);
+      MDC.remove(LoggingUtils.MDC_KEY_TASK);
     }
 
     /**

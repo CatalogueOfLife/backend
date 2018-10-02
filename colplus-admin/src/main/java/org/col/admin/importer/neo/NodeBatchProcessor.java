@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 
 import org.col.admin.importer.ImportJob;
+import org.col.common.util.LoggingUtils;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
@@ -54,7 +55,7 @@ public interface NodeBatchProcessor {
 
           batchCounter++;
           try (Transaction tx = neo.beginTx()) {
-            ImportJob.setMDC(datasetKey);
+            LoggingUtils.setMDC(datasetKey, ImportJob.class);
             LOG.debug("Start new neo processing batch {} with {} nodes, first={}", batchCounter, batch.size(), batch.get(0));
             for (Node n : batch) {
               callback.process(n);
@@ -64,7 +65,7 @@ public interface NodeBatchProcessor {
             callback.commitBatch(recordCounter);
 
           } finally {
-            ImportJob.removeMDC();
+            LoggingUtils.removeMDC();
           }
 
         } catch (InterruptedException ex) {
