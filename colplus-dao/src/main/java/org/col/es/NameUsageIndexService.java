@@ -85,6 +85,11 @@ public class NameUsageIndexService {
 
   @VisibleForTesting
   void indexBulk(String index, List<? extends NameUsage> usages) {
+    if(usages.size() == 0) {
+      // This is actually probably amounts to an illegal state of affairs, but ok ...
+      LOG.warn("Received empty batch of name usages while indexing into {}", index);
+      return;
+    }
     String actionMetaData = indexActionMetaData(index);
     StringBuilder body = new StringBuilder();
     try {
@@ -124,17 +129,17 @@ public class NameUsageIndexService {
   }
 
   private void execute(Request req, String index, List<? extends NameUsage> usages) {
-    Response reponse;
+    Response res;
     try {
-      reponse = client.performRequest(req);
+      res = client.performRequest(req);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
-    if (reponse.getStatusLine().getStatusCode() == 200) {
+    if (res.getStatusLine().getStatusCode() == 200) {
       LOG.debug("Successfully inserted {} name usages into index {}", usages.size(), index);
     } else {
       String fmt = "Error while populating index %s: %s";
-      String err = String.format(fmt, index, reponse.getStatusLine().getReasonPhrase());
+      String err = String.format(fmt, index, res.getStatusLine().getReasonPhrase());
       LOG.error(err);
       throw new RuntimeException(err);
     }

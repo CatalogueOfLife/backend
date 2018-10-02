@@ -4,14 +4,14 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 
 public class Filter {
 
-  private final Term filter;
+  private final TermQuery filter;
 
   @JsonCreator
-  public Filter(Term filter) {
+  public Filter(TermQuery filter) {
     this.filter = filter;
   }
 
-  public Term getFilter() {
+  public TermQuery getFilter() {
     return filter;
   }
 

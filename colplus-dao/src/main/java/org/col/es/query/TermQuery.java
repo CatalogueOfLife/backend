@@ -1,35 +1,33 @@
 package org.col.es.query;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class TermQuery {
 
-  private Object value;
-  private Float boost;
+  private Map<String, QueryValue> term;
 
   public TermQuery() {}
 
-  public TermQuery(Object value) {
-    this.value = value;
+  public TermQuery(String field, Object value) {
+    this(field, new QueryValue(value));
   }
 
-  public TermQuery(Object value, Float boost) {
-    this.value = value;
-    this.boost = boost;
+  public TermQuery(String field, Object value, Float boost) {
+    this(field, new QueryValue(value, boost));
   }
 
-  public Object getValue() {
-    return value;
+  public TermQuery(String field, QueryValue query) {
+    term = new HashMap<>();
+    term.put(field, query);
   }
 
-  public void setValue(Object value) {
-    this.value = value;
+  public Map<String, QueryValue> getTerm() {
+    return term;
   }
 
-  public Float getBoost() {
-    return boost;
-  }
-
-  public void setBoost(Float boost) {
-    this.boost = boost;
+  public void setTerm(Map<String, QueryValue> term) {
+    this.term = term;
   }
 
 }
