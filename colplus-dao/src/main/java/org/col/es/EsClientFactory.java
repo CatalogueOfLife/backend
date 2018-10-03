@@ -1,10 +1,15 @@
 package org.col.es;
 
 import com.google.common.base.Preconditions;
+
 import org.apache.http.HttpHost;
 import org.elasticsearch.client.RestClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class EsClientFactory {
+
+  private static final Logger LOG = LoggerFactory.getLogger(EsClientFactory.class);
 
   private final EsConfig cfg;
 
@@ -13,10 +18,6 @@ public class EsClientFactory {
   }
 
   public RestClient createClient() {
-    if (cfg.embedded()) {
-      int port = Integer.parseInt(cfg.ports);
-      return RestClient.builder(new HttpHost("127.0.0.1", port)).build();
-    }
     String[] hosts = cfg.hosts.split(",");
     String[] ports = cfg.ports == null ? new String[] {"9200"} : cfg.ports.split(",");
     HttpHost[] hhtpHosts = new HttpHost[hosts.length];
@@ -24,6 +25,8 @@ public class EsClientFactory {
       int port = Integer.parseInt(ports[i]);
       hhtpHosts[i] = new HttpHost(hosts[i], port);
     }
+    LOG.info("Connecting to Elasticsearch using hosts={}; ports={}", cfg.hosts,
+        (cfg.ports == null ? "9200" : cfg.ports));
     return RestClient.builder(hhtpHosts).build();
   }
 

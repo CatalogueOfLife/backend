@@ -21,7 +21,7 @@ public class NameUsageIndexServiceTest extends EsReadWriteTestBase {
   private static final String NAME_USAGE_TEST = "name_usage_test";
 
   @Test // Nice in combination with PgImportIT.testGsdGithub
-  @Ignore
+  //@Ignore
   public void indexDataSet() throws IOException, EsException {
     try (RestClient client = getEsClient()) {
       NameUsageIndexService svc = new NameUsageIndexService(client, getEsConfig(), factory(), false);
@@ -30,6 +30,7 @@ public class NameUsageIndexServiceTest extends EsReadWriteTestBase {
   }
 
   @Test
+  @Ignore
   public void indexBulk() throws IOException, EsException {
     try (RestClient client = getEsClient()) {
       EsUtil.deleteIndex(client, NAME_USAGE_TEST);

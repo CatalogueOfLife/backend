@@ -28,6 +28,7 @@ public class EsSetupRule extends ExternalResource {
     cfg = YamlUtils.read(EsConfig.class, "/es-test.yaml");
     if (cfg.embedded()) {
       LOG.info("Starting embedded Elasticsearch");
+      cfg.hosts = "127.0.0.1";
       try {
         // use configured port or assign free ports using local socket 0
         int httpPort;

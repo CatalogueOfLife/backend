@@ -3,7 +3,7 @@ package org.col.es.query;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class SearchRequest {
+public class EsSearchRequest {
 
   private Integer size;
   private Integer from;
