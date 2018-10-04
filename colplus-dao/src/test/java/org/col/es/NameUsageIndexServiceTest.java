@@ -30,6 +30,7 @@ public class NameUsageIndexServiceTest extends EsReadWriteTestBase {
   }
 
   @Test
+  @Ignore
   public void indexBulk() throws IOException, EsException {
     try (RestClient client = getEsClient()) {
       EsUtil.deleteIndex(client, NAME_USAGE_TEST);

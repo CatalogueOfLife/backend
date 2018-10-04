@@ -9,7 +9,7 @@ import javax.ws.rs.core.MultivaluedHashMap;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Sets;
 
-public class NameSearchRequest extends MultivaluedHashMap<NameSearchPararmeter, String> {
+public class NameSearchRequest extends MultivaluedHashMap<NameSearchParameter, String> {
   
   public static enum SearchContent {
     SCIENTIFIC_NAME,
@@ -27,7 +27,7 @@ public class NameSearchRequest extends MultivaluedHashMap<NameSearchPararmeter, 
   private Set<SearchContent> content = Sets.newHashSet(SearchContent.SCIENTIFIC_NAME, SearchContent.AUTHORSHIP, SearchContent.VERNACULAR_NAME);
   
   @QueryParam("facet")
-  private Set<NameSearchPararmeter> facets = new HashSet<>();
+  private Set<NameSearchParameter> facets = new HashSet<>();
   
   @QueryParam("q")
   private String q;
@@ -35,22 +35,22 @@ public class NameSearchRequest extends MultivaluedHashMap<NameSearchPararmeter, 
   @QueryParam("sortBy")
   private SortBy sortBy = SortBy.NAME;
   
-  public void addFilter(NameSearchPararmeter param, String value) {
+  public void addFilter(NameSearchParameter param, String value) {
     // make sure we can parse the string value
     param.from(value);
     add(param, value);
   }
   
-  public void addFilter(NameSearchPararmeter param, Object value) {
+  public void addFilter(NameSearchParameter param, Object value) {
     Preconditions.checkArgument(value.getClass().equals(param.type()));
     add(param, value.toString());
   }
 
-  public void addFacet(NameSearchPararmeter facet) {
+  public void addFacet(NameSearchParameter facet) {
     facets.add(facet);
   }
   
-  public Set<NameSearchPararmeter> getFacets() {
+  public Set<NameSearchParameter> getFacets() {
     return facets;
   }
   

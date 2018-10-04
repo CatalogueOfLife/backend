@@ -1,8 +1,9 @@
 package org.col.es.query;
 
-abstract class Aggregation {
-
+abstract class QueryElement {
+  
   public String toString() {
     return QueryUtil.toString(this);
   }
+  
 }

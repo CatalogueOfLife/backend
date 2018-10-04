@@ -19,7 +19,6 @@ import org.slf4j.LoggerFactory;
 
 @Path("/dataset/{datasetKey}/name")
 @Produces(MediaType.APPLICATION_JSON)
-@SuppressWarnings("static-method")
 public class NameResource {
 
   @SuppressWarnings("unused")

@@ -97,7 +97,6 @@ public class NameUsageIndexService {
     try {
       for (IssueWrapper<?> nu : usages) {
         body.append(actionMetaData);
-        System.out.println(WRITER.writeValueAsString(nu));
         body.append(WRITER.writeValueAsString(nu));
         body.append("\n");
       }

@@ -1,14 +1,5 @@
 package org.col.es.mapping;
 
-import static org.col.es.mapping.ESDataType.KEYWORD;
-import static org.col.es.mapping.ESDataType.NESTED;
-import static org.col.es.mapping.MappingUtil.extractProperty;
-import static org.col.es.mapping.MappingUtil.getClassForTypeArgument;
-import static org.col.es.mapping.MappingUtil.getFields;
-import static org.col.es.mapping.MappingUtil.getMappedProperties;
-import static org.col.es.mapping.MultiField.DEFAULT_MULTIFIELD;
-import static org.col.es.mapping.MultiField.CI_MULTIFIELD;
-import static org.col.es.mapping.MultiField.NGRAM0_MULTIFIELD;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -19,12 +10,24 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import org.col.api.annotations.Analyzer;
-import org.col.api.annotations.Analyzers;
-import org.col.api.annotations.NotIndexed;
-import org.col.api.annotations.NotNested;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import org.col.es.annotations.Analyzer;
+import org.col.es.annotations.Analyzers;
+import org.col.es.annotations.NotIndexed;
+import org.col.es.annotations.NotNested;
+
+import static org.col.es.mapping.ESDataType.KEYWORD;
+import static org.col.es.mapping.ESDataType.NESTED;
+import static org.col.es.mapping.MappingUtil.extractProperty;
+import static org.col.es.mapping.MappingUtil.getClassForTypeArgument;
+import static org.col.es.mapping.MappingUtil.getFields;
+import static org.col.es.mapping.MappingUtil.getMappedProperties;
+import static org.col.es.mapping.MultiField.*;
+import static org.col.es.mapping.MultiField.IGNORE_CASE;
+import static org.col.es.mapping.MultiField.NGRAM;
 
 /**
  * Generates Elasticsearch type mappings from {@link Class} objects. For each instance field in the
@@ -89,8 +92,7 @@ public class MappingFactory<T> {
       }
       return createDocument(field, mapToType, newTree(ancestors, mapToType));
     }
-    boolean forEnum = isOrContainsEnum(realType, field.getGenericType());
-    return createSimpleField(field, esType, forEnum);
+    return createSimpleField(field, esType);
   }
 
   private static ESField createESField(Method method, HashSet<Class<?>> ancestors) {
@@ -103,12 +105,10 @@ public class MappingFactory<T> {
       }
       return createDocument(method, mapToType, newTree(ancestors, mapToType));
     }
-    boolean forEnum = isOrContainsEnum(realType, method.getGenericReturnType());
-    return createSimpleField(method, esType, forEnum);
+    return createSimpleField(method, esType);
   }
 
-  private static SimpleField createSimpleField(AnnotatedElement fm, ESDataType esType,
-      boolean isEnum) {
+  private static SimpleField createSimpleField(AnnotatedElement fm, ESDataType esType) {
     SimpleField sf;
     switch (esType) {
       case KEYWORD:
@@ -122,7 +122,7 @@ public class MappingFactory<T> {
     }
     if (fm.getAnnotation(NotIndexed.class) == null) {
       if (esType == KEYWORD) {
-        addMultiFields((KeywordField) sf, fm, isEnum);
+        addMultiFields((KeywordField) sf, fm);
       }
     } else {
       sf.setIndex(Boolean.FALSE);
@@ -168,13 +168,9 @@ public class MappingFactory<T> {
    * Returns false if the Java field does not contain the @Analyzers annotation. Otherwise it
    * returns true.
    */
-  private static boolean addMultiFields(KeywordField kf, AnnotatedElement fm, boolean forEnum) {
+  private static boolean addMultiFields(KeywordField kf, AnnotatedElement fm) {
     Analyzers annotation = fm.getAnnotation(Analyzers.class);
     if (annotation == null) {
-      kf.addMultiField(CI_MULTIFIELD);
-      if (!forEnum) {
-        kf.addMultiField(DEFAULT_MULTIFIELD);
-      }
       return false;
     }
     if (annotation.value().length == 0) {
@@ -184,14 +180,17 @@ public class MappingFactory<T> {
     EnumSet<Analyzer> analyzers = EnumSet.copyOf(value);
     for (Analyzer a : analyzers) {
       switch (a) {
-        case CASE_INSENSITIVE:
-          kf.addMultiField(CI_MULTIFIELD);
+        case IGNORE_CASE:
+          kf.addMultiField(IGNORE_CASE);
           break;
         case DEFAULT:
-          kf.addMultiField(DEFAULT_MULTIFIELD);
+          kf.addMultiField(DEFAULT);
           break;
-        case NGRAM0:
-          kf.addMultiField(NGRAM0_MULTIFIELD);
+        case NGRAM:
+          kf.addMultiField(NGRAM);
+          break;
+        case AUTO_COMPLETE:
+          kf.addMultiField(NGRAM);
           break;
         default:
           break;
@@ -214,23 +213,6 @@ public class MappingFactory<T> {
     if (type.isEnum())
       return String.class;
     return type;
-  }
-
-  /*
-   * Whether or not the specified type is an enum or an array/collection of enums. If so the
-   * corresponding Elasticsearch field will not be indexed for full-text search.
-   */
-  private static boolean isOrContainsEnum(Class<?> type, Type typeArg) {
-    if (type.isEnum()) {
-      return true;
-    }
-    if (type.isArray()) {
-      return type.getComponentType().isEnum();
-    }
-    if (isA(type, Collection.class)) {
-      return getClassForTypeArgument(typeArg).isEnum();
-    }
-    return false;
   }
 
   private static boolean isMultiValued(Field f) {

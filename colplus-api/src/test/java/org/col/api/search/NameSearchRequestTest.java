@@ -9,13 +9,13 @@ public class NameSearchRequestTest {
   @Test(expected = IllegalArgumentException.class)
   public void addFilterBad() {
     NameSearchRequest r = new NameSearchRequest();
-    r.addFilter(NameSearchPararmeter.DATASET_KEY, "fgh");
+    r.addFilter(NameSearchParameter.DATASET_KEY, "fgh");
   }
   
   @Test
   public void addFilterGood() {
     NameSearchRequest r = new NameSearchRequest();
-    r.addFilter(NameSearchPararmeter.DATASET_KEY, "123");
-    r.addFilter(NameSearchPararmeter.DATASET_KEY, 1234);
+    r.addFilter(NameSearchParameter.DATASET_KEY, "123");
+    r.addFilter(NameSearchParameter.DATASET_KEY, 1234);
   }
 }

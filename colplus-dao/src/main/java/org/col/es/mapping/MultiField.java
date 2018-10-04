@@ -1,9 +1,6 @@
 package org.col.es.mapping;
 
-import static org.col.api.annotations.Analyzer.CASE_INSENSITIVE;
-import static org.col.api.annotations.Analyzer.DEFAULT;
-import static org.col.api.annotations.Analyzer.NGRAM0;
-import org.col.api.annotations.Analyzer;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * A {@code MultiField} is a virtual field underneath a {@link SimpleField regular field} that
@@ -15,35 +12,54 @@ import org.col.api.annotations.Analyzer;
 public class MultiField extends ESField {
 
   /**
-   * A string field analyzed using the default analyzer.
+   * A string field analyzed using the default (full-text) analyzer.
    */
-  public static final MultiField DEFAULT_MULTIFIELD;
+  public static final MultiField DEFAULT;
   /**
    * A string field for case-insensitive comparisons.
    */
-  public static final MultiField CI_MULTIFIELD;
+  public static final MultiField IGNORE_CASE;
   /**
-   * A string field for case-insensitive comparisons.
+   * A string field for case-insensitive "contains" or "LIKE" comparisons.
    */
-  public static final MultiField NGRAM0_MULTIFIELD;
+  public static final MultiField NGRAM;
+  /**
+   * A string field for case-insensitive "contains" or "LIKE" comparisons.
+   */
+  public static final MultiField AUTO_COMPLETE;
 
   static {
-    DEFAULT_MULTIFIELD = new MultiField(DEFAULT);
-    CI_MULTIFIELD = new MultiField(CASE_INSENSITIVE);
-    NGRAM0_MULTIFIELD = new MultiField(NGRAM0);
+    DEFAULT = new MultiField("ft", null);
+    IGNORE_CASE = new MultiField("ic", "ignore_case");
+    NGRAM = new MultiField("ng", "ngram");
+    AUTO_COMPLETE = new MultiField("ac", "autocomplete", "autocomplete_search");
   }
 
   private final String analyzer;
+  @JsonProperty("search_analyzer")
+  private final String searchAnalyzer;
 
-  private MultiField(Analyzer analyzer) {
+  private MultiField(String name, String analyzer) {
+    this(name, analyzer, null);
+  }
+
+  /*
+   * NB analyzer and searchAnalyzer must match analyzers defined in es-settings.json!
+   */
+  private MultiField(String name, String analyzer, String searchAnalyzer) {
     super();
-    this.name = analyzer.getMultiFieldName();
     this.type = ESDataType.TEXT;
-    this.analyzer = analyzer.getName();
+    this.name = name;
+    this.analyzer = analyzer;
+    this.searchAnalyzer = searchAnalyzer;
   }
 
   public String getAnalyzer() {
     return analyzer;
+  }
+
+  public String getSearchAnalyzer() {
+    return searchAnalyzer;
   }
 
 }

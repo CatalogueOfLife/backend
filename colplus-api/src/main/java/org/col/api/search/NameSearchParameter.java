@@ -5,7 +5,7 @@ import org.col.api.vocab.*;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 
-public enum NameSearchPararmeter {
+public enum NameSearchParameter {
   
   DATASET_KEY(Integer.class),
   
@@ -38,7 +38,7 @@ public enum NameSearchPararmeter {
   
   private final Class<?> type;
   
-  NameSearchPararmeter(Class<?> type) {
+  NameSearchParameter(Class<?> type) {
     this.type = type;
   }
   
@@ -65,7 +65,7 @@ public enum NameSearchPararmeter {
       return VocabularyUtils.lookupEnum(value, (Class<? extends Enum<?>>) type);
     
     } else {
-      throw new IllegalStateException(NameSearchPararmeter.class.getSimpleName() + " missing converter for data type " + type);
+      throw new IllegalStateException(NameSearchParameter.class.getSimpleName() + " missing converter for data type " + type);
     }
   }
 }

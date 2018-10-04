@@ -10,18 +10,18 @@ import org.col.api.model.Page;
 import org.col.api.model.ResultPage;
 
 public class NameSearchResponse extends ResultPage<NameUsage> {
-  private Map<NameSearchPararmeter, List<FacetCount>> facets;
+  private Map<NameSearchParameter, List<FacetCount>> facets;
   
   public NameSearchResponse(Page page, int total, List<NameUsage> result) {
     this(page, total, result, new HashMap<>());
   }
   
-  public NameSearchResponse(Page page, int total, List<NameUsage> result, Map<NameSearchPararmeter, List<FacetCount>> facets) {
+  public NameSearchResponse(Page page, int total, List<NameUsage> result, Map<NameSearchParameter, List<FacetCount>> facets) {
     super(page, total, result);
     this.facets = facets;
   }
   
-  public Map<NameSearchPararmeter, List<FacetCount>> getFacets() {
+  public Map<NameSearchParameter, List<FacetCount>> getFacets() {
     return facets;
   }
   

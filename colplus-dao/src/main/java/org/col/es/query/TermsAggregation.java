@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 
 public class TermsAggregation extends Aggregation {
 
-  public static class Terms {
+  private static class Terms {
     private final String field;
     private final Integer size;
 
@@ -12,14 +12,6 @@ public class TermsAggregation extends Aggregation {
     public Terms(String field, Integer size) {
       this.field = field;
       this.size = size;
-    }
-
-    public String getField() {
-      return field;
-    }
-
-    public Integer getSize() {
-      return size;
     }
   }
 
