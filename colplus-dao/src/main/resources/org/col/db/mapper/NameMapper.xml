@@ -174,8 +174,8 @@
     <select id="getByTaxon" resultMap="nameResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
-            JOIN taxon t ON t.name_id=n.id
-        WHERE t.id = #{taxonId}
+            JOIN taxon t ON t.name_id=n.id AND t.dataset_key = n.dataset_key
+        WHERE n.dataset_key = #{datasetKey} AND t.id = #{taxonId}
     </select>
 
     <insert id="create" parameterType="Name" useGeneratedKeys="true" keyProperty="key">

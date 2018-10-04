@@ -5,7 +5,6 @@ import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;
-import org.col.api.exception.NotFoundException;
 import org.col.api.model.Dataset;
 import org.col.api.model.Page;
 import org.col.api.model.ResultPage;
@@ -26,15 +25,7 @@ public class DatasetDao {
     this.session = sqlSession;
     mapper = session.getMapper(DatasetMapper.class);
   }
-
-  public Dataset get(int key) {
-    Dataset d = mapper.get(key);
-    if(d == null) {
-      throw NotFoundException.keyNotFound(Dataset.class, key);
-    }
-    return d;
-  }
-
+  
   public ResultPage<Dataset> search(@Nullable DatasetSearchRequest req, @Nullable Page page) {
     page = page == null ? new Page() : page;
     req = req == null || req.isEmpty() ? new DatasetSearchRequest() : req;
@@ -52,26 +43,5 @@ public class DatasetDao {
     List<Dataset> result = mapper.search(req, page);
     return new ResultPage<>(page, total, result);
   }
-
-  public Integer create(Dataset dataset) {
-    mapper.create(dataset);
-    session.commit();
-    return dataset.getKey();
-  }
-
-  public void update(Dataset dataset) {
-    int i = mapper.update(dataset);
-    if (i == 0) {
-      throw NotFoundException.keyNotFound(Dataset.class, dataset.getKey());
-    }
-    session.commit();
-  }
-
-  public void delete(int key) {
-    int i = mapper.delete(key);
-    if (i == 0) {
-      throw NotFoundException.keyNotFound(Dataset.class, key);
-    }
-    session.commit();
-  }
+  
 }

@@ -14,6 +14,7 @@ import org.junit.Test;
 
 import static org.col.api.TestEntityGenerator.DATASET11;
 import static org.col.api.TestEntityGenerator.TAXON1;
+import static org.col.api.TestEntityGenerator.TAXON2;
 import static org.junit.Assert.*;
 
 public class TaxonDaoTest extends DaoTestBase {
@@ -146,6 +147,9 @@ public class TaxonDaoTest extends DaoTestBase {
       // still the same number of heterotypic synonym groups
       assertEquals(3, synonymy.getHeterotypic().size());
       assertEquals(1, synonymy.getMisapplied().size());
+  
+      synonymy = tDao.getSynonymy(TAXON2);
+  
     }
   }
 

@@ -46,17 +46,18 @@ public abstract class CRUDResource<T extends IntKey> {
 
   @PUT
   @Path("{key}")
-  public void update(T obj, @Context SqlSession session) {
+  public void update(@PathParam("key") int key, T obj, @Context SqlSession session) {
+    obj.setKey(key);
     int i = session.getMapper(mapperClass).update(obj);
     if (i == 0) {
-      throw NotFoundException.keyNotFound(objClass, obj.getKey());
+      throw NotFoundException.keyNotFound(objClass, key);
     }
     session.commit();
   }
 
   @DELETE
   @Path("{key}")
-  public void delete(@PathParam("key") Integer key, @Context SqlSession session) {
+  public void delete(@PathParam("key") int key, @Context SqlSession session) {
     int i = session.getMapper(mapperClass).delete(key);
     if (i == 0) {
       throw NotFoundException.keyNotFound(objClass, key);
