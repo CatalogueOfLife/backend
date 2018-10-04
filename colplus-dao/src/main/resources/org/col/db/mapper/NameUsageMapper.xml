@@ -4,23 +4,39 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="org.col.db.mapper.NameUsageMapper">
 
-    <resultMap id="taxonResultMap" type="TaxonVernacularUsage" autoMapping="true" extends="org.col.db.mapper.TaxonMapper.taxonResultMap">
-        <id property="id" column="id" />
-        <collection property="vernacularNames" ofType="VernacularName" autoMapping="true">
-            <id property="key" column="v_key"/>
-        </collection>
+    <resultMap id="issueResultMap" type="IssueWrapper" autoMapping="true">
+        <result property="issues" column="issues" typeHandler="org.col.db.type2.IssueSetTypeHandler" />
     </resultMap>
 
-    <resultMap id="synonymResultMap" type="Synonym" autoMapping="true" extends="org.col.db.mapper.SynonymMapper.synonymResultMap">
-        <id column="n_id" />
-        <id column="a_id" />
-        <result property="accordingTo" column="s_according_to" />
-        <result property="status" column="s_status" />
+
+    <resultMap id="taxonResultMap" type="IssueWrapper" autoMapping="true" extends="issueResultMap">
+        <id column="id" />
+        <association property="usage" javaType="TaxonVernacularUsage">
+            <id property="id" column="id" />
+            <result property="lifezones" column="lifezones" typeHandler="org.col.db.type.LifezoneSetTypeHandler" />
+            <association property="name" javaType="Name" resultMap="org.col.db.mapper.NameMapper.nameResultMap" columnPrefix="n_" />
+            <collection property="vernacularNames" ofType="VernacularName" autoMapping="true">
+                <id property="key" column="v_key"/>
+            </collection>
+        </association>
     </resultMap>
 
-    <resultMap id="bareNameResultMap" type="BareName" autoMapping="true">
-        <id column="n_key" />
-        <association property="name" javaType="Name" resultMap="org.col.db.mapper.NameMapper.nameResultMap" columnPrefix="n_" />
+    <resultMap id="synonymResultMap" type="IssueWrapper" autoMapping="true" extends="issueResultMap">
+        <association property="usage" javaType="Synonym">
+            <id column="n_id" />
+            <id column="a_id" />
+            <result property="accordingTo" column="s_according_to" />
+            <result property="status" column="s_status" />
+            <association property="name" javaType="Name" resultMap="org.col.db.mapper.NameMapper.nameResultMap" columnPrefix="n_" />
+            <association property="accepted" javaType="Taxon" resultMap="org.col.db.mapper.TaxonMapper.taxonResultMap" columnPrefix="a_" />
+        </association>
+    </resultMap>
+
+    <resultMap id="bareNameResultMap" type="IssueWrapper" autoMapping="true" extends="issueResultMap">
+        <association property="usage" javaType="BareName">
+            <id column="n_key" />
+            <association property="name" javaType="Name" resultMap="org.col.db.mapper.NameMapper.nameResultMap" columnPrefix="n_" />
+        </association>
     </resultMap>
 
     <!--  select all name usages of a dataset
@@ -28,7 +44,7 @@
     -->
     <select id="processDatasetTaxa" parameterType="map" resultMap="taxonResultMap" resultOrdered="true"
             fetchSize="10000" resultSetType="FORWARD_ONLY">
-        SELECT
+        SELECT v.issues,
         <include refid="org.col.db.mapper.NameMapper.nameCols">
             <property name="alias" value="n"/>
             <property name="prefix" value="n_"/>
@@ -37,16 +53,17 @@
             <property name="alias" value="t"/>
             <property name="prefix" value=""/>
         </include>,
-        v.key as v_key, v.name, v.latin, v.language
+        vn.key as v_key, vn.name, vn.latin, vn.language
         FROM name n
             JOIN taxon t ON n.id = t.name_id AND t.dataset_key = n.dataset_key
-            LEFT JOIN vernacular_name v ON v.taxon_id=t.id AND v.dataset_key = n.dataset_key
+            LEFT JOIN vernacular_name vn ON vn.taxon_id=t.id AND vn.dataset_key = n.dataset_key
+            LEFT JOIN verbatim v ON v.dataset_key = n.dataset_key AND v.key=n.verbatim_key
         WHERE n.dataset_key = #{datasetKey}
     </select>
 
     <select id="processDatasetSynonyms" parameterType="map" resultMap="synonymResultMap" resultOrdered="true"
             fetchSize="10000" resultSetType="FORWARD_ONLY">
-        SELECT
+        SELECT v.issues,
         <include refid="org.col.db.mapper.NameMapper.nameCols">
             <property name="alias" value="n"/>
             <property name="prefix" value="n_"/>
@@ -67,12 +84,13 @@
             JOIN synonym s ON n.id = s.name_id AND s.dataset_key = n.dataset_key
             JOIN taxon t ON s.taxon_id = t.id AND t.dataset_key = n.dataset_key
             JOIN name an ON t.name_id = an.id  AND an.dataset_key = n.dataset_key
+            LEFT JOIN verbatim v ON v.dataset_key = n.dataset_key AND v.key=n.verbatim_key
         WHERE n.dataset_key = #{datasetKey}
     </select>
 
     <select id="processDatasetBareNames" parameterType="map" resultMap="bareNameResultMap" resultOrdered="true"
             fetchSize="10000" resultSetType="FORWARD_ONLY">
-        SELECT
+        SELECT v.issues,
         <include refid="org.col.db.mapper.NameMapper.nameCols">
             <property name="alias" value="n"/>
             <property name="prefix" value="n_"/>
@@ -80,6 +98,7 @@
         FROM name n
             LEFT JOIN synonym s ON n.id = s.name_id AND s.dataset_key = n.dataset_key
             LEFT JOIN taxon t ON n.id = t.name_id AND t.dataset_key = n.dataset_key
+            LEFT JOIN verbatim v ON v.key=n.verbatim_key AND v.dataset_key = n.dataset_key
         WHERE n.dataset_key = #{datasetKey}
             AND t.id IS NULL
             AND s.taxon_id IS NULL
