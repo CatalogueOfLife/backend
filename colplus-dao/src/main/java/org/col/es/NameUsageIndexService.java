@@ -13,6 +13,7 @@ import org.col.api.jackson.ApiModule;
 import org.col.api.model.NameUsage;
 import org.col.common.lang.Exceptions;
 import org.col.db.mapper.BatchResultHandler;
+import org.col.db.mapper.model.IssueWrapper;
 import org.col.db.mapper.NameUsageMapper;
 import org.elasticsearch.client.Request;
 import org.elasticsearch.client.Response;
@@ -84,7 +85,8 @@ public class NameUsageIndexService {
   }
 
   @VisibleForTesting
-  void indexBulk(String index, List<? extends NameUsage> usages) {
+  //TODO: change code for IssueWrapper and translate to EsNameUsage!!!
+  void indexBulk(String index, List<? extends IssueWrapper<?>> usages) {
     if(usages.size() == 0) {
       // This is actually probably amounts to an illegal state of affairs, but ok ...
       LOG.warn("Received empty batch of name usages while indexing into {}", index);
@@ -93,7 +95,7 @@ public class NameUsageIndexService {
     String actionMetaData = indexActionMetaData(index);
     StringBuilder body = new StringBuilder();
     try {
-      for (NameUsage nu : usages) {
+      for (IssueWrapper<?> nu : usages) {
         body.append(actionMetaData);
         System.out.println(WRITER.writeValueAsString(nu));
         body.append(WRITER.writeValueAsString(nu));
@@ -102,21 +104,21 @@ public class NameUsageIndexService {
       Request request = new Request("POST", "/_bulk");
       request.setJsonEntity(body.toString());
       if (async) {
-        executeAsync(request, index, usages);
+        executeAsync(request, index, usages.size());
       } else {
-        execute(request, index, usages);
+        execute(request, index, usages.size());
       }
     } catch (Exception e) {
       Exceptions.throwRuntime(e);
     }
   }
 
-  private void executeAsync(Request req, String index, List<? extends NameUsage> usages) {
+  private void executeAsync(Request req, String index, int size) {
     client.performRequestAsync(req, new ResponseListener() {
 
       @Override
       public void onSuccess(Response response) {
-        LOG.debug("Successfully inserted {} name usages into index {}", usages.size(), index);
+        LOG.debug("Successfully inserted {} name usages into index {}", size, index);
       }
 
       @Override
@@ -128,7 +130,7 @@ public class NameUsageIndexService {
     });
   }
 
-  private void execute(Request req, String index, List<? extends NameUsage> usages) {
+  private void execute(Request req, String index, int size) {
     Response res;
     try {
       res = client.performRequest(req);
@@ -136,7 +138,7 @@ public class NameUsageIndexService {
       throw new RuntimeException(e);
     }
     if (res.getStatusLine().getStatusCode() == 200) {
-      LOG.debug("Successfully inserted {} name usages into index {}", usages.size(), index);
+      LOG.debug("Successfully inserted {} name usages into index {}", size, index);
     } else {
       String fmt = "Error while populating index %s: %s";
       String err = String.format(fmt, index, res.getStatusLine().getReasonPhrase());

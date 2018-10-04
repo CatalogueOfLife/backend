@@ -6,8 +6,9 @@ import org.apache.ibatis.session.ResultContext;
 import org.apache.ibatis.session.ResultHandler;
 import org.col.api.model.BareName;
 import org.col.api.model.Synonym;
-import org.col.api.model.TaxonVernacularUsage;
 import org.col.api.model.VernacularName;
+import org.col.db.mapper.model.IssueWrapper;
+import org.col.db.mapper.model.TaxonVernacularUsage;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -25,10 +26,10 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
   
   @Test
   public void processDatasetTaxa() throws Exception {
-    mapper().processDatasetTaxa(NAME4.getDatasetKey(), new ResultHandler<TaxonVernacularUsage>() {
-      public void handleResult(ResultContext<? extends TaxonVernacularUsage> ctx) {
+    mapper().processDatasetTaxa(NAME4.getDatasetKey(), new ResultHandler<IssueWrapper<TaxonVernacularUsage>>() {
+      public void handleResult(ResultContext<? extends IssueWrapper<TaxonVernacularUsage>> ctx) {
         counter.incrementAndGet();
-        for (VernacularName v : ctx.getResultObject().getVernacularNames()) {
+        for (VernacularName v : ctx.getResultObject().getUsage().getVernacularNames()) {
           assertNotNull(v.getName());
         }
       }
@@ -38,11 +39,11 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
   
   @Test
   public void processDatasetSynonyms() throws Exception {
-    mapper().processDatasetSynonyms(NAME4.getDatasetKey(), new ResultHandler<Synonym>() {
-      public void handleResult(ResultContext<? extends Synonym> ctx) {
+    mapper().processDatasetSynonyms(NAME4.getDatasetKey(), new ResultHandler<IssueWrapper<Synonym>>() {
+      public void handleResult(ResultContext<? extends IssueWrapper<Synonym>> ctx) {
         counter.incrementAndGet();
-        assertTrue(ctx.getResultObject().getStatus().isSynonym());
-        assertNotNull(ctx.getResultObject().getAccepted());
+        assertTrue(ctx.getResultObject().getUsage().getStatus().isSynonym());
+        assertNotNull(ctx.getResultObject().getUsage().getAccepted());
       }
     });
     Assert.assertEquals(2, counter.get());
@@ -50,10 +51,12 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
   
   @Test
   public void processDatasetBareNames() throws Exception {
-    mapper().processDatasetBareNames(NAME4.getDatasetKey(), new ResultHandler<BareName>() {
-      public void handleResult(ResultContext<? extends BareName> ctx) {
+    mapper().processDatasetBareNames(NAME4.getDatasetKey(), new ResultHandler<IssueWrapper<BareName>>() {
+      public void handleResult(ResultContext<? extends IssueWrapper<BareName>> ctx) {
         counter.incrementAndGet();
         assertNotNull(ctx.getResultObject());
+        assertNotNull(ctx.getResultObject().getUsage());
+        assertNotNull(ctx.getResultObject().getUsage().getName());
       }
     });
     Assert.assertEquals(0, counter.get());

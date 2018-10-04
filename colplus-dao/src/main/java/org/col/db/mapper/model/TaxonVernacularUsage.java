@@ -1,7 +1,10 @@
-package org.col.api.model;
+package org.col.db.mapper.model;
 
 import java.util.List;
 import java.util.Objects;
+
+import org.col.api.model.Taxon;
+import org.col.api.model.VernacularName;
 
 public class TaxonVernacularUsage extends Taxon {
   

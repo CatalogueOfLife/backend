@@ -13,6 +13,7 @@
     -->
     <typeAliases>
         <package name="org.col.api.model" />
+        <package name="org.col.db.mapper.model" />
         <package name="org.gbif.nameparser.api" />
     </typeAliases>
 </configuration>
