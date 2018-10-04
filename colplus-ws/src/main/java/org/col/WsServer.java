@@ -5,7 +5,9 @@ import org.col.dw.PgApp;
 import org.col.resources.*;
 
 public class WsServer extends PgApp<WsServerConfig> {
-
+  
+  private Object adminApi;
+  
   public static void main(final String[] args) throws Exception {
 		new WsServer().run(args);
 	}
@@ -31,6 +33,8 @@ public class WsServer extends PgApp<WsServerConfig> {
     env.jersey().register(new ParserResource());
     env.jersey().register(new VerbatimResource());
     env.jersey().register(new VocabResource());
+  
+    env.jersey().register(new MatchingForwardingResource(cfg.adminApi));
   }
 
 }

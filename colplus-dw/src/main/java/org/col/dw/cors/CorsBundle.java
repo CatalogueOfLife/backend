@@ -48,7 +48,6 @@ public class CorsBundle implements ConfiguredBundle<CorsBundleConfiguration> {
     cors.setInitParameter(ALLOWED_METHODS_PARAM, configuration.getAllowedMethods());
     cors.setInitParameter(PREFLIGHT_MAX_AGE_PARAM, String.valueOf(configuration.getMaxAgeInSeconds()));
     cors.addMappingForUrlPatterns(EnumSet.allOf(DispatcherType.class), true, configuration.getUrlMapping());
-
   }
 
   @Override
