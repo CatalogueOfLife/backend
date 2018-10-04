@@ -9,6 +9,7 @@ import org.apache.ibatis.session.SqlSession;
 import org.col.api.BeanPrinter;
 import org.col.api.TestEntityGenerator;
 import org.col.api.model.*;
+import org.col.api.search.NameSearchPararmeter;
 import org.col.api.search.NameSearchRequest;
 import org.col.api.vocab.*;
 import org.col.db.dao.DaoTestBase;
@@ -87,25 +88,25 @@ public class NameUsageSearchTest extends DaoTestBase {
     commit();
 
     NameSearchRequest search = new NameSearchRequest();
-    search.setDatasetKey(n.getDatasetKey());
+    search.addFilter(NameSearchPararmeter.DATASET_KEY, n.getDatasetKey());
     search.setQ("foo");
     assertEquals(3, searchCount(search));
 
-    search.setRank(Rank.SPECIES);
+    search.addFilter(NameSearchPararmeter.RANK, Rank.SPECIES);
     assertEquals(2, searchCount(search));
 
     search.setQ("baz");
     assertEquals(1, searchCount(search));
 
     search.setQ("Foo");
-    search.setRank(Rank.PHYLUM);
+    search.addFilter(NameSearchPararmeter.RANK, Rank.PHYLUM);
     assertEquals(1, searchCount(search));
 
-    search.setRank(Rank.CLASS);
+    search.addFilter(NameSearchPararmeter.RANK, Rank.CLASS);
     assertEquals(0, searchCount(search));
 
     search = new NameSearchRequest();
-    search.setHasField(NameField.COMBINATION_AUTHORS);
+    search.addFilter(NameSearchPararmeter.FIELD, NameField.COMBINATION_AUTHORS);
     assertEquals(4, searchCount(search));
   }
 
@@ -141,12 +142,12 @@ public class NameUsageSearchTest extends DaoTestBase {
     session.commit();
 
     NameSearchRequest search = new NameSearchRequest();
-    search.setDatasetKey(DATASET11.getKey());
+    search.addFilter(NameSearchPararmeter.DATASET_KEY, DATASET11.getKey());
     search.setQ("foo");
     List<NameUsage> names = search(search);
     assertEquals("01", 3, names.size());
 
-    search.setRank(Rank.SPECIES);
+    search.addFilter(NameSearchPararmeter.RANK, Rank.SPECIES);
     names = search(search);
     assertEquals("02", 2, names.size());
 
@@ -155,11 +156,11 @@ public class NameUsageSearchTest extends DaoTestBase {
     assertEquals("03", 1, names.size());
 
     search.setQ("Foo");
-    search.setRank(Rank.PHYLUM);
+    search.addFilter(NameSearchPararmeter.RANK, Rank.PHYLUM);
     names = search(search);
     assertEquals("04", 1, names.size());
 
-    search.setRank(Rank.CLASS);
+    search.addFilter(NameSearchPararmeter.RANK, Rank.CLASS);
     names = search(search);
     assertEquals("05", 0, names.size());
   }
@@ -196,12 +197,12 @@ public class NameUsageSearchTest extends DaoTestBase {
     session.commit();
 
     NameSearchRequest search = new NameSearchRequest();
-    search.setDatasetKey(DATASET11.getKey());
+    search.addFilter(NameSearchPararmeter.DATASET_KEY, DATASET11.getKey());
     search.setQ("foo");
     List<NameUsage> names = search(search);
     assertEquals("01", 3, names.size());
 
-    search.setType(NameType.SCIENTIFIC);
+    search.addFilter(NameSearchPararmeter.TYPE, NameType.SCIENTIFIC);
     names = search(search);
     assertEquals("02", 2, names.size());
 
@@ -210,11 +211,11 @@ public class NameUsageSearchTest extends DaoTestBase {
     assertEquals("03", 1, names.size());
 
     search.setQ("Foo");
-    search.setType(NameType.VIRUS);
+    search.addFilter(NameSearchPararmeter.TYPE, NameType.VIRUS);
     names = search(search);
     assertEquals("04", 1, names.size());
 
-    search.setType(NameType.HYBRID_FORMULA);
+    search.addFilter(NameSearchPararmeter.TYPE, NameType.HYBRID_FORMULA);
     names = search(search);
     assertEquals("05", 0, names.size());
   }
@@ -250,12 +251,12 @@ public class NameUsageSearchTest extends DaoTestBase {
     session.commit();
 
     NameSearchRequest search = new NameSearchRequest();
-    search.setDatasetKey(DATASET11.getKey());
+    search.addFilter(NameSearchPararmeter.DATASET_KEY, DATASET11.getKey());
     search.setQ("foo");
     List<NameUsage> names = search(search);
     assertEquals("01", 3, names.size());
 
-    search.setNomStatus(NomStatus.UNEVALUATED);
+    search.addFilter(NameSearchPararmeter.NOM_STATUS, NomStatus.UNEVALUATED);
     names = search(search);
     assertEquals("02", 2, names.size());
 
@@ -264,11 +265,11 @@ public class NameUsageSearchTest extends DaoTestBase {
     assertEquals("03", 1, names.size());
 
     search.setQ("Foo");
-    search.setNomStatus(NomStatus.CHRESONYM);
+    search.addFilter(NameSearchPararmeter.NOM_STATUS, NomStatus.CHRESONYM);
     names = search(search);
     assertEquals("04", 1, names.size());
 
-    search.setNomStatus(NomStatus.DOUBTFUL);
+    search.addFilter(NameSearchPararmeter.NOM_STATUS, NomStatus.DOUBTFUL);
     names = search(search);
     assertEquals("05", 0, names.size());
   }
@@ -364,7 +365,7 @@ public class NameUsageSearchTest extends DaoTestBase {
 
     NameSearchRequest query = new NameSearchRequest();
     // Provide key of synonym name
-    query.setId(syn1.getName().getId());
+    query.addFilter(NameSearchPararmeter.NAME_ID, syn1.getName().getId());
     List<NameUsage> result = search(query);
     assertEquals(1, result.size());
 
@@ -401,7 +402,7 @@ public class NameUsageSearchTest extends DaoTestBase {
 
     NameSearchRequest query = new NameSearchRequest();
     // Provide key of accepted name
-    query.setId(acc1.getId());
+    query.addFilter(NameSearchPararmeter.NAME_ID, acc1.getId());
     List<NameUsage> result = search(query);
     assertEquals(1, result.size());
 
@@ -486,12 +487,12 @@ public class NameUsageSearchTest extends DaoTestBase {
     session.commit();
 
     NameSearchRequest search = new NameSearchRequest();
-    search.setDatasetKey(DATASET11.getKey());
+    search.addFilter(NameSearchPararmeter.DATASET_KEY, DATASET11.getKey());
     search.setQ("foo");
     List<NameUsage> names = search(search);
     assertEquals(3, names.size());
 
-    search.setIssue(Issue.UNPARSABLE_AUTHORSHIP);
+    search.addFilter(NameSearchPararmeter.ISSUE, Issue.UNPARSABLE_AUTHORSHIP);
     names = search(search);
     assertEquals(2, names.size());
 
@@ -500,11 +501,11 @@ public class NameUsageSearchTest extends DaoTestBase {
     assertEquals(1, names.size());
 
     search.setQ("Foo");
-    search.setIssue(Issue.UNPARSABLE_REFERENCE);
+    search.addFilter(NameSearchPararmeter.ISSUE, Issue.UNPARSABLE_REFERENCE);
     names = search(search);
     assertEquals(1, names.size());
-
-    search.setIssue(Issue.VERNACULAR_NAME_INVALID);
+  
+    search.addFilter(NameSearchPararmeter.ISSUE, Issue.VERNACULAR_NAME_INVALID);
     names = search(search);
     assertEquals(0, names.size());
   }
@@ -552,7 +553,7 @@ public class NameUsageSearchTest extends DaoTestBase {
     search.setSortBy(NameSearchRequest.SortBy.KEY);
 
     // accepted taxa only
-    search.setStatus(TaxonomicStatus.ACCEPTED);
+    search.addFilter(NameSearchPararmeter.STATUS, TaxonomicStatus.ACCEPTED);
     List<NameUsage> results = search(search);
     List<NameUsage> expected = Lists.newArrayList(
         TestEntityGenerator.TAXON1,
@@ -564,13 +565,13 @@ public class NameUsageSearchTest extends DaoTestBase {
     assertEquals(expected, results);
 
     // misapplied only
-    search.setStatus(TaxonomicStatus.MISAPPLIED);
+    search.addFilter(NameSearchPararmeter.STATUS, TaxonomicStatus.MISAPPLIED);
     results = search(search);
     expected = Lists.newArrayList(mis);
     assertEquals(expected, results);
 
     // synonyms
-    search.setStatus(TaxonomicStatus.SYNONYM);
+    search.addFilter(NameSearchPararmeter.STATUS, TaxonomicStatus.SYNONYM);
     results = search(search);
     expected = Lists.newArrayList(
         TestEntityGenerator.SYN1,
@@ -581,17 +582,16 @@ public class NameUsageSearchTest extends DaoTestBase {
     assertEquals(expected, results);
 
     // ambiguous synonyms
-    search.setStatus(TaxonomicStatus.AMBIGUOUS_SYNONYM);
+    search.addFilter(NameSearchPararmeter.STATUS, TaxonomicStatus.AMBIGUOUS_SYNONYM);
     results = search(search);
     assertTrue(results.isEmpty());
 
     // ambiguous synonyms
-    search.setStatus(TaxonomicStatus.DOUBTFUL);
+    search.addFilter(NameSearchPararmeter.STATUS, TaxonomicStatus.DOUBTFUL);
     results = search(search);
     assertTrue(results.isEmpty());
   }
-
-
+  
 
   private void saveTaxon(Taxon t) {
     if (t.getName().getId() == null) {

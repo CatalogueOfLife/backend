@@ -1,6 +1,7 @@
 package org.col.api.model;
 
 import org.col.api.jackson.SerdeTestBase;
+import org.col.api.search.NameSearchPararmeter;
 import org.col.api.search.NameSearchRequest;
 import org.col.api.vocab.Issue;
 import org.col.api.vocab.NomStatus;
@@ -19,9 +20,9 @@ public class NameSearchRequestSerde extends SerdeTestBase<NameSearchRequest> {
   public NameSearchRequest genTestValue() throws Exception {
     NameSearchRequest s = new NameSearchRequest();
     s.setQ("Abies");
-    s.setNomStatus(NomStatus.MANUSCRIPT);
-    s.setRank(Rank.VARIETY);
-    s.setIssue(Issue.ESCAPED_CHARACTERS);
+    s.addFilter(NameSearchPararmeter.NOM_STATUS, NomStatus.MANUSCRIPT);
+    s.addFilter(NameSearchPararmeter.NOM_STATUS, Rank.VARIETY);
+    s.addFilter(NameSearchPararmeter.NOM_STATUS, Issue.ESCAPED_CHARACTERS);
     return s;
   }
 }
