@@ -1,9 +1,10 @@
 package org.col.es.mapping;
 
-import static org.col.api.annotations.Analyzer.CASE_INSENSITIVE;
-import static org.col.api.annotations.Analyzer.DEFAULT;
-import static org.col.api.annotations.Analyzer.NGRAM0;
-import org.col.api.annotations.Analyzer;
+import org.col.es.annotations.Analyzer;
+
+import static org.col.es.annotations.Analyzer.CASE_INSENSITIVE;
+import static org.col.es.annotations.Analyzer.DEFAULT;
+import static org.col.es.annotations.Analyzer.NGRAM0;
 
 /**
  * A {@code MultiField} is a virtual field underneath a {@link SimpleField regular field} that

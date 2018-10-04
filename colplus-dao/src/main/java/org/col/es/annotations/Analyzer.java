@@ -1,4 +1,4 @@
-package org.col.api.annotations;
+package org.col.es.annotations;
 
 /**
  * Symbolic constants for the Elasticsearch analyzers defined within the CoL document store.

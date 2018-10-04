@@ -9,11 +9,11 @@ public class FullTextQuery extends TermQuery {
   }
 
   public FullTextQuery(String field, String value, Float boost) {
-    super(multi(field),value,boost);
+    super(multi(field), value, boost);
   }
 
   private static String multi(String field) {
-    return field + "." + MultiField.CI_MULTIFIELD.getName();
+    return field + "." + MultiField.DEFAULT_MULTIFIELD.getName();
   }
 
 }

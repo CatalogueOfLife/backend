@@ -42,8 +42,7 @@ public enum NameField {
   public String notNull(String alias) {
     if (array) {
       return "array_length(" + alias + '.' + this.name().toLowerCase() + ", 1) IS NOT NULL";
-    } else {
-      return alias + '.' + this.name().toLowerCase() + " IS NOT NULL";
     }
+    return alias + '.' + this.name().toLowerCase() + " IS NOT NULL";
   }
 }

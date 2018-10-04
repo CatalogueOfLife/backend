@@ -54,7 +54,6 @@ public class NameSearchRequestTranslator {
   }
 
   private void addVernacularNameFieldsToQuery(BoolQuery qQuery) {
-    
   }
 
 }

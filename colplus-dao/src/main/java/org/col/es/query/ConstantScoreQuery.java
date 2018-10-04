@@ -4,16 +4,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class ConstantScoreQuery extends AbstractQuery {
 
-  public static class Filter {
+  private static class Filter extends QueryElement {
     @JsonProperty("filter")
-    private final Query query;
+    final Query query;
 
-    public Filter(Query query) {
+    Filter(Query query) {
       this.query = query;
-    }
-
-    public Query getQuery() {
-      return query;
     }
   }
 
@@ -22,10 +18,6 @@ public class ConstantScoreQuery extends AbstractQuery {
 
   public ConstantScoreQuery(Query query) {
     this.filter = new Filter(query);
-  }
-
-  public Filter getFilter() {
-    return filter;
   }
 
 }

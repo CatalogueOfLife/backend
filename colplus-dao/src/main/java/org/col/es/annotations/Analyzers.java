@@ -1,4 +1,4 @@
-package org.col.api.annotations;
+package org.col.es.annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

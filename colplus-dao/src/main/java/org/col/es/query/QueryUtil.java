@@ -6,11 +6,11 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class QueryUtil {
+class QueryUtil {
 
   private static final ObjectMapper om = configureMapper();
 
-  public static String toString(Object obj) {
+  static String toString(Object obj) {
     try {
       return om.writerWithDefaultPrettyPrinter().writeValueAsString(obj);
     } catch (JsonProcessingException e) {

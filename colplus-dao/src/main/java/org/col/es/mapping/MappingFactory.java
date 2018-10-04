@@ -1,5 +1,10 @@
 package org.col.es.mapping;
 
+import org.col.es.annotations.Analyzer;
+import org.col.es.annotations.Analyzers;
+import org.col.es.annotations.NotIndexed;
+import org.col.es.annotations.NotNested;
+
 import static org.col.es.mapping.ESDataType.KEYWORD;
 import static org.col.es.mapping.ESDataType.NESTED;
 import static org.col.es.mapping.MappingUtil.extractProperty;
@@ -19,10 +24,7 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import org.col.api.annotations.Analyzer;
-import org.col.api.annotations.Analyzers;
-import org.col.api.annotations.NotIndexed;
-import org.col.api.annotations.NotNested;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
