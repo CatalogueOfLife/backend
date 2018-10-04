@@ -13,7 +13,7 @@ public class NGramQuery extends TermQuery {
   }
 
   private static String multi(String field) {
-    return field + "." + MultiField.NGRAM0_MULTIFIELD.getName();
+    return field + "." + MultiField.NGRAM.getName();
   }
 
 }

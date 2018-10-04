@@ -13,7 +13,7 @@ public class FullTextQuery extends TermQuery {
   }
 
   private static String multi(String field) {
-    return field + "." + MultiField.DEFAULT_MULTIFIELD.getName();
+    return field + "." + MultiField.DEFAULT.getName();
   }
 
 }

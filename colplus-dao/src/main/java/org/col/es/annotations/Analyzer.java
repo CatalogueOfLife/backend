@@ -4,55 +4,38 @@ package org.col.es.annotations;
  * Symbolic constants for the Elasticsearch analyzers defined within the CoL document store.
  */
 public enum Analyzer {
-  
+
   /**
-   * The default Elasticsearch analyzer.
+   * The default (full-text) analyzer. Not specifying any analyzer means the field is indexed using
+   * this analyzer, hence the analyzer's name is left empty (null).
    */
-  DEFAULT(null, "analyzed"),
-  
+  DEFAULT,
+
   /**
-   * The no-op analyzer; indexes values as-is.
+   * The no-op analyzer; indexes values as-is. Since this index is access through the field name
+   * itself (not through a multi-field underneath it), the multi-field name is left empty (null).
    */
-  KEYWORD("keyword", null),
+  KEYWORD,
   /**
    * An analyzer that allows for case-insensitive searches while preserving whitespace in the search
    * string.
    */
-  CASE_INSENSITIVE("case_insensitive_analyzer", "ci"),
-  
+  IGNORE_CASE,
+
   /**
-   * An ngram analyzer that breaks values up into ngrams of size 3 to 15.
+   * An ngram analyzer that breaks values up into ngrams.
    */
-  NGRAM0("ngram0_analyzer", "ngram0");
-  
-  private final String name;
-  private final String multiFieldName;
-  
-  private Analyzer(String name, String multiFieldName) {
-    this.name = name;
-    this.multiFieldName = multiFieldName;
-  }
-  
+  NGRAM,
+
   /**
-   * The name of the analyzer.
+   * An analyzer typically used for auto-complete functionality. This is meant as an index-time only
+   * analyzer. Note that in es-settings.json we have defined another analyzer (autocomplete_search,
+   * which is the search-time only counterpart of this analyzer. Ordinarily, index-time and
+   * search-time analysis should be the same, exception in this special case. You could index a
+   * field using this analyzer, but there's currently no use case for it (hence there's no constant
+   * for it in this enum. See
+   * https://www.elastic.co/guide/en/elasticsearch/reference/current/analysis-edgengram-tokenizer.html
    */
-  /*
-   * This name must correspond to an analyzer defined in es-settings.json !
-   */
-  public String getName() {
-    return name;
-  }
-  
-  /**
-   * The name of the multifield through which to invoke the analyzer.
-   */
-  public String getMultiFieldName() {
-    return multiFieldName;
-  }
-  
-  @Override
-  public String toString() {
-    return name;
-  }
-  
+  AUTO_COMPLETE;
+
 }

@@ -7,15 +7,20 @@ import org.col.api.vocab.Issue;
 import org.col.api.vocab.NameField;
 import org.col.api.vocab.NomStatus;
 import org.col.api.vocab.TaxonomicStatus;
+import org.col.es.annotations.Analyzers;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
+import static org.col.es.annotations.Analyzer.*;
 
 public class EsNameUsage {
   
   // 3 search fields that correspond to the "q" parameter
   // see SearchContent enumeration
+  @Analyzers({AUTO_COMPLETE})
   private String scientificName;
+  @Analyzers({AUTO_COMPLETE})
   private String authorship;
+  @Analyzers({AUTO_COMPLETE})
   private Set<String> vernacularNames;
 
   // name props

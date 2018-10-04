@@ -13,7 +13,7 @@ public class CaseInsensitiveQuery extends TermQuery {
   }
 
   private static String multi(String field) {
-    return field + "." + MultiField.CI_MULTIFIELD.getName();
+    return field + "." + MultiField.IGNORE_CASE.getName();
   }
 
 }

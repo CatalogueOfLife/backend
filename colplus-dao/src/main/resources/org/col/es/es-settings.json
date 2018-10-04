@@ -1,21 +1,36 @@
 {
 	"analysis": {
 		"analyzer": {
-			"case_insensitive_analyzer": {
+			"ignore_case": {
 				"tokenizer": "keyword",
 				"filter": "lowercase"
 			},
-			"ngram0_analyzer": {
-				"tokenizer": "ngram0",
+			"ngram": {
+				"tokenizer": "ngram",
 				"filter": "lowercase"
+			},
+			"autocomplete": {
+				"tokenizer": "autocomplete",
+				"filter": "lowercase"
+			},
+			"autocomplete_search": {
+				"tokenizer": "lowercase"
 			}
 		},
 		"tokenizer": {
-			"ngram0": {
+			"ngram": {
 				"type": "nGram",
-				"min_gram": 3,
-				"max_gram": 4,
+				"min_gram": 10,
+				"max_gram": 10,
 				"token_chars": []
+			},
+			"autocomplete": {
+				"type": "edge_ngram",
+				"min_gram": 2,
+				"max_gram": 10,
+				"token_chars": [
+					"letter"
+				]
 			}
 		}
 	},
