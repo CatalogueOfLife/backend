@@ -6,15 +6,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.annotations.VisibleForTesting;
-
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.jackson.ApiModule;
-import org.col.api.model.NameUsage;
 import org.col.common.lang.Exceptions;
 import org.col.db.mapper.BatchResultHandler;
-import org.col.db.mapper.model.IssueWrapper;
 import org.col.db.mapper.NameUsageMapper;
+import org.col.db.mapper.model.IssueWrapper;
 import org.elasticsearch.client.Request;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.ResponseListener;
@@ -28,7 +26,7 @@ import static org.col.es.EsConfig.NAME_USAGE_BASE;
 public class NameUsageIndexService {
 
   private static final Logger LOG = LoggerFactory.getLogger(NameUsageIndexService.class);
-  private static final ObjectWriter WRITER = ApiModule.MAPPER.writerFor(NameUsage.class);
+  private static final ObjectWriter WRITER = ApiModule.MAPPER.writerFor(IssueWrapper.class);
 
   private final RestClient client;
   private final EsConfig esConfig;

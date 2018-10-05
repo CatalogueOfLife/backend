@@ -11,14 +11,14 @@
 
     <resultMap id="taxonResultMap" type="IssueWrapper" autoMapping="true" extends="issueResultMap">
         <id column="id" />
-        <association property="usage" javaType="TaxonVernacularUsage">
+        <association property="usage" javaType="Taxon">
             <id property="id" column="id" />
             <result property="lifezones" column="lifezones" typeHandler="org.col.db.type.LifezoneSetTypeHandler" />
             <association property="name" javaType="Name" resultMap="org.col.db.mapper.NameMapper.nameResultMap" columnPrefix="n_" />
-            <collection property="vernacularNames" ofType="VernacularName" autoMapping="true">
-                <id property="key" column="v_key"/>
-            </collection>
         </association>
+        <collection property="vernacularNames" ofType="VernacularName" autoMapping="true">
+            <id property="key" column="v_key"/>
+        </collection>
     </resultMap>
 
     <resultMap id="synonymResultMap" type="IssueWrapper" autoMapping="true" extends="issueResultMap">

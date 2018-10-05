@@ -4,8 +4,8 @@ import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.session.ResultHandler;
 import org.col.api.model.BareName;
 import org.col.api.model.Synonym;
+import org.col.api.model.Taxon;
 import org.col.db.mapper.model.IssueWrapper;
-import org.col.db.mapper.model.TaxonVernacularUsage;
 
 /**
  * Mapper dealing with methods returning the NameUsage interface,
@@ -21,7 +21,7 @@ public interface NameUsageMapper {
 	 * and processes them with the supplied handler.
 	 * This allows a single query to efficiently stream all its values without keeping them in memory.
 	 */
-	void processDatasetTaxa(@Param("datasetKey") int datasetKey, ResultHandler<IssueWrapper<TaxonVernacularUsage>> handler);
+	void processDatasetTaxa(@Param("datasetKey") int datasetKey, ResultHandler<IssueWrapper<Taxon>> handler);
 	
 	/**
 	 * Iterates over all synonyms for a given dataset
