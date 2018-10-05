@@ -9,6 +9,7 @@ import org.apache.ibatis.session.SqlSession;
 import org.col.api.model.Page;
 import org.col.api.model.ResultPage;
 import org.col.api.model.VerbatimRecord;
+import org.col.api.vocab.Issue;
 import org.col.db.mapper.VerbatimRecordMapper;
 import org.gbif.dwc.terms.Term;
 import org.slf4j.Logger;
@@ -25,10 +26,11 @@ public class VerbatimResource {
   @GET
   public ResultPage<VerbatimRecord> list(@PathParam("datasetKey") int datasetKey,
                                          @QueryParam("type") Term type,
+                                         @QueryParam("issue") Issue issue,
                                          @Valid @BeanParam Page page,
                                          @Context SqlSession session) {
     VerbatimRecordMapper mapper = session.getMapper(VerbatimRecordMapper.class);
-    return new ResultPage<VerbatimRecord>(page, mapper.count(datasetKey, type), mapper.list(datasetKey, type, page));
+    return new ResultPage<VerbatimRecord>(page, mapper.count(datasetKey, type), mapper.list(datasetKey, type, issue, page));
   }
 
   @GET
