@@ -20,25 +20,28 @@ public class BoolQuery extends AbstractQuery {
     this.bool = new Clause();
   }
 
-  public void must(Query query) {
+  public BoolQuery must(Query query) {
     if (bool.must == null) {
       bool.must = new ArrayList<>();
     }
     bool.must.add(query);
+    return this;
   }
 
-  public void mustNot(Query query) {
+  public BoolQuery mustNot(Query query) {
     if (bool.mustNot == null) {
       bool.mustNot = new ArrayList<>();
     }
     bool.mustNot.add(query);
+    return this;
   }
 
-  public void should(Query query) {
+  public BoolQuery should(Query query) {
     if (bool.should == null) {
       bool.should = new ArrayList<>();
     }
     bool.should.add(query);
+    return this;
   }
 
 }
