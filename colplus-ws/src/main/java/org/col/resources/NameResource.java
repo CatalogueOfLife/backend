@@ -1,15 +1,19 @@
 package org.col.resources;
 
 import java.util.List;
+import java.util.Map;
 import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.UriInfo;
 
 import com.codahale.metrics.annotation.Timed;
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.model.*;
+import org.col.api.search.NameSearchParameter;
 import org.col.api.search.NameSearchRequest;
+import org.col.api.vocab.VocabularyUtils;
 import org.col.db.dao.NameDao;
 import org.col.db.mapper.NameMapper;
 import org.col.db.mapper.NameRelationMapper;
@@ -35,8 +39,19 @@ public class NameResource {
   @Timed
   @Path("search")
   public ResultPage<NameUsage> search(@BeanParam NameSearchRequest query, @Valid @BeanParam Page page,
-                                      @Context SqlSession session) {
+                                      @Context UriInfo uri, @Context SqlSession session) {
+    addQueryParams(query, uri);
+    
+    //TODO: execute ES search
     throw new NotSupportedException("Awaiting Elastic Search");
+  }
+  
+  private void addQueryParams(NameSearchRequest req, UriInfo uri) {
+    for (Map.Entry<String, List<String>> qp : uri.getQueryParameters().entrySet()) {
+      VocabularyUtils.lookup(qp.getKey(), NameSearchParameter.class).ifPresent(p -> {
+        req.addAll(p, qp.getValue());
+      });
+    }
   }
 
   @GET

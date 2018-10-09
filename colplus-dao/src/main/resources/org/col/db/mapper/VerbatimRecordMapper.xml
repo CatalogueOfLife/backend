@@ -41,6 +41,9 @@
         <if test="type != null">
             AND v.type = #{type, typeHandler=org.col.db.type.TermTypeHandler}
         </if>
+        <if test="issue != null">
+            AND v.issues @> array[${issue.ordinal()}]
+        </if>
     </sql>
 
     <resultMap id="verbatimResultMap" type="VerbatimRecord" autoMapping="true">

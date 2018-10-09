@@ -6,9 +6,9 @@ import org.apache.ibatis.session.ResultContext;
 import org.apache.ibatis.session.ResultHandler;
 import org.col.api.model.BareName;
 import org.col.api.model.Synonym;
+import org.col.api.model.Taxon;
 import org.col.api.model.VernacularName;
 import org.col.db.mapper.model.IssueWrapper;
-import org.col.db.mapper.model.TaxonVernacularUsage;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -26,10 +26,10 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
   
   @Test
   public void processDatasetTaxa() throws Exception {
-    mapper().processDatasetTaxa(NAME4.getDatasetKey(), new ResultHandler<IssueWrapper<TaxonVernacularUsage>>() {
-      public void handleResult(ResultContext<? extends IssueWrapper<TaxonVernacularUsage>> ctx) {
+    mapper().processDatasetTaxa(NAME4.getDatasetKey(), new ResultHandler<IssueWrapper<Taxon>>() {
+      public void handleResult(ResultContext<? extends IssueWrapper<Taxon>> ctx) {
         counter.incrementAndGet();
-        for (VernacularName v : ctx.getResultObject().getUsage().getVernacularNames()) {
+        for (VernacularName v : ctx.getResultObject().getVernacularNames()) {
           assertNotNull(v.getName());
         }
       }

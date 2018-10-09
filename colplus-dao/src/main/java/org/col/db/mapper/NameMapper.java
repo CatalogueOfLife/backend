@@ -26,7 +26,7 @@ public interface NameMapper {
 
 	Name get(@Param("datasetKey") int datasetKey, @Param("id") String id);
 
-	Name getByTaxon(@Param("taxonId") String taxonId);
+	Name getByTaxon(@Param("datasetKey") int datasetKey, @Param("taxonId") String taxonId);
 
   /**
    * Creates a new name.

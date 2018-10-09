@@ -1,16 +1,19 @@
 package org.col.db.mapper.model;
 
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
 import org.col.api.model.NameUsage;
+import org.col.api.model.VernacularName;
 import org.col.api.vocab.Issue;
 
 public class IssueWrapper<T extends NameUsage> {
   
   private T usage;
   private Set<Issue> issues;
+  private List<VernacularName> vernacularNames;
   
   public IssueWrapper() {
   }
@@ -36,17 +39,27 @@ public class IssueWrapper<T extends NameUsage> {
     this.issues = issues;
   }
   
+  public List<VernacularName> getVernacularNames() {
+    return vernacularNames;
+  }
+  
+  public void setVernacularNames(List<VernacularName> vernacularNames) {
+    this.vernacularNames = vernacularNames;
+  }
+  
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     IssueWrapper<?> that = (IssueWrapper<?>) o;
     return Objects.equals(usage, that.usage) &&
-        Objects.equals(issues, that.issues);
+        Objects.equals(issues, that.issues) &&
+        Objects.equals(vernacularNames, that.vernacularNames);
   }
   
   @Override
   public int hashCode() {
-    return Objects.hash(usage, issues);
+    
+    return Objects.hash(usage, issues, vernacularNames);
   }
 }
