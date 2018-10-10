@@ -150,7 +150,7 @@
     <select id="listByReference" resultMap="nameResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
-        WHERE n.published_in_id = #{refId}
+        WHERE n.dataset_key = #{datasetKey} AND n.published_in_id = #{refId}
         ORDER BY id
     </select>
 
@@ -168,7 +168,7 @@
     <select id="get" resultMap="nameResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
-        WHERE n.id = #{id}
+        WHERE n.dataset_key = #{datasetKey} AND n.id = #{id}
     </select>
 
     <select id="getByTaxon" resultMap="nameResultMap">
@@ -183,18 +183,11 @@
         VALUES (<include refid="PROPS" />)
     </insert>
 
-    <update id="updateHomotypicNameKey" parameterType="Name" useGeneratedKeys="true" keyProperty="key">
-        UPDATE name_${datasetKey}
-        SET homotypic_name_id = #{homoId}
-        WHERE id = #{id}
-    </update>
-
-
     <select id="homotypicGroup" resultMap="nameResultMap">
         SELECT <include refid="SELECT" />
         FROM name ns
           JOIN name n ON n.homotypic_name_id=ns.homotypic_name_id
-        WHERE ns.id=#{id}
+        WHERE ns.dataset_key = #{datasetKey} AND ns.id=#{id}
     </select>
 
     <select id="indexGroup" resultMap="nameResultMap">
