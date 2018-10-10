@@ -52,7 +52,7 @@ public class ApiModule extends SimpleModule {
     
     // then key deserializers
     addKeyDeserializer(Term.class, new TermSerde.TermKeyDeserializer());
-    addKeyDeserializer(Language.class, new CountrySerde.KeyDeserializer());
+    addKeyDeserializer(Country.class, new CountrySerde.KeyDeserializer());
     addKeyDeserializer(Language.class, new LanguageSerde.KeyDeserializer());
     
     // then key serializers
