@@ -35,10 +35,13 @@ class ParamTranslator {
       String field = EsFieldLookup.INSTANCE.get(param);
       return new BoolQuery().mustNot(new IsNotNullQuery(field));
     }
+    if (values.size() == 1) {
+      return translateSingle();
+    }
     return translateMultiple();
   }
 
-  private Query translateMultiple() {
+  private Query translateMultiple() throws InvalidQueryException {
     String field = EsFieldLookup.INSTANCE.get(param);
     if (param.type() == String.class) {
       return new TermsQuery(field, request.get(param));
@@ -58,6 +61,10 @@ class ParamTranslator {
       return new TermQuery(field, request.get(param).get(0));
     }
     if (param.type() == Integer.class) {
+      return new TermQuery(field, getInt());
+    }
+    if (param.type() == Integer.class) {
+      return new TermQuery(field, getInt());
     }
     throw new AssertionError("Unexpected search parameter type");
   }
@@ -71,8 +78,8 @@ class ParamTranslator {
     try {
       return Integer.valueOf(request.get(param).get(0));
     } catch (NumberFormatException e) {
-      String fmt = "Invalid value for parameter %s: %s";
-      String msg = String.format(fmt, param,request.get(param).get(0));
+      String fmt = "Non-integer value for parameter %s: %s";
+      String msg = String.format(fmt, param, request.get(param).get(0));
       throw new InvalidQueryException(msg);
     }
   }
@@ -84,8 +91,14 @@ class ParamTranslator {
         .collect(Collectors.toList());
   }
 
-  private List<Integer> getInts() {
-    return request.get(param).stream().map(Integer::valueOf).collect(Collectors.toList());
+  private List<Integer> getInts() throws InvalidQueryException {
+    try {
+      return request.get(param).stream().map(Integer::valueOf).collect(Collectors.toList());
+    } catch (NumberFormatException e) {
+      String fmt = "Non-integer value for parameter %s";
+      String msg = String.format(fmt, param);
+      throw new InvalidQueryException(msg);
+    }
   }
 
 }
