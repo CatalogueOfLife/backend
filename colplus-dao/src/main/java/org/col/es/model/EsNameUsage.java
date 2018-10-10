@@ -14,13 +14,8 @@ import static org.col.es.annotations.Analyzer.*;
 
 public class EsNameUsage {
   
-  // 3 search fields that correspond to the "q" parameter
-  // see SearchContent enumeration
-  @Analyzers({AUTO_COMPLETE})
   private String scientificName;
-  @Analyzers({AUTO_COMPLETE})
   private String authorship;
-  @Analyzers({AUTO_COMPLETE})
   private Set<String> vernacularNames;
 
   // name props
@@ -38,6 +33,7 @@ public class EsNameUsage {
   // other
   private Set<Issue> issues;
   
+  @Analyzers({AUTO_COMPLETE})
   public String getScientificName() {
     return scientificName;
   }
@@ -46,6 +42,7 @@ public class EsNameUsage {
     this.scientificName = scientificName;
   }
   
+  @Analyzers({AUTO_COMPLETE})
   public String getAuthorship() {
     return authorship;
   }
@@ -54,6 +51,7 @@ public class EsNameUsage {
     this.authorship = authorship;
   }
   
+  @Analyzers({AUTO_COMPLETE})
   public Set<String> getVernacularNames() {
     return vernacularNames;
   }

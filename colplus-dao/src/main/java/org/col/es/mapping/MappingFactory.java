@@ -190,7 +190,7 @@ public class MappingFactory<T> {
           kf.addMultiField(NGRAM);
           break;
         case AUTO_COMPLETE:
-          kf.addMultiField(NGRAM);
+          kf.addMultiField(AUTO_COMPLETE);
           break;
         default:
           break;
