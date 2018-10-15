@@ -10,7 +10,7 @@ import static org.col.common.text.StringUtils.foldToAscii;
  */
 public class SciNameNormalizer {
 
-  private static final Pattern suffix_a = Pattern.compile("(?:on|um|us|a)$");
+  private static final Pattern suffix_a = Pattern.compile("(?:on|um|us|a)$"); // is->e
   private static final Pattern suffix_i = Pattern.compile("ei$");
   private static final Pattern i = Pattern.compile("(?<!\\b)[jyi]+");
   private static final Pattern trh = Pattern.compile("([gtr])h", Pattern.CASE_INSENSITIVE);
