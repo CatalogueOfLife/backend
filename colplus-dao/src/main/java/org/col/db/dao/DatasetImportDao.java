@@ -76,6 +76,13 @@ public class DatasetImportDao {
 
     return di;
   }
+  
+  public DatasetImport getLast(Dataset d) {
+    try (SqlSession session = factory.openSession(true)){
+      List<DatasetImport> imports = session.getMapper(DatasetImportMapper.class).listByDataset(d.getKey(), null, 1);
+      return imports == null || imports.isEmpty() ? null : imports.get(0);
+    }
+  }
 
   /**
    * Updates a running dataset import instance with metrics and success state.

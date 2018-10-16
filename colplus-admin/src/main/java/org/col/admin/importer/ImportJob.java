@@ -18,6 +18,7 @@ import org.col.api.model.Dataset;
 import org.col.api.model.DatasetImport;
 import org.col.api.vocab.ImportState;
 import org.col.common.concurrent.StartNotifier;
+import org.col.common.io.ChecksumUtils;
 import org.col.common.io.CompressionUtil;
 import org.col.common.io.DownloadUtil;
 import org.col.common.util.LoggingUtils;
@@ -39,6 +40,7 @@ public class ImportJob implements Runnable {
   private final boolean force;
   private final Dataset dataset;
   private DatasetImport di;
+  private DatasetImport last;
   private final AdminServerConfig cfg;
   private final DownloadUtil downloader;
   private final SqlSessionFactory factory;
@@ -98,17 +100,20 @@ public class ImportJob implements Runnable {
     NeoDb store = null;
 
     try {
+      last = dao.getLast(dataset);
       di = dao.createDownloading(dataset);
-      LOG.info("Start new import attempt {} for dataset {}: {}", di.getAttempt(), datasetKey,
-          dataset.getTitle());
-
+      LOG.info("Start new import attempt {} for dataset {}: {}", di.getAttempt(), datasetKey, dataset.getTitle());
+  
       File source = cfg.normalizer.source(datasetKey);
       source.getParentFile().mkdirs();
 
       checkIfCancelled();
-      LOG.info("Downloading sources for dataset {} from {} to {}", datasetKey, di.getDownloadUri(),
-          source);
-      final boolean isModified = downloader.downloadIfModified(di.getDownloadUri(), source);
+      LOG.info("Downloading sources for dataset {} from {} to {}", datasetKey, di.getDownloadUri(), source);
+      boolean isModified = downloader.downloadIfModified(di.getDownloadUri(), source);
+      // also compare archive hash if file was downloaded
+      if (isModified) {
+        isModified = lastMD5Different(source);
+      }
       if (isModified || force) {
         if (!isModified) {
           LOG.info("Force reimport of unchanged archive {}", datasetKey);
@@ -173,6 +178,20 @@ public class ImportJob implements Runnable {
     }
   }
 
+  /**
+   * See https://github.com/Sp2000/colplus-backend/issues/78
+   * @return true if the source file has a different MD5 hash as the last imported file
+   */
+  private boolean lastMD5Different(File source) throws IOException {
+    di.setMd5(ChecksumUtils.getMD5Checksum(source));
+    if (last != null) {
+      LOG.debug("Compare with last MD5 {}", last.getMd5());
+      return di.getMd5().equals(last.getMd5());
+    } else {
+      return true;
+    }
+  }
+  
   @Override
   public boolean equals(Object o) {
     if (this == o)

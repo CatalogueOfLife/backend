@@ -43,6 +43,12 @@ public class DatasetImport {
    */
   private LocalDateTime finished;
   private String error;
+
+  /**
+   * MD5 Hash of raw archive file.
+   * Present only if downloaded.
+   */
+  private String md5;
   
   // metrics
   private Integer verbatimCount;
@@ -124,6 +130,14 @@ public class DatasetImport {
   
   public void setError(String error) {
     this.error = error;
+  }
+  
+  public String getMd5() {
+    return md5;
+  }
+  
+  public void setMd5(String md5) {
+    this.md5 = md5;
   }
   
   public Integer getVerbatimCount() {
@@ -267,6 +281,7 @@ public class DatasetImport {
         Objects.equals(started, that.started) &&
         Objects.equals(finished, that.finished) &&
         Objects.equals(error, that.error) &&
+        Objects.equals(md5, that.md5) &&
         Objects.equals(verbatimCount, that.verbatimCount) &&
         Objects.equals(nameCount, that.nameCount) &&
         Objects.equals(taxonCount, that.taxonCount) &&
@@ -288,7 +303,7 @@ public class DatasetImport {
   @Override
   public int hashCode() {
     
-    return Objects.hash(datasetKey, attempt, state, downloadUri, download, started, finished, error, verbatimCount, nameCount, taxonCount, referenceCount, vernacularCount, distributionCount, issuesCount, namesByRankCount, namesByTypeCount, vernacularsByLanguageCount, distributionsByGazetteerCount, namesByOriginCount, usagesByStatusCount, namesByStatusCount, nameRelationsByTypeCount, verbatimByTypeCount);
+    return Objects.hash(datasetKey, attempt, state, downloadUri, download, started, finished, error, md5, verbatimCount, nameCount, taxonCount, referenceCount, vernacularCount, distributionCount, issuesCount, namesByRankCount, namesByTypeCount, vernacularsByLanguageCount, distributionsByGazetteerCount, namesByOriginCount, usagesByStatusCount, namesByStatusCount, nameRelationsByTypeCount, verbatimByTypeCount);
   }
   
   public String attempt() {

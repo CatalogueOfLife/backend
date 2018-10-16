@@ -19,5 +19,12 @@ public enum DataFormat {
   /**
    * TDWG Taxonomic Concept Schema
    */
-  TCS
+  TCS,
+  
+  /**
+   * COL Data Package
+   * See https://github.com/CoL-Data/package-specs
+   */
+  COLDP
+  
 }

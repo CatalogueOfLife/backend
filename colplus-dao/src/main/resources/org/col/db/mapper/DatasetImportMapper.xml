@@ -110,6 +110,12 @@
         <result property="verbatimByTypeCount" column="verbatim_by_type_count" typeHandler="org.col.db.type2.HstoreTermCountTypeHandler"/>
     </resultMap>
 
+    <select id="get" resultMap="datasetImportResultMap">
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
+        WHERE dataset_key=#{key} AND attempt=#{attempt}
+    </select>
+
     <select id="count" resultType="integer">
         SELECT count(*)
         FROM <include refid="FROM" />

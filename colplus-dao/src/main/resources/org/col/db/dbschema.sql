@@ -199,6 +199,7 @@ CREATE TABLE dataset_import (
   attempt INTEGER NOT NULL,
   state INTEGER NOT NULL,
   error TEXT,
+  md5 TEXT,
   started TIMESTAMP WITHOUT TIME ZONE,
   finished TIMESTAMP WITHOUT TIME ZONE,
   download_uri TEXT,
