@@ -34,14 +34,16 @@ public enum RelType implements RelationshipType {
 
   BASED_ON("ex", NomRelType.BASED_ON),
 
-  REPLACEMENT_NAME_OF("nnov", NomRelType.REPLACEMENT_NAME),
+  REPLACEMENT_NAME_OF("nov", NomRelType.REPLACEMENT_NAME),
 
   CONSERVED_AGAINST("cons", NomRelType.CONSERVED),
 
   LATER_HOMONYM_OF("hom", NomRelType.LATER_HOMONYM),
 
   SUPERFLUOUS_BECAUSE_OF("superfl", NomRelType.SUPERFLUOUS),
-
+  
+  TYPE("typ", NomRelType.TYPE),
+  
   HOMOTYPIC("ht", NomRelType.HOMOTYPIC);
 
   public final NomRelType nomRelType;
