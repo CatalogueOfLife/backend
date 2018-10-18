@@ -107,6 +107,8 @@ CREATE TABLE dataset (
   logo TEXT,
   data_format INTEGER,
   data_access TEXT,
+  cluster BOOLEAN,
+  origin INTEGER NOT NULL,
   import_frequency INTEGER NOT NULL DEFAULT 7,
   code INTEGER,
   notes text,
