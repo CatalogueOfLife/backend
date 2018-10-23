@@ -1,7 +1,6 @@
 package org.col.api.model;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Objects;
 
 /**
@@ -12,9 +11,7 @@ public class Sector implements IntKey {
   private Integer key;
   private Integer colSourceKey;
   private NameRef root;
-  private List<NameRef> exclude;
   private NameRef attachment;
-  private List<NameRef> suppress;
   private LocalDateTime created;
   private LocalDateTime modified;
   
@@ -53,17 +50,6 @@ public class Sector implements IntKey {
   }
   
   /**
-   * Optional list of taxa within the descendants of root to exclude from this sector definition
-   */
-  public List<NameRef> getExclude() {
-    return exclude;
-  }
-  
-  public void setExclude(List<NameRef> exclude) {
-    this.exclude = exclude;
-  }
-  
-  /**
    * The attachment point in the CoL tree, i.e. the CoL parent taxon for the sector root
    */
   public NameRef getAttachment() {
@@ -72,19 +58,6 @@ public class Sector implements IntKey {
   
   public void setAttachment(NameRef attachment) {
     this.attachment = attachment;
-  }
-  
-  /**
-   * Optional list of CoL tree taxa that should be suppressed when this sector is attached.
-   * E.g. the CoL management classification might define an alternative taxonomy that uses
-   * different taxa which are covered by this sector already.
-   */
-  public List<NameRef> getSuppress() {
-    return suppress;
-  }
-  
-  public void setSuppress(List<NameRef> suppress) {
-    this.suppress = suppress;
   }
   
   public LocalDateTime getCreated() {
@@ -114,16 +87,14 @@ public class Sector implements IntKey {
     return Objects.equals(key, sector.key) &&
         Objects.equals(colSourceKey, sector.colSourceKey) &&
         Objects.equals(root, sector.root) &&
-        Objects.equals(exclude, sector.exclude) &&
         Objects.equals(attachment, sector.attachment) &&
-        Objects.equals(suppress, sector.suppress) &&
         Objects.equals(created, sector.created) &&
         Objects.equals(modified, sector.modified);
   }
   
   @Override
   public int hashCode() {
-    return Objects.hash(key, colSourceKey, root, exclude, attachment, suppress, created, modified);
+    return Objects.hash(key, colSourceKey, root, attachment, created, modified);
   }
   
   @Override

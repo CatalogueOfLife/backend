@@ -113,12 +113,15 @@ public enum NomRelType {
    */
   SUPERFLUOUS(true, NomStatus.ILLEGITIMATE, null),
   
-  
   /**
    * A relation indicating two homotypic names, i.e. objective or nomenclatural synonymy, but not further specifying why.
    */
-  HOMOTYPIC(true, null, null);
+  HOMOTYPIC(true, null, null),
   
+  /**
+   * Current name is the type name (species/genus) for the related higher ranked name.
+   */
+  TYPE(true, null, null);
   
   private final Boolean homotypic;
   private final NomStatus from;

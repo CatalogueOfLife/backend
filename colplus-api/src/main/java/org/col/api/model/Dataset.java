@@ -42,6 +42,9 @@ public class Dataset implements SourceMetadata, IntKey {
   private DataFormat dataFormat;
   @AbsoluteURI
   private URI dataAccess;
+  private boolean cluster = false;
+  @NotNull
+  private DatasetOrigin origin = DatasetOrigin.UPLOADED;
   private Frequency importFrequency;
   private NomCode code;
   private Integer size;
@@ -210,6 +213,26 @@ public class Dataset implements SourceMetadata, IntKey {
     this.dataAccess = dataAccess;
   }
   
+  /**
+   * https://github.com/Sp2000/colplus-backend/issues/163
+   * @return true if multiple col sources are allowed
+   */
+  public boolean isCluster() {
+    return cluster;
+  }
+  
+  public void setCluster(boolean cluster) {
+    this.cluster = cluster;
+  }
+  
+  public DatasetOrigin getOrigin() {
+    return origin;
+  }
+  
+  public void setOrigin(DatasetOrigin origin) {
+    this.origin = origin;
+  }
+  
   public Frequency getImportFrequency() {
     return importFrequency;
   }
@@ -281,12 +304,14 @@ public class Dataset implements SourceMetadata, IntKey {
     this.deleted = deleted;
   }
   
+  
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     Dataset dataset = (Dataset) o;
-    return Objects.equals(key, dataset.key) &&
+    return cluster == dataset.cluster &&
+        Objects.equals(key, dataset.key) &&
         type == dataset.type &&
         Objects.equals(title, dataset.title) &&
         Objects.equals(gbifKey, dataset.gbifKey) &&
@@ -302,6 +327,7 @@ public class Dataset implements SourceMetadata, IntKey {
         Objects.equals(logo, dataset.logo) &&
         dataFormat == dataset.dataFormat &&
         Objects.equals(dataAccess, dataset.dataAccess) &&
+        origin == dataset.origin &&
         importFrequency == dataset.importFrequency &&
         code == dataset.code &&
         Objects.equals(size, dataset.size) &&
@@ -315,7 +341,7 @@ public class Dataset implements SourceMetadata, IntKey {
   @Override
   public int hashCode() {
     
-    return Objects.hash(key, type, title, gbifKey, gbifPublisherKey, description, organisation, contactPerson, authorsAndEditors, license, version, released, homepage, logo, dataFormat, dataAccess, importFrequency, code, size, notes, catalogue, created, modified, deleted);
+    return Objects.hash(key, type, title, gbifKey, gbifPublisherKey, description, organisation, contactPerson, authorsAndEditors, license, version, released, homepage, logo, dataFormat, dataAccess, cluster, origin, importFrequency, code, size, notes, catalogue, created, modified, deleted);
   }
   
   @Override

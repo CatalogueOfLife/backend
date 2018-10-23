@@ -20,6 +20,8 @@ import org.gbif.nameparser.api.Rank;
  * The MyBatis mapper interface for DatasetImport.
  */
 public interface DatasetImportMapper {
+  
+  DatasetImport get(@Param("key") int datasetKey, @Param("attempt") int attempt);
 
   /**
    * Count all imports by their state
