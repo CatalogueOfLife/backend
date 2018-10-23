@@ -26,8 +26,8 @@ import org.codehaus.stax2.XMLStreamReader2;
 import org.col.admin.importer.InsertMetadata;
 import org.col.admin.importer.NormalizationFailedException;
 import org.col.api.model.VerbatimRecord;
-import org.col.api.vocab.ColTerm;
-import org.col.api.vocab.VocabularyUtils;
+import org.col.api.vocab.ColDwcTerm;
+import org.col.api.util.VocabularyUtils;
 import org.col.common.io.CharsetDetectingStream;
 import org.col.common.io.PathUtils;
 import org.col.csv.CsvReader;
@@ -56,12 +56,12 @@ public class DwcaReader extends CsvReader {
       .put(DwcTerm.Event, DwcTerm.eventID)
       .put(DwcTerm.Taxon, DwcTerm.taxonID)
       .put(DwcTerm.MeasurementOrFact, DwcTerm.measurementID)
-      .put(ColTerm.NameRelations, DwcTerm.taxonID)
+      .put(ColDwcTerm.NameRelations, DwcTerm.taxonID)
       .build();
 
   static {
     // make sure we are aware of ColTerms
-    TermFactory.instance().registerTermEnum(ColTerm.class);
+    TermFactory.instance().registerTermEnum(ColDwcTerm.class);
     TermFactory.instance().registerTerm(DWCA_ID);
   }
 

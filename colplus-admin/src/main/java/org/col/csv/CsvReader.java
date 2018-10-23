@@ -29,7 +29,7 @@ import com.univocity.parsers.common.TextParsingException;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
 import org.col.api.model.VerbatimRecord;
-import org.col.api.vocab.VocabularyUtils;
+import org.col.api.util.VocabularyUtils;
 import org.col.common.io.CharsetDetectingStream;
 import org.col.common.io.PathUtils;
 import org.gbif.dwc.terms.AcefTerm;

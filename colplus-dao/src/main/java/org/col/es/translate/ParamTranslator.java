@@ -5,7 +5,7 @@ import java.util.stream.Collectors;
 
 import org.col.api.search.NameSearchParameter;
 import org.col.api.search.NameSearchRequest;
-import org.col.api.vocab.VocabularyUtils;
+import org.col.api.util.VocabularyUtils;
 import org.col.es.InvalidQueryException;
 import org.col.es.query.BoolQuery;
 import org.col.es.query.IsNotNullQuery;

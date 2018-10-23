@@ -7,32 +7,36 @@ import javax.ws.rs.ext.Provider;
 
 import io.dropwizard.jersey.errors.LoggingExceptionMapper;
 import org.apache.ibatis.exceptions.PersistenceException;
+import org.postgresql.util.PSQLException;
 
 /**
- * Checks PersistenceExceptions to see if they are caused by missing dataset partitions.
+ * Checks PersistenceExceptions for certain known conditions that are not server errors.
+ * 1) see if they are caused by missing dataset partitions which are http 404
+ * 2) check for violated unique constraints which are considered 400.
  */
 @Provider
 public class PersistenceExceptionMapper extends LoggingExceptionMapper<PersistenceException> {
 
   private final static Pattern RELATION = Pattern.compile("relation \"[a-z_]+_([0-9]+)\" does not exist");
-
-  private Integer datasetNotFound(PersistenceException e) {
-    System.out.println(e.getMessage());
-    System.out.println(e.getCause().getMessage());
-    Matcher m = RELATION.matcher(e.getCause().getMessage());
-    if (m.find()) {
-      return Integer.parseInt(m.group(1));
-    }
-    return null;
-  }
-
+  
   @Override
   public Response toResponse(PersistenceException e) {
-    Integer datasetKey = datasetNotFound(e);
-    if (datasetKey != null) {
-      return JsonExceptionMapperBase.jsonErrorResponse(Response.Status.NOT_FOUND, "Dataset "+datasetKey+" does not exist");
-    } else {
-      return super.toResponse(e);
+    if (e.getCause() != null && e.getCause() instanceof PSQLException) {
+      PSQLException pe = (PSQLException) e.getCause();
+      // All Psql Error codes starting with 23 are constraint violations.
+      // https://www.postgresql.org/docs/9.4/static/errcodes-appendix.html
+      if (pe.getSQLState() != null && pe.getSQLState().startsWith("23")) {
+        return JsonExceptionMapperBase.jsonErrorResponse(Response.Status.BAD_REQUEST, e.getMessage());
+      }
     }
+    
+    Matcher m = RELATION.matcher(e.getCause().getMessage());
+    if (m.find()) {
+      return JsonExceptionMapperBase.jsonErrorResponse(Response.Status.NOT_FOUND,
+          "Dataset "+Integer.parseInt(m.group(1))+" does not exist");
+    }
+
+    return super.toResponse(e);
   }
+  
 }

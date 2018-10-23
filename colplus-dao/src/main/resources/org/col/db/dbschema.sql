@@ -178,7 +178,8 @@ CREATE TABLE sector (
   attach_authorship TEXT,
   attach_rank rank,
   created TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW(),
-  modified TIMESTAMP WITHOUT TIME ZONE
+  modified TIMESTAMP WITHOUT TIME ZONE,
+  UNIQUE (col_source_key, root_id)
 );
 
 CREATE TABLE decision (
@@ -372,4 +373,5 @@ IMMUTABLE;
 -- INDICES
 CREATE index ON dataset (gbif_key);
 CREATE index ON dataset_import (started);
-
+CREATE index ON sector (root_id);
+CREATE index ON sector (attach_id);

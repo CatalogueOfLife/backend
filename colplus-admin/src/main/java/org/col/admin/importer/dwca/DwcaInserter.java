@@ -11,7 +11,7 @@ import org.col.admin.importer.neo.NeoDb;
 import org.col.admin.importer.neo.NodeBatchProcessor;
 import org.col.admin.importer.reference.ReferenceFactory;
 import org.col.api.model.Dataset;
-import org.col.api.vocab.ColTerm;
+import org.col.api.vocab.ColDwcTerm;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.GbifTerm;
 import org.neo4j.graphdb.Transaction;
@@ -65,10 +65,10 @@ public class DwcaInserter extends NeoInserter {
   @Override
   public void postBatchInsert() throws NormalizationFailedException {
     try (Transaction tx = store.getNeo().beginTx()) {
-      insertNameRelations(reader, ColTerm.NameRelations,
+      insertNameRelations(reader, ColDwcTerm.NameRelations,
           inter::interpretNameRelations,
           DwcaReader.DWCA_ID,
-          ColTerm.relatedNameUsageID
+          ColDwcTerm.relatedNameUsageID
       );
 
       insertTaxonEntities(reader, GbifTerm.Distribution,

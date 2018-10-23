@@ -68,12 +68,12 @@ public class DwcInterpreter extends InterpreterBase {
 
   Optional<NeoNameRel> interpretNameRelations(VerbatimRecord rec) {
     NeoNameRel rel = new NeoNameRel();
-    SafeParser<NomRelType> type = SafeParser.parse(NomRelTypeParser.PARSER, rec.get(ColTerm.relationType));
+    SafeParser<NomRelType> type = SafeParser.parse(NomRelTypeParser.PARSER, rec.get(ColDwcTerm.relationType));
     if (type.isPresent()) {
       rel.setType(RelType.from(type.get()));
-      rel.setNote(rec.get(ColTerm.relationRemarks));
-      if (rec.hasTerm(ColTerm.publishedIn)) {
-        Reference ref = refFactory.fromDWC(rec.get(ColTerm.publishedInID), rec.get(ColTerm.publishedIn), null, rec);
+      rel.setNote(rec.get(ColDwcTerm.relationRemarks));
+      if (rec.hasTerm(ColDwcTerm.publishedIn)) {
+        Reference ref = refFactory.fromDWC(rec.get(ColDwcTerm.publishedInID), rec.get(ColDwcTerm.publishedIn), null, rec);
         rel.setRefId(ref.getId());
       }
       return Optional.of(rel);
@@ -165,15 +165,15 @@ public class DwcInterpreter extends InterpreterBase {
     t.taxon.setFossil(null);
     t.taxon.setRecent(null);
     // t.setLifezones();
-    if (v.hasTerm(ColTerm.speciesEstimate)) {
-      Integer est = v.getInt(ColTerm.speciesEstimate, Issue.ESTIMATES_INVALID);
+    if (v.hasTerm(ColDwcTerm.speciesEstimate)) {
+      Integer est = v.getInt(ColDwcTerm.speciesEstimate, Issue.ESTIMATES_INVALID);
       if (est != null && est != 0) {
         if (est < 0) {
           v.addIssue(Issue.ESTIMATES_INVALID);
         } else {
           t.taxon.setSpeciesEstimate(est);
-          if (v.hasTerm(ColTerm.speciesEstimateReference)) {
-            Reference ref = refFactory.fromCitation(null, v.get(ColTerm.speciesEstimateReference), v);
+          if (v.hasTerm(ColDwcTerm.speciesEstimateReference)) {
+            Reference ref = refFactory.fromCitation(null, v.get(ColDwcTerm.speciesEstimateReference), v);
             if (ref != null) {
               t.taxon.setSpeciesEstimateReferenceId(ref.getId());
             }

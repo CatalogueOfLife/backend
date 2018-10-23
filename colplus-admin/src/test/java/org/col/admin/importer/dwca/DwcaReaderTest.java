@@ -3,7 +3,7 @@ package org.col.admin.importer.dwca;
 import java.nio.file.Paths;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.col.api.vocab.VocabularyUtils;
+import org.col.api.util.VocabularyUtils;
 import org.col.common.io.PathUtils;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.GbifTerm;

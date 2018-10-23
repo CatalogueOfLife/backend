@@ -16,6 +16,8 @@
 package org.col.api.vocab;
 
 
+import org.col.api.util.VocabularyUtils;
+
 /**
  * Enumeration for all continents based on the 7 number model found on
  * <a href="http://en.wikipedia.org/wiki/Continent#Number_of_continents">Wikipedia</a>.

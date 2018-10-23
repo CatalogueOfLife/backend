@@ -6,9 +6,9 @@ import org.gbif.dwc.terms.AlternativeNames;
 import org.gbif.dwc.terms.Term;
 
 /**
- * New CoL terms used for name relations and other CoL+ achievements.
+ * New CoL terms used for name relations and other CoL+ achievements in the context of Darwin Core archives.
  */
-public enum ColTerm implements Term, AlternativeNames {
+public enum ColDwcTerm implements Term, AlternativeNames {
   NameRelations(true),
   relatedNameUsageID,
   relationType,
@@ -18,19 +18,19 @@ public enum ColTerm implements Term, AlternativeNames {
   speciesEstimate,
   speciesEstimateReference;
   
-  private static final String PREFIX = "col";
-  private static final String NS = "http://rs.col.plus/terms/";
+  private static final String PREFIX = "cold";
+  private static final String NS = "http://rs.col.plus/terms/dwc/";
   private static final URI NS_URI = URI.create(NS);
   
   private final boolean isClass;
   private final String[] alternatives;
   
-  ColTerm(boolean isClass, String... alternatives) {
+  ColDwcTerm(boolean isClass, String... alternatives) {
     this.alternatives = alternatives;
     this.isClass = isClass;
   }
   
-  ColTerm(String... alternatives) {
+  ColDwcTerm(String... alternatives) {
     this(false, alternatives);
   }
   

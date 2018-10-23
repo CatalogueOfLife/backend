@@ -20,6 +20,7 @@ public class TreeNode {
   private int speciesCount;
   private Integer speciesEstimate;
   private String speciesEstimateReferenceId;
+  private Sector sector;
   
   public String getId() {
     return id;

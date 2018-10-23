@@ -1,5 +1,6 @@
 package org.col.db.mapper;
 
+import org.apache.ibatis.exceptions.PersistenceException;
 import org.col.api.model.ColSource;
 import org.col.api.model.Sector;
 import org.junit.Before;
@@ -34,6 +35,17 @@ public class SectorMapperTest extends MapperTestBase<SectorMapper> {
     d2.setCreated(null);
 
     assertEquals(d1, d2);
+  }
+  
+  @Test(expected = PersistenceException.class)
+  public void unique() throws Exception {
+    Sector d1 = create(source.getKey());
+    mapper().create(d1);
+    commit();
+  
+    d1.setKey(null);
+    mapper().create(d1);
+    commit();
   }
 
   @Test

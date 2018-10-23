@@ -1,5 +1,6 @@
 package org.col.api.vocab;
 
+import org.col.api.util.VocabularyUtils;
 import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.dwc.terms.DwcTerm;
 import org.junit.Test;

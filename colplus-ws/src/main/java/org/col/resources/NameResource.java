@@ -13,7 +13,7 @@ import org.apache.ibatis.session.SqlSession;
 import org.col.api.model.*;
 import org.col.api.search.NameSearchParameter;
 import org.col.api.search.NameSearchRequest;
-import org.col.api.vocab.VocabularyUtils;
+import org.col.api.util.VocabularyUtils;
 import org.col.db.dao.NameDao;
 import org.col.db.mapper.NameMapper;
 import org.col.db.mapper.NameRelationMapper;
