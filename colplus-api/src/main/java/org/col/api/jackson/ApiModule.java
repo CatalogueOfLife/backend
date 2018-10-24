@@ -90,7 +90,7 @@ public class ApiModule extends SimpleModule {
     }
   }
   
-  private static String enumValueName(Enum<?> val) {
+  public static String enumValueName(Enum<?> val) {
     return val.name().toLowerCase().replaceAll("_+", " ");
   }
   

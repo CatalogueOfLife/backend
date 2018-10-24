@@ -1,6 +1,7 @@
 package org.col.api.search;
 
 import org.apache.commons.lang3.StringUtils;
+import org.col.api.util.VocabularyUtils;
 import org.col.api.vocab.*;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;

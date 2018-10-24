@@ -1,7 +1,7 @@
 package org.col.parser;
 
 import org.col.api.vocab.Language;
-import org.col.api.vocab.VocabularyUtils;
+import org.col.api.util.VocabularyUtils;
 
 /**
  * CoL language parser wrapping the GBIF language parser

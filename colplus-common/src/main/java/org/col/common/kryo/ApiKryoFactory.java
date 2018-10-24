@@ -98,7 +98,7 @@ public class ApiKryoFactory implements KryoFactory {
     kryo.register(TypeStatus.class);
 
     // term enums
-    TermFactory.instance().registerTermEnum(ColTerm.class);
+    TermFactory.instance().registerTermEnum(ColDwcTerm.class);
     for (Class cl : TermFactory.instance().listRegisteredTermEnums()) {
       kryo.register(cl);
     }

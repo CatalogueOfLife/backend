@@ -59,6 +59,6 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
         assertNotNull(ctx.getResultObject().getUsage().getName());
       }
     });
-    Assert.assertEquals(0, counter.get());
+    Assert.assertEquals(1, counter.get());
   }
 }

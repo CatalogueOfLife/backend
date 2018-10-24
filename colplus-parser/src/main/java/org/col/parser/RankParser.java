@@ -1,6 +1,6 @@
 package org.col.parser;
 
-import org.col.api.vocab.VocabularyUtils;
+import org.col.api.util.VocabularyUtils;
 import org.gbif.nameparser.api.Rank;
 
 /**

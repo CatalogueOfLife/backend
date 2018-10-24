@@ -19,7 +19,7 @@ import org.col.admin.matching.NameIndex;
 import org.col.admin.matching.NameIndexFactory;
 import org.col.admin.resources.ImporterResource;
 import org.col.admin.resources.MatchingResource;
-import org.col.api.vocab.ColTerm;
+import org.col.api.vocab.ColDwcTerm;
 import org.col.api.vocab.Datasets;
 import org.col.dw.PgApp;
 import org.col.dw.es.ManagedEsClient;
@@ -53,7 +53,7 @@ public class AdminServer extends PgApp<AdminServerConfig> {
     super.initialize(bootstrap);
 
     // register CoLTerms
-    TermFactory.instance().registerTermEnum(ColTerm.class);
+    TermFactory.instance().registerTermEnum(ColDwcTerm.class);
 
     // add some cli commands not accessible via the admin interface
     bootstrap.addCommand(new InitDbCmd());

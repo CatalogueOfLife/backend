@@ -143,7 +143,7 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
 
   @Test
   public void counts() throws Exception {
-    assertEquals((Integer) 4, mapper().countName(DATASET11.getKey()));
+    assertEquals((Integer) 5, mapper().countName(DATASET11.getKey()));
     assertEquals((Integer) 2, mapper().countTaxon(DATASET11.getKey()));
     assertEquals((Integer) 2, mapper().countReference(DATASET11.getKey()));
     assertEquals((Integer) 5, mapper().countVerbatim(DATASET11.getKey()));
@@ -162,15 +162,15 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     assertCounts(expected, mapper().countIssues(DATASET11.getKey()));
 
     Set<StringCount> expected2 = new HashSet<>();
-    expected2.add(new StringCount(Rank.SPECIES.name().toLowerCase(), 4));
+    expected2.add(new StringCount(Rank.SPECIES.name().toLowerCase(), 5));
     assertCounts(expected2, mapper().countNamesByRank(DATASET11.getKey()));
 
     expected.clear();
-    expected.add(new IntCount(Origin.SOURCE, 4));
+    expected.add(new IntCount(Origin.SOURCE, 5));
     assertCounts(expected, mapper().countNamesByOrigin(DATASET11.getKey()));
 
     expected.clear();
-    expected.add(new IntCount(NameType.SCIENTIFIC, 4));
+    expected.add(new IntCount(NameType.SCIENTIFIC, 5));
     assertCounts(expected, mapper().countNamesByType(DATASET11.getKey()));
 
     expected.clear();

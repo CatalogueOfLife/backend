@@ -104,14 +104,14 @@ public class NameMapperTest extends org.col.db.mapper.MapperTestBase<NameMapper>
   public void count() throws Exception {
     generateDatasetImport(DATASET11.getKey());
     commit();
-    assertEquals(4, nameMapper.count(DATASET11.getKey()));
+    assertEquals(5, nameMapper.count(DATASET11.getKey()));
 
     nameMapper.create(TestEntityGenerator.newName());
     nameMapper.create(TestEntityGenerator.newName());
     generateDatasetImport(DATASET11.getKey());
     commit();
 
-    assertEquals(6, nameMapper.count(DATASET11.getKey()));
+    assertEquals(7, nameMapper.count(DATASET11.getKey()));
   }
 
   @Test
