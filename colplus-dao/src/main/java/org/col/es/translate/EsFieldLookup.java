@@ -15,9 +15,15 @@ import static org.col.api.search.NameSearchParameter.RANK;
 import static org.col.api.search.NameSearchParameter.STATUS;
 import static org.col.api.search.NameSearchParameter.TYPE;
 
-class EsFieldLookup extends EnumMap<NameSearchParameter, String> {
-  
-  static final EsFieldLookup INSTANCE = new EsFieldLookup();
+/**
+ * Maps a name search parameter the corresponding Elasticsearch field(s). In principle a name search
+ * parameter may be mapped to multiple Elasticsearch fields, in which case the parameter's value is
+ * searched in all of these fields. In practice, though, we currently don't have multiply-mapped
+ * name search parameters.
+ */
+public class EsFieldLookup extends EnumMap<NameSearchParameter, String[]> {
+
+  public static final EsFieldLookup INSTANCE = new EsFieldLookup();
 
   private EsFieldLookup() {
     super(NameSearchParameter.class);
@@ -33,5 +39,8 @@ class EsFieldLookup extends EnumMap<NameSearchParameter, String> {
     put(TYPE, "type");
   }
 
+  private void put(NameSearchParameter key, String val) {
+    super.put(key, new String[] {val});
+  }
 
 }

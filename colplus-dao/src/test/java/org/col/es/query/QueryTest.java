@@ -11,7 +11,7 @@ public class QueryTest {
     sr.setQuery(csq);
     sr.addAggregation("collection-type", new TermsAggregation("collectionType",10));
     sr.addAggregation("record-basis", new TermsAggregation("recordBasis",10));
-    System.out.println(sr.toString());
+    System.out.println(sr);
   }
 
 }

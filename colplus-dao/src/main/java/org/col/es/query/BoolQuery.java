@@ -44,4 +44,8 @@ public class BoolQuery extends AbstractQuery {
     return this;
   }
 
+  public boolean isEmpty() {
+    return bool.must == null && bool.mustNot == null && bool.should == null;
+  }
+
 }

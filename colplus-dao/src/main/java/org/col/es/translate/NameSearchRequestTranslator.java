@@ -1,14 +1,17 @@
 package org.col.es.translate;
 
-import com.google.common.base.Strings;
-
-import org.col.api.search.NameSearchParameter;
 import org.col.api.search.NameSearchRequest;
 import org.col.es.InvalidQueryException;
 import org.col.es.query.BoolQuery;
 import org.col.es.query.ConstantScoreQuery;
 import org.col.es.query.EsSearchRequest;
+import org.col.es.query.SortBuilder;
 
+/**
+ * Translates a CoL NameSearchRequest into an actual Elasticsearch query. Main class of this
+ * package.
+ *
+ */
 public class NameSearchRequestTranslator {
 
   private final NameSearchRequest request;
@@ -18,22 +21,29 @@ public class NameSearchRequestTranslator {
   }
 
   public EsSearchRequest translate() throws InvalidQueryException {
-    EsSearchRequest esr = new EsSearchRequest();
+    EsSearchRequest req = new EsSearchRequest();
+    req.setFrom(request.getOffset());
+    req.setSize(request.getLimit());
     BoolQuery mainQuery = new BoolQuery();
-    if (request.getSortBy() == NameSearchRequest.SortBy.RELEVANCE) {
-      esr.setQuery(mainQuery);
+    if (request.getSortBy() == null) {
+      req.setSortBuilder(SortBuilder.DEFAULT_SORT);
     } else {
-      esr.setQuery(new ConstantScoreQuery(mainQuery));
+      req.setSortBuilder(new SortBuilder(request.getSortBy()));
     }
-    for (NameSearchParameter param : NameSearchParameter.values()) {
-      if (request.get(param) != null) {
-
+    new NameSearchParametersTranslator(request).translate().ifPresent(mainQuery::must);
+    new QTranslator(request).translate().ifPresent(mainQuery::must);
+    if (!mainQuery.isEmpty()) {
+      if (request.getSortBy() == NameSearchRequest.SortBy.RELEVANCE) {
+        req.setQuery(mainQuery);
+      } else {
+        /*
+         * Names and keys have such high cardinality that it doesn't make sense to let ES waste time
+         * on calculating scores.
+         */
+        req.setQuery(new ConstantScoreQuery(mainQuery));
       }
     }
-    if (!Strings.isNullOrEmpty(request.getQ())) {
-      mainQuery.must(new QTranslator(request).translate());
-    }
-    return esr;
+    return req;
   }
 
 }
