@@ -44,7 +44,7 @@
 			versions for many things including: commons-lang3, guava, jersey, commons-text, servlet api, httpclient, 
 			liquibase, freemarker, jetty, jackson, metrics, etc. -->
 		<citeproc.version>1.0.1</citeproc.version>
-		<commons-compress.version>1.17</commons-compress.version>
+		<commons-compress.version>1.18</commons-compress.version>
 		<commons-io.version>2.6</commons-io.version>
 		<dropwizard.version>1.3.7</dropwizard.version>
 		<dwc-api.version>1.19</dwc-api.version>
