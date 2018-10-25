@@ -5,6 +5,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import com.google.common.collect.Lists;
@@ -41,6 +43,13 @@ public class ColSource implements SourceMetadata, IntKey {
   private Integer vernacularsCount;
   private Integer namesCount;
   private LocalDateTime created;
+  @Max(5)
+  @Min(1)
+  private Integer confidence;
+  @Max(100)
+  @Min(0)
+  private Integer completeness;
+  private String notes;
   
   public Integer getKey() {
     return key;
@@ -237,6 +246,31 @@ public class ColSource implements SourceMetadata, IntKey {
     this.created = created;
   }
   
+  public Integer getConfidence() {
+    return confidence;
+  }
+  
+  public void setConfidence(Integer confidence) {
+    this.confidence = confidence;
+  }
+  
+  public Integer getCompleteness() {
+    return completeness;
+  }
+  
+  public void setCompleteness(Integer completeness) {
+    this.completeness = completeness;
+  }
+  
+  public String getNotes() {
+    return notes;
+  }
+  
+  public void setNotes(String notes) {
+    this.notes = notes;
+  }
+  
+  
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -263,13 +297,16 @@ public class ColSource implements SourceMetadata, IntKey {
         Objects.equals(synonymsCount, colSource.synonymsCount) &&
         Objects.equals(vernacularsCount, colSource.vernacularsCount) &&
         Objects.equals(namesCount, colSource.namesCount) &&
-        Objects.equals(created, colSource.created);
+        Objects.equals(created, colSource.created) &&
+        Objects.equals(confidence, colSource.confidence) &&
+        Objects.equals(completeness, colSource.completeness) &&
+        Objects.equals(notes, colSource.notes);
   }
   
   @Override
   public int hashCode() {
     
-    return Objects.hash(key, datasetKey, title, alias, description, organisation, contactPerson, authorsAndEditors, version, released, homepage, group, coverage, citation, livingSpeciesCount, livingInfraspecificCount, extinctSpeciesCount, extinctInfraspecificCount, synonymsCount, vernacularsCount, namesCount, created);
+    return Objects.hash(key, datasetKey, title, alias, description, organisation, contactPerson, authorsAndEditors, version, released, homepage, group, coverage, citation, livingSpeciesCount, livingInfraspecificCount, extinctSpeciesCount, extinctInfraspecificCount, synonymsCount, vernacularsCount, namesCount, created, confidence, completeness, notes);
   }
   
   @Override
