@@ -171,10 +171,10 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
 
   @Test
 	public void countSearchResults() throws Exception {
-		createSearchableDataset("BIZ", "CUIT", "A sentence with worms and stuff");
-		createSearchableDataset("ITIS", "ITIS", "Also contains worms");
-		createSearchableDataset("WORMS", "WORMS", "The Worms dataset");
-		createSearchableDataset("FOO", "BAR", null);
+		createSearchableDataset("BIZ", "markus", "CUIT", "A sentence with worms and stuff");
+		createSearchableDataset("ITIS", "markus", "ITIS", "Also contains worms");
+		createSearchableDataset("WORMS", "markus", "WORMS", "The Worms dataset");
+		createSearchableDataset("FOO", "markus", "BAR", null);
 		commit();
 		int count = mapper().count(DatasetSearchRequest.byQuery("worms"));
 		assertEquals("01", 3, count);
@@ -182,15 +182,32 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
 
 	@Test
 	public void search() throws Exception {
-		final Integer d1 = createSearchableDataset("ITIS", "ITIS", "Also contains worms");
-		final Integer d2 = createSearchableDataset("BIZ", "CUIT", "A sentence with worms and stuff");
-		final Integer d3 = createSearchableDataset("WORMS", "WORMS", "The Worms dataset");
-		final Integer d4 = createSearchableDataset("FOO", "BAR", null);
-		final Integer d5 = createSearchableDataset("WORMS worms", "WORMS", "Worms with even more worms than worms");
+		final Integer d1 = createSearchableDataset("ITIS", "Mike;Bob","ITIS", "Also contains worms");
+		final Integer d2 = createSearchableDataset("BIZ", "bob;jim","CUIT", "A sentence with worms and stuff");
+		final Integer d3 = createSearchableDataset("WORMS", "Bart", "WORMS", "The Worms dataset");
+
+		final Integer d4 = createSearchableDataset("FOO", "bar","BAR", null);
+		final Integer d5 = createSearchableDataset("WORMS worms", "beard","WORMS", "Worms with even more worms than worms");
 		mapper().delete(d5);
 		commit();
-		DatasetSearchRequest query = DatasetSearchRequest.byQuery("worms");
+		
+		DatasetSearchRequest query = new DatasetSearchRequest();
+		query.setCreated(LocalDate.parse("2031-12-31"));
+		assertTrue(mapper().search(query, new Page()).isEmpty());
+  
+		// apple.sql contains one dataset from 2017
+    query.setCreated(LocalDate.parse("2018-02-01"));
+    assertEquals(8, mapper().search(query, new Page()).size());
+    
+		query.setCreated(LocalDate.parse("2016-02-01"));
+		assertEquals(9, mapper().search(query, new Page()).size());
+    
+    query.setReleased(LocalDate.parse("2007-11-21"));
+    query.setModified(LocalDate.parse("2031-12-31"));
+    assertEquals(0, mapper().search(query, new Page()).size());
+
 		// check different orderings
+		query = DatasetSearchRequest.byQuery("worms");
 		for (DatasetSearchRequest.SortBy by : DatasetSearchRequest.SortBy.values()) {
 			query.setSortBy(by);
 			List<Dataset> datasets = mapper().search(query, new Page());
@@ -203,6 +220,11 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
 				case TITLE:
 					assertEquals("Bad ordering by "+by, d2, datasets.get(0).getKey());
 					assertEquals("Bad ordering by "+by, d3, datasets.get(2).getKey());
+					break;
+				case AUTHORS:
+					assertEquals("Bad ordering by "+by, d3, datasets.get(0).getKey());
+					assertEquals("Bad ordering by "+by, d2, datasets.get(1).getKey());
+					assertEquals("Bad ordering by "+by, d1, datasets.get(2).getKey());
 					break;
 				case CREATED:
 				case KEY:
@@ -224,9 +246,12 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
 		return ds;
 	}
 
-	private int createSearchableDataset(String title, String organisation, String description) {
+	private int createSearchableDataset(String title, String author, String organisation, String description) {
 		Dataset ds = new Dataset();
 		ds.setTitle(title);
+		if (author != null) {
+			ds.setAuthorsAndEditors(Lists.newArrayList(author.split(";")));
+		}
 		ds.setOrganisation(organisation);
 		ds.setDescription(description);
 		ds.setType(DatasetType.GLOBAL);

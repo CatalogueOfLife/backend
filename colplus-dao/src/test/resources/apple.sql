@@ -1,5 +1,5 @@
 -- test data
-INSERT INTO dataset (key, origin, title, import_frequency, created) VALUES (11, 1, 'First dataset',  -1, now());
+INSERT INTO dataset (key, origin, title, import_frequency, created) VALUES (11, 1, 'First dataset',  -1, '2017-03-24');
 INSERT INTO dataset (key, origin, title, import_frequency, created) VALUES (12, 1, 'Second dataset', -1, now());
 
 INSERT INTO verbatim(key, dataset_key, issues, type) VALUES (1, 11, '{1,2,3,4}', 'acef:AcceptedSpecies');
