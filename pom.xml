@@ -385,13 +385,6 @@
 				<version>${kryo-serializers.version}</version>
 			</dependency>
 
-			<!-- Frictionless -->
-			<dependency>
-				<groupId>com.github.frictionlessdata</groupId>
-				<artifactId>tableschema-java</artifactId>
-				<version>b736208145</version>
-			</dependency>
-
 			<!-- unicode, transliterations -->
 			<dependency>
 				<groupId>com.ibm.icu</groupId>

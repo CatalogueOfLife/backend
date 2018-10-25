@@ -91,10 +91,6 @@
 
         <!-- Other -->
         <dependency>
-            <groupId>com.github.frictionlessdata</groupId>
-            <artifactId>tableschema-java</artifactId>
-        </dependency>
-        <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
         </dependency>
