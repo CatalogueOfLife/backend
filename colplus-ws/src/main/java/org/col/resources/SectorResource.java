@@ -34,12 +34,14 @@ public class SectorResource extends CRUDResource<Sector> {
   
   @GET
   @Path("/broken")
-  public List<Sector> broken(@Context SqlSession session, @QueryParam("attachment") boolean attachment) {
+  public List<Sector> broken(@Context SqlSession session,
+                             @QueryParam("col") boolean col,
+                             @QueryParam("sourceKey") Integer colSourceKey) {
     SectorMapper mapper = session.getMapper(SectorMapper.class);
-    if (attachment) {
-      return mapper.attachmentBroken();
+    if (col) {
+      return mapper.colBroken(colSourceKey);
     } else {
-      return mapper.rootBroken();
+      return mapper.rootBroken(colSourceKey);
     }
   }
 }

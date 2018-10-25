@@ -82,12 +82,12 @@ public class NameIndexMapDBTest {
   @Test
   public void loadApple() throws Exception {
     setupApple();
-    assertEquals(4, ni.size());
+    assertEquals(5, ni.size());
 
-    assertMatch(4, "Larus erfundus", Rank.SPECIES, null);
-    assertMatch(4, "Larus erfunda", Rank.SPECIES, null);
-    assertMatch(3, "Larus fusca", Rank.SPECIES, null);
-    assertMatch(2, "Larus fuscus", Rank.SPECIES, null);
+    assertMatch(5, "Larus erfundus", Rank.SPECIES, null);
+    assertMatch(5, "Larus erfunda", Rank.SPECIES, null);
+    assertMatch(4, "Larus fusca", Rank.SPECIES, null);
+    assertMatch(3, "Larus fuscus", Rank.SPECIES, null);
   }
 
   @Test

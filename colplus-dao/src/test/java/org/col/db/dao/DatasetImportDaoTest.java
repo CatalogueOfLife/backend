@@ -23,7 +23,7 @@ public class DatasetImportDaoTest extends DaoTestBase {
     d.setDatasetKey(TestEntityGenerator.DATASET11.getKey());
     dao.updateMetrics(mapper(DatasetImportMapper.class), d);
 
-    assertEquals((Integer) 4, d.getNameCount());
+    assertEquals((Integer) 5, d.getNameCount());
     assertEquals((Integer) 2, d.getTaxonCount());
     assertEquals((Integer) 2, d.getReferenceCount());
     assertEquals((Integer) 5, d.getVerbatimCount());
@@ -41,13 +41,13 @@ public class DatasetImportDaoTest extends DaoTestBase {
     assertFalse(d.getIssuesCount().containsKey(Issue.NULL_EPITHET));
 
     assertEquals( 1, d.getNamesByRankCount().size());
-    assertEquals((Integer) 4, d.getNamesByRankCount().get(Rank.SPECIES));
+    assertEquals((Integer) 5, d.getNamesByRankCount().get(Rank.SPECIES));
 
     assertEquals( 1, d.getNamesByOriginCount().size());
-    assertEquals((Integer) 4, d.getNamesByOriginCount().get(Origin.SOURCE));
+    assertEquals((Integer) 5, d.getNamesByOriginCount().get(Origin.SOURCE));
 
     assertEquals( 1, d.getNamesByTypeCount().size());
-    assertEquals((Integer) 4, d.getNamesByTypeCount().get(NameType.SCIENTIFIC));
+    assertEquals((Integer) 5, d.getNamesByTypeCount().get(NameType.SCIENTIFIC));
 
     assertEquals( 1, d.getDistributionsByGazetteerCount().size());
     assertEquals((Integer) 3, d.getDistributionsByGazetteerCount().get(Gazetteer.TEXT));
