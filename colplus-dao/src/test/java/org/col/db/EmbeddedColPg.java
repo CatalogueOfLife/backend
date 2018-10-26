@@ -16,7 +16,6 @@ import org.col.common.lang.Exceptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.yandex.qatools.embed.postgresql.EmbeddedPostgres;
-import ru.yandex.qatools.embed.postgresql.distribution.Version;
 
 import static java.util.Arrays.asList;
 
@@ -27,7 +26,8 @@ import static java.util.Arrays.asList;
  */
 public class EmbeddedColPg {
   private static final Logger LOG = LoggerFactory.getLogger(EmbeddedColPg.class);
-
+	
+	private static final String VERSION = "11.0-1";
 	private static final List<String> DEFAULT_ADD_PARAMS = asList(
 			"-E", "SQL_ASCII",
 			"--locale=C",
@@ -37,7 +37,7 @@ public class EmbeddedColPg {
 	private EmbeddedPostgres postgres;
   private final PgConfig cfg;
 	private Path serverDir;
-
+	
 	@Deprecated
 	public EmbeddedColPg() {
 		this.cfg = new PgConfig();
@@ -73,7 +73,7 @@ public class EmbeddedColPg {
 			serverDir = cfg.host == null ? Files.createTempDirectory("colplus-pg-") : Paths.get(cfg.host);
 			LOG.debug("Use embedded Postgres, server dir={}", serverDir);
 
-			postgres = new EmbeddedPostgres(Version.V10_3);
+			postgres = new EmbeddedPostgres(() -> VERSION);
 			// assigned some free port using local socket 0
 			cfg.port = PortUtil.findFreePort();
 			cfg.host = "localhost";
