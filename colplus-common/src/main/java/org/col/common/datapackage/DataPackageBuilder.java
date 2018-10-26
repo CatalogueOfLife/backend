@@ -1,6 +1,7 @@
 package org.col.common.datapackage;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.ImmutableMap;
@@ -130,6 +131,14 @@ public class DataPackageBuilder {
   }
   
   private List<String> enumValues(ColTerm rowType, ColTerm t) {
+    // special cases
+    switch (t) {
+      case country:
+        return enumValues(Country.class, Country::getIso2LetterCode);
+      case language:
+        return enumValues(Language.class, Language::getIso3LetterCode);
+    }
+    
     Class<? extends Enum> enumClass;
     if (t == ColTerm.status && rowType == ColTerm.Name) {
       enumClass = NomStatus.class;
@@ -140,9 +149,13 @@ public class DataPackageBuilder {
     } else {
       enumClass = enums.get(t);
     }
-    
-    return Arrays.stream(enumClass.getEnumConstants())
-        .map(ApiModule::enumValueName)
+  
+    return enumValues(enumClass, ApiModule::enumValueName);
+  }
+  
+  private static <T extends Enum> List<String> enumValues(Class<T> eClass, Function<T, String> mapper) {
+    return Arrays.stream(eClass.getEnumConstants())
+        .map(mapper)
         .collect(Collectors.toList());
   }
 }
