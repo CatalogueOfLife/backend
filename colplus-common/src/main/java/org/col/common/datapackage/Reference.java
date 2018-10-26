@@ -1,42 +1,53 @@
 package org.col.common.datapackage;
-import java.net.URL;
+
+import java.util.Objects;
+
+import org.col.api.datapackage.ColTerm;
 
 /**
  *
  *
  */
 public class Reference {
-  private static final String JSON_KEY_DATAPACKAGE = "datapackage";
-  private static final String JSON_KEY_RESOURCE = "resource";
-  private static final String JSON_KEY_FIELDS = "fields";
+  private String resource;
+  private String fields;
   
-  private URL datapackage = null;
-  private String resource = null;
-  private Object fields = null;
-  
-  
-  public URL getDatapackage(){
-    return this.datapackage;
+  public Reference() {
   }
   
-  public void setDatapackage(URL datapackage){
-    this.datapackage = datapackage;
+  public Reference(ColTerm resource, ColTerm fields) {
+    this.resource = resource.simpleName();
+    this.fields = fields.simpleName();
   }
   
-  public String getResource(){
-    return this.resource;
+  public String getResource() {
+    return resource;
   }
   
-  public void setResource(String resource){
+  public void setResource(String resource) {
     this.resource = resource;
   }
   
-  public <Any> Any getFields(){
-    return (Any)this.fields;
+  public String getFields() {
+    return fields;
   }
   
-  public void setFields(Object fields){
+  public void setFields(String fields) {
     this.fields = fields;
   }
   
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    Reference reference = (Reference) o;
+    return Objects.equals(resource, reference.resource) &&
+        Objects.equals(fields, reference.fields);
+  }
+  
+  @Override
+  public int hashCode() {
+    
+    return Objects.hash(resource, fields);
+  }
 }

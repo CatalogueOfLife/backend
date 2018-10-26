@@ -7,26 +7,28 @@ import java.util.Map;
  *
  */
 public class Field {
-  public static final String FIELD_TYPE_STRING = "string";
-  public static final String FIELD_TYPE_INTEGER = "integer";
-  public static final String FIELD_TYPE_NUMBER = "number";
-  public static final String FIELD_TYPE_BOOLEAN = "boolean";
-  public static final String FIELD_TYPE_OBJECT = "object";
-  public static final String FIELD_TYPE_ARRAY = "array";
-  public static final String FIELD_TYPE_DATE = "date";
-  public static final String FIELD_TYPE_TIME = "time";
-  public static final String FIELD_TYPE_DATETIME = "datetime";
-  public static final String FIELD_TYPE_YEAR = "year";
-  public static final String FIELD_TYPE_YEARMONTH = "yearmonth";
-  public static final String FIELD_TYPE_DURATION = "duration";
-  public static final String FIELD_TYPE_GEOPOINT = "geopoint";
-  public static final String FIELD_TYPE_GEOJSON = "geojson";
-  public static final String FIELD_TYPE_ANY = "any";
+  public static final String TYPE_STRING = "string";
+  public static final String TYPE_INTEGER = "integer";
+  public static final String TYPE_NUMBER = "number";
+  public static final String TYPE_BOOLEAN = "boolean";
+  public static final String TYPE_OBJECT = "object";
+  public static final String TYPE_ARRAY = "array";
+  public static final String TYPE_DATE = "date";
+  public static final String TYPE_TIME = "time";
+  public static final String TYPE_DATETIME = "datetime";
+  public static final String TYPE_YEAR = "year";
+  public static final String TYPE_YEARMONTH = "yearmonth";
+  public static final String TYPE_DURATION = "duration";
+  public static final String TYPE_GEOPOINT = "geopoint";
+  public static final String TYPE_GEOJSON = "geojson";
+  public static final String TYPE_ANY = "any";
   
-  public static final String FIELD_FORMAT_DEFAULT = "default";
-  public static final String FIELD_FORMAT_ARRAY = "array";
-  public static final String FIELD_FORMAT_OBJECT = "object";
-  public static final String FIELD_FORMAT_TOPOJSON = "topojson";
+  public static final String FORMAT_DEFAULT = "default";
+  public static final String FORMAT_ARRAY = "array";
+  public static final String FORMAT_OBJECT = "object";
+  public static final String FORMAT_TOPOJSON = "topojson";
+  public static final String FORMAT_EMAIL = "email";
+  public static final String FORMAT_URI = "uri";
   
   public static final String CONSTRAINT_KEY_REQUIRED = "required";
   public static final String CONSTRAINT_KEY_UNIQUE = "unique";
@@ -37,19 +39,12 @@ public class Field {
   public static final String CONSTRAINT_KEY_PATTERN = "pattern";
   public static final String CONSTRAINT_KEY_ENUM = "enum";
   
-  public static final String JSON_KEY_NAME = "name";
-  public static final String JSON_KEY_TYPE = "type";
-  public static final String JSON_KEY_FORMAT = "format";
-  public static final String JSON_KEY_TITLE = "title";
-  public static final String JSON_KEY_DESCRIPTION = "description";
-  public static final String JSON_KEY_CONSTRAINTS = "constraints";
-  
-  private String name = "";
-  private String type = "";
-  private String format = FIELD_FORMAT_DEFAULT;
-  private String title = "";
-  private String description = "";
-  private Map<String, Object> constraints = null;
+  private String name;
+  private String type;
+  private String format = FORMAT_DEFAULT;
+  private String title;
+  private String description;
+  private Map<String, Object> constraints;
   
   public Field(String name, String type){
     this.name = name;
