@@ -44,6 +44,7 @@ public class DataPackageBuilder {
       .put(ColTerm.type, NomRelType.class)
       .put(ColTerm.code, NomCode.class)
       .put(ColTerm.country, Country.class)
+      .put(ColTerm.language, Language.class)
       .put(ColTerm.format, DataFormat.class)
       .put(ColTerm.gazetteer, Gazetteer.class)
       .put(ColTerm.rank, Rank.class)
