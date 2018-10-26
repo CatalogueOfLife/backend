@@ -50,6 +50,8 @@ public class DatasetSearchRequest {
   @QueryParam("sortBy")
   private SortBy sortBy;
   
+  @QueryParam("reverse")
+  private boolean reverse = false;
 
   public static DatasetSearchRequest byQuery(String query) {
     DatasetSearchRequest q = new DatasetSearchRequest();
@@ -134,12 +136,21 @@ public class DatasetSearchRequest {
     this.sortBy = Preconditions.checkNotNull(sortBy);
   }
   
+  public boolean isReverse() {
+    return reverse;
+  }
+  
+  public void setReverse(boolean reverse) {
+    this.reverse = reverse;
+  }
+  
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     DatasetSearchRequest that = (DatasetSearchRequest) o;
-    return Objects.equals(q, that.q) &&
+    return reverse == that.reverse &&
+        Objects.equals(q, that.q) &&
         code == that.code &&
         catalogue == that.catalogue &&
         format == that.format &&
@@ -153,6 +164,6 @@ public class DatasetSearchRequest {
   @Override
   public int hashCode() {
     
-    return Objects.hash(q, code, catalogue, format, type, modified, created, released, sortBy);
+    return Objects.hash(q, code, catalogue, format, type, modified, created, released, sortBy, reverse);
   }
 }

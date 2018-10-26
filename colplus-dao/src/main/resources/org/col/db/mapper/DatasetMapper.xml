@@ -130,6 +130,7 @@
         FROM <include refid="FROM" />
         WHERE <include refid="SEARCH_WHERE" />
         ORDER BY
+        <bind name="rev" value="req.reverse" />
         <choose>
             <when test="req == null || req.sortBy == null">
                 key
@@ -138,10 +139,12 @@
                 <bind name="sortBy" value="req.sortBy.name()" />
                 <choose>
                     <when test="sortBy == 'RELEVANCE'">
-                        ts_rank_cd(doc, plainto_tsquery('simple2', #{req.q})) DESC
+                        ts_rank_cd(doc, plainto_tsquery('simple2', #{req.q}))
+                        <bind name="rev" value="!req.reverse" />
                     </when>
                     <when test="sortBy == 'SIZE' || sortBy == 'CREATED' || sortBy == 'MODIFIED'">
-                        ${req.sortBy.name().toLowerCase()} DESC
+                        ${req.sortBy.name().toLowerCase()}
+                        <bind name="rev" value="!req.reverse" />
                     </when>
                     <when test="sortBy == 'AUTHORS'">
                         lower(authors_and_editors[1])
@@ -154,6 +157,10 @@
                     </otherwise>
                 </choose>
             </otherwise>
+        </choose>
+        <choose>
+            <when test="rev">DESC NULLs LAST</when>
+            <otherwise>ASC NULLs FIRST</otherwise>
         </choose>
         <include refid="org.col.db.mapper.Common.limit"/>
     </select>

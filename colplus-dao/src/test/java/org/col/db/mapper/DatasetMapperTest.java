@@ -183,11 +183,14 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
 	@Test
 	public void search() throws Exception {
 		final Integer d1 = createSearchableDataset("ITIS", "Mike;Bob","ITIS", "Also contains worms");
-		final Integer d2 = createSearchableDataset("BIZ", "bob;jim","CUIT", "A sentence with worms and stuff");
-		final Integer d3 = createSearchableDataset("WORMS", "Bart", "WORMS", "The Worms dataset");
+    commit();
 
+		final Integer d2 = createSearchableDataset("BIZ", "bob;jim","CUIT", "A sentence with worms and worms");
+    commit();
+
+		final Integer d3 = createSearchableDataset("WORMS", "Bart", "WORMS", "The Worms dataset");
 		final Integer d4 = createSearchableDataset("FOO", "bar","BAR", null);
-		final Integer d5 = createSearchableDataset("WORMS worms", "beard","WORMS", "Worms with even more worms than worms");
+		final Integer d5 = createSearchableDataset("WORMS worms", "beard", "WORMS", "Worms with even more worms than worms");
 		mapper().delete(d5);
 		commit();
 		
@@ -214,11 +217,15 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
 			assertEquals(3, datasets.size());
 			datasets.forEach(c -> Assert.assertNotEquals("FOO", c.getTitle()));
 			switch (by) {
+        case CREATED:
 				case RELEVANCE:
-					assertEquals("Bad ordering by "+by, d3, datasets.get(0).getKey());
+          assertEquals("Bad ordering by "+by, d3, datasets.get(0).getKey());
+          assertEquals("Bad ordering by "+by, d2, datasets.get(1).getKey());
+          assertEquals("Bad ordering by "+by, d1, datasets.get(2).getKey());
 					break;
 				case TITLE:
 					assertEquals("Bad ordering by "+by, d2, datasets.get(0).getKey());
+          assertEquals("Bad ordering by "+by, d1, datasets.get(1).getKey());
 					assertEquals("Bad ordering by "+by, d3, datasets.get(2).getKey());
 					break;
 				case AUTHORS:
@@ -226,15 +233,48 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
 					assertEquals("Bad ordering by "+by, d2, datasets.get(1).getKey());
 					assertEquals("Bad ordering by "+by, d1, datasets.get(2).getKey());
 					break;
-				case CREATED:
 				case KEY:
+          assertEquals("Bad ordering by "+by, d1, datasets.get(0).getKey());
+          assertEquals("Bad ordering by "+by, d2, datasets.get(1).getKey());
+          assertEquals("Bad ordering by "+by, d3, datasets.get(2).getKey());
 				case SIZE:
-				case MODIFIED:
-					assertEquals("Bad ordering by "+by, d1, datasets.get(0).getKey());
-					assertEquals("Bad ordering by "+by, d2, datasets.get(1).getKey());
-					assertEquals("Bad ordering by "+by, d3, datasets.get(2).getKey());
+        case MODIFIED:
+          // nothing, from import and all null
 			}
 		}
+		
+		// now try reversed
+    query.setReverse(true);
+    for (DatasetSearchRequest.SortBy by : DatasetSearchRequest.SortBy.values()) {
+      query.setSortBy(by);
+      List<Dataset> datasets = mapper().search(query, new Page());
+      assertEquals(3, datasets.size());
+      switch (by) {
+        case CREATED:
+        case RELEVANCE:
+          assertEquals("Bad ordering by "+by, d1, datasets.get(0).getKey());
+          assertEquals("Bad ordering by "+by, d2, datasets.get(1).getKey());
+          assertEquals("Bad ordering by "+by, d3, datasets.get(2).getKey());
+          break;
+        case TITLE:
+          assertEquals("Bad ordering by "+by, d3, datasets.get(0).getKey());
+          assertEquals("Bad ordering by "+by, d1, datasets.get(1).getKey());
+          assertEquals("Bad ordering by "+by, d2, datasets.get(2).getKey());
+          break;
+        case AUTHORS:
+          assertEquals("Bad ordering by "+by, d1, datasets.get(0).getKey());
+          assertEquals("Bad ordering by "+by, d2, datasets.get(1).getKey());
+          assertEquals("Bad ordering by "+by, d3, datasets.get(2).getKey());
+          break;
+        case KEY:
+          assertEquals("Bad ordering by "+by, d3, datasets.get(0).getKey());
+          assertEquals("Bad ordering by "+by, d2, datasets.get(1).getKey());
+          assertEquals("Bad ordering by "+by, d1, datasets.get(2).getKey());
+        case SIZE:
+        case MODIFIED:
+          // nothing, from import and all null
+      }
+    }
 	}
 
 	private static List<Dataset> removeCreated(List<Dataset> ds) {
