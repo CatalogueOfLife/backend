@@ -59,16 +59,6 @@ public class DataPackageBuilder {
 
   private static final Set<ColTerm> required = ImmutableSet.of(ColTerm.ID, ColTerm.scientificName);
   
-  public DataPackage fullPackage(String baseURL) {
-    PackageDescriptor pd = new PackageDescriptor();
-    pd.setBase(baseURL);
-    pd.setResources(ColTerm.RESOURCES.keySet().stream()
-        .map(t -> t.name().toLowerCase() + ".tsv")
-        .collect(Collectors.toList())
-    );
-    return build(pd);
-  }
-
   private String titleToName(String t) {
     return UnicodeUtils.ascii(t).replaceAll("\\s+", "-");
   }
@@ -77,6 +67,14 @@ public class DataPackageBuilder {
     DataPackage p = new DataPackage();
     p.setTitle(pd.getTitle());
     p.setName(titleToName(pd.getTitle()));
+    
+    if (pd.getResources() == null || pd.getResources().isEmpty()) {
+      // use all as default!
+      pd.setResources(ColTerm.RESOURCES.keySet().stream()
+          .map(t -> t.name().toLowerCase() + ".tsv")
+          .collect(Collectors.toList())
+      );
+    }
     
     for (String res : pd.getResources()) {
       Resource r = new Resource();
