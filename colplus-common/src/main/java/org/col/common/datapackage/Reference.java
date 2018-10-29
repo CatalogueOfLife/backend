@@ -16,7 +16,7 @@ public class Reference {
   }
   
   public Reference(ColTerm resource, ColTerm fields) {
-    this.resource = resource.simpleName();
+    this.resource = resource.simpleName().toLowerCase();
     this.fields = fields.simpleName();
   }
   

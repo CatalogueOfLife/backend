@@ -6,7 +6,7 @@ public class Resource {
   private String encoding = "UTF-8";
   private final String format = "csv";
   private String name;
-  private String url;
+  private String path;
   private Dialect dialect;
   private Schema schema;
   private final String profile = "tabular-data-resource";
@@ -39,12 +39,12 @@ public class Resource {
     return dialect;
   }
   
-  public String getUrl() {
-    return url;
+  public String getPath() {
+    return path;
   }
   
-  public void setUrl(String url) {
-    this.url = url;
+  public void setPath(String path) {
+    this.path = path;
   }
   
   public Schema getSchema() {
@@ -54,7 +54,7 @@ public class Resource {
   public void setSchema(Schema schema) {
     this.schema = schema;
     if (schema != null) {
-      this.name = schema.getRowType().simpleName();
+      this.name = schema.getRowType().simpleName().toLowerCase();
     }
   }
   
@@ -70,7 +70,7 @@ public class Resource {
     return Objects.equals(encoding, resource.encoding) &&
         Objects.equals(format, resource.format) &&
         Objects.equals(name, resource.name) &&
-        Objects.equals(url, resource.url) &&
+        Objects.equals(path, resource.path) &&
         Objects.equals(dialect, resource.dialect) &&
         Objects.equals(schema, resource.schema) &&
         Objects.equals(profile, resource.profile);
@@ -79,6 +79,6 @@ public class Resource {
   @Override
   public int hashCode() {
     
-    return Objects.hash(encoding, format, name, url, dialect, schema, profile);
+    return Objects.hash(encoding, format, name, path, dialect, schema, profile);
   }
 }

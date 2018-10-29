@@ -80,7 +80,7 @@ public class DataPackageBuilder {
     
     for (String res : pd.getResources()) {
       Resource r = new Resource();
-      r.setUrl(resourceUrl(pd.getBase(), res));
+      r.setPath(resourceUrl(pd.getBase(), res));
       if (!res.toLowerCase().endsWith("csv")) {
         r.setDialect(Dialect.TSV);
       }
