@@ -5,7 +5,7 @@ import org.apache.ibatis.session.ResultHandler;
 import org.col.api.model.BareName;
 import org.col.api.model.Synonym;
 import org.col.api.model.Taxon;
-import org.col.db.mapper.model.IssueWrapper;
+import org.col.api.search.NameUsageWrapper;
 
 /**
  * Mapper dealing with methods returning the NameUsage interface,
@@ -21,19 +21,19 @@ public interface NameUsageMapper {
 	 * and processes them with the supplied handler.
 	 * This allows a single query to efficiently stream all its values without keeping them in memory.
 	 */
-	void processDatasetTaxa(@Param("datasetKey") int datasetKey, ResultHandler<IssueWrapper<Taxon>> handler);
+	void processDatasetTaxa(@Param("datasetKey") int datasetKey, ResultHandler<NameUsageWrapper<Taxon>> handler);
 	
 	/**
 	 * Iterates over all synonyms for a given dataset
 	 * and processes them with the supplied handler.
 	 * This allows a single query to efficiently stream all its values without keeping them in memory.
 	 */
-	void processDatasetSynonyms(@Param("datasetKey") int datasetKey, ResultHandler<IssueWrapper<Synonym>> handler);
+	void processDatasetSynonyms(@Param("datasetKey") int datasetKey, ResultHandler<NameUsageWrapper<Synonym>> handler);
 	
 	/**
 	 * Iterates over all bare names not linked to a synonym or taxon for a given dataset
 	 * and processes them with the supplied handler.
 	 * This allows a single query to efficiently stream all its values without keeping them in memory.
 	 */
-	void processDatasetBareNames(@Param("datasetKey") int datasetKey, ResultHandler<IssueWrapper<BareName>> handler);
+	void processDatasetBareNames(@Param("datasetKey") int datasetKey, ResultHandler<NameUsageWrapper<BareName>> handler);
 }

@@ -8,7 +8,7 @@ import org.col.api.model.BareName;
 import org.col.api.model.Synonym;
 import org.col.api.model.Taxon;
 import org.col.api.model.VernacularName;
-import org.col.db.mapper.model.IssueWrapper;
+import org.col.api.search.NameUsageWrapper;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -26,8 +26,8 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
   
   @Test
   public void processDatasetTaxa() throws Exception {
-    mapper().processDatasetTaxa(NAME4.getDatasetKey(), new ResultHandler<IssueWrapper<Taxon>>() {
-      public void handleResult(ResultContext<? extends IssueWrapper<Taxon>> ctx) {
+    mapper().processDatasetTaxa(NAME4.getDatasetKey(), new ResultHandler<NameUsageWrapper<Taxon>>() {
+      public void handleResult(ResultContext<? extends NameUsageWrapper<Taxon>> ctx) {
         counter.incrementAndGet();
         for (VernacularName v : ctx.getResultObject().getVernacularNames()) {
           assertNotNull(v.getName());
@@ -39,8 +39,8 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
   
   @Test
   public void processDatasetSynonyms() throws Exception {
-    mapper().processDatasetSynonyms(NAME4.getDatasetKey(), new ResultHandler<IssueWrapper<Synonym>>() {
-      public void handleResult(ResultContext<? extends IssueWrapper<Synonym>> ctx) {
+    mapper().processDatasetSynonyms(NAME4.getDatasetKey(), new ResultHandler<NameUsageWrapper<Synonym>>() {
+      public void handleResult(ResultContext<? extends NameUsageWrapper<Synonym>> ctx) {
         counter.incrementAndGet();
         assertTrue(ctx.getResultObject().getUsage().getStatus().isSynonym());
         assertNotNull(ctx.getResultObject().getUsage().getAccepted());
@@ -51,8 +51,8 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
   
   @Test
   public void processDatasetBareNames() throws Exception {
-    mapper().processDatasetBareNames(NAME4.getDatasetKey(), new ResultHandler<IssueWrapper<BareName>>() {
-      public void handleResult(ResultContext<? extends IssueWrapper<BareName>> ctx) {
+    mapper().processDatasetBareNames(NAME4.getDatasetKey(), new ResultHandler<NameUsageWrapper<BareName>>() {
+      public void handleResult(ResultContext<? extends NameUsageWrapper<BareName>> ctx) {
         counter.incrementAndGet();
         assertNotNull(ctx.getResultObject());
         assertNotNull(ctx.getResultObject().getUsage());

@@ -21,7 +21,7 @@ public class EsConfig {
    * Comma separated list of ports matching the hosts list
    */
   public String ports;
-
+  
   public IndexConfig nameUsage;
 
   /**

@@ -10,6 +10,7 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -21,11 +22,12 @@ import org.col.es.annotations.NotNested;
 
 import static org.col.es.mapping.ESDataType.KEYWORD;
 import static org.col.es.mapping.ESDataType.NESTED;
-import static org.col.es.mapping.MappingUtil.extractProperty;
+import static org.col.es.mapping.MappingUtil.*;
 import static org.col.es.mapping.MappingUtil.getClassForTypeArgument;
 import static org.col.es.mapping.MappingUtil.getFields;
 import static org.col.es.mapping.MappingUtil.getMappedProperties;
-import static org.col.es.mapping.MultiField.*;
+import static org.col.es.mapping.MultiField.AUTO_COMPLETE;
+import static org.col.es.mapping.MultiField.DEFAULT;
 import static org.col.es.mapping.MultiField.IGNORE_CASE;
 import static org.col.es.mapping.MultiField.NGRAM;
 
@@ -38,6 +40,8 @@ import static org.col.es.mapping.MultiField.NGRAM;
 public class MappingFactory<T> {
 
   private static final HashMap<Class<?>, Mapping<?>> cache = new HashMap<>();
+
+  private boolean mapEnumToInt;
 
   /**
    * Creates a document type mapping for the specified class.
@@ -56,29 +60,55 @@ public class MappingFactory<T> {
     return mapping;
   }
 
-  private static void addFieldsToDocument(ComplexField document, Class<?> type,
+  public boolean isMapEnumToInt() {
+    return mapEnumToInt;
+  }
+
+  public void setMapEnumToInt(boolean soreEnumAsInt) {
+    this.mapEnumToInt = soreEnumAsInt;
+  }
+
+  private void addFieldsToDocument(ComplexField document, Class<?> type,
       HashSet<Class<?>> ancestors) {
-    for (Field javaField : getFields(type)) {
-      //System.out.println("Mapping field " + javaField.getName());
-      ESField esField = createESField(javaField, ancestors);
-      esField.setName(javaField.getName());
-      esField.setParent(document);
-      esField.setArray(isMultiValued(javaField));
-      document.addField(javaField.getName(), esField);
-    }
+    Set<String> fields = new HashSet<>();
     for (Method javaMethod : getMappedProperties(type)) {
-      //System.out.println("Mapping method " + javaMethod);
+      // System.out.println("Mapping method " + javaMethod);
       String methodName = javaMethod.getName();
       String fieldName = extractProperty(methodName);
+      fields.add(fieldName);
       ESField esField = createESField(javaMethod, ancestors);
       esField.setName(fieldName);
       esField.setParent(document);
       esField.setArray(isMultiValued(javaMethod));
       document.addField(fieldName, esField);
     }
+    for (Field javaField : getFields(type)) {
+      if (fields.contains(javaField.getName())) {
+        continue;
+      }
+      // System.out.println("Mapping field " + javaField.getName());
+      ESField esField = createESField(javaField, ancestors);
+      esField.setName(javaField.getName());
+      esField.setParent(document);
+      esField.setArray(isMultiValued(javaField));
+      document.addField(javaField.getName(), esField);
+    }
   }
 
-  private static ESField createESField(Field field, HashSet<Class<?>> ancestors) {
+  private ESField createESField(Method method, HashSet<Class<?>> ancestors) {
+    Class<?> realType = method.getReturnType();
+    Class<?> mapToType = mapType(realType, method.getGenericReturnType());
+    ESDataType esType = DataTypeMap.INSTANCE.getESType(mapToType);
+    if (esType == null) {
+      if (ancestors.contains(mapToType)) {
+        throw new ClassCircularityException(method, mapToType);
+      }
+      return createDocument(method, mapToType, newTree(ancestors, mapToType));
+    }
+    return createSimpleField(method, esType);
+  }
+
+  private ESField createESField(Field field, HashSet<Class<?>> ancestors) {
     Class<?> realType = field.getType();
     Class<?> mapToType = mapType(realType, field.getGenericType());
     ESDataType esType = DataTypeMap.INSTANCE.getESType(mapToType);
@@ -93,19 +123,6 @@ public class MappingFactory<T> {
       return createDocument(field, mapToType, newTree(ancestors, mapToType));
     }
     return createSimpleField(field, esType);
-  }
-
-  private static ESField createESField(Method method, HashSet<Class<?>> ancestors) {
-    Class<?> realType = method.getReturnType();
-    Class<?> mapToType = mapType(realType, method.getGenericReturnType());
-    ESDataType esType = DataTypeMap.INSTANCE.getESType(mapToType);
-    if (esType == null) {
-      if (ancestors.contains(mapToType)) {
-        throw new ClassCircularityException(method, mapToType);
-      }
-      return createDocument(method, mapToType, newTree(ancestors, mapToType));
-    }
-    return createSimpleField(method, esType);
   }
 
   private static SimpleField createSimpleField(AnnotatedElement fm, ESDataType esType) {
@@ -130,7 +147,7 @@ public class MappingFactory<T> {
     return sf;
   }
 
-  private static ComplexField createDocument(Field field, Class<?> mapToType,
+  private ComplexField createDocument(Field field, Class<?> mapToType,
       HashSet<Class<?>> ancestors) {
     Class<?> realType = field.getType();
     ComplexField document;
@@ -147,7 +164,7 @@ public class MappingFactory<T> {
     return document;
   }
 
-  private static ComplexField createDocument(Method method, Class<?> mapToType,
+  private ComplexField createDocument(Method method, Class<?> mapToType,
       HashSet<Class<?>> ancestors) {
     Class<?> realType = method.getReturnType();
     ComplexField document;
@@ -205,16 +222,19 @@ public class MappingFactory<T> {
    * mapped but the class of its elements. No array type exists or is required in Elasticsearch;
    * fields are intrinsically multi-valued.
    */
-  private static Class<?> mapType(Class<?> type, Type typeArg) {
-    if (type.isArray())
-      return type.getComponentType();
-    if (isA(type, Collection.class))
-      return getClassForTypeArgument(typeArg);
-    if (type.isEnum())
-      return String.class;
+  private Class<?> mapType(Class<?> type, Type typeArg) {
+    if(type.isArray()) {
+      return mapType(type.getComponentType(),null);
+    }
+    if(Collection.class.isAssignableFrom(type)) {
+      return mapType(getClassForTypeArgument(typeArg),null);
+    }
+    if (type.isEnum()) {
+      return mapEnumToInt ? int.class : String.class;
+    }
     return type;
   }
-
+  
   private static boolean isMultiValued(Field f) {
     if (f.getType().isArray())
       return true;

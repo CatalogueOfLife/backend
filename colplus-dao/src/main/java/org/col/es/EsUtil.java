@@ -22,6 +22,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class EsUtil {
+  
+  //public static final ObjectWriter WRITER = ApiModule.MAPPER.writerFor(EsNameUsage.class);
 
   private static final Logger LOG = LoggerFactory.getLogger(EsUtil.class);
 
@@ -126,6 +128,8 @@ public class EsUtil {
     }
     return (Integer) map.get("count");
   }
+  
+  //private static readIntoMap
 
   private static String serialize(Map<String, Object> map) {
     ObjectMapper om = new ObjectMapper();
