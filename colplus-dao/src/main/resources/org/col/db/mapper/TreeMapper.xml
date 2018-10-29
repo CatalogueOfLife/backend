@@ -14,8 +14,10 @@
         null as speciesCount,
         t.species_estimate,
         t.species_estimate_reference_id,
-        (select count(*) from taxon_${datasetKey} where parent_id=t.id) AS child_count,
-        <include refid="org.col.db.mapper.SectorMapper.SELECT" />
+        (select count(*) from taxon_${datasetKey} where parent_id=t.id) AS child_count
+        <if test="datasetKey == 3">
+            ,<include refid="org.col.db.mapper.SectorMapper.SELECT" />
+        </if>
     </sql>
 
     <sql id="FROM">

@@ -107,7 +107,7 @@
     ORDER BY key
   </select>
 
-  <select id="attachmentBroken" resultMap="sectorResultMap">
+  <select id="colBroken" resultMap="sectorResultMap">
     SELECT <include refid="SELECT" />
     FROM <include refid="FROM" />
     JOIN col_source cs ON cs.key = s.col_source_key

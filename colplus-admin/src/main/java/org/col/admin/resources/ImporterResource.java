@@ -6,6 +6,7 @@ import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.admin.importer.ImportManager;
 import org.col.admin.importer.ImportRequest;
@@ -40,7 +41,13 @@ public class ImporterResource {
   public ImportRequest schedule(@QueryParam("key") Integer datasetKey, @QueryParam("force") boolean force) {
     return importManager.submit(datasetKey, force);
   }
-
+  
+  @POST
+  @Path("/upload/{datasetKey}")
+  public ImportRequest upload(@PathParam("datasetKey") int datasetKey) {
+    throw new NotImplementedException("Manual upload not yet implemented");
+  }
+  
   @GET
   @Path("/queue")
   public Queue<ImportRequest> queue() {

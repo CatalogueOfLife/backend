@@ -9,6 +9,7 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.pool.KryoFactory;
 import de.javakaffee.kryoserializers.UnmodifiableCollectionsSerializer;
 import de.javakaffee.kryoserializers.guava.ImmutableListSerializer;
+import org.col.api.datapackage.ColTerm;
 import org.col.api.model.*;
 import org.col.api.vocab.*;
 import org.gbif.dwc.terms.TermFactory;
@@ -98,6 +99,7 @@ public class ApiKryoFactory implements KryoFactory {
     kryo.register(TypeStatus.class);
 
     // term enums
+    TermFactory.instance().registerTermEnum(ColTerm.class);
     TermFactory.instance().registerTermEnum(ColDwcTerm.class);
     for (Class cl : TermFactory.instance().listRegisteredTermEnums()) {
       kryo.register(cl);

@@ -82,6 +82,10 @@ public class InitDbCmd extends ConfiguredCommand<AdminServerConfig> {
       try (Reader datasets = new InputStreamReader(PgConfig.COL_DATASETS_URI.toURL().openStream(), StandardCharsets.UTF_8)) {
         exec(PgConfig.COL_DATASETS_URI.toString(), runner, con, datasets);
       }
+      // add more COL GSDs
+      try (Reader datasets = new InputStreamReader(PgConfig.COL_NEW_DATASETS_URI.toURL().openStream(), StandardCharsets.UTF_8)) {
+        exec(PgConfig.COL_NEW_DATASETS_URI.toString(), runner, con, datasets);
+      }
       // add GBIF Backbone datasets
       exec(PgConfig.GBIF_DATASETS_FILE, runner, con, Resources.getResourceAsReader(PgConfig.GBIF_DATASETS_FILE));
     }

@@ -12,10 +12,10 @@ public interface SectorMapper extends CRUDMapper<Sector> {
 	/**
 	 * List all sectors that cannot anymore be linked to root taxa in the source
 	 */
-	List<Sector> rootBroken(@Param("key") int colSourceKey);
+	List<Sector> rootBroken(@Param("key") Integer colSourceKey);
 	
 	/**
 	 * List all sectors that cannot anymore be linked to attachment points in the draft CoL
 	 */
-	List<Sector> attachmentBroken(@Param("key") int colSourceKey);
+	List<Sector> colBroken(@Param("key") Integer colSourceKey);
 }

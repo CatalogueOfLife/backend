@@ -8,15 +8,15 @@
     <field index="2" term="http://rs.tdwg.org/dwc/terms/namePublishedIn"/>
   </core> 
 
-  <extension encoding="UTF-8" fieldsTerminatedBy="\t" linesTerminatedBy="\n" fieldsEnclosedBy="" ignoreHeaderLines="1" rowType="http://rs.col.plus/terms/NameRelations">
+  <extension encoding="UTF-8" fieldsTerminatedBy="\t" linesTerminatedBy="\n" fieldsEnclosedBy="" ignoreHeaderLines="1" rowType="http://rs.col.plus/terms/dwc/NameRelations">
     <files>
       <location>rels.txt</location>
     </files>
     <coreid index="0" />
-    <field index="1" term="http://rs.col.plus/terms/relatedNameUsageID"/>
-    <field index="2" term="http://rs.col.plus/terms/relationType"/>
-    <field index="3" term="http://rs.col.plus/terms/publishedIn"/>
-    <field index="4" term="http://rs.col.plus/terms/relationRemarks"/>
+    <field index="1" term="http://rs.col.plus/terms/dwc/relatedNameUsageID"/>
+    <field index="2" term="http://rs.col.plus/terms/dwc/relationType"/>
+    <field index="3" term="http://rs.col.plus/terms/dwc/publishedIn"/>
+    <field index="4" term="http://rs.col.plus/terms/dwc/relationRemarks"/>
   </extension> 
 
 </archive>

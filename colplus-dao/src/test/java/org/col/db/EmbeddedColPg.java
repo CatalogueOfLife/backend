@@ -27,7 +27,8 @@ import static java.util.Arrays.asList;
  */
 public class EmbeddedColPg {
   private static final Logger LOG = LoggerFactory.getLogger(EmbeddedColPg.class);
-
+	
+	private static final String VERSION = Version.V10_3.asInDownloadPath(); //"11.0-1";
 	private static final List<String> DEFAULT_ADD_PARAMS = asList(
 			"-E", "SQL_ASCII",
 			"--locale=C",
@@ -37,7 +38,7 @@ public class EmbeddedColPg {
 	private EmbeddedPostgres postgres;
   private final PgConfig cfg;
 	private Path serverDir;
-
+	
 	@Deprecated
 	public EmbeddedColPg() {
 		this.cfg = new PgConfig();
@@ -73,7 +74,7 @@ public class EmbeddedColPg {
 			serverDir = cfg.host == null ? Files.createTempDirectory("colplus-pg-") : Paths.get(cfg.host);
 			LOG.debug("Use embedded Postgres, server dir={}", serverDir);
 
-			postgres = new EmbeddedPostgres(Version.V10_3);
+			postgres = new EmbeddedPostgres(() -> VERSION);
 			// assigned some free port using local socket 0
 			cfg.port = PortUtil.findFreePort();
 			cfg.host = "localhost";

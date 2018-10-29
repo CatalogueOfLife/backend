@@ -100,8 +100,14 @@
             <if test="req.format != null">
                 AND data_format=#{req.format}
             </if>
-            <if test="req.type != null">
-                AND type=#{req.type}
+            <if test="req.modified != null">
+                AND di.finished > #{req.modified}
+            </if>
+            <if test="req.created != null">
+                AND created > #{req.created}
+            </if>
+            <if test="req.released != null">
+                AND released > #{req.released}
             </if>
         </if>
     </sql>
@@ -124,21 +130,38 @@
         FROM <include refid="FROM" />
         WHERE <include refid="SEARCH_WHERE" />
         ORDER BY
-        <if test="req == null">key</if>
-        <if test="req != null">
-            <bind name="sortBy" value="req.sortBy.name()" />
-            <choose>
-                <when test="sortBy == 'RELEVANCE'">
-                    ts_rank_cd(doc, plainto_tsquery('simple2', #{req.q})) DESC
-                </when>
-                <when test="sortBy == 'SIZE' || sortBy == 'CREATED' || sortBy == 'MODIFIED'">
-                    ${req.sortBy.name().toLowerCase()} DESC
-                </when>
-                <otherwise>
-                    ${req.sortBy.name().toLowerCase()}
-                </otherwise>
-            </choose>
-        </if>
+        <bind name="rev" value="req.reverse" />
+        <choose>
+            <when test="req == null || req.sortBy == null">
+                key
+            </when>
+            <otherwise>
+                <bind name="sortBy" value="req.sortBy.name()" />
+                <choose>
+                    <when test="sortBy == 'RELEVANCE'">
+                        ts_rank_cd(doc, plainto_tsquery('simple2', #{req.q}))
+                        <bind name="rev" value="!req.reverse" />
+                    </when>
+                    <when test="sortBy == 'SIZE' || sortBy == 'CREATED' || sortBy == 'MODIFIED'">
+                        ${req.sortBy.name().toLowerCase()}
+                        <bind name="rev" value="!req.reverse" />
+                    </when>
+                    <when test="sortBy == 'AUTHORS'">
+                        lower(authors_and_editors[1])
+                    </when>
+                    <when test="sortBy == 'TITLE'">
+                        lower(title)
+                    </when>
+                    <otherwise>
+                        ${req.sortBy.name().toLowerCase()}
+                    </otherwise>
+                </choose>
+            </otherwise>
+        </choose>
+        <choose>
+            <when test="rev">DESC NULLs LAST</when>
+            <otherwise>ASC NULLs FIRST</otherwise>
+        </choose>
         <include refid="org.col.db.mapper.Common.limit"/>
     </select>
 

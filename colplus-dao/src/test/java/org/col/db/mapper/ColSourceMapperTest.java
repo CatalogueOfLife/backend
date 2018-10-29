@@ -63,6 +63,9 @@ public class ColSourceMapperTest extends MapperTestBase<ColSourceMapper> {
     d.setOrganisation("my org");
     d.setNamesCount(23456);
     d.setAlias("ILDIS");
+    d.setNotes("I hate my work");
+    d.setConfidence(2);
+    d.setCompleteness(88);
     return d;
   }
 
