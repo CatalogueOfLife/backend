@@ -32,12 +32,6 @@ public class NameSearchRequest extends MultivaluedHashMap<NameSearchParameter, S
 
   @QueryParam("sortBy")
   private SortBy sortBy = SortBy.NAME;
-  
-  @QueryParam("offset")
-  private Integer offset;
-  
-  @QueryParam("limit")
-  private Integer limit;
 
   public void addFilter(NameSearchParameter param, String value) {
     // make sure we can parse the string value
@@ -72,22 +66,6 @@ public class NameSearchRequest extends MultivaluedHashMap<NameSearchParameter, S
 
   public void setSortBy(SortBy sortBy) {
     this.sortBy = sortBy;
-  }
-  
-  public Integer getOffset() {
-    return offset;
-  }
-
-  public void setOffset(Integer offset) {
-    this.offset = offset;
-  }
-
-  public Integer getLimit() {
-    return limit;
-  }
-
-  public void setLimit(Integer limit) {
-    this.limit = limit;
   }
 
   public Set<SearchContent> getContent() {

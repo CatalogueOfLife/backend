@@ -17,13 +17,14 @@ import org.col.es.query.Query;
 import org.col.es.query.TermQuery;
 import org.col.es.query.TermsQuery;
 
-/*
+/**
  * Translates all query parameters except the "q" parameter into an Elasticsearch query. Unless
  * there is just one query parameter, this will be an AND query. For example:
  * ?rank=genus&nom_status=available is translated into (rank=genus AND nom_status=available). If a
- * query parameter maps to multiple Elasticsearch fields (not currently the case), these fields will
- * then be combined within a nested OR query. Also, the search request may contain multiple values
- * per request parameter (since it extends MultiValuedMap). For example:
+ * query parameter maps to multiple Elasticsearch fields (meaning we need to query multiple fields
+ * for a single query parameter), these fields will then be combined within a nested OR query. This
+ * is currently never the case, however. Also, the search request may contain multiple values per
+ * request parameter (since it extends MultiValuedMap). For example:
  * ?rank=order&rank=family&rank=genus. This will be translated into (rank=order OR rank=family OR
  * rank=genus). Finally, a query parameter may be present but have no value, for example:
  * ?nom_status=&rank=family. This will be translated into (nom_status IS NULL AND rank=family).

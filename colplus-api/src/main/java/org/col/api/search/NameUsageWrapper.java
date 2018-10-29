@@ -1,4 +1,4 @@
-package org.col.db.mapper.model;
+package org.col.api.search;
 
 import java.util.EnumSet;
 import java.util.List;
@@ -9,16 +9,16 @@ import org.col.api.model.NameUsage;
 import org.col.api.model.VernacularName;
 import org.col.api.vocab.Issue;
 
-public class IssueWrapper<T extends NameUsage> {
+public class NameUsageWrapper<T extends NameUsage> {
   
   private T usage;
   private Set<Issue> issues;
   private List<VernacularName> vernacularNames;
   
-  public IssueWrapper() {
+  public NameUsageWrapper() {
   }
   
-  public IssueWrapper(T usage) {
+  public NameUsageWrapper(T usage) {
     this.usage = usage;
     this.issues = EnumSet.noneOf(Issue.class);
   }
@@ -51,15 +51,14 @@ public class IssueWrapper<T extends NameUsage> {
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
-    IssueWrapper<?> that = (IssueWrapper<?>) o;
+    NameUsageWrapper<?> that = (NameUsageWrapper<?>) o;
     return Objects.equals(usage, that.usage) &&
         Objects.equals(issues, that.issues) &&
         Objects.equals(vernacularNames, that.vernacularNames);
   }
   
   @Override
-  public int hashCode() {
-    
+  public int hashCode() { 
     return Objects.hash(usage, issues, vernacularNames);
   }
 }

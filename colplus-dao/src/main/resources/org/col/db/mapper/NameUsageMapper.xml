@@ -4,12 +4,12 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="org.col.db.mapper.NameUsageMapper">
 
-    <resultMap id="issueResultMap" type="IssueWrapper" autoMapping="true">
+    <resultMap id="issueResultMap" type="NameUsageWrapper" autoMapping="true">
         <result property="issues" column="issues" typeHandler="org.col.db.type2.IssueSetTypeHandler" />
     </resultMap>
 
 
-    <resultMap id="taxonResultMap" type="IssueWrapper" autoMapping="true" extends="issueResultMap">
+    <resultMap id="taxonResultMap" type="NameUsageWrapper" autoMapping="true" extends="issueResultMap">
         <id column="id" />
         <association property="usage" javaType="Taxon">
             <id property="id" column="id" />
@@ -21,7 +21,7 @@
         </collection>
     </resultMap>
 
-    <resultMap id="synonymResultMap" type="IssueWrapper" autoMapping="true" extends="issueResultMap">
+    <resultMap id="synonymResultMap" type="NameUsageWrapper" autoMapping="true" extends="issueResultMap">
         <association property="usage" javaType="Synonym">
             <id column="n_id" />
             <id column="a_id" />
@@ -32,7 +32,7 @@
         </association>
     </resultMap>
 
-    <resultMap id="bareNameResultMap" type="IssueWrapper" autoMapping="true" extends="issueResultMap">
+    <resultMap id="bareNameResultMap" type="NameUsageWrapper" autoMapping="true" extends="issueResultMap">
         <association property="usage" javaType="BareName">
             <id column="n_key" />
             <association property="name" javaType="Name" resultMap="org.col.db.mapper.NameMapper.nameResultMap" columnPrefix="n_" />

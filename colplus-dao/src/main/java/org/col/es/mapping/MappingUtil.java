@@ -19,7 +19,7 @@ class MappingUtil {
    * Returns the type argument for a generic type (e.g. Person for List<Person>)
    */
   static Class<?> getClassForTypeArgument(Type t) {
-    String s = t.toString();
+    String s = t.getTypeName();
     int i = s.indexOf('<');
     s = s.substring(i + 1, s.length() - 1);
     try {

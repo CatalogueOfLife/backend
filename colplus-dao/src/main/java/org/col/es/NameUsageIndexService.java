@@ -4,15 +4,14 @@ import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.annotations.VisibleForTesting;
+
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.col.api.jackson.ApiModule;
+import org.col.api.search.NameUsageWrapper;
 import org.col.common.lang.Exceptions;
 import org.col.db.mapper.BatchResultHandler;
 import org.col.db.mapper.NameUsageMapper;
-import org.col.db.mapper.model.IssueWrapper;
 import org.elasticsearch.client.Request;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.ResponseListener;
@@ -26,7 +25,6 @@ import static org.col.es.EsConfig.NAME_USAGE_BASE;
 public class NameUsageIndexService {
 
   private static final Logger LOG = LoggerFactory.getLogger(NameUsageIndexService.class);
-  private static final ObjectWriter WRITER = ApiModule.MAPPER.writerFor(IssueWrapper.class);
 
   private final RestClient client;
   private final EsConfig esConfig;
@@ -54,21 +52,24 @@ public class NameUsageIndexService {
    * Main method to index an entire dataset from postgres into ElasticSearch using the bulk API.
    */
   public void indexDataset(final int datasetKey) throws EsException {
-    final String index = NAME_USAGE_BASE + datasetKey;
+    final String index = NAME_USAGE_BASE;
     final int batchSize = esConfig.nameUsage.batchSize;
     EsUtil.deleteIndex(client, index);
     EsUtil.createIndex(client, index, esConfig.nameUsage);
     final AtomicInteger counter = new AtomicInteger();
     try (SqlSession session = factory.openSession()) {
       NameUsageMapper mapper = session.getMapper(NameUsageMapper.class);
+      LOG.debug("Indexing bare names into Elasticsearch");
       mapper.processDatasetBareNames(datasetKey, new BatchResultHandler<>(batch -> {
         indexBulk(index, batch);
         counter.addAndGet(batch.size());
       }, batchSize));
+      LOG.debug("Indexing synonyms into Elasticsearch");
       mapper.processDatasetSynonyms(datasetKey, new BatchResultHandler<>(batch -> {
         indexBulk(index, batch);
         counter.addAndGet(batch.size());
       }, batchSize));
+      LOG.debug("Indexing taxa into Elasticsearch");
       mapper.processDatasetTaxa(datasetKey, new BatchResultHandler<>(batch -> {
         indexBulk(index, batch);
         counter.addAndGet(batch.size());
@@ -83,19 +84,18 @@ public class NameUsageIndexService {
   }
 
   @VisibleForTesting
-  //TODO: change code for IssueWrapper and translate to EsNameUsage!!!
-  void indexBulk(String index, List<? extends IssueWrapper<?>> usages) {
-    if(usages.size() == 0) {
-      // This is actually probably amounts to an illegal state of affairs, but ok ...
+  void indexBulk(String index, List<? extends NameUsageWrapper<?>> usages) {
+    if (usages.size() == 0) {
       LOG.warn("Received empty batch of name usages while indexing into {}", index);
       return;
     }
+    NameUsageTransfer transer = new NameUsageTransfer(esConfig.nameUsage);
     String actionMetaData = indexActionMetaData(index);
     StringBuilder body = new StringBuilder();
     try {
-      for (IssueWrapper<?> nu : usages) {
+      for (NameUsageWrapper<?> nu : usages) {
         body.append(actionMetaData);
-        body.append(WRITER.writeValueAsString(nu));
+        body.append(transer.toEsDocument(nu));
         body.append("\n");
       }
       Request request = new Request("POST", "/_bulk");
