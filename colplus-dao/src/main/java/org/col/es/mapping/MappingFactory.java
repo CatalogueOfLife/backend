@@ -44,6 +44,21 @@ public class MappingFactory<T> {
   private boolean mapEnumToInt;
 
   /**
+   * Creates a document type mapping for the specified class name.
+   * 
+   * @param className
+   * @return
+   */
+  @SuppressWarnings("unchecked")
+  public Mapping<T> getMapping(String className) {
+    try {
+      return getMapping((Class<T>) Class.forName(className));
+    } catch (ClassNotFoundException e) {
+      throw new MappingException("No such class: " + className);
+    }
+  }
+
+  /**
    * Creates a document type mapping for the specified class.
    * 
    * @param type
@@ -223,18 +238,18 @@ public class MappingFactory<T> {
    * fields are intrinsically multi-valued.
    */
   private Class<?> mapType(Class<?> type, Type typeArg) {
-    if(type.isArray()) {
-      return mapType(type.getComponentType(),null);
+    if (type.isArray()) {
+      return mapType(type.getComponentType(), null);
     }
-    if(Collection.class.isAssignableFrom(type)) {
-      return mapType(getClassForTypeArgument(typeArg),null);
+    if (Collection.class.isAssignableFrom(type)) {
+      return mapType(getClassForTypeArgument(typeArg), null);
     }
     if (type.isEnum()) {
       return mapEnumToInt ? int.class : String.class;
     }
     return type;
   }
-  
+
   private static boolean isMultiValued(Field f) {
     if (f.getType().isArray())
       return true;

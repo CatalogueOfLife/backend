@@ -44,7 +44,6 @@ public class MappingSerializer<T> {
     } catch (JsonProcessingException e) {
       throw new RuntimeException(e);
     }
-
   }
 
   private static ObjectMapper configureMapper() {
