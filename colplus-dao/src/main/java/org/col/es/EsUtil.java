@@ -26,9 +26,9 @@ public class EsUtil {
   public static <T> void createIndex(RestClient client, String name, IndexConfig cfg)
       throws EsException {
 
-    LOG.info("Creating index {}", name);
+     LOG.info("Creating index {}", name);
 
-    // Load global/static config (analyzers, tokenizers, etc.)
+    // Load global / static config (analyzers, tokenizers, etc.)
     Map<String, Object> settings = readIntoMap(loadSettings());
     // Insert index-specific settings
     Map<String, Object> indexSettings = (Map<String, Object>) settings.get("index");
@@ -37,7 +37,9 @@ public class EsUtil {
 
     // Create document type mapping
     Map<String, Object> mappings = new HashMap<>();
-    Mapping<T> mapping = new MappingFactory<T>().getMapping(cfg.modelClass);
+    MappingFactory<T> factory = new MappingFactory<>();
+    factory.setMapEnumToInt(cfg.storeEnumAsInt);
+    Mapping<T> mapping = factory.getMapping(cfg.modelClass);
     mappings.put(EsConfig.DEFAULT_TYPE_NAME, mapping);
 
     // Combine into full request

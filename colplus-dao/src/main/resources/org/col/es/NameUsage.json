@@ -2,7 +2,7 @@
 	"dynamic": "strict",
 	"properties": {
 		"status": {
-			"type": "integer"
+			"type": "keyword"
 		},
 		"scientificName": {
 			"type": "keyword",
@@ -37,13 +37,13 @@
 			"type": "keyword"
 		},
 		"rank": {
-			"type": "integer"
+			"type": "keyword"
 		},
 		"nomStatus": {
-			"type": "integer"
+			"type": "keyword"
 		},
 		"nameFields": {
-			"type": "integer"
+			"type": "keyword"
 		},
 		"taxonId": {
 			"type": "keyword"
@@ -59,14 +59,14 @@
 			}
 		},
 		"issues": {
-			"type": "integer"
+			"type": "keyword"
 		},
 		"payload": {
 			"type": "keyword",
 			"index": false
 		},
 		"type": {
-			"type": "integer"
+			"type": "keyword"
 		}
 	}
 }

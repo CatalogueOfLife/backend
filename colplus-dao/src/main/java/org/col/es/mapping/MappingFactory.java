@@ -107,7 +107,7 @@ public class MappingFactory<T> {
     ESDataType esType = DataTypeMap.INSTANCE.getESType(mapToType);
     if (esType == null) {
       /*
-       * Then the Java type does not map to a simple Elasticsearch type; the Elastichsearch type is
+       * Then the Java type does not map to a simple Elasticsearch type; the Elasticsearch type is
        * either "object" or "nested".
        */
       if (ancestors.contains(mapToType)) {
