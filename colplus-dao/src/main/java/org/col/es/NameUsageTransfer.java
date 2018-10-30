@@ -16,20 +16,20 @@ import org.col.es.model.EsNameUsage;
 /**
  * Converts NameUsageWrapper instances to EsNameUsage instances.
  */
-public class NameUsageTransfer {
+class NameUsageTransfer {
 
   // Writes out the entire EsNameUsage object to a JSON document
   private final ObjectWriter mainWriter;
   // Used to populate the "source" field within EsNameUsage
   private final ObjectWriter sourceWriter;
 
-  public NameUsageTransfer(IndexConfig nameUsageConfig) {
+  NameUsageTransfer(IndexConfig nameUsageConfig) {
     this.mainWriter = nameUsageConfig.getObjectWriter();
     this.sourceWriter = nameUsageConfig.getMapper()
         .writerFor(new TypeReference<NameUsageWrapper<? extends NameUsage>>() {});
   }
 
-  public String toEsDocument(NameUsageWrapper<? extends NameUsage> wrapper)
+  String toEsDocument(NameUsageWrapper<? extends NameUsage> wrapper)
       throws JsonProcessingException {
     EsNameUsage enu = new EsNameUsage();
     if (wrapper.getVernacularNames() != null) {

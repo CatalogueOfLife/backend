@@ -95,7 +95,7 @@ public class EsUtil {
     }
   }
 
-  private static Response executeRequest(RestClient client, Request request) throws EsException {
+  public static Response executeRequest(RestClient client, Request request) throws EsException {
     Response response;
     try {
       response = client.performRequest(request);
