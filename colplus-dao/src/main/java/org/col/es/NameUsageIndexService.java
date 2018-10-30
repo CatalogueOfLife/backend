@@ -127,12 +127,12 @@ public class NameUsageIndexService {
     });
   }
 
-  private void execute(Request req, String index, int size) {
+  private void execute(Request req, String index, int size) throws EsException {
     Response res;
     try {
       res = client.performRequest(req);
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new EsException(e);
     }
     if (res.getStatusLine().getStatusCode() == 200) {
       LOG.debug("Successfully inserted {} name usages into index {}", size, index);
@@ -140,7 +140,7 @@ public class NameUsageIndexService {
       String fmt = "Error while populating index %s: %s";
       String err = String.format(fmt, index, res.getStatusLine().getReasonPhrase());
       LOG.error(err);
-      throw new RuntimeException(err);
+      throw new EsException(err);
     }
   }
 

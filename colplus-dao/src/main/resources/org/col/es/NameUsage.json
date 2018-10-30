@@ -1,0 +1,72 @@
+{
+	"dynamic": "strict",
+	"properties": {
+		"status": {
+			"type": "keyword"
+		},
+		"scientificName": {
+			"type": "keyword",
+			"fields": {
+				"ac": {
+					"type": "text",
+					"analyzer": "autocomplete",
+					"search_analyzer": "autocomplete_search"
+				}
+			}
+		},
+		"authorship": {
+			"type": "keyword",
+			"fields": {
+				"ac": {
+					"type": "text",
+					"analyzer": "autocomplete",
+					"search_analyzer": "autocomplete_search"
+				}
+			}
+		},
+		"datasetKey": {
+			"type": "integer"
+		},
+		"nameId": {
+			"type": "keyword"
+		},
+		"nameIndexId": {
+			"type": "keyword"
+		},
+		"publishedInId": {
+			"type": "keyword"
+		},
+		"rank": {
+			"type": "keyword"
+		},
+		"nomStatus": {
+			"type": "keyword"
+		},
+		"nameFields": {
+			"type": "keyword"
+		},
+		"taxonId": {
+			"type": "keyword"
+		},
+		"vernacularNames": {
+			"type": "keyword",
+			"fields": {
+				"ac": {
+					"type": "text",
+					"analyzer": "autocomplete",
+					"search_analyzer": "autocomplete_search"
+				}
+			}
+		},
+		"issues": {
+			"type": "keyword"
+		},
+		"payload": {
+			"type": "keyword",
+			"index": false
+		},
+		"type": {
+			"type": "keyword"
+		}
+	}
+}

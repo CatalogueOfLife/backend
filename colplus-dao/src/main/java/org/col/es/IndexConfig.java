@@ -1,14 +1,12 @@
 package org.col.es;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.SerializationFeature;
 
 import org.col.api.jackson.ApiModule;
-import org.col.api.model.NameUsage;
-import org.col.api.search.NameUsageWrapper;
 
 public class IndexConfig {
 
@@ -30,13 +28,11 @@ public class IndexConfig {
    * the "source" field of EsNameUsage. On the other hand, it makes the index harder to read in
    * Kibana.
    */
-  public Boolean storeEnumAsInt = Boolean.TRUE;
+  public Boolean storeEnumAsInt = Boolean.FALSE;
 
   private ObjectReader reader;
   private ObjectWriter writer;
-  private ObjectWriter nameUsageWrapperWriter;
-  private ObjectReader nameUsageWrapperReader;
-  
+  private ObjectWriter prettyWriter;
 
   public ObjectMapper getMapper() {
     if (!storeEnumAsInt) {
@@ -44,14 +40,14 @@ public class IndexConfig {
     }
     if (simpleMapper == null) {
       simpleMapper = new ObjectMapper();
+      simpleMapper.enable(SerializationFeature.WRITE_ENUMS_USING_INDEX);
       simpleMapper.setSerializationInclusion(Include.NON_NULL);
     }
     return simpleMapper;
   }
 
-
   /**
-   * Returns an ObjectReader that deserializes ES documents into EsNameUsage instances.
+   * ObjectReader used to deserialize ES documents into EsNameUsage instances.
    */
   public ObjectReader getObjectReader() {
     if (reader == null) {
@@ -65,7 +61,7 @@ public class IndexConfig {
   }
 
   /**
-   * Returns an ObjectWriter that serializes EsNameUsage instances to ES documents.
+   * ObjectWriter used to serialize EsNameUsage instances to ES documents.
    * 
    * @return
    */
@@ -81,17 +77,15 @@ public class IndexConfig {
   }
 
   /**
-   * Returns an ObjectWriter that writes NameUsageWrapper objects coming from Postgres/MyBatis to
-   * the "source" field of the EsNameUsage class.
+   * Pretty prints EsNameUsage instances and Query instances.
    * 
    * @return
    */
-  public ObjectWriter getWriterForNameUsageWrapper() {
-    if (nameUsageWrapperWriter == null) {
-      nameUsageWrapperWriter =
-          getMapper().writerFor(new TypeReference<NameUsageWrapper<? extends NameUsage>>() {});
+  public ObjectWriter getPrettyWriter() {
+    if (prettyWriter == null) {
+      prettyWriter = getMapper().writer().withDefaultPrettyPrinter();
     }
-    return nameUsageWrapperWriter;
+    return prettyWriter;
   }
 
 }

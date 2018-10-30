@@ -1,5 +1,6 @@
 package org.col.es.query;
 
-abstract class AbstractQuery extends QueryElement implements Query {
+abstract class AbstractQuery implements Query {
 
+  // So far no shared functionality
 }

@@ -2,13 +2,11 @@ package org.col.es.query;
 
 public class QueryValue {
 
-  private Object value;
-  private Float boost;
-
-  public QueryValue() {}
+  private final Object value;
+  private final Float boost;
 
   public QueryValue(Object value) {
-    this.value = value;
+    this(value, null);
   }
 
   public QueryValue(Object value, Float boost) {
@@ -20,16 +18,8 @@ public class QueryValue {
     return value;
   }
 
-  public void setValue(Object value) {
-    this.value = value;
-  }
-
   public Float getBoost() {
     return boost;
-  }
-
-  public void setBoost(Float boost) {
-    this.boost = boost;
   }
 
 }

@@ -12,17 +12,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import org.col.es.annotations.Analyzer;
 import org.col.es.annotations.Analyzers;
 import org.col.es.annotations.NotIndexed;
-import org.col.es.annotations.NotNested;
 
 import static org.col.es.mapping.ESDataType.KEYWORD;
 import static org.col.es.mapping.ESDataType.NESTED;
-import static org.col.es.mapping.MappingUtil.*;
+import static org.col.es.mapping.MappingUtil.extractProperty;
 import static org.col.es.mapping.MappingUtil.getClassForTypeArgument;
 import static org.col.es.mapping.MappingUtil.getFields;
 import static org.col.es.mapping.MappingUtil.getMappedProperties;
@@ -32,16 +28,30 @@ import static org.col.es.mapping.MultiField.IGNORE_CASE;
 import static org.col.es.mapping.MultiField.NGRAM;
 
 /**
- * Generates Elasticsearch type mappings from {@link Class} objects. For each instance field in the
- * Java class a counterpart will be created in the Elasticsearch document type, unless it is
- * annotated with {@link JsonIgnore}. Getters are ignored unless they are annotated with
- * {@link JsonProperty}.
+ * Generates an Elasticsearch document type mapping from a {@link Class} object.
  */
 public class MappingFactory<T> {
 
+  // Cache of document type mappings. Since we really have only one document type (EsNameUsage), it
+  // will contain just one entry.
   private static final HashMap<Class<?>, Mapping<?>> cache = new HashMap<>();
 
   private boolean mapEnumToInt;
+
+  /**
+   * Creates a document type mapping for the specified class name.
+   * 
+   * @param className
+   * @return
+   */
+  @SuppressWarnings("unchecked")
+  public Mapping<T> getMapping(String className) {
+    try {
+      return getMapping((Class<T>) Class.forName(className));
+    } catch (ClassNotFoundException e) {
+      throw new MappingException("No such class: " + className);
+    }
+  }
 
   /**
    * Creates a document type mapping for the specified class.
@@ -78,8 +88,6 @@ public class MappingFactory<T> {
       fields.add(fieldName);
       ESField esField = createESField(javaMethod, ancestors);
       esField.setName(fieldName);
-      esField.setParent(document);
-      esField.setArray(isMultiValued(javaMethod));
       document.addField(fieldName, esField);
     }
     for (Field javaField : getFields(type)) {
@@ -89,8 +97,6 @@ public class MappingFactory<T> {
       // System.out.println("Mapping field " + javaField.getName());
       ESField esField = createESField(javaField, ancestors);
       esField.setName(javaField.getName());
-      esField.setParent(document);
-      esField.setArray(isMultiValued(javaField));
       document.addField(javaField.getName(), esField);
     }
   }
@@ -100,6 +106,10 @@ public class MappingFactory<T> {
     Class<?> mapToType = mapType(realType, method.getGenericReturnType());
     ESDataType esType = DataTypeMap.INSTANCE.getESType(mapToType);
     if (esType == null) {
+      /*
+       * Then the Java type does not map to a simple Elasticsearch type; the Elasticsearch type is
+       * either "object" or "nested".
+       */
       if (ancestors.contains(mapToType)) {
         throw new ClassCircularityException(method, mapToType);
       }
@@ -113,10 +123,6 @@ public class MappingFactory<T> {
     Class<?> mapToType = mapType(realType, field.getGenericType());
     ESDataType esType = DataTypeMap.INSTANCE.getESType(mapToType);
     if (esType == null) {
-      /*
-       * Then the Java type does not map to a simple Elasticsearch type; the Elastichsearch type is
-       * either "object" or "nested".
-       */
       if (ancestors.contains(mapToType)) {
         throw new ClassCircularityException(field, mapToType);
       }
@@ -152,11 +158,7 @@ public class MappingFactory<T> {
     Class<?> realType = field.getType();
     ComplexField document;
     if (realType.isArray() || isA(realType, Collection.class)) {
-      if (field.getAnnotation(NotNested.class) == null) {
-        document = new ComplexField(NESTED);
-      } else {
-        document = new ComplexField();
-      }
+      document = new ComplexField(NESTED);
     } else {
       document = new ComplexField();
     }
@@ -169,11 +171,7 @@ public class MappingFactory<T> {
     Class<?> realType = method.getReturnType();
     ComplexField document;
     if (realType.isArray() || isA(realType, Collection.class)) {
-      if (method.getAnnotation(NotNested.class) == null) {
-        document = new ComplexField(NESTED);
-      } else {
-        document = new ComplexField();
-      }
+      document = new ComplexField(NESTED);
     } else {
       document = new ComplexField();
     }
@@ -219,36 +217,20 @@ public class MappingFactory<T> {
   /*
    * Maps a Java class to another Java class that must be used in its place. The latter class is
    * then mapped to an Elasticsearch data type. When mapping arrays, it's not the array that is
-   * mapped but the class of its elements. No array type exists or is required in Elasticsearch;
-   * fields are intrinsically multi-valued.
+   * mapped but the class of its elements. No array type exists or is required in Elasticsearch.
+   * Fields are intrinsically multi-valued.
    */
   private Class<?> mapType(Class<?> type, Type typeArg) {
-    if(type.isArray()) {
-      return mapType(type.getComponentType(),null);
+    if (type.isArray()) {
+      return mapType(type.getComponentType(), null);
     }
-    if(Collection.class.isAssignableFrom(type)) {
-      return mapType(getClassForTypeArgument(typeArg),null);
+    if (Collection.class.isAssignableFrom(type)) {
+      return mapType(getClassForTypeArgument(typeArg), null);
     }
     if (type.isEnum()) {
       return mapEnumToInt ? int.class : String.class;
     }
     return type;
-  }
-  
-  private static boolean isMultiValued(Field f) {
-    if (f.getType().isArray())
-      return true;
-    if (isA(f.getType(), Collection.class))
-      return true;
-    return false;
-  }
-
-  private static boolean isMultiValued(Method m) {
-    if (m.getReturnType().isArray())
-      return true;
-    if (isA(m.getReturnType(), Collection.class))
-      return true;
-    return false;
   }
 
   private static HashSet<Class<?>> newTree(HashSet<Class<?>> ancestors, Class<?> newType) {

@@ -12,7 +12,7 @@ public class NestedQuery extends AbstractQuery {
     }
   }
 
-  private static class Clause extends QueryElement {
+  private static class Clause {
     private final String path;
     @JsonProperty("score_mode")
     private final ScoreMode scoreMode;
