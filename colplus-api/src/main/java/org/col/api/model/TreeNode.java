@@ -102,6 +102,14 @@ public class TreeNode {
     this.speciesEstimateReferenceId = speciesEstimateReferenceId;
   }
   
+  public Sector getSector() {
+    return sector;
+  }
+  
+  public void setSector(Sector sector) {
+    this.sector = sector;
+  }
+  
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -116,12 +124,13 @@ public class TreeNode {
         rank == treeNode.rank &&
         status == treeNode.status &&
         Objects.equals(speciesEstimate, treeNode.speciesEstimate) &&
-        Objects.equals(speciesEstimateReferenceId, treeNode.speciesEstimateReferenceId);
+        Objects.equals(speciesEstimateReferenceId, treeNode.speciesEstimateReferenceId) &&
+        Objects.equals(sector, treeNode.sector);
   }
   
   @Override
   public int hashCode() {
     
-    return Objects.hash(id, parentId, name, authorship, rank, status, childCount, speciesCount, speciesEstimate, speciesEstimateReferenceId);
+    return Objects.hash(id, parentId, name, authorship, rank, status, childCount, speciesCount, speciesEstimate, speciesEstimateReferenceId, sector);
   }
 }

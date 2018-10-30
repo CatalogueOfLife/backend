@@ -6,6 +6,7 @@ import org.col.api.model.Sector;
 import org.junit.Before;
 import org.junit.Test;
 
+import static org.col.api.TestEntityGenerator.DATASET11;
 import static org.col.api.TestEntityGenerator.newNameRef;
 import static org.junit.Assert.*;
 
@@ -19,7 +20,7 @@ public class SectorMapperTest extends MapperTestBase<SectorMapper> {
 
   @Before
   public void initSource() {
-    source = ColSourceMapperTest.create();
+    source = ColSourceMapperTest.create(DATASET11.getKey());
     mapper(ColSourceMapper.class).create(source);
   }
 

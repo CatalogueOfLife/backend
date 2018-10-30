@@ -240,6 +240,10 @@ public class TestEntityGenerator {
    * Creates a new name with the specified id, belonging to the specified dataset.
    */
   public static Name newName(int datasetKey, String id, String scientificName) {
+    return newName(datasetKey, id, scientificName, Rank.SPECIES);
+  }
+  
+  public static Name newName(int datasetKey, String id, String scientificName, Rank rank) {
     Name n = new Name();
     n.setId(id);
     n.setHomotypicNameId(id);
@@ -252,17 +256,23 @@ public class TestEntityGenerator {
       n.setSanctioningAuthor("Fr.");
     }
     List<String> tokens = SPACE_SPLITTER.splitToList(scientificName);
-    n.setGenus(tokens.get(0));
-    n.setSpecificEpithet(tokens.get(1));
-    n.setInfragenericEpithet("Igen");
-    n.setInfraspecificEpithet(null);
+    if (tokens.size() == 1) {
+      n.setUninomial(tokens.get(0));
+    } else {
+      n.setGenus(tokens.get(0));
+      n.setInfragenericEpithet("Igen");
+      n.setSpecificEpithet(tokens.get(1));
+      if (tokens.size() > 2) {
+        n.setInfraspecificEpithet(tokens.get(2));
+      }
+    }
     n.setCandidatus(true);
     n.setCultivarEpithet("Red Rose");
     n.setStrain("ACTT 675213");
     n.setSourceUrl(URI.create("http://gbif.org"));
     n.setNotho(NamePart.SPECIFIC);
     n.setFossil(true);
-    n.setRank(Rank.SPECIES);
+    n.setRank(rank);
     n.setOrigin(Origin.SOURCE);
     n.setType(NameType.SCIENTIFIC);
     n.updateScientificName();

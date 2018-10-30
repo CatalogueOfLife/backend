@@ -8,6 +8,7 @@ import org.col.api.vocab.TaxonomicStatus;
 import org.junit.Before;
 import org.junit.Test;
 
+import static org.col.api.TestEntityGenerator.DATASET11;
 import static org.col.api.TestEntityGenerator.newNameRef;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -24,7 +25,7 @@ public class DecisionMapperTest extends MapperTestBase<DecisionMapper> {
 
   @Before
   public void initSource() {
-    source = ColSourceMapperTest.create();
+    source = ColSourceMapperTest.create(DATASET11.getKey());
     mapper(ColSourceMapper.class).create(source);
 
     sector = SectorMapperTest.create(source.getKey());

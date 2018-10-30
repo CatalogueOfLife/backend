@@ -19,7 +19,7 @@ public class ColSourceMapperTest extends MapperTestBase<ColSourceMapper> {
 
   @Test
   public void roundtrip() throws Exception {
-    ColSource d1 = create();
+    ColSource d1 = create(DATASET11.getKey());
     mapper().create(d1);
 
     commit();
@@ -33,7 +33,7 @@ public class ColSourceMapperTest extends MapperTestBase<ColSourceMapper> {
 
   @Test
   public void delete() throws Exception {
-    ColSource d1 = create();
+    ColSource d1 = create(DATASET11.getKey());
     mapper().create(d1);
 
     commit();
@@ -47,9 +47,9 @@ public class ColSourceMapperTest extends MapperTestBase<ColSourceMapper> {
     assertNull(mapper().get(d1.getKey()));
   }
 
-  public static ColSource create() {
+  public static ColSource create(int datasetKey) {
     ColSource d = new ColSource();
-    d.setDatasetKey(DATASET11.getKey());
+    d.setDatasetKey(datasetKey);
     d.setCoverage(DatasetType.GLOBAL);
     d.setTitle(RandomUtils.randomString(80));
     d.setDescription(RandomUtils.randomString(500));
