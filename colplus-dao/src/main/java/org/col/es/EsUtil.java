@@ -14,6 +14,7 @@ import org.elasticsearch.client.RestClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.col.es.mapping.SerializationUtil.pretty;
 import static org.col.es.mapping.SerializationUtil.readIntoMap;
 import static org.col.es.mapping.SerializationUtil.serialize;
 
@@ -43,7 +44,7 @@ public class EsUtil {
     Map<String, Object> indexSpec = new HashMap<>();
     indexSpec.put("settings", settings);
     indexSpec.put("mappings", mappings);
-    LOG.debug(serialize(indexSpec));
+    LOG.debug(pretty(indexSpec));
 
     Request request = new Request("PUT", name);
     request.setJsonEntity(serialize(indexSpec));

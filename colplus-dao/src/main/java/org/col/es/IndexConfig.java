@@ -28,11 +28,11 @@ public class IndexConfig {
    * the "source" field of EsNameUsage. On the other hand, it makes the index harder to read in
    * Kibana.
    */
-  public Boolean storeEnumAsInt = Boolean.TRUE;
+  public Boolean storeEnumAsInt = Boolean.FALSE;
 
   private ObjectReader reader;
   private ObjectWriter writer;
-  
+  private ObjectWriter prettyWriter;
 
   public ObjectMapper getMapper() {
     if (!storeEnumAsInt) {
@@ -46,9 +46,8 @@ public class IndexConfig {
     return simpleMapper;
   }
 
-
   /**
-   * Returns an ObjectReader that deserializes ES documents into EsNameUsage instances.
+   * ObjectReader used to deserialize ES documents into EsNameUsage instances.
    */
   public ObjectReader getObjectReader() {
     if (reader == null) {
@@ -62,7 +61,7 @@ public class IndexConfig {
   }
 
   /**
-   * Returns an ObjectWriter that serializes EsNameUsage instances to ES documents.
+   * ObjectWriter used to serialize EsNameUsage instances to ES documents.
    * 
    * @return
    */
@@ -77,5 +76,16 @@ public class IndexConfig {
     return writer;
   }
 
+  /**
+   * Pretty prints EsNameUsage instances and Query instances.
+   * 
+   * @return
+   */
+  public ObjectWriter getPrettyWriter() {
+    if (prettyWriter == null) {
+      prettyWriter = getMapper().writer().withDefaultPrettyPrinter();
+    }
+    return prettyWriter;
+  }
 
 }

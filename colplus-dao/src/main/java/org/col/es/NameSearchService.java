@@ -2,40 +2,43 @@ package org.col.es;
 
 import java.io.IOException;
 
-import com.google.common.annotations.VisibleForTesting;
-
-import org.col.api.model.NameUsage;
 import org.col.api.model.Page;
 import org.col.api.model.ResultPage;
 import org.col.api.search.NameSearchRequest;
+import org.col.api.search.NameUsageWrapper;
 import org.col.es.query.EsSearchRequest;
 import org.col.es.translate.NameSearchRequestTranslator;
 import org.elasticsearch.client.Request;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.RestClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import static org.col.es.EsConfig.DEFAULT_TYPE_NAME;
+import static org.col.es.EsConfig.NAME_USAGE_BASE;
 
 public class NameSearchService {
+  
+  private static final Logger LOG = LoggerFactory.getLogger(NameSearchService.class);
+
+
+  private static String REQUEST_URL = getUrl();
 
   private final RestClient client;
-  private final EsConfig esConfig;
 
-  public NameSearchService(RestClient client, EsConfig esConfig) {
+  public NameSearchService(RestClient client) {
     this.client = client;
-    this.esConfig = esConfig;
   }
 
-  public ResultPage<NameUsage> search(NameSearchRequest query, Page page)
+  public ResultPage<NameUsageWrapper<?>> search(NameSearchRequest query, Page page)
       throws InvalidQueryException {
-    String index = EsConfig.NAME_USAGE_BASE;
-    return search(index, query, page);
-  }
-
-  @VisibleForTesting
-  ResultPage<NameUsage> search(String index, NameSearchRequest query, Page page)
-      throws InvalidQueryException {
-    Request request = new Request("GET", "/" + index + "/_doc");
-    EsSearchRequest esr = new NameSearchRequestTranslator(query, page).translate();
-    request.setJsonEntity(esr.toString());
+    NameSearchRequestTranslator translator = new NameSearchRequestTranslator(query, page);
+    EsSearchRequest esQuery = translator.translate();
+    if(LOG.isDebugEnabled()) {
+      //LOG.debug(msg);
+    }
+    Request request = new Request("GET", REQUEST_URL);
+    request.setJsonEntity(esQuery.toString());
     Response response;
     try {
       response = client.performRequest(request);
@@ -46,5 +49,9 @@ public class NameSearchService {
       throw new RuntimeException(response.getStatusLine().getReasonPhrase());
     }
     return null;
+  }
+
+  private static String getUrl() {
+    return String.format("/%s/%s", NAME_USAGE_BASE, DEFAULT_TYPE_NAME);
   }
 }

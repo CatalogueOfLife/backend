@@ -3,15 +3,16 @@ package org.col.es.query;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class BoolQuery extends AbstractQuery {
 
-  private static class Clause extends QueryElement {
-    private List<Query> must;
+  private static class Clause {
+    public List<Query> must;
     @JsonProperty("must_not")
-    private List<Query> mustNot;
-    private List<Query> should;
+    public List<Query> mustNot;
+    public List<Query> should;
   }
 
   private final Clause bool;
@@ -20,6 +21,7 @@ public class BoolQuery extends AbstractQuery {
     this.bool = new Clause();
   }
 
+  @JsonIgnore
   public BoolQuery must(Query query) {
     if (bool.must == null) {
       bool.must = new ArrayList<>();
@@ -28,6 +30,7 @@ public class BoolQuery extends AbstractQuery {
     return this;
   }
 
+  @JsonIgnore
   public BoolQuery mustNot(Query query) {
     if (bool.mustNot == null) {
       bool.mustNot = new ArrayList<>();
@@ -36,6 +39,7 @@ public class BoolQuery extends AbstractQuery {
     return this;
   }
 
+  @JsonIgnore
   public BoolQuery should(Query query) {
     if (bool.should == null) {
       bool.should = new ArrayList<>();
@@ -44,8 +48,8 @@ public class BoolQuery extends AbstractQuery {
     return this;
   }
 
-  public boolean isEmpty() {
-    return bool.must == null && bool.mustNot == null && bool.should == null;
+  public Clause getBool() {
+    return bool;
   }
 
 }

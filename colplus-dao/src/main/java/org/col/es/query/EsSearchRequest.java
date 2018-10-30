@@ -68,8 +68,5 @@ public class EsSearchRequest {
     this.aggs = aggs;
   }
 
-  public String toString() {
-    return QueryUtil.toString(this);
-  }
 
 }

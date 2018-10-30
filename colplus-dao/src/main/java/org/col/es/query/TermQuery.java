@@ -16,4 +16,8 @@ public class TermQuery extends AbstractQuery {
     term.put(field, new QueryValue(value, boost));
   }
 
+  public Map<String, QueryValue> getTerm() {
+    return term;
+  }
+
 }

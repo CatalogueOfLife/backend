@@ -33,17 +33,17 @@ public class SerializationUtil {
     }
   }
 
-  public static String serialize(Map<String, Object> map) {
+  public static String serialize(Object obj) {
     try {
-      return MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(map);
+      return MAPPER.writeValueAsString(obj);
     } catch (JsonProcessingException e) {
       throw new MappingException(e);
     }
   }
 
-  public static String serialize(Mapping<?> mapping) {
+  public static String pretty(Object obj) {
     try {
-      return MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(mapping);
+      return MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(obj);
     } catch (JsonProcessingException e) {
       throw new MappingException(e);
     }
