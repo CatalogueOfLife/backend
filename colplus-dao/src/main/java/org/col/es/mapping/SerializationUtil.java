@@ -13,7 +13,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
 /**
- * Serialization utils for Elasticsearch document type mappings.
+ * Serialization utils for Elasticsearch document type mappings. Not meant of real domain model
+ * objects.
  * 
  */
 public class SerializationUtil {

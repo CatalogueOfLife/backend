@@ -15,7 +15,6 @@ import java.util.Set;
 import org.col.es.annotations.Analyzer;
 import org.col.es.annotations.Analyzers;
 import org.col.es.annotations.NotIndexed;
-import org.col.es.annotations.NotNested;
 
 import static org.col.es.mapping.ESDataType.KEYWORD;
 import static org.col.es.mapping.ESDataType.NESTED;
@@ -33,6 +32,8 @@ import static org.col.es.mapping.MultiField.NGRAM;
  */
 public class MappingFactory<T> {
 
+  // Cache of document type mappings. Since we really have only one document type (EsNameUsage), it
+  // will contain just one entry.
   private static final HashMap<Class<?>, Mapping<?>> cache = new HashMap<>();
 
   private boolean mapEnumToInt;
@@ -157,11 +158,7 @@ public class MappingFactory<T> {
     Class<?> realType = field.getType();
     ComplexField document;
     if (realType.isArray() || isA(realType, Collection.class)) {
-      if (field.getAnnotation(NotNested.class) == null) {
-        document = new ComplexField(NESTED);
-      } else {
-        document = new ComplexField();
-      }
+      document = new ComplexField(NESTED);
     } else {
       document = new ComplexField();
     }
@@ -174,11 +171,7 @@ public class MappingFactory<T> {
     Class<?> realType = method.getReturnType();
     ComplexField document;
     if (realType.isArray() || isA(realType, Collection.class)) {
-      if (method.getAnnotation(NotNested.class) == null) {
-        document = new ComplexField(NESTED);
-      } else {
-        document = new ComplexField();
-      }
+      document = new ComplexField(NESTED);
     } else {
       document = new ComplexField();
     }
@@ -224,8 +217,8 @@ public class MappingFactory<T> {
   /*
    * Maps a Java class to another Java class that must be used in its place. The latter class is
    * then mapped to an Elasticsearch data type. When mapping arrays, it's not the array that is
-   * mapped but the class of its elements. No array type exists or is required in Elasticsearch;
-   * fields are intrinsically multi-valued.
+   * mapped but the class of its elements. No array type exists or is required in Elasticsearch.
+   * Fields are intrinsically multi-valued.
    */
   private Class<?> mapType(Class<?> type, Type typeArg) {
     if (type.isArray()) {
