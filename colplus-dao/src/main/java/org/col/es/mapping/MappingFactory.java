@@ -12,9 +12,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import org.col.es.annotations.Analyzer;
 import org.col.es.annotations.Analyzers;
 import org.col.es.annotations.NotIndexed;
@@ -22,7 +19,7 @@ import org.col.es.annotations.NotNested;
 
 import static org.col.es.mapping.ESDataType.KEYWORD;
 import static org.col.es.mapping.ESDataType.NESTED;
-import static org.col.es.mapping.MappingUtil.*;
+import static org.col.es.mapping.MappingUtil.extractProperty;
 import static org.col.es.mapping.MappingUtil.getClassForTypeArgument;
 import static org.col.es.mapping.MappingUtil.getFields;
 import static org.col.es.mapping.MappingUtil.getMappedProperties;
@@ -32,10 +29,7 @@ import static org.col.es.mapping.MultiField.IGNORE_CASE;
 import static org.col.es.mapping.MultiField.NGRAM;
 
 /**
- * Generates Elasticsearch type mappings from {@link Class} objects. For each instance field in the
- * Java class a counterpart will be created in the Elasticsearch document type, unless it is
- * annotated with {@link JsonIgnore}. Getters are ignored unless they are annotated with
- * {@link JsonProperty}.
+ * Generates an Elasticsearch document type mapping from a {@link Class} object.
  */
 public class MappingFactory<T> {
 
@@ -93,8 +87,6 @@ public class MappingFactory<T> {
       fields.add(fieldName);
       ESField esField = createESField(javaMethod, ancestors);
       esField.setName(fieldName);
-      esField.setParent(document);
-      esField.setArray(isMultiValued(javaMethod));
       document.addField(fieldName, esField);
     }
     for (Field javaField : getFields(type)) {
@@ -104,8 +96,6 @@ public class MappingFactory<T> {
       // System.out.println("Mapping field " + javaField.getName());
       ESField esField = createESField(javaField, ancestors);
       esField.setName(javaField.getName());
-      esField.setParent(document);
-      esField.setArray(isMultiValued(javaField));
       document.addField(javaField.getName(), esField);
     }
   }
@@ -115,6 +105,10 @@ public class MappingFactory<T> {
     Class<?> mapToType = mapType(realType, method.getGenericReturnType());
     ESDataType esType = DataTypeMap.INSTANCE.getESType(mapToType);
     if (esType == null) {
+      /*
+       * Then the Java type does not map to a simple Elasticsearch type; the Elastichsearch type is
+       * either "object" or "nested".
+       */
       if (ancestors.contains(mapToType)) {
         throw new ClassCircularityException(method, mapToType);
       }
@@ -128,10 +122,6 @@ public class MappingFactory<T> {
     Class<?> mapToType = mapType(realType, field.getGenericType());
     ESDataType esType = DataTypeMap.INSTANCE.getESType(mapToType);
     if (esType == null) {
-      /*
-       * Then the Java type does not map to a simple Elasticsearch type; the Elastichsearch type is
-       * either "object" or "nested".
-       */
       if (ancestors.contains(mapToType)) {
         throw new ClassCircularityException(field, mapToType);
       }
@@ -248,22 +238,6 @@ public class MappingFactory<T> {
       return mapEnumToInt ? int.class : String.class;
     }
     return type;
-  }
-
-  private static boolean isMultiValued(Field f) {
-    if (f.getType().isArray())
-      return true;
-    if (isA(f.getType(), Collection.class))
-      return true;
-    return false;
-  }
-
-  private static boolean isMultiValued(Method m) {
-    if (m.getReturnType().isArray())
-      return true;
-    if (isA(m.getReturnType(), Collection.class))
-      return true;
-    return false;
   }
 
   private static HashSet<Class<?>> newTree(HashSet<Class<?>> ancestors, Class<?> newType) {
