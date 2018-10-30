@@ -13,6 +13,9 @@ import org.col.api.model.VernacularName;
 import org.col.api.search.NameUsageWrapper;
 import org.col.es.model.EsNameUsage;
 
+/**
+ * Converts NameUsageWrapper instances to EsNameUsage instances.
+ */
 public class NameUsageTransfer {
 
   // Writes out the entire EsNameUsage object to a JSON document

@@ -1,14 +1,12 @@
 package org.col.es;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.SerializationFeature;
 
 import org.col.api.jackson.ApiModule;
-import org.col.api.model.NameUsage;
-import org.col.api.search.NameUsageWrapper;
 
 public class IndexConfig {
 
@@ -34,8 +32,6 @@ public class IndexConfig {
 
   private ObjectReader reader;
   private ObjectWriter writer;
-  private ObjectWriter nameUsageWrapperWriter;
-  private ObjectReader nameUsageWrapperReader;
   
 
   public ObjectMapper getMapper() {
@@ -44,6 +40,7 @@ public class IndexConfig {
     }
     if (simpleMapper == null) {
       simpleMapper = new ObjectMapper();
+      simpleMapper.enable(SerializationFeature.WRITE_ENUMS_USING_INDEX);
       simpleMapper.setSerializationInclusion(Include.NON_NULL);
     }
     return simpleMapper;
@@ -80,18 +77,5 @@ public class IndexConfig {
     return writer;
   }
 
-  /**
-   * Returns an ObjectWriter that writes NameUsageWrapper objects coming from Postgres/MyBatis to
-   * the "source" field of the EsNameUsage class.
-   * 
-   * @return
-   */
-  public ObjectWriter getWriterForNameUsageWrapper() {
-    if (nameUsageWrapperWriter == null) {
-      nameUsageWrapperWriter =
-          getMapper().writerFor(new TypeReference<NameUsageWrapper<? extends NameUsage>>() {});
-    }
-    return nameUsageWrapperWriter;
-  }
 
 }
