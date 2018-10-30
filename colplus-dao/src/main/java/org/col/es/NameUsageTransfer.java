@@ -52,7 +52,7 @@ class NameUsageTransfer {
       enu.setTaxonId(((Taxon) wrapper.getUsage()).getId());
     }
     enu.setType(name.getType());
-    enu.setSource(sourceWriter.writeValueAsString(wrapper));
+    enu.setPayload(sourceWriter.writeValueAsString(wrapper));
     return mainWriter.writeValueAsString(enu);
   }
 

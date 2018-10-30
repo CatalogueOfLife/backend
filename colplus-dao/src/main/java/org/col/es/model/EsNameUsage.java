@@ -34,7 +34,7 @@ public class EsNameUsage {
   private Set<Issue> issues;
   private List<String> vernacularNames;
 
-  private String source; // The entire NameUsageWrapper object, serialized to a string
+  private String payload; // The entire NameUsageWrapper object, serialized to a string
 
   @Analyzers({AUTO_COMPLETE})
   public String getScientificName() {
@@ -152,12 +152,12 @@ public class EsNameUsage {
   }
 
   @NotIndexed
-  public String getSource() {
-    return source;
+  public String getPayload() {
+    return payload;
   }
 
-  public void setSource(String source) {
-    this.source = source;
+  public void setPayload(String source) {
+    this.payload = source;
   }
 
   @Override
