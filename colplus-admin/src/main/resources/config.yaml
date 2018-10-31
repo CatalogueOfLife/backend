@@ -22,6 +22,9 @@ client:
   maxConnectionsPerRoute: 16
   keepAlive: 0ms
   retries: 1
+auth:
+  signingKey: 3254e6rftgbzg6tz7
+  gbifSecret: 123456789
 es:
   # comma-separated strings of hosts and ports (numbers must match)
   hosts: ${es.hosts}
