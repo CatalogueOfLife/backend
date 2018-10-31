@@ -100,7 +100,8 @@ CREATE TABLE coluser (
   country TEXT,
   roles int[],
   settings HSTORE,
-  last_login TIMESTAMP WITHOUT TIME ZONE,
+  last_login TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   deleted TIMESTAMP WITHOUT TIME ZONE
 );
 

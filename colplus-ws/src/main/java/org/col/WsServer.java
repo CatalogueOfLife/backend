@@ -29,8 +29,8 @@ public class WsServer extends PgApp<WsServerConfig> {
     RestClient esClient = new EsClientFactory(cfg.es).createClient();
     env.lifecycle().manage(new ManagedEsClient(esClient));
     
-    NameUsageSearchService svc = new NameUsageSearchService(esClient, cfg.es);
-    env.jersey().register(new NameResource(svc));   
+    NameUsageSearchService nuss = new NameUsageSearchService(esClient, cfg.es);
+    env.jersey().register(new NameResource(nuss));
 
     env.jersey().register(new ColSourceResource());
     env.jersey().register(new DecisionResource());

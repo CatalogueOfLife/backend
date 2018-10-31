@@ -23,8 +23,9 @@ public class ColUser implements IntKey, Principal {
   private Country country;
   private Set<Role> roles;
   private Map<String, String> settings = new HashMap<>();
-  private LocalDateTime deleted;
   private LocalDateTime lastLogin;
+  private LocalDateTime created;
+  private LocalDateTime deleted;
   
   
   @Override
@@ -141,27 +142,36 @@ public class ColUser implements IntKey, Principal {
     this.lastLogin = lastLogin;
   }
   
+  public LocalDateTime getCreated() {
+    return created;
+  }
+  
+  public void setCreated(LocalDateTime created) {
+    this.created = created;
+  }
+  
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
-    ColUser colUser = (ColUser) o;
-    return Objects.equals(key, colUser.key) &&
-        Objects.equals(username, colUser.username) &&
-        Objects.equals(firstname, colUser.firstname) &&
-        Objects.equals(lastname, colUser.lastname) &&
-        Objects.equals(email, colUser.email) &&
-        Objects.equals(orcid, colUser.orcid) &&
-        country == colUser.country &&
-        Objects.equals(roles, colUser.roles) &&
-        Objects.equals(settings, colUser.settings) &&
-        Objects.equals(deleted, colUser.deleted) &&
-        Objects.equals(lastLogin, colUser.lastLogin);
+    ColUser user = (ColUser) o;
+    return Objects.equals(key, user.key) &&
+        Objects.equals(username, user.username) &&
+        Objects.equals(firstname, user.firstname) &&
+        Objects.equals(lastname, user.lastname) &&
+        Objects.equals(email, user.email) &&
+        Objects.equals(orcid, user.orcid) &&
+        country == user.country &&
+        Objects.equals(roles, user.roles) &&
+        Objects.equals(settings, user.settings) &&
+        Objects.equals(lastLogin, user.lastLogin) &&
+        Objects.equals(created, user.created) &&
+        Objects.equals(deleted, user.deleted);
   }
   
   @Override
   public int hashCode() {
     
-    return Objects.hash(key, username, firstname, lastname, email, orcid, country, roles, settings, deleted, lastLogin);
+    return Objects.hash(key, username, firstname, lastname, email, orcid, country, roles, settings, lastLogin, created, deleted);
   }
 }

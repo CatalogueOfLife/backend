@@ -95,6 +95,7 @@ public class IdentityService implements Authenticator<BasicCredentials, ColUser>
         if (mapper.update(user) < 1) {
           LOG.info("Creating new CoL user {} {}", user.getUsername(), user.getKey());
           mapper.create(user);
+          user.setCreated(LocalDateTime.now());
         }
       }
       return Optional.of(cache(user));

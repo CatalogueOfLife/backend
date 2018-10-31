@@ -21,7 +21,7 @@ import org.apache.ibatis.type.BaseTypeHandler;
 import org.apache.ibatis.type.JdbcType;
 
 /**
- * String array hanlder that avoids nulls and uses empty arrays instead.
+ * String array handler that avoids nulls and uses empty arrays instead.
  */
 public class StringArrayTypeHandler extends BaseTypeHandler<List<String>> {
 
