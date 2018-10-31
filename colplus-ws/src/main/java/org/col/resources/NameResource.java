@@ -28,6 +28,7 @@ import org.col.api.util.VocabularyUtils;
 import org.col.db.dao.NameDao;
 import org.col.db.mapper.NameMapper;
 import org.col.db.mapper.NameRelationMapper;
+import org.col.es.InvalidQueryException;
 import org.col.es.NameUsageSearchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,7 +39,7 @@ public class NameResource {
 
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(NameResource.class);
-  
+
   private final NameUsageSearchService searchService;
 
   public NameResource(NameUsageSearchService svc) {
@@ -58,7 +59,12 @@ public class NameResource {
   public ResultPage<NameUsageWrapper<?>> search(@BeanParam NameSearchRequest query,
       @Valid @BeanParam Page page, @Context UriInfo uri) {
     addQueryParams(query, uri);
-    return null;
+    try {
+      return searchService.search(query, page);
+    } catch (InvalidQueryException e) {
+      // There's no real chance that a NameSearchRequest will translate into an invalid query
+      throw new AssertionError(e.getMessage());
+    }
   }
 
   private static void addQueryParams(NameSearchRequest req, UriInfo uri) {
