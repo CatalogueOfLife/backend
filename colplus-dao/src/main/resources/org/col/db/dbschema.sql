@@ -90,8 +90,8 @@ CREATE TYPE rank AS ENUM (
   'unranked'
 );
 
-CREATE TABLE user (
-  key INTEGER PRIMARY KEY,
+CREATE TABLE coluser (
+  key serial PRIMARY KEY,
   username TEXT,
   firstname TEXT,
   lastname TEXT,
