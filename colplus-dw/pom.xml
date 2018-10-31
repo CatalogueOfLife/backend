@@ -18,6 +18,14 @@
             <groupId>org.col</groupId>
             <artifactId>colplus-parser</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.col</groupId>
+            <artifactId>colplus-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.col</groupId>
+            <artifactId>colplus-dao</artifactId>
+        </dependency>
 
         <!-- Dropwizard -->
         <dependency>
@@ -29,15 +37,9 @@
             <artifactId>dropwizard-dashboard</artifactId>
             <version>1.1.1</version>
         </dependency>
-
-        <!-- other -->
         <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.col</groupId>
-            <artifactId>colplus-api</artifactId>
+            <groupId>io.dropwizard</groupId>
+            <artifactId>dropwizard-auth</artifactId>
         </dependency>
         <dependency>
             <groupId>io.dropwizard</groupId>
@@ -51,6 +53,18 @@
             <groupId>io.dropwizard</groupId>
             <artifactId>dropwizard-forms</artifactId>
         </dependency>
+
+        <!-- Auth -->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt</artifactId>
+        </dependency>
+
+        <!-- other -->
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.glassfish.hk2</groupId>
             <artifactId>hk2-api</artifactId>
@@ -58,10 +72,6 @@
         </dependency>
 
         <!-- DB -->
-        <dependency>
-            <groupId>org.col</groupId>
-            <artifactId>colplus-dao</artifactId>
-        </dependency>
         <dependency>
             <groupId>com.zaxxer</groupId>
             <artifactId>HikariCP</artifactId>

@@ -32,6 +32,7 @@ public class WsServer extends PgApp<WsServerConfig> {
     env.jersey().register(new TaxonResource());
     env.jersey().register(new TreeResource());
     env.jersey().register(new ParserResource());
+    env.jersey().register(new UserResource(getJwtCoder()));
     env.jersey().register(new VerbatimResource());
     env.jersey().register(new VocabResource());
   

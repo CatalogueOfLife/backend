@@ -2,6 +2,7 @@ package org.col.admin.resources;
 
 import java.util.List;
 import java.util.Queue;
+import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -15,6 +16,7 @@ import org.col.api.model.Page;
 import org.col.api.model.ResultPage;
 import org.col.api.vocab.ImportState;
 import org.col.db.dao.DatasetImportDao;
+import org.col.dw.auth.Roles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,12 +40,14 @@ public class ImporterResource {
   }
 
   @POST
+  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public ImportRequest schedule(@QueryParam("key") Integer datasetKey, @QueryParam("force") boolean force) {
     return importManager.submit(datasetKey, force);
   }
   
   @POST
   @Path("/upload/{datasetKey}")
+  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public ImportRequest upload(@PathParam("datasetKey") int datasetKey) {
     throw new NotImplementedException("Manual upload not yet implemented");
   }
@@ -56,6 +60,7 @@ public class ImporterResource {
 
   @DELETE
   @Path("{key}")
+  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void cancel(@PathParam("key") Integer datasetKey) {
     importManager.cancel(datasetKey);
   }

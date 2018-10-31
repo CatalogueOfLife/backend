@@ -58,6 +58,7 @@
 		<icu4j.version>62.1</icu4j.version>
 		<javax.ws.rs-api.version>2.0.1</javax.ws.rs-api.version>
 		<javers.version>3.10.0</javers.version>
+		<jjwt.version>0.7.0</jjwt.version>
 		<junit.version>4.12</junit.version>
 		<kryo.version>4.0.1</kryo.version>
 		<kryo-serializers.version>0.42</kryo-serializers.version>
@@ -206,6 +207,11 @@
 			</dependency>
 			<dependency>
 				<groupId>io.dropwizard</groupId>
+				<artifactId>dropwizard-auth</artifactId>
+				<version>${dropwizard.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.dropwizard</groupId>
 				<artifactId>dropwizard-client</artifactId>
 				<version>${dropwizard.version}</version>
 			</dependency>
@@ -282,6 +288,13 @@
 				<groupId>javax.validation</groupId>
 				<artifactId>validation-api</artifactId>
 				<version>${validation-api.version}</version>
+			</dependency>
+
+			<!-- JWT -->
+			<dependency>
+				<groupId>io.jsonwebtoken</groupId>
+				<artifactId>jjwt</artifactId>
+				<version>${jjwt.version}</version>
 			</dependency>
 
 			<!-- GBIF -->
