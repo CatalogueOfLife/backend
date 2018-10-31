@@ -31,7 +31,7 @@ import static org.col.api.TestEntityGenerator.DATASET11;
 import static org.junit.Assert.*;
 
 @Ignore("Old code from postgres search, needs ported to elastic!")
-public class NameUsageSearchTest extends DaoTestBase {
+public class NameUsageSearchServiceTest extends DaoTestBase {
   static final Javers javers = JaversBuilder.javers().build();
   static final Splitter SPACE_SPLITTER = Splitter.on(" ").trimResults();
 

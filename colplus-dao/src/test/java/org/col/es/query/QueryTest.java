@@ -70,7 +70,7 @@ public class QueryTest {
 
   private static String serialize(Object obj) {
     try {
-      return cfg.getPrettyWriter().writeValueAsString(obj);
+      return cfg.getQueryWriter().withDefaultPrettyPrinter().writeValueAsString(obj);
     } catch (JsonProcessingException e) {
       throw new RuntimeException(e);
     }

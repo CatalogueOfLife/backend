@@ -10,7 +10,7 @@ public class MappingFactoryTest {
     MappingFactory<EsNameUsage> mf = new MappingFactory<>();
     mf.setMapEnumToInt(false);  
     Mapping<EsNameUsage> mapping = mf.getMapping(EsNameUsage.class);
-    System.out.println(SerializationUtil.serialize(mapping));
+    System.out.println(SerializationUtil.pretty(mapping));
   }
 
 }

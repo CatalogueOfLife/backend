@@ -53,7 +53,7 @@ public class SerializationUtil {
     ObjectMapper om = new ObjectMapper();
     om.setVisibility(PropertyAccessor.ALL, Visibility.NONE);
     om.setVisibility(PropertyAccessor.FIELD, Visibility.ANY);
-    om.setSerializationInclusion(Include.NON_NULL);
+    om.setSerializationInclusion(Include.NON_EMPTY);
     om.enable(SerializationFeature.WRITE_ENUMS_USING_TO_STRING);
     return om;
   }

@@ -1,6 +1,6 @@
 package org.col.es;
 
-public class EsException extends Exception {
+public class EsException extends RuntimeException {
 
   public EsException(String arg0, Throwable arg1) {
     super(arg0, arg1);

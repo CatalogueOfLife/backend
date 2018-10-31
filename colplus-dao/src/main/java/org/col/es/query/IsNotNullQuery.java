@@ -4,14 +4,10 @@ package org.col.es.query;
 public class IsNotNullQuery extends AbstractQuery {
 
   private static class Field {
-    private final String field;
+    final String field;
 
     Field(String field) {
       this.field = field;
-    }
-
-    public String getField() {
-      return field;
     }
   }
 
@@ -21,7 +17,7 @@ public class IsNotNullQuery extends AbstractQuery {
     this.exists = new Field(field);
   }
 
-  public Field getExists() {
+  Field getExists() {
     return exists;
   }
 
