@@ -23,10 +23,9 @@ public class EsUtil {
   private static final Logger LOG = LoggerFactory.getLogger(EsUtil.class);
 
   @SuppressWarnings("unchecked")
-  public static <T> void createIndex(RestClient client, String name, IndexConfig cfg)
-      throws EsException {
+  public static <T> void createIndex(RestClient client, String name, IndexConfig cfg) {
 
-     LOG.info("Creating index {}", name);
+    LOG.info("Creating index {}", name);
 
     // Load global / static config (analyzers, tokenizers, etc.)
     Map<String, Object> settings = readIntoMap(loadSettings());
@@ -53,7 +52,7 @@ public class EsUtil {
     executeRequest(client, request);
   }
 
-  public static void deleteIndex(RestClient client, String name) throws EsException {
+  public static void deleteIndex(RestClient client, String name) {
     LOG.info("Deleting index {}", name);
     Request request = new Request("DELETE", name);
     Response response;
@@ -73,7 +72,7 @@ public class EsUtil {
     }
   }
 
-  public static void refreshIndex(RestClient client, String name) throws EsException {
+  public static void refreshIndex(RestClient client, String name) {
     LOG.info("Refreshing index {}", name);
     Request request = new Request("POST", name + "/_refresh");
     executeRequest(client, request);
@@ -85,9 +84,8 @@ public class EsUtil {
    * @param client
    * @param name
    * @return
-   * @throws EsException
-   */
-  public static int count(RestClient client, String name) throws EsException {
+    */
+  public static int count(RestClient client, String name) {
     LOG.info("Counting index {}", name);
     Request request = new Request("GET", name + "/_doc/_count");
     Response response = executeRequest(client, request);

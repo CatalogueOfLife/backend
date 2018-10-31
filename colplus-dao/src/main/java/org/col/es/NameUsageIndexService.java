@@ -1,6 +1,5 @@
 package org.col.es;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -85,16 +84,12 @@ public class NameUsageIndexService {
     } finally {
       EsUtil.refreshIndex(client, index);
     }
-    LOG.info("Indexed {} name usages from dataset {} into index {}", counter.get(), datasetKey,
-        index);
+    LOG.info("Successfully inserted {} name usages from dataset {} into index {}", counter.get(),
+        datasetKey, index);
   }
 
   @VisibleForTesting
   void indexBulk(String index, List<? extends NameUsageWrapper<?>> usages) {
-    if (usages.size() == 0) {
-      LOG.warn("Received empty batch of name usages while indexing into {}", index);
-      return;
-    }
     String actionMetaData = indexActionMetaData(index);
     StringBuilder body = new StringBuilder();
     try {
@@ -127,27 +122,14 @@ public class NameUsageIndexService {
       @Override
       public void onFailure(Exception e) {
         // No point in going on
-        LOG.error("Error while populating index {}: {}", index, e.getMessage());
         Exceptions.throwRuntime(e);
       }
     });
   }
 
-  private void execute(Request req, String index, int size) throws EsException {
-    Response res;
-    try {
-      res = client.performRequest(req);
-    } catch (IOException e) {
-      throw new EsException(e);
-    }
-    if (res.getStatusLine().getStatusCode() == 200) {
-      LOG.debug("Successfully inserted {} name usages into index {}", size, index);
-    } else {
-      String fmt = "Error while populating index %s: %s";
-      String err = String.format(fmt, index, res.getStatusLine().getReasonPhrase());
-      LOG.error(err);
-      throw new EsException(err);
-    }
+  private void execute(Request req, String index, int size) {
+    EsUtil.executeRequest(client, req);
+    LOG.debug("Successfully inserted {} name usages into index {}", size, index);
   }
 
   private static String indexActionMetaData(String index) {
