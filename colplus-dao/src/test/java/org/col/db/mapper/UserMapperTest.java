@@ -4,10 +4,12 @@ import java.util.Arrays;
 import java.util.stream.Collectors;
 
 import org.col.api.model.ColUser;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
+@Ignore
 public class UserMapperTest extends MapperTestBase<UserMapper> {
   
   public UserMapperTest() {
