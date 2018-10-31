@@ -1,5 +1,6 @@
 package org.col.admin.importer;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
@@ -36,8 +37,14 @@ public abstract class NeoInserter {
   protected final ReferenceFactory refFactory;
   private int vcounter;
 
-  public NeoInserter(Path folder, NeoDb store, ReferenceFactory refFactory) {
-    this.folder = folder;
+  public NeoInserter(Path folder, String subfolder, NeoDb store, ReferenceFactory refFactory) {
+    Path subf = folder.resolve(subfolder);
+    if (Files.isDirectory(subf)) {
+      LOG.info("Prefer to read from subfolder {}", subf);
+      this.folder = subf;
+    } else {
+      this.folder = folder;
+    }
     this.store = store;
     this.refFactory = refFactory;
   }
