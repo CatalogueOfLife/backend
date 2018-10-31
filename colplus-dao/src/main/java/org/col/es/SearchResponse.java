@@ -1,5 +1,10 @@
 package org.col.es;
 
+/**
+ * The outer shell of an Elasticsearch search response.
+ *
+ * @param <T> The type of objects in the search response (in our case EsNameUsage)
+ */
 public class SearchResponse<T> {
 
   private int took;
