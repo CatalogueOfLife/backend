@@ -2,22 +2,33 @@ package org.col.resources;
 
 import java.util.List;
 import java.util.Map;
+
 import javax.validation.Valid;
-import javax.ws.rs.*;
+import javax.ws.rs.BeanParam;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
 
 import com.codahale.metrics.annotation.Timed;
+
 import org.apache.ibatis.session.SqlSession;
-import org.col.api.model.*;
+import org.col.api.exception.NotFoundException;
+import org.col.api.model.Name;
+import org.col.api.model.NameRelation;
+import org.col.api.model.Page;
+import org.col.api.model.ResultPage;
 import org.col.api.search.NameSearchParameter;
 import org.col.api.search.NameSearchRequest;
+import org.col.api.search.NameUsageWrapper;
 import org.col.api.util.VocabularyUtils;
 import org.col.db.dao.NameDao;
 import org.col.db.mapper.NameMapper;
 import org.col.db.mapper.NameRelationMapper;
-import org.col.api.exception.NotFoundException;
+import org.col.es.NameUsageSearchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,6 +38,12 @@ public class NameResource {
 
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(NameResource.class);
+  
+  private final NameUsageSearchService searchService;
+
+  public NameResource(NameUsageSearchService svc) {
+    this.searchService = svc;
+  }
 
   @GET
   public ResultPage<Name> list(@PathParam("datasetKey") Integer datasetKey,
@@ -38,15 +55,13 @@ public class NameResource {
   @GET
   @Timed
   @Path("search")
-  public ResultPage<NameUsage> search(@BeanParam NameSearchRequest query, @Valid @BeanParam Page page,
-                                      @Context UriInfo uri, @Context SqlSession session) {
+  public ResultPage<NameUsageWrapper<?>> search(@BeanParam NameSearchRequest query,
+      @Valid @BeanParam Page page, @Context UriInfo uri) {
     addQueryParams(query, uri);
-    
-    //TODO: execute ES search
-    throw new NotSupportedException("Awaiting Elastic Search");
+    return null;
   }
-  
-  private void addQueryParams(NameSearchRequest req, UriInfo uri) {
+
+  private static void addQueryParams(NameSearchRequest req, UriInfo uri) {
     for (Map.Entry<String, List<String>> qp : uri.getQueryParameters().entrySet()) {
       VocabularyUtils.lookup(qp.getKey(), NameSearchParameter.class).ifPresent(p -> {
         req.addAll(p, qp.getValue());
@@ -56,7 +71,8 @@ public class NameResource {
 
   @GET
   @Path("{id}")
-  public Name get(@PathParam("datasetKey") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
+  public Name get(@PathParam("datasetKey") int datasetKey, @PathParam("id") String id,
+      @Context SqlSession session) {
     NameDao dao = new NameDao(session);
     Name name = dao.get(datasetKey, id);
     if (name == null) {
@@ -67,14 +83,16 @@ public class NameResource {
 
   @GET
   @Path("{id}/synonyms")
-  public List<Name> getSynonyms(@PathParam("datasetKey") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
+  public List<Name> getSynonyms(@PathParam("datasetKey") int datasetKey, @PathParam("id") String id,
+      @Context SqlSession session) {
     NameDao dao = new NameDao(session);
     return dao.homotypicGroup(datasetKey, id);
   }
 
   @GET
   @Path("{id}/relations")
-  public List<NameRelation> getRelations(@PathParam("datasetKey") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
+  public List<NameRelation> getRelations(@PathParam("datasetKey") int datasetKey,
+      @PathParam("id") String id, @Context SqlSession session) {
     NameRelationMapper mapper = session.getMapper(NameRelationMapper.class);
     return mapper.list(datasetKey, id);
   }

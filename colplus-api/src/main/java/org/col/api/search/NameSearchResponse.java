@@ -5,18 +5,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import org.col.api.model.NameUsage;
 import org.col.api.model.Page;
 import org.col.api.model.ResultPage;
 
-public class NameSearchResponse extends ResultPage<NameUsage> {
+public class NameSearchResponse extends ResultPage<NameUsageWrapper<?>> {
   private Map<NameSearchParameter, List<FacetCount>> facets;
   
-  public NameSearchResponse(Page page, int total, List<NameUsage> result) {
+  public NameSearchResponse(Page page, int total, List<NameUsageWrapper<?>> result) {
     this(page, total, result, new HashMap<>());
   }
   
-  public NameSearchResponse(Page page, int total, List<NameUsage> result, Map<NameSearchParameter, List<FacetCount>> facets) {
+  public NameSearchResponse(Page page, int total, List<NameUsageWrapper<?>> result, Map<NameSearchParameter, List<FacetCount>> facets) {
     super(page, total, result);
     this.facets = facets;
   }

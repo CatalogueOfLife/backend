@@ -31,3 +31,4 @@ es:
     numShards: 1
     numReplicas: 0
     batchSize: 1000
+    storeEnumAsInt: true

@@ -31,7 +31,7 @@ class NameUsageTransfer {
   NameUsageTransfer(IndexConfig cfg) {
     this.payloadWriter =
         cfg.getMapper().writerFor(new TypeReference<NameUsageWrapper<? extends NameUsage>>() {});
-  }
+  }  
 
   EsNameUsage toEsDocument(NameUsageWrapper<? extends NameUsage> wrapper)
       throws JsonProcessingException {

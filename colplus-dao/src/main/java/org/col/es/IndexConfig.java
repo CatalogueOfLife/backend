@@ -3,6 +3,7 @@ package org.col.es;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
@@ -12,7 +13,7 @@ import org.col.es.query.EsSearchRequest;
 
 public class IndexConfig {
 
-  private static ObjectMapper simpleMapper;
+  private static ObjectMapper mapper;
 
   /**
    * The model class corresponding to the type.
@@ -37,21 +38,22 @@ public class IndexConfig {
   private ObjectWriter queryWriter;
 
   /**
-   * Returns a simple ObjectMapper, basically just taking the storeEnumAsInt into account.
+   * Returns a ObjectMapper for reading/writing from/to Elasticsearch.
    * 
    * @return
    */
   public ObjectMapper getMapper() {
-    if (simpleMapper == null) {
-      simpleMapper = new ObjectMapper();
+    if (mapper == null) {
+      mapper = new ObjectMapper();
       if (storeEnumAsInt) {
-        simpleMapper.enable(SerializationFeature.WRITE_ENUMS_USING_INDEX);
+        mapper.enable(SerializationFeature.WRITE_ENUMS_USING_INDEX);
       }
-      simpleMapper.setVisibility(PropertyAccessor.ALL, Visibility.NONE);
-      simpleMapper.setVisibility(PropertyAccessor.FIELD, Visibility.ANY);
-      simpleMapper.setSerializationInclusion(Include.NON_EMPTY);
+      mapper.setVisibility(PropertyAccessor.ALL, Visibility.NONE);
+      mapper.setVisibility(PropertyAccessor.FIELD, Visibility.ANY);
+      mapper.setSerializationInclusion(Include.NON_EMPTY);
+      mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
     }
-    return simpleMapper;
+    return mapper;
   }
 
   /**

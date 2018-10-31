@@ -11,3 +11,13 @@ db:
   database: ${db.database}
   user: ${db.user}
   password: ${db.password}
+es:
+  # comma-separated strings of hosts and ports (numbers must match)
+  hosts: ${es.hosts}
+  ports: ${es.ports}
+  nameUsage:
+    modelClass: org.col.es.model.EsNameUsage
+    numShards: 1
+    numReplicas: 0
+    batchSize: 1000
+    storeEnumAsInt: true
