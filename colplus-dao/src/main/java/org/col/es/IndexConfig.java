@@ -1,10 +1,14 @@
 package org.col.es;
 
+import com.fasterxml.jackson.annotation.PropertyAccessor;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SerializationFeature;
+
+import org.col.es.query.EsSearchRequest;
 
 public class IndexConfig {
 
@@ -22,18 +26,19 @@ public class IndexConfig {
   public int batchSize = 1000;
   /**
    * Whether to store enums as ints or as strings. Storings as ints squeezes a bit more performance
-   * out of ES, but not much because cardinality will be low anyhow. And it saves space, notably in
-   * the "source" field of EsNameUsage. On the other hand, it makes the index harder to read in
+   * out of ES, but not much because cardinality will be low for enums. And it saves space, notably
+   * in the "payload" field of EsNameUsage. On the other hand, it makes the index harder to read in
    * Kibana.
    */
   public Boolean storeEnumAsInt = Boolean.TRUE;
 
   private ObjectReader reader;
   private ObjectWriter writer;
-  private ObjectWriter prettyWriter;
+  private ObjectWriter queryWriter;
 
   /**
-   * Returns a mapper for (de)serializing Elasticseach documents and queries.
+   * Returns a simple ObjectMapper, basically just taking the storeEnumAsInt into account.
+   * 
    * @return
    */
   public ObjectMapper getMapper() {
@@ -41,14 +46,16 @@ public class IndexConfig {
       simpleMapper = new ObjectMapper();
       if (storeEnumAsInt) {
         simpleMapper.enable(SerializationFeature.WRITE_ENUMS_USING_INDEX);
-        simpleMapper.setSerializationInclusion(Include.NON_EMPTY);
       }
+      simpleMapper.setVisibility(PropertyAccessor.ALL, Visibility.NONE);
+      simpleMapper.setVisibility(PropertyAccessor.FIELD, Visibility.ANY);
+      simpleMapper.setSerializationInclusion(Include.NON_EMPTY);
     }
     return simpleMapper;
   }
 
   /**
-   * ObjectReader used to deserialize ES documents into EsNameUsage instances.
+   * Returns a specialized ObjectReader used to read ES documents into EsNameUsage instances.
    */
   public ObjectReader getObjectReader() {
     if (reader == null) {
@@ -62,7 +69,7 @@ public class IndexConfig {
   }
 
   /**
-   * ObjectWriter used to serialize EsNameUsage instances to ES documents.
+   * Returns a specialized ObjectWriter used to serialize EsNameUsage instances.
    * 
    * @return
    */
@@ -78,15 +85,16 @@ public class IndexConfig {
   }
 
   /**
-   * Pretty prints EsNameUsage instances and Query instances.
+   * Returns a specialized ObjectWriter used to serialize Elasticsearch queries (which are actually
+   * embodied by the EsSearchRequest class, not the Query interface).
    * 
    * @return
    */
-  public ObjectWriter getPrettyWriter() {
-    if (prettyWriter == null) {
-      prettyWriter = getMapper().writer().withDefaultPrettyPrinter();
+  public ObjectWriter getQueryWriter() {
+    if (queryWriter == null) {
+      queryWriter = getMapper().writerFor(EsSearchRequest.class);
     }
-    return prettyWriter;
+    return queryWriter;
   }
 
 }
