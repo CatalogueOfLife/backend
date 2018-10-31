@@ -6,8 +6,6 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
-import org.col.api.jackson.ApiModule;
-
 public class IndexConfig {
 
   private static ObjectMapper simpleMapper;
@@ -28,20 +26,23 @@ public class IndexConfig {
    * the "source" field of EsNameUsage. On the other hand, it makes the index harder to read in
    * Kibana.
    */
-  public Boolean storeEnumAsInt = Boolean.FALSE;
+  public Boolean storeEnumAsInt = Boolean.TRUE;
 
   private ObjectReader reader;
   private ObjectWriter writer;
   private ObjectWriter prettyWriter;
 
+  /**
+   * Returns a mapper for (de)serializing Elasticseach documents and queries.
+   * @return
+   */
   public ObjectMapper getMapper() {
-    if (!storeEnumAsInt) {
-      return ApiModule.MAPPER;
-    }
     if (simpleMapper == null) {
       simpleMapper = new ObjectMapper();
-      simpleMapper.enable(SerializationFeature.WRITE_ENUMS_USING_INDEX);
-      simpleMapper.setSerializationInclusion(Include.NON_NULL);
+      if (storeEnumAsInt) {
+        simpleMapper.enable(SerializationFeature.WRITE_ENUMS_USING_INDEX);
+        simpleMapper.setSerializationInclusion(Include.NON_EMPTY);
+      }
     }
     return simpleMapper;
   }

@@ -14,11 +14,12 @@ import org.col.api.model.Taxon;
 import org.col.api.model.VernacularName;
 import org.col.api.search.NameUsageWrapper;
 import org.col.api.vocab.NameField;
-import org.col.common.util.CollectionUtils;
 import org.col.es.model.EsNameUsage;
 
+import static org.col.common.util.CollectionUtils.notEmpty;
+
 /**
- * Converts NameUsageWrapper instances to EsNameUsage instances.
+ * Converts NameUsageWrapper instances to EsNameUsage documents.
  */
 class NameUsageTransfer {
 
@@ -27,16 +28,16 @@ class NameUsageTransfer {
   // Used to populate the "payload" field within EsNameUsage
   private final ObjectWriter payloadWriter;
 
-  NameUsageTransfer(IndexConfig nameUsageConfig) {
-    this.mainWriter = nameUsageConfig.getObjectWriter();
-    this.payloadWriter = nameUsageConfig.getMapper()
-        .writerFor(new TypeReference<NameUsageWrapper<? extends NameUsage>>() {});
+  NameUsageTransfer(IndexConfig cfg) {
+    this.mainWriter = cfg.getObjectWriter();
+    this.payloadWriter =
+        cfg.getMapper().writerFor(new TypeReference<NameUsageWrapper<? extends NameUsage>>() {});
   }
 
   String toEsDocument(NameUsageWrapper<? extends NameUsage> wrapper)
       throws JsonProcessingException {
     EsNameUsage enu = new EsNameUsage();
-    if (wrapper.getVernacularNames() != null) {
+    if (notEmpty(wrapper.getVernacularNames())) {
       enu.setVernacularNames(
           wrapper.getVernacularNames().stream().map(VernacularName::getName).collect(
               Collectors.toList()));
@@ -67,13 +68,13 @@ class NameUsageTransfer {
       switch (nf) {
         case BASIONYM_AUTHORS:
           if (name.getBasionymAuthorship() != null
-              && CollectionUtils.notEmpty(name.getBasionymAuthorship().getAuthors())) {
+              && notEmpty(name.getBasionymAuthorship().getAuthors())) {
             fields.add(nf);
           }
           break;
         case BASIONYM_EX_AUTHORS:
           if (name.getBasionymAuthorship() != null
-              && CollectionUtils.notEmpty(name.getBasionymAuthorship().getExAuthors())) {
+              && notEmpty(name.getBasionymAuthorship().getExAuthors())) {
             fields.add(nf);
           }
           break;
@@ -90,13 +91,13 @@ class NameUsageTransfer {
           break;
         case COMBINATION_AUTHORS:
           if (name.getCombinationAuthorship() != null
-              && CollectionUtils.notEmpty(name.getCombinationAuthorship().getAuthors())) {
+              && notEmpty(name.getCombinationAuthorship().getAuthors())) {
             fields.add(nf);
           }
           break;
         case COMBINATION_EX_AUTHORS:
           if (name.getCombinationAuthorship() != null
-              && CollectionUtils.notEmpty(name.getCombinationAuthorship().getExAuthors())) {
+              && notEmpty(name.getCombinationAuthorship().getExAuthors())) {
             fields.add(nf);
           }
           break;

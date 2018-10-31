@@ -30,7 +30,7 @@ public class EsUtil {
 
     // Load global / static config (analyzers, tokenizers, etc.)
     Map<String, Object> settings = readIntoMap(loadSettings());
-    // Insert index-specific settings
+    // Insert configurable / index-specific settings
     Map<String, Object> indexSettings = (Map<String, Object>) settings.get("index");
     indexSettings.put("number_of_shards", cfg.numShards);
     indexSettings.put("number_of_replicas", cfg.numReplicas);

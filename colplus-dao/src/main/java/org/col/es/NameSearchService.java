@@ -48,6 +48,7 @@ public class NameSearchService {
     if (response.getStatusLine().getStatusCode() != 200) {
       throw new RuntimeException(response.getStatusLine().getReasonPhrase());
     }
+    
     return null;
   }
 

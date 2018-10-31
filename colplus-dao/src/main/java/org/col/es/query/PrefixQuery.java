@@ -5,7 +5,7 @@ import java.util.Map;
 
 public class PrefixQuery extends AbstractQuery {
 
-  private Map<String, QueryValue> prefix;
+  private final Map<String, QueryValue> prefix;
 
   public PrefixQuery(String field, Object value) {
     this(field, value, null);
@@ -16,7 +16,7 @@ public class PrefixQuery extends AbstractQuery {
     prefix.put(field, new QueryValue(value, boost));
   }
 
-  public Map<String, QueryValue> getPrefix() {
+  Map<String, QueryValue> getPrefix() {
     return prefix;
   }
 
