@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.annotations.VisibleForTesting;
 
 import org.apache.ibatis.session.SqlSession;
@@ -12,6 +13,7 @@ import org.col.api.search.NameUsageWrapper;
 import org.col.common.lang.Exceptions;
 import org.col.db.mapper.BatchResultHandler;
 import org.col.db.mapper.NameUsageMapper;
+import org.col.es.model.EsNameUsage;
 import org.elasticsearch.client.Request;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.ResponseListener;
@@ -34,6 +36,8 @@ public class NameUsageIndexService {
    * the callbacks to be invoked (as with unit tests).
    */
   private final boolean async;
+  private final NameUsageTransfer transfer;
+  private final ObjectWriter writer;
 
   public NameUsageIndexService(RestClient client, EsConfig esConfig, SqlSessionFactory factory) {
     this(client, esConfig, factory, false);
@@ -46,6 +50,8 @@ public class NameUsageIndexService {
     this.esConfig = esConfig;
     this.factory = factory;
     this.async = async;
+    this.transfer = new NameUsageTransfer(esConfig.nameUsage);
+    this.writer = esConfig.nameUsage.getObjectWriter();
   }
 
   /**
@@ -89,13 +95,13 @@ public class NameUsageIndexService {
       LOG.warn("Received empty batch of name usages while indexing into {}", index);
       return;
     }
-    NameUsageTransfer transer = new NameUsageTransfer(esConfig.nameUsage);
     String actionMetaData = indexActionMetaData(index);
     StringBuilder body = new StringBuilder();
     try {
       for (NameUsageWrapper<?> nu : usages) {
         body.append(actionMetaData);
-        body.append(transer.toEsDocument(nu));
+        EsNameUsage enu = transfer.toEsDocument(nu);
+        body.append(writer.writeValueAsString(enu));
         body.append("\n");
       }
       Request request = new Request("POST", "/_bulk");
