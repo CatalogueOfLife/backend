@@ -8,7 +8,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.jsontype.NamedType;
 
+import org.col.api.model.BareName;
+import org.col.api.model.Synonym;
+import org.col.api.model.Taxon;
 import org.col.es.query.EsSearchRequest;
 
 public class IndexConfig {
@@ -51,6 +55,8 @@ public class IndexConfig {
       mapper.setVisibility(PropertyAccessor.ALL, Visibility.NONE);
       mapper.setVisibility(PropertyAccessor.FIELD, Visibility.ANY);
       mapper.setSerializationInclusion(Include.NON_EMPTY);
+      // Necessary because the SearchResponse class does not contain each and every field within an
+      // Elasticsearch search response.
       mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
     }
     return mapper;
@@ -64,7 +70,7 @@ public class IndexConfig {
       try {
         reader = getMapper().readerFor(Class.forName(modelClass));
       } catch (ClassNotFoundException e) {
-        throw new RuntimeException(e);
+        throw new EsException(e);
       }
     }
     return reader;
@@ -80,7 +86,7 @@ public class IndexConfig {
       try {
         writer = getMapper().writerFor(Class.forName(modelClass));
       } catch (ClassNotFoundException e) {
-        throw new RuntimeException(e);
+        throw new EsException(e);
       }
     }
     return writer;
