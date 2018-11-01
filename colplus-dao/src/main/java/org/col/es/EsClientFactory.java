@@ -18,7 +18,7 @@ public class EsClientFactory {
   }
 
   public RestClient createClient() {
-    String[] hosts = cfg.hosts.split(",");
+    String[] hosts = cfg.hosts == null ? new String[] {"localhost"} : cfg.hosts.split(",");
     String[] ports = cfg.ports == null ? new String[] {"9200"} : cfg.ports.split(",");
     HttpHost[] hhtpHosts = new HttpHost[hosts.length];
     for (int i = 0; i < hosts.length; i++) {

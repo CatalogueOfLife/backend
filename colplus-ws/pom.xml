@@ -143,12 +143,12 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
-                <!-- configuration is shared in motherpom -->
+                <!-- cfg is shared in motherpom -->
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <!-- configuration is shared in motherpom -->
+                <!-- cfg is shared in motherpom -->
             </plugin>
         </plugins>
     </build>

@@ -22,12 +22,15 @@ public class JsonExceptionMapperBase<T extends Throwable> implements ExceptionMa
     this.errorCode = errorCode;
   }
 
-  static Response jsonErrorResponse(Response.StatusType errorCode, String message) {
+  public static Response.ResponseBuilder jsonErrorResponseBuilder(Response.StatusType errorCode, String message) {
     return Response
         .status(errorCode)
         .type(MediaType.APPLICATION_JSON_TYPE)
-        .entity(new ErrorMessage(errorCode.getStatusCode(), message))
-        .build();
+        .entity(new ErrorMessage(errorCode.getStatusCode(), message));
+  }
+  
+  static Response jsonErrorResponse(Response.StatusType errorCode, String message) {
+    return jsonErrorResponseBuilder(errorCode, message).build();
   }
 
   @Override

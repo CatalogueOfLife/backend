@@ -90,6 +90,21 @@ CREATE TYPE rank AS ENUM (
   'unranked'
 );
 
+CREATE TABLE coluser (
+  key serial PRIMARY KEY,
+  username TEXT,
+  firstname TEXT,
+  lastname TEXT,
+  email TEXT,
+  orcid TEXT,
+  country TEXT,
+  roles int[],
+  settings HSTORE,
+  last_login TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  deleted TIMESTAMP WITHOUT TIME ZONE
+);
+
 CREATE TABLE dataset (
   key serial PRIMARY KEY,
   type INTEGER NOT NULL DEFAULT 4,

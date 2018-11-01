@@ -13,7 +13,6 @@ import org.col.es.query.EsSearchRequest;
 
 public class IndexConfig {
 
-
   /**
    * The model class corresponding to the type.
    */
@@ -26,9 +25,8 @@ public class IndexConfig {
   public int batchSize = 1000;
   /**
    * Whether to store enums as ints or as strings. Storings as ints squeezes a bit more performance
-   * out of ES, but not much because cardinality will be low for enums. And it saves space, notably
-   * in the "payload" field of EsNameUsage. On the other hand, it makes the index harder to read in
-   * Kibana.
+   * out of ES and saves space, notably in the "payload" field of EsNameUsage. On the other hand, it
+   * makes the index harder to read in Kibana.
    */
   public Boolean storeEnumAsInt = Boolean.TRUE;
 
