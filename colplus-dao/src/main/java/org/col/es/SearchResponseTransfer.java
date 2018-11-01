@@ -11,6 +11,9 @@ import org.col.api.model.NameUsage;
 import org.col.api.search.NameUsageWrapper;
 import org.col.es.model.EsNameUsage;
 
+/**
+ * Converts the payload field within the EsNameUsage document back to a NameUsageWrapper.
+ */
 public class SearchResponseTransfer {
 
   private final ObjectReader payloadReader;

@@ -2,6 +2,7 @@ package org.col.api;
 
 import java.net.URI;
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Random;
@@ -9,9 +10,33 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
-import org.col.api.model.*;
-import org.col.api.vocab.*;
-import org.gbif.dwc.terms.*;
+
+import org.col.api.model.BareName;
+import org.col.api.model.CslData;
+import org.col.api.model.CslDate;
+import org.col.api.model.CslName;
+import org.col.api.model.Dataset;
+import org.col.api.model.Name;
+import org.col.api.model.NameRef;
+import org.col.api.model.Reference;
+import org.col.api.model.Synonym;
+import org.col.api.model.Synonymy;
+import org.col.api.model.Taxon;
+import org.col.api.model.VerbatimRecord;
+import org.col.api.model.VernacularName;
+import org.col.api.search.NameUsageWrapper;
+import org.col.api.vocab.CSLRefType;
+import org.col.api.vocab.Country;
+import org.col.api.vocab.Issue;
+import org.col.api.vocab.Language;
+import org.col.api.vocab.Lifezone;
+import org.col.api.vocab.Origin;
+import org.col.api.vocab.TaxonomicStatus;
+import org.gbif.dwc.terms.DcTerm;
+import org.gbif.dwc.terms.DwcTerm;
+import org.gbif.dwc.terms.GbifTerm;
+import org.gbif.dwc.terms.Term;
+import org.gbif.dwc.terms.UnknownTerm;
 import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.NamePart;
 import org.gbif.nameparser.api.NameType;
@@ -155,6 +180,8 @@ public class TestEntityGenerator {
     SYN2.setName(NAME4);
     SYN2.setAccepted(TAXON2);
     SYN2.setStatus(TaxonomicStatus.SYNONYM);
+    SYN2.setAccordingTo("John Smith");
+    SYN2.setVerbatimKey(133);
   }
 
   /*
@@ -170,12 +197,21 @@ public class TestEntityGenerator {
     return vn;
   }
 
+  public static VernacularName newVernacularName(String name, Language lang) {
+    VernacularName vn = new VernacularName();
+    vn.setName(name);
+    vn.setLatin(name);
+    vn.setLanguage(lang);
+    return vn;
+  }
+
   /*
    * Creates a new taxon with a generated id
    */
   public static Taxon newTaxon() {
-    return newTaxon(DATASET11.getKey(), "t"+ID_GEN.getAndIncrement());
+    return newTaxon(DATASET11.getKey(), "t" + ID_GEN.getAndIncrement());
   }
+
   /*
    * Creates a new taxon with the specified id, belonging to dataset DATASET11.
    */
@@ -242,7 +278,7 @@ public class TestEntityGenerator {
   public static Name newName(int datasetKey, String id, String scientificName) {
     return newName(datasetKey, id, scientificName, Rank.SPECIES);
   }
-  
+
   public static Name newName(int datasetKey, String id, String scientificName, Rank rank) {
     Name n = new Name();
     n.setId(id);
@@ -286,7 +322,7 @@ public class TestEntityGenerator {
    * which will not overlap
    */
   public static Name newName() {
-    return newName("n"+ID_GEN.getAndIncrement());
+    return newName("n" + ID_GEN.getAndIncrement());
   }
 
   public static List<Name> newNames(int size) {
@@ -312,7 +348,7 @@ public class TestEntityGenerator {
 
   public static Reference newReference(String title) {
     Reference r = new Reference();
-    r.setId("r"+ID_GEN.getAndIncrement());
+    r.setId("r" + ID_GEN.getAndIncrement());
     r.setDatasetKey(TestEntityGenerator.DATASET11.getKey());
     CslData csl = new CslData();
     r.setCsl(csl);
@@ -343,6 +379,7 @@ public class TestEntityGenerator {
     a.setYear(RandomUtils.randomSpeciesYear());
     return a;
   }
+
   public static CslData createCsl() {
     CslData csl = (CslData) random.create(CslData.class, CslName.class, CslDate.class);
     csl.getOriginalDate().setDateParts(new int[][] {{1752, 4, 4}, {1752, 8, 4}});
@@ -362,7 +399,8 @@ public class TestEntityGenerator {
     for (Term t : GbifTerm.values()) {
       rec.put(t, RandomUtils.randomString(1 + RND.nextInt(8)));
     }
-    rec.put(UnknownTerm.build("http://col.plus/terms/punk"), RandomUtils.randomString(500 + RND.nextInt(2000)));
+    rec.put(UnknownTerm.build("http://col.plus/terms/punk"),
+        RandomUtils.randomString(500 + RND.nextInt(2000)));
     rec.addIssue(Issue.ACCEPTED_NAME_MISSING);
     rec.addIssue(Issue.POTENTIAL_VARIANT);
     return rec;
@@ -380,6 +418,36 @@ public class TestEntityGenerator {
     n.setRank(Rank.SPECIES);
     n.setIndexNameId(RandomUtils.randomString(5));
     return n;
+  }
+
+  public static NameUsageWrapper<?> newNameUsageTaxonWrapper() {
+    NameUsageWrapper<Taxon> nuw = new NameUsageWrapper<>();
+    nuw.setUsage(TAXON1);
+    EnumSet<Issue> issues = EnumSet.of(Issue.ACCEPTED_NAME_MISSING, Issue.POTENTIAL_VARIANT,
+        Issue.DISTRIBUTION_AREA_INVALID);
+    nuw.setIssues(issues);
+    nuw.setVernacularNames(
+        Arrays.asList(newVernacularName("zeemeeuw", Language.DUTCH), newVernacularName("seagull")));
+    return nuw;
+  }
+
+  public static NameUsageWrapper<?> newNameUsageSynonymWrapper() {
+    NameUsageWrapper<Synonym> nuw = new NameUsageWrapper<>();
+    nuw.setUsage(SYN2);
+    EnumSet<Issue> issues = EnumSet.of(Issue.ACCEPTED_NAME_MISSING, Issue.POTENTIAL_VARIANT,
+        Issue.DISTRIBUTION_AREA_INVALID);
+    nuw.setIssues(issues);
+    return nuw;
+  }
+
+  public static NameUsageWrapper<?> newNameUsageBareNameWrapper() {
+    NameUsageWrapper<BareName> nuw = new NameUsageWrapper<>();
+    BareName bn = new BareName();
+    bn.setName(NAME4);
+    nuw.setUsage(bn);
+    EnumSet<Issue> issues = EnumSet.of(Issue.ID_NOT_UNIQUE);
+    nuw.setIssues(issues);
+    return nuw;
   }
 
 }
