@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.google.common.annotations.VisibleForTesting;
 
 import org.col.es.query.EsSearchRequest;
 
@@ -30,7 +31,9 @@ public class IndexConfig {
    */
   public Boolean storeEnumAsInt = Boolean.TRUE;
 
-  private ObjectMapper mapper;
+  @VisibleForTesting
+  static ObjectMapper mapper;
+  
   private ObjectReader reader;
   private ObjectWriter writer;
   private ObjectWriter queryWriter;

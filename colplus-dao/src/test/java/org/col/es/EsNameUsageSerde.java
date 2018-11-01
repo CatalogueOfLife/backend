@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.EnumSet;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
 
@@ -15,7 +14,6 @@ import org.col.api.vocab.TaxonomicStatus;
 import org.col.es.model.EsNameUsage;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,33 +29,31 @@ public class EsNameUsageSerde {
 
   static Logger LOG = LoggerFactory.getLogger(EsNameUsageSerde.class);
 
-  static EsConfig config1;
-  static EsConfig config2;
-
   static ObjectWriter esWriter;
   static ObjectReader esReader;
   static ObjectWriter payloadWriter;
   static ObjectReader payloadReader;
 
-  @BeforeClass
-  public static void init() {
-    config1 = new EsConfig();
+  private static IndexConfig config1() {
+    IndexConfig.mapper = null;
     IndexConfig ic = new IndexConfig();
     ic.modelClass = EsNameUsage.class.getName();
     ic.storeEnumAsInt = Boolean.TRUE;
-    config1.nameUsage = ic;
+    return ic;
+  }
 
-    config2 = new EsConfig();
-    ic = new IndexConfig();
+  private static IndexConfig config2() {
+    IndexConfig.mapper = null;
+    IndexConfig ic = new IndexConfig();
     ic.modelClass = EsNameUsage.class.getName();
     ic.storeEnumAsInt = Boolean.FALSE;
-    config2.nameUsage = ic;
+    return ic;
   }
 
   @Test
   public void testTaxon1() throws IOException {
-    payloadWriter = config1.nameUsage.getMapper().writerFor(EsUtil.NUW_TYPE_REF);
-    payloadReader = config1.nameUsage.getMapper().readerFor(EsUtil.NUW_TYPE_REF);
+    payloadWriter = config1().getMapper().writerFor(EsUtil.NUW_TYPE_REF);
+    payloadReader = config1().getMapper().readerFor(EsUtil.NUW_TYPE_REF);
     NameUsageWrapper<?> nuwIn = TestEntityGenerator.newNameUsageTaxonWrapper();
     String json = payloadWriter.writeValueAsString(nuwIn);
     LOG.debug(json);
@@ -67,8 +63,8 @@ public class EsNameUsageSerde {
 
   @Test
   public void testTaxon2() throws IOException {
-    payloadWriter = config2.nameUsage.getMapper().writerFor(EsUtil.NUW_TYPE_REF);
-    payloadReader = config2.nameUsage.getMapper().readerFor(EsUtil.NUW_TYPE_REF);
+    payloadWriter = config2().getMapper().writerFor(EsUtil.NUW_TYPE_REF);
+    payloadReader = config2().getMapper().readerFor(EsUtil.NUW_TYPE_REF);
     NameUsageWrapper<?> nuwIn = TestEntityGenerator.newNameUsageTaxonWrapper();
     String json = payloadWriter.writeValueAsString(nuwIn);
     LOG.debug(json);
@@ -78,8 +74,8 @@ public class EsNameUsageSerde {
 
   @Test
   public void testSynonym1() throws IOException {
-    payloadWriter = config1.nameUsage.getMapper().writerFor(EsUtil.NUW_TYPE_REF);
-    payloadReader = config1.nameUsage.getMapper().readerFor(EsUtil.NUW_TYPE_REF);
+    payloadWriter = config1().getMapper().writerFor(EsUtil.NUW_TYPE_REF);
+    payloadReader = config1().getMapper().readerFor(EsUtil.NUW_TYPE_REF);
     NameUsageWrapper<?> nuwIn = TestEntityGenerator.newNameUsageSynonymWrapper();
     String json = payloadWriter.writeValueAsString(nuwIn);
     LOG.debug(json);
@@ -89,8 +85,8 @@ public class EsNameUsageSerde {
 
   @Test
   public void testSynonym2() throws IOException {
-    payloadWriter = config2.nameUsage.getMapper().writerFor(EsUtil.NUW_TYPE_REF);
-    payloadReader = config2.nameUsage.getMapper().readerFor(EsUtil.NUW_TYPE_REF);
+    payloadWriter = config2().getMapper().writerFor(EsUtil.NUW_TYPE_REF);
+    payloadReader = config2().getMapper().readerFor(EsUtil.NUW_TYPE_REF);
     NameUsageWrapper<?> nuwIn = TestEntityGenerator.newNameUsageSynonymWrapper();
     String json = payloadWriter.writeValueAsString(nuwIn);
     LOG.debug(json);
@@ -100,8 +96,8 @@ public class EsNameUsageSerde {
 
   @Test
   public void testBareName1() throws IOException {
-    payloadWriter = config1.nameUsage.getMapper().writerFor(EsUtil.NUW_TYPE_REF);
-    payloadReader = config1.nameUsage.getMapper().readerFor(EsUtil.NUW_TYPE_REF);
+    payloadWriter = config1().getMapper().writerFor(EsUtil.NUW_TYPE_REF);
+    payloadReader = config1().getMapper().readerFor(EsUtil.NUW_TYPE_REF);
     NameUsageWrapper<?> nuwIn = TestEntityGenerator.newNameUsageBareNameWrapper();
     String json = payloadWriter.writeValueAsString(nuwIn);
     LOG.debug(json);
@@ -111,8 +107,8 @@ public class EsNameUsageSerde {
 
   @Test
   public void testBareName2() throws IOException {
-    payloadWriter = config2.nameUsage.getMapper().writerFor(EsUtil.NUW_TYPE_REF);
-    payloadReader = config2.nameUsage.getMapper().readerFor(EsUtil.NUW_TYPE_REF);
+    payloadWriter = config2().getMapper().writerFor(EsUtil.NUW_TYPE_REF);
+    payloadReader = config2().getMapper().readerFor(EsUtil.NUW_TYPE_REF);
     NameUsageWrapper<?> nuwIn = TestEntityGenerator.newNameUsageBareNameWrapper();
     String json = payloadWriter.writeValueAsString(nuwIn);
     LOG.debug(json);
@@ -122,10 +118,10 @@ public class EsNameUsageSerde {
 
   @Test
   public void testEsNameUsage1() throws IOException {
-    esWriter = config1.nameUsage.getObjectWriter();
-    esReader = config1.nameUsage.getObjectReader();
-    payloadWriter = config1.nameUsage.getMapper().writerFor(EsUtil.NUW_TYPE_REF);
-    payloadReader = config1.nameUsage.getMapper().readerFor(EsUtil.NUW_TYPE_REF);
+    esWriter = config1().getObjectWriter();
+    esReader = config1().getObjectReader();
+    payloadWriter = config1().getMapper().writerFor(EsUtil.NUW_TYPE_REF);
+    payloadReader = config1().getMapper().readerFor(EsUtil.NUW_TYPE_REF);
 
     EsNameUsage enuIn = new EsNameUsage();
     enuIn.setPayload(
@@ -154,10 +150,10 @@ public class EsNameUsageSerde {
 
   @Test
   public void testEsNameUsage2() throws IOException {
-    esWriter = config2.nameUsage.getObjectWriter();
-    esReader = config2.nameUsage.getObjectReader();
-    payloadWriter = config2.nameUsage.getMapper().writerFor(EsUtil.NUW_TYPE_REF);
-    payloadReader = config2.nameUsage.getMapper().readerFor(EsUtil.NUW_TYPE_REF);
+    esWriter = config2().getObjectWriter();
+    esReader = config2().getObjectReader();
+    payloadWriter = config2().getMapper().writerFor(EsUtil.NUW_TYPE_REF);
+    payloadReader = config2().getMapper().readerFor(EsUtil.NUW_TYPE_REF);
 
     EsNameUsage enuIn = new EsNameUsage();
     enuIn.setPayload(
