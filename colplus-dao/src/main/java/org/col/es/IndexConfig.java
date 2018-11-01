@@ -3,12 +3,15 @@ package org.col.es;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
-import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.SerializationFeature;
+
 import org.col.es.query.EsSearchRequest;
 
 public class IndexConfig {
-
-  private static ObjectMapper mapper;
 
   /**
    * The model class corresponding to the type.
@@ -22,12 +25,12 @@ public class IndexConfig {
   public int batchSize = 1000;
   /**
    * Whether to store enums as ints or as strings. Storings as ints squeezes a bit more performance
-   * out of ES, but not much because cardinality will be low for enums. And it saves space, notably
-   * in the "payload" field of EsNameUsage. On the other hand, it makes the index harder to read in
-   * Kibana.
+   * out of ES and saves space, notably in the "payload" field of EsNameUsage. On the other hand, it
+   * makes the index harder to read in Kibana.
    */
   public Boolean storeEnumAsInt = Boolean.TRUE;
 
+  private ObjectMapper mapper;
   private ObjectReader reader;
   private ObjectWriter writer;
   private ObjectWriter queryWriter;
@@ -46,6 +49,8 @@ public class IndexConfig {
       mapper.setVisibility(PropertyAccessor.ALL, Visibility.NONE);
       mapper.setVisibility(PropertyAccessor.FIELD, Visibility.ANY);
       mapper.setSerializationInclusion(Include.NON_EMPTY);
+      // Necessary because the SearchResponse class does not contain each and every field within an
+      // Elasticsearch search response.
       mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
     }
     return mapper;
@@ -59,7 +64,7 @@ public class IndexConfig {
       try {
         reader = getMapper().readerFor(Class.forName(modelClass));
       } catch (ClassNotFoundException e) {
-        throw new RuntimeException(e);
+        throw new EsException(e);
       }
     }
     return reader;
@@ -75,7 +80,7 @@ public class IndexConfig {
       try {
         writer = getMapper().writerFor(Class.forName(modelClass));
       } catch (ClassNotFoundException e) {
-        throw new RuntimeException(e);
+        throw new EsException(e);
       }
     }
     return writer;

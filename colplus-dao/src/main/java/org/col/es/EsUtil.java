@@ -5,6 +5,10 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+
+import org.col.api.model.NameUsage;
+import org.col.api.search.NameUsageWrapper;
 import org.col.es.mapping.Mapping;
 import org.col.es.mapping.MappingFactory;
 import org.elasticsearch.client.Request;
@@ -19,6 +23,9 @@ import static org.col.es.mapping.SerializationUtil.readIntoMap;
 import static org.col.es.mapping.SerializationUtil.serialize;
 
 public class EsUtil {
+
+  public static TypeReference<NameUsageWrapper<? extends NameUsage>> NUW_TYPE_REF =
+      new TypeReference<NameUsageWrapper<? extends NameUsage>>() {};
 
   private static final Logger LOG = LoggerFactory.getLogger(EsUtil.class);
 
@@ -84,7 +91,7 @@ public class EsUtil {
    * @param client
    * @param name
    * @return
-    */
+   */
   public static int count(RestClient client, String name) {
     LOG.info("Counting index {}", name);
     Request request = new Request("GET", name + "/_doc/_count");

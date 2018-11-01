@@ -174,14 +174,16 @@ public class EsNameUsage {
         && Objects.equals(publishedInId, that.publishedInId) && rank == that.rank
         && type == that.type && nomStatus == that.nomStatus
         && Objects.equals(nameFields, that.nameFields) && status == that.status
-        && Objects.equals(taxonId, that.taxonId) && Objects.equals(issues, that.issues);
+        && Objects.equals(taxonId, that.taxonId) && Objects.equals(issues, that.issues)
+        && Objects.equals(payload, that.payload);
   }
 
   @Override
   public int hashCode() {
 
     return Objects.hash(scientificName, authorship, vernacularNames, datasetKey, nameId,
-        nameIndexId, publishedInId, rank, type, nomStatus, nameFields, status, taxonId, issues);
+        nameIndexId, publishedInId, rank, type, nomStatus, nameFields, status, taxonId, issues,
+        payload);
   }
 
 }

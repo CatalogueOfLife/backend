@@ -85,8 +85,7 @@ public class NameUsageSearchService {
   }
 
   private ObjectReader getPayloadReader() {
-    return cfg.nameUsage.getMapper()
-        .readerFor(new TypeReference<NameUsageWrapper<? extends NameUsage>>() {});
+    return cfg.nameUsage.getMapper().readerFor(EsUtil.NUW_TYPE_REF);
   }
 
   private static String getUrl() {
