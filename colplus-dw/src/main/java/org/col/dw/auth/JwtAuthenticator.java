@@ -40,7 +40,11 @@ public class JwtAuthenticator implements Authenticator<String, ColUser> {
           .map(idService::get);
     
     } catch (JwtException | IllegalArgumentException ex) {
-      throw new NotAuthorizedException("Invalid JWT token", ex);
+      StringBuilder sb = new StringBuilder("Invalid JWT token");
+      if (ex.getMessage() != null) {
+        sb.append(": ").append(ex.getMessage());
+      }
+      throw new NotAuthorizedException(sb.toString(), ColUnauthorizedHandler.challengeJwt(AuthBundle.REALM));
     } catch (Exception ex) {
       throw new AuthenticationException("JWT token could not be verified", ex);
     }

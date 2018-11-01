@@ -10,10 +10,13 @@ import javax.ws.rs.core.HttpHeaders;
 
 import io.dropwizard.auth.AuthFilter;
 import io.dropwizard.auth.Authenticator;
+import io.jsonwebtoken.JwtException;
 import org.col.api.model.ColUser;
 
 /**
- * Authenticates an CoL user from an encoded JWT token.
+ * Authenticates an CoL user from an encoded Bearer JWT token.
+ * See https://tools.ietf.org/html/rfc6750
+ * and https://jwt.io/introduction/
  */
 public class JwtCredentialsFilter extends AuthFilter<String, ColUser> {
   
@@ -27,8 +30,12 @@ public class JwtCredentialsFilter extends AuthFilter<String, ColUser> {
   @Override
   public void filter(ContainerRequestContext requestContext) throws IOException {
     final String token = getBearerToken(requestContext.getHeaders().getFirst(HttpHeaders.AUTHORIZATION));
-    if (!authenticate(requestContext, token, SCHEME)) {
-      throw new WebApplicationException(unauthorizedHandler.buildResponse(prefix, realm));
+    try {
+      if (!authenticate(requestContext, token, SCHEME)) {
+        throw new WebApplicationException(unauthorizedHandler.buildResponse(prefix, realm));
+      }
+    } catch (JwtException e) {
+      throw new WebApplicationException(ColUnauthorizedHandler.buildResponse(prefix, realm, e.getMessage()));
     }
   }
   
