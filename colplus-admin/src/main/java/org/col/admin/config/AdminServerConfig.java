@@ -1,14 +1,11 @@
 package org.col.admin.config;
 
 import java.io.File;
-
 import javax.validation.constraints.Pattern;
 
 import org.col.db.PgDbConfig;
 import org.col.dw.PgAppConfig;
 import org.col.es.EsConfig;
-
-import io.dropwizard.client.JerseyClientConfiguration;
 
 public class AdminServerConfig extends PgAppConfig {
 
@@ -17,7 +14,6 @@ public class AdminServerConfig extends PgAppConfig {
   public ImporterConfig importer = new ImporterConfig();
   public GbifConfig gbif = new GbifConfig();
   public EsConfig es = new EsConfig();
-  public JerseyClientConfiguration client = new JerseyClientConfiguration();
 
   /**
    * The application context for the IndexServlet which renders the operational menu index. Has to

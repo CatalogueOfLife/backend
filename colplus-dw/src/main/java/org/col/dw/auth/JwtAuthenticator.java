@@ -20,6 +20,7 @@ public class JwtAuthenticator implements Authenticator<String, ColUser> {
   private final JwtCoder jwt;
   private final IdentityService idService;
   
+  
   public JwtAuthenticator(JwtCoder jwt, IdentityService idService) {
     this.idService = idService;
     this.jwt = jwt;

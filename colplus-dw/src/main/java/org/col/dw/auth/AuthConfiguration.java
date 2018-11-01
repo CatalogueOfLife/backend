@@ -18,6 +18,11 @@ public class AuthConfiguration {
   public String gbifSecret;
   
   /**
+   *  Proxied user for the GBIF trusted application authorization
+   */
+  public String gbifUser;
+
+  /**
    * Jason Web Token used to trust in externally authenticated users.
    */
   @NotNull

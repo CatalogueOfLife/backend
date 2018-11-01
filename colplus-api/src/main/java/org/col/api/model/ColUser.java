@@ -2,10 +2,7 @@ package org.col.api.model;
 
 import java.security.Principal;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import javax.security.auth.Subject;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -21,7 +18,7 @@ public class ColUser implements IntKey, Principal {
   private String email;
   private String orcid;
   private Country country;
-  private Set<Role> roles;
+  private Set<Role> roles = EnumSet.noneOf(Role.class);
   private Map<String, String> settings = new HashMap<>();
   private LocalDateTime lastLogin;
   private LocalDateTime created;
