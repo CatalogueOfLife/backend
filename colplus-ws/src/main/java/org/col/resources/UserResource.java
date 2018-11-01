@@ -12,7 +12,7 @@ import javax.ws.rs.core.SecurityContext;
 
 import io.dropwizard.auth.Auth;
 import org.col.api.model.ColUser;
-import org.col.dw.auth.JwtCoder;
+import org.col.dw.auth.JwtCodec;
 import org.col.dw.auth.Roles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,9 +25,9 @@ public class UserResource {
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(UserResource.class);
   
-  private final JwtCoder jwt;
+  private final JwtCodec jwt;
   
-  public UserResource(JwtCoder jwt) {
+  public UserResource(JwtCodec jwt) {
     this.jwt = jwt;
   }
   

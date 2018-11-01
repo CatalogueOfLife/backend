@@ -2,6 +2,7 @@ logging:
   level: INFO
   loggers:
     "org.col": DEBUG
+    "org.apache.http": DEBUG
   appenders:
     - type: console
 db:

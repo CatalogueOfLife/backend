@@ -2,23 +2,15 @@ package org.col.dw.auth;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 import com.google.common.annotations.VisibleForTesting;
-import io.dropwizard.auth.AuthenticationException;
-import io.dropwizard.auth.Authenticator;
-import io.dropwizard.auth.basic.BasicCredentials;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.CredentialsProvider;
+import com.google.common.io.BaseEncoding;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.protocol.HttpClientContext;
-import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -37,11 +29,10 @@ import org.slf4j.LoggerFactory;
  *
  * A SqlSessionFactory and an HttpClient MUST be set before the service is used.
  */
-public class IdentityService implements Authenticator<BasicCredentials, ColUser> {
+public class IdentityService {
   private static final Logger LOG = LoggerFactory.getLogger(IdentityService.class);
   private static final String SETTING_COUNTRY = "country";
   private static final String SYS_SETTING_ORCID = "auth.orcid.id";
-  private static final AuthScope gbifScope = new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT, AuthScope.ANY_REALM, AuthScope.ANY_SCHEME);
   
   private final AuthConfiguration cfg;
   private SqlSessionFactory sqlSessionFactory;
@@ -62,16 +53,6 @@ public class IdentityService implements Authenticator<BasicCredentials, ColUser>
     
     //TODO: replace with Chronicle Map and only cache the main webservice, not admin!
     this.cache = new ConcurrentHashMap<>();
-    // dummy user until we truly connect to GBIF
-    ColUser iggy = new ColUser();
-    iggy.setKey(1969);
-    iggy.setUsername("iggy");
-    iggy.setFirstname("James");
-    iggy.setLastname("Osterberg");
-    iggy.setEmail("iggy@mailinator.com");
-    iggy.setOrcid("0000-0000-0000-0666");
-    iggy.setRoles(Arrays.stream(ColUser.Role.values()).collect(Collectors.toSet()));
-    cache.put(iggy.getKey(), iggy);
   }
   
   /**
@@ -106,11 +87,6 @@ public class IdentityService implements Authenticator<BasicCredentials, ColUser>
   
   @VisibleForTesting
   Optional<ColUser> authenticate(String username, String password) {
-    // TODO: remove temp hack
-    if ("iggy".equalsIgnoreCase(username) && "NoFun".equals(password)) {
-      return Optional.of(cache.get(1969));
-    }
-    
     ColUser user = authenticateGBIF(username, password);
     if (user != null) {
       if (false) {
@@ -135,28 +111,33 @@ public class IdentityService implements Authenticator<BasicCredentials, ColUser>
   }
   
   /**
-   * Checks if Basic Auth against GBIF API is working
+   * Checks if Basic Auth against GBIF API is working.
+   * We avoid the native httpclient Basic authentication which uses ASCII to encode the password
+   * into Base64 octets. But GBIF requires ISO_8859_1! See:
+   *  https://github.com/gbif/registry/issues/67
+   *  https://stackoverflow.com/questions/7242316/what-encoding-should-i-use-for-http-basic-authentication
+   *  https://tools.ietf.org/html/rfc7617#section-2.1
    */
   @VisibleForTesting
   ColUser authenticateGBIF(String username, String password) {
-  
-    CredentialsProvider credsProvider = new BasicCredentialsProvider();
-    credsProvider.setCredentials(gbifScope, new UsernamePasswordCredentials(username, password));
-
-    HttpClientContext context = HttpClientContext.create();
-    context.setCredentialsProvider(credsProvider);
-
     HttpGet get = new HttpGet(loginUri);
-    try (CloseableHttpResponse resp = http.execute(get, context)){
+    get.addHeader("Authorization", basicAuthHeader(username, password));
+    try (CloseableHttpResponse resp = http.execute(get)){
       LOG.debug("GBIF authentication response for {}: {}", username, resp);
       if (resp.getStatusLine().getStatusCode() == 200) {
         return fromJson("");
       }
-    
     } catch (Exception e) {
       LOG.error("GBIF BasicAuth error", e);
     }
     return null;
+  }
+  
+  @VisibleForTesting
+  static String basicAuthHeader(String username, String password) {
+    String cred = username + ":" + password;
+    String base64 = BaseEncoding.base64().encode(cred.getBytes(StandardCharsets.ISO_8859_1));
+    return "Basic " + base64;
   }
   
   @VisibleForTesting
@@ -170,11 +151,6 @@ public class IdentityService implements Authenticator<BasicCredentials, ColUser>
       LOG.info("Failed to retrieve GBIF user {}", username, e);
     }
     return null;
-  }
-  
-  @Override
-  public Optional<ColUser> authenticate(BasicCredentials credentials) throws AuthenticationException {
-    return authenticate(credentials.getUsername(), credentials.getPassword());
   }
   
   private ColUser fromJson(String json) {

@@ -15,7 +15,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.jackson.ApiModule;
 import org.col.dw.auth.AuthBundle;
-import org.col.dw.auth.JwtCoder;
+import org.col.dw.auth.JwtCodec;
 import org.col.dw.cors.CorsBundle;
 import org.col.dw.db.MybatisBundle;
 import org.col.dw.health.NameParserHealthCheck;
@@ -54,8 +54,8 @@ public abstract class PgApp<T extends PgAppConfig> extends Application<T> {
     return mybatis.getSqlSessionFactory();
   }
   
-  public JwtCoder getJwtCoder() {
-    return auth.getJwtCoder();
+  public JwtCodec getJwtCoder() {
+    return auth.getJwtCodec();
   }
   
   @Override

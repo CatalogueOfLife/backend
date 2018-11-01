@@ -17,6 +17,8 @@ import org.col.dw.cors.CorsConfiguration;
  */
 public class PgAppConfig extends Configuration implements CorsBundleConfiguration {
   
+  @Valid
+  @NotNull
   public PgConfig db = new PgConfig();
   
   @Valid
@@ -33,7 +35,6 @@ public class PgAppConfig extends Configuration implements CorsBundleConfiguratio
   
   @Valid
   public DashboardConfiguration dashboard = new DashboardConfiguration();
-  
   
   
   @Override

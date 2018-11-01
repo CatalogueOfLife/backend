@@ -10,13 +10,13 @@ import org.col.common.date.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class JwtCoder {
-  private static final Logger LOG = LoggerFactory.getLogger(JwtCoder.class);
+public class JwtCodec {
+  private static final Logger LOG = LoggerFactory.getLogger(JwtCodec.class);
   private static final int EXPIRE_IN_DAYS = 7;
   private static final String ISSUER = "col.plus";
   private final byte[] signingKey;
   
-  public JwtCoder(AuthConfiguration cfg) {
+  public JwtCodec(AuthConfiguration cfg) {
     signingKey = cfg.signingKey.getBytes(StandardCharsets.UTF_8);
   }
   
