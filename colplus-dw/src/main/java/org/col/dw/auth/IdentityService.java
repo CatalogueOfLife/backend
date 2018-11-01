@@ -60,7 +60,7 @@ public class IdentityService implements Authenticator<BasicCredentials, ColUser>
   }
   
   public ColUser get(Integer key) {
-    if (cache.contains(key)) {
+    if (cache.containsKey(key)) {
       return cache.get(key);
     }
     // try to load from DB - if its not there the user has never logged in before and sth is wrong

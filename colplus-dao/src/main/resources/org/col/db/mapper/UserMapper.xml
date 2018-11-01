@@ -46,7 +46,7 @@
     </sql>
 
     <sql id="FROM">
-        coluser u
+        coluser
     </sql>
 
     <resultMap id="userResultMap" type="ColUser" autoMapping="true">
@@ -57,7 +57,7 @@
     <select id="get" resultMap="userResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
-        WHERE s.key = #{key}
+        WHERE key = #{key}
     </select>
 
     <insert id="create" parameterType="ColUser" useGeneratedKeys="true" keyProperty="key">
