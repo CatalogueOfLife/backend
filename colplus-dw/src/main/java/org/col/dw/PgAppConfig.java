@@ -4,7 +4,6 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import de.lhorn.dropwizard.dashboard.DashboardConfiguration;
 import io.dropwizard.Configuration;
 import io.dropwizard.client.JerseyClientConfiguration;
 import org.col.db.PgConfig;
@@ -32,9 +31,6 @@ public class PgAppConfig extends Configuration implements CorsBundleConfiguratio
   @Valid
   @NotNull
   public JerseyClientConfiguration client = new JerseyClientConfiguration();
-  
-  @Valid
-  public DashboardConfiguration dashboard = new DashboardConfiguration();
   
   
   @Override

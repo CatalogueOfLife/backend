@@ -1,6 +1,5 @@
 package org.col.dw;
 
-import de.lhorn.dropwizard.dashboard.Dashboard;
 import io.dropwizard.Application;
 import io.dropwizard.client.DropwizardApacheConnector;
 import io.dropwizard.client.HttpClientBuilder;
@@ -79,9 +78,6 @@ public abstract class PgApp<T extends PgAppConfig> extends Application<T> {
     // name parser
     NameParser.PARSER.register(env.metrics());
     env.healthChecks().register("name-parser", new NameParserHealthCheck());
-
-    final Dashboard dashboard = new Dashboard(env, cfg.dashboard);
-  
   
   }
   
