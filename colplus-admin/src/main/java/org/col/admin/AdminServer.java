@@ -54,9 +54,6 @@ public class AdminServer extends PgApp<AdminServerConfig> {
   public void run(AdminServerConfig cfg, Environment env) {
     super.run(cfg, env);
 
-    // add custom index
-    env.admin().addServlet("index-menu", new IndexServlet(cfg)).addMapping("");
-
     // name index
     NameIndex ni;
     if (cfg.namesIndexFile == null) {
