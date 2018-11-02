@@ -1,4 +1,4 @@
-package org.col.dw.auth.gbif;
+package org.col.dw.auth;
 
 import java.net.URI;
 import java.nio.charset.Charset;
@@ -6,12 +6,10 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
-import javax.ws.rs.client.ClientRequestContext;
-import javax.ws.rs.core.MultivaluedMap;
 
 import com.google.common.base.Preconditions;
 import com.google.common.io.BaseEncoding;
-import org.col.dw.auth.AuthConfiguration;
+import org.apache.http.client.methods.HttpUriRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,26 +67,26 @@ public class GbifTrustedAuth {
   /**
    * Build the string to be signed for a client request by extracting header information from the request.
    */
-  private static String buildStringToSign(ClientRequestContext request) {
+  private static String buildStringToSign(HttpUriRequest req) {
     StringBuilder sb = new StringBuilder();
 
-    sb.append(request.getMethod());
+    sb.append(req.getMethod());
     sb.append(NEWLINE);
-    sb.append(getCanonicalizedPath(request.getUri()));
+    sb.append(getCanonicalizedPath(req.getURI()));
 
-    appendHeader(sb, request.getHeaders(), HEADER_CONTENT_TYPE, false);
-    appendHeader(sb, request.getHeaders(), HEADER_GBIF_USER, true);
+    appendHeader(sb, req.getFirstHeader(HEADER_CONTENT_TYPE).getValue(), false);
+    appendHeader(sb, req.getFirstHeader(HEADER_GBIF_USER).getValue(), true);
 
     return sb.toString();
   }
 
-  private static void appendHeader(StringBuilder sb, MultivaluedMap<String, ?> request, String header, boolean caseSensitive) {
-    if (request.containsKey(header)) {
+  private static void appendHeader(StringBuilder sb, String header, boolean caseSensitive) {
+    if (header != null) {
       sb.append(NEWLINE);
       if (caseSensitive) {
-        sb.append(request.getFirst(header));
+        sb.append(header);
       } else {
-        sb.append(request.getFirst(header).toString().toLowerCase());
+        sb.append(header.toLowerCase());
       }
     }
   }
@@ -127,16 +125,16 @@ public class GbifTrustedAuth {
   }
 
   /**
-   * Signs a request by adding a Authorization header.
+   * Signs an httpclient request by adding a Authorization header.
    */
-  public void signRequest(String username, ClientRequestContext request) {
+  public void signRequest(String username, HttpUriRequest request) {
     // first add custom GBIF headers so we can use them to build the string to sign
 
     // the proxied username
-    request.getHeaders().putSingle(HEADER_GBIF_USER, username);
+    request.addHeader(HEADER_GBIF_USER, username);
 
     // the canonical path header
-    request.getHeaders().putSingle(HEADER_ORIGINAL_REQUEST_URL, getCanonicalizedPath(request.getUri()));
+    request.addHeader(HEADER_ORIGINAL_REQUEST_URL, getCanonicalizedPath(request.getURI()));
 
     // build the unique string to sign
     final String stringToSign = buildStringToSign(request);
@@ -147,8 +145,8 @@ public class GbifTrustedAuth {
     // build authorization header string
     String header = buildAuthHeader(appKey, signature);
     // add authorization header
-    LOG.debug("Adding authentication header to request {} for proxied user {} : {}", request.getUri(), username, header);
-    request.getHeaders().putSingle(HEADER_AUTHORIZATION, header);
+    LOG.debug("Adding authentication header to request {} for proxied user {} : {}", request.getURI(), username, header);
+    request.addHeader(HEADER_AUTHORIZATION, header);
   }
 
 }

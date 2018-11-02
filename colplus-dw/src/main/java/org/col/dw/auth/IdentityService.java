@@ -16,8 +16,6 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.model.ColUser;
 import org.col.db.mapper.UserMapper;
-import org.col.dw.auth.gbif.GbifTrustedAuth;
-import org.col.dw.auth.gbif.HttpGbifAuthFilter;
 import org.gbif.api.vocabulary.UserRole;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,9 +38,11 @@ public class IdentityService {
   private final URI loginUri;
   private final URI userUri;
   private CloseableHttpClient http;
+  private final GbifTrustedAuth gbifAuth;
   
   public IdentityService(AuthConfiguration cfg) {
     this.cfg = cfg;
+    gbifAuth = new GbifTrustedAuth(cfg);
     try {
       loginUri = new URI(cfg.gbifApi).resolve("user/login");
       userUri = new URI(cfg.gbifApi).resolve("admin/user/");
@@ -143,8 +143,8 @@ public class IdentityService {
   @VisibleForTesting
   ColUser getFullGbifUser(String username) {
     try {
-      new HttpGbifAuthFilter(new GbifTrustedAuth(cfg));
       HttpGet get = new HttpGet(userUri.resolve(username));
+      gbifAuth.signRequest(username, get);
       CloseableHttpResponse resp = http.execute(get);
 
     } catch (Exception e) {

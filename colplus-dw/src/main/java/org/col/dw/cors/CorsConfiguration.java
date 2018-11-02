@@ -6,10 +6,16 @@ public class CorsConfiguration {
   public static final String ANY_ORIGIN = "*";
   
   @NotEmpty
-  public String allowedOrigins = ANY_ORIGIN;
+  public String origins = ANY_ORIGIN;
+  
+  @NotEmpty
+  public String methods = "OPTIONS, GET, POST, PUT, DELETE";
+  
+  @NotEmpty
+  public String headers = "Authorization";
 
   public boolean anyOrigin() {
-    return ANY_ORIGIN.equals(allowedOrigins);
+    return ANY_ORIGIN.equals(origins);
   }
   
 }
