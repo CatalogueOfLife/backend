@@ -1,0 +1,20 @@
+{
+  "userName": "manga",
+  "firstName": "Mia",
+  "lastName": "Mänga",
+  "email": "manga@mailinator.com",
+  "roles": [
+    "USER",
+    "REGISTRY_ADMIN",
+    "COL_EDITOR",
+    "COL_ADMIN"
+  ],
+  "settings": {
+    "country": "JP"
+  },
+  "systemSettings": {
+    "auth.orcid.id": "0000-1234-5678-0011"
+  },
+  "key": 1,
+  "challengeCodePresent": false
+}
