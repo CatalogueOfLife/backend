@@ -39,8 +39,10 @@ public class EsSetupRule extends ExternalResource {
           httpPort = Integer.parseInt(cfg.ports);
         }
         int tcpPort = PortUtil.findFreePort();
-        ee = EmbeddedElastic.builder().withInstallationDirectory(new File(cfg.hosts))
-            .withElasticVersion(ES_VERSION).withStartTimeout(60, TimeUnit.SECONDS)
+        ee = EmbeddedElastic.builder()
+            .withInstallationDirectory(new File(cfg.hosts))
+            .withElasticVersion(ES_VERSION)
+            .withStartTimeout(60, TimeUnit.SECONDS)
             .withSetting(PopularProperties.TRANSPORT_TCP_PORT, tcpPort)
             .withSetting(PopularProperties.HTTP_PORT, httpPort)
             // .withEsJavaOpts("-Xms128m -Xmx512m")
