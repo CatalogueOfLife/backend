@@ -105,21 +105,29 @@ public class IdentityService {
     if (authenticateGBIF(username, password)) {
       // GBIF authentication does not provide us with the full user, we need to look it up again
       ColUser user = getFullGbifUser(username);
-      if (user != null) {
-        user.getRoles().add(ColUser.Role.USER);
-        user.setLastLogin(LocalDateTime.now());
-        // insert/update coluser in postgres with updated login date
-        try (SqlSession session = sqlSessionFactory.openSession(true)) {
-          UserMapper mapper = session.getMapper(UserMapper.class);
-          // try to update user, create new one otherwise
-          if (mapper.update(user) < 1) {
-            LOG.info("Creating new CoL user {} {}", user.getUsername(), user.getKey());
-            mapper.create(user);
-            user.setCreated(LocalDateTime.now());
-          }
-        }
-        return Optional.of(cache(user));
+      if (user == null) {
+        user = new ColUser();
+        user.setUsername(username);
+        user.setFirstname("?");
+        user.setLastname("?");
       }
+      user.getRoles().add(ColUser.Role.USER);
+      user.setLastLogin(LocalDateTime.now());
+      // insert/update coluser in postgres with updated login date
+      try (SqlSession session = sqlSessionFactory.openSession(true)) {
+        UserMapper mapper = session.getMapper(UserMapper.class);
+        // try to find existing user in Col db, otherwise create new one otherwise
+        ColUser existing = mapper.getByUsername(username);
+        if (existing != null) {
+          user.setKey(existing.getKey());
+          mapper.update(user);
+        } else {
+          LOG.info("Creating new CoL user {} {}", user.getUsername(), user.getKey());
+          mapper.create(user);
+          user.setCreated(LocalDateTime.now());
+        }
+      }
+      return Optional.of(cache(user));
     }
     return Optional.empty();
   }

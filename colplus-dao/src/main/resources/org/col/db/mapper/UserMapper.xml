@@ -62,6 +62,12 @@
         WHERE key = #{key}
     </select>
 
+    <select id="getByUsername" resultMap="userResultMap">
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
+        WHERE username = #{username}
+    </select>
+
     <insert id="create" parameterType="ColUser" useGeneratedKeys="true" keyProperty="key">
       INSERT INTO coluser (<include refid="COLS" />)
              VALUES (<include refid="PROPS" />)

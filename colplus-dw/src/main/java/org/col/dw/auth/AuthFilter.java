@@ -2,6 +2,7 @@ package org.col.dw.auth;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.security.Principal;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -10,6 +11,7 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 
 import com.google.common.io.BaseEncoding;
 import io.jsonwebtoken.Claims;
@@ -27,6 +29,7 @@ public class AuthFilter implements ContainerRequestFilter {
   
   private static final String REALM = "COL";
   private static final String BASIC = "Basic";
+  private static final String BEARER = "Bearer";
   private static final String CHALLENGE_FORMAT = "%s realm=\"%s\"";
   
   private static final Pattern AUTH_PATTERN = Pattern.compile("^(Basic|Bearer)\\s+(.+)$");
@@ -45,17 +48,52 @@ public class AuthFilter implements ContainerRequestFilter {
   @Override
   public void filter(ContainerRequestContext requestContext) throws IOException {
     final String auth = requestContext.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
+    String scheme = null;
+    Optional<ColUser> user = Optional.empty();
     if (auth != null) {
       Matcher m = AUTH_PATTERN.matcher(auth.trim());
       if (m.find()) {
         if (m.group(1).equals(BASIC)) {
-          doBasic(m.group(2));
+          user = doBasic(m.group(2));
+          scheme = BASIC;
         } else {
-          doJWT(m.group(2));
+          user = doJWT(m.group(2));
+          scheme = BEARER;
         }
       }
     }
-    unauthorized();
+    if (user.isPresent()) {
+      setSecurityContext(user.get(), scheme, requestContext);
+    } else {
+      unauthorized();
+    }
+  }
+  
+  private void setSecurityContext(final ColUser user, final String scheme, final ContainerRequestContext requestContext) {
+    final SecurityContext securityContext = requestContext.getSecurityContext();
+    final boolean secure = securityContext != null && securityContext.isSecure();
+  
+    requestContext.setSecurityContext(new SecurityContext() {
+      @Override
+      public Principal getUserPrincipal() {
+        return user;
+      }
+    
+      @Override
+      public boolean isUserInRole(String role) {
+        return user.hasRole(role);
+      }
+    
+      @Override
+      public boolean isSecure() {
+        return secure;
+      }
+    
+      @Override
+      public String getAuthenticationScheme() {
+        return scheme;
+      }
+    });
   }
   
   private static void unauthorized() {
