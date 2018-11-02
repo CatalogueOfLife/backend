@@ -45,8 +45,6 @@ public class WsServer extends PgApp<WsServerConfig> {
     env.jersey().register(new UserResource(getJwtCoder()));
     env.jersey().register(new VerbatimResource());
     env.jersey().register(new VocabResource());
-    
-    env.jersey().register(new MatchingForwardingResource(cfg.adminApi));
   }
 
 }
