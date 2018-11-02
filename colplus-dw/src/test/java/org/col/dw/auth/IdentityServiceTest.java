@@ -11,6 +11,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public class IdentityServiceTest {
   
@@ -19,8 +20,8 @@ public class IdentityServiceTest {
   public IdentityServiceTest() {
     AuthConfiguration cfg = new AuthConfiguration();
     cfg.gbifSecret = "12345678";
-    cfg.gbifApp = "app";
-    cfg.gbifApi = "http://localhost:8080/";
+    cfg.gbifApp = "col.app";
+    //cfg.gbifApi = "http://localhost:8080/";
     ids = new IdentityService(cfg);
     ids.setClient(HttpClients.createDefault());
   }
@@ -43,8 +44,8 @@ public class IdentityServiceTest {
   @Test
   @Ignore("GBIF service needs to be mocked - this uses live services")
   public void authenticateGBIF() {
-    assertNotNull(ids.authenticateGBIF("markus", "markus"));
-    assertNotNull(ids.authenticateGBIF("manga", "12345678"));
+    assertTrue(ids.authenticateGBIF("manga", ""));
+    assertTrue(ids.authenticateGBIF("markus", ""));
   }
   
   @Test

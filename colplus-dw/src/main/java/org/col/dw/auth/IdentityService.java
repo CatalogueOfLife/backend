@@ -105,19 +105,21 @@ public class IdentityService {
     if (authenticateGBIF(username, password)) {
       // GBIF authentication does not provide us with the full user, we need to look it up again
       ColUser user = getFullGbifUser(username);
-      user.getRoles().add(ColUser.Role.USER);
-      user.setLastLogin(LocalDateTime.now());
-      // insert/update coluser in postgres with updated login date
-      try (SqlSession session = sqlSessionFactory.openSession(true)) {
-        UserMapper mapper = session.getMapper(UserMapper.class);
-        // try to update user, create new one otherwise
-        if (mapper.update(user) < 1) {
-          LOG.info("Creating new CoL user {} {}", user.getUsername(), user.getKey());
-          mapper.create(user);
-          user.setCreated(LocalDateTime.now());
+      if (user != null) {
+        user.getRoles().add(ColUser.Role.USER);
+        user.setLastLogin(LocalDateTime.now());
+        // insert/update coluser in postgres with updated login date
+        try (SqlSession session = sqlSessionFactory.openSession(true)) {
+          UserMapper mapper = session.getMapper(UserMapper.class);
+          // try to update user, create new one otherwise
+          if (mapper.update(user) < 1) {
+            LOG.info("Creating new CoL user {} {}", user.getUsername(), user.getKey());
+            mapper.create(user);
+            user.setCreated(LocalDateTime.now());
+          }
         }
+        return Optional.of(cache(user));
       }
-      return Optional.of(cache(user));
     }
     return Optional.empty();
   }
@@ -155,7 +157,10 @@ public class IdentityService {
     HttpGet get = new HttpGet(userUri.resolve(username));
     gbifAuth.signRequest(username, get);
     try (CloseableHttpResponse resp = http.execute(get)) {
-      return fromJson(resp.getEntity().getContent());
+      if (resp.getStatusLine().getStatusCode() == 200) {
+        return fromJson(resp.getEntity().getContent());
+      }
+      LOG.info("No success retrieving GBIF user {}: {}", username, resp.getStatusLine());
     } catch (Exception e) {
       LOG.info("Failed to retrieve GBIF user {}", username, e);
     }
@@ -164,7 +169,6 @@ public class IdentityService {
   
   @VisibleForTesting
   static ColUser fromJson(InputStream json) throws IOException {
-    //String jstr = IOUtils.toString(json, "UTF-8");
     GUser gbif = OM.readValue(json, GUser.class);
     ColUser user = new ColUser();
     user.setUsername(gbif.userName);
