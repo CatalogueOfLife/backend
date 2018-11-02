@@ -1,12 +1,18 @@
 package org.col.dw.auth;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.io.BaseEncoding;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -15,8 +21,8 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.model.ColUser;
+import org.col.api.vocab.Country;
 import org.col.db.mapper.UserMapper;
-import org.gbif.api.vocabulary.UserRole;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,6 +45,15 @@ public class IdentityService {
   private final URI userUri;
   private CloseableHttpClient http;
   private final GbifTrustedAuth gbifAuth;
+  private final static ObjectMapper OM = configure(new ObjectMapper());
+
+  private static ObjectMapper configure(ObjectMapper mapper) {
+    //mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
+    mapper.enable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+    //mapper.registerModule(new JavaTimeModule());
+    //mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+    return mapper;
+  }
   
   public IdentityService(AuthConfiguration cfg) {
     this.cfg = cfg;
@@ -87,12 +102,9 @@ public class IdentityService {
   
   @VisibleForTesting
   Optional<ColUser> authenticate(String username, String password) {
-    ColUser user = authenticateGBIF(username, password);
-    if (user != null) {
-      if (false) {
-        // TODO: GBIF authentication does not provide us with the full user, we need to look it up again
-        user = getFullGbifUser(username);
-      }
+    if (authenticateGBIF(username, password)) {
+      // GBIF authentication does not provide us with the full user, we need to look it up again
+      ColUser user = getFullGbifUser(username);
       user.getRoles().add(ColUser.Role.USER);
       user.setLastLogin(LocalDateTime.now());
       // insert/update coluser in postgres with updated login date
@@ -119,18 +131,16 @@ public class IdentityService {
    *  https://tools.ietf.org/html/rfc7617#section-2.1
    */
   @VisibleForTesting
-  ColUser authenticateGBIF(String username, String password) {
+  boolean authenticateGBIF(String username, String password) {
     HttpGet get = new HttpGet(loginUri);
     get.addHeader("Authorization", basicAuthHeader(username, password));
     try (CloseableHttpResponse resp = http.execute(get)){
       LOG.debug("GBIF authentication response for {}: {}", username, resp);
-      if (resp.getStatusLine().getStatusCode() == 200) {
-        return fromJson("");
-      }
+      return resp.getStatusLine().getStatusCode() == 200;
     } catch (Exception e) {
       LOG.error("GBIF BasicAuth error", e);
     }
-    return null;
+    return false;
   }
   
   @VisibleForTesting
@@ -142,28 +152,56 @@ public class IdentityService {
   
   @VisibleForTesting
   ColUser getFullGbifUser(String username) {
-    try {
-      HttpGet get = new HttpGet(userUri.resolve(username));
-      gbifAuth.signRequest(username, get);
-      CloseableHttpResponse resp = http.execute(get);
-
+    HttpGet get = new HttpGet(userUri.resolve(username));
+    gbifAuth.signRequest(username, get);
+    try (CloseableHttpResponse resp = http.execute(get)) {
+      return fromJson(resp.getEntity().getContent());
     } catch (Exception e) {
       LOG.info("Failed to retrieve GBIF user {}", username, e);
     }
     return null;
   }
   
-  private ColUser fromJson(String json) {
+  @VisibleForTesting
+  static ColUser fromJson(InputStream json) throws IOException {
+    //String jstr = IOUtils.toString(json, "UTF-8");
+    GUser gbif = OM.readValue(json, GUser.class);
     ColUser user = new ColUser();
+    user.setUsername(gbif.userName);
+    user.setFirstname(gbif.firstName);
+    user.setLastname(gbif.lastName);
+    user.setEmail(gbif.email);
+    if (gbif.roles != null) {
+      for (String r : gbif.roles) {
+        ColUser.Role role = colRole(r);
+        if (role != null) user.addRole(role);
+      }
+    }
+    if (gbif.settings != null && gbif.settings.containsKey(SETTING_COUNTRY)) {
+      Country.fromIsoCode(gbif.settings.get(SETTING_COUNTRY)).ifPresent(user::setCountry);
+    }
+    if (gbif.systemSettings != null) {
+      user.setOrcid(gbif.systemSettings.getOrDefault(SYS_SETTING_ORCID, null));
+    }
     return user;
   }
   
-  private static ColUser.Role fromGbifRole(UserRole gbif) {
-    switch (gbif) {
-      case USER: return ColUser.Role.USER;
-      case REGISTRY_ADMIN: return ColUser.Role.ADMIN;
-      case REGISTRY_EDITOR: return ColUser.Role.EDITOR;
-    }
+  private static ColUser.Role colRole(String gbif) {
+    if ("col_admin".equalsIgnoreCase(gbif)) return ColUser.Role.ADMIN;
+    if ("col_editor".equalsIgnoreCase(gbif)) return ColUser.Role.EDITOR;
+    if ("user".equalsIgnoreCase(gbif)) return ColUser.Role.USER;
     return null;
+  }
+  
+  static class GUser {
+    public Integer key;
+    public String userName;
+    public String firstName;
+    public String lastName;
+    public String email;
+    public List<String> roles;
+    public Map<String, String> settings;
+    public Map<String, String> systemSettings;
+    public Boolean challengeCodePresent;
   }
 }

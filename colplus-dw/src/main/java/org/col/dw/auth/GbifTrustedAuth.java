@@ -9,6 +9,7 @@ import javax.crypto.spec.SecretKeySpec;
 
 import com.google.common.base.Preconditions;
 import com.google.common.io.BaseEncoding;
+import org.apache.http.Header;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,12 +56,13 @@ public class GbifTrustedAuth {
   public static final String HEADER_ORIGINAL_REQUEST_URL = "x-url";
   private static final char NEWLINE = '\n';
 
-  private final String appKey = "col.app";
+  private final String appKey;
   private final String appSecret;
 
   public GbifTrustedAuth(AuthConfiguration cfg) {
-    
-    this.appSecret = Preconditions.checkNotNull(cfg.gbifSecret, "To sign requests a GBIF secret for col.app is required");
+  
+    this.appKey    = Preconditions.checkNotNull(cfg.gbifApp, "To sign requests a GBIF app is required");
+    this.appSecret = Preconditions.checkNotNull(cfg.gbifSecret, "To sign requests a GBIF secret for "+appKey+" is required");
     LOG.info("Using GBIF app {}", appKey);
   }
 
@@ -74,19 +76,20 @@ public class GbifTrustedAuth {
     sb.append(NEWLINE);
     sb.append(getCanonicalizedPath(req.getURI()));
 
-    appendHeader(sb, req.getFirstHeader(HEADER_CONTENT_TYPE).getValue(), false);
-    appendHeader(sb, req.getFirstHeader(HEADER_GBIF_USER).getValue(), true);
-
+    appendHeader(sb, req.getFirstHeader(HEADER_CONTENT_TYPE), false);
+    appendHeader(sb, req.getFirstHeader(HEADER_GBIF_USER), true);
+  
+    LOG.info("GBIF auth string to sign:\n{}", sb.toString());
     return sb.toString();
   }
 
-  private static void appendHeader(StringBuilder sb, String header, boolean caseSensitive) {
+  private static void appendHeader(StringBuilder sb, Header header, boolean caseSensitive) {
     if (header != null) {
       sb.append(NEWLINE);
       if (caseSensitive) {
-        sb.append(header);
+        sb.append(header.getValue());
       } else {
-        sb.append(header.toLowerCase());
+        sb.append(header.getValue().toLowerCase());
       }
     }
   }

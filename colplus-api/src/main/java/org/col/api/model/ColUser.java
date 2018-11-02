@@ -24,6 +24,9 @@ public class ColUser implements IntKey, Principal {
   private LocalDateTime created;
   private LocalDateTime deleted;
   
+  public void addRole(Role role) {
+    roles.add(role);
+  }
   
   @Override
   @JsonIgnore
