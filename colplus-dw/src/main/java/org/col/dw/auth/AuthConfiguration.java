@@ -15,11 +15,13 @@ public class AuthConfiguration {
   /**
    * GBIF trusted application key to talk to the GBIF Identity Service
    */
+  @NotNull
   public String gbifApp = "col.app";
   
   /**
    * GBIF trusted application secret to talk to the GBIF Identity Service
    */
+  @NotNull
   public String gbifSecret;
 
   /**

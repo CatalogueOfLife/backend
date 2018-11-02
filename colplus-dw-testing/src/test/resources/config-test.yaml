@@ -17,3 +17,6 @@ db:
   database: ${db.database}
   user: ${db.user}
   password: ${db.password}
+auth:
+  signingKey: 3254e6rftgbzg6tz7
+  gbifSecret: 123456789
