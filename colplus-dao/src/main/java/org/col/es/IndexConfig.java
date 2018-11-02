@@ -1,6 +1,7 @@
 package org.col.es;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -29,10 +30,14 @@ public class IndexConfig {
    * makes the index harder to read in Kibana.
    */
   public Boolean storeEnumAsInt = Boolean.TRUE;
-
+  
+  @JsonIgnore
   private ObjectMapper mapper;
+  @JsonIgnore
   private ObjectReader reader;
+  @JsonIgnore
   private ObjectWriter writer;
+  @JsonIgnore
   private ObjectWriter queryWriter;
 
   /**
@@ -40,6 +45,7 @@ public class IndexConfig {
    * 
    * @return
    */
+  @JsonIgnore
   public ObjectMapper getMapper() {
     if (mapper == null) {
       mapper = new ObjectMapper();
@@ -59,6 +65,7 @@ public class IndexConfig {
   /**
    * Returns a specialized ObjectReader used to read ES documents into EsNameUsage instances.
    */
+  @JsonIgnore
   public ObjectReader getObjectReader() {
     if (reader == null) {
       try {
@@ -75,6 +82,7 @@ public class IndexConfig {
    * 
    * @return
    */
+  @JsonIgnore
   public ObjectWriter getObjectWriter() {
     if (writer == null) {
       try {
@@ -92,6 +100,7 @@ public class IndexConfig {
    * 
    * @return
    */
+  @JsonIgnore
   public ObjectWriter getQueryWriter() {
     if (queryWriter == null) {
       queryWriter = getMapper().writerFor(EsSearchRequest.class);
