@@ -63,7 +63,7 @@
       #{di.datasetKey},
       #{di.state},
       #{di.error},
-      #{md5},
+      #{di.md5},
       #{di.started},
       #{di.finished},
       #{di.downloadUri},
