@@ -24,9 +24,6 @@ import static org.col.es.mapping.SerializationUtil.serialize;
 
 public class EsUtil {
 
-  public static TypeReference<NameUsageWrapper<? extends NameUsage>> NUW_TYPE_REF =
-      new TypeReference<NameUsageWrapper<? extends NameUsage>>() {};
-
   private static final Logger LOG = LoggerFactory.getLogger(EsUtil.class);
 
   @SuppressWarnings("unchecked")
@@ -44,7 +41,7 @@ public class EsUtil {
     // Create document type mapping
     Map<String, Object> mappings = new HashMap<>();
     MappingFactory<T> factory = new MappingFactory<>();
-    factory.setMapEnumToInt(cfg.storeEnumAsInt);
+    factory.setMapEnumToInt(true);
     Mapping<T> mapping = factory.getMapping(cfg.modelClass);
     mappings.put(EsConfig.DEFAULT_TYPE_NAME, mapping);
 

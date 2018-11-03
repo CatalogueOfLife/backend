@@ -40,8 +40,8 @@ public class NameUsageSearchService {
   public NameUsageSearchService(RestClient client, EsConfig cfg) {
     this.client = client;
     this.cfg = cfg;
-    this.responseReader = getResponseReader();
-    this.transfer = new SearchResponseTransfer(getPayloadReader());
+    this.responseReader = EsModule.MAPPER.readerFor(new TypeReference<SearchResponse<EsNameUsage>>() {});
+    this.transfer = new SearchResponseTransfer();
   }
 
   public ResultPage<NameUsageWrapper<? extends NameUsage>> search(NameSearchRequest query,
@@ -61,7 +61,7 @@ public class NameUsageSearchService {
   }
 
   private String writeQuery(EsSearchRequest query, boolean pretty) {
-    ObjectWriter ow = cfg.nameUsage.getQueryWriter();
+    ObjectWriter ow = EsModule.QUERY_WRITER;
     if (pretty) {
       ow = ow.withDefaultPrettyPrinter();
     }
@@ -78,14 +78,6 @@ public class NameUsageSearchService {
     } catch (UnsupportedOperationException | IOException e) {
       throw new EsException(e);
     }
-  }
-
-  private ObjectReader getResponseReader() {
-    return cfg.nameUsage.getMapper().readerFor(new TypeReference<SearchResponse<EsNameUsage>>() {});
-  }
-
-  private ObjectReader getPayloadReader() {
-    return cfg.nameUsage.getMapper().readerFor(EsUtil.NUW_TYPE_REF);
   }
 
   private static String getUrl() {
