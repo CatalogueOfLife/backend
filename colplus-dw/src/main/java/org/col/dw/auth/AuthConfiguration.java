@@ -13,6 +13,12 @@ public class AuthConfiguration {
   public String gbifApi = "https://api.gbif.org/v1/";
   
   /**
+   * Proxied GBIF user to talk to the GBIF Identity Service that needs to have REGISTRY_ADMIN rights
+   */
+  @NotNull
+  public String gbifUser = "colplus";
+  
+  /**
    * GBIF trusted application key to talk to the GBIF Identity Service
    */
   @NotNull
@@ -23,7 +29,7 @@ public class AuthConfiguration {
    */
   @NotNull
   public String gbifSecret;
-
+  
   /**
    * Jason Web Token used to trust in externally authenticated users.
    */

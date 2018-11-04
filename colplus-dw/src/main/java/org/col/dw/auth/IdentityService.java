@@ -38,7 +38,6 @@ public class IdentityService {
   private static final String SETTING_COUNTRY = "country";
   private static final String SYS_SETTING_ORCID = "auth.orcid.id";
   
-  private final AuthConfiguration cfg;
   private SqlSessionFactory sqlSessionFactory;
   private ConcurrentHashMap<Integer, ColUser> cache;
   private final URI loginUri;
@@ -48,15 +47,11 @@ public class IdentityService {
   private final static ObjectMapper OM = configure(new ObjectMapper());
 
   private static ObjectMapper configure(ObjectMapper mapper) {
-    //mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
-    mapper.enable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-    //mapper.registerModule(new JavaTimeModule());
-    //mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+    mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
     return mapper;
   }
   
   public IdentityService(AuthConfiguration cfg) {
-    this.cfg = cfg;
     gbifAuth = new GbifTrustedAuth(cfg);
     try {
       loginUri = new URI(cfg.gbifApi).resolve("user/login");
@@ -163,7 +158,7 @@ public class IdentityService {
   @VisibleForTesting
   ColUser getFullGbifUser(String username) {
     HttpGet get = new HttpGet(userUri.resolve(username));
-    gbifAuth.signRequest(username, get);
+    gbifAuth.signRequest(get);
     try (CloseableHttpResponse resp = http.execute(get)) {
       if (resp.getStatusLine().getStatusCode() == 200) {
         return fromJson(resp.getEntity().getContent());

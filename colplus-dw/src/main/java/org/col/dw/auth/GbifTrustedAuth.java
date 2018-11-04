@@ -56,14 +56,15 @@ public class GbifTrustedAuth {
   public static final String HEADER_ORIGINAL_REQUEST_URL = "x-url";
   private static final char NEWLINE = '\n';
 
+  private final String user;
   private final String appKey;
   private final String appSecret;
 
   public GbifTrustedAuth(AuthConfiguration cfg) {
-  
+    this.user = Preconditions.checkNotNull(cfg.gbifUser, "A proxied GBIF user is required");
     this.appKey    = Preconditions.checkNotNull(cfg.gbifAppkey, "To sign requests a GBIF app is required");
     this.appSecret = Preconditions.checkNotNull(cfg.gbifSecret, "To sign requests a GBIF secret for "+appKey+" is required");
-    LOG.info("Using GBIF app {}", appKey);
+    LOG.info("Use trusted GBIF appkey {} to proxy user {}", appKey, user);
   }
 
   /**
@@ -79,7 +80,7 @@ public class GbifTrustedAuth {
     appendHeader(sb, req.getFirstHeader(HEADER_CONTENT_TYPE), false);
     appendHeader(sb, req.getFirstHeader(HEADER_GBIF_USER), true);
   
-    LOG.info("GBIF auth string to sign:\n{}", sb.toString());
+    LOG.debug("GBIF auth string to sign:\n{}", sb.toString());
     return sb.toString();
   }
 
@@ -130,11 +131,11 @@ public class GbifTrustedAuth {
   /**
    * Signs an httpclient request by adding a Authorization header.
    */
-  public void signRequest(String username, HttpUriRequest request) {
+  public void signRequest(HttpUriRequest request) {
     // first add custom GBIF headers so we can use them to build the string to sign
 
     // the proxied username
-    request.addHeader(HEADER_GBIF_USER, username);
+    request.addHeader(HEADER_GBIF_USER, user);
 
     // the canonical path header
     request.addHeader(HEADER_ORIGINAL_REQUEST_URL, getCanonicalizedPath(request.getURI()));
@@ -148,7 +149,7 @@ public class GbifTrustedAuth {
     // build authorization header string
     String header = buildAuthHeader(appKey, signature);
     // add authorization header
-    LOG.debug("Adding authentication header to request {} for proxied user {} : {}", request.getURI(), username, header);
+    LOG.debug("Adding authentication header to request {} for proxied user {} : {}", request.getURI(), user, header);
     request.addHeader(HEADER_AUTHORIZATION, header);
   }
 

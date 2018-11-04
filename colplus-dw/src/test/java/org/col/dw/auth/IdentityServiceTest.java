@@ -6,22 +6,18 @@ import org.apache.http.impl.client.HttpClients;
 import org.col.api.model.ColUser;
 import org.col.api.vocab.Country;
 import org.col.common.io.Resources;
+import org.col.common.util.YamlUtils;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class IdentityServiceTest {
   
   final IdentityService ids;
   
-  public IdentityServiceTest() {
-    AuthConfiguration cfg = new AuthConfiguration();
-    cfg.gbifSecret = "12345678";
-    cfg.gbifAppkey = "col.app";
-    //cfg.gbifApi = "http://localhost:8080/";
+  public IdentityServiceTest() throws IOException {
+    AuthConfiguration cfg = YamlUtils.read(AuthConfiguration.class, "/auth.yaml");
     ids = new IdentityService(cfg);
     ids.setClient(HttpClients.createDefault());
   }
