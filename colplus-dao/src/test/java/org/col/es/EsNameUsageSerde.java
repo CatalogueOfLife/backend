@@ -14,7 +14,6 @@ import org.col.es.model.EsNameUsage;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +25,6 @@ import static org.junit.Assert.assertEquals;
  * object. NB Can't extend SerdeTestBase b/c it's specifically about (de)serialization to ES
  * documents, which uses another ObjectMapper.
  */
-@Ignore("https://github.com/Sp2000/colplus-backend/issues/188")
 public class EsNameUsageSerde {
 
   static Logger LOG = LoggerFactory.getLogger(EsNameUsageSerde.class);

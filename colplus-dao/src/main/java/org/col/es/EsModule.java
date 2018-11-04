@@ -11,7 +11,6 @@ import org.col.api.model.Synonym;
 import org.col.api.model.Taxon;
 import org.col.api.search.NameUsageWrapper;
 import org.col.es.query.EsSearchRequest;
-import org.gbif.nameparser.api.Authorship;
 
 /**
  * Jackson module to configure an object mapper
@@ -55,7 +54,7 @@ public class EsModule extends SimpleModule {
   public void setupModule(SetupContext ctxt) {
     // required to properly register serdes
     super.setupModule(ctxt);
-    ctxt.setMixInAnnotations(Authorship.class, NameUsageMixIn.class);
+    ctxt.setMixInAnnotations(NameUsage.class, NameUsageMixIn.class);
   }
   
   @JsonTypeInfo(use = JsonTypeInfo.Id.NAME)
