@@ -61,7 +61,7 @@ public class GbifTrustedAuth {
 
   public GbifTrustedAuth(AuthConfiguration cfg) {
   
-    this.appKey    = Preconditions.checkNotNull(cfg.gbifApp, "To sign requests a GBIF app is required");
+    this.appKey    = Preconditions.checkNotNull(cfg.gbifAppkey, "To sign requests a GBIF app is required");
     this.appSecret = Preconditions.checkNotNull(cfg.gbifSecret, "To sign requests a GBIF secret for "+appKey+" is required");
     LOG.info("Using GBIF app {}", appKey);
   }

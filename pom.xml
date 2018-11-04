@@ -100,6 +100,10 @@
 		<db.user>postgres</db.user>
 		<db.password>postgres</db.password>
 
+		<gbif.api>https://api.gbif.org/v1/</gbif.api>
+		<gbif.appkey>col.plus</gbif.appkey>
+		<gbif.secret>secret</gbif.secret>
+
 		<es.hosts>${project.build.directory}/es-colplus</es.hosts>
 		<es.ports></es.ports>
 

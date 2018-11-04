@@ -35,5 +35,7 @@ es:
   nameUsage:
     modelClass: org.col.es.model.EsNameUsage
 auth:
+  gbifApi: ${gbif.api}
+  gbifAppkey: ${gbif.appkey}
+  gbifSecret: ${gbif.secret}
   signingKey: 3254e6rftgbzg6tz7
-  gbifSecret: 123456789

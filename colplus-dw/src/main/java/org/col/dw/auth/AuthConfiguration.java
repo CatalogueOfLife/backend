@@ -16,18 +16,13 @@ public class AuthConfiguration {
    * GBIF trusted application key to talk to the GBIF Identity Service
    */
   @NotNull
-  public String gbifApp = "col.app";
+  public String gbifAppkey = "col.app";
   
   /**
    * GBIF trusted application secret to talk to the GBIF Identity Service
    */
   @NotNull
   public String gbifSecret;
-
-  /**
-   *  Proxied user for the GBIF trusted application authorization
-   */
-  public String gbifUser = "col";
 
   /**
    * Jason Web Token used to trust in externally authenticated users.

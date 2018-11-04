@@ -20,7 +20,7 @@ public class IdentityServiceTest {
   public IdentityServiceTest() {
     AuthConfiguration cfg = new AuthConfiguration();
     cfg.gbifSecret = "12345678";
-    cfg.gbifApp = "col.app";
+    cfg.gbifAppkey = "col.app";
     //cfg.gbifApi = "http://localhost:8080/";
     ids = new IdentityService(cfg);
     ids.setClient(HttpClients.createDefault());

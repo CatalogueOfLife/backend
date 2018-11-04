@@ -18,5 +18,7 @@ db:
   user: ${db.user}
   password: ${db.password}
 auth:
+  gbifApi: ${gbif.api}
+  gbifAppkey: ${gbif.appkey}
+  gbifSecret: ${gbif.secret}
   signingKey: 3254e6rftgbzg6tz7
-  gbifSecret: 123456789
