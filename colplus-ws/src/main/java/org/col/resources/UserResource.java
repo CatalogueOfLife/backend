@@ -1,6 +1,6 @@
 package org.col.resources;
 
-import javax.annotation.security.RolesAllowed;
+import javax.annotation.security.PermitAll;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -13,7 +13,6 @@ import javax.ws.rs.core.SecurityContext;
 import io.dropwizard.auth.Auth;
 import org.col.api.model.ColUser;
 import org.col.dw.auth.JwtCodec;
-import org.col.dw.auth.Roles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,8 +32,8 @@ public class UserResource {
   
   @GET
   @Path("/me")
-  @RolesAllowed({Roles.USER})
-  public ColUser login(@Auth ColUser user) {
+  @PermitAll
+  public ColUser me(@Auth ColUser user) {
     return user;
   }
   

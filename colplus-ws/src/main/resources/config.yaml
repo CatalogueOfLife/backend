@@ -3,6 +3,7 @@ logging:
   loggers:
     "org.col": DEBUG
     "org.apache.http": DEBUG
+    "org.eclipse.jetty.servlet": DEBUG
   appenders:
     - type: console
 db:
@@ -13,9 +14,9 @@ db:
   user: ${db.user}
   password: ${db.password}
 auth:
-  gbifApi: ${gbif.api}
+  gbifApi: "${gbif.api}"
   gbifAppkey: ${gbif.appkey}
-  gbifSecret: ${gbif.secret}
+  gbifSecret: "${gbif.secret}"
   signingKey: 3254e6rftgbzg6tz7
 es:
   # comma-separated strings of hosts and ports (numbers must match)

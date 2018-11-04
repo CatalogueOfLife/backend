@@ -23,9 +23,9 @@ client:
   keepAlive: 0ms
   retries: 1
 auth:
-  gbifApi: ${gbif.api}
+  gbifApi: "${gbif.api}"
   gbifAppkey: ${gbif.appkey}
-  gbifSecret: ${gbif.secret}
+  gbifSecret: "${gbif.secret}"
   signingKey: 3254e6rftgbzg6tz7
 es:
   # comma-separated strings of hosts and ports (numbers must match)

@@ -6,6 +6,8 @@ import java.security.Principal;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.annotation.Priority;
+import javax.ws.rs.Priorities;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
@@ -25,6 +27,7 @@ import org.col.dw.jersey.exception.JsonExceptionMapperBase;
  * See https://tools.ietf.org/html/rfc6750
  * and https://jwt.io/introduction/
  */
+@Priority(Priorities.AUTHENTICATION)
 public class AuthFilter implements ContainerRequestFilter {
   
   private static final String REALM = "COL";
