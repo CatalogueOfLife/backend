@@ -3,13 +3,11 @@ package org.col.db.dao;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Function;
-import javax.annotation.Nullable;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.col.api.exception.NotFoundException;
 import org.col.api.model.Dataset;
 import org.col.api.model.DatasetImport;
 import org.col.api.model.Page;
@@ -38,24 +36,10 @@ public class DatasetImportDao {
     this.factory = factory;
   }
 
-  public List<DatasetImport> listByDataset(int key, @Nullable ImportState state, int limit) {
+  public ResultPage<DatasetImport> list(Integer datasetKey, Collection<ImportState> states, Page page) {
     try (SqlSession session = factory.openSession(true)){
       DatasetImportMapper mapper = session.getMapper(DatasetImportMapper.class);
-      List<DatasetImport> imports = mapper.listByDataset(key, state, limit);
-      if (imports.isEmpty()) {
-        // check if dataset even exists
-        if (session.getMapper(DatasetMapper.class).exists(key) == null) {
-          throw NotFoundException.keyNotFound(Dataset.class, key);
-        }
-      }
-      return imports;
-    }
-  }
-
-  public ResultPage<DatasetImport> list(Collection<ImportState> states, Page page) {
-    try (SqlSession session = factory.openSession(true)){
-      DatasetImportMapper mapper = session.getMapper(DatasetImportMapper.class);
-      return new ResultPage<>(page, mapper.count(states), mapper.list(states, page));
+      return new ResultPage<>(page, mapper.count(datasetKey ,states), mapper.list(states, page));
     }
   }
 
@@ -79,7 +63,8 @@ public class DatasetImportDao {
   
   public DatasetImport getLast(Dataset d) {
     try (SqlSession session = factory.openSession(true)){
-      List<DatasetImport> imports = session.getMapper(DatasetImportMapper.class).listByDataset(d.getKey(), null, 1);
+      Page p = new Page(0,1);
+      List<DatasetImport> imports = session.getMapper(DatasetImportMapper.class).listByDataset(d.getKey(), null, p);
       return imports == null || imports.isEmpty() ? null : imports.get(0);
     }
   }

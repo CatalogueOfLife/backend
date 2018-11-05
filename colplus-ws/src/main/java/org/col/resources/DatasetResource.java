@@ -1,20 +1,19 @@
 package org.col.resources;
 
-import java.util.List;
 import javax.validation.Valid;
-import javax.ws.rs.*;
+import javax.ws.rs.BeanParam;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.model.Dataset;
-import org.col.api.model.DatasetImport;
 import org.col.api.model.Page;
 import org.col.api.model.ResultPage;
 import org.col.api.search.DatasetSearchRequest;
-import org.col.api.vocab.ImportState;
 import org.col.db.dao.DatasetDao;
-import org.col.db.dao.DatasetImportDao;
 import org.col.db.mapper.DatasetMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,11 +38,8 @@ public class DatasetResource extends CRUDResource<Dataset> {
   }
 
   @GET
-  @Path("{key}/import")
-  public List<DatasetImport> getImports(@PathParam("key") int key,
-                                        @QueryParam("limit") @DefaultValue("1") int limit,
-                                        @QueryParam("state") ImportState state) {
-    return new DatasetImportDao(factory).listByDataset(key, state, limit);
+  @Path("{key}/logo")
+  public void logo(@PathParam("key") int key) {
+    //TODO:::
   }
-
 }

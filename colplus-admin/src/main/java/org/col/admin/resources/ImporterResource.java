@@ -1,5 +1,6 @@
 package org.col.admin.resources;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Queue;
@@ -37,8 +38,10 @@ public class ImporterResource {
   }
 
   @GET
-  public ResultPage<DatasetImport> list(@QueryParam("state") List<ImportState> states, @Valid @BeanParam Page page) {
-    return dao.list(states, page);
+  public ResultPage<DatasetImport> list(@QueryParam("state") List<ImportState> states,
+                                        @QueryParam("datasetKey") Integer datasetKey,
+                                        @Valid @BeanParam Page page) {
+    return dao.list(datasetKey, states, page);
   }
 
   @POST
@@ -59,7 +62,7 @@ public class ImporterResource {
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public ImportRequest upload(@PathParam("key") int datasetKey,
                               @FormDataParam("file") InputStream archive,
-                              @FormDataParam("file") FormDataContentDisposition fileMetaData) {
+                              @FormDataParam("file") FormDataContentDisposition fileMetaData) throws IOException {
     return importManager.submit(datasetKey, archive);
   }
   
