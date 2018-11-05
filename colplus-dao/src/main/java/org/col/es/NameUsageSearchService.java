@@ -51,7 +51,8 @@ public class NameUsageSearchService {
   @VisibleForTesting
   ResultPage<NameUsageWrapper<? extends NameUsage>> search(String indexName,
       NameSearchRequest query, Page page) throws InvalidQueryException {
-    NameSearchRequestTranslator translator = new NameSearchRequestTranslator(query, page);
+    NameSearchRequestTranslator translator =
+        new NameSearchRequestTranslator(cfg.nameUsage, query, page);
     EsSearchRequest esQuery = translator.translate();
     if (LOG.isDebugEnabled()) {
       LOG.debug(writeQuery(esQuery, true));

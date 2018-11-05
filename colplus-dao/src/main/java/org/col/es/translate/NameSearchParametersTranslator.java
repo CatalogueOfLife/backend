@@ -10,6 +10,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.col.api.search.NameSearchParameter;
 import org.col.api.search.NameSearchRequest;
 import org.col.api.util.VocabularyUtils;
+import org.col.es.IndexConfig;
 import org.col.es.InvalidQueryException;
 import org.col.es.query.BoolQuery;
 import org.col.es.query.IsNullQuery;
@@ -23,23 +24,25 @@ import org.col.es.query.TermsQuery;
  * ?rank=genus&nom_status=available is translated into (rank=genus AND nom_status=available). If a
  * query parameter maps to multiple Elasticsearch fields (meaning we need to query multiple fields
  * for a single query parameter), these fields will then be combined within a nested OR query. This
- * is currently never the case, however. Also, the search request may contain multiple values per
- * request parameter (since it extends MultiValuedMap). For example:
- * ?rank=order&rank=family&rank=genus. This will be translated into (rank=order OR rank=family OR
- * rank=genus). Finally, a query parameter may be present but have no value, for example:
- * ?nom_status=&rank=family. This will be translated into (nom_status IS NULL AND rank=family).
+ * is currently never the case. Also, the search request may contain multiple values per request
+ * parameter (since it extends MultiValuedMap). For example: ?rank=order&rank=family&rank=genus.
+ * This will then result in an OR constraint (rank=order OR rank=family OR rank=genus). Finally, a
+ * query parameter may be present but have no value, for example: ?nom_status=&rank=family. This
+ * will be translated into an IS NULL constraint (nom_status IS NULL AND rank=family).
  *
  */
 class NameSearchParametersTranslator {
 
+  private final IndexConfig cfg;
   private final NameSearchRequest request;
 
-  NameSearchParametersTranslator(NameSearchRequest request) {
+  NameSearchParametersTranslator(IndexConfig cfg,NameSearchRequest request) {
+    this.cfg = cfg;
     this.request = request;
   }
 
   Optional<Query> translate() throws InvalidQueryException {
-    NameSearchParameter[] params = getRequestParams();
+    NameSearchParameter[] params = getParamsInRequest();
     if (params.length == 0) {
       return Optional.empty();
     }
@@ -55,7 +58,7 @@ class NameSearchParametersTranslator {
 
   private Query translate(NameSearchParameter param) throws InvalidQueryException {
     List<Query> queries = new ArrayList<>();
-    // Get the ES field(s) that this parameter maps to
+    // Get the ES fields that this parameter maps to
     String[] fields = EsFieldLookup.INSTANCE.get(param);
     for (String field : fields) {
       if (containsEmptyValue(param)) {
@@ -74,7 +77,7 @@ class NameSearchParametersTranslator {
     return queries.stream().collect(BoolQuery::new, BoolQuery::should, BoolQuery::should);
   }
 
-  private NameSearchParameter[] getRequestParams() {
+  private NameSearchParameter[] getParamsInRequest() {
     return Arrays.stream(NameSearchParameter.values()).filter(request::containsKey).toArray(
         NameSearchParameter[]::new);
   }
@@ -83,22 +86,41 @@ class NameSearchParametersTranslator {
     return request.get(param).stream().anyMatch(StringUtils::isEmpty);
   }
 
+  /*
+   * Get all non-empty of one single single query parameter
+   */
+  @SuppressWarnings("unchecked")
   private List<?> getNonEmptyValues(NameSearchParameter param) throws InvalidQueryException {
-    if (param.type() == String.class)
+    if (param.type() == String.class) {
       return request.get(param).stream().filter(StringUtils::isNotEmpty).collect(
           Collectors.toList());
+    }
     if (param.type() == Integer.class) {
       try {
-        return request.get(param).stream().map(Integer::valueOf).collect(Collectors.toList());
+        return request.get(param)
+            .stream()
+            .filter(StringUtils::isNotEmpty)
+            .map(Integer::valueOf)
+            .collect(Collectors.toList());
       } catch (NumberFormatException e) {
         throw new InvalidQueryException("Non-integer value for parameter " + param);
       }
     }
     if (Enum.class.isAssignableFrom(param.type())) {
       try {
+        if (cfg.storeEnumAsInt) {
+          return request.get(param)
+              .stream()
+              .filter(StringUtils::isNotEmpty)
+              .map(val -> VocabularyUtils.lookupEnum(val, (Class<? extends Enum<?>>) param.type())
+                  .ordinal())
+              .collect(Collectors.toList());
+        }
         return request.get(param)
             .stream()
-            .map(t -> VocabularyUtils.lookupEnum(t, param.getClass()).ordinal())
+            .filter(StringUtils::isNotEmpty)
+            .map(val -> VocabularyUtils.lookupEnum(val, (Class<? extends Enum<?>>) param.type())
+                .name())
             .collect(Collectors.toList());
       } catch (IllegalArgumentException e) {
         throw new InvalidQueryException(e.getMessage());

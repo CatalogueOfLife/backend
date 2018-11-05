@@ -68,9 +68,9 @@ public class NameResource {
   }
 
   private static void addQueryParams(NameSearchRequest req, UriInfo uri) {
-    for (Map.Entry<String, List<String>> qp : uri.getQueryParameters().entrySet()) {
-      VocabularyUtils.lookup(qp.getKey(), NameSearchParameter.class).ifPresent(p -> {
-        req.addAll(p, qp.getValue());
+    for (Map.Entry<String, List<String>> param : uri.getQueryParameters().entrySet()) {
+      VocabularyUtils.lookup(param.getKey(), NameSearchParameter.class).ifPresent(p -> {
+        req.addAll(p, param.getValue());
       });
     }
   }
