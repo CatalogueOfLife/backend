@@ -47,7 +47,7 @@ public class IdentityServiceTest {
   @Test
   @Ignore("GBIF service needs to be mocked - this uses live services")
   public void getUser() {
-    ColUser u = ids.getFullGbifUser("manga");
+    ColUser u = ids.getFullGbifUser("markus");
     assertNotNull(u);
   }
 }

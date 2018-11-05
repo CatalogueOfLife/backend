@@ -117,7 +117,7 @@ public class AuthFilter implements ContainerRequestFilter {
    */
   private Optional<ColUser> doBasic(String token) {
     try {
-      String cred = new String(BaseEncoding.base64().decode(token), StandardCharsets.ISO_8859_1);
+      String cred = new String(BaseEncoding.base64().decode(token), StandardCharsets.UTF_8);
       String[] parts = cred.split(":");
       return idService.authenticate(parts[0], parts[1]);
     
