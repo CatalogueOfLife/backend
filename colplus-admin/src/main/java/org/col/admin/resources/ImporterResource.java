@@ -1,5 +1,6 @@
 package org.col.admin.resources;
 
+import java.io.InputStream;
 import java.util.List;
 import java.util.Queue;
 import javax.annotation.security.RolesAllowed;
@@ -7,7 +8,6 @@ import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
-import org.apache.commons.lang3.NotImplementedException;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.admin.importer.ImportManager;
 import org.col.admin.importer.ImportRequest;
@@ -17,6 +17,8 @@ import org.col.api.model.ResultPage;
 import org.col.api.vocab.ImportState;
 import org.col.db.dao.DatasetImportDao;
 import org.col.dw.auth.Roles;
+import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
+import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,18 +47,22 @@ public class ImporterResource {
     return importManager.submit(datasetKey, force);
   }
   
-  @POST
-  @Path("/upload/{datasetKey}")
-  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public ImportRequest upload(@PathParam("datasetKey") int datasetKey) {
-    throw new NotImplementedException("Manual upload not yet implemented");
-  }
-  
   @GET
   @Path("/queue")
   public Queue<ImportRequest> queue() {
     return importManager.list();
   }
+  
+  @POST
+  @Path("{key}")
+  @Consumes({MediaType.MULTIPART_FORM_DATA})
+  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
+  public ImportRequest upload(@PathParam("key") int datasetKey,
+                              @FormDataParam("file") InputStream archive,
+                              @FormDataParam("file") FormDataContentDisposition fileMetaData) {
+    return importManager.submit(datasetKey, archive);
+  }
+  
 
   @DELETE
   @Path("{key}")

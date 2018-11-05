@@ -1,6 +1,12 @@
 package org.col.admin.importer;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Iterator;
 import java.util.Map;
@@ -17,9 +23,12 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.admin.config.AdminServerConfig;
 import org.col.admin.matching.NameIndex;
+import org.col.api.exception.NotFoundException;
 import org.col.api.model.Dataset;
 import org.col.api.model.DatasetImport;
 import org.col.api.util.PagingUtil;
+import org.col.api.vocab.DatasetOrigin;
+import org.col.api.vocab.Frequency;
 import org.col.api.vocab.ImportState;
 import org.col.common.concurrent.ExecutorUtils;
 import org.col.common.concurrent.StartNotifier;
@@ -41,7 +50,7 @@ import static org.col.admin.AdminServer.MILLIS_TO_DIE;
 public class ImportManager implements Managed {
   private static final Logger LOG = LoggerFactory.getLogger(ImportManager.class);
   public static final String THREAD_NAME = "dataset-importer";
-
+  
   private ThreadPoolExecutor exec;
   private final Queue<ImportRequest> queue = new ConcurrentLinkedQueue<ImportRequest>();
   private final Map<Integer, Future> futures = new ConcurrentHashMap<Integer, Future>();
@@ -53,25 +62,26 @@ public class ImportManager implements Managed {
   private final NameUsageIndexService indexService;
   private final Timer importTimer;
   private final Counter failed;
-
+  
   public ImportManager(AdminServerConfig cfg, MetricRegistry registry, CloseableHttpClient client,
-      SqlSessionFactory factory, NameIndex index, RestClient esClient) {
+                       SqlSessionFactory factory, NameIndex index, RestClient esClient) {
     this.cfg = cfg;
     this.factory = factory;
     this.downloader = new DownloadUtil(client);
     this.index = index;
-    this.indexService = new NameUsageIndexService(esClient, cfg.es, factory);;
+    this.indexService = new NameUsageIndexService(esClient, cfg.es, factory);
+    ;
     importTimer = registry.timer("org.col.import.timer");
     failed = registry.counter("org.col.import.failures");
   }
-
+  
   /**
    * Lists the current queue
    */
   public Queue<ImportRequest> list() {
     return queue;
   }
-
+  
   /**
    * Cancels a running import job by its dataset key
    */
@@ -81,28 +91,27 @@ public class ImportManager implements Managed {
     if (f != null) {
       LOG.info("Canceled import for dataset {}", datasetKey);
       f.cancel(true);
-
+  
     } else {
       LOG.info("No import existing for dataset {}. Ignore", datasetKey);
     }
   }
-
+  
   /**
    * @throws IllegalArgumentException if dataset was scheduled for importing already, queue was full
-   *         or dataset does not exist
+   *                                  or dataset does not exist
    */
-  public ImportRequest submit(final int datasetKey, final boolean force)
-      throws IllegalArgumentException {
+  public ImportRequest submit(final int datasetKey, final boolean force) throws IllegalArgumentException {
     // is this dataset already scheduled?
     if (futures.containsKey(datasetKey)) {
       LOG.info("Dataset {} already queued for import", datasetKey);
       throw new IllegalArgumentException("Dataset " + datasetKey + " already queued for import");
-
+  
     } else if (queue.size() >= cfg.importer.maxQueue) {
       LOG.info("Import queued at max {} already. Skip dataset {}", queue.size(), datasetKey);
       throw new IllegalArgumentException("Import queue full, skip dataset " + datasetKey);
     }
-
+  
     final ImportRequest req = new ImportRequest(datasetKey, force);
     LOG.debug("Queue new import for dataset {}", datasetKey);
     final ImportJob job = createImport(req);
@@ -113,7 +122,7 @@ public class ImportManager implements Managed {
         LOG.error("Dataset import {} failed: {}", req.datasetKey, err.getCause().getMessage(),
             err.getCause());
         failed.inc();
-
+  
       } else {
         Duration durQueued = Duration.between(req.created, req.started);
         Duration durRun = Duration.between(req.started, LocalDateTime.now());
@@ -128,18 +137,59 @@ public class ImportManager implements Managed {
     LOG.info("Queued import for dataset {}", datasetKey);
     return req;
   }
-
+  
   /**
-   * @throws IllegalArgumentException if dataset does not exist or was deleted
+   * Uploads a new dataset and submits an import request.
+   * @throws IllegalArgumentException if dataset was scheduled for importing already, queue was full,
+   *                                  dataset does not exist or is not of type
    */
-  private ImportJob createImport(ImportRequest req) throws IllegalArgumentException {
+  public ImportRequest submit(final int datasetKey, final InputStream content) throws IOException {
+    uploadArchive(datasetKey, content);
+    return submit(datasetKey, false);
+  }
+  
+  /**
+   * Uploads an input stream to a tmp file and if no errors moves it to the archive source path.
+   */
+  private void uploadArchive(int datasetKey, InputStream content) throws NotFoundException, IOException {
+    try (SqlSession session = factory.openSession(true)) {
+      DatasetMapper dm = session.getMapper(DatasetMapper.class);
+      Dataset d = dm.get(datasetKey);
+      if (d == null) {
+        throw NotFoundException.keyNotFound(Dataset.class, datasetKey);
+      }
+      Path tmp = Files.createTempFile(cfg.normalizer.scratchDir.toPath(), "upload-", "");
+      LOG.info("Upload data to tmp file {}", tmp);
+      Files.copy(content, tmp);
+  
+      Path source = cfg.normalizer.source(datasetKey).toPath();
+      //source.getParentFile().mkdirs();
+      LOG.info("Move uploaded data to source repo at {}", source);
+      Files.move(tmp, source, StandardCopyOption.REPLACE_EXISTING);
+      
+      // finally update dataset metadata
+      d.setOrigin(DatasetOrigin.UPLOADED);
+      d.setImportFrequency(Frequency.NEVER);
+      d.setReleased(LocalDate.now());
+      dm.update(d);
+    }
+  }
+  
+  /**
+   * @throws NotFoundException if dataset does not exist or was deleted
+   * @throws IllegalArgumentException if dataset is of type managed
+   */
+  private ImportJob createImport(ImportRequest req) throws NotFoundException, IllegalArgumentException {
     try (SqlSession session = factory.openSession(true)) {
       Dataset d = session.getMapper(DatasetMapper.class).get(req.datasetKey);
       if (d == null) {
-        throw new IllegalArgumentException("Dataset " + req.datasetKey + " does not exist");
+        throw NotFoundException.keyNotFound(Dataset.class, req.datasetKey);
 
       } else if (d.hasDeletedDate()) {
-        throw new IllegalArgumentException("Dataset " + req.datasetKey + " is deleted");
+        LOG.warn("Dataset {} was deleted and cannot be imported", req.datasetKey);
+        throw NotFoundException.keyNotFound(Dataset.class, req.datasetKey);
+      } else if (d.getOrigin() == DatasetOrigin.MANAGED) {
+        throw new IllegalArgumentException("Dataset "+req.datasetKey+" is managed and cannot be imported");
       }
       ImportJob job = new ImportJob(d, req.force, cfg, downloader, factory, index, indexService,
           new StartNotifier() {
