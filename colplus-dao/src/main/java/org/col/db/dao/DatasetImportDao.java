@@ -39,7 +39,7 @@ public class DatasetImportDao {
   public ResultPage<DatasetImport> list(Integer datasetKey, Collection<ImportState> states, Page page) {
     try (SqlSession session = factory.openSession(true)){
       DatasetImportMapper mapper = session.getMapper(DatasetImportMapper.class);
-      return new ResultPage<>(page, mapper.count(datasetKey ,states), mapper.list(states, page));
+      return new ResultPage<>(page, mapper.count(datasetKey ,states), mapper.list(datasetKey, states, page));
     }
   }
 
@@ -64,7 +64,7 @@ public class DatasetImportDao {
   public DatasetImport getLast(Dataset d) {
     try (SqlSession session = factory.openSession(true)){
       Page p = new Page(0,1);
-      List<DatasetImport> imports = session.getMapper(DatasetImportMapper.class).listByDataset(d.getKey(), null, p);
+      List<DatasetImport> imports = session.getMapper(DatasetImportMapper.class).list(d.getKey(), null, p);
       return imports == null || imports.isEmpty() ? null : imports.get(0);
     }
   }

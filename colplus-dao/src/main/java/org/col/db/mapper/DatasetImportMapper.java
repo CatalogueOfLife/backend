@@ -29,16 +29,13 @@ public interface DatasetImportMapper {
   int count(@Param("key") @Nullable Integer datasetKey, @Param("states") Collection<ImportState> states);
 
   /**
-   * List all imports optionally filtered by their state
+   * List all imports optionally filtered by their datasetKey and state(s).
+   * Ordered by starting date from latest to historical.
    */
-  List<DatasetImport> list(@Param("states") @Nullable Collection<ImportState> states, @Param("page") Page page);
-
-  /**
-   * List current and historical imports for a dataset ordered by attempt from last to historical.
-   * Optionally filtered and limited, e.g. by one to get the last only.
-   */
-  List<DatasetImport> listByDataset(@Param("key") int datasetKey, @Param("state") @Nullable Collection<ImportState> states, @Param("page") Page page);
-
+  List<DatasetImport> list(@Param("key") @Nullable Integer datasetKey,
+                           @Param("states") @Nullable Collection<ImportState> states,
+                           @Param("page") Page page);
+  
   void create(@Param("di") DatasetImport datasetImport);
 
   void update(@Param("di") DatasetImport datasetImport);

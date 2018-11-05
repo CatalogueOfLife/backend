@@ -38,8 +38,8 @@ public class ImporterResource {
   }
 
   @GET
-  public ResultPage<DatasetImport> list(@QueryParam("state") List<ImportState> states,
-                                        @QueryParam("datasetKey") Integer datasetKey,
+  public ResultPage<DatasetImport> list(@QueryParam("datasetKey") Integer datasetKey,
+                                        @QueryParam("state") List<ImportState> states,
                                         @Valid @BeanParam Page page) {
     return dao.list(datasetKey, states, page);
   }

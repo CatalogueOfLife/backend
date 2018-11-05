@@ -90,13 +90,18 @@
       dataset_import
     </sql>
 
-    <sql id="WHERE_STATES">
-        <if test="states != null &amp;&amp; !states.isEmpty()">
-            WHERE state IN
-            <foreach item="state" index="idx" collection="states" open="(" separator="," close=")">
-                #{state}
-            </foreach>
-        </if>
+    <sql id="WHERE">
+        <where>
+            <if test="key != null">
+                dataset_key = #{key}
+            </if>
+            <if test="states != null &amp;&amp; !states.isEmpty()">
+                AND state IN
+                <foreach item="state" index="idx" collection="states" open="(" separator="," close=")">
+                    #{state}
+                </foreach>
+            </if>
+        </where>
     </sql>
 
     <!--  A mapping to Name, mostly auto mapped -->
@@ -122,26 +127,15 @@
     <select id="count" resultType="integer">
         SELECT count(*)
         FROM <include refid="FROM" />
-        <include refid="WHERE_STATES" />
+        <include refid="WHERE" />
     </select>
 
     <select id="list" resultMap="datasetImportResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
-        <include refid="WHERE_STATES" />
-        ORDER BY started DESC
+        <include refid="WHERE" />
+        ORDER BY started DESC, attempt DESC
         <include refid="org.col.db.mapper.Common.limit" />
-    </select>
-
-    <select id="listByDataset" resultMap="datasetImportResultMap">
-        SELECT <include refid="SELECT" />
-        FROM <include refid="FROM" />
-        WHERE dataset_key = #{key}
-        <if test="state != null">
-            AND state = #{state}
-        </if>
-        ORDER BY attempt DESC
-        LIMIT #{limit}
     </select>
 
 

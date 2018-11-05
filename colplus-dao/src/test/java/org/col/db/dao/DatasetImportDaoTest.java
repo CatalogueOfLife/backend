@@ -2,23 +2,16 @@ package org.col.db.dao;
 
 import org.col.api.TestEntityGenerator;
 import org.col.api.model.DatasetImport;
-import org.col.api.vocab.Gazetteer;
-import org.col.api.vocab.Issue;
-import org.col.api.vocab.Language;
-import org.col.api.vocab.NomRelType;
-import org.col.api.vocab.Origin;
-import org.col.api.vocab.TaxonomicStatus;
+import org.col.api.vocab.*;
 import org.col.db.mapper.DatasetImportMapper;
 import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
-@Ignore
 public class DatasetImportDaoTest extends DaoTestBase {
   
   @Test
