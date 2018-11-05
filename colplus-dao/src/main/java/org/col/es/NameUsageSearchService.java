@@ -7,6 +7,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.google.common.annotations.VisibleForTesting;
 
 import org.col.api.model.NameUsage;
 import org.col.api.model.Page;
@@ -29,8 +30,6 @@ public class NameUsageSearchService {
 
   private static final Logger LOG = LoggerFactory.getLogger(NameUsageSearchService.class);
 
-  private static String REQUEST_URL = getUrl();
-
   private final RestClient client;
   private final EsConfig cfg;
 
@@ -46,12 +45,18 @@ public class NameUsageSearchService {
 
   public ResultPage<NameUsageWrapper<? extends NameUsage>> search(NameSearchRequest query,
       Page page) throws InvalidQueryException {
+    return search(NAME_USAGE_BASE, query, page);
+  }
+
+  @VisibleForTesting
+  ResultPage<NameUsageWrapper<? extends NameUsage>> search(String indexName,
+      NameSearchRequest query, Page page) throws InvalidQueryException {
     NameSearchRequestTranslator translator = new NameSearchRequestTranslator(query, page);
     EsSearchRequest esQuery = translator.translate();
     if (LOG.isDebugEnabled()) {
       LOG.debug(writeQuery(esQuery, true));
     }
-    Request httpRequest = new Request("GET", REQUEST_URL);
+    Request httpRequest = new Request("GET", getUrl(indexName));
     httpRequest.setJsonEntity(writeQuery(esQuery, false));
     Response httpResponse = EsUtil.executeRequest(client, httpRequest);
     SearchResponse<EsNameUsage> response = readResponse(httpResponse);
@@ -88,7 +93,7 @@ public class NameUsageSearchService {
     return cfg.nameUsage.getMapper().readerFor(EsUtil.NUW_TYPE_REF);
   }
 
-  private static String getUrl() {
-    return String.format("/%s/%s", NAME_USAGE_BASE, DEFAULT_TYPE_NAME);
+  private static String getUrl(String indexName) {
+    return String.format("/%s/%s/_search", indexName, DEFAULT_TYPE_NAME);
   }
 }

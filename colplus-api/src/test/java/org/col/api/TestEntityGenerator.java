@@ -420,7 +420,7 @@ public class TestEntityGenerator {
     return n;
   }
 
-  public static NameUsageWrapper<?> newNameUsageTaxonWrapper() {
+  public static NameUsageWrapper<Taxon> newNameUsageTaxonWrapper() {
     NameUsageWrapper<Taxon> nuw = new NameUsageWrapper<>();
     nuw.setUsage(TAXON1);
     EnumSet<Issue> issues = EnumSet.of(Issue.ACCEPTED_NAME_MISSING, Issue.POTENTIAL_VARIANT,
@@ -431,7 +431,7 @@ public class TestEntityGenerator {
     return nuw;
   }
 
-  public static NameUsageWrapper<?> newNameUsageSynonymWrapper() {
+  public static NameUsageWrapper<Synonym> newNameUsageSynonymWrapper() {
     NameUsageWrapper<Synonym> nuw = new NameUsageWrapper<>();
     nuw.setUsage(SYN2);
     EnumSet<Issue> issues = EnumSet.of(Issue.ACCEPTED_NAME_MISSING, Issue.POTENTIAL_VARIANT,
@@ -440,7 +440,7 @@ public class TestEntityGenerator {
     return nuw;
   }
 
-  public static NameUsageWrapper<?> newNameUsageBareNameWrapper() {
+  public static NameUsageWrapper<BareName> newNameUsageBareNameWrapper() {
     NameUsageWrapper<BareName> nuw = new NameUsageWrapper<>();
     BareName bn = new BareName();
     bn.setName(NAME4);

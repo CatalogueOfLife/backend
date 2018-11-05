@@ -31,7 +31,7 @@ public class NameSearchRequestTranslator {
     req.setFrom(page.getOffset());
     req.setSize(page.getLimit());
     if (request.getSortBy() == null) {
-      req.setSortBuilder(SortBuilder.DEFAULT_SORT);
+      req.setSortBuilder(SortBuilder.INDEX_ORDER);
     } else {
       req.setSortBuilder(new SortBuilder(request.getSortBy()));
     }

@@ -21,7 +21,7 @@ class QTranslator {
   }
 
   Optional<Query> translate() {
-    if (!Strings.isNullOrEmpty(request.getQ())) {
+    if (Strings.isNullOrEmpty(request.getQ())) {
       return Optional.empty();
     }
     Query query;
