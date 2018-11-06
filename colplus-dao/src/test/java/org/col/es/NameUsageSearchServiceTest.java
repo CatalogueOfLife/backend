@@ -336,6 +336,52 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     assertEquals(4, result.getResult().size());
   }
 
+  public void testQParam2() throws JsonProcessingException, InvalidQueryException {
+    NameUsageTransfer transfer = new NameUsageTransfer();
+
+    // Define search condition
+    NameSearchRequest nsr = new NameSearchRequest();
+    nsr.setContent(EnumSet.of(NameSearchRequest.SearchContent.AUTHORSHIP));
+    nsr.setQ("UNLIKE");
+
+    // No
+    NameUsageWrapper<Taxon> nuw1 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    List<String> vernaculars = Arrays.asList("AN UNLIKELY NAME");
+    nuw1.setVernacularNames(create(vernaculars));
+    insert(client, indexName, transfer.toEsDocument(nuw1));
+
+    // No
+    NameUsageWrapper<Taxon> nuw2 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    vernaculars = Arrays.asList("ANOTHER NAME", "AN UNLIKELY NAME");
+    nuw2.setVernacularNames(create(vernaculars));
+    insert(client, indexName, transfer.toEsDocument(nuw2));
+
+    // No
+    NameUsageWrapper<Taxon> nuw3 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    vernaculars = Arrays.asList("YET ANOTHER NAME", "ANOTHER NAME", "AN UNLIKELY NAME");
+    nuw3.setVernacularNames(create(vernaculars));
+    insert(client, indexName, transfer.toEsDocument(nuw3));
+
+    // No
+    NameUsageWrapper<Taxon> nuw4 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    vernaculars = Arrays.asList("it's unlike capital case");
+    nuw4.setVernacularNames(create(vernaculars));
+    insert(client, indexName, transfer.toEsDocument(nuw4));
+
+    // No
+    NameUsageWrapper<Taxon> nuw5 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    vernaculars = Arrays.asList("LIKE IT OR NOT");
+    nuw5.setVernacularNames(create(vernaculars));
+    insert(client, indexName, transfer.toEsDocument(nuw5));
+
+    refreshIndex(client, indexName);
+
+    ResultPage<NameUsageWrapper<? extends NameUsage>> result =
+        svc.search(indexName, nsr, new Page());
+
+    assertEquals(4, result.getResult().size());
+  }
+
   private static List<VernacularName> create(List<String> names) {
     return names.stream().map(n -> {
       VernacularName vn = new VernacularName();
