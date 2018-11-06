@@ -1,5 +1,6 @@
 package org.col.api.search;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -39,9 +40,17 @@ public class NameSearchRequest extends MultivaluedHashMap<NameSearchParameter, S
     add(param, value);
   }
 
+  public void addFilter(NameSearchParameter param, String[] values) {
+    Arrays.stream(values).forEach(v -> addFilter(param, v));
+  }
+
   public void addFilter(NameSearchParameter param, Object value) {
     Preconditions.checkArgument(value.getClass().equals(param.type()));
     add(param, value.toString());
+  }
+
+  public void addFilter(NameSearchParameter param, Object[] values) {
+    Arrays.stream(values).forEach(v -> addFilter(param, v));
   }
 
   public void addFacet(NameSearchParameter facet) {

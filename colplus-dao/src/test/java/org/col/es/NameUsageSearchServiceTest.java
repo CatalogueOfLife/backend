@@ -1,6 +1,7 @@
 package org.col.es;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.EnumSet;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -135,26 +136,26 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
   @Test
   public void testQuery1() throws InvalidQueryException, JsonProcessingException {
     NameUsageTransfer transfer = new NameUsageTransfer();
-  
+
     // Define search condition
     NameSearchRequest nsr = new NameSearchRequest();
     nsr.addFilter(NameSearchParameter.ISSUE, Issue.ACCEPTED_NAME_MISSING);
-    
+
     // Yes
     NameUsageWrapper<Taxon> nuw1 = TestEntityGenerator.newNameUsageTaxonWrapper();
     nuw1.setIssues(EnumSet.of(Issue.ACCEPTED_NAME_MISSING));
     insert(client, indexName, transfer.toEsDocument(nuw1));
-    
+
     // Yes
     NameUsageWrapper<Taxon> nuw2 = TestEntityGenerator.newNameUsageTaxonWrapper();
     nuw2.setIssues(EnumSet.of(Issue.ACCEPTED_NAME_MISSING, Issue.ACCORDING_TO_DATE_INVALID));
     insert(client, indexName, transfer.toEsDocument(nuw2));
-    
+
     // Yes
     NameUsageWrapper<Taxon> nuw3 = TestEntityGenerator.newNameUsageTaxonWrapper();
     nuw3.setIssues(EnumSet.allOf(Issue.class));
     insert(client, indexName, transfer.toEsDocument(nuw3));
-    
+
     // No
     NameUsageWrapper<Taxon> nuw4 = TestEntityGenerator.newNameUsageTaxonWrapper();
     nuw4.setIssues(null);
@@ -174,12 +175,116 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     NameUsageWrapper<Taxon> nuw7 = TestEntityGenerator.newNameUsageTaxonWrapper();
     nuw7.setIssues(EnumSet.noneOf(Issue.class));
     insert(client, indexName, transfer.toEsDocument(nuw7));
-    
+
     refreshIndex(client, indexName);
 
     ResultPage<NameUsageWrapper<? extends NameUsage>> result =
         svc.search(indexName, nsr, new Page());
-    
+
     assertEquals(3, result.getResult().size());
+  }
+
+  @Test
+  public void testQuery2() throws InvalidQueryException, JsonProcessingException {
+    NameUsageTransfer transfer = new NameUsageTransfer();
+
+    // Define search condition
+    NameSearchRequest nsr = new NameSearchRequest();
+    nsr.addFilter(NameSearchParameter.ISSUE,
+       new Issue[] {Issue.ACCEPTED_NAME_MISSING, Issue.ACCORDING_TO_DATE_INVALID});
+
+    // Yes
+    NameUsageWrapper<Taxon> nuw1 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    nuw1.setIssues(EnumSet.of(Issue.ACCEPTED_NAME_MISSING));
+    insert(client, indexName, transfer.toEsDocument(nuw1));
+
+    // Yes
+    NameUsageWrapper<Taxon> nuw2 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    nuw2.setIssues(EnumSet.of(Issue.ACCEPTED_NAME_MISSING, Issue.ACCORDING_TO_DATE_INVALID));
+    insert(client, indexName, transfer.toEsDocument(nuw2));
+
+    // Yes
+    NameUsageWrapper<Taxon> nuw3 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    nuw3.setIssues(EnumSet.allOf(Issue.class));
+    insert(client, indexName, transfer.toEsDocument(nuw3));
+
+    // No
+    NameUsageWrapper<Taxon> nuw4 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    nuw4.setIssues(null);
+    insert(client, indexName, transfer.toEsDocument(nuw4));
+
+    // No
+    NameUsageWrapper<Taxon> nuw5 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    nuw5.setIssues(EnumSet.of(Issue.CITATION_UNPARSED));
+    insert(client, indexName, transfer.toEsDocument(nuw5));
+
+    // No
+    NameUsageWrapper<Taxon> nuw6 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    nuw6.setIssues(EnumSet.of(Issue.CITATION_UNPARSED, Issue.BASIONYM_ID_INVALID));
+    insert(client, indexName, transfer.toEsDocument(nuw6));
+
+    // No
+    NameUsageWrapper<Taxon> nuw7 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    nuw7.setIssues(EnumSet.noneOf(Issue.class));
+    insert(client, indexName, transfer.toEsDocument(nuw7));
+
+    refreshIndex(client, indexName);
+
+    ResultPage<NameUsageWrapper<? extends NameUsage>> result =
+        svc.search(indexName, nsr, new Page());
+
+    assertEquals(3, result.getResult().size());
+  }
+
+  @Test
+  public void testQuery3() throws InvalidQueryException, JsonProcessingException {
+    NameUsageTransfer transfer = new NameUsageTransfer();
+
+    // Define search condition
+    NameSearchRequest nsr = new NameSearchRequest();
+    nsr.addFilter(NameSearchParameter.ISSUE,
+       new Issue[] {Issue.ACCEPTED_NAME_MISSING, Issue.ACCORDING_TO_DATE_INVALID, Issue.BASIONYM_ID_INVALID});
+
+    // Yes
+    NameUsageWrapper<Taxon> nuw1 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    nuw1.setIssues(EnumSet.of(Issue.ACCEPTED_NAME_MISSING));
+    insert(client, indexName, transfer.toEsDocument(nuw1));
+
+    // Yes
+    NameUsageWrapper<Taxon> nuw2 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    nuw2.setIssues(EnumSet.of(Issue.ACCEPTED_NAME_MISSING, Issue.ACCORDING_TO_DATE_INVALID));
+    insert(client, indexName, transfer.toEsDocument(nuw2));
+
+    // Yes
+    NameUsageWrapper<Taxon> nuw3 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    nuw3.setIssues(EnumSet.allOf(Issue.class));
+    insert(client, indexName, transfer.toEsDocument(nuw3));
+
+    // No
+    NameUsageWrapper<Taxon> nuw4 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    nuw4.setIssues(null);
+    insert(client, indexName, transfer.toEsDocument(nuw4));
+
+    // No
+    NameUsageWrapper<Taxon> nuw5 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    nuw5.setIssues(EnumSet.of(Issue.CITATION_UNPARSED));
+    insert(client, indexName, transfer.toEsDocument(nuw5));
+
+    // Yes
+    NameUsageWrapper<Taxon> nuw6 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    nuw6.setIssues(EnumSet.of(Issue.CITATION_UNPARSED, Issue.BASIONYM_ID_INVALID));
+    insert(client, indexName, transfer.toEsDocument(nuw6));
+
+    // No
+    NameUsageWrapper<Taxon> nuw7 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    nuw7.setIssues(EnumSet.noneOf(Issue.class));
+    insert(client, indexName, transfer.toEsDocument(nuw7));
+
+    refreshIndex(client, indexName);
+
+    ResultPage<NameUsageWrapper<? extends NameUsage>> result =
+        svc.search(indexName, nsr, new Page());
+
+    assertEquals(4, result.getResult().size());
   }
 }
