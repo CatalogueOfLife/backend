@@ -13,7 +13,9 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyWriter;
 import javax.ws.rs.ext.Provider;
 
-@Produces({ "image/png", "image/jpg" })
+import org.col.dw.jersey.MoreMediaTypes;
+
+@Produces({MoreMediaTypes.IMG_PNG})
 @Provider
 public class BufferedImageBodyWriter implements MessageBodyWriter<BufferedImage> {
   

@@ -35,7 +35,7 @@ public class WsServer extends PgApp<WsServerConfig> {
     final NameUsageSearchService nuss = new NameUsageSearchService(esClient, cfg.es);
     env.jersey().register(new NameResource(nuss));
 
-    env.jersey().register(new ColSourceResource());
+    env.jersey().register(new ColSourceResource(imgService));
     env.jersey().register(new DecisionResource());
     env.jersey().register(new DocsResource(cfg));
     env.jersey().register(new DataPackageResource());
