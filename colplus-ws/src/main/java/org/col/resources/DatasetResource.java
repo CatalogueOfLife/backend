@@ -41,9 +41,14 @@ public class DatasetResource extends CRUDResource<Dataset> {
   @GET
   @Path("{key}/import")
   public List<DatasetImport> getImports(@PathParam("key") int key,
-                                        @QueryParam("limit") @DefaultValue("1") int limit,
-                                        @QueryParam("state") ImportState state) {
-    return new DatasetImportDao(factory).listByDataset(key, state, limit);
+                                        @QueryParam("state") List<ImportState> states,
+                                        @Valid @BeanParam Page page) {
+    return new DatasetImportDao(factory).list(key, states, page).getResult();
   }
-
+  
+  @GET
+  @Path("{key}/logo")
+  public void logo(@PathParam("key") int key) {
+    //TODO:::
+  }
 }

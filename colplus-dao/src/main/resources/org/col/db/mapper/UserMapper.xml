@@ -40,7 +40,7 @@
       #{orcid},
       #{country},
       #{roles, typeHandler=org.col.db.type2.RoleSetTypeHandler},
-      #{settings, typeHandler=org.col.db.type2.HstoreMapTypeHandler}
+      #{settings, typeHandler=org.col.db.type2.HstoreMapTypeHandler}::hstore,
       #{lastLogin},
       #{deleted}
     </sql>
@@ -51,6 +51,8 @@
 
     <resultMap id="userResultMap" type="ColUser" autoMapping="true">
         <id property="key" column="key" />
+        <result property="roles" column="roles" typeHandler="org.col.db.type2.RoleSetTypeHandler"/>
+        <result property="settings" column="settings" typeHandler="org.col.db.type2.HstoreMapTypeHandler"/>
     </resultMap>
 
 
@@ -58,6 +60,12 @@
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
         WHERE key = #{key}
+    </select>
+
+    <select id="getByUsername" resultMap="userResultMap">
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
+        WHERE username = #{username}
     </select>
 
     <insert id="create" parameterType="ColUser" useGeneratedKeys="true" keyProperty="key">

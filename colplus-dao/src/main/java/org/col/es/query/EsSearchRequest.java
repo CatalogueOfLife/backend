@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * The main (class) modeling an ES query. I.e. serializing it to JSON will result in a valid ES
+ * The main class modeling an ES query. I.e. serializing it to JSON will result in a valid ES
  * query.
  */
 public class EsSearchRequest {

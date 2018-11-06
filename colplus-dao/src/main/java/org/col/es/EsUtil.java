@@ -6,10 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 
-import org.col.api.model.NameUsage;
-import org.col.api.search.NameUsageWrapper;
 import org.col.es.mapping.Mapping;
 import org.col.es.mapping.MappingFactory;
 import org.col.es.mapping.SerializationUtil;
@@ -24,9 +21,6 @@ import static org.col.es.mapping.SerializationUtil.pretty;
 import static org.col.es.mapping.SerializationUtil.readIntoMap;
 
 public class EsUtil {
-
-  public static TypeReference<NameUsageWrapper<? extends NameUsage>> NUW_TYPE_REF =
-      new TypeReference<NameUsageWrapper<? extends NameUsage>>() {};
 
   private static final Logger LOG = LoggerFactory.getLogger(EsUtil.class);
 
@@ -45,7 +39,7 @@ public class EsUtil {
     // Create document type mapping
     Map<String, Object> mappings = new HashMap<>();
     MappingFactory<T> factory = new MappingFactory<>();
-    factory.setMapEnumToInt(cfg.storeEnumAsInt);
+    factory.setMapEnumToInt(true);
     Mapping<T> mapping = factory.getMapping(cfg.modelClass);
     mappings.put(EsConfig.DEFAULT_TYPE_NAME, mapping);
 
@@ -95,7 +89,7 @@ public class EsUtil {
    */
   public static int count(RestClient client, String indexName) {
     LOG.info("Counting index {}", indexName);
-    Request request = new Request("GET", indexName + "/_doc/_count");
+    Request request = new Request("GET", indexName + "/" + EsConfig.DEFAULT_TYPE_NAME + "/_count");
     Response response = executeRequest(client, request);
     try {
       return (Integer) readIntoMap(response.getEntity().getContent()).get("count");
@@ -104,11 +98,11 @@ public class EsUtil {
     }
   }
 
-  public static <T> void insert(RestClient client, String indexName, IndexConfig cfg, T obj) {
+  public static <T> void insert(RestClient client, String indexName, T obj) {
     LOG.info("Inserting {} into index {}", obj.getClass().getSimpleName(), indexName);
     String url = indexName + "/" + EsConfig.DEFAULT_TYPE_NAME;
     Request request = new Request("POST", url);
-    request.setJsonEntity(serialize(obj, cfg));
+    request.setJsonEntity(serialize(obj));
     executeRequest(client, request);
   }
 
@@ -129,9 +123,9 @@ public class EsUtil {
     return EsUtil.class.getResourceAsStream("es-settings.json");
   }
 
-  private static String serialize(Object obj, IndexConfig cfg) {
+  private static String serialize(Object obj) {
     try {
-      return cfg.getMapper().writeValueAsString(obj);
+      return EsModule.MAPPER.writeValueAsString(obj);
     } catch (JsonProcessingException e) {
       throw new EsException(e);
     }

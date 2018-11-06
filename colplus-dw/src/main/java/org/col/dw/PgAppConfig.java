@@ -4,9 +4,8 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import de.lhorn.dropwizard.dashboard.DashboardConfiguration;
 import io.dropwizard.Configuration;
+import io.dropwizard.client.JerseyClientConfiguration;
 import org.col.db.PgConfig;
 import org.col.dw.auth.AuthConfiguration;
 import org.col.dw.cors.CorsBundleConfiguration;
@@ -17,6 +16,8 @@ import org.col.dw.cors.CorsConfiguration;
  */
 public class PgAppConfig extends Configuration implements CorsBundleConfiguration {
   
+  @Valid
+  @NotNull
   public PgConfig db = new PgConfig();
   
   @Valid
@@ -26,19 +27,16 @@ public class PgAppConfig extends Configuration implements CorsBundleConfiguratio
   @Valid
   @NotNull
   private CorsConfiguration cors = new CorsConfiguration();
-
-  @JsonProperty("dashboard")
-  private DashboardConfiguration dashboard = new DashboardConfiguration();
-
+  
+  @Valid
+  @NotNull
+  public JerseyClientConfiguration client = new JerseyClientConfiguration();
+  
+  
   @Override
   @JsonIgnore
   public CorsConfiguration getCorsConfiguration() {
     return cors;
-  }
-
-  @JsonIgnore
-  public DashboardConfiguration getDashboardConfiguration() {
-    return dashboard;
   }
   
 }

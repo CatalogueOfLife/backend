@@ -1,6 +1,6 @@
 package org.col.resources;
 
-import javax.annotation.security.RolesAllowed;
+import javax.annotation.security.PermitAll;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -12,8 +12,7 @@ import javax.ws.rs.core.SecurityContext;
 
 import io.dropwizard.auth.Auth;
 import org.col.api.model.ColUser;
-import org.col.dw.auth.JwtCoder;
-import org.col.dw.auth.Roles;
+import org.col.dw.auth.JwtCodec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,16 +24,16 @@ public class UserResource {
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(UserResource.class);
   
-  private final JwtCoder jwt;
+  private final JwtCodec jwt;
   
-  public UserResource(JwtCoder jwt) {
+  public UserResource(JwtCodec jwt) {
     this.jwt = jwt;
   }
   
   @GET
   @Path("/me")
-  @RolesAllowed({Roles.USER})
-  public ColUser login(@Auth ColUser user) {
+  @PermitAll
+  public ColUser me(@Auth ColUser user) {
     return user;
   }
   

@@ -49,8 +49,8 @@ public class NameUsageIndexService {
     this.esConfig = esConfig;
     this.factory = factory;
     this.async = async;
-    this.transfer = new NameUsageTransfer(esConfig.nameUsage);
-    this.writer = esConfig.nameUsage.getObjectWriter();
+    this.transfer = new NameUsageTransfer();
+    this.writer = esConfig.nameUsage.getDocumentWriter();
   }
 
   /**

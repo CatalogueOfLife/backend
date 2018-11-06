@@ -4,6 +4,7 @@ import java.time.LocalDate;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
+import org.col.es.EsModule;
 import org.col.es.IndexConfig;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -70,7 +71,7 @@ public class QueryTest {
 
   private static String serialize(Object obj) {
     try {
-      return cfg.getQueryWriter().withDefaultPrettyPrinter().writeValueAsString(obj);
+      return EsModule.QUERY_WRITER.withDefaultPrettyPrinter().writeValueAsString(obj);
     } catch (JsonProcessingException e) {
       throw new RuntimeException(e);
     }

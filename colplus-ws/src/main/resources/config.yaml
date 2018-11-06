@@ -2,6 +2,8 @@ logging:
   level: INFO
   loggers:
     "org.col": DEBUG
+    "org.apache.http": DEBUG
+    "org.eclipse.jetty.servlet": DEBUG
   appenders:
     - type: console
 db:
@@ -12,8 +14,10 @@ db:
   user: ${db.user}
   password: ${db.password}
 auth:
+  gbifApi: "${gbif.api}"
+  gbifAppkey: ${gbif.appkey}
+  gbifSecret: "${gbif.secret}"
   signingKey: 3254e6rftgbzg6tz7
-  gbifSecret: 123456789
 es:
   # comma-separated strings of hosts and ports (numbers must match)
   hosts: ${es.hosts}
@@ -23,4 +27,3 @@ es:
     numShards: 1
     numReplicas: 0
     batchSize: 1000
-    storeEnumAsInt: true

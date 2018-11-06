@@ -6,7 +6,6 @@ import java.util.EnumSet;
 
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
-
 import org.col.api.TestEntityGenerator;
 import org.col.api.search.NameUsageWrapper;
 import org.col.api.vocab.NameField;
@@ -25,107 +24,71 @@ import static org.junit.Assert.assertEquals;
  * object. NB Can't extend SerdeTestBase b/c it's specifically about (de)serialization to ES
  * documents, which uses another ObjectMapper.
  */
-public class EsNameUsageSerde {
+public class EsNameUsageSerde extends EsReadTestBase {
 
   static Logger LOG = LoggerFactory.getLogger(EsNameUsageSerde.class);
-
-  static ObjectWriter esWriter;
-  static ObjectReader esReader;
-  static ObjectWriter payloadWriter;
-  static ObjectReader payloadReader;
-
-  private static IndexConfig config1() {
-    IndexConfig.mapper = null;
-    IndexConfig ic = new IndexConfig();
-    ic.modelClass = EsNameUsage.class.getName();
-    ic.storeEnumAsInt = Boolean.TRUE;
-    return ic;
-  }
-
-  private static IndexConfig config2() {
-    IndexConfig.mapper = null;
-    IndexConfig ic = new IndexConfig();
-    ic.modelClass = EsNameUsage.class.getName();
-    ic.storeEnumAsInt = Boolean.FALSE;
-    return ic;
-  }
+  
+  static final ObjectReader PAYLOAD_READER = EsModule.NAME_USAGE_READER;
+  static final ObjectWriter PAYLOAD_WRITER = EsModule.NAME_USAGE_WRITER;
 
   @Test
   public void testTaxon1() throws IOException {
-    payloadWriter = config1().getMapper().writerFor(EsUtil.NUW_TYPE_REF);
-    payloadReader = config1().getMapper().readerFor(EsUtil.NUW_TYPE_REF);
     NameUsageWrapper<?> nuwIn = TestEntityGenerator.newNameUsageTaxonWrapper();
-    String json = payloadWriter.writeValueAsString(nuwIn);
+    String json = PAYLOAD_WRITER.writeValueAsString(nuwIn);
     LOG.debug(json);
-    NameUsageWrapper<?> nuwOut = payloadReader.readValue(json);
+    NameUsageWrapper<?> nuwOut = PAYLOAD_READER.readValue(json);
     assertEquals(nuwIn, nuwOut);
   }
 
   @Test
   public void testTaxon2() throws IOException {
-    payloadWriter = config2().getMapper().writerFor(EsUtil.NUW_TYPE_REF);
-    payloadReader = config2().getMapper().readerFor(EsUtil.NUW_TYPE_REF);
     NameUsageWrapper<?> nuwIn = TestEntityGenerator.newNameUsageTaxonWrapper();
-    String json = payloadWriter.writeValueAsString(nuwIn);
+    String json = PAYLOAD_WRITER.writeValueAsString(nuwIn);
     LOG.debug(json);
-    NameUsageWrapper<?> nuwOut = payloadReader.readValue(json);
+    NameUsageWrapper<?> nuwOut = PAYLOAD_READER.readValue(json);
     assertEquals(nuwIn, nuwOut);
   }
 
   @Test
   public void testSynonym1() throws IOException {
-    payloadWriter = config1().getMapper().writerFor(EsUtil.NUW_TYPE_REF);
-    payloadReader = config1().getMapper().readerFor(EsUtil.NUW_TYPE_REF);
     NameUsageWrapper<?> nuwIn = TestEntityGenerator.newNameUsageSynonymWrapper();
-    String json = payloadWriter.writeValueAsString(nuwIn);
+    String json = PAYLOAD_WRITER.writeValueAsString(nuwIn);
     LOG.debug(json);
-    NameUsageWrapper<?> nuwOut = payloadReader.readValue(json);
+    NameUsageWrapper<?> nuwOut = PAYLOAD_READER.readValue(json);
     assertEquals(nuwIn, nuwOut);
   }
 
   @Test
   public void testSynonym2() throws IOException {
-    payloadWriter = config2().getMapper().writerFor(EsUtil.NUW_TYPE_REF);
-    payloadReader = config2().getMapper().readerFor(EsUtil.NUW_TYPE_REF);
     NameUsageWrapper<?> nuwIn = TestEntityGenerator.newNameUsageSynonymWrapper();
-    String json = payloadWriter.writeValueAsString(nuwIn);
+    String json = PAYLOAD_WRITER.writeValueAsString(nuwIn);
     LOG.debug(json);
-    NameUsageWrapper<?> nuwOut = payloadReader.readValue(json);
+    NameUsageWrapper<?> nuwOut = PAYLOAD_READER.readValue(json);
     assertEquals(nuwIn, nuwOut);
   }
 
   @Test
   public void testBareName1() throws IOException {
-    payloadWriter = config1().getMapper().writerFor(EsUtil.NUW_TYPE_REF);
-    payloadReader = config1().getMapper().readerFor(EsUtil.NUW_TYPE_REF);
     NameUsageWrapper<?> nuwIn = TestEntityGenerator.newNameUsageBareNameWrapper();
-    String json = payloadWriter.writeValueAsString(nuwIn);
+    String json = PAYLOAD_WRITER.writeValueAsString(nuwIn);
     LOG.debug(json);
-    NameUsageWrapper<?> nuwOut = payloadReader.readValue(json);
+    NameUsageWrapper<?> nuwOut = PAYLOAD_READER.readValue(json);
     assertEquals(nuwIn, nuwOut);
   }
 
   @Test
   public void testBareName2() throws IOException {
-    payloadWriter = config2().getMapper().writerFor(EsUtil.NUW_TYPE_REF);
-    payloadReader = config2().getMapper().readerFor(EsUtil.NUW_TYPE_REF);
     NameUsageWrapper<?> nuwIn = TestEntityGenerator.newNameUsageBareNameWrapper();
-    String json = payloadWriter.writeValueAsString(nuwIn);
+    String json = PAYLOAD_WRITER.writeValueAsString(nuwIn);
     LOG.debug(json);
-    NameUsageWrapper<?> nuwOut = payloadReader.readValue(json);
+    NameUsageWrapper<?> nuwOut = PAYLOAD_READER.readValue(json);
     assertEquals(nuwIn, nuwOut);
   }
 
   @Test
   public void testEsNameUsage1() throws IOException {
-    esWriter = config1().getObjectWriter();
-    esReader = config1().getObjectReader();
-    payloadWriter = config1().getMapper().writerFor(EsUtil.NUW_TYPE_REF);
-    payloadReader = config1().getMapper().readerFor(EsUtil.NUW_TYPE_REF);
-
     EsNameUsage enuIn = new EsNameUsage();
-    enuIn.setPayload(
-        payloadWriter.writeValueAsString(TestEntityGenerator.newNameUsageTaxonWrapper()));
+    enuIn.setPayload(PAYLOAD_WRITER.writeValueAsString(TestEntityGenerator.newNameUsageTaxonWrapper()));
     enuIn.setAuthorship("John Smith");
     enuIn.setDatasetKey(472);
     enuIn.setNameFields(EnumSet.of(NameField.COMBINATION_EX_AUTHORS, NameField.UNINOMIAL));
@@ -138,26 +101,21 @@ public class EsNameUsageSerde {
     enuIn.setType(NameType.SCIENTIFIC);
     enuIn.setVernacularNames(Arrays.asList("Apple tree"));
 
-    String json = esWriter.writeValueAsString(enuIn);
+    String json = getEsConfig().nameUsage.getDocumentWriter().writeValueAsString(enuIn);
     LOG.debug(json);
 
-    EsNameUsage enuOut = esReader.readValue(json);
+    EsNameUsage enuOut = getEsConfig().nameUsage.getDocumentReader().readValue(json);
     assertEquals(enuIn, enuOut);
 
-    NameUsageWrapper<?> nuw = payloadReader.readValue(enuOut.getPayload());
+    NameUsageWrapper<?> nuw = PAYLOAD_READER.readValue(enuOut.getPayload());
     assertEquals(TestEntityGenerator.newNameUsageTaxonWrapper(), nuw);
   }
 
   @Test
   public void testEsNameUsage2() throws IOException {
-    esWriter = config2().getObjectWriter();
-    esReader = config2().getObjectReader();
-    payloadWriter = config2().getMapper().writerFor(EsUtil.NUW_TYPE_REF);
-    payloadReader = config2().getMapper().readerFor(EsUtil.NUW_TYPE_REF);
-
     EsNameUsage enuIn = new EsNameUsage();
     enuIn.setPayload(
-        payloadWriter.writeValueAsString(TestEntityGenerator.newNameUsageTaxonWrapper()));
+        PAYLOAD_WRITER.writeValueAsString(TestEntityGenerator.newNameUsageTaxonWrapper()));
     enuIn.setAuthorship("John Smith");
     enuIn.setDatasetKey(472);
     enuIn.setNameFields(EnumSet.of(NameField.COMBINATION_EX_AUTHORS, NameField.UNINOMIAL));
@@ -170,13 +128,14 @@ public class EsNameUsageSerde {
     enuIn.setType(NameType.SCIENTIFIC);
     enuIn.setVernacularNames(Arrays.asList("Apple tree"));
 
-    String json = esWriter.writeValueAsString(enuIn);
+    String json = getEsConfig().nameUsage.getDocumentWriter().writeValueAsString(enuIn);
     LOG.debug(json);
 
-    EsNameUsage enuOut = esReader.readValue(json);
+    EsNameUsage enuOut = getEsConfig().nameUsage.getDocumentReader().readValue(json);
     assertEquals(enuIn, enuOut);
 
-    NameUsageWrapper<?> nuw = payloadReader.readValue(enuOut.getPayload());
+    NameUsageWrapper<?> nuw = PAYLOAD_READER.readValue(enuOut.getPayload());
     assertEquals(TestEntityGenerator.newNameUsageTaxonWrapper(), nuw);
   }
+  
 }

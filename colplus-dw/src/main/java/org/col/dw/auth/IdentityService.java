@@ -1,55 +1,68 @@
 package org.col.dw.auth;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.Objects;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
-import io.dropwizard.auth.AuthenticationException;
-import io.dropwizard.auth.Authenticator;
-import io.dropwizard.auth.basic.BasicCredentials;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.io.BaseEncoding;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.model.ColUser;
 import org.col.api.vocab.Country;
 import org.col.db.mapper.UserMapper;
-import org.gbif.api.model.common.GbifUser;
-import org.gbif.api.vocabulary.UserRole;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Identity service that delegates authentication to the BASIC scheme using the
- * GBIF id service.
+ * GBIF id service via http.
  * It keeps a local copy of users and therefore needs access to Postgres.
  *
- * A SqlSessionFactory MUST be set before the service is used.
+ * A SqlSessionFactory and an HttpClient MUST be set before the service is used.
  */
-public class IdentityService implements Authenticator<BasicCredentials, ColUser> {
+public class IdentityService {
   private static final Logger LOG = LoggerFactory.getLogger(IdentityService.class);
   private static final String SETTING_COUNTRY = "country";
   private static final String SYS_SETTING_ORCID = "auth.orcid.id";
   
-  private final AuthConfiguration cfg;
   private SqlSessionFactory sqlSessionFactory;
   private ConcurrentHashMap<Integer, ColUser> cache;
+  private final URI loginUri;
+  private final URI userUri;
+  private CloseableHttpClient http;
+  private final GbifTrustedAuth gbifAuth;
+  private final static ObjectMapper OM = configure(new ObjectMapper());
+
+  private static ObjectMapper configure(ObjectMapper mapper) {
+    mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+    return mapper;
+  }
   
   public IdentityService(AuthConfiguration cfg) {
-    this.cfg = cfg;
-    //TODO: replace with Chronicle Map
+    gbifAuth = new GbifTrustedAuth(cfg);
+    try {
+      loginUri = new URI(cfg.gbifApi).resolve("user/login");
+      userUri = new URI(cfg.gbifApi).resolve("admin/user/");
+    } catch (URISyntaxException e) {
+      throw new RuntimeException(e);
+    }
+    LOG.info("Accessing GBIF user accounts at {}", cfg.gbifApi);
+    
+    //TODO: replace with Chronicle Map and only cache the main webservice, not admin!
     this.cache = new ConcurrentHashMap<>();
-    // dummy user until we truely connect to GBIF
-    ColUser iggy = new ColUser();
-    iggy.setKey(1969);
-    iggy.setUsername("iggy");
-    iggy.setFirstname("James");
-    iggy.setLastname("Osterberg");
-    iggy.setEmail("iggy@mailinator.com");
-    iggy.setOrcid("0000-0000-0000-0666");
-    iggy.setRoles(Arrays.stream(ColUser.Role.values()).collect(Collectors.toSet()));
-    cache.put(iggy.getKey(), iggy);
   }
   
   /**
@@ -59,6 +72,10 @@ public class IdentityService implements Authenticator<BasicCredentials, ColUser>
     this.sqlSessionFactory = sqlSessionFactory;
   }
   
+  public void setClient(CloseableHttpClient http) {
+    this.http = http;
+  }
+
   public ColUser get(Integer key) {
     if (cache.containsKey(key)) {
       return cache.get(key);
@@ -78,21 +95,28 @@ public class IdentityService implements Authenticator<BasicCredentials, ColUser>
     return user;
   }
   
-  private Optional<ColUser> authenticate(String username, String password) {
-    // TODO: remove temp hack
-    if ("iggy".equalsIgnoreCase(username) && "NoFun".equals(password)) {
-      return Optional.of(cache.get(1969));
-    }
-    
+  @VisibleForTesting
+  Optional<ColUser> authenticate(String username, String password) {
     if (authenticateGBIF(username, password)) {
       // GBIF authentication does not provide us with the full user, we need to look it up again
       ColUser user = getFullGbifUser(username);
+      if (user == null) {
+        user = new ColUser();
+        user.setUsername(username);
+        user.setFirstname("?");
+        user.setLastname("?");
+      }
+      user.getRoles().add(ColUser.Role.USER);
       user.setLastLogin(LocalDateTime.now());
       // insert/update coluser in postgres with updated login date
       try (SqlSession session = sqlSessionFactory.openSession(true)) {
         UserMapper mapper = session.getMapper(UserMapper.class);
-        // try to update user, create new one otherwise
-        if (mapper.update(user) < 1) {
+        // try to find existing user in Col db, otherwise create new one otherwise
+        ColUser existing = mapper.getByUsername(username);
+        if (existing != null) {
+          user.setKey(existing.getKey());
+          mapper.update(user);
+        } else {
           LOG.info("Creating new CoL user {} {}", user.getUsername(), user.getKey());
           mapper.create(user);
           user.setCreated(LocalDateTime.now());
@@ -103,49 +127,88 @@ public class IdentityService implements Authenticator<BasicCredentials, ColUser>
     return Optional.empty();
   }
   
-  private boolean authenticateGBIF(String username, String password) {
-    // TODO: authenticate against GBIF API
+  /**
+   * Checks if Basic Auth against GBIF API is working.
+   * We avoid the native httpclient Basic authentication which uses ASCII to encode the password
+   * into Base64 octets. But GBIF requires ISO_8859_1! See:
+   *  https://github.com/gbif/registry/issues/67
+   *  https://stackoverflow.com/questions/7242316/what-encoding-should-i-use-for-http-basic-authentication
+   *  https://tools.ietf.org/html/rfc7617#section-2.1
+   */
+  @VisibleForTesting
+  boolean authenticateGBIF(String username, String password) {
+    HttpGet get = new HttpGet(loginUri);
+    get.addHeader("Authorization", basicAuthHeader(username, password));
+    try (CloseableHttpResponse resp = http.execute(get)){
+      LOG.debug("GBIF authentication response for {}: {}", username, resp);
+      return resp.getStatusLine().getStatusCode() == 200;
+    } catch (Exception e) {
+      LOG.error("GBIF BasicAuth error", e);
+    }
     return false;
   }
-
-  private ColUser getFullGbifUser(String username) {
-    // TODO: get full user from GBIF API via trusted app auth
-    return new ColUser();
+  
+  @VisibleForTesting
+  static String basicAuthHeader(String username, String password) {
+    String cred = username + ":" + password;
+    String base64 = BaseEncoding.base64().encode(cred.getBytes(StandardCharsets.ISO_8859_1));
+    return "Basic " + base64;
   }
   
-  @Override
-  public Optional<ColUser> authenticate(BasicCredentials credentials) throws AuthenticationException {
-    return authenticate(credentials.getUsername(), credentials.getPassword());
+  @VisibleForTesting
+  ColUser getFullGbifUser(String username) {
+    HttpGet get = new HttpGet(userUri.resolve(username));
+    gbifAuth.signRequest(get);
+    try (CloseableHttpResponse resp = http.execute(get)) {
+      if (resp.getStatusLine().getStatusCode() == 200) {
+        return fromJson(resp.getEntity().getContent());
+      }
+      LOG.info("No success retrieving GBIF user {}: {}", username, resp.getStatusLine());
+    } catch (Exception e) {
+      LOG.info("Failed to retrieve GBIF user {}", username, e);
+    }
+    return null;
   }
   
-  static ColUser fromGbif(GbifUser gbif) {
+  @VisibleForTesting
+  static ColUser fromJson(InputStream json) throws IOException {
+    GUser gbif = OM.readValue(json, GUser.class);
     ColUser user = new ColUser();
-    user.setUsername(gbif.getUserName());
-    user.setFirstname(gbif.getFirstName());
-    user.setLastname(gbif.getLastName());
-    user.setRoles(gbif.getRoles().stream()
-        .map(IdentityService::fromGbifRole)
-        .filter(Objects::nonNull)
-        .collect(Collectors.toSet()));
-    if (gbif.getLastLogin() != null) {
-      user.setLastLogin(LocalDateTime.from(gbif.getLastLogin().toInstant()));
+    user.setUsername(gbif.userName);
+    user.setFirstname(gbif.firstName);
+    user.setLastname(gbif.lastName);
+    user.setEmail(gbif.email);
+    if (gbif.roles != null) {
+      for (String r : gbif.roles) {
+        ColUser.Role role = colRole(r);
+        if (role != null) user.addRole(role);
+      }
     }
-    // settings
-    if (gbif.getSettings().containsKey(SETTING_COUNTRY)) {
-      user.setCountry(Country.fromIsoCode(gbif.getSettings().get(SETTING_COUNTRY)).orElse(null));
+    if (gbif.settings != null && gbif.settings.containsKey(SETTING_COUNTRY)) {
+      Country.fromIsoCode(gbif.settings.get(SETTING_COUNTRY)).ifPresent(user::setCountry);
     }
-    if (gbif.getSystemSettings().containsKey(SYS_SETTING_ORCID)) {
-      user.setOrcid(gbif.getSystemSettings().get(SYS_SETTING_ORCID));
+    if (gbif.systemSettings != null) {
+      user.setOrcid(gbif.systemSettings.getOrDefault(SYS_SETTING_ORCID, null));
     }
     return user;
   }
   
-  private static ColUser.Role fromGbifRole(UserRole gbif) {
-    switch (gbif) {
-      case USER: return ColUser.Role.USER;
-      case REGISTRY_ADMIN: return ColUser.Role.ADMIN;
-      case REGISTRY_EDITOR: return ColUser.Role.EDITOR;
-    }
+  private static ColUser.Role colRole(String gbif) {
+    if ("col_admin".equalsIgnoreCase(gbif)) return ColUser.Role.ADMIN;
+    if ("col_editor".equalsIgnoreCase(gbif)) return ColUser.Role.EDITOR;
+    if ("user".equalsIgnoreCase(gbif)) return ColUser.Role.USER;
     return null;
+  }
+  
+  static class GUser {
+    public Integer key;
+    public String userName;
+    public String firstName;
+    public String lastName;
+    public String email;
+    public List<String> roles;
+    public Map<String, String> settings;
+    public Map<String, String> systemSettings;
+    public Boolean challengeCodePresent;
   }
 }

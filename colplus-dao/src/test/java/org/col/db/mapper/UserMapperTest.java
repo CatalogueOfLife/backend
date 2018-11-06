@@ -3,31 +3,30 @@ package org.col.db.mapper;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
+import org.col.api.RandomUtils;
 import org.col.api.model.ColUser;
-import org.junit.Ignore;
-import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-
-@Ignore
-public class UserMapperTest extends MapperTestBase<UserMapper> {
+public class UserMapperTest extends CRUDMapperTest<ColUser, UserMapper> {
   
   public UserMapperTest() {
     super(UserMapper.class);
   }
   
-  @Test
-  public void roundtrip() throws Exception {
-    ColUser u1 = create("iggy");
-    mapper().create(u1);
-    commit();
-    
-    ColUser u2 = mapper().get(u1.getKey());
-    // remove newly set property
-    u2.setLastLogin(null);
-    u2.setCreated(null);
-    
-    assertEquals(u1, u2);
+  @Override
+  ColUser createTestEntity() {
+    return create(RandomUtils.randomString(10));
+  }
+  
+  @Override
+  ColUser removeDbCreatedProps(ColUser obj) {
+    obj.setLastLogin(null);
+    obj.setCreated(null);
+    return obj;
+  }
+  
+  @Override
+  void updateTestObj(ColUser obj) {
+    obj.setFirstname("Peter Punk");
   }
   
   ColUser create(String username) {

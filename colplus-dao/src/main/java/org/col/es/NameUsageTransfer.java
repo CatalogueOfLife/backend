@@ -5,9 +5,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectWriter;
-
 import org.col.api.model.Name;
 import org.col.api.model.NameUsage;
 import org.col.api.model.Taxon;
@@ -17,7 +14,6 @@ import org.col.api.vocab.NameField;
 import org.col.es.model.EsNameUsage;
 
 import static org.col.api.vocab.NameField.*;
-
 import static org.col.common.util.CollectionUtils.notEmpty;
 
 /**
@@ -25,16 +21,7 @@ import static org.col.common.util.CollectionUtils.notEmpty;
  */
 class NameUsageTransfer {
 
-  // Used to populate the "payload" field within EsNameUsage
-  private final ObjectWriter payloadWriter;
-
-  NameUsageTransfer(IndexConfig cfg) {
-    this.payloadWriter =
-        cfg.getMapper().writerFor(new TypeReference<NameUsageWrapper<? extends NameUsage>>() {});
-  }  
-
-  EsNameUsage toEsDocument(NameUsageWrapper<? extends NameUsage> wrapper)
-      throws JsonProcessingException {
+  EsNameUsage toEsDocument(NameUsageWrapper<? extends NameUsage> wrapper) throws JsonProcessingException {
 
     EsNameUsage enu = new EsNameUsage();
     if (notEmpty(wrapper.getVernacularNames())) {
@@ -57,7 +44,7 @@ class NameUsageTransfer {
       enu.setTaxonId(((Taxon) wrapper.getUsage()).getId());
     }
     enu.setType(name.getType());
-    enu.setPayload(payloadWriter.writeValueAsString(wrapper));
+    enu.setPayload(EsModule.NAME_USAGE_WRITER.writeValueAsString(wrapper));
     enu.setNameFields(getNonNullNameFields(wrapper.getUsage().getName()));
     return enu;
   }

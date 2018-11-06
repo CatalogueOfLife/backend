@@ -92,7 +92,7 @@ CREATE TYPE rank AS ENUM (
 
 CREATE TABLE coluser (
   key serial PRIMARY KEY,
-  username TEXT,
+  username TEXT UNIQUE,
   firstname TEXT,
   lastname TEXT,
   email TEXT,

@@ -23,8 +23,10 @@ client:
   keepAlive: 0ms
   retries: 1
 auth:
+  gbifApi: "${gbif.api}"
+  gbifAppkey: ${gbif.appkey}
+  gbifSecret: "${gbif.secret}"
   signingKey: 3254e6rftgbzg6tz7
-  gbifSecret: 123456789
 es:
   # comma-separated strings of hosts and ports (numbers must match)
   hosts: ${es.hosts}
@@ -34,4 +36,3 @@ es:
     numShards: 1
     numReplicas: 0
     batchSize: 1000
-    storeEnumAsInt: true

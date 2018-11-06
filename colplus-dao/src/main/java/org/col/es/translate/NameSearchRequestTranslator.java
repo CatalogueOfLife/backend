@@ -4,7 +4,6 @@ import java.util.Optional;
 
 import org.col.api.model.Page;
 import org.col.api.search.NameSearchRequest;
-import org.col.es.IndexConfig;
 import org.col.es.InvalidQueryException;
 import org.col.es.query.BoolQuery;
 import org.col.es.query.ConstantScoreQuery;
@@ -19,12 +18,10 @@ import org.col.es.query.SortBuilder;
  */
 public class NameSearchRequestTranslator {
 
-  private final IndexConfig cfg;
   private final NameSearchRequest request;
   private final Page page;
 
-  public NameSearchRequestTranslator(IndexConfig cfg, NameSearchRequest request, Page page) {
-    this.cfg = cfg;
+  public NameSearchRequestTranslator(NameSearchRequest request, Page page) {
     this.request = request;
     this.page = page;
   }
@@ -38,7 +35,7 @@ public class NameSearchRequestTranslator {
     } else {
       req.setSortBuilder(new SortBuilder(request.getSortBy()));
     }
-    Optional<Query> q1 = new NameSearchParametersTranslator(cfg, request).translate();
+    Optional<Query> q1 = new NameSearchParametersTranslator(request).translate();
     Optional<Query> q2 = new QTranslator(request).translate();
     Query query = null;
     if (q1.isPresent()) {

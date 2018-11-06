@@ -10,7 +10,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.col.api.search.NameSearchParameter;
 import org.col.api.search.NameSearchRequest;
 import org.col.api.util.VocabularyUtils;
-import org.col.es.IndexConfig;
 import org.col.es.InvalidQueryException;
 import org.col.es.query.BoolQuery;
 import org.col.es.query.IsNullQuery;
@@ -33,11 +32,9 @@ import org.col.es.query.TermsQuery;
  */
 class NameSearchParametersTranslator {
 
-  private final IndexConfig cfg;
   private final NameSearchRequest request;
 
-  NameSearchParametersTranslator(IndexConfig cfg,NameSearchRequest request) {
-    this.cfg = cfg;
+  NameSearchParametersTranslator(NameSearchRequest request) {
     this.request = request;
   }
 
@@ -108,19 +105,11 @@ class NameSearchParametersTranslator {
     }
     if (Enum.class.isAssignableFrom(param.type())) {
       try {
-        if (cfg.storeEnumAsInt) {
-          return request.get(param)
-              .stream()
-              .filter(StringUtils::isNotEmpty)
-              .map(val -> VocabularyUtils.lookupEnum(val, (Class<? extends Enum<?>>) param.type())
-                  .ordinal())
-              .collect(Collectors.toList());
-        }
         return request.get(param)
             .stream()
             .filter(StringUtils::isNotEmpty)
             .map(val -> VocabularyUtils.lookupEnum(val, (Class<? extends Enum<?>>) param.type())
-                .name())
+                .ordinal())
             .collect(Collectors.toList());
       } catch (IllegalArgumentException e) {
         throw new InvalidQueryException(e.getMessage());

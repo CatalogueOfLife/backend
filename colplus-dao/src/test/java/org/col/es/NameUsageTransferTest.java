@@ -11,7 +11,7 @@ public class NameUsageTransferTest extends EsReadTestBase {
   @Test
   @SuppressWarnings("unused")
   public void test() throws JsonProcessingException {
-    NameUsageTransfer transfer = new NameUsageTransfer(getEsConfig().nameUsage);
+    NameUsageTransfer transfer = new NameUsageTransfer();
     EsNameUsage enu1 = transfer.toEsDocument(TestEntityGenerator.newNameUsageTaxonWrapper());
     EsNameUsage enu2 = transfer.toEsDocument(TestEntityGenerator.newNameUsageSynonymWrapper());
     EsNameUsage enu3 = transfer.toEsDocument(TestEntityGenerator.newNameUsageBareNameWrapper());

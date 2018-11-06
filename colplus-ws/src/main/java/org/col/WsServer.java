@@ -29,7 +29,7 @@ public class WsServer extends PgApp<WsServerConfig> {
     RestClient esClient = new EsClientFactory(cfg.es).createClient();
     env.lifecycle().manage(new ManagedEsClient(esClient));
     
-    NameUsageSearchService nuss = new NameUsageSearchService(esClient, cfg.es);
+    NameUsageSearchService nuss = new NameUsageSearchService(esClient);
     env.jersey().register(new NameResource(nuss));
 
     env.jersey().register(new ColSourceResource());
@@ -45,8 +45,6 @@ public class WsServer extends PgApp<WsServerConfig> {
     env.jersey().register(new UserResource(getJwtCoder()));
     env.jersey().register(new VerbatimResource());
     env.jersey().register(new VocabResource());
-    
-    env.jersey().register(new MatchingForwardingResource(cfg.adminApi));
   }
 
 }
