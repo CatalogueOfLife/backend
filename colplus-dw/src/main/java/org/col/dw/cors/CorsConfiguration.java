@@ -9,10 +9,10 @@ public class CorsConfiguration {
   public String origins = ANY_ORIGIN;
   
   @NotEmpty
-  public String methods = "OPTIONS, GET, POST, PUT, DELETE";
+  public String methods = "OPTIONS, HEAD, GET, POST, PUT, DELETE";
   
   @NotEmpty
-  public String headers = "Authorization";
+  public String headers = "Authorization, Content-Type";
 
   public boolean anyOrigin() {
     return ANY_ORIGIN.equals(origins);
