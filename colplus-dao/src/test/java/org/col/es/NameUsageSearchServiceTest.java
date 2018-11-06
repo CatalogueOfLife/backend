@@ -3,6 +3,8 @@ package org.col.es;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
@@ -13,6 +15,7 @@ import org.col.api.model.Page;
 import org.col.api.model.ResultPage;
 import org.col.api.model.Synonym;
 import org.col.api.model.Taxon;
+import org.col.api.model.VernacularName;
 import org.col.api.search.NameSearchParameter;
 import org.col.api.search.NameSearchRequest;
 import org.col.api.search.NameSearchRequest.SortBy;
@@ -191,7 +194,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     // Define search condition
     NameSearchRequest nsr = new NameSearchRequest();
     nsr.addFilter(NameSearchParameter.ISSUE,
-       new Issue[] {Issue.ACCEPTED_NAME_MISSING, Issue.ACCORDING_TO_DATE_INVALID});
+        new Issue[] {Issue.ACCEPTED_NAME_MISSING, Issue.ACCORDING_TO_DATE_INVALID});
 
     // Yes
     NameUsageWrapper<Taxon> nuw1 = TestEntityGenerator.newNameUsageTaxonWrapper();
@@ -242,8 +245,8 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
 
     // Define search condition
     NameSearchRequest nsr = new NameSearchRequest();
-    nsr.addFilter(NameSearchParameter.ISSUE,
-       new Issue[] {Issue.ACCEPTED_NAME_MISSING, Issue.ACCORDING_TO_DATE_INVALID, Issue.BASIONYM_ID_INVALID});
+    nsr.addFilter(NameSearchParameter.ISSUE, new Issue[] {Issue.ACCEPTED_NAME_MISSING,
+        Issue.ACCORDING_TO_DATE_INVALID, Issue.BASIONYM_ID_INVALID});
 
     // Yes
     NameUsageWrapper<Taxon> nuw1 = TestEntityGenerator.newNameUsageTaxonWrapper();
@@ -286,5 +289,58 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
         svc.search(indexName, nsr, new Page());
 
     assertEquals(4, result.getResult().size());
+  }
+
+  public void testQParam1() throws JsonProcessingException, InvalidQueryException {
+    NameUsageTransfer transfer = new NameUsageTransfer();
+
+    // Define search condition
+    NameSearchRequest nsr = new NameSearchRequest();
+    nsr.setQ("UNLIKE");
+
+    // Yes
+    NameUsageWrapper<Taxon> nuw1 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    List<String> vernaculars = Arrays.asList("AN UNLIKELY NAME");
+    nuw1.setVernacularNames(create(vernaculars));
+    insert(client, indexName, transfer.toEsDocument(nuw1));
+
+    // Yes
+    NameUsageWrapper<Taxon> nuw2 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    vernaculars = Arrays.asList("ANOTHER NAME", "AN UNLIKELY NAME");
+    nuw2.setVernacularNames(create(vernaculars));
+    insert(client, indexName, transfer.toEsDocument(nuw2));
+
+    // Yes
+    NameUsageWrapper<Taxon> nuw3 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    vernaculars = Arrays.asList("YET ANOTHER NAME", "ANOTHER NAME", "AN UNLIKELY NAME");
+    nuw3.setVernacularNames(create(vernaculars));
+    insert(client, indexName, transfer.toEsDocument(nuw3));
+
+    // Yes
+    NameUsageWrapper<Taxon> nuw4 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    vernaculars = Arrays.asList("it's unlike capital case");
+    nuw4.setVernacularNames(create(vernaculars));
+    insert(client, indexName, transfer.toEsDocument(nuw4));
+
+    // No
+    NameUsageWrapper<Taxon> nuw5 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    vernaculars = Arrays.asList("LIKE IT OR NOT");
+    nuw5.setVernacularNames(create(vernaculars));
+    insert(client, indexName, transfer.toEsDocument(nuw5));
+
+    refreshIndex(client, indexName);
+
+    ResultPage<NameUsageWrapper<? extends NameUsage>> result =
+        svc.search(indexName, nsr, new Page());
+
+    assertEquals(4, result.getResult().size());
+  }
+
+  private static List<VernacularName> create(List<String> names) {
+    return names.stream().map(n -> {
+      VernacularName vn = new VernacularName();
+      vn.setName(n);
+      return vn;
+    }).collect(Collectors.toList());
   }
 }
