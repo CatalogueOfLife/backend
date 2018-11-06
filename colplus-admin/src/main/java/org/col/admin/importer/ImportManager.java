@@ -28,7 +28,6 @@ import org.col.api.model.Dataset;
 import org.col.api.model.DatasetImport;
 import org.col.api.util.PagingUtil;
 import org.col.api.vocab.DatasetOrigin;
-import org.col.api.vocab.Frequency;
 import org.col.api.vocab.ImportState;
 import org.col.common.concurrent.ExecutorUtils;
 import org.col.common.concurrent.StartNotifier;
@@ -37,6 +36,7 @@ import org.col.db.dao.DatasetImportDao;
 import org.col.db.mapper.DatasetMapper;
 import org.col.db.mapper.DatasetPartitionMapper;
 import org.col.es.NameUsageIndexService;
+import org.col.img.ImageService;
 import org.elasticsearch.client.RestClient;
 import org.gbif.nameparser.utils.NamedThreadFactory;
 import org.slf4j.Logger;
@@ -57,20 +57,20 @@ public class ImportManager implements Managed {
   private final AdminServerConfig cfg;
   private final DownloadUtil downloader;
   private final SqlSessionFactory factory;
-  // private final Parser<CslData> cslParser;
   private final NameIndex index;
   private final NameUsageIndexService indexService;
+  private final ImageService imgService;
   private final Timer importTimer;
   private final Counter failed;
   
   public ImportManager(AdminServerConfig cfg, MetricRegistry registry, CloseableHttpClient client,
-                       SqlSessionFactory factory, NameIndex index, RestClient esClient) {
+                       SqlSessionFactory factory, NameIndex index, RestClient esClient, ImageService imgService) {
     this.cfg = cfg;
     this.factory = factory;
     this.downloader = new DownloadUtil(client);
     this.index = index;
+    this.imgService = imgService;
     this.indexService = new NameUsageIndexService(esClient, cfg.es, factory);
-    ;
     importTimer = registry.timer("org.col.import.timer");
     failed = registry.counter("org.col.import.failures");
   }
@@ -141,7 +141,7 @@ public class ImportManager implements Managed {
   /**
    * Uploads a new dataset and submits an import request.
    * @throws IllegalArgumentException if dataset was scheduled for importing already, queue was full,
-   *                                  dataset does not exist or is not of type
+   *                                  dataset does not exist or is not of matching origin
    */
   public ImportRequest submit(final int datasetKey, final InputStream content) throws IOException {
     uploadArchive(datasetKey, content);
@@ -157,7 +157,10 @@ public class ImportManager implements Managed {
       Dataset d = dm.get(datasetKey);
       if (d == null) {
         throw NotFoundException.keyNotFound(Dataset.class, datasetKey);
+      } else if (d.getOrigin() != DatasetOrigin.UPLOADED) {
+        throw new IllegalArgumentException("Dataset " + datasetKey + " is of origin " + d.getOrigin());
       }
+      
       Path tmp = Files.createTempFile(cfg.normalizer.scratchDir.toPath(), "upload-", "");
       LOG.info("Upload data to tmp file {}", tmp);
       Files.copy(content, tmp);
@@ -168,8 +171,6 @@ public class ImportManager implements Managed {
       Files.move(tmp, source, StandardCopyOption.REPLACE_EXISTING);
       
       // finally update dataset metadata
-      d.setOrigin(DatasetOrigin.UPLOADED);
-      d.setImportFrequency(Frequency.NEVER);
       d.setReleased(LocalDate.now());
       dm.update(d);
     }
@@ -191,7 +192,7 @@ public class ImportManager implements Managed {
       } else if (d.getOrigin() == DatasetOrigin.MANAGED) {
         throw new IllegalArgumentException("Dataset "+req.datasetKey+" is managed and cannot be imported");
       }
-      ImportJob job = new ImportJob(d, req.force, cfg, downloader, factory, index, indexService,
+      ImportJob job = new ImportJob(d, req.force, cfg, downloader, factory, index, indexService, imgService,
           new StartNotifier() {
             @Override
             public void started() {

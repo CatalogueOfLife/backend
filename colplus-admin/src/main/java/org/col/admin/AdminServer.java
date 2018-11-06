@@ -11,12 +11,15 @@ import org.col.admin.importer.ImportManager;
 import org.col.admin.matching.NameIndex;
 import org.col.admin.matching.NameIndexFactory;
 import org.col.admin.resources.ImporterResource;
+import org.col.admin.resources.AdminResource;
 import org.col.admin.resources.MatchingResource;
 import org.col.api.vocab.ColDwcTerm;
 import org.col.api.vocab.Datasets;
+import org.col.common.io.DownloadUtil;
 import org.col.dw.PgApp;
 import org.col.dw.es.ManagedEsClient;
 import org.col.es.EsClientFactory;
+import org.col.img.ImageService;
 import org.elasticsearch.client.RestClient;
 import org.gbif.dwc.terms.TermFactory;
 import org.slf4j.Logger;
@@ -53,7 +56,10 @@ public class AdminServer extends PgApp<AdminServerConfig> {
   @Override
   public void run(AdminServerConfig cfg, Environment env) {
     super.run(cfg, env);
-
+    
+    // images
+    final ImageService imgService = new ImageService(cfg.img);
+  
     // name index
     NameIndex ni;
     if (cfg.namesIndexFile == null) {
@@ -69,7 +75,7 @@ public class AdminServer extends PgApp<AdminServerConfig> {
     env.lifecycle().manage(new ManagedEsClient(esClient));
 
     // setup async importer
-    final ImportManager importManager = new ImportManager(cfg, env.metrics(), super.httpClient, getSqlSessionFactory(), ni, esClient);
+    final ImportManager importManager = new ImportManager(cfg, env.metrics(), super.httpClient, getSqlSessionFactory(), ni, esClient, imgService);
     env.lifecycle().manage(importManager);
     env.jersey().register(new ImporterResource(importManager, getSqlSessionFactory()));
 
@@ -87,6 +93,10 @@ public class AdminServer extends PgApp<AdminServerConfig> {
     } else {
       LOG.warn("Disable GBIF dataset sync");
     }
+    
+    // admin resource
+    env.jersey().register(new AdminResource(getSqlSessionFactory(), new DownloadUtil(super.httpClient), cfg.normalizer, imgService));
+    
   }
 
 

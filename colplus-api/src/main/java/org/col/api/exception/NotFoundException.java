@@ -15,8 +15,9 @@ public class NotFoundException extends RuntimeException {
     return "No such " + entity.getSimpleName() + ": " + PARAM_JOINER.join(params);
   }
   
-  private final Class<?> entity;
-  private final Map<String, Object> params;
+  public NotFoundException(String message) {
+    super(message);
+  }
   
   public static NotFoundException keyNotFound(Class<?> entity, int key) {
     return new NotFoundException(entity, ImmutableMap.of("key", key));
@@ -28,16 +29,6 @@ public class NotFoundException extends RuntimeException {
   
   public NotFoundException(Class<?> entity, Map<String, Object> params) {
     super(createMessage(entity, params));
-    this.entity = entity;
-    this.params = params;
-  }
-  
-  public Class<?> getEntity() {
-    return entity;
-  }
-  
-  public Map<String, Object> getParams() {
-    return params;
   }
   
 }

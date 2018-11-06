@@ -13,6 +13,7 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.admin.config.AdminServerConfig;
 import org.col.admin.importer.neo.NeoDb;
 import org.col.admin.importer.neo.NeoDbFactory;
+import org.col.admin.logoupdater.LogoUpdateJob;
 import org.col.admin.matching.NameIndex;
 import org.col.api.model.Dataset;
 import org.col.api.model.DatasetImport;
@@ -24,6 +25,7 @@ import org.col.common.io.DownloadUtil;
 import org.col.common.util.LoggingUtils;
 import org.col.db.dao.DatasetImportDao;
 import org.col.es.NameUsageIndexService;
+import org.col.img.ImageService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,11 +49,12 @@ public class ImportJob implements Runnable {
   private final DatasetImportDao dao;
   private final NameIndex index;
   private final NameUsageIndexService indexService;
+  private final ImageService imgService;
 
   private final StartNotifier notifier;
 
   ImportJob(Dataset d, boolean force, AdminServerConfig cfg, DownloadUtil downloader,
-      SqlSessionFactory factory, NameIndex index, NameUsageIndexService indexService, StartNotifier notifier) {
+            SqlSessionFactory factory, NameIndex index, NameUsageIndexService indexService, ImageService imgService, StartNotifier notifier) {
     this.datasetKey = d.getKey();
     this.dataset = d;
     this.force = force;
@@ -61,6 +64,7 @@ public class ImportJob implements Runnable {
     this.index = index;
     this.indexService = indexService;
     dao = new DatasetImportDao(factory);
+    this.imgService = imgService;
     this.notifier = notifier;
   }
 
@@ -130,6 +134,9 @@ public class ImportJob implements Runnable {
         store.put(dataset);
 
         new Normalizer(store, dwcaDir, index).call();
+        if (dataset.getLogo() != null) {
+          LogoUpdateJob.pullLogo(dataset, downloader, cfg.normalizer, imgService);
+        }
 
         updateState(ImportState.INSERTING);
         LOG.info("Writing {} to Postgres!", datasetKey);
@@ -177,7 +184,7 @@ public class ImportJob implements Runnable {
       }
     }
   }
-
+  
   /**
    * See https://github.com/Sp2000/colplus-backend/issues/78
    * @return true if the source file has a different MD5 hash as the last imported file
