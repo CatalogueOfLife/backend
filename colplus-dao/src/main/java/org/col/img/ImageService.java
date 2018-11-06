@@ -9,6 +9,7 @@ import java.util.function.Function;
 import javax.imageio.ImageIO;
 
 import org.col.api.exception.NotFoundException;
+import org.col.api.model.Dataset;
 import org.imgscalr.Scalr;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,8 +28,12 @@ public class ImageService {
     return ImageIO.read(img);
   }
   
-  public void putDatasetLogo(int datasetKey, BufferedImage img) throws IOException {
-    storeAllImageSizes(img, s -> cfg.datasetLogo(datasetKey, s));
+  public void putDatasetLogo(Dataset dataset, BufferedImage img) throws IOException {
+    // is it allowed?
+    if (dataset.getLogo() != null) {
+      throw new IllegalArgumentException("Dataset is already configured with an external logo URL "+dataset.getLogo());
+    }
+    storeAllImageSizes(img, s -> cfg.datasetLogo(dataset.getKey(), s));
   }
   
   public void putColSourceLogo(int colSourceKey, BufferedImage img) throws IOException {

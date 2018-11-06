@@ -73,7 +73,7 @@ public class DatasetResource extends CRUDResource<Dataset> {
   })
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public Response uploadLogo(@PathParam("key") int key, InputStream img) throws IOException {
-    imgService.putDatasetLogo(key, ImageService.read(img));
+    imgService.putDatasetLogo(get(key), ImageService.read(img));
     return Response.ok().build();
   }
   
@@ -81,7 +81,13 @@ public class DatasetResource extends CRUDResource<Dataset> {
   @Path("{key}/logo")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public Response deleteLogo(@PathParam("key") int key) throws IOException {
-    imgService.putDatasetLogo(key, null);
+    imgService.putDatasetLogo(get(key), null);
     return Response.ok().build();
+  }
+  
+  private Dataset get(int key) {
+    try (SqlSession sess = factory.openSession()) {
+      return sess.getMapper(DatasetMapper.class).get(key);
+    }
   }
 }

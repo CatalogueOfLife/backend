@@ -9,6 +9,7 @@ import org.col.admin.config.AdminServerConfig;
 import org.col.admin.matching.NameIndexFactory;
 import org.col.db.PgSetupRule;
 import org.col.es.EsClientFactory;
+import org.col.img.ImageService;
 import org.elasticsearch.client.RestClient;
 import org.junit.*;
 
@@ -52,7 +53,7 @@ public class ImportManagerDebugging {
 
     hc = new HttpClientBuilder(metrics).using(cfg.client).build("local");
     importManager = new ImportManager(cfg, metrics, hc, PgSetupRule.getSqlSessionFactory(),
-        NameIndexFactory.passThru(),esClient);
+        NameIndexFactory.passThru(),esClient, new ImageService(cfg.img));
     importManager.start();
   }
 

@@ -35,7 +35,18 @@ public class DownloadUtil {
   public DownloadUtil(CloseableHttpClient hc) {
     this.hc = hc;
   }
-
+  
+  /**
+   * Downloads a uri to a local file, overwriting the file if it existed already.
+   *
+   * @param downloadTo file to download to
+   *
+   * @throws DownloadException if any error occurred incl all http 4xx, 5xx responses
+   */
+  public void download(URI url, File downloadTo) throws DownloadException {
+    downloadIfModifiedSince(url, null, downloadTo);
+  }
+  
   /**
    * Downloads a uri to a local file using conditional GET, i.e. only downloading the file again if it has been changed
    * since the last download.
