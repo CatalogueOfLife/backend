@@ -73,7 +73,8 @@
 		<postgresql.version>42.2.2</postgresql.version>
 		<postgresql-embedded.version>2.9</postgresql-embedded.version>
 		<stax2.version>3.1.4</stax2.version>
-		<univocity-parsers.version>2.6.4</univocity-parsers.version>
+		<twelvemonkeys.version>3.4</twelvemonkeys.version>
+        <univocity-parsers.version>2.6.4</univocity-parsers.version>
 		<validation-api.version>2.0.0.Final</validation-api.version>
 		<woodstox.version>4.4.1</woodstox.version>
 		<elasticsearch.version>6.4.0</elasticsearch.version>
@@ -295,6 +296,38 @@
 				<artifactId>validation-api</artifactId>
 				<version>${validation-api.version}</version>
 			</dependency>
+
+            <!-- Tvelve Monkeys image format extensions -->
+            <dependency>
+                <groupId>com.twelvemonkeys.imageio</groupId>
+                <artifactId>imageio-jpeg</artifactId>
+                <version>${twelvemonkeys.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.twelvemonkeys.imageio</groupId>
+                <artifactId>imageio-tiff</artifactId>
+                <version>${twelvemonkeys.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.twelvemonkeys.imageio</groupId>
+                <artifactId>imageio-bmp</artifactId>
+                <version>${twelvemonkeys.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.twelvemonkeys.imageio</groupId>
+                <artifactId>imageio-psd</artifactId>
+                <version>${twelvemonkeys.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.twelvemonkeys.imageio</groupId>
+                <artifactId>imageio-pict</artifactId>
+                <version>${twelvemonkeys.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.twelvemonkeys.imageio</groupId>
+                <artifactId>imageio-icns</artifactId>
+                <version>${twelvemonkeys.version}</version>
+            </dependency>
 
 			<!-- JWT -->
 			<dependency>
