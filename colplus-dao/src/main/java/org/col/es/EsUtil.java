@@ -6,10 +6,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 
 import org.col.es.mapping.Mapping;
 import org.col.es.mapping.MappingFactory;
 import org.col.es.mapping.SerializationUtil;
+import org.col.es.query.EsSearchRequest;
+import org.col.es.query.TermQuery;
 import org.elasticsearch.client.Request;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.ResponseException;
@@ -71,6 +74,28 @@ public class EsUtil {
     }
     if (response.getStatusLine().getStatusCode() != 200) {
       throw new EsException(response.getStatusLine().getReasonPhrase());
+    }
+  }
+
+  public static int deleteDataset(RestClient client, String indexName, int datasetKey) {
+    LOG.info("Deleting all documents from dataset {} !", datasetKey);
+    String url = String.format("%s/%s/_delete_by_query", indexName, EsConfig.DEFAULT_TYPE_NAME);
+    Request request = new Request("POST", url);
+    EsSearchRequest query = new EsSearchRequest();
+    query.setQuery(new TermQuery("datasetKey", datasetKey));
+    try {
+      request.setJsonEntity(EsModule.QUERY_WRITER.writeValueAsString(query));
+      Response response = client.performRequest(request);
+      if (response.getStatusLine().getStatusCode() >= 400) {
+        throw new EsException(response.getStatusLine().getReasonPhrase());
+      }
+      Map<String, Object> feedback = EsModule.MAPPER.readValue(response.getEntity().getContent(),
+          new TypeReference<Map<String, Object>>() {});
+      Integer total = (Integer) feedback.get("total");
+      LOG.info("Deleted {} documents from index {}", total, indexName);
+      return total.intValue();
+    } catch (IOException e) {
+      throw new EsException(e);
     }
   }
 
