@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.IllegalFormatException;
 import java.util.function.Function;
 import javax.imageio.ImageIO;
 
@@ -25,7 +26,14 @@ public class ImageService {
   }
   
   public static BufferedImage read(InputStream img) throws IOException {
-    return ImageIO.read(img);
+    if (img == null) {
+      throw new IllegalArgumentException("No image content");
+    }
+    BufferedImage bi = ImageIO.read(img);
+    if (bi == null) {
+      throw new UnsupportedFormatException("Image format not supported");
+    }
+    return bi;
   }
   
   public void putDatasetLogo(Dataset dataset, BufferedImage img) throws IOException {
