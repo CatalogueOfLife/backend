@@ -80,6 +80,9 @@ public class EmlParser {
                 case "abstract":
                   d.setDescription(para.toString());
                   break;
+                case "citation":
+                  d.setCitation(text(text));
+                  break;
                 case "para":
                   if (para.length() > 0) {
                     para.append("\n");
@@ -92,6 +95,13 @@ public class EmlParser {
                   } catch (IllegalArgumentException e) {
                     LOG.warn("Invalid URL {}", text.toString());
                     url = null;
+                  }
+                  break;
+                case "resourceLogoUrl":
+                  try {
+                    d.setLogo(URI.create(text.toString()));
+                  } catch (IllegalArgumentException e) {
+                    LOG.warn("Invalid logo URL {}", text.toString());
                   }
                   break;
                 case "distribution":

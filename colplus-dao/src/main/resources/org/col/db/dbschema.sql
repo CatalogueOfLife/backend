@@ -118,6 +118,7 @@ CREATE TABLE dataset (
   license INTEGER,
   version TEXT,
   released DATE,
+  citation TEXT,
   homepage TEXT,
   logo TEXT,
   data_format INTEGER,

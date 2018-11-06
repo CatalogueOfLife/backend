@@ -35,6 +35,7 @@ public class Dataset implements SourceMetadata, IntKey {
   private License license;
   private String version;
   private LocalDate released;
+  private String citation;
   @AbsoluteURI
   private URI homepage;
   @AbsoluteURI
@@ -177,6 +178,16 @@ public class Dataset implements SourceMetadata, IntKey {
   @Override
   public void setReleased(LocalDate released) {
     this.released = released;
+  }
+  
+  @Override
+  public String getCitation() {
+    return citation;
+  }
+  
+  @Override
+  public void setCitation(String citation) {
+    this.citation = citation;
   }
   
   @Override
@@ -323,6 +334,7 @@ public class Dataset implements SourceMetadata, IntKey {
         license == dataset.license &&
         Objects.equals(version, dataset.version) &&
         Objects.equals(released, dataset.released) &&
+        Objects.equals(citation, dataset.citation) &&
         Objects.equals(homepage, dataset.homepage) &&
         Objects.equals(logo, dataset.logo) &&
         dataFormat == dataset.dataFormat &&
@@ -341,7 +353,7 @@ public class Dataset implements SourceMetadata, IntKey {
   @Override
   public int hashCode() {
     
-    return Objects.hash(key, type, title, gbifKey, gbifPublisherKey, description, organisation, contactPerson, authorsAndEditors, license, version, released, homepage, logo, dataFormat, dataAccess, cluster, origin, importFrequency, code, size, notes, catalogue, created, modified, deleted);
+    return Objects.hash(key, type, title, gbifKey, gbifPublisherKey, description, organisation, contactPerson, authorsAndEditors, license, version, released, citation, homepage, logo, dataFormat, dataAccess, cluster, origin, importFrequency, code, size, notes, catalogue, created, modified, deleted);
   }
   
   @Override

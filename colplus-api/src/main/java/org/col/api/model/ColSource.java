@@ -174,10 +174,12 @@ public class ColSource implements SourceMetadata, IntKey {
     this.coverage = coverage;
   }
   
+  @Override
   public String getCitation() {
     return citation;
   }
   
+  @Override
   public void setCitation(String citation) {
     this.citation = citation;
   }
