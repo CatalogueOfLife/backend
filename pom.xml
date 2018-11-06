@@ -73,7 +73,7 @@
 		<postgresql.version>42.2.2</postgresql.version>
 		<postgresql-embedded.version>2.9</postgresql-embedded.version>
 		<stax2.version>3.1.4</stax2.version>
-		<twelvemonkeys.version>3.4</twelvemonkeys.version>
+		<twelvemonkeys.version>3.4.1</twelvemonkeys.version>
         <univocity-parsers.version>2.6.4</univocity-parsers.version>
 		<validation-api.version>2.0.0.Final</validation-api.version>
 		<woodstox.version>4.4.1</woodstox.version>
