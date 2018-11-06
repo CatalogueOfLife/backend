@@ -60,6 +60,8 @@ public class NameUsageIndexService {
     final String index = NAME_USAGE_BASE;
     final int batchSize = esConfig.nameUsage.batchSize;
     EsUtil.deleteDataset(client, index, datasetKey);
+    // Probably nor necessary, but let's do it anyhow.
+    EsUtil.refreshIndex(client, index);
     EsUtil.createIndex(client, index, esConfig.nameUsage);
     final AtomicInteger counter = new AtomicInteger();
     try (SqlSession session = factory.openSession()) {
