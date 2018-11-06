@@ -7,6 +7,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.google.common.annotations.VisibleForTesting;
 
 import org.col.api.model.NameUsage;
 import org.col.api.model.Page;
@@ -28,30 +29,32 @@ import static org.col.es.EsConfig.NAME_USAGE_BASE;
 public class NameUsageSearchService {
 
   private static final Logger LOG = LoggerFactory.getLogger(NameUsageSearchService.class);
-
-  private static String REQUEST_URL = getUrl();
+  private static final ObjectReader RESPONSE_READER =
+      EsModule.MAPPER.readerFor(new TypeReference<SearchResponse<EsNameUsage>>() {});
 
   private final RestClient client;
-  private final EsConfig cfg;
 
-  private final ObjectReader responseReader;
   private final SearchResponseTransfer transfer;
 
-  public NameUsageSearchService(RestClient client, EsConfig cfg) {
+  public NameUsageSearchService(RestClient client) {
     this.client = client;
-    this.cfg = cfg;
-    this.responseReader = EsModule.MAPPER.readerFor(new TypeReference<SearchResponse<EsNameUsage>>() {});
     this.transfer = new SearchResponseTransfer();
   }
 
   public ResultPage<NameUsageWrapper<? extends NameUsage>> search(NameSearchRequest query,
       Page page) throws InvalidQueryException {
+    return search(NAME_USAGE_BASE, query, page);
+  }
+
+  @VisibleForTesting
+  ResultPage<NameUsageWrapper<? extends NameUsage>> search(String indexName,
+      NameSearchRequest query, Page page) throws InvalidQueryException {
     NameSearchRequestTranslator translator = new NameSearchRequestTranslator(query, page);
     EsSearchRequest esQuery = translator.translate();
     if (LOG.isDebugEnabled()) {
       LOG.debug(writeQuery(esQuery, true));
     }
-    Request httpRequest = new Request("GET", REQUEST_URL);
+    Request httpRequest = new Request("GET", getUrl(indexName));
     httpRequest.setJsonEntity(writeQuery(esQuery, false));
     Response httpResponse = EsUtil.executeRequest(client, httpRequest);
     SearchResponse<EsNameUsage> response = readResponse(httpResponse);
@@ -60,7 +63,7 @@ public class NameUsageSearchService {
     return new ResultPage<>(page, total, nus);
   }
 
-  private String writeQuery(EsSearchRequest query, boolean pretty) {
+  private static String writeQuery(EsSearchRequest query, boolean pretty) {
     ObjectWriter ow = EsModule.QUERY_WRITER;
     if (pretty) {
       ow = ow.withDefaultPrettyPrinter();
@@ -72,15 +75,15 @@ public class NameUsageSearchService {
     }
   }
 
-  private SearchResponse<EsNameUsage> readResponse(Response response) {
+  private static SearchResponse<EsNameUsage> readResponse(Response response) {
     try {
-      return responseReader.readValue(response.getEntity().getContent());
+      return RESPONSE_READER.readValue(response.getEntity().getContent());
     } catch (UnsupportedOperationException | IOException e) {
       throw new EsException(e);
     }
   }
 
-  private static String getUrl() {
-    return String.format("/%s/%s", NAME_USAGE_BASE, DEFAULT_TYPE_NAME);
+  private static String getUrl(String indexName) {
+    return String.format("/%s/%s/_search", indexName, DEFAULT_TYPE_NAME);
   }
 }

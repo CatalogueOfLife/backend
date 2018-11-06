@@ -10,31 +10,27 @@ import org.col.resources.*;
 import org.elasticsearch.client.RestClient;
 
 public class WsServer extends PgApp<WsServerConfig> {
-  
+
   private Object adminApi;
 
-  
   public static void main(final String[] args) throws Exception {
-		new WsServer().run(args);
-	}
+    new WsServer().run(args);
+  }
 
-	@Override
-	public String getName() {
-		return "ws-server";
-	}
+  @Override
+  public String getName() {
+    return "ws-server";
+  }
 
   @Override
   public void run(WsServerConfig cfg, Environment env) {
     super.run(cfg, env);
-  
+
     final RestClient esClient = new EsClientFactory(cfg.es).createClient();
     env.lifecycle().manage(new ManagedEsClient(esClient));
-  
+    NameUsageSearchService nuss = new NameUsageSearchService(esClient);
     final ImageService imgService = new ImageService(cfg.img);
-  
-    final NameUsageSearchService nuss = new NameUsageSearchService(esClient, cfg.es);
     env.jersey().register(new NameResource(nuss));
-
     env.jersey().register(new ColSourceResource(imgService));
     env.jersey().register(new DecisionResource());
     env.jersey().register(new DocsResource(cfg));

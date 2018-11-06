@@ -21,7 +21,8 @@ public class SearchResponseTransfer {
     }
     return response.getHits().getHits().stream().map(hit -> {
       try {
-        return (NameUsageWrapper<? extends NameUsage>) EsModule.NAME_USAGE_READER.readValue(hit.getSource().getPayload());
+        return (NameUsageWrapper<? extends NameUsage>) EsModule.NAME_USAGE_READER
+            .readValue(hit.getSource().getPayload());
       } catch (IOException e) {
         throw new EsException(e);
       }

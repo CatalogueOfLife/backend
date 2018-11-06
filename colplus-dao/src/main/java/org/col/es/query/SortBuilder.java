@@ -15,7 +15,7 @@ public class SortBuilder {
    * for it if you're not interested in any particular sort order, otherwise the sort will be on
    * score descending.
    */
-  public static final SortBuilder DEFAULT_SORT = new SortBuilder("_doc");
+  public static final SortBuilder INDEX_ORDER = new SortBuilder("_doc");
 
   private final List<Object> fields;
 

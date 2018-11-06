@@ -13,7 +13,6 @@ import org.col.api.vocab.TaxonomicStatus;
 import org.col.es.model.EsNameUsage;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,31 +24,12 @@ import static org.junit.Assert.assertEquals;
  * object. NB Can't extend SerdeTestBase b/c it's specifically about (de)serialization to ES
  * documents, which uses another ObjectMapper.
  */
-public class EsNameUsageSerde {
+public class EsNameUsageSerde extends EsReadTestBase {
 
   static Logger LOG = LoggerFactory.getLogger(EsNameUsageSerde.class);
   
   static final ObjectReader PAYLOAD_READER = EsModule.NAME_USAGE_READER;
   static final ObjectWriter PAYLOAD_WRITER = EsModule.NAME_USAGE_WRITER;
-
-  static EsConfig config1;
-  static EsConfig config2;
-
-  static ObjectWriter esWriter;
-  static ObjectReader esReader;
-
-  @BeforeClass
-  public static void init() {
-    config1 = new EsConfig();
-    IndexConfig ic = new IndexConfig();
-    ic.modelClass = EsNameUsage.class.getName();
-    config1.nameUsage = ic;
-
-    config2 = new EsConfig();
-    ic = new IndexConfig();
-    ic.modelClass = EsNameUsage.class.getName();
-    config2.nameUsage = ic;
-  }
 
   @Test
   public void testTaxon1() throws IOException {
@@ -107,9 +87,6 @@ public class EsNameUsageSerde {
 
   @Test
   public void testEsNameUsage1() throws IOException {
-    esWriter = config1.nameUsage.getObjectWriter();
-    esReader = config1.nameUsage.getObjectReader();
-
     EsNameUsage enuIn = new EsNameUsage();
     enuIn.setPayload(PAYLOAD_WRITER.writeValueAsString(TestEntityGenerator.newNameUsageTaxonWrapper()));
     enuIn.setAuthorship("John Smith");
@@ -124,10 +101,10 @@ public class EsNameUsageSerde {
     enuIn.setType(NameType.SCIENTIFIC);
     enuIn.setVernacularNames(Arrays.asList("Apple tree"));
 
-    String json = esWriter.writeValueAsString(enuIn);
+    String json = getEsConfig().nameUsage.getDocumentWriter().writeValueAsString(enuIn);
     LOG.debug(json);
 
-    EsNameUsage enuOut = esReader.readValue(json);
+    EsNameUsage enuOut = getEsConfig().nameUsage.getDocumentReader().readValue(json);
     assertEquals(enuIn, enuOut);
 
     NameUsageWrapper<?> nuw = PAYLOAD_READER.readValue(enuOut.getPayload());
@@ -136,9 +113,6 @@ public class EsNameUsageSerde {
 
   @Test
   public void testEsNameUsage2() throws IOException {
-    esWriter = config2.nameUsage.getObjectWriter();
-    esReader = config2.nameUsage.getObjectReader();
-
     EsNameUsage enuIn = new EsNameUsage();
     enuIn.setPayload(
         PAYLOAD_WRITER.writeValueAsString(TestEntityGenerator.newNameUsageTaxonWrapper()));
@@ -154,13 +128,14 @@ public class EsNameUsageSerde {
     enuIn.setType(NameType.SCIENTIFIC);
     enuIn.setVernacularNames(Arrays.asList("Apple tree"));
 
-    String json = esWriter.writeValueAsString(enuIn);
+    String json = getEsConfig().nameUsage.getDocumentWriter().writeValueAsString(enuIn);
     LOG.debug(json);
 
-    EsNameUsage enuOut = esReader.readValue(json);
+    EsNameUsage enuOut = getEsConfig().nameUsage.getDocumentReader().readValue(json);
     assertEquals(enuIn, enuOut);
 
     NameUsageWrapper<?> nuw = PAYLOAD_READER.readValue(enuOut.getPayload());
     assertEquals(TestEntityGenerator.newNameUsageTaxonWrapper(), nuw);
   }
+  
 }

@@ -21,16 +21,14 @@ class QTranslator {
   }
 
   Optional<Query> translate() {
-    if (!Strings.isNullOrEmpty(request.getQ())) {
+    if (Strings.isNullOrEmpty(request.getQ())) {
       return Optional.empty();
     }
-    Query query;
     if (request.getContent().size() == 1) {
-      query = translate(request.getContent().iterator().next());
-    } else {
-      query = request.getContent().stream().map(this::translate).collect(BoolQuery::new,
-          BoolQuery::should, BoolQuery::should);
+      return request.getContent().stream().map(this::translate).findFirst();
     }
+    Query query = request.getContent().stream().map(this::translate).collect(BoolQuery::new,
+        BoolQuery::should, BoolQuery::should);
     return Optional.of(query);
   }
 

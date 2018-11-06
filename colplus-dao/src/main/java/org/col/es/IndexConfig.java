@@ -3,7 +3,6 @@ package org.col.es;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
-
 public class IndexConfig {
 
   /**
@@ -17,17 +16,15 @@ public class IndexConfig {
    */
   public int batchSize = 1000;
   
-  @JsonIgnore
-  private ObjectReader reader;
-  @JsonIgnore
-  private ObjectWriter writer;
+  private static ObjectReader reader;
+  private static ObjectWriter writer;
   
 
   /**
    * Returns a specialized ObjectReader used to read ES documents into EsNameUsage instances.
    */
   @JsonIgnore
-  public ObjectReader getObjectReader() {
+  public ObjectReader getDocumentReader() {
     if (reader == null) {
       try {
         reader = EsModule.MAPPER.readerFor(Class.forName(modelClass));
@@ -44,7 +41,7 @@ public class IndexConfig {
    * @return
    */
   @JsonIgnore
-  public ObjectWriter getObjectWriter() {
+  public ObjectWriter getDocumentWriter() {
     if (writer == null) {
       try {
         writer = EsModule.MAPPER.writerFor(Class.forName(modelClass));
