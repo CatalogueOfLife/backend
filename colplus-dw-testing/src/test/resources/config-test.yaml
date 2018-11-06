@@ -22,3 +22,5 @@ auth:
   gbifAppkey: ${gbif.appkey}
   gbifSecret: "${gbif.secret}"
   signingKey: 3254e6rftgbzg6tz7
+img:
+  repo: ${img.repo}

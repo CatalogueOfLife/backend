@@ -56,6 +56,7 @@
 		<hikaricp.version>3.2.0</hikaricp.version>
 		<hk2.version>2.5.0-b32</hk2.version>
 		<icu4j.version>62.1</icu4j.version>
+        <imgscalr.version>4.2</imgscalr.version>
 		<javax.ws.rs-api.version>2.0.1</javax.ws.rs-api.version>
 		<javers.version>3.10.0</javers.version>
 		<jjwt.version>0.7.0</jjwt.version>
@@ -103,6 +104,8 @@
 		<gbif.api>https://api.gbif.org/v1/</gbif.api>
 		<gbif.appkey>col.plus</gbif.appkey>
 		<gbif.secret>secret</gbif.secret>
+
+		<img.repo>${project.build.directory}/img-repo</img.repo>
 
 		<es.hosts>${project.build.directory}/es-colplus</es.hosts>
 		<es.ports></es.ports>
@@ -431,7 +434,12 @@
 			</dependency>
 
 			<!-- other -->
-			<dependency>
+            <dependency>
+                <groupId>org.imgscalr</groupId>
+                <artifactId>imgscalr-lib</artifactId>
+                <version>${imgscalr.version}</version>
+            </dependency>
+            <dependency>
 				<groupId>org.hashids</groupId>
 				<artifactId>hashids</artifactId>
 				<version>${hashids.version}</version>

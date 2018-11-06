@@ -36,6 +36,9 @@ public class JerseyProviderBundle implements Bundle {
     env.jersey().register(QueryParam400Mapper.class);
     env.jersey().register(UnsupportedOperationExceptionMapper.class);
     env.jersey().register(ValidationExceptionMapper.class);
+    
+    // message writers
+    env.jersey().register(BufferedImageBodyWriter.class);
   }
 
 }

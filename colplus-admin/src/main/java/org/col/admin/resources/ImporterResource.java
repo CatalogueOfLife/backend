@@ -18,8 +18,7 @@ import org.col.api.model.ResultPage;
 import org.col.api.vocab.ImportState;
 import org.col.db.dao.DatasetImportDao;
 import org.col.dw.auth.Roles;
-import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
-import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.col.dw.jersey.MoreMediaTypes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,11 +57,9 @@ public class ImporterResource {
   
   @POST
   @Path("{key}")
-  @Consumes({MediaType.MULTIPART_FORM_DATA})
+  @Consumes({MoreMediaTypes.APP_GZIP, MoreMediaTypes.APP_ZIP, MediaType.APPLICATION_OCTET_STREAM})
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public ImportRequest upload(@PathParam("key") int datasetKey,
-                              @FormDataParam("file") InputStream archive,
-                              @FormDataParam("file") FormDataContentDisposition fileMetaData) throws IOException {
+  public ImportRequest upload(@PathParam("key") int datasetKey, InputStream archive) throws IOException {
     return importManager.submit(datasetKey, archive);
   }
   

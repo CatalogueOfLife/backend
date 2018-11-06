@@ -10,6 +10,7 @@ import org.col.db.PgConfig;
 import org.col.dw.auth.AuthConfiguration;
 import org.col.dw.cors.CorsBundleConfiguration;
 import org.col.dw.cors.CorsConfiguration;
+import org.col.img.ImgConfig;
 
 /**
  * Base DW configuration class for all apps that need access to the postgres db & mybatis.
@@ -31,6 +32,10 @@ public class PgAppConfig extends Configuration implements CorsBundleConfiguratio
   @Valid
   @NotNull
   public JerseyClientConfiguration client = new JerseyClientConfiguration();
+  
+  @Valid
+  @NotNull
+  public ImgConfig img = new ImgConfig();
   
   
   @Override
