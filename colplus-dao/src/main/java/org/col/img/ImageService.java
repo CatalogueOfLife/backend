@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.IllegalFormatException;
 import java.util.function.Function;
 import javax.imageio.ImageIO;
 
@@ -50,16 +49,24 @@ public class ImageService {
   
   
   private void storeAllImageSizes(BufferedImage img, Function<ImgConfig.Scale, Path> locator) throws IOException {
-    if (img == null) {
-      LOG.debug("Delete all sizes for image {}", locator.apply(ImgConfig.Scale.ORIGINAL));
-      for (ImgConfig.Scale scale : ImgConfig.Scale.values()) {
-        Path p = locator.apply(scale);
-        Files.delete(p);
+    try {
+      if (img == null) {
+        LOG.debug("Delete all sizes for image {}", locator.apply(ImgConfig.Scale.ORIGINAL));
+        for (ImgConfig.Scale scale : ImgConfig.Scale.values()) {
+          Path p = locator.apply(scale);
+          Files.delete(p);
+        }
+      } else {
+        Path parent = locator.apply(ImgConfig.Scale.ORIGINAL).getParent();
+        if (!Files.isDirectory(parent)) {
+          Files.createDirectories(parent);
+        }
+        writeImage(locator.apply(ImgConfig.Scale.ORIGINAL), img);
+        writeImage(locator.apply(ImgConfig.Scale.LARGE), scale(img, ImgConfig.Scale.LARGE));
+        writeImage(locator.apply(ImgConfig.Scale.SMALL), scale(img, ImgConfig.Scale.SMALL));
       }
-    } else {
-      writeImage(locator.apply(ImgConfig.Scale.ORIGINAL), img);
-      writeImage(locator.apply(ImgConfig.Scale.LARGE), scale(img, ImgConfig.Scale.LARGE));
-      writeImage(locator.apply(ImgConfig.Scale.SMALL), scale(img, ImgConfig.Scale.SMALL));
+    } catch (IOException e) {
+      LOG.error("Failed to update all sizes for image {} {}", locator.apply(ImgConfig.Scale.ORIGINAL), img, e);
     }
   }
   
