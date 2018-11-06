@@ -2,6 +2,7 @@ package org.col.admin.command;
 
 import java.io.File;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Optional;
 
@@ -52,6 +53,7 @@ public abstract class CmdTestBase {
     cfg.adminDb.user = cfg.db.user;
     cfg.adminDb.password = cfg.db.password;
     cfg.auth.gbifSecret = "silly sally";
+    cfg.img.repo = Paths.get("/tmp/imgrepo");
 
     // somehow serde doesnt work with the inherited Configuration props, set them to null to ignore them
     cfg.client = null;

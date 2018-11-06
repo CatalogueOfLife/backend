@@ -3,16 +3,20 @@ package org.col.img;
 import java.util.Objects;
 import javax.validation.constraints.Min;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class Size {
 
   private int width;
   private int height;
   
-  public Size(@Min(10) int width, @Min(10) int height) {
+  @JsonCreator
+  public Size(@JsonProperty("width") @Min(10) int width, @JsonProperty("height") @Min(10) int height) {
     this.width = width;
     this.height = height;
   }
-  
+
   public int getWidth() {
     return width;
   }
