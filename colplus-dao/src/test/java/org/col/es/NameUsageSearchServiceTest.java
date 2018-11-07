@@ -26,6 +26,7 @@ import org.elasticsearch.client.RestClient;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.col.es.EsUtil.insert;
@@ -71,8 +72,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     NameSearchRequest nsr = new NameSearchRequest();
     // Force sorting by index order
     nsr.setSortBy(null);
-    ResultPage<NameUsageWrapper<NameUsage>> result =
-        svc.search(indexName, nsr, new Page());
+    ResultPage<NameUsageWrapper<NameUsage>> result = svc.search(indexName, nsr, new Page());
     assertEquals(3, result.getResult().size());
     assertEquals(Taxon.class, result.getResult().get(0).getUsage().getClass());
     assertEquals(Synonym.class, result.getResult().get(1).getUsage().getClass());
@@ -96,8 +96,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     assertEquals(3, EsUtil.count(client, indexName));
     NameSearchRequest nsr = new NameSearchRequest();
     nsr.setSortBy(SortBy.NAME);
-    ResultPage<NameUsageWrapper<NameUsage>> result =
-        svc.search(indexName, nsr, new Page());
+    ResultPage<NameUsageWrapper<NameUsage>> result = svc.search(indexName, nsr, new Page());
     assertEquals(3, result.getResult().size());
     assertEquals(BareName.class, result.getResult().get(0).getUsage().getClass());
     assertEquals(Taxon.class, result.getResult().get(1).getUsage().getClass());
@@ -126,8 +125,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     refreshIndex(client, indexName);
     NameSearchRequest nsr = new NameSearchRequest();
     nsr.setSortBy(SortBy.KEY);
-    ResultPage<NameUsageWrapper<NameUsage>> result =
-        svc.search(indexName, nsr, new Page());
+    ResultPage<NameUsageWrapper<NameUsage>> result = svc.search(indexName, nsr, new Page());
     assertEquals(5, result.getResult().size());
     assertEquals("1", result.getResult().get(0).getUsage().getName().getId());
     assertEquals("2", result.getResult().get(1).getUsage().getName().getId());
@@ -181,8 +179,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
 
     refreshIndex(client, indexName);
 
-    ResultPage<NameUsageWrapper<NameUsage>> result =
-        svc.search(indexName, nsr, new Page());
+    ResultPage<NameUsageWrapper<NameUsage>> result = svc.search(indexName, nsr, new Page());
 
     assertEquals(3, result.getResult().size());
   }
@@ -233,8 +230,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
 
     refreshIndex(client, indexName);
 
-    ResultPage<NameUsageWrapper<NameUsage>> result =
-        svc.search(indexName, nsr, new Page());
+    ResultPage<NameUsageWrapper<NameUsage>> result = svc.search(indexName, nsr, new Page());
 
     assertEquals(3, result.getResult().size());
   }
@@ -285,8 +281,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
 
     refreshIndex(client, indexName);
 
-    ResultPage<NameUsageWrapper<NameUsage>> result =
-        svc.search(indexName, nsr, new Page());
+    ResultPage<NameUsageWrapper<NameUsage>> result = svc.search(indexName, nsr, new Page());
 
     assertEquals(4, result.getResult().size());
   }
@@ -330,8 +325,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
 
     refreshIndex(client, indexName);
 
-    ResultPage<NameUsageWrapper<NameUsage>> result =
-        svc.search(indexName, nsr, new Page());
+    ResultPage<NameUsageWrapper<NameUsage>> result = svc.search(indexName, nsr, new Page());
 
     assertEquals(4, result.getResult().size());
   }
@@ -376,10 +370,76 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
 
     refreshIndex(client, indexName);
 
-    ResultPage<NameUsageWrapper<NameUsage>> result =
-        svc.search(indexName, nsr, new Page());
+    ResultPage<NameUsageWrapper<NameUsage>> result = svc.search(indexName, nsr, new Page());
 
     assertEquals(4, result.getResult().size());
+  }
+
+  @Test
+  public void testIsNull() throws JsonProcessingException, InvalidQueryException {
+    NameUsageTransfer transfer = new NameUsageTransfer();
+
+    // Define search condition
+    NameSearchRequest nsr = new NameSearchRequest();
+    nsr.addFilter(NameSearchParameter.ISSUE, "");
+    // NB actual null values are ignored by MultiValuedMap.add !
+
+    // Yes
+    NameUsageWrapper<Taxon> nuw1 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    nuw1.setIssues(EnumSet.noneOf(Issue.class));
+    insert(client, indexName, transfer.toEsDocument(nuw1));
+    // No
+    NameUsageWrapper<Taxon> nuw2 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    nuw2.setIssues(EnumSet.allOf(Issue.class));
+    insert(client, indexName, transfer.toEsDocument(nuw2));
+    // Yes
+    NameUsageWrapper<Taxon> nuw3 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    nuw3.setIssues(null);
+    insert(client, indexName, transfer.toEsDocument(nuw3));
+    // No
+    NameUsageWrapper<Taxon> nuw4 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    nuw4.setIssues(EnumSet.of(Issue.CITATION_UNPARSED));
+    insert(client, indexName, transfer.toEsDocument(nuw4));
+
+    refreshIndex(client, indexName);
+
+    ResultPage<NameUsageWrapper<NameUsage>> result = svc.search(indexName, nsr, new Page());
+
+    assertEquals(2, result.getResult().size());
+  }
+
+  @Test
+  @Ignore
+  public void testIsNotNull() throws JsonProcessingException, InvalidQueryException {
+    NameUsageTransfer transfer = new NameUsageTransfer();
+
+    // Define search condition
+    NameSearchRequest nsr = new NameSearchRequest();
+    nsr.addFilter(NameSearchParameter.ISSUE, "@not_null@");
+    // NB actual null values are ignored by MultiValuedMap.add !
+
+    // No
+    NameUsageWrapper<Taxon> nuw1 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    nuw1.setIssues(EnumSet.noneOf(Issue.class));
+    insert(client, indexName, transfer.toEsDocument(nuw1));
+    // Yes
+    NameUsageWrapper<Taxon> nuw2 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    nuw2.setIssues(EnumSet.allOf(Issue.class));
+    insert(client, indexName, transfer.toEsDocument(nuw2));
+    // No
+    NameUsageWrapper<Taxon> nuw3 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    nuw3.setIssues(null);
+    insert(client, indexName, transfer.toEsDocument(nuw3));
+    // Yes
+    NameUsageWrapper<Taxon> nuw4 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    nuw4.setIssues(EnumSet.of(Issue.CITATION_UNPARSED));
+    insert(client, indexName, transfer.toEsDocument(nuw4));
+
+    refreshIndex(client, indexName);
+
+    ResultPage<NameUsageWrapper<NameUsage>> result = svc.search(indexName, nsr, new Page());
+
+    assertEquals(2, result.getResult().size());
   }
 
   private static List<VernacularName> create(List<String> names) {

@@ -32,7 +32,7 @@ public class NameSearchRequest extends MultivaluedHashMap<NameSearchParameter, S
   private String q;
 
   @QueryParam("sortBy")
-  private SortBy sortBy = SortBy.NAME;
+  private SortBy sortBy;
 
   public void addFilter(NameSearchParameter param, String value) {
     // make sure we can parse the string value

@@ -18,6 +18,11 @@ import org.col.es.query.SortBuilder;
  */
 public class NameSearchRequestTranslator {
 
+  /**
+   * Query parameter to be used to indicate an IS NOT NULL document search.
+   * */
+  public static final String NOT_NULL_VALUE = "@NOT_NULL@";
+
   private final NameSearchRequest request;
   private final Page page;
 
