@@ -1,0 +1,10 @@
+ID	ReferenceType	ReferenceID
+2	TaxAccRef	19
+s5	TaxAccRef	19
+s6	TaxAccRef	24
+3	Common Name	302
+3	Common Name	453
+3	Common Name	807
+3	Nomenclatural	302
+2	Nomenclatural	302
+s5	Nomenclatural	302

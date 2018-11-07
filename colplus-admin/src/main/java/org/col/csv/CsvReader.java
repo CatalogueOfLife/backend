@@ -95,6 +95,10 @@ public class CsvReader {
     for (Path df : listDataFiles(folder)) {
       putSchema(buildSchema(df, termPrefix));
     }
+    // also include an optional data subfolder
+    for (Path df : listDataFiles(folder.resolve("data"))) {
+      putSchema(buildSchema(df, termPrefix));
+    }
   }
 
   protected void putSchema(Schema s) {

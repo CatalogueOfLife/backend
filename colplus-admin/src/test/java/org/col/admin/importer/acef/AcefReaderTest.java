@@ -39,6 +39,31 @@ public class AcefReaderTest {
     });
     assertEquals(3, counter.get());
   }
+  
+  @Test
+  public void fromDataFolder() throws Exception {
+    AcefReader reader = AcefReader.from(PathUtils.classPathTestRes("acef/0data"));
+    
+    AtomicInteger counter = new AtomicInteger(0);
+    reader.stream(AcefTerm.AcceptedSpecies).forEach(tr -> {
+      counter.incrementAndGet();
+      assertNotNull(tr.get(AcefTerm.AcceptedTaxonID));
+      assertEquals("Fabales", tr.get(AcefTerm.Order));
+      assertEquals("Fabaceae", tr.get(AcefTerm.Family));
+      assertNotNull(tr.get(AcefTerm.Genus));
+      assertNotNull(tr.get(AcefTerm.SpeciesEpithet));
+      assertNotNull(tr.get(AcefTerm.AuthorString));
+      assertNotNull(tr.get(AcefTerm.GSDNameStatus));
+      assertEquals("Accepted name", tr.get(AcefTerm.Sp2000NameStatus));
+      assertEquals("Terrestrial", tr.get(AcefTerm.LifeZone));
+      assertNotNull(tr.get(AcefTerm.SpeciesURL));
+      assertNotNull(tr.get(AcefTerm.GSDNameGUID));
+      assertEquals("0", tr.get(AcefTerm.IsExtinct));
+      assertEquals("0", tr.get(AcefTerm.HasPreHolocene));
+      assertEquals("1", tr.get(AcefTerm.HasModern));
+    });
+    assertEquals(3, counter.get());
+  }
 
   @Test
   public void corruptFiles() throws Exception {
