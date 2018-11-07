@@ -5,10 +5,6 @@
 				"tokenizer": "keyword",
 				"filter": "lowercase"
 			},
-			"ngram": {
-				"tokenizer": "ngram",
-				"filter": "lowercase"
-			},
 			"autocomplete": {
 				"tokenizer": "autocomplete",
 				"filter": "lowercase"
@@ -18,16 +14,10 @@
 			}
 		},
 		"tokenizer": {
-			"ngram": {
-				"type": "nGram",
-				"min_gram": 10,
-				"max_gram": 10,
-				"token_chars": []
-			},
 			"autocomplete": {
 				"type": "edge_ngram",
 				"min_gram": 2,
-				"max_gram": 10,
+				"max_gram": 12,
 				"token_chars": [
 					"letter"
 				]

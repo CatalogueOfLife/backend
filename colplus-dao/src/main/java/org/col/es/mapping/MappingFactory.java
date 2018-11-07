@@ -25,7 +25,6 @@ import static org.col.es.mapping.MappingUtil.getMappedProperties;
 import static org.col.es.mapping.MultiField.AUTO_COMPLETE;
 import static org.col.es.mapping.MultiField.DEFAULT;
 import static org.col.es.mapping.MultiField.IGNORE_CASE;
-import static org.col.es.mapping.MultiField.NGRAM;
 
 /**
  * Generates an Elasticsearch document type mapping from a {@link Class} object.
@@ -200,9 +199,6 @@ public class MappingFactory<T> {
           break;
         case DEFAULT:
           kf.addMultiField(DEFAULT);
-          break;
-        case NGRAM:
-          kf.addMultiField(NGRAM);
           break;
         case AUTO_COMPLETE:
           kf.addMultiField(AUTO_COMPLETE);

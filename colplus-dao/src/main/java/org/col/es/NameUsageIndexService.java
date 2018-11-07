@@ -56,11 +56,15 @@ public class NameUsageIndexService {
   /**
    * Main method to index an entire dataset from postgres into ElasticSearch using the bulk API.
    */
-  public void indexDataset(final int datasetKey) throws EsException {
+  public void indexDataset(final int datasetKey) {
     final String index = NAME_USAGE_BASE;
     final int batchSize = esConfig.nameUsage.batchSize;
-    EsUtil.deleteIndex(client, index);
-    EsUtil.createIndex(client, index, esConfig.nameUsage);
+    if (EsUtil.indexExists(client, index)) {
+      EsUtil.deleteDataset(client, index, datasetKey);
+      EsUtil.refreshIndex(client, index);
+    } else {
+      EsUtil.createIndex(client, index, esConfig.nameUsage);
+    }
     final AtomicInteger counter = new AtomicInteger();
     try (SqlSession session = factory.openSession()) {
       NameUsageMapper mapper = session.getMapper(NameUsageMapper.class);

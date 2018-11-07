@@ -15,13 +15,13 @@ import org.col.es.model.EsNameUsage;
 public class SearchResponseTransfer {
 
   @SuppressWarnings("unchecked")
-  List<NameUsageWrapper<? extends NameUsage>> transfer(SearchResponse<EsNameUsage> response) {
+  List<NameUsageWrapper<NameUsage>> transfer(SearchResponse<EsNameUsage> response) {
     if (response.getHits().getTotal() == 0) {
       return Collections.emptyList();
     }
     return response.getHits().getHits().stream().map(hit -> {
       try {
-        return (NameUsageWrapper<? extends NameUsage>) EsModule.NAME_USAGE_READER
+        return (NameUsageWrapper<NameUsage>) EsModule.NAME_USAGE_READER
             .readValue(hit.getSource().getPayload());
       } catch (IOException e) {
         throw new EsException(e);

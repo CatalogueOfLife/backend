@@ -5,7 +5,7 @@ import java.util.Map;
 
 public class TermQuery extends AbstractQuery {
 
-  private final Map<String, QueryValue> term;
+  private final Map<String, TermValue> term;
 
   public TermQuery(String field, Object value) {
     this(field, value, null);
@@ -13,10 +13,10 @@ public class TermQuery extends AbstractQuery {
 
   public TermQuery(String field, Object value, Float boost) {
     term = new HashMap<>();
-    term.put(field, new QueryValue(value, boost));
+    term.put(field, new TermValue(value, boost));
   }
 
-  public Map<String, QueryValue> getTerm() {
+  public Map<String, TermValue> getTerm() {
     return term;
   }
 

@@ -1,9 +1,9 @@
 logging:
-  level: INFO
+  level: WARN
   loggers:
     "org.col": DEBUG
-    "org.apache.http": DEBUG
-    "org.eclipse.jetty.servlet": DEBUG
+    "org.apache.http": WARN
+    "org.eclipse.jetty.servlet": WARN
   appenders:
     - type: console
 db:

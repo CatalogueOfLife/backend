@@ -27,7 +27,7 @@ public class NameUsageIndexServiceTest extends EsReadWriteTestBase {
   }
 
   @Test
-  // @Ignore
+  @Ignore
   public void indexBulk() throws IOException, EsException {
     String indexName = "name_usage_test";
     try (RestClient client = getEsClient()) {

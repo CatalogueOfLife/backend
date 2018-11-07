@@ -12,10 +12,12 @@ import org.col.api.search.NameSearchRequest;
 import org.col.api.util.VocabularyUtils;
 import org.col.es.InvalidQueryException;
 import org.col.es.query.BoolQuery;
+import org.col.es.query.IsNotNullQuery;
 import org.col.es.query.IsNullQuery;
 import org.col.es.query.Query;
 import org.col.es.query.TermQuery;
 import org.col.es.query.TermsQuery;
+import static org.col.es.translate.NameSearchRequestTranslator.*;
 
 /**
  * Translates all query parameters except the "q" parameter into an Elasticsearch query. Unless
@@ -61,7 +63,10 @@ class NameSearchParametersTranslator {
       if (containsEmptyValue(param)) {
         queries.add(new IsNullQuery(field));
       }
-      List<?> paramValues = getNonEmptyValues(param);
+      if (containsNotNullValue(param)) {
+        queries.add(new IsNotNullQuery(field));
+      }
+      List<?> paramValues = getRealValues(param);
       if (paramValues.size() == 1) {
         queries.add(new TermQuery(field, paramValues.get(0)));
       } else if (paramValues.size() > 1) {
@@ -79,26 +84,18 @@ class NameSearchParametersTranslator {
         NameSearchParameter[]::new);
   }
 
-  private boolean containsEmptyValue(NameSearchParameter param) {
-    return request.get(param).stream().anyMatch(StringUtils::isEmpty);
-  }
-
   /*
-   * Get all non-empty of one single single query parameter
+   * Get all non-empty and non-symbolic values of one single single query parameter
    */
   @SuppressWarnings("unchecked")
-  private List<?> getNonEmptyValues(NameSearchParameter param) throws InvalidQueryException {
+  private List<?> getRealValues(NameSearchParameter param) throws InvalidQueryException {
     if (param.type() == String.class) {
-      return request.get(param).stream().filter(StringUtils::isNotEmpty).collect(
-          Collectors.toList());
+      return request.get(param).stream().filter(this::isRealValue).collect(Collectors.toList());
     }
     if (param.type() == Integer.class) {
       try {
-        return request.get(param)
-            .stream()
-            .filter(StringUtils::isNotEmpty)
-            .map(Integer::valueOf)
-            .collect(Collectors.toList());
+        return request.get(param).stream().filter(this::isRealValue).map(Integer::valueOf).collect(
+            Collectors.toList());
       } catch (NumberFormatException e) {
         throw new InvalidQueryException("Non-integer value for parameter " + param);
       }
@@ -107,7 +104,7 @@ class NameSearchParametersTranslator {
       try {
         return request.get(param)
             .stream()
-            .filter(StringUtils::isNotEmpty)
+            .filter(this::isRealValue)
             .map(val -> VocabularyUtils.lookupEnum(val, (Class<? extends Enum<?>>) param.type())
                 .ordinal())
             .collect(Collectors.toList());
@@ -116,6 +113,20 @@ class NameSearchParametersTranslator {
       }
     }
     throw new AssertionError("Unexpected parameter type: " + param.type());
+  }
+
+  // Is one of the values of a query parameter an empty string?
+  private boolean containsEmptyValue(NameSearchParameter param) {
+    return request.get(param).stream().anyMatch(StringUtils::isEmpty);
+  }
+
+  // Is one of the values of a query parameter the symbol for NOT NULL?
+  private boolean containsNotNullValue(NameSearchParameter param) {
+    return request.get(param).stream().anyMatch(s -> s.equalsIgnoreCase(NOT_NULL_VALUE));
+  }
+
+  private boolean isRealValue(String s) {
+    return StringUtils.isNotEmpty(s) && !s.equalsIgnoreCase(NOT_NULL_VALUE);
   }
 
 }

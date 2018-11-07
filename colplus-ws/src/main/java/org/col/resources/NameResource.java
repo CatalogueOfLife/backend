@@ -19,6 +19,7 @@ import org.apache.ibatis.session.SqlSession;
 import org.col.api.exception.NotFoundException;
 import org.col.api.model.Name;
 import org.col.api.model.NameRelation;
+import org.col.api.model.NameUsage;
 import org.col.api.model.Page;
 import org.col.api.model.ResultPage;
 import org.col.api.search.NameSearchParameter;
@@ -56,7 +57,7 @@ public class NameResource {
   @GET
   @Timed
   @Path("search")
-  public ResultPage<NameUsageWrapper<?>> search(@BeanParam NameSearchRequest query,
+  public ResultPage<NameUsageWrapper<NameUsage>> search(@BeanParam NameSearchRequest query,
       @Valid @BeanParam Page page, @Context UriInfo uri) {
     addQueryParams(query, uri);
     try {
@@ -70,7 +71,7 @@ public class NameResource {
   private static void addQueryParams(NameSearchRequest req, UriInfo uri) {
     for (Map.Entry<String, List<String>> param : uri.getQueryParameters().entrySet()) {
       VocabularyUtils.lookup(param.getKey(), NameSearchParameter.class).ifPresent(p -> {
-        req.addAll(p, param.getValue());
+         req.addAll(p, param.getValue());
       });
     }
   }

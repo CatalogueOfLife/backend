@@ -41,13 +41,13 @@ public class NameUsageSearchService {
     this.transfer = new SearchResponseTransfer();
   }
 
-  public ResultPage<NameUsageWrapper<? extends NameUsage>> search(NameSearchRequest query,
+  public ResultPage<NameUsageWrapper<NameUsage>> search(NameSearchRequest query,
       Page page) throws InvalidQueryException {
     return search(NAME_USAGE_BASE, query, page);
   }
 
   @VisibleForTesting
-  ResultPage<NameUsageWrapper<? extends NameUsage>> search(String indexName,
+  ResultPage<NameUsageWrapper<NameUsage>> search(String indexName,
       NameSearchRequest query, Page page) throws InvalidQueryException {
     NameSearchRequestTranslator translator = new NameSearchRequestTranslator(query, page);
     EsSearchRequest esQuery = translator.translate();
@@ -59,7 +59,7 @@ public class NameUsageSearchService {
     Response httpResponse = EsUtil.executeRequest(client, httpRequest);
     SearchResponse<EsNameUsage> response = readResponse(httpResponse);
     int total = response.getHits().getTotal();
-    List<NameUsageWrapper<? extends NameUsage>> nus = transfer.transfer(response);
+    List<NameUsageWrapper<NameUsage>> nus = transfer.transfer(response);
     return new ResultPage<>(page, total, nus);
   }
 
