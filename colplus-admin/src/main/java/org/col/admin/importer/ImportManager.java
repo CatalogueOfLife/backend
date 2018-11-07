@@ -67,7 +67,7 @@ public class ImportManager implements Managed {
                        SqlSessionFactory factory, NameIndex index, RestClient esClient, ImageService imgService) {
     this.cfg = cfg;
     this.factory = factory;
-    this.downloader = new DownloadUtil(client);
+    this.downloader = new DownloadUtil(client, cfg.importer.githubToken);
     this.index = index;
     this.imgService = imgService;
     this.indexService = new NameUsageIndexService(esClient, cfg.es, factory);

@@ -29,11 +29,20 @@ public class DownloadUtil {
   private static final Logger LOG = LoggerFactory.getLogger(DownloadUtil.class);
   private static final String LAST_MODIFIED = "Last-Modified";
   private static final String MODIFIED_SINCE = "If-Modified-Since";
-
+  private static final String AUTHORIZATION = "Authorization";
+  
+  private static final String GITHUB_DOMAIN = "github.com";
+  
   private final CloseableHttpClient hc;
+  private final String githubToken;
 
   public DownloadUtil(CloseableHttpClient hc) {
+    this(hc, null);
+  }
+  
+  public DownloadUtil(CloseableHttpClient hc, String githubToken) {
     this.hc = hc;
+    this.githubToken = githubToken;
   }
   
   /**
@@ -99,6 +108,12 @@ public class DownloadUtil {
       // DateTimeFormatter is threadsafe these days
       LOG.debug("Conditional GET: {}", DateTimeFormatter.RFC_1123_DATE_TIME.format(lastModified));
       get.addHeader(MODIFIED_SINCE, DateTimeFormatter.RFC_1123_DATE_TIME.format(lastModified));
+    }
+  
+    if (githubToken != null && url.getHost().toLowerCase().endsWith(GITHUB_DOMAIN)) {
+      // DateTimeFormatter is threadsafe these days
+      LOG.debug("Adding Github API token");
+      get.addHeader(AUTHORIZATION, "token " + githubToken);
     }
 
     // execute

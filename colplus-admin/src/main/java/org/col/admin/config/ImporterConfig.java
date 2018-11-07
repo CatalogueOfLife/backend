@@ -29,5 +29,10 @@ public class ImporterConfig {
    */
   @Min(0)
   public int continousImportPolling = 0;
-
+  
+  /**
+   * Github API access token to use when downloading data from github.com URLs.
+   */
+  public String githubToken;
+  
 }
