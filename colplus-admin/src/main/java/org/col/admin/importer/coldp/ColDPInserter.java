@@ -1,4 +1,4 @@
-package org.col.admin.importer.acef;
+package org.col.admin.importer.coldp;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -11,6 +11,7 @@ import org.col.admin.importer.neo.NeoDb;
 import org.col.admin.importer.neo.NodeBatchProcessor;
 import org.col.admin.importer.neo.model.NeoTaxon;
 import org.col.admin.importer.reference.ReferenceFactory;
+import org.col.api.datapackage.ColTerm;
 import org.col.api.model.Dataset;
 import org.col.api.model.Reference;
 import org.col.api.model.VerbatimRecord;
@@ -26,24 +27,25 @@ import org.slf4j.LoggerFactory;
 import static com.google.common.base.Strings.emptyToNull;
 
 /**
+ * Main inserter for the ColDP entities in correct order to resolve some relations
  *
  */
-public class AcefInserter extends NeoInserter {
+public class ColDPInserter extends NeoInserter {
 
-  private static final Logger LOG = LoggerFactory.getLogger(AcefInserter.class);
+  private static final Logger LOG = LoggerFactory.getLogger(ColDPInserter.class);
   private static final Splitter COMMA_SPLITTER = Splitter.on(',').trimResults().omitEmptyStrings();
 
-  private AcefReader reader;
-  private AcefInterpreter inter;
+  private ColDPReader reader;
+  private ColDPInterpreter inter;
 
-  public AcefInserter(NeoDb store, Path folder, ReferenceFactory refFactory) {
+  public ColDPInserter(NeoDb store, Path folder, ReferenceFactory refFactory) {
     super(folder, store, refFactory);
   }
 
   private void initReader() {
     if (reader == null) {
       try {
-        reader = AcefReader.from(folder);
+        reader = ColDPReader.from(folder);
       } catch (IOException e) {
         throw new RuntimeException(e);
       }
@@ -51,43 +53,56 @@ public class AcefInserter extends NeoInserter {
   }
 
   /**
-   * Inserts ACEF data from a source folder into the normalizer store. Before inserting it does a
-   * quick check to see if all required files are existing.
+   * Inserts CoL data from a source folder into the normalizer store.
    */
   @Override
   public void batchInsert() throws NormalizationFailedException {
     try {
       initReader();
-      inter = new AcefInterpreter(store.getDataset(), meta, refFactory);
+      inter = new ColDPInterpreter(store.getDataset(), meta, refFactory);
 
-      // This inserts the plain references from the Reference file with no links to names, taxa or distributions.
-      // Links are added afterwards in other methods when a ACEF:ReferenceID field is processed by lookup to the neo store.
-      insertEntities(reader, AcefTerm.Reference,
+      insertEntities(reader, ColTerm.Reference,
           inter::interpretReference,
           store::put
       );
 
-      // species
-      insertEntities(reader, AcefTerm.AcceptedSpecies,
-          inter::interpretAccepted,
+      insertEntities(reader, ColTerm.Name,
+          inter::interpretName,
+          store::put
+      );
+      
+      //insertEntities(reader, ColTerm.NameRel,
+      //    inter::interpretAccepted,
+      //    store::put
+      //);
+      
+      insertEntities(reader, ColTerm.Taxon,
+          inter::interpretTaxon,
           store::put
       );
 
-      // infraspecies
-      // accepted infraspecific names in ACEF have no genus or species
-      // but a link to their parent species ID.
-      // so we cannot update the scientific name yet - we do this in the relation inserter instead!
-      insertEntities(reader, AcefTerm.AcceptedInfraSpecificTaxa,
-          inter::interpretAccepted,
-          store::put
-      );
-
-      // synonyms
-      insertEntities(reader, AcefTerm.Synonyms,
+      insertEntities(reader, ColTerm.Synonym,
           inter::interpretSynonym,
           store::put
       );
-
+  
+      //TODO:
+      insertEntities(reader, ColTerm.Description,
+          inter::interpretSynonym,
+          store::put
+      );
+      insertEntities(reader, ColTerm.Distribution,
+          inter::interpretSynonym,
+          store::put
+      );
+      insertEntities(reader, ColTerm.VernacularName,
+          inter::interpretSynonym,
+          store::put
+      );
+      insertEntities(reader, ColTerm.Media,
+          inter::interpretSynonym,
+          store::put
+      );
     } catch (RuntimeException e) {
       throw new NormalizationFailedException("Failed to read ACEF files", e);
     }
@@ -115,7 +130,7 @@ public class AcefInserter extends NeoInserter {
 
   @Override
   protected NodeBatchProcessor relationProcessor() {
-    return new AcefRelationInserter(store, inter);
+    return new ColDPRelationInserter(store, inter);
   }
 
   /**

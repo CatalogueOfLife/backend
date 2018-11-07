@@ -65,8 +65,8 @@ public class ReferenceFactory {
    * @param details title of periodicals, volume number, and other common bibliographic details
    * @return
    */
-  public Reference fromACEF(String referenceID, String authors, String year, String title,
-      String details, IssueContainer issues) {
+  public Reference fromACEF(String referenceID, String authors, String year, String title, String details,
+                            IssueContainer issues) {
     Reference ref = find(referenceID, null);
     if (ref == null) {
       ref = newReference(referenceID);

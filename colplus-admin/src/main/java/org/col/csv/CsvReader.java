@@ -287,7 +287,7 @@ public class CsvReader {
   }
 
   private static Iterable<Path> listDataFiles(Path folder) throws IOException {
-    if (!Files.isDirectory(folder)) return Collections.emptyList();
+    if (folder == null || !Files.isDirectory(folder)) return Collections.emptyList();
     return Files.newDirectoryStream(folder, new DirectoryStream.Filter<Path>() {
       @Override
       public boolean accept(Path p) throws IOException {
