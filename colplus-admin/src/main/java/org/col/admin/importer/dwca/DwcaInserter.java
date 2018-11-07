@@ -27,7 +27,7 @@ public class DwcaInserter extends NeoInserter {
   private DwcInterpreter inter;
 
   public DwcaInserter(NeoDb store, Path folder, ReferenceFactory refFactory) throws IOException {
-    super(folder, "dwca", store, refFactory);
+    super(folder, store, refFactory);
   }
 
   private void initReader() {

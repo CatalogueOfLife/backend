@@ -37,7 +37,7 @@ public class AcefInserter extends NeoInserter {
   private AcefInterpreter inter;
 
   public AcefInserter(NeoDb store, Path folder, ReferenceFactory refFactory) {
-    super(folder, "acef", store, refFactory);
+    super(folder, store, refFactory);
   }
 
   private void initReader() {
