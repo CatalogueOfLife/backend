@@ -10,6 +10,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 
 import org.col.api.TestEntityGenerator;
 import org.col.api.model.BareName;
+import org.col.api.model.Name;
 import org.col.api.model.NameUsage;
 import org.col.api.model.Page;
 import org.col.api.model.ResultPage;
@@ -442,6 +443,33 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
 
     assertEquals(2, result.getResult().size());
   }
+  
+  public void testFieldsQuery() throws JsonProcessingException {
+    NameUsageTransfer transfer = new NameUsageTransfer();
+    
+    Name n = new Name();
+    n.setUninomial("laridae");
+    BareName bn = new BareName(n);
+    NameUsageWrapper<BareName> nuw = new NameUsageWrapper<BareName>(bn);
+    EsNameUsage doc = transfer.toEsDocument(nuw);
+    insert(client, indexName, doc);
+    
+    n = new Name();
+    n.setUninomial("parus");
+    n.setGenus("parus");
+    bn = new BareName(n);
+    nuw = new NameUsageWrapper<BareName>(bn);
+    doc = transfer.toEsDocument(nuw);
+    insert(client, indexName, doc);
+    
+    n = new Name();
+    n.setUninomial("parus");
+    n.setGenus("parus");
+    bn = new BareName(n);
+    nuw = new NameUsageWrapper<BareName>(bn);
+    doc = transfer.toEsDocument(nuw);
+    insert(client, indexName, doc);
+   }
 
   private static List<VernacularName> create(List<String> names) {
     return names.stream().map(n -> {
