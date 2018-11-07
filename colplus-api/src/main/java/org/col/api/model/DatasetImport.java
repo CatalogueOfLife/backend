@@ -59,6 +59,7 @@ public class DatasetImport {
   private Integer distributionCount;
   private Map<Issue, Integer> issuesCount = Maps.newHashMap();
   private Map<Rank, Integer> namesByRankCount = Maps.newHashMap();
+  private Map<Rank, Integer> taxaByRankCount = Maps.newHashMap();
   private Map<NameType, Integer> namesByTypeCount = Maps.newHashMap();
   private Map<Language, Integer> vernacularsByLanguageCount = Maps.newHashMap();
   private Map<Gazetteer, Integer> distributionsByGazetteerCount = Maps.newHashMap();
@@ -204,6 +205,14 @@ public class DatasetImport {
     this.namesByRankCount = namesByRankCount;
   }
   
+  public Map<Rank, Integer> getTaxaByRankCount() {
+    return taxaByRankCount;
+  }
+  
+  public void setTaxaByRankCount(Map<Rank, Integer> taxaByRankCount) {
+    this.taxaByRankCount = taxaByRankCount;
+  }
+  
   public Map<NameType, Integer> getNamesByTypeCount() {
     return namesByTypeCount;
   }
@@ -290,6 +299,7 @@ public class DatasetImport {
         Objects.equals(distributionCount, that.distributionCount) &&
         Objects.equals(issuesCount, that.issuesCount) &&
         Objects.equals(namesByRankCount, that.namesByRankCount) &&
+        Objects.equals(taxaByRankCount, that.taxaByRankCount) &&
         Objects.equals(namesByTypeCount, that.namesByTypeCount) &&
         Objects.equals(vernacularsByLanguageCount, that.vernacularsByLanguageCount) &&
         Objects.equals(distributionsByGazetteerCount, that.distributionsByGazetteerCount) &&
@@ -303,7 +313,7 @@ public class DatasetImport {
   @Override
   public int hashCode() {
     
-    return Objects.hash(datasetKey, attempt, state, downloadUri, download, started, finished, error, md5, verbatimCount, nameCount, taxonCount, referenceCount, vernacularCount, distributionCount, issuesCount, namesByRankCount, namesByTypeCount, vernacularsByLanguageCount, distributionsByGazetteerCount, namesByOriginCount, usagesByStatusCount, namesByStatusCount, nameRelationsByTypeCount, verbatimByTypeCount);
+    return Objects.hash(datasetKey, attempt, state, downloadUri, download, started, finished, error, md5, verbatimCount, nameCount, taxonCount, referenceCount, vernacularCount, distributionCount, issuesCount, namesByRankCount, taxaByRankCount, namesByTypeCount, vernacularsByLanguageCount, distributionsByGazetteerCount, namesByOriginCount, usagesByStatusCount, namesByStatusCount, nameRelationsByTypeCount, verbatimByTypeCount);
   }
   
   public String attempt() {

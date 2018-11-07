@@ -234,6 +234,7 @@ CREATE TABLE dataset_import (
   distribution_count INTEGER,
   issues_count HSTORE,
   names_by_rank_count HSTORE,
+  taxa_by_rank_count HSTORE,
   names_by_type_count HSTORE,
   vernaculars_by_language_count HSTORE,
   distributions_by_gazetteer_count HSTORE,

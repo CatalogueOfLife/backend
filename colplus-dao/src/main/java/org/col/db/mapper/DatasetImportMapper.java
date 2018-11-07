@@ -52,6 +52,7 @@ public interface DatasetImportMapper {
   List<IntCount> countNameRelationsByType(@Param("key") int datasetKey);
   List<IntCount> countNamesByOrigin(@Param("key") int datasetKey);
   List<StringCount> countNamesByRank(@Param("key") int datasetKey);
+  List<StringCount> countTaxaByRank(@Param("key") int datasetKey);
   List<IntCount> countNamesByStatus(@Param("key") int datasetKey);
   List<IntCount> countNamesByType(@Param("key") int datasetKey);
   List<IntCount> countUsagesByStatus(@Param("key") int datasetKey);
