@@ -27,6 +27,16 @@ public class EsUtil {
 
   private static final Logger LOG = LoggerFactory.getLogger(EsUtil.class);
 
+  public static boolean indexExists(RestClient client, String indexName) {
+    Request request = new Request("HEAD", indexName);
+    try {
+      Response response = client.performRequest(request);
+      return response.getStatusLine().getStatusCode() == 200;
+    } catch (IOException e) {
+      throw new EsException(e);
+    }
+  }
+
   @SuppressWarnings("unchecked")
   public static <T> void createIndex(RestClient client, String indexName, IndexConfig cfg) {
 

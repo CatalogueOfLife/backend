@@ -71,7 +71,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     NameSearchRequest nsr = new NameSearchRequest();
     // Force sorting by index order
     nsr.setSortBy(null);
-    ResultPage<NameUsageWrapper<? extends NameUsage>> result =
+    ResultPage<NameUsageWrapper<NameUsage>> result =
         svc.search(indexName, nsr, new Page());
     assertEquals(3, result.getResult().size());
     assertEquals(Taxon.class, result.getResult().get(0).getUsage().getClass());
@@ -96,7 +96,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     assertEquals(3, EsUtil.count(client, indexName));
     NameSearchRequest nsr = new NameSearchRequest();
     nsr.setSortBy(SortBy.NAME);
-    ResultPage<NameUsageWrapper<? extends NameUsage>> result =
+    ResultPage<NameUsageWrapper<NameUsage>> result =
         svc.search(indexName, nsr, new Page());
     assertEquals(3, result.getResult().size());
     assertEquals(BareName.class, result.getResult().get(0).getUsage().getClass());
@@ -126,7 +126,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     refreshIndex(client, indexName);
     NameSearchRequest nsr = new NameSearchRequest();
     nsr.setSortBy(SortBy.KEY);
-    ResultPage<NameUsageWrapper<? extends NameUsage>> result =
+    ResultPage<NameUsageWrapper<NameUsage>> result =
         svc.search(indexName, nsr, new Page());
     assertEquals(5, result.getResult().size());
     assertEquals("1", result.getResult().get(0).getUsage().getName().getId());
@@ -181,7 +181,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
 
     refreshIndex(client, indexName);
 
-    ResultPage<NameUsageWrapper<? extends NameUsage>> result =
+    ResultPage<NameUsageWrapper<NameUsage>> result =
         svc.search(indexName, nsr, new Page());
 
     assertEquals(3, result.getResult().size());
@@ -233,7 +233,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
 
     refreshIndex(client, indexName);
 
-    ResultPage<NameUsageWrapper<? extends NameUsage>> result =
+    ResultPage<NameUsageWrapper<NameUsage>> result =
         svc.search(indexName, nsr, new Page());
 
     assertEquals(3, result.getResult().size());
@@ -285,7 +285,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
 
     refreshIndex(client, indexName);
 
-    ResultPage<NameUsageWrapper<? extends NameUsage>> result =
+    ResultPage<NameUsageWrapper<NameUsage>> result =
         svc.search(indexName, nsr, new Page());
 
     assertEquals(4, result.getResult().size());
@@ -330,7 +330,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
 
     refreshIndex(client, indexName);
 
-    ResultPage<NameUsageWrapper<? extends NameUsage>> result =
+    ResultPage<NameUsageWrapper<NameUsage>> result =
         svc.search(indexName, nsr, new Page());
 
     assertEquals(4, result.getResult().size());
@@ -376,7 +376,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
 
     refreshIndex(client, indexName);
 
-    ResultPage<NameUsageWrapper<? extends NameUsage>> result =
+    ResultPage<NameUsageWrapper<NameUsage>> result =
         svc.search(indexName, nsr, new Page());
 
     assertEquals(4, result.getResult().size());

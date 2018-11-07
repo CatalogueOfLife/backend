@@ -14,6 +14,8 @@ import org.junit.Test;
 import static org.col.es.EsUtil.insert;
 import static org.col.es.EsUtil.refreshIndex;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class EsUtilTest extends EsReadTestBase {
 
@@ -70,6 +72,15 @@ public class EsUtilTest extends EsReadTestBase {
     i = EsUtil.deleteDataset(client, indexName, 3);
     assertEquals(0, i);
 
+  }
+  
+  @Test
+  public void indexExists() {
+    EsUtil.deleteIndex(client, indexName);
+    EsUtil.createIndex(client, indexName, getEsConfig().nameUsage);
+    assertTrue(EsUtil.indexExists(client, indexName));
+    EsUtil.deleteIndex(client, indexName);
+    assertFalse(EsUtil.indexExists(client, indexName));
   }
 
 }
