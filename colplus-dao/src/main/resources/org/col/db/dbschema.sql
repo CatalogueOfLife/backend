@@ -128,7 +128,7 @@ CREATE TABLE dataset (
   import_frequency INTEGER NOT NULL DEFAULT 7,
   code INTEGER,
   notes text,
-  catalogue INTEGER,
+  contributes_to INTEGER,
   last_data_import_attempt INTEGER,
   created TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW(),
   deleted TIMESTAMP WITHOUT TIME ZONE,

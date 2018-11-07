@@ -50,7 +50,7 @@ public class Dataset implements SourceMetadata, IntKey {
   private NomCode code;
   private Integer size;
   private String notes;
-  private Catalogue catalogue;
+  private Catalogue contributesTo;
   private LocalDateTime created;
   private LocalDateTime modified;
   private LocalDateTime deleted;
@@ -269,17 +269,17 @@ public class Dataset implements SourceMetadata, IntKey {
   }
   
   /**
-   * If the dataset participates in any of the 2 catalouge assemblies
+   * If the dataset participates in any of the 2 catalogue assemblies
    * this is indicated here. All scrutinized sources will also be included as provisional ones.
    * <p>
    * Dataset used to build the provisional catalogue will be trusted and insert their names into the names index.
    */
-  public Catalogue getCatalogue() {
-    return catalogue;
+  public Catalogue getContributesTo() {
+    return contributesTo;
   }
   
-  public void setCatalogue(Catalogue catalogue) {
-    this.catalogue = catalogue;
+  public void setContributesTo(Catalogue contributesTo) {
+    this.contributesTo = contributesTo;
   }
   
   public LocalDateTime getCreated() {
@@ -344,7 +344,7 @@ public class Dataset implements SourceMetadata, IntKey {
         code == dataset.code &&
         Objects.equals(size, dataset.size) &&
         Objects.equals(notes, dataset.notes) &&
-        catalogue == dataset.catalogue &&
+        contributesTo == dataset.contributesTo &&
         Objects.equals(created, dataset.created) &&
         Objects.equals(modified, dataset.modified) &&
         Objects.equals(deleted, dataset.deleted);
@@ -353,7 +353,7 @@ public class Dataset implements SourceMetadata, IntKey {
   @Override
   public int hashCode() {
     
-    return Objects.hash(key, type, title, gbifKey, gbifPublisherKey, description, organisation, contactPerson, authorsAndEditors, license, version, released, citation, homepage, logo, dataFormat, dataAccess, cluster, origin, importFrequency, code, size, notes, catalogue, created, modified, deleted);
+    return Objects.hash(key, type, title, gbifKey, gbifPublisherKey, description, organisation, contactPerson, authorsAndEditors, license, version, released, citation, homepage, logo, dataFormat, dataAccess, cluster, origin, importFrequency, code, size, notes, contributesTo, created, modified, deleted);
   }
   
   @Override

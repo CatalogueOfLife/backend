@@ -240,7 +240,7 @@ public class Normalizer implements Callable<Boolean> {
     // if synonym negate the verbatim key to track status without needing more memory
     final Map<String, Integer> nameIds = new HashMap<>();
     store.all().forEach(t -> {
-      NameMatch m = index.match(t.name, dataset.getCatalogue()!=null, false);
+      NameMatch m = index.match(t.name, dataset.getContributesTo()!=null, false);
       if (m.hasMatch()) {
         t.name.setIndexNameId(m.getName().getId());
         store.update(t);

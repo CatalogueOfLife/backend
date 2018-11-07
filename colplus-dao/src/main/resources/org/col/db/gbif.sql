@@ -109,6 +109,6 @@ INSERT INTO dataset (gbif_key, origin, import_frequency, data_access, title) VAL
     ('fa8ab13c-52ed-4754-b838-aeff74c79718', 0, 7, 'https://github.com/Sp2000/dwca-apg/archive/master.zip', 'Angiosperm phylogeny classification of flowering plants (APG IV)');
 
 
-UPDATE dataset set catalogue=1,
+UPDATE dataset set contributes_to=1,
     data_format=0
     WHERE gbif_key is not NULL;

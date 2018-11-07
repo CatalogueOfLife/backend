@@ -27,7 +27,7 @@
       import_frequency,
       code,
       notes,
-      catalogue,
+      contributes_to,
       created,
       deleted,
       di.finished AS modified,
@@ -56,7 +56,7 @@
       import_frequency,
       code,
       notes,
-      catalogue
+      contributes_to
     </sql>
 
     <sql id="PROPS">
@@ -81,7 +81,7 @@
       #{importFrequency, typeHandler=org.col.db.type.FrequencyTypeHandler},
       #{code},
       #{notes},
-      #{catalogue}
+      #{contributesTo}
     </sql>
 
     <sql id="FROM">
@@ -97,8 +97,11 @@
             <if test="req.code != null">
                 AND code=#{req.code}
             </if>
-            <if test="req.catalogue != null">
-                AND catalogue &lt;= #{req.catalogue}
+            <if test="req.contributesTo != null &amp;&amp; !req.contributesTo.isEmpty()">
+                AND contributes_to IN
+                <foreach item="cat" index="idx" collection="req.contributesTo" open="(" separator="," close=")">
+                    #{cat}
+                </foreach>
             </if>
             <if test="req.format != null">
                 AND data_format=#{req.format}

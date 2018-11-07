@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import org.col.api.RandomUtils;
 import org.col.api.TestEntityGenerator;
@@ -33,6 +34,7 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
 	private static Dataset create() throws Exception {
 		Dataset d = new Dataset();
 		d.setType(DatasetType.GLOBAL);
+		d.setContributesTo(Catalogue.COL);
 		d.setGbifKey(UUID.randomUUID());
 		d.setTitle(RandomUtils.randomString(80));
 		d.setDescription(RandomUtils.randomString(500));
@@ -275,6 +277,13 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
           // nothing, from import and all null
       }
     }
+		
+		query = DatasetSearchRequest.byQuery("worms");
+    query.setContributesTo(ImmutableSet.of(Catalogue.COL));
+		assertEquals(0, mapper().search(query, new Page()).size());
+    
+    query.setContributesTo(ImmutableSet.of(Catalogue.PCAT, Catalogue.COL));
+    assertEquals(3, mapper().search(query, new Page()).size());
 	}
 
 	private static List<Dataset> removeCreated(List<Dataset> ds) {
@@ -295,7 +304,7 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
 		ds.setOrganisation(organisation);
 		ds.setDescription(description);
 		ds.setType(DatasetType.GLOBAL);
-		ds.setCatalogue(Catalogue.PROVISIONAL);
+		ds.setContributesTo(Catalogue.PCAT);
 		mapper().create(ds);
 		return ds.getKey();
 	}
