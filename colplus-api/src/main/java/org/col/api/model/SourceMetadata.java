@@ -45,4 +45,7 @@ public interface SourceMetadata {
   
   void setHomepage(URI homepage);
   
+  String getCitation();
+  
+  void setCitation(String citation);
 }

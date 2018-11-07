@@ -43,16 +43,18 @@ public class ImporterResource {
     return dao.list(datasetKey, states, page);
   }
 
-  @POST
-  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public ImportRequest schedule(@QueryParam("key") Integer datasetKey, @QueryParam("force") boolean force) {
-    return importManager.submit(datasetKey, force);
-  }
-  
   @GET
   @Path("/queue")
   public Queue<ImportRequest> queue() {
     return importManager.list();
+  }
+  
+  @POST
+  @Path("{key}")
+  @Consumes(MediaType.APPLICATION_JSON)
+  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
+  public ImportRequest schedule(@PathParam("key") int datasetKey, @QueryParam("force") boolean force) {
+    return importManager.submit(datasetKey, force);
   }
   
   @POST
@@ -67,7 +69,7 @@ public class ImporterResource {
   @DELETE
   @Path("{key}")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void cancel(@PathParam("key") Integer datasetKey) {
+  public void cancel(@PathParam("key") int datasetKey) {
     importManager.cancel(datasetKey);
   }
 

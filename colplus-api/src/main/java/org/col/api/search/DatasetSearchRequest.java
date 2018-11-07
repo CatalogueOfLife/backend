@@ -2,6 +2,7 @@ package org.col.api.search;
 
 import java.time.LocalDate;
 import java.util.Objects;
+import java.util.Set;
 import javax.ws.rs.QueryParam;
 
 import com.google.common.base.Preconditions;
@@ -29,8 +30,8 @@ public class DatasetSearchRequest {
   @QueryParam("code")
   private NomCode code;
   
-  @QueryParam("catalogue")
-  private Catalogue catalogue;
+  @QueryParam("contributesTo")
+  private Set<Catalogue> contributesTo;
   
   @QueryParam("format")
   private DataFormat format;
@@ -60,8 +61,10 @@ public class DatasetSearchRequest {
   }
   
   public boolean isEmpty() {
-    return StringUtils.isBlank(q) && code == null && catalogue == null && format == null && type == null
-        && sortBy == null && modified == null && created == null && released == null;
+    return StringUtils.isBlank(q) && code == null &&
+        (contributesTo == null || contributesTo.isEmpty()) &&
+        format == null && type == null && sortBy == null &&
+        modified == null && created == null && released == null;
   }
   
   public String getQ() {
@@ -80,12 +83,12 @@ public class DatasetSearchRequest {
     this.code = code;
   }
   
-  public Catalogue getCatalogue() {
-    return catalogue;
+  public Set<Catalogue> getContributesTo() {
+    return contributesTo;
   }
   
-  public void setCatalogue(Catalogue catalogue) {
-    this.catalogue = catalogue;
+  public void setContributesTo(Set<Catalogue> contributesTo) {
+    this.contributesTo = contributesTo;
   }
   
   public DataFormat getFormat() {
@@ -152,7 +155,7 @@ public class DatasetSearchRequest {
     return reverse == that.reverse &&
         Objects.equals(q, that.q) &&
         code == that.code &&
-        catalogue == that.catalogue &&
+        Objects.equals(contributesTo, that.contributesTo) &&
         format == that.format &&
         type == that.type &&
         Objects.equals(modified, that.modified) &&
@@ -164,6 +167,6 @@ public class DatasetSearchRequest {
   @Override
   public int hashCode() {
     
-    return Objects.hash(q, code, catalogue, format, type, modified, created, released, sortBy, reverse);
+    return Objects.hash(q, code, contributesTo, format, type, modified, created, released, sortBy, reverse);
   }
 }

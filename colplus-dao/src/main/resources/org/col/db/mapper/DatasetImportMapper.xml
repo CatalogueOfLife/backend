@@ -22,6 +22,7 @@
       distribution_count,
       issues_count,
       names_by_rank_count,
+      taxa_by_rank_count,
       names_by_type_count,
       vernaculars_by_language_count,
       distributions_by_gazetteer_count,
@@ -49,6 +50,7 @@
       distribution_count,
       issues_count,
       names_by_rank_count,
+      taxa_by_rank_count,
       names_by_type_count,
       vernaculars_by_language_count,
       distributions_by_gazetteer_count,
@@ -76,6 +78,7 @@
       #{di.distributionCount},
       #{di.issuesCount, typeHandler=org.col.db.type2.HstoreIssueCountTypeHandler}::hstore,
       #{di.namesByRankCount, typeHandler=org.col.db.type2.HstoreRankCountTypeHandler}::hstore,
+      #{di.taxaByRankCount, typeHandler=org.col.db.type2.HstoreRankCountTypeHandler}::hstore,
       #{di.namesByTypeCount, typeHandler=org.col.db.type2.HstoreNameTypeCountTypeHandler}::hstore,
       #{di.vernacularsByLanguageCount, typeHandler=org.col.db.type2.HstoreLanguageCountTypeHandler}::hstore,
       #{di.distributionsByGazetteerCount, typeHandler=org.col.db.type2.HstoreGazetteerCountTypeHandler}::hstore,
@@ -108,6 +111,7 @@
     <resultMap id="datasetImportResultMap" type="DatasetImport" autoMapping="true">
         <result property="issuesCount" column="issues_count" typeHandler="org.col.db.type2.HstoreIssueCountTypeHandler"/>
         <result property="namesByRankCount" column="names_by_rank_count" typeHandler="org.col.db.type2.HstoreRankCountTypeHandler"/>
+        <result property="taxaByRankCount" column="taxa_by_rank_count" typeHandler="org.col.db.type2.HstoreRankCountTypeHandler"/>
         <result property="namesByTypeCount" column="names_by_type_count" typeHandler="org.col.db.type2.HstoreNameTypeCountTypeHandler"/>
         <result property="vernacularsByLanguageCount" column="vernaculars_by_language_count" typeHandler="org.col.db.type2.HstoreLanguageCountTypeHandler"/>
         <result property="distributionsByGazetteerCount" column="distributions_by_gazetteer_count" typeHandler="org.col.db.type2.HstoreGazetteerCountTypeHandler"/>
@@ -193,6 +197,11 @@
         SELECT rank AS key, count(*) AS count
         FROM name_${key}
         GROUP BY rank
+    </select>
+    <select id="countTaxaByRank" resultType="StringCount">
+        SELECT n.rank AS key, count(*) AS count
+        FROM taxon_${key} t JOIN name_${key} n ON t.name_id=n.id
+        GROUP BY n.rank
     </select>
     <select id="countUsagesByStatus" resultType="IntCount">
         SELECT CASE WHEN doubtful THEN 1 ELSE 0 END AS key, count(*) AS count

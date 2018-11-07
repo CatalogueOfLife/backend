@@ -1,8 +1,8 @@
 package org.col.api.vocab;
 
 public enum Catalogue {
-  SCRUTINIZED(Datasets.SCRUT_CAT),
-  PROVISIONAL(Datasets.PROV_CAT);
+  COL(Datasets.SCRUT_CAT),
+  PCAT(Datasets.PROV_CAT);
   
   private final int datasetKey;
   

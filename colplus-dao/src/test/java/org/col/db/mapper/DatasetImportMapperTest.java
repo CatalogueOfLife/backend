@@ -50,6 +50,7 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     d.setIssuesCount(mockCount(Issue.class));
     d.setNamesByOriginCount(mockCount(Origin.class));
     d.setNamesByRankCount(mockCount(Rank.class));
+    d.setTaxaByRankCount(mockCount(Rank.class));
     d.setNamesByTypeCount(mockCount(NameType.class));
     d.setVernacularsByLanguageCount(mockCount(Language.class));
     d.setDistributionsByGazetteerCount(mockCount(Gazetteer.class));
@@ -168,6 +169,10 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     Set<StringCount> expected2 = new HashSet<>();
     expected2.add(new StringCount(Rank.SPECIES.name().toLowerCase(), 5));
     assertCounts(expected2, mapper().countNamesByRank(DATASET11.getKey()));
+  
+    expected2.clear();
+    expected2.add(new StringCount(Rank.SPECIES.name().toLowerCase(), 2));
+    assertCounts(expected2, mapper().countTaxaByRank(DATASET11.getKey()));
 
     expected.clear();
     expected.add(new IntCount(Origin.SOURCE, 5));

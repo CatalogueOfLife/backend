@@ -102,6 +102,7 @@ public class DatasetImportDao {
     di.setNameRelationsByTypeCount(DatasetImportDao.countMap(NomRelType.class, mapper.countNameRelationsByType(key)));
     di.setNamesByOriginCount(DatasetImportDao.countMap(Origin.class, mapper.countNamesByOrigin(key)));
     di.setNamesByRankCount(countMap(DatasetImportDao::parseRank, mapper.countNamesByRank(key)));
+    di.setTaxaByRankCount(countMap(DatasetImportDao::parseRank, mapper.countTaxaByRank(key)));
     di.setNamesByStatusCount(DatasetImportDao.countMap(NomStatus.class, mapper.countNamesByStatus(key)));
     di.setNamesByTypeCount(DatasetImportDao.countMap(NameType.class, mapper.countNamesByType(key)));
     di.setUsagesByStatusCount(DatasetImportDao.countMap(TaxonomicStatus.class, mapper.countUsagesByStatus(key)));

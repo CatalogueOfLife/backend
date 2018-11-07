@@ -69,7 +69,8 @@ public class DatasetResource extends CRUDResource<Dataset> {
   @POST
   @Path("{key}/logo")
   @Consumes({MediaType.APPLICATION_OCTET_STREAM,
-      MoreMediaTypes.IMG_BMP, MoreMediaTypes.IMG_PNG, MoreMediaTypes.IMG_GIF,MoreMediaTypes.IMG_JPG
+      MoreMediaTypes.IMG_BMP, MoreMediaTypes.IMG_PNG, MoreMediaTypes.IMG_GIF,
+      MoreMediaTypes.IMG_JPG ,MoreMediaTypes.IMG_PSD, MoreMediaTypes.IMG_TIFF
   })
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public Response uploadLogo(@PathParam("key") int key, InputStream img) throws IOException {

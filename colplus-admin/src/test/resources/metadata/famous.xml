@@ -46,4 +46,12 @@
             <userId directory="http://orcid.org/">0000-0001-7757-1889</userId>
         </contact>
     </dataset>
+    <additionalMetadata>
+        <metadata>
+            <gbif>
+                <resourceLogoUrl>http://www.marinespecies.org/aphia.php?p=taxdetails&amp;id=146230</resourceLogoUrl>
+                <citation>cite my famous dataset</citation>
+            </gbif>
+        </metadata>
+    </additionalMetadata>
 </eml:eml>
