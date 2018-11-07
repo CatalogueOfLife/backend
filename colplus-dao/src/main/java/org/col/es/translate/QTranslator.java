@@ -27,12 +27,15 @@ class QTranslator {
     if (Strings.isNullOrEmpty(request.getQ())) {
       return Optional.empty();
     }
-    if (request.getContent().size() == 1) {
+    Set<SearchContent> content;
+    if (request.getContent() == null || request.getContent().isEmpty()) {
+      content = EnumSet.allOf(SearchContent.class);
+    } else {
+      content = request.getContent();
+    }
+    if (content.size() == 1) {
       return request.getContent().stream().map(this::translate).findFirst();
     }
-    // By default search everywhere
-    Set<SearchContent> content =
-        request.getContent().isEmpty() ? EnumSet.allOf(SearchContent.class) : request.getContent();
     BoolQuery boolQuery = new BoolQuery();
     for (SearchContent sc : content) {
       boolQuery.should(translate(sc));

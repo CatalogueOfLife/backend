@@ -26,7 +26,6 @@ import org.elasticsearch.client.RestClient;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.col.es.EsUtil.insert;
@@ -142,37 +141,37 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     NameSearchRequest nsr = new NameSearchRequest();
     nsr.addFilter(NameSearchParameter.ISSUE, Issue.ACCEPTED_NAME_MISSING);
 
-    // Yes
+    // Match
     NameUsageWrapper<Taxon> nuw1 = TestEntityGenerator.newNameUsageTaxonWrapper();
     nuw1.setIssues(EnumSet.of(Issue.ACCEPTED_NAME_MISSING));
     insert(client, indexName, transfer.toEsDocument(nuw1));
 
-    // Yes
+    // Match
     NameUsageWrapper<Taxon> nuw2 = TestEntityGenerator.newNameUsageTaxonWrapper();
     nuw2.setIssues(EnumSet.of(Issue.ACCEPTED_NAME_MISSING, Issue.ACCORDING_TO_DATE_INVALID));
     insert(client, indexName, transfer.toEsDocument(nuw2));
 
-    // Yes
+    // Match
     NameUsageWrapper<Taxon> nuw3 = TestEntityGenerator.newNameUsageTaxonWrapper();
     nuw3.setIssues(EnumSet.allOf(Issue.class));
     insert(client, indexName, transfer.toEsDocument(nuw3));
 
-    // No
+    // No match
     NameUsageWrapper<Taxon> nuw4 = TestEntityGenerator.newNameUsageTaxonWrapper();
     nuw4.setIssues(null);
     insert(client, indexName, transfer.toEsDocument(nuw4));
 
-    // No
+    // No match
     NameUsageWrapper<Taxon> nuw5 = TestEntityGenerator.newNameUsageTaxonWrapper();
     nuw5.setIssues(EnumSet.of(Issue.CITATION_UNPARSED));
     insert(client, indexName, transfer.toEsDocument(nuw5));
 
-    // No
+    // No match
     NameUsageWrapper<Taxon> nuw6 = TestEntityGenerator.newNameUsageTaxonWrapper();
     nuw6.setIssues(EnumSet.of(Issue.CITATION_UNPARSED, Issue.BASIONYM_ID_INVALID));
     insert(client, indexName, transfer.toEsDocument(nuw6));
 
-    // No
+    // No match
     NameUsageWrapper<Taxon> nuw7 = TestEntityGenerator.newNameUsageTaxonWrapper();
     nuw7.setIssues(EnumSet.noneOf(Issue.class));
     insert(client, indexName, transfer.toEsDocument(nuw7));
@@ -193,37 +192,37 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     nsr.addFilter(NameSearchParameter.ISSUE,
         new Issue[] {Issue.ACCEPTED_NAME_MISSING, Issue.ACCORDING_TO_DATE_INVALID});
 
-    // Yes
+    // Match
     NameUsageWrapper<Taxon> nuw1 = TestEntityGenerator.newNameUsageTaxonWrapper();
     nuw1.setIssues(EnumSet.of(Issue.ACCEPTED_NAME_MISSING));
     insert(client, indexName, transfer.toEsDocument(nuw1));
 
-    // Yes
+    // Match
     NameUsageWrapper<Taxon> nuw2 = TestEntityGenerator.newNameUsageTaxonWrapper();
     nuw2.setIssues(EnumSet.of(Issue.ACCEPTED_NAME_MISSING, Issue.ACCORDING_TO_DATE_INVALID));
     insert(client, indexName, transfer.toEsDocument(nuw2));
 
-    // Yes
+    // Match
     NameUsageWrapper<Taxon> nuw3 = TestEntityGenerator.newNameUsageTaxonWrapper();
     nuw3.setIssues(EnumSet.allOf(Issue.class));
     insert(client, indexName, transfer.toEsDocument(nuw3));
 
-    // No
+    // No match
     NameUsageWrapper<Taxon> nuw4 = TestEntityGenerator.newNameUsageTaxonWrapper();
     nuw4.setIssues(null);
     insert(client, indexName, transfer.toEsDocument(nuw4));
 
-    // No
+    // No match
     NameUsageWrapper<Taxon> nuw5 = TestEntityGenerator.newNameUsageTaxonWrapper();
     nuw5.setIssues(EnumSet.of(Issue.CITATION_UNPARSED));
     insert(client, indexName, transfer.toEsDocument(nuw5));
 
-    // No
+    // No match
     NameUsageWrapper<Taxon> nuw6 = TestEntityGenerator.newNameUsageTaxonWrapper();
     nuw6.setIssues(EnumSet.of(Issue.CITATION_UNPARSED, Issue.BASIONYM_ID_INVALID));
     insert(client, indexName, transfer.toEsDocument(nuw6));
 
-    // No
+    // No match
     NameUsageWrapper<Taxon> nuw7 = TestEntityGenerator.newNameUsageTaxonWrapper();
     nuw7.setIssues(EnumSet.noneOf(Issue.class));
     insert(client, indexName, transfer.toEsDocument(nuw7));
@@ -244,37 +243,37 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     nsr.addFilter(NameSearchParameter.ISSUE, new Issue[] {Issue.ACCEPTED_NAME_MISSING,
         Issue.ACCORDING_TO_DATE_INVALID, Issue.BASIONYM_ID_INVALID});
 
-    // Yes
+    // Match
     NameUsageWrapper<Taxon> nuw1 = TestEntityGenerator.newNameUsageTaxonWrapper();
     nuw1.setIssues(EnumSet.of(Issue.ACCEPTED_NAME_MISSING));
     insert(client, indexName, transfer.toEsDocument(nuw1));
 
-    // Yes
+    // Match
     NameUsageWrapper<Taxon> nuw2 = TestEntityGenerator.newNameUsageTaxonWrapper();
     nuw2.setIssues(EnumSet.of(Issue.ACCEPTED_NAME_MISSING, Issue.ACCORDING_TO_DATE_INVALID));
     insert(client, indexName, transfer.toEsDocument(nuw2));
 
-    // Yes
+    // Match
     NameUsageWrapper<Taxon> nuw3 = TestEntityGenerator.newNameUsageTaxonWrapper();
     nuw3.setIssues(EnumSet.allOf(Issue.class));
     insert(client, indexName, transfer.toEsDocument(nuw3));
 
-    // No
+    // No match
     NameUsageWrapper<Taxon> nuw4 = TestEntityGenerator.newNameUsageTaxonWrapper();
     nuw4.setIssues(null);
     insert(client, indexName, transfer.toEsDocument(nuw4));
 
-    // No
+    // No match
     NameUsageWrapper<Taxon> nuw5 = TestEntityGenerator.newNameUsageTaxonWrapper();
     nuw5.setIssues(EnumSet.of(Issue.CITATION_UNPARSED));
     insert(client, indexName, transfer.toEsDocument(nuw5));
 
-    // Yes
+    // Match
     NameUsageWrapper<Taxon> nuw6 = TestEntityGenerator.newNameUsageTaxonWrapper();
     nuw6.setIssues(EnumSet.of(Issue.CITATION_UNPARSED, Issue.BASIONYM_ID_INVALID));
     insert(client, indexName, transfer.toEsDocument(nuw6));
 
-    // No
+    // No match
     NameUsageWrapper<Taxon> nuw7 = TestEntityGenerator.newNameUsageTaxonWrapper();
     nuw7.setIssues(EnumSet.noneOf(Issue.class));
     insert(client, indexName, transfer.toEsDocument(nuw7));
@@ -286,83 +285,39 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     assertEquals(4, result.getResult().size());
   }
 
-  public void testQParam1() throws JsonProcessingException, InvalidQueryException {
+  @Test
+  public void autocomplete1() throws JsonProcessingException, InvalidQueryException {
     NameUsageTransfer transfer = new NameUsageTransfer();
 
     // Define search condition
     NameSearchRequest nsr = new NameSearchRequest();
     nsr.setQ("UNLIKE");
 
-    // Yes
+    // Match
     NameUsageWrapper<Taxon> nuw1 = TestEntityGenerator.newNameUsageTaxonWrapper();
     List<String> vernaculars = Arrays.asList("AN UNLIKELY NAME");
     nuw1.setVernacularNames(create(vernaculars));
     insert(client, indexName, transfer.toEsDocument(nuw1));
 
-    // Yes
+    // Match
     NameUsageWrapper<Taxon> nuw2 = TestEntityGenerator.newNameUsageTaxonWrapper();
     vernaculars = Arrays.asList("ANOTHER NAME", "AN UNLIKELY NAME");
     nuw2.setVernacularNames(create(vernaculars));
     insert(client, indexName, transfer.toEsDocument(nuw2));
 
-    // Yes
+    // Match
     NameUsageWrapper<Taxon> nuw3 = TestEntityGenerator.newNameUsageTaxonWrapper();
     vernaculars = Arrays.asList("YET ANOTHER NAME", "ANOTHER NAME", "AN UNLIKELY NAME");
     nuw3.setVernacularNames(create(vernaculars));
     insert(client, indexName, transfer.toEsDocument(nuw3));
 
-    // Yes
+    // Match
     NameUsageWrapper<Taxon> nuw4 = TestEntityGenerator.newNameUsageTaxonWrapper();
     vernaculars = Arrays.asList("it's unlike capital case");
     nuw4.setVernacularNames(create(vernaculars));
     insert(client, indexName, transfer.toEsDocument(nuw4));
 
-    // No
-    NameUsageWrapper<Taxon> nuw5 = TestEntityGenerator.newNameUsageTaxonWrapper();
-    vernaculars = Arrays.asList("LIKE IT OR NOT");
-    nuw5.setVernacularNames(create(vernaculars));
-    insert(client, indexName, transfer.toEsDocument(nuw5));
-
-    refreshIndex(client, indexName);
-
-    ResultPage<NameUsageWrapper<NameUsage>> result = svc.search(indexName, nsr, new Page());
-
-    assertEquals(4, result.getResult().size());
-  }
-
-  public void testQParam2() throws JsonProcessingException, InvalidQueryException {
-    NameUsageTransfer transfer = new NameUsageTransfer();
-
-    // Define search condition
-    NameSearchRequest nsr = new NameSearchRequest();
-    nsr.setContent(EnumSet.of(NameSearchRequest.SearchContent.AUTHORSHIP));
-    nsr.setQ("UNLIKE");
-
-    // No
-    NameUsageWrapper<Taxon> nuw1 = TestEntityGenerator.newNameUsageTaxonWrapper();
-    List<String> vernaculars = Arrays.asList("AN UNLIKELY NAME");
-    nuw1.setVernacularNames(create(vernaculars));
-    insert(client, indexName, transfer.toEsDocument(nuw1));
-
-    // No
-    NameUsageWrapper<Taxon> nuw2 = TestEntityGenerator.newNameUsageTaxonWrapper();
-    vernaculars = Arrays.asList("ANOTHER NAME", "AN UNLIKELY NAME");
-    nuw2.setVernacularNames(create(vernaculars));
-    insert(client, indexName, transfer.toEsDocument(nuw2));
-
-    // No
-    NameUsageWrapper<Taxon> nuw3 = TestEntityGenerator.newNameUsageTaxonWrapper();
-    vernaculars = Arrays.asList("YET ANOTHER NAME", "ANOTHER NAME", "AN UNLIKELY NAME");
-    nuw3.setVernacularNames(create(vernaculars));
-    insert(client, indexName, transfer.toEsDocument(nuw3));
-
-    // No
-    NameUsageWrapper<Taxon> nuw4 = TestEntityGenerator.newNameUsageTaxonWrapper();
-    vernaculars = Arrays.asList("it's unlike capital case");
-    nuw4.setVernacularNames(create(vernaculars));
-    insert(client, indexName, transfer.toEsDocument(nuw4));
-
-    // No
+    // No match
     NameUsageWrapper<Taxon> nuw5 = TestEntityGenerator.newNameUsageTaxonWrapper();
     vernaculars = Arrays.asList("LIKE IT OR NOT");
     nuw5.setVernacularNames(create(vernaculars));
@@ -376,6 +331,53 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
   }
 
   @Test
+  public void autocomplete2() throws JsonProcessingException, InvalidQueryException {
+    NameUsageTransfer transfer = new NameUsageTransfer();
+
+    // Define search condition
+    NameSearchRequest nsr = new NameSearchRequest();
+    // Only search in authorship field
+    nsr.setContent(EnumSet.of(NameSearchRequest.SearchContent.AUTHORSHIP));
+    nsr.setQ("UNLIKE");
+
+    // No match
+    NameUsageWrapper<Taxon> nuw1 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    List<String> vernaculars = Arrays.asList("AN UNLIKELY NAME");
+    nuw1.setVernacularNames(create(vernaculars));
+    insert(client, indexName, transfer.toEsDocument(nuw1));
+
+    // No match
+    NameUsageWrapper<Taxon> nuw2 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    vernaculars = Arrays.asList("ANOTHER NAME", "AN UNLIKELY NAME");
+    nuw2.setVernacularNames(create(vernaculars));
+    insert(client, indexName, transfer.toEsDocument(nuw2));
+
+    // No match
+    NameUsageWrapper<Taxon> nuw3 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    vernaculars = Arrays.asList("YET ANOTHER NAME", "ANOTHER NAME", "AN UNLIKELY NAME");
+    nuw3.setVernacularNames(create(vernaculars));
+    insert(client, indexName, transfer.toEsDocument(nuw3));
+
+    // No match
+    NameUsageWrapper<Taxon> nuw4 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    vernaculars = Arrays.asList("it's unlike capital case");
+    nuw4.setVernacularNames(create(vernaculars));
+    insert(client, indexName, transfer.toEsDocument(nuw4));
+
+    // No match
+    NameUsageWrapper<Taxon> nuw5 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    vernaculars = Arrays.asList("LIKE IT OR NOT");
+    nuw5.setVernacularNames(create(vernaculars));
+    insert(client, indexName, transfer.toEsDocument(nuw5));
+
+    refreshIndex(client, indexName);
+
+    ResultPage<NameUsageWrapper<NameUsage>> result = svc.search(indexName, nsr, new Page());
+
+    assertEquals(0, result.getResult().size());
+  }
+
+  @Test
   public void testIsNull() throws JsonProcessingException, InvalidQueryException {
     NameUsageTransfer transfer = new NameUsageTransfer();
 
@@ -384,19 +386,19 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     nsr.addFilter(NameSearchParameter.ISSUE, "");
     // NB actual null values are ignored by MultiValuedMap.add !
 
-    // Yes
+    // Match
     NameUsageWrapper<Taxon> nuw1 = TestEntityGenerator.newNameUsageTaxonWrapper();
     nuw1.setIssues(EnumSet.noneOf(Issue.class));
     insert(client, indexName, transfer.toEsDocument(nuw1));
-    // No
+    // No match
     NameUsageWrapper<Taxon> nuw2 = TestEntityGenerator.newNameUsageTaxonWrapper();
     nuw2.setIssues(EnumSet.allOf(Issue.class));
     insert(client, indexName, transfer.toEsDocument(nuw2));
-    // Yes
+    // Match
     NameUsageWrapper<Taxon> nuw3 = TestEntityGenerator.newNameUsageTaxonWrapper();
     nuw3.setIssues(null);
     insert(client, indexName, transfer.toEsDocument(nuw3));
-    // No
+    // No match
     NameUsageWrapper<Taxon> nuw4 = TestEntityGenerator.newNameUsageTaxonWrapper();
     nuw4.setIssues(EnumSet.of(Issue.CITATION_UNPARSED));
     insert(client, indexName, transfer.toEsDocument(nuw4));
@@ -417,19 +419,19 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     nsr.addAll(NameSearchParameter.ISSUE, "@not_null@");
     // NB actual null values are ignored by MultiValuedMap.add !
 
-    // No
+    // No match
     NameUsageWrapper<Taxon> nuw1 = TestEntityGenerator.newNameUsageTaxonWrapper();
     nuw1.setIssues(EnumSet.noneOf(Issue.class));
     insert(client, indexName, transfer.toEsDocument(nuw1));
-    // Yes
+    // Match
     NameUsageWrapper<Taxon> nuw2 = TestEntityGenerator.newNameUsageTaxonWrapper();
     nuw2.setIssues(EnumSet.allOf(Issue.class));
     insert(client, indexName, transfer.toEsDocument(nuw2));
-    // No
+    // No match
     NameUsageWrapper<Taxon> nuw3 = TestEntityGenerator.newNameUsageTaxonWrapper();
     nuw3.setIssues(null);
     insert(client, indexName, transfer.toEsDocument(nuw3));
-    // Yes
+    // Match
     NameUsageWrapper<Taxon> nuw4 = TestEntityGenerator.newNameUsageTaxonWrapper();
     nuw4.setIssues(EnumSet.of(Issue.CITATION_UNPARSED));
     insert(client, indexName, transfer.toEsDocument(nuw4));
