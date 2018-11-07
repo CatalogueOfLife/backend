@@ -22,16 +22,11 @@ public class MultiField extends ESField {
   /**
    * A string field for case-insensitive "contains" or "LIKE" comparisons.
    */
-  public static final MultiField NGRAM;
-  /**
-   * A string field for case-insensitive "contains" or "LIKE" comparisons.
-   */
   public static final MultiField AUTO_COMPLETE;
 
   static {
     DEFAULT = new MultiField("ft", null);
     IGNORE_CASE = new MultiField("ic", "ignore_case");
-    NGRAM = new MultiField("ng", "ngram");
     AUTO_COMPLETE = new MultiField("ac", "autocomplete", "autocomplete_search");
   }
 

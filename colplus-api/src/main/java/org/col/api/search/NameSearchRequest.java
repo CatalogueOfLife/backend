@@ -9,7 +9,6 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MultivaluedHashMap;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Sets;
 
 public class NameSearchRequest extends MultivaluedHashMap<NameSearchParameter, String> {
 
@@ -22,8 +21,7 @@ public class NameSearchRequest extends MultivaluedHashMap<NameSearchParameter, S
   }
 
   @QueryParam("content")
-  private Set<SearchContent> content = Sets.newHashSet(SearchContent.SCIENTIFIC_NAME,
-      SearchContent.AUTHORSHIP, SearchContent.VERNACULAR_NAME);
+  private Set<SearchContent> content;
 
   @QueryParam("facet")
   private Set<NameSearchParameter> facets = new HashSet<>();

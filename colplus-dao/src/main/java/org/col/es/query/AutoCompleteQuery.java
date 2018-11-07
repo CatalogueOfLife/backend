@@ -1,15 +1,17 @@
 package org.col.es.query;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.col.es.mapping.MultiField;
 
-public class AutoCompleteQuery extends TermQuery {
+public class AutoCompleteQuery extends AbstractQuery {
 
-  public AutoCompleteQuery(String field, Object value) {
-    super(multi(field), value);
-  }
+  private final Map<String, MatchValue> match;
 
-  public AutoCompleteQuery(String field, String value, Float boost) {
-    super(multi(field),value,boost);
+  public AutoCompleteQuery(String field, String value) {
+    match = new HashMap<>();
+    match.put(multi(field), new MatchValue(value));
   }
 
   private static String multi(String field) {

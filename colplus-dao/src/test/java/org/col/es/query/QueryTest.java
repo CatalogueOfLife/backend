@@ -46,7 +46,6 @@ public class QueryTest {
   public void testBool() {
     EsSearchRequest esr = new EsSearchRequest();
     BoolQuery bq = new BoolQuery().must(new IsNullQuery("genus"))
-        .must(new NGramQuery("Parus", 2))
         .must(new AutoCompleteQuery("area", "Amsterdam"))
         .mustNot(new TermQuery("date", LocalDate.now()));
     esr.setQuery(bq);

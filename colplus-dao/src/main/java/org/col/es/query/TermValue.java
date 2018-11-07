@@ -1,15 +1,15 @@
 package org.col.es.query;
 
-public class QueryValue {
+public class TermValue {
 
   private final Object value;
   private final Float boost;
 
-  public QueryValue(Object value) {
+  public TermValue(Object value) {
     this(value, null);
   }
 
-  public QueryValue(Object value, Float boost) {
+  public TermValue(Object value, Float boost) {
     this.value = value;
     this.boost = boost;
   }

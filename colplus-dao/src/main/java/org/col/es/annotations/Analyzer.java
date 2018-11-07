@@ -23,11 +23,6 @@ public enum Analyzer {
   IGNORE_CASE,
 
   /**
-   * An ngram analyzer that breaks values up into ngrams.
-   */
-  NGRAM,
-
-  /**
    * An analyzer typically used for auto-complete functionality. This is meant as an index-time only
    * analyzer. Note that in es-settings.json we have defined another analyzer (autocomplete_search,
    * which is the search-time only counterpart of this analyzer. Ordinarily, index-time and
