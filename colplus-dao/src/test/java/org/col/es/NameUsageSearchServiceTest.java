@@ -409,13 +409,12 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
   }
 
   @Test
-  @Ignore
   public void testIsNotNull() throws JsonProcessingException, InvalidQueryException {
     NameUsageTransfer transfer = new NameUsageTransfer();
 
     // Define search condition
     NameSearchRequest nsr = new NameSearchRequest();
-    nsr.addFilter(NameSearchParameter.ISSUE, "@not_null@");
+    nsr.addAll(NameSearchParameter.ISSUE, "@not_null@");
     // NB actual null values are ignored by MultiValuedMap.add !
 
     // No

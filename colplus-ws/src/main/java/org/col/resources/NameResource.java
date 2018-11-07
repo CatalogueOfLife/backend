@@ -71,8 +71,7 @@ public class NameResource {
   private static void addQueryParams(NameSearchRequest req, UriInfo uri) {
     for (Map.Entry<String, List<String>> param : uri.getQueryParameters().entrySet()) {
       VocabularyUtils.lookup(param.getKey(), NameSearchParameter.class).ifPresent(p -> {
-        LOG.debug("Normalizing request parameter {} to {}", param.getKey(), p.name());
-        req.addAll(p, param.getValue());
+         req.addAll(p, param.getValue());
       });
     }
   }
