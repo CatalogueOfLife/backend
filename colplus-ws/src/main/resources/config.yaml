@@ -29,3 +29,5 @@ es:
     batchSize: 1000
 img:
   repo: ${img.repo}
+cors:
+  headers: "Authorization, Content-Type, Accept-Language, X-Requested-With"

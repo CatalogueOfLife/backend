@@ -27,7 +27,7 @@ public class PgAppConfig extends Configuration implements CorsBundleConfiguratio
   
   @Valid
   @NotNull
-  private CorsConfiguration cors = new CorsConfiguration();
+  public CorsConfiguration cors = new CorsConfiguration();
   
   @Valid
   @NotNull
