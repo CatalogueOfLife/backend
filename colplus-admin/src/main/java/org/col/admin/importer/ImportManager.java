@@ -163,12 +163,11 @@ public class ImportManager implements Managed {
       }
       
       Path tmp = Files.createTempFile(cfg.normalizer.scratchDir.toPath(), "upload-", "");
-      LOG.info("Upload data to tmp file {}", tmp);
-      Files.copy(content, tmp);
+      LOG.info("Upload data for dataset {} to tmp file {}", datasetKey, tmp);
+      Files.copy(content, tmp, StandardCopyOption.REPLACE_EXISTING);
       
       Path source = cfg.normalizer.source(datasetKey).toPath();
-      //source.getParentFile().mkdirs();
-      LOG.info("Move uploaded data to source repo at {}", source);
+      LOG.debug("Move uploaded data for dataset {} to source repo at {}", datasetKey, source);
       Files.move(tmp, source, StandardCopyOption.REPLACE_EXISTING);
       
       // finally update dataset metadata
