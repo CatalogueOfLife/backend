@@ -23,15 +23,13 @@ import org.slf4j.LoggerFactory;
 
 @Path("/vocab")
 @Produces(MediaType.APPLICATION_JSON)
-@SuppressWarnings("static-method")
 public class VocabResource {
 
-  @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(VocabResource.class);
-  private final Map<String, Class<Enum<?>>> vocabs;
+  private final Map<String, Class<Enum>> vocabs;
 
   public VocabResource() {
-    Map<String, Class<Enum<?>>> enums = Maps.newHashMap();
+    Map<String, Class<Enum>> enums = Maps.newHashMap();
     try {
       for (Package p : Lists.newArrayList(AreaStandard.class.getPackage(), Rank.class.getPackage())) {
         LOG.debug("Scan package {} for enums", p);
@@ -50,10 +48,10 @@ public class VocabResource {
     vocabs = ImmutableMap.copyOf(enums);
   }
   
-  private static void add(Map<String, Class<Enum<?>>> enums, Class<?> clazz) {
+  private static void add(Map<String, Class<Enum>> enums, Class<?> clazz) {
     if (clazz.isEnum()) {
       LOG.debug("Adding enum {} to vocabularies", clazz.getSimpleName());
-      Class<Enum<?>> enumClazz = (Class<Enum<?>>) clazz;
+      Class<Enum> enumClazz = (Class<Enum>) clazz;
       enums.put(enumClazz.getSimpleName().toLowerCase(), enumClazz);
     }
   }
@@ -65,7 +63,7 @@ public class VocabResource {
 
   @GET
   @Path("{name}")
-  public Enum<?>[] values(@PathParam("name") String name) {
+  public Enum[] values(@PathParam("name") String name) {
     if (name != null && vocabs.containsKey(name.toLowerCase())) {
       return vocabs.get(name.toLowerCase()).getEnumConstants();
     }

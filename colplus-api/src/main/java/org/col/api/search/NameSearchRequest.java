@@ -1,14 +1,12 @@
 package org.col.api.search;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
-
+import java.util.*;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MultivaluedHashMap;
+import javax.ws.rs.core.MultivaluedMap;
 
 import com.google.common.base.Preconditions;
+import org.col.api.util.VocabularyUtils;
 
 public class NameSearchRequest extends MultivaluedHashMap<NameSearchParameter, String> {
 
@@ -41,7 +39,7 @@ public class NameSearchRequest extends MultivaluedHashMap<NameSearchParameter, S
   public void addFilter(NameSearchParameter param, String[] values) {
     Arrays.stream(values).forEach(v -> addFilter(param, v));
   }
-
+  
   public void addFilter(NameSearchParameter param, Object value) {
     Preconditions.checkArgument(value.getClass().equals(param.type()));
     add(param, value.toString());
@@ -49,6 +47,10 @@ public class NameSearchRequest extends MultivaluedHashMap<NameSearchParameter, S
 
   public void addFilter(NameSearchParameter param, Object[] values) {
     Arrays.stream(values).forEach(v -> addFilter(param, v));
+  }
+  
+  public void addFilter(NameSearchParameter param, Collection<Object> values) {
+    values.forEach(v -> addFilter(param, v));
   }
 
   public void addFacet(NameSearchParameter facet) {
@@ -86,7 +88,19 @@ public class NameSearchRequest extends MultivaluedHashMap<NameSearchParameter, S
   public boolean isEmpty() {
     return q == null && super.isEmpty() && facets.isEmpty();
   }
-
+  
+  /**
+   * Extracts all query parameters that match a NameSearchParameter
+   * and puts it into the request filters.
+   */
+  public void addQueryParams(MultivaluedMap<String, String> params) {
+    for (Map.Entry<String, List<String>> param : params.entrySet()) {
+      VocabularyUtils.lookup(param.getKey(), NameSearchParameter.class).ifPresent(p -> {
+        addFilter(p, param.getValue());
+      });
+    }
+  }
+  
   @Override
   public boolean equals(Object o) {
     if (this == o)

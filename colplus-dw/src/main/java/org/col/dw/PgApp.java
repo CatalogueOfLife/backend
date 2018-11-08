@@ -18,7 +18,7 @@ import org.col.dw.auth.JwtCodec;
 import org.col.dw.cors.CorsBundle;
 import org.col.dw.db.MybatisBundle;
 import org.col.dw.health.NameParserHealthCheck;
-import org.col.dw.jersey.provider.JerseyProviderBundle;
+import org.col.dw.jersey.ColJerseyBundle;
 import org.col.parser.NameParser;
 import org.glassfish.jersey.client.rx.RxClient;
 import org.glassfish.jersey.client.rx.java8.RxCompletionStageInvoker;
@@ -36,7 +36,7 @@ public abstract class PgApp<T extends PgAppConfig> extends Application<T> {
 		// our mybatis classes
 		bootstrap.addBundle(mybatis);
 		// various custom jersey providers
-		bootstrap.addBundle(new JerseyProviderBundle());
+		bootstrap.addBundle(new ColJerseyBundle());
     bootstrap.addBundle(new MultiPartBundle());
     bootstrap.addBundle(new CorsBundle());
     // authentication which requires the UserMapper from mybatis AFTER the mybatis bundle has run
