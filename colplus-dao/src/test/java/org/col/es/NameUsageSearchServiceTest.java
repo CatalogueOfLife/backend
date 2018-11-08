@@ -16,10 +16,7 @@ import org.col.api.search.NameUsageWrapper;
 import org.col.api.vocab.Issue;
 import org.col.es.model.EsNameUsage;
 import org.elasticsearch.client.RestClient;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 
 import static org.col.es.EsUtil.insert;
 import static org.col.es.EsUtil.refreshIndex;
@@ -371,6 +368,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
   }
   
   @Test
+  @Ignore("needs special NULL value, see https://github.com/Sp2000/colplus-backend/issues/202")
   public void testIsNull() throws JsonProcessingException, InvalidQueryException {
     NameUsageTransfer transfer = new NameUsageTransfer();
     

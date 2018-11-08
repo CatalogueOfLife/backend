@@ -1,7 +1,5 @@
-# Comma-separated string of hosts
 hosts: ${es.hosts}
-# Comma-separated string of ports (defaults to 9200)
-ports:
+ports: ${es.ports}
 nameUsage:
   modelClass: org.col.es.model.EsNameUsage
   numShards: 1
