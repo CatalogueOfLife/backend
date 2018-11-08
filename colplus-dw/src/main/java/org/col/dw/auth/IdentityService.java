@@ -123,6 +123,8 @@ public class IdentityService {
         }
       }
       return Optional.of(cache(user));
+    } else {
+      LOG.debug("GBIF authentication failed for user {}", username);
     }
     return Optional.empty();
   }
@@ -143,7 +145,7 @@ public class IdentityService {
       LOG.debug("GBIF authentication response for {}: {}", username, resp);
       return resp.getStatusLine().getStatusCode() == 200;
     } catch (Exception e) {
-      LOG.error("GBIF BasicAuth error", e);
+      LOG.error("GBIF BasicAuth error for user {}", username, e);
     }
     return false;
   }

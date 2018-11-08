@@ -122,7 +122,7 @@ public class AuthFilter implements ContainerRequestFilter {
       return idService.authenticate(parts[0], parts[1]);
     
     } catch (Exception e) {
-      throw unauthorized("Basic authentication failed: " + e.getMessage());
+      throw unauthorized("Basic authentication error: " + e.getMessage());
     }
   }
   
