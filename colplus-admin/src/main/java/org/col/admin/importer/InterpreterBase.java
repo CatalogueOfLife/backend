@@ -225,7 +225,7 @@ public class InterpreterBase {
 
   protected void setRefKey(Referenced obj, Reference r) {
     if (r != null) {
-      obj.addReferenceId(r.getId());
+      obj.setReferenceId(r.getId());
     }
   }
 

@@ -117,18 +117,18 @@ public class AcefInterpreter extends InterpreterBase {
 
   List<VernacularName> interpretVernacular(VerbatimRecord rec) {
     return super.interpretVernacular(rec,
-        this::addReferences,
+        this::setReference,
         AcefTerm.CommonName,
         AcefTerm.TransliteratedName,
         AcefTerm.Language,
         AcefTerm.Country
     );
   }
-  private void addReferences(Referenced obj, VerbatimRecord v) {
+  private void setReference(Referenced obj, VerbatimRecord v) {
     if (v.hasTerm(AcefTerm.ReferenceID)) {
       Reference r = refFactory.find(v.get(AcefTerm.ReferenceID), null);
       if (r != null) {
-        obj.addReferenceId(r.getId());
+        obj.setReferenceId(r.getId());
       } else {
         LOG.info("ReferenceID {} not existing but referred from {} {}",
             v.get(AcefTerm.ReferenceID),
@@ -173,7 +173,7 @@ public class AcefInterpreter extends InterpreterBase {
       // status
       d.setStatus(parse(DistributionStatusParser.PARSER, rec.get(AcefTerm.DistributionStatus))
           .orElse(DistributionStatus.NATIVE, Issue.DISTRIBUTION_STATUS_INVALID, rec));
-      addReferences(d, rec);
+      setReference(d, rec);
       d.setVerbatimKey(rec.getKey());
       return Lists.newArrayList(d);
     }

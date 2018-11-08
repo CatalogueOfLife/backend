@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.col.db.mapper.MediaMapper">
+
+  <sql id="SELECT">
+    m.key,
+    m.taxon_id,
+    m.verbatim_key,
+    m.url,
+    m.type,
+    m.format,
+    m.title,
+    m.created,
+    m.creator,
+    m.license,
+    m.link,
+    m.reference_id
+  </sql>
+
+  <sql id="COLS">
+    dataset_key,
+    taxon_id,
+    verbatim_key,
+    url,
+    type,
+    format,
+    title,
+    created,
+    creator,
+    license,
+    link,
+    reference_id
+  </sql>
+
+  <sql id="PROPS">
+    #{datasetKey},
+    #{taxonId},
+    #{obj.verbatimKey},
+    #{obj.url},
+    #{obj.type},
+    #{obj.format},
+    #{obj.title},
+    #{obj.created},
+    #{obj.creator},
+    #{obj.license},
+    #{obj.link},
+    #{obj.referenceId}
+  </sql>
+
+  <sql id="FROM">
+    media m
+  </sql>
+
+  <resultMap id="mediaResultMap" type="Media" autoMapping="true">
+    <id property="key" column="key" />
+  </resultMap>
+
+
+  <select id="listByTaxon" resultMap="mediaResultMap">
+    SELECT <include refid="SELECT" />
+    FROM <include refid="FROM" />
+    WHERE m.taxon_id = #{taxonId} AND m.dataset_key = #{datasetKey}
+    ORDER BY m.key
+  </select>
+
+  <select id="get" resultMap="mediaResultMap">
+    SELECT <include refid="SELECT" />
+    FROM <include refid="FROM" />
+    WHERE m.key = #{key} AND m.dataset_key = #{datasetKey}
+  </select>
+
+  <insert id="create" parameterType="Media" useGeneratedKeys="true" keyProperty="obj.key">
+    INSERT INTO media_${datasetKey} ( <include refid="COLS" /> )
+    VALUES ( <include refid="PROPS" /> )
+  </insert>
+
+</mapper>

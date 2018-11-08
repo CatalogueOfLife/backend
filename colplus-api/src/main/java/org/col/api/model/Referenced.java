@@ -1,15 +1,11 @@
 package org.col.api.model;
 
-import java.util.Set;
-
 /**
  *
  */
 public interface Referenced {
-  Set<String> getReferenceIds();
+  String getReferenceId();
   
-  void setReferenceIds(Set<String> referenceIds);
-  
-  void addReferenceId(String referenceId);
+  void setReferenceId(String referenceId);
   
 }

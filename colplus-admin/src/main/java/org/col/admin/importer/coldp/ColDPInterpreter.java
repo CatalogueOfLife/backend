@@ -123,7 +123,7 @@ public class ColDPInterpreter extends InterpreterBase {
     if (v.hasTerm(AcefTerm.ReferenceID)) {
       Reference r = refFactory.find(v.get(AcefTerm.ReferenceID), null);
       if (r != null) {
-        obj.addReferenceId(r.getId());
+        obj.setReferenceId(r.getId());
       } else {
         LOG.info("ReferenceID {} not existing but referred from {} {}",
             v.get(AcefTerm.ReferenceID),

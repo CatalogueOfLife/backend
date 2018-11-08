@@ -160,8 +160,10 @@ public class TaxonDao {
     Set<String> refIds = new HashSet<>();
     refIds.add(taxon.getName().getPublishedInId());
     refIds.addAll(info.getTaxonReferences());
-    info.getDistributions().forEach(d -> refIds.addAll(d.getReferenceIds()));
-    info.getVernacularNames().forEach(d -> refIds.addAll(d.getReferenceIds()));
+    info.getDescriptions().forEach(d -> refIds.add(d.getReferenceId()));
+    info.getDistributions().forEach(d -> refIds.add(d.getReferenceId()));
+    info.getMedia().forEach(m -> refIds.add(m.getReferenceId()));
+    info.getVernacularNames().forEach(d -> refIds.add(d.getReferenceId()));
     // make sure we did not add null by accident
     refIds.remove(null);
 

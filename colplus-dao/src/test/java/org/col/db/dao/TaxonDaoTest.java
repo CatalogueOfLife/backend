@@ -39,8 +39,8 @@ public class TaxonDaoTest extends DaoTestBase {
 		refKeys2.addAll(info.getTaxonReferences());
     refKeys2.addAll(info.getTaxonReferences());
     refKeys2.addAll(info.getTaxonReferences());
-		info.getDistributions().forEach(d -> refKeys2.addAll(d.getReferenceIds()));
-    info.getVernacularNames().forEach(d -> refKeys2.addAll(d.getReferenceIds()));
+		info.getDistributions().forEach(d -> refKeys2.add(d.getReferenceId()));
+    info.getVernacularNames().forEach(d -> refKeys2.add(d.getReferenceId()));
 
 		assertEquals(refKeys1, refKeys2);
 
@@ -51,13 +51,13 @@ public class TaxonDaoTest extends DaoTestBase {
 		      assertEquals("Berlin", d.getArea());
           assertEquals(Gazetteer.TEXT, d.getGazetteer());
           assertNull(d.getStatus());
-          assertEquals(d.getReferenceIds(), Sets.newHashSet("ref-1", "ref-1b"));
+          assertEquals(d.getReferenceId(), Sets.newHashSet("ref-1", "ref-1b"));
           break;
         case 2:
           assertEquals("Leiden", d.getArea());
           assertEquals(Gazetteer.TEXT, d.getGazetteer());
           assertNull(d.getStatus());
-          assertEquals(d.getReferenceIds(), Sets.newHashSet("ref-1b"));
+          assertEquals(d.getReferenceId(), Sets.newHashSet("ref-1b"));
           break;
         default:
           fail("Unexpected distribution");

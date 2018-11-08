@@ -126,7 +126,7 @@ public class DwcInterpreter extends InterpreterBase {
 
   List<VernacularName> interpretVernacularName(VerbatimRecord rec) {
     return super.interpretVernacular(rec,
-        this::addReferences,
+        this::setReference,
         DwcTerm.vernacularName,
         null,
         DcTerm.language,
@@ -139,13 +139,13 @@ public class DwcInterpreter extends InterpreterBase {
     d.setVerbatimKey(rec.getKey());
     d.setArea(area);
     d.setGazetteer(standard);
-    addReferences(d, rec);
+    setReference(d, rec);
     // TODO: parse status!!!
     d.setStatus(DistributionStatus.NATIVE);
     return d;
   }
 
-  private void addReferences(Referenced obj, VerbatimRecord v) {
+  private void setReference(Referenced obj, VerbatimRecord v) {
     if (v.hasTerm(DcTerm.source)) {
       Reference ref = refFactory.fromCitation(null, v.get(DcTerm.source), v);
       setRefKey(obj, ref);

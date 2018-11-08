@@ -15,7 +15,10 @@ public interface ReferenceMapper {
 	int count(@Param("datasetKey") int datasetKey);
 
 	List<Reference> list(@Param("datasetKey") int datasetKey, @Param("page") Page page);
-
+	
+	/**
+	 * @return all bibliographic reference ids for the given taxon
+	 */
 	List<String> listByTaxon(@Param("datasetKey") int datasetKey, @Param("taxonId") String taxonId);
 
 	/**

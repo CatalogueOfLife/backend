@@ -354,14 +354,9 @@ CREATE TABLE vernacular_name (
   taxon_id TEXT NOT NULL,
   name TEXT NOT NULL,
   latin TEXT,
-  language CHAR(2),
-  country CHAR(2)
-) PARTITION BY LIST (dataset_key);
-
-CREATE TABLE vernacular_name_reference (
-  dataset_key INTEGER NOT NULL,
-  vernacular_name_key INTEGER NOT NULL,
-  reference_id TEXT NOT NULL
+  language CHAR(3),
+  country CHAR(2),
+  reference_id TEXT
 ) PARTITION BY LIST (dataset_key);
 
 CREATE TABLE distribution (
@@ -371,13 +366,35 @@ CREATE TABLE distribution (
   taxon_id TEXT NOT NULL,
   area TEXT NOT NULL,
   gazetteer INTEGER NOT NULL,
-  status INTEGER
+  status INTEGER,
+  reference_id TEXT
 ) PARTITION BY LIST (dataset_key);
 
-CREATE TABLE distribution_reference (
+CREATE TABLE description (
+  key serial NOT NULL,
   dataset_key INTEGER NOT NULL,
-  distribution_key INTEGER NOT NULL,
-  reference_id TEXT NOT NULL
+  verbatim_key INTEGER,
+  taxon_id TEXT NOT NULL,
+  category TEXT,
+  description TEXT NOT NULL,
+  language CHAR(3),
+  reference_id TEXT
+) PARTITION BY LIST (dataset_key);
+
+CREATE TABLE media (
+  key serial NOT NULL,
+  dataset_key INTEGER NOT NULL,
+  verbatim_key INTEGER,
+  taxon_id TEXT NOT NULL,
+  url TEXT,
+  type INTEGER NOT NULL,
+  format TEXT,
+  title TEXT,
+  created DATE,
+  creator TEXT,
+  license INTEGER,
+  link TEXT,
+  reference_id TEXT
 ) PARTITION BY LIST (dataset_key);
 
 

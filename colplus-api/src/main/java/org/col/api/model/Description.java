@@ -3,24 +3,23 @@ package org.col.api.model;
 import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.col.api.vocab.Country;
 import org.col.api.vocab.Language;
 
-public class VernacularName implements Referenced, VerbatimEntity, IntKey {
-  
+public class Description implements Referenced, VerbatimEntity, IntKey {
   @JsonIgnore
   private Integer key;
   private Integer verbatimKey;
-  private String name;
-  private String latin;
+  private String category;
+  private String description;
   private Language language;
-  private Country country;
   private String referenceId;
   
+  @Override
   public Integer getKey() {
     return key;
   }
   
+  @Override
   public void setKey(Integer key) {
     this.key = key;
   }
@@ -35,23 +34,20 @@ public class VernacularName implements Referenced, VerbatimEntity, IntKey {
     this.verbatimKey = verbatimKey;
   }
   
-  public String getName() {
-    return name;
+  public String getCategory() {
+    return category;
   }
   
-  public void setName(String name) {
-    this.name = name;
+  public void setCategory(String category) {
+    this.category = category;
   }
   
-  /**
-   * Transliterated name into the latin script.
-   */
-  public String getLatin() {
-    return latin;
+  public String getDescription() {
+    return description;
   }
   
-  public void setLatin(String latin) {
-    this.latin = latin;
+  public void setDescription(String description) {
+    this.description = description;
   }
   
   public Language getLanguage() {
@@ -62,41 +58,32 @@ public class VernacularName implements Referenced, VerbatimEntity, IntKey {
     this.language = language;
   }
   
-  public Country getCountry() {
-    return country;
-  }
-  
-  public void setCountry(Country country) {
-    this.country = country;
-  }
-  
   @Override
   public String getReferenceId() {
     return referenceId;
   }
   
+  @Override
   public void setReferenceId(String referenceId) {
     this.referenceId = referenceId;
   }
-  
   
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
-    VernacularName that = (VernacularName) o;
+    Description that = (Description) o;
     return Objects.equals(key, that.key) &&
         Objects.equals(verbatimKey, that.verbatimKey) &&
-        Objects.equals(name, that.name) &&
-        Objects.equals(latin, that.latin) &&
+        Objects.equals(category, that.category) &&
+        Objects.equals(description, that.description) &&
         language == that.language &&
-        country == that.country &&
         Objects.equals(referenceId, that.referenceId);
   }
   
   @Override
   public int hashCode() {
     
-    return Objects.hash(key, verbatimKey, name, latin, language, country, referenceId);
+    return Objects.hash(key, verbatimKey, category, description, language, referenceId);
   }
 }
