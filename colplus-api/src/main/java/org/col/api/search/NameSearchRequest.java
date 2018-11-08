@@ -6,6 +6,7 @@ import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 
 import com.google.common.base.Preconditions;
+import org.apache.commons.lang3.StringUtils;
 import org.col.api.util.VocabularyUtils;
 
 public class NameSearchRequest extends MultivaluedHashMap<NameSearchParameter, String> {
@@ -31,6 +32,7 @@ public class NameSearchRequest extends MultivaluedHashMap<NameSearchParameter, S
   private SortBy sortBy;
 
   public void addFilter(NameSearchParameter param, String value) {
+    value = StringUtils.trimToNull(value);
     // make sure we can parse the string value
     param.from(value);
     add(param, value);
@@ -41,15 +43,19 @@ public class NameSearchRequest extends MultivaluedHashMap<NameSearchParameter, S
   }
   
   public void addFilter(NameSearchParameter param, Object value) {
-    Preconditions.checkArgument(value.getClass().equals(param.type()));
-    add(param, value.toString());
+    if (String.class.isAssignableFrom(value.getClass())) {
+      add(param, (String) value);
+    } else {
+      Preconditions.checkArgument(value.getClass().equals(param.type()));
+      add(param, value.toString());
+    }
   }
 
   public void addFilter(NameSearchParameter param, Object[] values) {
     Arrays.stream(values).forEach(v -> addFilter(param, v));
   }
   
-  public void addFilter(NameSearchParameter param, Collection<Object> values) {
+  public void addFilter(NameSearchParameter param, Collection<?> values) {
     values.forEach(v -> addFilter(param, v));
   }
 

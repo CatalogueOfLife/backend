@@ -64,8 +64,7 @@ public enum NameSearchParameter {
     } else if (type.isEnum()) {
       return VocabularyUtils.lookupEnum(value, (Class<? extends Enum<?>>) type);
     } else {
-      throw new IllegalStateException(
-          NameSearchParameter.class.getSimpleName() + " missing converter for data type " + type);
+      throw new IllegalArgumentException(NameSearchParameter.class.getSimpleName() + " missing converter for data type " + type);
     }
   }
 }
