@@ -6,10 +6,12 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.ext.Provider;
 
 /**
  * Filter that returns a 404 instead of 204 for null results with GET requests.
  */
+@Provider
 public class Null404ResponseFilter implements ContainerResponseFilter {
   
   @Override

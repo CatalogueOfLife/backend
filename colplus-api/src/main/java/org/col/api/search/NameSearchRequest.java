@@ -37,9 +37,11 @@ public class NameSearchRequest extends MultivaluedHashMap<NameSearchParameter, S
   
   public void addFilter(NameSearchParameter param, String value) {
     value = StringUtils.trimToNull(value);
-    // make sure we can parse the string value
-    param.from(value);
-    add(param, value);
+    if (value != null) {
+      // make sure we can parse the string value
+      param.from(value);
+      add(param, value);
+    }
   }
   
   public void addFilter(NameSearchParameter param, String[] values) {

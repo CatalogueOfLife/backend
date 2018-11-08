@@ -8,6 +8,7 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.ext.Provider;
 
 /**
  * Filter that updates http headers when a new resource is successfully created via a POST request.
@@ -17,6 +18,7 @@ import javax.ws.rs.core.Response;
  * <li>Location header is set accordingly based on returned key</li>
  * </ul>
  */
+@Provider
 public class CreatedResponseFilter implements ContainerResponseFilter {
   
   @Override
