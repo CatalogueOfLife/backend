@@ -37,9 +37,9 @@ INSERT INTO distribution(key, dataset_key, taxon_id, area, gazetteer, reference_
 INSERT INTO distribution(key, dataset_key, taxon_id, area, gazetteer, reference_id) VALUES (3, 11, 'root-2', 'New York', 6, 'ref-1b');
 ALTER SEQUENCE distribution_key_seq RESTART WITH 1000;
 
-INSERT INTO vernacular_name(key,dataset_key,taxon_id,name,language, reference_id) VALUES (1, 11, 'root-1', 'Apple', 'en', 'ref-1');
-INSERT INTO vernacular_name(key,dataset_key,taxon_id,name,language, reference_id) VALUES (2, 11, 'root-1', 'Apfel', 'de', 'ref-1');
-INSERT INTO vernacular_name(key,dataset_key,taxon_id,name,language, reference_id) VALUES (3, 11, 'root-1', 'Meeuw', 'nl', null);
+INSERT INTO vernacular_name(key,dataset_key,taxon_id,name,language, reference_id) VALUES (1, 11, 'root-1', 'Apple', 'eng', 'ref-1');
+INSERT INTO vernacular_name(key,dataset_key,taxon_id,name,language, reference_id) VALUES (2, 11, 'root-1', 'Apfel', 'deu', 'ref-1');
+INSERT INTO vernacular_name(key,dataset_key,taxon_id,name,language, reference_id) VALUES (3, 11, 'root-1', 'Meeuw', 'nld', null);
 ALTER SEQUENCE vernacular_name_key_seq RESTART WITH 1000;
 
 
