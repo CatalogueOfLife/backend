@@ -15,6 +15,7 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
  */
 public class YamlUtils {
   private static final ObjectMapper OM = new ObjectMapper(new YAMLFactory());
+
   static {
     OM.setSerializationInclusion(JsonInclude.Include.NON_NULL);
     OM.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);

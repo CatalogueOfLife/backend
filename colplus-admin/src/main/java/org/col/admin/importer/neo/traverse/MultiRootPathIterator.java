@@ -12,15 +12,15 @@ import org.neo4j.graphdb.traversal.TraversalDescription;
  * Path iterator that traverses multiple start nodes in a given traversal description.
  */
 public class MultiRootPathIterator extends MultiRooIterator<Path> {
-
+  
   private final TraversalDescription td;
-
+  
   private MultiRootPathIterator(List<Node> roots, TraversalDescription td) {
     super(roots);
     this.td = td;
     prefetch();
   }
-
+  
   public static ResourceIterable<Path> create(final List<Node> roots, final TraversalDescription td) {
     return new ResourceIterable<Path>() {
       @Override
@@ -29,10 +29,10 @@ public class MultiRootPathIterator extends MultiRooIterator<Path> {
       }
     };
   }
-
+  
   @Override
   ResourceIterator<Path> iterateRoot(Node root) {
     return td.traverse(root).iterator();
   }
-
+  
 }

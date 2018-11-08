@@ -11,5 +11,5 @@ public class TermQueryTest {
     sr.setQuery(new TermQuery("foo", 1));
     System.out.println(sr.toString());
   }
-
+  
 }

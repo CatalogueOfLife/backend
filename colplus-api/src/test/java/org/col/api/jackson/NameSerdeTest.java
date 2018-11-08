@@ -13,22 +13,22 @@ import static org.junit.Assert.assertTrue;
  *
  */
 public class NameSerdeTest extends SerdeTestBase<Name> {
-
+  
   public NameSerdeTest() {
     super(Name.class);
   }
-
+  
   @Override
   public Name genTestValue() throws Exception {
     return TestEntityGenerator.newName();
   }
-
+  
   @Test
   public void testAuthorship() throws JsonProcessingException {
     Name n = TestEntityGenerator.newName();
     String json = ApiModule.MAPPER.writeValueAsString(n);
     assertTrue("Missing authorship property: " + json, json.contains("\"authorship\""));
-
+    
     n = new Name();
     n.setGenus("Abies");
     n.setSpecificEpithet("alba");
@@ -39,5 +39,5 @@ public class NameSerdeTest extends SerdeTestBase<Name> {
     assertFalse(json.contains("\"basionymAuthorship\""));
     assertFalse(json.contains("\"authorship\""));
   }
-
+  
 }

@@ -28,7 +28,7 @@ public class GmlPrinter implements TreePrinter {
   private final Function<Node, String> getTitle;
   private final boolean strictTree;
   private final RankEvaluator rankEvaluator;
-
+  
   /**
    * @param strictTree if true omit any pro parte and basionym relations to force a strict tree
    */
@@ -39,24 +39,24 @@ public class GmlPrinter implements TreePrinter {
     this.rankEvaluator = new RankEvaluator(rankThreshold);
     printHeader();
   }
-
+  
   private static class Edge {
     public final long source;
     public final long target;
-
+    
     public Edge(long source, long target) {
       this.source = source;
       this.target = target;
     }
-
+    
     public static Edge create(Relationship rel) {
       return new Edge(rel.getStartNode().getId(), rel.getEndNode().getId());
     }
-
+    
     public static Edge inverse(Relationship rel) {
       return new Edge(rel.getEndNode().getId(), rel.getStartNode().getId());
     }
-
+    
     void print(Writer writer) throws IOException {
       writer.append("  edge [\n")
           .append("    source ")
@@ -66,7 +66,7 @@ public class GmlPrinter implements TreePrinter {
           .append("\n  ]\n");
     }
   }
-
+  
   private void printHeader() {
     try {
       writer.write("graph [\n");
@@ -74,7 +74,7 @@ public class GmlPrinter implements TreePrinter {
       throw new RuntimeException(e);
     }
   }
-
+  
   @Override
   public void close() {
     try {
@@ -86,7 +86,7 @@ public class GmlPrinter implements TreePrinter {
       throw new RuntimeException(e);
     }
   }
-
+  
   @Override
   public void start(Node n) {
     try {
@@ -98,9 +98,9 @@ public class GmlPrinter implements TreePrinter {
       writer.write("    value " + n.getId() + "\n");
       writer.write("    label \"" + label + "\"\n");
       writer.write("  ]\n");
-
+      
       // keep edges with minimal footprint for later writes, they need to go at the very end!
-
+      
       // for a strict tree we only use parent and synonym of relations
       // synonym_of relations are inversed so the tree strictly points into one direction
       if (strictTree) {
@@ -114,7 +114,7 @@ public class GmlPrinter implements TreePrinter {
             edges.add(Edge.inverse(rel));
           }
         }
-
+        
       } else {
         for (Relationship rel : n.getRelationships(Direction.OUTGOING)) {
           if (rankEvaluator.evaluateNode(rel.getOtherNode(n))) {
@@ -122,14 +122,14 @@ public class GmlPrinter implements TreePrinter {
           }
         }
       }
-
+      
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
   }
-
+  
   @Override
   public void end(Node n) {
-
+  
   }
 }

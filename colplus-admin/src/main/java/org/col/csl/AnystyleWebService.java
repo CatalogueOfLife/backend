@@ -32,7 +32,8 @@ class AnystyleWebService {
 
   private Process process;
 
-  AnystyleWebService() {}
+  AnystyleWebService() {
+  }
 
   void start() throws IOException, InterruptedException {
     if (isRunning() || isListening()) {

@@ -32,25 +32,24 @@ public class CleanupUtils {
    * @param file file or directory to delete, can be {@code null}
    * @return {@code true} if the file or directory was deleted, otherwise
    * {@code false}
-   *
    * @since 1.4
    */
   public static boolean removeQuietly(Path file) {
     if (file == null) return false;
     try {
       Files.walkFileTree(file, new SimpleFileVisitor<Path>() {
-          @Override
-          public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-            Files.delete(file);
-            return FileVisitResult.CONTINUE;
-          }
+        @Override
+        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+          Files.delete(file);
+          return FileVisitResult.CONTINUE;
+        }
 
-          @Override
-          public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-            Files.delete(dir);
-            return FileVisitResult.CONTINUE;
-          }
-        });
+        @Override
+        public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+          Files.delete(dir);
+          return FileVisitResult.CONTINUE;
+        }
+      });
       return true;
 
     } catch (IOException e) {

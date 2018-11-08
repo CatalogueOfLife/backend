@@ -12,7 +12,7 @@ import org.neo4j.graphdb.traversal.Evaluator;
  * Includes only nodes that have ranks from Classification.RANKS.
  */
 public class ClassificationRankEvaluator implements Evaluator {
-
+  
   @Override
   public Evaluation evaluate(Path path) {
     Node end = path.endNode();

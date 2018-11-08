@@ -23,7 +23,6 @@ import static java.time.temporal.ChronoField.YEAR;
 
 /**
  * Parses date strings into FuzzyDate instances.
- * 
  */
 public class DateParser implements Parser<FuzzyDate> {
   private static final Logger LOG = LoggerFactory.getLogger(DateParser.class);
@@ -47,7 +46,7 @@ public class DateParser implements Parser<FuzzyDate> {
     private final TemporalQuery<?>[] parseInto;
 
     public ParseSpec(DateStringFilter filter, DateTimeFormatter formatter,
-        TemporalQuery<?>[] parseInto) {
+                     TemporalQuery<?>[] parseInto) {
       this.filter = filter;
       this.formatter = formatter;
       this.parseInto = parseInto;
@@ -124,7 +123,7 @@ public class DateParser implements Parser<FuzzyDate> {
 
   private static List<ParseSpec> createParseSpecsForType(String type, Properties props) {
     List<ParseSpec> parseSpecs = new ArrayList<>();
-    for (int i = 0;; i++) {
+    for (int i = 0; ; i++) {
       String val = props.getProperty(type + "." + i + ".name");
       if (val != null) {
         DateStringFilter filter = getFilter(type, i, props);
@@ -204,16 +203,16 @@ public class DateParser implements Parser<FuzzyDate> {
   private static TemporalQuery<?>[] getParseInto(String type, int i, Properties props) {
     switch (type) {
       case "OffsetDateTime":
-        return new TemporalQuery[] {OffsetDateTime::from};
+        return new TemporalQuery[]{OffsetDateTime::from};
       case "LocalDateTime":
-        return new TemporalQuery[] {LocalDateTime::from};
+        return new TemporalQuery[]{LocalDateTime::from};
       case "LocalDate":
-        return new TemporalQuery[] {LocalDate::from};
+        return new TemporalQuery[]{LocalDate::from};
       case "YearMonth":
-        return new TemporalQuery[] {YearMonth::from};
+        return new TemporalQuery[]{YearMonth::from};
       case "Year":
       default:
-        return new TemporalQuery[] {Year::from};
+        return new TemporalQuery[]{Year::from};
     }
   }
 

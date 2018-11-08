@@ -7,8 +7,8 @@ import org.neo4j.graphdb.Node;
  * Used in taxonomic traversals to implement workers for a classification walk.
  */
 public interface StartEndHandler {
-
+  
   void start(Node n);
-
+  
   void end(Node n);
 }

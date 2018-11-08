@@ -46,18 +46,18 @@ public class Field {
   private String description;
   private Map<String, Object> constraints;
   
-  public Field(String name, String type){
+  public Field(String name, String type) {
     this.name = name;
     this.type = type;
   }
   
-  public Field(String name, String type, String format){
+  public Field(String name, String type, String format) {
     this.name = name;
     this.type = type;
     this.format = format;
   }
   
-  public Field(String name, String type, String format, String title, String description){
+  public Field(String name, String type, String format, String title, String description) {
     this.name = name;
     this.type = type;
     this.format = format;
@@ -65,7 +65,7 @@ public class Field {
     this.description = description;
   }
   
-  public Field(String name, String type, String format, String title, String description, Map constraints){
+  public Field(String name, String type, String format, String title, String description, Map constraints) {
     this.name = name;
     this.type = type;
     this.format = format;
@@ -74,27 +74,27 @@ public class Field {
     this.constraints = constraints;
   }
   
-  public String getName(){
+  public String getName() {
     return this.name;
   }
   
-  public String getType(){
+  public String getType() {
     return this.type;
   }
   
-  public String getFormat(){
+  public String getFormat() {
     return this.format;
   }
   
-  public String getTitle(){
+  public String getTitle() {
     return this.title;
   }
   
-  public String getDescription(){
+  public String getDescription() {
     return this.description;
   }
   
-  public Map<String, Object> getConstraints(){
+  public Map<String, Object> getConstraints() {
     return this.constraints;
   }
 }

@@ -56,7 +56,7 @@ public class LogstashAppenderFactory extends AbstractAppenderFactory<ILoggingEve
 
   @Override
   public Appender<ILoggingEvent> build(LoggerContext context, String applicationName, LayoutFactory<ILoggingEvent> layoutFactory,
-                           LevelFilterFactory<ILoggingEvent> levelFilterFactory, AsyncAppenderFactory<ILoggingEvent> asyncAppenderFactory) {
+                                       LevelFilterFactory<ILoggingEvent> levelFilterFactory, AsyncAppenderFactory<ILoggingEvent> asyncAppenderFactory) {
 
     final LogstashSocketAppender appender = new LogstashSocketAppender();
     appender.setName("logstash-appender");
@@ -73,7 +73,7 @@ public class LogstashAppenderFactory extends AbstractAppenderFactory<ILoggingEve
     return wrapAsync(appender, asyncAppenderFactory);
   }
 
-  public String customFieldJson(String applicationName){
+  public String customFieldJson(String applicationName) {
     StringBuilder sb = new StringBuilder();
     sb.append("{")
         .append("\"environment\":\"col\",")

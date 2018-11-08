@@ -9,16 +9,17 @@ import org.col.api.model.NameAccordingTo;
  */
 public class MisappliedNameMatcher {
   private static final Pattern MIS_PATTERN = Pattern.compile("\\b(auct|sensu|non\\b|nec\\b)(?![ .]?(lat|str))", Pattern.CASE_INSENSITIVE);
+  
   /**
    * Detect a misapplied name based on taxonomic remarks and rank.
    * Rank must be a binomial at least.
    * The taxnomic remarks must start with either of:
-   *  auct. [Author name]
-   *  sensu [Author name]
-   *  (sensu) auctorum
-   *  (sensu) auct.
-   *  (sensu) auct. non [Author name]
-   *  (sensu) auct. nec [Author name]
+   * auct. [Author name]
+   * sensu [Author name]
+   * (sensu) auctorum
+   * (sensu) auct.
+   * (sensu) auct. non [Author name]
+   * (sensu) auct. nec [Author name]
    *
    * @return true if a misapplied name format was detected
    */
@@ -28,5 +29,5 @@ public class MisappliedNameMatcher {
     }
     return false;
   }
-
+  
 }

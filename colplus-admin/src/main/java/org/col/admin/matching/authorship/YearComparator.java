@@ -8,15 +8,15 @@ import org.col.admin.matching.Equality;
 
 public class YearComparator {
   private static final Pattern YEAR = Pattern.compile("(^|[^0-9])([0-9?]{4})([^0-9]|$)");
-
+  
   private String y1;
   private String y2;
-
+  
   public YearComparator(String y1, String y2) {
     this.y1 = normalizeYear(y1);
     this.y2 = normalizeYear(y2);
   }
-
+  
   private String normalizeYear(String y) {
     if (y == null) return null;
     Matcher m = YEAR.matcher(StringUtils.deleteWhitespace(y));
@@ -25,7 +25,7 @@ public class YearComparator {
     }
     return AuthorComparator.normalize(y);
   }
-
+  
   /**
    * @return true if ? placeholders are found and have been replaced
    */
@@ -53,7 +53,7 @@ public class YearComparator {
     }
     return false;
   }
-
+  
   /**
    * Compares year strings.
    * If parsable as integers allows for 1 year difference

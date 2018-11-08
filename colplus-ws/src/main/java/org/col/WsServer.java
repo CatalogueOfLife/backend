@@ -10,22 +10,22 @@ import org.col.resources.*;
 import org.elasticsearch.client.RestClient;
 
 public class WsServer extends PgApp<WsServerConfig> {
-
+  
   private Object adminApi;
-
+  
   public static void main(final String[] args) throws Exception {
     new WsServer().run(args);
   }
-
+  
   @Override
   public String getName() {
     return "ws-server";
   }
-
+  
   @Override
   public void run(WsServerConfig cfg, Environment env) {
     super.run(cfg, env);
-
+    
     final RestClient esClient = new EsClientFactory(cfg.es).createClient();
     env.lifecycle().manage(new ManagedEsClient(esClient));
     NameUsageSearchService nuss = new NameUsageSearchService(esClient);
@@ -46,5 +46,5 @@ public class WsServer extends PgApp<WsServerConfig> {
     env.jersey().register(new VerbatimResource());
     env.jersey().register(new VocabResource());
   }
-
+  
 }

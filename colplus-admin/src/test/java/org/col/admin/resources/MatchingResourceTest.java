@@ -20,24 +20,24 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 public class MatchingResourceTest {
-
+  
   @ClassRule
   public static final DropwizardPgAppRule<AdminServerConfig> RULE =
       new DropwizardPgAppRule<>(AdminServer.class, ResourceHelpers.resourceFilePath("config-test.yaml"));
-
+  
   @Test
   public void match() {
     Client client = new JerseyClientBuilder(RULE.getEnvironment())
         .withProperty(ClientProperties.CONNECT_TIMEOUT, 5000)
         .withProperty(ClientProperties.READ_TIMEOUT, 2000)
         .build("test client");
-
+    
     NameMatch match = client.target(
         String.format("http://localhost:%d/name/matching", RULE.getLocalPort()))
         .queryParam("q", "Abies alba Mill.")
         .request()
         .get(NameMatch.class);
-
+    
     Name abies = new Name();
     abies.setGenus("Abies");
     abies.setSpecificEpithet("alba");
@@ -45,7 +45,7 @@ public class MatchingResourceTest {
     abies.setType(NameType.SCIENTIFIC);
     abies.setRank(Rank.SPECIES);
     abies.updateScientificName();
-
+    
     assertNotNull(match);
     assertEquals(MatchType.NONE, match.getType());
   }

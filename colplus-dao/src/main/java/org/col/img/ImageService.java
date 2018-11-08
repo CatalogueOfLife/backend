@@ -38,7 +38,7 @@ public class ImageService {
   public void putDatasetLogo(Dataset dataset, BufferedImage img) throws IOException {
     // is it allowed?
     if (dataset.getLogo() != null) {
-      throw new IllegalArgumentException("Dataset is already configured with an external logo URL "+dataset.getLogo());
+      throw new IllegalArgumentException("Dataset is already configured with an external logo URL " + dataset.getLogo());
     }
     storeAllImageSizes(img, s -> cfg.datasetLogo(dataset.getKey(), s));
   }
@@ -72,23 +72,23 @@ public class ImageService {
   
   private BufferedImage scale(BufferedImage raw, ImgConfig.Scale scale) {
     final Size size = cfg.size(scale);
-    return Scalr.resize(raw, Scalr.Method.ULTRA_QUALITY , size.getWidth(), size.getHeight());
+    return Scalr.resize(raw, Scalr.Method.ULTRA_QUALITY, size.getWidth(), size.getHeight());
   }
-
+  
   private void writeImage(Path p, BufferedImage img) throws IOException {
     LOG.debug("Writing new image {}", p);
     ImageIO.write(img, IMAGE_FORMAT, p.toFile());
   }
-
+  
   
   public BufferedImage datasetLogo(int datasetKey, ImgConfig.Scale scale) {
     Path p = cfg.datasetLogo(datasetKey, scale);
-    return readImage(p, "Dataset "+datasetKey+" has no logo");
+    return readImage(p, "Dataset " + datasetKey + " has no logo");
   }
   
   public BufferedImage colSourceLogo(int colSourceKey, ImgConfig.Scale scale) {
     Path p = cfg.sourceLogo(colSourceKey, scale);
-    return readImage(p, "Source "+colSourceKey+" has no logo");
+    return readImage(p, "Source " + colSourceKey + " has no logo");
   }
   
   private BufferedImage readImage(Path p, String notFoundMsg) throws NotFoundException {
@@ -98,7 +98,7 @@ public class ImageService {
       }
       return ImageIO.read(p.toFile());
     } catch (IOException e) {
-      throw new RuntimeException("Failed to read image "+p, e);
+      throw new RuntimeException("Failed to read image " + p, e);
     }
   }
 }

@@ -5,32 +5,27 @@ import java.util.Optional;
 import org.col.api.model.Page;
 import org.col.api.search.NameSearchRequest;
 import org.col.es.InvalidQueryException;
-import org.col.es.query.BoolQuery;
-import org.col.es.query.ConstantScoreQuery;
-import org.col.es.query.EsSearchRequest;
-import org.col.es.query.Query;
-import org.col.es.query.SortBuilder;
+import org.col.es.query.*;
 
 /**
  * Translates a CoL NameSearchRequest into an actual Elasticsearch query. Main class of this
  * package.
- *
  */
 public class NameSearchRequestTranslator {
-
+  
   /**
    * Query parameter to be used to indicate an IS NOT NULL document search.
-   * */
+   */
   public static final String NOT_NULL_VALUE = "@NOT_NULL@";
-
+  
   private final NameSearchRequest request;
   private final Page page;
-
+  
   public NameSearchRequestTranslator(NameSearchRequest request, Page page) {
     this.request = request;
     this.page = page;
   }
-
+  
   public EsSearchRequest translate() throws InvalidQueryException {
     EsSearchRequest req = new EsSearchRequest();
     req.setFrom(page.getOffset());
@@ -62,5 +57,5 @@ public class NameSearchRequestTranslator {
     }
     return req;
   }
-
+  
 }

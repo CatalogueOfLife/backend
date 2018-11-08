@@ -10,9 +10,8 @@ import org.slf4j.LoggerFactory;
  * A writer implementation that consumes a result stream from postgres
  * querying using the postgres jdbc copy command.
  * This is a very fast and direct way to execute select sql statements from postgres.
- *
+ * <p>
  * Implement addRow to consume a single result row.
- *
  */
 public abstract class TabMapperBase extends Writer implements AutoCloseable {
   private static final Logger LOG = LoggerFactory.getLogger(TabMapperBase.class);
@@ -36,7 +35,7 @@ public abstract class TabMapperBase extends Writer implements AutoCloseable {
 
   @Override
   public void flush() throws IOException {
-      // nothing to do, override as needed
+    // nothing to do, override as needed
   }
 
   @Override

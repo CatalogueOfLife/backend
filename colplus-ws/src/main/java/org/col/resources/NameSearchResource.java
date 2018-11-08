@@ -23,16 +23,16 @@ import org.slf4j.LoggerFactory;
 @Path("/name/search")
 @Produces(MediaType.APPLICATION_JSON)
 public class NameSearchResource {
-
+  
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(NameSearchResource.class);
-
+  
   private final NameUsageSearchService searchService;
-
+  
   public NameSearchResource(NameUsageSearchService svc) {
     this.searchService = svc;
   }
-
+  
   @GET
   @Timed
   public ResultPage<NameUsageWrapper<NameUsage>> search(@BeanParam NameSearchRequest query,
@@ -41,5 +41,5 @@ public class NameSearchResource {
     query.addQueryParams(uri.getQueryParameters());
     return searchService.search(query, page);
   }
-
+  
 }

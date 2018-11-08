@@ -31,7 +31,7 @@ import static org.col.common.text.StringUtils.foldToAscii;
  */
 public class AuthorComparator {
   private static final Logger LOG = LoggerFactory.getLogger(AuthorComparator.class);
-
+  
   private static final Pattern FIL = Pattern.compile("([A-Z][a-z]*)[\\. ]\\s*f(:?il)?\\.?\\b");
   private static final Pattern TRANSLITERATIONS = Pattern.compile("([auo])e", Pattern.CASE_INSENSITIVE);
   private static final Pattern AUTHOR = Pattern.compile("^((?:[a-z]\\s)*).*?([a-z]+)( filius)?$");
@@ -39,9 +39,9 @@ public class AuthorComparator {
   private static final Pattern PUNCTUATION = Pattern.compile("[\\p{Punct}&&[^,]]+");
   private final Map<String, String> authorMap;
   private static final int MIN_AUTHOR_LENGTH_WITHOUT_LOOKUP = 4;
-
+  
   private final int minCommonSubstring;
-
+  
   private AuthorComparator(Map<String, String> authors) {
     Map<String, String> map = Maps.newHashMap();
     minCommonSubstring = 4;
@@ -57,11 +57,11 @@ public class AuthorComparator {
     authorMap = ImmutableMap.copyOf(map);
     LOG.info("Created author comparator with {} abbreviation entries", counter);
   }
-
+  
   public static AuthorComparator createWithoutAuthormap() {
     return new AuthorComparator(Maps.<String, String>newHashMap());
   }
-
+  
   public static AuthorComparator createWithAuthormap() {
     Map<String, String> map = new HashMap<>();
     Resources.tabRows(AUTHOR_MAP_FILENAME).forEach(row -> {
@@ -70,7 +70,7 @@ public class AuthorComparator {
     });
     return new AuthorComparator(map);
   }
-
+  
   /**
    * Compares the authorteams and year of two names by first evaluating equivalence of the authors.
    * Only if they appear to differ also a year comparison is done which can still yield an overall EQUAL in case years match.
@@ -87,7 +87,7 @@ public class AuthorComparator {
     }
     return result;
   }
-
+  
   /**
    * Does a comparison of recombination and basionym authorship using the author compare method once for the recombination authorship and once for the basionym.
    */
@@ -104,13 +104,13 @@ public class AuthorComparator {
       if (n1.getCombinationAuthorship().isEmpty()) {
         across = compare(n1.getBasionymAuthorship(), n2.getCombinationAuthorship());
       } else if (n1.getBasionymAuthorship().isEmpty()) {
-        across = compare(n1.getCombinationAuthorship(),n2.getBasionymAuthorship());
+        across = compare(n1.getCombinationAuthorship(), n2.getBasionymAuthorship());
       }
       return across == Equality.EQUAL ? Equality.EQUAL : Equality.UNKNOWN;
     }
     return recomb.and(original);
   }
-
+  
   /**
    * Compares two sets of author & year for equality.
    * This is more strict than the normal compare method and requires both authors and year to match.
@@ -130,7 +130,7 @@ public class AuthorComparator {
     }
     return Equality.EQUAL == new YearComparator(a1.getYear(), a2.getYear()).compare();
   }
-
+  
   /**
    * @return list of normalized authors, never null.
    * ascii only, lower cased string without punctuation. Empty string instead of null.
@@ -149,7 +149,7 @@ public class AuthorComparator {
     }
     return normed;
   }
-
+  
   @VisibleForTesting
   protected static String normalize(String x) {
     if (StringUtils.isBlank(x)) {
@@ -165,13 +165,13 @@ public class AuthorComparator {
     x = PUNCTUATION.matcher(x).replaceAll(" ");
     // norm space
     x = StringUtils.normalizeSpace(x);
-
+    
     if (StringUtils.isBlank(x)) {
       return null;
     }
     return x.toLowerCase();
   }
-
+  
   /**
    * Looks up individual authors from an authorship string
    *
@@ -185,7 +185,7 @@ public class AuthorComparator {
       return normalizedAuthor;
     }
   }
-
+  
   private List<String> lookup(List<String> authorTeam) {
     List<String> authors = Lists.newArrayList();
     for (String author : authorTeam) {
@@ -193,7 +193,7 @@ public class AuthorComparator {
     }
     return authors;
   }
-
+  
   private List<String> lookup(List<String> normalizedAuthorTeam, int minAuthorLengthWithoutLookup) {
     List<String> authors = Lists.newArrayList();
     for (String author : normalizedAuthorTeam) {
@@ -205,8 +205,8 @@ public class AuthorComparator {
     }
     return authors;
   }
-
-
+  
+  
   /**
    * Does an author comparison, normalizing the strings and try 3 comparisons:
    * 1) checks regular string equality
@@ -232,11 +232,11 @@ public class AuthorComparator {
     }
     return Equality.UNKNOWN;
   }
-
+  
   private static int lengthWithoutWhitespace(String x) {
     return StringUtils.deleteWhitespace(x).length();
   }
-
+  
   /**
    * compares entire author team strings
    */
@@ -245,7 +245,7 @@ public class AuthorComparator {
     if (authorTeam1.equals(authorTeam2)) {
       // we can stop here, authors are equal, thats enough
       return Equality.EQUAL;
-
+      
     } else {
       // compare all authors to each other - a single match is good enough!
       for (String author1 : authorTeam1) {
@@ -260,13 +260,13 @@ public class AuthorComparator {
     }
     return Equality.DIFFERENT;
   }
-
+  
   static class Author {
     final String fullname;
     final String initials;
     final String surname;
     final String suffix;
-
+    
     Author(String a) {
       fullname = a;
       Matcher m = AUTHOR.matcher(a);
@@ -281,15 +281,15 @@ public class AuthorComparator {
         suffix = "";
       }
     }
-
+    
     private String trim(String x) {
       return x == null ? null : StringUtils.trimToNull(x);
     }
-
+    
     boolean hasInitials() {
       return initials != null && !initials.isEmpty();
     }
-
+    
     /**
      * Gracefully compare initials of the first author only
      *
@@ -299,7 +299,7 @@ public class AuthorComparator {
       if (hasInitials() && other.hasInitials()) {
         if (initials.equals(other.initials)) {
           return false;
-
+          
         } else {
           // if one set of chars is a subset of the other we consider this a match
           List<Character> smaller = Lists.charactersOf(StringUtils.deleteWhitespace(initials));
@@ -318,13 +318,13 @@ public class AuthorComparator {
         }
         // they seem to differ
         return true;
-
+        
       } else {
         // no initials in at least one of them
         return false;
       }
     }
-
+    
     /**
      * compares a single author potentially with initials
      */
@@ -332,9 +332,9 @@ public class AuthorComparator {
       if (fullname.equals(other.fullname)) {
         // we can stop here, authors are equal, thats enough
         return Equality.EQUAL;
-
+        
       } else {
-
+        
         String common = StringUtils.getCommonPrefix(surname, other.surname);
         if (surname.equals(other.surname) || common.length() >= minCommonStart) {
           // do both names have a single initial which is different?
@@ -344,14 +344,14 @@ public class AuthorComparator {
           } else {
             return Equality.EQUAL;
           }
-
+          
         } else if (!firstInitialsDiffer(other) && (surname.equals(common) && (other.surname.startsWith(common))
             || other.surname.equals(common) && (surname.startsWith(common)))
             ) {
           // short common surname, matching in full to one of them
           // and in addition existing and not conflicting initials
           return Equality.EQUAL;
-
+          
         } else if (fullname.equals(common) && (other.surname.startsWith(common))
             || other.fullname.equals(common) && (surname.startsWith(common))
             ) {
@@ -359,16 +359,16 @@ public class AuthorComparator {
           // if it also matches the start of the first longer surname then we are ok as the entire string is the best match we can have
           // likey a short abbreviation
           return Equality.EQUAL;
-
+          
         } else if (lengthWithoutWhitespace(StringUtils.getCommonPrefix(fullname, other.fullname)) > minCommonStart) {
           // the author string incl initials but without whitespace shares at least minCommonStart+1 characters
           return Equality.EQUAL;
-
+          
         }
       }
       return Equality.DIFFERENT;
     }
-
+    
   }
-
+  
 }

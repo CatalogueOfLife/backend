@@ -13,7 +13,7 @@ public class CorsConfiguration {
   
   @NotEmpty
   public String headers = "Authorization, Content-Type, Accept-Language";
-
+  
   public boolean anyOrigin() {
     return ANY_ORIGIN.equals(origins);
   }

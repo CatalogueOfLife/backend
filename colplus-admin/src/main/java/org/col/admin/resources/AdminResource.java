@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory;
 @Produces(MediaType.APPLICATION_JSON)
 @RolesAllowed({Roles.ADMIN})
 public class AdminResource {
-
+  
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(AdminResource.class);
   private final SqlSessionFactory factory;

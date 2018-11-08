@@ -15,21 +15,21 @@ import org.neo4j.kernel.impl.core.NodeProxy;
  * It is used to serialize various information in kvp stores during checklist indexing and nub builds.
  */
 public class NeoKryoFactory extends ApiKryoFactory {
-
+  
   @Override
   public Kryo create() {
     Kryo kryo = super.create();
-
+    
     // add normalizer specific models
     kryo.register(NeoTaxon.class);
     kryo.register(RankedName.class);
-
+    
     // fastutil
     kryo.register(IntArrayList.class);
-
+    
     // ignore normalizer node proxies and set them to null upon read:
     kryo.register(NodeProxy.class, new NullSerializer());
-
+    
     return kryo;
   }
 }

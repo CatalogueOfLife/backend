@@ -21,15 +21,15 @@ import org.slf4j.LoggerFactory;
  */
 public class AcefRelationInserter implements NodeBatchProcessor {
   private static final Logger LOG = LoggerFactory.getLogger(AcefRelationInserter.class);
-
+  
   private final NeoDb store;
   private final AcefInterpreter inter;
-
+  
   public AcefRelationInserter(NeoDb store, AcefInterpreter inter) {
     this.store = store;
     this.inter = inter;
   }
-
+  
   @Override
   public void process(Node n) {
     try {
@@ -47,7 +47,7 @@ public class AcefRelationInserter implements NodeBatchProcessor {
             v.addIssue(Issue.ACCEPTED_NAME_MISSING);
             store.update(t);
           }
-
+          
         } else {
           v = store.getVerbatim(t.taxon.getVerbatimKey());
           Node p = lookupByID(AcefTerm.ParentSpeciesID, v, t);
@@ -57,7 +57,7 @@ public class AcefRelationInserter implements NodeBatchProcessor {
             v.addIssue(Issue.PARENT_ID_INVALID);
             store.update(t);
           }
-
+          
           if (AcefTerm.AcceptedInfraSpecificTaxa == v.getType()) {
             // finally we have all pieces to also interpret infraspecific names
             // even with a missing parent, we will still try to build a name
@@ -73,7 +73,7 @@ public class AcefRelationInserter implements NodeBatchProcessor {
             Optional<NameAccordingTo> opt = inter.interpretName(t.getID(), v.get(AcefTerm.InfraSpeciesMarker), null, v.get(AcefTerm.InfraSpeciesAuthorString),
                 genus, infragenericEpithet, specificEpithet, v.get(AcefTerm.InfraSpeciesEpithet),
                 null, v.get(AcefTerm.GSDNameStatus), null, null, v);
-
+            
             if (opt.isPresent()) {
               t.name = opt.get().getName();
               if (!t.name.getRank().isInfraspecific()) {
@@ -81,7 +81,7 @@ public class AcefRelationInserter implements NodeBatchProcessor {
                 v.addIssue(Issue.INCONSISTENT_NAME);
               }
               store.put(t);
-
+              
             } else {
               // remove name & taxon from store, only keeping the verbatim
               store.remove(n);
@@ -90,12 +90,12 @@ public class AcefRelationInserter implements NodeBatchProcessor {
         }
         store.put(v);
       }
-
+      
     } catch (Exception e) {
       LOG.error("error processing explicit relations for {} {}", n, NeoProperties.getScientificNameWithAuthor(n), e);
     }
   }
-
+  
   /**
    * Reads a verbatim given term that should represent a foreign key to another record via the taxonID.
    * If the value is not the same as the original records taxonID it tries to split the ids into multiple keys and lookup the matching nodes.
@@ -110,9 +110,8 @@ public class AcefRelationInserter implements NodeBatchProcessor {
     }
     return n;
   }
-
-
-
+  
+  
   @Override
   public void commitBatch(int counter) {
     if (Thread.interrupted()) {

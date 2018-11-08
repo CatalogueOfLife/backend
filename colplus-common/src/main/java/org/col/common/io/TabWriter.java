@@ -10,13 +10,13 @@ import org.apache.commons.lang3.StringUtils;
  * If desired the number of columns can be verified to be the same for every record.
  */
 public class TabWriter implements AutoCloseable {
-
+  
   private static final Pattern escapeChars = Pattern.compile("[\t\n\r]");
   private boolean verifyColumns = false;
   private int columns = -1;
   private int records = 0;
   private Writer writer;
-
+  
   public static TabWriter fromStream(OutputStream stream) throws FileNotFoundException {
     try {
       return new TabWriter(new BufferedWriter(new OutputStreamWriter(stream, "UTF8")));
@@ -24,23 +24,24 @@ public class TabWriter implements AutoCloseable {
       throw new IllegalStateException(e);
     }
   }
-
+  
   public static TabWriter fromFile(File file) throws FileNotFoundException {
     return fromStream(new FileOutputStream(file));
   }
-
+  
   public TabWriter(Writer writer) {
     this.writer = writer;
   }
-
+  
   /**
    * If set to true the writer verifies the number of written columns to always be the same.
+   *
    * @param verifyColumns
    */
   public void setVerifyColumns(boolean verifyColumns) {
     this.verifyColumns = verifyColumns;
   }
-
+  
   public void write(String[] row) throws IOException {
     if (row == null || row.length == 0) {
       return;
@@ -58,7 +59,7 @@ public class TabWriter implements AutoCloseable {
       records++;
     }
   }
-
+  
   private String tabRow(String[] columns) {
     // escape \t \n \r chars !!!
     boolean empty = true;
@@ -74,12 +75,12 @@ public class TabWriter implements AutoCloseable {
     }
     return StringUtils.join(columns, '\t') + "\n";
   }
-
+  
   @Override
   public void close() throws IOException {
     writer.close();
   }
-
+  
   /**
    * @return number of records already written
    */

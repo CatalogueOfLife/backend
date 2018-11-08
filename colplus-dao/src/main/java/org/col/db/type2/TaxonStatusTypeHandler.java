@@ -11,12 +11,12 @@ import org.col.db.type.BaseEnumTypeHandler;
  */
 @MappedTypes(TaxonomicStatus.class)
 public class TaxonStatusTypeHandler extends BaseEnumTypeHandler<Boolean, TaxonomicStatus> {
-
+  
   @Override
   protected Boolean fromEnum(TaxonomicStatus value) {
     return value != TaxonomicStatus.ACCEPTED;
   }
-
+  
   @Override
   protected TaxonomicStatus toEnum(Boolean doubtful) {
     return doubtful ? TaxonomicStatus.DOUBTFUL : TaxonomicStatus.ACCEPTED;

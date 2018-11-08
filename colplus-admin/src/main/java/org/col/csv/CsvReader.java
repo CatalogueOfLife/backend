@@ -42,16 +42,17 @@ import org.slf4j.LoggerFactory;
 /**
  * A reader giving access to a set of delimited text files in a folder
  * by offering verbatim values as standard TermRecords.
- *
+ * <p>
  * Very basic value cleaning is done:
- *  - NULL and \N values are considered null
- *  - Whitespace including control characters is trimmed and collapsed to a single space
- *
+ * - NULL and \N values are considered null
+ * - Whitespace including control characters is trimmed and collapsed to a single space
+ * <p>
  * It forms the basis for reading both DWC and ACEF files.
  */
 public class CsvReader {
   private static final Logger LOG = LoggerFactory.getLogger(CsvReader.class);
   protected static final CsvParserSettings CSV = new CsvParserSettings();
+  
   static {
     CSV.detectFormatAutomatically();
     // try with tabs as default if autoconfig fails
@@ -61,20 +62,21 @@ public class CsvReader {
     CSV.setReadInputOnSeparateThread(false);
     CSV.setNullValue(null);
     CSV.setMaxColumns(256);
-    CSV.setMaxCharsPerColumn(1024*256);
+    CSV.setMaxCharsPerColumn(1024 * 256);
   }
+  
   private static final Set<String> SUFFICES = ImmutableSet.of("csv", "tsv", "tab", "txt", "text", "archive", "dwca");
   private static final Pattern NULL_PATTERN = Pattern.compile("^\\s*(\\\\N|\\\\?NULL|null)\\s*$");
   private static final int STREAM_CHARACTERISTICS = Spliterator.ORDERED | Spliterator.DISTINCT | Spliterator.NONNULL | Spliterator.IMMUTABLE;
-
+  
   private static final Joiner LINE_JOIN = Joiner.on('\n');
-
+  
   protected final Path folder;
   protected final Map<Term, Schema> schemas = Maps.newHashMap();
   private static final Character[] delimiterCandidates = {'\t', ',', ';', '|'};
   // we also use \0 for hopefully no quote...
-  private static final Character[] quoteCandidates     = {'\0', '"', '\''};
-
+  private static final Character[] quoteCandidates = {'\0', '"', '\''};
+  
   /**
    * @param folder
    */
@@ -85,9 +87,8 @@ public class CsvReader {
     this.folder = folder;
     discoverSchemas(termPrefix);
   }
-
+  
   /**
-   *
    * @param termPrefix optional preferred term namespace prefix to use when looking up class & property terms
    * @throws IOException
    */
@@ -100,39 +101,40 @@ public class CsvReader {
       putSchema(buildSchema(df, termPrefix));
     }
   }
-
+  
   protected void putSchema(Schema s) {
     if (s != null) {
       schemas.put(s.rowType, s);
     }
   }
-
+  
   /**
    * Returns a path within the folder for a given relative file or path.
+   *
    * @param filename to resolve
    */
   protected Path resolve(String filename) {
     return folder.resolve(filename);
   }
-
+  
   /**
    * @param termPrefix optional preferred term namespace prefix to use when looking up class & property terms
    */
   public static CsvReader from(Path folder, String termPrefix) throws IOException {
     return new CsvReader(folder, termPrefix);
   }
-
+  
   public static CsvReader from(Path folder) throws IOException {
     return from(folder, null);
   }
-
+  
   protected void require(Term rowType, Term term) {
     if (hasData(rowType) && !hasData(rowType, term)) {
       Schema s = schemas.remove(rowType);
       LOG.warn("Required term {} missing. Ignore file {}!", term, s.file);
     }
   }
-
+  
   private static Optional<Term> findTerm(String termPrefix, String name, boolean isClassTerm) {
     if (termPrefix != null && !name.contains(":")) {
       name = termPrefix + ":" + name;
@@ -143,7 +145,7 @@ public class CsvReader {
       return Optional.empty();
     }
   }
-
+  
   /**
    * Detects the used CSV format by trying all combinations of delimiter and quote
    * and selecting the one with the most columns in a consistent manner
@@ -167,7 +169,7 @@ public class CsvReader {
     univoc.setDelimiterDetectionEnabled(true);
     univoc.setQuoteDetectionEnabled(true);
     candidates.add(univoc);
-
+    
     // find best settings, default to autodetection if all others fail
     CsvParserSettings best = univoc;
     int maxCols = 0;
@@ -179,7 +181,7 @@ public class CsvReader {
         int totalLength = 0;
         for (String[] row : parser.parseAll(new StringReader(LINE_JOIN.join(lines)))) {
           if (isAllNull(row)) continue;
-
+          
           if (cols == 0) {
             cols = row.length;
           } else if (cols != row.length) {
@@ -194,7 +196,7 @@ public class CsvReader {
           maxCols = cols;
           minTotalLength = totalLength;
         }
-
+        
       } catch (TextParsingException e) {
         // parser exception, e.g. if too many columns.
         // Swallow and simply consider failed attempt
@@ -202,18 +204,18 @@ public class CsvReader {
     }
     return best;
   }
-
+  
   private static int nullsafeLength(String x) {
     return x == null ? 0 : x.length();
   }
-
+  
   private Schema buildSchema(Path df, @Nullable String termPrefix) {
     LOG.debug("Detecting schema for file {}", PathUtils.getFilename(df));
     try {
-      try (CharsetDetectingStream in = CharsetDetectingStream.create(Files.newInputStream(df))){
+      try (CharsetDetectingStream in = CharsetDetectingStream.create(Files.newInputStream(df))) {
         final Charset charset = in.getCharset();
         LOG.debug("Use encoding {} for file {}", charset, PathUtils.getFilename(df));
-
+        
         List<String> lines = Lists.newArrayList();
         BufferedReader br = CharsetDetectingStream.createReader(in, in.getCharset());
         String line;
@@ -221,21 +223,21 @@ public class CsvReader {
           lines.add(line);
         }
         br.close();
-
+        
         if (lines.isEmpty()) {
           LOG.warn("{} contains no data", PathUtils.getFilename(df));
-
+          
         } else {
           CsvParserSettings set = discoverFormat(lines);
-
+          
           CsvParser parser = new CsvParser(set);
           parser.beginParsing(new StringReader(LINE_JOIN.join(lines)));
           String[] header = parser.parseNext();
           parser.stopParsing();
-
+          
           if (header == null) {
             LOG.warn("{} contains no data", PathUtils.getFilename(df));
-
+            
           } else {
             List<Schema.Field> columns = Lists.newArrayList();
             int unknownCounter = 0;
@@ -256,14 +258,14 @@ public class CsvReader {
               LOG.warn("No terms found in header");
               return null;
             }
-
-            int unknownPerc = unknownCounter*100 / columns.size();
-            if (unknownPerc > 80 ) {
+            
+            int unknownPerc = unknownCounter * 100 / columns.size();
+            if (unknownPerc > 80) {
               LOG.warn("{} percent unknown terms found as header", unknownPerc);
             }
             // ignore header row - needs changed if we parse the settings externally
             set.setNumberOfRowsToSkip(1);
-
+            
             // we create a tmp dummy schema with wrong rowType for convenience to find the real rowType - it will not survive
             final Optional<Term> rowType = detectRowType(new Schema(df, DwcTerm.Taxon, charset, set, columns), termPrefix);
             if (rowType.isPresent()) {
@@ -274,18 +276,18 @@ public class CsvReader {
           }
         }
       }
-
-
+      
+      
     } catch (RuntimeException | IOException e) {
       LOG.error("Failed to read schema for {}", PathUtils.getFilename(df), e);
     }
     return null;
   }
-
+  
   protected Optional<Term> detectRowType(Schema schema, String termPrefix) {
     return findTerm(termPrefix, PathUtils.getBasename(schema.file), true);
   }
-
+  
   private static Iterable<Path> listDataFiles(Path folder) throws IOException {
     if (!Files.isDirectory(folder)) return Collections.emptyList();
     return Files.newDirectoryStream(folder, new DirectoryStream.Filter<Path>() {
@@ -295,50 +297,50 @@ public class CsvReader {
       }
     });
   }
-
+  
   public Set<Term> rowTypes() {
     return schemas.keySet();
   }
-
+  
   public Collection<Schema> schemas() {
     return schemas.values();
   }
-
+  
   public boolean hasData(Term rowType) {
     return schemas.containsKey(rowType);
   }
-
+  
   public boolean hasData(Term rowType, Term term) {
     return schemas.containsKey(rowType) && schemas.get(rowType).hasTerm(term);
   }
-
+  
   /**
    * @return number of available schemas
    */
   public int size() {
     return schemas.size();
   }
-
+  
   /**
    * @return true if no schema is mapped
    */
   public boolean isEmpty() {
     return schemas.isEmpty();
   }
-
+  
   public Optional<Schema> schema(Term rowType) {
     return Optional.ofNullable(schemas.get(rowType));
   }
-
+  
   public Stream<VerbatimRecord> stream(Term rowType) {
-    Preconditions.checkArgument(rowType.isClass(), "RowType "+rowType+" is not a class term");
+    Preconditions.checkArgument(rowType.isClass(), "RowType " + rowType + " is not a class term");
     if (schemas.containsKey(rowType)) {
       return stream(schemas.get(rowType));
     } else {
       return Stream.empty();
     }
   }
-
+  
   /**
    * Returns the first content row of the given data file, skipping any header if existing.
    */
@@ -348,35 +350,35 @@ public class CsvReader {
     }
     return Optional.empty();
   }
-
+  
   private class TermRecIterator implements Iterator<VerbatimRecord> {
     private final ResultIterator<String[], ParsingContext> iter;
     private final Schema s;
     private final int maxIdx;
     private final String filename;
     private String[] row;
-
+    
     TermRecIterator(Schema schema) throws IOException {
       s = schema;
       filename = PathUtils.getFilename(schema.file);
-      maxIdx = schema.columns.stream().map(f->f.index).filter(Objects::nonNull).reduce(Integer::max).orElse(0);
+      maxIdx = schema.columns.stream().map(f -> f.index).filter(Objects::nonNull).reduce(Integer::max).orElse(0);
       CsvParser parser = new CsvParser(schema.settings);
-
+      
       IterableResult<String[], ParsingContext> it = parser.iterate(
           CharsetDetectingStream.createReader(Files.newInputStream(schema.file), schema.encoding)
       );
       this.iter = it.iterator();
       nextRow();
     }
-
+    
     @Override
     public boolean hasNext() {
       return row != null;
     }
-
+    
     private void nextRow() {
       if (iter.hasNext()) {
-        while (iter.hasNext() && isEmpty(row = iter.next(), true));
+        while (iter.hasNext() && isEmpty(row = iter.next(), true)) ;
         // if the last rows were empty we would get the last non empty row again, clear it in that case!
         if (!iter.hasNext() && isEmpty(row, false)) {
           row = null;
@@ -385,13 +387,13 @@ public class CsvReader {
         row = null;
       }
     }
-
+    
     private boolean isEmpty(String[] row, boolean log) {
       if (row == null) {
         // ignore this row, dont log
-      } else if (row.length < maxIdx+1) {
+      } else if (row.length < maxIdx + 1) {
         if (log) {
-          LOG.info("{} skip line {} with too few columns (found {}, expected {})", filename, iter.getContext().currentLine(), row.length, maxIdx+1);
+          LOG.info("{} skip line {} with too few columns (found {}, expected {})", filename, iter.getContext().currentLine(), row.length, maxIdx + 1);
         }
       } else if (isAllNull(row)) {
         if (log) {
@@ -402,10 +404,10 @@ public class CsvReader {
       }
       return true;
     }
-
+    
     @Override
     public VerbatimRecord next() {
-      VerbatimRecord tr = new VerbatimRecord(iter.getContext().currentLine()-1, filename, s.rowType);
+      VerbatimRecord tr = new VerbatimRecord(iter.getContext().currentLine() - 1, filename, s.rowType);
       for (Schema.Field f : s.columns) {
         if (f != null) {
           String val = null;
@@ -428,25 +430,25 @@ public class CsvReader {
       return tr;
     }
   }
-
+  
   private Stream<VerbatimRecord> stream(final Schema s) {
     try {
       return StreamSupport.stream(
           Spliterators.spliteratorUnknownSize(new TermRecIterator(s), STREAM_CHARACTERISTICS), false);
-
+      
     } catch (IOException | RuntimeException e) {
       LOG.error("Failed to read {}", s.file, e);
       return Stream.empty();
     }
   }
-
+  
   private static String clean(String x) {
     if (Strings.isNullOrEmpty(x) || NULL_PATTERN.matcher(x).find()) {
       return null;
     }
     return Strings.emptyToNull(CharMatcher.javaIsoControl().trimAndCollapseFrom(x, ' ').trim());
   }
-
+  
   private static boolean isAllNull(String[] row) {
     for (String x : row) {
       if (x != null) return false;

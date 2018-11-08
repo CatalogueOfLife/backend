@@ -6,23 +6,23 @@ package org.col.admin.importer.neo;
 public class NotUniqueRuntimeException extends RuntimeException {
   private final String property;
   private final Object key;
-
+  
   public NotUniqueRuntimeException(String property) {
     super(property + " not unique");
     this.property = property;
     this.key = null;
   }
-
+  
   public NotUniqueRuntimeException(String property, Object key) {
     super(property + " not unique: " + key);
     this.property = property;
     this.key = key;
   }
-
+  
   public String getProperty() {
     return property;
   }
-
+  
   public Object getKey() {
     return key;
   }

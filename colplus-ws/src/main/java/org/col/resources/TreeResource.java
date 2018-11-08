@@ -18,25 +18,25 @@ import org.slf4j.LoggerFactory;
 @Produces(MediaType.APPLICATION_JSON)
 @SuppressWarnings("static-method")
 public class TreeResource {
-
+  
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(TreeResource.class);
-
+  
   @GET
   public List<TreeNode> root(@PathParam("datasetKey") int datasetKey, @Context SqlSession session) {
     return session.getMapper(TreeMapper.class).root(datasetKey);
   }
-
+  
   @GET
   @Path("{id}")
   public List<TreeNode> parents(@PathParam("datasetKey") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
     return session.getMapper(TreeMapper.class).parents(datasetKey, id);
   }
-
+  
   @GET
   @Path("{id}/children")
   public List<TreeNode> children(@PathParam("datasetKey") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
     return session.getMapper(TreeMapper.class).children(datasetKey, id);
   }
-
+  
 }

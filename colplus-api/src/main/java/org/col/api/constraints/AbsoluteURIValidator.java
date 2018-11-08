@@ -11,10 +11,10 @@ public class AbsoluteURIValidator implements ConstraintValidator<AbsoluteURI, UR
   
   @Override
   public boolean isValid(URI uri, ConstraintValidatorContext constraintContext) {
-    if ( uri == null ) {
+    if (uri == null) {
       return true;
     }
-  
+
     if (uri.getScheme() == null || uri.getHost() == null) {
       return false;
     }

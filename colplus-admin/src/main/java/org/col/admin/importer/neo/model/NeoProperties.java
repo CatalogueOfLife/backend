@@ -17,31 +17,31 @@ public class NeoProperties {
   public static final String NOTE = "note";
   public static final String REF_ID = "refid";
   public static final String VERBATIM_KEY = "vkey";
-
+  
   public static final String NULL_NAME = "???";
-
+  
   private NeoProperties() {
   }
-
+  
   public static Rank getRank(Node n, Rank defaultValue) {
     if (n.hasProperty(NeoProperties.RANK)) {
       return Rank.values()[(int) n.getProperty(NeoProperties.RANK)];
     }
     return defaultValue;
   }
-
+  
   public static String getID(Node n) {
     return (String) n.getProperty(NeoProperties.ID, null);
   }
-
+  
   public static String getScientificName(Node n) {
     return (String) n.getProperty(NeoProperties.SCIENTIFIC_NAME, NULL_NAME);
   }
-
+  
   public static String getAuthorship(Node n) {
     return (String) n.getProperty(NeoProperties.AUTHORSHIP, null);
   }
-
+  
   public static String getScientificNameWithAuthor(Node n) {
     StringBuilder sb = new StringBuilder();
     sb.append(getScientificName(n));
@@ -52,7 +52,7 @@ public class NeoProperties {
     }
     return sb.toString();
   }
-
+  
   /**
    * Reads a ranked name instance purely from neo4j properties
    */

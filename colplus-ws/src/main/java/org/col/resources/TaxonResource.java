@@ -8,9 +8,9 @@ import javax.ws.rs.core.MediaType;
 
 import com.codahale.metrics.annotation.Timed;
 import org.apache.ibatis.session.SqlSession;
+import org.col.api.exception.NotFoundException;
 import org.col.api.model.*;
 import org.col.db.dao.TaxonDao;
-import org.col.api.exception.NotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,17 +18,17 @@ import org.slf4j.LoggerFactory;
 @Produces(MediaType.APPLICATION_JSON)
 @SuppressWarnings("static-method")
 public class TaxonResource {
-
+  
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(TaxonResource.class);
-
+  
   @GET
   public ResultPage<Taxon> list(@PathParam("datasetKey") int datasetKey, @QueryParam("root") boolean root,
                                 @Valid @BeanParam Page page, @Context SqlSession session) {
     TaxonDao dao = new TaxonDao(session);
     return dao.list(datasetKey, root, page);
   }
-
+  
   @GET
   @Path("{id}")
   public Taxon get(@PathParam("datasetKey") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
@@ -39,29 +39,29 @@ public class TaxonResource {
     }
     return dao.get(datasetKey, id);
   }
-
+  
   @GET
   @Path("{id}/children")
   public ResultPage<Taxon> children(@PathParam("datasetKey") int datasetKey, @PathParam("id") String id, @Valid @BeanParam Page page,
-      @Context SqlSession session) {
+                                    @Context SqlSession session) {
     TaxonDao dao = new TaxonDao(session);
     return dao.getChildren(datasetKey, id, page);
   }
-
+  
   @GET
   @Path("{id}/synonyms")
   public Synonymy synonyms(@PathParam("datasetKey") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
     TaxonDao dao = new TaxonDao(session);
     return dao.getSynonymy(datasetKey, id);
   }
-
+  
   @GET
   @Path("{id}/classification")
   public List<Taxon> classification(@PathParam("datasetKey") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
     TaxonDao dao = new TaxonDao(session);
     return dao.getClassification(datasetKey, id);
   }
-
+  
   @GET
   @Timed
   @Path("{id}/info")
@@ -73,5 +73,5 @@ public class TaxonResource {
     }
     return info;
   }
-
+  
 }

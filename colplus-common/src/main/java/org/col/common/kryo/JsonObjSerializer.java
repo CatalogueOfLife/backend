@@ -15,6 +15,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 public class JsonObjSerializer extends Serializer<ObjectNode> {
   private static final ObjectMapper MAPPER = new ObjectMapper();
+
   static {
     MAPPER.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
   }
@@ -38,7 +39,7 @@ public class JsonObjSerializer extends Serializer<ObjectNode> {
   public ObjectNode read(final Kryo kryo, final Input input, final Class<ObjectNode> uuidClass) {
     InputChunked chunked = new InputChunked(input, 256);
     try {
-      return  (ObjectNode) MAPPER.readTree(chunked);
+      return (ObjectNode) MAPPER.readTree(chunked);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

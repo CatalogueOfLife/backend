@@ -75,23 +75,23 @@ public class AuthFilter implements ContainerRequestFilter {
   private void setSecurityContext(final ColUser user, final String scheme, final ContainerRequestContext requestContext) {
     final SecurityContext securityContext = requestContext.getSecurityContext();
     final boolean secure = securityContext != null && securityContext.isSecure();
-  
+    
     requestContext.setSecurityContext(new SecurityContext() {
       @Override
       public Principal getUserPrincipal() {
         return user;
       }
-    
+      
       @Override
       public boolean isUserInRole(String role) {
         return user.hasRole(role);
       }
-    
+      
       @Override
       public boolean isSecure() {
         return secure;
       }
-    
+      
       @Override
       public String getAuthenticationScheme() {
         return scheme;
@@ -120,7 +120,7 @@ public class AuthFilter implements ContainerRequestFilter {
       String cred = new String(BaseEncoding.base64().decode(token), StandardCharsets.UTF_8);
       String[] parts = cred.split(":");
       return idService.authenticate(parts[0], parts[1]);
-    
+      
     } catch (Exception e) {
       throw unauthorized("Basic authentication error: " + e.getMessage());
     }
@@ -134,17 +134,17 @@ public class AuthFilter implements ContainerRequestFilter {
       Jws<Claims> jws = jwt.parse(token);
       return Optional.of(Integer.valueOf(jws.getBody().getSubject()))
           .map(idService::get);
-    
+      
     } catch (JwtException | IllegalArgumentException ex) {
       StringBuilder sb = new StringBuilder("Invalid JWT token");
       if (ex.getMessage() != null) {
         sb.append(": ").append(ex.getMessage());
       }
       throw unauthorized(sb.toString());
-    
+      
     } catch (Exception e) {
       throw unauthorized("JWT authentication failed: " + e.getMessage());
     }
   }
-
+  
 }

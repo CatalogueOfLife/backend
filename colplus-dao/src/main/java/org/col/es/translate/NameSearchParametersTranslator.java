@@ -11,13 +11,9 @@ import org.col.api.search.NameSearchParameter;
 import org.col.api.search.NameSearchRequest;
 import org.col.api.util.VocabularyUtils;
 import org.col.es.InvalidQueryException;
-import org.col.es.query.BoolQuery;
-import org.col.es.query.IsNotNullQuery;
-import org.col.es.query.IsNullQuery;
-import org.col.es.query.Query;
-import org.col.es.query.TermQuery;
-import org.col.es.query.TermsQuery;
-import static org.col.es.translate.NameSearchRequestTranslator.*;
+import org.col.es.query.*;
+
+import static org.col.es.translate.NameSearchRequestTranslator.NOT_NULL_VALUE;
 
 /**
  * Translates all query parameters except the "q" parameter into an Elasticsearch query. Unless
@@ -30,16 +26,15 @@ import static org.col.es.translate.NameSearchRequestTranslator.*;
  * This will then result in an OR constraint (rank=order OR rank=family OR rank=genus). Finally, a
  * query parameter may be present but have no value, for example: ?nom_status=&rank=family. This
  * will be translated into an IS NULL constraint (nom_status IS NULL AND rank=family).
- *
  */
 class NameSearchParametersTranslator {
-
+  
   private final NameSearchRequest request;
-
+  
   NameSearchParametersTranslator(NameSearchRequest request) {
     this.request = request;
   }
-
+  
   Optional<Query> translate() throws InvalidQueryException {
     NameSearchParameter[] params = getParamsInRequest();
     if (params.length == 0) {
@@ -54,7 +49,7 @@ class NameSearchParametersTranslator {
     }
     return Optional.of(bq);
   }
-
+  
   private Query translate(NameSearchParameter param) throws InvalidQueryException {
     List<Query> queries = new ArrayList<>();
     // Get the ES fields that this parameter maps to
@@ -78,12 +73,12 @@ class NameSearchParametersTranslator {
     }
     return queries.stream().collect(BoolQuery::new, BoolQuery::should, BoolQuery::should);
   }
-
+  
   private NameSearchParameter[] getParamsInRequest() {
     return Arrays.stream(NameSearchParameter.values()).filter(request::containsKey).toArray(
         NameSearchParameter[]::new);
   }
-
+  
   /*
    * Get all non-empty and non-symbolic values of one single single query parameter
    */
@@ -114,19 +109,19 @@ class NameSearchParametersTranslator {
     }
     throw new AssertionError("Unexpected parameter type: " + param.type());
   }
-
+  
   // Is one of the values of a query parameter an empty string?
   private boolean containsEmptyValue(NameSearchParameter param) {
     return request.get(param).stream().anyMatch(StringUtils::isEmpty);
   }
-
+  
   // Is one of the values of a query parameter the symbol for NOT NULL?
   private boolean containsNotNullValue(NameSearchParameter param) {
     return request.get(param).stream().anyMatch(s -> s.equalsIgnoreCase(NOT_NULL_VALUE));
   }
-
+  
   private boolean isRealValue(String s) {
     return StringUtils.isNotEmpty(s) && !s.equalsIgnoreCase(NOT_NULL_VALUE);
   }
-
+  
 }

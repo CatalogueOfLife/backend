@@ -16,7 +16,7 @@ import org.postgresql.util.PSQLException;
  */
 @Provider
 public class PersistenceExceptionMapper extends LoggingExceptionMapper<PersistenceException> {
-
+  
   private final static Pattern RELATION = Pattern.compile("relation \"[a-z_]+_([0-9]+)\" does not exist");
   
   @Override
@@ -33,9 +33,9 @@ public class PersistenceExceptionMapper extends LoggingExceptionMapper<Persisten
     Matcher m = RELATION.matcher(e.getCause().getMessage());
     if (m.find()) {
       return JsonExceptionMapperBase.jsonErrorResponse(Response.Status.NOT_FOUND,
-          "Dataset "+Integer.parseInt(m.group(1))+" does not exist");
+          "Dataset " + Integer.parseInt(m.group(1)) + " does not exist");
     }
-
+    
     return super.toResponse(e);
   }
   

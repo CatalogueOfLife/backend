@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory;
 @Provider
 public class TermParamConverterProvider implements ParamConverterProvider {
   private final static TermFactory TF = TermFactory.instance();
-
+  
   @Override
   public <T> ParamConverter<T> getConverter(Class<T> rawType, Type genericType, Annotation[] antns) {
     if (rawType == Term.class) {
@@ -27,23 +27,23 @@ public class TermParamConverterProvider implements ParamConverterProvider {
     }
     return null;
   }
-
+  
   static class TermParamConverter<T> implements ParamConverter<Term> {
     private static final Logger LOG = LoggerFactory.getLogger(TermParamConverter.class);
-
+    
     @Override
     public Term fromString(String value) {
       if (Strings.isNullOrEmpty(value)) return null;
       try {
         // we need to quote the value so it looks like a json value
         return TF.findTerm(value);
-
+        
       } catch (IllegalArgumentException e) {
         LOG.debug("Failed to lookup {} Term", value, e);
         throw e;
       }
     }
-
+    
     @Override
     public String toString(Term value) {
       if (value == null) return null;

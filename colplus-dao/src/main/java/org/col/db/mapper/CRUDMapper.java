@@ -17,5 +17,5 @@ public interface CRUDMapper<T extends IntKey> {
    * @param key
    */
   int delete(@Param("key") int key);
-
+  
 }

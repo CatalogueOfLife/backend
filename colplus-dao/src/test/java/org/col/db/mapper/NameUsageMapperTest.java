@@ -18,10 +18,11 @@ import static org.junit.Assert.assertTrue;
 
 
 public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
-
+  
   public NameUsageMapperTest() {
     super(NameUsageMapper.class);
   }
+  
   private AtomicInteger counter = new AtomicInteger(0);
   
   @Test

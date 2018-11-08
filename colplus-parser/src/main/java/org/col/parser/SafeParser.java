@@ -58,6 +58,7 @@ public class SafeParser<T> {
 
   /**
    * Always returns a value, if needed falling back to a default.
+   *
    * @return the parsed value if present, other if empty or unparsable
    */
   public T orElse(T other) {
@@ -73,6 +74,7 @@ public class SafeParser<T> {
 
   /**
    * Always returns a value, if needed falling back to null.
+   *
    * @return the parsed value if present, otherwise null
    */
   public T orNull() {
@@ -82,6 +84,7 @@ public class SafeParser<T> {
   /**
    * Always returns a value, if needed falling back to null.
    * If the value was unparsable an issue is added to the issue collector.
+   *
    * @return the parsed value if present, null if empty or unparsable
    */
   public T orNull(Issue unparsableIssue, IssueContainer issueCollector) {
@@ -91,6 +94,7 @@ public class SafeParser<T> {
   /**
    * Always returns a value, if needed falling back to a default.
    * If the value was unparsable an issue is added to the issue collector.
+   *
    * @return the parsed value if present, other if empty or unparsable
    */
   public T orElse(T other, Issue unparsableIssue, IssueContainer issueCollector) {

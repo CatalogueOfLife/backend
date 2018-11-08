@@ -15,17 +15,17 @@ import com.google.common.collect.Lists;
 public class IntArrayPgWriter extends Writer {
   private ArrayList<Integer> array = Lists.newArrayListWithCapacity(10000);
   private final CharBuffer value = CharBuffer.allocate(16);
-
+  
   @Override
   public void close() throws IOException {
     // nothing to do
   }
-
+  
   @Override
   public void flush() throws IOException {
     // nothing to do
   }
-
+  
   @Override
   public void write(char[] cbuf, int off, int len) throws IOException {
     CharBuffer buf = CharBuffer.wrap(cbuf, off, len);
@@ -39,8 +39,8 @@ public class IntArrayPgWriter extends Writer {
     }
     add();
   }
-
-
+  
+  
   private void add() throws IOException {
     value.flip();
     if (value.hasRemaining()) {
@@ -52,8 +52,8 @@ public class IntArrayPgWriter extends Writer {
     }
     value.clear();
   }
-
-
+  
+  
   public List<Integer> result() {
     return array;
   }

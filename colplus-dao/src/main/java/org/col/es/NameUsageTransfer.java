@@ -20,9 +20,9 @@ import static org.col.common.util.CollectionUtils.notEmpty;
  * Converts NameUsageWrapper instances to EsNameUsage documents.
  */
 class NameUsageTransfer {
-
+  
   EsNameUsage toEsDocument(NameUsageWrapper<? extends NameUsage> wrapper) throws JsonProcessingException {
-
+    
     EsNameUsage enu = new EsNameUsage();
     if (notEmpty(wrapper.getVernacularNames())) {
       enu.setVernacularNames(
@@ -48,7 +48,7 @@ class NameUsageTransfer {
     enu.setNameFields(getNonNullNameFields(wrapper.getUsage().getName()));
     return enu;
   }
-
+  
   private static Set<NameField> getNonNullNameFields(Name name) {
     Set<NameField> fields = EnumSet.noneOf(NameField.class);
     if (name.getBasionymAuthorship() != null
@@ -93,11 +93,11 @@ class NameUsageTransfer {
     addIfSet(fields, UNINOMIAL, name.getUninomial());
     return fields;
   }
-
+  
   private static void addIfSet(Set<NameField> fields, NameField nf, Object val) {
     if (val != null) {
       fields.add(nf);
     }
   }
-
+  
 }

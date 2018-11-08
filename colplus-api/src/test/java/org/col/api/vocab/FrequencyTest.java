@@ -2,17 +2,18 @@ package org.col.api.vocab;
 
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 public class FrequencyTest {
-
+  
   @Test
   public void getDays() {
     for (Frequency f : Frequency.values()) {
       assertNotNull(f.getDays());
     }
   }
-
+  
   @Test
   public void fromDays() {
     assertEquals(Frequency.WEEKLY, Frequency.fromDays(null));

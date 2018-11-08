@@ -24,10 +24,10 @@ import org.slf4j.LoggerFactory;
 @Path("/vocab")
 @Produces(MediaType.APPLICATION_JSON)
 public class VocabResource {
-
+  
   private static final Logger LOG = LoggerFactory.getLogger(VocabResource.class);
   private final Map<String, Class<Enum>> vocabs;
-
+  
   public VocabResource() {
     Map<String, Class<Enum>> enums = Maps.newHashMap();
     try {
@@ -37,11 +37,11 @@ public class VocabResource {
           add(enums, info.load());
         }
       }
-  
+      
       for (Class<?> clazz : ImmutableList.of(ColUser.Role.class, ImgConfig.Scale.class)) {
         add(enums, clazz);
       }
-
+      
     } catch (IOException e) {
       LOG.error("Failed to init enum class map", e);
     }
@@ -60,7 +60,7 @@ public class VocabResource {
   public Set<String> list() {
     return vocabs.keySet();
   }
-
+  
   @GET
   @Path("{name}")
   public Enum[] values(@PathParam("name") String name) {
@@ -69,5 +69,5 @@ public class VocabResource {
     }
     return new Enum[]{};
   }
-
+  
 }

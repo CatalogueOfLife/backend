@@ -25,12 +25,12 @@ import static org.junit.Assert.assertEquals;
  * documents, which uses another ObjectMapper.
  */
 public class EsNameUsageSerde extends EsReadTestBase {
-
+  
   static Logger LOG = LoggerFactory.getLogger(EsNameUsageSerde.class);
   
   static final ObjectReader PAYLOAD_READER = EsModule.NAME_USAGE_READER;
   static final ObjectWriter PAYLOAD_WRITER = EsModule.NAME_USAGE_WRITER;
-
+  
   @Test
   public void testTaxon1() throws IOException {
     NameUsageWrapper<?> nuwIn = TestEntityGenerator.newNameUsageTaxonWrapper();
@@ -39,7 +39,7 @@ public class EsNameUsageSerde extends EsReadTestBase {
     NameUsageWrapper<?> nuwOut = PAYLOAD_READER.readValue(json);
     assertEquals(nuwIn, nuwOut);
   }
-
+  
   @Test
   public void testTaxon2() throws IOException {
     NameUsageWrapper<?> nuwIn = TestEntityGenerator.newNameUsageTaxonWrapper();
@@ -48,7 +48,7 @@ public class EsNameUsageSerde extends EsReadTestBase {
     NameUsageWrapper<?> nuwOut = PAYLOAD_READER.readValue(json);
     assertEquals(nuwIn, nuwOut);
   }
-
+  
   @Test
   public void testSynonym1() throws IOException {
     NameUsageWrapper<?> nuwIn = TestEntityGenerator.newNameUsageSynonymWrapper();
@@ -57,7 +57,7 @@ public class EsNameUsageSerde extends EsReadTestBase {
     NameUsageWrapper<?> nuwOut = PAYLOAD_READER.readValue(json);
     assertEquals(nuwIn, nuwOut);
   }
-
+  
   @Test
   public void testSynonym2() throws IOException {
     NameUsageWrapper<?> nuwIn = TestEntityGenerator.newNameUsageSynonymWrapper();
@@ -66,7 +66,7 @@ public class EsNameUsageSerde extends EsReadTestBase {
     NameUsageWrapper<?> nuwOut = PAYLOAD_READER.readValue(json);
     assertEquals(nuwIn, nuwOut);
   }
-
+  
   @Test
   public void testBareName1() throws IOException {
     NameUsageWrapper<?> nuwIn = TestEntityGenerator.newNameUsageBareNameWrapper();
@@ -75,7 +75,7 @@ public class EsNameUsageSerde extends EsReadTestBase {
     NameUsageWrapper<?> nuwOut = PAYLOAD_READER.readValue(json);
     assertEquals(nuwIn, nuwOut);
   }
-
+  
   @Test
   public void testBareName2() throws IOException {
     NameUsageWrapper<?> nuwIn = TestEntityGenerator.newNameUsageBareNameWrapper();
@@ -84,7 +84,7 @@ public class EsNameUsageSerde extends EsReadTestBase {
     NameUsageWrapper<?> nuwOut = PAYLOAD_READER.readValue(json);
     assertEquals(nuwIn, nuwOut);
   }
-
+  
   @Test
   public void testEsNameUsage1() throws IOException {
     EsNameUsage enuIn = new EsNameUsage();
@@ -100,17 +100,17 @@ public class EsNameUsageSerde extends EsReadTestBase {
     enuIn.setStatus(TaxonomicStatus.ACCEPTED);
     enuIn.setType(NameType.SCIENTIFIC);
     enuIn.setVernacularNames(Arrays.asList("Apple tree"));
-
+    
     String json = getEsConfig().nameUsage.getDocumentWriter().writeValueAsString(enuIn);
     LOG.debug(json);
-
+    
     EsNameUsage enuOut = getEsConfig().nameUsage.getDocumentReader().readValue(json);
     assertEquals(enuIn, enuOut);
-
+    
     NameUsageWrapper<?> nuw = PAYLOAD_READER.readValue(enuOut.getPayload());
     assertEquals(TestEntityGenerator.newNameUsageTaxonWrapper(), nuw);
   }
-
+  
   @Test
   public void testEsNameUsage2() throws IOException {
     EsNameUsage enuIn = new EsNameUsage();
@@ -127,13 +127,13 @@ public class EsNameUsageSerde extends EsReadTestBase {
     enuIn.setStatus(TaxonomicStatus.ACCEPTED);
     enuIn.setType(NameType.SCIENTIFIC);
     enuIn.setVernacularNames(Arrays.asList("Apple tree"));
-
+    
     String json = getEsConfig().nameUsage.getDocumentWriter().writeValueAsString(enuIn);
     LOG.debug(json);
-
+    
     EsNameUsage enuOut = getEsConfig().nameUsage.getDocumentReader().readValue(json);
     assertEquals(enuIn, enuOut);
-
+    
     NameUsageWrapper<?> nuw = PAYLOAD_READER.readValue(enuOut.getPayload());
     assertEquals(TestEntityGenerator.newNameUsageTaxonWrapper(), nuw);
   }

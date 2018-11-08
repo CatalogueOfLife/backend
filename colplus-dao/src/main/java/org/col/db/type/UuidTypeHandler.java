@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory;
 @MappedTypes(UUID.class)
 public class UuidTypeHandler implements TypeHandler<UUID> {
   private static final Logger LOG = LoggerFactory.getLogger(UuidTypeHandler.class);
-
+  
   @Override
   public void setParameter(PreparedStatement ps, int i, UUID parameter, JdbcType jdbcType) throws SQLException {
     if (parameter == null) {
@@ -26,24 +26,24 @@ public class UuidTypeHandler implements TypeHandler<UUID> {
     } else {
       ps.setObject(i, parameter.toString(), Types.OTHER);
     }
-
+    
   }
-
+  
   @Override
   public UUID getResult(ResultSet rs, String columnName) throws SQLException {
     return toUUID(rs.getString(columnName));
   }
-
+  
   @Override
   public UUID getResult(ResultSet rs, int columnIndex) throws SQLException {
     return toUUID(rs.getString(columnIndex));
   }
-
+  
   @Override
   public UUID getResult(CallableStatement cs, int columnIndex) throws SQLException {
     return toUUID(cs.getString(columnIndex));
   }
-
+  
   private static UUID toUUID(String val) throws SQLException {
     if (Strings.isNullOrEmpty(val)) {
       return null;
@@ -55,5 +55,5 @@ public class UuidTypeHandler implements TypeHandler<UUID> {
     }
     return null;
   }
-
+  
 }

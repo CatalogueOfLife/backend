@@ -25,10 +25,10 @@ public class BooleanParserTest extends ParserTestBase<Boolean> {
     assertParse(true, "oui");
     assertParse(true, "wahr");
 
-    assertParse(false,"f");
-    assertParse(false,"f");
-    assertParse(false,"no");
-    assertParse(false,"nein");
+    assertParse(false, "f");
+    assertParse(false, "f");
+    assertParse(false, "no");
+    assertParse(false, "nein");
     assertParse(false, "-1");
   }
 

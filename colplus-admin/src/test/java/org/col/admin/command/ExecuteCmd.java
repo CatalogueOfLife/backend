@@ -10,7 +10,7 @@ import org.junit.Test;
  */
 @Ignore
 public class ExecuteCmd {
-
+  
   @Test
   public void test() throws Exception {
     // to run a command that needs configs please point the second argument to a matching yaml file

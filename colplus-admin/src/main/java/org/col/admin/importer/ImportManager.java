@@ -91,7 +91,7 @@ public class ImportManager implements Managed {
     if (f != null) {
       LOG.info("Canceled import for dataset {}", datasetKey);
       f.cancel(true);
-  
+      
     } else {
       LOG.info("No import existing for dataset {}. Ignore", datasetKey);
     }
@@ -106,12 +106,12 @@ public class ImportManager implements Managed {
     if (futures.containsKey(datasetKey)) {
       LOG.info("Dataset {} already queued for import", datasetKey);
       throw new IllegalArgumentException("Dataset " + datasetKey + " already queued for import");
-  
+      
     } else if (queue.size() >= cfg.importer.maxQueue) {
       LOG.info("Import queued at max {} already. Skip dataset {}", queue.size(), datasetKey);
       throw new IllegalArgumentException("Import queue full, skip dataset " + datasetKey);
     }
-  
+    
     final ImportRequest req = new ImportRequest(datasetKey, force);
     LOG.debug("Queue new import for dataset {}", datasetKey);
     final ImportJob job = createImport(req);
@@ -122,7 +122,7 @@ public class ImportManager implements Managed {
         LOG.error("Dataset import {} failed: {}", req.datasetKey, err.getCause().getMessage(),
             err.getCause());
         failed.inc();
-  
+        
       } else {
         Duration durQueued = Duration.between(req.created, req.started);
         Duration durRun = Duration.between(req.started, LocalDateTime.now());
@@ -140,6 +140,7 @@ public class ImportManager implements Managed {
   
   /**
    * Uploads a new dataset and submits an import request.
+   *
    * @throws IllegalArgumentException if dataset was scheduled for importing already, queue was full,
    *                                  dataset does not exist or is not of matching origin
    */
@@ -164,7 +165,7 @@ public class ImportManager implements Managed {
       Path tmp = Files.createTempFile(cfg.normalizer.scratchDir.toPath(), "upload-", "");
       LOG.info("Upload data to tmp file {}", tmp);
       Files.copy(content, tmp);
-  
+      
       Path source = cfg.normalizer.source(datasetKey).toPath();
       //source.getParentFile().mkdirs();
       LOG.info("Move uploaded data to source repo at {}", source);
@@ -177,7 +178,7 @@ public class ImportManager implements Managed {
   }
   
   /**
-   * @throws NotFoundException if dataset does not exist or was deleted
+   * @throws NotFoundException        if dataset does not exist or was deleted
    * @throws IllegalArgumentException if dataset is of type managed
    */
   private ImportJob createImport(ImportRequest req) throws NotFoundException, IllegalArgumentException {
@@ -185,12 +186,12 @@ public class ImportManager implements Managed {
       Dataset d = session.getMapper(DatasetMapper.class).get(req.datasetKey);
       if (d == null) {
         throw NotFoundException.keyNotFound(Dataset.class, req.datasetKey);
-
+        
       } else if (d.hasDeletedDate()) {
         LOG.warn("Dataset {} was deleted and cannot be imported", req.datasetKey);
         throw NotFoundException.keyNotFound(Dataset.class, req.datasetKey);
       } else if (d.getOrigin() == DatasetOrigin.MANAGED) {
-        throw new IllegalArgumentException("Dataset "+req.datasetKey+" is managed and cannot be imported");
+        throw new IllegalArgumentException("Dataset " + req.datasetKey + " is managed and cannot be imported");
       }
       ImportJob job = new ImportJob(d, req.force, cfg, downloader, factory, index, indexService, imgService,
           new StartNotifier() {
@@ -203,21 +204,21 @@ public class ImportManager implements Managed {
       return job;
     }
   }
-
+  
   /**
    * @return true if queue is empty
    */
   public boolean hasEmptyQueue() {
     return queue.isEmpty();
   }
-
+  
   /**
    * @return true if imports are running
    */
   public boolean hasRunning() {
     return !futures.isEmpty();
   }
-
+  
   @Override
   public void start() throws Exception {
     LOG.info("Starting import manager with {} import threads and a queue of {} max.",
@@ -227,13 +228,13 @@ public class ImportManager implements Managed {
         new NamedThreadFactory(THREAD_NAME, Thread.NORM_PRIORITY, true),
         new ThreadPoolExecutor.AbortPolicy());
     exec.allowCoreThreadTimeOut(true);
-
+    
     // read hanging imports in db, truncate if half inserted and add as new requests to the queue
     cancelAndReschedule(ImportState.DOWNLOADING, false);
     cancelAndReschedule(ImportState.PROCESSING, false);
     cancelAndReschedule(ImportState.INSERTING, true);
   }
-
+  
   private void cancelAndReschedule(ImportState state, boolean truncate) {
     int counter = 0;
     DatasetImportDao dao = new DatasetImportDao(factory);
@@ -259,7 +260,7 @@ public class ImportManager implements Managed {
     }
     LOG.info("Cancelled and resubmitted {} {} imports.", counter, state);
   }
-
+  
   @Override
   public void stop() throws Exception {
     // orderly shutdown running imports

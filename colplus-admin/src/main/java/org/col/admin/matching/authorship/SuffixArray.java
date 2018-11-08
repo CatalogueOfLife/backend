@@ -49,9 +49,9 @@ import java.util.Arrays;
  * <i>Algorithms, 4th Edition</i> by Robert Sedgewick and Kevin Wayne.
  */
 public class SuffixArray {
-
+  
   private Suffix[] suffixes;
-
+  
   /**
    * Initializes a suffix array for the given <tt>text</tt> string.
    *
@@ -65,25 +65,25 @@ public class SuffixArray {
     }
     Arrays.sort(suffixes);
   }
-
+  
   private static class Suffix implements Comparable<Suffix> {
-
+    
     private final String text;
     private final int index;
-
+    
     private Suffix(String text, int index) {
       this.text = text;
       this.index = index;
     }
-
+    
     private int length() {
       return text.length() - index;
     }
-
+    
     private char charAt(int i) {
       return text.charAt(index + i);
     }
-
+    
     public int compareTo(Suffix that) {
       if (this == that) return 0;  // optimization
       int N = Math.min(this.length(), that.length());
@@ -93,12 +93,12 @@ public class SuffixArray {
       }
       return this.length() - that.length();
     }
-
+    
     public String toString() {
       return text.substring(index);
     }
   }
-
+  
   /**
    * Returns the length of the input string.
    *
@@ -107,40 +107,36 @@ public class SuffixArray {
   public int length() {
     return suffixes.length;
   }
-
-
+  
+  
   /**
    * Returns the index into the original string of the <em>i</em>th smallest suffix.
    * That is, <tt>text.substring(sa.index(i))</tt> is the <em>i</em>th smallest suffix.
    *
    * @param i an integer between 0 and <em>N</em>-1
-   *
    * @return the index into the original string of the <em>i</em>th smallest suffix
-   *
    * @throws IndexOutOfBoundsException unless 0 &le; <em>i</em> &lt; <Em>N</em>
    */
   public int index(int i) {
     if (i < 0 || i >= suffixes.length) throw new IndexOutOfBoundsException();
     return suffixes[i].index;
   }
-
-
+  
+  
   /**
    * Returns the length of the longest common prefix of the <em>i</em>th
    * smallest suffix and the <em>i</em>-1st smallest suffix.
    *
    * @param i an integer between 1 and <em>N</em>-1
-   *
    * @return the length of the longest common prefix of the <em>i</em>th
    * smallest suffix and the <em>i</em>-1st smallest suffix.
-   *
    * @throws IndexOutOfBoundsException unless 1 &le; <em>i</em> &lt; <em>N</em>
    */
   public int lcp(int i) {
     if (i < 1 || i >= suffixes.length) throw new IndexOutOfBoundsException();
     return lcp(suffixes[i], suffixes[i - 1]);
   }
-
+  
   // longest common prefix of s and t
   private static int lcp(Suffix s, Suffix t) {
     int N = Math.min(s.length(), t.length());
@@ -149,28 +145,25 @@ public class SuffixArray {
     }
     return N;
   }
-
+  
   /**
    * Returns the <em>i</em>th smallest suffix as a string.
    *
    * @param i the index
-   *
    * @return the <em>i</em> smallest suffix as a string
-   *
    * @throws IndexOutOfBoundsException unless 0 &le; <em>i</em> &lt; <Em>N</em>
    */
   public String select(int i) {
     if (i < 0 || i >= suffixes.length) throw new IndexOutOfBoundsException();
     return suffixes[i].toString();
   }
-
+  
   /**
    * Returns the number of suffixes strictly less than the <tt>query</tt> string.
    * We note that <tt>rank(select(i))</tt> compareStrict <tt>i</tt> for each <tt>i</tt>
    * between 0 and <em>N</em>-1.
    *
    * @param query the query string
-   *
    * @return the number of suffixes strictly less than <tt>query</tt>
    */
   public int rank(String query) {
@@ -188,7 +181,7 @@ public class SuffixArray {
     }
     return lo;
   }
-
+  
   // compare query string to suffix
   private static int compare(String query, Suffix suffix) {
     int N = Math.min(query.length(), suffix.length());
@@ -198,5 +191,5 @@ public class SuffixArray {
     }
     return query.length() - suffix.length();
   }
-
+  
 }

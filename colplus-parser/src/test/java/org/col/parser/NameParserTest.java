@@ -18,33 +18,33 @@ import static org.junit.Assert.*;
  */
 public class NameParserTest {
   static final NameParser parser = new NameParser();
-
+  
   @Test
   public void parseAuthorship() throws Exception {
     assertAuthorship("L.f", null, "L.f");
     assertAuthorship("DC.", null, "DC.");
   }
-
+  
   @Test
   public void parseSubgenera() throws Exception {
     assertName("Eteone subgen. Mysta", "Eteone subgen. Mysta")
         .infraGeneric("Eteone", Rank.SUBGENUS, "Mysta")
         .nothingElse();
   }
-
+  
   @Test
   public void parseSpecies() throws Exception {
-
+    
     assertName("Zophosis persis (Chatanay 1914)", "Zophosis persis")
         .species("Zophosis", "persis")
         .basAuthors("1914", "Chatanay")
         .nothingElse();
-
+    
     assertName("Abies alba Mill.", "Abies alba")
         .species("Abies", "alba")
         .combAuthors(null, "Mill.")
         .nothingElse();
-
+    
     assertName("Alstonia vieillardii Van Heurck & Müll.Arg.", "Alstonia vieillardii")
         .species("Alstonia", "vieillardii")
         .combAuthors(null, "Van Heurck", "Müll.Arg.")
@@ -55,92 +55,92 @@ public class NameParserTest {
         .combAuthors(null, "de Vriese")
         .nothingElse();
   }
-
+  
   @Test
   public void parseInfraSpecies() throws Exception {
-
+    
     assertName("Abies alba ssp. alpina Mill.", "Abies alba subsp. alpina")
         .infraSpecies("Abies", "alba", Rank.SUBSPECIES, "alpina")
         .combAuthors(null, "Mill.")
         .nothingElse();
-
+    
     assertName("Festuca ovina L. subvar. gracilis Hackel", "Festuca ovina subvar. gracilis")
         .infraSpecies("Festuca", "ovina", Rank.SUBVARIETY, "gracilis")
         .combAuthors(null, "Hackel")
         .nothingElse();
-
+    
     assertName("Pseudomonas syringae pv. aceris (Ark, 1939) Young, Dye & Wilkie, 1978", "Pseudomonas syringae pv. aceris")
         .infraSpecies("Pseudomonas", "syringae", Rank.PATHOVAR, "aceris")
         .combAuthors("1978", "Young", "Dye", "Wilkie")
         .basAuthors("1939", "Ark");
-
+    
     assertName("Baccharis microphylla Kunth var. rhomboidea Wedd. ex Sch. Bip. (nom. nud.)", "Baccharis microphylla var. rhomboidea")
         .infraSpecies("Baccharis", "microphylla", Rank.VARIETY, "rhomboidea")
         .combAuthors(null, "Sch.Bip.")
         .combExAuthors("Wedd.")
         .nothingElse();
-
+    
     assertName("Achillea millefolium subsp. pallidotegula B. Boivin var. pallidotegula", "Achillea millefolium var. pallidotegula")
         .infraSpecies("Achillea", "millefolium", Rank.VARIETY, "pallidotegula")
         .nothingElse();
-
+    
   }
-
+  
   @Test
   public void test4PartedNames() throws Exception {
     assertName("Bombus sichelii alticola latofasciatus", "Bombus sichelii latofasciatus")
         .infraSpecies("Bombus", "sichelii", Rank.INFRASUBSPECIFIC_NAME, "latofasciatus")
         .nothingElse();
-
+    
     assertName("Poa pratensis kewensis primula (L.) Rouy, 1913", "Poa pratensis primula")
         .infraSpecies("Poa", "pratensis", Rank.INFRASUBSPECIFIC_NAME, "primula")
         .combAuthors("1913", "Rouy")
         .basAuthors(null, "L.")
         .nothingElse();
-
+    
     assertName("Acipenser gueldenstaedti colchicus natio danubicus Movchan, 1967", "Acipenser gueldenstaedti natio danubicus")
         .infraSpecies("Acipenser", "gueldenstaedti", Rank.NATIO, "danubicus")
         .combAuthors("1967", "Movchan");
   }
-
+  
   @Test
   public void parseMonomial() throws Exception {
-
+    
     assertName("Acripeza Guérin-Ménéville 1838", "Acripeza")
         .monomial("Acripeza", Rank.UNRANKED)
         .combAuthors("1838", "Guérin-Ménéville")
         .nothingElse();
-
+    
   }
-
+  
   @Test
   public void parseInfraGeneric() throws Exception {
-
+    
     assertName("Zignoella subgen. Trematostoma Sacc.", "Zignoella subgen. Trematostoma")
         .infraGeneric("Zignoella", Rank.SUBGENUS, "Trematostoma")
         .combAuthors(null, "Sacc.")
         .nothingElse();
-
+    
     assertName("subgen. Trematostoma Sacc.", "subgen. Trematostoma")
         .infraGeneric(null, Rank.SUBGENUS, "Trematostoma")
         .combAuthors(null, "Sacc.")
         .nothingElse();
-
+    
   }
-
+  
   @Test
   public void parsePlaceholder() throws Exception {
-
+    
     assertName("[unassigned] Cladobranchia", "[unassigned] Cladobranchia", NameType.PLACEHOLDER)
         .nothingElse();
-
+    
     assertName("Biota incertae sedis", "Biota incertae sedis", NameType.PLACEHOLDER)
         .nothingElse();
-
+    
     assertName("Mollusca not assigned", "Mollusca not assigned", NameType.PLACEHOLDER)
         .nothingElse();
   }
-
+  
   /**
    * Expect empty results for nothing or whitespace
    */
@@ -153,7 +153,7 @@ public class NameParserTest {
     assertEquals(Optional.empty(), parser.parse("\n"));
     assertEquals(Optional.empty(), parser.parse("\t\n"));
   }
-
+  
   /**
    * Avoid NPEs and other exceptions for very short non names and other extremes found in occurrences.
    */
@@ -166,12 +166,12 @@ public class NameParserTest {
     assertNoName("@");
     assertNoName("&nbsp;");
   }
-
+  
   private void assertNoName(String name) throws UnparsableException {
     assertName(name, name, NameType.NO_NAME)
         .nothingElse();
   }
-
+  
   @Test
   public void parseSanctioned() throws Exception {
     // sanctioning authors not supported
@@ -181,14 +181,14 @@ public class NameParserTest {
         .combAuthors(null, "Fr.")
         .basAuthors(null, "Fr.")
         .nothingElse();
-
+    
     assertName("Boletus versicolor L. : Fr.", "Boletus versicolor")
         .species("Boletus", "versicolor")
         .combAuthors(null, "L.")
         .sanctAuthor("Fr.")
         .nothingElse();
   }
-
+  
   @Test
   public void parseNothotaxa() throws Exception {
     // https://github.com/GlobalNamesArchitecture/gnparser/issues/410
@@ -196,27 +196,23 @@ public class NameParserTest {
         .infraSpecies("Iris", "germanica", Rank.VARIETY, "florentina")
         .notho(NamePart.INFRASPECIFIC)
         .nothingElse();
-
+    
     assertName("Abies alba var. ×alpina L.", "Abies alba nothovar. alpina")
         .infraSpecies("Abies", "alba", Rank.VARIETY, "alpina")
         .notho(NamePart.INFRASPECIFIC)
         .combAuthors(null, "L.")
         .nothingElse();
   }
-
+  
   @Test
   public void parseHybridFormulas() throws Exception {
     // fix hybrids formulas
     assertName("Asplenium rhizophyllum DC. x ruta-muraria E.L. Braun 1939", "Asplenium rhizophyllum DC. x ruta-muraria E.L. Braun 1939", NameType.HYBRID_FORMULA)
         .nothingElse();
-
+    
   }
-
-
-
-
-
-
+  
+  
   static void assertAuthorship(String authorship, String year, String... authors) throws UnparsableException {
     ParsedName pn = parser.parseAuthorship(authorship).get();
     Authorship a = new Authorship();
@@ -226,27 +222,37 @@ public class NameParserTest {
     }
     assertEquals(a, pn.getCombinationAuthorship());
   }
-
+  
   static NameAssertion assertName(String rawName, String sciname) throws UnparsableException {
     return assertName(rawName, sciname, NameType.SCIENTIFIC);
   }
-
+  
   static NameAssertion assertName(String rawName, String sciname, NameType type) throws UnparsableException {
     NameAccordingTo n = parser.parse(rawName).get();
     assertEquals(sciname, n.getName().getScientificName());
     assertEquals(type, n.getName().getType());
     return new NameAssertion(n.getName());
   }
-
+  
   static class NameAssertion {
     private final Name n;
     private Set<NP> tested = Sets.newHashSet();
-    private enum NP {EPITHETS,NOTHO,AUTH,EXAUTH,BAS,EXBAS,SANCT,RANK}
-
+    
+    private enum NP {
+      EPITHETS,
+      NOTHO,
+      AUTH,
+      EXAUTH,
+      BAS,
+      EXBAS,
+      SANCT,
+      RANK
+    }
+    
     public NameAssertion(Name n) {
       this.n = n;
     }
-
+    
     void nothingElse() {
       for (NP p : NP.values()) {
         if (!tested.contains(p)) {
@@ -283,14 +289,14 @@ public class NameParserTest {
         }
       }
     }
-
+    
     private NameAssertion add(NP... props) {
       for (NP p : props) {
         tested.add(p);
       }
       return this;
     }
-
+    
     NameAssertion monomial(String monomial, Rank rank) {
       assertEquals(monomial, n.getUninomial());
       assertNull(n.getGenus());
@@ -300,7 +306,7 @@ public class NameParserTest {
       assertEquals(rank, n.getRank());
       return add(NP.EPITHETS, NP.RANK);
     }
-
+    
     NameAssertion infraGeneric(String genus, Rank rank, String infraGeneric) {
       assertEquals(genus, n.getGenus());
       assertEquals(infraGeneric, n.getInfragenericEpithet());
@@ -309,7 +315,7 @@ public class NameParserTest {
       assertEquals(rank, n.getRank());
       return add(NP.EPITHETS, NP.RANK);
     }
-
+    
     NameAssertion species(String genus, String epithet) {
       assertEquals(genus, n.getGenus());
       assertNull(n.getInfragenericEpithet());
@@ -318,7 +324,7 @@ public class NameParserTest {
       assertEquals(Rank.SPECIES, n.getRank());
       return add(NP.EPITHETS, NP.RANK);
     }
-  
+    
     NameAssertion infraSpecies(String genus, String epithet, Rank rank, String infraEpithet) {
       assertEquals(genus, n.getGenus());
       assertNull(n.getInfragenericEpithet());
@@ -327,38 +333,38 @@ public class NameParserTest {
       assertEquals(rank, n.getRank());
       return add(NP.EPITHETS, NP.RANK);
     }
-  
-    NameAssertion combAuthors(String year, String ... authors) {
+    
+    NameAssertion combAuthors(String year, String... authors) {
       assertEquals(year, n.getCombinationAuthorship().getYear());
       assertEquals(Lists.newArrayList(authors), n.getCombinationAuthorship().getAuthors());
       return add(NP.AUTH);
     }
-
+    
     NameAssertion notho(NamePart notho) {
       assertEquals(notho, n.getNotho());
       return add(NP.NOTHO);
     }
-
+    
     NameAssertion sanctAuthor(String author) {
       assertEquals(author, n.getSanctioningAuthor());
       return add(NP.SANCT);
     }
-
-    NameAssertion combExAuthors(String ... authors) {
+    
+    NameAssertion combExAuthors(String... authors) {
       assertEquals(Lists.newArrayList(authors), n.getCombinationAuthorship().getExAuthors());
       return add(NP.EXAUTH);
     }
-
-    NameAssertion basAuthors(String year, String ... authors) {
+    
+    NameAssertion basAuthors(String year, String... authors) {
       assertEquals(year, n.getBasionymAuthorship().getYear());
       assertEquals(Lists.newArrayList(authors), n.getBasionymAuthorship().getAuthors());
       return add(NP.BAS);
     }
-
-    NameAssertion basExAuthors(String year, String ... authors) {
+    
+    NameAssertion basExAuthors(String year, String... authors) {
       assertEquals(Lists.newArrayList(authors), n.getBasionymAuthorship().getExAuthors());
       return add(NP.EXBAS);
     }
-
+    
   }
 }

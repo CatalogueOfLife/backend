@@ -10,34 +10,38 @@ import org.apache.commons.lang3.StringUtils;
 import org.col.api.util.VocabularyUtils;
 
 public class NameSearchRequest extends MultivaluedHashMap<NameSearchParameter, String> {
-
+  
   public static enum SearchContent {
-    SCIENTIFIC_NAME, AUTHORSHIP, VERNACULAR_NAME
+    SCIENTIFIC_NAME,
+    AUTHORSHIP,
+    VERNACULAR_NAME
   }
-
+  
   public static enum SortBy {
-    RELEVANCE, NAME, KEY
+    RELEVANCE,
+    NAME,
+    KEY
   }
-
+  
   @QueryParam("content")
   private Set<SearchContent> content;
-
+  
   @QueryParam("facet")
   private Set<NameSearchParameter> facets = new HashSet<>();
-
+  
   @QueryParam("q")
   private String q;
-
+  
   @QueryParam("sortBy")
   private SortBy sortBy;
-
+  
   public void addFilter(NameSearchParameter param, String value) {
     value = StringUtils.trimToNull(value);
     // make sure we can parse the string value
     param.from(value);
     add(param, value);
   }
-
+  
   public void addFilter(NameSearchParameter param, String[] values) {
     Arrays.stream(values).forEach(v -> addFilter(param, v));
   }
@@ -50,7 +54,7 @@ public class NameSearchRequest extends MultivaluedHashMap<NameSearchParameter, S
       add(param, value.toString());
     }
   }
-
+  
   public void addFilter(NameSearchParameter param, Object[] values) {
     Arrays.stream(values).forEach(v -> addFilter(param, v));
   }
@@ -58,39 +62,39 @@ public class NameSearchRequest extends MultivaluedHashMap<NameSearchParameter, S
   public void addFilter(NameSearchParameter param, Collection<?> values) {
     values.forEach(v -> addFilter(param, v));
   }
-
+  
   public void addFacet(NameSearchParameter facet) {
     facets.add(facet);
   }
-
+  
   public Set<NameSearchParameter> getFacets() {
     return facets;
   }
-
+  
   public String getQ() {
     return q;
   }
-
+  
   public void setQ(String q) {
     this.q = q;
   }
-
+  
   public SortBy getSortBy() {
     return sortBy;
   }
-
+  
   public void setSortBy(SortBy sortBy) {
     this.sortBy = sortBy;
   }
-
+  
   public Set<SearchContent> getContent() {
     return content;
   }
-
+  
   public void setContent(Set<SearchContent> content) {
     this.content = content;
   }
-
+  
   public boolean isEmpty() {
     return q == null && super.isEmpty() && facets.isEmpty();
   }
@@ -119,10 +123,10 @@ public class NameSearchRequest extends MultivaluedHashMap<NameSearchParameter, S
     return Objects.equals(content, that.content) && Objects.equals(facets, that.facets)
         && Objects.equals(q, that.q) && sortBy == that.sortBy;
   }
-
+  
   @Override
   public int hashCode() {
     return Objects.hash(super.hashCode(), content, facets, q, sortBy);
   }
-
+  
 }

@@ -31,22 +31,23 @@ import static org.col.api.jackson.ApiModule.MAPPER;
  */
 @Deprecated
 public class AnystyleParserWrapper implements Parser<CslData> {
-
+  
   private static final Logger LOG = LoggerFactory.getLogger(AnystyleParserWrapper.class);
-
+  
   private static final TypeReference<List<CslData>> ANYSTYLE_RESPONSE_TYPE =
-      new TypeReference<List<CslData>>() {};
-
+      new TypeReference<List<CslData>>() {
+      };
+  
   private final CloseableHttpClient hc;
   private final AnystyleConfig cfg;
   private final Timer timer;
-
+  
   public AnystyleParserWrapper(CloseableHttpClient hc, AnystyleConfig cfg, MetricRegistry metrics) {
     this.hc = hc;
     this.cfg = cfg;
     this.timer = metrics.timer("org.col.parser.anystyle");
   }
-
+  
   public Optional<CslData> parse(String ref) throws UnparsableException {
     if (Strings.isNullOrEmpty(ref)) {
       return Optional.empty();
@@ -74,15 +75,15 @@ public class AnystyleParserWrapper implements Parser<CslData> {
       CslData csl = raw.get(0);
       csl.setId(null);
       return Optional.of(csl);
-
+      
     } catch (IOException | URISyntaxException e) {
       String err = getError(ref, e.getMessage(), json);
       LOG.error(err);
       throw new UnparsableException(err);
-
+      
     }
   }
-
+  
   private static String getError(String ref, String errMsg, String json) {
     StringBuilder sb = new StringBuilder(100);
     sb.append("Error parsing citation: \"");
@@ -96,11 +97,11 @@ public class AnystyleParserWrapper implements Parser<CslData> {
     }
     return sb.toString();
   }
-
+  
   private HttpGet request(String reference) throws URISyntaxException {
     URIBuilder ub = new URIBuilder(cfg.baseUrl);
     ub.setParameter("ref", reference);
     return new HttpGet(ub.build());
   }
-
+  
 }

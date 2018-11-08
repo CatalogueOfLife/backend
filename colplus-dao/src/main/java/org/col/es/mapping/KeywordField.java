@@ -8,27 +8,27 @@ import java.util.LinkedHashMap;
  * "keyword", meaning they will always at least be indexed as-is.
  */
 public class KeywordField extends SimpleField {
-
+  
   protected String analyzer;
   private LinkedHashMap<String, MultiField> fields;
-
+  
   public KeywordField() {
     super(ESDataType.KEYWORD);
   }
-
+  
   public LinkedHashMap<String, MultiField> getMultiFields() {
     return fields;
   }
-
+  
   public void addMultiField(MultiField field) {
     if (fields == null) {
       fields = new LinkedHashMap<>(2);
     }
     fields.put(field.name, field);
   }
-
+  
   public boolean hasMultiField(MultiField mf) {
     return fields != null && fields.containsKey(mf.name);
   }
-
+  
 }

@@ -10,11 +10,11 @@ import org.junit.Test;
  *
  */
 public class AreaParserTest extends ParserTestBase<AreaParser.Area> {
-
+  
   public AreaParserTest() {
     super(AreaParser.PARSER);
   }
-
+  
   @Test
   public void parse() throws Exception {
     assertParse(new AreaParser.Area("AGS", Gazetteer.TDWG), "tdwg:AGS");
@@ -33,7 +33,7 @@ public class AreaParserTest extends ParserTestBase<AreaParser.Area> {
     assertParse(new AreaParser.Area("27.12.c", Gazetteer.FAO), "fish:27.12.C");
     assertParse(new AreaParser.Area("27.3.d.28.2", Gazetteer.FAO), "fish:27.3.d.28.2");
   }
-
+  
   @Override
   List<String> unparsableValues() {
     return Lists.newArrayList(".", "?", "---", "öüä", "#67#", "wtf", "nothing", "t ru e", "a", "2",

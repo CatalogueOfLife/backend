@@ -11,15 +11,15 @@ import org.col.api.vocab.Language;
  */
 @MappedTypes(Language.class)
 public class LanguageTypeHandler extends BaseEnumTypeHandler<String, Language> {
-
+  
   @Override
   public String fromEnum(Language value) {
     return value == null ? null : value.getIso2LetterCode();
   }
-
+  
   @Override
   public Language toEnum(String key) {
     return Language.fromIsoCode(key).orElse(null);
   }
-
+  
 }

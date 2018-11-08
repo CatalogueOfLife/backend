@@ -4,13 +4,13 @@ package org.col.es.annotations;
  * Symbolic constants for the Elasticsearch analyzers defined within the CoL document store.
  */
 public enum Analyzer {
-
+  
   /**
    * The default (full-text) analyzer. Not specifying any analyzer means the field is indexed using
    * this analyzer, hence the analyzer's name is left empty (null).
    */
   DEFAULT,
-
+  
   /**
    * The no-op analyzer; indexes values as-is. Since this index is access through the field name
    * itself (not through a multi-field underneath it), the multi-field name is left empty (null).
@@ -21,7 +21,7 @@ public enum Analyzer {
    * string.
    */
   IGNORE_CASE,
-
+  
   /**
    * An analyzer typically used for auto-complete functionality. This is meant as an index-time only
    * analyzer. Note that in es-settings.json we have defined another analyzer (autocomplete_search,
@@ -32,5 +32,5 @@ public enum Analyzer {
    * https://www.elastic.co/guide/en/elasticsearch/reference/current/analysis-edgengram-tokenizer.html
    */
   AUTO_COMPLETE;
-
+  
 }

@@ -3,8 +3,9 @@ package org.col.es;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
-public class IndexConfig {
 
+public class IndexConfig {
+  
   /**
    * The model class corresponding to the type.
    */
@@ -19,7 +20,7 @@ public class IndexConfig {
   private static ObjectReader reader;
   private static ObjectWriter writer;
   
-
+  
   /**
    * Returns a specialized ObjectReader used to read ES documents into EsNameUsage instances.
    */
@@ -34,10 +35,10 @@ public class IndexConfig {
     }
     return reader;
   }
-
+  
   /**
    * Returns a specialized ObjectWriter used to serialize EsNameUsage instances.
-   * 
+   *
    * @return
    */
   @JsonIgnore

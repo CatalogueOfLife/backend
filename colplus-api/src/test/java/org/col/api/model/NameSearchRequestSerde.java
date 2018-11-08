@@ -11,11 +11,11 @@ import org.gbif.nameparser.api.Rank;
  *
  */
 public class NameSearchRequestSerde extends SerdeTestBase<NameSearchRequest> {
-
+  
   public NameSearchRequestSerde() {
     super(NameSearchRequest.class);
   }
-
+  
   @Override
   public NameSearchRequest genTestValue() throws Exception {
     NameSearchRequest s = new NameSearchRequest();

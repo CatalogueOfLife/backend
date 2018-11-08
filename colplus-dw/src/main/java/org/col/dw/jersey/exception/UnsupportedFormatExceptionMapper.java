@@ -10,7 +10,7 @@ import org.col.img.UnsupportedFormatException;
  */
 @Provider
 public class UnsupportedFormatExceptionMapper extends JsonExceptionMapperBase<UnsupportedFormatException> {
-
+  
   public UnsupportedFormatExceptionMapper() {
     super(Response.Status.BAD_REQUEST);
   }

@@ -11,25 +11,25 @@ import static org.junit.Assert.assertTrue;
  *
  */
 public class ReferenceSerdeTest extends SerdeTestBase<Reference> {
-
+  
   public ReferenceSerdeTest() {
     super(Reference.class);
   }
-
+  
   @Override
   public Reference genTestValue() throws Exception {
     return TestEntityGenerator.newReference();
   }
-
+  
   @Test
   public void testAbstract() throws Exception {
     String json = ApiModule.MAPPER.writeValueAsString(genTestValue());
     assertTrue(json.contains("\"abstract\""));
     assertFalse(json.contains("\"abstrct\""));
   }
-
+  
   @Override
-  protected void debug(String json, Wrapper<Reference> wrapper, Wrapper<Reference> wrapper2){
+  protected void debug(String json, Wrapper<Reference> wrapper, Wrapper<Reference> wrapper2) {
     System.out.println(json);
   }
 }

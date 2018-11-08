@@ -9,12 +9,12 @@ import java.util.Objects;
 public class EnumNote<T extends Enum> {
   public final T val;
   public final String note;
-
+  
   public EnumNote(T val, String note) {
     this.val = val;
     this.note = note;
   }
-
+  
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -23,7 +23,7 @@ public class EnumNote<T extends Enum> {
     return Objects.equals(val, enumNote.val) &&
         Objects.equals(note, enumNote.note);
   }
-
+  
   @Override
   public int hashCode() {
     return Objects.hash(val, note);

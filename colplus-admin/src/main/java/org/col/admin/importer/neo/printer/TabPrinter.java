@@ -24,16 +24,16 @@ public class TabPrinter implements TreePrinter {
   private final Function<Node, String> getTitle;
   private final TabWriter writer;
   private static final Joiner ID_CONCAT = Joiner.on(";").skipNulls();
-
+  
   public TabPrinter(Writer writer, Function<Node, String> getTitle) {
     this.writer = new TabWriter(writer);
     this.getTitle = getTitle;
   }
-
+  
   @Override
   public void close() {
   }
-
+  
   @Override
   public void start(Node n) {
     try {
@@ -64,9 +64,9 @@ public class TabPrinter implements TreePrinter {
       throw new RuntimeException(e);
     }
   }
-
+  
   @Override
   public void end(Node n) {
-
+  
   }
 }

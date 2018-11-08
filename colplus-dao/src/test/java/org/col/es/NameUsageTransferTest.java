@@ -1,7 +1,6 @@
 package org.col.es;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-
 import org.col.api.TestEntityGenerator;
 import org.col.es.model.EsNameUsage;
 import org.junit.Test;

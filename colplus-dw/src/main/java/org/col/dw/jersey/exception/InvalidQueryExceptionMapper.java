@@ -10,7 +10,7 @@ import org.col.es.InvalidQueryException;
  */
 @Provider
 public class InvalidQueryExceptionMapper extends JsonExceptionMapperBase<InvalidQueryException> {
-
+  
   public InvalidQueryExceptionMapper() {
     super(Response.Status.BAD_REQUEST);
   }

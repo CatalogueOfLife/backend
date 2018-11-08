@@ -23,17 +23,17 @@ public class PgConfig extends PgDbConfig {
   public static final String GBIF_DATASETS_FILE = "org/col/db/gbif.sql";
   public static final URI COL_DATASETS_URI = URI.create("https://raw.githubusercontent.com/Sp2000/colplus-repo/master/datasets.sql");
   public static final URI COL_NEW_DATASETS_URI = URI.create("https://raw.githubusercontent.com/Sp2000/colplus-repo/master/new-datasets.sql");
-
+  
   /**
    * Use null or an absolute file path starting with / to indicate an embedded postgres server
    * If a path is given it is used to cache the postgres server installation, but not its data.
    */
   public String host;
   public int port = 5432;
-
+  
   @Min(1)
   public int maximumPoolSize = 8;
-
+  
   /**
    * The minimum number of idle connections that the pool tries to maintain.
    * If the idle connections dip below this value, the pool will make a best effort to add additional connections quickly and efficiently.
@@ -42,7 +42,7 @@ public class PgConfig extends PgDbConfig {
    */
   @Min(0)
   public int minimumIdle = 1;
-
+  
   /**
    * This property controls the maximum amount of time in milliseconds that a connection is allowed to sit idle in the pool.
    * A connection will never be retired as idle before this timeout.
@@ -50,7 +50,7 @@ public class PgConfig extends PgDbConfig {
    */
   @Min(0)
   public int idleTimeout = min(1);
-
+  
   /**
    * This property controls the maximum lifetime of a connection in the pool.
    * When a connection reaches this timeout it will be retired from the pool.
@@ -59,7 +59,7 @@ public class PgConfig extends PgDbConfig {
    */
   @Min(0)
   public int maxLifetime = min(15);
-
+  
   /**
    * Postgres property lock_timeout:
    * Abort any statement that takes more than the specified number of milliseconds,
@@ -68,73 +68,73 @@ public class PgConfig extends PgDbConfig {
    */
   @Min(0)
   public int lockTimeout = 0;
-
+  
   /**
    * Postgres property idle_in_transaction_session_timeout:
    * Terminate any session with an open transaction that has been idle for longer than the specified duration in milliseconds.
    * This allows any locks held by that session to be released and the connection slot to be reused;
    * it also allows tuples visible only to this transaction to be vacuumed.
-   *
+   * <p>
    * The default value of 0 disables this feature.
    */
   @Min(0)
   public int idleInTransactionSessionTimeout = 0;
-
+  
   /**
    * The postgres work_mem session setting in MB that should be used for each connection.
    * A value of zero or below does not set anything and thus uses the global postgres settings
    */
   public int workMem = 0;
-
+  
   @Min(1000)
   public int connectionTimeout = sec(5);
-
+  
   /**
    * @return true if an embedded database should be used
    */
   public boolean embedded() {
     return host == null || host.startsWith("/");
   }
-
+  
   /**
    * @return converted minutes in milliseconds
    */
   private static int min(int minutes) {
     return minutes * 60000;
   }
-
+  
   /**
    * @return converted seconds in milliseconds
    */
   private static int sec(int seconds) {
     return seconds * 1000;
   }
-
+  
   /**
    * @return a new simple postgres jdbc connection
    */
   public Connection connect() throws SQLException {
     return connect(this);
   }
-
+  
   /**
    * @return a new simple postgres jdbc connection to the given db on this pg server
    */
   public Connection connect(PgDbConfig db) throws SQLException {
     return DriverManager.getConnection(jdbcUrl(db), Strings.emptyToNull(db.user), Strings.emptyToNull(db.password));
   }
-
+  
   private String jdbcUrl(PgDbConfig db) {
     return "jdbc:postgresql://" + host + ":" + port + "/" + db.database;
   }
-
+  
   /**
    * @return a new hikari connection pool for the configured db
    */
   public HikariDataSource pool() {
     return new HikariDataSource(hikariConfig());
   }
-
+  
   public HikariConfig hikariConfig() {
     HikariConfig hikari = new HikariConfig();
     hikari.setJdbcUrl(jdbcUrl(this));
@@ -146,7 +146,7 @@ public class PgConfig extends PgDbConfig {
     hikari.setMinimumIdle(minimumIdle);
     hikari.setIdleTimeout(idleTimeout);
     hikari.setMaxLifetime(maxLifetime);
-
+    
     // connection settings
     StringBuilder sb = new StringBuilder();
     if (workMem > 0) {
@@ -158,12 +158,12 @@ public class PgConfig extends PgDbConfig {
     if (idleInTransactionSessionTimeout > 0) {
       sb.append("SET idle_in_transaction_session_timeout TO " + idleInTransactionSessionTimeout + ";");
     }
-    if (sb.length()>0) {
+    if (sb.length() > 0) {
       hikari.setConnectionInitSql(sb.toString());
     }
     return hikari;
   }
-
+  
   public static ScriptRunner scriptRunner(Connection con) {
     ScriptRunner runner = new ScriptRunner(con);
     // needed to honor the $$ escapes in pg functions
@@ -172,7 +172,7 @@ public class PgConfig extends PgDbConfig {
     runner.setLogWriter(null);
     return runner;
   }
-
+  
   @Override
   public String toString() {
     return MoreObjects.toStringHelper(this)
@@ -190,7 +190,7 @@ public class PgConfig extends PgDbConfig {
         .add("workMem", workMem)
         .toString();
   }
-
+  
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -210,7 +210,7 @@ public class PgConfig extends PgDbConfig {
         Objects.equals(user, pgConfig.user) &&
         Objects.equals(password, pgConfig.password);
   }
-
+  
   @Override
   public int hashCode() {
     return Objects.hash(host, port, database, user, password, maximumPoolSize, minimumIdle, idleTimeout, maxLifetime, lockTimeout, idleInTransactionSessionTimeout, workMem, connectionTimeout);

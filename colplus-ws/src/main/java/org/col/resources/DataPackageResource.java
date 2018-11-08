@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
 @Produces(MediaType.APPLICATION_JSON)
 @SuppressWarnings("static-method")
 public class DataPackageResource {
-
+  
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(DataPackageResource.class);
   private final DataPackageBuilder builder = new DataPackageBuilder();

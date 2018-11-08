@@ -12,7 +12,6 @@ import static java.time.temporal.ChronoField.*;
 /**
  * A FuzzyDate encapsulates a {@link TemporalAccessor} instance which is guaranteed to have at least
  * its YEAR field set. Other fields may be unknown, in which case the date is said to be fuzzy.
- *
  */
 public final class FuzzyDate {
   private static final Logger LOG = LoggerFactory.getLogger(FuzzyDate.class);
@@ -34,7 +33,7 @@ public final class FuzzyDate {
 
   /**
    * Returns a {@link LocalDate}, setting month and/or day to 1 if unknown.
-   * 
+   *
    * @return
    */
   public LocalDate toLocalDate() {
@@ -66,7 +65,7 @@ public final class FuzzyDate {
   /**
    * Returns a {@link LocalDate} if year, month and day are known; a {@link YearMonth} if year and
    * month are known; or a {@link Year} if only the year is known.
-   * 
+   *
    * @return
    */
   public TemporalAccessor bestMatch() {
@@ -81,7 +80,7 @@ public final class FuzzyDate {
 
   /**
    * Returns false if year, month and day are known, true otherwise.
-   * 
+   *
    * @return
    */
   public boolean isFuzzyDate() {
@@ -90,7 +89,7 @@ public final class FuzzyDate {
 
   /**
    * Returns the original date string from which this FuzzyDateInstance was created.
-   * 
+   *
    * @return
    */
   public String getVerbatim() {

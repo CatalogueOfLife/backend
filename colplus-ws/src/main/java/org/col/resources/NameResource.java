@@ -25,23 +25,23 @@ import org.slf4j.LoggerFactory;
 @Path("/dataset/{datasetKey}/name")
 @Produces(MediaType.APPLICATION_JSON)
 public class NameResource {
-
+  
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(NameResource.class);
-
+  
   private final NameUsageSearchService searchService;
-
+  
   public NameResource(NameUsageSearchService svc) {
     this.searchService = svc;
   }
-
+  
   @GET
   public ResultPage<Name> list(@PathParam("datasetKey") Integer datasetKey,
-      @Valid @BeanParam Page page, @Context SqlSession session) {
+                               @Valid @BeanParam Page page, @Context SqlSession session) {
     NameDao dao = new NameDao(session);
     return dao.list(datasetKey, page);
   }
-
+  
   @GET
   @Timed
   @Path("search")
@@ -51,12 +51,12 @@ public class NameResource {
                                                         @Context UriInfo uri) throws InvalidQueryException {
     query.addQueryParams(uri.getQueryParameters());
     if (query.containsKey(NameSearchParameter.DATASET_KEY)) {
-      throw new IllegalArgumentException("No further datasetKey parameter allowed, search already scoped to datasetKey="+datasetKey);
+      throw new IllegalArgumentException("No further datasetKey parameter allowed, search already scoped to datasetKey=" + datasetKey);
     }
     query.addFilter(NameSearchParameter.DATASET_KEY, datasetKey);
     return searchService.search(query, page);
   }
-
+  
   @GET
   @Path("{id}")
   public Name get(@PathParam("datasetKey") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
@@ -67,22 +67,22 @@ public class NameResource {
     }
     return name;
   }
-
+  
   @GET
   @Path("{id}/synonyms")
   public List<Name> getSynonyms(@PathParam("datasetKey") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
     NameDao dao = new NameDao(session);
     return dao.homotypicGroup(datasetKey, id);
   }
-
+  
   @GET
   @Path("{id}/relations")
   public List<NameRelation> getRelations(@PathParam("datasetKey") int datasetKey,
-      @PathParam("id") String id, @Context SqlSession session) {
+                                         @PathParam("id") String id, @Context SqlSession session) {
     NameRelationMapper mapper = session.getMapper(NameRelationMapper.class);
     return mapper.list(datasetKey, id);
   }
-
+  
   /**
    * TODO: this is really a names index / prov catalogue specific method. Move it to a dedicated web
    * resource

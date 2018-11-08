@@ -17,7 +17,7 @@ public class CslDataConverterTest {
 
   @Test
   public void toCSLType() {
-    for (CSLRefType t: CSLRefType.values()) {
+    for (CSLRefType t : CSLRefType.values()) {
       assertNotNull(CslDataConverter.toCSLType(t));
     }
   }

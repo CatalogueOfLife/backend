@@ -27,22 +27,23 @@ import org.slf4j.LoggerFactory;
  */
 public class DwcaRelationInserter implements NodeBatchProcessor {
   private static final Logger LOG = LoggerFactory.getLogger(DwcaRelationInserter.class);
-
+  
   private static final List<Splitter> COMMON_SPLITTER = Lists.newArrayList();
+  
   static {
     for (char del : "[|;, ]".toCharArray()) {
       COMMON_SPLITTER.add(Splitter.on(del).trimResults().omitEmptyStrings());
     }
   }
-
+  
   private final NeoDb store;
   private final InsertMetadata meta;
-
+  
   public DwcaRelationInserter(NeoDb store, InsertMetadata meta) {
     this.store = store;
     this.meta = meta;
   }
-
+  
   @Override
   public void process(Node n) {
     try {
@@ -54,14 +55,14 @@ public class DwcaRelationInserter implements NodeBatchProcessor {
         insertBasionymRel(t, v);
         store.put(v);
       }
-
+      
       store.put(t);
-
+      
     } catch (Exception e) {
       LOG.error("error processing explicit relations for {} {}", n, NeoProperties.getScientificNameWithAuthor(n), e);
     }
   }
-
+  
   /**
    * Creates synonym_of relationship based on the verbatim dwc:acceptedNameUsageID and dwc:acceptedNameUsage term values.
    * Assumes pro parte synonyms are dealt with before and the remaining accepted identifier refers to a single taxon only.
@@ -76,7 +77,7 @@ public class DwcaRelationInserter implements NodeBatchProcessor {
         store.createSynonymRel(t.node, acc.node);
       }
     }
-
+    
     // if status is synonym but we ain't got no idea of the accepted flag it
     if (accepted.isEmpty() && (t.isSynonym() || v.hasIssue(Issue.ACCEPTED_ID_INVALID))) {
       v.addIssue(Issue.ACCEPTED_NAME_MISSING);
@@ -86,7 +87,7 @@ public class DwcaRelationInserter implements NodeBatchProcessor {
       t.node.removeLabel(Labels.TAXON);
     }
   }
-
+  
   /**
    * Sets up the parent relations using the parentNameUsage(ID) term values.
    * The denormed, flat classification is used in a next step later.
@@ -99,7 +100,7 @@ public class DwcaRelationInserter implements NodeBatchProcessor {
       }
     }
   }
-
+  
   private void insertBasionymRel(NeoTaxon t, VerbatimRecord v) {
     if (v != null && meta.isOriginalNameMapped()) {
       RankedName bas = lookupSingleByIdOrName(v, t, DwcTerm.originalNameUsageID, Issue.BASIONYM_ID_INVALID, DwcTerm.originalNameUsage, Origin.VERBATIM_BASIONYM);
@@ -111,16 +112,16 @@ public class DwcaRelationInserter implements NodeBatchProcessor {
       }
     }
   }
-
+  
   private RankedName lookupSingleByIdOrName(VerbatimRecord v, NeoTaxon t, DwcTerm idTerm, Issue invlidIdIssue, DwcTerm nameTerm, Origin createdNameOrigin) {
     List<RankedName> names = lookupByIdOrName(v, t, false, idTerm, invlidIdIssue, nameTerm, createdNameOrigin);
     return names.isEmpty() ? null : names.get(0);
   }
-
+  
   private List<RankedName> lookupByIdOrName(VerbatimRecord v, NeoTaxon t, DwcTerm idTerm, Issue invlidIdIssue, DwcTerm nameTerm, Origin createdNameOrigin) {
     return lookupByIdOrName(v, t, true, idTerm, invlidIdIssue, nameTerm, createdNameOrigin);
   }
-
+  
   private List<RankedName> lookupByIdOrName(VerbatimRecord v, NeoTaxon t, boolean allowMultiple, DwcTerm idTerm, Issue invlidIdIssue, DwcTerm nameTerm, Origin createdNameOrigin) {
     List<RankedName> names = lookupByTaxonID(idTerm, v, t, invlidIdIssue, allowMultiple);
     if (names.isEmpty()) {
@@ -132,7 +133,7 @@ public class DwcaRelationInserter implements NodeBatchProcessor {
     }
     return names;
   }
-
+  
   /**
    * Reads a verbatim given term that should represent a foreign key to another record via the taxonID.
    * If the value is not the same as the original records taxonID it tries to split the ids into multiple keys and lookup the matching nodes.
@@ -152,8 +153,8 @@ public class DwcaRelationInserter implements NodeBatchProcessor {
         Node a = store.byID(unsplitIds);
         if (a != null) {
           ids.add(NeoProperties.getRankedName(a));
-
-        } else if (allowMultiple){
+          
+        } else if (allowMultiple) {
           for (Splitter splitter : COMMON_SPLITTER) {
             List<String> vals = splitter.splitToList(unsplitIds);
             if (vals.size() > 1) {
@@ -171,8 +172,8 @@ public class DwcaRelationInserter implements NodeBatchProcessor {
     }
     return ids;
   }
-
-
+  
+  
   private List<RankedName> lookupRankedNames(Iterable<String> taxonIDs, NeoTaxon t) {
     List<RankedName> rankedNames = Lists.newArrayList();
     for (String id : taxonIDs) {
@@ -185,12 +186,12 @@ public class DwcaRelationInserter implements NodeBatchProcessor {
     }
     return rankedNames;
   }
-
+  
   /**
    * Reads a verbatim given term that should represent a scientific name pointing to another record via the scientificName.
    * It first tries to lookup existing records by the canonical name with author, but falls back to authorless lookup if no matches.
    * If the name is the same as the original records scientificName it is ignored.
-   *
+   * <p>
    * If true names that cannot be found are created as explicit names
    *
    * @return the accepted node with its name. Null if no accepted name was mapped or equals the record itself
@@ -208,18 +209,18 @@ public class DwcaRelationInserter implements NodeBatchProcessor {
         if (name.hasAuthorship()) {
           matches.removeIf(n -> !Strings.isNullOrEmpty(NeoProperties.getAuthorship(n)) && !NeoProperties.getAuthorship(n).equalsIgnoreCase(name.authorshipComplete()));
         }
-
+        
         // if multiple matches remove synonyms
         if (matches.size() > 1) {
           matches.removeIf(n -> n.hasLabel(Labels.SYNONYM));
         }
-
+        
         // if we got one match, use it!
         if (matches.isEmpty()) {
           // create name
           LOG.debug("{} {} not existing, materialize it", term.simpleName(), name);
           return store.createDoubtfulFromSource(createdOrigin, name, t, t.name.getRank());
-
+          
         } else {
           if (matches.size() > 1) {
             // still multiple matches, pick first and log critical issue!
@@ -231,7 +232,7 @@ public class DwcaRelationInserter implements NodeBatchProcessor {
     }
     return null;
   }
-
+  
   @Override
   public void commitBatch(int counter) {
     if (Thread.interrupted()) {

@@ -11,14 +11,18 @@ import org.col.db.PgDbConfig;
 @SuppressWarnings("PublicField")
 public class ImgConfig extends PgDbConfig {
   
-  public enum Scale {ORIGINAL, LARGE, SMALL}
+  public enum Scale {
+    ORIGINAL,
+    LARGE,
+    SMALL
+  }
   
   @NotNull
   public Path repo;
-
+  
   @NotNull
   public Size small = new Size(90, 60);
-
+  
   @NotNull
   public Size large = new Size(300, 200);
   
@@ -33,15 +37,15 @@ public class ImgConfig extends PgDbConfig {
   }
   
   public Path datasetLogo(int datasetKey, Scale scale) {
-    return repo.resolve("dataset").resolve(filename(datasetKey+"-logo", scale));
+    return repo.resolve("dataset").resolve(filename(datasetKey + "-logo", scale));
   }
   
   public Path sourceLogo(int colSourceKey, Scale scale) {
-    return repo.resolve("source").resolve(filename(colSourceKey+"-logo", scale));
+    return repo.resolve("source").resolve(filename(colSourceKey + "-logo", scale));
   }
   
   private String filename(String prefix, Scale scale) {
     return String.format("%s-%s.%s", prefix, scale.name().toLowerCase(), ImageService.IMAGE_FORMAT);
   }
-
+  
 }

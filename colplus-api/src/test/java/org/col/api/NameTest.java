@@ -11,7 +11,7 @@ import static org.junit.Assert.assertEquals;
  *
  */
 public class NameTest {
-
+  
   @Test
   public void conversionAndFormatting() throws Exception {
     Name n = new Name();
@@ -20,7 +20,7 @@ public class NameTest {
     n.setNotho(NamePart.SPECIFIC);
     n.setRank(Rank.SUBSPECIES);
     assertEquals("Abies × alba subsp.", n.canonicalNameComplete());
-
+    
     n.setInfraspecificEpithet("alpina");
     n.getCombinationAuthorship().setYear("1999");
     n.getCombinationAuthorship().getAuthors().add("L.");

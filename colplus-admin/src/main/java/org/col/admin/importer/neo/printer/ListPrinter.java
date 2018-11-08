@@ -19,26 +19,26 @@ public class ListPrinter implements TreePrinter {
   private final Function<Node, String> getTitle;
   private final TabWriter writer;
   private String family;
-
+  
   public ListPrinter(Writer writer, Function<Node, String> getTitle) {
     this.writer = new TabWriter(writer);
     this.getTitle = getTitle;
   }
-
+  
   @Override
   public void close() {
   }
-
+  
   @Override
   public void start(Node n) {
     try {
       Rank rank = NeoProperties.getRank(n, Rank.UNRANKED);
       if (Rank.FAMILY == rank) {
         family = NeoProperties.getScientificName(n);
-
+        
       } else if (Rank.FAMILY.higherThan(rank)) {
         String[] row = new String[4];
-
+        
         row[0] = getTitle.apply(n);
         row[1] = rank.name().toLowerCase();
         row[2] = (n.hasLabel(Labels.SYNONYM) ? "synonym" : "accepted");
@@ -49,9 +49,9 @@ public class ListPrinter implements TreePrinter {
       throw new RuntimeException(e);
     }
   }
-
+  
   @Override
   public void end(Node n) {
-
+  
   }
 }

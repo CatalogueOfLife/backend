@@ -8,7 +8,6 @@ import org.col.parser.DateParser.DateStringFilter;
 /**
  * A DateStringFilter implementation used as a course, last ditch attempt to at least extract a year
  * from date strings like "2007b" or "1914 - 1918"
- *
  */
 public class YearExtractor implements DateStringFilter {
 
@@ -17,7 +16,8 @@ public class YearExtractor implements DateStringFilter {
 
   private static final Pattern PATTERN = Pattern.compile("(^|\\D+)(\\d{4})($|\\D+)");
 
-  public YearExtractor() {}
+  public YearExtractor() {
+  }
 
   @Override
   public String filter(String dateString) {

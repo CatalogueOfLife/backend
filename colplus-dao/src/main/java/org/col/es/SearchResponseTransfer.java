@@ -13,7 +13,7 @@ import org.col.es.model.EsNameUsage;
  * Converts the payload field within the EsNameUsage document back to a NameUsageWrapper.
  */
 public class SearchResponseTransfer {
-
+  
   @SuppressWarnings("unchecked")
   List<NameUsageWrapper<NameUsage>> transfer(SearchResponse<EsNameUsage> response) {
     if (response.getHits().getTotal() == 0) {
@@ -28,5 +28,5 @@ public class SearchResponseTransfer {
       }
     }).collect(Collectors.toList());
   }
-
+  
 }

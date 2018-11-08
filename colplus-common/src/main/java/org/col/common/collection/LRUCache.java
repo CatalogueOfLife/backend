@@ -7,7 +7,7 @@ import java.util.Map;
  * Last Recently Used cache using a LinkedHashMap underneath.
  * This class is NON THREAD SAFE !
  */
-public class LRUCache <K, V> extends LinkedHashMap<K, V> {
+public class LRUCache<K, V> extends LinkedHashMap<K, V> {
   private final int maxEntries;
   private static final int DEFAULT_INITIAL_CAPACITY = 16; // same as HasMap
   private static final float DEFAULT_LOAD_FACTOR = 0.75f; // same as HasMap

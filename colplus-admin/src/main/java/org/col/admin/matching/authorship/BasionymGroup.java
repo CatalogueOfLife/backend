@@ -17,48 +17,48 @@ public class BasionymGroup<T> {
   private Authorship authorship;
   private T basionym;
   private List<T> recombinations = Lists.newArrayList();
-
+  
   public BasionymGroup() {
   }
-
+  
   public T getBasionym() {
     return basionym;
   }
-
+  
   public void setBasionym(T basionym) {
     this.basionym = basionym;
   }
-
+  
   public List<T> getRecombinations() {
     return recombinations;
   }
-
+  
   public boolean hasBasionym() {
     return basionym != null;
   }
-
+  
   public boolean hasRecombinations() {
     return !recombinations.isEmpty();
   }
-
+  
   public Authorship getAuthorship() {
     return authorship;
   }
-
+  
   public String getEpithet() {
     return epithet;
   }
-
+  
   public void setName(String epithet, Authorship authorship) {
     this.epithet = epithet;
     this.authorship = authorship;
   }
-
+  
   @Override
   public int hashCode() {
     return Objects.hash(basionym, recombinations, epithet, authorship);
   }
-
+  
   @Override
   public boolean equals(Object obj) {
     if (this == obj) {
@@ -73,7 +73,7 @@ public class BasionymGroup<T> {
         && Objects.equals(this.epithet, other.epithet)
         && Objects.equals(this.authorship, other.authorship);
   }
-
+  
   @Override
   public String toString() {
     return "BasionymGroup{" + epithet + ' ' + authorship + " | " +

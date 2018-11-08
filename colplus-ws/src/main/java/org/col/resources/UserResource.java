@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory;
 @Produces(MediaType.APPLICATION_JSON)
 @SuppressWarnings("static-method")
 public class UserResource {
-
+  
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(UserResource.class);
   
@@ -52,5 +52,5 @@ public class UserResource {
     }
     return jwt.generate(user);
   }
-
+  
 }

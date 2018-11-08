@@ -6,12 +6,12 @@ import org.gbif.nameparser.api.Rank;
 
 @MappedTypes(Rank.class)
 public class RankTypeHandler extends BaseEnumTypeHandler<String, Rank> {
-
+  
   @Override
   public String fromEnum(Rank value) {
     return value == null ? null : value.name().toLowerCase();
   }
-
+  
   @Override
   public Rank toEnum(String key) {
     if (key == null) {

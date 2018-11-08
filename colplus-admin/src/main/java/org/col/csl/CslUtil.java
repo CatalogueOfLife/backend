@@ -16,6 +16,7 @@ public class CslUtil {
   private final static ReferenceProvider provider = new ReferenceProvider();
   private final static CSL csl;
   private static Timer timer;
+
   static {
     try {
       csl = new CSL(provider, "apa");
@@ -52,7 +53,7 @@ public class CslUtil {
 
     @Override
     public String[] getIds() {
-      return new String[] {ID};
+      return new String[]{ID};
     }
   }
 

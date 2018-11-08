@@ -28,7 +28,7 @@ public class NameSearchRequestTest {
     assertEquals(ImmutableList.of("123", "1234"), r.get(NameSearchParameter.DATASET_KEY));
     r.addFilter(NameSearchParameter.DATASET_KEY, Lists.newArrayList(1234, 12, 13, 14));
     assertEquals(ImmutableList.of("123", "1234", "1234", "12", "13", "14"), r.get(NameSearchParameter.DATASET_KEY));
-  
+    
     r.addFilter(NameSearchParameter.DATASET_KEY, Lists.newArrayList("1", "2"));
     assertEquals(ImmutableList.of("123", "1234", "1234", "12", "13", "14", "1", "2"), r.get(NameSearchParameter.DATASET_KEY));
   }

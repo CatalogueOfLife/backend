@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory;
  * Identity service that delegates authentication to the BASIC scheme using the
  * GBIF id service via http.
  * It keeps a local copy of users and therefore needs access to Postgres.
- *
+ * <p>
  * A SqlSessionFactory and an HttpClient MUST be set before the service is used.
  */
 public class IdentityService {
@@ -45,7 +45,7 @@ public class IdentityService {
   private CloseableHttpClient http;
   private final GbifTrustedAuth gbifAuth;
   private final static ObjectMapper OM = configure(new ObjectMapper());
-
+  
   private static ObjectMapper configure(ObjectMapper mapper) {
     mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
     return mapper;
@@ -75,7 +75,7 @@ public class IdentityService {
   public void setClient(CloseableHttpClient http) {
     this.http = http;
   }
-
+  
   public ColUser get(Integer key) {
     if (cache.containsKey(key)) {
       return cache.get(key);
@@ -89,7 +89,7 @@ public class IdentityService {
       return cache(user);
     }
   }
-
+  
   private ColUser cache(ColUser user) {
     cache.put(user.getKey(), user);
     return user;
@@ -133,15 +133,15 @@ public class IdentityService {
    * Checks if Basic Auth against GBIF API is working.
    * We avoid the native httpclient Basic authentication which uses ASCII to encode the password
    * into Base64 octets. But GBIF requires ISO_8859_1! See:
-   *  https://github.com/gbif/registry/issues/67
-   *  https://stackoverflow.com/questions/7242316/what-encoding-should-i-use-for-http-basic-authentication
-   *  https://tools.ietf.org/html/rfc7617#section-2.1
+   * https://github.com/gbif/registry/issues/67
+   * https://stackoverflow.com/questions/7242316/what-encoding-should-i-use-for-http-basic-authentication
+   * https://tools.ietf.org/html/rfc7617#section-2.1
    */
   @VisibleForTesting
   boolean authenticateGBIF(String username, String password) {
     HttpGet get = new HttpGet(loginUri);
     get.addHeader("Authorization", basicAuthHeader(username, password));
-    try (CloseableHttpResponse resp = http.execute(get)){
+    try (CloseableHttpResponse resp = http.execute(get)) {
       LOG.debug("GBIF authentication response for {}: {}", username, resp);
       return resp.getStatusLine().getStatusCode() == 200;
     } catch (Exception e) {

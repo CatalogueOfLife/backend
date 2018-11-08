@@ -6,12 +6,12 @@ import javax.validation.constraints.NotNull;
 public class PgDbConfig {
   @NotNull
   public String database = "postgres";
-
+  
   @NotNull
   public String user = "postgres";
-
+  
   public String password;
-
+  
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -21,12 +21,12 @@ public class PgDbConfig {
         Objects.equals(user, that.user) &&
         Objects.equals(password, that.password);
   }
-
+  
   @Override
   public int hashCode() {
     return Objects.hash(database, user, password);
   }
-
+  
   @Override
   public String toString() {
     return "PgDbConfig{" +

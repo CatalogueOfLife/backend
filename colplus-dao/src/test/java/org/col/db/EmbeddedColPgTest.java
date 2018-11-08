@@ -1,12 +1,12 @@
 package org.col.db;
 
 import java.io.IOException;
+
 import org.col.common.util.YamlUtils;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class EmbeddedColPgTest {
-
+  
   @Test
   //@Ignore
   public void startStop() throws IOException {

@@ -7,9 +7,9 @@ import org.col.es.EsConfig;
 
 
 public class WsServerConfig extends PgAppConfig {
-
+  
   public EsConfig es = new EsConfig();
-
+  
   @NotNull
   public String raml = "https://sp2000.github.io/colplus/api/api.html";
   

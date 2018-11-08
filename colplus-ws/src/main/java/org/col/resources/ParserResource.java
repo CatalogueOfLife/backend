@@ -22,11 +22,11 @@ import org.slf4j.LoggerFactory;
 @Path("/parser/name")
 @Produces(MediaType.APPLICATION_JSON)
 public class ParserResource {
-
-	@SuppressWarnings("unused")
-	private static final Logger LOG = LoggerFactory.getLogger(ParserResource.class);
+  
+  @SuppressWarnings("unused")
+  private static final Logger LOG = LoggerFactory.getLogger(ParserResource.class);
   private static final NameParser parser = NameParser.PARSER;
-
+  
   /**
    * Parsing names as GET query parameters.
    */
@@ -34,7 +34,7 @@ public class ParserResource {
   public List<NameAccordingTo> parseGet(@QueryParam("name") List<String> names) {
     return parse(names.stream());
   }
-
+  
   /**
    * Parsing names as a json array.
    */
@@ -43,7 +43,7 @@ public class ParserResource {
   public List<NameAccordingTo> parseJson(List<String> names) {
     return parse(names.stream());
   }
-
+  
   /**
    * Parsing names by uploading a plain UTF-8 text file using one line per scientific name.
    * <pre>
@@ -60,8 +60,8 @@ public class ParserResource {
     BufferedReader reader = new BufferedReader(new InputStreamReader(file, Charset.forName("UTF8")));
     return parse(reader.lines());
   }
-
-
+  
+  
   /**
    * Parsing names by posting plain text content using one line per scientific name.
    * Make sure to preserve new lines (\n) in the posted data, for example use --data-binary with curl:
@@ -74,7 +74,7 @@ public class ParserResource {
   public List<NameAccordingTo> parsePlainText(InputStream names) throws UnsupportedEncodingException {
     return parseFile(names);
   }
-
+  
   private List<NameAccordingTo> parse(Stream<String> names) {
     return names
         .peek(n -> LOG.info("Parse: {}", n))
@@ -83,5 +83,5 @@ public class ParserResource {
         .map(Optional::get)
         .collect(Collectors.toList());
   }
-
+  
 }

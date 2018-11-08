@@ -34,10 +34,10 @@ public class DataPackageBuilder {
       .build();
   
   private static final Set<ColTerm> monomials = ImmutableSet.of(
-        ColTerm.kingdom, ColTerm.phylum, ColTerm.class_, ColTerm.order, ColTerm.family,
-        ColTerm.subphylum, ColTerm.subclass, ColTerm.suborder, ColTerm.subfamily,
-        ColTerm.superfamily
-      );
+      ColTerm.kingdom, ColTerm.phylum, ColTerm.class_, ColTerm.order, ColTerm.family,
+      ColTerm.subphylum, ColTerm.subclass, ColTerm.suborder, ColTerm.subfamily,
+      ColTerm.superfamily
+  );
 
   private static final Map<ColTerm, Class<? extends Enum>> enums = ImmutableMap.<ColTerm, Class<? extends Enum>>builder()
       .put(ColTerm.status, TaxonomicStatus.class)
@@ -98,7 +98,7 @@ public class DataPackageBuilder {
     ColTerm rowType = ColTerm.find(FilenameUtils.getBaseName(resource), true);
     if (rowType == null) {
       throw new UnknownEntityException("Unknown entity " + resource);
-    
+
     } else if (!rowType.isClass()) {
       throw new UnknownEntityException(resource + " is not a class term");
     }
@@ -145,12 +145,12 @@ public class DataPackageBuilder {
       enumClass = NomStatus.class;
       
     } else if (t == ColTerm.type && rowType == ColTerm.Media) {
-        enumClass = MediaType.class;
-        
+      enumClass = MediaType.class;
+
     } else {
       enumClass = enums.get(t);
     }
-  
+
     return enumValues(enumClass, ApiModule::enumValueName);
   }
   

@@ -5,7 +5,7 @@ import org.col.api.model.Page;
 import org.junit.Test;
 
 public class ReferenceDaoTest extends DaoTestBase {
-
+  
   /*
    * Issue #54 /reference (without query params) generates NPE.
    */
@@ -16,5 +16,5 @@ public class ReferenceDaoTest extends DaoTestBase {
       dao.list(11, new Page());
     }
   }
-
+  
 }

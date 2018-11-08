@@ -58,7 +58,7 @@ public class NameUsageWrapper<T extends NameUsage> {
   }
   
   @Override
-  public int hashCode() { 
+  public int hashCode() {
     return Objects.hash(usage, issues, vernacularNames);
   }
 }

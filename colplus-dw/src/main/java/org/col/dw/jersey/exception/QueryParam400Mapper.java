@@ -11,11 +11,11 @@ import org.glassfish.jersey.server.ParamException;
  */
 @Provider
 public class QueryParam400Mapper extends JsonExceptionMapperBase<ParamException.QueryParamException> {
-
+  
   public QueryParam400Mapper() {
     super(Response.Status.BAD_REQUEST);
   }
-
+  
   @Override
   String message(ParamException.QueryParamException ex) {
     StringBuilder msg = new StringBuilder();
@@ -25,7 +25,7 @@ public class QueryParam400Mapper extends JsonExceptionMapperBase<ParamException.
     msg.append(getInitialCause(ex.getCause()));
     return msg.toString();
   }
-
+  
   private String getInitialCause(Throwable e) {
     if (e.getCause() != null) {
       return getInitialCause(e.getCause());

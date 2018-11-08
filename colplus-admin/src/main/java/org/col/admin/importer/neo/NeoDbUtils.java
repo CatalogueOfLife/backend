@@ -11,22 +11,22 @@ import org.neo4j.graphdb.Node;
  * Static utils for the NeoDb class
  */
 public class NeoDbUtils {
-
+  
   private NeoDbUtils() {
   }
-
+  
   static void putIfNotNull(Map<String, Object> props, String property, String value) {
     if (value != null) {
       props.put(property, value);
     }
   }
-
+  
   static void putIfNotNull(Map<String, Object> props, String property, Enum value) {
     if (value != null) {
       props.put(property, value.ordinal());
     }
   }
-
+  
   /**
    * Sets a node property and removes it in case the property value is null.
    */
@@ -37,7 +37,7 @@ public class NeoDbUtils {
       }
     }
   }
-
+  
   /**
    * Sets a node property and removes it in case the property value is null.
    */
@@ -48,7 +48,7 @@ public class NeoDbUtils {
       n.setProperty(property, value);
     }
   }
-
+  
   static Map<String, Object> neo4jProps(NeoTaxon tax) {
     Map<String, Object> props = Maps.newHashMap();
     putIfNotNull(props, NeoProperties.ID, tax.getID());

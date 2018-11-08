@@ -9,5 +9,5 @@ import org.col.api.model.ColUser;
 public interface UserMapper extends CRUDMapper<ColUser> {
   
   ColUser getByUsername(@Param("username") String username);
-
+  
 }

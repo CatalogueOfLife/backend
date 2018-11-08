@@ -19,7 +19,7 @@ import org.col.api.model.CslData;
 /**
  * A mybatis type handler that translates from an CslData instance to the postgres jsonb
  * database type.
- *
+ * <p>
  * As we do not map all java map types to this mybatis handler apply the handler manually for the
  * relevant hstore fields in the mapper xml.
  */
@@ -27,35 +27,36 @@ import org.col.api.model.CslData;
 @MappedJdbcTypes(JdbcType.OTHER)
 public class CslJsonHandler extends BaseTypeHandler<CslData> {
   private static final ObjectMapper MAPPER = new ObjectMapper();
+  
   static {
     MAPPER.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
   }
-
+  
   @Override
   public void setNonNullParameter(PreparedStatement ps, int i, CslData parameter,
-      JdbcType jdbcType) throws SQLException {
+                                  JdbcType jdbcType) throws SQLException {
     try {
       ps.setString(i, MAPPER.writeValueAsString(parameter));
     } catch (JsonProcessingException e) {
       throw new SQLException("Unable to convert CSL to JSON", e);
     }
   }
-
+  
   @Override
   public CslData getNullableResult(ResultSet rs, String columnName) throws SQLException {
     return fromString(rs.getString(columnName));
   }
-
+  
   @Override
   public CslData getNullableResult(ResultSet rs, int columnIndex) throws SQLException {
     return fromString(rs.getString(columnIndex));
   }
-
+  
   @Override
   public CslData getNullableResult(CallableStatement cs, int columnIndex) throws SQLException {
     return fromString(cs.getString(columnIndex));
   }
-
+  
   private CslData fromString(String jsonb) throws SQLException {
     if (!Strings.isNullOrEmpty(jsonb)) {
       try {
@@ -66,5 +67,5 @@ public class CslJsonHandler extends BaseTypeHandler<CslData> {
     }
     return null;
   }
-
+  
 }

@@ -3,7 +3,7 @@ package org.col.common.collection;
 import java.util.Iterator;
 
 public class IterUtils {
-
+  
   public static <T> T firstOrNull(Iterable<T> iterable) {
     if (iterable != null) {
       Iterator<T> iter = iterable.iterator();

@@ -15,7 +15,7 @@ public class DownloadUtilTest {
   CloseableHttpClient hc;
   
   @Before
-  public void start(){
+  public void start() {
     hc = HttpClientBuilder.create().build();
   }
   

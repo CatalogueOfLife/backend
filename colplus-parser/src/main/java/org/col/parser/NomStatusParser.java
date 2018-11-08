@@ -7,7 +7,7 @@ import org.col.api.vocab.NomStatus;
  */
 public class NomStatusParser extends EnumParser<NomStatus> {
   public static final NomStatusParser PARSER = new NomStatusParser();
-
+  
   public NomStatusParser() {
     super("nomstatus.csv", NomStatus.class);
     for (NomStatus st : NomStatus.values()) {
@@ -16,5 +16,5 @@ public class NomStatusParser extends EnumParser<NomStatus> {
       add(st.getAbbreviatedLabel(), st);
     }
   }
-
+  
 }

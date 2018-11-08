@@ -33,7 +33,7 @@ abstract class CRUDMapperTest<T extends IntKey, M extends CRUDMapper<T>> extends
     T u1 = createTestEntity();
     mapper().create(u1);
     commit();
-  
+    
     updateTestObj(u1);
     mapper().update(u1);
     commit();

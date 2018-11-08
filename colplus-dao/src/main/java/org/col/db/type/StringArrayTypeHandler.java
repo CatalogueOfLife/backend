@@ -24,36 +24,36 @@ import org.apache.ibatis.type.JdbcType;
  * String array handler that avoids nulls and uses empty arrays instead.
  */
 public class StringArrayTypeHandler extends BaseTypeHandler<List<String>> {
-
+  
   @Override
   public void setNonNullParameter(PreparedStatement ps, int i, List<String> parameter, JdbcType jdbcType) throws SQLException {
     Array array = ps.getConnection().createArrayOf("text", parameter.toArray());
     ps.setArray(i, array);
   }
-
+  
   @Override
   public void setParameter(PreparedStatement ps, int i, List<String> parameter, JdbcType jdbcType) throws SQLException {
     setNonNullParameter(ps, i, parameter == null ? Collections.emptyList() : parameter, jdbcType);
   }
-
+  
   @Override
   public List<String> getNullableResult(ResultSet rs, String columnName) throws SQLException {
     return toList(rs.getArray(columnName));
   }
-
+  
   @Override
   public List<String> getNullableResult(ResultSet rs, int columnIndex) throws SQLException {
     return toList(rs.getArray(columnIndex));
   }
-
+  
   @Override
   public List<String> getNullableResult(CallableStatement cs, int columnIndex) throws SQLException {
     return toList(cs.getArray(columnIndex));
   }
-
+  
   private List<String> toList(Array pgArray) throws SQLException {
     if (pgArray == null) return Lists.newArrayList();
-
+    
     String[] strings = (String[]) pgArray.getArray();
     return Lists.newArrayList(strings);
   }

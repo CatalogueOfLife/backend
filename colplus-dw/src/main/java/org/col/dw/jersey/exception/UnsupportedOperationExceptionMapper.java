@@ -8,11 +8,11 @@ import javax.ws.rs.ext.Provider;
  */
 @Provider
 public class UnsupportedOperationExceptionMapper extends JsonExceptionMapperBase<UnsupportedOperationException> {
-
+  
   public UnsupportedOperationExceptionMapper() {
     super(Response.Status.NOT_IMPLEMENTED);
   }
-
+  
   @Override
   String message(UnsupportedOperationException e) {
     String msg = super.message(e);

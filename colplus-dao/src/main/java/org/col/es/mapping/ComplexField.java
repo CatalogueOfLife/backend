@@ -8,24 +8,24 @@ import java.util.LinkedHashMap;
  * {@link Mapping} subclass is used to represent the entire type mapping.
  */
 public class ComplexField extends ESField {
-
+  
   private final LinkedHashMap<String, ESField> properties;
-
+  
   public ComplexField() {
     this(null);
   }
-
+  
   public ComplexField(ESDataType type) {
     this.type = type;
     properties = new LinkedHashMap<>();
   }
-
+  
   public LinkedHashMap<String, ESField> getProperties() {
     return properties;
   }
-
+  
   public void addField(String name, ESField f) {
     properties.put(name, f);
   }
-
+  
 }
