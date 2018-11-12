@@ -23,23 +23,22 @@ import org.slf4j.LoggerFactory;
 @Path("/name/search")
 @Produces(MediaType.APPLICATION_JSON)
 public class NameSearchResource {
-  
+
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(NameSearchResource.class);
-  
+
   private final NameUsageSearchService searchService;
-  
+
   public NameSearchResource(NameUsageSearchService svc) {
     this.searchService = svc;
   }
-  
+
   @GET
   @Timed
-  public ResultPage<NameUsageWrapper<NameUsage>> search(@BeanParam NameSearchRequest query,
-                                                        @Valid @BeanParam Page page,
-                                                        @Context UriInfo uri) throws InvalidQueryException {
+  public ResultPage<NameUsageWrapper<NameUsage>> search(@BeanParam NameSearchRequest query, @Valid @BeanParam Page page,
+      @Context UriInfo uri) throws InvalidQueryException {
     query.addQueryParams(uri.getQueryParameters());
     return searchService.search(query, page);
   }
-  
+
 }

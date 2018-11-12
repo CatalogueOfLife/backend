@@ -23,7 +23,7 @@ public class NameSearchRequestTest {
   @Test
   public void addFilterGood() {
     NameSearchRequest r = new NameSearchRequest();
-    r.addFilter(NameSearchParameter.DATASET_KEY, "123 ");
+    r.addFilter(NameSearchParameter.DATASET_KEY, "123");
     r.addFilter(NameSearchParameter.DATASET_KEY, 1234);
     assertEquals(ImmutableList.of("123", "1234"), r.get(NameSearchParameter.DATASET_KEY));
     r.addFilter(NameSearchParameter.DATASET_KEY, Lists.newArrayList(1234, 12, 13, 14));
