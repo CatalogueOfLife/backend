@@ -28,11 +28,12 @@ import org.gbif.nameparser.api.Rank;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.col.es.EsUtil.insert;
 import static org.col.es.EsUtil.refreshIndex;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 public class NameUsageSearchServiceTest extends EsReadTestBase {
 
@@ -259,6 +260,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
   }
 
   @Test
+  @Ignore
   public void testQuery2() throws InvalidQueryException {
     NameUsageTransfer transfer = new NameUsageTransfer();
 
@@ -309,6 +311,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
   }
 
   @Test
+  @Ignore
   public void testQuery3() throws InvalidQueryException {
     NameUsageTransfer transfer = new NameUsageTransfer();
 
