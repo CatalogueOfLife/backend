@@ -23,7 +23,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 public class LanguageTest {
-
+  
   @Test
   public void testFromIsoCode() throws Exception {
     assertEquals(Language.ENGLISH, Language.fromIsoCode("en").get());
@@ -33,7 +33,7 @@ public class LanguageTest {
     assertEquals(Language.GERMAN, Language.fromIsoCode("DEU").get());
     assertEquals(Language.GERMAN, Language.fromIsoCode("Deu").get());
   }
-
+  
   @Test
   public void testGetIso2LetterCode() throws Exception {
     for (Language l : Language.values()) {
@@ -44,7 +44,7 @@ public class LanguageTest {
     assertEquals("en", Language.ENGLISH.getIso2LetterCode());
     assertEquals("de", Language.GERMAN.getIso2LetterCode());
   }
-
+  
   @Test
   public void testGetIso3LetterCode() throws Exception {
     for (Language l : Language.values()) {
@@ -55,7 +55,7 @@ public class LanguageTest {
     assertEquals("eng", Language.ENGLISH.getIso3LetterCode());
     assertEquals("deu", Language.GERMAN.getIso3LetterCode());
   }
-
+  
   @Test
   public void testGetLocale() throws Exception {
     for (Language l : Language.values()) {
@@ -65,7 +65,7 @@ public class LanguageTest {
     assertEquals(Locale.ENGLISH, Language.ENGLISH.getLocale());
     assertEquals(Locale.GERMAN, Language.GERMAN.getLocale());
   }
-
+  
   @Test
   public void testGetTitleEnglish() throws Exception {
     for (Language l : Language.values()) {
@@ -74,7 +74,7 @@ public class LanguageTest {
     assertEquals("English", Language.ENGLISH.getTitleEnglish());
     assertEquals("German", Language.GERMAN.getTitleEnglish());
   }
-
+  
   @Test
   public void testGetTitleNative() throws Exception {
     for (Language l : Language.values()) {
@@ -83,5 +83,5 @@ public class LanguageTest {
     assertEquals("English", Language.ENGLISH.getTitleNative());
     assertEquals("Deutsch", Language.GERMAN.getTitleNative());
   }
-
+  
 }

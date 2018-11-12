@@ -19,10 +19,11 @@ import org.col.common.io.DownloadUtil;
  *
  */
 public class ExternalSourceUtil {
-
+  
   /**
    * Download and extracts an external source archive into a temp folder that gets removed after the consumer is finished.
-   * @param url externals source location
+   *
+   * @param url            externals source location
    * @param sourceConsumer the consumer for the source
    * @throws Exception
    */
@@ -40,19 +41,20 @@ public class ExternalSourceUtil {
       down.downloadIfModified(url, tmp);
       // decompress into folder
       CompressionUtil.decompressFile(source.toFile(), tmp);
-
+      
       // consume source folder before its being removed again
       sourceConsumer.accept(source);
-
+      
     } finally {
       FileUtils.deleteQuietly(tmp);
       MoreFiles.deleteRecursively(source, RecursiveDeleteOption.ALLOW_INSECURE);
     }
   }
-
+  
   /**
    * Extracts a local source archive into a temp folder that gets removed after the consumer is finished.
-   * @param file local source location
+   *
+   * @param file           local source location
    * @param sourceConsumer the consumer for the source
    * @throws Exception
    */
@@ -64,7 +66,7 @@ public class ExternalSourceUtil {
       CompressionUtil.decompressFile(source.toFile(), file);
       // consume source folder before its being removed again
       sourceConsumer.accept(source);
-
+      
     } finally {
       MoreFiles.deleteRecursively(source, RecursiveDeleteOption.ALLOW_INSECURE);
     }

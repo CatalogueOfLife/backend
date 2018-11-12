@@ -19,14 +19,14 @@ abstract class EnumNoteParser<T extends Enum> extends ParserBase<EnumNote<T>> {
   private static final Logger LOG = LoggerFactory.getLogger(EnumNoteParser.class);
   private final Map<String, EnumNote<T>> mapping = Maps.newHashMap();
   private final Class<T> enumClass;
-
+  
   public EnumNoteParser(String mappingResourceFile, Class<T> enumClass) {
     super(EnumNote.class);
     this.enumClass = enumClass;
     // read mappings from resource file
     try {
       LOG.info("Reading mappings from {}", mappingResourceFile);
-      CSVReader reader = CSVReaderFactory.build(getClass().getResourceAsStream("/parser/dicts/"+mappingResourceFile), "UTF8", ",", null, 0);
+      CSVReader reader = CSVReaderFactory.build(getClass().getResourceAsStream("/parser/dicts/" + mappingResourceFile), "UTF8", ",", null, 0);
       while (reader.hasNext()) {
         String[] row = reader.next();
         if (row.length == 0) continue;
@@ -53,13 +53,13 @@ abstract class EnumNoteParser<T extends Enum> extends ParserBase<EnumNote<T>> {
     // finally add native mappings, overriding anything found in files
     addNativeEnumMappings();
   }
-
+  
   private void addNativeEnumMappings() {
     for (T e : enumClass.getEnumConstants()) {
       add(e.name(), e, null);
     }
   }
-
+  
   /**
    * Adds more mappings to the main mapping dictionary, overwriting any potentially existing values.
    * Keys will be normalized with the same method used for parsing before inserting them to the mapping.
@@ -71,7 +71,7 @@ abstract class EnumNoteParser<T extends Enum> extends ParserBase<EnumNote<T>> {
       this.mapping.put(key, new EnumNote<>(value, note));
     }
   }
-
+  
   @Override
   String normalize(String x) {
     x = super.normalize(x);
@@ -80,7 +80,7 @@ abstract class EnumNoteParser<T extends Enum> extends ParserBase<EnumNote<T>> {
     }
     return null;
   }
-
+  
   @Override
   EnumNote<T> parseKnownValues(String upperCaseValue) {
     return mapping.get(upperCaseValue);

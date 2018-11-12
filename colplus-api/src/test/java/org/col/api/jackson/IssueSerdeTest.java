@@ -16,9 +16,9 @@ package org.col.api.jackson;
 import org.col.api.vocab.Issue;
 
 public class IssueSerdeTest extends EnumSerdeTestBase<Issue> {
-
+  
   public IssueSerdeTest() {
     super(Issue.class);
   }
-
+  
 }

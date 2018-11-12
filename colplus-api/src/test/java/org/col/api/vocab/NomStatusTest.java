@@ -6,7 +6,7 @@ import org.junit.Test;
  *
  */
 public class NomStatusTest {
-
+  
   @Test
   public void isAccepted() throws Exception {
     for (NomStatus ns : NomStatus.values()) {
@@ -17,5 +17,5 @@ public class NomStatusTest {
       );
     }
   }
-
+  
 }

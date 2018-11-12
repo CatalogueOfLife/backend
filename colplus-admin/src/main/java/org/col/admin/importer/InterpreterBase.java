@@ -43,20 +43,20 @@ public class InterpreterBase {
   
   protected final Dataset dataset;
   protected final ReferenceFactory refFactory;
-
+  
   public InterpreterBase(Dataset dataset, ReferenceFactory refFactory) {
     this.dataset = dataset;
     this.refFactory = refFactory;
   }
-
+  
   protected String latinName(String name) {
     return transLatin.transform(name);
   }
-
+  
   protected String asciiName(String name) {
     return transAscii.transform(latinName(name));
   }
-
+  
   protected List<VernacularName> interpretVernacular(VerbatimRecord rec, BiConsumer<VernacularName, VerbatimRecord> addReferences, Term name, Term translit, Term lang, Term... countryTerms) {
     VernacularName vn = new VernacularName();
     vn.setVerbatimKey(rec.getKey());
@@ -65,7 +65,7 @@ public class InterpreterBase {
       rec.addIssue(Issue.VERNACULAR_NAME_INVALID);
       return Collections.emptyList();
     }
-
+    
     if (translit != null) {
       vn.setLatin(rec.get(translit));
     }
@@ -73,16 +73,16 @@ public class InterpreterBase {
       vn.setLanguage(SafeParser.parse(LanguageParser.PARSER, rec.get(lang)).orNull());
     }
     vn.setCountry(SafeParser.parse(CountryParser.PARSER, rec.getFirst(countryTerms)).orNull());
-
+    
     addReferences.accept(vn, rec);
-
+    
     if (StringUtils.isBlank(vn.getLatin())) {
       vn.setLatin(latinName(vn.getName()));
       rec.addIssue(Issue.VERNACULAR_NAME_TRANSLITERATED);
     }
     return Lists.newArrayList(vn);
   }
-
+  
   protected LocalDate date(VerbatimRecord v, VerbatimEntity ent, Issue invalidIssue, Term term) {
     Optional<FuzzyDate> date;
     try {
@@ -99,43 +99,43 @@ public class InterpreterBase {
     }
     return null;
   }
-
+  
   protected URI uri(VerbatimRecord v, VerbatimEntity ent, Issue invalidIssue, Term... term) {
     return parse(UriParser.PARSER, v.getFirstRaw(term)).orNull(invalidIssue, v);
   }
-
+  
   protected Boolean bool(VerbatimRecord v, VerbatimEntity ent, Issue invalidIssue, Term... term) {
     return parse(BooleanParser.PARSER, v.getFirst(term)).orNull(invalidIssue, v);
   }
-
+  
   public Optional<NameAccordingTo> interpretName(final String id, final String vrank, final String sciname, final String authorship,
-                                       final String genus, final String infraGenus, final String species, final String infraspecies,
-                                       String nomCode, String nomStatus, String link, String remarks, VerbatimRecord v) {
+                                                 final String genus, final String infraGenus, final String species, final String infraspecies,
+                                                 String nomCode, String nomStatus, String link, String remarks, VerbatimRecord v) {
     final boolean isAtomized = ObjectUtils.anyNotNull(genus, infraGenus, species, infraspecies);
-
+    
     NameAccordingTo nat;
-
+    
     Name atom = new Name();
     atom.setType(NameType.SCIENTIFIC);
     atom.setGenus(genus);
     atom.setInfragenericEpithet(infraGenus);
     atom.setSpecificEpithet(species);
     atom.setInfraspecificEpithet(infraspecies);
-
+    
     // parse rank
     Rank rank = SafeParser.parse(RankParser.PARSER, vrank).orElse(Rank.UNRANKED, Issue.RANK_INVALID, v);
     atom.setRank(rank);
-
+    
     // we can get the scientific name in various ways.
     // we parse all names from the scientificName + optional authorship
     // or use the atomized parts which we also use to validate the parsing result.
     if (sciname != null) {
       nat = NameParser.PARSER.parse(sciname, rank, v).get();
-
+      
     } else if (!isAtomized) {
       LOG.info("No name given for {}", id);
       return Optional.empty();
-
+      
     } else {
       // parse the reconstructed name without authorship
       // cant use the atomized name just like that cause we would miss name type detection (virus,
@@ -154,18 +154,18 @@ public class InterpreterBase {
               !Objects.equals(infraGenus, nat.getName().getInfragenericEpithet()) ||
               !Objects.equals(species, nat.getName().getSpecificEpithet()) ||
               !Objects.equals(infraspecies, nat.getName().getInfraspecificEpithet())
-          ) {
+              ) {
             LOG.warn("Parsed and given name atoms differ: [{}] vs [{}]", nat.getName().canonicalNameComplete(), atom.canonicalNameComplete());
             v.addIssue(Issue.PARSED_NAME_DIFFERS);
           }
-        } else if (!Strings.isNullOrEmpty(authorship)){
+        } else if (!Strings.isNullOrEmpty(authorship)) {
           // append authorship to unparsed scientificName
           String fullname = nat.getName().getScientificName().trim() + " " + authorship.trim();
           nat.getName().setScientificName(fullname);
         }
       }
     }
-
+    
     // try to add an authorship if not yet there
     if (nat.getName().isParsed() && !Strings.isNullOrEmpty(authorship)) {
       ParsedName pnAuthorship = NameParser.PARSER.parseAuthorship(authorship).orElseGet(() -> {
@@ -176,10 +176,10 @@ public class InterpreterBase {
         pn.getCombinationAuthorship().getAuthors().add(authorship);
         return pn;
       });
-
+      
       // we might have already parsed an authorship from the scientificName string which does not match up?
       if (nat.getName().hasAuthorship() &&
-         !nat.getName().authorshipComplete().equalsIgnoreCase(pnAuthorship.authorshipComplete())) {
+          !nat.getName().authorshipComplete().equalsIgnoreCase(pnAuthorship.authorshipComplete())) {
         v.addIssue(Issue.INCONSISTENT_AUTHORSHIP);
         LOG.info("Different authorship [{}] found in dwc:scientificName=[{}] and dwc:scientificNameAuthorship=[{}]",
             nat.getName().authorshipComplete(), sciname, pnAuthorship.authorshipComplete());
@@ -188,7 +188,7 @@ public class InterpreterBase {
       nat.getName().setSanctioningAuthor(pnAuthorship.getSanctioningAuthor());
       nat.getName().setBasionymAuthorship(pnAuthorship.getBasionymAuthorship());
     }
-
+    
     // common basics
     nat.getName().setId(id);
     nat.getName().setVerbatimKey(v.getKey());
@@ -199,13 +199,13 @@ public class InterpreterBase {
     // Always make sure this happens BEFORE we update the canonical scientific name
     nat.getName().setCode(SafeParser.parse(NomCodeParser.PARSER, nomCode).orElse(dataset.getCode(), Issue.NOMENCLATURAL_CODE_INVALID, v));
     nat.getName().setRemarks(remarks);
-
+    
     // assign best rank
     if (rank.notOtherOrUnranked() || nat.getName().getRank() == null) {
       // TODO: check ACEF ranks...
       nat.getName().setRank(rank);
     }
-
+    
     // finally update the scientificName with the canonical form if we can
     try {
       nat.getName().updateScientificName();
@@ -219,14 +219,14 @@ public class InterpreterBase {
         return Optional.empty();
       }
     }
-
+    
     return Optional.of(nat);
   }
-
+  
   protected void setRefKey(Referenced obj, Reference r) {
     if (r != null) {
       obj.addReferenceId(r.getId());
     }
   }
-
+  
 }

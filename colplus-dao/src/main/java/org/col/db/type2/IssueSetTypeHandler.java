@@ -8,7 +8,7 @@ import org.col.db.type.EnumOrdinalSetTypeHandler;
  * values.
  */
 public class IssueSetTypeHandler extends EnumOrdinalSetTypeHandler<Issue> {
-
+  
   public IssueSetTypeHandler() {
     super(Issue.class);
   }

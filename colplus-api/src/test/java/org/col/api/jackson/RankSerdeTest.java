@@ -21,11 +21,11 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 
 public class RankSerdeTest extends EnumSerdeTestBase<Rank> {
-
+  
   public RankSerdeTest() {
     super(Rank.class);
   }
-
+  
   @Test
   public void testValues() throws IOException {
     for (Rank r : Rank.LINNEAN_RANKS) {

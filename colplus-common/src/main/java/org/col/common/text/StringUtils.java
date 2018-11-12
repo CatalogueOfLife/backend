@@ -25,9 +25,10 @@ public class StringUtils {
   private static final Pattern HEX = Pattern.compile("^[0-9abcdefABCDEF]+$");
   private static final char[] hexCode = "0123456789ABCDEF".toCharArray();
   private static final CharMatcher NON_DIGITLETTER = CharMatcher.javaLetterOrDigit().negate();
-
-  private StringUtils() {}
-
+  
+  private StringUtils() {
+  }
+  
   /**
    * Concatenates the given parts with a space, skipping any null or empty strings
    */
@@ -36,7 +37,7 @@ public class StringUtils {
     StringBuilder sb = new StringBuilder();
     for (String p : parts) {
       if (!org.apache.commons.lang3.StringUtils.isBlank(p)) {
-        if (sb.length()>0) {
+        if (sb.length() > 0) {
           sb.append(" ");
         }
         sb.append(p.trim());
@@ -44,12 +45,12 @@ public class StringUtils {
     }
     return sb.toString();
   }
-
+  
   public static String hexStream(InputStream stream) throws IOException {
     byte[] bytes = IOUtils.toByteArray(stream);
     return StringUtils.hexString(bytes);
   }
-
+  
   public static String hexString(byte[] data) {
     StringBuilder r = new StringBuilder(data.length * 2);
     int counter = 0;
@@ -65,10 +66,10 @@ public class StringUtils {
     }
     return r.toString();
   }
-
+  
   /**
    * Removes accents & diacretics and converts ligatures into several chars
-   * 
+   *
    * @param x string to fold into ASCII
    * @return string converted to ASCII equivalent, expanding common ligatures
    */
@@ -81,13 +82,13 @@ public class StringUtils {
     x = Normalizer.normalize(x, Normalizer.Form.NFD);
     return MARKER.matcher(x).replaceAll("");
   }
-
+  
   /**
    * The Normalizer misses a few cases and 2 char ligatures which we deal with here
    */
   private static String replaceSpecialCases(String x) {
     StringBuilder sb = new StringBuilder();
-
+    
     for (int i = 0; i < x.length(); i++) {
       char c = x.charAt(i);
       switch (c) {
@@ -139,14 +140,14 @@ public class StringUtils {
     }
     return sb.toString();
   }
-
+  
   /**
    * Increase a given string by 1, i.e. increase the last char in that string by one. If its a z or
    * Z the char before is increased instead and a new char a is appended. Only true letters are
    * increased, but spaces, punctuation or numbers remain unchanged. Null values stay null and empty
    * strings empty. The case of existing characters will be kept and the appended chars will use the
    * case of the last char of the original string.
-   *
+   * <p>
    * For example "Carlb" becomes "Carla", "Aua" "Atz", "zZz" "aAaa" or "Abies zzz" "Abiet aaa".
    *
    * @param x
@@ -159,31 +160,31 @@ public class StringUtils {
     if (x.equals("")) {
       return x;
     }
-
+    
     char[] chars = x.toCharArray();
     int idx = chars.length - 1;
     boolean appendingNeeded = false;
     Character lastOriginalChar = null;
-
+    
     while (idx >= 0) {
       char c = chars[idx];
       if (!Character.isLetter(c)) {
         idx--;
         continue;
       }
-
+      
       if (lastOriginalChar == null) {
         lastOriginalChar = c;
       }
-
+      
       if (c == 'z') {
         chars[idx] = 'a';
         appendingNeeded = true;
-
+        
       } else if (c == 'Z') {
         chars[idx] = 'A';
         appendingNeeded = true;
-
+        
       } else {
         c++;
         chars[idx] = c;
@@ -192,17 +193,17 @@ public class StringUtils {
       }
       idx--;
     }
-
+    
     // first char, also append to end
     if (appendingNeeded) {
       char append =
           (lastOriginalChar == null || Character.isLowerCase(lastOriginalChar)) ? 'a' : 'A';
       return String.valueOf(chars) + append;
-
+      
     }
     return String.valueOf(chars);
   }
-
+  
   public boolean allEmpty(String... strings) {
     for (String s : strings) {
       if (!org.apache.commons.lang3.StringUtils.isEmpty(s)) {
@@ -211,15 +212,15 @@ public class StringUtils {
     }
     return true;
   }
-
+  
   /**
    * Unescapes various unicode escapes if existing:
-   *
+   * <p>
    * java unicode escape, four hexadecimal digits \ uhhhh
-   *
+   * <p>
    * octal escape \nnn The octal value nnn, where nnn stands for 1 to 3 digits between ‘0’ and ‘7’.
    * For example, the code for the ASCII ESC (escape) character is ‘\033’.
-   *
+   * <p>
    * hexadecimal escape \xhh... The hexadecimal value hh, where hh stands for a sequence of
    * hexadecimal digits (‘0’–‘9’, and either ‘A’–‘F’ or ‘a’–‘f’).Like the same construct in ISO C,
    * the escape sequence continues until the first nonhexadecimal digit is seen. However, using more
@@ -312,7 +313,7 @@ public class StringUtils {
     }
     return sb.toString();
   }
-
+  
   /**
    * Tries to decode a UTF8 string only if common UTF8 character combinations are found which are
    * unlikely to be correctly encoded text. E.g. Ã¼ is the German Umlaut ü and indicates we have
@@ -320,8 +321,8 @@ public class StringUtils {
    */
   public static String decodeUtf8Garbage(String text) {
     Pattern UTF8_TEST = Pattern.compile("(Ã¤|Ã¼|Ã¶|Ã\u0084|Ã\u009C|Ã\u0096|" + // äüöÄÜÖ
-        "Ã±|Ã¸|Ã§|Ã®|Ã´|Ã»|Ã\u0091|Ã\u0098|Ã\u0087|Ã\u008E|Ã\u0094|Ã\u009B" + // ñøçîôûÑØÇÎÔÛ
-        "Ã¡|Ã©|Ã³|Ãº|Ã\u00AD|Ã\u0081|Ã\u0089|Ã\u0093|Ã\u009A|Ã\u008D)" // áéóúíÁÉÓÚÍ
+            "Ã±|Ã¸|Ã§|Ã®|Ã´|Ã»|Ã\u0091|Ã\u0098|Ã\u0087|Ã\u008E|Ã\u0094|Ã\u009B" + // ñøçîôûÑØÇÎÔÛ
+            "Ã¡|Ã©|Ã³|Ãº|Ã\u00AD|Ã\u0081|Ã\u0089|Ã\u0093|Ã\u009A|Ã\u008D)" // áéóúíÁÉÓÚÍ
         , Pattern.CASE_INSENSITIVE);
     if (text != null && UTF8_TEST.matcher(text).find()) {
       // typical utf8 combinations found. Try to decode from latin1 to utf8
@@ -336,7 +337,7 @@ public class StringUtils {
     }
     return text;
   }
-
+  
   /**
    * Returns an uppercase ASCII string for the given input. Replaces all non digit or letter
    * characters with a single space, including invisible control characters, underscore, dashes and
@@ -353,7 +354,7 @@ public class StringUtils {
     x = x.toUpperCase();
     return Strings.emptyToNull(x);
   }
-
+  
   /**
    * <p> Converts a string to a Set. Breaks the string to characters and store
    * each character in a Set.

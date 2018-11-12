@@ -10,7 +10,7 @@ import org.col.api.exception.NotFoundException;
  */
 @Provider
 public class NotFoundExceptionMapper extends JsonExceptionMapperBase<NotFoundException> {
-
+  
   public NotFoundExceptionMapper() {
     super(Response.Status.NOT_FOUND);
   }

@@ -16,28 +16,28 @@ import org.apache.ibatis.type.TypeHandler;
  * @param <D> the db storage value type
  */
 public abstract class BaseEnumTypeHandler<D, T extends Enum<?>> implements TypeHandler<T> {
-
+  
   @Override
   public void setParameter(PreparedStatement ps, int i, T parameter, JdbcType jdbcType) throws SQLException {
     ps.setObject(i, fromEnum(parameter));
   }
-
+  
   @Override
   public T getResult(ResultSet rs, String columnName) throws SQLException {
     return toEnum((D) rs.getObject(columnName));
   }
-
+  
   @Override
   public T getResult(ResultSet rs, int columnIndex) throws SQLException {
     return toEnum((D) rs.getObject(columnIndex));
   }
-
+  
   @Override
   public T getResult(CallableStatement cs, int columnIndex) throws SQLException {
     return toEnum((D) cs.getObject(columnIndex));
   }
-
+  
   protected abstract T toEnum(D dbValue);
-
+  
   protected abstract D fromEnum(T enumValue);
 }

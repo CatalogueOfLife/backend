@@ -20,7 +20,7 @@ public class Schema {
   public final Charset encoding;
   public final CsvParserSettings settings;
   public final List<Field> columns;
-
+  
   public Schema(Path file, Term rowType, Charset encoding, CsvParserSettings settings, List<Field> columns) {
     this.file = Preconditions.checkNotNull(file);
     this.rowType = Preconditions.checkNotNull(rowType);
@@ -28,17 +28,17 @@ public class Schema {
     this.settings = Preconditions.checkNotNull(settings);
     this.columns = ImmutableList.copyOf(columns);
   }
-
+  
   public static class Field {
     public final Term term;
     public final String value;
     public final Integer index;
     public final String delimiter;
-
+    
     public Field(Term term, Integer index) {
       this(term, null, index, null);
     }
-
+    
     public Field(Term term, String value, Integer index, String delimiter) {
       this.term = Preconditions.checkNotNull(term);
       if (value == null && index == null) {
@@ -50,29 +50,29 @@ public class Schema {
       this.delimiter = delimiter;
     }
   }
-
+  
   public Field field(Term term) {
     for (Field f : columns) {
       if (f.term == term) return f;
     }
     return null;
   }
-
+  
   public boolean hasTerm(Term term) {
     for (Field f : columns) {
       if (f.term == term) return true;
     }
     return false;
   }
-
+  
   public int size() {
     return columns.size();
   }
-
+  
   public boolean isEmpty() {
     return columns.isEmpty();
   }
-
+  
   @Override
   public String toString() {
     return rowType + " ["

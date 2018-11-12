@@ -24,29 +24,29 @@ import static org.junit.Assert.assertNull;
 
 @Ignore // If we switch over to the @JsonCreator & @JsonValue way of doing it
 public class CSLRefTypeSerdeTest extends EnumSerdeTestBase<CSLRefType> {
-
+  
   public CSLRefTypeSerdeTest() {
     super(CSLRefType.class);
   }
-
+  
   @Test
   public void testUnderscores() throws IOException {
     assertEquals("\"article-magazine\"", ApiModule.MAPPER.writeValueAsString(CSLRefType.ARTICLE_MAGAZINE));
     assertEquals("\"article\"", ApiModule.MAPPER.writeValueAsString(CSLRefType.ARTICLE));
     assertEquals("\"personal_communication\"", ApiModule.MAPPER.writeValueAsString(CSLRefType.PERSONAL_COMMUNICATION));
-
+    
     assertEquals(CSLRefType.ARTICLE_MAGAZINE, ApiModule.MAPPER.readValue("\"article-magazine\"", CSLRefType.class));
     assertEquals(CSLRefType.ARTICLE, ApiModule.MAPPER.readValue("\"article\"", CSLRefType.class));
     assertEquals(CSLRefType.PERSONAL_COMMUNICATION, ApiModule.MAPPER.readValue("\"personal-Communication\"", CSLRefType.class));
     assertEquals(CSLRefType.PERSONAL_COMMUNICATION, ApiModule.MAPPER.readValue("\"personal_communication\"", CSLRefType.class));
     assertEquals(CSLRefType.PERSONAL_COMMUNICATION, ApiModule.MAPPER.readValue("\"personal communication\"", CSLRefType.class));
   }
-
+  
   @Test
   public void testBadAnystyleValues() throws IOException {
     assertNull(ApiModule.MAPPER.readValue("\"Misc\"", CSLRefType.class));
     assertNull(ApiModule.MAPPER.readValue("\"III\"", CSLRefType.class));
     assertNull(ApiModule.MAPPER.readValue("\"197\"", CSLRefType.class));
   }
-
+  
 }

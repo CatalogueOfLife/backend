@@ -19,9 +19,9 @@ import org.gbif.dwc.terms.UnknownTerm;
  */
 @MappedTypes(Term.class)
 public class TermTypeHandler extends BaseTypeHandler<Term> {
-
+  
   private static final TermFactory TERMFACTORY = TermFactory.instance();
-
+  
   @Override
   public void setNonNullParameter(PreparedStatement ps, int i, Term parameter, JdbcType jdbcType) throws SQLException {
     if (parameter instanceof UnknownTerm) {
@@ -30,27 +30,27 @@ public class TermTypeHandler extends BaseTypeHandler<Term> {
       ps.setString(i, parameter.prefixedName());
     }
   }
-
+  
   @Override
   public Term getNullableResult(ResultSet rs, String columnName) throws SQLException {
     return toTerm(rs.getString(columnName));
   }
-
+  
   @Override
   public Term getNullableResult(ResultSet rs, int columnIndex) throws SQLException {
     return toTerm(rs.getString(columnIndex));
   }
-
+  
   @Override
   public Term getNullableResult(CallableStatement cs, int columnIndex) throws SQLException {
     return toTerm(cs.getString(columnIndex));
   }
-
+  
   private static Term toTerm(String val) throws SQLException {
     if (Strings.isNullOrEmpty(val)) {
       return null;
     }
     return TERMFACTORY.findTerm(val);
   }
-
+  
 }

@@ -25,11 +25,11 @@ public class DwcaInserter extends NeoInserter {
   private static final Logger LOG = LoggerFactory.getLogger(DwcaInserter.class);
   private DwcaReader reader;
   private DwcInterpreter inter;
-
+  
   public DwcaInserter(NeoDb store, Path folder, ReferenceFactory refFactory) throws IOException {
     super(folder, store, refFactory);
   }
-
+  
   private void initReader() {
     if (reader == null) {
       try {
@@ -40,7 +40,7 @@ public class DwcaInserter extends NeoInserter {
       }
     }
   }
-
+  
   /**
    * Inserts DWCA data from a source folder into the normalizer store.
    * Before inserting it does a quick check to see if all required files are existing.
@@ -50,18 +50,18 @@ public class DwcaInserter extends NeoInserter {
     try {
       initReader();
       inter = new DwcInterpreter(store.getDataset(), meta, refFactory);
-
+      
       // taxon core only, extensions are interpreted later
       insertEntities(reader, DwcTerm.Taxon,
           inter::interpret,
           store::put
       );
-
+      
     } catch (RuntimeException e) {
       throw new NormalizationFailedException("Failed to batch insert DwC-A data", e);
     }
   }
-
+  
   @Override
   public void postBatchInsert() throws NormalizationFailedException {
     try (Transaction tx = store.getNeo().beginTx()) {
@@ -70,19 +70,19 @@ public class DwcaInserter extends NeoInserter {
           DwcaReader.DWCA_ID,
           ColDwcTerm.relatedNameUsageID
       );
-
+      
       insertTaxonEntities(reader, GbifTerm.Distribution,
           inter::interpretDistribution,
           DwcaReader.DWCA_ID,
           (t, d) -> t.distributions.add(d)
       );
-
+      
       insertTaxonEntities(reader, GbifTerm.VernacularName,
           inter::interpretVernacularName,
           DwcaReader.DWCA_ID,
           (t, vn) -> t.vernacularNames.add(vn)
       );
-
+      
       insertTaxonEntities(reader, GbifTerm.Reference,
           inter::interpretReference,
           DwcaReader.DWCA_ID,
@@ -92,17 +92,17 @@ public class DwcaInserter extends NeoInserter {
           }
       );
       tx.success();
-
+      
     } catch (RuntimeException e) {
       throw new NormalizationFailedException("Failed to read DWCA files", e);
     }
   }
-
+  
   @Override
   protected NodeBatchProcessor relationProcessor() {
     return new DwcaRelationInserter(store, meta);
   }
-
+  
   /**
    * Reads the dataset metadata and puts it into the store
    */
@@ -115,7 +115,7 @@ public class DwcaInserter extends NeoInserter {
       if (Files.exists(metadataPath)) {
         try {
           return parser.parse(metadataPath);
-
+          
         } catch (IOException | RuntimeException e) {
           LOG.error("Unable to read dataset metadata from dwc archive: {}", e.getMessage(), e);
         }
@@ -127,5 +127,5 @@ public class DwcaInserter extends NeoInserter {
     }
     return Optional.empty();
   }
-
+  
 }

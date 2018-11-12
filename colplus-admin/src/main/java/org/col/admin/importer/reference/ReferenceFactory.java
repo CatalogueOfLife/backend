@@ -6,11 +6,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
-import org.col.api.model.CslData;
-import org.col.api.model.CslDate;
-import org.col.api.model.CslName;
-import org.col.api.model.IssueContainer;
-import org.col.api.model.Reference;
+import org.col.api.model.*;
 import org.col.api.vocab.Issue;
 import org.col.common.date.FuzzyDate;
 import org.col.parser.DateParser;
@@ -22,22 +18,22 @@ import org.slf4j.LoggerFactory;
  * Dataset specific factory for reference instances. It mostly manages the CSL parsing and works
  * with variously structured input forms. Responsible for detecting and flagging of issues in
  * reference.issues.
- *
+ * <p>
  * In the future we can expect dataset specific configuration hints to be added.
  */
 public class ReferenceFactory {
-
+  
   private static final Logger LOG = LoggerFactory.getLogger(ReferenceFactory.class);
   private static final Pattern YEAR_PATTERN = Pattern.compile("(^|\\D+)(\\d{4})($|\\D+)");
-
+  
   private final Integer datasetKey;
   private ReferenceStore store;
-
+  
   public ReferenceFactory(Integer datasetKey, ReferenceStore store) {
     this.datasetKey = datasetKey;
     this.store = store;
   }
-
+  
   /**
    * Tries to find an existing reference by its id or exact citation. Returns null if not found
    */
@@ -51,22 +47,22 @@ public class ReferenceFactory {
     }
     return r;
   }
-
+  
   /**
    * Builds a reference instance from a ACEF reference record.
-   *
+   * <p>
    * Example: Ross, J.H. | 1979 | A conspectus of African Acacia | Mem. Bot. Surv. S. Afr. 44: 1-150
    * | TaxAccRef
    *
    * @param referenceID
-   * @param authors author (or many) of publication
-   * @param year of publication
-   * @param title of paper or book
-   * @param details title of periodicals, volume number, and other common bibliographic details
+   * @param authors     author (or many) of publication
+   * @param year        of publication
+   * @param title       of paper or book
+   * @param details     title of periodicals, volume number, and other common bibliographic details
    * @return
    */
   public Reference fromACEF(String referenceID, String authors, String year, String title,
-      String details, IssueContainer issues) {
+                            String details, IssueContainer issues) {
     Reference ref = find(referenceID, null);
     if (ref == null) {
       ref = newReference(referenceID);
@@ -87,11 +83,11 @@ public class ReferenceFactory {
     }
     return ref;
   }
-
+  
   /**
    * Very similar to fromACEF but optionally providing a full citation given as
    * bibliographicCitation
-   * 
+   *
    * @param identifier
    * @param bibliographicCitation
    * @param creator
@@ -102,7 +98,7 @@ public class ReferenceFactory {
    * @return
    */
   public Reference fromDC(String identifier, String bibliographicCitation, String creator,
-      String date, String title, String source, IssueContainer issues) {
+                          String date, String title, String source, IssueContainer issues) {
     Reference ref = find(identifier, bibliographicCitation);
     if (ref == null) {
       ref = newReference(identifier);
@@ -124,10 +120,10 @@ public class ReferenceFactory {
     }
     return ref;
   }
-
+  
   /**
    * Creates a Reference instance from a DarwinCore data source.
-   * 
+   *
    * @param publishedInID
    * @param publishedIn
    * @param publishedInYear
@@ -135,20 +131,20 @@ public class ReferenceFactory {
    * @return
    */
   public Reference fromDWC(String publishedInID, String publishedIn, String publishedInYear,
-      IssueContainer issues) {
+                           IssueContainer issues) {
     Reference ref = find(publishedInID, publishedIn);
     if (ref == null) {
       ref = newReference(publishedInID);
       if (!StringUtils.isEmpty(publishedIn)) {
         ref.setCitation(publishedIn);
         issues.addIssue(Issue.CITATION_UNPARSED);
-      }   
+      }
       ref.setYear(parseYear(publishedInYear));
       store.put(ref);
     }
     return ref;
   }
-
+  
   public Reference fromCitation(String id, String citation, IssueContainer issues) {
     Reference ref = find(id, citation);
     if (ref == null) {
@@ -161,17 +157,17 @@ public class ReferenceFactory {
     }
     return ref;
   }
-
+  
   private static CslDate yearToDate(Integer y) {
     if (y == null) {
       return null;
     }
-    int[][] dateParts = new int[][] {{y, 1, 1}};
+    int[][] dateParts = new int[][]{{y, 1, 1}};
     CslDate d = new CslDate();
     d.setDateParts(dateParts);
     return d;
   }
-
+  
   private static CslDate toCslDate(String dateString) {
     Optional<FuzzyDate> fd;
     try {
@@ -183,14 +179,14 @@ public class ReferenceFactory {
     }
     if (fd.isPresent()) {
       LocalDate ld = fd.get().toLocalDate();
-      int[][] dateParts = new int[][] {{ld.getYear(), ld.getMonthValue(), ld.getDayOfMonth()}};
+      int[][] dateParts = new int[][]{{ld.getYear(), ld.getMonthValue(), ld.getDayOfMonth()}};
       CslDate cslDate = new CslDate();
       cslDate.setDateParts(dateParts);
       return cslDate;
     }
     return null;
   }
-
+  
   private static Integer parseYear(String yearString) {
     if (StringUtils.isBlank(yearString)) {
       return null;
@@ -206,20 +202,20 @@ public class ReferenceFactory {
       return null;
     }
   }
-
+  
   private static CslName[] getAuthors(String authorString) {
     if (StringUtils.isBlank(authorString)) {
       return null;
     }
     CslName name = new CslName();
     name.setLiteral(authorString);
-    return new CslName[] {name};
+    return new CslName[]{name};
   }
-
+  
   private static String nullIfEmpty(String s) {
     return StringUtils.isEmpty(s) ? null : s;
   }
-
+  
   private static String buildCitation(String authors, String year, String title, String container) {
     StringBuilder sb = new StringBuilder();
     if (!StringUtils.isEmpty(authors)) {
@@ -254,14 +250,14 @@ public class ReferenceFactory {
     }
     return sb.toString();
   }
-
+  
   private Reference newReference(String id) {
     Reference ref = new Reference();
     ref.setId(id);
     ref.setDatasetKey(datasetKey);
     return ref;
   }
-
+  
   private static boolean allEmpty(String... strings) {
     for (String s : strings) {
       if (!StringUtils.isEmpty(s)) {
@@ -270,5 +266,5 @@ public class ReferenceFactory {
     }
     return true;
   }
-
+  
 }

@@ -8,7 +8,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Modified Executors DefaultThreadFactory to allow custom named thread pools.
  * Otherwise, this factory yields the same semantics as the thread factory returned by
  * {@link Executors#defaultThreadFactory()}.
- *
+ * <p>
  * Optionally a priority or daemon flag can be provided.
  */
 public class NamedThreadFactory implements ThreadFactory {
@@ -21,6 +21,7 @@ public class NamedThreadFactory implements ThreadFactory {
 
   /**
    * Creates a new named user thread factory using a normal priority.
+   *
    * @param poolName the name prefix of the thread pool which will be appended -number for the individual thread
    */
   public NamedThreadFactory(String poolName) {

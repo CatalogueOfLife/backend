@@ -1,34 +1,23 @@
 package org.col.es.mapping;
 
-import static org.col.es.mapping.ESDataType.BOOLEAN;
-import static org.col.es.mapping.ESDataType.BYTE;
-import static org.col.es.mapping.ESDataType.DATE;
-import static org.col.es.mapping.ESDataType.DOUBLE;
-import static org.col.es.mapping.ESDataType.FLOAT;
-import static org.col.es.mapping.ESDataType.INTEGER;
-import static org.col.es.mapping.ESDataType.KEYWORD;
-import static org.col.es.mapping.ESDataType.LONG;
-import static org.col.es.mapping.ESDataType.SHORT;
 import java.net.URI;
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+
+import static org.col.es.mapping.ESDataType.*;
 
 /**
  * Maps Java types to Elasticsearch types and vice versa.
  */
 class DataTypeMap {
-
+  
   static final DataTypeMap INSTANCE = new DataTypeMap();
-
+  
   private final HashMap<Class<?>, ESDataType> java2es = new HashMap<>();
   private final EnumMap<ESDataType, Set<Class<?>>> es2java = new EnumMap<>(ESDataType.class);
-
+  
   private DataTypeMap() {
     /* Stringy types */
     java2es.put(String.class, KEYWORD);
@@ -56,7 +45,7 @@ class DataTypeMap {
     /* Date types */
     java2es.put(LocalDateTime.class, DATE);
     java2es.put(LocalDate.class, DATE);
-
+    
     /* Create reverse map */
     for (Map.Entry<Class<?>, ESDataType> entry : java2es.entrySet()) {
       Class<?> javaType = entry.getKey();
@@ -65,7 +54,7 @@ class DataTypeMap {
       javaTypes.add(javaType);
     }
   }
-
+  
   /**
    * Whether or not the specified Java type maps to a primitive Elasticsearch type (other than
    * "object" or "nested").
@@ -73,7 +62,7 @@ class DataTypeMap {
   boolean isESPrimitive(Class<?> javaType) {
     return getESType(javaType) == null;
   }
-
+  
   /**
    * Returns the Elasticsearch data type corresponding to the specified Java type. If none is found,
    * the superclass of the specified type is checked to see if it corresponds to an Elasticsearch
@@ -92,12 +81,12 @@ class DataTypeMap {
      */
     return esDataType;
   }
-
+  
   /**
    * Returns all Java types that map to the specified Elasticsearch data type.
    */
   Set<Class<?>> getJavaTypes(ESDataType esType) {
     return es2java.get(esType);
   }
-
+  
 }

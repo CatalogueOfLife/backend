@@ -16,15 +16,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class CompressionUtil {
-
+  
   private CompressionUtil() {
     throw new UnsupportedOperationException("Can't initialize class");
   }
-
+  
   private static final Logger LOG = LoggerFactory.getLogger(CompressionUtil.class);
   private static final int BUFFER = 2048;
   private static final String APPLE_RESOURCE_FORK = "__MACOSX";
-
+  
   /**
    * Tries to decompress a file trying gzip or zip regardless of the filename or its suffix.
    * If nothing works leave file as it is.
@@ -32,11 +32,9 @@ public class CompressionUtil {
    * @param directory      directory where archive's contents will be decompressed to.
    *                       If already existing it will be wiped
    * @param compressedFile compressed file
-   *
    * @return list of files that have been extracted or null an empty list if archive couldn't be decompressed
-   *
-   * @throws IOException                if problem occurred reading compressed file, or directory couldn't be written
-   *                                    to
+   * @throws IOException if problem occurred reading compressed file, or directory couldn't be written
+   *                     to
    */
   public static List<File> decompressFile(File directory, File compressedFile) throws IOException {
     if (directory.exists()) {
@@ -44,41 +42,40 @@ public class CompressionUtil {
       FileUtils.deleteDirectory(directory);
     }
     directory.mkdirs();
-
+    
     List<File> files = null;
     // first try zip
     try {
       files = unzipFile(directory, compressedFile);
-
+      
     } catch (ZipException e) {
       LOG.debug("No zip compression");
       // Try gzip if needed
       try {
         files = ungzipFile(directory, compressedFile);
-
+        
       } catch (Exception e2) {
         LOG.debug("No gzip compression");
         files = copyOriginalFile(directory, compressedFile);
         LOG.info("Assuming source file is uncompressed");
       }
     }
-
-
+    
+    
     return files;
   }
-
+  
   private static List<File> copyOriginalFile(File directory, File sourceFile) throws IOException {
     File targetFile = new File(directory, sourceFile.getName());
     FileUtils.copyFile(sourceFile, targetFile);
     return Lists.newArrayList(targetFile);
   }
-
+  
   /**
    * Extracts a gzipped file. Subdirectories or hidden files (i.e. files starting with a dot) are being ignored.
    *
    * @param directory where the file should be extracted to
    * @param zipFile   to extract
-   *
    * @return a list of all created files
    */
   public static List<File> ungzipFile(File directory, File zipFile) throws IOException {
@@ -119,7 +116,7 @@ public class CompressionUtil {
     }
     return files;
   }
-
+  
   /**
    * Gunzip a file.  Use this method with isTarred false if the gzip contains a single file.  If it's a gzip
    * of a tar archive pass true to isTarred (or call @ungzipFile(directory, zipFile) which is what this method
@@ -128,26 +125,24 @@ public class CompressionUtil {
    * @param directory the output directory for the uncompressed file(s)
    * @param zipFile   the gzip file
    * @param isTarred  true if the gzip contains a tar archive
-   *
    * @return a List of the uncompressed file name(s)
-   *
    * @throws IOException if reading or writing fails
    */
   public static List<File> ungzipFile(File directory, File zipFile, boolean isTarred) throws IOException {
     if (isTarred) return ungzipFile(directory, zipFile);
-
+    
     List<File> files = new ArrayList<File>();
     GZIPInputStream in = null;
     BufferedOutputStream dest = null;
     try {
       in = new GZIPInputStream(new FileInputStream(zipFile));
-
+      
       // assume that the gzip filename is the filename + .gz
       String unzippedName = zipFile.getName().substring(0, zipFile.getName().lastIndexOf("."));
       File outputFile = new File(directory, unzippedName);
       LOG.debug("Extracting file: {} to: {}", unzippedName, outputFile.getAbsolutePath());
       FileOutputStream fos = new FileOutputStream(outputFile);
-
+      
       dest = new BufferedOutputStream(fos, BUFFER);
       int count;
       byte[] data = new byte[BUFFER];
@@ -162,10 +157,10 @@ public class CompressionUtil {
         dest.close();
       }
     }
-
+    
     return files;
   }
-
+  
   /**
    * Zip a directory with all files but skipping included subdirectories.
    * Only files directly within the directory are added to the archive.
@@ -176,34 +171,34 @@ public class CompressionUtil {
   public static void zipDir(File dir, File zipFile) throws IOException {
     zipDir(dir, zipFile, false);
   }
-
+  
   /**
    * Zip a directory with all files. Files in Subdirectories will be included if the inclSubdirs is true.
    *
-   * @param dir     the directory to zip
-   * @param zipFile the zipped file
+   * @param dir         the directory to zip
+   * @param zipFile     the zipped file
    * @param inclSubdirs if true includes all subdirectories recursively
    */
   public static void zipDir(File dir, File zipFile, boolean inclSubdirs) throws IOException {
     Collection<File> files = org.apache.commons.io.FileUtils.listFiles(dir, null, inclSubdirs);
     zipFiles(files, dir, zipFile);
   }
-
+  
   public static void zipFile(File file, File zipFile) throws IOException {
     Set<File> files = new HashSet<File>();
     files.add(file);
     zipFiles(files, file.getParentFile(), zipFile);
   }
-
+  
   /**
    * Creates a zip archive from a given collection of files.
    * In order to preserve paths in the archive a rootContext can be specified which will be removed from the individual
    * zip entries. For example a rootContext of /home/freak with a file /home/freak/photo/birthday.jpg to be zipped
    * will result in a zip entry with a path photo/birthday.jpg.
    *
-   * @param files to be included in the zip archive
+   * @param files       to be included in the zip archive
    * @param rootContext optional path to be removed from each file
-   * @param zipFile the zip file to be created
+   * @param zipFile     the zip file to be created
    * @throws IOException
    */
   public static void zipFiles(Collection<File> files, File rootContext, File zipFile) throws IOException {
@@ -220,7 +215,7 @@ public class CompressionUtil {
           LOG.debug("Adding file {} to archive", f);
           FileInputStream fi = new FileInputStream(f);
           origin = new BufferedInputStream(fi, BUFFER);
-
+          
           String zipPath = StringUtils.removeStart(f.getAbsolutePath(), rootContext.getAbsolutePath() + File.separator);
           ZipEntry entry = new ZipEntry(zipPath);
           out.putNextEntry(entry);
@@ -238,7 +233,7 @@ public class CompressionUtil {
       }
     }
   }
-
+  
   /**
    * Extracts a zipped file into a target directory. If the file is wrapped in a root directory, this is removed by
    * default. Other subdirectories are ignored according to the parameter keepSubdirectories.
@@ -247,9 +242,8 @@ public class CompressionUtil {
    * i) hidden files (i.e. files starting with a dot)
    * ii) Apple resource fork (__MACOSX), including its subdirectories and subfiles
    *
-   * @param directory          where the zipped file and its subdirectories should be extracted to
-   * @param zipFile            to extract
-   *
+   * @param directory where the zipped file and its subdirectories should be extracted to
+   * @param zipFile   to extract
    * @return a list of all created files and directories extracted to target directory
    */
   public static List<File> unzipFile(File directory, File zipFile) throws IOException {
@@ -287,7 +281,7 @@ public class CompressionUtil {
     removeRootDirectory(directory);
     return (directory.listFiles() == null) ? new ArrayList<File>() : Arrays.asList(directory.listFiles());
   }
-
+  
   /**
    * @return true if file is a hidden file or directory, or if any of its parent directories are hidden checking
    * recursively
@@ -300,7 +294,7 @@ public class CompressionUtil {
     }
     return false;
   }
-
+  
   /**
    * Removes a wrapping root directory and flatten its structure by moving all that root directory's files and
    * subdirectories up to the same level as the root directory.
@@ -319,7 +313,7 @@ public class CompressionUtil {
       }
     }
   }
-
+  
   /**
    * Extract an entry from a zipped file into a target file.
    *
@@ -342,5 +336,5 @@ public class CompressionUtil {
       LOG.error("File could not be extraced: " + e.getMessage(), e);
     }
   }
-
+  
 }

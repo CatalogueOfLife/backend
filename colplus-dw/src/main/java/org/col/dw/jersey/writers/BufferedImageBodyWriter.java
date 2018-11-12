@@ -1,4 +1,4 @@
-package org.col.dw.jersey.provider;
+package org.col.dw.jersey.writers;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;

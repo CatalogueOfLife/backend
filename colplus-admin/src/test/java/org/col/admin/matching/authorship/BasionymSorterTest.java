@@ -24,6 +24,7 @@ public class BasionymSorterTest {
   private static Name parse(String x) {
     return NameParser.PARSER.parse(x).get().getName();
   }
+
   private static Name parse(String x, Rank rank) {
     return NameParser.PARSER.parse(x, rank, null).get().getName();
   }

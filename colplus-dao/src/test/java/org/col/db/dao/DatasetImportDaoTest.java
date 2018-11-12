@@ -16,21 +16,21 @@ public class DatasetImportDaoTest extends DaoTestBase {
   
   @Test
   public void generateDatasetImport() {
-
+    
     DatasetImportDao dao = new DatasetImportDao(factory());
-
+    
     DatasetImport d = new DatasetImport();
     d.setDatasetKey(TestEntityGenerator.DATASET11.getKey());
     dao.updateMetrics(mapper(DatasetImportMapper.class), d);
-
+    
     assertEquals((Integer) 5, d.getNameCount());
     assertEquals((Integer) 2, d.getTaxonCount());
     assertEquals((Integer) 2, d.getReferenceCount());
     assertEquals((Integer) 5, d.getVerbatimCount());
     assertEquals((Integer) 3, d.getVernacularCount());
     assertEquals((Integer) 3, d.getDistributionCount());
-
-    assertEquals( 6, d.getIssuesCount().keySet().size());
+    
+    assertEquals(6, d.getIssuesCount().keySet().size());
     assertEquals((Integer) 1, d.getIssuesCount().get(Issue.ESCAPED_CHARACTERS));
     assertEquals((Integer) 2, d.getIssuesCount().get(Issue.REFERENCE_ID_INVALID));
     assertEquals((Integer) 1, d.getIssuesCount().get(Issue.ID_NOT_UNIQUE));
@@ -39,34 +39,34 @@ public class DatasetImportDaoTest extends DaoTestBase {
     assertEquals((Integer) 1, d.getIssuesCount().get(Issue.UNUSUAL_NAME_CHARACTERS));
     assertFalse(d.getIssuesCount().containsKey(Issue.NOT_INTERPRETED));
     assertFalse(d.getIssuesCount().containsKey(Issue.NULL_EPITHET));
-
-    assertEquals( 1, d.getNamesByRankCount().size());
+    
+    assertEquals(1, d.getNamesByRankCount().size());
     assertEquals((Integer) 5, d.getNamesByRankCount().get(Rank.SPECIES));
-
-    assertEquals( 1, d.getNamesByOriginCount().size());
+    
+    assertEquals(1, d.getNamesByOriginCount().size());
     assertEquals((Integer) 5, d.getNamesByOriginCount().get(Origin.SOURCE));
-
-    assertEquals( 1, d.getNamesByTypeCount().size());
+    
+    assertEquals(1, d.getNamesByTypeCount().size());
     assertEquals((Integer) 5, d.getNamesByTypeCount().get(NameType.SCIENTIFIC));
-
-    assertEquals( 1, d.getDistributionsByGazetteerCount().size());
+    
+    assertEquals(1, d.getDistributionsByGazetteerCount().size());
     assertEquals((Integer) 3, d.getDistributionsByGazetteerCount().get(Gazetteer.TEXT));
-
-    assertEquals( 3, d.getVernacularsByLanguageCount().size());
+    
+    assertEquals(3, d.getVernacularsByLanguageCount().size());
     assertEquals((Integer) 1, d.getVernacularsByLanguageCount().get(Language.GERMAN));
     assertEquals((Integer) 1, d.getVernacularsByLanguageCount().get(Language.ENGLISH));
     assertEquals((Integer) 1, d.getVernacularsByLanguageCount().get(Language.DUTCH));
-
-    assertEquals( 2, d.getUsagesByStatusCount().size());
+    
+    assertEquals(2, d.getUsagesByStatusCount().size());
     assertEquals((Integer) 2, d.getUsagesByStatusCount().get(TaxonomicStatus.ACCEPTED));
     assertEquals((Integer) 2, d.getUsagesByStatusCount().get(TaxonomicStatus.SYNONYM));
-
-    assertEquals( 0, d.getNamesByStatusCount().size());
-
-    assertEquals( 1, d.getNameRelationsByTypeCount().size());
+    
+    assertEquals(0, d.getNamesByStatusCount().size());
+    
+    assertEquals(1, d.getNameRelationsByTypeCount().size());
     assertEquals((Integer) 1, d.getNameRelationsByTypeCount().get(NomRelType.SPELLING_CORRECTION));
-
-    assertEquals( 2, d.getVerbatimByTypeCount().size());
+    
+    assertEquals(2, d.getVerbatimByTypeCount().size());
     assertEquals((Integer) 3, d.getVerbatimByTypeCount().get(AcefTerm.AcceptedSpecies));
   }
 }

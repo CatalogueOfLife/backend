@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Size {
-
+  
   private int width;
   private int height;
   
@@ -16,7 +16,7 @@ public class Size {
     this.width = width;
     this.height = height;
   }
-
+  
   public int getWidth() {
     return width;
   }

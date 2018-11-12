@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 
 public class NameIndexFactory {
   private static final Logger LOG = LoggerFactory.getLogger(NameIndexFactory.class);
-
+  
   /**
    * @return NameIndex that returns no match for any query
    */
@@ -22,23 +22,23 @@ public class NameIndexFactory {
       public NameMatch match(Name name, boolean allowInserts, boolean verbose) {
         return NameMatch.noMatch();
       }
-
+      
       @Override
       public int size() {
         return 0;
       }
-
+      
       @Override
       public void add(Name name) {
       }
-
+      
     };
   }
-
+  
   public static NameIndex memory(int datasetKey, SqlSessionFactory sqlFactory) {
     return new NameIndexMapDB(DBMaker.memoryDB(), AuthorComparator.createWithAuthormap(), datasetKey, sqlFactory);
   }
-
+  
   /**
    * Creates or opens a persistent mapdb names index.
    */
@@ -48,5 +48,5 @@ public class NameIndexFactory {
         .fileMmapEnableIfSupported();
     return new NameIndexMapDB(maker, AuthorComparator.createWithAuthormap(), datasetKey, sqlFactory);
   }
-
+  
 }

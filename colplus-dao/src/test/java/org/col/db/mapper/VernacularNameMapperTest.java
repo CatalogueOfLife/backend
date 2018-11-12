@@ -12,37 +12,37 @@ import static org.junit.Assert.*;
  *
  */
 public class VernacularNameMapperTest extends MapperTestBase<VernacularNameMapper> {
-
-	public VernacularNameMapperTest() {
-		super(VernacularNameMapper.class);
-	}
-
-	@Test
-	public void roundtrip() throws Exception {
-		final int datasetKey = 2;
-
-		VernacularName in = newVernacularName("cat");
-		mapper().create(in, TAXON1.getId(), datasetKey);
-		assertNotNull(in.getKey());
-		commit();
-		VernacularName out = mapper().get(datasetKey, in.getKey());
-		assertTrue(in.equals(out));
-	}
-
-	@Test
-	public void testListByTaxon() throws Exception {
-		VernacularName b = newVernacularName("b");
-		mapper().create(b, TAXON2.getId(), DATASET11.getKey());
-		VernacularName c = newVernacularName("c");
-		mapper().create(c, TAXON2.getId(), DATASET11.getKey());
-		VernacularName a = newVernacularName("a");
-		mapper().create(a, TAXON2.getId(), DATASET11.getKey());
-
-		List<VernacularName> list = mapper().listByTaxon(TAXON2.getDatasetKey(), TAXON2.getId());
-		assertEquals(3, list.size());
-		assertTrue(a.equals(list.get(0)));
-		assertTrue(b.equals(list.get(1)));
-		assertTrue(c.equals(list.get(2)));
-	}
-
+  
+  public VernacularNameMapperTest() {
+    super(VernacularNameMapper.class);
+  }
+  
+  @Test
+  public void roundtrip() throws Exception {
+    final int datasetKey = 2;
+    
+    VernacularName in = newVernacularName("cat");
+    mapper().create(in, TAXON1.getId(), datasetKey);
+    assertNotNull(in.getKey());
+    commit();
+    VernacularName out = mapper().get(datasetKey, in.getKey());
+    assertTrue(in.equals(out));
+  }
+  
+  @Test
+  public void testListByTaxon() throws Exception {
+    VernacularName b = newVernacularName("b");
+    mapper().create(b, TAXON2.getId(), DATASET11.getKey());
+    VernacularName c = newVernacularName("c");
+    mapper().create(c, TAXON2.getId(), DATASET11.getKey());
+    VernacularName a = newVernacularName("a");
+    mapper().create(a, TAXON2.getId(), DATASET11.getKey());
+    
+    List<VernacularName> list = mapper().listByTaxon(TAXON2.getDatasetKey(), TAXON2.getId());
+    assertEquals(3, list.size());
+    assertTrue(a.equals(list.get(0)));
+    assertTrue(b.equals(list.get(1)));
+    assertTrue(c.equals(list.get(2)));
+  }
+  
 }

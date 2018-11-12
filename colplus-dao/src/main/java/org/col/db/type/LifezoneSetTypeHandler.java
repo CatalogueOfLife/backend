@@ -7,7 +7,7 @@ import org.col.api.vocab.Lifezone;
  * values.
  */
 public class LifezoneSetTypeHandler extends EnumOrdinalSetTypeHandler<Lifezone> {
-
+  
   public LifezoneSetTypeHandler() {
     super(Lifezone.class);
   }

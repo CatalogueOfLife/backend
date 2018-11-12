@@ -30,11 +30,11 @@ import org.slf4j.LoggerFactory;
  */
 public class InitDbCmd extends ConfiguredCommand<AdminServerConfig> {
   private static final Logger LOG = LoggerFactory.getLogger(InitDbCmd.class);
-
+  
   public InitDbCmd() {
     super("initdb", "Initialises a new database schema");
   }
-
+  
   @Override
   public void configure(Subparser subparser) {
     super.configure(subparser);
@@ -46,7 +46,7 @@ public class InitDbCmd extends ConfiguredCommand<AdminServerConfig> {
         .required(false)
         .help("Waiting time in seconds for a user prompt to abort db initialisation. Use zero for no prompt");
   }
-
+  
   @Override
   protected void run(Bootstrap<AdminServerConfig> bootstrap, Namespace namespace, AdminServerConfig cfg) throws Exception {
     final int prompt = namespace.getInt("prompt");
@@ -55,11 +55,11 @@ public class InitDbCmd extends ConfiguredCommand<AdminServerConfig> {
       System.out.format("You have %s seconds to abort if you did not intend to do so !!!\n", prompt);
       TimeUnit.SECONDS.sleep(prompt);
     }
-
+    
     execute(cfg);
     System.out.println("Done !!!");
   }
-
+  
   public static void execute(AdminServerConfig cfg) throws Exception {
     LOG.info("Starting database initialisation");
     try (Connection con = cfg.db.connect(cfg.adminDb);
@@ -67,11 +67,11 @@ public class InitDbCmd extends ConfiguredCommand<AdminServerConfig> {
     ) {
       LOG.info("Drop existing database {}", cfg.db.database);
       st.execute("DROP DATABASE IF EXISTS " + cfg.db.database);
-
+      
       LOG.info("Create new database {}", cfg.db.database);
       st.execute("CREATE DATABASE " + cfg.db.database + " WITH OWNER " + cfg.db.user);
     }
-
+    
     try (Connection con = cfg.db.connect()) {
       ScriptRunner runner = PgConfig.scriptRunner(con);
       // run sql schema
@@ -89,12 +89,12 @@ public class InitDbCmd extends ConfiguredCommand<AdminServerConfig> {
       // add GBIF Backbone datasets
       exec(PgConfig.GBIF_DATASETS_FILE, runner, con, Resources.getResourceAsReader(PgConfig.GBIF_DATASETS_FILE));
     }
-
+    
     // add col & names index partitions
     setupStandardPartitions(cfg.db);
   }
-
-  private static void setupStandardPartitions(PgConfig cfg){
+  
+  private static void setupStandardPartitions(PgConfig cfg) {
     HikariConfig hikari = cfg.hikariConfig();
     try (HikariDataSource dataSource = new HikariDataSource(hikari)) {
       // configure single mybatis session factory
@@ -111,7 +111,7 @@ public class InitDbCmd extends ConfiguredCommand<AdminServerConfig> {
       session.close();
     }
   }
-
+  
   private static void exec(String name, ScriptRunner runner, Connection con, Reader reader) {
     try {
       LOG.info("Executing {}", name);
@@ -120,7 +120,7 @@ public class InitDbCmd extends ConfiguredCommand<AdminServerConfig> {
     } catch (RuntimeException e) {
       LOG.error("Failed to execute {}", name);
       throw e;
-
+      
     } catch (Exception e) {
       LOG.error("Failed to execute {}", name);
       throw new RuntimeException("Fail to execute sql file: " + name, e);

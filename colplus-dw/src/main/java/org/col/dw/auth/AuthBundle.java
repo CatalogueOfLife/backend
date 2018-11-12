@@ -17,10 +17,10 @@ public class AuthBundle implements ConfiguredBundle<PgAppConfig> {
   @Override
   public void run(PgAppConfig configuration, Environment environment) {
     environment.jersey().register(RolesAllowedDynamicFeature.class);
-  
+    
     jwtCodec = new JwtCodec(configuration.auth);
     idService = new IdentityService(configuration.auth);
-
+    
     environment.jersey().register(new AuthDynamicFeature(new AuthFilter(idService, jwtCodec)));
     environment.jersey().register(new AuthValueFactoryProvider.Binder<>(ColUser.class));
   }

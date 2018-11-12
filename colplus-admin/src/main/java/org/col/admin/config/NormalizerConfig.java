@@ -18,37 +18,37 @@ import org.slf4j.LoggerFactory;
  */
 @SuppressWarnings("PublicField")
 public class NormalizerConfig {
-
+  
   private static final Logger LOG = LoggerFactory.getLogger(NormalizerConfig.class);
-
+  
   /**
    * Archive directory to store larger amount of data
    */
   @NotNull
   public File archiveDir = new File("/tmp");
-
+  
   /**
    * Temporary folder for fast IO.
    * Used primarily for neo4j dbs.
    */
   @NotNull
   public File scratchDir = new File("/tmp");
-
+  
   /**
    * Batchsize to use when processing all nodes, e.g. for normalising the flat classification
    */
   @NotNull
   public int batchSize = 10000;
-
+  
   /**
    * Timeout in minutes to wait before stopping processing a batch in neodb and fail the normalizer / import
    */
   @NotNull
   public int batchTimeout = 30;
-
+  
   @Min(0)
   public int mappedMemory = 128;
-
+  
   /**
    * The dataset source files as a single archive in original format (zip, gzip, etc).
    * Stored in special archive directory so we can keep large amounts of data on cheap storage devices
@@ -57,23 +57,23 @@ public class NormalizerConfig {
   public File source(int datasetKey) {
     return new File(archiveDir, String.valueOf(datasetKey) + ".archive");
   }
-
-
+  
+  
   public File scratchDir(int datasetKey) {
     return new File(scratchDir, String.valueOf(datasetKey));
   }
-
+  
   public File neoDir(int datasetKey) {
     return new File(scratchDir(datasetKey), "normalizer");
   }
-
+  
   /**
    * Directory with all decompressed source files
    */
   public File sourceDir(int datasetKey) {
     return new File(scratchDir(datasetKey), "source");
   }
-
+  
   /**
    * Creates a new embedded db in the directory folder.
    *
@@ -100,7 +100,7 @@ public class NormalizerConfig {
     }
     return builder;
   }
-
+  
 }
 
 

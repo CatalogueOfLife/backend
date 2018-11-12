@@ -21,7 +21,7 @@ public class KryoCollectionStoreTest {
         .softReferences()
         .build();
 
-    try (TempFile tf = new TempFile("kryo-",".bin");
+    try (TempFile tf = new TempFile("kryo-", ".bin");
          KryoCollectionStore<Page> store = new KryoCollectionStore(Page.class, tf.file, pool)) {
 
       for (int i = 0; i < 100; i++) {

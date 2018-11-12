@@ -13,19 +13,19 @@ import org.neo4j.graphdb.traversal.Evaluator;
  * Includes only paths with taxon end nodes that have a rank equal or above the threshold given.
  */
 public class RankEvaluator implements Evaluator {
-
+  
   private final @Nullable
   Rank threshold;
-
+  
   public RankEvaluator(Rank threshold) {
     this.threshold = threshold;
   }
-
+  
   @Override
   public Evaluation evaluate(Path path) {
     return evaluateNode(path.endNode()) ? Evaluation.INCLUDE_AND_CONTINUE : Evaluation.EXCLUDE_AND_CONTINUE;
   }
-
+  
   /**
    * @return true if the satisfies the rank evaluator and should be included.
    */

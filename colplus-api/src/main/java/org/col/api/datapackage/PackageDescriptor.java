@@ -9,7 +9,7 @@ public class PackageDescriptor {
   
   @QueryParam("title")
   private String title;
-
+  
   @QueryParam("header")
   @DefaultValue("true")
   private boolean header = true;

@@ -18,25 +18,25 @@ public class HstoreMapTypeHandler extends BaseTypeHandler<Map<String, String>> {
   
   @Override
   public void setNonNullParameter(PreparedStatement ps, int i, Map<String, String> parameter, JdbcType jdbcType)
-    throws SQLException {
+      throws SQLException {
     ps.setString(i, HStoreConverter.toString(parameter));
   }
-
+  
   @Override
   public Map<String, String> getNullableResult(ResultSet rs, String columnName) throws SQLException {
     return fromString(rs.getString(columnName));
   }
-
+  
   @Override
   public Map<String, String> getNullableResult(ResultSet rs, int columnIndex) throws SQLException {
     return fromString(rs.getString(columnIndex));
   }
-
+  
   @Override
   public Map<String, String> getNullableResult(CallableStatement cs, int columnIndex) throws SQLException {
     return fromString(cs.getString(columnIndex));
   }
-
+  
   private Map<String, String> fromString(String hstring) {
     return HStoreConverter.fromString(hstring);
   }

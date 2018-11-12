@@ -11,12 +11,12 @@ import org.col.api.vocab.Country;
  */
 @MappedTypes(Country.class)
 public class CountryTypeHandler extends BaseEnumTypeHandler<String, Country> {
-
+  
   @Override
   public String fromEnum(Country value) {
     return value == null ? null : value.getIso2LetterCode();
   }
-
+  
   /**
    * Matches a notnull key against the Country Enum. A key with no match against the country Enum will return
    * Country.UNKNOWN.

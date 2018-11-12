@@ -14,11 +14,11 @@ import static org.junit.Assert.*;
  *
  */
 public class AcefReaderTest {
-
+  
   @Test
   public void fromFolder() throws Exception {
     AcefReader reader = AcefReader.from(PathUtils.classPathTestRes("acef/0"));
-
+    
     AtomicInteger counter = new AtomicInteger(0);
     reader.stream(AcefTerm.AcceptedSpecies).forEach(tr -> {
       counter.incrementAndGet();
@@ -64,11 +64,11 @@ public class AcefReaderTest {
     });
     assertEquals(3, counter.get());
   }
-
+  
   @Test
   public void corruptFiles() throws Exception {
     AcefReader reader = AcefReader.from(PathUtils.classPathTestRes("acef/corrupt"));
-
+    
     AtomicInteger counter = new AtomicInteger(0);
     reader.stream(AcefTerm.AcceptedSpecies).forEach(tr -> {
       counter.incrementAndGet();
@@ -88,25 +88,25 @@ public class AcefReaderTest {
       assertEquals("1", tr.get(AcefTerm.HasModern));
     });
     assertEquals(3, counter.get());
-
+    
     Optional<VerbatimRecord> row = reader.readFirstRow(AcefTerm.NameReferencesLinks);
     assertTrue(row.isPresent());
-
+    
     // missing required column
     row = reader.readFirstRow(AcefTerm.CommonNames);
     assertFalse(row.isPresent());
-
+    
     row = reader.readFirstRow(AcefTerm.Distribution);
     assertFalse(row.isPresent());
-
+    
     row = reader.readFirstRow(AcefTerm.Reference);
     assertFalse(row.isPresent());
-
+    
     // try to read bad file
     row = reader.readFirstRow(AcefTerm.SourceDatabase);
     // this somehow works, puzzling but ok ...
     //assertFalse(row.isPresent());
-
+    
   }
-
+  
 }

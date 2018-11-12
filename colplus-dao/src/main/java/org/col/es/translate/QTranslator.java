@@ -5,7 +5,6 @@ import java.util.Optional;
 import java.util.Set;
 
 import com.google.common.base.Strings;
-
 import org.col.api.search.NameSearchRequest;
 import org.col.api.search.NameSearchRequest.SearchContent;
 import org.col.es.query.AutoCompleteQuery;
@@ -16,13 +15,13 @@ import org.col.es.query.Query;
  * Translates the "q" request parameter into an Elasticsearch query.
  */
 class QTranslator {
-
+  
   private final NameSearchRequest request;
-
+  
   QTranslator(NameSearchRequest request) {
     this.request = request;
   }
-
+  
   Optional<Query> translate() {
     if (Strings.isNullOrEmpty(request.getQ())) {
       return Optional.empty();
@@ -42,7 +41,7 @@ class QTranslator {
     }
     return Optional.of(boolQuery);
   }
-
+  
   private Query translate(SearchContent sc) {
     switch (sc) {
       case AUTHORSHIP:
@@ -54,5 +53,5 @@ class QTranslator {
         return new AutoCompleteQuery("vernacularNames", request.getQ());
     }
   }
-
+  
 }

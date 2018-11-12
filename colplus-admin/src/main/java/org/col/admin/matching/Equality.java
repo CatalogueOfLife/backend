@@ -1,9 +1,11 @@
 package org.col.admin.matching;
 
 public enum Equality {
-  EQUAL, DIFFERENT, UNKNOWN;
-
-  public Equality and (Equality other) {
+  EQUAL,
+  DIFFERENT,
+  UNKNOWN;
+  
+  public Equality and(Equality other) {
     switch (this) {
       case UNKNOWN:
         return other;

@@ -10,20 +10,20 @@ import java.util.*;
 import org.apache.commons.lang3.StringUtils;
 
 public class RandomInstance {
-
+  
   private static final Random RND = new Random();
-
+  
   // Upper bounds for randomized values
   private int maxInt = 100;
   private int maxStringLength = 10;
   private int maxArrayLength = 5;
-
+  
   /*
    * Whether or not to set "empty" strings/arrays/collections to null. MUST be true in combination
    * with JsonInclude.Include.NON_EMPTY !! Otherwise SerDe tests will arbitrarily fail or succeed.
    */
   private boolean emptyToNull = true;
-
+  
   /*
    * Initializes commonly-typed fields (String, int, ...) of an instance of type T.
    */
@@ -38,7 +38,7 @@ public class RandomInstance {
       throw new RuntimeException(e);
     }
   }
-
+  
   /*
    * Instantiate and initialize commonly-typed fields. Only works if c has a no-arg constructor.
    * Fields whose type is in the extraTypes array will also be initialized (again requires a no-arg
@@ -64,7 +64,7 @@ public class RandomInstance {
       throw new RuntimeException(e);
     }
   }
-
+  
   public List<?> createList(Class<?> c, Class<?>... extraTypes) {
     int size = RND.nextInt(maxArrayLength + 1);
     if (size == 0) {
@@ -76,7 +76,7 @@ public class RandomInstance {
     }
     return list;
   }
-
+  
   private Object[] createArray(Class<?> c, Class<?>... extraTypes) {
     int size = RND.nextInt(maxArrayLength + 1);
     Object[] arr = (Object[]) Array.newInstance(c, size);
@@ -88,23 +88,23 @@ public class RandomInstance {
     }
     return arr;
   }
-
+  
   public void setMaxInt(int maxInt) {
     this.maxInt = maxInt;
   }
-
+  
   public void setMaxStringLength(int maxStringLength) {
     this.maxStringLength = maxStringLength;
   }
-
+  
   public void setMaxArrayLength(int maxArrayLength) {
     this.maxArrayLength = maxArrayLength;
   }
-
+  
   public void setEmptyToNull(boolean emptyToNull) {
     this.emptyToNull = emptyToNull;
   }
-
+  
   private <T> boolean setCommonTypes(T instance, Field f) throws IllegalAccessException {
     Class<?> t = f.getType();
     if (t == String.class) {
@@ -145,11 +145,11 @@ public class RandomInstance {
     // TODO more common types
     return false;
   }
-
+  
   private LocalDateTime randomDateTime() {
     return LocalDateTime.now();
   }
-
+  
   private String randomString() {
     int len = RND.nextInt(maxStringLength + 1);
     if (len == 0) {
@@ -157,11 +157,11 @@ public class RandomInstance {
     }
     return RandomUtils.randomString(len);
   }
-
+  
   private static boolean randomBoolean() {
     return RND.nextInt(2) == 1;
   }
-
+  
   private static ArrayList<Field> getFields(Class<?> cls) {
     ArrayList<Class<?>> hierarchy = new ArrayList<>(4);
     Class<?> c = cls;
@@ -185,5 +185,5 @@ public class RandomInstance {
     }
     return allFields;
   }
-
+  
 }

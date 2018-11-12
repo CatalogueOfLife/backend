@@ -21,12 +21,12 @@ public class CharsetDetectingStream extends InputStream {
   private Charset charset;
   private final InputStream input;
   private final static int debugHexSize = 16;
-
+  
   private CharsetDetectingStream(InputStream in, Charset charset) {
     this.input = in;
     this.charset = charset;
   }
-
+  
   /**
    * Creates a buffered reader skipping potential bom start sequences
    */
@@ -35,14 +35,14 @@ public class CharsetDetectingStream extends InputStream {
     Preconditions.checkNotNull(charset);
     return new BufferedReader(new InputStreamReader(new BOMInputStream(in), charset));
   }
-
+  
   public static CharsetDetectingStream create(InputStream in) throws IOException {
     Preconditions.checkNotNull(in);
     BOMInputStream bom = new BOMInputStream(in);
     if (bom.hasBOM()) {
       LOG.debug("{} BOM found", bom.getBOMCharsetName());
       return new CharsetDetectingStream(bom, Charset.forName(bom.getBOMCharsetName()));
-
+      
     } else {
       // if we cannot find a BOM try to detect heuristically extracting a larger byte buffer first
       BufferedInputStream bis = new BufferedInputStream(bom, BUFFER_SIZE);
@@ -60,11 +60,11 @@ public class CharsetDetectingStream extends InputStream {
       return new CharsetDetectingStream(bis, cs);
     }
   }
-
+  
   public Charset getCharset() {
     return charset;
   }
-
+  
   @Override
   public int read() throws IOException {
     return input.read();

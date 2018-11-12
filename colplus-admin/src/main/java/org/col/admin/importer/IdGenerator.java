@@ -13,14 +13,15 @@ public class IdGenerator {
   private final AtomicLong counter = new AtomicLong(0);
   private final Hashids hashids = new Hashids("dvr4.", 4, availChars);
   private String prefix;
-
+  
   public IdGenerator() {
     this.prefix = "";
   }
+  
   public IdGenerator(String prefix) {
     this.prefix = prefix;
   }
-
+  
   private static String smallestNonExistingPrefix(Stream<String> existingIds) {
     final char preferredPrefixChar = '.';
     final StringBuilder prefix = new StringBuilder(String.valueOf(preferredPrefixChar));
@@ -44,21 +45,21 @@ public class IdGenerator {
     }
     return prefix.toString();
   }
-
+  
   public long getCounter() {
     return counter.get();
   }
-
+  
   public String getPrefix() {
     return prefix;
   }
-
+  
   public IdGenerator setPrefix(Stream<String> existingIds) {
     this.prefix = smallestNonExistingPrefix(existingIds);
     return this;
   }
-
-  public String next(){
+  
+  public String next() {
     return prefix + hashids.encode(counter.incrementAndGet());
   }
 }

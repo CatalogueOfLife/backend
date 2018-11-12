@@ -10,21 +10,21 @@ import org.junit.rules.ExternalResource;
  * Therefore this base class extends DaoTestBase.
  */
 public class EsReadWriteTestBase extends ExternalResource {
-
+  
   @ClassRule
   public static PgSetupRule pgSetupRule = new PgSetupRule(false, false);
-
+  
   @ClassRule
   public static EsSetupRule esSetupRule = new EsSetupRule();
-
+  
   protected EsConfig getEsConfig() {
     return esSetupRule.getEsConfig();
   }
-
+  
   protected RestClient getEsClient() {
     return esSetupRule.getEsClient();
   }
-
+  
   @Override
   protected void before() throws Throwable {
     super.before();

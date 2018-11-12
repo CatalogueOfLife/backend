@@ -4,7 +4,7 @@ package org.col.api.vocab;
  * Vocabulary for the source of truth for the data of a dataset.
  */
 public enum DatasetOrigin {
-
+  
   /**
    * A dataset which is synchronised from an external archive pulled from a URL at a regular interval.
    */

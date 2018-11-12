@@ -17,53 +17,52 @@ import org.parboiled.common.StringUtils;
  * Synonyms are prefixed with an asterisk *,
  * Pro parte synoynms with a double asterisk **,
  * basionyms are prefixed by a $ and listed first in the synonymy.
- *
+ * <p>
  * Ranks are given in brackets after the scientific name
- *
+ * <p>
  * A basic example tree would look like this:
-<pre>
-Plantae [kingdom]
-  Compositae Giseke [family]
-    *Asteraceae [family]
-    Artemisia L. [genus]
-      Artemisia elatior (Torr. & A. Gray) Rydb.
-        *$Artemisia tilesii var. elatior Torr. & A. Gray
-      $Artemisia rupestre Schrank L. [species]
-        *Absinthium rupestre (L.) Schrank [species]
-        *Absinthium viridifolium var. rupestre (L.) Besser
-</pre>
- *
+ * <pre>
+ * Plantae [kingdom]
+ * Compositae Giseke [family]
+ * Asteraceae [family]
+ * Artemisia L. [genus]
+ * Artemisia elatior (Torr. & A. Gray) Rydb.
+ * $Artemisia tilesii var. elatior Torr. & A. Gray
+ * $Artemisia rupestre Schrank L. [species]
+ * Absinthium rupestre (L.) Schrank [species]
+ * Absinthium viridifolium var. rupestre (L.) Besser
+ * </pre>
  */
 public class TxtPrinter implements TreePrinter {
   public static final String SYNONYM_SYMBOL = "*";
   public static final String BASIONYM_SYMBOL = "$";
-
+  
   private static final int indentation = 2;
   private int level = 0;
   private final Writer writer;
   private final boolean showIds;
-
-
+  
+  
   public TxtPrinter(Writer writer, boolean showIds) {
     this.writer = writer;
     this.showIds = showIds;
   }
-
+  
   public TxtPrinter(Writer writer) {
     this(writer, false);
   }
-
+  
   @Override
   public void start(Node n) {
     print(n);
     level++;
   }
-
+  
   @Override
   public void end(Node n) {
     level--;
   }
-
+  
   private void print(Node n) {
     try {
       //writer.write(String.valueOf(n.getId()));
@@ -96,14 +95,14 @@ public class TxtPrinter implements TreePrinter {
         writer.write("]");
       }
       writer.write("\n");
-
+      
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
   }
-
+  
   @Override
   public void close() {
-
+  
   }
 }

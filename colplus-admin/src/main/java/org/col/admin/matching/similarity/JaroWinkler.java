@@ -7,9 +7,9 @@ package org.col.admin.matching.similarity;
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -35,9 +35,9 @@ import java.util.Arrays;
  *
  */
 public class JaroWinkler implements StringSimilarity {
-
+  
   private float threshold = 0.7f;
-
+  
   private int[] matches(String s1, String s2) {
     String max, min;
     if (s1.length() > s2.length()) {
@@ -91,9 +91,9 @@ public class JaroWinkler implements StringSimilarity {
         break;
       }
     }
-    return new int[] {matches, transpositions / 2, prefix, max.length()};
+    return new int[]{matches, transpositions / 2, prefix, max.length()};
   }
-
+  
   @Override
   public double getSimilarity(String s1, String s2) {
     int[] mtp = matches(s1, s2);
@@ -103,10 +103,10 @@ public class JaroWinkler implements StringSimilarity {
     }
     float j = ((m / s1.length() + m / s2.length() + (m - mtp[1]) / m)) / 3;
     float jw = j < threshold ? j : j + Math.min(0.1f, 1f / mtp[3]) * mtp[2] * (1 - j);
-
+    
     //(100d - (100d-s) / Math.pow(Math.max(1,l-8), 0.2))
-
+    
     return 100d * jw;
   }
-
+  
 }

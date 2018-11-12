@@ -29,43 +29,43 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class NeoInserter {
   private static final Logger LOG = LoggerFactory.getLogger(NeoInserter.class);
-
+  
   protected final NeoDb store;
   protected final Path folder;
   protected final InsertMetadata meta = new InsertMetadata();
   protected final ReferenceFactory refFactory;
   private int vcounter;
-
+  
   public NeoInserter(Path folder, NeoDb store, ReferenceFactory refFactory) {
     this.folder = folder;
     this.store = store;
     this.refFactory = refFactory;
   }
-
+  
   final InsertMetadata insertAll() throws NormalizationFailedException {
     // the key will be preserved by the store
     Optional<Dataset> d = readMetadata();
     d.ifPresent(store::put);
-
+    
     store.startBatchMode();
     batchInsert();
     LOG.info("Batch insert completed, {} verbatim records processed, {} nodes created", vcounter, store.size());
-
+    
     store.endBatchMode();
     LOG.info("Neo batch inserter closed, data flushed to disk");
-
+    
     final int batchV = vcounter;
     final int batchRec = store.size();
     postBatchInsert();
-    LOG.info("Post batch insert completed, {} verbatim records processed creating {} new nodes", batchV, store.size()-batchRec);
-
+    LOG.info("Post batch insert completed, {} verbatim records processed creating {} new nodes", batchV, store.size() - batchRec);
+    
     LOG.debug("Start processing explicit relations ...");
-    store.process(Labels.ALL,5000, relationProcessor());
-
+    store.process(Labels.ALL, 5000, relationProcessor());
+    
     LOG.info("Insert of {} verbatim records and {} nodes completed", vcounter, store.size());
     return meta;
   }
-
+  
   private void processVerbatim(final CsvReader reader, final Term classTerm, Function<VerbatimRecord, Boolean> proc) {
     if (Thread.interrupted()) {
       LOG.warn("NeoInserter interrupted, exit early with incomplete import");
@@ -86,7 +86,7 @@ public abstract class NeoInserter {
     LOG.info("Inserted {} verbatim, {} successfully processed {}", counter.get(), success.get(), classTerm.prefixedName());
     vcounter += counter.get();
   }
-
+  
   protected <T extends VerbatimEntity> void insertEntities(final CsvReader reader, final Term classTerm,
                                                            Function<VerbatimRecord, Optional<T>> interpret,
                                                            Consumer<T> add
@@ -102,7 +102,7 @@ public abstract class NeoInserter {
       return false;
     });
   }
-
+  
   protected <T extends VerbatimEntity> void insertTaxonEntities(final CsvReader reader, final Term classTerm,
                                                                 Function<VerbatimRecord, List<T>> interpret,
                                                                 Term taxonIdTerm,
@@ -127,10 +127,10 @@ public abstract class NeoInserter {
       return interpreted;
     });
   }
-
+  
   protected void insertNameRelations(final CsvReader reader, final Term classTerm,
-                                                                Function<VerbatimRecord, Optional<NeoNameRel>> interpret,
-                                                                Term nameIdTerm, Term relatedNameIdTerm
+                                     Function<VerbatimRecord, Optional<NeoNameRel>> interpret,
+                                     Term nameIdTerm, Term relatedNameIdTerm
   ) {
     processVerbatim(reader, classTerm, rec -> {
       Optional<NeoNameRel> opt = interpret.apply(rec);
@@ -143,13 +143,13 @@ public abstract class NeoInserter {
       return false;
     });
   }
-
+  
   public abstract void batchInsert() throws NormalizationFailedException;
-
+  
   public abstract void postBatchInsert() throws NormalizationFailedException;
-
+  
   protected abstract NodeBatchProcessor relationProcessor();
-
+  
   protected abstract Optional<Dataset> readMetadata();
-
+  
 }

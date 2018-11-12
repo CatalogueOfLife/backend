@@ -20,11 +20,11 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 
 public class CountrySerdeTest extends SerdeMapEnumKeyTestBase<Country> {
-
+  
   public CountrySerdeTest() {
     super(Country.class);
   }
-
+  
   @Test
   public void testLowerCase() throws JsonProcessingException {
     Wrapper<Country> wrapper = new Wrapper<Country>(Country.GERMANY);

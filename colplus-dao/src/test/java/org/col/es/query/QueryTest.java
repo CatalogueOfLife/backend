@@ -3,7 +3,6 @@ package org.col.es.query;
 import java.time.LocalDate;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-
 import org.col.es.EsModule;
 import org.col.es.IndexConfig;
 import org.junit.BeforeClass;

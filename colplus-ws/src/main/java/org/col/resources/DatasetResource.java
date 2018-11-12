@@ -32,24 +32,24 @@ import org.slf4j.LoggerFactory;
 @Path("/dataset")
 @SuppressWarnings("static-method")
 public class DatasetResource extends CRUDResource<Dataset> {
-
+  
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(DatasetResource.class);
   private final SqlSessionFactory factory;
   private final ImageService imgService;
-
+  
   public DatasetResource(SqlSessionFactory factory, ImageService imgService) {
     super(Dataset.class, DatasetMapper.class);
     this.factory = factory;
     this.imgService = imgService;
   }
-
+  
   @GET
   public ResultPage<Dataset> list(@Valid @BeanParam Page page, @BeanParam DatasetSearchRequest req,
                                   @Context SqlSession session) {
     return new DatasetDao(session).search(req, page);
   }
-
+  
   @GET
   @Path("{key}/import")
   public List<DatasetImport> getImports(@PathParam("key") int key,
@@ -70,7 +70,7 @@ public class DatasetResource extends CRUDResource<Dataset> {
   @Path("{key}/logo")
   @Consumes({MediaType.APPLICATION_OCTET_STREAM,
       MoreMediaTypes.IMG_BMP, MoreMediaTypes.IMG_PNG, MoreMediaTypes.IMG_GIF,
-      MoreMediaTypes.IMG_JPG ,MoreMediaTypes.IMG_PSD, MoreMediaTypes.IMG_TIFF
+      MoreMediaTypes.IMG_JPG, MoreMediaTypes.IMG_PSD, MoreMediaTypes.IMG_TIFF
   })
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public Response uploadLogo(@PathParam("key") int key, InputStream img) throws IOException {

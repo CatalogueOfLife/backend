@@ -8,24 +8,26 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.ext.Provider;
 
 /**
  * Filter that updates http headers when a new resource is successfully created via a POST request.
  * The following headers are added or replaced if they existed:
  * <ul>
- *   <li>Http response code 201</li>
- *   <li>Location header is set accordingly based on returned key</li>
+ * <li>Http response code 201</li>
+ * <li>Location header is set accordingly based on returned key</li>
  * </ul>
  */
+@Provider
 public class CreatedResponseFilter implements ContainerResponseFilter {
-
+  
   @Override
   public void filter(ContainerRequestContext request, ContainerResponseContext response) throws IOException {
     if (request.getMethod() != null
         && "post".equalsIgnoreCase(request.getMethod())
         && response.getStatusInfo() != null
         && response.getStatusInfo().getFamily() == Response.Status.Family.SUCCESSFUL) {
-
+      
       response.setStatus(HttpURLConnection.HTTP_CREATED);
       // if response contains the key, also set Location
       if (response.getEntity() != null) {

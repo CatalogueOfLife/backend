@@ -20,44 +20,44 @@ import org.apache.ibatis.type.TypeHandler;
  * implementation of those methods.
  */
 public class Java8OptionalTypeHandler implements TypeHandler<Optional<Object>> {
-
+  
   public void setParameter(
       PreparedStatement ps, int i, @Nullable Optional<Object> parameter, @Nullable JdbcType jdbcType) throws SQLException {
     int typeCode = jdbcType == null ? Types.OTHER : jdbcType.TYPE_CODE;
-
+    
     if (parameter == null) {
       ps.setNull(i, typeCode);
       return;
     }
-
+    
     Object rawParameter = unpackOptional(parameter);
     if (rawParameter == null) {
       ps.setNull(i, typeCode);
       return;
     }
-
+    
     assert rawParameter != null;
     ps.setObject(i, rawParameter, typeCode);
   }
-
+  
   @Override
   public Optional<Object> getResult(ResultSet rs, String columnName) throws SQLException {
     Object rawValue = rs.getObject(columnName);
     return makeOptional(rawValue);
   }
-
+  
   @Override
   public Optional<Object> getResult(ResultSet rs, int columnIndex) throws SQLException {
     Object rawValue = rs.getObject(columnIndex);
     return makeOptional(rawValue);
   }
-
+  
   @Override
   public Optional<Object> getResult(CallableStatement cs, int columnIndex) throws SQLException {
     Object rawValue = cs.getObject(columnIndex);
     return makeOptional(rawValue);
   }
-
+  
   /**
    * Unpack an Optional-like value to its contained value, or <code>null</code>. Subclasses must supply this: when
    * this method returns <code>null</code>, this TypeHandler will store an SQL <code>NULL</code> to the database. When
@@ -71,7 +71,7 @@ public class Java8OptionalTypeHandler implements TypeHandler<Optional<Object>> {
   private Object unpackOptional(Optional<Object> parameter) {
     return parameter.orElse(null);
   }
-
+  
   /**
    * Wrap a database value in an Optional-like value. Subclasses must supply this: when passed <code>null</code> (read
    * from an SQL <code>NULL</code> value), this must return a non-null Optional-like value representing no value, such

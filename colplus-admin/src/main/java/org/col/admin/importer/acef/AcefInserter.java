@@ -29,17 +29,17 @@ import static com.google.common.base.Strings.emptyToNull;
  *
  */
 public class AcefInserter extends NeoInserter {
-
+  
   private static final Logger LOG = LoggerFactory.getLogger(AcefInserter.class);
   private static final Splitter COMMA_SPLITTER = Splitter.on(',').trimResults().omitEmptyStrings();
-
+  
   private AcefReader reader;
   private AcefInterpreter inter;
-
+  
   public AcefInserter(NeoDb store, Path folder, ReferenceFactory refFactory) {
     super(folder, store, refFactory);
   }
-
+  
   private void initReader() {
     if (reader == null) {
       try {
@@ -49,7 +49,7 @@ public class AcefInserter extends NeoInserter {
       }
     }
   }
-
+  
   /**
    * Inserts ACEF data from a source folder into the normalizer store. Before inserting it does a
    * quick check to see if all required files are existing.
@@ -59,20 +59,20 @@ public class AcefInserter extends NeoInserter {
     try {
       initReader();
       inter = new AcefInterpreter(store.getDataset(), meta, refFactory);
-
+      
       // This inserts the plain references from the Reference file with no links to names, taxa or distributions.
       // Links are added afterwards in other methods when a ACEF:ReferenceID field is processed by lookup to the neo store.
       insertEntities(reader, AcefTerm.Reference,
           inter::interpretReference,
           store::put
       );
-
+      
       // species
       insertEntities(reader, AcefTerm.AcceptedSpecies,
           inter::interpretAccepted,
           store::put
       );
-
+      
       // infraspecies
       // accepted infraspecific names in ACEF have no genus or species
       // but a link to their parent species ID.
@@ -81,18 +81,18 @@ public class AcefInserter extends NeoInserter {
           inter::interpretAccepted,
           store::put
       );
-
+      
       // synonyms
       insertEntities(reader, AcefTerm.Synonyms,
           inter::interpretSynonym,
           store::put
       );
-
+      
     } catch (RuntimeException e) {
       throw new NormalizationFailedException("Failed to read ACEF files", e);
     }
   }
-
+  
   @Override
   public void postBatchInsert() throws NormalizationFailedException {
     try (Transaction tx = store.getNeo().beginTx()) {
@@ -107,24 +107,24 @@ public class AcefInserter extends NeoInserter {
           (t, vn) -> t.vernacularNames.add(vn)
       );
       reader.stream(AcefTerm.NameReferencesLinks).forEach(this::addReferenceLink);
-
+      
     } catch (RuntimeException e) {
       throw new NormalizationFailedException("Failed to read ACEF files", e);
     }
   }
-
+  
   @Override
   protected NodeBatchProcessor relationProcessor() {
     return new AcefRelationInserter(store, inter);
   }
-
+  
   /**
    * Inserts the NameReferecesLinks table from ACEF by looking up both the taxonID and the ReferenceID
    * ComNameRef references are linked from the individual common name already, we only process name and taxon references here
-   *
+   * <p>
    * A name should only have one reference - the publishedIn one.
    * A taxon can have multiple and are treated as the bibliography extension in dwc.
-   *
+   * <p>
    * As all references and names must be indexed in the store to establish the relations
    * we run this in the relation inserter
    */
@@ -133,7 +133,7 @@ public class AcefInserter extends NeoInserter {
     String referenceID = emptyToNull(rec.get(AcefTerm.ReferenceID));
     String refTypeRaw = emptyToNull(rec.get(AcefTerm.ReferenceType)); // NomRef, TaxAccRef, ComNameRef
     ReferenceTypeParser.ReferenceType refType = SafeParser.parse(ReferenceTypeParser.PARSER, refTypeRaw).orNull();
-
+    
     // lookup NeoTaxon and reference
     NeoTaxon t = store.getByID(taxonID);
     Reference ref = store.refById(referenceID);
@@ -146,12 +146,12 @@ public class AcefInserter extends NeoInserter {
       } else {
         LOG.info("referenceID {} and taxonID {} from NameReferencesLinks line {} both not existing", referenceID, taxonID, rec.getLine());
       }
-
+      
     } else {
       if (ref == null) {
         LOG.debug("referenceID {} from NameReferencesLinks line {} not existing", referenceID, rec.getLine());
         issue = Issue.REFERENCE_ID_INVALID;
-
+        
       } else if (refType == null) {
         LOG.debug("Unknown reference type {} used in NameReferencesLinks line {}", refTypeRaw, rec.getLine());
         issue = Issue.REFTYPE_INVALID;
@@ -180,8 +180,8 @@ public class AcefInserter extends NeoInserter {
       store.put(rec);
     }
   }
-
-
+  
+  
   /**
    * Reads the dataset metadata and puts it into the store
    */
@@ -203,5 +203,5 @@ public class AcefInserter extends NeoInserter {
     }
     return Optional.ofNullable(d);
   }
-
+  
 }

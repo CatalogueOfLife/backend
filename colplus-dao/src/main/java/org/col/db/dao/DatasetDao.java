@@ -14,13 +14,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class DatasetDao {
-
+  
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(DatasetDao.class);
-
+  
   private final SqlSession session;
   private final DatasetMapper mapper;
-
+  
   public DatasetDao(SqlSession sqlSession) {
     this.session = sqlSession;
     mapper = session.getMapper(DatasetMapper.class);

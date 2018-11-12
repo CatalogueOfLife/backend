@@ -25,11 +25,11 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 
 public class LanguageSerdeTest extends SerdeMapEnumKeyTestBase<Language> {
-
+  
   public LanguageSerdeTest() {
     super(Language.class);
   }
-
+  
   @Test
   public void testMapEquality() throws JsonProcessingException {
     Map<Language, Integer> hm = new HashMap<>();
@@ -39,7 +39,7 @@ public class LanguageSerdeTest extends SerdeMapEnumKeyTestBase<Language> {
       lm.put(l, l.ordinal());
     }
     assertEquals(hm, lm);
-
+    
     // try different order to make sure its the same
     Map<Language, Integer> lm2 = new LinkedHashMap<>();
     Language[] langs = Language.values();
@@ -50,7 +50,7 @@ public class LanguageSerdeTest extends SerdeMapEnumKeyTestBase<Language> {
     assertEquals(hm, lm2);
     assertEquals(lm, lm2);
   }
-
+  
   @Test
   public void testLowerCase() throws JsonProcessingException {
     Wrapper<Language> wrapper = new Wrapper<Language>(Language.GERMAN);

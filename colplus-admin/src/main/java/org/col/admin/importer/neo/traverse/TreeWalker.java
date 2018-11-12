@@ -19,44 +19,44 @@ import org.slf4j.LoggerFactory;
  * A utility class to iterate over nodes in taxonomic order and execute any number of StartEndHandler while walking.
  */
 public class TreeWalker {
-
+  
   private static final Logger LOG = LoggerFactory.getLogger(TreeWalker.class);
   private static final int reportingSize = 10000;
-
+  
   /**
    * Walks all nodes of the taxonomic tree in a depth first order in a single transaction including multiple times the same pro parte node
    */
   public static void walkTree(GraphDatabaseService db, StartEndHandler... handler) throws InterruptedException {
     walkTree(db, Traversals.TREE, handler);
   }
-
+  
   /**
    * Walks all nodes of the taxonomic tree in a taxonomic order in a single transaction including multiple times the same pro parte node
    */
   public static void walkSortedTree(GraphDatabaseService db, StartEndHandler... handler) throws InterruptedException {
     walkTree(db, Traversals.SORTED_TREE, handler);
   }
-
+  
   public static void walkTree(GraphDatabaseService db,
-                                TraversalDescription td,
-                                StartEndHandler... handler
+                              TraversalDescription td,
+                              StartEndHandler... handler
   ) throws InterruptedException {
     try (Transaction tx = db.beginTx()) {
       walkPaths(MultiRootPathIterator.create(findRoot(db, null), td), handler);
     }
   }
-
+  
   public static void walkTree(GraphDatabaseService db,
-                                TraversalDescription td,
-                                @Nullable Node root,
-                                @Nullable Rank lowestRank,
-                                StartEndHandler... handler
+                              TraversalDescription td,
+                              @Nullable Node root,
+                              @Nullable Rank lowestRank,
+                              StartEndHandler... handler
   ) throws InterruptedException {
     try (Transaction tx = db.beginTx()) {
       walkPaths(MultiRootPathIterator.create(findRoot(db, root), filterRank(td, lowestRank)), handler);
     }
   }
-
+  
   private static void walkPaths(ResourceIterable<Path> paths, StartEndHandler... handler) throws InterruptedException {
     Path lastPath = null;
     long counter = 0;
@@ -86,7 +86,7 @@ public class TreeWalker {
           while (cIter.hasNext()) {
             handleStart(cIter.next(), handler);
           }
-
+          
         } else {
           // only new nodes
           for (Node n : p.nodes()) {
@@ -104,33 +104,33 @@ public class TreeWalker {
       }
     }
   }
-
+  
   private static void handleStart(Node n, StartEndHandler... handler) {
     for (StartEndHandler h : handler) {
       h.start(n);
     }
   }
-
+  
   private static void handleEnd(Node n, StartEndHandler... handler) {
     for (StartEndHandler h : handler) {
       h.end(n);
     }
   }
-
+  
   private static List<Node> findRoot(GraphDatabaseService db, @Nullable Node root) {
     if (root != null) {
       return Lists.newArrayList(root);
     }
     return org.neo4j.helpers.collection.Iterators.asList(db.findNodes(Labels.ROOT));
   }
-
+  
   private static TraversalDescription filterRank(TraversalDescription td, @Nullable Rank lowestRank) {
     if (lowestRank != null) {
       return td.evaluator(new RankEvaluator(lowestRank));
     }
     return td;
   }
-
+  
   private static void logPath(Path p) {
     StringBuilder sb = new StringBuilder();
     for (Node n : p.nodes()) {
@@ -141,5 +141,5 @@ public class TreeWalker {
     }
     LOG.info(sb.toString());
   }
-
+  
 }

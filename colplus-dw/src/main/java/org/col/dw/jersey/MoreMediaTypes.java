@@ -10,6 +10,9 @@ public class MoreMediaTypes {
   
   public final static String APP_GZIP = "application/gzip";
   public final static String APP_ZIP = "application/zip";
-
-  private MoreMediaTypes(){};
+  
+  private MoreMediaTypes() {
+  }
+  
+  ;
 }

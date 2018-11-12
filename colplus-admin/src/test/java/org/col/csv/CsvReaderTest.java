@@ -20,11 +20,11 @@ import static org.junit.Assert.*;
  *
  */
 public class CsvReaderTest {
-
+  
   @Test
   public void fromFolder() throws Exception {
     CsvReader reader = CsvReader.from(FileUtils.getClasspathFile("acef/0").toPath());
-
+    
     AtomicInteger counter = new AtomicInteger(0);
     reader.stream(AcefTerm.AcceptedSpecies).forEach(tr -> {
       counter.incrementAndGet();
@@ -45,11 +45,11 @@ public class CsvReaderTest {
     });
     assertEquals(3, counter.get());
   }
-
+  
   @Test
   public void corruptFiles() throws Exception {
     CsvReader reader = CsvReader.from(FileUtils.getClasspathFile("acef/corrupt").toPath());
-
+    
     AtomicInteger counter = new AtomicInteger(0);
     reader.stream(AcefTerm.AcceptedSpecies).forEach(tr -> {
       counter.incrementAndGet();
@@ -69,22 +69,22 @@ public class CsvReaderTest {
       assertEquals("1", tr.get(AcefTerm.HasModern));
     });
     assertEquals(3, counter.get());
-
+    
     Optional<VerbatimRecord> row = reader.readFirstRow(AcefTerm.CommonNames);
     assertTrue(row.isPresent());
-
+    
     row = reader.readFirstRow(AcefTerm.Distribution);
     assertFalse(row.isPresent());
-
+    
     row = reader.readFirstRow(AcefTerm.Reference);
     assertFalse(row.isPresent());
-
+    
     // try to read bad file
     row = reader.readFirstRow(AcefTerm.SourceDatabase);
     // this somehow works, puzzling but ok ...
     //assertFalse(row.isPresent());
   }
-
+  
   private CsvParserSettings assertFormat(String resource, char delimiter, char quote) throws IOException {
     CsvParserSettings csv = CsvReader.discoverFormat(
         new BufferedReader(new InputStreamReader(ClassLoader.getSystemResource(resource).openStream(), Charsets.UTF_8))
@@ -95,7 +95,7 @@ public class CsvReaderTest {
     assertEquals(quote, csv.getFormat().getQuote());
     return csv;
   }
-
+  
   @Test
   public void discoverFormat() throws Exception {
     assertFormat("csv/15-CommonNames.txt", ',', '"');

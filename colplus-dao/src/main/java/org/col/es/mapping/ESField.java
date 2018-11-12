@@ -8,26 +8,26 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  * {@link MultiField multi-fields} underneath a field are instances of an {@link ESField}.
  */
 public abstract class ESField {
-
+  
   @JsonIgnore
   protected String name;
   protected ESDataType type;
-
+  
   public String getName() {
     return name;
   }
-
+  
   public void setName(String name) {
     this.name = name;
   }
-
+  
   public ESDataType getType() {
     return type;
   }
-
+  
   public void setType(ESDataType type) {
     this.type = type;
   }
-
-
+  
+  
 }

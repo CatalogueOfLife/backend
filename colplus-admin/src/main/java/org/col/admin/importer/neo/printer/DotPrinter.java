@@ -31,24 +31,24 @@ public class DotPrinter implements TreePrinter {
   private final Writer writer;
   private final Function<Node, String> getTitle;
   private final RankEvaluator rankEvaluator;
-
+  
   public DotPrinter(Writer writer, @Nullable Rank rankThreshold, Function<Node, String> getTitle) {
     this.writer = writer;
     this.getTitle = getTitle;
     this.rankEvaluator = new RankEvaluator(rankThreshold);
     printHeader();
   }
-
+  
   private void printHeader() {
     try {
       writer.write("digraph G {\n");
       writer.write("  node [shape=plaintext]\n\n");
-
+      
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
   }
-
+  
   @Override
   public void close() {
     try {
@@ -57,7 +57,7 @@ public class DotPrinter implements TreePrinter {
       throw new RuntimeException(e);
     }
   }
-
+  
   @Override
   public void start(Node n) {
     try {
@@ -70,7 +70,7 @@ public class DotPrinter implements TreePrinter {
         writer.append(", fontcolor=darkgreen");
       }
       writer.append("]\n");
-
+      
       // edges
       for (Relationship rel : n.getRelationships(Direction.OUTGOING)) {
         if (rankEvaluator.evaluateNode(rel.getOtherNode(n))) {
@@ -99,14 +99,14 @@ public class DotPrinter implements TreePrinter {
           writer.append("\n");
         }
       }
-
+      
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
   }
-
+  
   @Override
   public void end(Node n) {
-
+  
   }
 }

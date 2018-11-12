@@ -23,12 +23,12 @@ import org.gbif.nameparser.api.*;
  * It is used to serialize various information in kvp stores during checklist indexing and nub builds.
  */
 public class ApiKryoFactory implements KryoFactory {
-
+  
   @Override
   public Kryo create() {
     Kryo kryo = new Kryo();
     kryo.setRegistrationRequired(true);
-
+    
     // col core
     kryo.register(Authorship.class);
     kryo.register(Classification.class);
@@ -47,7 +47,7 @@ public class ApiKryoFactory implements KryoFactory {
     kryo.register(VernacularName.class);
     kryo.register(VerbatimRecord.class);
     kryo.register(Page.class);
-
+    
     // CSL classes & enums
     kryo.register(CslData.class);
     kryo.register(CslName.class);
@@ -56,7 +56,7 @@ public class ApiKryoFactory implements KryoFactory {
     kryo.register(CSLRefType.class);
     kryo.register(String[].class);
     kryo.register(int[][].class);
-
+    
     // java & commons
     kryo.register(LocalDateTime.class);
     kryo.register(LocalDate.class);
@@ -68,9 +68,9 @@ public class ApiKryoFactory implements KryoFactory {
     kryo.register(UUID.class, new UUIDSerializer());
     kryo.register(URI.class, new URISerializer());
     kryo.register(int[].class);
-    UnmodifiableCollectionsSerializer.registerSerializers( kryo );
+    UnmodifiableCollectionsSerializer.registerSerializers(kryo);
     ImmutableListSerializer.registerSerializers(kryo);
-
+    
     // enums
     kryo.register(Catalogue.class);
     kryo.register(Country.class);
@@ -97,7 +97,7 @@ public class ApiKryoFactory implements KryoFactory {
     kryo.register(Rank.class);
     kryo.register(TaxonomicStatus.class);
     kryo.register(TypeStatus.class);
-
+    
     // term enums
     TermFactory.instance().registerTermEnum(ColTerm.class);
     TermFactory.instance().registerTermEnum(ColDwcTerm.class);
@@ -105,7 +105,7 @@ public class ApiKryoFactory implements KryoFactory {
       kryo.register(cl);
     }
     kryo.register(UnknownTerm.class, new TermSerializer());
-
+    
     return kryo;
   }
 }

@@ -25,24 +25,24 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class DatasetImportDao {
-
+  
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(DatasetImportDao.class);
-
+  
   private final SqlSessionFactory factory;
-
-
+  
+  
   public DatasetImportDao(SqlSessionFactory factory) {
     this.factory = factory;
   }
-
+  
   public ResultPage<DatasetImport> list(Integer datasetKey, Collection<ImportState> states, Page page) {
-    try (SqlSession session = factory.openSession(true)){
+    try (SqlSession session = factory.openSession(true)) {
       DatasetImportMapper mapper = session.getMapper(DatasetImportMapper.class);
-      return new ResultPage<>(page, mapper.count(datasetKey ,states), mapper.list(datasetKey, states, page));
+      return new ResultPage<>(page, mapper.count(datasetKey, states), mapper.list(datasetKey, states, page));
     }
   }
-
+  
   /**
    * Create a new downloading dataset import with the next attempt
    */
@@ -53,28 +53,28 @@ public class DatasetImportDao {
     di.setState(ImportState.DOWNLOADING);
     di.setDownloadUri(d.getDataAccess());
     di.setStarted(LocalDateTime.now());
-
-    try (SqlSession session = factory.openSession(true)){
+    
+    try (SqlSession session = factory.openSession(true)) {
       session.getMapper(DatasetImportMapper.class).create(di);
     }
-
+    
     return di;
   }
   
   public DatasetImport getLast(Dataset d) {
-    try (SqlSession session = factory.openSession(true)){
-      Page p = new Page(0,1);
+    try (SqlSession session = factory.openSession(true)) {
+      Page p = new Page(0, 1);
       List<DatasetImport> imports = session.getMapper(DatasetImportMapper.class).list(d.getKey(), null, p);
       return imports == null || imports.isEmpty() ? null : imports.get(0);
     }
   }
-
+  
   /**
    * Updates a running dataset import instance with metrics and success state.
    * Updates the dataset to point to the imports attempt.
    */
   public void updateImportSuccess(DatasetImport di) {
-    try (SqlSession session = factory.openSession(true)){
+    try (SqlSession session = factory.openSession(true)) {
       DatasetImportMapper mapper = session.getMapper(DatasetImportMapper.class);
       // update count metrics
       updateMetrics(mapper, di);
@@ -82,21 +82,21 @@ public class DatasetImportDao {
       di.setState(ImportState.FINISHED);
       di.setError(null);
       update(di, mapper);
-
+      
       session.getMapper(DatasetMapper.class).updateLastImport(di.getDatasetKey(), di.getAttempt());
     }
   }
-
+  
   public void updateMetrics(DatasetImportMapper mapper, DatasetImport di) {
     final int key = di.getDatasetKey();
-
+    
     di.setDistributionCount(mapper.countDistribution(key));
     di.setNameCount(mapper.countName(key));
     di.setReferenceCount(mapper.countReference(key));
     di.setTaxonCount(mapper.countTaxon(key));
     di.setVerbatimCount(mapper.countVerbatim(key));
     di.setVernacularCount(mapper.countVernacular(key));
-
+    
     di.setDistributionsByGazetteerCount(DatasetImportDao.countMap(Gazetteer.class, mapper.countDistributionsByGazetteer(key)));
     di.setIssuesCount(DatasetImportDao.countMap(Issue.class, mapper.countIssues(key)));
     di.setNameRelationsByTypeCount(DatasetImportDao.countMap(NomRelType.class, mapper.countNameRelationsByType(key)));
@@ -109,7 +109,7 @@ public class DatasetImportDao {
     di.setVerbatimByTypeCount(countMap(DatasetImportDao::parseTerm, mapper.countVerbatimByType(key)));
     di.setVernacularsByLanguageCount(countMap(Language::fromIsoCode, mapper.countVernacularsByLanguage(key)));
   }
-
+  
   private static <K extends Enum> Map<K, Integer> countMap(Class<K> clazz, List<IntCount> counts) {
     K[] values = clazz.getEnumConstants();
     Map<K, Integer> map = new HashMap<>(counts.size());
@@ -120,7 +120,7 @@ public class DatasetImportDao {
     }
     return map;
   }
-
+  
   private static <K> Map<K, Integer> countMap(Function<String, Optional<K>> converter, List<StringCount> counts) {
     Map<K, Integer> map = new HashMap<>(counts.size());
     for (StringCount cnt : counts) {
@@ -131,15 +131,15 @@ public class DatasetImportDao {
     }
     return map;
   }
-
+  
   private static Optional<Rank> parseRank(String rank) {
     return Optional.of(Rank.valueOf(rank.toUpperCase()));
   }
-
+  
   private static Optional<Term> parseTerm(String term) {
     return Optional.of(TermFactory.instance().findClassTerm(term));
   }
-
+  
   /**
    * Creates a new dataset import instance without metrics for a failed import.
    */
@@ -149,7 +149,7 @@ public class DatasetImportDao {
     di.setError(null);
     update(di);
   }
-
+  
   /**
    * Creates a new dataset import instance without metrics for a failed import.
    */
@@ -160,7 +160,7 @@ public class DatasetImportDao {
     di.setError(e.getMessage());
     update(di);
   }
-
+  
   /**
    * Creates a new dataset import instance without metrics for a failed import.
    */
@@ -170,13 +170,13 @@ public class DatasetImportDao {
     di.setError(null);
     update(di);
   }
-
+  
   public void update(DatasetImport di) {
-    try (SqlSession session = factory.openSession(true)){
+    try (SqlSession session = factory.openSession(true)) {
       update(di, session.getMapper(DatasetImportMapper.class));
     }
   }
-
+  
   private void update(DatasetImport di, DatasetImportMapper mapper) {
     Preconditions.checkNotNull(di.getDatasetKey(), "datasetKey required for update");
     Preconditions.checkNotNull(di.getAttempt(), "attempt required for update");

@@ -5,19 +5,19 @@ package org.col.es.mapping;
  * date}.
  */
 public class DateField extends SimpleField {
-
+  
   private String format = "yyyy-MM-dd'T'HH:mm:ssZ";
-
+  
   public DateField() {
     super(ESDataType.DATE);
   }
-
+  
   public String getFormat() {
     return format;
   }
-
+  
   public void setFormat(String format) {
     this.format = format;
   }
-
+  
 }

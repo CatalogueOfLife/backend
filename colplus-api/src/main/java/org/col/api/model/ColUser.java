@@ -9,7 +9,11 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.col.api.vocab.Country;
 
 public class ColUser implements IntKey, Principal {
-  public enum Role {USER, EDITOR, ADMIN}
+  public enum Role {
+    USER,
+    EDITOR,
+    ADMIN
+  }
   
   private Integer key;
   private String username;
@@ -49,7 +53,7 @@ public class ColUser implements IntKey, Principal {
     }
     return false;
   }
-
+  
   public boolean hasRole(Role role) {
     return roles.contains(role);
   }

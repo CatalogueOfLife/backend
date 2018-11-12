@@ -27,11 +27,11 @@ import static org.junit.Assert.*;
  */
 public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper> {
   private static Random rnd = new Random();
-
+  
   public DatasetImportMapperTest() {
     super(DatasetImportMapper.class);
   }
-
+  
   private static DatasetImport create(ImportState state) throws Exception {
     DatasetImport d = new DatasetImport();
     d.setDatasetKey(DATASET11.getKey());
@@ -62,11 +62,11 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     d.setVerbatimByTypeCount(vcnt);
     return d;
   }
-
+  
   private static DatasetImport create() throws Exception {
     return create(ImportState.DOWNLOADING);
   }
-
+  
   private static <T extends Enum> Map<T, Integer> mockCount(Class<T> clazz) {
     Map<T, Integer> cnt = Maps.newHashMap();
     for (T val : clazz.getEnumConstants()) {
@@ -74,29 +74,29 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     }
     return cnt;
   }
-
+  
   @Test
   public void roundtrip() throws Exception {
     DatasetImport d1 = create();
     mapper().create(d1);
     commit();
-    assertEquals((Integer)1, d1.getAttempt());
-
+    assertEquals((Integer) 1, d1.getAttempt());
+    
     DatasetImport d2 = mapper().list(d1.getDatasetKey(), null, new Page(0, 100)).get(0);
     assertNotNull(d2.getAttempt());
     d1.setAttempt(d2.getAttempt());
     assertEquals(d1, d2);
-
+    
     d1.setState(ImportState.FINISHED);
     d1.setError("no error at all");
     mapper().update(d1);
     assertNotEquals(d1, d2);
-
+    
     d2 = mapper().list(d1.getDatasetKey(), null, new Page(0, 100)).get(0);
     assertEquals(d1, d2);
     commit();
   }
-
+  
   @Test
   public void lastSuccessful() throws Exception {
     Set<ImportState> FINITO = ImmutableSet.of(ImportState.FINISHED);
@@ -105,28 +105,28 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     DatasetImport d = create();
     mapper().create(d);
     assertTrue(mapper().list(d.getDatasetKey(), FINITO, page).isEmpty());
-
+    
     d.setState(ImportState.FAILED);
     d.setError("damn error");
     mapper().update(d);
     assertTrue(mapper().list(d.getDatasetKey(), FINITO, page).isEmpty());
-
+    
     d = create();
     d.setState(ImportState.DOWNLOADING);
     mapper().create(d);
     assertTrue(mapper().list(d.getDatasetKey(), FINITO, page).isEmpty());
-
+    
     d.setState(ImportState.FINISHED);
     mapper().update(d);
     assertFalse(mapper().list(d.getDatasetKey(), FINITO, page).isEmpty());
-
+    
     d = create();
     d.setState(ImportState.CANCELED);
     mapper().create(d);
     assertFalse(mapper().list(d.getDatasetKey(), FINITO, page).isEmpty());
     commit();
   }
-
+  
   @Test
   public void listCount() throws Exception {
     mapper().create(create(ImportState.FAILED));
@@ -136,16 +136,16 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     mapper().create(create(ImportState.CANCELED));
     mapper().create(create(ImportState.INSERTING));
     mapper().create(create(ImportState.FINISHED));
-
+    
     assertEquals(7, mapper().count(null, null));
     assertEquals(7, mapper().count(null, Lists.newArrayList()));
     assertEquals(1, mapper().count(null, Lists.newArrayList(ImportState.FAILED)));
     assertEquals(3, mapper().count(null, Lists.newArrayList(ImportState.FINISHED)));
     assertEquals(2, mapper().count(null, Lists.newArrayList(ImportState.PROCESSING, ImportState.INSERTING)));
-
+    
     assertEquals(2, mapper().list(null, Lists.newArrayList(ImportState.PROCESSING, ImportState.INSERTING), new Page()).size());
   }
-
+  
   @Test
   public void counts() throws Exception {
     assertEquals((Integer) 5, mapper().countName(DATASET11.getKey()));
@@ -155,6 +155,7 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     assertEquals((Integer) 3, mapper().countVernacular(DATASET11.getKey()));
     assertEquals((Integer) 3, mapper().countDistribution(DATASET11.getKey()));
   }
+  
   @Test
   public void countMaps() throws Exception {
     Set<IntCount> expected = new HashSet<>();
@@ -165,58 +166,59 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     expected.add(new IntCount(Issue.INCONSISTENT_AUTHORSHIP, 1));
     expected.add(new IntCount(Issue.UNUSUAL_NAME_CHARACTERS, 1));
     assertCounts(expected, mapper().countIssues(DATASET11.getKey()));
-
+    
     Set<StringCount> expected2 = new HashSet<>();
     expected2.add(new StringCount(Rank.SPECIES.name().toLowerCase(), 5));
     assertCounts(expected2, mapper().countNamesByRank(DATASET11.getKey()));
-  
+    
     expected2.clear();
     expected2.add(new StringCount(Rank.SPECIES.name().toLowerCase(), 2));
     assertCounts(expected2, mapper().countTaxaByRank(DATASET11.getKey()));
-
+    
     expected.clear();
     expected.add(new IntCount(Origin.SOURCE, 5));
     assertCounts(expected, mapper().countNamesByOrigin(DATASET11.getKey()));
-
+    
     expected.clear();
     expected.add(new IntCount(NameType.SCIENTIFIC, 5));
     assertCounts(expected, mapper().countNamesByType(DATASET11.getKey()));
-
+    
     expected.clear();
     expected.add(new IntCount(Gazetteer.TEXT, 3));
     assertCounts(expected, mapper().countDistributionsByGazetteer(DATASET11.getKey()));
-
+    
     expected2.clear();
     expected2.add(new StringCount(Language.GERMAN.getIso2LetterCode(), 1));
     expected2.add(new StringCount(Language.ENGLISH.getIso2LetterCode(), 1));
     expected2.add(new StringCount(Language.DUTCH.getIso2LetterCode(), 1));
     assertCounts(expected2, mapper().countVernacularsByLanguage(DATASET11.getKey()));
-
+    
     expected.clear();
     expected.add(new IntCount(TaxonomicStatus.ACCEPTED, 2));
     expected.add(new IntCount(TaxonomicStatus.SYNONYM, 2));
     assertCounts(expected, mapper().countUsagesByStatus(DATASET11.getKey()));
-
+    
     assertEmpty(mapper().countNamesByStatus(DATASET11.getKey()));
-
+    
     expected.clear();
     expected.add(new IntCount(NomRelType.SPELLING_CORRECTION, 1));
     assertCounts(expected, mapper().countNameRelationsByType(DATASET11.getKey()));
-
+    
     expected2.clear();
     expected2.add(new StringCount(AcefTerm.AcceptedSpecies.prefixedName(), 3));
     expected2.add(new StringCount(AcefTerm.Synonyms.prefixedName(), 2));
     assertCounts(expected2, mapper().countVerbatimByType(DATASET11.getKey()));
   }
-
-  private static <T> void assertCounts(Set<T> expected, List<T> actual){
+  
+  private static <T> void assertCounts(Set<T> expected, List<T> actual) {
     assertEquals(expected, new HashSet<>(actual));
   }
-  private static <T> void assertEmpty(List<IntCount> actual){
+  
+  private static <T> void assertEmpty(List<IntCount> actual) {
     if (actual.isEmpty()) return;
     for (IntCount cnt : actual) {
       assertNull(cnt.getKey());
     }
   }
-
+  
 }

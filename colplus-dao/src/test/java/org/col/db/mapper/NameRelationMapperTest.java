@@ -16,13 +16,13 @@ import static org.junit.Assert.assertNotNull;
  */
 @SuppressWarnings("static-method")
 public class NameRelationMapperTest extends MapperTestBase<NameRelationMapper> {
-
+  
   private NameRelationMapper nameRelationMapper;
-
+  
   public NameRelationMapperTest() {
     super(NameRelationMapper.class);
   }
-
+  
   @Before
   public void init() {
     nameRelationMapper = initMybatisRule.getMapper(NameRelationMapper.class);
@@ -38,24 +38,24 @@ public class NameRelationMapperTest extends MapperTestBase<NameRelationMapper> {
     assertEquals(1, outs.size());
     assertEquals(in, outs.get(0));
   }
-
+  
   @Test
   public void testListByName() throws Exception {
     // NB We have one pre-inserted (apple.sql) NameAct record associated with NAME2 and 3
     assertEquals(0, nameRelationMapper.list(NAME1.getDatasetKey(), NAME1.getId()).size());
     assertEquals(1, nameRelationMapper.list(NAME2.getDatasetKey(), NAME2.getId()).size());
-
+    
     nameRelationMapper.create(newNameAct());
     nameRelationMapper.create(newNameAct(NomRelType.BASED_ON));
     nameRelationMapper.create(newNameAct(NomRelType.CONSERVED));
     commit();
     List<NameRelation> nas = nameRelationMapper.list(NAME1.getDatasetKey(), NAME1.getId());
-
+    
     assertEquals(3, nas.size());
-
+    
     assertEquals(4, nameRelationMapper.list(NAME2.getDatasetKey(), NAME2.getId()).size());
   }
-
+  
   private static NameRelation newNameAct(NomRelType type) {
     NameRelation na = new NameRelation();
     na.setDatasetKey(DATASET11.getKey());
@@ -64,9 +64,9 @@ public class NameRelationMapperTest extends MapperTestBase<NameRelationMapper> {
     na.setRelatedNameId(NAME2.getId());
     return na;
   }
-
+  
   private static NameRelation newNameAct() {
     return newNameAct(NomRelType.REPLACEMENT_NAME);
   }
-
+  
 }

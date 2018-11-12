@@ -10,40 +10,41 @@ import org.col.resources.*;
 import org.elasticsearch.client.RestClient;
 
 public class WsServer extends PgApp<WsServerConfig> {
-
+  
   private Object adminApi;
-
+  
   public static void main(final String[] args) throws Exception {
     new WsServer().run(args);
   }
-
+  
   @Override
   public String getName() {
     return "ws-server";
   }
-
+  
   @Override
   public void run(WsServerConfig cfg, Environment env) {
     super.run(cfg, env);
-
+    
     final RestClient esClient = new EsClientFactory(cfg.es).createClient();
     env.lifecycle().manage(new ManagedEsClient(esClient));
     NameUsageSearchService nuss = new NameUsageSearchService(esClient);
     final ImageService imgService = new ImageService(cfg.img);
-    env.jersey().register(new NameResource(nuss));
     env.jersey().register(new ColSourceResource(imgService));
-    env.jersey().register(new DecisionResource());
-    env.jersey().register(new DocsResource(cfg));
     env.jersey().register(new DataPackageResource());
     env.jersey().register(new DatasetResource(getSqlSessionFactory(), imgService));
+    env.jersey().register(new DecisionResource());
+    env.jersey().register(new DocsResource(cfg));
+    env.jersey().register(new NameResource(nuss));
+    env.jersey().register(new NameSearchResource(nuss));
+    env.jersey().register(new ParserResource());
     env.jersey().register(new ReferenceResource());
     env.jersey().register(new SectorResource());
     env.jersey().register(new TaxonResource());
     env.jersey().register(new TreeResource());
-    env.jersey().register(new ParserResource());
     env.jersey().register(new UserResource(getJwtCoder()));
     env.jersey().register(new VerbatimResource());
     env.jersey().register(new VocabResource());
   }
-
+  
 }

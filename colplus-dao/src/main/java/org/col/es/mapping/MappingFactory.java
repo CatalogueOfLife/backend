@@ -4,13 +4,7 @@ import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import org.col.es.annotations.Analyzer;
 import org.col.es.annotations.Analyzers;
@@ -18,28 +12,23 @@ import org.col.es.annotations.NotIndexed;
 
 import static org.col.es.mapping.ESDataType.KEYWORD;
 import static org.col.es.mapping.ESDataType.NESTED;
-import static org.col.es.mapping.MappingUtil.extractProperty;
-import static org.col.es.mapping.MappingUtil.getClassForTypeArgument;
-import static org.col.es.mapping.MappingUtil.getFields;
-import static org.col.es.mapping.MappingUtil.getMappedProperties;
-import static org.col.es.mapping.MultiField.AUTO_COMPLETE;
-import static org.col.es.mapping.MultiField.DEFAULT;
-import static org.col.es.mapping.MultiField.IGNORE_CASE;
+import static org.col.es.mapping.MappingUtil.*;
+import static org.col.es.mapping.MultiField.*;
 
 /**
  * Generates an Elasticsearch document type mapping from a {@link Class} object.
  */
 public class MappingFactory<T> {
-
+  
   // Cache of document type mappings. Since we really have only one document type (EsNameUsage), it
   // will contain just one entry.
   private static final HashMap<Class<?>, Mapping<?>> cache = new HashMap<>();
-
+  
   private boolean mapEnumToInt;
-
+  
   /**
    * Creates a document type mapping for the specified class name.
-   * 
+   *
    * @param className
    * @return
    */
@@ -51,10 +40,10 @@ public class MappingFactory<T> {
       throw new MappingException("No such class: " + className);
     }
   }
-
+  
   /**
    * Creates a document type mapping for the specified class.
-   * 
+   *
    * @param type
    * @return
    */
@@ -68,17 +57,17 @@ public class MappingFactory<T> {
     }
     return mapping;
   }
-
+  
   public boolean isMapEnumToInt() {
     return mapEnumToInt;
   }
-
+  
   public void setMapEnumToInt(boolean soreEnumAsInt) {
     this.mapEnumToInt = soreEnumAsInt;
   }
-
+  
   private void addFieldsToDocument(ComplexField document, Class<?> type,
-      HashSet<Class<?>> ancestors) {
+                                   HashSet<Class<?>> ancestors) {
     Set<String> fields = new HashSet<>();
     for (Method javaMethod : getMappedProperties(type)) {
       // System.out.println("Mapping method " + javaMethod);
@@ -99,7 +88,7 @@ public class MappingFactory<T> {
       document.addField(javaField.getName(), esField);
     }
   }
-
+  
   private ESField createESField(Method method, HashSet<Class<?>> ancestors) {
     Class<?> realType = method.getReturnType();
     Class<?> mapToType = mapType(realType, method.getGenericReturnType());
@@ -116,7 +105,7 @@ public class MappingFactory<T> {
     }
     return createSimpleField(method, esType);
   }
-
+  
   private ESField createESField(Field field, HashSet<Class<?>> ancestors) {
     Class<?> realType = field.getType();
     Class<?> mapToType = mapType(realType, field.getGenericType());
@@ -129,7 +118,7 @@ public class MappingFactory<T> {
     }
     return createSimpleField(field, esType);
   }
-
+  
   private static SimpleField createSimpleField(AnnotatedElement fm, ESDataType esType) {
     SimpleField sf;
     switch (esType) {
@@ -151,9 +140,9 @@ public class MappingFactory<T> {
     }
     return sf;
   }
-
+  
   private ComplexField createDocument(Field field, Class<?> mapToType,
-      HashSet<Class<?>> ancestors) {
+                                      HashSet<Class<?>> ancestors) {
     Class<?> realType = field.getType();
     ComplexField document;
     if (realType.isArray() || isA(realType, Collection.class)) {
@@ -164,9 +153,9 @@ public class MappingFactory<T> {
     addFieldsToDocument(document, mapToType, ancestors);
     return document;
   }
-
+  
   private ComplexField createDocument(Method method, Class<?> mapToType,
-      HashSet<Class<?>> ancestors) {
+                                      HashSet<Class<?>> ancestors) {
     Class<?> realType = method.getReturnType();
     ComplexField document;
     if (realType.isArray() || isA(realType, Collection.class)) {
@@ -177,7 +166,7 @@ public class MappingFactory<T> {
     addFieldsToDocument(document, mapToType, ancestors);
     return document;
   }
-
+  
   /*
    * Returns false if the Java field does not contain the @Analyzers annotation. Otherwise it
    * returns true.
@@ -209,7 +198,7 @@ public class MappingFactory<T> {
     }
     return true;
   }
-
+  
   /*
    * Maps a Java class to another Java class that must be used in its place. The latter class is
    * then mapped to an Elasticsearch data type. When mapping arrays, it's not the array that is
@@ -228,16 +217,16 @@ public class MappingFactory<T> {
     }
     return type;
   }
-
+  
   private static HashSet<Class<?>> newTree(HashSet<Class<?>> ancestors, Class<?> newType) {
     HashSet<Class<?>> set = new HashSet<>();
     set.addAll(ancestors);
     set.add(newType);
     return set;
   }
-
+  
   private static boolean isA(Class<?> cls, Class<?> interfaceOrSuperClass) {
     return interfaceOrSuperClass.isAssignableFrom(cls);
   }
-
+  
 }

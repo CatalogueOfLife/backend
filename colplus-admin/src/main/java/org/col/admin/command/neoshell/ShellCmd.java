@@ -10,11 +10,11 @@ import org.col.admin.config.AdminServerConfig;
  */
 public class ShellCmd extends ConfiguredCommand<AdminServerConfig> {
   private static final int PORT = 1337;
-
+  
   public ShellCmd() {
     super("shell", "Open a neo4j shell to a given datasource");
   }
-
+  
   @Override
   protected void run(Bootstrap<AdminServerConfig> bootstrap, Namespace namespace, AdminServerConfig configuration) throws Exception {
     System.out.format("Opening neo4j shell on port %s to dataset %s.\n" +

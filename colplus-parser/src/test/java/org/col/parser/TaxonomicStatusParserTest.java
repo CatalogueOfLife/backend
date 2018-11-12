@@ -7,6 +7,7 @@ import org.col.api.vocab.TaxonomicStatus;
 import org.junit.Test;
 
 import static org.col.api.vocab.TaxonomicStatus.*;
+
 /**
  *
  */
@@ -21,9 +22,9 @@ public class TaxonomicStatusParserTest extends EnumNoteParserTestBase<TaxonomicS
     assertParse(ACCEPTED, "valid");
     assertParse(ACCEPTED, "Valid");
     assertParse(ACCEPTED, "VALID");
-    assertParse(ACCEPTED,"accepted");
+    assertParse(ACCEPTED, "accepted");
 
-    assertParse(DOUBTFUL,"provisional");
+    assertParse(DOUBTFUL, "provisional");
 
     assertParse(SYNONYM, "synonym");
     assertParse(SYNONYM, "juniorsynonym");
@@ -39,6 +40,7 @@ public class TaxonomicStatusParserTest extends EnumNoteParserTestBase<TaxonomicS
   private void assertNote() {
 
   }
+
   @Override
   List<String> additionalUnparsableValues() {
     return Lists.newArrayList("term", "deuter");

@@ -11,7 +11,7 @@ import static org.junit.Assert.assertEquals;
  *
  */
 public class VocabularyUtilsTest {
-
+  
   @Test
   public void factory() throws Exception {
     assertEquals(AcefTerm.Details, VocabularyUtils.TF.findTerm("acef:source"));

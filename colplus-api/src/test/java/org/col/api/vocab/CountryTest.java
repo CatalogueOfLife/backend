@@ -20,13 +20,13 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class CountryTest {
-
+  
   @Test
   public void testFromIsoCode() throws Exception {
     assertEquals(Country.ARGENTINA, Country.fromIsoCode("ar").get());
     assertEquals(Country.ARGENTINA, Country.fromIsoCode("AR").get());
   }
-
+  
   @Test
   public void testGetIso2LetterCode() throws Exception {
     Set<String> codes = Sets.newHashSet();
@@ -41,7 +41,7 @@ public class CountryTest {
     assertEquals("DE", Country.GERMANY.getIso2LetterCode());
     assertEquals("GB", Country.UNITED_KINGDOM.getIso2LetterCode());
   }
-
+  
   @Test
   public void testGetIso3LetterCode() throws Exception {
     Set<String> codes = Sets.newHashSet();
@@ -56,7 +56,7 @@ public class CountryTest {
     assertEquals("GBR", Country.UNITED_KINGDOM.getIso3LetterCode());
     assertEquals("DEU", Country.GERMANY.getIso3LetterCode());
   }
-
+  
   @Test
   public void testGetIsoNumericalCode() throws Exception {
     Set<Integer> codes = Sets.newHashSet();
@@ -69,7 +69,7 @@ public class CountryTest {
     assertEquals("GBR", Country.UNITED_KINGDOM.getIso3LetterCode());
     assertEquals("DEU", Country.GERMANY.getIso3LetterCode());
   }
-
+  
   @Test
   public void testIsCustomCode() throws Exception {
     for (Country l : Country.values()) {
@@ -82,7 +82,7 @@ public class CountryTest {
       }
     }
   }
-
+  
   @Test
   public void testIsOfficial() throws Exception {
     for (Country l : Country.OFFICIAL_COUNTRIES) {
@@ -93,7 +93,7 @@ public class CountryTest {
     assertTrue(allCountries > officialCountries);
     assertEquals(249, officialCountries);
   }
-
+  
   @Test
   public void testgetTitle() throws Exception {
     for (Country l : Country.values()) {
@@ -103,24 +103,24 @@ public class CountryTest {
     assertEquals("United Kingdom", Country.UNITED_KINGDOM.getTitle());
     assertEquals("Germany", Country.GERMANY.getTitle());
   }
-
+  
   @Test
   public void testCodeUniqueness() {
     Set<String> codes = Sets.newHashSet();
     for (Country c : Country.values()) {
       assertFalse(codes.contains(c.getIso2LetterCode()));
       assertFalse(codes.contains(c.getIso3LetterCode()));
-
+      
       codes.add(c.getIso2LetterCode());
       codes.add(c.getIso3LetterCode());
-
+      
       if (c.getIsoNumericalCode() != null) {
         assertFalse(codes.contains(c.getIsoNumericalCode().toString()));
         codes.add(c.getIsoNumericalCode().toString());
       }
     }
   }
-
+  
   @Test
   public void testTitleUniqueness() {
     Set<String> names = Sets.newHashSet();
@@ -129,5 +129,5 @@ public class CountryTest {
       names.add(c.getTitle());
     }
   }
-
+  
 }

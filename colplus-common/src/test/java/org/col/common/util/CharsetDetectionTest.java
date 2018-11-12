@@ -17,7 +17,7 @@ import static org.junit.Assert.assertEquals;
  *
  */
 public class CharsetDetectionTest {
-
+  
   @Test
   public void detectEncoding() throws Exception {
     for (Path p : testFiles()) {
@@ -28,10 +28,10 @@ public class CharsetDetectionTest {
       assertEquals(PathUtils.getFilename(p), expected, detected);
     }
   }
-
+  
   public static Iterable<Path> testFiles() throws IOException, URISyntaxException {
     Path folder = PathUtils.classPathTestRes("charsets");
-
+    
     return Files.newDirectoryStream(folder, new DirectoryStream.Filter<Path>() {
       @Override
       public boolean accept(Path p) throws IOException {
@@ -39,7 +39,7 @@ public class CharsetDetectionTest {
       }
     });
   }
-
+  
   public static Charset expectedCharset(Path p) throws URISyntaxException {
     String name = PathUtils.getBasename(p);
     int idx = name.indexOf("_");
@@ -48,10 +48,10 @@ public class CharsetDetectionTest {
     }
     return Charset.forName(name);
   }
-
+  
   private static void showBits(byte param) {
     int mask = 1 << 8;
-
+    
     for (int i = 1; i <= 8; i++,
         param <<= 1) {
       System.out.print((param & mask) ==

@@ -28,14 +28,14 @@ public class DwcInterpreter extends InterpreterBase {
   private static final Logger LOG = LoggerFactory.getLogger(DwcInterpreter.class);
   private static final EnumNote<TaxonomicStatus> NO_STATUS =
       new EnumNote<>(TaxonomicStatus.DOUBTFUL, null);
-
+  
   private final InsertMetadata insertMetadata;
-
+  
   public DwcInterpreter(Dataset dataset, InsertMetadata insertMetadata, ReferenceFactory refFactory) {
     super(dataset, refFactory);
     this.insertMetadata = insertMetadata;
   }
-
+  
   public Optional<NeoTaxon> interpret(VerbatimRecord v) {
     // name
     Optional<NameAccordingTo> nat = interpretName(v);
@@ -65,7 +65,7 @@ public class DwcInterpreter extends InterpreterBase {
     }
     return Optional.empty();
   }
-
+  
   Optional<NeoNameRel> interpretNameRelations(VerbatimRecord rec) {
     NeoNameRel rel = new NeoNameRel();
     SafeParser<NomRelType> type = SafeParser.parse(NomRelTypeParser.PARSER, rec.get(ColDwcTerm.relationType));
@@ -80,7 +80,7 @@ public class DwcInterpreter extends InterpreterBase {
     }
     return Optional.empty();
   }
-
+  
   List<Reference> interpretReference(VerbatimRecord rec) {
     return Lists.newArrayList(refFactory.fromDC(rec.get(DcTerm.identifier),
         rec.get(DcTerm.bibliographicCitation),
@@ -91,7 +91,7 @@ public class DwcInterpreter extends InterpreterBase {
         rec
     ));
   }
-
+  
   List<Distribution> interpretDistribution(VerbatimRecord rec) {
     List<Distribution> distributions = new ArrayList<>();
     // try to figure out an area
@@ -104,7 +104,7 @@ public class DwcInterpreter extends InterpreterBase {
           rec.addIssue(Issue.DISTRIBUTION_AREA_INVALID);
         }
       }
-
+      
     } else if (rec.hasTerm(DwcTerm.countryCode) || rec.hasTerm(DwcTerm.country)) {
       for (String craw : MULTIVAL.split(rec.getFirst(DwcTerm.countryCode, DwcTerm.country))) {
         Country country = SafeParser.parse(CountryParser.PARSER, craw).orNull();
@@ -114,16 +114,16 @@ public class DwcInterpreter extends InterpreterBase {
           rec.addIssue(Issue.DISTRIBUTION_COUNTRY_INVALID);
         }
       }
-
+      
     } else if (rec.hasTerm(DwcTerm.locality)) {
       distributions.add(createDistribution(rec.get(DwcTerm.locality), Gazetteer.TEXT, rec));
-
+      
     } else {
       rec.addIssue(Issue.DISTRIBUTION_INVALID);
     }
     return distributions;
   }
-
+  
   List<VernacularName> interpretVernacularName(VerbatimRecord rec) {
     return super.interpretVernacular(rec,
         this::addReferences,
@@ -133,7 +133,7 @@ public class DwcInterpreter extends InterpreterBase {
         DwcTerm.countryCode, DwcTerm.country
     );
   }
-
+  
   private Distribution createDistribution(String area, Gazetteer standard, VerbatimRecord rec) {
     Distribution d = new Distribution();
     d.setVerbatimKey(rec.getKey());
@@ -144,14 +144,14 @@ public class DwcInterpreter extends InterpreterBase {
     d.setStatus(DistributionStatus.NATIVE);
     return d;
   }
-
+  
   private void addReferences(Referenced obj, VerbatimRecord v) {
     if (v.hasTerm(DcTerm.source)) {
       Reference ref = refFactory.fromCitation(null, v.get(DcTerm.source), v);
       setRefKey(obj, ref);
     }
   }
-
+  
   private void interpretTaxon(NeoTaxon t, VerbatimRecord v, EnumNote<TaxonomicStatus> status, String accordingTo) {
     // and it keeps the taxonID for resolution of relations
     t.taxon.setVerbatimKey(v.getKey());
@@ -183,7 +183,7 @@ public class DwcInterpreter extends InterpreterBase {
     }
     t.taxon.setRemarks(v.get(DwcTerm.taxonRemarks));
   }
-
+  
   private Optional<NameAccordingTo> interpretName(VerbatimRecord v) {
     Optional<NameAccordingTo> opt = interpretName(v.getFirst(DwcTerm.taxonID, DwcaReader.DWCA_ID),
         v.getFirst(DwcTerm.taxonRank, DwcTerm.verbatimTaxonRank), v.get(DwcTerm.scientificName),
@@ -192,7 +192,7 @@ public class DwcInterpreter extends InterpreterBase {
         v.get(DwcTerm.specificEpithet), v.get(DwcTerm.infraspecificEpithet),
         v.get(DwcTerm.nomenclaturalCode), v.get(DwcTerm.nomenclaturalStatus),
         v.getRaw(DcTerm.references), v.get(DwcTerm.nomenclaturalStatus), v);
-
+    
     // publishedIn
     if (opt.isPresent()) {
       Name n = opt.get().getName();
@@ -206,5 +206,5 @@ public class DwcInterpreter extends InterpreterBase {
     }
     return opt;
   }
-
+  
 }

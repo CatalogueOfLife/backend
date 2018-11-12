@@ -18,10 +18,10 @@ import org.slf4j.LoggerFactory;
 @Produces(MediaType.APPLICATION_JSON)
 @SuppressWarnings("static-method")
 public class DecisionResource extends CRUDResource<EditorialDecision> {
-
+  
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(DecisionResource.class);
-
+  
   public DecisionResource() {
     super(EditorialDecision.class, DecisionMapper.class);
   }
@@ -40,5 +40,5 @@ public class DecisionResource extends CRUDResource<EditorialDecision> {
       throw new IllegalArgumentException("Parameter datasetKey or sectorKey is required");
     }
   }
-
+  
 }

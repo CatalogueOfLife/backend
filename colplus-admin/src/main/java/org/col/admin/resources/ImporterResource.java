@@ -25,24 +25,24 @@ import org.slf4j.LoggerFactory;
 @Path("/importer")
 @Produces(MediaType.APPLICATION_JSON)
 public class ImporterResource {
-
+  
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(ImporterResource.class);
   private final ImportManager importManager;
   private final DatasetImportDao dao;
-
+  
   public ImporterResource(ImportManager importManager, SqlSessionFactory factory) {
     this.importManager = importManager;
     dao = new DatasetImportDao(factory);
   }
-
+  
   @GET
   public ResultPage<DatasetImport> list(@QueryParam("datasetKey") Integer datasetKey,
                                         @QueryParam("state") List<ImportState> states,
                                         @Valid @BeanParam Page page) {
     return dao.list(datasetKey, states, page);
   }
-
+  
   @GET
   @Path("/queue")
   public Queue<ImportRequest> queue() {
@@ -65,12 +65,12 @@ public class ImporterResource {
     return importManager.submit(datasetKey, archive);
   }
   
-
+  
   @DELETE
   @Path("{key}")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void cancel(@PathParam("key") int datasetKey) {
     importManager.cancel(datasetKey);
   }
-
+  
 }

@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory;
 @Consumes(MediaType.APPLICATION_JSON)
 @SuppressWarnings("static-method")
 public abstract class CRUDResource<T extends IntKey> {
-
+  
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(CRUDResource.class);
   private final Class<T> objClass;
@@ -42,13 +42,13 @@ public abstract class CRUDResource<T extends IntKey> {
     session.commit();
     return obj.getKey();
   }
-
+  
   @GET
   @Path("{key}")
   public T get(@PathParam("key") int key, @Context SqlSession session) {
     return session.getMapper(mapperClass).get(key);
   }
-
+  
   @PUT
   @Path("{key}")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
@@ -60,7 +60,7 @@ public abstract class CRUDResource<T extends IntKey> {
     }
     session.commit();
   }
-
+  
   @DELETE
   @Path("{key}")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
@@ -71,5 +71,5 @@ public abstract class CRUDResource<T extends IntKey> {
     }
     session.commit();
   }
-
+  
 }

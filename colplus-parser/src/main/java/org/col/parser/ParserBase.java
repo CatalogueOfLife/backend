@@ -11,11 +11,11 @@ import org.col.common.text.StringUtils;
 abstract class ParserBase<T> implements Parser<T> {
   private final static CharMatcher VISIBLE = CharMatcher.invisible().negate();
   final Class valueClass;
-
+  
   ParserBase(Class valueClass) {
     this.valueClass = valueClass;
   }
-
+  
   @Override
   public Optional<T> parse(String value) throws UnparsableException {
     String x = normalize(value);
@@ -26,21 +26,21 @@ abstract class ParserBase<T> implements Parser<T> {
       }
       return Optional.empty();
     }
-
+    
     T val = parseKnownValues(x);
     if (val != null) {
       return Optional.of(val);
     }
-
+    
     throw new UnparsableException(valueClass, value);
   }
-
+  
   /**
    * Default normalizer function that can be overridden for specific parsers.
    */
   String normalize(String x) {
     return StringUtils.digitOrAsciiLetters(x);
   }
-
+  
   abstract T parseKnownValues(String upperCaseValue) throws UnparsableException;
 }

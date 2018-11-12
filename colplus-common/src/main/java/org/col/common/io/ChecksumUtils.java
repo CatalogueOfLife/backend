@@ -16,7 +16,7 @@ public class ChecksumUtils {
   public static String getSHAChecksum(File file) throws IOException {
     return getFileChecksum("SHA-1", file);
   }
-
+  
   private static String getFileChecksum(String algorithmName, File file) throws IOException {
     MessageDigest digest;
     try {
@@ -24,7 +24,7 @@ public class ChecksumUtils {
     } catch (NoSuchAlgorithmException e) {
       throw new RuntimeException(e);
     }
-  
+    
     //Get file input stream for reading the file content
     FileInputStream fis = new FileInputStream(file);
     
@@ -42,7 +42,7 @@ public class ChecksumUtils {
     
     //Get the hash's bytes
     byte[] bytes = digest.digest();
-  
+    
     return DatatypeConverter.printHexBinary(bytes).toUpperCase();
   }
 }

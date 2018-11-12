@@ -15,16 +15,16 @@ import org.slf4j.LoggerFactory;
  */
 public class AcefReader extends CsvReader {
   private static final Logger LOG = LoggerFactory.getLogger(AcefReader.class);
-
+  
   private AcefReader(Path folder) throws IOException {
     super(folder, "acef");
     validate();
   }
-
+  
   public static AcefReader from(Path folder) throws IOException {
     return new AcefReader(folder);
   }
-
+  
   private void validate() throws NormalizationFailedException.SourceInvalidException {
     // allow only ACEF row types
     for (Schema s : schemas.values()) {
@@ -33,7 +33,7 @@ public class AcefReader extends CsvReader {
         schemas.remove(s.rowType);
       }
     }
-
+    
     // mandatory terms.
     // Fail early, if missing ignore file alltogether!!!
     require(AcefTerm.CommonNames, AcefTerm.AcceptedTaxonID);
@@ -50,12 +50,12 @@ public class AcefReader extends CsvReader {
     require(AcefTerm.AcceptedInfraSpecificTaxa, AcefTerm.ParentSpeciesID);
     require(AcefTerm.AcceptedInfraSpecificTaxa, AcefTerm.InfraSpeciesEpithet);
     require(AcefTerm.AcceptedInfraSpecificTaxa, AcefTerm.InfraSpeciesMarker);
-
+    
     // require at least the main accepted species file
     if (!hasData(AcefTerm.AcceptedSpecies)) {
       throw new NormalizationFailedException.SourceInvalidException(AcefTerm.AcceptedSpecies + " file required but missing from " + folder);
     }
-
+    
     for (AcefTerm t : AcefTerm.values()) {
       if (t.isClass()) {
         if (!hasData(t)) {
@@ -64,5 +64,5 @@ public class AcefReader extends CsvReader {
       }
     }
   }
-
+  
 }

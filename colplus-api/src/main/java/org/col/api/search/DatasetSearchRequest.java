@@ -47,13 +47,13 @@ public class DatasetSearchRequest {
   
   @QueryParam("released")
   private LocalDate released;
-
+  
   @QueryParam("sortBy")
   private SortBy sortBy;
   
   @QueryParam("reverse")
   private boolean reverse = false;
-
+  
   public static DatasetSearchRequest byQuery(String query) {
     DatasetSearchRequest q = new DatasetSearchRequest();
     q.q = query;

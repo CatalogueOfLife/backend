@@ -25,11 +25,11 @@ import org.slf4j.LoggerFactory;
 @Produces(MediaType.APPLICATION_JSON)
 @SuppressWarnings("static-method")
 public class ColSourceResource extends CRUDResource<ColSource> {
-
+  
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(ColSourceResource.class);
   private final ImageService imgService;
-
+  
   public ColSourceResource(ImageService imgService) {
     super(ColSource.class, ColSourceMapper.class);
     this.imgService = imgService;
@@ -39,7 +39,7 @@ public class ColSourceResource extends CRUDResource<ColSource> {
   public List<ColSource> list(@Context SqlSession session, @QueryParam("datasetKey") Integer datasetKey) {
     return session.getMapper(ColSourceMapper.class).list(datasetKey);
   }
-
+  
   @GET
   @Path("{key}/edit")
   public ColSource getEditable(@Context SqlSession session, @Param("key") int key) {
@@ -58,7 +58,7 @@ public class ColSourceResource extends CRUDResource<ColSource> {
   @Path("{key}/logo")
   @Consumes({MediaType.APPLICATION_OCTET_STREAM,
       MoreMediaTypes.IMG_BMP, MoreMediaTypes.IMG_PNG, MoreMediaTypes.IMG_GIF,
-      MoreMediaTypes.IMG_JPG ,MoreMediaTypes.IMG_PSD, MoreMediaTypes.IMG_TIFF
+      MoreMediaTypes.IMG_JPG, MoreMediaTypes.IMG_PSD, MoreMediaTypes.IMG_TIFF
   })
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public Response uploadLogo(@PathParam("key") int key, InputStream img) throws IOException {

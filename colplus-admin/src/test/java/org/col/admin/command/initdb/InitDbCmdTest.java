@@ -11,16 +11,16 @@ import static org.junit.Assert.assertTrue;
  *
  */
 public class InitDbCmdTest extends CmdTestBase {
-
+  
   public InitDbCmdTest() {
     super(new InitDbCmd());
   }
-
+  
   @Test
   public void testInitCmd() throws Exception {
     assertTrue(run("initdb", "--prompt", "0"));
   }
-
+  
   @Test
   public void testInitCmdFail() throws Exception {
     // use bad username & password -> expect error

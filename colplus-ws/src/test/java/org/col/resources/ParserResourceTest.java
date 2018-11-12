@@ -19,23 +19,24 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 
 public class ParserResourceTest {
-
+  
   @ClassRule
   public static final DropwizardPgAppRule<WsServerConfig> RULE =
       new DropwizardPgAppRule<>(WsServer.class, ResourceHelpers.resourceFilePath("config-test.yaml"));
-
-  GenericType<List<NameAccordingTo>> PARSER_TYPE = new GenericType<List<NameAccordingTo>>(){};
-
+  
+  GenericType<List<NameAccordingTo>> PARSER_TYPE = new GenericType<List<NameAccordingTo>>() {
+  };
+  
   @Test
   public void parseGet() {
     Client client = new JerseyClientBuilder(RULE.getEnvironment()).build("test client");
-
+    
     List<NameAccordingTo> resp = client.target(
         String.format("http://localhost:%d/parser/name", RULE.getLocalPort()))
         .queryParam("name", "Abies alba Mill.")
         .request()
         .get(PARSER_TYPE);
-
+    
     Name abies = new Name();
     abies.setGenus("Abies");
     abies.setSpecificEpithet("alba");
@@ -43,7 +44,7 @@ public class ParserResourceTest {
     abies.setType(NameType.SCIENTIFIC);
     abies.setRank(Rank.SPECIES);
     abies.updateScientificName();
-
+    
     assertEquals(1, resp.size());
     assertEquals(abies, resp.get(0).getName());
   }

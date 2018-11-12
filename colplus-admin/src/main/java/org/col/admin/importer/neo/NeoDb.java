@@ -64,7 +64,7 @@ public class NeoDb implements ReferenceStore {
   private static final Logger LOG = LoggerFactory.getLogger(NeoDb.class);
   private static final Labels[] TAX_LABELS = new Labels[]{Labels.ALL, Labels.TAXON};
   private static final Labels[] SYN_LABELS = new Labels[]{Labels.ALL, Labels.SYNONYM};
-
+  
   private final int datasetKey;
   private final GraphDatabaseBuilder neoFactory;
   private final DB mapDb;
@@ -83,11 +83,11 @@ public class NeoDb implements ReferenceStore {
   // taking up 99% of time for denormalization of higher taxa
   private final LRUCache<String, List<Node>> monomialCache = new LRUCache<String, List<Node>>(10000);
   private final LRUCache<String, Node> idCache = new LRUCache<String, Node>(10000);
-
+  
   private final String idGenPrefix = ".neodb.";
   private IdGenerator idGen = new IdGenerator(idGenPrefix);
   private GraphDatabaseService neo;
-
+  
   /**
    * @param mapDb
    * @param neoDir
@@ -101,12 +101,12 @@ public class NeoDb implements ReferenceStore {
     this.mapDb = mapDb;
     this.batchSize = batchSize;
     this.batchTimeout = batchTimeout;
-
+    
     try {
       pool = new KryoPool.Builder(new NeoKryoFactory())
           .softReferences()
           .build();
-
+      
       dataset = (Atomic.Var<Dataset>) mapDb.atomicVar("dataset", new MapDbObjectSerializer(Dataset.class, pool, 256))
           .createOrOpen();
       taxa = mapDb.hashMap("taxa")
@@ -127,14 +127,14 @@ public class NeoDb implements ReferenceStore {
           .valueSerializer(Serializer.STRING)
           .createOrOpen();
       openNeo();
-
+      
     } catch (Exception e) {
       LOG.error("Failed to initialize a new NeoDB", e);
       close();
       throw e;
     }
   }
-
+  
   /**
    * Fully closes the dao leaving any potentially existing persistence files untouched.
    */
@@ -149,7 +149,7 @@ public class NeoDb implements ReferenceStore {
     closeNeo();
     LOG.debug("Closed NormalizerStore for directory {}", neoDir.getAbsolutePath());
   }
-
+  
   public void closeAndDelete() {
     close();
     if (neoDir != null && neoDir.exists()) {
@@ -157,7 +157,7 @@ public class NeoDb implements ReferenceStore {
       FileUtils.deleteQuietly(neoDir);
     }
   }
-
+  
   private void openNeo() {
     LOG.debug("Starting embedded neo4j database from {}", neoDir.getAbsolutePath());
     neo = neoFactory.newGraphDatabase();
@@ -166,18 +166,18 @@ public class NeoDb implements ReferenceStore {
       GraphDatabaseAPI gdb = (GraphDatabaseAPI) neo;
       gdb.getDependencyResolver().resolveDependency(Procedures.class).registerProcedure(UnionFindProc.class);
       gdb.getDependencyResolver().resolveDependency(Procedures.class).registerProcedure(LabelPropagationProc.class);
-
+      
     } catch (KernelException e) {
       LOG.warn("Unable to register neo4j algorithms", e);
     }
   }
-
+  
   private void clearCaches() {
     LOG.debug("Clearing caches (monomial={}, id={})", monomialCache.size(), idCache.size());
     monomialCache.clear();
     idCache.clear();
   }
-
+  
   private void closeNeo() {
     try {
       clearCaches();
@@ -188,20 +188,20 @@ public class NeoDb implements ReferenceStore {
       LOG.error("Failed to close neo4j {}", neoDir.getAbsolutePath(), e);
     }
   }
-
+  
   public GraphDatabaseService getNeo() {
     return neo;
   }
-
+  
   public void setIdGeneratorPrefix(String prefix) {
     if (this.idGen.getCounter() > 0) {
       // we had issues ids already with the previous generator, continue with its
-
+      
     }
     this.idGen = Preconditions.checkNotNull(idGen);
     // update previous ids
   }
-
+  
   public NeoTaxon get(Node n) {
     NeoTaxon t = taxa.get(n.getId());
     if (t != null) {
@@ -209,7 +209,7 @@ public class NeoDb implements ReferenceStore {
     }
     return t;
   }
-
+  
   public NeoTaxon getByID(String id) {
     if (id != null) {
       Node n = byID(id);
@@ -219,7 +219,7 @@ public class NeoDb implements ReferenceStore {
     }
     return null;
   }
-
+  
   /**
    * @return a collection of all name relations with name key using node ids.
    */
@@ -231,16 +231,16 @@ public class NeoDb implements ReferenceStore {
           nr.setType(RelType.valueOf(r.getType().name()).nomRelType);
           nr.setNameId(NeoProperties.getID(r.getStartNode()));
           nr.setRelatedNameId(NeoProperties.getID(r.getEndNode()));
-          nr.setNote( (String) r.getProperty(NeoProperties.NOTE, null));
-          nr.setPublishedInId( (String) r.getProperty(NeoProperties.REF_ID, null));
+          nr.setNote((String) r.getProperty(NeoProperties.NOTE, null));
+          nr.setPublishedInId((String) r.getProperty(NeoProperties.REF_ID, null));
           if (r.hasProperty(NeoProperties.VERBATIM_KEY)) {
-            nr.setVerbatimKey((Integer)r.getProperty(NeoProperties.VERBATIM_KEY));
+            nr.setVerbatimKey((Integer) r.getProperty(NeoProperties.VERBATIM_KEY));
           }
           return nr;
         })
         .collect(Collectors.toList());
   }
-
+  
   /**
    * @return the single matching node with the taxonID or null
    */
@@ -251,17 +251,18 @@ public class NeoDb implements ReferenceStore {
       throw new NotUniqueRuntimeException(NeoProperties.ID, id);
     }
   }
-
+  
   /**
    * @return the matching nodes with the scientificName
    */
   public List<Node> byScientificName(String scientificName) {
     return byScientificName(Labels.ALL, scientificName);
   }
-
+  
   /**
    * Lookup nodes by their scientific name.
    * This method caches monomials for quick subsequent lookups
+   *
    * @return the matching nodes with the scientificName and given label
    */
   public List<Node> byScientificName(final Labels label, final String scientificName) {
@@ -271,14 +272,14 @@ public class NeoDb implements ReferenceStore {
       return new ArrayList<>(monomialCache.computeIfAbsent(scientificName, sn -> lookupByScientificName(label, sn)));
     }
   }
-
+  
   /**
    * uncached internal version
    */
   private List<Node> lookupByScientificName(Labels label, String scientificName) {
     return Iterators.asList(neo.findNodes(label, NeoProperties.SCIENTIFIC_NAME, scientificName));
   }
-
+  
   public List<Node> byScientificName(Labels label, String scientificName, Rank rank, boolean inclUnranked) {
     List<Node> names = byScientificName(label, scientificName);
     names.removeIf(n -> {
@@ -291,21 +292,21 @@ public class NeoDb implements ReferenceStore {
     });
     return names;
   }
-
+  
   public Dataset getDataset() {
     return dataset.get();
   }
-
+  
   /**
    * Process all nodes in batches with the given callback handler.
    * Every batch is processed in a single transaction which is committed at the end of the batch.
    * To avoid nested flat transactions we execute all batches in a separate consumer thread.
-   *
+   * <p>
    * If new nodes are created within a batch transaction this will be also be returned to the callback handler at the very end.
-   *
+   * <p>
    * Iteration is by node value starting from node value 1 to highest.
    *
-   * @param label neo4j node label to select nodes by. Use Labels.ALL for all nodes
+   * @param label     neo4j node label to select nodes by. Use Labels.ALL for all nodes
    * @param batchSize
    * @param callback
    * @return total number of processed nodes.
@@ -313,12 +314,12 @@ public class NeoDb implements ReferenceStore {
   public int process(Labels label, final int batchSize, NodeBatchProcessor callback) {
     final BlockingQueue<List<Node>> queue = new LinkedBlockingQueue<>(3);
     BatchConsumer consumer = new BatchConsumer(datasetKey, neo, callback, queue, Thread.currentThread());
-    Thread consThread = new Thread(consumer, "neodb-processor-"+datasetKey);
+    Thread consThread = new Thread(consumer, "neodb-processor-" + datasetKey);
     consThread.start();
-
-    try (Transaction tx = neo.beginTx()){
+    
+    try (Transaction tx = neo.beginTx()) {
       UnmodifiableIterator<List<Node>> batchIter = com.google.common.collect.Iterators.partition(neo.findNodes(label), batchSize);
-
+      
       while (batchIter.hasNext() && consThread.isAlive()) {
         checkIfInterrupted();
         List<Node> batch = batchIter.next();
@@ -326,7 +327,7 @@ public class NeoDb implements ReferenceStore {
           LOG.error("Failed to offer new batch {} of size {} within {} minutes for neodb processing by {}", consumer.getBatchCounter(), batch.size(), batchTimeout, callback);
           LOG.info("Nodes: {}", batch.stream()
               .map(NeoProperties::getScientificNameWithAuthor)
-              .collect(Collectors.joining( "; " ))
+              .collect(Collectors.joining("; "))
           );
           throw new RuntimeException("Failed to offer new batch for neodb processing by " + callback);
         }
@@ -335,33 +336,33 @@ public class NeoDb implements ReferenceStore {
         queue.put(BatchConsumer.POISON_PILL);
       }
       consThread.join();
-
+      
       // mark good for commit
       tx.success();
       LOG.info("Neo processing of {} finished in {} batches with {} records", label, consumer.getBatchCounter(), consumer.getRecordCounter());
-
+      
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();  // set interrupt flag back
       LOG.error("Neo processing interrupted", e);
-
+      
       if (consThread.isAlive()) {
         consThread.interrupt();
       }
     }
-
+    
     if (consumer.hasError()) {
       throw consumer.getError();
     }
-
+    
     return consumer.getRecordCounter();
   }
-
+  
   private void checkIfInterrupted() throws InterruptedException {
     if (Thread.currentThread().isInterrupted()) {
       throw new InterruptedException("Neo thread was cancelled/interrupted");
     }
   }
-
+  
   /**
    * Removes the neo4j node with all its relations and all entities stored under this node like NeoTaxon.
    */
@@ -375,8 +376,8 @@ public class NeoDb implements ReferenceStore {
     n.delete();
     LOG.debug("Deleted {} from store with {} relations", n, counter);
   }
-
-
+  
+  
   /**
    * Shuts down the regular neo4j db and opens up neo4j in batch mode.
    * While batch mode is active only writes will be accepted and reads from the store
@@ -390,11 +391,11 @@ public class NeoDb implements ReferenceStore {
       throw new RuntimeException(e);
     }
   }
-
+  
   public boolean isBatchMode() {
     return inserter != null;
   }
-
+  
   public void endBatchMode() throws NotUniqueRuntimeException {
     try {
       // define indices
@@ -404,7 +405,7 @@ public class NeoDb implements ReferenceStore {
       // this is when lucene indices are build
       inserter.shutdown();
     }
-
+    
     openNeo();
     // now try to add a taxonID unique constraint. If it fails we will remove offending records
     try {
@@ -414,33 +415,33 @@ public class NeoDb implements ReferenceStore {
       removeDuplicateKeys();
       buildPrimaryKeyIndex();
     }
-
+    
     inserter = null;
   }
-
+  
   private void buildPrimaryKeyIndex() {
-    try (Transaction tx = neo.beginTx()){
+    try (Transaction tx = neo.beginTx()) {
       LOG.info("Building lucene index ID ...");
       neo.schema().constraintFor(Labels.ALL).assertPropertyIsUnique(NeoProperties.ID).create();
       tx.success();
     }
-    try (Transaction tx = neo.beginTx()){
+    try (Transaction tx = neo.beginTx()) {
       neo.schema().awaitIndexesOnline(1, TimeUnit.HOURS);
       LOG.debug("Done building lucene index ID");
     }
   }
-
+  
   private void removeDuplicateKeys() {
-    try (Transaction tx = neo.beginTx()){
+    try (Transaction tx = neo.beginTx()) {
       final AtomicInteger counter = new AtomicInteger(0);
-      Result res = neo.execute("MATCH (n:ALL) WITH n."+NeoProperties.ID +" as id, collect(n) AS nodes WHERE size(nodes) >  1 RETURN nodes");
+      Result res = neo.execute("MATCH (n:ALL) WITH n." + NeoProperties.ID + " as id, collect(n) AS nodes WHERE size(nodes) >  1 RETURN nodes");
       res.accept(new Result.ResultVisitor<Exception>() {
         @Override
         public boolean visit(Result.ResultRow row) {
           List<Node> nodes = (List<Node>) row.get("nodes");
           Node first = nodes.get(0);
           LOG.info("keep {} {}", first, NeoProperties.getScientificNameWithAuthor(first));
-
+          
           NeoTaxon t = get(first);
           addIssues(t.name, Issue.ID_NOT_UNIQUE);
           for (Node n : nodes) {
@@ -457,13 +458,13 @@ public class NeoDb implements ReferenceStore {
       });
       tx.success();
       LOG.info("Remove {} duplicate records in total", counter.get());
-
+      
     } catch (Exception e) {
       LOG.error("Failed to remove duplicate records with the same ID ", e);
       throw new NotUniqueRuntimeException("ID");
     }
   }
-
+  
   /**
    * Persists a NeoTaxon instance, creating missing name & taxon ids de novo
    */
@@ -472,17 +473,17 @@ public class NeoDb implements ReferenceStore {
     if (t.taxon.getId() == null) {
       t.taxon.setId(idGen.next());
     }
-    if (t.name.getId() == null){
+    if (t.name.getId() == null) {
       t.name.setId(t.taxon.getId());
     }
-
+    
     // update neo4j properties either via batch mode or classic
     long nodeId;
     Map<String, Object> props = NeoDbUtils.neo4jProps(t);
     if (isBatchMode()) {
       // batch insert normalizer properties used during normalization
       nodeId = inserter.createNode(props, getNeoLabels(t));
-
+      
     } else {
       // create neo4j node if needed
       if (t.node == null) {
@@ -498,12 +499,12 @@ public class NeoDb implements ReferenceStore {
         monomialCache.remove(sn);
       }
     }
-
+    
     taxa.put(nodeId, t);
-
+    
     return t;
   }
-
+  
   /**
    * Updates the taxon object only in the  KVP store, keeping neo4j as it is.
    * throws is taxon did not exist before.
@@ -512,23 +513,24 @@ public class NeoDb implements ReferenceStore {
     Preconditions.checkNotNull(t.node);
     taxa.put(t.node.getId(), t);
   }
-
+  
   private Labels[] getNeoLabels(NeoTaxon t) {
     return t.isSynonym() ? SYN_LABELS : TAX_LABELS;
   }
-
+  
   public void assignKey(VerbatimRecord v) {
     if (v.getKey() == null) {
       v.setKey(verbatimSequence.incrementAndGet());
     }
   }
+  
   public void put(VerbatimRecord v) {
     if (v.hasChanged()) {
       assignKey(v);
       verbatim.put(v.getKey(), v);
     }
   }
-
+  
   /**
    * Creates a new name relation linking the 2 given nodes.
    * The note and publishedInKey values are stored as relation properties
@@ -545,7 +547,7 @@ public class NeoDb implements ReferenceStore {
       r.setProperty(NeoProperties.NOTE, rel.getNote());
     }
   }
-
+  
   /**
    * Persists a Reference instance, creating a missing id de novo
    */
@@ -563,7 +565,7 @@ public class NeoDb implements ReferenceStore {
     }
     return r;
   }
-
+  
   /**
    * @return the verbatim key as assigned from verbatimSequence
    */
@@ -574,11 +576,11 @@ public class NeoDb implements ReferenceStore {
     }
     return rec;
   }
-
+  
   public void addIssues(VerbatimEntity ent, Issue... issue) {
     addIssues(ent.getVerbatimKey(), issue);
   }
-
+  
   public void addIssues(Integer verbatimKey, Issue... issue) {
     if (verbatimKey != null) {
       VerbatimRecord v = getVerbatim(verbatimKey);
@@ -594,7 +596,7 @@ public class NeoDb implements ReferenceStore {
       }
     }
   }
-
+  
   /**
    * Return all NeoTaxa incl a node property to work with the nodeId.
    * Note though that it is not a real neo4j node but just a dummy that contains the id!!!
@@ -608,20 +610,20 @@ public class NeoDb implements ReferenceStore {
       return t;
     });
   }
-
+  
   @Override
   public Iterable<Reference> refList() {
     return references.values();
   }
-
+  
   public Set<String> refIds() {
     return references.keySet();
   }
-
+  
   public Iterable<VerbatimRecord> verbatimList() {
     return verbatim.values();
   }
-
+  
   @Override
   public Reference refById(String id) {
     if (id != null) {
@@ -629,7 +631,7 @@ public class NeoDb implements ReferenceStore {
     }
     return null;
   }
-
+  
   @Override
   public Reference refByCitation(String citation) {
     String normedCit = StringUtils.digitOrAsciiLetters(citation);
@@ -638,7 +640,7 @@ public class NeoDb implements ReferenceStore {
     }
     return null;
   }
-
+  
   public Dataset put(Dataset d) {
     // keep existing dataset key & settings
     Dataset old = dataset.get();
@@ -649,7 +651,7 @@ public class NeoDb implements ReferenceStore {
     dataset.set(d);
     return d;
   }
-
+  
   public Set<Long> nodeIdsOutsideTree() throws InterruptedException {
     final Set<Long> treeNodes = new HashSet<>();
     TreeWalker.walkTree(neo, new StartEndHandler() {
@@ -657,11 +659,12 @@ public class NeoDb implements ReferenceStore {
       public void start(Node n) {
         treeNodes.add(n.getId());
       }
-
+      
       @Override
-      public void end(Node n) { }
+      public void end(Node n) {
+      }
     });
-
+    
     final Set<Long> nodes = new HashSet<>();
     try (Transaction tx = getNeo().beginTx()) {
       for (Node n : neo.getAllNodes()) {
@@ -672,7 +675,7 @@ public class NeoDb implements ReferenceStore {
     }
     return nodes;
   }
-
+  
   /**
    * overlay neo4j relations to NeoTaxon instances
    */
@@ -686,8 +689,8 @@ public class NeoDb implements ReferenceStore {
             t.synonym.setStatus(TaxonomicStatus.SYNONYM);
             t.synonym.setAccordingTo(t.taxon.getAccordingTo());
           }
-
-        } else if (!t.node.hasLabel(Labels.ROOT)){
+          
+        } else if (!t.node.hasLabel(Labels.ROOT)) {
           // parent
           Node p = getSingleRelated(t.node, RelType.PARENT_OF, Direction.INCOMING);
           t.taxon.setParentId(extractTaxon(p).getId());
@@ -698,7 +701,7 @@ public class NeoDb implements ReferenceStore {
       tx.success();
     }
   }
-
+  
   /**
    * Sets the same name id for a given cluster of homotypic names derived from name relations and synonym[homotpic=true] relations.
    * We first go thru all synonyms with the homotypic flag to determine the keys and then add all missing basionym nodes.
@@ -712,13 +715,13 @@ public class NeoDb implements ReferenceStore {
         NeoTaxon tsyn = get(syn);
         if (tsyn.homotypic) {
           Relationship r = syn.getSingleRelationship(RelType.SYNONYM_OF, Direction.OUTGOING);
-          if(r == null) {
+          if (r == null) {
             addIssues(tsyn, Issue.ACCEPTED_NAME_MISSING);
             continue;
           }
           NeoTaxon acc = get(r.getEndNode());
           String homoId;
-          if (acc.name.getHomotypicNameId() == null ) {
+          if (acc.name.getHomotypicNameId() == null) {
             homoId = acc.name.getId();
             acc.name.setHomotypicNameId(homoId);
             update(acc);
@@ -731,7 +734,7 @@ public class NeoDb implements ReferenceStore {
         }
       }
       LOG.info("{} homotypic groups found via homotypic synonym relations", counter);
-
+      
       // now name relations, reuse keys if existing
       counter = 0;
       for (Node n : getNeo().getAllNodes()) {
@@ -756,7 +759,7 @@ public class NeoDb implements ReferenceStore {
             if (t.name.getHomotypicNameId() != null) {
               if (homoId == null) {
                 homoId = t.name.getHomotypicNameId();
-              } else if (!homoId.equals(t.name.getHomotypicNameId())){
+              } else if (!homoId.equals(t.name.getHomotypicNameId())) {
                 LOG.warn("Several homotypic name keys found in the same homotypic name group for {}", NeoProperties.getScientificNameWithAuthor(n));
               }
             }
@@ -777,35 +780,35 @@ public class NeoDb implements ReferenceStore {
       LOG.info("{} additional homotypic groups found via name relations", counter);
     }
   }
-
+  
   private Taxon extractTaxon(Node n) {
     NeoTaxon t = get(n);
     t.taxon.setName(t.name);
     return t.taxon;
   }
-
+  
   private Node getSingleRelated(Node n, RelType type, Direction dir) {
     try {
       Relationship rel = n.getSingleRelationship(type, dir);
       if (rel != null) {
         return rel.getOtherNode(n);
       }
-
+      
     } catch (NotFoundException e) {
       // thrown in case of multiple relations, debug
       LOG.debug("Multiple {} {} relations found for {}: {} - {}", dir, type, n, NeoProperties.getID(n), NeoProperties.getScientificNameWithAuthor(n));
       for (Relationship rel : n.getRelationships(type, dir)) {
         Node other = rel.getOtherNode(n);
         LOG.debug("  {} {}/{} - {}",
-            dir == Direction.INCOMING ? "<-- "+type.abbrev+" --" : "-- "+type.abbrev+" -->",
+            dir == Direction.INCOMING ? "<-- " + type.abbrev + " --" : "-- " + type.abbrev + " -->",
             other,
             NeoProperties.getID(other), NeoProperties.getScientificNameWithAuthor(other));
       }
-      throw new NormalizationFailedException("Multiple "+dir+" "+type+" relations found for "+NeoProperties.getScientificNameWithAuthor(n), e);
+      throw new NormalizationFailedException("Multiple " + dir + " " + type + " relations found for " + NeoProperties.getScientificNameWithAuthor(n), e);
     }
     return null;
   }
-
+  
   /**
    * Sync taxon KVP store with neo4j relations, setting correct neo4j labels, homotypic keys etc
    * Set correct ROOT, PROPARTE and BASIONYM labels for easier access
@@ -815,24 +818,24 @@ public class NeoDb implements ReferenceStore {
     updateTaxonStoreWithRelations();
     updateHomotypicNameKeys();
   }
-
+  
   /**
    * @return the number of neo4j nodes, ie number of NeoTaxon objects stored
    */
   public int size() {
     return taxa.size();
   }
-
+  
   private void updateLabels() {
     // set ROOT
     LOG.debug("Labelling root nodes");
-    String query =  "MATCH (r:TAXON) " +
+    String query = "MATCH (r:TAXON) " +
         "WHERE not ( ()-[:PARENT_OF]->(r) ) " +
         "SET r :ROOT " +
         "RETURN count(r)";
     long count = updateLabel(query);
     LOG.info("Labelled {} root nodes", count);
-
+    
     // set BASIONYM
     LOG.debug("Labelling basionym nodes");
     query = "MATCH (b:ALL)<-[:HAS_BASIONYM]-() " +
@@ -841,7 +844,7 @@ public class NeoDb implements ReferenceStore {
     count = updateLabel(query);
     LOG.info("Labelled {} basionym nodes", count);
   }
-
+  
   private long updateLabel(String query) {
     try (Transaction tx = neo.beginTx()) {
       Result result = neo.execute(query);
@@ -853,7 +856,7 @@ public class NeoDb implements ReferenceStore {
       }
     }
   }
-
+  
   /**
    * Returns an iterator over all relations of a given type.
    * Requires a valid neo transaction to exist outside of this method call.
@@ -863,13 +866,13 @@ public class NeoDb implements ReferenceStore {
     Result result = neo.execute(query);
     return result.columnAs("rel");
   }
-
+  
   public void assignParent(Node parent, Node child) {
     if (parent != null) {
       if (child.hasRelationship(RelType.PARENT_OF, Direction.INCOMING)) {
         // override existing parent!
-        Node oldParent=null;
-        for (Relationship r : child.getRelationships(RelType.PARENT_OF, Direction.INCOMING)){
+        Node oldParent = null;
+        for (Relationship r : child.getRelationships(RelType.PARENT_OF, Direction.INCOMING)) {
           oldParent = r.getOtherNode(child);
           r.delete();
         }
@@ -877,14 +880,14 @@ public class NeoDb implements ReferenceStore {
             NeoProperties.getScientificNameWithAuthor(child),
             NeoProperties.getScientificNameWithAuthor(oldParent),
             NeoProperties.getScientificNameWithAuthor(parent));
-
+        
       } else {
         parent.createRelationshipTo(child, RelType.PARENT_OF);
       }
-
+      
     }
   }
-
+  
   /**
    * Creates a synonym relationship between the given synonym and the accepted node, updating labels accordingly
    * and also moving potentially existing parent_of relations.
@@ -916,7 +919,7 @@ public class NeoDb implements ReferenceStore {
     }
     return synRel;
   }
-
+  
   /**
    * List all accepted taxa of a potentially prop parte synonym
    */
@@ -925,15 +928,15 @@ public class NeoDb implements ReferenceStore {
         .map(NeoProperties::getRankedName)
         .collect(Collectors.toList());
   }
-
+  
   /**
    * Creates a new taxon in neo and the name usage kvp using the source usages as a template for the classification properties.
    * Only copies the classification above genus and ignores genus and below!
    * A verbatim usage is created with just the parentNameUsage(ID) values so they can get resolved into proper neo relations later.
    * Name and taxon ids are generated de novo.
    *
-   * @param name the new name to be used
-   * @param source the taxon source to copy from
+   * @param name                the new name to be used
+   * @param source              the taxon source to copy from
    * @param excludeRankAndBelow the rank (and all ranks below) to exclude from the source classification
    */
   public RankedName createDoubtfulFromSource(Origin origin,
@@ -958,25 +961,25 @@ public class NeoDb implements ReferenceStore {
         t.taxon.setVerbatimKey(copyTerms.getKey());
       }
     }
-
+    
     // store, which creates a new neo node
     put(t);
-
+    
     return new RankedName(t.node, t.name.getScientificName(), t.name.authorshipComplete(), t.name.getRank());
   }
-
+  
   public void updateIdGeneratorPrefix() {
     idGen.setPrefix(
         Stream.concat(
             refIds().stream(),
             all()
-                .map(t-> new String[]{t.name.getId(), t.taxon.getId()})
+                .map(t -> new String[]{t.name.getId(), t.taxon.getId()})
                 .flatMap(Arrays::stream)
         )
     );
     if (idGen.getCounter() > 0) {
       // TODO: update references, anything else should have source ids at this point
-
+      
     }
     LOG.info("ID generator updated with unique prefix {}", idGen.getPrefix());
   }

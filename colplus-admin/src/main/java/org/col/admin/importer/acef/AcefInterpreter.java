@@ -28,13 +28,13 @@ import static org.col.parser.SafeParser.parse;
 public class AcefInterpreter extends InterpreterBase {
   private static final Logger LOG = LoggerFactory.getLogger(AcefInterpreter.class);
   private static final int ACEF_AUTHOR_MAX = 100;
-
+  
   public AcefInterpreter(Dataset dataset, InsertMetadata metadata, ReferenceFactory refFactory) {
     super(dataset, refFactory);
     // turn on normalization of flat classification
     metadata.setDenormedClassificationMapped(true);
   }
-
+  
   public Optional<Reference> interpretReference(VerbatimRecord rec) {
     return Optional.of(refFactory.fromACEF(
         rec.get(AcefTerm.ReferenceID),
@@ -45,24 +45,24 @@ public class AcefInterpreter extends InterpreterBase {
         rec
     ));
   }
-
+  
   Optional<NeoTaxon> interpretAccepted(VerbatimRecord v) {
     return interpretTaxon(AcefTerm.AcceptedTaxonID, v, false);
   }
-
+  
   Optional<NeoTaxon> interpretSynonym(VerbatimRecord v) {
     return interpretTaxon(AcefTerm.ID, v, true);
   }
-
+  
   private Optional<NeoTaxon> interpretTaxon(Term idTerm, VerbatimRecord v, boolean synonym) {
     // name
     Optional<NameAccordingTo> nat = interpretName(idTerm, v);
     if (!nat.isPresent()) {
       return Optional.empty();
     }
-
+    
     NeoTaxon t = NeoTaxon.createTaxon(Origin.SOURCE, nat.get().getName(), false);
-
+    
     // taxon
     t.taxon.setId(v.get(idTerm));
     t.taxon.setOrigin(Origin.SOURCE);
@@ -73,7 +73,7 @@ public class AcefInterpreter extends InterpreterBase {
     t.taxon.setFossil(bool(v, t.taxon, Issue.IS_FOSSIL_INVALID, AcefTerm.IsFossil, AcefTerm.HasPreHolocene));
     t.taxon.setRecent(bool(v, t.taxon, Issue.IS_RECENT_INVALID, AcefTerm.IsRecent, AcefTerm.HasModern));
     t.taxon.setRemarks(v.get(AcefTerm.AdditionalData));
-
+    
     // lifezones
     String raw = v.get(AcefTerm.LifeZone);
     if (raw != null) {
@@ -84,10 +84,10 @@ public class AcefInterpreter extends InterpreterBase {
         }
       }
     }
-
+    
     t.taxon.setSpeciesEstimate(null);
     t.taxon.setSpeciesEstimateReferenceId(null);
-
+    
     // status
     TaxonomicStatus status = parse(TaxonomicStatusParser.PARSER, v.get(AcefTerm.Sp2000NameStatus))
         .orElse(new EnumNote<>(synonym ? TaxonomicStatus.SYNONYM : TaxonomicStatus.ACCEPTED, null)).val;
@@ -97,24 +97,24 @@ public class AcefInterpreter extends InterpreterBase {
       // Synonym
       status = synonym ? TaxonomicStatus.SYNONYM : TaxonomicStatus.DOUBTFUL;
     }
-
+    
     // synonym
     if (synonym) {
       t.synonym = new Synonym();
       t.synonym.setStatus(status);
       t.synonym.setAccordingTo(nat.get().getAccordingTo());
       t.synonym.setVerbatimKey(v.getKey());
-
+      
     } else {
       t.taxon.setDoubtful(TaxonomicStatus.DOUBTFUL == status);
     }
-
+    
     // flat classification
     t.classification = interpretClassification(v, synonym);
-
+    
     return Optional.of(t);
   }
-
+  
   List<VernacularName> interpretVernacular(VerbatimRecord rec) {
     return super.interpretVernacular(rec,
         this::addReferences,
@@ -124,6 +124,7 @@ public class AcefInterpreter extends InterpreterBase {
         AcefTerm.Country
     );
   }
+  
   private void addReferences(Referenced obj, VerbatimRecord v) {
     if (v.hasTerm(AcefTerm.ReferenceID)) {
       Reference r = refFactory.find(v.get(AcefTerm.ReferenceID), null);
@@ -139,16 +140,16 @@ public class AcefInterpreter extends InterpreterBase {
       }
     }
   }
-
+  
   List<Distribution> interpretDistribution(VerbatimRecord rec) {
     // require location
     if (rec.hasTerm(AcefTerm.DistributionElement)) {
       Distribution d = new Distribution();
-
+      
       // which standard?
       d.setGazetteer(parse(GazetteerParser.PARSER, rec.get(AcefTerm.StandardInUse))
           .orElse(Gazetteer.TEXT, Issue.DISTRIBUTION_GAZETEER_INVALID, rec));
-
+      
       // TODO: try to split location into several distributions...
       String loc = rec.get(AcefTerm.DistributionElement);
       if (d.getGazetteer() == Gazetteer.TEXT) {
@@ -169,7 +170,7 @@ public class AcefInterpreter extends InterpreterBase {
               area.standard, area.area, d.getGazetteer(), rec);
         }
       }
-
+      
       // status
       d.setStatus(parse(DistributionStatusParser.PARSER, rec.get(AcefTerm.DistributionStatus))
           .orElse(DistributionStatus.NATIVE, Issue.DISTRIBUTION_STATUS_INVALID, rec));
@@ -179,7 +180,7 @@ public class AcefInterpreter extends InterpreterBase {
     }
     return Collections.emptyList();
   }
-
+  
   private Classification interpretClassification(VerbatimRecord v, boolean isSynonym) {
     Classification cl = new Classification();
     cl.setKingdom(v.get(AcefTerm.Kingdom));
@@ -194,7 +195,7 @@ public class AcefInterpreter extends InterpreterBase {
     }
     return cl;
   }
-
+  
   /**
    * @return a parsed name or in case of AcceptedInfraSpecificTaxa
    */
@@ -208,7 +209,7 @@ public class AcefInterpreter extends InterpreterBase {
       rank = "species";
       authorship = v.get(AcefTerm.AuthorString);
     }
-
+    
     // spot potential truncated authorstrings. CoL assembly db uses a max length of 100
     if (NameValidator.hasUnmatchedBrackets(authorship)) {
       v.addIssue(Issue.UNMATCHED_NAME_BRACKETS);
@@ -216,7 +217,7 @@ public class AcefInterpreter extends InterpreterBase {
     if (Strings.nullToEmpty(authorship).length() == ACEF_AUTHOR_MAX) {
       v.addIssue(Issue.TRUNCATED_NAME);
     }
-
+    
     Optional<NameAccordingTo> opt;
     if (v.getType() == AcefTerm.AcceptedInfraSpecificTaxa) {
       // preliminary name with just id and rank
@@ -235,5 +236,5 @@ public class AcefInterpreter extends InterpreterBase {
     }
     return opt;
   }
-
+  
 }

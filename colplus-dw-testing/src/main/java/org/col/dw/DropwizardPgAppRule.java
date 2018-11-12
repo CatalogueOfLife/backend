@@ -19,10 +19,10 @@ import org.slf4j.LoggerFactory;
 /**
  * An adaptation of the generic DropwizardAppRule that can be used as a junit class rule
  * to create integration tests against a running dropwizard instance.
- *
+ * <p>
  * DropwizardPgAppRule spins up an embedded postgres server
  * and updates the PgConfig with the matching config parameters to access it via the MyBatisModule.
- *
+ * <p>
  * It also selects and configures DW to use a free application port.
  */
 public class DropwizardPgAppRule<C extends PgAppConfig> extends DropwizardAppRule<C> {

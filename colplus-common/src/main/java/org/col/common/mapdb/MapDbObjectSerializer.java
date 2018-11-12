@@ -22,13 +22,13 @@ public class MapDbObjectSerializer<T> extends GroupSerializerObjectArray<T> {
   private final KryoPool pool;
   private final int bufferSize;
   private final Class<T> clazz;
-
+  
   public MapDbObjectSerializer(Class<T> clazz, KryoPool pool, int bufferSize) {
     this.pool = pool;
     this.clazz = clazz;
     this.bufferSize = bufferSize;
   }
-
+  
   @Override
   public void serialize(DataOutput2 out, T value) throws IOException {
     Kryo kryo = pool.borrow();
@@ -44,7 +44,7 @@ public class MapDbObjectSerializer<T> extends GroupSerializerObjectArray<T> {
       pool.release(kryo);
     }
   }
-
+  
   @Override
   public T deserialize(DataInput2 in, int available) throws IOException {
     if (available == 0) return null;
@@ -58,15 +58,15 @@ public class MapDbObjectSerializer<T> extends GroupSerializerObjectArray<T> {
       pool.release(kryo);
     }
   }
-
+  
   @Override
   public boolean isTrusted() {
     return true;
   }
-
+  
   @Override
   public int compare(T first, T second) {
     throw new NotImplementedException("compare should not be needed for our mapdb use");
   }
-
+  
 }

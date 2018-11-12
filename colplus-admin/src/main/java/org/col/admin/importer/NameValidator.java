@@ -25,17 +25,18 @@ public class NameValidator {
   static final Pattern NON_LETTER = Pattern.compile("[^a-z-ë]", Pattern.CASE_INSENSITIVE);
   static final CharMatcher OPEN_BRACKETS = CharMatcher.anyOf("[({");
   static final CharMatcher CLOSE_BRACKETS = CharMatcher.anyOf("])}");
-
+  
   /**
-   * Validates consistency of name properties adding issues to the name if found. 
+   * Validates consistency of name properties adding issues to the name if found.
    * This method checks if the given rank matches
    * populated properties and available properties make sense together.
+   *
    * @return true if any issue have been added
    */
   public static boolean flagIssues(Name n, IssueContainer issues) {
     final int startSize = issues.getIssues().size();
-
-
+    
+    
     // only check for type scientific which is parsable
     if (n.getType() == NameType.SCIENTIFIC && n.isParsed()) {
       flagParsedIssues(n, issues);
@@ -45,35 +46,35 @@ public class NameValidator {
         issues.addIssue(Issue.UNMATCHED_NAME_BRACKETS);
       }
     }
-
+    
     return issues.getIssues().size() > startSize;
   }
-
+  
   public static boolean hasUnmatchedBrackets(String x) {
     return !Strings.isNullOrEmpty(x) && OPEN_BRACKETS.countIn(x) != CLOSE_BRACKETS.countIn(x);
   }
-
+  
   private static void flagParsedIssues(Name n, IssueContainer issues) {
     final Rank rank = n.getRank();
     if (n.getUninomial() != null && (n.getGenus() != null || n.getInfragenericEpithet() != null
         || n.getSpecificEpithet() != null || n.getInfraspecificEpithet() != null)) {
       LOG.info("Uninomial with further epithets in name {}", n.toStringComplete());
       issues.addIssue(Issue.INCONSISTENT_NAME);
-
+      
     } else if (n.getGenus() == null && (n.getSpecificEpithet() != null || n.getInfragenericEpithet() != null)) {
       LOG.info("Missing genus in name {}", n.toStringComplete());
       issues.addIssue(Issue.INCONSISTENT_NAME);
-
+      
     } else if (n.getSpecificEpithet() == null && n.getInfraspecificEpithet() != null) {
       LOG.info("Missing specific epithet in infraspecific name {}", n.toStringComplete());
       issues.addIssue(Issue.INCONSISTENT_NAME);
     }
-
+    
     // look for truncated authorship
     if (hasUnmatchedBrackets(n.authorshipComplete())) {
       issues.addIssue(Issue.UNMATCHED_NAME_BRACKETS);
     }
-
+    
     // verify epithets
     for (String epithet : n.nameParts()) {
       // no whitespace
@@ -87,7 +88,7 @@ public class NameValidator {
         issues.addIssue(Issue.UNUSUAL_NAME_CHARACTERS);
       }
     }
-
+    
     // verify ranks
     if (rank.notOtherOrUnranked()) {
       if (rank.isGenusOrSuprageneric()) {
@@ -95,30 +96,30 @@ public class NameValidator {
           LOG.info("Missing genus or uninomial for {}", n.toStringComplete());
           issues.addIssue(Issue.INCONSISTENT_NAME);
         }
-
+        
       } else if (rank.isInfrageneric() && rank.isSupraspecific()) {
         if (n.getInfragenericEpithet() == null) {
           LOG.info("Missing infrageneric epithet for {}", n.toStringComplete());
           issues.addIssue(Issue.INCONSISTENT_NAME);
         }
-
+        
         if (n.getSpecificEpithet() != null || n.getInfraspecificEpithet() != null) {
           LOG.info("Species or infraspecific epithet for {}", n.toStringComplete());
           issues.addIssue(Issue.INCONSISTENT_NAME);
         }
-
+        
       } else if (rank.isSpeciesOrBelow()) {
         if (n.getSpecificEpithet() == null) {
           LOG.info("Missing specific epithet for {}", n.toStringComplete());
           issues.addIssue(Issue.INCONSISTENT_NAME);
         }
-
+        
         if (!rank.isInfraspecific() && n.getInfraspecificEpithet() != null) {
           LOG.info("Infraspecific epithet found for {}", n.toStringComplete());
           issues.addIssue(Issue.INCONSISTENT_NAME);
         }
       }
-
+      
       if (rank.isInfraspecific()) {
         if (n.getInfraspecificEpithet() == null) {
           LOG.info("Missing infraspecific epithet for {}", n.toStringComplete());

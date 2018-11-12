@@ -23,40 +23,40 @@ import org.slf4j.LoggerFactory;
  * A mybatis base type handler that translates from the generic java.util.Map<Enum, Integer> to the
  * postgres hstore database type. Any non integer values in hstore are silently ignored.
  * All enumerations are serialized by their name, not ordinal.
- *
+ * <p>
  * As we do not map all java map types to this mybatis handler apply the handler manually for the relevant hstore fields
  * in the mapper xml, for example see DatasetImportMapper.xml.
  */
 abstract class HstoreCountTypeHandlerBase<KEY extends Enum> extends BaseTypeHandler<Map<KEY, Integer>> {
   private static final Logger LOG = LoggerFactory.getLogger(HstoreCountTypeHandlerBase.class);
-
+  
   private final Class<KEY> enumClass;
-
+  
   public HstoreCountTypeHandlerBase(Class<KEY> enumClass) {
     this.enumClass = enumClass;
   }
-
+  
   @Override
   public void setNonNullParameter(PreparedStatement ps, int i, Map<KEY, Integer> parameter, JdbcType jdbcType)
-    throws SQLException {
+      throws SQLException {
     ps.setString(i, HStoreConverter.toString(parameter));
   }
-
+  
   @Override
   public Map<KEY, Integer> getNullableResult(ResultSet rs, String columnName) throws SQLException {
     return fromString(rs.getString(columnName));
   }
-
+  
   @Override
   public Map<KEY, Integer> getNullableResult(ResultSet rs, int columnIndex) throws SQLException {
     return fromString(rs.getString(columnIndex));
   }
-
+  
   @Override
   public Map<KEY, Integer> getNullableResult(CallableStatement cs, int columnIndex) throws SQLException {
     return fromString(cs.getString(columnIndex));
   }
-
+  
   private Map<KEY, Integer> fromString(String hstring) {
     HashMap<KEY, Integer> typedMap = Maps.newHashMap();
     if (!Strings.isNullOrEmpty(hstring)) {
@@ -80,7 +80,7 @@ abstract class HstoreCountTypeHandlerBase<KEY extends Enum> extends BaseTypeHand
     }
     return sortMap(typedMap);
   }
-
+  
   /**
    * Can be overridden to return sorted maps in custom manners.
    * By default sorts the map according to the count values in descending order.
@@ -88,7 +88,7 @@ abstract class HstoreCountTypeHandlerBase<KEY extends Enum> extends BaseTypeHand
   protected Map<KEY, Integer> sortMap(HashMap<KEY, Integer> map) {
     return sortMapByValuesDesc(map);
   }
-
+  
   @VisibleForTesting
   protected static <KEY extends Comparable> Map<KEY, Integer> sortMapByValuesDesc(HashMap<KEY, Integer> map) {
     final Ordering<KEY> reverseValuesAndNaturalKeysOrdering =
@@ -99,5 +99,5 @@ abstract class HstoreCountTypeHandlerBase<KEY extends Enum> extends BaseTypeHand
             .compound(Ordering.natural()); // secondary - natural ordering of keys
     return ImmutableSortedMap.copyOf(map, reverseValuesAndNaturalKeysOrdering);
   }
-
+  
 }

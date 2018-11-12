@@ -18,25 +18,25 @@ import org.col.dw.auth.JwtCodec;
 import org.col.dw.cors.CorsBundle;
 import org.col.dw.db.MybatisBundle;
 import org.col.dw.health.NameParserHealthCheck;
-import org.col.dw.jersey.provider.JerseyProviderBundle;
+import org.col.dw.jersey.ColJerseyBundle;
 import org.col.parser.NameParser;
 import org.glassfish.jersey.client.rx.RxClient;
 import org.glassfish.jersey.client.rx.java8.RxCompletionStageInvoker;
 import org.glassfish.jersey.client.spi.ConnectorProvider;
 
 public abstract class PgApp<T extends PgAppConfig> extends Application<T> {
-
+  
   private final MybatisBundle mybatis = new MybatisBundle();
   private final AuthBundle auth = new AuthBundle();
   protected CloseableHttpClient httpClient;
   protected RxClient<RxCompletionStageInvoker> jerseyRxClient;
-
+  
   @Override
-	public void initialize(final Bootstrap<T> bootstrap) {
-		// our mybatis classes
-		bootstrap.addBundle(mybatis);
-		// various custom jersey providers
-		bootstrap.addBundle(new JerseyProviderBundle());
+  public void initialize(final Bootstrap<T> bootstrap) {
+    // our mybatis classes
+    bootstrap.addBundle(mybatis);
+    // various custom jersey providers
+    bootstrap.addBundle(new ColJerseyBundle());
     bootstrap.addBundle(new MultiPartBundle());
     bootstrap.addBundle(new CorsBundle());
     // authentication which requires the UserMapper from mybatis AFTER the mybatis bundle has run
@@ -44,7 +44,7 @@ public abstract class PgApp<T extends PgAppConfig> extends Application<T> {
     // customize jackson
     ApiModule.configureMapper(bootstrap.getObjectMapper());
   }
-
+  
   /**
    * Make sure to call this after the app has been bootstrapped, otherwise its null.
    * Methods to add tasks or healthchecks can be sure to use the session factory.
@@ -61,7 +61,7 @@ public abstract class PgApp<T extends PgAppConfig> extends Application<T> {
   public void run(T cfg, Environment env) {
     // http client pool is managed via DW lifecycle already
     httpClient = new HttpClientBuilder(env).using(cfg.client).build(getName());
-  
+    
     // reuse the same http client pool also for jersey clients!
     JerseyClientBuilder builder = new JerseyClientBuilder(env)
         .using(cfg.client)
@@ -70,15 +70,15 @@ public abstract class PgApp<T extends PgAppConfig> extends Application<T> {
         );
     // build both syncroneous and reactive clients sharing the same thread pool
     jerseyRxClient = builder.buildRx(getName(), RxCompletionStageInvoker.class);
-  
+    
     // finally provide the SqlSessionFactory & http client
     auth.getIdentityService().setSqlSessionFactory(mybatis.getSqlSessionFactory());
     auth.getIdentityService().setClient(httpClient);
-
+    
     // name parser
     NameParser.PARSER.register(env.metrics());
     env.healthChecks().register("name-parser", new NameParserHealthCheck());
-  
+    
   }
   
   /**

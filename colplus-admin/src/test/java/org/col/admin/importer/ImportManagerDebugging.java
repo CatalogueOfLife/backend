@@ -15,14 +15,14 @@ import org.junit.*;
 
 @Ignore("manual import debugging")
 public class ImportManagerDebugging {
-
+  
   ImportManager importManager;
   CloseableHttpClient hc;
   RestClient esClient;
-
+  
   @ClassRule
   public static PgSetupRule pgSetupRule = new PgSetupRule(true);
-
+  
   private static AdminServerConfig provideConfig() {
     AdminServerConfig cfg = new AdminServerConfig();
     cfg.gbif.syncFrequency = 0;
@@ -37,33 +37,33 @@ public class ImportManagerDebugging {
     cfg.es.hosts = "localhost";
     cfg.es.ports = "9200";
     cfg.es.nameUsage.modelClass = "org.col.es.model.EsNameUsage";
-
+    
     return cfg;
   }
-
+  
   @Before
   public void init() throws Exception {
     MetricRegistry metrics = new MetricRegistry();
-
+    
     final AdminServerConfig cfg = provideConfig();
     InitDbCmd.execute(cfg);
     pgSetupRule.connect();
-
+    
     RestClient esClient = new EsClientFactory(cfg.es).createClient();
-
+    
     hc = new HttpClientBuilder(metrics).using(cfg.client).build("local");
     importManager = new ImportManager(cfg, metrics, hc, PgSetupRule.getSqlSessionFactory(),
-        NameIndexFactory.passThru(),esClient, new ImageService(cfg.img));
+        NameIndexFactory.passThru(), esClient, new ImageService(cfg.img));
     importManager.start();
   }
-
+  
   @After
   public void shutdown() throws Exception {
     importManager.stop();
     hc.close();
     esClient.close();
   }
-
+  
   /**
    * Try with 3 small parallel datasets
    */
@@ -72,13 +72,13 @@ public class ImportManagerDebugging {
     importManager.submit(1000, true);
     importManager.submit(1006, true);
     importManager.submit(1007, true);
-
+    
     Thread.sleep(1000);
     while (importManager.hasRunning()) {
       Thread.sleep(1000);
     }
   }
-
+  
   @Test
   public void debugImport() throws Exception {
     importManager.submit(2020, true);

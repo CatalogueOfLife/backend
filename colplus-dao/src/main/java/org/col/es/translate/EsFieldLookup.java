@@ -4,16 +4,7 @@ import java.util.EnumMap;
 
 import org.col.api.search.NameSearchParameter;
 
-import static org.col.api.search.NameSearchParameter.DATASET_KEY;
-import static org.col.api.search.NameSearchParameter.FIELD;
-import static org.col.api.search.NameSearchParameter.ISSUE;
-import static org.col.api.search.NameSearchParameter.NAME_ID;
-import static org.col.api.search.NameSearchParameter.NAME_INDEX_ID;
-import static org.col.api.search.NameSearchParameter.NOM_STATUS;
-import static org.col.api.search.NameSearchParameter.PUBLISHED_IN_ID;
-import static org.col.api.search.NameSearchParameter.RANK;
-import static org.col.api.search.NameSearchParameter.STATUS;
-import static org.col.api.search.NameSearchParameter.TYPE;
+import static org.col.api.search.NameSearchParameter.*;
 
 /**
  * Maps a name search parameter the corresponding Elasticsearch field(s). In principle a name search
@@ -22,9 +13,9 @@ import static org.col.api.search.NameSearchParameter.TYPE;
  * name search parameters.
  */
 public class EsFieldLookup extends EnumMap<NameSearchParameter, String[]> {
-
+  
   public static final EsFieldLookup INSTANCE = new EsFieldLookup();
-
+  
   private EsFieldLookup() {
     super(NameSearchParameter.class);
     put(DATASET_KEY, "datasetKey");
@@ -38,9 +29,9 @@ public class EsFieldLookup extends EnumMap<NameSearchParameter, String[]> {
     put(STATUS, "status");
     put(TYPE, "type");
   }
-
+  
   private void put(NameSearchParameter key, String val) {
-    super.put(key, new String[] {val});
+    super.put(key, new String[]{val});
   }
-
+  
 }

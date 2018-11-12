@@ -18,18 +18,18 @@ public class TreeNode {
   public final boolean basionym;
   public final List<TreeNode> synonyms = Lists.newArrayList();
   public final LinkedList<TreeNode> children = Lists.newLinkedList();
-
+  
   public TreeNode(String name, Rank rank, boolean isBasionym) {
     this.name = name;
     this.rank = rank;
     this.basionym = isBasionym;
   }
-
+  
   @Override
   public String toString() {
     return name;
   }
-
+  
   public void print(Appendable out, int level, boolean synonym) throws IOException {
     out.append(StringUtils.repeat(" ", level * 2));
     if (synonym) {

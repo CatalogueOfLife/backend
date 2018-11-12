@@ -21,15 +21,15 @@ import org.slf4j.LoggerFactory;
 @Path("/name/matching")
 @Produces(MediaType.APPLICATION_JSON)
 public class MatchingResource {
-
-	@SuppressWarnings("unused")
-	private static final Logger LOG = LoggerFactory.getLogger(MatchingResource.class);
+  
+  @SuppressWarnings("unused")
+  private static final Logger LOG = LoggerFactory.getLogger(MatchingResource.class);
   private final NameIndex ni;
-
+  
   public MatchingResource(NameIndex ni) {
     this.ni = ni;
   }
-
+  
   /**
    * Parsing citations as GET query parameters.
    */
@@ -46,7 +46,7 @@ public class MatchingResource {
     LOG.debug("Matching {} to {}", n.canonicalNameComplete(), m);
     return m;
   }
-
+  
   static Name name(String name, Rank rank, NomCode code) {
     Optional<NameAccordingTo> opt = NameParser.PARSER.parse(name, rank, IssueContainer.VOID);
     if (opt.isPresent()) {
@@ -59,10 +59,10 @@ public class MatchingResource {
         n.setCode(code);
       }
       return n;
-
+      
     } else {
-      throw new IllegalArgumentException("Unable to parse name: "+name);
+      throw new IllegalArgumentException("Unable to parse name: " + name);
     }
   }
-
+  
 }

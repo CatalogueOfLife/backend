@@ -13,19 +13,19 @@ public class StringUtilsTest {
 
   @Test
   public void testIncrease() {
-    assertEquals("Carlb",StringUtils.increase("Carla"));
-    assertEquals("Homa",StringUtils.increase("Holz"));
-    assertEquals("Aua",StringUtils.increase("Atz"));
-    assertEquals("b",StringUtils.increase("a"));
-    assertEquals("aa",StringUtils.increase("z"));
-    assertEquals("AAA",StringUtils.increase("ZZ"));
-    assertEquals("Aaa",StringUtils.increase("Zz"));
-    assertEquals("aaa",StringUtils.increase("zz"));
-    assertEquals("Abiet aaa",StringUtils.increase("Abies zzz"));
-    assertEquals("Alle31.3-a ",StringUtils.increase("Alld31.3-z "));
-    assertEquals("31.3-a a",StringUtils.increase("31.3-z "));
-    assertEquals("aAaa",StringUtils.increase("zZz"));
-    assertEquals("",StringUtils.increase(""));
+    assertEquals("Carlb", StringUtils.increase("Carla"));
+    assertEquals("Homa", StringUtils.increase("Holz"));
+    assertEquals("Aua", StringUtils.increase("Atz"));
+    assertEquals("b", StringUtils.increase("a"));
+    assertEquals("aa", StringUtils.increase("z"));
+    assertEquals("AAA", StringUtils.increase("ZZ"));
+    assertEquals("Aaa", StringUtils.increase("Zz"));
+    assertEquals("aaa", StringUtils.increase("zz"));
+    assertEquals("Abiet aaa", StringUtils.increase("Abies zzz"));
+    assertEquals("Alle31.3-a ", StringUtils.increase("Alld31.3-z "));
+    assertEquals("31.3-a a", StringUtils.increase("31.3-z "));
+    assertEquals("aAaa", StringUtils.increase("zZz"));
+    assertEquals("", StringUtils.increase(""));
     assertNull(StringUtils.increase(null));
   }
 
@@ -53,6 +53,7 @@ public class StringUtilsTest {
     // make sure if we had gotten the correct string it would not be modified
     assertEquals(expected, StringUtils.decodeUtf8Garbage(decoded));
   }
+
   @Test
   public void testFoldToAscii() throws Exception {
     assertEquals(null, StringUtils.foldToAscii(null));

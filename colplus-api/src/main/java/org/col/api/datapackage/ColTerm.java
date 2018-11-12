@@ -14,7 +14,7 @@ import org.gbif.dwc.terms.Term;
 /**
  * CoL terms covering all columns needed for the new CoL Data Package submission format:
  * https://github.com/CatalogueOfLife/datapackage-specs
- *
+ * <p>
  * To avoid dependency and clashes with DwC no terms are reused.
  */
 public enum ColTerm implements Term, AlternativeNames {
@@ -74,7 +74,7 @@ public enum ColTerm implements Term, AlternativeNames {
   subphylum,
   phylum,
   kingdom,
-      
+  
   Synonym(true),
   taxonID,
   //nameID,
@@ -119,7 +119,7 @@ public enum ColTerm implements Term, AlternativeNames {
   ;
   
   private static Map<String, ColTerm> LOOKUP = Maps.uniqueIndex(Arrays.asList(values()), ColTerm::normalize);
-
+  
   public static Map<ColTerm, List<ColTerm>> RESOURCES = ImmutableMap.<ColTerm, List<ColTerm>>builder()
       .put(Reference, ImmutableList.of(
           ID,
@@ -210,7 +210,7 @@ public enum ColTerm implements Term, AlternativeNames {
           sex,
           referenceID)
       ).build();
-
+  
   private static final String PREFIX = "col";
   private static final String NS = "http://rs.col.plus/terms/";
   private static final URI NS_URI = URI.create(NS);
@@ -222,7 +222,7 @@ public enum ColTerm implements Term, AlternativeNames {
     this.alternatives = new String[0];
     this.isClass = false;
   }
-
+  
   ColTerm(boolean isClass, String... alternatives) {
     this.alternatives = alternatives;
     this.isClass = isClass;
@@ -258,7 +258,6 @@ public enum ColTerm implements Term, AlternativeNames {
   public boolean isClass() {
     return isClass;
   }
-  
   
   
   private static String normalize(String x, boolean isClass) {

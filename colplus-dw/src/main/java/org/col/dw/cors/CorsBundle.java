@@ -15,33 +15,33 @@ import static com.google.common.base.Preconditions.checkArgument;
  * https://github.com/isaacasensio/dropwizard-cors/
  */
 public class CorsBundle implements ConfiguredBundle<CorsBundleConfiguration> {
-
+  
   private static final Logger LOG = LoggerFactory.getLogger(CorsBundle.class);
-
+  
   private final String filterName;
-
+  
   public CorsBundle(String filterName) {
     checkArgument(StringUtils.isNotBlank(filterName), "Filter name cannot be blank or null");
     this.filterName = filterName;
   }
-
+  
   public CorsBundle() {
     this("cors");
   }
-
+  
   @Override
   public void run(CorsBundleConfiguration cfg, Environment environment) throws Exception {
-
+    
     final CorsConfiguration configuration = cfg.getCorsConfiguration();
-
+    
     LOG.info("Registering CorsBundle with name {} and configuration: {}", filterName, configuration);
-  
+    
     environment.jersey().register(new CorsFilter(cfg.getCorsConfiguration()));
   }
-
+  
   @Override
   public void initialize(Bootstrap<?> bootstrap) {
     //Do nothing
   }
-
+  
 }

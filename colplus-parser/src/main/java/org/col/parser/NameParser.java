@@ -40,35 +40,36 @@ public class NameParser implements Parser<NameAccordingTo> {
       .put(Warnings.HTML_ENTITIES, Issue.ESCAPED_CHARACTERS)
       .put(Warnings.XML_TAGS, Issue.ESCAPED_CHARACTERS)
       .build();
-
+  
   private Timer timer;
-
+  
   /**
    * Optionally register timer metrics for name parsing events
+   *
    * @param registry
    */
   public void register(MetricRegistry registry) {
     timer = registry.timer("org.col.parser.name");
   }
-
+  
   public Optional<NameAccordingTo> parse(String name) {
     return parse(name, Rank.UNRANKED, IssueContainer.VOID);
   }
-
+  
   /**
    * @return a name instance with just the parsed authorship, i.e. combination & original year & author list
    */
   public Optional<ParsedName> parseAuthorship(String authorship) {
     if (Strings.isNullOrEmpty(authorship)) return Optional.of(new ParsedName());
     try {
-      return Optional.of(PARSER_INTERNAL.parse("Abies alba "+authorship, Rank.SPECIES));
-
+      return Optional.of(PARSER_INTERNAL.parse("Abies alba " + authorship, Rank.SPECIES));
+      
     } catch (UnparsableNameException e) {
       return Optional.empty();
     }
   }
-
-
+  
+  
   /**
    * Fully parses a name using #parse(String, Rank) but converts names that throw a UnparsableException
    * into ParsedName objects with the scientific name, rank and name type given.
@@ -77,13 +78,13 @@ public class NameParser implements Parser<NameAccordingTo> {
     if (StringUtils.isBlank(name)) {
       return Optional.empty();
     }
-
+    
     NameAccordingTo n;
     Timer.Context ctx = timer == null ? null : timer.time();
     try {
       n = fromParsedName(PARSER_INTERNAL.parse(name, rank), issues);
       n.getName().updateScientificName();
-
+      
     } catch (UnparsableNameException e) {
       n = new NameAccordingTo();
       n.setName(new Name());
@@ -101,7 +102,7 @@ public class NameParser implements Parser<NameAccordingTo> {
     }
     return Optional.of(n);
   }
-
+  
   private static NameAccordingTo fromParsedName(ParsedName pn, IssueContainer issues) {
     Name n = new Name();
     n.setUninomial(pn.getUninomial());
@@ -137,12 +138,12 @@ public class NameParser implements Parser<NameAccordingTo> {
     }
     //TODO: try to convert nom notes to enumeration. Add to remarks for now
     n.addRemark(pn.getNomenclaturalNotes());
-
+    
     NameAccordingTo nat = new NameAccordingTo();
     nat.setName(n);
     nat.setAccordingTo(pn.getTaxonomicNote());
-
+    
     return nat;
   }
-
+  
 }

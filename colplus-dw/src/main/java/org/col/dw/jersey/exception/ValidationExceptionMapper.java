@@ -22,13 +22,13 @@ import org.glassfish.jersey.server.model.Invocable;
 @Provider
 public class ValidationExceptionMapper implements ExceptionMapper<JerseyViolationException> {
   static final Joiner ERROR_JOINER = Joiner.on(". ").skipNulls();
-
+  
   @Override
   public Response toResponse(JerseyViolationException e) {
     final Set<ConstraintViolation<?>> violations = e.getConstraintViolations();
     final Invocable invocable = e.getInvocable();
     final int status = ConstraintMessage.determineStatus(violations, invocable);
-
+    
     ImmutableList.Builder<String> b = ImmutableList.builder();
     for (ConstraintViolation<?> v : e.getConstraintViolations()) {
       //b.add(String.format("Validation of [%s] failed: %s\n\n", v.getPropertyPath(), v.getMessage()));

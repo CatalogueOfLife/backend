@@ -28,13 +28,13 @@ public class DatasetPagerTest {
         .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     ClientConfig cfg = new ClientConfig(jacksonJsonProvider);
     cfg.register(new LoggingFeature(Logger.getLogger(getClass().getName()), Level.ALL, LoggingFeature.Verbosity.PAYLOAD_ANY, 1024));
-
+    
     RxClient<RxCompletionStageInvoker> client = Rx.from(ClientBuilder.newClient(cfg), RxCompletionStageInvoker.class);
-
+    
     DatasetPager pager = new DatasetPager(client, new GbifConfig());
-    while(pager.hasNext()) {
+    while (pager.hasNext()) {
       pager.next().forEach(System.out::println);
     }
   }
-
+  
 }

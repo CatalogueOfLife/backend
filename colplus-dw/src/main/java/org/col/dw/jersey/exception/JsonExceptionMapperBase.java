@@ -14,14 +14,14 @@ import org.slf4j.LoggerFactory;
  * with fixed http codes.
  */
 public class JsonExceptionMapperBase<T extends Throwable> implements ExceptionMapper<T> {
-
+  
   private static final Logger LOG = LoggerFactory.getLogger(JsonExceptionMapperBase.class);
   private final Response.StatusType errorCode;
-
+  
   public JsonExceptionMapperBase(Response.StatusType errorCode) {
     this.errorCode = errorCode;
   }
-
+  
   public static Response.ResponseBuilder jsonErrorResponseBuilder(Response.StatusType errorCode, String message) {
     return Response
         .status(errorCode)
@@ -32,15 +32,15 @@ public class JsonExceptionMapperBase<T extends Throwable> implements ExceptionMa
   static Response jsonErrorResponse(Response.StatusType errorCode, String message) {
     return jsonErrorResponseBuilder(errorCode, message).build();
   }
-
+  
   @Override
   public Response toResponse(T exception) {
     LOG.info(exception.getMessage(), exception);
     return jsonErrorResponse(errorCode, message(exception));
   }
-
+  
   String message(T e) {
     return e.getMessage();
   }
-
+  
 }

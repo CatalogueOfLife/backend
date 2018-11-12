@@ -11,7 +11,7 @@ import org.neo4j.graphdb.traversal.Evaluator;
  * Includes only paths that have accepted taxon end nodes.
  */
 public class AcceptedOnlyEvaluator implements Evaluator {
-
+  
   @Override
   public Evaluation evaluate(Path path) {
     Node end = path.endNode();

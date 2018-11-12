@@ -27,24 +27,25 @@ import org.slf4j.LoggerFactory;
 public class EmlParser {
   private static final Logger LOG = LoggerFactory.getLogger(EmlParser.class);
   private static final XMLInputFactory factory;
+  
   static {
     factory = XMLInputFactory.newInstance();
   }
-
+  
   Optional<Dataset> parse(Path file) throws IOException {
     CharsetDetectingStream cds = CharsetDetectingStream.create(Files.newInputStream(file));
     return parse(cds, cds.getCharset());
   }
-
+  
   Optional<Dataset> parse(InputStream stream) throws IOException {
     CharsetDetectingStream cds = CharsetDetectingStream.create(stream);
     return parse(cds, cds.getCharset());
   }
-
+  
   Optional<Dataset> parse(InputStream stream, Charset encoding) {
     try {
       XMLStreamReader parser = factory.createXMLStreamReader(stream, encoding.name());
-
+      
       final Dataset d = new Dataset();
       boolean isDataset = false;
       StringBuilder text = null;
@@ -52,7 +53,7 @@ public class EmlParser {
       Agent agent = new Agent();
       URI url = null;
       int event;
-
+      
       while ((event = parser.next()) != XMLStreamConstants.END_DOCUMENT) {
         switch (event) {
           case XMLStreamConstants.START_ELEMENT:
@@ -70,7 +71,7 @@ public class EmlParser {
                 agent = new Agent();
             }
             break;
-
+          
           case XMLStreamConstants.END_ELEMENT:
             if (isDataset) {
               switch (parser.getLocalName()) {
@@ -119,7 +120,7 @@ public class EmlParser {
                 case "contact":
                   agent.name().ifPresent(d::setContactPerson);
                   break;
-
+                
                 // AGENT PROPS
                 case "givenName":
                   agent.firstname = text(text);
@@ -154,22 +155,22 @@ public class EmlParser {
       }
       parser.close();
       return Optional.of(d);
-
+      
     } catch (XMLStreamException e) {
       LOG.error("Failed to parse EML: {}", e.getMessage(), e);
-
+      
     }
     return Optional.empty();
   }
-
+  
   private static String text(StringBuilder text) {
     return text == null || text.length() < 1 ? null : text.toString();
   }
-
+  
   private static FuzzyDate date(StringBuilder text) {
     return SafeParser.parse(DateParser.PARSER, text.toString()).orNull();
   }
-
+  
   static class Agent {
     public String firstname;
     public String surname;
@@ -177,7 +178,7 @@ public class EmlParser {
     public String email;
     public String url;
     public String orcid;
-
+    
     Optional<String> name() {
       StringBuilder sb = new StringBuilder();
       if (firstname != null)
@@ -203,5 +204,5 @@ public class EmlParser {
       return Optional.empty();
     }
   }
-
+  
 }

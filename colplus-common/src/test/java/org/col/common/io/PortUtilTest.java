@@ -9,12 +9,12 @@ import org.junit.Test;
 import static org.junit.Assert.assertTrue;
 
 public class PortUtilTest {
-
+  
   @Test
   public void findFreePort() throws IOException {
     Set<Integer> ports = new HashSet<>();
-    assertTrue( ports.add(PortUtil.findFreePort()) );
-    assertTrue( ports.add(PortUtil.findFreePort()) );
-    assertTrue( ports.add(PortUtil.findFreePort()) );
+    assertTrue(ports.add(PortUtil.findFreePort()));
+    assertTrue(ports.add(PortUtil.findFreePort()));
+    assertTrue(ports.add(PortUtil.findFreePort()));
   }
 }

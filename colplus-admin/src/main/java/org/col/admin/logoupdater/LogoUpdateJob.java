@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
 
 public class LogoUpdateJob implements Runnable {
   private static final Logger LOG = LoggerFactory.getLogger(LogoUpdateJob.class);
-
+  
   private final ImageService imgService;
   private final SqlSessionFactory factory;
   private final DownloadUtil downloader;

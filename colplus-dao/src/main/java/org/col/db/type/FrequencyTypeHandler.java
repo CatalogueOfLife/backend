@@ -11,15 +11,15 @@ import org.col.api.vocab.Frequency;
  */
 @MappedTypes(Frequency.class)
 public class FrequencyTypeHandler extends BaseEnumTypeHandler<Integer, Frequency> {
-
+  
   @Override
   public Integer fromEnum(Frequency value) {
     return value == null ? Frequency.WEEKLY.getDays() : value.getDays();
   }
-
+  
   @Override
   public Frequency toEnum(Integer days) {
     return Frequency.fromDays(days);
   }
-
+  
 }

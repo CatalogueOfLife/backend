@@ -19,23 +19,23 @@ import org.slf4j.LoggerFactory;
 public class BasionymSorter {
   private static final Logger LOG = LoggerFactory.getLogger(BasionymSorter.class);
   private AuthorComparator authorComp;
-
+  
   public BasionymSorter() {
     this.authorComp = AuthorComparator.createWithAuthormap();
   }
-
+  
   public BasionymSorter(AuthorComparator authorComp) {
     this.authorComp = authorComp;
   }
-
+  
   public static class MultipleBasionymException extends Exception {
-
+  
   }
-
+  
   public Collection<BasionymGroup<Name>> groupBasionyms(Iterable<Name> names) {
     return groupBasionyms(names, Functions.<Name>identity());
   }
-
+  
   private <T> BasionymGroup<T> findExistingGroup(T p, List<BasionymGroup<T>> groups, Function<T, Name> func) {
     Name pn = func.apply(p);
     for (BasionymGroup<T> g : groups) {
@@ -46,7 +46,7 @@ public class BasionymSorter {
     }
     return null;
   }
-
+  
   private <T> T findBasionym(Authorship authorship, List<T> originals, Function<T, Name> func) throws MultipleBasionymException {
     List<T> basionyms = Lists.newArrayList();
     for (T obj : originals) {
@@ -67,24 +67,24 @@ public class BasionymSorter {
         }
       }
     }
-
+    
     // we have more than one match, dont use it!
     if (basionyms.size() == 1) {
       return basionyms.get(0);
     } else if (basionyms.isEmpty()) {
       return null;
     }
-
+    
     throw new MultipleBasionymException();
   }
-
+  
   private static Authorship copyWithoutYear(Authorship a) {
     Authorship a2 = new Authorship();
     a2.setAuthors(a.getAuthors());
     a2.setExAuthors(a.getExAuthors());
     return a2;
   }
-
+  
   /**
    * Grouping that allows to use any custom class as long as there is a function that returns a Name instance.
    * The list of groups returned only contains groups with no or one known basionym. Any uncertain cases like groups with multiple basionyms are excluded!
@@ -107,7 +107,7 @@ public class BasionymSorter {
         LOG.warn("No parsed name returned for name object {}", obj);
       }
     }
-
+    
     // now group the recombinations
     for (T recomb : recombinations) {
       BasionymGroup<T> group = findExistingGroup(recomb, groups, func);

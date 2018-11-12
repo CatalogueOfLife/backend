@@ -26,8 +26,8 @@ import org.codehaus.stax2.XMLStreamReader2;
 import org.col.admin.importer.InsertMetadata;
 import org.col.admin.importer.NormalizationFailedException;
 import org.col.api.model.VerbatimRecord;
-import org.col.api.vocab.ColDwcTerm;
 import org.col.api.util.VocabularyUtils;
+import org.col.api.vocab.ColDwcTerm;
 import org.col.common.io.CharsetDetectingStream;
 import org.col.common.io.PathUtils;
 import org.col.csv.CsvReader;
@@ -42,15 +42,17 @@ import org.slf4j.LoggerFactory;
 public class DwcaReader extends CsvReader {
   private static final Logger LOG = LoggerFactory.getLogger(DwcaReader.class);
   private static final String DWCA_NS = "http://rs.tdwg.org/dwc/text/";
-  public static final Term DWCA_ID = UnknownTerm.build(DWCA_NS+"ID", "ID", false);
+  public static final Term DWCA_ID = UnknownTerm.build(DWCA_NS + "ID", "ID", false);
   private static final String META_FN = "meta.xml";
   private static final List<Term> PREFERRED_CORE_TYPES = ImmutableList.of(DwcTerm.Taxon, DwcTerm.Event, DwcTerm.Occurrence);
   private static final XMLInputFactory2 factory;
+  
   static {
     factory = (XMLInputFactory2) XMLInputFactory2.newFactory();
     factory.configureForConvenience();
     factory.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, false);
   }
+  
   private static final Map<Term, Term> ROW_TYPE_TO_ID = ImmutableMap.<Term, Term>builder()
       .put(DwcTerm.Occurrence, DwcTerm.occurrenceID)
       .put(DwcTerm.Event, DwcTerm.eventID)
@@ -58,40 +60,41 @@ public class DwcaReader extends CsvReader {
       .put(DwcTerm.MeasurementOrFact, DwcTerm.measurementID)
       .put(ColDwcTerm.NameRelations, DwcTerm.taxonID)
       .build();
-
+  
   static {
     // make sure we are aware of ColTerms
     TermFactory.instance().registerTermEnum(ColDwcTerm.class);
     TermFactory.instance().registerTerm(DWCA_ID);
   }
-
+  
   private Term coreRowType;
   private Path metadataFile;
-
+  
   private DwcaReader(Path folder) throws IOException {
     super(folder, "dwc");
     validate();
   }
-
+  
   public static DwcaReader from(Path folder) throws IOException {
     return new DwcaReader(folder);
   }
-
+  
   public Schema coreSchema() {
     return schemas.get(coreRowType);
   }
-
+  
   public Term coreRowType() {
     return coreRowType;
   }
-
+  
   public Optional<Path> getMetadataFile() {
     return Optional.ofNullable(metadataFile);
   }
-
+  
   /**
    * First tries to find and read a meta.xml file.
    * If none is found all potential txt files are scanned.
+   *
    * @param termPrefix optional preferred term namespace prefix to use when looking up class & property terms
    * @throws IOException
    */
@@ -100,10 +103,10 @@ public class DwcaReader extends CsvReader {
     Path meta = resolve(META_FN);
     if (Files.exists(meta)) {
       readFromMeta(meta);
-
+      
     } else {
       super.discoverSchemas(termPrefix);
-
+      
       // add artificial id terms for known rowType id pairs
       for (Schema s : schemas.values()) {
         if (!s.hasTerm(DWCA_ID)) {
@@ -118,8 +121,8 @@ public class DwcaReader extends CsvReader {
           }
         }
       }
-
-
+      
+      
       // select core
       if (size() == 1) {
         coreRowType = schemas.keySet().iterator().next();
@@ -139,9 +142,9 @@ public class DwcaReader extends CsvReader {
     }
     CsvFormat format = coreSchema().settings.getFormat();
     LOG.info("Found {} core [delim={} quote={}] and {} extensions",
-        coreRowType, format.getDelimiter(), format.getQuote(), size()-1);
+        coreRowType, format.getDelimiter(), format.getQuote(), size() - 1);
   }
-
+  
   @Override
   protected Optional<Term> detectRowType(Schema schema, String termPrefix) {
     // we only end up here when there is no meta descriptor
@@ -160,20 +163,20 @@ public class DwcaReader extends CsvReader {
     }
     return rowTypeCol.isPresent() ? rowTypeCol : rowTypeFile;
   }
-
+  
   private void buildSchema(XMLStreamReader2 parser, boolean core) throws XMLStreamException, IOException {
     // rowType
     final Term rowType = VocabularyUtils.TF.findClassTerm(attr(parser, "rowType"));
     if (core) {
       coreRowType = rowType;
     }
-
+    
     // encoding
     String enc = attr(parser, "encoding");
-
+    
     // delimiter
     final CsvParserSettings set = CSV.clone();
-
+    
     String val = unescapeBackslash(attr(parser, "fieldsTerminatedBy"));
     set.setDelimiterDetectionEnabled(true);
     if (val != null) {
@@ -199,7 +202,7 @@ public class DwcaReader extends CsvReader {
     // we ignore linesTerminatedBy
     // Its quite often wrong and people dont really use anything else than \n \r!
     set.setLineSeparatorDetectionEnabled(true);
-
+    
     //setAttrIfExists(parser, "linesTerminatedBy", set.getFormat()::setLineSeparator);
     val = attr(parser, "ignoreHeaderLines");
     if (val != null) {
@@ -209,7 +212,7 @@ public class DwcaReader extends CsvReader {
         throw new IllegalArgumentException("ignoreHeaderLines needs to be a valid integer");
       }
     }
-
+    
     // parse fields & file
     Path file = resolve(attr(parser, "encoding"));
     List<Schema.Field> fields = Lists.newArrayList();
@@ -251,24 +254,24 @@ public class DwcaReader extends CsvReader {
           break;
       }
     }
-
+    
     // final encoding
     Charset charset;
     try {
       charset = Charset.forName(enc);
     } catch (IllegalArgumentException e) {
-      try (CharsetDetectingStream in = CharsetDetectingStream.create(Files.newInputStream(file))){
+      try (CharsetDetectingStream in = CharsetDetectingStream.create(Files.newInputStream(file))) {
         charset = in.getCharset();
         LOG.debug("Use encoding {} for file {}", charset, PathUtils.getFilename(file));
       }
       LOG.warn("Bad charset encoding {} specified, using {}", enc, charset);
     }
-
+    
     Schema s = new Schema(file, rowType, charset, set, fields);
     LOG.debug("Found schema {}", s);
     schemas.put(rowType, s);
   }
-
+  
   private Optional<Schema.Field> buildField(XMLStreamReader2 parser, boolean id) {
     final Term term = id ? DWCA_ID : VocabularyUtils.TF.findPropertyTerm(attr(parser, "term"));
     try {
@@ -280,29 +283,29 @@ public class DwcaReader extends CsvReader {
       }
       String delimiter = attr(parser, "delimitedBy");
       return Optional.of(new Schema.Field(term, value, index, delimiter));
-
+      
     } catch (IllegalArgumentException e) {
       LOG.error("DwC-A descriptor with bad {} field: {}", term, e.getMessage());
       return Optional.empty();
     }
   }
-
+  
   private static String unescapeBackslash(String x) {
     if (x == null || x.length() == 0) {
       return null;
     }
     return StringEscapeUtils.unescapeJava(x);
   }
-
+  
   private static String attr(XMLStreamReader2 parser, String attrName) {
     return parser.getAttributeValue(null, attrName);
   }
-
+  
   private void readFromMeta(Path meta) {
     LOG.info("Reading DwC-A descriptor");
-    try (CharsetDetectingStream stream = CharsetDetectingStream.create(Files.newInputStream(meta))){
+    try (CharsetDetectingStream stream = CharsetDetectingStream.create(Files.newInputStream(meta))) {
       XMLStreamReader2 parser = (XMLStreamReader2) factory.createXMLStreamReader(stream, stream.getCharset().name());
-
+      
       int event;
       while ((event = parser.next()) != XMLStreamConstants.END_DOCUMENT) {
         switch (event) {
@@ -324,13 +327,13 @@ public class DwcaReader extends CsvReader {
         }
       }
       parser.close();
-
+      
     } catch (XMLStreamException | IOException e) {
       LOG.error("Failed to parse DwC-A descriptor: {}", e.getMessage(), e);
       throw new NormalizationFailedException.SourceInvalidException("Failed to parse DwC-A descriptor");
     }
   }
-
+  
   /**
    * Override to add dwca default values for missing values
    */
@@ -350,7 +353,7 @@ public class DwcaReader extends CsvReader {
       return super.stream(rowType);
     }
   }
-
+  
   private void validate() throws NormalizationFailedException.SourceInvalidException {
     // no checks
     if (isEmpty()) {
@@ -360,7 +363,7 @@ public class DwcaReader extends CsvReader {
       throw new NormalizationFailedException.SourceInvalidException("No core rowType set");
     }
   }
-
+  
   public void validate(InsertMetadata meta) throws NormalizationFailedException.SourceInvalidException {
     // check for a minimal parsed name
     Optional<Schema> optCore = schema(DwcTerm.Taxon);
@@ -373,7 +376,7 @@ public class DwcaReader extends CsvReader {
         ) {
       meta.setParsedNameMapped(true);
     }
-
+    
     // make sure either scientificName or genus & specificEpithet are mapped
     if (!core.hasTerm(DwcTerm.scientificName)) {
       LOG.warn("No scientificName mapped");
@@ -387,12 +390,12 @@ public class DwcaReader extends CsvReader {
         }
       }
     }
-
+    
     // warn if highly recommended terms are missing
     if (!core.hasTerm(DwcTerm.taxonRank)) {
       LOG.warn("No taxonRank mapped");
     }
-
+    
     // check if taxonID should be used, not the generic ID
     if (core.hasTerm(DwcTerm.taxonID) && !core.field(DWCA_ID).index.equals(core.field(DwcTerm.taxonID).index)) {
       LOG.info("Use taxonID instead of ID");
@@ -440,10 +443,10 @@ public class DwcaReader extends CsvReader {
     if (!meta.isParentNameMapped() && !meta.isDenormedClassificationMapped()) {
       LOG.warn("No higher classification mapped");
     }
-
+    
     //TODO: validate extensions:
     // vernacular name: vernacularName
     // distribution: some area (locationID, countryCode, etc)
   }
-
+  
 }

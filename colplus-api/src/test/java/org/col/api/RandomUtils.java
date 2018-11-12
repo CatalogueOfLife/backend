@@ -19,10 +19,10 @@ public class RandomUtils {
   private static final String CONS = "BCDFGHJKLMNPQRSTVWXYZ";
   private static final String VOC = "AEIOU";
   private static Random rnd = new Random();
-
+  
   private RandomUtils() {
   }
-
+  
   /**
    * Creates a random species binomial with no meaning at all, but highly randomized.
    *
@@ -31,22 +31,23 @@ public class RandomUtils {
   public static String randomSpecies() {
     return randomGenus() + " " + randomEpithet();
   }
-
+  
   public static String randomGenus() {
     return WordUtils.capitalize(randomString(rnd.nextInt(9) + 3).toLowerCase());
   }
-
+  
   public static String randomEpithet() {
     return randomString(rnd.nextInt(12) + 4).toLowerCase();
   }
+  
   public static String randomFamily() {
-      return WordUtils.capitalize(RandomUtils.randomString(rnd.nextInt(15) + 5).toLowerCase()) + "idae";
+    return WordUtils.capitalize(RandomUtils.randomString(rnd.nextInt(15) + 5).toLowerCase()) + "idae";
   }
-
+  
   public static String randomAuthor() {
     return WordUtils.capitalize(RandomUtils.randomString(rnd.nextInt(12) + 1).toLowerCase());
   }
-
+  
   public static Authorship randomAuthorship() {
     Authorship auth = new Authorship();
     while (rnd.nextBoolean()) {
@@ -55,25 +56,32 @@ public class RandomUtils {
     if (rnd.nextBoolean()) {
       auth.setYear(randomSpeciesYear());
     }
-
+    
     while (rnd.nextInt(10) == 1) {
       auth.getExAuthors().add(randomAuthor());
     }
     return auth;
   }
-
+  
   public static Rank randomRank() {
     switch (rnd.nextInt(10)) {
-      case 1: return Rank.values()[ rnd.nextInt(Rank.values().length) ];
-      case 2: return Rank.values()[ rnd.nextInt(Rank.FAMILY.ordinal()) ];
-      case 3: return Rank.FAMILY;
-      case 4: return Rank.GENUS;
-      case 5: return Rank.SUBSPECIES;
-      case 6: return Rank.values()[ Rank.SPECIES.ordinal() + rnd.nextInt(Rank.values().length - Rank.SPECIES.ordinal()) ];
-      default: return Rank.SPECIES;
+      case 1:
+        return Rank.values()[rnd.nextInt(Rank.values().length)];
+      case 2:
+        return Rank.values()[rnd.nextInt(Rank.FAMILY.ordinal())];
+      case 3:
+        return Rank.FAMILY;
+      case 4:
+        return Rank.GENUS;
+      case 5:
+        return Rank.SUBSPECIES;
+      case 6:
+        return Rank.values()[Rank.SPECIES.ordinal() + rnd.nextInt(Rank.values().length - Rank.SPECIES.ordinal())];
+      default:
+        return Rank.SPECIES;
     }
   }
-
+  
   public static Name randomName() {
     Name n = new Name();
     n.setCombinationAuthorship(randomAuthorship());
@@ -90,10 +98,11 @@ public class RandomUtils {
     }
     return n;
   }
-
+  
   /**
    * Creates a random string in upper case of given length with purely latin characters only.
    * Vocals are used much more frequently than consonants
+   *
    * @param len
    * @return a random string in upper case
    */
@@ -106,10 +115,10 @@ public class RandomUtils {
         sb.append(VOC.charAt(rnd.nextInt(VOC.length())));
       }
     }
-
+    
     return sb.toString();
   }
-
+  
   /**
    * @return a year since Linnéan times 1751 before now as a 4 character long string
    */
@@ -123,5 +132,5 @@ public class RandomUtils {
     
     return instance;
   }
-
+  
 }

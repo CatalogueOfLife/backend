@@ -18,25 +18,25 @@ public class TaxonomicOrderExpander implements PathExpander {
    * Expander following the parent_of relations in taxonomic order
    */
   public final static TaxonomicOrderExpander TREE_EXPANDER = new TaxonomicOrderExpander(false);
-
+  
   /**
    * Expander following the parent_of and synonym_of relations in taxonomic order
    */
   public final static TaxonomicOrderExpander TREE_WITH_SYNONYMS_EXPANDER = new TaxonomicOrderExpander(true);
-
+  
   private final boolean includeSynonyms;
-
+  
   private static final Ordering<Relationship> CHILDREN_ORDER = Ordering.from(new TaxonomicOrder()).onResultOf(
       new Function<Relationship, Node>() {
         @Nullable
         @Override
         public Node apply(Relationship rel) {
           return rel.getEndNode();
-
+          
         }
       }
   );
-
+  
   private static final Ordering<Relationship> SYNONYM_ORDER = Ordering.natural().reverse().onResultOf(
       new Function<Relationship, Boolean>() {
         @Nullable
@@ -52,16 +52,16 @@ public class TaxonomicOrderExpander implements PathExpander {
             @Override
             public Node apply(Relationship rel) {
               return rel.getStartNode();
-
+              
             }
           }
       )
   );
-
+  
   private TaxonomicOrderExpander(boolean includeSynonyms) {
     this.includeSynonyms = includeSynonyms;
   }
-
+  
   @Override
   public Iterable<Relationship> expand(Path path, BranchState state) {
     List<Relationship> children = CHILDREN_ORDER.sortedCopy(path.endNode().getRelationships(RelType.PARENT_OF, Direction.OUTGOING));
@@ -75,10 +75,10 @@ public class TaxonomicOrderExpander implements PathExpander {
       return children;
     }
   }
-
+  
   @Override
   public PathExpander reverse() {
     throw new UnsupportedOperationException();
   }
-
+  
 }

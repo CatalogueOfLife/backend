@@ -4,11 +4,11 @@ import org.col.api.vocab.Datasets;
 import org.junit.Test;
 
 public class DatasetPartitionMapperTest extends MapperTestBase<DatasetPartitionMapper> {
-
+  
   public DatasetPartitionMapperTest() {
     super(DatasetPartitionMapper.class);
   }
-
+  
   @Test
   public void createDelete() {
     // we only create the prov-cat partition in the InitMybatisRule
@@ -16,7 +16,7 @@ public class DatasetPartitionMapperTest extends MapperTestBase<DatasetPartitionM
     mapper().create(Datasets.SCRUT_CAT);
     mapper().buildIndices(Datasets.SCRUT_CAT);
     mapper().attach(Datasets.SCRUT_CAT);
-
+    
     mapper().delete(Datasets.SCRUT_CAT);
   }
 }

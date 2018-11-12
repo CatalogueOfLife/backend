@@ -12,7 +12,6 @@ import org.col.api.vocab.CSLRefType;
 
 /**
  * Converrs a CslData instance to a CSLItemData instance.
- *
  */
 class CslDataConverter {
 

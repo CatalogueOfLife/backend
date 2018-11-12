@@ -8,7 +8,7 @@ import org.col.db.type.EnumOrdinalSetTypeHandler;
  * values.
  */
 public class RoleSetTypeHandler extends EnumOrdinalSetTypeHandler<ColUser.Role> {
-
+  
   public RoleSetTypeHandler() {
     super(ColUser.Role.class);
   }

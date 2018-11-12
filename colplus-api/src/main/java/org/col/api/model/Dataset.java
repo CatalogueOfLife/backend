@@ -226,6 +226,7 @@ public class Dataset implements SourceMetadata, IntKey {
   
   /**
    * https://github.com/Sp2000/colplus-backend/issues/163
+   *
    * @return true if multiple col sources are allowed
    */
   public boolean isCluster() {
