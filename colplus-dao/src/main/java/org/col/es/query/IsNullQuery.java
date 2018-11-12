@@ -8,17 +8,17 @@ public class IsNullQuery extends BoolQuery {
 
   @Override
   public BoolQuery must(Query query) {
-    throw new UnsupportedOperationException();
+    throw new AssertionError();
   }
 
   @Override
   public BoolQuery mustNot(Query query) {
-    throw new UnsupportedOperationException();
+    throw new AssertionError();
   }
 
   @Override
   public BoolQuery should(Query query) {
-    throw new UnsupportedOperationException();
+    throw new AssertionError();
   }
 
 }

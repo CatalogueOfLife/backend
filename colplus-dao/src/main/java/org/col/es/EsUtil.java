@@ -99,8 +99,8 @@ public class EsUtil {
       if (response.getStatusLine().getStatusCode() >= 400) {
         throw new EsException(response.getStatusLine().getReasonPhrase());
       }
-      Map<String, Object> feedback = EsModule.MAPPER.readValue(response.getEntity().getContent(),
-          new TypeReference<Map<String, Object>>() {});
+      Map<String, Object> feedback =
+          EsModule.MAPPER.readValue(response.getEntity().getContent(), new TypeReference<Map<String, Object>>() {});
       Integer total = (Integer) feedback.get("total");
       LOG.info("Deleted {} documents from index {}", total, indexName);
       return total.intValue();

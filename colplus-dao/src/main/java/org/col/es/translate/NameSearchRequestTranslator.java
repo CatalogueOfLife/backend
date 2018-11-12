@@ -12,16 +12,10 @@ import org.col.es.query.Query;
 import org.col.es.query.SortBuilder;
 
 /**
- * Translates a CoL NameSearchRequest into an actual Elasticsearch query. Main class of this
- * package.
+ * Translates a CoL NameSearchRequest into an actual Elasticsearch query. Main class of this package.
  *
  */
 public class NameSearchRequestTranslator {
-
-  /**
-   * Query parameter to be used to indicate an IS NOT NULL document search.
-   * */
-  public static final String NOT_NULL_VALUE = "@NOT_NULL@";
 
   private final NameSearchRequest request;
   private final Page page;
@@ -32,14 +26,10 @@ public class NameSearchRequestTranslator {
   }
 
   public EsSearchRequest translate() throws InvalidQueryException {
-    EsSearchRequest req = new EsSearchRequest();
-    req.setFrom(page.getOffset());
-    req.setSize(page.getLimit());
-    if (request.getSortBy() == null) {
-      req.setSortBuilder(SortBuilder.INDEX_ORDER);
-    } else {
-      req.setSortBuilder(new SortBuilder(request.getSortBy()));
-    }
+    EsSearchRequest es = new EsSearchRequest();
+    es.setFrom(page.getOffset());
+    es.setSize(page.getLimit());
+    es.setSortBuilder(SortBuilder.create(request.getSortBy()));
     Optional<Query> q1 = new NameSearchParametersTranslator(request).translate();
     Optional<Query> q2 = new QTranslator(request).translate();
     Query query = null;
@@ -53,14 +43,9 @@ public class NameSearchRequestTranslator {
       query = q2.get();
     }
     if (query != null) {
-      if (request.getSortBy() != NameSearchRequest.SortBy.RELEVANCE) {
-        // Cardinality of names and keys is so high it doesn't make sense to let ES waste time on
-        // calculating scores.
-        query = new ConstantScoreQuery(query);
-      }
-      req.setQuery(query);
+      es.setQuery(new ConstantScoreQuery(query));
     }
-    return req;
+    return es;
   }
 
 }

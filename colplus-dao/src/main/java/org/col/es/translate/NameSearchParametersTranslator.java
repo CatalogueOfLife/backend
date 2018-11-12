@@ -17,19 +17,17 @@ import org.col.es.query.IsNullQuery;
 import org.col.es.query.Query;
 import org.col.es.query.TermQuery;
 import org.col.es.query.TermsQuery;
-import static org.col.es.translate.NameSearchRequestTranslator.*;
+
+import static org.col.api.search.NameSearchRequest.*;
 
 /**
- * Translates all query parameters except the "q" parameter into an Elasticsearch query. Unless
- * there is just one query parameter, this will be an AND query. For example:
- * ?rank=genus&nom_status=available is translated into (rank=genus AND nom_status=available). If a
- * query parameter maps to multiple Elasticsearch fields (meaning we need to query multiple fields
- * for a single query parameter), these fields will then be combined within a nested OR query. This
- * is currently never the case. Also, the search request may contain multiple values per request
- * parameter (since it extends MultiValuedMap). For example: ?rank=order&rank=family&rank=genus.
- * This will then result in an OR constraint (rank=order OR rank=family OR rank=genus). Finally, a
- * query parameter may be present but have no value, for example: ?nom_status=&rank=family. This
- * will be translated into an IS NULL constraint (nom_status IS NULL AND rank=family).
+ * Translates all query parameters except the "q" parameter into an Elasticsearch query. Unless there is just one query parameter, this will
+ * be an AND query. For example: ?rank=genus&nom_status=available is translated into (rank=genus AND nom_status=available). If a query
+ * parameter maps to multiple Elasticsearch fields (meaning we need to query multiple fields for a single query parameter), these fields
+ * will then be combined within a nested OR query. This is currently never the case. Also, the search request may contain multiple values
+ * per request parameter (since it extends MultiValuedMap). For example: ?rank=order&rank=family&rank=genus. This will then result in an OR
+ * constraint (rank=order OR rank=family OR rank=genus). Finally, a query parameter may be present but have no value, for example:
+ * ?nom_status=&rank=family. This will be translated into an IS NULL constraint (nom_status IS NULL AND rank=family).
  *
  */
 class NameSearchParametersTranslator {
@@ -60,13 +58,16 @@ class NameSearchParametersTranslator {
     // Get the ES fields that this parameter maps to
     String[] fields = EsFieldLookup.INSTANCE.get(param);
     for (String field : fields) {
-      if (containsEmptyValue(param)) {
+      if (containsNullValue(param)) {
         queries.add(new IsNullQuery(field));
       }
       if (containsNotNullValue(param)) {
         queries.add(new IsNotNullQuery(field));
       }
-      List<?> paramValues = getRealValues(param);
+      /*
+       * (Wouldn't make sense to have both present as it would result in an always-true query, but let's not interpret the client's wishes.)
+       */
+      List<?> paramValues = getLiteralValues(param);
       if (paramValues.size() == 1) {
         queries.add(new TermQuery(field, paramValues.get(0)));
       } else if (paramValues.size() > 1) {
@@ -80,22 +81,20 @@ class NameSearchParametersTranslator {
   }
 
   private NameSearchParameter[] getParamsInRequest() {
-    return Arrays.stream(NameSearchParameter.values()).filter(request::containsKey).toArray(
-        NameSearchParameter[]::new);
+    return Arrays.stream(NameSearchParameter.values()).filter(request::containsKey).toArray(NameSearchParameter[]::new);
   }
 
   /*
-   * Get all non-empty and non-symbolic values of one single single query parameter
+   * Get all non-symbolic values for one single single query parameter
    */
   @SuppressWarnings("unchecked")
-  private List<?> getRealValues(NameSearchParameter param) throws InvalidQueryException {
+  private List<?> getLiteralValues(NameSearchParameter param) throws InvalidQueryException {
     if (param.type() == String.class) {
-      return request.get(param).stream().filter(this::isRealValue).collect(Collectors.toList());
+      return request.get(param).stream().filter(NameSearchRequest::isLiteral).collect(Collectors.toList());
     }
     if (param.type() == Integer.class) {
       try {
-        return request.get(param).stream().filter(this::isRealValue).map(Integer::valueOf).collect(
-            Collectors.toList());
+        return request.get(param).stream().filter(NameSearchRequest::isLiteral).map(Integer::valueOf).collect(Collectors.toList());
       } catch (NumberFormatException e) {
         throw new InvalidQueryException("Non-integer value for parameter " + param);
       }
@@ -104,9 +103,8 @@ class NameSearchParametersTranslator {
       try {
         return request.get(param)
             .stream()
-            .filter(this::isRealValue)
-            .map(val -> VocabularyUtils.lookupEnum(val, (Class<? extends Enum<?>>) param.type())
-                .ordinal())
+            .filter(NameSearchRequest::isLiteral)
+            .map(val -> VocabularyUtils.lookupEnum(val, (Class<? extends Enum<?>>) param.type()).ordinal())
             .collect(Collectors.toList());
       } catch (IllegalArgumentException e) {
         throw new InvalidQueryException(e.getMessage());
@@ -115,18 +113,14 @@ class NameSearchParametersTranslator {
     throw new AssertionError("Unexpected parameter type: " + param.type());
   }
 
-  // Is one of the values of a query parameter an empty string?
-  private boolean containsEmptyValue(NameSearchParameter param) {
-    return request.get(param).stream().anyMatch(StringUtils::isEmpty);
+  // Is one of the values of a query parameter the symbol for IS NULL?
+  private boolean containsNullValue(NameSearchParameter param) {
+    return request.get(param).stream().anyMatch(s -> StringUtils.isEmpty(s) || s.equalsIgnoreCase(NULL_VALUE));
   }
 
-  // Is one of the values of a query parameter the symbol for NOT NULL?
+  // Is one of the values of a query parameter the symbol for IS NOT NULL?
   private boolean containsNotNullValue(NameSearchParameter param) {
     return request.get(param).stream().anyMatch(s -> s.equalsIgnoreCase(NOT_NULL_VALUE));
-  }
-
-  private boolean isRealValue(String s) {
-    return StringUtils.isNotEmpty(s) && !s.equalsIgnoreCase(NOT_NULL_VALUE);
   }
 
 }

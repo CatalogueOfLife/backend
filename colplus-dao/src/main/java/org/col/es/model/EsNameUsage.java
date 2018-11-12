@@ -20,7 +20,7 @@ public class EsNameUsage {
   private String scientificName;
   private String authorship;
 
-  private int datasetKey;
+  private Integer datasetKey;
   private String nameId;
   private String nameIndexId;
   private String publishedInId;
@@ -54,11 +54,11 @@ public class EsNameUsage {
     this.authorship = authorship;
   }
 
-  public int getDatasetKey() {
+  public Integer getDatasetKey() {
     return datasetKey;
   }
 
-  public void setDatasetKey(int datasetKey) {
+  public void setDatasetKey(Integer datasetKey) {
     this.datasetKey = datasetKey;
   }
 
@@ -167,23 +167,18 @@ public class EsNameUsage {
     if (o == null || getClass() != o.getClass())
       return false;
     EsNameUsage that = (EsNameUsage) o;
-    return datasetKey == that.datasetKey && Objects.equals(scientificName, that.scientificName)
-        && Objects.equals(authorship, that.authorship)
-        && Objects.equals(vernacularNames, that.vernacularNames)
+    return Objects.equals(datasetKey, that.datasetKey) && Objects.equals(scientificName, that.scientificName)
+        && Objects.equals(authorship, that.authorship) && Objects.equals(vernacularNames, that.vernacularNames)
         && Objects.equals(nameId, that.nameId) && Objects.equals(nameIndexId, that.nameIndexId)
-        && Objects.equals(publishedInId, that.publishedInId) && rank == that.rank
-        && type == that.type && nomStatus == that.nomStatus
-        && Objects.equals(nameFields, that.nameFields) && status == that.status
-        && Objects.equals(taxonId, that.taxonId) && Objects.equals(issues, that.issues)
-        && Objects.equals(payload, that.payload);
+        && Objects.equals(publishedInId, that.publishedInId) && rank == that.rank && type == that.type && nomStatus == that.nomStatus
+        && Objects.equals(nameFields, that.nameFields) && status == that.status && Objects.equals(taxonId, that.taxonId)
+        && Objects.equals(issues, that.issues) && Objects.equals(payload, that.payload);
   }
 
   @Override
   public int hashCode() {
-
-    return Objects.hash(scientificName, authorship, vernacularNames, datasetKey, nameId,
-        nameIndexId, publishedInId, rank, type, nomStatus, nameFields, status, taxonId, issues,
-        payload);
+    return Objects.hash(scientificName, authorship, vernacularNames, datasetKey, nameId, nameIndexId, publishedInId, rank, type, nomStatus,
+        nameFields, status, taxonId, issues, payload);
   }
 
 }

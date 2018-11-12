@@ -101,14 +101,13 @@ public class EsNameUsageSerde extends EsReadTestBase {
     enuIn.setType(NameType.SCIENTIFIC);
     enuIn.setVernacularNames(Arrays.asList("Apple tree"));
 
-    String json = getEsConfig().nameUsage.getDocumentWriter().writeValueAsString(enuIn);
-    LOG.debug(json);
-
+    String json = getEsConfig().nameUsage.getDocumentWriter().withDefaultPrettyPrinter().writeValueAsString(enuIn);
     EsNameUsage enuOut = getEsConfig().nameUsage.getDocumentReader().readValue(json);
     assertEquals(enuIn, enuOut);
 
-    NameUsageWrapper<?> nuw = PAYLOAD_READER.readValue(enuOut.getPayload());
+    NameUsageWrapper<?> nuw = PAYLOAD_READER.readValue(enuOut.getPayload()); 
     assertEquals(TestEntityGenerator.newNameUsageTaxonWrapper(), nuw);
+    
   }
 
   @Test

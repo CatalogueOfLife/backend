@@ -5,17 +5,15 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * The main class modeling an ES query. I.e. serializing it to JSON will result in a valid ES
- * query.
+ * The main class modeling an ES query. I.e. serializing it to JSON will result in a valid ES query.
  */
 public class EsSearchRequest {
 
   private Integer size;
   private Integer from;
   /*
-   * Each element will be EITHER a simple String (being the field to sort on) OR a
-   * Map<String,SortOptions> with one entry: the field to sort on as the key, and the sort options
-   * as the value.
+   * Each element will be EITHER a simple String (being the field to sort on) OR a Map<String, SortOptions> with one entry: the field to
+   * sort on as the key, and the sort options as the value.
    */
   private List<Object> sort;
   private Query query;
@@ -67,6 +65,5 @@ public class EsSearchRequest {
   public void setAggs(Map<String, Aggregation> aggs) {
     this.aggs = aggs;
   }
-
 
 }

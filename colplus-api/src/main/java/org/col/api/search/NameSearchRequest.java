@@ -10,6 +10,8 @@ import javax.ws.rs.core.MultivaluedHashMap;
 
 import com.google.common.base.Preconditions;
 
+import org.apache.commons.lang3.StringUtils;
+
 public class NameSearchRequest extends MultivaluedHashMap<NameSearchParameter, String> {
 
   public static enum SearchContent {
@@ -17,8 +19,18 @@ public class NameSearchRequest extends MultivaluedHashMap<NameSearchParameter, S
   }
 
   public static enum SortBy {
-    RELEVANCE, NAME, KEY
+    NATIVE, NAME, TAXONOMIC
   }
+
+  /**
+   * Value to be used to indicate an IS NOT NULL document search.
+   */
+  public static final String NOT_NULL_VALUE = "_NOT_NULL";
+
+  /**
+   * Value to be used to indicate an IS NULL document search.
+   */
+  public static final String NULL_VALUE = "_NULL";
 
   @QueryParam("content")
   private Set<SearchContent> content;
@@ -32,9 +44,19 @@ public class NameSearchRequest extends MultivaluedHashMap<NameSearchParameter, S
   @QueryParam("sortBy")
   private SortBy sortBy;
 
+  /**
+   * Whether or not the value in the request has any special meaning or is to be taken at face value.
+   */
+  public static boolean isLiteral(String value) {
+    return !StringUtils.isEmpty(value) && !value.equals(NOT_NULL_VALUE) && !value.equals(NULL_VALUE);
+  }
+
   public void addFilter(NameSearchParameter param, String value) {
-    // make sure we can parse the string value
-    param.from(value);
+    if (isLiteral(value)) {
+      // make sure we can parse the string value
+      param.from(value);
+    }
+    // Otherwise we leave it to the backend to interpret the value appropriately
     add(param, value);
   }
 
@@ -96,8 +118,8 @@ public class NameSearchRequest extends MultivaluedHashMap<NameSearchParameter, S
     if (!super.equals(o))
       return false;
     NameSearchRequest that = (NameSearchRequest) o;
-    return Objects.equals(content, that.content) && Objects.equals(facets, that.facets)
-        && Objects.equals(q, that.q) && sortBy == that.sortBy;
+    return Objects.equals(content, that.content) && Objects.equals(facets, that.facets) && Objects.equals(q, that.q)
+        && sortBy == that.sortBy;
   }
 
   @Override

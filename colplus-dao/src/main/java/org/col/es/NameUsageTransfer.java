@@ -21,13 +21,11 @@ import static org.col.common.util.CollectionUtils.notEmpty;
  */
 class NameUsageTransfer {
 
-  EsNameUsage toEsDocument(NameUsageWrapper<? extends NameUsage> wrapper) throws JsonProcessingException {
+  EsNameUsage toEsDocument(NameUsageWrapper<? extends NameUsage> wrapper) {
 
     EsNameUsage enu = new EsNameUsage();
     if (notEmpty(wrapper.getVernacularNames())) {
-      enu.setVernacularNames(
-          wrapper.getVernacularNames().stream().map(VernacularName::getName).collect(
-              Collectors.toList()));
+      enu.setVernacularNames(wrapper.getVernacularNames().stream().map(VernacularName::getName).collect(Collectors.toList()));
     }
     enu.setIssues(wrapper.getIssues());
     Name name = wrapper.getUsage().getName();
@@ -44,19 +42,21 @@ class NameUsageTransfer {
       enu.setTaxonId(((Taxon) wrapper.getUsage()).getId());
     }
     enu.setType(name.getType());
-    enu.setPayload(EsModule.NAME_USAGE_WRITER.writeValueAsString(wrapper));
+    try {
+      enu.setPayload(EsModule.NAME_USAGE_WRITER.writeValueAsString(wrapper));
+    } catch (JsonProcessingException e) {
+      throw new EsException(e);
+    }
     enu.setNameFields(getNonNullNameFields(wrapper.getUsage().getName()));
     return enu;
   }
 
   private static Set<NameField> getNonNullNameFields(Name name) {
     Set<NameField> fields = EnumSet.noneOf(NameField.class);
-    if (name.getBasionymAuthorship() != null
-        && notEmpty(name.getBasionymAuthorship().getAuthors())) {
+    if (name.getBasionymAuthorship() != null && notEmpty(name.getBasionymAuthorship().getAuthors())) {
       fields.add(BASIONYM_AUTHORS);
     }
-    if (name.getBasionymAuthorship() != null
-        && notEmpty(name.getBasionymAuthorship().getExAuthors())) {
+    if (name.getBasionymAuthorship() != null && notEmpty(name.getBasionymAuthorship().getExAuthors())) {
       fields.add(BASIONYM_EX_AUTHORS);
     }
     if (name.getBasionymAuthorship() != null && name.getBasionymAuthorship().getYear() != null) {
@@ -65,16 +65,13 @@ class NameUsageTransfer {
     if (name.isCandidatus()) {
       fields.add(CANDIDATUS);
     }
-    if (name.getCombinationAuthorship() != null
-        && notEmpty(name.getCombinationAuthorship().getAuthors())) {
+    if (name.getCombinationAuthorship() != null && notEmpty(name.getCombinationAuthorship().getAuthors())) {
       fields.add(COMBINATION_AUTHORS);
     }
-    if (name.getCombinationAuthorship() != null
-        && notEmpty(name.getCombinationAuthorship().getExAuthors())) {
+    if (name.getCombinationAuthorship() != null && notEmpty(name.getCombinationAuthorship().getExAuthors())) {
       fields.add(COMBINATION_EX_AUTHORS);
     }
-    if (name.getCombinationAuthorship() != null
-        && name.getCombinationAuthorship().getYear() != null) {
+    if (name.getCombinationAuthorship() != null && name.getCombinationAuthorship().getYear() != null) {
       fields.add(COMBINATION_YEAR);
     }
     addIfSet(fields, CULTIVAR_EPITHET, name.getCultivarEpithet());

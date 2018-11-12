@@ -24,13 +24,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.col.es.EsConfig.DEFAULT_TYPE_NAME;
-import static org.col.es.EsConfig.NAME_USAGE_BASE;
+import static org.col.es.EsConfig.NAME_USAGE_BASE;;
 
 public class NameUsageSearchService {
 
   private static final Logger LOG = LoggerFactory.getLogger(NameUsageSearchService.class);
-  private static final ObjectReader RESPONSE_READER =
-      EsModule.MAPPER.readerFor(new TypeReference<SearchResponse<EsNameUsage>>() {});
+  private static final ObjectReader RESPONSE_READER = EsModule.MAPPER.readerFor(new TypeReference<SearchResponse<EsNameUsage>>() {});
+  private static final ObjectWriter RESPONSE_WRITER =
+      EsModule.MAPPER.writerFor(new TypeReference<SearchResponse<EsNameUsage>>() {}).withDefaultPrettyPrinter();
 
   private final RestClient client;
 
@@ -41,18 +42,16 @@ public class NameUsageSearchService {
     this.transfer = new SearchResponseTransfer();
   }
 
-  public ResultPage<NameUsageWrapper<NameUsage>> search(NameSearchRequest query,
-      Page page) throws InvalidQueryException {
+  public ResultPage<NameUsageWrapper<NameUsage>> search(NameSearchRequest query, Page page) throws InvalidQueryException {
     return search(NAME_USAGE_BASE, query, page);
   }
 
   @VisibleForTesting
-  ResultPage<NameUsageWrapper<NameUsage>> search(String indexName,
-      NameSearchRequest query, Page page) throws InvalidQueryException {
+  ResultPage<NameUsageWrapper<NameUsage>> search(String indexName, NameSearchRequest query, Page page) throws InvalidQueryException {
     NameSearchRequestTranslator translator = new NameSearchRequestTranslator(query, page);
     EsSearchRequest esQuery = translator.translate();
     if (LOG.isDebugEnabled()) {
-      LOG.debug(writeQuery(esQuery, true));
+      LOG.debug("Executing query: " + writeQuery(esQuery, true));
     }
     Request httpRequest = new Request("GET", getUrl(indexName));
     httpRequest.setJsonEntity(writeQuery(esQuery, false));
@@ -77,7 +76,11 @@ public class NameUsageSearchService {
 
   private static SearchResponse<EsNameUsage> readResponse(Response response) {
     try {
-      return RESPONSE_READER.readValue(response.getEntity().getContent());
+      SearchResponse<EsNameUsage> r = RESPONSE_READER.readValue(response.getEntity().getContent());
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Receiving Response: " + RESPONSE_WRITER.writeValueAsString(r));
+      }
+      return r;
     } catch (UnsupportedOperationException | IOException e) {
       throw new EsException(e);
     }
