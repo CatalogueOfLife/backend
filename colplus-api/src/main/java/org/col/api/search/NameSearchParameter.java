@@ -56,8 +56,8 @@ public enum NameSearchParameter {
    * @return
    */
   @SuppressWarnings("unchecked")
-  public boolean isLegalValue(Object value) {
-    if (!NameSearchRequest.isLiteral(value.toString()) || type == String.class) {
+  public boolean isLegalValue(String value) {
+    if (type == String.class) {
       return true;
     }
     if (type == Integer.class) {
@@ -69,9 +69,6 @@ public enum NameSearchParameter {
       }
     }
     if (type.isEnum()) {
-      if (value.getClass() == type) {
-        return true;
-      }
       return VocabularyUtils.lookup(value.toString(), (Class<? extends Enum<?>>) type).isPresent();
     }
     throw new IllegalArgumentException(NameSearchParameter.class.getSimpleName() + " missing converter for data type " + type);

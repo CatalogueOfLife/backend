@@ -1,5 +1,6 @@
 package org.col.api.search;
 
+import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -11,14 +12,15 @@ import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.base.Preconditions;
 
 import org.apache.commons.lang3.StringUtils;
 import org.col.api.util.VocabularyUtils;
 
 /*
  * Making this class extends MultiValuedHashMap causes Jackson to ony serialize the superclass (MultiValuedHashMap), not the properties of
- * NameSearchRequest itself (q, factets, etc). Can probably be rectified using a JsonSerializer, but composition (including the map as a
- * property) feels pretty natural: getQ(), getFacets(), getFilters().
+ * NameSearchRequest itself (q, factets, etc). Can probably be rectified using a JsonSerializer, but including the map as a property feels
+ * natural anyhow: getQ(), getFacets(), getFilters().
  */
 public class NameSearchRequest {
 
@@ -73,19 +75,55 @@ public class NameSearchRequest {
   }
 
   public void addFilter(NameSearchParameter param, Iterable<?> values) {
-    values.forEach((s) -> addFilter(param, s));
+    values.forEach((s) -> addFilter(param, s == null ? NULL_VALUE : s.toString()));
   }
 
-  public void addFilter(NameSearchParameter param, Object value) {
-    if (param.isLegalValue(value)) {
-      if (filters == null) {
-        filters = new MultivaluedHashMap<>();
-      }
-      filters.add(param, value.toString());
+  public void addFilter(NameSearchParameter param, Object[] values) {
+    Arrays.stream(values).forEach((v) -> addFilter(param, v == null ? NULL_VALUE : v.toString()));
+  }
+
+  public void addFilter(NameSearchParameter param, int[] values) {
+    Arrays.stream(values).forEach((v) -> addFilter(param, String.valueOf(v)));
+  }
+
+  public void addFilter(NameSearchParameter param, String value) {
+    value = StringUtils.trimToNull(value);
+    if (value == null || value.equals(NULL_VALUE)) {
+      add(param, NULL_VALUE);
+    } else if (value.equals(NOT_NULL_VALUE)) {
+      add(param, NOT_NULL_VALUE);
+    } else if (param.isLegalValue(value)) {
+      add(param, value);
     } else {
       String err = String.format("Illegal value for parameter %s: %s", param, value);
       throw new IllegalArgumentException(err);
     }
+  }
+
+  public void addFilter(NameSearchParameter param, Enum<?> value) {
+    Preconditions.checkNotNull(value, "Null values not allowed for non-strings");
+    if (value.getClass() != param.type()) {
+      String err = String.format("Incompatible types: %s, %s", param.type().getSimpleName(), value.getClass().getSimpleName());
+      throw new IllegalArgumentException(err);
+    }
+    add(param, value.name());
+  }
+
+  public void addFilter(NameSearchParameter param, Integer value) {
+    Preconditions.checkNotNull(value, "Null values not allowed for non-strings");
+    if (param.type() == Integer.class || param.type() == String.class) {
+      add(param, value.toString());
+    } else {
+      String err = String.format("Incompatible types: %s, %s", param.type().getSimpleName(), value.getClass().getSimpleName());
+      throw new IllegalArgumentException(err);
+    }
+  }
+
+  private void add(NameSearchParameter param, String value) {
+    if (filters == null) {
+      filters = new MultivaluedHashMap<>();
+    }
+    filters.add(param, value);
   }
 
   public List<String> get(NameSearchParameter param) {

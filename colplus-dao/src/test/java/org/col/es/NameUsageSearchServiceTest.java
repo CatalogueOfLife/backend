@@ -266,7 +266,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
 
     // Define search
     NameSearchRequest nsr = new NameSearchRequest();
-    nsr.addFilter(NameSearchParameter.ISSUE, new Issue[] {Issue.ACCEPTED_NAME_MISSING, Issue.ACCORDING_TO_DATE_INVALID});
+    nsr.addFilter(NameSearchParameter.ISSUE, EnumSet.of(Issue.ACCEPTED_NAME_MISSING, Issue.ACCORDING_TO_DATE_INVALID));
 
     // Match
     NameUsageWrapper<Taxon> nuw1 = TestEntityGenerator.newNameUsageTaxonWrapper();
