@@ -12,7 +12,7 @@ public class EsSearchRequest {
   private Integer size;
   private Integer from;
   /*
-   * Each element will be EITHER a simple String (being the field to sort on) OR a Map<String, SortOptions> with one entry: the field to
+   * Each element will be either a simple String (being the field to sort on) or a Map<String, SortOptions> with one entry: the field to
    * sort on as the key, and the sort options as the value.
    */
   private List<Object> sort;
