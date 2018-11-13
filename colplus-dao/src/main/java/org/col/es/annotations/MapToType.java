@@ -8,12 +8,11 @@ import java.lang.annotation.Target;
 import org.col.es.mapping.ESDataType;
 
 /**
- * Forces the Java property with this annotation to be mapped to the specified ES data type. No check is done whether that makes sense. It
- * can often make sense though to map integers not to fields of type integer but to fields of type keyword. 
+ * Forces the Java property with this annotation to be mapped to the specified ES data type. No check is done whether that makes sense.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.FIELD, ElementType.METHOD})
-public @interface DataType {
+public @interface MapToType {
 
   ESDataType value();
 

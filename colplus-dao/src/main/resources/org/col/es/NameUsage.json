@@ -25,7 +25,7 @@
 			}
 		},
 		"datasetKey": {
-			"type": "integer"
+			"type": "keyword"
 		},
 		"nameId": {
 			"type": "keyword"

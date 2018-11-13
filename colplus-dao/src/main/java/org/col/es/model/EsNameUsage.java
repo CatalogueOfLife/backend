@@ -9,7 +9,9 @@ import org.col.api.vocab.NameField;
 import org.col.api.vocab.NomStatus;
 import org.col.api.vocab.TaxonomicStatus;
 import org.col.es.annotations.Analyzers;
+import org.col.es.annotations.MapToType;
 import org.col.es.annotations.NotIndexed;
+import org.col.es.mapping.ESDataType;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 
@@ -18,20 +20,31 @@ import static org.col.es.annotations.Analyzer.AUTO_COMPLETE;
 public class EsNameUsage {
 
   private String scientificName;
+
   private String authorship;
 
   private Integer datasetKey;
+
   private String nameId;
+
   private String nameIndexId;
+
   private String publishedInId;
+
   private Rank rank;
+
   private NameType type;
+
   private NomStatus nomStatus;
+
   private Set<NameField> nameFields;
+
   private TaxonomicStatus status;
+
   private String taxonId;
 
   private Set<Issue> issues;
+
   private List<String> vernacularNames;
 
   private String payload; // The entire NameUsageWrapper object, serialized to a string
@@ -54,6 +67,9 @@ public class EsNameUsage {
     this.authorship = authorship;
   }
 
+  // See here why this probably makes sense:
+  // https://www.elastic.co/guide/en/elasticsearch/reference/current/tune-for-search-speed.html#_consider_mapping_identifiers_as_literal_keyword_literal
+  @MapToType(ESDataType.KEYWORD)
   public Integer getDatasetKey() {
     return datasetKey;
   }
