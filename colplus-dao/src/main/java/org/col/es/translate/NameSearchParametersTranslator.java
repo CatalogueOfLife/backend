@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.StringUtils;
 import org.col.api.search.NameSearchParameter;
 import org.col.api.search.NameSearchRequest;
 import org.col.api.util.VocabularyUtils;
@@ -18,7 +17,8 @@ import org.col.es.query.Query;
 import org.col.es.query.TermQuery;
 import org.col.es.query.TermsQuery;
 
-import static org.col.api.search.NameSearchRequest.*;
+import static org.col.api.search.NameSearchRequest.NOT_NULL_VALUE;
+import static org.col.api.search.NameSearchRequest.NULL_VALUE;
 
 /**
  * Translates all query parameters except the "q" parameter into an Elasticsearch query. Unless there is just one query parameter, this will
@@ -55,24 +55,22 @@ class NameSearchParametersTranslator {
 
   private Query translate(NameSearchParameter param) throws InvalidQueryException {
     List<Query> queries = new ArrayList<>();
-    // Get the ES fields that this parameter maps to
     String[] fields = EsFieldLookup.INSTANCE.get(param);
-    for (String field : fields) {
-      if (containsNullValue(param)) {
-        queries.add(new IsNullQuery(field));
-      }
-      if (containsNotNullValue(param)) {
-        queries.add(new IsNotNullQuery(field));
-      }
-      /*
-       * (Wouldn't make sense to have both present as it would result in an always-true query, but let's not interpret the client's wishes.)
-       */
-      List<?> paramValues = getLiteralValues(param);
-      if (paramValues.size() == 1) {
-        queries.add(new TermQuery(field, paramValues.get(0)));
-      } else if (paramValues.size() > 1) {
-        queries.add(new TermsQuery(field, paramValues));
-      }
+    // So far  each NameSearchParameter corresponds to just one field in a name usage document
+    assert (fields.length == 1);
+    String field = fields[0];
+    if (containsNullValue(param)) {
+      queries.add(new IsNullQuery(field));
+    }
+    if (containsNotNullValue(param)) {
+      queries.add(new IsNotNullQuery(field));
+    }
+    // (Not very smart to have both, but OK)
+    List<?> paramValues = getLiteralValues(param);
+    if (paramValues.size() == 1) {
+      queries.add(new TermQuery(field, paramValues.get(0)));
+    } else if (paramValues.size() > 1) {
+      queries.add(new TermsQuery(field, paramValues));
     }
     if (queries.size() == 1) {
       return queries.get(0);
@@ -81,7 +79,7 @@ class NameSearchParametersTranslator {
   }
 
   private NameSearchParameter[] getParamsInRequest() {
-    return Arrays.stream(NameSearchParameter.values()).filter(request::containsKey).toArray(NameSearchParameter[]::new);
+    return Arrays.stream(NameSearchParameter.values()).filter(request::containsFilter).toArray(NameSearchParameter[]::new);
   }
 
   /*
@@ -90,20 +88,20 @@ class NameSearchParametersTranslator {
   @SuppressWarnings("unchecked")
   private List<?> getLiteralValues(NameSearchParameter param) throws InvalidQueryException {
     if (param.type() == String.class) {
-      return request.get(param).stream().filter(NameSearchRequest::isLiteral).collect(Collectors.toList());
+      return request.getFilter(param).stream().filter(this::isLiteral).collect(Collectors.toList());
     }
     if (param.type() == Integer.class) {
       try {
-        return request.get(param).stream().filter(NameSearchRequest::isLiteral).map(Integer::valueOf).collect(Collectors.toList());
+        return request.getFilter(param).stream().filter(this::isLiteral).map(Integer::valueOf).collect(Collectors.toList());
       } catch (NumberFormatException e) {
         throw new InvalidQueryException("Non-integer value for parameter " + param);
       }
     }
     if (Enum.class.isAssignableFrom(param.type())) {
       try {
-        return request.get(param)
+        return request.getFilter(param)
             .stream()
-            .filter(NameSearchRequest::isLiteral)
+            .filter(this::isLiteral)
             .map(val -> VocabularyUtils.lookupEnum(val, (Class<? extends Enum<?>>) param.type()).ordinal())
             .collect(Collectors.toList());
       } catch (IllegalArgumentException e) {
@@ -113,14 +111,18 @@ class NameSearchParametersTranslator {
     throw new AssertionError("Unexpected parameter type: " + param.type());
   }
 
+  private boolean isLiteral(String s) {
+    return !s.equals(NULL_VALUE) && !s.equals(NOT_NULL_VALUE);
+  }
+
   // Is one of the values of a query parameter the symbol for IS NULL?
   private boolean containsNullValue(NameSearchParameter param) {
-    return request.get(param).stream().anyMatch(s -> StringUtils.isEmpty(s) || s.equalsIgnoreCase(NULL_VALUE));
+    return request.getFilter(param).stream().anyMatch(s -> s.equals(NULL_VALUE));
   }
 
   // Is one of the values of a query parameter the symbol for IS NOT NULL?
   private boolean containsNotNullValue(NameSearchParameter param) {
-    return request.get(param).stream().anyMatch(s -> s.equalsIgnoreCase(NOT_NULL_VALUE));
+    return request.getFilter(param).stream().anyMatch(s -> s.equals(NOT_NULL_VALUE));
   }
 
 }

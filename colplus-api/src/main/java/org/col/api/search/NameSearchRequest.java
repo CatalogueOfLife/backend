@@ -57,13 +57,6 @@ public class NameSearchRequest {
   private SortBy sortBy;
 
   /**
-   * Whether or not the value in the request has any special meaning or is to be taken at face value.
-   */
-  public static boolean isLiteral(CharSequence value) {
-    return !StringUtils.isBlank(value) && !value.equals(NOT_NULL_VALUE) && !value.equals(NULL_VALUE);
-  }
-
-  /**
    * Extracts all query parameters that match a NameSearchParameter and adds them as request filters.
    */
   public void addQueryParams(MultivaluedMap<String, String> params) {
@@ -80,10 +73,6 @@ public class NameSearchRequest {
 
   public void addFilter(NameSearchParameter param, Object[] values) {
     Arrays.stream(values).forEach((v) -> addFilter(param, v == null ? NULL_VALUE : v.toString()));
-  }
-
-  public void addFilter(NameSearchParameter param, int[] values) {
-    Arrays.stream(values).forEach((v) -> addFilter(param, String.valueOf(v)));
   }
 
   public void addFilter(NameSearchParameter param, String value) {
@@ -126,18 +115,18 @@ public class NameSearchRequest {
     filters.add(param, value);
   }
 
-  public List<String> get(NameSearchParameter param) {
+  public List<String> getFilter(NameSearchParameter param) {
     if (filters == null) {
       return null;
     }
     return filters.get(param);
   }
 
-  public int size() {
+  public int countFilters() {
     return filters == null ? 0 : filters.size();
   }
 
-  public boolean containsKey(NameSearchParameter filter) {
+  public boolean containsFilter(NameSearchParameter filter) {
     return filters == null ? false : filters.containsKey(filter);
   }
 

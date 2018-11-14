@@ -8,6 +8,8 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+
 import org.col.api.TestEntityGenerator;
 import org.col.api.model.BareName;
 import org.col.api.model.Name;
@@ -106,7 +108,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
   }
 
   @Test
-  public void testSortTaxonomic() throws InvalidQueryException {
+  public void testSortTaxonomic() throws InvalidQueryException, JsonProcessingException {
     NameUsageTransfer transfer = new NameUsageTransfer();
 
     // Define search
@@ -116,6 +118,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     // Don't forget this one; we're going to insert more than 10 docs
     Page page = new Page(100);
 
+    // Create name usage in the order we expect them to come out, then shuffle.
     Name n = new Name();
     n.setRank(Rank.KINGDOM);
     n.setScientificName("B");
@@ -132,14 +135,14 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
 
     n = new Name();
     n.setRank(Rank.PHYLUM);
-    n.setScientificName("E");
+    n.setScientificName("C");
     t = new Taxon();
     t.setName(n);
     NameUsageWrapper<Taxon> nuw3 = new NameUsageWrapper<>(t);
 
     n = new Name();
     n.setRank(Rank.PHYLUM);
-    n.setScientificName("C");
+    n.setScientificName("E");
     t = new Taxon();
     t.setName(n);
     NameUsageWrapper<Taxon> nuw4 = new NameUsageWrapper<>(t);
@@ -174,7 +177,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
 
     n = new Name();
     n.setRank(Rank.SPECIES);
-    n.setScientificName("M");
+    n.setScientificName("K");
     t = new Taxon();
     t.setName(n);
     NameUsageWrapper<Taxon> nuw9 = new NameUsageWrapper<>(t);
@@ -188,12 +191,13 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
 
     n = new Name();
     n.setRank(Rank.SPECIES);
-    n.setScientificName("K");
+    n.setScientificName("M");
     t = new Taxon();
     t.setName(n);
     NameUsageWrapper<Taxon> nuw11 = new NameUsageWrapper<>(t);
 
     List<NameUsageWrapper<Taxon>> all = Arrays.asList(nuw1, nuw2, nuw3, nuw4, nuw5, nuw6, nuw7, nuw8, nuw9, nuw10, nuw11);
+
     List<NameUsageWrapper<Taxon>> shuffled = new ArrayList<>(all);
     Collections.shuffle(shuffled);
     shuffled.stream().map(transfer::toEsDocument).forEach(x -> insert(client, indexName, x));
@@ -201,11 +205,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
 
     ResultPage<NameUsageWrapper<NameUsage>> result = svc.search(indexName, nsr, page);
 
-    assertEquals(all.size(), result.getResult().size());
-
-    // This will currently not work because of empty lists/sets in the in-going name usages having been converted to null in the out-going
-    // name usages.
-    // assertEquals(all, result.getResult());
+     assertEquals(all, result.getResult());
 
   }
 
