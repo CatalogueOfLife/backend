@@ -30,7 +30,6 @@ import org.gbif.nameparser.api.Rank;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.col.es.EsUtil.insert;
@@ -63,7 +62,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
   }
 
   @Test
-  public void testSort1() throws InvalidQueryException {
+  public void testSort1() throws InvalidQueryException, JsonProcessingException {
     NameUsageTransfer transfer = new NameUsageTransfer();
     EsNameUsage enu = transfer.toEsDocument(TestEntityGenerator.newNameUsageTaxonWrapper());
     insert(client, indexName, enu);
@@ -84,7 +83,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
   }
 
   @Test
-  public void testSort2() throws InvalidQueryException {
+  public void testSort2() throws InvalidQueryException, JsonProcessingException {
     NameUsageTransfer transfer = new NameUsageTransfer();
     EsNameUsage enu = transfer.toEsDocument(TestEntityGenerator.newNameUsageTaxonWrapper());
     // Overwrite to test ordering by scientific name
@@ -108,7 +107,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
   }
 
   @Test
-  public void testSortTaxonomic() throws InvalidQueryException, JsonProcessingException {
+  public void testSortTaxonomic() throws InvalidQueryException {
     NameUsageTransfer transfer = new NameUsageTransfer();
 
     // Define search
@@ -200,17 +199,23 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
 
     List<NameUsageWrapper<Taxon>> shuffled = new ArrayList<>(all);
     Collections.shuffle(shuffled);
-    shuffled.stream().map(transfer::toEsDocument).forEach(x -> insert(client, indexName, x));
+    shuffled.stream().map(t1 -> {
+      try {
+        return transfer.toEsDocument(t1);
+      } catch (JsonProcessingException e) {
+        throw new RuntimeException();
+      }
+    }).forEach(x -> insert(client, indexName, x));
     refreshIndex(client, indexName);
 
     ResultPage<NameUsageWrapper<NameUsage>> result = svc.search(indexName, nsr, page);
 
-     assertEquals(all, result.getResult());
+    assertEquals(all, result.getResult());
 
   }
 
   @Test
-  public void testQuery1() throws InvalidQueryException {
+  public void testQuery1() throws InvalidQueryException, JsonProcessingException {
     NameUsageTransfer transfer = new NameUsageTransfer();
 
     // Define search
@@ -260,11 +265,10 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
   }
 
   @Test
-  @Ignore
-  public void testQuery2() throws InvalidQueryException {
+  public void testQuery2() throws InvalidQueryException, JsonProcessingException {
     NameUsageTransfer transfer = new NameUsageTransfer();
 
-    // Define search
+    // Find all documents with an issue of either ACCEPTED_NAME_MISSING or ACCORDING_TO_DATE_INVALID
     NameSearchRequest nsr = new NameSearchRequest();
     nsr.addFilter(NameSearchParameter.ISSUE, EnumSet.of(Issue.ACCEPTED_NAME_MISSING, Issue.ACCORDING_TO_DATE_INVALID));
 
@@ -303,22 +307,26 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     nuw7.setIssues(EnumSet.noneOf(Issue.class));
     insert(client, indexName, transfer.toEsDocument(nuw7));
 
+    // No match
+    NameUsageWrapper<Taxon> nuw8 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    nuw8.setIssues(EnumSet.of(Issue.ACCEPTED_NAME_MISSING, Issue.DOUBTFUL_NAME));
+    insert(client, indexName, transfer.toEsDocument(nuw8));
+
     refreshIndex(client, indexName);
 
     ResultPage<NameUsageWrapper<NameUsage>> result = svc.search(indexName, nsr, new Page());
 
-    assertEquals(3, result.getResult().size());
+    assertEquals(4, result.getResult().size());
   }
 
   @Test
-  @Ignore
-  public void testQuery3() throws InvalidQueryException {
+  public void testQuery3() throws InvalidQueryException, JsonProcessingException {
     NameUsageTransfer transfer = new NameUsageTransfer();
 
-    // Define search condition
+    // Find all documents with an issue of any of ACCEPTED_NAME_MISSING, ACCORDING_TO_DATE_INVALID, BASIONYM_ID_INVALID
     NameSearchRequest nsr = new NameSearchRequest();
     nsr.addFilter(NameSearchParameter.ISSUE,
-        new Issue[] {Issue.ACCEPTED_NAME_MISSING, Issue.ACCORDING_TO_DATE_INVALID, Issue.BASIONYM_ID_INVALID});
+        Issue.ACCEPTED_NAME_MISSING, Issue.ACCORDING_TO_DATE_INVALID, Issue.BASIONYM_ID_INVALID);
 
     // Match
     NameUsageWrapper<Taxon> nuw1 = TestEntityGenerator.newNameUsageTaxonWrapper();
@@ -363,7 +371,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
   }
 
   @Test
-  public void autocomplete1() throws InvalidQueryException {
+  public void autocomplete1() throws InvalidQueryException, JsonProcessingException {
     NameUsageTransfer transfer = new NameUsageTransfer();
 
     // Define search
@@ -408,7 +416,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
   }
 
   @Test
-  public void autocomplete2() throws InvalidQueryException {
+  public void autocomplete2() throws InvalidQueryException, JsonProcessingException {
     NameUsageTransfer transfer = new NameUsageTransfer();
 
     // Define search
@@ -455,7 +463,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
   }
 
   @Test
-  public void testIsNull() throws InvalidQueryException {
+  public void testIsNull() throws InvalidQueryException, JsonProcessingException {
     NameUsageTransfer transfer = new NameUsageTransfer();
 
     // Define search condition
@@ -487,7 +495,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
   }
 
   @Test
-  public void testIsNotNull() throws InvalidQueryException {
+  public void testIsNotNull() throws InvalidQueryException, JsonProcessingException {
     NameUsageTransfer transfer = new NameUsageTransfer();
 
     // Define search condition
@@ -518,31 +526,162 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     assertEquals(2, result.getResult().size());
   }
 
-  public void testFieldsQuery() {
+  @Test
+  public void testNameFieldsQuery1() throws InvalidQueryException, JsonProcessingException {
     NameUsageTransfer transfer = new NameUsageTransfer();
 
+    // Find all documents where the uninomial field is not empty
+    NameSearchRequest nsr = new NameSearchRequest();
+    nsr.addFilter(NameSearchParameter.FIELD, "uninomial");
+
+    // Match
     Name n = new Name();
     n.setUninomial("laridae");
     BareName bn = new BareName(n);
-    NameUsageWrapper<BareName> nuw = new NameUsageWrapper<BareName>(bn);
-    EsNameUsage doc = transfer.toEsDocument(nuw);
-    insert(client, indexName, doc);
+    NameUsageWrapper<NameUsage> nuw1 = new NameUsageWrapper<>(bn);
+    insert(client, indexName, transfer.toEsDocument(nuw1));
 
+    // Match
     n = new Name();
     n.setUninomial("parus");
     n.setGenus("parus");
     bn = new BareName(n);
-    nuw = new NameUsageWrapper<BareName>(bn);
-    doc = transfer.toEsDocument(nuw);
-    insert(client, indexName, doc);
+    NameUsageWrapper<NameUsage> nuw2 = new NameUsageWrapper<>(bn);
+    insert(client, indexName, transfer.toEsDocument(nuw2));
 
+    // No match
+    n = new Name();
+    n.setUninomial(null);
+    n.setGenus("parus");
+    bn = new BareName(n);
+    NameUsageWrapper<NameUsage> nuw3 = new NameUsageWrapper<>(bn);
+    insert(client, indexName, transfer.toEsDocument(nuw3));
+
+    // Match
     n = new Name();
     n.setUninomial("parus");
     n.setGenus("parus");
     bn = new BareName(n);
-    nuw = new NameUsageWrapper<BareName>(bn);
-    doc = transfer.toEsDocument(nuw);
-    insert(client, indexName, doc);
+    NameUsageWrapper<NameUsage> nuw4 = new NameUsageWrapper<>(bn);
+    insert(client, indexName, transfer.toEsDocument(nuw4));
+
+    refreshIndex(client, indexName);
+
+    List<NameUsageWrapper<NameUsage>> expected = Arrays.asList(nuw1, nuw2, nuw4);
+
+    ResultPage<NameUsageWrapper<NameUsage>> result = svc.search(indexName, nsr, new Page());
+
+    assertEquals(expected, result.getResult());
+
+  }
+
+  @Test
+  public void testNameFieldsQuery2() throws InvalidQueryException, JsonProcessingException {
+    NameUsageTransfer transfer = new NameUsageTransfer();
+
+    // Find all documents where the uninomial field is not empty
+    NameSearchRequest nsr = new NameSearchRequest();
+    nsr.addFilter(NameSearchParameter.FIELD, "uninomial", "remarks", "specific_epithet");
+
+    // Match
+    Name n = new Name();
+    n.setUninomial("laridae");
+    BareName bn = new BareName(n);
+    NameUsageWrapper<NameUsage> nuw1 = new NameUsageWrapper<>(bn);
+    insert(client, indexName, transfer.toEsDocument(nuw1));
+
+    // Match
+    n = new Name();
+    n.setUninomial("parus");
+    n.setGenus("parus");
+    bn = new BareName(n);
+    NameUsageWrapper<NameUsage> nuw2 = new NameUsageWrapper<>(bn);
+    insert(client, indexName, transfer.toEsDocument(nuw2));
+
+    // No match
+    n = new Name();
+    n.setUninomial(null);
+    n.setGenus("parus");
+    bn = new BareName(n);
+    NameUsageWrapper<NameUsage> nuw3 = new NameUsageWrapper<>(bn);
+    insert(client, indexName, transfer.toEsDocument(nuw3));
+
+    // Match
+    n = new Name();
+    n.setUninomial("parus");
+    n.setGenus("parus");
+    bn = new BareName(n);
+    NameUsageWrapper<NameUsage> nuw4 = new NameUsageWrapper<>(bn);
+    insert(client, indexName, transfer.toEsDocument(nuw4));
+
+    refreshIndex(client, indexName);
+
+    List<NameUsageWrapper<NameUsage>> expected = Arrays.asList(nuw1, nuw2, nuw4);
+
+    ResultPage<NameUsageWrapper<NameUsage>> result = svc.search(indexName, nsr, new Page());
+
+    assertEquals(expected, result.getResult());
+
+  }
+
+  @Test
+  public void testNameFieldsQuery3() throws InvalidQueryException, JsonProcessingException {
+    NameUsageTransfer transfer = new NameUsageTransfer();
+
+    // Find all documents where the uninomial field is not empty
+    NameSearchRequest nsr = new NameSearchRequest();
+    nsr.addFilter(NameSearchParameter.FIELD, "uninomial", "remarks", "specific_epithet");
+
+    // Match
+    Name n = new Name();
+    n.setUninomial("laridae");
+    BareName bn = new BareName(n);
+    NameUsageWrapper<NameUsage> nuw1 = new NameUsageWrapper<>(bn);
+    insert(client, indexName, transfer.toEsDocument(nuw1));
+
+    // Match
+    n = new Name();
+    n.setUninomial("parus");
+    n.setGenus("parus");
+    bn = new BareName(n);
+    NameUsageWrapper<NameUsage> nuw2 = new NameUsageWrapper<>(bn);
+    insert(client, indexName, transfer.toEsDocument(nuw2));
+
+    // Match
+    n = new Name();
+    n.setUninomial(null);
+    n.setGenus("parus");
+    n.setSpecificEpithet("major");
+    n.setRemarks("A bird");
+    bn = new BareName(n);
+    NameUsageWrapper<NameUsage> nuw3 = new NameUsageWrapper<>(bn);
+    insert(client, indexName, transfer.toEsDocument(nuw3));
+
+    // No Match
+    n = new Name();
+    n.setUninomial(null);
+    n.setGenus("parus");
+    bn = new BareName(n);
+    NameUsageWrapper<NameUsage> nuw4 = new NameUsageWrapper<>(bn);
+    insert(client, indexName, transfer.toEsDocument(nuw4));
+
+    // Match
+    n = new Name();
+    n.setUninomial(null);
+    n.setGenus("parus");
+    n.setRemarks("A bird");
+    bn = new BareName(n);
+    NameUsageWrapper<NameUsage> nuw5 = new NameUsageWrapper<>(bn);
+    insert(client, indexName, transfer.toEsDocument(nuw5));
+
+    refreshIndex(client, indexName);
+
+    List<NameUsageWrapper<NameUsage>> expected = Arrays.asList(nuw1, nuw2, nuw3, nuw5);
+
+    ResultPage<NameUsageWrapper<NameUsage>> result = svc.search(indexName, nsr, new Page());
+
+    assertEquals(expected, result.getResult());
+
   }
 
   private static List<VernacularName> create(List<String> names) {

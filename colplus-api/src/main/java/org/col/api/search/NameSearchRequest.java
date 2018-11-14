@@ -71,7 +71,7 @@ public class NameSearchRequest {
     values.forEach((s) -> addFilter(param, s == null ? NULL_VALUE : s.toString()));
   }
 
-  public void addFilter(NameSearchParameter param, Object[] values) {
+  public void addFilter(NameSearchParameter param, Object... values) {
     Arrays.stream(values).forEach((v) -> addFilter(param, v == null ? NULL_VALUE : v.toString()));
   }
 

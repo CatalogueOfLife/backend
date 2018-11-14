@@ -21,7 +21,7 @@ import static org.col.common.util.CollectionUtils.notEmpty;
  */
 class NameUsageTransfer {
 
-  EsNameUsage toEsDocument(NameUsageWrapper<? extends NameUsage> wrapper) {
+  EsNameUsage toEsDocument(NameUsageWrapper<? extends NameUsage> wrapper) throws JsonProcessingException {
 
     EsNameUsage enu = new EsNameUsage();
     if (notEmpty(wrapper.getVernacularNames())) {
@@ -42,11 +42,7 @@ class NameUsageTransfer {
       enu.setTaxonId(((Taxon) wrapper.getUsage()).getId());
     }
     enu.setType(name.getType());
-    try {
-      enu.setPayload(EsModule.NAME_USAGE_WRITER.writeValueAsString(wrapper));
-    } catch (JsonProcessingException e) {
-      throw new EsException(e);
-    }
+    enu.setPayload(EsModule.NAME_USAGE_WRITER.writeValueAsString(wrapper));
     enu.setNameFields(getNonNullNameFields(wrapper.getUsage().getName()));
     return enu;
   }
