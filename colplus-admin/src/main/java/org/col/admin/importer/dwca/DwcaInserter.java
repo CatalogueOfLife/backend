@@ -14,7 +14,6 @@ import org.col.api.model.Dataset;
 import org.col.api.vocab.ColDwcTerm;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.GbifTerm;
-import org.neo4j.graphdb.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,47 +53,41 @@ public class DwcaInserter extends NeoInserter {
       // taxon core only, extensions are interpreted later
       insertEntities(reader, DwcTerm.Taxon,
           inter::interpret,
-          store::put
+          store::createNameAndUsage
       );
-
-    } catch (RuntimeException e) {
-      throw new NormalizationFailedException("Failed to batch insert DwC-A data", e);
-    }
-  }
-
-  @Override
-  public void postBatchInsert() throws NormalizationFailedException {
-    try (Transaction tx = store.getNeo().beginTx()) {
+  
       insertNameRelations(reader, ColDwcTerm.NameRelations,
           inter::interpretNameRelations,
           DwcaReader.DWCA_ID,
           ColDwcTerm.relatedNameUsageID
       );
-
+  
       insertTaxonEntities(reader, GbifTerm.Distribution,
           inter::interpretDistribution,
           DwcaReader.DWCA_ID,
           (t, d) -> t.distributions.add(d)
       );
-
+  
       insertTaxonEntities(reader, GbifTerm.VernacularName,
           inter::interpretVernacularName,
           DwcaReader.DWCA_ID,
           (t, vn) -> t.vernacularNames.add(vn)
       );
-
+  
       insertTaxonEntities(reader, GbifTerm.Reference,
           inter::interpretReference,
           DwcaReader.DWCA_ID,
           (t, r) -> {
-            store.put(r);
-            t.bibliography.add(r.getId());
+            if (store.create(r)) {
+              t.bibliography.add(r.getId());
+            } else {
+          
+            }
           }
       );
-      tx.success();
-
+      
     } catch (RuntimeException e) {
-      throw new NormalizationFailedException("Failed to read DWCA files", e);
+      throw new NormalizationFailedException("Failed to batch insert DwC-A data", e);
     }
   }
 

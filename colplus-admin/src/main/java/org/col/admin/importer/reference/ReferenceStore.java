@@ -10,7 +10,7 @@ public interface ReferenceStore {
   /**
    * Stores a new references and assigns it a unique key
    */
-  Reference put(Reference r);
+  boolean create(Reference r);
 
   /**
    * @return list of all references

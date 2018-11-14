@@ -8,7 +8,7 @@ import com.google.common.collect.Lists;
 import org.col.admin.importer.InsertMetadata;
 import org.col.admin.importer.InterpreterBase;
 import org.col.admin.importer.neo.model.NeoNameRel;
-import org.col.admin.importer.neo.model.NeoTaxon;
+import org.col.admin.importer.neo.model.NeoUsage;
 import org.col.admin.importer.neo.model.RelType;
 import org.col.admin.importer.reference.ReferenceFactory;
 import org.col.api.model.*;
@@ -26,8 +26,7 @@ import org.slf4j.LoggerFactory;
  */
 public class DwcInterpreter extends InterpreterBase {
   private static final Logger LOG = LoggerFactory.getLogger(DwcInterpreter.class);
-  private static final EnumNote<TaxonomicStatus> NO_STATUS =
-      new EnumNote<>(TaxonomicStatus.DOUBTFUL, null);
+  private static final EnumNote<TaxonomicStatus> NO_STATUS = new EnumNote<>(TaxonomicStatus.DOUBTFUL, null);
 
   private final InsertMetadata insertMetadata;
 
@@ -36,24 +35,27 @@ public class DwcInterpreter extends InterpreterBase {
     this.insertMetadata = insertMetadata;
   }
 
-  public Optional<NeoTaxon> interpret(VerbatimRecord v) {
+  public Optional<NeoUsage> interpret(VerbatimRecord v) {
     // name
     Optional<NameAccordingTo> nat = interpretName(v);
     if (nat.isPresent()) {
-      // taxon
-      NeoTaxon t = NeoTaxon.createTaxon(Origin.SOURCE, nat.get().getName(), false);
+      // usage
+      NeoUsage t = NeoUsage.createTaxon(Origin.SOURCE, false);
+      // add the name
+      t.usage.setName(nat.get().getName());
       // add taxon in any case - we can swap status of a synonym during normalization
       EnumNote<TaxonomicStatus> status = SafeParser
           .parse(TaxonomicStatusParser.PARSER, v.get(DwcTerm.taxonomicStatus)).orElse(NO_STATUS);
       interpretTaxon(t, v, status, nat.get().getAccordingTo());
       // a synonym by status?
-      // we deal with relations via DwcTerm.acceptedNameUsageID and DwcTerm.acceptedNameUsage during
-      // relation insertion
+      // we deal with relations via DwcTerm.acceptedNameUsageID and DwcTerm.acceptedNameUsage
+      // during relation insertion
       if (status.val.isSynonym()) {
-        t.synonym = new Synonym();
-        t.synonym.setStatus(status.val);
-        t.synonym.setAccordingTo(nat.get().getAccordingTo());
-        t.synonym.setVerbatimKey(v.getKey());
+        Synonym syn = new Synonym();
+        syn.setStatus(status.val);
+        syn.setAccordingTo(nat.get().getAccordingTo());
+        syn.setVerbatimKey(v.getKey());
+        t.usage = syn;
         t.homotypic = TaxonomicStatusParser.isHomotypic(status);
       }
       // flat classification
@@ -152,18 +154,19 @@ public class DwcInterpreter extends InterpreterBase {
     }
   }
 
-  private void interpretTaxon(NeoTaxon t, VerbatimRecord v, EnumNote<TaxonomicStatus> status, String accordingTo) {
+  private void interpretTaxon(NeoUsage u, VerbatimRecord v, EnumNote<TaxonomicStatus> status, String accordingTo) {
+    Taxon tax = u.getTaxon();
     // and it keeps the taxonID for resolution of relations
-    t.taxon.setVerbatimKey(v.getKey());
-    t.taxon.setId(v.getFirst(DwcTerm.taxonID, DwcaReader.DWCA_ID));
+    tax.setVerbatimKey(v.getKey());
+    tax.setId(v.getFirst(DwcTerm.taxonID, DwcaReader.DWCA_ID));
     // this can be a synonym at this stage which the class does not accept
-    t.taxon.setDoubtful(TaxonomicStatus.DOUBTFUL == status.val || status.val.isSynonym());
-    t.taxon.setAccordingTo(ObjectUtils.coalesce(v.get(DwcTerm.nameAccordingTo), accordingTo));
-    t.taxon.setAccordingToDate(null);
-    t.taxon.setOrigin(Origin.SOURCE);
-    t.taxon.setDatasetUrl(uri(v, t, Issue.URL_INVALID, DcTerm.references));
-    t.taxon.setFossil(null);
-    t.taxon.setRecent(null);
+    tax.setDoubtful(TaxonomicStatus.DOUBTFUL == status.val || status.val.isSynonym());
+    tax.setAccordingTo(ObjectUtils.coalesce(v.get(DwcTerm.nameAccordingTo), accordingTo));
+    tax.setAccordingToDate(null);
+    tax.setOrigin(Origin.SOURCE);
+    tax.setDatasetUrl(uri(v, u, Issue.URL_INVALID, DcTerm.references));
+    tax.setFossil(null);
+    tax.setRecent(null);
     // t.setLifezones();
     if (v.hasTerm(ColDwcTerm.speciesEstimate)) {
       Integer est = v.getInt(ColDwcTerm.speciesEstimate, Issue.ESTIMATES_INVALID);
@@ -171,17 +174,17 @@ public class DwcInterpreter extends InterpreterBase {
         if (est < 0) {
           v.addIssue(Issue.ESTIMATES_INVALID);
         } else {
-          t.taxon.setSpeciesEstimate(est);
+          tax.setSpeciesEstimate(est);
           if (v.hasTerm(ColDwcTerm.speciesEstimateReference)) {
             Reference ref = refFactory.fromCitation(null, v.get(ColDwcTerm.speciesEstimateReference), v);
             if (ref != null) {
-              t.taxon.setSpeciesEstimateReferenceId(ref.getId());
+              tax.setSpeciesEstimateReferenceId(ref.getId());
             }
           }
         }
       }
     }
-    t.taxon.setRemarks(v.get(DwcTerm.taxonRemarks));
+    tax.setRemarks(v.get(DwcTerm.taxonRemarks));
   }
 
   private Optional<NameAccordingTo> interpretName(VerbatimRecord v) {

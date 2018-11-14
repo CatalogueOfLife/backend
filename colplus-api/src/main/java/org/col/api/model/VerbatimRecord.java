@@ -41,7 +41,7 @@ public class VerbatimRecord implements IssueContainer, IntKey {
   private Integer key;
   private Integer datasetKey;
   // instance hash created on load to see if the instance has been changed
-  private int _hashKeyOnLoad;
+  private int _hashKeyOnLoad = -1;
   
   private long line;
   private String file;
@@ -124,6 +124,14 @@ public class VerbatimRecord implements IssueContainer, IntKey {
     issues.add(issue);
   }
   
+  public void addIssues(Issue... issues) {
+    addIssues(Arrays.asList(issues));
+  }
+
+  public void addIssues(Collection<Issue> issues) {
+    this.issues.addAll(issues);
+  }
+
   @Override
   public boolean hasIssue(Issue issue) {
     return issues.contains(issue);
@@ -295,7 +303,7 @@ public class VerbatimRecord implements IssueContainer, IntKey {
    * @return true if the instance has been modified since the last time setHashCode was executed.
    */
   public boolean hasChanged() {
-    return _hashKeyOnLoad != hashCode();
+    return _hashKeyOnLoad == -1 || _hashKeyOnLoad != hashCode();
   }
   
   @Override

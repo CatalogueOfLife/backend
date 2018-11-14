@@ -7,9 +7,9 @@ import org.neo4j.graphdb.Label;
  */
 public enum Labels implements Label {
   /**
-   * Applied to all nodes, i.e. taxon or synonym
+   * Applied to nodes that contain a name
    */
-  ALL,
+  NAME,
 
   /**
    * Accepted taxa only

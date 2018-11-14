@@ -20,7 +20,7 @@ import org.col.admin.importer.neo.NeoDb;
 import org.col.admin.importer.neo.NeoDbFactory;
 import org.col.admin.importer.neo.NotUniqueRuntimeException;
 import org.col.admin.importer.neo.model.NeoProperties;
-import org.col.admin.importer.neo.model.NeoTaxon;
+import org.col.admin.importer.neo.model.NeoUsage;
 import org.col.admin.importer.neo.model.RankedName;
 import org.col.admin.importer.neo.printer.GraphFormat;
 import org.col.admin.importer.neo.printer.PrinterUtils;
@@ -102,13 +102,13 @@ public class NormalizerACEFIT {
     }
   }
 
-  NeoTaxon byID(String id) {
-    Node n = store.byID(id);
-    return store.get(n);
+  NeoUsage byID(String id) {
+    Node n = store.byTaxonID(id);
+    return store.getUsage(n);
   }
 
-  NeoTaxon byName(String name, @Nullable String author) {
-    List<Node> nodes = store.byScientificName(name);
+  NeoUsage byName(String name, @Nullable String author) {
+    List<Node> nodes = store.usageByScientificName(name);
     // filter by author
     if (author != null) {
       nodes.removeIf(n -> !author.equalsIgnoreCase(NeoProperties.getAuthorship(n)));
@@ -120,15 +120,15 @@ public class NormalizerACEFIT {
     if (nodes.size() > 1) {
       throw new NotUniqueRuntimeException("scientificName", name);
     }
-    return store.get(nodes.get(0));
+    return store.getUsage(nodes.get(0));
   }
 
-  NeoTaxon accepted(Node syn) {
+  NeoUsage accepted(Node syn) {
     List<RankedName> accepted = store.accepted(syn);
     if (accepted.size() != 1) {
       throw new IllegalStateException("Synonym has " + accepted.size() + " accepted taxa");
     }
-    return store.get(accepted.get(0).node);
+    return store.getUsage(accepted.get(0).node);
   }
 
   private boolean hasIssues(VerbatimEntity ent, Issue... issues) {
@@ -145,7 +145,7 @@ public class NormalizerACEFIT {
     normalize(0);
     writeToFile();
     try (Transaction tx = store.getNeo().beginTx()) {
-      NeoTaxon t = byID("s7");
+      NeoUsage t = byID("s7");
       assertTrue(t.isSynonym());
       assertEquals("Astragalus nonexistus", t.name.getScientificName());
       assertEquals("DC.", t.name.authorshipComplete());
@@ -169,7 +169,7 @@ public class NormalizerACEFIT {
       assertEquals(0, t.vernacularNames.size());
       assertEquals(0, t.distributions.size());
       assertEquals(0, t.bibliography.size());
-      NeoTaxon acc = accepted(t.node);
+      NeoUsage acc = accepted(t.node);
       assertEquals(1, acc.vernacularNames.size());
       assertEquals(2, acc.distributions.size());
       assertEquals(2, acc.bibliography.size());
@@ -183,7 +183,7 @@ public class NormalizerACEFIT {
   public void acefSample() throws Exception {
     normalize(1);
     try (Transaction tx = store.getNeo().beginTx()) {
-      NeoTaxon t = byID("14649");
+      NeoUsage t = byID("14649");
       assertEquals("Zapoteca formosa", t.name.getScientificName());
       assertEquals("(Kunth) H.M.Hern.", t.name.authorshipComplete());
       assertEquals(Rank.SPECIES, t.name.getRank());
@@ -219,7 +219,7 @@ public class NormalizerACEFIT {
   public void acef4NonUnique() throws Exception {
     normalize(4);
     try (Transaction tx = store.getNeo().beginTx()) {
-      NeoTaxon t = byID("1");
+      NeoUsage t = byID("1");
       assertEquals("Inga vera", t.name.getScientificName());
       assertEquals("Willd.", t.name.authorshipComplete());
       assertEquals(Rank.SPECIES, t.name.getRank());
@@ -244,13 +244,13 @@ public class NormalizerACEFIT {
   public void acef6Misapplied() throws Exception {
     normalize(6);
     try (Transaction tx = store.getNeo().beginTx()) {
-      NeoTaxon t = byID("MD1");
+      NeoUsage t = byID("MD1");
       assertEquals("Latrodectus tredecimguttatus (Rossi, 1790)", t.name.canonicalNameComplete());
 
       Set<String> nonMisappliedIds = Sets.newHashSet("s17", "s18");
       int counter = 0;
       for (Node sn : Traversals.SYNONYMS.traverse(t.node).nodes()) {
-        NeoTaxon s = store.get(sn);
+        NeoUsage s = store.getUsage(sn);
         assertTrue(s.synonym.getStatus().isSynonym());
         if (nonMisappliedIds.remove(s.getID())) {
           assertEquals(TaxonomicStatus.SYNONYM, s.synonym.getStatus());
@@ -270,7 +270,7 @@ public class NormalizerACEFIT {
   public void acef7Nulls() throws Exception {
     normalize(7);
     try (Transaction tx = store.getNeo().beginTx()) {
-      NeoTaxon t = byID("CIP-S-902");
+      NeoUsage t = byID("CIP-S-902");
       assertEquals("Lutzomyia preclara", t.name.canonicalNameComplete());
 
       t = byID("2");
@@ -290,7 +290,7 @@ public class NormalizerACEFIT {
   public void acef14virus() throws Exception {
     normalize(14);
     try (Transaction tx = store.getNeo().beginTx()) {
-      NeoTaxon t = byID("Vir-96");
+      NeoUsage t = byID("Vir-96");
       assertEquals("Phikmvlikevirus: Pseudomonas phage LKA1 ICTV", t.name.getScientificName());
     }
   }
@@ -303,7 +303,7 @@ public class NormalizerACEFIT {
   public void acef101() throws Exception {
     normalize(101);
     try (Transaction tx = store.getNeo().beginTx()) {
-      NeoTaxon t = byID("Sys-2476");
+      NeoUsage t = byID("Sys-2476");
       assertNotNull(t);
       assertEquals("Chagasia maculata", t.name.getScientificName());
     }

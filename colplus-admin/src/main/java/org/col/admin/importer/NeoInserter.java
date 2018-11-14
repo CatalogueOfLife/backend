@@ -10,9 +10,8 @@ import java.util.function.Function;
 
 import org.col.admin.importer.neo.NeoDb;
 import org.col.admin.importer.neo.NodeBatchProcessor;
-import org.col.admin.importer.neo.model.Labels;
 import org.col.admin.importer.neo.model.NeoNameRel;
-import org.col.admin.importer.neo.model.NeoTaxon;
+import org.col.admin.importer.neo.model.NeoUsage;
 import org.col.admin.importer.reference.ReferenceFactory;
 import org.col.api.model.Dataset;
 import org.col.api.model.VerbatimEntity;
@@ -53,16 +52,12 @@ public abstract class NeoInserter {
 
     store.endBatchMode();
     LOG.info("Neo batch inserter closed, data flushed to disk");
-
-    final int batchV = vcounter;
-    final int batchRec = store.size();
-    postBatchInsert();
-    LOG.info("Post batch insert completed, {} verbatim records processed creating {} new nodes", batchV, store.size()-batchRec);
-
+    
     LOG.debug("Start processing explicit relations ...");
-    store.process(Labels.ALL,5000, relationProcessor());
+    store.process(null,5000, relationProcessor());
 
     LOG.info("Insert of {} verbatim records and {} nodes completed", vcounter, store.size());
+    
     return meta;
   }
 
@@ -74,7 +69,7 @@ public abstract class NeoInserter {
     final AtomicInteger counter = new AtomicInteger(0);
     final AtomicInteger success = new AtomicInteger(0);
     reader.stream(classTerm).forEach(rec -> {
-      store.assignKey(rec);
+      store.put(rec);
       if (proc.apply(rec)) {
         success.incrementAndGet();
       } else {
@@ -102,11 +97,11 @@ public abstract class NeoInserter {
       return false;
     });
   }
-
+  
   protected <T extends VerbatimEntity> void insertTaxonEntities(final CsvReader reader, final Term classTerm,
                                                                 Function<VerbatimRecord, List<T>> interpret,
                                                                 Term taxonIdTerm,
-                                                                BiConsumer<NeoTaxon, T> add
+                                                                BiConsumer<NeoUsage, T> add
   ) {
     processVerbatim(reader, classTerm, rec -> {
       List<T> results = interpret.apply(rec);
@@ -115,10 +110,10 @@ public abstract class NeoInserter {
       for (T obj : results) {
         obj.setVerbatimKey(rec.getKey());
         String id = rec.getRaw(taxonIdTerm);
-        NeoTaxon t = store.getByID(id);
+        NeoUsage t = store.usages().objByID(id);
         if (t != null) {
           add.accept(t, obj);
-          store.update(t);
+          store.usages().update(t);
         } else {
           interpreted = false;
           LOG.warn("Non existing {} {} found in {} record line {}, {}", taxonIdTerm.simpleName(), id, rec.getType().simpleName(), rec.getLine(), rec.getFile());
@@ -135,8 +130,8 @@ public abstract class NeoInserter {
     processVerbatim(reader, classTerm, rec -> {
       Optional<NeoNameRel> opt = interpret.apply(rec);
       if (opt.isPresent()) {
-        Node n1 = store.byID(rec.getRaw(nameIdTerm));
-        Node n2 = store.byID(rec.getRaw(relatedNameIdTerm));
+        Node n1 = store.names().nodeByID(rec.getRaw(nameIdTerm));
+        Node n2 = store.names().nodeByID(rec.getRaw(relatedNameIdTerm));
         store.createNameRel(n1, n2, opt.get());
         return true;
       }
@@ -145,9 +140,7 @@ public abstract class NeoInserter {
   }
 
   public abstract void batchInsert() throws NormalizationFailedException;
-
-  public abstract void postBatchInsert() throws NormalizationFailedException;
-
+  
   protected abstract NodeBatchProcessor relationProcessor();
 
   protected abstract Optional<Dataset> readMetadata();

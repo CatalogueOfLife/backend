@@ -1,18 +1,10 @@
 package org.col.admin.importer;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.InputStream;
-import java.io.StringWriter;
-import java.io.Writer;
+import java.io.*;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -27,24 +19,24 @@ import org.apache.commons.io.IOUtils;
 import org.col.admin.config.NormalizerConfig;
 import org.col.admin.importer.neo.NeoDb;
 import org.col.admin.importer.neo.NeoDbFactory;
-import org.col.admin.importer.neo.model.Labels;
+import org.col.admin.importer.neo.model.NeoUsage;
 import org.col.admin.importer.neo.model.NeoProperties;
-import org.col.admin.importer.neo.model.NeoTaxon;
 import org.col.admin.importer.neo.printer.GraphFormat;
 import org.col.admin.importer.neo.printer.PrinterUtils;
 import org.col.admin.matching.NameIndexFactory;
 import org.col.api.model.Dataset;
 import org.col.api.model.Name;
 import org.col.api.vocab.DataFormat;
-import org.junit.*;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 /**
  * Tests to normalize various dwc archives and compare the results from the resulting neo store with
@@ -149,9 +141,9 @@ public class NormalizerTreeIT {
       // debug();
 
       try (Transaction tx = store.getNeo().beginTx()) {
-        NeoTaxon t26 = store.getByID("26");
-        for (Node n : store.byScientificName(Labels.ALL, "Discomitochondria")) {
-          NeoTaxon t = store.get(n);
+        NeoUsage t26 = store.getByTaxonID("26");
+        for (Node n : store.usageByScientificName("Discomitochondria")) {
+          NeoUsage t = store.getUsage(n);
           Name na = t.name;
         }
 

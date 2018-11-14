@@ -10,7 +10,6 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import org.col.admin.importer.acef.AcefInserter;
-import org.col.admin.importer.coldp.ColDPInserter;
 import org.col.admin.importer.dwca.DwcaInserter;
 import org.col.admin.importer.neo.NeoDb;
 import org.col.admin.importer.neo.NodeBatchProcessor;
@@ -116,52 +115,59 @@ public class Normalizer implements Callable<Boolean> {
       return false;
     }
   }
+  
   /**
    * Mostly checks for required attributes so that subsequent postgres imports do not fail.
    */
   private void verify() {
-    // verify uniqueness of name ids which are not covered by neo4j indices
-    final Set<String> nameIds = new HashSet<>(store.size());
-    store.all().forEach(t -> {
-      require(t.name, t.name.getId(), "name id");
-      require(t.name, t.taxon.getId(), "taxon id");
-      if (!nameIds.add(t.name.getId())) {
-        String msg = "Duplicate nameID "+ t.name.getId();
-        LOG.error(msg);
-        throw new NormalizationFailedException(msg);
-      }
-
+    store.names().all().forEach(nn -> {
+      Name n = nn.name;
+      require(n, n.getId(), "name id");
+  
       // is it a source with verbatim data?
-      require(t.name, t.name.getOrigin(), "name origin");
-
+      require(n, n.getOrigin(), "name origin");
+  
       // check for required fields to avoid pg exceptions
-      require(t.name, t.name.getScientificName(), "scientific name");
-      require(t.name, t.name.getRank(), "rank");
-      require(t.name, t.name.getType(), "name type");
-
+      require(n, n.getScientificName(), "scientific name");
+      require(n, n.getRank(), "rank");
+      require(n, n.getType(), "name type");
+  
+  
+      VerbatimRecord v = NameValidator.flagIssues(n, store.verbatimSupplier(n.getVerbatimKey()));
+      if (v != null) {
+        store.put(v);
+      }
+  
+    });
+    
+    store.usages().all().forEach(u -> {
       // taxon or synonym
-      if (!t.isSynonym()) {
-        require(t.taxon, t.taxon.getOrigin(), "taxon origin");
-        require(t.taxon, t.taxon.getStatus(), "taxon status");
-      }
-
-      // vernacular
-      for (VernacularName v : t.vernacularNames) {
-        require(v, v.getName(), "vernacular name");
-      }
-
-      // distribution
-      for (Distribution d : t.distributions) {
-        require(d, d.getGazetteer(), "distribution area standard");
-        require(d, d.getArea(), "distribution area");
-      }
-
-      // verify source name and flag issues
-      if (t.name.getVerbatimKey() != null) {
-        VerbatimRecord v = store.getVerbatim(t.name.getVerbatimKey());
-        if (NameValidator.flagIssues(t.name, v)) {
-          store.put(v);
+      if (u.isSynonym()) {
+        Synonym s = u.getSynonym();
+  
+        // no vernaculars, distribution etc
+        check(s, u.descriptions.isEmpty(), "no descriptions");
+        check(s, u.distributions.isEmpty(), "no distributions");
+        check(s, u.media.isEmpty(), "no media");
+        check(s, u.vernacularNames.isEmpty(), "no vernacular names");
+        
+      } else {
+        Taxon t = u.getTaxon();
+        require(t, t.getId(), "taxon id");
+        require(t, t.getOrigin(), "taxon origin");
+        require(t, t.getStatus(), "taxon status");
+  
+        // vernacular
+        for (VernacularName v : u.vernacularNames) {
+          require(v, v.getName(), "vernacular name");
         }
+  
+        // distribution
+        for (Distribution d : u.distributions) {
+          require(d, d.getGazetteer(), "distribution area standard");
+          require(d, d.getArea(), "distribution area");
+        }
+  
       }
     });
 
@@ -171,10 +177,10 @@ public class Normalizer implements Callable<Boolean> {
       public void process(Node n) {
         RankedName rn = NeoProperties.getRankedName(n);
         if (rn.rank.isSpeciesOrBelow()) {
-          NeoTaxon sp = store.get(n);
+          NeoName sp = store.names().objByNode(n);
           Node gn = Traversals.parentWithRankOf(sp.node, Rank.GENUS);
           if (gn != null) {
-            NeoTaxon g = store.get(gn);
+            NeoName g = store.names().objByNode(gn);
             // does the genus name match up?
             if (sp.name.isParsed() && g.name.isParsed() && !Objects.equals(sp.name.getGenus(), g.name.getUninomial())) {
               store.addIssues(sp.name, Issue.PARENT_NAME_MISMATCH);
@@ -216,7 +222,15 @@ public class Normalizer implements Callable<Boolean> {
       }
     }
   }
-
+  
+  private void check(VerbatimEntity ent, boolean assertion, String msg) {
+    if (!assertion) {
+      // failed assertion
+      String errMsg = String.format("%s check failed for %s", msg, ent.getClass().getSimpleName());
+      throw new NormalizationFailedException.AssertionException(errMsg);
+    }
+  }
+  
   private <T> T require(VerbatimEntity ent, T obj, String fieldName) {
     if (obj == null) {
       // in such fatal cases log the verbatim record in question for later debugging
@@ -240,30 +254,18 @@ public class Normalizer implements Callable<Boolean> {
     // track duplicates, map index name ids to first verbatim key
     // if synonym negate the verbatim key to track status without needing more memory
     final Map<String, Integer> nameIds = new HashMap<>();
-    store.all().forEach(t -> {
+    store.names().all().forEach(t -> {
       NameMatch m = index.match(t.name, dataset.getContributesTo()!=null, false);
       if (m.hasMatch()) {
         t.name.setIndexNameId(m.getName().getId());
-        store.update(t);
+        store.names().update(t);
         // track duplicates regardless of status - but only for verbatim records!
         if (t.name.getVerbatimKey() != null) {
           if (nameIds.containsKey(m.getName().getId())) {
-            Issue variant = null;
-            Integer vKey = nameIds.get(m.getName().getId());
-            if (!t.isSynonym()) {
-              if (vKey < 0) {
-                // first name was a synonym, this one is accepted. track accepted from now on instead
-                nameIds.put(m.getName().getId(), t.name.getVerbatimKey());
-              } else {
-                // first name was also accepted, flag another issue on both
-                variant = Issue.POTENTIAL_VARIANT;
-              }
-            }
-            store.addIssues(Math.abs(vKey), Issue.DUPLICATE_NAME, variant);
-            store.addIssues(t.name, Issue.DUPLICATE_NAME, variant);
+            store.addIssues(nameIds.get(m.getName().getId()), Issue.DUPLICATE_NAME);
+            store.addIssues(t.name, Issue.DUPLICATE_NAME);
           } else {
-            Integer vKey = t.isSynonym() ? -1 * t.name.getVerbatimKey() : t.name.getVerbatimKey();
-            nameIds.put(m.getName().getId(), vKey);
+            nameIds.put(m.getName().getId(), t.name.getVerbatimKey());
           }
         }
       }
@@ -305,37 +307,39 @@ public class Normalizer implements Callable<Boolean> {
    */
   private void rectifyTaxonomicStatus() {
     try (Transaction tx = store.getNeo().beginTx()) {
-      store.all().forEach(t -> {
-        if (t.isSynonym()) {
-          // get a real neo4j node (store.all() only populates a dummy with an id)
-          Node n = store.getNeo().getNodeById(t.node.getId());
+      store.usages().all().forEach(u -> {
+        if (u.isSynonym()) {
+          // getUsage a real neo4j node (store.allUsages() only populates a dummy with an id)
+          Node n = store.getNeo().getNodeById(u.node.getId());
+          Name name = store.names().objByNode(n).name;
+          Synonym syn = u.getSynonym();
           boolean ambigous = n.getDegree(RelType.SYNONYM_OF, Direction.OUTGOING) > 1;
-          boolean misapplied = MisappliedNameMatcher.isMisappliedName(new NameAccordingTo(t.name, t.synonym.getAccordingTo()));
-          TaxonomicStatus status = t.synonym.getStatus();
+          boolean misapplied = MisappliedNameMatcher.isMisappliedName(new NameAccordingTo(name, syn.getAccordingTo()));
+          TaxonomicStatus status = syn.getStatus();
 
           if (status == TaxonomicStatus.MISAPPLIED) {
             if (!misapplied) {
-              store.addIssues(t.taxon, Issue.TAXONOMIC_STATUS_DOUBTFUL);
+              store.addIssues(syn, Issue.TAXONOMIC_STATUS_DOUBTFUL);
             }
 
           } else if (status == TaxonomicStatus.AMBIGUOUS_SYNONYM) {
             if (misapplied) {
-              t.synonym.setStatus(TaxonomicStatus.MISAPPLIED);
-              store.addIssues(t.taxon, Issue.DERIVED_TAXONOMIC_STATUS);
-              store.update(t);
+              syn.setStatus(TaxonomicStatus.MISAPPLIED);
+              store.addIssues(syn, Issue.DERIVED_TAXONOMIC_STATUS);
+              store.usages().update(u);
             } else if (!ambigous) {
-              store.addIssues(t.taxon, Issue.TAXONOMIC_STATUS_DOUBTFUL);
+              store.addIssues(syn, Issue.TAXONOMIC_STATUS_DOUBTFUL);
             }
 
           } else if (status == TaxonomicStatus.SYNONYM) {
             if (misapplied) {
-              t.synonym.setStatus(TaxonomicStatus.MISAPPLIED);
-              store.addIssues(t.taxon, Issue.DERIVED_TAXONOMIC_STATUS);
-              store.update(t);
+              syn.setStatus(TaxonomicStatus.MISAPPLIED);
+              store.addIssues(syn, Issue.DERIVED_TAXONOMIC_STATUS);
+              store.usages().update(u);
             } else if (ambigous) {
-              t.synonym.setStatus(TaxonomicStatus.AMBIGUOUS_SYNONYM);
-              store.addIssues(t.taxon, Issue.DERIVED_TAXONOMIC_STATUS);
-              store.update(t);
+              syn.setStatus(TaxonomicStatus.AMBIGUOUS_SYNONYM);
+              store.addIssues(syn, Issue.DERIVED_TAXONOMIC_STATUS);
+              store.usages().update(u);
             }
           }
         }
@@ -349,27 +353,27 @@ public class Normalizer implements Callable<Boolean> {
    */
   private void moveSynonymData() {
     try (Transaction tx = store.getNeo().beginTx()) {
-      store.all().forEach(t -> {
-        if (t.isSynonym()) {
-          if (!t.distributions.isEmpty() ||
-              !t.vernacularNames.isEmpty() ||
-              !t.bibliography.isEmpty()
+      store.usages().all().forEach(u -> {
+        if (u.isSynonym()) {
+          if (!u.distributions.isEmpty() ||
+              !u.vernacularNames.isEmpty() ||
+              !u.bibliography.isEmpty()
           ) {
-            // get a real neo4j node (store.all() only populates a dummy with an id)
-            Node n = store.getNeo().getNodeById(t.node.getId());
+            // getUsage a real neo4j node (store.allUsages() only populates a dummy with an id)
+            Node n = store.getNeo().getNodeById(u.node.getId());
             for (RankedName rn : store.accepted(n)) {
-              NeoTaxon acc = store.get(rn.node);
-              acc.distributions.addAll(t.distributions);
-              acc.vernacularNames.addAll(t.vernacularNames);
-              acc.bibliography.addAll(t.bibliography);
-              store.update(acc);
+              NeoUsage acc = store.usages().objByNode(rn.node);
+              acc.distributions.addAll(u.distributions);
+              acc.vernacularNames.addAll(u.vernacularNames);
+              acc.bibliography.addAll(u.bibliography);
+              store.usages().update(acc);
             }
 
-            t.distributions.clear();
-            t.vernacularNames.clear();
-            t.bibliography.clear();
-            store.addIssues(t.synonym, Issue.SYNONYM_DATA_MOVED);
-            store.update(t);
+            u.distributions.clear();
+            u.vernacularNames.clear();
+            u.bibliography.clear();
+            store.addIssues(u.usage, Issue.SYNONYM_DATA_MOVED);
+            store.usages().update(u);
           }
         }
       });
@@ -400,7 +404,7 @@ public class Normalizer implements Callable<Boolean> {
         int d1 = b1.getDegree(RelType.HAS_BASIONYM, Direction.INCOMING);
         int d2 = b2.getDegree(RelType.HAS_BASIONYM, Direction.INCOMING);
 
-        // default to remove b2 with the "higher" sorting id property to get a determine result
+        // default to remove b2 with the "higher" sorting id property to getUsage a determine result
         String badRelAlias;
         // but prefer r1 in case it links to a more used basionym
         if (d1 < d2) {
@@ -446,7 +450,7 @@ public class Normalizer implements Callable<Boolean> {
         RankedName highest = findHighestParent(n);
         // only need to apply classification if highest exists and is not already a kingdom, the denormed classification cannot add to it anymore!
         if (highest != null && highest.rank != Rank.KINGDOM) {
-          NeoTaxon t = store.get(n);
+          NeoUsage t = store.usages().objByNode(n);
           if (t.classification != null) {
             applyClassification(highest, t.classification);
           }
@@ -472,7 +476,7 @@ public class Normalizer implements Callable<Boolean> {
           && !highest.rank.notOtherOrUnranked()
       ) {
         LOG.debug("Node {} already has a classification which ends in an uncomparable rank.", n.getId());
-        addTaxonIssue(n, Issue.CLASSIFICATION_NOT_APPLIED);
+        addUsageIssue(n, Issue.CLASSIFICATION_NOT_APPLIED);
         return null;
       }
     }
@@ -521,7 +525,7 @@ public class Normalizer implements Callable<Boolean> {
       if ((taxon.rank == null || !taxon.rank.higherThan(hr)) && cl.getByRank(hr) != null) {
         // test for existing usage with that name & rank (allowing also unranked names)
         boolean found = false;
-        for (Node n : store.byScientificName(Labels.TAXON, cl.getByRank(hr), hr, true)) {
+        for (Node n : store.taxaByScientificName(cl.getByRank(hr), hr, true)) {
           if (parent == null) {
             // make sure node does also not have a higher linnean rank parent
             Node p = Iterables.firstOrNull(Traversals.CLASSIFICATION.traverse(n).nodes());
@@ -539,8 +543,8 @@ public class Normalizer implements Callable<Boolean> {
               found = true;
             } else if (p == null) {
               // if the matched node has not yet been denormalized we need to compare the classification prop
-              NeoTaxon nt = store.get(n);
-              if (nt.classification != null && nt.classification.equalsAboveRank(cl, hr)) {
+              NeoUsage u = store.usages().objByNode(n);
+              if (u.classification != null && u.classification.equalsAboveRank(cl, hr)) {
                 found = true;
               }
             }
@@ -571,9 +575,9 @@ public class Normalizer implements Callable<Boolean> {
   }
 
   private void updateRank(Node n, Rank r) {
-    NeoTaxon t = store.get(n);
-    t.name.setRank(r);
-    store.put(t);
+    NeoName name = store.names().objByNode(n);
+    name.name.setRank(r);
+    store.names().update(name);
   }
 
   /**
@@ -590,7 +594,7 @@ public class Normalizer implements Callable<Boolean> {
         Relationship sr = (Relationship) result.next().get("sr");
 
         Node n = sr.getStartNode();
-        addTaxonIssue(n, Issue.CHAINED_SYNONYM);
+        addUsageIssue(n, Issue.CHAINED_SYNONYM);
         sr.delete();
 
         if (counter++ % 100 == 0) {
@@ -603,15 +607,17 @@ public class Normalizer implements Callable<Boolean> {
     LOG.info("{} synonym cycles resolved", counter);
   }
 
-  private NeoTaxon createHigherTaxon(String uninomial, Rank rank) {
+  private NeoUsage createHigherTaxon(String uninomial, Rank rank) {
+    NeoUsage t = NeoUsage.createTaxon(Origin.DENORMED_CLASSIFICATION, false);
+
     Name n = new Name();
     n.setUninomial(uninomial);
     n.setRank(rank);
     n.setType(NameType.SCIENTIFIC);
     n.updateScientificName();
-    NeoTaxon t = NeoTaxon.createTaxon(Origin.DENORMED_CLASSIFICATION, n, false);
-    // store, which creates a new neo node
-    store.put(t);
+    t.usage.setName(n);
+    // store both, which creates a single new neo node
+    store.createNameAndUsage(t);
     return t;
   }
 
@@ -632,7 +638,7 @@ public class Normalizer implements Callable<Boolean> {
         Node acc = (Node) row.get("t");
         for (Relationship sr : (Collection<Relationship>) row.get("sr")) {
           Node syn = sr.getStartNode();
-          addTaxonIssue(syn, Issue.CHAINED_SYNONYM);
+          addUsageIssue(syn, Issue.CHAINED_SYNONYM);
           store.createSynonymRel(syn, acc);
           sr.delete();
           counter++;
@@ -669,7 +675,7 @@ public class Normalizer implements Callable<Boolean> {
         for (Relationship pRel : syn.getRelationships(RelType.PARENT_OF, Direction.OUTGOING)) {
           Node child = pRel.getOtherNode(syn);
           pRel.delete();
-          addTaxonIssue(syn, Issue.SYNONYM_PARENT);
+          addUsageIssue(syn, Issue.SYNONYM_PARENT);
           if (accepted.contains(child)) {
             // accepted is also the parent. Simply delete the parent rel in this case
             parentOfRelDeleted++;
@@ -702,12 +708,11 @@ public class Normalizer implements Callable<Boolean> {
   }
 
   private void addNameIssue(Node node, Issue issue) {
-    NeoTaxon t = store.get(node);
-    store.addIssues(t.name, issue);
+    store.addIssues(store.names().objByNode(node).name, issue);
   }
-  private void addTaxonIssue(Node node, Issue issue) {
-    NeoTaxon t = store.get(node);
-    store.addIssues(t.taxon, issue);
+  
+  private void addUsageIssue(Node node, Issue issue) {
+    store.addIssues(store.usages().objByNode(node).usage, issue);
   }
 
   private void insertData() throws NormalizationFailedException {
@@ -716,8 +721,9 @@ public class Normalizer implements Callable<Boolean> {
       NeoInserter inserter;
       switch (dataset.getDataFormat()) {
         case COLDP:
-          inserter = new ColDPInserter(store, sourceDir, refFactory);
-          break;
+          throw new IllegalStateException("COLDP not done");
+          //inserter = new ColDPInserter(store, sourceDir, refFactory);
+          //break;
         case DWCA:
           inserter = new DwcaInserter(store, sourceDir, refFactory);
           break;
@@ -728,7 +734,9 @@ public class Normalizer implements Callable<Boolean> {
           throw new NormalizationFailedException("Unsupported data format " + dataset.getDataFormat());
       }
       meta = inserter.insertAll();
-
+      
+      store.reportDuplicates();
+  
     } catch (NotUniqueRuntimeException e) {
       throw new NormalizationFailedException(e.getProperty() + " values not unique: " + e.getKey(), e);
 

@@ -80,7 +80,7 @@ public class ModifiedDamerauLevenshtein implements StringSimilarity {
 		final int temp1Len = t1.length;
 		final int temp2Len = t2.length;
 
-		// using a 1-dimensional array with bit fiddling to get to the elements
+		// using a 1-dimensional array with bit fiddling to getUsage to the elements
 		// saves about 12-15% off the running time.
 		// so, we replace matrix[a][b] with matrix[((a)<<6)|(b)]
 		// this limits us to 64-character words, which should be plenty. I hope.

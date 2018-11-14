@@ -6,6 +6,7 @@ import java.util.EnumSet;
 import java.util.Objects;
 import java.util.Set;
 
+import com.google.common.base.Preconditions;
 import org.col.api.vocab.Lifezone;
 import org.col.api.vocab.Origin;
 import org.col.api.vocab.TaxonomicStatus;
@@ -13,7 +14,7 @@ import org.col.api.vocab.TaxonomicStatus;
 /**
  *
  */
-public class Taxon implements NameUsage, VerbatimEntity {
+public class Taxon implements VerbatimID, NameUsage {
   
   private String id;
   
@@ -87,6 +88,14 @@ public class Taxon implements NameUsage, VerbatimEntity {
   @Override
   public TaxonomicStatus getStatus() {
     return doubtful ? TaxonomicStatus.DOUBTFUL : TaxonomicStatus.ACCEPTED;
+  }
+  
+  @Override
+  public void setStatus(TaxonomicStatus status) {
+    if (Preconditions.checkNotNull(status).isSynonym()) {
+      throw new IllegalArgumentException("Taxa cannot have a synonym status");
+    }
+    doubtful = status == TaxonomicStatus.DOUBTFUL;
   }
   
   public boolean isDoubtful() {

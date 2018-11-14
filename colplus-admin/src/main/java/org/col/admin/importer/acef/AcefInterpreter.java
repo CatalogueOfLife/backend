@@ -9,7 +9,7 @@ import com.google.common.collect.Lists;
 import org.col.admin.importer.InsertMetadata;
 import org.col.admin.importer.InterpreterBase;
 import org.col.admin.importer.NameValidator;
-import org.col.admin.importer.neo.model.NeoTaxon;
+import org.col.admin.importer.neo.model.NeoUsage;
 import org.col.admin.importer.reference.ReferenceFactory;
 import org.col.api.model.*;
 import org.col.api.vocab.*;
@@ -46,48 +46,21 @@ public class AcefInterpreter extends InterpreterBase {
     ));
   }
 
-  Optional<NeoTaxon> interpretAccepted(VerbatimRecord v) {
+  Optional<NeoUsage> interpretAccepted(VerbatimRecord v) {
     return interpretTaxon(AcefTerm.AcceptedTaxonID, v, false);
   }
 
-  Optional<NeoTaxon> interpretSynonym(VerbatimRecord v) {
+  Optional<NeoUsage> interpretSynonym(VerbatimRecord v) {
     return interpretTaxon(AcefTerm.ID, v, true);
   }
 
-  private Optional<NeoTaxon> interpretTaxon(Term idTerm, VerbatimRecord v, boolean synonym) {
+  private Optional<NeoUsage> interpretTaxon(Term idTerm, VerbatimRecord v, boolean synonym) {
     // name
     Optional<NameAccordingTo> nat = interpretName(idTerm, v);
     if (!nat.isPresent()) {
       return Optional.empty();
     }
-
-    NeoTaxon t = NeoTaxon.createTaxon(Origin.SOURCE, nat.get().getName(), false);
-
-    // taxon
-    t.taxon.setId(v.get(idTerm));
-    t.taxon.setOrigin(Origin.SOURCE);
-    t.taxon.setVerbatimKey(v.getKey());
-    t.taxon.setAccordingTo(v.get(AcefTerm.LTSSpecialist));
-    t.taxon.setAccordingToDate(date(v, t.taxon, Issue.ACCORDING_TO_DATE_INVALID, AcefTerm.LTSDate));
-    t.taxon.setDatasetUrl(uri(v, t.taxon, Issue.URL_INVALID, AcefTerm.InfraSpeciesURL, AcefTerm.SpeciesURL));
-    t.taxon.setFossil(bool(v, t.taxon, Issue.IS_FOSSIL_INVALID, AcefTerm.IsFossil, AcefTerm.HasPreHolocene));
-    t.taxon.setRecent(bool(v, t.taxon, Issue.IS_RECENT_INVALID, AcefTerm.IsRecent, AcefTerm.HasModern));
-    t.taxon.setRemarks(v.get(AcefTerm.AdditionalData));
-
-    // lifezones
-    String raw = v.get(AcefTerm.LifeZone);
-    if (raw != null) {
-      for (String lzv : MULTIVAL.split(raw)) {
-        Lifezone lz = parse(LifezoneParser.PARSER, lzv).orNull(Issue.LIFEZONE_INVALID, v);
-        if (lz != null) {
-          t.taxon.getLifezones().add(lz);
-        }
-      }
-    }
-
-    t.taxon.setSpeciesEstimate(null);
-    t.taxon.setSpeciesEstimateReferenceId(null);
-
+    
     // status
     TaxonomicStatus status = parse(TaxonomicStatusParser.PARSER, v.get(AcefTerm.Sp2000NameStatus))
         .orElse(new EnumNote<>(synonym ? TaxonomicStatus.SYNONYM : TaxonomicStatus.ACCEPTED, null)).val;
@@ -97,22 +70,48 @@ public class AcefInterpreter extends InterpreterBase {
       // Synonym
       status = synonym ? TaxonomicStatus.SYNONYM : TaxonomicStatus.DOUBTFUL;
     }
-
+  
+    NeoUsage u;
     // synonym
     if (synonym) {
-      t.synonym = new Synonym();
-      t.synonym.setStatus(status);
-      t.synonym.setAccordingTo(nat.get().getAccordingTo());
-      t.synonym.setVerbatimKey(v.getKey());
+      u = NeoUsage.createSynonym(Origin.SOURCE, nat.get().getName(), status);
+      Synonym s = u.getSynonym();
+      s.setAccordingTo(nat.get().getAccordingTo());
 
     } else {
-      t.taxon.setDoubtful(TaxonomicStatus.DOUBTFUL == status);
+      // taxon
+      u = NeoUsage.createTaxon(Origin.SOURCE, nat.get().getName(), false);
+      Taxon t = u.getTaxon();
+      t.setOrigin(Origin.SOURCE);
+      t.setDoubtful(TaxonomicStatus.DOUBTFUL == status);
+      t.setAccordingTo(v.get(AcefTerm.LTSSpecialist));
+      t.setAccordingToDate(date(v, t, Issue.ACCORDING_TO_DATE_INVALID, AcefTerm.LTSDate));
+      t.setDatasetUrl(uri(v, t, Issue.URL_INVALID, AcefTerm.InfraSpeciesURL, AcefTerm.SpeciesURL));
+      t.setFossil(bool(v, t, Issue.IS_FOSSIL_INVALID, AcefTerm.IsFossil, AcefTerm.HasPreHolocene));
+      t.setRecent(bool(v, t, Issue.IS_RECENT_INVALID, AcefTerm.IsRecent, AcefTerm.HasModern));
+      t.setRemarks(v.get(AcefTerm.AdditionalData));
+  
+      // lifezones
+      String raw = v.get(AcefTerm.LifeZone);
+      if (raw != null) {
+        for (String lzv : MULTIVAL.split(raw)) {
+          Lifezone lz = parse(LifezoneParser.PARSER, lzv).orNull(Issue.LIFEZONE_INVALID, v);
+          if (lz != null) {
+            t.getLifezones().add(lz);
+          }
+        }
+      }
+  
+      t.setSpeciesEstimate(null);
+      t.setSpeciesEstimateReferenceId(null);
     }
+  
+    u.setId(v.get(idTerm));
+    u.setVerbatimKey(v.getKey());
+    // flat classification for any usage
+    u.classification = interpretClassification(v, synonym);
 
-    // flat classification
-    t.classification = interpretClassification(v, synonym);
-
-    return Optional.of(t);
+    return Optional.of(u);
   }
 
   List<VernacularName> interpretVernacular(VerbatimRecord rec) {

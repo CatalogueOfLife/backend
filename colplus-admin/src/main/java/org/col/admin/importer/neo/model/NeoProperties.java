@@ -10,10 +10,10 @@ import org.neo4j.graphdb.Node;
  */
 public class NeoProperties {
   // properties used in NeoTaxon
-  public static final String ID = "id";
   public static final String RANK = "rank";
   public static final String SCIENTIFIC_NAME = "scientificName";
   public static final String AUTHORSHIP = "authorship";
+  // nomrel props
   public static final String NOTE = "note";
   public static final String REF_ID = "refid";
   public static final String VERBATIM_KEY = "vkey";
@@ -28,10 +28,6 @@ public class NeoProperties {
       return Rank.values()[(int) n.getProperty(NeoProperties.RANK)];
     }
     return defaultValue;
-  }
-
-  public static String getID(Node n) {
-    return (String) n.getProperty(NeoProperties.ID, null);
   }
 
   public static String getScientificName(Node n) {

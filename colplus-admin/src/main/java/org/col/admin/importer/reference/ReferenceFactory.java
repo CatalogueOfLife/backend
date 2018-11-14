@@ -54,6 +54,8 @@ public class ReferenceFactory {
 
   /**
    * Builds a reference instance from a ACEF reference record.
+   * First tries to lookup an existing reference by its id.
+   * Does not persist the instance to the ref store.
    *
    * Example: Ross, J.H. | 1979 | A conspectus of African Acacia | Mem. Bot. Surv. S. Afr. 44: 1-150
    * | TaxAccRef
@@ -67,23 +69,19 @@ public class ReferenceFactory {
    */
   public Reference fromACEF(String referenceID, String authors, String year, String title, String details,
                             IssueContainer issues) {
-    Reference ref = find(referenceID, null);
-    if (ref == null) {
-      ref = newReference(referenceID);
-      ref.setYear(parseYear(year));
-      if (!allEmpty(authors, year, title, details)) {
-        ref.setCitation(buildCitation(authors, year, title, details));
-        CslData csl = new CslData();
-        ref.setCsl(csl);
-        csl.setAuthor(getAuthors(authors));
-        csl.setTitle(title);
-        csl.setIssued(yearToDate(ref.getYear()));
-        if (!StringUtils.isBlank(details)) {
-          csl.setContainerTitle(details);
-          issues.addIssue(Issue.CSL_CONTAINER_UNPARSED);
-        }
+    Reference ref = newReference(referenceID);
+    ref.setYear(parseYear(year));
+    if (!allEmpty(authors, year, title, details)) {
+      ref.setCitation(buildCitation(authors, year, title, details));
+      CslData csl = new CslData();
+      ref.setCsl(csl);
+      csl.setAuthor(getAuthors(authors));
+      csl.setTitle(title);
+      csl.setIssued(yearToDate(ref.getYear()));
+      if (!StringUtils.isBlank(details)) {
+        csl.setContainerTitle(details);
+        issues.addIssue(Issue.CSL_CONTAINER_UNPARSED);
       }
-      store.put(ref);
     }
     return ref;
   }
@@ -120,7 +118,6 @@ public class ReferenceFactory {
           issues.addIssue(Issue.CSL_CONTAINER_UNPARSED);
         }
       }
-      store.put(ref);
     }
     return ref;
   }
@@ -144,7 +141,6 @@ public class ReferenceFactory {
         issues.addIssue(Issue.CITATION_UNPARSED);
       }   
       ref.setYear(parseYear(publishedInYear));
-      store.put(ref);
     }
     return ref;
   }
@@ -157,7 +153,6 @@ public class ReferenceFactory {
         ref.setCitation(citation);
         issues.addIssue(Issue.CITATION_UNPARSED);
       }
-      store.put(ref);
     }
     return ref;
   }

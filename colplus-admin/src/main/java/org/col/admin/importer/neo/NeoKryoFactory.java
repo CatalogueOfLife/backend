@@ -2,7 +2,8 @@ package org.col.admin.importer.neo;
 
 import com.esotericsoftware.kryo.Kryo;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
-import org.col.admin.importer.neo.model.NeoTaxon;
+import org.col.admin.importer.neo.model.NeoName;
+import org.col.admin.importer.neo.model.NeoUsage;
 import org.col.admin.importer.neo.model.RankedName;
 import org.col.common.kryo.ApiKryoFactory;
 import org.col.common.kryo.NullSerializer;
@@ -21,7 +22,8 @@ public class NeoKryoFactory extends ApiKryoFactory {
     Kryo kryo = super.create();
 
     // add normalizer specific models
-    kryo.register(NeoTaxon.class);
+    kryo.register(NeoUsage.class);
+    kryo.register(NeoName.class);
     kryo.register(RankedName.class);
 
     // fastutil

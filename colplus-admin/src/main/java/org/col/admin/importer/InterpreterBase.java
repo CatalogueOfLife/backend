@@ -126,7 +126,7 @@ public class InterpreterBase {
     Rank rank = SafeParser.parse(RankParser.PARSER, vrank).orElse(Rank.UNRANKED, Issue.RANK_INVALID, v);
     atom.setRank(rank);
 
-    // we can get the scientific name in various ways.
+    // we can getUsage the scientific name in various ways.
     // we parse all names from the scientificName + optional authorship
     // or use the atomized parts which we also use to validate the parsing result.
     if (sciname != null) {

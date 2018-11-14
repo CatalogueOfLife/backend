@@ -5,8 +5,9 @@ import java.util.Optional;
 import org.col.admin.importer.NormalizationFailedException;
 import org.col.admin.importer.neo.NeoDb;
 import org.col.admin.importer.neo.NodeBatchProcessor;
+import org.col.admin.importer.neo.model.NeoName;
 import org.col.admin.importer.neo.model.NeoProperties;
-import org.col.admin.importer.neo.model.NeoTaxon;
+import org.col.admin.importer.neo.model.NeoUsage;
 import org.col.api.model.NameAccordingTo;
 import org.col.api.model.VerbatimRecord;
 import org.col.api.vocab.Issue;
@@ -33,54 +34,51 @@ public class AcefRelationInserter implements NodeBatchProcessor {
   @Override
   public void process(Node n) {
     try {
-      NeoTaxon t = store.get(n);
-      if (t.taxon.getVerbatimKey() != null) {
-        VerbatimRecord v;
-        if (t.isSynonym()) {
-          v = store.getVerbatim(t.synonym.getVerbatimKey());
-          Node an = lookupByID(AcefTerm.AcceptedTaxonID, v, t);
+      NeoUsage u = store.usages().objByNode(n);
+      if (u.getVerbatimKey() != null) {
+        VerbatimRecord v = store.getVerbatim(u.getVerbatimKey());
+        if (u.isSynonym()) {
+          Node an = lookupByID(AcefTerm.AcceptedTaxonID, v, u);
           if (an != null) {
-            store.createSynonymRel(t.node, an);
+            store.createSynonymRel(u.node, an);
           } else {
             // if we aint got no idea of the accepted insert just the name
-            v.addIssue(Issue.ACCEPTED_ID_INVALID);
-            v.addIssue(Issue.ACCEPTED_NAME_MISSING);
-            store.update(t);
+            v.addIssues(Issue.ACCEPTED_ID_INVALID, Issue.ACCEPTED_NAME_MISSING);
           }
 
         } else {
-          v = store.getVerbatim(t.taxon.getVerbatimKey());
-          Node p = lookupByID(AcefTerm.ParentSpeciesID, v, t);
+          Node p = lookupByID(AcefTerm.ParentSpeciesID, v, u);
           if (p != null) {
-            store.assignParent(p, t.node);
+            store.assignParent(p, u.node);
           } else {
             v.addIssue(Issue.PARENT_ID_INVALID);
-            store.update(t);
           }
 
           if (AcefTerm.AcceptedInfraSpecificTaxa == v.getType()) {
             // finally we have all pieces to also interpret infraspecific names
             // even with a missing parent, we will still try to build a name
+            final NeoName nn = store.names().objByNode(n);
             String genus = null;
             String infragenericEpithet = null;
             String specificEpithet = null;
             if (p != null) {
-              NeoTaxon sp = store.get(p);
+              NeoName sp = store.names().objByNode(p);
               genus = sp.name.getGenus();
               infragenericEpithet = sp.name.getInfragenericEpithet();
               specificEpithet = sp.name.getSpecificEpithet();
             }
-            Optional<NameAccordingTo> opt = inter.interpretName(t.getID(), v.get(AcefTerm.InfraSpeciesMarker), null, v.get(AcefTerm.InfraSpeciesAuthorString),
+            Optional<NameAccordingTo> opt = inter.interpretName(u.getId(), v.get(AcefTerm.InfraSpeciesMarker), null, v.get(AcefTerm.InfraSpeciesAuthorString),
                 genus, infragenericEpithet, specificEpithet, v.get(AcefTerm.InfraSpeciesEpithet),
                 null, v.get(AcefTerm.GSDNameStatus), null, null, v);
 
             if (opt.isPresent()) {
-              t.name = opt.get().getName();
-              if (!t.name.getRank().isInfraspecific()) {
-                LOG.info("Expected infraspecific taxon but found {} for name {}: {}", t.name.getRank(), t.getID(), t.name.getScientificName());
+              nn.name = opt.get().getName();
+              if (!nn.name.getRank().isInfraspecific()) {
+                LOG.info("Expected infraspecific taxon but found {} for name {}: {}", nn.name.getRank(), u.getId(), nn.name.getScientificName());
                 v.addIssue(Issue.INCONSISTENT_NAME);
               }
-              store.put(t);
+              
+              store.names().update(nn);
 
             } else {
               // remove name & taxon from store, only keeping the verbatim
@@ -102,11 +100,11 @@ public class AcefRelationInserter implements NodeBatchProcessor {
    *
    * @return list of potentially split ids with their matching neo node if found, otherwise null
    */
-  private Node lookupByID(Term term, VerbatimRecord v, NeoTaxon t) {
+  private Node lookupByID(Term term, VerbatimRecord v, NeoUsage t) {
     Node n = null;
     final String id = v.get(term);
-    if (id != null && !id.equals(t.getID())) {
-      n = store.byID(id);
+    if (id != null && !id.equals(t.getId())) {
+      n = store.usages().nodeByID(id);
     }
     return n;
   }

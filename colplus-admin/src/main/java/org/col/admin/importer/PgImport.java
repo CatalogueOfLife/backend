@@ -1,7 +1,5 @@
 package org.col.admin.importer;
 
-import java.util.HashSet;
-import java.util.Set;
 import java.util.Stack;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -12,10 +10,9 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.admin.config.ImporterConfig;
 import org.col.admin.importer.neo.NeoDb;
-import org.col.admin.importer.neo.NodeBatchProcessor;
 import org.col.admin.importer.neo.model.Labels;
-import org.col.admin.importer.neo.model.NeoProperties;
-import org.col.admin.importer.neo.model.NeoTaxon;
+import org.col.admin.importer.neo.model.NeoName;
+import org.col.admin.importer.neo.model.NeoUsage;
 import org.col.admin.importer.neo.model.RelType;
 import org.col.admin.importer.neo.traverse.StartEndHandler;
 import org.col.admin.importer.neo.traverse.TreeWalker;
@@ -77,7 +74,7 @@ public class PgImport implements Callable<Boolean> {
     insertNameRelations();
 
     checkIfCancelled();
-		insertTaxa();
+		insertUsages();
 
     checkIfCancelled();
     attach();
@@ -207,25 +204,17 @@ public class PgImport implements Callable<Boolean> {
     try (final SqlSession session = sessionFactory.openSession(false)) {
       final NameMapper nameMapper = session.getMapper(NameMapper.class);
       LOG.debug("Inserting all names");
-      store.process(Labels.ALL, batchSize, new NodeBatchProcessor() {
-        @Override
-        public void process(Node n) {
-          // we read all names as we also deal with acts for basionyms here
-          NeoTaxon t = store.get(n);
-          if (t.name.getHomotypicNameId() == null) {
-            t.name.setHomotypicNameId(t.name.getId());
-          }
-          t.name.setDatasetKey(dataset.getKey());
-          updateVerbatimEntity(t.name);
-          nameMapper.create(t.name);
-          nCounter.incrementAndGet();
+      store.names().all().forEach(n -> {
+        if (n.name.getHomotypicNameId() == null) {
+          n.name.setHomotypicNameId(n.name.getId());
         }
-
-        @Override
-        public void commitBatch(int counter) {
+        n.name.setDatasetKey(dataset.getKey());
+        updateVerbatimEntity(n.name);
+        nameMapper.create(n.name);
+        if (nCounter.incrementAndGet() % batchSize == 0) {
           session.commit();
-          LOG.debug("Inserted {} other names", counter);
-        }
+          LOG.debug("Inserted {} other names", nCounter.get());
+        };
       });
       session.commit();
     }
@@ -245,17 +234,7 @@ public class PgImport implements Callable<Boolean> {
         LOG.debug("Inserting all {} relations", rt);
         try (Transaction tx = store.getNeo().beginTx()) {
           store.iterRelations(rt).stream().forEach(rel -> {
-            NameRelation nr = new NameRelation();
-            nr.setType(rt.nomRelType);
-            nr.setDatasetKey(dataset.getKey());
-            nr.setNameId( NeoProperties.getID(rel.getStartNode()));
-            nr.setRelatedNameId( NeoProperties.getID(rel.getEndNode()));
-            nr.setNote( (String) rel.getProperty(NeoProperties.NOTE, null));
-            nr.setPublishedInId( (String) rel.getProperty(NeoProperties.REF_ID, null));
-            if (rel.hasProperty(NeoProperties.VERBATIM_KEY)) {
-              nr.setVerbatimKey(verbatimKeys.get((Integer)rel.getProperty(NeoProperties.VERBATIM_KEY)));
-            }
-
+            NameRelation nr = store.toRelation(rel);
             nameRelationMapper.create(nr);
             if (counter.incrementAndGet() % batchSize == 0) {
               session.commit();
@@ -269,9 +248,9 @@ public class PgImport implements Callable<Boolean> {
   }
 
 	/**
-	 * insert taxa with all the rest
+	 * insert taxa/synonyms with all the rest
 	 */
-	private void insertTaxa() throws InterruptedException {
+	private void insertUsages() throws InterruptedException {
 		try (SqlSession session = sessionFactory.openSession(false)) {
       LOG.info("Inserting remaining names and all taxa");
       NameDao nameDao = new NameDao(session);
@@ -282,63 +261,57 @@ public class PgImport implements Callable<Boolean> {
 
       // iterate over taxonomic tree in depth first order, keeping postgres parent keys
       // pro parte synonyms will be visited multiple times, remember their name ids!
-      Set<String> proParteNames = new HashSet<>();
       TreeWalker.walkTree(store.getNeo(), new StartEndHandler() {
         int counter = 0;
         Stack<String> parentIds = new Stack<>();
 
         @Override
         public void start(Node n) {
-          NeoTaxon t = store.get(n);
-          updateVerbatimEntity(t.synonym);
-          updateVerbatimEntity(t.taxon);
-
-          // is this a pro parte synonym that we have processed before already?
-          if (proParteNames.contains(t.name.getId())) {
-            // now add another synonym relation now that the other accepted exists in pg
-            nameDao.addSynonym(dataset.getKey(),t.name.getId(), parentIds.peek(), t.synonym);
-            return;
-          }
+          NeoUsage u = store.usages().objByNode(n);
+          NeoName nn = store.names().objByNode(n);
+          updateVerbatimEntity(u);
+          updateVerbatimEntity(nn);
 
           // insert accepted taxon or synonym
           String taxonId;
-          if (t.isSynonym()) {
+          if (u.isSynonym()) {
             taxonId = parentIds.peek();
-            nameDao.addSynonym(dataset.getKey(), t.name.getId(), taxonId, t.synonym);
+            nameDao.addSynonym(dataset.getKey(), nn.name.getId(), taxonId, u.getSynonym());
 
           } else {
+            Taxon tax = u.getTaxon();
             if (!parentIds.empty()) {
               // use parent postgres key from stack, but keep it there
-              t.taxon.setParentId(parentIds.peek());
+              tax.setParentId(parentIds.peek());
             } else if (!n.hasLabel(Labels.ROOT)) {
-              throw new IllegalStateException("Non root node " + n.getId() + " with an accepted taxon without parent found: " + t.name.getScientificName());
+              throw new IllegalStateException("Non root node " + n.getId() + " with an accepted taxon without parent found: " + nn.name.getScientificName());
             }
 
-            t.taxon.setName(t.name);
-            t.taxon.setDatasetKey(dataset.getKey());
-            taxonMapper.create(t.taxon);
+            tax.setName(nn.name);
+            tax.setDatasetKey(dataset.getKey());
+            taxonMapper.create(tax);
             tCounter.incrementAndGet();
-            taxonId = t.taxon.getId();
+            taxonId = tax.getId();
 
             // push new postgres key onto stack for this taxon as we traverse in depth first
             parentIds.push(taxonId);
 
             // insert vernacular
-            for (VernacularName vn : t.vernacularNames) {
+            for (VernacularName vn : u.vernacularNames) {
               updateVerbatimEntity(vn);
               vernacularMapper.create(vn, taxonId, dataset.getKey());
               vCounter.incrementAndGet();
             }
 
             // insert distributions
-            for (Distribution d : t.distributions) {
+            for (Distribution d : u.distributions) {
               updateVerbatimEntity(d);
               distributionMapper.create(d, taxonId, dataset.getKey());
               dCounter.incrementAndGet();
             }
 
             // link bibliography
-            for (String id : t.bibliography) {
+            for (String id : u.bibliography) {
               refMapper.linkToTaxon(dataset.getKey(), taxonId, id);
             }
           }

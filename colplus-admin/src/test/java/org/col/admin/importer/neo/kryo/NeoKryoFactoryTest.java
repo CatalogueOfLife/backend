@@ -8,7 +8,7 @@ import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import com.google.common.collect.Lists;
 import org.col.admin.importer.neo.NeoKryoFactory;
-import org.col.admin.importer.neo.model.NeoTaxon;
+import org.col.admin.importer.neo.model.NeoUsage;
 import org.col.api.TestEntityGenerator;
 import org.col.api.model.*;
 import org.col.api.vocab.Issue;
@@ -26,7 +26,7 @@ public class NeoKryoFactoryTest {
 
   @Test
   public void testNeoTaxon() throws Exception {
-    NeoTaxon t = new NeoTaxon();
+    NeoUsage t = new NeoUsage();
 
     t.taxon = new Taxon();
     t.taxon.setDoubtful(true);
@@ -70,7 +70,7 @@ public class NeoKryoFactoryTest {
 
   @Test
   public void testEmptyModels() throws Exception {
-    assertSerde(new NeoTaxon());
+    assertSerde(new NeoUsage());
     assertSerde(new Reference());
     assertSerde(new DatasetImport());
   }

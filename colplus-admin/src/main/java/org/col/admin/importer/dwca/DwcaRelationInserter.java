@@ -12,6 +12,7 @@ import org.col.admin.importer.neo.NeoDb;
 import org.col.admin.importer.neo.NodeBatchProcessor;
 import org.col.admin.importer.neo.model.*;
 import org.col.api.model.Name;
+import org.col.api.model.Taxon;
 import org.col.api.model.VerbatimRecord;
 import org.col.api.vocab.Issue;
 import org.col.api.vocab.Origin;
@@ -46,16 +47,14 @@ public class DwcaRelationInserter implements NodeBatchProcessor {
   @Override
   public void process(Node n) {
     try {
-      NeoTaxon t = store.get(n);
-      if (t.taxon.getVerbatimKey() != null) {
-        VerbatimRecord v = store.getVerbatim(t.taxon.getVerbatimKey());
-        insertAcceptedRel(t, v);
-        insertParentRel(t, v);
-        insertBasionymRel(t, v);
+      NeoUsage u = store.usages().objByNode(n);
+      if (u.getVerbatimKey() != null) {
+        VerbatimRecord v = store.getVerbatim(u.getVerbatimKey());
+        insertAcceptedRel(u, v);
+        insertParentRel(u, v);
+        insertBasionymRel(u, v);
         store.put(v);
       }
-
-      store.put(t);
 
     } catch (Exception e) {
       LOG.error("error processing explicit relations for {} {}", n, NeoProperties.getScientificNameWithAuthor(n), e);
@@ -66,24 +65,24 @@ public class DwcaRelationInserter implements NodeBatchProcessor {
    * Creates synonym_of relationship based on the verbatim dwc:acceptedNameUsageID and dwc:acceptedNameUsage term values.
    * Assumes pro parte synonyms are dealt with before and the remaining accepted identifier refers to a single taxon only.
    *
-   * @param t the full neotaxon to process
+   * @param u the full neotaxon to process
    */
-  private void insertAcceptedRel(NeoTaxon t, VerbatimRecord v) {
+  private void insertAcceptedRel(NeoUsage u, VerbatimRecord v) {
     List<RankedName> accepted = Collections.emptyList();
     if (meta.isAcceptedNameMapped()) {
-      accepted = lookupByIdOrName(v, t, DwcTerm.acceptedNameUsageID, Issue.ACCEPTED_ID_INVALID, DwcTerm.acceptedNameUsage, Origin.VERBATIM_ACCEPTED);
+      accepted = lookupByIdOrName(v, u, DwcTerm.acceptedNameUsageID, Issue.ACCEPTED_ID_INVALID, DwcTerm.acceptedNameUsage, Origin.VERBATIM_ACCEPTED);
       for (RankedName acc : accepted) {
-        store.createSynonymRel(t.node, acc.node);
+        store.createSynonymRel(u.node, acc.node);
       }
     }
 
     // if status is synonym but we ain't got no idea of the accepted flag it
-    if (accepted.isEmpty() && (t.isSynonym() || v.hasIssue(Issue.ACCEPTED_ID_INVALID))) {
+    if (accepted.isEmpty() && (u.isSynonym() || v.hasIssue(Issue.ACCEPTED_ID_INVALID))) {
       v.addIssue(Issue.ACCEPTED_NAME_MISSING);
       // now remove any denormed classification from this synonym to avoid parent relations
       //t.classification = null;
-      t.node.addLabel(Labels.SYNONYM);
-      t.node.removeLabel(Labels.TAXON);
+      u.node.addLabel(Labels.SYNONYM);
+      u.node.removeLabel(Labels.TAXON);
     }
   }
 
@@ -91,37 +90,37 @@ public class DwcaRelationInserter implements NodeBatchProcessor {
    * Sets up the parent relations using the parentNameUsage(ID) term values.
    * The denormed, flat classification is used in a next step later.
    */
-  private void insertParentRel(NeoTaxon t, VerbatimRecord v) {
+  private void insertParentRel(NeoUsage u, VerbatimRecord v) {
     if (v != null && meta.isParentNameMapped()) {
-      RankedName parent = lookupSingleByIdOrName(v, t, DwcTerm.parentNameUsageID, Issue.PARENT_ID_INVALID, DwcTerm.parentNameUsage, Origin.VERBATIM_PARENT);
+      RankedName parent = lookupSingleByIdOrName(v, u, DwcTerm.parentNameUsageID, Issue.PARENT_ID_INVALID, DwcTerm.parentNameUsage, Origin.VERBATIM_PARENT);
       if (parent != null) {
-        store.assignParent(parent.node, t.node);
+        store.assignParent(parent.node, u.node);
       }
     }
   }
 
-  private void insertBasionymRel(NeoTaxon t, VerbatimRecord v) {
+  private void insertBasionymRel(NeoUsage u, VerbatimRecord v) {
     if (v != null && meta.isOriginalNameMapped()) {
-      RankedName bas = lookupSingleByIdOrName(v, t, DwcTerm.originalNameUsageID, Issue.BASIONYM_ID_INVALID, DwcTerm.originalNameUsage, Origin.VERBATIM_BASIONYM);
+      RankedName bas = lookupSingleByIdOrName(v, u, DwcTerm.originalNameUsageID, Issue.BASIONYM_ID_INVALID, DwcTerm.originalNameUsage, Origin.VERBATIM_BASIONYM);
       if (bas != null) {
         NeoNameRel rel = new NeoNameRel();
         rel.setType(RelType.HAS_BASIONYM);
         rel.setVerbatimKey(v.getKey());
-        store.createNameRel(t.node, bas.node, rel);
+        store.createNameRel(u.node, bas.node, rel);
       }
     }
   }
 
-  private RankedName lookupSingleByIdOrName(VerbatimRecord v, NeoTaxon t, DwcTerm idTerm, Issue invlidIdIssue, DwcTerm nameTerm, Origin createdNameOrigin) {
+  private RankedName lookupSingleByIdOrName(VerbatimRecord v, NeoUsage t, DwcTerm idTerm, Issue invlidIdIssue, DwcTerm nameTerm, Origin createdNameOrigin) {
     List<RankedName> names = lookupByIdOrName(v, t, false, idTerm, invlidIdIssue, nameTerm, createdNameOrigin);
     return names.isEmpty() ? null : names.get(0);
   }
 
-  private List<RankedName> lookupByIdOrName(VerbatimRecord v, NeoTaxon t, DwcTerm idTerm, Issue invlidIdIssue, DwcTerm nameTerm, Origin createdNameOrigin) {
+  private List<RankedName> lookupByIdOrName(VerbatimRecord v, NeoUsage t, DwcTerm idTerm, Issue invlidIdIssue, DwcTerm nameTerm, Origin createdNameOrigin) {
     return lookupByIdOrName(v, t, true, idTerm, invlidIdIssue, nameTerm, createdNameOrigin);
   }
 
-  private List<RankedName> lookupByIdOrName(VerbatimRecord v, NeoTaxon t, boolean allowMultiple, DwcTerm idTerm, Issue invlidIdIssue, DwcTerm nameTerm, Origin createdNameOrigin) {
+  private List<RankedName> lookupByIdOrName(VerbatimRecord v, NeoUsage t, boolean allowMultiple, DwcTerm idTerm, Issue invlidIdIssue, DwcTerm nameTerm, Origin createdNameOrigin) {
     List<RankedName> names = lookupByTaxonID(idTerm, v, t, invlidIdIssue, allowMultiple);
     if (names.isEmpty()) {
       // try to setup rel via the name
@@ -139,17 +138,15 @@ public class DwcaRelationInserter implements NodeBatchProcessor {
    *
    * @return list of potentially split ids with their matching neo node if found, otherwise null
    */
-  private List<RankedName> lookupByTaxonID(DwcTerm term, VerbatimRecord v, NeoTaxon t, Issue invalidIdIssue, boolean allowMultiple) {
+  private List<RankedName> lookupByTaxonID(DwcTerm term, VerbatimRecord v, NeoUsage t, Issue invalidIdIssue, boolean allowMultiple) {
     List<RankedName> ids = Lists.newArrayList();
     final String unsplitIds = v.get(term);
-    if (unsplitIds != null && !unsplitIds.equals(t.getID())) {
+    if (unsplitIds != null && !unsplitIds.equals(t.getId())) {
       if (allowMultiple && meta.getMultiValueDelimiters().containsKey(term)) {
-        ids.addAll(lookupRankedNames(
-            meta.getMultiValueDelimiters().get(term).splitToList(unsplitIds), t)
-        );
+        ids.addAll(lookupRankedNames(meta.getMultiValueDelimiters().get(term).splitToList(unsplitIds), t.getTaxon()));
       } else {
         // match by taxonID to see if this is an existing identifier or if we should try to split it
-        Node a = store.byID(unsplitIds);
+        Node a = store.usages().nodeByID(unsplitIds);
         if (a != null) {
           ids.add(NeoProperties.getRankedName(a));
 
@@ -157,7 +154,7 @@ public class DwcaRelationInserter implements NodeBatchProcessor {
           for (Splitter splitter : COMMON_SPLITTER) {
             List<String> vals = splitter.splitToList(unsplitIds);
             if (vals.size() > 1) {
-              ids.addAll(lookupRankedNames(vals, t));
+              ids.addAll(lookupRankedNames(vals, t.getTaxon()));
               break;
             }
           }
@@ -173,11 +170,11 @@ public class DwcaRelationInserter implements NodeBatchProcessor {
   }
 
 
-  private List<RankedName> lookupRankedNames(Iterable<String> taxonIDs, NeoTaxon t) {
+  private List<RankedName> lookupRankedNames(Iterable<String> taxonIDs, Taxon t) {
     List<RankedName> rankedNames = Lists.newArrayList();
     for (String id : taxonIDs) {
-      if (!id.equals(t.getID())) {
-        Node n = store.byID(id);
+      if (!id.equals(t.getId())) {
+        Node n = store.usages().nodeByID(id);
         if (n != null) {
           rankedNames.add(NeoProperties.getRankedName(n));
         }
@@ -195,15 +192,16 @@ public class DwcaRelationInserter implements NodeBatchProcessor {
    *
    * @return the accepted node with its name. Null if no accepted name was mapped or equals the record itself
    */
-  private RankedName lookupByName(DwcTerm term, VerbatimRecord v, NeoTaxon t, Origin createdOrigin) {
+  private RankedName lookupByName(DwcTerm term, VerbatimRecord v, NeoUsage u, Origin createdOrigin) {
     if (v.hasTerm(term)) {
       final Name name = NameParser.PARSER.parse(v.get(term)).get().getName();
       // force unranked name for non binomials or unparsed names, avoiding wrong parser decisions
       if (!name.isParsed() || !name.isBinomial()) {
         name.setRank(Rank.UNRANKED);
       }
-      if (!name.getScientificName().equalsIgnoreCase(t.name.getScientificName())) {
-        List<Node> matches = store.byScientificName(name.getScientificName());
+      RankedName urn = NeoProperties.getRankedName(u.node);
+      if (!name.getScientificName().equalsIgnoreCase(urn.name)) {
+        List<Node> matches = store.names().nodesByName(name.getScientificName());
         // remove other authors, but allow names without authors
         if (name.hasAuthorship()) {
           matches.removeIf(n -> !Strings.isNullOrEmpty(NeoProperties.getAuthorship(n)) && !NeoProperties.getAuthorship(n).equalsIgnoreCase(name.authorshipComplete()));
@@ -218,7 +216,7 @@ public class DwcaRelationInserter implements NodeBatchProcessor {
         if (matches.isEmpty()) {
           // create name
           LOG.debug("{} {} not existing, materialize it", term.simpleName(), name);
-          return store.createDoubtfulFromSource(createdOrigin, name, t, t.name.getRank());
+          return store.createDoubtfulFromSource(createdOrigin, name, u, urn.rank);
 
         } else {
           if (matches.size() > 1) {

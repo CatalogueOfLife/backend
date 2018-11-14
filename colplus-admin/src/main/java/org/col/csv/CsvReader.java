@@ -377,7 +377,7 @@ public class CsvReader {
     private void nextRow() {
       if (iter.hasNext()) {
         while (iter.hasNext() && isEmpty(row = iter.next(), true));
-        // if the last rows were empty we would get the last non empty row again, clear it in that case!
+        // if the last rows were empty we would getUsage the last non empty row again, clear it in that case!
         if (!iter.hasNext() && isEmpty(row, false)) {
           row = null;
         }

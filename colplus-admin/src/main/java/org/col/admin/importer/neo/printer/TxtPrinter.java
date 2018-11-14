@@ -3,7 +3,6 @@ package org.col.admin.importer.neo.printer;
 import java.io.IOException;
 import java.io.Writer;
 
-import org.apache.commons.lang3.ObjectUtils;
 import org.col.admin.importer.neo.model.Labels;
 import org.col.admin.importer.neo.model.NeoProperties;
 import org.col.admin.importer.neo.model.RelType;
@@ -41,16 +40,9 @@ public class TxtPrinter implements TreePrinter {
   private static final int indentation = 2;
   private int level = 0;
   private final Writer writer;
-  private final boolean showIds;
-
-
-  public TxtPrinter(Writer writer, boolean showIds) {
-    this.writer = writer;
-    this.showIds = showIds;
-  }
-
+  
   public TxtPrinter(Writer writer) {
-    this(writer, false);
+    this.writer = writer;
   }
 
   @Override
@@ -87,12 +79,6 @@ public class TxtPrinter implements TreePrinter {
       if (n.hasProperty(NeoProperties.RANK)) {
         writer.write(" [");
         writer.write(Rank.values()[(Integer) n.getProperty(NeoProperties.RANK)].name().toLowerCase());
-        if (showIds) {
-          writer.write("; ");
-          writer.write(String.valueOf(n.getId()));
-          writer.write("; ");
-          writer.write(ObjectUtils.firstNonNull(NeoProperties.getID(n), ""));
-        }
         writer.write("]");
       }
       writer.write("\n");
