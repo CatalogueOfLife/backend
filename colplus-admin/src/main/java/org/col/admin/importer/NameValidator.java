@@ -75,11 +75,20 @@ public class NameValidator {
     }
   }
   
+  public static VerbatimRecord flagIssues(Name n, VerbatimRecord v) {
+    return flagIssues(n, new Supplier<VerbatimRecord>() {
+      @Override
+      public VerbatimRecord get() {
+        return v;
+      }
+    });
+  }
+  
   /**
    * Validates consistency of name properties adding issues to the name if found. 
    * This method checks if the given rank matches
    * populated properties and available properties make sense together.
-   * @return a non null IssueContainer if any issue have been added
+   * @return a non null VerbatimRecord if any issue have been added
    */
   public static VerbatimRecord flagIssues(Name n, Supplier<VerbatimRecord> issueSupplier) {
     final LazyVerbatimRecord v = new LazyVerbatimRecord(issueSupplier);

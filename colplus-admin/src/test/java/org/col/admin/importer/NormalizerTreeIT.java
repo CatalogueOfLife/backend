@@ -19,13 +19,11 @@ import org.apache.commons.io.IOUtils;
 import org.col.admin.config.NormalizerConfig;
 import org.col.admin.importer.neo.NeoDb;
 import org.col.admin.importer.neo.NeoDbFactory;
-import org.col.admin.importer.neo.model.NeoUsage;
 import org.col.admin.importer.neo.model.NeoProperties;
 import org.col.admin.importer.neo.printer.GraphFormat;
 import org.col.admin.importer.neo.printer.PrinterUtils;
 import org.col.admin.matching.NameIndexFactory;
 import org.col.api.model.Dataset;
-import org.col.api.model.Name;
 import org.col.api.vocab.DataFormat;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -33,7 +31,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
 
 import static org.junit.Assert.*;
@@ -139,15 +136,7 @@ public class NormalizerTreeIT {
       // reopen the neo db
       store = NeoDbFactory.open(datasetKey, cfg);
       // debug();
-
-      try (Transaction tx = store.getNeo().beginTx()) {
-        NeoUsage t26 = store.getByTaxonID("26");
-        for (Node n : store.usageByScientificName("Discomitochondria")) {
-          NeoUsage t = store.getUsage(n);
-          Name na = t.name;
-        }
-
-      }
+      
       // assert tree
       InputStream tree = getClass().getResourceAsStream(resourceDir + "/expected.tree");
       String expected = IOUtils.toString(tree, Charsets.UTF_8).trim();

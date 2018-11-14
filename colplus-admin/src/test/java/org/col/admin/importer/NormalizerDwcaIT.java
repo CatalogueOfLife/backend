@@ -1,11 +1,6 @@
 package org.col.admin.importer;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.io.Writer;
+import java.io.*;
 import java.net.URI;
 import java.net.URL;
 import java.nio.file.Path;
@@ -13,7 +8,6 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import javax.annotation.Nullable;
 
 import com.google.common.collect.Lists;
@@ -25,26 +19,12 @@ import org.col.admin.config.NormalizerConfig;
 import org.col.admin.importer.neo.NeoDb;
 import org.col.admin.importer.neo.NeoDbFactory;
 import org.col.admin.importer.neo.NotUniqueRuntimeException;
-import org.col.admin.importer.neo.model.Labels;
-import org.col.admin.importer.neo.model.NeoProperties;
-import org.col.admin.importer.neo.model.NeoUsage;
-import org.col.admin.importer.neo.model.RankedName;
-import org.col.admin.importer.neo.model.RelType;
+import org.col.admin.importer.neo.model.*;
 import org.col.admin.importer.neo.printer.GraphFormat;
 import org.col.admin.importer.neo.printer.PrinterUtils;
 import org.col.admin.matching.NameIndexFactory;
-import org.col.api.model.Dataset;
-import org.col.api.model.Distribution;
-import org.col.api.model.NameRelation;
-import org.col.api.model.Reference;
-import org.col.api.model.VerbatimRecord;
-import org.col.api.model.VernacularName;
-import org.col.api.vocab.DataFormat;
-import org.col.api.vocab.DistributionStatus;
-import org.col.api.vocab.Gazetteer;
-import org.col.api.vocab.Issue;
-import org.col.api.vocab.Language;
-import org.col.api.vocab.NomRelType;
+import org.col.api.model.*;
+import org.col.api.vocab.*;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -58,11 +38,7 @@ import org.neo4j.graphdb.schema.Schema;
 import org.neo4j.helpers.collection.Iterables;
 import org.neo4j.helpers.collection.Iterators;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  *
@@ -126,8 +102,7 @@ public class NormalizerDwcaIT {
   }
 
   VerbatimRecord vByID(String id) {
-    NeoUsage t = store.getByTaxonID(id);
-    return store.getVerbatim(t.name.getVerbatimKey());
+    return store.getVerbatim(store.names().objByID(id).getVerbatimKey());
   }
 
 
@@ -136,7 +111,7 @@ public class NormalizerDwcaIT {
   }
 
   NeoUsage byName(String name, @Nullable String author) {
-    List<Node> nodes = store.usageByScientificName(name);
+    List<Node> nodes = store.names().nodesByName(name);
     // filter by author
     if (author != null) {
       nodes.removeIf(n -> !author.equalsIgnoreCase(NeoProperties.getAuthorship(n)));
@@ -148,7 +123,18 @@ public class NormalizerDwcaIT {
     if (nodes.size() > 1) {
       throw new NotUniqueRuntimeException("scientificName", name);
     }
-    return store.getUsage(nodes.get(0));
+    return usageWithName(nodes.get(0));
+  }
+  
+  NeoUsage usageWithName(Node n) {
+    NeoUsage u = store.usages().objByNode(n);
+    NeoName nn = store.names().objByNode(n);
+    u.usage.setName(nn.name);
+    return u;
+  }
+  
+  NeoUsage byID(String id) {
+    return usageWithName(store.names().nodeByID(id));
   }
 
   @Test
@@ -156,10 +142,10 @@ public class NormalizerDwcaIT {
     normalize(17);
 
     try (Transaction tx = store.getNeo().beginTx()) {
-      NeoUsage t = store.getByTaxonID("1099-sp16");
+      NeoUsage t = byID("1099-sp16");
       assertFalse(t.isSynonym());
-      assertEquals("Pinus palustris Mill.", t.name.canonicalNameComplete());
-      assertEquals(URI.create("http://dx.doi.org/10.3897/BDJ.2.e1099"), t.taxon.getDatasetUrl());
+      assertEquals("Pinus palustris Mill.", t.usage.getName().canonicalNameComplete());
+      assertEquals(URI.create("http://dx.doi.org/10.3897/BDJ.2.e1099"), t.getTaxon().getDatasetUrl());
     }
   }
 
@@ -172,23 +158,23 @@ public class NormalizerDwcaIT {
     }
 
     try (Transaction tx = store.getNeo().beginTx()) {
-      NeoUsage trametes_modesta = store.getByTaxonID("324805");
+      NeoUsage trametes_modesta = byID("324805");
       assertFalse(trametes_modesta.isSynonym());
 
-      Reference pubIn = store.refById(trametes_modesta.name.getPublishedInId());
+      Reference pubIn = store.refById(trametes_modesta.usage.getName().getPublishedInId());
       assertEquals("Norw. Jl Bot. 19: 236 (1972)", pubIn.getCitation());
       assertNotNull(pubIn.getId());
 
-      NeoUsage Polystictus_substipitatus = store.getByTaxonID("140283");
+      NeoUsage Polystictus_substipitatus = byID("140283");
       assertTrue(Polystictus_substipitatus.isSynonym());
-      assertTrue(Polystictus_substipitatus.synonym.getStatus().isSynonym());
-      pubIn = store.refById(Polystictus_substipitatus.name.getPublishedInId());
+      assertTrue(Polystictus_substipitatus.getSynonym().getStatus().isSynonym());
+      pubIn = store.refById(Polystictus_substipitatus.usage.getName().getPublishedInId());
       assertEquals("Syll. fung. (Abellini) 21: 318 (1912)", pubIn.getCitation());
 
-      NeoUsage Polyporus_modestus = store.getByTaxonID("198666");
+      NeoUsage Polyporus_modestus = byID("198666");
       assertTrue(Polyporus_modestus.isSynonym());
-      assertTrue(Polyporus_modestus.synonym.getStatus().isSynonym());
-      pubIn = store.refById(Polyporus_modestus.name.getPublishedInId());
+      assertTrue(Polyporus_modestus.getSynonym().getStatus().isSynonym());
+      pubIn = store.refById(Polyporus_modestus.usage.getName().getPublishedInId());
       assertEquals("Linnaea 5: 519 (1830)", pubIn.getCitation());
     }
   }
@@ -200,8 +186,8 @@ public class NormalizerDwcaIT {
     // verify results
     try (Transaction tx = store.getNeo().beginTx()) {
       // check species name
-      NeoUsage t = store.getByTaxonID("1000");
-      assertEquals("Crepis pulchra", t.name.getScientificName());
+      NeoUsage t = byID("1000");
+      assertEquals("Crepis pulchra", t.usage.getName().getScientificName());
 
       // check vernaculars
       Map<Language, String> expV = jersey.repackaged.com.google.common.collect.Maps.newHashMap();
@@ -258,22 +244,22 @@ public class NormalizerDwcaIT {
     try (Transaction tx = store.getNeo().beginTx()) {
       // 1->2->1
       // should be: 1->2
-      NeoUsage t1 = store.getByTaxonID("1");
-      NeoUsage t2 = store.getByTaxonID("2");
+      NeoUsage t1 = byID("1");
+      NeoUsage t2 = byID("2");
 
       assertEquals(1, t1.node.getDegree(RelType.HAS_BASIONYM));
       assertEquals(1, t2.node.getDegree(RelType.HAS_BASIONYM));
       assertEquals(t2.node,
           t1.node.getSingleRelationship(RelType.HAS_BASIONYM, Direction.OUTGOING).getEndNode());
-      assertNotNull(t1.name.getHomotypicNameId());
-      assertEquals(t2.name.getHomotypicNameId(), t1.name.getHomotypicNameId());
+      assertNotNull(t1.usage.getName().getHomotypicNameId());
+      assertEquals(t2.usage.getName().getHomotypicNameId(), t1.usage.getName().getHomotypicNameId());
 
       // 10->11->12->10, 13->11
       // should be: 10,13->11 12
-      NeoUsage t10 = store.getByTaxonID("10");
-      NeoUsage t11 = store.getByTaxonID("11");
-      NeoUsage t12 = store.getByTaxonID("12");
-      NeoUsage t13 = store.getByTaxonID("13");
+      NeoUsage t10 = byID("10");
+      NeoUsage t11 = byID("11");
+      NeoUsage t12 = byID("12");
+      NeoUsage t13 = byID("13");
 
       assertEquals(1, t10.node.getDegree(RelType.HAS_BASIONYM));
       assertEquals(2, t11.node.getDegree(RelType.HAS_BASIONYM));
@@ -283,10 +269,10 @@ public class NormalizerDwcaIT {
           .getSingleRelationship(RelType.HAS_BASIONYM, Direction.OUTGOING).getOtherNode(t10.node));
       assertEquals(t11.node, t13.node
           .getSingleRelationship(RelType.HAS_BASIONYM, Direction.OUTGOING).getOtherNode(t13.node));
-      assertNull(t12.name.getHomotypicNameId());
-      assertEquals(t10.name.getId(), t11.name.getHomotypicNameId());
-      assertEquals(t10.name.getId(), t10.name.getHomotypicNameId());
-      assertEquals(t10.name.getId(), t13.name.getHomotypicNameId());
+      assertNull(t12.usage.getName().getHomotypicNameId());
+      assertEquals(t10.usage.getName().getId(), t11.usage.getName().getHomotypicNameId());
+      assertEquals(t10.usage.getName().getId(), t10.usage.getName().getHomotypicNameId());
+      assertEquals(t10.usage.getName().getId(), t13.usage.getName().getHomotypicNameId());
     }
   }
 
@@ -300,8 +286,8 @@ public class NormalizerDwcaIT {
     // verify results
     try (Transaction tx = store.getNeo().beginTx()) {
       // check species name
-      NeoUsage t = store.getByTaxonID("10156");
-      assertEquals("'Prosthète'", t.name.getScientificName());
+      NeoUsage t = byID("10156");
+      assertEquals("'Prosthète'", t.usage.getName().getScientificName());
     }
   }
 
@@ -341,16 +327,16 @@ public class NormalizerDwcaIT {
     normalize(1);
 
     try (Transaction tx = store.getNeo().beginTx()) {
-      NeoUsage u1 = store.getByTaxonID("1006");
+      NeoUsage u1 = byID("1006");
       NeoUsage u2 = byName("Leontodon taraxacoides", "(Vill.) Mérat");
 
       assertEquals(u1, u2);
 
       NeoUsage bas = byName("Leonida taraxacoida");
-      assertEquals(u2.name.getHomotypicNameId(), bas.name.getHomotypicNameId());
+      assertEquals(u2.usage.getName().getHomotypicNameId(), bas.usage.getName().getHomotypicNameId());
 
       NeoUsage syn = byName("Leontodon leysseri");
-      assertTrue(syn.synonym.getStatus().isSynonym());
+      assertTrue(syn.getSynonym().getStatus().isSynonym());
     }
   }
 
@@ -371,8 +357,8 @@ public class NormalizerDwcaIT {
     normalize(8);
 
     try (Transaction tx = store.getNeo().beginTx()) {
-      NeoUsage syn = store.getByTaxonID("1001");
-      assertNotNull(syn.synonym);
+      NeoUsage syn = byID("1001");
+      assertNotNull(syn.getSynonym());
 
       Map<String, String> expectedAccepted = Maps.newHashMap();
       expectedAccepted.put("1000", "Calendula arvensis");
@@ -380,7 +366,7 @@ public class NormalizerDwcaIT {
       expectedAccepted.put("10002", "Calendula incana subsp. maderensis");
 
       for (RankedName acc : store.accepted(syn.node)) {
-        assertEquals(expectedAccepted.remove(store.getTaxonID(acc.node)), acc.name);
+        assertEquals(expectedAccepted.remove(store.usages().objByNode(acc.node).getId()), acc.name);
       }
       assertTrue(expectedAccepted.isEmpty());
     }
@@ -391,18 +377,18 @@ public class NormalizerDwcaIT {
     normalize(29);
 
     try (Transaction tx = store.getNeo().beginTx()) {
-      NeoUsage annua1 = store.getByTaxonID("4");
-      NeoUsage annua2 = store.getByTaxonID("5");
-      assertEquals(annua1.name.getHomotypicNameId(), annua2.name.getHomotypicNameId());
-      NeoUsage reptans1 = store.getByTaxonID("7");
-      NeoUsage reptans2 = store.getByTaxonID("8");
-      assertEquals(reptans1.name.getHomotypicNameId(), reptans2.name.getHomotypicNameId());
-      assertFalse(annua1.name.getHomotypicNameId().equals(reptans1.name.getHomotypicNameId()));
+      NeoUsage annua1 = byID("4");
+      NeoUsage annua2 = byID("5");
+      assertEquals(annua1.usage.getName().getHomotypicNameId(), annua2.usage.getName().getHomotypicNameId());
+      NeoUsage reptans1 = byID("7");
+      NeoUsage reptans2 = byID("8");
+      assertEquals(reptans1.usage.getName().getHomotypicNameId(), reptans2.usage.getName().getHomotypicNameId());
+      assertFalse(annua1.usage.getName().getHomotypicNameId().equals(reptans1.usage.getName().getHomotypicNameId()));
 
       List<String> homos = Lists.newArrayList("4", "5", "7", "8");
-      store.allUsages().forEach(t -> {
-        if (!homos.contains(t.name.getId())) {
-          assertNull(t.name.getHomotypicNameId());
+      store.names().all().forEach(nn -> {
+        if (!homos.contains(nn.name.getId())) {
+          assertNull(nn.name.getHomotypicNameId());
         }
       });
     }
@@ -413,9 +399,9 @@ public class NormalizerDwcaIT {
     normalize(30);
 
     try (Transaction tx = store.getNeo().beginTx()) {
-      NeoUsage t10 = store.getByTaxonID("10");
-      NeoUsage t11 = store.getByTaxonID("11");
-      assertEquals(t10.name.getHomotypicNameId(), t11.name.getHomotypicNameId());
+      NeoUsage t10 = byID("10");
+      NeoUsage t11 = byID("11");
+      assertEquals(t10.usage.getName().getHomotypicNameId(), t11.usage.getName().getHomotypicNameId());
       List<NameRelation> rels = store.relations(t10.node);
       assertEquals(1, rels.size());
       assertEquals(NomRelType.BASED_ON, rels.get(0).getType());

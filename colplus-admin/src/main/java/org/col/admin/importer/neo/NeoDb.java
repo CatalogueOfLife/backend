@@ -2,7 +2,10 @@ package org.col.admin.importer.neo;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -106,9 +109,6 @@ public class NeoDb implements ReferenceStore {
       pool = new KryoPool.Builder(new NeoKryoFactory())
           .softReferences()
           .build();
-      usages = new NeoCRUDStore<>(neo, mapDb, "usages", NeoUsage.class, pool, idGen, this::addIssues, this::createNode);
-      names = new NeoNameStore(neo, mapDb, "names", NeoName.class, pool, idGen, this::addIssues, this::createNode);
-      
       dataset = (Atomic.Var<Dataset>) mapDb.atomicVar("dataset", new MapDbObjectSerializer(Dataset.class, pool, 256))
           .createOrOpen();
       verbatim = mapDb.hashMap("verbatim")
@@ -124,7 +124,11 @@ public class NeoDb implements ReferenceStore {
           .valueSerializer(Serializer.STRING)
           .createOrOpen();
       openNeo();
-
+      
+      usages = new NeoCRUDStore<>(neo, mapDb, "usages", NeoUsage.class, pool, idGen, this::addIssues, this::createNode);
+      names = new NeoNameStore(neo, mapDb, "names", NeoName.class, pool, idGen, this::addIssues, this::createNode);
+  
+  
     } catch (Exception e) {
       LOG.error("Failed to initialize a new NeoDB", e);
       close();
@@ -339,13 +343,13 @@ public class NeoDb implements ReferenceStore {
    * The name instance is taken from the usage object.
    * @return the created node id or null if it could not be created
    */
-  public Long createNameAndUsage(NeoUsage u) {
+  public Node createNameAndUsage(NeoUsage u) {
     Preconditions.checkArgument(u.getNode() == null, "NeoUsage already has a neo4j node");
-    Long nodeId = usages.createOrRegister(u, NeoDbUtils.neo4jProps(u.usage.getName()), Labels.NAME);
-    NeoName nn = new NeoName(new NodeProxy(null, nodeId), u.usage.getName());
+    Node n = usages.createOrRegister(u, NeoDbUtils.neo4jProps(u.usage.getName()), Labels.NAME);
+    NeoName nn = new NeoName(n, u.usage.getName());
     nn.homotypic = u.homotypic;
     names.createOrRegister(nn, null);
-    return nodeId;
+    return n;
   }
   
   /**
@@ -364,20 +368,19 @@ public class NeoDb implements ReferenceStore {
     LOG.debug("Deleted {} from store with {} relations", n, counter);
   }
   
-  private long createNode(Map<String,Object> properties, Label... labels) {
-    long nodeId;
+  private Node createNode(Map<String,Object> properties, Label... labels) {
+    Node n;
     if (isBatchMode()) {
       // batch insert normalizer properties used during normalization
-      nodeId = inserter.createNode(properties, labels);
-    
+      long nodeId = inserter.createNode(properties, labels);
+      n = new NodeProxy(null, nodeId);
     } else {
       // create neo4j node and update its properties
-      Node n = neo.createNode(labels);
+      n = neo.createNode(labels);
       NeoDbUtils.setProperties(n, properties);
-      nodeId = n.getId();
     }
     neoCounter.incrementAndGet();
-    return nodeId;
+    return n;
   }
   
   

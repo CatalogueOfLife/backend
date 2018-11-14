@@ -19,6 +19,7 @@ import org.col.admin.config.NormalizerConfig;
 import org.col.admin.importer.neo.NeoDb;
 import org.col.admin.importer.neo.NeoDbFactory;
 import org.col.admin.importer.neo.NotUniqueRuntimeException;
+import org.col.admin.importer.neo.model.NeoName;
 import org.col.admin.importer.neo.model.NeoProperties;
 import org.col.admin.importer.neo.model.NeoUsage;
 import org.col.admin.importer.neo.model.RankedName;
@@ -101,14 +102,20 @@ public class NormalizerACEFIT {
       throw new RuntimeException(e);
     }
   }
+  
+  NeoUsage usageWithName(Node n) {
+    NeoUsage u = store.usages().objByNode(n);
+    NeoName nn = store.names().objByNode(n);
+    u.usage.setName(nn.name);
+    return u;
+  }
 
   NeoUsage byID(String id) {
-    Node n = store.byTaxonID(id);
-    return store.getUsage(n);
+    return usageWithName(store.usages().nodeByID(id));
   }
 
   NeoUsage byName(String name, @Nullable String author) {
-    List<Node> nodes = store.usageByScientificName(name);
+    List<Node> nodes = store.names().nodesByName(name);
     // filter by author
     if (author != null) {
       nodes.removeIf(n -> !author.equalsIgnoreCase(NeoProperties.getAuthorship(n)));
@@ -120,7 +127,7 @@ public class NormalizerACEFIT {
     if (nodes.size() > 1) {
       throw new NotUniqueRuntimeException("scientificName", name);
     }
-    return store.getUsage(nodes.get(0));
+    return usageWithName(nodes.get(0));
   }
 
   NeoUsage accepted(Node syn) {
@@ -128,7 +135,7 @@ public class NormalizerACEFIT {
     if (accepted.size() != 1) {
       throw new IllegalStateException("Synonym has " + accepted.size() + " accepted taxa");
     }
-    return store.getUsage(accepted.get(0).node);
+    return usageWithName(accepted.get(0).node);
   }
 
   private boolean hasIssues(VerbatimEntity ent, Issue... issues) {
@@ -147,9 +154,9 @@ public class NormalizerACEFIT {
     try (Transaction tx = store.getNeo().beginTx()) {
       NeoUsage t = byID("s7");
       assertTrue(t.isSynonym());
-      assertEquals("Astragalus nonexistus", t.name.getScientificName());
-      assertEquals("DC.", t.name.authorshipComplete());
-      assertEquals(Rank.SPECIES, t.name.getRank());
+      assertEquals("Astragalus nonexistus", t.usage.getName().getScientificName());
+      assertEquals("DC.", t.usage.getName().authorshipComplete());
+      assertEquals(Rank.SPECIES, t.usage.getName().getRank());
 
       assertTrue(hasIssues(t, Issue.SYNONYM_DATA_MOVED));
       assertTrue(hasIssues(t, Issue.ACCEPTED_ID_INVALID));
@@ -162,8 +169,8 @@ public class NormalizerACEFIT {
 
       t = byID("s6");
       assertTrue(t.isSynonym());
-      assertEquals("Astragalus beersabeensis", t.name.getScientificName());
-      assertEquals(Rank.SPECIES, t.name.getRank());
+      assertEquals("Astragalus beersabeensis", t.usage.getName().getScientificName());
+      assertEquals(Rank.SPECIES, t.usage.getName().getRank());
       assertTrue(hasIssues(t, Issue.SYNONYM_DATA_MOVED));
       assertTrue(t.classification.isEmpty());
       assertEquals(0, t.vernacularNames.size());
@@ -184,9 +191,9 @@ public class NormalizerACEFIT {
     normalize(1);
     try (Transaction tx = store.getNeo().beginTx()) {
       NeoUsage t = byID("14649");
-      assertEquals("Zapoteca formosa", t.name.getScientificName());
-      assertEquals("(Kunth) H.M.Hern.", t.name.authorshipComplete());
-      assertEquals(Rank.SPECIES, t.name.getRank());
+      assertEquals("Zapoteca formosa", t.usage.getName().getScientificName());
+      assertEquals("(Kunth) H.M.Hern.", t.usage.getName().authorshipComplete());
+      assertEquals(Rank.SPECIES, t.usage.getName().getRank());
       assertEquals("Fabaceae", t.classification.getFamily());
 
       // distributions
@@ -208,10 +215,10 @@ public class NormalizerACEFIT {
 
       // denormed family
       t = byName("Fabaceae", null);
-      assertEquals("Fabaceae", t.name.getScientificName());
-      assertEquals("Fabaceae", t.name.canonicalNameComplete());
-      assertNull(t.name.authorshipComplete());
-      assertEquals(Rank.FAMILY, t.name.getRank());
+      assertEquals("Fabaceae", t.usage.getName().getScientificName());
+      assertEquals("Fabaceae", t.usage.getName().canonicalNameComplete());
+      assertNull(t.usage.getName().authorshipComplete());
+      assertEquals(Rank.FAMILY, t.usage.getName().getRank());
     }
   }
 
@@ -220,9 +227,9 @@ public class NormalizerACEFIT {
     normalize(4);
     try (Transaction tx = store.getNeo().beginTx()) {
       NeoUsage t = byID("1");
-      assertEquals("Inga vera", t.name.getScientificName());
-      assertEquals("Willd.", t.name.authorshipComplete());
-      assertEquals(Rank.SPECIES, t.name.getRank());
+      assertEquals("Inga vera", t.usage.getName().getScientificName());
+      assertEquals("Willd.", t.usage.getName().authorshipComplete());
+      assertEquals(Rank.SPECIES, t.usage.getName().getRank());
       assertTrue(hasIssues(t, Issue.ID_NOT_UNIQUE));
       assertEquals("Fabaceae", t.classification.getFamily());
       assertEquals("Plantae", t.classification.getKingdom());
@@ -245,15 +252,15 @@ public class NormalizerACEFIT {
     normalize(6);
     try (Transaction tx = store.getNeo().beginTx()) {
       NeoUsage t = byID("MD1");
-      assertEquals("Latrodectus tredecimguttatus (Rossi, 1790)", t.name.canonicalNameComplete());
+      assertEquals("Latrodectus tredecimguttatus (Rossi, 1790)", t.usage.getName().canonicalNameComplete());
 
       Set<String> nonMisappliedIds = Sets.newHashSet("s17", "s18");
       int counter = 0;
       for (Node sn : Traversals.SYNONYMS.traverse(t.node).nodes()) {
-        NeoUsage s = store.getUsage(sn);
-        assertTrue(s.synonym.getStatus().isSynonym());
-        if (nonMisappliedIds.remove(s.getID())) {
-          assertEquals(TaxonomicStatus.SYNONYM, s.synonym.getStatus());
+        NeoUsage s = usageWithName(sn);
+        assertTrue(s.getSynonym().getStatus().isSynonym());
+        if (nonMisappliedIds.remove(s.getId())) {
+          assertEquals(TaxonomicStatus.SYNONYM, s.getSynonym().getStatus());
           assertFalse(hasIssues(s, Issue.DERIVED_TAXONOMIC_STATUS));
         } else {
           counter++;
@@ -271,15 +278,15 @@ public class NormalizerACEFIT {
     normalize(7);
     try (Transaction tx = store.getNeo().beginTx()) {
       NeoUsage t = byID("CIP-S-902");
-      assertEquals("Lutzomyia preclara", t.name.canonicalNameComplete());
+      assertEquals("Lutzomyia preclara", t.usage.getName().canonicalNameComplete());
 
       t = byID("2");
-      assertEquals("Latrodectus spec.", t.name.canonicalNameComplete());
-      assertEquals("(Fabricius, 1775)", t.name.authorshipComplete().trim());
+      assertEquals("Latrodectus spec.", t.usage.getName().canonicalNameComplete());
+      assertEquals("(Fabricius, 1775)", t.usage.getName().authorshipComplete().trim());
 
       t = byID("3");
-      assertEquals("Null bactus", t.name.canonicalNameComplete());
-      assertTrue(store.getVerbatim(t.name.getVerbatimKey()).hasIssue(Issue.NULL_EPITHET));
+      assertEquals("Null bactus", t.usage.getName().canonicalNameComplete());
+      assertTrue(store.getVerbatim(t.usage.getName().getVerbatimKey()).hasIssue(Issue.NULL_EPITHET));
     }
   }
 
@@ -291,7 +298,7 @@ public class NormalizerACEFIT {
     normalize(14);
     try (Transaction tx = store.getNeo().beginTx()) {
       NeoUsage t = byID("Vir-96");
-      assertEquals("Phikmvlikevirus: Pseudomonas phage LKA1 ICTV", t.name.getScientificName());
+      assertEquals("Phikmvlikevirus: Pseudomonas phage LKA1 ICTV", t.usage.getName().getScientificName());
     }
   }
 
@@ -305,7 +312,7 @@ public class NormalizerACEFIT {
     try (Transaction tx = store.getNeo().beginTx()) {
       NeoUsage t = byID("Sys-2476");
       assertNotNull(t);
-      assertEquals("Chagasia maculata", t.name.getScientificName());
+      assertEquals("Chagasia maculata", t.usage.getName().getScientificName());
     }
   }
 

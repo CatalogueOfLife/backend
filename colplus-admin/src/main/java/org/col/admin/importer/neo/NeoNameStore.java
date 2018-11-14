@@ -26,7 +26,7 @@ public class NeoNameStore extends NeoCRUDStore<NeoName> {
   // scientificName to nodeId
   private final Map<String, long[]> names;
   
-  public NeoNameStore(GraphDatabaseService neo, DB mapDb, String mapDbName, Class<NeoName> clazz, KryoPool pool, IdGenerator idGen, BiConsumer<VerbatimEntity, Issue> addIssueFunc, BiFunction<Map<String, Object>, Label[], Long> createNode) {
+  public NeoNameStore(GraphDatabaseService neo, DB mapDb, String mapDbName, Class<NeoName> clazz, KryoPool pool, IdGenerator idGen, BiConsumer<VerbatimEntity, Issue> addIssueFunc, BiFunction<Map<String, Object>, Label[], Node> createNode) {
     super(neo, mapDb, mapDbName, clazz, pool, idGen, addIssueFunc, createNode);
     names = mapDb.hashMap(mapDbName+"-names")
         .keySerializer(Serializer.STRING)
@@ -47,12 +47,12 @@ public class NeoNameStore extends NeoCRUDStore<NeoName> {
   }
   
   @Override
-  Long createOrRegister(NeoName obj, Map<String, Object> extraProps, Label... extraLabels) {
-    Long nid = super.createOrRegister(obj, extraProps, extraLabels);
-    if (nid != null) {
-      add(obj, nid);
+  Node createOrRegister(NeoName obj, Map<String, Object> extraProps, Label... extraLabels) {
+    Node n = super.createOrRegister(obj, extraProps, extraLabels);
+    if (n != null) {
+      add(obj, n.getId());
     }
-    return nid;
+    return n;
   }
   
   @Override

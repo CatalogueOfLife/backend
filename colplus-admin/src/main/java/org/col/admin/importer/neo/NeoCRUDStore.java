@@ -34,14 +34,14 @@ public class NeoCRUDStore<T extends VerbatimID & NeoNode> {
   protected final GraphDatabaseService neo;
   private final String objName;
   private final BiConsumer<VerbatimEntity, Issue> addIssueFunc;
-  private final BiFunction<Map<String,Object>, Label[], Long> createNode;
+  private final BiFunction<Map<String,Object>, Label[], Node> createNode;
   
   
-  public NeoCRUDStore(GraphDatabaseService neo,
+  NeoCRUDStore(GraphDatabaseService neo,
                       DB mapDb, String mapDbName, Class<T> clazz, KryoPool pool,
                       IdGenerator idGen,
                       BiConsumer<VerbatimEntity, Issue> addIssueFunc,
-                      BiFunction<Map<String,Object>, Label[], Long> createNode) {
+                      BiFunction<Map<String,Object>, Label[], Node> createNode) {
     this.neo = neo;
     objName = clazz.getSimpleName();
     objects = mapDb.hashMap(mapDbName)
@@ -105,7 +105,7 @@ public class NeoCRUDStore<T extends VerbatimID & NeoNode> {
   /**
    * @return the created node id or null if it could not be created
    */
-  public Long create(T obj) {
+  public Node create(T obj) {
     Preconditions.checkArgument(obj.getNode() == null, "Object already has a neo4j node");
     return createOrRegister(obj, null);
   }
@@ -115,7 +115,7 @@ public class NeoCRUDStore<T extends VerbatimID & NeoNode> {
    * If a neo4j node already exists only the ID is checked and the object registered in this CRUD store
    * @return the created node id or null if it could not be created (currently only with duplicate IDs).
    */
-  Long createOrRegister(T obj, Map<String,Object> extraProps, Label... extraLabels) {
+  Node createOrRegister(T obj, Map<String,Object> extraProps, Label... extraLabels) {
     Preconditions.checkNotNull(obj);
     // create missing ids, sharing the same id between name & taxon
     if (obj.getId() == null) {
@@ -129,24 +129,24 @@ public class NeoCRUDStore<T extends VerbatimID & NeoNode> {
   
   
     // create a new neo4j node if not yet existing
-    long nodeId;
-    if (obj.getNode() != null) {
-      nodeId = obj.getNode().getId();
-    
-    } else {
+    if (obj.getNode() == null) {
       // update neo4j properties either via batch mode or classic
       Map<String,Object> props = obj.properties();
       if (extraProps != null) {
-        props.putAll(extraProps);
+        if (props.isEmpty()) {
+          props = extraProps;
+        } else {
+          props.putAll(extraProps);
+        }
       }
       Label[] labels = extraLabels == null ? obj.getLabels() : ArrayUtils.addAll(obj.getLabels(), extraLabels);
-      nodeId = createNode.apply(props, labels);
+      obj.setNode( createNode.apply(props, labels) );
     }
     
-    objects.put(nodeId, obj);
-    ids.put(obj.getId(), nodeId);
+    objects.put(obj.getNode().getId(), obj);
+    ids.put(obj.getId(), obj.getNode().getId());
     
-    return nodeId;
+    return obj.getNode();
   }
   
   /**

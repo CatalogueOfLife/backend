@@ -1,6 +1,5 @@
 package org.col.admin.importer;
 
-import org.col.api.model.IssueContainer;
 import org.col.api.model.Name;
 import org.col.api.model.VerbatimRecord;
 import org.col.api.vocab.Issue;
@@ -8,8 +7,7 @@ import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Test;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  *
@@ -17,14 +15,14 @@ import static org.junit.Assert.assertTrue;
 public class NameValidatorTest {
 
   private void verify(Name n, Issue ... expected) {
-    IssueContainer issues = new VerbatimRecord();
+    VerbatimRecord v = new VerbatimRecord();
     if (expected.length == 0) {
-      assertFalse( NameValidator.flagIssues(n, issues) );
+      assertNull( NameValidator.flagIssues(n, v) );
 
     } else {
-      assertTrue( NameValidator.flagIssues(n, issues) );
+      assertNotNull( NameValidator.flagIssues(n, v) );
       for (Issue iss : expected) {
-        assertTrue(issues.hasIssue(iss));
+        assertTrue(v.hasIssue(iss));
       }
     }
   }
