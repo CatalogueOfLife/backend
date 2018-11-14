@@ -17,7 +17,7 @@ import static org.junit.Assert.assertEquals;
 public class NameUsageIndexServiceTest extends EsReadWriteTestBase {
   
   @Test // Nice in combination with PgImportIT.testGsdGithub
-  //@Ignore
+  @Ignore
   public void indexDataSet() throws IOException, EsException {
     try (RestClient client = getEsClient()) {
       NameUsageIndexService svc =
