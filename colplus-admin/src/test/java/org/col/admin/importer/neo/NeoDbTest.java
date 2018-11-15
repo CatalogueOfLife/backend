@@ -9,6 +9,7 @@ import org.col.admin.importer.neo.model.NeoName;
 import org.col.admin.importer.neo.model.NeoUsage;
 import org.col.admin.importer.neo.model.RelType;
 import org.col.api.RandomUtils;
+import org.col.api.model.Name;
 import org.col.api.model.VerbatimRecord;
 import org.col.api.vocab.Origin;
 import org.gbif.dwc.terms.AcefTerm;
@@ -100,39 +101,47 @@ public class NeoDbTest {
 
   @Test
   public void neoSync() throws Exception {
-    NeoUsage t1;
-    NeoUsage t2;
+    NeoUsage u1;
+    NeoUsage u2;
+    Name n1;
     try (Transaction tx = db.getNeo().beginTx()) {
-      t1 = taxon("12");
-      db.createNameAndUsage(t1);
-      t2 = taxon("13");
-      db.createNameAndUsage(t2);
+      u1 = taxon("12");
+      assertNull(u1.usage.getName().getHomotypicNameId());
+      n1 = u1.usage.getName();
+      db.createNameAndUsage(u1);
+      assertNull(u1.usage.getName());
+
+      u2 = taxon("13");
+      assertNull(u2.usage.getName().getHomotypicNameId());
+      db.createNameAndUsage(u2);
+      assertNull(u2.usage.getName());
 
       // now relate the 2 nodes and make sure when we read the relations the instance is changed accordingly
-      t1.node.createRelationshipTo(t2.node, RelType.PARENT_OF);
-      t2.node.createRelationshipTo(t1.node, RelType.HAS_BASIONYM);
-
-      assertNull(t1.usage.getName().getHomotypicNameId());
-      assertNull(t2.usage.getName().getHomotypicNameId());
+      u1.node.createRelationshipTo(u2.node, RelType.PARENT_OF);
+      u2.node.createRelationshipTo(u1.node, RelType.HAS_BASIONYM);
 
       tx.success();
     }
     db.sync();
 
     try (Transaction tx = db.getNeo().beginTx()) {
-      NeoName t1b = db.names().objByID("12");
-      NeoName t2b = db.names().objByID("13");
-      assertNotNull(t1b.name.getHomotypicNameId());
-      assertNotNull(t2b.name.getHomotypicNameId());
+      NeoName n1b = db.names().objByID("12");
+      NeoName n2b = db.names().objByID("13");
+      assertNotNull(n1b.name.getHomotypicNameId());
+      assertNotNull(n2b.name.getHomotypicNameId());
 
-      assertEquals(t1b.name.getHomotypicNameId(), t2b.name.getHomotypicNameId());
-      t1b.name.setHomotypicNameId(null);
-      assertEquals(t1, t1b);
+      assertEquals(n1b.name.getHomotypicNameId(), n2b.name.getHomotypicNameId());
+      
+      n1b.name.setHomotypicNameId(null);
+      assertEquals(n1, n1b.name);
+
+      NeoUsage u1b = db.usages().objByID("12");
+      assertEquals(u1, u1b);
     }
   }
 
   static class BatchProcException extends RuntimeException {
-    public BatchProcException(String message) {
+    BatchProcException(String message) {
       super(message);
     }
   }

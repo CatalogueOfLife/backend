@@ -111,7 +111,7 @@ public class NormalizerACEFIT {
   }
 
   NeoUsage byID(String id) {
-    return usageWithName(store.usages().nodeByID(id));
+    return usageWithName(store.names().nodeByID(id));
   }
 
   NeoUsage byName(String name, @Nullable String author) {

@@ -22,8 +22,8 @@ INSERT INTO name (dataset_key, id, homotypic_name_id, scientific_name, genus, sp
 INSERT INTO taxon (id, dataset_key, name_id, origin) VALUES ('root-1', 11, 'name-1', 0);
 INSERT INTO taxon (id, dataset_key, name_id, origin) VALUES ('root-2', 11, 'name-2', 0);
 
-INSERT INTO synonym (taxon_id, name_id, dataset_key, status) VALUES ('root-2', 'name-3', 11, 2);
-INSERT INTO synonym (taxon_id, name_id, dataset_key, status) VALUES ('root-2', 'name-4', 11, 2);
+INSERT INTO synonym (taxon_id, name_id, dataset_key, status, origin) VALUES ('root-2', 'name-3', 11, 2, 0);
+INSERT INTO synonym (taxon_id, name_id, dataset_key, status, origin) VALUES ('root-2', 'name-4', 11, 2, 0);
 
 INSERT INTO taxon_reference(dataset_key, taxon_id, reference_id) VALUES (11, 'root-1', 'ref-1');
 INSERT INTO taxon_reference(dataset_key, taxon_id, reference_id) VALUES (11, 'root-2', 'ref-1');

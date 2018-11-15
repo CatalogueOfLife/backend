@@ -7,6 +7,7 @@ import java.util.Optional;
 import com.google.common.collect.Lists;
 import org.col.admin.importer.InsertMetadata;
 import org.col.admin.importer.InterpreterBase;
+import org.col.admin.importer.neo.NeoDb;
 import org.col.admin.importer.neo.model.NeoNameRel;
 import org.col.admin.importer.neo.model.NeoUsage;
 import org.col.admin.importer.neo.model.RelType;
@@ -29,41 +30,43 @@ public class DwcInterpreter extends InterpreterBase {
   private static final EnumNote<TaxonomicStatus> NO_STATUS = new EnumNote<>(TaxonomicStatus.DOUBTFUL, null);
 
   private final InsertMetadata insertMetadata;
+  private final NeoDb store;
 
-  public DwcInterpreter(Dataset dataset, InsertMetadata insertMetadata, ReferenceFactory refFactory) {
+  public DwcInterpreter(Dataset dataset, InsertMetadata insertMetadata, ReferenceFactory refFactory, NeoDb store) {
     super(dataset, refFactory);
     this.insertMetadata = insertMetadata;
+    this.store = store;
   }
 
   public Optional<NeoUsage> interpret(VerbatimRecord v) {
     // name
     Optional<NameAccordingTo> nat = interpretName(v);
     if (nat.isPresent()) {
+      EnumNote<TaxonomicStatus> status = SafeParser.parse(TaxonomicStatusParser.PARSER, v.get(DwcTerm.taxonomicStatus)).orElse(NO_STATUS);
       // usage
-      NeoUsage t = NeoUsage.createTaxon(Origin.SOURCE, false);
-      // add the name
-      t.usage.setName(nat.get().getName());
-      // add taxon in any case - we can swap status of a synonym during normalization
-      EnumNote<TaxonomicStatus> status = SafeParser
-          .parse(TaxonomicStatusParser.PARSER, v.get(DwcTerm.taxonomicStatus)).orElse(NO_STATUS);
-      interpretTaxon(t, v, status, nat.get().getAccordingTo());
+      NeoUsage u;
       // a synonym by status?
       // we deal with relations via DwcTerm.acceptedNameUsageID and DwcTerm.acceptedNameUsage
       // during relation insertion
       if (status.val.isSynonym()) {
-        Synonym syn = new Synonym();
-        syn.setStatus(status.val);
-        syn.setAccordingTo(nat.get().getAccordingTo());
-        syn.setVerbatimKey(v.getKey());
-        t.usage = syn;
-        t.homotypic = TaxonomicStatusParser.isHomotypic(status);
+        u = NeoUsage.createSynonym(Origin.SOURCE, nat.get().getName(), status.val);
+      } else {
+        u = NeoUsage.createTaxon(Origin.SOURCE, nat.get().getName(), false);
+        interpretTaxon(u, v, status);
       }
+  
+      // shared usage props
+      u.setId(v.getFirst(DwcTerm.taxonID, DwcaReader.DWCA_ID));
+      u.setVerbatimKey(v.getKey());
+      u.usage.setAccordingTo(ObjectUtils.coalesce(v.get(DwcTerm.nameAccordingTo), nat.get().getAccordingTo()));
+      u.homotypic = TaxonomicStatusParser.isHomotypic(status);
+
       // flat classification
-      t.classification = new Classification();
+      u.classification = new Classification();
       for (DwcTerm dwc : DwcTerm.HIGHER_RANKS) {
-        t.classification.setByTerm(dwc, v.get(dwc));
+        u.classification.setByTerm(dwc, v.get(dwc));
       }
-      return Optional.of(t);
+      return Optional.of(u);
     }
     return Optional.empty();
   }
@@ -154,16 +157,10 @@ public class DwcInterpreter extends InterpreterBase {
     }
   }
 
-  private void interpretTaxon(NeoUsage u, VerbatimRecord v, EnumNote<TaxonomicStatus> status, String accordingTo) {
+  private void interpretTaxon(NeoUsage u, VerbatimRecord v, EnumNote<TaxonomicStatus> status) {
     Taxon tax = u.getTaxon();
-    // and it keeps the taxonID for resolution of relations
-    tax.setVerbatimKey(v.getKey());
-    tax.setId(v.getFirst(DwcTerm.taxonID, DwcaReader.DWCA_ID));
     // this can be a synonym at this stage which the class does not accept
     tax.setDoubtful(TaxonomicStatus.DOUBTFUL == status.val || status.val.isSynonym());
-    tax.setAccordingTo(ObjectUtils.coalesce(v.get(DwcTerm.nameAccordingTo), accordingTo));
-    tax.setAccordingToDate(null);
-    tax.setOrigin(Origin.SOURCE);
     tax.setDatasetUrl(uri(v, u, Issue.URL_INVALID, DcTerm.references));
     tax.setFossil(null);
     tax.setRecent(null);
@@ -202,6 +199,7 @@ public class DwcInterpreter extends InterpreterBase {
       if (v.hasTerm(DwcTerm.namePublishedInID) || v.hasTerm(DwcTerm.namePublishedIn)) {
         Reference ref = refFactory.fromCitation(v.get(DwcTerm.namePublishedInID), v.get(DwcTerm.namePublishedIn), v);
         if (ref != null) {
+          store.create(ref);
           n.setPublishedInId(ref.getId());
           n.setPublishedInPage(ref.getPage());
         }

@@ -246,15 +246,14 @@ public class TestEntityGenerator {
     return (CslData) new RandomInstance().create(CslData.class, CslName.class, CslDate.class);
   }
 
-  /*
-   * Creates a new taxon with the specified id, belonging to the specified dataset.
-   */
   public static Synonym newSynonym(TaxonomicStatus status, Name name, Taxon accepted) {
     Synonym s = new Synonym();
+    s.setId("syn" + ID_GEN.getAndIncrement());
     s.setName(name);
     s.setAccordingTo("non Döring 1999");
     s.setStatus(status);
     s.setAccepted(accepted);
+    s.setOrigin(Origin.SOURCE);
     return s;
   }
 

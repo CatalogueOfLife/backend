@@ -134,7 +134,7 @@ public class NormalizerDwcaIT {
   }
   
   NeoUsage byID(String id) {
-    return usageWithName(store.names().nodeByID(id));
+    return usageWithName(store.usages().nodeByID(id));
   }
 
   @Test

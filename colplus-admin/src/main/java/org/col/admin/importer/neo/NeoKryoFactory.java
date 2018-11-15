@@ -4,6 +4,7 @@ import com.esotericsoftware.kryo.Kryo;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import org.col.admin.importer.neo.model.NeoName;
 import org.col.admin.importer.neo.model.NeoUsage;
+import org.col.admin.importer.neo.model.NodeMock;
 import org.col.admin.importer.neo.model.RankedName;
 import org.col.common.kryo.ApiKryoFactory;
 import org.col.common.kryo.NullSerializer;
@@ -31,6 +32,7 @@ public class NeoKryoFactory extends ApiKryoFactory {
 
     // ignore normalizer node proxies and set them to null upon read:
     kryo.register(NodeProxy.class, new NullSerializer());
+    kryo.register(NodeMock.class, new NullSerializer());
 
     return kryo;
   }

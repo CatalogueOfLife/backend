@@ -45,7 +45,6 @@ import org.neo4j.graphdb.factory.GraphDatabaseBuilder;
 import org.neo4j.helpers.collection.Iterables;
 import org.neo4j.helpers.collection.Iterators;
 import org.neo4j.internal.kernel.api.exceptions.KernelException;
-import org.neo4j.kernel.impl.core.NodeProxy;
 import org.neo4j.kernel.impl.proc.Procedures;
 import org.neo4j.kernel.internal.GraphDatabaseAPI;
 import org.neo4j.unsafe.batchinsert.BatchInserter;
@@ -125,8 +124,8 @@ public class NeoDb implements ReferenceStore {
           .createOrOpen();
       openNeo();
       
-      usages = new NeoCRUDStore<>(neo, mapDb, "usages", NeoUsage.class, pool, idGen, this::addIssues, this::createNode);
-      names = new NeoNameStore(neo, mapDb, "names", NeoName.class, pool, idGen, this::addIssues, this::createNode);
+      usages = new NeoCRUDStore<>(mapDb, "usages", NeoUsage.class, pool, idGen, this::addIssues, this::createNode, this::nodeById);
+      names = new NeoNameStore(mapDb, "names", NeoName.class, pool, idGen, this::addIssues, this::createNode, this::nodeById);
   
   
     } catch (Exception e) {
@@ -339,14 +338,32 @@ public class NeoDb implements ReferenceStore {
   }
   
   /**
-   * Creates a single neo4j node with both a name and usage.
-   * The name instance is taken from the usage object.
+   * Creates a single neo4j node with both a NeoName and NeoUsage sharing the same neo4j node.
+   * The name instance is taken from the usage object which is removed from the usage.
    * @return the created node id or null if it could not be created
    */
   public Node createNameAndUsage(NeoUsage u) {
     Preconditions.checkArgument(u.getNode() == null, "NeoUsage already has a neo4j node");
-    Node n = usages.createOrRegister(u, NeoDbUtils.neo4jProps(u.usage.getName()), Labels.NAME);
-    NeoName nn = new NeoName(n, u.usage.getName());
+    Preconditions.checkNotNull(u.usage.getName(), "NeoUsage with name required");
+    Name name = u.usage.getName();
+    // remove name from usage
+    u.usage.setName(null);
+    Node n = usages.createOrRegister(u, NeoDbUtils.neo4jProps(name), Labels.NAME);
+    // also create a neoname with the same id, origin and verbatim key if missing
+    NeoName nn = new NeoName(n, name);
+    if (nn.getId() == null) {
+      nn.setId(u.getId());
+    }
+    if (nn.getVerbatimKey() == null) {
+      nn.setVerbatimKey(u.getVerbatimKey());
+    }
+    if (name.getOrigin() == null) {
+      if (u.isSynonym()) {
+        name.setOrigin(u.getSynonym().getOrigin());
+      } else {
+        name.setOrigin(u.getTaxon().getOrigin());
+      }
+    }
     nn.homotypic = u.homotypic;
     names.createOrRegister(nn, null);
     return n;
@@ -373,7 +390,7 @@ public class NeoDb implements ReferenceStore {
     if (isBatchMode()) {
       // batch insert normalizer properties used during normalization
       long nodeId = inserter.createNode(properties, labels);
-      n = new NodeProxy(null, nodeId);
+      n = new NodeMock(nodeId);
     } else {
       // create neo4j node and update its properties
       n = neo.createNode(labels);
@@ -383,6 +400,12 @@ public class NeoDb implements ReferenceStore {
     return n;
   }
   
+  /**
+   * @return a node which is a dummy proxy only with just an id while we are in batch mode.
+   */
+  private Node nodeById(long nodeId) {
+    return isBatchMode() ? new NodeMock(nodeId) : neo.getNodeById(nodeId);
+  }
   
   /**
    * Creates or updates a verbatim record.
@@ -403,15 +426,12 @@ public class NeoDb implements ReferenceStore {
    * The note and publishedInKey values are stored as relation properties
    */
   public void createNameRel(Node n1, Node n2, NeoNameRel rel) {
-    Relationship r = n1.createRelationshipTo(n2, rel.getType());
-    if (rel.getVerbatimKey() != null) {
-      r.setProperty(NeoProperties.VERBATIM_KEY, rel.getVerbatimKey());
-    }
-    if (rel.getRefId() != null) {
-      r.setProperty(NeoProperties.REF_ID, rel.getRefId());
-    }
-    if (rel.getNote() != null) {
-      r.setProperty(NeoProperties.NOTE, rel.getNote());
+    Map<String, Object> props = NeoDbUtils.neo4jProps(rel);
+    if (isBatchMode()) {
+      inserter.createRelationship(n1.getId(), n2.getId(), rel.getType(), props);
+    } else {
+      Relationship r = n1.createRelationshipTo(n2, rel.getType());
+      NeoDbUtils.setProperties(r, props);
     }
   }
 

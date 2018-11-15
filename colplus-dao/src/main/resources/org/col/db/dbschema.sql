@@ -333,12 +333,14 @@ CREATE TABLE taxon (
 ) PARTITION BY LIST (dataset_key);
 
 CREATE TABLE synonym (
+  id TEXT,
   taxon_id TEXT,
   name_id TEXT,
   dataset_key INTEGER NOT NULL,
   verbatim_key INTEGER,
   status INTEGER NOT NULL,
-  according_to TEXT
+  according_to TEXT,
+  origin INTEGER NOT NULL
 ) PARTITION BY LIST (dataset_key);
 
 CREATE TABLE taxon_reference (

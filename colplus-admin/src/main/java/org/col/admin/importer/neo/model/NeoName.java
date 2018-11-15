@@ -5,14 +5,15 @@ import java.util.Objects;
 
 import org.col.admin.importer.neo.NeoDbUtils;
 import org.col.api.model.Name;
-import org.col.api.model.VerbatimID;
+import org.col.api.model.ID;
+import org.col.api.model.VerbatimEntity;
 import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
 
 /**
  * Simple wrapper to hold a neo4j node together with a name
  */
-public class NeoName implements NeoNode, VerbatimID {
+public class NeoName implements NeoNode, ID, VerbatimEntity {
   private static final Label[] LABELS = new Label[]{Labels.NAME};
   
   public Node node;
@@ -77,7 +78,7 @@ public class NeoName implements NeoNode, VerbatimID {
     if (o == null || getClass() != o.getClass()) return false;
     NeoName name1 = (NeoName) o;
     return homotypic == name1.homotypic &&
-        Objects.equals(node, name1.node) &&
+        this.equalNode(name1) &&
         Objects.equals(name, name1.name);
   }
   

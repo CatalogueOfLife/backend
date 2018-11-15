@@ -18,6 +18,16 @@ public class BareName implements NameUsage {
   }
   
   @Override
+  public String getId() {
+    return name.getId();
+  }
+  
+  @Override
+  public void setId(String id) {
+    name.setId(id);
+  }
+  
+  @Override
   public Name getName() {
     return name;
   }

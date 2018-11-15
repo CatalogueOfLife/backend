@@ -5,7 +5,7 @@ import org.col.api.vocab.TaxonomicStatus;
 /**
  *
  */
-public interface NameUsage extends VerbatimEntity {
+public interface NameUsage extends ID, VerbatimEntity {
 
   Name getName();
   

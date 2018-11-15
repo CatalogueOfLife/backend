@@ -5,9 +5,11 @@
 <mapper namespace="org.col.db.mapper.SynonymMapper">
 
     <sql id="synCols">
+        ${alias}.id AS ${prefix}id,
         ${alias}.verbatim_key AS ${prefix}verbatim_key,
         ${alias}.status AS ${prefix}status,
-        ${alias}.according_to AS ${prefix}according_to
+        ${alias}.according_to AS ${prefix}according_to,
+        ${alias}.origin AS ${prefix}origin
     </sql>
 
     <sql id="SELECT">
@@ -59,8 +61,8 @@
     </select>
 
     <insert id="create">
-        INSERT INTO synonym_${datasetKey} (dataset_key, name_id, taxon_id, verbatim_key, status, according_to)
-        VALUES (#{datasetKey}, #{nameId}, #{taxonId}, #{syn.verbatimKey}, #{syn.status}, #{syn.accordingTo})
+        INSERT INTO synonym_${datasetKey} (dataset_key, id, name_id, taxon_id, verbatim_key, status, according_to, origin)
+        VALUES (#{datasetKey}, #{syn.id}, #{nameId}, #{taxonId}, #{syn.verbatimKey}, #{syn.status}, #{syn.accordingTo}, #{syn.origin})
     </insert>
 
 </mapper>

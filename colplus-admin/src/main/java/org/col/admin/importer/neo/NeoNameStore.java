@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
+import java.util.function.LongFunction;
 import java.util.stream.Collectors;
 
 import com.esotericsoftware.kryo.pool.KryoPool;
@@ -17,7 +18,6 @@ import org.col.api.model.VerbatimEntity;
 import org.col.api.vocab.Issue;
 import org.mapdb.DB;
 import org.mapdb.Serializer;
-import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
 
@@ -26,8 +26,11 @@ public class NeoNameStore extends NeoCRUDStore<NeoName> {
   // scientificName to nodeId
   private final Map<String, long[]> names;
   
-  public NeoNameStore(GraphDatabaseService neo, DB mapDb, String mapDbName, Class<NeoName> clazz, KryoPool pool, IdGenerator idGen, BiConsumer<VerbatimEntity, Issue> addIssueFunc, BiFunction<Map<String, Object>, Label[], Node> createNode) {
-    super(neo, mapDb, mapDbName, clazz, pool, idGen, addIssueFunc, createNode);
+  public NeoNameStore(DB mapDb, String mapDbName, Class<NeoName> clazz, KryoPool pool, IdGenerator idGen,
+                      BiConsumer<VerbatimEntity, Issue> addIssueFunc,
+                      BiFunction<Map<String, Object>, Label[], Node> createNode,
+                      LongFunction<Node> nodeById) {
+    super(mapDb, mapDbName, clazz, pool, idGen, addIssueFunc, createNode, nodeById);
     names = mapDb.hashMap(mapDbName+"-names")
         .keySerializer(Serializer.STRING)
         .valueSerializer(Serializer.LONG_ARRAY)
@@ -40,7 +43,7 @@ public class NeoNameStore extends NeoCRUDStore<NeoName> {
   public List<Node> nodesByName(String scientificName) {
     if (names.containsKey(scientificName)) {
       return Arrays.stream(names.get(scientificName))
-          .mapToObj(neo::getNodeById)
+          .mapToObj(nodeById)
           .collect(Collectors.toList());
     }
     return Collections.emptyList();

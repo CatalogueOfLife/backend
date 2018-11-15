@@ -15,4 +15,12 @@ public interface NeoNode {
   
   Map<String, Object> properties();
   
+  /**
+   * Compares a NeoNode to another NeoNode just by its nodeId
+   */
+  default boolean equalNode(NeoNode other) {
+    return getNode() == other.getNode() ||
+        (getNode() != null && other.getNode() != null && getNode().getId() == other.getNode().getId());
+  }
+  
 }

@@ -3,6 +3,7 @@ package org.col.api.model;
 import java.util.Objects;
 
 import com.google.common.base.Preconditions;
+import org.col.api.vocab.Origin;
 import org.col.api.vocab.TaxonomicStatus;
 
 /**
@@ -11,11 +12,23 @@ import org.col.api.vocab.TaxonomicStatus;
  */
 public class Synonym implements NameUsage {
   
+  private String id;
   private Name name;
   private TaxonomicStatus status;
   private String accordingTo;
   private Taxon accepted;
+  private Origin origin;
   private Integer verbatimKey;
+  
+  @Override
+  public String getId() {
+    return id;
+  }
+  
+  @Override
+  public void setId(String id) {
+    this.id = id;
+  }
   
   @Override
   public Name getName() {
@@ -78,19 +91,31 @@ public class Synonym implements NameUsage {
     this.verbatimKey = verbatimKey;
   }
   
+  public Origin getOrigin() {
+    return origin;
+  }
+  
+  public void setOrigin(Origin origin) {
+    this.origin = origin;
+  }
+  
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     Synonym synonym = (Synonym) o;
-    return Objects.equals(name, synonym.name) &&
+    return Objects.equals(id, synonym.id) &&
+        Objects.equals(name, synonym.name) &&
         status == synonym.status &&
         Objects.equals(accordingTo, synonym.accordingTo) &&
-        Objects.equals(accepted, synonym.accepted);
+        Objects.equals(accepted, synonym.accepted) &&
+        origin == synonym.origin &&
+        Objects.equals(verbatimKey, synonym.verbatimKey);
   }
   
   @Override
   public int hashCode() {
-    return Objects.hash(name, status, accordingTo, accepted);
+    
+    return Objects.hash(id, name, status, accordingTo, accepted, origin, verbatimKey);
   }
 }

@@ -48,7 +48,7 @@ public class DwcaInserter extends NeoInserter {
   public void batchInsert() throws NormalizationFailedException {
     try {
       initReader();
-      inter = new DwcInterpreter(store.getDataset(), meta, refFactory);
+      inter = new DwcInterpreter(store.getDataset(), meta, refFactory, store);
 
       // taxon core only, extensions are interpreted later
       insertEntities(reader, DwcTerm.Taxon,

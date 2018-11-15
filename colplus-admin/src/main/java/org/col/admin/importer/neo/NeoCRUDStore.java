@@ -3,6 +3,7 @@ package org.col.admin.importer.neo;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
+import java.util.function.LongFunction;
 import java.util.stream.Stream;
 
 import com.esotericsoftware.kryo.pool.KryoPool;
@@ -10,20 +11,19 @@ import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.ArrayUtils;
 import org.col.admin.importer.IdGenerator;
 import org.col.admin.importer.neo.model.NeoNode;
+import org.col.admin.importer.neo.model.NodeMock;
 import org.col.api.model.VerbatimEntity;
-import org.col.api.model.VerbatimID;
+import org.col.api.model.ID;
 import org.col.api.vocab.Issue;
 import org.col.common.mapdb.MapDbObjectSerializer;
 import org.mapdb.DB;
 import org.mapdb.Serializer;
-import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
-import org.neo4j.kernel.impl.core.NodeProxy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class NeoCRUDStore<T extends VerbatimID & NeoNode> {
+public class NeoCRUDStore<T extends ID & VerbatimEntity & NeoNode> {
   private static final Logger LOG = LoggerFactory.getLogger(NeoCRUDStore.class);
   // nodeId -> obj
   private final Map<Long, T> objects;
@@ -31,18 +31,16 @@ public class NeoCRUDStore<T extends VerbatimID & NeoNode> {
   private final Map<String, Long> ids;
   private int duplicateCounter = 0;
   private final IdGenerator idGen;
-  protected final GraphDatabaseService neo;
   private final String objName;
   private final BiConsumer<VerbatimEntity, Issue> addIssueFunc;
   private final BiFunction<Map<String,Object>, Label[], Node> createNode;
+  protected final LongFunction<Node> nodeById;
   
-  
-  NeoCRUDStore(GraphDatabaseService neo,
-                      DB mapDb, String mapDbName, Class<T> clazz, KryoPool pool,
-                      IdGenerator idGen,
-                      BiConsumer<VerbatimEntity, Issue> addIssueFunc,
-                      BiFunction<Map<String,Object>, Label[], Node> createNode) {
-    this.neo = neo;
+  NeoCRUDStore( DB mapDb, String mapDbName, Class<T> clazz, KryoPool pool,
+                IdGenerator idGen,
+                BiConsumer<VerbatimEntity, Issue> addIssueFunc,
+                BiFunction<Map<String,Object>, Label[], Node> createNode,
+                LongFunction<Node> nodeById) {
     objName = clazz.getSimpleName();
     objects = mapDb.hashMap(mapDbName)
         .keySerializer(Serializer.LONG)
@@ -56,6 +54,7 @@ public class NeoCRUDStore<T extends VerbatimID & NeoNode> {
     this.idGen = idGen;
     this.addIssueFunc = addIssueFunc;
     this.createNode = createNode;
+    this.nodeById = nodeById;
   }
   
   public T objByNode(Node n) {
@@ -78,7 +77,7 @@ public class NeoCRUDStore<T extends VerbatimID & NeoNode> {
 
   public Node nodeByID(String id) {
     Long nodeId = ids.getOrDefault(id, null);
-    return nodeId == null ? null : neo.getNodeById(nodeId);
+    return nodeId == null ? null : nodeById.apply(nodeId);
   }
   
   /**
@@ -90,7 +89,7 @@ public class NeoCRUDStore<T extends VerbatimID & NeoNode> {
   public Stream<T> all() {
     return objects.entrySet().stream().map(e -> {
       T obj = e.getValue();
-      obj.setNode(new NodeProxy(null, e.getKey()));
+      obj.setNode(new NodeMock(e.getKey()));
       return obj;
     });
   }
@@ -120,6 +119,7 @@ public class NeoCRUDStore<T extends VerbatimID & NeoNode> {
     // create missing ids, sharing the same id between name & taxon
     if (obj.getId() == null) {
       obj.setId(idGen.next());
+      LOG.debug("Generate new {} ID: {}", obj.getClass().getSimpleName(), obj.getId());
     }
   
     // assert ID is unique
@@ -170,9 +170,11 @@ public class NeoCRUDStore<T extends VerbatimID & NeoNode> {
    */
   public void update(T obj) {
     Preconditions.checkNotNull(obj.getNode());
-    Map<String,Object> props = obj.properties();
-    if (props != null) {
-      NeoDbUtils.setProperties(obj.getNode(), props);
+    if (!(obj.getNode() instanceof NodeMock)) {
+      Map<String,Object> props = obj.properties();
+      if (props != null && !props.isEmpty()) {
+        NeoDbUtils.setProperties(obj.getNode(), props);
+      }
     }
     objects.put(obj.getNode().getId(), obj);
   }

@@ -14,7 +14,7 @@ import org.col.api.vocab.TaxonomicStatus;
 /**
  *
  */
-public class Taxon implements VerbatimID, NameUsage {
+public class Taxon implements NameUsage {
   
   private String id;
   

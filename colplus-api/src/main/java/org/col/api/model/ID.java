@@ -1,8 +1,7 @@
 package org.col.api.model;
 
 /**
- * Entity that has a String based ID as its primary key,
- * unique only within a dataset
+ * Verbatim entity that also has a String based ID as its primary key.
  */
 public interface ID {
   

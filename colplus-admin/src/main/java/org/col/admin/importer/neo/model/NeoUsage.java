@@ -19,9 +19,9 @@ import org.neo4j.graphdb.Node;
  * <p />
  * The modified flag can be used to (manually) track if an instance has changed and needs to be persisted.
  */
-public class NeoUsage implements NeoNode, VerbatimID {
-  private static final Label[] TAX_LABELS = new Label[]{Labels.SYNONYM};
-  private static final Label[] SYN_LABELS = new Label[]{Labels.TAXON};
+public class NeoUsage implements NeoNode, ID, VerbatimEntity {
+  private static final Label[] TAX_LABELS = new Label[]{Labels.TAXON};
+  private static final Label[] SYN_LABELS = new Label[]{Labels.SYNONYM};
 
   public Node node;
   // either a taxon or a synonym - this can change during normalisation!
@@ -60,6 +60,7 @@ public class NeoUsage implements NeoNode, VerbatimID {
   public static NeoUsage createSynonym(Origin origin, Name name, TaxonomicStatus status) {
     NeoUsage u = new NeoUsage();
     Synonym syn = new Synonym();
+    syn.setOrigin(origin);
     syn.setStatus(status);
     if (name != null) {
       syn.setName(name);
@@ -113,14 +114,12 @@ public class NeoUsage implements NeoNode, VerbatimID {
   
   @Override
   public String getId() {
-    return usage instanceof Taxon ? ((Taxon) usage).getId() : null;
+    return usage.getId();
   }
   
   @Override
   public void setId(String id) {
-    if (usage instanceof Taxon) {
-      ((Taxon) usage).setId(id);
-    }
+    usage.setId(id);
   }
   
   public void addRemark(String remark) {
@@ -132,7 +131,7 @@ public class NeoUsage implements NeoNode, VerbatimID {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     NeoUsage neoUsage = (NeoUsage) o;
-    return Objects.equals(node, neoUsage.node) &&
+    return this.equalNode(neoUsage) &&
         Objects.equals(usage, neoUsage.usage) &&
         Objects.equals(descriptions, neoUsage.descriptions) &&
         Objects.equals(distributions, neoUsage.distributions) &&

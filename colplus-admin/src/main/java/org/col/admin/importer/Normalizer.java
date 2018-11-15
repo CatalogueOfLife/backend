@@ -133,9 +133,11 @@ public class Normalizer implements Callable<Boolean> {
       require(n, n.getType(), "name type");
   
   
-      VerbatimRecord v = NameValidator.flagIssues(n, store.verbatimSupplier(n.getVerbatimKey()));
-      if (v != null) {
-        store.put(v);
+      if (n.getVerbatimKey() != null){
+        VerbatimRecord v = NameValidator.flagIssues(n, store.verbatimSupplier(n.getVerbatimKey()));
+        if (v != null) {
+          store.put(v);
+        }
       }
   
     });
