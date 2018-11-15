@@ -19,8 +19,8 @@ import org.col.api.util.VocabularyUtils;
 
 /*
  * Making this class extends MultiValuedHashMap causes Jackson to ony serialize the superclass (MultiValuedHashMap), not the properties of
- * NameSearchRequest itself (q, factets, etc). Can probably be rectified using a JsonSerializer, but including the map as a property feels
- * natural anyhow: getQ(), getFacets(), getFilters().
+ * NameSearchRequest itself (sortBy, q, facets, etc). Could probably be solved using a JsonSerializer, but composition feels more natural
+ * than inheritance: getSortBy(), getQ(), getFacets(), getFilters().
  */
 public class NameSearchRequest {
 
@@ -33,12 +33,12 @@ public class NameSearchRequest {
   }
 
   /**
-   * Value to be used to indicate an IS NOT NULL document search.
+   * Symbolic value to be used to indicate an IS NOT NULL document search.
    */
   public static final String NOT_NULL_VALUE = "_NOT_NULL";
 
   /**
-   * Value to be used to indicate an IS NULL document search.
+   * Symbolic value to be used to indicate an IS NULL document search.
    */
   public static final String NULL_VALUE = "_NULL";
 
@@ -57,7 +57,7 @@ public class NameSearchRequest {
   private SortBy sortBy;
 
   /**
-   * Extracts all query parameters that match a NameSearchParameter and adds them as request filters.
+   * Extracts all query parameters that match a NameSearchParameter and registers them as query filters.
    */
   public void addQueryParams(MultivaluedMap<String, String> params) {
     for (Map.Entry<String, List<String>> param : params.entrySet()) {
@@ -171,7 +171,11 @@ public class NameSearchRequest {
 
   @JsonIgnore
   public boolean isEmpty() {
-    return q == null && (filters == null || filters.isEmpty()) && (facets == null || facets.isEmpty());
+    return content == null
+        && (facets == null || facets.isEmpty())
+        && (filters == null || filters.isEmpty())
+        && q == null
+        && sortBy == null;
   }
 
   @Override
@@ -181,13 +185,16 @@ public class NameSearchRequest {
     if (o == null || getClass() != o.getClass())
       return false;
     NameSearchRequest that = (NameSearchRequest) o;
-    return Objects.equals(content, that.content) && Objects.equals(facets, that.facets) && Objects.equals(q, that.q)
+    return Objects.equals(content, that.content)
+        && Objects.equals(facets, that.facets)
+        && Objects.equals(filters, that.filters)
+        && Objects.equals(q, that.q)
         && sortBy == that.sortBy;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), content, facets, q, sortBy);
+    return Objects.hash(super.hashCode(), content, facets, filters, q, sortBy);
   }
 
 }

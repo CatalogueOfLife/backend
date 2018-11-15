@@ -1,0 +1,193 @@
+{
+	"aggs": {
+		"agg_attr_strings_filter": {
+			"filter": {
+				"bool": {
+					"filter": [
+						{
+							"nested": {
+								"query": {
+									"bool": {
+										"filter": [
+											{
+												"term": {
+													"attributeStrings.facetName": {
+														"value": "Property"
+													}
+												}
+											},
+											{
+												"terms": {
+													"attributeStrings.facetValue": [
+														"Organic"
+													]
+												}
+											}
+										]
+									}
+								},
+								"path": "attributeStrings"
+							}
+						},
+						{
+							"nested": {
+								"query": {
+									"bool": {
+										"filter": [
+											{
+												"term": {
+													"attributeStrings.facetName": {
+														"value": "Brand"
+													}
+												}
+											},
+											{
+												"terms": {
+													"attributeStrings.facetValue": [
+														"Adidas"
+													]
+												}
+											}
+										]
+									}
+								},
+								"path": "attributeStrings"
+							}
+						}
+					]
+				}
+			},
+			"aggs": {
+				"agg_attr_strings": {
+					"nested": {
+						"path": "attributeStrings"
+					},
+					"aggs": {
+						"attr_name": {
+							"terms": {
+								"field": "attributeStrings.facetName"
+							},
+							"aggs": {
+								"attr_value": {
+									"terms": {
+										"field": "attributeStrings.facetValue",
+										"size": 1000,
+										"order": [
+											{
+												"_term": "asc"
+											}
+										]
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"special_agg_property": {
+			"filter": {
+				"nested": {
+					"query": {
+						"bool": {
+							"filter": [
+								{
+									"term": {
+										"attributeStrings.facetName": {
+											"value": "Brand"
+										}
+									}
+								},
+								{
+									"terms": {
+										"attributeStrings.facetValue": [
+											"Adidas"
+										]
+									}
+								}
+							]
+						}
+					},
+					"path": "attributeStrings"
+				}
+			},
+			"aggs": {
+				"special_agg_property": {
+					"nested": {
+						"path": "attributeStrings"
+					},
+					"aggs": {
+						"agg_filtered_special": {
+							"filter": {
+								"query": {
+									"match": {
+										"attributeStrings.facetName": "Property"
+									}
+								}
+							},
+							"aggs": {
+								"facet_value": {
+									"terms": {
+										"size": 1000,
+										"field": "attributeStrings.facetValue"
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"special_agg_brand": {
+			"filter": {
+				"nested": {
+					"query": {
+						"bool": {
+							"filter": [
+								{
+									"term": {
+										"attributeStrings.facetName": {
+											"value": "Property"
+										}
+									}
+								},
+								{
+									"terms": {
+										"attributeStrings.facetValue": [
+											"Organic"
+										]
+									}
+								}
+							]
+						}
+					},
+					"path": "attributeStrings"
+				}
+			},
+			"aggs": {
+				"nested": {
+					"path": "attributeStrings"
+				},
+				"aggs": {
+					"agg_filtered_special": {
+						"filter": {
+							"query": {
+								"match": {
+									"attributeStrings.facetName": "Brand"
+								}
+							}
+						},
+						"aggs": {
+							"facet_value": {
+								"terms": {
+									"size": 1000,
+									"field": "attributeStrings.facetValue"
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}

@@ -21,9 +21,11 @@ import org.col.api.model.Taxon;
 import org.col.api.model.VernacularName;
 import org.col.api.search.NameSearchParameter;
 import org.col.api.search.NameSearchRequest;
+import org.col.api.search.NameSearchRequest.SearchContent;
 import org.col.api.search.NameSearchRequest.SortBy;
 import org.col.api.search.NameUsageWrapper;
 import org.col.api.vocab.Issue;
+import org.col.api.vocab.TaxonomicStatus;
 import org.col.es.model.EsNameUsage;
 import org.elasticsearch.client.RestClient;
 import org.gbif.nameparser.api.Rank;
@@ -677,6 +679,113 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     refreshIndex(client, indexName);
 
     List<NameUsageWrapper<NameUsage>> expected = Arrays.asList(nuw1, nuw2, nuw3, nuw5);
+
+    ResultPage<NameUsageWrapper<NameUsage>> result = svc.search(indexName, nsr, new Page());
+
+    assertEquals(expected, result.getResult());
+
+  }
+
+  @Test
+  public void testMultipleFiltersAndQ() throws InvalidQueryException, JsonProcessingException {
+    NameUsageTransfer transfer = new NameUsageTransfer();
+
+    // Find all documents where the uninomial field is not empty
+    NameSearchRequest nsr = new NameSearchRequest();
+    nsr.setQ("larid");
+    nsr.setContent(EnumSet.of(SearchContent.SCIENTIFIC_NAME, SearchContent.AUTHORSHIP));
+    nsr.addFilter(NameSearchParameter.FIELD, "uninomial");
+    nsr.addFilter(NameSearchParameter.RANK, Rank.ORDER, Rank.FAMILY);
+    nsr.addFilter(NameSearchParameter.STATUS, TaxonomicStatus.ACCEPTED);
+
+    // Match
+    Name n = new Name();
+    n.setScientificName("laridae");
+    n.setUninomial("laridae");
+    n.setRank(Rank.FAMILY);
+    Taxon t = new Taxon();
+    t.setName(n);
+    t.setDoubtful(false);
+    VernacularName vn = new VernacularName();
+    vn.setName("laridae");
+    NameUsageWrapper<NameUsage> nuw1 = new NameUsageWrapper<>(t);
+    // Present or not shouldn't make a difference because of SearchContent
+    nuw1.setVernacularNames(Arrays.asList(vn));
+    insert(client, indexName, transfer.toEsDocument(nuw1));
+
+    // Match
+    n = new Name();
+    n.setScientificName("laridae");
+    n.setUninomial("laridae");
+    n.setRank(Rank.ORDER);
+    t = new Taxon();
+    t.setName(n);
+    t.setDoubtful(false);
+    vn = new VernacularName();
+    vn.setName("laridae");
+    NameUsageWrapper<NameUsage> nuw2 = new NameUsageWrapper<>(t);
+    nuw2.setVernacularNames(Arrays.asList(vn));
+    insert(client, indexName, transfer.toEsDocument(nuw2));
+
+    // No match
+    n = new Name();
+    n.setScientificName("xxx"); // XXXXXXXXXXXXX
+    n.setUninomial("laridae");
+    n.setRank(Rank.FAMILY);
+    t = new Taxon();
+    t.setName(n);
+    t.setDoubtful(false);
+    vn = new VernacularName();
+    vn.setName("laridae");
+    NameUsageWrapper<NameUsage> nuw3 = new NameUsageWrapper<>(t);
+    nuw3.setVernacularNames(Arrays.asList(vn));
+    insert(client, indexName, transfer.toEsDocument(nuw3));
+
+    // No match
+    n = new Name();
+    n.setScientificName("laridae");
+    n.setUninomial(null); // XXXXXXXXXXXXX
+    n.setRank(Rank.FAMILY);
+    t = new Taxon();
+    t.setName(n);
+    t.setDoubtful(false);
+    vn = new VernacularName();
+    vn.setName("laridae");
+    NameUsageWrapper<NameUsage> nuw4 = new NameUsageWrapper<>(t);
+    nuw4.setVernacularNames(Arrays.asList(vn));
+    insert(client, indexName, transfer.toEsDocument(nuw4));
+
+    // No match
+    n = new Name();
+    n.setScientificName("laridae");
+    n.setUninomial(null);
+    n.setRank(Rank.GENUS); // XXXXXXXXXXXXX
+    t = new Taxon();
+    t.setName(n);
+    t.setDoubtful(false);
+    vn = new VernacularName();
+    vn.setName("laridae");
+    NameUsageWrapper<NameUsage> nuw5 = new NameUsageWrapper<>(t);
+    nuw5.setVernacularNames(Arrays.asList(vn));
+    insert(client, indexName, transfer.toEsDocument(nuw5));
+
+    // No match
+    n = new Name();
+    n.setScientificName("laridae");
+    n.setUninomial("laridae");
+    n.setRank(Rank.FAMILY);
+    t = new Taxon();
+    t.setName(n);
+    t.setDoubtful(true); // XXXXXXXXXXXXX
+    vn = new VernacularName();
+    vn.setName("laridae");
+    NameUsageWrapper<NameUsage> nuw6 = new NameUsageWrapper<>(t);
+    nuw6.setVernacularNames(Arrays.asList(vn));
+    insert(client, indexName, transfer.toEsDocument(nuw6));
+    
+    refreshIndex(client, indexName);
+
+    List<NameUsageWrapper<NameUsage>> expected = Arrays.asList(nuw1, nuw2);
 
     ResultPage<NameUsageWrapper<NameUsage>> result = svc.search(indexName, nsr, new Page());
 

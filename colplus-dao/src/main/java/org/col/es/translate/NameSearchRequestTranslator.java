@@ -30,17 +30,17 @@ public class NameSearchRequestTranslator {
     es.setFrom(page.getOffset());
     es.setSize(page.getLimit());
     es.setSortBuilder(SortBuilder.create(request.getSortBy()));
-    Optional<Query> q1 = new NameSearchParametersTranslator(request).translate();
-    Optional<Query> q2 = new QTranslator(request).translate();
+    Optional<Query> query1 = new NameSearchParamsTranslator(request).translate();
+    Optional<Query> query2 = new QTranslator(request).translate();
     Query query = null;
-    if (q1.isPresent()) {
-      if (q2.isPresent()) {
-        query = new BoolQuery().must(q1.get()).must(q2.get());
+    if (query1.isPresent()) {
+      if (query2.isPresent()) {
+        query = new BoolQuery().filter(query1.get()).filter(query2.get());
       } else {
-        query = q1.get();
+        query = query1.get();
       }
-    } else if (q2.isPresent()) {
-      query = q2.get();
+    } else if (query2.isPresent()) {
+      query = query2.get();
     }
     if (query != null) {
       es.setQuery(new ConstantScoreQuery(query));

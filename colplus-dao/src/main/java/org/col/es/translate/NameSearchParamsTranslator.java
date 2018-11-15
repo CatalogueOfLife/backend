@@ -30,11 +30,11 @@ import static org.col.api.search.NameSearchRequest.NULL_VALUE;
  * ?nom_status=&rank=family. This will be translated into an IS NULL constraint (nom_status IS NULL AND rank=family).
  *
  */
-class NameSearchParametersTranslator {
+class NameSearchParamsTranslator {
 
   private final NameSearchRequest request;
 
-  NameSearchParametersTranslator(NameSearchRequest request) {
+  NameSearchParamsTranslator(NameSearchRequest request) {
     this.request = request;
   }
 
@@ -48,7 +48,7 @@ class NameSearchParametersTranslator {
     }
     BoolQuery bq = new BoolQuery();
     for (NameSearchParameter param : params) {
-      bq.must(translate(param));
+      bq.filter(translate(param));
     }
     return Optional.of(bq);
   }
@@ -56,7 +56,7 @@ class NameSearchParametersTranslator {
   private Query translate(NameSearchParameter param) throws InvalidQueryException {
     List<Query> queries = new ArrayList<>();
     String[] fields = EsFieldLookup.INSTANCE.get(param);
-    // So far  each NameSearchParameter corresponds to just one field in a name usage document
+    // So far each NameSearchParameter corresponds to just one field in a name usage document
     assert (fields.length == 1);
     String field = fields[0];
     if (containsNullValue(param)) {
