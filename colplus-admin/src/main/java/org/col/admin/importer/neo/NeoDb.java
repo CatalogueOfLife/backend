@@ -211,6 +211,7 @@ public class NeoDb implements ReferenceStore {
    */
   public NameRelation toRelation(Relationship r) {
     NameRelation nr = new NameRelation();
+    nr.setDatasetKey(datasetKey);
     nr.setType(RelType.valueOf(r.getType().name()).nomRelType);
     nr.setNameId(usages.objByNode(r.getStartNode()).getId());
     nr.setRelatedNameId(usages.objByNode(r.getEndNode()).getId());
@@ -576,10 +577,7 @@ public class NeoDb implements ReferenceStore {
       for (Node n : getNeo().getAllNodes()) {
         NeoUsage u = usages().objByNode(n);
         if (u.node.hasLabel(Labels.SYNONYM) && !u.isSynonym()) {
-          Synonym syn = new Synonym();
-          syn.setStatus(TaxonomicStatus.SYNONYM);
-          syn.setAccordingTo(u.usage.getAccordingTo());
-          u.usage = syn;
+          u.convertToSynonym(TaxonomicStatus.SYNONYM);
 
         } else if (u.node.hasLabel(Labels.TAXON) && !u.node.hasLabel(Labels.ROOT)){
           // parent

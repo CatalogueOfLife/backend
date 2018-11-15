@@ -16,12 +16,7 @@ import org.col.api.model.Synonymy;
 import org.col.api.model.Taxon;
 import org.col.api.model.TaxonInfo;
 import org.col.api.vocab.TaxonomicStatus;
-import org.col.db.mapper.DistributionMapper;
-import org.col.db.mapper.NameMapper;
-import org.col.db.mapper.ReferenceMapper;
-import org.col.db.mapper.SynonymMapper;
-import org.col.db.mapper.TaxonMapper;
-import org.col.db.mapper.VernacularNameMapper;
+import org.col.db.mapper.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,21 +24,25 @@ public class TaxonDao {
   private static final Logger LOG = LoggerFactory.getLogger(TaxonDao.class);
 
   private final SqlSession session;
-  private final TaxonMapper tMapper;
+  private final DescriptionMapper deMapper;
+  private final DistributionMapper diMapper;
+  private final MediaMapper mMapper;
   private final NameMapper nMapper;
-  private final SynonymMapper sMapper;
   private final ReferenceMapper rMapper;
+  private final SynonymMapper sMapper;
+  private final TaxonMapper tMapper;
   private final VernacularNameMapper vMapper;
-  private final DistributionMapper dMapper;
 
   public TaxonDao(SqlSession sqlSession) {
     this.session = sqlSession;
-    tMapper = session.getMapper(TaxonMapper.class);
+    deMapper = session.getMapper(DescriptionMapper.class);
+    diMapper = session.getMapper(DistributionMapper.class);
+    mMapper = session.getMapper(MediaMapper.class);
     nMapper = session.getMapper(NameMapper.class);
-    sMapper = session.getMapper(SynonymMapper.class);
     rMapper = session.getMapper(ReferenceMapper.class);
+    sMapper = session.getMapper(SynonymMapper.class);
+    tMapper = session.getMapper(TaxonMapper.class);
     vMapper = session.getMapper(VernacularNameMapper.class);
-    dMapper = session.getMapper(DistributionMapper.class);
   }
 
   public ResultPage<Taxon> list(Integer datasetKey, Boolean root, Page page) {
@@ -150,11 +149,11 @@ public class TaxonDao {
     info.setTaxon(taxon);
     info.setTaxonReferences(rMapper.listByTaxon(taxon.getDatasetKey(), taxon.getId()));
 
-    // vernaculars
+    // add all supplementary taxon infos
+    info.setDescriptions(deMapper.listByTaxon(taxon.getDatasetKey(), taxon.getId()));
+    info.setDistributions(diMapper.listByTaxon(taxon.getDatasetKey(), taxon.getId()));
+    info.setMedia(mMapper.listByTaxon(taxon.getDatasetKey(), taxon.getId()));
     info.setVernacularNames(vMapper.listByTaxon(taxon.getDatasetKey(), taxon.getId()));
-
-    // distributions
-    info.setDistributions(dMapper.listByTaxon(taxon.getDatasetKey(), taxon.getId()));
 
     // all reference keys so we can select their details at the end
     Set<String> refIds = new HashSet<>();

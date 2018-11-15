@@ -239,7 +239,7 @@ public class NormalizerDwcaIT {
   @Test
   public void chainedBasionyms() throws Exception {
     normalize(28);
-    debug();
+
     // verify results
     try (Transaction tx = store.getNeo().beginTx()) {
       // 1->2->1

@@ -143,33 +143,39 @@ public class Normalizer implements Callable<Boolean> {
     });
     
     store.usages().all().forEach(u -> {
-      // taxon or synonym
-      if (u.isSynonym()) {
-        Synonym s = u.getSynonym();
-  
-        // no vernaculars, distribution etc
-        check(s, u.descriptions.isEmpty(), "no descriptions");
-        check(s, u.distributions.isEmpty(), "no distributions");
-        check(s, u.media.isEmpty(), "no media");
-        check(s, u.vernacularNames.isEmpty(), "no vernacular names");
-        
-      } else {
-        Taxon t = u.getTaxon();
-        require(t, t.getId(), "taxon id");
-        require(t, t.getOrigin(), "taxon origin");
-        require(t, t.getStatus(), "taxon status");
-  
-        // vernacular
-        for (VernacularName v : u.vernacularNames) {
-          require(v, v.getName(), "vernacular name");
+      try {
+        // taxon or synonym
+        if (u.isSynonym()) {
+          Synonym s = u.getSynonym();
+          require(s, s.getOrigin(), "origin");
+    
+          // no vernaculars, distribution etc
+          check(s, u.descriptions.isEmpty(), "no descriptions");
+          check(s, u.distributions.isEmpty(), "no distributions");
+          check(s, u.media.isEmpty(), "no media");
+          check(s, u.vernacularNames.isEmpty(), "no vernacular names");
+          
+        } else {
+          Taxon t = u.getTaxon();
+          require(t, t.getId(), "id");
+          require(t, t.getOrigin(), "origin");
+          require(t, t.getStatus(), "status");
+    
+          // vernacular
+          for (VernacularName v : u.vernacularNames) {
+            require(v, v.getName(), "vernacular name");
+          }
+    
+          // distribution
+          for (Distribution d : u.distributions) {
+            require(d, d.getGazetteer(), "area standard");
+            require(d, d.getArea(), "area");
+          }
+    
         }
-  
-        // distribution
-        for (Distribution d : u.distributions) {
-          require(d, d.getGazetteer(), "distribution area standard");
-          require(d, d.getArea(), "distribution area");
-        }
-  
+      } catch (NormalizationFailedException e) {
+        LOG.error("{}: {}", e.getMessage(), u.getId());
+        throw e;
       }
     });
 
