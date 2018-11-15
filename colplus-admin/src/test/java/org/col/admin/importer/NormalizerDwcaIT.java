@@ -356,6 +356,7 @@ public class NormalizerDwcaIT {
   public void testProParte() throws Exception {
     normalize(8);
 
+    debug();
     try (Transaction tx = store.getNeo().beginTx()) {
       NeoUsage syn = byID("1001");
       assertNotNull(syn.getSynonym());

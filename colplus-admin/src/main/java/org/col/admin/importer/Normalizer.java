@@ -388,7 +388,7 @@ public class Normalizer implements Callable<Boolean> {
    */
   private void cutBasionymChains() {
     LOG.info("Cut basionym chains");
-    final String query = "MATCH (x)-[r1:HAS_BASIONYM]->(b1)-[r2:HAS_BASIONYM]->(b2:ALL) " +
+    final String query = "MATCH (x)-[r1:HAS_BASIONYM]->(b1)-[r2:HAS_BASIONYM]->(b2:NAME) " +
         "RETURN b1, b2, r1, r2 " +
         "ORDER BY x.id " +
         "LIMIT 1";
@@ -587,7 +587,7 @@ public class Normalizer implements Callable<Boolean> {
    */
   private void cutSynonymCycles() {
     LOG.info("Cleanup synonym cycles");
-    final String query = "MATCH (s:ALL)-[sr:SYNONYM_OF]->(x)-[:SYNONYM_OF*]->(s) RETURN sr LIMIT 1";
+    final String query = "MATCH (s)-[sr:SYNONYM_OF]->(x)-[:SYNONYM_OF*]->(s) RETURN sr LIMIT 1";
 
     int counter = 0;
     try (Transaction tx = store.getNeo().beginTx()) {
@@ -628,7 +628,7 @@ public class Normalizer implements Callable<Boolean> {
    */
   private void relinkSynonymChains() {
     LOG.info("Relink synonym chains to single accepted");
-    final String query = "MATCH (s:ALL)-[sr:SYNONYM_OF*]->(x)-[:SYNONYM_OF]->(t:TAXON) " +
+    final String query = "MATCH (s)-[sr:SYNONYM_OF*]->(x)-[:SYNONYM_OF]->(t:TAXON) " +
         "WHERE NOT (t)-[:SYNONYM_OF]->() " +
         "RETURN sr, t LIMIT 1";
 

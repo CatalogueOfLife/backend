@@ -11,8 +11,8 @@ import org.col.admin.importer.NormalizationFailedException;
 import org.col.admin.importer.neo.NeoDb;
 import org.col.admin.importer.neo.NodeBatchProcessor;
 import org.col.admin.importer.neo.model.*;
+import org.col.api.model.ID;
 import org.col.api.model.Name;
-import org.col.api.model.Taxon;
 import org.col.api.model.VerbatimRecord;
 import org.col.api.vocab.Issue;
 import org.col.api.vocab.Origin;
@@ -154,7 +154,7 @@ public class DwcaRelationInserter implements NodeBatchProcessor {
           for (Splitter splitter : COMMON_SPLITTER) {
             List<String> vals = splitter.splitToList(unsplitIds);
             if (vals.size() > 1) {
-              ids.addAll(lookupRankedNames(vals, t.getTaxon()));
+              ids.addAll(lookupRankedNames(vals, t.usage));
               break;
             }
           }
@@ -170,10 +170,10 @@ public class DwcaRelationInserter implements NodeBatchProcessor {
   }
 
 
-  private List<RankedName> lookupRankedNames(Iterable<String> taxonIDs, Taxon t) {
+  private List<RankedName> lookupRankedNames(Iterable<String> taxonIDs, ID usage) {
     List<RankedName> rankedNames = Lists.newArrayList();
     for (String id : taxonIDs) {
-      if (!id.equals(t.getId())) {
+      if (!id.equals(usage.getId())) {
         Node n = store.usages().nodeByID(id);
         if (n != null) {
           rankedNames.add(NeoProperties.getRankedName(n));

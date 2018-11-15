@@ -723,7 +723,7 @@ public class NeoDb implements ReferenceStore {
 
     // set BASIONYM
     LOG.debug("Labelling basionym nodes");
-    query = "MATCH (b:ALL)<-[:HAS_BASIONYM]-() " +
+    query = "MATCH (b)<-[:HAS_BASIONYM]-() " +
         "SET b :BASIONYM " +
         "RETURN count(b)";
     count = updateLabel(query);
