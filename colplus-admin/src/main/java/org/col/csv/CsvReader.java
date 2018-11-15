@@ -9,6 +9,7 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -108,6 +109,18 @@ public class CsvReader {
     }
   }
 
+  protected void filterSchemas(Predicate<Term> keepRowType) {
+    // allow only COL row types
+    Iterator<Schema> iter = schemas.values().iterator();
+    while (iter.hasNext()) {
+      Schema s = iter.next();
+      if (!keepRowType.test(s.rowType)) {
+        LOG.info("Remove non COL rowType {} for file {}", s.rowType, s.file);
+        iter.remove();
+      }
+    }
+  }
+  
   /**
    * Returns a path within the folder for a given relative file or path.
    * @param filename to resolve

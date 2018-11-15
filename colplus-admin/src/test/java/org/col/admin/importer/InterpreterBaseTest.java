@@ -13,7 +13,7 @@ public class InterpreterBaseTest {
   @Mock
   ReferenceStore refStore;
 
-  InterpreterBase inter = new InterpreterBase(new Dataset(), new ReferenceFactory(1, refStore));
+  InterpreterBase inter = new InterpreterBase(new Dataset(), new ReferenceFactory(1, refStore), null);
 
   @Test
   public void latinName() throws Exception {

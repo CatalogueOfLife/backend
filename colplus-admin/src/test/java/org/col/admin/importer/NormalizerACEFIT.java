@@ -1,41 +1,19 @@
 package org.col.admin.importer;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.Writer;
 import java.net.URI;
-import java.net.URL;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.List;
 import java.util.Set;
-import javax.annotation.Nullable;
 
 import com.google.common.collect.Sets;
-import com.google.common.io.Files;
-import org.apache.commons.io.FileUtils;
-import org.col.admin.config.NormalizerConfig;
-import org.col.admin.importer.neo.NeoDb;
-import org.col.admin.importer.neo.NeoDbFactory;
-import org.col.admin.importer.neo.NotUniqueRuntimeException;
-import org.col.admin.importer.neo.model.NeoName;
-import org.col.admin.importer.neo.model.NeoProperties;
 import org.col.admin.importer.neo.model.NeoUsage;
-import org.col.admin.importer.neo.model.RankedName;
-import org.col.admin.importer.neo.printer.GraphFormat;
-import org.col.admin.importer.neo.printer.PrinterUtils;
 import org.col.admin.importer.neo.traverse.Traversals;
-import org.col.admin.matching.NameIndexFactory;
-import org.col.api.model.*;
+import org.col.api.model.Dataset;
+import org.col.api.model.Distribution;
+import org.col.api.model.VernacularName;
 import org.col.api.vocab.*;
 import org.gbif.nameparser.api.Rank;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.NotFoundException;
 import org.neo4j.graphdb.Transaction;
 
 import static org.junit.Assert.*;
@@ -43,114 +21,15 @@ import static org.junit.Assert.*;
 /**
  *
  */
-public class NormalizerACEFIT {
-
-  private NeoDb store;
-  private NormalizerConfig cfg;
-  private Path acef;
-
-  @Before
-  public void initCfg() throws Exception {
-    cfg = new NormalizerConfig();
-    cfg.archiveDir = Files.createTempDir();
-    cfg.scratchDir = Files.createTempDir();
-  }
-
-  @After
-  public void cleanup() throws Exception {
-    if (store != null) {
-      store.closeAndDelete();
-    }
-    FileUtils.deleteQuietly(cfg.archiveDir);
-    FileUtils.deleteQuietly(cfg.scratchDir);
-  }
-
-
-  /**
-   * Normalizes a ACEF folder from the test resources and checks its printed txt tree against the
-   * expected tree
-   * 
-   * @param datasetKey
-   */
-  private void normalize(int datasetKey) throws Exception {
-    URL acefUrl = getClass().getResource("/acef/" + datasetKey);
-    normalize(Paths.get(acefUrl.toURI()));
-  }
-
-  private void normalize(URI url) throws Exception {
-    // download an decompress
-    ExternalSourceUtil.consumeSource(url, this::normalize);
-  }
-
-  private void normalize(Path source) {
-    try {
-      acef = source;
-
-      store = NeoDbFactory.create(1, cfg);
-      Dataset d = new Dataset();
-      d.setKey(1);
-      d.setDataFormat(DataFormat.ACEF);
-      store.put(d);
-
-      Normalizer norm = new Normalizer(store, acef, NameIndexFactory.passThru());
-      norm.call();
-
-      // reopen
-      store = NeoDbFactory.open(1, cfg);
-
-    } catch (IOException | InterruptedException e) {
-      throw new RuntimeException(e);
-    }
+public class NormalizerACEFIT extends NormalizerITBase {
+  
+  NormalizerACEFIT() {
+    super(DataFormat.ACEF);
   }
   
-  NeoUsage usageWithName(Node n) {
-    NeoUsage u = store.usages().objByNode(n);
-    NeoName nn = store.names().objByNode(n);
-    u.usage.setName(nn.name);
-    return u;
-  }
-
-  NeoUsage byID(String id) {
-    return usageWithName(store.names().nodeByID(id));
-  }
-
-  NeoUsage byName(String name, @Nullable String author) {
-    List<Node> nodes = store.names().nodesByName(name);
-    // filter by author
-    if (author != null) {
-      nodes.removeIf(n -> !author.equalsIgnoreCase(NeoProperties.getAuthorship(n)));
-    }
-
-    if (nodes.isEmpty()) {
-      throw new NotFoundException();
-    }
-    if (nodes.size() > 1) {
-      throw new NotUniqueRuntimeException("scientificName", name);
-    }
-    return usageWithName(nodes.get(0));
-  }
-
-  NeoUsage accepted(Node syn) {
-    List<RankedName> accepted = store.accepted(syn);
-    if (accepted.size() != 1) {
-      throw new IllegalStateException("Synonym has " + accepted.size() + " accepted taxa");
-    }
-    return usageWithName(accepted.get(0).node);
-  }
-
-  private boolean hasIssues(VerbatimEntity ent, Issue... issues) {
-    IssueContainer ic = store.getVerbatim(ent.getVerbatimKey());
-    for (Issue is : issues) {
-      if (!ic.hasIssue(is))
-        return false;
-    }
-    return true;
-  }
-
   @Test
   public void acef0() throws Exception {
     normalize(0);
-    writeToFile();
     try (Transaction tx = store.getNeo().beginTx()) {
       NeoUsage t = byID("s7");
       assertTrue(t.isSynonym());
@@ -320,23 +199,6 @@ public class NormalizerACEFIT {
   @Ignore("external dependency")
   public void testGsdGithub() throws Exception {
     normalize(URI.create("https://raw.githubusercontent.com/Sp2000/colplus-repo/master/ACEF/19.tar.gz"));
-    writeToFile();
   }
-
-  void writeToFile() throws Exception {
-    // dump graph as TEXT file for debugging
-    File f = new File("graphs/tree-acef.txt");
-    Files.createParentDirs(f);
-    Writer writer = new FileWriter(f);
-    PrinterUtils.printTree(store.getNeo(), writer, GraphFormat.TEXT);
-    writer.close();
-    System.out.println("Wrote graph to " + f.getAbsolutePath());
-
-    f = new File("graphs/tree-acef.dot");
-    writer = new FileWriter(f);
-    PrinterUtils.printTree(store.getNeo(), writer, GraphFormat.DOT);
-    writer.close();
-    System.out.println("Wrote graph to " + f.getAbsolutePath());
-  }
-
+  
 }

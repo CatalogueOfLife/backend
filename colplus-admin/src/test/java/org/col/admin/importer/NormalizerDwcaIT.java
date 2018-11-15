@@ -1,37 +1,19 @@
 package org.col.admin.importer;
 
-import java.io.*;
 import java.net.URI;
-import java.net.URL;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import javax.annotation.Nullable;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.google.common.io.Files;
-import org.apache.commons.io.FileUtils;
-import org.col.admin.config.NormalizerConfig;
-import org.col.admin.importer.neo.NeoDb;
-import org.col.admin.importer.neo.NeoDbFactory;
-import org.col.admin.importer.neo.NotUniqueRuntimeException;
 import org.col.admin.importer.neo.model.*;
-import org.col.admin.importer.neo.printer.GraphFormat;
-import org.col.admin.importer.neo.printer.PrinterUtils;
-import org.col.admin.matching.NameIndexFactory;
 import org.col.api.model.*;
 import org.col.api.vocab.*;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.neo4j.graphdb.Direction;
-import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.NotFoundException;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.schema.IndexDefinition;
 import org.neo4j.graphdb.schema.Schema;
@@ -43,99 +25,13 @@ import static org.junit.Assert.*;
 /**
  *
  */
-public class NormalizerDwcaIT {
-
-  private NeoDb store;
-  private NormalizerConfig cfg;
-  private Path dwca;
-
-  @Before
-  public void initCfg() throws Exception {
-    cfg = new NormalizerConfig();
-    cfg.archiveDir = Files.createTempDir();
-    cfg.scratchDir = Files.createTempDir();
-  }
-
-  @After
-  public void cleanup() throws Exception {
-    if (store != null) {
-      store.closeAndDelete();
-    }
-    FileUtils.deleteQuietly(cfg.archiveDir);
-    FileUtils.deleteQuietly(cfg.scratchDir);
-  }
-
-  /**
-   * Normalizes a dwca from the dwca test resources and checks its printed txt tree against the
-   * expected tree
-   *
-   * @param datasetKey
-   * @return
-   * @throws Exception
-   */
-  private void normalize(int datasetKey) throws Exception {
-    URL dwcaUrl = getClass().getResource("/dwca/" + datasetKey);
-    normalize(Paths.get(dwcaUrl.toURI()));
-  }
-
-  private void normalize(URI url) throws Exception {
-    // download an decompress
-    ExternalSourceUtil.consumeSource(url, this::normalize);
-  }
-
-  private void normalize(Path dwca) {
-    try {
-      store = NeoDbFactory.create(1, cfg);
-      Dataset d = new Dataset();
-      d.setKey(1);
-      d.setDataFormat(DataFormat.DWCA);
-      store.put(d);
-      Normalizer norm = new Normalizer(store, dwca, NameIndexFactory.passThru());
-      norm.call();
-
-      // reopen
-      store = NeoDbFactory.open(1, cfg);
-
-    } catch (IOException | InterruptedException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  VerbatimRecord vByID(String id) {
-    return store.getVerbatim(store.names().objByID(id).getVerbatimKey());
-  }
-
-
-  NeoUsage byName(String name) {
-    return byName(name, null);
-  }
-
-  NeoUsage byName(String name, @Nullable String author) {
-    List<Node> nodes = store.names().nodesByName(name);
-    // filter by author
-    if (author != null) {
-      nodes.removeIf(n -> !author.equalsIgnoreCase(NeoProperties.getAuthorship(n)));
-    }
-
-    if (nodes.isEmpty()) {
-      throw new NotFoundException();
-    }
-    if (nodes.size() > 1) {
-      throw new NotUniqueRuntimeException("scientificName", name);
-    }
-    return usageWithName(nodes.get(0));
+public class NormalizerDwcaIT extends NormalizerITBase {
+  
+  
+  NormalizerDwcaIT() {
+    super(DataFormat.DWCA);
   }
   
-  NeoUsage usageWithName(Node n) {
-    NeoUsage u = store.usages().objByNode(n);
-    NeoName nn = store.names().objByNode(n);
-    u.usage.setName(nn.name);
-    return u;
-  }
-  
-  NeoUsage byID(String id) {
-    return usageWithName(store.usages().nodeByID(id));
-  }
 
   @Test
   public void testBdjCsv() throws Exception {
@@ -340,23 +236,10 @@ public class NormalizerDwcaIT {
     }
   }
 
-  private void debug() throws Exception {
-    PrinterUtils.printTree(store.getNeo(), new PrintWriter(System.out), GraphFormat.TEXT, true);
-
-    // dump graph as DOT file for debugging
-    File dotFile = new File("graphs/dbugtree.dot");
-    Files.createParentDirs(dotFile);
-    Writer writer = new FileWriter(dotFile);
-    PrinterUtils.printTree(store.getNeo(), writer, GraphFormat.DOT, true);
-    writer.close();
-    System.out.println("Wrote graph to " + dotFile.getAbsolutePath());
-  }
-
   @Test
   public void testProParte() throws Exception {
     normalize(8);
 
-    debug();
     try (Transaction tx = store.getNeo().beginTx()) {
       NeoUsage syn = byID("1001");
       assertNotNull(syn.getSynonym());
@@ -435,7 +318,6 @@ public class NormalizerDwcaIT {
   @Ignore("No testing yet")
   public void testWormsParents() throws Exception {
     normalize(32);
-    print("worms", GraphFormat.DOT, false);
 
     try (Transaction tx = store.getNeo().beginTx()) {
     }
@@ -448,26 +330,6 @@ public class NormalizerDwcaIT {
     //normalize(Paths.getUsage("/Users/markus/Downloads/ipni-dwca"));
     normalize(URI.create("https://raw.githubusercontent.com/mdoering/ion-taxonomic-hierarchy/master/classification.tsv"));
     // print("Diversity", GraphFormat.TEXT, false);
-  }
-
-  void print(String id, GraphFormat format, boolean file) throws Exception {
-    // dump graph as DOT file for debugging
-    File dotFile = new File("graphs/tree-dwca-" + id + "." + format.suffix);
-    Files.createParentDirs(dotFile);
-    Writer writer;
-    if (file) {
-      writer = new FileWriter(dotFile);
-    } else {
-      writer = new StringWriter();
-    }
-    PrinterUtils.printTree(store.getNeo(), writer, format);
-    writer.close();
-
-    if (file) {
-      System.out.println("Wrote graph to " + dotFile.getAbsolutePath());
-    } else {
-      System.out.println(writer.toString());
-    }
   }
 
 }

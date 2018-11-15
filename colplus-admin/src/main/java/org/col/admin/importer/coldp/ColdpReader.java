@@ -8,7 +8,6 @@ import com.google.common.collect.ImmutableSet;
 import org.col.admin.importer.NormalizationFailedException;
 import org.col.api.datapackage.ColTerm;
 import org.col.csv.CsvReader;
-import org.col.csv.Schema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,12 +33,7 @@ public class ColdpReader extends CsvReader {
 
   private void validate() throws NormalizationFailedException.SourceInvalidException {
     // allow only COL row types
-    for (Schema s : schemas.values()) {
-      if (!(s.rowType instanceof ColTerm)) {
-        LOG.info("Remove non COL rowType {} for file {}", s.rowType, s.file);
-        schemas.remove(s.rowType);
-      }
-    }
+    filterSchemas(rowType -> rowType instanceof ColTerm);
 
     // mandatory terms.
     // Fail early, if missing ignore file alltogether!!!

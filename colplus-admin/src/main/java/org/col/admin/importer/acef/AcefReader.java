@@ -5,7 +5,6 @@ import java.nio.file.Path;
 
 import org.col.admin.importer.NormalizationFailedException;
 import org.col.csv.CsvReader;
-import org.col.csv.Schema;
 import org.gbif.dwc.terms.AcefTerm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,12 +26,7 @@ public class AcefReader extends CsvReader {
 
   private void validate() throws NormalizationFailedException.SourceInvalidException {
     // allow only ACEF row types
-    for (Schema s : schemas.values()) {
-      if (!(s.rowType instanceof AcefTerm)) {
-        LOG.info("Remove non ACEF rowType {} for file {}", s.rowType, s.file);
-        schemas.remove(s.rowType);
-      }
-    }
+    filterSchemas(rowType -> rowType instanceof AcefTerm);
 
     // mandatory terms.
     // Fail early, if missing ignore file alltogether!!!
