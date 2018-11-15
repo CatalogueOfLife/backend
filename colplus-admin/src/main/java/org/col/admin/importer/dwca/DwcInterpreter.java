@@ -30,12 +30,10 @@ public class DwcInterpreter extends InterpreterBase {
   private static final EnumNote<TaxonomicStatus> NO_STATUS = new EnumNote<>(TaxonomicStatus.DOUBTFUL, null);
 
   private final InsertMetadata insertMetadata;
-  private final NeoDb store;
 
   public DwcInterpreter(Dataset dataset, InsertMetadata insertMetadata, ReferenceFactory refFactory, NeoDb store) {
-    super(dataset, refFactory);
+    super(dataset, refFactory, store);
     this.insertMetadata = insertMetadata;
-    this.store = store;
   }
 
   public Optional<NeoUsage> interpret(VerbatimRecord v) {

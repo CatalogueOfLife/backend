@@ -15,6 +15,7 @@ import com.google.common.collect.Lists;
 import com.ibm.icu.text.Transliterator;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.col.admin.importer.neo.NeoDb;
 import org.col.admin.importer.reference.ReferenceFactory;
 import org.col.api.exception.InvalidNameException;
 import org.col.api.model.*;
@@ -41,12 +42,14 @@ public class InterpreterBase {
   private static final Transliterator transLatin = Transliterator.getInstance("Any-Latin");
   private static final Transliterator transAscii = Transliterator.getInstance("Latin-ASCII");
   
+  protected final NeoDb store;
   protected final Dataset dataset;
   protected final ReferenceFactory refFactory;
 
-  public InterpreterBase(Dataset dataset, ReferenceFactory refFactory) {
+  public InterpreterBase(Dataset dataset, ReferenceFactory refFactory, NeoDb store) {
     this.dataset = dataset;
     this.refFactory = refFactory;
+    this.store = store;
   }
 
   protected String latinName(String name) {

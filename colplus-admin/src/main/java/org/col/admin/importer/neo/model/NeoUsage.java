@@ -58,6 +58,10 @@ public class NeoUsage implements NeoNode, ID, VerbatimEntity {
     return u;
   }
   
+  public static NeoUsage createSynonym(Origin origin, TaxonomicStatus status) {
+    return createSynonym(origin, null, status);
+  }
+  
   public static NeoUsage createSynonym(Origin origin, Name name, TaxonomicStatus status) {
     NeoUsage u = new NeoUsage();
     Synonym syn = new Synonym();

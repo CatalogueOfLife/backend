@@ -16,6 +16,7 @@ public class Synonym implements NameUsage {
   private Name name;
   private TaxonomicStatus status;
   private String accordingTo;
+  private String remarks;
   private Taxon accepted;
   private Origin origin;
   private Integer verbatimKey;
@@ -66,6 +67,14 @@ public class Synonym implements NameUsage {
     this.accordingTo = accordingTo;
   }
   
+  public String getRemarks() {
+    return remarks;
+  }
+  
+  public void setRemarks(String remarks) {
+    this.remarks = remarks;
+  }
+  
   /**
    * @return true if the synonym is a homotypic synonym for at least one of the accepted names.
    */
@@ -108,6 +117,7 @@ public class Synonym implements NameUsage {
         Objects.equals(name, synonym.name) &&
         status == synonym.status &&
         Objects.equals(accordingTo, synonym.accordingTo) &&
+        Objects.equals(remarks, synonym.remarks) &&
         Objects.equals(accepted, synonym.accepted) &&
         origin == synonym.origin &&
         Objects.equals(verbatimKey, synonym.verbatimKey);
@@ -116,6 +126,6 @@ public class Synonym implements NameUsage {
   @Override
   public int hashCode() {
     
-    return Objects.hash(id, name, status, accordingTo, accepted, origin, verbatimKey);
+    return Objects.hash(id, name, status, accordingTo, remarks, accepted, origin, verbatimKey);
   }
 }

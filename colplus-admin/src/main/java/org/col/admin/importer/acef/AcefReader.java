@@ -52,17 +52,9 @@ public class AcefReader extends CsvReader {
     require(AcefTerm.AcceptedInfraSpecificTaxa, AcefTerm.InfraSpeciesMarker);
 
     // require at least the main accepted species file
-    if (!hasData(AcefTerm.AcceptedSpecies)) {
-      throw new NormalizationFailedException.SourceInvalidException(AcefTerm.AcceptedSpecies + " file required but missing from " + folder);
-    }
-
-    for (AcefTerm t : AcefTerm.values()) {
-      if (t.isClass()) {
-        if (!hasData(t)) {
-          LOG.info("{} missing from ACEF in {}", t.name(), folder);
-        }
-      }
-    }
+    requireSchema(AcefTerm.AcceptedSpecies);
+  
+    reportMissingSchemas(AcefTerm.class);
   }
 
 }

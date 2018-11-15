@@ -4,8 +4,9 @@ import java.util.Map;
 import java.util.Objects;
 
 import org.col.admin.importer.neo.NeoDbUtils;
-import org.col.api.model.Name;
 import org.col.api.model.ID;
+import org.col.api.model.Name;
+import org.col.api.model.NameAccordingTo;
 import org.col.api.model.VerbatimEntity;
 import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
@@ -18,11 +19,17 @@ public class NeoName implements NeoNode, ID, VerbatimEntity {
   
   public Node node;
   public Name name;
+  public String accordingTo;
   public boolean homotypic = false;
   
   public NeoName() {
   }
   
+  public NeoName(NameAccordingTo nat) {
+    this.name = nat.getName();
+    this.accordingTo = nat.getAccordingTo();
+  }
+
   public NeoName(Name name) {
     this.name = name;
   }

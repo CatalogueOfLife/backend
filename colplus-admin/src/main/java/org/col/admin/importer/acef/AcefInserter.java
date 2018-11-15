@@ -60,7 +60,7 @@ public class AcefInserter extends NeoInserter {
   public void batchInsert() throws NormalizationFailedException {
     try {
       initReader();
-      inter = new AcefInterpreter(store.getDataset(), meta, refFactory);
+      inter = new AcefInterpreter(store.getDataset(), meta, refFactory, store);
 
       // This inserts the plain references from the Reference file with no links to names, taxa or distributions.
       // Links are added afterwards in other methods when a ACEF:ReferenceID field is processed by lookup to the neo store.

@@ -10,6 +10,7 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import org.col.admin.importer.acef.AcefInserter;
+import org.col.admin.importer.coldp.ColdpInserter;
 import org.col.admin.importer.dwca.DwcaInserter;
 import org.col.admin.importer.neo.NeoDb;
 import org.col.admin.importer.neo.NodeBatchProcessor;
@@ -729,9 +730,8 @@ public class Normalizer implements Callable<Boolean> {
       NeoInserter inserter;
       switch (dataset.getDataFormat()) {
         case COLDP:
-          throw new IllegalStateException("COLDP not done");
-          //inserter = new ColDPInserter(store, sourceDir, refFactory);
-          //break;
+          inserter = new ColdpInserter(store, sourceDir, refFactory);
+          break;
         case DWCA:
           inserter = new DwcaInserter(store, sourceDir, refFactory);
           break;

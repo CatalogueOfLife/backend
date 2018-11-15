@@ -28,6 +28,7 @@ import com.univocity.parsers.common.ResultIterator;
 import com.univocity.parsers.common.TextParsingException;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
+import org.col.admin.importer.NormalizationFailedException;
 import org.col.api.model.VerbatimRecord;
 import org.col.api.util.VocabularyUtils;
 import org.col.common.io.CharsetDetectingStream;
@@ -125,6 +126,12 @@ public class CsvReader {
   public static CsvReader from(Path folder) throws IOException {
     return from(folder, null);
   }
+  
+  protected void requireSchema(Term rowType) {
+    if (!hasData(rowType)) {
+      throw new NormalizationFailedException.SourceInvalidException(rowType + " file required but missing from " + folder);
+    }
+  }
 
   protected void require(Term rowType, Term term) {
     if (hasData(rowType) && !hasData(rowType, term)) {
@@ -132,7 +139,15 @@ public class CsvReader {
       LOG.warn("Required term {} missing. Ignore file {}!", term, s.file);
     }
   }
-
+  
+  protected <T extends Enum & Term> void reportMissingSchemas(Class<T> enumClass) {
+    for (T t : enumClass.getEnumConstants()) {
+      if (t.isClass() && !hasData(t)) {
+        LOG.info("{} missing from {} in {}", t.name(), enumClass.getSimpleName(), folder);
+      }
+    }
+  }
+  
   private static Optional<Term> findTerm(String termPrefix, String name, boolean isClassTerm) {
     if (termPrefix != null && !name.contains(":")) {
       name = termPrefix + ":" + name;
