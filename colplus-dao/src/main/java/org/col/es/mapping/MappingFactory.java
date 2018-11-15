@@ -36,6 +36,10 @@ public class MappingFactory<T> {
   // will contain just one entry.
   private static final HashMap<Class<?>, Mapping<?>> cache = new HashMap<>();
 
+  // Whether or not to map enum types to integer or to string (keyword actually). This is more or less separate from how you serialize them,
+  // although obviously serializing them using their name or toString() requires them to be mapped to keyword. However, when serializing
+  // them using their ordinal, you still have the choice of indexing as integers or as strings, which does make a difference in
+  // Elasticsearch.
   private boolean mapEnumToInt;
 
   /**
@@ -74,8 +78,8 @@ public class MappingFactory<T> {
     return mapEnumToInt;
   }
 
-  public void setMapEnumToInt(boolean soreEnumAsInt) {
-    this.mapEnumToInt = soreEnumAsInt;
+  public void setMapEnumToInt(boolean mapEnumToInt) {
+    this.mapEnumToInt = mapEnumToInt;
   }
 
   private void addFieldsToDocument(ComplexField document, Class<?> type, HashSet<Class<?>> ancestors) {
