@@ -28,7 +28,7 @@ import static org.junit.Assert.*;
 public class NormalizerDwcaIT extends NormalizerITBase {
   
   
-  NormalizerDwcaIT() {
+  public NormalizerDwcaIT() {
     super(DataFormat.DWCA);
   }
   

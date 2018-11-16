@@ -19,7 +19,6 @@ import org.col.api.model.VerbatimEntity;
 import org.col.api.vocab.Issue;
 import org.mapdb.DB;
 import org.mapdb.Serializer;
-import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
 
 public class NeoNameStore extends NeoCRUDStore<NeoName> {
@@ -52,8 +51,8 @@ public class NeoNameStore extends NeoCRUDStore<NeoName> {
   }
   
   @Override
-  Node createOrRegister(NeoName obj, Map<String, Object> extraProps, Label... extraLabels) {
-    Node n = super.createOrRegister(obj, extraProps, extraLabels);
+  Node createOrRegister(NeoName obj) {
+    Node n = super.createOrRegister(obj);
     if (n != null) {
       add(obj, n.getId());
     }

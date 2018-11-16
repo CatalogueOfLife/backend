@@ -18,28 +18,28 @@ public class NeoDbUtils {
   private NeoDbUtils() {
   }
 
-  static void putIfNotNull(Map<String, Object> props, String property, String value) {
+  private static void putIfNotNull(Map<String, Object> props, String property, String value) {
     if (value != null) {
       props.put(property, value);
     }
   }
-
-  static void putIfNotNull(Map<String, Object> props, String property, Enum value) {
+  
+  private static void putIfNotNull(Map<String, Object> props, String property, Enum value) {
     if (value != null) {
       props.put(property, value.ordinal());
     }
   }
   
-  static void putIfNotNull(Map<String, Object> props, String property, Integer value) {
+  private static void putIfNotNull(Map<String, Object> props, String property, Integer value) {
     if (value != null) {
       props.put(property, value);
     }
   }
 
   /**
-   * Sets a node property and removes it in case the property value is null.
+   * Adds node properties and removes them in case the property value is null.
    */
-  static void setProperties(PropertyContainer n, Map<String, Object> props) {
+  static void addProperties(PropertyContainer n, Map<String, Object> props) {
     if (props != null) {
       for (Map.Entry<String, Object> p : props.entrySet()) {
         setProperty(n, p.getKey(), p.getValue());
@@ -58,10 +58,19 @@ public class NeoDbUtils {
     }
   }
   
-  static void setLabels(Node n, Label... labels ) {
+  /**
+   * Remove all node labels
+   */
+  static void removeLabels(Node n) {
     for (Label l : n.getLabels()) {
       n.removeLabel(l);
     }
+  }
+  
+  /**
+   * Adds new labels to a node
+   */
+  static void addLabels(Node n, Label... labels ) {
     if (labels != null) {
       for (Label l : labels) {
         n.addLabel(l);

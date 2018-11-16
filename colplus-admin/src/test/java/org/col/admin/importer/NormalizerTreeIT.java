@@ -135,7 +135,7 @@ public class NormalizerTreeIT {
       norm.call();
       // reopen the neo db
       store = NeoDbFactory.open(datasetKey, cfg);
-      // debug();
+      debug();
       
       // assert tree
       InputStream tree = getClass().getResourceAsStream(resourceDir + "/expected.tree");
@@ -179,7 +179,7 @@ public class NormalizerTreeIT {
     File dotFile = new File("graphs/tree-" + format + sourceKey + ".dot");
     Files.createParentDirs(dotFile);
     Writer writer = new FileWriter(dotFile);
-    PrinterUtils.printTree(store.getNeo(), writer, GraphFormat.DOT);
+    PrinterUtils.dumpDotFile(store.getNeo(), writer);
     writer.close();
     System.out.println("Wrote graph to " + dotFile.getAbsolutePath());
   }

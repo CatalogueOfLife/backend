@@ -5,6 +5,7 @@ import java.io.Writer;
 import javax.annotation.Nullable;
 
 import com.google.common.base.Function;
+import com.google.common.base.Joiner;
 import org.col.admin.importer.neo.model.Labels;
 import org.col.admin.importer.neo.model.RelType;
 import org.col.admin.importer.neo.traverse.RankEvaluator;
@@ -28,10 +29,12 @@ import org.neo4j.graphdb.Relationship;
  * }
  */
 public class DotPrinter implements TreePrinter {
+  private static final Joiner SEMI_JOINER = Joiner.on(';').skipNulls();
   private final Writer writer;
   private final Function<Node, String> getTitle;
   private final RankEvaluator rankEvaluator;
-
+  private final boolean showLabels = false;
+  
   public DotPrinter(Writer writer, @Nullable Rank rankThreshold, Function<Node, String> getTitle) {
     this.writer = writer;
     this.getTitle = getTitle;
@@ -64,6 +67,10 @@ public class DotPrinter implements TreePrinter {
       writer.append("  n");
       writer.append(String.valueOf(n.getId()));
       writer.append("  [label=\"");
+      if (showLabels) {
+        writer.append(SEMI_JOINER.join(n.getLabels()));
+        writer.append(": ");
+      }
       writer.append(getTitle.apply(n));
       writer.append("\"");
       if (n.hasLabel(Labels.SYNONYM)) {

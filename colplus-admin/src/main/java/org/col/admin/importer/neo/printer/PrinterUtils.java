@@ -1,9 +1,13 @@
 package org.col.admin.importer.neo.printer;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.Writer;
 import javax.annotation.Nullable;
 
 import com.google.common.base.Function;
+import com.google.common.io.Files;
 import org.col.admin.importer.neo.NeoDb;
 import org.col.admin.importer.neo.model.NeoProperties;
 import org.col.admin.importer.neo.traverse.Traversals;
@@ -11,6 +15,7 @@ import org.col.admin.importer.neo.traverse.TreeWalker;
 import org.gbif.nameparser.api.Rank;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Transaction;
 
 /**
  * Printing utilities for {@link NeoDb}s
@@ -35,10 +40,6 @@ public class PrinterUtils {
    * Synonyms are marked with a prepended asterisk.
    */
   public static void printTree(GraphDatabaseService neo, Writer writer, GraphFormat format) throws Exception {
-    printTree(neo, writer, format, false);
-  }
-
-  public static void printTree(GraphDatabaseService neo, Writer writer, GraphFormat format, boolean showNodeIds) throws Exception {
     printTree(neo, writer, format, null, null);
   }
 
@@ -75,5 +76,25 @@ public class PrinterUtils {
     printer.close();
     writer.flush();
   }
-
+  
+  /**
+   * Prints the entire neo4j graph out to a writer in no particular order.
+   * It does not require a root node but dumps all nodes and relations.
+   */
+  public static void dumpDotFile(GraphDatabaseService neo, Writer writer) throws Exception {
+    DotPrinter printer = new DotPrinter(writer, null, getScientificWithAuthorship);;
+    try (Transaction tx = neo.beginTx()) {
+      for (Node n : neo.getAllNodes()) {
+        printer.start(n);
+        printer.end(n);
+      }
+    }
+    printer.close();
+    writer.flush();
+  }
+  
+  public static Writer fileWriter(File f) throws IOException {
+    Files.createParentDirs(f);
+    return new FileWriter(f);
+  }
 }

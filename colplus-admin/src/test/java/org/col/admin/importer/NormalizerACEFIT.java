@@ -23,7 +23,7 @@ import static org.junit.Assert.*;
  */
 public class NormalizerACEFIT extends NormalizerITBase {
   
-  NormalizerACEFIT() {
+  public NormalizerACEFIT() {
     super(DataFormat.ACEF);
   }
   

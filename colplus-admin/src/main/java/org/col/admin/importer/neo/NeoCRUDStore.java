@@ -18,7 +18,6 @@ import org.col.api.vocab.Issue;
 import org.col.common.mapdb.MapDbObjectSerializer;
 import org.mapdb.DB;
 import org.mapdb.Serializer;
-import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -109,7 +108,7 @@ public class NeoCRUDStore<T extends ID & VerbatimEntity & NeoNode> {
    */
   public Node create(T obj) {
     Preconditions.checkArgument(obj.getNode() == null, "Object already has a neo4j node");
-    return createOrRegister(obj, null);
+    return createOrRegister(obj);
   }
   
   /**
@@ -117,16 +116,15 @@ public class NeoCRUDStore<T extends ID & VerbatimEntity & NeoNode> {
    */
   public Node createWithNode(T obj) {
     Preconditions.checkNotNull(obj.getNode(), "createWithNode requires a neo4j node");
-    return createOrRegister(obj, null);
+    return createOrRegister(obj);
   }
   
   /**
    * Creates a new neo4j node if none exists yet applying extra propLabel and labels if given.
-   * If a neo4j node already exists only the ID is checked and the object registered in this CRUD store
+   * If a neo4j node already exists new properties and labels are added, the ID is checked and the object registered in this CRUD store
    * @return the created node id or null if it could not be created (currently only with duplicate IDs).
    */
-  Node createOrRegister(T obj, Map<String,Object> extraProps, Label... extraLabels) {
-    Preconditions.checkNotNull(obj);
+  Node createOrRegister(T obj) {
     // create missing ids, sharing the same id between name & taxon
     if (obj.getId() == null) {
       obj.setId(idGen.next());
@@ -139,12 +137,6 @@ public class NeoCRUDStore<T extends ID & VerbatimEntity & NeoNode> {
     }
     
     final PropLabel props = obj.propLabel();
-    if (extraProps != null) {
-      props.putAll(extraProps);
-    }
-    if (extraLabels != null) {
-      props.addLabels(extraLabels);
-    }
 
     // create a new neo4j node if not yet existing
     if (obj.getNode() == null) {
@@ -186,7 +178,7 @@ public class NeoCRUDStore<T extends ID & VerbatimEntity & NeoNode> {
     if (!(obj.getNode() instanceof NodeMock)) {
       Map<String,Object> props = obj.propLabel();
       if (props != null && !props.isEmpty()) {
-        NeoDbUtils.setProperties(obj.getNode(), props);
+        NeoDbUtils.addProperties(obj.getNode(), props);
       }
     }
     objects.put(obj.getNode().getId(), obj);

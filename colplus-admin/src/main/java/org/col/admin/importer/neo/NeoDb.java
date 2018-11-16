@@ -19,6 +19,7 @@ import com.esotericsoftware.kryo.pool.KryoPool;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.UnmodifiableIterator;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.col.admin.importer.IdGenerator;
 import org.col.admin.importer.NormalizationFailedException;
 import org.col.admin.importer.neo.NodeBatchProcessor.BatchConsumer;
@@ -357,28 +358,34 @@ public class NeoDb implements ReferenceStore {
   public Node createNameAndUsage(NeoUsage u) {
     Preconditions.checkArgument(u.getNode() == null, "NeoUsage already has a neo4j node");
     Preconditions.checkNotNull(u.usage.getName(), "NeoUsage with name required");
-    Name name = u.usage.getName();
-    // remove name from usage
-    u.usage.setName(null);
-    Node n = usages.createOrRegister(u, NeoDbUtils.neo4jProps(name), Labels.NAME);
+    
+    // first create the name
     // also create a neoname with the same id, origin and verbatim key if missing
-    NeoName nn = new NeoName(n, name);
+    NeoName nn = new NeoName(u.usage.getName());
     if (nn.getId() == null) {
       nn.setId(u.getId());
     }
     if (nn.getVerbatimKey() == null) {
       nn.setVerbatimKey(u.getVerbatimKey());
     }
-    if (name.getOrigin() == null) {
+    if (nn.name.getOrigin() == null) {
       if (u.isSynonym()) {
-        name.setOrigin(u.getSynonym().getOrigin());
+        nn.name.setOrigin(u.getSynonym().getOrigin());
       } else {
-        name.setOrigin(u.getTaxon().getOrigin());
+        nn.name.setOrigin(u.getTaxon().getOrigin());
       }
     }
     nn.homotypic = u.homotypic;
-    names.createOrRegister(nn, null);
-    return n;
+    Node n = names.create(nn);
+  
+    if (n != null) {
+      // remove name from usage & create it also with the existing name node
+      u.node = n;
+      u.usage.setName(null);
+      return usages.createWithNode(u);
+    }
+    LOG.debug("Skip usage {} as no name node was created for {}", u.getId(), nn.name.canonicalNameComplete());
+    return null;
   }
   
   /**
@@ -406,20 +413,33 @@ public class NeoDb implements ReferenceStore {
     } else {
       // create neo4j node and update its propLabel
       n = neo.createNode(data.getLabels());
-      NeoDbUtils.setProperties(n, data);
+      NeoDbUtils.addProperties(n, data);
     }
     neoCounter.incrementAndGet();
     return n;
   }
   
+  /**
+   * Updates a node by adding properties and/or labels
+   */
   public void updateNode(long nodeId, PropLabel data) {
-    if (isBatchMode()) {
-      inserter.setNodeLabels(nodeId, data.getLabels());
-      inserter.setNodeProperties(nodeId, data);
-    } else {
-      Node n = neo.getNodeById(nodeId);
-      NeoDbUtils.setProperties(n, data);
-      NeoDbUtils.setLabels(n, data.getLabels());
+    if (!data.isEmpty()) {
+      if (isBatchMode()) {
+        if (data.getLabels() != null) {
+          Label[] all = ArrayUtils.addAll(data.getLabels(),
+              com.google.common.collect.Iterables.toArray(inserter.getNodeLabels(nodeId), Label.class)
+          );
+          inserter.setNodeLabels(nodeId, all);
+        }
+        if (data.size()>0) {
+          data.putAll(inserter.getNodeProperties(nodeId));
+          inserter.setNodeProperties(nodeId, data);
+        }
+      } else {
+        Node n = neo.getNodeById(nodeId);
+        NeoDbUtils.addProperties(n, data);
+        NeoDbUtils.addLabels(n, data.getLabels());
+      }
     }
   }
   
@@ -454,7 +474,7 @@ public class NeoDb implements ReferenceStore {
       inserter.createRelationship(n1.getId(), n2.getId(), rel.getType(), props);
     } else {
       Relationship r = n1.createRelationshipTo(n2, rel.getType());
-      NeoDbUtils.setProperties(r, props);
+      NeoDbUtils.addProperties(r, props);
     }
   }
 

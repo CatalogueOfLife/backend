@@ -14,8 +14,7 @@ import org.neo4j.graphdb.traversal.Evaluator;
  */
 public class RankEvaluator implements Evaluator {
 
-  private final @Nullable
-  Rank threshold;
+  private final @Nullable Rank threshold;
 
   public RankEvaluator(Rank threshold) {
     this.threshold = threshold;

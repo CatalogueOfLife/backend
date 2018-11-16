@@ -162,13 +162,13 @@ abstract class NormalizerITBase {
   }
   
   public void debug() throws Exception {
-    PrinterUtils.printTree(store.getNeo(), new PrintWriter(System.out), GraphFormat.TEXT, true);
+    PrinterUtils.printTree(store.getNeo(), new PrintWriter(System.out), GraphFormat.TEXT);
 
     // dump graph as DOT file for debugging
     File dotFile = new File("graphs/debugtree.dot");
     Files.createParentDirs(dotFile);
     Writer writer = new FileWriter(dotFile);
-    PrinterUtils.printTree(store.getNeo(), writer, GraphFormat.DOT, true);
+    PrinterUtils.printTree(store.getNeo(), writer, GraphFormat.DOT);
     writer.close();
     System.out.println("Wrote graph to " + dotFile.getAbsolutePath());
   }
