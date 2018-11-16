@@ -35,7 +35,7 @@ public abstract class RelationInserterBase implements NodeBatchProcessor {
         VerbatimRecord v = store.getVerbatim(u.getVerbatimKey());
         Node p;
         if (u.isSynonym()) {
-          p = lookupByID(acceptedTerm, v, u);
+          p = usageByID(acceptedTerm, v, u);
           if (p != null) {
             store.createSynonymRel(u.node, p);
           } else {
@@ -44,7 +44,7 @@ public abstract class RelationInserterBase implements NodeBatchProcessor {
           }
 
         } else {
-          p = lookupByID(parentTerm, v, u);
+          p = usageByID(parentTerm, v, u);
           if (p != null) {
             store.assignParent(p, u.node);
           } else {
@@ -78,7 +78,7 @@ public abstract class RelationInserterBase implements NodeBatchProcessor {
    *
    * @return list of potentially split ids with their matching neo node if found, otherwise null
    */
-  protected Node lookupByID(Term term, VerbatimRecord v, NeoUsage u) {
+  protected Node usageByID(Term term, VerbatimRecord v, NeoUsage u) {
     Node n = null;
     final String id = v.get(term);
     if (id != null && !id.equals(u.getId())) {

@@ -232,6 +232,8 @@ CREATE TABLE dataset_import (
   reference_count INTEGER,
   vernacular_count INTEGER,
   distribution_count INTEGER,
+  description_count INTEGER,
+  media_count INTEGER,
   issues_count HSTORE,
   names_by_rank_count HSTORE,
   taxa_by_rank_count HSTORE,
@@ -243,6 +245,7 @@ CREATE TABLE dataset_import (
   names_by_status_count HSTORE,
   name_relations_by_type_count HSTORE,
   verbatim_by_type_count HSTORE,
+  media_by_type_count HSTORE,
   PRIMARY KEY (dataset_key, attempt)
 );
 

@@ -136,7 +136,7 @@ public class NormalizerACEFIT extends NormalizerITBase {
       Set<String> nonMisappliedIds = Sets.newHashSet("s17", "s18");
       int counter = 0;
       for (Node sn : Traversals.SYNONYMS.traverse(t.node).nodes()) {
-        NeoUsage s = usageWithName(sn);
+        NeoUsage s = store.usageWithName(sn);
         assertTrue(s.getSynonym().getStatus().isSynonym());
         if (nonMisappliedIds.remove(s.getId())) {
           assertEquals(TaxonomicStatus.SYNONYM, s.getSynonym().getStatus());

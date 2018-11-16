@@ -210,6 +210,13 @@ public class NeoDb implements ReferenceStore {
     return usages;
   }
   
+  public NeoUsage usageWithName(Node n) {
+    NeoUsage u = usages().objByNode(n);
+    NeoName nn = names().objByNode(n);
+    u.usage.setName(nn.name);
+    return u;
+  }
+  
   /**
    * @return a collection of all name relations with name key using node ids.
    */
@@ -228,7 +235,7 @@ public class NeoDb implements ReferenceStore {
   }
   
   /**
-   * @return a collection of all name relations with name key using node ids.
+   * @return a collection of all name relations with key using node ids.
    */
   public List<NameRelation> relations(Node n) {
     return Iterables.stream(n.getRelationships())
@@ -823,6 +830,15 @@ public class NeoDb implements ReferenceStore {
    */
   public List<RankedName> accepted(Node synonym) {
     return Traversals.ACCEPTED.traverse(synonym).nodes().stream()
+        .map(NeoProperties::getRankedName)
+        .collect(Collectors.toList());
+  }
+  
+  /**
+   * List all accepted taxa of a potentially prop parte synonym
+   */
+  public List<RankedName> parents(Node child) {
+    return Traversals.PARENTS.traverse(child).nodes().stream()
         .map(NeoProperties::getRankedName)
         .collect(Collectors.toList());
   }

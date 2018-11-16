@@ -39,8 +39,10 @@ public interface DatasetImportMapper {
   void create(@Param("di") DatasetImport datasetImport);
 
   void update(@Param("di") DatasetImport datasetImport);
-
+  
+  Integer countDescription(@Param("key") int datasetKey);
   Integer countDistribution(@Param("key") int datasetKey);
+  Integer countMedia(@Param("key") int datasetKey);
   Integer countName(@Param("key") int datasetKey);
   Integer countReference(@Param("key") int datasetKey);
   Integer countTaxon(@Param("key") int datasetKey);
@@ -49,13 +51,14 @@ public interface DatasetImportMapper {
 
   List<IntCount> countDistributionsByGazetteer(@Param("key") int datasetKey);
   List<IntCount> countIssues(@Param("key") int datasetKey);
+  List<IntCount> countMediaByType(@Param("key") int datasetKey);
   List<IntCount> countNameRelationsByType(@Param("key") int datasetKey);
   List<IntCount> countNamesByOrigin(@Param("key") int datasetKey);
-  List<StringCount> countNamesByRank(@Param("key") int datasetKey);
-  List<StringCount> countTaxaByRank(@Param("key") int datasetKey);
   List<IntCount> countNamesByStatus(@Param("key") int datasetKey);
   List<IntCount> countNamesByType(@Param("key") int datasetKey);
   List<IntCount> countUsagesByStatus(@Param("key") int datasetKey);
+  List<StringCount> countNamesByRank(@Param("key") int datasetKey);
+  List<StringCount> countTaxaByRank(@Param("key") int datasetKey);
   List<StringCount> countVerbatimByType(@Param("key") int datasetKey);
   List<StringCount> countVernacularsByLanguage(@Param("key") int datasetKey);
 

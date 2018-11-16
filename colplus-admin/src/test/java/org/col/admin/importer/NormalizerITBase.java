@@ -5,6 +5,7 @@ import java.net.URI;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nullable;
 
@@ -14,7 +15,6 @@ import org.col.admin.config.NormalizerConfig;
 import org.col.admin.importer.neo.NeoDb;
 import org.col.admin.importer.neo.NeoDbFactory;
 import org.col.admin.importer.neo.NotUniqueRuntimeException;
-import org.col.admin.importer.neo.model.NeoName;
 import org.col.admin.importer.neo.model.NeoProperties;
 import org.col.admin.importer.neo.model.NeoUsage;
 import org.col.admin.importer.neo.model.RankedName;
@@ -31,6 +31,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.NotFoundException;
+
+import static org.junit.Assert.assertEquals;
 
 abstract class NormalizerITBase {
   
@@ -114,7 +116,7 @@ abstract class NormalizerITBase {
     if (nodes.size() > 1) {
       throw new NotUniqueRuntimeException("scientificName", name);
     }
-    return usageWithName(nodes.get(0));
+    return store.usageWithName(nodes.get(0));
   }
   
   public NeoUsage accepted(Node syn) {
@@ -122,9 +124,26 @@ abstract class NormalizerITBase {
     if (accepted.size() != 1) {
       throw new IllegalStateException("Synonym has " + accepted.size() + " accepted taxa");
     }
-    return usageWithName(accepted.get(0).node);
+    return store.usageWithName(accepted.get(0).node);
   }
   
+  public List<NeoUsage> parents(Node child, String... parentIdsToVerify) {
+    List<NeoUsage> parents = new ArrayList<>();
+    int idx = 0;
+    for (RankedName rn : store.parents(child)) {
+      NeoUsage u = store.usageWithName(rn.node);
+      parents.add(u);
+      if (parentIdsToVerify != null) {
+        assertEquals(u.getId(), parentIdsToVerify[idx]);
+        idx++;
+      }
+    }
+    if (parentIdsToVerify != null) {
+      assertEquals(parents.size(), parentIdsToVerify.length);
+    }
+    return parents;
+  }
+
   public boolean hasIssues(VerbatimEntity ent, Issue... issues) {
     IssueContainer ic = store.getVerbatim(ent.getVerbatimKey());
     for (Issue is : issues) {
@@ -134,19 +153,12 @@ abstract class NormalizerITBase {
     return true;
   }
   
-  public NeoUsage usageWithName(Node n) {
-    NeoUsage u = store.usages().objByNode(n);
-    NeoName nn = store.names().objByNode(n);
-    u.usage.setName(nn.name);
-    return u;
-  }
-  
   public NeoUsage usageByNameID(String id) {
-    return usageWithName(store.names().nodeByID(id));
+    return store.usageWithName(store.names().nodeByID(id));
   }
 
   public NeoUsage usageByID(String id) {
-    return usageWithName(store.usages().nodeByID(id));
+    return store.usageWithName(store.usages().nodeByID(id));
   }
   
   public void debug() throws Exception {

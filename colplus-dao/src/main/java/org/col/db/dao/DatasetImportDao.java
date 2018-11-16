@@ -61,6 +61,25 @@ public class DatasetImportDao {
     return di;
   }
   
+  /**
+   * Generates new metrics and persists them as a new successful import record.
+   */
+  public DatasetImport createSuccess(int datasetKey) {
+    DatasetImport di = new DatasetImport();
+    di.setDatasetKey(datasetKey);
+    di.setState(ImportState.FINISHED);
+    di.setDownloadUri(null);
+    di.setStarted(LocalDateTime.now());
+    di.setDownload(LocalDateTime.now());
+    di.setFinished(LocalDateTime.now());
+    try (SqlSession session = factory.openSession(true)) {
+      DatasetImportMapper mapper = session.getMapper(DatasetImportMapper.class);
+      updateMetrics(mapper, di);
+      mapper.create(di);
+    }
+    return di;
+  }
+  
   public DatasetImport getLast(Dataset d) {
     try (SqlSession session = factory.openSession(true)){
       Page p = new Page(0,1);
@@ -86,25 +105,41 @@ public class DatasetImportDao {
       session.getMapper(DatasetMapper.class).updateLastImport(di.getDatasetKey(), di.getAttempt());
     }
   }
-
-  public void updateMetrics(DatasetImportMapper mapper, DatasetImport di) {
+  
+  /**
+   * Generates new metrics, but does not persist them as an import record.
+   */
+  public DatasetImport generateMetrics(int datasetKey) {
+    DatasetImport di = new DatasetImport();
+    di.setDatasetKey(datasetKey);
+    try (SqlSession session = factory.openSession(true)) {
+      DatasetImportMapper mapper = session.getMapper(DatasetImportMapper.class);
+      updateMetrics(mapper, di);
+    }
+    return di;
+  }
+  
+  private void updateMetrics(DatasetImportMapper mapper, DatasetImport di) {
     final int key = di.getDatasetKey();
-
+  
+    di.setDescriptionCount(mapper.countDescription(key));
     di.setDistributionCount(mapper.countDistribution(key));
+    di.setMediaCount(mapper.countMedia(key));
     di.setNameCount(mapper.countName(key));
     di.setReferenceCount(mapper.countReference(key));
     di.setTaxonCount(mapper.countTaxon(key));
     di.setVerbatimCount(mapper.countVerbatim(key));
     di.setVernacularCount(mapper.countVernacular(key));
-
+  
     di.setDistributionsByGazetteerCount(DatasetImportDao.countMap(Gazetteer.class, mapper.countDistributionsByGazetteer(key)));
     di.setIssuesCount(DatasetImportDao.countMap(Issue.class, mapper.countIssues(key)));
+    di.setMediaByTypeCount(DatasetImportDao.countMap(MediaType.class, mapper.countMediaByType(key)));
     di.setNameRelationsByTypeCount(DatasetImportDao.countMap(NomRelType.class, mapper.countNameRelationsByType(key)));
     di.setNamesByOriginCount(DatasetImportDao.countMap(Origin.class, mapper.countNamesByOrigin(key)));
     di.setNamesByRankCount(countMap(DatasetImportDao::parseRank, mapper.countNamesByRank(key)));
-    di.setTaxaByRankCount(countMap(DatasetImportDao::parseRank, mapper.countTaxaByRank(key)));
     di.setNamesByStatusCount(DatasetImportDao.countMap(NomStatus.class, mapper.countNamesByStatus(key)));
     di.setNamesByTypeCount(DatasetImportDao.countMap(NameType.class, mapper.countNamesByType(key)));
+    di.setTaxaByRankCount(countMap(DatasetImportDao::parseRank, mapper.countTaxaByRank(key)));
     di.setUsagesByStatusCount(DatasetImportDao.countMap(TaxonomicStatus.class, mapper.countUsagesByStatus(key)));
     di.setVerbatimByTypeCount(countMap(DatasetImportDao::parseTerm, mapper.countVerbatimByType(key)));
     di.setVernacularsByLanguageCount(countMap(Language::fromIsoCode, mapper.countVernacularsByLanguage(key)));

@@ -62,15 +62,15 @@ public class TaxonDao {
     return sMapper.listByName(datasetKey, nameId);
   }
 
-  public Synonym getSynonym(int datasetKey, String id) {
-    if (id != null) {
-      List<Synonym> syns = sMapper.listByName(datasetKey, id);
-      if (syns.isEmpty()) {
-        return null;
-      } else if (syns.size() > 1) {
-        LOG.debug("Multiple synonyms found for nameID {}", id);
+  public Synonym getSynonym(int datasetKey, String nameId) {
+    if (nameId != null) {
+      List<Synonym> syns = getSynonyms(datasetKey, nameId);
+      if (!syns.isEmpty()) {
+        if (syns.size() > 1) {
+          LOG.debug("Multiple synonyms found for nameID {}", nameId);
+        }
+        return syns.get(0);
       }
-      return syns.get(0);
     }
     return null;
   }
