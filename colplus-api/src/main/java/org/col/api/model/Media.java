@@ -1,5 +1,6 @@
 package org.col.api.model;
 
+import java.net.URI;
 import java.time.LocalDate;
 import java.util.Objects;
 
@@ -11,14 +12,14 @@ public class Media implements Referenced, VerbatimEntity, IntKey {
   @JsonIgnore
   private Integer key;
   private Integer verbatimKey;
-  private String url;
+  private URI url;
   private MediaType type;
   private String format;
   private String title;
   private LocalDate created;
   private String creator;
   private License license;
-  private String link;
+  private URI link;
   private String referenceId;
   
   @Override
@@ -41,11 +42,11 @@ public class Media implements Referenced, VerbatimEntity, IntKey {
     this.verbatimKey = verbatimKey;
   }
   
-  public String getUrl() {
+  public URI getUrl() {
     return url;
   }
   
-  public void setUrl(String url) {
+  public void setUrl(URI url) {
     this.url = url;
   }
   
@@ -97,11 +98,11 @@ public class Media implements Referenced, VerbatimEntity, IntKey {
     this.license = license;
   }
   
-  public String getLink() {
+  public URI getLink() {
     return link;
   }
   
-  public void setLink(String link) {
+  public void setLink(URI link) {
     this.link = link;
   }
   

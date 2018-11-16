@@ -370,6 +370,8 @@ public enum Issue {
   
   DISTRIBUTION_GAZETEER_INVALID(Group.DISTRIBUTION, Level.ERROR),
   
+  CREATED_DATE_INVALID(Group.MEDIA, Level.ERROR),
+  
   //
   // REFERENCE ISSUES
   //
@@ -416,7 +418,9 @@ public enum Issue {
     DATA,
     NAME,
     TAXON,
+    DESCRIPTION,
     DISTRIBUTION,
+    MEDIA,
     VERNACULAR,
     REFERENCE
   }

@@ -1,10 +1,8 @@
 package org.col.admin.importer.coldp;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import com.google.common.collect.Lists;
 import org.col.admin.importer.InsertMetadata;
 import org.col.admin.importer.InterpreterBase;
 import org.col.admin.importer.neo.NeoDb;
@@ -16,7 +14,10 @@ import org.col.admin.importer.reference.ReferenceFactory;
 import org.col.api.datapackage.ColTerm;
 import org.col.api.model.*;
 import org.col.api.vocab.*;
-import org.col.parser.*;
+import org.col.parser.EnumNote;
+import org.col.parser.NomRelTypeParser;
+import org.col.parser.SafeParser;
+import org.col.parser.TaxonomicStatusParser;
 import org.gbif.dwc.terms.Term;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,11 +63,11 @@ public class ColdpInterpreter extends InterpreterBase {
       t.setOrigin(Origin.SOURCE);
       t.setDoubtful(false); //TODO: v.get(ColTerm.provisional)
       t.setAccordingTo(v.get(ColTerm.accordingTo));
-      t.setAccordingToDate(date(v, t, Issue.ACCORDING_TO_DATE_INVALID, ColTerm.accordingToDate));
+      t.setAccordingToDate(date(v, Issue.ACCORDING_TO_DATE_INVALID, ColTerm.accordingToDate));
       //TODO: ColTerm.accordingToDateID for ORCIDS
-      t.setDatasetUrl(uri(v, t, Issue.URL_INVALID, ColTerm.link));
-      t.setFossil(bool(v, t, Issue.IS_FOSSIL_INVALID, ColTerm.fossil));
-      t.setRecent(bool(v, t, Issue.IS_RECENT_INVALID, ColTerm.recent));
+      t.setDatasetUrl(uri(v, Issue.URL_INVALID, ColTerm.link));
+      t.setFossil(bool(v, Issue.IS_FOSSIL_INVALID, ColTerm.fossil));
+      t.setRecent(bool(v, Issue.IS_RECENT_INVALID, ColTerm.recent));
       t.setRemarks(v.get(ColTerm.remarks));
     
       // lifezones
@@ -139,51 +140,29 @@ public class ColdpInterpreter extends InterpreterBase {
   }
 
   List<Distribution> interpretDistribution(VerbatimRecord rec) {
-    // require location
-    if (rec.hasTerm(ColTerm.area)) {
-      Distribution d = new Distribution();
-
-      // which standard?
-      d.setGazetteer(parse(GazetteerParser.PARSER, rec.get(ColTerm.gazetteer))
-          .orElse(Gazetteer.TEXT, Issue.DISTRIBUTION_GAZETEER_INVALID, rec));
-
-      // TODO: try to split location into several distributions...
-      String loc = rec.get(ColTerm.area);
-      if (d.getGazetteer() == Gazetteer.TEXT) {
-        d.setArea(loc);
-      } else {
-        // only parse area if other than text
-        AreaParser.Area textArea = new AreaParser.Area(loc, Gazetteer.TEXT);
-        if (loc.indexOf(':') < 0) {
-          loc = d.getGazetteer().locationID(loc);
-        }
-        AreaParser.Area area = SafeParser.parse(AreaParser.PARSER, loc).orElse(textArea,
-            Issue.DISTRIBUTION_AREA_INVALID, rec);
-        d.setArea(area.area);
-        // check if we have contradicting extracted a gazetteer
-        if (area.standard != Gazetteer.TEXT && area.standard != d.getGazetteer()) {
-          LOG.info(
-              "Area standard {} found in area {} different from explicitly given standard {} for {}",
-              area.standard, area.area, d.getGazetteer(), rec);
-        }
-      }
-
-      // status
-      d.setStatus(parse(DistributionStatusParser.PARSER, rec.get(ColTerm.status))
-          .orElse(DistributionStatus.NATIVE, Issue.DISTRIBUTION_STATUS_INVALID, rec));
-      setReference(d, rec);
-      d.setVerbatimKey(rec.getKey());
-      return Lists.newArrayList(d);
-    }
-    return Collections.emptyList();
+    return super.interpretDistribution(rec, this::setReference,
+        ColTerm.area,
+        ColTerm.gazetteer,
+        ColTerm.status);
   }
   
   List<Description> interpretDescription(VerbatimRecord rec) {
-    return Collections.emptyList();
+    return interpretDescription(rec, this::setReference,
+        ColTerm.description,
+        ColTerm.category,
+        ColTerm.language);
   }
   
   List<Media> interpretMedia(VerbatimRecord rec) {
-    return Collections.emptyList();
+    return interpretMedia(rec, this::setReference,
+        ColTerm.type,
+        ColTerm.url,
+        ColTerm.link,
+        ColTerm.license,
+        ColTerm.creator,
+        ColTerm.created,
+        ColTerm.title,
+        ColTerm.format);
   }
 
   Optional<NeoName> interpretName(VerbatimRecord v) {

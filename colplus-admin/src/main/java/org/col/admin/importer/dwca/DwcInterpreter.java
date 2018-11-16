@@ -1,7 +1,6 @@
 package org.col.admin.importer.dwca;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -139,13 +138,23 @@ public class DwcInterpreter extends InterpreterBase {
   }
   
   List<Description> interpretDescription(VerbatimRecord rec) {
-    return Collections.emptyList();
+    return interpretDescription(rec, this::setReference,
+        DcTerm.description,
+        DcTerm.type,
+        DcTerm.language);
   }
   
   List<Media> interpretMedia(VerbatimRecord rec) {
-    return Collections.emptyList();
+    return interpretMedia(rec, this::setReference,
+        DcTerm.type,
+        DcTerm.identifier,
+        DcTerm.references,
+        DcTerm.license,
+        DcTerm.creator,
+        DcTerm.created,
+        DcTerm.title,
+        DcTerm.format);
   }
-  
   private Distribution createDistribution(String area, Gazetteer standard, VerbatimRecord rec) {
     Distribution d = new Distribution();
     d.setVerbatimKey(rec.getKey());
@@ -168,7 +177,7 @@ public class DwcInterpreter extends InterpreterBase {
     Taxon tax = u.getTaxon();
     // this can be a synonym at this stage which the class does not accept
     tax.setDoubtful(TaxonomicStatus.DOUBTFUL == status.val || status.val.isSynonym());
-    tax.setDatasetUrl(uri(v, u, Issue.URL_INVALID, DcTerm.references));
+    tax.setDatasetUrl(uri(v, Issue.URL_INVALID, DcTerm.references));
     tax.setFossil(null);
     tax.setRecent(null);
     // t.setLifezones();

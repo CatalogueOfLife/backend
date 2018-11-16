@@ -1,11 +1,9 @@
 package org.col.admin.importer.acef;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
 import org.col.admin.importer.InsertMetadata;
 import org.col.admin.importer.InterpreterBase;
 import org.col.admin.importer.NameValidator;
@@ -13,8 +11,13 @@ import org.col.admin.importer.neo.NeoDb;
 import org.col.admin.importer.neo.model.NeoUsage;
 import org.col.admin.importer.reference.ReferenceFactory;
 import org.col.api.model.*;
-import org.col.api.vocab.*;
-import org.col.parser.*;
+import org.col.api.vocab.Issue;
+import org.col.api.vocab.Origin;
+import org.col.api.vocab.TaxonomicStatus;
+import org.col.parser.EnumNote;
+import org.col.parser.RankParser;
+import org.col.parser.SafeParser;
+import org.col.parser.TaxonomicStatusParser;
 import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.dwc.terms.Term;
 import org.gbif.nameparser.api.Rank;
@@ -66,43 +69,10 @@ public class AcefInterpreter extends InterpreterBase {
   }
   
   List<Distribution> interpretDistribution(VerbatimRecord rec) {
-    // require location
-    if (rec.hasTerm(AcefTerm.DistributionElement)) {
-      Distribution d = new Distribution();
-      
-      // which standard?
-      d.setGazetteer(parse(GazetteerParser.PARSER, rec.get(AcefTerm.StandardInUse))
-          .orElse(Gazetteer.TEXT, Issue.DISTRIBUTION_GAZETEER_INVALID, rec));
-      
-      // TODO: try to split location into several distributions...
-      String loc = rec.get(AcefTerm.DistributionElement);
-      if (d.getGazetteer() == Gazetteer.TEXT) {
-        d.setArea(loc);
-      } else {
-        // only parse area if other than text
-        AreaParser.Area textArea = new AreaParser.Area(loc, Gazetteer.TEXT);
-        if (loc.indexOf(':') < 0) {
-          loc = d.getGazetteer().locationID(loc);
-        }
-        AreaParser.Area area = SafeParser.parse(AreaParser.PARSER, loc).orElse(textArea,
-            Issue.DISTRIBUTION_AREA_INVALID, rec);
-        d.setArea(area.area);
-        // check if we have contradicting extracted a gazetteer
-        if (area.standard != Gazetteer.TEXT && area.standard != d.getGazetteer()) {
-          LOG.info(
-              "Area standard {} found in area {} different from explicitly given standard {} for {}",
-              area.standard, area.area, d.getGazetteer(), rec);
-        }
-      }
-      
-      // status
-      d.setStatus(parse(DistributionStatusParser.PARSER, rec.get(AcefTerm.DistributionStatus))
-          .orElse(DistributionStatus.NATIVE, Issue.DISTRIBUTION_STATUS_INVALID, rec));
-      setReference(d, rec);
-      d.setVerbatimKey(rec.getKey());
-      return Lists.newArrayList(d);
-    }
-    return Collections.emptyList();
+    return super.interpretDistribution(rec, this::setReference,
+        AcefTerm.DistributionElement,
+        AcefTerm.StandardInUse,
+        AcefTerm.DistributionStatus);
   }
   
   private Optional<NeoUsage> interpretTaxon(Term idTerm, VerbatimRecord v, boolean synonym) {
