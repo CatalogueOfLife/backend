@@ -149,6 +149,7 @@ public class InterpreterBase {
     m.setLink( uri(rec, Issue.URL_INVALID, link));
     m.setType( SafeParser.parse(MediaTypeParser.PARSER, rec.get(type)).orNull() );
     m.setFormat(rec.get(format));
+    //TODO: validate or derive type from format
     m.setLicense( SafeParser.parse(LicenseParser.PARSER, rec.get(license)).orNull() );
     m.setCreator(rec.get(creator));
     m.setCreated( date(rec, Issue.CREATED_DATE_INVALID, created) );

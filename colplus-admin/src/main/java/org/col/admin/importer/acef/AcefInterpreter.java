@@ -106,10 +106,10 @@ public class AcefInterpreter extends InterpreterBase {
       t.setOrigin(Origin.SOURCE);
       t.setDoubtful(TaxonomicStatus.DOUBTFUL == status);
       t.setAccordingTo(v.get(AcefTerm.LTSSpecialist));
-      t.setAccordingToDate(date(v, t, Issue.ACCORDING_TO_DATE_INVALID, AcefTerm.LTSDate));
-      t.setDatasetUrl(uri(v, t, Issue.URL_INVALID, AcefTerm.InfraSpeciesURL, AcefTerm.SpeciesURL));
-      t.setFossil(bool(v, t, Issue.IS_FOSSIL_INVALID, AcefTerm.IsFossil, AcefTerm.HasPreHolocene));
-      t.setRecent(bool(v, t, Issue.IS_RECENT_INVALID, AcefTerm.IsRecent, AcefTerm.HasModern));
+      t.setAccordingToDate(date(v, Issue.ACCORDING_TO_DATE_INVALID, AcefTerm.LTSDate));
+      t.setDatasetUrl(uri(v, Issue.URL_INVALID, AcefTerm.InfraSpeciesURL, AcefTerm.SpeciesURL));
+      t.setFossil(bool(v, Issue.IS_FOSSIL_INVALID, AcefTerm.IsFossil, AcefTerm.HasPreHolocene));
+      t.setRecent(bool(v, Issue.IS_RECENT_INVALID, AcefTerm.IsRecent, AcefTerm.HasModern));
       t.setRemarks(v.get(AcefTerm.AdditionalData));
   
       // lifezones
