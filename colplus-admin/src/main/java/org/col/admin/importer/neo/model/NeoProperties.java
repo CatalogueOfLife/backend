@@ -9,7 +9,7 @@ import org.neo4j.graphdb.Node;
  * Any property we store in normalizer should be listed here to avoid overlaps or other confusion.
  */
 public class NeoProperties {
-  // properties used in NeoTaxon
+  // propLabel used in NeoTaxon
   public static final String RANK = "rank";
   public static final String SCIENTIFIC_NAME = "scientificName";
   public static final String AUTHORSHIP = "authorship";
@@ -50,7 +50,7 @@ public class NeoProperties {
   }
 
   /**
-   * Reads a ranked name instance purely from neo4j properties
+   * Reads a ranked name instance purely from neo4j propLabel
    */
   public static RankedName getRankedName(Node n) {
     return new RankedName(n,

@@ -250,7 +250,8 @@ public class CsvReader {
         }
         br.close();
 
-        if (lines.isEmpty()) {
+        if (lines.size() < 2) {
+          // first line MUST be a header row...
           LOG.warn("{} contains no data", PathUtils.getFilename(df));
 
         } else {

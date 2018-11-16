@@ -85,9 +85,9 @@ public class NameValidator {
   }
   
   /**
-   * Validates consistency of name properties adding issues to the name if found. 
+   * Validates consistency of name propLabel adding issues to the name if found.
    * This method checks if the given rank matches
-   * populated properties and available properties make sense together.
+   * populated propLabel and available propLabel make sense together.
    * @return a non null VerbatimRecord if any issue have been added
    */
   public static VerbatimRecord flagIssues(Name n, Supplier<VerbatimRecord> issueSupplier) {

@@ -20,6 +20,7 @@ import org.col.admin.importer.reference.ReferenceFactory;
 import org.col.api.exception.InvalidNameException;
 import org.col.api.model.*;
 import org.col.api.vocab.Issue;
+import org.col.api.vocab.Lifezone;
 import org.col.api.vocab.Origin;
 import org.col.common.date.FuzzyDate;
 import org.col.parser.*;
@@ -231,5 +232,16 @@ public class InterpreterBase {
       obj.setReferenceId(r.getId());
     }
   }
-
+  
+  protected void setLifezones(Taxon t, VerbatimRecord v, Term lifezone) {
+    String raw = v.get(lifezone);
+    if (raw != null) {
+      for (String lzv : MULTIVAL.split(raw)) {
+        Lifezone lz = parse(LifezoneParser.PARSER, lzv).orNull(Issue.LIFEZONE_INVALID, v);
+        if (lz != null) {
+          t.getLifezones().add(lz);
+        }
+      }
+    }
+  }
 }

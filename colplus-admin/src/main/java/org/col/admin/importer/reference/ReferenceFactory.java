@@ -67,8 +67,7 @@ public class ReferenceFactory {
    * @param details title of periodicals, volume number, and other common bibliographic details
    * @return
    */
-  public Reference fromACEF(String referenceID, String authors, String year, String title, String details,
-                            IssueContainer issues) {
+  public Reference fromACEF(String referenceID, String authors, String year, String title, String details, IssueContainer issues) {
     Reference ref = newReference(referenceID);
     ref.setYear(parseYear(year));
     if (!allEmpty(authors, year, title, details)) {
@@ -85,20 +84,24 @@ public class ReferenceFactory {
     }
     return ref;
   }
-
-  /**
-   * Very similar to fromACEF but optionally providing a full citation given as
-   * bibliographicCitation
-   * 
-   * @param identifier
-   * @param bibliographicCitation
-   * @param creator
-   * @param date
-   * @param title
-   * @param source
-   * @param issues
-   * @return
-   */
+  
+  public Reference fromCol(String id, String authors, String year, String title, String source, IssueContainer issues) {
+    return fromACEF(id, authors, year, title, source, issues);
+  }
+    
+    /**
+     * Very similar to fromACEF but optionally providing a full citation given as
+     * bibliographicCitation
+     *
+     * @param identifier
+     * @param bibliographicCitation
+     * @param creator
+     * @param date
+     * @param title
+     * @param source
+     * @param issues
+     * @return
+     */
   public Reference fromDC(String identifier, String bibliographicCitation, String creator,
       String date, String title, String source, IssueContainer issues) {
     Reference ref = find(identifier, bibliographicCitation);

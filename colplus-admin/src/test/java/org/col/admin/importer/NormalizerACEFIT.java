@@ -31,7 +31,7 @@ public class NormalizerACEFIT extends NormalizerITBase {
   public void acef0() throws Exception {
     normalize(0);
     try (Transaction tx = store.getNeo().beginTx()) {
-      NeoUsage t = byID("s7");
+      NeoUsage t = usageByID("s7");
       assertTrue(t.isSynonym());
       assertEquals("Astragalus nonexistus", t.usage.getName().getScientificName());
       assertEquals("DC.", t.usage.getName().authorshipComplete());
@@ -46,7 +46,7 @@ public class NormalizerACEFIT extends NormalizerITBase {
       // missing accepted
       assertEquals(0, store.accepted(t.node).size());
 
-      t = byID("s6");
+      t = usageByID("s6");
       assertTrue(t.isSynonym());
       assertEquals("Astragalus beersabeensis", t.usage.getName().getScientificName());
       assertEquals(Rank.SPECIES, t.usage.getName().getRank());
@@ -69,7 +69,7 @@ public class NormalizerACEFIT extends NormalizerITBase {
   public void acefSample() throws Exception {
     normalize(1);
     try (Transaction tx = store.getNeo().beginTx()) {
-      NeoUsage t = byID("14649");
+      NeoUsage t = usageByID("14649");
       assertEquals("Zapoteca formosa", t.usage.getName().getScientificName());
       assertEquals("(Kunth) H.M.Hern.", t.usage.getName().authorshipComplete());
       assertEquals(Rank.SPECIES, t.usage.getName().getRank());
@@ -105,7 +105,7 @@ public class NormalizerACEFIT extends NormalizerITBase {
   public void acef4NonUnique() throws Exception {
     normalize(4);
     try (Transaction tx = store.getNeo().beginTx()) {
-      NeoUsage t = byID("1");
+      NeoUsage t = usageByID("1");
       assertEquals("Inga vera", t.usage.getName().getScientificName());
       assertEquals("Willd.", t.usage.getName().authorshipComplete());
       assertEquals(Rank.SPECIES, t.usage.getName().getRank());
@@ -130,7 +130,7 @@ public class NormalizerACEFIT extends NormalizerITBase {
   public void acef6Misapplied() throws Exception {
     normalize(6);
     try (Transaction tx = store.getNeo().beginTx()) {
-      NeoUsage t = byID("MD1");
+      NeoUsage t = usageByID("MD1");
       assertEquals("Latrodectus tredecimguttatus (Rossi, 1790)", t.usage.getName().canonicalNameComplete());
 
       Set<String> nonMisappliedIds = Sets.newHashSet("s17", "s18");
@@ -156,14 +156,14 @@ public class NormalizerACEFIT extends NormalizerITBase {
   public void acef7Nulls() throws Exception {
     normalize(7);
     try (Transaction tx = store.getNeo().beginTx()) {
-      NeoUsage t = byID("CIP-S-902");
+      NeoUsage t = usageByID("CIP-S-902");
       assertEquals("Lutzomyia preclara", t.usage.getName().canonicalNameComplete());
 
-      t = byID("2");
+      t = usageByID("2");
       assertEquals("Latrodectus spec.", t.usage.getName().canonicalNameComplete());
       assertEquals("(Fabricius, 1775)", t.usage.getName().authorshipComplete().trim());
 
-      t = byID("3");
+      t = usageByID("3");
       assertEquals("Null bactus", t.usage.getName().canonicalNameComplete());
       assertTrue(store.getVerbatim(t.usage.getName().getVerbatimKey()).hasIssue(Issue.NULL_EPITHET));
     }
@@ -176,7 +176,7 @@ public class NormalizerACEFIT extends NormalizerITBase {
   public void acef14virus() throws Exception {
     normalize(14);
     try (Transaction tx = store.getNeo().beginTx()) {
-      NeoUsage t = byID("Vir-96");
+      NeoUsage t = usageByID("Vir-96");
       assertEquals("Phikmvlikevirus: Pseudomonas phage LKA1 ICTV", t.usage.getName().getScientificName());
     }
   }
@@ -189,7 +189,7 @@ public class NormalizerACEFIT extends NormalizerITBase {
   public void acef101() throws Exception {
     normalize(101);
     try (Transaction tx = store.getNeo().beginTx()) {
-      NeoUsage t = byID("Sys-2476");
+      NeoUsage t = usageByID("Sys-2476");
       assertNotNull(t);
       assertEquals("Chagasia maculata", t.usage.getName().getScientificName());
     }

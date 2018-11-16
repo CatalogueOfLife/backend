@@ -143,15 +143,7 @@ public class AcefInterpreter extends InterpreterBase {
       t.setRemarks(v.get(AcefTerm.AdditionalData));
   
       // lifezones
-      String raw = v.get(AcefTerm.LifeZone);
-      if (raw != null) {
-        for (String lzv : MULTIVAL.split(raw)) {
-          Lifezone lz = parse(LifezoneParser.PARSER, lzv).orNull(Issue.LIFEZONE_INVALID, v);
-          if (lz != null) {
-            t.getLifezones().add(lz);
-          }
-        }
-      }
+      setLifezones(t, v, AcefTerm.LifeZone);
   
       t.setSpeciesEstimate(null);
       t.setSpeciesEstimateReferenceId(null);

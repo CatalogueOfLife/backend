@@ -6,6 +6,8 @@ import com.google.common.collect.Maps;
 import org.col.admin.importer.neo.model.NeoNameRel;
 import org.col.admin.importer.neo.model.NeoProperties;
 import org.col.api.model.Name;
+import org.neo4j.graphdb.Label;
+import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.PropertyContainer;
 
 /**
@@ -55,9 +57,23 @@ public class NeoDbUtils {
       n.setProperty(property, value);
     }
   }
-
+  
+  static void setLabels(Node n, Label... labels ) {
+    for (Label l : n.getLabels()) {
+      n.removeLabel(l);
+    }
+    if (labels != null) {
+      for (Label l : labels) {
+        n.addLabel(l);
+      }
+    }
+  }
+  
   public static Map<String, Object> neo4jProps(Name name) {
-    Map<String, Object> props = Maps.newHashMap();
+    return neo4jProps(name, Maps.newHashMap());
+  }
+  
+  public static <T extends Map<String, Object>> T neo4jProps(Name name, T props) {
     putIfNotNull(props, NeoProperties.SCIENTIFIC_NAME, name.getScientificName());
     putIfNotNull(props, NeoProperties.AUTHORSHIP, name.authorshipComplete());
     putIfNotNull(props, NeoProperties.RANK, name.getRank());
@@ -65,7 +81,10 @@ public class NeoDbUtils {
   }
   
   public static Map<String, Object> neo4jProps(NeoNameRel rel) {
-    Map<String, Object> props = Maps.newHashMap();
+    return neo4jProps(rel, Maps.newHashMap());
+  }
+  
+  public static <T extends Map<String, Object>> T neo4jProps(NeoNameRel rel, T props) {
     putIfNotNull(props, NeoProperties.VERBATIM_KEY, rel.getVerbatimKey());
     putIfNotNull(props, NeoProperties.REF_ID, rel.getRefId());
     putIfNotNull(props, NeoProperties.NOTE, rel.getNote());

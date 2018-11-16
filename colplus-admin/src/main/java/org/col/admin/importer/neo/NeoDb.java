@@ -53,10 +53,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A persistence mechanism for storing core taxonomy & names properties and relations in an embedded
+ * A persistence mechanism for storing core taxonomy & names propLabel and relations in an embedded
  * Neo4j database, while keeping a large BLOB of information in a separate MapDB storage.
  * <p>
- * Neo4j does not perform well storing large properties in its node and it is recommended to keep
+ * Neo4j does not perform well storing large propLabel in its node and it is recommended to keep
  * large BLOBs or strings externally: https://neo4j.com/blog/dark-side-neo4j-worst-practices/
  * <p>
  * We use the Kryo library for a very performant binary
@@ -122,10 +122,14 @@ public class NeoDb implements ReferenceStore {
           .keySerializer(Serializer.STRING_ASCII)
           .valueSerializer(Serializer.STRING)
           .createOrOpen();
+      
       openNeo();
       
-      usages = new NeoCRUDStore<>(mapDb, "usages", NeoUsage.class, pool, idGen, this::addIssues, this::createNode, this::nodeById);
-      names = new NeoNameStore(mapDb, "names", NeoName.class, pool, idGen, this::addIssues, this::createNode, this::nodeById);
+      usages = new NeoCRUDStore<>(mapDb, "usages", NeoUsage.class, pool, idGen,
+          this::addIssues, this::createNode, this::updateNode, this::nodeById);
+      
+      names = new NeoNameStore(mapDb, "names", NeoName.class, pool, idGen,
+          this::addIssues, this::createNode, this::updateNode, this::nodeById);
   
   
     } catch (Exception e) {
@@ -386,19 +390,30 @@ public class NeoDb implements ReferenceStore {
     LOG.debug("Deleted {} from store with {} relations", n, counter);
   }
   
-  private Node createNode(Map<String,Object> properties, Label... labels) {
+  private Node createNode(PropLabel data) {
     Node n;
     if (isBatchMode()) {
-      // batch insert normalizer properties used during normalization
-      long nodeId = inserter.createNode(properties, labels);
+      // batch insert normalizer propLabel used during normalization
+      long nodeId = inserter.createNode(data, data.getLabels());
       n = new NodeMock(nodeId);
     } else {
-      // create neo4j node and update its properties
-      n = neo.createNode(labels);
-      NeoDbUtils.setProperties(n, properties);
+      // create neo4j node and update its propLabel
+      n = neo.createNode(data.getLabels());
+      NeoDbUtils.setProperties(n, data);
     }
     neoCounter.incrementAndGet();
     return n;
+  }
+  
+  public void updateNode(long nodeId, PropLabel data) {
+    if (isBatchMode()) {
+      inserter.setNodeLabels(nodeId, data.getLabels());
+      inserter.setNodeProperties(nodeId, data);
+    } else {
+      Node n = neo.getNodeById(nodeId);
+      NeoDbUtils.setProperties(n, data);
+      NeoDbUtils.setLabels(n, data.getLabels());
+    }
   }
   
   /**
@@ -424,7 +439,7 @@ public class NeoDb implements ReferenceStore {
 
   /**
    * Creates a new name relation linking the 2 given nodes.
-   * The note and publishedInKey values are stored as relation properties
+   * The note and publishedInKey values are stored as relation propLabel
    */
   public void createNameRel(Node n1, Node n2, NeoNameRel rel) {
     Map<String, Object> props = NeoDbUtils.neo4jProps(rel);
@@ -813,7 +828,7 @@ public class NeoDb implements ReferenceStore {
   }
 
   /**
-   * Creates a new taxon in neo and the name usage kvp using the source usages as a template for the classification properties.
+   * Creates a new taxon in neo and the name usage kvp using the source usages as a template for the classification propLabel.
    * Only copies the classification above genus and ignores genus and below!
    * A verbatim usage is created with just the parentNameUsage(ID) values so they can getUsage resolved into proper neo relations later.
    * Name and taxon ids are generated de novo.

@@ -74,6 +74,18 @@ public class DwcaInserter extends NeoInserter {
           (t, vn) -> t.vernacularNames.add(vn)
       );
   
+      insertTaxonEntities(reader, GbifTerm.Description,
+          inter::interpretDescription,
+          DwcaReader.DWCA_ID,
+          (t, d) -> t.descriptions.add(d)
+      );
+  
+      insertTaxonEntities(reader, GbifTerm.Multimedia,
+          inter::interpretMedia,
+          DwcaReader.DWCA_ID,
+          (t, d) -> t.media.add(d)
+      );
+
       insertTaxonEntities(reader, GbifTerm.Reference,
           inter::interpretReference,
           DwcaReader.DWCA_ID,

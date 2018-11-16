@@ -1,6 +1,7 @@
 package org.col.admin.importer.dwca;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -136,7 +137,15 @@ public class DwcInterpreter extends InterpreterBase {
         DwcTerm.countryCode, DwcTerm.country
     );
   }
-
+  
+  List<Description> interpretDescription(VerbatimRecord rec) {
+    return Collections.emptyList();
+  }
+  
+  List<Media> interpretMedia(VerbatimRecord rec) {
+    return Collections.emptyList();
+  }
+  
   private Distribution createDistribution(String area, Gazetteer standard, VerbatimRecord rec) {
     Distribution d = new Distribution();
     d.setVerbatimKey(rec.getKey());

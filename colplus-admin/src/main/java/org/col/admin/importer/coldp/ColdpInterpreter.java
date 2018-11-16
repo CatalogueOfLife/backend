@@ -17,7 +17,7 @@ import org.col.api.datapackage.ColTerm;
 import org.col.api.model.*;
 import org.col.api.vocab.*;
 import org.col.parser.*;
-import org.gbif.dwc.terms.AcefTerm;
+import org.gbif.dwc.terms.Term;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,38 +37,80 @@ public class ColdpInterpreter extends InterpreterBase {
   }
 
   Optional<Reference> interpretReference(VerbatimRecord rec) {
-    return Optional.of(refFactory.fromACEF(
-        rec.get(AcefTerm.ReferenceID),
-        rec.get(AcefTerm.Author),
-        rec.get(AcefTerm.Year),
-        rec.get(AcefTerm.Title),
-        rec.get(AcefTerm.Details),
+    return Optional.of(refFactory.fromCol(
+        rec.get(ColTerm.ID),
+        rec.get(ColTerm.author),
+        rec.get(ColTerm.year),
+        rec.get(ColTerm.title),
+        rec.get(ColTerm.source),
         rec
     ));
   }
   
-  Optional<NeoUsage> interpretSynonym(VerbatimRecord v) {
-    TaxonomicStatus status = parse(TaxonomicStatusParser.PARSER, v.get(ColTerm.status)).orElse(SYN_NOTE).val;
-    if (!status.isSynonym()) {
-      v.addIssue(Issue.TAXONOMIC_STATUS_INVALID);
-      // override status as we require some accepted status on Taxon and some synonym status for
-      status = TaxonomicStatus.SYNONYM;
-    }
+  Optional<NeoUsage> interpretTaxon(VerbatimRecord v) {
+    return findName(v, ColTerm.nameID).map(n -> {
+      
+      //TODO: make sure no TAXON label already exists!!!
+  
+      NeoUsage u = NeoUsage.createTaxon(Origin.SOURCE, false);
+      u.node = n.node;
+      u.setId(v.get(ColTerm.ID));
+      u.setVerbatimKey(v.getKey());
     
-    NeoName nn = store.names().objByID(v.get(ColTerm.nameID));
-    if (nn == null) {
+      // taxon
+      Taxon t = u.getTaxon();
+      t.setOrigin(Origin.SOURCE);
+      t.setDoubtful(false); //TODO: v.get(ColTerm.provisional)
+      t.setAccordingTo(v.get(ColTerm.accordingTo));
+      t.setAccordingToDate(date(v, t, Issue.ACCORDING_TO_DATE_INVALID, ColTerm.accordingToDate));
+      //TODO: ColTerm.accordingToDateID for ORCIDS
+      t.setDatasetUrl(uri(v, t, Issue.URL_INVALID, ColTerm.link));
+      t.setFossil(bool(v, t, Issue.IS_FOSSIL_INVALID, ColTerm.fossil));
+      t.setRecent(bool(v, t, Issue.IS_RECENT_INVALID, ColTerm.recent));
+      t.setRemarks(v.get(ColTerm.remarks));
+    
+      // lifezones
+      setLifezones(t, v, ColTerm.lifezone);
+    
+      t.setSpeciesEstimate(null);
+      t.setSpeciesEstimateReferenceId(null);
+    
+      // flat classification for any usage
+      u.classification = interpretClassification(v);
+    
+      return u;
+    });
+  }
+  
+  private Optional<NeoName> findName(VerbatimRecord v, Term nameId) {
+    NeoName n = store.names().objByID(v.get(nameId));
+    if (n == null) {
       v.addIssue(Issue.NAME_ID_INVALID);
+      v.addIssue(Issue.NOT_INTERPRETED);
       return Optional.empty();
     }
+    return Optional.of(n);
+  }
   
-    NeoUsage u = NeoUsage.createSynonym(Origin.SOURCE, nn.name, status);
-    u.setId(v.get(ColTerm.ID));
-    u.setVerbatimKey(v.getKey());
-
-    Synonym s = u.getSynonym();
-    s.setRemarks(v.get(ColTerm.remarks));
-    s.setAccordingTo(nn.accordingTo);
-    return Optional.of(u);
+  Optional<NeoUsage> interpretSynonym(VerbatimRecord v) {
+    return findName(v, ColTerm.nameID).map(n -> {
+      TaxonomicStatus status = parse(TaxonomicStatusParser.PARSER, v.get(ColTerm.status)).orElse(SYN_NOTE).val;
+      if (!status.isSynonym()) {
+        v.addIssue(Issue.TAXONOMIC_STATUS_INVALID);
+        // override status as we require some accepted status on Taxon and some synonym status for
+        status = TaxonomicStatus.SYNONYM;
+      }
+  
+      NeoUsage u = NeoUsage.createSynonym(Origin.SOURCE, status);
+      u.node = n.node;
+      u.setId(v.get(ColTerm.ID));
+      u.setVerbatimKey(v.getKey());
+  
+      Synonym s = u.getSynonym();
+      s.setRemarks(v.get(ColTerm.remarks));
+      s.setAccordingTo(n.accordingTo);
+      return u;
+    });
   }
   
   Optional<NeoNameRel> interpretNameRelations(VerbatimRecord rec) {
@@ -98,15 +140,15 @@ public class ColdpInterpreter extends InterpreterBase {
 
   List<Distribution> interpretDistribution(VerbatimRecord rec) {
     // require location
-    if (rec.hasTerm(AcefTerm.DistributionElement)) {
+    if (rec.hasTerm(ColTerm.area)) {
       Distribution d = new Distribution();
 
       // which standard?
-      d.setGazetteer(parse(GazetteerParser.PARSER, rec.get(AcefTerm.StandardInUse))
+      d.setGazetteer(parse(GazetteerParser.PARSER, rec.get(ColTerm.gazetteer))
           .orElse(Gazetteer.TEXT, Issue.DISTRIBUTION_GAZETEER_INVALID, rec));
 
       // TODO: try to split location into several distributions...
-      String loc = rec.get(AcefTerm.DistributionElement);
+      String loc = rec.get(ColTerm.area);
       if (d.getGazetteer() == Gazetteer.TEXT) {
         d.setArea(loc);
       } else {
@@ -127,7 +169,7 @@ public class ColdpInterpreter extends InterpreterBase {
       }
 
       // status
-      d.setStatus(parse(DistributionStatusParser.PARSER, rec.get(AcefTerm.DistributionStatus))
+      d.setStatus(parse(DistributionStatusParser.PARSER, rec.get(ColTerm.status))
           .orElse(DistributionStatus.NATIVE, Issue.DISTRIBUTION_STATUS_INVALID, rec));
       setReference(d, rec);
       d.setVerbatimKey(rec.getKey());
@@ -152,54 +194,16 @@ public class ColdpInterpreter extends InterpreterBase {
     return opt.map(NeoName::new);
   }
   
-  Optional<NeoUsage> interpretTaxon(VerbatimRecord v) {
-    NeoUsage u = NeoUsage.createTaxon(Origin.SOURCE, false);
-    u.setId(v.get(ColTerm.ID));
-    u.setVerbatimKey(v.getKey());
-
-    // taxon
-    Taxon t = u.getTaxon();
-    t.setOrigin(Origin.SOURCE);
-    t.setDoubtful(false); //TODO: v.get(ColTerm.provisional)
-    t.setAccordingTo(v.get(AcefTerm.LTSSpecialist));
-    t.setAccordingToDate(date(v, t, Issue.ACCORDING_TO_DATE_INVALID, AcefTerm.LTSDate));
-    t.setDatasetUrl(uri(v, t, Issue.URL_INVALID, AcefTerm.InfraSpeciesURL, AcefTerm.SpeciesURL));
-    t.setFossil(bool(v, t, Issue.IS_FOSSIL_INVALID, AcefTerm.IsFossil, AcefTerm.HasPreHolocene));
-    t.setRecent(bool(v, t, Issue.IS_RECENT_INVALID, AcefTerm.IsRecent, AcefTerm.HasModern));
-    t.setRemarks(v.get(AcefTerm.AdditionalData));
-  
-    // lifezones
-    String raw = v.get(AcefTerm.LifeZone);
-    if (raw != null) {
-      for (String lzv : MULTIVAL.split(raw)) {
-        Lifezone lz = parse(LifezoneParser.PARSER, lzv).orNull(Issue.LIFEZONE_INVALID, v);
-        if (lz != null) {
-          t.getLifezones().add(lz);
-        }
-      }
-    }
-  
-    t.setSpeciesEstimate(null);
-    t.setSpeciesEstimateReferenceId(null);
-    
-    // flat classification for any usage
-    u.classification = interpretClassification(v, false);
-    
-    return Optional.of(u);
-  }
-  
-  private Classification interpretClassification(VerbatimRecord v, boolean isSynonym) {
+  private Classification interpretClassification(VerbatimRecord v) {
     Classification cl = new Classification();
-    cl.setKingdom(v.get(AcefTerm.Kingdom));
-    cl.setPhylum(v.get(AcefTerm.Phylum));
-    cl.setClass_(v.get(AcefTerm.Class));
-    cl.setOrder(v.get(AcefTerm.Order));
-    cl.setSuperfamily(v.get(AcefTerm.Superfamily));
-    cl.setFamily(v.get(AcefTerm.Family));
-    if (!isSynonym) {
-      cl.setGenus(v.get(AcefTerm.Genus));
-      cl.setSubgenus(v.get(AcefTerm.SubGenusName));
-    }
+    cl.setKingdom(v.get(ColTerm.kingdom));
+    cl.setPhylum(v.get(ColTerm.phylum));
+    cl.setClass_(v.get(ColTerm.class_));
+    cl.setOrder(v.get(ColTerm.order));
+    cl.setSuperfamily(v.get(ColTerm.superfamily));
+    cl.setFamily(v.get(ColTerm.family));
+    cl.setGenus(v.get(ColTerm.genus));
+    cl.setSubgenus(v.get(ColTerm.subgenus));
     return cl;
   }
   

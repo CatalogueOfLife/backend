@@ -1,6 +1,5 @@
 package org.col.admin.importer.neo.model;
 
-import java.util.Map;
 import java.util.Objects;
 
 import org.col.admin.importer.neo.NeoDbUtils;
@@ -70,13 +69,8 @@ public class NeoName implements NeoNode, ID, VerbatimEntity {
   }
   
   @Override
-  public Label[] getLabels() {
-    return LABELS;
-  }
-  
-  @Override
-  public Map<String, Object> properties() {
-    return NeoDbUtils.neo4jProps(name);
+  public PropLabel propLabel() {
+    return NeoDbUtils.neo4jProps(name, new PropLabel(LABELS));
   }
   
   @Override

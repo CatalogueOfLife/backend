@@ -1,6 +1,8 @@
 package org.col.admin.importer.neo.model;
 
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
@@ -84,15 +86,10 @@ public class NeoUsage implements NeoNode, ID, VerbatimEntity {
   public void setNode(Node node) {
     this.node = node;
   }
-  
+ 
   @Override
-  public Label[] getLabels() {
-    return isSynonym() ? SYN_LABELS : TAX_LABELS;
-  }
-  
-  @Override
-  public Map<String, Object> properties() {
-    return Collections.EMPTY_MAP;
+  public PropLabel propLabel() {
+    return new PropLabel(isSynonym() ? SYN_LABELS : TAX_LABELS);
   }
   
   public Taxon getTaxon() {

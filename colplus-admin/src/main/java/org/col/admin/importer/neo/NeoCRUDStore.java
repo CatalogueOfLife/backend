@@ -2,18 +2,18 @@ package org.col.admin.importer.neo;
 
 import java.util.Map;
 import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.function.LongFunction;
 import java.util.stream.Stream;
 
 import com.esotericsoftware.kryo.pool.KryoPool;
 import com.google.common.base.Preconditions;
-import org.apache.commons.lang3.ArrayUtils;
 import org.col.admin.importer.IdGenerator;
 import org.col.admin.importer.neo.model.NeoNode;
 import org.col.admin.importer.neo.model.NodeMock;
-import org.col.api.model.VerbatimEntity;
+import org.col.admin.importer.neo.model.PropLabel;
 import org.col.api.model.ID;
+import org.col.api.model.VerbatimEntity;
 import org.col.api.vocab.Issue;
 import org.col.common.mapdb.MapDbObjectSerializer;
 import org.mapdb.DB;
@@ -33,13 +33,15 @@ public class NeoCRUDStore<T extends ID & VerbatimEntity & NeoNode> {
   private final IdGenerator idGen;
   private final String objName;
   private final BiConsumer<VerbatimEntity, Issue> addIssueFunc;
-  private final BiFunction<Map<String,Object>, Label[], Node> createNode;
+  private final Function<PropLabel, Node> createNode;
+  private final BiConsumer<Long, PropLabel> createWithNode;
   protected final LongFunction<Node> nodeById;
   
   NeoCRUDStore( DB mapDb, String mapDbName, Class<T> clazz, KryoPool pool,
                 IdGenerator idGen,
                 BiConsumer<VerbatimEntity, Issue> addIssueFunc,
-                BiFunction<Map<String,Object>, Label[], Node> createNode,
+                Function<PropLabel, Node> createNode,
+                BiConsumer<Long, PropLabel> createWithNode,
                 LongFunction<Node> nodeById) {
     objName = clazz.getSimpleName();
     objects = mapDb.hashMap(mapDbName)
@@ -54,6 +56,7 @@ public class NeoCRUDStore<T extends ID & VerbatimEntity & NeoNode> {
     this.idGen = idGen;
     this.addIssueFunc = addIssueFunc;
     this.createNode = createNode;
+    this.createWithNode = createWithNode;
     this.nodeById = nodeById;
   }
   
@@ -110,7 +113,15 @@ public class NeoCRUDStore<T extends ID & VerbatimEntity & NeoNode> {
   }
   
   /**
-   * Creates a new neo4j node if none exists yet applying extra properties and labels if given.
+   * Creates a new usage, but attached to an already existing neo4j node
+   */
+  public Node createWithNode(T obj) {
+    Preconditions.checkNotNull(obj.getNode(), "createWithNode requires a neo4j node");
+    return createOrRegister(obj, null);
+  }
+  
+  /**
+   * Creates a new neo4j node if none exists yet applying extra propLabel and labels if given.
    * If a neo4j node already exists only the ID is checked and the object registered in this CRUD store
    * @return the created node id or null if it could not be created (currently only with duplicate IDs).
    */
@@ -126,21 +137,23 @@ public class NeoCRUDStore<T extends ID & VerbatimEntity & NeoNode> {
     if (duplicateID(obj)) {
       return null;
     }
-  
-  
+    
+    final PropLabel props = obj.propLabel();
+    if (extraProps != null) {
+      props.putAll(extraProps);
+    }
+    if (extraLabels != null) {
+      props.addLabels(extraLabels);
+    }
+
     // create a new neo4j node if not yet existing
     if (obj.getNode() == null) {
-      // update neo4j properties either via batch mode or classic
-      Map<String,Object> props = obj.properties();
-      if (extraProps != null) {
-        if (props.isEmpty()) {
-          props = extraProps;
-        } else {
-          props.putAll(extraProps);
-        }
-      }
-      Label[] labels = extraLabels == null ? obj.getLabels() : ArrayUtils.addAll(obj.getLabels(), extraLabels);
-      obj.setNode( createNode.apply(props, labels) );
+      // update neo4j propLabel either via batch mode or classic
+      obj.setNode( createNode.apply(props) );
+    
+    } else {
+      // update existing node labels and props with object data
+      createWithNode.accept(obj.getNode().getId(), props);
     }
     
     objects.put(obj.getNode().getId(), obj);
@@ -171,7 +184,7 @@ public class NeoCRUDStore<T extends ID & VerbatimEntity & NeoNode> {
   public void update(T obj) {
     Preconditions.checkNotNull(obj.getNode());
     if (!(obj.getNode() instanceof NodeMock)) {
-      Map<String,Object> props = obj.properties();
+      Map<String,Object> props = obj.propLabel();
       if (props != null && !props.isEmpty()) {
         NeoDbUtils.setProperties(obj.getNode(), props);
       }

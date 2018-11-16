@@ -5,7 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.function.LongFunction;
 import java.util.stream.Collectors;
 
@@ -14,6 +14,7 @@ import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.ArrayUtils;
 import org.col.admin.importer.IdGenerator;
 import org.col.admin.importer.neo.model.NeoName;
+import org.col.admin.importer.neo.model.PropLabel;
 import org.col.api.model.VerbatimEntity;
 import org.col.api.vocab.Issue;
 import org.mapdb.DB;
@@ -28,9 +29,10 @@ public class NeoNameStore extends NeoCRUDStore<NeoName> {
   
   public NeoNameStore(DB mapDb, String mapDbName, Class<NeoName> clazz, KryoPool pool, IdGenerator idGen,
                       BiConsumer<VerbatimEntity, Issue> addIssueFunc,
-                      BiFunction<Map<String, Object>, Label[], Node> createNode,
+                      Function<PropLabel, Node> createNode,
+                      BiConsumer<Long, PropLabel> createWithNode,
                       LongFunction<Node> nodeById) {
-    super(mapDb, mapDbName, clazz, pool, idGen, addIssueFunc, createNode, nodeById);
+    super(mapDb, mapDbName, clazz, pool, idGen, addIssueFunc, createNode, createWithNode, nodeById);
     names = mapDb.hashMap(mapDbName+"-names")
         .keySerializer(Serializer.STRING)
         .valueSerializer(Serializer.LONG_ARRAY)

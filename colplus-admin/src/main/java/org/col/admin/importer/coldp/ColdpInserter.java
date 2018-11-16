@@ -74,13 +74,13 @@ public class ColdpInserter extends NeoInserter {
       // taxa
       insertEntities(reader, ColTerm.Taxon,
           inter::interpretTaxon,
-          store.usages()::create
+          store.usages()::createWithNode
       );
       
       // synonyms
       insertEntities(reader, ColTerm.Synonym,
           inter::interpretSynonym,
-          store.usages()::create
+          store.usages()::createWithNode
       );
   
       // supplementary

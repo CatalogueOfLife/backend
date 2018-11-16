@@ -141,7 +141,11 @@ abstract class NormalizerITBase {
     return u;
   }
   
-  public NeoUsage byID(String id) {
+  public NeoUsage usageByNameID(String id) {
+    return usageWithName(store.names().nodeByID(id));
+  }
+
+  public NeoUsage usageByID(String id) {
     return usageWithName(store.usages().nodeByID(id));
   }
   
