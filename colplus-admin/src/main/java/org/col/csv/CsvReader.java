@@ -166,7 +166,7 @@ public class CsvReader {
       name = termPrefix + ":" + name;
     }
     try {
-      return Optional.of(VocabularyUtils.TF.findTerm(name, isClassTerm));
+      return Optional.of(VocabularyUtils.findTerm(name, isClassTerm));
     } catch (IllegalArgumentException e) {
       return Optional.empty();
     }

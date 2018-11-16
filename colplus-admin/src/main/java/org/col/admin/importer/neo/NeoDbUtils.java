@@ -95,7 +95,7 @@ public class NeoDbUtils {
   
   public static <T extends Map<String, Object>> T neo4jProps(NeoNameRel rel, T props) {
     putIfNotNull(props, NeoProperties.VERBATIM_KEY, rel.getVerbatimKey());
-    putIfNotNull(props, NeoProperties.REF_ID, rel.getRefId());
+    putIfNotNull(props, NeoProperties.REF_ID, rel.getReferenceId());
     putIfNotNull(props, NeoProperties.NOTE, rel.getNote());
     return props;
   }

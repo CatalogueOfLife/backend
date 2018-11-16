@@ -77,7 +77,7 @@ public class DwcInterpreter extends InterpreterBase {
       rel.setNote(rec.get(ColDwcTerm.relationRemarks));
       if (rec.hasTerm(ColDwcTerm.publishedIn)) {
         Reference ref = refFactory.fromDWC(rec.get(ColDwcTerm.publishedInID), rec.get(ColDwcTerm.publishedIn), null, rec);
-        rel.setRefId(ref.getId());
+        rel.setReferenceId(ref.getId());
       }
       return Optional.of(rel);
     }

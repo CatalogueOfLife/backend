@@ -168,7 +168,7 @@ abstract class NormalizerITBase {
     File dotFile = new File("graphs/debugtree.dot");
     Files.createParentDirs(dotFile);
     Writer writer = new FileWriter(dotFile);
-    PrinterUtils.printTree(store.getNeo(), writer, GraphFormat.DOT);
+    PrinterUtils.dumpDotFile(store.getNeo(), writer);
     writer.close();
     System.out.println("Wrote graph to " + dotFile.getAbsolutePath());
   }

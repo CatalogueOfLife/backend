@@ -116,14 +116,11 @@ public class ColdpInterpreter extends InterpreterBase {
   
   Optional<NeoNameRel> interpretNameRelations(VerbatimRecord rec) {
     NeoNameRel rel = new NeoNameRel();
-    SafeParser<NomRelType> type = SafeParser.parse(NomRelTypeParser.PARSER, rec.get(ColDwcTerm.relationType));
+    SafeParser<NomRelType> type = SafeParser.parse(NomRelTypeParser.PARSER, rec.get(ColTerm.type));
     if (type.isPresent()) {
       rel.setType(RelType.from(type.get()));
-      rel.setNote(rec.get(ColDwcTerm.relationRemarks));
-      if (rec.hasTerm(ColDwcTerm.publishedIn)) {
-        Reference ref = refFactory.fromDWC(rec.get(ColDwcTerm.publishedInID), rec.get(ColDwcTerm.publishedIn), null, rec);
-        rel.setRefId(ref.getId());
-      }
+      rel.setNote(rec.get(ColTerm.remarks));
+      setReference(rel, rec);
       return Optional.of(rel);
     }
     return Optional.empty();
