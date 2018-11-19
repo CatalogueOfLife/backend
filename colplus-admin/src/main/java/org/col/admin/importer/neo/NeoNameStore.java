@@ -1,5 +1,11 @@
 package org.col.admin.importer.neo;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import com.esotericsoftware.kryo.pool.KryoPool;
 import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.ArrayUtils;
@@ -8,12 +14,6 @@ import org.col.admin.importer.neo.model.NeoName;
 import org.mapdb.DB;
 import org.mapdb.Serializer;
 import org.neo4j.graphdb.Node;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 public class NeoNameStore extends NeoCRUDStore<NeoName> {
   
@@ -29,7 +29,7 @@ public class NeoNameStore extends NeoCRUDStore<NeoName> {
   }
   
   /**
-   * @return the matching nodes with the scientificName
+   * @return the matching name nodes with the scientificName
    */
   public List<Node> nodesByName(String scientificName) {
     if (names.containsKey(scientificName)) {

@@ -1,5 +1,17 @@
 package org.col.admin.importer.neo;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import javax.annotation.Nullable;
+
 import com.esotericsoftware.kryo.pool.KryoPool;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.UnmodifiableIterator;
@@ -37,21 +49,6 @@ import org.neo4j.unsafe.batchinsert.BatchInserter;
 import org.neo4j.unsafe.batchinsert.BatchInserters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nullable;
-import java.io.File;
-import java.io.IOException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * A persistence mechanism for storing core taxonomy & names propLabel and relations in an embedded
@@ -211,8 +208,9 @@ public class NeoDb implements ReferenceStore {
   
   public NeoUsage usageWithName(Node n) {
     NeoUsage u = usages().objByNode(n);
-    NeoName nn = names().objByNode(n);
+    NeoName nn = nameByUsage(n);
     u.usage.setName(nn.name);
+    u.nameNode = nn.node;
     return u;
   }
   
@@ -246,7 +244,6 @@ public class NeoDb implements ReferenceStore {
   public List<Node> taxaByScientificName(String scientificName, Rank rank, boolean inclUnranked) {
     List<Node> names = names().nodesByName(scientificName);
     names.removeIf(n -> {
-      if (!n.hasLabel(Labels.TAXON)) return true;
       Rank r = NeoProperties.getRank(n, Rank.UNRANKED);
       if (inclUnranked) {
         return !r.equals(rank) && r != Rank.UNRANKED;
@@ -254,7 +251,12 @@ public class NeoDb implements ReferenceStore {
         return !r.equals(rank);
       }
     });
-    return names;
+  
+    List<Node> taxa = new ArrayList<>();
+    for (Node n : names) {
+      taxa.addAll(usageNodesByName(n));
+    }
+    return taxa;
   }
 
   /**
@@ -447,6 +449,17 @@ public class NeoDb implements ReferenceStore {
   }
   
   /**
+   * Updates a node by adding properties and/or labels
+   */
+  void createRel(Node node1, Node node2, RelationshipType type) {
+      if (isBatchMode()) {
+        inserter.createRelationship(node1.getId(), node2.getId(), type, null);
+      } else {
+        node1.createRelationshipTo(node2, type);
+      }
+  }
+  
+  /**
    * @return a node which is a dummy proxy only with just an id while we are in batch mode.
    */
   Node nodeById(long nodeId) {
@@ -619,16 +632,23 @@ public class NeoDb implements ReferenceStore {
    */
   private void updateTaxonStoreWithRelations() {
     try (Transaction tx = getNeo().beginTx()) {
-      for (Node n : getNeo().getAllNodes()) {
+      for (Node n : Iterators.loop(getNeo().findNodes(Labels.TAXON))) {
         NeoUsage u = usages().objByNode(n);
-        if (u.node.hasLabel(Labels.SYNONYM) && !u.isSynonym()) {
-          u.convertToSynonym(TaxonomicStatus.SYNONYM);
-
-        } else if (u.node.hasLabel(Labels.TAXON) && !u.node.hasLabel(Labels.ROOT)){
+        if (u.node.hasLabel(Labels.TAXON) && !u.node.hasLabel(Labels.ROOT)){
           // parent
           Node p = getSingleRelated(u.node, RelType.PARENT_OF, Direction.INCOMING);
           Taxon pt = usages().objByNode(p).getTaxon();
           u.getTaxon().setParentId(pt.getId());
+        }
+        // store the updated object
+        usages().update(u);
+      }
+      tx.success();
+  
+      for (Node n : Iterators.loop(getNeo().findNodes(Labels.SYNONYM))) {
+        NeoUsage u = usages().objByNode(n);
+        if (u.node.hasLabel(Labels.SYNONYM) && !u.isSynonym()) {
+          u.convertToSynonym(TaxonomicStatus.SYNONYM);
         }
         // store the updated object
         usages().update(u);
@@ -647,14 +667,14 @@ public class NeoDb implements ReferenceStore {
     try (Transaction tx = neo.beginTx()) {
       // first homotypic synonym rels
       for (Node syn : Iterators.loop(getNeo().findNodes(Labels.SYNONYM))) {
-        NeoName tsyn = names().objByNode(syn);
+        NeoName tsyn = nameByUsage(syn);
         if (tsyn.homotypic) {
           Relationship r = syn.getSingleRelationship(RelType.SYNONYM_OF, Direction.OUTGOING);
           if(r == null) {
             addIssues(tsyn, Issue.ACCEPTED_NAME_MISSING);
             continue;
           }
-          NeoName acc = names().objByNode(r.getEndNode());
+          NeoName acc = nameByUsage(r.getEndNode());
           String homoId;
           if (acc.name.getHomotypicNameId() == null ) {
             homoId = acc.name.getId();
@@ -672,7 +692,7 @@ public class NeoDb implements ReferenceStore {
 
       // now name relations, reuse keys if existing
       counter = 0;
-      for (Node n : getNeo().getAllNodes()) {
+      for (Node n : Iterators.loop(getNeo().findNodes(Labels.NAME))) {
         // check if this node has a homotypic group already in which case we can skip it
         NeoName start = this.names().objByNode(n);
         if (start.name.getHomotypicNameId() != null) {
@@ -851,12 +871,32 @@ public class NeoDb implements ReferenceStore {
   /**
    * Get the name object for a usage via its HasName relation.
    */
-  public NeoName name(Node usage) {
+  public NeoName nameByUsage(final Node usage) {
     return names().objByNode(
             usage.getSingleRelationship(RelType.HAS_NAME, Direction.OUTGOING).getOtherNode(usage)
     );
   }
-
+  
+  /**
+   * Get the name object for a usage via its HasName relation.
+   */
+  public List<NeoUsage> usagesByName(final Node nameNode) {
+    return Iterables.stream(nameNode.getRelationships(RelType.HAS_NAME, Direction.INCOMING))
+        .map(rel -> usages().objByNode(rel.getOtherNode(nameNode)))
+        .collect(Collectors.toList());
+  }
+  
+  /**
+   * Get the name object for a usage via its HasName relation.
+   */
+  public List<Node> usageNodesByName(final Node nameNode) {
+    List<Node> usages = new ArrayList<>();
+    nameNode.getRelationships(RelType.HAS_NAME, Direction.INCOMING).forEach(
+        un -> usages.add(un.getOtherNode(nameNode))
+    );
+    return usages;
+  }
+  
   /**
    * List all accepted taxa of a potentially prop parte synonym
    */

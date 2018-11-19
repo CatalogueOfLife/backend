@@ -27,7 +27,7 @@ import static java.util.Arrays.asList;
 public class EmbeddedColPg {
   private static final Logger LOG = LoggerFactory.getLogger(EmbeddedColPg.class);
 	
-	private static final String VERSION = "11.0-1";
+	private static final String VERSION = "10.6-1"; //"11.0-1" exists for OSX, but not for Linux yet !!!;
 	private static final List<String> DEFAULT_ADD_PARAMS = asList(
 			"-E", "SQL_ASCII",
 			"--locale=C",

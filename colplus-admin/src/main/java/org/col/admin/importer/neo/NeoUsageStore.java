@@ -19,7 +19,7 @@ public class NeoUsageStore extends NeoCRUDStore<NeoUsage> {
     Preconditions.checkNotNull(obj.nameNode, "Usage requires an existing name node");
     Node nu = super.create(obj);
     if (nu != null) {
-      nu.createRelationshipTo(obj.nameNode, RelType.HAS_NAME);
+      neoDb.createRel(nu, obj.nameNode, RelType.HAS_NAME);
     }
     return nu;
   }
