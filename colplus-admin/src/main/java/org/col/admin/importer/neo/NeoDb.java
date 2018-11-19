@@ -1,20 +1,5 @@
 package org.col.admin.importer.neo;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import javax.annotation.Nullable;
-
 import com.esotericsoftware.kryo.pool.KryoPool;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.UnmodifiableIterator;
@@ -53,6 +38,21 @@ import org.neo4j.unsafe.batchinsert.BatchInserters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
+import java.io.File;
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 /**
  * A persistence mechanism for storing core taxonomy & names propLabel and relations in an embedded
  * Neo4j database, while keeping a large BLOB of information in a separate MapDB storage.
@@ -84,7 +84,7 @@ public class NeoDb implements ReferenceStore {
   public final int batchSize;
   public final int batchTimeout;
   private final NeoNameStore names;
-  private final NeoCRUDStore<NeoUsage> usages;
+  private final NeoUsageStore usages;
 
   private final String idGenPrefix = ".neodb.";
   private IdGenerator idGen = new IdGenerator(idGenPrefix);
@@ -126,11 +126,9 @@ public class NeoDb implements ReferenceStore {
       
       openNeo();
       
-      usages = new NeoCRUDStore<>(mapDb, "usages", NeoUsage.class, pool, idGen,
-          this::addIssues, this::createNode, this::updateNode, this::nodeById);
+      usages = new NeoUsageStore(mapDb, "usages", pool, idGen, this);
       
-      names = new NeoNameStore(mapDb, "names", NeoName.class, pool, idGen,
-          this::addIssues, this::createNode, this::updateNode, this::nodeById);
+      names = new NeoNameStore(mapDb, "names", pool, idGen, this);
   
   
     } catch (Exception e) {
@@ -351,16 +349,17 @@ public class NeoDb implements ReferenceStore {
   }
   
   /**
-   * Creates a single neo4j node with both a NeoName and NeoUsage sharing the same neo4j node.
+   * Creates both a name and a usage neo4j node.
+   * The name node is returned while the usage node is set on the NeoUsage object.
    * The name instance is taken from the usage object which is removed from the usage.
-   * @return the created node id or null if it could not be created
+   * @return the created name node or null if it could not be created
    */
   public Node createNameAndUsage(NeoUsage u) {
     Preconditions.checkArgument(u.getNode() == null, "NeoUsage already has a neo4j node");
+    Preconditions.checkArgument(u.nameNode == null, "NeoUsage already has a neo4j name node");
     Preconditions.checkNotNull(u.usage.getName(), "NeoUsage with name required");
     
-    // first create the name
-    // also create a neoname with the same id, origin and verbatim key if missing
+    // first create the name in a new node
     NeoName nn = new NeoName(u.usage.getName());
     if (nn.getId() == null) {
       nn.setId(u.getId());
@@ -376,16 +375,16 @@ public class NeoDb implements ReferenceStore {
       }
     }
     nn.homotypic = u.homotypic;
-    Node n = names.create(nn);
+    u.nameNode = names.create(nn);
   
-    if (n != null) {
-      // remove name from usage & create it also with the existing name node
-      u.node = n;
+    if (u.nameNode != null) {
+      // remove name from usage & create it which results in a new node on the usage
       u.usage.setName(null);
-      return usages.createWithNode(u);
+      usages.create(u);
+    } else {
+      LOG.debug("Skip usage {} as no name node was created for {}", u.getId(), nn.name.canonicalNameComplete());
     }
-    LOG.debug("Skip usage {} as no name node was created for {}", u.getId(), nn.name.canonicalNameComplete());
-    return null;
+    return u.nameNode;
   }
   
   /**
@@ -395,6 +394,10 @@ public class NeoDb implements ReferenceStore {
   public void remove(Node n) {
     names().remove(n);
     usages().remove(n);
+    removeNodeAndRels(n);
+  }
+
+  void removeNodeAndRels(Node n) {
     int counter = 0;
     for (Relationship rel : n.getRelationships()) {
       rel.delete();
@@ -403,8 +406,8 @@ public class NeoDb implements ReferenceStore {
     n.delete();
     LOG.debug("Deleted {} from store with {} relations", n, counter);
   }
-  
-  private Node createNode(PropLabel data) {
+
+  Node createNode(PropLabel data) {
     Node n;
     if (isBatchMode()) {
       // batch insert normalizer propLabel used during normalization
@@ -422,7 +425,7 @@ public class NeoDb implements ReferenceStore {
   /**
    * Updates a node by adding properties and/or labels
    */
-  public void updateNode(long nodeId, PropLabel data) {
+  void updateNode(long nodeId, PropLabel data) {
     if (!data.isEmpty()) {
       if (isBatchMode()) {
         if (data.getLabels() != null) {
@@ -446,7 +449,7 @@ public class NeoDb implements ReferenceStore {
   /**
    * @return a node which is a dummy proxy only with just an id while we are in batch mode.
    */
-  private Node nodeById(long nodeId) {
+  Node nodeById(long nodeId) {
     return isBatchMode() ? new NodeMock(nodeId) : neo.getNodeById(nodeId);
   }
   
@@ -843,6 +846,15 @@ public class NeoDb implements ReferenceStore {
       }
     }
     return synRel;
+  }
+
+  /**
+   * Get the name object for a usage via its HasName relation.
+   */
+  public NeoName name(Node usage) {
+    return names().objByNode(
+            usage.getSingleRelationship(RelType.HAS_NAME, Direction.OUTGOING).getOtherNode(usage)
+    );
   }
 
   /**

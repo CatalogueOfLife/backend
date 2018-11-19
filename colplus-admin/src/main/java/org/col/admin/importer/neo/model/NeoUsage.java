@@ -1,9 +1,5 @@
 package org.col.admin.importer.neo.model;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -12,6 +8,10 @@ import org.col.api.vocab.Origin;
 import org.col.api.vocab.TaxonomicStatus;
 import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
+
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * Simple wrapper to hold a normalizer node together with all data for a record
@@ -27,6 +27,8 @@ public class NeoUsage implements NeoNode, ID, VerbatimEntity {
   private static final Label[] SYN_LABELS = new Label[]{Labels.SYNONYM};
 
   public Node node;
+  // the neo4j name node, related via HAS_NAME
+  public Node nameNode;
   // either a taxon or a synonym - this can change during normalisation!
   public NameUsage usage;
   public boolean homotypic = false;

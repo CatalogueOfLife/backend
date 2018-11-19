@@ -1,11 +1,5 @@
 package org.col.admin.importer.neo;
 
-import java.util.Map;
-import java.util.function.BiConsumer;
-import java.util.function.Function;
-import java.util.function.LongFunction;
-import java.util.stream.Stream;
-
 import com.esotericsoftware.kryo.pool.KryoPool;
 import com.google.common.base.Preconditions;
 import org.col.admin.importer.IdGenerator;
@@ -22,6 +16,9 @@ import org.neo4j.graphdb.Node;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Map;
+import java.util.stream.Stream;
+
 public class NeoCRUDStore<T extends ID & VerbatimEntity & NeoNode> {
   private static final Logger LOG = LoggerFactory.getLogger(NeoCRUDStore.class);
   // nodeId -> obj
@@ -31,17 +28,10 @@ public class NeoCRUDStore<T extends ID & VerbatimEntity & NeoNode> {
   private int duplicateCounter = 0;
   private final IdGenerator idGen;
   private final String objName;
-  private final BiConsumer<VerbatimEntity, Issue> addIssueFunc;
-  private final Function<PropLabel, Node> createNode;
-  private final BiConsumer<Long, PropLabel> createWithNode;
-  protected final LongFunction<Node> nodeById;
-  
-  NeoCRUDStore( DB mapDb, String mapDbName, Class<T> clazz, KryoPool pool,
-                IdGenerator idGen,
-                BiConsumer<VerbatimEntity, Issue> addIssueFunc,
-                Function<PropLabel, Node> createNode,
-                BiConsumer<Long, PropLabel> createWithNode,
-                LongFunction<Node> nodeById) {
+  protected final NeoDb neoDb;
+
+  NeoCRUDStore( DB mapDb, String mapDbName, Class<T> clazz, KryoPool pool, NeoDb neoDb, IdGenerator idGen) {
+    this.neoDb = neoDb;
     objName = clazz.getSimpleName();
     objects = mapDb.hashMap(mapDbName)
         .keySerializer(Serializer.LONG)
@@ -53,10 +43,6 @@ public class NeoCRUDStore<T extends ID & VerbatimEntity & NeoNode> {
         .valueSerializer(Serializer.LONG)
         .createOrOpen();
     this.idGen = idGen;
-    this.addIssueFunc = addIssueFunc;
-    this.createNode = createNode;
-    this.createWithNode = createWithNode;
-    this.nodeById = nodeById;
   }
   
   public T objByNode(Node n) {
@@ -79,7 +65,7 @@ public class NeoCRUDStore<T extends ID & VerbatimEntity & NeoNode> {
 
   public Node nodeByID(String id) {
     Long nodeId = ids.getOrDefault(id, null);
-    return nodeId == null ? null : nodeById.apply(nodeId);
+    return nodeId == null ? null : neoDb.nodeById(nodeId);
   }
   
   /**
@@ -104,27 +90,12 @@ public class NeoCRUDStore<T extends ID & VerbatimEntity & NeoNode> {
   }
 
   /**
-   * @return the created node id or null if it could not be created
+   * Creates a new neo4j node and adds the object to the internal lookups.
+   * Properties and labels are added, the ID is checked and the object registered in this CRUD store
+   * @return the created node id or null if it could not be created (currently only with duplicate IDs).
    */
   public Node create(T obj) {
     Preconditions.checkArgument(obj.getNode() == null, "Object already has a neo4j node");
-    return createOrRegister(obj);
-  }
-  
-  /**
-   * Creates a new usage, but attached to an already existing neo4j node
-   */
-  public Node createWithNode(T obj) {
-    Preconditions.checkNotNull(obj.getNode(), "createWithNode requires a neo4j node");
-    return createOrRegister(obj);
-  }
-  
-  /**
-   * Creates a new neo4j node if none exists yet applying extra propLabel and labels if given.
-   * If a neo4j node already exists new properties and labels are added, the ID is checked and the object registered in this CRUD store
-   * @return the created node id or null if it could not be created (currently only with duplicate IDs).
-   */
-  Node createOrRegister(T obj) {
     // create missing ids, sharing the same id between name & taxon
     if (obj.getId() == null) {
       obj.setId(idGen.next());
@@ -141,11 +112,11 @@ public class NeoCRUDStore<T extends ID & VerbatimEntity & NeoNode> {
     // create a new neo4j node if not yet existing
     if (obj.getNode() == null) {
       // update neo4j propLabel either via batch mode or classic
-      obj.setNode( createNode.apply(props) );
+      obj.setNode( neoDb.createNode(props) );
     
     } else {
       // update existing node labels and props with object data
-      createWithNode.accept(obj.getNode().getId(), props);
+      neoDb.updateNode(obj.getNode().getId(), props);
     }
     
     objects.put(obj.getNode().getId(), obj);
@@ -161,9 +132,9 @@ public class NeoCRUDStore<T extends ID & VerbatimEntity & NeoNode> {
     if (ids.containsKey(obj.getId())) {
       LOG.info("Duplicate {}ID {}", objName, obj.getId());
       duplicateCounter++;
-      addIssueFunc.accept(obj, Issue.ID_NOT_UNIQUE);
+      neoDb.addIssues(obj, Issue.ID_NOT_UNIQUE);
       T obj2 = objByNode(nodeByID(obj.getId()));
-      addIssueFunc.accept(obj2, Issue.ID_NOT_UNIQUE);
+      neoDb.addIssues(obj2, Issue.ID_NOT_UNIQUE);
       return true;
     }
     return false;
@@ -187,11 +158,12 @@ public class NeoCRUDStore<T extends ID & VerbatimEntity & NeoNode> {
   /**
    * Removes the neo4j node with all its relations and all entities stored under this node like NeoTaxon.
    */
-  T remove(Node n) {
+  public T remove(Node n) {
     T obj = objects.remove(n.getId());
     if (obj != null) {
       ids.remove(obj.getId());
     }
+    neoDb.removeNodeAndRels(n);
     return obj;
   }
   
