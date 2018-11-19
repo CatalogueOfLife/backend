@@ -6,19 +6,16 @@ import java.util.List;
 
 import org.col.api.search.NameSearchRequest.SortBy;
 
-import static org.col.api.search.NameSearchRequest.SortBy.NAME;
-import static org.col.api.search.NameSearchRequest.SortBy.NATIVE;
-
 public class SortBuilder {
 
   public static SortBuilder create(SortBy sortBy) {
-    if (sortBy == null || sortBy == NATIVE) {
-      return SB_NATIVE;
+    if (sortBy == SortBy.TAXONOMIC) {
+      return SB_TAXONOMIC;
     }
-    if (sortBy == NAME) {
+    if (sortBy == SortBy.NAME) {
       return SB_NAME;
     }
-    return SB_TAXONOMIC;
+    return SB_NATIVE;
   }
 
   /**
@@ -29,8 +26,8 @@ public class SortBuilder {
   private static final SortBuilder SB_NAME = new SortBuilder("scientificName");
   private static final SortBuilder SB_TAXONOMIC = new SortBuilder("rank").and("scientificName");
 
-  // Each element is either a string (the sort field) or a single-entry hash map with key being the
-  // sort field and value the sort options.
+  // Each element is either a string (the sort field) or a single-entry hash map with the key being the
+  // sort field and the value being the sort options.
   private final List<Object> fields = new ArrayList<>();
 
   public SortBuilder(String field) {

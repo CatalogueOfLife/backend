@@ -2,6 +2,9 @@ package org.col.es.query;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 
+/**
+ * Basically just the value you are matching your documents against, plus an extra option to boost matching documents.
+ */
 public class MatchValue {
   
   public static enum Operator {
