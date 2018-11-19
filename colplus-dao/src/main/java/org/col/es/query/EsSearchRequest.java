@@ -11,11 +11,7 @@ public class EsSearchRequest {
 
   private Integer size;
   private Integer from;
-  /*
-   * Each element will be either a simple String (being the field to sort on) or a Map<String, SortOptions> with one entry: the field to
-   * sort on as the key, and the sort options as the value.
-   */
-  private List<Object> sort;
+  private List<SortField> sort;
   private Query query;
   private Map<String, Aggregation> aggs;
 
@@ -42,12 +38,12 @@ public class EsSearchRequest {
     this.from = from;
   }
 
-  public void setSortBuilder(SortBuilder sort) {
-    this.sort = sort.build();
+  public List<SortField> getSort() {
+    return sort;
   }
 
-  public List<Object> getSort() {
-    return sort;
+  public void setSort(List<SortField> sort) {
+    this.sort = sort;
   }
 
   public Query getQuery() {

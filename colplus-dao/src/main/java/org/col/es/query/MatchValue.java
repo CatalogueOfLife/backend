@@ -6,46 +6,45 @@ import com.fasterxml.jackson.annotation.JsonValue;
  * Basically just the value you are matching your documents against, plus an extra option to boost matching documents.
  */
 public class MatchValue {
-  
+
   public static enum Operator {
-    AND,
-    OR;
-    
+    AND, OR;
+
     @JsonValue
     public String toString() {
       return name();
     }
   }
-  
+
   // This is actually just the search string
   private final String query;
   private final Float boost;
   private final Operator operator;
-  
+
   public MatchValue(String query) {
     this(query, null);
   }
-  
+
   public MatchValue(String query, Float boost) {
     this(query, boost, Operator.AND);
   }
-  
+
   public MatchValue(String query, Float boost, Operator operator) {
     this.query = query;
     this.boost = boost;
     this.operator = operator;
   }
-  
+
   String getQuery() {
     return query;
   }
-  
+
   Float getBoost() {
     return boost;
   }
-  
+
   Operator getOperator() {
     return operator;
   }
-  
+
 }

@@ -9,7 +9,6 @@ import org.col.es.query.BoolQuery;
 import org.col.es.query.ConstantScoreQuery;
 import org.col.es.query.EsSearchRequest;
 import org.col.es.query.Query;
-import org.col.es.query.SortBuilder;
 
 /**
  * Translates a CoL NameSearchRequest into an actual Elasticsearch query. Main class of this package.
@@ -29,7 +28,7 @@ public class NameSearchRequestTranslator {
     EsSearchRequest es = new EsSearchRequest();
     es.setFrom(page.getOffset());
     es.setSize(page.getLimit());
-    es.setSortBuilder(SortBuilder.create(request.getSortBy()));
+    es.setSort(new SortByTranslator(request).translate());
     Optional<Query> query1 = new NameSearchParamsTranslator(request).translate();
     Optional<Query> query2 = new QTranslator(request).translate();
     Query query = null;
