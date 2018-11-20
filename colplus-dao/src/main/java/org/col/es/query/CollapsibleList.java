@@ -1,4 +1,4 @@
-package org.col.es.util;
+package org.col.es.query;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -7,9 +7,9 @@ import java.util.Collection;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 /**
- * An extension of ArrayList specifically aimed at accomodating the Elasticsearch Query DSL. Single-element arrays can be written without
- * using array notation (square brackets). You can still use array notation for single-element arrays, but it makes the query harder to
- * read.
+ * An extension of ArrayList solely aimed at reflecting the Elasticsearch Query DSL. The Query DSL allows you to write single-element arrays
+ * without using array notation (square brackets). You can still use array notation for single-element arrays, but it makes the query harder
+ * to read.
  */
 public class CollapsibleList<E> extends ArrayList<E> {
 
@@ -30,14 +30,14 @@ public class CollapsibleList<E> extends ArrayList<E> {
   }
 
   @JsonValue
-  public Object jsonValue() {
+  public Object collapse() {
     switch (size()) {
       case 0:
         return null;
       case 1:
         return get(0);
       default:
-        return stream().toArray();
+        return new ArrayList<>(this);
     }
   }
 

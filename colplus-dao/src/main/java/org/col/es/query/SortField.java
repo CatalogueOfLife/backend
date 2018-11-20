@@ -1,15 +1,33 @@
 package org.col.es.query;
 
-import org.col.es.util.CollapsibleTuple;
+import java.util.Collections;
 
-public class SortField extends CollapsibleTuple<String, SortOptions> {
+import com.fasterxml.jackson.annotation.JsonValue;
+
+import static org.col.es.query.SortOptions.Order.ASC;
+import static org.col.es.query.SortOptions.Order.DESC;
+
+public class SortField {
+
+  final String field;
+  final SortOptions options;
 
   public SortField(String field) {
-    super(field);
+    this(field, null);
+  }
+
+  public SortField(String field, boolean ascending) {
+    this(field, new SortOptions(ascending ? ASC : DESC));
   }
 
   public SortField(String field, SortOptions options) {
-    super(field, options);
+    this.field = field;
+    this.options = options;
+  }
+
+  @JsonValue
+  public Object jsonValue() {
+    return options == null ? field : Collections.singletonMap(field, options);
   }
 
 }

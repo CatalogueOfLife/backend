@@ -29,16 +29,16 @@ import static org.col.es.EsConfig.NAME_USAGE_BASE;;
 public class NameUsageSearchService {
 
   private static final Logger LOG = LoggerFactory.getLogger(NameUsageSearchService.class);
-  private static final ObjectReader RESPONSE_READER = EsModule.MAPPER.readerFor(new TypeReference<SearchResponse<EsNameUsage>>() {});
-  private static final ObjectWriter RESPONSE_WRITER =
-      EsModule.MAPPER.writerFor(new TypeReference<SearchResponse<EsNameUsage>>() {}).withDefaultPrettyPrinter();
 
   private final RestClient client;
-
+  private final ObjectReader responseReader;
+  private final ObjectWriter responseWriter;
   private final SearchResponseTransfer transfer;
 
   public NameUsageSearchService(RestClient client) {
     this.client = client;
+    this.responseReader = getResponseReader();
+    this.responseWriter = getResponseWriter();
     this.transfer = new SearchResponseTransfer();
   }
 
@@ -47,13 +47,18 @@ public class NameUsageSearchService {
   }
 
   @VisibleForTesting
-  ResultPage<NameUsageWrapper<NameUsage>> search(String indexName, NameSearchRequest query, Page page) throws InvalidQueryException {
+  ResultPage<NameUsageWrapper<NameUsage>> search(String index, NameSearchRequest query, Page page) throws InvalidQueryException {
     NameSearchRequestTranslator translator = new NameSearchRequestTranslator(query, page);
     EsSearchRequest esQuery = translator.translate();
+    return search(index, esQuery, page);
+  }
+
+  @VisibleForTesting
+  ResultPage<NameUsageWrapper<NameUsage>> search(String index, EsSearchRequest esQuery, Page page) {
     if (LOG.isDebugEnabled()) {
       LOG.debug("Executing query: " + writeQuery(esQuery, true));
     }
-    Request httpRequest = new Request("GET", getUrl(indexName));
+    Request httpRequest = new Request("GET", getUrl(index));
     httpRequest.setJsonEntity(writeQuery(esQuery, false));
     Response httpResponse = EsUtil.executeRequest(client, httpRequest);
     SearchResponse<EsNameUsage> response = readResponse(httpResponse);
@@ -74,16 +79,24 @@ public class NameUsageSearchService {
     }
   }
 
-  private static SearchResponse<EsNameUsage> readResponse(Response response) {
+  private SearchResponse<EsNameUsage> readResponse(Response response) {
     try {
-      SearchResponse<EsNameUsage> r = RESPONSE_READER.readValue(response.getEntity().getContent());
+      SearchResponse<EsNameUsage> r = responseReader.readValue(response.getEntity().getContent());
       if (LOG.isDebugEnabled()) {
-        LOG.debug("Receiving Response: " + RESPONSE_WRITER.writeValueAsString(r));
+        LOG.debug("Receiving Response: " + responseWriter.writeValueAsString(r));
       }
       return r;
     } catch (UnsupportedOperationException | IOException e) {
       throw new EsException(e);
     }
+  }
+
+  private static ObjectReader getResponseReader() {
+    return EsModule.MAPPER.readerFor(new TypeReference<SearchResponse<EsNameUsage>>() {});
+  }
+
+  private static ObjectWriter getResponseWriter() {
+    return EsModule.MAPPER.writerFor(new TypeReference<SearchResponse<EsNameUsage>>() {}).withDefaultPrettyPrinter();
   }
 
   private static String getUrl(String indexName) {

@@ -27,6 +27,9 @@ import org.col.api.search.NameUsageWrapper;
 import org.col.api.vocab.Issue;
 import org.col.api.vocab.TaxonomicStatus;
 import org.col.es.model.EsNameUsage;
+import org.col.es.query.EsSearchRequest;
+import org.col.es.query.SortField;
+import org.col.es.translate.NameSearchRequestTranslator;
 import org.elasticsearch.client.RestClient;
 import org.gbif.nameparser.api.Rank;
 import org.junit.AfterClass;
@@ -106,6 +109,60 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     assertEquals(BareName.class, result.getResult().get(0).getUsage().getClass());
     assertEquals(Taxon.class, result.getResult().get(1).getUsage().getClass());
     assertEquals(Synonym.class, result.getResult().get(2).getUsage().getClass());
+  }
+
+  @Test
+  public void testSortDescending() throws InvalidQueryException {
+    NameUsageTransfer transfer = new NameUsageTransfer();
+
+    EsSearchRequest esr = new NameSearchRequestTranslator(new NameSearchRequest(), new Page()).translate();
+    esr.setSort(Arrays.asList(new SortField("scientificName", false), new SortField("rank", false)));
+
+    // Create name usage in the order we expect them to come out, then shuffle.
+    Name n = new Name();
+    n.setScientificName("C");
+    n.setRank(Rank.SPECIES);
+    Taxon t = new Taxon();
+    t.setName(n);
+    final NameUsageWrapper<Taxon> nuw1 = new NameUsageWrapper<>(t);
+
+    n = new Name();
+    n.setScientificName("B");
+    n.setRank(Rank.GENUS);
+    t = new Taxon();
+    t.setName(n);
+    NameUsageWrapper<Taxon> nuw2 = new NameUsageWrapper<>(t);
+
+    n = new Name();
+    n.setScientificName("B");
+    n.setRank(Rank.PHYLUM);
+    t = new Taxon();
+    t.setName(n);
+    NameUsageWrapper<Taxon> nuw3 = new NameUsageWrapper<>(t);
+
+    n = new Name();
+    n.setScientificName("A");
+    n.setRank(Rank.INFRASPECIFIC_NAME);
+    t = new Taxon();
+    t.setName(n);
+    NameUsageWrapper<Taxon> nuw4 = new NameUsageWrapper<>(t);
+
+    List<NameUsageWrapper<Taxon>> all = Arrays.asList(nuw1, nuw2, nuw3, nuw4);
+
+    List<NameUsageWrapper<Taxon>> shuffled = new ArrayList<>(all);
+    Collections.shuffle(shuffled);
+    shuffled.stream().map(t1 -> {
+      try {
+        return transfer.toEsDocument(t1);
+      } catch (JsonProcessingException e) {
+        throw new RuntimeException();
+      }
+    }).forEach(x -> insert(client, indexName, x));
+    refreshIndex(client, indexName);
+
+    ResultPage<NameUsageWrapper<NameUsage>> result = svc.search(indexName, esr, new Page());
+
+    assertEquals(all, result.getResult());
   }
 
   @Test
@@ -782,7 +839,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     NameUsageWrapper<NameUsage> nuw6 = new NameUsageWrapper<>(t);
     nuw6.setVernacularNames(Arrays.asList(vn));
     insert(client, indexName, transfer.toEsDocument(nuw6));
-    
+
     refreshIndex(client, indexName);
 
     List<NameUsageWrapper<NameUsage>> expected = Arrays.asList(nuw1, nuw2);
