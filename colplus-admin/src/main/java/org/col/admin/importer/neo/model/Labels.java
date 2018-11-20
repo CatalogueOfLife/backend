@@ -10,6 +10,11 @@ public enum Labels implements Label {
    * Applied to nodes that contain a name
    */
   NAME,
+  
+  /**
+   * Additional super label for Taxon or Synonym
+   */
+  USAGE,
 
   /**
    * Accepted taxa only

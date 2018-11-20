@@ -10,13 +10,13 @@ import org.neo4j.graphdb.traversal.Evaluation;
 import org.neo4j.graphdb.traversal.Evaluator;
 
 /**
- * Includes only paths with taxon end nodes that have a rank equal or above the threshold given.
+ * Includes only paths with taxon end nodes that have a related name node with a rank equal or above the threshold given.
  */
-public class RankEvaluator implements Evaluator {
+public class UsageRankEvaluator implements Evaluator {
 
   private final @Nullable Rank threshold;
 
-  public RankEvaluator(Rank threshold) {
+  public UsageRankEvaluator(Rank threshold) {
     this.threshold = threshold;
   }
 
@@ -30,7 +30,7 @@ public class RankEvaluator implements Evaluator {
    */
   public boolean evaluateNode(Node n) {
     if (threshold == null) return true;
-    Rank rank = Rank.values()[(int) n.getProperty(NeoProperties.RANK, Rank.UNRANKED.ordinal())];
+    Rank rank = NeoProperties.getRank(NeoProperties.getNameNode(n), Rank.UNRANKED);
     return !threshold.higherThan(rank);
   }
 }

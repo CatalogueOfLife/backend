@@ -1,5 +1,9 @@
 package org.col.admin.importer.neo.model;
 
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -8,10 +12,6 @@ import org.col.api.vocab.Origin;
 import org.col.api.vocab.TaxonomicStatus;
 import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
-
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
 
 /**
  * Simple wrapper to hold a normalizer node together with all data for a record
@@ -23,8 +23,8 @@ import java.util.Set;
  * The modified flag can be used to (manually) track if an instance has changed and needs to be persisted.
  */
 public class NeoUsage implements NeoNode, ID, VerbatimEntity {
-  private static final Label[] TAX_LABELS = new Label[]{Labels.TAXON};
-  private static final Label[] SYN_LABELS = new Label[]{Labels.SYNONYM};
+  private static final Label[] TAX_LABELS = new Label[]{Labels.USAGE, Labels.TAXON};
+  private static final Label[] SYN_LABELS = new Label[]{Labels.USAGE, Labels.SYNONYM};
 
   public Node node;
   // the neo4j name node, related via HAS_NAME
@@ -47,6 +47,7 @@ public class NeoUsage implements NeoNode, ID, VerbatimEntity {
   public static NeoUsage createTaxon(Origin origin, boolean doubtful) {
     return createTaxon(origin, null, doubtful);
   }
+  
   public static NeoUsage createTaxon(Origin origin, Name name, boolean doubtful) {
     NeoUsage u = new NeoUsage();
     Taxon tax = new Taxon();
@@ -88,7 +89,12 @@ public class NeoUsage implements NeoNode, ID, VerbatimEntity {
   public void setNode(Node node) {
     this.node = node;
   }
- 
+  
+  public NeoName getNeoName() {
+    Preconditions.checkNotNull(nameNode, "Name node missing");
+    return new NeoName(nameNode, usage.getName());
+  }
+  
   @Override
   public PropLabel propLabel() {
     return new PropLabel(isSynonym() ? SYN_LABELS : TAX_LABELS);

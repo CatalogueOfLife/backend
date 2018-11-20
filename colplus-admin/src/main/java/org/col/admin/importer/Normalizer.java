@@ -184,9 +184,9 @@ public class Normalizer implements Callable<Boolean> {
     store.process(Labels.TAXON, store.batchSize, new NodeBatchProcessor() {
       @Override
       public void process(Node n) {
-        RankedName rn = NeoProperties.getRankedName(n);
-        if (rn.rank.isSpeciesOrBelow()) {
-          NeoName sp = store.names().objByNode(n);
+        RankedUsage ru = NeoProperties.getRankedUsage(n);
+        if (ru.rank.isSpeciesOrBelow()) {
+          NeoName sp = store.names().objByNode(ru.nameNode);
           Node gn = Traversals.parentWithRankOf(sp.node, Rank.GENUS);
           if (gn != null) {
             NeoName g = store.names().objByNode(gn);
@@ -318,10 +318,10 @@ public class Normalizer implements Callable<Boolean> {
     try (Transaction tx = store.getNeo().beginTx()) {
       store.usages().all().forEach(u -> {
         if (u.isSynonym()) {
+          Synonym syn = u.getSynonym();
           // getUsage a real neo4j node (store.allUsages() only populates a dummy with an id)
           Node n = store.getNeo().getNodeById(u.node.getId());
-          Name name = store.names().objByNode(n).name;
-          Synonym syn = u.getSynonym();
+          Name name = store.names().objByNode(NeoProperties.getNameNode(n)).name;
           boolean ambigous = n.getDegree(RelType.SYNONYM_OF, Direction.OUTGOING) > 1;
           boolean misapplied = MisappliedNameMatcher.isMisappliedName(new NameAccordingTo(name, syn.getAccordingTo()));
           TaxonomicStatus status = syn.getStatus();
@@ -370,14 +370,14 @@ public class Normalizer implements Callable<Boolean> {
           ) {
             // getUsage a real neo4j node (store.allUsages() only populates a dummy with an id)
             Node n = store.getNeo().getNodeById(u.node.getId());
-            for (RankedName rn : store.accepted(n)) {
-              NeoUsage acc = store.usages().objByNode(rn.node);
+            Traversals.ACCEPTED.traverse(n).nodes().forEach( accNode -> {
+              NeoUsage acc = store.usages().objByNode(accNode);
               acc.distributions.addAll(u.distributions);
               acc.vernacularNames.addAll(u.vernacularNames);
               acc.bibliography.addAll(u.bibliography);
               store.usages().update(acc);
-            }
-
+            });
+  
             u.distributions.clear();
             u.vernacularNames.clear();
             u.bibliography.clear();
@@ -456,7 +456,7 @@ public class Normalizer implements Callable<Boolean> {
       @Override
       public void process(Node n) {
         // the highest current parent of n
-        RankedName highest = findHighestParent(n);
+        RankedUsage highest = findHighestParent(n);
         // only need to apply classification if highest exists and is not already a kingdom, the denormed classification cannot add to it anymore!
         if (highest != null && highest.rank != Rank.KINGDOM) {
           NeoUsage t = store.usages().objByNode(n);
@@ -473,15 +473,15 @@ public class Normalizer implements Callable<Boolean> {
     });
   }
 
-  private RankedName findHighestParent(Node n) {
+  private RankedUsage findHighestParent(Node n) {
     // the highest current parent of n
-    RankedName highest = null;
+    RankedUsage highest = null;
     if (meta.isParentNameMapped()) {
       // verify if we already have a classification, that it ends with a known rank
       Node p = Iterables.lastOrNull(Traversals.PARENTS.traverse(n).nodes());
-      highest = p == null ? null : NeoProperties.getRankedName(p);
+      highest = p == null ? null : NeoProperties.getRankedUsage(p);
       if (highest != null
-          && !highest.node.equals(n)
+          && !highest.usageNode.equals(n)
           && !highest.rank.notOtherOrUnranked()
       ) {
         LOG.debug("Node {} already has a classification which ends in an uncomparable rank.", n.getId());
@@ -491,35 +491,35 @@ public class Normalizer implements Callable<Boolean> {
     }
     if (highest == null) {
       // otherwise use this node
-      highest = NeoProperties.getRankedName(n);
+      highest = NeoProperties.getRankedUsage(n);
     }
     return highest;
   }
 
   /**
-   * Applies the classification lc to the given RankedName taxon
+   * Applies the classification lc to the given RankedUsage taxon
    * @param taxon
    * @param cl
    */
-  private void applyClassification(RankedName taxon, Classification cl) {
+  private void applyClassification(RankedUsage taxon, Classification cl) {
     // first modify classification to only keep those ranks we want to apply!
     // exclude lowest rank from classification to be applied if this taxon is rankless and has the same name
     if (taxon.rank == null || taxon.rank.isUncomparable()) {
       Rank lowest = cl.getLowestExistingRank();
       if (lowest != null && cl.getByRank(lowest).equalsIgnoreCase(taxon.name)) {
         cl.setByRank(lowest, null);
-        // apply the classification rank to unranked taxon
-        updateRank(taxon.node, lowest);
-        taxon = NeoProperties.getRankedName(taxon.node);
+        // apply the classification rank to unranked taxon and reload immutable taxon instance
+        updateRank(taxon.nameNode, lowest);
+        taxon = NeoProperties.getRankedUsage(taxon.usageNode);
       }
     }
     // ignore same rank from classification if accepted
-    if (!taxon.node.hasLabel(Labels.SYNONYM) && taxon.rank != null) {
+    if (taxon.usageNode.hasLabel(Labels.TAXON) && taxon.rank != null) {
       cl.setByRank(taxon.rank, null);
     }
     // ignore genus and below for synonyms
     // http://dev.gbif.org/issues/browse/POR-2992
-    if (taxon.node.hasLabel(Labels.SYNONYM)) {
+    if (taxon.usageNode.hasLabel(Labels.SYNONYM)) {
       cl.setGenus(null);
       cl.setSubgenus(null);
     }
@@ -534,7 +534,7 @@ public class Normalizer implements Callable<Boolean> {
       if ((taxon.rank == null || !taxon.rank.higherThan(hr)) && cl.getByRank(hr) != null) {
         // test for existing usage with that name & rank (allowing also unranked names)
         boolean found = false;
-        for (Node n : store.taxaByScientificName(cl.getByRank(hr), hr, true)) {
+        for (Node n : store.usagesByName(cl.getByRank(hr), hr, true)) {
           if (parent == null) {
             // make sure node does also not have a higher linnean rank parent
             Node p = Iterables.firstOrNull(Traversals.CLASSIFICATION.traverse(n).nodes());
@@ -551,7 +551,7 @@ public class Normalizer implements Callable<Boolean> {
             if ((p != null && p.equals(parent)) || (p2 != null && p2.equals(parent))) {
               found = true;
             } else if (p == null) {
-              // if the matched node has not yet been denormalized we need to compare the classification prop
+              // if the matched node has not yet been denormalized we need to compare the classification props
               NeoUsage u = store.usages().objByNode(n);
               if (u.classification != null && u.classification.equalsAboveRank(cl, hr)) {
                 found = true;
@@ -563,8 +563,9 @@ public class Normalizer implements Callable<Boolean> {
             parent = n;
             parentRank = hr;
             // did we match against an unranked name? Then use the queried rank
-            if (Rank.UNRANKED == NeoProperties.getRank(n, Rank.UNRANKED)) {
-              updateRank(n, hr);
+            RankedUsage ru = NeoProperties.getRankedUsage(n);
+            if (Rank.UNRANKED == ru.rank) {
+              updateRank(ru.nameNode, hr);
             }
             break;
           }
@@ -580,9 +581,12 @@ public class Normalizer implements Callable<Boolean> {
       }
     }
     // finally apply lowest parent to initial node
-    store.assignParent(parent, taxon.node);
+    store.assignParent(parent, taxon.usageNode);
   }
-
+  
+  /**
+   * @param n a Name node (not usage!)
+   */
   private void updateRank(Node n, Rank r) {
     NeoName name = store.names().objByNode(n);
     name.name.setRank(r);

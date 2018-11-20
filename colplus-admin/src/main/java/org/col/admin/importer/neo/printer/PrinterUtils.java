@@ -31,7 +31,7 @@ public class PrinterUtils {
     @Nullable
     @Override
     public String apply(@Nullable Node n) {
-      return NeoProperties.getScientificNameWithAuthor(n);
+      return NeoProperties.getScientificNameWithAuthor(n, NeoProperties.NULL_NAME);
     }
   };
 
@@ -57,7 +57,7 @@ public class PrinterUtils {
         break;
 
       case DOT:
-        printer = new DotPrinter(writer, lowestRank, func);
+        printer = new DotPrinter(writer, lowestRank, func, false);
         break;
 
       case LIST:
@@ -82,7 +82,7 @@ public class PrinterUtils {
    * It does not require a root node but dumps all nodes and relations.
    */
   public static void dumpDotFile(GraphDatabaseService neo, Writer writer) throws Exception {
-    DotPrinter printer = new DotPrinter(writer, null, getScientificWithAuthorship);;
+    DotPrinter printer = new DotPrinter(writer, null, getScientificWithAuthorship, true);;
     try (Transaction tx = neo.beginTx()) {
       for (Node n : neo.getAllNodes()) {
         printer.start(n);

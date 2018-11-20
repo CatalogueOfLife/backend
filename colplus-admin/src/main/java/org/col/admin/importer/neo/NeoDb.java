@@ -2,6 +2,7 @@ package org.col.admin.importer.neo;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Writer;
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -21,6 +22,7 @@ import org.col.admin.importer.IdGenerator;
 import org.col.admin.importer.NormalizationFailedException;
 import org.col.admin.importer.neo.NodeBatchProcessor.BatchConsumer;
 import org.col.admin.importer.neo.model.*;
+import org.col.admin.importer.neo.printer.PrinterUtils;
 import org.col.admin.importer.neo.traverse.StartEndHandler;
 import org.col.admin.importer.neo.traverse.Traversals;
 import org.col.admin.importer.neo.traverse.TreeWalker;
@@ -241,7 +243,7 @@ public class NeoDb implements ReferenceStore {
         .collect(Collectors.toList());
   }
   
-  public List<Node> taxaByScientificName(String scientificName, Rank rank, boolean inclUnranked) {
+  public List<Node> usagesByName(String scientificName, Rank rank, boolean inclUnranked) {
     List<Node> names = names().nodesByName(scientificName);
     names.removeIf(n -> {
       Rank r = NeoProperties.getRank(n, Rank.UNRANKED);
@@ -634,10 +636,10 @@ public class NeoDb implements ReferenceStore {
     try (Transaction tx = getNeo().beginTx()) {
       for (Node n : Iterators.loop(getNeo().findNodes(Labels.TAXON))) {
         NeoUsage u = usages().objByNode(n);
-        if (u.node.hasLabel(Labels.TAXON) && !u.node.hasLabel(Labels.ROOT)){
+        if (!u.node.hasLabel(Labels.ROOT)){
           // parent
           Node p = getSingleRelated(u.node, RelType.PARENT_OF, Direction.INCOMING);
-          Taxon pt = usages().objByNode(p).getTaxon();
+          NeoUsage pt = usages().objByNode(p);
           u.getTaxon().setParentId(pt.getId());
         }
         // store the updated object
@@ -763,10 +765,27 @@ public class NeoDb implements ReferenceStore {
    */
   public void sync() {
     updateLabels();
+  
+    try {
+      dump(new File("graphs/neodbtree.dot"));
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+  
     updateTaxonStoreWithRelations();
     updateHomotypicNameKeys();
   }
-
+  
+  /**
+   * Dump entire graph with all labels as DOT file for debugging
+   */
+  public void dump(File file) throws Exception {
+    Writer writer = PrinterUtils.fileWriter(file);
+    PrinterUtils.dumpDotFile(neo, writer);
+    writer.close();
+    System.out.println("Wrote graph to " + file.getAbsolutePath());
+  }
+  
   /**
    * @return the number of neo4j nodes
    */
@@ -779,15 +798,24 @@ public class NeoDb implements ReferenceStore {
     LOG.debug("Labelling root nodes");
     String query =  "MATCH (r:TAXON) " +
         "WHERE not ( ()-[:PARENT_OF]->(r) ) " +
-        "SET r :ROOT " +
+        "SET r:ROOT " +
         "RETURN count(r)";
     long count = updateLabel(query);
     LOG.info("Labelled {} root nodes", count);
-
+    
+    // set USAGE
+    LOG.debug("Labelling usage nodes");
+    query =  "MATCH (u) " +
+        "WHERE u:TAXON OR u:SYNONYM " +
+        "SET u:USAGE " +
+        "RETURN count(u)";
+    count = updateLabel(query);
+    LOG.info("Labelled {} usage nodes", count);
+    
     // set BASIONYM
     LOG.debug("Labelling basionym nodes");
     query = "MATCH (b)<-[:HAS_BASIONYM]-() " +
-        "SET b :BASIONYM " +
+        "SET b:BASIONYM " +
         "RETURN count(b)";
     count = updateLabel(query);
     LOG.info("Labelled {} basionym nodes", count);
@@ -900,18 +928,18 @@ public class NeoDb implements ReferenceStore {
   /**
    * List all accepted taxa of a potentially prop parte synonym
    */
-  public List<RankedName> accepted(Node synonym) {
+  public List<RankedUsage> accepted(Node synonym) {
     return Traversals.ACCEPTED.traverse(synonym).nodes().stream()
-        .map(NeoProperties::getRankedName)
+        .map(NeoProperties::getRankedUsage)
         .collect(Collectors.toList());
   }
   
   /**
    * List all accepted taxa of a potentially prop parte synonym
    */
-  public List<RankedName> parents(Node child) {
+  public List<RankedUsage> parents(Node child) {
     return Traversals.PARENTS.traverse(child).nodes().stream()
-        .map(NeoProperties::getRankedName)
+        .map(NeoProperties::getRankedUsage)
         .collect(Collectors.toList());
   }
 
@@ -925,10 +953,10 @@ public class NeoDb implements ReferenceStore {
    * @param source the taxon source to copy from
    * @param excludeRankAndBelow the rank (and all ranks below) to exclude from the source classification
    */
-  public RankedName createDoubtfulFromSource(Origin origin,
-                                             Name name,
-                                             @Nullable NeoUsage source,
-                                             Rank excludeRankAndBelow) {
+  public RankedUsage createDoubtfulUsageFromSource(Origin origin,
+                                                   Name name,
+                                                   @Nullable NeoUsage source,
+                                                   Rank excludeRankAndBelow) {
     NeoUsage u = NeoUsage.createTaxon(origin, name, true);
     // copy verbatim classification from source
     if (source != null) {
@@ -949,11 +977,11 @@ public class NeoDb implements ReferenceStore {
     }
 
     // store, which creates a new neo node
-    createNameAndUsage(u);
+    Node nameNode = createNameAndUsage(u);
 
-    return new RankedName(u.node, name.getScientificName(), name.authorshipComplete(), name.getRank());
+    return new RankedUsage(u.node, nameNode, name.getScientificName(), name.authorshipComplete(), name.getRank());
   }
-
+  
   public void updateIdGeneratorPrefix() {
     idGen.setPrefix(
         Stream.concat(

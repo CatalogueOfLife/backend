@@ -140,22 +140,22 @@ public class NormalizerDwcaIT extends NormalizerITBase {
     try (Transaction tx = store.getNeo().beginTx()) {
       // 1->2->1
       // should be: 1->2
-      NeoUsage t1 = usageByID("1");
-      NeoUsage t2 = usageByID("2");
+      NeoName t1 = nameByID("1");
+      NeoName t2 = nameByID("2");
 
       assertEquals(1, t1.node.getDegree(RelType.HAS_BASIONYM));
       assertEquals(1, t2.node.getDegree(RelType.HAS_BASIONYM));
       assertEquals(t2.node,
           t1.node.getSingleRelationship(RelType.HAS_BASIONYM, Direction.OUTGOING).getEndNode());
-      assertNotNull(t1.usage.getName().getHomotypicNameId());
-      assertEquals(t2.usage.getName().getHomotypicNameId(), t1.usage.getName().getHomotypicNameId());
+      assertNotNull(t1.name.getHomotypicNameId());
+      assertEquals(t2.name.getHomotypicNameId(), t1.name.getHomotypicNameId());
 
       // 10->11->12->10, 13->11
       // should be: 10,13->11 12
-      NeoUsage t10 = usageByID("10");
-      NeoUsage t11 = usageByID("11");
-      NeoUsage t12 = usageByID("12");
-      NeoUsage t13 = usageByID("13");
+      NeoName t10 = nameByID("10");
+      NeoName t11 = nameByID("11");
+      NeoName t12 = nameByID("12");
+      NeoName t13 = nameByID("13");
 
       assertEquals(1, t10.node.getDegree(RelType.HAS_BASIONYM));
       assertEquals(2, t11.node.getDegree(RelType.HAS_BASIONYM));
@@ -165,10 +165,10 @@ public class NormalizerDwcaIT extends NormalizerITBase {
           .getSingleRelationship(RelType.HAS_BASIONYM, Direction.OUTGOING).getOtherNode(t10.node));
       assertEquals(t11.node, t13.node
           .getSingleRelationship(RelType.HAS_BASIONYM, Direction.OUTGOING).getOtherNode(t13.node));
-      assertNull(t12.usage.getName().getHomotypicNameId());
-      assertEquals(t10.usage.getName().getId(), t11.usage.getName().getHomotypicNameId());
-      assertEquals(t10.usage.getName().getId(), t10.usage.getName().getHomotypicNameId());
-      assertEquals(t10.usage.getName().getId(), t13.usage.getName().getHomotypicNameId());
+      assertNull(t12.name.getHomotypicNameId());
+      assertEquals(t10.name.getId(), t11.name.getHomotypicNameId());
+      assertEquals(t10.name.getId(), t10.name.getHomotypicNameId());
+      assertEquals(t10.name.getId(), t13.name.getHomotypicNameId());
     }
   }
 
@@ -250,7 +250,7 @@ public class NormalizerDwcaIT extends NormalizerITBase {
       expectedAccepted.put("10002", "Calendula incana subsp. maderensis");
 
       for (RankedName acc : store.accepted(syn.node)) {
-        assertEquals(expectedAccepted.remove(store.usages().objByNode(acc.node).getId()), acc.name);
+        assertEquals(expectedAccepted.remove(store.usages().objByNode(acc.nameNode).getId()), acc.name);
       }
       assertTrue(expectedAccepted.isEmpty());
     }

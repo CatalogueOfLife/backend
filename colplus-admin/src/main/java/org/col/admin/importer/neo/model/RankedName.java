@@ -4,20 +4,27 @@ import org.gbif.nameparser.api.Rank;
 import org.neo4j.graphdb.Node;
 
 public class RankedName {
-  public final Node node;
+  public final Node nameNode;
   public final String name;
   public final String author;
   public final Rank rank;
-
+  
+  public RankedName(NeoName nn) {
+    this.nameNode = nn.node;
+    this.name = nn.name.getScientificName();
+    this.author = nn.name.authorshipComplete();
+    this.rank = nn.name.getRank();
+  }
+  
   public RankedName(Node n, String name, String author, Rank rank) {
-    this.node = n;
+    this.nameNode = n;
     this.name = name;
     this.author = author;
     this.rank = rank;
   }
 
   public int getId() {
-    return (int) node.getId();
+    return (int) nameNode.getId();
   }
 
   @Override
@@ -30,6 +37,9 @@ public class RankedName {
     if (rank != null) {
       sb.append(" [").append(rank.name().toLowerCase()).append(']');
     }
+    sb.append(" {");
+    sb.append(getId());
+    sb.append("}");
     return sb.toString();
   }
 }

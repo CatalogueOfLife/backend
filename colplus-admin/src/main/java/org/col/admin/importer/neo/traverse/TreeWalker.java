@@ -126,7 +126,7 @@ public class TreeWalker {
 
   private static TraversalDescription filterRank(TraversalDescription td, @Nullable Rank lowestRank) {
     if (lowestRank != null) {
-      return td.evaluator(new RankEvaluator(lowestRank));
+      return td.evaluator(new UsageRankEvaluator(lowestRank));
     }
     return td;
   }

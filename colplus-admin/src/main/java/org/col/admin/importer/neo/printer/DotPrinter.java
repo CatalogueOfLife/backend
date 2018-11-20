@@ -8,7 +8,7 @@ import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import org.col.admin.importer.neo.model.Labels;
 import org.col.admin.importer.neo.model.RelType;
-import org.col.admin.importer.neo.traverse.RankEvaluator;
+import org.col.admin.importer.neo.traverse.UsageRankEvaluator;
 import org.gbif.nameparser.api.Rank;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
@@ -32,13 +32,14 @@ public class DotPrinter implements TreePrinter {
   private static final Joiner SEMI_JOINER = Joiner.on(';').skipNulls();
   private final Writer writer;
   private final Function<Node, String> getTitle;
-  private final RankEvaluator rankEvaluator;
-  private final boolean showLabels = false;
+  private final UsageRankEvaluator rankEvaluator;
+  private final boolean showLabels;
   
-  public DotPrinter(Writer writer, @Nullable Rank rankThreshold, Function<Node, String> getTitle) {
+  public DotPrinter(Writer writer, @Nullable Rank rankThreshold, Function<Node, String> getTitle, boolean showLabels) {
+    this.showLabels = showLabels;
     this.writer = writer;
     this.getTitle = getTitle;
-    this.rankEvaluator = new RankEvaluator(rankThreshold);
+    this.rankEvaluator = new UsageRankEvaluator(rankThreshold);
     printHeader();
   }
 

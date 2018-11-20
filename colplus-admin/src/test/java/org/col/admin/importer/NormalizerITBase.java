@@ -1,6 +1,7 @@
 package org.col.admin.importer;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.nio.file.Path;
@@ -15,11 +16,7 @@ import org.col.admin.config.NormalizerConfig;
 import org.col.admin.importer.neo.NeoDb;
 import org.col.admin.importer.neo.NeoDbFactory;
 import org.col.admin.importer.neo.NotUniqueRuntimeException;
-import org.col.admin.importer.neo.model.NeoProperties;
-import org.col.admin.importer.neo.model.NeoUsage;
-import org.col.admin.importer.neo.model.RankedName;
-import org.col.admin.importer.neo.printer.GraphFormat;
-import org.col.admin.importer.neo.printer.PrinterUtils;
+import org.col.admin.importer.neo.model.*;
 import org.col.admin.matching.NameIndexFactory;
 import org.col.api.model.Dataset;
 import org.col.api.model.IssueContainer;
@@ -120,18 +117,18 @@ abstract class NormalizerITBase {
   }
   
   public NeoUsage accepted(Node syn) {
-    List<RankedName> accepted = store.accepted(syn);
+    List<RankedUsage> accepted = store.accepted(syn);
     if (accepted.size() != 1) {
       throw new IllegalStateException("Synonym has " + accepted.size() + " accepted taxa");
     }
-    return store.usageWithName(accepted.get(0).node);
+    return store.usageWithName(accepted.get(0).nameNode);
   }
   
   public List<NeoUsage> parents(Node child, String... parentIdsToVerify) {
     List<NeoUsage> parents = new ArrayList<>();
     int idx = 0;
     for (RankedName rn : store.parents(child)) {
-      NeoUsage u = store.usageWithName(rn.node);
+      NeoUsage u = store.usageWithName(rn.nameNode);
       parents.add(u);
       if (parentIdsToVerify != null) {
         assertEquals(u.getId(), parentIdsToVerify[idx]);
@@ -161,16 +158,12 @@ abstract class NormalizerITBase {
     return store.usageWithName(store.usages().nodeByID(id));
   }
   
-  public void debug() throws Exception {
-    PrinterUtils.printTree(store.getNeo(), new PrintWriter(System.out), GraphFormat.TEXT);
-
-    // dump graph as DOT file for debugging
-    File dotFile = new File("graphs/debugtree.dot");
-    Files.createParentDirs(dotFile);
-    Writer writer = new FileWriter(dotFile);
-    PrinterUtils.dumpDotFile(store.getNeo(), writer);
-    writer.close();
-    System.out.println("Wrote graph to " + dotFile.getAbsolutePath());
+  public NeoName nameByID(String id) {
+    return store.names().objByID(id);
   }
 
+  public void debug() throws Exception {
+    store.dump(new File("graphs/debugtree.dot"));
+  }
+  
 }

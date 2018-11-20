@@ -15,8 +15,8 @@ public class ClassificationRankEvaluator implements Evaluator {
 
   @Override
   public Evaluation evaluate(Path path) {
-    Node end = path.endNode();
-    Rank r = Rank.values()[(int) end.getProperty(NeoProperties.RANK, Rank.UNRANKED.ordinal())];
+    Node nameNode = NeoProperties.getNameNode(path.endNode());
+    Rank r = NeoProperties.getRank(nameNode, Rank.UNRANKED);
     return Classification.RANKS.contains(r) ? Evaluation.INCLUDE_AND_CONTINUE : Evaluation.EXCLUDE_AND_CONTINUE;
   }
 }

@@ -10,7 +10,7 @@ import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import org.col.admin.importer.neo.model.NeoProperties;
 import org.col.admin.importer.neo.model.RelType;
-import org.col.admin.importer.neo.traverse.RankEvaluator;
+import org.col.admin.importer.neo.traverse.UsageRankEvaluator;
 import org.gbif.nameparser.api.Rank;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
@@ -27,7 +27,7 @@ public class GmlPrinter implements TreePrinter {
   private final List<Edge> edges = Lists.newArrayList();
   private final Function<Node, String> getTitle;
   private final boolean strictTree;
-  private final RankEvaluator rankEvaluator;
+  private final UsageRankEvaluator rankEvaluator;
 
   /**
    * @param strictTree if true omit any pro parte and basionym relations to force a strict tree
@@ -36,7 +36,7 @@ public class GmlPrinter implements TreePrinter {
     this.strictTree = strictTree;
     this.writer = writer;
     this.getTitle = getTitle;
-    this.rankEvaluator = new RankEvaluator(rankThreshold);
+    this.rankEvaluator = new UsageRankEvaluator(rankThreshold);
     printHeader();
   }
 
