@@ -115,13 +115,14 @@ public class NameSearchRequest {
     filters.add(param, value);
   }
 
-  public List<String> getFilter(NameSearchParameter param) {
+  public List<String> getFilterValue(NameSearchParameter param) {
     if (filters == null) {
       return null;
     }
     return filters.get(param);
   }
 
+  @JsonIgnore
   public int countFilters() {
     return filters == null ? 0 : filters.size();
   }

@@ -1,9 +1,9 @@
 package org.col.es.translate;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.col.api.search.NameSearchParameter;
@@ -19,6 +19,7 @@ import org.col.es.query.TermsQuery;
 
 import static org.col.api.search.NameSearchRequest.NOT_NULL_VALUE;
 import static org.col.api.search.NameSearchRequest.NULL_VALUE;
+import static org.col.common.util.CollectionUtils.isEmpty;
 
 /**
  * Translates all query parameters except the "q" parameter into an Elasticsearch query. Unless there is just one query parameter, this will
@@ -39,12 +40,12 @@ class NameSearchParamsTranslator {
   }
 
   Optional<Query> translate() throws InvalidQueryException {
-    NameSearchParameter[] params = getParamsInRequest();
-    if (params.length == 0) {
+    if (isEmpty(request.getFilters())) {
       return Optional.empty();
     }
-    if (params.length == 1) {
-      return Optional.of(translate(params[0]));
+    Set<NameSearchParameter> params = request.getFilters().keySet();
+    if (params.size() == 1) {
+      return Optional.of(translate(params.iterator().next()));
     }
     BoolQuery bq = new BoolQuery();
     for (NameSearchParameter param : params) {
@@ -53,10 +54,10 @@ class NameSearchParamsTranslator {
     return Optional.of(bq);
   }
 
-  private Query translate(NameSearchParameter param) throws InvalidQueryException {
+  Query translate(NameSearchParameter param) throws InvalidQueryException {
     List<Query> queries = new ArrayList<>();
     String[] fields = EsFieldLookup.INSTANCE.get(param);
-    // So far each NameSearchParameter corresponds to just one field in a name usage document
+    // So far each NameSearchParameter maps to just one field in a name usage document
     assert (fields.length == 1);
     String field = fields[0];
     if (containsNullValue(param)) {
@@ -78,28 +79,24 @@ class NameSearchParamsTranslator {
     return queries.stream().collect(BoolQuery::new, BoolQuery::should, BoolQuery::should);
   }
 
-  private NameSearchParameter[] getParamsInRequest() {
-    return Arrays.stream(NameSearchParameter.values()).filter(request::containsFilter).toArray(NameSearchParameter[]::new);
-  }
-
   /*
    * Get all non-symbolic values for one single single query parameter
    */
   @SuppressWarnings("unchecked")
   private List<?> getLiteralValues(NameSearchParameter param) throws InvalidQueryException {
     if (param.type() == String.class) {
-      return request.getFilter(param).stream().filter(this::isLiteral).collect(Collectors.toList());
+      return request.getFilterValue(param).stream().filter(this::isLiteral).collect(Collectors.toList());
     }
     if (param.type() == Integer.class) {
       try {
-        return request.getFilter(param).stream().filter(this::isLiteral).map(Integer::valueOf).collect(Collectors.toList());
+        return request.getFilterValue(param).stream().filter(this::isLiteral).map(Integer::valueOf).collect(Collectors.toList());
       } catch (NumberFormatException e) {
         throw new InvalidQueryException("Non-integer value for parameter " + param);
       }
     }
     if (Enum.class.isAssignableFrom(param.type())) {
       try {
-        return request.getFilter(param)
+        return request.getFilterValue(param)
             .stream()
             .filter(this::isLiteral)
             .map(val -> VocabularyUtils.lookupEnum(val, (Class<? extends Enum<?>>) param.type()).ordinal())
@@ -117,12 +114,12 @@ class NameSearchParamsTranslator {
 
   // Is one of the values of a query parameter the symbol for IS NULL?
   private boolean containsNullValue(NameSearchParameter param) {
-    return request.getFilter(param).stream().anyMatch(s -> s.equals(NULL_VALUE));
+    return request.getFilterValue(param).stream().anyMatch(s -> s.equals(NULL_VALUE));
   }
 
   // Is one of the values of a query parameter the symbol for IS NOT NULL?
   private boolean containsNotNullValue(NameSearchParameter param) {
-    return request.getFilter(param).stream().anyMatch(s -> s.equals(NOT_NULL_VALUE));
+    return request.getFilterValue(param).stream().anyMatch(s -> s.equals(NOT_NULL_VALUE));
   }
 
 }

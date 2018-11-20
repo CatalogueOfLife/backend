@@ -3,7 +3,7 @@ package org.col.es.util;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 /**
- * A tuple class accomodating one of the peculiarities of the Elasticsearch Query DSL.
+ * A tuple implementation specifically aimed at accomodating the Elasticsearch Query DSL.
  */
 public class CollapsibleTuple<T, U> {
 
