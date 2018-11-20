@@ -1,10 +1,10 @@
 package org.col.es.translate;
 
 import java.util.EnumSet;
-import java.util.Optional;
 import java.util.Set;
 
 import com.google.common.base.Strings;
+
 import org.col.api.search.NameSearchRequest;
 import org.col.api.search.NameSearchRequest.SearchContent;
 import org.col.es.query.AutoCompleteQuery;

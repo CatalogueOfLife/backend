@@ -7,31 +7,37 @@ import org.col.api.search.NameSearchParameter;
 import static org.col.api.search.NameSearchParameter.*;
 
 /**
- * Maps a name search parameter the corresponding Elasticsearch field(s). In principle a name search
- * parameter may be mapped to multiple Elasticsearch fields, in which case the parameter's value is
- * searched in all of these fields. In practice, though, we currently don't have multiply-mapped
- * name search parameters.
+ * Maps a name search parameter the corresponding Elasticsearch field(s). In principle a name search parameter may be mapped to multiple
+ * Elasticsearch fields, in which case the parameter's value is searched in all of these fields. In practice, though, we currently don't
+ * have multiply-mapped name search parameters.
  */
 public class EsFieldLookup extends EnumMap<NameSearchParameter, String[]> {
-  
+
   public static final EsFieldLookup INSTANCE = new EsFieldLookup();
-  
+
   private EsFieldLookup() {
     super(NameSearchParameter.class);
-    put(DATASET_KEY, "datasetKey");
-    put(FIELD, "nameFields");
-    put(ISSUE, "issues");
-    put(NAME_ID, "nameId");
-    put(NAME_INDEX_ID, "nameIndexId");
-    put(NOM_STATUS, "nomStatus");
-    put(PUBLISHED_IN_ID, "publishedInId");
-    put(RANK, "rank");
-    put(STATUS, "status");
-    put(TYPE, "type");
+    putSingle(DATASET_KEY, "datasetKey");
+    putSingle(FIELD, "nameFields");
+    putSingle(ISSUE, "issues");
+    putSingle(NAME_ID, "nameId");
+    putSingle(NAME_INDEX_ID, "nameIndexId");
+    putSingle(NOM_STATUS, "nomStatus");
+    putSingle(PUBLISHED_IN_ID, "publishedInId");
+    putSingle(RANK, "rank");
+    putSingle(STATUS, "status");
+    putSingle(TYPE, "type");
   }
-  
-  private void put(NameSearchParameter key, String val) {
-    super.put(key, new String[]{val});
+
+  private void putSingle(NameSearchParameter key, String val) {
+    put(key, new String[] {val});
   }
-  
+
+  public String lookup(NameSearchParameter param) {
+    String[] fields = get(param);
+    // Currently every NameSearchParameter maps to just one field in the name usage document
+    assert (fields.length == 1);
+    return fields[0];
+  }
+
 }

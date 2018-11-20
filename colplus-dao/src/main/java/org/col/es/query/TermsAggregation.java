@@ -1,21 +1,20 @@
 package org.col.es.query;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-
-public class TermsAggregation extends AbstractAggregation {
+public class TermsAggregation extends BucketAggregation {
 
   public static class Terms {
+    // The GROUP BY field
     final String field;
+    // The maximum number of buckets (distinct values) to retrieve
     final Integer size;
 
-    @JsonCreator
     Terms(String field, Integer size) {
       this.field = field;
       this.size = size;
     }
   }
 
-  private final Terms terms;
+  final Terms terms;
 
   public TermsAggregation(String field) {
     this.terms = new Terms(field, null);
@@ -23,10 +22,6 @@ public class TermsAggregation extends AbstractAggregation {
 
   public TermsAggregation(String field, Integer size) {
     this.terms = new Terms(field, size);
-  }
-
-  Terms getTerms() {
-    return terms;
   }
 
 }

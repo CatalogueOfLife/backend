@@ -1,16 +1,11 @@
 package org.col.es.query;
 
-public class FilterAggregation<T extends Query> extends BucketAggregation {
+public class FilterAggregation extends BucketAggregation {
 
-  private final T filter;
+  final Query filter;
 
-  public FilterAggregation(T filter) {
-    super();
+  public FilterAggregation(Query filter) {
     this.filter = filter;
-  }
-
-  public T getFilter() {
-    return filter;
   }
 
 }

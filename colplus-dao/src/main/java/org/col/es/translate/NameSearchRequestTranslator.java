@@ -14,7 +14,7 @@ import org.col.es.query.Query;
  */
 public class NameSearchRequestTranslator {
 
-  public static Query generateQuery(NameSearchRequest request) throws InvalidQueryException {
+  static Query generateQuery(NameSearchRequest request) throws InvalidQueryException {
     Query query1 = new NameSearchParamsTranslator(request).translate();
     Query query2 = new QTranslator(request).translate();
     Query query = null;

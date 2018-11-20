@@ -2,7 +2,6 @@ package org.col.es.translate;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -56,17 +55,14 @@ class NameSearchParamsTranslator {
 
   private Query translate(NameSearchParameter param) throws InvalidQueryException {
     List<Query> queries = new ArrayList<>();
-    String[] fields = EsFieldLookup.INSTANCE.get(param);
-    // So far each NameSearchParameter maps to just one field in a name usage document
-    assert (fields.length == 1);
-    String field = fields[0];
+    String field = EsFieldLookup.INSTANCE.lookup(param);
     if (containsNullValue(param)) {
       queries.add(new IsNullQuery(field));
     }
     if (containsNotNullValue(param)) {
       queries.add(new IsNotNullQuery(field));
     }
-    // (Not very smart to have both, but OK)
+    // (Not very clever to have both, but OK)
     List<?> paramValues = getLiteralValues(param);
     if (paramValues.size() == 1) {
       queries.add(new TermQuery(field, paramValues.get(0)));
