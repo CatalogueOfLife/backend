@@ -227,7 +227,7 @@ public class DwcaRelationInserter implements NodeBatchProcessor {
    */
   private RankedUsage usageByName(DwcTerm term, VerbatimRecord v, NeoUsage u, final Origin createdOrigin) {
     return byName(term, v, NeoProperties.getRankedUsage(u), NeoProperties::getRankedUsage,
-        name -> store.createDoubtfulUsageFromSource(createdOrigin, name, u, u.usage.getName().getRank()));
+        name -> store.createProvisionalUsageFromSource(createdOrigin, name, u, u.usage.getName().getRank()));
   }
   
   private <T extends RankedName> T byName(DwcTerm term, VerbatimRecord v, RankedName source,

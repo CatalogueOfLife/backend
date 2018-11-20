@@ -953,10 +953,10 @@ public class NeoDb implements ReferenceStore {
    * @param source the taxon source to copy from
    * @param excludeRankAndBelow the rank (and all ranks below) to exclude from the source classification
    */
-  public RankedUsage createDoubtfulUsageFromSource(Origin origin,
-                                                   Name name,
-                                                   @Nullable NeoUsage source,
-                                                   Rank excludeRankAndBelow) {
+  public RankedUsage createProvisionalUsageFromSource(Origin origin,
+                                                      Name name,
+                                                      @Nullable NeoUsage source,
+                                                      Rank excludeRankAndBelow) {
     NeoUsage u = NeoUsage.createTaxon(origin, name, true);
     // copy verbatim classification from source
     if (source != null) {

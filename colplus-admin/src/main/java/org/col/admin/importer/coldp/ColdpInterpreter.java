@@ -61,7 +61,7 @@ public class ColdpInterpreter extends InterpreterBase {
       // taxon
       Taxon t = u.getTaxon();
       t.setOrigin(Origin.SOURCE);
-      t.setDoubtful(false); //TODO: v.get(ColTerm.provisional)
+      t.setProvisional(false); //TODO: v.get(ColTerm.provisional)
       t.setAccordingTo(v.get(ColTerm.accordingTo));
       t.setAccordingToDate(date(v, Issue.ACCORDING_TO_DATE_INVALID, ColTerm.accordingToDate));
       //TODO: ColTerm.accordingToDateID for ORCIDS

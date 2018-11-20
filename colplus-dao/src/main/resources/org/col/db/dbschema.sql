@@ -322,7 +322,7 @@ CREATE TABLE taxon (
   verbatim_key INTEGER,
   parent_id TEXT,
   name_id TEXT NOT NULL,
-  doubtful BOOLEAN DEFAULT FALSE NOT NULL,
+  provisional BOOLEAN DEFAULT FALSE NOT NULL,
   origin INTEGER NOT NULL,
   according_to TEXT,
   according_to_date DATE,

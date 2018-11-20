@@ -30,7 +30,7 @@ public class NeoKryoFactoryTest {
     NeoUsage t = new NeoUsage();
   
     Taxon taxon = new Taxon();
-    taxon.setDoubtful(true);
+    taxon.setProvisional(true);
     taxon.setName(new Name());
     taxon.getName().setScientificName("Abies alba");
     taxon.getName().setCombinationAuthorship(TestEntityGenerator.createAuthorship());

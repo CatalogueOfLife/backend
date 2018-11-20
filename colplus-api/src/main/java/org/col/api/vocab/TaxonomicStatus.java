@@ -26,7 +26,7 @@ public enum TaxonomicStatus {
   /**
    * Treated as accepted, but doubtful whether this is correct.
    */
-  DOUBTFUL,
+  PROVISIONALLY_ACCEPTED,
   
   /**
    * Names which point unambiguously at one species (not specifying whether homo- or heterotypic)
@@ -50,7 +50,7 @@ public enum TaxonomicStatus {
    * @return true for a status valid for a synonym, false if valid for an accepted taxon.
    */
   public boolean isSynonym() {
-    return this != ACCEPTED && this != DOUBTFUL;
+    return this != ACCEPTED && this != PROVISIONALLY_ACCEPTED;
   }
   
 }

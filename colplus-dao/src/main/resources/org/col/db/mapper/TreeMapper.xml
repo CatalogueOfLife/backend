@@ -10,7 +10,7 @@
         n.scientific_name as name,
         null as authorship,
         n.rank,
-        t.doubtful,
+        t.provisional,
         null as speciesCount,
         t.species_estimate,
         t.species_estimate_reference_id,
@@ -30,7 +30,7 @@
     <!-- A mapping to Name, mostly auto mapped -->
     <resultMap id="treeResultMap" type="TreeNode" autoMapping="true">
         <id property="id" column="id" />
-        <result property="status" column="doubtful" typeHandler="org.col.db.type2.TaxonStatusTypeHandler" />
+        <result property="status" column="provisional" typeHandler="org.col.db.type2.TaxonStatusTypeHandler" />
         <association property="sector" javaType="Sector" resultMap="org.col.db.mapper.SectorMapper.sectorResultMap" columnPrefix="" />
     </resultMap>
 

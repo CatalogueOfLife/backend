@@ -215,9 +215,9 @@
         GROUP BY n.rank
     </select>
     <select id="countUsagesByStatus" resultType="IntCount">
-        SELECT CASE WHEN doubtful THEN 1 ELSE 0 END AS key, count(*) AS count
+        SELECT CASE WHEN provisional THEN 1 ELSE 0 END AS key, count(*) AS count
         FROM taxon_${key}
-        GROUP BY doubtful
+        GROUP BY provisional
         UNION
         SELECT status AS key, count(*) AS count
         FROM synonym_${key}

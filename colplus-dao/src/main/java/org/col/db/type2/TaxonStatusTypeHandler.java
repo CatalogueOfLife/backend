@@ -6,8 +6,8 @@ import org.col.api.vocab.TaxonomicStatus;
 import org.col.db.type.BaseEnumTypeHandler;
 
 /**
- * Special type handler for the taxonomic status enum which only allows ACCEPTED or DOUBTFUL
- * based on the doubtful boolean in the taxon table.
+ * Special type handler for the taxonomic status enum which only allows ACCEPTED or PROVISIONALLY_ACCEPTED
+ * based on the provisional boolean in the taxon table.
  */
 @MappedTypes(TaxonomicStatus.class)
 public class TaxonStatusTypeHandler extends BaseEnumTypeHandler<Boolean, TaxonomicStatus> {
@@ -18,7 +18,7 @@ public class TaxonStatusTypeHandler extends BaseEnumTypeHandler<Boolean, Taxonom
   }
 
   @Override
-  protected TaxonomicStatus toEnum(Boolean doubtful) {
-    return doubtful ? TaxonomicStatus.DOUBTFUL : TaxonomicStatus.ACCEPTED;
+  protected TaxonomicStatus toEnum(Boolean provisionallyAccepted) {
+    return provisionallyAccepted ? TaxonomicStatus.PROVISIONALLY_ACCEPTED : TaxonomicStatus.ACCEPTED;
   }
 }

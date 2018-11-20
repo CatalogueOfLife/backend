@@ -44,14 +44,14 @@ public class NeoUsage implements NeoNode, ID, VerbatimEntity {
   public Classification classification;
   public List<String> remarks = Lists.newArrayList();
   
-  public static NeoUsage createTaxon(Origin origin, boolean doubtful) {
-    return createTaxon(origin, null, doubtful);
+  public static NeoUsage createTaxon(Origin origin, boolean provisional) {
+    return createTaxon(origin, null, provisional);
   }
   
-  public static NeoUsage createTaxon(Origin origin, Name name, boolean doubtful) {
+  public static NeoUsage createTaxon(Origin origin, Name name, boolean provisional) {
     NeoUsage u = new NeoUsage();
     Taxon tax = new Taxon();
-    tax.setDoubtful(doubtful);
+    tax.setProvisional(provisional);
     tax.setOrigin(origin);
 
     if (name != null) {

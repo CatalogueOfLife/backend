@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
  */
 public class DwcInterpreter extends InterpreterBase {
   private static final Logger LOG = LoggerFactory.getLogger(DwcInterpreter.class);
-  private static final EnumNote<TaxonomicStatus> NO_STATUS = new EnumNote<>(TaxonomicStatus.DOUBTFUL, null);
+  private static final EnumNote<TaxonomicStatus> NO_STATUS = new EnumNote<>(TaxonomicStatus.PROVISIONALLY_ACCEPTED, null);
 
   private final InsertMetadata insertMetadata;
 
@@ -176,7 +176,7 @@ public class DwcInterpreter extends InterpreterBase {
   private void interpretTaxon(NeoUsage u, VerbatimRecord v, EnumNote<TaxonomicStatus> status) {
     Taxon tax = u.getTaxon();
     // this can be a synonym at this stage which the class does not accept
-    tax.setDoubtful(TaxonomicStatus.DOUBTFUL == status.val || status.val.isSynonym());
+    tax.setProvisional(TaxonomicStatus.PROVISIONALLY_ACCEPTED == status.val || status.val.isSynonym());
     tax.setDatasetUrl(uri(v, Issue.URL_INVALID, DcTerm.references));
     tax.setFossil(null);
     tax.setRecent(null);

@@ -89,7 +89,7 @@ public class AcefInterpreter extends InterpreterBase {
       v.addIssue(Issue.TAXONOMIC_STATUS_INVALID);
       // override status as we require some accepted status on Taxon and some synonym status for
       // Synonym
-      status = synonym ? TaxonomicStatus.SYNONYM : TaxonomicStatus.DOUBTFUL;
+      status = synonym ? TaxonomicStatus.SYNONYM : TaxonomicStatus.PROVISIONALLY_ACCEPTED;
     }
   
     NeoUsage u;
@@ -104,7 +104,7 @@ public class AcefInterpreter extends InterpreterBase {
       u = NeoUsage.createTaxon(Origin.SOURCE, nat.get().getName(), false);
       Taxon t = u.getTaxon();
       t.setOrigin(Origin.SOURCE);
-      t.setDoubtful(TaxonomicStatus.DOUBTFUL == status);
+      t.setProvisional(TaxonomicStatus.PROVISIONALLY_ACCEPTED == status);
       t.setAccordingTo(v.get(AcefTerm.LTSSpecialist));
       t.setAccordingToDate(date(v, Issue.ACCORDING_TO_DATE_INVALID, AcefTerm.LTSDate));
       t.setDatasetUrl(uri(v, Issue.URL_INVALID, AcefTerm.InfraSpeciesURL, AcefTerm.SpeciesURL));

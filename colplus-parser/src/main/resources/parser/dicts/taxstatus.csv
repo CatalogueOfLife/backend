@@ -9,16 +9,16 @@ preferredname,ACCEPTED
 valid,ACCEPTED
 nomeaceito,ACCEPTED
 
-aceptadoprovisionalmente,DOUBTFUL
-d,DOUBTFUL
-doubtful,DOUBTFUL
-dubioustaxonconcept,DOUBTFUL
-nomendubium,DOUBTFUL
-provisionallyacceptedname,DOUBTFUL
-temporaryname,DOUBTFUL
-todetermine,DOUBTFUL
-unresolved,DOUBTFUL
-provisional,DOUBTFUL
+aceptadoprovisionalmente,PROVISIONALLY_ACCEPTED
+d,PROVISIONALLY_ACCEPTED
+doubtful,PROVISIONALLY_ACCEPTED
+dubioustaxonconcept,PROVISIONALLY_ACCEPTED
+nomendubium,PROVISIONALLY_ACCEPTED
+provisionallyacceptedname,PROVISIONALLY_ACCEPTED
+temporaryname,PROVISIONALLY_ACCEPTED
+todetermine,PROVISIONALLY_ACCEPTED
+unresolved,PROVISIONALLY_ACCEPTED
+provisional,PROVISIONALLY_ACCEPTED
 
 alternaterepresentation,SYNONYM
 equivalenname,SYNONYM
