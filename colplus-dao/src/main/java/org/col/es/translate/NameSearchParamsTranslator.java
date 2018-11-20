@@ -39,22 +39,22 @@ class NameSearchParamsTranslator {
     this.request = request;
   }
 
-  Optional<Query> translate() throws InvalidQueryException {
+  Query translate() throws InvalidQueryException {
     if (isEmpty(request.getFilters())) {
-      return Optional.empty();
+      return null;
     }
     Set<NameSearchParameter> params = request.getFilters().keySet();
     if (params.size() == 1) {
-      return Optional.of(translate(params.iterator().next()));
+      return translate(params.iterator().next());
     }
-    BoolQuery bq = new BoolQuery();
+    BoolQuery boolQuery = new BoolQuery();
     for (NameSearchParameter param : params) {
-      bq.filter(translate(param));
+      boolQuery.filter(translate(param));
     }
-    return Optional.of(bq);
+    return boolQuery;
   }
 
-  Query translate(NameSearchParameter param) throws InvalidQueryException {
+  private Query translate(NameSearchParameter param) throws InvalidQueryException {
     List<Query> queries = new ArrayList<>();
     String[] fields = EsFieldLookup.INSTANCE.get(param);
     // So far each NameSearchParameter maps to just one field in a name usage document

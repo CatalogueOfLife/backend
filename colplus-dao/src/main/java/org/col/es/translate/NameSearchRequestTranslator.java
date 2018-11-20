@@ -1,7 +1,5 @@
 package org.col.es.translate;
 
-import java.util.Optional;
-
 import org.col.api.model.Page;
 import org.col.api.search.NameSearchRequest;
 import org.col.es.InvalidQueryException;
@@ -16,6 +14,25 @@ import org.col.es.query.Query;
  */
 public class NameSearchRequestTranslator {
 
+  public static Query generateQuery(NameSearchRequest request) throws InvalidQueryException {
+    Query query1 = new NameSearchParamsTranslator(request).translate();
+    Query query2 = new QTranslator(request).translate();
+    Query query = null;
+    if (query1 != null) {
+      if (query2 != null) {
+        query = new BoolQuery().filter(query1).filter(query2);
+      } else {
+        query = query1;
+      }
+    } else if (query2 != null) {
+      query = query2;
+    }
+    if (query != null) {
+      query = new ConstantScoreQuery(query);
+    }
+    return query;
+  }
+
   private final NameSearchRequest request;
   private final Page page;
 
@@ -28,22 +45,8 @@ public class NameSearchRequestTranslator {
     EsSearchRequest es = new EsSearchRequest();
     es.setFrom(page.getOffset());
     es.setSize(page.getLimit());
+    es.setQuery(generateQuery(request));
     es.setSort(new SortByTranslator(request).translate());
-    Optional<Query> query1 = new NameSearchParamsTranslator(request).translate();
-    Optional<Query> query2 = new QTranslator(request).translate();
-    Query query = null;
-    if (query1.isPresent()) {
-      if (query2.isPresent()) {
-        query = new BoolQuery().filter(query1.get()).filter(query2.get());
-      } else {
-        query = query1.get();
-      }
-    } else if (query2.isPresent()) {
-      query = query2.get();
-    }
-    if (query != null) {
-      es.setQuery(new ConstantScoreQuery(query));
-    }
     return es;
   }
 

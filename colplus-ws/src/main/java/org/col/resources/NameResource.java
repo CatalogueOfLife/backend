@@ -50,7 +50,7 @@ public class NameResource {
                                                         @Valid @BeanParam Page page,
                                                         @Context UriInfo uri) throws InvalidQueryException {
     query.addQueryParams(uri.getQueryParameters());
-    if (query.containsFilter(NameSearchParameter.DATASET_KEY)) {
+    if (query.hasFilter(NameSearchParameter.DATASET_KEY)) {
       throw new IllegalArgumentException("No further datasetKey parameter allowed, search already scoped to datasetKey=" + datasetKey);
     }
     query.addFilter(NameSearchParameter.DATASET_KEY, datasetKey);

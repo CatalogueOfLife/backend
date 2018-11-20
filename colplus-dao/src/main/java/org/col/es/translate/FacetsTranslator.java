@@ -1,8 +1,6 @@
 package org.col.es.translate;
 
-import java.util.LinkedHashSet;
 import java.util.Map;
-import java.util.Set;
 
 import org.col.api.search.NameSearchParameter;
 import org.col.api.search.NameSearchRequest;
@@ -18,8 +16,8 @@ class FacetsTranslator {
 
   Map<String, Aggregation> translate() {
     for (NameSearchParameter facet : request.getFacets()) {
-      Set<NameSearchParameter> otherFacets = new LinkedHashSet<>(request.getFacets());
-      otherFacets.remove(facet);
+      NameSearchRequest copy = request.copy();
+      copy.removeFilter(facet);
     }
     return null;
   }

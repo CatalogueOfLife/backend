@@ -15,16 +15,16 @@ import org.col.es.query.Query;
  * Translates the "q" request parameter into an Elasticsearch query.
  */
 class QTranslator {
-  
+
   private final NameSearchRequest request;
-  
+
   QTranslator(NameSearchRequest request) {
     this.request = request;
   }
-  
-  Optional<Query> translate() {
+
+  Query translate() {
     if (Strings.isNullOrEmpty(request.getQ())) {
-      return Optional.empty();
+      return null;
     }
     Set<SearchContent> content;
     if (request.getContent() == null || request.getContent().isEmpty()) {
@@ -33,15 +33,15 @@ class QTranslator {
       content = request.getContent();
     }
     if (content.size() == 1) {
-      return request.getContent().stream().map(this::translate).findFirst();
+      return request.getContent().stream().map(this::translate).findFirst().orElse(null);
     }
     BoolQuery boolQuery = new BoolQuery();
     for (SearchContent sc : content) {
       boolQuery.should(translate(sc));
     }
-    return Optional.of(boolQuery);
+    return boolQuery;
   }
-  
+
   private Query translate(SearchContent sc) {
     switch (sc) {
       case AUTHORSHIP:
@@ -53,5 +53,5 @@ class QTranslator {
         return new AutoCompleteQuery("vernacularNames", request.getQ());
     }
   }
-  
+
 }

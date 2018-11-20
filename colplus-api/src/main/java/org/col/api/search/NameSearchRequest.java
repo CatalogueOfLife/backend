@@ -56,6 +56,24 @@ public class NameSearchRequest {
   @QueryParam("sortBy")
   private SortBy sortBy;
 
+  public NameSearchRequest() {}
+
+  public NameSearchRequest copy() {
+    NameSearchRequest copy = new NameSearchRequest();
+    if (filters != null) {
+      copy.filters = new MultivaluedHashMap<>(filters);
+    }
+    if (facets != null) {
+      copy.facets = new LinkedHashSet<>(facets);
+    }
+    if (content != null) {
+      copy.content = new LinkedHashSet<>(content);
+    }
+    copy.q = q;
+    copy.sortBy = sortBy;
+    return copy;
+  }
+
   /**
    * Extracts all query parameters that match a NameSearchParameter and registers them as query filters.
    */
@@ -78,11 +96,11 @@ public class NameSearchRequest {
   public void addFilter(NameSearchParameter param, String value) {
     value = StringUtils.trimToNull(value);
     if (value == null || value.equals(NULL_VALUE)) {
-      add(param, NULL_VALUE);
+      addToFilters(param, NULL_VALUE);
     } else if (value.equals(NOT_NULL_VALUE)) {
-      add(param, NOT_NULL_VALUE);
+      addToFilters(param, NOT_NULL_VALUE);
     } else if (param.isLegalValue(value)) {
-      add(param, value);
+      addToFilters(param, value);
     } else {
       String err = String.format("Illegal value for parameter %s: %s", param, value);
       throw new IllegalArgumentException(err);
@@ -95,24 +113,17 @@ public class NameSearchRequest {
       String err = String.format("Incompatible types: %s, %s", param.type().getSimpleName(), value.getClass().getSimpleName());
       throw new IllegalArgumentException(err);
     }
-    add(param, value.name());
+    addToFilters(param, value.name());
   }
 
   public void addFilter(NameSearchParameter param, Integer value) {
     Preconditions.checkNotNull(value, "Null values not allowed for non-strings");
     if (param.type() == Integer.class || param.type() == String.class) {
-      add(param, value.toString());
+      addToFilters(param, value.toString());
     } else {
       String err = String.format("Incompatible types: %s, %s", param.type().getSimpleName(), value.getClass().getSimpleName());
       throw new IllegalArgumentException(err);
     }
-  }
-
-  private void add(NameSearchParameter param, String value) {
-    if (filters == null) {
-      filters = new MultivaluedHashMap<>();
-    }
-    filters.add(param, value);
   }
 
   public List<String> getFilterValue(NameSearchParameter param) {
@@ -127,8 +138,12 @@ public class NameSearchRequest {
     return filters == null ? 0 : filters.size();
   }
 
-  public boolean containsFilter(NameSearchParameter filter) {
+  public boolean hasFilter(NameSearchParameter filter) {
     return filters == null ? false : filters.containsKey(filter);
+  }
+
+  public List<String> removeFilter(NameSearchParameter filter) {
+    return filters == null ? null : filters.remove(filter);
   }
 
   public void addFacet(NameSearchParameter facet) {
@@ -196,6 +211,13 @@ public class NameSearchRequest {
   @Override
   public int hashCode() {
     return Objects.hash(super.hashCode(), content, facets, filters, q, sortBy);
+  }
+
+  private void addToFilters(NameSearchParameter param, String value) {
+    if (filters == null) {
+      filters = new MultivaluedHashMap<>();
+    }
+    filters.add(param, value);
   }
 
 }

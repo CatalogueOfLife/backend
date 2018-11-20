@@ -3,8 +3,7 @@ package org.col.es.query;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 /**
- * Sort options when sorting on particular field. In the future we might want to sort on nested fields and/or by geo distance, which would
- * be done by modifying this class.
+ * Sort options when sorting on particular field.
  */
 @SuppressWarnings("unused")
 public class SortOptions {
