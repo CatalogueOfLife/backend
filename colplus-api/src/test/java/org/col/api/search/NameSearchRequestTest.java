@@ -43,7 +43,7 @@ public class NameSearchRequestTest {
       r.addFilter(p, Lists.newArrayList(val, val));
       assertEquals(ImmutableList.of(val, val, val), r.getFilterValue(p));
     }
-    assertEquals(NameSearchParameter.values().length, r.countFilters());
+    assertEquals(NameSearchParameter.values().length, r.getFilters().size());
   }
   
   private String testVal(NameSearchParameter p) {

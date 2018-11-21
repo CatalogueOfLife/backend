@@ -4,22 +4,32 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  * The main class modeling an ES query. I.e. serializing it to JSON will result in a valid ES query.
  */
 public class EsSearchRequest {
 
+  /**
+   * Guaranteed to produce an empty search request irrespective of (future) implementation details. Equivalent of {}.
+   */
+  public static EsSearchRequest emptyRequest() {
+    return new EsSearchRequest();
+  }
+
   private Integer size;
   private Integer from;
   private List<SortField> sort;
   private Query query;
-  private Map<String, Aggregation> aggs;
+  @JsonProperty("aggs") // "aggregations" actually also allowed but "aggs" more idiomatic
+  private Map<String, Aggregation> aggregations;
 
   public void addAggregation(String name, Aggregation agg) {
-    if (aggs == null) {
-      aggs = new LinkedHashMap<>();
+    if (aggregations == null) {
+      aggregations = new LinkedHashMap<>();
     }
-    aggs.put(name, agg);
+    aggregations.put(name, agg);
   }
 
   public Integer getSize() {
@@ -54,12 +64,12 @@ public class EsSearchRequest {
     this.query = query;
   }
 
-  public Map<String, Aggregation> getAggs() {
-    return aggs;
+  public Map<String, Aggregation> getAggregations() {
+    return aggregations;
   }
 
-  public void setAggs(Map<String, Aggregation> aggs) {
-    this.aggs = aggs;
+  public void setAggregations(Map<String, Aggregation> aggregations) {
+    this.aggregations = aggregations;
   }
 
 }

@@ -9,33 +9,37 @@ import org.col.api.model.Page;
 import org.col.api.model.ResultPage;
 
 public class NameSearchResponse extends ResultPage<NameUsageWrapper<?>> {
-  private Map<NameSearchParameter, List<FacetCount>> facets;
-  
+
+  private final Map<NameSearchParameter, List<FacetCount>> facets;
+
   public NameSearchResponse(Page page, int total, List<NameUsageWrapper<?>> result) {
     this(page, total, result, new HashMap<>());
   }
-  
+
   public NameSearchResponse(Page page, int total, List<NameUsageWrapper<?>> result, Map<NameSearchParameter, List<FacetCount>> facets) {
     super(page, total, result);
     this.facets = facets;
   }
-  
+
   public Map<NameSearchParameter, List<FacetCount>> getFacets() {
     return facets;
   }
-  
+
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
-    if (!super.equals(o)) return false;
+    if (this == o)
+      return true;
+    if (o == null || getClass() != o.getClass())
+      return false;
+    if (!super.equals(o))
+      return false;
     NameSearchResponse that = (NameSearchResponse) o;
     return Objects.equals(facets, that.facets);
   }
-  
+
   @Override
   public int hashCode() {
-    
+
     return Objects.hash(super.hashCode(), facets);
   }
 }

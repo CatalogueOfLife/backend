@@ -15,7 +15,7 @@ import org.col.es.model.EsNameUsage;
 public class SearchResponseTransfer {
   
   @SuppressWarnings("unchecked")
-  List<NameUsageWrapper<NameUsage>> transfer(SearchResponse<EsNameUsage> response) {
+  List<NameUsageWrapper<NameUsage>> transfer(EsSearchResponse<EsNameUsage> response) {
     if (response.getHits().getTotal() == 0) {
       return Collections.emptyList();
     }

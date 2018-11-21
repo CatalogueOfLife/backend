@@ -29,7 +29,6 @@ import org.col.api.vocab.TaxonomicStatus;
 import org.col.es.model.EsNameUsage;
 import org.col.es.query.EsSearchRequest;
 import org.col.es.query.SortField;
-import org.col.es.translate.NameSearchRequestTranslator;
 import org.elasticsearch.client.RestClient;
 import org.gbif.nameparser.api.Rank;
 import org.junit.AfterClass;
@@ -115,7 +114,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
   public void testSortDescending() throws InvalidQueryException {
     NameUsageTransfer transfer = new NameUsageTransfer();
 
-    EsSearchRequest esr = new NameSearchRequestTranslator(new NameSearchRequest(), new Page()).translate();
+    EsSearchRequest esr = EsSearchRequest.emptyRequest();
     esr.setSort(Arrays.asList(new SortField("scientificName", false), new SortField("rank", false)));
 
     // Create name usage in the order we expect them to come out, then shuffle.

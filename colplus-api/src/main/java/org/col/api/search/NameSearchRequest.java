@@ -1,6 +1,7 @@
 package org.col.api.search;
 
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -64,10 +65,10 @@ public class NameSearchRequest {
       copy.filters = new MultivaluedHashMap<>(filters);
     }
     if (facets != null) {
-      copy.facets = new LinkedHashSet<>(facets);
+      copy.facets = EnumSet.copyOf(facets);
     }
     if (content != null) {
-      copy.content = new LinkedHashSet<>(content);
+      copy.content = EnumSet.copyOf(content);
     }
     copy.q = q;
     copy.sortBy = sortBy;
@@ -96,11 +97,11 @@ public class NameSearchRequest {
   public void addFilter(NameSearchParameter param, String value) {
     value = StringUtils.trimToNull(value);
     if (value == null || value.equals(NULL_VALUE)) {
-      addToFilters(param, NULL_VALUE);
+      add(param, NULL_VALUE);
     } else if (value.equals(NOT_NULL_VALUE)) {
-      addToFilters(param, NOT_NULL_VALUE);
+      add(param, NOT_NULL_VALUE);
     } else if (param.isLegalValue(value)) {
-      addToFilters(param, value);
+      add(param, value);
     } else {
       String err = String.format("Illegal value for parameter %s: %s", param, value);
       throw new IllegalArgumentException(err);
@@ -113,13 +114,13 @@ public class NameSearchRequest {
       String err = String.format("Incompatible types: %s, %s", param.type().getSimpleName(), value.getClass().getSimpleName());
       throw new IllegalArgumentException(err);
     }
-    addToFilters(param, value.name());
+    add(param, value.name());
   }
 
   public void addFilter(NameSearchParameter param, Integer value) {
     Preconditions.checkNotNull(value, "Null values not allowed for non-strings");
     if (param.type() == Integer.class || param.type() == String.class) {
-      addToFilters(param, value.toString());
+      add(param, value.toString());
     } else {
       String err = String.format("Incompatible types: %s, %s", param.type().getSimpleName(), value.getClass().getSimpleName());
       throw new IllegalArgumentException(err);
@@ -131,11 +132,6 @@ public class NameSearchRequest {
       return null;
     }
     return filters.get(param);
-  }
-
-  @JsonIgnore
-  public int countFilters() {
-    return filters == null ? 0 : filters.size();
   }
 
   public boolean hasFilter(NameSearchParameter filter) {
@@ -213,7 +209,7 @@ public class NameSearchRequest {
     return Objects.hash(super.hashCode(), content, facets, filters, q, sortBy);
   }
 
-  private void addToFilters(NameSearchParameter param, String value) {
+  private void add(NameSearchParameter param, String value) {
     if (filters == null) {
       filters = new MultivaluedHashMap<>();
     }

@@ -1,6 +1,6 @@
 package org.col.es;
 
-public class InvalidQueryException extends Exception {
+public class InvalidQueryException extends EsException {
   
   public InvalidQueryException(String arg0) {
     super(arg0);

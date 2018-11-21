@@ -23,6 +23,7 @@ import org.elasticsearch.client.RestClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.col.common.util.CollectionUtils.isEmpty;
 import static org.col.es.EsConfig.DEFAULT_TYPE_NAME;
 import static org.col.es.EsConfig.NAME_USAGE_BASE;;
 
@@ -49,8 +50,11 @@ public class NameUsageSearchService {
   @VisibleForTesting
   ResultPage<NameUsageWrapper<NameUsage>> search(String index, NameSearchRequest query, Page page) throws InvalidQueryException {
     NameSearchRequestTranslator translator = new NameSearchRequestTranslator(query, page);
-    EsSearchRequest esQuery = translator.translate();
-    return search(index, esQuery, page);
+    if (isEmpty(query.getFacets())) {
+      EsSearchRequest esQuery = translator.generateMainQuery();
+      return search(index, esQuery, page);
+    }
+    return null;
   }
 
   @VisibleForTesting
@@ -61,7 +65,7 @@ public class NameUsageSearchService {
     Request httpRequest = new Request("GET", getUrl(index));
     httpRequest.setJsonEntity(writeQuery(esQuery, false));
     Response httpResponse = EsUtil.executeRequest(client, httpRequest);
-    SearchResponse<EsNameUsage> response = readResponse(httpResponse);
+    EsSearchResponse<EsNameUsage> response = readResponse(httpResponse);
     int total = response.getHits().getTotal();
     List<NameUsageWrapper<NameUsage>> nus = transfer.transfer(response);
     return new ResultPage<>(page, total, nus);
@@ -79,9 +83,9 @@ public class NameUsageSearchService {
     }
   }
 
-  private SearchResponse<EsNameUsage> readResponse(Response response) {
+  private EsSearchResponse<EsNameUsage> readResponse(Response response) {
     try {
-      SearchResponse<EsNameUsage> r = responseReader.readValue(response.getEntity().getContent());
+      EsSearchResponse<EsNameUsage> r = responseReader.readValue(response.getEntity().getContent());
       if (LOG.isDebugEnabled()) {
         LOG.debug("Receiving Response: " + responseWriter.writeValueAsString(r));
       }
@@ -92,11 +96,11 @@ public class NameUsageSearchService {
   }
 
   private static ObjectReader getResponseReader() {
-    return EsModule.MAPPER.readerFor(new TypeReference<SearchResponse<EsNameUsage>>() {});
+    return EsModule.MAPPER.readerFor(new TypeReference<EsSearchResponse<EsNameUsage>>() {});
   }
 
   private static ObjectWriter getResponseWriter() {
-    return EsModule.MAPPER.writerFor(new TypeReference<SearchResponse<EsNameUsage>>() {}).withDefaultPrettyPrinter();
+    return EsModule.MAPPER.writerFor(new TypeReference<EsSearchResponse<EsNameUsage>>() {}).withDefaultPrettyPrinter();
   }
 
   private static String getUrl(String indexName) {

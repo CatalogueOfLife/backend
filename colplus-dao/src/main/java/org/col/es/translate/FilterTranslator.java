@@ -2,7 +2,6 @@ package org.col.es.translate;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.col.api.search.NameSearchParameter;
@@ -18,42 +17,20 @@ import org.col.es.query.TermsQuery;
 
 import static org.col.api.search.NameSearchRequest.NOT_NULL_VALUE;
 import static org.col.api.search.NameSearchRequest.NULL_VALUE;
-import static org.col.common.util.CollectionUtils.isEmpty;
 
 /**
- * Translates all query parameters except the "q" parameter into an Elasticsearch query. Unless there is just one query parameter, this will
- * be an AND query. For example: ?rank=genus&nom_status=available is translated into (rank=genus AND nom_status=available). If a query
- * parameter maps to multiple Elasticsearch fields (meaning we need to query multiple fields for a single query parameter), these fields
- * will then be combined within a nested OR query. This is currently never the case. Also, the search request may contain multiple values
- * per request parameter (since it extends MultiValuedMap). For example: ?rank=order&rank=family&rank=genus. This will then result in an OR
- * constraint (rank=order OR rank=family OR rank=genus). Finally, a query parameter may be present but have no value, for example:
- * ?nom_status=&rank=family. This will be translated into an IS NULL constraint (nom_status IS NULL AND rank=family).
- *
+ * Translates a single request parameter into an Elasticsearch query. If the parameter is multi-valued and contains no symbolic values (like
+ * _NULL), a terms query will be generated; if it has a mixture of literal and symbolic values, an OR query will generated.
  */
-class NameSearchParamsTranslator {
+class FilterTranslator {
 
   private final NameSearchRequest request;
 
-  NameSearchParamsTranslator(NameSearchRequest request) {
+  FilterTranslator(NameSearchRequest request) {
     this.request = request;
   }
 
-  Query translate() throws InvalidQueryException {
-    if (isEmpty(request.getFilters())) {
-      return null;
-    }
-    Set<NameSearchParameter> params = request.getFilters().keySet();
-    if (params.size() == 1) {
-      return translate(params.iterator().next());
-    }
-    BoolQuery boolQuery = new BoolQuery();
-    for (NameSearchParameter param : params) {
-      boolQuery.filter(translate(param));
-    }
-    return boolQuery;
-  }
-
-  private Query translate(NameSearchParameter param) throws InvalidQueryException {
+  Query translate(NameSearchParameter param) throws InvalidQueryException {
     List<Query> queries = new ArrayList<>();
     String field = EsFieldLookup.INSTANCE.lookup(param);
     if (containsNullValue(param)) {
@@ -117,5 +94,4 @@ class NameSearchParamsTranslator {
   private boolean containsNotNullValue(NameSearchParameter param) {
     return request.getFilterValue(param).stream().anyMatch(s -> s.equals(NOT_NULL_VALUE));
   }
-
 }
