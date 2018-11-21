@@ -22,6 +22,7 @@ import org.col.api.vocab.Issue;
 import org.col.parser.ReferenceTypeParser;
 import org.col.parser.SafeParser;
 import org.gbif.dwc.terms.AcefTerm;
+import org.neo4j.graphdb.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -101,13 +102,23 @@ public class AcefInserter extends NeoInserter {
           AcefTerm.AcceptedTaxonID,
           (t, vn) -> t.vernacularNames.add(vn)
       );
-      reader.stream(AcefTerm.NameReferencesLinks).forEach(this::addReferenceLink);
   
     } catch (RuntimeException e) {
       throw new NormalizationFailedException("Failed to read ACEF files", e);
     }
   }
-
+  
+  @Override
+  public void postBatchInsert() throws NormalizationFailedException {
+    try (Transaction tx = store.getNeo().beginTx()){
+      reader.stream(AcefTerm.NameReferencesLinks).forEach(this::addReferenceLink);
+      tx.success();
+      
+    } catch (RuntimeException e) {
+      throw new NormalizationFailedException("Failed to read ACEF files", e);
+    }
+  }
+  
   @Override
   protected NodeBatchProcessor relationProcessor() {
     return new AcefRelationInserter(store, inter);
@@ -153,7 +164,7 @@ public class AcefInserter extends NeoInserter {
       } else {
         switch (refType) {
           case NomRef:
-            NeoName nn = store.names().objByNode(u.node);
+            NeoName nn = store.nameByUsage(u.node);
             nn.name.setPublishedInId(ref.getId());
             // we extract the page from CSL and also store it in the name
             // No deduplication of refs happening

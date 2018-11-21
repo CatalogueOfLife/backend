@@ -120,14 +120,14 @@ abstract class NormalizerITBase {
     if (accepted.size() != 1) {
       throw new IllegalStateException("Synonym has " + accepted.size() + " accepted taxa");
     }
-    return store.usageWithName(accepted.get(0).nameNode);
+    return store.usageWithName(accepted.get(0).usageNode);
   }
   
   public List<NeoUsage> parents(Node child, String... parentIdsToVerify) {
     List<NeoUsage> parents = new ArrayList<>();
     int idx = 0;
-    for (RankedName rn : store.parents(child)) {
-      NeoUsage u = store.usageWithName(rn.nameNode);
+    for (RankedUsage rn : store.parents(child)) {
+      NeoUsage u = store.usageWithName(rn.usageNode);
       parents.add(u);
       if (parentIdsToVerify != null) {
         assertEquals(u.getId(), parentIdsToVerify[idx]);

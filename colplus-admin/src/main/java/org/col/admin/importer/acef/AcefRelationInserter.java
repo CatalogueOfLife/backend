@@ -32,12 +32,12 @@ public class AcefRelationInserter extends RelationInserterBase {
     if (AcefTerm.AcceptedInfraSpecificTaxa == v.getType()) {
       // finally we have all pieces to also interpret infraspecific names
       // even with a missing parent, we will still try to build a name
-      final NeoName nn = store.names().objByNode(u.node);
+      final NeoName nn = store.nameByUsage(u.node);
       String genus = null;
       String infragenericEpithet = null;
       String specificEpithet = null;
       if (p != null) {
-        NeoName sp = store.names().objByNode(p);
+        NeoName sp = store.nameByUsage(p);
         genus = sp.name.getGenus();
         infragenericEpithet = sp.name.getInfragenericEpithet();
         specificEpithet = sp.name.getSpecificEpithet();
@@ -57,6 +57,7 @@ public class AcefRelationInserter extends RelationInserterBase {
       
       } else {
         // remove name & taxon from store, only keeping the verbatim
+        store.remove(nn.node);
         store.remove(u.node);
       }
     }

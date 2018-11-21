@@ -2,6 +2,8 @@ package org.col.admin.importer;
 
 import org.col.admin.importer.neo.NeoDb;
 import org.col.admin.importer.neo.NodeBatchProcessor;
+import org.col.admin.importer.neo.model.Labels;
+import org.col.admin.importer.neo.model.NeoName;
 import org.col.admin.importer.neo.model.NeoProperties;
 import org.col.admin.importer.neo.model.NeoUsage;
 import org.col.api.model.VerbatimRecord;
@@ -16,54 +18,67 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class RelationInserterBase implements NodeBatchProcessor {
   private static final Logger LOG = LoggerFactory.getLogger(RelationInserterBase.class);
-
+  
   protected final NeoDb store;
   private final Term acceptedTerm;
   private final Term parentTerm;
-
+  
   public RelationInserterBase(NeoDb store, Term acceptedTerm, Term parentTerm) {
     this.store = store;
     this.acceptedTerm = acceptedTerm;
     this.parentTerm = parentTerm;
   }
-
+  
   @Override
   public void process(Node n) {
-    try {
-      NeoUsage u = store.usages().objByNode(n);
-      if (u.getVerbatimKey() != null) {
-        VerbatimRecord v = store.getVerbatim(u.getVerbatimKey());
-        Node p;
-        if (u.isSynonym()) {
-          p = usageByID(acceptedTerm, v, u);
-          if (p != null) {
-            store.createSynonymRel(u.node, p);
+    if (n.hasLabel(Labels.USAGE)) {
+      try {
+        NeoUsage u = store.usages().objByNode(n);
+        if (u.getVerbatimKey() != null) {
+          VerbatimRecord v = store.getVerbatim(u.getVerbatimKey());
+          Node p;
+          if (u.isSynonym()) {
+            p = usageByID(acceptedTerm, v, u);
+            if (p != null) {
+              store.createSynonymRel(u.node, p);
+            } else {
+              // if we ain't got no idea of the accepted insert just the name
+              v.addIssues(Issue.ACCEPTED_ID_INVALID, Issue.ACCEPTED_NAME_MISSING);
+            }
+            
           } else {
-            // if we ain't got no idea of the accepted insert just the name
-            v.addIssues(Issue.ACCEPTED_ID_INVALID, Issue.ACCEPTED_NAME_MISSING);
+            p = usageByID(parentTerm, v, u);
+            if (p != null) {
+              store.assignParent(p, u.node);
+            } else {
+              v.addIssue(Issue.PARENT_ID_INVALID);
+            }
           }
-
-        } else {
-          p = usageByID(parentTerm, v, u);
-          if (p != null) {
-            store.assignParent(p, u.node);
-          } else {
-            v.addIssue(Issue.PARENT_ID_INVALID);
-          }
+          
+          processVerbatimUsage(u, v, p);
+          
+          store.put(v);
         }
-  
-        processVerbatimUsage(u, v, p);
-        
-        store.put(v);
+      } catch (Exception e) {
+        LOG.error("error processing explicit relations for usage {} {}", n, NeoProperties.getRankedUsage(n), e);
       }
+    } else if (n.hasLabel(Labels.NAME)){
 
-    } catch (Exception e) {
-      LOG.error("error processing explicit relations for {} {}", n, NeoProperties.getScientificNameWithAuthor(n), e);
+      try {
+        NeoName nn = store.names().objByNode(n);
+        if (nn.getVerbatimKey() != null) {
+          VerbatimRecord v = store.getVerbatim(nn.getVerbatimKey());
+          processVerbatimName(nn, v);
+          store.put(v);
+        }
+      } catch (Exception e) {
+        LOG.error("error processing explicit relations for name {} {}", n, NeoProperties.getScientificNameWithAuthor(n), e);
+      }
+      
     }
   }
   
   /**
-   *
    * @param u
    * @param v
    * @param p parent (usage=taxon) or accepted (usage=synonym) node
@@ -72,6 +87,14 @@ public abstract class RelationInserterBase implements NodeBatchProcessor {
     // override to do further processing per usage node
   }
   
+  /**
+   * @param n
+   * @param v
+   */
+  protected void processVerbatimName(NeoName n, VerbatimRecord v) {
+    // override to do further processing per name node
+  }
+
   /**
    * Reads a verbatim given term that should represent a foreign key to another record via the taxonID.
    * If the value is not the same as the original records taxonID it tries to split the ids into multiple keys and lookup the matching nodes.

@@ -53,6 +53,11 @@ public abstract class NeoInserter {
     store.endBatchMode();
     LOG.info("Neo batch inserter closed, data flushed to disk");
     
+    final int batchV = vcounter;
+    final int batchRec = store.size();
+    postBatchInsert();
+    LOG.info("Post batch insert completed, {} verbatim records processed creating {} new nodes", batchV, store.size() - batchRec);
+    
     LOG.debug("Start processing explicit relations ...");
     store.process(null,5000, relationProcessor());
 
@@ -140,6 +145,10 @@ public abstract class NeoInserter {
   }
 
   public abstract void batchInsert() throws NormalizationFailedException;
+  
+  public void postBatchInsert() throws NormalizationFailedException {
+    // nothing by default
+  }
   
   protected abstract NodeBatchProcessor relationProcessor();
 
