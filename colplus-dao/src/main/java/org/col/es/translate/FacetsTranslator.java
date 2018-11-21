@@ -34,8 +34,8 @@ class FacetsTranslator {
       String field = EsFieldLookup.INSTANCE.lookup(facet);
       NameSearchRequest copy = request.copy();
       copy.removeFilter(facet);
-      Query filter = NameSearchRequestTranslator.generateQuery(copy);
-      aggs.put(field, new FacetAggregation(field, filter));
+      Query filter = NameSearchRequestTranslator.generateQuery(copy, false);
+      aggs.put(field.toUpperCase() + "_FACET", new FacetAggregation(field, filter));
     }
     return aggs;
   }

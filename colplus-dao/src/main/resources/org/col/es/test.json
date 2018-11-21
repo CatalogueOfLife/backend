@@ -1,0 +1,172 @@
+{
+	"size": 0,
+	"query": {
+		"bool": {
+			"filter": [
+				{
+					"term": {
+						"nameId": {
+							"value": "ABCDEFG"
+						}
+					}
+				},
+				{
+					"bool": {
+						"should": [
+							{
+								"match": {
+									"authorship.ac": {
+										"query": "anim",
+										"operator": "AND"
+									}
+								}
+							},
+							{
+								"match": {
+									"vernacularNames.ac": {
+										"query": "anim",
+										"operator": "AND"
+									}
+								}
+							}
+						]
+					}
+				}
+			]
+		}
+	},
+	"aggs": {
+		"DATASETKEY_FACET": {
+			"filter": {
+				"bool": {
+					"filter": [
+						{
+							"term": {
+								"rank": {
+									"value": 2
+								}
+							}
+						},
+						{
+							"terms": {
+								"issues": [
+									43,
+									35,
+									50
+								]
+							}
+						}
+					]
+				}
+			},
+			"aggs": {
+				"DATASETKEY_UNIQUE_VALUES": {
+					"terms": {
+						"field": "datasetKey"
+					}
+				}
+			}
+		},
+		"RANK_FACET": {
+			"filter": {
+				"bool": {
+					"filter": [
+						{
+							"terms": {
+								"datasetKey": [
+									10,
+									12
+								]
+							}
+						},
+						{
+							"terms": {
+								"issues": [
+									43,
+									35,
+									50
+								]
+							}
+						}
+					]
+				}
+			},
+			"aggs": {
+				"RANK_UNIQUE_VALUES": {
+					"terms": {
+						"field": "rank"
+					}
+				}
+			}
+		},
+		"STATUS_FACET": {
+			"filter": {
+				"bool": {
+					"filter": [
+						{
+							"term": {
+								"rank": {
+									"value": 2
+								}
+							}
+						},
+						{
+							"terms": {
+								"datasetKey": [
+									10,
+									12
+								]
+							}
+						},
+						{
+							"terms": {
+								"issues": [
+									43,
+									35,
+									50
+								]
+							}
+						}
+					]
+				}
+			},
+			"aggs": {
+				"STATUS_UNIQUE_VALUES": {
+					"terms": {
+						"field": "status"
+					}
+				}
+			}
+		},
+		"ISSUES_FACET": {
+			"filter": {
+				"bool": {
+					"filter": [
+						{
+							"term": {
+								"rank": {
+									"value": 2
+								}
+							}
+						},
+						{
+							"terms": {
+								"datasetKey": [
+									10,
+									12
+								]
+							}
+						}
+					]
+				}
+			},
+			"aggs": {
+				"ISSUES_UNIQUE_VALUES": {
+					"terms": {
+						"field": "issues"
+					}
+				}
+			}
+		}
+	}
+}

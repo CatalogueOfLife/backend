@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.col.es.EsModule;
 import org.col.es.IndexConfig;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -17,6 +18,13 @@ public class QueryTest {
   @BeforeClass
   public static void init() {
     cfg.modelClass = "org.col.es.model.EsNameUsage";
+  }
+  
+  @Before
+  public void before() {
+    System.out.println();
+    System.out.println("------------------------------------------------------------");
+    System.out.println();
   }
 
   @Test
@@ -66,7 +74,7 @@ public class QueryTest {
     esr.setQuery(new PrefixQuery("genus", "Parus"));
     System.out.println(serialize(esr));
   }
-
+  
   private static String serialize(Object obj) {
     try {
       return EsModule.QUERY_WRITER.withDefaultPrettyPrinter().writeValueAsString(obj);

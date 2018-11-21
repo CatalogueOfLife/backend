@@ -4,7 +4,7 @@ public class FacetAggregation extends FilterAggregation {
 
   public FacetAggregation(String field, Query filter) {
     super(filter);
-    addNestedAggregation(field + "_facet", new TermsAggregation(field));
+    addNestedAggregation(field.toUpperCase() + "_UNIQUE_VALUES", new TermsAggregation(field));
   }
 
 }
