@@ -43,7 +43,7 @@ public class NameSearchRequest {
    */
   public static final String NULL_VALUE = "_NULL";
 
-  private MultivaluedHashMap<NameSearchParameter, String> filters;
+  private MultivaluedMap<NameSearchParameter, String> filters;
 
   @QueryParam("facet")
   private Set<NameSearchParameter> facets;
@@ -62,7 +62,9 @@ public class NameSearchRequest {
   public NameSearchRequest copy() {
     NameSearchRequest copy = new NameSearchRequest();
     if (filters != null) {
-      copy.filters = new MultivaluedHashMap<>(filters);
+      copy.filters = new MultivaluedHashMap<>();
+      copy.filters.putAll(filters);
+      // Can't use copy constructor for some reason. Works in Eclipse, but not with maven build
     }
     if (facets != null) {
       copy.facets = EnumSet.copyOf(facets);
@@ -149,7 +151,7 @@ public class NameSearchRequest {
     facets.add(facet);
   }
 
-  public MultivaluedHashMap<NameSearchParameter, String> getFilters() {
+  public MultivaluedMap<NameSearchParameter, String> getFilters() {
     return filters;
   }
 
