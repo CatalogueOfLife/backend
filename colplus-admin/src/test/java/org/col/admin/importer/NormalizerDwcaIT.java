@@ -15,9 +15,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Transaction;
-import org.neo4j.graphdb.schema.IndexDefinition;
 import org.neo4j.graphdb.schema.Schema;
-import org.neo4j.helpers.collection.Iterables;
 import org.neo4j.helpers.collection.Iterators;
 
 import static org.junit.Assert.*;
@@ -198,23 +196,20 @@ public class NormalizerDwcaIT extends NormalizerITBase {
   @Test
   public void testNeoIndices() throws Exception {
     normalize(1);
-
-    Set<String> taxonIndices = Sets.newHashSet();
-    taxonIndices.add(NeoProperties.SCIENTIFIC_NAME);
+    
+    // no indices!
     try (Transaction tx = store.getNeo().beginTx()) {
       Schema schema = store.getNeo().schema();
-      for (IndexDefinition idf : schema.getIndexes(Labels.TAXON)) {
-        List<String> idxProps = Iterables.asList(idf.getPropertyKeys());
-        assertTrue(idxProps.size() == 1);
-        assertTrue(taxonIndices.remove(idxProps.get(0)));
-      }
+      assertFalse(schema.getIndexes().iterator().hasNext());
 
       // 1001, Crepis bakeri Greene
       assertNotNull(Iterators.singleOrNull(
-          store.getNeo().findNodes(Labels.TAXON, NeoProperties.SCIENTIFIC_NAME, "Crepis bakeri")));
-
+          store.getNeo().findNodes(Labels.NAME, NeoProperties.SCIENTIFIC_NAME, "Crepis bakeri")
+      ));
+  
       assertNull(Iterators.singleOrNull(
-          store.getNeo().findNodes(Labels.TAXON, NeoProperties.SCIENTIFIC_NAME, "xCrepis bakeri")));
+          store.getNeo().findNodes(Labels.NAME, NeoProperties.SCIENTIFIC_NAME, "xCrepis bakeri")
+      ));
     }
   }
 
@@ -249,8 +244,8 @@ public class NormalizerDwcaIT extends NormalizerITBase {
       expectedAccepted.put("10000", "Calendula incana subsp. incana");
       expectedAccepted.put("10002", "Calendula incana subsp. maderensis");
 
-      for (RankedName acc : store.accepted(syn.node)) {
-        assertEquals(expectedAccepted.remove(store.usages().objByNode(acc.nameNode).getId()), acc.name);
+      for (RankedUsage acc : store.accepted(syn.node)) {
+        assertEquals(expectedAccepted.remove(store.names().objByNode(acc.nameNode).getId()), acc.name);
       }
       assertTrue(expectedAccepted.isEmpty());
     }
@@ -267,7 +262,7 @@ public class NormalizerDwcaIT extends NormalizerITBase {
       NeoUsage reptans1 = usageByID("7");
       NeoUsage reptans2 = usageByID("8");
       assertEquals(reptans1.usage.getName().getHomotypicNameId(), reptans2.usage.getName().getHomotypicNameId());
-      assertFalse(annua1.usage.getName().getHomotypicNameId().equals(reptans1.usage.getName().getHomotypicNameId()));
+      assertNotEquals(annua1.usage.getName().getHomotypicNameId(), reptans1.usage.getName().getHomotypicNameId());
 
       List<String> homos = Lists.newArrayList("4", "5", "7", "8");
       store.names().all().forEach(nn -> {
@@ -286,7 +281,9 @@ public class NormalizerDwcaIT extends NormalizerITBase {
       NeoUsage t10 = usageByID("10");
       NeoUsage t11 = usageByID("11");
       assertEquals(t10.usage.getName().getHomotypicNameId(), t11.usage.getName().getHomotypicNameId());
-      List<NameRelation> rels = store.relations(t10.node);
+      
+      NeoName nn = nameByID("10");
+      List<NameRelation> rels = store.relations(nn.node);
       assertEquals(1, rels.size());
       assertEquals(NomRelType.BASED_ON, rels.get(0).getType());
     }
@@ -295,21 +292,21 @@ public class NormalizerDwcaIT extends NormalizerITBase {
   @Test
   public void testIssueFlagging() throws Exception {
     normalize(31);
-
+    debug();
     try (Transaction tx = store.getNeo().beginTx()) {
-      VerbatimRecord t9 = vByID("9");
-      // TODO: fix https://github.com/Sp2000/colplus-backend/issues/118
-      // assertTrue(t9.hasIssue(Issue.PUBLISHED_BEFORE_GENUS));
+      VerbatimRecord t9 = vByUsageID("9");
+      VerbatimRecord v9 = vByNameID("9");
+      assertTrue(t9.hasIssue(Issue.PUBLISHED_BEFORE_GENUS));
       assertFalse(t9.hasIssue(Issue.PARENT_NAME_MISMATCH));
 
-      VerbatimRecord t11 = vByID("11");
+      VerbatimRecord t11 = vByUsageID("11");
       assertTrue(t11.hasIssue(Issue.PARENT_NAME_MISMATCH));
 
-      VerbatimRecord t103 = vByID("103");
+      VerbatimRecord t103 = vByUsageID("103");
       assertFalse(t103.hasIssue(Issue.PUBLISHED_BEFORE_GENUS));
       assertFalse(t103.hasIssue(Issue.PARENT_NAME_MISMATCH));
 
-      VerbatimRecord t104 = vByID("104");
+      VerbatimRecord t104 = vByUsageID("104");
       assertTrue(t104.hasIssue(Issue.PUBLISHED_BEFORE_GENUS));
     }
   }

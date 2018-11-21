@@ -210,9 +210,11 @@ public class NeoDb implements ReferenceStore {
   
   public NeoUsage usageWithName(Node n) {
     NeoUsage u = usages().objByNode(n);
-    NeoName nn = nameByUsage(n);
-    u.usage.setName(nn.name);
-    u.nameNode = nn.node;
+    if (u != null) {
+      NeoName nn = nameByUsage(n);
+      u.usage.setName(nn.name);
+      u.nameNode = nn.node;
+    }
     return u;
   }
   
@@ -223,8 +225,8 @@ public class NeoDb implements ReferenceStore {
     NameRelation nr = new NameRelation();
     nr.setDatasetKey(datasetKey);
     nr.setType(RelType.valueOf(r.getType().name()).nomRelType);
-    nr.setNameId(usages.objByNode(r.getStartNode()).getId());
-    nr.setRelatedNameId(usages.objByNode(r.getEndNode()).getId());
+    nr.setNameId(names.objByNode(r.getStartNode()).getId());
+    nr.setRelatedNameId(names.objByNode(r.getEndNode()).getId());
     nr.setNote((String) r.getProperty(NeoProperties.NOTE, null));
     nr.setPublishedInId((String) r.getProperty(NeoProperties.REF_ID, null));
     if (r.hasProperty(NeoProperties.VERBATIM_KEY)) {
@@ -238,21 +240,28 @@ public class NeoDb implements ReferenceStore {
    */
   public List<NameRelation> relations(Node n) {
     return Iterables.stream(n.getRelationships())
-        .filter(r -> RelType.valueOf(r.getType().name()).nomRelType != null)
+        .filter(r -> RelType.valueOf(r.getType().name()).isNameRel())
         .map(this::toRelation)
         .collect(Collectors.toList());
   }
   
-  public List<Node> usagesByName(String scientificName, Rank rank, boolean inclUnranked) {
+  public List<Node> usagesByName(String scientificName, @Nullable String authorship, @Nullable Rank rank, boolean inclUnranked) {
     List<Node> names = names().nodesByName(scientificName);
-    names.removeIf(n -> {
-      Rank r = NeoProperties.getRank(n, Rank.UNRANKED);
-      if (inclUnranked) {
-        return !r.equals(rank) && r != Rank.UNRANKED;
-      } else {
-        return !r.equals(rank);
-      }
-    });
+    // filter ranks
+    if (rank != null) {
+      names.removeIf(n -> {
+        Rank r = NeoProperties.getRank(n, Rank.UNRANKED);
+        if (inclUnranked) {
+          return !r.equals(rank) && r != Rank.UNRANKED;
+        } else {
+          return !r.equals(rank);
+        }
+      });
+    }
+    // filter authorship
+    if (authorship != null) {
+      names.removeIf(n -> !authorship.equalsIgnoreCase(NeoProperties.getAuthorship(n)));
+    }
   
     List<Node> taxa = new ArrayList<>();
     for (Node n : names) {

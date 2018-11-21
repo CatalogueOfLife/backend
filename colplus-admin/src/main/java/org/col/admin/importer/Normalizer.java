@@ -187,9 +187,9 @@ public class Normalizer implements Callable<Boolean> {
         RankedUsage ru = NeoProperties.getRankedUsage(n);
         if (ru.rank.isSpeciesOrBelow()) {
           NeoName sp = store.names().objByNode(ru.nameNode);
-          Node gn = Traversals.parentWithRankOf(sp.node, Rank.GENUS);
+          Node gn = Traversals.parentWithRankOf(ru.usageNode, Rank.GENUS);
           if (gn != null) {
-            NeoName g = store.names().objByNode(gn);
+            NeoName g = store.nameByUsage(gn);
             // does the genus name match up?
             if (sp.name.isParsed() && g.name.isParsed() && !Objects.equals(sp.name.getGenus(), g.name.getUninomial())) {
               store.addIssues(sp.name, Issue.PARENT_NAME_MISMATCH);
@@ -534,7 +534,7 @@ public class Normalizer implements Callable<Boolean> {
       if ((taxon.rank == null || !taxon.rank.higherThan(hr)) && cl.getByRank(hr) != null) {
         // test for existing usage with that name & rank (allowing also unranked names)
         boolean found = false;
-        for (Node n : store.usagesByName(cl.getByRank(hr), hr, true)) {
+        for (Node n : store.usagesByName(cl.getByRank(hr), null, hr, true)) {
           if (parent == null) {
             // make sure node does also not have a higher linnean rank parent
             Node p = Iterables.firstOrNull(Traversals.CLASSIFICATION.traverse(n).nodes());

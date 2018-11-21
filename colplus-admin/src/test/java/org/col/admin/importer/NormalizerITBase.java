@@ -91,8 +91,12 @@ abstract class NormalizerITBase {
     }
   }
 
-  public VerbatimRecord vByID(String id) {
+  public VerbatimRecord vByNameID(String id) {
     return store.getVerbatim(store.names().objByID(id).getVerbatimKey());
+  }
+  
+  public VerbatimRecord vByUsageID(String id) {
+    return store.getVerbatim(store.usages().objByID(id).getVerbatimKey());
   }
   
   
@@ -101,19 +105,14 @@ abstract class NormalizerITBase {
   }
   
   public NeoUsage byName(String name, @Nullable String author) {
-    List<Node> nodes = store.names().nodesByName(name);
-    // filter by author
-    if (author != null) {
-      nodes.removeIf(n -> !author.equalsIgnoreCase(NeoProperties.getAuthorship(n)));
-    }
-
-    if (nodes.isEmpty()) {
+    List<Node> usageNodes = store.usagesByName(name, author, null, true);
+    if (usageNodes.isEmpty()) {
       throw new NotFoundException();
     }
-    if (nodes.size() > 1) {
+    if (usageNodes.size() > 1) {
       throw new NotUniqueRuntimeException("scientificName", name);
     }
-    return store.usageWithName(nodes.get(0));
+    return store.usageWithName(usageNodes.get(0));
   }
   
   public NeoUsage accepted(Node syn) {

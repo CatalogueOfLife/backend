@@ -213,7 +213,7 @@ public class DwcInterpreter extends InterpreterBase {
     if (opt.isPresent()) {
       Name n = opt.get().getName();
       if (v.hasTerm(DwcTerm.namePublishedInID) || v.hasTerm(DwcTerm.namePublishedIn)) {
-        Reference ref = refFactory.fromCitation(v.get(DwcTerm.namePublishedInID), v.get(DwcTerm.namePublishedIn), v);
+        Reference ref = refFactory.fromDWC(v.get(DwcTerm.namePublishedInID), v.get(DwcTerm.namePublishedIn), v.get(DwcTerm.namePublishedInYear), v);
         if (ref != null) {
           store.create(ref);
           n.setPublishedInId(ref.getId());
