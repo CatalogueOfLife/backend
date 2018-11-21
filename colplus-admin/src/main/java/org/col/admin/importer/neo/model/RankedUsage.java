@@ -15,4 +15,7 @@ public class RankedUsage extends RankedName {
     return (int) usageNode.getId();
   }
   
+  public boolean isSynonym() {
+    return usageNode.hasLabel(Labels.SYNONYM);
+  }
 }

@@ -27,6 +27,10 @@ public class RankedName {
     return (int) nameNode.getId();
   }
 
+  public String getNameWithAuthor() {
+    return author == null ? name : name + " " + author;
+  }
+  
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();

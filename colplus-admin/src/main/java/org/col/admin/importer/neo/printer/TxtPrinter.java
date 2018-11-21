@@ -3,8 +3,7 @@ package org.col.admin.importer.neo.printer;
 import java.io.IOException;
 import java.io.Writer;
 
-import org.col.admin.importer.neo.model.Labels;
-import org.col.admin.importer.neo.model.NeoProperties;
+import org.col.admin.importer.neo.model.RankedUsage;
 import org.col.admin.importer.neo.model.RelType;
 import org.gbif.nameparser.api.Rank;
 import org.neo4j.graphdb.Direction;
@@ -33,7 +32,7 @@ Plantae [kingdom]
 </pre>
  *
  */
-public class TxtPrinter implements TreePrinter {
+public class TxtPrinter extends BasePrinter {
   public static final String SYNONYM_SYMBOL = "*";
   public static final String BASIONYM_SYMBOL = "$";
 
@@ -42,12 +41,13 @@ public class TxtPrinter implements TreePrinter {
   private final Writer writer;
   
   public TxtPrinter(Writer writer) {
+    super(true);
     this.writer = writer;
   }
 
   @Override
-  public void start(Node n) {
-    print(n);
+  public void start(RankedUsage u) {
+    print(u);
     level++;
   }
 
@@ -56,29 +56,28 @@ public class TxtPrinter implements TreePrinter {
     level--;
   }
 
-  private void print(Node n) {
+  private void print(RankedUsage u) {
     try {
       //writer.write(String.valueOf(n.getId()));
       writer.write(StringUtils.repeat(' ', level * indentation));
-      if (n.hasLabel(Labels.SYNONYM)) {
+      if (u.isSynonym()) {
         writer.write(SYNONYM_SYMBOL);
-        if (n.getDegree(RelType.SYNONYM_OF, Direction.OUTGOING) > 1) {
+        if (u.usageNode.getDegree(RelType.SYNONYM_OF, Direction.OUTGOING) > 1) {
           // flag pro parte synonyms with an extra asterisk
           writer.write(SYNONYM_SYMBOL);
         }
       }
-      if (n.hasRelationship(RelType.HAS_BASIONYM, Direction.INCOMING)) {
+      if (u.nameNode.hasRelationship(RelType.HAS_BASIONYM, Direction.INCOMING)) {
         writer.write(BASIONYM_SYMBOL);
       }
-      writer.write(NeoProperties.getScientificName(n));
-      String author = NeoProperties.getAuthorship(n);
-      if (!org.apache.commons.lang3.StringUtils.isBlank(author)) {
+      writer.write(u.name);
+      if (!org.apache.commons.lang3.StringUtils.isBlank(u.author)) {
         writer.write(" ");
-        writer.write(author);
+        writer.write(u.author);
       }
-      if (n.hasProperty(NeoProperties.RANK)) {
+      if (u.rank != null && u.rank != Rank.UNRANKED) {
         writer.write(" [");
-        writer.write(Rank.values()[(Integer) n.getProperty(NeoProperties.RANK)].name().toLowerCase());
+        writer.write(u.rank.name().toLowerCase());
         writer.write("]");
       }
       writer.write("\n");
@@ -87,9 +86,5 @@ public class TxtPrinter implements TreePrinter {
       throw new RuntimeException(e);
     }
   }
-
-  @Override
-  public void close() {
-
-  }
+  
 }

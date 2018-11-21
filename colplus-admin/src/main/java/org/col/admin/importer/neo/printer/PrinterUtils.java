@@ -8,6 +8,7 @@ import javax.annotation.Nullable;
 
 import com.google.common.base.Function;
 import com.google.common.io.Files;
+import org.col.admin.importer.neo.DotProcessor;
 import org.col.admin.importer.neo.NeoDb;
 import org.col.admin.importer.neo.model.NeoProperties;
 import org.col.admin.importer.neo.traverse.Traversals;
@@ -48,24 +49,23 @@ public class PrinterUtils {
    * Synonyms are marked with a prepended asterisk.
    */
   public static void printTree(GraphDatabaseService neo, Writer writer, GraphFormat format, @Nullable Rank lowestRank, @Nullable Node root) throws Exception {
-    TreePrinter printer;
-    Function<Node, String> func = getScientificWithAuthorship;
+    BasePrinter printer;
 
     switch (format) {
       case GML:
-        printer = new GmlPrinter(writer, lowestRank, func, true);
+        printer = new GmlPrinter(writer, lowestRank, true);
         break;
 
       case DOT:
-        printer = new DotPrinter(writer, lowestRank, func, false);
+        printer = new DotPrinter(writer, lowestRank);
         break;
 
       case LIST:
-        printer = new ListPrinter(writer, func);
+        printer = new ListPrinter(writer);
         break;
 
       case TAB:
-        printer = new TabPrinter(writer, func);
+        printer = new TabPrinter(writer);
         break;
 
       default:
@@ -82,14 +82,13 @@ public class PrinterUtils {
    * It does not require a root node but dumps all nodes and relations.
    */
   public static void dumpDotFile(GraphDatabaseService neo, Writer writer) throws Exception {
-    DotPrinter printer = new DotPrinter(writer, null, getScientificWithAuthorship, true);;
-    try (Transaction tx = neo.beginTx()) {
+    try (DotProcessor dot = new DotProcessor(writer);
+         Transaction tx = neo.beginTx()
+    ) {
       for (Node n : neo.getAllNodes()) {
-        printer.start(n);
-        printer.end(n);
+        dot.accept(n);
       }
     }
-    printer.close();
     writer.flush();
   }
   
