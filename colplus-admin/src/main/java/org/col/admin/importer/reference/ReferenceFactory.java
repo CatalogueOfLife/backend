@@ -5,6 +5,10 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.annotation.Nullable;
+
+import com.google.common.annotations.VisibleForTesting;
+import org.apache.commons.lang3.CharSet;
 import org.apache.commons.lang3.StringUtils;
 import org.col.api.model.CslData;
 import org.col.api.model.CslDate;
@@ -18,6 +22,7 @@ import org.col.parser.UnparsableException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.col.common.text.StringUtils.hasContent;
 /**
  * Dataset specific factory for reference instances. It mostly manages the CSL parsing and works
  * with variously structured input forms. Responsible for detecting and flagging of issues in
@@ -29,6 +34,7 @@ public class ReferenceFactory {
 
   private static final Logger LOG = LoggerFactory.getLogger(ReferenceFactory.class);
   private static final Pattern YEAR_PATTERN = Pattern.compile("(^|\\D+)(\\d{4})($|\\D+)");
+  private static final CharSet PUNCTUATIONS = CharSet.getInstance(".?!;:,");
 
   private final Integer datasetKey;
   private ReferenceStore store;
@@ -70,7 +76,7 @@ public class ReferenceFactory {
   public Reference fromACEF(String referenceID, String authors, String year, String title, String details, IssueContainer issues) {
     Reference ref = newReference(referenceID);
     ref.setYear(parseYear(year));
-    if (!allEmpty(authors, year, title, details)) {
+    if (hasContent(authors, year, title, details)) {
       ref.setCitation(buildCitation(authors, year, title, details));
       CslData csl = new CslData();
       ref.setCsl(csl);
@@ -102,15 +108,20 @@ public class ReferenceFactory {
      * @param issues
      * @return
      */
-  public Reference fromDC(String identifier, String bibliographicCitation, String creator,
-      String date, String title, String source, IssueContainer issues) {
+  public Reference fromDC(String identifier, String bibliographicCitation,
+                          String creator, String date, String title, String source,
+                          IssueContainer issues) {
     Reference ref = find(identifier, bibliographicCitation);
     if (ref == null) {
       ref = newReference(identifier);
-      ref.setCitation(bibliographicCitation);
+      if (!StringUtils.isBlank(bibliographicCitation)) {
+        ref.setCitation(bibliographicCitation);
+      }
       ref.setYear(parseYear(date));
-      if (!allEmpty(creator, date, title, source)) {
-        ref.setCitation(buildCitation(creator, date, title, source));
+      if (hasContent(creator, date, title, source)) {
+        if (ref.getCitation() == null) {
+          ref.setCitation(buildCitation(creator, date, title, source));
+        }
         CslData csl = new CslData();
         ref.setCsl(csl);
         csl.setAuthor(getAuthors(creator));
@@ -134,13 +145,16 @@ public class ReferenceFactory {
    * @param issues
    * @return
    */
-  public Reference fromDWC(String publishedInID, String publishedIn, String publishedInYear,
-      IssueContainer issues) {
-    Reference ref = find(publishedInID, publishedIn);
+  public Reference fromDWC(String publishedInID, String publishedIn, String publishedInYear, IssueContainer issues) {
+    String citation = publishedIn;
+    if (publishedIn != null && publishedInYear != null && !publishedIn.contains(publishedInYear)) {
+      citation = buildCitation(null, publishedInYear, publishedIn, null);
+    }
+    Reference ref = find(publishedInID, citation);
     if (ref == null) {
       ref = newReference(publishedInID);
       if (!StringUtils.isEmpty(publishedIn)) {
-        ref.setCitation(publishedIn);
+        ref.setCitation(citation);
         issues.addIssue(Issue.CITATION_UNPARSED);
       }   
       ref.setYear(parseYear(publishedInYear));
@@ -217,40 +231,55 @@ public class ReferenceFactory {
   private static String nullIfEmpty(String s) {
     return StringUtils.isEmpty(s) ? null : s;
   }
-
-  private static String buildCitation(String authors, String year, String title, String container) {
+  
+  /**
+   * Produces a citation string of the following format:
+   * AUTHOR. TITLE. CONTAINER. YEAR
+   * @param authors
+   * @param year
+   * @param title
+   * @param container
+   * @return the full citation string
+   */
+  @VisibleForTesting
+  protected static String buildCitation(@Nullable String authors, @Nullable String year, @Nullable String title, @Nullable String container) {
     StringBuilder sb = new StringBuilder();
     if (!StringUtils.isEmpty(authors)) {
       sb.append(authors.trim());
+      appendDotIfMissing(sb);
     }
-    if (!StringUtils.isEmpty(year)) {
-      if (sb.length() > 0) {
-        sb.append(' ');
-      }
-      sb.append("(").append(year).append(")");
-    }
-    if (sb.length() > 0) {
-      sb.append('.');
-    }
+  
     if (!StringUtils.isEmpty(title)) {
-      if (sb.length() > 0) {
-        sb.append(' ');
-      }
+      appendSpaceIfContent(sb);
       sb.append(title.trim());
-      if (sb.charAt(sb.length() - 1) == '.') {
-        sb.append('.');
-      }
+      appendDotIfMissing(sb);
     }
+  
     if (!StringUtils.isEmpty(container)) {
-      if (sb.length() > 0) {
-        sb.append(' ');
-      }
+      appendSpaceIfContent(sb);
       sb.append(container.trim());
-      if (sb.charAt(sb.length() - 1) == '.') {
-        sb.append('.');
-      }
+      appendDotIfMissing(sb);
     }
+  
+    if (!StringUtils.isEmpty(year)) {
+      appendSpaceIfContent(sb);
+      sb.append(year.trim());
+      appendDotIfMissing(sb);
+    }
+
     return sb.toString();
+  }
+  
+  private static void appendSpaceIfContent(StringBuilder sb) {
+    if (sb.length() > 0) {
+      sb.append(' ');
+    }
+  }
+
+  private static void appendDotIfMissing(StringBuilder sb) {
+    if (sb.length() > 0 && !PUNCTUATIONS.contains(sb.charAt(sb.length() - 1))) {
+      sb.append(".");
+    }
   }
 
   private Reference newReference(String id) {
@@ -258,15 +287,6 @@ public class ReferenceFactory {
     ref.setId(id);
     ref.setDatasetKey(datasetKey);
     return ref;
-  }
-
-  private static boolean allEmpty(String... strings) {
-    for (String s : strings) {
-      if (!StringUtils.isEmpty(s)) {
-        return false;
-      }
-    }
-    return true;
   }
 
 }
