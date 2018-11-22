@@ -689,7 +689,6 @@ public class NeoDb implements ReferenceStore {
 
       // now name relations, reuse keys if existing
       counter = 0;
-      dump();
       for (Node n : Iterators.loop(getNeo().findNodes(Labels.NAME))) {
         // check if this node has a homotypic group already in which case we can skip it
         NeoName start = names().objByNode(n);
