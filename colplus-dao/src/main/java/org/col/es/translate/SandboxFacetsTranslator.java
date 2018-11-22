@@ -8,6 +8,7 @@ import org.col.es.query.Aggregation;
 import org.col.es.query.FacetAggregation;
 import org.col.es.query.GlobalAggregation;
 import org.col.es.query.Query;
+import org.col.es.query.TermsAggregation;
 
 import static java.util.Collections.singletonMap;
 
@@ -28,10 +29,14 @@ public class SandboxFacetsTranslator implements FacetsTranslator {
       String field = EsFieldLookup.INSTANCE.lookup(facet);
       NameSearchRequest copy = base.copy();
       copy.removeFilter(facet);
-      Query facetFilter = NameSearchRequestTranslator.generateQuery(copy, false);
-      main.addNestedAggregation(getFacetLabel(field), new FacetAggregation(field, facetFilter));
+      if (copy.getFilters().size() == 0) {
+        main.addNestedAggregation(getFacetLabel(field), new TermsAggregation(field));
+      } else {
+        Query facetFilter = NameSearchRequestTranslator.generateQuery(copy, false);
+        main.addNestedAggregation(getFacetLabel(field), new FacetAggregation(field, facetFilter));
+      }
     }
-    return singletonMap("ALL", main);
+    return singletonMap("_ALL_", main);
   }
 
 }

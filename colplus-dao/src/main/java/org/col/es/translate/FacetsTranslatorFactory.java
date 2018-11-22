@@ -40,7 +40,7 @@ class FacetsTranslatorFactory {
     if (facets.containsAll(filters) && StringUtils.isEmpty(request.getQ())) {
       /*
        * There are one or more active filters, but they all correspond to facets. We need a separate execution context, because in the main
-       * query we apply all filters, while we successively disable each of those filter when retrieving the unique values of the facets.
+       * query we apply all filters, while we successively disable each of those filters when retrieving the unique values of the facets.
        * facet. However we don't need to specify a filter constraining the document set over which to aggregate.
        */
       return new SandboxFacetsTranslator(request);

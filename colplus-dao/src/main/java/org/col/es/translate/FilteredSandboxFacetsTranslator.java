@@ -32,7 +32,7 @@ class FilteredSandboxFacetsTranslator implements FacetsTranslator {
     GlobalAggregation main = new GlobalAggregation();
     Query contextFilter = generateQuery(otherFiltersOnly, false);
     FilterAggregation context = new FilterAggregation(contextFilter);
-    main.setNestedAggregations(singletonMap("__CONTEXT__", context));
+    main.setNestedAggregations(singletonMap("_CONTEXT_", context));
     for (NameSearchParameter facet : request.getFacets()) {
       String field = EsFieldLookup.INSTANCE.lookup(facet);
       NameSearchRequest copy = facetFiltersOnly.copy();
@@ -44,7 +44,7 @@ class FilteredSandboxFacetsTranslator implements FacetsTranslator {
         context.addNestedAggregation(getFacetLabel(field), new FacetAggregation(field, facetFilter));
       }
     }
-    return singletonMap("__ALL__", main);
+    return singletonMap("_ALL_", main);
   }
 
 }
