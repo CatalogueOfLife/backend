@@ -88,14 +88,12 @@ public class PgImportIT {
       // normalize
       store = NeoDbFactory.create(dataset.getKey(), cfg);
       store.put(dataset);
-      Normalizer norm = new Normalizer(store, source,
-          NameIndexFactory.memory(Datasets.PROV_CAT, PgSetupRule.getSqlSessionFactory()));
+      Normalizer norm = new Normalizer(store, source, NameIndexFactory.memory(Datasets.PROV_CAT, PgSetupRule.getSqlSessionFactory()));
       norm.call();
 
       // import into postgres
       store = NeoDbFactory.open(dataset.getKey(), cfg);
-      PgImport importer =
-          new PgImport(dataset.getKey(), store, PgSetupRule.getSqlSessionFactory(), icfg);
+      PgImport importer = new PgImport(dataset.getKey(), store, PgSetupRule.getSqlSessionFactory(), icfg);
       importer.call();
       
     } catch (Exception e) {
@@ -517,7 +515,7 @@ public class PgImportIT {
   
   @Test
   public void testColdpSpecs() throws Exception {
-    normalizeAndImport(COLDP, 1);
+    normalizeAndImport(COLDP, 0);
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       NameDao ndao = new NameDao(session);
       Name n = ndao.get(dataset.getKey(), "1000");
@@ -544,7 +542,7 @@ public class PgImportIT {
     assertEquals(0, (int) metrics().getVernacularCount());
     assertEquals(16, (int) metrics().getTaxonCount());
     assertEquals(21, (int) metrics().getNameCount());
-    assertEquals(42, (int) metrics().getVerbatimCount());
+    assertEquals(43, (int) metrics().getVerbatimCount());
     //TODO: add more comparisons when the data is richer
     // assertEquals(null, metrics().getIssuesCount());
     // assertEquals(null, metrics().getUsagesByStatusCount());

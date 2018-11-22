@@ -38,7 +38,9 @@ public class PgImport implements Callable<Boolean> {
   private final AtomicInteger nCounter = new AtomicInteger(0);
   private final AtomicInteger tCounter = new AtomicInteger(0);
   private final AtomicInteger rCounter = new AtomicInteger(0);
-  private final AtomicInteger dCounter = new AtomicInteger(0);
+  private final AtomicInteger diCounter = new AtomicInteger(0);
+  private final AtomicInteger deCounter = new AtomicInteger(0);
+  private final AtomicInteger mCounter = new AtomicInteger(0);
   private final AtomicInteger vCounter = new AtomicInteger(0);
 
 	public PgImport(int datasetKey, NeoDb store, SqlSessionFactory sessionFactory,
@@ -81,9 +83,9 @@ public class PgImport implements Callable<Boolean> {
 
     updateMetadata();
 		LOG.info("Completed dataset {} insert with {} verbatim records, " +
-        "{} names, {} taxa, {} references, {} vernaculars and {} distributions",
+        "{} names, {} taxa, {} references, {} vernaculars, {} distributions, {} descriptions and {} media items",
         dataset.getKey(), verbatimKeys.size(),
-        nCounter, tCounter, rCounter, vCounter, dCounter);
+        nCounter, tCounter, rCounter, vCounter, diCounter, deCounter, mCounter);
 		return true;
 	}
 
@@ -226,7 +228,7 @@ public class PgImport implements Callable<Boolean> {
    */
   private void insertNameRelations() throws InterruptedException {
     for (RelType rt : RelType.values()) {
-      if (rt.nomRelType == null) continue;
+      if (!rt.isNameRel()) continue;
 
       final AtomicInteger counter = new AtomicInteger(0);
       try (final SqlSession session = sessionFactory.openSession(false)) {
@@ -254,10 +256,12 @@ public class PgImport implements Callable<Boolean> {
 		try (SqlSession session = sessionFactory.openSession(false)) {
       LOG.info("Inserting remaining names and all taxa");
       NameDao nameDao = new NameDao(session);
-      TaxonMapper taxonMapper = session.getMapper(TaxonMapper.class);
+      DescriptionMapper descriptionMapper = session.getMapper(DescriptionMapper.class);
       DistributionMapper distributionMapper = session.getMapper(DistributionMapper.class);
-      VernacularNameMapper vernacularMapper = session.getMapper(VernacularNameMapper.class);
+      MediaMapper mediaMapper = session.getMapper(MediaMapper.class);
       ReferenceMapper refMapper = session.getMapper(ReferenceMapper.class);
+      TaxonMapper taxonMapper = session.getMapper(TaxonMapper.class);
+      VernacularNameMapper vernacularMapper = session.getMapper(VernacularNameMapper.class);
 
       // iterate over taxonomic tree in depth first order, keeping postgres parent keys
       // pro parte synonyms will be visited multiple times, remember their name ids!
@@ -268,7 +272,7 @@ public class PgImport implements Callable<Boolean> {
         @Override
         public void start(Node n) {
           NeoUsage u = store.usages().objByNode(n);
-          NeoName nn = store.names().objByNode(n);
+          NeoName nn = store.nameByUsage(n);
           updateVerbatimEntity(u);
           updateVerbatimEntity(nn);
 
@@ -307,7 +311,21 @@ public class PgImport implements Callable<Boolean> {
             for (Distribution d : u.distributions) {
               updateVerbatimEntity(d);
               distributionMapper.create(d, taxonId, dataset.getKey());
-              dCounter.incrementAndGet();
+              diCounter.incrementAndGet();
+            }
+  
+            // insert descriptions
+            for (Description d : u.descriptions) {
+              updateVerbatimEntity(d);
+              descriptionMapper.create(d, taxonId, dataset.getKey());
+              deCounter.incrementAndGet();
+            }
+  
+            // insert media
+            for (Media m : u.media) {
+              updateVerbatimEntity(m);
+              mediaMapper.create(m, taxonId, dataset.getKey());
+              mCounter.incrementAndGet();
             }
 
             // link bibliography
