@@ -2,6 +2,7 @@ package org.col.admin.importer.neo;
 
 import java.util.Map;
 
+import com.google.common.base.Joiner;
 import com.google.common.collect.Maps;
 import org.col.admin.importer.neo.model.Labels;
 import org.col.admin.importer.neo.model.NeoNameRel;
@@ -14,6 +15,7 @@ import org.neo4j.graphdb.*;
  * Static utils for the NeoDb class
  */
 public class NeoDbUtils {
+  private final static Joiner LABEL_JOINER = Joiner.on(" ").skipNulls();
 
   private NeoDbUtils() {
   }
@@ -37,6 +39,10 @@ public class NeoDbUtils {
     return false;
   }
 
+  public static String labelsToString(Node n) {
+    return LABEL_JOINER.join(n.getLabels());
+  }
+  
   private static void putIfNotNull(Map<String, Object> props, String property, String value) {
     if (value != null) {
       props.put(property, value);

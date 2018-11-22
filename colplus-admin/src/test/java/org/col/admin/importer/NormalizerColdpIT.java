@@ -35,7 +35,7 @@ public class NormalizerColdpIT extends NormalizerITBase {
       assertEquals("1006-s3", t.usage.getName().getId());
       assertEquals("Leonida taraxacoida Vill.", t.usage.getName().canonicalNameComplete());
   
-      List<NameRelation> rels = store.relations(t.node);
+      List<NameRelation> rels = store.relations(t.nameNode);
       assertEquals(1, rels.size());
       assertEquals(NomRelType.BASIONYM, rels.get(0).getType());
   

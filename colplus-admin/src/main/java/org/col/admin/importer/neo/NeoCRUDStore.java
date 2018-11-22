@@ -46,7 +46,7 @@ public class NeoCRUDStore<T extends ID & VerbatimEntity & NeoNode> {
   }
   
   public T objByNode(Node n) {
-    T t = objects.get(n.getId());
+    T t = n == null ? null : objects.get(n.getId());
     if (t != null) {
       t.setNode(n);
     }

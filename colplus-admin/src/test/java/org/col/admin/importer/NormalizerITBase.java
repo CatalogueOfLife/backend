@@ -30,6 +30,7 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.NotFoundException;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 abstract class NormalizerITBase {
   
@@ -150,7 +151,11 @@ abstract class NormalizerITBase {
   }
   
   public NeoUsage usageByNameID(String id) {
-    return store.usageWithName(store.names().nodeByID(id));
+    List<Node> usages = store.usageNodesByName(store.names().nodeByID(id));
+    if (usages.size() != 1) {
+      fail("No single usage for name " + id);
+    }
+    return store.usageWithName(usages.get(0));
   }
 
   public NeoUsage usageByID(String id) {

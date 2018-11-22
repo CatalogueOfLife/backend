@@ -4,6 +4,7 @@ import java.net.URI;
 import java.util.Set;
 
 import com.google.common.collect.Sets;
+import org.col.admin.importer.neo.model.NeoName;
 import org.col.admin.importer.neo.model.NeoUsage;
 import org.col.admin.importer.neo.traverse.Traversals;
 import org.col.api.model.Dataset;
@@ -32,20 +33,18 @@ public class NormalizerACEFIT extends NormalizerITBase {
     normalize(0);
     try (Transaction tx = store.getNeo().beginTx()) {
       NeoUsage t = usageByID("s7");
-      assertTrue(t.isSynonym());
-      assertEquals("Astragalus nonexistus", t.usage.getName().getScientificName());
-      assertEquals("DC.", t.usage.getName().authorshipComplete());
-      assertEquals(Rank.SPECIES, t.usage.getName().getRank());
+      // synonym has no accepted thus gets removed!
+      assertNull(t);
+      
+      NeoName n = nameByID("s7");
+      assertEquals("Astragalus nonexistus", n.name.getScientificName());
+      assertEquals("DC.", n.name.authorshipComplete());
+      assertEquals(Rank.SPECIES, n.name.getRank());
 
-      assertTrue(hasIssues(t, Issue.SYNONYM_DATA_MOVED));
-      assertTrue(hasIssues(t, Issue.ACCEPTED_ID_INVALID));
-      assertTrue(t.classification.isEmpty());
-      assertEquals(0, t.vernacularNames.size());
-      assertEquals(0, t.distributions.size());
-      assertEquals(0, t.bibliography.size());
-      // missing accepted
-      assertEquals(0, store.accepted(t.node).size());
+      assertTrue(hasIssues(n, Issue.SYNONYM_DATA_MOVED));
+      assertTrue(hasIssues(n, Issue.ACCEPTED_ID_INVALID));
 
+      
       t = usageByID("s6");
       assertTrue(t.isSynonym());
       assertEquals("Astragalus beersabeensis", t.usage.getName().getScientificName());

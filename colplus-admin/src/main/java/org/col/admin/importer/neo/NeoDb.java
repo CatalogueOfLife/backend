@@ -206,10 +206,10 @@ public class NeoDb implements ReferenceStore {
     return usages;
   }
   
-  public NeoUsage usageWithName(Node n) {
-    NeoUsage u = usages().objByNode(n);
+  public NeoUsage usageWithName(Node usageNode) {
+    NeoUsage u = usages().objByNode(usageNode);
     if (u != null) {
-      NeoName nn = nameByUsage(n);
+      NeoName nn = nameByUsage(usageNode);
       u.usage.setName(nn.name);
       u.nameNode = nn.node;
     }
@@ -234,10 +234,10 @@ public class NeoDb implements ReferenceStore {
   }
   
   /**
-   * @return a collection of all name relations with key using node ids.
+   * @return a collection of all name relations for the given name node with NameRelation.key using node ids.
    */
-  public List<NameRelation> relations(Node n) {
-    return Iterables.stream(n.getRelationships())
+  public List<NameRelation> relations(Node nameNode) {
+    return Iterables.stream(nameNode.getRelationships())
         .filter(r -> RelType.valueOf(r.getType().name()).isNameRel())
         .map(this::toRelation)
         .collect(Collectors.toList());
@@ -415,9 +415,9 @@ public class NeoDb implements ReferenceStore {
       counter++;
     }
     // and finally the node
+    String labels = NeoDbUtils.labelsToString(n);
     n.delete();
-    String type = removed == null ? "" : removed.getClass().getSimpleName() + " ";
-    LOG.debug("Deleted {}{} from store with {} relations", type, n, counter);
+    LOG.debug("Deleted {}{} from store with {} relations", labels, n, counter);
   }
 
   Node createNode(PropLabel data) {

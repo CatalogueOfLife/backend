@@ -51,11 +51,11 @@ public class AcefInterpreter extends InterpreterBase {
   }
 
   Optional<NeoUsage> interpretAccepted(VerbatimRecord v) {
-    return interpretTaxon(AcefTerm.AcceptedTaxonID, v, false);
+    return interpretUsage(AcefTerm.AcceptedTaxonID, v, false);
   }
 
   Optional<NeoUsage> interpretSynonym(VerbatimRecord v) {
-    return interpretTaxon(AcefTerm.ID, v, true);
+    return interpretUsage(AcefTerm.ID, v, true);
   }
   
   List<VernacularName> interpretVernacular(VerbatimRecord rec) {
@@ -75,7 +75,7 @@ public class AcefInterpreter extends InterpreterBase {
         AcefTerm.DistributionStatus);
   }
   
-  private Optional<NeoUsage> interpretTaxon(Term idTerm, VerbatimRecord v, boolean synonym) {
+  private Optional<NeoUsage> interpretUsage(Term idTerm, VerbatimRecord v, boolean synonym) {
     // name
     Optional<NameAccordingTo> nat = interpretName(idTerm, v);
     if (!nat.isPresent()) {
