@@ -23,9 +23,7 @@ import org.col.admin.importer.NormalizationFailedException;
 import org.col.admin.importer.neo.NodeBatchProcessor.BatchConsumer;
 import org.col.admin.importer.neo.model.*;
 import org.col.admin.importer.neo.printer.PrinterUtils;
-import org.col.admin.importer.neo.traverse.StartEndHandler;
 import org.col.admin.importer.neo.traverse.Traversals;
-import org.col.admin.importer.neo.traverse.TreeWalker;
 import org.col.admin.importer.reference.ReferenceStore;
 import org.col.api.model.*;
 import org.col.api.vocab.Issue;
@@ -405,19 +403,21 @@ public class NeoDb implements ReferenceStore {
    * i.e. NeoUsage and NeoName.
    */
   public void remove(Node n) {
-    names().remove(n);
-    usages().remove(n);
-    removeNodeAndRels(n);
-  }
-
-  void removeNodeAndRels(Node n) {
+    // first remove mapdb entries
+    Object removed = names().remove(n);
+    if (removed == null) {
+      removed = usages().remove(n);
+    }
+    // now remove all neo relations
     int counter = 0;
     for (Relationship rel : n.getRelationships()) {
       rel.delete();
       counter++;
     }
+    // and finally the node
     n.delete();
-    LOG.debug("Deleted {} from store with {} relations", n, counter);
+    String type = removed == null ? "" : removed.getClass().getSimpleName() + " ";
+    LOG.debug("Deleted {}{} from store with {} relations", type, n, counter);
   }
 
   Node createNode(PropLabel data) {
@@ -492,7 +492,7 @@ public class NeoDb implements ReferenceStore {
   }
 
   /**
-   * Creates a new name relation linking the 2 given nodes.
+   * Creates a new name relation linking the 2 given name nodes.
    * The note and publishedInKey values are stored as relation propLabel
    */
   public void createNameRel(Node n1, Node n2, NeoNameRel rel) {
@@ -614,28 +614,14 @@ public class NeoDb implements ReferenceStore {
     dataset.set(d);
     return d;
   }
-
-  public Set<Long> nodeIdsOutsideTree() throws InterruptedException {
-    final Set<Long> treeNodes = new HashSet<>();
-    TreeWalker.walkTree(neo, new StartEndHandler() {
-      @Override
-      public void start(Node n) {
-        treeNodes.add(n.getId());
-      }
-
-      @Override
-      public void end(Node n) { }
-    });
-
-    final Set<Long> nodes = new HashSet<>();
-    try (Transaction tx = getNeo().beginTx()) {
-      for (Node n : neo.getAllNodes()) {
-        if (!treeNodes.contains(n.getId())) {
-          nodes.add(n.getId());
-        }
-      }
-    }
-    return nodes;
+  
+  /**
+   * @return a stream of name nodes which have no has_name relation to any usage
+   */
+  public Stream<Node> bareNameNodes() {
+    final String query = "MATCH (n:NAME) WHERE NOT (n)<-[:HAS_NAME]-() RETURN n";
+    Result result = neo.execute(query);
+    return result.<Node>columnAs("n").stream();
   }
 
   /**
@@ -703,9 +689,10 @@ public class NeoDb implements ReferenceStore {
 
       // now name relations, reuse keys if existing
       counter = 0;
+      dump();
       for (Node n : Iterators.loop(getNeo().findNodes(Labels.NAME))) {
         // check if this node has a homotypic group already in which case we can skip it
-        NeoName start = this.names().objByNode(n);
+        NeoName start = names().objByNode(n);
         if (start.name.getHomotypicNameId() != null) {
           continue;
         }
@@ -714,7 +701,7 @@ public class NeoDb implements ReferenceStore {
             .traverse(n)
             .nodes()
             .stream()
-            .map(this.names()::objByNode)
+            .map(names()::objByNode)
             .collect(Collectors.toList());
         if (!group.isEmpty()) {
           // we have more than the starting node so we do process, add starting node too
@@ -774,25 +761,27 @@ public class NeoDb implements ReferenceStore {
    */
   public void sync() {
     updateLabels();
-  
-    try {
-      dump(new File("graphs/neodbtree.dot"));
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-  
     updateTaxonStoreWithRelations();
     updateHomotypicNameKeys();
+  }
+  
+  public void dump() {
+    dump(new File("graphs/neodb.dot"));
   }
   
   /**
    * Dump entire graph with all labels as DOT file for debugging
    */
-  public void dump(File file) throws Exception {
-    Writer writer = PrinterUtils.fileWriter(file);
-    PrinterUtils.dumpDotFile(neo, writer);
-    writer.close();
-    System.out.println("Wrote graph to " + file.getAbsolutePath());
+  public void dump(File file) {
+    try {
+      Writer writer = PrinterUtils.fileWriter(file);
+      PrinterUtils.dumpDotFile(neo, writer);
+      writer.close();
+      System.out.println("Wrote graph to " + file.getAbsolutePath());
+    
+    } catch (Exception e) {
+      LOG.error("Failed to dump neo to {}", file, e);
+    }
   }
   
   /**

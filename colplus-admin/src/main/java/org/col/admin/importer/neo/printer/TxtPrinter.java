@@ -5,7 +5,6 @@ import java.io.Writer;
 
 import org.col.admin.importer.neo.model.RankedUsage;
 import org.col.admin.importer.neo.model.RelType;
-import org.gbif.nameparser.api.Rank;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.parboiled.common.StringUtils;
@@ -75,7 +74,7 @@ public class TxtPrinter extends BasePrinter {
         writer.write(" ");
         writer.write(u.author);
       }
-      if (u.rank != null && u.rank != Rank.UNRANKED) {
+      if (u.rank != null) {
         writer.write(" [");
         writer.write(u.rank.name().toLowerCase());
         writer.write("]");

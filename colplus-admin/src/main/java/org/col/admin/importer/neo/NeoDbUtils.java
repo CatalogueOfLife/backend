@@ -3,12 +3,12 @@ package org.col.admin.importer.neo;
 import java.util.Map;
 
 import com.google.common.collect.Maps;
+import org.col.admin.importer.neo.model.Labels;
 import org.col.admin.importer.neo.model.NeoNameRel;
 import org.col.admin.importer.neo.model.NeoProperties;
+import org.col.admin.importer.neo.model.RelType;
 import org.col.api.model.Name;
-import org.neo4j.graphdb.Label;
-import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.PropertyContainer;
+import org.neo4j.graphdb.*;
 
 /**
  * Static utils for the NeoDb class
@@ -16,6 +16,25 @@ import org.neo4j.graphdb.PropertyContainer;
 public class NeoDbUtils {
 
   private NeoDbUtils() {
+  }
+  
+  /**
+   * @return true if the name node is a basionym
+   */
+  public static boolean isBasionym(Node nameNode) {
+    return nameNode.hasRelationship(RelType.HAS_BASIONYM, Direction.INCOMING);
+  }
+  
+  /**
+   * @return if n is a Name node and used for a Taxon
+   */
+  public static boolean isAcceptedName(Node nameNode) {
+    for (Relationship rel : nameNode.getRelationships(RelType.HAS_NAME, Direction.INCOMING)) {
+      if (rel.getStartNode().hasLabel(Labels.TAXON)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private static void putIfNotNull(Map<String, Object> props, String property, String value) {

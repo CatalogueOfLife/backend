@@ -1,5 +1,8 @@
 package org.col.admin.importer.neo;
 
+import java.util.Map;
+import java.util.stream.Stream;
+
 import com.esotericsoftware.kryo.pool.KryoPool;
 import com.google.common.base.Preconditions;
 import org.col.admin.importer.IdGenerator;
@@ -15,9 +18,6 @@ import org.mapdb.Serializer;
 import org.neo4j.graphdb.Node;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Map;
-import java.util.stream.Stream;
 
 public class NeoCRUDStore<T extends ID & VerbatimEntity & NeoNode> {
   private static final Logger LOG = LoggerFactory.getLogger(NeoCRUDStore.class);
@@ -158,12 +158,11 @@ public class NeoCRUDStore<T extends ID & VerbatimEntity & NeoNode> {
   /**
    * Removes the neo4j node with all its relations and all entities stored under this node like NeoTaxon.
    */
-  public T remove(Node n) {
+  T remove(Node n) {
     T obj = objects.remove(n.getId());
     if (obj != null) {
       ids.remove(obj.getId());
     }
-    neoDb.removeNodeAndRels(n);
     return obj;
   }
   

@@ -1,5 +1,9 @@
 package org.col.admin.importer.coldp;
 
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.Optional;
+
 import com.google.common.base.Splitter;
 import org.col.admin.importer.NeoInserter;
 import org.col.admin.importer.NormalizationFailedException;
@@ -13,10 +17,6 @@ import org.col.api.vocab.DataFormat;
 import org.gbif.dwc.terms.AcefTerm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.Optional;
 
 /**
  *
@@ -106,7 +106,7 @@ public class ColdpInserter extends NeoInserter {
       );
       
     } catch (RuntimeException e) {
-      throw new NormalizationFailedException("Failed to read ACEF files", e);
+      throw new NormalizationFailedException("Failed to read ColDP files", e);
     }
   }
 

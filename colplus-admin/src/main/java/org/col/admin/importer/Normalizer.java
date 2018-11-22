@@ -297,16 +297,37 @@ public class Normalizer implements Callable<Boolean> {
 
     // rectify taxonomic status
     rectifyTaxonomicStatus();
-
+  
     // move synonym data to accepted
     moveSynonymData();
-
+  
     // process the denormalized classifications of accepted taxa
     applyDenormedClassification();
-
-    LOG.info("Relation setup completed.");
+  
+    // remove orphan synonyms
+    removeOrphanSynonyms();
+  
+    LOG.info("Normalization completed.");
   }
-
+  
+  private void removeOrphanSynonyms() {
+    final String query = "MATCH (s:SYNONYM) WHERE NOT (s)-[:SYNONYM_OF]->() RETURN s";
+    try (Transaction tx = store.getNeo().beginTx()) {
+      int counter = 0;
+      Result result = store.getNeo().execute(query);
+      try (ResourceIterator<Node> nodes = result.columnAs("s")) {
+        while (nodes.hasNext()) {
+          Node syn = nodes.next();
+          addUsageIssue(syn, Issue.ACCEPTED_NAME_MISSING);
+          store.remove(syn);
+          counter++;
+        }
+      }
+      tx.success();
+      LOG.info("{} orphan synonyms removed", counter);
+    }
+  }
+  
   /**
    * Updates the taxonomic status according to rules defined in
    * https://github.com/Sp2000/colplus-backend/issues/93
@@ -535,6 +556,8 @@ public class Normalizer implements Callable<Boolean> {
         // test for existing usage with that name & rank (allowing also unranked names)
         boolean found = false;
         for (Node n : store.usagesByName(cl.getByRank(hr), null, hr, true)) {
+          // ignore synonyms
+          if (n.hasLabel(Labels.SYNONYM)) continue;
           if (parent == null) {
             // make sure node does also not have a higher linnean rank parent
             Node p = Iterables.firstOrNull(Traversals.CLASSIFICATION.traverse(n).nodes());
@@ -638,32 +661,44 @@ public class Normalizer implements Callable<Boolean> {
    * Sanitizes synonym relations relinking synonym of synonyms to make sure synonyms always point to a direct accepted taxon.
    */
   private void relinkSynonymChains() {
-    LOG.info("Relink synonym chains to single accepted");
-    final String query = "MATCH (s)-[sr:SYNONYM_OF*]->(x)-[:SYNONYM_OF]->(t:TAXON) " +
-        "WHERE NOT (t)-[:SYNONYM_OF]->() " +
-        "RETURN sr, t LIMIT 1";
-
+    LOG.debug("Relink synonym chains to single accepted");
+    final String query = "MATCH (s)-[srs:SYNONYM_OF*]->(x)-[:SYNONYM_OF]->(t:TAXON) " +
+        "WITH srs, t UNWIND srs AS sr " +
+        "RETURN DISTINCT sr, t";
     int counter = 0;
     try (Transaction tx = store.getNeo().beginTx()) {
       Result result = store.getNeo().execute(query);
       while (result.hasNext()) {
         Map<String, Object> row = result.next();
         Node acc = (Node) row.get("t");
-        for (Relationship sr : (Collection<Relationship>) row.get("sr")) {
-          Node syn = sr.getStartNode();
-          addUsageIssue(syn, Issue.CHAINED_SYNONYM);
-          store.createSynonymRel(syn, acc);
-          sr.delete();
-          counter++;
-        }
-        if (counter++ % 100 == 0) {
-          LOG.debug("Synonym chains cut so far: {}", counter);
-        }
-        result = store.getNeo().execute(query);
+        Relationship sr = (Relationship) row.get("sr");
+        Node syn = sr.getStartNode();
+        addUsageIssue(syn, Issue.CHAINED_SYNONYM);
+        store.createSynonymRel(syn, acc);
+        sr.delete();
+        counter++;
       }
       tx.success();
     }
-    LOG.info("{} synonym chains resolved", counter);
+    LOG.info("{} synonym chains to a taxon resolved", counter);
+  
+    
+    LOG.debug("Remove synonym chains missing any accepted");
+    final String query2 = "MATCH (s)-[srs:SYNONYM_OF*]->(s2:SYNONYM) WHERE NOT (s2)-[:SYNONYM_OF]->() " +
+        "WITH srs UNWIND srs AS sr " +
+        "RETURN DISTINCT sr";
+    AtomicInteger cnt = new AtomicInteger(0);
+    try (Transaction tx = store.getNeo().beginTx()) {
+      Result result = store.getNeo().execute(query2);
+      result.<Relationship>columnAs("sr").forEachRemaining( sr -> {
+        Node syn = sr.getStartNode();
+        addUsageIssue(syn, Issue.CHAINED_SYNONYM);
+        sr.delete();
+        cnt.incrementAndGet();
+      });
+      tx.success();
+    }
+    LOG.info("{} synonym chains to a taxon resolved", counter);
   }
 
 

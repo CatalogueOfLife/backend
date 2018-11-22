@@ -1,2 +1,2 @@
-Create incertae sedis record for the missing accepted name of Pygoleptura nigrella
-and relink the other chained synonyms to it.
+3 chained synonyms pointing to the synonym Pygoleptura nigrella that is missing an accepted name.
+Only create bare names for those 4

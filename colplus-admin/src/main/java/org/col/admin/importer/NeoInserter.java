@@ -57,7 +57,7 @@ public abstract class NeoInserter {
     final int batchRec = store.size();
     postBatchInsert();
     LOG.info("Post batch insert completed, {} verbatim records processed creating {} new nodes", batchV, store.size() - batchRec);
-    
+
     LOG.debug("Start processing explicit relations ...");
     store.process(null,5000, relationProcessor());
 

@@ -58,9 +58,11 @@ public class NeoNameStore extends NeoCRUDStore<NeoName> {
   }
   
   @Override
-  public NeoName remove(Node n) {
+  NeoName remove(Node n) {
     NeoName nn = super.remove(n);
-    remove(nn);
+    if (nn != null) {
+      remove(nn);
+    }
     return nn;
   }
   

@@ -54,7 +54,7 @@ public class ColdpInterpreter extends InterpreterBase {
       //TODO: make sure no TAXON label already exists!!!
   
       NeoUsage u = NeoUsage.createTaxon(Origin.SOURCE, false);
-      u.node = n.node;
+      u.nameNode = n.node;
       u.setId(v.get(ColTerm.ID));
       u.setVerbatimKey(v.getKey());
     
@@ -103,7 +103,7 @@ public class ColdpInterpreter extends InterpreterBase {
       }
   
       NeoUsage u = NeoUsage.createSynonym(Origin.SOURCE, status);
-      u.node = n.node;
+      u.nameNode = n.node;
       u.setId(v.get(ColTerm.ID));
       u.setVerbatimKey(v.getKey());
   

@@ -67,7 +67,7 @@ public class Traversals {
   static {
     TraversalDescription td = new MonoDirectionalTraversalDescription();
     for (RelType rt : RelType.values()) {
-      if (rt.nomRelType != null && Boolean.TRUE.equals(rt.nomRelType.isHomotypic())) {
+      if (rt.isNameRel() && rt.nomRelType.isHomotypic()) {
         td = td.relationships(rt);
       }
     }
@@ -128,8 +128,7 @@ public class Traversals {
       .expand(TaxonomicOrderExpander.TREE_EXPANDER)
       .evaluator(new AcceptedOnlyEvaluator())
       .uniqueness(Uniqueness.NODE_PATH);
-
-
+  
   /**
    * Tries to find the set of accepted nodes.
    * Can be multiple due to pro parte synonyms.

@@ -134,10 +134,10 @@ public enum NomRelType {
   }
   
   /**
-   * @return true if homotypic, false if heterotypic and null if unknown
+   * @return true if homotypic, false if heterotypic or unknown
    */
-  public Boolean isHomotypic() {
-    return homotypic;
+  public boolean isHomotypic() {
+    return Boolean.TRUE.equals(homotypic);
   }
   
   /**

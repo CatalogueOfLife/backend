@@ -668,8 +668,10 @@ public class Name implements ID, VerbatimEntity {
   
   public String toStringComplete() {
     StringBuilder sb = new StringBuilder();
-    
-    sb.append(id);
+  
+    if (id != null) {
+      sb.append(id);
+    }
     
     if (this.type != null) {
       sb.append("[");

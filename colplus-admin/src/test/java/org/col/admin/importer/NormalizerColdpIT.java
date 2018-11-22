@@ -22,7 +22,7 @@ public class NormalizerColdpIT extends NormalizerITBase {
   
   @Test
   public void testSpecs() throws Exception {
-    normalize(1);
+    normalize(0);
 
     try (Transaction tx = store.getNeo().beginTx()) {
       NeoUsage t = usageByID("1000");

@@ -33,6 +33,18 @@ public class RankedName {
   
   @Override
   public String toString() {
+    return toStringBuilder().toString();
+  }
+  
+  public String toStringWithID() {
+    StringBuilder sb = toStringBuilder();
+    sb.append(" {");
+    sb.append(getId());
+    sb.append("}");
+    return sb.toString();
+  }
+  
+  public StringBuilder toStringBuilder() {
     StringBuilder sb = new StringBuilder();
     sb.append(name);
     if (author != null) {
@@ -41,9 +53,6 @@ public class RankedName {
     if (rank != null) {
       sb.append(" [").append(rank.name().toLowerCase()).append(']');
     }
-    sb.append(" {");
-    sb.append(getId());
-    sb.append("}");
-    return sb.toString();
+    return sb;
   }
 }

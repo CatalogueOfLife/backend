@@ -59,7 +59,7 @@ public class DotProcessor implements Consumer<Node>, AutoCloseable {
       writer.append("  [label=\"");
       if (n.hasLabel(Labels.NAME)) {
         writer.append(NeoProperties.getRank(n, Rank.UNRANKED).name());
-        writer.append(" ");
+        writer.append("\\n");
         writer.append(NeoProperties.getScientificNameWithAuthor(n));
       } else {
         writer.append(SEMI_JOINER.join(n.getLabels()));

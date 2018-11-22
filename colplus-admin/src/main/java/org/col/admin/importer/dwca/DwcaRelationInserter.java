@@ -1,8 +1,10 @@
 package org.col.admin.importer.dwca;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
@@ -145,7 +147,7 @@ public class DwcaRelationInserter implements NodeBatchProcessor {
       // could not find anything?
       if (usages.isEmpty()) {
         v.addIssue(invalidIdIssue);
-        LOG.warn("{} {} not existing", idTerm.simpleName(), unsplitIds);
+        LOG.info("{} {} not existing", idTerm.simpleName(), unsplitIds);
       }
     }
 
@@ -181,7 +183,7 @@ public class DwcaRelationInserter implements NodeBatchProcessor {
       // could not find anything?
       if (n == null) {
         v.addIssue(invalidIdIssue);
-        LOG.warn("{} {} not existing", idTerm.simpleName(), id);
+        LOG.info("{} {} not existing", idTerm.simpleName(), id);
       }
     }
     
@@ -206,7 +208,8 @@ public class DwcaRelationInserter implements NodeBatchProcessor {
    * @return the name node with its name. Null if no name was mapped or equals the record itself
    */
   private RankedName nameByName(DwcTerm term, VerbatimRecord v, NeoName n, Origin createdOrigin) {
-    return byName(term, v, new RankedName(n), NeoProperties::getRankedName,
+    return byName(term, v, new RankedName(n), false,
+        NeoProperties::getRankedName,
         name -> {
           name.setOrigin(createdOrigin);
           NeoName nn = new NeoName((name));
@@ -226,12 +229,37 @@ public class DwcaRelationInserter implements NodeBatchProcessor {
    * @return the accepted node with its name. Null if no accepted name was mapped or equals the record itself
    */
   private RankedUsage usageByName(DwcTerm term, VerbatimRecord v, NeoUsage u, final Origin createdOrigin) {
-    return byName(term, v, NeoProperties.getRankedUsage(u), NeoProperties::getRankedUsage,
+    return byName(term, v, NeoProperties.getRankedUsage(u), true,
+        NeoProperties::getRankedUsage,
         name -> store.createProvisionalUsageFromSource(createdOrigin, name, u, u.usage.getName().getRank()));
   }
   
+  private List<Node> usagesByNamesPreferAccepted(List<Node> nameNodes) {
+    // convert to usages
+    List<Node> usageMatches = nameNodes.stream()
+        .map(store::usageNodesByName)
+        .flatMap(List::stream)
+        .collect(Collectors.toList());
+  
+    // if multiple matches remove non accepted names
+    if (usageMatches.size() > 1) {
+      List<Node> accepted = new ArrayList<>();
+      for (Node u : usageMatches) {
+        if (u.hasLabel(Labels.TAXON)) {
+          accepted.add(u);
+        }
+      }
+      if (!accepted.isEmpty()) {
+        usageMatches = accepted;
+      }
+    }
+    return usageMatches;
+  }
+  
   private <T extends RankedName> T byName(DwcTerm term, VerbatimRecord v, RankedName source,
-                                          Function<Node, T> getByNode, Function<Name, T> createMissing) {
+                                          boolean transformToUsages,
+                                          Function<Node, T> getByNode,
+                                          Function<Name, T> createMissing) {
     if (v.hasTerm(term)) {
       final Name name = NameParser.PARSER.parse(v.get(term)).get().getName();
       // force unranked name for non binomials or unparsed names, avoiding wrong parser decisions
@@ -245,10 +273,9 @@ public class DwcaRelationInserter implements NodeBatchProcessor {
           matches.removeIf(n -> !Strings.isNullOrEmpty(NeoProperties.getAuthorship(n)) && !NeoProperties.getAuthorship(n).equalsIgnoreCase(name.authorshipComplete()));
         }
         
-        // if multiple matches remove synonyms
-        if (matches.size() > 1) {
-          //TODO: this is a name node, check for related usage!!!
-          matches.removeIf(n -> n.hasLabel(Labels.SYNONYM));
+        // transform to usage nodes if requested, preferring taxon nodes over synonyms
+        if (transformToUsages) {
+          matches = usagesByNamesPreferAccepted(matches);
         }
         
         // if we got one match, use it!
@@ -257,7 +284,7 @@ public class DwcaRelationInserter implements NodeBatchProcessor {
           LOG.debug("{} {} not existing, materialize it", term.simpleName(), name);
           return createMissing.apply(name);
           
-        } else {
+        } else{
           if (matches.size() > 1) {
             // still multiple matches, pick first and log critical issue!
             v.addIssue(Issue.NAME_NOT_UNIQUE);
@@ -268,7 +295,7 @@ public class DwcaRelationInserter implements NodeBatchProcessor {
     }
     return null;
   }
-
+  
   @Override
   public void commitBatch(int counter) {
     if (Thread.interrupted()) {

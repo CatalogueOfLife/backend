@@ -42,7 +42,8 @@ public abstract class RelationInserterBase implements NodeBatchProcessor {
             if (p != null) {
               store.createSynonymRel(u.node, p);
             } else {
-              // if we ain't got no idea of the accepted insert just the name
+              // if we ain't got no idea of the accepted flag it
+              // the orphan synonym usage will be removed later by the normalizer
               v.addIssues(Issue.ACCEPTED_ID_INVALID, Issue.ACCEPTED_NAME_MISSING);
             }
             
