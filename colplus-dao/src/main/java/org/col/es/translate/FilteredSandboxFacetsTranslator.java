@@ -1,43 +1,50 @@
 package org.col.es.translate;
 
-import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.col.api.search.NameSearchParameter;
 import org.col.api.search.NameSearchRequest;
-import org.col.es.InvalidQueryException;
 import org.col.es.query.Aggregation;
 import org.col.es.query.FacetAggregation;
+import org.col.es.query.FilterAggregation;
+import org.col.es.query.GlobalAggregation;
 import org.col.es.query.Query;
 import org.col.es.query.TermsAggregation;
 
-class FacetsTranslator {
+import static java.util.Collections.singletonMap;
+
+import static org.col.es.translate.NameSearchRequestTranslator.generateQuery;
+
+class FilteredSandboxFacetsTranslator implements FacetsTranslator {
 
   private final NameSearchRequest request;
 
-  FacetsTranslator(NameSearchRequest request) {
+  FilteredSandboxFacetsTranslator(NameSearchRequest request) {
     this.request = request;
   }
 
-  Map<String, Aggregation> translate() throws InvalidQueryException {
-    if (request.getFacets().size() == 1) {
-      String field = EsFieldLookup.INSTANCE.lookup(request.getFacets().iterator().next());
-      return Collections.singletonMap(field, new TermsAggregation(field));
-    }
-    Map<String, Aggregation> aggs = new LinkedHashMap<>();
-    /*
-     * For each facet remove the corresponding filter (if any) because thay would collapse the facet to the values of the filter. Then
-     * constrain the document set over which to aggregate using the values of the other facets.
-     */
+  public Map<String, Aggregation> translate() {
+    NameSearchRequest facetFiltersOnly = request.copy();
+    NameSearchRequest otherFiltersOnly = request.copy();
+    facetFiltersOnly.getFilters().keySet().retainAll(request.getFacets());
+    otherFiltersOnly.getFilters().keySet().removeAll(request.getFacets());
+    facetFiltersOnly.setQ(null);
+    GlobalAggregation main = new GlobalAggregation();
+    Query contextFilter = generateQuery(otherFiltersOnly, false);
+    FilterAggregation context = new FilterAggregation(contextFilter);
+    main.setNestedAggregations(singletonMap("__CONTEXT__", context));
     for (NameSearchParameter facet : request.getFacets()) {
       String field = EsFieldLookup.INSTANCE.lookup(facet);
-      NameSearchRequest copy = request.copy();
+      NameSearchRequest copy = facetFiltersOnly.copy();
       copy.removeFilter(facet);
-      Query filter = NameSearchRequestTranslator.generateQuery(copy, false);
-      aggs.put(field.toUpperCase() + "_FACET", new FacetAggregation(field, filter));
+      if (copy.getFilters().size() == 0) {
+        context.addNestedAggregation(getFacetLabel(field), new TermsAggregation(field));
+      } else {
+        Query facetFilter = NameSearchRequestTranslator.generateQuery(copy, false);
+        context.addNestedAggregation(getFacetLabel(field), new FacetAggregation(field, facetFilter));
+      }
     }
-    return aggs;
+    return singletonMap("__ALL__", main);
   }
 
 }

@@ -1,7 +1,5 @@
 package org.col.es.translate;
 
-import com.google.common.base.Preconditions;
-
 import org.col.api.model.Page;
 import org.col.api.search.NameSearchRequest;
 import org.col.es.query.BoolQuery;
@@ -50,36 +48,16 @@ public class NameSearchRequestTranslator {
     this.page = page;
   }
 
-  public EsSearchRequest generateMainQuery() {
+  public EsSearchRequest translate() {
     EsSearchRequest es = new EsSearchRequest();
     es.setFrom(page.getOffset());
     es.setSize(page.getLimit());
     es.setQuery(generateQuery(request, true));
     es.setSort(new SortByTranslator(request).translate());
-    return es;
-  }
-
-  public EsSearchRequest generateFacetQuery() {
-    Preconditions.checkArgument(notEmpty(request.getFacets()), "Should check for presence of facets first");
-    /*
-     * Create two copies of the NameSearchRequest object. In the first copy we get rid of all filters that are also facets. The remaining
-     * filters (plus the q parameter) will produce a document set that the facets will aggregate over. Each facet will apply additional
-     * filters further narrowing the document set, but these filters are facet-specific and can therefore niet be part of the main query. In
-     * the second copy of the NameSearchRequest object we only retain filters that are also facets. That one we hand over to the facets
-     * translator.
-     */
-    NameSearchRequest copy1 = request.copy();
-    NameSearchRequest copy2 = request.copy();
-    if (notEmpty(copy1.getFilters())) {
-      copy1.getFilters().keySet().removeAll(request.getFacets());
-      copy2.getFilters().keySet().retainAll(request.getFacets());
+    if(notEmpty(request.getFacets())) {
+      FacetsTranslator ft = new FacetsTranslatorFactory(request).createTranslator();
+      es.setAggregations(ft.translate());
     }
-    copy2.setQ(null);
-    EsSearchRequest es = new EsSearchRequest();
-    // Not interested in the documents themselves here
-    es.setSize(0);
-    es.setQuery(generateQuery(copy1, false));
-    es.setAggregations(new FacetsTranslator(copy2).translate());
     return es;
   }
 

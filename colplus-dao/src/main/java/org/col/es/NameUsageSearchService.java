@@ -51,7 +51,7 @@ public class NameUsageSearchService {
   ResultPage<NameUsageWrapper<NameUsage>> search(String index, NameSearchRequest query, Page page) throws InvalidQueryException {
     NameSearchRequestTranslator translator = new NameSearchRequestTranslator(query, page);
     if (isEmpty(query.getFacets())) {
-      EsSearchRequest esQuery = translator.generateMainQuery();
+      EsSearchRequest esQuery = translator.translate();
       return search(index, esQuery, page);
     }
     return null;

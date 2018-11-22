@@ -53,7 +53,7 @@ public class NameSearchRequestTranslatorTest {
     
     NameSearchRequestTranslator t = new NameSearchRequestTranslator(nsr, page);
     
-    EsSearchRequest esr = t.generateFacetQuery();
+    EsSearchRequest esr = t.translate();
     
     System.out.println(serialize(esr));
     
