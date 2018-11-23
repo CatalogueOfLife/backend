@@ -534,20 +534,24 @@ public class PgImportIT {
     }
   
     DatasetImport di = metrics();
-    assertEquals(0, (int) metrics().getDescriptionCount());
-    assertEquals(0, (int) metrics().getDistributionCount());
-    assertEquals(0, (int) metrics().getMediaCount());
-    assertEquals(0, (int) metrics().getReferenceCount());
-    assertEquals(0, (int) metrics().getVernacularCount());
-    assertEquals(16, (int) metrics().getTaxonCount());
-    assertEquals(21, (int) metrics().getNameCount());
-    assertEquals(43, (int) metrics().getVerbatimCount());
-    //TODO: add more comparisons when the data is richer
-    // assertEquals(null, metrics().getIssuesCount());
-    // assertEquals(null, metrics().getUsagesByStatusCount());
-    // assertEquals(null, metrics().getVerbatimByTypeCount());
-    // assertEquals(null, metrics().getMediaByTypeCount());
-    // assertEquals(null, metrics().getNamesByRankCount());
+    assertEquals(3, (int) metrics().getDescriptionCount());
+    assertEquals(9, (int) metrics().getDistributionCount());
+    assertEquals(1, (int) metrics().getMediaCount());
+    assertEquals(4, (int) metrics().getReferenceCount());
+    assertEquals(1, (int) metrics().getVernacularCount());
+    assertEquals(19, (int) metrics().getTaxonCount());
+    assertEquals(24, (int) metrics().getNameCount());
+    assertEquals(67, (int) metrics().getVerbatimCount());
+    
+    //assertFalse(metrics().getIssuesCount().containsKey(Issue.PARENT_ID_INVALID));
+    assertEquals(5, (int) metrics().getUsagesByStatusCount().get(TaxonomicStatus.SYNONYM));
+    assertEquals(metrics().getTaxonCount(), metrics().getUsagesByStatusCount().get(TaxonomicStatus.ACCEPTED));
+    assertEquals(1, (int) metrics().getMediaByTypeCount().get(MediaType.IMAGE));
+    assertEquals(2, (int) metrics().getNamesByRankCount().get(Rank.FAMILY));
+    assertEquals(4, (int) metrics().getNamesByRankCount().get(Rank.GENUS));
+    assertEquals(10, (int) metrics().getNamesByRankCount().get(Rank.SPECIES));
+    assertEquals(3, (int) metrics().getNamesByRankCount().get(Rank.SUBSPECIES));
+    assertEquals(9, (int) metrics().getDistributionsByGazetteerCount().get(Gazetteer.ISO));
   
   }
   

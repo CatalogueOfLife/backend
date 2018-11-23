@@ -66,10 +66,11 @@ public class NormalizerTreeIT {
     IntStream dwcaIds = IntStream.rangeClosed(0, MAX_DWCA_ID);
     IntStream coldpIds = IntStream.rangeClosed(0, MAX_COLDP_ID);
 
-    // acefIds = IntStream.empty();
+     acefIds = IntStream.empty();
     // acefIds = IntStream.of(6,7);
-    // dwcaIds = IntStream.empty();
+    dwcaIds = IntStream.empty();
     // dwcaIds = IntStream.of(31);
+    //coldpIds = IntStream.empty();
 
     return Stream.concat(
         acefIds.mapToObj(i -> new Object[] {DataFormat.ACEF, i}),
