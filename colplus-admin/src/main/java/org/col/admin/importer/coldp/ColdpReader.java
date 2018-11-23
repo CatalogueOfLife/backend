@@ -28,7 +28,7 @@ public class ColdpReader extends CsvReader {
   );
 
   private ColdpReader(Path folder) throws IOException {
-    super(folder, "col");
+    super(folder, "col", "coldp");
   }
 
   public static ColdpReader from(Path folder) throws IOException {

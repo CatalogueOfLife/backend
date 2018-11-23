@@ -16,7 +16,7 @@ public class AcefReader extends CsvReader {
   private static final Logger LOG = LoggerFactory.getLogger(AcefReader.class);
   
   private AcefReader(Path folder) throws IOException {
-    super(folder, "acef");
+    super(folder, "acef", "acef");
     validate();
   }
   

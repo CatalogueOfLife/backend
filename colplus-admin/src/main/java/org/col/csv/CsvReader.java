@@ -72,6 +72,7 @@ public class CsvReader {
   private static final Joiner LINE_JOIN = Joiner.on('\n');
   
   protected final Path folder;
+  private final String subfolder;
   protected final Map<Term, Schema> schemas = Maps.newHashMap();
   protected final MappingFlags mappingFlags = new MappingFlags();
   private static final Character[] delimiterCandidates = {'\t', ',', ';', '|'};
@@ -81,11 +82,12 @@ public class CsvReader {
   /**
    * @param folder
    */
-  protected CsvReader(Path folder, String termPrefix) throws IOException {
+  protected CsvReader(Path folder, String termPrefix, String subfolder) throws IOException {
     if (!Files.isDirectory(folder)) {
       throw new FileNotFoundException("Folder does not exist: " + folder);
     }
     this.folder = folder;
+    this.subfolder = subfolder;
     discoverSchemas(termPrefix);
     validate();
   }
@@ -101,6 +103,12 @@ public class CsvReader {
     // also include an optional data subfolder
     for (Path df : listDataFiles(folder.resolve("data"))) {
       putSchema(buildSchema(df, termPrefix));
+    }
+    // finally allow an optional subfolder called like the format
+    if (subfolder != null) {
+      for (Path df : listDataFiles(folder.resolve(subfolder))) {
+        putSchema(buildSchema(df, termPrefix));
+      }
     }
   }
   
@@ -145,9 +153,9 @@ public class CsvReader {
    * @param termPrefix optional preferred term namespace prefix to use when looking up class & property terms
    */
   public static CsvReader from(Path folder, String termPrefix) throws IOException {
-    return new CsvReader(folder, termPrefix);
+    return new CsvReader(folder, termPrefix, null);
   }
-  
+
   public static CsvReader from(Path folder) throws IOException {
     return from(folder, null);
   }

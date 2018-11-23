@@ -70,7 +70,7 @@ public class DwcaReader extends CsvReader {
   private Path metadataFile;
   
   private DwcaReader(Path folder) throws IOException {
-    super(folder, "dwc");
+    super(folder, "dwc", "dwca");
   }
   
   public static DwcaReader from(Path folder) throws IOException {
