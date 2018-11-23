@@ -1,19 +1,23 @@
 package org.col.admin.importer.acef;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
-import org.col.admin.importer.InsertMetadata;
+import org.col.admin.importer.MappingFlags;
 import org.col.admin.importer.InterpreterBase;
 import org.col.admin.importer.NameValidator;
-import org.col.admin.importer.neo.model.NeoTaxon;
+import org.col.admin.importer.neo.NeoDb;
+import org.col.admin.importer.neo.model.NeoUsage;
 import org.col.admin.importer.reference.ReferenceFactory;
 import org.col.api.model.*;
-import org.col.api.vocab.*;
-import org.col.parser.*;
+import org.col.api.vocab.Issue;
+import org.col.api.vocab.Origin;
+import org.col.api.vocab.TaxonomicStatus;
+import org.col.parser.EnumNote;
+import org.col.parser.RankParser;
+import org.col.parser.SafeParser;
+import org.col.parser.TaxonomicStatusParser;
 import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.dwc.terms.Term;
 import org.gbif.nameparser.api.Rank;
@@ -28,14 +32,14 @@ import static org.col.parser.SafeParser.parse;
 public class AcefInterpreter extends InterpreterBase {
   private static final Logger LOG = LoggerFactory.getLogger(AcefInterpreter.class);
   private static final int ACEF_AUTHOR_MAX = 100;
-  
-  public AcefInterpreter(Dataset dataset, InsertMetadata metadata, ReferenceFactory refFactory) {
-    super(dataset, refFactory);
+
+  AcefInterpreter(Dataset dataset, MappingFlags metadata, ReferenceFactory refFactory, NeoDb store) {
+    super(dataset, refFactory, store);
     // turn on normalization of flat classification
     metadata.setDenormedClassificationMapped(true);
   }
-  
-  public Optional<Reference> interpretReference(VerbatimRecord rec) {
+
+  Optional<Reference> interpretReference(VerbatimRecord rec) {
     return Optional.of(refFactory.fromACEF(
         rec.get(AcefTerm.ReferenceID),
         rec.get(AcefTerm.Author),
@@ -45,48 +49,38 @@ public class AcefInterpreter extends InterpreterBase {
         rec
     ));
   }
-  
-  Optional<NeoTaxon> interpretAccepted(VerbatimRecord v) {
-    return interpretTaxon(AcefTerm.AcceptedTaxonID, v, false);
+
+  Optional<NeoUsage> interpretAccepted(VerbatimRecord v) {
+    return interpretUsage(AcefTerm.AcceptedTaxonID, v, false);
+  }
+
+  Optional<NeoUsage> interpretSynonym(VerbatimRecord v) {
+    return interpretUsage(AcefTerm.ID, v, true);
   }
   
-  Optional<NeoTaxon> interpretSynonym(VerbatimRecord v) {
-    return interpretTaxon(AcefTerm.ID, v, true);
+  List<VernacularName> interpretVernacular(VerbatimRecord rec) {
+    return super.interpretVernacular(rec,
+        this::setReference,
+        AcefTerm.CommonName,
+        AcefTerm.TransliteratedName,
+        AcefTerm.Language,
+        AcefTerm.Country
+    );
   }
   
-  private Optional<NeoTaxon> interpretTaxon(Term idTerm, VerbatimRecord v, boolean synonym) {
+  List<Distribution> interpretDistribution(VerbatimRecord rec) {
+    return super.interpretDistribution(rec, this::setReference,
+        AcefTerm.DistributionElement,
+        AcefTerm.StandardInUse,
+        AcefTerm.DistributionStatus);
+  }
+  
+  private Optional<NeoUsage> interpretUsage(Term idTerm, VerbatimRecord v, boolean synonym) {
     // name
     Optional<NameAccordingTo> nat = interpretName(idTerm, v);
     if (!nat.isPresent()) {
       return Optional.empty();
     }
-    
-    NeoTaxon t = NeoTaxon.createTaxon(Origin.SOURCE, nat.get().getName(), false);
-    
-    // taxon
-    t.taxon.setId(v.get(idTerm));
-    t.taxon.setOrigin(Origin.SOURCE);
-    t.taxon.setVerbatimKey(v.getKey());
-    t.taxon.setAccordingTo(v.get(AcefTerm.LTSSpecialist));
-    t.taxon.setAccordingToDate(date(v, t.taxon, Issue.ACCORDING_TO_DATE_INVALID, AcefTerm.LTSDate));
-    t.taxon.setDatasetUrl(uri(v, t.taxon, Issue.URL_INVALID, AcefTerm.InfraSpeciesURL, AcefTerm.SpeciesURL));
-    t.taxon.setFossil(bool(v, t.taxon, Issue.IS_FOSSIL_INVALID, AcefTerm.IsFossil, AcefTerm.HasPreHolocene));
-    t.taxon.setRecent(bool(v, t.taxon, Issue.IS_RECENT_INVALID, AcefTerm.IsRecent, AcefTerm.HasModern));
-    t.taxon.setRemarks(v.get(AcefTerm.AdditionalData));
-    
-    // lifezones
-    String raw = v.get(AcefTerm.LifeZone);
-    if (raw != null) {
-      for (String lzv : MULTIVAL.split(raw)) {
-        Lifezone lz = parse(LifezoneParser.PARSER, lzv).orNull(Issue.LIFEZONE_INVALID, v);
-        if (lz != null) {
-          t.taxon.getLifezones().add(lz);
-        }
-      }
-    }
-    
-    t.taxon.setSpeciesEstimate(null);
-    t.taxon.setSpeciesEstimateReferenceId(null);
     
     // status
     TaxonomicStatus status = parse(TaxonomicStatusParser.PARSER, v.get(AcefTerm.Sp2000NameStatus))
@@ -95,41 +89,49 @@ public class AcefInterpreter extends InterpreterBase {
       v.addIssue(Issue.TAXONOMIC_STATUS_INVALID);
       // override status as we require some accepted status on Taxon and some synonym status for
       // Synonym
-      status = synonym ? TaxonomicStatus.SYNONYM : TaxonomicStatus.DOUBTFUL;
+      status = synonym ? TaxonomicStatus.SYNONYM : TaxonomicStatus.PROVISIONALLY_ACCEPTED;
     }
-    
+  
+    NeoUsage u;
     // synonym
     if (synonym) {
-      t.synonym = new Synonym();
-      t.synonym.setStatus(status);
-      t.synonym.setAccordingTo(nat.get().getAccordingTo());
-      t.synonym.setVerbatimKey(v.getKey());
-      
+      u = NeoUsage.createSynonym(Origin.SOURCE, nat.get().getName(), status);
+      Synonym s = u.getSynonym();
+      s.setAccordingTo(nat.get().getAccordingTo());
+
     } else {
-      t.taxon.setDoubtful(TaxonomicStatus.DOUBTFUL == status);
+      // taxon
+      u = NeoUsage.createTaxon(Origin.SOURCE, nat.get().getName(), false);
+      Taxon t = u.getTaxon();
+      t.setOrigin(Origin.SOURCE);
+      t.setProvisional(TaxonomicStatus.PROVISIONALLY_ACCEPTED == status);
+      t.setAccordingTo(v.get(AcefTerm.LTSSpecialist));
+      t.setAccordingToDate(date(v, Issue.ACCORDING_TO_DATE_INVALID, AcefTerm.LTSDate));
+      t.setDatasetUrl(uri(v, Issue.URL_INVALID, AcefTerm.InfraSpeciesURL, AcefTerm.SpeciesURL));
+      t.setFossil(bool(v, Issue.IS_FOSSIL_INVALID, AcefTerm.IsFossil, AcefTerm.HasPreHolocene));
+      t.setRecent(bool(v, Issue.IS_RECENT_INVALID, AcefTerm.IsRecent, AcefTerm.HasModern));
+      t.setRemarks(v.get(AcefTerm.AdditionalData));
+  
+      // lifezones
+      setLifezones(t, v, AcefTerm.LifeZone);
+  
+      t.setSpeciesEstimate(null);
+      t.setSpeciesEstimateReferenceId(null);
     }
-    
-    // flat classification
-    t.classification = interpretClassification(v, synonym);
-    
-    return Optional.of(t);
-  }
   
-  List<VernacularName> interpretVernacular(VerbatimRecord rec) {
-    return super.interpretVernacular(rec,
-        this::addReferences,
-        AcefTerm.CommonName,
-        AcefTerm.TransliteratedName,
-        AcefTerm.Language,
-        AcefTerm.Country
-    );
+    u.setId(v.get(idTerm));
+    u.setVerbatimKey(v.getKey());
+    // flat classification for any usage
+    u.classification = interpretClassification(v, synonym);
+
+    return Optional.of(u);
   }
-  
-  private void addReferences(Referenced obj, VerbatimRecord v) {
+
+  private void setReference(Referenced obj, VerbatimRecord v) {
     if (v.hasTerm(AcefTerm.ReferenceID)) {
       Reference r = refFactory.find(v.get(AcefTerm.ReferenceID), null);
       if (r != null) {
-        obj.addReferenceId(r.getId());
+        obj.setReferenceId(r.getId());
       } else {
         LOG.info("ReferenceID {} not existing but referred from {} {}",
             v.get(AcefTerm.ReferenceID),
@@ -140,47 +142,7 @@ public class AcefInterpreter extends InterpreterBase {
       }
     }
   }
-  
-  List<Distribution> interpretDistribution(VerbatimRecord rec) {
-    // require location
-    if (rec.hasTerm(AcefTerm.DistributionElement)) {
-      Distribution d = new Distribution();
-      
-      // which standard?
-      d.setGazetteer(parse(GazetteerParser.PARSER, rec.get(AcefTerm.StandardInUse))
-          .orElse(Gazetteer.TEXT, Issue.DISTRIBUTION_GAZETEER_INVALID, rec));
-      
-      // TODO: try to split location into several distributions...
-      String loc = rec.get(AcefTerm.DistributionElement);
-      if (d.getGazetteer() == Gazetteer.TEXT) {
-        d.setArea(loc);
-      } else {
-        // only parse area if other than text
-        AreaParser.Area textArea = new AreaParser.Area(loc, Gazetteer.TEXT);
-        if (loc.indexOf(':') < 0) {
-          loc = d.getGazetteer().locationID(loc);
-        }
-        AreaParser.Area area = SafeParser.parse(AreaParser.PARSER, loc).orElse(textArea,
-            Issue.DISTRIBUTION_AREA_INVALID, rec);
-        d.setArea(area.area);
-        // check if we have contradicting extracted a gazetteer
-        if (area.standard != Gazetteer.TEXT && area.standard != d.getGazetteer()) {
-          LOG.info(
-              "Area standard {} found in area {} different from explicitly given standard {} for {}",
-              area.standard, area.area, d.getGazetteer(), rec);
-        }
-      }
-      
-      // status
-      d.setStatus(parse(DistributionStatusParser.PARSER, rec.get(AcefTerm.DistributionStatus))
-          .orElse(DistributionStatus.NATIVE, Issue.DISTRIBUTION_STATUS_INVALID, rec));
-      addReferences(d, rec);
-      d.setVerbatimKey(rec.getKey());
-      return Lists.newArrayList(d);
-    }
-    return Collections.emptyList();
-  }
-  
+
   private Classification interpretClassification(VerbatimRecord v, boolean isSynonym) {
     Classification cl = new Classification();
     cl.setKingdom(v.get(AcefTerm.Kingdom));

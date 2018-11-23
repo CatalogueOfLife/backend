@@ -231,6 +231,11 @@ public enum Issue {
   TAXON_ID_INVALID(Group.TAXON, Level.ERROR),
   
   /**
+   * The name object for col:nameId could not be resolved.
+   */
+  NAME_ID_INVALID(Group.TAXON, Level.ERROR),
+
+  /**
    * The value for dwc:parentNameUsageID could not be resolved.
    */
   PARENT_ID_INVALID(Group.TAXON, Level.ERROR),
@@ -365,6 +370,8 @@ public enum Issue {
   
   DISTRIBUTION_GAZETEER_INVALID(Group.DISTRIBUTION, Level.ERROR),
   
+  CREATED_DATE_INVALID(Group.MEDIA, Level.ERROR),
+  
   //
   // REFERENCE ISSUES
   //
@@ -411,7 +418,9 @@ public enum Issue {
     DATA,
     NAME,
     TAXON,
+    DESCRIPTION,
     DISTRIBUTION,
+    MEDIA,
     VERNACULAR,
     REFERENCE
   }

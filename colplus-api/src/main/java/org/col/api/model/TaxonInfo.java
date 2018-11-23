@@ -5,16 +5,25 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+/**
+ * Aggregated taxon information
+ */
 public class TaxonInfo {
   
   private Taxon taxon;
-  
-  private List<String> taxonReferences;
-  
   private List<Distribution> distributions;
-  
   private List<VernacularName> vernacularNames;
+  private List<Media> media;
+  private List<Description> descriptions;
   
+  /**
+   * All bibliographic reference ids for the given taxon
+   */
+  private List<String> taxonReferences;
+  /**
+   * Lookup of referernceID to reference so the same reference can be shared across different objects
+   * saving json serialization size.
+   */
   private Map<String, Reference> references = new HashMap<>();
   
   public Taxon getTaxon() {
@@ -49,6 +58,21 @@ public class TaxonInfo {
     this.distributions = distributions;
   }
   
+  public List<Media> getMedia() {
+    return media;
+  }
+  
+  public void setMedia(List<Media> media) {
+    this.media = media;
+  }
+  
+  public List<Description> getDescriptions() {
+    return descriptions;
+  }
+  
+  public void setDescriptions(List<Description> descriptions) {
+    this.descriptions = descriptions;
+  }
   
   public Reference getReference(String id) {
     return references.getOrDefault(id, null);
@@ -82,14 +106,17 @@ public class TaxonInfo {
     if (o == null || getClass() != o.getClass()) return false;
     TaxonInfo taxonInfo = (TaxonInfo) o;
     return Objects.equals(taxon, taxonInfo.taxon) &&
-        Objects.equals(taxonReferences, taxonInfo.taxonReferences) &&
         Objects.equals(distributions, taxonInfo.distributions) &&
         Objects.equals(vernacularNames, taxonInfo.vernacularNames) &&
+        Objects.equals(media, taxonInfo.media) &&
+        Objects.equals(descriptions, taxonInfo.descriptions) &&
+        Objects.equals(taxonReferences, taxonInfo.taxonReferences) &&
         Objects.equals(references, taxonInfo.references);
   }
   
   @Override
   public int hashCode() {
-    return Objects.hash(taxon, taxonReferences, distributions, vernacularNames, references);
+    
+    return Objects.hash(taxon, distributions, vernacularNames, media, descriptions, taxonReferences, references);
   }
 }

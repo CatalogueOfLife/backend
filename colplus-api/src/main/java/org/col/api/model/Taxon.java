@@ -6,6 +6,7 @@ import java.util.EnumSet;
 import java.util.Objects;
 import java.util.Set;
 
+import com.google.common.base.Preconditions;
 import org.col.api.vocab.Lifezone;
 import org.col.api.vocab.Origin;
 import org.col.api.vocab.TaxonomicStatus;
@@ -13,7 +14,7 @@ import org.col.api.vocab.TaxonomicStatus;
 /**
  *
  */
-public class Taxon implements NameUsage, VerbatimEntity {
+public class Taxon implements NameUsage {
   
   private String id;
   
@@ -23,7 +24,7 @@ public class Taxon implements NameUsage, VerbatimEntity {
   
   private Name name;
   
-  private boolean doubtful = false;
+  private boolean provisional = false;
   
   private Origin origin;
   
@@ -86,15 +87,23 @@ public class Taxon implements NameUsage, VerbatimEntity {
   
   @Override
   public TaxonomicStatus getStatus() {
-    return doubtful ? TaxonomicStatus.DOUBTFUL : TaxonomicStatus.ACCEPTED;
+    return provisional ? TaxonomicStatus.PROVISIONALLY_ACCEPTED : TaxonomicStatus.ACCEPTED;
   }
   
-  public boolean isDoubtful() {
-    return doubtful;
+  @Override
+  public void setStatus(TaxonomicStatus status) {
+    if (Preconditions.checkNotNull(status).isSynonym()) {
+      throw new IllegalArgumentException("Taxa cannot have a synonym status");
+    }
+    provisional = status == TaxonomicStatus.PROVISIONALLY_ACCEPTED;
   }
   
-  public void setDoubtful(boolean doubtful) {
-    this.doubtful = doubtful;
+  public boolean isProvisional() {
+    return provisional;
+  }
+  
+  public void setProvisional(boolean provisional) {
+    this.provisional = provisional;
   }
   
   public Origin getOrigin() {
@@ -199,7 +208,7 @@ public class Taxon implements NameUsage, VerbatimEntity {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     Taxon taxon = (Taxon) o;
-    return doubtful == taxon.doubtful &&
+    return provisional == taxon.provisional &&
         Objects.equals(id, taxon.id) &&
         Objects.equals(datasetKey, taxon.datasetKey) &&
         Objects.equals(verbatimKey, taxon.verbatimKey) &&
@@ -221,6 +230,6 @@ public class Taxon implements NameUsage, VerbatimEntity {
   @Override
   public int hashCode() {
     
-    return Objects.hash(id, datasetKey, verbatimKey, name, doubtful, origin, parentId, accordingTo, accordingToDate, fossil, recent, lifezones, datasetUrl, childCount, speciesEstimate, speciesEstimateReferenceId, remarks);
+    return Objects.hash(id, datasetKey, verbatimKey, name, provisional, origin, parentId, accordingTo, accordingToDate, fossil, recent, lifezones, datasetUrl, childCount, speciesEstimate, speciesEstimateReferenceId, remarks);
   }
 }

@@ -5,7 +5,7 @@ import java.util.Objects;
 /**
  * Simplified citation class linked to an optional serial container.
  */
-public class Reference implements VerbatimEntity {
+public class Reference implements ID, VerbatimEntity {
   
   /**
    * Original key as provided by the dataset.

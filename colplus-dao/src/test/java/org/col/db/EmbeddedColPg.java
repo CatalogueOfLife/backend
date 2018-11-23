@@ -16,7 +16,6 @@ import org.col.common.lang.Exceptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.yandex.qatools.embed.postgresql.EmbeddedPostgres;
-import ru.yandex.qatools.embed.postgresql.distribution.Version;
 
 import static java.util.Arrays.asList;
 
@@ -27,15 +26,15 @@ import static java.util.Arrays.asList;
  */
 public class EmbeddedColPg {
   private static final Logger LOG = LoggerFactory.getLogger(EmbeddedColPg.class);
-  
-  private static final String VERSION = Version.V10_3.asInDownloadPath(); //"11.0-1";
-  private static final List<String> DEFAULT_ADD_PARAMS = asList(
-      "-E", "SQL_ASCII",
-      "--locale=C",
-      "--lc-collate=C",
-      "--lc-ctype=C");
-  
-  private EmbeddedPostgres postgres;
+	
+	private static final String VERSION = "10.6-1"; //"11.0-1" exists for OSX, but not for Linux yet !!!;
+	private static final List<String> DEFAULT_ADD_PARAMS = asList(
+			"-E", "SQL_ASCII",
+			"--locale=C",
+			"--lc-collate=C",
+			"--lc-ctype=C");
+
+	private EmbeddedPostgres postgres;
   private final PgConfig cfg;
   private Path serverDir;
   

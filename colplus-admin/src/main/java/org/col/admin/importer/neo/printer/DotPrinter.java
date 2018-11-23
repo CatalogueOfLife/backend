@@ -4,13 +4,12 @@ import java.io.IOException;
 import java.io.Writer;
 import javax.annotation.Nullable;
 
-import com.google.common.base.Function;
 import org.col.admin.importer.neo.model.Labels;
+import org.col.admin.importer.neo.model.RankedUsage;
 import org.col.admin.importer.neo.model.RelType;
-import org.col.admin.importer.neo.traverse.RankEvaluator;
+import org.col.admin.importer.neo.traverse.UsageRankEvaluator;
 import org.gbif.nameparser.api.Rank;
 import org.neo4j.graphdb.Direction;
-import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 
 /**
@@ -27,15 +26,14 @@ import org.neo4j.graphdb.Relationship;
  * t17 -> t16 [type=synonym_of];
  * }
  */
-public class DotPrinter implements TreePrinter {
+public class DotPrinter extends BasePrinter {
   private final Writer writer;
-  private final Function<Node, String> getTitle;
-  private final RankEvaluator rankEvaluator;
+  private final UsageRankEvaluator rankEvaluator;
   
-  public DotPrinter(Writer writer, @Nullable Rank rankThreshold, Function<Node, String> getTitle) {
+  public DotPrinter(Writer writer, @Nullable Rank rankThreshold) {
+    super(true);
     this.writer = writer;
-    this.getTitle = getTitle;
-    this.rankEvaluator = new RankEvaluator(rankThreshold);
+    this.rankEvaluator = new UsageRankEvaluator(rankThreshold);
     printHeader();
   }
   
@@ -59,21 +57,21 @@ public class DotPrinter implements TreePrinter {
   }
   
   @Override
-  public void start(Node n) {
+  public void start(RankedUsage u) {
     try {
       writer.append("  n");
-      writer.append(String.valueOf(n.getId()));
+      writer.append(String.valueOf(u.getId()));
       writer.append("  [label=\"");
-      writer.append(getTitle.apply(n));
+      writer.append(u.getNameWithAuthor());
       writer.append("\"");
-      if (n.hasLabel(Labels.SYNONYM)) {
+      if (u.usageNode.hasLabel(Labels.SYNONYM)) {
         writer.append(", fontcolor=darkgreen");
       }
       writer.append("]\n");
       
       // edges
-      for (Relationship rel : n.getRelationships(Direction.OUTGOING)) {
-        if (rankEvaluator.evaluateNode(rel.getOtherNode(n))) {
+      for (Relationship rel : u.usageNode.getRelationships(Direction.OUTGOING)) {
+        if (rankEvaluator.evaluateNode(rel.getOtherNode(u.usageNode))) {
           //n1 -> n16 [type=parent_of]
           long start = rel.getStartNode().getId();
           long end = rel.getEndNode().getId();
@@ -104,9 +102,5 @@ public class DotPrinter implements TreePrinter {
       throw new RuntimeException(e);
     }
   }
-  
-  @Override
-  public void end(Node n) {
-  
-  }
+
 }

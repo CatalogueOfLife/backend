@@ -19,6 +19,7 @@ import java.util.Optional;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.reflect.ClassPath;
+import org.gbif.dwc.terms.Term;
 import org.gbif.dwc.terms.TermFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +29,13 @@ public final class VocabularyUtils {
   private static final Logger LOG = LoggerFactory.getLogger(VocabularyUtils.class);
   
   public static final TermFactory TF = TermFactory.instance();
+  
+  /**
+   * Finds a term using this term factory, removing also - and # which are not removed in the TermFactory itself.
+   */
+  public static Term findTerm(String name, boolean isClassTerm) {
+    return TF.findTerm(name.replaceAll("[#-]+", ""), isClassTerm);
+  }
   
   /**
    * Generic method to toEnum an enumeration value for a given string based on the name of the enum member.

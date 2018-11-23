@@ -12,10 +12,10 @@
         CREATE TABLE taxon_${key} (LIKE taxon INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
         CREATE TABLE synonym_${key} (LIKE synonym INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
         CREATE TABLE taxon_reference_${key} (LIKE taxon_reference INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
+        CREATE TABLE description_${key} (LIKE description INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
         CREATE TABLE distribution_${key} (LIKE distribution INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
-        CREATE TABLE distribution_reference_${key} (LIKE distribution_reference INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
+        CREATE TABLE media_${key} (LIKE media INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
         CREATE TABLE vernacular_name_${key} (LIKE vernacular_name INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
-        CREATE TABLE vernacular_name_reference_${key} (LIKE vernacular_name_reference INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
     </update>
 
     <update id="attach" parameterType="map">
@@ -27,9 +27,9 @@
         ALTER TABLE synonym ATTACH PARTITION synonym_${key} FOR VALUES IN ( ${key} );
         ALTER TABLE taxon_reference ATTACH PARTITION taxon_reference_${key} FOR VALUES IN ( ${key} );
         ALTER TABLE distribution ATTACH PARTITION distribution_${key} FOR VALUES IN ( ${key} );
-        ALTER TABLE distribution_reference ATTACH PARTITION distribution_reference_${key} FOR VALUES IN ( ${key} );
+        ALTER TABLE description ATTACH PARTITION description_${key} FOR VALUES IN ( ${key} );
         ALTER TABLE vernacular_name ATTACH PARTITION vernacular_name_${key} FOR VALUES IN ( ${key} );
-        ALTER TABLE vernacular_name_reference ATTACH PARTITION vernacular_name_reference_${key} FOR VALUES IN ( ${key} );
+        ALTER TABLE media ATTACH PARTITION media_${key} FOR VALUES IN ( ${key} );
     </update>
 
     <update id="buildIndices" parameterType="map">
@@ -58,9 +58,17 @@
         ALTER TABLE reference_${key} ADD PRIMARY KEY (id);
         CREATE index ON reference_${key} (verbatim_key);
 
+        ALTER TABLE description_${key} ADD PRIMARY KEY (key);
+        CREATE index ON description_${key} (taxon_id);
+        CREATE index ON description_${key} (verbatim_key);
+
         ALTER TABLE distribution_${key} ADD PRIMARY KEY (key);
         CREATE index ON distribution_${key} (taxon_id);
         CREATE index ON distribution_${key} (verbatim_key);
+
+        ALTER TABLE media_${key} ADD PRIMARY KEY (key);
+        CREATE index ON media_${key} (taxon_id);
+        CREATE index ON media_${key} (verbatim_key);
 
         ALTER TABLE vernacular_name_${key} ADD PRIMARY KEY (key);
         CREATE index ON vernacular_name_${key} (taxon_id);
@@ -75,10 +83,10 @@
         DROP TABLE IF EXISTS taxon_${key};
         DROP TABLE IF EXISTS synonym_${key};
         DROP TABLE IF EXISTS taxon_reference_${key};
+        DROP TABLE IF EXISTS description_${key};
         DROP TABLE IF EXISTS distribution_${key};
-        DROP TABLE IF EXISTS distribution_reference_${key};
+        DROP TABLE IF EXISTS media_${key};
         DROP TABLE IF EXISTS vernacular_name_${key};
-        DROP TABLE IF EXISTS vernacular_name_reference_${key};
     </update>
 
 </mapper>

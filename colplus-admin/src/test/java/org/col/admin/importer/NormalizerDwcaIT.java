@@ -1,41 +1,21 @@
 package org.col.admin.importer;
 
-import java.io.*;
 import java.net.URI;
-import java.net.URL;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import javax.annotation.Nullable;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.google.common.io.Files;
-import org.apache.commons.io.FileUtils;
-import org.col.admin.config.NormalizerConfig;
-import org.col.admin.importer.neo.NeoDb;
-import org.col.admin.importer.neo.NeoDbFactory;
-import org.col.admin.importer.neo.NotUniqueRuntimeException;
 import org.col.admin.importer.neo.model.*;
-import org.col.admin.importer.neo.printer.GraphFormat;
-import org.col.admin.importer.neo.printer.PrinterUtils;
-import org.col.admin.matching.NameIndexFactory;
 import org.col.api.model.*;
 import org.col.api.vocab.*;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.neo4j.graphdb.Direction;
-import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.NotFoundException;
 import org.neo4j.graphdb.Transaction;
-import org.neo4j.graphdb.schema.IndexDefinition;
 import org.neo4j.graphdb.schema.Schema;
-import org.neo4j.helpers.collection.Iterables;
 import org.neo4j.helpers.collection.Iterators;
 
 import static org.junit.Assert.*;
@@ -43,103 +23,23 @@ import static org.junit.Assert.*;
 /**
  *
  */
-public class NormalizerDwcaIT {
+public class NormalizerDwcaIT extends NormalizerITBase {
   
-  private NeoDb store;
-  private NormalizerConfig cfg;
-  private Path dwca;
   
-  @Before
-  public void initCfg() throws Exception {
-    cfg = new NormalizerConfig();
-    cfg.archiveDir = Files.createTempDir();
-    cfg.scratchDir = Files.createTempDir();
+  public NormalizerDwcaIT() {
+    super(DataFormat.DWCA);
   }
   
-  @After
-  public void cleanup() throws Exception {
-    if (store != null) {
-      store.closeAndDelete();
-    }
-    FileUtils.deleteQuietly(cfg.archiveDir);
-    FileUtils.deleteQuietly(cfg.scratchDir);
-  }
-  
-  /**
-   * Normalizes a dwca from the dwca test resources and checks its printed txt tree against the
-   * expected tree
-   *
-   * @param datasetKey
-   * @return
-   * @throws Exception
-   */
-  private void normalize(int datasetKey) throws Exception {
-    URL dwcaUrl = getClass().getResource("/dwca/" + datasetKey);
-    normalize(Paths.get(dwcaUrl.toURI()));
-  }
-  
-  private void normalize(URI url) throws Exception {
-    // download an decompress
-    ExternalSourceUtil.consumeSource(url, this::normalize);
-  }
-  
-  private void normalize(Path dwca) {
-    try {
-      store = NeoDbFactory.create(1, cfg);
-      Dataset d = new Dataset();
-      d.setKey(1);
-      d.setDataFormat(DataFormat.DWCA);
-      store.put(d);
-      Normalizer norm = new Normalizer(store, dwca, NameIndexFactory.passThru());
-      norm.call();
-      
-      // reopen
-      store = NeoDbFactory.open(1, cfg);
-      
-    } catch (IOException | InterruptedException e) {
-      throw new RuntimeException(e);
-    }
-  }
-  
-  VerbatimRecord vByID(String id) {
-    NeoTaxon t = byID(id);
-    return store.getVerbatim(t.name.getVerbatimKey());
-  }
-  
-  NeoTaxon byID(String id) {
-    Node n = store.byID(id);
-    return store.get(n);
-  }
-  
-  NeoTaxon byName(String name) {
-    return byName(name, null);
-  }
-  
-  NeoTaxon byName(String name, @Nullable String author) {
-    List<Node> nodes = store.byScientificName(name);
-    // filter by author
-    if (author != null) {
-      nodes.removeIf(n -> !author.equalsIgnoreCase(NeoProperties.getAuthorship(n)));
-    }
-    
-    if (nodes.isEmpty()) {
-      throw new NotFoundException();
-    }
-    if (nodes.size() > 1) {
-      throw new NotUniqueRuntimeException("scientificName", name);
-    }
-    return store.get(nodes.get(0));
-  }
-  
+
   @Test
   public void testBdjCsv() throws Exception {
     normalize(17);
     
     try (Transaction tx = store.getNeo().beginTx()) {
-      NeoTaxon t = byID("1099-sp16");
+      NeoUsage t = usageByID("1099-sp16");
       assertFalse(t.isSynonym());
-      assertEquals("Pinus palustris Mill.", t.name.canonicalNameComplete());
-      assertEquals(URI.create("http://dx.doi.org/10.3897/BDJ.2.e1099"), t.taxon.getDatasetUrl());
+      assertEquals("Pinus palustris Mill.", t.usage.getName().canonicalNameComplete());
+      assertEquals(URI.create("http://dx.doi.org/10.3897/BDJ.2.e1099"), t.getTaxon().getDatasetUrl());
     }
   }
   
@@ -152,23 +52,23 @@ public class NormalizerDwcaIT {
     }
     
     try (Transaction tx = store.getNeo().beginTx()) {
-      NeoTaxon trametes_modesta = byID("324805");
+      NeoUsage trametes_modesta = usageByID("324805");
       assertFalse(trametes_modesta.isSynonym());
-      
-      Reference pubIn = store.refById(trametes_modesta.name.getPublishedInId());
+
+      Reference pubIn = store.refById(trametes_modesta.usage.getName().getPublishedInId());
       assertEquals("Norw. Jl Bot. 19: 236 (1972)", pubIn.getCitation());
       assertNotNull(pubIn.getId());
-      
-      NeoTaxon Polystictus_substipitatus = byID("140283");
+
+      NeoUsage Polystictus_substipitatus = usageByID("140283");
       assertTrue(Polystictus_substipitatus.isSynonym());
-      assertTrue(Polystictus_substipitatus.synonym.getStatus().isSynonym());
-      pubIn = store.refById(Polystictus_substipitatus.name.getPublishedInId());
+      assertTrue(Polystictus_substipitatus.getSynonym().getStatus().isSynonym());
+      pubIn = store.refById(Polystictus_substipitatus.usage.getName().getPublishedInId());
       assertEquals("Syll. fung. (Abellini) 21: 318 (1912)", pubIn.getCitation());
-      
-      NeoTaxon Polyporus_modestus = byID("198666");
+
+      NeoUsage Polyporus_modestus = usageByID("198666");
       assertTrue(Polyporus_modestus.isSynonym());
-      assertTrue(Polyporus_modestus.synonym.getStatus().isSynonym());
-      pubIn = store.refById(Polyporus_modestus.name.getPublishedInId());
+      assertTrue(Polyporus_modestus.getSynonym().getStatus().isSynonym());
+      pubIn = store.refById(Polyporus_modestus.usage.getName().getPublishedInId());
       assertEquals("Linnaea 5: 519 (1830)", pubIn.getCitation());
     }
   }
@@ -180,9 +80,9 @@ public class NormalizerDwcaIT {
     // verify results
     try (Transaction tx = store.getNeo().beginTx()) {
       // check species name
-      NeoTaxon t = byID("1000");
-      assertEquals("Crepis pulchra", t.name.getScientificName());
-      
+      NeoUsage t = usageByID("1000");
+      assertEquals("Crepis pulchra", t.usage.getName().getScientificName());
+
       // check vernaculars
       Map<Language, String> expV = jersey.repackaged.com.google.common.collect.Maps.newHashMap();
       expV.put(Language.GERMAN, "Schöner Pippau");
@@ -233,14 +133,14 @@ public class NormalizerDwcaIT {
   @Test
   public void chainedBasionyms() throws Exception {
     normalize(28);
-    debug();
+
     // verify results
     try (Transaction tx = store.getNeo().beginTx()) {
       // 1->2->1
       // should be: 1->2
-      NeoTaxon t1 = byID("1");
-      NeoTaxon t2 = byID("2");
-      
+      NeoName t1 = nameByID("1");
+      NeoName t2 = nameByID("2");
+
       assertEquals(1, t1.node.getDegree(RelType.HAS_BASIONYM));
       assertEquals(1, t2.node.getDegree(RelType.HAS_BASIONYM));
       assertEquals(t2.node,
@@ -250,11 +150,11 @@ public class NormalizerDwcaIT {
       
       // 10->11->12->10, 13->11
       // should be: 10,13->11 12
-      NeoTaxon t10 = byID("10");
-      NeoTaxon t11 = byID("11");
-      NeoTaxon t12 = byID("12");
-      NeoTaxon t13 = byID("13");
-      
+      NeoName t10 = nameByID("10");
+      NeoName t11 = nameByID("11");
+      NeoName t12 = nameByID("12");
+      NeoName t13 = nameByID("13");
+
       assertEquals(1, t10.node.getDegree(RelType.HAS_BASIONYM));
       assertEquals(2, t11.node.getDegree(RelType.HAS_BASIONYM));
       assertEquals(0, t12.node.getDegree(RelType.HAS_BASIONYM));
@@ -280,8 +180,8 @@ public class NormalizerDwcaIT {
     // verify results
     try (Transaction tx = store.getNeo().beginTx()) {
       // check species name
-      NeoTaxon t = byID("10156");
-      assertEquals("'Prosthète'", t.name.getScientificName());
+      NeoUsage t = usageByID("10156");
+      assertEquals("'Prosthète'", t.usage.getName().getScientificName());
     }
   }
   
@@ -297,27 +197,19 @@ public class NormalizerDwcaIT {
   public void testNeoIndices() throws Exception {
     normalize(1);
     
-    Set<String> taxonIndices = Sets.newHashSet();
-    taxonIndices.add(NeoProperties.ID);
-    taxonIndices.add(NeoProperties.SCIENTIFIC_NAME);
+    // no indices!
     try (Transaction tx = store.getNeo().beginTx()) {
       Schema schema = store.getNeo().schema();
-      for (IndexDefinition idf : schema.getIndexes(Labels.TAXON)) {
-        List<String> idxProps = Iterables.asList(idf.getPropertyKeys());
-        assertTrue(idxProps.size() == 1);
-        assertTrue(taxonIndices.remove(idxProps.get(0)));
-      }
-      
+      assertFalse(schema.getIndexes().iterator().hasNext());
+
       // 1001, Crepis bakeri Greene
-      assertNotNull(
-          Iterators.singleOrNull(store.getNeo().findNodes(Labels.TAXON, NeoProperties.ID, "1001")));
       assertNotNull(Iterators.singleOrNull(
-          store.getNeo().findNodes(Labels.TAXON, NeoProperties.SCIENTIFIC_NAME, "Crepis bakeri")));
-      
-      assertNull(Iterators
-          .singleOrNull(store.getNeo().findNodes(Labels.TAXON, NeoProperties.ID, "x1001")));
+          store.getNeo().findNodes(Labels.NAME, NeoProperties.SCIENTIFIC_NAME, "Crepis bakeri")
+      ));
+  
       assertNull(Iterators.singleOrNull(
-          store.getNeo().findNodes(Labels.TAXON, NeoProperties.SCIENTIFIC_NAME, "xCrepis bakeri")));
+          store.getNeo().findNodes(Labels.NAME, NeoProperties.SCIENTIFIC_NAME, "xCrepis bakeri")
+      ));
     }
   }
   
@@ -326,46 +218,34 @@ public class NormalizerDwcaIT {
     normalize(1);
     
     try (Transaction tx = store.getNeo().beginTx()) {
-      NeoTaxon u1 = byID("1006");
-      NeoTaxon u2 = byName("Leontodon taraxacoides", "(Vill.) Mérat");
-      
+      NeoUsage u1 = usageByID("1006");
+      NeoUsage u2 = byName("Leontodon taraxacoides", "(Vill.) Mérat");
+
       assertEquals(u1, u2);
-      
-      NeoTaxon bas = byName("Leonida taraxacoida");
-      assertEquals(u2.name.getHomotypicNameId(), bas.name.getHomotypicNameId());
-      
-      NeoTaxon syn = byName("Leontodon leysseri");
-      assertTrue(syn.synonym.getStatus().isSynonym());
+
+      NeoUsage bas = byName("Leonida taraxacoida");
+      assertEquals(u2.usage.getName().getHomotypicNameId(), bas.usage.getName().getHomotypicNameId());
+
+      NeoUsage syn = byName("Leontodon leysseri");
+      assertTrue(syn.getSynonym().getStatus().isSynonym());
     }
   }
-  
-  private void debug() throws Exception {
-    PrinterUtils.printTree(store.getNeo(), new PrintWriter(System.out), GraphFormat.TEXT, true);
-    
-    // dump graph as DOT file for debugging
-    File dotFile = new File("graphs/dbugtree.dot");
-    Files.createParentDirs(dotFile);
-    Writer writer = new FileWriter(dotFile);
-    PrinterUtils.printTree(store.getNeo(), writer, GraphFormat.DOT, true);
-    writer.close();
-    System.out.println("Wrote graph to " + dotFile.getAbsolutePath());
-  }
-  
+
   @Test
   public void testProParte() throws Exception {
     normalize(8);
     
     try (Transaction tx = store.getNeo().beginTx()) {
-      NeoTaxon syn = byID("1001");
-      assertNotNull(syn.synonym);
-      
+      NeoUsage syn = usageByID("1001");
+      assertNotNull(syn.getSynonym());
+
       Map<String, String> expectedAccepted = Maps.newHashMap();
       expectedAccepted.put("1000", "Calendula arvensis");
       expectedAccepted.put("10000", "Calendula incana subsp. incana");
       expectedAccepted.put("10002", "Calendula incana subsp. maderensis");
-      
-      for (RankedName acc : store.accepted(syn.node)) {
-        assertEquals(expectedAccepted.remove(NeoProperties.getID(acc.node)), acc.name);
+
+      for (RankedUsage acc : store.accepted(syn.node)) {
+        assertEquals(expectedAccepted.remove(store.names().objByNode(acc.nameNode).getId()), acc.name);
       }
       assertTrue(expectedAccepted.isEmpty());
     }
@@ -376,18 +256,18 @@ public class NormalizerDwcaIT {
     normalize(29);
     
     try (Transaction tx = store.getNeo().beginTx()) {
-      NeoTaxon annua1 = byID("4");
-      NeoTaxon annua2 = byID("5");
-      assertEquals(annua1.name.getHomotypicNameId(), annua2.name.getHomotypicNameId());
-      NeoTaxon reptans1 = byID("7");
-      NeoTaxon reptans2 = byID("8");
-      assertEquals(reptans1.name.getHomotypicNameId(), reptans2.name.getHomotypicNameId());
-      assertFalse(annua1.name.getHomotypicNameId().equals(reptans1.name.getHomotypicNameId()));
-      
+      NeoUsage annua1 = usageByID("4");
+      NeoUsage annua2 = usageByID("5");
+      assertEquals(annua1.usage.getName().getHomotypicNameId(), annua2.usage.getName().getHomotypicNameId());
+      NeoUsage reptans1 = usageByID("7");
+      NeoUsage reptans2 = usageByID("8");
+      assertEquals(reptans1.usage.getName().getHomotypicNameId(), reptans2.usage.getName().getHomotypicNameId());
+      assertNotEquals(annua1.usage.getName().getHomotypicNameId(), reptans1.usage.getName().getHomotypicNameId());
+
       List<String> homos = Lists.newArrayList("4", "5", "7", "8");
-      store.all().forEach(t -> {
-        if (!homos.contains(t.name.getId())) {
-          assertNull(t.name.getHomotypicNameId());
+      store.names().all().forEach(nn -> {
+        if (!homos.contains(nn.name.getId())) {
+          assertNull(nn.name.getHomotypicNameId());
         }
       });
     }
@@ -398,10 +278,12 @@ public class NormalizerDwcaIT {
     normalize(30);
     
     try (Transaction tx = store.getNeo().beginTx()) {
-      NeoTaxon t10 = byID("10");
-      NeoTaxon t11 = byID("11");
-      assertEquals(t10.name.getHomotypicNameId(), t11.name.getHomotypicNameId());
-      List<NameRelation> rels = store.relations(t10.node);
+      NeoUsage t10 = usageByID("10");
+      NeoUsage t11 = usageByID("11");
+      assertEquals(t10.usage.getName().getHomotypicNameId(), t11.usage.getName().getHomotypicNameId());
+      
+      NeoName nn = nameByID("10");
+      List<NameRelation> rels = store.relations(nn.node);
       assertEquals(1, rels.size());
       assertEquals(NomRelType.BASED_ON, rels.get(0).getType());
     }
@@ -410,21 +292,21 @@ public class NormalizerDwcaIT {
   @Test
   public void testIssueFlagging() throws Exception {
     normalize(31);
-    
+    debug();
     try (Transaction tx = store.getNeo().beginTx()) {
-      VerbatimRecord t9 = vByID("9");
-      // TODO: fix https://github.com/Sp2000/colplus-backend/issues/118
-      // assertTrue(t9.hasIssue(Issue.PUBLISHED_BEFORE_GENUS));
+      VerbatimRecord t9 = vByUsageID("9");
+      VerbatimRecord v9 = vByNameID("9");
+      assertTrue(t9.hasIssue(Issue.PUBLISHED_BEFORE_GENUS));
       assertFalse(t9.hasIssue(Issue.PARENT_NAME_MISMATCH));
-      
-      VerbatimRecord t11 = vByID("11");
+
+      VerbatimRecord t11 = vByUsageID("11");
       assertTrue(t11.hasIssue(Issue.PARENT_NAME_MISMATCH));
-      
-      VerbatimRecord t103 = vByID("103");
+
+      VerbatimRecord t103 = vByUsageID("103");
       assertFalse(t103.hasIssue(Issue.PUBLISHED_BEFORE_GENUS));
       assertFalse(t103.hasIssue(Issue.PARENT_NAME_MISMATCH));
-      
-      VerbatimRecord t104 = vByID("104");
+
+      VerbatimRecord t104 = vByUsageID("104");
       assertTrue(t104.hasIssue(Issue.PUBLISHED_BEFORE_GENUS));
     }
   }
@@ -433,8 +315,7 @@ public class NormalizerDwcaIT {
   @Ignore("No testing yet")
   public void testWormsParents() throws Exception {
     normalize(32);
-    print("worms", GraphFormat.DOT, false);
-    
+
     try (Transaction tx = store.getNeo().beginTx()) {
     }
   }
@@ -443,29 +324,9 @@ public class NormalizerDwcaIT {
   @Ignore
   public void testExternal() throws Exception {
     //normalize(URI.create("http://www.marinespecies.org/dwca/WoRMS_DwC-A.zip"));
-    //normalize(Paths.get("/Users/markus/Downloads/ipni-dwca"));
+    //normalize(Paths.getUsage("/Users/markus/Downloads/ipni-dwca"));
     normalize(URI.create("https://raw.githubusercontent.com/mdoering/ion-taxonomic-hierarchy/master/classification.tsv"));
     // print("Diversity", GraphFormat.TEXT, false);
   }
-  
-  void print(String id, GraphFormat format, boolean file) throws Exception {
-    // dump graph as DOT file for debugging
-    File dotFile = new File("graphs/tree-dwca-" + id + "." + format.suffix);
-    Files.createParentDirs(dotFile);
-    Writer writer;
-    if (file) {
-      writer = new FileWriter(dotFile);
-    } else {
-      writer = new StringWriter();
-    }
-    PrinterUtils.printTree(store.getNeo(), writer, format);
-    writer.close();
-    
-    if (file) {
-      System.out.println("Wrote graph to " + dotFile.getAbsolutePath());
-    } else {
-      System.out.println(writer.toString());
-    }
-  }
-  
+
 }

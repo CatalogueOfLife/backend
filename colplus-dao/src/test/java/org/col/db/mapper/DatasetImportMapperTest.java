@@ -188,9 +188,9 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     assertCounts(expected, mapper().countDistributionsByGazetteer(DATASET11.getKey()));
     
     expected2.clear();
-    expected2.add(new StringCount(Language.GERMAN.getIso2LetterCode(), 1));
-    expected2.add(new StringCount(Language.ENGLISH.getIso2LetterCode(), 1));
-    expected2.add(new StringCount(Language.DUTCH.getIso2LetterCode(), 1));
+    expected2.add(new StringCount(Language.DUTCH.getIso3LetterCode(), 1));
+    expected2.add(new StringCount(Language.ENGLISH.getIso3LetterCode(), 1));
+    expected2.add(new StringCount(Language.GERMAN.getIso3LetterCode(), 1));
     assertCounts(expected2, mapper().countVernacularsByLanguage(DATASET11.getKey()));
     
     expected.clear();

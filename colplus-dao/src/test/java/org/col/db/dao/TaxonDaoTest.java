@@ -2,13 +2,14 @@ package org.col.db.dao;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Stream;
 
-import com.google.common.collect.Sets;
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.BeanPrinter;
 import org.col.api.TestEntityGenerator;
 import org.col.api.model.*;
 import org.col.api.vocab.Gazetteer;
+import org.col.api.vocab.Origin;
 import org.col.api.vocab.TaxonomicStatus;
 import org.junit.Test;
 
@@ -35,13 +36,21 @@ public class TaxonDaoTest extends DaoTestBase {
     
     Set<String> refKeys2 = new HashSet<>();
     refKeys2.addAll(info.getTaxonReferences());
-    refKeys2.addAll(info.getTaxonReferences());
-    refKeys2.addAll(info.getTaxonReferences());
-    info.getDistributions().forEach(d -> refKeys2.addAll(d.getReferenceIds()));
-    info.getVernacularNames().forEach(d -> refKeys2.addAll(d.getReferenceIds()));
     
-    assertEquals(refKeys1, refKeys2);
-    
+    Stream.concat(
+        info.getDescriptions().stream(),
+        Stream.concat(
+            info.getDistributions().stream(),
+            Stream.concat(
+                info.getMedia().stream(),
+                info.getVernacularNames().stream()
+            )
+        )
+    ).filter(r -> r.getReferenceId() != null)
+     .forEach(r -> refKeys2.add(r.getReferenceId()));
+
+		assertEquals(refKeys1, refKeys2);
+
     assertEquals(2, info.getDistributions().size());
     for (Distribution d : info.getDistributions()) {
       switch (d.getKey()) {
@@ -49,13 +58,13 @@ public class TaxonDaoTest extends DaoTestBase {
           assertEquals("Berlin", d.getArea());
           assertEquals(Gazetteer.TEXT, d.getGazetteer());
           assertNull(d.getStatus());
-          assertEquals(d.getReferenceIds(), Sets.newHashSet("ref-1", "ref-1b"));
+          assertEquals("ref-1", d.getReferenceId());
           break;
         case 2:
           assertEquals("Leiden", d.getArea());
           assertEquals(Gazetteer.TEXT, d.getGazetteer());
           assertNull(d.getStatus());
-          assertEquals(d.getReferenceIds(), Sets.newHashSet("ref-1b"));
+          assertEquals("ref-1b" ,d.getReferenceId());
           break;
         default:
           fail("Unexpected distribution");
@@ -111,6 +120,7 @@ public class TaxonDaoTest extends DaoTestBase {
       // now add a single synonym relation
       Synonym syn = new Synonym();
       syn.setStatus(TaxonomicStatus.SYNONYM);
+      syn.setOrigin(Origin.SOURCE);
       nDao.addSynonym(datasetKey, syn1.getId(), acc.getId(), syn);
       session.commit();
       

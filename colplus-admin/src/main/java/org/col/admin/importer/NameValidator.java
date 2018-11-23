@@ -1,5 +1,7 @@
 package org.col.admin.importer;
 
+import java.util.Set;
+import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -7,6 +9,7 @@ import com.google.common.base.CharMatcher;
 import com.google.common.base.Strings;
 import org.col.api.model.IssueContainer;
 import org.col.api.model.Name;
+import org.col.api.model.VerbatimRecord;
 import org.col.api.vocab.Issue;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
@@ -25,29 +28,80 @@ public class NameValidator {
   static final Pattern NON_LETTER = Pattern.compile("[^a-z-ë]", Pattern.CASE_INSENSITIVE);
   static final CharMatcher OPEN_BRACKETS = CharMatcher.anyOf("[({");
   static final CharMatcher CLOSE_BRACKETS = CharMatcher.anyOf("])}");
+
+  
+  static class LazyVerbatimRecord implements IssueContainer {
+    private VerbatimRecord container;
+    private final Supplier<VerbatimRecord> supplier;
+    private int startSize;
+  
+    LazyVerbatimRecord(Supplier<VerbatimRecord> supplier) {
+      this.supplier = supplier;
+    }
+    
+    private void load() {
+      if (container == null) {
+        container = supplier.get();
+        startSize = container.getIssues().size();
+      }
+    }
+  
+    @Override
+    public Set<Issue> getIssues() {
+      load();
+      return container.getIssues();
+    }
+  
+    @Override
+    public void setIssues(Set<Issue> issues) {
+      load();
+      container.setIssues(issues);
+    }
+  
+    @Override
+    public void addIssue(Issue issue) {
+      load();
+      container.addIssue(issue);
+    }
+  
+    @Override
+    public boolean hasIssue(Issue issue) {
+      load();
+      return container.hasIssue(issue);
+    }
+  
+    public boolean hasChanged() {
+      return container != null && container.getIssues().size() > startSize;
+    }
+  }
+  
+  public static VerbatimRecord flagIssues(Name n, VerbatimRecord v) {
+    return flagIssues(n, new Supplier<VerbatimRecord>() {
+      @Override
+      public VerbatimRecord get() {
+        return v;
+      }
+    });
+  }
   
   /**
-   * Validates consistency of name properties adding issues to the name if found.
+   * Validates consistency of name propLabel adding issues to the name if found.
    * This method checks if the given rank matches
-   * populated properties and available properties make sense together.
-   *
-   * @return true if any issue have been added
+   * populated propLabel and available propLabel make sense together.
+   * @return a non null VerbatimRecord if any issue have been added
    */
-  public static boolean flagIssues(Name n, IssueContainer issues) {
-    final int startSize = issues.getIssues().size();
-    
-    
+  public static VerbatimRecord flagIssues(Name n, Supplier<VerbatimRecord> issueSupplier) {
+    final LazyVerbatimRecord v = new LazyVerbatimRecord(issueSupplier);
     // only check for type scientific which is parsable
     if (n.getType() == NameType.SCIENTIFIC && n.isParsed()) {
-      flagParsedIssues(n, issues);
+      flagParsedIssues(n, v);
     } else {
       // flag issues on the full name for unparsed names
       if (hasUnmatchedBrackets(n.getScientificName())) {
-        issues.addIssue(Issue.UNMATCHED_NAME_BRACKETS);
+        v.addIssue(Issue.UNMATCHED_NAME_BRACKETS);
       }
     }
-    
-    return issues.getIssues().size() > startSize;
+    return v.hasChanged() ? v.container : null;
   }
   
   public static boolean hasUnmatchedBrackets(String x) {

@@ -21,7 +21,7 @@ import static org.gbif.nameparser.util.NameFormatter.HYBRID_MARKER;
 /**
  *
  */
-public class Name implements VerbatimEntity {
+public class Name implements ID, VerbatimEntity {
   
   /**
    * Primary key of the name as given in the dataset dwc:scientificNameID. Only guaranteed to be
@@ -668,8 +668,10 @@ public class Name implements VerbatimEntity {
   
   public String toStringComplete() {
     StringBuilder sb = new StringBuilder();
-    
-    sb.append(id);
+  
+    if (id != null) {
+      sb.append(id);
+    }
     
     if (this.type != null) {
       sb.append("[");

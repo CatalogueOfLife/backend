@@ -25,6 +25,8 @@ public enum ColTerm implements Term, AlternativeNames {
   title,
   year,
   source,
+  doi,
+  link,
   
   Name(true),
   //ID,
@@ -38,7 +40,7 @@ public enum ColTerm implements Term, AlternativeNames {
   publishedInPage,
   code,
   status,
-  link,
+  //link,
   remarks,
   
   NameRel(true),
@@ -120,6 +122,16 @@ public enum ColTerm implements Term, AlternativeNames {
   
   private static Map<String, ColTerm> LOOKUP = Maps.uniqueIndex(Arrays.asList(values()), ColTerm::normalize);
   
+  /**
+   * List of all higher rank terms in dwc, ordered by rank and starting with kingdom.
+   */
+  public static final ColTerm[] HIGHER_RANKS = {ColTerm.kingdom,
+      ColTerm.phylum, ColTerm.subphylum,
+      ColTerm.class_, ColTerm.subclass,
+      ColTerm.order, ColTerm.suborder,
+      ColTerm.superfamily, ColTerm.family, ColTerm.subfamily,
+      ColTerm.genus, ColTerm.subgenus};
+  
   public static Map<ColTerm, List<ColTerm>> RESOURCES = ImmutableMap.<ColTerm, List<ColTerm>>builder()
       .put(Reference, ImmutableList.of(
           ID,
@@ -127,7 +139,9 @@ public enum ColTerm implements Term, AlternativeNames {
           author,
           title,
           year,
-          source)
+          source,
+          doi,
+          link)
       ).put(Name, ImmutableList.of(
           ID,
           scientificName,

@@ -11,7 +11,7 @@
     vn.latin,
     vn.language,
     vn.country,
-    vnr.reference_id
+    vn.reference_id
   </sql>
 
   <sql id="COLS">
@@ -21,29 +21,27 @@
     name,
     latin,
     language,
-    country
+    country,
+    reference_id
   </sql>
 
   <sql id="PROPS">
     #{datasetKey},
     #{taxonId},
-    #{v.verbatimKey},
-    #{v.name},
-    #{v.latin},
-    #{v.language},
-    #{v.country}
+    #{obj.verbatimKey},
+    #{obj.name},
+    #{obj.latin},
+    #{obj.language},
+    #{obj.country},
+    #{obj.referenceId}
   </sql>
 
   <sql id="FROM">
-    vernacular_name vn LEFT JOIN vernacular_name_reference vnr
-      ON vn.key=vnr.vernacular_name_key AND vn.dataset_key = vnr.dataset_key
+    vernacular_name vn
   </sql>
 
   <resultMap id="vernacularNameResultMap" type="VernacularName" autoMapping="true">
     <id property="key" column="key" />
-    <collection property="referenceIds" ofType="String">
-      <result column="reference_id"/>
-    </collection>
   </resultMap>
 
 
@@ -62,7 +60,7 @@
       AND vn.key = #{key}
   </select>
 
-  <insert id="create" parameterType="VernacularName" useGeneratedKeys="true" keyProperty="v.key">
+  <insert id="create" parameterType="VernacularName" useGeneratedKeys="true" keyProperty="obj.key">
     INSERT INTO vernacular_name_${datasetKey} ( <include refid="COLS" /> )
     VALUES ( <include refid="PROPS" /> )
   </insert>

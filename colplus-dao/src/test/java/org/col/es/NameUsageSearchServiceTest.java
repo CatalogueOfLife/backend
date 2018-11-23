@@ -761,7 +761,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     n.setRank(Rank.FAMILY);
     Taxon t = new Taxon();
     t.setName(n);
-    t.setDoubtful(false);
+    t.setProvisional(false);
     VernacularName vn = new VernacularName();
     vn.setName("laridae");
     NameUsageWrapper<NameUsage> nuw1 = new NameUsageWrapper<>(t);
@@ -776,7 +776,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     n.setRank(Rank.ORDER);
     t = new Taxon();
     t.setName(n);
-    t.setDoubtful(false);
+    t.setProvisional(false);
     vn = new VernacularName();
     vn.setName("laridae");
     NameUsageWrapper<NameUsage> nuw2 = new NameUsageWrapper<>(t);
@@ -790,7 +790,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     n.setRank(Rank.FAMILY);
     t = new Taxon();
     t.setName(n);
-    t.setDoubtful(false);
+    t.setProvisional(false);
     vn = new VernacularName();
     vn.setName("laridae");
     NameUsageWrapper<NameUsage> nuw3 = new NameUsageWrapper<>(t);
@@ -804,7 +804,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     n.setRank(Rank.FAMILY);
     t = new Taxon();
     t.setName(n);
-    t.setDoubtful(false);
+    t.setProvisional(false);
     vn = new VernacularName();
     vn.setName("laridae");
     NameUsageWrapper<NameUsage> nuw4 = new NameUsageWrapper<>(t);
@@ -818,7 +818,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     n.setRank(Rank.GENUS); // XXXXXXXXXXXXX
     t = new Taxon();
     t.setName(n);
-    t.setDoubtful(false);
+    t.setProvisional(false);
     vn = new VernacularName();
     vn.setName("laridae");
     NameUsageWrapper<NameUsage> nuw5 = new NameUsageWrapper<>(t);
@@ -832,7 +832,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     n.setRank(Rank.FAMILY);
     t = new Taxon();
     t.setName(n);
-    t.setDoubtful(true); // XXXXXXXXXXXXX
+    t.setProvisional(true); // XXXXXXXXXXXXX
     vn = new VernacularName();
     vn.setName("laridae");
     NameUsageWrapper<NameUsage> nuw6 = new NameUsageWrapper<>(t);

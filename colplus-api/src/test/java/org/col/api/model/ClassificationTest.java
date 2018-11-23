@@ -1,9 +1,11 @@
 package org.col.api.model;
 
+import org.col.api.datapackage.ColTerm;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Test;
 
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 public class ClassificationTest {
@@ -36,4 +38,16 @@ public class ClassificationTest {
     assertTrue(c1.equalsAboveRank(c2, Rank.GENUS));
     assertFalse(c1.equalsAboveRank(c2, Rank.SUBGENUS));
   }
+  
+  @Test
+  public void higherRanks() {
+    Classification c = new Classification();
+    int hash = c.hashCode();
+    for (ColTerm t : ColTerm.HIGHER_RANKS) {
+      assertTrue(c.setByTerm(t, "xyz"));
+      assertNotEquals(hash, c.hashCode());
+      hash = c.hashCode();
+    }
+  }
+  
 }

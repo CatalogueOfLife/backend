@@ -3,19 +3,33 @@ package org.col.api.model;
 import java.util.Objects;
 
 import com.google.common.base.Preconditions;
+import org.col.api.vocab.Origin;
 import org.col.api.vocab.TaxonomicStatus;
 
 /**
  * A taxonomic synonym, linking a name to potentially multiple taxa.
  * Can be used for both homo-and heterotypic synonyms as well as misapplied names.
  */
-public class Synonym implements NameUsage, VerbatimEntity {
+public class Synonym implements NameUsage {
   
+  private String id;
   private Name name;
   private TaxonomicStatus status;
   private String accordingTo;
+  private String remarks;
   private Taxon accepted;
+  private Origin origin;
   private Integer verbatimKey;
+  
+  @Override
+  public String getId() {
+    return id;
+  }
+  
+  @Override
+  public void setId(String id) {
+    this.id = id;
+  }
   
   @Override
   public Name getName() {
@@ -53,6 +67,14 @@ public class Synonym implements NameUsage, VerbatimEntity {
     this.accordingTo = accordingTo;
   }
   
+  public String getRemarks() {
+    return remarks;
+  }
+  
+  public void setRemarks(String remarks) {
+    this.remarks = remarks;
+  }
+  
   /**
    * @return true if the synonym is a homotypic synonym for at least one of the accepted names.
    */
@@ -78,19 +100,32 @@ public class Synonym implements NameUsage, VerbatimEntity {
     this.verbatimKey = verbatimKey;
   }
   
+  public Origin getOrigin() {
+    return origin;
+  }
+  
+  public void setOrigin(Origin origin) {
+    this.origin = origin;
+  }
+  
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     Synonym synonym = (Synonym) o;
-    return Objects.equals(name, synonym.name) &&
+    return Objects.equals(id, synonym.id) &&
+        Objects.equals(name, synonym.name) &&
         status == synonym.status &&
         Objects.equals(accordingTo, synonym.accordingTo) &&
-        Objects.equals(accepted, synonym.accepted);
+        Objects.equals(remarks, synonym.remarks) &&
+        Objects.equals(accepted, synonym.accepted) &&
+        origin == synonym.origin &&
+        Objects.equals(verbatimKey, synonym.verbatimKey);
   }
   
   @Override
   public int hashCode() {
-    return Objects.hash(name, status, accordingTo, accepted);
+    
+    return Objects.hash(id, name, status, accordingTo, remarks, accepted, origin, verbatimKey);
   }
 }

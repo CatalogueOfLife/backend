@@ -9,6 +9,7 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -28,14 +29,13 @@ import com.univocity.parsers.common.ResultIterator;
 import com.univocity.parsers.common.TextParsingException;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
+import org.col.admin.importer.MappingFlags;
+import org.col.admin.importer.NormalizationFailedException;
 import org.col.api.model.VerbatimRecord;
 import org.col.api.util.VocabularyUtils;
 import org.col.common.io.CharsetDetectingStream;
 import org.col.common.io.PathUtils;
-import org.gbif.dwc.terms.AcefTerm;
-import org.gbif.dwc.terms.DwcTerm;
-import org.gbif.dwc.terms.Term;
-import org.gbif.dwc.terms.UnknownTerm;
+import org.gbif.dwc.terms.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,7 +52,7 @@ import org.slf4j.LoggerFactory;
 public class CsvReader {
   private static final Logger LOG = LoggerFactory.getLogger(CsvReader.class);
   protected static final CsvParserSettings CSV = new CsvParserSettings();
-  
+  private static Term UNKNOWN_TERM = TermFactory.instance().findTerm("void", false);
   static {
     CSV.detectFormatAutomatically();
     // try with tabs as default if autoconfig fails
@@ -73,6 +73,7 @@ public class CsvReader {
   
   protected final Path folder;
   protected final Map<Term, Schema> schemas = Maps.newHashMap();
+  protected final MappingFlags mappingFlags = new MappingFlags();
   private static final Character[] delimiterCandidates = {'\t', ',', ';', '|'};
   // we also use \0 for hopefully no quote...
   private static final Character[] quoteCandidates = {'\0', '"', '\''};
@@ -86,6 +87,7 @@ public class CsvReader {
     }
     this.folder = folder;
     discoverSchemas(termPrefix);
+    validate();
   }
   
   /**
@@ -102,9 +104,31 @@ public class CsvReader {
     }
   }
   
+  /**
+   * Override to add custom validations and set the mapping flags
+   */
+  protected void validate() {
+    // check at least one schema exists
+    if (isEmpty()) {
+      throw new NormalizationFailedException.SourceInvalidException("No data files found in " + folder);
+    }
+  }
+  
   protected void putSchema(Schema s) {
     if (s != null) {
       schemas.put(s.rowType, s);
+    }
+  }
+
+  protected void filterSchemas(Predicate<Term> keepRowType) {
+    // allow only COL row types
+    Iterator<Schema> iter = schemas.values().iterator();
+    while (iter.hasNext()) {
+      Schema s = iter.next();
+      if (!keepRowType.test(s.rowType)) {
+        LOG.info("Remove non COL rowType {} for file {}", s.rowType, s.file);
+        iter.remove();
+      }
     }
   }
   
@@ -128,10 +152,41 @@ public class CsvReader {
     return from(folder, null);
   }
   
+  protected void requireSchema(Term rowType) {
+    if (!hasData(rowType)) {
+      throw new NormalizationFailedException.SourceInvalidException(rowType + " file required but missing from " + folder);
+    }
+  }
+
   protected void require(Term rowType, Term term) {
     if (hasData(rowType) && !hasData(rowType, term)) {
       Schema s = schemas.remove(rowType);
       LOG.warn("Required term {} missing. Ignore file {}!", term, s.file);
+    }
+  }
+  
+  protected void disallow(Term rowType, Term term) {
+    if (hasData(rowType) && hasData(rowType, term)) {
+      LOG.warn("Removing disallowed term {} in {}", term, rowType);
+      Schema s = schemas.get(rowType);
+      List<Schema.Field> cols = new ArrayList<>();
+      for (Schema.Field f : s.columns) {
+        if (f.term == term) {
+          cols.add(new Schema.Field(UNKNOWN_TERM, f.index));
+        } else {
+          cols.add(f);
+        }
+      }
+      Schema s2 = new Schema(s.file, s.rowType, s.encoding, s.settings, cols);
+      schemas.put(rowType, s2);
+    }
+  }
+
+  protected <T extends Enum & Term> void reportMissingSchemas(Class<T> enumClass) {
+    for (T t : enumClass.getEnumConstants()) {
+      if (t.isClass() && !hasData(t)) {
+        LOG.info("{} missing from {} in {}", t.name(), enumClass.getSimpleName(), folder);
+      }
     }
   }
   
@@ -140,10 +195,14 @@ public class CsvReader {
       name = termPrefix + ":" + name;
     }
     try {
-      return Optional.of(VocabularyUtils.TF.findTerm(name, isClassTerm));
+      return Optional.of(VocabularyUtils.findTerm(name, isClassTerm));
     } catch (IllegalArgumentException e) {
       return Optional.empty();
     }
+  }
+  
+  public MappingFlags getMappingFlags() {
+    return mappingFlags;
   }
   
   /**
@@ -223,8 +282,9 @@ public class CsvReader {
           lines.add(line);
         }
         br.close();
-        
-        if (lines.isEmpty()) {
+
+        if (lines.size() < 2) {
+          // first line MUST be a header row...
           LOG.warn("{} contains no data", PathUtils.getFilename(df));
           
         } else {
@@ -289,7 +349,7 @@ public class CsvReader {
   }
   
   private static Iterable<Path> listDataFiles(Path folder) throws IOException {
-    if (!Files.isDirectory(folder)) return Collections.emptyList();
+    if (folder == null || !Files.isDirectory(folder)) return Collections.emptyList();
     return Files.newDirectoryStream(folder, new DirectoryStream.Filter<Path>() {
       @Override
       public boolean accept(Path p) throws IOException {
@@ -332,6 +392,10 @@ public class CsvReader {
     return Optional.ofNullable(schemas.get(rowType));
   }
   
+  public boolean hasSchema(Term rowType) {
+    return schemas.containsKey(rowType);
+  }
+
   public Stream<VerbatimRecord> stream(Term rowType) {
     Preconditions.checkArgument(rowType.isClass(), "RowType " + rowType + " is not a class term");
     if (schemas.containsKey(rowType)) {
@@ -378,8 +442,8 @@ public class CsvReader {
     
     private void nextRow() {
       if (iter.hasNext()) {
-        while (iter.hasNext() && isEmpty(row = iter.next(), true)) ;
-        // if the last rows were empty we would get the last non empty row again, clear it in that case!
+        while (iter.hasNext() && isEmpty(row = iter.next(), true));
+        // if the last rows were empty we would getUsage the last non empty row again, clear it in that case!
         if (!iter.hasNext() && isEmpty(row, false)) {
           row = null;
         }

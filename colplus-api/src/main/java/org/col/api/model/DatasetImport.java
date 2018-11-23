@@ -51,22 +51,25 @@ public class DatasetImport {
   private String md5;
   
   // metrics
-  private Integer verbatimCount;
-  private Integer nameCount;
-  private Integer taxonCount;
-  private Integer referenceCount;
-  private Integer vernacularCount;
+  private Integer descriptionCount;
   private Integer distributionCount;
+  private Integer mediaCount;
+  private Integer nameCount;
+  private Integer referenceCount;
+  private Integer taxonCount;
+  private Integer verbatimCount;
+  private Integer vernacularCount;
+  private Map<Gazetteer, Integer> distributionsByGazetteerCount = Maps.newHashMap();
   private Map<Issue, Integer> issuesCount = Maps.newHashMap();
+  private Map<Language, Integer> vernacularsByLanguageCount = Maps.newHashMap();
+  private Map<MediaType, Integer> mediaByTypeCount = Maps.newHashMap();
+  private Map<NameType, Integer> namesByTypeCount = Maps.newHashMap();
+  private Map<NomRelType, Integer> nameRelationsByTypeCount = Maps.newHashMap();
+  private Map<NomStatus, Integer> namesByStatusCount = Maps.newHashMap();
+  private Map<Origin, Integer> namesByOriginCount = Maps.newHashMap();
   private Map<Rank, Integer> namesByRankCount = Maps.newHashMap();
   private Map<Rank, Integer> taxaByRankCount = Maps.newHashMap();
-  private Map<NameType, Integer> namesByTypeCount = Maps.newHashMap();
-  private Map<Language, Integer> vernacularsByLanguageCount = Maps.newHashMap();
-  private Map<Gazetteer, Integer> distributionsByGazetteerCount = Maps.newHashMap();
-  private Map<Origin, Integer> namesByOriginCount = Maps.newHashMap();
   private Map<TaxonomicStatus, Integer> usagesByStatusCount = Maps.newHashMap();
-  private Map<NomStatus, Integer> namesByStatusCount = Maps.newHashMap();
-  private Map<NomRelType, Integer> nameRelationsByTypeCount = Maps.newHashMap();
   private Map<Term, Integer> verbatimByTypeCount = Maps.newHashMap();
   
   public Integer getAttempt() {
@@ -277,6 +280,30 @@ public class DatasetImport {
     this.verbatimByTypeCount = verbatimByTypeCount;
   }
   
+  public Integer getDescriptionCount() {
+    return descriptionCount;
+  }
+  
+  public void setDescriptionCount(Integer descriptionCount) {
+    this.descriptionCount = descriptionCount;
+  }
+  
+  public Integer getMediaCount() {
+    return mediaCount;
+  }
+  
+  public void setMediaCount(Integer mediaCount) {
+    this.mediaCount = mediaCount;
+  }
+  
+  public Map<MediaType, Integer> getMediaByTypeCount() {
+    return mediaByTypeCount;
+  }
+  
+  public void setMediaByTypeCount(Map<MediaType, Integer> mediaByTypeCount) {
+    this.mediaByTypeCount = mediaByTypeCount;
+  }
+  
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -291,29 +318,32 @@ public class DatasetImport {
         Objects.equals(finished, that.finished) &&
         Objects.equals(error, that.error) &&
         Objects.equals(md5, that.md5) &&
-        Objects.equals(verbatimCount, that.verbatimCount) &&
-        Objects.equals(nameCount, that.nameCount) &&
-        Objects.equals(taxonCount, that.taxonCount) &&
-        Objects.equals(referenceCount, that.referenceCount) &&
-        Objects.equals(vernacularCount, that.vernacularCount) &&
+        Objects.equals(descriptionCount, that.descriptionCount) &&
         Objects.equals(distributionCount, that.distributionCount) &&
+        Objects.equals(mediaCount, that.mediaCount) &&
+        Objects.equals(nameCount, that.nameCount) &&
+        Objects.equals(referenceCount, that.referenceCount) &&
+        Objects.equals(taxonCount, that.taxonCount) &&
+        Objects.equals(verbatimCount, that.verbatimCount) &&
+        Objects.equals(vernacularCount, that.vernacularCount) &&
+        Objects.equals(distributionsByGazetteerCount, that.distributionsByGazetteerCount) &&
         Objects.equals(issuesCount, that.issuesCount) &&
+        Objects.equals(vernacularsByLanguageCount, that.vernacularsByLanguageCount) &&
+        Objects.equals(mediaByTypeCount, that.mediaByTypeCount) &&
+        Objects.equals(namesByTypeCount, that.namesByTypeCount) &&
+        Objects.equals(nameRelationsByTypeCount, that.nameRelationsByTypeCount) &&
+        Objects.equals(namesByStatusCount, that.namesByStatusCount) &&
+        Objects.equals(namesByOriginCount, that.namesByOriginCount) &&
         Objects.equals(namesByRankCount, that.namesByRankCount) &&
         Objects.equals(taxaByRankCount, that.taxaByRankCount) &&
-        Objects.equals(namesByTypeCount, that.namesByTypeCount) &&
-        Objects.equals(vernacularsByLanguageCount, that.vernacularsByLanguageCount) &&
-        Objects.equals(distributionsByGazetteerCount, that.distributionsByGazetteerCount) &&
-        Objects.equals(namesByOriginCount, that.namesByOriginCount) &&
         Objects.equals(usagesByStatusCount, that.usagesByStatusCount) &&
-        Objects.equals(namesByStatusCount, that.namesByStatusCount) &&
-        Objects.equals(nameRelationsByTypeCount, that.nameRelationsByTypeCount) &&
         Objects.equals(verbatimByTypeCount, that.verbatimByTypeCount);
   }
   
   @Override
   public int hashCode() {
     
-    return Objects.hash(datasetKey, attempt, state, downloadUri, download, started, finished, error, md5, verbatimCount, nameCount, taxonCount, referenceCount, vernacularCount, distributionCount, issuesCount, namesByRankCount, taxaByRankCount, namesByTypeCount, vernacularsByLanguageCount, distributionsByGazetteerCount, namesByOriginCount, usagesByStatusCount, namesByStatusCount, nameRelationsByTypeCount, verbatimByTypeCount);
+    return Objects.hash(datasetKey, attempt, state, downloadUri, download, started, finished, error, md5, descriptionCount, distributionCount, mediaCount, nameCount, referenceCount, taxonCount, verbatimCount, vernacularCount, distributionsByGazetteerCount, issuesCount, vernacularsByLanguageCount, mediaByTypeCount, namesByTypeCount, nameRelationsByTypeCount, namesByStatusCount, namesByOriginCount, namesByRankCount, taxaByRankCount, usagesByStatusCount, verbatimByTypeCount);
   }
   
   public String attempt() {

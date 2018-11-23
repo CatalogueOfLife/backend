@@ -1,10 +1,8 @@
 package org.col.api.model;
 
 import java.util.Objects;
-import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.collect.Sets;
 import org.col.api.vocab.Country;
 import org.col.api.vocab.Language;
 
@@ -17,7 +15,7 @@ public class VernacularName implements Referenced, VerbatimEntity, IntKey {
   private String latin;
   private Language language;
   private Country country;
-  private Set<String> referenceIds = Sets.newHashSet();
+  private String referenceId;
   
   public Integer getKey() {
     return key;
@@ -73,16 +71,12 @@ public class VernacularName implements Referenced, VerbatimEntity, IntKey {
   }
   
   @Override
-  public Set<String> getReferenceIds() {
-    return referenceIds;
+  public String getReferenceId() {
+    return referenceId;
   }
   
-  public void setReferenceIds(Set<String> referenceIds) {
-    this.referenceIds = referenceIds;
-  }
-  
-  public void addReferenceId(String referenceId) {
-    this.referenceIds.add(referenceId);
+  public void setReferenceId(String referenceId) {
+    this.referenceId = referenceId;
   }
   
   
@@ -97,12 +91,12 @@ public class VernacularName implements Referenced, VerbatimEntity, IntKey {
         Objects.equals(latin, that.latin) &&
         language == that.language &&
         country == that.country &&
-        Objects.equals(referenceIds, that.referenceIds);
+        Objects.equals(referenceId, that.referenceId);
   }
   
   @Override
   public int hashCode() {
     
-    return Objects.hash(key, verbatimKey, name, latin, language, country, referenceIds);
+    return Objects.hash(key, verbatimKey, name, latin, language, country, referenceId);
   }
 }

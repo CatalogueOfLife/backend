@@ -22,6 +22,7 @@ import org.col.admin.matching.NameIndexFactory;
 import org.col.api.model.*;
 import org.col.api.vocab.*;
 import org.col.db.PgSetupRule;
+import org.col.db.dao.DatasetImportDao;
 import org.col.db.dao.NameDao;
 import org.col.db.dao.ReferenceDao;
 import org.col.db.dao.TaxonDao;
@@ -29,8 +30,7 @@ import org.col.db.mapper.*;
 import org.gbif.nameparser.api.Rank;
 import org.junit.*;
 
-import static org.col.api.vocab.DataFormat.ACEF;
-import static org.col.api.vocab.DataFormat.DWCA;
+import static org.col.api.vocab.DataFormat.*;
 import static org.junit.Assert.*;
 
 /**
@@ -88,14 +88,12 @@ public class PgImportIT {
       // normalize
       store = NeoDbFactory.create(dataset.getKey(), cfg);
       store.put(dataset);
-      Normalizer norm = new Normalizer(store, source,
-          NameIndexFactory.memory(Datasets.PROV_CAT, PgSetupRule.getSqlSessionFactory()));
+      Normalizer norm = new Normalizer(store, source, NameIndexFactory.memory(Datasets.PROV_CAT, PgSetupRule.getSqlSessionFactory()));
       norm.call();
       
       // import into postgres
       store = NeoDbFactory.open(dataset.getKey(), cfg);
-      PgImport importer =
-          new PgImport(dataset.getKey(), store, PgSetupRule.getSqlSessionFactory(), icfg);
+      PgImport importer = new PgImport(dataset.getKey(), store, PgSetupRule.getSqlSessionFactory(), icfg);
       importer.call();
       
     } catch (Exception e) {
@@ -114,6 +112,12 @@ public class PgImportIT {
     // decompress
     ExternalSourceUtil.consumeFile(file, this::normalizeAndImport);
   }
+  
+  DatasetImport metrics() {
+    return new DatasetImportDao(PgSetupRule.getSqlSessionFactory()).generateMetrics(dataset.getKey());
+  }
+  
+  
   
   @Test
   public void testPublishedIn() throws Exception {
@@ -506,6 +510,45 @@ public class PgImportIT {
       // this is buggy normalization of bad data - should really be just one...
       assertEquals(2, tdao.list(dataset.getKey(), true, new Page()).getResult().size());
     }
+  }
+  
+  @Test
+  public void testColdpSpecs() throws Exception {
+    normalizeAndImport(COLDP, 0);
+    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+      NameDao ndao = new NameDao(session);
+      Name n = ndao.get(dataset.getKey(), "1000");
+      assertEquals("Platycarpha glomerata", n.getScientificName());
+      assertEquals("(Thunberg) A.P.de Candolle", n.authorshipComplete());
+      assertEquals("1000", n.getId());
+      assertEquals(Rank.SPECIES, n.getRank());
+    
+      TaxonDao tdao = new TaxonDao(session);
+      // one root
+      assertEquals(1, tdao.list(dataset.getKey(), true, new Page()).getResult().size());
+  
+      Synonym s3 = tdao.getSynonym(dataset.getKey(), "1006-s3");
+      assertEquals("Leonida taraxacoida Vill.", s3.getName().canonicalNameComplete());
+      assertEquals("1006", s3.getAccepted().getId());
+      assertEquals("Leontodon taraxacoides (Vill.) Mérat", s3.getAccepted().getName().canonicalNameComplete());
+    }
+  
+    DatasetImport di = metrics();
+    assertEquals(0, (int) metrics().getDescriptionCount());
+    assertEquals(0, (int) metrics().getDistributionCount());
+    assertEquals(0, (int) metrics().getMediaCount());
+    assertEquals(0, (int) metrics().getReferenceCount());
+    assertEquals(0, (int) metrics().getVernacularCount());
+    assertEquals(16, (int) metrics().getTaxonCount());
+    assertEquals(21, (int) metrics().getNameCount());
+    assertEquals(43, (int) metrics().getVerbatimCount());
+    //TODO: add more comparisons when the data is richer
+    // assertEquals(null, metrics().getIssuesCount());
+    // assertEquals(null, metrics().getUsagesByStatusCount());
+    // assertEquals(null, metrics().getVerbatimByTypeCount());
+    // assertEquals(null, metrics().getMediaByTypeCount());
+    // assertEquals(null, metrics().getNamesByRankCount());
+  
   }
   
   @Test

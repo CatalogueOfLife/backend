@@ -68,7 +68,7 @@ public class Traversals {
   static {
     TraversalDescription td = new MonoDirectionalTraversalDescription();
     for (RelType rt : RelType.values()) {
-      if (rt.nomRelType != null && Boolean.TRUE.equals(rt.nomRelType.isHomotypic())) {
+      if (rt.isNameRel() && rt.nomRelType.isHomotypic()) {
         td = td.relationships(rt);
       }
     }
@@ -130,7 +130,6 @@ public class Traversals {
       .evaluator(new AcceptedOnlyEvaluator())
       .uniqueness(Uniqueness.NODE_PATH);
   
-  
   /**
    * Tries to find the set of accepted nodes.
    * Can be multiple due to pro parte synonyms.
@@ -164,7 +163,7 @@ public class Traversals {
     try (ResourceIterator<Node> parents = Traversals.PARENTS.traverse(start).nodes().iterator()) {
       while (parents.hasNext()) {
         Node p = parents.next();
-        int rankOrd = (int) p.getProperty(NeoProperties.RANK, -1);
+        int rankOrd = (int) NeoProperties.getNameNode(p).getProperty(NeoProperties.RANK, -1);
         if (rankOrd == rank.ordinal()) {
           return p;
         } else if (!rank.isUncomparable() && rankOrd > 0 && rankOrd < rank.ordinal()) {

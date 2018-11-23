@@ -2,11 +2,13 @@ package org.col.admin.importer.neo;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Writer;
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
@@ -15,19 +17,18 @@ import com.esotericsoftware.kryo.pool.KryoPool;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.UnmodifiableIterator;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.col.admin.importer.IdGenerator;
 import org.col.admin.importer.NormalizationFailedException;
 import org.col.admin.importer.neo.NodeBatchProcessor.BatchConsumer;
 import org.col.admin.importer.neo.model.*;
-import org.col.admin.importer.neo.traverse.StartEndHandler;
+import org.col.admin.importer.neo.printer.PrinterUtils;
 import org.col.admin.importer.neo.traverse.Traversals;
-import org.col.admin.importer.neo.traverse.TreeWalker;
 import org.col.admin.importer.reference.ReferenceStore;
 import org.col.api.model.*;
 import org.col.api.vocab.Issue;
 import org.col.api.vocab.Origin;
 import org.col.api.vocab.TaxonomicStatus;
-import org.col.common.collection.LRUCache;
 import org.col.common.mapdb.MapDbObjectSerializer;
 import org.col.common.text.StringUtils;
 import org.gbif.dwc.terms.DwcTerm;
@@ -42,7 +43,6 @@ import org.neo4j.graphdb.factory.GraphDatabaseBuilder;
 import org.neo4j.helpers.collection.Iterables;
 import org.neo4j.helpers.collection.Iterators;
 import org.neo4j.internal.kernel.api.exceptions.KernelException;
-import org.neo4j.kernel.impl.core.NodeProxy;
 import org.neo4j.kernel.impl.proc.Procedures;
 import org.neo4j.kernel.internal.GraphDatabaseAPI;
 import org.neo4j.unsafe.batchinsert.BatchInserter;
@@ -51,10 +51,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A persistence mechanism for storing core taxonomy & names properties and relations in an embedded
+ * A persistence mechanism for storing core taxonomy & names propLabel and relations in an embedded
  * Neo4j database, while keeping a large BLOB of information in a separate MapDB storage.
  * <p>
- * Neo4j does not perform well storing large properties in its node and it is recommended to keep
+ * Neo4j does not perform well storing large propLabel in its node and it is recommended to keep
  * large BLOBs or strings externally: https://neo4j.com/blog/dark-side-neo4j-worst-practices/
  * <p>
  * We use the Kryo library for a very performant binary
@@ -62,32 +62,32 @@ import org.slf4j.LoggerFactory;
  */
 public class NeoDb implements ReferenceStore {
   private static final Logger LOG = LoggerFactory.getLogger(NeoDb.class);
-  private static final Labels[] TAX_LABELS = new Labels[]{Labels.ALL, Labels.TAXON};
-  private static final Labels[] SYN_LABELS = new Labels[]{Labels.ALL, Labels.SYNONYM};
-  
+
   private final int datasetKey;
   private final GraphDatabaseBuilder neoFactory;
   private final DB mapDb;
   private final Atomic.Var<Dataset> dataset;
-  private final Map<Long, NeoTaxon> taxa;
+  // ID -> REF
   private final Map<String, Reference> references;
+  // Citation -> refID
   private final Map<String, String> refIndexCitation;
-  private final Map<Integer, VerbatimRecord> verbatim;
+  // verbatimKey sequence and lookup
   private final AtomicInteger verbatimSequence = new AtomicInteger(0);
+  private final Map<Integer, VerbatimRecord> verbatim;
+  
   private final File neoDir;
   private final KryoPool pool;
   private BatchInserter inserter;
   public final int batchSize;
   public final int batchTimeout;
-  // monomial lookup cache to speed up lookups by scientific name
-  // taking up 99% of time for denormalization of higher taxa
-  private final LRUCache<String, List<Node>> monomialCache = new LRUCache<String, List<Node>>(10000);
-  private final LRUCache<String, Node> idCache = new LRUCache<String, Node>(10000);
-  
+  private final NeoNameStore names;
+  private final NeoUsageStore usages;
+
   private final String idGenPrefix = ".neodb.";
   private IdGenerator idGen = new IdGenerator(idGenPrefix);
   private GraphDatabaseService neo;
-  
+  private final AtomicInteger neoCounter = new AtomicInteger(0);
+
   /**
    * @param mapDb
    * @param neoDir
@@ -106,13 +106,7 @@ public class NeoDb implements ReferenceStore {
       pool = new KryoPool.Builder(new NeoKryoFactory())
           .softReferences()
           .build();
-      
       dataset = (Atomic.Var<Dataset>) mapDb.atomicVar("dataset", new MapDbObjectSerializer(Dataset.class, pool, 256))
-          .createOrOpen();
-      taxa = mapDb.hashMap("taxa")
-          .keySerializer(Serializer.LONG)
-          .valueSerializer(new MapDbObjectSerializer<>(NeoTaxon.class, pool, 256))
-          .counterEnable()
           .createOrOpen();
       verbatim = mapDb.hashMap("verbatim")
           .keySerializer(Serializer.INTEGER)
@@ -126,8 +120,14 @@ public class NeoDb implements ReferenceStore {
           .keySerializer(Serializer.STRING_ASCII)
           .valueSerializer(Serializer.STRING)
           .createOrOpen();
+      
       openNeo();
       
+      usages = new NeoUsageStore(mapDb, "usages", pool, idGen, this);
+      
+      names = new NeoNameStore(mapDb, "names", pool, idGen, this);
+  
+  
     } catch (Exception e) {
       LOG.error("Failed to initialize a new NeoDB", e);
       close();
@@ -161,7 +161,6 @@ public class NeoDb implements ReferenceStore {
   private void openNeo() {
     LOG.debug("Starting embedded neo4j database from {}", neoDir.getAbsolutePath());
     neo = neoFactory.newGraphDatabase();
-    clearCaches();
     try {
       GraphDatabaseAPI gdb = (GraphDatabaseAPI) neo;
       gdb.getDependencyResolver().resolveDependency(Procedures.class).registerProcedure(UnionFindProc.class);
@@ -171,16 +170,9 @@ public class NeoDb implements ReferenceStore {
       LOG.warn("Unable to register neo4j algorithms", e);
     }
   }
-  
-  private void clearCaches() {
-    LOG.debug("Clearing caches (monomial={}, id={})", monomialCache.size(), idCache.size());
-    monomialCache.clear();
-    idCache.clear();
-  }
-  
+
   private void closeNeo() {
     try {
-      clearCaches();
       if (neo != null) {
         neo.shutdown();
       }
@@ -202,99 +194,78 @@ public class NeoDb implements ReferenceStore {
     // update previous ids
   }
   
-  public NeoTaxon get(Node n) {
-    NeoTaxon t = taxa.get(n.getId());
-    if (t != null) {
-      t.node = n;
-    }
-    return t;
+  public Dataset getDataset() {
+    return dataset.get();
   }
   
-  public NeoTaxon getByID(String id) {
-    if (id != null) {
-      Node n = byID(id);
-      if (n != null) {
-        return get(n);
-      }
+  public NeoNameStore names() {
+    return names;
+  }
+  
+  public NeoCRUDStore<NeoUsage> usages() {
+    return usages;
+  }
+  
+  public NeoUsage usageWithName(Node usageNode) {
+    NeoUsage u = usages().objByNode(usageNode);
+    if (u != null) {
+      NeoName nn = nameByUsage(usageNode);
+      u.usage.setName(nn.name);
+      u.nameNode = nn.node;
     }
-    return null;
+    return u;
   }
   
   /**
    * @return a collection of all name relations with name key using node ids.
    */
-  public List<NameRelation> relations(Node n) {
-    return Iterables.stream(n.getRelationships())
-        .filter(r -> RelType.valueOf(r.getType().name()).nomRelType != null)
-        .map(r -> {
-          NameRelation nr = new NameRelation();
-          nr.setType(RelType.valueOf(r.getType().name()).nomRelType);
-          nr.setNameId(NeoProperties.getID(r.getStartNode()));
-          nr.setRelatedNameId(NeoProperties.getID(r.getEndNode()));
-          nr.setNote((String) r.getProperty(NeoProperties.NOTE, null));
-          nr.setPublishedInId((String) r.getProperty(NeoProperties.REF_ID, null));
-          if (r.hasProperty(NeoProperties.VERBATIM_KEY)) {
-            nr.setVerbatimKey((Integer) r.getProperty(NeoProperties.VERBATIM_KEY));
-          }
-          return nr;
-        })
+  public NameRelation toRelation(Relationship r) {
+    NameRelation nr = new NameRelation();
+    nr.setDatasetKey(datasetKey);
+    nr.setType(RelType.valueOf(r.getType().name()).nomRelType);
+    nr.setNameId(names.objByNode(r.getStartNode()).getId());
+    nr.setRelatedNameId(names.objByNode(r.getEndNode()).getId());
+    nr.setNote((String) r.getProperty(NeoProperties.NOTE, null));
+    nr.setPublishedInId((String) r.getProperty(NeoProperties.REF_ID, null));
+    if (r.hasProperty(NeoProperties.VERBATIM_KEY)) {
+      nr.setVerbatimKey((Integer) r.getProperty(NeoProperties.VERBATIM_KEY));
+    }
+    return nr;
+  }
+  
+  /**
+   * @return a collection of all name relations for the given name node with NameRelation.key using node ids.
+   */
+  public List<NameRelation> relations(Node nameNode) {
+    return Iterables.stream(nameNode.getRelationships())
+        .filter(r -> RelType.valueOf(r.getType().name()).isNameRel())
+        .map(this::toRelation)
         .collect(Collectors.toList());
   }
   
-  /**
-   * @return the single matching node with the taxonID or null
-   */
-  public Node byID(String id) {
-    try {
-      return idCache.computeIfAbsent(id, x -> Iterators.singleOrNull(neo.findNodes(Labels.ALL, NeoProperties.ID, x)));
-    } catch (NoSuchElementException e) {
-      throw new NotUniqueRuntimeException(NeoProperties.ID, id);
+  public List<Node> usagesByName(String scientificName, @Nullable String authorship, @Nullable Rank rank, boolean inclUnranked) {
+    List<Node> names = names().nodesByName(scientificName);
+    // filter ranks
+    if (rank != null) {
+      names.removeIf(n -> {
+        Rank r = NeoProperties.getRank(n, Rank.UNRANKED);
+        if (inclUnranked) {
+          return !r.equals(rank) && r != Rank.UNRANKED;
+        } else {
+          return !r.equals(rank);
+        }
+      });
     }
-  }
-  
-  /**
-   * @return the matching nodes with the scientificName
-   */
-  public List<Node> byScientificName(String scientificName) {
-    return byScientificName(Labels.ALL, scientificName);
-  }
-  
-  /**
-   * Lookup nodes by their scientific name.
-   * This method caches monomials for quick subsequent lookups
-   *
-   * @return the matching nodes with the scientificName and given label
-   */
-  public List<Node> byScientificName(final Labels label, final String scientificName) {
-    if (scientificName.contains(" ")) {
-      return lookupByScientificName(label, scientificName);
-    } else {
-      return new ArrayList<>(monomialCache.computeIfAbsent(scientificName, sn -> lookupByScientificName(label, sn)));
+    // filter authorship
+    if (authorship != null) {
+      names.removeIf(n -> !authorship.equalsIgnoreCase(NeoProperties.getAuthorship(n)));
     }
-  }
   
-  /**
-   * uncached internal version
-   */
-  private List<Node> lookupByScientificName(Labels label, String scientificName) {
-    return Iterators.asList(neo.findNodes(label, NeoProperties.SCIENTIFIC_NAME, scientificName));
-  }
-  
-  public List<Node> byScientificName(Labels label, String scientificName, Rank rank, boolean inclUnranked) {
-    List<Node> names = byScientificName(label, scientificName);
-    names.removeIf(n -> {
-      Rank r = NeoProperties.getRank(n, Rank.UNRANKED);
-      if (inclUnranked) {
-        return !r.equals(rank) && r != Rank.UNRANKED;
-      } else {
-        return !r.equals(rank);
-      }
-    });
-    return names;
-  }
-  
-  public Dataset getDataset() {
-    return dataset.get();
+    List<Node> taxa = new ArrayList<>();
+    for (Node n : names) {
+      taxa.addAll(usageNodesByName(n));
+    }
+    return taxa;
   }
   
   /**
@@ -306,20 +277,21 @@ public class NeoDb implements ReferenceStore {
    * <p>
    * Iteration is by node value starting from node value 1 to highest.
    *
-   * @param label     neo4j node label to select nodes by. Use Labels.ALL for all nodes
+   * @param label neo4j node label to select nodes by. Use NULL for all nodes
    * @param batchSize
    * @param callback
    * @return total number of processed nodes.
    */
-  public int process(Labels label, final int batchSize, NodeBatchProcessor callback) {
+  public int process(@Nullable Labels label, final int batchSize, NodeBatchProcessor callback) {
     final BlockingQueue<List<Node>> queue = new LinkedBlockingQueue<>(3);
     BatchConsumer consumer = new BatchConsumer(datasetKey, neo, callback, queue, Thread.currentThread());
     Thread consThread = new Thread(consumer, "neodb-processor-" + datasetKey);
     consThread.start();
-    
-    try (Transaction tx = neo.beginTx()) {
-      UnmodifiableIterator<List<Node>> batchIter = com.google.common.collect.Iterators.partition(neo.findNodes(label), batchSize);
-      
+
+    try (Transaction tx = neo.beginTx()){
+      final ResourceIterator<Node> iter = label == null ? neo.getAllNodes().iterator() : neo.findNodes(label);
+      UnmodifiableIterator<List<Node>> batchIter = com.google.common.collect.Iterators.partition(iter, batchSize);
+
       while (batchIter.hasNext() && consThread.isAlive()) {
         checkIfInterrupted();
         List<Node> batch = batchIter.next();
@@ -364,21 +336,6 @@ public class NeoDb implements ReferenceStore {
   }
   
   /**
-   * Removes the neo4j node with all its relations and all entities stored under this node like NeoTaxon.
-   */
-  public void remove(Node n) {
-    taxa.remove(n.getId());
-    int counter = 0;
-    for (Relationship rel : n.getRelationships()) {
-      rel.delete();
-      counter++;
-    }
-    n.delete();
-    LOG.debug("Deleted {} from store with {} relations", n, counter);
-  }
-  
-  
-  /**
    * Shuts down the regular neo4j db and opens up neo4j in batch mode.
    * While batch mode is active only writes will be accepted and reads from the store
    * will throw exceptions.
@@ -397,177 +354,184 @@ public class NeoDb implements ReferenceStore {
   }
   
   public void endBatchMode() throws NotUniqueRuntimeException {
-    try {
-      // define indices
-      LOG.info("Building lucene index scientificName ...");
-      inserter.createDeferredSchemaIndex(Labels.ALL).on(NeoProperties.SCIENTIFIC_NAME).create();
-    } finally {
-      // this is when lucene indices are build
-      inserter.shutdown();
-    }
-    
+    inserter.shutdown();
     openNeo();
-    // now try to add a taxonID unique constraint. If it fails we will remove offending records
-    try {
-      buildPrimaryKeyIndex();
-    } catch (ConstraintViolationException e) {
-      LOG.warn("The inserted dataset contains duplicate IDs! Only the first record will be used");
-      removeDuplicateKeys();
-      buildPrimaryKeyIndex();
-    }
-    
     inserter = null;
   }
   
-  private void buildPrimaryKeyIndex() {
-    try (Transaction tx = neo.beginTx()) {
-      LOG.info("Building lucene index ID ...");
-      neo.schema().constraintFor(Labels.ALL).assertPropertyIsUnique(NeoProperties.ID).create();
-      tx.success();
-    }
-    try (Transaction tx = neo.beginTx()) {
-      neo.schema().awaitIndexesOnline(1, TimeUnit.HOURS);
-      LOG.debug("Done building lucene index ID");
-    }
-  }
-  
-  private void removeDuplicateKeys() {
-    try (Transaction tx = neo.beginTx()) {
-      final AtomicInteger counter = new AtomicInteger(0);
-      Result res = neo.execute("MATCH (n:ALL) WITH n." + NeoProperties.ID + " as id, collect(n) AS nodes WHERE size(nodes) >  1 RETURN nodes");
-      res.accept(new Result.ResultVisitor<Exception>() {
-        @Override
-        public boolean visit(Result.ResultRow row) {
-          List<Node> nodes = (List<Node>) row.get("nodes");
-          Node first = nodes.get(0);
-          LOG.info("keep {} {}", first, NeoProperties.getScientificNameWithAuthor(first));
-          
-          NeoTaxon t = get(first);
-          addIssues(t.name, Issue.ID_NOT_UNIQUE);
-          for (Node n : nodes) {
-            if (n.getId() != first.getId()) {
-              LOG.info("remove {} with duplicate ID {}", NeoProperties.getID(n), n);
-              n.delete();
-              taxa.remove(n.getId());
-              counter.incrementAndGet();
-            }
-          }
-          // continue to visit other nodes
-          return true;
-        }
-      });
-      tx.success();
-      LOG.info("Remove {} duplicate records in total", counter.get());
-      
-    } catch (Exception e) {
-      LOG.error("Failed to remove duplicate records with the same ID ", e);
-      throw new NotUniqueRuntimeException("ID");
-    }
-  }
-  
   /**
-   * Persists a NeoTaxon instance, creating missing name & taxon ids de novo
+   * Creates both a name and a usage neo4j node.
+   * The name node is returned while the usage node is set on the NeoUsage object.
+   * The name instance is taken from the usage object which is removed from the usage.
+   * @return the created name node or null if it could not be created
    */
-  public NeoTaxon put(NeoTaxon t) {
-    // create missing ids, sharing the same id between name & taxon
-    if (t.taxon.getId() == null) {
-      t.taxon.setId(idGen.next());
-    }
-    if (t.name.getId() == null) {
-      t.name.setId(t.taxon.getId());
-    }
+  public Node createNameAndUsage(NeoUsage u) {
+    Preconditions.checkArgument(u.getNode() == null, "NeoUsage already has a neo4j node");
+    Preconditions.checkArgument(u.nameNode == null, "NeoUsage already has a neo4j name node");
+    Preconditions.checkNotNull(u.usage.getName(), "NeoUsage with name required");
     
-    // update neo4j properties either via batch mode or classic
-    long nodeId;
-    Map<String, Object> props = NeoDbUtils.neo4jProps(t);
-    if (isBatchMode()) {
-      // batch insert normalizer properties used during normalization
-      nodeId = inserter.createNode(props, getNeoLabels(t));
-      
+    // first create the name in a new node
+    NeoName nn = new NeoName(u.usage.getName());
+    if (nn.getId() == null) {
+      nn.setId(u.getId());
+    }
+    if (nn.getVerbatimKey() == null) {
+      nn.setVerbatimKey(u.getVerbatimKey());
+    }
+    if (nn.name.getOrigin() == null) {
+      if (u.isSynonym()) {
+        nn.name.setOrigin(u.getSynonym().getOrigin());
+      } else {
+        nn.name.setOrigin(u.getTaxon().getOrigin());
+      }
+    }
+    nn.homotypic = u.homotypic;
+    u.nameNode = names.create(nn);
+  
+    if (u.nameNode != null) {
+      // remove name from usage & create it which results in a new node on the usage
+      u.usage.setName(null);
+      usages.create(u);
     } else {
-      // create neo4j node if needed
-      if (t.node == null) {
-        t.node = neo.createNode(getNeoLabels(t));
-      }
-      nodeId = t.node.getId();
-      // update neo4j props
-      NeoDbUtils.setProperties(t.node, props);
-      // clear monomial lookup monomialCache
-      //noinspection SuspiciousMethodCalls
-      String sn = (String) props.get(NeoProperties.SCIENTIFIC_NAME);
-      if (sn != null && !sn.contains(" ")) {
-        monomialCache.remove(sn);
-      }
+      LOG.debug("Skip usage {} as no name node was created for {}", u.getId(), nn.name.canonicalNameComplete());
     }
-    
-    taxa.put(nodeId, t);
-    
-    return t;
+    return u.nameNode;
   }
   
   /**
-   * Updates the taxon object only in the  KVP store, keeping neo4j as it is.
-   * throws is taxon did not exist before.
+   * Removes the neo4j node with all its relations and all entities stored under this node
+   * i.e. NeoUsage and NeoName.
    */
-  public void update(NeoTaxon t) {
-    Preconditions.checkNotNull(t.node);
-    taxa.put(t.node.getId(), t);
+  public void remove(Node n) {
+    // first remove mapdb entries
+    Object removed = names().remove(n);
+    if (removed == null) {
+      removed = usages().remove(n);
+    }
+    // now remove all neo relations
+    int counter = 0;
+    for (Relationship rel : n.getRelationships()) {
+      rel.delete();
+      counter++;
+    }
+    // and finally the node
+    String labels = NeoDbUtils.labelsToString(n);
+    n.delete();
+    LOG.debug("Deleted {}{} from store with {} relations", labels, n, counter);
+  }
+
+  Node createNode(PropLabel data) {
+    Node n;
+    if (isBatchMode()) {
+      // batch insert normalizer propLabel used during normalization
+      long nodeId = inserter.createNode(data, data.getLabels());
+      n = new NodeMock(nodeId);
+    } else {
+      // create neo4j node and update its propLabel
+      n = neo.createNode(data.getLabels());
+      NeoDbUtils.addProperties(n, data);
+    }
+    neoCounter.incrementAndGet();
+    return n;
   }
   
-  private Labels[] getNeoLabels(NeoTaxon t) {
-    return t.isSynonym() ? SYN_LABELS : TAX_LABELS;
-  }
-  
-  public void assignKey(VerbatimRecord v) {
-    if (v.getKey() == null) {
-      v.setKey(verbatimSequence.incrementAndGet());
+  /**
+   * Updates a node by adding properties and/or labels
+   */
+  void updateNode(long nodeId, PropLabel data) {
+    if (!data.isEmpty()) {
+      if (isBatchMode()) {
+        if (data.getLabels() != null) {
+          Label[] all = ArrayUtils.addAll(data.getLabels(),
+              com.google.common.collect.Iterables.toArray(inserter.getNodeLabels(nodeId), Label.class)
+          );
+          inserter.setNodeLabels(nodeId, all);
+        }
+        if (data.size()>0) {
+          data.putAll(inserter.getNodeProperties(nodeId));
+          inserter.setNodeProperties(nodeId, data);
+        }
+      } else {
+        Node n = neo.getNodeById(nodeId);
+        NeoDbUtils.addProperties(n, data);
+        NeoDbUtils.addLabels(n, data.getLabels());
+      }
     }
   }
   
+  /**
+   * Updates a node by adding properties and/or labels
+   */
+  void createRel(Node node1, Node node2, RelationshipType type) {
+      if (isBatchMode()) {
+        inserter.createRelationship(node1.getId(), node2.getId(), type, null);
+      } else {
+        node1.createRelationshipTo(node2, type);
+      }
+  }
+  
+  /**
+   * @return a node which is a dummy proxy only with just an id while we are in batch mode.
+   */
+  Node nodeById(long nodeId) {
+    return isBatchMode() ? new NodeMock(nodeId) : neo.getNodeById(nodeId);
+  }
+  
+  /**
+   * Creates or updates a verbatim record.
+   * If created a new key is issued.
+   */
   public void put(VerbatimRecord v) {
     if (v.hasChanged()) {
-      assignKey(v);
+      if (v.getKey() == null) {
+        v.setKey(verbatimSequence.incrementAndGet());
+      }
       verbatim.put(v.getKey(), v);
+      v.setHashCode();
     }
   }
   
   /**
-   * Creates a new name relation linking the 2 given nodes.
-   * The note and publishedInKey values are stored as relation properties
+   * Creates a new name relation linking the 2 given name nodes.
+   * The note and publishedInKey values are stored as relation propLabel
    */
   public void createNameRel(Node n1, Node n2, NeoNameRel rel) {
-    Relationship r = n1.createRelationshipTo(n2, rel.getType());
-    if (rel.getVerbatimKey() != null) {
-      r.setProperty(NeoProperties.VERBATIM_KEY, rel.getVerbatimKey());
-    }
-    if (rel.getRefId() != null) {
-      r.setProperty(NeoProperties.REF_ID, rel.getRefId());
-    }
-    if (rel.getNote() != null) {
-      r.setProperty(NeoProperties.NOTE, rel.getNote());
+    Map<String, Object> props = NeoDbUtils.neo4jProps(rel);
+    if (isBatchMode()) {
+      inserter.createRelationship(n1.getId(), n2.getId(), rel.getType(), props);
+    } else {
+      Relationship r = n1.createRelationshipTo(n2, rel.getType());
+      NeoDbUtils.addProperties(r, props);
     }
   }
   
   /**
    * Persists a Reference instance, creating a missing id de novo
    */
-  @Override
-  public Reference put(Reference r) {
+  public boolean create(Reference r) {
     // create missing id
     if (r.getId() == null) {
       r.setId(idGen.next());
     }
+    if (references.containsKey(r.getId())) {
+      LOG.warn("Duplicate referenceID {}", r.getId());
+      Reference prev = references.get(r.getId());
+      addIssues(prev, Issue.ID_NOT_UNIQUE);
+      addIssues(r, Issue.ID_NOT_UNIQUE);
+      return false;
+    }
+    
     references.put(r.getId(), r);
     // update lookup index for title
     String normedCit = StringUtils.digitOrAsciiLetters(r.getCitation());
     if (normedCit != null) {
       refIndexCitation.put(normedCit, r.getId());
     }
-    return r;
+    return true;
   }
   
   /**
-   * @return the verbatim key as assigned from verbatimSequence
+   * @return the verbatim record belonging to the requested key as assigned from verbatimSequence
    */
   public VerbatimRecord getVerbatim(int key) {
     VerbatimRecord rec = verbatim.get(key);
@@ -575,6 +539,18 @@ public class NeoDb implements ReferenceStore {
       rec.setHashCode();
     }
     return rec;
+  }
+  
+  /**
+   * @return a lazy supplier for the verbatim record belonging to the requested key as assigned from verbatimSequence
+   */
+  public Supplier<VerbatimRecord> verbatimSupplier(int key) {
+    return new Supplier<VerbatimRecord>() {
+      @Override
+      public VerbatimRecord get() {
+        return getVerbatim(key);
+      }
+    };
   }
   
   public void addIssues(VerbatimEntity ent, Issue... issue) {
@@ -597,19 +573,6 @@ public class NeoDb implements ReferenceStore {
     }
   }
   
-  /**
-   * Return all NeoTaxa incl a node property to work with the nodeId.
-   * Note though that it is not a real neo4j node but just a dummy that contains the id!!!
-   * No other neo operations can be done on this node - it would need to be retrieved from the store
-   * individually.
-   */
-  public Stream<NeoTaxon> all() {
-    return taxa.entrySet().stream().map(e -> {
-      NeoTaxon t = e.getValue();
-      t.node = new NodeProxy(null, e.getKey());
-      return t;
-    });
-  }
   
   @Override
   public Iterable<Reference> refList() {
@@ -652,28 +615,13 @@ public class NeoDb implements ReferenceStore {
     return d;
   }
   
-  public Set<Long> nodeIdsOutsideTree() throws InterruptedException {
-    final Set<Long> treeNodes = new HashSet<>();
-    TreeWalker.walkTree(neo, new StartEndHandler() {
-      @Override
-      public void start(Node n) {
-        treeNodes.add(n.getId());
-      }
-      
-      @Override
-      public void end(Node n) {
-      }
-    });
-    
-    final Set<Long> nodes = new HashSet<>();
-    try (Transaction tx = getNeo().beginTx()) {
-      for (Node n : neo.getAllNodes()) {
-        if (!treeNodes.contains(n.getId())) {
-          nodes.add(n.getId());
-        }
-      }
-    }
-    return nodes;
+  /**
+   * @return a stream of name nodes which have no has_name relation to any usage
+   */
+  public Stream<Node> bareNameNodes() {
+    final String query = "MATCH (n:NAME) WHERE NOT (n)<-[:HAS_NAME]-() RETURN n";
+    Result result = neo.execute(query);
+    return result.<Node>columnAs("n").stream();
   }
   
   /**
@@ -681,22 +629,26 @@ public class NeoDb implements ReferenceStore {
    */
   private void updateTaxonStoreWithRelations() {
     try (Transaction tx = getNeo().beginTx()) {
-      for (Node n : getNeo().getAllNodes()) {
-        NeoTaxon t = get(n);
-        if (t.node.hasLabel(Labels.SYNONYM)) {
-          if (t.synonym == null) {
-            t.synonym = new Synonym();
-            t.synonym.setStatus(TaxonomicStatus.SYNONYM);
-            t.synonym.setAccordingTo(t.taxon.getAccordingTo());
-          }
-          
-        } else if (!t.node.hasLabel(Labels.ROOT)) {
+      for (Node n : Iterators.loop(getNeo().findNodes(Labels.TAXON))) {
+        NeoUsage u = usages().objByNode(n);
+        if (!u.node.hasLabel(Labels.ROOT)){
           // parent
-          Node p = getSingleRelated(t.node, RelType.PARENT_OF, Direction.INCOMING);
-          t.taxon.setParentId(extractTaxon(p).getId());
+          Node p = getSingleRelated(u.node, RelType.PARENT_OF, Direction.INCOMING);
+          NeoUsage pt = usages().objByNode(p);
+          u.getTaxon().setParentId(pt.getId());
         }
-        // store the updated object directly in MapDB, avoiding unecessary updates to Neo
-        taxa.put(t.node.getId(), t);
+        // store the updated object
+        usages().update(u);
+      }
+      tx.success();
+  
+      for (Node n : Iterators.loop(getNeo().findNodes(Labels.SYNONYM))) {
+        NeoUsage u = usages().objByNode(n);
+        if (u.node.hasLabel(Labels.SYNONYM) && !u.isSynonym()) {
+          u.convertToSynonym(TaxonomicStatus.SYNONYM);
+        }
+        // store the updated object
+        usages().update(u);
       }
       tx.success();
     }
@@ -712,50 +664,50 @@ public class NeoDb implements ReferenceStore {
     try (Transaction tx = neo.beginTx()) {
       // first homotypic synonym rels
       for (Node syn : Iterators.loop(getNeo().findNodes(Labels.SYNONYM))) {
-        NeoTaxon tsyn = get(syn);
+        NeoName tsyn = nameByUsage(syn);
         if (tsyn.homotypic) {
           Relationship r = syn.getSingleRelationship(RelType.SYNONYM_OF, Direction.OUTGOING);
           if (r == null) {
             addIssues(tsyn, Issue.ACCEPTED_NAME_MISSING);
             continue;
           }
-          NeoTaxon acc = get(r.getEndNode());
+          NeoName acc = nameByUsage(r.getEndNode());
           String homoId;
           if (acc.name.getHomotypicNameId() == null) {
             homoId = acc.name.getId();
             acc.name.setHomotypicNameId(homoId);
-            update(acc);
+            names().update(acc);
             counter++;
           } else {
             homoId = acc.name.getHomotypicNameId();
           }
           tsyn.name.setHomotypicNameId(homoId);
-          update(tsyn);
+          names().update(tsyn);
         }
       }
       LOG.info("{} homotypic groups found via homotypic synonym relations", counter);
       
       // now name relations, reuse keys if existing
       counter = 0;
-      for (Node n : getNeo().getAllNodes()) {
+      for (Node n : Iterators.loop(getNeo().findNodes(Labels.NAME))) {
         // check if this node has a homotypic group already in which case we can skip it
-        NeoTaxon start = get(n);
+        NeoName start = names().objByNode(n);
         if (start.name.getHomotypicNameId() != null) {
           continue;
         }
         // query homotypic group excluding start node
-        List<NeoTaxon> group = Traversals.HOMOTYPIC_GROUP
+        List<NeoName> group = Traversals.HOMOTYPIC_GROUP
             .traverse(n)
             .nodes()
             .stream()
-            .map(this::get)
+            .map(names()::objByNode)
             .collect(Collectors.toList());
         if (!group.isEmpty()) {
           // we have more than the starting node so we do process, add starting node too
           group.add(start);
           // determine existing or new key to be shared
           String homoId = null;
-          for (NeoTaxon t : group) {
+          for (NeoName t : group) {
             if (t.name.getHomotypicNameId() != null) {
               if (homoId == null) {
                 homoId = t.name.getHomotypicNameId();
@@ -769,10 +721,10 @@ public class NeoDb implements ReferenceStore {
             counter++;
           }
           // update entire group with key
-          for (NeoTaxon t : group) {
+          for (NeoName t : group) {
             if (t.name.getHomotypicNameId() == null) {
               t.name.setHomotypicNameId(homoId);
-              update(t);
+              names().update(t);
             }
           }
         }
@@ -780,13 +732,7 @@ public class NeoDb implements ReferenceStore {
       LOG.info("{} additional homotypic groups found via name relations", counter);
     }
   }
-  
-  private Taxon extractTaxon(Node n) {
-    NeoTaxon t = get(n);
-    t.taxon.setName(t.name);
-    return t.taxon;
-  }
-  
+
   private Node getSingleRelated(Node n, RelType type, Direction dir) {
     try {
       Relationship rel = n.getSingleRelationship(type, dir);
@@ -796,13 +742,12 @@ public class NeoDb implements ReferenceStore {
       
     } catch (NotFoundException e) {
       // thrown in case of multiple relations, debug
-      LOG.debug("Multiple {} {} relations found for {}: {} - {}", dir, type, n, NeoProperties.getID(n), NeoProperties.getScientificNameWithAuthor(n));
+      LOG.debug("Multiple {} {} relations found for {}: {}", dir, type, n, NeoProperties.getScientificNameWithAuthor(n));
       for (Relationship rel : n.getRelationships(type, dir)) {
         Node other = rel.getOtherNode(n);
-        LOG.debug("  {} {}/{} - {}",
-            dir == Direction.INCOMING ? "<-- " + type.abbrev + " --" : "-- " + type.abbrev + " -->",
-            other,
-            NeoProperties.getID(other), NeoProperties.getScientificNameWithAuthor(other));
+        LOG.debug("  {} {}/{}",
+            dir == Direction.INCOMING ? "<-- "+type.abbrev+" --" : "-- "+type.abbrev+" -->",
+            other, NeoProperties.getScientificNameWithAuthor(other));
       }
       throw new NormalizationFailedException("Multiple " + dir + " " + type + " relations found for " + NeoProperties.getScientificNameWithAuthor(n), e);
     }
@@ -819,11 +764,30 @@ public class NeoDb implements ReferenceStore {
     updateHomotypicNameKeys();
   }
   
+  public void dump() {
+    dump(new File("graphs/neodb.dot"));
+  }
+  
   /**
-   * @return the number of neo4j nodes, ie number of NeoTaxon objects stored
+   * Dump entire graph with all labels as DOT file for debugging
+   */
+  public void dump(File file) {
+    try {
+      Writer writer = PrinterUtils.fileWriter(file);
+      PrinterUtils.dumpDotFile(neo, writer);
+      writer.close();
+      System.out.println("Wrote graph to " + file.getAbsolutePath());
+    
+    } catch (Exception e) {
+      LOG.error("Failed to dump neo to {}", file, e);
+    }
+  }
+  
+  /**
+   * @return the number of neo4j nodes
    */
   public int size() {
-    return taxa.size();
+    return neoCounter.get();
   }
   
   private void updateLabels() {
@@ -831,15 +795,24 @@ public class NeoDb implements ReferenceStore {
     LOG.debug("Labelling root nodes");
     String query = "MATCH (r:TAXON) " +
         "WHERE not ( ()-[:PARENT_OF]->(r) ) " +
-        "SET r :ROOT " +
+        "SET r:ROOT " +
         "RETURN count(r)";
     long count = updateLabel(query);
     LOG.info("Labelled {} root nodes", count);
     
+    // set USAGE
+    LOG.debug("Labelling usage nodes");
+    query =  "MATCH (u) " +
+        "WHERE u:TAXON OR u:SYNONYM " +
+        "SET u:USAGE " +
+        "RETURN count(u)";
+    count = updateLabel(query);
+    LOG.info("Labelled {} usage nodes", count);
+    
     // set BASIONYM
     LOG.debug("Labelling basionym nodes");
-    query = "MATCH (b:ALL)<-[:HAS_BASIONYM]-() " +
-        "SET b :BASIONYM " +
+    query = "MATCH (b)<-[:HAS_BASIONYM]-() " +
+        "SET b:BASIONYM " +
         "RETURN count(b)";
     count = updateLabel(query);
     LOG.info("Labelled {} basionym nodes", count);
@@ -873,13 +846,26 @@ public class NeoDb implements ReferenceStore {
         // override existing parent!
         Node oldParent = null;
         for (Relationship r : child.getRelationships(RelType.PARENT_OF, Direction.INCOMING)) {
-          oldParent = r.getOtherNode(child);
-          r.delete();
+          Node p = r.getOtherNode(child);
+          if (p.getId() != parent.getId()) {
+            if (oldParent != null) {
+              throw new IllegalStateException(NeoProperties.getScientificNameWithAuthorFromUsage(child) +
+                  " has multiple parents including " +
+                  NeoProperties.getScientificNameWithAuthorFromUsage(oldParent)
+              );
+            }
+            oldParent = p;
+            r.delete();
+          }
         }
-        LOG.warn("{} has already a parent {}, override with new parent {}",
-            NeoProperties.getScientificNameWithAuthor(child),
-            NeoProperties.getScientificNameWithAuthor(oldParent),
-            NeoProperties.getScientificNameWithAuthor(parent));
+        if (oldParent != null) {
+          parent.createRelationshipTo(child, RelType.PARENT_OF);
+          LOG.warn("{} has already a parent {}, override with new parent {}",
+              NeoProperties.getScientificNameWithAuthorFromUsage(child),
+              NeoProperties.getScientificNameWithAuthorFromUsage(oldParent),
+              NeoProperties.getScientificNameWithAuthorFromUsage(parent)
+          );
+        }
         
       } else {
         parent.createRelationshipTo(child, RelType.PARENT_OF);
@@ -921,60 +907,99 @@ public class NeoDb implements ReferenceStore {
   }
   
   /**
-   * List all accepted taxa of a potentially prop parte synonym
+   * Get the name object for a usage via its HasName relation.
    */
-  public List<RankedName> accepted(Node synonym) {
-    return Traversals.ACCEPTED.traverse(synonym).nodes().stream()
-        .map(NeoProperties::getRankedName)
+  public NeoName nameByUsage(final Node usage) {
+    return names().objByNode(
+            usage.getSingleRelationship(RelType.HAS_NAME, Direction.OUTGOING).getOtherNode(usage)
+    );
+  }
+  
+  /**
+   * Get the name object for a usage via its HasName relation.
+   */
+  public List<NeoUsage> usagesByName(final Node nameNode) {
+    return Iterables.stream(nameNode.getRelationships(RelType.HAS_NAME, Direction.INCOMING))
+        .map(rel -> usages().objByNode(rel.getOtherNode(nameNode)))
         .collect(Collectors.toList());
   }
   
   /**
-   * Creates a new taxon in neo and the name usage kvp using the source usages as a template for the classification properties.
+   * Get the name object for a usage via its HasName relation.
+   */
+  public List<Node> usageNodesByName(final Node nameNode) {
+    List<Node> usages = new ArrayList<>();
+    nameNode.getRelationships(RelType.HAS_NAME, Direction.INCOMING).forEach(
+        un -> usages.add(un.getOtherNode(nameNode))
+    );
+    return usages;
+  }
+  
+  /**
+   * List all accepted taxa of a potentially prop parte synonym
+   */
+  public List<RankedUsage> accepted(Node synonym) {
+    return Traversals.ACCEPTED.traverse(synonym).nodes().stream()
+        .map(NeoProperties::getRankedUsage)
+        .collect(Collectors.toList());
+  }
+  
+  /**
+   * List all accepted taxa of a potentially prop parte synonym
+   */
+  public List<RankedUsage> parents(Node child) {
+    return Traversals.PARENTS.traverse(child).nodes().stream()
+        .map(NeoProperties::getRankedUsage)
+        .collect(Collectors.toList());
+  }
+  
+  /**
+   * Creates a new taxon in neo and the name usage kvp using the source usages as a template for the classification propLabel.
    * Only copies the classification above genus and ignores genus and below!
-   * A verbatim usage is created with just the parentNameUsage(ID) values so they can get resolved into proper neo relations later.
+   * A verbatim usage is created with just the parentNameUsage(ID) values so they can getUsage resolved into proper neo relations later.
    * Name and taxon ids are generated de novo.
    *
    * @param name                the new name to be used
    * @param source              the taxon source to copy from
    * @param excludeRankAndBelow the rank (and all ranks below) to exclude from the source classification
    */
-  public RankedName createDoubtfulFromSource(Origin origin,
-                                             Name name,
-                                             @Nullable NeoTaxon source,
-                                             Rank excludeRankAndBelow) {
-    NeoTaxon t = NeoTaxon.createTaxon(origin, name, true);
+  public RankedUsage createProvisionalUsageFromSource(Origin origin,
+                                                      Name name,
+                                                      @Nullable NeoUsage source,
+                                                      Rank excludeRankAndBelow) {
+    NeoUsage u = NeoUsage.createTaxon(origin, name, true);
     // copy verbatim classification from source
     if (source != null) {
       if (source.classification != null) {
-        t.classification = Classification.copy(source.classification);
+        u.classification = Classification.copy(source.classification);
         // remove lower ranks
-        t.classification.clearRankAndBelow(excludeRankAndBelow);
+        u.classification.clearRankAndBelow(excludeRankAndBelow);
       }
       // copy parent props from source
-      if (t.taxon.getVerbatimKey() != null) {
-        VerbatimRecord sourceTerms = getVerbatim(t.taxon.getVerbatimKey());
+      if (u.getVerbatimKey() != null) {
+        VerbatimRecord sourceTerms = getVerbatim(u.getVerbatimKey());
         VerbatimRecord copyTerms = new VerbatimRecord();
         copyTerms.put(DwcTerm.parentNameUsageID, sourceTerms.get(DwcTerm.parentNameUsageID));
         copyTerms.put(DwcTerm.parentNameUsage, sourceTerms.get(DwcTerm.parentNameUsage));
         put(copyTerms);
-        t.taxon.setVerbatimKey(copyTerms.getKey());
+        u.setVerbatimKey(copyTerms.getKey());
       }
     }
     
     // store, which creates a new neo node
-    put(t);
-    
-    return new RankedName(t.node, t.name.getScientificName(), t.name.authorshipComplete(), t.name.getRank());
+    Node nameNode = createNameAndUsage(u);
+
+    return new RankedUsage(u.node, nameNode, name.getScientificName(), name.authorshipComplete(), name.getRank());
   }
   
   public void updateIdGeneratorPrefix() {
     idGen.setPrefix(
         Stream.concat(
             refIds().stream(),
-            all()
-                .map(t -> new String[]{t.name.getId(), t.taxon.getId()})
-                .flatMap(Arrays::stream)
+            Stream.concat(
+                usages().allIds(),
+                names().allIds()
+            )
         )
     );
     if (idGen.getCounter() > 0) {
@@ -983,5 +1008,15 @@ public class NeoDb implements ReferenceStore {
     }
     LOG.info("ID generator updated with unique prefix {}", idGen.getPrefix());
   }
+  
+  public void reportDuplicates() {
+    if (names().getDuplicateCounter() > 0) {
+      LOG.warn("The inserted dataset contains {} duplicate nameIds! Only the first record will be used", names().getDuplicateCounter());
+    }
+    if (usages().getDuplicateCounter() > 0) {
+      LOG.warn("The inserted dataset contains {} duplicate taxonIds! Only the first record will be used", usages().getDuplicateCounter());
+    }
+  }
+  
 }
 

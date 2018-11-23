@@ -16,21 +16,25 @@ public class TaxonDao {
   private static final Logger LOG = LoggerFactory.getLogger(TaxonDao.class);
   
   private final SqlSession session;
-  private final TaxonMapper tMapper;
+  private final DescriptionMapper deMapper;
+  private final DistributionMapper diMapper;
+  private final MediaMapper mMapper;
   private final NameMapper nMapper;
-  private final SynonymMapper sMapper;
   private final ReferenceMapper rMapper;
+  private final SynonymMapper sMapper;
+  private final TaxonMapper tMapper;
   private final VernacularNameMapper vMapper;
-  private final DistributionMapper dMapper;
-  
+
   public TaxonDao(SqlSession sqlSession) {
     this.session = sqlSession;
-    tMapper = session.getMapper(TaxonMapper.class);
+    deMapper = session.getMapper(DescriptionMapper.class);
+    diMapper = session.getMapper(DistributionMapper.class);
+    mMapper = session.getMapper(MediaMapper.class);
     nMapper = session.getMapper(NameMapper.class);
-    sMapper = session.getMapper(SynonymMapper.class);
     rMapper = session.getMapper(ReferenceMapper.class);
+    sMapper = session.getMapper(SynonymMapper.class);
+    tMapper = session.getMapper(TaxonMapper.class);
     vMapper = session.getMapper(VernacularNameMapper.class);
-    dMapper = session.getMapper(DistributionMapper.class);
   }
   
   public ResultPage<Taxon> list(Integer datasetKey, Boolean root, Page page) {
@@ -49,16 +53,16 @@ public class TaxonDao {
   public List<Synonym> getSynonyms(int datasetKey, String nameId) {
     return sMapper.listByName(datasetKey, nameId);
   }
-  
-  public Synonym getSynonym(int datasetKey, String id) {
-    if (id != null) {
-      List<Synonym> syns = sMapper.listByName(datasetKey, id);
-      if (syns.isEmpty()) {
-        return null;
-      } else if (syns.size() > 1) {
-        LOG.debug("Multiple synonyms found for nameID {}", id);
+
+  public Synonym getSynonym(int datasetKey, String nameId) {
+    if (nameId != null) {
+      List<Synonym> syns = getSynonyms(datasetKey, nameId);
+      if (!syns.isEmpty()) {
+        if (syns.size() > 1) {
+          LOG.debug("Multiple synonyms found for nameID {}", nameId);
+        }
+        return syns.get(0);
       }
-      return syns.get(0);
     }
     return null;
   }
@@ -136,19 +140,21 @@ public class TaxonDao {
     TaxonInfo info = new TaxonInfo();
     info.setTaxon(taxon);
     info.setTaxonReferences(rMapper.listByTaxon(taxon.getDatasetKey(), taxon.getId()));
-    
-    // vernaculars
+
+    // add all supplementary taxon infos
+    info.setDescriptions(deMapper.listByTaxon(taxon.getDatasetKey(), taxon.getId()));
+    info.setDistributions(diMapper.listByTaxon(taxon.getDatasetKey(), taxon.getId()));
+    info.setMedia(mMapper.listByTaxon(taxon.getDatasetKey(), taxon.getId()));
     info.setVernacularNames(vMapper.listByTaxon(taxon.getDatasetKey(), taxon.getId()));
-    
-    // distributions
-    info.setDistributions(dMapper.listByTaxon(taxon.getDatasetKey(), taxon.getId()));
-    
+
     // all reference keys so we can select their details at the end
     Set<String> refIds = new HashSet<>();
     refIds.add(taxon.getName().getPublishedInId());
     refIds.addAll(info.getTaxonReferences());
-    info.getDistributions().forEach(d -> refIds.addAll(d.getReferenceIds()));
-    info.getVernacularNames().forEach(d -> refIds.addAll(d.getReferenceIds()));
+    info.getDescriptions().forEach(d -> refIds.add(d.getReferenceId()));
+    info.getDistributions().forEach(d -> refIds.add(d.getReferenceId()));
+    info.getMedia().forEach(m -> refIds.add(m.getReferenceId()));
+    info.getVernacularNames().forEach(d -> refIds.add(d.getReferenceId()));
     // make sure we did not add null by accident
     refIds.remove(null);
     

@@ -2,14 +2,17 @@ package org.col.admin.importer.acef;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.EnumSet;
 import java.util.Optional;
+import java.util.Set;
 
 import com.google.common.base.Splitter;
 import org.col.admin.importer.NeoInserter;
 import org.col.admin.importer.NormalizationFailedException;
 import org.col.admin.importer.neo.NeoDb;
 import org.col.admin.importer.neo.NodeBatchProcessor;
-import org.col.admin.importer.neo.model.NeoTaxon;
+import org.col.admin.importer.neo.model.NeoName;
+import org.col.admin.importer.neo.model.NeoUsage;
 import org.col.admin.importer.reference.ReferenceFactory;
 import org.col.api.model.Dataset;
 import org.col.api.model.Reference;
@@ -33,21 +36,10 @@ public class AcefInserter extends NeoInserter {
   private static final Logger LOG = LoggerFactory.getLogger(AcefInserter.class);
   private static final Splitter COMMA_SPLITTER = Splitter.on(',').trimResults().omitEmptyStrings();
   
-  private AcefReader reader;
   private AcefInterpreter inter;
   
-  public AcefInserter(NeoDb store, Path folder, ReferenceFactory refFactory) {
-    super(folder, store, refFactory);
-  }
-  
-  private void initReader() {
-    if (reader == null) {
-      try {
-        reader = AcefReader.from(folder);
-      } catch (IOException e) {
-        throw new RuntimeException(e);
-      }
-    }
+  public AcefInserter(NeoDb store, Path folder, ReferenceFactory refFactory) throws IOException {
+    super(folder, AcefReader.from(folder), store, refFactory);
   }
   
   /**
@@ -57,20 +49,19 @@ public class AcefInserter extends NeoInserter {
   @Override
   public void batchInsert() throws NormalizationFailedException {
     try {
-      initReader();
-      inter = new AcefInterpreter(store.getDataset(), meta, refFactory);
-      
+      inter = new AcefInterpreter(store.getDataset(), reader.getMappingFlags(), refFactory, store);
+
       // This inserts the plain references from the Reference file with no links to names, taxa or distributions.
       // Links are added afterwards in other methods when a ACEF:ReferenceID field is processed by lookup to the neo store.
       insertEntities(reader, AcefTerm.Reference,
           inter::interpretReference,
-          store::put
+          store::create
       );
       
       // species
       insertEntities(reader, AcefTerm.AcceptedSpecies,
           inter::interpretAccepted,
-          store::put
+          store::createNameAndUsage
       );
       
       // infraspecies
@@ -79,15 +70,27 @@ public class AcefInserter extends NeoInserter {
       // so we cannot update the scientific name yet - we do this in the relation inserter instead!
       insertEntities(reader, AcefTerm.AcceptedInfraSpecificTaxa,
           inter::interpretAccepted,
-          store::put
+          store::createNameAndUsage
       );
       
       // synonyms
       insertEntities(reader, AcefTerm.Synonyms,
           inter::interpretSynonym,
-          store::put
+          store::createNameAndUsage
+      );
+  
+      insertTaxonEntities(reader, AcefTerm.Distribution,
+          inter::interpretDistribution,
+          AcefTerm.AcceptedTaxonID,
+          (t, d) -> t.distributions.add(d)
       );
       
+      insertTaxonEntities(reader, AcefTerm.CommonNames,
+          inter::interpretVernacular,
+          AcefTerm.AcceptedTaxonID,
+          (t, vn) -> t.vernacularNames.add(vn)
+      );
+  
     } catch (RuntimeException e) {
       throw new NormalizationFailedException("Failed to read ACEF files", e);
     }
@@ -95,18 +98,9 @@ public class AcefInserter extends NeoInserter {
   
   @Override
   public void postBatchInsert() throws NormalizationFailedException {
-    try (Transaction tx = store.getNeo().beginTx()) {
-      insertTaxonEntities(reader, AcefTerm.Distribution,
-          inter::interpretDistribution,
-          AcefTerm.AcceptedTaxonID,
-          (t, d) -> t.distributions.add(d)
-      );
-      insertTaxonEntities(reader, AcefTerm.CommonNames,
-          inter::interpretVernacular,
-          AcefTerm.AcceptedTaxonID,
-          (t, vn) -> t.vernacularNames.add(vn)
-      );
+    try (Transaction tx = store.getNeo().beginTx()){
       reader.stream(AcefTerm.NameReferencesLinks).forEach(this::addReferenceLink);
+      tx.success();
       
     } catch (RuntimeException e) {
       throw new NormalizationFailedException("Failed to read ACEF files", e);
@@ -135,48 +129,49 @@ public class AcefInserter extends NeoInserter {
     ReferenceTypeParser.ReferenceType refType = SafeParser.parse(ReferenceTypeParser.PARSER, refTypeRaw).orNull();
     
     // lookup NeoTaxon and reference
-    NeoTaxon t = store.getByID(taxonID);
+    NeoUsage u = store.usages().objByID(taxonID);
     Reference ref = store.refById(referenceID);
-    Issue issue = null;
-    if (t == null) {
+    Set<Issue> issues = EnumSet.noneOf(Issue.class);
+    if (u == null) {
+      issues.add(Issue.TAXON_ID_INVALID);
       if (ref != null) {
         LOG.debug("taxonID {} from NameReferencesLinks line {} not existing", taxonID, rec.getLine());
-        issue = Issue.TAXON_ID_INVALID;
-        store.put(ref);
       } else {
+        issues.add(Issue.REFERENCE_ID_INVALID);
         LOG.info("referenceID {} and taxonID {} from NameReferencesLinks line {} both not existing", referenceID, taxonID, rec.getLine());
       }
       
     } else {
       if (ref == null) {
         LOG.debug("referenceID {} from NameReferencesLinks line {} not existing", referenceID, rec.getLine());
-        issue = Issue.REFERENCE_ID_INVALID;
-        
+        issues.add(Issue.REFERENCE_ID_INVALID);
+
       } else if (refType == null) {
         LOG.debug("Unknown reference type {} used in NameReferencesLinks line {}", refTypeRaw, rec.getLine());
-        issue = Issue.REFTYPE_INVALID;
-        store.put(ref);
+        issues.add(Issue.REFTYPE_INVALID);
       } else {
         switch (refType) {
           case NomRef:
-            t.name.setPublishedInId(ref.getId());
+            NeoName nn = store.nameByUsage(u.node);
+            nn.name.setPublishedInId(ref.getId());
             // we extract the page from CSL and also store it in the name
             // No deduplication of refs happening
-            t.name.setPublishedInPage(ref.getCsl().getPage());
+            nn.name.setPublishedInPage(ref.getCsl().getPage());
+            store.names().update(nn);
             break;
           case TaxAccRef:
-            t.bibliography.add(ref.getId());
+            u.bibliography.add(ref.getId());
+            store.usages().update(u);
             break;
           case ComNameRef:
             // ignore here, we should see this again when parsing common names
             break;
         }
       }
-      store.update(t);
     }
     // persist new issue?
-    if (issue != null) {
-      rec.addIssue(issue);
+    if (!issues.isEmpty()) {
+      rec.addIssues(issues);
       store.put(rec);
     }
   }
@@ -188,7 +183,6 @@ public class AcefInserter extends NeoInserter {
   @Override
   protected Optional<Dataset> readMetadata() {
     Dataset d = null;
-    initReader();
     Optional<VerbatimRecord> metadata = reader.readFirstRow(AcefTerm.SourceDatabase);
     if (metadata.isPresent()) {
       VerbatimRecord dr = metadata.get();

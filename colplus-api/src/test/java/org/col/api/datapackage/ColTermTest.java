@@ -24,4 +24,12 @@ public class ColTermTest {
     assertEquals(ColTerm.Description, ColTerm.find("description ", true));
     assertEquals(ColTerm.description, ColTerm.find("des_cription ", false));
   }
+  
+  @Test
+  public void higherRanks() {
+    for (ColTerm t : ColTerm.HIGHER_RANKS) {
+      assertFalse(t.isClass());
+      assertTrue(ColTerm.RESOURCES.get(ColTerm.Taxon).contains(t));
+    }
+  }
 }
