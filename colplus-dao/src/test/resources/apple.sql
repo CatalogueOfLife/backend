@@ -22,8 +22,8 @@ INSERT INTO name (dataset_key, id, homotypic_name_id, scientific_name, genus, sp
 INSERT INTO taxon (id, dataset_key, name_id, origin) VALUES ('root-1', 11, 'name-1', 0);
 INSERT INTO taxon (id, dataset_key, name_id, origin) VALUES ('root-2', 11, 'name-2', 0);
 
-INSERT INTO synonym (taxon_id, name_id, dataset_key, status) VALUES ('root-2', 'name-3', 11, 2);
-INSERT INTO synonym (taxon_id, name_id, dataset_key, status) VALUES ('root-2', 'name-4', 11, 2);
+INSERT INTO synonym (taxon_id, name_id, dataset_key, status, origin) VALUES ('root-2', 'name-3', 11, 2, 0);
+INSERT INTO synonym (taxon_id, name_id, dataset_key, status, origin) VALUES ('root-2', 'name-4', 11, 2, 0);
 
 INSERT INTO taxon_reference(dataset_key, taxon_id, reference_id) VALUES (11, 'root-1', 'ref-1');
 INSERT INTO taxon_reference(dataset_key, taxon_id, reference_id) VALUES (11, 'root-2', 'ref-1');
@@ -32,23 +32,15 @@ INSERT INTO taxon_reference(dataset_key, taxon_id, reference_id) VALUES (11, 'ro
 INSERT INTO name_rel (key, dataset_key, type, name_id, related_name_id) VALUES (1, 11, 0, 'name-2', 'name-3');
 ALTER SEQUENCE name_rel_key_seq RESTART WITH 1000;
 
-INSERT INTO distribution(key, dataset_key, taxon_id, area, gazetteer) VALUES (1, 11, 'root-1', 'Berlin', 6);
-INSERT INTO distribution(key, dataset_key, taxon_id, area, gazetteer) VALUES (2, 11, 'root-1', 'Leiden', 6);
-INSERT INTO distribution(key, dataset_key, taxon_id, area, gazetteer) VALUES (3, 11, 'root-2', 'New York', 6);
+INSERT INTO distribution(key, dataset_key, taxon_id, area, gazetteer, reference_id) VALUES (1, 11, 'root-1', 'Berlin', 6, 'ref-1');
+INSERT INTO distribution(key, dataset_key, taxon_id, area, gazetteer, reference_id) VALUES (2, 11, 'root-1', 'Leiden', 6, 'ref-1b');
+INSERT INTO distribution(key, dataset_key, taxon_id, area, gazetteer, reference_id) VALUES (3, 11, 'root-2', 'New York', 6, 'ref-1b');
 ALTER SEQUENCE distribution_key_seq RESTART WITH 1000;
 
-
-INSERT INTO distribution_reference(dataset_key,distribution_key,reference_id) VALUES (11, 1, 'ref-1');
-INSERT INTO distribution_reference(dataset_key,distribution_key,reference_id) VALUES (11, 1, 'ref-1b');
-INSERT INTO distribution_reference(dataset_key,distribution_key,reference_id) VALUES (11, 2, 'ref-1b');
-
-INSERT INTO vernacular_name(key,dataset_key,taxon_id,name,language) VALUES (1, 11, 'root-1', 'Apple', 'en');
-INSERT INTO vernacular_name(key,dataset_key,taxon_id,name,language) VALUES (2, 11, 'root-1', 'Apfel', 'de');
-INSERT INTO vernacular_name(key,dataset_key,taxon_id,name,language) VALUES (3, 11, 'root-1', 'Meeuw', 'nl');
+INSERT INTO vernacular_name(key,dataset_key,taxon_id,name,language, reference_id) VALUES (1, 11, 'root-1', 'Apple', 'eng', 'ref-1');
+INSERT INTO vernacular_name(key,dataset_key,taxon_id,name,language, reference_id) VALUES (2, 11, 'root-1', 'Apfel', 'deu', 'ref-1');
+INSERT INTO vernacular_name(key,dataset_key,taxon_id,name,language, reference_id) VALUES (3, 11, 'root-1', 'Meeuw', 'nld', null);
 ALTER SEQUENCE vernacular_name_key_seq RESTART WITH 1000;
-
-INSERT INTO vernacular_name_reference(dataset_key,vernacular_name_key,reference_id) VALUES (11, 1, 'ref-1');
-INSERT INTO vernacular_name_reference(dataset_key,vernacular_name_key,reference_id) VALUES (11, 2, 'ref-1');
 
 
 

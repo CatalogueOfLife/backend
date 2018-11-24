@@ -15,11 +15,11 @@ import com.google.common.collect.Lists;
 import com.ibm.icu.text.Transliterator;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.col.admin.importer.neo.NeoDb;
 import org.col.admin.importer.reference.ReferenceFactory;
 import org.col.api.exception.InvalidNameException;
 import org.col.api.model.*;
-import org.col.api.vocab.Issue;
-import org.col.api.vocab.Origin;
+import org.col.api.vocab.*;
 import org.col.common.date.FuzzyDate;
 import org.col.parser.*;
 import org.gbif.dwc.terms.Term;
@@ -41,12 +41,14 @@ public class InterpreterBase {
   private static final Transliterator transLatin = Transliterator.getInstance("Any-Latin");
   private static final Transliterator transAscii = Transliterator.getInstance("Latin-ASCII");
   
+  protected final NeoDb store;
   protected final Dataset dataset;
   protected final ReferenceFactory refFactory;
-  
-  public InterpreterBase(Dataset dataset, ReferenceFactory refFactory) {
+
+  public InterpreterBase(Dataset dataset, ReferenceFactory refFactory, NeoDb store) {
     this.dataset = dataset;
     this.refFactory = refFactory;
+    this.store = store;
   }
   
   protected String latinName(String name) {
@@ -56,8 +58,9 @@ public class InterpreterBase {
   protected String asciiName(String name) {
     return transAscii.transform(latinName(name));
   }
-  
-  protected List<VernacularName> interpretVernacular(VerbatimRecord rec, BiConsumer<VernacularName, VerbatimRecord> addReferences, Term name, Term translit, Term lang, Term... countryTerms) {
+
+  protected List<VernacularName> interpretVernacular(VerbatimRecord rec, BiConsumer<VernacularName, VerbatimRecord> addReference,
+                                                     Term name, Term translit, Term lang, Term... countryTerms) {
     VernacularName vn = new VernacularName();
     vn.setVerbatimKey(rec.getKey());
     vn.setName(rec.get(name));
@@ -73,9 +76,9 @@ public class InterpreterBase {
       vn.setLanguage(SafeParser.parse(LanguageParser.PARSER, rec.get(lang)).orNull());
     }
     vn.setCountry(SafeParser.parse(CountryParser.PARSER, rec.getFirst(countryTerms)).orNull());
-    
-    addReferences.accept(vn, rec);
-    
+
+    addReference.accept(vn, rec);
+
     if (StringUtils.isBlank(vn.getLatin())) {
       vn.setLatin(latinName(vn.getName()));
       rec.addIssue(Issue.VERNACULAR_NAME_TRANSLITERATED);
@@ -83,7 +86,81 @@ public class InterpreterBase {
     return Lists.newArrayList(vn);
   }
   
-  protected LocalDate date(VerbatimRecord v, VerbatimEntity ent, Issue invalidIssue, Term term) {
+  protected List<Distribution> interpretDistribution(VerbatimRecord rec, BiConsumer<Distribution, VerbatimRecord> addReference,
+                                                     Term tArea, Term tGazetteer, Term tStatus) {
+    // require location
+    if (rec.hasTerm(tArea)) {
+      Distribution d = new Distribution();
+      
+      // which standard?
+      d.setGazetteer(parse(GazetteerParser.PARSER, rec.get(tGazetteer))
+          .orElse(Gazetteer.TEXT, Issue.DISTRIBUTION_GAZETEER_INVALID, rec));
+      
+      // TODO: try to split location into several distributions...
+      String loc = rec.get(tArea);
+      if (d.getGazetteer() == Gazetteer.TEXT) {
+        d.setArea(loc);
+      } else {
+        // only parse area if other than text
+        AreaParser.Area textArea = new AreaParser.Area(loc, Gazetteer.TEXT);
+        if (loc.indexOf(':') < 0) {
+          loc = d.getGazetteer().locationID(loc);
+        }
+        AreaParser.Area area = SafeParser.parse(AreaParser.PARSER, loc).orElse(textArea,
+            Issue.DISTRIBUTION_AREA_INVALID, rec);
+        d.setArea(area.area);
+        // check if we have contradicting extracted a gazetteer
+        if (area.standard != Gazetteer.TEXT && area.standard != d.getGazetteer()) {
+          LOG.info(
+              "Area standard {} found in area {} different from explicitly given standard {} for {}",
+              area.standard, area.area, d.getGazetteer(), rec);
+        }
+      }
+      
+      // status
+      d.setStatus(parse(DistributionStatusParser.PARSER, rec.get(tStatus))
+          .orElse(DistributionStatus.NATIVE, Issue.DISTRIBUTION_STATUS_INVALID, rec));
+      
+      addReference.accept(d, rec);
+      d.setVerbatimKey(rec.getKey());
+      return Lists.newArrayList(d);
+    }
+    return Collections.emptyList();
+  }
+  
+  protected List<Description> interpretDescription(VerbatimRecord rec, BiConsumer<Description, VerbatimRecord> addReference,
+                                                   Term description, Term category, Term lang) {
+    Description d = new Description();
+    d.setVerbatimKey(rec.getKey());
+    d.setCategory(rec.get(category));
+    d.setDescription(rec.get(description));
+    d.setLanguage(SafeParser.parse(LanguageParser.PARSER, rec.get(lang)).orNull());
+  
+    addReference.accept(d, rec);
+  
+    return Lists.newArrayList(d);
+  }
+  
+  protected List<Media> interpretMedia(VerbatimRecord rec, BiConsumer<Media, VerbatimRecord> addReference,
+                 Term type, Term url, Term link, Term license, Term creator, Term created, Term title, Term format) {
+    Media m = new Media();
+    m.setVerbatimKey(rec.getKey());
+    m.setUrl( uri(rec, Issue.URL_INVALID, url));
+    m.setLink( uri(rec, Issue.URL_INVALID, link));
+    m.setType( SafeParser.parse(MediaTypeParser.PARSER, rec.get(type)).orNull() );
+    m.setFormat(rec.get(format));
+    //TODO: validate or derive type from format
+    m.setLicense( SafeParser.parse(LicenseParser.PARSER, rec.get(license)).orNull() );
+    m.setCreator(rec.get(creator));
+    m.setCreated( date(rec, Issue.CREATED_DATE_INVALID, created) );
+    m.setTitle(rec.get(title));
+    
+    addReference.accept(m, rec);
+    
+    return Lists.newArrayList(m);
+  }
+
+  protected LocalDate date(VerbatimRecord v, Issue invalidIssue, Term term) {
     Optional<FuzzyDate> date;
     try {
       date = DateParser.PARSER.parse(v.get(term));
@@ -99,12 +176,12 @@ public class InterpreterBase {
     }
     return null;
   }
-  
-  protected URI uri(VerbatimRecord v, VerbatimEntity ent, Issue invalidIssue, Term... term) {
+
+  protected URI uri(VerbatimRecord v, Issue invalidIssue, Term... term) {
     return parse(UriParser.PARSER, v.getFirstRaw(term)).orNull(invalidIssue, v);
   }
-  
-  protected Boolean bool(VerbatimRecord v, VerbatimEntity ent, Issue invalidIssue, Term... term) {
+
+  protected Boolean bool(VerbatimRecord v, Issue invalidIssue, Term... term) {
     return parse(BooleanParser.PARSER, v.getFirst(term)).orNull(invalidIssue, v);
   }
   
@@ -125,8 +202,8 @@ public class InterpreterBase {
     // parse rank
     Rank rank = SafeParser.parse(RankParser.PARSER, vrank).orElse(Rank.UNRANKED, Issue.RANK_INVALID, v);
     atom.setRank(rank);
-    
-    // we can get the scientific name in various ways.
+
+    // we can getUsage the scientific name in various ways.
     // we parse all names from the scientificName + optional authorship
     // or use the atomized parts which we also use to validate the parsing result.
     if (sciname != null) {
@@ -225,8 +302,19 @@ public class InterpreterBase {
   
   protected void setRefKey(Referenced obj, Reference r) {
     if (r != null) {
-      obj.addReferenceId(r.getId());
+      obj.setReferenceId(r.getId());
     }
   }
   
+  protected void setLifezones(Taxon t, VerbatimRecord v, Term lifezone) {
+    String raw = v.get(lifezone);
+    if (raw != null) {
+      for (String lzv : MULTIVAL.split(raw)) {
+        Lifezone lz = parse(LifezoneParser.PARSER, lzv).orNull(Issue.LIFEZONE_INVALID, v);
+        if (lz != null) {
+          t.getLifezones().add(lz);
+        }
+      }
+    }
+  }
 }

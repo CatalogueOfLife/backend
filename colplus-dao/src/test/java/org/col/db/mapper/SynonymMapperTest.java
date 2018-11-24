@@ -7,6 +7,7 @@ import org.col.api.TestEntityGenerator;
 import org.col.api.model.Name;
 import org.col.api.model.Synonym;
 import org.col.api.model.Taxon;
+import org.col.api.vocab.Origin;
 import org.col.api.vocab.TaxonomicStatus;
 import org.col.db.dao.NameDao;
 import org.junit.Before;
@@ -33,8 +34,7 @@ public class SynonymMapperTest extends MapperTestBase<SynonymMapper> {
     synonymMapper = initMybatisRule.getMapper(SynonymMapper.class);
     taxonMapper = initMybatisRule.getMapper(TaxonMapper.class);
   }
-  
-  
+
   @Test
   public void roundtrip() {
     Name n = TestEntityGenerator.newName();
@@ -102,6 +102,7 @@ public class SynonymMapperTest extends MapperTestBase<SynonymMapper> {
     
     // now add a few synonyms
     Synonym syn = new Synonym();
+    syn.setOrigin(Origin.SOURCE);
     syn.setStatus(TaxonomicStatus.SYNONYM);
     synonymMapper.create(datasetKey, syn1.getId(), accKey, syn);
     commit();

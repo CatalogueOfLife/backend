@@ -9,10 +9,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Settings uses during the insert of the dwc archive into normalizer.
+ * Dataset archive settings specific to a dataset used by the normalizer,
+ * e.g. to skip procedures that are not present/mapped in the concrete archive.
  */
-public class InsertMetadata {
-  private static final Logger LOG = LoggerFactory.getLogger(InsertMetadata.class);
+public class MappingFlags {
+  private static final Logger LOG = LoggerFactory.getLogger(MappingFlags.class);
   
   private boolean taxonId;
   private boolean parsedNameMapped;

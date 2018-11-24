@@ -143,8 +143,14 @@
     </select>
 
 
+    <select id="countDescription" resultType="integer">
+        SELECT count(*) FROM description_${key}
+    </select>
     <select id="countDistribution" resultType="integer">
         SELECT count(*) FROM distribution_${key}
+    </select>
+    <select id="countMedia" resultType="integer">
+        SELECT count(*) FROM media_${key}
     </select>
     <select id="countName" resultType="integer">
         SELECT count(*) FROM name_${key}
@@ -172,6 +178,11 @@
          SELECT unnest(issues) iss from verbatim_${key}
         ) AS dis
         GROUP BY iss
+    </select>
+    <select id="countMediaByType" resultType="IntCount">
+        SELECT type AS key, count(*) AS count
+        FROM media_${key}
+        GROUP BY type
     </select>
     <select id="countNamesByType" resultType="IntCount">
         SELECT type AS key, count(*) AS count
@@ -204,9 +215,9 @@
         GROUP BY n.rank
     </select>
     <select id="countUsagesByStatus" resultType="IntCount">
-        SELECT CASE WHEN doubtful THEN 1 ELSE 0 END AS key, count(*) AS count
+        SELECT CASE WHEN provisional THEN 1 ELSE 0 END AS key, count(*) AS count
         FROM taxon_${key}
-        GROUP BY doubtful
+        GROUP BY provisional
         UNION
         SELECT status AS key, count(*) AS count
         FROM synonym_${key}

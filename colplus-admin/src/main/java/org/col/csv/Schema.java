@@ -65,6 +65,15 @@ public class Schema {
     return false;
   }
   
+  public boolean hasAnyTerm(Term... terms) {
+    for (Term t : terms) {
+      if (hasTerm(t)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   public int size() {
     return columns.size();
   }

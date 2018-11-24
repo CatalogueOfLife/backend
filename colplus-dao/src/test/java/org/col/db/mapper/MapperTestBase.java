@@ -1,12 +1,8 @@
 package org.col.db.mapper;
 
-import java.time.LocalDateTime;
-
 import org.col.api.TestEntityGenerator;
-import org.col.api.model.DatasetImport;
 import org.col.api.model.Name;
 import org.col.api.model.Taxon;
-import org.col.api.vocab.ImportState;
 import org.col.db.PgSetupRule;
 import org.col.db.dao.DatasetImportDao;
 import org.gbif.nameparser.api.Rank;
@@ -47,19 +43,9 @@ public abstract class MapperTestBase<T> {
   }
   
   protected void generateDatasetImport(int datasetKey) {
-    DatasetImportMapper dim = mapper(DatasetImportMapper.class);
-    
-    DatasetImport d = new DatasetImport();
-    d.setDatasetKey(datasetKey);
-    d.setState(ImportState.FINISHED);
-    d.setStarted(LocalDateTime.now());
-    d.setDownload(LocalDateTime.now());
-    d.setFinished(LocalDateTime.now());
-    dim.create(d);
-    
-    DatasetImportDao dao = new DatasetImportDao(null);
-    dao.updateMetrics(dim, d);
-    dim.update(d);
+    commit();
+    DatasetImportDao dao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory());
+    dao.createSuccess(datasetKey);
     commit();
   }
   

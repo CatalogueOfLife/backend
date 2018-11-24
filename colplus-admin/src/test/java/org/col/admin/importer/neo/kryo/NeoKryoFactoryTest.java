@@ -8,7 +8,8 @@ import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import com.google.common.collect.Lists;
 import org.col.admin.importer.neo.NeoKryoFactory;
-import org.col.admin.importer.neo.model.NeoTaxon;
+import org.col.admin.importer.neo.model.NeoName;
+import org.col.admin.importer.neo.model.NeoUsage;
 import org.col.api.TestEntityGenerator;
 import org.col.api.model.*;
 import org.col.api.vocab.Issue;
@@ -26,19 +27,31 @@ public class NeoKryoFactoryTest {
   
   @Test
   public void testNeoTaxon() throws Exception {
-    NeoTaxon t = new NeoTaxon();
-    
-    t.taxon = new Taxon();
-    t.taxon.setDoubtful(true);
-    
-    t.taxon.setName(new Name());
-    t.taxon.getName().setScientificName("Abies alba");
-    t.taxon.getName().setCombinationAuthorship(TestEntityGenerator.createAuthorship());
-    t.taxon.getName().setBasionymAuthorship(TestEntityGenerator.createAuthorship());
-    t.taxon.getName().setRank(Rank.SPECIES);
+    NeoUsage t = new NeoUsage();
+  
+    Taxon taxon = new Taxon();
+    taxon.setProvisional(true);
+    taxon.setName(new Name());
+    taxon.getName().setScientificName("Abies alba");
+    taxon.getName().setCombinationAuthorship(TestEntityGenerator.createAuthorship());
+    taxon.getName().setBasionymAuthorship(TestEntityGenerator.createAuthorship());
+    taxon.getName().setRank(Rank.SPECIES);
+    t.usage = taxon;
     assertSerde(t);
   }
   
+  @Test
+  public void testNeoName() throws Exception {
+    NeoName nn = new NeoName();
+    
+    nn.name = new Name();
+    nn.name.setScientificName("Abies alba");
+    nn.name.setCombinationAuthorship(TestEntityGenerator.createAuthorship());
+    nn.name.setBasionymAuthorship(TestEntityGenerator.createAuthorship());
+    nn.name.setRank(Rank.SPECIES);
+    assertSerde(nn);
+  }
+
   @Test
   public void testReference() throws Exception {
     Reference r = new Reference();
@@ -70,7 +83,7 @@ public class NeoKryoFactoryTest {
   
   @Test
   public void testEmptyModels() throws Exception {
-    assertSerde(new NeoTaxon());
+    assertSerde(new NeoUsage());
     assertSerde(new Reference());
     assertSerde(new DatasetImport());
   }

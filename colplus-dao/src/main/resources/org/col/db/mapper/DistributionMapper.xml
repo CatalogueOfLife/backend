@@ -11,7 +11,7 @@
     d.area,
     d.gazetteer,
     d.status,
-    dr.reference_id
+    d.reference_id
   </sql>
 
   <sql id="COLS">
@@ -20,28 +20,27 @@
     verbatim_key,
     area,
     gazetteer,
-    status
+    status,
+    reference_id
   </sql>
 
   <sql id="PROPS">
     #{datasetKey},
     #{taxonId},
-    #{d.verbatimKey},
-    #{d.area},
-    #{d.gazetteer},
-    #{d.status}
+    #{obj.verbatimKey},
+    #{obj.area},
+    #{obj.gazetteer},
+    #{obj.status},
+    #{obj.referenceId}
   </sql>
 
   <sql id="FROM">
-    distribution d LEFT JOIN distribution_reference dr ON d.key=dr.distribution_key
+    distribution d
   </sql>
 
   <!-- A mapping to Distribution, mostly auto mapped -->
   <resultMap id="distributionResultMap" type="Distribution" autoMapping="true">
     <id property="key" column="key" />
-    <collection property="referenceIds" ofType="String">
-        <result column="reference_id"/>
-    </collection>
   </resultMap>
 
 
@@ -58,7 +57,7 @@
     WHERE d.key = #{key} AND d.dataset_key = #{datasetKey}
   </select>
 
-  <insert id="create" parameterType="Distribution" useGeneratedKeys="true" keyProperty="d.key">
+  <insert id="create" parameterType="Distribution" useGeneratedKeys="true" keyProperty="obj.key">
     INSERT INTO distribution_${datasetKey} ( <include refid="COLS" /> )
     VALUES ( <include refid="PROPS" /> )
   </insert>

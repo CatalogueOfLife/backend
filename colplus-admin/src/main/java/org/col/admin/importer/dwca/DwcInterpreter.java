@@ -5,10 +5,11 @@ import java.util.List;
 import java.util.Optional;
 
 import com.google.common.collect.Lists;
-import org.col.admin.importer.InsertMetadata;
+import org.col.admin.importer.MappingFlags;
 import org.col.admin.importer.InterpreterBase;
+import org.col.admin.importer.neo.NeoDb;
 import org.col.admin.importer.neo.model.NeoNameRel;
-import org.col.admin.importer.neo.model.NeoTaxon;
+import org.col.admin.importer.neo.model.NeoUsage;
 import org.col.admin.importer.neo.model.RelType;
 import org.col.admin.importer.reference.ReferenceFactory;
 import org.col.api.model.*;
@@ -26,42 +27,44 @@ import org.slf4j.LoggerFactory;
  */
 public class DwcInterpreter extends InterpreterBase {
   private static final Logger LOG = LoggerFactory.getLogger(DwcInterpreter.class);
-  private static final EnumNote<TaxonomicStatus> NO_STATUS =
-      new EnumNote<>(TaxonomicStatus.DOUBTFUL, null);
-  
-  private final InsertMetadata insertMetadata;
-  
-  public DwcInterpreter(Dataset dataset, InsertMetadata insertMetadata, ReferenceFactory refFactory) {
-    super(dataset, refFactory);
-    this.insertMetadata = insertMetadata;
+  private static final EnumNote<TaxonomicStatus> NO_STATUS = new EnumNote<>(TaxonomicStatus.PROVISIONALLY_ACCEPTED, null);
+
+  private final MappingFlags mappingFlags;
+
+  public DwcInterpreter(Dataset dataset, MappingFlags mappingFlags, ReferenceFactory refFactory, NeoDb store) {
+    super(dataset, refFactory, store);
+    this.mappingFlags = mappingFlags;
   }
-  
-  public Optional<NeoTaxon> interpret(VerbatimRecord v) {
+
+  public Optional<NeoUsage> interpret(VerbatimRecord v) {
     // name
     Optional<NameAccordingTo> nat = interpretName(v);
     if (nat.isPresent()) {
-      // taxon
-      NeoTaxon t = NeoTaxon.createTaxon(Origin.SOURCE, nat.get().getName(), false);
-      // add taxon in any case - we can swap status of a synonym during normalization
-      EnumNote<TaxonomicStatus> status = SafeParser
-          .parse(TaxonomicStatusParser.PARSER, v.get(DwcTerm.taxonomicStatus)).orElse(NO_STATUS);
-      interpretTaxon(t, v, status, nat.get().getAccordingTo());
+      EnumNote<TaxonomicStatus> status = SafeParser.parse(TaxonomicStatusParser.PARSER, v.get(DwcTerm.taxonomicStatus)).orElse(NO_STATUS);
+      // usage
+      NeoUsage u;
       // a synonym by status?
-      // we deal with relations via DwcTerm.acceptedNameUsageID and DwcTerm.acceptedNameUsage during
-      // relation insertion
+      // we deal with relations via DwcTerm.acceptedNameUsageID and DwcTerm.acceptedNameUsage
+      // during relation insertion
       if (status.val.isSynonym()) {
-        t.synonym = new Synonym();
-        t.synonym.setStatus(status.val);
-        t.synonym.setAccordingTo(nat.get().getAccordingTo());
-        t.synonym.setVerbatimKey(v.getKey());
-        t.homotypic = TaxonomicStatusParser.isHomotypic(status);
+        u = NeoUsage.createSynonym(Origin.SOURCE, nat.get().getName(), status.val);
+      } else {
+        u = NeoUsage.createTaxon(Origin.SOURCE, nat.get().getName(), false);
+        interpretTaxon(u, v, status);
       }
+  
+      // shared usage props
+      u.setId(v.getFirst(DwcTerm.taxonID, DwcaReader.DWCA_ID));
+      u.setVerbatimKey(v.getKey());
+      u.usage.setAccordingTo(ObjectUtils.coalesce(v.get(DwcTerm.nameAccordingTo), nat.get().getAccordingTo()));
+      u.homotypic = TaxonomicStatusParser.isHomotypic(status);
+
       // flat classification
-      t.classification = new Classification();
+      u.classification = new Classification();
       for (DwcTerm dwc : DwcTerm.HIGHER_RANKS) {
-        t.classification.setByTerm(dwc, v.get(dwc));
+        u.classification.setByTerm(dwc, v.get(dwc));
       }
-      return Optional.of(t);
+      return Optional.of(u);
     }
     return Optional.empty();
   }
@@ -74,7 +77,7 @@ public class DwcInterpreter extends InterpreterBase {
       rel.setNote(rec.get(ColDwcTerm.relationRemarks));
       if (rec.hasTerm(ColDwcTerm.publishedIn)) {
         Reference ref = refFactory.fromDWC(rec.get(ColDwcTerm.publishedInID), rec.get(ColDwcTerm.publishedIn), null, rec);
-        rel.setRefId(ref.getId());
+        rel.setReferenceId(ref.getId());
       }
       return Optional.of(rel);
     }
@@ -126,7 +129,7 @@ public class DwcInterpreter extends InterpreterBase {
   
   List<VernacularName> interpretVernacularName(VerbatimRecord rec) {
     return super.interpretVernacular(rec,
-        this::addReferences,
+        this::setReference,
         DwcTerm.vernacularName,
         null,
         DcTerm.language,
@@ -134,36 +137,49 @@ public class DwcInterpreter extends InterpreterBase {
     );
   }
   
+  List<Description> interpretDescription(VerbatimRecord rec) {
+    return interpretDescription(rec, this::setReference,
+        DcTerm.description,
+        DcTerm.type,
+        DcTerm.language);
+  }
+  
+  List<Media> interpretMedia(VerbatimRecord rec) {
+    return interpretMedia(rec, this::setReference,
+        DcTerm.type,
+        DcTerm.identifier,
+        DcTerm.references,
+        DcTerm.license,
+        DcTerm.creator,
+        DcTerm.created,
+        DcTerm.title,
+        DcTerm.format);
+  }
   private Distribution createDistribution(String area, Gazetteer standard, VerbatimRecord rec) {
     Distribution d = new Distribution();
     d.setVerbatimKey(rec.getKey());
     d.setArea(area);
     d.setGazetteer(standard);
-    addReferences(d, rec);
+    setReference(d, rec);
     // TODO: parse status!!!
     d.setStatus(DistributionStatus.NATIVE);
     return d;
   }
-  
-  private void addReferences(Referenced obj, VerbatimRecord v) {
+
+  private void setReference(Referenced obj, VerbatimRecord v) {
     if (v.hasTerm(DcTerm.source)) {
       Reference ref = refFactory.fromCitation(null, v.get(DcTerm.source), v);
       setRefKey(obj, ref);
     }
   }
-  
-  private void interpretTaxon(NeoTaxon t, VerbatimRecord v, EnumNote<TaxonomicStatus> status, String accordingTo) {
-    // and it keeps the taxonID for resolution of relations
-    t.taxon.setVerbatimKey(v.getKey());
-    t.taxon.setId(v.getFirst(DwcTerm.taxonID, DwcaReader.DWCA_ID));
+
+  private void interpretTaxon(NeoUsage u, VerbatimRecord v, EnumNote<TaxonomicStatus> status) {
+    Taxon tax = u.getTaxon();
     // this can be a synonym at this stage which the class does not accept
-    t.taxon.setDoubtful(TaxonomicStatus.DOUBTFUL == status.val || status.val.isSynonym());
-    t.taxon.setAccordingTo(ObjectUtils.coalesce(v.get(DwcTerm.nameAccordingTo), accordingTo));
-    t.taxon.setAccordingToDate(null);
-    t.taxon.setOrigin(Origin.SOURCE);
-    t.taxon.setDatasetUrl(uri(v, t, Issue.URL_INVALID, DcTerm.references));
-    t.taxon.setFossil(null);
-    t.taxon.setRecent(null);
+    tax.setProvisional(TaxonomicStatus.PROVISIONALLY_ACCEPTED == status.val || status.val.isSynonym());
+    tax.setDatasetUrl(uri(v, Issue.URL_INVALID, DcTerm.references));
+    tax.setFossil(null);
+    tax.setRecent(null);
     // t.setLifezones();
     if (v.hasTerm(ColDwcTerm.speciesEstimate)) {
       Integer est = v.getInt(ColDwcTerm.speciesEstimate, Issue.ESTIMATES_INVALID);
@@ -171,17 +187,17 @@ public class DwcInterpreter extends InterpreterBase {
         if (est < 0) {
           v.addIssue(Issue.ESTIMATES_INVALID);
         } else {
-          t.taxon.setSpeciesEstimate(est);
+          tax.setSpeciesEstimate(est);
           if (v.hasTerm(ColDwcTerm.speciesEstimateReference)) {
             Reference ref = refFactory.fromCitation(null, v.get(ColDwcTerm.speciesEstimateReference), v);
             if (ref != null) {
-              t.taxon.setSpeciesEstimateReferenceId(ref.getId());
+              tax.setSpeciesEstimateReferenceId(ref.getId());
             }
           }
         }
       }
     }
-    t.taxon.setRemarks(v.get(DwcTerm.taxonRemarks));
+    tax.setRemarks(v.get(DwcTerm.taxonRemarks));
   }
   
   private Optional<NameAccordingTo> interpretName(VerbatimRecord v) {
@@ -197,8 +213,9 @@ public class DwcInterpreter extends InterpreterBase {
     if (opt.isPresent()) {
       Name n = opt.get().getName();
       if (v.hasTerm(DwcTerm.namePublishedInID) || v.hasTerm(DwcTerm.namePublishedIn)) {
-        Reference ref = refFactory.fromCitation(v.get(DwcTerm.namePublishedInID), v.get(DwcTerm.namePublishedIn), v);
+        Reference ref = refFactory.fromDWC(v.get(DwcTerm.namePublishedInID), v.get(DwcTerm.namePublishedIn), v.get(DwcTerm.namePublishedInYear), v);
         if (ref != null) {
+          store.create(ref);
           n.setPublishedInId(ref.getId());
           n.setPublishedInPage(ref.getPage());
         }

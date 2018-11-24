@@ -83,7 +83,7 @@ class AnystyleWebService {
     try (PrintWriter p = new PrintWriter(w)) {
       p.print("require 'anystyle/parser';");
       p.print("require 'sinatra';");
-      p.print("get '/' do;");
+      p.print("getUsage '/' do;");
       p.printf("Anystyle.parse(params['%s'], :citeproc).to_json;", QUERY_PARAM_REF);
       p.print("end");
     }

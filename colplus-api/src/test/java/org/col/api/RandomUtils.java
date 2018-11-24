@@ -1,5 +1,6 @@
 package org.col.api;
 
+import java.net.URI;
 import java.util.Calendar;
 import java.util.Random;
 
@@ -119,6 +120,30 @@ public class RandomUtils {
     return sb.toString();
   }
   
+  /**
+   * Creates a random URI using the http or https protocol.
+   */
+  public static URI randomUri() {
+    StringBuilder sb = new StringBuilder();
+    switch (rnd.nextInt(10)) {
+      case 1: sb.append("https"); break;
+      case 2: sb.append("ftp"); break;
+      default: sb.append("http");
+    }
+    sb.append("://www.")
+        .append(randomString(8).toLowerCase())
+        .append(".com");
+    if (rnd.nextBoolean()) {
+      sb.append("/").append(randomString(4).toLowerCase())
+        .append("/").append(Integer.toString(Math.abs(rnd.nextInt())));
+      
+      if (rnd.nextBoolean()) {
+        sb.append("#").append(randomString(14));
+      }
+    }
+    return URI.create(sb.toString());
+  }
+
   /**
    * @return a year since Linnéan times 1751 before now as a 4 character long string
    */

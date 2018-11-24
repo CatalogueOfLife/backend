@@ -32,4 +32,14 @@ public class NormalizationFailedException extends RuntimeException {
       super(message);
     }
   }
+  
+  /**
+   * Failed validation assertions.
+   */
+  public static class AssertionException extends NormalizationFailedException {
+    
+    public AssertionException(String message) {
+      super(message);
+    }
+  }
 }

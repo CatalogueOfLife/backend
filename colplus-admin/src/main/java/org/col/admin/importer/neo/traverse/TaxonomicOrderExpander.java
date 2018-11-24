@@ -6,6 +6,7 @@ import javax.annotation.Nullable;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Ordering;
+import org.col.admin.importer.neo.NeoDbUtils;
 import org.col.admin.importer.neo.model.RelType;
 import org.neo4j.graphdb.*;
 import org.neo4j.graphdb.traversal.BranchState;
@@ -42,7 +43,7 @@ public class TaxonomicOrderExpander implements PathExpander {
         @Nullable
         @Override
         public Boolean apply(Relationship rel) {
-          return rel.getStartNode().hasRelationship(RelType.HAS_BASIONYM, Direction.INCOMING);
+          return NeoDbUtils.isBasionym(rel.getStartNode().getSingleRelationship(RelType.HAS_NAME, Direction.OUTGOING).getEndNode());
         }
       }
   ).compound(

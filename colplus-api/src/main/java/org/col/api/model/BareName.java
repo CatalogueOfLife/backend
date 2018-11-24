@@ -18,6 +18,16 @@ public class BareName implements NameUsage {
   }
   
   @Override
+  public String getId() {
+    return name.getId();
+  }
+  
+  @Override
+  public void setId(String id) {
+    name.setId(id);
+  }
+  
+  @Override
   public Name getName() {
     return name;
   }
@@ -32,8 +42,30 @@ public class BareName implements NameUsage {
   }
   
   @Override
+  public void setAccordingTo(String according) {
+    // nothing, throw if new status is supposed to be non null
+    if (according != null) throw new IllegalArgumentException("Bare names do not have an accordingTo");
+  }
+  
+  @Override
   public TaxonomicStatus getStatus() {
     return null;
+  }
+  
+  @Override
+  public void setStatus(TaxonomicStatus status) {
+    // nothing, throw if new status is supposed to be non null
+    if (status != null) throw new IllegalArgumentException("Bare names do not have a taxonomic status");
+  }
+  
+  @Override
+  public Integer getVerbatimKey() {
+    return name.getVerbatimKey();
+  }
+  
+  @Override
+  public void setVerbatimKey(Integer verbatimKey) {
+    name.setVerbatimKey(verbatimKey);
   }
   
   @Override

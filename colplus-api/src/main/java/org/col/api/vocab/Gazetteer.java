@@ -18,9 +18,16 @@ public enum Gazetteer {
   TDWG,
   
   /**
-   * ISO 3166-1 Country codes given either as alpha-2, alpha-3 or numeric codes.
+   * ISO 3166 codes for the representation of names of countries and their subdivisions.
+   * Codes for current countries (ISO 3166-1), country subdivisions (ISO 3166-2) and formerly used names of countries (ISO 3166-3).
+   * Country codes can be given either as alpha-2, alpha-3 or numeric codes.
+   *
    * Mostly synonymous are the <a href="http://www.fao.org/countryprofiles/iso3list/en/">FAO ISO 3 letter country codes</a>.
    *
+   * @see <a href="https://en.wikipedia.org/wiki/ISO_3166">ISO 3166</a>
+   * @see <a href="https://de.wikipedia.org/wiki/ISO_3166-2">ISO 3166-1</a>
+   * @see <a href="https://de.wikipedia.org/wiki/ISO_3166-2">ISO 3166-2</a>
+   * @see <a href="https://en.wikipedia.org/wiki/ISO_3166-3">ISO 3166-3</a>
    * @see <a href="https://www.iso.org/obp/ui/">ISO Code Browser</a>
    */
   ISO,

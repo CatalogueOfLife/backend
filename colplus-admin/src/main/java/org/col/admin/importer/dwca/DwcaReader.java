@@ -23,7 +23,6 @@ import com.univocity.parsers.csv.CsvParserSettings;
 import org.apache.commons.text.StringEscapeUtils;
 import org.codehaus.stax2.XMLInputFactory2;
 import org.codehaus.stax2.XMLStreamReader2;
-import org.col.admin.importer.InsertMetadata;
 import org.col.admin.importer.NormalizationFailedException;
 import org.col.api.model.VerbatimRecord;
 import org.col.api.util.VocabularyUtils;
@@ -71,8 +70,7 @@ public class DwcaReader extends CsvReader {
   private Path metadataFile;
   
   private DwcaReader(Path folder) throws IOException {
-    super(folder, "dwc");
-    validate();
+    super(folder, "dwc", "dwca");
   }
   
   public static DwcaReader from(Path folder) throws IOException {
@@ -354,33 +352,25 @@ public class DwcaReader extends CsvReader {
     }
   }
   
-  private void validate() throws NormalizationFailedException.SourceInvalidException {
+  @Override
+  protected void validate() throws NormalizationFailedException.SourceInvalidException {
+    super.validate();
     // no checks
-    if (isEmpty()) {
-      throw new NormalizationFailedException.SourceInvalidException("No data files found in " + folder);
-    }
-    if (coreRowType == null) {
-      throw new NormalizationFailedException.SourceInvalidException("No core rowType set");
-    }
-  }
-  
-  public void validate(InsertMetadata meta) throws NormalizationFailedException.SourceInvalidException {
-    // check for a minimal parsed name
-    Optional<Schema> optCore = schema(DwcTerm.Taxon);
-    if (!optCore.isPresent()) {
+    if (coreRowType != DwcTerm.Taxon) {
       throw new NormalizationFailedException.SourceInvalidException("No Taxon core, not a checklist?");
     }
-    final Schema core = optCore.get();
+    // check for a minimal parsed name
+    final Schema core = schema(DwcTerm.Taxon).get();
     if ((core.hasTerm(DwcTerm.genus) || core.hasTerm(GbifTerm.genericName))
         && core.hasTerm(DwcTerm.specificEpithet)
         ) {
-      meta.setParsedNameMapped(true);
+      mappingFlags.setParsedNameMapped(true);
     }
     
     // make sure either scientificName or genus & specificEpithet are mapped
     if (!core.hasTerm(DwcTerm.scientificName)) {
       LOG.warn("No scientificName mapped");
-      if (!meta.isParsedNameMapped()) {
+      if (!mappingFlags.isParsedNameMapped()) {
         // no name to work with!!!
         throw new NormalizationFailedException.SourceInvalidException("No scientificName nor parsed name mapped");
       } else {
@@ -399,28 +389,28 @@ public class DwcaReader extends CsvReader {
     // check if taxonID should be used, not the generic ID
     if (core.hasTerm(DwcTerm.taxonID) && !core.field(DWCA_ID).index.equals(core.field(DwcTerm.taxonID).index)) {
       LOG.info("Use taxonID instead of ID");
-      meta.setTaxonId(true);
+      mappingFlags.setTaxonId(true);
     }
     // multi values in use, e.g. for acceptedID?
     for (Schema.Field f : core.columns) {
       if (!Strings.isNullOrEmpty(f.delimiter)) {
-        meta.getMultiValueDelimiters().put(f.term, Splitter.on(f.delimiter).omitEmptyStrings());
+        mappingFlags.getMultiValueDelimiters().put(f.term, Splitter.on(f.delimiter).omitEmptyStrings());
       }
     }
     for (Term t : DwcTerm.HIGHER_RANKS) {
       if (core.hasTerm(t)) {
-        meta.setDenormedClassificationMapped(true);
+        mappingFlags.setDenormedClassificationMapped(true);
         break;
       }
     }
     if (core.hasTerm(AcefTerm.Superfamily)) {
-      meta.setDenormedClassificationMapped(true);
+      mappingFlags.setDenormedClassificationMapped(true);
     }
     if (core.hasTerm(DwcTerm.parentNameUsageID) || core.hasTerm(DwcTerm.parentNameUsage)) {
-      meta.setParentNameMapped(true);
+      mappingFlags.setParentNameMapped(true);
     }
     if (core.hasTerm(DwcTerm.acceptedNameUsageID) || core.hasTerm(DwcTerm.acceptedNameUsage)) {
-      meta.setAcceptedNameMapped(true);
+      mappingFlags.setAcceptedNameMapped(true);
     } else {
       if (core.hasTerm(AcefTerm.AcceptedTaxonID)) {
         // this sometimes gets confused with dwc - translate into dwc as we read dwc archives here
@@ -431,16 +421,16 @@ public class DwcaReader extends CsvReader {
         updatedColumns.set(updatedColumns.indexOf(f), f2);
         Schema s2 = new Schema(core.file, core.rowType, core.encoding, core.settings, updatedColumns);
         putSchema(s2);
-        meta.setAcceptedNameMapped(true);
+        mappingFlags.setAcceptedNameMapped(true);
       } else {
         LOG.warn("No accepted name terms mapped");
       }
     }
     if (core.hasTerm(DwcTerm.originalNameUsageID) || core.hasTerm(DwcTerm.originalNameUsage)) {
-      meta.setOriginalNameMapped(true);
+      mappingFlags.setOriginalNameMapped(true);
     }
     // any classification?
-    if (!meta.isParentNameMapped() && !meta.isDenormedClassificationMapped()) {
+    if (!mappingFlags.isParentNameMapped() && !mappingFlags.isDenormedClassificationMapped()) {
       LOG.warn("No higher classification mapped");
     }
     

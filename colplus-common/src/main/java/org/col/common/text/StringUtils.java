@@ -26,7 +26,19 @@ public class StringUtils {
   private static final CharMatcher NON_DIGITLETTER = CharMatcher.javaLetterOrDigit().negate();
 
   private StringUtils() {}
-
+  
+  /**
+   * @return true if at least one of the strings is non empty
+   */
+  public static  boolean hasContent(String... strings) {
+    for (String s : strings) {
+      if (!org.apache.commons.lang3.StringUtils.isEmpty(s)) {
+        return true;
+      }
+    }
+    return false;
+  }
+  
   /**
    * Concatenates the given parts with a space, skipping any null or empty strings
    */

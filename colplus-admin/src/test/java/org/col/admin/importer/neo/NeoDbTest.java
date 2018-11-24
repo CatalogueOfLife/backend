@@ -5,12 +5,13 @@ import java.io.IOException;
 import com.google.common.io.Files;
 import org.apache.commons.io.FileUtils;
 import org.col.admin.config.NormalizerConfig;
-import org.col.admin.importer.neo.model.Labels;
-import org.col.admin.importer.neo.model.NeoTaxon;
+import org.col.admin.importer.neo.model.NeoName;
+import org.col.admin.importer.neo.model.NeoUsage;
 import org.col.admin.importer.neo.model.RelType;
 import org.col.api.RandomUtils;
-import org.col.api.model.Taxon;
+import org.col.api.model.Name;
 import org.col.api.model.VerbatimRecord;
+import org.col.api.vocab.Origin;
 import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.dwc.terms.GbifTerm;
 import org.junit.*;
@@ -100,37 +101,47 @@ public class NeoDbTest {
   
   @Test
   public void neoSync() throws Exception {
-    NeoTaxon t1;
-    NeoTaxon t2;
+    NeoUsage u1;
+    NeoUsage u2;
+    Name n1;
     try (Transaction tx = db.getNeo().beginTx()) {
-      t1 = db.put(taxon("12"));
-      t2 = db.put(taxon("13"));
-      
+      u1 = taxon("12");
+      assertNull(u1.usage.getName().getHomotypicNameId());
+      n1 = u1.usage.getName();
+      db.createNameAndUsage(u1);
+      assertNull(u1.usage.getName());
+
+      u2 = taxon("13");
+      assertNull(u2.usage.getName().getHomotypicNameId());
+      db.createNameAndUsage(u2);
+      assertNull(u2.usage.getName());
+
       // now relate the 2 nodes and make sure when we read the relations the instance is changed accordingly
-      t1.node.createRelationshipTo(t2.node, RelType.PARENT_OF);
-      t2.node.createRelationshipTo(t1.node, RelType.HAS_BASIONYM);
-      
-      assertNull(t1.name.getHomotypicNameId());
-      assertNull(t2.name.getHomotypicNameId());
-      
+      u1.node.createRelationshipTo(u2.node, RelType.PARENT_OF);
+      u2.nameNode.createRelationshipTo(u1.nameNode, RelType.HAS_BASIONYM);
+
       tx.success();
     }
     db.sync();
     
     try (Transaction tx = db.getNeo().beginTx()) {
-      NeoTaxon t1b = db.get(db.byID("12"));
-      NeoTaxon t2b = db.get(db.byID("13"));
-      assertNotNull(t1b.name.getHomotypicNameId());
-      assertNotNull(t2b.name.getHomotypicNameId());
+      NeoName n1b = db.names().objByID("12");
+      NeoName n2b = db.names().objByID("13");
+      assertNotNull(n1b.name.getHomotypicNameId());
+      assertNotNull(n2b.name.getHomotypicNameId());
+
+      assertEquals(n1b.name.getHomotypicNameId(), n2b.name.getHomotypicNameId());
       
-      assertEquals(t1b.name.getHomotypicNameId(), t2b.name.getHomotypicNameId());
-      t1b.name.setHomotypicNameId(null);
-      assertEquals(t1, t1b);
+      n1b.name.setHomotypicNameId(null);
+      assertEquals(n1, n1b.name);
+
+      NeoUsage u1b = db.usages().objByID("12");
+      assertEquals(u1, u1b);
     }
   }
   
   static class BatchProcException extends RuntimeException {
-    public BatchProcException(String message) {
+    BatchProcException(String message) {
       super(message);
     }
   }
@@ -138,25 +149,26 @@ public class NeoDbTest {
   @Test(expected = BatchProcException.class)
   public void batchProcessing() throws Exception {
     try (Transaction tx = db.getNeo().beginTx()) {
-      NeoTaxon p = null;
-      NeoTaxon p2 = null;
-      for (int i = 1; i < 100; i++) {
-        NeoTaxon t = db.put(taxon("id-" + i));
+      NeoUsage p = null;
+      NeoUsage p2 = null;
+      for (int i = 1; i<100; i++) {
+        NeoUsage u = taxon("id-"+i);
+        db.createNameAndUsage(u);
         if (p == null) {
-          p = t;
-        } else if (p2 == null || i % 10 == 0) {
-          p2 = t;
+          p = u;
+        } else if (p2 == null || i%10==0) {
+          p2 = u;
           p.node.createRelationshipTo(p2.node, RelType.PARENT_OF);
           
         } else {
-          p2.node.createRelationshipTo(t.node, RelType.PARENT_OF);
+          p2.node.createRelationshipTo(u.node, RelType.PARENT_OF);
         }
       }
       tx.success();
     }
     db.sync();
-    
-    db.process(Labels.ALL, 10, new NodeBatchProcessor() {
+
+    db.process(null, 10, new NodeBatchProcessor() {
       @Override
       public void process(Node n) {
         System.out.println("process " + n);
@@ -169,7 +181,7 @@ public class NeoDbTest {
     });
     
     // now try with error throwing processor
-    db.process(Labels.ALL, 10, new NodeBatchProcessor() {
+    db.process(null, 10, new NodeBatchProcessor() {
       @Override
       public void process(Node n) {
         System.out.println("process " + n);
@@ -188,7 +200,8 @@ public class NeoDbTest {
   @Test
   public void updateTaxon() throws Exception {
     try (Transaction tx = db.getNeo().beginTx()) {
-      NeoTaxon t = db.put(taxon("id1"));
+      NeoUsage u = taxon("id1");
+      db.createNameAndUsage(u);
       tx.success();
     }
     db.sync();
@@ -198,24 +211,22 @@ public class NeoDbTest {
     tr.put(AcefTerm.DistributionElement, "Asia");
     
     try (Transaction tx = db.getNeo().beginTx()) {
-      NeoTaxon t = db.getByID("id1");
-      
-      db.update(t);
+      NeoUsage u = db.usages().objByID("id1");
+      db.usages().update(u);
     }
     
     try (Transaction tx = db.getNeo().beginTx()) {
-      NeoTaxon t = db.getByID("id1");
+      NeoUsage u = db.usages().objByID("id1");
       //assertEquals(1, t.verbatim.getExtensionRecords(AcefTerm.Distribution).size());
-      //assertEquals(tr, t.verbatim.getExtensionRecords(AcefTerm.Distribution).get(0));
+      //assertEquals(tr, t.verbatim.getExtensionRecords(AcefTerm.Distribution).getUsage(0));
     }
     
   }
-  
-  public static NeoTaxon taxon(String id) {
-    NeoTaxon t = new NeoTaxon();
-    t.name = RandomUtils.randomName();
-    t.taxon = new Taxon();
-    t.taxon.setId(id);
+
+  public static NeoUsage taxon(String id) {
+    NeoUsage t = NeoUsage.createTaxon(Origin.SOURCE, false);
+    t.usage.setName(RandomUtils.randomName());
+    t.setId(id);
     return t;
   }
 }

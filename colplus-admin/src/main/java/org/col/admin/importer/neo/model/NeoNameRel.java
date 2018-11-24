@@ -2,12 +2,13 @@ package org.col.admin.importer.neo.model;
 
 import java.util.Objects;
 
+import org.col.api.model.Referenced;
 import org.col.api.model.VerbatimEntity;
 
-public class NeoNameRel implements VerbatimEntity {
+public class NeoNameRel implements VerbatimEntity, Referenced {
   private Integer verbatimKey;
   private RelType type;
-  private String refId;
+  private String referenceId;
   private String note;
   
   @Override
@@ -28,12 +29,14 @@ public class NeoNameRel implements VerbatimEntity {
     this.type = type;
   }
   
-  public String getRefId() {
-    return refId;
+  @Override
+  public String getReferenceId() {
+    return referenceId;
   }
   
-  public void setRefId(String refId) {
-    this.refId = refId;
+  @Override
+  public void setReferenceId(String referenceId) {
+    this.referenceId = referenceId;
   }
   
   public String getNote() {
@@ -51,13 +54,13 @@ public class NeoNameRel implements VerbatimEntity {
     NeoNameRel that = (NeoNameRel) o;
     return Objects.equals(verbatimKey, that.verbatimKey) &&
         type == that.type &&
-        Objects.equals(refId, that.refId) &&
+        Objects.equals(referenceId, that.referenceId) &&
         Objects.equals(note, that.note);
   }
   
   @Override
   public int hashCode() {
     
-    return Objects.hash(verbatimKey, type, refId, note);
+    return Objects.hash(verbatimKey, type, referenceId, note);
   }
 }

@@ -7,12 +7,15 @@ import org.col.admin.importer.neo.model.NeoProperties;
 import org.neo4j.graphdb.Node;
 
 /**
- * Orders taxon nodes by their rank first, then canonical name and scientificName ultimately.
+ * Orders usage nodes by their rank first, then canonical name and scientificName ultimately.
  */
 public class TaxonomicOrder implements Comparator<Node> {
   
   @Override
-  public int compare(Node n1, Node n2) {
+  public int compare(Node usage1, Node usage2) {
+    Node n1 = NeoProperties.getNameNode(usage1);
+    Node n2 = NeoProperties.getNameNode(usage2);
+    
     int r1 = (int) n1.getProperty(NeoProperties.RANK, Integer.MAX_VALUE);
     int r2 = (int) n2.getProperty(NeoProperties.RANK, Integer.MAX_VALUE);
     

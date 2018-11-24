@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.col.db.mapper.DescriptionMapper">
+
+  <sql id="SELECT">
+    d.key,
+    d.taxon_id,
+    d.verbatim_key,
+    d.category,
+    d.description,
+    d.language,
+    d.reference_id
+  </sql>
+
+  <sql id="COLS">
+    dataset_key,
+    taxon_id,
+    verbatim_key,
+    category,
+    description,
+    language,
+    reference_id
+  </sql>
+
+  <sql id="PROPS">
+    #{datasetKey},
+    #{taxonId},
+    #{obj.verbatimKey},
+    #{obj.category},
+    #{obj.description},
+    #{obj.language},
+    #{obj.referenceId}
+  </sql>
+
+  <sql id="FROM">
+    description d
+  </sql>
+
+  <resultMap id="descriptionResultMap" type="Description" autoMapping="true">
+    <id property="key" column="key" />
+  </resultMap>
+
+
+  <select id="listByTaxon" resultMap="descriptionResultMap">
+    SELECT <include refid="SELECT" />
+    FROM <include refid="FROM" />
+    WHERE d.taxon_id = #{taxonId} AND d.dataset_key = #{datasetKey}
+    ORDER BY d.key
+  </select>
+
+  <select id="get" resultMap="descriptionResultMap">
+    SELECT <include refid="SELECT" />
+    FROM <include refid="FROM" />
+    WHERE d.key = #{key} AND d.dataset_key = #{datasetKey}
+  </select>
+
+  <insert id="create" parameterType="Distribution" useGeneratedKeys="true" keyProperty="obj.key">
+    INSERT INTO description_${datasetKey} ( <include refid="COLS" /> )
+    VALUES ( <include refid="PROPS" /> )
+  </insert>
+
+</mapper>

@@ -2,7 +2,7 @@
 **/target
 **/.idea
 colplus-admin/graphs/
-
+**/.DS_Store
 
 **/.project
 **/.classpath

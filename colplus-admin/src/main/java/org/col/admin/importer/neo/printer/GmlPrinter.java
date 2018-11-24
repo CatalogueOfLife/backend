@@ -6,14 +6,12 @@ import java.io.Writer;
 import java.util.List;
 import javax.annotation.Nullable;
 
-import com.google.common.base.Function;
 import com.google.common.collect.Lists;
-import org.col.admin.importer.neo.model.NeoProperties;
+import org.col.admin.importer.neo.model.RankedUsage;
 import org.col.admin.importer.neo.model.RelType;
-import org.col.admin.importer.neo.traverse.RankEvaluator;
+import org.col.admin.importer.neo.traverse.UsageRankEvaluator;
 import org.gbif.nameparser.api.Rank;
 import org.neo4j.graphdb.Direction;
-import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 
 /**
@@ -22,21 +20,20 @@ import org.neo4j.graphdb.Relationship;
  * https://en.wikipedia.org/wiki/Graph_Modelling_Language
  * See http://www.fim.uni-passau.de/fileadmin/files/lehrstuhl/brandenburg/projekte/gml/gml-technical-report.pdf
  */
-public class GmlPrinter implements TreePrinter {
+public class GmlPrinter extends BasePrinter{
   private final Writer writer;
   private final List<Edge> edges = Lists.newArrayList();
-  private final Function<Node, String> getTitle;
   private final boolean strictTree;
-  private final RankEvaluator rankEvaluator;
-  
+  private final UsageRankEvaluator rankEvaluator;
+
   /**
    * @param strictTree if true omit any pro parte and basionym relations to force a strict tree
    */
-  public GmlPrinter(Writer writer, @Nullable Rank rankThreshold, Function<Node, String> getTitle, boolean strictTree) {
+  public GmlPrinter(Writer writer, @Nullable Rank rankThreshold, boolean strictTree) {
+    super(true);
     this.strictTree = strictTree;
     this.writer = writer;
-    this.getTitle = getTitle;
-    this.rankEvaluator = new RankEvaluator(rankThreshold);
+    this.rankEvaluator = new UsageRankEvaluator(rankThreshold);
     printHeader();
   }
   
@@ -88,14 +85,14 @@ public class GmlPrinter implements TreePrinter {
   }
   
   @Override
-  public void start(Node n) {
+  public void start(RankedUsage u) {
     try {
       String label = String.format("%s [%s]",
-          getTitle.apply(n),
-          NeoProperties.getRank(n, Rank.UNRANKED).name().toLowerCase()
+          u.getNameWithAuthor(),
+          u.rank.name().toLowerCase()
       );
       writer.write("  node [\n");
-      writer.write("    value " + n.getId() + "\n");
+      writer.write("    value " + u.usageNode.getId() + "\n");
       writer.write("    label \"" + label + "\"\n");
       writer.write("  ]\n");
       
@@ -104,20 +101,20 @@ public class GmlPrinter implements TreePrinter {
       // for a strict tree we only use parent and synonym of relations
       // synonym_of relations are inversed so the tree strictly points into one direction
       if (strictTree) {
-        for (Relationship rel : n.getRelationships(RelType.PARENT_OF, Direction.OUTGOING)) {
-          if (rankEvaluator.evaluateNode(rel.getOtherNode(n))) {
+        for (Relationship rel : u.usageNode.getRelationships(RelType.PARENT_OF, Direction.OUTGOING)) {
+          if (rankEvaluator.evaluateNode(rel.getOtherNode(u.usageNode))) {
             edges.add(Edge.create(rel));
           }
         }
-        for (Relationship rel : n.getRelationships(RelType.SYNONYM_OF, Direction.OUTGOING)) {
-          if (rankEvaluator.evaluateNode(rel.getOtherNode(n))) {
+        for (Relationship rel : u.usageNode.getRelationships(RelType.SYNONYM_OF, Direction.OUTGOING)) {
+          if (rankEvaluator.evaluateNode(rel.getOtherNode(u.usageNode))) {
             edges.add(Edge.inverse(rel));
           }
         }
         
       } else {
-        for (Relationship rel : n.getRelationships(Direction.OUTGOING)) {
-          if (rankEvaluator.evaluateNode(rel.getOtherNode(n))) {
+        for (Relationship rel : u.usageNode.getRelationships(Direction.OUTGOING)) {
+          if (rankEvaluator.evaluateNode(rel.getOtherNode(u.usageNode))) {
             edges.add(Edge.create(rel));
           }
         }
@@ -127,9 +124,5 @@ public class GmlPrinter implements TreePrinter {
       throw new RuntimeException(e);
     }
   }
-  
-  @Override
-  public void end(Node n) {
-  
-  }
+
 }

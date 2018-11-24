@@ -34,47 +34,50 @@ public class ApiKryoFactory implements KryoFactory {
     kryo.register(Classification.class);
     kryo.register(Dataset.class);
     kryo.register(DatasetImport.class);
+    kryo.register(Description.class);
     kryo.register(Distribution.class);
+    kryo.register(Media.class);
     kryo.register(Name.class);
     kryo.register(NameAccordingTo.class);
     kryo.register(NameRelation.class);
+    kryo.register(Page.class);
     kryo.register(ParsedName.class);
     kryo.register(ParsedName.State.class);
     kryo.register(Reference.class);
     kryo.register(Sector.class);
     kryo.register(Synonym.class);
     kryo.register(Taxon.class);
-    kryo.register(VernacularName.class);
     kryo.register(VerbatimRecord.class);
-    kryo.register(Page.class);
-    
+    kryo.register(VernacularName.class);
+
     // CSL classes & enums
     kryo.register(CslData.class);
+    kryo.register(CslDate.class);
     kryo.register(CslName.class);
     kryo.register(CslName[].class);
-    kryo.register(CslDate.class);
     kryo.register(CSLRefType.class);
-    kryo.register(String[].class);
     kryo.register(int[][].class);
-    
+    kryo.register(String[].class);
+
     // java & commons
-    kryo.register(LocalDateTime.class);
-    kryo.register(LocalDate.class);
-    kryo.register(HashMap.class);
-    kryo.register(LinkedHashMap.class);
-    kryo.register(HashSet.class);
     kryo.register(ArrayList.class);
-    kryo.register(LinkedList.class);
-    kryo.register(UUID.class, new UUIDSerializer());
-    kryo.register(URI.class, new URISerializer());
+    kryo.register(HashMap.class);
+    kryo.register(HashSet.class);
     kryo.register(int[].class);
-    UnmodifiableCollectionsSerializer.registerSerializers(kryo);
+    kryo.register(LinkedHashMap.class);
+    kryo.register(LinkedList.class);
+    kryo.register(LocalDate.class);
+    kryo.register(LocalDateTime.class);
+    kryo.register(URI.class, new URISerializer());
+    kryo.register(UUID.class, new UUIDSerializer());
+    UnmodifiableCollectionsSerializer.registerSerializers( kryo );
     ImmutableListSerializer.registerSerializers(kryo);
     
     // enums
     kryo.register(Catalogue.class);
     kryo.register(Country.class);
     kryo.register(DataFormat.class);
+    kryo.register(DatasetOrigin.class);
     kryo.register(DatasetType.class);
     kryo.register(DistributionStatus.class);
     kryo.register(EnumMap.class, new EnumMapSerializer());
@@ -87,13 +90,13 @@ public class ApiKryoFactory implements KryoFactory {
     kryo.register(Language.class);
     kryo.register(License.class);
     kryo.register(Lifezone.class);
+    kryo.register(MediaType.class);
     kryo.register(NamePart.class);
     kryo.register(NameType.class);
-    kryo.register(NomRelType.class);
     kryo.register(NomCode.class);
+    kryo.register(NomRelType.class);
     kryo.register(NomStatus.class);
     kryo.register(Origin.class);
-    kryo.register(DatasetOrigin.class);
     kryo.register(Rank.class);
     kryo.register(TaxonomicStatus.class);
     kryo.register(TypeStatus.class);

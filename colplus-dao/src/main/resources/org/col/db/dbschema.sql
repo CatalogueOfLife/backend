@@ -232,6 +232,8 @@ CREATE TABLE dataset_import (
   reference_count INTEGER,
   vernacular_count INTEGER,
   distribution_count INTEGER,
+  description_count INTEGER,
+  media_count INTEGER,
   issues_count HSTORE,
   names_by_rank_count HSTORE,
   taxa_by_rank_count HSTORE,
@@ -243,6 +245,7 @@ CREATE TABLE dataset_import (
   names_by_status_count HSTORE,
   name_relations_by_type_count HSTORE,
   verbatim_by_type_count HSTORE,
+  media_by_type_count HSTORE,
   PRIMARY KEY (dataset_key, attempt)
 );
 
@@ -319,7 +322,7 @@ CREATE TABLE taxon (
   verbatim_key INTEGER,
   parent_id TEXT,
   name_id TEXT NOT NULL,
-  doubtful BOOLEAN DEFAULT FALSE NOT NULL,
+  provisional BOOLEAN DEFAULT FALSE NOT NULL,
   origin INTEGER NOT NULL,
   according_to TEXT,
   according_to_date DATE,
@@ -333,12 +336,14 @@ CREATE TABLE taxon (
 ) PARTITION BY LIST (dataset_key);
 
 CREATE TABLE synonym (
+  id TEXT,
   taxon_id TEXT,
   name_id TEXT,
   dataset_key INTEGER NOT NULL,
   verbatim_key INTEGER,
   status INTEGER NOT NULL,
-  according_to TEXT
+  according_to TEXT,
+  origin INTEGER NOT NULL
 ) PARTITION BY LIST (dataset_key);
 
 CREATE TABLE taxon_reference (
@@ -354,14 +359,9 @@ CREATE TABLE vernacular_name (
   taxon_id TEXT NOT NULL,
   name TEXT NOT NULL,
   latin TEXT,
-  language CHAR(2),
-  country CHAR(2)
-) PARTITION BY LIST (dataset_key);
-
-CREATE TABLE vernacular_name_reference (
-  dataset_key INTEGER NOT NULL,
-  vernacular_name_key INTEGER NOT NULL,
-  reference_id TEXT NOT NULL
+  language CHAR(3),
+  country CHAR(2),
+  reference_id TEXT
 ) PARTITION BY LIST (dataset_key);
 
 CREATE TABLE distribution (
@@ -371,13 +371,35 @@ CREATE TABLE distribution (
   taxon_id TEXT NOT NULL,
   area TEXT NOT NULL,
   gazetteer INTEGER NOT NULL,
-  status INTEGER
+  status INTEGER,
+  reference_id TEXT
 ) PARTITION BY LIST (dataset_key);
 
-CREATE TABLE distribution_reference (
+CREATE TABLE description (
+  key serial NOT NULL,
   dataset_key INTEGER NOT NULL,
-  distribution_key INTEGER NOT NULL,
-  reference_id TEXT NOT NULL
+  verbatim_key INTEGER,
+  taxon_id TEXT NOT NULL,
+  category TEXT,
+  description TEXT NOT NULL,
+  language CHAR(3),
+  reference_id TEXT
+) PARTITION BY LIST (dataset_key);
+
+CREATE TABLE media (
+  key serial NOT NULL,
+  dataset_key INTEGER NOT NULL,
+  verbatim_key INTEGER,
+  taxon_id TEXT NOT NULL,
+  url TEXT,
+  type INTEGER NOT NULL,
+  format TEXT,
+  title TEXT,
+  created DATE,
+  creator TEXT,
+  license INTEGER,
+  link TEXT,
+  reference_id TEXT
 ) PARTITION BY LIST (dataset_key);
 
 

@@ -1,25 +1,31 @@
 package org.col.admin.importer.neo.model;
 
-import java.util.Arrays;
-import java.util.Map;
-import java.util.function.Function;
-
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import org.col.api.vocab.NomRelType;
 import org.neo4j.graphdb.RelationshipType;
 
+import java.util.Arrays;
+import java.util.Map;
+import java.util.function.Function;
+
 /**
  *
  */
 public enum RelType implements RelationshipType {
+
+  /**
+   * Taxon/Synonym -> Name
+   */
+  HAS_NAME("name"),
+
   /**
    * Taxon -> Taxon
    */
   PARENT_OF("par"),
   
   /**
-   * Name -> Taxon
+   * Synonym -> Taxon
    * with optional property "homotypic" of any non null value
    * to indicate a homotypic synonym which results in sharing the same homotypic group key at the end
    */
@@ -61,7 +67,11 @@ public enum RelType implements RelationshipType {
   private final static Map<NomRelType, RelType> MAP = Arrays.stream(values())
       .filter(relType -> relType.nomRelType != null)
       .collect(ImmutableMap.toImmutableMap(rt -> rt.nomRelType, Function.identity()));
-  
+
+  public boolean isNameRel(){
+    return nomRelType != null;
+  }
+
   public static RelType from(NomRelType rt) {
     return MAP.get(rt);
   }

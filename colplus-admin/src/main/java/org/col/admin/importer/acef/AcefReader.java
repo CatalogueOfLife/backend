@@ -5,7 +5,6 @@ import java.nio.file.Path;
 
 import org.col.admin.importer.NormalizationFailedException;
 import org.col.csv.CsvReader;
-import org.col.csv.Schema;
 import org.gbif.dwc.terms.AcefTerm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,7 +16,7 @@ public class AcefReader extends CsvReader {
   private static final Logger LOG = LoggerFactory.getLogger(AcefReader.class);
   
   private AcefReader(Path folder) throws IOException {
-    super(folder, "acef");
+    super(folder, "acef", "acef");
     validate();
   }
   
@@ -25,15 +24,11 @@ public class AcefReader extends CsvReader {
     return new AcefReader(folder);
   }
   
-  private void validate() throws NormalizationFailedException.SourceInvalidException {
+  protected void validate() throws NormalizationFailedException.SourceInvalidException {
+    super.validate();
     // allow only ACEF row types
-    for (Schema s : schemas.values()) {
-      if (!(s.rowType instanceof AcefTerm)) {
-        LOG.info("Remove non ACEF rowType {} for file {}", s.rowType, s.file);
-        schemas.remove(s.rowType);
-      }
-    }
-    
+    filterSchemas(rowType -> rowType instanceof AcefTerm);
+
     // mandatory terms.
     // Fail early, if missing ignore file alltogether!!!
     require(AcefTerm.CommonNames, AcefTerm.AcceptedTaxonID);
@@ -52,17 +47,9 @@ public class AcefReader extends CsvReader {
     require(AcefTerm.AcceptedInfraSpecificTaxa, AcefTerm.InfraSpeciesMarker);
     
     // require at least the main accepted species file
-    if (!hasData(AcefTerm.AcceptedSpecies)) {
-      throw new NormalizationFailedException.SourceInvalidException(AcefTerm.AcceptedSpecies + " file required but missing from " + folder);
-    }
-    
-    for (AcefTerm t : AcefTerm.values()) {
-      if (t.isClass()) {
-        if (!hasData(t)) {
-          LOG.info("{} missing from ACEF in {}", t.name(), folder);
-        }
-      }
-    }
+    requireSchema(AcefTerm.AcceptedSpecies);
+  
+    reportMissingSchemas(AcefTerm.class);
   }
   
 }
