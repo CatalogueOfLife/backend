@@ -8,7 +8,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.col.api.search.NameSearchParameter;
 import org.col.api.search.NameSearchRequest;
 
-import static org.col.common.util.CollectionUtils.isEmpty;
 import static org.col.common.util.CollectionUtils.notEmpty;
 
 class FacetsTranslatorFactory {
