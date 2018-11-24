@@ -10,7 +10,7 @@ import java.util.Map;
  */
 public abstract class BucketAggregation extends AbstractAggregation {
 
-  private Map<String, Aggregation> aggs;
+  Map<String, Aggregation> aggs;
 
   public void addNestedAggregation(String label, Aggregation agg) {
     if (aggs == null) {
