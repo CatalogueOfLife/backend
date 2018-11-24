@@ -53,7 +53,7 @@ public class FacetsTranslatorTest {
 
     System.out.println(serialize(ft.translate()));
 
-    assertEquals(FilteredSandboxFacetsTranslator.class, ft.getClass());
+    assertEquals(ShieldedFilterFacetsTranslator.class, ft.getClass());
 
   }
 
@@ -86,7 +86,7 @@ public class FacetsTranslatorTest {
 
     System.out.println(serialize(ft.translate()));
 
-    assertEquals(FilteredSandboxFacetsTranslator.class, ft.getClass());
+    assertEquals(ShieldedFilterFacetsTranslator.class, ft.getClass());
 
   }
 
@@ -116,7 +116,7 @@ public class FacetsTranslatorTest {
 
     System.out.println(serialize(ft.translate()));
 
-    assertEquals(SandboxFacetsTranslator.class, ft.getClass());
+    assertEquals(ShieldedFacetsTranslator.class, ft.getClass());
 
   }
 

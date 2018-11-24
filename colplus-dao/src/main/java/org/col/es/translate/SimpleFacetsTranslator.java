@@ -1,6 +1,6 @@
 package org.col.es.translate;
 
-import java.util.LinkedHashMap;
+import java.util.Collections;
 import java.util.Map;
 
 import org.col.api.search.NameSearchParameter;
@@ -9,9 +9,8 @@ import org.col.es.query.Aggregation;
 import org.col.es.query.TermsAggregation;
 
 /**
- * Edge case. There is just one facet and no filters besides possibly one for the facet itself (i.e. the user has selected one or more
- * values from this facet). We don't need a separate execution context to guarantee we will retrieve all distinct values for the facet
- * (pagination considerations aside).
+ * A simple facets translator that operates within the current execution context. Produced by the FacetsTranslator if there is just one
+ * facet.
  */
 class SimpleFacetsTranslator implements FacetsTranslator {
 
@@ -23,12 +22,9 @@ class SimpleFacetsTranslator implements FacetsTranslator {
 
   @Override
   public Map<String, Aggregation> translate() {
-    Map<String, Aggregation> aggs = new LinkedHashMap<>();
-    for (NameSearchParameter facet : request.getFacets()) {
-      String field = EsFieldLookup.INSTANCE.lookup(facet);
-      aggs.put(getFacetLabel(field), new TermsAggregation(field));
-    }
-    return aggs;
+    NameSearchParameter facet = request.getFacets().iterator().next();
+    String field = EsFieldLookup.INSTANCE.lookup(facet);
+    return Collections.singletonMap(field, new TermsAggregation(field));
   }
 
 }

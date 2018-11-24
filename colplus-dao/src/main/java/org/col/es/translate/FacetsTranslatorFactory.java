@@ -27,29 +27,23 @@ class FacetsTranslatorFactory {
       /*
        * There is just one facet. It doesn't matter if there is a corresponding filter (i.e. the user has selected one or more values from
        * that facet) or whether there are any other filters at all; we simply need to retrieve all distinct values (pagination
-       * considerations aside) for that facet.
-       */
-      return new SimpleFacetsTranslator(request);
-    }
-    if (isEmpty(filters) && StringUtils.isEmpty(request.getQ())) {
-      /*
-       * There are no filters whatsoever. We simply need to retrieve all distinct values (pagination considerations aside) for all facets.
+       * considerations aside) for that facet, given the current execution context.
        */
       return new SimpleFacetsTranslator(request);
     }
     if (facets.containsAll(filters) && StringUtils.isEmpty(request.getQ())) {
       /*
-       * There are one or more active filters, but they all correspond to facets. We need a separate execution context, because in the main
+       * There are multiple active filters, but they all correspond to facets. We need a separate execution context, because in the main
        * query we apply all filters, while we successively disable each of those filters when retrieving the unique values of the facets.
-       * facet. However we don't need to specify a filter constraining the document set over which to aggregate.
+       * However we don't need to specify a filter constraining the document set over which to aggregate.
        */
-      return new SandboxFacetsTranslator(request);
+      return new ShieldedFacetsTranslator(request);
     }
     /*
      * There are multiple facets and one or more filters are not corresponding to any facet. We need a separate execution context and we
      * need to apply all non-facet filters to constrain the document set for that context.
      */
-    return new FilteredSandboxFacetsTranslator(request);
+    return new ShieldedFilterFacetsTranslator(request);
   }
 
 }
