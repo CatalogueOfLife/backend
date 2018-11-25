@@ -9,7 +9,7 @@ interface FacetsTranslator {
   Map<String, Aggregation> translate();
 
   default String getFacetLabel(String field) {
-    return field.toUpperCase() + "_FACET";
+    return field.toUpperCase() + "__FACET";
   }
 
 }
