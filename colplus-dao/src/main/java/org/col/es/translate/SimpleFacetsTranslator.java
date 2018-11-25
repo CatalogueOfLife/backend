@@ -1,6 +1,6 @@
 package org.col.es.translate;
 
-import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.col.api.search.NameSearchParameter;
@@ -9,8 +9,7 @@ import org.col.es.query.Aggregation;
 import org.col.es.query.TermsAggregation;
 
 /**
- * A simple facets translator that operates within the current execution context. Produced by the FacetsTranslator if there is just one
- * facet.
+ * A simple facets translator that operates within the current execution context.
  */
 class SimpleFacetsTranslator implements FacetsTranslator {
 
@@ -22,9 +21,12 @@ class SimpleFacetsTranslator implements FacetsTranslator {
 
   @Override
   public Map<String, Aggregation> translate() {
-    NameSearchParameter facet = request.getFacets().iterator().next();
-    String field = EsFieldLookup.INSTANCE.lookup(facet);
-    return Collections.singletonMap(field, new TermsAggregation(field));
+    Map<String, Aggregation> aggs = new LinkedHashMap<>(request.getFacets().size());
+    for (NameSearchParameter facet : request.getFacets()) {
+      String field = EsFieldLookup.INSTANCE.lookup(facet);
+      aggs.put(field, new TermsAggregation(field));
+    }
+    return aggs;
   }
 
 }
