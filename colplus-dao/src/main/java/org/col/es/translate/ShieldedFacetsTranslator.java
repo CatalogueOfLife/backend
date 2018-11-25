@@ -13,6 +13,7 @@ import org.col.es.query.TermsAggregation;
 import static java.util.Collections.singletonMap;
 
 import static org.col.common.util.CollectionUtils.isEmpty;
+import static org.col.es.translate.FacetsTranslator.getFacetLabel;
 import static org.col.es.translate.NameSearchRequestTranslator.generateQuery;
 
 /**

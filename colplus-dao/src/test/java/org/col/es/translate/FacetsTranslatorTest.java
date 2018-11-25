@@ -4,7 +4,6 @@ import java.util.EnumSet;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
-import org.col.api.model.Page;
 import org.col.api.search.NameSearchRequest;
 import org.col.api.search.NameSearchRequest.SearchContent;
 import org.col.api.vocab.Issue;

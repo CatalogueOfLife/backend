@@ -13,9 +13,10 @@ import org.col.es.query.TermsAggregation;
 
 import static java.util.Collections.singletonMap;
 
-import static org.col.common.util.CollectionUtils.notEmpty;
-import static org.col.es.translate.NameSearchRequestTranslator.generateQuery;
 import static org.col.common.util.CollectionUtils.isEmpty;
+import static org.col.common.util.CollectionUtils.notEmpty;
+import static org.col.es.translate.FacetsTranslator.getFacetLabel;
+import static org.col.es.translate.NameSearchRequestTranslator.generateQuery;
 
 /**
  * A facets translator executing within a execution context separate from the one produced by the main query. An extra filter is applied to

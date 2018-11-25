@@ -7,6 +7,7 @@ import org.col.api.search.NameSearchParameter;
 import org.col.api.search.NameSearchRequest;
 import org.col.es.query.Aggregation;
 import org.col.es.query.TermsAggregation;
+import static org.col.es.translate.FacetsTranslator.*;
 
 /**
  * A simple facets translator that operates within the current execution context.
@@ -24,7 +25,7 @@ class SimpleFacetsTranslator implements FacetsTranslator {
     Map<String, Aggregation> aggs = new LinkedHashMap<>(request.getFacets().size());
     for (NameSearchParameter facet : request.getFacets()) {
       String field = EsFieldLookup.INSTANCE.lookup(facet);
-      aggs.put(field, new TermsAggregation(field));
+      aggs.put(getBucketsLabel(field), new TermsAggregation(field));
     }
     return aggs;
   }

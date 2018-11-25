@@ -46,7 +46,7 @@ public class NameSearchRequestTranslatorTest {
     nsr.addFacet(STATUS);
 
     nsr.addFilter(DATASET_KEY, 1000);
-    nsr.setQ("Caret");
+    nsr.setQ("c");
 
     NameSearchRequestTranslator t = new NameSearchRequestTranslator(nsr, new Page());
 
@@ -64,8 +64,39 @@ public class NameSearchRequestTranslatorTest {
     nsr.addFacet(RANK);
     nsr.addFacet(STATUS);
 
-    nsr.setQ("Caret");
+    nsr.setQ("c");
 
+    NameSearchRequestTranslator t = new NameSearchRequestTranslator(nsr, new Page());
+
+    System.out.println(serialize(t.translate()));
+
+  }
+
+  @Test
+  public void test4() {
+
+    NameSearchRequest nsr = new NameSearchRequest();
+
+    nsr.addFacet(ISSUE);
+    nsr.addFacet(DATASET_KEY);
+    nsr.addFacet(RANK);
+    nsr.addFacet(STATUS);
+
+    NameSearchRequestTranslator t = new NameSearchRequestTranslator(nsr, new Page());
+
+    System.out.println(serialize(t.translate()));
+
+  }
+
+  @Test
+  public void test5() {
+
+    NameSearchRequest nsr = new NameSearchRequest();
+
+    nsr.addFacet(RANK);
+    
+    nsr.addFilter(DATASET_KEY, 1000);
+    
     NameSearchRequestTranslator t = new NameSearchRequestTranslator(nsr, new Page());
 
     System.out.println(serialize(t.translate()));
