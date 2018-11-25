@@ -1,5 +1,6 @@
 package org.col.es.translate;
 
+import java.util.Collections;
 import java.util.Set;
 
 import com.google.common.base.Preconditions;
@@ -8,7 +9,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.col.api.search.NameSearchParameter;
 import org.col.api.search.NameSearchRequest;
 
-import static org.col.common.util.CollectionUtils.*;
+import static org.col.common.util.CollectionUtils.isEmpty;
+import static org.col.common.util.CollectionUtils.notEmpty;
 
 /**
  * Produced a FacetsTranslator instance based on the state of the NameSearchRequest. Don't directly instantiate a FacetsTranslator class b/c
@@ -25,7 +27,7 @@ class FacetsTranslatorFactory {
   FacetsTranslator createTranslator() {
     Preconditions.checkArgument(notEmpty(request.getFacets()), "Should have verified presence of facets first");
     Set<NameSearchParameter> facets = request.getFacets();
-    Set<NameSearchParameter> filters = request.getFilters().keySet();
+    Set<NameSearchParameter> filters = request.getFilters() == null ? Collections.emptySet() : request.getFilters().keySet();
     if (facets.size() == 1) {
       /*
        * There is just one facet. It doesn't matter if there is a corresponding filter (i.e. the user has selected one or more values from
@@ -43,8 +45,8 @@ class FacetsTranslatorFactory {
     if (facets.containsAll(filters) && StringUtils.isEmpty(request.getQ())) {
       /*
        * There are multiple active filters, but they all correspond to facets. We need a separate execution context, because in the main
-       * query we apply all filters at the same time, while we must successively disable each filter when dealing with the corresponding facet.
-       * However we don't need to specify an over-arching filter for the new execution context.
+       * query we apply all filters at the same time, while we must successively disable each filter when dealing with the corresponding
+       * facet. However we don't need to specify an over-arching filter for the new execution context.
        */
       return new ShieldedFacetsTranslator(request);
     }

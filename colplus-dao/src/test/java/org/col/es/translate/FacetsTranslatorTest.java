@@ -4,6 +4,7 @@ import java.util.EnumSet;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
+import org.col.api.model.Page;
 import org.col.api.search.NameSearchRequest;
 import org.col.api.search.NameSearchRequest.SearchContent;
 import org.col.api.vocab.Issue;
@@ -117,6 +118,39 @@ public class FacetsTranslatorTest {
     System.out.println(serialize(ft.translate()));
 
     assertEquals(ShieldedFacetsTranslator.class, ft.getClass());
+
+  }
+
+  @Test
+  public void test4() {
+
+    NameSearchRequest nsr = new NameSearchRequest();
+
+    // Add facets + corresponding filters
+
+    nsr.addFacet(ISSUE);
+    nsr.addFacet(DATASET_KEY);
+    nsr.addFacet(RANK);
+    nsr.addFacet(STATUS);
+
+    nsr.addFilter(ISSUE, Issue.ACCEPTED_ID_INVALID);
+    nsr.addFilter(ISSUE, Issue.BASIONYM_ID_INVALID);
+    nsr.addFilter(ISSUE, Issue.CHAINED_SYNONYM);
+
+    // Just one filter corresponding to a facet. For that facet, the aggregation should collapse into a simple terms aggregation, while for
+    // the others a filter aggregation should be generated.
+
+    // Add non-facet filters
+    nsr.addFilter(NAME_ID, "ABCDEFG");
+    nsr.setQ("anim");
+    nsr.setContent(EnumSet.of(SearchContent.AUTHORSHIP, SearchContent.VERNACULAR_NAME));
+
+    FacetsTranslatorFactory ftt = new FacetsTranslatorFactory(nsr);
+    FacetsTranslator ft = ftt.createTranslator();
+
+    System.out.println(serialize(ft.translate()));
+
+    assertEquals(ShieldedFilterFacetsTranslator.class, ft.getClass());
 
   }
 
