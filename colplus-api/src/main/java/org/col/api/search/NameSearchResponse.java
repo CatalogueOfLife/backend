@@ -39,7 +39,6 @@ public class NameSearchResponse extends ResultPage<NameUsageWrapper<?>> {
 
   @Override
   public int hashCode() {
-
     return Objects.hash(super.hashCode(), facets);
   }
 }

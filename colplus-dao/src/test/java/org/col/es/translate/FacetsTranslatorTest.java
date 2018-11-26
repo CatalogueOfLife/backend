@@ -53,7 +53,7 @@ public class FacetsTranslatorTest {
 
     System.out.println(serialize(ft.translate()));
 
-    assertEquals(FilteredSandboxFacetsTranslator.class, ft.getClass());
+    assertEquals(ShieldedFilterFacetsTranslator.class, ft.getClass());
 
   }
 
@@ -86,7 +86,7 @@ public class FacetsTranslatorTest {
 
     System.out.println(serialize(ft.translate()));
 
-    assertEquals(FilteredSandboxFacetsTranslator.class, ft.getClass());
+    assertEquals(ShieldedFilterFacetsTranslator.class, ft.getClass());
 
   }
 
@@ -116,9 +116,62 @@ public class FacetsTranslatorTest {
 
     System.out.println(serialize(ft.translate()));
 
-    assertEquals(SandboxFacetsTranslator.class, ft.getClass());
+    assertEquals(ShieldedFacetsTranslator.class, ft.getClass());
 
   }
+
+  @Test
+  public void test4() {
+
+    NameSearchRequest nsr = new NameSearchRequest();
+
+    // Add facets + corresponding filters
+
+    nsr.addFacet(ISSUE);
+    nsr.addFacet(DATASET_KEY);
+    nsr.addFacet(RANK);
+    nsr.addFacet(STATUS);
+
+    nsr.addFilter(ISSUE, Issue.ACCEPTED_ID_INVALID);
+    nsr.addFilter(ISSUE, Issue.BASIONYM_ID_INVALID);
+    nsr.addFilter(ISSUE, Issue.CHAINED_SYNONYM);
+
+    // Just one filter corresponding to a facet. For that facet, the aggregation should collapse into a simple terms aggregation, while for
+    // the others a filter aggregation should be generated.
+
+    // Add non-facet filters
+    nsr.addFilter(NAME_ID, "ABCDEFG");
+    nsr.setQ("anim");
+    nsr.setContent(EnumSet.of(SearchContent.AUTHORSHIP, SearchContent.VERNACULAR_NAME));
+
+    FacetsTranslatorFactory ftt = new FacetsTranslatorFactory(nsr);
+    FacetsTranslator ft = ftt.createTranslator();
+
+    System.out.println(serialize(ft.translate()));
+
+    assertEquals(ShieldedFilterFacetsTranslator.class, ft.getClass());
+
+  }
+  
+  @Test
+  public void test5() {
+
+    NameSearchRequest nsr = new NameSearchRequest();
+
+    nsr.addFacet(ISSUE);
+    nsr.addFacet(DATASET_KEY);
+    nsr.addFacet(RANK);
+    nsr.addFacet(STATUS);
+
+    FacetsTranslatorFactory ftt = new FacetsTranslatorFactory(nsr);
+    FacetsTranslator ft = ftt.createTranslator();
+
+    System.out.println(serialize(ft.translate()));
+
+    assertEquals(SimpleFacetsTranslator.class, ft.getClass());
+
+  }
+
 
   private static String serialize(Object obj) {
     try {

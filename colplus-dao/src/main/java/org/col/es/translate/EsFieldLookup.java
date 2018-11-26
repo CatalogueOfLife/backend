@@ -29,8 +29,8 @@ public class EsFieldLookup extends EnumMap<NameSearchParameter, String[]> {
     putSingle(TYPE, "type");
   }
 
-  private void putSingle(NameSearchParameter key, String val) {
-    put(key, new String[] {val});
+  private void putSingle(NameSearchParameter param, String field) {
+    put(param, new String[] {field});
   }
 
   public String lookup(NameSearchParameter param) {

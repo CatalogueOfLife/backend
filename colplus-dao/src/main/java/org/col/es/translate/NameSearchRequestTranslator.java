@@ -21,7 +21,7 @@ public class NameSearchRequestTranslator {
    * won't be any documents to calculate scores for. In these cases not wrapping the basic query into a ConstantScoreQuery makes the
    * resulting JSON easier to read.
    */
-  static Query generateQuery(NameSearchRequest request, boolean constantScore) {
+  static Query generateQuery(NameSearchRequest request) {
     Query query1 = new FiltersTranslator(request).translate();
     Query query2 = new QTranslator(request).translate();
     Query query = null;
@@ -33,9 +33,6 @@ public class NameSearchRequestTranslator {
       }
     } else if (query2 != null) {
       query = query2;
-    }
-    if (query != null && constantScore) {
-      query = new ConstantScoreQuery(query);
     }
     return query;
   }
@@ -52,9 +49,12 @@ public class NameSearchRequestTranslator {
     EsSearchRequest es = new EsSearchRequest();
     es.setFrom(page.getOffset());
     es.setSize(page.getLimit());
-    es.setQuery(generateQuery(request, true));
+    Query query = generateQuery(request);
+    if (query != null) {
+      es.setQuery(new ConstantScoreQuery(query));
+    }
     es.setSort(new SortByTranslator(request).translate());
-    if(notEmpty(request.getFacets())) {
+    if (notEmpty(request.getFacets())) {
       FacetsTranslator ft = new FacetsTranslatorFactory(request).createTranslator();
       es.setAggregations(ft.translate());
     }

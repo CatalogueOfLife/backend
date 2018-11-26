@@ -11,7 +11,7 @@ import org.col.es.query.AutoCompleteQuery;
 import org.col.es.query.BoolQuery;
 import org.col.es.query.Query;
 
-/*
+/**
  * Translates the "q" request parameter into an Elasticsearch query.
  */
 class QTranslator {
