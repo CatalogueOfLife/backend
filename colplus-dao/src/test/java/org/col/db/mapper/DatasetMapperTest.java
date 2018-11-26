@@ -51,7 +51,8 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
     d.setHomepage(URI.create("https://www.gbif.org/dataset/" + d.getGbifKey()));
     d.setNotes("my notes");
     d.setCode(NomCode.ZOOLOGICAL);
-    d.setOrganisation("my org");
+    d.getOrganisations().add("my org");
+    d.getOrganisations().add("your org");
     return d;
   }
   
@@ -301,7 +302,7 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
     if (author != null) {
       ds.setAuthorsAndEditors(Lists.newArrayList(author.split(";")));
     }
-    ds.setOrganisation(organisation);
+    ds.getOrganisations().add(organisation);
     ds.setDescription(description);
     ds.setType(DatasetType.GLOBAL);
     ds.setContributesTo(Catalogue.PCAT);

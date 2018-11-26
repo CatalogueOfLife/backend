@@ -25,7 +25,7 @@ public class ColSource implements SourceMetadata, IntKey {
   @NotBlank
   private String alias;
   private String description;
-  private String organisation;
+  private List<String> organisations;
   private String contactPerson;
   private List<String> authorsAndEditors = Lists.newArrayList();
   private String version;
@@ -95,14 +95,12 @@ public class ColSource implements SourceMetadata, IntKey {
     this.description = description;
   }
   
-  @Override
-  public String getOrganisation() {
-    return organisation;
+  public List<String> getOrganisations() {
+    return organisations;
   }
   
-  @Override
-  public void setOrganisation(String organisation) {
-    this.organisation = organisation;
+  public void setOrganisations(List<String> organisations) {
+    this.organisations = organisations;
   }
   
   @Override
@@ -283,7 +281,7 @@ public class ColSource implements SourceMetadata, IntKey {
         Objects.equals(title, colSource.title) &&
         Objects.equals(alias, colSource.alias) &&
         Objects.equals(description, colSource.description) &&
-        Objects.equals(organisation, colSource.organisation) &&
+        Objects.equals(organisations, colSource.organisations) &&
         Objects.equals(contactPerson, colSource.contactPerson) &&
         Objects.equals(authorsAndEditors, colSource.authorsAndEditors) &&
         Objects.equals(version, colSource.version) &&
@@ -308,7 +306,7 @@ public class ColSource implements SourceMetadata, IntKey {
   @Override
   public int hashCode() {
     
-    return Objects.hash(key, datasetKey, title, alias, description, organisation, contactPerson, authorsAndEditors, version, released, homepage, group, coverage, citation, livingSpeciesCount, livingInfraspecificCount, extinctSpeciesCount, extinctInfraspecificCount, synonymsCount, vernacularsCount, namesCount, created, confidence, completeness, notes);
+    return Objects.hash(key, datasetKey, title, alias, description, organisations, contactPerson, authorsAndEditors, version, released, homepage, group, coverage, citation, livingSpeciesCount, livingInfraspecificCount, extinctSpeciesCount, extinctInfraspecificCount, synonymsCount, vernacularsCount, namesCount, created, confidence, completeness, notes);
   }
   
   @Override

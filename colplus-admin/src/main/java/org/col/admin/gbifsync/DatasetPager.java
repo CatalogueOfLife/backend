@@ -145,7 +145,7 @@ public class DatasetPager {
     Dataset d = new Dataset();
     d.setGbifKey(g.key);
     d.setGbifPublisherKey(g.publishingOrganizationKey);
-    d.setOrganisation(publisher(g.publishingOrganizationKey));
+    d.getOrganisations().add(publisher(g.publishingOrganizationKey));
     d.setTitle(g.title);
     d.setDescription(g.description);
     Optional<GEndpoint> dwca = g.endpoints.stream().filter(e -> e.type.equalsIgnoreCase("DWC_ARCHIVE")).findFirst();
