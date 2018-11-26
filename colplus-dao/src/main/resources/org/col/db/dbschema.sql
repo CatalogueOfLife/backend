@@ -141,7 +141,7 @@ CREATE OR REPLACE FUNCTION dataset_doc_update() RETURNS trigger AS $$
 BEGIN
     NEW.doc :=
       setweight(to_tsvector('simple2', coalesce(NEW.title,'')), 'A') ||
-      setweight(to_tsvector('simple2', coalesce(NEW.organisation,'')), 'B') ||
+      setweight(to_tsvector('simple2', coalesce(array_to_string(NEW.organisations, '|'), '')), 'B') ||
       setweight(to_tsvector('simple2', coalesce(NEW.description,'')), 'C') ||
       setweight(to_tsvector('simple2', coalesce(NEW.contact_person,'')), 'C') ||
       setweight(to_tsvector('simple2', coalesce(array_to_string(NEW.authors_and_editors, '|'), '')), 'C') ||
