@@ -8,12 +8,5 @@ public interface FacetsTranslator {
 
   Map<String, Aggregation> translate();
   
-  static String getFacetLabel(String field) {
-    return field + "Facet";
-  }
-  
-  static String getBucketsLabel(String field) {
-    return field + "Buckets";
-  }
 
 }

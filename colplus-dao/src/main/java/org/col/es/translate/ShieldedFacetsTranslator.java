@@ -6,14 +6,17 @@ import org.col.api.search.NameSearchParameter;
 import org.col.api.search.NameSearchRequest;
 import org.col.es.query.Aggregation;
 import org.col.es.query.FacetAggregation;
+import org.col.es.query.FilterAggregation;
 import org.col.es.query.GlobalAggregation;
+import org.col.es.query.MatchAllQuery;
 import org.col.es.query.Query;
-import org.col.es.query.TermsAggregation;
 
 import static java.util.Collections.singletonMap;
 
 import static org.col.common.util.CollectionUtils.isEmpty;
-import static org.col.es.translate.FacetsTranslator.getFacetLabel;
+import static org.col.es.translate.AggregationLabelProvider.getContextFilterLabel;
+import static org.col.es.translate.AggregationLabelProvider.getContextLabel;
+import static org.col.es.translate.AggregationLabelProvider.getFacetLabel;
 import static org.col.es.translate.NameSearchRequestTranslator.generateQuery;
 
 /**
@@ -30,19 +33,18 @@ public class ShieldedFacetsTranslator implements FacetsTranslator {
 
   public Map<String, Aggregation> translate() {
     NameSearchRequest facetFiltersOnly = request.copy();
-    GlobalAggregation main = new GlobalAggregation();
+    GlobalAggregation context = new GlobalAggregation();
+    FilterAggregation contextFilter = new FilterAggregation(MatchAllQuery.INSTANCE);
+    context.setNestedAggregations(singletonMap(getContextFilterLabel(), contextFilter));
     for (NameSearchParameter facet : facetFiltersOnly.getFacets()) {
       String field = EsFieldLookup.INSTANCE.lookup(facet);
       NameSearchRequest copy = facetFiltersOnly.copy();
       copy.removeFilter(facet);
-      if (isEmpty(copy.getFilters())) {
-        main.addNestedAggregation(getFacetLabel(field), new TermsAggregation(field));
-      } else {
-        Query facetFilter = generateQuery(copy);
-        main.addNestedAggregation(getFacetLabel(field), new FacetAggregation(field, facetFilter));
-      }
+      Query query = isEmpty(copy.getFilters()) ? MatchAllQuery.INSTANCE : generateQuery(copy);
+      Aggregation agg = new FacetAggregation(field, query);
+      contextFilter.addNestedAggregation(getFacetLabel(facet), agg);
     }
-    return singletonMap("_ALL_", main);
+    return singletonMap(getContextLabel(), context);
   }
 
 }

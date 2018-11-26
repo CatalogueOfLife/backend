@@ -152,6 +152,26 @@ public class FacetsTranslatorTest {
     assertEquals(ShieldedFilterFacetsTranslator.class, ft.getClass());
 
   }
+  
+  @Test
+  public void test5() {
+
+    NameSearchRequest nsr = new NameSearchRequest();
+
+    nsr.addFacet(ISSUE);
+    nsr.addFacet(DATASET_KEY);
+    nsr.addFacet(RANK);
+    nsr.addFacet(STATUS);
+
+    FacetsTranslatorFactory ftt = new FacetsTranslatorFactory(nsr);
+    FacetsTranslator ft = ftt.createTranslator();
+
+    System.out.println(serialize(ft.translate()));
+
+    assertEquals(SimpleFacetsTranslator.class, ft.getClass());
+
+  }
+
 
   private static String serialize(Object obj) {
     try {

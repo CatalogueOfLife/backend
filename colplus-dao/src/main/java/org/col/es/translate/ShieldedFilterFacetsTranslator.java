@@ -8,14 +8,16 @@ import org.col.es.query.Aggregation;
 import org.col.es.query.FacetAggregation;
 import org.col.es.query.FilterAggregation;
 import org.col.es.query.GlobalAggregation;
+import org.col.es.query.MatchAllQuery;
 import org.col.es.query.Query;
-import org.col.es.query.TermsAggregation;
 
 import static java.util.Collections.singletonMap;
 
 import static org.col.common.util.CollectionUtils.isEmpty;
 import static org.col.common.util.CollectionUtils.notEmpty;
-import static org.col.es.translate.FacetsTranslator.getFacetLabel;
+import static org.col.es.translate.AggregationLabelProvider.getContextFilterLabel;
+import static org.col.es.translate.AggregationLabelProvider.getContextLabel;
+import static org.col.es.translate.AggregationLabelProvider.getFacetLabel;
 import static org.col.es.translate.NameSearchRequestTranslator.generateQuery;
 
 /**
@@ -40,22 +42,23 @@ class ShieldedFilterFacetsTranslator implements FacetsTranslator {
       otherFiltersOnly.getFilters().keySet().removeAll(request.getFacets());
     }
     facetFiltersOnly.setQ(null);
-    GlobalAggregation main = new GlobalAggregation();
-    Query contextFilter = generateQuery(otherFiltersOnly);
-    FilterAggregation context = new FilterAggregation(contextFilter);
-    main.setNestedAggregations(singletonMap("_CONTEXT_", context));
+    GlobalAggregation context = new GlobalAggregation();
+    Query query = generateQuery(otherFiltersOnly);
+    FilterAggregation contextFilter = new FilterAggregation(query);
+    context.setNestedAggregations(singletonMap(getContextFilterLabel(), contextFilter));
     for (NameSearchParameter facet : facetFiltersOnly.getFacets()) {
       String field = EsFieldLookup.INSTANCE.lookup(facet);
       NameSearchRequest copy = facetFiltersOnly.copy();
       copy.removeFilter(facet);
-      if (isEmpty(copy.getFilters())) {
-        context.addNestedAggregation(getFacetLabel(field), new TermsAggregation(field));
-      } else {
-        Query facetFilter = generateQuery(copy);
-        context.addNestedAggregation(getFacetLabel(field), new FacetAggregation(field, facetFilter));
-      }
+      /*
+       * NB When no filters are left, we could as well use a simple TermsAggregation, but that would make the query response less uniform,
+       * so harder to parse.
+       */
+      query = isEmpty(copy.getFilters()) ? MatchAllQuery.INSTANCE : generateQuery(copy);
+      Aggregation agg = new FacetAggregation(field, query);
+      contextFilter.addNestedAggregation(getFacetLabel(facet), agg);
     }
-    return singletonMap("_ALL_", main);
+    return singletonMap(getContextLabel(), context);
   }
 
 }

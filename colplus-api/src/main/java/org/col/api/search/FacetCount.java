@@ -1,13 +1,14 @@
 package org.col.api.search;
 
 public class FacetCount {
+  
   private String value;
-  private Integer count;
+  private int count;
   
   public FacetCount() {
   }
   
-  public FacetCount(String value, Integer count) {
+  public FacetCount(String value, int count) {
     this.value = value;
     this.count = count;
   }
@@ -20,11 +21,11 @@ public class FacetCount {
     this.value = value;
   }
   
-  public Integer getCount() {
+  public int getCount() {
     return count;
   }
   
-  public void setCount(Integer count) {
+  public void setCount(int count) {
     this.count = count;
   }
 }
