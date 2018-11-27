@@ -16,7 +16,6 @@ import static org.col.api.search.NameSearchParameter.ISSUE;
 import static org.col.api.search.NameSearchParameter.NAME_ID;
 import static org.col.api.search.NameSearchParameter.RANK;
 import static org.col.api.search.NameSearchParameter.STATUS;
-import static org.junit.Assert.assertEquals;
 
 public class FacetsTranslatorTest {
 
@@ -48,12 +47,9 @@ public class FacetsTranslatorTest {
     nsr.setQ("anim");
     nsr.setContent(EnumSet.of(SearchContent.AUTHORSHIP, SearchContent.VERNACULAR_NAME));
 
-    FacetsTranslatorFactory ftt = new FacetsTranslatorFactory(nsr);
-    FacetsTranslator ft = ftt.createTranslator();
+    FacetsTranslator ft = new FacetsTranslator(nsr);
 
     System.out.println(serialize(ft.translate()));
-
-    assertEquals(ShieldedFilterFacetsTranslator.class, ft.getClass());
 
   }
 
@@ -81,12 +77,9 @@ public class FacetsTranslatorTest {
     nsr.setQ("anim");
     nsr.setContent(EnumSet.of(SearchContent.AUTHORSHIP, SearchContent.VERNACULAR_NAME));
 
-    FacetsTranslatorFactory ftt = new FacetsTranslatorFactory(nsr);
-    FacetsTranslator ft = ftt.createTranslator();
+    FacetsTranslator ft = new FacetsTranslator(nsr);
 
     System.out.println(serialize(ft.translate()));
-
-    assertEquals(ShieldedFilterFacetsTranslator.class, ft.getClass());
 
   }
 
@@ -105,18 +98,15 @@ public class FacetsTranslatorTest {
     nsr.addFilter(ISSUE, Issue.ACCEPTED_ID_INVALID);
     nsr.addFilter(ISSUE, Issue.BASIONYM_ID_INVALID);
     nsr.addFilter(ISSUE, Issue.CHAINED_SYNONYM);
-    
+
     nsr.addFilter(DATASET_KEY, 10);
     nsr.addFilter(DATASET_KEY, 12);
 
     // No non-facet filters!
 
-    FacetsTranslatorFactory ftt = new FacetsTranslatorFactory(nsr);
-    FacetsTranslator ft = ftt.createTranslator();
+    FacetsTranslator ft = new FacetsTranslator(nsr);
 
     System.out.println(serialize(ft.translate()));
-
-    assertEquals(ShieldedFacetsTranslator.class, ft.getClass());
 
   }
 
@@ -144,15 +134,12 @@ public class FacetsTranslatorTest {
     nsr.setQ("anim");
     nsr.setContent(EnumSet.of(SearchContent.AUTHORSHIP, SearchContent.VERNACULAR_NAME));
 
-    FacetsTranslatorFactory ftt = new FacetsTranslatorFactory(nsr);
-    FacetsTranslator ft = ftt.createTranslator();
+    FacetsTranslator ft = new FacetsTranslator(nsr);
 
     System.out.println(serialize(ft.translate()));
 
-    assertEquals(ShieldedFilterFacetsTranslator.class, ft.getClass());
-
   }
-  
+
   @Test
   public void test5() {
 
@@ -163,15 +150,11 @@ public class FacetsTranslatorTest {
     nsr.addFacet(RANK);
     nsr.addFacet(STATUS);
 
-    FacetsTranslatorFactory ftt = new FacetsTranslatorFactory(nsr);
-    FacetsTranslator ft = ftt.createTranslator();
+    FacetsTranslator ft = new FacetsTranslator(nsr);
 
     System.out.println(serialize(ft.translate()));
 
-    assertEquals(SimpleFacetsTranslator.class, ft.getClass());
-
   }
-
 
   private static String serialize(Object obj) {
     try {

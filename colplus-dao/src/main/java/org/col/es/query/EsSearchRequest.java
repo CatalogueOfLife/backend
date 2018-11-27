@@ -19,10 +19,14 @@ public class EsSearchRequest {
   }
 
   private Integer size;
+
   private Integer from;
+
   private List<SortField> sort;
+
   private Query query;
-  @JsonProperty("aggs") // "aggregations" actually also allowed but "aggs" more idiomatic
+
+  @JsonProperty("aggs")
   private Map<String, Aggregation> aggregations;
 
   public void addAggregation(String name, Aggregation agg) {

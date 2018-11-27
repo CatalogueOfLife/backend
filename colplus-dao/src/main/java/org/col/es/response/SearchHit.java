@@ -1,4 +1,4 @@
-package org.col.es;
+package org.col.es.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

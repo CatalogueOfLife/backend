@@ -5,7 +5,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.col.es.translate.AggregationLabelProvider;
 
 /**
- * This get wrapped arround the facets within the response if we used a ShieldedFacetsTranslator or a SieldedFilterFacetsTranslator.
+ * An extra layer between the outer "aggregations" field in the ES search response and the facets, arising from the fact that we use a
+ * global filter aggregation to shrink the document set over which the facets aggregate.
  */
 public class ContextFilterWrapper {
 
@@ -13,7 +14,7 @@ public class ContextFilterWrapper {
   private int docCount;
 
   @JsonProperty(AggregationLabelProvider.CONTEXT_FILTER)
-  private FacetsContainer facetsContainer;
+  private EsFacets facetsContainer;
 
   public int getDocCount() {
     return docCount;
@@ -23,11 +24,11 @@ public class ContextFilterWrapper {
     this.docCount = docCount;
   }
 
-  public FacetsContainer getFacetsContainer() {
+  public EsFacets getFacetsContainer() {
     return facetsContainer;
   }
 
-  public void setFacetsContainer(FacetsContainer facetsContainer) {
+  public void setFacetsContainer(EsFacets facetsContainer) {
     this.facetsContainer = facetsContainer;
   }
 

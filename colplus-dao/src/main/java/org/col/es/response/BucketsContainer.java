@@ -1,14 +1,16 @@
 package org.col.es.response;
 
+import java.util.List;
+
 public class BucketsContainer {
 
-  Bucket[] buckets;
+  private List<Bucket> buckets;
 
-  public Bucket[] getBuckets() {
+  public List<Bucket> getBuckets() {
     return buckets;
   }
 
-  public void setBuckets(Bucket[] buckets) {
+  public void setBuckets(List<Bucket> buckets) {
     this.buckets = buckets;
   }
 
