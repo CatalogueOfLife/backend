@@ -1,10 +1,6 @@
 
--- this will remove all existing tables
-DROP SCHEMA public CASCADE;
-CREATE SCHEMA public;
-
+-- required extensions
 CREATE EXTENSION IF NOT EXISTS hstore;
-
 CREATE EXTENSION IF NOT EXISTS unaccent;
 
 -- use unaccent by default for all simple search

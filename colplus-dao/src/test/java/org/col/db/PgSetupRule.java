@@ -3,6 +3,7 @@ package org.col.db;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
@@ -110,8 +111,13 @@ public class PgSetupRule extends ExternalResource {
   }
   
   public static void initDb(PgConfig cfg) throws Exception {
-    try (Connection con = cfg.connect()) {
+    try (Connection con = cfg.connect();
+         Statement st = con.createStatement()
+    ) {
       LOG.info("Init empty database schema");
+      st.execute("DROP SCHEMA public CASCADE");
+      st.execute("CREATE SCHEMA public");
+      
       ScriptRunner runner = PgConfig.scriptRunner(con);
       runner.runScript(Resources.getResourceAsReader(PgConfig.SCHEMA_FILE));
       con.commit();

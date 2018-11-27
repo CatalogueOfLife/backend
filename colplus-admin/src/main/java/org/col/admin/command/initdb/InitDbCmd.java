@@ -21,7 +21,6 @@ import org.col.admin.config.AdminServerConfig;
 import org.col.api.vocab.Datasets;
 import org.col.db.MybatisFactory;
 import org.col.db.PgConfig;
-import org.col.db.PgDbConfig;
 import org.col.db.mapper.DatasetPartitionMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,16 +70,6 @@ public class InitDbCmd extends ConfiguredCommand<AdminServerConfig> {
       
       LOG.info("Create new database {}", cfg.db.database);
       st.execute("CREATE DATABASE " + cfg.db.database + " WITH OWNER " + cfg.db.user);
-    }
-  
-    PgDbConfig colplusAdminUser = new PgDbConfig(cfg.db);
-    colplusAdminUser.user = cfg.adminDb.user;
-    colplusAdminUser.password = cfg.adminDb.password;
-    
-    try (Connection con = cfg.db.connect(colplusAdminUser);
-         Statement st = con.createStatement()
-    ) {
-      st.execute("ALTER SCHEMA public OWNER TO " + cfg.db.user);
     }
     
     try (Connection con = cfg.db.connect()) {
