@@ -87,7 +87,7 @@ class NameSearchResponseTransfer {
       } else if (param.type().isEnum()) {
         facets.put(param, createEnumBuckets(esFacet, param));
       } else {
-        throw new AssertionError("Unexpected type of NameSearchParameter");
+        throw new AssertionError("Unexpected parameter type: " + param.type());
       }
     }
   }

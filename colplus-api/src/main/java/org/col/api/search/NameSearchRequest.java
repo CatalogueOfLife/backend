@@ -18,11 +18,6 @@ import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.StringUtils;
 import org.col.api.util.VocabularyUtils;
 
-/*
- * Making this class extends MultiValuedHashMap causes Jackson to ony serialize the superclass (MultiValuedHashMap), not the properties of
- * NameSearchRequest itself (sortBy, q, facets, etc). Could probably be solved using a JsonSerializer, but composition feels more natural
- * than inheritance: getSortBy(), getQ(), getFacets(), getFilters().
- */
 public class NameSearchRequest {
 
   public static enum SearchContent {
@@ -64,7 +59,6 @@ public class NameSearchRequest {
     if (filters != null) {
       copy.filters = new MultivaluedHashMap<>();
       copy.filters.putAll(filters);
-      // Can't use copy constructor for some reason. Works in Eclipse, but not with maven build
     }
     if (facets != null) {
       copy.facets = EnumSet.copyOf(facets);
@@ -78,7 +72,9 @@ public class NameSearchRequest {
   }
 
   /**
-   * Extracts all query parameters that match a NameSearchParameter and registers them as query filters.
+   * Extracts all query parameters that match a NameSearchParameter and registers them as query filters. Values of query parameters that are
+   * associated with an enum type can be supplied using the name of the enum constant or using the ordinal of the enum constant. In both
+   * cases it is the ordinal that will be registered as the query filter.
    */
   public void addQueryParams(MultivaluedMap<String, String> params) {
     for (Map.Entry<String, List<String>> param : params.entrySet()) {
@@ -102,31 +98,45 @@ public class NameSearchRequest {
       add(param, NULL_VALUE);
     } else if (value.equals(NOT_NULL_VALUE)) {
       add(param, NOT_NULL_VALUE);
-    } else if (param.isLegalValue(value)) {
+    } else if (param.type() == String.class) {
       add(param, value);
+    } else if (param.type() == Integer.class) {
+      try {
+        Integer.valueOf(value);
+        add(param, value);
+      } catch (NumberFormatException e) {
+        throw illegalValueForParameter(param, value);
+      }
+    } else if (param.type().isEnum()) {
+      try {
+        int i = Integer.parseInt(value);
+        if (i < 0 || i >= param.type().getEnumConstants().length) {
+          throw illegalValueForParameter(param, value);
+        }
+        add(param, value);
+      } catch (NumberFormatException e) {
+        @SuppressWarnings("unchecked")
+        Enum<?> c = VocabularyUtils.lookupEnum(value, (Class<? extends Enum<?>>) param.type());
+        add(param, String.valueOf(c.ordinal()));
+      }
     } else {
-      String err = String.format("Illegal value for parameter %s: %s", param, value);
-      throw new IllegalArgumentException(err);
+      throw new AssertionError("Unexpected parameter type: " + param.type());
     }
   }
 
-  public void addFilter(NameSearchParameter param, Enum<?> value) {
-    Preconditions.checkNotNull(value, "Null values not allowed for non-strings");
-    if (value.getClass() != param.type()) {
-      String err = String.format("Incompatible types: %s, %s", param.type().getSimpleName(), value.getClass().getSimpleName());
-      throw new IllegalArgumentException(err);
-    }
-    add(param, value.name());
+  private static IllegalArgumentException illegalValueForParameter(NameSearchParameter param, String value) {
+    String err = String.format("Illegal value for parameter %s: %s", param, value);
+    return new IllegalArgumentException(err);
   }
 
   public void addFilter(NameSearchParameter param, Integer value) {
     Preconditions.checkNotNull(value, "Null values not allowed for non-strings");
-    if (param.type() == Integer.class || param.type() == String.class) {
-      add(param, value.toString());
-    } else {
-      String err = String.format("Incompatible types: %s, %s", param.type().getSimpleName(), value.getClass().getSimpleName());
-      throw new IllegalArgumentException(err);
-    }
+    addFilter(param, value.toString());
+  }
+
+  public void addFilter(NameSearchParameter param, Enum<?> value) {
+    Preconditions.checkNotNull(value, "Null values not allowed for non-strings");
+    addFilter(param, String.valueOf(value.ordinal()));
   }
 
   public List<String> getFilterValue(NameSearchParameter param) {

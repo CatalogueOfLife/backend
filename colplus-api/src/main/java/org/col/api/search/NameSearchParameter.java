@@ -1,6 +1,5 @@
 package org.col.api.search;
 
-import org.col.api.util.VocabularyUtils;
 import org.col.api.vocab.Issue;
 import org.col.api.vocab.NameField;
 import org.col.api.vocab.NomStatus;
@@ -49,28 +48,4 @@ public enum NameSearchParameter {
     return type;
   }
 
-  /**
-   * Checks that the provided string can be converted to the type of this NameSearchParameter
-   * 
-   * @param value
-   * @return
-   */
-  @SuppressWarnings("unchecked")
-  public boolean isLegalValue(String value) {
-    if (type == String.class) {
-      return true;
-    }
-    if (type == Integer.class) {
-      try {
-        Integer.parseInt(value.toString());
-        return true;
-      } catch (NumberFormatException e) {
-        return false;
-      }
-    }
-    if (type.isEnum()) {
-      return VocabularyUtils.lookup(value.toString(), (Class<? extends Enum<?>>) type).isPresent();
-    }
-    throw new IllegalArgumentException(NameSearchParameter.class.getSimpleName() + " missing converter for data type " + type);
-  }
 }

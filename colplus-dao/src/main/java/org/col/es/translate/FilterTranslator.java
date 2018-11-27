@@ -6,7 +6,6 @@ import java.util.stream.Collectors;
 
 import org.col.api.search.NameSearchParameter;
 import org.col.api.search.NameSearchRequest;
-import org.col.api.util.VocabularyUtils;
 import org.col.es.InvalidQueryException;
 import org.col.es.query.BoolQuery;
 import org.col.es.query.IsNotNullQuery;
@@ -55,28 +54,13 @@ class FilterTranslator {
   /*
    * Get all non-symbolic values for one single single query parameter
    */
-  @SuppressWarnings("unchecked")
   private List<?> getLiteralValues(NameSearchParameter param) throws InvalidQueryException {
     if (param.type() == String.class) {
       return request.getFilterValue(param).stream().filter(this::isLiteral).collect(Collectors.toList());
     }
-    if (param.type() == Integer.class) {
-      try {
-        return request.getFilterValue(param).stream().filter(this::isLiteral).map(Integer::valueOf).collect(Collectors.toList());
-      } catch (NumberFormatException e) {
-        throw new InvalidQueryException("Non-integer value for parameter " + param);
-      }
-    }
-    if (Enum.class.isAssignableFrom(param.type())) {
-      try {
-        return request.getFilterValue(param)
-            .stream()
-            .filter(this::isLiteral)
-            .map(val -> VocabularyUtils.lookupEnum(val, (Class<? extends Enum<?>>) param.type()).ordinal())
-            .collect(Collectors.toList());
-      } catch (IllegalArgumentException e) {
-        throw new InvalidQueryException(e.getMessage());
-      }
+    if (param.type() == Integer.class || param.type().isEnum()) {
+      // NB Any validity checks are presumed to have been done in NameSearchRequest.addFilter() !!!
+      return request.getFilterValue(param).stream().filter(this::isLiteral).map(Integer::valueOf).collect(Collectors.toList());
     }
     throw new AssertionError("Unexpected parameter type: " + param.type());
   }
