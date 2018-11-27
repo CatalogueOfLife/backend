@@ -11,7 +11,6 @@ import static org.col.common.util.CollectionUtils.notEmpty;
 
 /**
  * Translates a CoL NameSearchRequest into an actual Elasticsearch query. Main class of this package.
- *
  */
 public class NameSearchRequestTranslator {
 

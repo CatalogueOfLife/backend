@@ -4,7 +4,16 @@ import java.util.EnumMap;
 
 import org.col.api.search.NameSearchParameter;
 
-import static org.col.api.search.NameSearchParameter.*;
+import static org.col.api.search.NameSearchParameter.DATASET_KEY;
+import static org.col.api.search.NameSearchParameter.FIELD;
+import static org.col.api.search.NameSearchParameter.ISSUE;
+import static org.col.api.search.NameSearchParameter.NAME_ID;
+import static org.col.api.search.NameSearchParameter.NAME_INDEX_ID;
+import static org.col.api.search.NameSearchParameter.NOM_STATUS;
+import static org.col.api.search.NameSearchParameter.PUBLISHED_IN_ID;
+import static org.col.api.search.NameSearchParameter.RANK;
+import static org.col.api.search.NameSearchParameter.STATUS;
+import static org.col.api.search.NameSearchParameter.TYPE;
 
 /**
  * Maps a name search parameter the corresponding Elasticsearch field(s). In principle a name search parameter may be mapped to multiple
@@ -29,15 +38,15 @@ public class EsFieldLookup extends EnumMap<NameSearchParameter, String[]> {
     putSingle(TYPE, "type");
   }
 
-  private void putSingle(NameSearchParameter param, String field) {
-    put(param, new String[] {field});
-  }
-
   public String lookup(NameSearchParameter param) {
     String[] fields = get(param);
     // Currently every NameSearchParameter maps to just one field in the name usage document
     assert (fields.length == 1);
     return fields[0];
+  }
+
+  private void putSingle(NameSearchParameter param, String field) {
+    put(param, new String[] {field});
   }
 
 }

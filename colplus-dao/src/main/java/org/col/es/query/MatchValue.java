@@ -17,9 +17,9 @@ public class MatchValue {
   }
 
   // This is actually just the search string
-  private final String query;
-  private final Float boost;
-  private final Operator operator;
+  final String query;
+  final Float boost;
+  final Operator operator;
 
   public MatchValue(String query) {
     this(query, null);
@@ -33,18 +33,6 @@ public class MatchValue {
     this.query = query;
     this.boost = boost;
     this.operator = operator;
-  }
-
-  String getQuery() {
-    return query;
-  }
-
-  Float getBoost() {
-    return boost;
-  }
-
-  Operator getOperator() {
-    return operator;
   }
 
 }

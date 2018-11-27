@@ -25,7 +25,7 @@ public class NestedQuery extends AbstractQuery {
     }
   }
 
-  private final Clause nested;
+  final Clause nested;
 
   public NestedQuery(String path, Query query) {
     this.nested = new Clause(path, ScoreMode.AVG, query);
@@ -33,10 +33,6 @@ public class NestedQuery extends AbstractQuery {
 
   public NestedQuery(String path, ScoreMode scoreMode, Query query) {
     this.nested = new Clause(path, scoreMode, query);
-  }
-
-  public Clause getNested() {
-    return nested;
   }
 
 }

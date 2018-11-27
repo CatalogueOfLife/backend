@@ -30,7 +30,7 @@ import static org.col.es.translate.NameSearchRequestTranslator.generateQuery;
  * (there will probably alsway be more than one facet). And also, Elasticseaech will probably cache the filter, reducing the performance
  * overhead.
  */
-public class FacetsTranslator {
+class FacetsTranslator {
 
   private final NameSearchRequest request;
 
@@ -38,7 +38,7 @@ public class FacetsTranslator {
     this.request = request;
   }
 
-  public Map<String, Aggregation> translate() {
+  Map<String, Aggregation> translate() {
     NameSearchRequest copy = request.copy();
     if (notEmpty(request.getFilters())) {
       copy.getFilters().keySet().retainAll(request.getFacets());
