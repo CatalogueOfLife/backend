@@ -38,7 +38,7 @@ public class NameSearchRequest {
    */
   public static final String NULL_VALUE = "_NULL";
 
-  private MultivaluedMap<NameSearchParameter, String> filters;
+  private MultivaluedMap<NameSearchParameter, Object> filters;
 
   @QueryParam("facet")
   private Set<NameSearchParameter> facets;
@@ -95,15 +95,15 @@ public class NameSearchRequest {
   public void addFilter(NameSearchParameter param, String value) {
     value = StringUtils.trimToNull(value);
     if (value == null || value.equals(NULL_VALUE)) {
-      add(param, NULL_VALUE);
+      newFilterValue(param, NULL_VALUE);
     } else if (value.equals(NOT_NULL_VALUE)) {
-      add(param, NOT_NULL_VALUE);
+      newFilterValue(param, NOT_NULL_VALUE);
     } else if (param.type() == String.class) {
-      add(param, value);
+      newFilterValue(param, value);
     } else if (param.type() == Integer.class) {
       try {
         Integer.valueOf(value);
-        add(param, value);
+        newFilterValue(param, Integer.valueOf(value));
       } catch (NumberFormatException e) {
         throw illegalValueForParameter(param, value);
       }
@@ -113,20 +113,15 @@ public class NameSearchRequest {
         if (i < 0 || i >= param.type().getEnumConstants().length) {
           throw illegalValueForParameter(param, value);
         }
-        add(param, value);
+        newFilterValue(param, value);
       } catch (NumberFormatException e) {
         @SuppressWarnings("unchecked")
         Enum<?> c = VocabularyUtils.lookupEnum(value, (Class<? extends Enum<?>>) param.type());
-        add(param, String.valueOf(c.ordinal()));
+        newFilterValue(param, String.valueOf(c.ordinal()));
       }
     } else {
       throw new AssertionError("Unexpected parameter type: " + param.type());
     }
-  }
-
-  private static IllegalArgumentException illegalValueForParameter(NameSearchParameter param, String value) {
-    String err = String.format("Illegal value for parameter %s: %s", param, value);
-    return new IllegalArgumentException(err);
   }
 
   public void addFilter(NameSearchParameter param, Integer value) {
@@ -139,7 +134,19 @@ public class NameSearchRequest {
     addFilter(param, String.valueOf(value.ordinal()));
   }
 
-  public List<String> getFilterValue(NameSearchParameter param) {
+  private void newFilterValue(NameSearchParameter param, Object value) {
+    if (filters == null) {
+      filters = new MultivaluedHashMap<>();
+    }
+    filters.add(param, value);
+  }
+
+  private static IllegalArgumentException illegalValueForParameter(NameSearchParameter param, String value) {
+    String err = String.format("Illegal value for parameter %s: %s", param, value);
+    return new IllegalArgumentException(err);
+  }
+
+  public List<Object> getFilterValue(NameSearchParameter param) {
     if (filters == null) {
       return null;
     }
@@ -150,7 +157,7 @@ public class NameSearchRequest {
     return filters == null ? false : filters.containsKey(filter);
   }
 
-  public List<String> removeFilter(NameSearchParameter filter) {
+  public List<Object> removeFilter(NameSearchParameter filter) {
     return filters == null ? null : filters.remove(filter);
   }
 
@@ -161,7 +168,7 @@ public class NameSearchRequest {
     facets.add(facet);
   }
 
-  public MultivaluedMap<NameSearchParameter, String> getFilters() {
+  public MultivaluedMap<NameSearchParameter, Object> getFilters() {
     return filters;
   }
 
@@ -219,13 +226,6 @@ public class NameSearchRequest {
   @Override
   public int hashCode() {
     return Objects.hash(super.hashCode(), content, facets, filters, q, sortBy);
-  }
-
-  private void add(NameSearchParameter param, String value) {
-    if (filters == null) {
-      filters = new MultivaluedHashMap<>();
-    }
-    filters.add(param, value);
   }
 
 }
