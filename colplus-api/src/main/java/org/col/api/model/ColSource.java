@@ -25,7 +25,7 @@ public class ColSource implements SourceMetadata, IntKey {
   @NotBlank
   private String alias;
   private String description;
-  private List<String> organisations;
+  private List<String> organisations = Lists.newArrayList();
   private String contactPerson;
   private List<String> authorsAndEditors = Lists.newArrayList();
   private String version;
