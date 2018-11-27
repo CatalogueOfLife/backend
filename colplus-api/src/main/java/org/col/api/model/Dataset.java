@@ -29,7 +29,7 @@ public class Dataset implements SourceMetadata, IntKey {
   private UUID gbifKey;
   private UUID gbifPublisherKey;
   private String description;
-  private String organisation;
+  private List<String> organisations = Lists.newArrayList();
   private String contactPerson;
   private List<String> authorsAndEditors = Lists.newArrayList();
   private License license;
@@ -132,14 +132,12 @@ public class Dataset implements SourceMetadata, IntKey {
     this.authorsAndEditors = authorsAndEditors;
   }
   
-  @Override
-  public String getOrganisation() {
-    return organisation;
+  public List<String> getOrganisations() {
+    return organisations;
   }
   
-  @Override
-  public void setOrganisation(String organisation) {
-    this.organisation = organisation;
+  public void setOrganisations(List<String> organisations) {
+    this.organisations = organisations;
   }
   
   @Override
@@ -329,7 +327,7 @@ public class Dataset implements SourceMetadata, IntKey {
         Objects.equals(gbifKey, dataset.gbifKey) &&
         Objects.equals(gbifPublisherKey, dataset.gbifPublisherKey) &&
         Objects.equals(description, dataset.description) &&
-        Objects.equals(organisation, dataset.organisation) &&
+        Objects.equals(organisations, dataset.organisations) &&
         Objects.equals(contactPerson, dataset.contactPerson) &&
         Objects.equals(authorsAndEditors, dataset.authorsAndEditors) &&
         license == dataset.license &&
@@ -354,7 +352,7 @@ public class Dataset implements SourceMetadata, IntKey {
   @Override
   public int hashCode() {
     
-    return Objects.hash(key, type, title, gbifKey, gbifPublisherKey, description, organisation, contactPerson, authorsAndEditors, license, version, released, citation, homepage, logo, dataFormat, dataAccess, cluster, origin, importFrequency, code, size, notes, contributesTo, created, modified, deleted);
+    return Objects.hash(key, type, title, gbifKey, gbifPublisherKey, description, organisations, contactPerson, authorsAndEditors, license, version, released, citation, homepage, logo, dataFormat, dataAccess, cluster, origin, importFrequency, code, size, notes, contributesTo, created, modified, deleted);
   }
   
   @Override

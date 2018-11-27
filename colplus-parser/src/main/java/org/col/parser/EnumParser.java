@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
 /**
  *
  */
-abstract class EnumParser<T extends Enum> extends ParserBase<T> {
+public abstract class EnumParser<T extends Enum> extends ParserBase<T> {
   private static final Logger LOG = LoggerFactory.getLogger(EnumParser.class);
   private final Map<String, T> mapping = Maps.newHashMap();
   private final Class<T> enumClass;
@@ -87,6 +87,10 @@ abstract class EnumParser<T extends Enum> extends ParserBase<T> {
       return x.replaceAll(" +", "");
     }
     return null;
+  }
+  
+  public Class<T> getEnumClass() {
+    return enumClass;
   }
   
   @Override

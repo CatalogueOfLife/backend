@@ -21,9 +21,6 @@ public interface SourceMetadata {
   
   void setAuthorsAndEditors(List<String> authorsAndEditors);
   
-  String getOrganisation();
-  
-  void setOrganisation(String organisation);
   
   String getContactPerson();
   

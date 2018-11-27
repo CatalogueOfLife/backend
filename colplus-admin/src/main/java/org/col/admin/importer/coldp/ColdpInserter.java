@@ -1,10 +1,20 @@
 package org.col.admin.importer.coldp;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Optional;
 
-import com.google.common.base.Splitter;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.google.common.base.Charsets;
+import com.google.common.collect.ImmutableList;
 import org.col.admin.importer.NeoInserter;
 import org.col.admin.importer.NormalizationFailedException;
 import org.col.admin.importer.neo.NeoDb;
@@ -12,9 +22,10 @@ import org.col.admin.importer.neo.NodeBatchProcessor;
 import org.col.admin.importer.reference.ReferenceFactory;
 import org.col.api.datapackage.ColTerm;
 import org.col.api.model.Dataset;
-import org.col.api.model.VerbatimRecord;
 import org.col.api.vocab.DataFormat;
-import org.gbif.dwc.terms.AcefTerm;
+import org.col.api.vocab.License;
+import org.col.admin.jackson.EnumParserSerde;
+import org.col.parser.LicenseParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,8 +35,17 @@ import org.slf4j.LoggerFactory;
 public class ColdpInserter extends NeoInserter {
 
   private static final Logger LOG = LoggerFactory.getLogger(ColdpInserter.class);
-  private static final Splitter COMMA_SPLITTER = Splitter.on(',').trimResults().omitEmptyStrings();
-
+  private static final List<String> METADATA_FILENAMES = ImmutableList.of("metadata.yaml", "metadata.yml");
+  private static final ObjectMapper OM;
+  private static final ObjectReader DATASET_READER;
+  static {
+    OM = new ObjectMapper(new YAMLFactory())
+        .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+        .registerModule(new JavaTimeModule())
+        .registerModule(new ColdpYamlModule());
+    DATASET_READER = OM.readerFor(Dataset.class);
+  }
+  
   private ColdpInterpreter inter;
 
   public ColdpInserter(NeoDb store, Path folder, ReferenceFactory refFactory) throws IOException {
@@ -104,24 +124,34 @@ public class ColdpInserter extends NeoInserter {
   }
 
   /**
-   * Reads the dataset metadata and puts it into the store
+   * Reads the dataset metadata.yaml and puts it into the store
    */
   @Override
   protected Optional<Dataset> readMetadata() {
-    Dataset d = null;
-    Optional<VerbatimRecord> metadata = reader.readFirstRow(AcefTerm.SourceDatabase);
-    if (metadata.isPresent()) {
-      VerbatimRecord dr = metadata.get();
-      d = new Dataset();
-      d.setTitle(dr.get(AcefTerm.DatabaseFullName));
-      d.setVersion(dr.get(AcefTerm.DatabaseVersion));
-      d.setDescription(dr.get(AcefTerm.Abstract));
-      d.setAuthorsAndEditors(dr.get(AcefTerm.AuthorsEditors, COMMA_SPLITTER));
-      d.setDescription(dr.get(AcefTerm.Abstract));
-      d.setHomepage(dr.getURI(AcefTerm.HomeURL));
-      d.setDataFormat(DataFormat.ACEF);
+    for (String fn : METADATA_FILENAMES) {
+      Path metapath = super.folder.resolve(fn);
+      if (Files.exists(metapath)) {
+        try {
+          BufferedReader reader = Files.newBufferedReader(metapath, Charsets.UTF_8);
+          Dataset d = DATASET_READER.readValue(reader);
+          d.setDataFormat(DataFormat.COLDP);
+          // TODO: transform contact ORCIDSs
+          return Optional.of(d);
+          
+        } catch (IOException e) {
+          LOG.error("Error reading " + fn, e);
+        }
+      }
     }
-    return Optional.ofNullable(d);
+    return Optional.empty();
+  }
+  
+  static  class ColdpYamlModule extends SimpleModule {
+    public ColdpYamlModule() {
+      super("ColdpYaml");
+      EnumParserSerde<License> lserde = new EnumParserSerde<License>(LicenseParser.PARSER);
+      addDeserializer(License.class, lserde.new Deserializer());
+    }
   }
 
 }

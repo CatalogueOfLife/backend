@@ -10,6 +10,7 @@ import org.col.admin.importer.NormalizationFailedException;
 import org.col.api.datapackage.ColTerm;
 import org.col.csv.CsvReader;
 import org.col.csv.Schema;
+import org.gbif.dwc.terms.TermFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,6 +27,10 @@ public class ColdpReader extends CsvReader {
   private static Set<ColTerm> REFID_SCHEMAS = ImmutableSet.of(
       ColTerm.Description, ColTerm.Distribution, ColTerm.VernacularName
   );
+  static {
+    // make sure we are aware of ColTerms
+    TermFactory.instance().registerTermEnum(ColTerm.class);
+  }
 
   private ColdpReader(Path folder) throws IOException {
     super(folder, "col", "coldp");

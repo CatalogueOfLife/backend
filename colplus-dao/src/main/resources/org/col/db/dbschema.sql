@@ -1,10 +1,6 @@
 
--- this will remove all existing tables
-DROP SCHEMA public CASCADE;
-CREATE SCHEMA public;
-
+-- required extensions
 CREATE EXTENSION IF NOT EXISTS hstore;
-
 CREATE EXTENSION IF NOT EXISTS unaccent;
 
 -- use unaccent by default for all simple search
@@ -112,7 +108,7 @@ CREATE TABLE dataset (
   gbif_key UUID,
   gbif_publisher_key UUID,
   description TEXT,
-  organisation TEXT,
+  organisations TEXT[] DEFAULT '{}',
   contact_person TEXT,
   authors_and_editors TEXT[] DEFAULT '{}',
   license INTEGER,
@@ -141,7 +137,7 @@ CREATE OR REPLACE FUNCTION dataset_doc_update() RETURNS trigger AS $$
 BEGIN
     NEW.doc :=
       setweight(to_tsvector('simple2', coalesce(NEW.title,'')), 'A') ||
-      setweight(to_tsvector('simple2', coalesce(NEW.organisation,'')), 'B') ||
+      setweight(to_tsvector('simple2', coalesce(array_to_string(NEW.organisations, '|'), '')), 'B') ||
       setweight(to_tsvector('simple2', coalesce(NEW.description,'')), 'C') ||
       setweight(to_tsvector('simple2', coalesce(NEW.contact_person,'')), 'C') ||
       setweight(to_tsvector('simple2', coalesce(array_to_string(NEW.authors_and_editors, '|'), '')), 'C') ||
@@ -161,7 +157,7 @@ CREATE TABLE col_source (
   title TEXT,
   alias TEXT NOT NULL,
   description TEXT,
-  organisation TEXT,
+  organisations TEXT[] DEFAULT '{}',
   contact_person TEXT,
   authors_and_editors TEXT[] DEFAULT '{}',
   version TEXT,

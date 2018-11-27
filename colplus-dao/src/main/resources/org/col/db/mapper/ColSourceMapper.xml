@@ -10,7 +10,7 @@
       title,
       alias,
       description,
-      organisation,
+      organisations,
       contact_person,
       authors_and_editors,
       version,
@@ -38,7 +38,7 @@
         coalesce(s.title, d.title) AS title,
         s.alias,
         coalesce(s.description, d.description) AS description,
-        coalesce(s.organisation, d.organisation) AS organisation,
+        coalesce(s.organisations, d.organisations) AS organisations,
         coalesce(s.contact_person, d.contact_person) AS contact_person,
         CASE WHEN s.authors_and_editors='{}' THEN d.authors_and_editors ELSE s.authors_and_editors END AS authors_and_editors,
         coalesce(s.version, d.version) AS version,
@@ -65,7 +65,7 @@
         title,
         alias,
         description,
-        organisation,
+        organisations,
         contact_person,
         authors_and_editors,
         version,
@@ -91,7 +91,7 @@
       #{title},
       #{alias},
       #{description},
-      #{organisation},
+      #{organisations, typeHandler=org.col.db.type.StringArrayTypeHandler},
       #{contactPerson},
       #{authorsAndEditors, typeHandler=org.col.db.type.StringArrayTypeHandler},
       #{version},
@@ -122,6 +122,7 @@
     <!--  A mapping to Name, mostly auto mapped -->
     <resultMap id="sourceResultMap" type="ColSource" autoMapping="true">
         <id property="key" column="key" />
+        <result property="organisations" column="organisations" typeHandler="org.col.db.type.StringArrayTypeHandler" />
         <result property="authorsAndEditors" column="authors_and_editors" typeHandler="org.col.db.type.StringArrayTypeHandler" />
     </resultMap>
 

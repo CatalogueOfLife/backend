@@ -12,6 +12,16 @@ public class PgDbConfig {
   
   public String password;
   
+  
+  public PgDbConfig() {
+  }
+  
+  public PgDbConfig(PgDbConfig cfg) {
+    this.database = cfg.database;
+    this.user = cfg.user;
+    this.password = cfg.password;
+  }
+  
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;

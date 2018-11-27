@@ -60,7 +60,8 @@ public class ColSourceMapperTest extends MapperTestBase<ColSourceMapper> {
     d.setReleased(LocalDate.now());
     d.setVersion("v123");
     d.setHomepage(URI.create("https://www.gbif.org/dataset/13"));
-    d.setOrganisation("my org");
+    d.getOrganisations().add("my org");
+    d.getOrganisations().add("your org");
     d.setNamesCount(23456);
     d.setAlias("ILDIS");
     d.setNotes("I hate my work");
