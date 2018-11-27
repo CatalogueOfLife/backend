@@ -43,12 +43,12 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
     for (int i = 0; i < 8; i++) {
       d.getAuthorsAndEditors().add(RandomUtils.randomString(100));
     }
-    d.setContactPerson("Hans Peter");
+    d.setContact("Hans Peter");
     d.setDataAccess(URI.create("https://api.gbif.org/v1/dataset/" + d.getGbifKey()));
     d.setDataFormat(DataFormat.ACEF);
     d.setReleased(LocalDate.now());
     d.setVersion("v123");
-    d.setHomepage(URI.create("https://www.gbif.org/dataset/" + d.getGbifKey()));
+    d.setWebsite(URI.create("https://www.gbif.org/dataset/" + d.getGbifKey()));
     d.setNotes("my notes");
     d.setCode(NomCode.ZOOLOGICAL);
     d.getOrganisations().add("my org");

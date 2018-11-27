@@ -104,13 +104,13 @@ public class ColSource implements SourceMetadata, IntKey {
   }
   
   @Override
-  public String getContactPerson() {
+  public String getContact() {
     return contactPerson;
   }
   
   @Override
-  public void setContactPerson(String contactPerson) {
-    this.contactPerson = contactPerson;
+  public void setContact(String contact) {
+    this.contactPerson = contact;
   }
   
   @Override
@@ -144,13 +144,13 @@ public class ColSource implements SourceMetadata, IntKey {
   }
   
   @Override
-  public URI getHomepage() {
+  public URI getWebsite() {
     return homepage;
   }
   
   @Override
-  public void setHomepage(URI homepage) {
-    this.homepage = homepage;
+  public void setWebsite(URI website) {
+    this.homepage = website;
   }
   
   /**

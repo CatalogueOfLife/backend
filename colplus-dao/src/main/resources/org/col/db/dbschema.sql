@@ -109,7 +109,7 @@ CREATE TABLE dataset (
   gbif_publisher_key UUID,
   description TEXT,
   organisations TEXT[] DEFAULT '{}',
-  contact_person TEXT,
+  contact TEXT,
   authors_and_editors TEXT[] DEFAULT '{}',
   license INTEGER,
   version TEXT,
@@ -139,7 +139,7 @@ BEGIN
       setweight(to_tsvector('simple2', coalesce(NEW.title,'')), 'A') ||
       setweight(to_tsvector('simple2', coalesce(array_to_string(NEW.organisations, '|'), '')), 'B') ||
       setweight(to_tsvector('simple2', coalesce(NEW.description,'')), 'C') ||
-      setweight(to_tsvector('simple2', coalesce(NEW.contact_person,'')), 'C') ||
+      setweight(to_tsvector('simple2', coalesce(NEW.contact,'')), 'C') ||
       setweight(to_tsvector('simple2', coalesce(array_to_string(NEW.authors_and_editors, '|'), '')), 'C') ||
       setweight(to_tsvector('simple2', coalesce(NEW.gbif_key::text,'')), 'C');
     RETURN NEW;
@@ -158,7 +158,7 @@ CREATE TABLE col_source (
   alias TEXT NOT NULL,
   description TEXT,
   organisations TEXT[] DEFAULT '{}',
-  contact_person TEXT,
+  contact TEXT,
   authors_and_editors TEXT[] DEFAULT '{}',
   version TEXT,
   released DATE,

@@ -22,9 +22,9 @@ public interface SourceMetadata {
   void setAuthorsAndEditors(List<String> authorsAndEditors);
   
   
-  String getContactPerson();
+  String getContact();
   
-  void setContactPerson(String contactPerson);
+  void setContact(String contact);
   
   String getVersion();
   
@@ -38,9 +38,9 @@ public interface SourceMetadata {
   
   void setReleased(LocalDate released);
   
-  URI getHomepage();
+  URI getWebsite();
   
-  void setHomepage(URI homepage);
+  void setWebsite(URI website);
   
   String getCitation();
   

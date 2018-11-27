@@ -30,14 +30,14 @@ public class Dataset implements SourceMetadata, IntKey {
   private UUID gbifPublisherKey;
   private String description;
   private List<String> organisations = Lists.newArrayList();
-  private String contactPerson;
+  private String contact;
   private List<String> authorsAndEditors = Lists.newArrayList();
   private License license;
   private String version;
   private LocalDate released;
   private String citation;
   @AbsoluteURI
-  private URI homepage;
+  private URI website;
   @AbsoluteURI
   private URI logo;
   private DataFormat dataFormat;
@@ -141,13 +141,13 @@ public class Dataset implements SourceMetadata, IntKey {
   }
   
   @Override
-  public String getContactPerson() {
-    return contactPerson;
+  public String getContact() {
+    return contact;
   }
   
   @Override
-  public void setContactPerson(String contactPerson) {
-    this.contactPerson = contactPerson;
+  public void setContact(String contact) {
+    this.contact = contact;
   }
   
   public License getLicense() {
@@ -189,13 +189,13 @@ public class Dataset implements SourceMetadata, IntKey {
   }
   
   @Override
-  public URI getHomepage() {
-    return homepage;
+  public URI getWebsite() {
+    return website;
   }
   
   @Override
-  public void setHomepage(URI homepage) {
-    this.homepage = homepage;
+  public void setWebsite(URI website) {
+    this.website = website;
   }
   
   public URI getLogo() {
@@ -328,13 +328,13 @@ public class Dataset implements SourceMetadata, IntKey {
         Objects.equals(gbifPublisherKey, dataset.gbifPublisherKey) &&
         Objects.equals(description, dataset.description) &&
         Objects.equals(organisations, dataset.organisations) &&
-        Objects.equals(contactPerson, dataset.contactPerson) &&
+        Objects.equals(contact, dataset.contact) &&
         Objects.equals(authorsAndEditors, dataset.authorsAndEditors) &&
         license == dataset.license &&
         Objects.equals(version, dataset.version) &&
         Objects.equals(released, dataset.released) &&
         Objects.equals(citation, dataset.citation) &&
-        Objects.equals(homepage, dataset.homepage) &&
+        Objects.equals(website, dataset.website) &&
         Objects.equals(logo, dataset.logo) &&
         dataFormat == dataset.dataFormat &&
         Objects.equals(dataAccess, dataset.dataAccess) &&
@@ -352,7 +352,7 @@ public class Dataset implements SourceMetadata, IntKey {
   @Override
   public int hashCode() {
     
-    return Objects.hash(key, type, title, gbifKey, gbifPublisherKey, description, organisations, contactPerson, authorsAndEditors, license, version, released, citation, homepage, logo, dataFormat, dataAccess, cluster, origin, importFrequency, code, size, notes, contributesTo, created, modified, deleted);
+    return Objects.hash(key, type, title, gbifKey, gbifPublisherKey, description, organisations, contact, authorsAndEditors, license, version, released, citation, website, logo, dataFormat, dataAccess, cluster, origin, importFrequency, code, size, notes, contributesTo, created, modified, deleted);
   }
   
   @Override

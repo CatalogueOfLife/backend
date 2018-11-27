@@ -56,10 +56,10 @@ public class ColSourceMapperTest extends MapperTestBase<ColSourceMapper> {
     for (int i = 0; i < 8; i++) {
       d.getAuthorsAndEditors().add(RandomUtils.randomString(100));
     }
-    d.setContactPerson("Hans Peter");
+    d.setContact("Hans Peter");
     d.setReleased(LocalDate.now());
     d.setVersion("v123");
-    d.setHomepage(URI.create("https://www.gbif.org/dataset/13"));
+    d.setWebsite(URI.create("https://www.gbif.org/dataset/13"));
     d.getOrganisations().add("my org");
     d.getOrganisations().add("your org");
     d.setNamesCount(23456);
