@@ -14,46 +14,46 @@ import static org.col.es.translate.AggregationLabelProvider.STATUS_FACET;
 import static org.col.es.translate.AggregationLabelProvider.TYPE_FACET;
 
 /**
- * This will be the "aggregations" object in the ES query response if we used the SimpleFacetsTranslator
+ * The data structure within the ES response within which we will find the facets.
  */
-public class FacetsContainer {
+public class EsFacets {
 
   @JsonProperty("doc_count")
   private int docCount;
 
   @JsonProperty(DATASET_KEY_FACET)
-  private Facet datasetKey;
+  private EsFacet datasetKey;
 
   @JsonProperty(RANK_FACET)
-  private Facet rank;
+  private EsFacet rank;
 
   @JsonProperty(NOM_STATUS_FACET)
-  private Facet nomStatus;
+  private EsFacet nomStatus;
 
   @JsonProperty(STATUS_FACET)
-  private Facet status;
+  private EsFacet status;
 
   @JsonProperty(ISSUE_FACET)
-  private Facet issue;
+  private EsFacet issue;
 
   @JsonProperty(TYPE_FACET)
-  private Facet type;
+  private EsFacet type;
 
   @JsonProperty(FIELD_FACET)
-  private Facet field;
+  private EsFacet field;
 
   /*
    * Unlikely to become facets, but just to be complete:
    */
 
   @JsonProperty(NAME_ID_FACET)
-  private Facet nameId;
+  private EsFacet nameId;
 
   @JsonProperty(NAME_INDEX_ID_FACET)
-  private Facet nameIndexId;
+  private EsFacet nameIndexId;
 
   @JsonProperty(PUBLISHED_IN_ID_FACET)
-  private Facet publishedInId;
+  private EsFacet publishedInId;
 
   public int getDocCount() {
     return docCount;
@@ -63,83 +63,83 @@ public class FacetsContainer {
     this.docCount = docCount;
   }
 
-  public Facet getDatasetKey() {
+  public EsFacet getDatasetKey() {
     return datasetKey;
   }
 
-  public void setDatasetKey(Facet datasetKey) {
+  public void setDatasetKey(EsFacet datasetKey) {
     this.datasetKey = datasetKey;
   }
 
-  public Facet getRank() {
+  public EsFacet getRank() {
     return rank;
   }
 
-  public void setRank(Facet rank) {
+  public void setRank(EsFacet rank) {
     this.rank = rank;
   }
 
-  public Facet getNomStatus() {
+  public EsFacet getNomStatus() {
     return nomStatus;
   }
 
-  public void setNomStatus(Facet nomStatus) {
+  public void setNomStatus(EsFacet nomStatus) {
     this.nomStatus = nomStatus;
   }
 
-  public Facet getStatus() {
+  public EsFacet getStatus() {
     return status;
   }
 
-  public void setStatus(Facet status) {
+  public void setStatus(EsFacet status) {
     this.status = status;
   }
 
-  public Facet getIssue() {
+  public EsFacet getIssue() {
     return issue;
   }
 
-  public void setIssue(Facet issue) {
+  public void setIssue(EsFacet issue) {
     this.issue = issue;
   }
 
-  public Facet getType() {
+  public EsFacet getType() {
     return type;
   }
 
-  public void setType(Facet type) {
+  public void setType(EsFacet type) {
     this.type = type;
   }
 
-  public Facet getField() {
+  public EsFacet getField() {
     return field;
   }
 
-  public void setField(Facet field) {
+  public void setField(EsFacet field) {
     this.field = field;
   }
 
-  public Facet getNameId() {
+  public EsFacet getNameId() {
     return nameId;
   }
 
-  public void setNameId(Facet nameId) {
+  public void setNameId(EsFacet nameId) {
     this.nameId = nameId;
   }
 
-  public Facet getNameIndexId() {
+  public EsFacet getNameIndexId() {
     return nameIndexId;
   }
 
-  public void setNameIndexId(Facet nameIndexId) {
+  public void setNameIndexId(EsFacet nameIndexId) {
     this.nameIndexId = nameIndexId;
   }
 
-  public Facet getPublishedInId() {
+  public EsFacet getPublishedInId() {
     return publishedInId;
   }
 
-  public void setPublishedInId(Facet publishedInId) {
+  public void setPublishedInId(EsFacet publishedInId) {
     this.publishedInId = publishedInId;
   }
 

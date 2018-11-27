@@ -11,16 +11,9 @@ import static org.col.common.util.CollectionUtils.notEmpty;
 
 /**
  * Translates a CoL NameSearchRequest into an actual Elasticsearch query. Main class of this package.
- *
  */
 public class NameSearchRequestTranslator {
 
-  /**
-   * Generates an ES query from the specified NameSearchRequest. Generally there is no reason to calculate relevance scores, so the 2nd
-   * argument should be true. However, in some cases the query already takes place in a non-scoring context, or you know in advance there
-   * won't be any documents to calculate scores for. In these cases not wrapping the basic query into a ConstantScoreQuery makes the
-   * resulting JSON easier to read.
-   */
   static Query generateQuery(NameSearchRequest request) {
     Query query1 = new FiltersTranslator(request).translate();
     Query query2 = new QTranslator(request).translate();
@@ -55,7 +48,7 @@ public class NameSearchRequestTranslator {
     }
     es.setSort(new SortByTranslator(request).translate());
     if (notEmpty(request.getFacets())) {
-      FacetsTranslator ft = new FacetsTranslatorFactory(request).createTranslator();
+      FacetsTranslator ft = new FacetsTranslator(request);
       es.setAggregations(ft.translate());
     }
     return es;

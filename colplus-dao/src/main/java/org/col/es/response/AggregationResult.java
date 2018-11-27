@@ -5,10 +5,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.col.es.translate.AggregationLabelProvider;
 
 /**
- * This will be the "aggregations" object in the ES query response if we used a ShieldedFacetsTranslator or a SieldedFilterFacetsTranslator.
- * You have to go 2 levels deep to get to the facets.
+ * This will be the "aggregations" object in the Elasticsearch response.
  */
-public class ContextWrapper {
+public class AggregationResult {
 
   @JsonProperty("doc_count")
   private int docCount;

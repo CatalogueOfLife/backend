@@ -15,6 +15,10 @@ import static org.col.api.search.NameSearchParameter.RANK;
 import static org.col.api.search.NameSearchParameter.STATUS;
 import static org.col.api.search.NameSearchParameter.TYPE;
 
+/**
+ * Determines and provides the labels to use at various levels of the aggregation queries and corresponding result. We need to centralize
+ * this so that the query generators use the same labels as the result parsers.
+ */
 public class AggregationLabelProvider {
 
   public static final String DATASET_KEY_FACET = "DATASET_KEY_FACET";
@@ -36,7 +40,7 @@ public class AggregationLabelProvider {
    * The label for aggregations operating within a separate execution context with a new set of filters applied.
    */
   public static final String CONTEXT_FILTER = "_FILTER_";
-  
+
   public static final String BUCKETS = "BUCKETS";
 
   private static final EnumMap<NameSearchParameter, String> map1;

@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonValue;
 /**
  * Sort options when sorting on particular field.
  */
-@SuppressWarnings("unused")
 public class SortOptions {
 
   public static enum Order {
@@ -35,9 +34,9 @@ public class SortOptions {
     }
   }
 
-  private final Order order;
-  private final Nulls missing;
-  private final Mode mode;
+  final Order order;
+  final Nulls missing;
+  final Mode mode;
 
   public SortOptions() {
     this(Order.ASC);

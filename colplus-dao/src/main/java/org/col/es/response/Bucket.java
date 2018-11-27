@@ -4,15 +4,15 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Bucket {
 
-  private String key;
+  private Object key;
   @JsonProperty("doc_count")
   private int docCount;
 
-  public String getKey() {
+  public Object getKey() {
     return key;
   }
 
-  public void setKey(String key) {
+  public void setKey(Object key) {
     this.key = key;
   }
 

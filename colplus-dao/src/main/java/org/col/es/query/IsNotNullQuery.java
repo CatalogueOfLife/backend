@@ -10,14 +10,10 @@ public class IsNotNullQuery extends AbstractQuery {
     }
   }
 
-  private final Field exists;
+  final Field exists;
 
   public IsNotNullQuery(String field) {
     this.exists = new Field(field);
-  }
-
-  Field getExists() {
-    return exists;
   }
 
 }

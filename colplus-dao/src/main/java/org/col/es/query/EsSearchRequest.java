@@ -7,7 +7,9 @@ import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * The main class modeling an ES query. I.e. serializing it to JSON will result in a valid ES query.
+ * Class modeling a complete Elasticsearch search request. Serializing it to JSON will result in a syntactically valid Elasticsearch query
+ * (e.g. which you could execute in Kibana). Instances of this class are produced by a NameSearchRequestTranslator using a NameSearchRequest
+ * object as input.
  */
 public class EsSearchRequest {
 
@@ -19,10 +21,14 @@ public class EsSearchRequest {
   }
 
   private Integer size;
+
   private Integer from;
+
   private List<SortField> sort;
+
   private Query query;
-  @JsonProperty("aggs") // "aggregations" actually also allowed but "aggs" more idiomatic
+
+  @JsonProperty("aggs")
   private Map<String, Aggregation> aggregations;
 
   public void addAggregation(String name, Aggregation agg) {

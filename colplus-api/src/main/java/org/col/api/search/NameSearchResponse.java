@@ -1,27 +1,29 @@
 package org.col.api.search;
 
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import org.col.api.model.NameUsage;
 import org.col.api.model.Page;
 import org.col.api.model.ResultPage;
 
-public class NameSearchResponse extends ResultPage<NameUsageWrapper<?>> {
+public class NameSearchResponse extends ResultPage<NameUsageWrapper<NameUsage>> {
 
-  private final Map<NameSearchParameter, List<FacetCount>> facets;
+  private final Map<NameSearchParameter, List<FacetValue<?>>> facets;
 
-  public NameSearchResponse(Page page, int total, List<NameUsageWrapper<?>> result) {
-    this(page, total, result, new HashMap<>());
+  public NameSearchResponse(Page page, int total, List<NameUsageWrapper<NameUsage>> result) {
+    this(page, total, result, Collections.emptyMap());
   }
 
-  public NameSearchResponse(Page page, int total, List<NameUsageWrapper<?>> result, Map<NameSearchParameter, List<FacetCount>> facets) {
+  public NameSearchResponse(Page page, int total, List<NameUsageWrapper<NameUsage>> result,
+      Map<NameSearchParameter, List<FacetValue<?>>> facets) {
     super(page, total, result);
     this.facets = facets;
   }
 
-  public Map<NameSearchParameter, List<FacetCount>> getFacets() {
+  public Map<NameSearchParameter, List<FacetValue<?>>> getFacets() {
     return facets;
   }
 
