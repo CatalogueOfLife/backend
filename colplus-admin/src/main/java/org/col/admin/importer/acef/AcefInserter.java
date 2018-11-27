@@ -192,7 +192,7 @@ public class AcefInserter extends NeoInserter {
       d.setDescription(dr.get(AcefTerm.Abstract));
       d.setAuthorsAndEditors(dr.get(AcefTerm.AuthorsEditors, COMMA_SPLITTER));
       d.setDescription(dr.get(AcefTerm.Abstract));
-      d.setHomepage(dr.getURI(AcefTerm.HomeURL));
+      d.setWebsite(dr.getURI(AcefTerm.HomeURL));
       d.setDataFormat(DataFormat.ACEF);
     }
     return Optional.ofNullable(d);

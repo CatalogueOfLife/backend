@@ -25,9 +25,9 @@ public class EmlParserTest {
     
     assertEquals("Species named after famous people", d.getTitle());
     assertEquals("A list of species named after famous people including musicians and politicians.", d.getDescription());
-    assertEquals("https://github.com/mdoering/famous-organism", d.getHomepage().toString());
+    assertEquals("https://github.com/mdoering/famous-organism", d.getWebsite().toString());
     //assertEquals("Species named after famous people", d.getLicense());
-    assertEquals("Markus Döring (GBIF)", d.getContactPerson());
+    assertEquals("Markus Döring (GBIF)", d.getContact());
     assertEquals("[Markus Döring (GBIF)]", d.getAuthorsAndEditors().toString());
     assertEquals("2017-01-19", d.getReleased().toString());
     assertEquals("http://www.marinespecies.org/aphia.php?p=taxdetails&id=146230", d.getLogo().toString());
@@ -41,9 +41,9 @@ public class EmlParserTest {
     
     assertEquals("Checklist of the Vascular Plants of Big Lagoon Bog, Big Lagoon County Park, Humboldt County, California", d.getTitle());
     assertNull(d.getDescription());
-    assertEquals("https://github.com/mdoering/famous-organism", d.getHomepage().toString());
+    assertEquals("https://github.com/mdoering/famous-organism", d.getWebsite().toString());
     //assertEquals("Species named after famous people", d.getLicense());
-    assertEquals("Markus Döring (GBIF)", d.getContactPerson());
+    assertEquals("Markus Döring (GBIF)", d.getContact());
     assertEquals("[Markus Döring (GBIF)]", d.getAuthorsAndEditors().toString());
     assertEquals("2017-01-19", d.getReleased().toString());
   }
@@ -55,9 +55,9 @@ public class EmlParserTest {
     
     assertEquals("Database of Vascular Plants of Canada (VASCAN)", d.getTitle());
     assertEquals("A list of species named after famous people including musicians and politicians.", d.getDescription());
-    assertEquals("https://github.com/mdoering/famous-organism", d.getHomepage().toString());
+    assertEquals("https://github.com/mdoering/famous-organism", d.getWebsite().toString());
     //assertEquals("Species named after famous people", d.getLicense());
-    assertEquals("Markus Döring (GBIF)", d.getContactPerson());
+    assertEquals("Markus Döring (GBIF)", d.getContact());
     assertEquals("[Markus Döring (GBIF)]", d.getAuthorsAndEditors().toString());
     assertEquals("2017-01-19", d.getReleased().toString());
   }
@@ -69,9 +69,9 @@ public class EmlParserTest {
     
     assertEquals("Species named after famous people", d.getTitle());
     assertEquals("A list of species named after famous people including musicians and politicians.", d.getDescription());
-    assertEquals("https://github.com/mdoering/famous-organism", d.getHomepage().toString());
+    assertEquals("https://github.com/mdoering/famous-organism", d.getWebsite().toString());
     //assertEquals("Species named after famous people", d.getLicense());
-    assertEquals("Markus Döring (GBIF)", d.getContactPerson());
+    assertEquals("Markus Döring (GBIF)", d.getContact());
     assertEquals("[Markus Döring (GBIF)]", d.getAuthorsAndEditors().toString());
     assertEquals("2017-01-19", d.getReleased().toString());
   }

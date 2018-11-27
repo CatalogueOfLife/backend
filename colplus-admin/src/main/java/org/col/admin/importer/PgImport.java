@@ -138,9 +138,9 @@ public class PgImport implements Callable<Boolean> {
         old.setTitle(dataset.getTitle());
       }
       old.setAuthorsAndEditors(dataset.getAuthorsAndEditors());
-      old.setContactPerson(dataset.getContactPerson());
+      old.setContact(dataset.getContact());
       old.setDescription(dataset.getDescription());
-      old.setHomepage(dataset.getHomepage());
+      old.setWebsite(dataset.getWebsite());
       old.setLicense(dataset.getLicense());
       old.setOrganisations(dataset.getOrganisations());
       old.setReleased(dataset.getReleased());

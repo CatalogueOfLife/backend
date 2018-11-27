@@ -156,10 +156,10 @@ public class DatasetPager {
       LOG.info("Skip dataset without DWCA access: {} - {}", d.getGbifKey(), d.getTitle());
       return null;
     }
-    d.setHomepage(uri(g.homepage));
+    d.setWebsite(uri(g.homepage));
     d.setLicense(SafeParser.parse(LicenseParser.PARSER, g.license).orElse(License.UNSPECIFIED, License.UNSUPPORTED));
     //TODO: convert contact and authors
-    d.setContactPerson(null);
+    d.setContact(null);
     d.setAuthorsAndEditors(null);
     d.setNotes(null);
     d.setVersion(opt(g.pubDate));

@@ -106,7 +106,7 @@ public class EmlParser {
                   }
                   break;
                 case "distribution":
-                  d.setHomepage(url);
+                  d.setWebsite(url);
                   break;
                 case "pubDate":
                   FuzzyDate fuzzy = date(text);
@@ -118,7 +118,7 @@ public class EmlParser {
                   agent.name().ifPresent(d.getAuthorsAndEditors()::add);
                   break;
                 case "contact":
-                  agent.name().ifPresent(d::setContactPerson);
+                  agent.name().ifPresent(d::setContact);
                   break;
                 
                 // AGENT PROPS
