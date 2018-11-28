@@ -2,7 +2,7 @@ package org.col.es;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -73,7 +73,7 @@ class NameSearchResponseTransfer {
 
   private Map<NameSearchParameter, List<FacetValue<?>>> transferFacets() {
     EsFacets esFacets = esRresponse.getAggregations().getContextFilter().getFacetsContainer();
-    Map<NameSearchParameter, List<FacetValue<?>>> facets = new LinkedHashMap<>();
+    Map<NameSearchParameter, List<FacetValue<?>>> facets = new EnumMap<>(NameSearchParameter.class);
     addIfPresent(facets, DATASET_KEY, esFacets.getDatasetKey());
     addIfPresent(facets, FIELD, esFacets.getField());
     addIfPresent(facets, ISSUE, esFacets.getIssue());
