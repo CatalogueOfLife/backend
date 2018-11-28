@@ -92,18 +92,22 @@ public class NameSearchRequest {
     Arrays.stream(values).forEach((v) -> addFilter(param, v == null ? NULL_VALUE : v.toString()));
   }
 
+  /*
+   * Primary usage case - parameter values coming in as strings from the HTTP request. Values are validated and converted to the type
+   * associated with the parameter.
+   */
   public void addFilter(NameSearchParameter param, String value) {
     value = StringUtils.trimToNull(value);
     if (value == null || value.equals(NULL_VALUE)) {
-      newFilterValue(param, NULL_VALUE);
+      addFilterValue(param, NULL_VALUE);
     } else if (value.equals(NOT_NULL_VALUE)) {
-      newFilterValue(param, NOT_NULL_VALUE);
+      addFilterValue(param, NOT_NULL_VALUE);
     } else if (param.type() == String.class) {
-      newFilterValue(param, value);
+      addFilterValue(param, value);
     } else if (param.type() == Integer.class) {
       try {
         Integer.valueOf(value);
-        newFilterValue(param, Integer.valueOf(value));
+        addFilterValue(param, Integer.valueOf(value));
       } catch (NumberFormatException e) {
         throw illegalValueForParameter(param, value);
       }
@@ -113,11 +117,11 @@ public class NameSearchRequest {
         if (i < 0 || i >= param.type().getEnumConstants().length) {
           throw illegalValueForParameter(param, value);
         }
-        newFilterValue(param, value);
+        addFilterValue(param, value);
       } catch (NumberFormatException e) {
         @SuppressWarnings("unchecked")
         Enum<?> c = VocabularyUtils.lookupEnum(value, (Class<? extends Enum<?>>) param.type());
-        newFilterValue(param, String.valueOf(c.ordinal()));
+        addFilterValue(param, String.valueOf(c.ordinal()));
       }
     } else {
       throw new AssertionError("Unexpected parameter type: " + param.type());
@@ -134,7 +138,7 @@ public class NameSearchRequest {
     addFilter(param, String.valueOf(value.ordinal()));
   }
 
-  private void newFilterValue(NameSearchParameter param, Object value) {
+  private void addFilterValue(NameSearchParameter param, Object value) {
     if (filters == null) {
       filters = new MultivaluedHashMap<>();
     }

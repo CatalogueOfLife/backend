@@ -1,12 +1,15 @@
 package org.col.es.translate;
 
+import org.apache.commons.lang3.StringUtils;
 import org.col.api.model.Page;
 import org.col.api.search.NameSearchRequest;
 import org.col.es.query.BoolQuery;
 import org.col.es.query.ConstantScoreQuery;
 import org.col.es.query.EsSearchRequest;
+import org.col.es.query.MatchAllQuery;
 import org.col.es.query.Query;
 
+import static org.col.common.util.CollectionUtils.isEmpty;
 import static org.col.common.util.CollectionUtils.notEmpty;
 
 /**
@@ -15,19 +18,17 @@ import static org.col.common.util.CollectionUtils.notEmpty;
 public class NameSearchRequestTranslator {
 
   static Query generateQuery(NameSearchRequest request) {
-    Query query1 = new FiltersTranslator(request).translate();
-    Query query2 = new QTranslator(request).translate();
-    Query query = null;
-    if (query1 != null) {
-      if (query2 != null) {
-        query = new BoolQuery().filter(query1).filter(query2);
-      } else {
-        query = query1;
+    if (isEmpty(request.getFilters())) {
+      if (StringUtils.isEmpty(request.getQ())) {
+        return MatchAllQuery.INSTANCE;
       }
-    } else if (query2 != null) {
-      query = query2;
+      return new QTranslator(request).translate();
+    } else if (StringUtils.isEmpty(request.getQ())) {
+      return new FiltersTranslator(request).translate();
     }
-    return query;
+    Query filters = new FiltersTranslator(request).translate();
+    Query q = new QTranslator(request).translate();
+    return new BoolQuery().filter(filters).filter(q);
   }
 
   private final NameSearchRequest request;
@@ -43,7 +44,7 @@ public class NameSearchRequestTranslator {
     es.setFrom(page.getOffset());
     es.setSize(page.getLimit());
     Query query = generateQuery(request);
-    if (query != null) {
+    if (query != MatchAllQuery.INSTANCE) {
       es.setQuery(new ConstantScoreQuery(query));
     }
     es.setSort(new SortByTranslator(request).translate());
