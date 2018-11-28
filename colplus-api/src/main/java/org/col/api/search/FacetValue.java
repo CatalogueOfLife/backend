@@ -4,7 +4,7 @@ import java.util.Objects;
 
 import com.google.common.base.Preconditions;
 
-public class FacetValue<T> {
+public class FacetValue<T> implements Comparable<FacetValue<T>> {
 
   public static FacetValue<String> forString(Object val, int count) {
     return new FacetValue<>(val.toString(), count);
@@ -55,6 +55,16 @@ public class FacetValue<T> {
   @Override
   public int hashCode() {
     return Objects.hash(value, count);
+  }
+
+  @Override
+  public int compareTo(FacetValue<T> other) {
+    @SuppressWarnings({"rawtypes", "unchecked"}) // String, Integer and Enum are all Comparable
+    int i = ((Comparable) value).compareTo(other.value);
+    if (i == 0) {
+      return count - other.count;
+    }
+    return i;
   }
 
 }
