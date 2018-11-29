@@ -18,10 +18,17 @@ import org.apache.ibatis.jdbc.ScriptRunner;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.admin.config.AdminServerConfig;
+import org.col.api.model.Name;
+import org.col.api.model.Taxon;
 import org.col.api.vocab.Datasets;
+import org.col.api.vocab.Origin;
 import org.col.db.MybatisFactory;
 import org.col.db.PgConfig;
 import org.col.db.mapper.DatasetPartitionMapper;
+import org.col.db.mapper.NameMapper;
+import org.col.db.mapper.TaxonMapper;
+import org.gbif.nameparser.api.NameType;
+import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -96,16 +103,38 @@ public class InitDbCmd extends ConfiguredCommand<AdminServerConfig> {
   
   private static void setupStandardPartitions(PgConfig cfg) {
     HikariConfig hikari = cfg.hikariConfig();
+    
+    final Name nBiota = new Name();
+    nBiota.setId("biota");
+    nBiota.setScientificName("Biota");
+    nBiota.setRank(Rank.SUPERKINGDOM);
+    nBiota.setHomotypicNameId(nBiota.getId());
+    nBiota.setOrigin(Origin.SOURCE);
+    nBiota.setType(NameType.INFORMAL);
+    
+    final Taxon tBiota = new Taxon();
+    tBiota.setId("root");
+    tBiota.setName(nBiota);
+    tBiota.setOrigin(Origin.SOURCE);
+  
     try (HikariDataSource dataSource = new HikariDataSource(hikari)) {
       // configure single mybatis session factory
       SqlSessionFactory factory = MybatisFactory.configure(dataSource, "init");
       SqlSession session = factory.openSession();
       DatasetPartitionMapper pm = session.getMapper(DatasetPartitionMapper.class);
-      for (int key : new int[]{Datasets.SCRUT_CAT, Datasets.PROV_CAT}) {
+      NameMapper nm = session.getMapper(NameMapper.class);
+      TaxonMapper tm = session.getMapper(TaxonMapper.class);
+      for (int key : new int[]{Datasets.COL, Datasets.PCAT, Datasets.DRAFT_COL}) {
         LOG.info("Create catalogue partition {}", key);
         pm.create(key);
         pm.buildIndices(key);
         pm.attach(key);
+        // add single Biota taxon
+        nBiota.setDatasetKey(key);
+        nm.create(nBiota);
+        
+        tBiota.setDatasetKey(key);
+        tm.create(tBiota);
       }
       session.commit();
       session.close();

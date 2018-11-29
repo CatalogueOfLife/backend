@@ -88,7 +88,7 @@ public class PgImportIT {
       // normalize
       store = NeoDbFactory.create(dataset.getKey(), cfg);
       store.put(dataset);
-      Normalizer norm = new Normalizer(store, source, NameIndexFactory.memory(Datasets.PROV_CAT, PgSetupRule.getSqlSessionFactory()));
+      Normalizer norm = new Normalizer(store, source, NameIndexFactory.memory(Datasets.PCAT, PgSetupRule.getSqlSessionFactory()));
       norm.call();
       
       // import into postgres

@@ -10,7 +10,7 @@ import org.col.api.model.TreeNode;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.col.api.vocab.Datasets.DRAFT_CAT;
+import static org.col.api.vocab.Datasets.DRAFT_COL;
 import static org.junit.Assert.*;
 
 public class TreeMapperTest extends MapperTestBase<TreeMapper> {
@@ -64,16 +64,16 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
     sm.create(s2);
     commit();
     
-    List<TreeNode> nodes = mapper().children(DRAFT_CAT, "t1");
+    List<TreeNode> nodes = mapper().children(DRAFT_COL, "t1");
     assertEquals(1, nodes.size());
     
-    nodes = mapper().children(DRAFT_CAT, "t2");
+    nodes = mapper().children(DRAFT_COL, "t2");
     assertEquals(1, nodes.size());
     
-    nodes = mapper().children(DRAFT_CAT, "t3");
+    nodes = mapper().children(DRAFT_COL, "t3");
     assertEquals(2, nodes.size());
     
-    nodes = mapper().parents(DRAFT_CAT, "t4");
+    nodes = mapper().parents(DRAFT_COL, "t4");
     assertEquals(4, nodes.size());
     assertNotNull(nodes.get(0).getSector());
     assertNull(nodes.get(1).getSector());

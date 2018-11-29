@@ -43,7 +43,7 @@ public class NameIndexMapDBTest {
   }
   
   void setupTest() throws Exception {
-    ni = NameIndexFactory.memory(Datasets.PROV_CAT, PgSetupRule.getSqlSessionFactory());
+    ni = NameIndexFactory.memory(Datasets.PCAT, PgSetupRule.getSqlSessionFactory());
     Collection<Name> names = Lists.newArrayList(
         name(1, "Animalia", Rank.KINGDOM, NomCode.ZOOLOGICAL),
         
