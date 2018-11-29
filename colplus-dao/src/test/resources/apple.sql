@@ -1,4 +1,10 @@
 -- test data
+INSERT INTO coluser (key, username, firstname, lastname, email, roles) VALUES
+    (1, 'admin',  'Stan', 'Sterling', 'stan@mailinator.com', '{2}'),
+    (2, 'editor', 'Yuri', 'Roskov', 'yuri@mailinator.com', '{0,1}'),
+    (3, 'user',   'Frank', 'Müller', 'frank@mailinator.com', '{0}');
+ALTER SEQUENCE coluser_key_seq RESTART WITH 100;
+
 INSERT INTO dataset (key, origin, title, import_frequency, created) VALUES (11, 1, 'First dataset',  -1, '2017-03-24');
 INSERT INTO dataset (key, origin, title, import_frequency, created) VALUES (12, 1, 'Second dataset', -1, now());
 

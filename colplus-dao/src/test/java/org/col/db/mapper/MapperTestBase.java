@@ -9,7 +9,7 @@ import org.gbif.nameparser.api.Rank;
 import org.junit.ClassRule;
 import org.junit.Rule;
 
-import static org.col.api.vocab.Datasets.DRAFT_CAT;
+import static org.col.api.vocab.Datasets.DRAFT_COL;
 
 /**
  * A reusable base class for all mybatis mapper tests that takes care of postgres & mybatis.
@@ -59,7 +59,7 @@ public abstract class MapperTestBase<T> {
   
   
   protected void populateDraftTree() {
-    partition(DRAFT_CAT);
+    partition(DRAFT_COL);
     
     NameMapper nm = mapper(NameMapper.class);
     
@@ -80,13 +80,13 @@ public abstract class MapperTestBase<T> {
   }
   
   private static Name draftName(NameMapper nm, String id, String name, Rank rank) {
-    Name n = TestEntityGenerator.newName(DRAFT_CAT, id, name, rank);
+    Name n = TestEntityGenerator.newName(DRAFT_COL, id, name, rank);
     nm.create(n);
     return n;
   }
   
   private static Taxon draftTaxon(TaxonMapper tm, String id, Name n, Taxon parent) {
-    Taxon t = TestEntityGenerator.newTaxon(DRAFT_CAT, id);
+    Taxon t = TestEntityGenerator.newTaxon(DRAFT_COL, id);
     t.setName(n);
     if (parent == null) {
       t.setParentId(null);

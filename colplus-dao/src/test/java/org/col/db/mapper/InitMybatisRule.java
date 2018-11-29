@@ -111,6 +111,7 @@ public class InitMybatisRule extends ExternalResource {
     try (Connection con = PgSetupRule.getConnection()) {
       con.setAutoCommit(false);
       java.sql.Statement st = con.createStatement();
+      st.execute("TRUNCATE coluser CASCADE");
       st.execute("TRUNCATE dataset CASCADE");
       con.commit();
       st.close();

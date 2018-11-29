@@ -69,7 +69,7 @@ public class SectorMapperTest extends MapperTestBase<SectorMapper> {
     Sector d = new Sector();
     d.setColSourceKey(sourceKey);
     d.setRoot(newNameRef());
-    d.setAttachment(newNameRef());
+    d.setTarget(newNameRef());
     return d;
   }
   

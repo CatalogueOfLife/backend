@@ -115,7 +115,7 @@ CREATE TABLE dataset (
   version TEXT,
   released DATE,
   citation TEXT,
-  homepage TEXT,
+  website TEXT,
   logo TEXT,
   data_format INTEGER,
   data_access TEXT,
@@ -162,7 +162,7 @@ CREATE TABLE col_source (
   authors_and_editors TEXT[] DEFAULT '{}',
   version TEXT,
   released DATE,
-  homepage TEXT,
+  website TEXT,
   "group" TEXT,
   coverage INTEGER,
   citation TEXT,
@@ -205,11 +205,14 @@ CREATE TABLE decision (
   subject_name TEXT,
   subject_authorship TEXT,
   subject_rank rank,
+  blocked BOOLEAN DEFAULT FALSE,
   status INTEGER,
-  name TEXT,
-  authorship TEXT,
+  name JSONB,
+  note TEXT,
   created TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW(),
-  deleted TIMESTAMP WITHOUT TIME ZONE
+  created_by INTEGER REFERENCES coluser,
+  modified TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW(),
+  modified_by INTEGER REFERENCES coluser
 );
 
 CREATE TABLE dataset_import (

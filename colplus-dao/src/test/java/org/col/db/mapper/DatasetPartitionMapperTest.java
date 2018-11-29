@@ -12,11 +12,11 @@ public class DatasetPartitionMapperTest extends MapperTestBase<DatasetPartitionM
   @Test
   public void createDelete() {
     // we only create the prov-cat partition in the InitMybatisRule
-    mapper().delete(Datasets.SCRUT_CAT);
-    mapper().create(Datasets.SCRUT_CAT);
-    mapper().buildIndices(Datasets.SCRUT_CAT);
-    mapper().attach(Datasets.SCRUT_CAT);
+    mapper().delete(Datasets.COL);
+    mapper().create(Datasets.COL);
+    mapper().buildIndices(Datasets.COL);
+    mapper().attach(Datasets.COL);
     
-    mapper().delete(Datasets.SCRUT_CAT);
+    mapper().delete(Datasets.COL);
   }
 }

@@ -105,9 +105,9 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
   
   private List<Dataset> createExpected() throws Exception {
     List<Dataset> ds = Lists.newArrayList();
-    ds.add(mapper().get(Datasets.SCRUT_CAT));
-    ds.add(mapper().get(Datasets.PROV_CAT));
-    ds.add(mapper().get(Datasets.DRAFT_CAT));
+    ds.add(mapper().get(Datasets.COL));
+    ds.add(mapper().get(Datasets.PCAT));
+    ds.add(mapper().get(Datasets.DRAFT_COL));
     ds.add(mapper().get(TestEntityGenerator.DATASET11.getKey()));
     ds.add(mapper().get(TestEntityGenerator.DATASET12.getKey()));
     ds.add(create());

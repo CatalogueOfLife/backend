@@ -64,10 +64,10 @@ public class AdminServer extends PgApp<AdminServerConfig> {
     NameIndex ni;
     if (cfg.namesIndexFile == null) {
       LOG.info("Using volatile in memory names index");
-      ni = NameIndexFactory.memory(Datasets.PROV_CAT, getSqlSessionFactory());
+      ni = NameIndexFactory.memory(Datasets.PCAT, getSqlSessionFactory());
     } else {
       LOG.info("Using names index at {}", cfg.namesIndexFile.getAbsolutePath());
-      ni = NameIndexFactory.persistent(Datasets.PROV_CAT, cfg.namesIndexFile, getSqlSessionFactory());
+      ni = NameIndexFactory.persistent(Datasets.PCAT, cfg.namesIndexFile, getSqlSessionFactory());
     }
     env.jersey().register(new MatchingResource(ni));
     

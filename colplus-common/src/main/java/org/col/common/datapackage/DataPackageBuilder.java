@@ -11,6 +11,7 @@ import org.col.api.datapackage.ColTerm;
 import org.col.api.datapackage.PackageDescriptor;
 import org.col.api.jackson.ApiModule;
 import org.col.api.vocab.*;
+import org.col.common.text.StringUtils;
 import org.col.common.text.UnicodeUtils;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
@@ -62,7 +63,10 @@ public class DataPackageBuilder {
   private static final Set<ColTerm> required = ImmutableSet.of(ColTerm.ID, ColTerm.scientificName);
   
   private String titleToName(String t) {
-    return UnicodeUtils.ascii(t).replaceAll("\\s+", "-");
+    if (StringUtils.hasContent(t)) {
+      return UnicodeUtils.ascii(t).replaceAll("\\s+", "-");
+    }
+    return null;
   }
   
   public DataPackage build(PackageDescriptor pd) {

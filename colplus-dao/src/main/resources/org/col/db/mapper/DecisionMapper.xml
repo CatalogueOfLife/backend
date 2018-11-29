@@ -12,11 +12,14 @@
     ed.subject_name,
     ed.subject_authorship,
     ed.subject_rank,
+    ed.blocked,
     ed.status,
     ed.name,
-    ed.authorship,
+    ed.note,
     ed.created,
-    ed.deleted
+    ed.created_by,
+    ed.modified,
+    ed.modified_by
   </sql>
 
   <sql id="COLS">
@@ -26,10 +29,11 @@
     subject_name,
     subject_authorship,
     subject_rank,
+    blocked,
     status,
     name,
-    authorship,
-    deleted
+    note,
+    modified_by
   </sql>
 
   <sql id="PROPS">
@@ -39,10 +43,11 @@
     #{subject.name},
     #{subject.authorship},
     #{subject.rank}::rank,
+    #{blocked},
     #{status},
-    #{name},
-    #{authorship},
-    #{deleted}
+    #{name, typeHandler=org.col.db.type2.NameJsonHandler}::jsonb,
+    #{note},
+    #{modifiedBy}
   </sql>
 
   <sql id="FROM">
@@ -51,9 +56,9 @@
 
   <resultMap id="decisionResultMap" type="EditorialDecision" autoMapping="true">
     <id property="key" column="key" />
+    <result property="name" column="name" typeHandler="org.col.db.type2.NameJsonHandler" />
     <association property="subject" javaType="NameRef" resultMap="org.col.db.mapper.SectorMapper.refResultMap" columnPrefix="subject_" />
   </resultMap>
-
 
   <select id="listBySector" resultMap="decisionResultMap">
     SELECT <include refid="SELECT" />
@@ -77,13 +82,13 @@
   </select>
 
   <insert id="create" parameterType="Sector" useGeneratedKeys="true" keyProperty="key">
-    INSERT INTO decision ( <include refid="COLS" /> )
-    VALUES ( <include refid="PROPS" /> )
+    INSERT INTO decision ( <include refid="COLS" />, created_by )
+    VALUES ( <include refid="PROPS" />, #{createdBy} )
   </insert>
 
   <update id="update" parameterType="Sector">
     UPDATE decision
-    SET (<include refid="COLS" />) = (<include refid="PROPS" />)
+    SET (<include refid="COLS" />, modified) = (<include refid="PROPS" />, now())
     WHERE key = #{key}
   </update>
 
