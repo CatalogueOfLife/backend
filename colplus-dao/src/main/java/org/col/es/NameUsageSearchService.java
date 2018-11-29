@@ -16,7 +16,6 @@ import org.elasticsearch.client.RestClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.col.common.util.CollectionUtils.isEmpty;
 import static org.col.es.EsConfig.DEFAULT_TYPE_NAME;
 import static org.col.es.EsConfig.NAME_USAGE_BASE;;
 
@@ -37,11 +36,8 @@ public class NameUsageSearchService {
   @VisibleForTesting
   NameSearchResponse search(String index, NameSearchRequest query, Page page) {
     NameSearchRequestTranslator translator = new NameSearchRequestTranslator(query, page);
-    if (isEmpty(query.getFacets())) {
-      EsSearchRequest esQuery = translator.translate();
-      return search(index, esQuery, page);
-    }
-    return null;
+    EsSearchRequest esSearchRequest = translator.translate();
+    return search(index, esSearchRequest, page);
   }
 
   @VisibleForTesting

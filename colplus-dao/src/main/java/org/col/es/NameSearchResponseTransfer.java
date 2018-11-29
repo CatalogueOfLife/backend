@@ -1,10 +1,14 @@
 package org.col.es;
 
 import java.io.IOException;
-import java.util.LinkedHashMap;
+import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.Set;
+import java.util.TreeSet;
+
+import com.fasterxml.jackson.databind.ObjectReader;
 
 import org.col.api.model.NameUsage;
 import org.col.api.model.Page;
@@ -29,6 +33,9 @@ import static org.col.api.search.NameSearchParameter.RANK;
 import static org.col.api.search.NameSearchParameter.STATUS;
 import static org.col.api.search.NameSearchParameter.TYPE;
 
+/**
+ * Converts the Elasticsearch response object to an API object (NameSearchResponse).
+ */
 class NameSearchResponseTransfer {
 
   private final EsNameSearchResponse esRresponse;
@@ -41,30 +48,33 @@ class NameSearchResponseTransfer {
 
   public NameSearchResponse transferResponse() {
     int total = esRresponse.getHits().getTotal();
-    List<NameUsageWrapper<NameUsage>> nameUsages = transferNameUsages();
-    if (esRresponse.getAggregations() == null) {
-      return new NameSearchResponse(page, total, nameUsages);
-    }
-    Map<NameSearchParameter, List<FacetValue<?>>> facets = transferFacets();
-    return new NameSearchResponse(page, total, nameUsages, facets);
-  }
-
-  private List<NameUsageWrapper<NameUsage>> transferNameUsages() {
-    return esRresponse.getHits().getHits().stream().map(this::convert).collect(Collectors.toList());
-  }
-
-  @SuppressWarnings("unchecked")
-  private NameUsageWrapper<NameUsage> convert(SearchHit<EsNameUsage> hit) {
+    List<NameUsageWrapper<NameUsage>> nameUsages;
     try {
-      return (NameUsageWrapper<NameUsage>) EsModule.NAME_USAGE_READER.readValue(hit.getSource().getPayload());
+      nameUsages = transferNameUsages();
     } catch (IOException e) {
       throw new EsException(e);
     }
+    if (esRresponse.getAggregations() == null) {
+      return new NameSearchResponse(page, total, nameUsages);
+    }
+    return new NameSearchResponse(page, total, nameUsages, transferFacets());
   }
 
-  private Map<NameSearchParameter, List<FacetValue<?>>> transferFacets() {
+  @SuppressWarnings("unchecked")
+  private List<NameUsageWrapper<NameUsage>> transferNameUsages() throws IOException {
+    List<SearchHit<EsNameUsage>> hits = esRresponse.getHits().getHits();
+    List<NameUsageWrapper<NameUsage>> nus = new ArrayList<>(hits.size());
+    ObjectReader reader = EsModule.NAME_USAGE_READER;
+    for (SearchHit<EsNameUsage> hit : hits) {
+      String payload = hit.getSource().getPayload();
+      nus.add((NameUsageWrapper<NameUsage>) reader.readValue(payload));
+    }
+    return nus;
+  }
+
+  private Map<NameSearchParameter, Set<FacetValue<?>>> transferFacets() {
     EsFacets esFacets = esRresponse.getAggregations().getContextFilter().getFacetsContainer();
-    Map<NameSearchParameter, List<FacetValue<?>>> facets = new LinkedHashMap<>();
+    Map<NameSearchParameter, Set<FacetValue<?>>> facets = new EnumMap<>(NameSearchParameter.class);
     addIfPresent(facets, DATASET_KEY, esFacets.getDatasetKey());
     addIfPresent(facets, FIELD, esFacets.getField());
     addIfPresent(facets, ISSUE, esFacets.getIssue());
@@ -78,7 +88,7 @@ class NameSearchResponseTransfer {
     return facets;
   }
 
-  private static void addIfPresent(Map<NameSearchParameter, List<FacetValue<?>>> facets, NameSearchParameter param, EsFacet esFacet) {
+  private static void addIfPresent(Map<NameSearchParameter, Set<FacetValue<?>>> facets, NameSearchParameter param, EsFacet esFacet) {
     if (esFacet != null) {
       if (param.type() == String.class) {
         facets.put(param, createStringBuckets(esFacet));
@@ -92,31 +102,30 @@ class NameSearchResponseTransfer {
     }
   }
 
-  private static List<FacetValue<?>> createStringBuckets(EsFacet esFacet) {
+  private static Set<FacetValue<?>> createStringBuckets(EsFacet esFacet) {
     return esFacet.getBucketsContainer()
         .getBuckets()
         .stream()
-        .map(b -> new FacetValue<String>(b.getKey().toString(), b.getDocCount()))
-        .collect(Collectors.toList());
+        .map(b -> FacetValue.forString(b.getKey(), b.getDocCount()))
+        .collect(TreeSet::new, TreeSet::add, TreeSet::addAll);
   }
 
-  private static List<FacetValue<?>> createIntBuckets(EsFacet esFacet) {
+  private static Set<FacetValue<?>> createIntBuckets(EsFacet esFacet) {
     return esFacet.getBucketsContainer()
         .getBuckets()
         .stream()
-        .map(b -> new FacetValue<Integer>((Integer) b.getKey(), b.getDocCount()))
-        .collect(Collectors.toList());
+        .map(b -> FacetValue.forInteger(b.getKey(), b.getDocCount()))
+        .collect(TreeSet::new, TreeSet::add, TreeSet::addAll);
   }
 
-  private static List<FacetValue<?>> createEnumBuckets(EsFacet esFacet, NameSearchParameter param) {
+  private static <U extends Enum<U>> Set<FacetValue<?>> createEnumBuckets(EsFacet esFacet, NameSearchParameter param) {
+    @SuppressWarnings("unchecked")
+    Class<U> enumClass = (Class<U>) param.type();
     return esFacet.getBucketsContainer()
         .getBuckets()
         .stream()
-        .map(b -> {
-          Enum<?> e = (Enum<?>) param.type().getEnumConstants()[(Integer) b.getKey()];
-          return new FacetValue<Enum<?>>(e, b.getDocCount());
-        })
-        .collect(Collectors.toList());
+        .map(b -> FacetValue.forEnum(enumClass, b.getKey(), b.getDocCount()))
+        .collect(TreeSet::new, TreeSet::add, TreeSet::addAll);
   }
 
 }

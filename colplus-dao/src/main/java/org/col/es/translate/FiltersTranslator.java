@@ -8,8 +8,6 @@ import org.col.es.InvalidQueryException;
 import org.col.es.query.BoolQuery;
 import org.col.es.query.Query;
 
-import static org.col.common.util.CollectionUtils.isEmpty;
-
 /**
  * Translates all query parameters except the "q" parameter into an Elasticsearch query. Unless there is just one query parameter, this will
  * result in an AND query. For example: ?rank=genus&nom_status=available is translated into (rank=genus AND nom_status=available). If a
@@ -27,9 +25,6 @@ class FiltersTranslator {
   }
 
   Query translate() throws InvalidQueryException {
-    if (isEmpty(request.getFilters())) {
-      return null;
-    }
     FilterTranslator ft = new FilterTranslator(request);
     Set<NameSearchParameter> params = request.getFilters().keySet();
     if (params.size() == 1) {
