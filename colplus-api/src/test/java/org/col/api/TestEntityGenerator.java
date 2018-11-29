@@ -29,6 +29,10 @@ public class TestEntityGenerator {
   private static final Splitter SPACE_SPLITTER = Splitter.on(" ").trimResults();
   private static final AtomicInteger ID_GEN = new AtomicInteger(10000);
   
+  public final static ColUser USER_USER = new ColUser();
+  public final static ColUser USER_EDITOR = new ColUser();
+  public final static ColUser USER_ADMIN = new ColUser();
+
   /**
    * Corresponds exactly to dataset record inserted via apple.sql with key=11
    */
@@ -80,6 +84,28 @@ public class TestEntityGenerator {
   public final static Reference REF3 = new Reference();
   
   static {
+    USER_ADMIN.setKey(1);
+    USER_ADMIN.setUsername("'admin'");
+    USER_ADMIN.setFirstname("Stan");
+    USER_ADMIN.setLastname("Sterling");
+    USER_ADMIN.setEmail("stan@mailinator.com");
+    USER_ADMIN.getRoles().add(ColUser.Role.ADMIN);
+  
+    USER_EDITOR.setKey(2);
+    USER_EDITOR.setUsername("editor");
+    USER_EDITOR.setFirstname("Yuri");
+    USER_EDITOR.setLastname("Roskov");
+    USER_EDITOR.setEmail("yuri@mailinator.com");
+    USER_EDITOR.getRoles().add(ColUser.Role.USER);
+    USER_EDITOR.getRoles().add(ColUser.Role.EDITOR);
+  
+    USER_USER.setKey(3);
+    USER_USER.setUsername("'user'");
+    USER_USER.setFirstname("Frank");
+    USER_USER.setLastname("Müller");
+    USER_USER.setEmail("frank@mailinator.com");
+    USER_USER.getRoles().add(ColUser.Role.USER);
+    
     DATASET11.setKey(11);
     DATASET12.setKey(12);
     

@@ -40,14 +40,14 @@ public class IdentityServiceTest {
   @Test
   @Ignore("GBIF service needs to be mocked - this uses live services")
   public void authenticateGBIF() {
-    assertTrue(ids.authenticateGBIF("manga", ""));
-    assertTrue(ids.authenticateGBIF("markus", ""));
+    assertTrue(ids.authenticateGBIF("markus", "xxx"));
+    assertTrue(ids.authenticateGBIF("colplus", "xxx"));
   }
   
   @Test
   @Ignore("GBIF service needs to be mocked - this uses live services")
   public void getUser() {
-    ColUser u = ids.getFullGbifUser("markus");
+    ColUser u = ids.getFullGbifUser("colplus");
     assertNotNull(u);
   }
 }

@@ -43,11 +43,11 @@
     #{root.name},
     #{root.authorship},
     #{root.rank}::rank,
-    #{attachment.id},
-    #{attachment.indexNameId},
-    #{attachment.name},
-    #{attachment.authorship},
-    #{attachment.rank}::rank,
+    #{target.id},
+    #{target.indexNameId},
+    #{target.name},
+    #{target.authorship},
+    #{target.rank}::rank,
     #{modified}
   </sql>
 
@@ -59,7 +59,7 @@
   <resultMap id="sectorResultMap" type="Sector" autoMapping="true">
     <id property="key" column="key" />
     <association property="root" javaType="NameRef" resultMap="org.col.db.mapper.SectorMapper.refResultMap" columnPrefix="root_" />
-    <association property="attachment" javaType="NameRef" resultMap="org.col.db.mapper.SectorMapper.refResultMap" columnPrefix="attach_" />
+    <association property="target" javaType="NameRef" resultMap="org.col.db.mapper.SectorMapper.refResultMap" columnPrefix="attach_" />
   </resultMap>
 
   <resultMap id="refResultMap" type="NameRef" autoMapping="true">

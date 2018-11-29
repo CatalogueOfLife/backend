@@ -1,6 +1,7 @@
 package org.col.api.model;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -11,7 +12,9 @@ public class Sector implements IntKey {
   private Integer key;
   private Integer colSourceKey;
   private NameRef root;
-  private NameRef attachment;
+  private NameRef target;
+  private List<NameRef> exclude;
+  private boolean exclusive;
   private LocalDateTime created;
   private LocalDateTime modified;
   
@@ -50,14 +53,36 @@ public class Sector implements IntKey {
   }
   
   /**
-   * The attachment point in the CoL tree, i.e. the CoL parent taxon for the sector root
+   * Optional list of taxa within the descendants of root to exclude from this sector definition
    */
-  public NameRef getAttachment() {
-    return attachment;
+  public List<NameRef> getExclude() {
+    return exclude;
   }
   
-  public void setAttachment(NameRef attachment) {
-    this.attachment = attachment;
+  public void setExclude(List<NameRef> exclude) {
+    this.exclude = exclude;
+  }
+  
+  /**
+   * @return true if the
+   */
+  public boolean isExclusive() {
+    return exclusive;
+  }
+  
+  public void setExclusive(boolean exclusive) {
+    this.exclusive = exclusive;
+  }
+  
+  /**
+   * The attachment point in the CoL tree, i.e. the CoL parent taxon for the sector root
+   */
+  public NameRef getTarget() {
+    return target;
+  }
+  
+  public void setTarget(NameRef target) {
+    this.target = target;
   }
   
   public LocalDateTime getCreated() {
@@ -87,14 +112,14 @@ public class Sector implements IntKey {
     return Objects.equals(key, sector.key) &&
         Objects.equals(colSourceKey, sector.colSourceKey) &&
         Objects.equals(root, sector.root) &&
-        Objects.equals(attachment, sector.attachment) &&
+        Objects.equals(target, sector.target) &&
         Objects.equals(created, sector.created) &&
         Objects.equals(modified, sector.modified);
   }
   
   @Override
   public int hashCode() {
-    return Objects.hash(key, colSourceKey, root, attachment, created, modified);
+    return Objects.hash(key, colSourceKey, root, target, created, modified);
   }
   
   @Override

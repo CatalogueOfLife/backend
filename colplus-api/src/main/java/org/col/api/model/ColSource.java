@@ -31,7 +31,7 @@ public class ColSource implements SourceMetadata, IntKey {
   private String version;
   private LocalDate released;
   @AbsoluteURI
-  private URI homepage;
+  private URI website;
   private String group;
   private DatasetType coverage;
   private String citation;
@@ -145,12 +145,12 @@ public class ColSource implements SourceMetadata, IntKey {
   
   @Override
   public URI getWebsite() {
-    return homepage;
+    return website;
   }
   
   @Override
   public void setWebsite(URI website) {
-    this.homepage = website;
+    this.website = website;
   }
   
   /**
@@ -286,7 +286,7 @@ public class ColSource implements SourceMetadata, IntKey {
         Objects.equals(authorsAndEditors, colSource.authorsAndEditors) &&
         Objects.equals(version, colSource.version) &&
         Objects.equals(released, colSource.released) &&
-        Objects.equals(homepage, colSource.homepage) &&
+        Objects.equals(website, colSource.website) &&
         Objects.equals(group, colSource.group) &&
         coverage == colSource.coverage &&
         Objects.equals(citation, colSource.citation) &&
@@ -306,7 +306,7 @@ public class ColSource implements SourceMetadata, IntKey {
   @Override
   public int hashCode() {
     
-    return Objects.hash(key, datasetKey, title, alias, description, organisations, contactPerson, authorsAndEditors, version, released, homepage, group, coverage, citation, livingSpeciesCount, livingInfraspecificCount, extinctSpeciesCount, extinctInfraspecificCount, synonymsCount, vernacularsCount, namesCount, created, confidence, completeness, notes);
+    return Objects.hash(key, datasetKey, title, alias, description, organisations, contactPerson, authorsAndEditors, version, released, website, group, coverage, citation, livingSpeciesCount, livingInfraspecificCount, extinctSpeciesCount, extinctInfraspecificCount, synonymsCount, vernacularsCount, namesCount, created, confidence, completeness, notes);
   }
   
   @Override
