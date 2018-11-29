@@ -53,13 +53,13 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
     
     Sector s1 = new Sector();
     s1.setColSourceKey(source.getKey());
-    s1.setRoot(nameref("root-1"));
+    s1.setSubject(nameref("root-1"));
     s1.setTarget(nameref("t4"));
     sm.create(s1);
     
     Sector s2 = new Sector();
     s2.setColSourceKey(source.getKey());
-    s2.setRoot(nameref("root-2"));
+    s2.setSubject(nameref("root-2"));
     s2.setTarget(nameref("t5"));
     sm.create(s2);
     commit();

@@ -46,11 +46,10 @@ public class DecisionMapperTest extends CRUDMapperTest<EditorialDecision, Decisi
     EditorialDecision d = new EditorialDecision();
     d.setSectorKey(sectorKey);
     d.setSubject(newNameRef());
-    d.setBlocked(false);
+    d.setMode(EditorialDecision.Mode.CREATE);
     d.setName(TestEntityGenerator.newName());
     d.setStatus(TaxonomicStatus.AMBIGUOUS_SYNONYM);
     d.setNote("I cannot remember why I did this.");
-    
     d.setCreatedBy(TestEntityGenerator.USER_EDITOR.getKey());
     d.setModifiedBy(d.getCreatedBy());
     return d;

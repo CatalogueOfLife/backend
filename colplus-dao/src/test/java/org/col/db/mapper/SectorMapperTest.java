@@ -1,6 +1,8 @@
 package org.col.db.mapper;
 
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.ibatis.exceptions.PersistenceException;
+import org.col.api.TestEntityGenerator;
 import org.col.api.model.ColSource;
 import org.col.api.model.Sector;
 import org.junit.Before;
@@ -8,9 +10,8 @@ import org.junit.Test;
 
 import static org.col.api.TestEntityGenerator.DATASET11;
 import static org.col.api.TestEntityGenerator.newNameRef;
-import static org.junit.Assert.*;
 
-public class SectorMapperTest extends MapperTestBase<SectorMapper> {
+public class SectorMapperTest extends CRUDMapperTest<Sector, SectorMapper> {
   
   private ColSource source;
   
@@ -24,18 +25,35 @@ public class SectorMapperTest extends MapperTestBase<SectorMapper> {
     mapper(ColSourceMapper.class).create(source);
   }
   
-  @Test
-  public void roundtrip() throws Exception {
-    Sector d1 = create(source.getKey());
-    mapper().create(d1);
-    
-    commit();
-    
-    Sector d2 = mapper().get(d1.getKey());
+  
+  @Override
+  Sector createTestEntity() {
+    return create(source.getKey());
+  }
+  
+  static Sector create(int sourceKey) {
+    Sector d = new Sector();
+    d.setColSourceKey(sourceKey);
+    d.setMode(Sector.Mode.ATTACH);
+    d.setSubject(newNameRef());
+    d.setTarget(newNameRef());
+    d.setNote(RandomStringUtils.random(1024));
+    d.setCreatedBy(TestEntityGenerator.USER_EDITOR.getKey());
+    d.setModifiedBy(TestEntityGenerator.USER_EDITOR.getKey());
+    return d;
+  }
+  
+  @Override
+  Sector removeDbCreatedProps(Sector s) {
     // remove newly set property
-    d2.setCreated(null);
-    
-    assertEquals(d1, d2);
+    s.setCreated(null);
+    s.setModified(null);
+    return s;
+  }
+  
+  @Override
+  void updateTestObj(Sector s) {
+    s.setNote("not my thing");
   }
   
   @Test(expected = PersistenceException.class)
@@ -47,30 +65,6 @@ public class SectorMapperTest extends MapperTestBase<SectorMapper> {
     d1.setKey(null);
     mapper().create(d1);
     commit();
-  }
-  
-  @Test
-  public void delete() throws Exception {
-    Sector d1 = create(source.getKey());
-    mapper().create(d1);
-    
-    commit();
-    
-    // not deleted yet
-    Sector d = mapper().get(d1.getKey());
-    assertNotNull(d.getCreated());
-    
-    // physically delete
-    mapper().delete(d1.getKey());
-    assertNull(mapper().get(d1.getKey()));
-  }
-  
-  public static Sector create(int sourceKey) {
-    Sector d = new Sector();
-    d.setColSourceKey(sourceKey);
-    d.setRoot(newNameRef());
-    d.setTarget(newNameRef());
-    return d;
   }
   
 }

@@ -4,50 +4,61 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="org.col.db.mapper.DecisionMapper">
 
-  <sql id="SELECT">
-    ed.key,
-    ed.sector_key,
-    ed.subject_id,
-    ed.subject_index_name_id,
-    ed.subject_name,
-    ed.subject_authorship,
-    ed.subject_rank,
-    ed.blocked,
-    ed.status,
-    ed.name,
-    ed.note,
-    ed.created,
-    ed.created_by,
-    ed.modified,
-    ed.modified_by
+  <sql id="DecisionCols">
+    ${prefix}subject_id,
+    ${prefix}subject_index_name_id,
+    ${prefix}subject_name,
+    ${prefix}subject_authorship,
+    ${prefix}subject_rank,
+    ${prefix}note,
+    ${prefix}modified,
+    ${prefix}modified_by
   </sql>
-
-  <sql id="COLS">
-    sector_key,
-    subject_id,
-    subject_index_name_id,
-    subject_name,
-    subject_authorship,
-    subject_rank,
-    blocked,
-    status,
-    name,
-    note,
-    modified_by
+  <sql id="DecisionColsAll">
+    ${prefix}key,
+    <include refid="org.col.db.mapper.DecisionMapper.DecisionCols">
+      <property name="prefix" value="${prefix}"/>
+    </include>,
+    ${prefix}created,
+    ${prefix}created_by
   </sql>
-
-  <sql id="PROPS">
-    #{sectorKey},
+  <sql id="DecisionProps">
     #{subject.id},
     #{subject.indexNameId},
     #{subject.name},
     #{subject.authorship},
     #{subject.rank}::rank,
-    #{blocked},
-    #{status},
-    #{name, typeHandler=org.col.db.type2.NameJsonHandler}::jsonb,
     #{note},
+    now(),
     #{modifiedBy}
+  </sql>
+
+  <sql id="SELECT">
+    ed.sector_key,
+    <include refid="DecisionColsAll">
+      <property name="prefix" value="ed."/>
+    </include>,
+    ed.mode,
+    ed.status,
+    ed.name
+  </sql>
+
+  <sql id="COLS">
+    sector_key,
+    <include refid="DecisionCols">
+      <property name="prefix" value=""/>
+    </include>,
+    mode,
+    status,
+    name
+  </sql>
+
+  <sql id="PROPS">
+    #{sectorKey},
+    <include refid="DecisionProps" />,
+    #{mode},
+    #{status},
+    #{name, typeHandler=org.col.db.type2.NameJsonHandler}::jsonb
   </sql>
 
   <sql id="FROM">
@@ -88,7 +99,7 @@
 
   <update id="update" parameterType="Sector">
     UPDATE decision
-    SET (<include refid="COLS" />, modified) = (<include refid="PROPS" />, now())
+    SET (<include refid="COLS" />) = (<include refid="PROPS" />)
     WHERE key = #{key}
   </update>
 

@@ -1,34 +1,33 @@
 package org.col.api.model;
 
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * A taxonomic sector definition within a dataset that is used to assemble the Catalogue of Life.
  * Sectors will also serve to show the taxonomic coverage in the CoL portal.
+ * The subject of the sector is the root taxon in the original source dataset.
+ * The target is the parent taxon the subject should be placed under in the catalogue in ATTACH mode.
+ * In MERGE mode the subject taxon itself should be skipped and only its descendants be included.
+ *
+ * A sector can be really small and the subject even be a species, but usually it is some higher taxon.
  */
-public class Sector implements IntKey {
-  private Integer key;
+public class Sector extends Decision {
   private Integer colSourceKey;
-  private NameRef root;
   private NameRef target;
   private List<NameRef> exclude;
-  private boolean exclusive;
-  private LocalDateTime created;
-  private LocalDateTime modified;
+  private Mode mode;
   
-  /**
-   * Primary key
-   */
-  public Integer getKey() {
-    return key;
+  public static enum Mode {
+    /**
+     * Attach the entire subject and its descendants under its target parent.
+     */
+    ATTACH,
+
+    /**
+     * Merge all descendants of subject under the target taxon, but exclude the subject taxon itself.
+     */
+    MERGE
   }
-  
-  public void setKey(Integer key) {
-    this.key = key;
-  }
-  
   /**
    * The col source the root of this sector originates from
    */
@@ -38,18 +37,6 @@ public class Sector implements IntKey {
   
   public void setColSourceKey(Integer colSourceKey) {
     this.colSourceKey = colSourceKey;
-  }
-  
-  /**
-   * A reference to the single root taxon from the col source for this sector.
-   * Can even be a species, but usually some higher taxon.
-   */
-  public NameRef getRoot() {
-    return root;
-  }
-  
-  public void setRoot(NameRef root) {
-    this.root = root;
   }
   
   /**
@@ -63,15 +50,12 @@ public class Sector implements IntKey {
     this.exclude = exclude;
   }
   
-  /**
-   * @return true if the
-   */
-  public boolean isExclusive() {
-    return exclusive;
+  public Mode getMode() {
+    return mode;
   }
   
-  public void setExclusive(boolean exclusive) {
-    this.exclusive = exclusive;
+  public void setMode(Mode mode) {
+    this.mode = mode;
   }
   
   /**
@@ -85,48 +69,13 @@ public class Sector implements IntKey {
     this.target = target;
   }
   
-  public LocalDateTime getCreated() {
-    return created;
-  }
-  
-  public void setCreated(LocalDateTime created) {
-    this.created = created;
-  }
-  
-  /**
-   * Time the data of this sector was last changed in the Catalogue of Life.
-   */
-  public LocalDateTime getModified() {
-    return modified;
-  }
-  
-  public void setModified(LocalDateTime modified) {
-    this.modified = modified;
-  }
-  
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
-    Sector sector = (Sector) o;
-    return Objects.equals(key, sector.key) &&
-        Objects.equals(colSourceKey, sector.colSourceKey) &&
-        Objects.equals(root, sector.root) &&
-        Objects.equals(target, sector.target) &&
-        Objects.equals(created, sector.created) &&
-        Objects.equals(modified, sector.modified);
-  }
-  
-  @Override
-  public int hashCode() {
-    return Objects.hash(key, colSourceKey, root, target, created, modified);
-  }
   
   @Override
   public String toString() {
-    return "Sector{" + key +
+    return "Sector{" + getKey() +
         ", colSourceKey=" + colSourceKey +
-        ", root=" + root +
+        ", mode=" + mode +
+        ", subject=" + getSubject() +
         '}';
   }
 }
