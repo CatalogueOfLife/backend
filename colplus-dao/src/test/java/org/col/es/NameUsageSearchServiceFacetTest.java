@@ -1,13 +1,12 @@
 package org.col.es;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
@@ -147,8 +146,8 @@ public class NameUsageSearchServiceFacetTest extends EsReadTestBase {
 
     NameSearchResponse result = svc.search(indexName, nsr, page);
 
-    Map<NameSearchParameter, List<FacetValue<?>>> expected = new HashMap<>();
-    List<FacetValue<?>> rankFacet = new ArrayList<>();
+    Map<NameSearchParameter, Set<FacetValue<?>>> expected = new HashMap<>();
+    Set<FacetValue<?>> rankFacet = new TreeSet<>();
     rankFacet.add(FacetValue.forEnum(Rank.class, Rank.KINGDOM.ordinal(), 4)); // Descending doc count !!!
     rankFacet.add(FacetValue.forEnum(Rank.class, Rank.PHYLUM.ordinal(), 4));
     rankFacet.add(FacetValue.forEnum(Rank.class, Rank.GENUS.ordinal(), 3));
@@ -156,7 +155,7 @@ public class NameUsageSearchServiceFacetTest extends EsReadTestBase {
     rankFacet.add(FacetValue.forEnum(Rank.class, Rank.SPECIES.ordinal(), 1));
     expected.put(NameSearchParameter.RANK, rankFacet);
 
-    assertEqualsIgnoringOrder(expected, result.getFacets());
+    assertEquals(expected, result.getFacets());
 
   }
 
@@ -257,9 +256,9 @@ public class NameUsageSearchServiceFacetTest extends EsReadTestBase {
 
     NameSearchResponse result = svc.search(indexName, nsr, page);
 
-    Map<NameSearchParameter, List<FacetValue<?>>> expected = new HashMap<>();
+    Map<NameSearchParameter, Set<FacetValue<?>>> expected = new HashMap<>();
 
-    List<FacetValue<?>> rankFacet = new ArrayList<>();
+    Set<FacetValue<?>> rankFacet = new TreeSet<>();
     rankFacet.add(FacetValue.forEnum(Rank.class, Rank.KINGDOM.ordinal(), 4));
     rankFacet.add(FacetValue.forEnum(Rank.class, Rank.PHYLUM.ordinal(), 4));
     rankFacet.add(FacetValue.forEnum(Rank.class, Rank.GENUS.ordinal(), 3));
@@ -267,7 +266,7 @@ public class NameUsageSearchServiceFacetTest extends EsReadTestBase {
     rankFacet.add(FacetValue.forEnum(Rank.class, Rank.SPECIES.ordinal(), 1));
     expected.put(NameSearchParameter.RANK, rankFacet);
 
-    List<FacetValue<?>> issueFacet = new ArrayList<>();
+    Set<FacetValue<?>> issueFacet = new TreeSet<>();
     issueFacet.add(FacetValue.forEnum(Issue.class, Issue.ACCEPTED_NAME_MISSING.ordinal(), 5));
     issueFacet.add(FacetValue.forEnum(Issue.class, Issue.BASIONYM_ID_INVALID.ordinal(), 3));
     issueFacet.add(FacetValue.forEnum(Issue.class, Issue.ACCEPTED_ID_INVALID.ordinal(), 2));
@@ -275,7 +274,7 @@ public class NameUsageSearchServiceFacetTest extends EsReadTestBase {
     issueFacet.add(FacetValue.forEnum(Issue.class, Issue.CLASSIFICATION_NOT_APPLIED.ordinal(), 1));
     expected.put(NameSearchParameter.ISSUE, issueFacet);
 
-    assertEqualsIgnoringOrder(expected, result.getFacets());
+    assertEquals(expected, result.getFacets());
 
   }
 
@@ -399,9 +398,9 @@ public class NameUsageSearchServiceFacetTest extends EsReadTestBase {
 
     NameSearchResponse result = svc.search(indexName, nsr, page);
 
-    Map<NameSearchParameter, List<FacetValue<?>>> expected = new HashMap<>();
+    Map<NameSearchParameter, Set<FacetValue<?>>> expected = new HashMap<>();
 
-    List<FacetValue<?>> rankFacet = new ArrayList<>();
+    Set<FacetValue<?>> rankFacet = new TreeSet<>();
     rankFacet.add(FacetValue.forEnum(Rank.class, Rank.KINGDOM.ordinal(), 4)); // Descending doc count !!!
     rankFacet.add(FacetValue.forEnum(Rank.class, Rank.PHYLUM.ordinal(), 4));
     rankFacet.add(FacetValue.forEnum(Rank.class, Rank.GENUS.ordinal(), 3));
@@ -409,7 +408,7 @@ public class NameUsageSearchServiceFacetTest extends EsReadTestBase {
     rankFacet.add(FacetValue.forEnum(Rank.class, Rank.SPECIES.ordinal(), 1));
     expected.put(NameSearchParameter.RANK, rankFacet);
 
-    List<FacetValue<?>> issueFacet = new ArrayList<>();
+    Set<FacetValue<?>> issueFacet = new TreeSet<>();
     issueFacet.add(FacetValue.forEnum(Issue.class, Issue.ACCEPTED_NAME_MISSING.ordinal(), 5));
     issueFacet.add(FacetValue.forEnum(Issue.class, Issue.BASIONYM_ID_INVALID.ordinal(), 3));
     issueFacet.add(FacetValue.forEnum(Issue.class, Issue.ACCEPTED_ID_INVALID.ordinal(), 2));
@@ -417,12 +416,12 @@ public class NameUsageSearchServiceFacetTest extends EsReadTestBase {
     issueFacet.add(FacetValue.forEnum(Issue.class, Issue.CLASSIFICATION_NOT_APPLIED.ordinal(), 1));
     expected.put(NameSearchParameter.ISSUE, issueFacet);
 
-    List<FacetValue<?>> pubIdFacet = new ArrayList<>();
+    Set<FacetValue<?>> pubIdFacet = new TreeSet<>();
     pubIdFacet.add(FacetValue.forString(PUB_ID1, 6));
     pubIdFacet.add(FacetValue.forString(PUB_ID2, 4));
     expected.put(NameSearchParameter.PUBLISHED_IN_ID, pubIdFacet);
 
-    assertEqualsIgnoringOrder(expected, result.getFacets());
+    assertEquals(expected, result.getFacets());
 
   }
 
@@ -549,9 +548,9 @@ public class NameUsageSearchServiceFacetTest extends EsReadTestBase {
 
     NameSearchResponse result = svc.search(indexName, nsr, page);
 
-    Map<NameSearchParameter, List<FacetValue<?>>> expected = new HashMap<>();
+    Map<NameSearchParameter, Set<FacetValue<?>>> expected = new HashMap<>();
 
-    List<FacetValue<?>> rankFacet = new ArrayList<>();
+    Set<FacetValue<?>> rankFacet = new TreeSet<>();
     rankFacet.add(FacetValue.forEnum(Rank.class, Rank.KINGDOM.ordinal(), 2));
     rankFacet.add(FacetValue.forEnum(Rank.class, Rank.PHYLUM.ordinal(), 2));
     rankFacet.add(FacetValue.forEnum(Rank.class, Rank.CLASS.ordinal(), 1));
@@ -559,18 +558,18 @@ public class NameUsageSearchServiceFacetTest extends EsReadTestBase {
     rankFacet.add(FacetValue.forEnum(Rank.class, Rank.SPECIES.ordinal(), 1));
     expected.put(NameSearchParameter.RANK, rankFacet);
 
-    List<FacetValue<?>> issueFacet = new ArrayList<>();
+    Set<FacetValue<?>> issueFacet = new TreeSet<>();
     issueFacet.add(FacetValue.forEnum(Issue.class, Issue.ACCEPTED_NAME_MISSING.ordinal(), 2));
     issueFacet.add(FacetValue.forEnum(Issue.class, Issue.BASIONYM_ID_INVALID.ordinal(), 2));
     issueFacet.add(FacetValue.forEnum(Issue.class, Issue.CITATION_UNPARSED.ordinal(), 2));
     expected.put(NameSearchParameter.ISSUE, issueFacet);
 
-    List<FacetValue<?>> pubIdFacet = new ArrayList<>();
+    Set<FacetValue<?>> pubIdFacet = new TreeSet<>();
     pubIdFacet.add(FacetValue.forString(PUB_ID1, 3));
     pubIdFacet.add(FacetValue.forString(PUB_ID2, 2));
     expected.put(NameSearchParameter.PUBLISHED_IN_ID, pubIdFacet);
 
-    assertEqualsIgnoringOrder(expected, result.getFacets());
+    assertEquals(expected, result.getFacets());
 
   }
 
@@ -698,45 +697,26 @@ public class NameUsageSearchServiceFacetTest extends EsReadTestBase {
 
     NameSearchResponse result = svc.search(indexName, nsr, page);
 
-    Map<NameSearchParameter, List<FacetValue<?>>> expected = new HashMap<>();
+    Map<NameSearchParameter, Set<FacetValue<?>>> expected = new HashMap<>();
 
-    List<FacetValue<?>> rankFacet = new ArrayList<>();
+    Set<FacetValue<?>> rankFacet = new TreeSet<>();
     rankFacet.add(FacetValue.forEnum(Rank.class, Rank.KINGDOM.ordinal(), 3));
     rankFacet.add(FacetValue.forEnum(Rank.class, Rank.PHYLUM.ordinal(), 1));
     rankFacet.add(FacetValue.forEnum(Rank.class, Rank.GENUS.ordinal(), 2));
     expected.put(NameSearchParameter.RANK, rankFacet);
 
-    List<FacetValue<?>> issueFacet = new ArrayList<>();
+    Set<FacetValue<?>> issueFacet = new TreeSet<>();
     issueFacet.add(FacetValue.forEnum(Issue.class, Issue.ACCEPTED_NAME_MISSING.ordinal(), 2));
     issueFacet.add(FacetValue.forEnum(Issue.class, Issue.BASIONYM_ID_INVALID.ordinal(), 3));
     expected.put(NameSearchParameter.ISSUE, issueFacet);
 
-    List<FacetValue<?>> pubIdFacet = new ArrayList<>();
+    Set<FacetValue<?>> pubIdFacet = new TreeSet<>();
     pubIdFacet.add(FacetValue.forString(PUB_ID1, 6));
     pubIdFacet.add(FacetValue.forString(PUB_ID2, 4));
     expected.put(NameSearchParameter.PUBLISHED_IN_ID, pubIdFacet);
 
-    assertEqualsIgnoringOrder(expected, result.getFacets());
+    assertEquals(expected, result.getFacets());
 
-  }
-
-  private static void assertEqualsIgnoringOrder(Map<NameSearchParameter, List<FacetValue<?>>> expected,
-      Map<NameSearchParameter, List<FacetValue<?>>> actual) {
-    expected.values().forEach(Collections::sort);
-    actual.values().forEach(Collections::sort);
-
-    TreeMap<NameSearchParameter, List<FacetValue<?>>> expected1 = new TreeMap<>(expected);
-    TreeMap<NameSearchParameter, List<FacetValue<?>>> actual1 = new TreeMap<>(actual);
-
-    try {
-      System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-      System.out.println(ApiModule.MAPPER.writer().withDefaultPrettyPrinter().writeValueAsString(expected1));
-      System.out.println("*******************************************************************");
-      System.out.println(ApiModule.MAPPER.writer().withDefaultPrettyPrinter().writeValueAsString(actual1));
-      assertEquals(expected1, actual1);
-    } catch (JsonProcessingException e) {
-      throw new RuntimeException(e);
-    }
   }
 
   private static String getDummyPayload() {

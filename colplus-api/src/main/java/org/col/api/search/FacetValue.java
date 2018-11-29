@@ -4,7 +4,7 @@ import java.util.Objects;
 
 import com.google.common.base.Preconditions;
 
-public class FacetValue<T> implements Comparable<FacetValue<T>> {
+public class FacetValue<T extends Comparable<T>> implements Comparable<FacetValue<T>> {
 
   public static FacetValue<String> forString(Object val, int count) {
     return new FacetValue<>(val.toString(), count);
@@ -13,7 +13,7 @@ public class FacetValue<T> implements Comparable<FacetValue<T>> {
   public static FacetValue<Integer> forInteger(Object val, int count) {
     // See NameSearchResponseTransferTest. In theory val might could a Long or even a BigInteger, but that's very unlikely. Only if the
     // dataset key were to be a facet and it was declared to be a double precision integer in Postgress.
-    Preconditions.checkArgument(val.getClass() == Integer.class, "Integer overflow");
+    Preconditions.checkArgument(val.getClass() == Integer.class, "%s could not be cast to integer", val);
     return new FacetValue<>((Integer) val, count);
   }
 
@@ -59,10 +59,9 @@ public class FacetValue<T> implements Comparable<FacetValue<T>> {
 
   @Override
   public int compareTo(FacetValue<T> other) {
-    @SuppressWarnings({"rawtypes", "unchecked"}) // String, Integer and Enum are all Comparable
-    int i = ((Comparable) value).compareTo(other.value);
+    int i = count - other.count;
     if (i == 0) {
-      return count - other.count;
+      return value.compareTo(other.value);
     }
     return i;
   }

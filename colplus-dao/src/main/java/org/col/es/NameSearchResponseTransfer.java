@@ -5,7 +5,8 @@ import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.Set;
+import java.util.TreeSet;
 
 import com.fasterxml.jackson.databind.ObjectReader;
 
@@ -71,9 +72,9 @@ class NameSearchResponseTransfer {
     return nus;
   }
 
-  private Map<NameSearchParameter, List<FacetValue<?>>> transferFacets() {
+  private Map<NameSearchParameter, Set<FacetValue<?>>> transferFacets() {
     EsFacets esFacets = esRresponse.getAggregations().getContextFilter().getFacetsContainer();
-    Map<NameSearchParameter, List<FacetValue<?>>> facets = new EnumMap<>(NameSearchParameter.class);
+    Map<NameSearchParameter, Set<FacetValue<?>>> facets = new EnumMap<>(NameSearchParameter.class);
     addIfPresent(facets, DATASET_KEY, esFacets.getDatasetKey());
     addIfPresent(facets, FIELD, esFacets.getField());
     addIfPresent(facets, ISSUE, esFacets.getIssue());
@@ -87,7 +88,7 @@ class NameSearchResponseTransfer {
     return facets;
   }
 
-  private static void addIfPresent(Map<NameSearchParameter, List<FacetValue<?>>> facets, NameSearchParameter param, EsFacet esFacet) {
+  private static void addIfPresent(Map<NameSearchParameter, Set<FacetValue<?>>> facets, NameSearchParameter param, EsFacet esFacet) {
     if (esFacet != null) {
       if (param.type() == String.class) {
         facets.put(param, createStringBuckets(esFacet));
@@ -101,30 +102,30 @@ class NameSearchResponseTransfer {
     }
   }
 
-  private static List<FacetValue<?>> createStringBuckets(EsFacet esFacet) {
+  private static Set<FacetValue<?>> createStringBuckets(EsFacet esFacet) {
     return esFacet.getBucketsContainer()
         .getBuckets()
         .stream()
         .map(b -> FacetValue.forString(b.getKey(), b.getDocCount()))
-        .collect(Collectors.toList());
+        .collect(TreeSet::new, TreeSet::add, TreeSet::addAll);
   }
 
-  private static List<FacetValue<?>> createIntBuckets(EsFacet esFacet) {
+  private static Set<FacetValue<?>> createIntBuckets(EsFacet esFacet) {
     return esFacet.getBucketsContainer()
         .getBuckets()
         .stream()
         .map(b -> FacetValue.forInteger(b.getKey(), b.getDocCount()))
-        .collect(Collectors.toList());
+        .collect(TreeSet::new, TreeSet::add, TreeSet::addAll);
   }
 
-  private static <U extends Enum<U>> List<FacetValue<?>> createEnumBuckets(EsFacet esFacet, NameSearchParameter param) {
+  private static <U extends Enum<U>> Set<FacetValue<?>> createEnumBuckets(EsFacet esFacet, NameSearchParameter param) {
     @SuppressWarnings("unchecked")
     Class<U> enumClass = (Class<U>) param.type();
     return esFacet.getBucketsContainer()
         .getBuckets()
         .stream()
         .map(b -> FacetValue.forEnum(enumClass, b.getKey(), b.getDocCount()))
-        .collect(Collectors.toList());
+        .collect(TreeSet::new, TreeSet::add, TreeSet::addAll);
   }
 
 }
