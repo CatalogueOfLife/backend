@@ -26,7 +26,7 @@ public class FacetValue<T extends Comparable<T>> implements Comparable<FacetValu
   private final T value;
   private final int count;
 
-  public FacetValue(T value, int count) {
+  private FacetValue(T value, int count) {
     Preconditions.checkNotNull(value);
     this.value = value;
     this.count = count;
@@ -59,7 +59,7 @@ public class FacetValue<T extends Comparable<T>> implements Comparable<FacetValu
 
   @Override
   public int compareTo(FacetValue<T> other) {
-    int i = count - other.count;
+    int i = other.count - count; // doc count descending !
     if (i == 0) {
       return value.compareTo(other.value);
     }

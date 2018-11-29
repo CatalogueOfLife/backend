@@ -54,16 +54,19 @@ public class NameSearchRequest {
 
   public NameSearchRequest() {}
 
+  /**
+   * Creates a copy of this NameSearchRequest that you can change without affecting the original.
+   */
   public NameSearchRequest copy() {
     NameSearchRequest copy = new NameSearchRequest();
-    if (filters != null) {
+    if (filters != null && !filters.isEmpty()) {
       copy.filters = new MultivaluedHashMap<>();
       copy.filters.putAll(filters);
     }
-    if (facets != null) {
+    if (facets != null && !facets.isEmpty()) {
       copy.facets = EnumSet.copyOf(facets);
     }
-    if (content != null) {
+    if (content != null && !content.isEmpty()) {
       copy.content = EnumSet.copyOf(content);
     }
     copy.q = q;
