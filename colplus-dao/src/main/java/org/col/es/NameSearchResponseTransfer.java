@@ -34,7 +34,7 @@ import static org.col.api.search.NameSearchParameter.STATUS;
 import static org.col.api.search.NameSearchParameter.TYPE;
 
 /**
- * Converts the Elasticsearch response object to an API object (NameSearchResponse).
+ * Converts the Elasticsearch response object to a NameSearchResponse instance.
  */
 class NameSearchResponseTransfer {
 

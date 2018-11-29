@@ -5,13 +5,11 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.TreeSet;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 import org.col.api.TestEntityGenerator;
-import org.col.api.jackson.ApiModule;
 import org.col.api.model.Page;
 import org.col.api.model.Taxon;
 import org.col.api.search.FacetValue;
@@ -148,7 +146,7 @@ public class NameUsageSearchServiceFacetTest extends EsReadTestBase {
 
     Map<NameSearchParameter, Set<FacetValue<?>>> expected = new HashMap<>();
     Set<FacetValue<?>> rankFacet = new TreeSet<>();
-    rankFacet.add(FacetValue.forEnum(Rank.class, Rank.KINGDOM.ordinal(), 4)); // Descending doc count !!!
+    rankFacet.add(FacetValue.forEnum(Rank.class, Rank.KINGDOM.ordinal(), 4));
     rankFacet.add(FacetValue.forEnum(Rank.class, Rank.PHYLUM.ordinal(), 4));
     rankFacet.add(FacetValue.forEnum(Rank.class, Rank.GENUS.ordinal(), 3));
     rankFacet.add(FacetValue.forEnum(Rank.class, Rank.CLASS.ordinal(), 2));
