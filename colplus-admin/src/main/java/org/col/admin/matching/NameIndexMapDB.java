@@ -23,7 +23,7 @@ import org.col.api.vocab.MatchType;
 import org.col.api.vocab.NomStatus;
 import org.col.api.vocab.Origin;
 import org.col.common.kryo.ApiKryoFactory;
-import org.col.common.mapdb.MapDbObjectSerializer;
+import org.col.common.kryo.map.MapDbObjectSerializer;
 import org.col.common.tax.SciNameNormalizer;
 import org.col.db.dao.NameDao;
 import org.col.db.mapper.NameMapper;

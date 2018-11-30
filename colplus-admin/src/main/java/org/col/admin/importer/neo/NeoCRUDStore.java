@@ -12,7 +12,7 @@ import org.col.admin.importer.neo.model.PropLabel;
 import org.col.api.model.ID;
 import org.col.api.model.VerbatimEntity;
 import org.col.api.vocab.Issue;
-import org.col.common.mapdb.MapDbObjectSerializer;
+import org.col.common.kryo.map.MapDbObjectSerializer;
 import org.mapdb.DB;
 import org.mapdb.Serializer;
 import org.neo4j.graphdb.Node;

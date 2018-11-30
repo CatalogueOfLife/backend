@@ -1,5 +1,6 @@
 package org.col.api.model;
 
+import java.io.Serializable;
 import java.net.URI;
 import java.util.*;
 import java.util.regex.Pattern;
@@ -33,7 +34,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * Hexadecimal unicode escapes started by  "\\u": \\u00A9
  * Unicode code point escapes indicated by "\\u{}": \\u{2F80}
  */
-public class VerbatimRecord implements IssueContainer, IntKey {
+public class VerbatimRecord implements IssueContainer, IntKey, Serializable {
   private static final Logger LOG = LoggerFactory.getLogger(VerbatimRecord.class);
   private static final Pattern REMOVE_TAGS = Pattern.compile("</? *[a-z][a-z1-5]{0,5} *>", Pattern.CASE_INSENSITIVE);
   private static final Pattern ECMA_UNICODE = Pattern.compile("\\\\u\\{([0-9a-f]{4})}", Pattern.CASE_INSENSITIVE);

@@ -1,4 +1,4 @@
-package org.col.common.mapdb;
+package org.col.common.kryo.map;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

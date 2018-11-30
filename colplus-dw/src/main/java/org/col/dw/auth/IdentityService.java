@@ -61,7 +61,6 @@ public class IdentityService {
     }
     LOG.info("Accessing GBIF user accounts at {}", cfg.gbifApi);
     
-    //TODO: replace with Chronicle Map and only cache the main webservice, not admin!
     this.cache = new ConcurrentHashMap<>();
   }
   
