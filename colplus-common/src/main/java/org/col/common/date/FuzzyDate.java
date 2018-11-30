@@ -37,29 +37,22 @@ public final class FuzzyDate {
    * @return
    */
   public LocalDate toLocalDate() {
-    try {
-      if (ta.getClass() == LocalDate.class) {
-        return (LocalDate) ta;
-      }
-      if (ta.getClass() == OffsetDateTime.class) {
-        return ((OffsetDateTime) ta).toLocalDate();
-      }
-      if (ta.getClass() == LocalDateTime.class) {
-        return ((LocalDateTime) ta).toLocalDate();
-      }
-      if (ta.isSupported(MONTH_OF_YEAR)) {
-        if (ta.isSupported(DAY_OF_MONTH)) {
-          return LocalDate.of(ta.get(YEAR), ta.get(MONTH_OF_YEAR), ta.get(DAY_OF_MONTH));
-        }
-        return LocalDate.of(ta.get(YEAR), ta.get(MONTH_OF_YEAR), 1);
-      }
-      return LocalDate.of(ta.get(YEAR), 1, 1);
-
-    } catch (Exception e) {
-      //TODO: remove this exception handling once parser produces only correct temporal accessors!!!
-      LOG.error("FuzzyDate [{}][{}] failed to convert to LocalDate", ta, verbatim, e);
-      return null;
+    if (ta.getClass() == LocalDate.class) {
+      return (LocalDate) ta;
     }
+    if (ta.getClass() == OffsetDateTime.class) {
+      return ((OffsetDateTime) ta).toLocalDate();
+    }
+    if (ta.getClass() == LocalDateTime.class) {
+      return ((LocalDateTime) ta).toLocalDate();
+    }
+    if (ta.isSupported(MONTH_OF_YEAR)) {
+      if (ta.isSupported(DAY_OF_MONTH)) {
+        return LocalDate.of(ta.get(YEAR), ta.get(MONTH_OF_YEAR), ta.get(DAY_OF_MONTH));
+      }
+      return LocalDate.of(ta.get(YEAR), ta.get(MONTH_OF_YEAR), 1);
+    }
+    return LocalDate.of(ta.get(YEAR), 1, 1);
   }
 
   /**
