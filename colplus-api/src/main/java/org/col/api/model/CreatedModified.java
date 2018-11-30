@@ -11,9 +11,9 @@ public interface CreatedModified {
   
   void setCreated(LocalDateTime created);
   
-  int getCreatedBy();
+  Integer getCreatedBy();
   
-  void setCreatedBy(int createdBy);
+  void setCreatedBy(Integer createdBy);
   
   /**
    * The time the entity was last modified . Also set on creation!
@@ -26,7 +26,7 @@ public interface CreatedModified {
    * The user who has last modified the entity. Also set on creation!
    * @return ColUser key
    */
-  int getModifiedBy();
+  Integer getModifiedBy();
   
-  void setModifiedBy(int modifiedBy);
+  void setModifiedBy(Integer modifiedBy);
 }

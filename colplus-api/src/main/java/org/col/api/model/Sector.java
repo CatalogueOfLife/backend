@@ -6,7 +6,7 @@ import java.util.List;
  * A taxonomic sector definition within a dataset that is used to assemble the Catalogue of Life.
  * Sectors will also serve to show the taxonomic coverage in the CoL portal.
  * The subject of the sector is the root taxon in the original source dataset.
- * The target is the parent taxon the subject should be placed under in the catalogue in ATTACH mode.
+ * The target is the parent taxon the subject should be placed under in the catalogue in ATTACH mode which is the default.
  * In MERGE mode the subject taxon itself should be skipped and only its descendants be included.
  *
  * A sector can be really small and the subject even be a species, but usually it is some higher taxon.
@@ -15,7 +15,7 @@ public class Sector extends Decision {
   private Integer colSourceKey;
   private NameRef target;
   private List<NameRef> exclude;
-  private Mode mode;
+  private Mode mode = Sector.Mode.ATTACH;
   
   public static enum Mode {
     /**

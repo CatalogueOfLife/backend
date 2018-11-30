@@ -8,9 +8,9 @@ abstract class Decision implements IntKey, CreatedModified {
   protected NameRef subject;
   protected String note;
   private LocalDateTime created;
-  private int createdBy;
+  private Integer createdBy;
   private LocalDateTime modified;
-  private int modifiedBy;
+  private Integer modifiedBy;
   
   @Override
   public Integer getKey() {
@@ -41,12 +41,12 @@ abstract class Decision implements IntKey, CreatedModified {
   }
   
   @Override
-  public int getCreatedBy() {
+  public Integer getCreatedBy() {
     return createdBy;
   }
   
   @Override
-  public void setCreatedBy(int createdBy) {
+  public void setCreatedBy(Integer createdBy) {
     this.createdBy = createdBy;
   }
   
@@ -61,12 +61,12 @@ abstract class Decision implements IntKey, CreatedModified {
   }
   
   @Override
-  public int getModifiedBy() {
+  public Integer getModifiedBy() {
     return modifiedBy;
   }
   
   @Override
-  public void setModifiedBy(int modifiedBy) {
+  public void setModifiedBy(Integer modifiedBy) {
     this.modifiedBy = modifiedBy;
   }
   

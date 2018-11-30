@@ -10,7 +10,7 @@
     <!-- selects the last successful import, i.e. the one that imported data -->
     <sql id="fromFinishedDatasetImport">
         FROM dataset_import
-        WHERE dataset_key = #{datasetKey} AND state = 4
+        WHERE dataset_key = #{datasetKey} AND state = ${@org.col.api.vocab.ImportState@FINISHED.ordinal()}
         ORDER BY attempt DESC
         LIMIT 1
     </sql>
