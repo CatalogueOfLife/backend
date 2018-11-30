@@ -102,9 +102,9 @@ public abstract class RelationInserterBase implements NodeBatchProcessor {
    *
    * @return list of potentially split ids with their matching neo node if found, otherwise null
    */
-  protected Node usageByID(Term term, VerbatimRecord v, NeoUsage u) {
+  protected Node usageByID(Term idTerm, VerbatimRecord v, NeoUsage u) {
     Node n = null;
-    final String id = v.get(term);
+    final String id = v.getRaw(idTerm);
     if (id != null && !id.equals(u.getId())) {
       n = store.usages().nodeByID(id);
     }
