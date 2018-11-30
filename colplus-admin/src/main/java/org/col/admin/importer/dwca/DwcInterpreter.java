@@ -54,7 +54,10 @@ public class DwcInterpreter extends InterpreterBase {
       }
   
       // shared usage props
-      u.setId(v.getFirst(DwcTerm.taxonID, DwcaReader.DWCA_ID));
+      u.setId(v.getFirstRaw(DwcTerm.taxonID, DwcaReader.DWCA_ID));
+      if (u.getId().startsWith("S-Gratiola_amphiantha")){
+        int x =8;
+      }
       u.setVerbatimKey(v.getKey());
       u.usage.setAccordingTo(ObjectUtils.coalesce(v.get(DwcTerm.nameAccordingTo), nat.get().getAccordingTo()));
       u.homotypic = TaxonomicStatusParser.isHomotypic(status);
@@ -201,7 +204,7 @@ public class DwcInterpreter extends InterpreterBase {
   }
   
   private Optional<NameAccordingTo> interpretName(VerbatimRecord v) {
-    Optional<NameAccordingTo> opt = interpretName(v.getFirst(DwcTerm.taxonID, DwcaReader.DWCA_ID),
+    Optional<NameAccordingTo> opt = interpretName(v.getFirstRaw(DwcTerm.taxonID, DwcaReader.DWCA_ID),
         v.getFirst(DwcTerm.taxonRank, DwcTerm.verbatimTaxonRank), v.get(DwcTerm.scientificName),
         v.get(DwcTerm.scientificNameAuthorship),
         v.getFirst(GbifTerm.genericName, DwcTerm.genus), v.get(DwcTerm.subgenus),
@@ -215,7 +218,10 @@ public class DwcInterpreter extends InterpreterBase {
       if (v.hasTerm(DwcTerm.namePublishedInID) || v.hasTerm(DwcTerm.namePublishedIn)) {
         Reference ref = refFactory.fromDWC(v.get(DwcTerm.namePublishedInID), v.get(DwcTerm.namePublishedIn), v.get(DwcTerm.namePublishedInYear), v);
         if (ref != null) {
-          store.create(ref);
+          if (ref.getId() == null) {
+            // create new reference, we've never seen this before!
+            store.create(ref);
+          }
           n.setPublishedInId(ref.getId());
           n.setPublishedInPage(ref.getPage());
         }

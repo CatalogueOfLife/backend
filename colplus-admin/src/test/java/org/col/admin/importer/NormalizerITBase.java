@@ -74,7 +74,7 @@ abstract class NormalizerITBase {
     ExternalSourceUtil.consumeSource(url, this::normalize);
   }
 
-  private void normalize(Path arch) {
+  protected void normalize(Path arch) {
     try {
       store = NeoDbFactory.create(1, cfg);
       Dataset d = new Dataset();

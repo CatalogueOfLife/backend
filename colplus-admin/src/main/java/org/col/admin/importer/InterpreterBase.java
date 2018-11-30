@@ -61,29 +61,29 @@ public class InterpreterBase {
 
   protected List<VernacularName> interpretVernacular(VerbatimRecord rec, BiConsumer<VernacularName, VerbatimRecord> addReference,
                                                      Term name, Term translit, Term lang, Term... countryTerms) {
-    VernacularName vn = new VernacularName();
-    vn.setVerbatimKey(rec.getKey());
-    vn.setName(rec.get(name));
-    if (StringUtils.isBlank(vn.getName())) {
-      rec.addIssue(Issue.VERNACULAR_NAME_INVALID);
-      return Collections.emptyList();
+    String vname = rec.get(name);
+    if (vname != null) {
+      VernacularName vn = new VernacularName();
+      vn.setVerbatimKey(rec.getKey());
+      vn.setName(vname);
+      
+      if (translit != null) {
+        vn.setLatin(rec.get(translit));
+      }
+      if (lang != null) {
+        vn.setLanguage(SafeParser.parse(LanguageParser.PARSER, rec.get(lang)).orNull());
+      }
+      vn.setCountry(SafeParser.parse(CountryParser.PARSER, rec.getFirst(countryTerms)).orNull());
+  
+      addReference.accept(vn, rec);
+  
+      if (StringUtils.isBlank(vn.getLatin())) {
+        vn.setLatin(latinName(vn.getName()));
+        rec.addIssue(Issue.VERNACULAR_NAME_TRANSLITERATED);
+      }
+      return Lists.newArrayList(vn);
     }
-    
-    if (translit != null) {
-      vn.setLatin(rec.get(translit));
-    }
-    if (lang != null) {
-      vn.setLanguage(SafeParser.parse(LanguageParser.PARSER, rec.get(lang)).orNull());
-    }
-    vn.setCountry(SafeParser.parse(CountryParser.PARSER, rec.getFirst(countryTerms)).orNull());
-
-    addReference.accept(vn, rec);
-
-    if (StringUtils.isBlank(vn.getLatin())) {
-      vn.setLatin(latinName(vn.getName()));
-      rec.addIssue(Issue.VERNACULAR_NAME_TRANSLITERATED);
-    }
-    return Lists.newArrayList(vn);
+    return Collections.emptyList();
   }
   
   protected List<Distribution> interpretDistribution(VerbatimRecord rec, BiConsumer<Distribution, VerbatimRecord> addReference,
@@ -130,34 +130,42 @@ public class InterpreterBase {
   
   protected List<Description> interpretDescription(VerbatimRecord rec, BiConsumer<Description, VerbatimRecord> addReference,
                                                    Term description, Term category, Term lang) {
-    Description d = new Description();
-    d.setVerbatimKey(rec.getKey());
-    d.setCategory(rec.get(category));
-    d.setDescription(rec.get(description));
-    d.setLanguage(SafeParser.parse(LanguageParser.PARSER, rec.get(lang)).orNull());
+    // require non empty description
+    if (rec.hasTerm(description)) {
+      Description d = new Description();
+      d.setVerbatimKey(rec.getKey());
+      d.setCategory(rec.get(category));
+      d.setDescription(rec.get(description));
+      d.setLanguage(SafeParser.parse(LanguageParser.PARSER, rec.get(lang)).orNull());
   
-    addReference.accept(d, rec);
+      addReference.accept(d, rec);
   
-    return Lists.newArrayList(d);
+      return Lists.newArrayList(d);
+    }
+    return Collections.emptyList();
   }
   
   protected List<Media> interpretMedia(VerbatimRecord rec, BiConsumer<Media, VerbatimRecord> addReference,
                  Term type, Term url, Term link, Term license, Term creator, Term created, Term title, Term format) {
-    Media m = new Media();
-    m.setVerbatimKey(rec.getKey());
-    m.setUrl( uri(rec, Issue.URL_INVALID, url));
-    m.setLink( uri(rec, Issue.URL_INVALID, link));
-    m.setType( SafeParser.parse(MediaTypeParser.PARSER, rec.get(type)).orNull() );
-    m.setFormat(rec.get(format));
-    //TODO: validate or derive type from format
-    m.setLicense( SafeParser.parse(LicenseParser.PARSER, rec.get(license)).orNull() );
-    m.setCreator(rec.get(creator));
-    m.setCreated( date(rec, Issue.CREATED_DATE_INVALID, created) );
-    m.setTitle(rec.get(title));
-    
-    addReference.accept(m, rec);
-    
-    return Lists.newArrayList(m);
+    // require media or link url
+    if (rec.hasTerm(url) || rec.hasTerm(link)) {
+      Media m = new Media();
+      m.setVerbatimKey(rec.getKey());
+      m.setUrl( uri(rec, Issue.URL_INVALID, url));
+      m.setLink( uri(rec, Issue.URL_INVALID, link));
+      m.setType( SafeParser.parse(MediaTypeParser.PARSER, rec.get(type)).orNull() );
+      m.setFormat(rec.get(format));
+      //TODO: validate or derive type from format
+      m.setLicense( SafeParser.parse(LicenseParser.PARSER, rec.get(license)).orNull() );
+      m.setCreator(rec.get(creator));
+      m.setCreated( date(rec, Issue.CREATED_DATE_INVALID, created) );
+      m.setTitle(rec.get(title));
+  
+      addReference.accept(m, rec);
+  
+      return Lists.newArrayList(m);
+    }
+    return Collections.emptyList();
   }
 
   protected LocalDate date(VerbatimRecord v, Issue invalidIssue, Term term) {

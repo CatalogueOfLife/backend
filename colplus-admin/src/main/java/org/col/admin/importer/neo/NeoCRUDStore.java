@@ -130,7 +130,7 @@ public class NeoCRUDStore<T extends ID & VerbatimEntity & NeoNode> {
    */
   private boolean duplicateID(T obj) {
     if (ids.containsKey(obj.getId())) {
-      LOG.info("Duplicate {}ID {}", objName, obj.getId());
+      LOG.warn("Duplicate {}ID {}", objName, obj.getId());
       duplicateCounter++;
       neoDb.addIssues(obj, Issue.ID_NOT_UNIQUE);
       T obj2 = objByNode(nodeByID(obj.getId()));
