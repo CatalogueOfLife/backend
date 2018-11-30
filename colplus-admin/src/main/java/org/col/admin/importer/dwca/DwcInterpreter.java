@@ -213,7 +213,7 @@ public class DwcInterpreter extends InterpreterBase {
     if (opt.isPresent()) {
       Name n = opt.get().getName();
       if (v.hasTerm(DwcTerm.namePublishedInID) || v.hasTerm(DwcTerm.namePublishedIn)) {
-        Reference ref = refFactory.fromDWC(v.get(DwcTerm.namePublishedInID), v.get(DwcTerm.namePublishedIn), v.get(DwcTerm.namePublishedInYear), v);
+        Reference ref = refFactory.fromDWC(v.getRaw(DwcTerm.namePublishedInID), v.get(DwcTerm.namePublishedIn), v.get(DwcTerm.namePublishedInYear), v);
         if (ref != null) {
           if (ref.getVerbatimKey() == null) {
             // create new reference with verbatim key, we've never seen this before!
