@@ -117,9 +117,6 @@ public abstract class NeoInserter {
       boolean interpreted = true;
       for (T obj : results) {
         String id = rec.getRaw(taxonIdTerm);
-        if (id .startsWith("S-Gratiola_amphiantha")){
-          int x =8;
-        }
         NeoUsage t = store.usages().objByID(id);
         if (t != null) {
           add.accept(t, obj);
