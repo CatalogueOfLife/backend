@@ -1,12 +1,12 @@
 package org.col.admin.importer.dwca;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 import com.google.common.collect.Lists;
-import org.col.admin.importer.MappingFlags;
 import org.col.admin.importer.InterpreterBase;
+import org.col.admin.importer.MappingFlags;
 import org.col.admin.importer.neo.NeoDb;
 import org.col.admin.importer.neo.model.NeoNameRel;
 import org.col.admin.importer.neo.model.NeoUsage;
@@ -15,7 +15,10 @@ import org.col.admin.importer.reference.ReferenceFactory;
 import org.col.api.model.*;
 import org.col.api.vocab.*;
 import org.col.common.util.ObjectUtils;
-import org.col.parser.*;
+import org.col.parser.EnumNote;
+import org.col.parser.NomRelTypeParser;
+import org.col.parser.SafeParser;
+import org.col.parser.TaxonomicStatusParser;
 import org.gbif.dwc.terms.DcTerm;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.GbifTerm;
@@ -85,7 +88,7 @@ public class DwcInterpreter extends InterpreterBase {
   }
   
   List<Reference> interpretReference(VerbatimRecord rec) {
-    return Lists.newArrayList(refFactory.fromDC(rec.get(DcTerm.identifier),
+    return Lists.newArrayList(refFactory.fromDC(rec.getRaw(DcTerm.identifier),
         rec.get(DcTerm.bibliographicCitation),
         rec.get(DcTerm.creator),
         rec.get(DcTerm.date),
@@ -96,35 +99,29 @@ public class DwcInterpreter extends InterpreterBase {
   }
   
   List<Distribution> interpretDistribution(VerbatimRecord rec) {
-    List<Distribution> distributions = new ArrayList<>();
     // try to figure out an area
     if (rec.hasTerm(DwcTerm.locationID)) {
-      for (String loc : MULTIVAL.split(rec.get(DwcTerm.locationID))) {
-        AreaParser.Area area = SafeParser.parse(AreaParser.PARSER, loc).orNull();
-        if (area != null) {
-          distributions.add(createDistribution(area.area, area.standard, rec));
-        } else {
-          rec.addIssue(Issue.DISTRIBUTION_AREA_INVALID);
-        }
-      }
+      return createDistributions(Gazetteer.ISO,
+          rec.getRaw(DwcTerm.locationID),
+          rec.get(DwcTerm.occurrenceStatus),
+          rec, this::setReference);
       
     } else if (rec.hasTerm(DwcTerm.countryCode) || rec.hasTerm(DwcTerm.country)) {
-      for (String craw : MULTIVAL.split(rec.getFirst(DwcTerm.countryCode, DwcTerm.country))) {
-        Country country = SafeParser.parse(CountryParser.PARSER, craw).orNull();
-        if (country != null) {
-          distributions.add(createDistribution(country.getIso2LetterCode(), Gazetteer.ISO, rec));
-        } else {
-          rec.addIssue(Issue.DISTRIBUTION_COUNTRY_INVALID);
-        }
-      }
+      return createDistributions(Gazetteer.ISO,
+          rec.getFirst(DwcTerm.countryCode, DwcTerm.country),
+          rec.get(DwcTerm.occurrenceStatus),
+          rec, this::setReference);
       
     } else if (rec.hasTerm(DwcTerm.locality)) {
-      distributions.add(createDistribution(rec.get(DwcTerm.locality), Gazetteer.TEXT, rec));
+      return createDistributions(Gazetteer.TEXT,
+          rec.get(DwcTerm.locality),
+          rec.get(DwcTerm.occurrenceStatus),
+          rec, this::setReference);
       
     } else {
       rec.addIssue(Issue.DISTRIBUTION_INVALID);
+      return Collections.emptyList();
     }
-    return distributions;
   }
   
   List<VernacularName> interpretVernacularName(VerbatimRecord rec) {
@@ -155,21 +152,24 @@ public class DwcInterpreter extends InterpreterBase {
         DcTerm.title,
         DcTerm.format);
   }
-  private Distribution createDistribution(String area, Gazetteer standard, VerbatimRecord rec) {
-    Distribution d = new Distribution();
-    d.setVerbatimKey(rec.getKey());
-    d.setArea(area);
-    d.setGazetteer(standard);
-    setReference(d, rec);
-    // TODO: parse status!!!
-    d.setStatus(DistributionStatus.NATIVE);
-    return d;
-  }
-
+  
+  /**
+   * Reads the dc:source citation string and looks up or creates a new reference.
+   * Sets the reference id of the referenced object.
+   * @param obj
+   * @param v
+   */
   private void setReference(Referenced obj, VerbatimRecord v) {
     if (v.hasTerm(DcTerm.source)) {
       Reference ref = refFactory.fromCitation(null, v.get(DcTerm.source), v);
-      setRefKey(obj, ref);
+      if (ref != null) {
+        if (ref.getVerbatimKey() == null) {
+          // create new reference with verbatim key, we've never seen this before!
+          ref.setVerbatimKey(v.getKey());
+          store.create(ref);
+        }
+        obj.setReferenceId(ref.getId());
+      }
     }
   }
 
