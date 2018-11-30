@@ -95,25 +95,7 @@ public class NormalizerDwcaIT extends NormalizerITBase {
       assertTrue(expV.isEmpty());
       
       // check distributions
-      Set<Distribution> expD = Sets.newHashSet();
-      expD.add(dist(Gazetteer.TEXT, "All of Austria and the alps", DistributionStatus.NATIVE));
-      expD.add(dist(Gazetteer.ISO, "DE", DistributionStatus.NATIVE));
-      expD.add(dist(Gazetteer.ISO, "FR", DistributionStatus.NATIVE));
-      expD.add(dist(Gazetteer.ISO, "DK", DistributionStatus.NATIVE));
-      expD.add(dist(Gazetteer.ISO, "GB", DistributionStatus.NATIVE));
-      expD.add(dist(Gazetteer.ISO, "NG", DistributionStatus.NATIVE));
-      expD.add(dist(Gazetteer.ISO, "KE", DistributionStatus.NATIVE));
-      expD.add(dist(Gazetteer.TDWG, "AGS", DistributionStatus.NATIVE));
-      expD.add(dist(Gazetteer.FAO, "37.4.1", DistributionStatus.NATIVE));
-      expD.add(dist(Gazetteer.TDWG, "MOR-MO", DistributionStatus.NATIVE));
-      expD.add(dist(Gazetteer.TDWG, "MOR-CE", DistributionStatus.NATIVE));
-      expD.add(dist(Gazetteer.TDWG, "MOR-ME", DistributionStatus.NATIVE));
-      expD.add(dist(Gazetteer.TDWG, "CPP", DistributionStatus.NATIVE));
-      expD.add(dist(Gazetteer.TDWG, "NAM", DistributionStatus.NATIVE));
-      expD.add(dist(Gazetteer.ISO, "IT-82", DistributionStatus.NATIVE));
-      expD.add(dist(Gazetteer.ISO, "ES-CN", DistributionStatus.NATIVE));
-      expD.add(dist(Gazetteer.ISO, "FR-H", DistributionStatus.NATIVE));
-      expD.add(dist(Gazetteer.ISO, "FM-PNI", DistributionStatus.NATIVE));
+      Set<Distribution> expD = PgImportIT.expectedDwca24Distributions();
       
       assertEquals(expD.size(), t.distributions.size());
       // remove keys before we check equality

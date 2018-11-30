@@ -215,6 +215,30 @@ public class PgImportIT {
     assertFalse(v.hasIssue(issue));
   }
   
+  public static Set<Distribution> expectedDwca24Distributions() {
+    Set<Distribution> expD = Sets.newHashSet();
+    expD.add(dist(Gazetteer.TEXT, "All of Austria and the alps", DistributionStatus.NATIVE));
+    expD.add(dist(Gazetteer.ISO, "DE", DistributionStatus.NATIVE));
+    expD.add(dist(Gazetteer.ISO, "FR", DistributionStatus.NATIVE));
+    expD.add(dist(Gazetteer.ISO, "DK", DistributionStatus.NATIVE));
+    expD.add(dist(Gazetteer.ISO, "GB", DistributionStatus.NATIVE));
+    expD.add(dist(Gazetteer.ISO, "NG", DistributionStatus.NATIVE));
+    expD.add(dist(Gazetteer.ISO, "KE", DistributionStatus.NATIVE));
+    expD.add(dist(Gazetteer.TDWG, "AGS", DistributionStatus.NATIVE));
+    expD.add(dist(Gazetteer.FAO, "37.4.1", DistributionStatus.NATIVE));
+    expD.add(dist(Gazetteer.TDWG, "MOR-MO", DistributionStatus.NATIVE));
+    expD.add(dist(Gazetteer.TDWG, "MOR-CE", DistributionStatus.NATIVE));
+    expD.add(dist(Gazetteer.TDWG, "MOR-ME", DistributionStatus.NATIVE));
+    expD.add(dist(Gazetteer.TDWG, "CPP", DistributionStatus.NATIVE));
+    expD.add(dist(Gazetteer.TDWG, "NAM", DistributionStatus.NATIVE));
+    expD.add(dist(Gazetteer.TEXT, "tdwg:cpp; tdwg:of; tdwg:nam", DistributionStatus.NATIVE));
+    expD.add(dist(Gazetteer.ISO, "IT-82", DistributionStatus.NATIVE));
+    expD.add(dist(Gazetteer.ISO, "ES-CN", DistributionStatus.NATIVE));
+    expD.add(dist(Gazetteer.ISO, "FR-H", DistributionStatus.NATIVE));
+    expD.add(dist(Gazetteer.ISO, "FM-PNI", DistributionStatus.NATIVE));
+    return expD;
+  }
+  
   @Test
   public void testSupplementary() throws Exception {
     normalizeAndImport(DWCA, 24);
@@ -240,27 +264,7 @@ public class PgImportIT {
       assertTrue(expV.isEmpty());
       
       // check distributions
-      Set<Distribution> expD = Sets.newHashSet();
-      expD.add(dist(Gazetteer.TEXT, "All of Austria and the alps", DistributionStatus.NATIVE));
-      expD.add(dist(Gazetteer.ISO, "DE", DistributionStatus.NATIVE));
-      expD.add(dist(Gazetteer.ISO, "FR", DistributionStatus.NATIVE));
-      expD.add(dist(Gazetteer.ISO, "DK", DistributionStatus.NATIVE));
-      expD.add(dist(Gazetteer.ISO, "GB", DistributionStatus.NATIVE));
-      expD.add(dist(Gazetteer.ISO, "NG", DistributionStatus.NATIVE));
-      expD.add(dist(Gazetteer.ISO, "KE", DistributionStatus.NATIVE));
-      expD.add(dist(Gazetteer.TDWG, "AGS", DistributionStatus.NATIVE));
-      expD.add(dist(Gazetteer.FAO, "37.4.1", DistributionStatus.NATIVE));
-      expD.add(dist(Gazetteer.TDWG, "MOR-MO", DistributionStatus.NATIVE));
-      expD.add(dist(Gazetteer.TDWG, "MOR-CE", DistributionStatus.NATIVE));
-      expD.add(dist(Gazetteer.TDWG, "MOR-ME", DistributionStatus.NATIVE));
-      expD.add(dist(Gazetteer.TDWG, "CPP", DistributionStatus.NATIVE));
-      expD.add(dist(Gazetteer.TDWG, "NAM", DistributionStatus.NATIVE));
-      expD.add(dist(Gazetteer.TEXT, "tdwg:cpp; tdwg:of; tdwg:nam", DistributionStatus.NATIVE));
-      expD.add(dist(Gazetteer.ISO, "IT-82", DistributionStatus.NATIVE));
-      expD.add(dist(Gazetteer.ISO, "ES-CN", DistributionStatus.NATIVE));
-      expD.add(dist(Gazetteer.ISO, "FR-H", DistributionStatus.NATIVE));
-      expD.add(dist(Gazetteer.ISO, "FM-PNI", DistributionStatus.NATIVE));
-      
+      Set<Distribution> expD = expectedDwca24Distributions();
       assertEquals(expD.size(), info.getDistributions().size());
       // remove dist keys before we check equality
       info.getDistributions().forEach(d -> {
@@ -571,7 +575,7 @@ public class PgImportIT {
     return new RankedName(null, name, null, rank);
   }
   
-  private Distribution dist(Gazetteer standard, String area, DistributionStatus status) {
+  private static Distribution dist(Gazetteer standard, String area, DistributionStatus status) {
     Distribution d = new Distribution();
     d.setArea(area);
     d.setGazetteer(standard);
