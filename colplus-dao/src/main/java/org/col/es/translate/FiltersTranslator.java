@@ -18,23 +18,19 @@ import org.col.es.query.Query;
  */
 class FiltersTranslator {
 
-  private final NameSearchRequest request;
+	private final NameSearchRequest request;
 
-  FiltersTranslator(NameSearchRequest request) {
-    this.request = request;
-  }
+	FiltersTranslator(NameSearchRequest request) {
+		this.request = request;
+	}
 
-  Query translate() throws InvalidQueryException {
-    FilterTranslator ft = new FilterTranslator(request);
-    Set<NameSearchParameter> params = request.getFilters().keySet();
-    if (params.size() == 1) {
-      return ft.translate(params.iterator().next());
-    }
-    BoolQuery boolQuery = new BoolQuery();
-    for (NameSearchParameter param : params) {
-      boolQuery.filter(ft.translate(param));
-    }
-    return boolQuery;
-  }
+	Query translate() throws InvalidQueryException {
+		FilterTranslator ft = new FilterTranslator(request);
+		Set<NameSearchParameter> params = request.getFilters().keySet();
+		if (params.size() == 1) {
+			return params.stream().map(ft::translate).findFirst().get();
+		}
+		return params.stream().map(ft::translate).collect(BoolQuery::new, BoolQuery::filter, BoolQuery::filter);
+	}
 
 }
