@@ -96,7 +96,7 @@ public class EsNameUsageSerde extends EsReadTestBase {
     enuIn.setNameIndexId("afd56770af");
     enuIn.setPublishedInId("AMO333");
     enuIn.setRank(Rank.SPECIES);
-    enuIn.setScientificName("Malus Sylvestris");
+    enuIn.setSciNameNormalized("Malus Sylvestris");
     enuIn.setStatus(TaxonomicStatus.ACCEPTED);
     enuIn.setType(NameType.SCIENTIFIC);
     enuIn.setVernacularNames(Arrays.asList("Apple tree"));
@@ -122,7 +122,7 @@ public class EsNameUsageSerde extends EsReadTestBase {
     enuIn.setNameIndexId("afd56770af");
     enuIn.setPublishedInId("AMO333");
     enuIn.setRank(Rank.SPECIES);
-    enuIn.setScientificName("Malus Sylvestris");
+    enuIn.setSciNameNormalized("Malus Sylvestris");
     enuIn.setStatus(TaxonomicStatus.ACCEPTED);
     enuIn.setType(NameType.SCIENTIFIC);
     enuIn.setVernacularNames(Arrays.asList("Apple tree"));

@@ -91,13 +91,13 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     NameUsageTransfer transfer = new NameUsageTransfer();
     EsNameUsage enu = transfer.toEsDocument(TestEntityGenerator.newNameUsageTaxonWrapper());
     // Overwrite to test ordering by scientific name
-    enu.setScientificName("B");
+    enu.setSciNameNormalized("B");
     insert(client, indexName, enu);
     enu = transfer.toEsDocument(TestEntityGenerator.newNameUsageSynonymWrapper());
-    enu.setScientificName("C");
+    enu.setSciNameNormalized("C");
     insert(client, indexName, enu);
     enu = transfer.toEsDocument(TestEntityGenerator.newNameUsageBareNameWrapper());
-    enu.setScientificName("A");
+    enu.setSciNameNormalized("A");
     insert(client, indexName, enu);
     refreshIndex(client, indexName);
     assertEquals(3, EsUtil.count(client, indexName));
@@ -115,7 +115,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     NameUsageTransfer transfer = new NameUsageTransfer();
 
     EsSearchRequest esr = EsSearchRequest.emptyRequest();
-    esr.setSort(Arrays.asList(new SortField("scientificName", false), new SortField("rank", false)));
+    esr.setSort(Arrays.asList(new SortField("sciNameNormalized", false), new SortField("rank", false)));
 
     // Create name usage in the order we expect them to come out, then shuffle.
     Name n = new Name();

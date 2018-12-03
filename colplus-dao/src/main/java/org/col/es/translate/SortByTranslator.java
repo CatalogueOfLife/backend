@@ -9,6 +9,10 @@ import org.col.es.query.SortField;
 
 class SortByTranslator {
 
+  private static final SortField SORTFIELD_NAME = new SortField("sciNameNormalized");
+  private static final SortField SORTFIELD_RANK = new SortField("rank");
+  private static final SortField SORTFIELD_NATIVE = new SortField("_doc");
+
   private final NameSearchRequest request;
 
   SortByTranslator(NameSearchRequest request) {
@@ -17,12 +21,12 @@ class SortByTranslator {
 
   List<SortField> translate() {
     if (request.getSortBy() == SortBy.NAME) {
-      return CollapsibleList.of(new SortField("scientificName"));
+      return CollapsibleList.of(SORTFIELD_NAME);
     }
     if (request.getSortBy() == SortBy.TAXONOMIC) {
-      return CollapsibleList.of(new SortField("rank"), new SortField("scientificName"));
+      return CollapsibleList.of(SORTFIELD_RANK, SORTFIELD_NAME);
     }
-    return CollapsibleList.of(new SortField("_doc"));
+    return CollapsibleList.of(SORTFIELD_NATIVE);
   }
 
 }

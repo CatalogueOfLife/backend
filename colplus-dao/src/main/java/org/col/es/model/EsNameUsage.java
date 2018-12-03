@@ -19,7 +19,7 @@ import static org.col.es.annotations.Analyzer.AUTO_COMPLETE;
 
 public class EsNameUsage {
 
-  private String scientificName;
+  private String sciNameNormalized;
 
   private String authorship;
 
@@ -50,12 +50,12 @@ public class EsNameUsage {
   private String payload; // The entire NameUsageWrapper object, serialized to a string
 
   @Analyzers({AUTO_COMPLETE})
-  public String getScientificName() {
-    return scientificName;
+  public String getSciNameNormalized() {
+    return sciNameNormalized;
   }
 
-  public void setScientificName(String scientificName) {
-    this.scientificName = scientificName;
+  public void setSciNameNormalized(String sciNameNormalized) {
+    this.sciNameNormalized = sciNameNormalized;
   }
 
   @Analyzers({AUTO_COMPLETE})
@@ -183,7 +183,7 @@ public class EsNameUsage {
     if (o == null || getClass() != o.getClass())
       return false;
     EsNameUsage that = (EsNameUsage) o;
-    return Objects.equals(datasetKey, that.datasetKey) && Objects.equals(scientificName, that.scientificName)
+    return Objects.equals(datasetKey, that.datasetKey) && Objects.equals(sciNameNormalized, that.sciNameNormalized)
         && Objects.equals(authorship, that.authorship) && Objects.equals(vernacularNames, that.vernacularNames)
         && Objects.equals(nameId, that.nameId) && Objects.equals(nameIndexId, that.nameIndexId)
         && Objects.equals(publishedInId, that.publishedInId) && rank == that.rank && type == that.type && nomStatus == that.nomStatus
@@ -193,7 +193,7 @@ public class EsNameUsage {
 
   @Override
   public int hashCode() {
-    return Objects.hash(scientificName, authorship, vernacularNames, datasetKey, nameId, nameIndexId, publishedInId, rank, type, nomStatus,
+    return Objects.hash(sciNameNormalized, authorship, vernacularNames, datasetKey, nameId, nameIndexId, publishedInId, rank, type, nomStatus,
         nameFields, status, taxonId, issues, payload);
   }
 

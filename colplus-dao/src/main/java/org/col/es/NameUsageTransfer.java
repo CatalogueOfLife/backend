@@ -5,15 +5,37 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+
 import org.col.api.model.Name;
 import org.col.api.model.NameUsage;
 import org.col.api.model.Taxon;
 import org.col.api.model.VernacularName;
 import org.col.api.search.NameUsageWrapper;
 import org.col.api.vocab.NameField;
+import org.col.common.tax.SciNameNormalizer;
 import org.col.es.model.EsNameUsage;
 
-import static org.col.api.vocab.NameField.*;
+import static org.col.api.vocab.NameField.BASIONYM_AUTHORS;
+import static org.col.api.vocab.NameField.BASIONYM_EX_AUTHORS;
+import static org.col.api.vocab.NameField.BASIONYM_YEAR;
+import static org.col.api.vocab.NameField.CANDIDATUS;
+import static org.col.api.vocab.NameField.COMBINATION_AUTHORS;
+import static org.col.api.vocab.NameField.COMBINATION_EX_AUTHORS;
+import static org.col.api.vocab.NameField.COMBINATION_YEAR;
+import static org.col.api.vocab.NameField.CULTIVAR_EPITHET;
+import static org.col.api.vocab.NameField.GENUS;
+import static org.col.api.vocab.NameField.INFRAGENERIC_EPITHET;
+import static org.col.api.vocab.NameField.INFRASPECIFIC_EPITHET;
+import static org.col.api.vocab.NameField.NOM_STATUS;
+import static org.col.api.vocab.NameField.NOTHO;
+import static org.col.api.vocab.NameField.PUBLISHED_IN_ID;
+import static org.col.api.vocab.NameField.PUBLISHED_IN_PAGE;
+import static org.col.api.vocab.NameField.REMARKS;
+import static org.col.api.vocab.NameField.SANCTIONING_AUTHOR;
+import static org.col.api.vocab.NameField.SOURCE_URL;
+import static org.col.api.vocab.NameField.SPECIFIC_EPITHET;
+import static org.col.api.vocab.NameField.STRAIN;
+import static org.col.api.vocab.NameField.UNINOMIAL;
 import static org.col.common.util.CollectionUtils.notEmpty;
 
 /**
@@ -36,7 +58,9 @@ class NameUsageTransfer {
     enu.setNomStatus(name.getNomStatus());
     enu.setPublishedInId(name.getPublishedInId());
     enu.setRank(name.getRank());
-    enu.setScientificName(name.getScientificName());
+    String sn = name.getScientificName();
+    String normalized = SciNameNormalizer.normalizeAll(sn);
+    enu.setSciNameNormalized(normalized);
     enu.setStatus(wrapper.getUsage().getStatus());
     if (wrapper.getUsage().getClass() == Taxon.class) {
       enu.setTaxonId(((Taxon) wrapper.getUsage()).getId());

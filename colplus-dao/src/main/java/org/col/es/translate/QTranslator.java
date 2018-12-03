@@ -16,35 +16,40 @@ import static org.col.common.util.CollectionUtils.isEmpty;
  */
 class QTranslator {
 
-	private final NameSearchRequest request;
+  private final NameSearchRequest request;
 
-	QTranslator(NameSearchRequest request) {
-		this.request = request;
-	}
+  QTranslator(NameSearchRequest request) {
+    this.request = request;
+  }
 
-	Query translate() {
-		Set<SearchContent> content;
-		if (isEmpty(request.getContent())) {
-			content = EnumSet.allOf(SearchContent.class);
-		} else {
-			content = request.getContent();
-		}
-		if (content.size() == 1) {
-			return content.stream().map(this::translate).findFirst().orElse(null);
-		}
-		return content.stream().map(this::translate).collect(BoolQuery::new, BoolQuery::should, BoolQuery::should);
-	}
+  Query translate() {
+    Set<SearchContent> content;
+    if (isEmpty(request.getContent())) {
+      content = EnumSet.allOf(SearchContent.class);
+    } else {
+      content = request.getContent();
+    }
+    if (content.size() == 1) {
+      return content.stream()
+          .map(this::translate)
+          .findFirst()
+          .orElse(null);
+    }
+    return content.stream()
+        .map(this::translate)
+        .collect(BoolQuery::new, BoolQuery::should, BoolQuery::should);
+  }
 
-	private Query translate(SearchContent sc) {
-		switch (sc) {
-		case AUTHORSHIP:
-			return new AutoCompleteQuery("authorship", request.getQ());
-		case SCIENTIFIC_NAME:
-			return new AutoCompleteQuery("scientificName", request.getQ());
-		case VERNACULAR_NAME:
-		default:
-			return new AutoCompleteQuery("vernacularNames", request.getQ());
-		}
-	}
+  private Query translate(SearchContent sc) {
+    switch (sc) {
+      case AUTHORSHIP:
+        return new AutoCompleteQuery("authorship", request.getQ());
+      case SCIENTIFIC_NAME:
+        return new AutoCompleteQuery("sciNameNormalized", request.getQ());
+      case VERNACULAR_NAME:
+      default:
+        return new AutoCompleteQuery("vernacularNames", request.getQ());
+    }
+  }
 
 }
