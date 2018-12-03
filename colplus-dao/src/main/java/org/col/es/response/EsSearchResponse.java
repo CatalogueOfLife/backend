@@ -3,13 +3,12 @@ package org.col.es.response;
 /**
  * The outer shell of an Elasticsearch search response.
  *
- * @param <T> The type of objects in the search response (in our case EsNameUsage)
+ * @param <T> The type of objects in the search response.
  */
 public class EsSearchResponse<T> {
 
   private int took;
   private SearchHits<T> hits;
-  private AggregationResult aggregations;
 
   public int getTook() {
     return took;
@@ -18,12 +17,5 @@ public class EsSearchResponse<T> {
   public SearchHits<T> getHits() {
     return hits;
   }
-
-  public AggregationResult getAggregations() {
-    return aggregations;
-  }
-
-  public void setAggregations(AggregationResult aggregations) {
-    this.aggregations = aggregations;
-  }
+  
 }

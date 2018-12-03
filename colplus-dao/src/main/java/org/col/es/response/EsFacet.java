@@ -2,8 +2,12 @@ package org.col.es.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import static org.col.es.translate.AggregationLabelProvider.BUCKETS;
+import static org.col.es.response.AggregationLabelProvider.BUCKETS;
 
+/**
+ * The data structure containing the facet values and their respective document counts. It contains itself a document count as well, which
+ * is the sum total of document counts for the facet.
+ */
 public class EsFacet {
 
   @JsonProperty("doc_count")
@@ -16,16 +20,8 @@ public class EsFacet {
     return docCount;
   }
 
-  public void setDocCount(int docCount) {
-    this.docCount = docCount;
-  }
-
   public BucketsContainer getBucketsContainer() {
     return bucketsContainer;
-  }
-
-  public void setBuckets(BucketsContainer b) {
-    this.bucketsContainer = b;
   }
 
 }

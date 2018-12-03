@@ -1,6 +1,5 @@
 package org.col.es.query;
 
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -30,13 +29,6 @@ public class EsSearchRequest {
 
   @JsonProperty("aggs")
   private Map<String, Aggregation> aggregations;
-
-  public void addAggregation(String name, Aggregation agg) {
-    if (aggregations == null) {
-      aggregations = new LinkedHashMap<>();
-    }
-    aggregations.put(name, agg);
-  }
 
   public Integer getSize() {
     return size;

@@ -24,8 +24,8 @@ public class TermsAggregation extends BucketAggregation {
   }
 
   private static final int DEFAULT_NUM_BUCKETS = 50;
-  private static final Map<String, String> ORDER_DOC_COUNT_DESC = Collections.singletonMap("doc_count", "desc ");
-  private static final Map<String, String> ORDER_VALUE_ASC = Collections.singletonMap("_key", "asc");
+  private static final Map<String, String> SORTBY_DOC_COUNT_DESC = Collections.singletonMap("doc_count", "desc ");
+  private static final Map<String, String> SORTBY_VALUE_ASC = Collections.singletonMap("_key", "asc");
 
   final Terms terms;
 
@@ -46,9 +46,9 @@ public class TermsAggregation extends BucketAggregation {
       return null;
     }
     if (sortBy == SortBy.VALUE_ASC) {
-      return ORDER_VALUE_ASC;
+      return SORTBY_VALUE_ASC;
     }
-    return ORDER_DOC_COUNT_DESC;
+    return SORTBY_DOC_COUNT_DESC;
   }
 
 }

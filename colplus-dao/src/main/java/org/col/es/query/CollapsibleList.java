@@ -25,6 +25,10 @@ public class CollapsibleList<E> extends ArrayList<E> {
     super();
   }
 
+  public CollapsibleList(int initialCapacity) {
+    super(initialCapacity);
+  }
+
   public CollapsibleList(Collection<? extends E> c) {
     super(c);
   }

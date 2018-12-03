@@ -13,9 +13,9 @@ import org.col.es.query.Query;
 import static java.util.Collections.singletonMap;
 
 import static org.col.common.util.CollectionUtils.notEmpty;
-import static org.col.es.translate.AggregationLabelProvider.getContextFilterLabel;
-import static org.col.es.translate.AggregationLabelProvider.getContextLabel;
-import static org.col.es.translate.AggregationLabelProvider.getFacetLabel;
+import static org.col.es.response.AggregationLabelProvider.getContextFilterLabel;
+import static org.col.es.response.AggregationLabelProvider.getContextLabel;
+import static org.col.es.response.AggregationLabelProvider.getFacetLabel;
 import static org.col.es.translate.NameSearchRequestTranslator.generateQuery;
 
 /**

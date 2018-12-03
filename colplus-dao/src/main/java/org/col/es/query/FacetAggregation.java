@@ -1,6 +1,6 @@
 package org.col.es.query;
 
-import static org.col.es.translate.AggregationLabelProvider.getBucketsLabel;
+import static org.col.es.response.AggregationLabelProvider.getBucketsLabel;
 
 /*
  * N.B. This class does not correspond to any real Elasticsearch aggregation type. It's just a convenience subclass of FilterAggregation

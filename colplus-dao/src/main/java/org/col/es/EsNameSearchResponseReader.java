@@ -25,12 +25,8 @@ class EsNameSearchResponseReader {
     this.httpResponse = httpResponse;
   }
 
-  EsNameSearchResponse readHttpResponse() {
-    try {
-      return reader.readValue(httpResponse.getEntity().getContent());
-    } catch (UnsupportedOperationException | IOException e) {
-      throw new EsException(e);
-    }
+  EsNameSearchResponse readHttpResponse() throws IOException {
+    return reader.readValue(httpResponse.getEntity().getContent());
   }
 
 }
