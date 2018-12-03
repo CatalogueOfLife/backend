@@ -46,14 +46,9 @@ class NameSearchResponseTransfer {
     this.page = page;
   }
 
-  public NameSearchResponse transferResponse() {
+  public NameSearchResponse transferResponse() throws IOException {
     int total = esRresponse.getHits().getTotal();
-    List<NameUsageWrapper<NameUsage>> nameUsages;
-    try {
-      nameUsages = transferNameUsages();
-    } catch (IOException e) {
-      throw new EsException(e);
-    }
+    List<NameUsageWrapper<NameUsage>> nameUsages = transferNameUsages();
     if (esRresponse.getAggregations() == null) {
       return new NameSearchResponse(page, total, nameUsages);
     }

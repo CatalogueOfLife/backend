@@ -66,7 +66,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
   }
 
   @Test
-  public void testSort1() throws InvalidQueryException, JsonProcessingException {
+  public void testSort1() throws IOException {
     NameUsageTransfer transfer = new NameUsageTransfer();
     EsNameUsage enu = transfer.toEsDocument(TestEntityGenerator.newNameUsageTaxonWrapper());
     insert(client, indexName, enu);
@@ -87,7 +87,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
   }
 
   @Test
-  public void testSort2() throws InvalidQueryException, JsonProcessingException {
+  public void testSort2() throws IOException {
     NameUsageTransfer transfer = new NameUsageTransfer();
     EsNameUsage enu = transfer.toEsDocument(TestEntityGenerator.newNameUsageTaxonWrapper());
     // Overwrite to test ordering by scientific name
@@ -111,7 +111,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
   }
 
   @Test
-  public void testSortDescending() throws InvalidQueryException {
+  public void testSortDescending() throws IOException {
     NameUsageTransfer transfer = new NameUsageTransfer();
 
     EsSearchRequest esr = EsSearchRequest.emptyRequest();
@@ -165,7 +165,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
   }
 
   @Test
-  public void testSortTaxonomic() throws InvalidQueryException {
+  public void testSortTaxonomic() throws IOException {
     NameUsageTransfer transfer = new NameUsageTransfer();
 
     // Define search
@@ -273,7 +273,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
   }
 
   @Test
-  public void testQuery1() throws InvalidQueryException, JsonProcessingException {
+  public void testQuery1() throws IOException {
     NameUsageTransfer transfer = new NameUsageTransfer();
 
     // Define search
@@ -323,7 +323,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
   }
 
   @Test
-  public void testQuery2() throws InvalidQueryException, JsonProcessingException {
+  public void testQuery2() throws IOException {
     NameUsageTransfer transfer = new NameUsageTransfer();
 
     // Find all documents with an issue of either ACCEPTED_NAME_MISSING or ACCORDING_TO_DATE_INVALID
@@ -378,7 +378,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
   }
 
   @Test
-  public void testQuery3() throws InvalidQueryException, JsonProcessingException {
+  public void testQuery3() throws IOException {
     NameUsageTransfer transfer = new NameUsageTransfer();
 
     // Find all documents with an issue of any of ACCEPTED_NAME_MISSING, ACCORDING_TO_DATE_INVALID, BASIONYM_ID_INVALID
@@ -429,7 +429,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
   }
 
   @Test
-  public void autocomplete1() throws InvalidQueryException, JsonProcessingException {
+  public void autocomplete1() throws IOException {
     NameUsageTransfer transfer = new NameUsageTransfer();
 
     // Define search
@@ -474,7 +474,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
   }
 
   @Test
-  public void autocomplete2() throws InvalidQueryException, JsonProcessingException {
+  public void autocomplete2() throws IOException {
     NameUsageTransfer transfer = new NameUsageTransfer();
 
     // Define search
@@ -521,7 +521,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
   }
 
   @Test
-  public void testIsNull() throws InvalidQueryException, JsonProcessingException {
+  public void testIsNull() throws IOException {
     NameUsageTransfer transfer = new NameUsageTransfer();
 
     // Define search condition
@@ -553,7 +553,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
   }
 
   @Test
-  public void testIsNotNull() throws InvalidQueryException, JsonProcessingException {
+  public void testIsNotNull() throws IOException {
     NameUsageTransfer transfer = new NameUsageTransfer();
 
     // Define search condition
@@ -585,7 +585,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
   }
 
   @Test
-  public void testNameFieldsQuery1() throws InvalidQueryException, JsonProcessingException {
+  public void testNameFieldsQuery1() throws IOException {
     NameUsageTransfer transfer = new NameUsageTransfer();
 
     // Find all documents where the uninomial field is not empty
@@ -634,7 +634,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
   }
 
   @Test
-  public void testNameFieldsQuery2() throws InvalidQueryException, JsonProcessingException {
+  public void testNameFieldsQuery2() throws IOException {
     NameUsageTransfer transfer = new NameUsageTransfer();
 
     // Find all documents where the uninomial field is not empty
@@ -683,7 +683,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
   }
 
   @Test
-  public void testNameFieldsQuery3() throws InvalidQueryException, JsonProcessingException {
+  public void testNameFieldsQuery3() throws IOException {
     NameUsageTransfer transfer = new NameUsageTransfer();
 
     // Find all documents where the uninomial field is not empty
@@ -743,7 +743,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
   }
 
   @Test
-  public void testMultipleFiltersAndQ() throws InvalidQueryException, JsonProcessingException {
+  public void testMultipleFiltersAndQ() throws IOException {
     NameUsageTransfer transfer = new NameUsageTransfer();
 
     // Find all documents where the uninomial field is not empty

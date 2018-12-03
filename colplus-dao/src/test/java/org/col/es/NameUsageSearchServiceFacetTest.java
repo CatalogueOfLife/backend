@@ -56,7 +56,7 @@ public class NameUsageSearchServiceFacetTest extends EsReadTestBase {
   }
 
   @Test
-  public void testSingleFacetWithoutFilters() throws InvalidQueryException {
+  public void testSingleFacetWithoutFilters() throws IOException {
     // Define search
     NameSearchRequest nsr = new NameSearchRequest();
     nsr.addFacet(NameSearchParameter.RANK);
@@ -158,7 +158,7 @@ public class NameUsageSearchServiceFacetTest extends EsReadTestBase {
   }
 
   @Test
-  public void testTwoFacetsWithoutFilters() throws InvalidQueryException {
+  public void testTwoFacetsWithoutFilters() throws IOException {
     // Define search
     NameSearchRequest nsr = new NameSearchRequest();
     nsr.addFacet(NameSearchParameter.RANK);
@@ -277,7 +277,7 @@ public class NameUsageSearchServiceFacetTest extends EsReadTestBase {
   }
 
   @Test
-  public void testThreeFacetsWithoutFilters() throws InvalidQueryException {
+  public void testThreeFacetsWithoutFilters() throws IOException {
     // Define search
     NameSearchRequest nsr = new NameSearchRequest();
     nsr.addFacet(NameSearchParameter.RANK);
@@ -424,7 +424,7 @@ public class NameUsageSearchServiceFacetTest extends EsReadTestBase {
   }
 
   @Test
-  public void testThreeFacetsWithQ() throws InvalidQueryException {
+  public void testThreeFacetsWithQ() throws InvalidQueryException, IOException {
     // Define search
     NameSearchRequest nsr = new NameSearchRequest();
     nsr.addFacet(NameSearchParameter.RANK);
@@ -572,7 +572,7 @@ public class NameUsageSearchServiceFacetTest extends EsReadTestBase {
   }
 
   @Test
-  public void testThreeFacetsWithOneFacetFilter() throws InvalidQueryException {
+  public void testThreeFacetsWithOneFacetFilter() throws IOException {
 
     String PUB_ID1 = "PUB_0001";
     String PUB_ID2 = "PUB_0002";
