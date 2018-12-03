@@ -3,10 +3,7 @@ package org.col.resources;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
 import com.google.common.collect.ImmutableList;
@@ -14,7 +11,10 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.reflect.ClassPath;
+import org.apache.commons.lang3.StringUtils;
 import org.col.api.model.ColUser;
+import org.col.api.model.EditorialDecision;
+import org.col.api.model.Sector;
 import org.col.api.vocab.AreaStandard;
 import org.col.img.ImgConfig;
 import org.gbif.nameparser.api.Rank;
@@ -38,7 +38,7 @@ public class VocabResource {
         }
       }
       
-      for (Class<?> clazz : ImmutableList.of(ColUser.Role.class, ImgConfig.Scale.class)) {
+      for (Class<?> clazz : ImmutableList.of(ColUser.Role.class, ImgConfig.Scale.class, EditorialDecision.Mode.class, Sector.Mode.class)) {
         add(enums, clazz);
       }
       
@@ -51,8 +51,9 @@ public class VocabResource {
   private static void add(Map<String, Class<Enum>> enums, Class<?> clazz) {
     if (clazz.isEnum()) {
       LOG.debug("Adding enum {} to vocabularies", clazz.getSimpleName());
-      Class<Enum> enumClazz = (Class<Enum>) clazz;
-      enums.put(enumClazz.getSimpleName().toLowerCase(), enumClazz);
+      if (enums.put(binaryName(clazz), (Class<Enum>) clazz) != null) {
+        LOG.warn("Enum {} has the same key {} as an already existing vocabulary", clazz.getName(), binaryName(clazz));
+      }
     }
   }
   
@@ -67,7 +68,15 @@ public class VocabResource {
     if (name != null && vocabs.containsKey(name.toLowerCase())) {
       return vocabs.get(name.toLowerCase()).getEnumConstants();
     }
-    return new Enum[]{};
+    throw new NotFoundException();
   }
   
+  private static String binaryName(Class clazz) {
+    if (clazz.isMemberClass()) {
+      return StringUtils.substringAfterLast(clazz.getName(),".").toLowerCase();
+      
+    } else {
+      return clazz.getSimpleName().toLowerCase();
+    }
+  }
 }

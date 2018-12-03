@@ -125,7 +125,7 @@ public class DwcaRelationInserter implements NodeBatchProcessor {
    */
   private List<RankedUsage> usagesByIdOrName(VerbatimRecord v, NeoUsage t, boolean allowMultiple, DwcTerm idTerm, Issue invalidIdIssue, DwcTerm nameTerm, Origin createdNameOrigin) {
     List<RankedUsage> usages = Lists.newArrayList();
-    final String unsplitIds = v.get(idTerm);
+    final String unsplitIds = v.getRaw(idTerm);
     if (unsplitIds != null && !unsplitIds.equals(t.getId())) {
       if (allowMultiple && meta.getMultiValueDelimiters().containsKey(idTerm)) {
         usages.addAll(usagesByIds(meta.getMultiValueDelimiters().get(idTerm).splitToList(unsplitIds), t));
@@ -177,7 +177,7 @@ public class DwcaRelationInserter implements NodeBatchProcessor {
   
   
   private RankedName nameByIdOrName(VerbatimRecord v, NeoName nn, DwcTerm idTerm, Issue invalidIdIssue, DwcTerm nameTerm, Origin createdOrigin) {
-    final String id = v.get(idTerm);
+    final String id = v.getRaw(idTerm);
     Node n = null;
     if (id != null && !id.equals(nn.getId())) {
       n = store.names().nodeByID(id);

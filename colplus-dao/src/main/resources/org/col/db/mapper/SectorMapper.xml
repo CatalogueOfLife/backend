@@ -7,48 +7,39 @@
   <sql id="SELECT">
     s.key,
     s.col_source_key,
-    s.root_id,
-    s.root_index_name_id,
-    s.root_name,
-    s.root_authorship,
-    s.root_rank,
-    s.attach_id,
-    s.attach_index_name_id,
-    s.attach_name,
-    s.attach_authorship,
-    s.attach_rank,
-    s.created,
-    s.modified
+    <include refid="org.col.db.mapper.DecisionMapper.DecisionColsAll">
+      <property name="prefix" value="s."/>
+    </include>,
+    s.target_id,
+    s.target_index_name_id,
+    s.target_name,
+    s.target_authorship,
+    s.target_rank,
+    s.mode
   </sql>
 
   <sql id="COLS">
     col_source_key,
-    root_id,
-    root_index_name_id,
-    root_name,
-    root_authorship,
-    root_rank,
-    attach_id,
-    attach_index_name_id,
-    attach_name,
-    attach_authorship,
-    attach_rank,
-    modified
+    <include refid="org.col.db.mapper.DecisionMapper.DecisionCols">
+      <property name="prefix" value=""/>
+    </include>,
+    target_id,
+    target_index_name_id,
+    target_name,
+    target_authorship,
+    target_rank,
+    mode
   </sql>
 
   <sql id="PROPS">
     #{colSourceKey},
-    #{root.id},
-    #{root.indexNameId},
-    #{root.name},
-    #{root.authorship},
-    #{root.rank}::rank,
+    <include refid="org.col.db.mapper.DecisionMapper.DecisionProps" />,
     #{target.id},
     #{target.indexNameId},
     #{target.name},
     #{target.authorship},
     #{target.rank}::rank,
-    #{modified}
+    #{mode}
   </sql>
 
   <sql id="FROM">
@@ -58,8 +49,8 @@
   <!-- A mapping to Distribution, mostly auto mapped -->
   <resultMap id="sectorResultMap" type="Sector" autoMapping="true">
     <id property="key" column="key" />
-    <association property="root" javaType="NameRef" resultMap="org.col.db.mapper.SectorMapper.refResultMap" columnPrefix="root_" />
-    <association property="target" javaType="NameRef" resultMap="org.col.db.mapper.SectorMapper.refResultMap" columnPrefix="attach_" />
+    <association property="subject" javaType="NameRef" resultMap="org.col.db.mapper.SectorMapper.refResultMap" columnPrefix="subject_" />
+    <association property="target" javaType="NameRef" resultMap="org.col.db.mapper.SectorMapper.refResultMap" columnPrefix="target_" />
   </resultMap>
 
   <resultMap id="refResultMap" type="NameRef" autoMapping="true">
@@ -80,8 +71,8 @@
   </select>
 
   <insert id="create" parameterType="Sector" useGeneratedKeys="true" keyProperty="key">
-    INSERT INTO sector ( <include refid="COLS" /> )
-    VALUES ( <include refid="PROPS" /> )
+    INSERT INTO sector ( <include refid="COLS" />, created_by )
+    VALUES ( <include refid="PROPS" />, #{createdBy} )
   </insert>
 
   <update id="update" parameterType="Sector">
@@ -99,7 +90,7 @@
     SELECT <include refid="SELECT" />
     FROM <include refid="FROM" />
       JOIN col_source cs ON cs.key = s.col_source_key
-      LEFT JOIN taxon t ON t.dataset_key=cs.dataset_key AND t.id=s.root_id
+      LEFT JOIN taxon t ON t.dataset_key=cs.dataset_key AND t.id=s.subject_id
     WHERE t.id IS NULL
     <if test="key != null">
       AND s.col_source_key = #{key}
@@ -111,7 +102,7 @@
     SELECT <include refid="SELECT" />
     FROM <include refid="FROM" />
     JOIN col_source cs ON cs.key = s.col_source_key
-    LEFT JOIN taxon t ON t.dataset_key=cs.dataset_key AND t.id=s.attach_id
+    LEFT JOIN taxon t ON t.dataset_key=cs.dataset_key AND t.id=s.target_id
     WHERE t.id IS NULL
     <if test="key != null">
       AND s.col_source_key = #{key}

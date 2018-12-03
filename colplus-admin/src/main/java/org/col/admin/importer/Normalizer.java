@@ -789,6 +789,7 @@ public class Normalizer implements Callable<Boolean> {
       meta = inserter.reader.getMappingFlags();
       
       store.reportDuplicates();
+      inserter.reportBadFks();
   
     } catch (NotUniqueRuntimeException e) {
       throw new NormalizationFailedException(e.getProperty() + " values not unique: " + e.getKey(), e);

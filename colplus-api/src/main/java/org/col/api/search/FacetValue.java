@@ -11,14 +11,13 @@ public class FacetValue<T extends Comparable<T>> implements Comparable<FacetValu
   }
 
   public static FacetValue<Integer> forInteger(Object val, int count) {
-    // See NameSearchResponseTransferTest. In theory val might could a Long or even a BigInteger, but that's very unlikely. Only if the
-    // dataset key were to be a facet and it was declared to be a double precision integer in Postgress.
+    // See NameSearchResponseTransferTest. In theory val might could a Long or even a BigInteger, but that's very unlikely - only if the
+    // dataset key were to be a facet and it was declared to be a double precision integer in Postgres.
     Preconditions.checkArgument(val.getClass() == Integer.class, "%s could not be cast to integer", val);
     return new FacetValue<>((Integer) val, count);
   }
 
   public static <U extends Enum<U>> FacetValue<U> forEnum(Class<U> enumClass, Object val, int count) {
-    // No type and array index checking here. In any ordinary workflow the arguments will come in just fine.
     int ordinal = ((Integer) val).intValue();
     return new FacetValue<>(enumClass.getEnumConstants()[ordinal], count);
   }

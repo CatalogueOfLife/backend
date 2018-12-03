@@ -142,7 +142,6 @@ public class RandomInstance {
       f.set(instance, randomDateTime().toLocalDate());
       return true;
     }
-    // TODO more common types
     return false;
   }
   

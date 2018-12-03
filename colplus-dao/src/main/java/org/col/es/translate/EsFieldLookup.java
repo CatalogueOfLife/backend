@@ -41,7 +41,6 @@ public class EsFieldLookup extends EnumMap<NameSearchParameter, String[]> {
   public String lookup(NameSearchParameter param) {
     String[] fields = get(param);
     // Currently every NameSearchParameter maps to just one field in the name usage document
-    assert (fields.length == 1);
     return fields[0];
   }
 

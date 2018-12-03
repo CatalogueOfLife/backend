@@ -12,7 +12,7 @@ import org.col.admin.importer.neo.model.PropLabel;
 import org.col.api.model.ID;
 import org.col.api.model.VerbatimEntity;
 import org.col.api.vocab.Issue;
-import org.col.common.mapdb.MapDbObjectSerializer;
+import org.col.common.kryo.map.MapDbObjectSerializer;
 import org.mapdb.DB;
 import org.mapdb.Serializer;
 import org.neo4j.graphdb.Node;
@@ -130,7 +130,7 @@ public class NeoCRUDStore<T extends ID & VerbatimEntity & NeoNode> {
    */
   private boolean duplicateID(T obj) {
     if (ids.containsKey(obj.getId())) {
-      LOG.info("Duplicate {}ID {}", objName, obj.getId());
+      LOG.warn("Duplicate {}ID {}", objName, obj.getId());
       duplicateCounter++;
       neoDb.addIssues(obj, Issue.ID_NOT_UNIQUE);
       T obj2 = objByNode(nodeByID(obj.getId()));

@@ -2,11 +2,9 @@ package org.col.admin.importer;
 
 import java.net.URI;
 import java.time.LocalDate;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.BiConsumer;
+import javax.annotation.Nullable;
 
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Splitter;
@@ -61,103 +59,134 @@ public class InterpreterBase {
 
   protected List<VernacularName> interpretVernacular(VerbatimRecord rec, BiConsumer<VernacularName, VerbatimRecord> addReference,
                                                      Term name, Term translit, Term lang, Term... countryTerms) {
-    VernacularName vn = new VernacularName();
-    vn.setVerbatimKey(rec.getKey());
-    vn.setName(rec.get(name));
-    if (StringUtils.isBlank(vn.getName())) {
-      rec.addIssue(Issue.VERNACULAR_NAME_INVALID);
-      return Collections.emptyList();
+    String vname = rec.get(name);
+    if (vname != null) {
+      VernacularName vn = new VernacularName();
+      vn.setVerbatimKey(rec.getKey());
+      vn.setName(vname);
+      
+      if (translit != null) {
+        vn.setLatin(rec.get(translit));
+      }
+      if (lang != null) {
+        vn.setLanguage(SafeParser.parse(LanguageParser.PARSER, rec.get(lang)).orNull());
+      }
+      vn.setCountry(SafeParser.parse(CountryParser.PARSER, rec.getFirst(countryTerms)).orNull());
+  
+      addReference.accept(vn, rec);
+  
+      if (StringUtils.isBlank(vn.getLatin())) {
+        vn.setLatin(latinName(vn.getName()));
+        rec.addIssue(Issue.VERNACULAR_NAME_TRANSLITERATED);
+      }
+      return Lists.newArrayList(vn);
     }
-    
-    if (translit != null) {
-      vn.setLatin(rec.get(translit));
-    }
-    if (lang != null) {
-      vn.setLanguage(SafeParser.parse(LanguageParser.PARSER, rec.get(lang)).orNull());
-    }
-    vn.setCountry(SafeParser.parse(CountryParser.PARSER, rec.getFirst(countryTerms)).orNull());
-
-    addReference.accept(vn, rec);
-
-    if (StringUtils.isBlank(vn.getLatin())) {
-      vn.setLatin(latinName(vn.getName()));
-      rec.addIssue(Issue.VERNACULAR_NAME_TRANSLITERATED);
-    }
-    return Lists.newArrayList(vn);
+    return Collections.emptyList();
   }
   
   protected List<Distribution> interpretDistribution(VerbatimRecord rec, BiConsumer<Distribution, VerbatimRecord> addReference,
                                                      Term tArea, Term tGazetteer, Term tStatus) {
     // require location
     if (rec.hasTerm(tArea)) {
-      Distribution d = new Distribution();
-      
       // which standard?
-      d.setGazetteer(parse(GazetteerParser.PARSER, rec.get(tGazetteer))
-          .orElse(Gazetteer.TEXT, Issue.DISTRIBUTION_GAZETEER_INVALID, rec));
+      Gazetteer gazetteer = parse(GazetteerParser.PARSER, rec.get(tGazetteer))
+          .orElse(Gazetteer.TEXT, Issue.DISTRIBUTION_GAZETEER_INVALID, rec);
       
-      // TODO: try to split location into several distributions...
-      String loc = rec.get(tArea);
-      if (d.getGazetteer() == Gazetteer.TEXT) {
-        d.setArea(loc);
+      return createDistributions(gazetteer, rec.get(tArea), rec.get(tStatus), rec, addReference);
+    }
+    return Collections.emptyList();
+  }
+  
+  private Distribution createDistribution(VerbatimRecord rec, Gazetteer standard, String area, DistributionStatus status,
+                                          BiConsumer<Distribution, VerbatimRecord> addReference) {
+    Distribution d = new Distribution();
+    d.setVerbatimKey(rec.getKey());
+    d.setGazetteer(standard);
+    d.setArea(area);
+    d.setStatus(status);
+    addReference.accept(d, rec);
+    return d;
+  }
+  
+  protected List<Distribution> createDistributions(@Nullable Gazetteer standard, final String locRaw, String statusRaw, VerbatimRecord rec,
+                                                   BiConsumer<Distribution, VerbatimRecord> addReference) {
+    if (locRaw != null) {
+
+      final DistributionStatus status = parse(DistributionStatusParser.PARSER, statusRaw)
+          .orElse(DistributionStatus.NATIVE, Issue.DISTRIBUTION_STATUS_INVALID, rec);
+
+      if (standard == Gazetteer.TEXT) {
+        return Lists.newArrayList( createDistribution(rec, Gazetteer.TEXT, locRaw, status, addReference) );
+      
       } else {
-        // only parse area if other than text
-        AreaParser.Area textArea = new AreaParser.Area(loc, Gazetteer.TEXT);
-        if (loc.indexOf(':') < 0) {
-          loc = d.getGazetteer().locationID(loc);
+        List<Distribution> distributions = new ArrayList<>();
+        boolean rawAdded = false;
+        for (String loc : MULTIVAL.split(locRaw)) {
+          // add gazetteer prefix if not yet included
+          if (standard != null && loc.indexOf(':') < 0) {
+            loc = standard.locationID(loc);
+          }
+          AreaParser.Area area = SafeParser.parse(AreaParser.PARSER, loc).orNull(Issue.DISTRIBUTION_AREA_INVALID, rec);
+          if (area == null) {
+            // failed to parse. Keep the full original area as a single text entry once in addition to whatever parses here well
+            if (!rawAdded) {
+              rawAdded=true;
+              distributions.add( createDistribution(rec, Gazetteer.TEXT, locRaw, status, addReference) );
+            }
+          } else {
+            // check if we have contradicting extracted a gazetteer
+            if (standard != null && area.standard != Gazetteer.TEXT && area.standard != standard) {
+              LOG.info("Area standard {} found in area {} different from explicitly given standard {} for {}",
+                        area.standard, area.area, standard, rec);
+            }
+            
+            distributions.add(createDistribution(rec, area.standard, area.area, status, addReference));
+          }
         }
-        AreaParser.Area area = SafeParser.parse(AreaParser.PARSER, loc).orElse(textArea,
-            Issue.DISTRIBUTION_AREA_INVALID, rec);
-        d.setArea(area.area);
-        // check if we have contradicting extracted a gazetteer
-        if (area.standard != Gazetteer.TEXT && area.standard != d.getGazetteer()) {
-          LOG.info(
-              "Area standard {} found in area {} different from explicitly given standard {} for {}",
-              area.standard, area.area, d.getGazetteer(), rec);
-        }
+        return distributions;
       }
-      
-      // status
-      d.setStatus(parse(DistributionStatusParser.PARSER, rec.get(tStatus))
-          .orElse(DistributionStatus.NATIVE, Issue.DISTRIBUTION_STATUS_INVALID, rec));
-      
-      addReference.accept(d, rec);
-      d.setVerbatimKey(rec.getKey());
-      return Lists.newArrayList(d);
     }
     return Collections.emptyList();
   }
   
   protected List<Description> interpretDescription(VerbatimRecord rec, BiConsumer<Description, VerbatimRecord> addReference,
                                                    Term description, Term category, Term lang) {
-    Description d = new Description();
-    d.setVerbatimKey(rec.getKey());
-    d.setCategory(rec.get(category));
-    d.setDescription(rec.get(description));
-    d.setLanguage(SafeParser.parse(LanguageParser.PARSER, rec.get(lang)).orNull());
+    // require non empty description
+    if (rec.hasTerm(description)) {
+      Description d = new Description();
+      d.setVerbatimKey(rec.getKey());
+      d.setCategory(rec.get(category));
+      d.setDescription(rec.get(description));
+      d.setLanguage(SafeParser.parse(LanguageParser.PARSER, rec.get(lang)).orNull());
   
-    addReference.accept(d, rec);
+      addReference.accept(d, rec);
   
-    return Lists.newArrayList(d);
+      return Lists.newArrayList(d);
+    }
+    return Collections.emptyList();
   }
   
   protected List<Media> interpretMedia(VerbatimRecord rec, BiConsumer<Media, VerbatimRecord> addReference,
                  Term type, Term url, Term link, Term license, Term creator, Term created, Term title, Term format) {
-    Media m = new Media();
-    m.setVerbatimKey(rec.getKey());
-    m.setUrl( uri(rec, Issue.URL_INVALID, url));
-    m.setLink( uri(rec, Issue.URL_INVALID, link));
-    m.setType( SafeParser.parse(MediaTypeParser.PARSER, rec.get(type)).orNull() );
-    m.setFormat(rec.get(format));
-    //TODO: validate or derive type from format
-    m.setLicense( SafeParser.parse(LicenseParser.PARSER, rec.get(license)).orNull() );
-    m.setCreator(rec.get(creator));
-    m.setCreated( date(rec, Issue.CREATED_DATE_INVALID, created) );
-    m.setTitle(rec.get(title));
-    
-    addReference.accept(m, rec);
-    
-    return Lists.newArrayList(m);
+    // require media or link url
+    if (rec.hasTerm(url) || rec.hasTerm(link)) {
+      Media m = new Media();
+      m.setVerbatimKey(rec.getKey());
+      m.setUrl( uri(rec, Issue.URL_INVALID, url));
+      m.setLink( uri(rec, Issue.URL_INVALID, link));
+      m.setType( SafeParser.parse(MediaTypeParser.PARSER, rec.get(type)).orNull() );
+      m.setFormat(rec.get(format));
+      //TODO: validate or derive type from format
+      m.setLicense( SafeParser.parse(LicenseParser.PARSER, rec.get(license)).orNull() );
+      m.setCreator(rec.get(creator));
+      m.setCreated( date(rec, Issue.CREATED_DATE_INVALID, created) );
+      m.setTitle(rec.get(title));
+  
+      addReference.accept(m, rec);
+  
+      return Lists.newArrayList(m);
+    }
+    return Collections.emptyList();
   }
 
   protected LocalDate date(VerbatimRecord v, Issue invalidIssue, Term term) {
@@ -298,12 +327,6 @@ public class InterpreterBase {
     }
     
     return Optional.of(nat);
-  }
-  
-  protected void setRefKey(Referenced obj, Reference r) {
-    if (r != null) {
-      obj.setReferenceId(r.getId());
-    }
   }
   
   protected void setLifezones(Taxon t, VerbatimRecord v, Term lifezone) {

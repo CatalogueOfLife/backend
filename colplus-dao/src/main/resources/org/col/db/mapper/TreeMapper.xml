@@ -22,8 +22,8 @@
 
     <sql id="FROM">
         taxon_${datasetKey} t JOIN name_${datasetKey} n ON t.name_id=n.id
-        <if test="datasetKey == 3">
-            LEFT JOIN sector s ON s.attach_id=t.id
+        <if test="datasetKey == @org.col.api.vocab.Datasets@DRAFT_COL">
+            LEFT JOIN sector s ON s.target_id=t.id
         </if>
     </sql>
 

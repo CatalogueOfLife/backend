@@ -2,6 +2,7 @@ package org.col.admin.importer;
 
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
@@ -17,6 +18,7 @@ import org.col.api.model.Dataset;
 import org.col.api.model.VerbatimEntity;
 import org.col.api.model.VerbatimRecord;
 import org.col.api.vocab.Issue;
+import org.col.common.collection.DefaultMap;
 import org.col.csv.CsvReader;
 import org.gbif.dwc.terms.Term;
 import org.neo4j.graphdb.Node;
@@ -34,7 +36,9 @@ public abstract class NeoInserter {
   protected final CsvReader reader;
   protected final ReferenceFactory refFactory;
   private int vcounter;
-
+  private Map<Term, AtomicInteger> badTaxonFks = DefaultMap.createCounter();
+  
+  
   public NeoInserter(Path folder, CsvReader reader, NeoDb store, ReferenceFactory refFactory) {
     this.folder = folder;
     this.reader = reader;
@@ -103,16 +107,15 @@ public abstract class NeoInserter {
   }
   
   protected <T extends VerbatimEntity> void insertTaxonEntities(final CsvReader reader, final Term classTerm,
-                                                                Function<VerbatimRecord, List<T>> interpret,
-                                                                Term taxonIdTerm,
-                                                                BiConsumer<NeoUsage, T> add
+                                                                final Function<VerbatimRecord, List<T>> interpret,
+                                                                final Term taxonIdTerm,
+                                                                final BiConsumer<NeoUsage, T> add
   ) {
     processVerbatim(reader, classTerm, rec -> {
       List<T> results = interpret.apply(rec);
       if (reader.isEmpty()) return false;
       boolean interpreted = true;
       for (T obj : results) {
-        obj.setVerbatimKey(rec.getKey());
         String id = rec.getRaw(taxonIdTerm);
         NeoUsage t = store.usages().objByID(id);
         if (t != null) {
@@ -120,11 +123,22 @@ public abstract class NeoInserter {
           store.usages().update(t);
         } else {
           interpreted = false;
-          LOG.warn("Non existing {} {} found in {} record line {}, {}", taxonIdTerm.simpleName(), id, rec.getType().simpleName(), rec.getLine(), rec.getFile());
+          badTaxonFk(rec, taxonIdTerm, id);
         }
       }
       return interpreted;
     });
+  }
+  
+  private void badTaxonFk(VerbatimRecord rec, Term taxonIdTerm, String id){
+    badTaxonFks.get(rec.getType()).incrementAndGet();
+    LOG.warn("Non existing {} {} found in {} record line {}, {}", taxonIdTerm.simpleName(), id, rec.getType().simpleName(), rec.getLine(), rec.getFile());
+  }
+  
+  public void reportBadFks() {
+    for (Map.Entry<Term, AtomicInteger> entry : badTaxonFks.entrySet()) {
+      LOG.warn("The inserted dataset contains {} bad taxon foreign keys in {}", entry.getValue(), entry.getKey().prefixedName());
+    }
   }
   
   protected void insertNameRelations(final CsvReader reader, final Term classTerm,

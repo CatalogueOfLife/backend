@@ -179,22 +179,36 @@ CREATE TABLE col_source (
   created TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW()
 );
 
+
 CREATE TABLE sector (
   key serial PRIMARY KEY,
   col_source_key INTEGER NOT NULL REFERENCES col_source,
-  root_id TEXT,
-  root_index_name_id TEXT,
-  root_name TEXT,
-  root_authorship TEXT,
-  root_rank rank,
-  attach_id TEXT,
-  attach_index_name_id TEXT,
-  attach_name TEXT,
-  attach_authorship TEXT,
-  attach_rank rank,
-  created TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW(),
-  modified TIMESTAMP WITHOUT TIME ZONE,
-  UNIQUE (col_source_key, root_id)
+  subject_id TEXT,
+  subject_index_name_id TEXT,
+  subject_name TEXT,
+  subject_authorship TEXT,
+  subject_rank rank,
+  target_id TEXT,
+  target_index_name_id TEXT,
+  target_name TEXT,
+  target_authorship TEXT,
+  target_rank rank,
+  mode INTEGER NOT NULL,
+  note TEXT,
+  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  created_by INTEGER REFERENCES coluser,
+  modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  modified_by INTEGER REFERENCES coluser,
+  UNIQUE (col_source_key, subject_id)
+);
+
+CREATE TABLE sector_exclude (
+  sector_key INTEGER NOT NULL REFERENCES sector,
+  id TEXT,
+  index_name_id TEXT,
+  name TEXT,
+  authorship TEXT,
+  rank rank
 );
 
 CREATE TABLE decision (
@@ -205,13 +219,13 @@ CREATE TABLE decision (
   subject_name TEXT,
   subject_authorship TEXT,
   subject_rank rank,
-  blocked BOOLEAN DEFAULT FALSE,
+  mode INTEGER NOT NULL,
   status INTEGER,
   name JSONB,
   note TEXT,
-  created TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW(),
+  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   created_by INTEGER REFERENCES coluser,
-  modified TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW(),
+  modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   modified_by INTEGER REFERENCES coluser
 );
 
@@ -414,5 +428,6 @@ IMMUTABLE;
 -- INDICES
 CREATE index ON dataset (gbif_key);
 CREATE index ON dataset_import (started);
-CREATE index ON sector (root_id);
-CREATE index ON sector (attach_id);
+CREATE index ON decision (subject_id);
+CREATE index ON sector (subject_id);
+CREATE index ON sector (target_id);

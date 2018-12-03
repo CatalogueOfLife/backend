@@ -83,10 +83,6 @@ public class NameResource {
     return mapper.list(datasetKey, id);
   }
   
-  /**
-   * TODO: this is really a names index / prov catalogue specific method. Move it to a dedicated web
-   * resource
-   */
   @GET
   @Path("{id}/group")
   public List<Name> getIndexGroup(@PathParam("id") String id, @Context SqlSession session) {
