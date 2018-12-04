@@ -18,7 +18,7 @@ import org.col.api.search.NameSearchResponse;
 import org.col.api.search.NameUsageWrapper;
 import org.col.es.model.EsNameUsage;
 import org.col.es.response.EsFacet;
-import org.col.es.response.EsFacets;
+import org.col.es.response.EsFacetsContainer;
 import org.col.es.response.EsNameSearchResponse;
 import org.col.es.response.SearchHit;
 
@@ -46,14 +46,9 @@ class NameSearchResponseTransfer {
     this.page = page;
   }
 
-  public NameSearchResponse transferResponse() {
+  public NameSearchResponse transferResponse() throws IOException {
     int total = esRresponse.getHits().getTotal();
-    List<NameUsageWrapper<NameUsage>> nameUsages;
-    try {
-      nameUsages = transferNameUsages();
-    } catch (IOException e) {
-      throw new EsException(e);
-    }
+    List<NameUsageWrapper<NameUsage>> nameUsages = transferNameUsages();
     if (esRresponse.getAggregations() == null) {
       return new NameSearchResponse(page, total, nameUsages);
     }
@@ -73,7 +68,7 @@ class NameSearchResponseTransfer {
   }
 
   private Map<NameSearchParameter, Set<FacetValue<?>>> transferFacets() {
-    EsFacets esFacets = esRresponse.getAggregations().getContextFilter().getFacetsContainer();
+    EsFacetsContainer esFacets = esRresponse.getAggregations().getContextFilter().getFacetsContainer();
     Map<NameSearchParameter, Set<FacetValue<?>>> facets = new EnumMap<>(NameSearchParameter.class);
     addIfPresent(facets, DATASET_KEY, esFacets.getDatasetKey());
     addIfPresent(facets, FIELD, esFacets.getField());

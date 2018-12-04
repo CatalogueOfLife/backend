@@ -10,8 +10,4 @@ public class BucketsContainer {
     return buckets;
   }
 
-  public void setBuckets(List<Bucket> buckets) {
-    this.buckets = buckets;
-  }
-
 }

@@ -2,6 +2,9 @@ package org.col.es.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+/**
+ * The ES counter part to the FacetValue API class.
+ */
 public class Bucket {
 
   private Object key;
@@ -12,16 +15,8 @@ public class Bucket {
     return key;
   }
 
-  public void setKey(Object key) {
-    this.key = key;
-  }
-
   public int getDocCount() {
     return docCount;
-  }
-
-  public void setDocCount(int docCount) {
-    this.docCount = docCount;
   }
 
 }

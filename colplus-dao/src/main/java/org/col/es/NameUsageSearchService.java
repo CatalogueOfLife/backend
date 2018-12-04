@@ -1,5 +1,7 @@
 package org.col.es;
 
+import java.io.IOException;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.annotations.VisibleForTesting;
@@ -30,18 +32,22 @@ public class NameUsageSearchService {
   }
 
   public NameSearchResponse search(NameSearchRequest query, Page page) {
-    return search(NAME_USAGE_BASE, query, page);
+    try {
+      return search(NAME_USAGE_BASE, query, page);
+    } catch (IOException e) {
+      throw new EsException(e);
+    }
   }
 
   @VisibleForTesting
-  NameSearchResponse search(String index, NameSearchRequest query, Page page) {
+  NameSearchResponse search(String index, NameSearchRequest query, Page page) throws IOException {
     NameSearchRequestTranslator translator = new NameSearchRequestTranslator(query, page);
     EsSearchRequest esSearchRequest = translator.translate();
     return search(index, esSearchRequest, page);
   }
 
   @VisibleForTesting
-  NameSearchResponse search(String index, EsSearchRequest esQuery, Page page) {
+  NameSearchResponse search(String index, EsSearchRequest esQuery, Page page) throws IOException {
     if (LOG.isDebugEnabled()) {
       LOG.debug("Executing query: " + writeQuery(esQuery, true));
     }
@@ -54,16 +60,12 @@ public class NameUsageSearchService {
     return transfer.transferResponse();
   }
 
-  private static String writeQuery(EsSearchRequest query, boolean pretty) {
+  private static String writeQuery(EsSearchRequest query, boolean pretty) throws JsonProcessingException {
     ObjectWriter ow = EsModule.QUERY_WRITER;
     if (pretty) {
       ow = ow.withDefaultPrettyPrinter();
     }
-    try {
-      return ow.writeValueAsString(query);
-    } catch (JsonProcessingException e) {
-      throw new EsException(e);
-    }
+    return ow.writeValueAsString(query);
   }
 
   private static String getUrl(String indexName) {

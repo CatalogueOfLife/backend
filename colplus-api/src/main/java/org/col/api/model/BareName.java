@@ -19,12 +19,12 @@ public class BareName implements NameUsage {
   
   @Override
   public String getId() {
-    return name.getId();
+    return null;
   }
   
   @Override
   public void setId(String id) {
-    name.setId(id);
+    // Do nothing
   }
   
   @Override

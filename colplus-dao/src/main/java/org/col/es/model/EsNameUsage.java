@@ -15,11 +15,23 @@ import org.col.es.mapping.ESDataType;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 
-import static org.col.es.annotations.Analyzer.AUTO_COMPLETE;
+import static org.col.es.annotations.Analyzer.*;
 
 public class EsNameUsage {
 
-  private String scientificName;
+  /*
+   * A Weakly Normalized version of the original scientific name, used for auto-completion purposes. What weak and strong normalization
+   * exactly is, is left intentionally vague, so we have room to experiment and fine-tune. The only requirement is that the same
+   * normalization method be used at index and query time, and that two different weakly normalized names may become when same strongly
+   * normalized name, but two different strongly normalized names must also have two weakly normalized names. See NameUsageTransfer for the
+   * actual implementations of weak and strong normalization.
+   */
+  private String scientificNameWN;
+
+  /*
+   * A Strongly normalized version of the original scientific name.
+   */
+  private String scientificNameSN;
 
   private String authorship;
 
@@ -49,16 +61,25 @@ public class EsNameUsage {
 
   private String payload; // The entire NameUsageWrapper object, serialized to a string
 
-  @Analyzers({AUTO_COMPLETE})
-  public String getScientificName() {
-    return scientificName;
+  @Analyzers({AUTO_COMPLETE, IGNORE_CASE})
+  public String getScientificNameWN() {
+    return scientificNameWN;
   }
 
-  public void setScientificName(String scientificName) {
-    this.scientificName = scientificName;
+  public void setScientificNameWN(String scientificNameWN) {
+    this.scientificNameWN = scientificNameWN;
   }
 
-  @Analyzers({AUTO_COMPLETE})
+  @Analyzers({AUTO_COMPLETE, IGNORE_CASE})
+  public String getScientificNameSN() {
+    return scientificNameSN;
+  }
+
+  public void setScientificNameSN(String scientificNameSN) {
+    this.scientificNameSN = scientificNameSN;
+  }
+
+  @Analyzers({AUTO_COMPLETE, IGNORE_CASE})
   public String getAuthorship() {
     return authorship;
   }
@@ -150,7 +171,7 @@ public class EsNameUsage {
     this.taxonId = taxonId;
   }
 
-  @Analyzers({AUTO_COMPLETE})
+  @Analyzers({AUTO_COMPLETE, IGNORE_CASE})
   public List<String> getVernacularNames() {
     return vernacularNames;
   }
@@ -183,7 +204,8 @@ public class EsNameUsage {
     if (o == null || getClass() != o.getClass())
       return false;
     EsNameUsage that = (EsNameUsage) o;
-    return Objects.equals(datasetKey, that.datasetKey) && Objects.equals(scientificName, that.scientificName)
+    return Objects.equals(datasetKey, that.datasetKey) && Objects.equals(scientificNameWN, that.scientificNameWN)
+        && Objects.equals(scientificNameSN, that.scientificNameSN)
         && Objects.equals(authorship, that.authorship) && Objects.equals(vernacularNames, that.vernacularNames)
         && Objects.equals(nameId, that.nameId) && Objects.equals(nameIndexId, that.nameIndexId)
         && Objects.equals(publishedInId, that.publishedInId) && rank == that.rank && type == that.type && nomStatus == that.nomStatus
@@ -193,8 +215,9 @@ public class EsNameUsage {
 
   @Override
   public int hashCode() {
-    return Objects.hash(scientificName, authorship, vernacularNames, datasetKey, nameId, nameIndexId, publishedInId, rank, type, nomStatus,
-        nameFields, status, taxonId, issues, payload);
+    return Objects.hash(scientificNameWN, scientificNameSN, authorship, vernacularNames, datasetKey, nameId, nameIndexId, publishedInId,
+        rank,
+        type, nomStatus, nameFields, status, taxonId, issues, payload);
   }
 
 }

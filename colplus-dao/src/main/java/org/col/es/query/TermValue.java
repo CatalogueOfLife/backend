@@ -1,7 +1,7 @@
 package org.col.es.query;
 
 /**
- * Basically just the (exact) value you are searching for, plus the option to provide a boost to documents containing that value. 
+ * Represents the (exact) value you are searching for, plus the option to provide a boost to documents containing that value. 
  */
 public class TermValue {
 

@@ -22,7 +22,7 @@ public class BoolQuery extends AbstractQuery {
 
   public BoolQuery must(Query query) {
     if (bool.must == null) {
-      bool.must = new CollapsibleList<>();
+      bool.must = new CollapsibleList<>(5);
     }
     bool.must.add(query);
     return this;
@@ -30,7 +30,7 @@ public class BoolQuery extends AbstractQuery {
 
   public BoolQuery filter(Query query) {
     if (bool.filter == null) {
-      bool.filter = new CollapsibleList<>();
+      bool.filter = new CollapsibleList<>(5);
     }
     bool.filter.add(query);
     return this;
@@ -38,7 +38,7 @@ public class BoolQuery extends AbstractQuery {
 
   public BoolQuery mustNot(Query query) {
     if (bool.mustNot == null) {
-      bool.mustNot = new CollapsibleList<>();
+      bool.mustNot = new CollapsibleList<>(5);
     }
     bool.mustNot.add(query);
     return this;
@@ -46,7 +46,7 @@ public class BoolQuery extends AbstractQuery {
 
   public BoolQuery should(Query query) {
     if (bool.should == null) {
-      bool.should = new CollapsibleList<>();
+      bool.should = new CollapsibleList<>(5);
     }
     bool.should.add(query);
     return this;

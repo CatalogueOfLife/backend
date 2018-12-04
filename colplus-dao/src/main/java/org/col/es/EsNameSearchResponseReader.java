@@ -3,9 +3,12 @@ package org.col.es;
 import java.io.IOException;
 
 import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.databind.ObjectWriter;
 
 import org.col.es.response.EsNameSearchResponse;
 import org.elasticsearch.client.Response;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Extracts an EsNameSearchResponse from the HTTP response. This is the data structure coming back from Elasticsearch. It is passed on to a
@@ -13,10 +16,16 @@ import org.elasticsearch.client.Response;
  */
 class EsNameSearchResponseReader {
 
-  private static final ObjectReader reader;
+  private static final Logger LOG = LoggerFactory.getLogger(EsNameSearchResponseReader.class);
+
+  private static final ObjectReader RESPONSE_READER;
+  private static final ObjectWriter RESPONSE_WRITER; // Only used in DEBUG mode
+  // For unit tests being being able to see the response sometimes helps, but sometimes definitely not
+  private static final boolean SUPPRESS_WRITER = false;
 
   static {
-    reader = EsModule.MAPPER.readerFor(EsNameSearchResponse.class);
+    RESPONSE_READER = EsModule.MAPPER.readerFor(EsNameSearchResponse.class);
+    RESPONSE_WRITER = EsModule.MAPPER.writerFor(EsNameSearchResponse.class).withDefaultPrettyPrinter();
   }
 
   private final Response httpResponse;
@@ -25,12 +34,12 @@ class EsNameSearchResponseReader {
     this.httpResponse = httpResponse;
   }
 
-  EsNameSearchResponse readHttpResponse() {
-    try {
-      return reader.readValue(httpResponse.getEntity().getContent());
-    } catch (UnsupportedOperationException | IOException e) {
-      throw new EsException(e);
+  EsNameSearchResponse readHttpResponse() throws IOException {
+    EsNameSearchResponse response = RESPONSE_READER.readValue(httpResponse.getEntity().getContent());
+    if (LOG.isDebugEnabled() && !SUPPRESS_WRITER) {
+      LOG.debug("Receiving response: {}", RESPONSE_WRITER.writeValueAsString(response));
     }
+    return response;
   }
 
 }

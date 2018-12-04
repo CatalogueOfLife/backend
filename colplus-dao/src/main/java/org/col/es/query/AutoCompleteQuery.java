@@ -13,6 +13,10 @@ public class AutoCompleteQuery extends AbstractQuery {
     match = Collections.singletonMap(multi(field), new MatchValue(value));
   }
 
+  public AutoCompleteQuery(String field, String value, float boost) {
+    match = Collections.singletonMap(multi(field), new MatchValue(value, boost));
+  }
+
   private static String multi(String field) {
     return field + "." + MultiField.AUTO_COMPLETE.getName();
   }
