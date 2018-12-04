@@ -25,7 +25,7 @@ public class IdentityServiceTest {
   @Test
   public void basicHeader() {
     // test some non ASCII passwords
-    assertEquals("Basic TGVtbXk6TfZ09nJoZWFk", ids.basicAuthHeader("Lemmy", "Mötörhead"));
+    assertEquals("Basic TGVtbXk6TcO2dMO2cmhlYWQ=", ids.basicAuthHeader("Lemmy", "Mötörhead"));
   }
   
   @Test
