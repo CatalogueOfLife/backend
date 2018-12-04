@@ -1,14 +1,14 @@
 package org.col.common.util;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  *
@@ -32,7 +32,7 @@ public class YamlUtils {
    * Deserializes an object from a yaml resource located by the system classloader.
    */
   public static <T> T read(Class<T> objClass, String resourceFile) throws IOException {
-    return read(objClass, System.class.getResourceAsStream(resourceFile));
+    return read(objClass, YamlUtils.class.getResourceAsStream(resourceFile));
   }
 
   /**

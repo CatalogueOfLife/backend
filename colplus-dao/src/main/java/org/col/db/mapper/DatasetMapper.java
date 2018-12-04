@@ -8,7 +8,7 @@ import org.col.api.model.Dataset;
 import org.col.api.model.Page;
 import org.col.api.search.DatasetSearchRequest;
 
-public interface DatasetMapper extends CRUDMapper<Dataset> {
+public interface DatasetMapper extends CRUDIntMapper<Dataset> {
   
   int count(@Param("req") DatasetSearchRequest request);
   

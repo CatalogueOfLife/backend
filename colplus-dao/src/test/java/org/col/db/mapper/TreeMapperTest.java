@@ -1,7 +1,5 @@
 package org.col.db.mapper;
 
-import java.util.List;
-
 import org.col.api.TestEntityGenerator;
 import org.col.api.model.ColSource;
 import org.col.api.model.NameRef;
@@ -9,6 +7,8 @@ import org.col.api.model.Sector;
 import org.col.api.model.TreeNode;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.List;
 
 import static org.col.api.vocab.Datasets.DRAFT_COL;
 import static org.junit.Assert.*;
@@ -33,6 +33,10 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
   @Test
   public void root() {
     assertEquals(2, mapper().root(dataset11).size());
+    TreeNode tn = mapper().root(dataset11).get(0);
+    assertEquals(dataset11, (int) tn.getDatasetKey());
+    assertNotNull(tn.getId());
+    assertNull(tn.getParentId());
   }
   
   @Test

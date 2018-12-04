@@ -1,13 +1,13 @@
 package org.col.dw.jersey.exception;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.Provider;
-
 import io.dropwizard.jersey.errors.LoggingExceptionMapper;
 import org.apache.ibatis.exceptions.PersistenceException;
 import org.postgresql.util.PSQLException;
+
+import javax.ws.rs.core.Response;
+import javax.ws.rs.ext.Provider;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Checks PersistenceExceptions for certain known conditions that are not server errors.
@@ -23,8 +23,8 @@ public class PersistenceExceptionMapper extends LoggingExceptionMapper<Persisten
   public Response toResponse(PersistenceException e) {
     if (e.getCause() != null && e.getCause() instanceof PSQLException) {
       PSQLException pe = (PSQLException) e.getCause();
-      // All Psql Error codes starting with 23 are constraint violations.
-      // https://www.postgresql.org/docs/9.4/static/errcodes-appendix.html
+      // All PgSql Error codes starting with 23 are constraint violations.
+      // https://www.postgresql.org/docs/11/errcodes-appendix.html
       if (pe.getSQLState() != null && pe.getSQLState().startsWith("23")) {
         return JsonExceptionMapperBase.jsonErrorResponse(Response.Status.BAD_REQUEST, e.getMessage());
       }

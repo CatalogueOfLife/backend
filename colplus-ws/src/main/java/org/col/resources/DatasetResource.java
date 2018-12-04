@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory;
 
 @Path("/dataset")
 @SuppressWarnings("static-method")
-public class DatasetResource extends CRUDResource<Dataset> {
+public class DatasetResource extends CRUDIntResource<Dataset> {
   
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(DatasetResource.class);

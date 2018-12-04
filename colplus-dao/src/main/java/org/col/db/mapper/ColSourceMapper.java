@@ -6,7 +6,7 @@ import javax.annotation.Nullable;
 import org.apache.ibatis.annotations.Param;
 import org.col.api.model.ColSource;
 
-public interface ColSourceMapper extends CRUDMapper<ColSource> {
+public interface ColSourceMapper extends CRUDIntMapper<ColSource> {
   
   List<ColSource> list(@Param("key") @Nullable Integer datasetKey);
   

@@ -5,6 +5,7 @@
 <mapper namespace="org.col.db.mapper.TreeMapper">
 
     <sql id="SELECT">
+        t.dataset_key,
         t.id,
         t.parent_id,
         n.scientific_name as name,

@@ -1,9 +1,9 @@
 package org.col.api.exception;
 
-import java.util.Map;
-
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableMap;
+
+import java.util.Map;
 
 public class NotFoundException extends RuntimeException {
   
@@ -19,7 +19,7 @@ public class NotFoundException extends RuntimeException {
     super(message);
   }
   
-  public static NotFoundException keyNotFound(Class<?> entity, int key) {
+  public static NotFoundException keyNotFound(Class<?> entity, Object key) {
     return new NotFoundException(entity, ImmutableMap.of("key", key));
   }
   

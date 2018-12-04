@@ -1,5 +1,13 @@
 package org.col.db.mapper;
 
+import com.google.common.collect.ImmutableSet;
+import org.apache.ibatis.io.Resources;
+import org.apache.ibatis.jdbc.ScriptRunner;
+import org.apache.ibatis.session.SqlSession;
+import org.col.db.PgConfig;
+import org.col.db.PgSetupRule;
+import org.junit.rules.ExternalResource;
+
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -8,14 +16,6 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Collections;
 import java.util.Set;
-
-import com.google.common.collect.ImmutableSet;
-import org.apache.ibatis.io.Resources;
-import org.apache.ibatis.jdbc.ScriptRunner;
-import org.apache.ibatis.session.SqlSession;
-import org.col.db.PgConfig;
-import org.col.db.PgSetupRule;
-import org.junit.rules.ExternalResource;
 
 /**
  * A junit test rule that truncates all CoL tables, potentially loads some test
@@ -33,13 +33,13 @@ public class InitMybatisRule extends ExternalResource {
   private SqlSession session;
   
   public enum TestData {
-    NONE(2),
+    NONE(1,2,3),
     APPLE(2, 11, 12),
     
     /**
      * Inits the datasets table with real col data from colplus-repo
      */
-    DATASETS(2);
+    DATASETS(2,3);
     
     final Set<Integer> datasetKeys;
     
@@ -101,6 +101,7 @@ public class InitMybatisRule extends ExternalResource {
     for (Integer dk : testData.datasetKeys) {
       pm.delete(dk);
       pm.create(dk);
+      pm.buildIndices(dk);
       pm.attach(dk);
       session.commit();
     }

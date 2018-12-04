@@ -1,16 +1,5 @@
 package org.col.dw.auth;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
-
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
@@ -25,6 +14,17 @@ import org.col.api.vocab.Country;
 import org.col.db.mapper.UserMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Identity service that delegates authentication to the BASIC scheme using the
@@ -152,7 +152,7 @@ public class IdentityService {
   @VisibleForTesting
   static String basicAuthHeader(String username, String password) {
     String cred = username + ":" + password;
-    String base64 = BaseEncoding.base64().encode(cred.getBytes(StandardCharsets.ISO_8859_1));
+    String base64 = BaseEncoding.base64().encode(cred.getBytes(StandardCharsets.UTF_8));
     return "Basic " + base64;
   }
   
