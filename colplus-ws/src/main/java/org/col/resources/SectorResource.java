@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory;
 @Path("/sector")
 @Produces(MediaType.APPLICATION_JSON)
 @SuppressWarnings("static-method")
-public class SectorResource extends CRUDResource<Sector> {
+public class SectorResource extends CRUDIntResource<Sector> {
   
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(SectorResource.class);

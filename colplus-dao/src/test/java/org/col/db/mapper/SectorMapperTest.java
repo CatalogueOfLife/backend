@@ -11,7 +11,7 @@ import org.junit.Test;
 import static org.col.api.TestEntityGenerator.DATASET11;
 import static org.col.api.TestEntityGenerator.newNameRef;
 
-public class SectorMapperTest extends CRUDMapperTest<Sector, SectorMapper> {
+public class SectorMapperTest extends CRUDIntMapperTest<Sector, SectorMapper> {
   
   private ColSource source;
   

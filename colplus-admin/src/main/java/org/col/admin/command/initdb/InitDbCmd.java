@@ -1,12 +1,5 @@
 package org.col.admin.command.initdb;
 
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.nio.charset.StandardCharsets;
-import java.sql.Connection;
-import java.sql.Statement;
-import java.util.concurrent.TimeUnit;
-
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import io.dropwizard.cli.ConfiguredCommand;
@@ -31,6 +24,13 @@ import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.nio.charset.StandardCharsets;
+import java.sql.Connection;
+import java.sql.Statement;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Command to initialise a new database schema.
@@ -100,10 +100,20 @@ public class InitDbCmd extends ConfiguredCommand<AdminServerConfig> {
     // add col & names index partitions
     setupStandardPartitions(cfg.db);
   }
-  
+
   private static void setupStandardPartitions(PgConfig cfg) {
     HikariConfig hikari = cfg.hikariConfig();
-    
+    try (HikariDataSource dataSource = new HikariDataSource(hikari)) {
+      // configure single mybatis session factory
+      SqlSessionFactory factory = MybatisFactory.configure(dataSource, "init");
+      SqlSession session = factory.openSession();
+      setupStandardPartitions(session);
+      session.commit();
+      session.close();
+    }
+  }
+
+  public static void setupStandardPartitions(SqlSession session) {
     final Name nBiota = new Name();
     nBiota.setId("biota");
     nBiota.setScientificName("Biota");
@@ -117,27 +127,21 @@ public class InitDbCmd extends ConfiguredCommand<AdminServerConfig> {
     tBiota.setName(nBiota);
     tBiota.setOrigin(Origin.SOURCE);
   
-    try (HikariDataSource dataSource = new HikariDataSource(hikari)) {
-      // configure single mybatis session factory
-      SqlSessionFactory factory = MybatisFactory.configure(dataSource, "init");
-      SqlSession session = factory.openSession();
-      DatasetPartitionMapper pm = session.getMapper(DatasetPartitionMapper.class);
-      NameMapper nm = session.getMapper(NameMapper.class);
-      TaxonMapper tm = session.getMapper(TaxonMapper.class);
-      for (int key : new int[]{Datasets.COL, Datasets.PCAT, Datasets.DRAFT_COL}) {
-        LOG.info("Create catalogue partition {}", key);
-        pm.create(key);
-        pm.buildIndices(key);
-        pm.attach(key);
-        // add single Biota taxon
-        nBiota.setDatasetKey(key);
-        nm.create(nBiota);
-        
-        tBiota.setDatasetKey(key);
-        tm.create(tBiota);
-      }
-      session.commit();
-      session.close();
+    DatasetPartitionMapper pm = session.getMapper(DatasetPartitionMapper.class);
+    NameMapper nm = session.getMapper(NameMapper.class);
+    TaxonMapper tm = session.getMapper(TaxonMapper.class);
+    for (int key : new int[]{Datasets.COL, Datasets.PCAT, Datasets.DRAFT_COL}) {
+      LOG.info("Create catalogue partition {}", key);
+      pm.delete(key);
+      pm.create(key);
+      pm.buildIndices(key);
+      pm.attach(key);
+      // add single Biota taxon
+      nBiota.setDatasetKey(key);
+      nm.create(nBiota);
+
+      tBiota.setDatasetKey(key);
+      tm.create(tBiota);
     }
   }
   

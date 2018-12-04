@@ -5,7 +5,7 @@ import java.util.List;
 import org.apache.ibatis.annotations.Param;
 import org.col.api.model.EditorialDecision;
 
-public interface DecisionMapper extends CRUDMapper<EditorialDecision> {
+public interface DecisionMapper extends CRUDIntMapper<EditorialDecision> {
   
   List<EditorialDecision> listBySector(@Param("key") int sectorKey);
   

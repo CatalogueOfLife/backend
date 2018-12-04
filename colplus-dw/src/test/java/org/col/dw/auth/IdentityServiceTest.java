@@ -1,7 +1,5 @@
 package org.col.dw.auth;
 
-import java.io.IOException;
-
 import org.apache.http.impl.client.HttpClients;
 import org.col.api.model.ColUser;
 import org.col.api.vocab.Country;
@@ -9,6 +7,8 @@ import org.col.common.io.Resources;
 import org.col.common.util.YamlUtils;
 import org.junit.Ignore;
 import org.junit.Test;
+
+import java.io.IOException;
 
 import static org.junit.Assert.*;
 

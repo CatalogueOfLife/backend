@@ -10,7 +10,7 @@ import org.junit.Before;
 import static org.col.api.TestEntityGenerator.DATASET11;
 import static org.col.api.TestEntityGenerator.newNameRef;
 
-public class DecisionMapperTest extends CRUDMapperTest<EditorialDecision, DecisionMapper> {
+public class DecisionMapperTest extends CRUDIntMapperTest<EditorialDecision, DecisionMapper> {
   
   private ColSource source;
   private Sector sector;

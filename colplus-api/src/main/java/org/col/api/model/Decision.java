@@ -3,7 +3,7 @@ package org.col.api.model;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
-abstract class Decision implements IntKey, CreatedModified {
+abstract class Decision implements IntKey, UserManaged {
   protected Integer key;
   protected NameRef subject;
   protected String note;

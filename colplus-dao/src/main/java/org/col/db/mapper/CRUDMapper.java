@@ -1,21 +1,20 @@
 package org.col.db.mapper;
 
 import org.apache.ibatis.annotations.Param;
-import org.col.api.model.IntKey;
 
-public interface CRUDMapper<T extends IntKey> {
+public interface CRUDMapper<K, V> {
   
-  T get(@Param("key") int key);
+  V get(@Param("key") K key);
   
-  void create(T obj);
+  void create(V obj);
   
-  int update(T obj);
+  int update(V obj);
   
   /**
    * Marks a source as deleted
    *
    * @param key
    */
-  int delete(@Param("key") int key);
+  int delete(@Param("key") K key);
   
 }

@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 /**
  * Entity that can be created and modified by a user.
  */
-public interface CreatedModified {
+public interface UserManaged {
   
   LocalDateTime getCreated();
   

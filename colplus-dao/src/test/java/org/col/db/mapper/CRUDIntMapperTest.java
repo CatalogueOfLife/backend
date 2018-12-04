@@ -6,9 +6,9 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
-abstract class CRUDMapperTest<T extends IntKey, M extends CRUDMapper<T>> extends MapperTestBase<M> {
+abstract class CRUDIntMapperTest<T extends IntKey, M extends CRUDIntMapper<T>> extends MapperTestBase<M> {
   
-  public CRUDMapperTest(Class<M> mapperClazz) {
+  public CRUDIntMapperTest(Class<M> mapperClazz) {
     super(mapperClazz);
   }
   

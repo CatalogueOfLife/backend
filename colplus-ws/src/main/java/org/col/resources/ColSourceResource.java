@@ -24,7 +24,7 @@ import org.slf4j.LoggerFactory;
 @Path("/colsource")
 @Produces(MediaType.APPLICATION_JSON)
 @SuppressWarnings("static-method")
-public class ColSourceResource extends CRUDResource<ColSource> {
+public class ColSourceResource extends CRUDIntResource<ColSource> {
   
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(ColSourceResource.class);

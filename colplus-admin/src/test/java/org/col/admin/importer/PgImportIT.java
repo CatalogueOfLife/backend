@@ -1,18 +1,12 @@
 package org.col.admin.importer;
 
-import java.io.File;
-import java.net.URI;
-import java.net.URL;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.*;
-
 import com.google.common.collect.Sets;
 import com.google.common.io.Files;
 import jersey.repackaged.com.google.common.collect.Lists;
 import jersey.repackaged.com.google.common.collect.Maps;
 import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.session.SqlSession;
+import org.col.admin.command.initdb.InitDbCmd;
 import org.col.admin.config.ImporterConfig;
 import org.col.admin.config.NormalizerConfig;
 import org.col.admin.importer.neo.NeoDb;
@@ -30,6 +24,13 @@ import org.col.db.mapper.*;
 import org.gbif.nameparser.api.Rank;
 import org.junit.*;
 
+import java.io.File;
+import java.net.URI;
+import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
+
 import static org.col.api.vocab.DataFormat.*;
 import static org.junit.Assert.*;
 
@@ -43,6 +44,7 @@ public class PgImportIT {
   private ImporterConfig icfg = new ImporterConfig();
   private Dataset dataset;
   private VerbatimRecordMapper vMapper;
+  private boolean fullInit = true;
   
   @ClassRule
   public static PgSetupRule pgSetupRule = new PgSetupRule();
@@ -57,6 +59,11 @@ public class PgImportIT {
     cfg.scratchDir = Files.createTempDir();
     dataset = new Dataset();
     dataset.setContributesTo(Catalogue.PCAT);
+
+    if (fullInit) {
+      InitDbCmd.setupStandardPartitions(initMybatisRule.getSqlSession());
+      initMybatisRule.commit();
+    }
   }
   
   @After

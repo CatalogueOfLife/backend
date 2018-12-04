@@ -44,12 +44,7 @@ public enum Origin {
    * Implicit usage from a verbatim basionym/original name.
    */
   VERBATIM_BASIONYM,
-  
-  /**
-   * Duplicated usage from a single pro parte record.
-   */
-  PROPARTE,
-  
+
   /**
    * Generated, missing autonym.
    */
@@ -80,6 +75,12 @@ public enum Origin {
    * A name in the names index introduced by name matching
    */
   NAME_MATCHING,
+
+  /**
+   * An entity was created or modified by a user.
+   */
+  USER,
+
   /**
    * Any other origin not covered by the above.
    */

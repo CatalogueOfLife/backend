@@ -1,9 +1,9 @@
 package org.col.db;
 
-import java.io.IOException;
-
 import org.col.common.util.YamlUtils;
 import org.junit.Test;
+
+import java.io.IOException;
 
 public class EmbeddedColPgTest {
   

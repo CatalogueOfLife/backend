@@ -5,10 +5,11 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import javax.xml.bind.DatatypeConverter;
 
 public class ChecksumUtils {
-  
+
+  private static final char[] hexCode = "0123456789ABCDEF".toCharArray();
+
   public static String getMD5Checksum(File file) throws IOException {
     return getFileChecksum("MD5", file);
   }
@@ -42,7 +43,16 @@ public class ChecksumUtils {
     
     //Get the hash's bytes
     byte[] bytes = digest.digest();
-    
-    return DatatypeConverter.printHexBinary(bytes).toUpperCase();
+
+    return toHexBinary(bytes);
+  }
+
+  public static String toHexBinary(byte[] data) {
+    StringBuilder r = new StringBuilder(data.length * 2);
+    for (byte b : data) {
+      r.append(hexCode[(b >> 4) & 0xF]);
+      r.append(hexCode[(b & 0xF)]);
+    }
+    return r.toString();
   }
 }
