@@ -7,7 +7,6 @@ import java.util.stream.Collectors;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 import org.col.api.model.Name;
-import org.col.api.model.NameUsage;
 import org.col.api.model.Taxon;
 import org.col.api.model.VernacularName;
 import org.col.api.search.NameUsageWrapper;
@@ -58,7 +57,7 @@ public class NameUsageTransfer {
     return SciNameNormalizer.normalizeAll(sn);
   }
 
-  EsNameUsage toEsDocument(NameUsageWrapper<? extends NameUsage> wrapper) throws JsonProcessingException {
+  EsNameUsage toEsDocument(NameUsageWrapper wrapper) throws JsonProcessingException {
 
     EsNameUsage enu = new EsNameUsage();
     if (notEmpty(wrapper.getVernacularNames())) {

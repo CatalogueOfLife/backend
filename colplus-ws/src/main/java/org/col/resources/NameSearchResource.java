@@ -10,7 +10,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
 
 import com.codahale.metrics.annotation.Timed;
-import org.col.api.model.NameUsage;
+
 import org.col.api.model.Page;
 import org.col.api.model.ResultPage;
 import org.col.api.search.NameSearchRequest;
@@ -35,7 +35,7 @@ public class NameSearchResource {
 
   @GET
   @Timed
-  public ResultPage<NameUsageWrapper<NameUsage>> search(@BeanParam NameSearchRequest query, @Valid @BeanParam Page page,
+  public ResultPage<NameUsageWrapper> search(@BeanParam NameSearchRequest query, @Valid @BeanParam Page page,
       @Context UriInfo uri) throws InvalidQueryException {
     query.addQueryParams(uri.getQueryParameters());
     return searchService.search(query, page);

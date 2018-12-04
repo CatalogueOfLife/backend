@@ -8,23 +8,23 @@ import org.col.api.model.NameUsage;
 import org.col.api.model.VernacularName;
 import org.col.api.vocab.Issue;
 
-public class NameUsageWrapper<T extends NameUsage> {
+public class NameUsageWrapper {
 
-  private T usage;
+  private NameUsage usage;
   private Set<Issue> issues;
   private List<VernacularName> vernacularNames;
 
   public NameUsageWrapper() {}
 
-  public NameUsageWrapper(T usage) {
+  public NameUsageWrapper(NameUsage usage) {
     this.usage = usage;
   }
 
-  public T getUsage() {
+  public NameUsage getUsage() {
     return usage;
   }
 
-  public void setUsage(T usage) {
+  public void setUsage(NameUsage usage) {
     this.usage = usage;
   }
 
@@ -50,7 +50,7 @@ public class NameUsageWrapper<T extends NameUsage> {
       return true;
     if (o == null || getClass() != o.getClass())
       return false;
-    NameUsageWrapper<?> that = (NameUsageWrapper<?>) o;
+    NameUsageWrapper that = (NameUsageWrapper) o;
     return Objects.equals(usage, that.usage) && Objects.equals(issues, that.issues)
         && Objects.equals(vernacularNames, that.vernacularNames);
   }

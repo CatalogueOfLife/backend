@@ -11,7 +11,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 
 import org.col.api.TestEntityGenerator;
 import org.col.api.model.Page;
-import org.col.api.model.Taxon;
 import org.col.api.search.FacetValue;
 import org.col.api.search.NameSearchParameter;
 import org.col.api.search.NameSearchRequest;
@@ -718,7 +717,7 @@ public class NameUsageSearchServiceFacetTest extends EsReadTestBase {
   }
 
   private static String getDummyPayload() {
-    NameUsageWrapper<Taxon> dummy = TestEntityGenerator.newNameUsageTaxonWrapper();
+    NameUsageWrapper dummy = TestEntityGenerator.newNameUsageTaxonWrapper();
     try {
       return EsModule.NAME_USAGE_WRITER.writeValueAsString(dummy);
     } catch (JsonProcessingException e) {

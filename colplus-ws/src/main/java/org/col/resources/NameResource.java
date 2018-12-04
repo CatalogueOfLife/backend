@@ -45,7 +45,7 @@ public class NameResource {
   @GET
   @Timed
   @Path("search")
-  public ResultPage<NameUsageWrapper<NameUsage>> search(@PathParam("datasetKey") int datasetKey,
+  public ResultPage<NameUsageWrapper> search(@PathParam("datasetKey") int datasetKey,
                                                         @BeanParam NameSearchRequest query,
                                                         @Valid @BeanParam Page page,
                                                         @Context UriInfo uri) throws InvalidQueryException {

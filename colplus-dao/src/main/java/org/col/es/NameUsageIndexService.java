@@ -9,7 +9,6 @@ import com.google.common.annotations.VisibleForTesting;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.col.api.model.NameUsage;
 import org.col.api.search.NameUsageWrapper;
 import org.col.common.lang.Exceptions;
 import org.col.db.mapper.BatchResultHandler;
@@ -70,21 +69,21 @@ public class NameUsageIndexService {
     final AtomicInteger counter = new AtomicInteger();
     try (SqlSession session = factory.openSession()) {
       NameUsageMapper mapper = session.getMapper(NameUsageMapper.class);
-      Consumer<List<NameUsageWrapper<NameUsage>>> indexer = (batch) -> {
+      Consumer<List<NameUsageWrapper>> indexer = (batch) -> {
         if (batch.size() != 0) {
           indexBulk(indexName, batch);
           counter.addAndGet(batch.size());
         }
       };
-      try (BatchResultHandler<NameUsageWrapper<NameUsage>> handler = new BatchResultHandler<>(indexer, batchSize)) {
+      try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(indexer, batchSize)) {
         LOG.debug("Indexing bare names into Elasticsearch");
         mapper.processDatasetBareNames(datasetKey, handler);
       }
-      try (BatchResultHandler<NameUsageWrapper<NameUsage>> handler = new BatchResultHandler<>(indexer, batchSize)) {
+      try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(indexer, batchSize)) {
         LOG.debug("Indexing synonyms into Elasticsearch");
         mapper.processDatasetSynonyms(datasetKey, handler);
       }
-      try (BatchResultHandler<NameUsageWrapper<NameUsage>> handler = new BatchResultHandler<>(indexer, batchSize)) {
+      try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(indexer, batchSize)) {
         LOG.debug("Indexing taxa into Elasticsearch");
         mapper.processDatasetTaxa(datasetKey, handler);
       }
@@ -98,11 +97,11 @@ public class NameUsageIndexService {
   }
 
   @VisibleForTesting
-  void indexBulk(String index, List<? extends NameUsageWrapper<?>> usages) {
+  void indexBulk(String index, List<? extends NameUsageWrapper> usages) {
     String actionMetaData = indexActionMetaData(index);
     StringBuilder body = new StringBuilder();
     try {
-      for (NameUsageWrapper<?> nu : usages) {
+      for (NameUsageWrapper nu : usages) {
         body.append(actionMetaData);
         EsNameUsage enu = transfer.toEsDocument(nu);
         body.append(writer.writeValueAsString(enu));

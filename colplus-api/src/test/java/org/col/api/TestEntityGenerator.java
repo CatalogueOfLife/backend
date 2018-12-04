@@ -10,10 +10,34 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
-import org.col.api.model.*;
+
+import org.col.api.model.BareName;
+import org.col.api.model.ColUser;
+import org.col.api.model.CslData;
+import org.col.api.model.CslDate;
+import org.col.api.model.CslName;
+import org.col.api.model.Dataset;
+import org.col.api.model.Name;
+import org.col.api.model.NameRef;
+import org.col.api.model.Reference;
+import org.col.api.model.Synonym;
+import org.col.api.model.Synonymy;
+import org.col.api.model.Taxon;
+import org.col.api.model.VerbatimRecord;
+import org.col.api.model.VernacularName;
 import org.col.api.search.NameUsageWrapper;
-import org.col.api.vocab.*;
-import org.gbif.dwc.terms.*;
+import org.col.api.vocab.CSLRefType;
+import org.col.api.vocab.Country;
+import org.col.api.vocab.Issue;
+import org.col.api.vocab.Language;
+import org.col.api.vocab.Lifezone;
+import org.col.api.vocab.Origin;
+import org.col.api.vocab.TaxonomicStatus;
+import org.gbif.dwc.terms.DcTerm;
+import org.gbif.dwc.terms.DwcTerm;
+import org.gbif.dwc.terms.GbifTerm;
+import org.gbif.dwc.terms.Term;
+import org.gbif.dwc.terms.UnknownTerm;
 import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.NamePart;
 import org.gbif.nameparser.api.NameType;
@@ -23,12 +47,12 @@ import org.gbif.nameparser.api.Rank;
  * utility class to metrics new test instances to be used in tests.
  */
 public class TestEntityGenerator {
-  
+
   private final static Random RND = new Random();
   private final static RandomInstance random = new RandomInstance();
   private static final Splitter SPACE_SPLITTER = Splitter.on(" ").trimResults();
   private static final AtomicInteger ID_GEN = new AtomicInteger(10000);
-  
+
   public final static ColUser USER_USER = new ColUser();
   public final static ColUser USER_EDITOR = new ColUser();
   public final static ColUser USER_ADMIN = new ColUser();
@@ -82,7 +106,7 @@ public class TestEntityGenerator {
    */
   public final static Reference REF2 = new Reference();
   public final static Reference REF3 = new Reference();
-  
+
   static {
     USER_ADMIN.setKey(1);
     USER_ADMIN.setUsername("'admin'");
@@ -90,7 +114,7 @@ public class TestEntityGenerator {
     USER_ADMIN.setLastname("Sterling");
     USER_ADMIN.setEmail("stan@mailinator.com");
     USER_ADMIN.getRoles().add(ColUser.Role.ADMIN);
-  
+
     USER_EDITOR.setKey(2);
     USER_EDITOR.setUsername("editor");
     USER_EDITOR.setFirstname("Yuri");
@@ -98,26 +122,26 @@ public class TestEntityGenerator {
     USER_EDITOR.setEmail("yuri@mailinator.com");
     USER_EDITOR.getRoles().add(ColUser.Role.USER);
     USER_EDITOR.getRoles().add(ColUser.Role.EDITOR);
-  
+
     USER_USER.setKey(3);
     USER_USER.setUsername("'user'");
     USER_USER.setFirstname("Frank");
     USER_USER.setLastname("Müller");
     USER_USER.setEmail("frank@mailinator.com");
     USER_USER.getRoles().add(ColUser.Role.USER);
-    
+
     DATASET11.setKey(11);
     DATASET12.setKey(12);
-    
+
     REF1.setId("ref-1");
     REF1.setDatasetKey(DATASET11.getKey());
-    
+
     REF2.setId("ref-1b");
     REF2.setDatasetKey(DATASET11.getKey());
-    
+
     REF3.setId("ref-2");
     REF3.setDatasetKey(DATASET12.getKey());
-    
+
     NAME1.setId("name-1");
     NAME1.setHomotypicNameId(NAME1.getId());
     NAME1.setDatasetKey(DATASET11.getKey());
@@ -129,7 +153,7 @@ public class TestEntityGenerator {
     NAME1.updateScientificName();
     NAME1.setPublishedInId(REF1.getId());
     NAME1.setPublishedInPage("712");
-    
+
     NAME2.setId("name-2");
     NAME2.setHomotypicNameId(NAME2.getId());
     NAME2.setDatasetKey(DATASET11.getKey());
@@ -141,7 +165,7 @@ public class TestEntityGenerator {
     NAME2.updateScientificName();
     NAME2.setPublishedInId(null);
     NAME2.setPublishedInPage(null);
-    
+
     NAME3.setId("name-3");
     NAME3.setHomotypicNameId(NAME2.getId());
     NAME3.setDatasetKey(DATASET11.getKey());
@@ -153,7 +177,7 @@ public class TestEntityGenerator {
     NAME3.updateScientificName();
     NAME3.setPublishedInId(null);
     NAME3.setPublishedInPage(null);
-    
+
     NAME4.setId("name-4");
     NAME4.setHomotypicNameId(NAME4.getId());
     NAME4.setDatasetKey(DATASET11.getKey());
@@ -165,31 +189,30 @@ public class TestEntityGenerator {
     NAME4.updateScientificName();
     NAME4.setPublishedInId(null);
     NAME4.setPublishedInPage(null);
-    
+
     TAXON1.setId("root-1");
     TAXON1.setDatasetKey(DATASET11.getKey());
     TAXON1.setName(NAME1);
     TAXON1.setOrigin(Origin.SOURCE);
-    
+
     TAXON2.setId("root-2");
     TAXON2.setDatasetKey(DATASET11.getKey());
     TAXON2.setName(NAME2);
     TAXON2.setOrigin(Origin.SOURCE);
-    
+
     SYN1.setName(NAME3);
     SYN1.setAccepted(TAXON2);
     SYN1.setStatus(TaxonomicStatus.SYNONYM);
-    
+
     SYN2.setName(NAME4);
     SYN2.setAccepted(TAXON2);
     SYN2.setStatus(TaxonomicStatus.SYNONYM);
     SYN2.setAccordingTo("John Smith");
     SYN2.setVerbatimKey(133);
   }
-  
+
   /*
-   * Creates a VernacularName using the specified vernacular name, belonging to the specified taxon
-   * and dataset DATASET11.
+   * Creates a VernacularName using the specified vernacular name, belonging to the specified taxon and dataset DATASET11.
    */
   public static VernacularName newVernacularName(String name) {
     VernacularName vn = new VernacularName();
@@ -199,7 +222,7 @@ public class TestEntityGenerator {
     vn.setCountry(Country.UNITED_KINGDOM);
     return vn;
   }
-  
+
   public static VernacularName newVernacularName(String name, Language lang) {
     VernacularName vn = new VernacularName();
     vn.setName(name);
@@ -207,21 +230,21 @@ public class TestEntityGenerator {
     vn.setLanguage(lang);
     return vn;
   }
-  
+
   /*
    * Creates a new taxon with a generated id
    */
   public static Taxon newTaxon() {
     return newTaxon(DATASET11.getKey(), "t" + ID_GEN.getAndIncrement());
   }
-  
+
   /*
    * Creates a new taxon with the specified id, belonging to dataset DATASET11.
    */
   public static Taxon newTaxon(String id) {
     return newTaxon(DATASET11.getKey(), id);
   }
-  
+
   /*
    * Creates a new taxon with the specified id, belonging to the specified dataset.
    */
@@ -244,7 +267,7 @@ public class TestEntityGenerator {
     t.setSpeciesEstimateReferenceId(REF1.getId());
     return t;
   }
-  
+
   public static CslData newCslData() {
     return (CslData) new RandomInstance().create(CslData.class, CslName.class, CslDate.class);
   }
@@ -259,28 +282,28 @@ public class TestEntityGenerator {
     s.setOrigin(Origin.SOURCE);
     return s;
   }
-  
+
   /*
    * Creates a new name with the specified id, belonging to the specified dataset.
    */
   public static Name newName(String id) {
     return newName(id, RandomUtils.randomSpecies());
   }
-  
+
   /*
    * Creates a new name with the specified id, belonging to the specified dataset.
    */
   public static Name newName(String id, String scientificName) {
     return newName(DATASET11.getKey(), id, scientificName);
   }
-  
+
   /*
    * Creates a new name with the specified id, belonging to the specified dataset.
    */
   public static Name newName(int datasetKey, String id, String scientificName) {
     return newName(datasetKey, id, scientificName, Rank.SPECIES);
   }
-  
+
   public static Name newName(int datasetKey, String id, String scientificName, Rank rank) {
     Name n = new Name();
     n.setId(id);
@@ -318,15 +341,14 @@ public class TestEntityGenerator {
     n.addRemark("my second note");
     return n;
   }
-  
+
   /**
-   * Creates a new name instance with an id generated by the static id generator from this class
-   * which will not overlap
+   * Creates a new name instance with an id generated by the static id generator from this class which will not overlap
    */
   public static Name newName() {
     return newName("n" + ID_GEN.getAndIncrement());
   }
-  
+
   public static List<Name> newNames(int size) {
     List<Name> names = Lists.newArrayList();
     while (size-- > 0) {
@@ -334,7 +356,7 @@ public class TestEntityGenerator {
     }
     return names;
   }
-  
+
   public static Synonymy newSynonymy() {
     Synonymy s = new Synonymy();
     s.addHeterotypicGroup(newNames(1 + RND.nextInt(3)));
@@ -343,11 +365,11 @@ public class TestEntityGenerator {
     }
     return s;
   }
-  
+
   public static Reference newReference() {
     return newReference(RandomUtils.randomString(25));
   }
-  
+
   public static Reference newReference(String title) {
     Reference r = new Reference();
     r.setId("r" + ID_GEN.getAndIncrement());
@@ -365,14 +387,14 @@ public class TestEntityGenerator {
     CslName author2 = new CslName();
     author2.setGiven("Betty");
     author2.setFamily("Jones");
-    csl.setAuthor(new CslName[]{author1, author2});
+    csl.setAuthor(new CslName[] {author1, author2});
     CslDate date = new CslDate();
-    date.setDateParts(new int[][]{{2014, 8, 12}});
+    date.setDateParts(new int[][] {{2014, 8, 12}});
     csl.setAccessed(date);
-    csl.setCategories(new String[]{"A", "B", "C"});
+    csl.setCategories(new String[] {"A", "B", "C"});
     return r;
   }
-  
+
   public static Authorship createAuthorship() {
     Authorship a = new Authorship();
     while (a.getAuthors().size() < 2 || RND.nextBoolean()) {
@@ -381,14 +403,14 @@ public class TestEntityGenerator {
     a.setYear(RandomUtils.randomSpeciesYear());
     return a;
   }
-  
+
   public static CslData createCsl() {
     CslData csl = (CslData) random.create(CslData.class, CslName.class, CslDate.class);
-    csl.getOriginalDate().setDateParts(new int[][]{{1752, 4, 4}, {1752, 8, 4}});
-    csl.getSubmitted().setDateParts(new int[][]{{1850, 6, 12}});
+    csl.getOriginalDate().setDateParts(new int[][] {{1752, 4, 4}, {1752, 8, 4}});
+    csl.getSubmitted().setDateParts(new int[][] {{1850, 6, 12}});
     return csl;
   }
-  
+
   public static VerbatimRecord createVerbatim() {
     VerbatimRecord rec = new VerbatimRecord(11, "myFile.txt", DwcTerm.Taxon);
     rec.setDatasetKey(TestEntityGenerator.DATASET11.getKey());
@@ -407,11 +429,11 @@ public class TestEntityGenerator {
     rec.addIssue(Issue.POTENTIAL_VARIANT);
     return rec;
   }
-  
+
   public static NameRef newNameRef() {
     return newNameRef(RandomUtils.randomString(5));
   }
-  
+
   public static NameRef newNameRef(String id) {
     NameRef n = new NameRef();
     n.setId(id);
@@ -421,9 +443,9 @@ public class TestEntityGenerator {
     n.setIndexNameId(RandomUtils.randomString(5));
     return n;
   }
-  
-  public static NameUsageWrapper<Taxon> newNameUsageTaxonWrapper() {
-    NameUsageWrapper<Taxon> nuw = new NameUsageWrapper<>();
+
+  public static NameUsageWrapper newNameUsageTaxonWrapper() {
+    NameUsageWrapper nuw = new NameUsageWrapper();
     nuw.setUsage(TAXON1);
     EnumSet<Issue> issues = EnumSet.of(Issue.ACCEPTED_NAME_MISSING, Issue.POTENTIAL_VARIANT,
         Issue.DISTRIBUTION_AREA_INVALID);
@@ -432,18 +454,18 @@ public class TestEntityGenerator {
         Arrays.asList(newVernacularName("zeemeeuw", Language.DUTCH), newVernacularName("seagull")));
     return nuw;
   }
-  
-  public static NameUsageWrapper<Synonym> newNameUsageSynonymWrapper() {
-    NameUsageWrapper<Synonym> nuw = new NameUsageWrapper<>();
+
+  public static NameUsageWrapper newNameUsageSynonymWrapper() {
+    NameUsageWrapper nuw = new NameUsageWrapper();
     nuw.setUsage(SYN2);
     EnumSet<Issue> issues = EnumSet.of(Issue.ACCEPTED_NAME_MISSING, Issue.POTENTIAL_VARIANT,
         Issue.DISTRIBUTION_AREA_INVALID);
     nuw.setIssues(issues);
     return nuw;
   }
-  
-  public static NameUsageWrapper<BareName> newNameUsageBareNameWrapper() {
-    NameUsageWrapper<BareName> nuw = new NameUsageWrapper<>();
+
+  public static NameUsageWrapper newNameUsageBareNameWrapper() {
+    NameUsageWrapper nuw = new NameUsageWrapper();
     BareName bn = new BareName();
     bn.setName(NAME4);
     nuw.setUsage(bn);
@@ -451,5 +473,5 @@ public class TestEntityGenerator {
     nuw.setIssues(issues);
     return nuw;
   }
-  
+
 }

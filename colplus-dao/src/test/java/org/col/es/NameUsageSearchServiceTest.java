@@ -13,7 +13,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import org.col.api.TestEntityGenerator;
 import org.col.api.model.BareName;
 import org.col.api.model.Name;
-import org.col.api.model.NameUsage;
 import org.col.api.model.Page;
 import org.col.api.model.ResultPage;
 import org.col.api.model.Synonym;
@@ -79,7 +78,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     NameSearchRequest nsr = new NameSearchRequest();
     // Force sorting by index order
     nsr.setSortBy(null);
-    ResultPage<NameUsageWrapper<NameUsage>> result = svc.search(indexName, nsr, new Page());
+    ResultPage<NameUsageWrapper> result = svc.search(indexName, nsr, new Page());
     assertEquals(3, result.getResult().size());
     assertEquals(Taxon.class, result.getResult().get(0).getUsage().getClass());
     assertEquals(Synonym.class, result.getResult().get(1).getUsage().getClass());
@@ -103,7 +102,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     assertEquals(3, EsUtil.count(client, indexName));
     NameSearchRequest nsr = new NameSearchRequest();
     nsr.setSortBy(SortBy.NAME);
-    ResultPage<NameUsageWrapper<NameUsage>> result = svc.search(indexName, nsr, new Page());
+    ResultPage<NameUsageWrapper> result = svc.search(indexName, nsr, new Page());
     assertEquals(3, result.getResult().size());
     assertEquals(BareName.class, result.getResult().get(0).getUsage().getClass());
     assertEquals(Taxon.class, result.getResult().get(1).getUsage().getClass());
@@ -123,32 +122,32 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     n.setRank(Rank.SPECIES);
     Taxon t = new Taxon();
     t.setName(n);
-    final NameUsageWrapper<Taxon> nuw1 = new NameUsageWrapper<>(t);
+    final NameUsageWrapper nuw1 = new NameUsageWrapper(t);
 
     n = new Name();
     n.setScientificName("B");
     n.setRank(Rank.GENUS);
     t = new Taxon();
     t.setName(n);
-    NameUsageWrapper<Taxon> nuw2 = new NameUsageWrapper<>(t);
+    NameUsageWrapper nuw2 = new NameUsageWrapper(t);
 
     n = new Name();
     n.setScientificName("B");
     n.setRank(Rank.PHYLUM);
     t = new Taxon();
     t.setName(n);
-    NameUsageWrapper<Taxon> nuw3 = new NameUsageWrapper<>(t);
+    NameUsageWrapper nuw3 = new NameUsageWrapper(t);
 
     n = new Name();
     n.setScientificName("A");
     n.setRank(Rank.INFRASPECIFIC_NAME);
     t = new Taxon();
     t.setName(n);
-    NameUsageWrapper<Taxon> nuw4 = new NameUsageWrapper<>(t);
+    NameUsageWrapper nuw4 = new NameUsageWrapper(t);
 
-    List<NameUsageWrapper<Taxon>> all = Arrays.asList(nuw1, nuw2, nuw3, nuw4);
+    List<NameUsageWrapper> all = Arrays.asList(nuw1, nuw2, nuw3, nuw4);
 
-    List<NameUsageWrapper<Taxon>> shuffled = new ArrayList<>(all);
+    List<NameUsageWrapper> shuffled = new ArrayList<>(all);
     Collections.shuffle(shuffled);
     shuffled.stream().map(t1 -> {
       try {
@@ -159,7 +158,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     }).forEach(x -> insert(client, indexName, x));
     refreshIndex(client, indexName);
 
-    ResultPage<NameUsageWrapper<NameUsage>> result = svc.search(indexName, esr, new Page());
+    ResultPage<NameUsageWrapper> result = svc.search(indexName, esr, new Page());
 
     assertEquals(all, result.getResult());
   }
@@ -181,81 +180,81 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     n.setScientificName("B");
     Taxon t = new Taxon();
     t.setName(n);
-    final NameUsageWrapper<Taxon> nuw1 = new NameUsageWrapper<>(t);
+    final NameUsageWrapper nuw1 = new NameUsageWrapper(t);
 
     n = new Name();
     n.setRank(Rank.KINGDOM);
     n.setScientificName("Z");
     t = new Taxon();
     t.setName(n);
-    NameUsageWrapper<Taxon> nuw2 = new NameUsageWrapper<>(t);
+    NameUsageWrapper nuw2 = new NameUsageWrapper(t);
 
     n = new Name();
     n.setRank(Rank.PHYLUM);
     n.setScientificName("C");
     t = new Taxon();
     t.setName(n);
-    NameUsageWrapper<Taxon> nuw3 = new NameUsageWrapper<>(t);
+    NameUsageWrapper nuw3 = new NameUsageWrapper(t);
 
     n = new Name();
     n.setRank(Rank.PHYLUM);
     n.setScientificName("E");
     t = new Taxon();
     t.setName(n);
-    NameUsageWrapper<Taxon> nuw4 = new NameUsageWrapper<>(t);
+    NameUsageWrapper nuw4 = new NameUsageWrapper(t);
 
     n = new Name();
     n.setRank(Rank.CLASS);
     n.setScientificName("Y");
     t = new Taxon();
     t.setName(n);
-    NameUsageWrapper<Taxon> nuw5 = new NameUsageWrapper<>(t);
+    NameUsageWrapper nuw5 = new NameUsageWrapper(t);
 
     n = new Name();
     n.setRank(Rank.ORDER);
     n.setScientificName("X");
     t = new Taxon();
     t.setName(n);
-    NameUsageWrapper<Taxon> nuw6 = new NameUsageWrapper<>(t);
+    NameUsageWrapper nuw6 = new NameUsageWrapper(t);
 
     n = new Name();
     n.setRank(Rank.FAMILY);
     n.setScientificName("V");
     t = new Taxon();
     t.setName(n);
-    NameUsageWrapper<Taxon> nuw7 = new NameUsageWrapper<>(t);
+    NameUsageWrapper nuw7 = new NameUsageWrapper(t);
 
     n = new Name();
     n.setRank(Rank.GENUS);
     n.setScientificName("Q");
     t = new Taxon();
     t.setName(n);
-    NameUsageWrapper<Taxon> nuw8 = new NameUsageWrapper<>(t);
+    NameUsageWrapper nuw8 = new NameUsageWrapper(t);
 
     n = new Name();
     n.setRank(Rank.SPECIES);
     n.setScientificName("K");
     t = new Taxon();
     t.setName(n);
-    NameUsageWrapper<Taxon> nuw9 = new NameUsageWrapper<>(t);
+    NameUsageWrapper nuw9 = new NameUsageWrapper(t);
 
     n = new Name();
     n.setRank(Rank.SPECIES);
     n.setScientificName("L");
     t = new Taxon();
     t.setName(n);
-    NameUsageWrapper<Taxon> nuw10 = new NameUsageWrapper<>(t);
+    NameUsageWrapper nuw10 = new NameUsageWrapper(t);
 
     n = new Name();
     n.setRank(Rank.SPECIES);
     n.setScientificName("M");
     t = new Taxon();
     t.setName(n);
-    NameUsageWrapper<Taxon> nuw11 = new NameUsageWrapper<>(t);
+    NameUsageWrapper nuw11 = new NameUsageWrapper(t);
 
-    List<NameUsageWrapper<Taxon>> all = Arrays.asList(nuw1, nuw2, nuw3, nuw4, nuw5, nuw6, nuw7, nuw8, nuw9, nuw10, nuw11);
+    List<NameUsageWrapper> all = Arrays.asList(nuw1, nuw2, nuw3, nuw4, nuw5, nuw6, nuw7, nuw8, nuw9, nuw10, nuw11);
 
-    List<NameUsageWrapper<Taxon>> shuffled = new ArrayList<>(all);
+    List<NameUsageWrapper> shuffled = new ArrayList<>(all);
     Collections.shuffle(shuffled);
     shuffled.stream().map(t1 -> {
       try {
@@ -266,7 +265,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     }).forEach(x -> insert(client, indexName, x));
     refreshIndex(client, indexName);
 
-    ResultPage<NameUsageWrapper<NameUsage>> result = svc.search(indexName, nsr, page);
+    ResultPage<NameUsageWrapper> result = svc.search(indexName, nsr, page);
 
     assertEquals(all, result.getResult());
 
@@ -281,43 +280,43 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     nsr.addFilter(NameSearchParameter.ISSUE, Issue.ACCEPTED_NAME_MISSING);
 
     // Match
-    NameUsageWrapper<Taxon> nuw1 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    NameUsageWrapper nuw1 = TestEntityGenerator.newNameUsageTaxonWrapper();
     nuw1.setIssues(EnumSet.of(Issue.ACCEPTED_NAME_MISSING));
     insert(client, indexName, transfer.toEsDocument(nuw1));
 
     // Match
-    NameUsageWrapper<Taxon> nuw2 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    NameUsageWrapper nuw2 = TestEntityGenerator.newNameUsageTaxonWrapper();
     nuw2.setIssues(EnumSet.of(Issue.ACCEPTED_NAME_MISSING, Issue.ACCORDING_TO_DATE_INVALID));
     insert(client, indexName, transfer.toEsDocument(nuw2));
 
     // Match
-    NameUsageWrapper<Taxon> nuw3 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    NameUsageWrapper nuw3 = TestEntityGenerator.newNameUsageTaxonWrapper();
     nuw3.setIssues(EnumSet.allOf(Issue.class));
     insert(client, indexName, transfer.toEsDocument(nuw3));
 
     // No match
-    NameUsageWrapper<Taxon> nuw4 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    NameUsageWrapper nuw4 = TestEntityGenerator.newNameUsageTaxonWrapper();
     nuw4.setIssues(null);
     insert(client, indexName, transfer.toEsDocument(nuw4));
 
     // No match
-    NameUsageWrapper<Taxon> nuw5 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    NameUsageWrapper nuw5 = TestEntityGenerator.newNameUsageTaxonWrapper();
     nuw5.setIssues(EnumSet.of(Issue.CITATION_UNPARSED));
     insert(client, indexName, transfer.toEsDocument(nuw5));
 
     // No match
-    NameUsageWrapper<Taxon> nuw6 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    NameUsageWrapper nuw6 = TestEntityGenerator.newNameUsageTaxonWrapper();
     nuw6.setIssues(EnumSet.of(Issue.CITATION_UNPARSED, Issue.BASIONYM_ID_INVALID));
     insert(client, indexName, transfer.toEsDocument(nuw6));
 
     // No match
-    NameUsageWrapper<Taxon> nuw7 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    NameUsageWrapper nuw7 = TestEntityGenerator.newNameUsageTaxonWrapper();
     nuw7.setIssues(EnumSet.noneOf(Issue.class));
     insert(client, indexName, transfer.toEsDocument(nuw7));
 
     refreshIndex(client, indexName);
 
-    ResultPage<NameUsageWrapper<NameUsage>> result = svc.search(indexName, nsr, new Page());
+    ResultPage<NameUsageWrapper> result = svc.search(indexName, nsr, new Page());
 
     assertEquals(3, result.getResult().size());
   }
@@ -331,48 +330,48 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     nsr.addFilter(NameSearchParameter.ISSUE, EnumSet.of(Issue.ACCEPTED_NAME_MISSING, Issue.ACCORDING_TO_DATE_INVALID));
 
     // Match
-    NameUsageWrapper<Taxon> nuw1 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    NameUsageWrapper nuw1 = TestEntityGenerator.newNameUsageTaxonWrapper();
     nuw1.setIssues(EnumSet.of(Issue.ACCEPTED_NAME_MISSING));
     insert(client, indexName, transfer.toEsDocument(nuw1));
 
     // Match
-    NameUsageWrapper<Taxon> nuw2 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    NameUsageWrapper nuw2 = TestEntityGenerator.newNameUsageTaxonWrapper();
     nuw2.setIssues(EnumSet.of(Issue.ACCEPTED_NAME_MISSING, Issue.ACCORDING_TO_DATE_INVALID));
     insert(client, indexName, transfer.toEsDocument(nuw2));
 
     // Match
-    NameUsageWrapper<Taxon> nuw3 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    NameUsageWrapper nuw3 = TestEntityGenerator.newNameUsageTaxonWrapper();
     nuw3.setIssues(EnumSet.allOf(Issue.class));
     insert(client, indexName, transfer.toEsDocument(nuw3));
 
     // No match
-    NameUsageWrapper<Taxon> nuw4 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    NameUsageWrapper nuw4 = TestEntityGenerator.newNameUsageTaxonWrapper();
     nuw4.setIssues(null);
     insert(client, indexName, transfer.toEsDocument(nuw4));
 
     // No match
-    NameUsageWrapper<Taxon> nuw5 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    NameUsageWrapper nuw5 = TestEntityGenerator.newNameUsageTaxonWrapper();
     nuw5.setIssues(EnumSet.of(Issue.CITATION_UNPARSED));
     insert(client, indexName, transfer.toEsDocument(nuw5));
 
     // No match
-    NameUsageWrapper<Taxon> nuw6 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    NameUsageWrapper nuw6 = TestEntityGenerator.newNameUsageTaxonWrapper();
     nuw6.setIssues(EnumSet.of(Issue.CITATION_UNPARSED, Issue.BASIONYM_ID_INVALID));
     insert(client, indexName, transfer.toEsDocument(nuw6));
 
     // No match
-    NameUsageWrapper<Taxon> nuw7 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    NameUsageWrapper nuw7 = TestEntityGenerator.newNameUsageTaxonWrapper();
     nuw7.setIssues(EnumSet.noneOf(Issue.class));
     insert(client, indexName, transfer.toEsDocument(nuw7));
 
     // No match
-    NameUsageWrapper<Taxon> nuw8 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    NameUsageWrapper nuw8 = TestEntityGenerator.newNameUsageTaxonWrapper();
     nuw8.setIssues(EnumSet.of(Issue.ACCEPTED_NAME_MISSING, Issue.DOUBTFUL_NAME));
     insert(client, indexName, transfer.toEsDocument(nuw8));
 
     refreshIndex(client, indexName);
 
-    ResultPage<NameUsageWrapper<NameUsage>> result = svc.search(indexName, nsr, new Page());
+    ResultPage<NameUsageWrapper> result = svc.search(indexName, nsr, new Page());
 
     assertEquals(4, result.getResult().size());
   }
@@ -387,43 +386,43 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
         Issue.ACCEPTED_NAME_MISSING, Issue.ACCORDING_TO_DATE_INVALID, Issue.BASIONYM_ID_INVALID);
 
     // Match
-    NameUsageWrapper<Taxon> nuw1 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    NameUsageWrapper nuw1 = TestEntityGenerator.newNameUsageTaxonWrapper();
     nuw1.setIssues(EnumSet.of(Issue.ACCEPTED_NAME_MISSING));
     insert(client, indexName, transfer.toEsDocument(nuw1));
 
     // Match
-    NameUsageWrapper<Taxon> nuw2 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    NameUsageWrapper nuw2 = TestEntityGenerator.newNameUsageTaxonWrapper();
     nuw2.setIssues(EnumSet.of(Issue.ACCEPTED_NAME_MISSING, Issue.ACCORDING_TO_DATE_INVALID));
     insert(client, indexName, transfer.toEsDocument(nuw2));
 
     // Match
-    NameUsageWrapper<Taxon> nuw3 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    NameUsageWrapper nuw3 = TestEntityGenerator.newNameUsageTaxonWrapper();
     nuw3.setIssues(EnumSet.allOf(Issue.class));
     insert(client, indexName, transfer.toEsDocument(nuw3));
 
     // No match
-    NameUsageWrapper<Taxon> nuw4 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    NameUsageWrapper nuw4 = TestEntityGenerator.newNameUsageTaxonWrapper();
     nuw4.setIssues(null);
     insert(client, indexName, transfer.toEsDocument(nuw4));
 
     // No match
-    NameUsageWrapper<Taxon> nuw5 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    NameUsageWrapper nuw5 = TestEntityGenerator.newNameUsageTaxonWrapper();
     nuw5.setIssues(EnumSet.of(Issue.CITATION_UNPARSED));
     insert(client, indexName, transfer.toEsDocument(nuw5));
 
     // Match
-    NameUsageWrapper<Taxon> nuw6 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    NameUsageWrapper nuw6 = TestEntityGenerator.newNameUsageTaxonWrapper();
     nuw6.setIssues(EnumSet.of(Issue.CITATION_UNPARSED, Issue.BASIONYM_ID_INVALID));
     insert(client, indexName, transfer.toEsDocument(nuw6));
 
     // No match
-    NameUsageWrapper<Taxon> nuw7 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    NameUsageWrapper nuw7 = TestEntityGenerator.newNameUsageTaxonWrapper();
     nuw7.setIssues(EnumSet.noneOf(Issue.class));
     insert(client, indexName, transfer.toEsDocument(nuw7));
 
     refreshIndex(client, indexName);
 
-    ResultPage<NameUsageWrapper<NameUsage>> result = svc.search(indexName, nsr, new Page());
+    ResultPage<NameUsageWrapper> result = svc.search(indexName, nsr, new Page());
 
     assertEquals(4, result.getResult().size());
   }
@@ -437,38 +436,38 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     nsr.setQ("UNLIKE");
 
     // Match
-    NameUsageWrapper<Taxon> nuw1 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    NameUsageWrapper nuw1 = TestEntityGenerator.newNameUsageTaxonWrapper();
     List<String> vernaculars = Arrays.asList("AN UNLIKELY NAME");
     nuw1.setVernacularNames(create(vernaculars));
     insert(client, indexName, transfer.toEsDocument(nuw1));
 
     // Match
-    NameUsageWrapper<Taxon> nuw2 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    NameUsageWrapper nuw2 = TestEntityGenerator.newNameUsageTaxonWrapper();
     vernaculars = Arrays.asList("ANOTHER NAME", "AN UNLIKELY NAME");
     nuw2.setVernacularNames(create(vernaculars));
     insert(client, indexName, transfer.toEsDocument(nuw2));
 
     // Match
-    NameUsageWrapper<Taxon> nuw3 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    NameUsageWrapper nuw3 = TestEntityGenerator.newNameUsageTaxonWrapper();
     vernaculars = Arrays.asList("YET ANOTHER NAME", "ANOTHER NAME", "AN UNLIKELY NAME");
     nuw3.setVernacularNames(create(vernaculars));
     insert(client, indexName, transfer.toEsDocument(nuw3));
 
     // Match
-    NameUsageWrapper<Taxon> nuw4 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    NameUsageWrapper nuw4 = TestEntityGenerator.newNameUsageTaxonWrapper();
     vernaculars = Arrays.asList("it's unlike capital case");
     nuw4.setVernacularNames(create(vernaculars));
     insert(client, indexName, transfer.toEsDocument(nuw4));
 
     // No match
-    NameUsageWrapper<Taxon> nuw5 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    NameUsageWrapper nuw5 = TestEntityGenerator.newNameUsageTaxonWrapper();
     vernaculars = Arrays.asList("LIKE IT OR NOT");
     nuw5.setVernacularNames(create(vernaculars));
     insert(client, indexName, transfer.toEsDocument(nuw5));
 
     refreshIndex(client, indexName);
 
-    ResultPage<NameUsageWrapper<NameUsage>> result = svc.search(indexName, nsr, new Page());
+    ResultPage<NameUsageWrapper> result = svc.search(indexName, nsr, new Page());
 
     assertEquals(4, result.getResult().size());
   }
@@ -484,38 +483,38 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     nsr.setQ("UNLIKE");
 
     // No match
-    NameUsageWrapper<Taxon> nuw1 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    NameUsageWrapper nuw1 = TestEntityGenerator.newNameUsageTaxonWrapper();
     List<String> vernaculars = Arrays.asList("AN UNLIKELY NAME");
     nuw1.setVernacularNames(create(vernaculars));
     insert(client, indexName, transfer.toEsDocument(nuw1));
 
     // No match
-    NameUsageWrapper<Taxon> nuw2 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    NameUsageWrapper nuw2 = TestEntityGenerator.newNameUsageTaxonWrapper();
     vernaculars = Arrays.asList("ANOTHER NAME", "AN UNLIKELY NAME");
     nuw2.setVernacularNames(create(vernaculars));
     insert(client, indexName, transfer.toEsDocument(nuw2));
 
     // No match
-    NameUsageWrapper<Taxon> nuw3 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    NameUsageWrapper nuw3 = TestEntityGenerator.newNameUsageTaxonWrapper();
     vernaculars = Arrays.asList("YET ANOTHER NAME", "ANOTHER NAME", "AN UNLIKELY NAME");
     nuw3.setVernacularNames(create(vernaculars));
     insert(client, indexName, transfer.toEsDocument(nuw3));
 
     // No match
-    NameUsageWrapper<Taxon> nuw4 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    NameUsageWrapper nuw4 = TestEntityGenerator.newNameUsageTaxonWrapper();
     vernaculars = Arrays.asList("it's unlike capital case");
     nuw4.setVernacularNames(create(vernaculars));
     insert(client, indexName, transfer.toEsDocument(nuw4));
 
     // No match
-    NameUsageWrapper<Taxon> nuw5 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    NameUsageWrapper nuw5 = TestEntityGenerator.newNameUsageTaxonWrapper();
     vernaculars = Arrays.asList("LIKE IT OR NOT");
     nuw5.setVernacularNames(create(vernaculars));
     insert(client, indexName, transfer.toEsDocument(nuw5));
 
     refreshIndex(client, indexName);
 
-    ResultPage<NameUsageWrapper<NameUsage>> result = svc.search(indexName, nsr, new Page());
+    ResultPage<NameUsageWrapper> result = svc.search(indexName, nsr, new Page());
 
     assertEquals(0, result.getResult().size());
   }
@@ -529,25 +528,25 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     nsr.addFilter(NameSearchParameter.ISSUE, NameSearchRequest.NULL_VALUE);
 
     // Match
-    NameUsageWrapper<Taxon> nuw1 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    NameUsageWrapper nuw1 = TestEntityGenerator.newNameUsageTaxonWrapper();
     nuw1.setIssues(EnumSet.noneOf(Issue.class));
     insert(client, indexName, transfer.toEsDocument(nuw1));
     // No match
-    NameUsageWrapper<Taxon> nuw2 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    NameUsageWrapper nuw2 = TestEntityGenerator.newNameUsageTaxonWrapper();
     nuw2.setIssues(EnumSet.allOf(Issue.class));
     insert(client, indexName, transfer.toEsDocument(nuw2));
     // Match
-    NameUsageWrapper<Taxon> nuw3 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    NameUsageWrapper nuw3 = TestEntityGenerator.newNameUsageTaxonWrapper();
     nuw3.setIssues(null);
     insert(client, indexName, transfer.toEsDocument(nuw3));
     // No match
-    NameUsageWrapper<Taxon> nuw4 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    NameUsageWrapper nuw4 = TestEntityGenerator.newNameUsageTaxonWrapper();
     nuw4.setIssues(EnumSet.of(Issue.CITATION_UNPARSED));
     insert(client, indexName, transfer.toEsDocument(nuw4));
 
     refreshIndex(client, indexName);
 
-    ResultPage<NameUsageWrapper<NameUsage>> result = svc.search(indexName, nsr, new Page());
+    ResultPage<NameUsageWrapper> result = svc.search(indexName, nsr, new Page());
 
     assertEquals(2, result.getResult().size());
   }
@@ -561,25 +560,25 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     nsr.addFilter(NameSearchParameter.ISSUE, NameSearchRequest.NOT_NULL_VALUE);
 
     // No match
-    NameUsageWrapper<Taxon> nuw1 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    NameUsageWrapper nuw1 = TestEntityGenerator.newNameUsageTaxonWrapper();
     nuw1.setIssues(EnumSet.noneOf(Issue.class));
     insert(client, indexName, transfer.toEsDocument(nuw1));
     // Match
-    NameUsageWrapper<Taxon> nuw2 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    NameUsageWrapper nuw2 = TestEntityGenerator.newNameUsageTaxonWrapper();
     nuw2.setIssues(EnumSet.allOf(Issue.class));
     insert(client, indexName, transfer.toEsDocument(nuw2));
     // No match
-    NameUsageWrapper<Taxon> nuw3 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    NameUsageWrapper nuw3 = TestEntityGenerator.newNameUsageTaxonWrapper();
     nuw3.setIssues(null);
     insert(client, indexName, transfer.toEsDocument(nuw3));
     // Match
-    NameUsageWrapper<Taxon> nuw4 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    NameUsageWrapper nuw4 = TestEntityGenerator.newNameUsageTaxonWrapper();
     nuw4.setIssues(EnumSet.of(Issue.CITATION_UNPARSED));
     insert(client, indexName, transfer.toEsDocument(nuw4));
 
     refreshIndex(client, indexName);
 
-    ResultPage<NameUsageWrapper<NameUsage>> result = svc.search(indexName, nsr, new Page());
+    ResultPage<NameUsageWrapper> result = svc.search(indexName, nsr, new Page());
 
     assertEquals(2, result.getResult().size());
   }
@@ -596,7 +595,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     Name n = new Name();
     n.setUninomial("laridae");
     BareName bn = new BareName(n);
-    NameUsageWrapper<NameUsage> nuw1 = new NameUsageWrapper<>(bn);
+    NameUsageWrapper nuw1 = new NameUsageWrapper(bn);
     insert(client, indexName, transfer.toEsDocument(nuw1));
 
     // Match
@@ -604,7 +603,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     n.setUninomial("parus");
     n.setGenus("parus");
     bn = new BareName(n);
-    NameUsageWrapper<NameUsage> nuw2 = new NameUsageWrapper<>(bn);
+    NameUsageWrapper nuw2 = new NameUsageWrapper(bn);
     insert(client, indexName, transfer.toEsDocument(nuw2));
 
     // No match
@@ -612,7 +611,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     n.setUninomial(null);
     n.setGenus("parus");
     bn = new BareName(n);
-    NameUsageWrapper<NameUsage> nuw3 = new NameUsageWrapper<>(bn);
+    NameUsageWrapper nuw3 = new NameUsageWrapper(bn);
     insert(client, indexName, transfer.toEsDocument(nuw3));
 
     // Match
@@ -620,14 +619,14 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     n.setUninomial("parus");
     n.setGenus("parus");
     bn = new BareName(n);
-    NameUsageWrapper<NameUsage> nuw4 = new NameUsageWrapper<>(bn);
+    NameUsageWrapper nuw4 = new NameUsageWrapper(bn);
     insert(client, indexName, transfer.toEsDocument(nuw4));
 
     refreshIndex(client, indexName);
 
-    List<NameUsageWrapper<NameUsage>> expected = Arrays.asList(nuw1, nuw2, nuw4);
+    List<NameUsageWrapper> expected = Arrays.asList(nuw1, nuw2, nuw4);
 
-    ResultPage<NameUsageWrapper<NameUsage>> result = svc.search(indexName, nsr, new Page());
+    ResultPage<NameUsageWrapper> result = svc.search(indexName, nsr, new Page());
 
     assertEquals(expected, result.getResult());
 
@@ -645,7 +644,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     Name n = new Name();
     n.setUninomial("laridae");
     BareName bn = new BareName(n);
-    NameUsageWrapper<NameUsage> nuw1 = new NameUsageWrapper<>(bn);
+    NameUsageWrapper nuw1 = new NameUsageWrapper(bn);
     insert(client, indexName, transfer.toEsDocument(nuw1));
 
     // Match
@@ -653,7 +652,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     n.setUninomial("parus");
     n.setGenus("parus");
     bn = new BareName(n);
-    NameUsageWrapper<NameUsage> nuw2 = new NameUsageWrapper<>(bn);
+    NameUsageWrapper nuw2 = new NameUsageWrapper(bn);
     insert(client, indexName, transfer.toEsDocument(nuw2));
 
     // No match
@@ -661,7 +660,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     n.setUninomial(null);
     n.setGenus("parus");
     bn = new BareName(n);
-    NameUsageWrapper<NameUsage> nuw3 = new NameUsageWrapper<>(bn);
+    NameUsageWrapper nuw3 = new NameUsageWrapper(bn);
     insert(client, indexName, transfer.toEsDocument(nuw3));
 
     // Match
@@ -669,14 +668,14 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     n.setUninomial("parus");
     n.setGenus("parus");
     bn = new BareName(n);
-    NameUsageWrapper<NameUsage> nuw4 = new NameUsageWrapper<>(bn);
+    NameUsageWrapper nuw4 = new NameUsageWrapper(bn);
     insert(client, indexName, transfer.toEsDocument(nuw4));
 
     refreshIndex(client, indexName);
 
-    List<NameUsageWrapper<NameUsage>> expected = Arrays.asList(nuw1, nuw2, nuw4);
+    List<NameUsageWrapper> expected = Arrays.asList(nuw1, nuw2, nuw4);
 
-    ResultPage<NameUsageWrapper<NameUsage>> result = svc.search(indexName, nsr, new Page());
+    ResultPage<NameUsageWrapper> result = svc.search(indexName, nsr, new Page());
 
     assertEquals(expected, result.getResult());
 
@@ -694,7 +693,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     Name n = new Name();
     n.setUninomial("laridae");
     BareName bn = new BareName(n);
-    NameUsageWrapper<NameUsage> nuw1 = new NameUsageWrapper<>(bn);
+    NameUsageWrapper nuw1 = new NameUsageWrapper(bn);
     insert(client, indexName, transfer.toEsDocument(nuw1));
 
     // Match
@@ -702,7 +701,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     n.setUninomial("parus");
     n.setGenus("parus");
     bn = new BareName(n);
-    NameUsageWrapper<NameUsage> nuw2 = new NameUsageWrapper<>(bn);
+    NameUsageWrapper nuw2 = new NameUsageWrapper(bn);
     insert(client, indexName, transfer.toEsDocument(nuw2));
 
     // Match
@@ -712,7 +711,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     n.setSpecificEpithet("major");
     n.setRemarks("A bird");
     bn = new BareName(n);
-    NameUsageWrapper<NameUsage> nuw3 = new NameUsageWrapper<>(bn);
+    NameUsageWrapper nuw3 = new NameUsageWrapper(bn);
     insert(client, indexName, transfer.toEsDocument(nuw3));
 
     // No Match
@@ -720,7 +719,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     n.setUninomial(null);
     n.setGenus("parus");
     bn = new BareName(n);
-    NameUsageWrapper<NameUsage> nuw4 = new NameUsageWrapper<>(bn);
+    NameUsageWrapper nuw4 = new NameUsageWrapper(bn);
     insert(client, indexName, transfer.toEsDocument(nuw4));
 
     // Match
@@ -729,14 +728,14 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     n.setGenus("parus");
     n.setRemarks("A bird");
     bn = new BareName(n);
-    NameUsageWrapper<NameUsage> nuw5 = new NameUsageWrapper<>(bn);
+    NameUsageWrapper nuw5 = new NameUsageWrapper(bn);
     insert(client, indexName, transfer.toEsDocument(nuw5));
 
     refreshIndex(client, indexName);
 
-    List<NameUsageWrapper<NameUsage>> expected = Arrays.asList(nuw1, nuw2, nuw3, nuw5);
+    List<NameUsageWrapper> expected = Arrays.asList(nuw1, nuw2, nuw3, nuw5);
 
-    ResultPage<NameUsageWrapper<NameUsage>> result = svc.search(indexName, nsr, new Page());
+    ResultPage<NameUsageWrapper> result = svc.search(indexName, nsr, new Page());
 
     assertEquals(expected, result.getResult());
 
@@ -764,7 +763,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     t.setProvisional(false);
     VernacularName vn = new VernacularName();
     vn.setName("laridae");
-    NameUsageWrapper<NameUsage> nuw1 = new NameUsageWrapper<>(t);
+    NameUsageWrapper nuw1 = new NameUsageWrapper(t);
     // Present or not shouldn't make a difference because of SearchContent
     nuw1.setVernacularNames(Arrays.asList(vn));
     insert(client, indexName, transfer.toEsDocument(nuw1));
@@ -779,7 +778,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     t.setProvisional(false);
     vn = new VernacularName();
     vn.setName("laridae");
-    NameUsageWrapper<NameUsage> nuw2 = new NameUsageWrapper<>(t);
+    NameUsageWrapper nuw2 = new NameUsageWrapper(t);
     nuw2.setVernacularNames(Arrays.asList(vn));
     insert(client, indexName, transfer.toEsDocument(nuw2));
 
@@ -793,7 +792,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     t.setProvisional(false);
     vn = new VernacularName();
     vn.setName("laridae");
-    NameUsageWrapper<NameUsage> nuw3 = new NameUsageWrapper<>(t);
+    NameUsageWrapper nuw3 = new NameUsageWrapper(t);
     nuw3.setVernacularNames(Arrays.asList(vn));
     insert(client, indexName, transfer.toEsDocument(nuw3));
 
@@ -807,7 +806,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     t.setProvisional(false);
     vn = new VernacularName();
     vn.setName("laridae");
-    NameUsageWrapper<NameUsage> nuw4 = new NameUsageWrapper<>(t);
+    NameUsageWrapper nuw4 = new NameUsageWrapper(t);
     nuw4.setVernacularNames(Arrays.asList(vn));
     insert(client, indexName, transfer.toEsDocument(nuw4));
 
@@ -821,7 +820,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     t.setProvisional(false);
     vn = new VernacularName();
     vn.setName("laridae");
-    NameUsageWrapper<NameUsage> nuw5 = new NameUsageWrapper<>(t);
+    NameUsageWrapper nuw5 = new NameUsageWrapper(t);
     nuw5.setVernacularNames(Arrays.asList(vn));
     insert(client, indexName, transfer.toEsDocument(nuw5));
 
@@ -835,15 +834,15 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     t.setProvisional(true); // XXXXXXXXXXXXX
     vn = new VernacularName();
     vn.setName("laridae");
-    NameUsageWrapper<NameUsage> nuw6 = new NameUsageWrapper<>(t);
+    NameUsageWrapper nuw6 = new NameUsageWrapper(t);
     nuw6.setVernacularNames(Arrays.asList(vn));
     insert(client, indexName, transfer.toEsDocument(nuw6));
 
     refreshIndex(client, indexName);
 
-    List<NameUsageWrapper<NameUsage>> expected = Arrays.asList(nuw1, nuw2);
+    List<NameUsageWrapper> expected = Arrays.asList(nuw1, nuw2);
 
-    ResultPage<NameUsageWrapper<NameUsage>> result = svc.search(indexName, nsr, new Page());
+    ResultPage<NameUsageWrapper> result = svc.search(indexName, nsr, new Page());
 
     assertEquals(expected, result.getResult());
 
@@ -861,14 +860,14 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     Name n = new Name();
     n.setScientificName("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
     BareName bn = new BareName(n);
-    NameUsageWrapper<NameUsage> nuw1 = new NameUsageWrapper<>(bn);
+    NameUsageWrapper nuw1 = new NameUsageWrapper(bn);
     insert(client, indexName, transfer.toEsDocument(nuw1));
 
     // Match on vernacular name
     n = new Name();
     n.setScientificName("FOO");
     bn = new BareName(n);
-    NameUsageWrapper<NameUsage> nuw2 = new NameUsageWrapper<>(bn);
+    NameUsageWrapper nuw2 = new NameUsageWrapper(bn);
     VernacularName vn = new VernacularName();
     vn.setName("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
     nuw2.setVernacularNames(Arrays.asList(vn));
@@ -878,7 +877,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     n = new Name();
     n.setScientificName("BAR");
     bn = new BareName(n);
-    NameUsageWrapper<NameUsage> nuw3 = new NameUsageWrapper<>(bn);
+    NameUsageWrapper nuw3 = new NameUsageWrapper(bn);
     // Bypassing dark art of authorship generation here
     EsNameUsage esn = transfer.toEsDocument(nuw3);
     esn.setAuthorship("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
@@ -888,26 +887,26 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     n = new Name();
     n.setScientificName("ABCDEFGHIJKLMNOPQRSTUV");
     bn = new BareName(n);
-    NameUsageWrapper<NameUsage> nuw4 = new NameUsageWrapper<>(bn);
+    NameUsageWrapper nuw4 = new NameUsageWrapper(bn);
     insert(client, indexName, transfer.toEsDocument(nuw4));
 
     // No match (missing 'A')
     n = new Name();
     n.setScientificName("BCDEFGHIJKLMNOPQRSTUVW");
     bn = new BareName(n);
-    NameUsageWrapper<NameUsage> nuw5 = new NameUsageWrapper<>(bn);
+    NameUsageWrapper nuw5 = new NameUsageWrapper(bn);
     insert(client, indexName, transfer.toEsDocument(nuw5));
 
     refreshIndex(client, indexName);
 
-    List<NameUsageWrapper<NameUsage>> expected = Arrays.asList(nuw1, nuw2, nuw3);
+    List<NameUsageWrapper> expected = Arrays.asList(nuw1, nuw2, nuw3);
 
-    ResultPage<NameUsageWrapper<NameUsage>> result = svc.search(indexName, nsr, new Page());
+    ResultPage<NameUsageWrapper> result = svc.search(indexName, nsr, new Page());
 
     assertEquals(expected, result.getResult());
 
   }
-  
+
   // Issue #207
   @Test
   public void testWithSmthii__1() throws IOException {
@@ -920,36 +919,35 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     Name n = new Name();
     n.setScientificName("Smithii");
     BareName bn = new BareName(n);
-    NameUsageWrapper<NameUsage> nuw1 = new NameUsageWrapper<>(bn);
+    NameUsageWrapper nuw1 = new NameUsageWrapper(bn);
     insert(client, indexName, transfer.toEsDocument(nuw1));
-    
+
     n = new Name();
     n.setScientificName("Smithi");
     bn = new BareName(n);
-    NameUsageWrapper<NameUsage> nuw2 = new NameUsageWrapper<>(bn);
+    NameUsageWrapper nuw2 = new NameUsageWrapper(bn);
     insert(client, indexName, transfer.toEsDocument(nuw2));
-
 
     n = new Name();
     n.setScientificName("SmithiiFooBar");
     bn = new BareName(n);
-    NameUsageWrapper<NameUsage> nuw3 = new NameUsageWrapper<>(bn);
+    NameUsageWrapper nuw3 = new NameUsageWrapper(bn);
     insert(client, indexName, transfer.toEsDocument(nuw3));
-    
+
     n = new Name();
     n.setScientificName("SmithiFooBar");
     bn = new BareName(n);
-    NameUsageWrapper<NameUsage> nuw4 = new NameUsageWrapper<>(bn);
+    NameUsageWrapper nuw4 = new NameUsageWrapper(bn);
     insert(client, indexName, transfer.toEsDocument(nuw4));
 
     refreshIndex(client, indexName);
 
-    List<NameUsageWrapper<NameUsage>> expected = Arrays.asList(nuw1, nuw2, nuw3, nuw4);
+    List<NameUsageWrapper> expected = Arrays.asList(nuw1, nuw2, nuw3, nuw4);
 
-    ResultPage<NameUsageWrapper<NameUsage>> result = svc.search(indexName, nsr, new Page());
+    ResultPage<NameUsageWrapper> result = svc.search(indexName, nsr, new Page());
 
-    assertEquals(expected, result.getResult());   
-    
+    assertEquals(expected, result.getResult());
+
   }
 
   @Test
@@ -963,36 +961,35 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     Name n = new Name();
     n.setScientificName("Smithii");
     BareName bn = new BareName(n);
-    NameUsageWrapper<NameUsage> nuw1 = new NameUsageWrapper<>(bn);
+    NameUsageWrapper nuw1 = new NameUsageWrapper(bn);
     insert(client, indexName, transfer.toEsDocument(nuw1));
-    
+
     n = new Name();
     n.setScientificName("Smithi");
     bn = new BareName(n);
-    NameUsageWrapper<NameUsage> nuw2 = new NameUsageWrapper<>(bn);
+    NameUsageWrapper nuw2 = new NameUsageWrapper(bn);
     insert(client, indexName, transfer.toEsDocument(nuw2));
-
 
     n = new Name();
     n.setScientificName("SmithiiFooBar");
     bn = new BareName(n);
-    NameUsageWrapper<NameUsage> nuw3 = new NameUsageWrapper<>(bn);
+    NameUsageWrapper nuw3 = new NameUsageWrapper(bn);
     insert(client, indexName, transfer.toEsDocument(nuw3));
-    
+
     n = new Name();
     n.setScientificName("SmithiFooBar");
     bn = new BareName(n);
-    NameUsageWrapper<NameUsage> nuw4 = new NameUsageWrapper<>(bn);
+    NameUsageWrapper nuw4 = new NameUsageWrapper(bn);
     insert(client, indexName, transfer.toEsDocument(nuw4));
 
     refreshIndex(client, indexName);
 
-    List<NameUsageWrapper<NameUsage>> expected = Arrays.asList(nuw1, nuw2, nuw3, nuw4);
+    List<NameUsageWrapper> expected = Arrays.asList(nuw1, nuw2, nuw3, nuw4);
 
-    ResultPage<NameUsageWrapper<NameUsage>> result = svc.search(indexName, nsr, new Page());
+    ResultPage<NameUsageWrapper> result = svc.search(indexName, nsr, new Page());
 
-    assertEquals(expected, result.getResult());   
-    
+    assertEquals(expected, result.getResult());
+
   }
 
   private static List<VernacularName> create(List<String> names) {

@@ -94,7 +94,7 @@ class QTranslator {
           .should(new AutoCompleteQuery("scientificNameWN", weaklyNormed, DFAULT_SCI_NAME_BOOST))
           .should(new AutoCompleteQuery("scientificNameSN", stronglyNormed, strongBoost));
     }
-    if (len >= 8 && len < MAX_NGRAM_SIZE) {
+    if (len >= 8 && len <= MAX_NGRAM_SIZE) {
       float strongBoost = DFAULT_SCI_NAME_BOOST;
       return new BoolQuery()
           .should(new AutoCompleteQuery("scientificNameWN", weaklyNormed, DFAULT_SCI_NAME_BOOST))
