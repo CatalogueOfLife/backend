@@ -45,7 +45,7 @@ public class PgImportIT {
   private VerbatimRecordMapper vMapper;
   
   @ClassRule
-  public static PgSetupRule pgSetupRule = new PgSetupRule();
+  public static PgSetupRule pgSetupRule = new PgSetupRule(false,true);
   
   @Rule
   public InitMybatisRule initMybatisRule = InitMybatisRule.empty();
@@ -119,7 +119,7 @@ public class PgImportIT {
   
   
   
-  @Test
+  //@Test
   public void testPublishedIn() throws Exception {
     normalizeAndImport(DWCA, 0);
     
@@ -135,7 +135,7 @@ public class PgImportIT {
     }
   }
   
-  @Test
+  //@Test
   public void testDwca1() throws Exception {
     normalizeAndImport(DWCA, 1);
     
@@ -160,7 +160,7 @@ public class PgImportIT {
     }
   }
   
-  @Test
+  //@Test
   public void testIpniDwca() throws Exception {
     normalizeAndImport(DWCA, 27);
   }
@@ -170,7 +170,7 @@ public class PgImportIT {
    * <p>
    * 10->11->12->10, 13->11 should be: 10,13->11 12
    */
-  @Test
+  //@Test
   public void chainedBasionyms() throws Exception {
     normalizeAndImport(DWCA, 28);
     // verify results
@@ -239,7 +239,7 @@ public class PgImportIT {
     return expD;
   }
   
-  @Test
+  //@Test
   public void testSupplementary() throws Exception {
     normalizeAndImport(DWCA, 24);
     
@@ -283,7 +283,7 @@ public class PgImportIT {
     }
   }
   
-  @Test
+  //@Test
   public void testAcef0() throws Exception {
     normalizeAndImport(ACEF, 0);
     
@@ -327,7 +327,7 @@ public class PgImportIT {
     }
   }
   
-  @Test
+  //@Test
   public void testAcef1() throws Exception {
     normalizeAndImport(ACEF, 1);
     
@@ -358,7 +358,7 @@ public class PgImportIT {
     }
   }
   
-  @Test
+  //@Test
   public void testAcef69() throws Exception {
     normalizeAndImport(ACEF, 69);
     
@@ -407,7 +407,7 @@ public class PgImportIT {
     }
   }
   
-  @Test
+  //@Test
   public void testAcef6Misapplied() throws Exception {
     normalizeAndImport(ACEF, 6);
     
@@ -451,7 +451,7 @@ public class PgImportIT {
   /**
    * Homotypic keys and basionym acts.
    */
-  @Test
+  //@Test
   public void testDwca29() throws Exception {
     normalizeAndImport(DWCA, 29);
     
@@ -502,7 +502,7 @@ public class PgImportIT {
   /**
    * duplicate scientificNameID s should not bring down the importer
    */
-  @Test
+  //@Test
   public void testSwampsSciNameIDs() throws Exception {
     normalizeAndImport(DWCA, 33);
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
@@ -517,7 +517,7 @@ public class PgImportIT {
     }
   }
   
-  @Test
+  //@Test
   public void testColdpSpecs() throws Exception {
     normalizeAndImport(COLDP, 0);
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
@@ -561,14 +561,14 @@ public class PgImportIT {
   }
   
   @Test
-  @Ignore
+  //@Ignore
   public void testGsdGithub() throws Exception {
     dataset.setContributesTo(Catalogue.PCAT);
     // normalizeAndImport(URI.create("https://raw.githubusercontent.com/Sp2000/colplus-repo/master/ACEF/assembly/15.tar.gz"), DataFormat.ACEF);
     // normalizeAndImport(URI.create("http://services.snsb.info/DTNtaxonlists/rest/v0.1/lists/DiversityTaxonNames_Fossils/1154/dwc"), DataFormat.DWCA);
     //normalizeAndImport(URI.create("https://raw.githubusercontent.com/Sp2000/colplus-repo/master/ACEF/177.tar.gz"), DataFormat.ACEF);
     //normalizeAndImport(URI.create("https://svampe.databasen.org/dwc/DMS_Fun_taxa.zip"), DataFormat.DWCA);
-    normalizeAndImport(new File("/Users/markus/Downloads/Neuropterida_ACEF_CoLPlus.zip"), DataFormat.ACEF);
+    normalizeAndImport(new File("/home/ayco/git-repos/colplus-repo/ACEF/8.tar.gz"), DataFormat.ACEF);
   }
   
   private static RankedName rn(Rank rank, String name) {

@@ -66,54 +66,54 @@ public class NameUsageSearchServiceFacetTest extends EsReadTestBase {
     // 4 kingdoms
     EsNameUsage enu = newEsNameUsage();
     enu.setRank(Rank.KINGDOM);
-    enu.setSciNameNormalized("Animalia");
+    enu.setScientificNameWN("Animalia");
     insert(client, indexName, enu);
 
     enu = newEsNameUsage();
     enu.setRank(Rank.KINGDOM);
-    enu.setSciNameNormalized("Plantae");
+    enu.setScientificNameWN("Plantae");
     insert(client, indexName, enu);
 
     enu = newEsNameUsage();
     enu.setRank(Rank.KINGDOM);
-    enu.setSciNameNormalized("Fungi");
+    enu.setScientificNameWN("Fungi");
     insert(client, indexName, enu);
 
     enu = newEsNameUsage();
     enu.setRank(Rank.KINGDOM);
-    enu.setSciNameNormalized("Bacteria");
+    enu.setScientificNameWN("Bacteria");
     insert(client, indexName, enu);
 
     // 4 Phylae
     enu = newEsNameUsage();
     enu.setRank(Rank.PHYLUM);
-    enu.setSciNameNormalized("Arthropoda");
+    enu.setScientificNameWN("Arthropoda");
     insert(client, indexName, enu);
 
     enu = newEsNameUsage();
     enu.setRank(Rank.PHYLUM);
-    enu.setSciNameNormalized("Brachiopoda");
+    enu.setScientificNameWN("Brachiopoda");
     insert(client, indexName, enu);
 
     enu = newEsNameUsage();
     enu.setRank(Rank.PHYLUM);
-    enu.setSciNameNormalized("Chordata");
+    enu.setScientificNameWN("Chordata");
     insert(client, indexName, enu);
 
     enu = newEsNameUsage();
     enu.setRank(Rank.PHYLUM);
-    enu.setSciNameNormalized("Mollusca");
+    enu.setScientificNameWN("Mollusca");
     insert(client, indexName, enu);
 
     // 2 classes
     enu = newEsNameUsage();
     enu.setRank(Rank.CLASS);
-    enu.setSciNameNormalized("Mammalia");
+    enu.setScientificNameWN("Mammalia");
     insert(client, indexName, enu);
 
     enu = newEsNameUsage();
     enu.setRank(Rank.CLASS);
-    enu.setSciNameNormalized("Aves");
+    enu.setScientificNameWN("Aves");
     insert(client, indexName, enu);
 
     // Zero orders & families
@@ -121,23 +121,23 @@ public class NameUsageSearchServiceFacetTest extends EsReadTestBase {
     // 3 genera
     enu = newEsNameUsage();
     enu.setRank(Rank.GENUS);
-    enu.setSciNameNormalized("Homo");
+    enu.setScientificNameWN("Homo");
     insert(client, indexName, enu);
 
     enu = newEsNameUsage();
     enu.setRank(Rank.GENUS);
-    enu.setSciNameNormalized("Larus");
+    enu.setScientificNameWN("Larus");
     insert(client, indexName, enu);
 
     enu = newEsNameUsage();
     enu.setRank(Rank.GENUS);
-    enu.setSciNameNormalized("Abies");
+    enu.setScientificNameWN("Abies");
     insert(client, indexName, enu);
 
     // 1 species
     enu = newEsNameUsage();
     enu.setRank(Rank.SPECIES);
-    enu.setSciNameNormalized("Larus fuscus");
+    enu.setScientificNameWN("Larus fuscus");
     insert(client, indexName, enu);
 
     refreshIndex(client, indexName);
@@ -168,80 +168,80 @@ public class NameUsageSearchServiceFacetTest extends EsReadTestBase {
     EsNameUsage enu = newEsNameUsage();
     enu.setRank(Rank.KINGDOM);
     enu.setIssues(EnumSet.of(Issue.ACCEPTED_NAME_MISSING, Issue.ACCEPTED_ID_INVALID));
-    enu.setSciNameNormalized("Animalia");
+    enu.setScientificNameWN("Animalia");
     insert(client, indexName, enu);
 
     enu = newEsNameUsage();
     enu.setRank(Rank.KINGDOM);
     enu.setIssues(EnumSet.of(Issue.ACCEPTED_NAME_MISSING, Issue.BASIONYM_ID_INVALID));
-    enu.setSciNameNormalized("Plantae");
+    enu.setScientificNameWN("Plantae");
     insert(client, indexName, enu);
 
     enu = newEsNameUsage();
     enu.setRank(Rank.KINGDOM);
     enu.setIssues(EnumSet.of(Issue.BASIONYM_ID_INVALID));
-    enu.setSciNameNormalized("Fungi");
+    enu.setScientificNameWN("Fungi");
     insert(client, indexName, enu);
 
     enu = newEsNameUsage();
     enu.setRank(Rank.KINGDOM);
     enu.setIssues(EnumSet.of(Issue.BASIONYM_ID_INVALID));
-    enu.setSciNameNormalized("Bacteria");
+    enu.setScientificNameWN("Bacteria");
     insert(client, indexName, enu);
 
     enu = newEsNameUsage();
     enu.setRank(Rank.PHYLUM);
     enu.setIssues(EnumSet.of(Issue.ACCEPTED_NAME_MISSING));
-    enu.setSciNameNormalized("Arthropoda");
+    enu.setScientificNameWN("Arthropoda");
     insert(client, indexName, enu);
 
     enu = newEsNameUsage();
     enu.setRank(Rank.PHYLUM);
     enu.setIssues(EnumSet.of(Issue.ACCEPTED_NAME_MISSING, Issue.CITATION_UNPARSED));
-    enu.setSciNameNormalized("Brachiopoda");
+    enu.setScientificNameWN("Brachiopoda");
     insert(client, indexName, enu);
 
     enu = newEsNameUsage();
     enu.setRank(Rank.PHYLUM);
     enu.setIssues(EnumSet.of(Issue.ACCEPTED_NAME_MISSING, Issue.ACCEPTED_ID_INVALID, Issue.CLASSIFICATION_NOT_APPLIED));
-    enu.setSciNameNormalized("Chordata");
+    enu.setScientificNameWN("Chordata");
     insert(client, indexName, enu);
 
     enu = newEsNameUsage();
     enu.setRank(Rank.PHYLUM);
-    enu.setSciNameNormalized("Mollusca");
+    enu.setScientificNameWN("Mollusca");
     insert(client, indexName, enu);
 
     // 2 classes
     enu = newEsNameUsage();
     enu.setRank(Rank.CLASS);
-    enu.setSciNameNormalized("Mammalia");
+    enu.setScientificNameWN("Mammalia");
     insert(client, indexName, enu);
 
     enu = newEsNameUsage();
     enu.setRank(Rank.CLASS);
     enu.setIssues(EnumSet.of(Issue.CITATION_UNPARSED));
-    enu.setSciNameNormalized("Aves");
+    enu.setScientificNameWN("Aves");
     insert(client, indexName, enu);
 
     enu = newEsNameUsage();
     enu.setRank(Rank.GENUS);
-    enu.setSciNameNormalized("Homo");
+    enu.setScientificNameWN("Homo");
     insert(client, indexName, enu);
 
     enu = newEsNameUsage();
     enu.setRank(Rank.GENUS);
-    enu.setSciNameNormalized("Larus");
+    enu.setScientificNameWN("Larus");
     insert(client, indexName, enu);
 
     enu = newEsNameUsage();
     enu.setRank(Rank.GENUS);
-    enu.setSciNameNormalized("Abies");
+    enu.setScientificNameWN("Abies");
     insert(client, indexName, enu);
 
     enu = newEsNameUsage();
     enu.setRank(Rank.SPECIES);
-    enu.setSciNameNormalized("Larus fuscus");
+    enu.setScientificNameWN("Larus fuscus");
     insert(client, indexName, enu);
 
     // ACCEPTED_NAME_MISSING: 5 docs
@@ -292,28 +292,28 @@ public class NameUsageSearchServiceFacetTest extends EsReadTestBase {
     EsNameUsage enu = newEsNameUsage();
     enu.setRank(Rank.KINGDOM);
     enu.setIssues(EnumSet.of(Issue.ACCEPTED_NAME_MISSING, Issue.ACCEPTED_ID_INVALID));
-    enu.setSciNameNormalized("Animalia");
+    enu.setScientificNameWN("Animalia");
     insert(client, indexName, enu);
 
     enu = newEsNameUsage();
     enu.setRank(Rank.KINGDOM);
     enu.setIssues(EnumSet.of(Issue.ACCEPTED_NAME_MISSING, Issue.BASIONYM_ID_INVALID));
     enu.setPublishedInId(PUB_ID1);
-    enu.setSciNameNormalized("Plantae");
+    enu.setScientificNameWN("Plantae");
     insert(client, indexName, enu);
 
     enu = newEsNameUsage();
     enu.setRank(Rank.KINGDOM);
     enu.setIssues(EnumSet.of(Issue.BASIONYM_ID_INVALID));
     enu.setPublishedInId(PUB_ID1);
-    enu.setSciNameNormalized("Fungi");
+    enu.setScientificNameWN("Fungi");
     insert(client, indexName, enu);
 
     enu = newEsNameUsage();
     enu.setRank(Rank.KINGDOM);
     enu.setIssues(EnumSet.of(Issue.BASIONYM_ID_INVALID));
     enu.setPublishedInId(PUB_ID1);
-    enu.setSciNameNormalized("Bacteria");
+    enu.setScientificNameWN("Bacteria");
     insert(client, indexName, enu);
 
     // 4 Phylae
@@ -321,39 +321,39 @@ public class NameUsageSearchServiceFacetTest extends EsReadTestBase {
     enu.setPublishedInId(PUB_ID1);
     enu.setRank(Rank.PHYLUM);
     enu.setIssues(EnumSet.of(Issue.ACCEPTED_NAME_MISSING));
-    enu.setSciNameNormalized("Arthropoda");
+    enu.setScientificNameWN("Arthropoda");
     insert(client, indexName, enu);
 
     enu = newEsNameUsage();
     enu.setRank(Rank.PHYLUM);
     enu.setIssues(EnumSet.of(Issue.ACCEPTED_NAME_MISSING, Issue.CITATION_UNPARSED));
     enu.setPublishedInId(PUB_ID2);
-    enu.setSciNameNormalized("Brachiopoda");
+    enu.setScientificNameWN("Brachiopoda");
     insert(client, indexName, enu);
 
     enu = newEsNameUsage();
     enu.setRank(Rank.PHYLUM);
     enu.setIssues(EnumSet.of(Issue.ACCEPTED_NAME_MISSING, Issue.ACCEPTED_ID_INVALID, Issue.CLASSIFICATION_NOT_APPLIED));
     enu.setPublishedInId(PUB_ID2);
-    enu.setSciNameNormalized("Chordata");
+    enu.setScientificNameWN("Chordata");
     insert(client, indexName, enu);
 
     enu = newEsNameUsage();
     enu.setRank(Rank.PHYLUM);
-    enu.setSciNameNormalized("Mollusca");
+    enu.setScientificNameWN("Mollusca");
     insert(client, indexName, enu);
 
     // 2 classes
     enu = newEsNameUsage();
     enu.setRank(Rank.CLASS);
     enu.setPublishedInId(PUB_ID2);
-    enu.setSciNameNormalized("Mammalia");
+    enu.setScientificNameWN("Mammalia");
     insert(client, indexName, enu);
 
     enu = newEsNameUsage();
     enu.setRank(Rank.CLASS);
     enu.setIssues(EnumSet.of(Issue.CITATION_UNPARSED));
-    enu.setSciNameNormalized("Aves");
+    enu.setScientificNameWN("Aves");
     insert(client, indexName, enu);
 
     // Zero orders & families
@@ -362,25 +362,25 @@ public class NameUsageSearchServiceFacetTest extends EsReadTestBase {
     enu = newEsNameUsage();
     enu.setRank(Rank.GENUS);
     enu.setPublishedInId(PUB_ID1);
-    enu.setSciNameNormalized("Homo");
+    enu.setScientificNameWN("Homo");
     insert(client, indexName, enu);
 
     enu = newEsNameUsage();
     enu.setRank(Rank.GENUS);
     enu.setPublishedInId(PUB_ID1);
-    enu.setSciNameNormalized("Larus");
+    enu.setScientificNameWN("Larus");
     insert(client, indexName, enu);
 
     enu = newEsNameUsage();
     enu.setRank(Rank.GENUS);
-    enu.setSciNameNormalized("Abies");
+    enu.setScientificNameWN("Abies");
     insert(client, indexName, enu);
 
     // 1 species
     enu = newEsNameUsage();
     enu.setRank(Rank.SPECIES);
     enu.setPublishedInId(PUB_ID2);
-    enu.setSciNameNormalized("Larus fuscus");
+    enu.setScientificNameWN("Larus fuscus");
     insert(client, indexName, enu);
 
     // ACCEPTED_NAME_MISSING: 5 docs
@@ -439,90 +439,90 @@ public class NameUsageSearchServiceFacetTest extends EsReadTestBase {
     EsNameUsage enu = newEsNameUsage();
     enu.setRank(Rank.KINGDOM);
     enu.setIssues(EnumSet.of(Issue.ACCEPTED_NAME_MISSING, Issue.ACCEPTED_ID_INVALID));
-    enu.setSciNameNormalized("AAAAA");
+    enu.setScientificNameWN("AAAAA");
     insert(client, indexName, enu);
 
     enu = newEsNameUsage();
     enu.setRank(Rank.KINGDOM);
     enu.setIssues(EnumSet.of(Issue.ACCEPTED_NAME_MISSING, Issue.BASIONYM_ID_INVALID));
     enu.setPublishedInId(PUB_ID1);
-    enu.setSciNameNormalized("BBBBB");
+    enu.setScientificNameWN("BBBBB");
     insert(client, indexName, enu);
 
     enu = newEsNameUsage();
     enu.setRank(Rank.KINGDOM);
     enu.setIssues(EnumSet.of(Issue.BASIONYM_ID_INVALID));
     enu.setPublishedInId(PUB_ID1);
-    enu.setSciNameNormalized("AAAAA");
+    enu.setScientificNameWN("AAAAA");
     insert(client, indexName, enu);
 
     enu = newEsNameUsage();
     enu.setRank(Rank.KINGDOM);
     enu.setIssues(EnumSet.of(Issue.BASIONYM_ID_INVALID));
     enu.setPublishedInId(PUB_ID1);
-    enu.setSciNameNormalized("BBBBB");
+    enu.setScientificNameWN("BBBBB");
     insert(client, indexName, enu);
 
     enu = newEsNameUsage();
     enu.setPublishedInId(PUB_ID1);
     enu.setRank(Rank.PHYLUM);
     enu.setIssues(EnumSet.of(Issue.ACCEPTED_NAME_MISSING));
-    enu.setSciNameNormalized("AAAAA");
+    enu.setScientificNameWN("AAAAA");
     insert(client, indexName, enu);
 
     enu = newEsNameUsage();
     enu.setRank(Rank.PHYLUM);
     enu.setIssues(EnumSet.of(Issue.ACCEPTED_NAME_MISSING, Issue.CITATION_UNPARSED));
     enu.setPublishedInId(PUB_ID2);
-    enu.setSciNameNormalized("BBBBB");
+    enu.setScientificNameWN("BBBBB");
     insert(client, indexName, enu);
 
     enu = newEsNameUsage();
     enu.setRank(Rank.PHYLUM);
     enu.setIssues(EnumSet.of(Issue.ACCEPTED_NAME_MISSING, Issue.ACCEPTED_ID_INVALID, Issue.CLASSIFICATION_NOT_APPLIED));
     enu.setPublishedInId(PUB_ID2);
-    enu.setSciNameNormalized("AAAAA");
+    enu.setScientificNameWN("AAAAA");
     insert(client, indexName, enu);
 
     enu = newEsNameUsage();
     enu.setRank(Rank.PHYLUM);
-    enu.setSciNameNormalized("BBBBB");
+    enu.setScientificNameWN("BBBBB");
     insert(client, indexName, enu);
 
     enu = newEsNameUsage();
     enu.setRank(Rank.CLASS);
     enu.setPublishedInId(PUB_ID2);
-    enu.setSciNameNormalized("AAAAA");
+    enu.setScientificNameWN("AAAAA");
     insert(client, indexName, enu);
 
     enu = newEsNameUsage();
     enu.setRank(Rank.CLASS);
     enu.setIssues(EnumSet.of(Issue.CITATION_UNPARSED));
-    enu.setSciNameNormalized("BBBBB");
+    enu.setScientificNameWN("BBBBB");
     insert(client, indexName, enu);
 
     enu = newEsNameUsage();
     enu.setRank(Rank.GENUS);
     enu.setPublishedInId(PUB_ID1);
-    enu.setSciNameNormalized("AAAAA");
+    enu.setScientificNameWN("AAAAA");
     insert(client, indexName, enu);
 
     enu = newEsNameUsage();
     enu.setRank(Rank.GENUS);
     enu.setPublishedInId(PUB_ID1);
-    enu.setSciNameNormalized("BBBBB");
+    enu.setScientificNameWN("BBBBB");
     insert(client, indexName, enu);
 
     enu = newEsNameUsage();
     enu.setRank(Rank.GENUS);
-    enu.setSciNameNormalized("AAAAA");
+    enu.setScientificNameWN("AAAAA");
     insert(client, indexName, enu);
 
     // 1 species
     enu = newEsNameUsage();
     enu.setRank(Rank.SPECIES);
     enu.setPublishedInId(PUB_ID2);
-    enu.setSciNameNormalized("BBBBB");
+    enu.setScientificNameWN("BBBBB");
     insert(client, indexName, enu);
 
     // Q = "BBBB";
@@ -588,90 +588,90 @@ public class NameUsageSearchServiceFacetTest extends EsReadTestBase {
     EsNameUsage enu = newEsNameUsage();
     enu.setRank(Rank.KINGDOM);
     enu.setIssues(EnumSet.of(Issue.ACCEPTED_NAME_MISSING, Issue.ACCEPTED_ID_INVALID));
-    enu.setSciNameNormalized("AAAAA");
+    enu.setScientificNameWN("AAAAA");
     insert(client, indexName, enu);
 
     enu = newEsNameUsage();
     enu.setRank(Rank.KINGDOM);
     enu.setIssues(EnumSet.of(Issue.ACCEPTED_NAME_MISSING, Issue.BASIONYM_ID_INVALID));
     enu.setPublishedInId(PUB_ID1);
-    enu.setSciNameNormalized("BBBBB");
+    enu.setScientificNameWN("BBBBB");
     insert(client, indexName, enu);
 
     enu = newEsNameUsage();
     enu.setRank(Rank.KINGDOM);
     enu.setIssues(EnumSet.of(Issue.BASIONYM_ID_INVALID));
     enu.setPublishedInId(PUB_ID1);
-    enu.setSciNameNormalized("AAAAA");
+    enu.setScientificNameWN("AAAAA");
     insert(client, indexName, enu);
 
     enu = newEsNameUsage();
     enu.setRank(Rank.KINGDOM);
     enu.setIssues(EnumSet.of(Issue.BASIONYM_ID_INVALID));
     enu.setPublishedInId(PUB_ID1);
-    enu.setSciNameNormalized("BBBBB");
+    enu.setScientificNameWN("BBBBB");
     insert(client, indexName, enu);
 
     enu = newEsNameUsage();
     enu.setPublishedInId(PUB_ID1);
     enu.setRank(Rank.PHYLUM);
     enu.setIssues(EnumSet.of(Issue.ACCEPTED_NAME_MISSING));
-    enu.setSciNameNormalized("AAAAA");
+    enu.setScientificNameWN("AAAAA");
     insert(client, indexName, enu);
 
     enu = newEsNameUsage();
     enu.setRank(Rank.PHYLUM);
     enu.setIssues(EnumSet.of(Issue.ACCEPTED_NAME_MISSING, Issue.CITATION_UNPARSED));
     enu.setPublishedInId(PUB_ID2);
-    enu.setSciNameNormalized("BBBBB");
+    enu.setScientificNameWN("BBBBB");
     insert(client, indexName, enu);
 
     enu = newEsNameUsage();
     enu.setRank(Rank.PHYLUM);
     enu.setIssues(EnumSet.of(Issue.ACCEPTED_NAME_MISSING, Issue.ACCEPTED_ID_INVALID, Issue.CLASSIFICATION_NOT_APPLIED));
     enu.setPublishedInId(PUB_ID2);
-    enu.setSciNameNormalized("AAAAA");
+    enu.setScientificNameWN("AAAAA");
     insert(client, indexName, enu);
 
     enu = newEsNameUsage();
     enu.setRank(Rank.PHYLUM);
-    enu.setSciNameNormalized("BBBBB");
+    enu.setScientificNameWN("BBBBB");
     insert(client, indexName, enu);
 
     enu = newEsNameUsage();
     enu.setRank(Rank.CLASS);
     enu.setPublishedInId(PUB_ID2);
-    enu.setSciNameNormalized("AAAAA");
+    enu.setScientificNameWN("AAAAA");
     insert(client, indexName, enu);
 
     enu = newEsNameUsage();
     enu.setRank(Rank.CLASS);
     enu.setIssues(EnumSet.of(Issue.CITATION_UNPARSED));
-    enu.setSciNameNormalized("BBBBB");
+    enu.setScientificNameWN("BBBBB");
     insert(client, indexName, enu);
 
     enu = newEsNameUsage();
     enu.setRank(Rank.GENUS);
     enu.setPublishedInId(PUB_ID1);
-    enu.setSciNameNormalized("AAAAA");
+    enu.setScientificNameWN("AAAAA");
     insert(client, indexName, enu);
 
     enu = newEsNameUsage();
     enu.setRank(Rank.GENUS);
     enu.setPublishedInId(PUB_ID1);
-    enu.setSciNameNormalized("BBBBB");
+    enu.setScientificNameWN("BBBBB");
     insert(client, indexName, enu);
 
     enu = newEsNameUsage();
     enu.setRank(Rank.GENUS);
-    enu.setSciNameNormalized("AAAAA");
+    enu.setScientificNameWN("AAAAA");
     insert(client, indexName, enu);
 
     // 1 species
     enu = newEsNameUsage();
     enu.setRank(Rank.SPECIES);
     enu.setPublishedInId(PUB_ID2);
-    enu.setSciNameNormalized("BBBBB");
+    enu.setScientificNameWN("BBBBB");
     insert(client, indexName, enu);
 
     // NAME_PUBLISHED_IN_ID = "PUB_0001"

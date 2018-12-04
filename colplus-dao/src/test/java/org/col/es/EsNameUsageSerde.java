@@ -6,6 +6,7 @@ import java.util.EnumSet;
 
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
+
 import org.col.api.TestEntityGenerator;
 import org.col.api.search.NameUsageWrapper;
 import org.col.api.vocab.NameField;
@@ -96,7 +97,7 @@ public class EsNameUsageSerde extends EsReadTestBase {
     enuIn.setNameIndexId("afd56770af");
     enuIn.setPublishedInId("AMO333");
     enuIn.setRank(Rank.SPECIES);
-    enuIn.setSciNameNormalized("Malus Sylvestris");
+    enuIn.setScientificNameWN("Malus Sylvestris");
     enuIn.setStatus(TaxonomicStatus.ACCEPTED);
     enuIn.setType(NameType.SCIENTIFIC);
     enuIn.setVernacularNames(Arrays.asList("Apple tree"));
@@ -122,7 +123,7 @@ public class EsNameUsageSerde extends EsReadTestBase {
     enuIn.setNameIndexId("afd56770af");
     enuIn.setPublishedInId("AMO333");
     enuIn.setRank(Rank.SPECIES);
-    enuIn.setSciNameNormalized("Malus Sylvestris");
+    enuIn.setScientificNameWN("Malus Sylvestris");
     enuIn.setStatus(TaxonomicStatus.ACCEPTED);
     enuIn.setType(NameType.SCIENTIFIC);
     enuIn.setVernacularNames(Arrays.asList("Apple tree"));

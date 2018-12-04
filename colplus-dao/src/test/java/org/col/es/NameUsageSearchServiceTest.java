@@ -91,13 +91,13 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     NameUsageTransfer transfer = new NameUsageTransfer();
     EsNameUsage enu = transfer.toEsDocument(TestEntityGenerator.newNameUsageTaxonWrapper());
     // Overwrite to test ordering by scientific name
-    enu.setSciNameNormalized("B");
+    enu.setScientificNameWN("B");
     insert(client, indexName, enu);
     enu = transfer.toEsDocument(TestEntityGenerator.newNameUsageSynonymWrapper());
-    enu.setSciNameNormalized("C");
+    enu.setScientificNameWN("C");
     insert(client, indexName, enu);
     enu = transfer.toEsDocument(TestEntityGenerator.newNameUsageBareNameWrapper());
-    enu.setSciNameNormalized("A");
+    enu.setScientificNameWN("A");
     insert(client, indexName, enu);
     refreshIndex(client, indexName);
     assertEquals(3, EsUtil.count(client, indexName));
@@ -115,7 +115,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     NameUsageTransfer transfer = new NameUsageTransfer();
 
     EsSearchRequest esr = EsSearchRequest.emptyRequest();
-    esr.setSort(Arrays.asList(new SortField("sciNameNormalized", false), new SortField("rank", false)));
+    esr.setSort(Arrays.asList(new SortField("scientificNameWN", false), new SortField("rank", false)));
 
     // Create name usage in the order we expect them to come out, then shuffle.
     Name n = new Name();
@@ -842,6 +842,65 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     refreshIndex(client, indexName);
 
     List<NameUsageWrapper<NameUsage>> expected = Arrays.asList(nuw1, nuw2);
+
+    ResultPage<NameUsageWrapper<NameUsage>> result = svc.search(indexName, nsr, new Page());
+
+    assertEquals(expected, result.getResult());
+
+  }
+
+  @Test
+  public void testWithBigQString() throws IOException {
+    NameUsageTransfer transfer = new NameUsageTransfer();
+
+    // Find all documents where the uninomial field is not empty
+    NameSearchRequest nsr = new NameSearchRequest();
+    nsr.setQ("ABCDEFGHIJKLMNOPQRSTUVW");
+
+    // Match on scientific name
+    Name n = new Name();
+    n.setScientificName("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+    BareName bn = new BareName(n);
+    NameUsageWrapper<NameUsage> nuw1 = new NameUsageWrapper<>(bn);
+    insert(client, indexName, transfer.toEsDocument(nuw1));
+
+    // Match on vernacular name
+    n = new Name();
+    n.setScientificName("FOO");
+    bn = new BareName(n);
+    NameUsageWrapper<NameUsage> nuw2 = new NameUsageWrapper<>(bn);
+    VernacularName vn = new VernacularName();
+    vn.setName("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+    nuw2.setVernacularNames(Arrays.asList(vn));
+    insert(client, indexName, transfer.toEsDocument(nuw2));
+
+    // Match on authorship
+    n = new Name();
+    n.setScientificName("BAR");
+    bn = new BareName(n);
+    NameUsageWrapper<NameUsage> nuw3 = new NameUsageWrapper<>(bn);
+    // Bypassing dark art of authorship generation here
+    EsNameUsage esn = transfer.toEsDocument(nuw3);
+    esn.setAuthorship("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+    insert(client, indexName, esn);
+
+    // No match (missing 'W')
+    n = new Name();
+    n.setScientificName("ABCDEFGHIJKLMNOPQRSTUV");
+    bn = new BareName(n);
+    NameUsageWrapper<NameUsage> nuw4 = new NameUsageWrapper<>(bn);
+    insert(client, indexName, transfer.toEsDocument(nuw4));
+
+    // No match (missing 'A')
+    n = new Name();
+    n.setScientificName("BCDEFGHIJKLMNOPQRSTUVW");
+    bn = new BareName(n);
+    NameUsageWrapper<NameUsage> nuw5 = new NameUsageWrapper<>(bn);
+    insert(client, indexName, transfer.toEsDocument(nuw5));
+
+    refreshIndex(client, indexName);
+
+    List<NameUsageWrapper<NameUsage>> expected = Arrays.asList(nuw1, nuw2, nuw3);
 
     ResultPage<NameUsageWrapper<NameUsage>> result = svc.search(indexName, nsr, new Page());
 
