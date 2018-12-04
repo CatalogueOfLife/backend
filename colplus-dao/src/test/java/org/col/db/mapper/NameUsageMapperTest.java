@@ -4,10 +4,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.ibatis.session.ResultContext;
 import org.apache.ibatis.session.ResultHandler;
-import org.col.api.model.BareName;
 import org.col.api.model.NameUsage;
 import org.col.api.model.Synonym;
-import org.col.api.model.Taxon;
 import org.col.api.model.VernacularName;
 import org.col.api.search.NameUsageWrapper;
 import org.junit.Assert;

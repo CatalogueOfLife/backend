@@ -2,10 +2,7 @@ package org.col.db.mapper;
 
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.session.ResultHandler;
-import org.col.api.model.BareName;
 import org.col.api.model.NameUsage;
-import org.col.api.model.Synonym;
-import org.col.api.model.Taxon;
 import org.col.api.search.NameUsageWrapper;
 
 /**
