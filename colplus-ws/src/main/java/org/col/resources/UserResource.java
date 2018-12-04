@@ -1,20 +1,19 @@
 package org.col.resources;
 
+import io.dropwizard.auth.Auth;
+import org.apache.ibatis.session.SqlSession;
+import org.col.api.model.ColUser;
+import org.col.db.mapper.UserMapper;
+import org.col.dw.auth.JwtCodec;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.annotation.security.PermitAll;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
-
-import io.dropwizard.auth.Auth;
-import org.col.api.model.ColUser;
-import org.col.dw.auth.JwtCodec;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @Path("/user")
 @Produces(MediaType.APPLICATION_JSON)
@@ -29,7 +28,22 @@ public class UserResource {
   public UserResource(JwtCodec jwt) {
     this.jwt = jwt;
   }
-  
+
+  @GET
+  @Path("/{key}")
+  public ColUser get(@PathParam("key") Integer key, @Context SqlSession session) {
+    ColUser u = session.getMapper(UserMapper.class).get(key);
+    // obfuscate email and personal things
+    u.setEmail(null);
+    u.setSettings(null);
+    u.setOrcid(null);
+    u.setLastLogin(null);
+    u.setCreated(null);
+    u.setDeleted(null);
+    u.setRoles(null);
+    return u;
+  }
+
   @GET
   @Path("/me")
   @PermitAll
