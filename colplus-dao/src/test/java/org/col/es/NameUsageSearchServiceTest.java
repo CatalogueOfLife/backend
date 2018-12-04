@@ -907,6 +907,93 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     assertEquals(expected, result.getResult());
 
   }
+  
+  // Issue #207
+  @Test
+  public void testWithSmthii__1() throws IOException {
+    NameUsageTransfer transfer = new NameUsageTransfer();
+
+    // Find all documents where the uninomial field is not empty
+    NameSearchRequest nsr = new NameSearchRequest();
+    nsr.setQ("Smithi");
+
+    Name n = new Name();
+    n.setScientificName("Smithii");
+    BareName bn = new BareName(n);
+    NameUsageWrapper<NameUsage> nuw1 = new NameUsageWrapper<>(bn);
+    insert(client, indexName, transfer.toEsDocument(nuw1));
+    
+    n = new Name();
+    n.setScientificName("Smithi");
+    bn = new BareName(n);
+    NameUsageWrapper<NameUsage> nuw2 = new NameUsageWrapper<>(bn);
+    insert(client, indexName, transfer.toEsDocument(nuw2));
+
+
+    n = new Name();
+    n.setScientificName("SmithiiFooBar");
+    bn = new BareName(n);
+    NameUsageWrapper<NameUsage> nuw3 = new NameUsageWrapper<>(bn);
+    insert(client, indexName, transfer.toEsDocument(nuw3));
+    
+    n = new Name();
+    n.setScientificName("SmithiFooBar");
+    bn = new BareName(n);
+    NameUsageWrapper<NameUsage> nuw4 = new NameUsageWrapper<>(bn);
+    insert(client, indexName, transfer.toEsDocument(nuw4));
+
+    refreshIndex(client, indexName);
+
+    List<NameUsageWrapper<NameUsage>> expected = Arrays.asList(nuw1, nuw2, nuw3, nuw4);
+
+    ResultPage<NameUsageWrapper<NameUsage>> result = svc.search(indexName, nsr, new Page());
+
+    assertEquals(expected, result.getResult());   
+    
+  }
+
+  @Test
+  public void testWithSmthii__2() throws IOException {
+    NameUsageTransfer transfer = new NameUsageTransfer();
+
+    // Find all documents where the uninomial field is not empty
+    NameSearchRequest nsr = new NameSearchRequest();
+    nsr.setQ("Smithii");
+
+    Name n = new Name();
+    n.setScientificName("Smithii");
+    BareName bn = new BareName(n);
+    NameUsageWrapper<NameUsage> nuw1 = new NameUsageWrapper<>(bn);
+    insert(client, indexName, transfer.toEsDocument(nuw1));
+    
+    n = new Name();
+    n.setScientificName("Smithi");
+    bn = new BareName(n);
+    NameUsageWrapper<NameUsage> nuw2 = new NameUsageWrapper<>(bn);
+    insert(client, indexName, transfer.toEsDocument(nuw2));
+
+
+    n = new Name();
+    n.setScientificName("SmithiiFooBar");
+    bn = new BareName(n);
+    NameUsageWrapper<NameUsage> nuw3 = new NameUsageWrapper<>(bn);
+    insert(client, indexName, transfer.toEsDocument(nuw3));
+    
+    n = new Name();
+    n.setScientificName("SmithiFooBar");
+    bn = new BareName(n);
+    NameUsageWrapper<NameUsage> nuw4 = new NameUsageWrapper<>(bn);
+    insert(client, indexName, transfer.toEsDocument(nuw4));
+
+    refreshIndex(client, indexName);
+
+    List<NameUsageWrapper<NameUsage>> expected = Arrays.asList(nuw1, nuw2, nuw3, nuw4);
+
+    ResultPage<NameUsageWrapper<NameUsage>> result = svc.search(indexName, nsr, new Page());
+
+    assertEquals(expected, result.getResult());   
+    
+  }
 
   private static List<VernacularName> create(List<String> names) {
     return names.stream().map(n -> {

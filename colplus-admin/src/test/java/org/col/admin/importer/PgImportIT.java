@@ -517,7 +517,7 @@ public class PgImportIT {
     }
   }
   
-  //@Test
+  @Test
   public void testColdpSpecs() throws Exception {
     normalizeAndImport(COLDP, 0);
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
