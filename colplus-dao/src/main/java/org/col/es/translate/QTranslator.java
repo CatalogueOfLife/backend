@@ -8,7 +8,6 @@ import org.col.api.search.NameSearchRequest.SearchContent;
 import org.col.es.query.AutoCompleteQuery;
 import org.col.es.query.BoolQuery;
 import org.col.es.query.CaseInsensitivePrefixQuery;
-import org.col.es.query.PrefixQuery;
 import org.col.es.query.Query;
 
 import static org.col.api.search.NameSearchRequest.SearchContent.AUTHORSHIP;
@@ -41,7 +40,7 @@ class QTranslator {
       content = EnumSet.allOf(SearchContent.class);
     }
     if (content.size() == 1) {
-      return content.stream().map(this::translate).findFirst().orElse(null);
+      return content.stream().map(this::translate).findFirst().get();
     }
     return content.stream().map(this::translate).collect(BoolQuery::new, BoolQuery::should, BoolQuery::should);
   }
@@ -81,7 +80,7 @@ class QTranslator {
       if (len <= MAX_NGRAM_SIZE) {
         return new AutoCompleteQuery("scientificNameWN", weaklyNormed, DFAULT_SCI_NAME_BOOST);
       }
-      return new PrefixQuery("scientificNameWN", weaklyNormed, DFAULT_SCI_NAME_BOOST);
+      return new CaseInsensitivePrefixQuery("scientificNameWN", weaklyNormed, DFAULT_SCI_NAME_BOOST);
     }
     if (len < 4) {
       float strongBoost = 0.4F;
@@ -89,7 +88,7 @@ class QTranslator {
           .should(new AutoCompleteQuery("scientificNameWN", weaklyNormed, DFAULT_SCI_NAME_BOOST))
           .should(new AutoCompleteQuery("scientificNameSN", stronglyNormed, strongBoost));
     }
-    if (len >= 4 && len < 9) {
+    if (len >= 4 && len < 8) {
       float strongBoost = 0.8F;
       return new BoolQuery()
           .should(new AutoCompleteQuery("scientificNameWN", weaklyNormed, DFAULT_SCI_NAME_BOOST))
