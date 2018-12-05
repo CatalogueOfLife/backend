@@ -8,6 +8,7 @@ import org.col.api.search.NameSearchParameter;
 import org.col.api.search.NameSearchRequest;
 import org.col.es.InvalidQueryException;
 import org.col.es.query.BoolQuery;
+import org.col.es.query.ConstantScoreQuery;
 import org.col.es.query.IsNotNullQuery;
 import org.col.es.query.IsNullQuery;
 import org.col.es.query.Query;
@@ -45,15 +46,15 @@ class FilterTranslator {
     } else if (paramValues.size() > 1) {
       queries.add(new TermsQuery(field, paramValues));
     }
+    Query combined;
     if (queries.size() == 1) {
-      return queries.get(0);
+      combined = queries.get(0);
+    } else {
+      combined = queries.stream().collect(BoolQuery::new, BoolQuery::should, BoolQuery::should);
     }
-    return queries.stream().collect(BoolQuery::new, BoolQuery::should, BoolQuery::should);
+    return new ConstantScoreQuery(combined);
   }
 
-  /*
-   * Get all non-symbolic values for one single single query parameter
-   */
   private List<?> getLiteralValues(NameSearchParameter param) throws InvalidQueryException {
     return request.getFilterValue(param).stream().filter(this::isLiteral).collect(Collectors.toList());
   }

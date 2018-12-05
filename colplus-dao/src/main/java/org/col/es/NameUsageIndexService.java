@@ -66,7 +66,7 @@ public class NameUsageIndexService {
     } else {
       EsUtil.createIndex(client, indexName, esConfig.nameUsage);
     }
-    final AtomicInteger counter = new AtomicInteger();
+    AtomicInteger counter = new AtomicInteger();
     try (SqlSession session = factory.openSession()) {
       NameUsageMapper mapper = session.getMapper(NameUsageMapper.class);
       Consumer<List<NameUsageWrapper>> indexer = (batch) -> {

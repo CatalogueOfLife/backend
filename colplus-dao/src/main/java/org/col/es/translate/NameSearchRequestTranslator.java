@@ -4,7 +4,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.col.api.model.Page;
 import org.col.api.search.NameSearchRequest;
 import org.col.es.query.BoolQuery;
-import org.col.es.query.ConstantScoreQuery;
 import org.col.es.query.EsSearchRequest;
 import org.col.es.query.MatchAllQuery;
 import org.col.es.query.Query;
@@ -43,10 +42,7 @@ public class NameSearchRequestTranslator {
     EsSearchRequest es = new EsSearchRequest();
     es.setFrom(page.getOffset());
     es.setSize(page.getLimit());
-    Query query = generateQuery(request);
-    if (query != MatchAllQuery.INSTANCE) {
-      es.setQuery(new ConstantScoreQuery(query));
-    }
+    es.setQuery(generateQuery(request));
     es.setSort(new SortByTranslator(request).translate());
     if (notEmpty(request.getFacets())) {
       FacetsTranslator ft = new FacetsTranslator(request);
