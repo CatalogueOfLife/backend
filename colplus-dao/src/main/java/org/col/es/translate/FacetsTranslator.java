@@ -31,7 +31,7 @@ class FacetsTranslator {
 
 	private final NameSearchRequest request;
 
-	public FacetsTranslator(NameSearchRequest request) {
+	FacetsTranslator(NameSearchRequest request) {
 		this.request = request;
 	}
 
