@@ -1,5 +1,12 @@
 package org.col.admin.importer;
 
+import java.io.File;
+import java.net.URI;
+import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
+
 import com.google.common.collect.Sets;
 import com.google.common.io.Files;
 import jersey.repackaged.com.google.common.collect.Lists;
@@ -24,13 +31,7 @@ import org.col.db.mapper.*;
 import org.gbif.nameparser.api.Rank;
 import org.junit.*;
 
-import java.io.File;
-import java.net.URI;
-import java.net.URL;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.*;
-
+import static org.col.api.TestEntityGenerator.setUserManaged;
 import static org.col.api.vocab.DataFormat.*;
 import static org.junit.Assert.*;
 
@@ -59,6 +60,8 @@ public class PgImportIT {
     cfg.scratchDir = Files.createTempDir();
     dataset = new Dataset();
     dataset.setContributesTo(Catalogue.PCAT);
+    dataset.setCreatedBy(InitMybatisRule.TEST_USER.getKey());
+    dataset.setModifiedBy(InitMybatisRule.TEST_USER.getKey());
 
     if (fullInit) {
       InitDbCmd.setupStandardPartitions(initMybatisRule.getSqlSession());
@@ -279,12 +282,13 @@ public class PgImportIT {
         assertNotNull(d.getVerbatimKey());
         d.setKey(null);
         d.setVerbatimKey(null);
+        setUserManaged(d, null, null);
       });
       Set<Distribution> imported = Sets.newHashSet(info.getDistributions());
       
       Sets.SetView<Distribution> diff = Sets.difference(expD, imported);
       for (Distribution d : diff) {
-        // System.out.println(d);
+        System.out.println(d);
       }
       assertEquals(expD, imported);
     }

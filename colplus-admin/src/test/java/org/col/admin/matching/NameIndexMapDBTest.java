@@ -20,6 +20,7 @@ import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 
+import static org.col.api.TestEntityGenerator.setUserManaged;
 import static org.junit.Assert.*;
 
 public class NameIndexMapDBTest {
@@ -173,7 +174,7 @@ public class NameIndexMapDBTest {
     }
     n.setRank(rank);
     n.setCode(code);
-    return n;
+    return setUserManaged(n);
   }
   
   private NameMatch assertAmbiguousMatch(String name, Rank rank, NomCode code, Integer... keys) {

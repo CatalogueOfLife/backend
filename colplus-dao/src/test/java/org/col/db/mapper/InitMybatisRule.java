@@ -1,13 +1,5 @@
 package org.col.db.mapper;
 
-import com.google.common.collect.ImmutableSet;
-import org.apache.ibatis.io.Resources;
-import org.apache.ibatis.jdbc.ScriptRunner;
-import org.apache.ibatis.session.SqlSession;
-import org.col.db.PgConfig;
-import org.col.db.PgSetupRule;
-import org.junit.rules.ExternalResource;
-
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -16,6 +8,15 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Collections;
 import java.util.Set;
+
+import com.google.common.collect.ImmutableSet;
+import org.apache.ibatis.io.Resources;
+import org.apache.ibatis.jdbc.ScriptRunner;
+import org.apache.ibatis.session.SqlSession;
+import org.col.api.model.ColUser;
+import org.col.db.PgConfig;
+import org.col.db.PgSetupRule;
+import org.junit.rules.ExternalResource;
 
 /**
  * A junit test rule that truncates all CoL tables, potentially loads some test
@@ -28,7 +29,14 @@ import java.util.Set;
  * Make sure its setup!
  */
 public class InitMybatisRule extends ExternalResource {
-  
+  public static final ColUser TEST_USER = new ColUser();
+  static {
+    TEST_USER.setUsername("test");
+    TEST_USER.setFirstname("Tim");
+    TEST_USER.setLastname("Tester");
+    TEST_USER.setEmail("tim.test@mailinator.com");
+    TEST_USER.getRoles().add(ColUser.Role.ADMIN);
+  }
   final private TestData testData;
   private SqlSession session;
   
@@ -85,9 +93,12 @@ public class InitMybatisRule extends ExternalResource {
     super.before();
     System.out.println("Open new mybatis session");
     session = PgSetupRule.getSqlSessionFactory().openSession(false);
+    // create required partitions to load data
     partition();
     truncate();
     loadData();
+    // finally create a test user to use in tests
+    session.getMapper(UserMapper.class).create(TEST_USER);
   }
   
   @Override

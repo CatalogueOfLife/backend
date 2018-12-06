@@ -508,9 +508,13 @@ public class TestEntityGenerator {
   }
   
   public static <T extends UserManaged> T setUserManaged(T managed, Integer userKey) {
-    managed.setCreated(LocalDateTime.now());
+    return setUserManaged(managed, userKey, LocalDateTime.now());
+  }
+  
+  public static <T extends UserManaged> T setUserManaged(T managed, Integer userKey, LocalDateTime dateTime) {
+    managed.setCreated(dateTime);
     managed.setCreatedBy(userKey);
-    managed.setModified(LocalDateTime.now());
+    managed.setModified(dateTime);
     managed.setModifiedBy(userKey);
     return managed;
   }

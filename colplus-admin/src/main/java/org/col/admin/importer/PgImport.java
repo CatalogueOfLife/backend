@@ -17,6 +17,7 @@ import org.col.admin.importer.neo.model.RelType;
 import org.col.admin.importer.neo.traverse.StartEndHandler;
 import org.col.admin.importer.neo.traverse.TreeWalker;
 import org.col.api.model.*;
+import org.col.api.vocab.Users;
 import org.col.db.dao.NameDao;
 import org.col.db.mapper.*;
 import org.neo4j.graphdb.Node;
@@ -172,19 +173,33 @@ public class PgImport implements Callable<Boolean> {
     }
   }
   
-  private void updateVerbatimEntity(VerbatimEntity ent) {
+  private <T extends VerbatimEntity & UserManaged> T updateVerbatimUserEntity(T ent) {
+    return updateUser(updateVerbatimEntity(ent));
+  }
+  
+  private <T extends VerbatimEntity> T updateVerbatimEntity(T ent) {
     if (ent != null && ent.getVerbatimKey() != null) {
       ent.setVerbatimKey(verbatimKeys.get(ent.getVerbatimKey()));
     }
+    return ent;
   }
-  
+
+  private static <T extends UserManaged> T updateUser(T ent) {
+    if (ent != null) {
+      ent.setCreatedBy(Users.MATCHER);
+      ent.setModifiedBy(Users.MATCHER);
+    }
+    return ent;
+  }
+
   private void insertReferences() throws InterruptedException {
     try (final SqlSession session = sessionFactory.openSession(false)) {
       ReferenceMapper mapper = session.getMapper(ReferenceMapper.class);
       int counter = 0;
       for (Reference r : store.refList()) {
         r.setDatasetKey(dataset.getKey());
-        updateVerbatimEntity(r);
+        updateVerbatimUserEntity(r);
+        updateUser(r);
         mapper.create(r);
         rCounter.incrementAndGet();
         if (counter++ % batchSize == 0) {
@@ -211,7 +226,7 @@ public class PgImport implements Callable<Boolean> {
           n.name.setHomotypicNameId(n.name.getId());
         }
         n.name.setDatasetKey(dataset.getKey());
-        updateVerbatimEntity(n.name);
+        updateVerbatimUserEntity(n.name);
         nameMapper.create(n.name);
         if (nCounter.incrementAndGet() % batchSize == 0) {
           session.commit();
@@ -237,7 +252,7 @@ public class PgImport implements Callable<Boolean> {
         try (Transaction tx = store.getNeo().beginTx()) {
           store.iterRelations(rt).stream().forEach(rel -> {
             NameRelation nr = store.toRelation(rel);
-            nameRelationMapper.create(nr);
+            nameRelationMapper.create(updateUser(nr));
             if (counter.incrementAndGet() % batchSize == 0) {
               session.commit();
             }
@@ -280,7 +295,7 @@ public class PgImport implements Callable<Boolean> {
           String taxonId;
           if (u.isSynonym()) {
             taxonId = parentIds.peek();
-            nameDao.addSynonym(dataset.getKey(), nn.name.getId(), taxonId, u.getSynonym());
+            nameDao.addSynonym(dataset.getKey(), nn.name.getId(), taxonId, updateUser(u.getSynonym()));
 
           } else {
             Taxon tax = u.getTaxon();
@@ -293,7 +308,7 @@ public class PgImport implements Callable<Boolean> {
 
             tax.setName(nn.name);
             tax.setDatasetKey(dataset.getKey());
-            taxonMapper.create(tax);
+            taxonMapper.create(updateUser(tax));
             tCounter.incrementAndGet();
             taxonId = tax.getId();
 
@@ -302,28 +317,28 @@ public class PgImport implements Callable<Boolean> {
             
             // insert vernacular
             for (VernacularName vn : u.vernacularNames) {
-              updateVerbatimEntity(vn);
+              updateVerbatimUserEntity(vn);
               vernacularMapper.create(vn, taxonId, dataset.getKey());
               vCounter.incrementAndGet();
             }
             
             // insert distributions
             for (Distribution d : u.distributions) {
-              updateVerbatimEntity(d);
+              updateVerbatimUserEntity(d);
               distributionMapper.create(d, taxonId, dataset.getKey());
               diCounter.incrementAndGet();
             }
   
             // insert descriptions
             for (Description d : u.descriptions) {
-              updateVerbatimEntity(d);
+              updateVerbatimUserEntity(d);
               descriptionMapper.create(d, taxonId, dataset.getKey());
               deCounter.incrementAndGet();
             }
   
             // insert media
             for (Media m : u.media) {
-              updateVerbatimEntity(m);
+              updateVerbatimUserEntity(m);
               mediaMapper.create(m, taxonId, dataset.getKey());
               mCounter.incrementAndGet();
             }
