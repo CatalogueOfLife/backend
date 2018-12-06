@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
@@ -32,11 +31,9 @@ public class EsModule extends SimpleModule {
 
   public static final ObjectWriter QUERY_WRITER = MAPPER.writerFor(EsSearchRequest.class);
 
-  public static final ObjectWriter NAME_USAGE_WRITER =
-      MAPPER.writerFor(new TypeReference<NameUsageWrapper<NameUsage>>() {});
+  public static final ObjectWriter NAME_USAGE_WRITER = MAPPER.writerFor(NameUsageWrapper.class);
 
-  public static final ObjectReader NAME_USAGE_READER =
-      MAPPER.readerFor(new TypeReference<NameUsageWrapper<NameUsage>>() {});
+  public static final ObjectReader NAME_USAGE_READER = MAPPER.readerFor(NameUsageWrapper.class);
 
   public static ObjectMapper configureMapper(ObjectMapper mapper) {
     mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);

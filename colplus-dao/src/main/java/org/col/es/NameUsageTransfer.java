@@ -7,7 +7,6 @@ import java.util.stream.Collectors;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 import org.col.api.model.Name;
-import org.col.api.model.NameUsage;
 import org.col.api.model.Taxon;
 import org.col.api.model.VernacularName;
 import org.col.api.search.NameUsageWrapper;
@@ -45,7 +44,7 @@ public class NameUsageTransfer {
 
   /**
    * Provides a weakly normalized version of the original scientific name. Whatever normalization method we choose, we must make sure it is
-   * used both at index time and at query time. Hence this public static method.
+   * used both at index time (here) and at query time (QTranslator). Hence this public static method.
    */
   public static String normalizeWeakly(String sn) {
     return SciNameNormalizer.normalize(sn);
@@ -58,7 +57,7 @@ public class NameUsageTransfer {
     return SciNameNormalizer.normalizeAll(sn);
   }
 
-  EsNameUsage toEsDocument(NameUsageWrapper<? extends NameUsage> wrapper) throws JsonProcessingException {
+  EsNameUsage toEsDocument(NameUsageWrapper wrapper) throws JsonProcessingException {
 
     EsNameUsage enu = new EsNameUsage();
     if (notEmpty(wrapper.getVernacularNames())) {
@@ -78,7 +77,7 @@ public class NameUsageTransfer {
     enu.setScientificNameWN(w);
     /*
      * Don't waste time indexing the same ngram tokens twice for every document. Only index the strongly normalized variant if it differs
-     * from the weakly normalized variant. This if-logic will appear in the query at query time as well.
+     * from the weakly normalized variant. This if-logic is replicated at query time (see QTranslator).
      */
     if (!w.equals(s)) {
       enu.setScientificNameSN(s);

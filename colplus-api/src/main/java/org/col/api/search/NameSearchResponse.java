@@ -6,19 +6,18 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-import org.col.api.model.NameUsage;
 import org.col.api.model.Page;
 import org.col.api.model.ResultPage;
 
-public class NameSearchResponse extends ResultPage<NameUsageWrapper<NameUsage>> {
+public class NameSearchResponse extends ResultPage<NameUsageWrapper> {
 
   private final Map<NameSearchParameter, Set<FacetValue<?>>> facets;
 
-  public NameSearchResponse(Page page, int total, List<NameUsageWrapper<NameUsage>> result) {
+  public NameSearchResponse(Page page, int total, List<NameUsageWrapper> result) {
     this(page, total, result, Collections.emptyMap());
   }
 
-  public NameSearchResponse(Page page, int total, List<NameUsageWrapper<NameUsage>> result,
+  public NameSearchResponse(Page page, int total, List<NameUsageWrapper> result,
       Map<NameSearchParameter, Set<FacetValue<?>>> facets) {
     super(page, total, result);
     this.facets = facets;

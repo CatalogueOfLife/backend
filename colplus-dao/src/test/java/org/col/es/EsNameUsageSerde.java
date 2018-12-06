@@ -34,55 +34,55 @@ public class EsNameUsageSerde extends EsReadTestBase {
 
   @Test
   public void testTaxon1() throws IOException {
-    NameUsageWrapper<?> nuwIn = TestEntityGenerator.newNameUsageTaxonWrapper();
+    NameUsageWrapper nuwIn = TestEntityGenerator.newNameUsageTaxonWrapper();
     String json = PAYLOAD_WRITER.writeValueAsString(nuwIn);
     LOG.debug(json);
-    NameUsageWrapper<?> nuwOut = PAYLOAD_READER.readValue(json);
+    NameUsageWrapper nuwOut = PAYLOAD_READER.readValue(json);
     assertEquals(nuwIn, nuwOut);
   }
 
   @Test
   public void testTaxon2() throws IOException {
-    NameUsageWrapper<?> nuwIn = TestEntityGenerator.newNameUsageTaxonWrapper();
+    NameUsageWrapper nuwIn = TestEntityGenerator.newNameUsageTaxonWrapper();
     String json = PAYLOAD_WRITER.writeValueAsString(nuwIn);
     LOG.debug(json);
-    NameUsageWrapper<?> nuwOut = PAYLOAD_READER.readValue(json);
+    NameUsageWrapper nuwOut = PAYLOAD_READER.readValue(json);
     assertEquals(nuwIn, nuwOut);
   }
 
   @Test
   public void testSynonym1() throws IOException {
-    NameUsageWrapper<?> nuwIn = TestEntityGenerator.newNameUsageSynonymWrapper();
+    NameUsageWrapper nuwIn = TestEntityGenerator.newNameUsageSynonymWrapper();
     String json = PAYLOAD_WRITER.writeValueAsString(nuwIn);
     LOG.debug(json);
-    NameUsageWrapper<?> nuwOut = PAYLOAD_READER.readValue(json);
+    NameUsageWrapper nuwOut = PAYLOAD_READER.readValue(json);
     assertEquals(nuwIn, nuwOut);
   }
 
   @Test
   public void testSynonym2() throws IOException {
-    NameUsageWrapper<?> nuwIn = TestEntityGenerator.newNameUsageSynonymWrapper();
+    NameUsageWrapper nuwIn = TestEntityGenerator.newNameUsageSynonymWrapper();
     String json = PAYLOAD_WRITER.writeValueAsString(nuwIn);
     LOG.debug(json);
-    NameUsageWrapper<?> nuwOut = PAYLOAD_READER.readValue(json);
+    NameUsageWrapper nuwOut = PAYLOAD_READER.readValue(json);
     assertEquals(nuwIn, nuwOut);
   }
 
   @Test
   public void testBareName1() throws IOException {
-    NameUsageWrapper<?> nuwIn = TestEntityGenerator.newNameUsageBareNameWrapper();
+    NameUsageWrapper nuwIn = TestEntityGenerator.newNameUsageBareNameWrapper();
     String json = PAYLOAD_WRITER.writeValueAsString(nuwIn);
     LOG.debug(json);
-    NameUsageWrapper<?> nuwOut = PAYLOAD_READER.readValue(json);
+    NameUsageWrapper nuwOut = PAYLOAD_READER.readValue(json);
     assertEquals(nuwIn, nuwOut);
   }
 
   @Test
   public void testBareName2() throws IOException {
-    NameUsageWrapper<?> nuwIn = TestEntityGenerator.newNameUsageBareNameWrapper();
+    NameUsageWrapper nuwIn = TestEntityGenerator.newNameUsageBareNameWrapper();
     String json = PAYLOAD_WRITER.writeValueAsString(nuwIn);
     LOG.debug(json);
-    NameUsageWrapper<?> nuwOut = PAYLOAD_READER.readValue(json);
+    NameUsageWrapper nuwOut = PAYLOAD_READER.readValue(json);
     assertEquals(nuwIn, nuwOut);
   }
 
@@ -106,7 +106,7 @@ public class EsNameUsageSerde extends EsReadTestBase {
     EsNameUsage enuOut = getEsConfig().nameUsage.getDocumentReader().readValue(json);
     assertEquals(enuIn, enuOut);
 
-    NameUsageWrapper<?> nuw = PAYLOAD_READER.readValue(enuOut.getPayload()); 
+    NameUsageWrapper nuw = PAYLOAD_READER.readValue(enuOut.getPayload()); 
     assertEquals(TestEntityGenerator.newNameUsageTaxonWrapper(), nuw);
     
   }
@@ -134,7 +134,7 @@ public class EsNameUsageSerde extends EsReadTestBase {
     EsNameUsage enuOut = getEsConfig().nameUsage.getDocumentReader().readValue(json);
     assertEquals(enuIn, enuOut);
 
-    NameUsageWrapper<?> nuw = PAYLOAD_READER.readValue(enuOut.getPayload());
+    NameUsageWrapper nuw = PAYLOAD_READER.readValue(enuOut.getPayload());
     assertEquals(TestEntityGenerator.newNameUsageTaxonWrapper(), nuw);
   }
   

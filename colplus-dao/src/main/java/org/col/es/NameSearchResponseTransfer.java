@@ -10,7 +10,6 @@ import java.util.TreeSet;
 
 import com.fasterxml.jackson.databind.ObjectReader;
 
-import org.col.api.model.NameUsage;
 import org.col.api.model.Page;
 import org.col.api.search.FacetValue;
 import org.col.api.search.NameSearchParameter;
@@ -48,21 +47,20 @@ class NameSearchResponseTransfer {
 
   public NameSearchResponse transferResponse() throws IOException {
     int total = esRresponse.getHits().getTotal();
-    List<NameUsageWrapper<NameUsage>> nameUsages = transferNameUsages();
+    List<NameUsageWrapper> nameUsages = transferNameUsages();
     if (esRresponse.getAggregations() == null) {
       return new NameSearchResponse(page, total, nameUsages);
     }
     return new NameSearchResponse(page, total, nameUsages, transferFacets());
   }
 
-  @SuppressWarnings("unchecked")
-  private List<NameUsageWrapper<NameUsage>> transferNameUsages() throws IOException {
+  private List<NameUsageWrapper> transferNameUsages() throws IOException {
     List<SearchHit<EsNameUsage>> hits = esRresponse.getHits().getHits();
-    List<NameUsageWrapper<NameUsage>> nus = new ArrayList<>(hits.size());
+    List<NameUsageWrapper> nus = new ArrayList<>(hits.size());
     ObjectReader reader = EsModule.NAME_USAGE_READER;
     for (SearchHit<EsNameUsage> hit : hits) {
       String payload = hit.getSource().getPayload();
-      nus.add((NameUsageWrapper<NameUsage>) reader.readValue(payload));
+      nus.add((NameUsageWrapper) reader.readValue(payload));
     }
     return nus;
   }
