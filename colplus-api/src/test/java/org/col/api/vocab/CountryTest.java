@@ -15,6 +15,7 @@ package org.col.api.vocab;
 import java.util.Set;
 
 import com.google.common.collect.Sets;
+import org.junit.Assert;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -23,7 +24,7 @@ public class CountryTest {
   
   @Test
   public void testFromIsoCode() throws Exception {
-    assertEquals(Country.ARGENTINA, Country.fromIsoCode("ar").get());
+    Assert.assertEquals(Country.ARGENTINA, Country.fromIsoCode("ar").get());
     assertEquals(Country.ARGENTINA, Country.fromIsoCode("AR").get());
   }
   

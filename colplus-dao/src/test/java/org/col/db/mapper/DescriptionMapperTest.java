@@ -8,6 +8,8 @@ import org.col.api.model.Description;
 import org.col.api.vocab.Gazetteer;
 import org.col.api.vocab.Language;
 
+import static org.col.api.TestEntityGenerator.setUserManaged;
+
 /**
  *
  */
@@ -26,7 +28,7 @@ public class DescriptionMapperTest extends TaxonExtensionMapperTest<Description,
 				d.setCategory("Etymology");
 				d.setDescription(RandomUtils.randomString(1000));
 				d.setLanguage(l);
-				ds.add(d);
+				ds.add(setUserManaged(d));
 			}
 		}
 		return ds;

@@ -10,7 +10,7 @@ import static org.junit.Assert.assertEquals;
  */
 public abstract class SerdeTestBase<T> {
   
-  Class<T> clazz;
+  protected final Class<T> clazz;
   protected final JavaType type;
   
   public SerdeTestBase(Class<T> clazz) {

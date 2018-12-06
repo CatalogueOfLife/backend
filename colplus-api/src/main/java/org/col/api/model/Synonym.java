@@ -10,7 +10,7 @@ import org.col.api.vocab.TaxonomicStatus;
  * A taxonomic synonym, linking a name to potentially multiple taxa.
  * Can be used for both homo-and heterotypic synonyms as well as misapplied names.
  */
-public class Synonym implements NameUsage {
+public class Synonym extends DataEntity implements NameUsage {
   
   private String id;
   private Name name;

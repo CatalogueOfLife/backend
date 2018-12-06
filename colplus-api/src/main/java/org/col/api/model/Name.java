@@ -1,5 +1,10 @@
 package org.col.api.model;
 
+import java.net.URI;
+import java.util.List;
+import java.util.Objects;
+import javax.annotation.Nonnull;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -11,17 +16,12 @@ import org.col.api.vocab.Origin;
 import org.gbif.nameparser.api.*;
 import org.gbif.nameparser.util.NameFormatter;
 
-import javax.annotation.Nonnull;
-import java.net.URI;
-import java.util.List;
-import java.util.Objects;
-
 import static org.gbif.nameparser.util.NameFormatter.HYBRID_MARKER;
 
 /**
  *
  */
-public class Name implements ID, VerbatimEntity {
+public class Name extends DataEntity implements ID, VerbatimEntity {
   
   /**
    * Primary key of the name as given in the dataset dwc:scientificNameID. Only guaranteed to be
@@ -549,17 +549,17 @@ public class Name implements ID, VerbatimEntity {
   }
   
   /**
-   * @return true if the name status is potentiall available
+   * @return true if the name status is potentially available
    */
-  @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+  @JsonIgnore
   public boolean isAvailable() {
     return nomStatus == null || nomStatus.isAvailable();
   }
   
   /**
-   * @return true if the name status is potentiall legitimate
+   * @return true if the name status is potentially legitimate
    */
-  @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+  @JsonIgnore
   public boolean isLegitimate() {
     return nomStatus == null || nomStatus.isLegitimate();
   }

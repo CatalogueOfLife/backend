@@ -1,10 +1,5 @@
 package org.col.db.mapper;
 
-import java.net.URI;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.UUID;
-
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import org.col.api.RandomUtils;
@@ -20,6 +15,13 @@ import org.javers.core.diff.Diff;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.net.URI;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.UUID;
+
+import static org.col.api.TestEntityGenerator.nullifyUserManaged;
+import static org.col.api.TestEntityGenerator.setUserManaged;
 import static org.junit.Assert.*;
 
 /**
@@ -32,7 +34,7 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
   }
   
   private static Dataset create() throws Exception {
-    Dataset d = new Dataset();
+    Dataset d = setUserManaged(new Dataset());
     d.setType(DatasetType.GLOBAL);
     d.setContributesTo(Catalogue.COL);
     d.setGbifKey(UUID.randomUUID());
@@ -63,11 +65,8 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
     
     commit();
     
-    Dataset d2 = mapper().get(d1.getKey());
-    // remove newly set property
-    d2.setCreated(null);
-    d2.setModified(null);
-    
+    Dataset d2 = nullifyUserManaged(mapper().get(d1.getKey()));
+
     assertEquals(d1, d2);
   }
   
@@ -306,7 +305,7 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
     ds.setDescription(description);
     ds.setType(DatasetType.GLOBAL);
     ds.setContributesTo(Catalogue.PCAT);
-    mapper().create(ds);
+    mapper().create(setUserManaged(ds));
     return ds.getKey();
   }
 }

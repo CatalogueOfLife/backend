@@ -1,11 +1,11 @@
-package org.col.api.jackson;
+package org.col.api.model;
 
 import org.col.api.TestEntityGenerator;
-import org.col.api.model.CslData;
+import org.col.api.jackson.SerdeTestBase;
 
-public class CslDataSerdeTest extends SerdeTestBase<CslData> {
+public class CslDataTest extends SerdeTestBase<CslData> {
   
-  public CslDataSerdeTest() {
+  public CslDataTest() {
     super(CslData.class);
   }
   

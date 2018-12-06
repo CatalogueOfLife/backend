@@ -150,8 +150,8 @@ public class ImportJob implements Runnable {
         LOG.info("Build search index for dataset {}", datasetKey);
         indexService.indexDataset(datasetKey);
         
-        LOG.info("Dataset import {} completed in {}", datasetKey, DurationFormatUtils
-            .formatDurationHMS(Duration.between(di.getStarted(), LocalDateTime.now()).toMillis()));
+        LOG.info("Dataset import {} completed in {}", datasetKey,
+            DurationFormatUtils.formatDurationHMS(Duration.between(di.getStarted(), LocalDateTime.now()).toMillis()));
         
       } else {
         LOG.info("Dataset {} sources unchanged. Stop import", datasetKey);

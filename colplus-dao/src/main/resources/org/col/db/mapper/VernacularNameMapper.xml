@@ -11,7 +11,11 @@
     vn.latin,
     vn.language,
     vn.country,
-    vn.reference_id
+    vn.reference_id,
+    vn.created,
+    vn.created_by,
+    vn.modified,
+    vn.modified_by
   </sql>
 
   <sql id="COLS">
@@ -22,7 +26,9 @@
     latin,
     language,
     country,
-    reference_id
+    reference_id,
+    created_by,
+    modified_by
   </sql>
 
   <sql id="PROPS">
@@ -33,7 +39,9 @@
     #{obj.latin},
     #{obj.language},
     #{obj.country},
-    #{obj.referenceId}
+    #{obj.referenceId},
+    #{obj.createdBy},
+    #{obj.modifiedBy}
   </sql>
 
   <sql id="FROM">
@@ -61,8 +69,8 @@
   </select>
 
   <insert id="create" parameterType="VernacularName" useGeneratedKeys="true" keyProperty="obj.key">
-    INSERT INTO vernacular_name_${datasetKey} ( <include refid="COLS" /> )
-    VALUES ( <include refid="PROPS" /> )
+    INSERT INTO vernacular_name_${datasetKey} ( <include refid="COLS" />, created, modified)
+    VALUES ( <include refid="PROPS" />, now(), now())
   </insert>
 
 </mapper>

@@ -15,6 +15,7 @@ import org.col.api.model.Name;
 import org.col.api.model.Taxon;
 import org.col.api.vocab.Datasets;
 import org.col.api.vocab.Origin;
+import org.col.api.vocab.Users;
 import org.col.db.MybatisFactory;
 import org.col.db.PgConfig;
 import org.col.db.mapper.DatasetPartitionMapper;
@@ -121,12 +122,16 @@ public class InitDbCmd extends ConfiguredCommand<AdminServerConfig> {
     nBiota.setHomotypicNameId(nBiota.getId());
     nBiota.setOrigin(Origin.SOURCE);
     nBiota.setType(NameType.INFORMAL);
-    
+    nBiota.setCreatedBy(Users.DB_INIT);
+    nBiota.setModifiedBy(Users.DB_INIT);
+
     final Taxon tBiota = new Taxon();
     tBiota.setId("root");
     tBiota.setName(nBiota);
     tBiota.setOrigin(Origin.SOURCE);
-  
+    tBiota.setCreatedBy(Users.DB_INIT);
+    tBiota.setModifiedBy(Users.DB_INIT);
+
     DatasetPartitionMapper pm = session.getMapper(DatasetPartitionMapper.class);
     NameMapper nm = session.getMapper(NameMapper.class);
     TaxonMapper tm = session.getMapper(TaxonMapper.class);

@@ -10,12 +10,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.col.api.jackson;
+package org.col.api.vocab;
 
 
 import java.io.IOException;
 
+import org.col.api.jackson.ApiModule;
+import org.col.api.jackson.EnumSerdeTestBase;
 import org.gbif.nameparser.api.Rank;
+import org.junit.Assert;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -29,7 +32,7 @@ public class RankSerdeTest extends EnumSerdeTestBase<Rank> {
   @Test
   public void testValues() throws IOException {
     for (Rank r : Rank.LINNEAN_RANKS) {
-      assertEquals('"' + r.name().toLowerCase() + '"', ApiModule.MAPPER.writeValueAsString(r));
+      Assert.assertEquals('"' + r.name().toLowerCase() + '"', ApiModule.MAPPER.writeValueAsString(r));
     }
   }
 }

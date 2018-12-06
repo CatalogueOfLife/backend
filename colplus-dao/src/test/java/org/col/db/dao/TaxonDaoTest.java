@@ -118,7 +118,7 @@ public class TaxonDaoTest extends DaoTestBase {
       assertEquals(0, synonymy.size());
       
       // now add a single synonym relation
-      Synonym syn = new Synonym();
+      Synonym syn = setUserManaged(new Synonym());
       syn.setStatus(TaxonomicStatus.SYNONYM);
       syn.setOrigin(Origin.SOURCE);
       nDao.addSynonym(datasetKey, syn1.getId(), acc.getId(), syn);

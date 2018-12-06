@@ -1,6 +1,7 @@
 package org.col.api.model;
 
 import org.col.api.TestEntityGenerator;
+import org.col.api.jackson.SerdeTestBase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -8,7 +9,16 @@ import static org.junit.Assert.*;
 /**
  *
  */
-public class SynonymyTest {
+public class SynonymyTest extends SerdeTestBase<Synonymy> {
+  
+  public SynonymyTest() {
+    super(Synonymy.class);
+  }
+  
+  @Override
+  public Synonymy genTestValue() throws Exception {
+    return TestEntityGenerator.newSynonymy();
+  }
   
   @Test
   public void isEmpty() throws Exception {

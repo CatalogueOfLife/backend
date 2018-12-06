@@ -19,7 +19,11 @@
         ${alias}.dataset_url AS ${prefix}dataset_url,
         ${alias}.species_estimate AS ${prefix}species_estimate,
         ${alias}.species_estimate_reference_id AS ${prefix}species_estimate_reference_id,
-        ${alias}.remarks AS ${prefix}remarks
+        ${alias}.remarks AS ${prefix}remarks,
+        ${alias}.created AS ${prefix}created,
+        ${alias}.created_by AS ${prefix}created_by,
+        ${alias}.modified AS ${prefix}modified,
+        ${alias}.modified_by AS ${prefix}modified_by
     </sql>
 
     <sql id="SELECT">
@@ -50,7 +54,9 @@
         dataset_url,
         species_estimate,
         species_estimate_reference_id,
-        remarks
+        remarks,
+        created_by,
+        modified_by
     </sql>
 
     <sql id="PROPS">
@@ -69,7 +75,9 @@
         #{datasetUrl, typeHandler=org.col.db.type.UriTypeHandler},
         #{speciesEstimate},
         #{speciesEstimateReferenceId},
-        #{remarks}
+        #{remarks},
+        #{createdBy},
+        #{modifiedBy}
     </sql>
 
     <sql id="FROM">
@@ -154,8 +162,8 @@
      </select>
 
     <insert id="create" parameterType="Taxon" useGeneratedKeys="false" keyProperty="id">
-        INSERT INTO taxon_${datasetKey} (<include refid="COLS" />)
-        VALUES (<include refid="PROPS" />)
+        INSERT INTO taxon_${datasetKey} (<include refid="COLS" />, created, modified)
+        VALUES (<include refid="PROPS" />, now(), now())
     </insert>
 
 </mapper>

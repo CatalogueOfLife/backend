@@ -1,14 +1,14 @@
-package org.col.api.jackson;
+package org.col.api.model;
 
 import org.col.api.TestEntityGenerator;
-import org.col.api.model.Taxon;
+import org.col.api.jackson.SerdeTestBase;
 
 /**
  *
  */
-public class TaxonSerdeTest extends SerdeTestBase<Taxon> {
+public class TaxonTest extends SerdeTestBase<Taxon> {
   
-  public TaxonSerdeTest() {
+  public TaxonTest() {
     super(Taxon.class);
   }
   

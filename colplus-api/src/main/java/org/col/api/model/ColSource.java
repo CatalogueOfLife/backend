@@ -2,7 +2,6 @@ package org.col.api.model;
 
 import java.net.URI;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import javax.validation.constraints.Max;
@@ -17,7 +16,7 @@ import org.col.api.vocab.DatasetType;
 /**
  * A citable source for a CoL data provider
  */
-public class ColSource implements SourceMetadata, IntKey {
+public class ColSource extends DataEntity implements SourceMetadata, IntKey {
   private Integer key;
   @NotNull
   private Integer datasetKey;
@@ -42,7 +41,6 @@ public class ColSource implements SourceMetadata, IntKey {
   private Integer synonymsCount;
   private Integer vernacularsCount;
   private Integer namesCount;
-  private LocalDateTime created;
   @Max(5)
   @Min(1)
   private Integer confidence;
@@ -237,15 +235,7 @@ public class ColSource implements SourceMetadata, IntKey {
   public void setNamesCount(Integer namesCount) {
     this.namesCount = namesCount;
   }
-  
-  public LocalDateTime getCreated() {
-    return created;
-  }
-  
-  public void setCreated(LocalDateTime created) {
-    this.created = created;
-  }
-  
+
   public Integer getConfidence() {
     return confidence;
   }
@@ -297,7 +287,6 @@ public class ColSource implements SourceMetadata, IntKey {
         Objects.equals(synonymsCount, colSource.synonymsCount) &&
         Objects.equals(vernacularsCount, colSource.vernacularsCount) &&
         Objects.equals(namesCount, colSource.namesCount) &&
-        Objects.equals(created, colSource.created) &&
         Objects.equals(confidence, colSource.confidence) &&
         Objects.equals(completeness, colSource.completeness) &&
         Objects.equals(notes, colSource.notes);
@@ -305,10 +294,9 @@ public class ColSource implements SourceMetadata, IntKey {
   
   @Override
   public int hashCode() {
-    
-    return Objects.hash(key, datasetKey, title, alias, description, organisations, contactPerson, authorsAndEditors, version, released, website, group, coverage, citation, livingSpeciesCount, livingInfraspecificCount, extinctSpeciesCount, extinctInfraspecificCount, synonymsCount, vernacularsCount, namesCount, created, confidence, completeness, notes);
+    return Objects.hash(key, datasetKey, title, alias, description, organisations, contactPerson, authorsAndEditors, version, released, website, group, coverage, citation, livingSpeciesCount, livingInfraspecificCount, extinctSpeciesCount, extinctInfraspecificCount, synonymsCount, vernacularsCount, namesCount, confidence, completeness, notes);
   }
-  
+
   @Override
   public String toString() {
     return "ColSource " + key + ": " + alias;

@@ -1,11 +1,12 @@
 package org.col.db.mapper;
 
-import java.util.List;
-
+import org.col.api.TestEntityGenerator;
 import org.col.api.model.NameRelation;
 import org.col.api.vocab.NomRelType;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.List;
 
 import static org.col.api.TestEntityGenerator.*;
 import static org.junit.Assert.assertEquals;
@@ -57,7 +58,7 @@ public class NameRelationMapperTest extends MapperTestBase<NameRelationMapper> {
   }
   
   private static NameRelation newNameAct(NomRelType type) {
-    NameRelation na = new NameRelation();
+    NameRelation na = TestEntityGenerator.setUserManaged(new NameRelation());
     na.setDatasetKey(DATASET11.getKey());
     na.setType(type);
     na.setNameId(NAME1.getId());

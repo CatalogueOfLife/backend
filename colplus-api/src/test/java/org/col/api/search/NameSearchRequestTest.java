@@ -1,14 +1,35 @@
 package org.col.api.search;
 
+import java.util.Arrays;
+import java.util.HashSet;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-
+import org.col.api.jackson.ApiModule;
+import org.col.api.jackson.SerdeTestBase;
+import org.col.api.vocab.NomStatus;
 import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-public class NameSearchRequestTest {
+public class NameSearchRequestTest extends SerdeTestBase<NameSearchRequest> {
+  
+  public NameSearchRequestTest() {
+    super(NameSearchRequest.class);
+  }
+  
+  @Override
+  public NameSearchRequest genTestValue() throws Exception {
+    NameSearchRequest s = new NameSearchRequest();
+    s.setQ("Abies");
+    s.setContent(new HashSet<>(Arrays.asList(NameSearchRequest.SearchContent.AUTHORSHIP)));
+    s.setSortBy(NameSearchRequest.SortBy.NATIVE);
+    s.addFilter(NameSearchParameter.NOM_STATUS, NomStatus.MANUSCRIPT);
+    s.addFilter(NameSearchParameter.NOM_STATUS, NomStatus.CHRESONYM);
+    return s;
+  }
 
   @Test(expected = IllegalArgumentException.class)
   public void badInt() {
@@ -59,6 +80,16 @@ public class NameSearchRequestTest {
       return String.valueOf(values[0].ordinal());
     } else {
       throw new IllegalStateException(NameSearchParameter.class.getSimpleName() + " missing converter for data type " + p.type());
+    }
+  }
+  
+  
+  protected void debug(String json, Wrapper<NameSearchRequest> wrapper, Wrapper<NameSearchRequest> wrapper2) {
+    try {
+      System.out.println(ApiModule.MAPPER.writeValueAsString(wrapper.value));
+      System.out.println(ApiModule.MAPPER.writeValueAsString(wrapper2.value));
+    } catch (JsonProcessingException e) {
+      e.printStackTrace();
     }
   }
 }

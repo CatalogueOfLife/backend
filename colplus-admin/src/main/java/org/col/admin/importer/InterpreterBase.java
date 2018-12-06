@@ -1,11 +1,5 @@
 package org.col.admin.importer;
 
-import java.net.URI;
-import java.time.LocalDate;
-import java.util.*;
-import java.util.function.BiConsumer;
-import javax.annotation.Nullable;
-
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
@@ -26,6 +20,12 @@ import org.gbif.nameparser.api.ParsedName;
 import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nullable;
+import java.net.URI;
+import java.time.LocalDate;
+import java.util.*;
+import java.util.function.BiConsumer;
 
 import static org.col.parser.SafeParser.parse;
 
@@ -178,8 +178,8 @@ public class InterpreterBase {
       m.setFormat(rec.get(format));
       //TODO: validate or derive type from format
       m.setLicense( SafeParser.parse(LicenseParser.PARSER, rec.get(license)).orNull() );
-      m.setCreator(rec.get(creator));
-      m.setCreated( date(rec, Issue.CREATED_DATE_INVALID, created) );
+      m.setCapturedBy(rec.get(creator));
+      m.setCaptured( date(rec, Issue.CREATED_DATE_INVALID, created) );
       m.setTitle(rec.get(title));
   
       addReference.accept(m, rec);

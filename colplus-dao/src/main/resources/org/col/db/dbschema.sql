@@ -101,6 +101,7 @@ CREATE TABLE coluser (
   deleted TIMESTAMP WITHOUT TIME ZONE
 );
 
+
 CREATE TABLE dataset (
   key serial PRIMARY KEY,
   type INTEGER NOT NULL DEFAULT 4,
@@ -126,9 +127,12 @@ CREATE TABLE dataset (
   notes text,
   contributes_to INTEGER,
   last_data_import_attempt INTEGER,
-  created TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW(),
   deleted TIMESTAMP WITHOUT TIME ZONE,
-  doc tsvector
+  doc tsvector,
+  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  created_by INTEGER NOT NULL,
+  modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  modified_by INTEGER NOT NULL
 );
 
 CREATE INDEX ON dataset USING gin(doc);
@@ -176,9 +180,11 @@ CREATE TABLE col_source (
   synonyms_count INTEGER,
   vernaculars_count INTEGER,
   names_count INTEGER,
-  created TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW()
+  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  created_by INTEGER NOT NULL,
+  modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  modified_by INTEGER NOT NULL
 );
-
 
 CREATE TABLE sector (
   key serial PRIMARY KEY,
@@ -196,9 +202,9 @@ CREATE TABLE sector (
   mode INTEGER NOT NULL,
   note TEXT,
   created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
-  created_by INTEGER REFERENCES coluser,
+  created_by INTEGER NOT NULL,
   modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
-  modified_by INTEGER REFERENCES coluser,
+  modified_by INTEGER NOT NULL,
   UNIQUE (col_source_key, subject_id)
 );
 
@@ -224,9 +230,9 @@ CREATE TABLE decision (
   name JSONB,
   note TEXT,
   created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
-  created_by INTEGER REFERENCES coluser,
+  created_by INTEGER NOT NULL,
   modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
-  modified_by INTEGER REFERENCES coluser
+  modified_by INTEGER NOT NULL
 );
 
 CREATE TABLE dataset_import (
@@ -262,6 +268,11 @@ CREATE TABLE dataset_import (
   PRIMARY KEY (dataset_key, attempt)
 );
 
+
+--
+-- PARTITIONED DATA TABLES
+--
+
 CREATE TABLE verbatim (
   key serial,
   dataset_key INTEGER NOT NULL,
@@ -278,10 +289,13 @@ CREATE TABLE reference (
   verbatim_key INTEGER,
   csl JSONB,
   citation TEXT,
-  year int
+  year int,
+  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  created_by INTEGER NOT NULL,
+  modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  modified_by INTEGER NOT NULL
 ) PARTITION BY LIST (dataset_key);
 
-CREATE SEQUENCE name_key_seq;
 
 CREATE TABLE name (
   id TEXT NOT NULL,
@@ -315,7 +329,11 @@ CREATE TABLE name (
   type INTEGER NOT NULL,
   source_url TEXT,
   fossil BOOLEAN,
-  remarks TEXT
+  remarks TEXT,
+  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  created_by INTEGER NOT NULL,
+  modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  modified_by INTEGER NOT NULL
 ) PARTITION BY LIST (dataset_key);
 
 CREATE TABLE name_rel (
@@ -326,7 +344,11 @@ CREATE TABLE name_rel (
   name_id TEXT NOT NULL,
   related_name_id TEXT NULL,
   published_in_id TEXT,
-  note TEXT
+  note TEXT,
+  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  created_by INTEGER NOT NULL,
+  modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  modified_by INTEGER NOT NULL
 ) PARTITION BY LIST (dataset_key);
 
 CREATE TABLE taxon (
@@ -345,7 +367,11 @@ CREATE TABLE taxon (
   dataset_url TEXT,
   species_estimate INTEGER,
   species_estimate_reference_id TEXT,
-  remarks TEXT
+  remarks TEXT,
+  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  created_by INTEGER NOT NULL,
+  modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  modified_by INTEGER NOT NULL
 ) PARTITION BY LIST (dataset_key);
 
 CREATE TABLE synonym (
@@ -356,7 +382,11 @@ CREATE TABLE synonym (
   verbatim_key INTEGER,
   status INTEGER NOT NULL,
   according_to TEXT,
-  origin INTEGER NOT NULL
+  origin INTEGER NOT NULL,
+  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  created_by INTEGER NOT NULL,
+  modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  modified_by INTEGER NOT NULL
 ) PARTITION BY LIST (dataset_key);
 
 CREATE TABLE taxon_reference (
@@ -374,7 +404,11 @@ CREATE TABLE vernacular_name (
   latin TEXT,
   language CHAR(3),
   country CHAR(2),
-  reference_id TEXT
+  reference_id TEXT,
+  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  created_by INTEGER NOT NULL,
+  modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  modified_by INTEGER NOT NULL
 ) PARTITION BY LIST (dataset_key);
 
 CREATE TABLE distribution (
@@ -385,7 +419,11 @@ CREATE TABLE distribution (
   area TEXT NOT NULL,
   gazetteer INTEGER NOT NULL,
   status INTEGER,
-  reference_id TEXT
+  reference_id TEXT,
+  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  created_by INTEGER NOT NULL,
+  modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  modified_by INTEGER NOT NULL
 ) PARTITION BY LIST (dataset_key);
 
 CREATE TABLE description (
@@ -396,7 +434,11 @@ CREATE TABLE description (
   category TEXT,
   description TEXT NOT NULL,
   language CHAR(3),
-  reference_id TEXT
+  reference_id TEXT,
+  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  created_by INTEGER NOT NULL,
+  modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  modified_by INTEGER NOT NULL
 ) PARTITION BY LIST (dataset_key);
 
 CREATE TABLE media (
@@ -408,11 +450,15 @@ CREATE TABLE media (
   type INTEGER NOT NULL,
   format TEXT,
   title TEXT,
-  created DATE,
-  creator TEXT,
+  captured DATE,
+  captured_by TEXT,
   license INTEGER,
   link TEXT,
-  reference_id TEXT
+  reference_id TEXT,
+  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  created_by INTEGER NOT NULL,
+  modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  modified_by INTEGER NOT NULL
 ) PARTITION BY LIST (dataset_key);
 
 
@@ -425,7 +471,7 @@ LANGUAGE SQL
 IMMUTABLE;
 
 
--- INDICES
+-- INDICES for non partitioned tables
 CREATE index ON dataset (gbif_key);
 CREATE index ON dataset_import (started);
 CREATE index ON decision (subject_id);

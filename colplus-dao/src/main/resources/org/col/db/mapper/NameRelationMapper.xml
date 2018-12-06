@@ -12,7 +12,11 @@
     nr.name_id,
     nr.related_name_id,
     nr.published_in_id,
-    nr.note
+    nr.note,
+    nr.created,
+    nr.created_by,
+    nr.modified,
+    nr.modified_by
   </sql>
 
   <sql id="COLS">
@@ -22,7 +26,9 @@
     name_id,
     related_name_id,
     published_in_id,
-    note
+    note,
+    created_by,
+    modified_by
   </sql>
 
   <sql id="PROPS">
@@ -32,7 +38,9 @@
     #{nameId},
     #{relatedNameId},
     #{publishedInId},
-    #{note}
+    #{note},
+    #{createdBy},
+    #{modifiedBy}
   </sql>
 
   <sql id="FROM">
@@ -61,8 +69,8 @@
   </select>
 
   <insert id="create" parameterType="NameRelation" useGeneratedKeys="true" keyProperty="key">
-    INSERT INTO name_rel_${datasetKey} ( <include refid="COLS" /> )
-    VALUES ( <include refid="PROPS" /> )
+    INSERT INTO name_rel_${datasetKey} ( <include refid="COLS" />, created, modified )
+    VALUES ( <include refid="PROPS" />, now(), now() )
   </insert>
 
 </mapper>

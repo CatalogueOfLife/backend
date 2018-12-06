@@ -12,11 +12,15 @@
     m.type,
     m.format,
     m.title,
-    m.created,
-    m.creator,
+    m.captured,
+    m.captured_by,
     m.license,
     m.link,
-    m.reference_id
+    m.reference_id,
+    m.created,
+    m.created_by,
+    m.modified,
+    m.modified_by
   </sql>
 
   <sql id="COLS">
@@ -27,11 +31,13 @@
     type,
     format,
     title,
-    created,
-    creator,
+    captured,
+    captured_by,
     license,
     link,
-    reference_id
+    reference_id,
+    created_by,
+    modified_by
   </sql>
 
   <sql id="PROPS">
@@ -42,11 +48,13 @@
     #{obj.type},
     #{obj.format},
     #{obj.title},
-    #{obj.created},
-    #{obj.creator},
+    #{obj.captured},
+    #{obj.capturedBy},
     #{obj.license},
     #{obj.link},
-    #{obj.referenceId}
+    #{obj.referenceId},
+    #{obj.createdBy},
+    #{obj.modifiedBy}
   </sql>
 
   <sql id="FROM">
@@ -72,8 +80,8 @@
   </select>
 
   <insert id="create" parameterType="Media" useGeneratedKeys="true" keyProperty="obj.key">
-    INSERT INTO media_${datasetKey} ( <include refid="COLS" /> )
-    VALUES ( <include refid="PROPS" /> )
+    INSERT INTO media_${datasetKey} ( <include refid="COLS" />, created, modified )
+    VALUES ( <include refid="PROPS" />, now(), now() )
   </insert>
 
 </mapper>

@@ -5,7 +5,7 @@ import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.col.api.vocab.Language;
 
-public class Description implements Referenced, VerbatimEntity, IntKey {
+public class Description extends DataEntity implements Referenced, VerbatimEntity, IntKey {
   @JsonIgnore
   private Integer key;
   private Integer verbatimKey;
@@ -67,23 +67,23 @@ public class Description implements Referenced, VerbatimEntity, IntKey {
   public void setReferenceId(String referenceId) {
     this.referenceId = referenceId;
   }
-  
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
+    if (!super.equals(o)) return false;
     Description that = (Description) o;
     return Objects.equals(key, that.key) &&
-        Objects.equals(verbatimKey, that.verbatimKey) &&
-        Objects.equals(category, that.category) &&
-        Objects.equals(description, that.description) &&
-        language == that.language &&
-        Objects.equals(referenceId, that.referenceId);
+            Objects.equals(verbatimKey, that.verbatimKey) &&
+            Objects.equals(category, that.category) &&
+            Objects.equals(description, that.description) &&
+            language == that.language &&
+            Objects.equals(referenceId, that.referenceId);
   }
-  
+
   @Override
   public int hashCode() {
-    
-    return Objects.hash(key, verbatimKey, category, description, language, referenceId);
+    return Objects.hash(super.hashCode(), key, verbatimKey, category, description, language, referenceId);
   }
 }

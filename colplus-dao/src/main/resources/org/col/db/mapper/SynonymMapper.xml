@@ -9,7 +9,37 @@
         ${alias}.verbatim_key AS ${prefix}verbatim_key,
         ${alias}.status AS ${prefix}status,
         ${alias}.according_to AS ${prefix}according_to,
-        ${alias}.origin AS ${prefix}origin
+        ${alias}.origin AS ${prefix}origin,
+        ${alias}.created AS ${prefix}created,
+        ${alias}.created_by AS ${prefix}created_by,
+        ${alias}.modified AS ${prefix}modified,
+        ${alias}.modified_by AS ${prefix}modified_by
+    </sql>
+
+    <sql id="COLS">
+        dataset_key,
+        id,
+        name_id,
+        taxon_id,
+        verbatim_key,
+        status,
+        according_to,
+        origin,
+        created_by,
+        modified_by
+    </sql>
+
+    <sql id="PROPS">
+        #{datasetKey},
+        #{syn.id},
+        #{nameId},
+        #{taxonId},
+        #{syn.verbatimKey},
+        #{syn.status},
+        #{syn.accordingTo},
+        #{syn.origin},
+        #{syn.createdBy},
+        #{syn.modifiedBy}
     </sql>
 
     <sql id="SELECT">
@@ -61,8 +91,8 @@
     </select>
 
     <insert id="create">
-        INSERT INTO synonym_${datasetKey} (dataset_key, id, name_id, taxon_id, verbatim_key, status, according_to, origin)
-        VALUES (#{datasetKey}, #{syn.id}, #{nameId}, #{taxonId}, #{syn.verbatimKey}, #{syn.status}, #{syn.accordingTo}, #{syn.origin})
+        INSERT INTO synonym_${datasetKey} (<include refid="COLS" />, created, modified)
+        VALUES (<include refid="PROPS" />, now(), now())
     </insert>
 
 </mapper>

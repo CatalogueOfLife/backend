@@ -363,12 +363,13 @@ public class BeanPrinter {
    * Add a package to the set of opaque packages.
    *
    * @param packageName The name of the package
+   * @return true if the package was found and added
    */
-  public void printOpaque(String packageName) {
+  public boolean printOpaque(String packageName) {
     Package p = Package.getPackage(packageName);
-    if (p == null)
-      throw new RuntimeException("No such package: " + packageName);
+    if (p == null) return false;
     opaquePackages.add(p);
+    return true;
   }
   
   /**
