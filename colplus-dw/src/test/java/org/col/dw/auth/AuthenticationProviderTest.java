@@ -1,16 +1,20 @@
 package org.col.dw.auth;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import javax.validation.Validator;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Charsets;
 import io.dropwizard.configuration.ConfigurationSourceProvider;
 import io.dropwizard.configuration.YamlConfigurationFactory;
 import io.dropwizard.jackson.DiscoverableSubtypeResolver;
 import io.dropwizard.jackson.Jackson;
 import io.dropwizard.jersey.validation.Validators;
+import org.apache.commons.io.FileUtils;
 import org.col.common.io.Resources;
+import org.col.common.util.YamlUtils;
 import org.col.dw.auth.gbif.GBIFAuthenticationFactory;
 import org.col.dw.auth.map.MapAuthenticationFactory;
 import org.junit.Test;
@@ -60,6 +64,26 @@ public class AuthenticationProviderTest {
       assertNotNull(c.username);
       assertNotNull(c.password);
     }
+  }
+  
+  public static class TestConfig {
+    public AuthenticationProviderFactory apf;
+  }
+  
+  @Test
+  public void testWriteMap() throws Exception {
+    final TestConfig cfg = new TestConfig();
+    MapAuthenticationFactory maf = new MapAuthenticationFactory();
+    MapAuthenticationFactory.Cred c = new MapAuthenticationFactory.Cred();
+    c.username = "bfdvs";
+    maf.users.add(c);
+    cfg.apf = maf;
+    
+    File f = File.createTempFile("col6432", "fd");
+    System.out.println(f.getAbsolutePath());
+    YamlUtils.write(cfg, f);
+    
+    System.out.println(FileUtils.readFileToString(f, Charsets.UTF_8));
   }
 
 }

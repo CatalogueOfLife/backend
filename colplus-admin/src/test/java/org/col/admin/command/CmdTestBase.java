@@ -17,6 +17,7 @@ import org.col.admin.command.initdb.InitDbCmd;
 import org.col.admin.config.AdminServerConfig;
 import org.col.common.util.YamlUtils;
 import org.col.db.PgSetupRule;
+import org.col.dw.auth.map.MapAuthenticationFactory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -53,6 +54,7 @@ public abstract class CmdTestBase {
     cfg.adminDb.user = cfg.db.user;
     cfg.adminDb.password = cfg.db.password;
     cfg.img.repo = Paths.get("/tmp/imgrepo");
+    cfg.auth = new MapAuthenticationFactory();
     
     // somehow serde doesnt work with the inherited Configuration props, set them to null to ignore them
     cfg.client = null;
