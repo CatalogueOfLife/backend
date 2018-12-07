@@ -29,4 +29,15 @@ public interface UserManaged {
   Integer getModifiedBy();
   
   void setModifiedBy(Integer modifiedBy);
+  
+  default void applyUser(ColUser user) {
+    applyUser(user.getKey());
+  }
+  
+  default void applyUser(Integer userKey) {
+    setModifiedBy(userKey);
+    if (getCreatedBy() == null) {
+      setCreatedBy(userKey);
+    }
+  }
 }

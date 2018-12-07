@@ -1,4 +1,6 @@
-package org.col.dw.auth;
+package org.col.dw.auth.gbif;
+
+import java.io.IOException;
 
 import org.apache.http.impl.client.HttpClients;
 import org.col.api.model.ColUser;
@@ -8,29 +10,26 @@ import org.col.common.util.YamlUtils;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import java.io.IOException;
-
 import static org.junit.Assert.*;
 
-public class IdentityServiceTest {
+public class GBIFAuthenticationTest {
+  final GBIFAuthentication gbif;
   
-  final IdentityService ids;
-  
-  public IdentityServiceTest() throws IOException {
-    AuthConfiguration cfg = YamlUtils.read(AuthConfiguration.class, "/auth.yaml");
-    ids = new IdentityService(cfg);
-    ids.setClient(HttpClients.createDefault());
+  public GBIFAuthenticationTest() throws IOException {
+    GBIFAuthenticationFactory factory = YamlUtils.read(GBIFAuthenticationFactory.class, "/gbifAuth.yaml");
+    gbif = new GBIFAuthentication(factory);
+    gbif.setClient(HttpClients.createDefault());
   }
   
   @Test
   public void basicHeader() {
     // test some non ASCII passwords
-    assertEquals("Basic TGVtbXk6TcO2dMO2cmhlYWQ=", ids.basicAuthHeader("Lemmy", "Mötörhead"));
+    assertEquals("Basic TGVtbXk6TcO2dMO2cmhlYWQ=", gbif.basicAuthHeader("Lemmy", "Mötörhead"));
   }
   
   @Test
   public void fromJson() throws IOException {
-    ColUser u = ids.fromJson(Resources.stream("gbif-user.json"));
+    ColUser u = gbif.fromJson(Resources.stream("gbif-user.json"));
     assertEquals("manga@mailinator.com", u.getEmail());
     assertEquals("Mänga", u.getLastname());
     assertEquals("0000-1234-5678-0011", u.getOrcid());
@@ -40,14 +39,14 @@ public class IdentityServiceTest {
   @Test
   @Ignore("GBIF service needs to be mocked - this uses live services")
   public void authenticateGBIF() {
-    assertTrue(ids.authenticateGBIF("markus", "xxx"));
-    assertTrue(ids.authenticateGBIF("colplus", "xxx"));
+    assertTrue(gbif.authenticateGBIF("markus", "xxx"));
+    assertTrue(gbif.authenticateGBIF("colplus", "xxx"));
   }
   
   @Test
   @Ignore("GBIF service needs to be mocked - this uses live services")
   public void getUser() {
-    ColUser u = ids.getFullGbifUser("colplus");
+    ColUser u = gbif.getFullGbifUser("colplus");
     assertNotNull(u);
   }
 }

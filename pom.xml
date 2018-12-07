@@ -43,6 +43,7 @@
             These BOMs manage dependency
             versions for many things including: commons-lang3, guava, jersey, commons-text, servlet api, httpclient,
             liquibase, freemarker, jetty, jackson, metrics, etc. -->
+        <assertj.version>3.11.1</assertj.version>
         <citeproc.version>1.0.1</citeproc.version>
         <commons-compress.version>1.18</commons-compress.version>
         <commons-io.version>2.6</commons-io.version>
@@ -513,6 +514,12 @@
                 <scope>test</scope>
             </dependency>
             <dependency>
+                <groupId>org.assertj</groupId>
+                <artifactId>assertj-core</artifactId>
+                <version>${assertj.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
                 <groupId>ru.yandex.qatools.embed</groupId>
                 <artifactId>postgresql-embedded</artifactId>
                 <version>${postgresql-embedded.version}</version>
@@ -647,14 +654,11 @@
                     <configuration>
                         <createDependencyReducedPom>false</createDependencyReducedPom>
                         <transformers>
-                            <transformer
-                                    implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
-                            <transformer
-                                    implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                            <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                            <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                 <mainClass>${mainClass}</mainClass>
                             </transformer>
-                            <transformer
-                                    implementation="org.apache.maven.plugins.shade.resource.DontIncludeResourceTransformer">
+                            <transformer implementation="org.apache.maven.plugins.shade.resource.DontIncludeResourceTransformer">
                                 <resource>config.yaml</resource>
                             </transformer>
                         </transformers>

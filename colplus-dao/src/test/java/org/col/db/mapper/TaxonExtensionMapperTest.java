@@ -9,7 +9,7 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.col.api.TestEntityGenerator.nullifyUserManaged;
+import static org.col.api.TestEntityGenerator.nullifyDate;
 import static org.junit.Assert.assertEquals;
 
 abstract class TaxonExtensionMapperTest<T extends IntKey & UserManaged, M extends TaxonExtensionMapper<T>> extends MapperTestBase<M> {
@@ -33,14 +33,14 @@ abstract class TaxonExtensionMapperTest<T extends IntKey & UserManaged, M extend
     List<T> originals = new ArrayList<>();
     for (T obj : createTestEntities()) {
       mapper().create(obj, taxonID, datasetKey);
-      originals.add(nullifyUserManaged(obj));
+      originals.add(TestEntityGenerator.nullifyDate(obj));
     }
     commit();
 
-    T obj = nullifyUserManaged(mapper().get(datasetKey, originals.get(0).getKey()));
+    T obj = TestEntityGenerator.nullifyDate(mapper().get(datasetKey, originals.get(0).getKey()));
     assertEquals(obj, originals.get(0));
   
-    List<T> created = nullifyUserManaged(mapper().listByTaxon(datasetKey, taxonID));
+    List<T> created = TestEntityGenerator.nullifyDate(mapper().listByTaxon(datasetKey, taxonID));
     assertEquals(originals, created);
   }
   

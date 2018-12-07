@@ -52,7 +52,6 @@ public abstract class CmdTestBase {
     cfg.db = PgSetupRule.getCfg();
     cfg.adminDb.user = cfg.db.user;
     cfg.adminDb.password = cfg.db.password;
-    cfg.auth.gbifSecret = "silly sally";
     cfg.img.repo = Paths.get("/tmp/imgrepo");
     
     // somehow serde doesnt work with the inherited Configuration props, set them to null to ignore them

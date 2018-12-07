@@ -1,25 +1,26 @@
 package org.col.resources;
 
-import io.dropwizard.auth.Auth;
-import org.apache.ibatis.session.SqlSession;
-import org.col.api.exception.NotFoundException;
-import org.col.api.model.ColUser;
-import org.col.api.model.IntKey;
-import org.col.db.mapper.CRUDIntMapper;
-import org.col.dw.auth.Roles;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
+import io.dropwizard.auth.Auth;
+import org.apache.ibatis.session.SqlSession;
+import org.col.api.exception.NotFoundException;
+import org.col.api.model.ColUser;
+import org.col.api.model.IntKey;
+import org.col.api.model.UserManaged;
+import org.col.db.mapper.CRUDIntMapper;
+import org.col.dw.auth.Roles;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @SuppressWarnings("static-method")
-public abstract class CRUDIntResource<T extends IntKey> {
+public abstract class CRUDIntResource<T extends IntKey & UserManaged> {
 
   private final Class<T> objClass;
   private final Class<? extends CRUDIntMapper<T>> mapperClass;
@@ -38,6 +39,7 @@ public abstract class CRUDIntResource<T extends IntKey> {
   @POST
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public Integer create(@Valid T obj, @Auth ColUser user, @Context SqlSession session) {
+    obj.applyUser(user);
     session.getMapper(mapperClass).create(obj);
     session.commit();
     return obj.getKey();
@@ -54,6 +56,7 @@ public abstract class CRUDIntResource<T extends IntKey> {
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void update(@PathParam("key") Integer key, T obj, @Auth ColUser user, @Context SqlSession session) {
     obj.setKey(key);
+    obj.applyUser(user);
     int i = session.getMapper(mapperClass).update(obj);
     if (i == 0) {
       throw org.col.api.exception.NotFoundException.keyNotFound(objClass, key);

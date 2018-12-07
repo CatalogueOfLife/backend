@@ -1,4 +1,4 @@
-package org.col.dw.auth;
+package org.col.dw.auth.gbif;
 
 import java.net.URI;
 import java.nio.charset.Charset;
@@ -49,21 +49,21 @@ public class GbifTrustedAuth {
   private static final Logger LOG = LoggerFactory.getLogger(GbifTrustedAuth.class);
   
   private static final String ALGORITHM = "HmacSHA1";
-  public static final String HEADER_AUTHORIZATION = "Authorization";
-  public static final String HEADER_CONTENT_TYPE = "Content-Type";
-  public static final String GBIF_SCHEME = "GBIF";
-  public static final String HEADER_GBIF_USER = "x-gbif-user";
-  public static final String HEADER_ORIGINAL_REQUEST_URL = "x-url";
+  private static final String HEADER_AUTHORIZATION = "Authorization";
+  private static final String HEADER_CONTENT_TYPE = "Content-Type";
+  private static final String GBIF_SCHEME = "GBIF";
+  private static final String HEADER_GBIF_USER = "x-gbif-user";
+  private static final String HEADER_ORIGINAL_REQUEST_URL = "x-url";
   private static final char NEWLINE = '\n';
   
   private final String user;
   private final String appKey;
   private final String appSecret;
   
-  public GbifTrustedAuth(AuthConfiguration cfg) {
-    this.user = Preconditions.checkNotNull(cfg.gbifUser, "A proxied GBIF user is required");
-    this.appKey = Preconditions.checkNotNull(cfg.gbifAppkey, "To sign requests a GBIF app is required");
-    this.appSecret = Preconditions.checkNotNull(cfg.gbifSecret, "To sign requests a GBIF secret for " + appKey + " is required");
+  public GbifTrustedAuth(GBIFAuthenticationFactory cfg) {
+    this.user = Preconditions.checkNotNull(cfg.user, "A proxied GBIF user is required");
+    this.appKey = Preconditions.checkNotNull(cfg.appkey, "To sign requests a GBIF app is required");
+    this.appSecret = Preconditions.checkNotNull(cfg.secret, "To sign requests a GBIF secret for " + appKey + " is required");
     LOG.info("Use trusted GBIF appkey {} to proxy user {}", appKey, user);
   }
   

@@ -1,6 +1,7 @@
 package org.col.db.mapper;
 
 import org.col.api.RandomUtils;
+import org.col.api.TestEntityGenerator;
 import org.col.api.model.ColSource;
 import org.col.api.vocab.DatasetType;
 import org.junit.Test;
@@ -9,7 +10,7 @@ import java.net.URI;
 import java.time.LocalDate;
 
 import static org.col.api.TestEntityGenerator.DATASET11;
-import static org.col.api.TestEntityGenerator.setUserManaged;
+import static org.col.api.TestEntityGenerator.setUserDate;
 import static org.junit.Assert.*;
 
 public class ColSourceMapperTest extends MapperTestBase<ColSourceMapper> {
@@ -49,7 +50,7 @@ public class ColSourceMapperTest extends MapperTestBase<ColSourceMapper> {
   }
   
   public static ColSource create(int datasetKey) {
-    ColSource d = setUserManaged(new ColSource());
+    ColSource d = TestEntityGenerator.setUserDate(new ColSource());
     d.setDatasetKey(datasetKey);
     d.setCoverage(DatasetType.GLOBAL);
     d.setTitle(RandomUtils.randomString(80));

@@ -1,13 +1,15 @@
 package org.col.dw.jersey.exception;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.ext.Provider;
+
 import io.dropwizard.jersey.errors.LoggingExceptionMapper;
 import org.apache.ibatis.exceptions.PersistenceException;
 import org.postgresql.util.PSQLException;
-
-import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.Provider;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Checks PersistenceExceptions for certain known conditions that are not server errors.
@@ -16,6 +18,7 @@ import java.util.regex.Pattern;
  */
 @Provider
 public class PersistenceExceptionMapper extends LoggingExceptionMapper<PersistenceException> {
+  private static final Logger LOG = LoggerFactory.getLogger(PersistenceExceptionMapper.class);
   
   private final static Pattern RELATION = Pattern.compile("relation \"[a-z_]+_([0-9]+)\" does not exist");
   
@@ -26,6 +29,7 @@ public class PersistenceExceptionMapper extends LoggingExceptionMapper<Persisten
       // All PgSql Error codes starting with 23 are constraint violations.
       // https://www.postgresql.org/docs/11/errcodes-appendix.html
       if (pe.getSQLState() != null && pe.getSQLState().startsWith("23")) {
+        LOG.warn("Postgres constraint violation", pe);
         return JsonExceptionMapperBase.jsonErrorResponse(Response.Status.BAD_REQUEST, e.getMessage());
       }
     }

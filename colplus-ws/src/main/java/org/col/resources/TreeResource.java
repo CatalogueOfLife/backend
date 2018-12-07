@@ -1,5 +1,13 @@
 package org.col.resources;
 
+import java.util.List;
+import java.util.UUID;
+import javax.annotation.security.RolesAllowed;
+import javax.validation.Valid;
+import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+
 import io.dropwizard.auth.Auth;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.ibatis.session.SqlSession;
@@ -12,14 +20,6 @@ import org.col.db.mapper.TreeMapper;
 import org.col.dw.auth.Roles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.annotation.security.RolesAllowed;
-import javax.validation.Valid;
-import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import java.util.List;
-import java.util.UUID;
 
 @Path("/dataset/{datasetKey}/tree")
 @Produces(MediaType.APPLICATION_JSON)
@@ -40,17 +40,19 @@ public class TreeResource {
 
     NameMapper nm = session.getMapper(NameMapper.class);
     Name n = newKey(nm.getByTaxon(obj.getDatasetKey(), obj.getId()));
-
+    
     if (n.getPublishedInId() != null) {
       ReferenceMapper rm = session.getMapper(ReferenceMapper.class);
       Reference ref = newKey(rm.get(obj.getDatasetKey(), obj.getId()));
       ref.setDatasetKey(datasetKey);
+      ref.applyUser(user);
       rm.create(ref);
 
       n.setPublishedInId(ref.getId());
     }
     n.setDatasetKey(datasetKey);
     n.setOrigin(Origin.USER);
+    n.applyUser(user);
     nm.create(n);
 
     TaxonMapper tm = session.getMapper(TaxonMapper.class);
@@ -60,6 +62,7 @@ public class TreeResource {
     t.setParentId(obj.getParentId());
     t.setName(n);
     t.setOrigin(Origin.USER);
+    t.applyUser(user);
     tm.create(t);
 
     session.commit();

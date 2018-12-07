@@ -1,8 +1,5 @@
 package org.col.admin.resources;
 
-import javax.ws.rs.client.Client;
-
-import io.dropwizard.client.JerseyClientBuilder;
 import io.dropwizard.testing.ResourceHelpers;
 import org.col.admin.AdminServer;
 import org.col.admin.config.AdminServerConfig;
@@ -12,10 +9,10 @@ import org.col.api.vocab.MatchType;
 import org.col.dw.DropwizardPgAppRule;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
-import org.glassfish.jersey.client.ClientProperties;
 import org.junit.ClassRule;
 import org.junit.Test;
 
+import static org.col.dw.ApiUtils.userCreds;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -27,16 +24,10 @@ public class MatchingResourceTest {
   
   @Test
   public void match() {
-    Client client = new JerseyClientBuilder(RULE.getEnvironment())
-        .withProperty(ClientProperties.CONNECT_TIMEOUT, 5000)
-        .withProperty(ClientProperties.READ_TIMEOUT, 2000)
-        .build("test client");
-    
-    NameMatch match = client.target(
+    NameMatch match = userCreds(RULE.client().target(
         String.format("http://localhost:%d/name/matching", RULE.getLocalPort()))
         .queryParam("q", "Abies alba Mill.")
-        .request()
-        .get(NameMatch.class);
+    ).get(NameMatch.class);
     
     Name abies = new Name();
     abies.setGenus("Abies");

@@ -35,9 +35,17 @@ es:
   nameUsage:
     modelClass: org.col.es.model.EsNameUsage
 auth:
-  gbifApi: "${gbif.api}"
-  gbifAppkey: ${gbif.appkey}
-  gbifSecret: "${gbif.secret}"
-  signingKey: 3254e6rftgbzg6tz7
+  type: map
+  users:
+    - username: user
+      password: 1234
+      role:
+    - username: editor
+      password: 123456
+      role: EDITOR
+    - username: admin
+      password: 12345678
+      role: ADMIN
+jwtKey: 3254e6rftgbzg6tz7
 img:
   repo: ${img.repo}

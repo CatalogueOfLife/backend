@@ -47,6 +47,27 @@ public final class VocabularyUtils {
    * @throws IllegalArgumentException if the name cannot be parsed into a known name
    */
   public static <T extends Enum<?>> T lookupEnum(String name, Class<T> vocab) {
+    T val = lookupEnumInternal(name, vocab);
+    if (val == null) {
+      throw new IllegalArgumentException("Cannot parse " + name + " into a known " + vocab.getSimpleName());
+    }
+    return val;
+  }
+  
+  /**
+   * Same as {@link #lookupEnum(String, Class)} } without IllegalArgumentException.
+   * On failure, this method will return Optional.absent().
+   *
+   * @param name
+   * @param vocab
+   * @param <T>
+   * @return instance of com.google.common.base.Optional, never null.
+   */
+  public static <T extends Enum<?>> Optional<T> lookup(String name, Class<T> vocab) {
+    return Optional.ofNullable(lookupEnumInternal(name, vocab));
+  }
+  
+  private static <T extends Enum<?>> T lookupEnumInternal(String name, Class<T> vocab) {
     if (Strings.isNullOrEmpty(name)) {
       return null;
     }
@@ -60,25 +81,7 @@ public final class VocabularyUtils {
         }
       }
     }
-    throw new IllegalArgumentException("Cannot parse " + name + " into a known " + vocab.getSimpleName());
-  }
-  
-  /**
-   * Same as {@link #lookupEnum(String, Class)} } without IllegalArgumentException.
-   * On failure, this method will return Optional.absent().
-   *
-   * @param name
-   * @param vocab
-   * @param <T>
-   * @return instance of com.google.common.base.Optional, never null.
-   */
-  public static <T extends Enum<?>> Optional<T> lookup(String name, Class<T> vocab) {
-    T result = null;
-    // this try/catch in needed until we replace all calls to lookupEnum() in favor of this method
-    try {
-      result = lookupEnum(name, vocab);
-    } catch (IllegalArgumentException iaEx) {/*ignore*/}
-    return Optional.ofNullable(result);
+    return null;
   }
   
   /**

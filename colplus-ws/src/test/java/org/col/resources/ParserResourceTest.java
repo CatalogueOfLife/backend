@@ -1,10 +1,8 @@
 package org.col.resources;
 
 import java.util.List;
-import javax.ws.rs.client.Client;
 import javax.ws.rs.core.GenericType;
 
-import io.dropwizard.client.JerseyClientBuilder;
 import io.dropwizard.testing.ResourceHelpers;
 import org.col.WsServer;
 import org.col.WsServerConfig;
@@ -16,6 +14,7 @@ import org.gbif.nameparser.api.Rank;
 import org.junit.ClassRule;
 import org.junit.Test;
 
+import static org.col.dw.ApiUtils.userCreds;
 import static org.junit.Assert.assertEquals;
 
 public class ParserResourceTest {
@@ -29,13 +28,10 @@ public class ParserResourceTest {
   
   @Test
   public void parseGet() {
-    Client client = new JerseyClientBuilder(RULE.getEnvironment()).build("test client");
-    
-    List<NameAccordingTo> resp = client.target(
+    List<NameAccordingTo> resp = userCreds(RULE.client().target(
         String.format("http://localhost:%d/parser/name", RULE.getLocalPort()))
         .queryParam("name", "Abies alba Mill.")
-        .request()
-        .get(PARSER_TYPE);
+    ).get(PARSER_TYPE);
     
     Name abies = new Name();
     abies.setGenus("Abies");

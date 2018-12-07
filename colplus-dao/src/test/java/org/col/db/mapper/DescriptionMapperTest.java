@@ -4,11 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.col.api.RandomUtils;
+import org.col.api.TestEntityGenerator;
 import org.col.api.model.Description;
 import org.col.api.vocab.Gazetteer;
 import org.col.api.vocab.Language;
 
-import static org.col.api.TestEntityGenerator.setUserManaged;
+import static org.col.api.TestEntityGenerator.setUserDate;
 
 /**
  *
@@ -28,7 +29,7 @@ public class DescriptionMapperTest extends TaxonExtensionMapperTest<Description,
 				d.setCategory("Etymology");
 				d.setDescription(RandomUtils.randomString(1000));
 				d.setLanguage(l);
-				ds.add(setUserManaged(d));
+				ds.add(TestEntityGenerator.setUserDate(d));
 			}
 		}
 		return ds;

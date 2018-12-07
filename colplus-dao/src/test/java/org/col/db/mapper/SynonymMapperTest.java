@@ -101,7 +101,7 @@ public class SynonymMapperTest extends MapperTestBase<SynonymMapper> {
     assertEquals(0, synonyms.size());
     
     // now add a few synonyms
-    Synonym syn = TestEntityGenerator.setUserManaged(new Synonym());
+    Synonym syn = TestEntityGenerator.setUserDate(new Synonym());
     syn.setOrigin(Origin.SOURCE);
     syn.setStatus(TaxonomicStatus.SYNONYM);
     synonymMapper.create(datasetKey, syn1.getId(), accKey, syn);

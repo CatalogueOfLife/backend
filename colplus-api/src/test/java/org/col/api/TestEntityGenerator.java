@@ -253,7 +253,7 @@ public class TestEntityGenerator {
    * Creates a new taxon with the specified id, belonging to the specified dataset.
    */
   public static Taxon newTaxon(int datasetKey, String id) {
-    Taxon t = setUserManaged(new Taxon());
+    Taxon t = setUserDate(new Taxon());
     t.setAccordingTo("Foo");
     t.setAccordingToDate(LocalDate.of(2010, 11, 24));
     t.setDatasetKey(datasetKey);
@@ -277,7 +277,7 @@ public class TestEntityGenerator {
   }
   
   public static Synonym newSynonym(TaxonomicStatus status, Name name, Taxon accepted) {
-    Synonym s = setUserManaged(new Synonym());
+    Synonym s = setUserDate(new Synonym());
     s.setId("syn" + ID_GEN.getAndIncrement());
     s.setName(name);
     s.setAccordingTo("non Döring 1999");
@@ -309,7 +309,7 @@ public class TestEntityGenerator {
   }
 
   public static Name newName(int datasetKey, String id, String scientificName, Rank rank) {
-    Name n = setUserManaged(new Name());
+    Name n = setUserDate(new Name());
     n.setId(id);
     n.setHomotypicNameId(id);
     n.setDatasetKey(datasetKey);
@@ -375,7 +375,7 @@ public class TestEntityGenerator {
   }
 
   public static Reference newReference(String title) {
-    Reference r = setUserManaged(new Reference());
+    Reference r = setUserDate(new Reference());
     r.setId("r" + ID_GEN.getAndIncrement());
     r.setDatasetKey(TestEntityGenerator.DATASET11.getKey());
     CslData csl = new CslData();
@@ -478,40 +478,48 @@ public class TestEntityGenerator {
     return nuw;
   }
   
-  public static <T extends UserManaged> List<T> nullifyUserManaged(List<T> managed) {
+  public static <T extends UserManaged> List<T> nullifyDate(List<T> managed) {
     for (T m : managed) {
-      nullifyUserManaged(m);
+      nullifyDate(m);
     }
     return managed;
   }
   
-  public static Taxon nullifyUserManaged(Taxon taxon) {
-    nullifyUserManaged((UserManaged) taxon);
-    nullifyUserManaged(taxon.getName());
+  public static Taxon nullifyDate(Taxon taxon) {
+    nullifyDate((UserManaged) taxon);
+    nullifyDate(taxon.getName());
     return taxon;
   }
   
-  public static Synonym nullifyUserManaged(Synonym syn) {
-    nullifyUserManaged((UserManaged) syn);
-    nullifyUserManaged(syn.getName());
+  public static Synonym nullifyDate(Synonym syn) {
+    nullifyDate((UserManaged) syn);
+    nullifyDate(syn.getName());
     return syn;
   }
   
-  public static <T extends UserManaged> T nullifyUserManaged(T managed) {
+  public static <T extends UserManaged> T nullifyDate(T managed) {
     managed.setCreated(null);
     managed.setModified(null);
     return managed;
   }
   
-  public static <T extends UserManaged> T setUserManaged(T managed) {
-    return setUserManaged(managed, Users.DB_INIT);
+  public static <T extends UserManaged> T nullifyUserDate(T managed) {
+    managed.setCreated(null);
+    managed.setCreatedBy(null);
+    managed.setModified(null);
+    managed.setModifiedBy(null);
+    return managed;
+  }
+
+  public static <T extends UserManaged> T setUserDate(T managed) {
+    return setUserDate(managed, Users.DB_INIT);
   }
   
-  public static <T extends UserManaged> T setUserManaged(T managed, Integer userKey) {
-    return setUserManaged(managed, userKey, LocalDateTime.now());
+  public static <T extends UserManaged> T setUserDate(T managed, Integer userKey) {
+    return setUserDate(managed, userKey, LocalDateTime.now());
   }
   
-  public static <T extends UserManaged> T setUserManaged(T managed, Integer userKey, LocalDateTime dateTime) {
+  public static <T extends UserManaged> T setUserDate(T managed, Integer userKey, LocalDateTime dateTime) {
     managed.setCreated(dateTime);
     managed.setCreatedBy(userKey);
     managed.setModified(dateTime);

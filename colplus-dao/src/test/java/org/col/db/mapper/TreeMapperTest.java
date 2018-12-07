@@ -10,7 +10,7 @@ import org.junit.Test;
 
 import java.util.List;
 
-import static org.col.api.TestEntityGenerator.setUserManaged;
+import static org.col.api.TestEntityGenerator.setUserDate;
 import static org.col.api.vocab.Datasets.DRAFT_COL;
 import static org.junit.Assert.*;
 
@@ -56,13 +56,13 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
     
     SectorMapper sm = mapper(SectorMapper.class);
     
-    Sector s1 = setUserManaged(new Sector());
+    Sector s1 = TestEntityGenerator.setUserDate(new Sector());
     s1.setColSourceKey(source.getKey());
     s1.setSubject(nameref("root-1"));
     s1.setTarget(nameref("t4"));
     sm.create(s1);
     
-    Sector s2 = setUserManaged(new Sector());
+    Sector s2 = TestEntityGenerator.setUserDate(new Sector());
     s2.setColSourceKey(source.getKey());
     s2.setSubject(nameref("root-2"));
     s2.setTarget(nameref("t5"));

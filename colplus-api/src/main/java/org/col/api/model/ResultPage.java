@@ -1,5 +1,6 @@
 package org.col.api.model;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nullable;
@@ -9,9 +10,12 @@ import javax.annotation.Nullable;
  *
  * @param <T> the type of the paging content
  */
-public class ResultPage<T> extends Page {
-  private final int total;
-  private final List<T> result;
+public class ResultPage<T> extends Page implements Iterable<T> {
+  private int total;
+  private List<T> result;
+  
+  public ResultPage() {
+  }
   
   public ResultPage(Page page, int total, List<T> result) {
     this.setOffset(page.getOffset());
@@ -38,11 +42,11 @@ public class ResultPage<T> extends Page {
   }
   
   public int size() {
-    return result.size();
+    return result == null ? 0 : result.size();
   }
   
   public boolean isEmpty() {
-    return result.isEmpty();
+    return result != null && result.isEmpty();
   }
   
   @Override
@@ -58,5 +62,10 @@ public class ResultPage<T> extends Page {
   @Override
   public int hashCode() {
     return Objects.hash(total, result);
+  }
+  
+  @Override
+  public Iterator<T> iterator() {
+    return result.iterator();
   }
 }

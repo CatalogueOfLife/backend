@@ -4,15 +4,16 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Collections;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import com.google.common.collect.ImmutableSet;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.jdbc.ScriptRunner;
 import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.model.ColUser;
 import org.col.db.PgConfig;
 import org.col.db.PgSetupRule;
@@ -30,6 +31,7 @@ import org.junit.rules.ExternalResource;
  */
 public class InitMybatisRule extends ExternalResource {
   public static final ColUser TEST_USER = new ColUser();
+  
   static {
     TEST_USER.setUsername("test");
     TEST_USER.setFirstname("Tim");
@@ -37,17 +39,19 @@ public class InitMybatisRule extends ExternalResource {
     TEST_USER.setEmail("tim.test@mailinator.com");
     TEST_USER.getRoles().add(ColUser.Role.ADMIN);
   }
+  
   final private TestData testData;
   private SqlSession session;
+  private final Supplier<SqlSessionFactory> sqlSessionFactorySupplier;
   
   public enum TestData {
-    NONE(1,2,3),
+    NONE(1, 2, 3),
     APPLE(2, 11, 12),
     
     /**
      * Inits the datasets table with real col data from colplus-repo
      */
-    DATASETS(2,3);
+    DATASETS(2, 3);
     
     final Set<Integer> datasetKeys;
     
@@ -64,16 +68,33 @@ public class InitMybatisRule extends ExternalResource {
     return new InitMybatisRule(TestData.NONE);
   }
   
+  public static InitMybatisRule empty(SqlSessionFactory sqlSessionFactory) {
+    return new InitMybatisRule(TestData.NONE, () -> sqlSessionFactory);
+  }
+  
   public static InitMybatisRule apple() {
     return new InitMybatisRule(TestData.APPLE);
+  }
+  
+  public static InitMybatisRule apple(SqlSessionFactory sqlSessionFactory) {
+    return new InitMybatisRule(TestData.APPLE, () -> sqlSessionFactory);
   }
   
   public static InitMybatisRule datasets() {
     return new InitMybatisRule(TestData.DATASETS);
   }
   
-  private InitMybatisRule(TestData testData) {
+  public static InitMybatisRule datasets(SqlSessionFactory sqlSessionFactory) {
+    return new InitMybatisRule(TestData.DATASETS, () -> sqlSessionFactory);
+  }
+  
+  private InitMybatisRule(TestData testData, Supplier<SqlSessionFactory> sqlSessionFactorySupplier) {
     this.testData = testData;
+    this.sqlSessionFactorySupplier = sqlSessionFactorySupplier;
+  }
+  
+  private InitMybatisRule(TestData testData) {
+    this(testData, () -> PgSetupRule.getSqlSessionFactory());
   }
   
   public <T> T getMapper(Class<T> mapperClazz) {
@@ -91,8 +112,7 @@ public class InitMybatisRule extends ExternalResource {
   @Override
   protected void before() throws Throwable {
     super.before();
-    System.out.println("Open new mybatis session");
-    session = PgSetupRule.getSqlSessionFactory().openSession(false);
+    session = sqlSessionFactorySupplier.get().openSession(false);
     // create required partitions to load data
     partition();
     truncate();
@@ -118,52 +138,40 @@ public class InitMybatisRule extends ExternalResource {
     }
   }
   
-  private void truncate() {
+  private void truncate() throws SQLException {
     System.out.println("Truncate tables");
-    try (Connection con = PgSetupRule.getConnection()) {
-      con.setAutoCommit(false);
-      java.sql.Statement st = con.createStatement();
-      st.execute("TRUNCATE coluser CASCADE");
-      st.execute("TRUNCATE dataset CASCADE");
-      con.commit();
-      st.close();
-      
-    } catch (SQLException e) {
-      throw new RuntimeException(e);
-    }
+    java.sql.Statement st = session.getConnection().createStatement();
+    st.execute("TRUNCATE coluser CASCADE");
+    st.execute("TRUNCATE dataset CASCADE");
+    session.getConnection().commit();
+    st.close();
   }
   
-  private void loadData() {
-    try (Connection con = PgSetupRule.getConnection()) {
-      con.setAutoCommit(false);
-      ScriptRunner runner = new ScriptRunner(con);
-      runner.setSendFullScript(true);
-      
-      // common data for all tests and even the empty one
-      runner.runScript(Resources.getResourceAsReader(PgConfig.DATA_FILE));
-      con.commit();
-      
-      if (testData != TestData.NONE) {
-        System.out.format("Load %s test data\n\n", testData);
-        switch (testData) {
-          case DATASETS:
-            // COL GSDs
-            try (Reader datasets = new InputStreamReader(PgConfig.COL_DATASETS_URI.toURL().openStream(), StandardCharsets.UTF_8)) {
-              runner.runScript(datasets);
-              con.commit();
-            }
-            // GBIF Backbone datasets
-            runner.runScript(Resources.getResourceAsReader(PgConfig.GBIF_DATASETS_FILE));
-            break;
-          default:
-            runner.runScript(Resources.getResourceAsReader(testData.name().toLowerCase() + ".sql"));
-        }
+  private void loadData() throws SQLException, IOException {
+    ScriptRunner runner = new ScriptRunner(session.getConnection());
+    runner.setSendFullScript(true);
+    
+    // common data for all tests and even the empty one
+    runner.runScript(Resources.getResourceAsReader(PgConfig.DATA_FILE));
+    session.getConnection().commit();
+    
+    if (testData != TestData.NONE) {
+      System.out.format("Load %s test data\n\n", testData);
+      switch (testData) {
+        case DATASETS:
+          // COL GSDs
+          try (Reader datasets = new InputStreamReader(PgConfig.COL_DATASETS_URI.toURL().openStream(), StandardCharsets.UTF_8)) {
+            runner.runScript(datasets);
+            session.getConnection().commit();
+          }
+          // GBIF Backbone datasets
+          runner.runScript(Resources.getResourceAsReader(PgConfig.GBIF_DATASETS_FILE));
+          break;
+        default:
+          runner.runScript(Resources.getResourceAsReader(testData.name().toLowerCase() + ".sql"));
       }
-      con.commit();
-      
-    } catch (SQLException | IOException e) {
-      throw new RuntimeException(e);
     }
+    session.getConnection().commit();
   }
   
 }

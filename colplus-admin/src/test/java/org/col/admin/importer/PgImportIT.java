@@ -31,7 +31,7 @@ import org.col.db.mapper.*;
 import org.gbif.nameparser.api.Rank;
 import org.junit.*;
 
-import static org.col.api.TestEntityGenerator.setUserManaged;
+import static org.col.api.TestEntityGenerator.setUserDate;
 import static org.col.api.vocab.DataFormat.*;
 import static org.junit.Assert.*;
 
@@ -282,7 +282,7 @@ public class PgImportIT {
         assertNotNull(d.getVerbatimKey());
         d.setKey(null);
         d.setVerbatimKey(null);
-        setUserManaged(d, null, null);
+        setUserDate(d, null, null);
       });
       Set<Distribution> imported = Sets.newHashSet(info.getDistributions());
       

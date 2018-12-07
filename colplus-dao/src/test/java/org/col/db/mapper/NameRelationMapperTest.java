@@ -58,7 +58,7 @@ public class NameRelationMapperTest extends MapperTestBase<NameRelationMapper> {
   }
   
   private static NameRelation newNameAct(NomRelType type) {
-    NameRelation na = TestEntityGenerator.setUserManaged(new NameRelation());
+    NameRelation na = TestEntityGenerator.setUserDate(new NameRelation());
     na.setDatasetKey(DATASET11.getKey());
     na.setType(type);
     na.setNameId(NAME1.getId());

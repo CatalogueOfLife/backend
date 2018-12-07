@@ -1,0 +1,11 @@
+type: map
+users:
+  - username: manu
+    password: 234rtgh
+    role:
+  - username: Silver
+    password: cg52346f63
+    role: EDITOR
+  - username: emil
+    password: 234rtgh
+    role: ADMIN
