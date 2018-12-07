@@ -87,6 +87,8 @@ public class IdentityService {
           mapper.create(user);
           user.setCreated(LocalDateTime.now());
         }
+      } catch (RuntimeException e) {
+        LOG.error("IdentityService error", e);
       }
       cache(user);
       

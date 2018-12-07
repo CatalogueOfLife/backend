@@ -4,6 +4,7 @@ import java.sql.CallableStatement;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.ibatis.type.BaseTypeHandler;
@@ -38,7 +39,7 @@ public class HstoreMapTypeHandler extends BaseTypeHandler<Map<String, String>> {
   }
   
   private Map<String, String> fromString(String hstring) {
-    return HStoreConverter.fromString(hstring);
+    return hstring == null ? new HashMap<>() : HStoreConverter.fromString(hstring);
   }
   
 }

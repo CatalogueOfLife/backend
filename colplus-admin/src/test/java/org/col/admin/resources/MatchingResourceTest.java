@@ -12,7 +12,6 @@ import org.gbif.nameparser.api.Rank;
 import org.junit.ClassRule;
 import org.junit.Test;
 
-import static org.col.dw.ApiUtils.userCreds;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -24,10 +23,10 @@ public class MatchingResourceTest {
   
   @Test
   public void match() {
-    NameMatch match = userCreds(RULE.client().target(
+    NameMatch match = RULE.client().target(
         String.format("http://localhost:%d/name/matching", RULE.getLocalPort()))
         .queryParam("q", "Abies alba Mill.")
-    ).get(NameMatch.class);
+        .request().get(NameMatch.class);
     
     Name abies = new Name();
     abies.setGenus("Abies");

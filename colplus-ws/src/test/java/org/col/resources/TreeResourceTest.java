@@ -26,7 +26,7 @@ public class TreeResourceTest extends ResourceTestBase {
   
   @Test
   public void get() {
-    List<TreeNode> root = userCreds(base.path("/11/tree")).get(LIST_TYPE);
+    List<TreeNode> root = base.path("/11/tree").request().get(LIST_TYPE);
     assertEquals(2, root.size());
   }
   

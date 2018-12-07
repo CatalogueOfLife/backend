@@ -39,11 +39,15 @@ public class TreeResource {
                        @Auth ColUser user, @Context SqlSession session) {
 
     NameMapper nm = session.getMapper(NameMapper.class);
-    Name n = newKey(nm.getByTaxon(obj.getDatasetKey(), obj.getId()));
-    
+    Name n = nm.getByTaxon(obj.getDatasetKey(), obj.getId());
+    if (n == null) {
+      throw new IllegalArgumentException("NameID " + obj.getId() + " not existing in dataset " + obj.getDatasetKey());
+    }
+    newKey(n);
+  
     if (n.getPublishedInId() != null) {
       ReferenceMapper rm = session.getMapper(ReferenceMapper.class);
-      Reference ref = newKey(rm.get(obj.getDatasetKey(), obj.getId()));
+      Reference ref = newKey(rm.get(obj.getDatasetKey(), n.getPublishedInId()));
       ref.setDatasetKey(datasetKey);
       ref.applyUser(user);
       rm.create(ref);

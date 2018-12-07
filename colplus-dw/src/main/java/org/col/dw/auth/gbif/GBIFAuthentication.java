@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import javax.ws.rs.core.HttpHeaders;
+
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
@@ -91,7 +93,7 @@ public class GBIFAuthentication implements AuthenticationProvider {
   @VisibleForTesting
   boolean authenticateGBIF(String username, String password) {
     HttpGet get = new HttpGet(loginUri);
-    get.addHeader("Authorization", basicAuthHeader(username, password));
+    get.addHeader(HttpHeaders.AUTHORIZATION, basicAuthHeader(username, password));
     try (CloseableHttpResponse resp = http.execute(get)) {
       LOG.debug("GBIF authentication response for {}: {}", username, resp);
       return resp.getStatusLine().getStatusCode() == 200;
@@ -101,8 +103,7 @@ public class GBIFAuthentication implements AuthenticationProvider {
     return false;
   }
   
-  @VisibleForTesting
-  static String basicAuthHeader(String username, String password) {
+  public static String basicAuthHeader(String username, String password) {
     String cred = username + ":" + password;
     String base64 = BaseEncoding.base64().encode(cred.getBytes(StandardCharsets.UTF_8));
     return "Basic " + base64;

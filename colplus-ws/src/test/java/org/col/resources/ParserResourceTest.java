@@ -14,7 +14,6 @@ import org.gbif.nameparser.api.Rank;
 import org.junit.ClassRule;
 import org.junit.Test;
 
-import static org.col.dw.ApiUtils.userCreds;
 import static org.junit.Assert.assertEquals;
 
 public class ParserResourceTest {
@@ -28,10 +27,11 @@ public class ParserResourceTest {
   
   @Test
   public void parseGet() {
-    List<NameAccordingTo> resp = userCreds(RULE.client().target(
+    List<NameAccordingTo> resp = RULE.client().target(
         String.format("http://localhost:%d/parser/name", RULE.getLocalPort()))
         .queryParam("name", "Abies alba Mill.")
-    ).get(PARSER_TYPE);
+        .request()
+        .get(PARSER_TYPE);
     
     Name abies = new Name();
     abies.setGenus("Abies");

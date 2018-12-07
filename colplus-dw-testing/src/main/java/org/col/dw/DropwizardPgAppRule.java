@@ -14,7 +14,6 @@ import org.col.db.EmbeddedColPg;
 import org.col.db.PgConfig;
 import org.col.db.PgSetupRule;
 import org.glassfish.jersey.client.JerseyClientBuilder;
-import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -100,8 +99,8 @@ public class DropwizardPgAppRule<C extends PgAppConfig> extends DropwizardAppRul
   @Override
   protected JerseyClientBuilder clientBuilder() {
     JerseyClientBuilder builder = super.clientBuilder();
-    HttpAuthenticationFeature feature = HttpAuthenticationFeature.basicBuilder().build();
-    builder.register(feature);
+    BasicAuthClientFilter basicAuthFilter = new BasicAuthClientFilter();
+    builder.register(basicAuthFilter);
     return builder;
   }
   

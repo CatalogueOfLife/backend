@@ -6,6 +6,7 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
+import javax.ws.rs.core.HttpHeaders;
 
 import com.google.common.base.Preconditions;
 import com.google.common.io.BaseEncoding;
@@ -49,8 +50,6 @@ public class GbifTrustedAuth {
   private static final Logger LOG = LoggerFactory.getLogger(GbifTrustedAuth.class);
   
   private static final String ALGORITHM = "HmacSHA1";
-  private static final String HEADER_AUTHORIZATION = "Authorization";
-  private static final String HEADER_CONTENT_TYPE = "Content-Type";
   private static final String GBIF_SCHEME = "GBIF";
   private static final String HEADER_GBIF_USER = "x-gbif-user";
   private static final String HEADER_ORIGINAL_REQUEST_URL = "x-url";
@@ -76,8 +75,8 @@ public class GbifTrustedAuth {
     sb.append(req.getMethod());
     sb.append(NEWLINE);
     sb.append(getCanonicalizedPath(req.getURI()));
-    
-    appendHeader(sb, req.getFirstHeader(HEADER_CONTENT_TYPE), false);
+  
+    appendHeader(sb, req.getFirstHeader(HttpHeaders.CONTENT_TYPE), false);
     appendHeader(sb, req.getFirstHeader(HEADER_GBIF_USER), true);
     
     LOG.debug("GBIF auth string to sign:\n{}", sb.toString());
@@ -151,7 +150,7 @@ public class GbifTrustedAuth {
     String header = buildAuthHeader(appKey, signature);
     // add authorization header
     LOG.debug("Adding authentication header to request {} for proxied user {} : {}", request.getURI(), user, header);
-    request.addHeader(HEADER_AUTHORIZATION, header);
+    request.addHeader(HttpHeaders.AUTHORIZATION, header);
   }
   
 }

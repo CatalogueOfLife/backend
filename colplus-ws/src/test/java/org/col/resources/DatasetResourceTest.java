@@ -36,7 +36,7 @@ public class DatasetResourceTest extends ResourceTestBase {
   @Test
   public void list() {
     Page page = new Page(0,10);
-    ResultPage<Dataset> resp = userCreds(applyPage(base, page)).get(RESULT_PAGE);
+    ResultPage<Dataset> resp = applyPage(base, page).request().get(RESULT_PAGE);
     
     assertEquals(10, resp.size());
     assertTrue(resp.getTotal() > 200);
@@ -46,14 +46,14 @@ public class DatasetResourceTest extends ResourceTestBase {
   
     DatasetSearchRequest req = DatasetSearchRequest.byQuery("Catalogue");
     req.setSortBy(DatasetSearchRequest.SortBy.TITLE);
-    resp = userCreds(applySearch(base, req, page)).get(RESULT_PAGE);
+    resp = applySearch(base, req, page).request().get(RESULT_PAGE);
   
     assertEquals(8, resp.size());
     assertEquals("Catalogue of Afrotropical Bees", resp.getResult().get(0).getTitle());
   
     req.setFormat(DataFormat.DWCA);
     req.setContributesTo(Sets.newHashSet(Catalogue.COL, Catalogue.PCAT));
-    resp = userCreds(applySearch(base, req, page)).get(RESULT_PAGE);
+    resp = applySearch(base, req, page).request().get(RESULT_PAGE);
   
     assertEquals(5, resp.size());
     assertEquals("Catalogue of Afrotropical Bees", resp.getResult().get(0).getTitle());
@@ -70,14 +70,14 @@ public class DatasetResourceTest extends ResourceTestBase {
     Integer key = editorCreds(base).post(json(d), Integer.class);
     d.setKey(key);
     
-    Dataset d2 = userCreds(base.path(key.toString())).get(Dataset.class);
+    Dataset d2 = base.path(key.toString()).request().get(Dataset.class);
     
     assertEquals(nullifyUserDate(d2), nullifyUserDate(d));
   }
   
   @Test
   public void get() {
-    Dataset d = userCreds(base.path("2035")).get(Dataset.class);
+    Dataset d = base.path("2035").request().get(Dataset.class);
     assertNotNull(d);
     assertNull(d.getDeleted());
     assertEquals("Catalogue of Afrotropical Bees", d.getTitle());
@@ -93,7 +93,7 @@ public class DatasetResourceTest extends ResourceTestBase {
     Response resp = editorCreds(base.path("2035")).delete();
     assertEquals(204, resp.getStatus());
   
-    Dataset d = userCreds(base.path("2035")).get(Dataset.class);
+    Dataset d = base.path("2035").request().get(Dataset.class);
     assertNotNull(d.getDeleted());
   }
   
