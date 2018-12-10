@@ -8,7 +8,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.col.api.vocab.License;
 import org.col.api.vocab.MediaType;
 
-public class Media implements Referenced, VerbatimEntity, IntKey {
+public class Media extends DataEntity implements Referenced, VerbatimEntity, IntKey {
   @JsonIgnore
   private Integer key;
   private Integer verbatimKey;
@@ -16,8 +16,8 @@ public class Media implements Referenced, VerbatimEntity, IntKey {
   private MediaType type;
   private String format;
   private String title;
-  private LocalDate created;
-  private String creator;
+  private LocalDate captured;
+  private String capturedBy;
   private License license;
   private URI link;
   private String referenceId;
@@ -73,23 +73,23 @@ public class Media implements Referenced, VerbatimEntity, IntKey {
   public void setTitle(String title) {
     this.title = title;
   }
-  
-  public LocalDate getCreated() {
-    return created;
+
+  public LocalDate getCaptured() {
+    return captured;
   }
-  
-  public void setCreated(LocalDate created) {
-    this.created = created;
+
+  public void setCaptured(LocalDate captured) {
+    this.captured = captured;
   }
-  
-  public String getCreator() {
-    return creator;
+
+  public String getCapturedBy() {
+    return capturedBy;
   }
-  
-  public void setCreator(String creator) {
-    this.creator = creator;
+
+  public void setCapturedBy(String capturedBy) {
+    this.capturedBy = capturedBy;
   }
-  
+
   public License getLicense() {
     return license;
   }
@@ -115,28 +115,28 @@ public class Media implements Referenced, VerbatimEntity, IntKey {
   public void setReferenceId(String referenceId) {
     this.referenceId = referenceId;
   }
-  
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
+    if (!super.equals(o)) return false;
     Media media = (Media) o;
     return Objects.equals(key, media.key) &&
-        Objects.equals(verbatimKey, media.verbatimKey) &&
-        Objects.equals(url, media.url) &&
-        type == media.type &&
-        Objects.equals(format, media.format) &&
-        Objects.equals(title, media.title) &&
-        Objects.equals(created, media.created) &&
-        Objects.equals(creator, media.creator) &&
-        license == media.license &&
-        Objects.equals(link, media.link) &&
-        Objects.equals(referenceId, media.referenceId);
+            Objects.equals(verbatimKey, media.verbatimKey) &&
+            Objects.equals(url, media.url) &&
+            type == media.type &&
+            Objects.equals(format, media.format) &&
+            Objects.equals(title, media.title) &&
+            Objects.equals(captured, media.captured) &&
+            Objects.equals(capturedBy, media.capturedBy) &&
+            license == media.license &&
+            Objects.equals(link, media.link) &&
+            Objects.equals(referenceId, media.referenceId);
   }
-  
+
   @Override
   public int hashCode() {
-    
-    return Objects.hash(key, verbatimKey, url, type, format, title, created, creator, license, link, referenceId);
+    return Objects.hash(super.hashCode(), key, verbatimKey, url, type, format, title, captured, capturedBy, license, link, referenceId);
   }
 }

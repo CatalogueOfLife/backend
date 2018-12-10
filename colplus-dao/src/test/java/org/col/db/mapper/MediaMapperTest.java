@@ -1,13 +1,16 @@
 package org.col.db.mapper;
 
+import org.col.api.RandomUtils;
+import org.col.api.TestEntityGenerator;
+import org.col.api.model.Media;
+import org.col.api.vocab.License;
+import org.col.api.vocab.MediaType;
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.col.api.RandomUtils;
-import org.col.api.model.Media;
-import org.col.api.vocab.License;
-import org.col.api.vocab.MediaType;
+import static org.col.api.TestEntityGenerator.setUserDate;
 
 /**
  *
@@ -27,12 +30,12 @@ public class MediaMapperTest extends TaxonExtensionMapperTest<Media, MediaMapper
         d.setType(t);
         d.setFormat("Etymology");
         d.setTitle(RandomUtils.randomString(100));
-        d.setCreated(LocalDate.now());
-        d.setCreator(RandomUtils.randomString(20));
+        d.setCaptured(LocalDate.now());
+        d.setCapturedBy(RandomUtils.randomString(20));
         d.setLicense(l);
         d.setLink(RandomUtils.randomUri());
         d.setUrl(RandomUtils.randomUri());
-        ds.add(d);
+        ds.add(TestEntityGenerator.setUserDate(d));
       }
     }
 		return ds;

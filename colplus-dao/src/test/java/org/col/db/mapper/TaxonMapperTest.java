@@ -17,6 +17,7 @@ import org.javers.core.diff.Diff;
 import org.junit.Test;
 
 import static org.col.api.TestEntityGenerator.DATASET11;
+import static org.col.api.TestEntityGenerator.nullifyDate;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -37,8 +38,8 @@ public class TaxonMapperTest extends MapperTestBase<TaxonMapper> {
     mapper().create(in);
     assertNotNull(in.getId());
     commit();
-    Taxon out = mapper().get(in.getDatasetKey(), in.getId());
-    
+    Taxon out = TestEntityGenerator.nullifyDate(mapper().get(in.getDatasetKey(), in.getId()));
+    TestEntityGenerator.nullifyDate(in);
     Javers javers = JaversBuilder.javers().build();
     Diff diff = javers.compare(in, out);
     System.out.println(diff);

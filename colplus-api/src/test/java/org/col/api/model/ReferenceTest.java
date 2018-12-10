@@ -1,7 +1,8 @@
-package org.col.api.jackson;
+package org.col.api.model;
 
 import org.col.api.TestEntityGenerator;
-import org.col.api.model.Reference;
+import org.col.api.jackson.ApiModule;
+import org.col.api.jackson.SerdeTestBase;
 import org.junit.Test;
 
 import static org.junit.Assert.assertFalse;
@@ -10,9 +11,9 @@ import static org.junit.Assert.assertTrue;
 /**
  *
  */
-public class ReferenceSerdeTest extends SerdeTestBase<Reference> {
+public class ReferenceTest extends SerdeTestBase<Reference> {
   
-  public ReferenceSerdeTest() {
+  public ReferenceTest() {
     super(Reference.class);
   }
   

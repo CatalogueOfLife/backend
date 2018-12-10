@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.Configuration;
 import io.dropwizard.client.JerseyClientConfiguration;
 import org.col.db.PgConfig;
-import org.col.dw.auth.AuthConfiguration;
+import org.col.dw.auth.AuthenticationProviderFactory;
 import org.col.dw.cors.CorsBundleConfiguration;
 import org.col.dw.cors.CorsConfiguration;
 import org.col.img.ImgConfig;
@@ -23,7 +23,13 @@ public class PgAppConfig extends Configuration implements CorsBundleConfiguratio
   
   @Valid
   @NotNull
-  public AuthConfiguration auth = new AuthConfiguration();
+  public AuthenticationProviderFactory auth;
+  
+  /**
+   * Json Web Token used to trust in externally authenticated users.
+   */
+  @NotNull
+  public String jwtKey = "bhc564c76VT-d/722mc";
   
   @Valid
   @NotNull

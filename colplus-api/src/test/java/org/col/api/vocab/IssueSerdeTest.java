@@ -10,10 +10,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.col.api.jackson;
+package org.col.api.vocab;
 
 
-import org.col.api.vocab.Issue;
+import org.col.api.jackson.EnumSerdeTestBase;
 
 public class IssueSerdeTest extends EnumSerdeTestBase<Issue> {
   

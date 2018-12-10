@@ -3,6 +3,7 @@ package org.col.dw.jersey.provider;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
+import java.util.Optional;
 import java.util.regex.Pattern;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.ext.ParamConverter;
@@ -12,6 +13,7 @@ import javax.ws.rs.ext.Provider;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Strings;
 import org.col.api.jackson.ApiModule;
+import org.col.api.util.VocabularyUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,16 +42,21 @@ public class EnumParamConverterProvider implements ParamConverterProvider {
     }
     
     @Override
+    @SuppressWarnings("unchecked")
     public T fromString(String value) {
       if (Strings.isNullOrEmpty(value)) return null;
-      try {
-        // we need to quote the value so it looks like a json value
-        return ApiModule.MAPPER.readValue('"' + value.trim() + '"', type);
-        
-      } catch (IOException e) {
-        LOG.debug("Failed to convert {} into {}", value, type, e);
-        throw new IllegalArgumentException("Invalid " + type.getSimpleName() + " value: " + value);
-      }
+      
+      // first try raw enum value without ApiModule transformations
+      Optional<T> eVal = (Optional<T>) VocabularyUtils.lookup(value, (Class<Enum>) type);
+      // we need to quote the value so it looks like a json value
+      return eVal.orElseGet(() -> {
+        try {
+          return ApiModule.MAPPER.readValue('"' + value.trim() + '"', type);
+        } catch (IOException e) {
+          LOG.debug("Failed to convert {} into {}", value, type, e);
+          throw new IllegalArgumentException("Invalid " + type.getSimpleName() + " value: " + value);
+        }
+      });
     }
     
     @Override

@@ -6,10 +6,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.col.api.RandomUtils;
+import org.col.api.TestEntityGenerator;
 import org.col.api.model.VernacularName;
 import org.col.api.vocab.Language;
 
 import static org.col.api.TestEntityGenerator.newVernacularName;
+import static org.col.api.TestEntityGenerator.setUserDate;
 
 /**
  *
@@ -26,7 +28,7 @@ public class VernacularNameMapperTest extends TaxonExtensionMapperTest<Vernacula
 		for (Language l : Language.values()) {
 			VernacularName v = newVernacularName(RandomUtils.randomString(30));
 			v.setLanguage(l);
-			objs.add(v);
+			objs.add(TestEntityGenerator.setUserDate(v));
 		}
 		// now sort by name as this is the order we expect in listByTaxon
 		return objs.stream()

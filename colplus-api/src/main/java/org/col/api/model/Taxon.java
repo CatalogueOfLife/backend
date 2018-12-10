@@ -14,7 +14,7 @@ import org.col.api.vocab.TaxonomicStatus;
 /**
  *
  */
-public class Taxon implements NameUsage {
+public class Taxon extends DataEntity implements NameUsage {
   
   private String id;
   

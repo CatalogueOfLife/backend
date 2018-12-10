@@ -16,7 +16,7 @@
             <result property="lifezones" column="lifezones" typeHandler="org.col.db.type.LifezoneSetTypeHandler" />
             <association property="name" javaType="Name" resultMap="org.col.db.mapper.NameMapper.nameResultMap" columnPrefix="n_" />
         </association>
-        <collection property="vernacularNames" ofType="VernacularName" autoMapping="true">
+        <collection property="vernacularNames" ofType="VernacularName" autoMapping="true" notNullColumn="v_key">
             <id property="key" column="v_key"/>
         </collection>
     </resultMap>

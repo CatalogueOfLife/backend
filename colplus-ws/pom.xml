@@ -129,6 +129,12 @@
 
         <!-- TEST SCOPE -->
         <dependency>
+            <groupId>org.col</groupId>
+            <artifactId>colplus-api</artifactId>
+            <classifier>tests</classifier>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>
@@ -138,6 +144,13 @@
             <artifactId>colplus-dw-testing</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.col</groupId>
+            <artifactId>colplus-dao</artifactId>
+            <classifier>tests</classifier>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <build>

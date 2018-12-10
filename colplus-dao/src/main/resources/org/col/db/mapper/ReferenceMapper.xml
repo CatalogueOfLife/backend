@@ -10,7 +10,11 @@
         r.verbatim_key,
         r.csl,
         r.citation,
-        r.year
+        r.year,
+        r.created,
+        r.created_by,
+        r.modified,
+        r.modified_by
     </sql>
 
     <sql id="COLS">
@@ -19,7 +23,9 @@
         verbatim_key,
         csl,
         citation,
-        year
+        year,
+        created_by,
+        modified_by
     </sql>
 
     <sql id="PROPS">
@@ -28,7 +34,9 @@
         #{verbatimKey},
         #{csl, typeHandler=org.col.db.type.CslJsonHandler}::jsonb,
         #{citation},
-        #{year}
+        #{year},
+        #{createdBy},
+        #{modifiedBy}
     </sql>
 
     <sql id="FROM">
@@ -73,8 +81,8 @@
     </select>
 
     <insert id="create" parameterType="Reference" useGeneratedKeys="true" keyProperty="key">
-        INSERT INTO reference_${datasetKey} ( <include refid="COLS" /> )
-        VALUES ( <include refid="PROPS" /> )
+        INSERT INTO reference_${datasetKey} ( <include refid="COLS" />, created, modified)
+        VALUES ( <include refid="PROPS" />, now(), now())
     </insert>
 
     <insert id="linkToTaxon">

@@ -16,8 +16,8 @@ public class JwtCodec {
   private static final String ISSUER = "col.plus";
   private final byte[] signingKey;
   
-  public JwtCodec(AuthConfiguration cfg) {
-    signingKey = cfg.signingKey.getBytes(StandardCharsets.UTF_8);
+  public JwtCodec(String signingKey) {
+    this.signingKey = signingKey.getBytes(StandardCharsets.UTF_8);
   }
   
   public String generate(ColUser user) throws JwtException {

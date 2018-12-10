@@ -1,5 +1,7 @@
 package org.col.api.model;
 
+import org.col.api.TestEntityGenerator;
+import org.col.api.jackson.SerdeTestBase;
 import org.col.api.vocab.Issue;
 import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.dwc.terms.DwcTerm;
@@ -9,8 +11,23 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-public class VerbatimRecordTest {
+public class VerbatimRecordTest extends SerdeTestBase<VerbatimRecord> {
+  
   private VerbatimRecord v;
+  
+  public VerbatimRecordTest() {
+    super(VerbatimRecord.class);
+  }
+  
+  @Override
+  protected void debug(String json, Wrapper<VerbatimRecord> wrapper, Wrapper<VerbatimRecord> wrapper2) {
+    //System.out.println(json);
+  }
+  
+  @Override
+  public VerbatimRecord genTestValue() throws Exception {
+    return TestEntityGenerator.createVerbatim();
+  }
   
   @Before
   public void init() {

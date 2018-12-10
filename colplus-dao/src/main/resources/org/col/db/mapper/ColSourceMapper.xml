@@ -29,7 +29,10 @@
       synonyms_count,
       vernaculars_count,
       names_count,
-      created
+      created_by,
+      modified_by,
+      created,
+      modified
     </sql>
 
     <sql id="SELECT-FULL">
@@ -57,7 +60,10 @@
         s.synonyms_count,
         s.vernaculars_count,
         s.names_count,
-        s.created
+        s.created_by,
+        s.modified_by,
+        s.created,
+        s.modified
     </sql>
 
     <sql id="COLS">
@@ -83,7 +89,9 @@
         extinct_infraspecific_count,
         synonyms_count,
         vernaculars_count,
-        names_count
+        names_count,
+        created_by,
+        modified_by
     </sql>
 
     <sql id="PROPS">
@@ -109,7 +117,9 @@
       #{extinctInfraspecificCount},
       #{synonymsCount},
       #{vernacularsCount},
-      #{namesCount}
+      #{namesCount},
+      #{createdBy},
+      #{modifiedBy}
     </sql>
 
     <sql id="FROM">
@@ -150,13 +160,13 @@
     </select>
 
     <insert id="create" parameterType="ColSource" useGeneratedKeys="true" keyProperty="key">
-      INSERT INTO col_source (<include refid="COLS" />, created)
-             VALUES (<include refid="PROPS" />, now())
+      INSERT INTO col_source (<include refid="COLS" />)
+             VALUES (<include refid="PROPS" />)
     </insert>
 
     <update id="update" parameterType="ColSource">
         UPDATE col_source
-        SET (<include refid="COLS" />) = (<include refid="PROPS" />)
+        SET (<include refid="COLS" />, modified) = (<include refid="PROPS" />, now())
         WHERE key = #{key}
     </update>
 

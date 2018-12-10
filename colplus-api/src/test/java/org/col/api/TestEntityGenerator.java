@@ -2,6 +2,7 @@ package org.col.api;
 
 import java.net.URI;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
@@ -11,28 +12,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 
-import org.col.api.model.BareName;
-import org.col.api.model.ColUser;
-import org.col.api.model.CslData;
-import org.col.api.model.CslDate;
-import org.col.api.model.CslName;
-import org.col.api.model.Dataset;
-import org.col.api.model.Name;
-import org.col.api.model.NameRef;
-import org.col.api.model.Reference;
-import org.col.api.model.Synonym;
-import org.col.api.model.Synonymy;
-import org.col.api.model.Taxon;
-import org.col.api.model.VerbatimRecord;
-import org.col.api.model.VernacularName;
+import org.col.api.model.*;
 import org.col.api.search.NameUsageWrapper;
-import org.col.api.vocab.CSLRefType;
-import org.col.api.vocab.Country;
-import org.col.api.vocab.Issue;
-import org.col.api.vocab.Language;
-import org.col.api.vocab.Lifezone;
-import org.col.api.vocab.Origin;
-import org.col.api.vocab.TaxonomicStatus;
+import org.col.api.vocab.*;
 import org.gbif.dwc.terms.DcTerm;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.GbifTerm;
@@ -56,7 +38,7 @@ public class TestEntityGenerator {
   public final static ColUser USER_USER = new ColUser();
   public final static ColUser USER_EDITOR = new ColUser();
   public final static ColUser USER_ADMIN = new ColUser();
-
+  
   /**
    * Corresponds exactly to dataset record inserted via apple.sql with key=11
    */
@@ -108,14 +90,14 @@ public class TestEntityGenerator {
   public final static Reference REF3 = new Reference();
 
   static {
-    USER_ADMIN.setKey(1);
+    USER_ADMIN.setKey(91);
     USER_ADMIN.setUsername("'admin'");
     USER_ADMIN.setFirstname("Stan");
     USER_ADMIN.setLastname("Sterling");
     USER_ADMIN.setEmail("stan@mailinator.com");
     USER_ADMIN.getRoles().add(ColUser.Role.ADMIN);
 
-    USER_EDITOR.setKey(2);
+    USER_EDITOR.setKey(92);
     USER_EDITOR.setUsername("editor");
     USER_EDITOR.setFirstname("Yuri");
     USER_EDITOR.setLastname("Roskov");
@@ -123,7 +105,7 @@ public class TestEntityGenerator {
     USER_EDITOR.getRoles().add(ColUser.Role.USER);
     USER_EDITOR.getRoles().add(ColUser.Role.EDITOR);
 
-    USER_USER.setKey(3);
+    USER_USER.setKey(93);
     USER_USER.setUsername("'user'");
     USER_USER.setFirstname("Frank");
     USER_USER.setLastname("Müller");
@@ -135,13 +117,19 @@ public class TestEntityGenerator {
 
     REF1.setId("ref-1");
     REF1.setDatasetKey(DATASET11.getKey());
-
+    REF1.setCreatedBy(Users.DB_INIT);
+    REF1.setModifiedBy(Users.DB_INIT);
+    
     REF2.setId("ref-1b");
     REF2.setDatasetKey(DATASET11.getKey());
-
+    REF2.setCreatedBy(Users.DB_INIT);
+    REF2.setModifiedBy(Users.DB_INIT);
+    
     REF3.setId("ref-2");
     REF3.setDatasetKey(DATASET12.getKey());
-
+    REF3.setCreatedBy(Users.DB_INIT);
+    REF3.setModifiedBy(Users.DB_INIT);
+    
     NAME1.setId("name-1");
     NAME1.setHomotypicNameId(NAME1.getId());
     NAME1.setDatasetKey(DATASET11.getKey());
@@ -153,7 +141,9 @@ public class TestEntityGenerator {
     NAME1.updateScientificName();
     NAME1.setPublishedInId(REF1.getId());
     NAME1.setPublishedInPage("712");
-
+    NAME1.setCreatedBy(Users.DB_INIT);
+    NAME1.setModifiedBy(Users.DB_INIT);
+    
     NAME2.setId("name-2");
     NAME2.setHomotypicNameId(NAME2.getId());
     NAME2.setDatasetKey(DATASET11.getKey());
@@ -165,7 +155,9 @@ public class TestEntityGenerator {
     NAME2.updateScientificName();
     NAME2.setPublishedInId(null);
     NAME2.setPublishedInPage(null);
-
+    NAME2.setCreatedBy(Users.DB_INIT);
+    NAME2.setModifiedBy(Users.DB_INIT);
+    
     NAME3.setId("name-3");
     NAME3.setHomotypicNameId(NAME2.getId());
     NAME3.setDatasetKey(DATASET11.getKey());
@@ -177,7 +169,9 @@ public class TestEntityGenerator {
     NAME3.updateScientificName();
     NAME3.setPublishedInId(null);
     NAME3.setPublishedInPage(null);
-
+    NAME3.setCreatedBy(Users.DB_INIT);
+    NAME3.setModifiedBy(Users.DB_INIT);
+    
     NAME4.setId("name-4");
     NAME4.setHomotypicNameId(NAME4.getId());
     NAME4.setDatasetKey(DATASET11.getKey());
@@ -189,26 +183,36 @@ public class TestEntityGenerator {
     NAME4.updateScientificName();
     NAME4.setPublishedInId(null);
     NAME4.setPublishedInPage(null);
-
+    NAME4.setCreatedBy(Users.DB_INIT);
+    NAME4.setModifiedBy(Users.DB_INIT);
+    
     TAXON1.setId("root-1");
     TAXON1.setDatasetKey(DATASET11.getKey());
     TAXON1.setName(NAME1);
     TAXON1.setOrigin(Origin.SOURCE);
-
+    TAXON1.setCreatedBy(Users.DB_INIT);
+    TAXON1.setModifiedBy(Users.DB_INIT);
+    
     TAXON2.setId("root-2");
     TAXON2.setDatasetKey(DATASET11.getKey());
     TAXON2.setName(NAME2);
     TAXON2.setOrigin(Origin.SOURCE);
-
+    TAXON2.setCreatedBy(Users.DB_INIT);
+    TAXON2.setModifiedBy(Users.DB_INIT);
+    
     SYN1.setName(NAME3);
     SYN1.setAccepted(TAXON2);
     SYN1.setStatus(TaxonomicStatus.SYNONYM);
-
+    SYN1.setCreatedBy(Users.DB_INIT);
+    SYN1.setModifiedBy(Users.DB_INIT);
+    
     SYN2.setName(NAME4);
     SYN2.setAccepted(TAXON2);
     SYN2.setStatus(TaxonomicStatus.SYNONYM);
     SYN2.setAccordingTo("John Smith");
     SYN2.setVerbatimKey(133);
+    SYN2.setCreatedBy(Users.DB_INIT);
+    SYN2.setModifiedBy(Users.DB_INIT);
   }
 
   /*
@@ -249,7 +253,7 @@ public class TestEntityGenerator {
    * Creates a new taxon with the specified id, belonging to the specified dataset.
    */
   public static Taxon newTaxon(int datasetKey, String id) {
-    Taxon t = new Taxon();
+    Taxon t = setUserDate(new Taxon());
     t.setAccordingTo("Foo");
     t.setAccordingToDate(LocalDate.of(2010, 11, 24));
     t.setDatasetKey(datasetKey);
@@ -271,9 +275,9 @@ public class TestEntityGenerator {
   public static CslData newCslData() {
     return (CslData) new RandomInstance().create(CslData.class, CslName.class, CslDate.class);
   }
-
+  
   public static Synonym newSynonym(TaxonomicStatus status, Name name, Taxon accepted) {
-    Synonym s = new Synonym();
+    Synonym s = setUserDate(new Synonym());
     s.setId("syn" + ID_GEN.getAndIncrement());
     s.setName(name);
     s.setAccordingTo("non Döring 1999");
@@ -305,7 +309,7 @@ public class TestEntityGenerator {
   }
 
   public static Name newName(int datasetKey, String id, String scientificName, Rank rank) {
-    Name n = new Name();
+    Name n = setUserDate(new Name());
     n.setId(id);
     n.setHomotypicNameId(id);
     n.setDatasetKey(datasetKey);
@@ -371,7 +375,7 @@ public class TestEntityGenerator {
   }
 
   public static Reference newReference(String title) {
-    Reference r = new Reference();
+    Reference r = setUserDate(new Reference());
     r.setId("r" + ID_GEN.getAndIncrement());
     r.setDatasetKey(TestEntityGenerator.DATASET11.getKey());
     CslData csl = new CslData();
@@ -473,5 +477,53 @@ public class TestEntityGenerator {
     nuw.setIssues(issues);
     return nuw;
   }
+  
+  public static <T extends UserManaged> List<T> nullifyDate(List<T> managed) {
+    for (T m : managed) {
+      nullifyDate(m);
+    }
+    return managed;
+  }
+  
+  public static Taxon nullifyDate(Taxon taxon) {
+    nullifyDate((UserManaged) taxon);
+    nullifyDate(taxon.getName());
+    return taxon;
+  }
+  
+  public static Synonym nullifyDate(Synonym syn) {
+    nullifyDate((UserManaged) syn);
+    nullifyDate(syn.getName());
+    return syn;
+  }
+  
+  public static <T extends UserManaged> T nullifyDate(T managed) {
+    managed.setCreated(null);
+    managed.setModified(null);
+    return managed;
+  }
+  
+  public static <T extends UserManaged> T nullifyUserDate(T managed) {
+    managed.setCreated(null);
+    managed.setCreatedBy(null);
+    managed.setModified(null);
+    managed.setModifiedBy(null);
+    return managed;
+  }
 
+  public static <T extends UserManaged> T setUserDate(T managed) {
+    return setUserDate(managed, Users.DB_INIT);
+  }
+  
+  public static <T extends UserManaged> T setUserDate(T managed, Integer userKey) {
+    return setUserDate(managed, userKey, LocalDateTime.now());
+  }
+  
+  public static <T extends UserManaged> T setUserDate(T managed, Integer userKey, LocalDateTime dateTime) {
+    managed.setCreated(dateTime);
+    managed.setCreatedBy(userKey);
+    managed.setModified(dateTime);
+    managed.setModifiedBy(userKey);
+    return managed;
+  }
 }

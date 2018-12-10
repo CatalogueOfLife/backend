@@ -35,7 +35,11 @@
         ${alias}.type AS ${prefix}type,
         ${alias}.source_url AS ${prefix}source_url,
         ${alias}.fossil AS ${prefix}fossil,
-        ${alias}.remarks AS ${prefix}remarks
+        ${alias}.remarks AS ${prefix}remarks,
+        ${alias}.created AS ${prefix}created,
+        ${alias}.created_by AS ${prefix}created_by,
+        ${alias}.modified AS ${prefix}modified,
+        ${alias}.modified_by AS ${prefix}modified_by
     </sql>
 
     <sql id="SELECT">
@@ -77,7 +81,9 @@
         type,
         source_url,
         fossil,
-        remarks
+        remarks,
+        created_by,
+        modified_by
     </sql>
 
     <sql id="PROPS">
@@ -112,7 +118,9 @@
         #{type},
         #{sourceUrl},
         #{fossil},
-        #{remarks}
+        #{remarks},
+        #{createdBy},
+        #{modifiedBy}
     </sql>
 
     <sql id="FROM">name n</sql>
@@ -179,8 +187,8 @@
     </select>
 
     <insert id="create" parameterType="Name" useGeneratedKeys="true" keyProperty="key">
-        INSERT INTO name_${datasetKey} (<include refid="COLS" />)
-        VALUES (<include refid="PROPS" />)
+        INSERT INTO name_${datasetKey} (<include refid="COLS" />, created, modified)
+        VALUES (<include refid="PROPS" />, now(), now())
     </insert>
 
     <select id="homotypicGroup" resultMap="nameResultMap">

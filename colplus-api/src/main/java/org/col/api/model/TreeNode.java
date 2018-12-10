@@ -1,9 +1,9 @@
 package org.col.api.model;
 
+import java.util.Objects;
+
 import org.col.api.vocab.TaxonomicStatus;
 import org.gbif.nameparser.api.Rank;
-
-import java.util.Objects;
 
 /**
  * A drastic simplification of a taxon with just the minimum information used to render in a tree.

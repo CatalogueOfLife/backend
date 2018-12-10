@@ -26,7 +26,6 @@ public class InitDbCmdTest extends CmdTestBase {
     // use bad username & password -> expect error
     cfg.adminDb.user = "Fritz";
     cfg.adminDb.password = "Fröhlich";
-    cfg.auth.gbifSecret = "silly sally";
     tempDbCfg.delete();
     YamlUtils.write(cfg, tempDbCfg);
     assertFalse(run("initdb", "--prompt", "0"));

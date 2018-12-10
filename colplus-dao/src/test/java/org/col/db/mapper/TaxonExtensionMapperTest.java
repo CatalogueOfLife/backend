@@ -1,16 +1,18 @@
 package org.col.db.mapper;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.col.api.TestEntityGenerator;
 import org.col.api.model.IntKey;
 import org.col.api.model.Taxon;
+import org.col.api.model.UserManaged;
 import org.junit.Test;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.col.api.TestEntityGenerator.nullifyDate;
 import static org.junit.Assert.assertEquals;
 
-abstract class TaxonExtensionMapperTest<T extends IntKey, M extends TaxonExtensionMapper<T>> extends MapperTestBase<M> {
+abstract class TaxonExtensionMapperTest<T extends IntKey & UserManaged, M extends TaxonExtensionMapper<T>> extends MapperTestBase<M> {
   
   public TaxonExtensionMapperTest(Class<M> mapperClazz) {
     super(mapperClazz);
@@ -31,14 +33,14 @@ abstract class TaxonExtensionMapperTest<T extends IntKey, M extends TaxonExtensi
     List<T> originals = new ArrayList<>();
     for (T obj : createTestEntities()) {
       mapper().create(obj, taxonID, datasetKey);
-      originals.add(obj);
+      originals.add(TestEntityGenerator.nullifyDate(obj));
     }
     commit();
 
-    T obj = mapper().get(datasetKey, originals.get(0).getKey());
+    T obj = TestEntityGenerator.nullifyDate(mapper().get(datasetKey, originals.get(0).getKey()));
     assertEquals(obj, originals.get(0));
   
-    List<T> created = mapper().listByTaxon(datasetKey, taxonID);
+    List<T> created = TestEntityGenerator.nullifyDate(mapper().listByTaxon(datasetKey, taxonID));
     assertEquals(originals, created);
   }
   

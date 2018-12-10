@@ -5,14 +5,15 @@ import java.io.IOException;
 import java.util.List;
 
 import com.google.common.collect.Lists;
-import io.dropwizard.Application;
 import io.dropwizard.testing.ConfigOverride;
 import io.dropwizard.testing.junit.DropwizardAppRule;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.common.io.PortUtil;
 import org.col.common.util.YamlUtils;
 import org.col.db.EmbeddedColPg;
 import org.col.db.PgConfig;
 import org.col.db.PgSetupRule;
+import org.glassfish.jersey.client.JerseyClientBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,16 +25,24 @@ import org.slf4j.LoggerFactory;
  * and updates the PgConfig with the matching config parameters to access it via the MyBatisModule.
  * <p>
  * It also selects and configures DW to use a free application port.
+ *
+ * The created jersey client includes basic auth which needs to be set for each call like this:
+ *
+ * <code>
+ *      Response response = client.target("http://localhost:8080/rest/homer/contact").request()
+ *         .property(HTTP_AUTHENTICATION_BASIC_USERNAME, "homer")
+ *         .property(HTTP_AUTHENTICATION_BASIC_PASSWORD, "p1swd745").get();
+ * </code>
  */
 public class DropwizardPgAppRule<C extends PgAppConfig> extends DropwizardAppRule<C> {
   private static final Logger LOG = LoggerFactory.getLogger(DropwizardPgAppRule.class);
   private static EmbeddedColPg pg;
-
-  public DropwizardPgAppRule(Class<? extends Application<C>> applicationClass,
+  
+  public DropwizardPgAppRule(Class<? extends PgApp<C>> applicationClass,
                              String configPath, ConfigOverride... configOverrides) {
     super(applicationClass, configPath, setupPg(configPath, configOverrides));
   }
-
+  
   static class PgConfigInApp {
     public PgConfig db = new PgConfig();
   }
@@ -42,8 +51,13 @@ public class DropwizardPgAppRule<C extends PgAppConfig> extends DropwizardAppRul
     List<ConfigOverride> overrides = Lists.newArrayList(configOverrides);
     try {
       PgConfigInApp cfg = YamlUtils.read(PgConfigInApp.class, new File(configPath));
-      pg = new EmbeddedColPg(cfg.db);
-      pg.start();
+      if (cfg.db.embedded()) {
+        pg = new EmbeddedColPg(cfg.db);
+        pg.start();
+      } else {
+        LOG.info("Use external Postgres server {}/{}", cfg.db.host, cfg.db.database);
+      }
+  
       PgSetupRule.initDb(cfg.db);
 
       overrides.add(ConfigOverride.config("db.host", cfg.db.host));
@@ -53,7 +67,7 @@ public class DropwizardPgAppRule<C extends PgAppConfig> extends DropwizardAppRul
       overrides.add(ConfigOverride.config("db.password", cfg.db.password));
 
     } catch (Exception e) {
-      throw new RuntimeException("Failed to read popstgres configuration from " + configPath, e);
+      throw new RuntimeException("Failed to read postgres configuration from " + configPath, e);
     }
 
     // select free DW port
@@ -69,10 +83,25 @@ public class DropwizardPgAppRule<C extends PgAppConfig> extends DropwizardAppRul
 
     return overrides.toArray(new ConfigOverride[0]);
   }
-
+  
+  public SqlSessionFactory getSqlSessionFactory() {
+    return ((PgApp) getTestSupport().getApplication()).getSqlSessionFactory();
+  }
+  
   @Override
   protected void after() {
-    pg.stop();
+    if (pg != null) {
+      pg.stop();
+    }
     super.after();
   }
+  
+  @Override
+  protected JerseyClientBuilder clientBuilder() {
+    JerseyClientBuilder builder = super.clientBuilder();
+    BasicAuthClientFilter basicAuthFilter = new BasicAuthClientFilter();
+    builder.register(basicAuthFilter);
+    return builder;
+  }
+  
 }

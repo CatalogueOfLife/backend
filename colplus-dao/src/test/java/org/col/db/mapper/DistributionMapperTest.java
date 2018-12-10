@@ -1,11 +1,14 @@
 package org.col.db.mapper;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import org.col.api.TestEntityGenerator;
 import org.col.api.model.Distribution;
 import org.col.api.vocab.DistributionStatus;
 import org.col.api.vocab.Gazetteer;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.col.api.TestEntityGenerator.setUserDate;
 
 /**
  *
@@ -25,7 +28,7 @@ public class DistributionMapperTest extends TaxonExtensionMapperTest<Distributio
 				d.setArea("Europe");
 				d.setGazetteer(g);
 				d.setStatus(status);
-				ds.add(d);
+				ds.add(TestEntityGenerator.setUserDate(d));
 			}
 		}
 		return ds;

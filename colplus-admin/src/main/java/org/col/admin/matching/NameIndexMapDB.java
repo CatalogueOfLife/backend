@@ -22,6 +22,7 @@ import org.col.api.model.NameMatch;
 import org.col.api.vocab.MatchType;
 import org.col.api.vocab.NomStatus;
 import org.col.api.vocab.Origin;
+import org.col.api.vocab.Users;
 import org.col.common.kryo.ApiKryoFactory;
 import org.col.common.kryo.map.MapDbObjectSerializer;
 import org.col.common.tax.SciNameNormalizer;
@@ -278,6 +279,8 @@ public class NameIndexMapDB implements NameIndex {
     name.setNomStatus(NomStatus.UNEVALUATED);
     name.setPublishedInId(null);
     name.setPublishedInPage(null);
+    name.setCreatedBy(Users.MATCHER);
+    name.setModifiedBy(Users.MATCHER);
     // add to index map
     add(name);
     // insert into postgres dataset

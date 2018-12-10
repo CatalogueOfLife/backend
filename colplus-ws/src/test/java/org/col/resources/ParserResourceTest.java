@@ -1,10 +1,8 @@
 package org.col.resources;
 
 import java.util.List;
-import javax.ws.rs.client.Client;
 import javax.ws.rs.core.GenericType;
 
-import io.dropwizard.client.JerseyClientBuilder;
 import io.dropwizard.testing.ResourceHelpers;
 import org.col.WsServer;
 import org.col.WsServerConfig;
@@ -29,9 +27,7 @@ public class ParserResourceTest {
   
   @Test
   public void parseGet() {
-    Client client = new JerseyClientBuilder(RULE.getEnvironment()).build("test client");
-    
-    List<NameAccordingTo> resp = client.target(
+    List<NameAccordingTo> resp = RULE.client().target(
         String.format("http://localhost:%d/parser/name", RULE.getLocalPort()))
         .queryParam("name", "Abies alba Mill.")
         .request()

@@ -19,7 +19,7 @@ import org.gbif.nameparser.api.NomCode;
 /**
  * Metadata about a dataset or a subset of it if parentKey is given.
  */
-public class Dataset implements SourceMetadata, IntKey {
+public class Dataset extends DataEntity implements SourceMetadata, IntKey {
   private Integer key;
   @NotNull
   private DatasetType type = DatasetType.OTHER;
@@ -51,8 +51,7 @@ public class Dataset implements SourceMetadata, IntKey {
   private Integer size;
   private String notes;
   private Catalogue contributesTo;
-  private LocalDateTime created;
-  private LocalDateTime modified;
+  private LocalDateTime imported;
   private LocalDateTime deleted;
   
   public Integer getKey() {
@@ -280,27 +279,20 @@ public class Dataset implements SourceMetadata, IntKey {
   public void setContributesTo(Catalogue contributesTo) {
     this.contributesTo = contributesTo;
   }
-  
-  public LocalDateTime getCreated() {
-    return created;
-  }
-  
-  public void setCreated(LocalDateTime created) {
-    this.created = created;
-  }
-  
+
   /**
    * Time the data of the dataset was last changed in the Clearinghouse,
    * i.e. time of the last import that changed at least one record.
    */
-  public LocalDateTime getModified() {
-    return modified;
+  public LocalDateTime getImported() {
+    return imported;
   }
-  
-  public void setModified(LocalDateTime modified) {
-    this.modified = modified;
+
+  public void setImported(LocalDateTime imported) {
+    this.imported = imported;
   }
-  
+
+
   public LocalDateTime getDeleted() {
     return deleted;
   }
@@ -344,15 +336,14 @@ public class Dataset implements SourceMetadata, IntKey {
         Objects.equals(size, dataset.size) &&
         Objects.equals(notes, dataset.notes) &&
         contributesTo == dataset.contributesTo &&
-        Objects.equals(created, dataset.created) &&
-        Objects.equals(modified, dataset.modified) &&
+        Objects.equals(imported, dataset.imported) &&
         Objects.equals(deleted, dataset.deleted);
   }
   
   @Override
   public int hashCode() {
     
-    return Objects.hash(key, type, title, gbifKey, gbifPublisherKey, description, organisations, contact, authorsAndEditors, license, version, released, citation, website, logo, dataFormat, dataAccess, cluster, origin, importFrequency, code, size, notes, contributesTo, created, modified, deleted);
+    return Objects.hash(key, type, title, gbifKey, gbifPublisherKey, description, organisations, contact, authorsAndEditors, license, version, released, citation, website, logo, dataFormat, dataAccess, cluster, origin, importFrequency, code, size, notes, contributesTo, imported, deleted);
   }
   
   @Override

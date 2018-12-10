@@ -11,7 +11,7 @@ abstract class Decision implements IntKey, UserManaged {
   private Integer createdBy;
   private LocalDateTime modified;
   private Integer modifiedBy;
-  
+
   @Override
   public Integer getKey() {
     return key;

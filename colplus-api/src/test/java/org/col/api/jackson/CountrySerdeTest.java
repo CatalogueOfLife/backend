@@ -27,7 +27,7 @@ public class CountrySerdeTest extends SerdeMapEnumKeyTestBase<Country> {
   
   @Test
   public void testLowerCase() throws JsonProcessingException {
-    Wrapper<Country> wrapper = new Wrapper<Country>(Country.GERMANY);
+    SerdeTestBase.Wrapper<Country> wrapper = new SerdeTestBase.Wrapper<Country>(Country.GERMANY);
     String json = ApiModule.MAPPER.writeValueAsString(wrapper);
     assertEquals("{\"value\":\"DE\"}", json);
   }
