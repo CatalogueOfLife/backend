@@ -1,7 +1,9 @@
 package org.col.es;
 
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -64,6 +66,7 @@ public class NameUsageTransfer {
       enu.setVernacularNames(wrapper.getVernacularNames().stream().map(VernacularName::getName).collect(Collectors.toList()));
     }
     enu.setIssues(wrapper.getIssues());
+
     Name name = wrapper.getUsage().getName();
     enu.setAuthorship(name.authorshipComplete()); // TODO: Is this correct !!??
     enu.setDatasetKey(name.getDatasetKey());
@@ -85,6 +88,9 @@ public class NameUsageTransfer {
     enu.setStatus(wrapper.getUsage().getStatus());
     if (wrapper.getUsage().getClass() == Taxon.class) {
       enu.setTaxonId(((Taxon) wrapper.getUsage()).getId());
+      String[] ids = wrapper.getHigherTaxonTrail().split(Pattern.quote("|@|"));
+      ids = Arrays.copyOfRange(ids, 1, ids.length);
+      enu.setHigherTaxonIds(Arrays.asList(ids));
     }
     enu.setType(name.getType());
     enu.setPayload(EsModule.NAME_USAGE_WRITER.writeValueAsString(wrapper));

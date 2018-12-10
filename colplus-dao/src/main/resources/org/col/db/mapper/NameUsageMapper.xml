@@ -44,21 +44,47 @@
     -->
     <select id="processDatasetTaxa" parameterType="map" resultMap="taxonResultMap" resultOrdered="true"
             fetchSize="10000" resultSetType="FORWARD_ONLY">
-        SELECT v.issues,
-        <include refid="org.col.db.mapper.NameMapper.nameCols">
-            <property name="alias" value="n"/>
-            <property name="prefix" value="n_"/>
-        </include>,
-        <include refid="org.col.db.mapper.TaxonMapper.taxonCols">
-            <property name="alias" value="t"/>
-            <property name="prefix" value=""/>
-        </include>,
-        vn.key as v_key, vn.name, vn.latin, vn.language
-        FROM name n
-            JOIN taxon t ON n.id = t.name_id AND t.dataset_key = n.dataset_key
-            LEFT JOIN vernacular_name vn ON vn.taxon_id=t.id AND vn.dataset_key = n.dataset_key
-            LEFT JOIN verbatim v ON v.dataset_key = n.dataset_key AND v.key=n.verbatim_key
-        WHERE n.dataset_key = #{datasetKey}
+            
+        WITH RECURSIVE tree AS(
+	         
+	        SELECT v.issues, t.id AS higherTaxonTrail,
+	        <include refid="org.col.db.mapper.NameMapper.nameCols">
+	            <property name="alias" value="n"/>
+	            <property name="prefix" value="n_"/>
+	        </include>,
+	        <include refid="org.col.db.mapper.TaxonMapper.taxonCols">
+	            <property name="alias" value="t"/>
+	            <property name="prefix" value=""/>
+	        </include>,
+	        vn.key as v_key, vn.name, vn.latin, vn.language
+	        FROM name n
+	            JOIN taxon t ON n.id = t.name_id AND t.dataset_key = n.dataset_key
+	            LEFT JOIN vernacular_name vn ON vn.taxon_id=t.id AND vn.dataset_key = n.dataset_key
+	            LEFT JOIN verbatim v ON v.dataset_key = n.dataset_key AND v.key=n.verbatim_key
+	        WHERE n.dataset_key = #{datasetKey} AND t.parent_id IS NULL
+	        
+	        UNION
+	         
+	        SELECT v.issues, CONCAT(t.id, '|@|', tree.higherTaxonTrail) AS higherTaxonTrail,
+	        <include refid="org.col.db.mapper.NameMapper.nameCols">
+	            <property name="alias" value="n"/>
+	            <property name="prefix" value="n_"/>
+	        </include>,
+	        <include refid="org.col.db.mapper.TaxonMapper.taxonCols">
+	            <property name="alias" value="t"/>
+	            <property name="prefix" value=""/>
+	        </include>,
+	        vn.key as v_key, vn.name, vn.latin, vn.language
+	        FROM name n
+	            JOIN taxon t ON n.id = t.name_id AND t.dataset_key = n.dataset_key
+	        	INNER JOIN tree ON (tree.id = t.parent_id)
+	            LEFT JOIN vernacular_name vn ON vn.taxon_id=t.id AND vn.dataset_key = n.dataset_key
+	            LEFT JOIN verbatim v ON v.dataset_key = n.dataset_key AND v.key=n.verbatim_key
+	        WHERE n.dataset_key = #{datasetKey}
+	   )
+	   SELECT * FROM tree      
+        
+        
     </select>
 
     <select id="processDatasetSynonyms" parameterType="map" resultMap="synonymResultMap" resultOrdered="true"

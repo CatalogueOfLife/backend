@@ -59,6 +59,8 @@ public class EsNameUsage {
 
   private List<String> vernacularNames;
 
+  private List<String> higherTaxonIds;
+
   private String payload; // The entire NameUsageWrapper object, serialized to a string
 
   @Analyzers({AUTO_COMPLETE, IGNORE_CASE})
@@ -186,6 +188,14 @@ public class EsNameUsage {
 
   public void setIssues(Set<Issue> issues) {
     this.issues = issues;
+  }
+
+  public List<String> getHigherTaxonIds() {
+    return higherTaxonIds;
+  }
+
+  public void setHigherTaxonIds(List<String> higherTaxonIds) {
+    this.higherTaxonIds = higherTaxonIds;
   }
 
   @NotIndexed
