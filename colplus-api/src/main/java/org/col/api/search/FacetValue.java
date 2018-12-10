@@ -14,32 +14,17 @@ import org.col.api.vocab.Issue;
 public class FacetValue<T extends Comparable<T>> implements Comparable<FacetValue<T>> {
 
   /*
-   * Enums that should be sorted according to their string representation rather than by their ordinal number
+   * Enums that must be sorted according to their string representation rather than by their ordinal number
    */
   private static final Set<Class<? extends Enum<?>>> STRINGIFY = new HashSet<>(Arrays.asList(Issue.class));
-
-  /**
-   * Comparator to be used if you want to sort by facet value first, and then by document count descending. The natural order for facets is
-   * by document count descending first, and then by value.
-   */
-  @SuppressWarnings({"rawtypes", "unchecked"})
-  public static Comparator<FacetValue<?>> VALUE_FIRST_COMPARATOR = (f1, f2) -> {
-    int i;
-    if (STRINGIFY.contains(f1.getClass())) {
-      i = stringify(f1.value).compareTo(stringify(f2.value));
-    } else {
-      i = ((Comparable) f1.value).compareTo(f2.value);
-    }
-    return i == 0 ? f2.count - f1.count : i;
-  };
 
   public static FacetValue<String> forString(Object val, int count) {
     return new FacetValue<>(val.toString(), count);
   }
 
   /*
-   * See NameSearchResponseTransferTest. Theoretically val could be a Long or even a BigInteger, but we don't try to deal with this
-   * possibility. It could happen only if dataset_key were to be declared a double precision integer in Postgres.
+   * See NameSearchResponseTransferTest. Theoretically val could be a Long or even a BigInteger, but only if dataset_key were to be declared
+   * a double precision integer in Postgres.
    */
   public static FacetValue<Integer> forInteger(Object val, int count) {
     Preconditions.checkArgument(val.getClass() == Integer.class, "%s could not be cast to integer", val);
@@ -49,6 +34,27 @@ public class FacetValue<T extends Comparable<T>> implements Comparable<FacetValu
   public static <U extends Enum<U>> FacetValue<U> forEnum(Class<U> enumClass, Object val, int count) {
     int ordinal = ((Integer) val).intValue();
     return new FacetValue<>(enumClass.getEnumConstants()[ordinal], count);
+  }
+
+  /**
+   * Comparator to be used if you want to sort by facet value first, and then by document count descending. The natural order for facets is
+   * by document count descending first, and then by value.
+   */
+  public static <U extends Comparable<U>> Comparator<FacetValue<U>> getValueComparator() {
+    return new ValueComparator<>();
+  }
+
+  private static final class ValueComparator<U extends Comparable<U>> implements Comparator<FacetValue<U>> {
+    @Override
+    public int compare(FacetValue<U> f1, FacetValue<U> f2) {
+      int i;
+      if (STRINGIFY.contains(f1.getClass())) {
+        i = enumToString(f1.value).compareTo(enumToString(f2.value));
+      } else {
+        i = f1.value.compareTo(f2.value);
+      }
+      return i == 0 ? f2.count - f1.count : i;
+    }
   }
 
   private final T value;
@@ -90,14 +96,14 @@ public class FacetValue<T extends Comparable<T>> implements Comparable<FacetValu
     int i = other.count - count; // doc count descending !
     if (i == 0) {
       if (STRINGIFY.contains(getClass())) {
-        return stringify(value).compareTo(stringify(other.value));
+        return enumToString(value).compareTo(enumToString(other.value));
       }
       return value.compareTo(other.value);
     }
     return i;
   }
 
-  private static String stringify(Object enum0) {
+  private static String enumToString(Object enum0) {
     return ApiModule.enumValueName((Enum<?>) enum0);
   }
 
