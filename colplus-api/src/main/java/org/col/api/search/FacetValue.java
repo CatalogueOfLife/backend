@@ -13,19 +13,10 @@ import org.col.api.vocab.Issue;
 
 public class FacetValue<T extends Comparable<T>> implements Comparable<FacetValue<T>> {
 
-  /*
-   * Enums that must be sorted according to their string representation rather than by their ordinal number
-   */
-  private static final Set<Class<? extends Enum<?>>> STRINGIFY = new HashSet<>(Arrays.asList(Issue.class));
-
   public static FacetValue<String> forString(Object val, int count) {
     return new FacetValue<>(val.toString(), count);
   }
 
-  /*
-   * See NameSearchResponseTransferTest. Theoretically val could be a Long or even a BigInteger, but only if dataset_key were to be declared
-   * a double precision integer in Postgres.
-   */
   public static FacetValue<Integer> forInteger(Object val, int count) {
     Preconditions.checkArgument(val.getClass() == Integer.class, "%s could not be cast to integer", val);
     return new FacetValue<>((Integer) val, count);
@@ -35,6 +26,11 @@ public class FacetValue<T extends Comparable<T>> implements Comparable<FacetValu
     int ordinal = ((Integer) val).intValue();
     return new FacetValue<>(enumClass.getEnumConstants()[ordinal], count);
   }
+
+  /*
+   * Enums that must be sorted according to their string representation rather than by their ordinal number
+   */
+  private static final Set<Class<? extends Enum<?>>> STRINGIFY = new HashSet<>(Arrays.asList(Issue.class));
 
   /**
    * Comparator to be used if you want to sort by facet value first, and then by document count descending. The natural order for facets is
