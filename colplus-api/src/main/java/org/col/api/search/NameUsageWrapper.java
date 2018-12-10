@@ -49,10 +49,10 @@ public class NameUsageWrapper {
   }
 
   /*
-   * A concatenated version of higher taxon IDs, produced by MyBatis where processing taxa for indexing into Elasticsearch. If it's not
-   * desirable that this method shows up here (this is after all an API class), we need an extra (non-API) class. The non-API class only has
-   * the concatenated ID string, while this class only has the List of IDs. When indexing into Elasticsearch we use the new class with the
-   * concatenated IDs. When querying Elasticsearch, we use this class.
+   * A concatenated version of higher taxon IDs, produced by MyBatis when processing taxa for indexing into Elasticsearch. If it's not
+   * desirable that this method shows up in the API (this is after all an API class), we need another (non-API) class. The non-API class
+   * only has the concatenated ID string, while this class only has the List of IDs. When indexing into Elasticsearch we use the new class
+   * with the concatenated IDs. When querying Elasticsearch, we use this class.
    */
   @JsonIgnore // Never serve this up to the client
   public String getHigherTaxonTrail() {

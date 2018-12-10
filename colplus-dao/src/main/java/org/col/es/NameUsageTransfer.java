@@ -93,8 +93,8 @@ public class NameUsageTransfer {
       enu.setHigherTaxonIds(Arrays.asList(ids));
     }
     enu.setType(name.getType());
-    enu.setPayload(EsModule.NAME_USAGE_WRITER.writeValueAsString(wrapper));
     enu.setNameFields(getNonNullNameFields(wrapper.getUsage().getName()));
+    enu.setPayload(EsModule.NAME_USAGE_WRITER.writeValueAsString(wrapper));
     return enu;
   }
 
