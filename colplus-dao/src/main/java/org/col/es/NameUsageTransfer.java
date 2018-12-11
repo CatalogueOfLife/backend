@@ -88,9 +88,7 @@ public class NameUsageTransfer {
     enu.setStatus(wrapper.getUsage().getStatus());
     if (wrapper.getUsage().getClass() == Taxon.class) {
       enu.setTaxonId(((Taxon) wrapper.getUsage()).getId());
-      String[] ids = wrapper.getHigherTaxonTrail().split(Pattern.quote("|@|"));
-      ids = Arrays.copyOfRange(ids, 1, ids.length);
-      enu.setHigherTaxonIds(Arrays.asList(ids));
+      enu.setHigherTaxonIds(wrapper.getHigherTaxonIds());
     }
     enu.setType(name.getType());
     enu.setNameFields(getNonNullNameFields(wrapper.getUsage().getName()));

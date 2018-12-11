@@ -75,14 +75,14 @@ public class NameUsageIndexService {
           counter.addAndGet(batch.size());
         }
       };
-      try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(indexer, batchSize)) {
-        LOG.debug("Indexing bare names into Elasticsearch");
-        mapper.processDatasetBareNames(datasetKey, handler);
-      }
-      try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(indexer, batchSize)) {
-        LOG.debug("Indexing synonyms into Elasticsearch");
-        mapper.processDatasetSynonyms(datasetKey, handler);
-      }
+//      try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(indexer, batchSize)) {
+//        LOG.debug("Indexing bare names into Elasticsearch");
+//        mapper.processDatasetBareNames(datasetKey, handler);
+//      }
+//      try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(indexer, batchSize)) {
+//        LOG.debug("Indexing synonyms into Elasticsearch");
+//        mapper.processDatasetSynonyms(datasetKey, handler);
+//      }
       try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(indexer, batchSize)) {
         LOG.debug("Indexing taxa into Elasticsearch");
         mapper.processDatasetTaxa(datasetKey, handler);

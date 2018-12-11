@@ -47,7 +47,7 @@
             
         WITH RECURSIVE tree AS(
 	         
-	        SELECT v.issues, t.id AS higherTaxonTrail,
+	        SELECT v.issues, ARRAY[t.id] AS higherTaxonIds,
 	        <include refid="org.col.db.mapper.NameMapper.nameCols">
 	            <property name="alias" value="n"/>
 	            <property name="prefix" value="n_"/>
@@ -65,7 +65,7 @@
 	        
 	        UNION
 	         
-	        SELECT v.issues, CONCAT(t.id, '|@|', tree.higherTaxonTrail) AS higherTaxonTrail,
+	        SELECT v.issues, array_append(tree.higherTaxonIds,t.id) AS higherTaxonIds,
 	        <include refid="org.col.db.mapper.NameMapper.nameCols">
 	            <property name="alias" value="n"/>
 	            <property name="prefix" value="n_"/>
