@@ -51,9 +51,9 @@
         WITH RECURSIVE tree AS(
 	         
 	        SELECT v.issues, 
-	        	ARRAY[t.id] AS higherTaxonIds,
-	        	ARRAY[n.rank] AS higherTaxonRanks,
-	        	ARRAY[n.scientific_name] AS higherTaxonNames,
+	        	ARRAY[]::text[] AS higherTaxonIds,
+	        	ARRAY[]::rank[] AS higherTaxonRanks,
+	        	ARRAY[]::text[] AS higherTaxonNames,
 	        <include refid="org.col.db.mapper.NameMapper.nameCols">
 	            <property name="alias" value="n"/>
 	            <property name="prefix" value="n_"/>
