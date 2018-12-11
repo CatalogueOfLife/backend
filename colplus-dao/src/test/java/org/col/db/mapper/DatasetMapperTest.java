@@ -1,5 +1,10 @@
 package org.col.db.mapper;
 
+import java.net.URI;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.UUID;
+
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import org.col.api.RandomUtils;
@@ -15,13 +20,6 @@ import org.javers.core.diff.Diff;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.net.URI;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.UUID;
-
-import static org.col.api.TestEntityGenerator.nullifyDate;
-import static org.col.api.TestEntityGenerator.setUserDate;
 import static org.junit.Assert.*;
 
 /**

@@ -47,6 +47,7 @@ public class InitMybatisRule extends ExternalResource {
   public enum TestData {
     NONE(1, 2, 3),
     APPLE(2, 11, 12),
+    TREE(2, 11),
     
     /**
      * Inits the datasets table with real col data from colplus-repo
@@ -80,6 +81,14 @@ public class InitMybatisRule extends ExternalResource {
     return new InitMybatisRule(TestData.APPLE, () -> sqlSessionFactory);
   }
   
+  public static InitMybatisRule tree() {
+    return new InitMybatisRule(TestData.TREE);
+  }
+  
+  public static InitMybatisRule tree(SqlSessionFactory sqlSessionFactory) {
+    return new InitMybatisRule(TestData.TREE, () -> sqlSessionFactory);
+  }
+
   public static InitMybatisRule datasets() {
     return new InitMybatisRule(TestData.DATASETS);
   }

@@ -1,16 +1,18 @@
 package org.col.db.dao;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+
 import com.google.common.collect.Lists;
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.model.*;
+import org.col.api.vocab.Origin;
 import org.col.api.vocab.TaxonomicStatus;
 import org.col.db.mapper.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 public class TaxonDao {
   private static final Logger LOG = LoggerFactory.getLogger(TaxonDao.class);
@@ -37,10 +39,49 @@ public class TaxonDao {
     vMapper = session.getMapper(VernacularNameMapper.class);
   }
 
-  public Taxon copy(int srcDatasetKey, String srcId, int targetDatasetKey, String targetParentId) {
-    return null;
+  public Taxon copy(final DatasetID source, final DatasetID targetParent, ColUser user) {
+  
+    NameMapper nm = session.getMapper(NameMapper.class);
+    Name n = nm.getByTaxon(source.getDatasetKey(), source.getId());
+    if (n == null) {
+      throw new IllegalArgumentException("NameID " + source.getId() + " not existing in dataset " + source.getDatasetKey());
+    }
+    newKey(n);
+  
+    if (n.getPublishedInId() != null) {
+      ReferenceMapper rm = session.getMapper(ReferenceMapper.class);
+      Reference ref = newKey(rm.get(source.getDatasetKey(), n.getPublishedInId()));
+      ref.setDatasetKey(targetParent.getDatasetKey());
+      ref.applyUser(user);
+      rm.create(ref);
+    
+      n.setPublishedInId(ref.getId());
+    }
+    n.setDatasetKey(targetParent.getDatasetKey());
+    n.setOrigin(Origin.USER);
+    n.applyUser(user);
+    nm.create(n);
+  
+    TaxonMapper tm = session.getMapper(TaxonMapper.class);
+    Taxon t = new Taxon();
+    t.setId(UUID.randomUUID().toString());
+    t.setDatasetKey(targetParent.getDatasetKey());
+    t.setParentId(targetParent.getId());
+    t.setName(n);
+    t.setOrigin(Origin.USER);
+    t.applyUser(user);
+    tm.create(t);
+  
+    session.commit();
+    return t;
   }
-
+  
+  private static <T extends VerbatimEntity & ID> T newKey(T e) {
+    e.setVerbatimKey(null);
+    e.setId(UUID.randomUUID().toString());
+    return e;
+  }
+  
   public ResultPage<Taxon> list(Integer datasetKey, Boolean root, Page page) {
     Page p = page == null ? new Page() : page;
     Boolean r = root == null ? Boolean.FALSE : root;

@@ -18,4 +18,16 @@ public interface NameUsage extends ID, VerbatimEntity {
   String getAccordingTo();
   
   void setAccordingTo(String according);
+  
+  default boolean isSynonym() {
+    return getStatus() != null && getStatus().isSynonym();
+  }
+  
+  default boolean isTaxon() {
+    return getStatus() != null && !getStatus().isSynonym();
+  }
+  
+  default boolean isBareName() {
+    return getStatus() == null;
+  }
 }

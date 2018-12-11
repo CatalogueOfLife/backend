@@ -17,7 +17,6 @@ import org.javers.core.diff.Diff;
 import org.junit.Test;
 
 import static org.col.api.TestEntityGenerator.DATASET11;
-import static org.col.api.TestEntityGenerator.nullifyDate;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 

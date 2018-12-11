@@ -1,7 +1,6 @@
 package org.col.resources;
 
 import java.util.List;
-import java.util.UUID;
 import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 import javax.ws.rs.*;
@@ -11,11 +10,11 @@ import javax.ws.rs.core.MediaType;
 import io.dropwizard.auth.Auth;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.ibatis.session.SqlSession;
-import org.col.api.model.*;
-import org.col.api.vocab.Origin;
-import org.col.db.mapper.NameMapper;
-import org.col.db.mapper.ReferenceMapper;
-import org.col.db.mapper.TaxonMapper;
+import org.col.api.model.ColUser;
+import org.col.api.model.DatasetID;
+import org.col.api.model.Taxon;
+import org.col.api.model.TreeNode;
+import org.col.db.dao.TaxonDao;
 import org.col.db.mapper.TreeMapper;
 import org.col.dw.auth.Roles;
 import org.slf4j.Logger;
@@ -37,47 +36,10 @@ public class TreeResource {
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public String create(@PathParam("datasetKey") Integer datasetKey, @Valid TreeNode obj,
                        @Auth ColUser user, @Context SqlSession session) {
-
-    NameMapper nm = session.getMapper(NameMapper.class);
-    Name n = nm.getByTaxon(obj.getDatasetKey(), obj.getId());
-    if (n == null) {
-      throw new IllegalArgumentException("NameID " + obj.getId() + " not existing in dataset " + obj.getDatasetKey());
-    }
-    newKey(n);
-  
-    if (n.getPublishedInId() != null) {
-      ReferenceMapper rm = session.getMapper(ReferenceMapper.class);
-      Reference ref = newKey(rm.get(obj.getDatasetKey(), n.getPublishedInId()));
-      ref.setDatasetKey(datasetKey);
-      ref.applyUser(user);
-      rm.create(ref);
-
-      n.setPublishedInId(ref.getId());
-    }
-    n.setDatasetKey(datasetKey);
-    n.setOrigin(Origin.USER);
-    n.applyUser(user);
-    nm.create(n);
-
-    TaxonMapper tm = session.getMapper(TaxonMapper.class);
-    Taxon t = new Taxon();
-    t.setId(UUID.randomUUID().toString());
-    t.setDatasetKey(datasetKey);
-    t.setParentId(obj.getParentId());
-    t.setName(n);
-    t.setOrigin(Origin.USER);
-    t.applyUser(user);
-    tm.create(t);
-
-    session.commit();
+    Taxon t = new TaxonDao(session).copy(new DatasetID(obj.getDatasetKey(), obj.getId()), new DatasetID(datasetKey, obj.getParentId()), user);
     return t.getId();
   }
 
-  private static <T extends VerbatimEntity & ID> T newKey(T e) {
-    e.setVerbatimKey(null);
-    e.setId(UUID.randomUUID().toString());
-    return e;
-  }
 
   @PUT
   @Path("{id}")

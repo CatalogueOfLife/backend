@@ -1,5 +1,6 @@
 package org.col.db.mapper;
 
+import java.net.URI;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.ibatis.session.ResultContext;
@@ -13,14 +14,13 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import static org.col.api.TestEntityGenerator.NAME4;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 
-public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
+public class NameUsageMapperTreeTest extends MapperTestBase<NameUsageMapper> {
   
-  public NameUsageMapperTest() {
-    super(NameUsageMapper.class);
+  public NameUsageMapperTreeTest() {
+    super(NameUsageMapper.class, InitMybatisRule.tree());
   }
   
   private AtomicInteger counter = new AtomicInteger(0);
@@ -39,16 +39,26 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
         assertTrue(obj.getUsage().isTaxon());
         Taxon t = (Taxon) obj.getUsage();
         assertNotNull(t.getId());
-        System.out.println(t.getId());
-        System.out.println(t.getParentId());
-        System.out.println(ctx.getResultObject().getHigherTaxa());
+        assertNotNull(t.getAccordingToDate());
+        assertEquals("M.Döring", t.getAccordingTo());
+        assertEquals((Integer) 10, t.getSpeciesEstimate());
+        assertEquals((Integer) 1, t.getVerbatimKey());
+        assertEquals("remark me", t.getRemarks());
+        assertEquals(URI.create("http://myspace.com"), t.getDatasetUrl());
+        if (t.getId().equals("t1")) {
+          assertNull(t.getParentId());
+          assertTrue(obj.getHigherTaxa().isEmpty());
+        } else {
+          assertNotNull(t.getParentId());
+          assertFalse(obj.getHigherTaxa().isEmpty());
+        }
 
         for (VernacularName v : ctx.getResultObject().getVernacularNames()) {
           assertNotNull(v.getName());
         }
       }
     });
-    Assert.assertEquals(2, counter.get());
+    Assert.assertEquals(20, counter.get());
   }
   
   @Test
@@ -62,7 +72,7 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
         assertNotNull(s.getAccepted());
       }
     });
-    Assert.assertEquals(2, counter.get());
+    Assert.assertEquals(4, counter.get());
   }
   
   @Test
@@ -75,6 +85,6 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
         assertNotNull(ctx.getResultObject().getUsage().getName());
       }
     });
-    Assert.assertEquals(1, counter.get());
+    Assert.assertEquals(0, counter.get());
   }
 }

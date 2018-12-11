@@ -28,6 +28,26 @@ public class NameUsageWrapper {
     public String getScientificName() {
       return scientificName;
     }
+  
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) return true;
+      if (o == null || getClass() != o.getClass()) return false;
+      HigherTaxon that = (HigherTaxon) o;
+      return Objects.equals(id, that.id) &&
+          rank == that.rank &&
+          Objects.equals(scientificName, that.scientificName);
+    }
+  
+    @Override
+    public int hashCode() {
+      return Objects.hash(id, rank, scientificName);
+    }
+  
+    @Override
+    public String toString() {
+      return rank + " " + scientificName + " [" + id + ']';
+    }
   }
 
   private NameUsage usage;

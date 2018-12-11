@@ -14,7 +14,7 @@
         <result property="higherTaxonIds" column="higherTaxonIds" typeHandler="org.col.db.type.StringArrayTypeHandler"/>
         <result property="higherTaxonNames" column="higherTaxonNames" typeHandler="org.col.db.type.StringArrayTypeHandler"/>
         <result property="higherTaxonRanks" column="higherTaxonRanks" typeHandler="org.col.db.type.RankArrayTypeHandler"/>
-        <association property="usage" javaType="Taxon">
+        <association property="usage" javaType="Taxon" autoMapping="true">
             <id property="id" column="id" />
             <result property="lifezones" column="lifezones" typeHandler="org.col.db.type.LifezoneSetTypeHandler" />
             <association property="name" javaType="Name" resultMap="org.col.db.mapper.NameMapper.nameResultMap" columnPrefix="n_" />

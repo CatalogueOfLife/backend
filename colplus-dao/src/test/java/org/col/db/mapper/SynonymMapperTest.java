@@ -1,5 +1,7 @@
 package org.col.db.mapper;
 
+import java.util.List;
+
 import org.col.api.RandomUtils;
 import org.col.api.TestEntityGenerator;
 import org.col.api.model.Name;
@@ -10,8 +12,6 @@ import org.col.api.vocab.TaxonomicStatus;
 import org.col.db.dao.NameDao;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.util.List;
 
 import static org.junit.Assert.*;
 

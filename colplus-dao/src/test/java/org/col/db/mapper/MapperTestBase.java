@@ -24,10 +24,15 @@ public abstract class MapperTestBase<T> {
   public static PgSetupRule pgSetupRule = new PgSetupRule();
   
   @Rule
-  public InitMybatisRule initMybatisRule = InitMybatisRule.apple();
+  public final InitMybatisRule initMybatisRule;
   
   public MapperTestBase(Class<T> mapperClazz) {
+    this(mapperClazz, InitMybatisRule.apple());
+  }
+  
+  public MapperTestBase(Class<T> mapperClazz, InitMybatisRule initMybatisRule) {
     this.mapperClazz = mapperClazz;
+    this.initMybatisRule = initMybatisRule;
   }
   
   public T mapper() {

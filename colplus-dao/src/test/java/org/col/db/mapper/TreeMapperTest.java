@@ -1,5 +1,7 @@
 package org.col.db.mapper;
 
+import java.util.List;
+
 import org.col.api.TestEntityGenerator;
 import org.col.api.model.ColSource;
 import org.col.api.model.NameRef;
@@ -8,9 +10,6 @@ import org.col.api.model.TreeNode;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.List;
-
-import static org.col.api.TestEntityGenerator.setUserDate;
 import static org.col.api.vocab.Datasets.DRAFT_COL;
 import static org.junit.Assert.*;
 
