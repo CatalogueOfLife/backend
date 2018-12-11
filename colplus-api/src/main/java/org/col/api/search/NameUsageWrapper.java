@@ -69,6 +69,10 @@ public class NameUsageWrapper {
     return higherTaxa;
   }
 
+  public void setHigherTaxa(List<HigherTaxon> higherTaxa) {
+    this.higherTaxa = higherTaxa;
+  }
+
   public void setHigherTaxonIds(List<String> ids) {
     if (higherTaxa == null) {
       higherTaxa = new ArrayList<>(ids.size());

@@ -1,9 +1,7 @@
 package org.col.es;
 
-import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.Set;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -59,6 +57,29 @@ public class NameUsageTransfer {
     return SciNameNormalizer.normalizeAll(sn);
   }
 
+  /**
+   * Nullifies fields in the NameUsageWrapper object that are already indexed separately so as to make the payload (and the entire document)
+   * as small as possible and to cut down as much as possible on JSON processing. It's not necessary (and we don't) prune away everything
+   * that can be pruned away, as long as this method mirrors enrichPayload().
+   * 
+   * @param nameUsage
+   */
+  public static void prunePayload(NameUsageWrapper nameUsage) {
+    nameUsage.setIssues(null);
+    nameUsage.setHigherTaxa(null);
+  }
+
+  /**
+   * Puts the nullified fields back onto the NameUsageWrapper object.
+   * 
+   * @param nameUsage
+   * @param enu
+   */
+  public static void enrichPayload(NameUsageWrapper nameUsage, EsNameUsage enu) {
+    nameUsage.setIssues(enu.getIssues());
+    nameUsage.setHigherTaxa(enu.getHigherTaxa());
+  }
+
   EsNameUsage toEsDocument(NameUsageWrapper wrapper) throws JsonProcessingException {
 
     EsNameUsage enu = new EsNameUsage();
@@ -66,7 +87,6 @@ public class NameUsageTransfer {
       enu.setVernacularNames(wrapper.getVernacularNames().stream().map(VernacularName::getName).collect(Collectors.toList()));
     }
     enu.setIssues(wrapper.getIssues());
-
     Name name = wrapper.getUsage().getName();
     enu.setAuthorship(name.authorshipComplete()); // TODO: Is this correct !!??
     enu.setDatasetKey(name.getDatasetKey());
@@ -92,6 +112,7 @@ public class NameUsageTransfer {
     }
     enu.setType(name.getType());
     enu.setNameFields(getNonNullNameFields(wrapper.getUsage().getName()));
+    prunePayload(wrapper);
     enu.setPayload(EsModule.NAME_USAGE_WRITER.writeValueAsString(wrapper));
     return enu;
   }

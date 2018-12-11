@@ -60,6 +60,8 @@ class NameSearchResponseTransfer {
     ObjectReader reader = EsModule.NAME_USAGE_READER;
     for (SearchHit<EsNameUsage> hit : hits) {
       String payload = hit.getSource().getPayload();
+      NameUsageWrapper nu = (NameUsageWrapper) reader.readValue(payload);
+      NameUsageTransfer.enrichPayload(nu, hit.getSource());
       nus.add((NameUsageWrapper) reader.readValue(payload));
     }
     return nus;
