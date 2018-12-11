@@ -62,7 +62,7 @@ class NameSearchResponseTransfer {
       String payload = hit.getSource().getPayload();
       NameUsageWrapper nu = (NameUsageWrapper) reader.readValue(payload);
       NameUsageTransfer.enrichPayload(nu, hit.getSource());
-      nus.add((NameUsageWrapper) reader.readValue(payload));
+      nus.add(nu);
     }
     return nus;
   }
