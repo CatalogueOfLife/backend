@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import org.col.api.search.NameUsageWrapper;
 import org.col.api.vocab.Issue;
 import org.col.api.vocab.NameField;
 import org.col.api.vocab.NomStatus;
@@ -59,7 +60,7 @@ public class EsNameUsage {
 
   private List<String> vernacularNames;
 
-  private List<String> higherTaxonIds;
+  private List<NameUsageWrapper.HigherTaxon> higherTaxa;
 
   private String payload; // The entire NameUsageWrapper object, serialized to a string
 
@@ -190,12 +191,12 @@ public class EsNameUsage {
     this.issues = issues;
   }
 
-  public List<String> getHigherTaxonIds() {
-    return higherTaxonIds;
+  public List<NameUsageWrapper.HigherTaxon> getHigherTaxa() {
+    return higherTaxa;
   }
 
-  public void setHigherTaxonIds(List<String> higherTaxonIds) {
-    this.higherTaxonIds = higherTaxonIds;
+  public void setHigherTaxa(List<NameUsageWrapper.HigherTaxon> higherTaxa) {
+    this.higherTaxa = higherTaxa;
   }
 
   @NotIndexed

@@ -572,7 +572,7 @@ public class PgImportIT {
   }
   
   @Test
-  //@Ignore
+  @Ignore
   public void testGsdGithub() throws Exception {
     dataset.setContributesTo(Catalogue.PCAT);
     // normalizeAndImport(URI.create("https://raw.githubusercontent.com/Sp2000/colplus-repo/master/ACEF/assembly/15.tar.gz"), DataFormat.ACEF);

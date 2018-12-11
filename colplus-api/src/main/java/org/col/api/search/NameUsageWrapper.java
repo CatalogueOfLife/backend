@@ -1,20 +1,39 @@
 package org.col.api.search;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-
 import org.col.api.model.NameUsage;
 import org.col.api.model.VernacularName;
 import org.col.api.vocab.Issue;
+import org.gbif.nameparser.api.Rank;
 
 public class NameUsageWrapper {
+
+  public static class HigherTaxon {
+    private String id;
+    private Rank rank;
+    private String scientificName;
+
+    public String getId() {
+      return id;
+    }
+
+    public Rank getRank() {
+      return rank;
+    }
+
+    public String getScientificName() {
+      return scientificName;
+    }
+  }
 
   private NameUsage usage;
   private Set<Issue> issues;
   private List<VernacularName> vernacularNames;
-  private List<String> higherTaxonIds;
+  private List<HigherTaxon> higherTaxa;
 
   public NameUsageWrapper() {}
 
@@ -46,12 +65,53 @@ public class NameUsageWrapper {
     this.vernacularNames = vernacularNames;
   }
 
-  public List<String> getHigherTaxonIds() {
-    return higherTaxonIds;
+  public List<HigherTaxon> getHigherTaxa() {
+    return higherTaxa;
   }
 
-  public void setHigherTaxonIds(List<String> higherTaxonIds) {
-    this.higherTaxonIds = higherTaxonIds;
+  public void setHigherTaxonIds(List<String> ids) {
+    if (higherTaxa == null) {
+      higherTaxa = new ArrayList<>(ids.size());
+      for (int i = 0; i < ids.size(); i++) {
+        HigherTaxon ht = new HigherTaxon();
+        ht.id = ids.get(i);
+        higherTaxa.add(ht);
+      }
+    } else {
+      for (int i = 0; i < ids.size(); i++) {
+        higherTaxa.get(i).id = ids.get(i);
+      }
+    }
+  }
+
+  public void setHigherTaxonRanks(List<Rank> ranks) {
+    if (higherTaxa == null) {
+      higherTaxa = new ArrayList<>(ranks.size());
+      for (int i = 0; i < ranks.size(); i++) {
+        HigherTaxon ht = new HigherTaxon();
+        ht.rank = ranks.get(i);
+        higherTaxa.add(ht);
+      }
+    } else {
+      for (int i = 0; i < ranks.size(); i++) {
+        higherTaxa.get(i).rank = ranks.get(i);
+      }
+    }
+  }
+
+  public void setHigherTaxonNames(List<String> names) {
+    if (higherTaxa == null) {
+      higherTaxa = new ArrayList<>(names.size());
+      for (int i = 0; i < names.size(); i++) {
+        HigherTaxon ht = new HigherTaxon();
+        ht.scientificName = names.get(i);
+        higherTaxa.add(ht);
+      }
+    } else {
+      for (int i = 0; i < names.size(); i++) {
+        higherTaxa.get(i).scientificName = names.get(i);
+      }
+    }
   }
 
   @Override

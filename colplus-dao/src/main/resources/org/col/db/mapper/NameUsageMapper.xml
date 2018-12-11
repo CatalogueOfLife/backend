@@ -11,6 +11,9 @@
 
     <resultMap id="taxonResultMap" type="NameUsageWrapper" autoMapping="true" extends="issueResultMap">
         <id column="id" />
+        <result property="higherTaxonIds" column="higherTaxonIds" typeHandler="org.col.db.type.StringArrayTypeHandler"/>
+        <result property="higherTaxonNames" column="higherTaxonNames" typeHandler="org.col.db.type.StringArrayTypeHandler"/>
+        <result property="higherTaxonRanks" column="higherTaxonRanks" typeHandler="org.col.db.type.RankArrayTypeHandler"/>
         <association property="usage" javaType="Taxon">
             <id property="id" column="id" />
             <result property="lifezones" column="lifezones" typeHandler="org.col.db.type.LifezoneSetTypeHandler" />
@@ -47,7 +50,10 @@
             
         WITH RECURSIVE tree AS(
 	         
-	        SELECT v.issues, ARRAY[t.id] AS higherTaxonIds,
+	        SELECT v.issues, 
+	        	ARRAY[t.id] AS higherTaxonIds,
+	        	ARRAY[n.rank] AS higherTaxonRanks,
+	        	ARRAY[n.scientific_name] AS higherTaxonNames,
 	        <include refid="org.col.db.mapper.NameMapper.nameCols">
 	            <property name="alias" value="n"/>
 	            <property name="prefix" value="n_"/>
@@ -65,7 +71,10 @@
 	        
 	        UNION
 	         
-	        SELECT v.issues, array_append(tree.higherTaxonIds,t.id) AS higherTaxonIds,
+	        SELECT v.issues, 
+	        	array_append(tree.higherTaxonIds,t.id) AS higherTaxonIds,
+	        	array_append(tree.higherTaxonRanks,n.rank) AS higherTaxonRanks,
+	        	array_append(tree.higherTaxonNames,n.scientific_name) AS higherTaxonNames,
 	        <include refid="org.col.db.mapper.NameMapper.nameCols">
 	            <property name="alias" value="n"/>
 	            <property name="prefix" value="n_"/>
