@@ -1,8 +1,9 @@
 package org.col.resources;
 
 import java.io.IOException;
-import java.util.Map;
-import java.util.Set;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.*;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
@@ -12,6 +13,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.reflect.ClassPath;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.reflect.FieldUtils;
+import org.col.api.jackson.ApiModule;
 import org.col.api.model.ColUser;
 import org.col.api.model.EditorialDecision;
 import org.col.api.model.Sector;
@@ -64,11 +67,35 @@ public class VocabResource {
   
   @GET
   @Path("{name}")
-  public Enum[] values(@PathParam("name") String name) {
+  public List<Map<String, String>> values(@PathParam("name") String name) throws IllegalAccessException {
     if (name != null && vocabs.containsKey(name.toLowerCase())) {
-      return vocabs.get(name.toLowerCase()).getEnumConstants();
+      return enumList(vocabs.get(name.toLowerCase()));
     }
     throw new NotFoundException();
+  }
+  
+  private static List<Map<String, String>> enumList(Class<Enum> clazz) throws IllegalAccessException {
+    List<Map<String, String>> values = new ArrayList<>();
+    for (Enum entry : clazz.getEnumConstants()) {
+      Map<String, String> map = new HashMap<>();
+      for (Field f : clazz.getDeclaredFields()) {
+        if (!f.isEnumConstant() && !Modifier.isStatic(f.getModifiers()) && !f.getName().equals("$VALUES")) {
+          String sval = null;
+          Object val = FieldUtils.readField(f, entry, true);
+          if (val != null) {
+            if (f.getType().isEnum()) {
+              sval = ApiModule.enumValueName((Enum)val);
+            } else {
+              sval = val.toString();
+            }
+          }
+          map.put(f.getName(), sval);
+        }
+      }
+      map.put("name", ApiModule.enumValueName(entry));
+      values.add(map);
+    }
+    return values;
   }
   
   private static String binaryName(Class clazz) {
