@@ -13,8 +13,8 @@ import java.util.List;
  */
 public class Sector extends Decision {
   private Integer colSourceKey;
-  private NameRef target;
-  private List<NameRef> exclude;
+  private SimpleName target;
+  private List<SimpleName> exclude;
   private Mode mode = Sector.Mode.ATTACH;
   
   public static enum Mode {
@@ -42,11 +42,11 @@ public class Sector extends Decision {
   /**
    * Optional list of taxa within the descendants of root to exclude from this sector definition
    */
-  public List<NameRef> getExclude() {
+  public List<SimpleName> getExclude() {
     return exclude;
   }
   
-  public void setExclude(List<NameRef> exclude) {
+  public void setExclude(List<SimpleName> exclude) {
     this.exclude = exclude;
   }
   
@@ -61,11 +61,11 @@ public class Sector extends Decision {
   /**
    * The attachment point in the CoL tree, i.e. the CoL parent taxon for the sector root
    */
-  public NameRef getTarget() {
+  public SimpleName getTarget() {
     return target;
   }
   
-  public void setTarget(NameRef target) {
+  public void setTarget(SimpleName target) {
     this.target = target;
   }
   

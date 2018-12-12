@@ -73,3 +73,7 @@ INSERT INTO synonym (id, taxon_id, dataset_key, name_id, status, origin, created
  ('s14', 't13', 11, 'n14', 2, 0, 1, 1),
  ('s21', 't20', 11, 'n21', 2, 0, 1, 1),
  ('s22', 't20', 11, 'n22', 2, 0, 1, 1);
+
+UPDATE synonym SET
+    according_to = 'M.Döring',
+    verbatim_key=1;

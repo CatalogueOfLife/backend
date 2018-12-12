@@ -6,7 +6,6 @@
 
   <sql id="DecisionCols">
     ${prefix}subject_id,
-    ${prefix}subject_index_name_id,
     ${prefix}subject_name,
     ${prefix}subject_authorship,
     ${prefix}subject_rank,
@@ -24,7 +23,6 @@
   </sql>
   <sql id="DecisionProps">
     #{subject.id},
-    #{subject.indexNameId},
     #{subject.name},
     #{subject.authorship},
     #{subject.rank}::rank,
@@ -68,7 +66,7 @@
   <resultMap id="decisionResultMap" type="EditorialDecision" autoMapping="true">
     <id property="key" column="key" />
     <result property="name" column="name" typeHandler="org.col.db.type2.NameJsonHandler" />
-    <association property="subject" javaType="NameRef" resultMap="org.col.db.mapper.SectorMapper.refResultMap" columnPrefix="subject_" />
+    <association property="subject" javaType="simpleName" resultMap="org.col.db.mapper.SectorMapper.refResultMap" columnPrefix="subject_" />
   </resultMap>
 
   <select id="listBySector" resultMap="decisionResultMap">

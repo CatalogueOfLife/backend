@@ -47,10 +47,10 @@ public class NameUsageMapperTreeTest extends MapperTestBase<NameUsageMapper> {
         assertEquals(URI.create("http://myspace.com"), t.getDatasetUrl());
         if (t.getId().equals("t1")) {
           assertNull(t.getParentId());
-          assertTrue(obj.getHigherTaxa().isEmpty());
+          assertTrue(obj.getClassification().isEmpty());
         } else {
           assertNotNull(t.getParentId());
-          assertFalse(obj.getHigherTaxa().isEmpty());
+          assertFalse(obj.getClassification().isEmpty());
         }
 
         for (VernacularName v : ctx.getResultObject().getVernacularNames()) {
@@ -70,6 +70,8 @@ public class NameUsageMapperTreeTest extends MapperTestBase<NameUsageMapper> {
         assertTrue(ctx.getResultObject().getUsage().isSynonym());
         Synonym s = (Synonym) ctx.getResultObject().getUsage();
         assertNotNull(s.getAccepted());
+        assertEquals("M.Döring", s.getAccordingTo());
+        assertEquals((Integer) 1, s.getVerbatimKey());
       }
     });
     Assert.assertEquals(4, counter.get());

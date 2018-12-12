@@ -6,54 +6,17 @@ import java.util.Objects;
 import java.util.Set;
 
 import org.col.api.model.NameUsage;
+import org.col.api.model.SimpleName;
 import org.col.api.model.VernacularName;
 import org.col.api.vocab.Issue;
 import org.gbif.nameparser.api.Rank;
 
 public class NameUsageWrapper {
-
-  public static class HigherTaxon {
-    private String id;
-    private Rank rank;
-    private String scientificName;
-
-    public String getId() {
-      return id;
-    }
-
-    public Rank getRank() {
-      return rank;
-    }
-
-    public String getScientificName() {
-      return scientificName;
-    }
   
-    @Override
-    public boolean equals(Object o) {
-      if (this == o) return true;
-      if (o == null || getClass() != o.getClass()) return false;
-      HigherTaxon that = (HigherTaxon) o;
-      return Objects.equals(id, that.id) &&
-          rank == that.rank &&
-          Objects.equals(scientificName, that.scientificName);
-    }
-  
-    @Override
-    public int hashCode() {
-      return Objects.hash(id, rank, scientificName);
-    }
-  
-    @Override
-    public String toString() {
-      return rank + " " + scientificName + " [" + id + ']';
-    }
-  }
-
   private NameUsage usage;
   private Set<Issue> issues;
   private List<VernacularName> vernacularNames;
-  private List<HigherTaxon> higherTaxa;
+  private List<SimpleName> classification;
 
   public NameUsageWrapper() {}
 
@@ -85,72 +48,72 @@ public class NameUsageWrapper {
     this.vernacularNames = vernacularNames;
   }
 
-  public List<HigherTaxon> getHigherTaxa() {
-    return higherTaxa;
+  public List<SimpleName> getClassification() {
+    return classification;
   }
 
-  public void setHigherTaxa(List<HigherTaxon> higherTaxa) {
-    this.higherTaxa = higherTaxa;
+  public void setClassification(List<SimpleName> classification) {
+    this.classification = classification;
   }
 
-  public void setHigherTaxonIds(List<String> ids) {
-    if (higherTaxa == null) {
-      higherTaxa = new ArrayList<>(ids.size());
+  public void setClassificationIds(List<String> ids) {
+    if (classification == null) {
+      classification = new ArrayList<>(ids.size());
       for (int i = 0; i < ids.size(); i++) {
-        HigherTaxon ht = new HigherTaxon();
-        ht.id = ids.get(i);
-        higherTaxa.add(ht);
+        SimpleName ht = new SimpleName();
+        ht.setId(ids.get(i));
+        classification.add(ht);
       }
     } else {
       for (int i = 0; i < ids.size(); i++) {
-        higherTaxa.get(i).id = ids.get(i);
+        classification.get(i).setId(ids.get(i));
       }
     }
   }
 
-  public void setHigherTaxonRanks(List<Rank> ranks) {
-    if (higherTaxa == null) {
-      higherTaxa = new ArrayList<>(ranks.size());
+  public void setClassificationRanks(List<Rank> ranks) {
+    if (classification == null) {
+      classification = new ArrayList<>(ranks.size());
       for (int i = 0; i < ranks.size(); i++) {
-        HigherTaxon ht = new HigherTaxon();
-        ht.rank = ranks.get(i);
-        higherTaxa.add(ht);
+        SimpleName ht = new SimpleName();
+        ht.setRank(ranks.get(i));
+        classification.add(ht);
       }
     } else {
       for (int i = 0; i < ranks.size(); i++) {
-        higherTaxa.get(i).rank = ranks.get(i);
+        classification.get(i).setRank(ranks.get(i));
       }
     }
   }
 
-  public void setHigherTaxonNames(List<String> names) {
-    if (higherTaxa == null) {
-      higherTaxa = new ArrayList<>(names.size());
+  public void setClassificationNames(List<String> names) {
+    if (classification == null) {
+      classification = new ArrayList<>(names.size());
       for (int i = 0; i < names.size(); i++) {
-        HigherTaxon ht = new HigherTaxon();
-        ht.scientificName = names.get(i);
-        higherTaxa.add(ht);
+        SimpleName ht = new SimpleName();
+        ht.setName(names.get(i));
+        classification.add(ht);
       }
     } else {
       for (int i = 0; i < names.size(); i++) {
-        higherTaxa.get(i).scientificName = names.get(i);
+        classification.get(i).setName(names.get(i));
       }
     }
   }
-
+  
   @Override
   public boolean equals(Object o) {
-    if (this == o)
-      return true;
-    if (o == null || getClass() != o.getClass())
-      return false;
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
     NameUsageWrapper that = (NameUsageWrapper) o;
-    return Objects.equals(usage, that.usage) && Objects.equals(issues, that.issues)
-        && Objects.equals(vernacularNames, that.vernacularNames);
+    return Objects.equals(usage, that.usage) &&
+        Objects.equals(issues, that.issues) &&
+        Objects.equals(vernacularNames, that.vernacularNames) &&
+        Objects.equals(classification, that.classification);
   }
-
+  
   @Override
   public int hashCode() {
-    return Objects.hash(usage, issues, vernacularNames);
+    return Objects.hash(usage, issues, vernacularNames, classification);
   }
 }

@@ -11,9 +11,9 @@
 
     <resultMap id="taxonResultMap" type="NameUsageWrapper" autoMapping="true" extends="issueResultMap">
         <id column="id" />
-        <result property="higherTaxonIds" column="higherTaxonIds" typeHandler="org.col.db.type.StringArrayTypeHandler"/>
-        <result property="higherTaxonNames" column="higherTaxonNames" typeHandler="org.col.db.type.StringArrayTypeHandler"/>
-        <result property="higherTaxonRanks" column="higherTaxonRanks" typeHandler="org.col.db.type.RankArrayTypeHandler"/>
+        <result property="classificationIds" column="classificationIds" typeHandler="org.col.db.type.StringArrayTypeHandler"/>
+        <result property="classificationNames" column="classificationNames" typeHandler="org.col.db.type.StringArrayTypeHandler"/>
+        <result property="classificationRanks" column="classificationRanks" typeHandler="org.col.db.type.RankArrayTypeHandler"/>
         <association property="usage" javaType="Taxon" autoMapping="true">
             <id property="id" column="id" />
             <result property="lifezones" column="lifezones" typeHandler="org.col.db.type.LifezoneSetTypeHandler" />
@@ -25,13 +25,9 @@
     </resultMap>
 
     <resultMap id="synonymResultMap" type="NameUsageWrapper" autoMapping="true" extends="issueResultMap">
-        <association property="usage" javaType="Synonym">
+        <association property="usage" javaType="Synonym" resultMap="org.col.db.mapper.SynonymMapper.synonymResultMap" autoMapping="true">
             <id column="n_id" />
             <id column="a_id" />
-            <result property="accordingTo" column="s_according_to" />
-            <result property="status" column="s_status" />
-            <association property="name" javaType="Name" resultMap="org.col.db.mapper.NameMapper.nameResultMap" columnPrefix="n_" />
-            <association property="accepted" javaType="Taxon" resultMap="org.col.db.mapper.TaxonMapper.taxonResultMap" columnPrefix="a_" />
         </association>
     </resultMap>
 
@@ -51,9 +47,9 @@
         WITH RECURSIVE tree AS(
 	         
 	        SELECT v.issues, 
-	        	ARRAY[]::text[] AS higherTaxonIds,
-	        	ARRAY[]::rank[] AS higherTaxonRanks,
-	        	ARRAY[]::text[] AS higherTaxonNames,
+	        	ARRAY[]::text[] AS classificationIds,
+	        	ARRAY[]::rank[] AS classificationRanks,
+	        	ARRAY[]::text[] AS classificationNames,
 	        <include refid="org.col.db.mapper.NameMapper.nameCols">
 	            <property name="alias" value="n"/>
 	            <property name="prefix" value="n_"/>
@@ -72,9 +68,9 @@
 	        UNION
 	         
 	        SELECT v.issues, 
-	        	array_append(tree.higherTaxonIds,t.id) AS higherTaxonIds,
-	        	array_append(tree.higherTaxonRanks,n.rank) AS higherTaxonRanks,
-	        	array_append(tree.higherTaxonNames,n.scientific_name) AS higherTaxonNames,
+	        	array_append(tree.classificationIds,t.id) AS classificationIds,
+	        	array_append(tree.classificationRanks,n.rank) AS classificationRanks,
+	        	array_append(tree.classificationNames,n.scientific_name) AS classificationNames,
 	        <include refid="org.col.db.mapper.NameMapper.nameCols">
 	            <property name="alias" value="n"/>
 	            <property name="prefix" value="n_"/>
@@ -91,36 +87,15 @@
 	            LEFT JOIN verbatim v ON v.dataset_key = n.dataset_key AND v.key=n.verbatim_key
 	        WHERE n.dataset_key = #{datasetKey}
 	   )
-	   SELECT * FROM tree      
-        
-        
+	   SELECT * FROM tree
     </select>
 
     <select id="processDatasetSynonyms" parameterType="map" resultMap="synonymResultMap" resultOrdered="true"
             fetchSize="10000" resultSetType="FORWARD_ONLY">
-        SELECT v.issues,
-        <include refid="org.col.db.mapper.NameMapper.nameCols">
-            <property name="alias" value="n"/>
-            <property name="prefix" value="n_"/>
-        </include>,
-        <include refid="org.col.db.mapper.SynonymMapper.synCols">
-            <property name="alias" value="s"/>
-            <property name="prefix" value="s_"/>
-        </include>,
-        <include refid="org.col.db.mapper.TaxonMapper.taxonCols">
-            <property name="alias" value="t"/>
-            <property name="prefix" value="a_"/>
-        </include>,
-        <include refid="org.col.db.mapper.NameMapper.nameCols">
-            <property name="alias" value="an"/>
-            <property name="prefix" value="a_n_"/>
-        </include>
-        FROM name n
-            JOIN synonym s ON n.id = s.name_id AND s.dataset_key = n.dataset_key
-            JOIN taxon t ON s.taxon_id = t.id AND t.dataset_key = n.dataset_key
-            JOIN name an ON t.name_id = an.id  AND an.dataset_key = n.dataset_key
+        SELECT <include refid="org.col.db.mapper.SynonymMapper.SELECT"/>, v.issues
+        FROM <include refid="org.col.db.mapper.SynonymMapper.FROM"/>
             LEFT JOIN verbatim v ON v.dataset_key = n.dataset_key AND v.key=n.verbatim_key
-        WHERE n.dataset_key = #{datasetKey}
+        WHERE s.dataset_key = #{datasetKey}
     </select>
 
     <select id="processDatasetBareNames" parameterType="map" resultMap="bareNameResultMap" resultOrdered="true"

@@ -5,7 +5,7 @@ import java.util.Objects;
 
 abstract class Decision implements IntKey, UserManaged {
   protected Integer key;
-  protected NameRef subject;
+  protected SimpleName subject;
   protected String note;
   private LocalDateTime created;
   private Integer createdBy;
@@ -70,11 +70,11 @@ abstract class Decision implements IntKey, UserManaged {
     this.modifiedBy = modifiedBy;
   }
   
-  public NameRef getSubject() {
+  public SimpleName getSubject() {
     return subject;
   }
   
-  public void setSubject(NameRef subject) {
+  public void setSubject(SimpleName subject) {
     this.subject = subject;
   }
   

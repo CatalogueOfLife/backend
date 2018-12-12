@@ -11,7 +11,6 @@
       <property name="prefix" value="s."/>
     </include>,
     s.target_id,
-    s.target_index_name_id,
     s.target_name,
     s.target_authorship,
     s.target_rank,
@@ -24,7 +23,6 @@
       <property name="prefix" value=""/>
     </include>,
     target_id,
-    target_index_name_id,
     target_name,
     target_authorship,
     target_rank,
@@ -35,7 +33,6 @@
     #{colSourceKey},
     <include refid="org.col.db.mapper.DecisionMapper.DecisionProps" />,
     #{target.id},
-    #{target.indexNameId},
     #{target.name},
     #{target.authorship},
     #{target.rank}::rank,
@@ -49,11 +46,11 @@
   <!-- A mapping to Distribution, mostly auto mapped -->
   <resultMap id="sectorResultMap" type="Sector" autoMapping="true">
     <id property="key" column="key" />
-    <association property="subject" javaType="NameRef" resultMap="org.col.db.mapper.SectorMapper.refResultMap" columnPrefix="subject_" />
-    <association property="target" javaType="NameRef" resultMap="org.col.db.mapper.SectorMapper.refResultMap" columnPrefix="target_" />
+    <association property="subject" javaType="simpleName" resultMap="org.col.db.mapper.SectorMapper.refResultMap" columnPrefix="subject_" />
+    <association property="target" javaType="simpleName" resultMap="org.col.db.mapper.SectorMapper.refResultMap" columnPrefix="target_" />
   </resultMap>
 
-  <resultMap id="refResultMap" type="NameRef" autoMapping="true">
+  <resultMap id="refResultMap" type="simpleName" autoMapping="true">
   </resultMap>
 
 

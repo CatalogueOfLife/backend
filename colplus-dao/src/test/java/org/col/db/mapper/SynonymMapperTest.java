@@ -47,6 +47,7 @@ public class SynonymMapperTest extends MapperTestBase<SynonymMapper> {
     taxonMapper.create(t);
     
     Synonym s1 = TestEntityGenerator.newSynonym(TaxonomicStatus.SYNONYM, n, t);
+    s1.setVerbatimKey(1);
     synonymMapper.create(n.getDatasetKey(), s1.getName().getId(), s1.getAccepted().getId(), s1);
     commit();
     

@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.col.api.TestEntityGenerator;
 import org.col.api.model.ColSource;
-import org.col.api.model.NameRef;
+import org.col.api.model.SimpleName;
 import org.col.api.model.Sector;
 import org.col.api.model.TreeNode;
 import org.junit.Before;
@@ -89,8 +89,8 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
     }
   }
   
-  private static NameRef nameref(String id) {
-    NameRef nr = new NameRef();
+  private static SimpleName nameref(String id) {
+    SimpleName nr = new SimpleName();
     nr.setId(id);
     return nr;
   }

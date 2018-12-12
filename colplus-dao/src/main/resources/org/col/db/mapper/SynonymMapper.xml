@@ -43,7 +43,7 @@
     </sql>
 
     <sql id="SELECT">
-        <include refid="synCols">
+        <include refid="org.col.db.mapper.SynonymMapper.synCols">
             <property name="alias" value="s"/>
             <property name="prefix" value=""/>
         </include>,
