@@ -1,26 +1,44 @@
 package org.col.admin.importer;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.Objects;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
 
 /**
  *
  */
-public class ImportRequest {
+public class ImportRequest implements Comparable<ImportRequest> {
   public final int datasetKey;
+  public final boolean priority;
   public final boolean force;
+  public int createdBy;
   public final LocalDateTime created = LocalDateTime.now();
   public LocalDateTime started;
   
-  public ImportRequest(int datasetKey, boolean force) {
+  public ImportRequest(int datasetKey, int createdBy) {
+    this(datasetKey, createdBy, false, false);
+  }
+
+  @JsonCreator
+  public ImportRequest(int datasetKey, int createdBy, boolean force, boolean priority) {
     this.datasetKey = datasetKey;
+    this.createdBy = createdBy;
     this.force = force;
+    this.priority = priority;
   }
   
   public void start() {
     started = LocalDateTime.now();
   }
   
+  public int compareTo(ImportRequest other) {
+    return Comparator.comparing((ImportRequest r) -> !r.priority)
+        .thenComparing(r->r.created)
+        .compare(this, other);
+  }
+ 
   /**
    * Naturally equal if the datasetKey matches
    */
@@ -41,6 +59,7 @@ public class ImportRequest {
   public String toString() {
     return "ImportRequest{" +
         "datasetKey=" + datasetKey +
+        ", priority=" + priority +
         ", force=" + force +
         '}';
   }

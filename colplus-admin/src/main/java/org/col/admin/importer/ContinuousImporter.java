@@ -8,6 +8,7 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.admin.config.ImporterConfig;
 import org.col.api.model.Dataset;
+import org.col.api.vocab.Users;
 import org.col.common.util.LoggingUtils;
 import org.col.db.mapper.DatasetMapper;
 import org.slf4j.Logger;
@@ -77,7 +78,7 @@ public class ContinuousImporter implements Managed {
           } else {
             for (Dataset d : datasets) {
               try {
-                manager.submit(d.getKey(), false);
+                manager.submit(new ImportRequest(d.getKey(), Users.IMPORTER, false, false));
               } catch (IllegalArgumentException e) {
                 // ignore
               }

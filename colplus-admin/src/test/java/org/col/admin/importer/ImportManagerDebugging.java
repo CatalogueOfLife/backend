@@ -7,6 +7,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.col.admin.command.initdb.InitDbCmd;
 import org.col.admin.config.AdminServerConfig;
 import org.col.admin.matching.NameIndexFactory;
+import org.col.api.vocab.Users;
 import org.col.db.PgSetupRule;
 import org.col.es.EsClientFactory;
 import org.col.img.ImageService;
@@ -69,9 +70,9 @@ public class ImportManagerDebugging {
    */
   @Test
   public void debugParallel() throws Exception {
-    importManager.submit(1000, true);
-    importManager.submit(1006, true);
-    importManager.submit(1007, true);
+    importManager.submit(new ImportRequest(1000, Users.IMPORTER));
+    importManager.submit(new ImportRequest(1006, Users.IMPORTER));
+    importManager.submit(new ImportRequest(1007, Users.IMPORTER));
     
     Thread.sleep(1000);
     while (importManager.hasRunning()) {
@@ -81,7 +82,7 @@ public class ImportManagerDebugging {
   
   @Test
   public void debugImport() throws Exception {
-    importManager.submit(2020, true);
+    importManager.submit(new ImportRequest(2020, Users.IMPORTER));
     Thread.sleep(1000);
     while (importManager.hasRunning()) {
       Thread.sleep(1000);
