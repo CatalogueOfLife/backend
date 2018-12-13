@@ -10,9 +10,9 @@ public interface SectorMapper extends CRUDIntMapper<Sector> {
   List<Sector> list(@Param("key") int colSourceKey);
   
   /**
-   * List all sectors that cannot anymore be linked to root taxa in the source
+   * List all sectors that cannot anymore be linked to subject taxa in the source
    */
-  List<Sector> rootBroken(@Param("key") Integer colSourceKey);
+  List<Sector> subjectBroken(@Param("key") Integer colSourceKey);
   
   /**
    * List all sectors that cannot anymore be linked to attachment points in the draft CoL

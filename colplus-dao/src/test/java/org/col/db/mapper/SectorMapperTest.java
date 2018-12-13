@@ -34,7 +34,7 @@ public class SectorMapperTest extends CRUDIntMapperTest<Sector, SectorMapper> {
   static Sector create(int sourceKey) {
     Sector d = new Sector();
     d.setColSourceKey(sourceKey);
-    d.setMode(Sector.Mode.ATTACH);
+    d.setMode(Sector.Mode.REPLACE);
     d.setSubject(newNameRef());
     d.setTarget(newNameRef());
     d.setNote(RandomStringUtils.random(1024));

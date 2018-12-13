@@ -3,10 +3,12 @@ package org.col.api.model;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
-abstract class Decision implements IntKey, UserManaged {
+public abstract class Decision implements IntKey, UserManaged {
   protected Integer key;
+  protected Integer colSourceKey;
   protected SimpleName subject;
   protected String note;
+  
   private LocalDateTime created;
   private Integer createdBy;
   private LocalDateTime modified;
@@ -20,6 +22,25 @@ abstract class Decision implements IntKey, UserManaged {
   @Override
   public void setKey(Integer key) {
     this.key = key;
+  }
+  
+  /**
+   * The col source the subject originates from
+   */
+  public Integer getColSourceKey() {
+    return colSourceKey;
+  }
+  
+  public void setColSourceKey(Integer colSourceKey) {
+    this.colSourceKey = colSourceKey;
+  }
+  
+  public SimpleName getSubject() {
+    return subject;
+  }
+  
+  public void setSubject(SimpleName subject) {
+    this.subject = subject;
   }
   
   public String getNote() {
@@ -70,31 +91,24 @@ abstract class Decision implements IntKey, UserManaged {
     this.modifiedBy = modifiedBy;
   }
   
-  public SimpleName getSubject() {
-    return subject;
-  }
-  
-  public void setSubject(SimpleName subject) {
-    this.subject = subject;
-  }
   
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     Decision decision = (Decision) o;
-    return createdBy == decision.createdBy &&
-        modifiedBy == decision.modifiedBy &&
+    return Objects.equals(key, decision.key) &&
+        Objects.equals(colSourceKey, decision.colSourceKey) &&
         Objects.equals(subject, decision.subject) &&
-        Objects.equals(key, decision.key) &&
         Objects.equals(note, decision.note) &&
         Objects.equals(created, decision.created) &&
-        Objects.equals(modified, decision.modified);
+        Objects.equals(createdBy, decision.createdBy) &&
+        Objects.equals(modified, decision.modified) &&
+        Objects.equals(modifiedBy, decision.modifiedBy);
   }
   
   @Override
   public int hashCode() {
-    
-    return Objects.hash(subject, key, note, created, createdBy, modified, modifiedBy);
+    return Objects.hash(key, colSourceKey, subject, note, created, createdBy, modified, modifiedBy);
   }
 }

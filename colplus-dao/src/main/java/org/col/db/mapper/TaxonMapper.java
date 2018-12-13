@@ -1,8 +1,10 @@
 package org.col.db.mapper;
 
 import java.util.List;
+import java.util.Set;
 
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.session.ResultHandler;
 import org.col.api.model.Page;
 import org.col.api.model.Taxon;
 
@@ -35,5 +37,21 @@ public interface TaxonMapper {
    * @param taxon
    */
   void create(Taxon taxon);
+  
+  /**
+   * Iterates over all accepted descendants in a tree in depth first order for a given start/root taxon
+   * and processes them with the supplied handler. This allows a single
+   * query to efficiently stream all its values without keeping them in memory.
+   *
+   * An optional exclusion filter can be used to prevent traversal of subtrees.
+   * Synonyms are not traversed, this only works on Taxa!
+   *
+   * @param startID taxon id to start the traversal. Will be included in the result
+   * @param exclusions set of taxon ids to exclude from traversal. This will also exclude all descendants
+   */
+  void processTree(@Param("datasetKey") int datasetKey,
+                   @Param("startID") String startID,
+                   @Param("exclusions") Set<String> exclusions,
+                   ResultHandler<Taxon> handler);
   
 }

@@ -206,17 +206,9 @@ CREATE TABLE sector (
   UNIQUE (col_source_key, subject_id)
 );
 
-CREATE TABLE sector_exclude (
-  sector_key INTEGER NOT NULL REFERENCES sector,
-  id TEXT,
-  name TEXT,
-  authorship TEXT,
-  rank rank
-);
-
 CREATE TABLE decision (
   key serial PRIMARY KEY,
-  sector_key INTEGER NOT NULL REFERENCES sector,
+  col_source_key INTEGER NOT NULL REFERENCES col_source,
   subject_id TEXT,
   subject_name TEXT,
   subject_authorship TEXT,
@@ -228,7 +220,8 @@ CREATE TABLE decision (
   created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   created_by INTEGER NOT NULL,
   modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
-  modified_by INTEGER NOT NULL
+  modified_by INTEGER NOT NULL,
+  UNIQUE (col_source_key, subject_id)
 );
 
 CREATE TABLE dataset_import (

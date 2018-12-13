@@ -41,7 +41,7 @@ public class SectorResource extends CRUDIntResource<Sector> {
     if (col) {
       return mapper.colBroken(colSourceKey);
     } else {
-      return mapper.rootBroken(colSourceKey);
+      return mapper.subjectBroken(colSourceKey);
     }
   }
 }
