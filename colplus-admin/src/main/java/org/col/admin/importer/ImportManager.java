@@ -13,6 +13,8 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.*;
 
+import javax.annotation.Nullable;
+
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
@@ -38,6 +40,7 @@ import org.col.db.dao.DatasetImportDao;
 import org.col.db.mapper.DatasetMapper;
 import org.col.db.mapper.DatasetPartitionMapper;
 import org.col.es.NameUsageIndexService;
+import org.col.es.NameUsageIndexServiceES;
 import org.col.img.ImageService;
 import org.elasticsearch.client.RestClient;
 import org.gbif.nameparser.utils.NamedThreadFactory;
@@ -65,14 +68,29 @@ public class ImportManager implements Managed {
   private final Timer importTimer;
   private final Counter failed;
   
+  /**
+   *
+   * @param cfg
+   * @param registry
+   * @param client
+   * @param factory
+   * @param index
+   * @param esClient rest client for Elastic Search. If null no ES indexing will be done at all
+   * @param imgService
+   */
   public ImportManager(AdminServerConfig cfg, MetricRegistry registry, CloseableHttpClient client,
-                       SqlSessionFactory factory, NameIndex index, RestClient esClient, ImageService imgService) {
+                       SqlSessionFactory factory, NameIndex index, @Nullable RestClient esClient, ImageService imgService) {
     this.cfg = cfg;
     this.factory = factory;
     this.downloader = new DownloadUtil(client, cfg.importer.githubToken);
     this.index = index;
     this.imgService = imgService;
-    this.indexService = new NameUsageIndexService(esClient, cfg.es, factory);
+    if (esClient == null) {
+      this.indexService = NameUsageIndexService.passThru();
+      LOG.warn("No Elastic Search configured, use pass through indexing");
+    } else {
+      this.indexService = new NameUsageIndexServiceES(esClient, cfg.es, factory);
+    }
     importTimer = registry.timer("org.col.import.timer");
     failed = registry.counter("org.col.import.failures");
   }

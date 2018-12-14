@@ -74,8 +74,11 @@ public class AdminServer extends PgApp<AdminServerConfig> {
     }
     env.jersey().register(new MatchingResource(ni));
     
-    RestClient esClient = new EsClientFactory(cfg.es).createClient();
-    env.lifecycle().manage(new ManagedEsClient(esClient));
+    RestClient esClient = null;
+    if (cfg.es != null) {
+      esClient = new EsClientFactory(cfg.es).createClient();
+      env.lifecycle().manage(new ManagedEsClient(esClient));
+    }
     
     // setup async importer
     final ImportManager importManager = new ImportManager(cfg, env.metrics(), super.httpClient, getSqlSessionFactory(), ni, esClient, imgService);
