@@ -191,8 +191,6 @@ public class ImportManager implements Managed {
       } else if (d.hasDeletedDate()) {
         LOG.warn("Dataset {} was deleted and cannot be imported", req.datasetKey);
         throw NotFoundException.keyNotFound(Dataset.class, req.datasetKey);
-      } else if (d.getOrigin() == DatasetOrigin.MANAGED) {
-        throw new IllegalArgumentException("Dataset " + req.datasetKey + " is managed and cannot be imported");
       }
       ImportJob job = new ImportJob(d, req.force, cfg, downloader, factory, index, indexService, imgService,
           new StartNotifier() {

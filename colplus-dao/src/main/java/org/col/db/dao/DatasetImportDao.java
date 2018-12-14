@@ -46,13 +46,18 @@ public class DatasetImportDao {
   /**
    * Create a new downloading dataset import with the next attempt
    */
-  public DatasetImport createDownloading(Dataset d) {
+  public DatasetImport create(Dataset d) {
     // build new import
     DatasetImport di = new DatasetImport();
     di.setDatasetKey(d.getKey());
-    di.setState(ImportState.DOWNLOADING);
-    di.setDownloadUri(d.getDataAccess());
     di.setStarted(LocalDateTime.now());
+    if (d.getOrigin() == DatasetOrigin.EXTERNAL) {
+      di.setState(ImportState.DOWNLOADING);
+      di.setDownloadUri(d.getDataAccess());
+    } else {
+      di.setState(ImportState.PROCESSING);
+      di.setDownloadUri(null);
+    }
     
     try (SqlSession session = factory.openSession(true)) {
       session.getMapper(DatasetImportMapper.class).create(di);

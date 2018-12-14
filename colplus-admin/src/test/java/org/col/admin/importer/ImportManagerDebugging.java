@@ -10,6 +10,7 @@ import org.col.admin.matching.NameIndexFactory;
 import org.col.api.vocab.Users;
 import org.col.db.PgSetupRule;
 import org.col.es.EsClientFactory;
+import org.col.es.IndexConfig;
 import org.col.img.ImageService;
 import org.elasticsearch.client.RestClient;
 import org.junit.*;
@@ -37,6 +38,7 @@ public class ImportManagerDebugging {
     cfg.db.password = "postgres";
     cfg.es.hosts = "localhost";
     cfg.es.ports = "9200";
+    cfg.es.nameUsage = new IndexConfig();
     cfg.es.nameUsage.modelClass = "org.col.es.model.EsNameUsage";
     
     return cfg;

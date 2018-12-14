@@ -5,6 +5,7 @@ import java.util.Comparator;
 import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  *
@@ -13,16 +14,23 @@ public class ImportRequest implements Comparable<ImportRequest> {
   public final int datasetKey;
   public final boolean priority;
   public final boolean force;
-  public int createdBy;
+  public Integer createdBy;
   public final LocalDateTime created = LocalDateTime.now();
   public LocalDateTime started;
   
+  @JsonCreator
+  public ImportRequest(@JsonProperty("datasetKey") int datasetKey,
+                       @JsonProperty("force") boolean force,
+                       @JsonProperty("priority") boolean priority
+  ) {
+   this(datasetKey, null, force, priority);
+  }
+
   public ImportRequest(int datasetKey, int createdBy) {
     this(datasetKey, createdBy, false, false);
   }
-
-  @JsonCreator
-  public ImportRequest(int datasetKey, int createdBy, boolean force, boolean priority) {
+  
+  public ImportRequest(int datasetKey, Integer createdBy, boolean force, boolean priority) {
     this.datasetKey = datasetKey;
     this.createdBy = createdBy;
     this.force = force;
