@@ -56,6 +56,9 @@ public class AdminServer extends PgApp<AdminServerConfig> {
   @Override
   public void run(AdminServerConfig cfg, Environment env) {
     super.run(cfg, env);
+  
+    // turn off user cache as longs as we cannot sync between JVMs
+    cfg.authCache = false;
     
     // images
     final ImageService imgService = new ImageService(cfg.img);

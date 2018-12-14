@@ -25,6 +25,8 @@ public class PgAppConfig extends Configuration implements CorsBundleConfiguratio
   @NotNull
   public AuthenticationProviderFactory auth;
   
+  public boolean authCache = true;
+  
   /**
    * Json Web Token used to trust in externally authenticated users.
    */

@@ -15,11 +15,11 @@ public class AuthBundle implements ConfiguredBundle<PgAppConfig> {
   private IdentityService idService;
   
   @Override
-  public void run(PgAppConfig configuration, Environment environment) {
+  public void run(PgAppConfig cfg, Environment environment) {
     environment.jersey().register(RolesAllowedDynamicFeature.class);
     
-    jwtCodec = new JwtCodec(configuration.jwtKey);
-    idService = new IdentityService(configuration.auth.createAuthenticationProvider());
+    jwtCodec = new JwtCodec(cfg.jwtKey);
+    idService = new IdentityService(cfg.auth.createAuthenticationProvider(), cfg.authCache);
     
     environment.jersey().register(new AuthDynamicFeature(new AuthFilter(idService, jwtCodec)));
     environment.jersey().register(new AuthValueFactoryProvider.Binder<>(ColUser.class));
