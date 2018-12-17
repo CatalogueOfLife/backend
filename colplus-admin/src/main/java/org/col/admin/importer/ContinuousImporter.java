@@ -66,7 +66,7 @@ public class ContinuousImporter implements Managed {
       
       while (running) {
         try {
-          while (manager.list().size() > MIN_SIZE) {
+          while (manager.queue().size() > MIN_SIZE) {
             LOG.debug("Importer busy, sleep for {} minutes", cfg.continousImportPolling);
             TimeUnit.MINUTES.sleep(cfg.continousImportPolling);
           }

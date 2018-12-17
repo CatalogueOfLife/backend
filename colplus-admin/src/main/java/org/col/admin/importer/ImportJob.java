@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 import com.google.common.base.Preconditions;
 import org.apache.commons.io.FileUtils;
@@ -182,7 +183,12 @@ public class ImportJob implements Runnable {
         di.setDownload(downloader.lastModified(source));
         dao.updateImportUnchanged(di);
       }
-      
+  
+      if (cfg.importer.wait > 0) {
+        LOG.info("Wait for {}s before finishing import job", cfg.importer.wait);
+        TimeUnit.SECONDS.sleep(cfg.importer.wait);
+      }
+  
     } catch (InterruptedException e) {
       // cancelled import
       LOG.error("Dataset {} import cancelled. Log to db", datasetKey, e);

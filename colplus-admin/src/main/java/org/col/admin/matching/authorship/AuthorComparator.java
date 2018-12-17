@@ -132,7 +132,7 @@ public class AuthorComparator {
   }
   
   /**
-   * @return list of normalized authors, never null.
+   * @return queue of normalized authors, never null.
    * ascii only, lower cased string without punctuation. Empty string instead of null.
    * Umlaut transliterations reduced to single letter
    */
@@ -223,7 +223,7 @@ public class AuthorComparator {
         // try again by looking up entire author strings
         List<String> authorTeam1l = lookup(authorTeam1);
         List<String> authorTeam2l = lookup(authorTeam2);
-        // only compare again if the list is actually different then before
+        // only compare again if the queue is actually different then before
         if (!authorTeam1.equals(authorTeam1l) || !authorTeam2.equals(authorTeam2l)) {
           equality = compareNormalizedAuthorteam(authorTeam1l, authorTeam2l, minCommonSubstring);
         }
@@ -310,7 +310,7 @@ public class AuthorComparator {
             smaller = larger;
             larger = tmp;
           }
-          // remove all of the chars from the larger list and see if any remain
+          // remove all of the chars from the larger queue and see if any remain
           if (CollectionUtils.isSubCollection(smaller, larger)) {
             // one is a subset of the other
             return false;

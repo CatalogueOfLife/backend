@@ -48,7 +48,7 @@ public class ImporterResource {
   @GET
   @Path("queue")
   public Queue<ImportRequest> queue() {
-    return importManager.list();
+    return importManager.queue();
   }
   
   @POST

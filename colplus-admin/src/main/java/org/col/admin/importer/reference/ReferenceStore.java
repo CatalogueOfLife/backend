@@ -13,7 +13,7 @@ public interface ReferenceStore {
   boolean create(Reference r);
 
   /**
-   * @return list of all references
+   * @return queue of all references
    */
   Iterable<Reference> refList();
   

@@ -1,26 +1,36 @@
 # Catalogue of Life Backend
 
-For source code contributions please see our [developer guide](DEVELOPER-GUIDE.md)
+For source code contributions please see our [developer guide](DEVELOPER-GUIDE.md).
+The CoL backend consists of 2 [Dropwizard](https://www.dropwizard.io/) applications, colplus-ws and colplus-admin, that drive different parts of the [colplus API](http://api.col.plus). colplus-ws is responsible for most lightweight REST services exposing the Clearinghouse and the CoL. colplus-admin does the more heavyweight indexing of datasets and assembly of catalogues.
 
 
 ## Prerequisites
 1. Java 8 JDK
 1. Maven 3
-1. Postgres 10 or later.
+1. Postgres 11.
 
-## Run the CoL application locally
-1. create a local [config.yml](config.yml) file
+## Run the CoL applications locally
+### colplus-admin
+1. cd into `colplus-admin`
 1. Run `mvn clean install` to build your application
-1. On the first run init a new, empty database with `java -jar target/colplus-backend-1.0-SNAPSHOT.jar initdb config.yml`
-1. Start application with `java -jar target/colplus-backend-1.0-SNAPSHOT.jar server config.yml`
+1. create a local [config.yml](colplus-admin/src/main/resources/config.yaml) file
+1. On the first run init a new, empty database with `java -jar target/colplus-admin-1.0-SNAPSHOT.jar initdb config.yml`
+1. Start application with `java -jar target/colplus-admin-1.0-SNAPSHOT.jar server config.yml`
+1. To check that your application is running enter url `http://localhost:8080`
+
+### colplus-ws
+1. cd into `colplus-ws`
+1. Run `mvn clean install` to build your application
+1. create a local [config.yml](colplus-ws/src/main/resources/config.yaml) file
+1. Start application with `java -jar target/colplus-ws-1.0-SNAPSHOT.jar server config.yml`
 1. To check that your application is running enter url `http://localhost:8080`
 
 For development tests you can also run the application straight from your IDE 
-by executing the main `ColApp.java` class and passing it the right arguments `server /path/to/config.yml`
+by executing the main `WsServer.java` or `AdminServer.java` class and passing it the right arguments `server /path/to/config.yml`
+
 
 ## Health Check
 To see your applications health enter url `http://localhost:8081/healthcheck`
-
 
 
 ## Maven modules
@@ -41,14 +51,16 @@ The postgres persistence layer.
 The Dropwizard based JSON webservices.
 
 
+
 ## Dataset imports
 The admin server should be used to import known datasets from their registered data access URL.
 Imports are scheduled in an internal, non persistent queue. 
-Scheduling a dataset for importing is done by POSTing a dataset key to the importer resource like this:
+Scheduling a dataset for importing is done by POSTing an import request object to the importer resource like this:
 
-```curl -X POST "http://localhost/importer?force=true&key=$1"```
+```curl -X POST -d "{'datasetKey'=1000, 'priority'=false}" "http://localhost:8080/importer/queue"```
 
-The force parameter overrides the default behavior to stop importing if the exact same archive has been imported before.
+The priority parameter places the request on the beginning of the queue.
+
 
 ### Data Normalizer
 All data is normalized prior to inserting it into the database.

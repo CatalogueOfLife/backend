@@ -29,7 +29,7 @@
     <field index="20" term="http://rs.gbif.org/terms/iczn/opinion"/>
     <field index="21" term="http://rs.gbif.org/terms/iczn/rlpcomments"/>
     <field index="22" term="http://rs.tdwg.org/dwc/terms/taxonRemarks"/>
-	<!-- global default values for all names in the list -->
+	<!-- global default values for all names in the queue -->
     <field default="Animalia" term="http://rs.tdwg.org/dwc/terms/kingdom"/>
     <field default="ICZN" term="http://rs.tdwg.org/dwc/terms/nomenclaturalCode"/>
   </core>

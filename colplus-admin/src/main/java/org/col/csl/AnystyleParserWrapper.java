@@ -26,7 +26,7 @@ import static org.col.api.jackson.ApiModule.MAPPER;
 
 /*
  * Passes citations on to a (Ruby/sinatra) web service which uses Anystyle to parse the citations
- * and returns a list of CslData objects (JSON-formatted). The assumption is that the list will
+ * and returns a queue of CslData objects (JSON-formatted). The assumption is that the queue will
  * contain excatly one CslData object.
  */
 @Deprecated
@@ -67,7 +67,7 @@ public class AnystyleParserWrapper implements Parser<CslData> {
         throw new UnparsableException(err);
       }
       if (raw.size() != 1) {
-        String msg = String.format("Anystyle result is list of size %s (expected 1)", raw.size());
+        String msg = String.format("Anystyle result is queue of size %s (expected 1)", raw.size());
         String err = getError(ref, msg, json);
         LOG.error(err);
         throw new UnparsableException(err);

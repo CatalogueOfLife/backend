@@ -39,7 +39,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * NameMatching implementation that is backed by a mapdb with a list of names keyed to their normalised
+ * NameMatching implementation that is backed by a mapdb with a queue of names keyed to their normalised
  * canonical name using the SciNameNormalizer.normalize() method.
  */
 public class NameIndexMapDB implements NameIndex {

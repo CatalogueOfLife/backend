@@ -8,11 +8,8 @@ import java.nio.file.StandardCopyOption;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Queue;
+import java.util.*;
 import java.util.concurrent.*;
-
 import javax.annotation.Nullable;
 
 import com.codahale.metrics.Counter;
@@ -98,7 +95,7 @@ public class ImportManager implements Managed {
   /**
    * Lists the current queue
    */
-  public Queue<ImportRequest> list() {
+  public Queue<ImportRequest> queue() {
     return queue;
   }
   

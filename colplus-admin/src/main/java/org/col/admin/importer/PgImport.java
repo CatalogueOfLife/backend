@@ -358,7 +358,7 @@ public class PgImport implements Callable<Boolean> {
         
         @Override
         public void end(Node n) {
-          // remove this key from parent list if its an accepted taxon
+          // remove this key from parent queue if its an accepted taxon
           if (n.hasLabel(Labels.TAXON)) {
             parentIds.pop();
           }

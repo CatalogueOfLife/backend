@@ -160,7 +160,7 @@ public class NormalizerTreeIT {
       // compare trees
       assertEquals("Taxon tree not as expected", expected, neotree);
 
-      // list non tree nodes
+      // queue non tree nodes
       String bareNames;
       try (Transaction tx = store.getNeo().beginTx()) {
         bareNames = store.bareNameNodes()
