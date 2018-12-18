@@ -41,7 +41,7 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
         assertNotNull(t.getId());
         System.out.println(t.getId());
         System.out.println(t.getParentId());
-        System.out.println(ctx.getResultObject().getHigherTaxa());
+        System.out.println(ctx.getResultObject().getClassification());
 
         for (VernacularName v : ctx.getResultObject().getVernacularNames()) {
           assertNotNull(v.getName());

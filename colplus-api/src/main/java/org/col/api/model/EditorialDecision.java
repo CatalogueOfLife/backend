@@ -13,7 +13,6 @@ import org.col.api.vocab.TaxonomicStatus;
  * Otherwise all non null values from status or name should be applied to the underlying subject.
  */
 public class EditorialDecision extends Decision {
-  private Integer sectorKey;
   private Mode mode;
   private TaxonomicStatus status;
   private Name name;
@@ -34,14 +33,6 @@ public class EditorialDecision extends Decision {
      * Creates a new taxon child below the subject using the configured name and status.
      */
     CREATE
-  }
-  
-  public Integer getSectorKey() {
-    return sectorKey;
-  }
-  
-  public void setSectorKey(Integer sectorKey) {
-    this.sectorKey = sectorKey;
   }
   
   public Mode getMode() {
@@ -74,8 +65,7 @@ public class EditorialDecision extends Decision {
     if (o == null || getClass() != o.getClass()) return false;
     if (!super.equals(o)) return false;
     EditorialDecision that = (EditorialDecision) o;
-    return Objects.equals(sectorKey, that.sectorKey) &&
-        mode == that.mode &&
+    return mode == that.mode &&
         status == that.status &&
         Objects.equals(name, that.name);
   }
@@ -83,7 +73,7 @@ public class EditorialDecision extends Decision {
   @Override
   public int hashCode() {
     
-    return Objects.hash(super.hashCode(), sectorKey, mode, status, name);
+    return Objects.hash(super.hashCode(), mode, status, name);
   }
   
   @Override

@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-import org.col.api.search.NameUsageWrapper;
+import org.col.api.model.SimpleName;
 import org.col.api.vocab.Issue;
 import org.col.api.vocab.NameField;
 import org.col.api.vocab.NomStatus;
@@ -16,7 +16,8 @@ import org.col.es.mapping.ESDataType;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 
-import static org.col.es.annotations.Analyzer.*;
+import static org.col.es.annotations.Analyzer.AUTO_COMPLETE;
+import static org.col.es.annotations.Analyzer.IGNORE_CASE;
 
 public class EsNameUsage {
 
@@ -60,7 +61,7 @@ public class EsNameUsage {
 
   private List<String> vernacularNames;
 
-  private List<NameUsageWrapper.HigherTaxon> higherTaxa;
+  private List<SimpleName> classification;
 
   private String payload; // The entire NameUsageWrapper object, serialized to a string
 
@@ -191,12 +192,12 @@ public class EsNameUsage {
     this.issues = issues;
   }
 
-  public List<NameUsageWrapper.HigherTaxon> getHigherTaxa() {
-    return higherTaxa;
+  public List<SimpleName> getClassification() {
+    return classification;
   }
 
-  public void setHigherTaxa(List<NameUsageWrapper.HigherTaxon> higherTaxa) {
-    this.higherTaxa = higherTaxa;
+  public void setClassification(List<SimpleName> classification) {
+    this.classification = classification;
   }
 
   @NotIndexed

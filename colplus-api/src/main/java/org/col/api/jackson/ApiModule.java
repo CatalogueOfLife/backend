@@ -1,10 +1,15 @@
 package org.col.api.jackson;
 
+import java.io.IOException;
+import java.net.URI;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.deser.std.FromStringDeserializer;
 import com.fasterxml.jackson.databind.introspect.NopAnnotationIntrospector;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -26,6 +31,7 @@ public class ApiModule extends SimpleModule {
     mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
     
     mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+    mapper.enable(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT);
     
     mapper.registerModule(new JavaTimeModule());
     mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
@@ -43,6 +49,7 @@ public class ApiModule extends SimpleModule {
     addDeserializer(Language.class, new LanguageSerde.Deserializer());
     addDeserializer(Term.class, new TermSerde.Deserializer());
     addDeserializer(CSLRefType.class, new CSLRefTypeSerde.Deserializer());
+    addDeserializer(URI.class, new URIDeserializer());
     
     // then serializers:
     addSerializer(Country.class, new CountrySerde.Serializer());
@@ -94,4 +101,20 @@ public class ApiModule extends SimpleModule {
     return val.name().toLowerCase().replaceAll("_+", " ");
   }
   
+  static class URIDeserializer extends FromStringDeserializer<URI> {
+  
+    protected URIDeserializer() {
+      super(URI.class);
+    }
+  
+    @Override
+    protected URI _deserializeFromEmptyString() throws IOException {
+      return null;
+    }
+  
+    @Override
+    protected URI _deserialize(String value, DeserializationContext ctxt) throws IOException {
+      return URI.create(value);
+    }
+  }
 }

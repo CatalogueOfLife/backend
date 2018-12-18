@@ -8,10 +8,9 @@ import java.nio.file.StandardCopyOption;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Queue;
+import java.util.*;
 import java.util.concurrent.*;
+import javax.annotation.Nullable;
 
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.MetricRegistry;
@@ -24,11 +23,13 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.admin.config.AdminServerConfig;
 import org.col.admin.matching.NameIndex;
 import org.col.api.exception.NotFoundException;
+import org.col.api.model.ColUser;
 import org.col.api.model.Dataset;
 import org.col.api.model.DatasetImport;
 import org.col.api.util.PagingUtil;
 import org.col.api.vocab.DatasetOrigin;
 import org.col.api.vocab.ImportState;
+import org.col.api.vocab.Users;
 import org.col.common.concurrent.ExecutorUtils;
 import org.col.common.concurrent.StartNotifier;
 import org.col.common.io.DownloadUtil;
@@ -36,6 +37,7 @@ import org.col.db.dao.DatasetImportDao;
 import org.col.db.mapper.DatasetMapper;
 import org.col.db.mapper.DatasetPartitionMapper;
 import org.col.es.NameUsageIndexService;
+import org.col.es.NameUsageIndexServiceES;
 import org.col.img.ImageService;
 import org.elasticsearch.client.RestClient;
 import org.gbif.nameparser.utils.NamedThreadFactory;
@@ -52,7 +54,7 @@ public class ImportManager implements Managed {
   public static final String THREAD_NAME = "dataset-importer";
   
   private ThreadPoolExecutor exec;
-  private final Queue<ImportRequest> queue = new ConcurrentLinkedQueue<ImportRequest>();
+  private final PriorityBlockingQueue<ImportRequest> queue = new PriorityBlockingQueue<ImportRequest>();
   private final Map<Integer, Future> futures = new ConcurrentHashMap<Integer, Future>();
   private final AdminServerConfig cfg;
   private final DownloadUtil downloader;
@@ -63,14 +65,29 @@ public class ImportManager implements Managed {
   private final Timer importTimer;
   private final Counter failed;
   
+  /**
+   *
+   * @param cfg
+   * @param registry
+   * @param client
+   * @param factory
+   * @param index
+   * @param esClient rest client for Elastic Search. If null no ES indexing will be done at all
+   * @param imgService
+   */
   public ImportManager(AdminServerConfig cfg, MetricRegistry registry, CloseableHttpClient client,
-                       SqlSessionFactory factory, NameIndex index, RestClient esClient, ImageService imgService) {
+                       SqlSessionFactory factory, NameIndex index, @Nullable RestClient esClient, ImageService imgService) {
     this.cfg = cfg;
     this.factory = factory;
     this.downloader = new DownloadUtil(client, cfg.importer.githubToken);
     this.index = index;
     this.imgService = imgService;
-    this.indexService = new NameUsageIndexService(esClient, cfg.es, factory);
+    if (esClient == null) {
+      this.indexService = NameUsageIndexService.passThru();
+      LOG.warn("No Elastic Search configured, use pass through indexing");
+    } else {
+      this.indexService = new NameUsageIndexServiceES(esClient, cfg.es, factory);
+    }
     importTimer = registry.timer("org.col.import.timer");
     failed = registry.counter("org.col.import.failures");
   }
@@ -78,7 +95,7 @@ public class ImportManager implements Managed {
   /**
    * Lists the current queue
    */
-  public Queue<ImportRequest> list() {
+  public Queue<ImportRequest> queue() {
     return queue;
   }
   
@@ -86,7 +103,7 @@ public class ImportManager implements Managed {
    * Cancels a running import job by its dataset key
    */
   public void cancel(int datasetKey) {
-    queue.remove(new ImportRequest(datasetKey, false));
+    queue.remove(new ImportRequest(datasetKey, Users.IMPORTER));
     Future f = futures.remove(datasetKey);
     if (f != null) {
       LOG.info("Canceled import for dataset {}", datasetKey);
@@ -101,22 +118,22 @@ public class ImportManager implements Managed {
    * @throws IllegalArgumentException if dataset was scheduled for importing already, queue was full
    *                                  or dataset does not exist
    */
-  public ImportRequest submit(final int datasetKey, final boolean force) throws IllegalArgumentException {
+  public ImportRequest submit(final ImportRequest req) throws IllegalArgumentException {
     // is this dataset already scheduled?
-    if (futures.containsKey(datasetKey)) {
-      LOG.info("Dataset {} already queued for import", datasetKey);
-      throw new IllegalArgumentException("Dataset " + datasetKey + " already queued for import");
+    if (futures.containsKey(req.datasetKey)) {
+      LOG.info("Dataset {} already queued for import", req.datasetKey);
+      throw new IllegalArgumentException("Dataset " + req.datasetKey + " already queued for import");
       
     } else if (queue.size() >= cfg.importer.maxQueue) {
-      LOG.info("Import queued at max {} already. Skip dataset {}", queue.size(), datasetKey);
-      throw new IllegalArgumentException("Import queue full, skip dataset " + datasetKey);
+      LOG.info("Import queued at max {} already. Skip dataset {}", queue.size(), req.datasetKey);
+      throw new IllegalArgumentException("Import queue full, skip dataset " + req.datasetKey);
     }
     
-    final ImportRequest req = new ImportRequest(datasetKey, force);
-    LOG.debug("Queue new import for dataset {}", datasetKey);
-    final ImportJob job = createImport(req);
+    LOG.debug("Queue new import for dataset {}", req.datasetKey);
     queue.add(req);
-    futures.put(datasetKey, CompletableFuture.runAsync(job, exec).handle((di, err) -> {
+
+    final ImportJob job = createImport(req);
+    futures.put(req.datasetKey, CompletableFuture.runAsync(job, exec).handle((di, err) -> {
       if (err != null) {
         // unwrap CompletionException error
         LOG.error("Dataset import {} failed: {}", req.datasetKey, err.getCause().getMessage(),
@@ -134,7 +151,7 @@ public class ImportManager implements Managed {
       // return true if succeeded, false if error
       return err != null;
     }));
-    LOG.info("Queued import for dataset {}", datasetKey);
+    LOG.info("Queued import for dataset {}", req.datasetKey);
     return req;
   }
   
@@ -144,9 +161,9 @@ public class ImportManager implements Managed {
    * @throws IllegalArgumentException if dataset was scheduled for importing already, queue was full,
    *                                  dataset does not exist or is not of matching origin
    */
-  public ImportRequest submit(final int datasetKey, final InputStream content) throws IOException {
+  public ImportRequest submit(final int datasetKey, final InputStream content, ColUser user) throws IOException {
     uploadArchive(datasetKey, content);
-    return submit(datasetKey, false);
+    return submit(new ImportRequest(datasetKey, user.getKey(), false, true));
   }
   
   /**
@@ -189,8 +206,6 @@ public class ImportManager implements Managed {
       } else if (d.hasDeletedDate()) {
         LOG.warn("Dataset {} was deleted and cannot be imported", req.datasetKey);
         throw NotFoundException.keyNotFound(Dataset.class, req.datasetKey);
-      } else if (d.getOrigin() == DatasetOrigin.MANAGED) {
-        throw new IllegalArgumentException("Dataset " + req.datasetKey + " is managed and cannot be imported");
       }
       ImportJob job = new ImportJob(d, req.force, cfg, downloader, factory, index, indexService, imgService,
           new StartNotifier() {
@@ -251,7 +266,7 @@ public class ImportManager implements Managed {
       }
       // add back to queue
       try {
-        submit(di.getDatasetKey(), true);
+        submit(new ImportRequest(di.getDatasetKey(), Users.IMPORTER, true, false));
         counter++;
       } catch (IllegalArgumentException e) {
         // swallow

@@ -66,7 +66,7 @@ public class NameUsageTransfer {
    */
   public static void prunePayload(NameUsageWrapper nameUsage) {
     nameUsage.setIssues(null);
-    nameUsage.setHigherTaxa(null);
+    nameUsage.setClassification(null);
   }
 
   /**
@@ -77,7 +77,7 @@ public class NameUsageTransfer {
    */
   public static void enrichPayload(NameUsageWrapper nameUsage, EsNameUsage enu) {
     nameUsage.setIssues(enu.getIssues());
-    nameUsage.setHigherTaxa(enu.getHigherTaxa());
+    nameUsage.setClassification(enu.getClassification());
   }
 
   EsNameUsage toEsDocument(NameUsageWrapper wrapper) throws JsonProcessingException {
@@ -108,7 +108,7 @@ public class NameUsageTransfer {
     enu.setStatus(wrapper.getUsage().getStatus());
     if (wrapper.getUsage().getClass() == Taxon.class) {
       enu.setTaxonId(((Taxon) wrapper.getUsage()).getId());
-      enu.setHigherTaxa(wrapper.getHigherTaxa());
+      enu.setClassification(wrapper.getClassification());
     }
     enu.setType(name.getType());
     enu.setNameFields(getNonNullNameFields(wrapper.getUsage().getName()));

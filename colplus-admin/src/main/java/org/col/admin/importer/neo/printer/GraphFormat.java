@@ -26,7 +26,7 @@ public enum GraphFormat {
   TAB("tab"),
   
   /**
-   * Denormalised list of genus or infrageneric names. Not tree format really.
+   * Denormalised queue of genus or infrageneric names. Not tree format really.
    */
   LIST("txt");
   

@@ -16,7 +16,7 @@ public interface NameIndex extends AutoCloseable {
    *
    * @param name         the parsed name to match against, ignoring any ids if present
    * @param allowInserts if true inserts the name to be matched into the index if not yet existing, avoiding NoMatch responses
-   * @param verbose      if true adds verbose matching information, i.e. list of alternative matches
+   * @param verbose      if true adds verbose matching information, i.e. queue of alternative matches
    * @return a match which is never null, but might have a usageKey=null if nothing could be matched
    */
   NameMatch match(Name name, boolean allowInserts, boolean verbose);

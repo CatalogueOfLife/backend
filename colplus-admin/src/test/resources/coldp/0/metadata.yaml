@@ -3,7 +3,7 @@ description: |
     An abstract about the content of this dataset.
     This can be as many paragraphs as you like in literal style YAML.
 
-# list of publishing organisations
+# queue of publishing organisations
 organisations:
   - FIN
   - WorldFish
@@ -19,7 +19,7 @@ organisations:
 # point of contact for questions. Either just a plain email or a name given with email address in angel brackets
 contact: Nicolas Bailly <nbailly@hcmr.gr>
 
-# list of authors and editors.
+# queue of authors and editors.
 # optionally an ORCID can be appended (orcid: prefix required!) to be included in DOI metadata
 authorsAndEditors:
   - Rainer Froese

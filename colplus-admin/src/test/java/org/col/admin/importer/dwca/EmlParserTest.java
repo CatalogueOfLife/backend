@@ -24,7 +24,7 @@ public class EmlParserTest {
     Dataset d = read("famous.xml");
     
     assertEquals("Species named after famous people", d.getTitle());
-    assertEquals("A list of species named after famous people including musicians and politicians.", d.getDescription());
+    assertEquals("A queue of species named after famous people including musicians and politicians.", d.getDescription());
     assertEquals("https://github.com/mdoering/famous-organism", d.getWebsite().toString());
     //assertEquals("Species named after famous people", d.getLicense());
     assertEquals("Markus Döring (GBIF)", d.getContact());
@@ -54,7 +54,7 @@ public class EmlParserTest {
     Dataset d = read("vascan.xml");
     
     assertEquals("Database of Vascular Plants of Canada (VASCAN)", d.getTitle());
-    assertEquals("A list of species named after famous people including musicians and politicians.", d.getDescription());
+    assertEquals("A queue of species named after famous people including musicians and politicians.", d.getDescription());
     assertEquals("https://github.com/mdoering/famous-organism", d.getWebsite().toString());
     //assertEquals("Species named after famous people", d.getLicense());
     assertEquals("Markus Döring (GBIF)", d.getContact());
@@ -68,7 +68,7 @@ public class EmlParserTest {
     Dataset d = read("worms_eml2.1.xml");
     
     assertEquals("Species named after famous people", d.getTitle());
-    assertEquals("A list of species named after famous people including musicians and politicians.", d.getDescription());
+    assertEquals("A queue of species named after famous people including musicians and politicians.", d.getDescription());
     assertEquals("https://github.com/mdoering/famous-organism", d.getWebsite().toString());
     //assertEquals("Species named after famous people", d.getLicense());
     assertEquals("Markus Döring (GBIF)", d.getContact());

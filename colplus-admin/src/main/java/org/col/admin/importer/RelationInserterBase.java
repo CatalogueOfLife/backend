@@ -100,7 +100,7 @@ public abstract class RelationInserterBase implements NodeBatchProcessor {
    * Reads a verbatim given term that should represent a foreign key to another record via the taxonID.
    * If the value is not the same as the original records taxonID it tries to split the ids into multiple keys and lookup the matching nodes.
    *
-   * @return list of potentially split ids with their matching neo node if found, otherwise null
+   * @return queue of potentially split ids with their matching neo node if found, otherwise null
    */
   protected Node usageByID(Term idTerm, VerbatimRecord v, NeoUsage u) {
     Node n = null;

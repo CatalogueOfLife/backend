@@ -5,12 +5,12 @@ import java.util.Objects;
 import org.gbif.nameparser.api.Rank;
 
 /**
- * A small class that acts as a reference to a scientific name in a dataset.
+ * A small class representing a name with an id.
+ * It can act as a reference to a scientific name in a dataset.
  * It combines the source ID with the full scientific name in order to best deal with changing identifiers in sources.
  */
-public class NameRef {
+public class SimpleName {
   private String id;
-  private String indexNameId;
   private String name;
   private String authorship;
   private Rank rank;
@@ -21,14 +21,6 @@ public class NameRef {
   
   public void setId(String id) {
     this.id = id;
-  }
-  
-  public String getIndexNameId() {
-    return indexNameId;
-  }
-  
-  public void setIndexNameId(String indexNameId) {
-    this.indexNameId = indexNameId;
   }
   
   public String getName() {
@@ -59,21 +51,20 @@ public class NameRef {
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
-    NameRef nameRef = (NameRef) o;
-    return Objects.equals(id, nameRef.id) &&
-        Objects.equals(indexNameId, nameRef.indexNameId) &&
-        Objects.equals(name, nameRef.name) &&
-        Objects.equals(authorship, nameRef.authorship) &&
-        rank == nameRef.rank;
+    SimpleName simpleName = (SimpleName) o;
+    return Objects.equals(id, simpleName.id) &&
+        Objects.equals(name, simpleName.name) &&
+        Objects.equals(authorship, simpleName.authorship) &&
+        rank == simpleName.rank;
   }
   
   @Override
   public int hashCode() {
-    return Objects.hash(id, indexNameId, name, authorship, rank);
+    return Objects.hash(id, name, authorship, rank);
   }
   
   @Override
   public String toString() {
-    return id + " " + rank + " " + name + ' ' + authorship;
+    return rank + " " + name + ' ' + authorship + " [" + id + ']';
   }
 }

@@ -6,7 +6,9 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
+import com.google.common.base.Preconditions;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -17,6 +19,7 @@ import org.col.admin.logoupdater.LogoUpdateJob;
 import org.col.admin.matching.NameIndex;
 import org.col.api.model.Dataset;
 import org.col.api.model.DatasetImport;
+import org.col.api.vocab.DatasetOrigin;
 import org.col.api.vocab.ImportState;
 import org.col.common.concurrent.StartNotifier;
 import org.col.common.io.ChecksumUtils;
@@ -55,8 +58,8 @@ public class ImportJob implements Runnable {
   
   ImportJob(Dataset d, boolean force, AdminServerConfig cfg, DownloadUtil downloader,
             SqlSessionFactory factory, NameIndex index, NameUsageIndexService indexService, ImageService imgService, StartNotifier notifier) {
+    this.dataset = Preconditions.checkNotNull(d);
     this.datasetKey = d.getKey();
-    this.dataset = d;
     this.force = force;
     this.cfg = cfg;
     this.downloader = downloader;
@@ -66,6 +69,19 @@ public class ImportJob implements Runnable {
     dao = new DatasetImportDao(factory);
     this.imgService = imgService;
     this.notifier = notifier;
+    validate();
+  }
+  
+  private void validate() {
+    if (dataset.getOrigin() == DatasetOrigin.MANAGED) {
+      throw new IllegalArgumentException("Dataset " + datasetKey + " is managed and cannot be imported");
+      
+    } else if (dataset.getOrigin() == DatasetOrigin.EXTERNAL && dataset.getDataAccess() == null) {
+      throw new IllegalArgumentException("Dataset " + datasetKey + " is external but lacks a data access URL");
+      
+    } else if (dataset.getOrigin() == DatasetOrigin.UPLOADED && !cfg.normalizer.source(datasetKey).exists()) {
+      throw new IllegalArgumentException("Dataset " + datasetKey + " is lacking an uploaded archive");
+    }
   }
   
   @Override
@@ -100,24 +116,33 @@ public class ImportJob implements Runnable {
   }
   
   private void importDataset() {
-    final Path dwcaDir = cfg.normalizer.sourceDir(datasetKey).toPath();
+    final Path sourceDir = cfg.normalizer.sourceDir(datasetKey).toPath();
     NeoDb store = null;
     
     try {
       last = dao.getLast(dataset);
-      di = dao.createDownloading(dataset);
-      LOG.info("Start new import attempt {} for dataset {}: {}", di.getAttempt(), datasetKey, dataset.getTitle());
-      
+      di = dao.create(dataset);
+      LOG.info("Start new import attempt {} for {} dataset {}: {}", di.getAttempt(), dataset.getOrigin(), datasetKey, dataset.getTitle());
+  
       File source = cfg.normalizer.source(datasetKey);
-      source.getParentFile().mkdirs();
+      boolean isModified;
+      if (dataset.getOrigin() == DatasetOrigin.UPLOADED) {
+        // did we import that very archive before already?
+        isModified = lastMD5Different(source);
+        
+      } else if (dataset.getOrigin() == DatasetOrigin.EXTERNAL) {
+        // first download archive
+        source.getParentFile().mkdirs();
+        LOG.info("Downloading sources for dataset {} from {} to {}", datasetKey, di.getDownloadUri(), source);
+        isModified = downloader.downloadIfModified(di.getDownloadUri(), source)
+            && lastMD5Different(source);
+  
+      } else {
+        // we catch this in constructor already and should never reach here
+        throw new IllegalStateException("Dataset " + datasetKey + " is managed and cannot be imported");
+      }
       
       checkIfCancelled();
-      LOG.info("Downloading sources for dataset {} from {} to {}", datasetKey, di.getDownloadUri(), source);
-      boolean isModified = downloader.downloadIfModified(di.getDownloadUri(), source);
-      // also compare archive hash if file was downloaded
-      if (isModified) {
-        isModified = lastMD5Different(source);
-      }
       if (isModified || force) {
         if (!isModified) {
           LOG.info("Force reimport of unchanged archive {}", datasetKey);
@@ -126,14 +151,14 @@ public class ImportJob implements Runnable {
         
         updateState(ImportState.PROCESSING);
         LOG.info("Extracting files from archive {}", datasetKey);
-        CompressionUtil.decompressFile(dwcaDir.toFile(), source);
+        CompressionUtil.decompressFile(sourceDir.toFile(), source);
         
         checkIfCancelled();
         LOG.info("Normalizing {}", datasetKey);
         store = NeoDbFactory.create(datasetKey, cfg.normalizer);
         store.put(dataset);
         
-        new Normalizer(store, dwcaDir, index).call();
+        new Normalizer(store, sourceDir, index).call();
         if (dataset.getLogo() != null) {
           LogoUpdateJob.pullLogo(dataset, downloader, cfg.normalizer, imgService);
         }
@@ -158,7 +183,12 @@ public class ImportJob implements Runnable {
         di.setDownload(downloader.lastModified(source));
         dao.updateImportUnchanged(di);
       }
-      
+  
+      if (cfg.importer.wait > 0) {
+        LOG.info("Wait for {}s before finishing import job", cfg.importer.wait);
+        TimeUnit.SECONDS.sleep(cfg.importer.wait);
+      }
+  
     } catch (InterruptedException e) {
       // cancelled import
       LOG.error("Dataset {} import cancelled. Log to db", datasetKey, e);

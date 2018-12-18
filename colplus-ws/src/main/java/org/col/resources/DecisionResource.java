@@ -1,18 +1,18 @@
 package org.col.resources;
 
-import org.apache.ibatis.session.SqlSession;
-import org.col.api.model.EditorialDecision;
-import org.col.db.mapper.DecisionMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import java.util.List;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import java.util.List;
+
+import org.apache.ibatis.session.SqlSession;
+import org.col.api.model.EditorialDecision;
+import org.col.db.mapper.DecisionMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Path("/decision")
 @Produces(MediaType.APPLICATION_JSON)
@@ -31,7 +31,7 @@ public class DecisionResource extends CRUDIntResource<EditorialDecision> {
                                       @QueryParam("datasetKey") Integer datasetKey,
                                       @QueryParam("sectorKey") Integer sectorKey) {
     if (sectorKey != null) {
-      return session.getMapper(DecisionMapper.class).listBySector(sectorKey);
+      return session.getMapper(DecisionMapper.class).listBySource(sectorKey);
       
     } else if (datasetKey != null) {
       return session.getMapper(DecisionMapper.class).listByDataset(datasetKey);
@@ -41,4 +41,10 @@ public class DecisionResource extends CRUDIntResource<EditorialDecision> {
     }
   }
   
+  @GET
+  @Path("/broken")
+  public List<EditorialDecision> broken(@Context SqlSession session, @QueryParam("sourceKey") Integer colSourceKey) {
+    DecisionMapper mapper = session.getMapper(DecisionMapper.class);
+    return mapper.subjectBroken(colSourceKey);
+  }
 }

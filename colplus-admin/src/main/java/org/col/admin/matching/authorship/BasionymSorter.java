@@ -13,7 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A utility to sort a list of parsed names into sets sharing the same basionym judging only the authorship not epithets.
+ * A utility to sort a queue of parsed names into sets sharing the same basionym judging only the authorship not epithets.
  * A name without any authorship at all will be ignored and not returned in any group.
  */
 public class BasionymSorter {
@@ -87,7 +87,7 @@ public class BasionymSorter {
   
   /**
    * Grouping that allows to use any custom class as long as there is a function that returns a Name instance.
-   * The list of groups returned only contains groups with no or one known basionym. Any uncertain cases like groups with multiple basionyms are excluded!
+   * The queue of groups returned only contains groups with no or one known basionym. Any uncertain cases like groups with multiple basionyms are excluded!
    */
   public <T> Collection<BasionymGroup<T>> groupBasionyms(Iterable<T> names, Function<T, Name> func) {
     List<BasionymGroup<T>> groups = Lists.newArrayList();
@@ -126,7 +126,7 @@ public class BasionymSorter {
         group.getRecombinations().add(recomb);
       }
     }
-    // finally try to find the basionym for each group in the list of original names
+    // finally try to find the basionym for each group in the queue of original names
     Iterator<BasionymGroup<T>> iter = groups.iterator();
     while (iter.hasNext()) {
       BasionymGroup<T> group = iter.next();

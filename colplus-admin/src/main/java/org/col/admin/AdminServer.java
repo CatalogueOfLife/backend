@@ -56,6 +56,9 @@ public class AdminServer extends PgApp<AdminServerConfig> {
   @Override
   public void run(AdminServerConfig cfg, Environment env) {
     super.run(cfg, env);
+  
+    // turn off user cache as longs as we cannot sync between JVMs
+    cfg.authCache = false;
     
     // images
     final ImageService imgService = new ImageService(cfg.img);
@@ -71,8 +74,11 @@ public class AdminServer extends PgApp<AdminServerConfig> {
     }
     env.jersey().register(new MatchingResource(ni));
     
-    RestClient esClient = new EsClientFactory(cfg.es).createClient();
-    env.lifecycle().manage(new ManagedEsClient(esClient));
+    RestClient esClient = null;
+    if (cfg.es != null) {
+      esClient = new EsClientFactory(cfg.es).createClient();
+      env.lifecycle().manage(new ManagedEsClient(esClient));
+    }
     
     // setup async importer
     final ImportManager importManager = new ImportManager(cfg, env.metrics(), super.httpClient, getSqlSessionFactory(), ni, esClient, imgService);
@@ -96,7 +102,10 @@ public class AdminServer extends PgApp<AdminServerConfig> {
     
     // admin resource
     env.jersey().register(new AdminResource(getSqlSessionFactory(), new DownloadUtil(super.httpClient), cfg.normalizer, imgService));
-    
+  
+    //ContinuousAssembly assembly = new ContinuousAssembly(getSqlSessionFactory());
+    //env.jersey().register(new AssemblyResource(assembly));
+  
   }
   
   

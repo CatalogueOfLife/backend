@@ -434,17 +434,16 @@ public class TestEntityGenerator {
     return rec;
   }
 
-  public static NameRef newNameRef() {
+  public static SimpleName newNameRef() {
     return newNameRef(RandomUtils.randomString(5));
   }
 
-  public static NameRef newNameRef(String id) {
-    NameRef n = new NameRef();
+  public static SimpleName newNameRef(String id) {
+    SimpleName n = new SimpleName();
     n.setId(id);
     n.setName(RandomUtils.randomSpecies());
     n.setAuthorship(RandomUtils.randomAuthorship().toString());
     n.setRank(Rank.SPECIES);
-    n.setIndexNameId(RandomUtils.randomString(5));
     return n;
   }
 

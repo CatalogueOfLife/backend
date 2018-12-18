@@ -3,7 +3,6 @@ package org.col.db.mapper;
 import org.col.api.TestEntityGenerator;
 import org.col.api.model.ColSource;
 import org.col.api.model.EditorialDecision;
-import org.col.api.model.Sector;
 import org.col.api.vocab.TaxonomicStatus;
 import org.junit.Before;
 
@@ -13,7 +12,6 @@ import static org.col.api.TestEntityGenerator.newNameRef;
 public class DecisionMapperTest extends CRUDIntMapperTest<EditorialDecision, DecisionMapper> {
   
   private ColSource source;
-  private Sector sector;
   
   public DecisionMapperTest() {
     super(DecisionMapper.class);
@@ -23,9 +21,6 @@ public class DecisionMapperTest extends CRUDIntMapperTest<EditorialDecision, Dec
   public void initSource() {
     source = ColSourceMapperTest.create(DATASET11.getKey());
     mapper(ColSourceMapper.class).create(source);
-    
-    sector = SectorMapperTest.create(source.getKey());
-    mapper(SectorMapper.class).create(sector);
     
     commit();
   }
@@ -39,12 +34,12 @@ public class DecisionMapperTest extends CRUDIntMapperTest<EditorialDecision, Dec
   
   @Override
   EditorialDecision createTestEntity() {
-    return create(sector.getKey());
+    return create(source.getKey());
   }
 
-  public static EditorialDecision create(int sectorKey) {
+  public static EditorialDecision create(int sourceKey) {
     EditorialDecision d = new EditorialDecision();
-    d.setSectorKey(sectorKey);
+    d.setColSourceKey(sourceKey);
     d.setSubject(newNameRef());
     d.setMode(EditorialDecision.Mode.CREATE);
     d.setName(TestEntityGenerator.newName());

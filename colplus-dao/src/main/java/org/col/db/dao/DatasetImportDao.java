@@ -36,6 +36,17 @@ public class DatasetImportDao {
     this.factory = factory;
   }
   
+  /**
+   * Pages through all imports ordered by starting date from most recent ones to historical.
+   */
+  public ResultPage<DatasetImport> list(Page page) {
+    return list(null, null, page);
+  }
+  
+  /**
+   * List all imports optionally filtered by their datasetKey and state(s).
+   * Ordered by starting date from latest to historical.
+   */
   public ResultPage<DatasetImport> list(Integer datasetKey, Collection<ImportState> states, Page page) {
     try (SqlSession session = factory.openSession(true)) {
       DatasetImportMapper mapper = session.getMapper(DatasetImportMapper.class);
@@ -46,13 +57,18 @@ public class DatasetImportDao {
   /**
    * Create a new downloading dataset import with the next attempt
    */
-  public DatasetImport createDownloading(Dataset d) {
+  public DatasetImport create(Dataset d) {
     // build new import
     DatasetImport di = new DatasetImport();
     di.setDatasetKey(d.getKey());
-    di.setState(ImportState.DOWNLOADING);
-    di.setDownloadUri(d.getDataAccess());
     di.setStarted(LocalDateTime.now());
+    if (d.getOrigin() == DatasetOrigin.EXTERNAL) {
+      di.setState(ImportState.DOWNLOADING);
+      di.setDownloadUri(d.getDataAccess());
+    } else {
+      di.setState(ImportState.PROCESSING);
+      di.setDownloadUri(null);
+    }
     
     try (SqlSession session = factory.openSession(true)) {
       session.getMapper(DatasetImportMapper.class).create(di);

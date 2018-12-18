@@ -9,9 +9,11 @@ import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
+import io.dropwizard.auth.Auth;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.admin.importer.ImportManager;
 import org.col.admin.importer.ImportRequest;
+import org.col.api.model.ColUser;
 import org.col.api.model.DatasetImport;
 import org.col.api.model.Page;
 import org.col.api.model.ResultPage;
@@ -44,25 +46,26 @@ public class ImporterResource {
   }
   
   @GET
-  @Path("/queue")
+  @Path("queue")
   public Queue<ImportRequest> queue() {
-    return importManager.list();
+    return importManager.queue();
   }
   
   @POST
-  @Path("{key}")
+  @Path("queue")
   @Consumes(MediaType.APPLICATION_JSON)
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public ImportRequest schedule(@PathParam("key") int datasetKey, @QueryParam("force") boolean force) {
-    return importManager.submit(datasetKey, force);
+  public ImportRequest schedule(@Auth ColUser user, @Valid ImportRequest request) {
+    request.createdBy = user.getKey();
+    return importManager.submit(request);
   }
   
   @POST
   @Path("{key}")
   @Consumes({MoreMediaTypes.APP_GZIP, MoreMediaTypes.APP_ZIP, MediaType.APPLICATION_OCTET_STREAM})
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public ImportRequest upload(@PathParam("key") int datasetKey, InputStream archive) throws IOException {
-    return importManager.submit(datasetKey, archive);
+  public ImportRequest upload(@PathParam("key") int datasetKey, @Auth ColUser user, InputStream archive) throws IOException {
+    return importManager.submit(datasetKey, archive, user);
   }
   
   

@@ -4,8 +4,6 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -27,14 +25,9 @@ public class IdentityService {
   private ConcurrentHashMap<Integer, ColUser> cache;
   private final AuthenticationProvider authProvider;
   
-  private static ObjectMapper configure(ObjectMapper mapper) {
-    mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-    return mapper;
-  }
-  
-  public IdentityService(AuthenticationProvider authProvider) {
+  public IdentityService(AuthenticationProvider authProvider, boolean useCache) {
     this.authProvider = authProvider;
-    this.cache = new ConcurrentHashMap<>();
+    this.cache = useCache ? new ConcurrentHashMap<>() : null;
   }
   
   /**
@@ -49,7 +42,7 @@ public class IdentityService {
   }
   
   public ColUser get(Integer key) {
-    if (cache.containsKey(key)) {
+    if (cache != null && cache.containsKey(key)) {
       return cache.get(key);
     }
     // try to load from DB - if its not there the user has never logged in before and sth is wrong
@@ -63,7 +56,9 @@ public class IdentityService {
   }
   
   private ColUser cache(ColUser user) {
-    cache.put(user.getKey(), user);
+    if (cache != null) {
+      cache.put(user.getKey(), user);
+    }
     return user;
   }
   

@@ -14,14 +14,14 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-public class NameUsageIndexServiceTest extends EsReadWriteTestBase {
+public class NameUsageIndexServiceESTest extends EsReadWriteTestBase {
 
   @Test // Nice in combination with PgImportIT.testGsdGithub
   @Ignore
   public void indexDataSet() throws IOException, EsException {
     try (RestClient client = getEsClient()) {
-      NameUsageIndexService svc =
-          new NameUsageIndexService(client, getEsConfig(), factory(), false);
+      NameUsageIndexServiceES svc =
+          new NameUsageIndexServiceES(client, getEsConfig(), factory(), false);
       svc.indexDataset(1000);
     }
   }
@@ -39,8 +39,8 @@ public class NameUsageIndexServiceTest extends EsReadWriteTestBase {
               TestEntityGenerator.newNameUsageSynonymWrapper(),
               TestEntityGenerator.newNameUsageSynonymWrapper());
 
-      NameUsageIndexService svc =
-          new NameUsageIndexService(client, getEsConfig(), factory(), false);
+      NameUsageIndexServiceES svc =
+          new NameUsageIndexServiceES(client, getEsConfig(), factory(), false);
       svc.indexBulk(indexName, docs);
       EsUtil.refreshIndex(client, indexName);
       assertEquals(3, EsUtil.count(client, indexName));

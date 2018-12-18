@@ -5,8 +5,8 @@
 <mapper namespace="org.col.db.mapper.DecisionMapper">
 
   <sql id="DecisionCols">
+    ${prefix}col_source_key,
     ${prefix}subject_id,
-    ${prefix}subject_index_name_id,
     ${prefix}subject_name,
     ${prefix}subject_authorship,
     ${prefix}subject_rank,
@@ -23,8 +23,8 @@
     ${prefix}created_by
   </sql>
   <sql id="DecisionProps">
+    #{colSourceKey},
     #{subject.id},
-    #{subject.indexNameId},
     #{subject.name},
     #{subject.authorship},
     #{subject.rank}::rank,
@@ -34,7 +34,6 @@
   </sql>
 
   <sql id="SELECT">
-    ed.sector_key,
     <include refid="DecisionColsAll">
       <property name="prefix" value="ed."/>
     </include>,
@@ -44,7 +43,6 @@
   </sql>
 
   <sql id="COLS">
-    sector_key,
     <include refid="DecisionCols">
       <property name="prefix" value=""/>
     </include>,
@@ -54,7 +52,6 @@
   </sql>
 
   <sql id="PROPS">
-    #{sectorKey},
     <include refid="DecisionProps" />,
     #{mode},
     #{status},
@@ -68,20 +65,20 @@
   <resultMap id="decisionResultMap" type="EditorialDecision" autoMapping="true">
     <id property="key" column="key" />
     <result property="name" column="name" typeHandler="org.col.db.type2.NameJsonHandler" />
-    <association property="subject" javaType="NameRef" resultMap="org.col.db.mapper.SectorMapper.refResultMap" columnPrefix="subject_" />
+    <association property="subject" javaType="SimpleName" resultMap="org.col.db.mapper.SectorMapper.refResultMap" columnPrefix="subject_" />
   </resultMap>
 
-  <select id="listBySector" resultMap="decisionResultMap">
+  <select id="listBySource" resultMap="decisionResultMap">
     SELECT <include refid="SELECT" />
     FROM <include refid="FROM" />
-    WHERE sector_key = #{key}
+    WHERE col_source_key = #{key}
     ORDER BY key
   </select>
 
   <select id="listByDataset" resultMap="decisionResultMap">
     SELECT <include refid="SELECT" />
     FROM <include refid="FROM" />
-      JOIN sector s ON s.key=ed.sector_key
+      JOIN col_source s ON s.key=ed.col_source_key
     WHERE s.dataset_key = #{key}
     ORDER BY key
   </select>
@@ -107,5 +104,17 @@
     DELETE FROM decision
     WHERE key = #{key}
   </delete>
+
+  <select id="subjectBroken" resultMap="decisionResultMap">
+    SELECT <include refid="SELECT" />
+    FROM <include refid="FROM" />
+      JOIN col_source cs ON cs.key = ed.col_source_key
+      LEFT JOIN taxon t ON t.dataset_key=cs.dataset_key AND t.id=ed.subject_id
+    WHERE t.id IS NULL
+    <if test="key != null">
+      AND ed.col_source_key = #{key}
+    </if>
+    ORDER BY key
+  </select>
 
 </mapper>
