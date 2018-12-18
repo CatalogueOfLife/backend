@@ -11,4 +11,16 @@ public class Exceptions {
     }
     throw new RuntimeException(e);
   }
+  
+  public static void interruptIfCancelled() throws InterruptedRuntimeException {
+    if (Thread.currentThread().isInterrupted()) {
+      throw new InterruptedRuntimeException();
+    }
+  }
+  
+  public static void interruptIfCancelled(String msg) throws InterruptedRuntimeException {
+    if (Thread.currentThread().isInterrupted()) {
+      throw new InterruptedRuntimeException(msg);
+    }
+  }
 }

@@ -106,8 +106,8 @@ public class ImportManager implements Managed {
     queue.remove(new ImportRequest(datasetKey, Users.IMPORTER));
     Future f = futures.remove(datasetKey);
     if (f != null) {
-      LOG.info("Canceled import for dataset {}", datasetKey);
       f.cancel(true);
+      LOG.info("Canceled import for dataset {}: {}", datasetKey);
       
     } else {
       LOG.info("No import existing for dataset {}. Ignore", datasetKey);
@@ -129,32 +129,32 @@ public class ImportManager implements Managed {
       throw new IllegalArgumentException("Import queue full, skip dataset " + req.datasetKey);
     }
     
-    LOG.debug("Queue new import for dataset {}", req.datasetKey);
     queue.add(req);
-
-    final ImportJob job = createImport(req);
-    futures.put(req.datasetKey, CompletableFuture.runAsync(job, exec).handle((di, err) -> {
-      if (err != null) {
-        // unwrap CompletionException error
-        LOG.error("Dataset import {} failed: {}", req.datasetKey, err.getCause().getMessage(),
-            err.getCause());
-        failed.inc();
-        
-      } else {
-        Duration durQueued = Duration.between(req.created, req.started);
-        Duration durRun = Duration.between(req.started, LocalDateTime.now());
-        LOG.info("Dataset import {} finished. {} min queued, {} min to execute", req.datasetKey,
-            durQueued.toMinutes(), durRun.toMinutes());
-        importTimer.update(durRun.getSeconds(), TimeUnit.SECONDS);
-      }
-      futures.remove(req.datasetKey);
-      // return true if succeeded, false if error
-      return err != null;
-    }));
+    futures.put(req.datasetKey, exec.submit(createImport(req)));
     LOG.info("Queued import for dataset {}", req.datasetKey);
     return req;
   }
   
+  /**
+   * We use old school callbacks here as you cannot easily cancel CopletableFutures.
+   */
+  private void successCallBack(ImportRequest req) {
+    Duration durQueued = Duration.between(req.created, req.started);
+    Duration durRun = Duration.between(req.started, LocalDateTime.now());
+    LOG.info("Dataset import {} finished. {} min queued, {} min to execute", req.datasetKey, durQueued.toMinutes(), durRun.toMinutes());
+    importTimer.update(durRun.getSeconds(), TimeUnit.SECONDS);
+    futures.remove(req.datasetKey);
+  }
+  
+  /**
+   * We use old school callbacks here as you cannot easily cancel CopletableFutures.
+   */
+  private void errorCallBack(ImportRequest req, Exception err) {
+    LOG.error("Dataset import {} failed: {}", req.datasetKey, err.getCause().getMessage(), err.getCause());
+    failed.inc();
+    futures.remove(req.datasetKey);
+  }
+
   /**
    * Uploads a new dataset and submits an import request.
    *
@@ -207,14 +207,14 @@ public class ImportManager implements Managed {
         LOG.warn("Dataset {} was deleted and cannot be imported", req.datasetKey);
         throw NotFoundException.keyNotFound(Dataset.class, req.datasetKey);
       }
-      ImportJob job = new ImportJob(d, req.force, cfg, downloader, factory, index, indexService, imgService,
+      ImportJob job = new ImportJob(req, d, cfg, downloader, factory, index, indexService, imgService,
           new StartNotifier() {
             @Override
             public void started() {
               req.start();
               queue.remove(req);
             }
-          });
+          }, this::successCallBack, this::errorCallBack);
       return job;
     }
   }
@@ -227,7 +227,7 @@ public class ImportManager implements Managed {
   }
   
   /**
-   * @return true if imports are running
+   * @return true if imports are running or queued
    */
   public boolean hasRunning() {
     return !futures.isEmpty();
