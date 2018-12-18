@@ -24,7 +24,7 @@ public class TermsAggregation extends BucketAggregation {
   }
 
   private static final int DEFAULT_NUM_BUCKETS = 50;
-  private static final Map<String, String> SORTBY_DOC_COUNT_DESC = Collections.singletonMap("doc_count", "desc ");
+  private static final Map<String, String> SORTBY_DOC_COUNT_DESC = Collections.singletonMap("doc_count", "desc");
   private static final Map<String, String> SORTBY_VALUE_ASC = Collections.singletonMap("_key", "asc");
 
   final Terms terms;

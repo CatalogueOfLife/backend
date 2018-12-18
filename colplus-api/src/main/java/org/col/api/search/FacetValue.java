@@ -44,7 +44,7 @@ public class FacetValue<T extends Comparable<T>> implements Comparable<FacetValu
     @Override
     public int compare(FacetValue<U> f1, FacetValue<U> f2) {
       int i;
-      if (STRINGIFY.contains(f1.getClass())) {
+      if (STRINGIFY.contains(f1.value.getClass())) {
         i = enumToString(f1.value).compareTo(enumToString(f2.value));
       } else {
         i = f1.value.compareTo(f2.value);
@@ -91,7 +91,7 @@ public class FacetValue<T extends Comparable<T>> implements Comparable<FacetValu
   public int compareTo(FacetValue<T> other) {
     int i = other.count - count; // doc count descending !
     if (i == 0) {
-      if (STRINGIFY.contains(getClass())) {
+      if (STRINGIFY.contains(value.getClass())) {
         return enumToString(value).compareTo(enumToString(other.value));
       }
       return value.compareTo(other.value);
