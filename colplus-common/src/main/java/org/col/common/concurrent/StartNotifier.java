@@ -1,5 +1,6 @@
 package org.col.common.concurrent;
 
+@FunctionalInterface
 public interface StartNotifier {
   
   /**

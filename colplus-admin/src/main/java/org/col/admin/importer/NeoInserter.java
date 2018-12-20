@@ -25,6 +25,8 @@ import org.neo4j.graphdb.Node;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.col.common.lang.Exceptions.interruptIfCancelled;
+
 /**
  *
  */
@@ -52,17 +54,21 @@ public abstract class NeoInserter {
     d.ifPresent(store::put);
     
     store.startBatchMode();
+    interruptIfCancelled("Normalizer interrupted, exit early");
     batchInsert();
     LOG.info("Batch insert completed, {} verbatim records processed, {} nodes created", vcounter, store.size());
-    
+  
+    interruptIfCancelled("Normalizer interrupted, exit early");
     store.endBatchMode();
     LOG.info("Neo batch inserter closed, data flushed to disk");
     
     final int batchV = vcounter;
     final int batchRec = store.size();
+    interruptIfCancelled("Normalizer interrupted, exit early");
     postBatchInsert();
     LOG.info("Post batch insert completed, {} verbatim records processed creating {} new nodes", batchV, store.size() - batchRec);
-
+  
+    interruptIfCancelled("Normalizer interrupted, exit early");
     LOG.debug("Start processing explicit relations ...");
     store.process(null,5000, relationProcessor());
 
@@ -70,10 +76,7 @@ public abstract class NeoInserter {
   }
   
   private void processVerbatim(final CsvReader reader, final Term classTerm, Function<VerbatimRecord, Boolean> proc) {
-    if (Thread.interrupted()) {
-      LOG.warn("NeoInserter interrupted, exit early with incomplete import");
-      throw new NormalizationFailedException("NeoInserter interrupted");
-    }
+    interruptIfCancelled("NeoInserter interrupted, exit early with incomplete import");
     final AtomicInteger counter = new AtomicInteger(0);
     final AtomicInteger success = new AtomicInteger(0);
     reader.stream(classTerm).forEach(rec -> {
@@ -95,6 +98,7 @@ public abstract class NeoInserter {
                                                            Consumer<T> add
   ) {
     processVerbatim(reader, classTerm, rec -> {
+      interruptIfCancelled("NeoInserter interrupted, exit early");
       Optional<T> opt = interpret.apply(rec);
       if (opt.isPresent()) {
         T obj = opt.get();
@@ -112,6 +116,7 @@ public abstract class NeoInserter {
                                                                 final BiConsumer<NeoUsage, T> add
   ) {
     processVerbatim(reader, classTerm, rec -> {
+      interruptIfCancelled("NeoInserter interrupted, exit early");
       List<T> results = interpret.apply(rec);
       if (reader.isEmpty()) return false;
       boolean interpreted = true;

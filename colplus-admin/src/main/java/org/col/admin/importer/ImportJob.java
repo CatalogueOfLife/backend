@@ -7,6 +7,8 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 import com.google.common.base.Preconditions;
 import org.apache.commons.io.FileUtils;
@@ -25,6 +27,8 @@ import org.col.common.concurrent.StartNotifier;
 import org.col.common.io.ChecksumUtils;
 import org.col.common.io.CompressionUtil;
 import org.col.common.io.DownloadUtil;
+import org.col.common.lang.Exceptions;
+import org.col.common.lang.InterruptedRuntimeException;
 import org.col.common.util.LoggingUtils;
 import org.col.db.dao.DatasetImportDao;
 import org.col.es.NameUsageIndexService;
@@ -42,7 +46,7 @@ import org.slf4j.LoggerFactory;
 public class ImportJob implements Runnable {
   private static final Logger LOG = LoggerFactory.getLogger(ImportJob.class);
   private final int datasetKey;
-  private final boolean force;
+  private final ImportRequest req;
   private final Dataset dataset;
   private DatasetImport di;
   private DatasetImport last;
@@ -55,12 +59,19 @@ public class ImportJob implements Runnable {
   private final ImageService imgService;
   
   private final StartNotifier notifier;
+  private final Consumer<ImportRequest> successCallback;
+  private final BiConsumer<ImportRequest, Exception> errorCallback;
   
-  ImportJob(Dataset d, boolean force, AdminServerConfig cfg, DownloadUtil downloader,
-            SqlSessionFactory factory, NameIndex index, NameUsageIndexService indexService, ImageService imgService, StartNotifier notifier) {
+  ImportJob(ImportRequest req, Dataset d,
+            AdminServerConfig cfg,
+            DownloadUtil downloader, SqlSessionFactory factory, NameIndex index, NameUsageIndexService indexService, ImageService imgService,
+            StartNotifier notifier,
+            Consumer<ImportRequest> successCallback,
+            BiConsumer<ImportRequest, Exception> errorCallback
+    ) {
     this.dataset = Preconditions.checkNotNull(d);
     this.datasetKey = d.getKey();
-    this.force = force;
+    this.req = req;
     this.cfg = cfg;
     this.downloader = downloader;
     this.factory = factory;
@@ -68,7 +79,11 @@ public class ImportJob implements Runnable {
     this.indexService = indexService;
     dao = new DatasetImportDao(factory);
     this.imgService = imgService;
+    
     this.notifier = notifier;
+    this.successCallback = successCallback;
+    this.errorCallback = errorCallback;
+
     validate();
   }
   
@@ -90,6 +105,11 @@ public class ImportJob implements Runnable {
     try {
       notifier.started();
       importDataset();
+      successCallback.accept(req);
+      
+    }catch (Exception e) {
+      errorCallback.accept(req, e);
+    
     } finally {
       LoggingUtils.removeMDC();
     }
@@ -103,16 +123,14 @@ public class ImportJob implements Runnable {
     return di == null ? null : di.getAttempt();
   }
   
-  private void updateState(ImportState state) throws InterruptedException {
+  private void updateState(ImportState state) {
     di.setState(state);
     dao.update(di);
     checkIfCancelled();
   }
   
-  private void checkIfCancelled() throws InterruptedException {
-    if (Thread.currentThread().isInterrupted()) {
-      throw new InterruptedException("Import " + di.attempt() + " was cancelled");
-    }
+  private void checkIfCancelled() {
+    Exceptions.interruptIfCancelled("Import " + di.attempt() + " was cancelled");
   }
   
   private void importDataset() {
@@ -143,18 +161,19 @@ public class ImportJob implements Runnable {
       }
       
       checkIfCancelled();
-      if (isModified || force) {
+      if (isModified || req.force) {
         if (!isModified) {
           LOG.info("Force reimport of unchanged archive {}", datasetKey);
         }
         di.setDownload(downloader.lastModified(source));
         
+        checkIfCancelled();
         updateState(ImportState.PROCESSING);
         LOG.info("Extracting files from archive {}", datasetKey);
         CompressionUtil.decompressFile(sourceDir.toFile(), source);
         
-        checkIfCancelled();
         LOG.info("Normalizing {}", datasetKey);
+        checkIfCancelled();
         store = NeoDbFactory.create(datasetKey, cfg.normalizer);
         store.put(dataset);
         
@@ -163,15 +182,16 @@ public class ImportJob implements Runnable {
           LogoUpdateJob.pullLogo(dataset, downloader, cfg.normalizer, imgService);
         }
         
+        checkIfCancelled();
         updateState(ImportState.INSERTING);
         LOG.info("Writing {} to Postgres!", datasetKey);
         store = NeoDbFactory.open(datasetKey, cfg.normalizer);
         new PgImport(datasetKey, store, factory, cfg.importer).call();
         
-        checkIfCancelled();
         LOG.info("Build import metrics for dataset {}", datasetKey);
         dao.updateImportSuccess(di);
-        
+  
+        checkIfCancelled();
         LOG.info("Build search index for dataset {}", datasetKey);
         indexService.indexDataset(datasetKey);
         
@@ -186,12 +206,18 @@ public class ImportJob implements Runnable {
   
       if (cfg.importer.wait > 0) {
         LOG.info("Wait for {}s before finishing import job", cfg.importer.wait);
-        TimeUnit.SECONDS.sleep(cfg.importer.wait);
+        try {
+          TimeUnit.SECONDS.sleep(cfg.importer.wait);
+        } catch (InterruptedException e) {
+          LOG.debug("Woke up dataset {} from sleep", datasetKey);
+          // swallow, we only interrupted the sleep and the import is done anyways.
+          // Just continue
+        }
       }
   
-    } catch (InterruptedException e) {
+    } catch (InterruptedException | InterruptedRuntimeException e) {
       // cancelled import
-      LOG.error("Dataset {} import cancelled. Log to db", datasetKey, e);
+      LOG.warn("Dataset {} import cancelled. Log to db", datasetKey);
       dao.updateImportCancelled(di);
       
     } catch (Exception e) {
@@ -247,6 +273,6 @@ public class ImportJob implements Runnable {
   
   @Override
   public String toString() {
-    return "ImportJob{" + "datasetKey=" + datasetKey + ", force=" + force + '}';
+    return "ImportJob{" + "datasetKey=" + datasetKey + ", force=" + req.force + '}';
   }
 }

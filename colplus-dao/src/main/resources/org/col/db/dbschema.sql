@@ -436,7 +436,7 @@ CREATE TABLE media (
   verbatim_key INTEGER,
   taxon_id TEXT NOT NULL,
   url TEXT,
-  type INTEGER NOT NULL,
+  type INTEGER,
   format TEXT,
   title TEXT,
   captured DATE,

@@ -18,12 +18,15 @@ import org.col.admin.importer.neo.traverse.StartEndHandler;
 import org.col.admin.importer.neo.traverse.TreeWalker;
 import org.col.api.model.*;
 import org.col.api.vocab.Users;
+import org.col.common.lang.InterruptedRuntimeException;
 import org.col.db.dao.NameDao;
 import org.col.db.mapper.*;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.col.common.lang.Exceptions.interruptIfCancelled;
 
 /**
  *
@@ -53,33 +56,20 @@ public class PgImport implements Callable<Boolean> {
     this.sessionFactory = sessionFactory;
   }
   
-  private void checkIfCancelled() throws InterruptedException {
-    if (Thread.currentThread().isInterrupted()) {
-      throw new InterruptedException("PgImport was cancelled/interrupted");
-    }
-  }
-  
   @Override
-  public Boolean call() throws InterruptedException {
-    checkIfCancelled();
+  public Boolean call() throws InterruptedException, InterruptedRuntimeException {
     partition();
     
-    checkIfCancelled();
     insertVerbatim();
     
-    checkIfCancelled();
     insertReferences();
     
-    checkIfCancelled();
     insertNames();
     
-    checkIfCancelled();
     insertNameRelations();
     
-    checkIfCancelled();
 		insertUsages();
 
-    checkIfCancelled();
     attach();
     
     updateMetadata();
@@ -90,7 +80,8 @@ public class PgImport implements Callable<Boolean> {
 		return true;
 	}
 
-  private void partition(){
+  private void partition() throws InterruptedException {
+    interruptIfCancelled();
     try (SqlSession session = sessionFactory.openSession(false)) {
       partition(session, dataset.getKey());
     }
@@ -117,13 +108,15 @@ public class PgImport implements Callable<Boolean> {
    * Builds indices and finally attaches partitions to main tables.
    */
   private void attach() {
+    interruptIfCancelled();
     try (SqlSession session = sessionFactory.openSession(true)) {
       LOG.info("Build partition indices for dataset {}: {}", dataset.getKey(), dataset.getTitle());
       DatasetPartitionMapper mapper = session.getMapper(DatasetPartitionMapper.class);
       
       mapper.buildIndices(dataset.getKey());
       session.commit();
-      
+  
+      interruptIfCancelled();
       mapper.attach(dataset.getKey());
       session.commit();
     }
@@ -163,7 +156,7 @@ public class PgImport implements Callable<Boolean> {
         mapper.create(v);
         verbatimKeys.put(storeKey, v.getKey());
         if (++counter % batchSize == 0) {
-          checkIfCancelled();
+          interruptIfCancelled();
           session.commit();
           LOG.debug("Inserted {} verbatim records so far", counter);
         }
@@ -203,7 +196,7 @@ public class PgImport implements Callable<Boolean> {
         mapper.create(r);
         rCounter.incrementAndGet();
         if (counter++ % batchSize == 0) {
-          checkIfCancelled();
+          interruptIfCancelled();
           session.commit();
           LOG.debug("Inserted {} references", counter);
         }
@@ -217,7 +210,7 @@ public class PgImport implements Callable<Boolean> {
   /**
    * Inserts all names, collecting all homotypic name keys for later updates if they havent been inserted already.
    */
-  private void insertNames() throws InterruptedException {
+  private void insertNames() {
     try (final SqlSession session = sessionFactory.openSession(false)) {
       final NameMapper nameMapper = session.getMapper(NameMapper.class);
       LOG.debug("Inserting all names");
@@ -229,9 +222,10 @@ public class PgImport implements Callable<Boolean> {
         updateVerbatimUserEntity(n.name);
         nameMapper.create(n.name);
         if (nCounter.incrementAndGet() % batchSize == 0) {
+          interruptIfCancelled();
           session.commit();
           LOG.debug("Inserted {} other names", nCounter.get());
-        };
+        }
       });
       session.commit();
     }
@@ -241,7 +235,7 @@ public class PgImport implements Callable<Boolean> {
   /**
    * Go through all neo4j relations and convert them to name acts if the rel type matches
    */
-  private void insertNameRelations() throws InterruptedException {
+  private void insertNameRelations() {
     for (RelType rt : RelType.values()) {
       if (!rt.isNameRel()) continue;
 
@@ -254,6 +248,7 @@ public class PgImport implements Callable<Boolean> {
             NameRelation nr = store.toRelation(rel);
             nameRelationMapper.create(updateUser(nr));
             if (counter.incrementAndGet() % batchSize == 0) {
+              interruptIfCancelled();
               session.commit();
             }
           });
@@ -351,6 +346,7 @@ public class PgImport implements Callable<Boolean> {
           
           // commit in batches
           if (counter++ % batchSize == 0) {
+            interruptIfCancelled();
             session.commit();
             LOG.info("Inserted {} names and taxa", counter);
           }
@@ -358,6 +354,7 @@ public class PgImport implements Callable<Boolean> {
         
         @Override
         public void end(Node n) {
+          interruptIfCancelled();
           // remove this key from parent queue if its an accepted taxon
           if (n.hasLabel(Labels.TAXON)) {
             parentIds.pop();

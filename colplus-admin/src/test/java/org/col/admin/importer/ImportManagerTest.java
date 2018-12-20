@@ -3,6 +3,7 @@ package org.col.admin.importer;
 import java.net.URI;
 import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import com.codahale.metrics.MetricRegistry;
 import com.google.common.collect.Sets;
@@ -23,6 +24,8 @@ import org.col.db.mapper.DatasetMapper;
 import org.col.db.mapper.InitMybatisRule;
 import org.col.img.ImageService;
 import org.junit.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
@@ -34,6 +37,7 @@ import static org.junit.Assert.assertFalse;
  */
 @Ignore
 public class ImportManagerTest {
+  private static final Logger LOG = LoggerFactory.getLogger(ImportManagerTest.class);
   
   ImportManager importManager;
   CloseableHttpClient hc;
@@ -74,10 +78,12 @@ public class ImportManagerTest {
     importManager.start();
   
     diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory());
+    LOG.warn("Test initialized");
   }
   
   @After
   public void shutdown() throws Exception {
+    LOG.warn("Shutting down test");
     importManager.stop();
     hc.close();
   }
@@ -88,15 +94,36 @@ public class ImportManagerTest {
     d.setOrigin(DatasetOrigin.EXTERNAL);
     d.setTitle("Test dataset");
     d.setDataFormat(DataFormat.COLDP);
-    d.setDataAccess(URI.create("https://github.com/Sp2000/colplus-backend/raw/master/colplus-admin/src/test/resources/coldp/test.zip"));
+    d.setDataAccess(URI.create("https://raw.githubusercontent.com/Sp2000/colplus-backend/master/colplus-admin/src/test/resources/coldp/test.zip"));
     d.setCreatedBy(InitMybatisRule.TEST_USER.getKey());
     d.setModifiedBy(InitMybatisRule.TEST_USER.getKey());
   
-    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(false) ) {
+    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true) ) {
       session.getMapper(DatasetMapper.class).create(d);
       session.commit();
     }
     return d;
+  }
+  
+  @Test
+  public void cancel() throws Exception {
+    final Dataset d1 = createExternal();
+  
+    LOG.warn("SUBMIT");
+    importManager.submit(new ImportRequest(d1.getKey(), Users.IMPORTER));
+    Thread.sleep(100);
+    
+    LOG.warn("CHECK");
+    assertTrue(importManager.hasEmptyQueue());
+    assertTrue(importManager.hasRunning());
+ 
+    // cancel
+    LOG.warn("CANCEL");
+    importManager.cancel(d1.getKey());
+    TimeUnit.MILLISECONDS.sleep(500);
+    LOG.warn("CHECK");
+    assertTrue(importManager.hasEmptyQueue());
+    assertFalse(importManager.hasRunning());
   }
   
   @Test
@@ -149,8 +176,18 @@ public class ImportManagerTest {
   
     // cancel d1
     importManager.cancel(d1.getKey());
-    Thread.sleep(5000);
+    TimeUnit.SECONDS.sleep(1);
     assertTrue(importManager.hasEmptyQueue());
+    imports = diDao.list(new Page());
+    assertEquals(3, imports.size());
+    assertEquals(d3.getKey(), imports.getResult().get(0).getDatasetKey());
+    assertTrue(runningStates.contains(imports.getResult().get(0).getState()));
+    
+    assertEquals(d2.getKey(), imports.getResult().get(1).getDatasetKey());
+    assertTrue(runningStates.contains(imports.getResult().get(1).getState()));
+
+    assertEquals(d1.getKey(), imports.getResult().get(2).getDatasetKey());
+    assertEquals(ImportState.CANCELED, imports.getResult().get(2).getState());
   }
   
 }
