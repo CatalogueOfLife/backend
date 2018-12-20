@@ -47,9 +47,9 @@
         WITH RECURSIVE tree AS(
 	         
 	        SELECT v.issues, 
-	        	ARRAY[]::text[] AS classificationIds,
-	        	ARRAY[]::rank[] AS classificationRanks,
-	        	ARRAY[]::text[] AS classificationNames,
+	        	ARRAY[t.id]::text[] AS classificationIds,
+	        	ARRAY[n.rank]::rank[] AS classificationRanks,
+	        	ARRAY[n.scientific_name]::text[] AS classificationNames,
 	        <include refid="org.col.db.mapper.NameMapper.nameCols">
 	            <property name="alias" value="n"/>
 	            <property name="prefix" value="n_"/>
@@ -68,9 +68,9 @@
 	        UNION
 	         
 	        SELECT v.issues, 
-	        	array_append(tree.classificationIds,t.id) AS classificationIds,
-	        	array_append(tree.classificationRanks,n.rank) AS classificationRanks,
-	        	array_append(tree.classificationNames,n.scientific_name) AS classificationNames,
+	        	array_append(tree.classificationIds, t.id) AS classificationIds,
+	        	array_append(tree.classificationRanks, n.rank) AS classificationRanks,
+	        	array_append(tree.classificationNames, n.scientific_name) AS classificationNames,
 	        <include refid="org.col.db.mapper.NameMapper.nameCols">
 	            <property name="alias" value="n"/>
 	            <property name="prefix" value="n_"/>

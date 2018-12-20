@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-import org.col.api.model.SimpleName;
 import org.col.api.vocab.Issue;
 import org.col.api.vocab.NameField;
 import org.col.api.vocab.NomStatus;
@@ -21,6 +20,8 @@ import static org.col.es.annotations.Analyzer.IGNORE_CASE;
 
 public class EsNameUsage {
 
+  private String usageId;
+  private Integer datasetKey;
   /*
    * A Weakly Normalized version of the original scientific name, used for auto-completion purposes. What weak and strong normalization
    * exactly is, is left intentionally vague, so we have room to experiment and fine-tune. The only requirement is that the same
@@ -29,41 +30,49 @@ public class EsNameUsage {
    * actual implementations of weak and strong normalization.
    */
   private String scientificNameWN;
-
   /*
    * A Strongly normalized version of the original scientific name.
    */
   private String scientificNameSN;
-
   private String authorship;
-
-  private Integer datasetKey;
-
   private String nameId;
-
-  private String nameIndexId;
-
+  private String indexNameId;
   private String publishedInId;
-
   private Rank rank;
-
   private NameType type;
-
   private NomStatus nomStatus;
-
   private Set<NameField> nameFields;
-
   private TaxonomicStatus status;
-
-  private String taxonId;
-
   private Set<Issue> issues;
-
   private List<String> vernacularNames;
-
-  private List<SimpleName> classification;
-
+  /*
+   * We store the IDs of the higher taxa separately from the monomials. This allows for fast retrieval by ID, because we don't need nested
+   * queries if the IDs are stored separately. In addition, if you have a query condition on the ID field, it hardly ever makes sense to
+   * have any other query condition. We do, however, wrap rank and name in a separate object, because here combining the two fields in an
+   * AND query could possibly make sense, thus necessitating a nested query.
+   */
+  private List<String> higherNameIds;
+  private List<Monomial> higherNames;
   private String payload; // The entire NameUsageWrapper object, serialized to a string
+
+  public String getUsageId() {
+    return usageId;
+  }
+
+  public void setUsageId(String usageId) {
+    this.usageId = usageId;
+  }
+
+  // See here why this probably makes sense:
+  // https://www.elastic.co/guide/en/elasticsearch/reference/current/tune-for-search-speed.html#_consider_mapping_identifiers_as_literal_keyword_literal
+  @MapToType(ESDataType.KEYWORD)
+  public Integer getDatasetKey() {
+    return datasetKey;
+  }
+
+  public void setDatasetKey(Integer datasetKey) {
+    this.datasetKey = datasetKey;
+  }
 
   @Analyzers({AUTO_COMPLETE, IGNORE_CASE})
   public String getScientificNameWN() {
@@ -92,17 +101,6 @@ public class EsNameUsage {
     this.authorship = authorship;
   }
 
-  // See here why this probably makes sense:
-  // https://www.elastic.co/guide/en/elasticsearch/reference/current/tune-for-search-speed.html#_consider_mapping_identifiers_as_literal_keyword_literal
-  @MapToType(ESDataType.KEYWORD)
-  public Integer getDatasetKey() {
-    return datasetKey;
-  }
-
-  public void setDatasetKey(Integer datasetKey) {
-    this.datasetKey = datasetKey;
-  }
-
   public String getNameId() {
     return nameId;
   }
@@ -111,12 +109,12 @@ public class EsNameUsage {
     this.nameId = nameId;
   }
 
-  public String getNameIndexId() {
-    return nameIndexId;
+  public String getIndexNameId() {
+    return indexNameId;
   }
 
-  public void setNameIndexId(String nameIndexId) {
-    this.nameIndexId = nameIndexId;
+  public void setIndexNameId(String nameIndexId) {
+    this.indexNameId = nameIndexId;
   }
 
   public String getPublishedInId() {
@@ -167,14 +165,6 @@ public class EsNameUsage {
     this.status = status;
   }
 
-  public String getTaxonId() {
-    return taxonId;
-  }
-
-  public void setTaxonId(String taxonId) {
-    this.taxonId = taxonId;
-  }
-
   @Analyzers({AUTO_COMPLETE, IGNORE_CASE})
   public List<String> getVernacularNames() {
     return vernacularNames;
@@ -192,14 +182,6 @@ public class EsNameUsage {
     this.issues = issues;
   }
 
-  public List<SimpleName> getClassification() {
-    return classification;
-  }
-
-  public void setClassification(List<SimpleName> classification) {
-    this.classification = classification;
-  }
-
   @NotIndexed
   public String getPayload() {
     return payload;
@@ -209,6 +191,22 @@ public class EsNameUsage {
     this.payload = source;
   }
 
+  public List<String> getHigherNameIds() {
+    return higherNameIds;
+  }
+
+  public void setHigherNameIds(List<String> higherTaxonIds) {
+    this.higherNameIds = higherTaxonIds;
+  }
+
+  public List<Monomial> getHigherNames() {
+    return higherNames;
+  }
+
+  public void setHigherNames(List<Monomial> monomials) {
+    this.higherNames = monomials;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o)
@@ -216,20 +214,20 @@ public class EsNameUsage {
     if (o == null || getClass() != o.getClass())
       return false;
     EsNameUsage that = (EsNameUsage) o;
-    return Objects.equals(datasetKey, that.datasetKey) && Objects.equals(scientificNameWN, that.scientificNameWN)
-        && Objects.equals(scientificNameSN, that.scientificNameSN)
+    return Objects.equals(usageId, that.usageId) && Objects.equals(datasetKey, that.datasetKey)
+        && Objects.equals(scientificNameWN, that.scientificNameWN)
         && Objects.equals(authorship, that.authorship) && Objects.equals(vernacularNames, that.vernacularNames)
-        && Objects.equals(nameId, that.nameId) && Objects.equals(nameIndexId, that.nameIndexId)
+        && Objects.equals(nameId, that.nameId) && Objects.equals(indexNameId, that.indexNameId)
         && Objects.equals(publishedInId, that.publishedInId) && rank == that.rank && type == that.type && nomStatus == that.nomStatus
-        && Objects.equals(nameFields, that.nameFields) && status == that.status && Objects.equals(taxonId, that.taxonId)
-        && Objects.equals(issues, that.issues) && Objects.equals(payload, that.payload);
+        && Objects.equals(nameFields, that.nameFields) && status == that.status
+        && Objects.equals(issues, that.issues) && Objects.equals(payload, that.payload)
+        && Objects.equals(higherNameIds, that.higherNameIds);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(scientificNameWN, scientificNameSN, authorship, vernacularNames, datasetKey, nameId, nameIndexId, publishedInId,
-        rank,
-        type, nomStatus, nameFields, status, taxonId, issues, payload);
+    return Objects.hash(usageId, scientificNameWN, authorship, vernacularNames, datasetKey, nameId, indexNameId,
+        publishedInId, rank, type, nomStatus, nameFields, status, issues, payload, higherNameIds, higherNames);
   }
 
 }

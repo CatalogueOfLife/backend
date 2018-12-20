@@ -9,6 +9,8 @@ import static org.col.es.query.SortOptions.Order.DESC;
 
 public class SortField {
 
+  public static final SortField DOC = new SortField("_doc");
+
   final String field;
   final SortOptions options;
 

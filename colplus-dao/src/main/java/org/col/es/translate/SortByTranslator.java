@@ -11,7 +11,7 @@ class SortByTranslator {
 
   private static final SortField SORTFIELD_NAME = new SortField("scientificNameWN");
   private static final SortField SORTFIELD_RANK = new SortField("rank");
-  private static final SortField SORTFIELD_NATIVE = new SortField("_doc");
+  private static final SortField SORTFIELD_NATIVE = SortField.DOC;
 
   private final NameSearchRequest request;
 

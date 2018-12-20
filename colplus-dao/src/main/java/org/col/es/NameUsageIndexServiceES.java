@@ -26,6 +26,7 @@ import static org.col.es.EsConfig.NAME_USAGE_BASE;
 
 public class NameUsageIndexServiceES implements NameUsageIndexService {
 
+
   private static final Logger LOG = LoggerFactory.getLogger(NameUsageIndexServiceES.class);
 
   private final RestClient client;
@@ -45,7 +46,7 @@ public class NameUsageIndexServiceES implements NameUsageIndexService {
 
   @VisibleForTesting
   NameUsageIndexServiceES(RestClient client, EsConfig esConfig, SqlSessionFactory factory,
-                          boolean async) {
+      boolean async) {
     this.client = client;
     this.esConfig = esConfig;
     this.factory = factory;
@@ -76,14 +77,14 @@ public class NameUsageIndexServiceES implements NameUsageIndexService {
           counter.addAndGet(batch.size());
         }
       };
-//      try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(indexer, batchSize)) {
-//        LOG.debug("Indexing bare names into Elasticsearch");
-//        mapper.processDatasetBareNames(datasetKey, handler);
-//      }
-//      try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(indexer, batchSize)) {
-//        LOG.debug("Indexing synonyms into Elasticsearch");
-//        mapper.processDatasetSynonyms(datasetKey, handler);
-//      }
+      // try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(indexer, batchSize)) {
+      // LOG.debug("Indexing bare names into Elasticsearch");
+      // mapper.processDatasetBareNames(datasetKey, handler);
+      // }
+      // try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(indexer, batchSize)) {
+      // LOG.debug("Indexing synonyms into Elasticsearch");
+      // mapper.processDatasetSynonyms(datasetKey, handler);
+      // }
       try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(indexer, batchSize)) {
         LOG.debug("Indexing taxa into Elasticsearch");
         mapper.processDatasetTaxa(datasetKey, handler);
@@ -136,8 +137,9 @@ public class NameUsageIndexServiceES implements NameUsageIndexService {
     });
   }
 
-  private void execute(Request req, String index, int size) {
-    EsUtil.executeRequest(client, req);
+  private void execute(Request req, String index, int size) {   
+    @SuppressWarnings("unused") // One day retrieve errors from response
+    Response response = EsUtil.executeRequest(client, req);
     LOG.debug("Successfully inserted {} name usages into index {}", size, index);
   }
 

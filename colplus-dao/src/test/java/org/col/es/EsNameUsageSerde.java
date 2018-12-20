@@ -94,7 +94,7 @@ public class EsNameUsageSerde extends EsReadTestBase {
     enuIn.setDatasetKey(472);
     enuIn.setNameFields(EnumSet.of(NameField.COMBINATION_EX_AUTHORS, NameField.UNINOMIAL));
     enuIn.setNameId("16");
-    enuIn.setNameIndexId("afd56770af");
+    enuIn.setIndexNameId("afd56770af");
     enuIn.setPublishedInId("AMO333");
     enuIn.setRank(Rank.SPECIES);
     enuIn.setScientificNameWN("Malus Sylvestris");
@@ -120,7 +120,7 @@ public class EsNameUsageSerde extends EsReadTestBase {
     enuIn.setDatasetKey(472);
     enuIn.setNameFields(EnumSet.of(NameField.COMBINATION_EX_AUTHORS, NameField.UNINOMIAL));
     enuIn.setNameId("16");
-    enuIn.setNameIndexId("afd56770af");
+    enuIn.setIndexNameId("afd56770af");
     enuIn.setPublishedInId("AMO333");
     enuIn.setRank(Rank.SPECIES);
     enuIn.setScientificNameWN("Malus Sylvestris");
