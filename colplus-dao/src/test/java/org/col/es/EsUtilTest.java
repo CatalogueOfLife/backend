@@ -2,7 +2,6 @@ package org.col.es;
 
 import java.io.IOException;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import org.col.api.TestEntityGenerator;
 import org.col.es.model.EsNameUsage;
 import org.elasticsearch.client.RestClient;
@@ -12,7 +11,9 @@ import org.junit.Test;
 
 import static org.col.es.EsUtil.insert;
 import static org.col.es.EsUtil.refreshIndex;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class EsUtilTest extends EsReadTestBase {
 
@@ -39,7 +40,7 @@ public class EsUtilTest extends EsReadTestBase {
   }
 
   @Test
-  public void deleteDataset() throws JsonProcessingException {
+  public void deleteDataset() throws IOException {
     EsUtil.deleteIndex(client, indexName);
     EsUtil.createIndex(client, indexName, getEsConfig().nameUsage);
     // Insert 3 documents (overwriting dataset key to know values)

@@ -1,12 +1,14 @@
 package org.col.es;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
+import java.util.zip.DeflaterOutputStream;
 
 import org.col.api.model.Name;
 import org.col.api.model.SimpleName;
@@ -41,9 +43,15 @@ import static org.col.api.vocab.NameField.UNINOMIAL;
 import static org.col.common.util.CollectionUtils.notEmpty;
 
 /**
- * Converts NameUsageWrapper instances to EsNameUsage documents.
+ * Converts NameUsageWrapper instances to EsNameUsage documents. Only a few fields are indexed. The remainder of the NameUsageWrapper is
+ * converted to JSON and the resulting JSON string is stored in a payload field.
  */
 public class NameUsageTransfer {
+
+  /**
+   * Whether or not to zip the stringified NameUsageWrapper.
+   */
+  public static final boolean ZIP_PAYLOAD = true;
 
   /**
    * Provides a weakly normalized version of the original scientific name. Whatever normalization method we choose, we must make sure it is
@@ -117,7 +125,7 @@ public class NameUsageTransfer {
     loadClassification(enu, nuw);
   }
 
-  EsNameUsage toDocument(NameUsageWrapper nuw) throws JsonProcessingException {
+  EsNameUsage toDocument(NameUsageWrapper nuw) throws IOException {
     EsNameUsage enu = new EsNameUsage();
     if (notEmpty(nuw.getVernacularNames())) {
       List<String> names = nuw.getVernacularNames()
@@ -151,7 +159,15 @@ public class NameUsageTransfer {
     enu.setType(name.getType());
     enu.setNameFields(getNonNullNameFields(name));
     prunePayload(nuw);
-    enu.setPayload(EsModule.NAME_USAGE_WRITER.writeValueAsString(nuw));
+    if (ZIP_PAYLOAD) {
+      ByteArrayOutputStream baos = new ByteArrayOutputStream(1024);
+      DeflaterOutputStream dos = new DeflaterOutputStream(baos);
+      EsModule.NAME_USAGE_WRITER.writeValue(dos, nuw);
+      dos.close();
+      enu.setPayload(Base64.getEncoder().encodeToString(baos.toByteArray()));
+    } else {
+      enu.setPayload(EsModule.NAME_USAGE_WRITER.writeValueAsString(nuw));
+    }
     return enu;
   }
 

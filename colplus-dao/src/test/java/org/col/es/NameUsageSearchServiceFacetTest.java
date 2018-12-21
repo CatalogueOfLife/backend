@@ -1,13 +1,14 @@
 package org.col.es;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Base64;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
+import java.util.zip.DeflaterOutputStream;
 
 import org.col.api.TestEntityGenerator;
 import org.col.api.model.Page;
@@ -717,10 +718,17 @@ public class NameUsageSearchServiceFacetTest extends EsReadTestBase {
   }
 
   private static String getDummyPayload() {
-    NameUsageWrapper dummy = TestEntityGenerator.newNameUsageTaxonWrapper();
     try {
+      NameUsageWrapper dummy = TestEntityGenerator.newNameUsageTaxonWrapper();
+      if (NameUsageTransfer.ZIP_PAYLOAD) {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream(1024);
+        DeflaterOutputStream dos = new DeflaterOutputStream(baos);
+        EsModule.NAME_USAGE_WRITER.writeValue(dos, dummy);
+        dos.close();
+        return Base64.getEncoder().encodeToString(baos.toByteArray());
+      }
       return EsModule.NAME_USAGE_WRITER.writeValueAsString(dummy);
-    } catch (JsonProcessingException e) {
+    } catch (IOException e) {
       throw new RuntimeException(e);
     }
   }

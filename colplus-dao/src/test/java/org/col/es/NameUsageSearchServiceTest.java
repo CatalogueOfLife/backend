@@ -8,8 +8,6 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-
 import org.col.api.TestEntityGenerator;
 import org.col.api.model.BareName;
 import org.col.api.model.Name;
@@ -152,7 +150,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     shuffled.stream().map(t1 -> {
       try {
         return transfer.toDocument(t1);
-      } catch (JsonProcessingException e) {
+      } catch (IOException e) {
         throw new RuntimeException();
       }
     }).forEach(x -> insert(client, indexName, x));
@@ -259,7 +257,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     shuffled.stream().map(t1 -> {
       try {
         return transfer.toDocument(t1);
-      } catch (JsonProcessingException e) {
+      } catch (IOException e) {
         throw new RuntimeException();
       }
     }).forEach(x -> insert(client, indexName, x));

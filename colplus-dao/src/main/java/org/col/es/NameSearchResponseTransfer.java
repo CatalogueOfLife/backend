@@ -1,13 +1,16 @@
 package org.col.es;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
+import java.util.zip.InflaterInputStream;
 
 import com.fasterxml.jackson.databind.ObjectReader;
 
@@ -59,7 +62,8 @@ class NameSearchResponseTransfer {
    * @return
    */
   public List<EsNameUsage> getDocuments() {
-    return esRresponse.getHits().getHits()
+    return esRresponse.getHits()
+        .getHits()
         .stream()
         .map(SearchHit::getSource)
         .collect(Collectors.toList());
@@ -71,7 +75,15 @@ class NameSearchResponseTransfer {
     ObjectReader reader = EsModule.NAME_USAGE_READER;
     for (SearchHit<EsNameUsage> hit : hits) {
       String payload = hit.getSource().getPayload();
-      NameUsageWrapper nuw = (NameUsageWrapper) reader.readValue(payload);
+      NameUsageWrapper nuw;
+      if (NameUsageTransfer.ZIP_PAYLOAD) {
+        byte[] bytes = Base64.getDecoder().decode(payload.getBytes());
+        ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
+        InflaterInputStream iis = new InflaterInputStream(bais);
+        nuw = (NameUsageWrapper) reader.readValue(iis);
+      } else {
+        nuw = (NameUsageWrapper) reader.readValue(payload);
+      }
       NameUsageTransfer.enrichPayload(nuw, hit.getSource());
       nuws.add(nuw);
     }
