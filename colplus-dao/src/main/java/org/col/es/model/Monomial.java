@@ -3,18 +3,24 @@ package org.col.es.model;
 import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import org.col.es.annotations.MapToType;
 import org.col.es.mapping.ESDataType;
 import org.gbif.nameparser.api.Rank;
 
+/**
+ * A simple rank-name tuple. When indexing NameUsages the SimpleName instance that constitute the taxon's/synonym's classification are split
+ * into a list of taxon/synonym ids on the one hand and a list of monomials on the other. This allows for fast retrieval by id, because no
+ * nested query on subdocuments is necessary this way.
+ */
 public class Monomial {
 
   private Rank rank;
   private String name;
 
   @JsonCreator
-  public Monomial(Rank rank, String name) {
+  public Monomial(@JsonProperty("rank") Rank rank, @JsonProperty("name") String name) {
     this.rank = rank;
     this.name = name;
   }

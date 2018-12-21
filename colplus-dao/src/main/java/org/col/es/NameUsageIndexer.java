@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
 
 import static org.col.es.EsConfig.DEFAULT_TYPE_NAME;
 
-public class NameUsageIndexer implements Consumer<List<NameUsageWrapper>> {
+class NameUsageIndexer implements Consumer<List<NameUsageWrapper>> {
 
   private static final Logger LOG = LoggerFactory.getLogger(NameUsageIndexer.class);
 
@@ -25,20 +25,16 @@ public class NameUsageIndexer implements Consumer<List<NameUsageWrapper>> {
 
   private int indexed = 0;
 
-  public NameUsageIndexer(RestClient client, String index) {
+  NameUsageIndexer(RestClient client, String index) {
     this.client = client;
     this.index = index;
   }
 
   @Override
   public void accept(List<NameUsageWrapper> batch) {
-    indexBatch(batch);
-  }
-
-  public int indexBatch(List<NameUsageWrapper> batch) {
     if (batch.size() == 0) {
-      LOG.warn("Ignoring empty batch of name usages");
-      return 0;
+      LOG.info("Ignoring empty batch of name usages");
+      return;
     }
     NameUsageTransfer transfer = new NameUsageTransfer();
     ObjectWriter writer = EsModule.writerFor(EsNameUsage.class);
@@ -57,7 +53,6 @@ public class NameUsageIndexer implements Consumer<List<NameUsageWrapper>> {
       Response response = EsUtil.executeRequest(client, request);
       LOG.debug("Successfully inserted {} name usages into index {}", batch.size(), index);
       indexed += batch.size(); // TODO Inspect response and get number of documents actually indexed
-      return batch.size();
     } catch (Throwable t) {
       throw Exceptions.asRuntimeException(t);
     }
@@ -68,7 +63,7 @@ public class NameUsageIndexer implements Consumer<List<NameUsageWrapper>> {
    * 
    * @return
    */
-  public RestClient getRestClient() {
+  RestClient getEsClient() {
     return client;
   }
 
@@ -77,7 +72,7 @@ public class NameUsageIndexer implements Consumer<List<NameUsageWrapper>> {
    * 
    * @return
    */
-  public String getIndexName() {
+  String getIndexName() {
     return index;
   }
 
@@ -86,7 +81,7 @@ public class NameUsageIndexer implements Consumer<List<NameUsageWrapper>> {
    * 
    * @return
    */
-  public int documentsIndexed() {
+  int documentsIndexed() {
     return indexed;
   }
 

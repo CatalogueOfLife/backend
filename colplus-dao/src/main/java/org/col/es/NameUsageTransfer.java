@@ -207,9 +207,10 @@ public class NameUsageTransfer {
 
   private static void saveClassification(NameUsageWrapper from, EsNameUsage to) {
     if (notEmpty(from.getClassification())) {
-      List<String> higherTaxonIds = new ArrayList<>(from.getClassification().size());
-      List<Monomial> monomials = new ArrayList<>(from.getClassification().size());
-      for (int i = 0; i < from.getClassification().size(); i++) {
+      // NB last element is the taxon itsef; couldn't figure out the SQL to exclude it
+      List<String> higherTaxonIds = new ArrayList<>(from.getClassification().size() - 1);
+      List<Monomial> monomials = new ArrayList<>(from.getClassification().size() - 1);
+      for (int i = 0; i < from.getClassification().size() - 1; i++) {
         SimpleName sn = from.getClassification().get(i);
         higherTaxonIds.add(sn.getId());
         monomials.add(new Monomial(sn.getRank(), sn.getName()));

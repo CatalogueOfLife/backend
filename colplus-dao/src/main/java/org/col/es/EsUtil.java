@@ -88,7 +88,7 @@ public class EsUtil {
   }
 
   public static int deleteDataset(RestClient client, String indexName, int datasetKey) {
-    LOG.info("Deleting all documents from dataset {} !", datasetKey);
+    LOG.info("Deleting all documents from dataset {}", datasetKey);
     String url = String.format("%s/%s/_delete_by_query", indexName, EsConfig.DEFAULT_TYPE_NAME);
     Request request = new Request("POST", url);
     EsSearchRequest query = new EsSearchRequest();

@@ -47,7 +47,9 @@ public class NameUsageMapperTreeTest extends MapperTestBase<NameUsageMapper> {
         assertEquals(URI.create("http://myspace.com"), t.getDatasetUrl());
         if (t.getId().equals("t1")) {
           assertNull(t.getParentId());
-          assertTrue(obj.getClassification().isEmpty());
+          // Not true any longer; see NameUsafeTransfer.saveClassification
+          //assertTrue(obj.getClassification().isEmpty());
+          assertEquals(1,obj.getClassification().size());
         } else {
           assertNotNull(t.getParentId());
           assertFalse(obj.getClassification().isEmpty());

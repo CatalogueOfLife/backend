@@ -1,8 +1,10 @@
 package org.col.es;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import org.col.api.model.SimpleName;
 import org.col.api.model.Synonym;
@@ -15,64 +17,87 @@ import org.col.es.query.EsSearchRequest;
 import org.col.es.query.SortField;
 import org.col.es.query.TermQuery;
 import org.col.es.query.TermsQuery;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static java.util.stream.Collectors.toMap;
 
-public class SynonymBatchProcessor {
+/**
+ * Collects synonyms retrieved from Postgres until a trashold is reached and then enriches them with classifications before insert them into
+ * Elasticsearch.
+ */
+class SynonymBatchProcessor implements Consumer<List<NameUsageWrapper>>, AutoCloseable {
+
+  @SuppressWarnings("unused")
+  private static final Logger LOG = LoggerFactory.getLogger(SynonymBatchProcessor.class);
 
   /*
    * 655536 is the absolute maximum number of terms in a terms query, but that may take up too much memory.
    */
-  private static final int LOOKUP_BATCH_SIZE = 4096;
+  private static final int LOOKUP_BATCH_SIZE = 8192;
 
   private final NameUsageIndexer indexer;
-  private final String datasetKey;
+  private final int datasetKey;
 
   private final List<String> taxonIds = new ArrayList<>(LOOKUP_BATCH_SIZE);
-  // Assume 3 synonyms per accepted name
-  private final List<NameUsageWrapper> collected = new ArrayList<>(LOOKUP_BATCH_SIZE * 3);
+  private final List<NameUsageWrapper> collected = new ArrayList<>(LOOKUP_BATCH_SIZE);
 
   private String prevTaxonId = "";
-
-  public SynonymBatchProcessor(NameUsageIndexer indexer, String datasetKey) {
+  
+  SynonymBatchProcessor(NameUsageIndexer indexer, int datasetKey) {
     this.indexer = indexer;
     this.datasetKey = datasetKey;
   }
 
-  public void addBatch(List<NameUsageWrapper> batch) {
-    for (NameUsageWrapper nuw : batch) {
-      collected.add(nuw);
-      String taxonId = ((Synonym) nuw.getUsage()).getAccepted().getId();
-      if (taxonId.equals(prevTaxonId)) {
-        continue;
+  @Override
+  public void accept(List<NameUsageWrapper> batch) {
+    try {
+      for (NameUsageWrapper nuw : batch) {
+        collected.add(nuw);
+        String taxonId = ((Synonym) nuw.getUsage()).getAccepted().getId();
+        if (taxonId.equals(prevTaxonId)) {
+          // Assumption: synonyms ordered by accepted name id
+          continue;
+        }
+        taxonIds.add(taxonId);
+        if (taxonIds.size() == LOOKUP_BATCH_SIZE) {
+          flush();
+        }
       }
-      taxonIds.add(taxonId);
-      if (taxonIds.size() == LOOKUP_BATCH_SIZE) {
-        flush();
-      }
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
   }
 
-  private void flush() {
+  @Override
+  public void close() throws Exception {
+    if (collected.size() != 0) {
+      flush();
+    }
+  }
+
+  private void flush() throws IOException {
     EsSearchRequest query = createQuery();
-    NameUsageSearchService svc = new NameUsageSearchService(indexer.getRestClient());
-    List<EsNameUsage> docs = svc.getDocuments(query);
-    Map<String, List<SimpleName>> lookupTable = docs
+    NameUsageSearchService svc = new NameUsageSearchService(indexer.getEsClient());
+    List<EsNameUsage> docs = svc.getDocuments(indexer.getIndexName(), query);
+    // Create a lookup table mapping taxon ids to classifications.
+    Map<String, List<SimpleName>> lookups = docs
         .stream()
         .collect(toMap(EsNameUsage::getUsageId, NameUsageTransfer::extractClassifiction));
     collected.forEach(nuw -> {
       String taxonId = ((Synonym) nuw.getUsage()).getAccepted().getId();
-      nuw.setClassification(lookupTable.get(taxonId));
+      nuw.setClassification(lookups.get(taxonId));
     });
-    indexer.indexBatch(collected);
+    indexer.accept(collected);
     taxonIds.clear();
     collected.clear();
+    prevTaxonId = "";
   }
 
   private EsSearchRequest createQuery() {
     BoolQuery query = new BoolQuery()
         .filter(new TermQuery("datasetKey", datasetKey))
-        .filter(new TermsQuery("taxonId", taxonIds));
+        .filter(new TermsQuery("usageId", taxonIds));
     EsSearchRequest esr = EsSearchRequest.emptyRequest();
     esr.setQuery(new ConstantScoreQuery(query));
     esr.setSort(CollapsibleList.of(SortField.DOC));
