@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectReader;
 
@@ -38,14 +39,12 @@ import static org.col.api.search.NameSearchParameter.TYPE;
 class NameSearchResponseTransfer {
 
   private final EsNameSearchResponse esRresponse;
-  private final Page page;
 
-  NameSearchResponseTransfer(EsNameSearchResponse response, Page page) {
+  NameSearchResponseTransfer(EsNameSearchResponse response) {
     this.esRresponse = response;
-    this.page = page;
   }
 
-  public NameSearchResponse transferResponse() throws IOException {
+  public NameSearchResponse transferResponse(Page page) throws IOException {
     int total = esRresponse.getHits().getTotal();
     List<NameUsageWrapper> nameUsages = transferNameUsages();
     if (esRresponse.getAggregations() == null) {
@@ -54,17 +53,29 @@ class NameSearchResponseTransfer {
     return new NameSearchResponse(page, total, nameUsages, transferFacets());
   }
 
+  /**
+   * Returns the raw Elasticsearch documents, not transformed yet into NameUsageWrapper instances.
+   * 
+   * @return
+   */
+  public List<EsNameUsage> getDocuments() {
+    return esRresponse.getHits().getHits()
+        .stream()
+        .map(SearchHit::getSource)
+        .collect(Collectors.toList());
+  }
+
   private List<NameUsageWrapper> transferNameUsages() throws IOException {
     List<SearchHit<EsNameUsage>> hits = esRresponse.getHits().getHits();
-    List<NameUsageWrapper> nus = new ArrayList<>(hits.size());
+    List<NameUsageWrapper> nuws = new ArrayList<>(hits.size());
     ObjectReader reader = EsModule.NAME_USAGE_READER;
     for (SearchHit<EsNameUsage> hit : hits) {
       String payload = hit.getSource().getPayload();
-      NameUsageWrapper nu = (NameUsageWrapper) reader.readValue(payload);
-      NameUsageTransfer.enrichPayload(nu, hit.getSource());
-      nus.add(nu);
+      NameUsageWrapper nuw = (NameUsageWrapper) reader.readValue(payload);
+      NameUsageTransfer.enrichPayload(nuw, hit.getSource());
+      nuws.add(nuw);
     }
-    return nus;
+    return nuws;
   }
 
   private Map<NameSearchParameter, Set<FacetValue<?>>> transferFacets() {

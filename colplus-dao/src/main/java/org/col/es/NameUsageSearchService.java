@@ -1,6 +1,7 @@
 package org.col.es;
 
 import java.io.IOException;
+import java.util.List;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectWriter;
@@ -9,6 +10,7 @@ import com.google.common.annotations.VisibleForTesting;
 import org.col.api.model.Page;
 import org.col.api.search.NameSearchRequest;
 import org.col.api.search.NameSearchResponse;
+import org.col.es.model.EsNameUsage;
 import org.col.es.query.EsSearchRequest;
 import org.col.es.response.EsNameSearchResponse;
 import org.col.es.translate.NameSearchRequestTranslator;
@@ -31,9 +33,30 @@ public class NameUsageSearchService {
     this.client = client;
   }
 
+  /**
+   * Converts the Elasticsearh response coming back from the query into an API object (NameSearchResponse).
+   * 
+   * @param query
+   * @param page
+   * @return
+   */
   public NameSearchResponse search(NameSearchRequest query, Page page) {
     try {
       return search(NAME_USAGE_BASE, query, page);
+    } catch (IOException e) {
+      throw new EsException(e);
+    }
+  }
+
+  /**
+   * Returns the raw Elasticsearch documents matching the specified query.
+   * 
+   * @param query
+   * @return
+   */
+  public List<EsNameUsage> getDocuments(EsSearchRequest query) {
+    try {
+      return getDocuments(NAME_USAGE_BASE, query);
     } catch (IOException e) {
       throw new EsException(e);
     }
@@ -48,6 +71,19 @@ public class NameUsageSearchService {
 
   @VisibleForTesting
   NameSearchResponse search(String index, EsSearchRequest esQuery, Page page) throws IOException {
+    EsNameSearchResponse esResponse = executeSearchRequest(index, esQuery);
+    NameSearchResponseTransfer transfer = new NameSearchResponseTransfer(esResponse);
+    return transfer.transferResponse(page);
+  }
+
+  @VisibleForTesting
+  List<EsNameUsage> getDocuments(String index, EsSearchRequest query) throws IOException {
+    EsNameSearchResponse esResponse = executeSearchRequest(index, query);
+    NameSearchResponseTransfer transfer = new NameSearchResponseTransfer(esResponse);
+    return transfer.getDocuments();
+  }
+
+  private EsNameSearchResponse executeSearchRequest(String index, EsSearchRequest esQuery) throws JsonProcessingException, IOException {
     if (LOG.isDebugEnabled()) {
       LOG.debug("Executing query: " + writeQuery(esQuery, true));
     }
@@ -56,8 +92,7 @@ public class NameUsageSearchService {
     Response httpResponse = EsUtil.executeRequest(client, httpRequest);
     EsNameSearchResponseReader reader = new EsNameSearchResponseReader(httpResponse);
     EsNameSearchResponse esResponse = reader.readHttpResponse();
-    NameSearchResponseTransfer transfer = new NameSearchResponseTransfer(esResponse, page);
-    return transfer.transferResponse();
+    return esResponse;
   }
 
   private static String writeQuery(EsSearchRequest query, boolean pretty) throws JsonProcessingException {

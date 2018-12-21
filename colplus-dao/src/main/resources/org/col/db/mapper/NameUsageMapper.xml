@@ -96,6 +96,7 @@
         FROM <include refid="org.col.db.mapper.SynonymMapper.FROM"/>
             LEFT JOIN verbatim v ON v.dataset_key = n.dataset_key AND v.key=n.verbatim_key
         WHERE s.dataset_key = #{datasetKey}
+        ORDER BY s.taxon_id
     </select>
 
     <select id="processDatasetBareNames" parameterType="map" resultMap="bareNameResultMap" resultOrdered="true"

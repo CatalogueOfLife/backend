@@ -44,13 +44,13 @@ public class EsUtilTest extends EsReadTestBase {
     EsUtil.createIndex(client, indexName, getEsConfig().nameUsage);
     // Insert 3 documents (overwriting dataset key to know values)
     NameUsageTransfer transfer = new NameUsageTransfer();
-    EsNameUsage enu = transfer.toEsDocument(TestEntityGenerator.newNameUsageTaxonWrapper());
+    EsNameUsage enu = transfer.toDocument(TestEntityGenerator.newNameUsageTaxonWrapper());
     enu.setDatasetKey(1);
     insert(client, indexName, enu);
-    enu = transfer.toEsDocument(TestEntityGenerator.newNameUsageSynonymWrapper());
+    enu = transfer.toDocument(TestEntityGenerator.newNameUsageSynonymWrapper());
     enu.setDatasetKey(1);
     insert(client, indexName, enu);
-    enu = transfer.toEsDocument(TestEntityGenerator.newNameUsageBareNameWrapper());
+    enu = transfer.toDocument(TestEntityGenerator.newNameUsageBareNameWrapper());
     enu.setDatasetKey(2);
     insert(client, indexName, enu);
     refreshIndex(client, indexName);

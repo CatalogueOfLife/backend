@@ -61,13 +61,33 @@ public class NameUsageTransfer {
   }
 
   /**
+   * Extracts the classification from the Elasticsearch document.
+   * 
+   * @param enu
+   * @return
+   */
+  public static List<SimpleName> extractClassifiction(EsNameUsage enu) {
+    if (enu.getHigherNameIds() == null) {
+      return null;
+    }
+    List<String> ids = enu.getHigherNameIds();
+    List<Monomial> names = enu.getHigherNames();
+    List<SimpleName> classification = new ArrayList<>(ids.size());
+    for (int i = 0; i < enu.getHigherNameIds().size(); i++) {
+      SimpleName sn = new SimpleName(ids.get(i), names.get(i).getName(), names.get(i).getRank());
+      classification.add(sn);
+    }
+    return classification;
+  }
+
+  /**
    * Nullifies fields in the NameUsageWrapper object that are already indexed separately so as to make the payload (and the entire document)
    * as small as possible and to cut down as much as possible on JSON processing. It's not necessary (and we don't) prune away everything
    * that can be pruned away, as long as this method mirrors enrichPayload().
    * 
    * @param nuw
    */
-  private static void prunePayload(NameUsageWrapper nuw) {
+  static void prunePayload(NameUsageWrapper nuw) {
     nuw.getUsage().setId(null);
     nuw.getUsage().getName().setDatasetKey(null);
     nuw.getUsage().getName().setId(null);
@@ -85,7 +105,7 @@ public class NameUsageTransfer {
    * @param nuw
    * @param enu
    */
-  public static void enrichPayload(NameUsageWrapper nuw, EsNameUsage enu) {
+  static void enrichPayload(NameUsageWrapper nuw, EsNameUsage enu) {
     nuw.getUsage().setId(enu.getUsageId());
     nuw.getUsage().getName().setDatasetKey(enu.getDatasetKey());
     nuw.getUsage().getName().setId(enu.getNameId());
@@ -97,8 +117,7 @@ public class NameUsageTransfer {
     loadClassification(enu, nuw);
   }
 
-  EsNameUsage toEsDocument(NameUsageWrapper nuw) throws JsonProcessingException {
-
+  EsNameUsage toDocument(NameUsageWrapper nuw) throws JsonProcessingException {
     EsNameUsage enu = new EsNameUsage();
     if (notEmpty(nuw.getVernacularNames())) {
       List<String> names = nuw.getVernacularNames()
@@ -183,14 +202,7 @@ public class NameUsageTransfer {
   }
 
   private static void loadClassification(EsNameUsage from, NameUsageWrapper into) {
-    if (from.getHigherNameIds() != null) {
-      List<SimpleName> classification = new ArrayList<>(from.getHigherNameIds().size());
-      for (int i = 0; i < from.getHigherNameIds().size(); i++) {
-        Monomial m = from.getHigherNames().get(i);
-        classification.add(new SimpleName(from.getHigherNameIds().get(i), m.getName(), m.getRank()));
-      }
-      into.setClassification(classification);
-    }
+    into.setClassification(extractClassifiction(from));
   }
 
   private static void saveClassification(NameUsageWrapper from, EsNameUsage to) {

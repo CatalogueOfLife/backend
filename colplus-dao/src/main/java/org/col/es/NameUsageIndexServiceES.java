@@ -1,8 +1,6 @@
 package org.col.es;
 
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
 
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.annotations.VisibleForTesting;
@@ -16,7 +14,6 @@ import org.col.db.mapper.NameUsageMapper;
 import org.col.es.model.EsNameUsage;
 import org.elasticsearch.client.Request;
 import org.elasticsearch.client.Response;
-import org.elasticsearch.client.ResponseListener;
 import org.elasticsearch.client.RestClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,23 +28,11 @@ public class NameUsageIndexServiceES implements NameUsageIndexService {
   private final RestClient client;
   private final EsConfig esConfig;
   private final SqlSessionFactory factory;
-  /*
-   * Asynchronous indexing is problematic if the rest client doesn't stick around long enough for the callbacks to be invoked (as with unit
-   * tests).
-   */
-  private final boolean async;
 
   public NameUsageIndexServiceES(RestClient client, EsConfig esConfig, SqlSessionFactory factory) {
-    this(client, esConfig, factory, false);
-  }
-
-  @VisibleForTesting
-  NameUsageIndexServiceES(RestClient client, EsConfig esConfig, SqlSessionFactory factory,
-      boolean async) {
     this.client = client;
     this.esConfig = esConfig;
     this.factory = factory;
-    this.async = async;
   }
 
   /**
@@ -63,38 +48,38 @@ public class NameUsageIndexServiceES implements NameUsageIndexService {
     } else {
       EsUtil.createIndex(client, indexName, esConfig.nameUsage);
     }
-    AtomicInteger counter = new AtomicInteger();
+    NameUsageIndexer indexer = new NameUsageIndexer(client, NAME_USAGE_BASE);
     try (SqlSession session = factory.openSession()) {
       NameUsageMapper mapper = session.getMapper(NameUsageMapper.class);
-      Consumer<List<NameUsageWrapper>> indexer = (batch) -> {
-        if (batch.size() != 0) {
-          indexBulk(indexName, batch);
-          counter.incrementAndGet();
-        }
-      };
+      // Consumer<List<NameUsageWrapper>> batchProcessor = (batch) -> {
+      // NameUsageIndexer inde = new NameUsageIndexer(client);
+      // indexBulk(indexName, batch);
+      // counter.incrementAndGet();
+      // };
+      try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<NameUsageWrapper>(indexer, batchSize)) {
+        LOG.debug("Indexing taxa into Elasticsearch");
+        mapper.processDatasetTaxa(datasetKey, handler);
+        EsUtil.refreshIndex(client, indexName);
+      }
+      // try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(batchProcessor, batchSize)) {
+      // LOG.debug("Indexing synonyms into Elasticsearch");
+      // mapper.processDatasetSynonyms(datasetKey, handler);
+      // }
       // try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(indexer, batchSize)) {
       // LOG.debug("Indexing bare names into Elasticsearch");
       // mapper.processDatasetBareNames(datasetKey, handler);
       // }
-      // try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(indexer, batchSize)) {
-      // LOG.debug("Indexing synonyms into Elasticsearch");
-      // mapper.processDatasetSynonyms(datasetKey, handler);
-      // }
-      try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(indexer, batchSize)) {
-        LOG.debug("Indexing taxa into Elasticsearch");
-        mapper.processDatasetTaxa(datasetKey, handler);
-      }
     } catch (Exception e) {
       throw new EsException(e);
     } finally {
       EsUtil.refreshIndex(client, indexName);
     }
-    LOG.info("Successfully inserted {} name usages from dataset {} into index {}", counter.get(),
+    LOG.info("Successfully inserted {} name usages from dataset {} into index {}", indexer.documentsIndexed(),
         datasetKey, indexName);
   }
 
   @VisibleForTesting
-  void indexBulk(String index, List<? extends NameUsageWrapper> usages) {
+  public void indexBulk(String index, List<? extends NameUsageWrapper> usages) {
     NameUsageTransfer transfer = new NameUsageTransfer();
     ObjectWriter writer = EsModule.writerFor(EsNameUsage.class);
     String actionMetaData = indexActionMetaData(index);
@@ -102,36 +87,16 @@ public class NameUsageIndexServiceES implements NameUsageIndexService {
     try {
       for (NameUsageWrapper nu : usages) {
         body.append(actionMetaData);
-        EsNameUsage enu = transfer.toEsDocument(nu);
+        EsNameUsage enu = transfer.toDocument(nu);
         body.append(writer.writeValueAsString(enu));
         body.append("\n");
       }
       Request request = new Request("POST", "/_bulk");
       request.setJsonEntity(body.toString());
-      if (async) {
-        executeAsync(request, index, usages.size());
-      } else {
-        execute(request, index, usages.size());
-      }
+      execute(request, index, usages.size());
     } catch (Exception e) {
       Exceptions.throwRuntime(e);
     }
-  }
-
-  private void executeAsync(Request req, String index, int size) {
-    client.performRequestAsync(req, new ResponseListener() {
-
-      @Override
-      public void onSuccess(Response response) {
-        LOG.debug("Successfully inserted {} name usages into index {}", size, index);
-      }
-
-      @Override
-      public void onFailure(Exception e) {
-        // No point in going on
-        Exceptions.throwRuntime(e);
-      }
-    });
   }
 
   private void execute(Request req, String index, int size) {

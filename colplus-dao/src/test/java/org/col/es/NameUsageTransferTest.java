@@ -12,9 +12,9 @@ public class NameUsageTransferTest {
   public void test() throws JsonProcessingException {
     // Just make sure we have no (JSON) exceptions
     NameUsageTransfer transfer = new NameUsageTransfer();
-    EsNameUsage enu1 = transfer.toEsDocument(TestEntityGenerator.newNameUsageTaxonWrapper());
-    EsNameUsage enu2 = transfer.toEsDocument(TestEntityGenerator.newNameUsageSynonymWrapper());
-    EsNameUsage enu3 = transfer.toEsDocument(TestEntityGenerator.newNameUsageBareNameWrapper());
+    EsNameUsage enu1 = transfer.toDocument(TestEntityGenerator.newNameUsageTaxonWrapper());
+    EsNameUsage enu2 = transfer.toDocument(TestEntityGenerator.newNameUsageSynonymWrapper());
+    EsNameUsage enu3 = transfer.toDocument(TestEntityGenerator.newNameUsageBareNameWrapper());
   }
 
 }
