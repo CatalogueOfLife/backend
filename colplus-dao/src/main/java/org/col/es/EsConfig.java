@@ -5,9 +5,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 public class EsConfig {
   
   /**
-   * Base name from which to construct index names for the name usage index.
+   * Name of the Elasticsearch index for name usages
    */
-  static final String NAME_USAGE_BASE = "nu";
+  static final String ES_INDEX_NAME_USAGE = "nu";
   
   /**
    * The default name of the type created within an index.

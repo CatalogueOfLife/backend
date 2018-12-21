@@ -21,7 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.col.es.EsConfig.DEFAULT_TYPE_NAME;
-import static org.col.es.EsConfig.NAME_USAGE_BASE;;
+import static org.col.es.EsConfig.ES_INDEX_NAME_USAGE;;
 
 public class NameUsageSearchService {
 
@@ -42,7 +42,7 @@ public class NameUsageSearchService {
    */
   public NameSearchResponse search(NameSearchRequest query, Page page) {
     try {
-      return search(NAME_USAGE_BASE, query, page);
+      return search(ES_INDEX_NAME_USAGE, query, page);
     } catch (IOException e) {
       throw new EsException(e);
     }
@@ -56,7 +56,7 @@ public class NameUsageSearchService {
    */
   public List<EsNameUsage> getDocuments(EsSearchRequest query) {
     try {
-      return getDocuments(NAME_USAGE_BASE, query);
+      return getDocuments(ES_INDEX_NAME_USAGE, query);
     } catch (IOException e) {
       throw new EsException(e);
     }

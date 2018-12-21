@@ -19,7 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.col.es.EsConfig.DEFAULT_TYPE_NAME;
-import static org.col.es.EsConfig.NAME_USAGE_BASE;
+import static org.col.es.EsConfig.ES_INDEX_NAME_USAGE;
 
 public class NameUsageIndexServiceES implements NameUsageIndexService {
 
@@ -39,24 +39,18 @@ public class NameUsageIndexServiceES implements NameUsageIndexService {
    * Main method to index an entire dataset from postgres into ElasticSearch using the bulk API.
    */
   @Override
-  public void indexDataset(final int datasetKey) {
-    final String indexName = NAME_USAGE_BASE;
-    final int batchSize = esConfig.nameUsage.batchSize;
+  public void indexDataset(int datasetKey) {
+    final String indexName = ES_INDEX_NAME_USAGE;
     if (EsUtil.indexExists(client, indexName)) {
       EsUtil.deleteDataset(client, indexName, datasetKey);
       EsUtil.refreshIndex(client, indexName);
     } else {
       EsUtil.createIndex(client, indexName, esConfig.nameUsage);
     }
-    NameUsageIndexer indexer = new NameUsageIndexer(client, NAME_USAGE_BASE);
+    NameUsageIndexer indexer = new NameUsageIndexer(client, indexName);
     try (SqlSession session = factory.openSession()) {
       NameUsageMapper mapper = session.getMapper(NameUsageMapper.class);
-      // Consumer<List<NameUsageWrapper>> batchProcessor = (batch) -> {
-      // NameUsageIndexer inde = new NameUsageIndexer(client);
-      // indexBulk(indexName, batch);
-      // counter.incrementAndGet();
-      // };
-      try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<NameUsageWrapper>(indexer, batchSize)) {
+      try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<NameUsageWrapper>(indexer, 1024)) {
         LOG.debug("Indexing taxa into Elasticsearch");
         mapper.processDatasetTaxa(datasetKey, handler);
         EsUtil.refreshIndex(client, indexName);

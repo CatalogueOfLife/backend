@@ -35,7 +35,7 @@ public class NameUsageIndexer implements Consumer<List<NameUsageWrapper>> {
     indexBatch(batch);
   }
 
-  public int indexBatch(List<? extends NameUsageWrapper> batch) {
+  public int indexBatch(List<NameUsageWrapper> batch) {
     if (batch.size() == 0) {
       LOG.warn("Ignoring empty batch of name usages");
       return 0;
@@ -61,6 +61,24 @@ public class NameUsageIndexer implements Consumer<List<NameUsageWrapper>> {
     } catch (Throwable t) {
       throw Exceptions.asRuntimeException(t);
     }
+  }
+
+  /**
+   * Returns the Elasticsearc client used to connect to the Elasticsearch server.
+   * 
+   * @return
+   */
+  public RestClient getRestClient() {
+    return client;
+  }
+
+  /**
+   * Returns the name of the index that this NameUsageIndexer inserts into.
+   * 
+   * @return
+   */
+  public String getIndexName() {
+    return index;
   }
 
   /**
