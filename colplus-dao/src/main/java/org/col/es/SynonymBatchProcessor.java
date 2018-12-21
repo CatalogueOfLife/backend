@@ -43,7 +43,7 @@ class SynonymBatchProcessor implements Consumer<List<NameUsageWrapper>>, AutoClo
   private final List<NameUsageWrapper> collected = new ArrayList<>(LOOKUP_BATCH_SIZE);
 
   private String prevTaxonId = "";
-  
+
   SynonymBatchProcessor(NameUsageIndexer indexer, int datasetKey) {
     this.indexer = indexer;
     this.datasetKey = datasetKey;
@@ -59,6 +59,7 @@ class SynonymBatchProcessor implements Consumer<List<NameUsageWrapper>>, AutoClo
           // Assumption: synonyms ordered by accepted name id
           continue;
         }
+        prevTaxonId = taxonId;
         taxonIds.add(taxonId);
         if (taxonIds.size() == LOOKUP_BATCH_SIZE) {
           flush();
