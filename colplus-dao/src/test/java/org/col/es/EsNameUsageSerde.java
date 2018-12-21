@@ -102,8 +102,8 @@ public class EsNameUsageSerde extends EsReadTestBase {
     enuIn.setType(NameType.SCIENTIFIC);
     enuIn.setVernacularNames(Arrays.asList("Apple tree"));
 
-    String json = getEsConfig().nameUsage.getDocumentWriter().withDefaultPrettyPrinter().writeValueAsString(enuIn);
-    EsNameUsage enuOut = getEsConfig().nameUsage.getDocumentReader().readValue(json);
+    String json = EsModule.writerFor(EsNameUsage.class).withDefaultPrettyPrinter().writeValueAsString(enuIn);
+    EsNameUsage enuOut = EsModule.readerFor(EsNameUsage.class).readValue(json);
     assertEquals(enuIn, enuOut);
 
     NameUsageWrapper nuw = PAYLOAD_READER.readValue(enuOut.getPayload()); 
@@ -128,10 +128,10 @@ public class EsNameUsageSerde extends EsReadTestBase {
     enuIn.setType(NameType.SCIENTIFIC);
     enuIn.setVernacularNames(Arrays.asList("Apple tree"));
 
-    String json = getEsConfig().nameUsage.getDocumentWriter().writeValueAsString(enuIn);
+    String json = EsModule.writerFor(EsNameUsage.class).writeValueAsString(enuIn);
     LOG.debug(json);
 
-    EsNameUsage enuOut = getEsConfig().nameUsage.getDocumentReader().readValue(json);
+    EsNameUsage enuOut = EsModule.readerFor(EsNameUsage.class).readValue(json);
     assertEquals(enuIn, enuOut);
 
     NameUsageWrapper nuw = PAYLOAD_READER.readValue(enuOut.getPayload());

@@ -67,14 +67,13 @@ public class NameUsageTransfer {
    * 
    * @param nuw
    */
-  public static void prunePayload(NameUsageWrapper nuw) {
+  private static void prunePayload(NameUsageWrapper nuw) {
     nuw.getUsage().setId(null);
     nuw.getUsage().getName().setDatasetKey(null);
     nuw.getUsage().getName().setId(null);
     nuw.getUsage().getName().setIndexNameId(null);
     nuw.getUsage().getName().setNomStatus(null);
     nuw.getUsage().getName().setPublishedInId(null);
-    nuw.getUsage().getName().setRank(null);
     nuw.getUsage().getName().setType(null);
     nuw.setIssues(null);
     nuw.setClassification(null);
@@ -93,7 +92,6 @@ public class NameUsageTransfer {
     nuw.getUsage().getName().setIndexNameId(enu.getIndexNameId());
     nuw.getUsage().getName().setNomStatus(enu.getNomStatus());
     nuw.getUsage().getName().setPublishedInId(enu.getPublishedInId());
-    nuw.getUsage().getName().setRank(enu.getRank());
     nuw.getUsage().getName().setType(enu.getType());
     nuw.setIssues(enu.getIssues());
     loadClassification(enu, nuw);
@@ -132,7 +130,7 @@ public class NameUsageTransfer {
     enu.setStatus(nuw.getUsage().getStatus());
     enu.setUsageId(nuw.getUsage().getId());
     enu.setType(name.getType());
-    enu.setNameFields(getNonNullNameFields(nuw.getUsage().getName()));
+    enu.setNameFields(getNonNullNameFields(name));
     prunePayload(nuw);
     enu.setPayload(EsModule.NAME_USAGE_WRITER.writeValueAsString(nuw));
     return enu;

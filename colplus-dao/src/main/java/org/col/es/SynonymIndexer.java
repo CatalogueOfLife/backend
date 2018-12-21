@@ -17,6 +17,7 @@ import org.col.es.query.TermsQuery;
 public class SynonymIndexer {
 
   private final String datasetKey;
+  
 
   public SynonymIndexer(String datasetKey) {
     this.datasetKey = datasetKey;

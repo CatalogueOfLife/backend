@@ -26,7 +26,6 @@ import static org.col.es.EsConfig.NAME_USAGE_BASE;
 
 public class NameUsageIndexServiceES implements NameUsageIndexService {
 
-
   private static final Logger LOG = LoggerFactory.getLogger(NameUsageIndexServiceES.class);
 
   private final RestClient client;
@@ -37,8 +36,6 @@ public class NameUsageIndexServiceES implements NameUsageIndexService {
    * tests).
    */
   private final boolean async;
-  private final NameUsageTransfer transfer;
-  private final ObjectWriter writer;
 
   public NameUsageIndexServiceES(RestClient client, EsConfig esConfig, SqlSessionFactory factory) {
     this(client, esConfig, factory, false);
@@ -51,8 +48,6 @@ public class NameUsageIndexServiceES implements NameUsageIndexService {
     this.esConfig = esConfig;
     this.factory = factory;
     this.async = async;
-    this.transfer = new NameUsageTransfer();
-    this.writer = esConfig.nameUsage.getDocumentWriter();
   }
 
   /**
@@ -74,7 +69,7 @@ public class NameUsageIndexServiceES implements NameUsageIndexService {
       Consumer<List<NameUsageWrapper>> indexer = (batch) -> {
         if (batch.size() != 0) {
           indexBulk(indexName, batch);
-          counter.addAndGet(batch.size());
+          counter.incrementAndGet();
         }
       };
       // try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(indexer, batchSize)) {
@@ -100,8 +95,10 @@ public class NameUsageIndexServiceES implements NameUsageIndexService {
 
   @VisibleForTesting
   void indexBulk(String index, List<? extends NameUsageWrapper> usages) {
+    NameUsageTransfer transfer = new NameUsageTransfer();
+    ObjectWriter writer = EsModule.writerFor(EsNameUsage.class);
     String actionMetaData = indexActionMetaData(index);
-    StringBuilder body = new StringBuilder();
+    StringBuilder body = new StringBuilder(2 << 16);
     try {
       for (NameUsageWrapper nu : usages) {
         body.append(actionMetaData);
@@ -137,8 +134,8 @@ public class NameUsageIndexServiceES implements NameUsageIndexService {
     });
   }
 
-  private void execute(Request req, String index, int size) {   
-    @SuppressWarnings("unused") // One day retrieve errors from response
+  private void execute(Request req, String index, int size) {
+    @SuppressWarnings("unused") // Retrieve errors/warnings from response
     Response response = EsUtil.executeRequest(client, req);
     LOG.debug("Successfully inserted {} name usages into index {}", size, index);
   }

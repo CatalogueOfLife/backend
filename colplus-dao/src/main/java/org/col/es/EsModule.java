@@ -29,11 +29,20 @@ public class EsModule extends SimpleModule {
 
   public static final ObjectMapper MAPPER = configureMapper(new ObjectMapper());
 
-  public static final ObjectWriter QUERY_WRITER = MAPPER.writerFor(EsSearchRequest.class);
+  /*
+   * Define frequently used readers and writer
+   */
+  public static final ObjectWriter QUERY_WRITER = writerFor(EsSearchRequest.class);
+  public static final ObjectWriter NAME_USAGE_WRITER = writerFor(NameUsageWrapper.class);
+  public static final ObjectReader NAME_USAGE_READER = readerFor(NameUsageWrapper.class);
 
-  public static final ObjectWriter NAME_USAGE_WRITER = MAPPER.writerFor(NameUsageWrapper.class);
+  public static ObjectReader readerFor(Class<?> c) {
+    return MAPPER.readerFor(c);
+  }
 
-  public static final ObjectReader NAME_USAGE_READER = MAPPER.readerFor(NameUsageWrapper.class);
+  public static ObjectWriter writerFor(Class<?> c) {
+    return MAPPER.writerFor(c);
+  }
 
   public static ObjectMapper configureMapper(ObjectMapper mapper) {
     mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
