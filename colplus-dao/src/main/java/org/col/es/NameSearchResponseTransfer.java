@@ -2,6 +2,7 @@ package org.col.es;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.EnumMap;
@@ -77,10 +78,7 @@ class NameSearchResponseTransfer {
       String payload = hit.getSource().getPayload();
       NameUsageWrapper nuw;
       if (NameUsageTransfer.ZIP_PAYLOAD) {
-        byte[] bytes = Base64.getDecoder().decode(payload.getBytes());
-        ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
-        InflaterInputStream iis = new InflaterInputStream(bais);
-        nuw = (NameUsageWrapper) reader.readValue(iis);
+        nuw = (NameUsageWrapper) reader.readValue(inflate(payload));
       } else {
         nuw = (NameUsageWrapper) reader.readValue(payload);
       }
@@ -144,6 +142,13 @@ class NameSearchResponseTransfer {
         .stream()
         .map(b -> FacetValue.forEnum(enumClass, b.getKey(), b.getDocCount()))
         .collect(TreeSet::new, TreeSet::add, TreeSet::addAll);
+  }
+
+  private static InputStream inflate(String payload) {
+    byte[] bytes = Base64.getDecoder().decode(payload.getBytes());
+    ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
+    InflaterInputStream iis = new InflaterInputStream(bais);
+    return iis;
   }
 
 }

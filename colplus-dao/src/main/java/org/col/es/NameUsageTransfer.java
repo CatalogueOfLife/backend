@@ -79,10 +79,11 @@ public class NameUsageTransfer {
       return null;
     }
     List<String> ids = enu.getHigherNameIds();
-    List<Monomial> names = enu.getHigherNames();
+    List<Monomial> monomials = enu.getHigherNames();
     List<SimpleName> classification = new ArrayList<>(ids.size());
     for (int i = 0; i < enu.getHigherNameIds().size(); i++) {
-      SimpleName sn = new SimpleName(ids.get(i), names.get(i).getName(), names.get(i).getRank());
+      Monomial monomial = monomials.get(i);
+      SimpleName sn = new SimpleName(ids.get(i), monomial.getName(), monomial.getRank());
       classification.add(sn);
     }
     return classification;
@@ -160,11 +161,7 @@ public class NameUsageTransfer {
     enu.setNameFields(getNonNullNameFields(name));
     prunePayload(nuw);
     if (ZIP_PAYLOAD) {
-      ByteArrayOutputStream baos = new ByteArrayOutputStream(1024);
-      DeflaterOutputStream dos = new DeflaterOutputStream(baos);
-      EsModule.NAME_USAGE_WRITER.writeValue(dos, nuw);
-      dos.close();
-      enu.setPayload(Base64.getEncoder().encodeToString(baos.toByteArray()));
+      enu.setPayload(deflate(nuw));
     } else {
       enu.setPayload(EsModule.NAME_USAGE_WRITER.writeValueAsString(nuw));
     }
@@ -217,13 +214,25 @@ public class NameUsageTransfer {
     }
   }
 
+  /*
+   * Deflates and base64 encodes the stringified NameUsageWrapper. NB you can't store raw byte arrays in Elasticsearch. You must base64
+   * encode them.
+   */
+  private static String deflate(NameUsageWrapper nuw) throws IOException {
+    ByteArrayOutputStream baos = new ByteArrayOutputStream(1024);
+    DeflaterOutputStream dos = new DeflaterOutputStream(baos);
+    EsModule.NAME_USAGE_WRITER.writeValue(dos, nuw);
+    dos.close();
+    return Base64.getEncoder().encodeToString(baos.toByteArray());
+  }
+
   private static void loadClassification(EsNameUsage from, NameUsageWrapper into) {
     into.setClassification(extractClassifiction(from));
   }
 
   private static void saveClassification(NameUsageWrapper from, EsNameUsage to) {
     if (notEmpty(from.getClassification())) {
-      // NB last element is the taxon itsef; couldn't figure out the SQL to exclude it
+      // NB last element is the taxon itself; couldn't figure out the SQL to exclude it
       List<String> higherTaxonIds = new ArrayList<>(from.getClassification().size() - 1);
       List<Monomial> monomials = new ArrayList<>(from.getClassification().size() - 1);
       for (int i = 0; i < from.getClassification().size() - 1; i++) {

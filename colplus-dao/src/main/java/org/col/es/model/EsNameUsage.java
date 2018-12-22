@@ -18,14 +18,17 @@ import org.gbif.nameparser.api.Rank;
 import static org.col.es.annotations.Analyzer.AUTO_COMPLETE;
 import static org.col.es.annotations.Analyzer.IGNORE_CASE;
 
+/**
+ * Class modeling the Elasticsearch document type used to store NameUsageWrapper instances.
+ */
 public class EsNameUsage {
 
   private String usageId;
   private Integer datasetKey;
   /*
-   * A Weakly Normalized version of the original scientific name, used for auto-completion purposes. What weak and strong normalization
+   * A Weakly normalized version of the original scientific name, used for auto-completion purposes. What weak and strong normalization
    * exactly is, is left intentionally vague, so we have room to experiment and fine-tune. The only requirement is that the same
-   * normalization method be used at index and query time, and that two different weakly normalized names may become when same strongly
+   * normalization method be used at index and query time, and that two different weakly normalized names may have the same strongly
    * normalized name, but two different strongly normalized names must also have two weakly normalized names. See NameUsageTransfer for the
    * actual implementations of weak and strong normalization.
    */
@@ -45,13 +48,7 @@ public class EsNameUsage {
   private TaxonomicStatus status;
   private Set<Issue> issues;
   private List<String> vernacularNames;
-  /*
-   * We store the IDs of the higher taxa separately from the monomials. This allows for fast retrieval by ID, because we don't need nested
-   * queries if the IDs are stored separately. In addition, if you have a query condition on the ID field, it hardly ever makes sense to
-   * have any other query condition. We do, however, wrap rank and name in a separate object, because here combining the two fields in an
-   * AND query could possibly make sense, thus necessitating a nested query.
-   */
-  private List<String> higherNameIds;
+  private List<String> higherNameIds; // Store IDs and monomials separately. See Monomial class.
   private List<Monomial> higherNames;
   private String payload; // The entire NameUsageWrapper object, serialized to a string
 
@@ -221,7 +218,8 @@ public class EsNameUsage {
         && Objects.equals(publishedInId, that.publishedInId) && rank == that.rank && type == that.type && nomStatus == that.nomStatus
         && Objects.equals(nameFields, that.nameFields) && status == that.status
         && Objects.equals(issues, that.issues) && Objects.equals(payload, that.payload)
-        && Objects.equals(higherNameIds, that.higherNameIds);
+        && Objects.equals(higherNameIds, that.higherNameIds)
+        && Objects.equals(higherNames, that.higherNames);
   }
 
   @Override

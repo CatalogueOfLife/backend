@@ -5,7 +5,6 @@ import java.util.List;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectWriter;
-import com.google.common.annotations.VisibleForTesting;
 
 import org.col.api.model.Page;
 import org.col.api.search.NameSearchRequest;
@@ -49,7 +48,8 @@ public class NameUsageSearchService {
   }
 
   /**
-   * Returns the raw Elasticsearch documents matching the specified query.
+   * Returns the raw Elasticsearch documents matching the specified query (with payloads still pruned and zipped). Useful if you're only
+   * interested in one (or more) of the indexed fields.
    * 
    * @param query
    * @return
@@ -62,21 +62,18 @@ public class NameUsageSearchService {
     }
   }
 
-  @VisibleForTesting
   NameSearchResponse search(String index, NameSearchRequest query, Page page) throws IOException {
     NameSearchRequestTranslator translator = new NameSearchRequestTranslator(query, page);
     EsSearchRequest esSearchRequest = translator.translate();
     return search(index, esSearchRequest, page);
   }
 
-  @VisibleForTesting
   NameSearchResponse search(String index, EsSearchRequest esQuery, Page page) throws IOException {
     EsNameSearchResponse esResponse = executeSearchRequest(index, esQuery);
     NameSearchResponseTransfer transfer = new NameSearchResponseTransfer(esResponse);
     return transfer.transferResponse(page);
   }
 
-  @VisibleForTesting
   List<EsNameUsage> getDocuments(String index, EsSearchRequest query) throws IOException {
     EsNameSearchResponse esResponse = executeSearchRequest(index, query);
     NameSearchResponseTransfer transfer = new NameSearchResponseTransfer(esResponse);

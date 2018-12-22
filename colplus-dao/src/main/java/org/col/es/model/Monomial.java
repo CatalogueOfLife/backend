@@ -10,9 +10,11 @@ import org.col.es.mapping.ESDataType;
 import org.gbif.nameparser.api.Rank;
 
 /**
- * A simple rank-name tuple. When indexing NameUsages the SimpleName instance that constitute the taxon's/synonym's classification are split
- * into a list of taxon/synonym ids on the one hand and a list of monomials on the other. This allows for fast retrieval by id, because no
- * nested query on subdocuments is necessary this way.
+ * A simple rank-name tuple. When indexing NameUsages the SimpleName instances that constitute the taxon's/synonym's classification are
+ * split into a list of taxon/synonym ids on the one hand and a list of monomials on the other. This allows for fast retrieval by id,
+ * because no nested query on subdocuments is necessary this way. In addition, if you have a query condition on the "primary key" field (the
+ * taxon ID), it hardly ever makes sense to have any other query condition. We do, however, wrap rank and name into a separate object,
+ * because here combining the two fields in an AND query could possibly make sense, thus necessitating a nested query.
  */
 public class Monomial {
 

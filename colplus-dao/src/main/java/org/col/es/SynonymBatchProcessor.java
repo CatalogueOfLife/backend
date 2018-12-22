@@ -78,11 +78,8 @@ class SynonymBatchProcessor implements Consumer<List<NameUsageWrapper>>, AutoClo
   }
 
   private void flush() throws IOException {
-    EsSearchRequest query = createQuery();
-    NameUsageSearchService svc = new NameUsageSearchService(indexer.getEsClient());
-    List<EsNameUsage> docs = svc.getDocuments(indexer.getIndexName(), query);
     // Create a lookup table mapping taxon ids to classifications.
-    Map<String, List<SimpleName>> lookups = docs
+    Map<String, List<SimpleName>> lookups = loadTaxa()
         .stream()
         .collect(toMap(EsNameUsage::getUsageId, NameUsageTransfer::extractClassifiction));
     collected.forEach(nuw -> {
@@ -95,7 +92,8 @@ class SynonymBatchProcessor implements Consumer<List<NameUsageWrapper>>, AutoClo
     prevTaxonId = "";
   }
 
-  private EsSearchRequest createQuery() {
+  private List<EsNameUsage> loadTaxa() throws IOException {
+    NameUsageSearchService svc = new NameUsageSearchService(indexer.getEsClient());
     BoolQuery query = new BoolQuery()
         .filter(new TermQuery("datasetKey", datasetKey))
         .filter(new TermsQuery("usageId", taxonIds));
@@ -103,7 +101,7 @@ class SynonymBatchProcessor implements Consumer<List<NameUsageWrapper>>, AutoClo
     esr.setQuery(new ConstantScoreQuery(query));
     esr.setSort(CollapsibleList.of(SortField.DOC));
     esr.setSize(LOOKUP_BATCH_SIZE);
-    return esr;
+    return svc.getDocuments(indexer.getIndexName(), esr);
   }
 
 }
