@@ -19,23 +19,41 @@ public class EsSearchRequest {
     return new EsSearchRequest();
   }
 
-  private Integer size;
-
-  private Integer from;
-
-  private List<SortField> sort;
-
+  @JsonProperty("_source")
+  private List<String> select;
   private Query query;
-
   @JsonProperty("aggs")
   private Map<String, Aggregation> aggregations;
+  private List<SortField> sort;
+  private Integer size;
+  private Integer from;
 
-  public Integer getSize() {
-    return size;
+  public void select(String... fields) {
+    select = CollapsibleList.of(fields);
   }
 
-  public void setSize(Integer size) {
-    this.size = size;
+  public List<String> getSelect() {
+    return select;
+  }
+
+  public void setSelect(List<String> select) {
+    this.select = select;
+  }
+
+  public Query getQuery() {
+    return query;
+  }
+
+  public void setQuery(Query query) {
+    this.query = query;
+  }
+
+  public Map<String, Aggregation> getAggregations() {
+    return aggregations;
+  }
+
+  public void setAggregations(Map<String, Aggregation> aggregations) {
+    this.aggregations = aggregations;
   }
 
   public Integer getFrom() {
@@ -54,20 +72,12 @@ public class EsSearchRequest {
     this.sort = sort;
   }
 
-  public Query getQuery() {
-    return query;
+  public Integer getSize() {
+    return size;
   }
 
-  public void setQuery(Query query) {
-    this.query = query;
-  }
-
-  public Map<String, Aggregation> getAggregations() {
-    return aggregations;
-  }
-
-  public void setAggregations(Map<String, Aggregation> aggregations) {
-    this.aggregations = aggregations;
+  public void setSize(Integer size) {
+    this.size = size;
   }
 
 }

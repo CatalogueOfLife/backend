@@ -48,9 +48,9 @@ public class EsNameUsage {
   private TaxonomicStatus status;
   private Set<Issue> issues;
   private List<String> vernacularNames;
-  private List<String> higherNameIds; // Store IDs and monomials separately. See Monomial class.
+  private List<String> higherNameIds;
   private List<Monomial> higherNames;
-  private String payload; // The entire NameUsageWrapper object, serialized to a string
+  private String payload;
 
   public String getUsageId() {
     return usageId;

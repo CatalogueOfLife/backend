@@ -12,8 +12,6 @@ import org.col.es.query.BoolQuery;
 import org.col.es.query.CaseInsensitivePrefixQuery;
 import org.col.es.query.Query;
 
-import static java.util.Arrays.asList;
-
 import static org.col.api.search.NameSearchRequest.SearchContent.AUTHORSHIP;
 import static org.col.api.search.NameSearchRequest.SearchContent.VERNACULAR_NAME;
 import static org.col.common.util.CollectionUtils.isEmpty;
@@ -43,65 +41,57 @@ class QTranslator {
     if (isEmpty(content)) {
       content = EnumSet.allOf(SearchContent.class);
     }
-    List<Query> subqueries = content.stream()
-        .map(this::translate)
-        .collect(ArrayList::new, ArrayList::addAll, ArrayList::addAll);
+    List<Query> subqueries = new ArrayList<>(4);
+    content.forEach(sc -> translate(subqueries, sc));
     if (subqueries.size() == 1) {
       return subqueries.get(0);
     }
-    return subqueries.stream().collect(BoolQuery::new, BoolQuery::should, BoolQuery::should);
+    BoolQuery query = new BoolQuery();
+    subqueries.forEach(query::should);
+    return query;
   }
 
-  private List<Query> translate(SearchContent sc) {
+  private void translate(List<Query> subqueries, SearchContent sc) {
     // Either an AutoCompleteQuery or a CaseInsensitivePrefixQuery is going to be executed. Both use lowercasing tokenizers.
     String q = request.getQ().toLowerCase();
     if (sc == AUTHORSHIP) {
-      if (q.length() <= MAX_NGRAM_SIZE) {
-        return asList(new AutoCompleteQuery("authorship", q, AUTHORSHIP_BOOST));
-      }
-      return asList(new CaseInsensitivePrefixQuery("authorship", q, AUTHORSHIP_BOOST));
+      subqueries.add(subquery("authorship", q, AUTHORSHIP_BOOST));
+    } else if (sc == VERNACULAR_NAME) {
+      subqueries.add(subquery("vernacularNames", q, VERNACULAR_BOOST));
+    } else {
+      addSciNameQuery(subqueries, q);
     }
-    if (sc == VERNACULAR_NAME) {
-      if (q.length() <= MAX_NGRAM_SIZE) {
-        return asList(new AutoCompleteQuery("vernacularNames", q, VERNACULAR_BOOST));
-      }
-      return asList(new CaseInsensitivePrefixQuery("vernacularNames", q, VERNACULAR_BOOST));
-    }
-    return getSciNameQuery(q);
   }
 
   /*
-   * A match between a weakly normalized q and the weakly normalized scientific name in a name usage document must always rate at least as
-   * high as a match between a strongly normalized q and the strongly normalized scientific name. The former implies the latter, but not
-   * vice versa. Multiple weakly normalized strings lead to the same strongly normalized string, but not vice versa. However, as the user
-   * types more letters, the difference in the ratings should decrease: to assume the user means "ra" when he/she types "rus" is an
-   * aggressive interpretation. But to assume the user means "lara fusca" (strongly normalized version of Larus fuscus) when he types
-   * "Larus fusca" is not. Thus, keeping the boost for the weakly normalized match at the default boost, the boost for the strongly
-   * normalized match should start out lower and approach it as the length of the search string increases.
+   * A match between a weakly normalized q and the weakly normalized scientific name in a name usage document should probably always rate at
+   * least as high as a match between a strongly normalized q and the strongly normalized scientific name. To assume the user means "ra"
+   * when he/she types "rus" is an aggressive interpretation. But to assume the user means "lara fusca" (strongly normalized version of
+   * Larus fuscus) when he types "Larus fusca" is not. Thus, keeping the boost for the weakly normalized match at the default boost, the
+   * boost for the strongly normalized match should start out lower and approach it as the length of the search string increases.
    */
-  private static List<Query> getSciNameQuery(String q) {
+  private static void addSciNameQuery(List<Query> subqueries, String q) {
     String weaklyNormed = normalizeWeakly(q);
     String stronglyNormed = normalizeStrongly(q);
-    int len = q.length();
     if (weaklyNormed.equals(stronglyNormed)) {
-      if (len <= MAX_NGRAM_SIZE) {
-        return asList(new AutoCompleteQuery("scientificNameWN", weaklyNormed, SCI_NAME_BOOST));
-      }
-      return asList(new CaseInsensitivePrefixQuery("scientificNameWN", weaklyNormed, SCI_NAME_BOOST));
+      subqueries.add(subquery("scientificNameWN", weaklyNormed, SCI_NAME_BOOST));
+    } else {
+      int len = q.length();
+      // Determines how fast boost for strongly normalized matches creaps towards boost for weakly normalized matches
+      int accelerator = 2;
+      // Determines how far boost for strongly normalized matches may exceed boost for weakly normalized matches (possibly negative)
+      float overshoot = 0;
+      float strongBoost = Math.min(SCI_NAME_BOOST + overshoot, ((len + accelerator) / SCI_NAME_BOOST));
+      subqueries.add(subquery("scientificNameWN", weaklyNormed, SCI_NAME_BOOST));
+      subqueries.add(subquery("scientificNameSN", stronglyNormed, strongBoost));
     }
-    // Determines how fast boost for strongly normalized matches creaps towards boost for weakly normalized matches
-    int accelerator = 2;
-    // Determines how far boost for strongly normalized matches may exceed boost for weakly normalized matches (possibly negative)
-    float overshoot = 0;
-    float strongBoost = Math.min(SCI_NAME_BOOST + overshoot, ((len + accelerator) / SCI_NAME_BOOST));
-    if (len <= MAX_NGRAM_SIZE) {
-      return asList(
-          new AutoCompleteQuery("scientificNameWN", weaklyNormed, SCI_NAME_BOOST),
-          new AutoCompleteQuery("scientificNameSN", stronglyNormed, strongBoost));
+  }
+
+  private static Query subquery(String field, String value, float boost) {
+    if (value.length() < MAX_NGRAM_SIZE) {
+      return new AutoCompleteQuery(field, value, boost);
     }
-    return asList(
-        new CaseInsensitivePrefixQuery("scientificNameWN", weaklyNormed, SCI_NAME_BOOST),
-        new CaseInsensitivePrefixQuery("scientificNameSN", stronglyNormed, strongBoost));
+    return new CaseInsensitivePrefixQuery(field, value, boost);
   }
 
 }

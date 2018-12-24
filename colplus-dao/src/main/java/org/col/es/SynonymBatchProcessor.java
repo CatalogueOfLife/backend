@@ -12,7 +12,6 @@ import org.col.api.search.NameUsageWrapper;
 import org.col.es.model.EsNameUsage;
 import org.col.es.query.BoolQuery;
 import org.col.es.query.CollapsibleList;
-import org.col.es.query.ConstantScoreQuery;
 import org.col.es.query.EsSearchRequest;
 import org.col.es.query.SortField;
 import org.col.es.query.TermQuery;
@@ -23,7 +22,7 @@ import org.slf4j.LoggerFactory;
 import static java.util.stream.Collectors.toMap;
 
 /**
- * Collects synonyms retrieved from Postgres until a trashold is reached and then enriches them with classifications before insert them into
+ * Collects synonyms retrieved from Postgres until a treshold is reached and then adds their classification before inserting them into
  * Elasticsearch.
  */
 class SynonymBatchProcessor implements Consumer<List<NameUsageWrapper>>, AutoCloseable {
@@ -32,15 +31,16 @@ class SynonymBatchProcessor implements Consumer<List<NameUsageWrapper>>, AutoClo
   private static final Logger LOG = LoggerFactory.getLogger(SynonymBatchProcessor.class);
 
   /*
-   * 655536 is the absolute maximum number of terms in a terms query, but that may take up too much memory.
+   * The maximum number of taxa we are going to retrieve to build an id-to-classification lookup table. NB 655536 is the absolute maximum
+   * number of terms in a terms query, but that would probably blow up the JVM.
    */
-  private static final int LOOKUP_BATCH_SIZE = 8192;
+  private static final int LOOKUP_TABLE_SIZE = 8192;
 
   private final NameUsageIndexer indexer;
   private final int datasetKey;
 
-  private final List<String> taxonIds = new ArrayList<>(LOOKUP_BATCH_SIZE);
-  private final List<NameUsageWrapper> collected = new ArrayList<>(LOOKUP_BATCH_SIZE);
+  private final List<String> taxonIds = new ArrayList<>(LOOKUP_TABLE_SIZE);
+  private final List<NameUsageWrapper> collected = new ArrayList<>(LOOKUP_TABLE_SIZE);
 
   private String prevTaxonId = "";
 
@@ -61,7 +61,7 @@ class SynonymBatchProcessor implements Consumer<List<NameUsageWrapper>>, AutoClo
         }
         prevTaxonId = taxonId;
         taxonIds.add(taxonId);
-        if (taxonIds.size() == LOOKUP_BATCH_SIZE) {
+        if (taxonIds.size() == LOOKUP_TABLE_SIZE) {
           flush();
         }
       }
@@ -98,9 +98,11 @@ class SynonymBatchProcessor implements Consumer<List<NameUsageWrapper>>, AutoClo
         .filter(new TermQuery("datasetKey", datasetKey))
         .filter(new TermsQuery("usageId", taxonIds));
     EsSearchRequest esr = EsSearchRequest.emptyRequest();
-    esr.setQuery(new ConstantScoreQuery(query));
+    // Keep memory footprint of lookup table as small as possible:
+    esr.select("usageId", "higherNameIds", "higherNames");
+    esr.setQuery(query);
     esr.setSort(CollapsibleList.of(SortField.DOC));
-    esr.setSize(LOOKUP_BATCH_SIZE);
+    esr.setSize(LOOKUP_TABLE_SIZE);
     return svc.getDocuments(indexer.getIndexName(), esr);
   }
 

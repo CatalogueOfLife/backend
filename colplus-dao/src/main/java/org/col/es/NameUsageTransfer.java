@@ -82,8 +82,8 @@ public class NameUsageTransfer {
     List<Monomial> monomials = enu.getHigherNames();
     List<SimpleName> classification = new ArrayList<>(ids.size());
     for (int i = 0; i < enu.getHigherNameIds().size(); i++) {
-      Monomial monomial = monomials.get(i);
-      SimpleName sn = new SimpleName(ids.get(i), monomial.getName(), monomial.getRank());
+      Monomial m = monomials.get(i);
+      SimpleName sn = new SimpleName(ids.get(i), m.getName(), m.getRank());
       classification.add(sn);
     }
     return classification;
@@ -91,8 +91,8 @@ public class NameUsageTransfer {
 
   /**
    * Nullifies fields in the NameUsageWrapper object that are already indexed separately so as to make the payload (and the entire document)
-   * as small as possible and to cut down as much as possible on JSON processing. It's not necessary (and we don't) prune away everything
-   * that can be pruned away, as long as this method mirrors enrichPayload().
+   * as small as possible and to cut down as much as possible on JSON processing. It's not necessary to prune away everything that can be
+   * pruned away, as long as this method mirrors enrichPayload().
    * 
    * @param nuw
    */
@@ -123,9 +123,16 @@ public class NameUsageTransfer {
     nuw.getUsage().getName().setPublishedInId(enu.getPublishedInId());
     nuw.getUsage().getName().setType(enu.getType());
     nuw.setIssues(enu.getIssues());
-    loadClassification(enu, nuw);
+    nuw.setClassification(extractClassifiction(enu));
   }
 
+  /**
+   * Converts a NameUsageWrapper to an Elasticsearch document. Main method of this class.
+   * 
+   * @param nuw
+   * @return
+   * @throws IOException
+   */
   EsNameUsage toDocument(NameUsageWrapper nuw) throws IOException {
     EsNameUsage enu = new EsNameUsage();
     if (notEmpty(nuw.getVernacularNames())) {
@@ -149,8 +156,8 @@ public class NameUsageTransfer {
     String s = normalizeStrongly(name.getScientificName());
     enu.setScientificNameWN(w);
     /*
-     * Don't waste time indexing the same ngram tokens twice for every document. Only index the strongly normalized variant if it differs
-     * from the weakly normalized variant. This if-logic is replicated at query time (see QTranslator).
+     * Don't waste time indexing the same ngram tokens twice. Only index the strongly normalized variant if it differs from the weakly
+     * normalized variant. This if-logic is replicated at query time (see QTranslator).
      */
     if (!w.equals(s)) {
       enu.setScientificNameSN(s);
@@ -226,22 +233,18 @@ public class NameUsageTransfer {
     return Base64.getEncoder().encodeToString(baos.toByteArray());
   }
 
-  private static void loadClassification(EsNameUsage from, NameUsageWrapper into) {
-    into.setClassification(extractClassifiction(from));
-  }
-
   private static void saveClassification(NameUsageWrapper from, EsNameUsage to) {
     if (notEmpty(from.getClassification())) {
       // NB last element is the taxon itself; couldn't figure out the SQL to exclude it
-      List<String> higherTaxonIds = new ArrayList<>(from.getClassification().size() - 1);
+      List<String> higherNameIds = new ArrayList<>(from.getClassification().size() - 1);
       List<Monomial> monomials = new ArrayList<>(from.getClassification().size() - 1);
       for (int i = 0; i < from.getClassification().size() - 1; i++) {
         SimpleName sn = from.getClassification().get(i);
-        higherTaxonIds.add(sn.getId());
+        higherNameIds.add(sn.getId());
         monomials.add(new Monomial(sn.getRank(), sn.getName()));
       }
       to.setHigherNames(monomials);
-      to.setHigherNameIds(higherTaxonIds);
+      to.setHigherNameIds(higherNameIds);
     }
   }
 

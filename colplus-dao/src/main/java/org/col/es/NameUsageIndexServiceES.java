@@ -41,18 +41,18 @@ public class NameUsageIndexServiceES implements NameUsageIndexService {
     NameUsageIndexer indexer = new NameUsageIndexer(client, indexName);
     try (SqlSession session = factory.openSession()) {
       NameUsageMapper mapper = session.getMapper(NameUsageMapper.class);
-      try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<NameUsageWrapper>(indexer, 4096)) {
+      try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<NameUsageWrapper>(indexer, 1024)) {
         LOG.debug("Indexing taxa into Elasticsearch");
         mapper.processDatasetTaxa(datasetKey, handler);
       }
       EsUtil.refreshIndex(client, indexName);
       try (SynonymBatchProcessor sbp = new SynonymBatchProcessor(indexer, datasetKey)) {
-        try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<NameUsageWrapper>(sbp, 4096)) {
+        try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<NameUsageWrapper>(sbp, 1024)) {
           LOG.debug("Indexing synonyms into Elasticsearch");
           mapper.processDatasetSynonyms(datasetKey, handler);
         }
       }
-      try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(indexer, 4096)) {
+      try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(indexer, 1024)) {
         LOG.debug("Indexing bare names into Elasticsearch");
         mapper.processDatasetBareNames(datasetKey, handler);
       }

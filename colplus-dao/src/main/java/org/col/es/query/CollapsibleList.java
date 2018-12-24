@@ -21,6 +21,11 @@ public class CollapsibleList<E> extends ArrayList<E> {
     return new CollapsibleList<>(Arrays.asList(one, two));
   }
 
+  @SuppressWarnings("unchecked")
+  public static <T> CollapsibleList<T> of(T... items) {
+    return new CollapsibleList<>(Arrays.asList(items));
+  }
+
   public CollapsibleList() {
     super();
   }

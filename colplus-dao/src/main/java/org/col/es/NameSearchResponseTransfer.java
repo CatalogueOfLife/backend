@@ -48,7 +48,14 @@ class NameSearchResponseTransfer {
     this.esRresponse = response;
   }
 
-  public NameSearchResponse transferResponse(Page page) throws IOException {
+  /**
+   * Converts the Elasticsearch response into an API object (NameSearchResponse).
+   * 
+   * @param page
+   * @return
+   * @throws IOException
+   */
+  NameSearchResponse transferResponse(Page page) throws IOException {
     int total = esRresponse.getHits().getTotal();
     List<NameUsageWrapper> nameUsages = transferNameUsages();
     if (esRresponse.getAggregations() == null) {
@@ -58,11 +65,12 @@ class NameSearchResponseTransfer {
   }
 
   /**
-   * Returns the raw Elasticsearch documents, not transformed yet into NameUsageWrapper instances.
+   * Returns the raw Elasticsearch documents, not transformed yet into NameUsageWrapper instances. The payload is not unzipped (if zipping
+   * is enabled). Useful and fast if you're only interested in the indexed fields.
    * 
    * @return
    */
-  public List<EsNameUsage> getDocuments() {
+  List<EsNameUsage> getDocuments() {
     return esRresponse.getHits()
         .getHits()
         .stream()
@@ -147,8 +155,7 @@ class NameSearchResponseTransfer {
   private static InputStream inflate(String payload) {
     byte[] bytes = Base64.getDecoder().decode(payload.getBytes());
     ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
-    InflaterInputStream iis = new InflaterInputStream(bais);
-    return iis;
+    return new InflaterInputStream(bais);
   }
 
 }
