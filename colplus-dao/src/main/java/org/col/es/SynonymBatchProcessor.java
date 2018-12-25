@@ -2,8 +2,8 @@ package org.col.es;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Consumer;
 
 import org.col.api.model.SimpleName;
@@ -18,8 +18,6 @@ import org.col.es.query.TermQuery;
 import org.col.es.query.TermsQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static java.util.stream.Collectors.toMap;
 
 /**
  * Collects synonyms retrieved from Postgres until a treshold is reached and then adds their classification before inserting them into
@@ -78,14 +76,20 @@ class SynonymBatchProcessor implements Consumer<List<NameUsageWrapper>>, AutoClo
   }
 
   private void flush() throws IOException {
-    // Create a lookup table mapping taxon ids to classifications.
-    Map<String, List<SimpleName>> lookups = loadTaxa()
-        .stream()
-        .collect(toMap(EsNameUsage::getUsageId, NameUsageTransfer::extractClassifiction));
+    LOG.debug("Loading taxa");
+    List<EsNameUsage> taxa = loadTaxa();
+    LOG.debug("Creating taxon lookup table");
+    HashMap<String, List<SimpleName>> lookups = toMap(taxa);
+    LOG.debug("Copying classifications");
     collected.forEach(nuw -> {
       String taxonId = ((Synonym) nuw.getUsage()).getAccepted().getId();
-      nuw.setClassification(lookups.get(taxonId));
+      List<SimpleName> classification = lookups.get(taxonId);
+      if (classification == null) { // Bad situation
+        LOG.error("No taxon found for synonym ID {}", nuw.getUsage().getId());
+      }
+      nuw.setClassification(classification);
     });
+    LOG.debug("Submitting {} synonyms to indexer", collected.size());
     indexer.accept(collected);
     taxonIds.clear();
     collected.clear();
@@ -102,8 +106,16 @@ class SynonymBatchProcessor implements Consumer<List<NameUsageWrapper>>, AutoClo
     esr.select("usageId", "higherNameIds", "higherNames");
     esr.setQuery(query);
     esr.setSort(CollapsibleList.of(SortField.DOC));
-    esr.setSize(LOOKUP_TABLE_SIZE);
+    esr.setSize(taxonIds.size());
     return svc.getDocuments(indexer.getIndexName(), esr);
+  }
+
+  // Collectors.toMap very inefficient for large tables in Java 8
+  private static HashMap<String, List<SimpleName>> toMap(List<EsNameUsage> taxa) {
+    // Expect hardly any hash collisions for taxon IDs
+    HashMap<String, List<SimpleName>> map = new HashMap<>(taxa.size(), 1F);
+    taxa.forEach(enu -> map.put(enu.getUsageId(), NameUsageTransfer.extractClassifiction(enu)));
+    return map;
   }
 
 }

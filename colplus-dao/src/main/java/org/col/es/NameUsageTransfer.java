@@ -227,9 +227,9 @@ public class NameUsageTransfer {
    */
   private static String deflate(NameUsageWrapper nuw) throws IOException {
     ByteArrayOutputStream baos = new ByteArrayOutputStream(1024);
-    DeflaterOutputStream dos = new DeflaterOutputStream(baos);
-    EsModule.NAME_USAGE_WRITER.writeValue(dos, nuw);
-    dos.close();
+    try (DeflaterOutputStream dos = new DeflaterOutputStream(baos)) {
+      EsModule.NAME_USAGE_WRITER.writeValue(dos, nuw);
+    }
     return Base64.getEncoder().encodeToString(baos.toByteArray());
   }
 

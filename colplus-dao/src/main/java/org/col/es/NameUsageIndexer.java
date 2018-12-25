@@ -19,6 +19,7 @@ import static org.col.es.EsConfig.DEFAULT_TYPE_NAME;
 class NameUsageIndexer implements Consumer<List<NameUsageWrapper>> {
 
   private static final Logger LOG = LoggerFactory.getLogger(NameUsageIndexer.class);
+  private static final ObjectWriter writer = EsModule.writerFor(EsNameUsage.class);
 
   private final RestClient client;
   private final String index;
@@ -37,9 +38,8 @@ class NameUsageIndexer implements Consumer<List<NameUsageWrapper>> {
       return;
     }
     NameUsageTransfer transfer = new NameUsageTransfer();
-    ObjectWriter writer = EsModule.writerFor(EsNameUsage.class);
     String actionMetaData = metadata();
-    StringBuilder body = new StringBuilder(2 << 16);
+    StringBuilder body = new StringBuilder(2 << 16); // 64KB
     try {
       for (NameUsageWrapper nuw : batch) {
         body.append(actionMetaData);

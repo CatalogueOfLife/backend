@@ -27,7 +27,9 @@ public class NameSearchRequestTranslator {
     }
     Query filters = new FiltersTranslator(request).translate();
     Query q = new QTranslator(request).translate();
-    return new BoolQuery().filter(filters).filter(q);
+    return new BoolQuery()
+        .filter(filters) // non-scoring
+        .must(q); // scoring
   }
 
   private final NameSearchRequest request;

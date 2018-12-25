@@ -84,7 +84,7 @@ public class NameUsageSearchService {
     if (LOG.isDebugEnabled()) {
       LOG.debug("Executing query: " + writeQuery(esQuery, true));
     }
-    Request httpRequest = new Request("GET", getUrl(index));
+    Request httpRequest = new Request("GET", endpoint(index));
     httpRequest.setJsonEntity(writeQuery(esQuery, false));
     Response httpResponse = EsUtil.executeRequest(client, httpRequest);
     EsNameSearchResponseReader reader = new EsNameSearchResponseReader(httpResponse);
@@ -100,7 +100,7 @@ public class NameUsageSearchService {
     return ow.writeValueAsString(query);
   }
 
-  private static String getUrl(String indexName) {
+  private static String endpoint(String indexName) {
     return String.format("/%s/%s/_search", indexName, DEFAULT_TYPE_NAME);
   }
 }

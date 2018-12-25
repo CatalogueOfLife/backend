@@ -8,7 +8,6 @@ import org.col.api.search.NameSearchParameter;
 import org.col.api.search.NameSearchRequest;
 import org.col.es.InvalidQueryException;
 import org.col.es.query.BoolQuery;
-import org.col.es.query.ConstantScoreQuery;
 import org.col.es.query.IsNotNullQuery;
 import org.col.es.query.IsNullQuery;
 import org.col.es.query.Query;
@@ -46,17 +45,19 @@ class FilterTranslator {
     } else if (paramValues.size() > 1) {
       queries.add(new TermsQuery(field, paramValues));
     }
-    Query combined;
     if (queries.size() == 1) {
-      combined = queries.get(0);
-    } else {
-      combined = queries.stream().collect(BoolQuery::new, BoolQuery::should, BoolQuery::should);
+      return queries.get(0);
     }
-    return new ConstantScoreQuery(combined);
+    BoolQuery combined = new BoolQuery();
+    queries.forEach(combined::should);
+    return combined;
   }
 
   private List<?> getLiteralValues(NameSearchParameter param) throws InvalidQueryException {
-    return request.getFilterValue(param).stream().filter(this::isLiteral).collect(Collectors.toList());
+    return request.getFilterValue(param)
+        .stream()
+        .filter(this::isLiteral)
+        .collect(Collectors.toList());
   }
 
   private boolean isLiteral(Object o) {
