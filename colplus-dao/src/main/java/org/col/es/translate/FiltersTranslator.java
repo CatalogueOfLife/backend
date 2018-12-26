@@ -30,9 +30,9 @@ class FiltersTranslator {
     if (params.size() == 1) {
       return params.stream().map(ft::translate).findFirst().get();
     }
-    BoolQuery combined = new BoolQuery();
-    params.stream().map(ft::translate).forEach(combined::filter);
-    return combined;
+    BoolQuery query = new BoolQuery();
+    params.stream().map(ft::translate).forEach(query::filter);
+    return query;
   }
 
 }

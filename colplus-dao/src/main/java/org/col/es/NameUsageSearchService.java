@@ -49,7 +49,7 @@ public class NameUsageSearchService {
 
   /**
    * Returns the raw Elasticsearch documents matching the specified query (with payloads still pruned and zipped). Useful if you're only
-   * interested in one (or more) of the indexed fields.
+   * interested in the indexed fields.
    * 
    * @param query
    * @return

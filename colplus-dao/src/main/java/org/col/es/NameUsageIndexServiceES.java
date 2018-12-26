@@ -58,9 +58,8 @@ public class NameUsageIndexServiceES implements NameUsageIndexService {
       }
     } catch (Throwable t) {
       throw Exceptions.asRuntimeException(t);
-    } finally {
-      EsUtil.refreshIndex(client, indexName);
     }
+    EsUtil.refreshIndex(client, indexName);
     LOG.info("Successfully inserted {} name usages from dataset {} into index {}", indexer.documentsIndexed(),
         datasetKey, indexName);
   }

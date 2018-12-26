@@ -19,7 +19,7 @@ import static org.col.es.response.AggregationLabelProvider.getFacetLabel;
 import static org.col.es.translate.NameSearchRequestTranslator.generateQuery;
 
 /**
- * Translates the facet list in the NameSearchRequest object into a set of suitable aggregation. There is one edge case here, namely if
+ * Translates the facet list in the NameSearchRequest object into a set of suitable aggregations. There is one edge case here, namely if
  * there is just one facet, with or without a corresponding filter (actually with or without any filter at all). In this case the
  * aggregation can take place in the current execution context (the document set produced by the main query). However we wilfully incur some
  * performance overhead by still making it take place within a separate execution context with exactly the same query as the main query.

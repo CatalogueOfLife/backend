@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -58,10 +59,8 @@ class NameSearchResponseTransfer {
   NameSearchResponse transferResponse(Page page) throws IOException {
     int total = esRresponse.getHits().getTotal();
     List<NameUsageWrapper> nameUsages = transferNameUsages();
-    if (esRresponse.getAggregations() == null) {
-      return new NameSearchResponse(page, total, nameUsages);
-    }
-    return new NameSearchResponse(page, total, nameUsages, transferFacets());
+    Map<NameSearchParameter, Set<FacetValue<?>>> facets = transferFacets();
+    return new NameSearchResponse(page, total, nameUsages, facets);
   }
 
   /**
@@ -97,6 +96,9 @@ class NameSearchResponseTransfer {
   }
 
   private Map<NameSearchParameter, Set<FacetValue<?>>> transferFacets() {
+    if (esRresponse.getAggregations() == null) {
+      return Collections.emptyMap();
+    }
     EsFacetsContainer esFacets = esRresponse.getAggregations().getContextFilter().getFacetsContainer();
     Map<NameSearchParameter, Set<FacetValue<?>>> facets = new EnumMap<>(NameSearchParameter.class);
     addIfPresent(facets, DATASET_KEY, esFacets.getDatasetKey());

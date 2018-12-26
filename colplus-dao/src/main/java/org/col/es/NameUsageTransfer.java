@@ -41,6 +41,7 @@ import static org.col.api.vocab.NameField.SPECIFIC_EPITHET;
 import static org.col.api.vocab.NameField.STRAIN;
 import static org.col.api.vocab.NameField.UNINOMIAL;
 import static org.col.common.util.CollectionUtils.notEmpty;
+import static org.col.es.EsModule.NAME_USAGE_WRITER;
 
 /**
  * Converts NameUsageWrapper instances to EsNameUsage documents. Only a few fields are indexed. The remainder of the NameUsageWrapper is
@@ -74,7 +75,7 @@ public class NameUsageTransfer {
    * @param enu
    * @return
    */
-  public static List<SimpleName> extractClassifiction(EsNameUsage enu) {
+  static List<SimpleName> extractClassifiction(EsNameUsage enu) {
     if (enu.getHigherNameIds() == null) {
       return null;
     }
@@ -170,7 +171,7 @@ public class NameUsageTransfer {
     if (ZIP_PAYLOAD) {
       enu.setPayload(deflate(nuw));
     } else {
-      enu.setPayload(EsModule.NAME_USAGE_WRITER.writeValueAsString(nuw));
+      enu.setPayload(NAME_USAGE_WRITER.writeValueAsString(nuw));
     }
     return enu;
   }
@@ -228,7 +229,7 @@ public class NameUsageTransfer {
   private static String deflate(NameUsageWrapper nuw) throws IOException {
     ByteArrayOutputStream baos = new ByteArrayOutputStream(1024);
     try (DeflaterOutputStream dos = new DeflaterOutputStream(baos)) {
-      EsModule.NAME_USAGE_WRITER.writeValue(dos, nuw);
+      NAME_USAGE_WRITER.writeValue(dos, nuw);
     }
     return Base64.getEncoder().encodeToString(baos.toByteArray());
   }

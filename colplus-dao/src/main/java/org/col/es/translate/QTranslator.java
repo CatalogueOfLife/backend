@@ -65,10 +65,11 @@ class QTranslator {
 
   /*
    * A match between a weakly normalized q and the weakly normalized scientific name in a name usage document should probably always rate at
-   * least as high as a match between a strongly normalized q and the strongly normalized scientific name. To assume the user means "ra"
-   * when he/she types "rus" is an aggressive interpretation. But to assume the user means "lara fusca" (strongly normalized version of
-   * Larus fuscus) when he types "Larus fusca" is not. Thus, keeping the boost for the weakly normalized match at the default boost, the
-   * boost for the strongly normalized match should start out lower and approach it as the length of the search string increases.
+   * least as high as a match between a strongly normalized q and the strongly normalized scientific name. The former implies the latter,
+   * but not vice versa. However the difference should decrease as the user types more letters. To assume the user means "ra" when he/she
+   * types "rus" is an aggressive interpretation. But to assume the user means "lara fusca" (strongly normalized version of Larus fuscus)
+   * when he types "Larus fusca" is not. Thus, keeping the boost for the weakly normalized match at the default boost, the boost for the
+   * strongly normalized match should start out lower and approach it as the length of the search string increases.
    */
   private static void addSciNameQuery(List<Query> subqueries, String q) {
     String weaklyNormed = normalizeWeakly(q);
