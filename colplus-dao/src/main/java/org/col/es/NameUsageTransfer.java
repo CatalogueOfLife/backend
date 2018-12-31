@@ -76,13 +76,13 @@ public class NameUsageTransfer {
    * @return
    */
   static List<SimpleName> extractClassifiction(EsNameUsage enu) {
-    if (enu.getHigherNameIds() == null) {
+    if (enu.getClassificationIds() == null) {
       return null;
     }
-    List<String> ids = enu.getHigherNameIds();
-    List<Monomial> monomials = enu.getHigherNames();
+    List<String> ids = enu.getClassificationIds();
+    List<Monomial> monomials = enu.getClassification();
     List<SimpleName> classification = new ArrayList<>(ids.size());
-    for (int i = 0; i < enu.getHigherNameIds().size(); i++) {
+    for (int i = 0; i < enu.getClassificationIds().size(); i++) {
       Monomial m = monomials.get(i);
       SimpleName sn = new SimpleName(ids.get(i), m.getName(), m.getRank());
       classification.add(sn);
@@ -244,8 +244,8 @@ public class NameUsageTransfer {
         higherNameIds.add(sn.getId());
         monomials.add(new Monomial(sn.getRank(), sn.getName()));
       }
-      to.setHigherNames(monomials);
-      to.setHigherNameIds(higherNameIds);
+      to.setClassification(monomials);
+      to.setClassificationIds(higherNameIds);
     }
   }
 

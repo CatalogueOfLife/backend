@@ -1,12 +1,12 @@
 package org.col.es;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.function.Consumer;
 
 import com.fasterxml.jackson.databind.ObjectWriter;
 
 import org.col.api.search.NameUsageWrapper;
-import org.col.common.lang.Exceptions;
 import org.col.es.model.EsNameUsage;
 import org.elasticsearch.client.Request;
 import org.elasticsearch.client.Response;
@@ -21,14 +21,18 @@ class NameUsageIndexer implements Consumer<List<NameUsageWrapper>> {
   private static final Logger LOG = LoggerFactory.getLogger(NameUsageIndexer.class);
   private static final ObjectWriter writer = EsModule.writerFor(EsNameUsage.class);
 
+  private final StringBuilder buf = new StringBuilder(1024 * 1024);
+
   private final RestClient client;
   private final String index;
+  private final String header;
 
   private int indexed = 0;
 
   NameUsageIndexer(RestClient client, String index) {
     this.client = client;
     this.index = index;
+    this.header = getHeader();
   }
 
   @Override
@@ -37,24 +41,23 @@ class NameUsageIndexer implements Consumer<List<NameUsageWrapper>> {
       LOG.info("Ignoring empty batch of name usages");
       return;
     }
+    buf.setLength(0);
     NameUsageTransfer transfer = new NameUsageTransfer();
-    String actionMetaData = metadata();
-    StringBuilder body = new StringBuilder(2 << 16); // 64KB
     try {
       for (NameUsageWrapper nuw : batch) {
-        body.append(actionMetaData);
+        buf.append(header);
         EsNameUsage enu = transfer.toDocument(nuw);
-        body.append(writer.writeValueAsString(enu));
-        body.append("\n");
+        buf.append(writer.writeValueAsString(enu));
+        buf.append("\n");
       }
       Request request = new Request("POST", "/_bulk");
-      request.setJsonEntity(body.toString());
+      request.setJsonEntity(buf.toString());
       @SuppressWarnings("unused")
       Response response = EsUtil.executeRequest(client, request);
       LOG.debug("Successfully inserted {} name usages into index {}", batch.size(), index);
       indexed += batch.size(); // TODO Inspect response and get number of documents actually indexed
-    } catch (Throwable t) {
-      throw Exceptions.asRuntimeException(t);
+    } catch (IOException e) {
+      throw new EsException(e);
     }
   }
 
@@ -85,8 +88,8 @@ class NameUsageIndexer implements Consumer<List<NameUsageWrapper>> {
     return indexed;
   }
 
-  private String metadata() {
-    String fmt = "{ \"index\" : { \"_index\" : \"%s\", \"_type\" : \"%s\" } }%n";
+  private String getHeader() {
+    String fmt = "{\"index\":{\"_index\":\"%s\",\"_type\":\"%s\"}}%n";
     return String.format(fmt, index, DEFAULT_TYPE_NAME);
   }
 }

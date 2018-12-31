@@ -39,7 +39,7 @@ public class BatchResultHandler<T> implements ResultHandler<T>, AutoCloseable {
   }
   
   @Override
-  public void close() throws Exception {
+  public void close() {
     submit();
   }
 }

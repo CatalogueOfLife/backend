@@ -13,12 +13,14 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
+import org.col.api.jackson.TermSerde;
 import org.col.api.model.BareName;
 import org.col.api.model.NameUsage;
 import org.col.api.model.Synonym;
 import org.col.api.model.Taxon;
 import org.col.api.search.NameUsageWrapper;
 import org.col.es.query.EsSearchRequest;
+import org.gbif.dwc.terms.Term;
 
 /**
  * Jackson module to configure an object mapper to (de)serialize data stored in Elastic Search.
@@ -57,6 +59,10 @@ public class EsModule extends SimpleModule {
 
   public EsModule() {
     super("ElasticSearch");
+    addDeserializer(Term.class, new TermSerde.Deserializer());
+    addSerializer(Term.class, new TermSerde.ValueSerializer());
+    addKeyDeserializer(Term.class, new TermSerde.TermKeyDeserializer());
+    addKeySerializer(Term.class, new TermSerde.FieldSerializer());
   }
 
   @Override
@@ -72,6 +78,5 @@ public class EsModule extends SimpleModule {
       @JsonSubTypes.Type(value = Synonym.class, name = "S")})
   abstract class NameUsageMixIn {
   }
-
 
 }

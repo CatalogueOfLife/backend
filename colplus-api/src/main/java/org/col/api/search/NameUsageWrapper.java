@@ -7,14 +7,15 @@ import java.util.Set;
 
 import org.col.api.model.NameUsage;
 import org.col.api.model.SimpleName;
+import org.col.api.model.VerbatimRecord;
 import org.col.api.model.VernacularName;
 import org.col.api.vocab.Issue;
 import org.gbif.nameparser.api.Rank;
 
 public class NameUsageWrapper {
-  
+
   private NameUsage usage;
-  private Set<Issue> issues;
+  private VerbatimRecord verbatimRecord;
   private List<VernacularName> vernacularNames;
   private List<SimpleName> classification;
 
@@ -32,12 +33,25 @@ public class NameUsageWrapper {
     this.usage = usage;
   }
 
+  /*
+   * TODO remove getter/setter for issues. They are just so existing code won't break
+   */
   public Set<Issue> getIssues() {
-    return issues;
+    if (verbatimRecord == null || verbatimRecord.getIssues().isEmpty()) {
+      return null;
+    }
+    return verbatimRecord.getIssues();
   }
 
   public void setIssues(Set<Issue> issues) {
-    this.issues = issues;
+    if (issues == null || issues.isEmpty()) {
+      verbatimRecord = null;
+    } else {
+      if (verbatimRecord == null) {
+        verbatimRecord = new VerbatimRecord();
+      }
+      verbatimRecord.setIssues(issues);
+    }
   }
 
   public List<VernacularName> getVernacularNames() {
@@ -100,20 +114,22 @@ public class NameUsageWrapper {
       }
     }
   }
-  
+
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+    if (this == o)
+      return true;
+    if (o == null || getClass() != o.getClass())
+      return false;
     NameUsageWrapper that = (NameUsageWrapper) o;
     return Objects.equals(usage, that.usage) &&
-        Objects.equals(issues, that.issues) &&
+        Objects.equals(verbatimRecord, that.verbatimRecord) &&
         Objects.equals(vernacularNames, that.vernacularNames) &&
         Objects.equals(classification, that.classification);
   }
-  
+
   @Override
   public int hashCode() {
-    return Objects.hash(usage, issues, vernacularNames, classification);
+    return Objects.hash(usage, verbatimRecord, vernacularNames, classification);
   }
 }

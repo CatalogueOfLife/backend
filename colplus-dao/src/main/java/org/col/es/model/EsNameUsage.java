@@ -48,8 +48,8 @@ public class EsNameUsage {
   private TaxonomicStatus status;
   private Set<Issue> issues;
   private List<String> vernacularNames;
-  private List<String> higherNameIds;
-  private List<Monomial> higherNames;
+  private List<String> classificationIds;
+  private List<Monomial> classification;
   private String payload;
 
   public String getUsageId() {
@@ -188,20 +188,20 @@ public class EsNameUsage {
     this.payload = source;
   }
 
-  public List<String> getHigherNameIds() {
-    return higherNameIds;
+  public List<String> getClassificationIds() {
+    return classificationIds;
   }
 
-  public void setHigherNameIds(List<String> higherTaxonIds) {
-    this.higherNameIds = higherTaxonIds;
+  public void setClassificationIds(List<String> higherTaxonIds) {
+    this.classificationIds = higherTaxonIds;
   }
 
-  public List<Monomial> getHigherNames() {
-    return higherNames;
+  public List<Monomial> getClassification() {
+    return classification;
   }
 
-  public void setHigherNames(List<Monomial> monomials) {
-    this.higherNames = monomials;
+  public void setClassification(List<Monomial> monomials) {
+    this.classification = monomials;
   }
 
   @Override
@@ -218,14 +218,14 @@ public class EsNameUsage {
         && Objects.equals(publishedInId, that.publishedInId) && rank == that.rank && type == that.type && nomStatus == that.nomStatus
         && Objects.equals(nameFields, that.nameFields) && status == that.status
         && Objects.equals(issues, that.issues) && Objects.equals(payload, that.payload)
-        && Objects.equals(higherNameIds, that.higherNameIds)
-        && Objects.equals(higherNames, that.higherNames);
+        && Objects.equals(classificationIds, that.classificationIds)
+        && Objects.equals(classification, that.classification);
   }
 
   @Override
   public int hashCode() {
     return Objects.hash(usageId, scientificNameWN, authorship, vernacularNames, datasetKey, nameId, indexNameId,
-        publishedInId, rank, type, nomStatus, nameFields, status, issues, payload, higherNameIds, higherNames);
+        publishedInId, rank, type, nomStatus, nameFields, status, issues, payload, classificationIds, classification);
   }
 
 }

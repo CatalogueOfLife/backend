@@ -1,9 +1,10 @@
 package org.col.es;
 
+import java.io.IOException;
+
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.search.NameUsageWrapper;
-import org.col.common.lang.Exceptions;
 import org.col.db.mapper.BatchResultHandler;
 import org.col.db.mapper.NameUsageMapper;
 import org.elasticsearch.client.RestClient;
@@ -39,29 +40,36 @@ public class NameUsageIndexServiceES implements NameUsageIndexService {
       EsUtil.createIndex(client, indexName, esConfig.nameUsage);
     }
     NameUsageIndexer indexer = new NameUsageIndexer(client, indexName);
+    int tCount, sCount, bCount;
     try (SqlSession session = factory.openSession()) {
       NameUsageMapper mapper = session.getMapper(NameUsageMapper.class);
-      try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(indexer, 1024)) {
+      try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(indexer, 4096)) {
         LOG.debug("Indexing taxa into Elasticsearch");
         mapper.processDatasetTaxa(datasetKey, handler);
       }
+      tCount = indexer.documentsIndexed();
       EsUtil.refreshIndex(client, indexName);
-      try (SynonymBatchProcessor sbp = new SynonymBatchProcessor(indexer, datasetKey)) {
-        try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(sbp, 1024)) {
-          LOG.debug("Indexing synonyms into Elasticsearch");
-          mapper.processDatasetSynonyms(datasetKey, handler);
-        }
+      try (SynonymResultHandler handler = new SynonymResultHandler(indexer, datasetKey)) {
+        LOG.debug("Indexing synonyms into Elasticsearch");
+        mapper.processDatasetSynonyms(datasetKey, handler);
       }
-      try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(indexer, 1024)) {
+      sCount = indexer.documentsIndexed() - tCount;
+      try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(indexer, 4096)) {
         LOG.debug("Indexing bare names into Elasticsearch");
         mapper.processDatasetBareNames(datasetKey, handler);
       }
-    } catch (Throwable t) {
-      throw Exceptions.asRuntimeException(t);
+      bCount = indexer.documentsIndexed() - tCount - sCount;
+    } catch (IOException e) {
+      throw new EsException(e);
     }
     EsUtil.refreshIndex(client, indexName);
-    LOG.info("Successfully inserted {} name usages from dataset {} into index {}", indexer.documentsIndexed(),
-        datasetKey, indexName);
+    LOG.info("Successfully indexed {} taxa, {} synonyms and {} bare names (total: {}; dataset: {}; index: {})",
+        tCount,
+        sCount,
+        bCount,
+        indexer.documentsIndexed(),
+        datasetKey,
+        indexName);
   }
 
 }

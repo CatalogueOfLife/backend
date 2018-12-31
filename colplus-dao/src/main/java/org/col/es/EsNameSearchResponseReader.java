@@ -20,7 +20,7 @@ class EsNameSearchResponseReader {
 
   private static final ObjectReader RESPONSE_READER;
   private static final ObjectWriter RESPONSE_WRITER; // Only used in DEBUG mode
-  // For unit tests being being able to see the response sometimes helps, but sometimes definitely not
+  // For unit tests and debugging, being being able to see the response sometimes helps, but sometimes definitely not
   private static final boolean SUPPRESS_WRITER = true;
 
   static {
@@ -34,10 +34,9 @@ class EsNameSearchResponseReader {
     this.httpResponse = httpResponse;
   }
 
-  @SuppressWarnings("unused")
   EsNameSearchResponse readHttpResponse() throws IOException {
     EsNameSearchResponse response = RESPONSE_READER.readValue(httpResponse.getEntity().getContent());
-    if (LOG.isDebugEnabled() && !SUPPRESS_WRITER) {
+    if (!SUPPRESS_WRITER) {
       LOG.debug("Receiving response: {}", RESPONSE_WRITER.writeValueAsString(response));
     }
     return response;
