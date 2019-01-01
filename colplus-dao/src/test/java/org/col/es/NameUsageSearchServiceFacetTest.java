@@ -50,7 +50,7 @@ public class NameUsageSearchServiceFacetTest extends EsReadTestBase {
   }
 
   @Before
-  public void before() {
+  public void before() throws IOException {
     EsUtil.deleteIndex(client, indexName);
     EsUtil.createIndex(client, indexName, getEsConfig().nameUsage);
   }

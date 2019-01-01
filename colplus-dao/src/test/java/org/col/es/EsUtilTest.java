@@ -33,7 +33,7 @@ public class EsUtilTest extends EsReadTestBase {
   }
 
   @Test
-  public void createAndDeleteIndices() throws EsException {
+  public void createAndDeleteIndices() throws IOException {
     EsUtil.deleteIndex(client, indexName); // OK if index does not exist
     EsUtil.createIndex(client, indexName, getEsConfig().nameUsage);
     EsUtil.deleteIndex(client, indexName);
@@ -73,7 +73,7 @@ public class EsUtilTest extends EsReadTestBase {
   }
   
   @Test
-  public void indexExists() {
+  public void indexExists() throws IOException {
     EsUtil.deleteIndex(client, indexName);
     EsUtil.createIndex(client, indexName, getEsConfig().nameUsage);
     assertTrue(EsUtil.indexExists(client, indexName));

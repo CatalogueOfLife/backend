@@ -35,10 +35,9 @@ class SynonymResultHandler implements ResultHandler<NameUsageWrapper>, AutoClose
   /*
    * The maximum number of taxa we are going to retrieve to build an id-to-classification lookup table. NB 655536 is the absolute maximum
    * number of terms in a terms query (used to retrieve the taxa by their IDs), but that's likely to blow up the JVM. Note that the lookup
-   * table size doesn't matter all that much, because indexing the synonyms takes up way more time than enriching them with
-   * classifications.
+   * table size doesn't matter all that much, because indexing the synonyms takes up way more time than enriching them with classifications.
    */
-  private static final int LOOKUP_TABLE_SIZE = 8192;
+  private static final int LOOKUP_TABLE_SIZE = 4096;
 
   private final NameUsageIndexer indexer;
   private final int datasetKey;

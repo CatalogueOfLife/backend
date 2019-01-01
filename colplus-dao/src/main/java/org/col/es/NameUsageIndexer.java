@@ -21,7 +21,12 @@ class NameUsageIndexer implements Consumer<List<NameUsageWrapper>> {
   private static final Logger LOG = LoggerFactory.getLogger(NameUsageIndexer.class);
   private static final ObjectWriter writer = EsModule.writerFor(EsNameUsage.class);
 
-  private final StringBuilder buf = new StringBuilder(1024 * 1024);
+  /*
+   * The request body. With the current batch size of 4096 the request body can grow to about 10 MB for synonyms with zipped payloads, and
+   * 18 MB with unzipped payloads. A batch size of 4096 seems about optimal. A batch size of 2048 also performs well, but with a batch size
+   * of 8192 performance appears to decrease again.
+   */
+  private final StringBuilder buf = new StringBuilder(1024 * 1024 * 4);
 
   private final RestClient client;
   private final String index;
@@ -37,24 +42,26 @@ class NameUsageIndexer implements Consumer<List<NameUsageWrapper>> {
 
   @Override
   public void accept(List<NameUsageWrapper> batch) {
-    if (batch.size() == 0) {
-      LOG.info("Ignoring empty batch of name usages");
-      return;
-    }
     buf.setLength(0);
+    int docSize = 0;
     NameUsageTransfer transfer = new NameUsageTransfer();
     try {
+      String json;
       for (NameUsageWrapper nuw : batch) {
         buf.append(header);
         EsNameUsage enu = transfer.toDocument(nuw);
-        buf.append(writer.writeValueAsString(enu));
+        buf.append(json = writer.writeValueAsString(enu));
+        docSize += json.length();
         buf.append("\n");
       }
       Request request = new Request("POST", "/_bulk");
       request.setJsonEntity(buf.toString());
       @SuppressWarnings("unused")
       Response response = EsUtil.executeRequest(client, request);
-      LOG.debug("Successfully inserted {} name usages into index {}", batch.size(), index);
+      LOG.debug("Successfully inserted {} name usages into index {} (avg doc size: {})",
+          batch.size(),
+          index,
+          (int) Math.ceil(docSize / batch.size()));
       indexed += batch.size(); // TODO Inspect response and get number of documents actually indexed
     } catch (IOException e) {
       throw new EsException(e);

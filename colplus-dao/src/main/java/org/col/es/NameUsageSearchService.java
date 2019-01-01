@@ -25,6 +25,8 @@ import static org.col.es.EsConfig.ES_INDEX_NAME_USAGE;;
 public class NameUsageSearchService {
 
   private static final Logger LOG = LoggerFactory.getLogger(NameUsageSearchService.class);
+  // For debugging, being being able to see the generated queries sometimes helps, but sometimes definitely not
+  private static final boolean SUPPRESS_WRITER = true;
 
   private final RestClient client;
 
@@ -82,7 +84,7 @@ public class NameUsageSearchService {
   }
 
   private EsNameSearchResponse executeSearchRequest(String index, EsSearchRequest esSearchRequest) throws IOException {
-    if (LOG.isDebugEnabled()) {
+    if (!SUPPRESS_WRITER) {
       LOG.debug("Executing query: {}", writeQuery(esSearchRequest, true));
     }
     Request httpRequest = new Request("GET", endpoint(index));

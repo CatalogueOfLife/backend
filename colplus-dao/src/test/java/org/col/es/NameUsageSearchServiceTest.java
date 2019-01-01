@@ -57,7 +57,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
   }
 
   @Before
-  public void before() {
+  public void before() throws IOException {
     EsUtil.deleteIndex(client, indexName);
     EsUtil.createIndex(client, indexName, getEsConfig().nameUsage);
   }
@@ -153,7 +153,13 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
       } catch (IOException e) {
         throw new RuntimeException();
       }
-    }).forEach(x -> insert(client, indexName, x));
+    }).forEach(x -> {
+      try {
+        insert(client, indexName, x);
+      } catch (IOException e) {
+        throw new EsException(e);
+      }
+    });
     refreshIndex(client, indexName);
 
     ResultPage<NameUsageWrapper> result = svc.search(indexName, esr, new Page());
@@ -260,7 +266,13 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
       } catch (IOException e) {
         throw new RuntimeException();
       }
-    }).forEach(x -> insert(client, indexName, x));
+    }).forEach(x -> {
+      try {
+        insert(client, indexName, x);
+      } catch (IOException e) {
+        throw new EsException(e);
+      }
+    });
     refreshIndex(client, indexName);
 
     ResultPage<NameUsageWrapper> result = svc.search(indexName, nsr, page);

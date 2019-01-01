@@ -32,23 +32,18 @@ public class NameUsageIndexServiceES implements NameUsageIndexService {
    */
   @Override
   public void indexDataset(int datasetKey) {
-    String indexName = ES_INDEX_NAME_USAGE;
-    if (EsUtil.indexExists(client, indexName)) {
-      EsUtil.deleteDataset(client, indexName, datasetKey);
-      EsUtil.refreshIndex(client, indexName);
-    } else {
-      EsUtil.createIndex(client, indexName, esConfig.nameUsage);
-    }
-    NameUsageIndexer indexer = new NameUsageIndexer(client, indexName);
+    String index = ES_INDEX_NAME_USAGE;
+    NameUsageIndexer indexer = new NameUsageIndexer(client, index);
     int tCount, sCount, bCount;
     try (SqlSession session = factory.openSession()) {
+      createOrEmptyIndex(datasetKey, index);
       NameUsageMapper mapper = session.getMapper(NameUsageMapper.class);
       try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(indexer, 4096)) {
         LOG.debug("Indexing taxa for dataset {}", datasetKey);
         mapper.processDatasetTaxa(datasetKey, handler);
       }
       tCount = indexer.documentsIndexed();
-      EsUtil.refreshIndex(client, indexName);
+      EsUtil.refreshIndex(client, index);
       try (SynonymResultHandler handler = new SynonymResultHandler(indexer, datasetKey)) {
         LOG.debug("Indexing synonyms for dataset {}", datasetKey);
         mapper.processDatasetSynonyms(datasetKey, handler);
@@ -59,17 +54,26 @@ public class NameUsageIndexServiceES implements NameUsageIndexService {
         mapper.processDatasetBareNames(datasetKey, handler);
       }
       bCount = indexer.documentsIndexed() - tCount - sCount;
+      EsUtil.refreshIndex(client, index);
     } catch (IOException e) {
       throw new EsException(e);
     }
-    EsUtil.refreshIndex(client, indexName);
     LOG.info("Successfully indexed {} taxa, {} synonyms and {} bare names (total: {}; dataset: {}; index: {})",
         tCount,
         sCount,
         bCount,
         indexer.documentsIndexed(),
         datasetKey,
-        indexName);
+        index);
+  }
+
+  private void createOrEmptyIndex(int datasetKey, String indexName) throws IOException {
+    if (EsUtil.indexExists(client, indexName)) {
+      EsUtil.deleteDataset(client, indexName, datasetKey);
+      EsUtil.refreshIndex(client, indexName);
+    } else {
+      EsUtil.createIndex(client, indexName, esConfig.nameUsage);
+    }
   }
 
 }
