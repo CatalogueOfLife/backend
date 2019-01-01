@@ -43,21 +43,21 @@ import static org.col.api.search.NameSearchParameter.TYPE;
  */
 class NameSearchResponseTransfer {
 
-  private final EsNameSearchResponse esRresponse;
+  private final EsNameSearchResponse esResponse;
 
   NameSearchResponseTransfer(EsNameSearchResponse response) {
-    this.esRresponse = response;
+    this.esResponse = response;
   }
 
   /**
-   * Converts the Elasticsearch response into an API object (NameSearchResponse).
+   * Converts the Elasticsearch response object to a NameSearchResponse instance.
    * 
    * @param page
    * @return
    * @throws IOException
    */
   NameSearchResponse transferResponse(Page page) throws IOException {
-    int total = esRresponse.getHits().getTotal();
+    int total = esResponse.getHits().getTotal();
     List<NameUsageWrapper> nameUsages = transferNameUsages();
     Map<NameSearchParameter, Set<FacetValue<?>>> facets = transferFacets();
     return new NameSearchResponse(page, total, nameUsages, facets);
@@ -70,7 +70,7 @@ class NameSearchResponseTransfer {
    * @return
    */
   List<EsNameUsage> getDocuments() {
-    return esRresponse.getHits()
+    return esResponse.getHits()
         .getHits()
         .stream()
         .map(SearchHit::getSource)
@@ -78,7 +78,7 @@ class NameSearchResponseTransfer {
   }
 
   private List<NameUsageWrapper> transferNameUsages() throws IOException {
-    List<SearchHit<EsNameUsage>> hits = esRresponse.getHits().getHits();
+    List<SearchHit<EsNameUsage>> hits = esResponse.getHits().getHits();
     List<NameUsageWrapper> nuws = new ArrayList<>(hits.size());
     ObjectReader reader = EsModule.NAME_USAGE_READER;
     for (SearchHit<EsNameUsage> hit : hits) {
@@ -96,10 +96,10 @@ class NameSearchResponseTransfer {
   }
 
   private Map<NameSearchParameter, Set<FacetValue<?>>> transferFacets() {
-    if (esRresponse.getAggregations() == null) {
+    if (esResponse.getAggregations() == null) {
       return Collections.emptyMap();
     }
-    EsFacetsContainer esFacets = esRresponse.getAggregations().getContextFilter().getFacetsContainer();
+    EsFacetsContainer esFacets = esResponse.getAggregations().getContextFilter().getFacetsContainer();
     Map<NameSearchParameter, Set<FacetValue<?>>> facets = new EnumMap<>(NameSearchParameter.class);
     addIfPresent(facets, DATASET_KEY, esFacets.getDatasetKey());
     addIfPresent(facets, FIELD, esFacets.getField());

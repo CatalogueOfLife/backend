@@ -32,7 +32,7 @@ public class NameUsageIndexServiceES implements NameUsageIndexService {
    */
   @Override
   public void indexDataset(int datasetKey) {
-    final String indexName = ES_INDEX_NAME_USAGE;
+    String indexName = ES_INDEX_NAME_USAGE;
     if (EsUtil.indexExists(client, indexName)) {
       EsUtil.deleteDataset(client, indexName, datasetKey);
       EsUtil.refreshIndex(client, indexName);
@@ -44,18 +44,18 @@ public class NameUsageIndexServiceES implements NameUsageIndexService {
     try (SqlSession session = factory.openSession()) {
       NameUsageMapper mapper = session.getMapper(NameUsageMapper.class);
       try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(indexer, 4096)) {
-        LOG.debug("Indexing taxa into Elasticsearch");
+        LOG.debug("Indexing taxa for dataset {}", datasetKey);
         mapper.processDatasetTaxa(datasetKey, handler);
       }
       tCount = indexer.documentsIndexed();
       EsUtil.refreshIndex(client, indexName);
       try (SynonymResultHandler handler = new SynonymResultHandler(indexer, datasetKey)) {
-        LOG.debug("Indexing synonyms into Elasticsearch");
+        LOG.debug("Indexing synonyms for dataset {}", datasetKey);
         mapper.processDatasetSynonyms(datasetKey, handler);
       }
       sCount = indexer.documentsIndexed() - tCount;
       try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(indexer, 4096)) {
-        LOG.debug("Indexing bare names into Elasticsearch");
+        LOG.debug("Indexing bare names for dataset {}", datasetKey);
         mapper.processDatasetBareNames(datasetKey, handler);
       }
       bCount = indexer.documentsIndexed() - tCount - sCount;

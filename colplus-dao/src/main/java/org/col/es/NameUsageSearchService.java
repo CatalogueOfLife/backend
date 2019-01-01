@@ -48,15 +48,16 @@ public class NameUsageSearchService {
   }
 
   /**
-   * Returns the raw Elasticsearch documents matching the specified query (with payloads still pruned and zipped). Useful if you're only
-   * interested in the indexed fields.
+   * Returns the raw Elasticsearch documents matching the specified query (with payloads still pruned and zipped). Useful and fast if you're
+   * only interested in the indexed fields. Since this method is currently only used internally, you can (and must) compose the
+   * EsSearchRequest directly.
    * 
-   * @param query
+   * @param esSearchRequest
    * @return
    */
-  public List<EsNameUsage> getDocuments(EsSearchRequest query) {
+  public List<EsNameUsage> getDocuments(EsSearchRequest esSearchRequest) {
     try {
-      return getDocuments(ES_INDEX_NAME_USAGE, query);
+      return getDocuments(ES_INDEX_NAME_USAGE, esSearchRequest);
     } catch (IOException e) {
       throw new EsException(e);
     }
@@ -68,36 +69,36 @@ public class NameUsageSearchService {
     return search(index, esSearchRequest, page);
   }
 
-  NameSearchResponse search(String index, EsSearchRequest esQuery, Page page) throws IOException {
-    EsNameSearchResponse esResponse = executeSearchRequest(index, esQuery);
+  NameSearchResponse search(String index, EsSearchRequest esSearchRequest, Page page) throws IOException {
+    EsNameSearchResponse esResponse = executeSearchRequest(index, esSearchRequest);
     NameSearchResponseTransfer transfer = new NameSearchResponseTransfer(esResponse);
     return transfer.transferResponse(page);
   }
 
-  List<EsNameUsage> getDocuments(String index, EsSearchRequest query) throws IOException {
-    EsNameSearchResponse esResponse = executeSearchRequest(index, query);
+  List<EsNameUsage> getDocuments(String index, EsSearchRequest esSearchRequest) throws IOException {
+    EsNameSearchResponse esResponse = executeSearchRequest(index, esSearchRequest);
     NameSearchResponseTransfer transfer = new NameSearchResponseTransfer(esResponse);
     return transfer.getDocuments();
   }
 
-  private EsNameSearchResponse executeSearchRequest(String index, EsSearchRequest esQuery) throws JsonProcessingException, IOException {
+  private EsNameSearchResponse executeSearchRequest(String index, EsSearchRequest esSearchRequest) throws IOException {
     if (LOG.isDebugEnabled()) {
-      LOG.debug("Executing query: " + writeQuery(esQuery, true));
+      LOG.debug("Executing query: {}", writeQuery(esSearchRequest, true));
     }
     Request httpRequest = new Request("GET", endpoint(index));
-    httpRequest.setJsonEntity(writeQuery(esQuery, false));
+    httpRequest.setJsonEntity(writeQuery(esSearchRequest, false));
     Response httpResponse = EsUtil.executeRequest(client, httpRequest);
     EsNameSearchResponseReader reader = new EsNameSearchResponseReader(httpResponse);
     EsNameSearchResponse esResponse = reader.readHttpResponse();
     return esResponse;
   }
 
-  private static String writeQuery(EsSearchRequest query, boolean pretty) throws JsonProcessingException {
+  private static String writeQuery(EsSearchRequest esSearchRequest, boolean pretty) throws JsonProcessingException {
     ObjectWriter ow = EsModule.QUERY_WRITER;
     if (pretty) {
       ow = ow.withDefaultPrettyPrinter();
     }
-    return ow.writeValueAsString(query);
+    return ow.writeValueAsString(esSearchRequest);
   }
 
   private static String endpoint(String indexName) {

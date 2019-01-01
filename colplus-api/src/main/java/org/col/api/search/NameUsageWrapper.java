@@ -33,8 +33,32 @@ public class NameUsageWrapper {
     this.usage = usage;
   }
 
+  public VerbatimRecord getVerbatimRecord() {
+    return verbatimRecord;
+  }
+
+  public void setVerbatimRecord(VerbatimRecord verbatimRecord) {
+    this.verbatimRecord = verbatimRecord;
+  }
+
+  public List<VernacularName> getVernacularNames() {
+    return vernacularNames;
+  }
+
+  public void setVernacularNames(List<VernacularName> vernacularNames) {
+    this.vernacularNames = vernacularNames;
+  }
+
+  public List<SimpleName> getClassification() {
+    return classification;
+  }
+
+  public void setClassification(List<SimpleName> classification) {
+    this.classification = classification;
+  }
+
   /*
-   * TODO remove getter/setter for issues. They are just so existing code won't break
+   * TODO remove getter/setter for issues. They are just here so existing code won't break
    */
   public Set<Issue> getIssues() {
     if (verbatimRecord == null || verbatimRecord.getIssues().isEmpty()) {
@@ -54,32 +78,17 @@ public class NameUsageWrapper {
     }
   }
 
-  public List<VernacularName> getVernacularNames() {
-    return vernacularNames;
-  }
-
-  public void setVernacularNames(List<VernacularName> vernacularNames) {
-    this.vernacularNames = vernacularNames;
-  }
-
-  public List<SimpleName> getClassification() {
-    return classification;
-  }
-
-  public void setClassification(List<SimpleName> classification) {
-    this.classification = classification;
-  }
-
   public void setClassificationIds(List<String> ids) {
+    // NB last element is the taxon itself! Couldn't figure out the SQL to exclude it
     if (classification == null) {
-      classification = new ArrayList<>(ids.size());
-      for (int i = 0; i < ids.size(); i++) {
-        SimpleName ht = new SimpleName();
-        ht.setId(ids.get(i));
-        classification.add(ht);
+      classification = new ArrayList<>(ids.size() - 1);
+      for (int i = 0; i < ids.size() - 1; i++) {
+        SimpleName sn = new SimpleName();
+        sn.setId(ids.get(i));
+        classification.add(sn);
       }
     } else {
-      for (int i = 0; i < ids.size(); i++) {
+      for (int i = 0; i < ids.size() - 1; i++) {
         classification.get(i).setId(ids.get(i));
       }
     }
@@ -88,13 +97,13 @@ public class NameUsageWrapper {
   public void setClassificationRanks(List<Rank> ranks) {
     if (classification == null) {
       classification = new ArrayList<>(ranks.size());
-      for (int i = 0; i < ranks.size(); i++) {
-        SimpleName ht = new SimpleName();
-        ht.setRank(ranks.get(i));
-        classification.add(ht);
+      for (int i = 0; i < ranks.size() - 1; i++) {
+        SimpleName sn = new SimpleName();
+        sn.setRank(ranks.get(i));
+        classification.add(sn);
       }
     } else {
-      for (int i = 0; i < ranks.size(); i++) {
+      for (int i = 0; i < ranks.size() - 1; i++) {
         classification.get(i).setRank(ranks.get(i));
       }
     }
@@ -103,13 +112,13 @@ public class NameUsageWrapper {
   public void setClassificationNames(List<String> names) {
     if (classification == null) {
       classification = new ArrayList<>(names.size());
-      for (int i = 0; i < names.size(); i++) {
-        SimpleName ht = new SimpleName();
-        ht.setName(names.get(i));
-        classification.add(ht);
+      for (int i = 0; i < names.size() - 1; i++) {
+        SimpleName sn = new SimpleName();
+        sn.setName(names.get(i));
+        classification.add(sn);
       }
     } else {
-      for (int i = 0; i < names.size(); i++) {
+      for (int i = 0; i < names.size() - 1; i++) {
         classification.get(i).setName(names.get(i));
       }
     }

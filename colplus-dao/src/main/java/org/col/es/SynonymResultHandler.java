@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import org.apache.ibatis.session.ResultContext;
 import org.apache.ibatis.session.ResultHandler;
 import org.col.api.model.SimpleName;
@@ -32,8 +34,8 @@ class SynonymResultHandler implements ResultHandler<NameUsageWrapper>, AutoClose
 
   /*
    * The maximum number of taxa we are going to retrieve to build an id-to-classification lookup table. NB 655536 is the absolute maximum
-   * number of terms in a terms query (used to retrieve the taxa by their IDs), but that might blow up the JVM. Note that the lookup table
-   * size really doesn't matter all that much, because simply indexing the documents takes up way more time than enriching them with
+   * number of terms in a terms query (used to retrieve the taxa by their IDs), but that's likely to blow up the JVM. Note that the lookup
+   * table size doesn't matter all that much, because indexing the synonyms takes up way more time than enriching them with
    * classifications.
    */
   private static final int LOOKUP_TABLE_SIZE = 8192;
@@ -53,11 +55,15 @@ class SynonymResultHandler implements ResultHandler<NameUsageWrapper>, AutoClose
 
   @Override
   public void handleResult(ResultContext<? extends NameUsageWrapper> ctx) {
-    NameUsageWrapper nuw = ctx.getResultObject();
+    handle(ctx.getResultObject());
+  }
+
+  @VisibleForTesting
+  void handle(NameUsageWrapper nuw) {
     collected.add(nuw);
     String taxonId = getTaxonId(nuw);
     if (!taxonId.equals(prevTaxonId)) {
-      // NB synonyms expected to be ordered by taxon ID in NameUsageMapper.xml
+      // NB synonyms presumed to be ordered by taxon ID in NameUsageMapper.xml
       taxonIds.add(prevTaxonId = taxonId);
       if (taxonIds.size() == LOOKUP_TABLE_SIZE) {
         try {
@@ -82,7 +88,10 @@ class SynonymResultHandler implements ResultHandler<NameUsageWrapper>, AutoClose
     LOG.debug("Building lookup table for {} taxa", taxa.size());
     HashMap<String, List<SimpleName>> lookups = createLookupTable(taxa);
     LOG.debug("Copying classifications");
-    collected.forEach(nuw -> nuw.setClassification(lookups.get(getTaxonId(nuw))));
+    collected.forEach(nuw -> {
+      String taxonId = getTaxonId(nuw);
+      nuw.setClassification(lookups.get(taxonId));
+    });
     LOG.debug("Submitting {} synonyms to indexer", collected.size());
     indexer.accept(collected);
     taxonIds.clear();
@@ -106,7 +115,6 @@ class SynonymResultHandler implements ResultHandler<NameUsageWrapper>, AutoClose
 
   // Collectors.toMap inefficient for large maps in Java 8
   private static HashMap<String, List<SimpleName>> createLookupTable(List<EsNameUsage> taxa) {
-    // Expect hardly any hash collisions for taxon IDs
     HashMap<String, List<SimpleName>> map = new HashMap<>(taxa.size(), 1F);
     taxa.forEach(enu -> map.put(enu.getUsageId(), extractClassifiction(enu)));
     return map;

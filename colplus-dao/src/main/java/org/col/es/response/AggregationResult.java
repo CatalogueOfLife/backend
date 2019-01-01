@@ -3,7 +3,7 @@ package org.col.es.response;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * This will be the "aggregations" object in the Elasticsearch response.
+ * The "aggregations" object within the Elasticsearch response.
  */
 public class AggregationResult {
 

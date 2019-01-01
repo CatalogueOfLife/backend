@@ -3,7 +3,7 @@ package org.col.es.query;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 /**
- * Represents the value you are matching your documents against, plus an extra option to boost matching documents.
+ * Represents the value you are matching your documents against, plus the option to boost matching documents.
  */
 public class MatchValue {
 
@@ -16,9 +16,10 @@ public class MatchValue {
     }
   }
 
-  // This is actually just the search string
+  // The search string
   final String query;
   final Float boost;
+  // How to combine the terms resulting from tokenization
   final Operator operator;
 
   public MatchValue(String query) {

@@ -48,9 +48,9 @@ class FilterTranslator {
     if (queries.size() == 1) {
       return queries.get(0);
     }
-    BoolQuery combined = new BoolQuery();
-    queries.forEach(combined::should);
-    return combined;
+    BoolQuery query = new BoolQuery();
+    queries.forEach(query::should);
+    return query;
   }
 
   private List<?> getLiteralValues(NameSearchParameter param) throws InvalidQueryException {
