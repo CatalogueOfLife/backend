@@ -6,7 +6,7 @@
 
     <resultMap id="issueResultMap" type="NameUsageWrapper" autoMapping="true">
     	<!-- You must place the issues within an association, otherwise MyBatis will skip records without issues -->
-    	<association property="verbatimRecord" javaType="VerbatimRecord">
+    	<association property="verbatimRecord" javaType="SimpleVerbatimRecord">
 	        <result property="issues" column="issues" typeHandler="org.col.db.type2.IssueSetTypeHandler" />
     	</association>
     </resultMap>

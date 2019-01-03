@@ -5,9 +5,10 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import org.col.api.model.NameUsage;
 import org.col.api.model.SimpleName;
-import org.col.api.model.VerbatimRecord;
 import org.col.api.model.VernacularName;
 import org.col.api.vocab.Issue;
 import org.gbif.nameparser.api.Rank;
@@ -15,7 +16,7 @@ import org.gbif.nameparser.api.Rank;
 public class NameUsageWrapper {
 
   private NameUsage usage;
-  private VerbatimRecord verbatimRecord;
+  private SimpleVerbatimRecord verbatimRecord;
   private List<VernacularName> vernacularNames;
   private List<SimpleName> classification;
 
@@ -33,11 +34,11 @@ public class NameUsageWrapper {
     this.usage = usage;
   }
 
-  public VerbatimRecord getVerbatimRecord() {
+  public SimpleVerbatimRecord getVerbatimRecord() {
     return verbatimRecord;
   }
 
-  public void setVerbatimRecord(VerbatimRecord verbatimRecord) {
+  public void setVerbatimRecord(SimpleVerbatimRecord verbatimRecord) {
     this.verbatimRecord = verbatimRecord;
   }
 
@@ -60,6 +61,7 @@ public class NameUsageWrapper {
   /*
    * TODO remove getter/setter for issues. They are just here so existing code won't break
    */
+  @JsonIgnore
   public Set<Issue> getIssues() {
     if (verbatimRecord == null || verbatimRecord.getIssues().isEmpty()) {
       return null;
@@ -72,19 +74,19 @@ public class NameUsageWrapper {
       verbatimRecord = null;
     } else {
       if (verbatimRecord == null) {
-        verbatimRecord = new VerbatimRecord();
+        verbatimRecord = new SimpleVerbatimRecord();
       }
       verbatimRecord.setIssues(issues);
     }
   }
 
   public void setClassificationIds(List<String> ids) {
-    // NB last element is the taxon itself! Couldn't figure out the SQL to exclude it
+    // NB last element is the taxon itself. Couldn't figure out the SQL to exclude it
     if (classification == null) {
       classification = new ArrayList<>(ids.size() - 1);
+      SimpleName sn;
       for (int i = 0; i < ids.size() - 1; i++) {
-        SimpleName sn = new SimpleName();
-        sn.setId(ids.get(i));
+        (sn = new SimpleName()).setId(ids.get(i));
         classification.add(sn);
       }
     } else {
@@ -97,9 +99,9 @@ public class NameUsageWrapper {
   public void setClassificationRanks(List<Rank> ranks) {
     if (classification == null) {
       classification = new ArrayList<>(ranks.size());
+      SimpleName sn;
       for (int i = 0; i < ranks.size() - 1; i++) {
-        SimpleName sn = new SimpleName();
-        sn.setRank(ranks.get(i));
+        (sn = new SimpleName()).setRank(ranks.get(i));
         classification.add(sn);
       }
     } else {
@@ -112,9 +114,9 @@ public class NameUsageWrapper {
   public void setClassificationNames(List<String> names) {
     if (classification == null) {
       classification = new ArrayList<>(names.size());
+      SimpleName sn;
       for (int i = 0; i < names.size() - 1; i++) {
-        SimpleName sn = new SimpleName();
-        sn.setName(names.get(i));
+        (sn = new SimpleName()).setName(names.get(i));
         classification.add(sn);
       }
     } else {

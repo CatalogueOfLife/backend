@@ -83,10 +83,9 @@ public class NameUsageTransfer {
     List<String> ids = enu.getClassificationIds();
     List<Monomial> monomials = enu.getClassification();
     List<SimpleName> classification = new ArrayList<>(ids.size());
-    for (int i = 0; i < enu.getClassificationIds().size(); i++) {
+    for (int i = 0; i < ids.size(); i++) {
       Monomial m = monomials.get(i);
-      SimpleName sn = new SimpleName(ids.get(i), m.getName(), m.getRank());
-      classification.add(sn);
+      classification.add(new SimpleName(ids.get(i), m.getName(), m.getRank()));
     }
     return classification;
   }
@@ -187,11 +186,12 @@ public class NameUsageTransfer {
 
   private static void saveClassification(NameUsageWrapper from, EsNameUsage to) {
     if (notEmpty(from.getClassification())) {
-      List<String> ids = new ArrayList<>(from.getClassification().size());
-      List<Monomial> monomials = new ArrayList<>(from.getClassification().size());
-      for (int i = 0; i < from.getClassification().size(); i++) {
-        SimpleName sn = from.getClassification().get(i);
-        ids.add(sn.getId());
+      int sz = from.getClassification().size();
+      List<String> ids = new ArrayList<>(sz);
+      List<Monomial> monomials = new ArrayList<>(sz);
+      SimpleName sn;
+      for (int i = 0; i < sz; i++) {
+        ids.add((sn = from.getClassification().get(i)).getId());
         monomials.add(new Monomial(sn.getRank(), sn.getName()));
       }
       to.setClassification(monomials);
