@@ -1,10 +1,12 @@
 package org.col.es;
 
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.util.List;
 import java.util.function.Consumer;
 
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.google.common.base.Charsets;
 
 import org.col.api.search.NameUsageWrapper;
 import org.col.es.model.EsNameUsage;
@@ -19,12 +21,13 @@ import static org.col.es.EsConfig.DEFAULT_TYPE_NAME;
 class NameUsageIndexer implements Consumer<List<NameUsageWrapper>> {
 
   private static final Logger LOG = LoggerFactory.getLogger(NameUsageIndexer.class);
-  private static final ObjectWriter writer = EsModule.writerFor(EsNameUsage.class);
+  private static final ObjectWriter WRITER = EsModule.writerFor(EsNameUsage.class);
+  private static final boolean EXTRA_STATS = false;
 
   /*
-   * The request body. With the current batch size of 4096 the request body can grow to about 10 MB for synonyms with zipped payloads, and
-   * 18 MB with unzipped payloads. A batch size of 4096 seems about optimal. A batch size of 2048 also performs well, but with a batch size
-   * of 8192 performance appears to decrease again.
+   * The request body. With the current batch size of 4096 the request body can grow to about 11 MB for synonyms with zipped payloads, and
+   * 20 MB with unzipped payloads. A batch size of 4096 seems about optimal. A batch size of 2048 also performs well, a batch size of 8192
+   * appears to perform slightly worse.
    */
   private final StringBuilder buf = new StringBuilder(1024 * 1024 * 4);
 
@@ -42,6 +45,35 @@ class NameUsageIndexer implements Consumer<List<NameUsageWrapper>> {
 
   @Override
   public void accept(List<NameUsageWrapper> batch) {
+    if (EXTRA_STATS) {
+      indexWithExtraStats(batch);
+    } else {
+      index(batch);
+    }
+  }
+
+  private void index(List<NameUsageWrapper> batch) {
+    buf.setLength(0);
+    NameUsageTransfer transfer = new NameUsageTransfer();
+    try {
+      for (NameUsageWrapper nuw : batch) {
+        buf.append(header);
+        EsNameUsage enu = transfer.toDocument(nuw);
+        buf.append(WRITER.writeValueAsString(enu));
+        buf.append("\n");
+      }
+      Request request = new Request("POST", "/_bulk");
+      request.setJsonEntity(buf.toString());
+      @SuppressWarnings("unused")
+      Response response = EsUtil.executeRequest(client, request);
+      LOG.debug("Successfully inserted {} name usages into index {}", batch.size(), index);
+      indexed += batch.size(); // TODO Inspect response and get number of documents actually indexed
+    } catch (IOException e) {
+      throw new EsException(e);
+    }
+  }
+
+  private void indexWithExtraStats(List<NameUsageWrapper> batch) {
     buf.setLength(0);
     int docSize = 0;
     NameUsageTransfer transfer = new NameUsageTransfer();
@@ -50,19 +82,23 @@ class NameUsageIndexer implements Consumer<List<NameUsageWrapper>> {
       for (NameUsageWrapper nuw : batch) {
         buf.append(header);
         EsNameUsage enu = transfer.toDocument(nuw);
-        buf.append(json = writer.writeValueAsString(enu));
-        docSize += json.length();
+        buf.append(json = WRITER.writeValueAsString(enu));
+        docSize += json.getBytes(Charsets.UTF_8).length;
         buf.append("\n");
       }
       Request request = new Request("POST", "/_bulk");
       request.setJsonEntity(buf.toString());
       @SuppressWarnings("unused")
       Response response = EsUtil.executeRequest(client, request);
-      LOG.debug("Successfully inserted {} name usages into index {} (avg doc size: {})",
-          batch.size(),
-          index,
-          (int) Math.ceil(docSize / batch.size()));
-      indexed += batch.size(); // TODO Inspect response and get number of documents actually indexed
+      double reqSize = ((double) buf.toString().getBytes(Charsets.UTF_8).length / (double) (1024 * 1024));
+      double totSize = ((double) docSize / (double) (1024 * 1024));
+      double avgSize = ((double) docSize / (double) (batch.size() * 1024));
+      String req = new DecimalFormat("0.0").format(reqSize);
+      String tot = new DecimalFormat("0.0").format(totSize);
+      String avg = new DecimalFormat("0.0").format(avgSize);
+      LOG.debug("Successfully inserted {} name usages into index {}", batch.size(), index);
+      LOG.debug("Average document size: {} KB. Total document size: {} MB. Request body size: {} MB.", avg, tot, req);
+      indexed += batch.size();
     } catch (IOException e) {
       throw new EsException(e);
     }

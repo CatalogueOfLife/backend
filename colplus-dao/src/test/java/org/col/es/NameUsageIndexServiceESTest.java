@@ -28,7 +28,7 @@ import static org.gbif.nameparser.api.Rank.PHYLUM;
 import static org.gbif.nameparser.api.Rank.SPECIES;
 import static org.junit.Assert.assertEquals;
 
-public class NameUsageIndexServiceESTest extends EsReadTestBase {
+public class NameUsageIndexServiceESTest extends EsReadWriteTestBase {
 
   @Test // Nice in combination with PgImportIT.testGsdGithub
   @Ignore

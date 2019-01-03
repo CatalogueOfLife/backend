@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
@@ -136,13 +137,8 @@ public class NameUsageTransfer {
    */
   EsNameUsage toDocument(NameUsageWrapper nuw) throws IOException {
     EsNameUsage enu = new EsNameUsage();
-    if (notEmpty(nuw.getVernacularNames())) {
-      List<String> names = nuw.getVernacularNames()
-          .stream()
-          .map(VernacularName::getName)
-          .collect(Collectors.toList());
-      enu.setVernacularNames(names);
-    }
+    saveScientificName(nuw, enu);
+    saveVernacularNames(nuw, enu);
     saveClassification(nuw, enu);
     enu.setIssues(nuw.getIssues());
     Name name = nuw.getUsage().getName();
@@ -153,16 +149,6 @@ public class NameUsageTransfer {
     enu.setNomStatus(name.getNomStatus());
     enu.setPublishedInId(name.getPublishedInId());
     enu.setRank(name.getRank());
-    String w = normalizeWeakly(name.getScientificName());
-    String s = normalizeStrongly(name.getScientificName());
-    enu.setScientificNameWN(w);
-    /*
-     * Don't waste time indexing the same ngram tokens twice. Only index the strongly normalized variant if it differs from the weakly
-     * normalized variant. This if-logic is replicated at query time (see QTranslator).
-     */
-    if (!w.equals(s)) {
-      enu.setScientificNameSN(s);
-    }
     enu.setStatus(nuw.getUsage().getStatus());
     enu.setUsageId(nuw.getUsage().getId());
     enu.setType(name.getType());
@@ -176,28 +162,54 @@ public class NameUsageTransfer {
     return enu;
   }
 
+  private static void saveScientificName(NameUsageWrapper from, EsNameUsage to) {
+    String w = normalizeWeakly(from.getUsage().getName().getScientificName());
+    String s = normalizeStrongly(from.getUsage().getName().getScientificName());
+    to.setScientificNameWN(w);
+    /*
+     * Don't waste time indexing the same ngram tokens twice. Only index the strongly normalized variant if it differs from the weakly
+     * normalized variant. This if-logic is replicated at query time (see QTranslator).
+     */
+    if (!w.equals(s)) {
+      to.setScientificNameSN(s);
+    }
+  }
+
+  private static void saveVernacularNames(NameUsageWrapper from, EsNameUsage to) {
+    if (notEmpty(from.getVernacularNames())) {
+      List<String> names = from.getVernacularNames()
+          .stream()
+          .map(VernacularName::getName)
+          .collect(Collectors.toList());
+      to.setVernacularNames(names);
+    }
+  }
+
+  private static void saveClassification(NameUsageWrapper from, EsNameUsage to) {
+    if (notEmpty(from.getClassification())) {
+      List<String> ids = new ArrayList<>(from.getClassification().size());
+      List<Monomial> monomials = new ArrayList<>(from.getClassification().size());
+      for (int i = 0; i < from.getClassification().size(); i++) {
+        SimpleName sn = from.getClassification().get(i);
+        ids.add(sn.getId());
+        monomials.add(new Monomial(sn.getRank(), sn.getName()));
+      }
+      to.setClassification(monomials);
+      to.setClassificationIds(ids);
+    }
+  }
+
   private static Set<NameField> getNonNullNameFields(Name name) {
     Set<NameField> fields = EnumSet.noneOf(NameField.class);
-    if (name.getBasionymAuthorship() != null && notEmpty(name.getBasionymAuthorship().getAuthors())) {
-      fields.add(BASIONYM_AUTHORS);
+    if (name.getBasionymAuthorship() != null) {
+      addIfSet(fields, BASIONYM_AUTHORS, name.getBasionymAuthorship().getAuthors());
+      addIfSet(fields, BASIONYM_EX_AUTHORS, name.getBasionymAuthorship().getExAuthors());
+      addIfSet(fields, BASIONYM_YEAR, name.getBasionymAuthorship().getYear());
     }
-    if (name.getBasionymAuthorship() != null && notEmpty(name.getBasionymAuthorship().getExAuthors())) {
-      fields.add(BASIONYM_EX_AUTHORS);
-    }
-    if (name.getBasionymAuthorship() != null && name.getBasionymAuthorship().getYear() != null) {
-      fields.add(BASIONYM_YEAR);
-    }
-    if (name.isCandidatus()) {
-      fields.add(CANDIDATUS);
-    }
-    if (name.getCombinationAuthorship() != null && notEmpty(name.getCombinationAuthorship().getAuthors())) {
-      fields.add(COMBINATION_AUTHORS);
-    }
-    if (name.getCombinationAuthorship() != null && notEmpty(name.getCombinationAuthorship().getExAuthors())) {
-      fields.add(COMBINATION_EX_AUTHORS);
-    }
-    if (name.getCombinationAuthorship() != null && name.getCombinationAuthorship().getYear() != null) {
-      fields.add(COMBINATION_YEAR);
+    if (name.getCombinationAuthorship() != null) {
+      addIfSet(fields, COMBINATION_AUTHORS, name.getCombinationAuthorship().getAuthors());
+      addIfSet(fields, COMBINATION_EX_AUTHORS, name.getCombinationAuthorship().getExAuthors());
+      addIfSet(fields, COMBINATION_YEAR, name.getCombinationAuthorship().getYear());
     }
     addIfSet(fields, CULTIVAR_EPITHET, name.getCultivarEpithet());
     addIfSet(fields, GENUS, name.getGenus());
@@ -213,7 +225,16 @@ public class NameUsageTransfer {
     addIfSet(fields, SPECIFIC_EPITHET, name.getSpecificEpithet());
     addIfSet(fields, STRAIN, name.getStrain());
     addIfSet(fields, UNINOMIAL, name.getUninomial());
+    if (name.isCandidatus()) {
+      fields.add(CANDIDATUS);
+    }
     return fields;
+  }
+
+  private static void addIfSet(Set<NameField> fields, NameField nf, Collection<?> val) {
+    if (notEmpty(val)) {
+      fields.add(nf);
+    }
   }
 
   private static void addIfSet(Set<NameField> fields, NameField nf, Object val) {
@@ -232,20 +253,6 @@ public class NameUsageTransfer {
       NAME_USAGE_WRITER.writeValue(dos, nuw);
     }
     return Base64.getEncoder().encodeToString(baos.toByteArray());
-  }
-
-  private static void saveClassification(NameUsageWrapper from, EsNameUsage to) {
-    if (notEmpty(from.getClassification())) {
-      List<String> ids = new ArrayList<>(from.getClassification().size());
-      List<Monomial> monomials = new ArrayList<>(from.getClassification().size());
-      for (int i = 0; i < from.getClassification().size(); i++) {
-        SimpleName sn = from.getClassification().get(i);
-        ids.add(sn.getId());
-        monomials.add(new Monomial(sn.getRank(), sn.getName()));
-      }
-      to.setClassification(monomials);
-      to.setClassificationIds(ids);
-    }
   }
 
 }

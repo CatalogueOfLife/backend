@@ -36,7 +36,7 @@ public class NameUsageIndexServiceES implements NameUsageIndexService {
     NameUsageIndexer indexer = new NameUsageIndexer(client, index);
     int tCount, sCount, bCount;
     try (SqlSession session = factory.openSession()) {
-      createOrEmptyIndex(datasetKey, index);
+      createOrEmptyIndex(index, datasetKey);
       NameUsageMapper mapper = session.getMapper(NameUsageMapper.class);
       try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(indexer, 4096)) {
         LOG.debug("Indexing taxa for dataset {}", datasetKey);
@@ -67,12 +67,12 @@ public class NameUsageIndexServiceES implements NameUsageIndexService {
         index);
   }
 
-  private void createOrEmptyIndex(int datasetKey, String indexName) throws IOException {
-    if (EsUtil.indexExists(client, indexName)) {
-      EsUtil.deleteDataset(client, indexName, datasetKey);
-      EsUtil.refreshIndex(client, indexName);
+  private void createOrEmptyIndex(String index, int datasetKey) throws IOException {
+    if (EsUtil.indexExists(client, index)) {
+      EsUtil.deleteDataset(client, index, datasetKey);
+      EsUtil.refreshIndex(client, index);
     } else {
-      EsUtil.createIndex(client, indexName, esConfig.nameUsage);
+      EsUtil.createIndex(client, index, esConfig.nameUsage);
     }
   }
 

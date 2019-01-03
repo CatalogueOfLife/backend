@@ -25,25 +25,19 @@ import org.slf4j.LoggerFactory;
 import static org.col.es.NameUsageTransfer.extractClassifiction;
 
 /**
- * Collects synonyms retrieved from Postgres until a treshold is reached and then adds their classification before inserting them into
- * Elasticsearch.
+ * Collects synonyms from Postgres/MyBatis until and adds their classification before inserting them into Elasticsearch.
  */
 class SynonymResultHandler implements ResultHandler<NameUsageWrapper>, AutoCloseable {
 
   private static final Logger LOG = LoggerFactory.getLogger(SynonymResultHandler.class);
-
-  /*
-   * The maximum number of taxa we are going to retrieve to build an id-to-classification lookup table. NB 655536 is the absolute maximum
-   * number of terms in a terms query (used to retrieve the taxa by their IDs), but that's likely to blow up the JVM. Note that the lookup
-   * table size doesn't matter all that much, because indexing the synonyms takes up way more time than enriching them with classifications.
-   */
+  // The number of taxa we are going to retrieve to build an id-to-classification lookup table
   private static final int LOOKUP_TABLE_SIZE = 4096;
-
-  private final NameUsageIndexer indexer;
-  private final int datasetKey;
 
   private final List<String> taxonIds = new ArrayList<>(LOOKUP_TABLE_SIZE);
   private final List<NameUsageWrapper> collected = new ArrayList<>(LOOKUP_TABLE_SIZE * 2);
+
+  private final NameUsageIndexer indexer;
+  private final int datasetKey;
 
   private String prevTaxonId = "";
 

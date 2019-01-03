@@ -12,7 +12,7 @@ import static org.col.common.util.CollectionUtils.isEmpty;
 import static org.col.common.util.CollectionUtils.notEmpty;
 
 /**
- * Translates a CoL NameSearchRequest into an actual Elasticsearch query. Main class of this package.
+ * Translates a NameSearchRequest into an Elasticsearch search request. Main class of this package.
  */
 public class NameSearchRequestTranslator {
 
@@ -25,11 +25,9 @@ public class NameSearchRequestTranslator {
     } else if (StringUtils.isEmpty(request.getQ())) {
       return new FiltersTranslator(request).translate();
     }
-    Query filters = new FiltersTranslator(request).translate();
-    Query q = new QTranslator(request).translate();
     return new BoolQuery()
-        .filter(filters) // non-scoring
-        .must(q); // scoring
+        .filter(new FiltersTranslator(request).translate())
+        .must(new QTranslator(request).translate());
   }
 
   private final NameSearchRequest request;

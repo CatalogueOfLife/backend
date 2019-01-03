@@ -50,7 +50,7 @@ public class NameUsageSearchService {
   }
 
   /**
-   * Returns the raw Elasticsearch documents matching the specified query (with payloads still pruned and zipped). Useful and fast if you're
+   * Returns the raw Elasticsearch documents matching the specified query, with payloads still pruned and zipped. Useful and fast if you're
    * only interested in the indexed fields. Since this method is currently only used internally, you can (and must) compose the
    * EsSearchRequest directly.
    * 
@@ -91,8 +91,7 @@ public class NameUsageSearchService {
     httpRequest.setJsonEntity(writeQuery(esSearchRequest, false));
     Response httpResponse = EsUtil.executeRequest(client, httpRequest);
     EsNameSearchResponseReader reader = new EsNameSearchResponseReader(httpResponse);
-    EsNameSearchResponse esResponse = reader.readHttpResponse();
-    return esResponse;
+    return reader.readHttpResponse();
   }
 
   private static String writeQuery(EsSearchRequest esSearchRequest, boolean pretty) throws JsonProcessingException {
