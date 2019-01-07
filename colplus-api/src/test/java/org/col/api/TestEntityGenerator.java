@@ -88,7 +88,13 @@ public class TestEntityGenerator {
    */
   public final static Reference REF2 = new Reference();
   public final static Reference REF3 = new Reference();
-
+  
+  public final static int VERBATIM_KEY1 = 1;
+  public final static int VERBATIM_KEY2 = 2;
+  public final static int VERBATIM_KEY3 = 3;
+  public final static int VERBATIM_KEY4 = 4;
+  public final static int VERBATIM_KEY5 = 5;
+  
   static {
     USER_ADMIN.setKey(91);
     USER_ADMIN.setUsername("'admin'");
@@ -133,6 +139,7 @@ public class TestEntityGenerator {
     NAME1.setId("name-1");
     NAME1.setHomotypicNameId(NAME1.getId());
     NAME1.setDatasetKey(DATASET11.getKey());
+    NAME1.setVerbatimKey(VERBATIM_KEY5);
     NAME1.setGenus("Malus");
     NAME1.setSpecificEpithet("sylvestris");
     NAME1.setRank(Rank.SPECIES);
@@ -188,6 +195,7 @@ public class TestEntityGenerator {
     
     TAXON1.setId("root-1");
     TAXON1.setDatasetKey(DATASET11.getKey());
+    TAXON1.setVerbatimKey(VERBATIM_KEY1);
     TAXON1.setName(NAME1);
     TAXON1.setOrigin(Origin.SOURCE);
     TAXON1.setCreatedBy(Users.DB_INIT);
@@ -195,6 +203,7 @@ public class TestEntityGenerator {
     
     TAXON2.setId("root-2");
     TAXON2.setDatasetKey(DATASET11.getKey());
+    TAXON1.setVerbatimKey(VERBATIM_KEY5);
     TAXON2.setName(NAME2);
     TAXON2.setOrigin(Origin.SOURCE);
     TAXON2.setCreatedBy(Users.DB_INIT);

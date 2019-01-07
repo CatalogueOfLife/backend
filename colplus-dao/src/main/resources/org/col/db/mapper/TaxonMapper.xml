@@ -81,7 +81,7 @@
     </sql>
 
     <sql id="FROM">
-        taxon t JOIN name n ON (t.name_id=n.id AND t.dataset_key=n.dataset_key)
+        taxon_${datasetKey} t JOIN name_${datasetKey} n ON t.name_id=n.id
     </sql>
 
     <!-- A mapping to Name, mostly auto mapped -->

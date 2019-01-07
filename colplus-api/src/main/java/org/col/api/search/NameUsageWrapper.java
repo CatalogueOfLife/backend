@@ -5,8 +5,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import org.col.api.model.NameUsage;
 import org.col.api.model.SimpleName;
 import org.col.api.model.VernacularName;
@@ -16,9 +14,17 @@ import org.gbif.nameparser.api.Rank;
 public class NameUsageWrapper {
 
   private NameUsage usage;
-  private SimpleVerbatimRecord verbatimRecord;
   private List<VernacularName> vernacularNames;
   private List<SimpleName> classification;
+  private Set<Issue> issues;
+  
+  public Set<Issue> getIssues() {
+    return issues;
+  }
+  
+  public void setIssues(Set<Issue> issues) {
+    this.issues = issues;
+  }
 
   public NameUsageWrapper() {}
 
@@ -33,15 +39,7 @@ public class NameUsageWrapper {
   public void setUsage(NameUsage usage) {
     this.usage = usage;
   }
-
-  public SimpleVerbatimRecord getVerbatimRecord() {
-    return verbatimRecord;
-  }
-
-  public void setVerbatimRecord(SimpleVerbatimRecord verbatimRecord) {
-    this.verbatimRecord = verbatimRecord;
-  }
-
+  
   public List<VernacularName> getVernacularNames() {
     return vernacularNames;
   }
@@ -56,28 +54,6 @@ public class NameUsageWrapper {
 
   public void setClassification(List<SimpleName> classification) {
     this.classification = classification;
-  }
-
-  /*
-   * TODO remove getter/setter for issues. They are just here so existing code won't break
-   */
-  @JsonIgnore
-  public Set<Issue> getIssues() {
-    if (verbatimRecord == null || verbatimRecord.getIssues().isEmpty()) {
-      return null;
-    }
-    return verbatimRecord.getIssues();
-  }
-
-  public void setIssues(Set<Issue> issues) {
-    if (issues == null || issues.isEmpty()) {
-      verbatimRecord = null;
-    } else {
-      if (verbatimRecord == null) {
-        verbatimRecord = new SimpleVerbatimRecord();
-      }
-      verbatimRecord.setIssues(issues);
-    }
   }
 
   public void setClassificationIds(List<String> ids) {
@@ -134,13 +110,13 @@ public class NameUsageWrapper {
       return false;
     NameUsageWrapper that = (NameUsageWrapper) o;
     return Objects.equals(usage, that.usage) &&
-        Objects.equals(verbatimRecord, that.verbatimRecord) &&
+        Objects.equals(issues, that.issues) &&
         Objects.equals(vernacularNames, that.vernacularNames) &&
         Objects.equals(classification, that.classification);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(usage, verbatimRecord, vernacularNames, classification);
+    return Objects.hash(usage, issues, vernacularNames, classification);
   }
 }

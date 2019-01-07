@@ -13,8 +13,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import static org.col.api.TestEntityGenerator.NAME4;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 
 public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
@@ -31,6 +30,12 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
       public void handleResult(ResultContext<? extends NameUsageWrapper> ctx) {
         counter.incrementAndGet();
         NameUsageWrapper obj = ctx.getResultObject();
+        if (obj.getUsage().getId().equals("root-1")) {
+          assertEquals(4, obj.getIssues().size());
+        } else {
+          assertNull(obj.getIssues());
+        }
+
         Name n = obj.getUsage().getName();
         assertNotNull(n);
         assertNotNull(n.getId());

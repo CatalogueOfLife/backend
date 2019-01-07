@@ -62,10 +62,10 @@
     </sql>
 
     <sql id="FROM">
-        synonym s
-        JOIN name n ON n.id=s.name_id AND s.dataset_key = n.dataset_key
-        JOIN taxon a ON a.id=s.taxon_id AND s.dataset_key = a.dataset_key
-        JOIN name an ON an.id=a.name_id AND s.dataset_key = an.dataset_key
+        synonym_${datasetKey} s
+        JOIN name_${datasetKey} n ON n.id=s.name_id
+        JOIN taxon_${datasetKey} a ON a.id=s.taxon_id
+        JOIN name_${datasetKey} an ON an.id=a.name_id
     </sql>
 
 
