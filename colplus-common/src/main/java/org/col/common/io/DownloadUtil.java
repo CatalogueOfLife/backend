@@ -11,6 +11,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
+import java.util.regex.Pattern;
 
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -30,8 +31,7 @@ public class DownloadUtil {
   private static final String LAST_MODIFIED = "Last-Modified";
   private static final String MODIFIED_SINCE = "If-Modified-Since";
   private static final String AUTHORIZATION = "Authorization";
-  
-  private static final String GITHUB_DOMAIN = "github.com";
+  private static final Pattern GITHUB_DOMAINS = Pattern.compile("github(usercontent)?\\.com", Pattern.CASE_INSENSITIVE);
   
   private final CloseableHttpClient hc;
   private final String githubToken;
@@ -105,7 +105,7 @@ public class DownloadUtil {
       get.addHeader(MODIFIED_SINCE, DateTimeFormatter.RFC_1123_DATE_TIME.format(lastModified));
     }
     
-    if (githubToken != null && url.getHost().toLowerCase().endsWith(GITHUB_DOMAIN)) {
+    if (githubToken != null && GITHUB_DOMAINS.matcher(url.getHost()).find()) {
       // DateTimeFormatter is threadsafe these days
       LOG.debug("Adding Github API token");
       get.addHeader(AUTHORIZATION, "token " + githubToken);
