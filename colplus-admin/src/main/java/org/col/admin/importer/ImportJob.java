@@ -146,14 +146,13 @@ public class ImportJob implements Runnable {
       boolean isModified;
       if (dataset.getOrigin() == DatasetOrigin.UPLOADED) {
         // did we import that very archive before already?
-        isModified = lastMD5Different(source);
+        isModified = lastMD5IsDifferent(source);
         
       } else if (dataset.getOrigin() == DatasetOrigin.EXTERNAL) {
         // first download archive
         source.getParentFile().mkdirs();
         LOG.info("Downloading sources for dataset {} from {} to {}", datasetKey, di.getDownloadUri(), source);
-        isModified = downloader.downloadIfModified(di.getDownloadUri(), source)
-            && lastMD5Different(source);
+        isModified = downloader.downloadIfModified(di.getDownloadUri(), source) && lastMD5IsDifferent(source);
   
       } else {
         // we catch this in constructor already and should never reach here
@@ -246,11 +245,11 @@ public class ImportJob implements Runnable {
    *
    * @return true if the source file has a different MD5 hash as the last imported file
    */
-  private boolean lastMD5Different(File source) throws IOException {
+  private boolean lastMD5IsDifferent(File source) throws IOException {
     di.setMd5(ChecksumUtils.getMD5Checksum(source));
     if (last != null) {
       LOG.debug("Compare with last MD5 {}", last.getMd5());
-      return di.getMd5().equals(last.getMd5());
+      return !di.getMd5().equals(last.getMd5());
     } else {
       return true;
     }
