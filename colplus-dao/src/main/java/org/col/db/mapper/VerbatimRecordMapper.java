@@ -17,7 +17,7 @@ public interface VerbatimRecordMapper {
   int count(@Param("datasetKey") int datasetKey, @Param("type") Term type);
   
   List<VerbatimRecord> list(@Param("datasetKey") int datasetKey,
-                            @Param("type") Term type,
+                            @Nullable @Param("type") Term type,
                             @Nullable @Param("issue") Issue issue,
                             @Param("page") Page page
   );

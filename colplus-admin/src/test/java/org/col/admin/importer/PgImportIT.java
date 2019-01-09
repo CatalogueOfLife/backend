@@ -28,6 +28,8 @@ import org.col.db.dao.NameDao;
 import org.col.db.dao.ReferenceDao;
 import org.col.db.dao.TaxonDao;
 import org.col.db.mapper.*;
+import org.gbif.dwc.terms.Term;
+import org.gbif.dwc.terms.UnknownTerm;
 import org.gbif.nameparser.api.Rank;
 import org.junit.*;
 
@@ -547,6 +549,14 @@ public class PgImportIT {
       assertEquals("Leonida taraxacoida Vill.", s3.getName().canonicalNameComplete());
       assertEquals("1006", s3.getAccepted().getId());
       assertEquals("Leontodon taraxacoides (Vill.) Mérat", s3.getAccepted().getName().canonicalNameComplete());
+      
+      // https://github.com/Sp2000/colplus-backend/issues/237
+      VerbatimRecordMapper vm = session.getMapper(VerbatimRecordMapper.class);
+      for (VerbatimRecord v : vm.list(dataset.getKey(), null, null, new Page(0, 100))) {
+        for (Term t : v.terms()) {
+          assertFalse(t instanceof UnknownTerm);
+        }
+      }
     }
   
     DatasetImport di = metrics();
