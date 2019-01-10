@@ -89,7 +89,7 @@ public class ImportManager implements Managed {
       this.indexService = new NameUsageIndexServiceES(esClient, cfg.es, factory);
     }
     importTimer = registry.timer("org.col.import.timer");
-    failed = registry.counter("org.col.import.failures");
+    failed = registry.counter("org.col.import.failed");
   }
   
   /**
@@ -118,7 +118,7 @@ public class ImportManager implements Managed {
    * @throws IllegalArgumentException if dataset was scheduled for importing already, queue was full
    *                                  or dataset does not exist
    */
-  public ImportRequest submit(final ImportRequest req) throws IllegalArgumentException {
+  public synchronized ImportRequest submit(final ImportRequest req) throws IllegalArgumentException {
     // is this dataset already scheduled?
     if (futures.containsKey(req.datasetKey)) {
       LOG.info("Dataset {} already queued for import", req.datasetKey);
@@ -156,14 +156,14 @@ public class ImportManager implements Managed {
   }
 
   /**
-   * Uploads a new dataset and submits an import request.
+   * Uploads a new dataset and submits a forced, high priority import request.
    *
    * @throws IllegalArgumentException if dataset was scheduled for importing already, queue was full,
    *                                  dataset does not exist or is not of matching origin
    */
   public ImportRequest submit(final int datasetKey, final InputStream content, ColUser user) throws IOException {
     uploadArchive(datasetKey, content);
-    return submit(new ImportRequest(datasetKey, user.getKey(), false, true));
+    return submit(new ImportRequest(datasetKey, user.getKey(), true, true));
   }
   
   /**

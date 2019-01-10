@@ -84,7 +84,7 @@ public class AcefInterpreter extends InterpreterBase {
     
     // status
     TaxonomicStatus status = parse(TaxonomicStatusParser.PARSER, v.get(AcefTerm.Sp2000NameStatus))
-        .orElse(new EnumNote<>(synonym ? TaxonomicStatus.SYNONYM : TaxonomicStatus.ACCEPTED, null)).val;
+        .orElse(new EnumNote<>(synonym ? TaxonomicStatus.SYNONYM : TaxonomicStatus.ACCEPTED, null), Issue.TAXONOMIC_STATUS_INVALID, v).val;
     if (synonym != status.isSynonym()) {
       v.addIssue(Issue.TAXONOMIC_STATUS_INVALID);
       // override status as we require some accepted status on Taxon and some synonym status for

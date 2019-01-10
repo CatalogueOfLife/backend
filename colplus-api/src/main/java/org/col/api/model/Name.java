@@ -615,6 +615,14 @@ public class Name extends DataEntity implements ID, VerbatimEntity {
   }
   
   /**
+   * @return the complete canonical name formatted with basic html tags
+   */
+  @JsonProperty(value = "formattedName", access = JsonProperty.Access.READ_ONLY)
+  public String canonicalNameCompleteHtml() {
+    return isParsed() ? NameFormatter.canonicalCompleteHtml(toParsedName(this)) : getScientificName();
+  }
+  
+  /**
    * @See NameFormatter.authorshipComplete()
    */
   @JsonProperty(value = "authorship", access = JsonProperty.Access.READ_ONLY)

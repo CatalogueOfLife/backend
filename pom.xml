@@ -75,7 +75,7 @@
         <postgresql-embedded.version>2.10</postgresql-embedded.version>
         <postgresql.version>42.2.5</postgresql.version>
         <stax2.version>3.1.4</stax2.version>
-        <tika.version>1.13</tika.version>
+        <tika.version>1.20</tika.version>
         <twelvemonkeys.version>3.4.1</twelvemonkeys.version>
         <validation-api.version>2.0.0.Final</validation-api.version>
         <woodstox.version>4.4.1</woodstox.version>

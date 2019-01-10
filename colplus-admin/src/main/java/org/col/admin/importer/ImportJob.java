@@ -107,7 +107,7 @@ public class ImportJob implements Runnable {
       importDataset();
       successCallback.accept(req);
       
-    }catch (Exception e) {
+    } catch (Exception e) {
       errorCallback.accept(req, e);
     
     } finally {

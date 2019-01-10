@@ -98,7 +98,7 @@ public class AdminServer extends PgApp<AdminServerConfig> {
     // admin resource
     env.jersey().register(new AdminResource(getSqlSessionFactory(), new DownloadUtil(super.httpClient), cfg.normalizer, imgService));
   
-    //ContinuousAssembly assembly = new ContinuousAssembly(getSqlSessionFactory());
+    //AssemblyCoordinator assembly = new AssemblyCoordinator(getSqlSessionFactory());
     //env.jersey().register(new AssemblyResource(assembly));
   
   }

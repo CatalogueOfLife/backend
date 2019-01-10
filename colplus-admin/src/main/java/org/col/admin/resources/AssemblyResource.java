@@ -3,7 +3,8 @@ package org.col.admin.resources;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
-import org.col.admin.assembly.ContinuousAssembly;
+import org.col.admin.assembly.AssemblyCoordinator;
+import org.col.admin.assembly.AssemblyState;
 import org.col.api.vocab.Datasets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,15 +15,15 @@ public class AssemblyResource {
   
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(AssemblyResource.class);
-  private final ContinuousAssembly assembly;
+  private final AssemblyCoordinator assembly;
   
-  public AssemblyResource(ContinuousAssembly assembly) {
+  public AssemblyResource(AssemblyCoordinator assembly) {
     this.assembly = assembly;
   }
   
   @GET
   @Path("/sync")
-  public Object state(@PathParam("catKey") int catKey) {
+  public AssemblyState state(@PathParam("catKey") int catKey) {
     requireDraft(catKey);
     return assembly.getState();
   }
