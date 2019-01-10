@@ -13,8 +13,6 @@ import org.col.admin.matching.NameIndexFactory;
 import org.col.admin.resources.AdminResource;
 import org.col.admin.resources.ImporterResource;
 import org.col.admin.resources.MatchingResource;
-import org.col.api.datapackage.ColTerm;
-import org.col.api.vocab.ColDwcTerm;
 import org.col.api.vocab.Datasets;
 import org.col.common.io.DownloadUtil;
 import org.col.dw.PgApp;
@@ -22,7 +20,6 @@ import org.col.dw.es.ManagedEsClient;
 import org.col.es.EsClientFactory;
 import org.col.img.ImageService;
 import org.elasticsearch.client.RestClient;
-import org.gbif.dwc.terms.TermFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
@@ -46,10 +43,6 @@ public class AdminServer extends PgApp<AdminServerConfig> {
   public void initialize(Bootstrap<AdminServerConfig> bootstrap) {
     super.initialize(bootstrap);
     
-    // register CoLTerms
-    TermFactory.instance().registerTermEnum(ColDwcTerm.class);
-    TermFactory.instance().registerTermEnum(ColTerm.class);
-  
     // add some cli commands not accessible via the admin interface
     bootstrap.addCommand(new InitDbCmd());
     bootstrap.addCommand(new ShellCmd());

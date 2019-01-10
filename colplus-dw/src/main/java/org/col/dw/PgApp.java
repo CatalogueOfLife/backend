@@ -12,7 +12,9 @@ import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSessionFactory;
+import org.col.api.datapackage.ColTerm;
 import org.col.api.jackson.ApiModule;
+import org.col.api.vocab.ColDwcTerm;
 import org.col.dw.auth.AuthBundle;
 import org.col.dw.auth.JwtCodec;
 import org.col.dw.cors.CorsBundle;
@@ -20,6 +22,7 @@ import org.col.dw.db.MybatisBundle;
 import org.col.dw.health.NameParserHealthCheck;
 import org.col.dw.jersey.ColJerseyBundle;
 import org.col.parser.NameParser;
+import org.gbif.dwc.terms.TermFactory;
 import org.glassfish.jersey.client.rx.RxClient;
 import org.glassfish.jersey.client.rx.java8.RxCompletionStageInvoker;
 import org.glassfish.jersey.client.spi.ConnectorProvider;
@@ -41,6 +44,9 @@ public abstract class PgApp<T extends PgAppConfig> extends Application<T> {
     bootstrap.addBundle(new CorsBundle());
     // authentication which requires the UserMapper from mybatis AFTER the mybatis bundle has run
     bootstrap.addBundle(auth);
+    // register CoLTerms
+    TermFactory.instance().registerTermEnum(ColDwcTerm.class);
+    TermFactory.instance().registerTermEnum(ColTerm.class);
     // customize jackson
     ApiModule.configureMapper(bootstrap.getObjectMapper());
   }
