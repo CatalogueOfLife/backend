@@ -35,6 +35,12 @@ public class TaxonomicStatusParserTest extends EnumNoteParserTestBase<TaxonomicS
     assertParse(AMBIGUOUS_SYNONYM, "Pro-Parte");
 
     assertParse(SYNONYM, TaxonomicStatusParser.HOMOTYPIC_NOTE, "homotypicsynonym");
+  
+    assertParse(ACCEPTED, "1");
+    assertParse(AMBIGUOUS_SYNONYM, "2");
+    assertParse(MISAPPLIED, "3");
+    assertParse(PROVISIONALLY_ACCEPTED,"4");
+    assertParse(SYNONYM, "5");
   }
 
   private void assertNote() {

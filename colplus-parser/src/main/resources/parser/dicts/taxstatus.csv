@@ -1,3 +1,4 @@
+1,ACCEPTED
 a,ACCEPTED
 acceped,ACCEPTED
 accepted,ACCEPTED
@@ -9,6 +10,7 @@ preferredname,ACCEPTED
 valid,ACCEPTED
 nomeaceito,ACCEPTED
 
+4,PROVISIONALLY_ACCEPTED
 aceptadoprovisionalmente,PROVISIONALLY_ACCEPTED
 d,PROVISIONALLY_ACCEPTED
 doubtful,PROVISIONALLY_ACCEPTED
@@ -20,6 +22,7 @@ todetermine,PROVISIONALLY_ACCEPTED
 unresolved,PROVISIONALLY_ACCEPTED
 provisional,PROVISIONALLY_ACCEPTED
 
+5,SYNONYM
 alternaterepresentation,SYNONYM
 equivalenname,SYNONYM
 equivalentname,SYNONYM
@@ -59,6 +62,7 @@ unaccepted,SYNONYM
 unavailable,SYNONYM
 unpublishedname,SYNONYM
 
+2,AMBIGUOUS_SYNONYM
 ambiguoussynonym,AMBIGUOUS_SYNONYM
 pp,AMBIGUOUS_SYNONYM
 pparte,AMBIGUOUS_SYNONYM
@@ -67,6 +71,7 @@ ppsynonym,AMBIGUOUS_SYNONYM
 proparte,AMBIGUOUS_SYNONYM
 propartesynonym,AMBIGUOUS_SYNONYM
 
+3,MISAPPLIED
 ismisappliednamefor,MISAPPLIED
 misapplied,MISAPPLIED
 misappliedname,MISAPPLIED
