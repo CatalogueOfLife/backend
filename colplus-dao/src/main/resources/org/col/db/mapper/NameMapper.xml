@@ -4,11 +4,8 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="org.col.db.mapper.NameMapper">
 
-    <sql id="nameCols">
+    <sql id="minimalNameCols">
         ${alias}.id AS ${prefix}id,
-        ${alias}.dataset_key AS ${prefix}dataset_key,
-        ${alias}.verbatim_key AS ${prefix}verbatim_key,
-        ${alias}.homotypic_name_id AS ${prefix}homotypic_name_id,
         ${alias}.scientific_name AS ${prefix}scientific_name,
         ${alias}.rank AS ${prefix}rank,
         ${alias}.uninomial AS ${prefix}uninomial,
@@ -27,9 +24,16 @@
         ${alias}.combination_ex_authors AS ${prefix}combination_ex_authors,
         ${alias}.combination_year AS ${prefix}combination_year,
         ${alias}.sanctioning_author AS ${prefix}sanctioning_author,
+        ${alias}.code AS ${prefix}code
+    </sql>
+
+    <sql id="nameCols">
+        <include refid="org.col.db.mapper.NameMapper.minimalNameCols" />,
+        ${alias}.dataset_key AS ${prefix}dataset_key,
+        ${alias}.verbatim_key AS ${prefix}verbatim_key,
+        ${alias}.homotypic_name_id AS ${prefix}homotypic_name_id,
         ${alias}.published_in_id AS ${prefix}published_in_id,
         ${alias}.published_in_page AS ${prefix}published_in_page,
-        ${alias}.code AS ${prefix}code,
         ${alias}.nom_status AS ${prefix}nom_status,
         ${alias}.origin AS ${prefix}origin,
         ${alias}.type AS ${prefix}type,
@@ -43,7 +47,7 @@
     </sql>
 
     <sql id="SELECT">
-        <include refid="nameCols">
+        <include refid="org.col.db.mapper.NameMapper.nameCols">
             <property name="alias" value="n"/>
             <property name="prefix" value=""/>
         </include>
@@ -127,8 +131,7 @@
 
      <!-- A mapping to Name, mostly auto mapped -->
     <resultMap id="nameResultMap" type="Name" autoMapping="true">
-        <id property="key" column="key" />
-        <result property="id" column="id" />
+        <id property="id" column="id" />
         <association property="combinationAuthorship" javaType="Authorship">
             <result property="authors" column="combination_authors" typeHandler="org.col.db.type.StringArrayTypeHandler" />
             <result property="exAuthors" column="combination_ex_authors" typeHandler="org.col.db.type.StringArrayTypeHandler" />

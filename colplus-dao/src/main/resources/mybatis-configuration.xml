@@ -12,6 +12,7 @@
     which are otherwise setup via code in the MybatisFactory.
     -->
     <typeAliases>
+        <typeAlias type="org.col.api.model.TreeNode$TreeNodeMybatis" alias="TreeNodeMybatis" />
         <package name="org.col.api.model" />
         <package name="org.col.api.search" />
         <package name="org.gbif.nameparser.api" />

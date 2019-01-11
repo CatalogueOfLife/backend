@@ -12,6 +12,7 @@ import org.apache.ibatis.type.EnumOrdinalTypeHandler;
 import org.apache.ibatis.type.TypeAliasRegistry;
 import org.apache.ibatis.type.TypeHandlerRegistry;
 import org.col.api.model.Name;
+import org.col.api.model.TreeNode;
 import org.col.api.search.NameUsageWrapper;
 import org.col.db.mapper.NameMapper;
 import org.col.db.type.RankTypeHandler;
@@ -76,6 +77,7 @@ public class MybatisFactory {
     registry.registerAliases(NameUsageWrapper.class.getPackage().getName());
     registry.registerAlias(IntCount.class);
     registry.registerAlias(StringCount.class);
+    registry.registerAlias("TreeNodeMybatis", TreeNode.TreeNodeMybatis.class);
   }
   
   private static void registerTypeHandlers(TypeHandlerRegistry registry) {

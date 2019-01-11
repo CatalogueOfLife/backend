@@ -14,7 +14,6 @@ public class TreeNode implements ID {
   private String id;
   private String parentId;
   private String name;
-  private String authorship;
   private Rank rank;
   private TaxonomicStatus status;
   private int childCount;
@@ -23,6 +22,15 @@ public class TreeNode implements ID {
   private String speciesEstimateReferenceId;
   private Sector sector;
 
+  public static class TreeNodeMybatis extends TreeNode {
+    private Name _name;
+  
+    @Override
+    public String getName() {
+      return _name == null ? null :_name.canonicalNameCompleteHtml();
+    }
+  }
+  
   public Integer getDatasetKey() {
     return datasetKey;
   }
@@ -55,14 +63,6 @@ public class TreeNode implements ID {
   
   public void setName(String name) {
     this.name = name;
-  }
-  
-  public String getAuthorship() {
-    return authorship;
-  }
-  
-  public void setAuthorship(String authorship) {
-    this.authorship = authorship;
   }
   
   public Rank getRank() {
@@ -133,7 +133,6 @@ public class TreeNode implements ID {
             Objects.equals(id, treeNode.id) &&
             Objects.equals(parentId, treeNode.parentId) &&
             Objects.equals(name, treeNode.name) &&
-            Objects.equals(authorship, treeNode.authorship) &&
             rank == treeNode.rank &&
             status == treeNode.status &&
             Objects.equals(speciesEstimate, treeNode.speciesEstimate) &&
@@ -143,6 +142,6 @@ public class TreeNode implements ID {
 
   @Override
   public int hashCode() {
-    return Objects.hash(datasetKey, id, parentId, name, authorship, rank, status, childCount, speciesCount, speciesEstimate, speciesEstimateReferenceId, sector);
+    return Objects.hash(datasetKey, id, parentId, name, rank, status, childCount, speciesCount, speciesEstimate, speciesEstimateReferenceId, sector);
   }
 }

@@ -8,14 +8,15 @@
         t.dataset_key,
         t.id,
         t.parent_id,
-        n.scientific_name as name,
-        null as authorship,
-        n.rank,
         t.provisional,
         null as speciesCount,
         t.species_estimate,
         t.species_estimate_reference_id,
-        (select count(*) from taxon_${datasetKey} where parent_id=t.id) AS child_count
+        (select count(*) from taxon_${datasetKey} where parent_id=t.id) AS child_count,
+        <include refid="org.col.db.mapper.NameMapper.minimalNameCols">
+            <property name="alias" value="n"/>
+            <property name="prefix" value=""/>
+        </include>
         <if test="datasetKey == 3">
             ,<include refid="org.col.db.mapper.SectorMapper.SELECT" />
         </if>
@@ -28,11 +29,11 @@
         </if>
     </sql>
 
-    <!-- A mapping to Name, mostly auto mapped -->
-    <resultMap id="treeResultMap" type="TreeNode" autoMapping="true">
+    <resultMap id="treeResultMap" type="TreeNodeMybatis" autoMapping="true">
         <id property="id" column="id" />
         <result property="status" column="provisional" typeHandler="org.col.db.type2.TaxonStatusTypeHandler" />
-        <association property="sector" javaType="Sector" resultMap="org.col.db.mapper.SectorMapper.sectorResultMap" columnPrefix="" />
+        <association property="_name" javaType="Name" resultMap="org.col.db.mapper.NameMapper.nameResultMap" />
+        <association property="sector" javaType="Sector" resultMap="org.col.db.mapper.SectorMapper.sectorResultMap" />
     </resultMap>
 
     <select id="root" resultMap="treeResultMap">

@@ -32,7 +32,7 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
   
   @Test
   public void root() {
-    assertEquals(2, mapper().root(dataset11).size());
+    assertEquals(2, valid(mapper().root(dataset11)).size());
     TreeNode tn = mapper().root(dataset11).get(0);
     assertEquals(dataset11, (int) tn.getDatasetKey());
     assertNotNull(tn.getId());
@@ -41,12 +41,12 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
   
   @Test
   public void parents() {
-    assertEquals(1, mapper().parents(dataset11, "root-1").size());
+    assertEquals(1, valid(mapper().parents(dataset11, "root-1")).size());
   }
   
   @Test
   public void children() {
-    assertEquals(0, mapper().children(dataset11, "root-1").size());
+    assertEquals(0, valid(mapper().children(dataset11, "root-1")).size());
   }
   
   @Test
@@ -68,25 +68,48 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
     sm.create(s2);
     commit();
     
-    List<TreeNode> nodes = mapper().children(DRAFT_COL, "t1");
+    List<TreeNode.TreeNodeMybatis> nodes = mapper().children(DRAFT_COL, "t1");
     assertEquals(1, nodes.size());
-    
+    noSector(nodes);
+  
     nodes = mapper().children(DRAFT_COL, "t2");
     assertEquals(1, nodes.size());
+    noSector(nodes);
     
     nodes = mapper().children(DRAFT_COL, "t3");
     assertEquals(2, nodes.size());
+    sectors(nodes);
     
     nodes = mapper().parents(DRAFT_COL, "t4");
     assertEquals(4, nodes.size());
+    valid(nodes);
     assertNotNull(nodes.get(0).getSector());
     assertNull(nodes.get(1).getSector());
   }
   
-  private void noSector(List<TreeNode> nodes) {
+  private List<TreeNode.TreeNodeMybatis> sectors(List<TreeNode.TreeNodeMybatis> nodes) {
+    valid(nodes);
+    for (TreeNode n : nodes) {
+      assertNotNull(n.getSector());
+    }
+    return nodes;
+  }
+
+  private List<TreeNode.TreeNodeMybatis> noSector(List<TreeNode.TreeNodeMybatis> nodes) {
+    valid(nodes);
     for (TreeNode n : nodes) {
       assertNull(n.getSector());
     }
+    return nodes;
+  }
+  
+  private List<TreeNode.TreeNodeMybatis> valid(List<TreeNode.TreeNodeMybatis> nodes) {
+    for (TreeNode n : nodes) {
+      assertNotNull(n.getId());
+      assertNotNull(n.getDatasetKey());
+      assertNotNull(n.getName());
+    }
+    return nodes;
   }
   
   private static SimpleName nameref(String id) {
