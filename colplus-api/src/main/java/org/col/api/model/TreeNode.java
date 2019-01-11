@@ -17,7 +17,6 @@ public class TreeNode implements ID {
   private Rank rank;
   private TaxonomicStatus status;
   private int childCount;
-  private int speciesCount;
   private Integer speciesEstimate;
   private String speciesEstimateReferenceId;
   private Sector sector;
@@ -89,14 +88,6 @@ public class TreeNode implements ID {
     this.childCount = childCount;
   }
   
-  public int getSpeciesCount() {
-    return speciesCount;
-  }
-  
-  public void setSpeciesCount(int speciesCount) {
-    this.speciesCount = speciesCount;
-  }
-  
   public Integer getSpeciesEstimate() {
     return speciesEstimate;
   }
@@ -128,7 +119,6 @@ public class TreeNode implements ID {
     if (o == null || getClass() != o.getClass()) return false;
     TreeNode treeNode = (TreeNode) o;
     return childCount == treeNode.childCount &&
-            speciesCount == treeNode.speciesCount &&
             Objects.equals(datasetKey, treeNode.datasetKey) &&
             Objects.equals(id, treeNode.id) &&
             Objects.equals(parentId, treeNode.parentId) &&
@@ -142,6 +132,6 @@ public class TreeNode implements ID {
 
   @Override
   public int hashCode() {
-    return Objects.hash(datasetKey, id, parentId, name, rank, status, childCount, speciesCount, speciesEstimate, speciesEstimateReferenceId, sector);
+    return Objects.hash(datasetKey, id, parentId, name, rank, status, childCount, speciesEstimate, speciesEstimateReferenceId, sector);
   }
 }
