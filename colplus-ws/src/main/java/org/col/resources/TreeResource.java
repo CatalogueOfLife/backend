@@ -63,19 +63,19 @@ public class TreeResource {
   }
 
   @GET
-  public List<TreeNode> root(@PathParam("datasetKey") int datasetKey, @Context SqlSession session) {
+  public List<TreeNode.TreeNodeMybatis> root(@PathParam("datasetKey") int datasetKey, @Context SqlSession session) {
     return session.getMapper(TreeMapper.class).root(datasetKey);
   }
   
   @GET
   @Path("{id}")
-  public List<TreeNode> parents(@PathParam("datasetKey") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
+  public List<TreeNode.TreeNodeMybatis> parents(@PathParam("datasetKey") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
     return session.getMapper(TreeMapper.class).parents(datasetKey, id);
   }
   
   @GET
   @Path("{id}/children")
-  public List<TreeNode> children(@PathParam("datasetKey") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
+  public List<TreeNode.TreeNodeMybatis> children(@PathParam("datasetKey") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
     return session.getMapper(TreeMapper.class).children(datasetKey, id);
   }
   
