@@ -6,6 +6,7 @@ import java.util.HashSet;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import org.col.api.jackson.ApiModule;
 import org.col.api.jackson.SerdeTestBase;
 import org.col.api.vocab.NomStatus;
@@ -55,6 +56,23 @@ public class NameSearchRequestTest extends SerdeTestBase<NameSearchRequest> {
     r.addFilter(NameSearchParameter.DATASET_KEY, Lists.newArrayList("1", "2"));
     assertEquals(ImmutableList.of(123, 1234, 1234, 12, 13, 14, 1, 2), r.getFilterValue(NameSearchParameter.DATASET_KEY));
   }
+  
+  @Test
+  public void copy() {
+    NameSearchRequest r = new NameSearchRequest();
+    r.addFilter(NameSearchParameter.DATASET_KEY, "123");
+    r.addFilter(NameSearchParameter.DATASET_KEY, 1234);
+    assertEquals(r, r.copy());
+
+    r.setContent(null);
+    assertEquals(r, r.copy());
+  
+    r.setContent(Sets.newHashSet(NameSearchRequest.SearchContent.AUTHORSHIP));
+    assertEquals(r, r.copy());
+  
+    r.setContent(Sets.newHashSet());
+    r.copy();
+  }
 
   @Ignore // Filter params now get converted to appropriate type before they enter the multivalued map.
   @Test
@@ -65,7 +83,7 @@ public class NameSearchRequestTest extends SerdeTestBase<NameSearchRequest> {
       String val = testVal(p);
       r.addFilter(p, val);
       r.addFilter(p, Lists.newArrayList(val, val));
-      assertEquals(ImmutableList.of(val, val, val), r.getFilterValue(p));
+      assertEquals(Lists.newArrayList(val, val, val), r.getFilterValue(p));
     }
     assertEquals(NameSearchParameter.values().length, r.getFilters().size());
   }
