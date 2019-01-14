@@ -93,7 +93,7 @@ class SynonymResultHandler implements ResultHandler<NameUsageWrapper>, AutoClose
   }
 
   private List<EsNameUsage> loadTaxa() throws IOException {
-    NameUsageSearchService svc = new NameUsageSearchService(indexer.getEsClient());
+    NameUsageSearchService svc = new NameUsageSearchService(indexer.getIndexName(), indexer.getEsClient());
     BoolQuery query = new BoolQuery()
         .filter(new TermQuery("datasetKey", datasetKey))
         .filter(new TermsQuery("usageId", taxonIds));

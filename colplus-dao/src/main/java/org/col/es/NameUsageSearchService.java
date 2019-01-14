@@ -5,7 +5,6 @@ import java.util.List;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectWriter;
-
 import org.col.api.model.Page;
 import org.col.api.search.NameSearchRequest;
 import org.col.api.search.NameSearchResponse;
@@ -20,17 +19,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.col.es.EsConfig.DEFAULT_TYPE_NAME;
-import static org.col.es.EsConfig.ES_INDEX_NAME_USAGE;;
+
+;
 
 public class NameUsageSearchService {
 
   private static final Logger LOG = LoggerFactory.getLogger(NameUsageSearchService.class);
   // For debugging, being being able to see the generated queries sometimes helps, but sometimes definitely not
   private static final boolean SUPPRESS_WRITER = true;
-
+  
+  private final String index;
   private final RestClient client;
 
-  public NameUsageSearchService(RestClient client) {
+  public NameUsageSearchService(String indexName, RestClient client) {
+    this.index = indexName;
     this.client = client;
   }
 
@@ -43,7 +45,7 @@ public class NameUsageSearchService {
    */
   public NameSearchResponse search(NameSearchRequest query, Page page) {
     try {
-      return search(ES_INDEX_NAME_USAGE, query, page);
+      return search(index, query, page);
     } catch (IOException e) {
       throw new EsException(e);
     }
@@ -59,7 +61,7 @@ public class NameUsageSearchService {
    */
   public List<EsNameUsage> getDocuments(EsSearchRequest esSearchRequest) {
     try {
-      return getDocuments(ES_INDEX_NAME_USAGE, esSearchRequest);
+      return getDocuments(index, esSearchRequest);
     } catch (IOException e) {
       throw new EsException(e);
     }

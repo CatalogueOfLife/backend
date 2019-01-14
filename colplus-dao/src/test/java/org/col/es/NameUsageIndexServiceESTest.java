@@ -43,7 +43,7 @@ public class NameUsageIndexServiceESTest extends EsReadWriteTestBase {
   public void indexWithClassification() throws IOException, EsException {
 
     try (RestClient client = getEsClient()) {
-      String index = "name_usage_test";
+      final String index = "name_usage_test";
       EsUtil.deleteIndex(client, index);
       EsUtil.createIndex(client, index, getEsConfig().nameUsage);
       NameUsageIndexer indexer = new NameUsageIndexer(client, index);
@@ -58,7 +58,7 @@ public class NameUsageIndexServiceESTest extends EsReadWriteTestBase {
 
       NameSearchRequest nsr = new NameSearchRequest();
       nsr.setSortBy(SortBy.NATIVE);
-      NameUsageSearchService svc = new NameUsageSearchService(client);
+      NameUsageSearchService svc = new NameUsageSearchService(index, client);
       NameSearchResponse response = svc.search(index, nsr, new Page());
       List<NameUsageWrapper> result = response.getResult();
 

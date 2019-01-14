@@ -9,6 +9,8 @@ import org.col.img.ImageService;
 import org.col.resources.*;
 import org.elasticsearch.client.RestClient;
 
+import static org.col.es.EsConfig.ES_INDEX_NAME_USAGE;
+
 public class WsServer extends PgApp<WsServerConfig> {
   
   private Object adminApi;
@@ -28,7 +30,7 @@ public class WsServer extends PgApp<WsServerConfig> {
     
     final RestClient esClient = new EsClientFactory(cfg.es).createClient();
     env.lifecycle().manage(new ManagedEsClient(esClient));
-    NameUsageSearchService nuss = new NameUsageSearchService(esClient);
+    NameUsageSearchService nuss = new NameUsageSearchService(cfg.es.indexName(ES_INDEX_NAME_USAGE), esClient);
     final ImageService imgService = new ImageService(cfg.img);
     env.jersey().register(new ColSourceResource(imgService));
     env.jersey().register(new DataPackageResource());

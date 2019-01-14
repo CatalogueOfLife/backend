@@ -19,10 +19,12 @@ public class NameUsageIndexServiceES implements NameUsageIndexService {
 
   private final RestClient client;
   private final EsConfig esConfig;
+  private final String index;
   private final SqlSessionFactory factory;
 
   public NameUsageIndexServiceES(RestClient client, EsConfig esConfig, SqlSessionFactory factory) {
     this.client = client;
+    this.index = esConfig.indexName(ES_INDEX_NAME_USAGE);
     this.esConfig = esConfig;
     this.factory = factory;
   }
@@ -32,7 +34,6 @@ public class NameUsageIndexServiceES implements NameUsageIndexService {
    */
   @Override
   public void indexDataset(int datasetKey) {
-    String index = ES_INDEX_NAME_USAGE;
     NameUsageIndexer indexer = new NameUsageIndexer(client, index);
     int tCount, sCount, bCount;
     try (SqlSession session = factory.openSession()) {
