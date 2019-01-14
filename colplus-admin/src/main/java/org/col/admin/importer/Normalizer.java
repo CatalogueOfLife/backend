@@ -389,6 +389,8 @@ public class Normalizer implements Callable<Boolean> {
       store.usages().all().forEach(u -> {
         if (u.isSynonym()) {
           if (!u.distributions.isEmpty() ||
+              !u.descriptions.isEmpty() ||
+              !u.media.isEmpty() ||
               !u.vernacularNames.isEmpty() ||
               !u.bibliography.isEmpty()
           ) {
@@ -397,12 +399,16 @@ public class Normalizer implements Callable<Boolean> {
             Traversals.ACCEPTED.traverse(n).nodes().forEach( accNode -> {
               NeoUsage acc = store.usages().objByNode(accNode);
               acc.distributions.addAll(u.distributions);
+              acc.descriptions.addAll(u.descriptions);
+              acc.media.addAll(u.media);
               acc.vernacularNames.addAll(u.vernacularNames);
               acc.bibliography.addAll(u.bibliography);
               store.usages().update(acc);
             });
   
             u.distributions.clear();
+            u.descriptions.clear();
+            u.media.clear();
             u.vernacularNames.clear();
             u.bibliography.clear();
             store.addIssues(u.usage, Issue.SYNONYM_DATA_MOVED);
