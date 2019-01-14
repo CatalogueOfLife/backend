@@ -7,6 +7,7 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.Appender;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
+import com.google.common.base.Strings;
 import io.dropwizard.logging.AbstractAppenderFactory;
 import io.dropwizard.logging.async.AsyncAppenderFactory;
 import io.dropwizard.logging.filter.LevelFilterFactory;
@@ -24,7 +25,7 @@ public class LogstashAppenderFactory extends AbstractAppenderFactory<ILoggingEve
 
   private int port;
   private String host;
-  private String environment = "col";
+  private String environment;
   private Map<String, String> extra;
 
   @JsonProperty
@@ -87,12 +88,15 @@ public class LogstashAppenderFactory extends AbstractAppenderFactory<ILoggingEve
   public String customFieldJson(String applicationName) {
     StringBuilder sb = new StringBuilder();
     sb.append("{")
-        .append("\"environment\":\"")
-        .append(environment)
-        .append("\",")
-        .append("\"class\":\"")
-        .append(applicationName)
-        .append("\"");
+      .append("\"environment\":\"col");
+    if (environment != null) {
+      sb.append("-")
+        .append(Strings.nullToEmpty(environment));
+    }
+    sb.append("\",")
+      .append("\"class\":\"")
+      .append(applicationName)
+      .append("\"");
     if (extra != null) {
       extra.forEach((key, value) -> {
         sb.append(",\"")
