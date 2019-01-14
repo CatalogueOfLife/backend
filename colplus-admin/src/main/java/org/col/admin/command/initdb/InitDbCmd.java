@@ -77,7 +77,7 @@ public class InitDbCmd extends ConfiguredCommand<AdminServerConfig> {
       st.execute("DROP DATABASE IF EXISTS \"" + cfg.db.database + "\"");
       
       LOG.info("Create new database {}", cfg.db.database);
-      st.execute("CREATE DATABASE  + \"" + cfg.db.database + "\"" + " WITH OWNER " + cfg.db.user);
+      st.execute("CREATE DATABASE  \"" + cfg.db.database + "\"" + " WITH OWNER " + cfg.db.user);
     }
     
     try (Connection con = cfg.db.connect()) {
