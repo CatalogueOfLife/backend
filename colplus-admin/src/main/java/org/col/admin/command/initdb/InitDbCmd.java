@@ -1,5 +1,12 @@
 package org.col.admin.command.initdb;
 
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.nio.charset.StandardCharsets;
+import java.sql.Connection;
+import java.sql.Statement;
+import java.util.concurrent.TimeUnit;
+
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import io.dropwizard.cli.ConfiguredCommand;
@@ -25,13 +32,6 @@ import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.nio.charset.StandardCharsets;
-import java.sql.Connection;
-import java.sql.Statement;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Command to initialise a new database schema.
@@ -74,10 +74,10 @@ public class InitDbCmd extends ConfiguredCommand<AdminServerConfig> {
          Statement st = con.createStatement()
     ) {
       LOG.info("Drop existing database {}", cfg.db.database);
-      st.execute("DROP DATABASE IF EXISTS " + cfg.db.database);
+      st.execute("DROP DATABASE IF EXISTS \"" + cfg.db.database + "\"");
       
       LOG.info("Create new database {}", cfg.db.database);
-      st.execute("CREATE DATABASE " + cfg.db.database + " WITH OWNER " + cfg.db.user);
+      st.execute("CREATE DATABASE  + \"" + cfg.db.database + "\"" + " WITH OWNER " + cfg.db.user);
     }
     
     try (Connection con = cfg.db.connect()) {
