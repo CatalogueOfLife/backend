@@ -393,7 +393,7 @@ public enum Issue {
   /**
    * Value for container title was accepted as-is
    */
-  CSL_CONTAINER_UNPARSED(Group.REFERENCE, Level.INFO),
+  CITATION_CONTAINER_TITLE_UNPARSED(Group.REFERENCE, Level.INFO),
   
   /**
    * Value for citation was accepted as-is

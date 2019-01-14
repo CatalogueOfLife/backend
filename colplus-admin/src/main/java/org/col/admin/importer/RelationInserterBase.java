@@ -38,21 +38,19 @@ public abstract class RelationInserterBase implements NodeBatchProcessor {
           VerbatimRecord v = store.getVerbatim(u.getVerbatimKey());
           Node p;
           if (u.isSynonym()) {
-            p = usageByID(acceptedTerm, v, u);
+            p = usageByID(acceptedTerm, v, u, Issue.ACCEPTED_ID_INVALID);
             if (p != null) {
               store.createSynonymRel(u.node, p);
             } else {
               // if we ain't got no idea of the accepted flag it
               // the orphan synonym usage will be removed later by the normalizer
-              v.addIssues(Issue.ACCEPTED_ID_INVALID, Issue.ACCEPTED_NAME_MISSING);
+              v.addIssues(Issue.ACCEPTED_NAME_MISSING);
             }
             
           } else {
-            p = usageByID(parentTerm, v, u);
+            p = usageByID(parentTerm, v, u, Issue.PARENT_ID_INVALID);
             if (p != null) {
               store.assignParent(p, u.node);
-            } else {
-              v.addIssue(Issue.PARENT_ID_INVALID);
             }
           }
           
@@ -97,16 +95,21 @@ public abstract class RelationInserterBase implements NodeBatchProcessor {
   }
 
   /**
-   * Reads a verbatim given term that should represent a foreign key to another record via the taxonID.
-   * If the value is not the same as the original records taxonID it tries to split the ids into multiple keys and lookup the matching nodes.
+   * Reads a verbatim idTerm that should represent a foreign key to another record via the taxonID.
+   * If the value is not the same as the original records taxonID it tries to lookup the matching node.
+   *
+   * If a non empty value foreign key existed which cannot be resolved the given invalidIssue is applied.
    *
    * @return queue of potentially split ids with their matching neo node if found, otherwise null
    */
-  protected Node usageByID(Term idTerm, VerbatimRecord v, NeoUsage u) {
+  protected Node usageByID(Term idTerm, VerbatimRecord v, NeoUsage u, Issue invalidIssue) {
     Node n = null;
     final String id = v.getRaw(idTerm);
     if (id != null && !id.equals(u.getId())) {
       n = store.usages().nodeByID(id);
+      if (n == null) {
+        v.addIssue(invalidIssue);
+      }
     }
     return n;
   }

@@ -81,7 +81,7 @@ public class ReferenceFactory {
       csl.setIssued(yearToDate(ref.getYear()));
       if (!StringUtils.isBlank(details)) {
         csl.setContainerTitle(details);
-        issues.addIssue(Issue.CSL_CONTAINER_UNPARSED);
+        issues.addIssue(Issue.CITATION_CONTAINER_TITLE_UNPARSED);
       }
     }
     return ref;
@@ -133,7 +133,7 @@ public class ReferenceFactory {
         csl.setIssued(toCslDate(date));
         if (!StringUtils.isEmpty(source)) {
           csl.setContainerTitle(source);
-          issues.addIssue(Issue.CSL_CONTAINER_UNPARSED);
+          issues.addIssue(Issue.CITATION_CONTAINER_TITLE_UNPARSED);
         }
       }
     }

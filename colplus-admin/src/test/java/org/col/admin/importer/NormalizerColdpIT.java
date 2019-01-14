@@ -4,7 +4,9 @@ import java.util.List;
 
 import org.col.admin.importer.neo.model.NeoUsage;
 import org.col.api.model.NameRelation;
+import org.col.api.model.VerbatimRecord;
 import org.col.api.vocab.DataFormat;
+import org.col.api.vocab.Issue;
 import org.col.api.vocab.NomRelType;
 import org.junit.Test;
 import org.neo4j.graphdb.Transaction;
@@ -46,6 +48,25 @@ public class NormalizerColdpIT extends NormalizerITBase {
       
       parents(t.node, "102", "30", "20", "10", "1");
       
+      store.names().all().forEach(n -> {
+        VerbatimRecord v = store.getVerbatim(n.getVerbatimKey());
+        assertNotNull(v);
+        assertEquals(1, v.getIssues().size());
+        assertTrue(v.hasIssue(Issue.NAME_MATCH_NONE));
+      });
+  
+      store.usages().all().forEach(u -> {
+        VerbatimRecord v = store.getVerbatim(u.getVerbatimKey());
+        assertNotNull(v);
+        assertTrue(v.getIssues().isEmpty());
+      });
+  
+      store.refList().forEach(r -> {
+        VerbatimRecord v = store.getVerbatim(r.getVerbatimKey());
+        assertNotNull(v);
+        assertEquals(1, v.getIssues().size());
+        assertTrue(v.hasIssue(Issue.CITATION_CONTAINER_TITLE_UNPARSED));
+      });
     }
   }
 
