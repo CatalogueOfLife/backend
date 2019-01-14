@@ -59,6 +59,13 @@ public class DatasetResource extends CRUDIntResource<Dataset> {
   }
   
   @GET
+  @Path("{key}/import/{attempt}")
+  public DatasetImport getImportAttempt(@PathParam("key") int key,
+                                        @PathParam("attempt") int attempt) {
+    return new DatasetImportDao(factory).getAttempt(key, attempt);
+  }
+  
+  @GET
   @Path("{key}/logo")
   @Produces("image/png")
   public BufferedImage logo(@PathParam("key") int key, @QueryParam("size") @DefaultValue("small") ImgConfig.Scale scale) {

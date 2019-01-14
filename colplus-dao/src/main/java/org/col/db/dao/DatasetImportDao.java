@@ -104,6 +104,12 @@ public class DatasetImportDao {
     }
   }
   
+  public DatasetImport getAttempt(int datasetKey, int attempt) {
+    try (SqlSession session = factory.openSession(true)) {
+      return session.getMapper(DatasetImportMapper.class).get(datasetKey, attempt);
+    }
+  }
+
   /**
    * Updates a running dataset import instance with metrics and success state.
    * Updates the dataset to point to the imports attempt.
