@@ -24,6 +24,7 @@ public class LogstashAppenderFactory extends AbstractAppenderFactory<ILoggingEve
 
   private int port;
   private String host;
+  private String environment = "col";
   private Map<String, String> extra;
 
   @JsonProperty
@@ -45,7 +46,17 @@ public class LogstashAppenderFactory extends AbstractAppenderFactory<ILoggingEve
   public void setHost(String host) {
     this.host = host;
   }
-
+  
+  @JsonProperty
+  public String getEnvironment() {
+    return environment;
+  }
+  
+  @JsonProperty
+  public void setEnvironment(String environment) {
+    this.environment = environment;
+  }
+  
   public Map<String, String> getExtra() {
     return extra;
   }
@@ -69,14 +80,16 @@ public class LogstashAppenderFactory extends AbstractAppenderFactory<ILoggingEve
     getFilterFactories().forEach(f -> appender.addFilter(f.build()));
     appender.start();
 
-    LOG.debug("Created asynchroneous (queue={}, custom={}) logstash appender for {}:{}", getQueueSize(), appender.getCustomFields(), host, port);
+    LOG.debug("Created asynchroneous (queue={}, custom={}) logstash appender for env {} {}:{}", getQueueSize(), appender.getCustomFields(), environment ,host, port);
     return wrapAsync(appender, asyncAppenderFactory);
   }
 
   public String customFieldJson(String applicationName) {
     StringBuilder sb = new StringBuilder();
     sb.append("{")
-        .append("\"environment\":\"col\",")
+        .append("\"environment\":\"")
+        .append(environment)
+        .append("\",")
         .append("\"class\":\"")
         .append(applicationName)
         .append("\"");
