@@ -23,6 +23,7 @@ public class PgConfig extends PgDbConfig {
   public static final String GBIF_DATASETS_FILE = "org/col/db/gbif.sql";
   public static final URI COL_DATASETS_URI = URI.create("https://raw.githubusercontent.com/Sp2000/colplus-repo/master/datasets.sql");
   public static final URI COL_NEW_DATASETS_URI = URI.create("https://raw.githubusercontent.com/Sp2000/colplus-repo/master/new-datasets.sql");
+  public static final URI TEST_DATASETS_URI = URI.create("https://raw.githubusercontent.com/Sp2000/colplus-repo/master/unit-tests.sql");
   
   /**
    * Use null or an absolute file path starting with / to indicate an embedded postgres server
