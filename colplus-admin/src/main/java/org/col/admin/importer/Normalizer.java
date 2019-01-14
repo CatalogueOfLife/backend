@@ -301,14 +301,14 @@ public class Normalizer implements Callable<Boolean> {
     // rectify taxonomic status
     rectifyTaxonomicStatus();
   
-    // move synonym data to accepted
-    moveSynonymData();
-  
     // process the denormalized classifications of accepted taxa
     applyDenormedClassification();
   
     // remove orphan synonyms
     removeOrphanSynonyms();
+  
+    // move synonym data to accepted
+    moveSynonymData();
   
     LOG.info("Normalization completed.");
   }
@@ -381,7 +381,7 @@ public class Normalizer implements Callable<Boolean> {
   }
   
   /**
-   * Moves synonym data (distributions, vernacular, bibliography) to its accepted taxon.
+   * Moves synonym data (descriptions, distributions, media, vernacular, bibliography) to its accepted taxon.
    * https://github.com/Sp2000/colplus-backend/issues/108
    */
   private void moveSynonymData() {

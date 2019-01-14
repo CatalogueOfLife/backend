@@ -36,5 +36,27 @@
 		<field index="5" term="http://rs.tdwg.org/dwc/terms/occurrenceStatus" default="present"/>
 		<field index="6" term="http://purl.org/dc/terms/source"/>
 	</extension>
+	<extension encoding="UTF-8" linesTerminatedBy="\n" fieldsTerminatedBy="\t" fieldsEnclosedBy='' ignoreHeaderLines="1" rowType="http://rs.gbif.org/terms/1.0/Multimedia">
+		<files>
+			<location>media.txt</location>
+		</files>
+		<id index="0" />
+		<field index="0" term="http://rs.tdwg.org/dwc/terms/taxonID"/>
+		<field default="StillImage" term="http://purl.org/dc/terms/type"/>
+		<field default="image/jpeg" term="http://purl.org/dc/terms/format"/>
+		<field index="1" term="http://purl.org/dc/terms/identifier"/>
+		<field index="2" term="http://purl.org/dc/terms/references"/>
+        <field index="3" term="http://purl.org/dc/terms/created"/>
+	</extension>
+	<extension encoding="UTF-8" linesTerminatedBy="\n" fieldsTerminatedBy="\t" fieldsEnclosedBy='' ignoreHeaderLines="1" rowType="http://rs.gbif.org/terms/1.0/Description">
+		<files>
+			<location>description.txt</location>
+		</files>
+		<id index="0" />
+		<field index="0" term="http://rs.tdwg.org/dwc/terms/taxonID"/>
+		<field index="1" term="http://purl.org/dc/terms/type"/>
+		<field index="2" term="http://purl.org/dc/terms/description"/>
+		<field default="eng" term="http://purl.org/dc/terms/language"/>
+	</extension>
 </archive>
 

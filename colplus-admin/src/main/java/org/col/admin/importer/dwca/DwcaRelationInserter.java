@@ -19,6 +19,7 @@ import org.col.api.model.Name;
 import org.col.api.model.VerbatimRecord;
 import org.col.api.vocab.Issue;
 import org.col.api.vocab.Origin;
+import org.col.api.vocab.TaxonomicStatus;
 import org.col.parser.NameParser;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.nameparser.api.Rank;
@@ -79,6 +80,12 @@ public class DwcaRelationInserter implements NodeBatchProcessor {
       accepted = usagesByIdOrName(v, u, true, DwcTerm.acceptedNameUsageID, Issue.ACCEPTED_ID_INVALID, DwcTerm.acceptedNameUsage, Origin.VERBATIM_ACCEPTED);
       for (RankedUsage acc : accepted) {
         store.createSynonymRel(u.node, acc.usageNode);
+      }
+      
+      if (!accepted.isEmpty() && !u.isSynonym()) {
+        u.convertToSynonym(TaxonomicStatus.SYNONYM);
+        // store the updated object
+        store.usages().update(u);
       }
     }
     

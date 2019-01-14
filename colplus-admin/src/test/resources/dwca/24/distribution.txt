@@ -9,6 +9,6 @@ taxonID	locationID	locality	countryCode	country	occurrenceStatus	source
 1000	TDWG:MOR-MO,TDWG:MOR-CE,TDWG:MOR-ME				present	
 1000	tdwg:cpp; tdwg:of; tdwg:nam				present	
 1000	iso:it-82					
-1000	ISO:ES-CN				present	
-1000	ISO:FR-H					
-1000	ISO:FM-PNI				present	
+1001	ISO:ES-CN				present	
+1001	ISO:FR-H					
+1001	ISO:FM-PNI				present	
