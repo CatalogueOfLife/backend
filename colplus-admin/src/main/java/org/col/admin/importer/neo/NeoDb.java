@@ -648,6 +648,7 @@ public class NeoDb implements ReferenceStore {
       for (Node n : Iterators.loop(getNeo().findNodes(Labels.SYNONYM))) {
         NeoUsage u = usages().objByNode(n);
         if (u.node.hasLabel(Labels.SYNONYM) && !u.isSynonym()) {
+          LOG.error("Taxon to Synonym conversion in neo4j needed for {}", u.usage);
           u.convertToSynonym(TaxonomicStatus.SYNONYM);
         }
         // store the updated object

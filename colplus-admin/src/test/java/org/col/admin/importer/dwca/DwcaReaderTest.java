@@ -5,6 +5,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.col.api.util.VocabularyUtils;
 import org.col.common.io.PathUtils;
+import org.gbif.dwc.terms.DcTerm;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.GbifTerm;
 import org.gbif.dwc.terms.Term;
@@ -117,7 +118,7 @@ public class DwcaReaderTest {
   public void dwca24() throws Exception {
     DwcaReader reader = DwcaReader.from(PathUtils.classPathTestRes("dwca/24"));
     
-    assertEquals(3, reader.size());
+    assertEquals(5, reader.size());
     assertEquals(DwcTerm.Taxon, reader.coreRowType());
     assertEquals(7, reader.coreSchema().size());
     assertTrue(reader.coreSchema().hasTerm(DwcaReader.DWCA_ID));
@@ -127,14 +128,20 @@ public class DwcaReaderTest {
     
     assertTrue(reader.hasData(GbifTerm.VernacularName));
     assertEquals(6, reader.schema(GbifTerm.VernacularName).get().size());
-    
+  
+    assertTrue(reader.hasData(GbifTerm.Description));
+    assertEquals(5, reader.schema(GbifTerm.Description).get().size());
+  
+    assertTrue(reader.hasData(GbifTerm.Multimedia));
+    assertEquals(7, reader.schema(GbifTerm.Multimedia).get().size());
+
     final AtomicInteger counter = new AtomicInteger(0);
     reader.stream(DwcTerm.Taxon).forEach(tr -> {
       counter.incrementAndGet();
       assertNotNull(tr.get(DwcTerm.scientificName));
       assertEquals(tr.get(DwcaReader.DWCA_ID), tr.get(DwcTerm.taxonID));
     });
-    assertEquals(4, counter.get());
+    assertEquals(5, counter.get());
     
     counter.set(0);
     reader.stream(GbifTerm.Distribution).forEach(tr -> {
@@ -152,6 +159,24 @@ public class DwcaReaderTest {
       assertEquals("xyz", tr.get(countOnMe));
     });
     assertEquals(7, counter.get());
+  
+    counter.set(0);
+    reader.stream(GbifTerm.Description).forEach(tr -> {
+      counter.incrementAndGet();
+      assertNotNull(tr.get(DwcaReader.DWCA_ID));
+      assertNotNull(tr.get(DwcTerm.taxonID));
+      assertNotNull(tr.get(DcTerm.description));
+    });
+    assertEquals(3, counter.get());
+    
+    counter.set(0);
+    reader.stream(GbifTerm.Multimedia).forEach(tr -> {
+      counter.incrementAndGet();
+      assertNotNull(tr.get(DwcaReader.DWCA_ID));
+      assertNotNull(tr.get(DwcTerm.taxonID));
+      assertNotNull(tr.get(DcTerm.identifier));
+    });
+    assertEquals(1, counter.get());
   }
   
   /**

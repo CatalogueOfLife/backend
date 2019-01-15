@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.common.base.Joiner;
@@ -304,11 +305,11 @@ public class Normalizer implements Callable<Boolean> {
     // process the denormalized classifications of accepted taxa
     applyDenormedClassification();
   
-    // remove orphan synonyms
-    removeOrphanSynonyms();
-  
     // move synonym data to accepted
     moveSynonymData();
+  
+    // remove orphan synonyms
+    removeOrphanSynonyms();
   
     LOG.info("Normalization completed.");
   }
@@ -385,6 +386,9 @@ public class Normalizer implements Callable<Boolean> {
    * https://github.com/Sp2000/colplus-backend/issues/108
    */
   private void moveSynonymData() {
+    AtomicInteger moved = new AtomicInteger(0);
+    AtomicInteger removed = new AtomicInteger(0);
+    AtomicBoolean hasAccepted = new AtomicBoolean(false);
     try (Transaction tx = store.getNeo().beginTx()) {
       store.usages().all().forEach(u -> {
         if (u.isSynonym()) {
@@ -396,6 +400,7 @@ public class Normalizer implements Callable<Boolean> {
           ) {
             // getUsage a real neo4j node (store.allUsages() only populates a dummy with an id)
             Node n = store.getNeo().getNodeById(u.node.getId());
+            hasAccepted.set(false);
             Traversals.ACCEPTED.traverse(n).nodes().forEach( accNode -> {
               NeoUsage acc = store.usages().objByNode(accNode);
               acc.distributions.addAll(u.distributions);
@@ -404,6 +409,7 @@ public class Normalizer implements Callable<Boolean> {
               acc.vernacularNames.addAll(u.vernacularNames);
               acc.bibliography.addAll(u.bibliography);
               store.usages().update(acc);
+              hasAccepted.set(true);
             });
   
             u.distributions.clear();
@@ -413,10 +419,17 @@ public class Normalizer implements Callable<Boolean> {
             u.bibliography.clear();
             store.addIssues(u.usage, Issue.SYNONYM_DATA_MOVED);
             store.usages().update(u);
+            if (hasAccepted.get()) {
+              moved.incrementAndGet();
+            } else {
+              removed.incrementAndGet();
+            }
           }
         }
       });
     }
+    LOG.info("Moved associated data from {} synonyms to their accepted taxon", moved);
+    LOG.info("Removed associated data from {} synonyms without accepted taxon", removed);
   }
   
   /**

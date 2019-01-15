@@ -322,11 +322,17 @@ public enum Issue {
   TAXONOMIC_STATUS_DOUBTFUL(Group.TAXON),
   
   /**
-   * A synonym which originally had associated data (distributions, vernacular names,
+   * A synonym which originally had some associated data (descriptions distributions, media items, vernacular names,
    * bibliography) but which was moved to its accepted taxon.
    */
   SYNONYM_DATA_MOVED(Group.TAXON, Level.INFO),
   
+  /**
+   * A synonym which originally had some associated data (descriptions distributions, media items, vernacular names,
+   * bibliography) but which was removed as it lacks an accepted taxon.
+   */
+  SYNONYM_DATA_REMOVED(Group.TAXON, Level.INFO),
+
   /**
    * ACEF reference type values unparsable or missing
    */
