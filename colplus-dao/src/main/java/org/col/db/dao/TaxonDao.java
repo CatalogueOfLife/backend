@@ -4,10 +4,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
 
 import com.google.common.collect.Lists;
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.model.*;
+import org.col.api.vocab.EntityType;
 import org.col.api.vocab.Origin;
 import org.col.api.vocab.TaxonomicStatus;
 import org.col.db.mapper.*;
@@ -38,44 +40,76 @@ public class TaxonDao {
     tMapper = session.getMapper(TaxonMapper.class);
     vMapper = session.getMapper(VernacularNameMapper.class);
   }
-
-  public Taxon copy(final DatasetID source, final DatasetID targetParent, ColUser user) {
   
-    NameMapper nm = session.getMapper(NameMapper.class);
-    Name n = nm.getByTaxon(source.getDatasetKey(), source.getId());
-    if (n == null) {
-      throw new IllegalArgumentException("NameID " + source.getId() + " not existing in dataset " + source.getDatasetKey());
+  /**
+   * Copies an existing taxon with its name to a new dataset under an existing parent taxon.
+   * If desired all associated data
+   * @param source
+   * @param targetParent
+   * @param user
+   * @param include set of entity type to include when copying
+   * @return the newly generated taxon id
+   */
+  public DatasetID copyTaxon(final DatasetID source, final DatasetID targetParent, ColUser user, Set<EntityType> include) {
+  
+    Taxon src = tMapper.get(source.getDatasetKey(), source.getId());
+    if (src == null) {
+      throw new IllegalArgumentException("TaxonID " + source.getId() + " not existing in dataset " + source.getDatasetKey());
     }
-    newKey(n);
-  
-    if (n.getPublishedInId() != null) {
-      ReferenceMapper rm = session.getMapper(ReferenceMapper.class);
-      Reference ref = newKey(rm.get(source.getDatasetKey(), n.getPublishedInId()));
-      ref.setDatasetKey(targetParent.getDatasetKey());
-      ref.applyUser(user);
-      rm.create(ref);
-    
-      n.setPublishedInId(ref.getId());
-    }
-    n.setDatasetKey(targetParent.getDatasetKey());
-    n.setOrigin(Origin.USER);
-    n.applyUser(user);
-    nm.create(n);
-  
-    TaxonMapper tm = session.getMapper(TaxonMapper.class);
-    Taxon t = new Taxon();
-    t.setId(UUID.randomUUID().toString());
-    t.setDatasetKey(targetParent.getDatasetKey());
-    t.setParentId(targetParent.getId());
-    t.setName(n);
-    t.setOrigin(Origin.USER);
-    t.applyUser(user);
-    tm.create(t);
-  
-    session.commit();
-    return t;
+    // src instance will be modified and represent the newly generated taxon after this call!
+    copyTaxon(src, targetParent.getDatasetKey(), targetParent.getId(), user, include, this::devNull);
+    return new DatasetID(src);
   }
   
+  private String devNull(Reference r) {
+    return null;
+  }
+  
+  /**
+   * Copies the given source taxon into the dataset and under the parent of targetParent.
+   * The taxon and name source instance will be modified to represent the newly generated taxon and finally persisted.
+   * The original id is retained and finally returned.
+   * An optional set of associated entity types can be indicated to be copied too.
+   *
+   * @return the original source taxon id
+   */
+  public DatasetID copyTaxon(final Taxon t, final int targetDatasetKey, final String targetParentID, ColUser user, Set<EntityType> include,
+                             Function<Reference,String> lookupReference) {
+    final DatasetID orig = new DatasetID(t);
+
+    Name n = t.getName();
+    setKeys(n, targetDatasetKey);
+    n.applyUser(user);
+    n.setOrigin(Origin.SOURCE);
+    if (n.getPublishedInId() != null) {
+      Reference ref = newKey(rMapper.get(t.getDatasetKey(), n.getPublishedInId()));
+      n.setPublishedInId(lookupReference.apply(ref));
+    }
+    nMapper.create(n);
+    
+    setKeys(t, targetDatasetKey);
+    t.applyUser(user);
+    t.setOrigin(Origin.SOURCE);
+    t.setParentId(targetParentID);
+    tMapper.create(t);
+
+    session.commit();
+    return orig;
+  }
+  
+  public void copySynonym(final Synonym source, final DatasetID accepted, ColUser user) {
+  }
+  
+  private static Taxon setKeys(Taxon t, int datasetKey) {
+    t.setDatasetKey(datasetKey);
+    return newKey(t);
+  }
+  
+  private static Name setKeys(Name n, int datasetKey) {
+    n.setDatasetKey(datasetKey);
+    return newKey(n);
+  }
+
   private static <T extends VerbatimEntity & ID> T newKey(T e) {
     e.setVerbatimKey(null);
     e.setId(UUID.randomUUID().toString());

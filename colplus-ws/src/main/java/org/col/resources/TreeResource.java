@@ -1,5 +1,6 @@
 package org.col.resources;
 
+import java.util.Collections;
 import java.util.List;
 import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
@@ -12,7 +13,6 @@ import org.apache.commons.lang3.NotImplementedException;
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.model.ColUser;
 import org.col.api.model.DatasetID;
-import org.col.api.model.Taxon;
 import org.col.api.model.TreeNode;
 import org.col.db.dao.TaxonDao;
 import org.col.db.mapper.TreeMapper;
@@ -36,7 +36,7 @@ public class TreeResource {
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public String create(@PathParam("datasetKey") Integer datasetKey, @Valid TreeNode obj,
                        @Auth ColUser user, @Context SqlSession session) {
-    Taxon t = new TaxonDao(session).copy(new DatasetID(obj.getDatasetKey(), obj.getId()), new DatasetID(datasetKey, obj.getParentId()), user);
+    DatasetID t = new TaxonDao(session).copyTaxon(new DatasetID(obj.getDatasetKey(), obj.getId()), new DatasetID(datasetKey, obj.getParentId()), user, Collections.emptySet());
     return t.getId();
   }
 

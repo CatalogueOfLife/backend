@@ -9,7 +9,7 @@ import java.util.List;
 import com.google.common.collect.Lists;
 
 /**
- * A writer for native postgres copy commands that converts a pg query result of integers into a integer list
+ * A writer for native postgres copyTaxon commands that converts a pg query result of integers into a integer list
  * very efficiently.
  */
 public class IntArrayPgWriter extends Writer {

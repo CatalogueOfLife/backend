@@ -15,6 +15,11 @@ public class DatasetID {
     this.id = id;
   }
   
+  public DatasetID(Taxon t) {
+    this.datasetKey = t.getDatasetKey();
+    this.id = t.getId();
+  }
+  
   public Integer getDatasetKey() {
     return datasetKey;
   }

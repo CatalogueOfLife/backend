@@ -48,6 +48,8 @@ public class EmlParser {
       
       final Dataset d = new Dataset();
       boolean isDataset = false;
+      boolean isProject = false;
+      boolean isAdditionalMetadata = false;
       StringBuilder text = null;
       StringBuilder para = new StringBuilder();
       Agent agent = new Agent();
@@ -62,6 +64,12 @@ public class EmlParser {
               case "dataset":
                 isDataset = true;
                 break;
+              case "additionalMetadata":
+                isAdditionalMetadata = true;
+                break;
+              case "project":
+                isProject = true;
+                break;
               case "abstract":
                 para = new StringBuilder();
                 break;
@@ -73,37 +81,58 @@ public class EmlParser {
             break;
           
           case XMLStreamConstants.END_ELEMENT:
+            // first general instructions
+            switch (parser.getLocalName()) {
+              case "dataset":
+                isDataset = false;
+                break;
+              case "additionalMetadata":
+                isAdditionalMetadata = false;
+                break;
+              case "project":
+                isProject = false;
+                break;
+              case "para":
+                if (para.length() > 0) {
+                  para.append("\n");
+                }
+                para.append(text);
+                break;
+              case "url":
+                try {
+                  url = URI.create(text.toString());
+                } catch (IllegalArgumentException e) {
+                  LOG.warn("Invalid URL {}", text.toString());
+                  url = null;
+                }
+                break;
+              // AGENT PROPS
+              case "givenName":
+                agent.firstname = text(text);
+                break;
+              case "surName":
+                agent.surname = text(text);
+                break;
+              case "organizationName":
+                agent.organization = text(text);
+                break;
+              case "electronicMailAddress":
+                agent.email = text(text);
+                break;
+              case "userId":
+                agent.orcid = text(text);
+                break;
+            }
+
             if (isDataset) {
               switch (parser.getLocalName()) {
                 case "title":
-                  d.setTitle(text(text));
+                  if (!isProject) {
+                    d.setTitle(text(text));
+                  }
                   break;
                 case "abstract":
                   d.setDescription(para.toString());
-                  break;
-                case "citation":
-                  d.setCitation(text(text));
-                  break;
-                case "para":
-                  if (para.length() > 0) {
-                    para.append("\n");
-                  }
-                  para.append(text);
-                  break;
-                case "url":
-                  try {
-                    url = URI.create(text.toString());
-                  } catch (IllegalArgumentException e) {
-                    LOG.warn("Invalid URL {}", text.toString());
-                    url = null;
-                  }
-                  break;
-                case "resourceLogoUrl":
-                  try {
-                    d.setLogo(URI.create(text.toString()));
-                  } catch (IllegalArgumentException e) {
-                    LOG.warn("Invalid logo URL {}", text.toString());
-                  }
                   break;
                 case "distribution":
                   d.setWebsite(url);
@@ -120,31 +149,26 @@ public class EmlParser {
                 case "contact":
                   agent.name().ifPresent(d::setContact);
                   break;
-                
-                // AGENT PROPS
-                case "givenName":
-                  agent.firstname = text(text);
+              }
+            }
+            if (isAdditionalMetadata) {
+              switch (parser.getLocalName()) {
+                case "resourceLogoUrl":
+                  try {
+                    d.setLogo(URI.create(text.toString()));
+                  } catch (IllegalArgumentException e) {
+                    LOG.warn("Invalid logo URL {}", text.toString());
+                  }
                   break;
-                case "surName":
-                  agent.surname = text(text);
-                  break;
-                case "organizationName":
-                  agent.organization = text(text);
-                  break;
-                case "electronicMailAddress":
-                  agent.email = text(text);
-                  break;
-                case "xxx":
-                  agent.url = text(text);
-                  break;
-                case "userId":
-                  agent.orcid = text(text);
+                case "citation":
+                  d.setCitation(text(text));
                   break;
               }
             }
             break;
+            
           case XMLStreamConstants.CHARACTERS:
-            if (isDataset) {
+            if (isDataset || isAdditionalMetadata || isProject) {
               String x = StringUtils.normalizeSpace(parser.getText());
               if (!StringUtils.isBlank(x)) {
                 text.append(x.trim());

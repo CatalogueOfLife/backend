@@ -414,7 +414,7 @@ public class DwcaReader extends CsvReader {
     } else {
       if (core.hasTerm(AcefTerm.AcceptedTaxonID)) {
         // this sometimes gets confused with dwc - translate into dwc as we read dwc archives here
-        // as schema and all fields are final we create a copy of the entire schema here
+        // as schema and all fields are final we create a copyTaxon of the entire schema here
         Schema.Field f = core.field(AcefTerm.AcceptedTaxonID);
         Schema.Field f2 = new Schema.Field(DwcTerm.acceptedNameUsageID, f.value, f.index, f.delimiter);
         List<Schema.Field> updatedColumns = Lists.newArrayList(core.columns);

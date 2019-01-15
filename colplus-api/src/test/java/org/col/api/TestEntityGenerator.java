@@ -40,7 +40,7 @@ public class TestEntityGenerator {
   public final static ColUser USER_ADMIN = new ColUser();
   
   /**
-   * Corresponds exactly to dataset record inserted via apple.sql with key=11
+   * Corresponds exactly to dataset record inserted via apple.sql or tree.sql with key=11
    */
   public final static Dataset DATASET11 = new Dataset();
   /**

@@ -78,7 +78,7 @@ public class LogoUpdateJob implements Runnable {
     File logo = new File(cfg.scratchDir(dataset.getKey()), fn);
     try {
       downloader.download(dataset.getLogo(), logo);
-      // now read image and copy to logo repo for resizing
+      // now read image and copyTaxon to logo repo for resizing
       imgService.putDatasetLogo(dataset, ImageIO.read(logo));
       return true;
       

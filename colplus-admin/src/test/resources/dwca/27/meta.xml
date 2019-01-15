@@ -2,7 +2,7 @@
 <archive xmlns="http://rs.tdwg.org/dwc/text/">
   <core encoding="UTF-8" fieldsTerminatedBy="\t" linesTerminatedBy="\n" fieldsEnclosedBy='' ignoreHeaderLines="0" rowType="http://rs.tdwg.org/dwc/terms/Taxon">
     <files>
-      <!--  \copy (SELECT id, 'urn:lsid:ipni.org:names:' || lookup_basionym_id, 'urn:lsid:ipni.org:names:' || lookup_parent_id,	coalesce(taxon_scientific_name_s_lower, family_s_lower), authors_t, rank_s_alphanum,	family_s_lower, genus_s_lower, species_s_lower, infraspecies_s_lower,	reference_t, lookup_publication_id, publication_year_i, citation_type_s_lower,	lookup_nomenclatural_synonym_id, lookup_same_citation_as_id, version_s_lower,	'http://www.ipni.org/' || id FROM names) to 'ipni.txt' WITH NULL as ''  -->
+      <!--  \copyTaxon (SELECT id, 'urn:lsid:ipni.org:names:' || lookup_basionym_id, 'urn:lsid:ipni.org:names:' || lookup_parent_id,	coalesce(taxon_scientific_name_s_lower, family_s_lower), authors_t, rank_s_alphanum,	family_s_lower, genus_s_lower, species_s_lower, infraspecies_s_lower,	reference_t, lookup_publication_id, publication_year_i, citation_type_s_lower,	lookup_nomenclatural_synonym_id, lookup_same_citation_as_id, version_s_lower,	'http://www.ipni.org/' || id FROM names) to 'ipni.txt' WITH NULL as ''  -->
       <location>ipni.txt</location>
     </files>
     <id index="0" />

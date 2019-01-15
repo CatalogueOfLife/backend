@@ -8,14 +8,14 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import com.google.common.collect.ImmutableSet;
 import org.apache.ibatis.session.ResultContext;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.col.api.model.EditorialDecision;
-import org.col.api.model.Sector;
-import org.col.api.model.Synonym;
-import org.col.api.model.Taxon;
+import org.col.api.model.*;
+import org.col.api.vocab.Datasets;
+import org.col.api.vocab.EntityType;
 import org.col.common.util.LoggingUtils;
 import org.col.db.dao.TaxonDao;
 import org.col.db.mapper.*;
@@ -29,10 +29,17 @@ import org.slf4j.LoggerFactory;
  */
 public class SectorSync implements Runnable {
   private static final Logger LOG = LoggerFactory.getLogger(SectorSync.class);
+  private static Set<EntityType> COPY_DATA = ImmutableSet.of(
+      EntityType.REFERENCE,
+      EntityType.VERNACULAR,
+      EntityType.DISTRIBUTION
+  );
 
   // sources
   private final int datasetKey;
   private final Sector sector;
+  // target
+  private final int catalogueKey = Datasets.DRAFT_COL;
   
   private final SqlSessionFactory factory;
   private final NameUsageIndexServiceES indexService;
@@ -40,11 +47,13 @@ public class SectorSync implements Runnable {
   private final Consumer<SectorSync> successCallback;
   private final BiConsumer<SectorSync, Exception> errorCallback;
   private final LocalDateTime created = LocalDateTime.now();
+  private final ColUser user;
   private LocalDateTime started;
   
   public SectorSync(int sectorKey, SqlSessionFactory factory, NameUsageIndexServiceES indexService,
                     Consumer<SectorSync> successCallback,
-                    BiConsumer<SectorSync, Exception> errorCallback) {
+                    BiConsumer<SectorSync, Exception> errorCallback, ColUser user) {
+    this.user = user;
     try (SqlSession session = factory.openSession(true)) {
       Sector s = session.getMapper(SectorMapper.class).get(sectorKey);
       if (s == null) {
@@ -52,6 +61,10 @@ public class SectorSync implements Runnable {
       }
       this.sector = s;
       this.datasetKey = session.getMapper(ColSourceMapper.class).get(sector.getColSourceKey()).getDatasetKey();
+      Taxon target = session.getMapper(TaxonMapper.class).get(catalogueKey, sector.getTarget().getId());
+      if (target == null) {
+        throw new IllegalStateException("Sector " + sectorKey + " does have a non existing target id for catalogue " + catalogueKey);
+      }
     }
     this.factory = factory;
     this.indexService = indexService;
@@ -135,6 +148,7 @@ public class SectorSync implements Runnable {
     final TaxonDao dao;
     final SynonymMapper sMapper;
     int counter = 0;
+    final Map<String, String> ids = new HashMap<>();
   
     TreeCopyHandler(SqlSession session) {
       this.session = session;
@@ -145,17 +159,35 @@ public class SectorSync implements Runnable {
     @Override
     public void handleResult(ResultContext<? extends Taxon> ctxt) {
       Taxon tax = ctxt.getResultObject();
-      // TODO: copy/update name, taxon, refs, vernaculars, distributions
-      //dao.copy()
+      // lookup parent
+      String parentID = sector.getSubject().getId().equals(tax.getId()) ?
+          sector.getTarget().getId() :
+          ids.get(tax.getParentId());
+      // copy name, taxon, refs, vernaculars, distributions
+      DatasetID orig = dao.copyTaxon(tax, catalogueKey, parentID, user, COPY_DATA, this::lookupReference);
+      // remember old to new id mapping
+      ids.put(orig.getId(), tax.getId());
+      DatasetID acc = new DatasetID(tax);
       for (Synonym syn : sMapper.listByTaxon(tax.getDatasetKey(), tax.getId())) {
-        // TODO: copy name, syn, refs
-        
+        // copy synonym, name, syn, refs
+        dao.copySynonym(syn, acc, user);
       }
-      
       // commit in batches
-      if (counter % 100 == 0) {
+      if (counter++ % 100 == 0) {
         session.commit();
       }
+    }
+    
+    private String lookupReference(Reference ref) {
+      if (ref != null) {
+        //TODO: lookup existing refs from other sectors
+        if (1 == 2) {
+          ref.setDatasetKey(catalogueKey);
+          ref.applyUser(user);
+          // TODO: Create ref
+        }
+      }
+      return null;
     }
   }
   

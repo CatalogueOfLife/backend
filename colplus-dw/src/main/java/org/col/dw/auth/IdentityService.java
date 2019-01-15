@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Identity service that delegates authentication to a pluggable provider
- * It keeps a local copy of users and therefore needs access to Postgres.
+ * It keeps a local copyTaxon of users and therefore needs access to Postgres.
  * <p>
  * A SqlSessionFactory and an HttpClient MUST be set before the service is used.
  */

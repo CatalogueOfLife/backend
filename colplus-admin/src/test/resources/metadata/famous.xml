@@ -45,6 +45,19 @@
             <electronicMailAddress>mdoering@gbif.org</electronicMailAddress>
             <userId directory="http://orcid.org/">0000-0001-7757-1889</userId>
         </contact>
+        <project>
+            <title>Dr.</title>
+            <personnel>
+                <individualName>
+                    <givenName>Patrice</givenName>
+                    <surName>Bouchard</surName>
+                </individualName>
+                <role>author</role>
+            </personnel>
+            <funding>
+                <para>A-base funding (Agriculture and Agri-Food Canada)</para>
+            </funding>
+        </project>
     </dataset>
     <additionalMetadata>
         <metadata>

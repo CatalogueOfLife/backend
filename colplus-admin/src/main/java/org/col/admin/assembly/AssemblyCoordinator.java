@@ -10,6 +10,7 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import io.dropwizard.lifecycle.Managed;
 import org.apache.ibatis.session.SqlSessionFactory;
+import org.col.api.model.ColUser;
 import org.col.common.concurrent.ExecutorUtils;
 import org.gbif.nameparser.utils.NamedThreadFactory;
 import org.slf4j.Logger;
@@ -55,13 +56,13 @@ public class AssemblyCoordinator implements Managed {
     return new AssemblyState(syncs.size(), (int) failed.getCount(), (int) counter.getCount());
   }
   
-  public synchronized void syncSector(int sectorKey) {
+  public synchronized void syncSector(int sectorKey, ColUser user) {
     // is this sector already syncing?
     if (syncs.containsKey(sectorKey)) {
       LOG.info("Sector {} already syncing", sectorKey);
       // ignore
     } else {
-      SectorSync ss = new SectorSync(sectorKey, factory, null, this::successCallBack, this::errorCallBack);
+      SectorSync ss = new SectorSync(sectorKey, factory, null, this::successCallBack, this::errorCallBack, user);
       syncs.put(sectorKey, exec.submit(ss));
       LOG.info("Queued sync of sector {}", sectorKey);
     }

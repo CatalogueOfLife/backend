@@ -964,7 +964,7 @@ public class NeoDb implements ReferenceStore {
    * Name and taxon ids are generated de novo.
    *
    * @param name                the new name to be used
-   * @param source              the taxon source to copy from
+   * @param source              the taxon source to copyTaxon from
    * @param excludeRankAndBelow the rank (and all ranks below) to exclude from the source classification
    */
   public RankedUsage createProvisionalUsageFromSource(Origin origin,
@@ -972,14 +972,14 @@ public class NeoDb implements ReferenceStore {
                                                       @Nullable NeoUsage source,
                                                       Rank excludeRankAndBelow) {
     NeoUsage u = NeoUsage.createTaxon(origin, name, true);
-    // copy verbatim classification from source
+    // copyTaxon verbatim classification from source
     if (source != null) {
       if (source.classification != null) {
         u.classification = Classification.copy(source.classification);
         // remove lower ranks
         u.classification.clearRankAndBelow(excludeRankAndBelow);
       }
-      // copy parent props from source
+      // copyTaxon parent props from source
       if (u.getVerbatimKey() != null) {
         VerbatimRecord sourceTerms = getVerbatim(u.getVerbatimKey());
         VerbatimRecord copyTerms = new VerbatimRecord();
