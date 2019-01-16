@@ -40,6 +40,7 @@
         FROM <include refid="FROM" />
         WHERE t.parent_id IS NULL
         ORDER BY n.rank, n.scientific_name
+        <include refid="org.col.db.mapper.Common.limit" />
     </select>
 
     <select id="children" resultMap="treeResultMap">
@@ -47,6 +48,7 @@
         FROM <include refid="FROM" />
         WHERE t.parent_id = #{id}
         ORDER BY n.rank, n.scientific_name
+        <include refid="org.col.db.mapper.Common.limit" />
     </select>
 
     <select id="parents" resultMap="treeResultMap">

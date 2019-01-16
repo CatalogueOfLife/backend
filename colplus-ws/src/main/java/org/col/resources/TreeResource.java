@@ -11,10 +11,9 @@ import javax.ws.rs.core.MediaType;
 import io.dropwizard.auth.Auth;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.ibatis.session.SqlSession;
-import org.col.api.model.ColUser;
-import org.col.api.model.DatasetID;
-import org.col.api.model.TreeNode;
+import org.col.api.model.*;
 import org.col.db.dao.TaxonDao;
+import org.col.db.mapper.TaxonMapper;
 import org.col.db.mapper.TreeMapper;
 import org.col.dw.auth.Roles;
 import org.slf4j.Logger;
@@ -24,7 +23,8 @@ import org.slf4j.LoggerFactory;
 @Produces(MediaType.APPLICATION_JSON)
 @SuppressWarnings("static-method")
 public class TreeResource {
-
+  private static final int DEFAULT_PAGE_SIZE = 100;
+  
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(TreeResource.class);
 
@@ -63,20 +63,29 @@ public class TreeResource {
   }
 
   @GET
-  public List<TreeNode.TreeNodeMybatis> root(@PathParam("datasetKey") int datasetKey, @Context SqlSession session) {
-    return session.getMapper(TreeMapper.class).root(datasetKey);
+  public ResultPage<? extends TreeNode> root(@PathParam("datasetKey") int datasetKey, @Valid @BeanParam Page page, @Context SqlSession session) {
+    Page p = page == null ? new Page(0, DEFAULT_PAGE_SIZE) : page;
+    List<? extends TreeNode> result = session.getMapper(TreeMapper.class).root(datasetKey, p);
+    int total = result.size() == p.getLimit() ?
+        session.getMapper(TaxonMapper.class).count(datasetKey, true) : result.size();
+    return new ResultPage<>(p, total, result);
   }
   
   @GET
   @Path("{id}")
-  public List<TreeNode.TreeNodeMybatis> parents(@PathParam("datasetKey") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
+  public List<? extends TreeNode> parents(@PathParam("datasetKey") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
     return session.getMapper(TreeMapper.class).parents(datasetKey, id);
   }
   
   @GET
   @Path("{id}/children")
-  public List<TreeNode.TreeNodeMybatis> children(@PathParam("datasetKey") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
-    return session.getMapper(TreeMapper.class).children(datasetKey, id);
+  public ResultPage<? extends TreeNode> children(@PathParam("datasetKey") int datasetKey, @PathParam("id") String id,
+                                                 @Valid @BeanParam Page page, @Context SqlSession session) {
+    Page p = page == null ? new Page(0, DEFAULT_PAGE_SIZE) : page;
+    List<? extends TreeNode> result = session.getMapper(TreeMapper.class).children(datasetKey, id, p);
+    int total = result.size() == p.getLimit() ?
+        session.getMapper(TaxonMapper.class).countChildren(datasetKey, id) : result.size();
+    return new ResultPage<>(p, total, result);
   }
   
 }

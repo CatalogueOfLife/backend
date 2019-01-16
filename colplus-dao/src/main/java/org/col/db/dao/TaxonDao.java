@@ -119,8 +119,9 @@ public class TaxonDao {
   public ResultPage<Taxon> list(Integer datasetKey, Boolean root, Page page) {
     Page p = page == null ? new Page() : page;
     Boolean r = root == null ? Boolean.FALSE : root;
-    int total = tMapper.count(datasetKey, r);
     List<Taxon> result = tMapper.list(datasetKey, r, p);
+    int total = result.size() == p.getLimit() ?
+        tMapper.count(datasetKey, r) : result.size();
     return new ResultPage<>(p, total, result);
   }
   
@@ -197,8 +198,9 @@ public class TaxonDao {
   
   public ResultPage<Taxon> getChildren(int datasetKey, String key, Page page) {
     Page p = page == null ? new Page() : page;
-    int total = tMapper.countChildren(datasetKey, key);
     List<Taxon> result = tMapper.children(datasetKey, key, p);
+    int total = result.size() == p.getLimit() ?
+        tMapper.countChildren(datasetKey, key) : result.size();
     return new ResultPage<>(p, total, result);
   }
   

@@ -3,10 +3,7 @@ package org.col.db.mapper;
 import java.util.List;
 
 import org.col.api.TestEntityGenerator;
-import org.col.api.model.ColSource;
-import org.col.api.model.SimpleName;
-import org.col.api.model.Sector;
-import org.col.api.model.TreeNode;
+import org.col.api.model.*;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -32,8 +29,8 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
   
   @Test
   public void root() {
-    assertEquals(2, valid(mapper().root(dataset11)).size());
-    TreeNode tn = mapper().root(dataset11).get(0);
+    assertEquals(2, valid(mapper().root(dataset11, new Page())).size());
+    TreeNode tn = mapper().root(dataset11, new Page()).get(0);
     assertEquals(dataset11, (int) tn.getDatasetKey());
     assertNotNull(tn.getId());
     assertNull(tn.getParentId());
@@ -46,7 +43,7 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
   
   @Test
   public void children() {
-    assertEquals(0, valid(mapper().children(dataset11, "root-1")).size());
+    assertEquals(0, valid(mapper().children(dataset11, "root-1", new Page())).size());
   }
   
   @Test
@@ -68,15 +65,15 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
     sm.create(s2);
     commit();
     
-    List<TreeNode.TreeNodeMybatis> nodes = mapper().children(DRAFT_COL, "t1");
+    List<TreeNode.TreeNodeMybatis> nodes = mapper().children(DRAFT_COL, "t1", new Page());
     assertEquals(1, nodes.size());
     noSector(nodes);
   
-    nodes = mapper().children(DRAFT_COL, "t2");
+    nodes = mapper().children(DRAFT_COL, "t2", new Page());
     assertEquals(1, nodes.size());
     noSector(nodes);
     
-    nodes = mapper().children(DRAFT_COL, "t3");
+    nodes = mapper().children(DRAFT_COL, "t3", new Page());
     assertEquals(2, nodes.size());
     sectors(nodes);
     
