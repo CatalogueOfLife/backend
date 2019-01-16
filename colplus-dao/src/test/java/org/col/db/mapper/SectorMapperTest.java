@@ -13,6 +13,7 @@ import static org.col.api.TestEntityGenerator.newNameRef;
 
 public class SectorMapperTest extends CRUDIntMapperTest<Sector, SectorMapper> {
   
+  private static final int datasetKey = DATASET11.getKey();
   private ColSource source;
   
   public SectorMapperTest() {
@@ -21,7 +22,7 @@ public class SectorMapperTest extends CRUDIntMapperTest<Sector, SectorMapper> {
   
   @Before
   public void initSource() {
-    source = ColSourceMapperTest.create(DATASET11.getKey());
+    source = ColSourceMapperTest.create(datasetKey);
     mapper(ColSourceMapper.class).create(source);
   }
   
@@ -33,6 +34,7 @@ public class SectorMapperTest extends CRUDIntMapperTest<Sector, SectorMapper> {
   
   static Sector create(int sourceKey) {
     Sector d = new Sector();
+    d.setDatasetKey(datasetKey);
     d.setColSourceKey(sourceKey);
     d.setMode(Sector.Mode.REPLACE);
     d.setSubject(newNameRef());

@@ -188,7 +188,8 @@ CREATE TABLE col_source (
 
 CREATE TABLE sector (
   key serial PRIMARY KEY,
-  col_source_key INTEGER NOT NULL REFERENCES col_source,
+  dataset_key INTEGER NOT NULL REFERENCES dataset,
+  col_source_key INTEGER REFERENCES col_source,
   subject_id TEXT,
   subject_name TEXT,
   subject_authorship TEXT,
@@ -203,12 +204,12 @@ CREATE TABLE sector (
   created_by INTEGER NOT NULL,
   modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   modified_by INTEGER NOT NULL,
-  UNIQUE (col_source_key, subject_id)
+  UNIQUE (dataset_key, subject_id)
 );
 
 CREATE TABLE decision (
   key serial PRIMARY KEY,
-  col_source_key INTEGER NOT NULL REFERENCES col_source,
+  dataset_key INTEGER NOT NULL REFERENCES dataset,
   subject_id TEXT,
   subject_name TEXT,
   subject_authorship TEXT,
@@ -221,7 +222,7 @@ CREATE TABLE decision (
   created_by INTEGER NOT NULL,
   modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   modified_by INTEGER NOT NULL,
-  UNIQUE (col_source_key, subject_id)
+  UNIQUE (dataset_key, subject_id)
 );
 
 CREATE TABLE dataset_import (

@@ -30,8 +30,8 @@ public class SectorSyncTest {
   
   DatasetImportDao diDao;
   
+  final int datasetKey = DATASET11.getKey();
   Sector sector;
-  ColSource colSource;
   Taxon colAttachment;
   
   @Before
@@ -65,14 +65,8 @@ public class SectorSyncTest {
       colAttachment.applyUser(TestEntityGenerator.USER_EDITOR);
       session.getMapper(TaxonMapper.class).create(colAttachment);
   
-      colSource = new ColSource();
-      colSource.setDatasetKey(DATASET11.getKey());
-      colSource.setAlias("tree");
-      colSource.applyUser(TestEntityGenerator.USER_EDITOR);
-      session.getMapper(ColSourceMapper.class).create(colSource);
-      
       sector = new Sector();
-      sector.setColSourceKey(colSource.getKey());
+      sector.setDatasetKey(datasetKey);
       sector.setSubject(new SimpleName("t2", "name", Rank.ORDER));
       sector.setTarget(new SimpleName("cole", "Coleoptera", Rank.ORDER));
       sector.applyUser(TestEntityGenerator.USER_EDITOR);

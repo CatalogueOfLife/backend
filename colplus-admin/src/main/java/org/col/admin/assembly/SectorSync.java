@@ -60,7 +60,7 @@ public class SectorSync implements Runnable {
         throw new IllegalArgumentException("Sector "+sectorKey+" does not exist");
       }
       this.sector = s;
-      this.datasetKey = session.getMapper(ColSourceMapper.class).get(sector.getColSourceKey()).getDatasetKey();
+      this.datasetKey = sector.getDatasetKey();
       Taxon target = session.getMapper(TaxonMapper.class).get(catalogueKey, sector.getTarget().getId());
       if (target == null) {
         throw new IllegalStateException("Sector " + sectorKey + " does have a non existing target id for catalogue " + catalogueKey);

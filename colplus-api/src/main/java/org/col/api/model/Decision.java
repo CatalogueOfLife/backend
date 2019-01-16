@@ -5,7 +5,7 @@ import java.util.Objects;
 
 public abstract class Decision implements IntKey, UserManaged {
   protected Integer key;
-  protected Integer colSourceKey;
+  protected Integer datasetKey;
   protected SimpleName subject;
   protected String note;
   
@@ -25,14 +25,14 @@ public abstract class Decision implements IntKey, UserManaged {
   }
   
   /**
-   * The col source the subject originates from
+   * @return the dataset key the subject belongs to
    */
-  public Integer getColSourceKey() {
-    return colSourceKey;
+  public Integer getDatasetKey() {
+    return datasetKey;
   }
   
-  public void setColSourceKey(Integer colSourceKey) {
-    this.colSourceKey = colSourceKey;
+  public void setDatasetKey(Integer datasetKey) {
+    this.datasetKey = datasetKey;
   }
   
   public SimpleName getSubject() {
@@ -98,7 +98,7 @@ public abstract class Decision implements IntKey, UserManaged {
     if (o == null || getClass() != o.getClass()) return false;
     Decision decision = (Decision) o;
     return Objects.equals(key, decision.key) &&
-        Objects.equals(colSourceKey, decision.colSourceKey) &&
+        Objects.equals(datasetKey, decision.datasetKey) &&
         Objects.equals(subject, decision.subject) &&
         Objects.equals(note, decision.note) &&
         Objects.equals(created, decision.created) &&
@@ -109,6 +109,6 @@ public abstract class Decision implements IntKey, UserManaged {
   
   @Override
   public int hashCode() {
-    return Objects.hash(key, colSourceKey, subject, note, created, createdBy, modified, modifiedBy);
+    return Objects.hash(key, datasetKey, subject, note, created, createdBy, modified, modifiedBy);
   }
 }

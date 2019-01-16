@@ -1,30 +1,35 @@
 package org.col.db.mapper;
 
 import org.col.api.TestEntityGenerator;
-import org.col.api.model.ColSource;
 import org.col.api.model.EditorialDecision;
 import org.col.api.vocab.TaxonomicStatus;
-import org.junit.Before;
+import org.junit.Test;
 
 import static org.col.api.TestEntityGenerator.DATASET11;
 import static org.col.api.TestEntityGenerator.newNameRef;
+import static org.junit.Assert.assertEquals;
 
 public class DecisionMapperTest extends CRUDIntMapperTest<EditorialDecision, DecisionMapper> {
-  
-  private ColSource source;
   
   public DecisionMapperTest() {
     super(DecisionMapper.class);
   }
   
-  @Before
-  public void initSource() {
-    source = ColSourceMapperTest.create(DATASET11.getKey());
-    mapper(ColSourceMapper.class).create(source);
-    
-    commit();
-  }
+  final int datasetKey = DATASET11.getKey();
   
+  @Test
+  public void brokenDecisions() {
+    EditorialDecision d1 = createTestEntity();
+    d1.getSubject().setId(TestEntityGenerator.TAXON1.getId());
+    mapper().create(d1);
+
+    EditorialDecision d2 = createTestEntity();
+    mapper().create(d2);
+    commit();
+    
+    assertEquals(2, mapper().listByDataset(datasetKey).size());
+    assertEquals(1, mapper().subjectBroken(datasetKey).size());
+  }
   
   @Override
   void updateTestObj(EditorialDecision ed) {
@@ -34,12 +39,12 @@ public class DecisionMapperTest extends CRUDIntMapperTest<EditorialDecision, Dec
   
   @Override
   EditorialDecision createTestEntity() {
-    return create(source.getKey());
+    return create(datasetKey);
   }
 
-  public static EditorialDecision create(int sourceKey) {
+  public static EditorialDecision create(int datasetKey) {
     EditorialDecision d = new EditorialDecision();
-    d.setColSourceKey(sourceKey);
+    d.setDatasetKey(datasetKey);
     d.setSubject(newNameRef());
     d.setMode(EditorialDecision.Mode.CREATE);
     d.setName(TestEntityGenerator.newName());

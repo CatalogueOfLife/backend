@@ -1,6 +1,7 @@
 package org.col.resources;
 
 import java.util.List;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -27,24 +28,14 @@ public class DecisionResource extends CRUDIntResource<EditorialDecision> {
   }
   
   @GET
-  public List<EditorialDecision> list(@Context SqlSession session,
-                                      @QueryParam("datasetKey") Integer datasetKey,
-                                      @QueryParam("sectorKey") Integer sectorKey) {
-    if (sectorKey != null) {
-      return session.getMapper(DecisionMapper.class).listBySource(sectorKey);
-      
-    } else if (datasetKey != null) {
-      return session.getMapper(DecisionMapper.class).listByDataset(datasetKey);
-      
-    } else {
-      throw new IllegalArgumentException("Parameter datasetKey or sectorKey is required");
-    }
+  public List<EditorialDecision> list(@Context SqlSession session, @NotNull @QueryParam("datasetKey") Integer datasetKey) {
+    return session.getMapper(DecisionMapper.class).listByDataset(datasetKey);
   }
   
   @GET
   @Path("/broken")
-  public List<EditorialDecision> broken(@Context SqlSession session, @QueryParam("sourceKey") Integer colSourceKey) {
+  public List<EditorialDecision> broken(@Context SqlSession session, @QueryParam("datasetKey") Integer datasetKey) {
     DecisionMapper mapper = session.getMapper(DecisionMapper.class);
-    return mapper.subjectBroken(colSourceKey);
+    return mapper.subjectBroken(datasetKey);
   }
 }

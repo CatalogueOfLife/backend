@@ -5,7 +5,7 @@
 <mapper namespace="org.col.db.mapper.DecisionMapper">
 
   <sql id="DecisionCols">
-    ${prefix}col_source_key,
+    ${prefix}dataset_key,
     ${prefix}subject_id,
     ${prefix}subject_name,
     ${prefix}subject_authorship,
@@ -23,7 +23,7 @@
     ${prefix}created_by
   </sql>
   <sql id="DecisionProps">
-    #{colSourceKey},
+    #{datasetKey},
     #{subject.id},
     #{subject.name},
     #{subject.authorship},
@@ -68,18 +68,10 @@
     <association property="subject" javaType="SimpleName" resultMap="org.col.db.mapper.SectorMapper.refResultMap" columnPrefix="subject_" />
   </resultMap>
 
-  <select id="listBySource" resultMap="decisionResultMap">
-    SELECT <include refid="SELECT" />
-    FROM <include refid="FROM" />
-    WHERE col_source_key = #{key}
-    ORDER BY key
-  </select>
-
   <select id="listByDataset" resultMap="decisionResultMap">
     SELECT <include refid="SELECT" />
     FROM <include refid="FROM" />
-      JOIN col_source s ON s.key=ed.col_source_key
-    WHERE s.dataset_key = #{key}
+    WHERE dataset_key = #{key}
     ORDER BY key
   </select>
 
@@ -108,13 +100,12 @@
   <select id="subjectBroken" resultMap="decisionResultMap">
     SELECT <include refid="SELECT" />
     FROM <include refid="FROM" />
-      JOIN col_source cs ON cs.key = ed.col_source_key
-      LEFT JOIN taxon t ON t.dataset_key=cs.dataset_key AND t.id=ed.subject_id
+      LEFT JOIN taxon t ON t.dataset_key=ed.dataset_key AND t.id=ed.subject_id
     WHERE t.id IS NULL
     <if test="key != null">
-      AND ed.col_source_key = #{key}
+      AND ed.dataset_key = #{key}
     </if>
-    ORDER BY key
+    ORDER BY ed.key
   </select>
 
 </mapper>
