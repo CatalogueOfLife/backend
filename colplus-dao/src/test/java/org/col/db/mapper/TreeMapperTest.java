@@ -3,8 +3,10 @@ package org.col.db.mapper;
 import java.util.List;
 
 import org.col.api.TestEntityGenerator;
-import org.col.api.model.*;
-import org.junit.Before;
+import org.col.api.model.Page;
+import org.col.api.model.Sector;
+import org.col.api.model.SimpleName;
+import org.col.api.model.TreeNode;
 import org.junit.Test;
 
 import static org.col.api.vocab.Datasets.DRAFT_COL;
@@ -12,20 +14,12 @@ import static org.junit.Assert.*;
 
 public class TreeMapperTest extends MapperTestBase<TreeMapper> {
   
-  private ColSource source;
   private final int dataset11 = TestEntityGenerator.DATASET11.getKey();
   
   public TreeMapperTest() {
     super(TreeMapper.class);
   }
   
-  @Before
-  public void initSource() {
-    source = ColSourceMapperTest.create(dataset11);
-    mapper(ColSourceMapper.class).create(source);
-    
-    commit();
-  }
   
   @Test
   public void root() {
@@ -53,19 +47,19 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
     SectorMapper sm = mapper(SectorMapper.class);
     
     Sector s1 = TestEntityGenerator.setUserDate(new Sector());
-    s1.setColSourceKey(source.getKey());
+    s1.setDatasetKey(dataset11);
     s1.setSubject(nameref("root-1"));
     s1.setTarget(nameref("t4"));
     sm.create(s1);
     
     Sector s2 = TestEntityGenerator.setUserDate(new Sector());
-    s2.setColSourceKey(source.getKey());
+    s2.setDatasetKey(dataset11);
     s2.setSubject(nameref("root-2"));
     s2.setTarget(nameref("t5"));
     sm.create(s2);
     commit();
     
-    List<TreeNode.TreeNodeMybatis> nodes = mapper().children(DRAFT_COL, "t1", new Page());
+    List<? extends TreeNode> nodes = mapper().children(DRAFT_COL, "t1", new Page());
     assertEquals(1, nodes.size());
     noSector(nodes);
   
@@ -84,7 +78,7 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
     assertNull(nodes.get(1).getSector());
   }
   
-  private List<TreeNode.TreeNodeMybatis> sectors(List<TreeNode.TreeNodeMybatis> nodes) {
+  private List<? extends TreeNode> sectors(List<? extends TreeNode> nodes) {
     valid(nodes);
     for (TreeNode n : nodes) {
       assertNotNull(n.getSector());
@@ -92,7 +86,7 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
     return nodes;
   }
 
-  private List<TreeNode.TreeNodeMybatis> noSector(List<TreeNode.TreeNodeMybatis> nodes) {
+  private List<? extends TreeNode> noSector(List<? extends TreeNode> nodes) {
     valid(nodes);
     for (TreeNode n : nodes) {
       assertNull(n.getSector());
@@ -100,7 +94,7 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
     return nodes;
   }
   
-  private List<TreeNode.TreeNodeMybatis> valid(List<TreeNode.TreeNodeMybatis> nodes) {
+  private List<? extends TreeNode> valid(List<? extends TreeNode> nodes) {
     for (TreeNode n : nodes) {
       assertNotNull(n.getId());
       assertNotNull(n.getDatasetKey());

@@ -43,11 +43,11 @@
   <!-- A mapping to Distribution, mostly auto mapped -->
   <resultMap id="sectorResultMap" type="Sector" autoMapping="true">
     <id property="key" column="key" />
-    <association property="subject" javaType="simpleName" resultMap="org.col.db.mapper.SectorMapper.refResultMap" columnPrefix="subject_" />
-    <association property="target" javaType="simpleName" resultMap="org.col.db.mapper.SectorMapper.refResultMap" columnPrefix="target_" />
+    <association property="subject" javaType="SimpleName" resultMap="org.col.db.mapper.SectorMapper.refResultMap" columnPrefix="subject_" />
+    <association property="target" javaType="SimpleName" resultMap="org.col.db.mapper.SectorMapper.refResultMap" columnPrefix="target_" />
   </resultMap>
 
-  <resultMap id="refResultMap" type="simpleName" autoMapping="true">
+  <resultMap id="refResultMap" type="SimpleName" autoMapping="true">
   </resultMap>
 
 

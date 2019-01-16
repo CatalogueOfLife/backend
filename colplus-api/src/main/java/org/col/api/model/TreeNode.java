@@ -20,7 +20,10 @@ public class TreeNode implements ID {
   private Integer speciesEstimate;
   private String speciesEstimateReferenceId;
   private Sector sector;
-
+  
+  /**
+   * Only to be used by mybatis mappers, nowhere else!!!
+   */
   public static class TreeNodeMybatis extends TreeNode {
     private Name _name;
   
