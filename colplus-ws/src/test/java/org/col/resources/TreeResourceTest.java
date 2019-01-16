@@ -1,21 +1,22 @@
 package org.col.resources;
 
-import java.util.List;
 import javax.ws.rs.core.GenericType;
 
+import org.col.api.model.ResultPage;
 import org.col.api.model.TreeNode;
 import org.col.db.mapper.InitMybatisRule;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
-import static org.col.dw.ApiUtils.*;
+import static org.col.dw.ApiUtils.editorCreds;
+import static org.col.dw.ApiUtils.json;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 public class TreeResourceTest extends ResourceTestBase {
   
-  static GenericType<List<TreeNode>> LIST_TYPE = new GenericType<List<TreeNode>>() {};
+  static GenericType<ResultPage<? extends TreeNode>> RESP_TYPE = new GenericType<ResultPage<? extends TreeNode>>() {};
   
   @Rule
   public InitMybatisRule initMybatisRule = InitMybatisRule.apple(RULE.getSqlSessionFactory());
@@ -26,7 +27,7 @@ public class TreeResourceTest extends ResourceTestBase {
   
   @Test
   public void get() {
-    List<TreeNode> root = base.path("/11/tree").request().get(LIST_TYPE);
+    ResultPage<? extends TreeNode> root = base.path("/11/tree").request().get(RESP_TYPE);
     assertEquals(2, root.size());
   }
   
