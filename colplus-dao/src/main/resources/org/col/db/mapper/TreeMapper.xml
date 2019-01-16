@@ -15,10 +15,15 @@
         <include refid="org.col.db.mapper.NameMapper.minimalNameCols">
             <property name="alias" value="n"/>
             <property name="prefix" value=""/>
-        </include>
-        <if test="datasetKey == 3">
-            ,<include refid="org.col.db.mapper.SectorMapper.SELECT" />
-        </if>
+        </include>,
+        <choose>
+            <when test="datasetKey == 3">
+                <include refid="org.col.db.mapper.SectorMapper.SELECT" />
+            </when>
+            <otherwise>
+                NULL as key
+            </otherwise>
+        </choose>
     </sql>
 
     <sql id="FROM">
