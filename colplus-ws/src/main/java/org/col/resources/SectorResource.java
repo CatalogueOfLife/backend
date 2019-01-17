@@ -1,7 +1,6 @@
 package org.col.resources;
 
 import java.util.List;
-import javax.validation.constraints.NotNull;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -28,20 +27,23 @@ public class SectorResource extends CRUDIntResource<Sector> {
   }
   
   @GET
-  public List<Sector> list(@Context SqlSession session, @NotNull @QueryParam("sourceKey") Integer colSourceKey) {
-    return session.getMapper(SectorMapper.class).list(colSourceKey);
+  public List<Sector> list(@Context SqlSession session,
+                           @QueryParam("datasetKey") Integer datasetKey,
+                           @QueryParam("sourceKey") Integer colSourceKey) {
+    return session.getMapper(SectorMapper.class).list(datasetKey, colSourceKey);
   }
   
   @GET
   @Path("/broken")
   public List<Sector> broken(@Context SqlSession session,
-                             @QueryParam("col") boolean col,
+                             @QueryParam("target") boolean target,
+                             @QueryParam("datasetKey") Integer datasetKey,
                              @QueryParam("sourceKey") Integer colSourceKey) {
     SectorMapper mapper = session.getMapper(SectorMapper.class);
-    if (col) {
-      return mapper.colBroken(colSourceKey);
+    if (target) {
+      return mapper.targetBroken(datasetKey, colSourceKey);
     } else {
-      return mapper.subjectBroken(colSourceKey);
+      return mapper.subjectBroken(datasetKey, colSourceKey);
     }
   }
 }

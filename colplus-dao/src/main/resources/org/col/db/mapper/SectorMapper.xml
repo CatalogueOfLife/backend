@@ -17,6 +17,7 @@
 
   <sql id="COLS">
     dataset_key,
+    col_source_key,
     <include refid="org.col.db.mapper.DecisionMapper.DecisionCols">
       <property name="prefix" value=""/>
     </include>,
@@ -29,6 +30,7 @@
 
   <sql id="PROPS">
     #{datasetKey},
+    #{colSourceKey},
     <include refid="org.col.db.mapper.DecisionMapper.DecisionProps" />,
     #{target.id},
     #{target.name},
@@ -39,6 +41,20 @@
 
   <sql id="FROM">
     sector s
+  </sql>
+
+  <sql id="WHERE">
+    <where>
+      <if test="idIsNull">
+        t.id IS NULL
+      </if>
+      <if test="datasetKey != null">
+        AND s.dataset_key = #{datasetKey}
+      </if>
+      <if test="colSourceKey != null">
+        AND s.col_source_key = #{colSourceKey}
+      </if>
+    </where>
   </sql>
 
   <!-- A mapping to Distribution, mostly auto mapped -->
@@ -52,13 +68,6 @@
   <resultMap id="refResultMap" type="SimpleName" autoMapping="true">
   </resultMap>
 
-
-  <select id="list" resultMap="sectorResultMap">
-    SELECT <include refid="SELECT" />
-    FROM <include refid="FROM" />
-    WHERE col_source_key = #{key}
-    ORDER BY key
-  </select>
 
   <select id="get" resultMap="sectorResultMap">
     SELECT <include refid="SELECT" />
@@ -82,27 +91,29 @@
     WHERE key = #{key}
   </delete>
 
-  <select id="subjectBroken" resultMap="sectorResultMap">
+  <select id="list" resultMap="sectorResultMap">
     SELECT <include refid="SELECT" />
     FROM <include refid="FROM" />
-      JOIN col_source cs ON cs.key = s.col_source_key
-      LEFT JOIN taxon t ON t.dataset_key=cs.dataset_key AND t.id=s.subject_id
-    WHERE t.id IS NULL
-    <if test="key != null">
-      AND s.col_source_key = #{key}
-    </if>
+    <bind name="idIsNull" value="false" />
+    <include refid="WHERE" />
     ORDER BY key
   </select>
 
-  <select id="colBroken" resultMap="sectorResultMap">
+  <select id="subjectBroken" resultMap="sectorResultMap">
     SELECT <include refid="SELECT" />
     FROM <include refid="FROM" />
-    JOIN col_source cs ON cs.key = s.col_source_key
-    LEFT JOIN taxon t ON t.dataset_key=cs.dataset_key AND t.id=s.target_id
-    WHERE t.id IS NULL
-    <if test="key != null">
-      AND s.col_source_key = #{key}
-    </if>
+      LEFT JOIN taxon t ON t.id=s.subject_id AND t.dataset_key = #{datasetKey}
+    <bind name="idIsNull" value="true" />
+    <include refid="WHERE" />
+    ORDER BY key
+  </select>
+
+  <select id="targetBroken" resultMap="sectorResultMap">
+    SELECT <include refid="SELECT" />
+    FROM <include refid="FROM" />
+      LEFT JOIN taxon t ON t.id=s.target_id AND t.dataset_key = 3
+    <bind name="idIsNull" value="true" />
+    <include refid="WHERE" />
     ORDER BY key
   </select>
 
