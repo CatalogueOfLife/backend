@@ -75,6 +75,7 @@ public class AssemblyCoordinator implements Managed {
     Duration durQueued = Duration.between(sync.getCreated(), sync.getStarted());
     Duration durRun = Duration.between(sync.getStarted(), LocalDateTime.now());
     LOG.info("Sector Sync {} finished. {} min queued, {} min to execute", sync.getSectorKey(), durQueued.toMinutes(), durRun.toMinutes());
+    counter.inc();
     timer.update(durRun.getSeconds(), TimeUnit.SECONDS);
     syncs.remove(sync.getSectorKey());
   }

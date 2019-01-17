@@ -2,6 +2,7 @@ package org.col.admin;
 
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
+import org.col.admin.assembly.AssemblyCoordinator;
 import org.col.admin.command.initdb.InitDbCmd;
 import org.col.admin.command.neoshell.ShellCmd;
 import org.col.admin.config.AdminServerConfig;
@@ -11,6 +12,7 @@ import org.col.admin.importer.ImportManager;
 import org.col.admin.matching.NameIndex;
 import org.col.admin.matching.NameIndexFactory;
 import org.col.admin.resources.AdminResource;
+import org.col.admin.resources.AssemblyResource;
 import org.col.admin.resources.ImporterResource;
 import org.col.admin.resources.MatchingResource;
 import org.col.api.vocab.Datasets;
@@ -98,9 +100,10 @@ public class AdminServer extends PgApp<AdminServerConfig> {
     // admin resource
     env.jersey().register(new AdminResource(getSqlSessionFactory(), new DownloadUtil(super.httpClient), cfg.normalizer, imgService));
   
-    //AssemblyCoordinator assembly = new AssemblyCoordinator(getSqlSessionFactory());
-    //env.jersey().register(new AssemblyResource(assembly));
-  
+    // assembly
+    AssemblyCoordinator assembly = new AssemblyCoordinator(getSqlSessionFactory(), env.metrics());
+    env.jersey().register(new AssemblyResource(assembly));
+    
   }
   
   
