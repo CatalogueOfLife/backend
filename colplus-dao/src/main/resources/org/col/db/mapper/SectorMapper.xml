@@ -5,7 +5,6 @@
 <mapper namespace="org.col.db.mapper.SectorMapper">
 
   <sql id="SELECT">
-    s.key,
     <include refid="org.col.db.mapper.DecisionMapper.DecisionColsAll">
       <property name="prefix" value="s."/>
     </include>,
@@ -17,6 +16,7 @@
   </sql>
 
   <sql id="COLS">
+    dataset_key,
     <include refid="org.col.db.mapper.DecisionMapper.DecisionCols">
       <property name="prefix" value=""/>
     </include>,
@@ -28,6 +28,7 @@
   </sql>
 
   <sql id="PROPS">
+    #{datasetKey},
     <include refid="org.col.db.mapper.DecisionMapper.DecisionProps" />,
     #{target.id},
     #{target.name},
@@ -43,6 +44,7 @@
   <!-- A mapping to Distribution, mostly auto mapped -->
   <resultMap id="sectorResultMap" type="Sector" autoMapping="true">
     <id property="key" column="key" />
+    <result property="datasetKey" column="decision_dataset_key" />
     <association property="subject" javaType="SimpleName" resultMap="org.col.db.mapper.SectorMapper.refResultMap" columnPrefix="subject_" />
     <association property="target" javaType="SimpleName" resultMap="org.col.db.mapper.SectorMapper.refResultMap" columnPrefix="target_" />
   </resultMap>

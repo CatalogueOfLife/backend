@@ -5,7 +5,6 @@
 <mapper namespace="org.col.db.mapper.DecisionMapper">
 
   <sql id="DecisionCols">
-    ${prefix}dataset_key,
     ${prefix}subject_id,
     ${prefix}subject_name,
     ${prefix}subject_authorship,
@@ -16,6 +15,7 @@
   </sql>
   <sql id="DecisionColsAll">
     ${prefix}key,
+    ${prefix}dataset_key AS decision_dataset_key,
     <include refid="org.col.db.mapper.DecisionMapper.DecisionCols">
       <property name="prefix" value="${prefix}"/>
     </include>,
@@ -23,7 +23,6 @@
     ${prefix}created_by
   </sql>
   <sql id="DecisionProps">
-    #{datasetKey},
     #{subject.id},
     #{subject.name},
     #{subject.authorship},
@@ -43,6 +42,7 @@
   </sql>
 
   <sql id="COLS">
+    dataset_key,
     <include refid="DecisionCols">
       <property name="prefix" value=""/>
     </include>,
@@ -52,6 +52,7 @@
   </sql>
 
   <sql id="PROPS">
+    #{datasetKey},
     <include refid="DecisionProps" />,
     #{mode},
     #{status},
@@ -64,6 +65,7 @@
 
   <resultMap id="decisionResultMap" type="EditorialDecision" autoMapping="true">
     <id property="key" column="key" />
+    <result property="datasetKey" column="decision_dataset_key" />
     <result property="name" column="name" typeHandler="org.col.db.type2.NameJsonHandler" />
     <association property="subject" javaType="SimpleName" resultMap="org.col.db.mapper.SectorMapper.refResultMap" columnPrefix="subject_" />
   </resultMap>
