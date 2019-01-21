@@ -35,7 +35,7 @@ public class AssemblyResource {
   
   @POST
   @Path("/sync/sector/{key}")
-  public void sync(@PathParam("catKey") int catKey, @QueryParam("key") int sectorKey, @Auth ColUser user) {
+  public void sync(@PathParam("catKey") int catKey, @PathParam("key") int sectorKey, @Auth ColUser user) {
     requireDraft(catKey);
     assembly.syncSector(sectorKey, user);
   }
