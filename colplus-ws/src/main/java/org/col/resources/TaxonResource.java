@@ -1,16 +1,20 @@
 package org.col.resources;
 
 import java.util.List;
+import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
 import com.codahale.metrics.annotation.Timed;
+import io.dropwizard.auth.Auth;
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.exception.NotFoundException;
 import org.col.api.model.*;
 import org.col.db.dao.TaxonDao;
+import org.col.dw.auth.Roles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,6 +33,15 @@ public class TaxonResource {
     return dao.list(datasetKey, root, page);
   }
   
+  /**
+   * @return the primary key of the object. Together with the CreatedResponseFilter will return a 201 location
+   */
+  @POST
+  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
+  public String createChild(@PathParam("datasetKey") Integer datasetKey, @Valid Taxon obj, @Auth ColUser user, @Context SqlSession session) {
+    throw new NotImplementedException("create not implemented yet");
+  }
+
   @GET
   @Path("{id}")
   public Taxon get(@PathParam("datasetKey") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
@@ -38,6 +51,29 @@ public class TaxonResource {
       throw NotFoundException.idNotFound(Taxon.class, datasetKey, id);
     }
     return dao.get(datasetKey, id);
+  }
+  
+  
+  @PUT
+  @Path("{id}")
+  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
+  public void update(@PathParam("datasetKey") Integer datasetKey, @PathParam("id") String id,
+                     @Valid Taxon obj, @Auth ColUser user, @Context SqlSession session) {
+    obj.setDatasetKey(datasetKey);
+    obj.setId(id);
+    //TODO...
+    throw new NotImplementedException("update not implemented yet");
+    //session.commit();
+  }
+  
+  @DELETE
+  @Path("{id}")
+  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
+  public void delete(@PathParam("datasetKey") Integer datasetKey, @PathParam("id") String id,
+                     @Auth ColUser user, @Context SqlSession session) {
+    //TODO...
+    throw new NotImplementedException("delete not implemented yet");
+    //session.commit();
   }
   
   @GET
