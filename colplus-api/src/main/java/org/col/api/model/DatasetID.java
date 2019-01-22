@@ -2,6 +2,9 @@ package org.col.api.model;
 
 import java.util.Objects;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  * Globally unique identifier across all datasets by combining the datasetKey and ID.
  * Useful for name, taxon and reference objects.
@@ -10,7 +13,8 @@ public class DatasetID {
   private final Integer datasetKey;
   private final String id;
   
-  public DatasetID(Integer datasetKey, String id) {
+  @JsonCreator
+  public DatasetID(@JsonProperty("datasetKey") Integer datasetKey, @JsonProperty("id") String id) {
     this.datasetKey = datasetKey;
     this.id = id;
   }
