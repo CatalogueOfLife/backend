@@ -32,8 +32,7 @@ public class TreeResource {
   public ResultPage<? extends TreeNode> root(@PathParam("datasetKey") int datasetKey, @Valid @BeanParam Page page, @Context SqlSession session) {
     Page p = page == null ? new Page(0, DEFAULT_PAGE_SIZE) : page;
     List<? extends TreeNode> result = session.getMapper(TreeMapper.class).root(datasetKey, p);
-    int total = result.size() == p.getLimit() ?
-        session.getMapper(TaxonMapper.class).count(datasetKey, true) : result.size();
+    int total = result.size() == p.getLimit() ? session.getMapper(TaxonMapper.class).countRoot(datasetKey) : result.size();
     return new ResultPage<>(p, total, result);
   }
   

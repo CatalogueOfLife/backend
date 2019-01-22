@@ -9,7 +9,6 @@ import javax.ws.rs.core.MediaType;
 
 import com.codahale.metrics.annotation.Timed;
 import io.dropwizard.auth.Auth;
-import org.apache.commons.lang3.NotImplementedException;
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.exception.NotFoundException;
 import org.col.api.model.*;
@@ -30,7 +29,7 @@ public class TaxonResource {
   public ResultPage<Taxon> list(@PathParam("datasetKey") int datasetKey, @QueryParam("root") boolean root,
                                 @Valid @BeanParam Page page, @Context SqlSession session) {
     TaxonDao dao = new TaxonDao(session);
-    return dao.list(datasetKey, root, page);
+    return root ? dao.listRoot(datasetKey, page) : dao.list(datasetKey, page);
   }
   
   /**
@@ -39,7 +38,11 @@ public class TaxonResource {
   @POST
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public String createChild(@PathParam("datasetKey") Integer datasetKey, @Valid Taxon obj, @Auth ColUser user, @Context SqlSession session) {
-    throw new NotImplementedException("create not implemented yet");
+    TaxonDao dao = new TaxonDao(session);
+    obj.setDatasetKey(datasetKey);
+    dao.create(obj, user);
+    session.commit();
+    return obj.getId();
   }
 
   @GET
@@ -59,11 +62,11 @@ public class TaxonResource {
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void update(@PathParam("datasetKey") Integer datasetKey, @PathParam("id") String id,
                      @Valid Taxon obj, @Auth ColUser user, @Context SqlSession session) {
+    TaxonDao dao = new TaxonDao(session);
     obj.setDatasetKey(datasetKey);
     obj.setId(id);
-    //TODO...
-    throw new NotImplementedException("update not implemented yet");
-    //session.commit();
+    dao.update(obj, user);
+    session.commit();
   }
   
   @DELETE
@@ -71,9 +74,9 @@ public class TaxonResource {
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void delete(@PathParam("datasetKey") Integer datasetKey, @PathParam("id") String id,
                      @Auth ColUser user, @Context SqlSession session) {
-    //TODO...
-    throw new NotImplementedException("delete not implemented yet");
-    //session.commit();
+    TaxonDao dao = new TaxonDao(session);
+    dao.delete(new DatasetID(datasetKey, id), user);
+    session.commit();
   }
   
   @GET

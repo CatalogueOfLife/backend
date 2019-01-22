@@ -97,8 +97,8 @@ public class SectorSyncTest {
       assertEquals(20, nm.count(Datasets.DRAFT_COL));
   
       final TaxonMapper tm = session.getMapper(TaxonMapper.class);
-      assertEquals(1, tm.count(Datasets.DRAFT_COL, true));
-      assertEquals(20, tm.count(Datasets.DRAFT_COL, false));
+      assertEquals(1, tm.countRoot(Datasets.DRAFT_COL));
+      assertEquals(20, tm.count(Datasets.DRAFT_COL));
     }
   }
   

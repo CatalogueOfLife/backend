@@ -54,7 +54,7 @@ public class TaxonMapperTest extends MapperTestBase<TaxonMapper> {
     mapper().create(TestEntityGenerator.newTaxon("t4"));
     generateDatasetImport(DATASET11.getKey());
     
-    assertEquals(5, mapper().count(DATASET11.getKey(), false));
+    assertEquals(5, mapper().count(DATASET11.getKey()));
   }
   
   @Test
@@ -77,7 +77,7 @@ public class TaxonMapperTest extends MapperTestBase<TaxonMapper> {
     // get first page
     Page p = new Page(0, 3);
     
-    List<Taxon> res = mapper().list(DATASET11.getKey(), false, p);
+    List<Taxon> res = mapper().list(DATASET11.getKey(), p);
     assertEquals(3, res.size());
     // First 2 taxa in dataset D1 are pre-inserted taxa:
     assertEquals(TestEntityGenerator.TAXON1.getId(), res.get(0).getId());
@@ -85,7 +85,7 @@ public class TaxonMapperTest extends MapperTestBase<TaxonMapper> {
     assertEquals(taxa.get(0).getId(), res.get(2).getId());
     
     p.next();
-    res = mapper().list(DATASET11.getKey(), false, p);
+    res = mapper().list(DATASET11.getKey(), p);
     assertEquals(3, res.size());
     assertEquals(taxa.get(1).getId(), res.get(0).getId());
     assertEquals(taxa.get(2).getId(), res.get(1).getId());
@@ -113,7 +113,7 @@ public class TaxonMapperTest extends MapperTestBase<TaxonMapper> {
     // get first page
     Page p = new Page(0, 1000);
     
-    List<Taxon> res = mapper().list(DATASET11.getKey(), true, p);
+    List<Taxon> res = mapper().listRoot(DATASET11.getKey(), p);
     // Only the 2 pre-inserted root taxa.
     assertEquals(2, res.size());
   }

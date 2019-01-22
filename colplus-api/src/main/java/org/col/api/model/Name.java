@@ -21,7 +21,7 @@ import static org.gbif.nameparser.util.NameFormatter.HYBRID_MARKER;
 /**
  *
  */
-public class Name extends DataEntity implements ID, VerbatimEntity {
+public class Name extends DataEntity implements ID, DatasetEntity, VerbatimEntity {
   
   /**
    * Primary key of the name as given in the dataset dwc:scientificNameID. Only guaranteed to be
@@ -230,10 +230,12 @@ public class Name extends DataEntity implements ID, VerbatimEntity {
     this.id = id;
   }
   
+  @Override
   public Integer getDatasetKey() {
     return datasetKey;
   }
   
+  @Override
   public void setDatasetKey(Integer key) {
     this.datasetKey = key;
   }

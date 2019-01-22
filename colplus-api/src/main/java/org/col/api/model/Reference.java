@@ -5,7 +5,7 @@ import java.util.Objects;
 /**
  * Simplified citation class linked to an optional serial container.
  */
-public class Reference extends DataEntity implements ID, VerbatimEntity {
+public class Reference extends DataEntity implements ID, DatasetEntity, VerbatimEntity {
   
   /**
    * Original key as provided by the dataset.
@@ -44,10 +44,12 @@ public class Reference extends DataEntity implements ID, VerbatimEntity {
     this.id = id;
   }
   
+  @Override
   public Integer getDatasetKey() {
     return datasetKey;
   }
   
+  @Override
   public void setDatasetKey(Integer datasetKey) {
     this.datasetKey = datasetKey;
   }

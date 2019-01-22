@@ -28,6 +28,7 @@ import static org.gbif.nameparser.api.Rank.PHYLUM;
 import static org.gbif.nameparser.api.Rank.SPECIES;
 import static org.junit.Assert.assertEquals;
 
+@Ignore("Its too slow for jenkins most of the time")
 public class NameUsageIndexServiceESTest extends EsReadWriteTestBase {
 
   @Test // Nice in combination with PgImportIT.testGsdGithub

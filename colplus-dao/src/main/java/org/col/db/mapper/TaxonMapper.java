@@ -9,17 +9,17 @@ import org.col.api.model.Page;
 import org.col.api.model.Taxon;
 
 /**
+ * Taxon mapper with CRUD features.
  *
+ * For create or update note that the name must exist already and taxon.name.id be present.
  */
-public interface TaxonMapper {
+public interface TaxonMapper extends DatasetCRUDMapper<Taxon> {
   
-  int count(@Param("datasetKey") int datasetKey, @Param("root") boolean root);
+  int countRoot(@Param("datasetKey") int datasetKey);
   
-  List<Taxon> list(@Param("datasetKey") int datasetKey, @Param("root") boolean root, @Param("page") Page page);
+  List<Taxon> listRoot(@Param("datasetKey") int datasetKey, @Param("page") Page page);
   
   List<Taxon> listByName(@Param("datasetKey") int datasetKey, @Param("nameId") String nameId);
-  
-  Taxon get(@Param("datasetKey") int datasetKey, @Param("id") String id);
   
   /**
    * @return list of all parents starting with the immediate parent
@@ -29,14 +29,6 @@ public interface TaxonMapper {
   int countChildren(@Param("datasetKey") int datasetKey, @Param("id") String id);
   
   List<Taxon> children(@Param("datasetKey") int datasetKey, @Param("id") String id, @Param("page") Page page);
-  
-  /**
-   * Creates a new taxon linked to a given name.
-   * Note that the name must exist already and taxon.name.key must exist.
-   *
-   * @param taxon
-   */
-  void create(Taxon taxon);
   
   /**
    * Iterates over all accepted descendants in a tree in depth first order for a given start/root taxon

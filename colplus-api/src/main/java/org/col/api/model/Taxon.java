@@ -14,7 +14,7 @@ import org.col.api.vocab.TaxonomicStatus;
 /**
  *
  */
-public class Taxon extends DataEntity implements NameUsage {
+public class Taxon extends DataEntity implements NameUsage, DatasetEntity {
   
   private String id;
   
@@ -58,10 +58,12 @@ public class Taxon extends DataEntity implements NameUsage {
     this.id = id;
   }
   
+  @Override
   public Integer getDatasetKey() {
     return datasetKey;
   }
   
+  @Override
   public void setDatasetKey(Integer key) {
     this.datasetKey = key;
   }

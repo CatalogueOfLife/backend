@@ -10,11 +10,6 @@ public interface CRUDMapper<K, V> {
   
   int update(V obj);
   
-  /**
-   * Marks a source as deleted
-   *
-   * @param key
-   */
   int delete(@Param("key") K key);
   
 }

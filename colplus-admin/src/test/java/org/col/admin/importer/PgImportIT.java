@@ -526,7 +526,7 @@ public class PgImportIT {
       
       TaxonDao tdao = new TaxonDao(session);
       // this is buggy normalization of bad data - should really be just one...
-      assertEquals(2, tdao.list(dataset.getKey(), true, new Page()).getResult().size());
+      assertEquals(2, tdao.listRoot(dataset.getKey(), new Page()).getResult().size());
     }
   }
   
@@ -543,7 +543,7 @@ public class PgImportIT {
     
       TaxonDao tdao = new TaxonDao(session);
       // one root
-      assertEquals(1, tdao.list(dataset.getKey(), true, new Page()).getResult().size());
+      assertEquals(1, tdao.listRoot(dataset.getKey(), new Page()).getResult().size());
   
       Synonym s3 = tdao.getSynonym(dataset.getKey(), "1006-s3");
       assertEquals("Leonida taraxacoida Vill.", s3.getName().canonicalNameComplete());

@@ -5,16 +5,12 @@ import java.util.List;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.session.ResultHandler;
 import org.col.api.model.Name;
-import org.col.api.model.Page;
 
 /**
- *
+ * When creating a new name if the homotypic group key is not yet set the newly created name key will be
+ * used to point to the name itself
  */
-public interface NameMapper {
-  
-  int count(@Param("datasetKey") int datasetKey);
-  
-  List<Name> list(@Param("datasetKey") int datasetKey, @Param("page") Page page);
+public interface NameMapper extends DatasetCRUDMapper<Name> {
   
   /**
    * Iterates over all names of a given dataset and processes them with the supplied handler.
@@ -24,18 +20,8 @@ public interface NameMapper {
    */
   void processDataset(@Param("datasetKey") int datasetKey, ResultHandler<Name> handler);
   
-  Name get(@Param("datasetKey") int datasetKey, @Param("id") String id);
   
   Name getByTaxon(@Param("datasetKey") int datasetKey, @Param("taxonId") String taxonId);
-  
-  /**
-   * Creates a new name.
-   * If the homotypic group key is not yet set the newly created name key will be
-   * used to point to the name itself
-   *
-   * @param name
-   */
-  void create(Name name);
   
   /**
    * Lists all homotypic names based on the same homotypic name key

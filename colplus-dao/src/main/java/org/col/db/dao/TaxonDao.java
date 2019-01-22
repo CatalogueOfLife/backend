@@ -116,12 +116,17 @@ public class TaxonDao {
     return e;
   }
   
-  public ResultPage<Taxon> list(Integer datasetKey, Boolean root, Page page) {
+  public ResultPage<Taxon> listRoot(Integer datasetKey, Page page) {
     Page p = page == null ? new Page() : page;
-    Boolean r = root == null ? Boolean.FALSE : root;
-    List<Taxon> result = tMapper.list(datasetKey, r, p);
-    int total = result.size() == p.getLimit() ?
-        tMapper.count(datasetKey, r) : result.size();
+    List<Taxon> result = tMapper.listRoot(datasetKey, p);
+    int total = result.size() == p.getLimit() ? tMapper.countRoot(datasetKey) : result.size();
+    return new ResultPage<>(p, total, result);
+  }
+  
+  public ResultPage<Taxon> list(Integer datasetKey, Page page) {
+    Page p = page == null ? new Page() : page;
+    List<Taxon> result = tMapper.list(datasetKey, p);
+    int total = result.size() == p.getLimit() ? tMapper.count(datasetKey) : result.size();
     return new ResultPage<>(p, total, result);
   }
   
@@ -204,10 +209,6 @@ public class TaxonDao {
     return new ResultPage<>(p, total, result);
   }
   
-  public void create(Taxon taxon) {
-    tMapper.create(taxon);
-  }
-  
   public TaxonInfo getTaxonInfo(int datasetKey, String key) {
     return getTaxonInfo(tMapper.get(datasetKey, key));
   }
@@ -247,4 +248,43 @@ public class TaxonDao {
     return info;
   }
   
+  /**
+   * Creates a new Taxon including a name instance if no name id is already given.
+   *
+   * @param t
+   * @param user
+   * @return newly created taxon id
+   */
+  public String create(Taxon t, ColUser user) {
+    final int datasetKey = t.getDatasetKey();
+    Name n = t.getName();
+    if (n.getId() == null) {
+      newKey(n);
+      n.setOrigin(Origin.USER);
+      n.applyUser(user);
+      // make sure we use the same dataset
+      n.setDatasetKey(datasetKey);
+      nMapper.create(n);
+    }
+  
+    newKey(t);
+    t.setOrigin(Origin.USER);
+    t.applyUser(user);
+    tMapper.create(t);
+  
+    session.commit();
+    
+    return t.getId();
+  }
+  
+  public void update(Taxon obj, ColUser user) {
+    obj.applyUser(user);
+    tMapper.update(obj);
+    session.commit();
+  }
+  
+  public void delete(DatasetID obj, ColUser user) {
+    tMapper.delete(obj.getDatasetKey(), obj.getId());
+    session.commit();
+  }
 }

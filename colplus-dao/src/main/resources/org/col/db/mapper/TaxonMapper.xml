@@ -91,32 +91,33 @@
         <association property="name" javaType="Name" resultMap="org.col.db.mapper.NameMapper.nameResultMap" columnPrefix="n_" />
     </resultMap>
 
+    <select id="count" resultType="integer">
+        <include refid="org.col.db.mapper.Common.countFromFinishedDatasetImport">
+            <property name="column" value="taxon_count"/>
+        </include>
+    </select>
+
     <select id="countChildren" resultType="integer">
         SELECT count(*) FROM taxon_${datasetKey} where parent_id=#{id}
     </select>
 
-    <select id="count" resultType="integer">
-        <choose>
-            <when test="root">
-                SELECT count(*)
-                FROM taxon
-                WHERE dataset_key = #{datasetKey} AND parent_id IS NULL
-            </when>
-            <otherwise>
-                <include refid="org.col.db.mapper.Common.countFromFinishedDatasetImport">
-                    <property name="column" value="taxon_count"/>
-                </include>
-            </otherwise>
-        </choose>
+    <select id="countRoot" resultType="integer">
+        SELECT count(*)
+        FROM taxon_${datasetKey}
+        WHERE dataset_key = #{datasetKey} AND parent_id IS NULL
     </select>
 
     <select id="list" resultMap="taxonResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
-        WHERE t.dataset_key = #{datasetKey}
-        <if test="root">
-            AND t.parent_id IS NULL
-        </if>
+        ORDER BY id
+        <include refid="org.col.db.mapper.Common.limit" />
+    </select>
+
+    <select id="listRoot" resultMap="taxonResultMap">
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
+        WHERE t.parent_id IS NULL
         ORDER BY id
         <include refid="org.col.db.mapper.Common.limit" />
     </select>
@@ -126,13 +127,6 @@
         FROM <include refid="FROM" />
         WHERE t.dataset_key = #{datasetKey} AND t.name_id=#{nameId}
         ORDER BY id
-    </select>
-
-    <select id="get" resultMap="taxonResultMap">
-        SELECT <include refid="SELECT" />
-        FROM <include refid="FROM" />
-        WHERE t.dataset_key = #{datasetKey}
-            AND t.id = #{id}
     </select>
 
     <select id="children" resultMap="taxonResultMap">
@@ -161,10 +155,26 @@
         WHERE x.id != #{id}
      </select>
 
+    <select id="get" resultMap="taxonResultMap">
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
+        WHERE t.dataset_key = #{datasetKey}
+        AND t.id = #{id}
+    </select>
+
     <insert id="create" parameterType="Taxon" useGeneratedKeys="false" keyProperty="id">
         INSERT INTO taxon_${datasetKey} (<include refid="COLS" />, created, modified)
         VALUES (<include refid="PROPS" />, now(), now())
     </insert>
+
+    <update id="update" parameterType="Taxon" keyProperty="id">
+        UPDATE taxon_${datasetKey} (<include refid="COLS" />, created, modified)
+        VALUES (<include refid="PROPS" />, now(), now())
+    </update>
+
+    <delete id="delete" parameterType="map">
+        DELETE taxon_${datasetKey} WHERE id = #{id}
+    </delete>
 
     <select id="processTree" parameterType="map" resultMap="taxonResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
         WITH RECURSIVE x AS(
