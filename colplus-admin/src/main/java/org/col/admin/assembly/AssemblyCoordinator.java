@@ -8,6 +8,7 @@ import java.util.concurrent.*;
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
+import com.google.common.collect.Lists;
 import io.dropwizard.lifecycle.Managed;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.model.ColUser;
@@ -25,6 +26,7 @@ public class AssemblyCoordinator implements Managed {
   private ExecutorService exec;
   private final SqlSessionFactory factory;
   private final Map<Integer, Future> syncs = new ConcurrentHashMap<Integer, Future>();
+  private final Map<Integer, SectorSyncState> syncStates = new ConcurrentHashMap<Integer, SectorSyncState>();
   private final Timer timer;
   private final Counter counter;
   private final Counter failed;
@@ -53,7 +55,7 @@ public class AssemblyCoordinator implements Managed {
   }
   
   public AssemblyState getState() {
-    return new AssemblyState(syncs.size(), (int) failed.getCount(), (int) counter.getCount());
+    return new AssemblyState(Lists.newArrayList(syncStates.values()), (int) failed.getCount(), (int) counter.getCount(), null);
   }
   
   public synchronized void syncSector(int sectorKey, ColUser user) {
@@ -64,6 +66,7 @@ public class AssemblyCoordinator implements Managed {
     } else {
       SectorSync ss = new SectorSync(sectorKey, factory, null, this::successCallBack, this::errorCallBack, user);
       syncs.put(sectorKey, exec.submit(ss));
+      syncStates.put(sectorKey, ss.getState());
       LOG.info("Queued sync of sector {}", sectorKey);
     }
   }
@@ -78,6 +81,7 @@ public class AssemblyCoordinator implements Managed {
     counter.inc();
     timer.update(durRun.getSeconds(), TimeUnit.SECONDS);
     syncs.remove(sync.getSectorKey());
+    syncStates.remove(sync.getSectorKey());
   }
   
   /**
@@ -87,5 +91,6 @@ public class AssemblyCoordinator implements Managed {
     LOG.error("Sector Sync {} failed: {}", sync.getSectorKey(), err.getCause().getMessage(), err.getCause());
     failed.inc();
     syncs.remove(sync.getSectorKey());
+    syncStates.remove(sync.getSectorKey());
   }
 }

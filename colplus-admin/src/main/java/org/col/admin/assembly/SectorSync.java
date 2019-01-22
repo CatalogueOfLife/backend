@@ -48,7 +48,7 @@ public class SectorSync implements Runnable {
   private final BiConsumer<SectorSync, Exception> errorCallback;
   private final LocalDateTime created = LocalDateTime.now();
   private final ColUser user;
-  private LocalDateTime started;
+  private final SectorSyncState state = new SectorSyncState();
   
   public SectorSync(int sectorKey, SqlSessionFactory factory, NameUsageIndexServiceES indexService,
                     Consumer<SectorSync> successCallback,
@@ -76,7 +76,8 @@ public class SectorSync implements Runnable {
   public void run() {
     LoggingUtils.setMDC(datasetKey, getClass());
     try {
-      started = LocalDateTime.now();
+      state.started = LocalDateTime.now();
+      
       sync();
       successCallback.accept(this);
   
@@ -86,6 +87,10 @@ public class SectorSync implements Runnable {
     } finally {
       LoggingUtils.removeMDC();
     }
+  }
+  
+  public SectorSyncState getState() {
+    return state;
   }
   
   private void checkIfCancelled() throws InterruptedException {
@@ -103,20 +108,26 @@ public class SectorSync implements Runnable {
   }
   
   public LocalDateTime getStarted() {
-    return started;
+    return state.started;
   }
   
   public void sync() throws InterruptedException {
+    state.status = SectorSyncState.Status.PREPARING;
     loadDecisions();
     checkIfCancelled();
-    
+  
+    state.status = SectorSyncState.Status.COPYING;
     processTree();
     checkIfCancelled();
-
+  
+    state.status = SectorSyncState.Status.DELETING;
     deleteOld();
     checkIfCancelled();
-
+  
+    state.status = SectorSyncState.Status.INDEXING;
     updateSearchIndex();
+
+    state.status = SectorSyncState.Status.FINISHED;
   }
   
   private void loadDecisions() {
@@ -176,6 +187,7 @@ public class SectorSync implements Runnable {
       if (counter++ % 100 == 0) {
         session.commit();
       }
+      state.created.set(counter);
     }
     
     private String lookupReference(Reference ref) {

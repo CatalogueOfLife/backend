@@ -15,7 +15,6 @@ import org.slf4j.LoggerFactory;
 
 @Path("/assembly/{catKey}")
 @Produces(MediaType.APPLICATION_JSON)
-@RolesAllowed({Roles.ADMIN, Roles.EDITOR})
 public class AssemblyResource {
   
   @SuppressWarnings("unused")
@@ -35,6 +34,7 @@ public class AssemblyResource {
   
   @POST
   @Path("/sync/sector/{key}")
+  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void sync(@PathParam("catKey") int catKey, @PathParam("key") int sectorKey, @Auth ColUser user) {
     requireDraft(catKey);
     assembly.syncSector(sectorKey, user);
