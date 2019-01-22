@@ -77,7 +77,7 @@ public class EmbeddedColPg {
       // assigned some free port using local socket 0
       cfg.port = PortUtil.findFreePort();
       cfg.host = "localhost";
-      cfg.maximumPoolSize = 3;
+      cfg.maximumPoolSize = 12;
       postgres.start(EmbeddedPostgres.cachedRuntimeConfig(serverDir),
           cfg.host, cfg.port, cfg.database, cfg.user, cfg.password,
           DEFAULT_ADD_PARAMS
