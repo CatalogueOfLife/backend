@@ -102,6 +102,7 @@ public class AdminServer extends PgApp<AdminServerConfig> {
   
     // assembly
     AssemblyCoordinator assembly = new AssemblyCoordinator(getSqlSessionFactory(), env.metrics());
+    env.lifecycle().manage(assembly);     
     env.jersey().register(new AssemblyResource(assembly));
     
   }
