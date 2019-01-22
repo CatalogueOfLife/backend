@@ -72,7 +72,7 @@ public class PgImportTest {
     System.out.println("\n\nSTART SEQUENTIAL PASS " + cnt.incrementAndGet());
     System.out.println("\n");
     List<Future<Boolean>> tasks = Lists.newArrayList();
-    for (int k = 3; k < 25; k++) {
+    for (int k = 3; k < 10; k++) {
       tasks.add(exec.submit(new PartitionJob(k)));
     }
     for (Future<Boolean> f : tasks) {
