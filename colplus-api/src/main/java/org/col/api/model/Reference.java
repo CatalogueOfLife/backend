@@ -1,6 +1,7 @@
 package org.col.api.model;
 
 import java.util.Objects;
+import javax.annotation.Nonnull;
 
 /**
  * Simplified citation class linked to an optional serial container.
@@ -15,6 +16,7 @@ public class Reference extends DataEntity implements ID, DatasetEntity, Verbatim
   /**
    * Key to dataset instance. Defines context of the reference key.
    */
+  @Nonnull
   private Integer datasetKey;
   
   private Integer verbatimKey;
@@ -28,6 +30,7 @@ public class Reference extends DataEntity implements ID, DatasetEntity, Verbatim
    * The citation generated from the CSL data or the verbatim citation if it could not be parsed
    * into a structured CSLData object.
    */
+  @Nonnull
   private String citation;
   
   /**

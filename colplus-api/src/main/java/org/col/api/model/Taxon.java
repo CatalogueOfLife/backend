@@ -6,6 +6,8 @@ import java.util.EnumSet;
 import java.util.Objects;
 import java.util.Set;
 
+import javax.annotation.Nonnull;
+
 import com.google.common.base.Preconditions;
 import org.col.api.vocab.Lifezone;
 import org.col.api.vocab.Origin;
@@ -18,14 +20,17 @@ public class Taxon extends DataEntity implements NameUsage, DatasetEntity {
   
   private String id;
   
+  @Nonnull
   private Integer datasetKey;
   
   private Integer verbatimKey;
   
+  @Nonnull
   private Name name;
   
   private boolean provisional = false;
   
+  @Nonnull
   private Origin origin;
   
   private String parentId;

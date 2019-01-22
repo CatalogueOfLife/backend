@@ -3,6 +3,7 @@ package org.col.api.model;
 import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.*;
+import javax.annotation.Nonnull;
 import javax.security.auth.Subject;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -16,6 +17,7 @@ public class ColUser implements IntKey, Principal {
   }
   
   private Integer key;
+  @Nonnull
   private String username;
   private String firstname;
   private String lastname;

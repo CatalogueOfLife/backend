@@ -2,6 +2,8 @@ package org.col.api.model;
 
 import java.util.Objects;
 
+import javax.annotation.Nonnull;
+
 import com.google.common.base.Preconditions;
 import org.col.api.vocab.Origin;
 import org.col.api.vocab.TaxonomicStatus;
@@ -13,11 +15,14 @@ import org.col.api.vocab.TaxonomicStatus;
 public class Synonym extends DataEntity implements NameUsage {
   
   private String id;
+  @Nonnull
   private Name name;
   private TaxonomicStatus status;
   private String accordingTo;
   private String remarks;
+  @Nonnull
   private Taxon accepted;
+  @Nonnull
   private Origin origin;
   private Integer verbatimKey;
   

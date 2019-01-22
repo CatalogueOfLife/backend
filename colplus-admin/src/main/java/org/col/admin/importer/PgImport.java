@@ -97,7 +97,6 @@ public class PgImport implements Callable<Boolean> {
     DatasetPartitionMapper mapper = session.getMapper(DatasetPartitionMapper.class);
     // first remove
     mapper.delete(datasetKey);
-    session.commit();
     
     // then create
     mapper.create(datasetKey);
@@ -106,19 +105,28 @@ public class PgImport implements Callable<Boolean> {
   
   /**
    * Builds indices and finally attaches partitions to main tables.
+   * To avoid table deadlocks on the main table we synchronize this method.
    */
-  private void attach() {
+  static synchronized void attach(SqlSession session, int datasetKey) {
+      LOG.info("Build partition indices for dataset {}", datasetKey);
+      DatasetPartitionMapper mapper = session.getMapper(DatasetPartitionMapper.class);
+    
+      // build indices and add dataset bound constraints
+      mapper.buildIndices(datasetKey);
+    
+      // attach to main table
+      mapper.attach(datasetKey);
+      session.commit();
+  }
+  
+  /**
+   * Builds indices and finally attaches partitions to main tables.
+   * To avoid table deadlocks on the main table we synchronize this method.
+   */
+  private synchronized void attach() {
     interruptIfCancelled();
     try (SqlSession session = sessionFactory.openSession(true)) {
-      LOG.info("Build partition indices for dataset {}: {}", dataset.getKey(), dataset.getTitle());
-      DatasetPartitionMapper mapper = session.getMapper(DatasetPartitionMapper.class);
-      
-      mapper.buildIndices(dataset.getKey());
-      session.commit();
-  
-      interruptIfCancelled();
-      mapper.attach(dataset.getKey());
-      session.commit();
+      attach(session, dataset.getKey());
     }
   }
   

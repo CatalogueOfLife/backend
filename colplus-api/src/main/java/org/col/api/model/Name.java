@@ -32,6 +32,7 @@ public class Name extends DataEntity implements ID, DatasetEntity, VerbatimEntit
   /**
    * Key to dataset instance. Defines context of the name key.
    */
+  @Nonnull
   private Integer datasetKey;
   
   private Integer verbatimKey;
@@ -53,6 +54,7 @@ public class Name extends DataEntity implements ID, DatasetEntity, VerbatimEntit
    * excluding the authorship. For uninomials, e.g. families or names at higher ranks, this is just
    * the uninomial.
    */
+  @Nonnull
   private String scientificName;
   
   /**
@@ -141,6 +143,7 @@ public class Name extends DataEntity implements ID, DatasetEntity, VerbatimEntit
    */
   private String publishedInPage;
   
+  @Nonnull
   private Origin origin;
   
   /**

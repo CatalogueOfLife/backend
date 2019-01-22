@@ -265,6 +265,11 @@ public class TaxonDao {
       // make sure we use the same dataset
       n.setDatasetKey(datasetKey);
       nMapper.create(n);
+    } else {
+      Name nExisting = nMapper.get(datasetKey, n.getId());
+      if (nExisting == null) {
+        throw new IllegalArgumentException("No name exists with ID " + n.getId() + " in dataset " + datasetKey);
+      }
     }
   
     newKey(t);
