@@ -70,6 +70,8 @@ public class NeoCRUDStore<T extends ID & VerbatimEntity & NeoNode> {
   
   /**
    * Return all NeoUsage incl a node property to work with the nodeId.
+   * WARNING: nameNode is currently not set!!!
+   *
    * Note though that it is not a real neo4j node but just a dummy that contains the id!!!
    * No other neo operations can be done on this node - it would need to be retrieved from the store
    * individually.

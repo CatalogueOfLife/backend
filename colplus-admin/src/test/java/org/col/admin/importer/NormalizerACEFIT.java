@@ -4,6 +4,7 @@ import java.net.URI;
 import java.util.Set;
 
 import com.google.common.collect.Sets;
+import org.col.admin.importer.neo.model.Labels;
 import org.col.admin.importer.neo.model.NeoName;
 import org.col.admin.importer.neo.model.NeoUsage;
 import org.col.admin.importer.neo.traverse.Traversals;
@@ -16,6 +17,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
+import org.neo4j.helpers.collection.Iterators;
 
 import static org.junit.Assert.*;
 
@@ -168,6 +170,30 @@ public class NormalizerACEFIT extends NormalizerITBase {
       t = usageByID("3");
       assertEquals("Null bactus", t.usage.getName().canonicalNameComplete());
       assertTrue(store.getVerbatim(t.usage.getName().getVerbatimKey()).hasIssue(Issue.NULL_EPITHET));
+    }
+  }
+  
+  @Test
+  public void acef8Nons() throws Exception {
+    normalize(8);
+    try (Transaction tx = store.getNeo().beginTx()) {
+      NeoUsage u;
+      for (Node n : Iterators.loop(store.getNeo().findNodes(Labels.USAGE))) {
+        u = store.usageWithName(n);
+        if (u.usage.getName().getOrigin() == Origin.SOURCE) {
+          System.out.println(u.usage.getStatus() + ": " + u.usage.getName().canonicalNameComplete());
+          System.out.println("  " + u.usage.getName().getRemarks());
+          System.out.println("  " + u.usage.getAccordingTo());
+          assertNotNull(u.usage.getAccordingTo());
+        }
+      }
+      
+      u = usageByID("8");
+      assertEquals("Anthurium lanceum Engl. [nom.illeg.]", u.usage.getName().canonicalNameComplete());
+      assertEquals("nom.illeg.", u.usage.getName().getRemarks());
+      assertEquals("Markus non. A.lancea.", u.usage.getAccordingTo());
+      assertEquals(NomStatus.ILLEGITIMATE, u.usage.getName().getNomStatus());
+      //assertTrue(store.getVerbatim(u.usage.getName().getVerbatimKey()).hasIssue(Issue.PARTIALLY_PARSABLE_NAME));
     }
   }
   

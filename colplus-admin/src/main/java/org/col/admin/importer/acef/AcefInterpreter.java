@@ -96,8 +96,6 @@ public class AcefInterpreter extends InterpreterBase {
     // synonym
     if (synonym) {
       u = NeoUsage.createSynonym(Origin.SOURCE, nat.get().getName(), status);
-      Synonym s = u.getSynonym();
-      s.setAccordingTo(nat.get().getAccordingTo());
 
     } else {
       // taxon
@@ -105,6 +103,7 @@ public class AcefInterpreter extends InterpreterBase {
       Taxon t = u.getTaxon();
       t.setOrigin(Origin.SOURCE);
       t.setProvisional(TaxonomicStatus.PROVISIONALLY_ACCEPTED == status);
+      
       t.setAccordingTo(v.get(AcefTerm.LTSSpecialist));
       t.setAccordingToDate(date(v, Issue.ACCORDING_TO_DATE_INVALID, AcefTerm.LTSDate));
       t.setDatasetUrl(uri(v, Issue.URL_INVALID, AcefTerm.InfraSpeciesURL, AcefTerm.SpeciesURL));
@@ -118,6 +117,8 @@ public class AcefInterpreter extends InterpreterBase {
       t.setSpeciesEstimate(null);
       t.setSpeciesEstimateReferenceId(null);
     }
+    // for both synonyms and taxa
+    u.usage.addAccordingTo(nat.get().getAccordingTo());
   
     u.setId(v.get(idTerm));
     u.setVerbatimKey(v.getKey());

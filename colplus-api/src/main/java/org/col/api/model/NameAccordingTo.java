@@ -2,6 +2,8 @@ package org.col.api.model;
 
 import java.util.Objects;
 
+import org.apache.commons.lang3.StringUtils;
+
 /**
  *
  */
@@ -31,6 +33,12 @@ public class NameAccordingTo {
   
   public void setAccordingTo(String accordingTo) {
     this.accordingTo = accordingTo;
+  }
+  
+  public void addAccordingTo(String accordingTo) {
+    if (!StringUtils.isBlank(accordingTo)) {
+      this.accordingTo = this.accordingTo == null ? accordingTo.trim() : this.accordingTo + " " + accordingTo.trim();
+    }
   }
   
   @Override

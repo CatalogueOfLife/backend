@@ -1,7 +1,6 @@
 package org.col.api.model;
 
 import java.util.Objects;
-
 import javax.annotation.Nonnull;
 
 import com.google.common.base.Preconditions;

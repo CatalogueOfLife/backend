@@ -1,5 +1,6 @@
 package org.col.api.model;
 
+import org.apache.commons.lang3.StringUtils;
 import org.col.api.vocab.TaxonomicStatus;
 
 /**
@@ -30,4 +31,11 @@ public interface NameUsage extends ID, VerbatimEntity {
   default boolean isBareName() {
     return getStatus() == null;
   }
+  
+  default void addAccordingTo(String accordingTo) {
+    if (!StringUtils.isBlank(accordingTo)) {
+      setAccordingTo( getAccordingTo() == null ? accordingTo.trim() : getAccordingTo() + " " + accordingTo.trim());
+    }
+  }
+  
 }

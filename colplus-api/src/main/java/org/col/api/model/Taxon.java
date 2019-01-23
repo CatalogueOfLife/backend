@@ -9,6 +9,7 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 
 import com.google.common.base.Preconditions;
+import org.apache.commons.lang3.StringUtils;
 import org.col.api.vocab.Lifezone;
 import org.col.api.vocab.Origin;
 import org.col.api.vocab.TaxonomicStatus;
@@ -136,6 +137,12 @@ public class Taxon extends DataEntity implements NameUsage, DatasetEntity {
   
   public void setAccordingTo(String accordingTo) {
     this.accordingTo = accordingTo;
+  }
+  
+  public void addAccordingTo(String accordingTo) {
+    if (!StringUtils.isBlank(accordingTo)) {
+      this.accordingTo = this.accordingTo == null ? accordingTo.trim() : this.accordingTo + " " + accordingTo.trim();
+    }
   }
   
   public LocalDate getAccordingToDate() {

@@ -177,7 +177,7 @@ public class InterpreterBase {
       m.setLink( uri(rec, Issue.URL_INVALID, link));
       m.setLicense( SafeParser.parse(LicenseParser.PARSER, rec.get(license)).orNull() );
       m.setCapturedBy(rec.get(creator));
-      m.setCaptured( date(rec, Issue.CREATED_DATE_INVALID, created) );
+      m.setCaptured( date(rec, Issue.MEDIA_CREATED_DATE_INVALID, created) );
       m.setTitle(rec.get(title));
       m.setFormat(mediaInterpreter.parseMimeType(rec.get(format)));
       m.setType( SafeParser.parse(MediaTypeParser.PARSER, rec.get(type)).orNull() );
@@ -294,6 +294,10 @@ public class InterpreterBase {
       nat.getName().setCombinationAuthorship(pnAuthorship.getCombinationAuthorship());
       nat.getName().setSanctioningAuthor(pnAuthorship.getSanctioningAuthor());
       nat.getName().setBasionymAuthorship(pnAuthorship.getBasionymAuthorship());
+      // propagate notes found in authorship
+      nat.getName().addRemark(pnAuthorship.getRemarks());
+      nat.getName().addRemark(pnAuthorship.getNomenclaturalNotes());
+      nat.addAccordingTo(pnAuthorship.getTaxonomicNote());
     }
     
     // common basics
@@ -301,11 +305,14 @@ public class InterpreterBase {
     nat.getName().setVerbatimKey(v.getKey());
     nat.getName().setOrigin(Origin.SOURCE);
     nat.getName().setSourceUrl(SafeParser.parse(UriParser.PARSER, link).orNull());
-    nat.getName().setNomStatus(SafeParser.parse(NomStatusParser.PARSER, nomStatus).orElse(null, Issue.NOMENCLATURAL_STATUS_INVALID, v));
+    // name status can be explicitly given or as part of the name remarks
+    nat.getName().setNomStatus(SafeParser.parse(NomStatusParser.PARSER, nomStatus).orElse(
+        SafeParser.parse(NomStatusParser.PARSER, nat.getName().getRemarks()).orNull()
+        , Issue.NOMENCLATURAL_STATUS_INVALID, v));
     // applies default dataset code if we cannot find or parse any
     // Always make sure this happens BEFORE we update the canonical scientific name
     nat.getName().setCode(SafeParser.parse(NomCodeParser.PARSER, nomCode).orElse(dataset.getCode(), Issue.NOMENCLATURAL_CODE_INVALID, v));
-    nat.getName().setRemarks(remarks);
+    nat.getName().addRemark(remarks);
     
     // assign best rank
     if (rank.notOtherOrUnranked() || nat.getName().getRank() == null) {

@@ -122,11 +122,21 @@ public class NameParser implements Parser<NameAccordingTo> {
     n.setRemarks(pn.getRemarks());
     n.setType(pn.getType());
     // issues
-    if (!pn.getState().isParsed()) {
-      issues.addIssue(Issue.UNPARSABLE_NAME);
+    switch (pn.getState()) {
+      case PARTIAL:
+        issues.addIssue(Issue.PARTIALLY_PARSABLE_NAME);
+        break;
+      case NONE:
+        issues.addIssue(Issue.UNPARSABLE_NAME);
+        break;
+      case COMPLETE:
+        break;
     }
     if (pn.isDoubtful()) {
       issues.addIssue(Issue.DOUBTFUL_NAME);
+    }
+    if (pn.isIncomplete()) {
+      issues.addIssue(Issue.INCONSISTENT_NAME);
     }
     // translate warnings into issues
     for (String warn : pn.getWarnings()) {
