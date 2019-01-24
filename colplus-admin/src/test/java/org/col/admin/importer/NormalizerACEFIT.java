@@ -8,9 +8,7 @@ import org.col.admin.importer.neo.model.Labels;
 import org.col.admin.importer.neo.model.NeoName;
 import org.col.admin.importer.neo.model.NeoUsage;
 import org.col.admin.importer.neo.traverse.Traversals;
-import org.col.api.model.Dataset;
-import org.col.api.model.Distribution;
-import org.col.api.model.VernacularName;
+import org.col.api.model.*;
 import org.col.api.vocab.*;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Ignore;
@@ -195,6 +193,32 @@ public class NormalizerACEFIT extends NormalizerITBase {
       assertEquals(NomStatus.ILLEGITIMATE, u.usage.getName().getNomStatus());
       //assertTrue(store.getVerbatim(u.usage.getName().getVerbatimKey()).hasIssue(Issue.PARTIALLY_PARSABLE_NAME));
     }
+  }
+  
+  @Test
+  public void acefNameIssues() throws Exception {
+    normalize(9);
+    try (Transaction tx = store.getNeo().beginTx()) {
+      NeoUsage u = usageByID("Lamprostiba_pu!chra");
+      assertEquals("Lamprostiba pu!chra", u.usage.getName().getScientificName());
+      assertEquals("Pace, 2014", u.usage.getName().authorshipComplete());
+      VerbatimRecord v = verbatim(u.usage.getName());
+      assertTrue(v.hasIssue(Issue.UNUSUAL_NAME_CHARACTERS));
+      assertTrue(v.hasIssue(Issue.PARTIALLY_PARSABLE_NAME));
+      assertTrue(v.hasIssue(Issue.PARSED_NAME_DIFFERS));
+  
+      u = usageByID("Eusphalerum_caucasicum_feldmanni");
+      assertEquals("feldmanni", u.usage.getName().getScientificName());
+      assertEquals("Zanetti, 2012", u.usage.getName().authorshipComplete());
+      v = verbatim(u.usage.getName());
+      assertTrue(v.hasIssue(Issue.PARENT_ID_INVALID));
+      assertTrue(v.hasIssue(Issue.MISSING_GENUS));
+      assertTrue(v.hasIssue(Issue.PARSED_NAME_DIFFERS));
+    }
+  }
+  
+  private VerbatimRecord verbatim(VerbatimEntity obj) {
+    return store.getVerbatim(obj.getVerbatimKey());
   }
   
   /**

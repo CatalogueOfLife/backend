@@ -1,0 +1,2 @@
+AcceptedTaxonID	ParentSpeciesID	InfraSpeciesEpithet	InfraSpeciesAuthorString	InfraSpeciesMarker
+Eusphalerum_caucasicum_feldmanni	Eusphalerum_caucasicum	feldmanni	Zanetti, 2012	
