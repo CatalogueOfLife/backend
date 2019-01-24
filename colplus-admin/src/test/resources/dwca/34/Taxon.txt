@@ -1,0 +1,11 @@
+TaxonID	Phylum	scientificName	nameAccordingTo
+1	Phylata	Paphiopedilum littleanum (auct.) Rolfe	Markus
+2	Phylata	Laeliocattleya welsiana (auct.) auct.	Markus
+3	Phylata	Placostegus crystallinus (non Scacchi, 1836) sensu Zibrowius, 1968	Markus
+4	Phylata	Canna ehemannii auct., nom. subnud.	Markus
+5	Phylata	Photorhabdus asymbiotica Fischer-Le Saux et al., 1999 emend. Akhurst et al., 2004	Markus
+6	Phylata	Opisthomonorcheides overstreeti (Ahmad, 1985) Madhavi, 2011 nec Ahmad, 1985	Markus
+7	Phylata	Stichotricha cornuta Dumas, 1858 non Dumas, 1858	Markus
+8	Phylata	Anthurium lanceum Engl., nom. illeg., non. A. lancea.	Markus
+9	Phylata	Strombidium striatum sensu Busch, 1930	Markus
+10	Phylata	Corydalis gigantea Trautv. & Meyer sensu lato	Markus

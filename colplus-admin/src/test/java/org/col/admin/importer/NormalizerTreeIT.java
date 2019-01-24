@@ -48,7 +48,7 @@ import static org.junit.Assert.*;
 @RunWith(Parameterized.class)
 public class NormalizerTreeIT {
   final static int MAX_ACEF_ID = 7;
-  final static int MAX_DWCA_ID = 31;
+  final static int MAX_DWCA_ID = 34;
   final static int MAX_COLDP_ID = 0;
 
   private static NormalizerConfig cfg;
@@ -66,10 +66,10 @@ public class NormalizerTreeIT {
     IntStream dwcaIds = IntStream.rangeClosed(0, MAX_DWCA_ID);
     IntStream coldpIds = IntStream.rangeClosed(0, MAX_COLDP_ID);
 
-     acefIds = IntStream.empty();
+    //acefIds = IntStream.empty();
     // acefIds = IntStream.of(6,7);
-    dwcaIds = IntStream.empty();
-    // dwcaIds = IntStream.of(31);
+    //dwcaIds = IntStream.empty();
+    //dwcaIds = IntStream.of(31, 32, 33, 34);
     //coldpIds = IntStream.empty();
 
     return Stream.concat(

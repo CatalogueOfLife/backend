@@ -15,6 +15,7 @@ import org.col.api.vocab.*;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.schema.Schema;
 import org.neo4j.helpers.collection.Iterators;
@@ -300,6 +301,30 @@ public class NormalizerDwcaIT extends NormalizerITBase {
     normalize(32);
 
     try (Transaction tx = store.getNeo().beginTx()) {
+    }
+  }
+  
+  @Test
+  public void dwc8Nons() throws Exception {
+    normalize(34);
+    try (Transaction tx = store.getNeo().beginTx()) {
+      NeoUsage u;
+      for (Node n : Iterators.loop(store.getNeo().findNodes(Labels.USAGE))) {
+        u = store.usageWithName(n);
+        if (u.usage.getName().getOrigin() == Origin.SOURCE) {
+          System.out.println(u.usage.getStatus() + ": " + u.usage.getName().canonicalNameComplete());
+          System.out.println("  " + u.usage.getName().getRemarks());
+          System.out.println("  " + u.usage.getAccordingTo());
+          assertNotNull(u.usage.getAccordingTo());
+        }
+      }
+      
+      u = usageByID("8");
+      assertEquals("Anthurium lanceum Engl. [nom.illeg.]", u.usage.getName().canonicalNameComplete());
+      assertEquals("nom.illeg.", u.usage.getName().getRemarks());
+      assertEquals("Markus non. A.lancea.", u.usage.getAccordingTo());
+      assertEquals(NomStatus.ILLEGITIMATE, u.usage.getName().getNomStatus());
+      //assertTrue(store.getVerbatim(u.usage.getName().getVerbatimKey()).hasIssue(Issue.PARTIALLY_PARSABLE_NAME));
     }
   }
   

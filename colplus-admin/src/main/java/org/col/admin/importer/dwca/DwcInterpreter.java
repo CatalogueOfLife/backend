@@ -14,7 +14,6 @@ import org.col.admin.importer.neo.model.RelType;
 import org.col.admin.importer.reference.ReferenceFactory;
 import org.col.api.model.*;
 import org.col.api.vocab.*;
-import org.col.common.util.ObjectUtils;
 import org.col.parser.EnumNote;
 import org.col.parser.NomRelTypeParser;
 import org.col.parser.SafeParser;
@@ -59,7 +58,8 @@ public class DwcInterpreter extends InterpreterBase {
       // shared usage props
       u.setId(v.getFirstRaw(DwcTerm.taxonID, DwcaReader.DWCA_ID));
       u.setVerbatimKey(v.getKey());
-      u.usage.setAccordingTo(ObjectUtils.coalesce(v.get(DwcTerm.nameAccordingTo), nat.get().getAccordingTo()));
+      u.usage.setAccordingTo(v.get(DwcTerm.nameAccordingTo));
+      u.usage.addAccordingTo(nat.get().getAccordingTo());
       u.homotypic = TaxonomicStatusParser.isHomotypic(status);
 
       // flat classification

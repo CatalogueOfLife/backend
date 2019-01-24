@@ -1,4 +1,5 @@
 Plantae [kingdom]
   Asteraceae [family]
     Crepis L. [genus]
-      Crepis pulchra L. [species]
+      $Crepis pulchra L. [species]
+        *Chondrilla pulchra (L.) Lam. [species]
