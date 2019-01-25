@@ -41,13 +41,13 @@
             <if test="type != null">
                 v.type = #{type, typeHandler=org.col.db.type.TermTypeHandler}
             </if>
-            <if test="terms != null">
+            <if test="terms != null and !terms.isEmpty()">
                 AND v.terms @>
                 <foreach item="val" index="term" collection="terms" open="'{" separator="," close="}'">
                     "${term}": "${val}"
                 </foreach>
             </if>
-            <if test="issues != null">
+            <if test="issues != null and !issues.isEmpty()">
                 AND v.issues @>
                 <foreach item="issue" index="index" collection="issues" open="array[" separator="," close="]">${issue.ordinal()}</foreach>
             </if>

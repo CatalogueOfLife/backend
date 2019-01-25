@@ -35,6 +35,8 @@
     <update id="buildIndices" parameterType="map">
         ALTER TABLE verbatim_${key} ADD PRIMARY KEY (key);
         CREATE index ON verbatim_${key} USING GIN(issues);
+        CREATE INDEX ON verbatim_${key} (type);
+        CREATE INDEX ON verbatim_${key} USING GIN (terms jsonb_path_ops);
 
         ALTER TABLE reference_${key} ADD PRIMARY KEY (id);
         CREATE index ON reference_${key} (verbatim_key);
@@ -80,9 +82,6 @@
         ALTER TABLE vernacular_name_${key} ADD PRIMARY KEY (key);
         CREATE index ON vernacular_name_${key} (taxon_id);
         CREATE index ON vernacular_name_${key} (verbatim_key);
-
-        CREATE INDEX ON verbatim_${key} (type);
-        CREATE INDEX ON verbatim_${key} USING GIN (terms jsonb_path_ops);
     </update>
 
     <update id="delete" parameterType="map">

@@ -1,6 +1,8 @@
 package org.col.db.mapper;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 
 import com.google.common.collect.ImmutableMap;
@@ -64,7 +66,7 @@ public class VerbatimRecordMapperTest extends MapperTestBase<VerbatimRecordMappe
   
     insertTestData();
     assertEquals(8, mapper().count(datasetKey, null, null, null));
-    assertEquals(2, mapper().count(datasetKey, AcefTerm.AcceptedInfraSpecificTaxa, null, null));
+    assertEquals(2, mapper().count(datasetKey, AcefTerm.AcceptedInfraSpecificTaxa, new HashMap<>(), new ArrayList<>()));
     assertEquals(1, mapper().count(datasetKey, AcefTerm.AcceptedInfraSpecificTaxa, ImmutableMap.of(DwcTerm.genus, "Abies"), null));
     assertEquals(2, mapper().count(datasetKey, null, ImmutableMap.of(DwcTerm.genus, "Abies"), null));
     assertEquals(1, mapper().count(datasetKey, null, ImmutableMap.of(DwcTerm.genus, "Abies"), Lists.newArrayList(Issue.BASIONYM_ID_INVALID)));
