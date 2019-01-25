@@ -308,7 +308,6 @@ public class PgImportIT {
       vMapper = session.getMapper(VerbatimRecordMapper.class);
       
       Name n = ndao.get(dataset.getKey(), "s7");
-      assertEquals("Astragalus nonexistus DC.", n.canonicalNameComplete());
       assertEquals("Astragalus nonexistus", n.getScientificName());
       assertEquals("DC.", n.authorshipComplete());
       assertEquals(Rank.SPECIES, n.getRank());
@@ -348,7 +347,8 @@ public class PgImportIT {
       TaxonDao tdao = new TaxonDao(session);
       
       Taxon t = tdao.get(dataset.getKey(), "14649");
-      assertEquals("Zapoteca formosa (Kunth) H.M.Hern.", t.getName().canonicalNameComplete());
+      assertEquals("Zapoteca formosa", t.getName().getScientificName());
+      assertEquals("(Kunth) H.M.Hern.", t.getName().authorshipComplete());
       assertEquals(Rank.SPECIES, t.getName().getRank());
       
       TaxonInfo info = tdao.getTaxonInfo(t);
@@ -428,8 +428,9 @@ public class PgImportIT {
       TaxonDao tdao = new TaxonDao(session);
       
       Taxon t = tdao.get(dataset.getKey(), "MD2");
-      assertEquals("Latrodectus mactans (Fabricius, 1775)", t.getName().canonicalNameComplete());
-      
+      assertEquals("Latrodectus mactans", t.getName().getScientificName());
+      assertEquals("(Fabricius, 1775)", t.getName().authorshipComplete());
+  
       TaxonInfo info = tdao.getTaxonInfo(t);
       // Walckenaer1805;Walckenaer, CA;1805;Table of the aranid or essential characters of the
       // tribes, genera, families and races contained in the genus Aranea of ​​Linnaeus, with the
@@ -552,7 +553,7 @@ public class PgImportIT {
       
       // https://github.com/Sp2000/colplus-backend/issues/237
       VerbatimRecordMapper vm = session.getMapper(VerbatimRecordMapper.class);
-      for (VerbatimRecord v : vm.list(dataset.getKey(), null, null, new Page(0, 100))) {
+      for (VerbatimRecord v : vm.list(dataset.getKey(), null, null, null, new Page(0, 100))) {
         for (Term t : v.terms()) {
           assertFalse(t instanceof UnknownTerm);
         }
