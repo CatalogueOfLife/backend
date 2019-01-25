@@ -61,13 +61,13 @@ public class VerbatimRecordMapperTest extends MapperTestBase<VerbatimRecordMappe
     // count apples. rely on import metrics for quick counts so derive them first
     generateDatasetImport(DATASET11.getKey());
     assertEquals(5, mapper().count(datasetKey, null, null, null));
-    assertEquals(3, mapper().count(datasetKey, AcefTerm.AcceptedSpecies, null, null));
-    assertEquals(0, mapper().count(datasetKey, AcefTerm.AcceptedInfraSpecificTaxa, null, null));
+    assertEquals(3, mapper().count(datasetKey, Lists.newArrayList(AcefTerm.AcceptedSpecies), null, null));
+    assertEquals(0, mapper().count(datasetKey, Lists.newArrayList(AcefTerm.AcceptedInfraSpecificTaxa), null, null));
   
     insertTestData();
     assertEquals(8, mapper().count(datasetKey, null, null, null));
-    assertEquals(2, mapper().count(datasetKey, AcefTerm.AcceptedInfraSpecificTaxa, new HashMap<>(), new ArrayList<>()));
-    assertEquals(1, mapper().count(datasetKey, AcefTerm.AcceptedInfraSpecificTaxa, ImmutableMap.of(DwcTerm.genus, "Abies"), null));
+    assertEquals(2, mapper().count(datasetKey, Lists.newArrayList(AcefTerm.AcceptedInfraSpecificTaxa), new HashMap<>(), new ArrayList<>()));
+    assertEquals(1, mapper().count(datasetKey, Lists.newArrayList(AcefTerm.AcceptedInfraSpecificTaxa), ImmutableMap.of(DwcTerm.genus, "Abies"), null));
     assertEquals(2, mapper().count(datasetKey, null, ImmutableMap.of(DwcTerm.genus, "Abies"), null));
     assertEquals(1, mapper().count(datasetKey, null, ImmutableMap.of(DwcTerm.genus, "Abies"), Lists.newArrayList(Issue.BASIONYM_ID_INVALID)));
   }

@@ -38,8 +38,9 @@
 
     <sql id="WHERE">
         <where>
-            <if test="type != null">
-                v.type = #{type, typeHandler=org.col.db.type.TermTypeHandler}
+            <if test="types != null and !types.isEmpty()">
+                AND v.type IN
+                <foreach item="type" index="index" collection="types" open="(" separator="," close=")">#{type, typeHandler=org.col.db.type.TermTypeHandler}</foreach>
             </if>
             <if test="terms != null and !terms.isEmpty()">
                 AND v.terms @>
@@ -63,15 +64,15 @@
         SELECT coalesce(
         (SELECT
         <choose>
-            <when test="terms != null or issues != null">
+            <when test="(terms != null and !terms.isEmpty()) or (issues != null and !issues.isEmpty()) or (types != null and types.size > 1)">
                 count(*)
                 FROM <include refid="FROM" />
                 <include refid="WHERE" />
             </when>
             <otherwise>
                 <choose>
-                    <when test="type != null">
-                        (verbatim_by_type_count->#{type, typeHandler=org.col.db.type.TermTypeHandler})::int
+                    <when test="types != null and !types.isEmpty()">
+                        (verbatim_by_type_count->#{types[0], typeHandler=org.col.db.type.TermTypeHandler})::int
                     </when>
                     <otherwise>
                         verbatim_count

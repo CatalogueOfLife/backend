@@ -30,7 +30,7 @@ public class VerbatimResource {
   
   @GET
   public ResultPage<VerbatimRecord> list(@PathParam("datasetKey") int datasetKey,
-                                         @QueryParam("type") Term type,
+                                         @QueryParam("type") List<Term> types,
                                          @QueryParam("term") List<String> filter,
                                          @QueryParam("issue") List<Issue> issues,
                                          @Valid @BeanParam Page page,
@@ -39,8 +39,8 @@ public class VerbatimResource {
     Map<Term, String> terms = termFilter(filter);
     
     return new ResultPage<VerbatimRecord>(page,
-        mapper.count(datasetKey, type, terms, issues),
-        mapper.list(datasetKey, type, terms, issues, page)
+        mapper.count(datasetKey, types, terms, issues),
+        mapper.list(datasetKey, types, terms, issues, page)
     );
   }
   

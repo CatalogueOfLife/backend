@@ -1,5 +1,6 @@
 package org.col.db.mapper;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
@@ -19,24 +20,24 @@ public interface VerbatimRecordMapper {
    * See list method for parameters
    */
   int count(@Param("datasetKey") int datasetKey,
-            @Param("type") Term type,
+            @Nullable @Param("types") Collection<Term> types,
             @Nullable @Param("terms") Map<Term, String> terms,
-            @Nullable @Param("issues") List<Issue> issues
+            @Nullable @Param("issues") Collection<Issue> issues
   );
   
   /**
    * List verbatim records for a given dataset
    * @param datasetKey the required dataset key
-   * @param type rowType to restrict to
+   * @param types rowTypes to restrict to
    * @param terms optional list of terms and their values to filter by
    * @param issues optional issues to filter by
    * @param page
    * @return
    */
   List<VerbatimRecord> list(@Param("datasetKey") int datasetKey,
-                            @Nullable @Param("type") Term type,
+                            @Nullable @Param("types") Collection<Term> types,
                             @Nullable @Param("terms") Map<Term, String> terms,
-                            @Nullable @Param("issues") List<Issue> issues,
+                            @Nullable @Param("issues") Collection<Issue> issues,
                             @Param("page") Page page
   );
   
