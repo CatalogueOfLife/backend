@@ -325,6 +325,7 @@ public class InterpreterBase {
     // Always make sure this happens BEFORE we update the canonical scientific name
     nat.getName().setCode(SafeParser.parse(NomCodeParser.PARSER, nomCode).orElse(dataset.getCode(), Issue.NOMENCLATURAL_CODE_INVALID, v));
     nat.getName().addRemark(remarks);
+    nat.getName().addRemark(nomStatus);
     
     // assign best rank
     if (rank.notOtherOrUnranked() || nat.getName().getRank() == null) {

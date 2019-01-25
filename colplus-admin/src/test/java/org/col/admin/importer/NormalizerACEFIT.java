@@ -133,7 +133,8 @@ public class NormalizerACEFIT extends NormalizerITBase {
     normalize(6);
     try (Transaction tx = store.getNeo().beginTx()) {
       NeoUsage t = usageByID("MD1");
-      assertEquals("Latrodectus tredecimguttatus (Rossi, 1790)", t.usage.getName().canonicalNameComplete());
+      assertEquals("Latrodectus tredecimguttatus", t.usage.getName().getScientificName());
+      assertEquals("(Rossi, 1790)", t.usage.getName().authorshipComplete());
 
       Set<String> nonMisappliedIds = Sets.newHashSet("s17", "s18");
       int counter = 0;
@@ -159,14 +160,14 @@ public class NormalizerACEFIT extends NormalizerITBase {
     normalize(7);
     try (Transaction tx = store.getNeo().beginTx()) {
       NeoUsage t = usageByID("CIP-S-902");
-      assertEquals("Lutzomyia preclara", t.usage.getName().canonicalNameComplete());
+      assertEquals("Lutzomyia preclara", t.usage.getName().getScientificName());
 
       t = usageByID("2");
-      assertEquals("Latrodectus spec.", t.usage.getName().canonicalNameComplete());
+      assertEquals("Latrodectus spec.", t.usage.getName().getScientificName());
       assertEquals("(Fabricius, 1775)", t.usage.getName().authorshipComplete().trim());
 
       t = usageByID("3");
-      assertEquals("Null bactus", t.usage.getName().canonicalNameComplete());
+      assertEquals("Null bactus", t.usage.getName().getScientificName());
       assertTrue(store.getVerbatim(t.usage.getName().getVerbatimKey()).hasIssue(Issue.NULL_EPITHET));
     }
   }
@@ -187,11 +188,18 @@ public class NormalizerACEFIT extends NormalizerITBase {
       }
       
       u = usageByID("8");
-      assertEquals("Anthurium lanceum Engl. [nom.illeg.]", u.usage.getName().canonicalNameComplete());
-      assertEquals("nom.illeg.", u.usage.getName().getRemarks());
+      assertEquals("Anthurium lanceum", u.usage.getName().getScientificName());
+      assertEquals("Engl.", u.usage.getName().authorshipComplete());
+      assertEquals("nom.illeg.; superfluous at its time of publication", u.usage.getName().getRemarks());
       assertEquals("Markus non. A.lancea.", u.usage.getAccordingTo());
       assertEquals(NomStatus.ILLEGITIMATE, u.usage.getName().getNomStatus());
-      //assertTrue(store.getVerbatim(u.usage.getName().getVerbatimKey()).hasIssue(Issue.PARTIALLY_PARSABLE_NAME));
+  
+      u = usageByID("11");
+      assertEquals("Abies alba", u.usage.getName().getScientificName());
+      assertEquals("Mill.", u.usage.getName().authorshipComplete());
+      assertEquals("valid", u.usage.getName().getRemarks());
+      assertEquals("non Parolly", u.usage.getAccordingTo());
+      assertEquals(NomStatus.LEGITIMATE, u.usage.getName().getNomStatus());
     }
   }
   
