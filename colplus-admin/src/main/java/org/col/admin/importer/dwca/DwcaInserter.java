@@ -13,6 +13,7 @@ import org.col.admin.importer.reference.ReferenceFactory;
 import org.col.api.model.Dataset;
 import org.col.api.vocab.ColDwcTerm;
 import org.gbif.dwc.terms.DwcTerm;
+import org.gbif.dwc.terms.DwcaTerm;
 import org.gbif.dwc.terms.GbifTerm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,37 +46,37 @@ public class DwcaInserter extends NeoInserter {
   
       insertNameRelations(reader, ColDwcTerm.NameRelations,
           inter::interpretNameRelations,
-          DwcaReader.DWCA_ID,
+          DwcaTerm.ID,
           ColDwcTerm.relatedNameUsageID
       );
   
       insertTaxonEntities(reader, GbifTerm.Distribution,
           inter::interpretDistribution,
-          DwcaReader.DWCA_ID,
+          DwcaTerm.ID,
           (t, d) -> t.distributions.add(d)
       );
   
       insertTaxonEntities(reader, GbifTerm.VernacularName,
           inter::interpretVernacularName,
-          DwcaReader.DWCA_ID,
+          DwcaTerm.ID,
           (t, vn) -> t.vernacularNames.add(vn)
       );
   
       insertTaxonEntities(reader, GbifTerm.Description,
           inter::interpretDescription,
-          DwcaReader.DWCA_ID,
+          DwcaTerm.ID,
           (t, d) -> t.descriptions.add(d)
       );
   
       insertTaxonEntities(reader, GbifTerm.Multimedia,
           inter::interpretMedia,
-          DwcaReader.DWCA_ID,
+          DwcaTerm.ID,
           (t, d) -> t.media.add(d)
       );
 
       insertTaxonEntities(reader, GbifTerm.Reference,
           inter::interpretReference,
-          DwcaReader.DWCA_ID,
+          DwcaTerm.ID,
           (t, r) -> {
             if (store.create(r)) {
               t.bibliography.add(r.getId());

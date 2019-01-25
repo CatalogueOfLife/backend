@@ -20,6 +20,7 @@ import org.col.parser.SafeParser;
 import org.col.parser.TaxonomicStatusParser;
 import org.gbif.dwc.terms.DcTerm;
 import org.gbif.dwc.terms.DwcTerm;
+import org.gbif.dwc.terms.DwcaTerm;
 import org.gbif.dwc.terms.GbifTerm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,7 +57,7 @@ public class DwcInterpreter extends InterpreterBase {
       }
   
       // shared usage props
-      u.setId(v.getFirstRaw(DwcTerm.taxonID, DwcaReader.DWCA_ID));
+      u.setId(v.getFirstRaw(DwcTerm.taxonID, DwcaTerm.ID));
       u.setVerbatimKey(v.getKey());
       u.usage.setAccordingTo(v.get(DwcTerm.nameAccordingTo));
       u.usage.addAccordingTo(nat.get().getAccordingTo());
@@ -201,7 +202,7 @@ public class DwcInterpreter extends InterpreterBase {
   }
   
   private Optional<NameAccordingTo> interpretName(VerbatimRecord v) {
-    Optional<NameAccordingTo> opt = interpretName(v.getFirstRaw(DwcTerm.taxonID, DwcaReader.DWCA_ID),
+    Optional<NameAccordingTo> opt = interpretName(v.getFirstRaw(DwcTerm.taxonID, DwcaTerm.ID),
         v.getFirst(DwcTerm.taxonRank, DwcTerm.verbatimTaxonRank), v.get(DwcTerm.scientificName),
         v.get(DwcTerm.scientificNameAuthorship),
         v.getFirst(GbifTerm.genericName, DwcTerm.genus), v.get(DwcTerm.subgenus),

@@ -40,8 +40,6 @@ import org.slf4j.LoggerFactory;
  */
 public class DwcaReader extends CsvReader {
   private static final Logger LOG = LoggerFactory.getLogger(DwcaReader.class);
-  private static final String DWCA_NS = "http://rs.tdwg.org/dwc/text/";
-  public static final Term DWCA_ID = UnknownTerm.build(DWCA_NS + "ID", "ID", false);
   private static final String META_FN = "meta.xml";
   private static final List<Term> PREFERRED_CORE_TYPES = ImmutableList.of(DwcTerm.Taxon, DwcTerm.Event, DwcTerm.Occurrence);
   private static final XMLInputFactory2 factory;
@@ -63,7 +61,7 @@ public class DwcaReader extends CsvReader {
   static {
     // make sure we are aware of ColTerms
     TermFactory.instance().registerTermEnum(ColDwcTerm.class);
-    TermFactory.instance().registerTerm(DWCA_ID);
+    TermFactory.instance().registerTerm(DwcaTerm.ID);
   }
   
   private Term coreRowType;
@@ -107,11 +105,11 @@ public class DwcaReader extends CsvReader {
       
       // add artificial id terms for known rowType id pairs
       for (Schema s : schemas.values()) {
-        if (!s.hasTerm(DWCA_ID)) {
+        if (!s.hasTerm(DwcaTerm.ID)) {
           Optional<Term> idTerm = Optional.ofNullable(ROW_TYPE_TO_ID.getOrDefault(s.rowType, null));
           if (idTerm.isPresent() && s.hasTerm(idTerm.get())) {
             // create another id field with the same index
-            Schema.Field id = new Schema.Field(DWCA_ID, s.field(idTerm.get()).index);
+            Schema.Field id = new Schema.Field(DwcaTerm.ID, s.field(idTerm.get()).index);
             List<Schema.Field> columns = Lists.newArrayList(s.columns);
             columns.add(id);
             Schema s2 = new Schema(s.file, s.rowType, s.encoding, s.settings, columns);
@@ -271,7 +269,7 @@ public class DwcaReader extends CsvReader {
   }
   
   private Optional<Schema.Field> buildField(XMLStreamReader2 parser, boolean id) {
-    final Term term = id ? DWCA_ID : VocabularyUtils.TF.findPropertyTerm(attr(parser, "term"));
+    final Term term = id ? DwcaTerm.ID : VocabularyUtils.TF.findPropertyTerm(attr(parser, "term"));
     try {
       String value = attr(parser, "default");
       Integer index = null;
@@ -339,11 +337,11 @@ public class DwcaReader extends CsvReader {
   public Stream<VerbatimRecord> stream(Term rowType) {
     final Optional<Term> idTerm = Optional.ofNullable(ROW_TYPE_TO_ID.getOrDefault(rowType, null));
     final Optional<Schema> schema = schema(rowType);
-    if (schema.isPresent() && !schema.get().hasTerm(DWCA_ID) && idTerm.isPresent()) {
+    if (schema.isPresent() && !schema.get().hasTerm(DwcaTerm.ID) && idTerm.isPresent()) {
       return super.stream(rowType)
           .map(row -> {
             // add dwca id columns
-            idTerm.ifPresent(term -> row.put(DWCA_ID, row.get(term)));
+            idTerm.ifPresent(term -> row.put(DwcaTerm.ID, row.get(term)));
             return row;
           });
     } else {
@@ -387,7 +385,7 @@ public class DwcaReader extends CsvReader {
     }
     
     // check if taxonID should be used, not the generic ID
-    if (core.hasTerm(DwcTerm.taxonID) && !core.field(DWCA_ID).index.equals(core.field(DwcTerm.taxonID).index)) {
+    if (core.hasTerm(DwcTerm.taxonID) && !core.field(DwcaTerm.ID).index.equals(core.field(DwcTerm.taxonID).index)) {
       LOG.info("Use taxonID instead of ID");
       mappingFlags.setTaxonId(true);
     }
