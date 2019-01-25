@@ -1,5 +1,8 @@
 package org.col.resources;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
@@ -10,8 +13,10 @@ import org.col.api.model.Page;
 import org.col.api.model.ResultPage;
 import org.col.api.model.VerbatimRecord;
 import org.col.api.vocab.Issue;
+import org.col.common.text.StringUtils;
 import org.col.db.mapper.VerbatimRecordMapper;
 import org.gbif.dwc.terms.Term;
+import org.gbif.dwc.terms.TermFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,11 +31,31 @@ public class VerbatimResource {
   @GET
   public ResultPage<VerbatimRecord> list(@PathParam("datasetKey") int datasetKey,
                                          @QueryParam("type") Term type,
-                                         @QueryParam("issue") Issue issue,
+                                         @QueryParam("term") List<String> filter,
+                                         @QueryParam("issue") List<Issue> issues,
                                          @Valid @BeanParam Page page,
                                          @Context SqlSession session) {
     VerbatimRecordMapper mapper = session.getMapper(VerbatimRecordMapper.class);
-    return new ResultPage<VerbatimRecord>(page, mapper.count(datasetKey, type), mapper.list(datasetKey, type, issue, page));
+    Map<Term, String> terms = termFilter(filter);
+    
+    return new ResultPage<VerbatimRecord>(page,
+        mapper.count(datasetKey, type, terms, issues),
+        mapper.list(datasetKey, type, terms, issues, page)
+    );
+  }
+  
+  private Map<Term, String> termFilter(List<String> filter) {
+    Map<Term, String> terms = new HashMap<>();
+    if (filter != null) {
+      for (String f : filter) {
+        String[] parts = StringUtils.splitRight(f, ':');
+        if (parts == null) {
+          throw new IllegalArgumentException("Term query parameter must contain a colon delimited value");
+        }
+        terms.put(TermFactory.instance().findPropertyTerm(parts[0]), parts[1]);
+      }
+    }
+    return terms;
   }
   
   @GET

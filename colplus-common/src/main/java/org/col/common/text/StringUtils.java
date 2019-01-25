@@ -213,7 +213,21 @@ public class StringUtils {
     }
     return String.valueOf(chars);
   }
-
+  
+  /**
+   * Splits a string at the last occurrence of the given delimiter.
+   * If delimiter exists an array with 2 strings is returned.
+   * If not, null is returned.
+   * @return null or an array with the 2 split strings excluding the delimiter
+   */
+  public static String[] splitRight(String s, char delimiter) {
+    int i = s.lastIndexOf(delimiter);
+    if (i > 0) {
+      return new String[]{s.substring(0, i), s.substring(i+1)};
+    }
+    return null;
+  }
+  
   public boolean allEmpty(String... strings) {
     for (String s : strings) {
       if (!org.apache.commons.lang3.StringUtils.isEmpty(s)) {

@@ -2,15 +2,20 @@ package org.col.common.text;
 
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
 /**
  *
  */
 public class StringUtilsTest {
-
-
+  
+  
+  @Test
+  public void testRihtSplit() {
+    assertArrayEquals(new String[]{"Carl", "s"}, StringUtils.splitRight("Carlas", 'a'));
+    assertArrayEquals(new String[]{"dwc:genus", "Abies"}, StringUtils.splitRight("dwc:genus:Abies", ':'));
+  }
+  
   @Test
   public void testIncrease() {
     assertEquals("Carlb", StringUtils.increase("Carla"));
