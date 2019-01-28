@@ -132,41 +132,36 @@ public class AcefInserter extends NeoInserter {
     NeoUsage u = store.usages().objByID(taxonID);
     Reference ref = store.refById(referenceID);
     Set<Issue> issues = EnumSet.noneOf(Issue.class);
-    if (u == null) {
-      issues.add(Issue.TAXON_ID_INVALID);
-      if (ref != null) {
-        LOG.debug("taxonID {} from NameReferencesLinks line {} not existing", taxonID, rec.getLine());
-      } else {
-        issues.add(Issue.REFERENCE_ID_INVALID);
-        LOG.info("referenceID {} and taxonID {} from NameReferencesLinks line {} both not existing", referenceID, taxonID, rec.getLine());
+    if (u != null && ref != null && refType != null) {
+      switch (refType) {
+        case NomRef:
+          NeoName nn = store.nameByUsage(u.node);
+          if (nn.name.getPublishedInId() != null) {
+            rec.addIssue(Issue.MULTIPLE_PUBLISHED_IN_REFERENCES);
+          }
+          nn.name.setPublishedInId(ref.getId());
+          // we extract the page from CSL and also store it in the name
+          // No deduplication of refs happening
+          nn.name.setPublishedInPage(ref.getCsl().getPage());
+          store.names().update(nn);
+          break;
+        case TaxAccRef:
+          u.bibliography.add(ref.getId());
+          store.usages().update(u);
+          break;
+        case ComNameRef:
+          // ignore here, we should see this again when parsing common names
+          break;
       }
-      
     } else {
+      if (u == null) {
+        issues.add(Issue.TAXON_ID_INVALID);
+      }
       if (ref == null) {
-        LOG.debug("referenceID {} from NameReferencesLinks line {} not existing", referenceID, rec.getLine());
         issues.add(Issue.REFERENCE_ID_INVALID);
-
-      } else if (refType == null) {
-        LOG.debug("Unknown reference type {} used in NameReferencesLinks line {}", refTypeRaw, rec.getLine());
+      }
+      if (refType == null) {
         issues.add(Issue.REFTYPE_INVALID);
-      } else {
-        switch (refType) {
-          case NomRef:
-            NeoName nn = store.nameByUsage(u.node);
-            nn.name.setPublishedInId(ref.getId());
-            // we extract the page from CSL and also store it in the name
-            // No deduplication of refs happening
-            nn.name.setPublishedInPage(ref.getCsl().getPage());
-            store.names().update(nn);
-            break;
-          case TaxAccRef:
-            u.bibliography.add(ref.getId());
-            store.usages().update(u);
-            break;
-          case ComNameRef:
-            // ignore here, we should see this again when parsing common names
-            break;
-        }
       }
     }
     // persist new issue?

@@ -262,6 +262,9 @@ public enum Issue {
   // REFERENCE ISSUES
   //
   
+  MULTIPLE_PUBLISHED_IN_REFERENCES(Group.REFERENCE, Level.WARNING,
+      "There are multiple references for the original publication of a name."),
+  
   UNPARSABLE_REFERENCE(Group.REFERENCE, Level.ERROR,
       "The reference could not be parsed and broken down into a sensible record."),
   
