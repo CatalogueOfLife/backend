@@ -60,7 +60,7 @@ public class AcefInserter extends NeoInserter {
       
       // species
       insertEntities(reader, AcefTerm.AcceptedSpecies,
-          inter::interpretAccepted,
+          inter::interpretSpecies,
           store::createNameAndUsage
       );
       
@@ -69,7 +69,7 @@ public class AcefInserter extends NeoInserter {
       // but a link to their parent species ID.
       // so we cannot update the scientific name yet - we do this in the relation inserter instead!
       insertEntities(reader, AcefTerm.AcceptedInfraSpecificTaxa,
-          inter::interpretAccepted,
+          inter::interpretInfraspecies,
           store::createNameAndUsage
       );
       

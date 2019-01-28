@@ -1,12 +1,14 @@
 package org.col.api.model;
 
 import java.util.Objects;
+import java.util.Set;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.QueryParam;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * A page used for requesting or responding to a pageable service.
@@ -15,6 +17,7 @@ public class Page {
   public static final int MAX_LIMIT = 1000;
   public static final int DEFAULT_LIMIT = 10;
   public static final int DEFAULT_OFFSET = 0;
+  public static final Set<String> PARAMETER_NAMES = ImmutableSet.of("offset", "limit");
   
   @QueryParam("offset")
   @DefaultValue("0")

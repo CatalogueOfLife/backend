@@ -49,12 +49,18 @@ public class AcefInterpreter extends InterpreterBase {
         rec
     ));
   }
+  
+  Optional<NeoUsage> interpretSpecies(VerbatimRecord v) {
+    return interpretUsage(AcefTerm.AcceptedTaxonID, v, false);
+  }
 
-  Optional<NeoUsage> interpretAccepted(VerbatimRecord v) {
+  Optional<NeoUsage> interpretInfraspecies(VerbatimRecord v) {
+    requireTerm(v, AcefTerm.ParentSpeciesID, Issue.PARENT_ID_INVALID);
     return interpretUsage(AcefTerm.AcceptedTaxonID, v, false);
   }
 
   Optional<NeoUsage> interpretSynonym(VerbatimRecord v) {
+    requireTerm(v, AcefTerm.AcceptedTaxonID, Issue.ACCEPTED_ID_INVALID);
     return interpretUsage(AcefTerm.ID, v, true);
   }
   
