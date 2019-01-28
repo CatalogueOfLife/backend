@@ -37,7 +37,7 @@ import org.col.db.dao.DatasetImportDao;
 import org.col.db.mapper.DatasetMapper;
 import org.col.db.mapper.DatasetPartitionMapper;
 import org.col.es.NameUsageIndexService;
-import org.col.es.NameUsageIndexServiceES;
+import org.col.es.NameUsageIndexServiceEs;
 import org.col.img.ImageService;
 import org.elasticsearch.client.RestClient;
 import org.gbif.nameparser.utils.NamedThreadFactory;
@@ -86,7 +86,7 @@ public class ImportManager implements Managed {
       this.indexService = NameUsageIndexService.passThru();
       LOG.warn("No Elastic Search configured, use pass through indexing");
     } else {
-      this.indexService = new NameUsageIndexServiceES(esClient, cfg.es, factory);
+      this.indexService = new NameUsageIndexServiceEs(esClient, cfg.es, factory);
     }
     importTimer = registry.timer("org.col.import.timer");
     failed = registry.counter("org.col.import.failed");

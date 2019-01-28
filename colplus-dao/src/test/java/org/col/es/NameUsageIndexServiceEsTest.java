@@ -29,13 +29,13 @@ import static org.gbif.nameparser.api.Rank.SPECIES;
 import static org.junit.Assert.assertEquals;
 
 @Ignore("Its too slow for jenkins most of the time")
-public class NameUsageIndexServiceESTest extends EsReadWriteTestBase {
+public class NameUsageIndexServiceEsTest extends EsReadWriteTestBase {
 
   @Test // Nice in combination with PgImportIT.testGsdGithub
   @Ignore
   public void indexDataSet() throws IOException, EsException {
     try (RestClient client = getEsClient()) {
-      NameUsageIndexServiceES svc = new NameUsageIndexServiceES(client, getEsConfig(), factory());
+      NameUsageIndexServiceEs svc = new NameUsageIndexServiceEs(client, getEsConfig(), factory());
       svc.indexDataset(1000);
     }
   }

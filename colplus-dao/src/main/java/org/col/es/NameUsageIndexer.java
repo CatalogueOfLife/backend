@@ -58,8 +58,7 @@ class NameUsageIndexer implements Consumer<List<NameUsageWrapper>> {
     try {
       for (NameUsageWrapper nuw : batch) {
         buf.append(header);
-        EsNameUsage enu = transfer.toDocument(nuw);
-        buf.append(WRITER.writeValueAsString(enu));
+        buf.append(WRITER.writeValueAsString(transfer.toDocument(nuw)));
         buf.append("\n");
       }
       Request request = new Request("POST", "/_bulk");
@@ -81,8 +80,7 @@ class NameUsageIndexer implements Consumer<List<NameUsageWrapper>> {
       String json;
       for (NameUsageWrapper nuw : batch) {
         buf.append(header);
-        EsNameUsage enu = transfer.toDocument(nuw);
-        buf.append(json = WRITER.writeValueAsString(enu));
+        buf.append(json = WRITER.writeValueAsString(transfer.toDocument(nuw)));
         docSize += json.getBytes(Charsets.UTF_8).length;
         buf.append("\n");
       }
@@ -102,6 +100,13 @@ class NameUsageIndexer implements Consumer<List<NameUsageWrapper>> {
     } catch (IOException e) {
       throw new EsException(e);
     }
+  }
+
+  /**
+   * Resets the document counter.
+   */
+  void reset() {
+    indexed = 0;
   }
 
   /**

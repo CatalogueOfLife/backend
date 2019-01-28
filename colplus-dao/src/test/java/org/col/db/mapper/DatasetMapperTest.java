@@ -2,17 +2,26 @@ package org.col.db.mapper;
 
 import java.net.URI;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
+
 import org.col.api.RandomUtils;
 import org.col.api.TestEntityGenerator;
 import org.col.api.model.Dataset;
 import org.col.api.model.Page;
 import org.col.api.search.DatasetSearchRequest;
-import org.col.api.vocab.*;
+import org.col.api.vocab.Catalogue;
+import org.col.api.vocab.DataFormat;
+import org.col.api.vocab.DatasetType;
+import org.col.api.vocab.Datasets;
+import org.col.api.vocab.Frequency;
+import org.col.api.vocab.License;
 import org.gbif.nameparser.api.NomCode;
 import org.javers.core.Javers;
 import org.javers.core.JaversBuilder;
@@ -20,17 +29,20 @@ import org.javers.core.diff.Diff;
 import org.junit.Assert;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  *
  */
 public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
-  
+
   public DatasetMapperTest() {
     super(DatasetMapper.class);
   }
-  
+
   private static Dataset create() throws Exception {
     Dataset d = TestEntityGenerator.setUserDate(new Dataset());
     d.setType(DatasetType.GLOBAL);
@@ -55,51 +67,72 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
     d.getOrganisations().add("your org");
     return d;
   }
-  
+
   @Test
   public void roundtrip() throws Exception {
     Dataset d1 = create();
     mapper().create(d1);
-    
+
     commit();
-    
+
     Dataset d2 = TestEntityGenerator.nullifyDate(mapper().get(d1.getKey()));
 
     assertEquals(d1, d2);
   }
-  
+
   @Test
   public void delete() throws Exception {
     Dataset d1 = create();
     mapper().create(d1);
-    
+
     commit();
-    
+
     // not deleted yet
     Dataset d = mapper().get(d1.getKey());
     assertNull(d.getDeleted());
     assertNotNull(d.getCreated());
-    
+
     // mark deleted
     mapper().delete(d1.getKey());
     d = mapper().get(d1.getKey());
     assertNotNull(d.getDeleted());
   }
-  
+
   @Test
   public void count() throws Exception {
     assertEquals(5, mapper().count(null));
-    
+
     mapper().create(create());
     mapper().create(create());
     // even thogh not committed we are in the same session so we see the new
     // datasets already
     assertEquals(7, mapper().count(null));
-    
+
     commit();
     assertEquals(7, mapper().count(null));
   }
-  
+
+  @Test
+  public void keys() throws Exception {
+    List<Integer> expected = mapper().list(new Page(100)).stream().map(Dataset::getKey).collect(Collectors.toList());
+    Dataset d = create();
+    mapper().create(d);
+    commit();
+    expected.add(d.getKey());
+    d = create();
+    mapper().create(d);
+    commit();
+    expected.add(d.getKey());
+    d = create();
+    mapper().create(d);
+    commit();
+    expected.add(d.getKey());
+    Collections.sort(expected);
+    List<Integer> actual = mapper().keys();
+    Collections.sort(actual);
+    assertEquals(expected, actual);
+  }
+
   private List<Dataset> createExpected() throws Exception {
     List<Dataset> ds = Lists.newArrayList();
     ds.add(mapper().get(Datasets.COL));
@@ -114,7 +147,7 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
     ds.add(create());
     return ds;
   }
-  
+
   @Test
   public void list() throws Exception {
     List<Dataset> ds = createExpected();
@@ -127,31 +160,30 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
     }
     commit();
     removeCreated(ds);
-    
+
     // get first page
     Page p = new Page(0, 4);
-    
-    
+
     List<Dataset> res = removeCreated(mapper().list(p));
     assertEquals(4, res.size());
     Javers javers = JaversBuilder.javers().build();
     Diff diff = javers.compare(ds.get(0), res.get(0));
     assertEquals(0, diff.getChanges().size());
     assertEquals(ds.subList(0, 4), res);
-    
+
     // next page (d5-8)
     p.next();
     res = removeCreated(mapper().list(p));
     assertEquals(4, res.size());
     assertEquals(ds.subList(4, 8), res);
-    
+
     // next page (d9)
     p.next();
     res = removeCreated(mapper().list(p));
     assertEquals(2, res.size());
     assertEquals(ds.subList(8, 10), res);
   }
-  
+
   @Test
   public void listNeverImported() throws Exception {
     List<Dataset> ds = createExpected();
@@ -161,14 +193,14 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
       }
     }
     commit();
-    
+
     List<Dataset> never = mapper().listNeverImported(3);
     assertEquals(3, never.size());
-    
+
     List<Dataset> tobe = mapper().listToBeImported(3);
     assertEquals(0, tobe.size());
   }
-  
+
   @Test
   public void countSearchResults() throws Exception {
     createSearchableDataset("BIZ", "markus", "CUIT", "A sentence with worms and stuff");
@@ -179,36 +211,36 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
     int count = mapper().count(DatasetSearchRequest.byQuery("worms"));
     assertEquals("01", 3, count);
   }
-  
+
   @Test
   public void search() throws Exception {
     final Integer d1 = createSearchableDataset("ITIS", "Mike;Bob", "ITIS", "Also contains worms");
     commit();
-    
+
     final Integer d2 = createSearchableDataset("BIZ", "bob;jim", "CUIT", "A sentence with worms and worms");
     commit();
-    
+
     final Integer d3 = createSearchableDataset("WORMS", "Bart", "WORMS", "The Worms dataset");
     final Integer d4 = createSearchableDataset("FOO", "bar", "BAR", null);
     final Integer d5 = createSearchableDataset("WORMS worms", "beard", "WORMS", "Worms with even more worms than worms");
     mapper().delete(d5);
     commit();
-    
+
     DatasetSearchRequest query = new DatasetSearchRequest();
     query.setCreated(LocalDate.parse("2031-12-31"));
     assertTrue(mapper().search(query, new Page()).isEmpty());
-    
+
     // apple.sql contains one dataset from 2017
     query.setCreated(LocalDate.parse("2018-02-01"));
     assertEquals(8, mapper().search(query, new Page()).size());
-    
+
     query.setCreated(LocalDate.parse("2016-02-01"));
     assertEquals(9, mapper().search(query, new Page()).size());
-    
+
     query.setReleased(LocalDate.parse("2007-11-21"));
     query.setModified(LocalDate.parse("2031-12-31"));
     assertEquals(0, mapper().search(query, new Page()).size());
-    
+
     // check different orderings
     query = DatasetSearchRequest.byQuery("worms");
     for (DatasetSearchRequest.SortBy by : DatasetSearchRequest.SortBy.values()) {
@@ -242,7 +274,7 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
           // nothing, from import and all null
       }
     }
-    
+
     // now try reversed
     query.setReverse(true);
     for (DatasetSearchRequest.SortBy by : DatasetSearchRequest.SortBy.values()) {
@@ -275,15 +307,15 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
           // nothing, from import and all null
       }
     }
-    
+
     query = DatasetSearchRequest.byQuery("worms");
     query.setContributesTo(ImmutableSet.of(Catalogue.COL));
     assertEquals(0, mapper().search(query, new Page()).size());
-    
+
     query.setContributesTo(ImmutableSet.of(Catalogue.PCAT, Catalogue.COL));
     assertEquals(3, mapper().search(query, new Page()).size());
   }
-  
+
   private static List<Dataset> removeCreated(List<Dataset> ds) {
     for (Dataset d : ds) {
       // dont compare created stamps
@@ -292,7 +324,7 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
     }
     return ds;
   }
-  
+
   private int createSearchableDataset(String title, String author, String organisation, String description) {
     Dataset ds = new Dataset();
     ds.setTitle(title);

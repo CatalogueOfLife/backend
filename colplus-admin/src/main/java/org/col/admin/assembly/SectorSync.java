@@ -19,7 +19,7 @@ import org.col.api.vocab.EntityType;
 import org.col.common.util.LoggingUtils;
 import org.col.db.dao.TaxonDao;
 import org.col.db.mapper.*;
-import org.col.es.NameUsageIndexServiceES;
+import org.col.es.NameUsageIndexServiceEs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,7 +42,7 @@ public class SectorSync implements Runnable {
   private final int catalogueKey = Datasets.DRAFT_COL;
   
   private final SqlSessionFactory factory;
-  private final NameUsageIndexServiceES indexService;
+  private final NameUsageIndexServiceEs indexService;
   private Map<String, EditorialDecision> decisions = new HashMap<>();
   private final Consumer<SectorSync> successCallback;
   private final BiConsumer<SectorSync, Exception> errorCallback;
@@ -50,7 +50,7 @@ public class SectorSync implements Runnable {
   private final ColUser user;
   private final SectorSyncState state = new SectorSyncState();
   
-  public SectorSync(int sectorKey, SqlSessionFactory factory, NameUsageIndexServiceES indexService,
+  public SectorSync(int sectorKey, SqlSessionFactory factory, NameUsageIndexServiceEs indexService,
                     Consumer<SectorSync> successCallback,
                     BiConsumer<SectorSync, Exception> errorCallback, ColUser user) {
     this.user = user;

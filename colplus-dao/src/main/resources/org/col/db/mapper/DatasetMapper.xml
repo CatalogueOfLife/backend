@@ -139,6 +139,11 @@
         WHERE <include refid="SEARCH_WHERE" />
     </select>
 
+    <select id="keys" resultType="integer">
+        SELECT key
+        FROM dataset
+    </select>
+
     <select id="search" resultMap="datasetResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
