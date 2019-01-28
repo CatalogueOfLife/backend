@@ -1,22 +1,22 @@
 package org.col.resources;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.UriInfo;
 
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.model.Page;
 import org.col.api.model.ResultPage;
 import org.col.api.model.VerbatimRecord;
 import org.col.api.vocab.Issue;
-import org.col.common.text.StringUtils;
 import org.col.db.mapper.VerbatimRecordMapper;
 import org.gbif.dwc.terms.Term;
 import org.gbif.dwc.terms.TermFactory;
+import org.gbif.dwc.terms.UnknownTerm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,6 +24,14 @@ import org.slf4j.LoggerFactory;
 @Produces(MediaType.APPLICATION_JSON)
 @SuppressWarnings("static-method")
 public class VerbatimResource {
+  private static final Set<String> KNOWN_PARAMS;
+  static {
+    Set<String> paras = new HashSet<>();
+    paras.addAll(Page.PARAMETER_NAMES);
+    paras.add("type");
+    paras.add("issue");
+    KNOWN_PARAMS = Collections.unmodifiableSet(paras);
+  }
   
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(VerbatimResource.class);
@@ -31,12 +39,12 @@ public class VerbatimResource {
   @GET
   public ResultPage<VerbatimRecord> list(@PathParam("datasetKey") int datasetKey,
                                          @QueryParam("type") List<Term> types,
-                                         @QueryParam("term") List<String> filter,
                                          @QueryParam("issue") List<Issue> issues,
                                          @Valid @BeanParam Page page,
+                                         @Context UriInfo uri,
                                          @Context SqlSession session) {
     VerbatimRecordMapper mapper = session.getMapper(VerbatimRecordMapper.class);
-    Map<Term, String> terms = termFilter(filter);
+    Map<Term, String> terms = termFilter(uri.getQueryParameters());
     
     return new ResultPage<VerbatimRecord>(page,
         mapper.count(datasetKey, types, terms, issues),
@@ -44,15 +52,17 @@ public class VerbatimResource {
     );
   }
   
-  private Map<Term, String> termFilter(List<String> filter) {
+  private Map<Term, String> termFilter(MultivaluedMap<String, String> filter) {
     Map<Term, String> terms = new HashMap<>();
     if (filter != null) {
-      for (String f : filter) {
-        String[] parts = StringUtils.splitRight(f, ':');
-        if (parts == null) {
-          throw new IllegalArgumentException("Term query parameter must contain a colon delimited value");
+      for (String f : filter.keySet()) {
+        if (KNOWN_PARAMS.contains(f)) continue;
+        if (filter.getFirst(f) == null) continue;
+        Term t = TermFactory.instance().findPropertyTerm(f);
+        if (t instanceof UnknownTerm) {
+          throw new IllegalArgumentException("Unknown term parameter" + f);
         }
-        terms.put(TermFactory.instance().findPropertyTerm(parts[0]), parts[1]);
+        terms.put(t, filter.getFirst(f));
       }
     }
     return terms;

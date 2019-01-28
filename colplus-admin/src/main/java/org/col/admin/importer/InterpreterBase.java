@@ -215,12 +215,12 @@ public class InterpreterBase {
     return null;
   }
 
-  protected URI uri(VerbatimRecord v, Issue invalidIssue, Term... term) {
-    return parse(UriParser.PARSER, v.getFirstRaw(term)).orNull(invalidIssue, v);
+  protected URI uri(VerbatimRecord v, Issue invalidIssue, Term... terms) {
+    return parse(UriParser.PARSER, v.getFirstRaw(terms)).orNull(invalidIssue, v);
   }
 
-  protected Boolean bool(VerbatimRecord v, Issue invalidIssue, Term... term) {
-    return parse(BooleanParser.PARSER, v.getFirst(term)).orNull(invalidIssue, v);
+  protected Boolean bool(VerbatimRecord v, Issue invalidIssue, Term... terms) {
+    return parse(BooleanParser.PARSER, v.getFirst(terms)).orNull(invalidIssue, v);
   }
   
   private static boolean hasNoSpace(String x) {
