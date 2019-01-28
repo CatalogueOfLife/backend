@@ -50,6 +50,14 @@ public class InterpreterBase {
     this.store = store;
   }
   
+  protected boolean requireTerm(VerbatimRecord v, Term term, Issue notExistingIssue){
+    if (!v.hasTerm(term)) {
+      v.addIssue(notExistingIssue);
+      return false;
+    }
+    return true;
+  }
+  
   protected String latinName(String name) {
     return transLatin.transform(name);
   }

@@ -158,10 +158,10 @@ public enum Issue {
       "The name object for col:nameId could not be resolved."),
 
   PARENT_ID_INVALID(Group.TAXON, Level.ERROR,
-      "The value for dwc:parentNameUsageID could not be resolved."),
+      "The value for dwc:parentNameUsageID could not be resolved or is missing."),
   
   ACCEPTED_ID_INVALID(Group.TAXON, Level.ERROR,
-      "The value for dwc:acceptedNameUsageID could not be resolved."),
+      "The value for dwc:acceptedNameUsageID could not be resolved or is missing."),
   
   ACCEPTED_NAME_MISSING(Group.TAXON, Level.ERROR,
       "Synonym lacking an accepted name. These will be treated as bare names in the datastore"),
