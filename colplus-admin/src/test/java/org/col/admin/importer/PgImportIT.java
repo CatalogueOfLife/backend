@@ -553,7 +553,7 @@ public class PgImportIT {
       
       // https://github.com/Sp2000/colplus-backend/issues/237
       VerbatimRecordMapper vm = session.getMapper(VerbatimRecordMapper.class);
-      for (VerbatimRecord v : vm.list(dataset.getKey(), null, null, null, new Page(0, 100))) {
+      for (VerbatimRecord v : vm.list(dataset.getKey(), null, null, LogicalOperator.AND, null, new Page(0, 100))) {
         for (Term t : v.terms()) {
           assertFalse(t instanceof UnknownTerm);
         }

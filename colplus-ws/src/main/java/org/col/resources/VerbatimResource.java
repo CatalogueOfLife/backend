@@ -13,6 +13,7 @@ import org.col.api.model.Page;
 import org.col.api.model.ResultPage;
 import org.col.api.model.VerbatimRecord;
 import org.col.api.vocab.Issue;
+import org.col.db.mapper.LogicalOperator;
 import org.col.db.mapper.VerbatimRecordMapper;
 import org.gbif.dwc.terms.Term;
 import org.gbif.dwc.terms.TermFactory;
@@ -30,6 +31,7 @@ public class VerbatimResource {
     paras.addAll(Page.PARAMETER_NAMES);
     paras.add("type");
     paras.add("issue");
+    paras.add("termOp");
     KNOWN_PARAMS = Collections.unmodifiableSet(paras);
   }
   
@@ -39,6 +41,7 @@ public class VerbatimResource {
   @GET
   public ResultPage<VerbatimRecord> list(@PathParam("datasetKey") int datasetKey,
                                          @QueryParam("type") List<Term> types,
+                                         @QueryParam("termOp") @DefaultValue("AND") LogicalOperator termOp,
                                          @QueryParam("issue") List<Issue> issues,
                                          @Valid @BeanParam Page page,
                                          @Context UriInfo uri,
@@ -47,8 +50,8 @@ public class VerbatimResource {
     Map<Term, String> terms = termFilter(uri.getQueryParameters());
     
     return new ResultPage<VerbatimRecord>(page,
-        mapper.count(datasetKey, types, terms, issues),
-        mapper.list(datasetKey, types, terms, issues, page)
+        mapper.count(datasetKey, types, terms, termOp, issues),
+        mapper.list(datasetKey, types, terms, termOp, issues, page)
     );
   }
   

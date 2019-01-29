@@ -22,6 +22,7 @@ public interface VerbatimRecordMapper {
   int count(@Param("datasetKey") int datasetKey,
             @Nullable @Param("types") Collection<Term> types,
             @Nullable @Param("terms") Map<Term, String> terms,
+            @Param("termOp") LogicalOperator termOp,
             @Nullable @Param("issues") Collection<Issue> issues
   );
   
@@ -30,6 +31,7 @@ public interface VerbatimRecordMapper {
    * @param datasetKey the required dataset key
    * @param types rowTypes to restrict to
    * @param terms optional list of terms and their values to filter by
+   * @param termOp logical operator to combine multiple term filters
    * @param issues optional issues to filter by
    * @param page
    * @return
@@ -37,6 +39,7 @@ public interface VerbatimRecordMapper {
   List<VerbatimRecord> list(@Param("datasetKey") int datasetKey,
                             @Nullable @Param("types") Collection<Term> types,
                             @Nullable @Param("terms") Map<Term, String> terms,
+                            @Param("termOp") LogicalOperator termOp,
                             @Nullable @Param("issues") Collection<Issue> issues,
                             @Param("page") Page page
   );
