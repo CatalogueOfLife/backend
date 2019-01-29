@@ -150,6 +150,11 @@
             <classifier>tests</classifier>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.javers</groupId>
+            <artifactId>javers-core</artifactId>
+            <scope>test</scope>
+        </dependency>
 
     </dependencies>
 
