@@ -1,8 +1,6 @@
 package org.col.admin.command.initdb;
 
-import java.io.InputStreamReader;
 import java.io.Reader;
-import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.Statement;
 import java.util.concurrent.TimeUnit;
@@ -86,20 +84,8 @@ public class InitDbCmd extends ConfiguredCommand<AdminServerConfig> {
       exec(PgConfig.SCHEMA_FILE, runner, con, Resources.getResourceAsReader(PgConfig.SCHEMA_FILE));
       // add common data
       exec(PgConfig.DATA_FILE, runner, con, Resources.getResourceAsReader(PgConfig.DATA_FILE));
-      // add COL GSDs
-      try (Reader datasets = new InputStreamReader(PgConfig.COL_DATASETS_URI.toURL().openStream(), StandardCharsets.UTF_8)) {
-        exec(PgConfig.COL_DATASETS_URI.toString(), runner, con, datasets);
-      }
-      // add more COL GSDs
-      try (Reader datasets = new InputStreamReader(PgConfig.COL_NEW_DATASETS_URI.toURL().openStream(), StandardCharsets.UTF_8)) {
-        exec(PgConfig.COL_NEW_DATASETS_URI.toString(), runner, con, datasets);
-      }
-      // add unit tests
-      try (Reader datasets = new InputStreamReader(PgConfig.TEST_DATASETS_URI.toURL().openStream(), StandardCharsets.UTF_8)) {
-        exec(PgConfig.TEST_DATASETS_URI.toString(), runner, con, datasets);
-      }
-      // add GBIF Backbone datasets
-      exec(PgConfig.GBIF_DATASETS_FILE, runner, con, Resources.getResourceAsReader(PgConfig.GBIF_DATASETS_FILE));
+      // add known datasets
+      exec(PgConfig.DATASETS_FILE, runner, con, Resources.getResourceAsReader(PgConfig.DATASETS_FILE));
     }
     
     // add col & names index partitions

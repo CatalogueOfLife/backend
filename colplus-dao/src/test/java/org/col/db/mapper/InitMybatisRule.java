@@ -1,9 +1,6 @@
 package org.col.db.mapper;
 
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.util.Collections;
 import java.util.Set;
@@ -168,13 +165,8 @@ public class InitMybatisRule extends ExternalResource {
       System.out.format("Load %s test data\n\n", testData);
       switch (testData) {
         case DATASETS:
-          // COL GSDs
-          try (Reader datasets = new InputStreamReader(PgConfig.COL_DATASETS_URI.toURL().openStream(), StandardCharsets.UTF_8)) {
-            runner.runScript(datasets);
-            session.getConnection().commit();
-          }
-          // GBIF Backbone datasets
-          runner.runScript(Resources.getResourceAsReader(PgConfig.GBIF_DATASETS_FILE));
+          // known datasets
+          runner.runScript(Resources.getResourceAsReader(PgConfig.DATASETS_FILE));
           break;
         default:
           runner.runScript(Resources.getResourceAsReader(testData.name().toLowerCase() + ".sql"));

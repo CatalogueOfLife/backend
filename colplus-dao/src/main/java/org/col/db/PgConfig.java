@@ -1,6 +1,5 @@
 package org.col.db;
 
-import java.net.URI;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -20,10 +19,7 @@ import org.apache.ibatis.jdbc.ScriptRunner;
 public class PgConfig extends PgDbConfig {
   public static final String SCHEMA_FILE = "org/col/db/dbschema.sql";
   public static final String DATA_FILE = "org/col/db/data.sql";
-  public static final String GBIF_DATASETS_FILE = "org/col/db/gbif.sql";
-  public static final URI COL_DATASETS_URI = URI.create("https://raw.githubusercontent.com/Sp2000/colplus-repo/master/datasets.sql");
-  public static final URI COL_NEW_DATASETS_URI = URI.create("https://raw.githubusercontent.com/Sp2000/colplus-repo/master/new-datasets.sql");
-  public static final URI TEST_DATASETS_URI = URI.create("https://raw.githubusercontent.com/Sp2000/colplus-repo/master/unit-tests.sql");
+  public static final String DATASETS_FILE = "org/col/db/datasets.sql";
   
   /**
    * Use null or an absolute file path starting with / to indicate an embedded postgres server
