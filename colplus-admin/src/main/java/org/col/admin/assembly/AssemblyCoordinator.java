@@ -12,6 +12,7 @@ import com.google.common.collect.Lists;
 import io.dropwizard.lifecycle.Managed;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.model.ColUser;
+import org.col.api.model.SectorImport;
 import org.col.common.concurrent.ExecutorUtils;
 import org.gbif.nameparser.utils.NamedThreadFactory;
 import org.slf4j.Logger;
@@ -26,7 +27,7 @@ public class AssemblyCoordinator implements Managed {
   private ExecutorService exec;
   private final SqlSessionFactory factory;
   private final Map<Integer, Future> syncs = new ConcurrentHashMap<Integer, Future>();
-  private final Map<Integer, SectorSyncState> syncStates = new ConcurrentHashMap<Integer, SectorSyncState>();
+  private final Map<Integer, SectorImport> syncStates = new ConcurrentHashMap<Integer, SectorImport>();
   private final Timer timer;
   private final Counter counter;
   private final Counter failed;

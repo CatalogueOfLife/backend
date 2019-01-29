@@ -5,7 +5,7 @@ package org.col.api.model;
  * Sectors will also serve to show the taxonomic coverage in the CoL portal.
  * The subject of the sector is the root taxon in the original source dataset.
  * The target is the matching taxon in the assembled catalogue,
- * the subject should be replacing in REPLACE mode which is the default.
+ * the subject should be replacing in ATTACH mode which is the default.
  * In MERGE mode the subject taxon itself should be skipped and only its descendants be included if they do
  * not already exist.
  *
@@ -14,13 +14,13 @@ package org.col.api.model;
 public class Sector extends Decision {
   private Integer colSourceKey;
   private SimpleName target;
-  private Mode mode = Sector.Mode.REPLACE;
+  private Mode mode = Sector.Mode.ATTACH;
   
   public static enum Mode {
     /**
      * Attach the entire subject and its descendants under its target parent.
      */
-    REPLACE,
+    ATTACH,
 
     /**
      * Merge all descendants of subject under the target taxon, but exclude the subject taxon itself.

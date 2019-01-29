@@ -8,42 +8,57 @@ import com.google.common.collect.Lists;
 import org.col.api.TestEntityGenerator;
 import org.col.api.model.Name;
 import org.col.api.model.Page;
+import org.col.api.model.Sector;
 import org.col.api.model.Taxon;
 import org.col.db.dao.NameDao;
 import org.gbif.nameparser.api.Rank;
-import org.javers.core.Javers;
-import org.javers.core.JaversBuilder;
-import org.javers.core.diff.Diff;
+import org.junit.Before;
 import org.junit.Test;
 
 import static org.col.api.TestEntityGenerator.DATASET11;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 /**
  *
  */
-public class TaxonMapperTest extends MapperTestBase<TaxonMapper> {
+public class TaxonMapperTest extends DatasetCRUDMapperTest<Taxon, TaxonMapper> {
+  
+  private static final int datasetKey = TestEntityGenerator.TAXON1.getDatasetKey();
+  private Sector sector;
   
   public TaxonMapperTest() {
     super(TaxonMapper.class);
   }
   
-  @Test
-  public void roundtrip() throws Exception {
-    Taxon in = TestEntityGenerator.newTaxon("t1");
+  @Before
+  public void init() {
+    // create a few draft taxa to attach sectors to
+    populateDraftTree();
+
+    sector = SectorMapperTest.create(null);
+    sector.getSubject().setId(TestEntityGenerator.TAXON1.getId());
+    sector.getTarget().setId("t4");
+
+    mapper(SectorMapper.class).create(sector);
+  }
+  
+  @Override
+  void updateTestObj(Taxon obj) {
+  
+  }
+  
+  @Override
+  Taxon createTestEntity() {
+    Taxon t = TestEntityGenerator.newTaxon();
     // manually set the child count which is populated on read only
-    in.setChildCount(0);
-    mapper().create(in);
-    assertNotNull(in.getId());
-    commit();
-    Taxon out = TestEntityGenerator.nullifyDate(mapper().get(in.getDatasetKey(), in.getId()));
-    TestEntityGenerator.nullifyDate(in);
-    Javers javers = JaversBuilder.javers().build();
-    Diff diff = javers.compare(in, out);
-    System.out.println(diff);
-    assertEquals(0, diff.getChanges().size());
-    assertEquals(in, out);
+    t.setChildCount(0);
+    t.setSectorKey(sector.getKey());
+    return t;
+  }
+  
+  @Override
+  Taxon removeDbCreatedProps(Taxon obj) {
+    return TestEntityGenerator.nullifyUserDate(obj);
   }
   
   @Test

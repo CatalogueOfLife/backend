@@ -48,7 +48,7 @@ public class SectorSync implements Runnable {
   private final BiConsumer<SectorSync, Exception> errorCallback;
   private final LocalDateTime created = LocalDateTime.now();
   private final ColUser user;
-  private final SectorSyncState state = new SectorSyncState();
+  private final SectorImport state = new SectorImport();
   
   public SectorSync(int sectorKey, SqlSessionFactory factory, NameUsageIndexServiceEs indexService,
                     Consumer<SectorSync> successCallback,
@@ -76,7 +76,7 @@ public class SectorSync implements Runnable {
   public void run() {
     LoggingUtils.setMDC(datasetKey, getClass());
     try {
-      state.started = LocalDateTime.now();
+      state.setStarted(LocalDateTime.now());
       
       sync();
       successCallback.accept(this);
@@ -89,7 +89,7 @@ public class SectorSync implements Runnable {
     }
   }
   
-  public SectorSyncState getState() {
+  public SectorImport getState() {
     return state;
   }
   
@@ -108,26 +108,26 @@ public class SectorSync implements Runnable {
   }
   
   public LocalDateTime getStarted() {
-    return state.started;
+    return state.getStarted();
   }
   
   public void sync() throws InterruptedException {
-    state.status = SectorSyncState.Status.PREPARING;
+    state.setStatus( SectorImport.Status.PREPARING);
     loadDecisions();
     checkIfCancelled();
   
-    state.status = SectorSyncState.Status.COPYING;
+    state.setStatus( SectorImport.Status.COPYING);
     processTree();
     checkIfCancelled();
   
-    state.status = SectorSyncState.Status.DELETING;
+    state.setStatus( SectorImport.Status.DELETING);
     deleteOld();
     checkIfCancelled();
   
-    state.status = SectorSyncState.Status.INDEXING;
+    state.setStatus( SectorImport.Status.INDEXING);
     updateSearchIndex();
-
-    state.status = SectorSyncState.Status.FINISHED;
+  
+    state.setStatus( SectorImport.Status.FINISHED);
   }
   
   private void loadDecisions() {
@@ -170,24 +170,40 @@ public class SectorSync implements Runnable {
     @Override
     public void handleResult(ResultContext<? extends Taxon> ctxt) {
       Taxon tax = ctxt.getResultObject();
-      // lookup parent
-      String parentID = sector.getSubject().getId().equals(tax.getId()) ?
-          sector.getTarget().getId() :
-          ids.get(tax.getParentId());
-      // copy name, taxon, refs, vernaculars, distributions
+      
+      String parentID;
+      // treat root node according to sector mode
+      if (sector.getSubject().getId().equals(tax.getId())) {
+        if (sector.getMode() == Sector.Mode.MERGE) {
+          // in merge mode the root node itself is not copied
+          // but all child taxa should be linked to the sector target, so remember ID:
+          ids.put(tax.getId(), sector.getTarget().getId());
+          return;
+        }
+        // we want to attach the root node under the sector target
+        parentID = sector.getTarget().getId();
+      } else {
+        // all non root nodes have newly created parents
+        parentID = ids.get(tax.getParentId());
+      }
+
+      // Taxon: copy name, taxon, refs, vernaculars, distributions
       DatasetID orig = dao.copyTaxon(tax, catalogueKey, parentID, user, COPY_DATA, this::lookupReference);
       // remember old to new id mapping
       ids.put(orig.getId(), tax.getId());
+      
+      // Synonyms
       DatasetID acc = new DatasetID(tax);
       for (Synonym syn : sMapper.listByTaxon(tax.getDatasetKey(), tax.getId())) {
         // copy synonym, name, syn, refs
         dao.copySynonym(syn, acc, user);
       }
+      
       // commit in batches
       if (counter++ % 100 == 0) {
         session.commit();
       }
-      state.created.set(counter);
+      state.setTaxaCreated(counter);
     }
     
     private String lookupReference(Reference ref) {

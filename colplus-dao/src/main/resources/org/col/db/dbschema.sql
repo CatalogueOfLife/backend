@@ -344,6 +344,7 @@ CREATE TABLE name_rel (
 CREATE TABLE taxon (
   id TEXT NOT NULL,
   dataset_key INTEGER NOT NULL,
+  sector_key INTEGER,
   verbatim_key INTEGER,
   parent_id TEXT,
   name_id TEXT NOT NULL,

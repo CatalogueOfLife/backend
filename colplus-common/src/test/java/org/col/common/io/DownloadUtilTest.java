@@ -36,7 +36,7 @@ public class DownloadUtilTest {
   @Ignore
   public void downloadWithToken() throws IOException {
     File f = File.createTempFile("download", ".zip");
-    DownloadUtil d = new DownloadUtil(hc, "REPLACE-ME");
+    DownloadUtil d = new DownloadUtil(hc, "ATTACH-ME");
     // a private repo should be accessible with the right API token
     d.download(URI.create("https://github.com/Sp2000/data-scarabs/archive/master.zip"), f);
   }

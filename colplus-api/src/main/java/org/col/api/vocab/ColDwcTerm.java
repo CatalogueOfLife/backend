@@ -18,7 +18,7 @@ public enum ColDwcTerm implements Term, AlternativeNames {
   speciesEstimate,
   speciesEstimateReference;
   
-  private static final String PREFIX = "cold";
+  private static final String PREFIX = "coldwc";
   private static final String NS = "http://rs.col.plus/terms/dwc/";
   private static final URI NS_URI = URI.create(NS);
   

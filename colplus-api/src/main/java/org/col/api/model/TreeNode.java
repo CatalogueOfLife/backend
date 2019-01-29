@@ -1,5 +1,6 @@
 package org.col.api.model;
 
+import java.util.List;
 import java.util.Objects;
 
 import org.col.api.vocab.TaxonomicStatus;
@@ -19,7 +20,8 @@ public class TreeNode implements ID {
   private int childCount;
   private Integer speciesEstimate;
   private String speciesEstimateReferenceId;
-  private Sector sector;
+  private Integer sectorKey;
+  private List<Sector> sectors;
   
   /**
    * Only to be used by mybatis mappers, nowhere else!!!
@@ -107,34 +109,42 @@ public class TreeNode implements ID {
     this.speciesEstimateReferenceId = speciesEstimateReferenceId;
   }
   
-  public Sector getSector() {
-    return sector;
+  public Integer getSectorKey() {
+    return sectorKey;
   }
   
-  public void setSector(Sector sector) {
-    this.sector = sector;
+  public void setSectorKey(Integer sectorKey) {
+    this.sectorKey = sectorKey;
   }
-
-
+  
+  public List<Sector> getSectors() {
+    return sectors;
+  }
+  
+  public void setSectors(List<Sector> sectors) {
+    this.sectors = sectors;
+  }
+  
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     TreeNode treeNode = (TreeNode) o;
     return childCount == treeNode.childCount &&
-            Objects.equals(datasetKey, treeNode.datasetKey) &&
-            Objects.equals(id, treeNode.id) &&
-            Objects.equals(parentId, treeNode.parentId) &&
-            Objects.equals(name, treeNode.name) &&
-            rank == treeNode.rank &&
-            status == treeNode.status &&
-            Objects.equals(speciesEstimate, treeNode.speciesEstimate) &&
-            Objects.equals(speciesEstimateReferenceId, treeNode.speciesEstimateReferenceId) &&
-            Objects.equals(sector, treeNode.sector);
+        Objects.equals(datasetKey, treeNode.datasetKey) &&
+        Objects.equals(id, treeNode.id) &&
+        Objects.equals(parentId, treeNode.parentId) &&
+        Objects.equals(name, treeNode.name) &&
+        rank == treeNode.rank &&
+        status == treeNode.status &&
+        Objects.equals(speciesEstimate, treeNode.speciesEstimate) &&
+        Objects.equals(speciesEstimateReferenceId, treeNode.speciesEstimateReferenceId) &&
+        Objects.equals(sectorKey, treeNode.sectorKey) &&
+        Objects.equals(sectors, treeNode.sectors);
   }
-
+  
   @Override
   public int hashCode() {
-    return Objects.hash(datasetKey, id, parentId, name, rank, status, childCount, speciesEstimate, speciesEstimateReferenceId, sector);
+    return Objects.hash(datasetKey, id, parentId, name, rank, status, childCount, speciesEstimate, speciesEstimateReferenceId, sectorKey, sectors);
   }
 }

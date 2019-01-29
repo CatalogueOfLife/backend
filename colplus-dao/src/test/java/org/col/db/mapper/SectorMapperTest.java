@@ -76,11 +76,11 @@ public class SectorMapperTest extends CRUDIntMapperTest<Sector, SectorMapper> {
     return create(source.getKey());
   }
   
-  static Sector create(int sourceKey) {
+  static Sector create(Integer sourceKey) {
     Sector d = new Sector();
     d.setDatasetKey(datasetKey);
     d.setColSourceKey(sourceKey);
-    d.setMode(Sector.Mode.REPLACE);
+    d.setMode(Sector.Mode.ATTACH);
     d.setSubject(newNameRef());
     d.setTarget(newNameRef());
     d.setNote(RandomStringUtils.random(1024));
