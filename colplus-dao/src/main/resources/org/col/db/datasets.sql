@@ -217,14 +217,8 @@ INSERT INTO dataset (key, origin, title, created_by, modified_by, deleted) VALUE
 	('1165', 0, 'faeu_turbellaria', 0, 0, now());
 
 
--- create colsources for all GSDs
-INSERT INTO col_source (key, dataset_key, alias, created_by, modified_by)
-    SELECT key, key, key::text, created_by, modified_by FROM dataset
-    WHERE data_format=1 AND key < 2000;
-
 -- reserve keys below 2000 for existing GSDs
 ALTER SEQUENCE dataset_key_seq RESTART WITH 2000;
-ALTER SEQUENCE col_source_key_seq RESTART WITH 2000;
 
 
 

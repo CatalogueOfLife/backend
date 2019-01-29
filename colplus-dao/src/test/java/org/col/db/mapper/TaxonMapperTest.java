@@ -35,7 +35,7 @@ public class TaxonMapperTest extends DatasetCRUDMapperTest<Taxon, TaxonMapper> {
     // create a few draft taxa to attach sectors to
     populateDraftTree();
 
-    sector = SectorMapperTest.create(null);
+    sector = SectorMapperTest.create();
     sector.getSubject().setId(TestEntityGenerator.TAXON1.getId());
     sector.getTarget().setId("t4");
 

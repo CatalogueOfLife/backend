@@ -3,9 +3,6 @@ package org.col.db.mapper;
 import org.col.api.TestEntityGenerator;
 import org.col.api.model.DatasetEntity;
 import org.col.api.model.ID;
-import org.javers.core.Javers;
-import org.javers.core.JaversBuilder;
-import org.javers.core.diff.Diff;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -53,12 +50,6 @@ abstract class DatasetCRUDMapperTest<T extends DatasetEntity & ID, M extends Dat
   
     printDiff(u1, u2);
     assertEquals(u1, u2);
-  }
-  
-  protected void printDiff(Object o1, Object o2) {
-    Javers javers = JaversBuilder.javers().build();
-    Diff diff = javers.compare(o1, o2);
-    System.out.println(diff);
   }
   
   @Test

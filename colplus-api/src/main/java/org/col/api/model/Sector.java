@@ -12,7 +12,6 @@ package org.col.api.model;
  * A sector can be really small and the subject even be a species, but usually it is some higher taxon.
  */
 public class Sector extends Decision {
-  private Integer colSourceKey;
   private SimpleName target;
   private Mode mode = Sector.Mode.ATTACH;
   
@@ -35,18 +34,7 @@ public class Sector extends Decision {
   public void setMode(Mode mode) {
     this.mode = mode;
   }
-  
-  /**
-   * The col source the sector should be grouped into
-   */
-  public Integer getColSourceKey() {
-    return colSourceKey;
-  }
-  
-  public void setColSourceKey(Integer colSourceKey) {
-    this.colSourceKey = colSourceKey;
-  }
-
+ 
   /**
    * The attachment point in the CoL tree, i.e. the CoL parent taxon for the sector root
    */
@@ -62,7 +50,7 @@ public class Sector extends Decision {
   @Override
   public String toString() {
     return "Sector{" + getKey() +
-        ", colSourceKey=" + colSourceKey +
+        ", datasetKey=" + datasetKey +
         ", mode=" + mode +
         ", subject=" + getSubject() +
         '}';

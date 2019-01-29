@@ -24,6 +24,11 @@ public class EditorialDecision extends Decision {
     BLOCK,
   
     /**
+     * Flags a name as a chresonym and blocks it from the assembly.
+     */
+    CHRESONYM,
+
+    /**
      * Updates the subject using the configured name and status,
      * leaving NULL values unchanged.
      */

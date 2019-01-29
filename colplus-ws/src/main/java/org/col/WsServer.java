@@ -32,7 +32,6 @@ public class WsServer extends PgApp<WsServerConfig> {
     env.lifecycle().manage(new ManagedEsClient(esClient));
     NameUsageSearchService nuss = new NameUsageSearchService(cfg.es.indexName(ES_INDEX_NAME_USAGE), esClient);
     final ImageService imgService = new ImageService(cfg.img);
-    env.jersey().register(new ColSourceResource(imgService));
     env.jersey().register(new DataPackageResource());
     env.jersey().register(new DatasetResource(getSqlSessionFactory(), imgService));
     env.jersey().register(new DecisionResource());

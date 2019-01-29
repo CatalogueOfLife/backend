@@ -43,11 +43,6 @@ public class ImageService {
     storeAllImageSizes(img, s -> cfg.datasetLogo(dataset.getKey(), s));
   }
   
-  public void putColSourceLogo(int colSourceKey, BufferedImage img) throws IOException {
-    storeAllImageSizes(img, s -> cfg.sourceLogo(colSourceKey, s));
-  }
-  
-  
   private void storeAllImageSizes(BufferedImage img, Function<ImgConfig.Scale, Path> locator) throws IOException {
     try {
       if (img == null) {
@@ -84,11 +79,6 @@ public class ImageService {
   public BufferedImage datasetLogo(int datasetKey, ImgConfig.Scale scale) {
     Path p = cfg.datasetLogo(datasetKey, scale);
     return readImage(p, "Dataset " + datasetKey + " has no logo");
-  }
-  
-  public BufferedImage colSourceLogo(int colSourceKey, ImgConfig.Scale scale) {
-    Path p = cfg.sourceLogo(colSourceKey, scale);
-    return readImage(p, "Source " + colSourceKey + " has no logo");
   }
   
   private BufferedImage readImage(Path p, String notFoundMsg) throws NotFoundException {

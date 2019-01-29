@@ -17,7 +17,6 @@
 
   <sql id="COLS">
     dataset_key,
-    col_source_key,
     <include refid="org.col.db.mapper.DecisionMapper.DecisionCols">
       <property name="prefix" value=""/>
     </include>,
@@ -30,7 +29,6 @@
 
   <sql id="PROPS">
     #{datasetKey},
-    #{colSourceKey},
     <include refid="org.col.db.mapper.DecisionMapper.DecisionProps" />,
     #{target.id},
     #{target.name},
@@ -50,9 +48,6 @@
       </if>
       <if test="datasetKey != null">
         AND s.dataset_key = #{datasetKey}
-      </if>
-      <if test="colSourceKey != null">
-        AND s.col_source_key = #{colSourceKey}
       </if>
     </where>
   </sql>

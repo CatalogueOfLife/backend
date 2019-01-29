@@ -28,22 +28,20 @@ public class SectorResource extends CRUDIntResource<Sector> {
   
   @GET
   public List<Sector> list(@Context SqlSession session,
-                           @QueryParam("datasetKey") Integer datasetKey,
-                           @QueryParam("sourceKey") Integer colSourceKey) {
-    return session.getMapper(SectorMapper.class).list(datasetKey, colSourceKey);
+                           @QueryParam("datasetKey") Integer datasetKey) {
+    return session.getMapper(SectorMapper.class).list(datasetKey);
   }
   
   @GET
   @Path("/broken")
   public List<Sector> broken(@Context SqlSession session,
                              @QueryParam("target") boolean target,
-                             @QueryParam("datasetKey") Integer datasetKey,
-                             @QueryParam("sourceKey") Integer colSourceKey) {
+                             @QueryParam("datasetKey") Integer datasetKey) {
     SectorMapper mapper = session.getMapper(SectorMapper.class);
     if (target) {
-      return mapper.targetBroken(datasetKey, colSourceKey);
+      return mapper.targetBroken(datasetKey);
     } else {
-      return mapper.subjectBroken(datasetKey, colSourceKey);
+      return mapper.subjectBroken(datasetKey);
     }
   }
 }

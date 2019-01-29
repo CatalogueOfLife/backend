@@ -69,7 +69,6 @@ public class DatasetResource extends CRUDIntResource<Dataset> {
   @Path("{key}/logo")
   @Produces("image/png")
   public BufferedImage logo(@PathParam("key") int key, @QueryParam("size") @DefaultValue("small") ImgConfig.Scale scale) {
-    //return Response.ok(imgService.datasetLogo(key, scale)).build();
     return imgService.datasetLogo(key, scale);
   }
   

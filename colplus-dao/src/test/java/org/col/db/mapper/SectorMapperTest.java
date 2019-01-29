@@ -3,9 +3,7 @@ package org.col.db.mapper;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.ibatis.exceptions.PersistenceException;
 import org.col.api.TestEntityGenerator;
-import org.col.api.model.ColSource;
 import org.col.api.model.Sector;
-import org.junit.Before;
 import org.junit.Test;
 
 import static org.col.api.TestEntityGenerator.DATASET11;
@@ -15,16 +13,9 @@ import static org.junit.Assert.assertEquals;
 public class SectorMapperTest extends CRUDIntMapperTest<Sector, SectorMapper> {
   
   private static final int datasetKey = DATASET11.getKey();
-  private ColSource source;
   
   public SectorMapperTest() {
     super(SectorMapper.class);
-  }
-  
-  @Before
-  public void initSource() {
-    source = ColSourceMapperTest.create(datasetKey);
-    mapper(ColSourceMapper.class).create(source);
   }
   
   private void add2Sectors() {
@@ -44,42 +35,33 @@ public class SectorMapperTest extends CRUDIntMapperTest<Sector, SectorMapper> {
   @Test
   public void list() {
     add2Sectors();
-    assertEquals(2, mapper().list(datasetKey, null).size());
-    assertEquals(2, mapper().list(datasetKey, source.getKey()).size());
-    assertEquals(2, mapper().list(null, source.getKey()).size());
-    assertEquals(2, mapper().list(null, null).size());
-    assertEquals(0, mapper().list(datasetKey, -8765).size());
-    assertEquals(0, mapper().list(null, -8765).size());
-    assertEquals(0, mapper().list(-432, null).size());
+    assertEquals(2, mapper().list(datasetKey).size());
+    assertEquals(2, mapper().list(null).size());
+    assertEquals(0, mapper().list(-432).size());
   }
   
   @Test
   public void brokenSubjects() {
     add2Sectors();
-    assertEquals(1, mapper().subjectBroken(datasetKey, null).size());
-    assertEquals(1, mapper().subjectBroken(datasetKey, source.getKey()).size());
-    assertEquals(0, mapper().subjectBroken(datasetKey, -8765).size());
-    assertEquals(0, mapper().subjectBroken(543432, null).size());
+    assertEquals(1, mapper().subjectBroken(datasetKey).size());
+    assertEquals(0, mapper().subjectBroken(543432).size());
   }
   
   @Test
   public void brokenTargets() {
     add2Sectors();
-    assertEquals(1, mapper().targetBroken(datasetKey, null).size());
-    assertEquals(1, mapper().targetBroken(datasetKey, source.getKey()).size());
-    assertEquals(0, mapper().targetBroken(datasetKey, -8765).size());
-    assertEquals(0, mapper().targetBroken(543432, null).size());
+    assertEquals(1, mapper().targetBroken(datasetKey).size());
+    assertEquals(0, mapper().targetBroken(543432).size());
   }
   
   @Override
   Sector createTestEntity() {
-    return create(source.getKey());
+    return create();
   }
   
-  static Sector create(Integer sourceKey) {
+  static Sector create() {
     Sector d = new Sector();
     d.setDatasetKey(datasetKey);
-    d.setColSourceKey(sourceKey);
     d.setMode(Sector.Mode.ATTACH);
     d.setSubject(newNameRef());
     d.setTarget(newNameRef());
@@ -104,7 +86,7 @@ public class SectorMapperTest extends CRUDIntMapperTest<Sector, SectorMapper> {
   
   @Test(expected = PersistenceException.class)
   public void unique() throws Exception {
-    Sector d1 = create(source.getKey());
+    Sector d1 = create();
     mapper().create(d1);
     commit();
     

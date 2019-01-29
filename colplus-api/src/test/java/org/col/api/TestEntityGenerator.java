@@ -516,7 +516,13 @@ public class TestEntityGenerator {
     nullifyUserDate((UserManaged) taxon);
     nullifyUserDate(taxon.getName());
     return taxon;
+  }
   
+  public static Synonym nullifyUserDate(Synonym syn) {
+    nullifyUserDate((UserManaged) syn);
+    nullifyUserDate(syn.getName());
+    nullifyUserDate(syn.getAccepted());
+    return syn;
   }
 
   public static <T extends UserManaged> T nullifyUserDate(T managed) {

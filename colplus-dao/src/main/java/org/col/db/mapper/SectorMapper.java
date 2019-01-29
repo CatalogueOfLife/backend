@@ -9,15 +9,15 @@ import org.col.api.model.Sector;
 
 public interface SectorMapper extends CRUDIntMapper<Sector> {
   
-  List<Sector> list(@Nullable @Param("datasetKey") Integer datasetKey, @Nullable @Param("colSourceKey") Integer colSourceKey);
+  List<Sector> list(@Nullable @Param("datasetKey") Integer datasetKey);
   
   /**
    * List all sectors that cannot anymore be linked to subject taxa in the source
    */
-  List<Sector> subjectBroken(@Param("datasetKey") int datasetKey, @Nullable @Param("colSourceKey") Integer colSourceKey);
+  List<Sector> subjectBroken(@Param("datasetKey") int datasetKey);
   
   /**
    * List all sectors that cannot anymore be linked to attachment points in the draft CoL
    */
-  List<Sector> targetBroken(@Param("datasetKey") int datasetKey, @Nullable @Param("colSourceKey") Integer colSourceKey);
+  List<Sector> targetBroken(@Param("datasetKey") int datasetKey);
 }

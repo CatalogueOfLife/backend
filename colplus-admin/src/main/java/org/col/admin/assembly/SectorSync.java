@@ -170,6 +170,7 @@ public class SectorSync implements Runnable {
     @Override
     public void handleResult(ResultContext<? extends Taxon> ctxt) {
       Taxon tax = ctxt.getResultObject();
+      tax.setSectorKey(sector.getKey());
       
       String parentID;
       // treat root node according to sector mode

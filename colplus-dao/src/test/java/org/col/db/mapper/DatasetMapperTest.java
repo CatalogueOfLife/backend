@@ -2,7 +2,6 @@ package org.col.db.mapper;
 
 import java.net.URI;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -10,18 +9,12 @@ import java.util.stream.Collectors;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
-
 import org.col.api.RandomUtils;
 import org.col.api.TestEntityGenerator;
 import org.col.api.model.Dataset;
 import org.col.api.model.Page;
 import org.col.api.search.DatasetSearchRequest;
-import org.col.api.vocab.Catalogue;
-import org.col.api.vocab.DataFormat;
-import org.col.api.vocab.DatasetType;
-import org.col.api.vocab.Datasets;
-import org.col.api.vocab.Frequency;
-import org.col.api.vocab.License;
+import org.col.api.vocab.*;
 import org.gbif.nameparser.api.NomCode;
 import org.javers.core.Javers;
 import org.javers.core.JaversBuilder;
@@ -29,10 +22,7 @@ import org.javers.core.diff.Diff;
 import org.junit.Assert;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  *
@@ -44,7 +34,8 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
   }
 
   private static Dataset create() throws Exception {
-    Dataset d = TestEntityGenerator.setUserDate(new Dataset());
+    Dataset d = new Dataset();
+    d.applyUser(Users.DB_INIT);
     d.setType(DatasetType.GLOBAL);
     d.setContributesTo(Catalogue.COL);
     d.setGbifKey(UUID.randomUUID());
@@ -76,7 +67,8 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
     commit();
 
     Dataset d2 = TestEntityGenerator.nullifyDate(mapper().get(d1.getKey()));
-
+  
+    printDiff(d1, d2);
     assertEquals(d1, d2);
   }
 

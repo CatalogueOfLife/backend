@@ -6,6 +6,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -19,13 +21,14 @@ import org.gbif.nameparser.api.NomCode;
 /**
  * Metadata about a dataset or a subset of it if parentKey is given.
  */
-public class Dataset extends DataEntity implements SourceMetadata, IntKey {
+public class Dataset extends DataEntity implements IntKey {
   private Integer key;
   @NotNull
   private DatasetType type = DatasetType.OTHER;
   @NotNull
   @NotBlank
   private String title;
+  private String alias;
   private UUID gbifKey;
   private UUID gbifPublisherKey;
   private String description;
@@ -38,17 +41,23 @@ public class Dataset extends DataEntity implements SourceMetadata, IntKey {
   private String citation;
   @AbsoluteURI
   private URI website;
+  private String group;
   @AbsoluteURI
   private URI logo;
   private DataFormat dataFormat;
   @AbsoluteURI
   private URI dataAccess;
-  private boolean cluster = false;
   @NotNull
   private DatasetOrigin origin = DatasetOrigin.UPLOADED;
   private Frequency importFrequency;
   private NomCode code;
   private Integer size;
+  @Max(5)
+  @Min(1)
+  private Integer confidence;
+  @Max(100)
+  @Min(0)
+  private Integer completeness;
   private String notes;
   private Catalogue contributesTo;
   private LocalDateTime imported;
@@ -70,12 +79,10 @@ public class Dataset extends DataEntity implements SourceMetadata, IntKey {
     this.key = key;
   }
   
-  @Override
   public String getTitle() {
     return title;
   }
   
-  @Override
   public void setTitle(String title) {
     this.title = title;
   }
@@ -96,12 +103,10 @@ public class Dataset extends DataEntity implements SourceMetadata, IntKey {
     this.gbifPublisherKey = gbifPublisherKey;
   }
   
-  @Override
   public String getDescription() {
     return description;
   }
   
-  @Override
   public void setDescription(String description) {
     this.description = description;
   }
@@ -121,12 +126,10 @@ public class Dataset extends DataEntity implements SourceMetadata, IntKey {
     this.code = code;
   }
   
-  @Override
   public List<String> getAuthorsAndEditors() {
     return authorsAndEditors;
   }
   
-  @Override
   public void setAuthorsAndEditors(List<String> authorsAndEditors) {
     this.authorsAndEditors = authorsAndEditors;
   }
@@ -139,12 +142,10 @@ public class Dataset extends DataEntity implements SourceMetadata, IntKey {
     this.organisations = organisations;
   }
   
-  @Override
   public String getContact() {
     return contact;
   }
   
-  @Override
   public void setContact(String contact) {
     this.contact = contact;
   }
@@ -157,42 +158,38 @@ public class Dataset extends DataEntity implements SourceMetadata, IntKey {
     this.license = license;
   }
   
-  @Override
   public String getVersion() {
     return version;
   }
   
-  @Override
   public void setVersion(String version) {
     this.version = version;
   }
   
-  @Override
+  /**
+   * Release date of the source data.
+   * The date can usually only be taken from metadata explicitly given by the source.
+   */
   public LocalDate getReleased() {
     return released;
   }
   
-  @Override
   public void setReleased(LocalDate released) {
     this.released = released;
   }
   
-  @Override
   public String getCitation() {
     return citation;
   }
   
-  @Override
   public void setCitation(String citation) {
     this.citation = citation;
   }
   
-  @Override
   public URI getWebsite() {
     return website;
   }
   
-  @Override
   public void setWebsite(URI website) {
     this.website = website;
   }
@@ -219,19 +216,6 @@ public class Dataset extends DataEntity implements SourceMetadata, IntKey {
   
   public void setDataAccess(URI dataAccess) {
     this.dataAccess = dataAccess;
-  }
-  
-  /**
-   * https://github.com/Sp2000/colplus-backend/issues/163
-   *
-   * @return true if multiple col sources are allowed
-   */
-  public boolean isCluster() {
-    return cluster;
-  }
-  
-  public void setCluster(boolean cluster) {
-    this.cluster = cluster;
   }
   
   public DatasetOrigin getOrigin() {
@@ -306,16 +290,48 @@ public class Dataset extends DataEntity implements SourceMetadata, IntKey {
     this.deleted = deleted;
   }
   
+  public String getAlias() {
+    return alias;
+  }
+  
+  public void setAlias(String alias) {
+    this.alias = alias;
+  }
+  
+  public String getGroup() {
+    return group;
+  }
+  
+  public void setGroup(String group) {
+    this.group = group;
+  }
+  
+  public Integer getConfidence() {
+    return confidence;
+  }
+  
+  public void setConfidence(Integer confidence) {
+    this.confidence = confidence;
+  }
+  
+  public Integer getCompleteness() {
+    return completeness;
+  }
+  
+  public void setCompleteness(Integer completeness) {
+    this.completeness = completeness;
+  }
   
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
+    if (!super.equals(o)) return false;
     Dataset dataset = (Dataset) o;
-    return cluster == dataset.cluster &&
-        Objects.equals(key, dataset.key) &&
+    return Objects.equals(key, dataset.key) &&
         type == dataset.type &&
         Objects.equals(title, dataset.title) &&
+        Objects.equals(alias, dataset.alias) &&
         Objects.equals(gbifKey, dataset.gbifKey) &&
         Objects.equals(gbifPublisherKey, dataset.gbifPublisherKey) &&
         Objects.equals(description, dataset.description) &&
@@ -327,6 +343,7 @@ public class Dataset extends DataEntity implements SourceMetadata, IntKey {
         Objects.equals(released, dataset.released) &&
         Objects.equals(citation, dataset.citation) &&
         Objects.equals(website, dataset.website) &&
+        Objects.equals(group, dataset.group) &&
         Objects.equals(logo, dataset.logo) &&
         dataFormat == dataset.dataFormat &&
         Objects.equals(dataAccess, dataset.dataAccess) &&
@@ -334,6 +351,8 @@ public class Dataset extends DataEntity implements SourceMetadata, IntKey {
         importFrequency == dataset.importFrequency &&
         code == dataset.code &&
         Objects.equals(size, dataset.size) &&
+        Objects.equals(confidence, dataset.confidence) &&
+        Objects.equals(completeness, dataset.completeness) &&
         Objects.equals(notes, dataset.notes) &&
         contributesTo == dataset.contributesTo &&
         Objects.equals(imported, dataset.imported) &&
@@ -342,8 +361,7 @@ public class Dataset extends DataEntity implements SourceMetadata, IntKey {
   
   @Override
   public int hashCode() {
-    
-    return Objects.hash(key, type, title, gbifKey, gbifPublisherKey, description, organisations, contact, authorsAndEditors, license, version, released, citation, website, logo, dataFormat, dataAccess, cluster, origin, importFrequency, code, size, notes, contributesTo, imported, deleted);
+    return Objects.hash(super.hashCode(), key, type, title, alias, gbifKey, gbifPublisherKey, description, organisations, contact, authorsAndEditors, license, version, released, citation, website, group, logo, dataFormat, dataAccess, origin, importFrequency, code, size, confidence, completeness, notes, contributesTo, imported, deleted);
   }
   
   @Override

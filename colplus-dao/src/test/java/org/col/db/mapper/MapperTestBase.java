@@ -6,6 +6,9 @@ import org.col.api.model.Taxon;
 import org.col.db.PgSetupRule;
 import org.col.db.dao.DatasetImportDao;
 import org.gbif.nameparser.api.Rank;
+import org.javers.core.Javers;
+import org.javers.core.JaversBuilder;
+import org.javers.core.diff.Diff;
 import org.junit.ClassRule;
 import org.junit.Rule;
 
@@ -52,6 +55,12 @@ public abstract class MapperTestBase<T> {
     DatasetImportDao dao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory());
     dao.createSuccess(datasetKey);
     commit();
+  }
+  
+  protected void printDiff(Object o1, Object o2) {
+    Javers javers = JaversBuilder.javers().build();
+    Diff diff = javers.compare(o1, o2);
+    System.out.println(diff);
   }
   
   protected void partition(int datasetKey) {

@@ -40,10 +40,6 @@ public class ImgConfig extends PgDbConfig {
     return repo.resolve("dataset").resolve(filename(datasetKey + "-logo", scale));
   }
   
-  public Path sourceLogo(int colSourceKey, Scale scale) {
-    return repo.resolve("source").resolve(filename(colSourceKey + "-logo", scale));
-  }
-  
   private String filename(String prefix, Scale scale) {
     return String.format("%s-%s.%s", prefix, scale.name().toLowerCase(), ImageService.IMAGE_FORMAT);
   }
