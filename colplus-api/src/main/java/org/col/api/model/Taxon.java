@@ -218,10 +218,10 @@ public class Taxon extends DataEntity implements NameUsage, DatasetEntity {
     Taxon taxon = (Taxon) o;
     return provisional == taxon.provisional &&
         Objects.equals(id, taxon.id) &&
-        datasetKey.equals(taxon.datasetKey) &&
+        Objects.equals(datasetKey, taxon.datasetKey) &&
         Objects.equals(verbatimKey, taxon.verbatimKey) &&
-        name.equals(taxon.name) &&
-        origin == taxon.origin &&
+        Objects.equals(name, taxon.name) &&
+        Objects.equals(origin, taxon.origin) &&
         Objects.equals(parentId, taxon.parentId) &&
         Objects.equals(accordingTo, taxon.accordingTo) &&
         Objects.equals(accordingToDate, taxon.accordingToDate) &&
