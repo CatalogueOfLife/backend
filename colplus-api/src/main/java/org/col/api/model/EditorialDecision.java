@@ -1,7 +1,10 @@
 package org.col.api.model;
 
+import java.util.EnumSet;
 import java.util.Objects;
+import java.util.Set;
 
+import org.col.api.vocab.Lifezone;
 import org.col.api.vocab.TaxonomicStatus;
 
 /**
@@ -14,8 +17,11 @@ import org.col.api.vocab.TaxonomicStatus;
  */
 public class EditorialDecision extends Decision {
   private Mode mode;
-  private TaxonomicStatus status;
   private Name name;
+  private TaxonomicStatus status;
+  private Boolean fossil;
+  private Boolean recent;
+  private Set<Lifezone> lifezones = EnumSet.noneOf(Lifezone.class);
   
   public static enum Mode {
     /**
@@ -29,15 +35,10 @@ public class EditorialDecision extends Decision {
     CHRESONYM,
 
     /**
-     * Updates the subject using the configured name and status,
+     * Updates the subject using the configured name, status, lifezone and fossil flags
      * leaving NULL values unchanged.
      */
-    UPDATE,
-  
-    /**
-     * Creates a new taxon child below the subject using the configured name and status.
-     */
-    CREATE
+    UPDATE
   }
   
   public Mode getMode() {
@@ -64,6 +65,30 @@ public class EditorialDecision extends Decision {
     this.name = name;
   }
   
+  public Boolean getFossil() {
+    return fossil;
+  }
+  
+  public void setFossil(Boolean fossil) {
+    this.fossil = fossil;
+  }
+  
+  public Boolean getRecent() {
+    return recent;
+  }
+  
+  public void setRecent(Boolean recent) {
+    this.recent = recent;
+  }
+  
+  public Set<Lifezone> getLifezones() {
+    return lifezones;
+  }
+  
+  public void setLifezones(Set<Lifezone> lifezones) {
+    this.lifezones = lifezones;
+  }
+  
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -71,14 +96,16 @@ public class EditorialDecision extends Decision {
     if (!super.equals(o)) return false;
     EditorialDecision that = (EditorialDecision) o;
     return mode == that.mode &&
+        Objects.equals(name, that.name) &&
         status == that.status &&
-        Objects.equals(name, that.name);
+        Objects.equals(fossil, that.fossil) &&
+        Objects.equals(recent, that.recent) &&
+        Objects.equals(lifezones, that.lifezones);
   }
   
   @Override
   public int hashCode() {
-    
-    return Objects.hash(super.hashCode(), mode, status, name);
+    return Objects.hash(super.hashCode(), mode, name, status, fossil, recent, lifezones);
   }
   
   @Override

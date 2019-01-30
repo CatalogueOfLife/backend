@@ -37,8 +37,11 @@
       <property name="prefix" value="ed."/>
     </include>,
     ed.mode,
+    ed.name,
     ed.status,
-    ed.name
+    ed.fossil,
+    ed.recent,
+    ed.lifezones
   </sql>
 
   <sql id="COLS">
@@ -47,16 +50,22 @@
       <property name="prefix" value=""/>
     </include>,
     mode,
+    name,
     status,
-    name
+    fossil,
+    recent,
+    lifezones
   </sql>
 
   <sql id="PROPS">
     #{datasetKey},
     <include refid="DecisionProps" />,
     #{mode},
+    #{name, typeHandler=org.col.db.type2.NameJsonHandler}::jsonb,
     #{status},
-    #{name, typeHandler=org.col.db.type2.NameJsonHandler}::jsonb
+    #{fossil},
+    #{recent},
+    #{lifezones, typeHandler=org.col.db.type.LifezoneSetTypeHandler}
   </sql>
 
   <sql id="FROM">
@@ -67,6 +76,7 @@
     <id property="key" column="key" />
     <result property="datasetKey" column="decision_dataset_key" />
     <result property="name" column="name" typeHandler="org.col.db.type2.NameJsonHandler" />
+    <result property="lifezones" column="lifezones" typeHandler="org.col.db.type.LifezoneSetTypeHandler" />
     <association property="subject" javaType="SimpleName" resultMap="org.col.db.mapper.SectorMapper.refResultMap" columnPrefix="subject_" />
   </resultMap>
 

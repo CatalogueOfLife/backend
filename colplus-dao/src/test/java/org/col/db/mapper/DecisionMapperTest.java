@@ -2,6 +2,7 @@ package org.col.db.mapper;
 
 import org.col.api.TestEntityGenerator;
 import org.col.api.model.EditorialDecision;
+import org.col.api.vocab.Lifezone;
 import org.col.api.vocab.TaxonomicStatus;
 import org.junit.Test;
 
@@ -46,9 +47,13 @@ public class DecisionMapperTest extends CRUDIntMapperTest<EditorialDecision, Dec
     EditorialDecision d = new EditorialDecision();
     d.setDatasetKey(datasetKey);
     d.setSubject(newNameRef());
-    d.setMode(EditorialDecision.Mode.CREATE);
+    d.setMode(EditorialDecision.Mode.UPDATE);
     d.setName(TestEntityGenerator.newName());
     d.setStatus(TaxonomicStatus.AMBIGUOUS_SYNONYM);
+    d.setFossil(true);
+    d.setRecent(true);
+    d.getLifezones().add(Lifezone.MARINE);
+    d.getLifezones().add(Lifezone.BRACKISH);
     d.setNote("I cannot remember why I did this.");
     d.setCreatedBy(TestEntityGenerator.USER_EDITOR.getKey());
     d.setModifiedBy(d.getCreatedBy());
