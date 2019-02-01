@@ -199,5 +199,16 @@
         SELECT * FROM x
     </select>
 
+    <select id="foreignChildren" resultMap="taxonResultMap">
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
+        WHERE t.dataset_key = #{datasetKey}
+        AND t.id = #{id}
+    </select>
+
+    <delete id="deleteBySector" parameterType="map">
+        DELETE FROM taxon_${datasetKey} WHERE sector_key = #{sectorKey}
+    </delete>
+
 
 </mapper>

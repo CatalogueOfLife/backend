@@ -43,7 +43,10 @@ public class SectorSync implements Runnable {
   
   private final SqlSessionFactory factory;
   private final NameUsageIndexServiceEs indexService;
+  // maps keyed on taxon ids from this sector
   private Map<String, EditorialDecision> decisions = new HashMap<>();
+  private Map<String, String> foreignChildren = new HashMap<>();
+  private Map<String, Sector> childSectors = new HashMap<>();
   private final Consumer<SectorSync> successCallback;
   private final BiConsumer<SectorSync, Exception> errorCallback;
   private final LocalDateTime created = LocalDateTime.now();
@@ -114,14 +117,16 @@ public class SectorSync implements Runnable {
   public void sync() throws InterruptedException {
     state.setStatus( SectorImport.Status.PREPARING);
     loadDecisions();
+    loadForeignChildren();
+    loadAttachedSectors();
     checkIfCancelled();
-  
-    state.setStatus( SectorImport.Status.COPYING);
-    processTree();
-    checkIfCancelled();
-  
+
     state.setStatus( SectorImport.Status.DELETING);
     deleteOld();
+    checkIfCancelled();
+
+    state.setStatus( SectorImport.Status.COPYING);
+    processTree();
     checkIfCancelled();
   
     state.setStatus( SectorImport.Status.INDEXING);
@@ -133,11 +138,25 @@ public class SectorSync implements Runnable {
   private void loadDecisions() {
     try (SqlSession session = factory.openSession(true)) {
       DecisionMapper dm = session.getMapper(DecisionMapper.class);
-      for (EditorialDecision ed : dm.listByDataset(datasetKey)) {
+      for (EditorialDecision ed : dm.list(datasetKey, null)) {
         decisions.put(ed.getSubject().getId(), ed);
       }
     }
     LOG.info("Loaded {} editorial decisions for sector {}", decisions.size(), sector.getKey());
+  }
+  
+  private void loadForeignChildren() {
+    try (SqlSession session = factory.openSession(true)) {
+      //TODO: implement
+    }
+    LOG.info("Loaded {} children from other sectors with a parent from sector {}", foreignChildren.size(), sector.getKey());
+  }
+  
+  private void loadAttachedSectors() {
+    try (SqlSession session = factory.openSession(true)) {
+      //TODO: implement
+    }
+    LOG.info("Loaded {} sectors targeting taxa from sector {}", childSectors.size(), sector.getKey());
   }
   
   private void processTree() {
@@ -221,8 +240,16 @@ public class SectorSync implements Runnable {
   }
   
   private void deleteOld() {
-    LOG.info("Deleting old taxa, synonym and orphaned names from the same sector");
-    //TODO: delete by sectorKey and date last modified < this.created
+    int count;
+    try (SqlSession session = factory.openSession(true)) {
+      TaxonMapper tm = session.getMapper(TaxonMapper.class);
+      count = tm.deleteBySector(datasetKey, sector.getKey());
+      LOG.info("Deleted {} existing taxa with their synonyms and related information from sector {}", count, sector.getKey());
+    }
+    
+    // TODO: delete orphaned names
+    count = 0;
+    LOG.info("Deleted {} orphaned names from sector {}", count, sector.getKey());
   }
   
   private void updateSearchIndex() {

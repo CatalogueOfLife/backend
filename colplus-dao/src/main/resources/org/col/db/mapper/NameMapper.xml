@@ -218,4 +218,11 @@
     <delete id="delete" parameterType="map">
         DELETE name_${datasetKey} WHERE id = #{id}
     </delete>
+
+    <delete id="deleteOrphans" parameterType="map">
+        DELETE FROM name_${datasetKey} n
+        USING taxon_${datasetKey} t, synonym__${datasetKey} s
+        WHERE id = #{datasetKey}
+    </delete>
+
 </mapper>

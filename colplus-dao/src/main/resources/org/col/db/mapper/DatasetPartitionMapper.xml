@@ -64,24 +64,28 @@
         CREATE index ON synonym_${key} (taxon_id);
         CREATE index ON synonym_${key} (name_id);
         CREATE index ON synonym_${key} (verbatim_key);
-        ALTER TABLE synonym_${key} ADD CONSTRAINT synonym_${key}_taxon_id_fk FOREIGN KEY (taxon_id) REFERENCES taxon_${key} (id);
+        ALTER TABLE synonym_${key} ADD CONSTRAINT synonym_${key}_taxon_id_fk FOREIGN KEY (taxon_id) REFERENCES taxon_${key} (id) ON DELETE CASCADE;
         ALTER TABLE synonym_${key} ADD CONSTRAINT synonym_${key}_name_id_fk FOREIGN KEY (name_id) REFERENCES name_${key} (id);
 
         ALTER TABLE description_${key} ADD PRIMARY KEY (key);
         CREATE index ON description_${key} (taxon_id);
         CREATE index ON description_${key} (verbatim_key);
+        ALTER TABLE description_${key} ADD CONSTRAINT description_${key}_taxon_id_fk FOREIGN KEY (taxon_id) REFERENCES taxon_${key} (id) ON DELETE CASCADE;
 
         ALTER TABLE distribution_${key} ADD PRIMARY KEY (key);
         CREATE index ON distribution_${key} (taxon_id);
         CREATE index ON distribution_${key} (verbatim_key);
+        ALTER TABLE distribution_${key} ADD CONSTRAINT distribution_${key}_taxon_id_fk FOREIGN KEY (taxon_id) REFERENCES taxon_${key} (id) ON DELETE CASCADE;
 
         ALTER TABLE media_${key} ADD PRIMARY KEY (key);
         CREATE index ON media_${key} (taxon_id);
         CREATE index ON media_${key} (verbatim_key);
+        ALTER TABLE media_${key} ADD CONSTRAINT media_${key}_taxon_id_fk FOREIGN KEY (taxon_id) REFERENCES taxon_${key} (id) ON DELETE CASCADE;
 
         ALTER TABLE vernacular_name_${key} ADD PRIMARY KEY (key);
         CREATE index ON vernacular_name_${key} (taxon_id);
         CREATE index ON vernacular_name_${key} (verbatim_key);
+        ALTER TABLE vernacular_name_${key} ADD CONSTRAINT vernacular_name_${key}_taxon_id_fk FOREIGN KEY (taxon_id) REFERENCES taxon_${key} (id) ON DELETE CASCADE;
     </update>
 
     <update id="delete" parameterType="map">

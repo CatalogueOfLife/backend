@@ -1,10 +1,8 @@
 package org.col.api.search;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
+import org.col.api.model.EditorialDecision;
 import org.col.api.model.NameUsage;
 import org.col.api.model.SimpleName;
 import org.col.api.model.VernacularName;
@@ -17,6 +15,8 @@ public class NameUsageWrapper {
   private List<VernacularName> vernacularNames;
   private List<SimpleName> classification;
   private Set<Issue> issues;
+  private EditorialDecision decision;
+  private UUID publisherKey;
   
   public Set<Issue> getIssues() {
     return issues;
@@ -101,22 +101,38 @@ public class NameUsageWrapper {
       }
     }
   }
-
+  
+  public EditorialDecision getDecision() {
+    return decision;
+  }
+  
+  public void setDecision(EditorialDecision decision) {
+    this.decision = decision;
+  }
+  
+  public UUID getPublisherKey() {
+    return publisherKey;
+  }
+  
+  public void setPublisherKey(UUID publisherKey) {
+    this.publisherKey = publisherKey;
+  }
+  
   @Override
   public boolean equals(Object o) {
-    if (this == o)
-      return true;
-    if (o == null || getClass() != o.getClass())
-      return false;
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
     NameUsageWrapper that = (NameUsageWrapper) o;
     return Objects.equals(usage, that.usage) &&
-        Objects.equals(issues, that.issues) &&
         Objects.equals(vernacularNames, that.vernacularNames) &&
-        Objects.equals(classification, that.classification);
+        Objects.equals(classification, that.classification) &&
+        Objects.equals(issues, that.issues) &&
+        Objects.equals(decision, that.decision) &&
+        Objects.equals(publisherKey, that.publisherKey);
   }
-
+  
   @Override
   public int hashCode() {
-    return Objects.hash(usage, issues, vernacularNames, classification);
+    return Objects.hash(usage, vernacularNames, classification, issues, decision, publisherKey);
   }
 }

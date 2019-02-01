@@ -1,7 +1,6 @@
 package org.col.resources;
 
 import java.util.List;
-import javax.validation.constraints.NotNull;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -28,8 +27,8 @@ public class DecisionResource extends CRUDIntResource<EditorialDecision> {
   }
   
   @GET
-  public List<EditorialDecision> list(@Context SqlSession session, @NotNull @QueryParam("datasetKey") Integer datasetKey) {
-    return session.getMapper(DecisionMapper.class).listByDataset(datasetKey);
+  public List<EditorialDecision> list(@Context SqlSession session, @QueryParam("datasetKey") Integer datasetKey, @QueryParam("id") String id) {
+    return session.getMapper(DecisionMapper.class).list(datasetKey, id);
   }
   
   @GET

@@ -80,11 +80,18 @@
     <association property="subject" javaType="SimpleName" resultMap="org.col.db.mapper.SectorMapper.refResultMap" columnPrefix="subject_" />
   </resultMap>
 
-  <select id="listByDataset" resultMap="decisionResultMap">
+  <select id="list" resultMap="decisionResultMap">
     SELECT <include refid="SELECT" />
     FROM <include refid="FROM" />
-    WHERE dataset_key = #{key}
-    ORDER BY key
+    <where>
+      <if test="datasetKey != null">
+        ed.dataset_key = #{datasetKey}
+      </if>
+      <if test="id != null">
+        AND ed.subject_id = #{id}
+      </if>
+    </where>
+    ORDER BY ed.key
   </select>
 
   <select id="get" resultMap="decisionResultMap">
@@ -114,8 +121,8 @@
     FROM <include refid="FROM" />
       LEFT JOIN taxon t ON t.dataset_key=ed.dataset_key AND t.id=ed.subject_id
     WHERE t.id IS NULL
-    <if test="key != null">
-      AND ed.dataset_key = #{key}
+    <if test="datasetKey != null">
+      AND ed.dataset_key = #{datasetKey}
     </if>
     ORDER BY ed.key
   </select>

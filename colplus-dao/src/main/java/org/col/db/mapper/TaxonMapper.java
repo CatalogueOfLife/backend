@@ -1,6 +1,7 @@
 package org.col.db.mapper;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.ibatis.annotations.Param;
@@ -46,4 +47,7 @@ public interface TaxonMapper extends DatasetCRUDMapper<Taxon> {
                    @Param("exclusions") Set<String> exclusions,
                    ResultHandler<Taxon> handler);
   
+  Map<String, String> foreignChildren(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
+  
+  int deleteBySector(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
 }
