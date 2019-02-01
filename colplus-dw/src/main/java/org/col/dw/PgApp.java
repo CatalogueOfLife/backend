@@ -1,11 +1,13 @@
 package org.col.dw;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dropwizard.Application;
 import io.dropwizard.client.DropwizardApacheConnector;
 import io.dropwizard.client.HttpClientBuilder;
 import io.dropwizard.client.JerseyClientBuilder;
 import io.dropwizard.client.JerseyClientConfiguration;
 import io.dropwizard.forms.MultiPartBundle;
+import io.dropwizard.jackson.Jackson;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import org.apache.http.client.config.CookieSpecs;
@@ -47,8 +49,9 @@ public abstract class PgApp<T extends PgAppConfig> extends Application<T> {
     // register CoLTerms
     TermFactory.instance().registerTermEnum(ColDwcTerm.class);
     TermFactory.instance().registerTermEnum(ColTerm.class);
-    // customize jackson
-    ApiModule.configureMapper(bootstrap.getObjectMapper());
+    // use a custom jackson mapper
+    ObjectMapper om = ApiModule.configureMapper(Jackson.newMinimalObjectMapper());
+    bootstrap.setObjectMapper(om);
   }
   
   /**
@@ -70,11 +73,14 @@ public abstract class PgApp<T extends PgAppConfig> extends Application<T> {
     
     // reuse the same http client pool also for jersey clients!
     JerseyClientBuilder builder = new JerseyClientBuilder(env)
+        //.withProperty(CommonProperties.FEATURE_AUTO_DISCOVERY_DISABLE, Boolean.TRUE)
         .using(cfg.client)
         .using((ConnectorProvider) (cl, runtimeConfig) ->
             new DropwizardApacheConnector(httpClient, requestConfig(cfg.client), cfg.client.isChunkedEncodingEnabled())
         );
     // build both syncroneous and reactive clients sharing the same thread pool
+    
+  
     jerseyRxClient = builder.buildRx(getName(), RxCompletionStageInvoker.class);
     
     // finally provide the SqlSessionFactory & http client

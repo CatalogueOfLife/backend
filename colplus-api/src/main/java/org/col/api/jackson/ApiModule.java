@@ -37,6 +37,11 @@ public class ApiModule extends SimpleModule {
     mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
     
     mapper.registerModule(new ApiModule());
+    //mapper.registerModule(new ParameterNamesModule());
+    //mapper.registerModule(new Jdk8Module());
+    //mapper.registerModule(new SafeJavaTimeModule());
+    //mapper.registerModule(new AfterburnerModule());
+    //mapper.setPropertyNamingStrategy(new AnnotationSensitivePropertyNamingStrategy());
     
     return mapper;
   }
