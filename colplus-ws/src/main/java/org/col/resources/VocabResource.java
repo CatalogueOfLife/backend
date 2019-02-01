@@ -20,6 +20,8 @@ import org.col.api.model.EditorialDecision;
 import org.col.api.model.Sector;
 import org.col.api.vocab.AreaStandard;
 import org.col.img.ImgConfig;
+import org.gbif.dwc.terms.Term;
+import org.gbif.dwc.terms.TermFactory;
 import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,6 +67,32 @@ public class VocabResource {
     return vocabs.keySet();
   }
   
+  @GET
+  @Path("terms")
+  public <TE extends Enum & Term> List<Term> terms(@QueryParam("prefix") String prefix) {
+    Set<Class<? extends Enum>> classes = new HashSet<>( TermFactory.instance().listRegisteredTermEnums() );
+    if (prefix != null) {
+      prefix = prefix.toLowerCase().trim();
+      Iterator<Class<? extends Enum>> iter = classes.iterator();
+      while (iter.hasNext()) {
+        Class<TE> tec = (Class<TE>) iter.next();
+        if (!prefix.equals( tec.getEnumConstants()[0].prefix())) {
+          iter.remove();
+        }
+      }
+    }
+    
+    List<Term> terms = new ArrayList<>();
+    for (Class<? extends Enum> clazz : classes) {
+      Class<TE> tec = (Class<TE>) clazz;
+      for (TE te : tec.getEnumConstants()) {
+        terms.add(te);
+      }
+    }
+    
+    return terms;
+  }
+
   @GET
   @Path("{name}")
   public List<Map<String, String>> values(@PathParam("name") String name) throws IllegalAccessException {
