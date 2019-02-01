@@ -2,6 +2,7 @@ package org.col.api.jackson;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -12,6 +13,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.deser.std.FromStringDeserializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.google.common.collect.ImmutableSet;
 import org.col.api.vocab.CSLRefType;
 import org.col.api.vocab.Country;
 import org.col.api.vocab.Language;
@@ -23,8 +25,8 @@ import org.gbif.nameparser.api.Authorship;
  */
 public class ApiModule extends SimpleModule {
   
-  public static final ObjectMapper MAPPER = configureMapper(new ObjectMapper());
-  
+  public static final ObjectMapper  MAPPER = configureMapper(new ObjectMapper());
+  static final Set<Class> ENUM_CLASSES = ImmutableSet.of(Country.class, Language.class, CSLRefType.class, Term.class);
   public static ObjectMapper configureMapper(ObjectMapper mapper) {
     
     mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);

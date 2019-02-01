@@ -15,6 +15,7 @@ import com.fasterxml.jackson.databind.deser.std.StdScalarDeserializer;
 import com.fasterxml.jackson.databind.ser.Serializers;
 import com.fasterxml.jackson.databind.ser.std.StdScalarSerializer;
 import com.google.common.base.Joiner;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * A module for deserializing enums that is more permissive than the default.
@@ -44,7 +45,7 @@ public class PermissiveEnumSerde {
 
         @Override
         public Enum<?> deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException {
-            if (jp.getText() == null) return null;
+            if (StringUtils.isBlank(jp.getText())) return null;
             Enum<?> constant = values.get(
                 TOKEN_DELIM.matcher(jp.getText().trim())
                     .replaceAll(" ")
@@ -64,7 +65,10 @@ public class PermissiveEnumSerde {
         public JsonDeserializer<?> findEnumDeserializer(Class<?> type,
                                                         DeserializationConfig config,
                                                         BeanDescription desc) throws JsonMappingException {
-            return new PermissiveEnumDeserializer((Class<Enum<?>>) type);
+            if (type.isEnum() && !ApiModule.ENUM_CLASSES.contains(type)) {
+                return new PermissiveEnumDeserializer((Class<Enum<?>>) type);
+            }
+            return null;
         }
     }
     
@@ -92,7 +96,7 @@ public class PermissiveEnumSerde {
     static class PermissiveEnumSerializers extends Serializers.Base {
         @Override
         public JsonSerializer<?> findSerializer(SerializationConfig config, JavaType type, BeanDescription beanDesc) {
-            if (type.isEnumType()) {
+            if (type.isEnumType() && !ApiModule.ENUM_CLASSES.contains(type.getRawClass())) {
                 return new PermissiveEnumSerializer((Class<Enum<?>>) type.getRawClass());
             }
             return null;
