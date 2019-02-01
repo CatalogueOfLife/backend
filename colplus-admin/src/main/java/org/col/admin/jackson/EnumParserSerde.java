@@ -10,7 +10,7 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import org.col.api.jackson.ApiModule;
+import org.col.api.jackson.PermissiveEnumSerde;
 import org.col.parser.EnumParser;
 import org.col.parser.UnparsableException;
 import org.slf4j.Logger;
@@ -35,7 +35,7 @@ public class EnumParserSerde<T extends Enum<T>> {
       if (value == null) {
         jgen.writeNull();
       } else {
-        jgen.writeString(ApiModule.enumValueName(value));
+        jgen.writeString(PermissiveEnumSerde.enumValueName(value));
       }
     }
   }

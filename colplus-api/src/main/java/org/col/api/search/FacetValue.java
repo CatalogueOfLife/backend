@@ -1,14 +1,9 @@
 package org.col.api.search;
 
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 import com.google.common.base.Preconditions;
-
-import org.col.api.jackson.ApiModule;
+import org.col.api.jackson.PermissiveEnumSerde;
 import org.col.api.vocab.Issue;
 
 public class FacetValue<T extends Comparable<T>> implements Comparable<FacetValue<T>> {
@@ -100,7 +95,7 @@ public class FacetValue<T extends Comparable<T>> implements Comparable<FacetValu
   }
 
   private static String enumToString(Object enum0) {
-    return ApiModule.enumValueName((Enum<?>) enum0);
+    return PermissiveEnumSerde.enumValueName((Enum<?>) enum0);
   }
 
 }

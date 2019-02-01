@@ -9,7 +9,7 @@ import com.google.common.collect.ImmutableSet;
 import org.apache.commons.io.FilenameUtils;
 import org.col.api.datapackage.ColTerm;
 import org.col.api.datapackage.PackageDescriptor;
-import org.col.api.jackson.ApiModule;
+import org.col.api.jackson.PermissiveEnumSerde;
 import org.col.api.vocab.*;
 import org.col.common.text.StringUtils;
 import org.col.common.text.UnicodeUtils;
@@ -155,7 +155,7 @@ public class DataPackageBuilder {
       enumClass = enums.get(t);
     }
 
-    return enumValues(enumClass, ApiModule::enumValueName);
+    return enumValues(enumClass, PermissiveEnumSerde::enumValueName);
   }
   
   private static <T extends Enum> List<String> enumValues(Class<T> eClass, Function<T, String> mapper) {

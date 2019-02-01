@@ -10,7 +10,6 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.deser.std.FromStringDeserializer;
-import com.fasterxml.jackson.databind.introspect.NopAnnotationIntrospector;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.col.api.vocab.CSLRefType;
@@ -72,33 +71,16 @@ public class ApiModule extends SimpleModule {
   public void setupModule(SetupContext ctxt) {
     // required to properly register serdes
     super.setupModule(ctxt);
-    ctxt.appendAnnotationIntrospector(new EnumAnnotationIntrospector());
     ctxt.setMixInAnnotations(Authorship.class, AuthorshipMixIn.class);
+    // default enum serde
+    ctxt.addDeserializers(new PermissiveEnumSerde.PermissiveEnumDeserializers());
+    ctxt.addSerializers(new PermissiveEnumSerde.PermissiveEnumSerializers());
+  
   }
   
   abstract class AuthorshipMixIn {
     @JsonIgnore
     abstract boolean isEmpty();
-  }
-  
-  /**
-   * Intercepts the way standard EnumValues are build by forcing all values to lower case and to use
-   * a space instead of underscores.
-   */
-  public static class EnumAnnotationIntrospector extends NopAnnotationIntrospector {
-    
-    @Override
-    public String[] findEnumValues(Class<?> enumType, Enum<?>[] enumValues, String[] names) {
-      int idx = 0;
-      for (Enum<?> e : enumValues) {
-        names[idx++] = enumValueName(e);
-      }
-      return names;
-    }
-  }
-  
-  public static String enumValueName(Enum<?> val) {
-    return val.name().toLowerCase().replaceAll("_+", " ");
   }
   
   static class URIDeserializer extends FromStringDeserializer<URI> {

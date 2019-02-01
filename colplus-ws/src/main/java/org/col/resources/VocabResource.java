@@ -14,7 +14,7 @@ import com.google.common.collect.Maps;
 import com.google.common.reflect.ClassPath;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
-import org.col.api.jackson.ApiModule;
+import org.col.api.jackson.PermissiveEnumSerde;
 import org.col.api.model.ColUser;
 import org.col.api.model.EditorialDecision;
 import org.col.api.model.Sector;
@@ -112,7 +112,7 @@ public class VocabResource {
           Object val = FieldUtils.readField(f, entry, true);
           if (val != null) {
             if (f.getType().isEnum()) {
-              sval = ApiModule.enumValueName((Enum)val);
+              sval = PermissiveEnumSerde.enumValueName((Enum)val);
             } else {
               sval = val.toString();
             }
@@ -120,7 +120,7 @@ public class VocabResource {
           map.put(f.getName(), sval);
         }
       }
-      map.put("name", ApiModule.enumValueName(entry));
+      map.put("name", PermissiveEnumSerde.enumValueName(entry));
       values.add(map);
     }
     return values;
