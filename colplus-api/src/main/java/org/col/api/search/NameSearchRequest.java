@@ -52,7 +52,10 @@ public class NameSearchRequest {
 
 	@QueryParam("sortBy")
 	private SortBy sortBy;
-
+	
+	@QueryParam("reverse")
+	private boolean reverse = false;
+	
 	public NameSearchRequest() {
 	}
 
@@ -74,6 +77,7 @@ public class NameSearchRequest {
 		}
 		copy.q = q;
 		copy.sortBy = sortBy;
+		copy.reverse = reverse;
 		return copy;
 	}
 
