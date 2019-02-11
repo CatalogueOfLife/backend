@@ -1,9 +1,10 @@
 package org.col.api.jackson;
 
 import com.fasterxml.jackson.databind.JavaType;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 /**
  *
@@ -34,6 +35,12 @@ public abstract class SerdeTestBase<T> {
   @Test
   public void testRoundtrip() throws Exception {
     testRoundtrip(genTestValue());
+  }
+  
+  @Test
+  public void testSerialisation() throws Exception {
+    String json = ApiModule.MAPPER.writeValueAsString(new Wrapper<T>(genTestValue()));
+    assertFalse(StringUtils.isBlank(json));
   }
   
   protected void testRoundtrip(T value) throws Exception {
