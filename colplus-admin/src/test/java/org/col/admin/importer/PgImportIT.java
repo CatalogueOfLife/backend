@@ -404,7 +404,7 @@ public class PgImportIT {
       assertTrue(t.isRecent());
       assertTrue(t.getLifezones().isEmpty());
       assertNull(t.getRemarks());
-      assertNull(t.getDatasetUrl());
+      assertNull(t.getWebpage());
       
       // test synonym
       Name sn = ndao.get(dataset.getKey(), "Rho-140");

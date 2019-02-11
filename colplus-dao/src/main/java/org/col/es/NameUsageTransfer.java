@@ -37,7 +37,7 @@ import static org.col.api.vocab.NameField.PUBLISHED_IN_ID;
 import static org.col.api.vocab.NameField.PUBLISHED_IN_PAGE;
 import static org.col.api.vocab.NameField.REMARKS;
 import static org.col.api.vocab.NameField.SANCTIONING_AUTHOR;
-import static org.col.api.vocab.NameField.SOURCE_URL;
+import static org.col.api.vocab.NameField.WEBPAGE;
 import static org.col.api.vocab.NameField.SPECIFIC_EPITHET;
 import static org.col.api.vocab.NameField.STRAIN;
 import static org.col.api.vocab.NameField.UNINOMIAL;
@@ -221,7 +221,7 @@ public class NameUsageTransfer {
     addIfSet(fields, PUBLISHED_IN_PAGE, name.getPublishedInPage());
     addIfSet(fields, REMARKS, name.getRemarks());
     addIfSet(fields, SANCTIONING_AUTHOR, name.getSanctioningAuthor());
-    addIfSet(fields, SOURCE_URL, name.getSourceUrl());
+    addIfSet(fields, WEBPAGE, name.getWebpage());
     addIfSet(fields, SPECIFIC_EPITHET, name.getSpecificEpithet());
     addIfSet(fields, STRAIN, name.getStrain());
     addIfSet(fields, UNINOMIAL, name.getUninomial());

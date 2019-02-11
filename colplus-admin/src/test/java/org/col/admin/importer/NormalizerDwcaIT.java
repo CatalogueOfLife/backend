@@ -41,7 +41,7 @@ public class NormalizerDwcaIT extends NormalizerITBase {
       NeoUsage t = usageByID("1099-sp16");
       assertFalse(t.isSynonym());
       assertEquals("Pinus palustris Mill.", t.usage.getName().canonicalNameComplete());
-      assertEquals(URI.create("http://dx.doi.org/10.3897/BDJ.2.e1099"), t.getTaxon().getDatasetUrl());
+      assertEquals(URI.create("http://dx.doi.org/10.3897/BDJ.2.e1099"), t.getTaxon().getWebpage());
     }
   }
   

@@ -151,7 +151,7 @@ public class Name extends DataEntity implements ID, DatasetEntity, VerbatimEntit
    */
   private NameType type;
   
-  private URI sourceUrl;
+  private URI webpage;
   
   /**
    * true if the type specimen of the name is a fossil
@@ -196,7 +196,7 @@ public class Name extends DataEntity implements ID, DatasetEntity, VerbatimEntit
     this.publishedInPage = n.publishedInPage;
     this.origin = n.origin;
     this.type = n.type;
-    this.sourceUrl = n.sourceUrl;
+    this.webpage = n.webpage;
     this.fossil = n.fossil;
     this.remarks = n.remarks;
   }
@@ -327,12 +327,12 @@ public class Name extends DataEntity implements ID, DatasetEntity, VerbatimEntit
     this.nomStatus = nomStatus;
   }
   
-  public URI getSourceUrl() {
-    return sourceUrl;
+  public URI getWebpage() {
+    return webpage;
   }
   
-  public void setSourceUrl(URI sourceUrl) {
-    this.sourceUrl = sourceUrl;
+  public void setWebpage(URI webpage) {
+    this.webpage = webpage;
   }
   
   public Authorship getCombinationAuthorship() {
@@ -664,14 +664,14 @@ public class Name extends DataEntity implements ID, DatasetEntity, VerbatimEntit
         Objects.equals(publishedInPage, name.publishedInPage) &&
         origin == name.origin &&
         type == name.type &&
-        Objects.equals(sourceUrl, name.sourceUrl) &&
+        Objects.equals(webpage, name.webpage) &&
         Objects.equals(fossil, name.fossil) &&
         Objects.equals(remarks, name.remarks);
   }
   
   @Override
   public int hashCode() {
-    return Objects.hash(id, datasetKey, homotypicNameId, indexNameId, scientificName, rank, uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, strain, candidatus, notho, combinationAuthorship, basionymAuthorship, sanctioningAuthor, code, nomStatus, publishedInId, publishedInPage, origin, type, sourceUrl, fossil, remarks);
+    return Objects.hash(id, datasetKey, homotypicNameId, indexNameId, scientificName, rank, uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, strain, candidatus, notho, combinationAuthorship, basionymAuthorship, sanctioningAuthor, code, nomStatus, publishedInId, publishedInPage, origin, type, webpage, fossil, remarks);
   }
   
   @Override

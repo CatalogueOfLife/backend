@@ -324,7 +324,7 @@ public class InterpreterBase {
     nat.getName().setId(id);
     nat.getName().setVerbatimKey(v.getKey());
     nat.getName().setOrigin(Origin.SOURCE);
-    nat.getName().setSourceUrl(SafeParser.parse(UriParser.PARSER, link).orNull());
+    nat.getName().setWebpage(SafeParser.parse(UriParser.PARSER, link).orNull());
     // name status can be explicitly given or as part of the name remarks
     nat.getName().setNomStatus(SafeParser.parse(NomStatusParser.PARSER, nomStatus).orElse(
         SafeParser.parse(NomStatusParser.PARSER, nat.getName().getRemarks()).orNull()

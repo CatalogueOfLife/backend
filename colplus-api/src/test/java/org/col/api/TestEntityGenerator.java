@@ -266,7 +266,7 @@ public class TestEntityGenerator {
     t.setAccordingTo("Foo");
     t.setAccordingToDate(LocalDate.of(2010, 11, 24));
     t.setDatasetKey(datasetKey);
-    t.setDatasetUrl(URI.create("http://foo.com"));
+    t.setWebpage(URI.create("http://foo.com"));
     t.setFossil(true);
     t.setId(id);
     t.setLifezones(EnumSet.of(Lifezone.BRACKISH, Lifezone.FRESHWATER, Lifezone.TERRESTRIAL));
@@ -344,7 +344,7 @@ public class TestEntityGenerator {
     n.setCandidatus(true);
     n.setCultivarEpithet("Red Rose");
     n.setStrain("ACTT 675213");
-    n.setSourceUrl(URI.create("http://gbif.org"));
+    n.setWebpage(URI.create("http://gbif.org"));
     n.setNotho(NamePart.SPECIFIC);
     n.setFossil(true);
     n.setRank(rank);

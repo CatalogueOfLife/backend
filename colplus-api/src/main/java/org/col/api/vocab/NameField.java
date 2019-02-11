@@ -26,7 +26,7 @@ public enum NameField {
   NOM_STATUS,
   PUBLISHED_IN_ID,
   PUBLISHED_IN_PAGE,
-  SOURCE_URL,
+  WEBPAGE,
   REMARKS;
   
   private boolean array;

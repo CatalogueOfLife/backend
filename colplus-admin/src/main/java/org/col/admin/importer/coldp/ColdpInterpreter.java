@@ -67,7 +67,7 @@ public class ColdpInterpreter extends InterpreterBase {
       t.setAccordingTo(v.get(ColTerm.accordingTo));
       t.setAccordingToDate(date(v, Issue.ACCORDING_TO_DATE_INVALID, ColTerm.accordingToDate));
       //TODO: ColTerm.accordingToDateID for ORCIDS
-      t.setDatasetUrl(uri(v, Issue.URL_INVALID, ColTerm.link));
+      t.setWebpage(uri(v, Issue.URL_INVALID, ColTerm.link));
       t.setFossil(bool(v, Issue.IS_FOSSIL_INVALID, ColTerm.fossil));
       t.setRecent(bool(v, Issue.IS_RECENT_INVALID, ColTerm.recent));
       t.setRemarks(v.get(ColTerm.remarks));

@@ -34,7 +34,7 @@ public class Taxon extends DataEntity implements NameUsage, DatasetEntity {
   private Boolean fossil;
   private Boolean recent;
   private Set<Lifezone> lifezones = EnumSet.noneOf(Lifezone.class);
-  private URI datasetUrl;
+  private URI webpage;
   private Integer speciesEstimate;
   private String speciesEstimateReferenceId;
   private String remarks;
@@ -162,12 +162,12 @@ public class Taxon extends DataEntity implements NameUsage, DatasetEntity {
     this.lifezones = lifezones;
   }
   
-  public URI getDatasetUrl() {
-    return datasetUrl;
+  public URI getWebpage() {
+    return webpage;
   }
   
-  public void setDatasetUrl(URI datasetUrl) {
-    this.datasetUrl = datasetUrl;
+  public void setWebpage(URI webpage) {
+    this.webpage = webpage;
   }
   
   public Integer getChildCount() {
@@ -228,7 +228,7 @@ public class Taxon extends DataEntity implements NameUsage, DatasetEntity {
         Objects.equals(fossil, taxon.fossil) &&
         Objects.equals(recent, taxon.recent) &&
         Objects.equals(lifezones, taxon.lifezones) &&
-        Objects.equals(datasetUrl, taxon.datasetUrl) &&
+        Objects.equals(webpage, taxon.webpage) &&
         Objects.equals(speciesEstimate, taxon.speciesEstimate) &&
         Objects.equals(speciesEstimateReferenceId, taxon.speciesEstimateReferenceId) &&
         Objects.equals(remarks, taxon.remarks) &&
@@ -238,6 +238,6 @@ public class Taxon extends DataEntity implements NameUsage, DatasetEntity {
   
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), id, datasetKey, verbatimKey, name, provisional, origin, parentId, accordingTo, accordingToDate, fossil, recent, lifezones, datasetUrl, speciesEstimate, speciesEstimateReferenceId, remarks, childCount, sectorKey);
+    return Objects.hash(super.hashCode(), id, datasetKey, verbatimKey, name, provisional, origin, parentId, accordingTo, accordingToDate, fossil, recent, lifezones, webpage, speciesEstimate, speciesEstimateReferenceId, remarks, childCount, sectorKey);
   }
 }

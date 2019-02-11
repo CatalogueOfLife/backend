@@ -67,7 +67,7 @@ UPDATE taxon SET
     according_to_date = now(),
     verbatim_key=1,
     species_estimate=10,
-    dataset_url = 'http://myspace.com',
+    webpage = 'http://myspace.com',
     remarks = 'remark me';
 
 INSERT INTO synonym (id, taxon_id, dataset_key, verbatim_key, name_id, status, origin, created_by, modified_by) VALUES
