@@ -10,6 +10,7 @@ import org.col.api.model.Name;
 import org.col.api.model.Page;
 import org.col.api.model.Sector;
 import org.col.api.model.Taxon;
+import org.col.db.MybatisTestUtils;
 import org.col.db.dao.NameDao;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Before;
@@ -33,7 +34,7 @@ public class TaxonMapperTest extends DatasetCRUDMapperTest<Taxon, TaxonMapper> {
   @Before
   public void init() {
     // create a few draft taxa to attach sectors to
-    populateDraftTree();
+    MybatisTestUtils.populateDraftTree(session());
 
     sector = SectorMapperTest.create();
     sector.getSubject().setId(TestEntityGenerator.TAXON1.getId());

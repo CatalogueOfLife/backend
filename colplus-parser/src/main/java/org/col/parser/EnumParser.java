@@ -32,7 +32,7 @@ public abstract class EnumParser<T extends Enum> extends ParserBase<T> {
     // read mappings from resource file
     try {
       LOG.info("Reading mappings from {}", mappingResourceFile);
-      CSVReader reader = CSVReaderFactory.build(getClass().getResourceAsStream("/parser/dicts/" + mappingResourceFile), "UTF8", ",", null, 0);
+      CSVReader reader = dictReader(mappingResourceFile);
       while (reader.hasNext()) {
         String[] row = reader.next();
         if (row.length == 0) continue;
@@ -60,6 +60,10 @@ public abstract class EnumParser<T extends Enum> extends ParserBase<T> {
     }
     // finally add native mappings, overriding anything found in files
     addNativeEnumMappings();
+  }
+  
+  protected CSVReader dictReader(String resourceFilename) throws IOException {
+    return CSVReaderFactory.build(getClass().getResourceAsStream("/parser/dicts/" + resourceFilename), "UTF8", ",", null, 0);
   }
   
   private void addNativeEnumMappings() {

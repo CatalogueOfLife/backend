@@ -4,6 +4,7 @@ import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import org.col.admin.assembly.AssemblyCoordinator;
 import org.col.admin.command.es.IndexAllCmd;
+import org.col.admin.command.export.ExportColCmd;
 import org.col.admin.command.initdb.InitDbCmd;
 import org.col.admin.command.neoshell.ShellCmd;
 import org.col.admin.config.AdminServerConfig;
@@ -50,6 +51,7 @@ public class AdminServer extends PgApp<AdminServerConfig> {
     bootstrap.addCommand(new InitDbCmd());
     bootstrap.addCommand(new ShellCmd());
     bootstrap.addCommand(new IndexAllCmd());
+    bootstrap.addCommand(new ExportColCmd());
   }
   
   @Override

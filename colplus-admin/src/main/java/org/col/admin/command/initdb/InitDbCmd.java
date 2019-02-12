@@ -140,7 +140,7 @@ public class InitDbCmd extends ConfiguredCommand<AdminServerConfig> {
     }
   }
   
-  private static void exec(String name, ScriptRunner runner, Connection con, Reader reader) {
+  public static void exec(String name, ScriptRunner runner, Connection con, Reader reader) {
     try {
       LOG.info("Executing {}", name);
       runner.runScript(reader);

@@ -276,7 +276,7 @@ public class NameIndexMapDB implements NameIndex {
     name.setIndexNameId(null);
     name.setDatasetKey(datasetKey);
     name.setOrigin(Origin.NAME_MATCHING);
-    name.setNomStatus(NomStatus.UNEVALUATED);
+    name.setNomStatus(NomStatus.DOUBTFUL);
     name.setPublishedInId(null);
     name.setPublishedInPage(null);
     name.setCreatedBy(Users.MATCHER);

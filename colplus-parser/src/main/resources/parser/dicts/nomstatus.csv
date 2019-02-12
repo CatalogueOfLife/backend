@@ -29,6 +29,7 @@ correctum oppressa,
 denied,
 doubtful,DOUBTFUL
 dubimum,DOUBTFUL
+nom dub,DOUBTFUL
 dubimum correctum,
 dubimum correctum novum,
 dubimum invalidum,UNAVAILABLE
@@ -220,3 +221,4 @@ utique rejected,REJECTED
 utique rejected proposed,REJECTED
 valid,LEGITIMATE
 variante_ortografica,
+uncertain,DOUBTFUL

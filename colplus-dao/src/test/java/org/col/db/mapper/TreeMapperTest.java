@@ -7,6 +7,7 @@ import org.col.api.model.Page;
 import org.col.api.model.Sector;
 import org.col.api.model.SimpleName;
 import org.col.api.model.TreeNode;
+import org.col.db.MybatisTestUtils;
 import org.junit.Test;
 
 import static org.col.api.vocab.Datasets.DRAFT_COL;
@@ -42,7 +43,7 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
   
   @Test
   public void draftWithSector() {
-    populateDraftTree();
+    MybatisTestUtils.populateDraftTree(session());
     
     SectorMapper sm = mapper(SectorMapper.class);
     

@@ -342,8 +342,8 @@ CREATE TABLE taxon (
 
 CREATE TABLE synonym (
   id TEXT,
-  taxon_id TEXT,
-  name_id TEXT,
+  taxon_id TEXT NOT NULL,
+  name_id TEXT NOT NULL,
   dataset_key INTEGER NOT NULL,
   verbatim_key INTEGER,
   status INTEGER NOT NULL,

@@ -115,7 +115,7 @@ public enum NomStatus {
    * The application of the name Platanus hispanica is uncertain, so the name has been rejected
    * in favour of Platanus ×acerifolia (Aiton) Willd., pro. sp.
    * <p>
-   * Includes nomen ambiguum
+   * Includes nomen ambiguum and nomen inquirendum, a species of doubtful identity requiring further investigation.
    */
   DOUBTFUL("nomen dubium", "nom. dub.", "doubtful"),
   
@@ -146,12 +146,7 @@ public enum NomStatus {
    * A name usage erroneously cited without a sec/sensu indication so it appears to be a published homonym with a different authority.
    * See https://en.wikipedia.org/wiki/Chresonym
    */
-  CHRESONYM("chresonym", null, "chresonym"),
-  
-  /**
-   * Species inquirenda, a species of doubtful identity requiring further investigation
-   */
-  UNEVALUATED("nomen inquirendum", null, "unevaluated");
+  CHRESONYM("chresonym", null, "chresonym");
   
   
   private final String botany;

@@ -4,6 +4,7 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.ibatis.exceptions.PersistenceException;
 import org.col.api.TestEntityGenerator;
 import org.col.api.model.Sector;
+import org.col.db.MybatisTestUtils;
 import org.junit.Test;
 
 import static org.col.api.TestEntityGenerator.DATASET11;
@@ -20,7 +21,7 @@ public class SectorMapperTest extends CRUDIntMapperTest<Sector, SectorMapper> {
   
   private void add2Sectors() {
     // create a few draft taxa to attach sectors to
-    populateDraftTree();
+    MybatisTestUtils.populateDraftTree(session());
     
     Sector s1 = createTestEntity();
     s1.getSubject().setId(TestEntityGenerator.TAXON1.getId());

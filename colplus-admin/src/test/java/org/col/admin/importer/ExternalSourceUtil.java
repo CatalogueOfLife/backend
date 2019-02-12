@@ -38,7 +38,7 @@ public class ExternalSourceUtil {
     Path source = java.nio.file.Files.createTempDirectory("col-gsd");
     try (CloseableHttpClient hc = htb.build()) {
       DownloadUtil down = new DownloadUtil(hc);
-      down.downloadIfModified(url, tmp);
+      down.download(url, tmp);
       // decompress into folder
       CompressionUtil.decompressFile(source.toFile(), tmp);
       
