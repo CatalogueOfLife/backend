@@ -7,6 +7,7 @@
     <sql id="minimalNameCols">
         ${alias}.id AS ${prefix}id,
         ${alias}.scientific_name AS ${prefix}scientific_name,
+        ${alias}.authorship AS ${prefix}authorship,
         ${alias}.rank AS ${prefix}rank,
         ${alias}.uninomial AS ${prefix}uninomial,
         ${alias}.genus AS ${prefix}genus,
@@ -62,6 +63,7 @@
         index_name_id,
         homotypic_name_id,
         scientific_name,
+        authorship,
         rank,
         uninomial,
         genus,
@@ -99,6 +101,7 @@
         #{indexNameId},
         #{homotypicNameId},
         #{scientificName},
+        #{authorship},
         #{rank}::rank,
         #{uninomial},
         #{genus},

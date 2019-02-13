@@ -145,7 +145,7 @@ public class TestEntityGenerator {
     NAME1.setRank(Rank.SPECIES);
     NAME1.setOrigin(Origin.SOURCE);
     NAME1.setType(NameType.SCIENTIFIC);
-    NAME1.updateScientificName();
+    NAME1.updateNameCache();
     NAME1.setPublishedInId(REF1.getId());
     NAME1.setPublishedInPage("712");
     NAME1.setCreatedBy(Users.DB_INIT);
@@ -159,7 +159,7 @@ public class TestEntityGenerator {
     NAME2.setRank(Rank.SPECIES);
     NAME2.setOrigin(Origin.SOURCE);
     NAME2.setType(NameType.SCIENTIFIC);
-    NAME2.updateScientificName();
+    NAME2.updateNameCache();
     NAME2.setPublishedInId(null);
     NAME2.setPublishedInPage(null);
     NAME2.setCreatedBy(Users.DB_INIT);
@@ -173,7 +173,7 @@ public class TestEntityGenerator {
     NAME3.setRank(Rank.SPECIES);
     NAME3.setOrigin(Origin.SOURCE);
     NAME3.setType(NameType.SCIENTIFIC);
-    NAME3.updateScientificName();
+    NAME3.updateNameCache();
     NAME3.setPublishedInId(null);
     NAME3.setPublishedInPage(null);
     NAME3.setCreatedBy(Users.DB_INIT);
@@ -187,7 +187,7 @@ public class TestEntityGenerator {
     NAME4.setRank(Rank.SPECIES);
     NAME4.setOrigin(Origin.SOURCE);
     NAME4.setType(NameType.SCIENTIFIC);
-    NAME4.updateScientificName();
+    NAME4.updateNameCache();
     NAME4.setPublishedInId(null);
     NAME4.setPublishedInPage(null);
     NAME4.setCreatedBy(Users.DB_INIT);
@@ -350,7 +350,7 @@ public class TestEntityGenerator {
     n.setRank(rank);
     n.setOrigin(Origin.SOURCE);
     n.setType(NameType.SCIENTIFIC);
-    n.updateScientificName();
+    n.updateNameCache();
     n.addRemark("my first note");
     n.addRemark("my second note");
     return n;

@@ -269,6 +269,7 @@ CREATE TABLE name (
   homotypic_name_id TEXT NOT NULL,
   index_name_id TEXT,
   scientific_name TEXT NOT NULL,
+  authorship TEXT,
   rank rank NOT NULL,
   uninomial TEXT,
   genus TEXT,

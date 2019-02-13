@@ -83,7 +83,7 @@ public class NameParser implements Parser<NameAccordingTo> {
     Timer.Context ctx = timer == null ? null : timer.time();
     try {
       n = fromParsedName(PARSER_INTERNAL.parse(name, rank), issues);
-      n.getName().updateScientificName();
+      n.getName().updateNameCache();
       
     } catch (UnparsableNameException e) {
       n = new NameAccordingTo();

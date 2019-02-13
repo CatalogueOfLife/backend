@@ -343,7 +343,7 @@ public class InterpreterBase {
     
     // finally update the scientificName with the canonical form if we can
     try {
-      nat.getName().updateScientificName();
+      nat.getName().updateNameCache();
     } catch (InvalidNameException e) {
       LOG.info("Invalid atomised name found: {}", nat.getName());
       v.addIssue(Issue.INCONSISTENT_NAME);

@@ -29,7 +29,8 @@ public class AbstractJsonHandler<T> extends BaseTypeHandler<T> {
   public void setNonNullParameter(PreparedStatement ps, int i, T parameter,
                                   JdbcType jdbcType) throws SQLException {
     try {
-      ps.setString(i, ApiModule.MAPPER.writeValueAsString(parameter));
+      String x = ApiModule.MAPPER.writeValueAsString(parameter);
+      ps.setString(i, x);
     } catch (JsonProcessingException e) {
       throw new SQLException("Unable to convert " + clazz.getSimpleName() + " to JSON", e);
     }
