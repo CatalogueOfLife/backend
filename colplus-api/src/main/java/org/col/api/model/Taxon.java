@@ -22,6 +22,7 @@ public class Taxon extends DataEntity implements NameUsage, DatasetEntity {
   private String id;
   @Nonnull
   private Integer datasetKey;
+  private Integer sectorKey;
   private Integer verbatimKey;
   @Nonnull
   private Name name;
@@ -39,7 +40,6 @@ public class Taxon extends DataEntity implements NameUsage, DatasetEntity {
   private String speciesEstimateReferenceId;
   private String remarks;
   private Integer childCount;
-  private Integer sectorKey;
   
   public String getId() {
     return id;

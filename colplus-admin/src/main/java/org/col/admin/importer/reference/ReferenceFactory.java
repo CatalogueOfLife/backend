@@ -78,7 +78,7 @@ public class ReferenceFactory {
       ref.setCsl(csl);
       csl.setAuthor(getAuthors(authors));
       csl.setTitle(title);
-      csl.setIssued(yearToDate(ref.getYear()));
+      csl.setIssued(yearToDate(ref.getYear(), year));
       if (!StringUtils.isBlank(details)) {
         csl.setContainerTitle(details);
         issues.addIssue(Issue.CITATION_CONTAINER_TITLE_UNPARSED);
@@ -179,12 +179,22 @@ public class ReferenceFactory {
   }
   
   private static CslDate yearToDate(Integer y) {
-    if (y == null) {
+    return yearToDate(y, null);
+  }
+  
+  private static CslDate yearToDate(Integer year, String literalYear) {
+    if (year == null && literalYear == null) {
       return null;
     }
-    int[][] dateParts = new int[][]{{y, 1, 1}};
+    
     CslDate d = new CslDate();
-    d.setDateParts(dateParts);
+    if (year != null) {
+      int[][] dateParts = new int[][]{{year, 1, 1}};
+      d.setDateParts(dateParts);
+    }
+    if (literalYear != null) {
+      d.setLiteral(literalYear);
+    }
     return d;
   }
   

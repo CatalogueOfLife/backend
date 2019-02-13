@@ -251,6 +251,7 @@ CREATE TABLE verbatim (
 CREATE TABLE reference (
   id TEXT NOT NULL,
   dataset_key INTEGER NOT NULL,
+  sector_key INTEGER,
   verbatim_key INTEGER,
   csl JSONB,
   citation TEXT,

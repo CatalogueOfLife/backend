@@ -18,7 +18,7 @@ public class Reference extends DataEntity implements ID, DatasetEntity, Verbatim
    */
   @Nonnull
   private Integer datasetKey;
-  
+  private Integer sectorKey;
   private Integer verbatimKey;
   
   /**
@@ -55,6 +55,14 @@ public class Reference extends DataEntity implements ID, DatasetEntity, Verbatim
   @Override
   public void setDatasetKey(Integer datasetKey) {
     this.datasetKey = datasetKey;
+  }
+  
+  public Integer getSectorKey() {
+    return sectorKey;
+  }
+  
+  public void setSectorKey(Integer sectorKey) {
+    this.sectorKey = sectorKey;
   }
   
   @Override
@@ -97,20 +105,22 @@ public class Reference extends DataEntity implements ID, DatasetEntity, Verbatim
   
   @Override
   public boolean equals(Object o) {
-    if (this == o)
-      return true;
-    if (o == null || getClass() != o.getClass())
-      return false;
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    if (!super.equals(o)) return false;
     Reference reference = (Reference) o;
-    return Objects.equals(id, reference.id)
-        && Objects.equals(datasetKey, reference.datasetKey) && Objects.equals(csl, reference.csl)
-        && Objects.equals(citation, reference.citation) && Objects.equals(year, reference.year);
+    return Objects.equals(id, reference.id) &&
+        datasetKey.equals(reference.datasetKey) &&
+        Objects.equals(sectorKey, reference.sectorKey) &&
+        Objects.equals(verbatimKey, reference.verbatimKey) &&
+        Objects.equals(csl, reference.csl) &&
+        citation.equals(reference.citation) &&
+        Objects.equals(year, reference.year);
   }
   
   @Override
   public int hashCode() {
-    
-    return Objects.hash(id, datasetKey, csl, year);
+    return Objects.hash(super.hashCode(), id, datasetKey, sectorKey, verbatimKey, csl, citation, year);
   }
   
   @Override

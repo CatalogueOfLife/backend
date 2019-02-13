@@ -7,6 +7,7 @@
     <sql id="SELECT">
         r.id,
         r.dataset_key,
+        r.sector_key,
         r.verbatim_key,
         r.csl,
         r.citation,
@@ -20,6 +21,7 @@
     <sql id="COLS">
         id,
         dataset_key,
+        sector_key,
         verbatim_key,
         csl,
         citation,
@@ -31,6 +33,7 @@
     <sql id="PROPS">
         #{id},
         #{datasetKey},
+        #{sectorKey},
         #{verbatimKey},
         #{csl, typeHandler=org.col.db.type.CslJsonHandler}::jsonb,
         #{citation},
