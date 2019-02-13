@@ -1,5 +1,6 @@
 package org.col.admin.config;
 
+import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 
 /**
@@ -25,11 +26,25 @@ public class ImporterConfig {
   
   /**
    * Duration in minutes the continous import scheduler will fall to sleep if imports are running already.
-   * Zero or negative values will turn off continuous importing.
+   * Zero will turn off continuous importing.
    */
   @Min(0)
   public int continousImportPolling = 0;
   
+  /**
+   * The number of allowed datasets already in the queue before the continuous import polling adds more.
+   */
+  @Min(0)
+  @Max(100)
+  public int continousImportMinSize = 0;
+  
+  /**
+   * The number of datasets to queue during one import poll.
+   */
+  @Min(1)
+  @Max(1000)
+  public int continousImportBatchSize = 10;
+
   /**
    * Github API access token to use when downloading data from github.com URLs.
    */
