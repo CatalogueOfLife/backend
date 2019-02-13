@@ -152,7 +152,6 @@ FROM (SELECT unnest(array[
 7,
 70,
 73,
-74,
 75,
 76,
 78,
