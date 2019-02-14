@@ -3,10 +3,7 @@ package org.col.api;
 import java.net.URI;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.common.base.Splitter;
@@ -398,12 +395,15 @@ public class TestEntityGenerator {
     CslName author1 = new CslName();
     author1.setGiven("John");
     author1.setFamily("Smith");
+    author1.setLiteral("John Smith");
     CslName author2 = new CslName();
     author2.setGiven("Betty");
     author2.setFamily("Jones");
+    author2.setLiteral("Jones, Betty");
     csl.setAuthor(new CslName[] {author1, author2});
     CslDate date = new CslDate();
     date.setDateParts(new int[][] {{2014, 8, 12}});
+    date.setLiteral("2014-8-12");
     csl.setAccessed(date);
     csl.setCategories(new String[] {"A", "B", "C"});
     return r;
@@ -512,6 +512,10 @@ public class TestEntityGenerator {
     return managed;
   }
   
+  public static <T extends UserManaged> void nullifyDate(Collection<T> managed) {
+    managed.forEach(TestEntityGenerator::nullifyDate);
+  }
+
   public static Taxon nullifyUserDate(Taxon taxon) {
     nullifyUserDate((UserManaged) taxon);
     nullifyUserDate(taxon.getName());
@@ -532,7 +536,11 @@ public class TestEntityGenerator {
     managed.setModifiedBy(null);
     return managed;
   }
-
+  
+  public static <T extends UserManaged> void nullifyUserDate(Collection<T> managed) {
+    managed.forEach(TestEntityGenerator::nullifyUserDate);
+  }
+  
   public static <T extends UserManaged> T setUserDate(T managed) {
     return setUserDate(managed, Users.DB_INIT);
   }

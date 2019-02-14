@@ -76,7 +76,7 @@ public class ReferenceFactory {
       ref.setCitation(buildCitation(authors, year, title, details));
       CslData csl = new CslData();
       ref.setCsl(csl);
-      csl.setAuthor(getAuthors(authors));
+      csl.setAuthor(parseAuthors(authors));
       csl.setTitle(title);
       csl.setIssued(yearToDate(ref.getYear(), year));
       if (!StringUtils.isBlank(details)) {
@@ -128,7 +128,7 @@ public class ReferenceFactory {
         }
         CslData csl = new CslData();
         ref.setCsl(csl);
-        csl.setAuthor(getAuthors(creator));
+        csl.setAuthor(parseAuthors(creator));
         csl.setTitle(nullIfEmpty(title));
         csl.setIssued(toCslDate(date));
         if (!StringUtils.isEmpty(source)) {
@@ -233,7 +233,7 @@ public class ReferenceFactory {
     }
   }
   
-  private static CslName[] getAuthors(String authorString) {
+  private static CslName[] parseAuthors(String authorString) {
     if (StringUtils.isBlank(authorString)) {
       return null;
     }
