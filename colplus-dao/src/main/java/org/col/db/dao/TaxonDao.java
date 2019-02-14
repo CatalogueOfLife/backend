@@ -1,9 +1,6 @@
 package org.col.db.dao;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Function;
 
 import com.google.common.collect.Lists;
@@ -28,7 +25,9 @@ public class TaxonDao {
   private final SynonymMapper sMapper;
   private final TaxonMapper tMapper;
   private final VernacularNameMapper vMapper;
-
+  private final Map<EntityType, TaxonExtensionMapper<? extends IntKey>> extMapper = new HashMap<>();
+  
+  
   public TaxonDao(SqlSession sqlSession) {
     this.session = sqlSession;
     deMapper = session.getMapper(DescriptionMapper.class);
@@ -39,6 +38,11 @@ public class TaxonDao {
     sMapper = session.getMapper(SynonymMapper.class);
     tMapper = session.getMapper(TaxonMapper.class);
     vMapper = session.getMapper(VernacularNameMapper.class);
+  
+    extMapper.put(EntityType.DISTRIBUTION, diMapper);
+    extMapper.put(EntityType.VERNACULAR, vMapper);
+    extMapper.put(EntityType.DESCRIPTION, deMapper);
+    extMapper.put(EntityType.MEDIA, mMapper);
   }
   
   /**
@@ -92,7 +96,21 @@ public class TaxonDao {
     t.setOrigin(Origin.SOURCE);
     t.setParentId(targetParentID);
     tMapper.create(t);
-
+    
+    // copy related entities
+    for (EntityType type : include) {
+      if (extMapper.containsKey(type)) {
+        TaxonExtensionMapper<IntKey> mapper = (TaxonExtensionMapper<IntKey>) extMapper.get(type);
+        mapper.listByTaxon(orig.getDatasetKey(), orig.getId()).forEach( e -> {
+          e.setKey(null);
+          ((UserManaged)e).applyUser(user);
+          mapper.create( e, t.getId(), targetDatasetKey);
+        });
+      } else {
+        // TODO copy refs, reflinks & name rels
+      }
+    }
+    
     session.commit();
     return orig;
   }
