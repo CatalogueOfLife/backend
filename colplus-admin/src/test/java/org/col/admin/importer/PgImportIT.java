@@ -92,7 +92,7 @@ public class PgImportIT {
       dataset.setTitle("Test Dataset " + source.toString());
       
       SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true);
-      // this creates a new datasetKey, usually 2000!
+      // this creates a new key, usually 2000!
       session.getMapper(DatasetMapper.class).create(dataset);
       session.commit();
       session.close();
@@ -314,7 +314,7 @@ public class PgImportIT {
       assertIssue(n, Issue.ACCEPTED_ID_INVALID);
       
       // a bare name
-      assertTrue(taxMapper.listByName(dataset.getKey(), n.getId()).isEmpty());
+      assertTrue(taxMapper.listByNameID(dataset.getKey(), n.getId()).isEmpty());
       assertTrue(synMapper.listByName(dataset.getKey(), n.getId()).isEmpty());
       assertNull(tdao.get(dataset.getKey(), "s7"));
       

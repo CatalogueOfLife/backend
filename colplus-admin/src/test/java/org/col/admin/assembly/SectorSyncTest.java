@@ -90,7 +90,7 @@ public class SectorSyncTest {
     }
 
     SectorSync ss = new SectorSync(sector.getKey(), PgSetupRule.getSqlSessionFactory(), null,
-        this::successCallBack, this::errorCallBack, TestEntityGenerator.USER_EDITOR);
+        SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestEntityGenerator.USER_EDITOR);
     ss.sync();
   
     diDao.createSuccess(Datasets.DRAFT_COL);
@@ -125,14 +125,14 @@ public class SectorSyncTest {
   /**
    * We use old school callbacks here as you cannot easily cancel CopletableFutures.
    */
-  private void successCallBack(SectorSync sync) {
+  static void successCallBack(SectorSync sync) {
     System.out.println("Sector Sync success");
   }
   
   /**
    * We use old school callbacks here as you cannot easily cancel CopletableFutures.
    */
-  private void errorCallBack(SectorSync sync, Exception err) {
+  static void errorCallBack(SectorSync sync, Exception err) {
     System.out.println("Sector Sync failed:");
     err.printStackTrace();
     fail("Sector sync failed");
