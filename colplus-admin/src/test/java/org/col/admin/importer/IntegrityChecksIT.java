@@ -110,7 +110,7 @@ public class IntegrityChecksIT {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       TaxonDao tdao = new TaxonDao(session);
       
-      Taxon t = tdao.get(dataset.getKey(), "14649");
+      Taxon t = tdao.get(dataset.getKey(), "1");
       assertEquals("Zapoteca formosa", t.getName().getScientificName());
       assertEquals("(Kunth) H.M.Hern.", t.getName().authorshipComplete());
       assertEquals(Rank.SPECIES, t.getName().getRank());
