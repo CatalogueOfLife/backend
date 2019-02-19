@@ -5,7 +5,7 @@ import java.util.Objects;
 
 public class SectorImport {
   public enum Status {
-    WAITING, PREPARING, COPYING, DELETING, INDEXING, FINISHED
+    WAITING, PREPARING, COPYING, DELETING, RELINKING, INDEXING, FINISHED
   }
 
   private int sectorKey;

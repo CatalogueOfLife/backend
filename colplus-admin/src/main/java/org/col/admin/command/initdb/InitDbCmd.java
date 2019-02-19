@@ -86,12 +86,16 @@ public class InitDbCmd extends ConfiguredCommand<AdminServerConfig> {
       exec(PgConfig.DATA_FILE, runner, con, Resources.getResourceAsReader(PgConfig.DATA_FILE));
       // add known datasets
       exec(PgConfig.DATASETS_FILE, runner, con, Resources.getResourceAsReader(PgConfig.DATASETS_FILE));
+      // add known sectors
+      exec(PgConfig.SECTORS_FILE, runner, con, Resources.getResourceAsReader(PgConfig.SECTORS_FILE));
+      // add known decisions
+      exec(PgConfig.DECISIONS_FILE, runner, con, Resources.getResourceAsReader(PgConfig.DECISIONS_FILE));
     }
     
     // add col & names index partitions
     setupStandardPartitions(cfg.db);
   }
-
+  
   private static void setupStandardPartitions(PgConfig cfg) {
     HikariConfig hikari = cfg.hikariConfig();
     try (HikariDataSource dataSource = new HikariDataSource(hikari)) {

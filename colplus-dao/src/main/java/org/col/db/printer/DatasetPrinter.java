@@ -71,49 +71,65 @@ public class DatasetPrinter implements ResultHandler<Taxon> {
   
   @Override
   public void handleResult(ResultContext<? extends Taxon> resultContext) {
-    Taxon t = resultContext.getResultObject();
-    System.out.println(t.getId() + "\n  " + t.getRemarks());
-    // send end signals
-    while (!parents.isEmpty() && !parents.peekLast().getId().equals(t.getParentId())) {
-      end(parents.removeLast());
-    }
-    start(t);
+    try {
+      Taxon t = resultContext.getResultObject();
+      // send end signals
+      while (!parents.isEmpty() && !parents.peekLast().getId().equals(t.getParentId())) {
+        end(parents.removeLast());
+      }
+      start(t);
+      
+      // synonyms
+      for (Synonym s : sm.listByTaxon(datasetKey, t.getId())) {
+        start(s);
+        end(s);
+      }
+      parents.add(t);
     
-    // synonyms
-    for (Synonym s : sm.listByTaxon(datasetKey, t.getId())) {
-      start(s);
-      end(s);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
-    parents.add(t);
   }
   
-  private void start(NameUsage u) {
-    print(u);
+  private void start(Taxon t) throws IOException {
+    print(t);
     level++;
   }
   
+  private void start(Synonym s) throws IOException {
+    print(s);
+    level++;
+  }
+
   private void end(NameUsage u) {
     level--;
   }
-
-  private void print(NameUsage u) {
-    try {
-      Name n = u.getName();
-      writer.write(StringUtils.repeat(' ', level * indentation));
-      if (u.isSynonym()) {
-        writer.write(SYNONYM_SYMBOL);
-      }
-      //TODO: flag basionyms
-      writer.write(n.canonicalNameComplete());
-      if (n.getRank() != null) {
-        writer.write(" [");
-        writer.write(n.getRank().name().toLowerCase());
-        writer.write("]");
-      }
-      writer.write("\n");
-      
-    } catch (IOException e) {
-      throw new RuntimeException(e);
+  
+  private void print(Taxon t) throws IOException {
+    printCore(t);
+    if (t.getSectorKey() != null) {
+      writer.write(" (S"+t.getSectorKey()+")");
+    }
+    writer.write("\n");
+  }
+  
+  private void print(Synonym s) throws IOException {
+    printCore(s);
+    writer.write("\n");
+  }
+  
+  private void printCore(NameUsage u) throws IOException {
+    Name n = u.getName();
+    writer.write(StringUtils.repeat(' ', level * indentation));
+    if (u.isSynonym()) {
+      writer.write(SYNONYM_SYMBOL);
+    }
+    //TODO: flag basionyms
+    writer.write(n.canonicalName());
+    if (n.getRank() != null) {
+      writer.write(" [");
+      writer.write(n.getRank().name().toLowerCase());
+      writer.write("]");
     }
   }
   

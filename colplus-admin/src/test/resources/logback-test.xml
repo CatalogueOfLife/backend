@@ -18,7 +18,8 @@
     <logger name="org.col.common.io" level="DEBUG"/>
 
     <logger name="org.col.db.mapper.TaxonMapper" level="DEBUG"/>
-
+    <!--
+    -->
     <root level="INFO">
         <appender-ref ref="CONSOLE"/>
     </root>

@@ -1,8 +1,13 @@
 package org.col.admin.assembly;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringWriter;
+import java.io.Writer;
 import java.util.List;
 
+import com.google.common.base.Charsets;
+import org.apache.commons.io.IOUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.col.admin.importer.PgImportRule;
 import org.col.api.model.Sector;
@@ -20,6 +25,9 @@ import org.gbif.nameparser.api.Rank;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 public class SectorSyncIT {
   
@@ -101,7 +109,21 @@ public class SectorSyncIT {
     createSector(Sector.Mode.MERGE, src, trg);
 
     syncAll();
-    printDraft();
+    assertTree("cat1_5_6.txt");
+    //printDraft();
   }
+ 
+  void assertTree(String filename) throws IOException {
+    InputStream resIn = getClass().getResourceAsStream("/assembly-trees/" + filename);
+    String expected = IOUtils.toString(resIn, Charsets.UTF_8).trim();
+    
+    Writer writer = new StringWriter();
+    new DatasetPrinter(Datasets.DRAFT_COL, PgSetupRule.getSqlSessionFactory(), writer).print();
+    String tree = writer.toString().trim();
+    assertFalse("Empty tree, probably no root node found", tree.isEmpty());
   
+    // compare trees
+    System.out.println(tree);
+    assertEquals("Assembled tree not as expected", expected, tree);
+  }
 }
