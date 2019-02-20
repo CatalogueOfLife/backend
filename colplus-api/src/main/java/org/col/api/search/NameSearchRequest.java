@@ -38,13 +38,13 @@ public class NameSearchRequest {
    */
   public static final String NULL_VALUE = "_NULL";
 
-  private final EnumMap<NameSearchParameter, List<Object>> filters = new EnumMap<>(NameSearchParameter.class);
+  private EnumMap<NameSearchParameter, List<Object>> filters = new EnumMap<>(NameSearchParameter.class);
 
   @QueryParam("facet")
-  private final Set<NameSearchParameter> facets = EnumSet.noneOf(NameSearchParameter.class);
+  private Set<NameSearchParameter> facets = EnumSet.noneOf(NameSearchParameter.class);
 
   @QueryParam("content")
-  private final Set<SearchContent> content = EnumSet.allOf(SearchContent.class);
+  private Set<SearchContent> content;
 
   @QueryParam("q")
   private String q;
@@ -67,10 +67,9 @@ public class NameSearchRequest {
    */
   public NameSearchRequest copy() {
     NameSearchRequest copy = new NameSearchRequest();
-    copy.filters.putAll(filters);
-    copy.facets.addAll(facets);
-    copy.content.clear();
-    copy.content.addAll(content);
+    copy.filters = new EnumMap<>(filters);
+    copy.facets = EnumSet.copyOf(facets);
+    copy.content = EnumSet.copyOf(content);
     copy.q = q;
     copy.sortBy = sortBy;
     copy.highlight = highlight;
@@ -202,15 +201,17 @@ public class NameSearchRequest {
   }
 
   public Set<SearchContent> getContent() {
+    if (content == null || content.isEmpty()) {
+      return content = EnumSet.allOf(SearchContent.class);
+    }
     return content;
   }
 
   public void setContent(Set<SearchContent> content) {
-    this.content.clear();
-    if (content == null) {
-      this.content.addAll(EnumSet.allOf(SearchContent.class));
+    if (content == null || content.size() == 0) {
+      this.content = EnumSet.allOf(SearchContent.class);
     } else {
-      this.content.addAll(content);
+      this.content = content;
     }
   }
 
