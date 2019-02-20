@@ -6,6 +6,7 @@
 
     <sql id="SELECT">
         t.dataset_key,
+        t.sector_key,
         t.id,
         t.parent_id,
         t.provisional,
