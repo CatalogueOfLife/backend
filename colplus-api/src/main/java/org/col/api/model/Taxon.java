@@ -216,7 +216,7 @@ public class Taxon extends DataEntity implements NameUsage, DatasetEntity {
     if (o == null || getClass() != o.getClass()) return false;
     if (!super.equals(o)) return false;
     Taxon taxon = (Taxon) o;
-    return provisional == taxon.provisional &&
+    return provisional == taxon.provisional /*&&
         Objects.equals(id, taxon.id) &&
         Objects.equals(datasetKey, taxon.datasetKey) &&
         Objects.equals(verbatimKey, taxon.verbatimKey) &&
@@ -233,7 +233,7 @@ public class Taxon extends DataEntity implements NameUsage, DatasetEntity {
         Objects.equals(speciesEstimateReferenceId, taxon.speciesEstimateReferenceId) &&
         Objects.equals(remarks, taxon.remarks) &&
         Objects.equals(childCount, taxon.childCount) &&
-        Objects.equals(sectorKey, taxon.sectorKey);
+        Objects.equals(sectorKey, taxon.sectorKey)*/;
   }
   
   @Override

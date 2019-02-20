@@ -19,9 +19,7 @@ class EsNameSearchResponseReader {
   private static final Logger LOG = LoggerFactory.getLogger(EsNameSearchResponseReader.class);
 
   private static final ObjectReader RESPONSE_READER;
-  private static final ObjectWriter RESPONSE_WRITER; // Only used in DEBUG mode
-  // For debugging, being being able to see the response sometimes helps, but sometimes definitely not
-  private static final boolean SUPPRESS_WRITER = true;
+  private static final ObjectWriter RESPONSE_WRITER; // Only used in TRACE mode
 
   static {
     RESPONSE_READER = EsModule.MAPPER.readerFor(EsNameSearchResponse.class);
@@ -36,8 +34,8 @@ class EsNameSearchResponseReader {
 
   EsNameSearchResponse readHttpResponse() throws IOException {
     EsNameSearchResponse response = RESPONSE_READER.readValue(httpResponse.getEntity().getContent());
-    if (!SUPPRESS_WRITER) {
-      LOG.debug("Receiving response: {}", RESPONSE_WRITER.writeValueAsString(response));
+    if (LOG.isTraceEnabled()) {
+      LOG.trace("Receiving response: {}", RESPONSE_WRITER.writeValueAsString(response));
     }
     return response;
   }

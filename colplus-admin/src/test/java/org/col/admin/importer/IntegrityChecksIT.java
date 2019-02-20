@@ -109,6 +109,7 @@ public class IntegrityChecksIT {
     normalizeAndImport("A1");
 
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+
       NameMapper nm = session.getMapper(NameMapper.class);
       Name m = nm.get(dataset.getKey(), "1");
       VerbatimRecordMapper v = session.getMapper(VerbatimRecordMapper.class);

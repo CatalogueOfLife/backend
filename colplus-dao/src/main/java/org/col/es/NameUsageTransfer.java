@@ -53,7 +53,7 @@ public class NameUsageTransfer {
   /**
    * Whether or not to zip the stringified NameUsageWrapper.
    */
-  public static final boolean ZIP_PAYLOAD = true;
+  public static final boolean ZIP_PAYLOAD = false;
 
   /**
    * Provides a weakly normalized version of the original scientific name. Whatever normalization method we choose, we must make sure it is

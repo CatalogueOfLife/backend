@@ -5,6 +5,9 @@ import java.util.List;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.google.common.annotations.VisibleForTesting;
+
+import static org.apache.commons.lang3.StringUtils.*;
 import org.col.api.model.Page;
 import org.col.api.search.NameSearchRequest;
 import org.col.api.search.NameSearchResponse;
@@ -20,14 +23,10 @@ import org.slf4j.LoggerFactory;
 
 import static org.col.es.EsConfig.DEFAULT_TYPE_NAME;
 
-;
-
 public class NameUsageSearchService {
 
   private static final Logger LOG = LoggerFactory.getLogger(NameUsageSearchService.class);
-  // For debugging, being being able to see the generated queries sometimes helps, but sometimes definitely not
-  private static final boolean SUPPRESS_WRITER = true;
-  
+
   private final String index;
   private final RestClient client;
 
@@ -39,13 +38,13 @@ public class NameUsageSearchService {
   /**
    * Converts the Elasticsearh response coming back from the query into an API object (NameSearchResponse).
    * 
-   * @param query
+   * @param nameSearchRequest
    * @param page
    * @return
    */
-  public NameSearchResponse search(NameSearchRequest query, Page page) {
+  public NameSearchResponse search(NameSearchRequest nameSearchRequest, Page page) {
     try {
-      return search(index, query, page);
+      return search(index, nameSearchRequest, page);
     } catch (IOException e) {
       throw new EsException(e);
     }
@@ -67,18 +66,28 @@ public class NameUsageSearchService {
     }
   }
 
-  NameSearchResponse search(String index, NameSearchRequest query, Page page) throws IOException {
-    NameSearchRequestTranslator translator = new NameSearchRequestTranslator(query, page);
+  @VisibleForTesting
+  NameSearchResponse search(String index, NameSearchRequest colSearchRequest, Page page) throws IOException {
+    NameSearchRequestTranslator translator = new NameSearchRequestTranslator(colSearchRequest, page);
     EsSearchRequest esSearchRequest = translator.translate();
-    return search(index, esSearchRequest, page);
+    EsNameSearchResponse esResponse = executeSearchRequest(index, esSearchRequest);
+    NameSearchResponseTransfer transfer = new NameSearchResponseTransfer(esResponse);
+    NameSearchResponse colResponse = transfer.transferResponse(page);
+    if (mustHighlight(colSearchRequest, colResponse)) {
+      NameSearchHighlighter highlighter = new NameSearchHighlighter(colSearchRequest, colResponse);
+      highlighter.highlightNameUsages();
+    }
+    return colResponse;
   }
 
+  @VisibleForTesting
   NameSearchResponse search(String index, EsSearchRequest esSearchRequest, Page page) throws IOException {
     EsNameSearchResponse esResponse = executeSearchRequest(index, esSearchRequest);
     NameSearchResponseTransfer transfer = new NameSearchResponseTransfer(esResponse);
     return transfer.transferResponse(page);
   }
 
+  @VisibleForTesting
   List<EsNameUsage> getDocuments(String index, EsSearchRequest esSearchRequest) throws IOException {
     EsNameSearchResponse esResponse = executeSearchRequest(index, esSearchRequest);
     NameSearchResponseTransfer transfer = new NameSearchResponseTransfer(esResponse);
@@ -86,8 +95,8 @@ public class NameUsageSearchService {
   }
 
   private EsNameSearchResponse executeSearchRequest(String index, EsSearchRequest esSearchRequest) throws IOException {
-    if (!SUPPRESS_WRITER) {
-      LOG.debug("Executing query: {}", writeQuery(esSearchRequest, true));
+    if (LOG.isTraceEnabled()) {
+      LOG.trace("Executing query: {}", writeQuery(esSearchRequest, true));
     }
     Request httpRequest = new Request("GET", endpoint(index));
     httpRequest.setJsonEntity(writeQuery(esSearchRequest, false));
@@ -102,6 +111,10 @@ public class NameUsageSearchService {
       ow = ow.withDefaultPrettyPrinter();
     }
     return ow.writeValueAsString(esSearchRequest);
+  }
+
+  private static boolean mustHighlight(NameSearchRequest req, NameSearchResponse res) {
+    return req.isHighlight() && !res.getResult().isEmpty() && req.getQ() != null && req.getQ().length() > 1;
   }
 
   private static String endpoint(String indexName) {

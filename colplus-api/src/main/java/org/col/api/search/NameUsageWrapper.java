@@ -121,7 +121,7 @@ public class NameUsageWrapper {
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+    if (o == null || getClass() != o.getClass()) return false;   
     NameUsageWrapper that = (NameUsageWrapper) o;
     return Objects.equals(usage, that.usage) &&
         Objects.equals(vernacularNames, that.vernacularNames) &&
