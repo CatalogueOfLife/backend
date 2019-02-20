@@ -142,6 +142,20 @@
         ORDER BY id
     </select>
 
+    <select id="listByNameAndSector" resultMap="taxonResultMap">
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
+        WHERE
+            t.dataset_key = #{datasetKey}
+            AND t.sector_key = #{sectorKey}
+            AND n.scientific_name=#{name}
+            <if test="rank != null">
+                AND n.rank=#{rank}::rank
+            </if>
+        ORDER BY id
+    </select>
+
+
     <select id="children" resultMap="taxonResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
@@ -196,7 +210,7 @@
         WITH RECURSIVE x AS(
             SELECT <include refid="SELECT" />
                 <if test="depthFirst">
-                    ,t.id AS path
+                    ,concat_ws('|', n.scientific_name, t.id) AS path
                 </if>
             FROM <include refid="FROM" />
             WHERE
@@ -213,7 +227,7 @@
 
             SELECT <include refid="SELECT" />
                 <if test="depthFirst">
-                    ,concat_ws('|', x.path, t.id)  AS path
+                    ,concat_ws('|', x.path, n.scientific_name, t.id)  AS path
                 </if>
             FROM <include refid="FROM" />
                 JOIN x ON x.id = t.parent_id

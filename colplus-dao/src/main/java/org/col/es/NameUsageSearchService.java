@@ -7,7 +7,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.annotations.VisibleForTesting;
 
-import static org.apache.commons.lang3.StringUtils.*;
 import org.col.api.model.Page;
 import org.col.api.search.NameSearchRequest;
 import org.col.api.search.NameSearchResponse;

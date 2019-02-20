@@ -91,6 +91,7 @@ public class TaxonDao {
     n.setOrigin(Origin.SOURCE);
     if (n.getPublishedInId() != null) {
       Reference ref = newKey(rMapper.get(t.getDatasetKey(), n.getPublishedInId()));
+      //TODO: add sectorKey to reference
       n.setPublishedInId(lookupReference.apply(ref));
     }
     nMapper.create(n);
