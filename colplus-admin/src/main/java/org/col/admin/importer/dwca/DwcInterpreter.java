@@ -178,7 +178,7 @@ public class DwcInterpreter extends InterpreterBase {
     Taxon tax = u.getTaxon();
     // this can be a synonym at this stage which the class does not accept
     tax.setProvisional(TaxonomicStatus.PROVISIONALLY_ACCEPTED == status.val || status.val.isSynonym());
-    tax.setDatasetUrl(uri(v, Issue.URL_INVALID, DcTerm.references));
+    tax.setWebpage(uri(v, Issue.URL_INVALID, DcTerm.references));
     tax.setFossil(null);
     tax.setRecent(null);
     // t.setLifezones();

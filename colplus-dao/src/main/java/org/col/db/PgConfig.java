@@ -20,6 +20,8 @@ public class PgConfig extends PgDbConfig {
   public static final String SCHEMA_FILE = "org/col/db/dbschema.sql";
   public static final String DATA_FILE = "org/col/db/data.sql";
   public static final String DATASETS_FILE = "org/col/db/datasets.sql";
+  public static final String SECTORS_FILE = "org/col/db/sectors.sql";
+  public static final String DECISIONS_FILE = "org/col/db/decisions.sql";
   
   /**
    * Use null or an absolute file path starting with / to indicate an embedded postgres server

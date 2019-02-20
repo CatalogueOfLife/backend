@@ -99,7 +99,7 @@ public class InitMybatisRule extends ExternalResource {
     this.sqlSessionFactorySupplier = sqlSessionFactorySupplier;
   }
   
-  private InitMybatisRule(TestData testData) {
+  public InitMybatisRule(TestData testData) {
     this(testData, () -> PgSetupRule.getSqlSessionFactory());
   }
   

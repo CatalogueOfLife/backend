@@ -44,7 +44,7 @@ public class NameUsageMapperTreeTest extends MapperTestBase<NameUsageMapper> {
         assertEquals((Integer) 10, t.getSpeciesEstimate());
         assertEquals((Integer) 1, t.getVerbatimKey());
         assertEquals("remark me", t.getRemarks());
-        assertEquals(URI.create("http://myspace.com"), t.getDatasetUrl());
+        assertEquals(URI.create("http://myspace.com"), t.getWebpage());
         if (t.getId().equals("t1")) {
           assertNull(t.getParentId());
           assertTrue(obj.getClassification().isEmpty());

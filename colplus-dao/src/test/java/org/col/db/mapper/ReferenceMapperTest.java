@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.google.common.collect.Sets;
 import org.col.api.RandomUtils;
+import org.col.api.TestEntityGenerator;
 import org.col.api.model.CslData;
 import org.col.api.model.Page;
 import org.col.api.model.Reference;
@@ -28,6 +29,10 @@ public class ReferenceMapperTest extends MapperTestBase<ReferenceMapper> {
     mapper().create(r1);
     commit();
     Reference r2 = mapper().get(r1.getDatasetKey(), r1.getId());
+    
+    TestEntityGenerator.nullifyUserDate(r1);
+    TestEntityGenerator.nullifyUserDate(r2);
+  
     assertEquals(r1, r2);
   }
   
@@ -68,6 +73,9 @@ public class ReferenceMapperTest extends MapperTestBase<ReferenceMapper> {
     in.add(REF2);
     List<Reference> out = mapper().list(DATASET11.getKey(), new Page());
     assertEquals(7, out.size());
+
+    TestEntityGenerator.nullifyDate(in);
+    TestEntityGenerator.nullifyDate(out);
     assertEquals(in, out);
   }
   

@@ -17,7 +17,7 @@
         ${alias}.fossil AS ${prefix}fossil,
         ${alias}.recent AS ${prefix}recent,
         ${alias}.lifezones AS ${prefix}lifezones,
-        ${alias}.dataset_url AS ${prefix}dataset_url,
+        ${alias}.webpage AS ${prefix}webpage,
         ${alias}.species_estimate AS ${prefix}species_estimate,
         ${alias}.species_estimate_reference_id AS ${prefix}species_estimate_reference_id,
         ${alias}.remarks AS ${prefix}remarks,
@@ -52,7 +52,7 @@
         fossil,
         recent,
         lifezones,
-        dataset_url,
+        webpage,
         species_estimate,
         species_estimate_reference_id,
         remarks,
@@ -73,7 +73,7 @@
         #{fossil},
         #{recent},
         #{lifezones, typeHandler=org.col.db.type.LifezoneSetTypeHandler},
-        #{datasetUrl, typeHandler=org.col.db.type.UriTypeHandler},
+        #{webpage, typeHandler=org.col.db.type.UriTypeHandler},
         #{speciesEstimate},
         #{speciesEstimateReferenceId},
         #{remarks},
@@ -123,10 +123,22 @@
         <include refid="org.col.db.mapper.Common.limit" />
     </select>
 
-    <select id="listByName" resultMap="taxonResultMap">
+    <select id="listByNameID" resultMap="taxonResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
         WHERE t.dataset_key = #{datasetKey} AND t.name_id=#{nameId}
+        ORDER BY id
+    </select>
+
+    <select id="listByName" resultMap="taxonResultMap">
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
+        WHERE
+            t.dataset_key = #{datasetKey}
+            AND n.scientific_name=#{name}
+            <if test="rank != null">
+                AND n.rank=#{rank}::rank
+            </if>
         ORDER BY id
     </select>
 
@@ -183,20 +195,37 @@
     <select id="processTree" parameterType="map" resultMap="taxonResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
         WITH RECURSIVE x AS(
             SELECT <include refid="SELECT" />
+                <if test="depthFirst">
+                    ,t.id AS path
+                </if>
             FROM <include refid="FROM" />
-            WHERE t.id = #{startID}
+            WHERE
+            <choose>
+                <when test="startID != null">
+                    t.id = #{startID}
+                </when>
+                <otherwise>
+                    t.parent_id IS NULL
+                </otherwise>
+            </choose>
 
             UNION
 
             SELECT <include refid="SELECT" />
-            FROM <include refid="FROM" />, x
-            WHERE t.parent_id = x.id
+                <if test="depthFirst">
+                    ,concat_ws('|', x.path, t.id)  AS path
+                </if>
+            FROM <include refid="FROM" />
+                JOIN x ON x.id = t.parent_id
             <if test="exclusions != null and !exclusions.isEmpty()">
-                AND t.id NOT IN
+                WHERE t.id NOT IN
                 <foreach item="id" index="idx" collection="exclusions" open="(" separator="," close=")">#{id}</foreach>
             </if>
         )
         SELECT * FROM x
+        <if test="depthFirst">
+            ORDER BY x.path
+        </if>
     </select>
 
     <select id="foreignChildren" resultMap="taxonResultMap">

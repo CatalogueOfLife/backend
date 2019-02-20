@@ -49,8 +49,15 @@ public class PrinterUtils {
    * Synonyms are marked with a prepended asterisk.
    */
   public static void printTree(GraphDatabaseService neo, Writer writer, GraphFormat format, @Nullable Rank lowestRank, @Nullable Node root) throws Exception {
+    BasePrinter printer = createPrinter(writer, format, lowestRank, root);
+    TreeWalker.walkTree(neo, Traversals.SORTED_TREE, root, lowestRank, printer);
+    printer.close();
+    writer.flush();
+  }
+  
+  private static BasePrinter createPrinter(Writer writer, GraphFormat format, @Nullable Rank lowestRank, @Nullable Node root) throws Exception {
     BasePrinter printer;
-
+    
     switch (format) {
       case GML:
         printer = new GmlPrinter(writer, lowestRank, true);
@@ -72,9 +79,7 @@ public class PrinterUtils {
         printer = new TxtPrinter(writer);
         break;
     }
-    TreeWalker.walkTree(neo, Traversals.SORTED_TREE, root, lowestRank, printer);
-    printer.close();
-    writer.flush();
+    return printer;
   }
   
   /**

@@ -1,5 +1,8 @@
 package org.col.api.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.col.api.vocab.Datasets;
+
 /**
  * A taxonomic sector definition within a dataset that is used to assemble the Catalogue of Life.
  * Sectors will also serve to show the taxonomic coverage in the CoL portal.
@@ -46,7 +49,16 @@ public class Sector extends Decision {
     this.target = target;
   }
   
+  @JsonIgnore
+  public DatasetID getSourceAsDatasetID() {
+    return new DatasetID(datasetKey, subject.getId());
+  }
   
+  @JsonIgnore
+  public DatasetID getTargetAsDatasetID() {
+    return new DatasetID(Datasets.DRAFT_COL, target.getId());
+  }
+
   @Override
   public String toString() {
     return "Sector{" + getKey() +

@@ -57,6 +57,8 @@ public class Name extends DataEntity implements ID, DatasetEntity, VerbatimEntit
   @Nonnull
   private String scientificName;
   
+  private String authorship;
+  
   /**
    * Rank of the name from enumeration
    */
@@ -151,7 +153,7 @@ public class Name extends DataEntity implements ID, DatasetEntity, VerbatimEntit
    */
   private NameType type;
   
-  private URI sourceUrl;
+  private URI webpage;
   
   /**
    * true if the type specimen of the name is a fossil
@@ -196,7 +198,7 @@ public class Name extends DataEntity implements ID, DatasetEntity, VerbatimEntit
     this.publishedInPage = n.publishedInPage;
     this.origin = n.origin;
     this.type = n.type;
-    this.sourceUrl = n.sourceUrl;
+    this.webpage = n.webpage;
     this.fossil = n.fossil;
     this.remarks = n.remarks;
   }
@@ -265,17 +267,37 @@ public class Name extends DataEntity implements ID, DatasetEntity, VerbatimEntit
     return scientificName;
   }
   
+  /**
+   * WARN: avoid setting the cached scientificName for parsed names directly.
+   * Use updateNameCache() instead!
+   */
   public void setScientificName(String scientificName) {
     this.scientificName = scientificName;
   }
   
   /**
-   * Updates the scientific name property based on the parsed properties
-   * for parsed names only.
+   * Cached complete authorship
    */
-  public void updateScientificName() {
+  public String getAuthorship() {
+    return authorship;
+  }
+  
+  /**
+   * WARN: avoid setting the cached complete authorship for parsed names directly.
+   * Use updateNameCache() instead!
+   */
+  public void setAuthorship(String authorship) {
+    this.authorship = authorship;
+  }
+  
+  /**
+   * Updates the scientific name and authorship properties
+   * based on the parsed properties for parsed names only.
+   */
+  public void updateNameCache() {
     if (isParsed()) {
       this.scientificName = canonicalNameWithoutAuthorship();
+      this.authorship = authorshipComplete();
     }
   }
   
@@ -327,12 +349,12 @@ public class Name extends DataEntity implements ID, DatasetEntity, VerbatimEntit
     this.nomStatus = nomStatus;
   }
   
-  public URI getSourceUrl() {
-    return sourceUrl;
+  public URI getWebpage() {
+    return webpage;
   }
   
-  public void setSourceUrl(URI sourceUrl) {
-    this.sourceUrl = sourceUrl;
+  public void setWebpage(URI webpage) {
+    this.webpage = webpage;
   }
   
   public Authorship getCombinationAuthorship() {
@@ -630,7 +652,6 @@ public class Name extends DataEntity implements ID, DatasetEntity, VerbatimEntit
   /**
    * @See NameFormatter.authorshipComplete()
    */
-  @JsonProperty(value = "authorship", access = JsonProperty.Access.READ_ONLY)
   public String authorshipComplete() {
     return NameFormatter.authorshipComplete(toParsedName(this));
   }
@@ -646,6 +667,7 @@ public class Name extends DataEntity implements ID, DatasetEntity, VerbatimEntit
         Objects.equals(homotypicNameId, name.homotypicNameId) &&
         Objects.equals(indexNameId, name.indexNameId) &&
         Objects.equals(scientificName, name.scientificName) &&
+        Objects.equals(authorship, name.authorship) &&
         rank == name.rank &&
         Objects.equals(uninomial, name.uninomial) &&
         Objects.equals(genus, name.genus) &&
@@ -664,14 +686,14 @@ public class Name extends DataEntity implements ID, DatasetEntity, VerbatimEntit
         Objects.equals(publishedInPage, name.publishedInPage) &&
         origin == name.origin &&
         type == name.type &&
-        Objects.equals(sourceUrl, name.sourceUrl) &&
+        Objects.equals(webpage, name.webpage) &&
         Objects.equals(fossil, name.fossil) &&
         Objects.equals(remarks, name.remarks);
   }
   
   @Override
   public int hashCode() {
-    return Objects.hash(id, datasetKey, homotypicNameId, indexNameId, scientificName, rank, uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, strain, candidatus, notho, combinationAuthorship, basionymAuthorship, sanctioningAuthor, code, nomStatus, publishedInId, publishedInPage, origin, type, sourceUrl, fossil, remarks);
+    return Objects.hash(id, datasetKey, homotypicNameId, indexNameId, scientificName, authorship, rank, uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, strain, candidatus, notho, combinationAuthorship, basionymAuthorship, sanctioningAuthor, code, nomStatus, publishedInId, publishedInPage, origin, type, webpage, fossil, remarks);
   }
   
   @Override

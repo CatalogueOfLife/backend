@@ -34,7 +34,7 @@ public class MatchingResourceTest {
     abies.getCombinationAuthorship().getAuthors().add("Mill.");
     abies.setType(NameType.SCIENTIFIC);
     abies.setRank(Rank.SPECIES);
-    abies.updateScientificName();
+    abies.updateNameCache();
     
     assertNotNull(match);
     assertEquals(MatchType.NONE, match.getType());

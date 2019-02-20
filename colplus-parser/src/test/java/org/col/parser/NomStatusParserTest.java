@@ -21,6 +21,12 @@ public class NomStatusParserTest extends ParserTestBase<NomStatus> {
     assertParse(NomStatus.MANUSCRIPT, "manuscript");
     assertParse(NomStatus.MANUSCRIPT, "ined.");
     assertParse(NomStatus.MANUSCRIPT, "ineditus");
+  
+    assertParse(NomStatus.DOUBTFUL, "inquirenda");
+    assertParse(NomStatus.DOUBTFUL, "nom inquirenda");
+    assertParse(NomStatus.DOUBTFUL, "nomen inquirendum");
+    assertParse(NomStatus.DOUBTFUL, "nomina inquirenda");
+    
   }
 
   @Override

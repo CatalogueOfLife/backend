@@ -129,6 +129,10 @@ public class SectorSync implements Runnable {
     processTree();
     checkIfCancelled();
   
+    state.setStatus( SectorImport.Status.RELINKING);
+    //relinkForeignChildren();
+    //relinkAttachedSectors();
+  
     state.setStatus( SectorImport.Status.INDEXING);
     updateSearchIndex();
   
@@ -168,7 +172,7 @@ public class SectorSync implements Runnable {
           .collect(Collectors.toSet());
       LOG.info("Traverse taxon tree, blocking {} nodes", blockedIds.size());
       final TreeCopyHandler treeHandler = new TreeCopyHandler(session);
-      tm.processTree(datasetKey, sector.getSubject().getId(), blockedIds, treeHandler);
+      tm.processTree(datasetKey, sector.getSubject().getId(), blockedIds, false, treeHandler);
       session.commit();
     }
   }
@@ -243,7 +247,7 @@ public class SectorSync implements Runnable {
     int count;
     try (SqlSession session = factory.openSession(true)) {
       TaxonMapper tm = session.getMapper(TaxonMapper.class);
-      count = tm.deleteBySector(datasetKey, sector.getKey());
+      count = tm.deleteBySector(catalogueKey, sector.getKey());
       LOG.info("Deleted {} existing taxa with their synonyms and related information from sector {}", count, sector.getKey());
     }
     

@@ -1,5 +1,8 @@
 package org.col.admin.assembly;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.TestEntityGenerator;
 import org.col.api.model.*;
@@ -87,7 +90,7 @@ public class SectorSyncTest {
     }
 
     SectorSync ss = new SectorSync(sector.getKey(), PgSetupRule.getSqlSessionFactory(), null,
-        this::successCallBack, this::errorCallBack, TestEntityGenerator.USER_EDITOR);
+        SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestEntityGenerator.USER_EDITOR);
     ss.sync();
   
     diDao.createSuccess(Datasets.DRAFT_COL);
@@ -99,20 +102,37 @@ public class SectorSyncTest {
       final TaxonMapper tm = session.getMapper(TaxonMapper.class);
       assertEquals(1, tm.countRoot(Datasets.DRAFT_COL));
       assertEquals(20, tm.count(Datasets.DRAFT_COL));
+      
+      List<Taxon> taxa = tm.list(Datasets.DRAFT_COL, new Page(0, 100));
+      assertEquals(20, taxa.size());
+      
+      final VernacularNameMapper vm = session.getMapper(VernacularNameMapper.class);
+      List<VernacularName> vNames = new ArrayList<>();
+      for (Taxon t : taxa) {
+        vNames.addAll(vm.listByTaxon(Datasets.DRAFT_COL, t.getId()));
+      }
+      assertEquals(3, vNames.size());
+  
+      final DistributionMapper dm = session.getMapper(DistributionMapper.class);
+      List<Distribution> distributions = new ArrayList<>();
+      for (Taxon t : taxa) {
+        distributions.addAll(dm.listByTaxon(Datasets.DRAFT_COL, t.getId()));
+      }
+      assertEquals(7, distributions.size());
     }
   }
   
   /**
    * We use old school callbacks here as you cannot easily cancel CopletableFutures.
    */
-  private void successCallBack(SectorSync sync) {
+  static void successCallBack(SectorSync sync) {
     System.out.println("Sector Sync success");
   }
   
   /**
    * We use old school callbacks here as you cannot easily cancel CopletableFutures.
    */
-  private void errorCallBack(SectorSync sync, Exception err) {
+  static void errorCallBack(SectorSync sync, Exception err) {
     System.out.println("Sector Sync failed:");
     err.printStackTrace();
     fail("Sector sync failed");

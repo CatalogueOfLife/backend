@@ -41,6 +41,7 @@ abstract class CRUDIntMapperTest<T extends IntKey, M extends CRUDIntMapper<T>> e
     commit();
     
     T u2 = mapper().get(u1.getKey());
+    //printDiff(u1, u2);
     assertEquals(u1, removeDbCreatedProps(u2));
   }
   

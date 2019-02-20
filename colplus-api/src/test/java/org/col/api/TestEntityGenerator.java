@@ -3,10 +3,7 @@ package org.col.api;
 import java.net.URI;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.common.base.Splitter;
@@ -145,7 +142,7 @@ public class TestEntityGenerator {
     NAME1.setRank(Rank.SPECIES);
     NAME1.setOrigin(Origin.SOURCE);
     NAME1.setType(NameType.SCIENTIFIC);
-    NAME1.updateScientificName();
+    NAME1.updateNameCache();
     NAME1.setPublishedInId(REF1.getId());
     NAME1.setPublishedInPage("712");
     NAME1.setCreatedBy(Users.DB_INIT);
@@ -159,7 +156,7 @@ public class TestEntityGenerator {
     NAME2.setRank(Rank.SPECIES);
     NAME2.setOrigin(Origin.SOURCE);
     NAME2.setType(NameType.SCIENTIFIC);
-    NAME2.updateScientificName();
+    NAME2.updateNameCache();
     NAME2.setPublishedInId(null);
     NAME2.setPublishedInPage(null);
     NAME2.setCreatedBy(Users.DB_INIT);
@@ -173,7 +170,7 @@ public class TestEntityGenerator {
     NAME3.setRank(Rank.SPECIES);
     NAME3.setOrigin(Origin.SOURCE);
     NAME3.setType(NameType.SCIENTIFIC);
-    NAME3.updateScientificName();
+    NAME3.updateNameCache();
     NAME3.setPublishedInId(null);
     NAME3.setPublishedInPage(null);
     NAME3.setCreatedBy(Users.DB_INIT);
@@ -187,7 +184,7 @@ public class TestEntityGenerator {
     NAME4.setRank(Rank.SPECIES);
     NAME4.setOrigin(Origin.SOURCE);
     NAME4.setType(NameType.SCIENTIFIC);
-    NAME4.updateScientificName();
+    NAME4.updateNameCache();
     NAME4.setPublishedInId(null);
     NAME4.setPublishedInPage(null);
     NAME4.setCreatedBy(Users.DB_INIT);
@@ -266,7 +263,7 @@ public class TestEntityGenerator {
     t.setAccordingTo("Foo");
     t.setAccordingToDate(LocalDate.of(2010, 11, 24));
     t.setDatasetKey(datasetKey);
-    t.setDatasetUrl(URI.create("http://foo.com"));
+    t.setWebpage(URI.create("http://foo.com"));
     t.setFossil(true);
     t.setId(id);
     t.setLifezones(EnumSet.of(Lifezone.BRACKISH, Lifezone.FRESHWATER, Lifezone.TERRESTRIAL));
@@ -344,13 +341,13 @@ public class TestEntityGenerator {
     n.setCandidatus(true);
     n.setCultivarEpithet("Red Rose");
     n.setStrain("ACTT 675213");
-    n.setSourceUrl(URI.create("http://gbif.org"));
+    n.setWebpage(URI.create("http://gbif.org"));
     n.setNotho(NamePart.SPECIFIC);
     n.setFossil(true);
     n.setRank(rank);
     n.setOrigin(Origin.SOURCE);
     n.setType(NameType.SCIENTIFIC);
-    n.updateScientificName();
+    n.updateNameCache();
     n.addRemark("my first note");
     n.addRemark("my second note");
     return n;
@@ -398,12 +395,15 @@ public class TestEntityGenerator {
     CslName author1 = new CslName();
     author1.setGiven("John");
     author1.setFamily("Smith");
+    author1.setLiteral("John Smith");
     CslName author2 = new CslName();
     author2.setGiven("Betty");
     author2.setFamily("Jones");
+    author2.setLiteral("Jones, Betty");
     csl.setAuthor(new CslName[] {author1, author2});
     CslDate date = new CslDate();
     date.setDateParts(new int[][] {{2014, 8, 12}});
+    date.setLiteral("2014-8-12");
     csl.setAccessed(date);
     csl.setCategories(new String[] {"A", "B", "C"});
     return r;
@@ -512,6 +512,10 @@ public class TestEntityGenerator {
     return managed;
   }
   
+  public static <T extends UserManaged> void nullifyDate(Collection<T> managed) {
+    managed.forEach(TestEntityGenerator::nullifyDate);
+  }
+
   public static Taxon nullifyUserDate(Taxon taxon) {
     nullifyUserDate((UserManaged) taxon);
     nullifyUserDate(taxon.getName());
@@ -532,7 +536,11 @@ public class TestEntityGenerator {
     managed.setModifiedBy(null);
     return managed;
   }
-
+  
+  public static <T extends UserManaged> void nullifyUserDate(Collection<T> managed) {
+    managed.forEach(TestEntityGenerator::nullifyUserDate);
+  }
+  
   public static <T extends UserManaged> T setUserDate(T managed) {
     return setUserDate(managed, Users.DB_INIT);
   }

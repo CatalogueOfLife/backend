@@ -1,16 +1,19 @@
 package org.col.resources;
 
+import java.util.Collections;
 import java.util.List;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.annotation.security.RolesAllowed;
+import javax.validation.Valid;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
+import io.dropwizard.auth.Auth;
 import org.apache.ibatis.session.SqlSession;
-import org.col.api.model.Sector;
+import org.col.api.model.*;
+import org.col.db.dao.TaxonDao;
 import org.col.db.mapper.SectorMapper;
+import org.col.dw.auth.Roles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,6 +27,28 @@ public class SectorResource extends CRUDIntResource<Sector> {
   
   public SectorResource() {
     super(Sector.class, SectorMapper.class);
+  }
+  
+  @POST
+  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
+  public Integer create(@Valid Sector obj, @Auth ColUser user, @Context SqlSession session) {
+    Integer secKey = super.create(obj, user, session);
+    // create direct children in catalogue
+    if (Sector.Mode.ATTACH == obj.getMode()) {
+      // one taxon in ATTACH mode
+      TaxonDao tdao = new TaxonDao(session);
+      tdao.copyTaxon(obj.getSourceAsDatasetID(), obj.getTargetAsDatasetID(), user, Collections.emptySet());
+      session.commit();
+    } else {
+      // several taxa in MERGE mode
+      TaxonDao tdao = new TaxonDao(session);
+      final DatasetID did = obj.getTargetAsDatasetID();
+      for (Taxon t : tdao.getChildren(obj.getDatasetKey(), obj.getSubject().getId(), new Page()).getResult()) {
+        tdao.copyTaxon(t, did, user, Collections.emptySet());
+      }
+      session.commit();
+    }
+    return secKey;
   }
   
   @GET

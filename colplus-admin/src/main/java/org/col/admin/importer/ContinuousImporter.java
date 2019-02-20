@@ -29,8 +29,6 @@ import static org.col.admin.AdminServer.MILLIS_TO_DIE;
 public class ContinuousImporter implements Managed {
   private static final Logger LOG = LoggerFactory.getLogger(ContinuousImporter.class);
   private static final String THREAD_NAME = "continuous-importer";
-  private static final int MIN_SIZE = 10;
-  private static final int BATCH_SIZE = 50;
   private static final int WAIT_TIME_IN_HOURS = 1;
   
   private Thread thread;
@@ -38,9 +36,9 @@ public class ContinuousImporter implements Managed {
   
   public ContinuousImporter(ImporterConfig cfg, ImportManager manager, SqlSessionFactory factory) {
     this.job = new ContinousImporterJob(cfg, manager, factory);
-    if (cfg.maxQueue < BATCH_SIZE) {
+    if (cfg.maxQueue < cfg.continousImportBatchSize) {
       job.running = false;
-      LOG.warn("Importer queue is shorter ({}) than the amount of batches ({}) to submit. Shutdown continuous importer!", cfg.maxQueue, BATCH_SIZE);
+      LOG.warn("Importer queue is shorter ({}) than the amount of batches ({}) to submit. Shutdown continuous importer!", cfg.maxQueue, cfg.continousImportBatchSize);
     }
   }
   
@@ -66,7 +64,7 @@ public class ContinuousImporter implements Managed {
       
       while (running) {
         try {
-          while (manager.queue().size() > MIN_SIZE) {
+          while (manager.queue().size() > cfg.continousImportMinSize) {
             LOG.debug("Importer busy, sleep for {} minutes", cfg.continousImportPolling);
             TimeUnit.MINUTES.sleep(cfg.continousImportPolling);
           }
@@ -103,10 +101,10 @@ public class ContinuousImporter implements Managed {
       // check never crawled datasets first
       List<Dataset> datasets;
       try (SqlSession session = factory.openSession(true)) {
-        datasets = session.getMapper(DatasetMapper.class).listNeverImported(BATCH_SIZE);
+        datasets = session.getMapper(DatasetMapper.class).listNeverImported(cfg.continousImportBatchSize);
         if (datasets.isEmpty()) {
           // now check for eligable datasets based on import frequency
-          datasets = session.getMapper(DatasetMapper.class).listToBeImported(BATCH_SIZE);
+          datasets = session.getMapper(DatasetMapper.class).listToBeImported(cfg.continousImportBatchSize);
         }
       }
       return datasets;

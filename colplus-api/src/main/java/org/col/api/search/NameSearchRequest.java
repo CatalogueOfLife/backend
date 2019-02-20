@@ -55,6 +55,9 @@ public class NameSearchRequest {
   @QueryParam("highlight")
   private boolean highlight;
 
+  @QueryParam("reverse")
+  private boolean reverse;
+
   public NameSearchRequest() {}
 
   /**
@@ -226,7 +229,8 @@ public class NameSearchRequest {
         && (filters == null || filters.isEmpty())
         && q == null
         && sortBy == null
-        && highlight == false;
+        && highlight == false
+        && reverse == false;
   }
 
   @Override
@@ -240,12 +244,14 @@ public class NameSearchRequest {
         && Objects.equals(facets, that.facets)
         && Objects.equals(filters, that.filters)
         && Objects.equals(q, that.q)
-        && sortBy == that.sortBy && highlight == that.highlight;
+        && sortBy == that.sortBy
+        && highlight == that.highlight
+        && reverse == that.reverse;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), content, facets, filters, q, sortBy, highlight);
+    return Objects.hash(super.hashCode(), content, facets, filters, q, sortBy, highlight, reverse);
   }
 
 }
