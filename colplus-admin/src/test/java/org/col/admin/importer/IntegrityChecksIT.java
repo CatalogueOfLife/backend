@@ -21,6 +21,7 @@ import org.col.db.dao.DatasetImportDao;
 import org.col.db.dao.TaxonDao;
 import org.col.db.mapper.DatasetMapper;
 import org.col.db.mapper.InitMybatisRule;
+import org.col.db.mapper.NameMapper;
 import org.col.db.mapper.VerbatimRecordMapper;
 import org.gbif.nameparser.api.Rank;
 import org.junit.*;
@@ -103,35 +104,19 @@ public class IntegrityChecksIT {
   
   
   @Test
-  @Ignore("depends on duplicate detection working")
+  //@Ignore("depends on duplicate detection working")
   public void testA1() throws Exception {
     normalizeAndImport("A1");
-    
+
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
-      TaxonDao tdao = new TaxonDao(session);
-      
-      Taxon t = tdao.get(dataset.getKey(), "14649");
-      assertEquals("Zapoteca formosa", t.getName().getScientificName());
-      assertEquals("(Kunth) H.M.Hern.", t.getName().authorshipComplete());
-      assertEquals(Rank.SPECIES, t.getName().getRank());
-      
-      TaxonInfo info = tdao.getTaxonInfo(t);
-      // distributions
-      assertEquals(3, info.getDistributions().size());
-      Set<String> areas = Sets.newHashSet("AGE-BA", "BZC-MS", "BZC-MT");
-      for (Distribution d : info.getDistributions()) {
-        assertEquals(Gazetteer.TDWG, d.getGazetteer());
-        assertTrue(areas.remove(d.getArea()));
-      }
-      
-      // vernacular
-      assertEquals(3, info.getVernacularNames().size());
-      Set<String> names = Sets.newHashSet("Ramkurthi", "Ram Kurthi", "отчество");
-      for (VernacularName v : info.getVernacularNames()) {
-        assertEquals(v.getName().startsWith("R") ? Language.HINDI : Language.RUSSIAN,
-            v.getLanguage());
-        assertTrue(names.remove(v.getName()));
-      }
+      NameMapper nm = session.getMapper(NameMapper.class);
+      Name m = nm.get(dataset.getKey(), "1");
+      VerbatimRecordMapper v = session.getMapper(VerbatimRecordMapper.class);
+      VerbatimRecord vr = v.get(dataset.getKey(), m.getVerbatimKey());
+
+      // missing species epithet
+      assertTrue(vr.hasIssue(Issue.INDETERMINED));
+
     }
   }
   
