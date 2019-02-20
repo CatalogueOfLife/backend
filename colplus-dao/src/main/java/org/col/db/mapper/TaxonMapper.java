@@ -26,6 +26,8 @@ public interface TaxonMapper extends DatasetCRUDMapper<Taxon> {
   List<Taxon> listByNameID(@Param("datasetKey") int datasetKey, @Param("nameId") String nameId);
   
   List<Taxon> listByName(@Param("datasetKey") int datasetKey, @Param("name") String sciname, @Nullable @Param("rank") Rank rank);
+  
+  List<Taxon> listByNameAndSector(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey, @Param("name") String sciname, @Nullable @Param("rank") Rank rank);
 
   /**
    * @return list of all parents starting with the immediate parent

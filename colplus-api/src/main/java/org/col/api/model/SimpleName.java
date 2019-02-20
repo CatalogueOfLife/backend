@@ -81,6 +81,21 @@ public class SimpleName {
 
   @Override
   public String toString() {
-    return rank + " " + name + ' ' + authorship + " [" + id + ']';
+    StringBuilder sb = new StringBuilder();
+    if (rank != null) {
+      sb.append(rank);
+      sb.append(" ");
+    }
+    sb.append(name);
+    if (authorship != null) {
+      sb.append(" ");
+      sb.append(authorship);
+    }
+    if (id != null) {
+      sb.append(" [");
+      sb.append(id);
+      sb.append("]");
+    }
+    return sb.toString();
   }
 }

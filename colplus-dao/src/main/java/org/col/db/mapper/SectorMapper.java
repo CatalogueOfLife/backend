@@ -11,6 +11,8 @@ public interface SectorMapper extends CRUDIntMapper<Sector> {
   
   List<Sector> list(@Nullable @Param("datasetKey") Integer datasetKey);
   
+  List<Sector> listChildSectors(@Param("key") int sectorKey);
+
   /**
    * List all sectors that cannot anymore be linked to subject taxa in the source
    */
