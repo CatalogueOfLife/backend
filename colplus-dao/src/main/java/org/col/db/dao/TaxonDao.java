@@ -69,14 +69,18 @@ public class TaxonDao {
     return null;
   }
   
-  /**
-   * Copies the given source taxon into the dataset and under the parent of targetParent.
-   * The taxon and name source instance will be modified to represent the newly generated taxon and finally persisted.
-   * The original id is retained and finally returned.
-   * An optional set of associated entity types can be indicated to be copied too.
-   *
-   * @return the original source taxon id
-   */
+  public DatasetID copyTaxon(final Taxon t, final DatasetID target, ColUser user, Set<EntityType> include) {
+    return copyTaxon(t, target.getDatasetKey(), target.getId(), user, include, this::devNull);
+  }
+  
+                             /**
+                              * Copies the given source taxon into the dataset and under the parent of targetParent.
+                              * The taxon and name source instance will be modified to represent the newly generated taxon and finally persisted.
+                              * The original id is retained and finally returned.
+                              * An optional set of associated entity types can be indicated to be copied too.
+                              *
+                              * @return the original source taxon id
+                              */
   public DatasetID copyTaxon(final Taxon t, final int targetDatasetKey, final String targetParentID, ColUser user, Set<EntityType> include,
                              Function<Reference,String> lookupReference) {
     final DatasetID orig = new DatasetID(t);
