@@ -2,6 +2,7 @@ package org.col.admin.assembly;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiConsumer;
@@ -17,6 +18,7 @@ import org.col.api.model.*;
 import org.col.api.vocab.Datasets;
 import org.col.api.vocab.EntityType;
 import org.col.common.util.LoggingUtils;
+import org.col.db.dao.MatchingDao;
 import org.col.db.dao.TaxonDao;
 import org.col.db.mapper.*;
 import org.col.es.NameUsageIndexServiceEs;
@@ -44,9 +46,9 @@ public class SectorSync implements Runnable {
   private final SqlSessionFactory factory;
   private final NameUsageIndexServiceEs indexService;
   // maps keyed on taxon ids from this sector
-  private Map<String, EditorialDecision> decisions = new HashMap<>();
-  private Map<String, String> foreignChildren = new HashMap<>();
-  private Map<String, Sector> childSectors = new HashMap<>();
+  private final Map<String, EditorialDecision> decisions = new HashMap<>();
+  private final Map<String, String> foreignChildren = new HashMap<>();
+  private List<Sector> childSectors;
   private final Consumer<SectorSync> successCallback;
   private final BiConsumer<SectorSync, Exception> errorCallback;
   private final LocalDateTime created = LocalDateTime.now();
@@ -130,8 +132,8 @@ public class SectorSync implements Runnable {
     checkIfCancelled();
   
     state.setStatus( SectorImport.Status.RELINKING);
-    //relinkForeignChildren();
-    //relinkAttachedSectors();
+    relinkForeignChildren();
+    relinkAttachedSectors();
   
     state.setStatus( SectorImport.Status.INDEXING);
     updateSearchIndex();
@@ -158,9 +160,36 @@ public class SectorSync implements Runnable {
   
   private void loadAttachedSectors() {
     try (SqlSession session = factory.openSession(true)) {
-      //TODO: implement
+      SectorMapper sm = session.getMapper(SectorMapper.class);
+      childSectors=sm.listChildSectors(sector.getKey());
     }
     LOG.info("Loaded {} sectors targeting taxa from sector {}", childSectors.size(), sector.getKey());
+  }
+  
+  
+  private void relinkForeignChildren() {
+    //TODO
+  }
+  
+  private void relinkAttachedSectors() {
+    try (SqlSession session = factory.openSession(false)) {
+      SectorMapper sm = session.getMapper(SectorMapper.class);
+      MatchingDao mdao = new MatchingDao(session);
+      for (Sector s : childSectors) {
+        List<Taxon> matches = mdao.match(s.getTarget(), sector.getKey());
+        if (matches.isEmpty()) {
+          LOG.warn("Child sector {} cannot be rematched to synced sector {} - lost {}", s.getKey(), sector.getKey(), s.getTarget());
+          //TODO: warn in sync status !!!
+        } else if (matches.size() > 1) {
+          LOG.warn("Child sector {} cannot be rematched to synced sector {} - multiple names like {}", s.getKey(), sector.getKey(), s.getTarget());
+          //TODO: warn in sync status !!!
+        } else {
+          s.getTarget().setId(matches.get(0).getId());
+          sm.update(s);
+        }
+      }
+      session.commit();
+    }
   }
   
   private void processTree() {

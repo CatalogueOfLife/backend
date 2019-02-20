@@ -23,7 +23,6 @@ import org.col.db.mapper.TaxonMapper;
 import org.col.db.printer.DatasetPrinter;
 import org.gbif.nameparser.api.Rank;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -92,7 +91,6 @@ public class SectorSyncIT {
   }
 
   @Test
-  @Ignore("nested sector syncs not yet working")
   public void test1_5_6() throws Exception {
     print(datasetKey(1, DataFormat.ACEF));
     print(datasetKey(5, DataFormat.ACEF));

@@ -94,6 +94,14 @@
     ORDER BY key
   </select>
 
+  <select id="listChildSectors" resultMap="sectorResultMap">
+    SELECT <include refid="SELECT" />
+    FROM <include refid="FROM" />
+      JOIN taxon_3 t ON t.id=s.target_id
+    WHERE t.sector_key=#{key}
+    ORDER BY key
+  </select>
+
   <select id="subjectBroken" resultMap="sectorResultMap">
     SELECT <include refid="SELECT" />
     FROM <include refid="FROM" />
