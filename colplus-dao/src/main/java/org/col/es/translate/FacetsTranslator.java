@@ -12,7 +12,6 @@ import org.col.es.query.Query;
 
 import static java.util.Collections.singletonMap;
 
-import static org.col.common.util.CollectionUtils.*;
 import static org.col.es.response.AggregationLabelProvider.getContextFilterLabel;
 import static org.col.es.response.AggregationLabelProvider.getContextLabel;
 import static org.col.es.response.AggregationLabelProvider.getFacetLabel;
@@ -37,9 +36,7 @@ class FacetsTranslator {
 
   Map<String, Aggregation> translate() {
     NameSearchRequest copy = request.copy();
-    if (notEmpty(request.getFilters())) {
-      copy.getFilters().keySet().retainAll(request.getFacets());
-    }
+    copy.getFilters().keySet().retainAll(request.getFacets());
     copy.setQ(null);
     GlobalAggregation context = new GlobalAggregation();
     FilterAggregation ctxFilterAgg = new FilterAggregation(getContextFilter());
@@ -57,7 +54,7 @@ class FacetsTranslator {
   }
 
   private Query getContextFilter() {
-    if (isEmpty(request.getFilters())) { // might still have a Q
+    if (request.getFilters().isEmpty()) { // might still have a Q
       return generateQuery(request);
     }
     NameSearchRequest copy = request.copy();

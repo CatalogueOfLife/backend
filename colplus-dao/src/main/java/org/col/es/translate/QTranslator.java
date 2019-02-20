@@ -1,7 +1,6 @@
 package org.col.es.translate;
 
 import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
@@ -14,7 +13,6 @@ import org.col.es.query.Query;
 
 import static org.col.api.search.NameSearchRequest.SearchContent.AUTHORSHIP;
 import static org.col.api.search.NameSearchRequest.SearchContent.VERNACULAR_NAME;
-import static org.col.common.util.CollectionUtils.isEmpty;
 import static org.col.es.NameUsageTransfer.normalizeStrongly;
 import static org.col.es.NameUsageTransfer.normalizeWeakly;
 
@@ -38,9 +36,6 @@ class QTranslator {
 
   Query translate() {
     Set<SearchContent> content = request.getContent();
-    if (isEmpty(content)) {
-      content = EnumSet.allOf(SearchContent.class);
-    }
     List<Query> subqueries = new ArrayList<>(4);
     content.forEach(sc -> translate(subqueries, sc));
     if (subqueries.size() == 1) {

@@ -2,6 +2,7 @@ package org.col.es;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -120,6 +121,12 @@ public class EsUtil {
       return (Integer) readIntoMap(response.getEntity().getContent()).get("count");
     } catch (UnsupportedOperationException | IOException e) {
       throw new EsException(e);
+    }
+  }
+
+  public static <T> void insert(RestClient client, String index, Collection<T> objs) throws IOException {
+    for (T obj : objs) {
+      insert(client, index, obj);
     }
   }
 

@@ -8,16 +8,13 @@ import org.col.es.query.EsSearchRequest;
 import org.col.es.query.MatchAllQuery;
 import org.col.es.query.Query;
 
-import static org.col.common.util.CollectionUtils.isEmpty;
-import static org.col.common.util.CollectionUtils.notEmpty;
-
 /**
  * Translates a NameSearchRequest into an Elasticsearch search request. Main class of this package.
  */
 public class NameSearchRequestTranslator {
 
   static Query generateQuery(NameSearchRequest request) {
-    if (isEmpty(request.getFilters())) {
+    if (request.getFilters().isEmpty()) {
       if (StringUtils.isEmpty(request.getQ())) {
         return MatchAllQuery.INSTANCE;
       }
@@ -44,7 +41,7 @@ public class NameSearchRequestTranslator {
     es.setSize(page.getLimit());
     es.setQuery(generateQuery(request));
     es.setSort(new SortByTranslator(request).translate());
-    if (notEmpty(request.getFacets())) {
+    if (!request.getFacets().isEmpty()) {
       FacetsTranslator ft = new FacetsTranslator(request);
       es.setAggregations(ft.translate());
     }
