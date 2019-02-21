@@ -155,8 +155,11 @@ public abstract class NeoInserter {
       if (opt.isPresent()) {
         Node n1 = store.names().nodeByID(rec.getRaw(nameIdTerm));
         Node n2 = store.names().nodeByID(rec.getRaw(relatedNameIdTerm));
-        store.createNameRel(n1, n2, opt.get());
-        return true;
+        if (n1 != null && n2 != null) {
+          store.createNameRel(n1, n2, opt.get());
+          return true;
+        }
+        rec.addIssue(Issue.NAME_ID_INVALID);
       }
       return false;
     });
