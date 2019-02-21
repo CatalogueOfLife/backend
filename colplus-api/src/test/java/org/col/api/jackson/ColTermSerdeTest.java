@@ -25,5 +25,9 @@ public class ColTermSerdeTest extends SerdeTestBase<Term> {
     System.out.println(val);
     Assert.assertTrue(val.contains(":"));
     Assert.assertEquals("\"col:Taxon\"", val);
+  
+    val = ApiModule.MAPPER.writeValueAsString(ColTerm.class_);
+    System.out.println(val);
+    Assert.assertEquals("\"col:class\"", val);
   }
 }

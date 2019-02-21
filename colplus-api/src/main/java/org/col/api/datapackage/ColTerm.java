@@ -258,6 +258,9 @@ public enum ColTerm implements Term, AlternativeNames {
   
   @Override
   public String simpleName() {
+    if (this == class_) {
+      return "class";
+    }
     return name();
   }
   
