@@ -38,13 +38,13 @@ public class NameSearchRequest {
    */
   public static final String NULL_VALUE = "_NULL";
 
-  private final EnumMap<NameSearchParameter, List<Object>> filters = new EnumMap<>(NameSearchParameter.class);
+  private EnumMap<NameSearchParameter, List<Object>> filters;
 
   @QueryParam("facet")
-  private final Set<NameSearchParameter> facets = EnumSet.noneOf(NameSearchParameter.class);
+  private Set<NameSearchParameter> facets;
 
   @QueryParam("content")
-  private final Set<SearchContent> content = EnumSet.allOf(SearchContent.class);
+  private Set<SearchContent> content;
 
   @QueryParam("q")
   private String q;
@@ -67,10 +67,9 @@ public class NameSearchRequest {
    */
   public NameSearchRequest copy() {
     NameSearchRequest copy = new NameSearchRequest();
-    copy.filters.putAll(filters);
-    copy.facets.addAll(facets);
-    copy.content.clear();
-    copy.content.addAll(content);
+    copy.filters = new EnumMap<>(getFilters());
+    copy.facets = EnumSet.copyOf(getFacets());
+    copy.content = EnumSet.copyOf(getContent());
     copy.q = q;
     copy.sortBy = sortBy;
     copy.highlight = highlight;
@@ -145,7 +144,7 @@ public class NameSearchRequest {
   }
 
   private void addFilterValue(NameSearchParameter param, Object value) {
-    List<Object> values = filters.get(param);
+    List<Object> values = getFilters().get(param);
     if (values == null) {
       values = new ArrayList<>();
       filters.put(param, values);
@@ -153,36 +152,49 @@ public class NameSearchRequest {
     values.add(value);
   }
 
-  private static IllegalArgumentException illegalValueForParameter(NameSearchParameter param, String value) {
-    String err = String.format("Illegal value for parameter %s: %s", param, value);
-    return new IllegalArgumentException(err);
-  }
-
   public List<Object> getFilterValue(NameSearchParameter param) {
-    if (filters == null) {
-      return null;
-    }
-    return filters.get(param);
+    return getFilters().get(param);
   }
 
   public boolean hasFilter(NameSearchParameter filter) {
-    return filters == null ? false : filters.containsKey(filter);
+    return getFilters().containsKey(filter);
   }
 
   public List<Object> removeFilter(NameSearchParameter filter) {
-    return filters == null ? null : filters.remove(filter);
+    return getFilters().remove(filter);
   }
 
   public void addFacet(NameSearchParameter facet) {
-    facets.add(facet);
+    getFacets().add(facet);
   }
 
   public EnumMap<NameSearchParameter, List<Object>> getFilters() {
+    if (filters == null) {
+      return (filters = new EnumMap<>(NameSearchParameter.class));
+    }
     return filters;
   }
 
   public Set<NameSearchParameter> getFacets() {
+    if (facets == null) {
+      return (facets = EnumSet.noneOf(NameSearchParameter.class));
+    }
     return facets;
+  }
+
+  public Set<SearchContent> getContent() {
+    if (content == null || content.isEmpty()) {
+      return (content = EnumSet.allOf(SearchContent.class));
+    }
+    return content;
+  }
+
+  public void setContent(Set<SearchContent> content) {
+    if (content == null || content.size() == 0) {
+      this.content = EnumSet.allOf(SearchContent.class);
+    } else {
+      this.content = content;
+    }
   }
 
   public String getQ() {
@@ -199,19 +211,6 @@ public class NameSearchRequest {
 
   public void setSortBy(SortBy sortBy) {
     this.sortBy = sortBy;
-  }
-
-  public Set<SearchContent> getContent() {
-    return content;
-  }
-
-  public void setContent(Set<SearchContent> content) {
-    this.content.clear();
-    if (content == null) {
-      this.content.addAll(EnumSet.allOf(SearchContent.class));
-    } else {
-      this.content.addAll(content);
-    }
   }
 
   public boolean isHighlight() {
@@ -252,6 +251,11 @@ public class NameSearchRequest {
   @Override
   public int hashCode() {
     return Objects.hash(super.hashCode(), content, facets, filters, q, sortBy, highlight, reverse);
+  }
+
+  private static IllegalArgumentException illegalValueForParameter(NameSearchParameter param, String value) {
+    String err = String.format("Illegal value for parameter %s: %s", param, value);
+    return new IllegalArgumentException(err);
   }
 
 }
