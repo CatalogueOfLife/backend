@@ -70,28 +70,16 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
     
     nodes = mapper().children(DRAFT_COL, "t3", new Page());
     assertEquals(2, nodes.size());
-    sectors(nodes, dataset11);
     
     nodes = mapper().parents(DRAFT_COL, "t4");
     assertEquals(4, nodes.size());
     valid(nodes);
-   assertFalse(nodes.get(0).getSectors().isEmpty());
-    assertTrue(nodes.get(1).getSectors().isEmpty());
-  }
-  
-  private List<? extends TreeNode> sectors(List<? extends TreeNode> nodes, Integer expectedDatasetKey) {
-    valid(nodes);
-    for (TreeNode n : nodes) {
-      assertEquals(1, n.getSectors().size());
-      assertEquals(expectedDatasetKey, n.getSectors().get(0).getDatasetKey());
-    }
-    return nodes;
   }
 
   private List<? extends TreeNode> noSector(List<? extends TreeNode> nodes) {
     valid(nodes);
     for (TreeNode n : nodes) {
-      assertTrue(n.getSectors().isEmpty());
+      assertNull(n.getSectorKey());
     }
     return nodes;
   }
