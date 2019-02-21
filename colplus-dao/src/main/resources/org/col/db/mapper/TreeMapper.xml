@@ -38,7 +38,6 @@
         <id property="id" column="id" />
         <result property="status" column="provisional" typeHandler="org.col.db.type2.TaxonStatusTypeHandler" />
         <association property="_name" javaType="Name" resultMap="org.col.db.mapper.NameMapper.nameResultMap" />
-        <collection property="sectors" ofType="Sector" resultMap="org.col.db.mapper.SectorMapper.sectorResultMap" notNullColumn="key" />
     </resultMap>
 
     <select id="root" resultMap="treeResultMap">

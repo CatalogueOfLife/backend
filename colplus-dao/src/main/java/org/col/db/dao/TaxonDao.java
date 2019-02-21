@@ -45,26 +45,6 @@ public class TaxonDao {
     extMapper.put(EntityType.MEDIA, mMapper);
   }
   
-  /**
-   * Copies an existing taxon with its name to a new dataset under an existing parent taxon.
-   * If desired all associated data
-   * @param source
-   * @param targetParent
-   * @param user
-   * @param include set of entity type to include when copying
-   * @return the newly generated taxon id
-   */
-  public DatasetID copyTaxon(final DatasetID source, final DatasetID targetParent, ColUser user, Set<EntityType> include) {
-  
-    Taxon src = tMapper.get(source.getDatasetKey(), source.getId());
-    if (src == null) {
-      throw new IllegalArgumentException("TaxonID " + source.getId() + " not existing in dataset " + source.getDatasetKey());
-    }
-    // src instance will be modified and represent the newly generated taxon after this call!
-    copyTaxon(src, targetParent.getDatasetKey(), targetParent.getId(), user, include, this::devNull);
-    return new DatasetID(src);
-  }
-  
   private String devNull(Reference r) {
     return null;
   }

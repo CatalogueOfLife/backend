@@ -1,6 +1,5 @@
 package org.col.api.model;
 
-import java.util.List;
 import java.util.Objects;
 
 import org.col.api.vocab.TaxonomicStatus;
@@ -21,7 +20,6 @@ public class TreeNode implements ID {
   private Integer speciesEstimate;
   private String speciesEstimateReferenceId;
   private Integer sectorKey;
-  private List<Sector> sectors;
   
   /**
    * Only to be used by mybatis mappers, nowhere else!!!
@@ -117,14 +115,6 @@ public class TreeNode implements ID {
     this.sectorKey = sectorKey;
   }
   
-  public List<Sector> getSectors() {
-    return sectors;
-  }
-  
-  public void setSectors(List<Sector> sectors) {
-    this.sectors = sectors;
-  }
-  
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -135,16 +125,15 @@ public class TreeNode implements ID {
         Objects.equals(id, treeNode.id) &&
         Objects.equals(parentId, treeNode.parentId) &&
         Objects.equals(name, treeNode.name) &&
-        rank == treeNode.rank &&
-        status == treeNode.status &&
+        Objects.equals(rank, treeNode.rank) &&
+        Objects.equals(status, treeNode.status) &&
         Objects.equals(speciesEstimate, treeNode.speciesEstimate) &&
         Objects.equals(speciesEstimateReferenceId, treeNode.speciesEstimateReferenceId) &&
-        Objects.equals(sectorKey, treeNode.sectorKey) &&
-        Objects.equals(sectors, treeNode.sectors);
+        Objects.equals(sectorKey, treeNode.sectorKey);
   }
   
   @Override
   public int hashCode() {
-    return Objects.hash(datasetKey, id, parentId, name, rank, status, childCount, speciesEstimate, speciesEstimateReferenceId, sectorKey, sectors);
+    return Objects.hash(datasetKey, id, parentId, name, rank, status, childCount, speciesEstimate, speciesEstimateReferenceId, sectorKey);
   }
 }

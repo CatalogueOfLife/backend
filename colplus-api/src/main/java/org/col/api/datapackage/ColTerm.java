@@ -35,7 +35,10 @@ public enum ColTerm implements Term, AlternativeNames {
   rank,
   genus,
   specificEpithet,
+  infragenericEpithet,  // TODO: newly added to ColDP, update docs & importer !!!
   infraspecificEpithet,
+  cultivarEpithet,      // TODO: newly added to ColDP, update docs & importer !!!
+  appendedPhrase,       // TODO: newly added to ColDP, update docs & importer !!!
   publishedInID,
   publishedInPage,
   code,

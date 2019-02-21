@@ -1,20 +1,17 @@
 package org.col.resources;
 
-import java.util.Collections;
 import java.util.List;
-import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
-import io.dropwizard.auth.Auth;
 import org.apache.ibatis.session.SqlSession;
-import org.col.api.model.*;
-import org.col.db.dao.TaxonDao;
+import org.col.api.model.Page;
+import org.col.api.model.ResultPage;
+import org.col.api.model.TreeNode;
 import org.col.db.mapper.TaxonMapper;
 import org.col.db.mapper.TreeMapper;
-import org.col.dw.auth.Roles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,18 +37,6 @@ public class TreeResource {
   @Path("{id}")
   public List<? extends TreeNode> parents(@PathParam("datasetKey") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
     return session.getMapper(TreeMapper.class).parents(datasetKey, id);
-  }
-  
-  /**
-   * Copies the taxon with name from another source to this dataset which will become a new child of the target id
-   */
-  @POST
-  @Path("{id}/copy")
-  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public String copyChild(@PathParam("datasetKey") Integer datasetKey, @PathParam("id") String id,
-                          @Valid DatasetID src, @Auth ColUser user, @Context SqlSession session) {
-    DatasetID t = new TaxonDao(session).copyTaxon(src, new DatasetID(datasetKey, id), user, Collections.emptySet());
-    return t.getId();
   }
   
   @GET
