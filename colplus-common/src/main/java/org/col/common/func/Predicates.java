@@ -33,4 +33,8 @@ public class Predicates {
   public static BiPredicate<String, Class<?>> isEnumString = (name, vocab) -> {
     return VocabularyUtils.lookup(name, (Class<? extends Enum<?>>) vocab).isPresent();
   };
+  
+  public static <T> Predicate<T> not(Predicate<T> t) {
+    return t.negate();
+  }
 }

@@ -165,33 +165,34 @@ public class ImportJob implements Runnable {
           LOG.info("Force reimport of unchanged archive {}", datasetKey);
         }
         di.setDownload(downloader.lastModified(source));
-        
         checkIfCancelled();
-        updateState(ImportState.PROCESSING);
+        
         LOG.info("Extracting files from archive {}", datasetKey);
         CompressionUtil.decompressFile(sourceDir.toFile(), source);
+        checkIfCancelled();
         
         LOG.info("Normalizing {}", datasetKey);
-        checkIfCancelled();
+        updateState(ImportState.PROCESSING);
         store = NeoDbFactory.create(datasetKey, cfg.normalizer);
         store.put(dataset);
-        
         new Normalizer(store, sourceDir, index).call();
         if (dataset.getLogo() != null) {
           LogoUpdateJob.pullLogo(dataset, downloader, cfg.normalizer, imgService);
         }
-        
         checkIfCancelled();
-        updateState(ImportState.INSERTING);
+        
         LOG.info("Writing {} to Postgres!", datasetKey);
+        updateState(ImportState.INSERTING);
         store = NeoDbFactory.open(datasetKey, cfg.normalizer);
         new PgImport(datasetKey, store, factory, cfg.importer).call();
-        
-        LOG.info("Build import metrics for dataset {}", datasetKey);
-        dao.updateImportSuccess(di);
   
+        LOG.info("Build import metrics for dataset {}", datasetKey);
+        updateState(ImportState.BUILDING_METRICS);
+        dao.updateImportSuccess(di);
         checkIfCancelled();
+  
         LOG.info("Build search index for dataset {}", datasetKey);
+        updateState(ImportState.INDEXING);
         indexService.indexDataset(datasetKey);
         
         LOG.info("Dataset import {} completed in {}", datasetKey,

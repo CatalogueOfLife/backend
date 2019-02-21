@@ -183,7 +183,11 @@ public class AcefInserter extends NeoInserter {
       VerbatimRecord dr = metadata.get();
       d = new Dataset();
       d.setTitle(dr.get(AcefTerm.DatabaseFullName));
+      d.setAlias(dr.get(AcefTerm.DatabaseShortName));
       d.setVersion(dr.get(AcefTerm.DatabaseVersion));
+      d.setReleased(null);
+      //TODO: AcefTerm.ReleaseDate, AcefTerm.GroupNameInEnglish, AcefTerm.Organisation, Completeness, Confidence, LogoFileName, ContactPerson
+      
       d.setDescription(dr.get(AcefTerm.Abstract));
       d.setAuthorsAndEditors(dr.get(AcefTerm.AuthorsEditors, COMMA_SPLITTER));
       d.setDescription(dr.get(AcefTerm.Abstract));

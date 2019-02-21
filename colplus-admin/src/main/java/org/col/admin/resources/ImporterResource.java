@@ -41,7 +41,11 @@ public class ImporterResource {
   @GET
   public ResultPage<DatasetImport> list(@QueryParam("datasetKey") Integer datasetKey,
                                         @QueryParam("state") List<ImportState> states,
+                                        @QueryParam("running") Boolean running,
                                         @Valid @BeanParam Page page) {
+    if (running != null) {
+      states = running ? ImportState.runningStates() : ImportState.finishedStates();
+    }
     return dao.list(datasetKey, states, page);
   }
   
