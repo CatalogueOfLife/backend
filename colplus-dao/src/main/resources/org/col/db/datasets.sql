@@ -62,7 +62,6 @@ FROM (SELECT unnest(array[
 158,
 161,
 162,
-163,
 164,
 166,
 167,
@@ -190,7 +189,7 @@ UPDATE dataset SET type=4 WHERE key IN (
 );
 
 UPDATE dataset SET code=1 WHERE key IN (
-	1015,1025,1036,1038,1040,1045,1048,1066,1097,1098,1163
+	1015,1025,1036,1038,1040,1045,1048,1066,1097,1098
 );
 UPDATE dataset SET code=3 WHERE key IN (
 	1014
@@ -319,7 +318,8 @@ INSERT INTO dataset (key, origin, type, contributes_to, code, title, import_freq
 ('1601', 0, 0, 1,    1, 'MycoBank',          7, 0, 0, 0, 'https://github.com/mdoering/mycobank/raw/master/mycobank.zip'),
 ('1602', 0, 4, null, 4, 'Testing Data ACEF', 7, 0, 0, 1, 'https://github.com/Sp2000/data-testing/archive/master.zip'),
 ('1603', 0, 4, null, 4, 'Testing Data ColDP',7, 0, 0, 3, 'https://github.com/Sp2000/data-testing/archive/master.zip'),
-('1604', 0, 1, 0,    4, 'StaphBase ACEF',    1, 0, 0, 1, 'https://github.com/Sp2000/data-staphbase/archive/master.zip');
+('1604', 0, 1, 0,    4, 'StaphBase ACEF',    1, 0, 0, 1, 'https://github.com/Sp2000/data-staphbase/archive/master.zip'),
+('1163', 0, 1, 0,    1, 'Cycads',            1, 0, 0, 3, 'https://github.com/gdower/data-cycads/archive/master.zip');
 
 
 
