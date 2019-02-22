@@ -67,6 +67,7 @@ public class NeoDb implements ReferenceStore {
   private static final Logger LOG = LoggerFactory.getLogger(NeoDb.class);
 
   private final int datasetKey;
+  private final int attempt;
   private final GraphDatabaseBuilder neoFactory;
   private final DB mapDb;
   private final Atomic.Var<Dataset> dataset;
@@ -97,8 +98,9 @@ public class NeoDb implements ReferenceStore {
    * @param neoFactory
    * @param batchTimeout in minutes
    */
-  NeoDb(int datasetKey, DB mapDb, File neoDir, GraphDatabaseBuilder neoFactory, int batchSize, int batchTimeout) {
+  NeoDb(int datasetKey, int attempt, DB mapDb, File neoDir, GraphDatabaseBuilder neoFactory, int batchSize, int batchTimeout) {
     this.datasetKey = datasetKey;
+    this.attempt = attempt;
     this.neoFactory = neoFactory;
     this.neoDir = neoDir;
     this.mapDb = mapDb;
@@ -287,7 +289,7 @@ public class NeoDb implements ReferenceStore {
    */
   public int process(@Nullable Labels label, final int batchSize, NodeBatchProcessor callback) {
     final BlockingQueue<List<Node>> queue = new LinkedBlockingQueue<>(3);
-    BatchConsumer consumer = new BatchConsumer(datasetKey, neo, callback, queue, Thread.currentThread());
+    BatchConsumer consumer = new BatchConsumer(datasetKey, attempt, neo, callback, queue, Thread.currentThread());
     Thread consThread = new Thread(consumer, "neodb-processor-" + datasetKey);
     consThread.start();
 

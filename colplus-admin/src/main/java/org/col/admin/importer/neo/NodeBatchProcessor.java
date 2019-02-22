@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 
-import org.col.admin.importer.ImportJob;
 import org.col.common.util.LoggingUtils;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -29,6 +28,7 @@ public interface NodeBatchProcessor {
     public static final List<Node> POISON_PILL = new ArrayList<>();
     private static final Logger LOG = LoggerFactory.getLogger(BatchConsumer.class);
     private final int datasetKey;
+    private final int attempt;
     private final GraphDatabaseService neo;
     private final NodeBatchProcessor callback;
     private final BlockingQueue<List<Node>> queue;
@@ -37,8 +37,9 @@ public interface NodeBatchProcessor {
     private RuntimeException error = null;
     private final Thread parentThread;
     
-    BatchConsumer(int datasetKey, GraphDatabaseService neo, NodeBatchProcessor callback, BlockingQueue<List<Node>> queue, Thread parentThread) {
+    BatchConsumer(int datasetKey, int attempt, GraphDatabaseService neo, NodeBatchProcessor callback, BlockingQueue<List<Node>> queue, Thread parentThread) {
       this.datasetKey = datasetKey;
+      this.attempt = attempt;
       this.neo = neo;
       this.callback = callback;
       this.queue = queue;
@@ -56,7 +57,7 @@ public interface NodeBatchProcessor {
           
           batchCounter++;
           try (Transaction tx = neo.beginTx()) {
-            LoggingUtils.setMDC(datasetKey, ImportJob.class);
+            LoggingUtils.setDatasetMDC(datasetKey, attempt, NodeBatchProcessor.class);
             LOG.debug("Start new neo processing batch {} with {} nodes, first={}", batchCounter, batch.size(), batch.get(0));
             for (Node n : batch) {
               callback.process(n);
@@ -66,7 +67,7 @@ public interface NodeBatchProcessor {
             callback.commitBatch(recordCounter);
             
           } finally {
-            LoggingUtils.removeMDC();
+            LoggingUtils.removeDatasetMDC();
           }
           
         } catch (InterruptedException ex) {

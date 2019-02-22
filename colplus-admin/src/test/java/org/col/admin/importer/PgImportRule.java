@@ -131,13 +131,13 @@ public class PgImportRule extends InitMybatisRule {
       session.close();
       
       // normalize
-      store = NeoDbFactory.create(dataset.getKey(), cfg);
+      store = NeoDbFactory.create(dataset.getKey(), 1, cfg);
       store.put(dataset);
       Normalizer norm = new Normalizer(store, source, NameIndexFactory.passThru());
       norm.call();
       
       // import into postgres
-      store = NeoDbFactory.open(dataset.getKey(), cfg);
+      store = NeoDbFactory.open(dataset.getKey(), 1, cfg);
       PgImport importer = new PgImport(dataset.getKey(), store, PgSetupRule.getSqlSessionFactory(), icfg);
       importer.call();
       

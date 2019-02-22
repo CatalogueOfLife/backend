@@ -79,7 +79,7 @@ public class SectorSync implements Runnable {
   
   @Override
   public void run() {
-    LoggingUtils.setMDC(datasetKey, getClass());
+    LoggingUtils.setSectorMDC(datasetKey, 0, getClass());
     try {
       state.setStarted(LocalDateTime.now());
       
@@ -90,7 +90,7 @@ public class SectorSync implements Runnable {
       errorCallback.accept(this, e);
       
     } finally {
-      LoggingUtils.removeMDC();
+      LoggingUtils.removeSectorMDC();
     }
   }
   

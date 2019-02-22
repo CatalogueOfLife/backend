@@ -36,7 +36,7 @@ public class NeoDbTest {
   
   @Before
   public void init() throws IOException {
-    db = NeoDbFactory.create(DATASET_KEY, cfg);
+    db = NeoDbFactory.create(DATASET_KEY, 1, cfg);
   }
   
   @After

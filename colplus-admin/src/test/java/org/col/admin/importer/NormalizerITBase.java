@@ -76,7 +76,7 @@ abstract class NormalizerITBase {
 
   protected void normalize(Path arch) {
     try {
-      store = NeoDbFactory.create(1, cfg);
+      store = NeoDbFactory.create(1, 1, cfg);
       Dataset d = new Dataset();
       d.setKey(1);
       d.setDataFormat(format);
@@ -85,7 +85,7 @@ abstract class NormalizerITBase {
       norm.call();
 
       // reopen
-      store = NeoDbFactory.open(1, cfg);
+      store = NeoDbFactory.open(1, 1,  cfg);
 
     } catch (IOException | InterruptedException e) {
       throw new RuntimeException(e);

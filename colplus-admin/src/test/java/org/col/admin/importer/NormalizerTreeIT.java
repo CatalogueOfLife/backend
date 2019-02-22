@@ -136,7 +136,7 @@ public class NormalizerTreeIT {
       source = Paths.get(dwcaUrl.toURI());
       System.out.println("TEST " + format + " " + sourceKey);
       
-      store = NeoDbFactory.create(datasetKey, cfg);
+      store = NeoDbFactory.create(datasetKey, 1, cfg);
       Dataset d = new Dataset();
       d.setKey(datasetKey);
       d.setDataFormat(format);
@@ -145,7 +145,7 @@ public class NormalizerTreeIT {
       Normalizer norm = new Normalizer(store, source, NameIndexFactory.passThru());
       norm.call();
       // reopen the neo db
-      store = NeoDbFactory.open(datasetKey, cfg);
+      store = NeoDbFactory.open(datasetKey, 1, cfg);
       debug();
       
       // assert tree

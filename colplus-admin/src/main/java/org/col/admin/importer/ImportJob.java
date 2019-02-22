@@ -101,7 +101,7 @@ public class ImportJob implements Runnable {
   
   @Override
   public void run() {
-    LoggingUtils.setMDC(datasetKey, getClass());
+    LoggingUtils.setDatasetMDC(datasetKey, -1, getClass());
     try {
       notifier.started();
       importDataset();
@@ -111,7 +111,7 @@ public class ImportJob implements Runnable {
       errorCallback.accept(req, e);
     
     } finally {
-      LoggingUtils.removeMDC();
+      LoggingUtils.removeDatasetMDC();
     }
   }
   
@@ -140,6 +140,7 @@ public class ImportJob implements Runnable {
     try {
       last = dao.getLast(dataset);
       di = dao.create(dataset);
+      LoggingUtils.setDatasetMDC(datasetKey, getAttempt(), getClass());
       LOG.info("Start new import attempt {} for {} dataset {}: {}", di.getAttempt(), dataset.getOrigin(), datasetKey, dataset.getTitle());
   
       File source = cfg.normalizer.source(datasetKey);
@@ -173,7 +174,7 @@ public class ImportJob implements Runnable {
         
         LOG.info("Normalizing {}", datasetKey);
         updateState(ImportState.PROCESSING);
-        store = NeoDbFactory.create(datasetKey, cfg.normalizer);
+        store = NeoDbFactory.create(datasetKey, getAttempt(), cfg.normalizer);
         store.put(dataset);
         new Normalizer(store, sourceDir, index).call();
         if (dataset.getLogo() != null) {
@@ -183,7 +184,7 @@ public class ImportJob implements Runnable {
         
         LOG.info("Writing {} to Postgres!", datasetKey);
         updateState(ImportState.INSERTING);
-        store = NeoDbFactory.open(datasetKey, cfg.normalizer);
+        store = NeoDbFactory.open(datasetKey, getAttempt(), cfg.normalizer);
         new PgImport(datasetKey, store, factory, cfg.importer).call();
   
         LOG.info("Build import metrics for dataset {}", datasetKey);

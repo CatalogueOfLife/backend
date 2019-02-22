@@ -2,9 +2,7 @@ package org.col.admin.importer;
 
 import java.net.URL;
 import java.nio.file.Paths;
-import java.util.Set;
 
-import com.google.common.collect.Sets;
 import com.google.common.io.Files;
 import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.session.SqlSession;
@@ -14,19 +12,22 @@ import org.col.admin.config.NormalizerConfig;
 import org.col.admin.importer.neo.NeoDb;
 import org.col.admin.importer.neo.NeoDbFactory;
 import org.col.admin.matching.NameIndexFactory;
-import org.col.api.model.*;
-import org.col.api.vocab.*;
+import org.col.api.model.Dataset;
+import org.col.api.model.DatasetImport;
+import org.col.api.model.Name;
+import org.col.api.model.VerbatimRecord;
+import org.col.api.vocab.Catalogue;
+import org.col.api.vocab.DataFormat;
+import org.col.api.vocab.Datasets;
+import org.col.api.vocab.Issue;
 import org.col.db.PgSetupRule;
 import org.col.db.dao.DatasetImportDao;
-import org.col.db.dao.TaxonDao;
 import org.col.db.mapper.DatasetMapper;
 import org.col.db.mapper.InitMybatisRule;
 import org.col.db.mapper.NameMapper;
 import org.col.db.mapper.VerbatimRecordMapper;
-import org.gbif.nameparser.api.Rank;
 import org.junit.*;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -83,13 +84,13 @@ public class IntegrityChecksIT {
       session.close();
       
       // normalize
-      store = NeoDbFactory.create(dataset.getKey(), cfg);
+      store = NeoDbFactory.create(dataset.getKey(), 1, cfg);
       store.put(dataset);
       Normalizer norm = new Normalizer(store, Paths.get(url.toURI()), NameIndexFactory.memory(Datasets.PCAT, PgSetupRule.getSqlSessionFactory()));
       norm.call();
       
       // import into postgres
-      store = NeoDbFactory.open(dataset.getKey(), cfg);
+      store = NeoDbFactory.open(dataset.getKey(), 1, cfg);
       PgImport importer = new PgImport(dataset.getKey(), store, PgSetupRule.getSqlSessionFactory(), icfg);
       importer.call();
       
