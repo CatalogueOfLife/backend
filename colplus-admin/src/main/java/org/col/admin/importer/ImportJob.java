@@ -170,7 +170,6 @@ public class ImportJob implements Runnable {
         
         LOG.info("Extracting files from archive {}", datasetKey);
         CompressionUtil.decompressFile(sourceDir.toFile(), source);
-        checkIfCancelled();
         
         LOG.info("Normalizing {}", datasetKey);
         updateState(ImportState.PROCESSING);
@@ -180,7 +179,6 @@ public class ImportJob implements Runnable {
         if (dataset.getLogo() != null) {
           LogoUpdateJob.pullLogo(dataset, downloader, cfg.normalizer, imgService);
         }
-        checkIfCancelled();
         
         LOG.info("Writing {} to Postgres!", datasetKey);
         updateState(ImportState.INSERTING);
@@ -189,20 +187,25 @@ public class ImportJob implements Runnable {
   
         LOG.info("Build import metrics for dataset {}", datasetKey);
         updateState(ImportState.BUILDING_METRICS);
-        dao.updateImportSuccess(di);
-        checkIfCancelled();
+        dao.updateMetrics(di);
   
         LOG.info("Build search index for dataset {}", datasetKey);
         updateState(ImportState.INDEXING);
         indexService.indexDataset(datasetKey);
-        
+  
+  
         LOG.info("Dataset import {} completed in {}", datasetKey,
             DurationFormatUtils.formatDurationHMS(Duration.between(di.getStarted(), LocalDateTime.now()).toMillis()));
-        
+        di.setFinished(LocalDateTime.now());
+        di.setError(null);
+        updateState(ImportState.FINISHED);
+  
       } else {
         LOG.info("Dataset {} sources unchanged. Stop import", datasetKey);
         di.setDownload(downloader.lastModified(source));
-        dao.updateImportUnchanged(di);
+        di.setFinished(LocalDateTime.now());
+        di.setError(null);
+        updateState(ImportState.UNCHANGED);
       }
   
       if (cfg.importer.wait > 0) {

@@ -14,7 +14,6 @@ import org.col.api.model.Page;
 import org.col.api.model.ResultPage;
 import org.col.api.vocab.*;
 import org.col.db.mapper.DatasetImportMapper;
-import org.col.db.mapper.DatasetMapper;
 import org.col.db.type2.IntCount;
 import org.col.db.type2.StringCount;
 import org.gbif.dwc.terms.Term;
@@ -109,24 +108,6 @@ public class DatasetImportDao {
       return session.getMapper(DatasetImportMapper.class).get(datasetKey, attempt);
     }
   }
-
-  /**
-   * Updates a running dataset import instance with metrics and success state.
-   * Updates the dataset to point to the imports attempt.
-   */
-  public void updateImportSuccess(DatasetImport di) {
-    try (SqlSession session = factory.openSession(true)) {
-      DatasetImportMapper mapper = session.getMapper(DatasetImportMapper.class);
-      // update count metrics
-      updateMetrics(mapper, di);
-      di.setFinished(LocalDateTime.now());
-      di.setState(ImportState.FINISHED);
-      di.setError(null);
-      update(di, mapper);
-      
-      session.getMapper(DatasetMapper.class).updateLastImport(di.getDatasetKey(), di.getAttempt());
-    }
-  }
   
   /**
    * Generates new metrics, but does not persist them as an import record.
@@ -139,6 +120,13 @@ public class DatasetImportDao {
       updateMetrics(mapper, di);
     }
     return di;
+  }
+  
+  public void updateMetrics(DatasetImport di) {
+    try (SqlSession session = factory.openSession(true)) {
+      DatasetImportMapper mapper = session.getMapper(DatasetImportMapper.class);
+      updateMetrics(mapper, di);
+    }
   }
   
   private void updateMetrics(DatasetImportMapper mapper, DatasetImport di) {
@@ -215,16 +203,6 @@ public class DatasetImportDao {
     di.setState(ImportState.FAILED);
     // System.out.println(ExceptionUtils.getMessage(e));
     di.setError(e.getMessage());
-    update(di);
-  }
-  
-  /**
-   * Creates a new dataset import instance without metrics for a failed import.
-   */
-  public void updateImportUnchanged(DatasetImport di) {
-    di.setFinished(LocalDateTime.now());
-    di.setState(ImportState.UNCHANGED);
-    di.setError(null);
     update(di);
   }
   
