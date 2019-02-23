@@ -17,7 +17,6 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.admin.config.AdminServerConfig;
 import org.col.admin.importer.neo.NeoDb;
 import org.col.admin.importer.neo.NeoDbFactory;
-import org.col.admin.logoupdater.LogoUpdateJob;
 import org.col.admin.matching.NameIndex;
 import org.col.api.model.Dataset;
 import org.col.api.model.DatasetImport;
@@ -33,6 +32,7 @@ import org.col.common.util.LoggingUtils;
 import org.col.db.dao.DatasetImportDao;
 import org.col.es.NameUsageIndexService;
 import org.col.img.ImageService;
+import org.col.img.LogoUpdateJob;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -176,9 +176,7 @@ public class ImportJob implements Runnable {
         store = NeoDbFactory.create(datasetKey, getAttempt(), cfg.normalizer);
         store.put(dataset);
         new Normalizer(store, sourceDir, index).call();
-        if (dataset.getLogo() != null) {
-          LogoUpdateJob.pullLogo(dataset, downloader, cfg.normalizer, imgService);
-        }
+        LogoUpdateJob.updateDatasetAsync(dataset, factory, downloader, cfg.normalizer::scratchDir, imgService);
         
         LOG.info("Writing {} to Postgres!", datasetKey);
         updateState(ImportState.INSERTING);

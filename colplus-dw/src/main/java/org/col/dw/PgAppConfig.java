@@ -1,5 +1,6 @@
 package org.col.dw;
 
+import java.io.File;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
@@ -51,5 +52,10 @@ public class PgAppConfig extends Configuration implements CorsBundleConfiguratio
   public CorsConfiguration getCorsConfiguration() {
     return cors;
   }
+  
+  public File scratchDir(int datasetKey) {
+    return new File("/tmp/colplus/dataset" + datasetKey);
+  }
+  
   
 }

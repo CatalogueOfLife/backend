@@ -8,10 +8,10 @@ import javax.ws.rs.core.MediaType;
 
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.admin.config.NormalizerConfig;
-import org.col.admin.logoupdater.LogoUpdateJob;
 import org.col.common.io.DownloadUtil;
 import org.col.dw.auth.Roles;
 import org.col.img.ImageService;
+import org.col.img.LogoUpdateJob;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,7 +37,7 @@ public class AdminResource {
   @GET
   @Path("/logo-update")
   public String updateAllLogos() {
-    LogoUpdateJob.updateAll(factory, downloader, cfg, imgService);
+    LogoUpdateJob.updateAllAsync(factory, downloader, cfg::scratchDir, imgService);
     return "Started Logo Updater";
   }
   

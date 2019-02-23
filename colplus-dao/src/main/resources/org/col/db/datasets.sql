@@ -218,9 +218,171 @@ INSERT INTO dataset (key, origin, title, created_by, modified_by, deleted) VALUE
 -- reserve keys below 2000 for existing GSDs
 ALTER SEQUENCE dataset_key_seq RESTART WITH 2000;
 
-
-
-
+-- dataset titles, will be overwritten by actual titles in the archives
+UPDATE dataset SET alias='CCW', title='Catalogue of Craneflies of the World' WHERE key=1005;
+UPDATE dataset SET alias='CIPA', title='Computer Aided Identification of Phlebotomine sandflies of Americas' WHERE key=1006;
+UPDATE dataset SET alias='ReptileDB', title='The Reptile Database' WHERE key=1008;
+UPDATE dataset SET alias='ETI WBD (Euphausiacea)', title='World Biodiversity Database (Euphausiacea)' WHERE key=1009;
+UPDATE dataset SET alias='FishBase', title='FishBase' WHERE key=1010;
+UPDATE dataset SET alias='FLOW', title='Fulgoromorpha Lists On the WEB' WHERE key=1011;
+UPDATE dataset SET alias='Glomeromycota', title='Phylogeny and taxonomy of Glomeromycota (arbuscular mycorrhizal (AM) and related fungi)' WHERE key=1012;
+UPDATE dataset SET alias='ICTV_MSL', title='International Committee on Taxonomy of Viruses / Master Species List' WHERE key=1014;
+UPDATE dataset SET alias='ILDIS', title='ILDIS World Database of Legumes' WHERE key=1015;
+UPDATE dataset SET alias='ITIS Regional', title='The Integrated Taxonomic Information System' WHERE key=1017;
+UPDATE dataset SET alias='LepIndex', title='LepIndex: The Global Lepidoptera Names Index' WHERE key=1018;
+UPDATE dataset SET alias='MOST', title='Moss TROPICOS Database' WHERE key=1019;
+UPDATE dataset SET alias='Odonata', title='Global Species Database of Odonata' WHERE key=1020;
+UPDATE dataset SET alias='SF Orthoptera', title='Orthoptera Species File' WHERE key=1021;
+UPDATE dataset SET alias='Parhost', title='Parhost World Database of Fleas' WHERE key=1022;
+UPDATE dataset SET alias='Phyllachorales', title='Phyllachorales' WHERE key=1023;
+UPDATE dataset SET alias='WCSP', title='World Checklist of Selected Plant Families' WHERE key=1024;
+UPDATE dataset SET alias='Rhytismatales', title='Rhytismatales' WHERE key=1025;
+UPDATE dataset SET alias='ScaleNet', title='Systematic Database of the Scale Insects of the World' WHERE key=1026;
+UPDATE dataset SET alias='Species Fungorum', title='Species Fungorum' WHERE key=1028;
+UPDATE dataset SET alias='WSC', title='World Spider Catalog' WHERE key=1029;
+UPDATE dataset SET alias='TicksBase', title='TicksBase' WHERE key=1030;
+UPDATE dataset SET alias='Tineidae NHM', title='Tineidae NHM: Global taxonomic database of Tineidae (Lepidoptera)' WHERE key=1031;
+UPDATE dataset SET alias='TITAN', title='Cerambycidae database' WHERE key=1032;
+UPDATE dataset SET alias='Trichomycetes', title='Trichomycetes ‚Äì Fungi Associated with Arthropods' WHERE key=1033;
+UPDATE dataset SET alias='UCD', title='Universal Chalcidoidea Database' WHERE key=1034;
+UPDATE dataset SET alias='Xylariaceae', title='Home of the Xylariaceae' WHERE key=1036;
+UPDATE dataset SET alias='ZOBODAT Vespoidea', title='Zoological-Botanical Database (Vespoidea)' WHERE key=1037;
+UPDATE dataset SET alias='Zygomycetes', title='Zygomycetes' WHERE key=1038;
+UPDATE dataset SET alias='WTaxa', title='Electronic Catalogue of Weevil names (Curculionoidea) ' WHERE key=1039;
+UPDATE dataset SET alias='AnnonBase', title='Annonaceae GSD' WHERE key=1040;
+UPDATE dataset SET alias='ChiloBase', title='A World Catalogue of Centipedes (Chilopoda) for the Web' WHERE key=1042;
+UPDATE dataset SET alias='WoRMS Porifera', title='World Porifera database' WHERE key=1044;
+UPDATE dataset SET alias='Conifer Database', title='Conifer Database' WHERE key=1045;
+UPDATE dataset SET alias='GloBIS (GART)', title='Global Butterfly Information System' WHERE key=1046;
+UPDATE dataset SET alias='FADA Rotifera', title='Annotated checklist of the rotifers (Phylum Rotifera)' WHERE key=1047;
+UPDATE dataset SET alias='RJB Geranium', title='Geranium Taxonomic Information System' WHERE key=1048;
+UPDATE dataset SET alias='Global Gracillariidae', title='Global Taxonomic Database of Gracillariidae' WHERE key=1049;
+UPDATE dataset SET alias='SF Phasmida', title='Phasmida Species File' WHERE key=1050;
+UPDATE dataset SET alias='SF Cockroach', title='Cockroach Species File' WHERE key=1051;
+UPDATE dataset SET alias='COOL', title='Cercopoidea Organised On Line' WHERE key=1052;
+UPDATE dataset SET alias='Nomen.eumycetozoa.com', title='An online nomenclatural information system of Eumycetozoa' WHERE key=1053;
+UPDATE dataset SET alias='Psyllist', title='Psylloidea database' WHERE key=1054;
+UPDATE dataset SET alias='Brachiopoda Database', title='Brachiopoda Database' WHERE key=1057;
+UPDATE dataset SET alias='WoRMS Cumacea', title='World Cumacea Database' WHERE key=1058;
+UPDATE dataset SET alias='WoRMS Ophiuroidea', title='World Ophiuroidea database' WHERE key=1059;
+UPDATE dataset SET alias='SF Aphid', title='Aphid Species File' WHERE key=1061;
+UPDATE dataset SET alias='SF Mantodea', title='Mantodea Species File' WHERE key=1062;
+UPDATE dataset SET alias='OlogamasidBase', title='Mites GSDs: OlogamasidBase' WHERE key=1063;
+UPDATE dataset SET alias='SF Plecoptera', title='Plecoptera Species File' WHERE key=1065;
+UPDATE dataset SET alias='Droseraceae Database', title='Droseraceae Database' WHERE key=1066;
+UPDATE dataset SET alias='ITIS Bees', title='ITIS World Bee Checklist' WHERE key=1067;
+UPDATE dataset SET alias='Taxapad Ichneumonoidea', title='Taxapad Ichneumonoidea' WHERE key=1068;
+UPDATE dataset SET alias='RhodacaridBase', title='Mites GSDs: RhodacaridBase' WHERE key=1069;
+UPDATE dataset SET alias='PhytoseiidBase', title='Mites GSDs: PhytoseiidBase' WHERE key=1070;
+UPDATE dataset SET alias='Brassicaceae', title='Brassicaceae species checklist and database' WHERE key=1073;
+UPDATE dataset SET alias='NZIB', title='New Zealand Inventory of Biodiversity' WHERE key=1075;
+UPDATE dataset SET alias='MBB', title='Moss Bug Base' WHERE key=1076;
+UPDATE dataset SET alias='TenuipalpidBase', title='Mites GSDs: TenuipalpidBase' WHERE key=1078;
+UPDATE dataset SET alias='LIAS', title='A Global Information System for Lichenized and Non-Lichenized Ascomycetes' WHERE key=1079;
+UPDATE dataset SET alias='BdelloideaBase', title='Bdellid & Cunaxid Databases' WHERE key=1080;
+UPDATE dataset SET alias='WoRMS Bryozoa', title='World List of Bryozoa' WHERE key=1081;
+UPDATE dataset SET alias='SpmWeb', title='Spider Mites Web' WHERE key=1082;
+UPDATE dataset SET alias='WoRMS Nemertea', title='World Nemertea Database' WHERE key=1085;
+UPDATE dataset SET alias='WoRMS Bochusacea', title='World List of Bochusacea' WHERE key=1086;
+UPDATE dataset SET alias='WoRMS Brachypoda', title='World List of Brachypoda' WHERE key=1087;
+UPDATE dataset SET alias='WoRMS Mystacocarida', title='World List of Mystacocarida' WHERE key=1088;
+UPDATE dataset SET alias='SF Embioptera', title='Embioptera Species File' WHERE key=1089;
+UPDATE dataset SET alias='WoRMS Polychaeta', title='World Polychaeta database' WHERE key=1090;
+UPDATE dataset SET alias='WoRMS Remipedia', title='World Remipedia Database' WHERE key=1091;
+UPDATE dataset SET alias='WoRMS Tantulocarida', title='World List of Tantulocarida' WHERE key=1092;
+UPDATE dataset SET alias='WoRMS Thermosbaenacea', title='World List of Thermosbaenacea' WHERE key=1093;
+UPDATE dataset SET alias='WoRMS Isopoda', title='World Marine, Freshwater and Terrestrial Isopod Crustaceans database' WHERE key=1094;
+UPDATE dataset SET alias='WoRMS Asteroidea', title='World Asteroidea Database' WHERE key=1095;
+UPDATE dataset SET alias='MOWD', title='MOWD: Membracoidea of the World Database' WHERE key=1096;
+UPDATE dataset SET alias='Saccharomycetes', title='Saccharomycetes - ascomycetous yeast forming fungi' WHERE key=1097;
+UPDATE dataset SET alias='Dothideomycetes', title='Dothideomycetes - saprobic or parasitic ascolocular ascomycetes' WHERE key=1098;
+UPDATE dataset SET alias='WoRMS Oligochaeta', title='World List of Marine Oligochaeta' WHERE key=1099;
+UPDATE dataset SET alias='WoRMS Xenoturbellida', title='World List of Xenoturbellida' WHERE key=1100;
+UPDATE dataset SET alias='Systema Dipterorum', title='Systema Dipterorum' WHERE key=1101;
+UPDATE dataset SET alias='Strepsiptera Database', title='Global Strepsiptera Database' WHERE key=1103;
+UPDATE dataset SET alias='Phoronida Database', title='Phoronida Database' WHERE key=1104;
+UPDATE dataset SET alias='WoRMS Leptostraca', title='World List of Leptostraca' WHERE key=1105;
+UPDATE dataset SET alias='WoRMS Echinoidea', title='World Echinoidea Database' WHERE key=1106;
+UPDATE dataset SET alias='WoRMS Holothuroidea', title='World List of Holothuroidea' WHERE key=1107;
+UPDATE dataset SET alias='WoRMS Brachyura', title='World List of marine Brachyura' WHERE key=1108;
+UPDATE dataset SET alias='WoRMS Polycystina', title='World List of Polycystina (Radiolaria)' WHERE key=1109;
+UPDATE dataset SET alias='WoRMS Tanaidacea', title='World List of Tanaidacea' WHERE key=1110;
+UPDATE dataset SET alias='WoRMS Hydrozoa', title='World Hydrozoa Database' WHERE key=1112;
+UPDATE dataset SET alias='CilCat', title='The World Ciliate Catalog' WHERE key=1113;
+UPDATE dataset SET alias='ITIS Global', title='The Integrated Taxonomic Information System' WHERE key=1115;
+UPDATE dataset SET alias='HymIS', title='Hymenoptera Information SysteHymenoptera Information System' WHERE key=1118;
+UPDATE dataset SET alias='FADA Nematomorpha', title='World checklist of freshwater Nematomorpha species' WHERE key=1119;
+UPDATE dataset SET alias='FADA Ephemeroptera', title='World checklist of freshwater Ephemeroptera species' WHERE key=1120;
+UPDATE dataset SET alias='CoL China', title='CoL China: Catalogue of Life China' WHERE key=1121;
+UPDATE dataset SET alias='WoRMS Gastrotricha', title='World Gastrotricha Database' WHERE key=1122;
+UPDATE dataset SET alias='WoRMS Placozoa', title='World Placozoa Database' WHERE key=1123;
+UPDATE dataset SET alias='WoRMS Priapulida', title='World List of Priapulida' WHERE key=1124;
+UPDATE dataset SET alias='WoRMS Gnathostomulida', title='World List of Gnathostomulida' WHERE key=1125;
+UPDATE dataset SET alias='WoRMS Monogenea', title='World List of Monogenea' WHERE key=1126;
+UPDATE dataset SET alias='WoRMS Cestoda', title='World List of Cestoda' WHERE key=1127;
+UPDATE dataset SET alias='WoRMS Trematoda', title='World List of Trematoda' WHERE key=1128;
+UPDATE dataset SET alias='WoRMS Myxozoa', title='World list of Myxozoa' WHERE key=1129;
+UPDATE dataset SET alias='WoRMS Mollusca', title='MolluscaBase (2017)' WHERE key=1130;
+UPDATE dataset SET alias='WoRMS Octocorallia', title='World List of Octocorallia' WHERE key=1131;
+UPDATE dataset SET alias='WoRMS Chaetognatha', title='World List of Chaetognatha' WHERE key=1132;
+UPDATE dataset SET alias='SF Psocodea', title='Psocodea Species File' WHERE key=1133;
+UPDATE dataset SET alias='SF Coreoidea', title='Coreoidea Species File' WHERE key=1134;
+UPDATE dataset SET alias='FADA Cladocera', title='World checklist of freshwater Cladocera species' WHERE key=1138;
+UPDATE dataset SET alias='FADA Halacaridae', title='World checklist of freshwater Halacaridae species' WHERE key=1139;
+UPDATE dataset SET alias='The White-Files', title='Taxonomic checklist of the world‚Äôs whiteflies (Insecta: Hemiptera: Aleyrodidae)' WHERE key=1142;
+UPDATE dataset SET alias='Tessaratomidae Database', title=' Illustrated catalog of Tessaratomidae' WHERE key=1143;
+UPDATE dataset SET alias='Lace Bugs Database', title='Lace Bugs Database (Hemiptera: Tingidae)' WHERE key=1144;
+UPDATE dataset SET alias='CarabCat', title='Global database of ground beetles' WHERE key=1146;
+UPDATE dataset SET alias='Microsporidia', title='Microsporidia: Unicellular spore-forming protozoan parasites' WHERE key=1148;
+UPDATE dataset SET alias='WoRMS Orthonectida', title='World List of Orthonectida' WHERE key=1149;
+UPDATE dataset SET alias='WoRMS Rhombozoa', title='World List of Rhombozoa' WHERE key=1150;
+UPDATE dataset SET alias='WoRMS Merostomata', title='World List of Merostomata' WHERE key=1152;
+UPDATE dataset SET alias='WoRMS Kinorhyncha', title='World List of Kinorhyncha' WHERE key=1153;
+UPDATE dataset SET alias='WoRMS Cephalochordata', title='World List of Cephalochordata' WHERE key=1154;
+UPDATE dataset SET alias='WoRMS Foraminifera', title='World Foraminifera Database' WHERE key=1157;
+UPDATE dataset SET alias='SF Dermaptera', title='Dermaptera Species File' WHERE key=1158;
+UPDATE dataset SET alias='Brentids', title='Brentidae of the World' WHERE key=1161;
+UPDATE dataset SET alias='WWW', title='World WideW attle' WHERE key=1162;
+UPDATE dataset SET alias='The World List of Cycads', title='The World List of Cycads, online edition' WHERE key=1163;
+UPDATE dataset SET alias='The Scorpion Files', title='The Scorpion Files' WHERE key=1164;
+UPDATE dataset SET alias='3i Curculio', title='3i taxonomic databases, Curculionidae, subfamily Entiminae' WHERE key=1166;
+UPDATE dataset SET alias='SF Zoraptera', title='Zoraptera Species File' WHERE key=1167;
+UPDATE dataset SET alias='SF Mantophasmatodea', title='Mantophasmatodea Species File' WHERE key=1168;
+UPDATE dataset SET alias='SF Chrysididae', title='Chrysididae Species File' WHERE key=1169;
+UPDATE dataset SET alias='SF Grylloblattodea', title='Grylloblattodea Species File' WHERE key=1170;
+UPDATE dataset SET alias='PBI Plant Bug', title='On-line Systematic Catalog of Plant Bugs (Insecta: Heteroptera: Miridae)' WHERE key=1171;
+UPDATE dataset SET alias='Nepticuloidea', title='Nepticulidae and Opostegidae of the World' WHERE key=1172;
+UPDATE dataset SET alias='SF Lygaeoidea', title='Lygaeoidea Species File' WHERE key=1173;
+UPDATE dataset SET alias='PaleoBioDB', title='The Paleobiology Database' WHERE key=1174;
+UPDATE dataset SET alias='WoRMS Ostracoda', title='World Ostracoda Database' WHERE key=1175;
+UPDATE dataset SET alias='WoRMS Hexacoral', title='Hexacorallians (Actiniaria) of the World' WHERE key=1176;
+UPDATE dataset SET alias='Gymnodinium', title='The dinoflagellate genus Gymnodinium checklist' WHERE key=1177;
+UPDATE dataset SET alias='WoRMS Appendicularia', title='World List of Appendicularia' WHERE key=1178;
+UPDATE dataset SET alias='WoRMS Ceriantharia', title='World list of Ceriantharia' WHERE key=1179;
+UPDATE dataset SET alias='WoRMS Ctenophora', title='Phylum Ctenophora, a list of all valid species names harvested from the Internet between 1998 - pres' WHERE key=1180;
+UPDATE dataset SET alias='WoRMS Cubozoa', title='World list of Cubozoa' WHERE key=1181;
+UPDATE dataset SET alias='WoRMS Loricifera', title='World list of Loricifera' WHERE key=1182;
+UPDATE dataset SET alias='WoRMS PycnoBase', title='World Pycnogonida Database' WHERE key=1183;
+UPDATE dataset SET alias='WoRMS Staurozoa', title='World list of Staurozoa' WHERE key=1184;
+UPDATE dataset SET alias='WoRMS Thaliacea', title='World list of Thaliacea' WHERE key=1185;
+UPDATE dataset SET alias='WoRMS Ascidiacea', title='Ascidiacea World Database' WHERE key=1186;
+UPDATE dataset SET alias='WoRMS Scyphozoa', title='World list of Scyphozoa' WHERE key=1188;
+UPDATE dataset SET alias='3i Auchenorrhyncha', title='World Auchenorrhyncha Database' WHERE key=1189;
+UPDATE dataset SET alias='Jewel Beetles', title='The World of Jewel Beetles' WHERE key=1190;
+UPDATE dataset SET alias='WoRMS Copepoda', title='World of Copepods database' WHERE key=1191;
+UPDATE dataset SET alias='SF Coleorrhyncha', title='Coleorrhyncha Species File' WHERE key=1192;
+UPDATE dataset SET alias='WoRMS Turbellarians', title='World List of turbellarian worms, Acoelomorpha, Catenulida, Rhabditophora' WHERE key=1193;
+UPDATE dataset SET alias='WoRMS Antipatharia', title='World List of Antipatharia' WHERE key=1194;
+UPDATE dataset SET alias='WoRMS Corallimorpharia', title='World List of Corallimorpharia' WHERE key=1195;
+UPDATE dataset SET alias='WoRMS Scleractinia', title='World List of Scleractinia' WHERE key=1196;
+UPDATE dataset SET alias='WoRMS Zoantharia', title='World List of Zoantharia' WHERE key=1197;
+UPDATE dataset SET alias='SF Isoptera', title='Isoptera Species File' WHERE key=1198;
+UPDATE dataset SET alias='Pterophoroidea', title='Catalogue of the Pterophoroidea of the World' WHERE key=1199;
+UPDATE dataset SET alias='WoRMS MilliBase', title='MilliBase' WHERE key=1200;
+UPDATE dataset SET alias='Ginkgoales', title='Fossil Ginkgoales' WHERE key=1201;
+UPDATE dataset SET alias='CoL Management Classification', title='A Higher Level Classification of All Living Organisms. In: PLoS ONE 10(4): e0119248. doi:10.1371/jou' WHERE key=1500;
+UPDATE dataset SET alias='IRMNG', title='Interim Register of Marine and Nonmarine Genera' WHERE key=1501;
+UPDATE dataset SET alias='Animal biodiversity', title='An Outline of Higher-level Classification and Survey of Taxonomic Richness (Addenda 2013)1' WHERE key=1502;
 
 --------------------------
 -- GBIF
@@ -307,13 +469,13 @@ WHERE gbif_key IS NOT NULL;
 -- or for entirely new datasets in the range of 1600-1699
 INSERT INTO dataset (key, origin, type, contributes_to, code, title, import_frequency, created_by, modified_by, data_format, data_access) VALUES
 ('1027', 0, 1, 0,    4, 'Scarabs',           1, 0, 0, 1, 'https://github.com/Sp2000/data-scarabs/archive/master.zip'),
-('1055', 0, 1, 0,    4, 'Neuropterida',      1, 0, 0, 1, 'https://github.com/Sp2000/data-neuropterida/archive/master.zip'),
+('1055', 0, 1, 0,    4, 'LDL Neuropterida',  1, 0, 0, 1, 'https://github.com/Sp2000/data-neuropterida/archive/master.zip'),
 ('1074', 0, 1, 0,    1, 'ELPT',              1, 0, 0, 1, 'https://github.com/Sp2000/data-elpt/archive/master.zip'),
-('1140', 0, 0, 0,    1, 'WorldFerns',        1, 0, 0, 1, 'https://github.com/Sp2000/data-world-ferns/archive/master.zip'),
-('1141', 0, 0, 0,    1, 'WorldPlants',       1, 0, 0, 0, 'https://github.com/Sp2000/data-world-plants/archive/master.zip'),
+('1140', 0, 0, 0,    1, 'World Ferns',        1, 0, 0, 1, 'https://github.com/Sp2000/data-world-ferns/archive/master.zip'),
+('1141', 0, 0, 0,    1, 'World Plants',       1, 0, 0, 0, 'https://github.com/Sp2000/data-world-plants/archive/master.zip'),
 ('1202', 0, 1, 0,    4, 'WoRMS Amphipoda',   1, 0, 0, 1, 'https://raw.githubusercontent.com/Sp2000/colplus-repo/master/ACEF/202.tar.gz'),
 ('1203', 0, 1, 0,    4, 'ThripsWiki',        1, 0, 0, 1, 'https://github.com/Sp2000/data-thrips/archive/master.zip'),
-('1204', 0, 1, 0,    4, 'StaphBase',         1, 0, 0, 3, 'https://github.com/Sp2000/data-staphbase/archive/master.zip'),
+
 ('1600', 0, 4, null, 1, 'ColDP Example',     7, 0, 0, 3, 'https://github.com/Sp2000/coldp/archive/master.zip'),
 ('1601', 0, 0, 1,    1, 'MycoBank',          7, 0, 0, 0, 'https://github.com/mdoering/mycobank/raw/master/mycobank.zip'),
 ('1602', 0, 4, null, 4, 'Testing Data ACEF', 7, 0, 0, 1, 'https://github.com/Sp2000/data-testing/archive/master.zip'),
@@ -321,7 +483,8 @@ INSERT INTO dataset (key, origin, type, contributes_to, code, title, import_freq
 ('1604', 0, 1, 0,    4, 'StaphBase ACEF',    1, 0, 0, 1, 'https://github.com/Sp2000/data-staphbase/archive/master.zip'),
 ('1163', 0, 1, 0,    1, 'Cycads',            1, 0, 0, 3, 'https://github.com/gdower/data-cycads/archive/master.zip');
 
-
+UPDATE dataset set alias=title
+WHERE key IN (1027,1055,1074,1140,1141,1202,1203,1204,1600,1601,1602,1603,1604,1163);
 
 
 --------------------------

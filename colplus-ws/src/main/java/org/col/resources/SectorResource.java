@@ -33,6 +33,7 @@ public class SectorResource extends CRUDIntResource<Sector> {
   
   @POST
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
+  @Override
   public Integer create(@Valid Sector obj, @Auth ColUser user, @Context SqlSession session) {
     Integer secKey = super.create(obj, user, session);
     final DatasetID did = obj.getTargetAsDatasetID();
@@ -61,6 +62,11 @@ public class SectorResource extends CRUDIntResource<Sector> {
     session.commit();
   
     return secKey;
+  }
+  
+  @Override
+  public void delete(Integer key, @Auth ColUser user, @Context SqlSession session) {
+    super.delete(key, user, session);
   }
   
   @GET

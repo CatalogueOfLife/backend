@@ -1,6 +1,7 @@
 package org.col;
 
 import io.dropwizard.setup.Environment;
+import org.col.common.io.DownloadUtil;
 import org.col.dw.PgApp;
 import org.col.dw.es.ManagedEsClient;
 import org.col.es.EsClientFactory;
@@ -33,7 +34,7 @@ public class WsServer extends PgApp<WsServerConfig> {
     NameUsageSearchService nuss = new NameUsageSearchService(cfg.es.indexName(ES_INDEX_NAME_USAGE), esClient);
     final ImageService imgService = new ImageService(cfg.img);
     env.jersey().register(new DataPackageResource());
-    env.jersey().register(new DatasetResource(getSqlSessionFactory(), imgService));
+    env.jersey().register(new DatasetResource(getSqlSessionFactory(), imgService, cfg::scratchDir, new DownloadUtil(super.httpClient)));
     env.jersey().register(new DecisionResource());
     env.jersey().register(new DocsResource(cfg));
     env.jersey().register(new NameResource(nuss));
