@@ -46,6 +46,10 @@ public class PgAppConfig extends Configuration implements CorsBundleConfiguratio
   @NotNull
   public ImgConfig img = new ImgConfig();
   
+  @Valid
+  @NotNull
+  public File scratchDir = new File("/tmp/colplus");
+  
   
   @Override
   @JsonIgnore
@@ -54,8 +58,7 @@ public class PgAppConfig extends Configuration implements CorsBundleConfiguratio
   }
   
   public File scratchDir(int datasetKey) {
-    return new File("/tmp/colplus/dataset" + datasetKey);
+    return new File(scratchDir,"dataset" + datasetKey);
   }
-  
   
 }
