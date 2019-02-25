@@ -1,15 +1,27 @@
 package org.col.api.model;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
+
+import com.google.common.base.Predicates;
+import org.col.api.vocab.Issue;
 
 public class SectorImport {
-  public enum Status {
-    WAITING, PREPARING, COPYING, DELETING, RELINKING, INDEXING, FINISHED
+  public enum State {
+    WAITING, PREPARING, COPYING, DELETING, RELINKING, INDEXING, FINISHED, CANCELED, FAILED;
+    
+    public boolean isRunning() {
+      return this != FINISHED && this != FAILED && this != CANCELED;
+    }
   }
 
   private int sectorKey;
-  public Status status;
+  private int attempt;
+  private State state;
   
   /**
    * Time the import started
@@ -22,11 +34,6 @@ public class SectorImport {
   private LocalDateTime finished;
   private String error;
   
-  // change
-  public Integer taxaCreated;
-  public Integer taxaUpdated;
-  public Integer taxaDeleted;
-  
   // metrics
   private Integer descriptionCount;
   private Integer distributionCount;
@@ -35,7 +42,8 @@ public class SectorImport {
   private Integer referenceCount;
   private Integer taxonCount;
   private Integer vernacularCount;
-  private StatusRankCounts usagesByRankCount;
+  private Map<Issue, Integer> issueCount;
+  private StatusRankCounts usagesByRankCount = new StatusRankCounts();
   
   public int getSectorKey() {
     return sectorKey;
@@ -45,12 +53,20 @@ public class SectorImport {
     this.sectorKey = sectorKey;
   }
   
-  public Status getStatus() {
-    return status;
+  public int getAttempt() {
+    return attempt;
   }
   
-  public void setStatus(Status status) {
-    this.status = status;
+  public void setAttempt(int attempt) {
+    this.attempt = attempt;
+  }
+  
+  public State getState() {
+    return state;
+  }
+  
+  public void setState(State state) {
+    this.state = state;
   }
   
   public LocalDateTime getStarted() {
@@ -75,30 +91,6 @@ public class SectorImport {
   
   public void setError(String error) {
     this.error = error;
-  }
-  
-  public Integer getTaxaCreated() {
-    return taxaCreated;
-  }
-  
-  public void setTaxaCreated(Integer taxaCreated) {
-    this.taxaCreated = taxaCreated;
-  }
-  
-  public Integer getTaxaUpdated() {
-    return taxaUpdated;
-  }
-  
-  public void setTaxaUpdated(Integer taxaUpdated) {
-    this.taxaUpdated = taxaUpdated;
-  }
-  
-  public Integer getTaxaDeleted() {
-    return taxaDeleted;
-  }
-  
-  public void setTaxaDeleted(Integer taxaDeleted) {
-    this.taxaDeleted = taxaDeleted;
   }
   
   public Integer getDescriptionCount() {
@@ -171,13 +163,11 @@ public class SectorImport {
     if (o == null || getClass() != o.getClass()) return false;
     SectorImport that = (SectorImport) o;
     return sectorKey == that.sectorKey &&
-        status == that.status &&
+        attempt == that.attempt &&
+        state == that.state &&
         Objects.equals(started, that.started) &&
         Objects.equals(finished, that.finished) &&
         Objects.equals(error, that.error) &&
-        Objects.equals(taxaCreated, that.taxaCreated) &&
-        Objects.equals(taxaUpdated, that.taxaUpdated) &&
-        Objects.equals(taxaDeleted, that.taxaDeleted) &&
         Objects.equals(descriptionCount, that.descriptionCount) &&
         Objects.equals(distributionCount, that.distributionCount) &&
         Objects.equals(mediaCount, that.mediaCount) &&
@@ -190,6 +180,19 @@ public class SectorImport {
   
   @Override
   public int hashCode() {
-    return Objects.hash(sectorKey, status, started, finished, error, taxaCreated, taxaUpdated, taxaDeleted, descriptionCount, distributionCount, mediaCount, nameCount, referenceCount, taxonCount, vernacularCount, usagesByRankCount);
+    return Objects.hash(sectorKey, attempt, state, started, finished, error, descriptionCount, distributionCount, mediaCount, nameCount, referenceCount, taxonCount, vernacularCount, usagesByRankCount);
   }
+  
+  public static List<State> runningStates() {
+    return Arrays.stream(State.values())
+        .filter(State::isRunning)
+        .collect(Collectors.toList());
+  }
+  
+  public static List<State> finishedStates() {
+    return Arrays.stream(State.values())
+        .filter(Predicates.not(State::isRunning))
+        .collect(Collectors.toList());
+  }
+  
 }

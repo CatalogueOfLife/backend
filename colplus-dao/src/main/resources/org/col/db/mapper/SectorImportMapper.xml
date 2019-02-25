@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.col.db.mapper.SectorImportMapper">
+
+    <sql id="SELECT">
+        sector_key,
+        attempt,
+        state,
+        error,
+        started,
+        finished,
+        name_count,
+        taxon_count,
+        reference_count,
+        vernacular_count,
+        distribution_count,
+        description_count,
+        media_count,
+        issue_count
+    </sql>
+
+    <sql id="COLS">
+        sector_key,
+        attempt,
+        state,
+        error,
+        started,
+        finished,
+        name_count,
+        taxon_count,
+        reference_count,
+        vernacular_count,
+        distribution_count,
+        description_count,
+        media_count,
+        issue_count
+    </sql>
+
+    <sql id="PROPS">
+        #{imp.sectorKey},
+        #{imp.attempt},
+        #{imp.state},
+        #{imp.error},
+        #{imp.started},
+        #{imp.finished},
+        #{imp.nameCount},
+        #{imp.taxonCount},
+        #{imp.referenceCount},
+        #{imp.vernacularCount},
+        #{imp.distributionCount},
+        #{imp.descriptionCount},
+        #{imp.mediaCount},
+        #{imp.issueCount, typeHandler=org.col.db.type2.HstoreIssueCountTypeHandler}::hstore
+    </sql>
+
+    <sql id="FROM">
+      sector_import
+    </sql>
+
+    <sql id="WHERE">
+        <where>
+            <if test="key != null">
+                sector_key = #{key}
+            </if>
+            <if test="states != null &amp;&amp; !states.isEmpty()">
+                AND state IN
+                <foreach item="state" collection="states" open="(" separator="," close=")">
+                    #{state}
+                </foreach>
+            </if>
+        </where>
+    </sql>
+
+    <!--  A mapping to Name, mostly auto mapped -->
+    <resultMap id="sectorImportResultMap" type="SectorImport" autoMapping="true">
+        <result property="issueCount" column="issue_count" typeHandler="org.col.db.type2.HstoreIssueCountTypeHandler"/>
+    </resultMap>
+
+    <select id="get" resultMap="sectorImportResultMap">
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
+        WHERE sector_key=#{key} AND attempt=#{attempt}
+    </select>
+
+    <select id="count" resultType="integer">
+        SELECT count(*)
+        FROM <include refid="FROM" />
+        <include refid="WHERE" />
+    </select>
+
+    <select id="list" resultMap="sectorImportResultMap">
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
+        <include refid="WHERE" />
+        ORDER BY started DESC, sector_key ASC, attempt DESC
+        <include refid="org.col.db.mapper.Common.limit" />
+    </select>
+
+    <insert id="create" parameterType="SectorImport">
+        INSERT INTO sector_import (<include refid="COLS" />)
+          VALUES (<include refid="PROPS" />)
+    </insert>
+
+</mapper>

@@ -60,16 +60,23 @@ public class SectorSync implements Runnable {
                     BiConsumer<SectorSync, Exception> errorCallback, ColUser user) {
     this.user = user;
     try (SqlSession session = factory.openSession(true)) {
+      // check if sector actually exists
       Sector s = session.getMapper(SectorMapper.class).get(sectorKey);
       if (s == null) {
         throw new IllegalArgumentException("Sector "+sectorKey+" does not exist");
       }
       this.sector = s;
       this.datasetKey = sector.getDatasetKey();
+      // check if target actually exists
       Taxon target = session.getMapper(TaxonMapper.class).get(catalogueKey, sector.getTarget().getId());
       if (target == null) {
         throw new IllegalStateException("Sector " + sectorKey + " does have a non existing target id for catalogue " + catalogueKey);
       }
+      // lookup next attempt
+      List<SectorImport> imports = session.getMapper(SectorImportMapper.class).list(sectorKey, null, new Page(0,1));
+      state.setAttempt(imports == null || imports.isEmpty() ? 1 : imports.get(0).getAttempt() + 1);
+      state.setSectorKey(sectorKey);
+      state.setState(SectorImport.State.WAITING);
     }
     this.factory = factory;
     this.indexService = indexService;
@@ -77,6 +84,7 @@ public class SectorSync implements Runnable {
     this.errorCallback = errorCallback;
   }
   
+ 
   @Override
   public void run() {
     LoggingUtils.setSectorMDC(datasetKey, 0, getClass());
@@ -86,10 +94,21 @@ public class SectorSync implements Runnable {
       sync();
       successCallback.accept(this);
   
+    } catch (InterruptedException e) {
+      state.setState(SectorImport.State.CANCELED);
+      errorCallback.accept(this, e);
+
     } catch (Exception e) {
+      state.setState(SectorImport.State.FAILED);
+      state.setError(e.getCause().getMessage());
       errorCallback.accept(this, e);
       
     } finally {
+      state.setFinished(LocalDateTime.now());
+      try (SqlSession session = factory.openSession(true)) {
+        SectorImportMapper sim = session.getMapper(SectorImportMapper.class);
+        sim.create(state);
+      }
       LoggingUtils.removeSectorMDC();
     }
   }
@@ -117,28 +136,28 @@ public class SectorSync implements Runnable {
   }
   
   public void sync() throws InterruptedException {
-    state.setStatus( SectorImport.Status.PREPARING);
+    state.setState( SectorImport.State.PREPARING);
     loadDecisions();
     loadForeignChildren();
     loadAttachedSectors();
     checkIfCancelled();
 
-    state.setStatus( SectorImport.Status.DELETING);
+    state.setState( SectorImport.State.DELETING);
     deleteOld();
     checkIfCancelled();
 
-    state.setStatus( SectorImport.Status.COPYING);
+    state.setState( SectorImport.State.COPYING);
     processTree();
     checkIfCancelled();
   
-    state.setStatus( SectorImport.Status.RELINKING);
+    state.setState( SectorImport.State.RELINKING);
     relinkForeignChildren();
     relinkAttachedSectors();
   
-    state.setStatus( SectorImport.Status.INDEXING);
+    state.setState( SectorImport.State.INDEXING);
     updateSearchIndex();
   
-    state.setStatus( SectorImport.Status.FINISHED);
+    state.setState( SectorImport.State.FINISHED);
   }
   
   private void loadDecisions() {
@@ -256,7 +275,7 @@ public class SectorSync implements Runnable {
       if (counter++ % 100 == 0) {
         session.commit();
       }
-      state.setTaxaCreated(counter);
+      state.setTaxonCount(counter);
     }
     
     private String lookupReference(Reference ref) {

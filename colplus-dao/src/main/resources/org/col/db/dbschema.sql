@@ -179,6 +179,26 @@ CREATE TABLE sector (
   UNIQUE (dataset_key, subject_id)
 );
 
+CREATE TABLE sector_import (
+  sector_key INTEGER NOT NULL REFERENCES sector,
+  attempt INTEGER NOT NULL,
+  state INTEGER NOT NULL,
+  error TEXT,
+  started TIMESTAMP WITHOUT TIME ZONE,
+  finished TIMESTAMP WITHOUT TIME ZONE,
+
+  name_count INTEGER,
+  taxon_count INTEGER,
+  reference_count INTEGER,
+  vernacular_count INTEGER,
+  distribution_count INTEGER,
+  description_count INTEGER,
+  media_count INTEGER,
+  issue_count HSTORE,
+
+  PRIMARY KEY (sector_key, attempt)
+);
+
 CREATE TABLE decision (
   key serial PRIMARY KEY,
   dataset_key INTEGER NOT NULL REFERENCES dataset,

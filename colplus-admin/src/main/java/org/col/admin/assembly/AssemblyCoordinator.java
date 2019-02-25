@@ -42,7 +42,7 @@ public class AssemblyCoordinator implements Managed {
   @Override
   public void start() throws Exception {
     LOG.info("Starting assembly coordinator");
-    exec = Executors.newSingleThreadExecutor(new NamedThreadFactory(THREAD_NAME, Thread.NORM_PRIORITY, true));
+    exec = Executors.newSingleThreadExecutor(new NamedThreadFactory(THREAD_NAME, Thread.MAX_PRIORITY, true));
   }
   
   @Override
@@ -56,7 +56,7 @@ public class AssemblyCoordinator implements Managed {
   }
   
   public AssemblyState getState() {
-    return new AssemblyState(Lists.newArrayList(syncStates.values()), (int) failed.getCount(), (int) counter.getCount(), null);
+    return new AssemblyState(Lists.newArrayList(syncStates.values()), (int) failed.getCount(), (int) counter.getCount());
   }
   
   public synchronized void syncSector(int sectorKey, ColUser user) {
@@ -73,7 +73,7 @@ public class AssemblyCoordinator implements Managed {
   }
   
   /**
-   * We use old school callbacks here as you cannot easily cancel CopletableFutures.
+   * We use old school callbacks here as you cannot easily cancel CompletableFutures.
    */
   private void successCallBack(SectorSync sync) {
     Duration durQueued = Duration.between(sync.getCreated(), sync.getStarted());
@@ -82,16 +82,23 @@ public class AssemblyCoordinator implements Managed {
     counter.inc();
     timer.update(durRun.getSeconds(), TimeUnit.SECONDS);
     syncs.remove(sync.getSectorKey());
-    syncStates.remove(sync.getSectorKey());
   }
   
   /**
-   * We use old school callbacks here as you cannot easily cancel CopletableFutures.
+   * We use old school callbacks here as you cannot easily cancel CompletableFutures.
    */
   private void errorCallBack(SectorSync sync, Exception err) {
     LOG.error("Sector Sync {} failed: {}", sync.getSectorKey(), err.getCause().getMessage(), err.getCause());
     failed.inc();
     syncs.remove(sync.getSectorKey());
-    syncStates.remove(sync.getSectorKey());
+  }
+  
+
+  
+  public void cancel(int sectorKey, ColUser user) {
+    if (syncs.containsKey(sectorKey)) {
+      syncStates.get(sectorKey).setState(SectorImport.State.CANCELED);
+      syncs.get(sectorKey).cancel(true);
+    }
   }
 }
