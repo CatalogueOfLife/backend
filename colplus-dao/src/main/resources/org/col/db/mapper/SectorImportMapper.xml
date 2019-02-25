@@ -109,16 +109,28 @@
     </insert>
 
     <select id="countDescription" resultType="integer">
-        SELECT count(*) FROM description_${datasetKey} WHERE sector_key=${sectorKey}
+        SELECT count(*)
+        FROM description_${datasetKey} x
+            JOIN taxon_${datasetKey} t ON t.id=x.taxon_id
+        WHERE t.sector_key=${sectorKey}
     </select>
     <select id="countDistribution" resultType="integer">
-        SELECT count(*) FROM distribution_${datasetKey} WHERE sector_key=${sectorKey}
+        SELECT count(*)
+        FROM distribution_${datasetKey} x
+            JOIN taxon_${datasetKey} t ON t.id=x.taxon_id
+        WHERE t.sector_key=${sectorKey}
     </select>
     <select id="countMedia" resultType="integer">
-        SELECT count(*) FROM media_${datasetKey} WHERE sector_key=${sectorKey}
+        SELECT count(*)
+        FROM media_${datasetKey} x
+            JOIN taxon_${datasetKey} t ON t.id=x.taxon_id
+        WHERE t.sector_key=${sectorKey}
     </select>
     <select id="countVernacular" resultType="integer">
-        SELECT count(*) FROM vernacular_name_${datasetKey} WHERE sector_key=${sectorKey}
+        SELECT count(*)
+        FROM vernacular_name_${datasetKey} x
+            JOIN taxon_${datasetKey} t ON t.id=x.taxon_id
+        WHERE t.sector_key=${sectorKey}
     </select>
 
     <select id="countName" resultType="integer">
@@ -133,7 +145,7 @@
 
     <select id="countIssues" resultType="IntCount">
         SELECT iss AS key, count(*) AS count FROM (
-        SELECT unnest(issues) iss FROM verbatim_${datasetKey} WHERE sector_key=${sectorKey}
+            SELECT unnest(issues) iss FROM verbatim_${datasetKey} WHERE sector_key=${sectorKey}
         ) AS dis
         GROUP BY iss
     </select>
