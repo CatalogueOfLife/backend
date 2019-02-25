@@ -12,6 +12,7 @@ import com.google.common.base.Splitter;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.model.SectorImport;
+import org.col.common.collection.LimitedQueue;
 import org.col.db.mapper.SectorImportMapper;
 
 public class TreeDiffService {
@@ -42,15 +43,17 @@ public class TreeDiffService {
       if (s1 == null || s2 == null) {
         throw new IllegalArgumentException("Sector "+sectorKey+" sync attempts "+attempt1+".."+attempt2+" not existing");
       }
-      return diff(attempt1, s1.getTextTree(), attempt2, s2.getTextTree());
+      return diff(0, attempt1, s1.getTextTree(), attempt2, s2.getTextTree());
     }
   }
   
-  static String diff(int attempt1, String t1, int attempt2, String t2) throws DiffException {
+  static String diff(int context, int attempt1, String t1, int attempt2, String t2) throws DiffException {
     DiffRowGenerator generator = DiffRowGenerator.create()
         .showInlineDiffs(true)
-        .mergeOriginalRevised(true)
         .inlineDiffByWord(true)
+        .reportLinesUnchanged(false)
+        .ignoreWhiteSpaces(false)
+        .mergeOriginalRevised(false)
         .oldTag(f -> "~")      //introduce markdown style for strikethrough
         .newTag(f -> "**")     //introduce markdown style for bold
         .build();
@@ -60,11 +63,38 @@ public class TreeDiffService {
     StringBuilder sb = new StringBuilder();
     sb.append("|attempt "+attempt1+"|attempt "+attempt2+"|\n");
     sb.append("|--------|---|\n");
-    for (DiffRow row : rows) {
-      sb.append("|" + row.getOldLine() + "|" + row.getNewLine() + "|\n");
+    
+    if (context > 0) {
+      LimitedQueue<DiffRow> queue = new LimitedQueue(context);
+      int postCtxt = 0;
+      for (DiffRow row : rows) {
+        if (DiffRow.Tag.EQUAL != row.getTag()) {
+          for (DiffRow qr : queue) {
+            print(sb, qr);
+          }
+          print(sb, row);
+          postCtxt = context;
+        } else {
+          if (postCtxt > 0) {
+            postCtxt--;
+            print(sb, row);
+          } else {
+            queue.add(row);
+          }
+        }
+      }
+      
+    } else {
+      for (DiffRow qr : rows) {
+        print(sb, qr);
+      }
     }
     
     return sb.toString();
+  }
+  
+  private static void print(StringBuilder sb, DiffRow row) {
+    sb.append("|" + row.getOldLine() + "|" + row.getNewLine() + "|\n");
   }
   
   static Patch<String> unifiedDiff(String t1, String t2) throws DiffException {
