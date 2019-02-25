@@ -273,7 +273,7 @@ public class NameIndexMapDB implements NameIndex {
     // reset all other keys
     name.setVerbatimKey(null);
     name.setHomotypicNameId(null);
-    name.setIndexNameId(null);
+    name.setNameIndexId(null);
     name.setDatasetKey(datasetKey);
     name.setOrigin(Origin.NAME_MATCHING);
     name.setNomStatus(NomStatus.DOUBTFUL);

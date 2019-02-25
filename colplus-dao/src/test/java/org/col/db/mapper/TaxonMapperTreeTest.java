@@ -31,27 +31,27 @@ public class TaxonMapperTreeTest extends MapperTestBase<TaxonMapper> {
   @Test
   public void processTree() throws Exception {
     countHandler = new CountHandler();
-    mapper().processTree(DATASET11.getKey(), "t2", Sets.newHashSet("skipID"), false, countHandler);
+    mapper().processTree(DATASET11.getKey(), null, "t2", Sets.newHashSet("skipID"), false, countHandler);
     Assert.assertEquals(19, countHandler.counter.get());
   
     countHandler.reset();
-    mapper().processTree(DATASET11.getKey(), "t2", Sets.newHashSet("t6"), false, countHandler);
+    mapper().processTree(DATASET11.getKey(), null,"t2", Sets.newHashSet("t6"), false, countHandler);
     Assert.assertEquals(13, countHandler.counter.get());
   
     countHandler.reset();
-    mapper().processTree(DATASET11.getKey(), "t2", Sets.newHashSet("t6", "t30"), false, countHandler);
+    mapper().processTree(DATASET11.getKey(), null,"t2", Sets.newHashSet("t6", "t30"), false, countHandler);
     Assert.assertEquals(8, countHandler.counter.get());
   }
   
   @Test
   public void processTreeOrder() throws Exception {
     CollectIdHandler h = new CollectIdHandler();
-    mapper().processTree(DATASET11.getKey(), null, null, false, h);
+    mapper().processTree(DATASET11.getKey(), null,null, null, false, h);
     List<String> bfs = ImmutableList.of("t1","t2","t3","t4","t5","t6","t10","t20","t30","t12","t13","t23","t24","t25","t31","t32","t33","t34","t15","t16");
     assertEquals(bfs, h.list);
   
     h = new CollectIdHandler();
-    mapper().processTree(DATASET11.getKey(), null, null, true, h);
+    mapper().processTree(DATASET11.getKey(), null,null, null, true, h);
     List<String> dfs = ImmutableList.of("t1","t2","t3","t4","t5","t20","t23","t24","t25","t30","t31","t32","t33","t34","t6","t10","t12","t13","t15","t16");
     assertEquals(dfs, h.list);
   }

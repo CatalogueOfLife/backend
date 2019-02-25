@@ -48,8 +48,8 @@ public class DatasetResourceTest extends ResourceTestBase {
     req.setSortBy(DatasetSearchRequest.SortBy.TITLE);
     resp = applySearch(base, req, page).request().get(RESULT_PAGE);
   
-    assertEquals(8, resp.size());
-    assertEquals("Catalogue of Afrotropical Bees", resp.getResult().get(0).getTitle());
+    assertEquals(10, resp.size());
+    assertEquals("A World Catalogue of Centipedes (Chilopoda) for the Web", resp.getResult().get(0).getTitle());
   
     req.setFormat(DataFormat.DWCA);
     req.setContributesTo(Sets.newHashSet(Catalogue.COL, Catalogue.PCAT));

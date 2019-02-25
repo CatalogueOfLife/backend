@@ -101,7 +101,7 @@ public class NameUsageTransfer {
     nuw.getUsage().setId(null);
     nuw.getUsage().getName().setDatasetKey(null);
     nuw.getUsage().getName().setId(null);
-    nuw.getUsage().getName().setIndexNameId(null);
+    nuw.getUsage().getName().setNameIndexId(null);
     nuw.getUsage().getName().setNomStatus(null);
     nuw.getUsage().getName().setPublishedInId(null);
     nuw.getUsage().getName().setType(null);
@@ -119,7 +119,7 @@ public class NameUsageTransfer {
     nuw.getUsage().setId(enu.getUsageId());
     nuw.getUsage().getName().setDatasetKey(enu.getDatasetKey());
     nuw.getUsage().getName().setId(enu.getNameId());
-    nuw.getUsage().getName().setIndexNameId(enu.getIndexNameId());
+    nuw.getUsage().getName().setNameIndexId(enu.getIndexNameId());
     nuw.getUsage().getName().setNomStatus(enu.getNomStatus());
     nuw.getUsage().getName().setPublishedInId(enu.getPublishedInId());
     nuw.getUsage().getName().setType(enu.getType());
@@ -144,7 +144,7 @@ public class NameUsageTransfer {
     enu.setAuthorship(name.authorshipComplete());
     enu.setDatasetKey(name.getDatasetKey());
     enu.setNameId(name.getId());
-    enu.setIndexNameId(name.getIndexNameId());
+    enu.setIndexNameId(name.getNameIndexId());
     enu.setNomStatus(name.getNomStatus());
     enu.setPublishedInId(name.getPublishedInId());
     enu.setRank(name.getRank());

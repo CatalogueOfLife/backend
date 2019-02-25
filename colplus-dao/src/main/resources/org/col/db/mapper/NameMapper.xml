@@ -32,7 +32,7 @@
         <include refid="org.col.db.mapper.NameMapper.minimalNameCols" />,
         ${alias}.dataset_key AS ${prefix}dataset_key,
         ${alias}.verbatim_key AS ${prefix}verbatim_key,
-        ${alias}.index_name_id AS ${prefix}index_name_id,
+        ${alias}.name_index_id AS ${prefix}name_index_id,
         ${alias}.homotypic_name_id AS ${prefix}homotypic_name_id,
         ${alias}.published_in_id AS ${prefix}published_in_id,
         ${alias}.published_in_page AS ${prefix}published_in_page,
@@ -60,7 +60,7 @@
         id,
         dataset_key,
         verbatim_key,
-        index_name_id,
+        name_index_id,
         homotypic_name_id,
         scientific_name,
         authorship,
@@ -98,7 +98,7 @@
         #{id},
         #{datasetKey},
         #{verbatimKey},
-        #{indexNameId},
+        #{nameIndexId},
         #{homotypicNameId},
         #{scientificName},
         #{authorship},
@@ -195,6 +195,14 @@
         WHERE n.dataset_key = #{datasetKey} AND t.id = #{taxonId}
     </select>
 
+    <select id="listNameIndexIds" resultType="String" >
+        SELECT DISTINCT name_index_id
+        FROM name_#{datasetKey}
+        <if test="sectorKey != null">
+            WHERE sector_key = #{sectorKey}
+        </if>
+    </select>
+
     <select id="homotypicGroup" resultMap="nameResultMap">
         SELECT <include refid="SELECT" />
         FROM name ns
@@ -205,7 +213,7 @@
     <select id="indexGroup" resultMap="nameResultMap">
         SELECT <include refid="SELECT" />
         FROM name n
-        WHERE n.index_name_id=#{id}
+        WHERE n.name_index_id=#{id}
     </select>
 
     <insert id="create" parameterType="Name" useGeneratedKeys="false" keyProperty="id">

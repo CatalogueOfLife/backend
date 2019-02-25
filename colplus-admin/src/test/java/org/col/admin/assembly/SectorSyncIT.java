@@ -20,7 +20,7 @@ import org.col.db.dao.DatasetImportDao;
 import org.col.db.mapper.InitMybatisRule;
 import org.col.db.mapper.SectorMapper;
 import org.col.db.mapper.TaxonMapper;
-import org.col.db.printer.DatasetPrinter;
+import org.col.db.printer.TextTreePrinter;
 import org.gbif.nameparser.api.Rank;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -86,7 +86,7 @@ public class SectorSyncIT {
   void print(int datasetKey) throws Exception {
     StringWriter writer = new StringWriter();
     writer.append("\nDATASET "+datasetKey+"\n");
-    new DatasetPrinter(datasetKey, PgSetupRule.getSqlSessionFactory(), writer).print();
+    TextTreePrinter.dataset(datasetKey, PgSetupRule.getSqlSessionFactory(), writer).print();
     System.out.println(writer.toString());
   }
 
@@ -118,7 +118,7 @@ public class SectorSyncIT {
     String expected = IOUtils.toString(resIn, Charsets.UTF_8).trim();
     
     Writer writer = new StringWriter();
-    new DatasetPrinter(Datasets.DRAFT_COL, PgSetupRule.getSqlSessionFactory(), writer).print();
+    TextTreePrinter.dataset(Datasets.DRAFT_COL, PgSetupRule.getSqlSessionFactory(), writer).print();
     String tree = writer.toString().trim();
     assertFalse("Empty tree, probably no root node found", tree.isEmpty());
   

@@ -34,7 +34,7 @@ public class Name extends DataEntity implements ID, DatasetEntity, VerbatimEntit
    */
   @Nonnull
   private Integer datasetKey;
-  
+  private Integer sectorKey;
   private Integer verbatimKey;
   
   /**
@@ -47,7 +47,7 @@ public class Name extends DataEntity implements ID, DatasetEntity, VerbatimEntit
   /**
    * Id from the names index grouping all distinct scientific names
    */
-  private String indexNameId;
+  private String nameIndexId;
   
   /**
    * Entire canonical name string with a rank marker for infragenerics and infraspecfics, but
@@ -176,8 +176,9 @@ public class Name extends DataEntity implements ID, DatasetEntity, VerbatimEntit
   public Name(Name n) {
     this.id = n.id;
     this.datasetKey = n.datasetKey;
+    this.sectorKey = n.sectorKey;
     this.homotypicNameId = n.homotypicNameId;
-    this.indexNameId = n.indexNameId;
+    this.nameIndexId = n.nameIndexId;
     this.scientificName = n.scientificName;
     this.rank = n.rank;
     this.uninomial = n.uninomial;
@@ -245,6 +246,14 @@ public class Name extends DataEntity implements ID, DatasetEntity, VerbatimEntit
     this.datasetKey = key;
   }
   
+  public Integer getSectorKey() {
+    return sectorKey;
+  }
+  
+  public void setSectorKey(Integer sectorKey) {
+    this.sectorKey = sectorKey;
+  }
+  
   @Override
   public Integer getVerbatimKey() {
     return verbatimKey;
@@ -255,12 +264,12 @@ public class Name extends DataEntity implements ID, DatasetEntity, VerbatimEntit
     this.verbatimKey = verbatimKey;
   }
   
-  public String getIndexNameId() {
-    return indexNameId;
+  public String getNameIndexId() {
+    return nameIndexId;
   }
   
-  public void setIndexNameId(String indexNameId) {
-    this.indexNameId = indexNameId;
+  public void setNameIndexId(String nameIndexId) {
+    this.nameIndexId = nameIndexId;
   }
   
   public String getScientificName() {
@@ -664,8 +673,9 @@ public class Name extends DataEntity implements ID, DatasetEntity, VerbatimEntit
     return candidatus == name.candidatus &&
         Objects.equals(id, name.id) &&
         Objects.equals(datasetKey, name.datasetKey) &&
+        Objects.equals(sectorKey, name.sectorKey) &&
         Objects.equals(homotypicNameId, name.homotypicNameId) &&
-        Objects.equals(indexNameId, name.indexNameId) &&
+        Objects.equals(nameIndexId, name.nameIndexId) &&
         Objects.equals(scientificName, name.scientificName) &&
         Objects.equals(authorship, name.authorship) &&
         rank == name.rank &&
@@ -693,7 +703,7 @@ public class Name extends DataEntity implements ID, DatasetEntity, VerbatimEntit
   
   @Override
   public int hashCode() {
-    return Objects.hash(id, datasetKey, homotypicNameId, indexNameId, scientificName, authorship, rank, uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, strain, candidatus, notho, combinationAuthorship, basionymAuthorship, sanctioningAuthor, code, nomStatus, publishedInId, publishedInPage, origin, type, webpage, fossil, remarks);
+    return Objects.hash(id, datasetKey, sectorKey, homotypicNameId, nameIndexId, scientificName, authorship, rank, uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, strain, candidatus, notho, combinationAuthorship, basionymAuthorship, sanctioningAuthor, code, nomStatus, publishedInId, publishedInPage, origin, type, webpage, fossil, remarks);
   }
   
   @Override

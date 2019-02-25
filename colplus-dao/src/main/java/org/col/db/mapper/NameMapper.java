@@ -1,6 +1,8 @@
 package org.col.db.mapper;
 
 import java.util.List;
+import java.util.Set;
+import javax.annotation.Nullable;
 
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.session.ResultHandler;
@@ -23,6 +25,11 @@ public interface NameMapper extends DatasetCRUDMapper<Name> {
   
   Name getByTaxon(@Param("datasetKey") int datasetKey, @Param("taxonId") String taxonId);
   
+  /**
+   * Lists all distinct name index ids from the names table.
+   */
+  Set<String> listNameIndexIds(@Param("datasetKey") int datasetKey, @Nullable @Param("sectorKey") Integer sectorKey);
+
   /**
    * Lists all homotypic names based on the same homotypic name key
    *

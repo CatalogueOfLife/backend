@@ -1,5 +1,7 @@
 package org.col.admin.assembly;
 
+import java.io.IOException;
+import java.io.StringWriter;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -23,6 +25,7 @@ import org.col.db.dao.DatasetImportDao;
 import org.col.db.dao.MatchingDao;
 import org.col.db.dao.TaxonDao;
 import org.col.db.mapper.*;
+import org.col.db.printer.TextTreePrinter;
 import org.col.es.NameUsageIndexServiceEs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -119,15 +122,24 @@ public class SectorSync implements Runnable {
   private void metrics() {
     try (SqlSession session = factory.openSession(true)) {
       SectorImportMapper sim = session.getMapper(SectorImportMapper.class);
-      state.setDescriptionCount(sim.countDescription(datasetKey, sector.getKey()));
-      state.setDistributionCount(sim.countDistribution(datasetKey, sector.getKey()));
-      state.setMediaCount(sim.countMedia(datasetKey, sector.getKey()));
-      state.setNameCount(sim.countName(datasetKey, sector.getKey()));
-      state.setReferenceCount(sim.countReference(datasetKey, sector.getKey()));
-      state.setTaxonCount(sim.countTaxon(datasetKey, sector.getKey()));
-      state.setVernacularCount(sim.countVernacular(datasetKey, sector.getKey()));
-      state.setIssueCount(DatasetImportDao.countMap(Issue.class, sim.countIssues(datasetKey, sector.getKey())));
+      state.setDescriptionCount(sim.countDescription(catalogueKey, sector.getKey()));
+      state.setDistributionCount(sim.countDistribution(catalogueKey, sector.getKey()));
+      state.setMediaCount(sim.countMedia(catalogueKey, sector.getKey()));
+      state.setNameCount(sim.countName(catalogueKey, sector.getKey()));
+      state.setReferenceCount(sim.countReference(catalogueKey, sector.getKey()));
+      state.setTaxonCount(sim.countTaxon(catalogueKey, sector.getKey()));
+      state.setVernacularCount(sim.countVernacular(catalogueKey, sector.getKey()));
+      state.setIssueCount(DatasetImportDao.countMap(Issue.class, sim.countIssues(catalogueKey, sector.getKey())));
       //TODO: usagesByRankCount
+
+      try {
+        StringWriter tree = new StringWriter();
+        TextTreePrinter.sector(catalogueKey, sector.getKey(), factory, tree).print();
+        state.setTextTree(tree.toString());
+      } catch (IOException e) {
+        LOG.error("Failed to print sector {} of catalogue {}", sector.getKey(), catalogueKey, e);
+      }
+      state.setNames(session.getMapper(NameMapper.class).listNameIndexIds(datasetKey, sector.getKey()));
       sim.create(state);
     }
   }
@@ -239,7 +251,7 @@ public class SectorSync implements Runnable {
           .collect(Collectors.toSet());
       LOG.info("Traverse taxon tree, blocking {} nodes", blockedIds.size());
       final TreeCopyHandler treeHandler = new TreeCopyHandler(session);
-      tm.processTree(datasetKey, sector.getSubject().getId(), blockedIds, false, treeHandler);
+      tm.processTree(datasetKey, null, sector.getSubject().getId(), blockedIds, false, treeHandler);
       session.commit();
     }
   }
@@ -261,6 +273,7 @@ public class SectorSync implements Runnable {
     public void handleResult(ResultContext<? extends Taxon> ctxt) {
       Taxon tax = ctxt.getResultObject();
       tax.setSectorKey(sector.getKey());
+      tax.getName().setSectorKey(sector.getKey());
       
       String parentID;
       // treat root node according to sector mode

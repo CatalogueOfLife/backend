@@ -29,6 +29,7 @@
         started,
         finished,
         text_tree,
+        names,
         name_count,
         taxon_count,
         reference_count,
@@ -47,6 +48,7 @@
         #{imp.started},
         #{imp.finished},
         #{imp.textTree},
+        #{imp.names, typeHandler=org.col.db.type.StringSetTypeHandler},
         #{imp.nameCount},
         #{imp.taxonCount},
         #{imp.referenceCount},
@@ -78,10 +80,11 @@
     <!--  A mapping to Name, mostly auto mapped -->
     <resultMap id="sectorImportResultMap" type="SectorImport" autoMapping="true">
         <result property="issueCount" column="issue_count" typeHandler="org.col.db.type2.HstoreIssueCountTypeHandler"/>
+        <result property="names" column="names" typeHandler="org.col.db.type.StringSetTypeHandler"/>
     </resultMap>
 
     <select id="get" resultMap="sectorImportResultMap">
-        SELECT <include refid="SELECT" />, text_tree
+        SELECT <include refid="SELECT" />, text_tree, names
         FROM <include refid="FROM" />
         WHERE sector_key=#{key} AND attempt=#{attempt}
     </select>

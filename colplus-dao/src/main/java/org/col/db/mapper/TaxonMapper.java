@@ -47,11 +47,13 @@ public interface TaxonMapper extends DatasetCRUDMapper<Taxon> {
    * An optional exclusion filter can be used to prevent traversal of subtrees.
    * Synonyms are not traversed, this only works on Taxa!
    *
+   * @param sectorKey optional sector key to limit the traversal to
    * @param startID taxon id to start the traversal. Will be included in the result. If null start with all root taxa
    * @param exclusions set of taxon ids to exclude from traversal. This will also exclude all descendants
    * @param depthFirst if true uses a depth first traversal which is more expensive then breadth first!
    */
   void processTree(@Param("datasetKey") int datasetKey,
+                   @Param("sectorKey") Integer sectorKey,
                    @Param("startID") @Nullable  String startID,
                    @Param("exclusions") @Nullable Set<String> exclusions,
                    @Param("depthFirst") boolean depthFirst,

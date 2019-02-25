@@ -1,10 +1,7 @@
 package org.col.api.model;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.google.common.base.Predicates;
@@ -34,8 +31,10 @@ public class SectorImport {
   private LocalDateTime finished;
   private String error;
   
-  // metrics
+  // data for diffs
   private String textTree;
+  private Set<String> names;
+  // metrics
   private Integer descriptionCount;
   private Integer distributionCount;
   private Integer mediaCount;
@@ -100,6 +99,14 @@ public class SectorImport {
   
   public void setTextTree(String textTree) {
     this.textTree = textTree;
+  }
+  
+  public Set<String> getNames() {
+    return names;
+  }
+  
+  public void setNames(Set<String> names) {
+    this.names = names;
   }
   
   public Integer getDescriptionCount() {
@@ -186,6 +193,7 @@ public class SectorImport {
         Objects.equals(finished, that.finished) &&
         Objects.equals(error, that.error) &&
         Objects.equals(textTree, that.textTree) &&
+        Objects.equals(names, that.names) &&
         Objects.equals(descriptionCount, that.descriptionCount) &&
         Objects.equals(distributionCount, that.distributionCount) &&
         Objects.equals(mediaCount, that.mediaCount) &&
@@ -199,7 +207,7 @@ public class SectorImport {
   
   @Override
   public int hashCode() {
-    return Objects.hash(sectorKey, attempt, state, started, finished, error, textTree, descriptionCount, distributionCount, mediaCount, nameCount, referenceCount, taxonCount, vernacularCount, issueCount, usagesByRankCount);
+    return Objects.hash(sectorKey, attempt, state, started, finished, error, textTree, names, descriptionCount, distributionCount, mediaCount, nameCount, referenceCount, taxonCount, vernacularCount, issueCount, usagesByRankCount);
   }
   
   public static List<State> runningStates() {

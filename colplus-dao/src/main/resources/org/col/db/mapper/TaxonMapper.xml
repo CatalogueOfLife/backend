@@ -231,10 +231,16 @@
                 </if>
             FROM <include refid="FROM" />
                 JOIN x ON x.id = t.parent_id
-            <if test="exclusions != null and !exclusions.isEmpty()">
-                WHERE t.id NOT IN
-                <foreach item="id" index="idx" collection="exclusions" open="(" separator="," close=")">#{id}</foreach>
-            </if>
+            <where>
+                <if test="exclusions != null and !exclusions.isEmpty()">
+                    t.id NOT IN
+                    <foreach item="id" collection="exclusions" open="(" separator="," close=")">#{id}</foreach>
+                </if>
+                <if test="sectorKey != null">
+                    AND t.sector_key != #{sectorKey}
+                </if>
+            </where>
+
         )
         SELECT * FROM x
         <if test="depthFirst">

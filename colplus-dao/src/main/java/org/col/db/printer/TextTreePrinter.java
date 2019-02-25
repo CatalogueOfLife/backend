@@ -9,10 +9,8 @@ import org.apache.ibatis.session.ResultContext;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.col.api.model.Name;
-import org.col.api.model.NameUsage;
-import org.col.api.model.Synonym;
-import org.col.api.model.Taxon;
+import org.col.api.model.*;
+import org.col.db.mapper.SectorMapper;
 import org.col.db.mapper.SynonymMapper;
 import org.col.db.mapper.TaxonMapper;
 
@@ -37,7 +35,7 @@ import org.col.db.mapper.TaxonMapper;
  * Absinthium viridifolium var. rupestre (L.) Besser
  * </pre>
  */
-public class DatasetPrinter implements ResultHandler<Taxon> {
+public class TextTreePrinter implements ResultHandler<Taxon> {
   public static final String SYNONYM_SYMBOL = "*";
   public static final String BASIONYM_SYMBOL = "$";
   
@@ -45,23 +43,44 @@ public class DatasetPrinter implements ResultHandler<Taxon> {
   private int level = 0;
   private final Writer writer;
   private final int datasetKey;
+  private final Integer sectorKey;
+  private final String startID;
   private final SqlSessionFactory factory;
   private SqlSession session;
   private SynonymMapper sm;
   private final LinkedList<Taxon> parents = new LinkedList<>();
   
-  public DatasetPrinter(int datasetKey, SqlSessionFactory factory, Writer writer) {
+  /**
+   * @param sectorKey optional sectorKey to restrict printed tree to
+   */
+  private TextTreePrinter(int datasetKey, Integer sectorKey, String startID, SqlSessionFactory factory, Writer writer) {
     this.datasetKey = datasetKey;
+    this.startID = startID;
+    this.sectorKey = sectorKey;
     this.factory = factory;
     this.writer = writer;
   }
   
+  public static TextTreePrinter dataset(int datasetKey, SqlSessionFactory factory, Writer writer) {
+    return new TextTreePrinter(datasetKey, null, null, factory, writer);
+  }
+  
+  /**
+   * Prints a sector from the given catalogue.
+   */
+  public static TextTreePrinter sector(int catalogueKey, final int sectorKey, SqlSessionFactory factory, Writer writer) {
+    try (SqlSession session = factory.openSession(true)) {
+      Sector s = session.getMapper(SectorMapper.class).get(sectorKey);
+      return new TextTreePrinter(catalogueKey, sectorKey, s.getTarget().getId(), factory, writer);
+    }
+  }
+
   public void print() throws IOException {
     try {
       session = factory.openSession(true);
       sm = session.getMapper(SynonymMapper.class);
       TaxonMapper tm = session.getMapper(TaxonMapper.class);
-      tm.processTree(datasetKey, null, null, true, this);
+      tm.processTree(datasetKey, sectorKey, startID, null, true, this);
 
     } finally {
       writer.flush();
