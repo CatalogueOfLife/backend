@@ -29,9 +29,9 @@ public class MediaMapperTest extends TaxonExtensionMapperTest<Media, MediaMapper
         Media d = new Media();
         d.setType(t);
         d.setFormat("Etymology");
-        d.setTitle(RandomUtils.randomString(100));
+        d.setTitle(RandomUtils.randomLatinString(100));
         d.setCaptured(LocalDate.now());
-        d.setCapturedBy(RandomUtils.randomString(20));
+        d.setCapturedBy(RandomUtils.randomLatinString(20));
         d.setLicense(l);
         d.setLink(RandomUtils.randomUri());
         d.setUrl(RandomUtils.randomUri());

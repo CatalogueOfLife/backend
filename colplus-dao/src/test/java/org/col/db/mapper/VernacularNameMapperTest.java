@@ -26,7 +26,7 @@ public class VernacularNameMapperTest extends TaxonExtensionMapperTest<Vernacula
 	List<VernacularName> createTestEntities() {
     List<VernacularName> objs = new ArrayList<>();
 		for (Language l : Language.values()) {
-			VernacularName v = newVernacularName(RandomUtils.randomString(30));
+			VernacularName v = newVernacularName(RandomUtils.randomLatinString(30));
 			v.setLanguage(l);
 			objs.add(TestEntityGenerator.setUserDate(v));
 		}

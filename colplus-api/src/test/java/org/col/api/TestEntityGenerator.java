@@ -317,7 +317,7 @@ public class TestEntityGenerator {
   public static Name newName(int datasetKey, String id, String scientificName, Rank rank) {
     Name n = setUserDate(new Name());
     n.setId(id);
-    n.setIndexNameId(RandomUtils.randomString(10));
+    n.setIndexNameId(RandomUtils.randomLatinString(10));
     n.setHomotypicNameId(id);
     n.setDatasetKey(datasetKey);
     n.setCombinationAuthorship(createAuthorship());
@@ -378,7 +378,7 @@ public class TestEntityGenerator {
   }
 
   public static Reference newReference() {
-    return newReference(RandomUtils.randomString(25));
+    return newReference(RandomUtils.randomLatinString(25));
   }
 
   public static Reference newReference(String title) {
@@ -429,23 +429,23 @@ public class TestEntityGenerator {
     VerbatimRecord rec = new VerbatimRecord(11, "myFile.txt", DwcTerm.Taxon);
     rec.setDatasetKey(TestEntityGenerator.DATASET11.getKey());
     for (Term t : DwcTerm.values()) {
-      rec.put(t, RandomUtils.randomString(1 + RND.nextInt(23)).toLowerCase());
+      rec.put(t, RandomUtils.randomLatinString(1 + RND.nextInt(23)).toLowerCase());
     }
     for (Term t : DcTerm.values()) {
-      rec.put(t, RandomUtils.randomString(1 + RND.nextInt(77)));
+      rec.put(t, RandomUtils.randomUnicodeString(1 + RND.nextInt(77)));
     }
     for (Term t : GbifTerm.values()) {
-      rec.put(t, RandomUtils.randomString(1 + RND.nextInt(8)));
+      rec.put(t, RandomUtils.randomLatinString(1 + RND.nextInt(8)));
     }
     rec.put(UnknownTerm.build("http://col.plus/terms/punk"),
-        RandomUtils.randomString(500 + RND.nextInt(2000)));
+        RandomUtils.randomLatinString(500 + RND.nextInt(2000)));
     rec.addIssue(Issue.ACCEPTED_NAME_MISSING);
     rec.addIssue(Issue.POTENTIAL_VARIANT);
     return rec;
   }
 
   public static SimpleName newNameRef() {
-    return newNameRef(RandomUtils.randomString(5));
+    return newNameRef(RandomUtils.randomLatinString(5));
   }
 
   public static SimpleName newNameRef(String id) {

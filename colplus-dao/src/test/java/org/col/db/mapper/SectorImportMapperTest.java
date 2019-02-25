@@ -3,7 +3,7 @@ package org.col.db.mapper;
 import java.time.LocalDateTime;
 
 import com.google.common.collect.Lists;
-import org.apache.commons.lang3.RandomStringUtils;
+import org.col.api.RandomUtils;
 import org.col.api.TestEntityGenerator;
 import org.col.api.model.Page;
 import org.col.api.model.Sector;
@@ -26,7 +26,7 @@ public class SectorImportMapperTest extends MapperTestBase<SectorImportMapper> {
     s.setMode(Sector.Mode.ATTACH);
     s.setSubject(newNameRef());
     s.setTarget(newNameRef());
-    s.setNote(RandomStringUtils.random(1024));
+    s.setNote(RandomUtils.randomUnicodeString(1024));
     s.setCreatedBy(TestEntityGenerator.USER_EDITOR.getKey());
     s.setModifiedBy(TestEntityGenerator.USER_EDITOR.getKey());
     
@@ -41,6 +41,7 @@ public class SectorImportMapperTest extends MapperTestBase<SectorImportMapper> {
     d.setState(state);
     d.setStarted(LocalDateTime.now());
     d.setFinished(LocalDateTime.now());
+    d.setTextTree(RandomUtils.randomUnicodeString(1234567));
     d.setNameCount(65432);
     d.setTaxonCount(5748329);
     d.setReferenceCount(9781);
@@ -61,7 +62,7 @@ public class SectorImportMapperTest extends MapperTestBase<SectorImportMapper> {
     commit();
     assertEquals(1, d1.getAttempt());
   
-    SectorImport d2 = mapper().list(d1.getSectorKey(), null, new Page(0, 100)).get(0);
+    SectorImport d2 = mapper().get(d1.getSectorKey(), d1.getAttempt());
     assertEquals(d1, d2);
   }
   

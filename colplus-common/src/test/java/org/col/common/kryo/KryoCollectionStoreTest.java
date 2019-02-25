@@ -50,7 +50,7 @@ public class KryoCollectionStoreTest {
     Reference r = new Reference();
     r.getCsl().setTitle("Harry Belafonte");
     r.setYear(1989);
-    r.setId("randomString(12)");
+    r.setId("randomLatinString(12)");
     return r;
   }
 

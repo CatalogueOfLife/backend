@@ -42,7 +42,7 @@ public class SynonymMapperTest extends MapperTestBase<SynonymMapper> {
     
     Name an = TestEntityGenerator.newName();
     nameDao.create(an);
-    Taxon t = TestEntityGenerator.newTaxon(an.getDatasetKey(), RandomUtils.randomString(25));
+    Taxon t = TestEntityGenerator.newTaxon(an.getDatasetKey(), RandomUtils.randomLatinString(25));
     t.setName(an);
     taxonMapper.create(t);
     

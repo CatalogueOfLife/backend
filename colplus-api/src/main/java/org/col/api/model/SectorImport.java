@@ -35,6 +35,7 @@ public class SectorImport {
   private String error;
   
   // metrics
+  private String textTree;
   private Integer descriptionCount;
   private Integer distributionCount;
   private Integer mediaCount;
@@ -91,6 +92,14 @@ public class SectorImport {
   
   public void setError(String error) {
     this.error = error;
+  }
+  
+  public String getTextTree() {
+    return textTree;
+  }
+  
+  public void setTextTree(String textTree) {
+    this.textTree = textTree;
   }
   
   public Integer getDescriptionCount() {
@@ -176,6 +185,7 @@ public class SectorImport {
         Objects.equals(started, that.started) &&
         Objects.equals(finished, that.finished) &&
         Objects.equals(error, that.error) &&
+        Objects.equals(textTree, that.textTree) &&
         Objects.equals(descriptionCount, that.descriptionCount) &&
         Objects.equals(distributionCount, that.distributionCount) &&
         Objects.equals(mediaCount, that.mediaCount) &&
@@ -189,7 +199,7 @@ public class SectorImport {
   
   @Override
   public int hashCode() {
-    return Objects.hash(sectorKey, attempt, state, started, finished, error, descriptionCount, distributionCount, mediaCount, nameCount, referenceCount, taxonCount, vernacularCount, issueCount, usagesByRankCount);
+    return Objects.hash(sectorKey, attempt, state, started, finished, error, textTree, descriptionCount, distributionCount, mediaCount, nameCount, referenceCount, taxonCount, vernacularCount, issueCount, usagesByRankCount);
   }
   
   public static List<State> runningStates() {

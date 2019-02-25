@@ -14,7 +14,7 @@ public class UserMapperTest extends CRUDIntMapperTest<ColUser, UserMapper> {
   
   @Override
   ColUser createTestEntity() {
-    return create(RandomUtils.randomString(10));
+    return create(RandomUtils.randomLatinString(10));
   }
   
   @Override

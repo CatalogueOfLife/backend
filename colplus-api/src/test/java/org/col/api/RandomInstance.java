@@ -154,7 +154,7 @@ public class RandomInstance {
     if (len == 0) {
       return emptyToNull || randomBoolean() ? null : StringUtils.EMPTY;
     }
-    return RandomUtils.randomString(len);
+    return RandomUtils.randomLatinString(len);
   }
   
   private static boolean randomBoolean() {

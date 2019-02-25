@@ -94,11 +94,11 @@ public class ReferenceMapperTest extends MapperTestBase<ReferenceMapper> {
   
   private static CslData createCsl() {
     CslData item = new CslData();
-    item.setTitle(RandomUtils.randomString(80));
-    item.setContainerTitle(RandomUtils.randomString(100));
+    item.setTitle(RandomUtils.randomLatinString(80));
+    item.setContainerTitle(RandomUtils.randomLatinString(100));
     item.setPublisher("Springer");
     item.setYearSuffix("1988b");
-    item.setDOI("doi:10.1234/" + RandomUtils.randomString(20));
+    item.setDOI("doi:10.1234/" + RandomUtils.randomLatinString(20));
     return item;
   }
   

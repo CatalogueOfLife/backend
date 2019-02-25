@@ -27,7 +27,7 @@ public class DescriptionMapperTest extends TaxonExtensionMapperTest<Description,
 			for (Language l: Language.values()) {
 				Description d = new Description();
 				d.setCategory("Etymology");
-				d.setDescription(RandomUtils.randomString(1000));
+				d.setDescription(RandomUtils.randomLatinString(1000));
 				d.setLanguage(l);
 				ds.add(TestEntityGenerator.setUserDate(d));
 			}

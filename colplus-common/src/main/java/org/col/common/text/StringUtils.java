@@ -151,7 +151,7 @@ public class StringUtils {
     }
     return sb.toString();
   }
-
+  
   /**
    * Increase a given string by 1, i.e. increase the last char in that string by one. If its a z or Z the char before is increased instead
    * and a new char a is appended. Only true letters are increased, but spaces, punctuation or numbers remain unchanged. Null values stay

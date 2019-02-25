@@ -186,7 +186,7 @@ CREATE TABLE sector_import (
   error TEXT,
   started TIMESTAMP WITHOUT TIME ZONE,
   finished TIMESTAMP WITHOUT TIME ZONE,
-
+  text_tree TEXT,
   name_count INTEGER,
   taxon_count INTEGER,
   reference_count INTEGER,

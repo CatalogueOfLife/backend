@@ -15,10 +15,10 @@ public class RandomUtilsTest {
   
   @Test
   public void testRandomString() {
-    assertEquals(10, RandomUtils.randomString(10).length());
+    assertEquals(10, RandomUtils.randomLatinString(10).length());
     
     // all upper case
-    String rnd = RandomUtils.randomString(22);
+    String rnd = RandomUtils.randomLatinString(22);
     assertEquals(rnd, rnd.toUpperCase());
   
     URI uri = RandomUtils.randomUri();

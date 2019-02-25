@@ -14,6 +14,9 @@ import org.col.db.type2.IntCount;
  */
 public interface SectorImportMapper {
   
+  /**
+   * Retrieves the full import with the entire potentially very large text tree.
+   */
   SectorImport get(@Param("key") int sectorKey, @Param("attempt") int attempt);
   
   /**
@@ -24,13 +27,14 @@ public interface SectorImportMapper {
   /**
    * List all imports optionally filtered by their sectorKey and state(s).
    * Ordered by starting date from latest to historical.
+   * Not that the text tree property is kept null deliberately to not pull too much data into memory.
+   * Use the get method on individual imports if the textTree is needed.
    */
   List<SectorImport> list(@Param("key") @Nullable Integer sectorKey,
                            @Param("states") @Nullable Collection<SectorImport.State> states,
                            @Param("page") Page page);
   
   void create(@Param("imp") SectorImport sectorImport);
-  
   
   Integer countDescription(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
   Integer countDistribution(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);

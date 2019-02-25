@@ -1,7 +1,7 @@
 package org.col.db.mapper;
 
-import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.ibatis.exceptions.PersistenceException;
+import org.col.api.RandomUtils;
 import org.col.api.TestEntityGenerator;
 import org.col.api.model.Sector;
 import org.col.db.MybatisTestUtils;
@@ -66,7 +66,7 @@ public class SectorMapperTest extends CRUDIntMapperTest<Sector, SectorMapper> {
     d.setMode(Sector.Mode.ATTACH);
     d.setSubject(newNameRef());
     d.setTarget(newNameRef());
-    d.setNote(RandomStringUtils.random(1024));
+    d.setNote(RandomUtils.randomUnicodeString(1024));
     d.setCreatedBy(TestEntityGenerator.USER_EDITOR.getKey());
     d.setModifiedBy(TestEntityGenerator.USER_EDITOR.getKey());
     return d;
