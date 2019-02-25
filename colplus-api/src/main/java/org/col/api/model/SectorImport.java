@@ -149,6 +149,14 @@ public class SectorImport {
     this.vernacularCount = vernacularCount;
   }
   
+  public Map<Issue, Integer> getIssueCount() {
+    return issueCount;
+  }
+  
+  public void setIssueCount(Map<Issue, Integer> issueCount) {
+    this.issueCount = issueCount;
+  }
+  
   public StatusRankCounts getUsagesByRankCount() {
     return usagesByRankCount;
   }
@@ -175,12 +183,13 @@ public class SectorImport {
         Objects.equals(referenceCount, that.referenceCount) &&
         Objects.equals(taxonCount, that.taxonCount) &&
         Objects.equals(vernacularCount, that.vernacularCount) &&
+        Objects.equals(issueCount, that.issueCount) &&
         Objects.equals(usagesByRankCount, that.usagesByRankCount);
   }
   
   @Override
   public int hashCode() {
-    return Objects.hash(sectorKey, attempt, state, started, finished, error, descriptionCount, distributionCount, mediaCount, nameCount, referenceCount, taxonCount, vernacularCount, usagesByRankCount);
+    return Objects.hash(sectorKey, attempt, state, started, finished, error, descriptionCount, distributionCount, mediaCount, nameCount, referenceCount, taxonCount, vernacularCount, issueCount, usagesByRankCount);
   }
   
   public static List<State> runningStates() {

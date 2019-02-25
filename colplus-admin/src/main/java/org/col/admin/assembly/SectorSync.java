@@ -17,7 +17,9 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.model.*;
 import org.col.api.vocab.Datasets;
 import org.col.api.vocab.EntityType;
+import org.col.api.vocab.Issue;
 import org.col.common.util.LoggingUtils;
+import org.col.db.dao.DatasetImportDao;
 import org.col.db.dao.MatchingDao;
 import org.col.db.dao.TaxonDao;
 import org.col.db.mapper.*;
@@ -92,6 +94,7 @@ public class SectorSync implements Runnable {
       state.setStarted(LocalDateTime.now());
       
       sync();
+      metrics();
       successCallback.accept(this);
   
     } catch (InterruptedException e) {
@@ -110,6 +113,22 @@ public class SectorSync implements Runnable {
         sim.create(state);
       }
       LoggingUtils.removeSectorMDC();
+    }
+  }
+  
+  private void metrics() {
+    try (SqlSession session = factory.openSession(true)) {
+      SectorImportMapper sim = session.getMapper(SectorImportMapper.class);
+      state.setDescriptionCount(sim.countDescription(datasetKey, sector.getKey()));
+      state.setDistributionCount(sim.countDistribution(datasetKey, sector.getKey()));
+      state.setMediaCount(sim.countMedia(datasetKey, sector.getKey()));
+      state.setNameCount(sim.countName(datasetKey, sector.getKey()));
+      state.setReferenceCount(sim.countReference(datasetKey, sector.getKey()));
+      state.setTaxonCount(sim.countTaxon(datasetKey, sector.getKey()));
+      state.setVernacularCount(sim.countVernacular(datasetKey, sector.getKey()));
+      state.setIssueCount(DatasetImportDao.countMap(Issue.class, sim.countIssues(datasetKey, sector.getKey())));
+      //TODO: usagesByRankCount
+      sim.create(state);
     }
   }
   

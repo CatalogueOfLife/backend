@@ -155,7 +155,7 @@ public class DatasetImportDao {
     di.setVernacularsByLanguageCount(countMap(Language::fromIsoCode, mapper.countVernacularsByLanguage(key)));
   }
   
-  private static <K extends Enum> Map<K, Integer> countMap(Class<K> clazz, List<IntCount> counts) {
+  public static <K extends Enum> Map<K, Integer> countMap(Class<K> clazz, List<IntCount> counts) {
     K[] values = clazz.getEnumConstants();
     Map<K, Integer> map = new HashMap<>(counts.size());
     for (IntCount cnt : counts) {
