@@ -7,8 +7,10 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
+import com.github.difflib.algorithm.DiffException;
 import io.dropwizard.auth.Auth;
 import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.admin.assembly.AssemblyCoordinator;
 import org.col.admin.assembly.AssemblyState;
 import org.col.api.model.ColUser;
@@ -17,6 +19,7 @@ import org.col.api.model.ResultPage;
 import org.col.api.model.SectorImport;
 import org.col.api.vocab.Datasets;
 import org.col.db.mapper.SectorImportMapper;
+import org.col.db.printer.TreeDiffService;
 import org.col.dw.auth.Roles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,9 +31,11 @@ public class AssemblyResource {
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(AssemblyResource.class);
   private final AssemblyCoordinator assembly;
+  private final TreeDiffService diff;
   
-  public AssemblyResource(AssemblyCoordinator assembly) {
+  public AssemblyResource(AssemblyCoordinator assembly, SqlSessionFactory factory) {
     this.assembly = assembly;
+    this.diff = new TreeDiffService(factory);
   }
   
   @GET
@@ -71,12 +76,22 @@ public class AssemblyResource {
   
   @GET
   @Path("/sync/sector/{key}/{attempt}")
-  public SectorImport getImportAttempt(@PathParam("key") int key,
-                                        @PathParam("attempt") int attempt,
-                                        @Context SqlSession session) {
-    return session.getMapper(SectorImportMapper.class).get(key, attempt);
+  public SectorImport getImportAttempt(@PathParam("catKey") int catKey,
+                                       @PathParam("key") int sectorKey,
+                                       @PathParam("attempt") int attempt,
+                                       @Context SqlSession session) {
+    return session.getMapper(SectorImportMapper.class).get(sectorKey, attempt);
   }
   
+  @GET
+  @Path("/diff/sector/{key}")
+  public String getImportAttempt(@PathParam("catKey") int catKey,
+                                 @PathParam("key") int sectorKey,
+                                 @QueryParam("attempts") String attempts,
+                                 @Context SqlSession session) throws DiffException {
+    return diff.diff(sectorKey, attempts);
+  }
+
   private static void requireDraft(int catKey) {
     if (catKey != Datasets.DRAFT_COL) {
       throw new IllegalArgumentException("Only the draft CoL can be assembled at this stage");

@@ -58,6 +58,7 @@
         <hikaricp.version>3.2.0</hikaricp.version>
         <hk2.version>2.5.0-b32</hk2.version>
         <icu4j.version>63.1</icu4j.version>
+        <java-diff-utils.version>4.0</java-diff-utils.version>
         <javax.ws.rs-api.version>2.0.1</javax.ws.rs-api.version>
         <javers.version>3.10.0</javers.version>
         <jjwt.version>0.7.0</jjwt.version>
@@ -465,6 +466,11 @@
             </dependency>
 
             <!-- other -->
+            <dependency>
+                <groupId>io.github.java-diff-utils</groupId>
+                <artifactId>java-diff-utils</artifactId>
+                <version>${java-diff-utils.version}</version>
+            </dependency>
             <dependency>
                 <groupId>org.apache.tika</groupId>
                 <artifactId>tika-core</artifactId>
