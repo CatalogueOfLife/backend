@@ -20,6 +20,8 @@ public class TreeNode implements ID {
   private Integer speciesEstimate;
   private String speciesEstimateReferenceId;
   private Integer sectorKey;
+  private Sector sector;
+  private Decision decision;
   
   /**
    * Only to be used by mybatis mappers, nowhere else!!!

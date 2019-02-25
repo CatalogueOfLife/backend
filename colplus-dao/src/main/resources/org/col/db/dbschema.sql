@@ -464,6 +464,6 @@ IMMUTABLE;
 -- INDICES for non partitioned tables
 CREATE index ON dataset (gbif_key);
 CREATE index ON dataset_import (started);
-CREATE index ON decision (subject_id);
-CREATE index ON sector (subject_id);
+CREATE index ON dataset_import (dataset_key);
+CREATE index ON sector_import (sector_key);
 CREATE index ON sector (target_id);

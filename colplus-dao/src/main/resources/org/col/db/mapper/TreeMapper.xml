@@ -18,8 +18,9 @@
             <property name="prefix" value=""/>
         </include>,
         <choose>
-            <when test="datasetKey == 3">
-                <include refid="org.col.db.mapper.SectorMapper.SELECT" />
+            <when test="datasetKey != @org.col.api.vocab.Datasets@DRAFT_COL">
+                <include refid="org.col.db.mapper.SectorMapper.SELECT" />,
+                <include refid="org.col.db.mapper.DecisionMapper.SELECT" />
             </when>
             <otherwise>
                 NULL as key
@@ -29,8 +30,9 @@
 
     <sql id="FROM">
         taxon_${datasetKey} t JOIN name_${datasetKey} n ON t.name_id=n.id
-        <if test="datasetKey == @org.col.api.vocab.Datasets@DRAFT_COL">
-            LEFT JOIN sector s ON s.target_id=t.id
+        <if test="datasetKey != @org.col.api.vocab.Datasets@DRAFT_COL">
+            LEFT JOIN decision ed ON ed.subject_id=t.id AND ed.dataset_key=#{datasetKey}
+            LEFT JOIN sector    s ON  s.subject_id=t.id AND  s.dataset_key=#{datasetKey}
         </if>
     </sql>
 
@@ -38,6 +40,8 @@
         <id property="id" column="id" />
         <result property="status" column="provisional" typeHandler="org.col.db.type2.TaxonStatusTypeHandler" />
         <association property="_name" javaType="Name" resultMap="org.col.db.mapper.NameMapper.nameResultMap" />
+        <association property="decision" javaType="EditorialDecision" resultMap="org.col.db.mapper.DecisionMapper.decisionResultMap" />
+        <association property="sector" javaType="Sector" resultMap="org.col.db.mapper.SectorMapper.sectorResultMap" />
     </resultMap>
 
     <select id="root" resultMap="treeResultMap">

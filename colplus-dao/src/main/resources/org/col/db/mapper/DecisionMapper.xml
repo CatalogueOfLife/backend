@@ -33,7 +33,7 @@
   </sql>
 
   <sql id="SELECT">
-    <include refid="DecisionColsAll">
+    <include refid="org.col.db.mapper.DecisionMapper.DecisionColsAll">
       <property name="prefix" value="ed."/>
     </include>,
     ed.mode,
