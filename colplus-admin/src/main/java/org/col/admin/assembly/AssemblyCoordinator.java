@@ -75,13 +75,14 @@ public class AssemblyCoordinator implements Managed {
   public synchronized void deleteSector(int sectorKey, ColUser user) {
     // is this sector already syncing?
     if (syncs.containsKey(sectorKey)) {
-      LOG.info("Sector {} already syncing", sectorKey);
+      LOG.info("Sector {} already busy", sectorKey);
       // ignore
+
     } else {
-      SectorSync ss = new SectorSync(sectorKey, factory, null, this::successCallBack, this::errorCallBack, user);
-      syncs.put(sectorKey, exec.submit(ss));
-      imports.put(sectorKey, ss.getState());
-      LOG.info("Queued sync of sector {}", sectorKey);
+      SectorDelete sd = new SectorDelete(sectorKey, factory, null, this::successCallBack, this::errorCallBack, user);
+      syncs.put(sectorKey, exec.submit(sd));
+      imports.put(sectorKey, sd.getState());
+      LOG.info("Queued deletion of sector {}", sectorKey);
     }
   }
   
