@@ -125,14 +125,14 @@ public class SectorSyncTest {
   /**
    * We use old school callbacks here as you cannot easily cancel CopletableFutures.
    */
-  static void successCallBack(SectorSync sync) {
+  static void successCallBack(SectorRunnable sync) {
     System.out.println("Sector Sync success");
   }
   
   /**
    * We use old school callbacks here as you cannot easily cancel CopletableFutures.
    */
-  static void errorCallBack(SectorSync sync, Exception err) {
+  static void errorCallBack(SectorRunnable sync, Exception err) {
     System.out.println("Sector Sync failed:");
     err.printStackTrace();
     fail("Sector sync failed");
