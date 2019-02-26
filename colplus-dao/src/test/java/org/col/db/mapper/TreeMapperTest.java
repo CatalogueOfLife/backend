@@ -3,10 +3,7 @@ package org.col.db.mapper;
 import java.util.List;
 
 import org.col.api.TestEntityGenerator;
-import org.col.api.model.Page;
-import org.col.api.model.Sector;
-import org.col.api.model.SimpleName;
-import org.col.api.model.TreeNode;
+import org.col.api.model.*;
 import org.col.db.MybatisTestUtils;
 import org.junit.Test;
 
@@ -62,11 +59,11 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
     
     List<? extends TreeNode> nodes = mapper().children(DRAFT_COL, "t1", new Page());
     assertEquals(1, nodes.size());
-    noSector(nodes);
+    noSectorKeys(nodes);
   
     nodes = mapper().children(DRAFT_COL, "t2", new Page());
     assertEquals(1, nodes.size());
-    noSector(nodes);
+    noSectorKeys(nodes);
     
     nodes = mapper().children(DRAFT_COL, "t3", new Page());
     assertEquals(2, nodes.size());
@@ -75,8 +72,66 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
     assertEquals(4, nodes.size());
     valid(nodes);
   }
+  
+  @Test
+  public void sourceWithDecisions() {
+  
+    MybatisTestUtils.populateDraftTree(session());
+    MybatisTestUtils.populateTestTree(dataset11, session());
+    
+    SectorMapper sm = mapper(SectorMapper.class);
+    DecisionMapper dm = mapper(DecisionMapper.class);
+    
+    Sector s = TestEntityGenerator.setUserDate(new Sector());
+    s.setDatasetKey(dataset11);
+    s.setSubject(nameref("t2"));
+    s.setTarget(nameref("root-1"));
+    sm.create(s);
+  
+    EditorialDecision d1 = TestEntityGenerator.setUser(new EditorialDecision());
+    d1.setDatasetKey(dataset11);
+    d1.setSubject(nameref("t2"));
+    d1.setMode(EditorialDecision.Mode.UPDATE);
+    dm.create(d1);
+  
+    EditorialDecision d2 = TestEntityGenerator.setUser(new EditorialDecision());
+    d2.setDatasetKey(dataset11);
+    d2.setSubject(nameref("t3"));
+    d2.setMode(EditorialDecision.Mode.BLOCK);
+    dm.create(d2);
 
-  private List<? extends TreeNode> noSector(List<? extends TreeNode> nodes) {
+    
+    List<? extends TreeNode> nodes = mapper().children(dataset11, "t1", new Page());
+    assertEquals(1, nodes.size());
+    equals(s, nodes.get(0).getSector());
+    equals(d1, nodes.get(0).getDecision());
+    noSectorKeys(nodes);
+    
+    nodes = mapper().parents(dataset11, "t4");
+    noSectorKeys(nodes);
+    assertEquals(4, nodes.size());
+  
+    assertNull(nodes.get(0).getSector());
+    assertNull(nodes.get(1).getSector());
+    equals(s, nodes.get(2).getSector());
+    assertNull(nodes.get(3).getSector());
+  
+    assertNull(nodes.get(0).getDecision());
+    equals(d2, nodes.get(1).getDecision());
+    equals(d1, nodes.get(2).getDecision());
+  
+    nodes = mapper().children(dataset11, "t2", new Page());
+    noSectors(noSectorKeys(nodes));
+  }
+  
+  /**
+   * Tests for equality but removes user dates which are usually set by the db
+   */
+  private static <T extends UserManaged> void equals(T o1, T o2) {
+    assertEquals(TestEntityGenerator.nullifyDate(o1), TestEntityGenerator.nullifyDate(o2));
+  }
+  
+  private static List<? extends TreeNode> noSectorKeys(List<? extends TreeNode> nodes) {
     valid(nodes);
     for (TreeNode n : nodes) {
       assertNull(n.getSectorKey());
@@ -84,7 +139,23 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
     return nodes;
   }
   
-  private List<? extends TreeNode> valid(List<? extends TreeNode> nodes) {
+  private static List<? extends TreeNode> noSectors(List<? extends TreeNode> nodes) {
+    valid(nodes);
+    for (TreeNode n : nodes) {
+      assertNull(n.getSector());
+    }
+    return nodes;
+  }
+  
+  private static List<? extends TreeNode> noDecisions(List<? extends TreeNode> nodes) {
+    valid(nodes);
+    for (TreeNode n : nodes) {
+      assertNull(n.getDecision());
+    }
+    return nodes;
+  }
+
+  private static List<? extends TreeNode> valid(List<? extends TreeNode> nodes) {
     for (TreeNode n : nodes) {
       assertNotNull(n.getId());
       assertNotNull(n.getDatasetKey());

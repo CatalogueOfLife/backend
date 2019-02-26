@@ -4,51 +4,42 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="org.col.db.mapper.DecisionMapper">
 
-  <sql id="DecisionCols">
-    ${prefix}subject_id,
-    ${prefix}subject_name,
-    ${prefix}subject_authorship,
-    ${prefix}subject_rank,
-    ${prefix}note,
-    ${prefix}modified,
-    ${prefix}modified_by
-  </sql>
-  <sql id="DecisionColsAll">
-    ${prefix}key,
-    ${prefix}dataset_key AS decision_dataset_key,
-    <include refid="org.col.db.mapper.DecisionMapper.DecisionCols">
-      <property name="prefix" value="${prefix}"/>
-    </include>,
-    ${prefix}created,
-    ${prefix}created_by
-  </sql>
-  <sql id="DecisionProps">
-    #{subject.id},
-    #{subject.name},
-    #{subject.authorship},
-    #{subject.rank}::rank,
-    #{note},
-    now(),
-    #{modifiedBy}
+  <sql id="SelectVar">
+    ${alias}key AS ${prefix}key,
+    ${alias}dataset_key AS ${prefix}dataset_key,
+    ${alias}subject_id AS ${prefix}subject_id,
+    ${alias}subject_name AS ${prefix}subject_name,
+    ${alias}subject_authorship AS ${prefix}subject_authorship,
+    ${alias}subject_rank AS ${prefix}subject_rank,
+    ${alias}note AS ${prefix}note,
+    ${alias}modified AS ${prefix}modified,
+    ${alias}modified_by AS ${prefix}modified_by,
+    ${alias}created AS ${prefix}created,
+    ${alias}created_by AS ${prefix}created_by,
+    ${alias}mode AS ${prefix}mode,
+    ${alias}name AS ${prefix}name,
+    ${alias}status AS ${prefix}status,
+    ${alias}fossil AS ${prefix}fossil,
+    ${alias}recent AS ${prefix}recent,
+    ${alias}lifezones AS ${prefix}lifezones
   </sql>
 
   <sql id="SELECT">
-    <include refid="org.col.db.mapper.DecisionMapper.DecisionColsAll">
-      <property name="prefix" value="ed."/>
-    </include>,
-    ed.mode,
-    ed.name,
-    ed.status,
-    ed.fossil,
-    ed.recent,
-    ed.lifezones
+    <include refid="org.col.db.mapper.DecisionMapper.SelectVar">
+      <property name="alias" value="ed."/>
+      <property name="prefix" value=""/>
+    </include>
   </sql>
 
   <sql id="COLS">
     dataset_key,
-    <include refid="DecisionCols">
-      <property name="prefix" value=""/>
-    </include>,
+    subject_id,
+    subject_name,
+    subject_authorship,
+    subject_rank,
+    note,
+    modified,
+    modified_by,
     mode,
     name,
     status,
@@ -59,7 +50,13 @@
 
   <sql id="PROPS">
     #{datasetKey},
-    <include refid="DecisionProps" />,
+    #{subject.id},
+    #{subject.name},
+    #{subject.authorship},
+    #{subject.rank}::rank,
+    #{note},
+    now(),
+    #{modifiedBy},
     #{mode},
     #{name, typeHandler=org.col.db.type2.NameJsonHandler}::jsonb,
     #{status},
@@ -74,7 +71,6 @@
 
   <resultMap id="decisionResultMap" type="EditorialDecision" autoMapping="true">
     <id property="key" column="key" />
-    <result property="datasetKey" column="decision_dataset_key" />
     <result property="name" column="name" typeHandler="org.col.db.type2.NameJsonHandler" />
     <result property="lifezones" column="lifezones" typeHandler="org.col.db.type.LifezoneSetTypeHandler" />
     <association property="subject" javaType="SimpleName" resultMap="org.col.db.mapper.SectorMapper.refResultMap" columnPrefix="subject_" />

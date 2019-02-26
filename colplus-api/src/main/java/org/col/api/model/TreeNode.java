@@ -117,6 +117,22 @@ public class TreeNode implements ID {
     this.sectorKey = sectorKey;
   }
   
+  public Sector getSector() {
+    return sector;
+  }
+  
+  public void setSector(Sector sector) {
+    this.sector = sector;
+  }
+  
+  public Decision getDecision() {
+    return decision;
+  }
+  
+  public void setDecision(Decision decision) {
+    this.decision = decision;
+  }
+  
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;

@@ -541,6 +541,11 @@ public class TestEntityGenerator {
     managed.forEach(TestEntityGenerator::nullifyUserDate);
   }
   
+  public static <T extends UserManaged> T setUser(T managed) {
+    managed.applyUser(Users.DB_INIT);
+    return managed;
+  }
+
   public static <T extends UserManaged> T setUserDate(T managed) {
     return setUserDate(managed, Users.DB_INIT);
   }

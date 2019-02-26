@@ -4,37 +4,62 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="org.col.db.mapper.SectorMapper">
 
+  <sql id="SelectVar">
+    ${alias}key AS ${prefix}key,
+    ${alias}dataset_key AS ${prefix}dataset_key,
+    ${alias}subject_id AS ${prefix}subject_id,
+    ${alias}subject_name AS ${prefix}subject_name,
+    ${alias}subject_authorship AS ${prefix}subject_authorship,
+    ${alias}subject_rank AS ${prefix}subject_rank,
+    ${alias}target_id AS ${prefix}target_id,
+    ${alias}target_name AS ${prefix}target_name,
+    ${alias}target_authorship AS ${prefix}target_authorship,
+    ${alias}target_rank AS ${prefix}target_rank,
+    ${alias}mode AS ${prefix}mode,
+    ${alias}note AS ${prefix}note,
+    ${alias}modified AS ${prefix}modified,
+    ${alias}modified_by AS ${prefix}modified_by,
+    ${alias}created AS ${prefix}created,
+    ${alias}created_by AS ${prefix}created_by
+  </sql>
+
   <sql id="SELECT">
-    <include refid="org.col.db.mapper.DecisionMapper.DecisionColsAll">
-      <property name="prefix" value="s."/>
-    </include>,
-    s.target_id,
-    s.target_name,
-    s.target_authorship,
-    s.target_rank,
-    s.mode
+    <include refid="org.col.db.mapper.SectorMapper.SelectVar">
+      <property name="alias" value="s."/>
+      <property name="prefix" value=""/>
+    </include>
   </sql>
 
   <sql id="COLS">
     dataset_key,
-    <include refid="org.col.db.mapper.DecisionMapper.DecisionCols">
-      <property name="prefix" value=""/>
-    </include>,
+    subject_id,
+    subject_name,
+    subject_authorship,
+    subject_rank,
     target_id,
     target_name,
     target_authorship,
     target_rank,
-    mode
+    mode,
+    note,
+    modified,
+    modified_by
   </sql>
 
   <sql id="PROPS">
     #{datasetKey},
-    <include refid="org.col.db.mapper.DecisionMapper.DecisionProps" />,
+    #{subject.id},
+    #{subject.name},
+    #{subject.authorship},
+    #{subject.rank}::rank,
     #{target.id},
     #{target.name},
     #{target.authorship},
     #{target.rank}::rank,
-    #{mode}
+    #{mode},
+    #{note},
+    now(),
+    #{modifiedBy}
   </sql>
 
   <sql id="FROM">
@@ -55,7 +80,6 @@
   <!-- A mapping to Distribution, mostly auto mapped -->
   <resultMap id="sectorResultMap" type="Sector" autoMapping="true">
     <id property="key" column="key" />
-    <result property="datasetKey" column="decision_dataset_key" />
     <association property="subject" javaType="SimpleName" resultMap="org.col.db.mapper.SectorMapper.refResultMap" columnPrefix="subject_" />
     <association property="target" javaType="SimpleName" resultMap="org.col.db.mapper.SectorMapper.refResultMap" columnPrefix="target_" />
   </resultMap>
