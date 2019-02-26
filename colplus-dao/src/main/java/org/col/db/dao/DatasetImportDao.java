@@ -14,6 +14,7 @@ import org.col.api.model.Page;
 import org.col.api.model.ResultPage;
 import org.col.api.vocab.*;
 import org.col.db.mapper.DatasetImportMapper;
+import org.col.db.mapper.DatasetMapper;
 import org.col.db.type2.IntCount;
 import org.col.db.type2.StringCount;
 import org.gbif.dwc.terms.Term;
@@ -92,7 +93,15 @@ public class DatasetImportDao {
       updateMetrics(mapper, di);
       mapper.create(di);
     }
+    // also update dataset with attempt
+    updateDatasetLastAttempt(di);
     return di;
+  }
+  
+  public void updateDatasetLastAttempt(DatasetImport di) {
+    try (SqlSession session = factory.openSession(true)) {
+      session.getMapper(DatasetMapper.class).updateLastImport(di.getDatasetKey(), di.getAttempt());
+    }
   }
   
   public DatasetImport getLast(Dataset d) {

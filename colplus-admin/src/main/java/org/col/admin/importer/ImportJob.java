@@ -182,7 +182,9 @@ public class ImportJob implements Runnable {
         updateState(ImportState.INSERTING);
         store = NeoDbFactory.open(datasetKey, getAttempt(), cfg.normalizer);
         new PgImport(datasetKey, store, factory, cfg.importer).call();
-  
+        // update dataset with latest success attempt now that all data is in postgres - even if we fail further down
+        dao.updateDatasetLastAttempt(di);
+
         LOG.info("Build import metrics for dataset {}", datasetKey);
         updateState(ImportState.BUILDING_METRICS);
         dao.updateMetrics(di);
