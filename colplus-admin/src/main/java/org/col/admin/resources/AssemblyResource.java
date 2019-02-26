@@ -39,7 +39,6 @@ public class AssemblyResource {
   }
   
   @GET
-  @Path("/state")
   public AssemblyState state(@PathParam("catKey") int catKey) {
     requireDraft(catKey);
     return assembly.getState();
@@ -66,7 +65,35 @@ public class AssemblyResource {
     requireDraft(catKey);
     assembly.syncSector(sector.sectorKey, user);
   }
-
+  
+  @DELETE
+  @Path("/sync/{sectorKey}")
+  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
+  public void deleteSync(@PathParam("catKey") int catKey, @PathParam("sectorKey") int sectorKey, @Auth ColUser user) {
+    requireDraft(catKey);
+    assembly.cancel(sectorKey, user);
+  }
+  
+  @GET
+  @Path("/sync/{sectorKey}/{attempt}")
+  public SectorImport getImportAttempt(@PathParam("catKey") int catKey,
+                                       @PathParam("sectorKey") int sectorKey,
+                                       @PathParam("attempt") int attempt,
+                                       @Context SqlSession session) {
+    requireDraft(catKey);
+    return session.getMapper(SectorImportMapper.class).get(sectorKey, attempt);
+  }
+  
+  @GET
+  @Path("/sync/{sectorKey}/diff")
+  public String getImportAttempt(@PathParam("catKey") int catKey,
+                                 @PathParam("sectorKey") int sectorKey,
+                                 @QueryParam("attempts") String attempts,
+                                 @Context SqlSession session) throws DiffException {
+    requireDraft(catKey);
+    return diff.diff(sectorKey, attempts);
+  }
+  
   @DELETE
   @Path("/sector/{key}")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
@@ -79,33 +106,7 @@ public class AssemblyResource {
     public int sectorKey;
   }
   
-  @DELETE
-  @Path("/sector/{key}/sync")
-  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void deleteSync(@PathParam("catKey") int catKey, @PathParam("key") int sectorKey, @Auth ColUser user) {
-    requireDraft(catKey);
-    assembly.cancel(sectorKey, user);
-  }
-  
-  @GET
-  @Path("/sector/{key}/sync/{attempt}")
-  public SectorImport getImportAttempt(@PathParam("catKey") int catKey,
-                                       @PathParam("key") int sectorKey,
-                                       @PathParam("attempt") int attempt,
-                                       @Context SqlSession session) {
-    requireDraft(catKey);
-    return session.getMapper(SectorImportMapper.class).get(sectorKey, attempt);
-  }
-  
-  @GET
-  @Path("/sector/{key}/diff")
-  public String getImportAttempt(@PathParam("catKey") int catKey,
-                                 @PathParam("key") int sectorKey,
-                                 @QueryParam("attempts") String attempts,
-                                 @Context SqlSession session) throws DiffException {
-    requireDraft(catKey);
-    return diff.diff(sectorKey, attempts);
-  }
+
 
   
   private static void requireDraft(int catKey) {
