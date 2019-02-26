@@ -27,7 +27,7 @@ public class AssemblyCoordinator implements Managed {
   private ExecutorService exec;
   private final SqlSessionFactory factory;
   private final Map<Integer, Future> syncs = new ConcurrentHashMap<Integer, Future>();
-  private final Map<Integer, SectorImport> syncStates = new ConcurrentHashMap<Integer, SectorImport>();
+  private final Map<Integer, SectorImport> imports = new ConcurrentHashMap<>();
   private final Timer timer;
   private final Counter counter;
   private final Counter failed;
@@ -56,7 +56,7 @@ public class AssemblyCoordinator implements Managed {
   }
   
   public AssemblyState getState() {
-    return new AssemblyState(Lists.newArrayList(syncStates.values()), (int) failed.getCount(), (int) counter.getCount());
+    return new AssemblyState(Lists.newArrayList(imports.values()), (int) failed.getCount(), (int) counter.getCount());
   }
   
   public synchronized void syncSector(int sectorKey, ColUser user) {
@@ -67,7 +67,20 @@ public class AssemblyCoordinator implements Managed {
     } else {
       SectorSync ss = new SectorSync(sectorKey, factory, null, this::successCallBack, this::errorCallBack, user);
       syncs.put(sectorKey, exec.submit(ss));
-      syncStates.put(sectorKey, ss.getState());
+      imports.put(sectorKey, ss.getState());
+      LOG.info("Queued sync of sector {}", sectorKey);
+    }
+  }
+  
+  public synchronized void deleteSector(int sectorKey, ColUser user) {
+    // is this sector already syncing?
+    if (syncs.containsKey(sectorKey)) {
+      LOG.info("Sector {} already syncing", sectorKey);
+      // ignore
+    } else {
+      SectorSync ss = new SectorSync(sectorKey, factory, null, this::successCallBack, this::errorCallBack, user);
+      syncs.put(sectorKey, exec.submit(ss));
+      imports.put(sectorKey, ss.getState());
       LOG.info("Queued sync of sector {}", sectorKey);
     }
   }
@@ -75,7 +88,7 @@ public class AssemblyCoordinator implements Managed {
   /**
    * We use old school callbacks here as you cannot easily cancel CompletableFutures.
    */
-  private void successCallBack(SectorSync sync) {
+  private void successCallBack(SectorRunnable sync) {
     Duration durQueued = Duration.between(sync.getCreated(), sync.getStarted());
     Duration durRun = Duration.between(sync.getStarted(), LocalDateTime.now());
     LOG.info("Sector Sync {} finished. {} min queued, {} min to execute", sync.getSectorKey(), durQueued.toMinutes(), durRun.toMinutes());
@@ -87,7 +100,7 @@ public class AssemblyCoordinator implements Managed {
   /**
    * We use old school callbacks here as you cannot easily cancel CompletableFutures.
    */
-  private void errorCallBack(SectorSync sync, Exception err) {
+  private void errorCallBack(SectorRunnable sync, Exception err) {
     LOG.error("Sector Sync {} failed: {}", sync.getSectorKey(), err.getCause().getMessage(), err.getCause());
     failed.inc();
     syncs.remove(sync.getSectorKey());
@@ -97,7 +110,7 @@ public class AssemblyCoordinator implements Managed {
   
   public void cancel(int sectorKey, ColUser user) {
     if (syncs.containsKey(sectorKey)) {
-      syncStates.get(sectorKey).setState(SectorImport.State.CANCELED);
+      imports.get(sectorKey).setState(SectorImport.State.CANCELED);
       syncs.get(sectorKey).cancel(true);
     }
   }

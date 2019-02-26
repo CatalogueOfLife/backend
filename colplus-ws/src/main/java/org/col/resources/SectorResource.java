@@ -66,7 +66,9 @@ public class SectorResource extends CRUDIntResource<Sector> {
   
   @Override
   public void delete(Integer key, @Auth ColUser user, @Context SqlSession session) {
-    super.delete(key, user, session);
+    // do not allow to delete a sector directly
+    // instead an asyncroneous sector deletion should be triggered in the admin-ws which also removes catalogue data
+    throw new NotAllowedException("Sectors cannot be deleted directly. Use the assembly service instead");
   }
   
   @GET

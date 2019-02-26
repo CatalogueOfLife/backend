@@ -2,7 +2,6 @@ package org.col.admin.assembly;
 
 import java.io.IOException;
 import java.io.StringWriter;
-import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,10 +16,8 @@ import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.model.*;
-import org.col.api.vocab.Datasets;
 import org.col.api.vocab.EntityType;
 import org.col.api.vocab.Issue;
-import org.col.common.util.LoggingUtils;
 import org.col.db.dao.DatasetImportDao;
 import org.col.db.dao.MatchingDao;
 import org.col.db.dao.TaxonDao;
@@ -31,92 +28,26 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * 1. get all decisions for the source
- * 2. iterate over taxa & syns
+ * Syncs/imports source data for a given sector into the assembled catalgoue
  */
-public class SectorSync implements Runnable {
+public class SectorSync extends SectorRunnable {
   private static final Logger LOG = LoggerFactory.getLogger(SectorSync.class);
   private static Set<EntityType> COPY_DATA = ImmutableSet.of(
       EntityType.REFERENCE,
       EntityType.VERNACULAR,
       EntityType.DISTRIBUTION
   );
-
-  // sources
-  private final int datasetKey;
-  private final Sector sector;
-  // target
-  private final int catalogueKey = Datasets.DRAFT_COL;
-  
-  private final SqlSessionFactory factory;
-  private final NameUsageIndexServiceEs indexService;
-  // maps keyed on taxon ids from this sector
-  private final Map<String, EditorialDecision> decisions = new HashMap<>();
-  private final Map<String, String> foreignChildren = new HashMap<>();
-  private List<Sector> childSectors;
-  private final Consumer<SectorSync> successCallback;
-  private final BiConsumer<SectorSync, Exception> errorCallback;
-  private final LocalDateTime created = LocalDateTime.now();
-  private final ColUser user;
-  private final SectorImport state = new SectorImport();
   
   public SectorSync(int sectorKey, SqlSessionFactory factory, NameUsageIndexServiceEs indexService,
-                    Consumer<SectorSync> successCallback,
-                    BiConsumer<SectorSync, Exception> errorCallback, ColUser user) {
-    this.user = user;
-    try (SqlSession session = factory.openSession(true)) {
-      // check if sector actually exists
-      Sector s = session.getMapper(SectorMapper.class).get(sectorKey);
-      if (s == null) {
-        throw new IllegalArgumentException("Sector "+sectorKey+" does not exist");
-      }
-      this.sector = s;
-      this.datasetKey = sector.getDatasetKey();
-      // check if target actually exists
-      Taxon target = session.getMapper(TaxonMapper.class).get(catalogueKey, sector.getTarget().getId());
-      if (target == null) {
-        throw new IllegalStateException("Sector " + sectorKey + " does have a non existing target id for catalogue " + catalogueKey);
-      }
-      // lookup next attempt
-      List<SectorImport> imports = session.getMapper(SectorImportMapper.class).list(sectorKey, null, new Page(0,1));
-      state.setAttempt(imports == null || imports.isEmpty() ? 1 : imports.get(0).getAttempt() + 1);
-      state.setSectorKey(sectorKey);
-      state.setState(SectorImport.State.WAITING);
-    }
-    this.factory = factory;
-    this.indexService = indexService;
-    this.successCallback = successCallback;
-    this.errorCallback = errorCallback;
+                    Consumer<SectorRunnable> successCallback,
+                    BiConsumer<SectorRunnable, Exception> errorCallback, ColUser user) {
+    super(sectorKey, factory, indexService, successCallback, errorCallback, user);
   }
   
- 
   @Override
-  public void run() {
-    LoggingUtils.setSectorMDC(datasetKey, 0, getClass());
-    try {
-      state.setStarted(LocalDateTime.now());
-      
-      sync();
-      metrics();
-      successCallback.accept(this);
-  
-    } catch (InterruptedException e) {
-      state.setState(SectorImport.State.CANCELED);
-      errorCallback.accept(this, e);
-
-    } catch (Exception e) {
-      state.setState(SectorImport.State.FAILED);
-      state.setError(e.getCause().getMessage());
-      errorCallback.accept(this, e);
-      
-    } finally {
-      state.setFinished(LocalDateTime.now());
-      try (SqlSession session = factory.openSession(true)) {
-        SectorImportMapper sim = session.getMapper(SectorImportMapper.class);
-        sim.create(state);
-      }
-      LoggingUtils.removeSectorMDC();
-    }
+  void doWork() throws Exception {
+    sync();
+    metrics();
   }
   
   private void metrics() {
@@ -144,34 +75,7 @@ public class SectorSync implements Runnable {
     }
   }
   
-  public SectorImport getState() {
-    return state;
-  }
-  
-  private void checkIfCancelled() throws InterruptedException {
-    if (Thread.currentThread().isInterrupted()) {
-      throw new InterruptedException("Sync of sector " + sector.getKey() + " was cancelled");
-    }
-  }
-  
-  public Integer getSectorKey() {
-    return sector.getKey();
-  }
-  
-  public LocalDateTime getCreated() {
-    return created;
-  }
-  
-  public LocalDateTime getStarted() {
-    return state.getStarted();
-  }
-  
   public void sync() throws InterruptedException {
-    state.setState( SectorImport.State.PREPARING);
-    loadDecisions();
-    loadForeignChildren();
-    loadAttachedSectors();
-    checkIfCancelled();
 
     state.setState( SectorImport.State.DELETING);
     deleteOld();
@@ -190,32 +94,6 @@ public class SectorSync implements Runnable {
   
     state.setState( SectorImport.State.FINISHED);
   }
-  
-  private void loadDecisions() {
-    try (SqlSession session = factory.openSession(true)) {
-      DecisionMapper dm = session.getMapper(DecisionMapper.class);
-      for (EditorialDecision ed : dm.list(datasetKey, null)) {
-        decisions.put(ed.getSubject().getId(), ed);
-      }
-    }
-    LOG.info("Loaded {} editorial decisions for sector {}", decisions.size(), sector.getKey());
-  }
-  
-  private void loadForeignChildren() {
-    try (SqlSession session = factory.openSession(true)) {
-      //TODO: implement
-    }
-    LOG.info("Loaded {} children from other sectors with a parent from sector {}", foreignChildren.size(), sector.getKey());
-  }
-  
-  private void loadAttachedSectors() {
-    try (SqlSession session = factory.openSession(true)) {
-      SectorMapper sm = session.getMapper(SectorMapper.class);
-      childSectors=sm.listChildSectors(sector.getKey());
-    }
-    LOG.info("Loaded {} sectors targeting taxa from sector {}", childSectors.size(), sector.getKey());
-  }
-  
   
   private void relinkForeignChildren() {
     //TODO

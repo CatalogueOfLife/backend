@@ -39,14 +39,14 @@ public class AssemblyResource {
   }
   
   @GET
-  @Path("/sync")
+  @Path("/state")
   public AssemblyState state(@PathParam("catKey") int catKey) {
     requireDraft(catKey);
     return assembly.getState();
   }
   
   @GET
-  @Path("/sync/sector")
+  @Path("/sync")
   public ResultPage<SectorImport> list(@QueryParam("sectorKey") Integer sectorKey,
                                        @QueryParam("state") List<SectorImport.State> states,
                                        @QueryParam("running") Boolean running,
@@ -60,38 +60,54 @@ public class AssemblyResource {
   }
   
   @POST
-  @Path("/sync/sector/{key}")
+  @Path("/sync")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void sync(@PathParam("catKey") int catKey, @PathParam("key") int sectorKey, @Auth ColUser user) {
+  public void sync(@PathParam("catKey") int catKey, SyncRequest sector, @Auth ColUser user) {
     requireDraft(catKey);
-    assembly.syncSector(sectorKey, user);
+    assembly.syncSector(sector.sectorKey, user);
+  }
+
+  @DELETE
+  @Path("/sector/{key}")
+  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
+  public void deleteSector(@PathParam("catKey") int catKey, @PathParam("key") int sectorKey, @Auth ColUser user) {
+    requireDraft(catKey);
+    assembly.deleteSector(sectorKey, user);
+  }
+  
+  public static class SyncRequest {
+    public int sectorKey;
   }
   
   @DELETE
-  @Path("/sync/sector/{key}")
+  @Path("/sector/{key}/sync")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void delete(@PathParam("catKey") int catKey, @PathParam("key") int sectorKey, @Auth ColUser user) {
+  public void deleteSync(@PathParam("catKey") int catKey, @PathParam("key") int sectorKey, @Auth ColUser user) {
+    requireDraft(catKey);
     assembly.cancel(sectorKey, user);
   }
   
   @GET
-  @Path("/sync/sector/{key}/{attempt}")
+  @Path("/sector/{key}/sync/{attempt}")
   public SectorImport getImportAttempt(@PathParam("catKey") int catKey,
                                        @PathParam("key") int sectorKey,
                                        @PathParam("attempt") int attempt,
                                        @Context SqlSession session) {
+    requireDraft(catKey);
     return session.getMapper(SectorImportMapper.class).get(sectorKey, attempt);
   }
   
   @GET
-  @Path("/diff/sector/{key}")
+  @Path("/sector/{key}/diff")
   public String getImportAttempt(@PathParam("catKey") int catKey,
                                  @PathParam("key") int sectorKey,
                                  @QueryParam("attempts") String attempts,
                                  @Context SqlSession session) throws DiffException {
+    requireDraft(catKey);
     return diff.diff(sectorKey, attempts);
   }
 
+  
   private static void requireDraft(int catKey) {
     if (catKey != Datasets.DRAFT_COL) {
       throw new IllegalArgumentException("Only the draft CoL can be assembled at this stage");
