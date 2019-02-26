@@ -73,7 +73,7 @@ public class SectorSyncIT {
   void sync(int sectorKey) throws InterruptedException {
     SectorSync ss = new SectorSync(sectorKey, PgSetupRule.getSqlSessionFactory(), null,
         SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, InitMybatisRule.TEST_USER);
-    ss.sync();
+    ss.run();
 
     DatasetImportDao diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory());
     diDao.createSuccess(Datasets.DRAFT_COL);

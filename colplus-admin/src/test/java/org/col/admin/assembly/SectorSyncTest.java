@@ -91,7 +91,7 @@ public class SectorSyncTest {
 
     SectorSync ss = new SectorSync(sector.getKey(), PgSetupRule.getSqlSessionFactory(), null,
         SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestEntityGenerator.USER_EDITOR);
-    ss.sync();
+    ss.run();
   
     diDao.createSuccess(Datasets.DRAFT_COL);
   

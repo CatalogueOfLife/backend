@@ -71,11 +71,10 @@ public class SectorSync extends SectorRunnable {
         LOG.error("Failed to print sector {} of catalogue {}", sector.getKey(), catalogueKey, e);
       }
       state.setNames(session.getMapper(NameMapper.class).listNameIndexIds(datasetKey, sector.getKey()));
-      sim.create(state);
     }
   }
   
-  public void sync() throws InterruptedException {
+  private void sync() throws InterruptedException {
 
     state.setState( SectorImport.State.DELETING);
     deleteOld();

@@ -144,8 +144,24 @@
     </select>
 
     <select id="countIssues" resultType="IntCount">
+        WITH issues AS (
+            SELECT vn.key, vn.issues
+            FROM verbatim_${datasetKey} vn
+                JOIN name_${datasetKey} n ON vn.key=n.verbatim_key
+            WHERE n.sector_key=${sectorKey}
+        UNION
+            SELECT vt.key, vt.issues
+            FROM verbatim_${datasetKey} vt
+            JOIN taxon_${datasetKey} t ON vt.key=t.verbatim_key
+            WHERE t.sector_key=${sectorKey}
+        UNION
+            SELECT vr.key, vr.issues
+            FROM verbatim_${datasetKey} vr
+            JOIN reference_${datasetKey} r ON vr.key=r.verbatim_key
+            WHERE r.sector_key=${sectorKey}
+        )
         SELECT iss AS key, count(*) AS count FROM (
-            SELECT unnest(issues) iss FROM verbatim_${datasetKey} WHERE sector_key=${sectorKey}
+            SELECT unnest(issues) iss FROM issues
         ) AS dis
         GROUP BY iss
     </select>

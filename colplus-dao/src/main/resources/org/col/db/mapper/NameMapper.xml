@@ -197,7 +197,7 @@
 
     <select id="listNameIndexIds" resultType="String" >
         SELECT DISTINCT name_index_id
-        FROM name_#{datasetKey}
+        FROM name_${datasetKey}
         <if test="sectorKey != null">
             WHERE sector_key = #{sectorKey}
         </if>
