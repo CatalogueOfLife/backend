@@ -171,6 +171,8 @@ public class ImportManager implements Managed {
         throw new IllegalArgumentException("Dataset " + datasetKey + " is deleted and cannot be imported");
       } else if (d.getOrigin() == DatasetOrigin.MANAGED) {
         throw new IllegalArgumentException("Dataset " + datasetKey + " is managed and cannot be imported");
+      } else if (d.getKey() < 100) {
+        throw new IllegalArgumentException("Dataset " + datasetKey + " is an assembled catalogue and cannot be imported");
       }
       return d;
     }
