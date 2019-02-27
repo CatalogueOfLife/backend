@@ -29,6 +29,7 @@ import com.univocity.parsers.common.ResultIterator;
 import com.univocity.parsers.common.TextParsingException;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
+import org.apache.commons.lang3.StringUtils;
 import org.col.admin.importer.MappingFlags;
 import org.col.admin.importer.NormalizationFailedException;
 import org.col.api.model.VerbatimRecord;
@@ -310,6 +311,7 @@ public class CsvReader {
             List<Schema.Field> columns = Lists.newArrayList();
             int unknownCounter = 0;
             for (String col : header) {
+              if (StringUtils.isBlank(col)) continue;
               Optional<Term> termOpt = findTerm(termPrefix, col, false);
               if (termOpt.isPresent()) {
                 Term term = termOpt.get();
