@@ -38,9 +38,9 @@ public enum License {
   UNSPECIFIED(null, null),
   
   /**
-   * A license not supported by the CLearinghouse.
+   * A license not supported by the Clearinghouse.
    */
-  UNSUPPORTED(null, null);
+  OTHER(null, null);
   
   License(String title, String url) {
     this.title = title;

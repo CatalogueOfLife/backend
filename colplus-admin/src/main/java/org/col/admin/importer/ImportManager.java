@@ -8,7 +8,9 @@ import java.nio.file.StandardCopyOption;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Queue;
 import java.util.concurrent.*;
 import javax.annotation.Nullable;
 
@@ -116,9 +118,33 @@ public class ImportManager implements Managed {
   
   /**
    * @throws IllegalArgumentException if dataset was scheduled for importing already, queue was full
-   *                                  or dataset does not exist
+   *                                  or dataset does not exist or is of origin managed
    */
   public synchronized ImportRequest submit(final ImportRequest req) throws IllegalArgumentException {
+    validDataset(req.datasetKey);
+    return submitValidDataset(req);
+  }
+  
+  /**
+   * Uploads a new dataset and submits a forced, high priority import request.
+   *
+   * @throws IllegalArgumentException if dataset was scheduled for importing already, queue was full,
+   *                                  dataset does not exist or is not of matching origin
+   */
+  public ImportRequest submit(final int datasetKey, final InputStream content, ColUser user) throws IOException {
+    Dataset d = validDataset(datasetKey);
+    if (d.getOrigin()!= DatasetOrigin.UPLOADED) {
+      throw new IllegalArgumentException("Dataset " + datasetKey + " is not of origin uploaded");
+    }
+    uploadArchive(d, content);
+    return submitValidDataset(new ImportRequest(datasetKey, user.getKey(), true, true));
+  }
+  
+  /**
+   * @throws IllegalArgumentException if dataset was scheduled for importing already, queue was full
+   *                                  or dataset does not exist or is of origin managed
+   */
+  private synchronized ImportRequest submitValidDataset(final ImportRequest req) throws IllegalArgumentException {
     // is this dataset already scheduled?
     if (futures.containsKey(req.datasetKey)) {
       LOG.info("Dataset {} already queued for import", req.datasetKey);
@@ -133,6 +159,21 @@ public class ImportManager implements Managed {
     futures.put(req.datasetKey, exec.submit(createImport(req)));
     LOG.info("Queued import for dataset {}", req.datasetKey);
     return req;
+  }
+  
+  private Dataset validDataset(int datasetKey){
+    try (SqlSession session = factory.openSession(true)) {
+      DatasetMapper dm = session.getMapper(DatasetMapper.class);
+      Dataset d = dm.get(datasetKey);
+      if (d == null) {
+        throw NotFoundException.keyNotFound(Dataset.class, datasetKey);
+      } else if (d.hasDeletedDate()) {
+        throw new IllegalArgumentException("Dataset " + datasetKey + " is deleted and cannot be imported");
+      } else if (d.getOrigin() == DatasetOrigin.MANAGED) {
+        throw new IllegalArgumentException("Dataset " + datasetKey + " is managed and cannot be imported");
+      }
+      return d;
+    }
   }
   
   /**
@@ -154,37 +195,20 @@ public class ImportManager implements Managed {
     failed.inc();
     futures.remove(req.datasetKey);
   }
-
-  /**
-   * Uploads a new dataset and submits a forced, high priority import request.
-   *
-   * @throws IllegalArgumentException if dataset was scheduled for importing already, queue was full,
-   *                                  dataset does not exist or is not of matching origin
-   */
-  public ImportRequest submit(final int datasetKey, final InputStream content, ColUser user) throws IOException {
-    uploadArchive(datasetKey, content);
-    return submit(new ImportRequest(datasetKey, user.getKey(), true, true));
-  }
   
   /**
    * Uploads an input stream to a tmp file and if no errors moves it to the archive source path.
    */
-  private void uploadArchive(int datasetKey, InputStream content) throws NotFoundException, IOException {
+  private void uploadArchive(Dataset d, InputStream content) throws NotFoundException, IOException {
     try (SqlSession session = factory.openSession(true)) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
-      Dataset d = dm.get(datasetKey);
-      if (d == null) {
-        throw NotFoundException.keyNotFound(Dataset.class, datasetKey);
-      } else if (d.getOrigin() != DatasetOrigin.UPLOADED) {
-        throw new IllegalArgumentException("Dataset " + datasetKey + " is of origin " + d.getOrigin());
-      }
       
       Path tmp = Files.createTempFile(cfg.normalizer.scratchDir.toPath(), "upload-", "");
-      LOG.info("Upload data for dataset {} to tmp file {}", datasetKey, tmp);
+      LOG.info("Upload data for dataset {} to tmp file {}", d.getKey(), tmp);
       Files.copy(content, tmp, StandardCopyOption.REPLACE_EXISTING);
       
-      Path source = cfg.normalizer.source(datasetKey).toPath();
-      LOG.debug("Move uploaded data for dataset {} to source repo at {}", datasetKey, source);
+      Path source = cfg.normalizer.source(d.getKey()).toPath();
+      LOG.debug("Move uploaded data for dataset {} to source repo at {}", d.getKey(), source);
       Files.move(tmp, source, StandardCopyOption.REPLACE_EXISTING);
       
       // finally update dataset metadata

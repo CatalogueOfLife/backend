@@ -75,10 +75,12 @@ public class ContinuousImporter implements Managed {
             
           } else {
             for (Dataset d : datasets) {
-              try {
-                manager.submit(new ImportRequest(d.getKey(), Users.IMPORTER, false, false));
-              } catch (IllegalArgumentException e) {
-                // ignore
+              if (!d.hasDeletedDate()) {
+                try {
+                  manager.submit(new ImportRequest(d.getKey(), Users.IMPORTER, false, false));
+                } catch (IllegalArgumentException e) {
+                  // ignore
+                }
               }
             }
           }

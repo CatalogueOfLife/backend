@@ -353,7 +353,26 @@ public class CsvReader {
   }
   
   protected Optional<Term> detectRowType(Schema schema, String termPrefix) {
-    return findTerm(termPrefix, PathUtils.getBasename(schema.file), true);
+    String fn = PathUtils.getBasename(schema.file);
+    Optional<Term> rt = findTerm(termPrefix, fn, true);
+    if (!rt.isPresent() || rt.get() instanceof UnknownTerm) {
+      Optional<Term> orig = rt;
+      // try without plural s
+      if (fn.endsWith("s")) {
+        rt = findTerm(termPrefix, fn.substring(0,fn.length() - 1), true);
+      }
+      // specials for taxon/taxa
+      if (!rt.isPresent() || rt.get() instanceof UnknownTerm) {
+        if (fn.equalsIgnoreCase("taxa")) {
+          rt = findTerm(termPrefix, "Taxon", true);
+        }
+      }
+      // revert to first parsed unknown term
+      if (!rt.isPresent() || rt.get() instanceof UnknownTerm) {
+        rt = orig;
+      }
+    }
+    return rt;
   }
   
   private static Iterable<Path> listDataFiles(Path folder) throws IOException {

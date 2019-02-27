@@ -118,7 +118,7 @@ public class SectorSync extends SectorRunnable {
       session.commit();
     }
   }
-  
+
   private void processTree() {
     try (SqlSession session = factory.openSession(false)) {
       TaxonMapper tm = session.getMapper(TaxonMapper.class);
@@ -145,12 +145,16 @@ public class SectorSync extends SectorRunnable {
       dao = new TaxonDao(session);
       sMapper = session.getMapper(SynonymMapper.class);
     }
-  
+    
     @Override
     public void handleResult(ResultContext<? extends Taxon> ctxt) {
       Taxon tax = ctxt.getResultObject();
       tax.setSectorKey(sector.getKey());
       tax.getName().setSectorKey(sector.getKey());
+  
+      if (decisions.containsKey(tax.getId())) {
+        applyDecision(tax, decisions.get(tax.getId()));
+      }
       
       String parentID;
       // treat root node according to sector mode
@@ -176,6 +180,9 @@ public class SectorSync extends SectorRunnable {
       // Synonyms
       DatasetID acc = new DatasetID(tax);
       for (Synonym syn : sMapper.listByTaxon(tax.getDatasetKey(), tax.getId())) {
+        if (syn.getId() != null && decisions.containsKey(syn.getId())) {
+          applyDecision(syn, decisions.get(syn.getId()));
+        }
         // copy synonym, name, syn, refs
         dao.copySynonym(syn, acc, user);
       }
@@ -187,6 +194,47 @@ public class SectorSync extends SectorRunnable {
       state.setTaxonCount(counter);
     }
     
+    private void applyDecision(Taxon tax, EditorialDecision ed) {
+      switch (ed.getMode()) {
+        case BLOCK:
+          throw new IllegalStateException("Blocked taxon "+tax.getId()+" should not have been traversed");
+        case CHRESONYM:
+          //TODO: we need to exclude the name from CoL. Watch out for linking children correctly
+        case UPDATE:
+          updateUsage(tax, ed);
+      }
+    }
+  
+    private void applyDecision(Synonym syn, EditorialDecision ed) {
+      switch (ed.getMode()) {
+        case BLOCK:
+          //TODO: we need to exclude the name from CoL.
+        case CHRESONYM:
+          //TODO: we need to exclude the name from CoL.
+          break;
+        case UPDATE:
+          updateUsage(syn, ed);
+      }
+    }
+  
+    private void updateUsage(NameUsage u, EditorialDecision ed) {
+      if (ed.getName() != null) {
+        //TODO: update usage
+      }
+      if (ed.getStatus() != null) {
+        //TODO: update usage
+      }
+      if (ed.getLifezones() != null) {
+        //TODO: update usage and all descendants
+      }
+      if (ed.getFossil() != null) {
+        //TODO: update usage and all descendants
+      }
+      if (ed.getRecent() != null) {
+        //TODO: update usage and all descendants
+      }
+    }
+
     private String lookupReference(Reference ref) {
       if (ref != null) {
         //TODO: lookup existing refs from other sectors

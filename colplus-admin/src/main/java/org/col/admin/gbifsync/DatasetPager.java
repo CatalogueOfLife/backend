@@ -157,7 +157,7 @@ public class DatasetPager {
       return null;
     }
     d.setWebsite(uri(g.homepage));
-    d.setLicense(SafeParser.parse(LicenseParser.PARSER, g.license).orElse(License.UNSPECIFIED, License.UNSUPPORTED));
+    d.setLicense(SafeParser.parse(LicenseParser.PARSER, g.license).orElse(License.UNSPECIFIED, License.OTHER));
     //TODO: convert contact and authors
     d.setContact(null);
     d.setAuthorsAndEditors(null);
