@@ -15,9 +15,7 @@ import com.google.common.reflect.ClassPath;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.col.api.jackson.PermissiveEnumSerde;
-import org.col.api.model.ColUser;
-import org.col.api.model.EditorialDecision;
-import org.col.api.model.Sector;
+import org.col.api.model.*;
 import org.col.api.vocab.AreaStandard;
 import org.col.img.ImgConfig;
 import org.gbif.dwc.terms.Term;
@@ -43,7 +41,12 @@ public class VocabResource {
         }
       }
       
-      for (Class<?> clazz : ImmutableList.of(ColUser.Role.class, ImgConfig.Scale.class, EditorialDecision.Mode.class, Sector.Mode.class)) {
+      for (Class<?> clazz : ImmutableList.of(
+          ColUser.Role.class,
+          ImgConfig.Scale.class,
+          EditorialDecision.Mode.class,
+          Sector.Mode.class,
+          SectorImport.State.class)) {
         add(enums, clazz);
       }
       
