@@ -5,6 +5,7 @@ import java.sql.Connection;
 import java.sql.Statement;
 import java.util.concurrent.TimeUnit;
 
+import com.google.common.collect.ImmutableMap;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import io.dropwizard.cli.ConfiguredCommand;
@@ -16,18 +17,13 @@ import org.apache.ibatis.jdbc.ScriptRunner;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.admin.config.AdminServerConfig;
-import org.col.api.model.Name;
-import org.col.api.model.Taxon;
 import org.col.api.vocab.Datasets;
-import org.col.api.vocab.Origin;
 import org.col.api.vocab.Users;
 import org.col.db.MybatisFactory;
 import org.col.db.PgConfig;
+import org.col.db.copy.PgCopyUtils;
 import org.col.db.mapper.DatasetPartitionMapper;
-import org.col.db.mapper.NameMapper;
-import org.col.db.mapper.TaxonMapper;
-import org.gbif.nameparser.api.NameType;
-import org.gbif.nameparser.api.Rank;
+import org.postgresql.jdbc.PgConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -84,6 +80,16 @@ public class InitDbCmd extends ConfiguredCommand<AdminServerConfig> {
       exec(PgConfig.SCHEMA_FILE, runner, con, Resources.getResourceAsReader(PgConfig.SCHEMA_FILE));
       // add common data
       exec(PgConfig.DATA_FILE, runner, con, Resources.getResourceAsReader(PgConfig.DATA_FILE));
+    }
+    
+    // add col & names index partitions
+    setupStandardPartitions(cfg.db);
+  
+    try (Connection con = cfg.db.connect()) {
+      // add draft hierarchy
+      loadDraftHierarchy(con);
+
+      ScriptRunner runner = PgConfig.scriptRunner(con);
       // add known datasets
       exec(PgConfig.DATASETS_FILE, runner, con, Resources.getResourceAsReader(PgConfig.DATASETS_FILE));
       // add known sectors
@@ -91,9 +97,24 @@ public class InitDbCmd extends ConfiguredCommand<AdminServerConfig> {
       // add known decisions
       exec(PgConfig.DECISIONS_FILE, runner, con, Resources.getResourceAsReader(PgConfig.DECISIONS_FILE));
     }
-    
-    // add col & names index partitions
-    setupStandardPartitions(cfg.db);
+  }
+  
+  private static void loadDraftHierarchy(Connection con) throws Exception {
+    PgConnection pgc = (PgConnection) con;
+    PgCopyUtils.copy(pgc, "name_3", "org/col/db/draft/name.csv", ImmutableMap.<String, Object>builder()
+        .put("dataset_key", 3)
+        .put("origin", 0)
+        .put("created_by", Users.DB_INIT)
+        .put("modified_by", Users.DB_INIT)
+        .build());
+    PgCopyUtils.copy(pgc, "taxon_3", "org/col/db/draft/taxon.csv", ImmutableMap.<String, Object>builder()
+        .put("dataset_key", 3)
+        .put("origin", 0)
+        .put("according_to", "CoL")
+        //.put("according_to_date", Year.now().getValue())
+        .put("created_by", Users.DB_INIT)
+        .put("modified_by", Users.DB_INIT)
+        .build());
   }
   
   private static void setupStandardPartitions(PgConfig cfg) {
@@ -109,38 +130,13 @@ public class InitDbCmd extends ConfiguredCommand<AdminServerConfig> {
   }
 
   public static void setupStandardPartitions(SqlSession session) {
-    final Name nBiota = new Name();
-    nBiota.setId("biota");
-    nBiota.setScientificName("Biota");
-    nBiota.setRank(Rank.SUPERKINGDOM);
-    nBiota.setHomotypicNameId(nBiota.getId());
-    nBiota.setOrigin(Origin.SOURCE);
-    nBiota.setType(NameType.INFORMAL);
-    nBiota.setCreatedBy(Users.DB_INIT);
-    nBiota.setModifiedBy(Users.DB_INIT);
-
-    final Taxon tBiota = new Taxon();
-    tBiota.setId("root");
-    tBiota.setName(nBiota);
-    tBiota.setOrigin(Origin.SOURCE);
-    tBiota.setCreatedBy(Users.DB_INIT);
-    tBiota.setModifiedBy(Users.DB_INIT);
-
     DatasetPartitionMapper pm = session.getMapper(DatasetPartitionMapper.class);
-    NameMapper nm = session.getMapper(NameMapper.class);
-    TaxonMapper tm = session.getMapper(TaxonMapper.class);
     for (int key : new int[]{Datasets.COL, Datasets.PCAT, Datasets.DRAFT_COL}) {
       LOG.info("Create catalogue partition {}", key);
       pm.delete(key);
       pm.create(key);
       pm.buildIndices(key);
       pm.attach(key);
-      // add single Biota taxon
-      nBiota.setDatasetKey(key);
-      nm.create(nBiota);
-
-      tBiota.setDatasetKey(key);
-      tm.create(tBiota);
     }
   }
   
