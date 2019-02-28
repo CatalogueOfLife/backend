@@ -8,6 +8,8 @@ import com.google.common.base.Charsets;
 import org.apache.commons.io.IOUtils;
 import org.col.api.model.SectorImport;
 import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class DiffServiceTest {
   static int attemptCnt;
@@ -19,7 +21,12 @@ public class DiffServiceTest {
   
   @Test
   public void namesdiff() throws Exception {
-    System.out.println(DiffService.namesDiff( syncImp("c1", "c2", "3", "dghz"), syncImp("f1", "c2", "32")));
+    DiffReport.NamesDiff diff = DiffService.namesDiff( syncImp("c1", "c2", "3", "dghz"), syncImp("f1", "c2", "32"));
+    assertEquals(3, diff.getDeleted().size());
+    assertTrue(diff.getDeleted().contains("3"));
+  
+    assertEquals(2, diff.getInserted().size());
+    assertTrue(diff.getInserted().contains("f1"));
   }
   
   private static SectorImport syncImp(String... ids) throws IOException {
