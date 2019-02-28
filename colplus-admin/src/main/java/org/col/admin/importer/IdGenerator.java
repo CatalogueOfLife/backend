@@ -9,9 +9,10 @@ import org.col.common.text.StringUtils;
 import org.hashids.Hashids;
 
 public class IdGenerator {
-  private static final String availChars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ.-_!$";
+  private static final String availChars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_-";
+  private static final char PREFERRED_PREFIX = 'x';
   private final AtomicLong counter = new AtomicLong(0);
-  private final Hashids hashids = new Hashids("dvr4.", 4, availChars);
+  private final Hashids hashids = new Hashids("dvr4GgTx", 4, availChars);
   private String prefix;
   
   public IdGenerator() {
@@ -23,7 +24,7 @@ public class IdGenerator {
   }
   
   private static String smallestNonExistingPrefix(Stream<String> existingIds) {
-    final char preferredPrefixChar = '.';
+    final char preferredPrefixChar = PREFERRED_PREFIX;
     final StringBuilder prefix = new StringBuilder(String.valueOf(preferredPrefixChar));
     Set<String> ids = existingIds.filter(s -> s.startsWith(prefix.toString())).collect(Collectors.toSet());
     while (!ids.isEmpty()) {
