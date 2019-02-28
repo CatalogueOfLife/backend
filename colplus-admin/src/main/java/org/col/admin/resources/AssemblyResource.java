@@ -85,7 +85,7 @@ public class AssemblyResource {
   }
   
   @GET
-  @Path("/sync/{sectorKey}/diff")
+    @Path("/sync/{sectorKey}/diff")
   public String getImportAttempt(@PathParam("catKey") int catKey,
                                  @PathParam("sectorKey") int sectorKey,
                                  @QueryParam("attempts") String attempts,
