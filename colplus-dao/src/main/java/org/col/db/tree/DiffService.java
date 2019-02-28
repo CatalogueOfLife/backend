@@ -1,7 +1,9 @@
-package org.col.db.printer;
+package org.col.db.tree;
 
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.BiFunction;
 
 import com.github.difflib.algorithm.DiffException;
 import com.github.difflib.text.DiffRow;
@@ -16,16 +18,25 @@ import org.col.api.model.Page;
 import org.col.api.model.SectorImport;
 import org.col.db.mapper.SectorImportMapper;
 
-public class TreeDiffService {
+public class DiffService {
   private final SqlSessionFactory factory;
   private final static Splitter ATTEMPTS = Splitter.on("..").trimResults();
   private final static Splitter LINE_SPLITTER = Splitter.on('\n');
   
-  public TreeDiffService(SqlSessionFactory factory) {
+  public DiffService(SqlSessionFactory factory) {
     this.factory = factory;
   }
   
-  public TreeDiff diff(int sectorKey, String attempts) throws DiffException {
+  public DiffReport.TreeDiff treeDiff(int sectorKey, String attempts) {
+    return diff(sectorKey, attempts, DiffService::treeDiff);
+  }
+  
+  public DiffReport.NamesDiff namesDiff(int sectorKey, String attempts) {
+    return diff(sectorKey, attempts, DiffService::namesDiff);
+  }
+
+  
+  private <T extends DiffReport> T diff(int sectorKey, String attempts, BiFunction<SectorImport,SectorImport,T> diffFunc) {
     int a1;
     int a2;
     try (SqlSession session = factory.openSession(true)) {
@@ -42,16 +53,14 @@ public class TreeDiffService {
         a1 = Integer.parseInt(attIter.next());
         a2 = Integer.parseInt(attIter.next());
       }
-      return diff(sectorKey, a1, a2);
-    
-    } catch (DiffException | NotFoundException e) {
+      return diff(sectorKey, a1, a2, diffFunc);
+      
+    } catch (IllegalArgumentException | NotFoundException e) {
       throw e;
-    } catch (RuntimeException e) {
-      throw new IllegalArgumentException("Range of attempts to be separated by ..", e);
     }
   }
   
-  public TreeDiff diff(int sectorKey, int attempt1, int attempt2) throws DiffException, NotFoundException {
+  private <T extends DiffReport> T diff(int sectorKey, int attempt1, int attempt2, BiFunction<SectorImport,SectorImport,T> diffFunc) {
     try (SqlSession session = factory.openSession(true)) {
       SectorImportMapper sim = session.getMapper(SectorImportMapper.class);
       SectorImport s1 = sim.get(sectorKey, attempt1);
@@ -59,20 +68,34 @@ public class TreeDiffService {
       if (s1 == null || s2 == null) {
         throw new NotFoundException("Sector "+sectorKey+" sync attempts "+attempt1+".."+attempt2+" not existing");
       }
-      return diff(sectorKey, attempt1, s1.getTextTree(), attempt2, s2.getTextTree());
+      return diffFunc.apply(s1, s2);
     }
   }
   
-  static TreeDiff diff(int sectorKey, int attempt1, String t1, int attempt2, String t2) throws DiffException {
-    final TreeDiff diff = new TreeDiff(sectorKey, attempt1, attempt2);
+  static DiffReport.TreeDiff treeDiff(SectorImport imp1, SectorImport imp2) {
+    final DiffReport.TreeDiff diff = new DiffReport.TreeDiff(imp1.getSectorKey(), imp1.getAttempt(), imp2.getAttempt());
     DiffRowGenerator generator = DiffRowGenerator.create()
         .reportLinesUnchanged(true)
         .build();
     // remove new line in case of equals
-    for (DiffRow row : generator.generateDiffRows(LINE_SPLITTER.splitToList(t1), LINE_SPLITTER.splitToList(t2))) {
-      diff.add(row);
+    try {
+      for (DiffRow row : generator.generateDiffRows(LINE_SPLITTER.splitToList(imp1.getTextTree()), LINE_SPLITTER.splitToList(imp2.getTextTree()))) {
+        diff.add(row);
+      }
+    } catch (DiffException e) {
+      throw new RuntimeException(e);
     }
     return diff;
   }
   
+  static DiffReport.NamesDiff namesDiff(SectorImport imp1, SectorImport imp2) {
+    final DiffReport.NamesDiff diff = new DiffReport.NamesDiff(imp1.getSectorKey(), imp1.getAttempt(), imp2.getAttempt());
+    diff.setDeleted(new HashSet<>(imp1.getNames()));
+    diff.getDeleted().removeAll(imp2.getNames());
+  
+    diff.setInserted(new HashSet<>(imp2.getNames()));
+    diff.getInserted().removeAll(imp1.getNames());
+
+    return diff;
+  }
 }

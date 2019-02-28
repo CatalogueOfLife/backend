@@ -22,7 +22,7 @@ import org.col.db.dao.DatasetImportDao;
 import org.col.db.dao.MatchingDao;
 import org.col.db.dao.TaxonDao;
 import org.col.db.mapper.*;
-import org.col.db.printer.TextTreePrinter;
+import org.col.db.tree.TextTreePrinter;
 import org.col.es.NameUsageIndexServiceEs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

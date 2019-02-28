@@ -19,8 +19,8 @@ import org.col.api.model.ResultPage;
 import org.col.api.model.SectorImport;
 import org.col.api.vocab.Datasets;
 import org.col.db.mapper.SectorImportMapper;
-import org.col.db.printer.TreeDiff;
-import org.col.db.printer.TreeDiffService;
+import org.col.db.tree.DiffReport;
+import org.col.db.tree.DiffService;
 import org.col.dw.auth.Roles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,11 +32,11 @@ public class AssemblyResource {
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(AssemblyResource.class);
   private final AssemblyCoordinator assembly;
-  private final TreeDiffService diff;
+  private final DiffService diff;
   
   public AssemblyResource(AssemblyCoordinator assembly, SqlSessionFactory factory) {
     this.assembly = assembly;
-    this.diff = new TreeDiffService(factory);
+    this.diff = new DiffService(factory);
   }
   
   @GET
@@ -86,15 +86,25 @@ public class AssemblyResource {
   }
   
   @GET
-    @Path("/sync/{sectorKey}/diff")
-  public TreeDiff getImportAttempt(@PathParam("catKey") int catKey,
-                                   @PathParam("sectorKey") int sectorKey,
-                                   @QueryParam("attempts") String attempts,
-                                   @Context SqlSession session) throws DiffException {
+  @Path("/sync/{sectorKey}/treediff")
+  public DiffReport diffTree(@PathParam("catKey") int catKey,
+                              @PathParam("sectorKey") int sectorKey,
+                              @QueryParam("attempts") String attempts,
+                              @Context SqlSession session) throws DiffException {
     requireDraft(catKey);
-    return diff.diff(sectorKey, attempts);
+    return diff.treeDiff(sectorKey, attempts);
   }
   
+  @GET
+  @Path("/sync/{sectorKey}/namesdiff")
+  public DiffReport diffNames(@PathParam("catKey") int catKey,
+                               @PathParam("sectorKey") int sectorKey,
+                               @QueryParam("attempts") String attempts,
+                               @Context SqlSession session) throws DiffException {
+    requireDraft(catKey);
+    return diff.namesDiff(sectorKey, attempts);
+  }
+
   @DELETE
   @Path("/sector/{key}")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})

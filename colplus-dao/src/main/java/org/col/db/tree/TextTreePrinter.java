@@ -1,4 +1,4 @@
-package org.col.db.printer;
+package org.col.db.tree;
 
 import java.io.IOException;
 import java.io.Writer;
