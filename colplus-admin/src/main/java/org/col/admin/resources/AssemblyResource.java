@@ -19,6 +19,7 @@ import org.col.api.model.ResultPage;
 import org.col.api.model.SectorImport;
 import org.col.api.vocab.Datasets;
 import org.col.db.mapper.SectorImportMapper;
+import org.col.db.printer.TreeDiff;
 import org.col.db.printer.TreeDiffService;
 import org.col.dw.auth.Roles;
 import org.slf4j.Logger;
@@ -86,10 +87,10 @@ public class AssemblyResource {
   
   @GET
     @Path("/sync/{sectorKey}/diff")
-  public String getImportAttempt(@PathParam("catKey") int catKey,
-                                 @PathParam("sectorKey") int sectorKey,
-                                 @QueryParam("attempts") String attempts,
-                                 @Context SqlSession session) throws DiffException {
+  public TreeDiff getImportAttempt(@PathParam("catKey") int catKey,
+                                   @PathParam("sectorKey") int sectorKey,
+                                   @QueryParam("attempts") String attempts,
+                                   @Context SqlSession session) throws DiffException {
     requireDraft(catKey);
     return diff.diff(sectorKey, attempts);
   }

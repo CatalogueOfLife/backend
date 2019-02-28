@@ -11,7 +11,7 @@ public class TreeDiffServiceTest {
   
   @Test
   public void diff() throws Exception {
-    System.out.println(TreeDiffService.diff(0, 1, tree("coldp.tree"), 2, tree("coldp2.tree")));
+    System.out.println(TreeDiffService.diff( 1, 1, tree("coldp.tree"), 2, tree("coldp2.tree")));
   }
   
   private String tree(String fn) throws IOException {
