@@ -30,14 +30,16 @@
       "group",
       confidence,
       completeness,
-      contributes_to,
+      names_index,
       created,
       created_by,
       modified,
       modified_by,
       deleted,
       di.finished AS imported,
-      di.verbatim_count AS size
+      di.verbatim_count AS size,
+      case exists(select 1 from sector s where s.dataset_key=d.key) when true then 1 else p_id end
+      exists(select 1 from sector s where ) from dataset d where d.key>1140 and d.key<1165;
     </sql>
 
     <sql id="COLS">
@@ -65,7 +67,7 @@
       "group",
       confidence,
       completeness,
-      contributes_to,
+      names_index,
       created_by,
       modified_by
     </sql>
@@ -95,7 +97,7 @@
       #{group},
       #{confidence},
       #{completeness},
-      #{contributesTo},
+      #{namesIndex},
       #{createdBy},
       #{modifiedBy}
     </sql>

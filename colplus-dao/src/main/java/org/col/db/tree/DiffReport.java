@@ -108,13 +108,13 @@ public abstract class DiffReport {
     }
   
     public void setDeleted(Set<String> deleted) {
-      this.deleted = deleted;
-      setSummary(DiffRow.Tag.DELETE, inserted.size());
+      this.deleted = deleted == null ? Collections.EMPTY_SET : deleted;
+      setSummary(DiffRow.Tag.DELETE, this.deleted.size());
     }
   
     public void setInserted(Set<String> inserted) {
-      this.inserted = inserted;
-      setSummary(DiffRow.Tag.INSERT, inserted.size());
+      this.inserted = inserted == null ? Collections.EMPTY_SET : inserted;
+      setSummary(DiffRow.Tag.INSERT, this.inserted.size());
     }
   
     public Set<String> getInserted() {
