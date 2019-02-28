@@ -23,7 +23,7 @@ public class TreeDiff {
   }
   
   public static class Row {
-    static final char EQUAL   = '=';
+    static final char EQUAL  = '=';
     static final char DELETE = '-';
     static final char INSERT = '+';
     static final char CHANGE = '~';
