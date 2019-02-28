@@ -60,6 +60,7 @@ public class Dataset extends DataEntity implements IntKey {
   private Integer completeness;
   private String notes;
   private Catalogue contributesTo;
+  private Boolean namesIndex;
   private LocalDateTime imported;
   private LocalDateTime deleted;
   
@@ -263,7 +264,15 @@ public class Dataset extends DataEntity implements IntKey {
   public void setContributesTo(Catalogue contributesTo) {
     this.contributesTo = contributesTo;
   }
-
+  
+  public Boolean getNamesIndex() {
+    return namesIndex;
+  }
+  
+  public void setNamesIndex(Boolean namesIndex) {
+    this.namesIndex = namesIndex;
+  }
+  
   /**
    * Time the data of the dataset was last changed in the Clearinghouse,
    * i.e. time of the last import that changed at least one record.
@@ -355,6 +364,7 @@ public class Dataset extends DataEntity implements IntKey {
         Objects.equals(completeness, dataset.completeness) &&
         Objects.equals(notes, dataset.notes) &&
         contributesTo == dataset.contributesTo &&
+        Objects.equals(namesIndex, dataset.namesIndex) &&
         Objects.equals(imported, dataset.imported) &&
         Objects.equals(deleted, dataset.deleted);
   }

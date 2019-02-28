@@ -38,8 +38,9 @@
       deleted,
       di.finished AS imported,
       di.verbatim_count AS size,
-      case exists(select 1 from sector s where s.dataset_key=d.key) when true then 1 else p_id end
-      exists(select 1 from sector s where ) from dataset d where d.key>1140 and d.key<1165;
+      case exists(select 1 from sector s where s.dataset_key=d.key) when true then 0 else
+        case names_index when true then 1 else null end
+      end AS contributes_to
     </sql>
 
     <sql id="COLS">
@@ -115,12 +116,14 @@
             <if test="req.code != null">
                 AND code=#{req.code}
             </if>
+            <!--
             <if test="req.contributesTo != null &amp;&amp; !req.contributesTo.isEmpty()">
                 AND contributes_to IN
                 <foreach item="cat" index="idx" collection="req.contributesTo" open="(" separator="," close=")">
                     #{cat}
                 </foreach>
             </if>
+            -->
             <if test="req.format != null">
                 AND data_format=#{req.format}
             </if>
