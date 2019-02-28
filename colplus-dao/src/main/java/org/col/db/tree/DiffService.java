@@ -93,6 +93,8 @@ public class DiffService {
     diff.setDeleted(new HashSet<>(imp1.getNames()));
     diff.getDeleted().removeAll(imp2.getNames());
   
+    diff.setSummary(DiffRow.Tag.EQUAL, imp1.getNames().size() - diff.getDeleted().size());
+  
     diff.setInserted(new HashSet<>(imp2.getNames()));
     diff.getInserted().removeAll(imp1.getNames());
 

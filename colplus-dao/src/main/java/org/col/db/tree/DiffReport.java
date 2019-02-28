@@ -34,6 +34,10 @@ public abstract class DiffReport {
     return summary;
   }
   
+  public void setSummary(DiffRow.Tag op, int count) {
+    summary.put(op, new AtomicInteger(count));
+  }
+  
   void incSummary(DiffRow.Tag op) {
     if (!summary.containsKey(op)) {
       summary.put(op, new AtomicInteger(1));
@@ -105,10 +109,12 @@ public abstract class DiffReport {
   
     public void setDeleted(Set<String> deleted) {
       this.deleted = deleted;
+      setSummary(DiffRow.Tag.DELETE, inserted.size());
     }
   
     public void setInserted(Set<String> inserted) {
       this.inserted = inserted;
+      setSummary(DiffRow.Tag.INSERT, inserted.size());
     }
   
     public Set<String> getInserted() {
