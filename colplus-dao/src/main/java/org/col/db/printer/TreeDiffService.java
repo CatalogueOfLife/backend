@@ -64,22 +64,14 @@ public class TreeDiffService {
   }
   
   static TreeDiff diff(int sectorKey, int attempt1, String t1, int attempt2, String t2) throws DiffException {
-  
     final TreeDiff diff = new TreeDiff(sectorKey, attempt1, attempt2);
-    
     DiffRowGenerator generator = DiffRowGenerator.create()
         .reportLinesUnchanged(true)
         .build();
-
     // remove new line in case of equals
     for (DiffRow row : generator.generateDiffRows(LINE_SPLITTER.splitToList(t1), LINE_SPLITTER.splitToList(t2))) {
-      if (row.getTag() == DiffRow.Tag.EQUAL) {
-        diff.add(new DiffRow(DiffRow.Tag.EQUAL, row.getOldLine(), null));
-      } else {
-        diff.add(row);
-      }
+      diff.add(row);
     }
-    
     return diff;
   }
   

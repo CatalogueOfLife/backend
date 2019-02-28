@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.difflib.text.DiffRow;
 
 public class TreeDiff {
@@ -13,7 +14,7 @@ public class TreeDiff {
   private final int attempt1;
   private final int attempt2;
   private final Map<DiffRow.Tag, AtomicInteger> summary = new HashMap<>();
-  private final List<DiffRow> rows = new ArrayList<>();
+  private final List<Row> rows = new ArrayList<>();
   
   public TreeDiff(int sectorKey, int attempt1, int attempt2) {
     this.sectorKey = sectorKey;
@@ -21,6 +22,24 @@ public class TreeDiff {
     this.attempt2 = attempt2;
   }
   
+  public static class Row {
+    static final char EQUAL   = '=';
+    static final char DELETE = '-';
+    static final char INSERT = '+';
+    static final char CHANGE = '~';
+  
+    public final char op;
+    public final String old;
+    @JsonProperty("new")
+    public final String _new;
+  
+    public Row(char op, String old, String _new) {
+      this.op = op;
+      this.old = old;
+      this._new = _new;
+    }
+  }
+
   public int getSectorKey() {
     return sectorKey;
   }
@@ -33,7 +52,7 @@ public class TreeDiff {
     return attempt2;
   }
   
-  public List<DiffRow> getRows() {
+  public List<Row> getRows() {
     return rows;
   }
   
@@ -41,15 +60,32 @@ public class TreeDiff {
     return summary;
   }
   
-  public void incSummary(DiffRow.Tag tag) {
-    if (!summary.containsKey(tag)) {
-      summary.put(tag, new AtomicInteger(1));
+  private void incSummary(DiffRow.Tag op) {
+    if (!summary.containsKey(op)) {
+      summary.put(op, new AtomicInteger(1));
     } else {
-      summary.get(tag).incrementAndGet();
+      summary.get(op).incrementAndGet();
     }
   }
   
   public void add(DiffRow row) {
-    rows.add(row);
+    incSummary(row.getTag());
+    if (row.getTag() == DiffRow.Tag.EQUAL) {
+      rows.add(new Row(Row.EQUAL, row.getOldLine(), null));
+    } else {
+      char op;
+      switch (row.getTag()) {
+        case DELETE:
+          op=Row.DELETE;
+          break;
+        case INSERT:
+          op=Row.INSERT;
+          break;
+        default:
+          op=Row.CHANGE;
+      }
+      rows.add(new Row(op, row.getOldLine(), row.getNewLine()));
+    }
   }
+  
 }

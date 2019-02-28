@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -81,7 +82,7 @@ public class SectorResource extends CRUDIntResource<Sector> {
   @Path("/broken")
   public List<Sector> broken(@Context SqlSession session,
                              @QueryParam("target") boolean target,
-                             @QueryParam("datasetKey") Integer datasetKey) {
+                             @NotNull @QueryParam("datasetKey") Integer datasetKey) {
     SectorMapper mapper = session.getMapper(SectorMapper.class);
     if (target) {
       return mapper.targetBroken(datasetKey);
