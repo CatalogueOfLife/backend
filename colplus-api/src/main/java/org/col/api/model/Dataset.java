@@ -3,9 +3,7 @@ package org.col.api.model;
 import java.net.URI;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
@@ -59,8 +57,8 @@ public class Dataset extends DataEntity implements IntKey {
   @Min(0)
   private Integer completeness;
   private String notes;
-  private Catalogue contributesTo;
-  private Boolean namesIndex;
+  private Set<Integer> contributesTo;
+  private boolean namesIndexContributor;
   private LocalDateTime imported;
   private LocalDateTime deleted;
   
@@ -252,25 +250,32 @@ public class Dataset extends DataEntity implements IntKey {
   }
   
   /**
-   * If the dataset participates in any of the 2 catalogue assemblies
-   * this is indicated here. All scrutinized sources will also be included as provisional ones.
+   * If the dataset participates in any catalogue assemblies
+   * this is indicated here by listing the catalogues datasetKey.
    * <p>
    * Dataset used to build the provisional catalogue will be trusted and insert their names into the names index.
    */
-  public Catalogue getContributesTo() {
+  public Set<Integer> getContributesTo() {
     return contributesTo;
   }
   
-  public void setContributesTo(Catalogue contributesTo) {
+  public void setContributesTo(Set<Integer> contributesTo) {
     this.contributesTo = contributesTo;
   }
   
-  public Boolean getNamesIndex() {
-    return namesIndex;
+  public void addContributesTo(Integer catalogueKey) {
+    if (contributesTo == null) {
+      contributesTo = new HashSet<>();
+    }
+    contributesTo.add(catalogueKey);
+  }
+
+  public boolean getNamesIndexContributor() {
+    return namesIndexContributor;
   }
   
-  public void setNamesIndex(Boolean namesIndex) {
-    this.namesIndex = namesIndex;
+  public void setNamesIndexContributor(boolean namesIndexContributor) {
+    this.namesIndexContributor = namesIndexContributor;
   }
   
   /**
@@ -364,7 +369,7 @@ public class Dataset extends DataEntity implements IntKey {
         Objects.equals(completeness, dataset.completeness) &&
         Objects.equals(notes, dataset.notes) &&
         contributesTo == dataset.contributesTo &&
-        Objects.equals(namesIndex, dataset.namesIndex) &&
+        Objects.equals(namesIndexContributor, dataset.namesIndexContributor) &&
         Objects.equals(imported, dataset.imported) &&
         Objects.equals(deleted, dataset.deleted);
   }

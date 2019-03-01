@@ -56,12 +56,12 @@ public class PgImportIT {
   public InitMybatisRule initMybatisRule = InitMybatisRule.empty();
   
   @Before
-  public void initCfg() throws Exception {
+  public void initCfg() {
     cfg = new NormalizerConfig();
     cfg.archiveDir = Files.createTempDir();
     cfg.scratchDir = Files.createTempDir();
     dataset = new Dataset();
-    dataset.setContributesTo(Catalogue.PCAT);
+    dataset.setNamesIndexContributor(true);
     dataset.setCreatedBy(InitMybatisRule.TEST_USER.getKey());
     dataset.setModifiedBy(InitMybatisRule.TEST_USER.getKey());
 
@@ -72,7 +72,7 @@ public class PgImportIT {
   }
   
   @After
-  public void cleanup() throws Exception {
+  public void cleanup() {
     if (store != null) {
       store.closeAndDelete();
       FileUtils.deleteQuietly(cfg.archiveDir);

@@ -48,7 +48,7 @@
         #{imp.started},
         #{imp.finished},
         #{imp.textTree},
-        #{imp.names, typeHandler=org.col.db.type.StringSetTypeHandler},
+        #{imp.names, typeHandler=org.col.db.type2.StringSetTypeHandler},
         #{imp.nameCount},
         #{imp.taxonCount},
         #{imp.referenceCount},
@@ -80,7 +80,7 @@
     <!--  A mapping to Name, mostly auto mapped -->
     <resultMap id="sectorImportResultMap" type="SectorImport" autoMapping="true">
         <result property="issueCount" column="issue_count" typeHandler="org.col.db.type2.HstoreIssueCountTypeHandler"/>
-        <result property="names" column="names" typeHandler="org.col.db.type.StringSetTypeHandler"/>
+        <result property="names" column="names" typeHandler="org.col.db.type2.StringSetTypeHandler"/>
     </resultMap>
 
     <select id="get" resultMap="sectorImportResultMap">

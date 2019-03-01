@@ -74,7 +74,6 @@ public class ApiKryoFactory implements KryoFactory {
     ImmutableListSerializer.registerSerializers(kryo);
     
     // enums
-    kryo.register(Catalogue.class);
     kryo.register(Country.class);
     kryo.register(DataFormat.class);
     kryo.register(DatasetOrigin.class);

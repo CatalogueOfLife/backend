@@ -49,7 +49,7 @@ public class ApiUtils {
     return applyPage(wt, page)
         .queryParam("q", search.getQ())
         .queryParam("code", search.getCode())
-        .queryParam("contributesTo", array(search.getContributesTo()))
+        .queryParam("contributesTo", search.getContributesTo())
         .queryParam("format", search.getFormat())
         .queryParam("type", search.getType())
         .queryParam("modified", search.getModified())

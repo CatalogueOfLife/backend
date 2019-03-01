@@ -16,7 +16,6 @@ import org.col.api.model.Dataset;
 import org.col.api.model.DatasetImport;
 import org.col.api.model.Name;
 import org.col.api.model.VerbatimRecord;
-import org.col.api.vocab.Catalogue;
 import org.col.api.vocab.DataFormat;
 import org.col.api.vocab.Datasets;
 import org.col.api.vocab.Issue;
@@ -39,7 +38,6 @@ public class IntegrityChecksIT {
   private NormalizerConfig cfg;
   private ImporterConfig icfg = new ImporterConfig();
   private Dataset dataset;
-  private VerbatimRecordMapper vMapper;
   
   @ClassRule
   public static PgSetupRule pgSetupRule = new PgSetupRule();
@@ -48,12 +46,12 @@ public class IntegrityChecksIT {
   public InitMybatisRule initMybatisRule = InitMybatisRule.empty();
   
   @Before
-  public void initCfg() throws Exception {
+  public void initCfg() {
     cfg = new NormalizerConfig();
     cfg.archiveDir = Files.createTempDir();
     cfg.scratchDir = Files.createTempDir();
     dataset = new Dataset();
-    dataset.setContributesTo(Catalogue.PCAT);
+    dataset.setNamesIndexContributor(true);
     dataset.setCreatedBy(InitMybatisRule.TEST_USER.getKey());
     dataset.setModifiedBy(InitMybatisRule.TEST_USER.getKey());
 
@@ -62,7 +60,7 @@ public class IntegrityChecksIT {
  }
   
   @After
-  public void cleanup() throws Exception {
+  public void cleanup() {
     if (store != null) {
       store.closeAndDelete();
       FileUtils.deleteQuietly(cfg.archiveDir);
@@ -70,7 +68,7 @@ public class IntegrityChecksIT {
     }
   }
   
-  void normalizeAndImport(String key) throws Exception {
+  void normalizeAndImport(String key) {
     URL url = getClass().getResource("/integrity-checks/" + key);
     dataset.setDataFormat(DataFormat.COLDP);
     try {

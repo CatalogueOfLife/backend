@@ -30,7 +30,7 @@
       "group",
       confidence,
       completeness,
-      names_index,
+      names_index_contributor,
       created,
       created_by,
       modified,
@@ -38,9 +38,9 @@
       deleted,
       di.finished AS imported,
       di.verbatim_count AS size,
-      case exists(select 1 from sector s where s.dataset_key=d.key) when true then 0 else
-        case names_index when true then 1 else null end
-      end AS contributes_to
+      case exists(select 1 from sector s where s.dataset_key=d.key) when true then array[3] end
+        || case names_index_contributor when true then array[2] end
+        AS contributes_to
     </sql>
 
     <sql id="COLS">
@@ -68,7 +68,7 @@
       "group",
       confidence,
       completeness,
-      names_index,
+      names_index_contributor,
       created_by,
       modified_by
     </sql>
@@ -98,7 +98,7 @@
       #{group},
       #{confidence},
       #{completeness},
-      #{namesIndex},
+      #{namesIndexContributor},
       #{createdBy},
       #{modifiedBy}
     </sql>
@@ -116,14 +116,21 @@
             <if test="req.code != null">
                 AND code=#{req.code}
             </if>
-            <!--
-            <if test="req.contributesTo != null &amp;&amp; !req.contributesTo.isEmpty()">
-                AND contributes_to IN
-                <foreach item="cat" index="idx" collection="req.contributesTo" open="(" separator="," close=")">
-                    #{cat}
-                </foreach>
-            </if>
+            <!-- for now this is rather hacky cause we sectors only apply to the draft CoL (key=3)
+             and the pCat is dealt with via the names_index_contributor
             -->
+            <if test="req.contributesTo != null">
+                <if test="req.contributesTo == 2">
+                    AND names_index_contributor=true
+                </if>
+                <if test="req.contributesTo == 3">
+                    AND exists(select 1 from sector s where s.dataset_key=d.key)
+                </if>
+                <!-- we only support catalogue 2 & 3 for now -->
+                <if test="req.contributesTo &lt; 2 or req.contributesTo &gt; 3">
+                    AND false
+                </if>
+            </if>
             <if test="req.format != null">
                 AND data_format=#{req.format}
             </if>
@@ -142,6 +149,7 @@
     <!--  A mapping to Name, mostly auto mapped -->
     <resultMap id="datasetResultMap" type="Dataset" autoMapping="true">
         <id property="key" column="key" />
+        <result property="contributesTo" column="contributes_to" typeHandler="org.col.db.type2.IntegerSetTypeHandler" />
         <result property="organisations" column="organisations" typeHandler="org.col.db.type.StringArrayTypeHandler" />
         <result property="authorsAndEditors" column="authors_and_editors" typeHandler="org.col.db.type.StringArrayTypeHandler" />
         <result property="importFrequency" column="import_frequency" typeHandler="org.col.db.type.FrequencyTypeHandler" />

@@ -10,52 +10,50 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.col.db.type;
+package org.col.db.type2;
 
 import java.sql.*;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 
-import com.google.common.collect.Sets;
 import org.apache.ibatis.type.BaseTypeHandler;
 import org.apache.ibatis.type.JdbcType;
 
 /**
- * Stores string sets as non null arrays in postgres, avoiding nulls and uses empty sets instead.
+ * Stores sets as non null arrays in postgres, avoiding nulls and uses empty sets instead.
  */
-public class StringSetTypeHandler extends BaseTypeHandler<Set<String>> {
+public abstract class AbstractSetTypeHandler<T> extends BaseTypeHandler<Set<T>> {
+  private final String arrayType;
+  
+  public AbstractSetTypeHandler(String arrayType) {
+    this.arrayType = arrayType;
+  }
   
   @Override
-  public void setNonNullParameter(PreparedStatement ps, int i, Set<String> parameter, JdbcType jdbcType) throws SQLException {
-    Array array = ps.getConnection().createArrayOf("text", parameter.toArray());
+  public void setNonNullParameter(PreparedStatement ps, int i, Set<T> parameter, JdbcType jdbcType) throws SQLException {
+    Array array = ps.getConnection().createArrayOf(arrayType, parameter.toArray());
     ps.setArray(i, array);
   }
   
   @Override
-  public void setParameter(PreparedStatement ps, int i, Set<String> parameter, JdbcType jdbcType) throws SQLException {
+  public void setParameter(PreparedStatement ps, int i, Set<T> parameter, JdbcType jdbcType) throws SQLException {
     setNonNullParameter(ps, i, parameter == null ? Collections.emptySet() : parameter, jdbcType);
   }
   
   @Override
-  public Set<String> getNullableResult(ResultSet rs, String columnName) throws SQLException {
+  public Set<T> getNullableResult(ResultSet rs, String columnName) throws SQLException {
     return toSet(rs.getArray(columnName));
   }
   
   @Override
-  public Set<String> getNullableResult(ResultSet rs, int columnIndex) throws SQLException {
+  public Set<T> getNullableResult(ResultSet rs, int columnIndex) throws SQLException {
     return toSet(rs.getArray(columnIndex));
   }
   
   @Override
-  public Set<String> getNullableResult(CallableStatement cs, int columnIndex) throws SQLException {
+  public Set<T> getNullableResult(CallableStatement cs, int columnIndex) throws SQLException {
     return toSet(cs.getArray(columnIndex));
   }
   
-  private Set<String> toSet(Array pgArray) throws SQLException {
-    if (pgArray == null) return new HashSet<>();
-    
-    String[] strings = (String[]) pgArray.getArray();
-    return Sets.newHashSet(strings);
-  }
+  abstract Set<T> toSet(Array pgArray) throws SQLException;
 }

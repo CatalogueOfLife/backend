@@ -2,12 +2,10 @@ package org.col.api.search;
 
 import java.time.LocalDate;
 import java.util.Objects;
-import java.util.Set;
 import javax.ws.rs.QueryParam;
 
 import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.StringUtils;
-import org.col.api.vocab.Catalogue;
 import org.col.api.vocab.DataFormat;
 import org.col.api.vocab.DatasetType;
 import org.gbif.nameparser.api.NomCode;
@@ -31,7 +29,7 @@ public class DatasetSearchRequest {
   private NomCode code;
   
   @QueryParam("contributesTo")
-  private Set<Catalogue> contributesTo;
+  private Integer contributesTo;
   
   @QueryParam("format")
   private DataFormat format;
@@ -62,7 +60,7 @@ public class DatasetSearchRequest {
   
   public boolean isEmpty() {
     return StringUtils.isBlank(q) && code == null &&
-        (contributesTo == null || contributesTo.isEmpty()) &&
+        contributesTo == null &&
         format == null && type == null && sortBy == null &&
         modified == null && created == null && released == null;
   }
@@ -83,11 +81,11 @@ public class DatasetSearchRequest {
     this.code = code;
   }
   
-  public Set<Catalogue> getContributesTo() {
+  public Integer getContributesTo() {
     return contributesTo;
   }
   
-  public void setContributesTo(Set<Catalogue> contributesTo) {
+  public void setContributesTo(Integer contributesTo) {
     this.contributesTo = contributesTo;
   }
   
@@ -166,7 +164,6 @@ public class DatasetSearchRequest {
   
   @Override
   public int hashCode() {
-    
     return Objects.hash(q, code, contributesTo, format, type, modified, created, released, sortBy, reverse);
   }
 }

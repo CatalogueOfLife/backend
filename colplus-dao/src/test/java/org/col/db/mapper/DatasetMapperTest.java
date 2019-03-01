@@ -12,6 +12,7 @@ import org.col.api.RandomUtils;
 import org.col.api.TestEntityGenerator;
 import org.col.api.model.Dataset;
 import org.col.api.model.Page;
+import org.col.api.model.Sector;
 import org.col.api.search.DatasetSearchRequest;
 import org.col.api.vocab.*;
 import org.gbif.nameparser.api.NomCode;
@@ -21,6 +22,7 @@ import org.javers.core.diff.Diff;
 import org.junit.Assert;
 import org.junit.Test;
 
+import static org.col.api.TestEntityGenerator.newNameRef;
 import static org.junit.Assert.*;
 
 /**
@@ -36,7 +38,7 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
     Dataset d = new Dataset();
     d.applyUser(Users.DB_INIT);
     d.setType(DatasetType.GLOBAL);
-    d.setNamesIndex(true);
+    d.setNamesIndexContributor(true);
     d.setGbifKey(UUID.randomUUID());
     d.setTitle(RandomUtils.randomLatinString(80));
     d.setDescription(RandomUtils.randomLatinString(500));
@@ -204,7 +206,20 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
     int count = mapper().count(DatasetSearchRequest.byQuery("worms"));
     assertEquals("01", 3, count);
   }
-
+  
+  private void createSector(int datasetKey) {
+    Sector s = new Sector();
+    s.setDatasetKey(datasetKey);
+    s.setMode(Sector.Mode.ATTACH);
+    s.setSubject(newNameRef());
+    s.setTarget(newNameRef());
+    s.setNote(RandomUtils.randomUnicodeString(128));
+    s.setCreatedBy(TestEntityGenerator.USER_EDITOR.getKey());
+    s.setModifiedBy(TestEntityGenerator.USER_EDITOR.getKey());
+    
+    mapper(SectorMapper.class).create(s);
+  }
+  
   @Test
   public void search() throws Exception {
     final Integer d1 = createSearchableDataset("ITIS", "Mike;Bob", "ITIS", "Also contains worms");
@@ -217,6 +232,8 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
     final Integer d4 = createSearchableDataset("FOO", "bar", "BAR", null);
     final Integer d5 = createSearchableDataset("WORMS worms", "beard", "WORMS", "Worms with even more worms than worms");
     mapper().delete(d5);
+    createSector(d3);
+    createSector(d4);
     commit();
 
     DatasetSearchRequest query = new DatasetSearchRequest();
@@ -300,15 +317,26 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
           // nothing, from import and all null
       }
     }
-    
-    
-    //TODO: contributes to filter SQL broken
-    //query = DatasetSearchRequest.byQuery("worms");
-    //query.setContributesTo(ImmutableSet.of(Catalogue.COL));
-    //assertEquals(0, mapper().search(query, new Page()).size());
-    
-    //query.setContributesTo(ImmutableSet.of(Catalogue.PCAT, Catalogue.COL));
-    //assertEquals(3, mapper().search(query, new Page()).size());
+  
+  
+    query = DatasetSearchRequest.byQuery("worms");
+    query.setContributesTo(Datasets.DRAFT_COL);
+    assertEquals(1, mapper().search(query, new Page()).size());
+  
+    query.setQ(null);
+    assertEquals(2, mapper().search(query, new Page()).size());
+  
+  
+  
+    // non existing catalogue
+    query.setContributesTo(99);
+    assertEquals(0, mapper().search(query, new Page()).size());
+
+    query.setContributesTo(Datasets.DRAFT_COL);
+    assertEquals(2, mapper().search(query, new Page()).size());
+  
+    query.setContributesTo(Datasets.PCAT);
+    assertEquals(4, mapper().search(query, new Page()).size());
   }
 
   private static List<Dataset> removeCreated(List<Dataset> ds) {
@@ -331,7 +359,7 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
     ds.getOrganisations().add(organisation);
     ds.setDescription(description);
     ds.setType(DatasetType.GLOBAL);
-    ds.setContributesTo(Catalogue.PCAT);
+    ds.setNamesIndexContributor(true);
     mapper().create(TestEntityGenerator.setUserDate(ds));
     return ds.getKey();
   }

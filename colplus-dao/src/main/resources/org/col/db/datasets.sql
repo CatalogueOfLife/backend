@@ -5,10 +5,10 @@
 --------------------------
 
 -- origin:  0=EXTERNAL, 1=UPLOADED, 2=MANAGED
-INSERT INTO dataset (key, origin, type, names_index, title, import_frequency, created_by, modified_by, data_format, data_access)
+INSERT INTO dataset (key, origin, type, names_index_contributor, title, import_frequency, created_by, modified_by, data_format, data_access)
 VALUES ('1000', 0, 1, true, 'CoL Management Classification', 1, 0, 0, 0, 'https://raw.githubusercontent.com/Sp2000/colplus-repo/master/ACEF/higher-classification.dwca.zip');
 
-INSERT INTO dataset (key, origin, type, names_index, title, import_frequency, created_by, modified_by, data_format, data_access)
+INSERT INTO dataset (key, origin, type, names_index_contributor, title, import_frequency, created_by, modified_by, data_format, data_access)
 SELECT x.id+1000, 0, 1, true, 'GSD ' || x.id, 1, 0, 0, 1, 'https://raw.githubusercontent.com/Sp2000/colplus-repo/master/ACEF/' || x.id || '.tar.gz'
 FROM (SELECT unnest(array[
 10,
@@ -441,7 +441,7 @@ INSERT INTO dataset (gbif_key, created_by, modified_by, origin, code, data_acces
 
 UPDATE dataset SET
     data_format = 0,
-    names_index = true,
+    names_index_contributor = true,
     import_frequency = 7
 WHERE gbif_key IS NOT NULL;
 
@@ -465,7 +465,7 @@ WHERE gbif_key IS NOT NULL;
 
 -- use keys from range 1000-1500 for existing GSD IDs+1000
 -- or for entirely new datasets in the range of 1600-1699
-INSERT INTO dataset (key, origin, type, names_index, code, title, import_frequency, created_by, modified_by, data_format, data_access) VALUES
+INSERT INTO dataset (key, origin, type, names_index_contributor, code, title, import_frequency, created_by, modified_by, data_format, data_access) VALUES
 ('1027', 0, 1, true,  4, 'Scarabs',           1, 0, 0, 1, 'https://github.com/Sp2000/data-scarabs/archive/master.zip'),
 ('1055', 0, 1, true,  4, 'LDL Neuropterida',  1, 0, 0, 1, 'https://github.com/Sp2000/data-neuropterida/archive/master.zip'),
 ('1074', 0, 1, true,  1, 'ELPT',              1, 0, 0, 1, 'https://github.com/Sp2000/data-elpt/archive/master.zip'),
