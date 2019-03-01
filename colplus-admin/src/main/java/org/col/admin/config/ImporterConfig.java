@@ -49,6 +49,7 @@ public class ImporterConfig {
    * Github API access token to use when downloading data from github.com URLs.
    */
   public String githubToken;
+  public String githubTokenGeoff;
   
   /**
    * Number of seconds to wait after an import has finished before the job is done.

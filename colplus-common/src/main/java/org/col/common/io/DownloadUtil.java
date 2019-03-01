@@ -32,17 +32,21 @@ public class DownloadUtil {
   private static final String MODIFIED_SINCE = "If-Modified-Since";
   private static final String AUTHORIZATION = "Authorization";
   private static final Pattern GITHUB_DOMAINS = Pattern.compile("github(usercontent)?\\.com", Pattern.CASE_INSENSITIVE);
+  private static final Pattern GEOFF = Pattern.compile("^/gdower", Pattern.CASE_INSENSITIVE);
+  //https://codeload.github.com/gdower/data-cycads/zip/master
   
   private final CloseableHttpClient hc;
   private final String githubToken;
+  private final String githubTokenGeoff;
   
   public DownloadUtil(CloseableHttpClient hc) {
-    this(hc, null);
+    this(hc, null, null);
   }
   
-  public DownloadUtil(CloseableHttpClient hc, String githubToken) {
+  public DownloadUtil(CloseableHttpClient hc, String githubToken, String githubTokenGeoff) {
     this.hc = hc;
     this.githubToken = githubToken;
+    this.githubTokenGeoff = githubTokenGeoff;
   }
   
   /**
@@ -106,9 +110,13 @@ public class DownloadUtil {
     }
     
     if (githubToken != null && GITHUB_DOMAINS.matcher(url.getHost()).find()) {
-      // DateTimeFormatter is threadsafe these days
-      LOG.debug("Adding Github API token");
-      get.addHeader(AUTHORIZATION, "token " + githubToken);
+      if (githubTokenGeoff != null && GEOFF.matcher(url.getPath()).find()) {
+        LOG.debug("Adding Github API token from Geoff");
+        get.addHeader(AUTHORIZATION, "token " + githubTokenGeoff);
+      } else {
+        LOG.debug("Adding Github API token");
+        get.addHeader(AUTHORIZATION, "token " + githubToken);
+      }
     }
     
     // execute
