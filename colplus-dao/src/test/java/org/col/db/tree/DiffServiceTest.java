@@ -27,6 +27,8 @@ public class DiffServiceTest {
   
     assertEquals(2, diff.getInserted().size());
     assertTrue(diff.getInserted().contains("f1"));
+  
+    System.out.println(diff);
   }
   
   private static SectorImport syncImp(String... ids) throws IOException {

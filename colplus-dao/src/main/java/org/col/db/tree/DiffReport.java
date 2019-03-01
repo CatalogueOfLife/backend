@@ -1,16 +1,18 @@
 package org.col.db.tree;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.github.difflib.text.DiffRow;
+import com.github.difflib.patch.DeltaType;
 
 public abstract class DiffReport {
   private final int sectorKey;
   private final int attempt1;
   private final int attempt2;
-  private final Map<DiffRow.Tag, AtomicInteger> summary = new HashMap<>();
+  private final Map<DeltaType, AtomicInteger> summary = new HashMap<>();
   
   private DiffReport(int sectorKey, int attempt1, int attempt2) {
     this.sectorKey = sectorKey;
@@ -30,15 +32,15 @@ public abstract class DiffReport {
     return attempt2;
   }
   
-  public Map<DiffRow.Tag, AtomicInteger> getSummary() {
+  public Map<DeltaType, AtomicInteger> getSummary() {
     return summary;
   }
   
-  public void setSummary(DiffRow.Tag op, int count) {
+  public void setSummary(DeltaType op, int count) {
     summary.put(op, new AtomicInteger(count));
   }
   
-  void incSummary(DiffRow.Tag op) {
+  void incSummary(DeltaType op) {
     if (!summary.containsKey(op)) {
       summary.put(op, new AtomicInteger(1));
     } else {
@@ -46,52 +48,35 @@ public abstract class DiffReport {
     }
   }
   
-  public static class Row {
-    static final char EQUAL  = '=';
-    static final char DELETE = '-';
-    static final char INSERT = '+';
-    static final char CHANGE = '~';
-    
-    public final char op;
-    public final String old;
-    @JsonProperty("new")
-    public final String _new;
-    
-    public Row(char op, String old, String _new) {
-      this.op = op;
-      this.old = old;
-      this._new = _new;
-    }
+  @Override
+  public String toString() {
+    return "{" +
+        "sectorKey=" + sectorKey +
+        ", attempt1=" + attempt1 +
+        ", attempt2=" + attempt2 +
+        ", summary=" + summary;
   }
   
   public static class TreeDiff extends DiffReport {
-    private final List<Row> rows = new ArrayList<>();
+    private String diff;
     
     public TreeDiff(int sectorKey, int attempt1, int attempt2) {
       super(sectorKey, attempt1, attempt2);
     }
-    public List<Row> getRows() {
-      return rows;
+  
+    public String getDiff() {
+      return diff;
     }
   
-    public void add(DiffRow row) {
-      incSummary(row.getTag());
-      if (row.getTag() == DiffRow.Tag.EQUAL) {
-        rows.add(new Row(Row.EQUAL, row.getOldLine(), null));
-      } else {
-        char op;
-        switch (row.getTag()) {
-          case DELETE:
-            op= Row.DELETE;
-            break;
-          case INSERT:
-            op= Row.INSERT;
-            break;
-          default:
-            op= Row.CHANGE;
-        }
-        rows.add(new Row(op, row.getOldLine(), row.getNewLine()));
-      }
+    public void setDiff(String diff) {
+      this.diff = diff;
+    }
+  
+    @Override
+    public String toString() {
+      return "TreeDiff" +
+          super.toString() +
+          ", diff=\n" + diff;
     }
   }
   
@@ -109,16 +94,24 @@ public abstract class DiffReport {
   
     public void setDeleted(Set<String> deleted) {
       this.deleted = deleted == null ? Collections.EMPTY_SET : deleted;
-      setSummary(DiffRow.Tag.DELETE, this.deleted.size());
+      setSummary(DeltaType.DELETE, this.deleted.size());
     }
   
     public void setInserted(Set<String> inserted) {
       this.inserted = inserted == null ? Collections.EMPTY_SET : inserted;
-      setSummary(DiffRow.Tag.INSERT, this.inserted.size());
+      setSummary(DeltaType.INSERT, this.inserted.size());
     }
   
     public Set<String> getInserted() {
       return inserted;
+    }
+
+    @Override
+    public String toString() {
+      return "NamesDiff" +
+          super.toString() +
+          ", deleted=" + deleted +
+          ", inserted=" + inserted;
     }
   }
   
