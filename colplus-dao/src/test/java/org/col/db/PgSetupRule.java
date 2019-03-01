@@ -12,6 +12,7 @@ import org.apache.ibatis.jdbc.ScriptRunner;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.common.util.YamlUtils;
 import org.junit.rules.ExternalResource;
+import org.postgresql.jdbc.PgConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.yandex.qatools.embed.postgresql.EmbeddedPostgres;
@@ -42,7 +43,7 @@ public class PgSetupRule extends ExternalResource {
   }
   
   /**
-   * @param serverOnly if true just provides a postgres server but does not connect to it or init a
+   * @param serverOnly if true just provides a postgres server but does not connectPool to it or init a
    *                   colplus database
    */
   public PgSetupRule(boolean serverOnly) {
@@ -63,10 +64,6 @@ public class PgSetupRule extends ExternalResource {
     return cfg;
   }
   
-  public static Connection getConnection() throws SQLException {
-    return dataSource.getConnection();
-  }
-  
   public static SqlSessionFactory getSqlSessionFactory() {
     return sqlSessionFactory;
   }
@@ -77,7 +74,7 @@ public class PgSetupRule extends ExternalResource {
     try {
       startDb();
       if (!serverOnly) {
-        connect();
+        connectPool();
         if (doInitDb) {
           initDb(cfg);
         }
@@ -100,7 +97,16 @@ public class PgSetupRule extends ExternalResource {
     }
   }
   
-  public void connect() {
+  public PgConnection connect() throws SQLException {
+    if (dataSource != null) {
+      LOG.debug("Connection via pool");
+      return (PgConnection) dataSource.getConnection();
+    }
+    LOG.debug("Connection directly via JDBC");
+    return (PgConnection) cfg.connect();
+  }
+
+  public void connectPool() {
     LOG.debug("Setup connection pool");
     HikariConfig hikari = cfg.hikariConfig();
     hikari.setAutoCommit(false);
@@ -110,14 +116,19 @@ public class PgSetupRule extends ExternalResource {
     sqlSessionFactory = MybatisFactory.configure(dataSource, "test");
   }
   
-  public static void initDb(PgConfig cfg) throws Exception {
-    try (Connection con = cfg.connect();
-         Statement st = con.createStatement()
-    ) {
-      LOG.info("Init empty database schema");
+  public static void wipeDB(Connection con) throws SQLException {
+    con.setAutoCommit(false);
+    try (Statement st = con.createStatement()) {
       st.execute("DROP SCHEMA public CASCADE");
       st.execute("CREATE SCHEMA public");
-      
+      con.commit();
+    }
+  }
+  
+  public static void initDb(PgConfig cfg) throws Exception {
+    try (Connection con = cfg.connect()) {
+      LOG.info("Init empty database schema");
+      wipeDB(con);
       ScriptRunner runner = PgConfig.scriptRunner(con);
       runner.runScript(Resources.getResourceAsReader(PgConfig.SCHEMA_FILE));
       con.commit();

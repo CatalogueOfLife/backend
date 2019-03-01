@@ -1,4 +1,4 @@
-package org.col.db.type;
+package org.col.postgres;
 
 import java.io.IOException;
 import java.io.Writer;

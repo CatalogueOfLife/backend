@@ -50,7 +50,7 @@ public class ImportManagerDebugging {
     
     final AdminServerConfig cfg = provideConfig();
     InitDbCmd.execute(cfg);
-    pgSetupRule.connect();
+    pgSetupRule.connectPool();
     
     RestClient esClient = new EsClientFactory(cfg.es).createClient();
     

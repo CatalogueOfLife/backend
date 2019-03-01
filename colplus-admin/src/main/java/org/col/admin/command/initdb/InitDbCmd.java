@@ -21,7 +21,7 @@ import org.col.api.vocab.Datasets;
 import org.col.api.vocab.Users;
 import org.col.db.MybatisFactory;
 import org.col.db.PgConfig;
-import org.col.db.copy.PgCopyUtils;
+import org.col.postgres.PgCopyUtils;
 import org.col.db.mapper.DatasetPartitionMapper;
 import org.postgresql.jdbc.PgConnection;
 import org.slf4j.Logger;

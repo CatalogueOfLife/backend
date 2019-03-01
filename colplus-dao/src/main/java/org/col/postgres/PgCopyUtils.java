@@ -1,5 +1,7 @@
-package org.col.db.copy;
+package org.col.postgres;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.SQLException;
@@ -10,7 +12,6 @@ import java.util.Map;
 import com.google.common.base.Joiner;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
-import org.apache.ibatis.io.Resources;
 import org.postgresql.PGConnection;
 import org.postgresql.copy.CopyManager;
 import org.postgresql.jdbc.PgConnection;
@@ -32,7 +33,7 @@ public class PgCopyUtils {
     con.commit();
   
     LOG.info("Copy {} to table {}", resourceName, table);
-    InputStreamWithoutHeader in = new InputStreamWithoutHeader(Resources.getResourceAsStream(resourceName), ',', '\n', defaults);
+    InputStreamWithoutHeader in = new InputStreamWithoutHeader(PgCopyUtils.class.getResourceAsStream(resourceName), ',', '\n', defaults);
     String header = HEADER_JOINER.join(in.header);
     long cnt = copy.copyIn("COPY " + table + "(" + header + ") FROM STDOUT WITH CSV NULL ''", in);
 
@@ -162,4 +163,27 @@ public class PgCopyUtils {
     }
   }
   
+  /**
+   * Uses pg copy to write a select statement to a CSV file with headers
+   * @param sql select statement
+   * @param out file to write to
+   */
+  public static void dump(PgConnection con, String sql, File out) throws IOException, SQLException {
+    dump(con, sql, out, "CSV HEADER NULL ''");
+  }
+  
+  /**
+   * Uses pg copy to write a select statement to a text file.
+   * @param sql select statement
+   * @param out file to write to
+   * @param with with clause for the copy command. Example: CSV HEADER NULL ''
+   */
+  public static void dump(PgConnection con, String sql, File out, String with) throws IOException, SQLException {
+    con.setAutoCommit(false);
+    
+    try (FileWriter writer = new FileWriter(out)) {
+      CopyManager copy = con.getCopyAPI();
+      copy.copyOut("COPY (" + sql + ") TO STDOUT WITH "+with, writer);
+    }
+  }
 }

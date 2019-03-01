@@ -2,6 +2,8 @@ package org.col.admin.config;
 
 import java.io.File;
 
+import javax.validation.constraints.NotNull;
+
 import org.col.db.PgDbConfig;
 import org.col.dw.PgAppConfig;
 import org.col.es.EsConfig;
@@ -19,4 +21,15 @@ public class AdminServerConfig extends PgAppConfig {
    */
   public File namesIndexFile;
   
+  /**
+   * Directory to store export archives
+   */
+  @NotNull
+  public File downloadDir;
+  
+  /**
+   * Path to the local export bash script.
+   */
+  @NotNull
+  public File acExportScript = new File("home/col/bin/");
 }

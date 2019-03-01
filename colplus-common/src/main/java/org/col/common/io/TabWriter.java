@@ -17,7 +17,7 @@ public class TabWriter implements AutoCloseable {
   private int records = 0;
   private Writer writer;
   
-  public static TabWriter fromStream(OutputStream stream) throws FileNotFoundException {
+  public static TabWriter fromStream(OutputStream stream) {
     try {
       return new TabWriter(new BufferedWriter(new OutputStreamWriter(stream, "UTF8")));
     } catch (UnsupportedEncodingException e) {
@@ -25,8 +25,12 @@ public class TabWriter implements AutoCloseable {
     }
   }
   
-  public static TabWriter fromFile(File file) throws FileNotFoundException {
-    return fromStream(new FileOutputStream(file));
+  public static TabWriter fromFile(File file) {
+    try {
+      return fromStream(new FileOutputStream(file));
+    } catch (FileNotFoundException e) {
+      throw new RuntimeException(e);
+    }
   }
   
   public TabWriter(Writer writer) {

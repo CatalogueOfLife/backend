@@ -11,8 +11,10 @@ import com.github.difflib.algorithm.DiffException;
 import io.dropwizard.auth.Auth;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
+import org.col.admin.command.export.AcExporter;
 import org.col.admin.assembly.AssemblyCoordinator;
 import org.col.admin.assembly.AssemblyState;
+import org.col.admin.assembly.SyncRequest;
 import org.col.api.model.ColUser;
 import org.col.api.model.Page;
 import org.col.api.model.ResultPage;
@@ -33,10 +35,12 @@ public class AssemblyResource {
   private static final Logger LOG = LoggerFactory.getLogger(AssemblyResource.class);
   private final AssemblyCoordinator assembly;
   private final DiffService diff;
+  private final AcExporter exporter;
   
-  public AssemblyResource(AssemblyCoordinator assembly, SqlSessionFactory factory) {
+  public AssemblyResource(AssemblyCoordinator assembly, SqlSessionFactory factory, AcExporter exporter) {
     this.assembly = assembly;
     this.diff = new DiffService(factory);
+    this.exporter = exporter;
   }
   
   @GET
@@ -64,7 +68,7 @@ public class AssemblyResource {
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void sync(@PathParam("catKey") int catKey, SyncRequest sector, @Auth ColUser user) {
     requireDraft(catKey);
-    assembly.syncSector(sector.sectorKey, user);
+    assembly.syncSector(sector.getSectorKey(), user);
   }
   
   @DELETE
@@ -113,11 +117,14 @@ public class AssemblyResource {
     assembly.deleteSector(sectorKey, user);
   }
   
-  public static class SyncRequest {
-    public int sectorKey;
+  @POST
+  @Path("/exportAC")
+  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
+  public void exportAC(@PathParam("catKey") int catKey, @Auth ColUser user) throws Exception {
+    requireDraft(catKey);
+    exporter.export(catKey);
+    throw new UnsupportedOperationException("not implemented yet");
   }
-  
-
 
   
   private static void requireDraft(int catKey) {

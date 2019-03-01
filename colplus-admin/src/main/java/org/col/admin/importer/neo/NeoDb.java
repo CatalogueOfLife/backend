@@ -32,6 +32,7 @@ import org.col.api.model.*;
 import org.col.api.vocab.Issue;
 import org.col.api.vocab.Origin;
 import org.col.api.vocab.TaxonomicStatus;
+import org.col.common.io.Utf8Writers;
 import org.col.common.kryo.map.MapDbObjectSerializer;
 import org.col.common.text.StringUtils;
 import org.gbif.dwc.terms.DwcTerm;
@@ -779,7 +780,7 @@ public class NeoDb implements ReferenceStore {
    */
   public void dump(File file) {
     try {
-      Writer writer = PrinterUtils.fileWriter(file);
+      Writer writer = Utf8Writers.fromFile(file);
       PrinterUtils.dumpDotFile(neo, writer);
       writer.close();
       System.out.println("Wrote graph to " + file.getAbsolutePath());

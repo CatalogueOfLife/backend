@@ -2,6 +2,7 @@ package org.col.admin;
 
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
+import org.col.admin.command.export.AcExporter;
 import org.col.admin.assembly.AssemblyCoordinator;
 import org.col.admin.command.es.IndexAllCmd;
 import org.col.admin.command.export.ExportCmd;
@@ -104,10 +105,12 @@ public class AdminServer extends PgApp<AdminServerConfig> {
     // admin resource
     env.jersey().register(new AdminResource(getSqlSessionFactory(), new DownloadUtil(super.httpClient), cfg.normalizer, imgService));
   
+    // exporter
+    AcExporter exporter = new AcExporter(cfg);
     // assembly
     AssemblyCoordinator assembly = new AssemblyCoordinator(getSqlSessionFactory(), env.metrics());
     env.lifecycle().manage(assembly);
-    env.jersey().register(new AssemblyResource(assembly, getSqlSessionFactory()));
+    env.jersey().register(new AssemblyResource(assembly, getSqlSessionFactory(), exporter));
     
   }
   

@@ -1,13 +1,9 @@
 package org.col.admin.importer.neo.printer;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.io.Writer;
 import javax.annotation.Nullable;
 
 import com.google.common.base.Function;
-import com.google.common.io.Files;
 import org.col.admin.importer.neo.DotProcessor;
 import org.col.admin.importer.neo.NeoDb;
 import org.col.admin.importer.neo.model.NeoProperties;
@@ -97,8 +93,4 @@ public class PrinterUtils {
     writer.flush();
   }
   
-  public static Writer fileWriter(File f) throws IOException {
-    Files.createParentDirs(f);
-    return new FileWriter(f);
-  }
 }
