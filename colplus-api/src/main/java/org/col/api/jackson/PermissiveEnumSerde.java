@@ -58,7 +58,7 @@ public class PermissiveEnumSerde {
         }
     }
 
-    static class PermissiveEnumDeserializers extends Deserializers.Base {
+    public static class PermissiveEnumDeserializers extends Deserializers.Base {
         @Override
         @SuppressWarnings("unchecked")
         @Nullable

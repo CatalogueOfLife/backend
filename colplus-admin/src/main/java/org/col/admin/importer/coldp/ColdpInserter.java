@@ -20,11 +20,12 @@ import org.col.admin.importer.NormalizationFailedException;
 import org.col.admin.importer.neo.NeoDb;
 import org.col.admin.importer.neo.NodeBatchProcessor;
 import org.col.admin.importer.reference.ReferenceFactory;
+import org.col.admin.jackson.EnumParserSerde;
 import org.col.api.datapackage.ColTerm;
+import org.col.api.jackson.PermissiveEnumSerde;
 import org.col.api.model.Dataset;
 import org.col.api.vocab.DataFormat;
 import org.col.api.vocab.License;
-import org.col.admin.jackson.EnumParserSerde;
 import org.col.parser.LicenseParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -151,6 +152,13 @@ public class ColdpInserter extends NeoInserter {
       super("ColdpYaml");
       EnumParserSerde<License> lserde = new EnumParserSerde<License>(LicenseParser.PARSER);
       addDeserializer(License.class, lserde.new Deserializer());
+    }
+    
+    @Override
+    public void setupModule(SetupContext ctxt) {
+      // default enum serde
+      ctxt.addDeserializers(new PermissiveEnumSerde.PermissiveEnumDeserializers());
+      super.setupModule(ctxt);
     }
   }
 

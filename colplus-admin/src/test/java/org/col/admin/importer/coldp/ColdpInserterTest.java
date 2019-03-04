@@ -8,6 +8,7 @@ import org.col.api.model.Dataset;
 import org.col.api.vocab.DataFormat;
 import org.col.api.vocab.DatasetType;
 import org.col.api.vocab.License;
+import org.gbif.nameparser.api.NomCode;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -36,5 +37,12 @@ public class ColdpInserterTest {
     assertEquals("https://www.fishbase.org", d.getWebsite().toString());
     assertEquals("https://www.fishbase.de/images/gifs/fblogo_new.gif", d.getLogo().toString());
     assertEquals("Froese R. & Pauly D. (eds) (2018). FishBase (version 06/2018).", d.getCitation());
+  
+    assertEquals(NomCode.BOTANICAL, d.getCode());
+    assertEquals((Integer)4, d.getConfidence());
+    assertEquals((Integer)32, d.getCompleteness());
+    assertEquals("my personal,\n" +
+                          "very long notes", d.getNotes());
+    assertEquals("shortname", d.getAlias());
   }
 }
