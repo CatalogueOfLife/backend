@@ -69,7 +69,7 @@ abstract class SectorRunnable implements Runnable {
   
   @Override
   public void run() {
-    LoggingUtils.setSectorMDC(datasetKey, 0, getClass());
+    LoggingUtils.setSectorMDC(sector.getKey(), state.getAttempt(), getClass());
     try {
       state.setStarted(LocalDateTime.now());
   

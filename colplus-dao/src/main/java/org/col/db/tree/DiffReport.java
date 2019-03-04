@@ -48,6 +48,10 @@ public abstract class DiffReport {
     }
   }
   
+  public boolean isIdentical(){
+    return summary.isEmpty();
+  }
+  
   @Override
   public String toString() {
     return "{" +
@@ -94,12 +98,16 @@ public abstract class DiffReport {
   
     public void setDeleted(Set<String> deleted) {
       this.deleted = deleted == null ? Collections.EMPTY_SET : deleted;
-      setSummary(DeltaType.DELETE, this.deleted.size());
+      if (! this.deleted.isEmpty()) {
+        setSummary(DeltaType.DELETE, this.deleted.size());
+      }
     }
   
     public void setInserted(Set<String> inserted) {
       this.inserted = inserted == null ? Collections.EMPTY_SET : inserted;
-      setSummary(DeltaType.INSERT, this.inserted.size());
+      if (! this.inserted.isEmpty()) {
+        setSummary(DeltaType.INSERT, this.inserted.size());
+      }
     }
   
     public Set<String> getInserted() {

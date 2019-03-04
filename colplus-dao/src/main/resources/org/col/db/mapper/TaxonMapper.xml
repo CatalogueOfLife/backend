@@ -237,7 +237,7 @@
                     <foreach item="id" collection="exclusions" open="(" separator="," close=")">#{id}</foreach>
                 </if>
                 <if test="sectorKey != null">
-                    AND t.sector_key != #{sectorKey}
+                    AND t.sector_key = #{sectorKey}
                 </if>
             </where>
 

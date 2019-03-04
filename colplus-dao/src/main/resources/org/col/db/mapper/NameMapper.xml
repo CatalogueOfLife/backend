@@ -31,6 +31,7 @@
     <sql id="nameCols">
         <include refid="org.col.db.mapper.NameMapper.minimalNameCols" />,
         ${alias}.dataset_key AS ${prefix}dataset_key,
+        ${alias}.sector_key AS ${prefix}sector_key,
         ${alias}.verbatim_key AS ${prefix}verbatim_key,
         ${alias}.name_index_id AS ${prefix}name_index_id,
         ${alias}.homotypic_name_id AS ${prefix}homotypic_name_id,
@@ -59,6 +60,7 @@
     <sql id="COLS">
         id,
         dataset_key,
+        sector_key,
         verbatim_key,
         name_index_id,
         homotypic_name_id,
@@ -97,6 +99,7 @@
     <sql id="PROPS">
         #{id},
         #{datasetKey},
+        #{sectorKey},
         #{verbatimKey},
         #{nameIndexId},
         #{homotypicNameId},

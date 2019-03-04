@@ -70,7 +70,7 @@ public class SectorSync extends SectorRunnable {
       } catch (IOException e) {
         LOG.error("Failed to print sector {} of catalogue {}", sector.getKey(), catalogueKey, e);
       }
-      state.setNames(session.getMapper(NameMapper.class).listNameIndexIds(datasetKey, sector.getKey()));
+      state.setNames(session.getMapper(NameMapper.class).listNameIndexIds(catalogueKey, sector.getKey()));
     }
   }
   
@@ -173,6 +173,7 @@ public class SectorSync extends SectorRunnable {
       }
 
       // Taxon: copy name, taxon, refs, vernaculars, distributions
+      // this assigns a new taxonID !!!
       DatasetID orig = dao.copyTaxon(tax, catalogueKey, parentID, user, COPY_DATA, this::lookupReference);
       // remember old to new id mapping
       ids.put(orig.getId(), tax.getId());

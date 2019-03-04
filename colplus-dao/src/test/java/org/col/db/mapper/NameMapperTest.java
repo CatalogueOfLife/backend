@@ -40,6 +40,7 @@ public class NameMapperTest extends org.col.db.mapper.MapperTestBase<NameMapper>
   private static Name create(Dataset d) throws Exception {
     Name n = TestEntityGenerator.newName();
     n.setDatasetKey(d.getKey());
+    n.setSectorKey(1); // not existing, but FK is not checked
     n.setHomotypicNameId(NAME1.getId());
     return n;
   }
