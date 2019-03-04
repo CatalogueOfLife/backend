@@ -158,7 +158,7 @@ public class TaxonDao {
   }
   
   public List<Synonym> getSynonyms(int datasetKey, String nameId) {
-    return sMapper.listByName(datasetKey, nameId);
+    return sMapper.listByNameID(datasetKey, nameId);
   }
 
   public Synonym getSynonym(int datasetKey, String nameId) {

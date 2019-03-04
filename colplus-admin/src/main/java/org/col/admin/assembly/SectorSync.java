@@ -95,7 +95,25 @@ public class SectorSync extends SectorRunnable {
   }
   
   private void relinkForeignChildren() {
-    //TODO
+    try (SqlSession session = factory.openSession(false)) {
+      TaxonMapper tm = session.getMapper(TaxonMapper.class);
+      MatchingDao mdao = new MatchingDao(session);
+      for (Taxon t : foreignChildren) {
+        List<Taxon> matches = mdao.matchSector(t.getName(), sector.getKey());
+        if (matches.isEmpty()) {
+          LOG.warn("{} with parent in sector {} cannot be rematched - becomes new root", t.getName(), sector.getKey());
+          t.setParentId(null);
+        } else {
+          if (matches.size() > 1) {
+            LOG.warn("{} with parent in sector {} matches multiple - pick first {}", t.getName(), sector.getKey());
+          }
+          t.setParentId(matches.get(0).getId());
+        }
+        tm.update(t);
+      }
+      session.commit();
+    }
+    
   }
   
   private void relinkAttachedSectors() {
@@ -103,17 +121,19 @@ public class SectorSync extends SectorRunnable {
       SectorMapper sm = session.getMapper(SectorMapper.class);
       MatchingDao mdao = new MatchingDao(session);
       for (Sector s : childSectors) {
-        List<Taxon> matches = mdao.match(s.getTarget(), sector.getKey());
+        List<Taxon> matches = mdao.matchSector(s.getTarget(), sector.getKey());
         if (matches.isEmpty()) {
           LOG.warn("Child sector {} cannot be rematched to synced sector {} - lost {}", s.getKey(), sector.getKey(), s.getTarget());
+          s.getTarget().setId(null);
           //TODO: warn in sync status !!!
         } else if (matches.size() > 1) {
           LOG.warn("Child sector {} cannot be rematched to synced sector {} - multiple names like {}", s.getKey(), sector.getKey(), s.getTarget());
+          s.getTarget().setId(null);
           //TODO: warn in sync status !!!
         } else {
           s.getTarget().setId(matches.get(0).getId());
-          sm.update(s);
         }
+        sm.update(s);
       }
       session.commit();
     }

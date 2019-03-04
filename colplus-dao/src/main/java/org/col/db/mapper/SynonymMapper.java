@@ -1,9 +1,11 @@
 package org.col.db.mapper;
 
 import java.util.List;
+import javax.annotation.Nullable;
 
 import org.apache.ibatis.annotations.Param;
 import org.col.api.model.Synonym;
+import org.gbif.nameparser.api.Rank;
 
 /**
  *
@@ -31,10 +33,13 @@ public interface SynonymMapper {
    */
   List<Synonym> listByTaxon(@Param("datasetKey") int datasetKey, @Param("taxonId") String taxonId);
   
+  List<Synonym> listByName(@Param("datasetKey") int datasetKey,
+                           @Param("name") String sciname,
+                           @Nullable @Param("rank") Rank rank);
   
   /**
    * Reads all synonyms including misapplied names by the synonyms name.
    */
-  List<Synonym> listByName(@Param("datasetKey") int datasetKey, @Param("nameId") String nameId);
+  List<Synonym> listByNameID(@Param("datasetKey") int datasetKey, @Param("nameId") String nameId);
   
 }

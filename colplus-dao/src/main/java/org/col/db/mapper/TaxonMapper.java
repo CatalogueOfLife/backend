@@ -1,9 +1,7 @@
 package org.col.db.mapper;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-
 import javax.annotation.Nullable;
 
 import org.apache.ibatis.annotations.Param;
@@ -25,10 +23,10 @@ public interface TaxonMapper extends DatasetCRUDMapper<Taxon> {
   
   List<Taxon> listByNameID(@Param("datasetKey") int datasetKey, @Param("nameId") String nameId);
   
-  List<Taxon> listByName(@Param("datasetKey") int datasetKey, @Param("name") String sciname, @Nullable @Param("rank") Rank rank);
+  List<Taxon> listByName(@Param("datasetKey") int datasetKey,
+                         @Param("name") String sciname,
+                         @Nullable @Param("rank") Rank rank);
   
-  List<Taxon> listByNameAndSector(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey, @Param("name") String sciname, @Nullable @Param("rank") Rank rank);
-
   /**
    * @return list of all parents starting with the immediate parent
    */
@@ -59,7 +57,12 @@ public interface TaxonMapper extends DatasetCRUDMapper<Taxon> {
                    @Param("depthFirst") boolean depthFirst,
                    ResultHandler<Taxon> handler);
   
-  Map<String, String> foreignChildren(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
+  /**
+   * @param catKey the catalogue being assembled
+   * @param sectorKey sector that foreign children should point into
+   * @return
+   */
+  List<Taxon> foreignChildren(@Param("catKey") int catKey, @Param("sectorKey") int sectorKey);
   
   int deleteBySector(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
 }

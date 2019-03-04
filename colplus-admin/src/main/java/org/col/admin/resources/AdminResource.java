@@ -1,12 +1,14 @@
 package org.col.admin.resources;
 
 import javax.annotation.security.RolesAllowed;
-import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.ibatis.session.SqlSessionFactory;
+import org.col.admin.assembly.DecisionRematcher;
 import org.col.admin.config.NormalizerConfig;
 import org.col.common.io.DownloadUtil;
 import org.col.dw.auth.Roles;
@@ -34,11 +36,20 @@ public class AdminResource {
     this.downloader = downloader;
   }
   
-  @GET
+  @POST
   @Path("/logo-update")
   public String updateAllLogos() {
     LogoUpdateJob.updateAllAsync(factory, downloader, cfg::scratchDir, imgService);
     return "Started Logo Updater";
+  }
+  
+  @POST
+  @Path("/rematch-decisions")
+  public String updateDecisions(@QueryParam("datasetKey") Integer datasetKey) {
+    DecisionRematcher rem = new DecisionRematcher(factory, datasetKey);
+    Thread t = new Thread(rem, "decision-rematcher");
+    t.start();
+    return "Started Decision Rematcher";
   }
   
 }

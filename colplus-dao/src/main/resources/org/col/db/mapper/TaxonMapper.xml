@@ -133,28 +133,12 @@
     <select id="listByName" resultMap="taxonResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
-        WHERE
-            t.dataset_key = #{datasetKey}
-            AND n.scientific_name=#{name}
-            <if test="rank != null">
-                AND n.rank=#{rank}::rank
-            </if>
+        WHERE n.scientific_name=#{name}
+        <if test="rank != null">
+            AND n.rank=#{rank}::rank
+        </if>
         ORDER BY id
     </select>
-
-    <select id="listByNameAndSector" resultMap="taxonResultMap">
-        SELECT <include refid="SELECT" />
-        FROM <include refid="FROM" />
-        WHERE
-            t.dataset_key = #{datasetKey}
-            AND t.sector_key = #{sectorKey}
-            AND n.scientific_name=#{name}
-            <if test="rank != null">
-                AND n.rank=#{rank}::rank
-            </if>
-        ORDER BY id
-    </select>
-
 
     <select id="children" resultMap="taxonResultMap">
         SELECT <include refid="SELECT" />
@@ -169,13 +153,11 @@
         WITH RECURSIVE x AS(
             SELECT <include refid="SELECT" />
             FROM <include refid="FROM" />
-            WHERE t.dataset_key = #{datasetKey}
-                AND t.id = #{id}
+            WHERE t.id = #{id}
         UNION
             SELECT <include refid="SELECT" />
             FROM <include refid="FROM" />, x
-            WHERE t.dataset_key = #{datasetKey}
-                AND t.id = x.parent_id
+            WHERE t.id = x.parent_id
         )
         SELECT *
         FROM x
@@ -185,8 +167,7 @@
     <select id="get" resultMap="taxonResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
-        WHERE t.dataset_key = #{datasetKey}
-        AND t.id = #{id}
+        WHERE t.id = #{id}
     </select>
 
     <insert id="create" parameterType="Taxon" useGeneratedKeys="false" keyProperty="id">

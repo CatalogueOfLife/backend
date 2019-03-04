@@ -30,7 +30,7 @@ abstract class SectorRunnable implements Runnable {
   final NameUsageIndexServiceEs indexService;
   // maps keyed on taxon ids from this sector
   final Map<String, EditorialDecision> decisions = new HashMap<>();
-  final Map<String, String> foreignChildren = new HashMap<>();
+  List<Taxon> foreignChildren;
   List<Sector> childSectors;
   final Consumer<SectorRunnable> successCallback;
   final BiConsumer<SectorRunnable, Exception> errorCallback;
@@ -117,7 +117,8 @@ abstract class SectorRunnable implements Runnable {
   
   private void loadForeignChildren() {
     try (SqlSession session = factory.openSession(true)) {
-      //TODO: implement
+      TaxonMapper tm = session.getMapper(TaxonMapper.class);
+      foreignChildren = tm.foreignChildren(catalogueKey, sector.getKey());
     }
     LOG.info("Loaded {} children from other sectors with a parent from sector {}", foreignChildren.size(), sector.getKey());
   }

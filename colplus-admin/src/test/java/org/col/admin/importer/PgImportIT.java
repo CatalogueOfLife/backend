@@ -321,7 +321,7 @@ public class PgImportIT {
       
       // a bare name
       assertTrue(taxMapper.listByNameID(dataset.getKey(), n.getId()).isEmpty());
-      assertTrue(synMapper.listByName(dataset.getKey(), n.getId()).isEmpty());
+      assertTrue(synMapper.listByNameID(dataset.getKey(), n.getId()).isEmpty());
       assertNull(tdao.get(dataset.getKey(), "s7"));
       
       n = ndao.get(dataset.getKey(), "s6");
@@ -329,7 +329,7 @@ public class PgImportIT {
       assertEquals(Rank.SPECIES, n.getRank());
       assertIssue(n, Issue.SYNONYM_DATA_MOVED);
       
-      List<Synonym> syns = synMapper.listByName(dataset.getKey(), n.getId());
+      List<Synonym> syns = synMapper.listByNameID(dataset.getKey(), n.getId());
       assertEquals(1, syns.size());
       Synonym s = syns.get(0);
       assertEquals("Astracantha arnacantha", s.getAccepted().getName().getScientificName());
@@ -416,7 +416,7 @@ public class PgImportIT {
       Name sn = ndao.get(dataset.getKey(), "Rho-140");
       assertEquals("Rhodacarus guevarai Guevara-Benitez, 1974", sn.canonicalNameComplete());
       
-      List<Synonym> syns = synMapper.listByName(dataset.getKey(), sn.getId());
+      List<Synonym> syns = synMapper.listByNameID(dataset.getKey(), sn.getId());
       assertEquals(1, syns.size());
       
       t = tdao.get(dataset.getKey(), "Rho-61");

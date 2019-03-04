@@ -51,7 +51,7 @@ public class SynonymMapperTest extends MapperTestBase<SynonymMapper> {
     synonymMapper.create(n.getDatasetKey(), s1.getName().getId(), s1.getAccepted().getId(), s1);
     commit();
     
-    List<Synonym> syns = synonymMapper.listByName(s1.getName().getDatasetKey(), s1.getName().getId());
+    List<Synonym> syns = synonymMapper.listByNameID(s1.getName().getDatasetKey(), s1.getName().getId());
     assertEquals(1, syns.size());
     Synonym s2 = syns.get(0);
     

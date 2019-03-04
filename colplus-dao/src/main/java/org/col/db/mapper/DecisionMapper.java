@@ -8,7 +8,7 @@ import org.col.api.model.EditorialDecision;
 
 public interface DecisionMapper extends CRUDIntMapper<EditorialDecision> {
   
-  List<EditorialDecision> list(@Nullable @Param("datasetKey") Integer datasetKey, @Param("id") String id);
+  List<EditorialDecision> list(@Nullable @Param("datasetKey") Integer datasetKey, @Nullable @Param("id") String id);
   
   /**
    * List all decisions that cannot anymore be linked to subject taxa in the source

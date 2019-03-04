@@ -74,13 +74,22 @@
         <association property="accepted" javaType="Taxon" resultMap="org.col.db.mapper.TaxonMapper.taxonResultMap" columnPrefix="a_" />
     </resultMap>
 
-    <select id="listByName" resultMap="synonymResultMap">
+    <select id="listByNameID" resultMap="synonymResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
         WHERE n.id = #{nameId}
             AND s.dataset_key = #{datasetKey}
     </select>
 
+    <select id="listByName" resultMap="synonymResultMap">
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
+        WHERE n.scientific_name=#{name}
+        <if test="rank != null">
+            AND n.rank=#{rank}::rank
+        </if>
+        ORDER BY id, n.id
+    </select>
 
     <select id="listByTaxon" resultMap="synonymResultMap">
         SELECT <include refid="SELECT" />

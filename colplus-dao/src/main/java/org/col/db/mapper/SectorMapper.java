@@ -11,6 +11,9 @@ public interface SectorMapper extends CRUDIntMapper<Sector> {
   
   List<Sector> list(@Nullable @Param("datasetKey") Integer datasetKey);
   
+  /**
+   * List all sectors which have a targetID within the given sector.
+   */
   List<Sector> listChildSectors(@Param("key") int sectorKey);
 
   /**

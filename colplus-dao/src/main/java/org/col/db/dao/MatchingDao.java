@@ -6,7 +6,7 @@ import java.util.Objects;
 import javax.annotation.Nullable;
 
 import org.apache.ibatis.session.SqlSession;
-import org.col.api.model.Decision;
+import org.col.api.model.Name;
 import org.col.api.model.SimpleName;
 import org.col.api.model.Taxon;
 import org.col.api.vocab.Datasets;
@@ -27,18 +27,30 @@ public class MatchingDao {
     tMapper = session.getMapper(TaxonMapper.class);
   }
   
-  public List<Taxon> match(Decision decision, int sector) {
-    //TODO
-    return null;
+  public List<Taxon> matchDataset(SimpleName name, int datasetKey) {
+    List<Taxon> matches = new ArrayList<>();
+    // https://github.com/Sp2000/colplus-backend/issues/283
+    // TODO: blocks decisions on synonyms
+    for (Taxon t : tMapper.listByName(datasetKey, name.getName(), name.getRank())) {
+      if (Objects.equals(name.getAuthorship(), t.getName().authorshipComplete())) {
+        matches.add(t);
+      }
+    }
+    return matches;
   }
-  public List<Taxon> match(SimpleName name, int sector) {
-    return match(name.getName(), name.getAuthorship(), name.getRank(), sector);
+
+  public List<Taxon> matchSector(SimpleName name, int sector) {
+    return matchSector(name.getName(), name.getAuthorship(), name.getRank(), sector);
   }
   
-  public List<Taxon> match(String name, @Nullable String authorship, @Nullable Rank rank, int sector) {
+  public List<Taxon> matchSector(Name name, int sector) {
+    return matchSector(name.getScientificName(), name.getAuthorship(), name.getRank(), sector);
+  }
+
+  public List<Taxon> matchSector(String name, @Nullable String authorship, @Nullable Rank rank, int sector) {
     List<Taxon> matches = new ArrayList<>();
-    for (Taxon t : tMapper.listByNameAndSector(Datasets.DRAFT_COL, sector, name, rank)) {
-      if (Objects.equals(authorship, t.getName().authorshipComplete())) {
+    for (Taxon t : tMapper.listByName(Datasets.DRAFT_COL, name, rank)) {
+      if (t.getSectorKey() != null && t.getSectorKey().equals(sector) && Objects.equals(authorship, t.getName().authorshipComplete())) {
         matches.add(t);
       }
     }
