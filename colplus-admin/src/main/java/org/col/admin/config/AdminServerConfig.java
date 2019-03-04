@@ -25,11 +25,6 @@ public class AdminServerConfig extends PgAppConfig {
    * Directory to store export archives
    */
   @NotNull
-  public File downloadDir;
+  public File downloadDir = new File("/tmp");
   
-  /**
-   * Path to the local export bash script.
-   */
-  @NotNull
-  public File acExportScript = new File("home/col/bin/");
 }

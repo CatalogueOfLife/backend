@@ -101,13 +101,13 @@ public class InitDbCmd extends ConfiguredCommand<AdminServerConfig> {
   
   private static void loadDraftHierarchy(Connection con) throws Exception {
     PgConnection pgc = (PgConnection) con;
-    PgCopyUtils.copy(pgc, "name_3", "org/col/db/draft/name.csv", ImmutableMap.<String, Object>builder()
+    PgCopyUtils.copy(pgc, "name_3", "/org/col/db/draft/name.csv", ImmutableMap.<String, Object>builder()
         .put("dataset_key", 3)
         .put("origin", 0)
         .put("created_by", Users.DB_INIT)
         .put("modified_by", Users.DB_INIT)
         .build());
-    PgCopyUtils.copy(pgc, "taxon_3", "org/col/db/draft/taxon.csv", ImmutableMap.<String, Object>builder()
+    PgCopyUtils.copy(pgc, "taxon_3", "/org/col/db/draft/taxon.csv", ImmutableMap.<String, Object>builder()
         .put("dataset_key", 3)
         .put("origin", 0)
         .put("according_to", "CoL")

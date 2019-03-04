@@ -185,7 +185,8 @@ public class SectorSync extends SectorRunnable {
           applyDecision(syn, decisions.get(syn.getId()));
         }
         // copy synonym, name, syn, refs
-        dao.copySynonym(syn, acc, user);
+        syn.getName().setSectorKey(sector.getKey());
+        dao.copySynonym(syn, acc, user, this::lookupReference);
       }
       
       // commit in batches

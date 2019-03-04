@@ -64,17 +64,7 @@ public class TaxonDao {
   public DatasetID copyTaxon(final Taxon t, final int targetDatasetKey, final String targetParentID, ColUser user, Set<EntityType> include,
                              Function<Reference,String> lookupReference) {
     final DatasetID orig = new DatasetID(t);
-
-    Name n = t.getName();
-    setKeys(n, targetDatasetKey);
-    n.applyUser(user);
-    n.setOrigin(Origin.SOURCE);
-    if (n.getPublishedInId() != null) {
-      Reference ref = newKey(rMapper.get(t.getDatasetKey(), n.getPublishedInId()));
-      //TODO: add sectorKey to reference
-      n.setPublishedInId(lookupReference.apply(ref));
-    }
-    nMapper.create(n);
+    copyName(t, targetDatasetKey, user, lookupReference);
     
     setKeys(t, targetDatasetKey);
     t.applyUser(user);
@@ -100,9 +90,30 @@ public class TaxonDao {
     return orig;
   }
   
-  public void copySynonym(final Synonym source, final DatasetID accepted, ColUser user) {
+  public void copySynonym(final Synonym syn, final DatasetID accepted, ColUser user, Function<Reference,String> lookupReference) {
+    copyName(syn, accepted.getDatasetKey(), user, lookupReference);
+    newKey(syn);
+    syn.applyUser(user);
+    syn.setOrigin(Origin.SOURCE);
+    sMapper.create(accepted.getDatasetKey(), syn.getName().getId(), accepted.getId(), syn);
   }
   
+  /**
+   * Copies the given nam instance, modifying the original and assigning a new id
+   */
+  private void copyName(final NameUsage u, final int targetDatasetKey, ColUser user, Function<Reference,String> lookupReference) {
+    Name n = u.getName();
+    n.applyUser(user);
+    n.setOrigin(Origin.SOURCE);
+    if (n.getPublishedInId() != null) {
+      Reference ref = setKeys(rMapper.get(n.getDatasetKey(), n.getPublishedInId()), targetDatasetKey);
+      //TODO: add sectorKey to reference
+      n.setPublishedInId(lookupReference.apply(ref));
+    }
+    setKeys(n, targetDatasetKey);
+    nMapper.create(n);
+  }
+
   private static Taxon setKeys(Taxon t, int datasetKey) {
     t.setDatasetKey(datasetKey);
     return newKey(t);
@@ -112,7 +123,12 @@ public class TaxonDao {
     n.setDatasetKey(datasetKey);
     return newKey(n);
   }
-
+  
+  private static Reference setKeys(Reference r, int datasetKey) {
+    r.setDatasetKey(datasetKey);
+    return newKey(r);
+  }
+  
   private static <T extends VerbatimEntity & ID> T newKey(T e) {
     e.setVerbatimKey(null);
     e.setId(UUID.randomUUID().toString());
