@@ -121,7 +121,10 @@ public class TaxonDao {
   
   private static Name setKeys(Name n, int datasetKey) {
     n.setDatasetKey(datasetKey);
-    return newKey(n);
+    newKey(n);
+    //TODO: should we update homotypic name based on the original ids if they are also in the sector???
+    n.setHomotypicNameId(n.getId());
+    return n;
   }
   
   private static Reference setKeys(Reference r, int datasetKey) {
