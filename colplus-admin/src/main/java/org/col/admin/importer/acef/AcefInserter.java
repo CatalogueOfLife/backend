@@ -5,6 +5,8 @@ import java.nio.file.Path;
 import java.util.EnumSet;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 import com.google.common.base.Splitter;
 import org.col.admin.importer.NeoInserter;
@@ -22,6 +24,7 @@ import org.col.api.vocab.Issue;
 import org.col.parser.ReferenceTypeParser;
 import org.col.parser.SafeParser;
 import org.gbif.dwc.terms.AcefTerm;
+import org.gbif.dwc.terms.Term;
 import org.neo4j.graphdb.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -185,16 +188,27 @@ public class AcefInserter extends NeoInserter {
       d.setTitle(dr.get(AcefTerm.DatabaseFullName));
       d.setAlias(dr.get(AcefTerm.DatabaseShortName));
       d.setVersion(dr.get(AcefTerm.DatabaseVersion));
-      d.setReleased(null);
-      //TODO: AcefTerm.ReleaseDate, AcefTerm.GroupNameInEnglish, AcefTerm.Organisation, Completeness, Confidence, LogoFileName, ContactPerson
-      
+      d.setGroup(dr.get(AcefTerm.GroupNameInEnglish));
       d.setDescription(dr.get(AcefTerm.Abstract));
+      setSilently(d::setReleased, dr::getDate, AcefTerm.ReleaseDate);
+      setSilently(d::setCompleteness, dr::getInt, AcefTerm.Completeness);
+      setSilently(d::setConfidence, dr::getInt, AcefTerm.Confidence);
+      setSilently(d::setLogo, dr::getURI, AcefTerm.LogoFileName);
+      setSilently(d::setWebsite, dr::getURI, AcefTerm.HomeURL);
+      // TODO: transform contact ORCIDSs
+      d.setContact(dr.get(AcefTerm.ContactPerson));
       d.setAuthorsAndEditors(dr.get(AcefTerm.AuthorsEditors, COMMA_SPLITTER));
-      d.setDescription(dr.get(AcefTerm.Abstract));
-      d.setWebsite(dr.getURI(AcefTerm.HomeURL));
       d.setDataFormat(DataFormat.ACEF);
     }
     return Optional.ofNullable(d);
+  }
+  
+  private <T> void setSilently(Consumer<T> setter, Function<Term, T> accessor, AcefTerm term) {
+    try {
+      setter.accept(accessor.apply(term));
+    } catch (RuntimeException e) {
+      LOG.debug("Could not read {}", term, e);
+    }
   }
   
 }

@@ -2,6 +2,8 @@ package org.col.api.model;
 
 import java.io.Serializable;
 import java.net.URI;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
@@ -243,6 +245,18 @@ public class VerbatimRecord implements IssueContainer, IntKey, Serializable {
     String val = get(term);
     if (val != null) {
       return Integer.valueOf(val);
+    }
+    return null;
+  }
+  
+  /**
+   * Returns a parsed date for a term value, throwing DateTimeParseException if the value cannot be parsed.
+   */
+  public LocalDate getDate(Term term) throws DateTimeParseException {
+    checkNotNull(term, "term can't be null");
+    String val = get(term);
+    if (val != null) {
+      return LocalDate.parse(val);
     }
     return null;
   }
