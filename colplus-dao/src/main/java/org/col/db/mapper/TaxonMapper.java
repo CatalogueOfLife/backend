@@ -58,11 +58,11 @@ public interface TaxonMapper extends DatasetCRUDMapper<Taxon> {
                    ResultHandler<Taxon> handler);
   
   /**
-   * @param catKey the catalogue being assembled
+   * @param datasetKey the catalogue being assembled
    * @param sectorKey sector that foreign children should point into
    * @return
    */
-  List<Taxon> foreignChildren(@Param("catKey") int catKey, @Param("sectorKey") int sectorKey);
+  List<Taxon> foreignChildren(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
   
   int deleteBySector(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
 }

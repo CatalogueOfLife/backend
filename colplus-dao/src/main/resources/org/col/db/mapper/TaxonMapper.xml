@@ -232,8 +232,9 @@
     <select id="foreignChildren" resultMap="taxonResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
-        WHERE t.dataset_key = #{datasetKey}
-        AND t.id = #{id}
+            JOIN taxon_3 p ON p.id=t.parent_id
+        WHERE p.sector_key=#{sectorKey}
+            AND t.sector_key!=#{sectorKey}
     </select>
 
     <delete id="deleteBySector" parameterType="map">
