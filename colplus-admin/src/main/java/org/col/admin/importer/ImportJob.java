@@ -14,6 +14,7 @@ import com.google.common.base.Preconditions;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.apache.ibatis.session.SqlSessionFactory;
+import org.col.admin.assembly.DecisionRematcher;
 import org.col.admin.config.AdminServerConfig;
 import org.col.admin.importer.neo.NeoDb;
 import org.col.admin.importer.neo.NeoDbFactory;
@@ -193,6 +194,9 @@ public class ImportJob implements Runnable {
         updateState(ImportState.INDEXING);
         indexService.indexDataset(datasetKey);
   
+        LOG.info("Updating sectors and decisions for dataset {}", datasetKey);
+        DecisionRematcher rem = new DecisionRematcher(factory, datasetKey);
+        rem.run();
   
         LOG.info("Dataset import {} completed in {}", datasetKey,
             DurationFormatUtils.formatDurationHMS(Duration.between(di.getStarted(), LocalDateTime.now()).toMillis()));
