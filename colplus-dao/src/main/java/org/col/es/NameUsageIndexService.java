@@ -6,6 +6,8 @@ import org.slf4j.LoggerFactory;
 public interface NameUsageIndexService {
 
   Logger LOG = LoggerFactory.getLogger(NameUsageIndexService.class);
+  
+  void indexSector(int sectorKey);
 
   void indexDataset(int datasetKey);
 
@@ -16,6 +18,11 @@ public interface NameUsageIndexService {
    */
   static NameUsageIndexService passThru() {
     return new NameUsageIndexService() {
+  
+      @Override
+      public void indexSector(int sectorKey) {
+        LOG.info("No Elastic Search configured, pass through sector {}", sectorKey);
+      }
 
       @Override
       public void indexDataset(int datasetKey) {

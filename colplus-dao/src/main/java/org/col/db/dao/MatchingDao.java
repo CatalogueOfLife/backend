@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nullable;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.model.Name;
 import org.col.api.model.SimpleName;
@@ -32,7 +33,7 @@ public class MatchingDao {
     // https://github.com/Sp2000/colplus-backend/issues/283
     // TODO: blocks decisions on synonyms
     for (Taxon t : tMapper.listByName(datasetKey, name.getName(), name.getRank())) {
-      if (Objects.equals(name.getAuthorship(), t.getName().authorshipComplete())) {
+      if (Objects.equals(StringUtils.trimToNull(name.getAuthorship()), StringUtils.trimToNull(t.getName().authorshipComplete()))) {
         matches.add(t);
       }
     }
@@ -50,7 +51,8 @@ public class MatchingDao {
   public List<Taxon> matchSector(String name, @Nullable String authorship, @Nullable Rank rank, int sector) {
     List<Taxon> matches = new ArrayList<>();
     for (Taxon t : tMapper.listByName(Datasets.DRAFT_COL, name, rank)) {
-      if (t.getSectorKey() != null && t.getSectorKey().equals(sector) && Objects.equals(authorship, t.getName().authorshipComplete())) {
+      if (t.getSectorKey() != null && t.getSectorKey().equals(sector)
+          && Objects.equals(StringUtils.trimToNull(authorship), StringUtils.trimToNull(t.getName().authorshipComplete()))) {
         matches.add(t);
       }
     }

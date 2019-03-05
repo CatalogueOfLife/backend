@@ -89,7 +89,7 @@ public class SectorSync extends SectorRunnable {
     relinkAttachedSectors();
   
     state.setState( SectorImport.State.INDEXING);
-    updateSearchIndex();
+    indexService.indexSector(sector.getKey());
   
     state.setState( SectorImport.State.FINISHED);
   }
@@ -173,7 +173,12 @@ public class SectorSync extends SectorRunnable {
       tax.getName().setSectorKey(sector.getKey());
   
       if (decisions.containsKey(tax.getId())) {
-        applyDecision(tax, decisions.get(tax.getId()));
+        if (applyDecision(tax, decisions.get(tax.getId()))) {
+          // skip this taxon, but include children
+          // use taxons parent also as the parentID for this so children link one level up
+          ids.put(tax.getId(), ids.get(tax.getParentId()));
+          return;
+        }
       }
       
       String parentID;
@@ -202,7 +207,9 @@ public class SectorSync extends SectorRunnable {
       DatasetID acc = new DatasetID(tax);
       for (Synonym syn : sMapper.listByTaxon(tax.getDatasetKey(), tax.getId())) {
         if (syn.getId() != null && decisions.containsKey(syn.getId())) {
-          applyDecision(syn, decisions.get(syn.getId()));
+          if (applyDecision(syn, decisions.get(syn.getId()))) {
+            continue;
+          }
         }
         // copy synonym, name, syn, refs
         syn.getName().setSectorKey(sector.getKey());
@@ -215,28 +222,44 @@ public class SectorSync extends SectorRunnable {
       }
       state.setTaxonCount(counter);
     }
-    
-    private void applyDecision(Taxon tax, EditorialDecision ed) {
+  
+    /**
+     * @return true if the taxon should be skipped
+     */
+    private boolean applyDecision(Taxon tax, EditorialDecision ed) {
       switch (ed.getMode()) {
         case BLOCK:
           throw new IllegalStateException("Blocked taxon "+tax.getId()+" should not have been traversed");
         case CHRESONYM:
-          //TODO: we need to exclude the name from CoL. Watch out for linking children correctly
+          return true;
         case UPDATE:
           updateUsage(tax, ed);
+          if (ed.getLifezones() != null) {
+            tax.setLifezones(ed.getLifezones());
+          }
+          if (ed.getFossil() != null) {
+            tax.setFossil(ed.getFossil());
+          }
+          if (ed.getRecent() != null) {
+            tax.setRecent(ed.getRecent());
+          }
       }
+      return false;
     }
   
-    private void applyDecision(Synonym syn, EditorialDecision ed) {
+    /**
+     * @return true if the synonym should be skipped
+     */
+    private boolean applyDecision(Synonym syn, EditorialDecision ed) {
       switch (ed.getMode()) {
         case BLOCK:
-          //TODO: we need to exclude the name from CoL.
+          return true;
         case CHRESONYM:
-          //TODO: we need to exclude the name from CoL.
-          break;
+          return true;
         case UPDATE:
           updateUsage(syn, ed);
       }
+      return false;
     }
   
     private void updateUsage(NameUsage u, EditorialDecision ed) {
@@ -244,16 +267,11 @@ public class SectorSync extends SectorRunnable {
         //TODO: update usage
       }
       if (ed.getStatus() != null) {
-        //TODO: update usage
-      }
-      if (ed.getLifezones() != null) {
-        //TODO: update usage and all descendants
-      }
-      if (ed.getFossil() != null) {
-        //TODO: update usage and all descendants
-      }
-      if (ed.getRecent() != null) {
-        //TODO: update usage and all descendants
+        try {
+          u.setStatus(ed.getStatus());
+        } catch (IllegalArgumentException e) {
+          LOG.warn("Cannot convert {} {} {} into {}", u.getName().getRank(), u.getStatus(), u.getName().canonicalNameComplete(), ed.getStatus(), e);
+        }
       }
     }
 
@@ -281,10 +299,6 @@ public class SectorSync extends SectorRunnable {
     // TODO: delete orphaned names
     count = 0;
     LOG.info("Deleted {} orphaned names from sector {}", count, sector.getKey());
-  }
-  
-  private void updateSearchIndex() {
-    LOG.info("Update search index");
   }
   
 }
