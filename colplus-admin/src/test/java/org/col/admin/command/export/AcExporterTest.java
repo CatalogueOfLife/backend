@@ -1,5 +1,7 @@
 package org.col.admin.command.export;
 
+import java.io.File;
+
 import com.google.common.io.Files;
 import org.apache.commons.io.FileUtils;
 import org.col.admin.config.AdminServerConfig;
@@ -12,6 +14,7 @@ import org.junit.*;
 public class AcExporterTest {
   
   AdminServerConfig cfg;
+  File arch;
   
   @ClassRule
   public static PgSetupRule pgSetupRule = new PgSetupRule();
@@ -31,12 +34,15 @@ public class AcExporterTest {
   public void cleanup()  {
     FileUtils.deleteQuietly(cfg.downloadDir);
     FileUtils.deleteQuietly(cfg.scratchDir);
+    if (arch != null) {
+      FileUtils.deleteQuietly(arch);
+    }
   }
   
   @Test
   public void export() throws Exception {
     MybatisTestUtils.populateDraftTree(initMybatisRule.getSqlSession());
     AcExporter exp = new AcExporter(cfg);
-    exp.export(Datasets.DRAFT_COL);
+    arch = exp.export(Datasets.DRAFT_COL);
   }
 }

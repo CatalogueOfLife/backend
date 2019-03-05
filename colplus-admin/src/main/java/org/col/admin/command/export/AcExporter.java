@@ -8,7 +8,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.google.common.io.Files;
+import org.apache.commons.io.FileUtils;
 import org.col.admin.config.AdminServerConfig;
+import org.col.common.io.CompressionUtil;
 import org.col.postgres.PgCopyUtils;
 import org.postgresql.jdbc.PgConnection;
 import org.slf4j.Logger;
@@ -27,20 +29,40 @@ public class AcExporter {
     this.cfg = cfg;
   }
   
-  public void export(int catalogueKey) throws IOException, SQLException {
-    try (Connection c = cfg.db.connect()) {
-      c.setAutoCommit(false);
-      InputStream sql = AcExporter.class.getResourceAsStream(EXPORT_SQL);
-      executeAcExportSql(catalogueKey, (PgConnection)c, new BufferedReader(new InputStreamReader(sql, "UTF8")));
-      //TODO: zip files and move to download
-    } catch (UnsupportedEncodingException e) {
-      throw new RuntimeException(e);
+  /**
+   * @return final archive
+   */
+  public File export(int catalogueKey) throws IOException, SQLException {
+    File csvDir = new File(cfg.scratchDir, "exports/"+catalogueKey);
+    try {
+      // create csv files
+      try (Connection c = cfg.db.connect()) {
+        c.setAutoCommit(false);
+        InputStream sql = AcExporter.class.getResourceAsStream(EXPORT_SQL);
+        executeAcExportSql(catalogueKey, (PgConnection)c, new BufferedReader(new InputStreamReader(sql, "UTF8")), csvDir);
+      } catch (UnsupportedEncodingException e) {
+        throw new RuntimeException(e);
+      }
+      // zip up archive and move to download
+      File arch = new File(cfg.downloadDir, "ac-export.zip");
+      if (arch.exists()) {
+        LOG.debug("Remove previous export file {}", arch.getAbsolutePath());
+        arch.delete();
+      }
+      LOG.info("Creating final export archive {}", arch.getAbsolutePath());
+      CompressionUtil.zipDir(csvDir, arch);
+      return arch;
+      
+    } finally {
+      LOG.debug("Remove temp export directory {}", csvDir.getAbsolutePath());
+      FileUtils.deleteQuietly(csvDir);
     }
   }
   
-  private void executeAcExportSql(int datasetKey, PgConnection con, BufferedReader sql) throws IOException, SQLException {
-    File tmpDir = new File(cfg.scratchDir, "exports/"+datasetKey);
-    
+  /**
+   * @return directory with all CSV dump files
+   */
+  private void executeAcExportSql(int datasetKey, PgConnection con, BufferedReader sql, File csvDir) throws IOException, SQLException {
     StringBuilder sb = new StringBuilder();
     String line;
     while ((line = sql.readLine()) != null) {
@@ -51,7 +73,7 @@ public class AcExporter {
       
       } else if (m.find()) {
         // copy to file
-        File f = new File(tmpDir, m.group(1).trim());
+        File f = new File(csvDir, m.group(1).trim());
         Files.createParentDirs(f);
         LOG.info("Exporting {}", f.getAbsolutePath());
         PgCopyUtils.dump(con, sb.toString(), f, COPY_WITH);
