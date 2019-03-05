@@ -26092,9 +26092,9 @@ VALUES
 --
 INSERT INTO sector (dataset_key, mode, subject_rank, subject_name, target_rank, target_name, created_by, modified_by)
 VALUES
-(1604, 0,   'family'::rank, 'Synteliidae',           'superfamily'::rank, 'Histeroidea',  0,0),
-(1604, 0,   'superfamily'::rank, 'Hydrophiloidea',   'order'::rank, 'Coleoptera',  0,0),
-(1604, 0,   'superfamily'::rank, 'Staphylinoidea',   'order'::rank, 'Coleoptera',  0,0);
+(1204, 0,   'family'::rank, 'Synteliidae',           'superfamily'::rank, 'Histeroidea',  0,0),
+(1204, 0,   'superfamily'::rank, 'Hydrophiloidea',   'order'::rank, 'Coleoptera',  0,0),
+(1204, 0,   'superfamily'::rank, 'Staphylinoidea',   'order'::rank, 'Coleoptera',  0,0);
 
 --
 -- World Plants

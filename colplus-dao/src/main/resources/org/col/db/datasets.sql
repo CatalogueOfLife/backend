@@ -215,9 +215,6 @@ INSERT INTO dataset (key, origin, title, created_by, modified_by, deleted) VALUE
 	('1165', 0, 'faeu_turbellaria', 0, 0, now());
 
 
--- reserve keys below 2000 for existing GSDs
-ALTER SEQUENCE dataset_key_seq RESTART WITH 2000;
-
 -- dataset titles, will be overwritten by actual titles in the archives
 UPDATE dataset SET alias='CCW', title='Catalogue of Craneflies of the World' WHERE key=1005;
 UPDATE dataset SET alias='CIPA', title='Computer Aided Identification of Phlebotomine sandflies of Americas' WHERE key=1006;
@@ -384,9 +381,72 @@ UPDATE dataset SET alias='CoL Management Classification', title='A Higher Level 
 UPDATE dataset SET alias='IRMNG', title='Interim Register of Marine and Nonmarine Genera' WHERE key=1501;
 UPDATE dataset SET alias='Animal biodiversity', title='An Outline of Higher-level Classification and Survey of Taxonomic Richness (Addenda 2013)1' WHERE key=1502;
 
+
+--------------------------
+-- NEW DATASETS
+--   since late 2018 managed in their own github repos
+--------------------------
+
+-- for enums we use the int ordinal, i.e. array index starting with 0:
+-- origin:  http://api.col.plus/vocab/datasetorigin
+--          0=EXTERNAL, 1=UPLOADED, 2=MANAGED
+-- type:  http://api.col.plus/vocab/datasettype
+--          0=nomenclatural, 1=global, 2=regional, 3=personal, 4=other
+-- code:  http://api.col.plus/vocab/nomCode
+--          0=bacterial, 1=botanical, 2=cultivars, 3=virus, 4=zoological
+-- data_format:  http://api.col.plus/vocab/dataformat
+--          0=dwca, 1=acef, 2=tcs, 3=coldp
+
+-- use keys from range 1000-1500 for CoL GSD IDs+1000
+INSERT INTO dataset (key, origin, type, names_index_contributor, code, title, import_frequency, created_by, modified_by, data_format, data_access) VALUES
+('1027', 0, 1, true,  4, 'Scarabs',           1, 0, 0, 1, 'https://github.com/Sp2000/data-scarabs/archive/master.zip'),
+('1055', 0, 1, true,  4, 'LDL Neuropterida',  1, 0, 0, 1, 'https://github.com/Sp2000/data-neuropterida/archive/master.zip'),
+('1074', 0, 1, true,  1, 'ELPT',              1, 0, 0, 1, 'https://github.com/Sp2000/data-elpt/archive/master.zip'),
+('1140', 0, 0, true,  1, 'World Ferns',       1, 0, 0, 1, 'https://github.com/Sp2000/data-world-ferns/archive/master.zip'),
+('1141', 0, 0, true,  1, 'World Plants',      1, 0, 0, 1, 'https://github.com/Sp2000/data-world-plants/archive/master.zip'),
+('1163', 0, 1, true,  1, 'Cycads',            1, 0, 0, 3, 'https://github.com/gdower/data-cycads/archive/master.zip'),
+
+('1202', 0, 1, true,  4, 'WoRMS Amphipoda',   1, 0, 0, 1, 'https://raw.githubusercontent.com/Sp2000/colplus-repo/master/ACEF/202.tar.gz'),
+('1203', 0, 1, true,  4, 'ThripsWiki',        1, 0, 0, 1, 'https://github.com/Sp2000/data-thrips/archive/master.zip'),
+('1204', 0, 1, true,  4, 'StaphBase',         1, 0, 0, 3, 'https://github.com/Sp2000/data-staphbase/archive/master.zip');
+
+UPDATE dataset set alias=title
+WHERE key IN (1027,1055,1074,1140,1141,1163,1202,1203,1204,1600,1601,1602,1700);
+
+
+
+
+--------------------------
+-- TESTS
+--   from https://github.com/Sp2000/data-unit-tests
+-- use ID range 1700-1799
+ALTER SEQUENCE dataset_key_seq RESTART WITH 1700;
+--------------------------
+
+
+INSERT INTO dataset (alias, title, origin, type, created_by, modified_by)
+SELECT x.alias, 'Unit Test: ' || x.alias, 0, 4, 0, 0
+    FROM (SELECT unnest(array['A1','A27','A3','A4','A5','A6','A99','B1','B2','B3','B4','B5','B6','B7','B8','B9']) AS alias) AS x;
+
+UPDATE dataset SET
+    website='https://github.com/Sp2000/colplus-backend/issues/193',
+    data_access='https://github.com/Sp2000/data-unit-tests/raw/master/' || alias || '.zip',
+    data_format=3,
+    import_frequency=1
+WHERE key >= 1700 and key < 1800;
+
+
+INSERT INTO dataset (origin, type, code, title, import_frequency, created_by, modified_by, data_format, data_access) VALUES
+(0, 4, 1, 'ColDP Example',     7, 0, 0, 3, 'https://github.com/Sp2000/coldp/archive/master.zip'),
+(0, 4, 4, 'Testing Data ACEF', 7, 0, 0, 1, 'https://github.com/Sp2000/data-testing/archive/master.zip'),
+(0, 4, 4, 'Testing Data ColDP',7, 0, 0, 3, 'https://github.com/Sp2000/data-testing/archive/master.zip');
+
+
 --------------------------
 -- GBIF
 --   for the provisional catalogue
+-- key range above 2000
+ALTER SEQUENCE dataset_key_seq RESTART WITH 2000;
 --------------------------
 
 -- all datasets from https://github.com/gbif/checklistbank/blob/master/checklistbank-nub/nub-sources.tsv
@@ -394,6 +454,7 @@ UPDATE dataset SET alias='Animal biodiversity', title='An Outline of Higher-leve
 -- nom codes: 0=BACTERIAL, 1=BOTANICAL, 2=CULTIVARS, 3=VIRUS, 4=ZOOLOGICAL
 
 INSERT INTO dataset (gbif_key, created_by, modified_by, origin, code, data_access, title) VALUES
+    (null, 0, 0, 0, 1, 'https://github.com/mdoering/mycobank/raw/master/mycobank.zip', 'MycoBank'),
     ('00e791be-36ae-40ee-8165-0b2cb0b8c84f', 12, 12, 0, null, 'https://github.com/mdoering/famous-organism/archive/master.zip', 'Species named after famous people'),
     ('046bbc50-cae2-47ff-aa43-729fbf53f7c5', 12, 12, 0, 1,    'http://rs.gbif.org/datasets/protected/ipni.zip', 'International Plant Names Index'),
     ('0938172b-2086-439c-a1dd-c21cb0109ed5', 12, 12, 0, null, 'http://www.irmng.org/export/IRMNG_genera_DwCA.zip', 'The Interim Register of Marine and Nonmarine Genera'),
@@ -443,82 +504,5 @@ UPDATE dataset SET
     data_format = 0,
     names_index_contributor = true,
     import_frequency = 7
-WHERE gbif_key IS NOT NULL;
+WHERE key >= 2000;
 
-
-
-
---------------------------
--- NEW DATASETS
---   since late 2018 managed in their own github repos
---------------------------
-
--- for enums we use the int ordinal, i.e. array index starting with 0:
--- origin:  http://api.col.plus/vocab/datasetorigin
---          0=EXTERNAL, 1=UPLOADED, 2=MANAGED
--- type:  http://api.col.plus/vocab/datasettype
---          0=nomenclatural, 1=global, 2=regional, 3=personal, 4=other
--- code:  http://api.col.plus/vocab/nomCode
---          0=bacterial, 1=botanical, 2=cultivars, 3=virus, 4=zoological
--- data_format:  http://api.col.plus/vocab/dataformat
---          0=dwca, 1=acef, 2=tcs, 3=coldp
-
--- use keys from range 1000-1500 for existing GSD IDs+1000
--- or for entirely new datasets in the range of 1600-1699
-INSERT INTO dataset (key, origin, type, names_index_contributor, code, title, import_frequency, created_by, modified_by, data_format, data_access) VALUES
-('1027', 0, 1, true,  4, 'Scarabs',           1, 0, 0, 1, 'https://github.com/Sp2000/data-scarabs/archive/master.zip'),
-('1055', 0, 1, true,  4, 'LDL Neuropterida',  1, 0, 0, 1, 'https://github.com/Sp2000/data-neuropterida/archive/master.zip'),
-('1074', 0, 1, true,  1, 'ELPT',              1, 0, 0, 1, 'https://github.com/Sp2000/data-elpt/archive/master.zip'),
-('1140', 0, 0, true,  1, 'World Ferns',       1, 0, 0, 1, 'https://github.com/Sp2000/data-world-ferns/archive/master.zip'),
-('1141', 0, 0, true,  1, 'World Plants',      1, 0, 0, 1, 'https://github.com/Sp2000/data-world-plants/archive/master.zip'),
-('1163', 0, 1, true,  1, 'Cycads',            1, 0, 0, 3, 'https://github.com/gdower/data-cycads/archive/master.zip'),
-('1202', 0, 1, true,  4, 'WoRMS Amphipoda',   1, 0, 0, 1, 'https://raw.githubusercontent.com/Sp2000/colplus-repo/master/ACEF/202.tar.gz'),
-('1203', 0, 1, true,  4, 'ThripsWiki',        1, 0, 0, 1, 'https://github.com/Sp2000/data-thrips/archive/master.zip'),
-('1600', 0, 4, false, 1, 'ColDP Example',     7, 0, 0, 3, 'https://github.com/Sp2000/coldp/archive/master.zip'),
-('1601', 0, 0, true,  1, 'MycoBank',          7, 0, 0, 0, 'https://github.com/mdoering/mycobank/raw/master/mycobank.zip'),
-('1602', 0, 4, false, 4, 'Testing Data ACEF', 7, 0, 0, 1, 'https://github.com/Sp2000/data-testing/archive/master.zip'),
-('1603', 0, 4, false, 4, 'Testing Data ColDP',7, 0, 0, 3, 'https://github.com/Sp2000/data-testing/archive/master.zip'),
-('1604', 0, 1, true,  4, 'StaphBase',         1, 0, 0, 3, 'https://github.com/Sp2000/data-staphbase/archive/master.zip');
-
-UPDATE dataset set alias=title
-WHERE key IN (1027,1055,1074,1140,1141,1202,1203,1204,1600,1601,1602,1603,1604,1163);
-
-
---------------------------
--- UNIT TESTS
---   from https://github.com/Sp2000/data-unit-tests
---------------------------
-
--- for enums we use the int ordinal, i.e. array index starting with 0:
--- origin:  http://api.col.plus/vocab/datasetorigin
---          0=EXTERNAL, 1=UPLOADED, 2=MANAGED
--- type:  http://api.col.plus/vocab/datasettype
---          0=nomenclatural, 1=global, 2=regional, 3=personal, 4=other
--- code:  http://api.col.plus/vocab/nomCode
---          0=bacterial, 1=botanical, 2=cultivars, 3=virus, 4=zoological
--- data_format:  http://api.col.plus/vocab/dataformat
---          0=dwca, 1=acef, 2=tcs, 3=coldp
-
--- use keys from range 1000-1500 for existing GSD IDs+1000
--- or for entirely new datasets in the range of 1600-1699
--- or for unit tests use 1700-1799
-INSERT INTO dataset (key, origin, type, code, title, import_frequency, created_by, modified_by, data_format, data_access, website, description) VALUES
-('1701', 0, 4, 4, 'Unit Test: C1  (GSD Duplicates: ACC-ACC species diff authors)',     1, 0, 0, 3, 'https://github.com/Sp2000/data-unit-tests/raw/master/C1.zip',  'https://github.com/Sp2000/colplus-backend/issues/195', 'GSD duplicates: ACC-ACC species (different authors)'),
-('1702', 0, 4, 4, 'Unit Test: C2  (GSD Duplicates: ACC-ACC species same authors)',     1, 0, 0, 3, 'https://github.com/Sp2000/data-unit-tests/raw/master/C2.zip',  'https://github.com/Sp2000/colplus-backend/issues/195', 'GSD duplicates: ACC-ACC species (same authors)'),
-('1703', 0, 4, 4, 'Unit Test: C3  (GSD Duplicates: ACC-ACC infraspecies diff authors)',     1, 0, 0, 3, 'https://github.com/Sp2000/data-unit-tests/raw/master/C3.zip',  'https://github.com/Sp2000/colplus-backend/issues/195', 'GSD duplicates: ACC-ACC infraspecies and infraspecies marker (different authors)'),
-('1704', 0, 4, 4, 'Unit Test: C4  (GSD Duplicates: ACC-ACC infraspecies same authors)',     1, 0, 0, 3, 'https://github.com/Sp2000/data-unit-tests/raw/master/C4.zip',  'https://github.com/Sp2000/colplus-backend/issues/195', 'GSD duplicates: ACC-ACC infraspecies and infraspecies marker (same authors)'),
-('1705', 0, 4, 1, 'Unit Test: C5  (GSD Duplicates: ACC-SYN species diff parent, diff authors)',     1, 0, 0, 3, 'https://github.com/Sp2000/data-unit-tests/raw/master/C5.zip',  'https://github.com/Sp2000/colplus-backend/issues/195', 'GSD duplicates: ACC-SYN species (different parent, different authors)'),
-('1706', 0, 4, 1, 'Unit Test: C6  (GSD Duplicates: ACC-SYN species diff parent, same authors)',     1, 0, 0, 3, 'https://github.com/Sp2000/data-unit-tests/raw/master/C6.zip',  'https://github.com/Sp2000/colplus-backend/issues/195', 'GSD duplicates: ACC-SYN species (different parent, same authors)'),
-('1707', 0, 4, 1, 'Unit Test: C7  (GSD Duplicates: ACC-SYN species same parent, same authors)',     1, 0, 0, 3, 'https://github.com/Sp2000/data-unit-tests/raw/master/C7.zip',  'https://github.com/Sp2000/colplus-backend/issues/195', 'GSD duplicates: ACC-SYN species (same parent, same authors)'),
-('1708', 0, 4, 4, 'Unit Test: C8  (GSD Duplicates: ACC-SYN infraspecies diff parent, diff authors)',     1, 0, 0, 3, 'https://github.com/Sp2000/data-unit-tests/raw/master/C8.zip',  'https://github.com/Sp2000/colplus-backend/issues/195', 'GSD duplicates: ACC-SYN infraspecies (different parent, different authors)'),
-('1709', 0, 4, 1, 'Unit Test: C9  (GSD Duplicates: ACC-SYN infraspecies diff parent, same authors)',     1, 0, 0, 3, 'https://github.com/Sp2000/data-unit-tests/raw/master/C9.zip',  'https://github.com/Sp2000/colplus-backend/issues/195', 'GSD duplicates: ACC-SYN infraspecies (different parent, same authors)'),
-('1710', 0, 4, 1, 'Unit Test: C10 (GSD Duplicates: ACC-SYN infraspecies same parent, same authors)',     1, 0, 0, 3, 'https://github.com/Sp2000/data-unit-tests/raw/master/C10.zip', 'https://github.com/Sp2000/colplus-backend/issues/195', 'GSD duplicates: ACC-SYN infraspecies (same parent, same authors)'),
-('1711', 0, 4, 1, 'Unit Test: C11 (GSD Duplicates: SYN-SYN species diff parent, diff authors)',     1, 0, 0, 3, 'https://github.com/Sp2000/data-unit-tests/raw/master/C11.zip', 'https://github.com/Sp2000/colplus-backend/issues/195', 'GSD duplicates: SYN-SYN species (different parent, different authors)'),
-('1712', 0, 4, 1, 'Unit Test: C12 (GSD Duplicates: SYN-SYN species diff parent, same authors)',     1, 0, 0, 3, 'https://github.com/Sp2000/data-unit-tests/raw/master/C12.zip', 'https://github.com/Sp2000/colplus-backend/issues/195', 'GSD duplicates: SYN-SYN species (different parent, same authors)'),
-('1713', 0, 4, 1, 'Unit Test: C13 (GSD Duplicates: SYN-SYN species same parent, diff authors)',     1, 0, 0, 3, 'https://github.com/Sp2000/data-unit-tests/raw/master/C13.zip', 'https://github.com/Sp2000/colplus-backend/issues/195', 'GSD duplicates: SYN-SYN species (same parent, different authors)'),
-('1714', 0, 4, 1, 'Unit Test: C14 (GSD Duplicates: SYN-SYN species same parent, same authors)',     1, 0, 0, 3, 'https://github.com/Sp2000/data-unit-tests/raw/master/C14.zip', 'https://github.com/Sp2000/colplus-backend/issues/195', 'GSD duplicates: SYN-SYN species (same parent, same authors)'),
-('1715', 0, 4, 1, 'Unit Test: C15 (GSD Duplicates: SYN-SYN infraspecies diff parent, diff authors)',     1, 0, 0, 3, 'https://github.com/Sp2000/data-unit-tests/raw/master/C15.zip', 'https://github.com/Sp2000/colplus-backend/issues/195', 'GSD duplicates: SYN-SYN infraspecies (different parent, different authors)'),
-('1716', 0, 4, 1, 'Unit Test: C16 (GSD Duplicates: SYN-SYN infraspecies diff parent, same authors)',     1, 0, 0, 3, 'https://github.com/Sp2000/data-unit-tests/raw/master/C16.zip', 'https://github.com/Sp2000/colplus-backend/issues/195', 'GSD duplicates: SYN-SYN infraspecies (different parent, same authors)'),
-('1717', 0, 4, 1, 'Unit Test: C17 (GSD Duplicates: SYN-SYN infraspecies same parent, diff authors)',     1, 0, 0, 3, 'https://github.com/Sp2000/data-unit-tests/raw/master/C17.zip', 'https://github.com/Sp2000/colplus-backend/issues/195', 'GSD duplicates: SYN-SYN infraspecies (same parent, different authors)'),
-('1718', 0, 4, 1, 'Unit Test: C18 (GSD Duplicates: SYN-SYN infraspecies same parent, same authors)',     1, 0, 0, 3, 'https://github.com/Sp2000/data-unit-tests/raw/master/C18.zip', 'https://github.com/Sp2000/colplus-backend/issues/195', 'GSD duplicates: SYN-SYN infraspecies (same parent, same authors)'),
-('1719', 0, 4, 1, 'Unit Test: A99 (Data validation: References)',                                        1, 0, 0, 1, 'https://github.com/Sp2000/data-unit-tests/raw/master/A99.zip', 'https://github.com/Sp2000/colplus-backend/issues/193', 'Unit Test: A99 (Data validation: References)');
