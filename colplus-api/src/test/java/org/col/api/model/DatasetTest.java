@@ -2,6 +2,7 @@ package org.col.api.model;
 
 import java.net.URI;
 
+import com.google.common.collect.ImmutableSet;
 import org.col.api.jackson.ApiModule;
 import org.col.api.jackson.SerdeTestBase;
 import org.col.api.vocab.DatasetOrigin;
@@ -41,6 +42,7 @@ public class DatasetTest extends SerdeTestBase<Dataset> {
     d.getOrganisations().add("bla");
     d.setContact("foo");
     d.setNotes("cuzdsghazugbe67wqt6c g cuzdsghazugbe67wqt6c g  nhjs");
+    d.setContributesTo(ImmutableSet.of(1,2));
     return d;
   }
   

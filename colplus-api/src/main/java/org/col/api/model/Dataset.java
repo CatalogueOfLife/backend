@@ -342,7 +342,8 @@ public class Dataset extends DataEntity implements IntKey {
     if (o == null || getClass() != o.getClass()) return false;
     if (!super.equals(o)) return false;
     Dataset dataset = (Dataset) o;
-    return Objects.equals(key, dataset.key) &&
+    return namesIndexContributor == dataset.namesIndexContributor &&
+        Objects.equals(key, dataset.key) &&
         type == dataset.type &&
         Objects.equals(title, dataset.title) &&
         Objects.equals(alias, dataset.alias) &&
@@ -352,7 +353,7 @@ public class Dataset extends DataEntity implements IntKey {
         Objects.equals(organisations, dataset.organisations) &&
         Objects.equals(contact, dataset.contact) &&
         Objects.equals(authorsAndEditors, dataset.authorsAndEditors) &&
-        license == dataset.license &&
+        Objects.equals(license, dataset.license) &&
         Objects.equals(version, dataset.version) &&
         Objects.equals(released, dataset.released) &&
         Objects.equals(citation, dataset.citation) &&
@@ -368,15 +369,14 @@ public class Dataset extends DataEntity implements IntKey {
         Objects.equals(confidence, dataset.confidence) &&
         Objects.equals(completeness, dataset.completeness) &&
         Objects.equals(notes, dataset.notes) &&
-        contributesTo == dataset.contributesTo &&
-        Objects.equals(namesIndexContributor, dataset.namesIndexContributor) &&
+        Objects.equals(contributesTo, dataset.contributesTo) &&
         Objects.equals(imported, dataset.imported) &&
         Objects.equals(deleted, dataset.deleted);
   }
   
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), key, type, title, alias, gbifKey, gbifPublisherKey, description, organisations, contact, authorsAndEditors, license, version, released, citation, website, group, logo, dataFormat, dataAccess, origin, importFrequency, code, size, confidence, completeness, notes, contributesTo, imported, deleted);
+    return Objects.hash(super.hashCode(), key, type, title, alias, gbifKey, gbifPublisherKey, description, organisations, contact, authorsAndEditors, license, version, released, citation, website, group, logo, dataFormat, dataAccess, origin, importFrequency, code, size, confidence, completeness, notes, contributesTo, namesIndexContributor, imported, deleted);
   }
   
   @Override
