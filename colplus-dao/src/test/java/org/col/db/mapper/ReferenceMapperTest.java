@@ -76,6 +76,13 @@ public class ReferenceMapperTest extends MapperTestBase<ReferenceMapper> {
 
     TestEntityGenerator.nullifyDate(in);
     TestEntityGenerator.nullifyDate(out);
+    assertEquals(in.get(0), out.get(0));
+    assertEquals(in.get(1), out.get(1));
+    assertEquals(in.get(2), out.get(2));
+    assertEquals(in.get(3), out.get(3));
+    assertEquals(in.get(4), out.get(4));
+    assertEquals(in.get(5), out.get(5));
+    assertEquals(in.get(6), out.get(6));
     assertEquals(in, out);
   }
   

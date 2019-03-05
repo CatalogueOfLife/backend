@@ -79,7 +79,7 @@ public class DatasetResourceTest extends ResourceTestBase {
     Dataset d = base.path("2035").request().get(Dataset.class);
     assertNotNull(d);
     assertNull(d.getDeleted());
-    assertEquals("Catalogue of Afrotropical Bees", d.getTitle());
+    assertEquals("The Plant List with literature", d.getTitle());
   }
   
   @Test
