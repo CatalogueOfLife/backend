@@ -157,7 +157,7 @@
 
     <select id="count" resultType="integer">
         SELECT COUNT(*)
-        FROM dataset
+        FROM <include refid="FROM" />
         WHERE <include refid="SEARCH_WHERE" />
     </select>
 
