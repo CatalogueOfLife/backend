@@ -32,15 +32,18 @@ import static org.col.es.mapping.MultiField.IGNORE_CASE;
  */
 public class MappingFactory<T> {
 
-  // Cache of document type mappings. Since we really have only one document type (EsNameUsage), it
-  // will contain just one entry.
+  /*
+   * Cache of document type mappings. Since we currently have just one document type (EsNameUsage), it will contain just one entry.
+   */
   private static final HashMap<Class<?>, Mapping<?>> cache = new HashMap<>();
 
-  // Whether or not to map enum types to integer or to string (keyword actually). This is more or less separate from how you serialize them,
-  // although obviously serializing them using their name or toString() requires them to be mapped to keyword. However, when serializing
-  // them using their ordinal, you still have the choice of indexing as integers or as strings, which does make a difference in
-  // Elasticsearch.
-  private boolean mapEnumToInt;
+  /*
+   * Whether or not to map enum types to Elasticsearch's integer or string (keyword actually) datatype. This is more or less separate from
+   * how you serialize them, although obviously serializing enums using toString() requires them to be mapped to the keyword datatype.
+   * However, when serializing enums using their ordinal value, you still have the choice of indexing as integers or as strings, which does
+   * make a difference in Elasticsearch, and often you would still map them to keyword!
+   */
+  private boolean mapEnumToInt = false;
 
   /**
    * Creates a document type mapping for the specified class name.

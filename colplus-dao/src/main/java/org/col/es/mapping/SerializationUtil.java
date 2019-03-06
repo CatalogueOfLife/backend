@@ -13,18 +13,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
 /**
- * Serialization utils for Elasticsearch document type mappings. Not meant of real domain model
- * objects.
+ * Serialization utils for Elasticsearch document type mappings. Not meant of real domain model objects.
  */
 public class SerializationUtil {
-  
+
   // Mapper for (de)serializing document type mappings
   public static final ObjectMapper MAPPER = configureMapper();
-  
-  private static final TypeReference<Map<String, Object>> MAP_TYPE_REF =
-      new TypeReference<Map<String, Object>>() {
-      };
-  
+
+  private static final TypeReference<Map<String, Object>> MAP_TYPE_REF = new TypeReference<Map<String, Object>>() {};
+
   public static Map<String, Object> readIntoMap(InputStream is) {
     try {
       return MAPPER.readValue(is, MAP_TYPE_REF);
@@ -32,7 +29,7 @@ public class SerializationUtil {
       throw new MappingException(e);
     }
   }
-  
+
   public static String serialize(Object obj) {
     try {
       return MAPPER.writeValueAsString(obj);
@@ -40,7 +37,7 @@ public class SerializationUtil {
       throw new MappingException(e);
     }
   }
-  
+
   public static String pretty(Object obj) {
     try {
       return MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(obj);
@@ -48,7 +45,7 @@ public class SerializationUtil {
       throw new MappingException(e);
     }
   }
-  
+
   private static ObjectMapper configureMapper() {
     ObjectMapper om = new ObjectMapper();
     om.setVisibility(PropertyAccessor.ALL, Visibility.NONE);
