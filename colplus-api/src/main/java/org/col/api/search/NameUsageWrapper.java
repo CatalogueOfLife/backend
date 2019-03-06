@@ -2,7 +2,6 @@ package org.col.api.search;
 
 import java.util.*;
 
-import org.col.api.model.EditorialDecision;
 import org.col.api.model.NameUsage;
 import org.col.api.model.SimpleName;
 import org.col.api.model.VernacularName;
@@ -15,7 +14,7 @@ public class NameUsageWrapper {
   private List<VernacularName> vernacularNames;
   private List<SimpleName> classification;
   private Set<Issue> issues;
-  private EditorialDecision decision;
+  private Integer decisionKey;
   private UUID publisherKey;
   
   public Set<Issue> getIssues() {
@@ -102,12 +101,12 @@ public class NameUsageWrapper {
     }
   }
   
-  public EditorialDecision getDecision() {
-    return decision;
+  public Integer getDecisionKey() {
+    return decisionKey;
   }
   
-  public void setDecision(EditorialDecision decision) {
-    this.decision = decision;
+  public void setDecisionKey(Integer decisionKey) {
+    this.decisionKey = decisionKey;
   }
   
   public UUID getPublisherKey() {
@@ -127,12 +126,12 @@ public class NameUsageWrapper {
         Objects.equals(vernacularNames, that.vernacularNames) &&
         Objects.equals(classification, that.classification) &&
         Objects.equals(issues, that.issues) &&
-        Objects.equals(decision, that.decision) &&
+        Objects.equals(decisionKey, that.decisionKey) &&
         Objects.equals(publisherKey, that.publisherKey);
   }
   
   @Override
   public int hashCode() {
-    return Objects.hash(usage, vernacularNames, classification, issues, decision, publisherKey);
+    return Objects.hash(usage, vernacularNames, classification, issues, decisionKey, publisherKey);
   }
 }
