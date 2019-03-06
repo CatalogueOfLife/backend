@@ -34,7 +34,7 @@ import static org.junit.Assert.assertFalse;
 public class SectorSyncIT {
   
   @ClassRule
-  public static PgSetupRule pgSetupRule = new PgSetupRule();
+  public static PgSetupRule pg = new PgSetupRule();
   
   @Rule
   public final PgImportRule importRule = PgImportRule.create(DataFormat.ACEF, 1, 5, 6);
@@ -51,7 +51,7 @@ public class SectorSyncIT {
     }
   }
   
-  int createSector(Sector.Mode mode, Taxon src, Taxon target) {
+  static int createSector(Sector.Mode mode, Taxon src, Taxon target) {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       Sector sector = new Sector();
       sector.setMode(mode);

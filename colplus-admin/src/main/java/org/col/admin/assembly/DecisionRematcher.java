@@ -55,8 +55,11 @@ public class DecisionRematcher implements Runnable {
       } else {
         matchDataset(datasetKey);
       }
-      LOG.info("Rematched {} sectors from {} datasets, {} failed", sectorTotal, datasets, sectorFailed);
-      LOG.info("Rematched {} decisions from {} datasets, {} failed", decisionTotal, datasets, decisionFailed);
+      if (datasetKey == null) {
+        // log totals across all datasets
+        LOG.info("Rematched {} sectors from all {} datasets, {} failed", sectorTotal, datasets, sectorFailed);
+        LOG.info("Rematched {} decisions from all {} datasets, {} failed", decisionTotal, datasets, decisionFailed);
+      }
     }
   }
   
