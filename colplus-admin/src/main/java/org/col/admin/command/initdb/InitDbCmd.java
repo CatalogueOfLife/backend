@@ -21,6 +21,7 @@ import org.col.api.vocab.Datasets;
 import org.col.api.vocab.Users;
 import org.col.db.MybatisFactory;
 import org.col.db.PgConfig;
+import org.col.db.dao.DecisionRematcher;
 import org.col.postgres.PgCopyUtils;
 import org.col.db.mapper.DatasetPartitionMapper;
 import org.postgresql.jdbc.PgConnection;
@@ -81,22 +82,39 @@ public class InitDbCmd extends ConfiguredCommand<AdminServerConfig> {
       // add common data
       exec(PgConfig.DATA_FILE, runner, con, Resources.getResourceAsReader(PgConfig.DATA_FILE));
     }
-    
-    // add col & names index partitions
-    setupStandardPartitions(cfg.db);
   
-    try (Connection con = cfg.db.connect()) {
-      // add draft hierarchy
-      loadDraftHierarchy(con);
-
-      ScriptRunner runner = PgConfig.scriptRunner(con);
-      // add known datasets
-      exec(PgConfig.DATASETS_FILE, runner, con, Resources.getResourceAsReader(PgConfig.DATASETS_FILE));
-      // add known sectors
-      exec(PgConfig.SECTORS_FILE, runner, con, Resources.getResourceAsReader(PgConfig.SECTORS_FILE));
-      // add known decisions
-      exec(PgConfig.DECISIONS_FILE, runner, con, Resources.getResourceAsReader(PgConfig.DECISIONS_FILE));
+    HikariConfig hikari = cfg.db.hikariConfig();
+    try (HikariDataSource dataSource = new HikariDataSource(hikari)) {
+      // configure single mybatis session factory
+      final SqlSessionFactory factory = MybatisFactory.configure(dataSource, "init");
+      
+      // add col & names index partitions
+      try (SqlSession session = factory.openSession()) {
+        setupStandardPartitions(session);
+        session.commit();
+      }
+      
+      try (Connection con = cfg.db.connect()) {
+        // add draft hierarchy
+        loadDraftHierarchy(con);
+  
+        ScriptRunner runner = PgConfig.scriptRunner(con);
+        // add known datasets
+        exec(PgConfig.DATASETS_FILE, runner, con, Resources.getResourceAsReader(PgConfig.DATASETS_FILE));
+        // add known sectors
+        exec(PgConfig.SECTORS_FILE, runner, con, Resources.getResourceAsReader(PgConfig.SECTORS_FILE));
+        // add known decisions
+        exec(PgConfig.DECISIONS_FILE, runner, con, Resources.getResourceAsReader(PgConfig.DECISIONS_FILE));
+      }
+      
+      // rematch sector targets
+      rematchSectorTargets(factory);
     }
+  
+  }
+  
+  private static void rematchSectorTargets(SqlSessionFactory factory) {
+    new DecisionRematcher(factory).matchBrokenSectorTargets();
   }
   
   private static void loadDraftHierarchy(Connection con) throws Exception {
@@ -117,18 +135,6 @@ public class InitDbCmd extends ConfiguredCommand<AdminServerConfig> {
         .build());
   }
   
-  private static void setupStandardPartitions(PgConfig cfg) {
-    HikariConfig hikari = cfg.hikariConfig();
-    try (HikariDataSource dataSource = new HikariDataSource(hikari)) {
-      // configure single mybatis session factory
-      SqlSessionFactory factory = MybatisFactory.configure(dataSource, "init");
-      SqlSession session = factory.openSession();
-      setupStandardPartitions(session);
-      session.commit();
-      session.close();
-    }
-  }
-
   public static void setupStandardPartitions(SqlSession session) {
     DatasetPartitionMapper pm = session.getMapper(DatasetPartitionMapper.class);
     for (int key : new int[]{Datasets.COL, Datasets.PCAT, Datasets.DRAFT_COL}) {

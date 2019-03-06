@@ -138,7 +138,7 @@
   <select id="targetBroken" resultMap="sectorResultMap">
     SELECT <include refid="SELECT" />
     FROM <include refid="FROM" />
-      LEFT JOIN taxon t ON t.id=s.target_id AND t.dataset_key = 3
+      LEFT JOIN taxon_3 t ON t.id=s.target_id
     <bind name="idIsNull" value="true" />
     <include refid="WHERE" />
     ORDER BY key

@@ -100,8 +100,8 @@ public class SectorResource extends CRUDIntResource<Sector> {
   @Path("/{key}/rematch")
   public Sector rematch(@PathParam("key") Integer key, @Context SqlSession session, @Auth ColUser user) {
     Sector s = getNonNull(key, session);
-    DecisionRematcher rem = new DecisionRematcher(factory);
-    rem.matchSector(s);
+    new DecisionRematcher(session).matchSector(s, true, true);
+    session.commit();
     return s;
   }
   

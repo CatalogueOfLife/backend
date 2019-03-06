@@ -9,6 +9,7 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.model.Dataset;
 import org.col.api.model.Page;
+import org.col.api.search.DatasetSearchRequest;
 import org.col.db.mapper.DatasetMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,11 +22,26 @@ public class Pager<T> implements Iterable<T> {
   private final int pageSize;
   private final Function<Page, List<T>> nextPageFunc;
   
-  public static Iterable<Dataset> datasets(final SqlSessionFactory sessionFactory) {
+  public static Iterable<Dataset> datasets(final SqlSessionFactory factory) {
+    return datasets(factory, null);
+  }
+  
+  public static Iterable<Dataset> datasets(final SqlSessionFactory factory, Integer contributesTo) {
+    final DatasetSearchRequest req;
+    if (contributesTo != null) {
+      req = new DatasetSearchRequest();
+      req.setContributesTo(contributesTo);
+    } else {
+      req = null;
+    }
+    
     return new Pager<Dataset>(100, new Function<Page, List<Dataset>>() {
       @Override
       public List<Dataset> apply(Page page) {
-        try (SqlSession session = sessionFactory.openSession()) {
+        try (SqlSession session = factory.openSession()) {
+          if (req != null) {
+            return session.getMapper(DatasetMapper.class).search(req, page);
+          }
           return session.getMapper(DatasetMapper.class).list(page);
         }
       }

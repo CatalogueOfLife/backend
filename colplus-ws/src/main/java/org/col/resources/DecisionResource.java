@@ -47,9 +47,9 @@ public class DecisionResource extends CRUDIntResource<EditorialDecision> {
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   @Path("/{key}/rematch")
   public EditorialDecision rematch(@PathParam("key") Integer key, @Context SqlSession session, @Auth ColUser user) {
-    EditorialDecision s = getNonNull(key, session);
-    DecisionRematcher rem = new DecisionRematcher(factory);
-    rem.matchDecision(s);
-    return s;
+    EditorialDecision ed = getNonNull(key, session);
+    new DecisionRematcher(session).matchDecision(ed);
+    session.commit();
+    return ed;
   }
 }
