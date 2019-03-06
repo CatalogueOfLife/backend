@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MultivaluedMap;
@@ -109,6 +110,8 @@ public class NameSearchRequest {
       addFilterValue(param, NOT_NULL_VALUE);
     } else if (param.type() == String.class) {
       addFilterValue(param, value);
+    } else if (param.type() == UUID.class) {
+      addFilterValue(param, value);
     } else if (param.type() == Integer.class) {
       try {
         Integer i = Integer.valueOf(value);
@@ -129,7 +132,7 @@ public class NameSearchRequest {
         addFilterValue(param, Integer.valueOf(c.ordinal()));
       }
     } else {
-      throw new AssertionError("Unexpected parameter type: " + param.type());
+      throw new IllegalArgumentException("Unexpected parameter type: " + param.type());
     }
   }
 
@@ -141,6 +144,11 @@ public class NameSearchRequest {
   public void addFilter(NameSearchParameter param, Enum<?> value) {
     Preconditions.checkNotNull(value, "Null values not allowed for non-strings");
     addFilter(param, String.valueOf(value.ordinal()));
+  }
+
+  public void addFilter(NameSearchParameter param, UUID value) {
+    Preconditions.checkNotNull(value, "Null values not allowed for non-strings");
+    addFilter(param, String.valueOf(value));
   }
 
   private void addFilterValue(NameSearchParameter param, Object value) {
