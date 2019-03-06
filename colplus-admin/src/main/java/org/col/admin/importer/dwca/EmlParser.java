@@ -131,6 +131,11 @@ public class EmlParser {
                     d.setTitle(text(text));
                   }
                   break;
+                case "shortName":
+                  if (!isProject) {
+                    d.setAlias(text(text));
+                  }
+                  break;
                 case "abstract":
                   d.setDescription(para.toString());
                   break;

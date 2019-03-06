@@ -32,6 +32,7 @@ public class EmlParserTest {
     assertEquals("2017-01-19", d.getReleased().toString());
     assertEquals("http://www.marinespecies.org/aphia.php?p=taxdetails&id=146230", d.getLogo().toString());
     assertEquals("cite my famous dataset", d.getCitation());
+    assertEquals("Famous People", d.getAlias());
   }
   
   @Test
