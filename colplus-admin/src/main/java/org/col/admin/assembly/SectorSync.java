@@ -23,7 +23,7 @@ import org.col.db.dao.MatchingDao;
 import org.col.db.dao.TaxonDao;
 import org.col.db.mapper.*;
 import org.col.db.tree.TextTreePrinter;
-import org.col.es.NameUsageIndexServiceEs;
+import org.col.es.NameUsageIndexService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,7 +38,7 @@ public class SectorSync extends SectorRunnable {
       EntityType.DISTRIBUTION
   );
   
-  public SectorSync(int sectorKey, SqlSessionFactory factory, NameUsageIndexServiceEs indexService,
+  public SectorSync(int sectorKey, SqlSessionFactory factory, NameUsageIndexService indexService,
                     Consumer<SectorRunnable> successCallback,
                     BiConsumer<SectorRunnable, Exception> errorCallback, ColUser user) {
     super(sectorKey, factory, indexService, successCallback, errorCallback, user);

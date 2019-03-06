@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.model.*;
@@ -16,7 +17,7 @@ import org.col.db.mapper.DecisionMapper;
 import org.col.db.mapper.SectorImportMapper;
 import org.col.db.mapper.SectorMapper;
 import org.col.db.mapper.TaxonMapper;
-import org.col.es.NameUsageIndexServiceEs;
+import org.col.es.NameUsageIndexService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,7 +28,7 @@ abstract class SectorRunnable implements Runnable {
   final int datasetKey;
   final Sector sector;
   final SqlSessionFactory factory;
-  final NameUsageIndexServiceEs indexService;
+  final NameUsageIndexService indexService;
   // maps keyed on taxon ids from this sector
   final Map<String, EditorialDecision> decisions = new HashMap<>();
   List<Taxon> foreignChildren;
@@ -38,7 +39,7 @@ abstract class SectorRunnable implements Runnable {
   final ColUser user;
   final SectorImport state = new SectorImport();
   
-  SectorRunnable(int sectorKey, SqlSessionFactory factory, NameUsageIndexServiceEs indexService,
+  SectorRunnable(int sectorKey, SqlSessionFactory factory, NameUsageIndexService indexService,
                       Consumer<SectorRunnable> successCallback,
                       BiConsumer<SectorRunnable, Exception> errorCallback, ColUser user) {
     this.user = user;
@@ -83,7 +84,7 @@ abstract class SectorRunnable implements Runnable {
       
     } catch (Exception e) {
       state.setState(SectorImport.State.FAILED);
-      state.setError(e.getCause().getMessage());
+      state.setError(ExceptionUtils.getRootCauseMessage(e));
       errorCallback.accept(this, e);
       
     } finally {

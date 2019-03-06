@@ -11,6 +11,8 @@ import org.col.api.vocab.Origin;
 import org.col.db.PgSetupRule;
 import org.col.db.dao.DatasetImportDao;
 import org.col.db.mapper.*;
+import org.col.es.NameUsageIndexService;
+import org.col.es.NameUsageIndexServiceEs;
 import org.gbif.common.shaded.com.google.common.collect.Lists;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
@@ -89,7 +91,7 @@ public class SectorSyncTest {
       assertEquals(1, nm.count(Datasets.DRAFT_COL));
     }
 
-    SectorSync ss = new SectorSync(sector.getKey(), PgSetupRule.getSqlSessionFactory(), null,
+    SectorSync ss = new SectorSync(sector.getKey(), PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(),
         SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestEntityGenerator.USER_EDITOR);
     ss.run();
   
