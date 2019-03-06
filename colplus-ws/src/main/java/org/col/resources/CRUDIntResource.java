@@ -50,7 +50,18 @@ public abstract class CRUDIntResource<T extends IntKey & UserManaged> {
   public T get(@PathParam("key") Integer key, @Context SqlSession session) {
     return session.getMapper(mapperClass).get(key);
   }
-
+  
+  /**
+   * Gets entity by its key and throws NotFoundException if not existing
+   */
+  public T getNonNull(Integer key, SqlSession session) {
+    T obj = get(key, session);
+    if (obj == null) {
+      throw NotFoundException.keyNotFound(objClass, key);
+    }
+    return obj;
+  }
+  
   @PUT
   @Path("{key}")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
@@ -59,7 +70,7 @@ public abstract class CRUDIntResource<T extends IntKey & UserManaged> {
     obj.applyUser(user);
     int i = session.getMapper(mapperClass).update(obj);
     if (i == 0) {
-      throw org.col.api.exception.NotFoundException.keyNotFound(objClass, key);
+      throw NotFoundException.keyNotFound(objClass, key);
     }
     session.commit();
   }

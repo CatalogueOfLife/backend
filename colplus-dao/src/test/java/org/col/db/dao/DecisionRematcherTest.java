@@ -1,11 +1,9 @@
-package org.col.admin.assembly;
+package org.col.db.dao;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;
-import org.col.admin.importer.PgImportRule;
 import org.col.api.model.Sector;
 import org.col.api.model.SimpleName;
-import org.col.api.vocab.DataFormat;
 import org.col.db.MybatisTestUtils;
 import org.col.db.PgSetupRule;
 import org.col.db.mapper.InitMybatisRule;
@@ -22,7 +20,7 @@ public class DecisionRematcherTest {
   public static PgSetupRule pg = new PgSetupRule();
   
   @Rule
-  public final PgImportRule importRule = PgImportRule.create(DataFormat.ACEF, 0);
+  public final InitMybatisRule importRule = InitMybatisRule.apple();
 
   @Test
   public void run() {
@@ -34,14 +32,14 @@ public class DecisionRematcherTest {
     Name n5 = draftName(nm, datasetKey,"n5", "Lepidoptera", Rank.ORDER);
      */
     MybatisTestUtils.populateDraftTree(importRule.getSqlSession());
-    final int datasetKey = importRule.datasetKey(0, DataFormat.ACEF);
+    final int datasetKey = 11;
     
     int s1 = createSector(Sector.Mode.ATTACH, datasetKey,
-        new SimpleName(null, "Superfabaceae", Rank.SUPERFAMILY),
+        new SimpleName(null, "Malus sylvestris", Rank.SPECIES),
         new SimpleName(null, "Coleoptera", Rank.ORDER)
     );
     int s2 = createSector(Sector.Mode.MERGE, datasetKey,
-        new SimpleName(null, "Astracantha", Rank.GENUS),
+        new SimpleName(null, "Larus fuscus", Rank.SPECIES),
         new SimpleName(null, "Lepidoptera", Rank.ORDER)
     );
   

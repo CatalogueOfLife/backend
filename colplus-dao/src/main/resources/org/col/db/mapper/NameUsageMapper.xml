@@ -52,11 +52,15 @@
             <property name="alias" value="t"/>
             <property name="prefix" value=""/>
         </include>,
+        ed.key AS decisionKey,
         vn.key as v_key, vn.name, vn.latin, vn.language
     FROM <include refid="org.col.db.mapper.TaxonMapper.FROM"/>
         LEFT JOIN verbatim_${datasetKey} vbt ON vbt.key=t.verbatim_key
         LEFT JOIN verbatim_${datasetKey} vbn ON vbn.key=n.verbatim_key
         LEFT JOIN vernacular_name_${datasetKey} vn ON vn.taxon_id=t.id
+        <if test="datasetKey != @org.col.api.vocab.Datasets@DRAFT_COL">
+            LEFT JOIN decision ed ON ed.subject_id=t.id AND ed.dataset_key=#{datasetKey}
+        </if>
     </sql>
     <!--  select all name usages of a dataset
         Using a optimal fetchsize to enable low memory footprint while keeping good performance using a resulthandler

@@ -35,13 +35,13 @@ public class WsServer extends PgApp<WsServerConfig> {
     final ImageService imgService = new ImageService(cfg.img);
     env.jersey().register(new DataPackageResource());
     env.jersey().register(new DatasetResource(getSqlSessionFactory(), imgService, cfg::scratchDir, new DownloadUtil(super.httpClient)));
-    env.jersey().register(new DecisionResource());
+    env.jersey().register(new DecisionResource(getSqlSessionFactory()));
     env.jersey().register(new DocsResource(cfg));
     env.jersey().register(new NameResource(nuss));
     env.jersey().register(new NameSearchResource(nuss));
     env.jersey().register(new ParserResource());
     env.jersey().register(new ReferenceResource());
-    env.jersey().register(new SectorResource());
+    env.jersey().register(new SectorResource(getSqlSessionFactory()));
     env.jersey().register(new TaxonResource());
     env.jersey().register(new TreeResource());
     env.jersey().register(new UserResource(getJwtCoder()));
