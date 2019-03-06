@@ -1,4 +1,4 @@
-package org.col.admin.assembly;
+package org.col.db.dao;
 
 import java.util.List;
 
@@ -7,7 +7,6 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.model.*;
 import org.col.api.search.DatasetSearchRequest;
 import org.col.api.vocab.Datasets;
-import org.col.db.dao.MatchingDao;
 import org.col.db.mapper.DatasetMapper;
 import org.col.db.mapper.DecisionMapper;
 import org.col.db.mapper.SectorMapper;
@@ -27,6 +26,10 @@ public class DecisionRematcher implements Runnable {
   private int decisionFailed  = 0;
   private int datasets  = 0;
   
+  public DecisionRematcher(SqlSessionFactory factory) {
+    this(factory, null);
+  }
+
   public DecisionRematcher(SqlSessionFactory factory, Integer datasetKey) {
     this.factory = factory;
     this.datasetKey = datasetKey;
@@ -75,18 +78,35 @@ public class DecisionRematcher implements Runnable {
     return null;
   }
   
+  public boolean matchSector(Sector s) {
+    String id = matchUniquely(s, s.getDatasetKey(), s.getSubject());
+    boolean success = id != null;
+    s.getSubject().setId(id);
+    if (s.getTarget().getId() == null) {
+      String id2 = matchUniquely(s, Datasets.DRAFT_COL, s.getTarget());
+      s.getTarget().setId(id2);
+      success = success && id2 != null;
+    }
+    sm.update(s);
+    return success;
+  }
+  
+  public boolean matchDecision(EditorialDecision ed) {
+    String id = matchUniquely(ed, ed.getDatasetKey(), ed.getSubject());
+    boolean success = id != null;
+    ed.getSubject().setId(id);
+    em.update(ed);
+    return success;
+  }
+
   private void matchDataset(final int datasetKey) {
     datasets++;
     int counter = 0;
     int failed  = 0;
     for (Sector s : sm.list(datasetKey)) {
-      String id = matchUniquely(s, datasetKey, s.getSubject());
-      s.getSubject().setId(id);
-      if (s.getTarget().getId() == null) {
-        s.getTarget().setId(matchUniquely(s, Datasets.DRAFT_COL, s.getTarget()));
+      if (!matchSector(s)){
+        failed++;
       }
-      sm.update(s);
-      if (id == null) failed++;
       counter++;
     }
     sectorTotal  += counter;
@@ -96,20 +116,9 @@ public class DecisionRematcher implements Runnable {
     counter = 0;
     failed = 0;
     for (EditorialDecision e : em.list(datasetKey, null)) {
-      List<Taxon> matches = mdao.matchDataset(e.getSubject(), e.getDatasetKey());
-      if (matches.isEmpty()) {
-        LOG.warn("Decision {} cannot be rematched to dataset {} - lost {}", e.getKey(), e.getDatasetKey(), e.getSubject());
-        e.getSubject().setId(null);
+      if (!matchDecision(e)){
         failed++;
-      } else if (matches.size() > 1) {
-        LOG.warn("Decision {} cannot be rematched to dataset {} - multiple names like {}", e.getKey(), e.getDatasetKey(), e.getSubject());
-        e.getSubject().setId(null);
-        failed++;
-      } else {
-        e.getSubject().setId(matches.get(0).getId());
-        counter++;
       }
-      em.update(e);
       counter++;
     }
     decisionTotal  += counter;

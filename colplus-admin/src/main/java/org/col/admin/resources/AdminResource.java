@@ -8,7 +8,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.col.admin.assembly.DecisionRematcher;
+import org.col.db.dao.DecisionRematcher;
 import org.col.admin.config.NormalizerConfig;
 import org.col.common.io.DownloadUtil;
 import org.col.dw.auth.Roles;

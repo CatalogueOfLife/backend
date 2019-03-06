@@ -14,7 +14,7 @@ import com.google.common.base.Preconditions;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.col.admin.assembly.DecisionRematcher;
+import org.col.db.dao.DecisionRematcher;
 import org.col.admin.config.AdminServerConfig;
 import org.col.admin.importer.neo.NeoDb;
 import org.col.admin.importer.neo.NeoDbFactory;

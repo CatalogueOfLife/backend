@@ -12,7 +12,9 @@ import javax.ws.rs.core.MediaType;
 
 import io.dropwizard.auth.Auth;
 import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.model.*;
+import org.col.db.dao.DecisionRematcher;
 import org.col.db.dao.TaxonDao;
 import org.col.db.mapper.SectorMapper;
 import org.col.db.mapper.TaxonMapper;
@@ -27,9 +29,11 @@ public class SectorResource extends CRUDIntResource<Sector> {
   
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(SectorResource.class);
+  private final SqlSessionFactory factory;
   
-  public SectorResource() {
+  public SectorResource(SqlSessionFactory factory) {
     super(Sector.class, SectorMapper.class);
+    this.factory = factory;
   }
   
   @POST
@@ -90,4 +94,15 @@ public class SectorResource extends CRUDIntResource<Sector> {
       return mapper.subjectBroken(datasetKey);
     }
   }
+  
+  @POST
+  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
+  @Path("/{key}/rematch")
+  public Sector rematch(@PathParam("key") Integer key, @Context SqlSession session, @Auth ColUser user) {
+    Sector s = getNonNull(key, session);
+    DecisionRematcher rem = new DecisionRematcher(factory);
+    rem.matchSector(s);
+    return s;
+  }
+  
 }
