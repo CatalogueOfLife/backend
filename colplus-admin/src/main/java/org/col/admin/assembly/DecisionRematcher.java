@@ -63,25 +63,31 @@ public class DecisionRematcher implements Runnable {
     }
   }
   
+  private String matchUniquely(Decision d, int datasetKey, SimpleName sn){
+    List<Taxon> matches = mdao.matchDataset(sn, datasetKey);
+    if (matches.isEmpty()) {
+      LOG.warn("{} {} cannot be rematched to dataset {} - lost {}", d.getClass().getSimpleName(), d.getKey(), datasetKey, sn);
+    } else if (matches.size() > 1) {
+      LOG.warn("{} {} cannot be rematched to dataset {} - multiple names like {}", d.getClass().getSimpleName(), d.getKey(), datasetKey, sn);
+    } else {
+      return matches.get(0).getId();
+    }
+    return null;
+  }
+  
   private void matchDataset(final int datasetKey) {
     datasets++;
     int counter = 0;
     int failed  = 0;
     for (Sector s : sm.list(datasetKey)) {
-      List<Taxon> matches = mdao.matchDataset(s.getSubject(), s.getDatasetKey());
-      if (matches.isEmpty()) {
-        LOG.warn("Sector {} cannot be rematched to dataset {} - lost {}", s.getKey(), s.getDatasetKey(), s.getSubject());
-        s.getSubject().setId(null);
-        failed++;
-      } else if (matches.size() > 1) {
-        LOG.warn("Sector {} cannot be rematched to dataset {} - multiple names like {}", s.getKey(), s.getDatasetKey(), s.getSubject());
-        s.getSubject().setId(null);
-        failed++;
-      } else {
-        s.getSubject().setId(matches.get(0).getId());
+      String id = matchUniquely(s, datasetKey, s.getSubject());
+      s.getSubject().setId(id);
+      if (s.getTarget().getId() == null) {
+        s.getTarget().setId(matchUniquely(s, Datasets.DRAFT_COL, s.getTarget()));
       }
-      counter++;
       sm.update(s);
+      if (id == null) failed++;
+      counter++;
     }
     sectorTotal  += counter;
     sectorFailed += failed;

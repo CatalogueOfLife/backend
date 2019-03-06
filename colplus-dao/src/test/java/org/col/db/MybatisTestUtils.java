@@ -1,12 +1,16 @@
 package org.col.db;
 
 import org.apache.ibatis.session.SqlSession;
+import org.col.api.RandomUtils;
 import org.col.api.TestEntityGenerator;
 import org.col.api.model.Name;
 import org.col.api.model.Taxon;
+import org.col.api.vocab.Origin;
 import org.col.db.mapper.DatasetPartitionMapper;
+import org.col.db.mapper.InitMybatisRule;
 import org.col.db.mapper.NameMapper;
 import org.col.db.mapper.TaxonMapper;
+import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 
 import static org.col.api.vocab.Datasets.DRAFT_COL;
@@ -35,11 +39,11 @@ public class MybatisTestUtils {
   
     NameMapper nm = session.getMapper(NameMapper.class);
   
-    Name n1 = draftName(nm, datasetKey,"n1", "Animalia", Rank.KINGDOM);
-    Name n2 = draftName(nm, datasetKey,"n2", "Arthropoda", Rank.KINGDOM);
-    Name n3 = draftName(nm, datasetKey,"n3", "Insecta", Rank.CLASS);
-    Name n4 = draftName(nm, datasetKey,"n4", "Coleoptera", Rank.ORDER);
-    Name n5 = draftName(nm, datasetKey,"n5", "Lepidoptera", Rank.ORDER);
+    Name n1 = uninomial(nm, datasetKey,"n1", "Animalia", Rank.KINGDOM);
+    Name n2 = uninomial(nm, datasetKey,"n2", "Arthropoda", Rank.KINGDOM);
+    Name n3 = uninomial(nm, datasetKey,"n3", "Insecta", Rank.CLASS);
+    Name n4 = uninomial(nm, datasetKey,"n4", "Coleoptera", Rank.ORDER);
+    Name n5 = uninomial(nm, datasetKey,"n5", "Lepidoptera", Rank.ORDER);
   
     TaxonMapper tm = session.getMapper(TaxonMapper.class);
     Taxon t1 = draftTaxon(tm, datasetKey,"t1", n1, null);
@@ -55,8 +59,18 @@ public class MybatisTestUtils {
     populateTestTree(DRAFT_COL, session);
   }
   
-  private static Name draftName(NameMapper nm, int datasetKey, String id, String name, Rank rank) {
-    Name n = TestEntityGenerator.newName(datasetKey, id, name, rank);
+  private static Name uninomial(NameMapper nm, int datasetKey, String id, String name, Rank rank) {
+    Name n = new Name();
+    n.applyUser(InitMybatisRule.TEST_USER);
+    n.setId(id);
+    n.setNameIndexId(RandomUtils.randomLatinString(10));
+    n.setHomotypicNameId(id);
+    n.setDatasetKey(datasetKey);
+    n.setUninomial(name);
+    n.setRank(rank);
+    n.setOrigin(Origin.SOURCE);
+    n.setType(NameType.SCIENTIFIC);
+    n.updateNameCache();
     nm.create(n);
     return n;
   }
