@@ -1,6 +1,5 @@
 package org.col.db.dao;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.model.Sector;
 import org.col.api.model.SimpleName;
@@ -23,7 +22,7 @@ public class DecisionRematcherTest {
   public final InitMybatisRule importRule = InitMybatisRule.apple();
 
   @Test
-  public void run() {
+  public void matchDataset() {
     /*
     Name n1 = draftName(nm, datasetKey,"n1", "Animalia", Rank.KINGDOM);
     Name n2 = draftName(nm, datasetKey,"n2", "Arthropoda", Rank.KINGDOM);
@@ -43,18 +42,29 @@ public class DecisionRematcherTest {
         new SimpleName(null, "Lepidoptera", Rank.ORDER)
     );
   
-    DecisionRematcher rem = new DecisionRematcher(PgSetupRule.getSqlSessionFactory(), datasetKey);
-    rem.run();
-  
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       SectorMapper sm = session.getMapper(SectorMapper.class);
+      DecisionRematcher rem = new DecisionRematcher(session);
+      
+      rem.matchDataset(datasetKey);
+
       Sector s1b = sm.get(s1);
-      Assert.assertNotNull(StringUtils.trimToNull(s1b.getSubject().getId()));
-      Assert.assertNotNull(StringUtils.trimToNull(s1b.getTarget().getId()));
+      Assert.assertNotNull(s1b.getSubject().getId());
+      Assert.assertNull(s1b.getTarget().getId());
 
       Sector s2b = sm.get(s2);
-      Assert.assertNotNull(StringUtils.trimToNull(s2b.getSubject().getId()));
-      Assert.assertNotNull(StringUtils.trimToNull(s2b.getTarget().getId()));
+      Assert.assertNotNull(s2b.getSubject().getId());
+      Assert.assertNull(s2b.getTarget().getId());
+  
+      rem.matchBrokenSectorTargets();
+      Sector s1c = sm.get(s1);
+      Assert.assertEquals(s1b.getSubject().getId(), s1c.getSubject().getId());
+      Assert.assertNotNull(s1c.getTarget().getId());
+  
+      Sector s2c = sm.get(s2);
+      Assert.assertEquals(s2b.getSubject().getId(), s2c.getSubject().getId());
+      Assert.assertNotNull(s2c.getTarget().getId());
+  
     }
   
   }

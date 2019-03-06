@@ -22,7 +22,7 @@ public interface SectorMapper extends CRUDIntMapper<Sector> {
   List<Sector> subjectBroken(@Param("datasetKey") int datasetKey);
   
   /**
-   * List all sectors that cannot anymore be linked to attachment points in the draft CoL
+   * List all sectors from a source dataset that cannot anymore be linked to attachment points in the draft CoL
    */
   List<Sector> targetBroken(@Param("datasetKey") int datasetKey);
 }

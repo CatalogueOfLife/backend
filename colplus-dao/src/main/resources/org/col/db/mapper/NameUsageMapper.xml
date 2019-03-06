@@ -52,7 +52,9 @@
             <property name="alias" value="t"/>
             <property name="prefix" value=""/>
         </include>,
-        ed.key AS decisionKey,
+        <if test="datasetKey != @org.col.api.vocab.Datasets@DRAFT_COL">
+            ed.key AS decisionKey,
+        </if>
         vn.key as v_key, vn.name, vn.latin, vn.language
     FROM <include refid="org.col.db.mapper.TaxonMapper.FROM"/>
         LEFT JOIN verbatim_${datasetKey} vbt ON vbt.key=t.verbatim_key
