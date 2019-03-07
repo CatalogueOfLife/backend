@@ -2,16 +2,17 @@ package org.col.db.dao;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.model.*;
 import org.col.api.search.DatasetSearchRequest;
 import org.col.api.vocab.Datasets;
-import org.col.db.mapper.DatasetMapper;
-import org.col.db.mapper.DecisionMapper;
-import org.col.db.mapper.SectorMapper;
-import org.col.db.mapper.TaxonMapper;
+import org.col.api.vocab.Origin;
+import org.col.api.vocab.Users;
+import org.col.db.mapper.*;
+import org.gbif.nameparser.api.NameType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,6 +25,10 @@ public class DecisionRematcher {
   private final SectorMapper sm;
   private final DecisionMapper em;
   private final MatchingDao mdao;
+  private final TaxonDao tdao;
+  private final ColUser user;
+  
+  
   private int sectorTotal = 0;
   private int sectorFailed  = 0;
   private int decisionTotal = 0;
@@ -37,6 +42,8 @@ public class DecisionRematcher {
     sm = session.getMapper(SectorMapper.class);
     em = session.getMapper(DecisionMapper.class);
     mdao = new MatchingDao(session);
+    tdao = new TaxonDao(session);
+    user = session.getMapper(UserMapper.class).get(Users.DB_INIT);
   }
   
   private void clearCounter() {
@@ -74,8 +81,10 @@ public class DecisionRematcher {
       if (t != null) {
         s.getTarget().setId(t.getId());
         if (s.getMode() == Sector.Mode.ATTACH) {
-          t.setSectorKey(s.getKey());
-          tm.update(t);
+          // create single, new child
+          Taxon c = newTaxon(Datasets.DRAFT_COL, s.getSubject());
+          c.setSectorKey(s.getKey());
+          tdao.copyTaxon(c, s.getTargetAsDatasetID(), user, Collections.emptySet());
         } else {
           // mark 10 children as coming from this sector...
           for (Taxon c : tm.children(Datasets.DRAFT_COL, t.getId(), new Page(0,3))) {
@@ -89,6 +98,22 @@ public class DecisionRematcher {
     }
     sm.update(s);
     return success;
+  }
+  
+  private Taxon newTaxon(int datasetKey, SimpleName sn){
+    Taxon t = new Taxon();
+    t.setDatasetKey(datasetKey);
+    t.setProvisional(false);
+    
+    Name n = new Name();
+    t.setName(n);
+    n.setDatasetKey(datasetKey);
+    n.setScientificName(sn.getName());
+    n.setAuthorship(sn.getAuthorship());
+    n.setRank(sn.getRank());
+    n.setType(NameType.SCIENTIFIC);
+    n.setOrigin(Origin.SOURCE);
+    return t;
   }
   
   public boolean matchDecision(EditorialDecision ed) {
