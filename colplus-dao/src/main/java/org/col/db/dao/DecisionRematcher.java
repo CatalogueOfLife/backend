@@ -11,6 +11,7 @@ import org.col.api.vocab.Datasets;
 import org.col.db.mapper.DatasetMapper;
 import org.col.db.mapper.DecisionMapper;
 import org.col.db.mapper.SectorMapper;
+import org.col.db.mapper.TaxonMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,6 +19,7 @@ public class DecisionRematcher {
   private static final Logger LOG = LoggerFactory.getLogger(DecisionRematcher.class);
   
   private final SqlSession session;
+  private final TaxonMapper tm;
   private final DatasetMapper dm;
   private final SectorMapper sm;
   private final DecisionMapper em;
@@ -30,6 +32,7 @@ public class DecisionRematcher {
   
   public DecisionRematcher(SqlSession session) {
     this.session = session;
+    tm = session.getMapper(TaxonMapper.class);
     dm = session.getMapper(DatasetMapper.class);
     sm = session.getMapper(SectorMapper.class);
     em = session.getMapper(DecisionMapper.class);
@@ -59,17 +62,27 @@ public class DecisionRematcher {
   public boolean matchSector(Sector s, boolean subject, boolean target) {
     boolean success = true;
     if (subject) {
-      String id = matchUniquely(s, s.getDatasetKey(), s.getSubject());
-      if (id != null) {
-        s.getSubject().setId(id);
+      Taxon t = matchUniquely(s, s.getDatasetKey(), s.getSubject());
+      if (t != null) {
+        s.getSubject().setId(t.getId());
       } else {
         success = false;
       }
     }
     if (target) {
-      String id = matchUniquely(s, Datasets.DRAFT_COL, s.getTarget());
-      if (id != null) {
-        s.getTarget().setId(id);
+      Taxon t = matchUniquely(s, Datasets.DRAFT_COL, s.getTarget());
+      if (t != null) {
+        s.getTarget().setId(t.getId());
+        if (s.getMode() == Sector.Mode.ATTACH) {
+          t.setSectorKey(s.getKey());
+          tm.update(t);
+        } else {
+          // mark 10 children as coming from this sector...
+          for (Taxon c : tm.children(Datasets.DRAFT_COL, t.getId(), new Page(0,3))) {
+            c.setSectorKey(s.getKey());
+            tm.update(c);
+          }
+        }
       } else {
         success = false;
       }
@@ -79,9 +92,9 @@ public class DecisionRematcher {
   }
   
   public boolean matchDecision(EditorialDecision ed) {
-    String id = matchUniquely(ed, ed.getDatasetKey(), ed.getSubject());
-    boolean success = id != null;
-    ed.getSubject().setId(id);
+    Taxon t = matchUniquely(ed, ed.getDatasetKey(), ed.getSubject());
+    boolean success = t != null;
+    ed.getSubject().setId(t.getId());
     em.update(ed);
     return success;
   }
@@ -154,14 +167,14 @@ public class DecisionRematcher {
     }
   }
   
-  private String matchUniquely(Decision d, int datasetKey, SimpleName sn){
+  private Taxon matchUniquely(Decision d, int datasetKey, SimpleName sn){
     List<Taxon> matches = mdao.matchDataset(sn, datasetKey);
     if (matches.isEmpty()) {
       LOG.warn("{} {} cannot be rematched to dataset {} - lost {}", d.getClass().getSimpleName(), d.getKey(), datasetKey, sn);
     } else if (matches.size() > 1) {
       LOG.warn("{} {} cannot be rematched to dataset {} - multiple names like {}", d.getClass().getSimpleName(), d.getKey(), datasetKey, sn);
     } else {
-      return matches.get(0).getId();
+      return matches.get(0);
     }
     return null;
   }
