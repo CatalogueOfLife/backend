@@ -110,11 +110,13 @@ public class InitDbCmd extends ConfiguredCommand<AdminServerConfig> {
       // rematch sector targets
       rematchSectorTargets(factory);
     }
-  
   }
   
   private static void rematchSectorTargets(SqlSessionFactory factory) {
-    new DecisionRematcher(factory).matchBrokenSectorTargets();
+    LOG.info("Rematch sector targets");
+    try (SqlSession session = factory.openSession(true)) {
+      new DecisionRematcher(session).matchBrokenSectorTargets();
+    }
   }
   
   private static void loadDraftHierarchy(Connection con) throws Exception {

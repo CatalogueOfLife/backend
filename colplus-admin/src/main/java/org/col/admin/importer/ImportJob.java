@@ -13,6 +13,7 @@ import java.util.function.Consumer;
 import com.google.common.base.Preconditions;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.time.DurationFormatUtils;
+import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.db.dao.DecisionRematcher;
 import org.col.admin.config.AdminServerConfig;
@@ -195,8 +196,9 @@ public class ImportJob implements Runnable {
         indexService.indexDataset(datasetKey);
   
         LOG.info("Updating sectors and decisions for dataset {}", datasetKey);
-        DecisionRematcher rem = new DecisionRematcher(factory, datasetKey);
-        rem.run();
+        try(SqlSession session = factory.openSession(true)) {
+          new DecisionRematcher(session).matchDataset(datasetKey);
+        }
   
         LOG.info("Dataset import {} completed in {}", datasetKey,
             DurationFormatUtils.formatDurationHMS(Duration.between(di.getStarted(), LocalDateTime.now()).toMillis()));

@@ -2,15 +2,17 @@ package org.col.db.dao;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.model.*;
 import org.col.api.search.DatasetSearchRequest;
 import org.col.api.vocab.Datasets;
-import org.col.db.mapper.DatasetMapper;
-import org.col.db.mapper.DecisionMapper;
-import org.col.db.mapper.SectorMapper;
+import org.col.api.vocab.Origin;
+import org.col.api.vocab.Users;
+import org.col.db.mapper.*;
+import org.gbif.nameparser.api.NameType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,10 +20,15 @@ public class DecisionRematcher {
   private static final Logger LOG = LoggerFactory.getLogger(DecisionRematcher.class);
   
   private final SqlSession session;
+  private final TaxonMapper tm;
   private final DatasetMapper dm;
   private final SectorMapper sm;
   private final DecisionMapper em;
   private final MatchingDao mdao;
+  private final TaxonDao tdao;
+  private final ColUser user;
+  
+  
   private int sectorTotal = 0;
   private int sectorFailed  = 0;
   private int decisionTotal = 0;
@@ -30,10 +37,13 @@ public class DecisionRematcher {
   
   public DecisionRematcher(SqlSession session) {
     this.session = session;
+    tm = session.getMapper(TaxonMapper.class);
     dm = session.getMapper(DatasetMapper.class);
     sm = session.getMapper(SectorMapper.class);
     em = session.getMapper(DecisionMapper.class);
     mdao = new MatchingDao(session);
+    tdao = new TaxonDao(session);
+    user = session.getMapper(UserMapper.class).get(Users.DB_INIT);
   }
   
   private void clearCounter() {
@@ -59,17 +69,29 @@ public class DecisionRematcher {
   public boolean matchSector(Sector s, boolean subject, boolean target) {
     boolean success = true;
     if (subject) {
-      String id = matchUniquely(s, s.getDatasetKey(), s.getSubject());
-      if (id != null) {
-        s.getSubject().setId(id);
+      Taxon t = matchUniquely(s, s.getDatasetKey(), s.getSubject());
+      if (t != null) {
+        s.getSubject().setId(t.getId());
       } else {
         success = false;
       }
     }
     if (target) {
-      String id = matchUniquely(s, Datasets.DRAFT_COL, s.getTarget());
-      if (id != null) {
-        s.getTarget().setId(id);
+      Taxon t = matchUniquely(s, Datasets.DRAFT_COL, s.getTarget());
+      if (t != null) {
+        s.getTarget().setId(t.getId());
+        if (s.getMode() == Sector.Mode.ATTACH) {
+          // create single, new child
+          Taxon c = newTaxon(Datasets.DRAFT_COL, s.getSubject());
+          c.setSectorKey(s.getKey());
+          tdao.copyTaxon(c, s.getTargetAsDatasetID(), user, Collections.emptySet());
+        } else {
+          // mark 10 children as coming from this sector...
+          for (Taxon c : tm.children(Datasets.DRAFT_COL, t.getId(), new Page(0,3))) {
+            c.setSectorKey(s.getKey());
+            tm.update(c);
+          }
+        }
       } else {
         success = false;
       }
@@ -78,10 +100,26 @@ public class DecisionRematcher {
     return success;
   }
   
+  private Taxon newTaxon(int datasetKey, SimpleName sn){
+    Taxon t = new Taxon();
+    t.setDatasetKey(datasetKey);
+    t.setProvisional(false);
+    
+    Name n = new Name();
+    t.setName(n);
+    n.setDatasetKey(datasetKey);
+    n.setScientificName(sn.getName());
+    n.setAuthorship(sn.getAuthorship());
+    n.setRank(sn.getRank());
+    n.setType(NameType.SCIENTIFIC);
+    n.setOrigin(Origin.SOURCE);
+    return t;
+  }
+  
   public boolean matchDecision(EditorialDecision ed) {
-    String id = matchUniquely(ed, ed.getDatasetKey(), ed.getSubject());
-    boolean success = id != null;
-    ed.getSubject().setId(id);
+    Taxon t = matchUniquely(ed, ed.getDatasetKey(), ed.getSubject());
+    boolean success = t != null;
+    ed.getSubject().setId(t.getId());
     em.update(ed);
     return success;
   }
@@ -154,14 +192,14 @@ public class DecisionRematcher {
     }
   }
   
-  private String matchUniquely(Decision d, int datasetKey, SimpleName sn){
+  private Taxon matchUniquely(Decision d, int datasetKey, SimpleName sn){
     List<Taxon> matches = mdao.matchDataset(sn, datasetKey);
     if (matches.isEmpty()) {
       LOG.warn("{} {} cannot be rematched to dataset {} - lost {}", d.getClass().getSimpleName(), d.getKey(), datasetKey, sn);
     } else if (matches.size() > 1) {
       LOG.warn("{} {} cannot be rematched to dataset {} - multiple names like {}", d.getClass().getSimpleName(), d.getKey(), datasetKey, sn);
     } else {
-      return matches.get(0).getId();
+      return matches.get(0);
     }
     return null;
   }
