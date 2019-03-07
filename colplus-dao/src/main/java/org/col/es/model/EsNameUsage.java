@@ -39,7 +39,7 @@ public class EsNameUsage {
   private String scientificNameSN;
   private String authorship;
   private String nameId;
-  private String indexNameId;
+  private String nameIndexId;
   private String publishedInId;
   private Integer decisionKey;
   private UUID publisherKey;
@@ -107,12 +107,12 @@ public class EsNameUsage {
     this.nameId = nameId;
   }
 
-  public String getIndexNameId() {
-    return indexNameId;
+  public String getNameIndexId() {
+    return nameIndexId;
   }
 
-  public void setIndexNameId(String nameIndexId) {
-    this.indexNameId = nameIndexId;
+  public void setNameIndexId(String nameIndexId) {
+    this.nameIndexId = nameIndexId;
   }
 
   public String getPublishedInId() {
@@ -235,7 +235,7 @@ public class EsNameUsage {
         && Objects.equals(classificationIds, that.classificationIds)
         && Objects.equals(datasetKey, that.datasetKey)
         && Objects.equals(decisionKey, that.decisionKey)
-        && Objects.equals(indexNameId, that.indexNameId)
+        && Objects.equals(nameIndexId, that.nameIndexId)
         && Objects.equals(issues, that.issues)
         && Objects.equals(nameFields, that.nameFields)
         && Objects.equals(nameId, that.nameId)
@@ -260,7 +260,7 @@ public class EsNameUsage {
         classificationIds,
         datasetKey,
         decisionKey,
-        indexNameId,
+        nameIndexId,
         issues,
         nameFields,
         nameId,

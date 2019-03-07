@@ -23,7 +23,9 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.col.api.search.NameSearchParameter.*;
+import static org.col.api.search.NameSearchParameter.DECISION_KEY;
+import static org.col.api.search.NameSearchParameter.NAME_INDEX_ID;
+import static org.col.api.search.NameSearchParameter.PUBLISHER_KEY;
 import static org.col.api.search.NameSearchParameter.TAXON_ID;
 import static org.col.es.EsUtil.insert;
 import static org.col.es.EsUtil.refreshIndex;
@@ -165,8 +167,6 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
 
   @Test
   public void testPublisherKey1() throws IOException {
-    NameUsage bogus = new Taxon();
-    bogus.setName(new Name());
     UUID uuid1 = UUID.randomUUID();
     UUID uuid2 = UUID.randomUUID();
     NameUsageWrapper nuw1 = minimalNameUsage();
@@ -205,8 +205,6 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
 
   @Test
   public void testPublisherKey2() throws IOException {
-    NameUsage bogus = new Taxon();
-    bogus.setName(new Name());
     UUID uuid1 = UUID.randomUUID();
     UUID uuid2 = UUID.randomUUID();
     NameUsageWrapper nuw1 = minimalNameUsage();
@@ -240,8 +238,6 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
 
   @Test
   public void testPublisherKey3() throws IOException {
-    NameUsage bogus = new Taxon();
-    bogus.setName(new Name());
     UUID uuid1 = UUID.randomUUID();
     UUID uuid2 = UUID.randomUUID();
     NameUsageWrapper nuw1 = minimalNameUsage();
@@ -275,8 +271,6 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
 
   @Test
   public void testPublisherKey4() throws IOException {
-    NameUsage bogus = new Taxon();
-    bogus.setName(new Name());
     UUID uuid1 = UUID.randomUUID();
     UUID uuid2 = UUID.randomUUID();
     NameUsageWrapper nuw1 = minimalNameUsage();
@@ -313,8 +307,6 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
 
   @Test
   public void testDecisionKey1() throws IOException {
-    NameUsage bogus = new Taxon();
-    bogus.setName(new Name());
     Integer key1 = 100;
     Integer key2 = 101;
     NameUsageWrapper nuw1 = minimalNameUsage();
@@ -425,6 +417,117 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
     assertEquals(expected, result.getResult());
 
     countdown(DECISION_KEY);
+
+  }
+
+  @Test
+  public void testNameIndexId1() throws IOException {
+    String key1 = "100";
+    String key2 = "101";
+    NameUsageWrapper nuw1 = minimalNameUsage();
+    nuw1.getUsage().getName().setNameIndexId(key1);
+    NameUsageWrapper nuw2 = minimalNameUsage();
+    nuw2.getUsage().getName().setNameIndexId(key1);
+    NameUsageWrapper nuw3 = minimalNameUsage();
+    nuw3.getUsage().getName().setNameIndexId(key2);
+    NameUsageWrapper nuw4 = minimalNameUsage();
+    nuw4.getUsage().getName().setNameIndexId(null);
+
+    NameUsageTransfer transfer = new NameUsageTransfer();
+
+    insert(client, indexName, transfer.toDocument(nuw1));
+    insert(client, indexName, transfer.toDocument(nuw2));
+    insert(client, indexName, transfer.toDocument(nuw3));
+    insert(client, indexName, transfer.toDocument(nuw4));
+    refreshIndex(client, indexName);
+
+    NameSearchRequest req = new NameSearchRequest();
+    req.addFilter(NAME_INDEX_ID, key2);
+
+    nuw1.getUsage().getName().setNameIndexId(key1);
+    nuw2.getUsage().getName().setNameIndexId(key1);
+    nuw3.getUsage().getName().setNameIndexId(key2);
+    nuw4.getUsage().getName().setNameIndexId(null);
+    List<NameUsageWrapper> expected = Arrays.asList(nuw2);
+
+    ResultPage<NameUsageWrapper> result = svc.search(indexName, req, new Page());
+    assertEquals(expected, result.getResult());
+
+    countdown(NAME_INDEX_ID);
+
+  }
+
+  @Test
+  public void testNameIndexId2() throws IOException {
+    String key1 = "100";
+    String key2 = "101";
+    NameUsageWrapper nuw1 = minimalNameUsage();
+    nuw1.getUsage().getName().setNameIndexId(key1);
+    NameUsageWrapper nuw2 = minimalNameUsage();
+    nuw2.getUsage().getName().setNameIndexId(key1);
+    NameUsageWrapper nuw3 = minimalNameUsage();
+    nuw3.getUsage().getName().setNameIndexId(key2);
+    NameUsageWrapper nuw4 = minimalNameUsage();
+    nuw4.getUsage().getName().setNameIndexId(null);
+
+    NameUsageTransfer transfer = new NameUsageTransfer();
+
+    insert(client, indexName, transfer.toDocument(nuw1));
+    insert(client, indexName, transfer.toDocument(nuw2));
+    insert(client, indexName, transfer.toDocument(nuw3));
+    insert(client, indexName, transfer.toDocument(nuw4));
+    refreshIndex(client, indexName);
+
+    NameSearchRequest req = new NameSearchRequest();
+    req.addFilter(NAME_INDEX_ID, NameSearchRequest.NULL_VALUE);
+
+    nuw1.getUsage().getName().setNameIndexId(key1);
+    nuw2.getUsage().getName().setNameIndexId(key1);
+    nuw3.getUsage().getName().setNameIndexId(key2);
+    nuw4.getUsage().getName().setNameIndexId(null);
+    List<NameUsageWrapper> expected = Arrays.asList(nuw4);
+
+    ResultPage<NameUsageWrapper> result = svc.search(indexName, req, new Page());
+    assertEquals(expected, result.getResult());
+
+    countdown(NAME_INDEX_ID);
+
+  }
+
+  @Test
+  public void testNameIndexId3() throws IOException {
+    String key1 = "100";
+    String key2 = "101";
+    NameUsageWrapper nuw1 = minimalNameUsage();
+    nuw1.getUsage().getName().setNameIndexId(key1);
+    NameUsageWrapper nuw2 = minimalNameUsage();
+    nuw2.getUsage().getName().setNameIndexId(key1);
+    NameUsageWrapper nuw3 = minimalNameUsage();
+    nuw3.getUsage().getName().setNameIndexId(key2);
+    NameUsageWrapper nuw4 = minimalNameUsage();
+    nuw4.getUsage().getName().setNameIndexId(null);
+
+    NameUsageTransfer transfer = new NameUsageTransfer();
+
+    insert(client, indexName, transfer.toDocument(nuw1));
+    insert(client, indexName, transfer.toDocument(nuw2));
+    insert(client, indexName, transfer.toDocument(nuw3));
+    insert(client, indexName, transfer.toDocument(nuw4));
+    refreshIndex(client, indexName);
+
+    NameSearchRequest req = new NameSearchRequest();
+    req.addFilter(NAME_INDEX_ID, NameSearchRequest.NOT_NULL_VALUE);
+
+    nuw1.getUsage().getName().setNameIndexId(key1);
+    nuw2.getUsage().getName().setNameIndexId(key1);
+    nuw3.getUsage().getName().setNameIndexId(key2);
+    nuw4.getUsage().getName().setNameIndexId(null);
+    List<NameUsageWrapper> expected = Arrays.asList(nuw1, nuw2, nuw3);
+
+    ResultPage<NameUsageWrapper> result = svc.search(indexName, req, new Page());
+    assertEquals(expected, result.getResult());
+
+    countdown(NAME_INDEX_ID);
 
   }
 
