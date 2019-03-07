@@ -5,6 +5,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 
 import com.google.common.base.Preconditions;
 
@@ -15,6 +16,10 @@ public class FacetValue<T extends Comparable<T>> implements Comparable<FacetValu
 
   public static FacetValue<String> forString(Object val, int count) {
     return new FacetValue<>(val.toString(), count);
+  }
+
+  public static FacetValue<UUID> forUUID(Object val, int count) {
+    return new FacetValue<>(UUID.fromString(val.toString()), count);
   }
 
   public static FacetValue<Integer> forInteger(Object val, int count) {
@@ -30,7 +35,7 @@ public class FacetValue<T extends Comparable<T>> implements Comparable<FacetValu
   /*
    * Enums that must be sorted according to their string representation rather than by their ordinal number
    */
-  private static final Set<Class<? extends Enum<?>>> STRINGIFY = new HashSet<>(Arrays.asList(Issue.class));
+  private static final Set<Class<? extends Enum<?>>> useEnumName = new HashSet<>(Arrays.asList(Issue.class));
 
   /**
    * Comparator to be used if you want to sort by facet value first, and then by document count descending. The natural order for facets is
@@ -44,7 +49,7 @@ public class FacetValue<T extends Comparable<T>> implements Comparable<FacetValu
     @Override
     public int compare(FacetValue<U> f1, FacetValue<U> f2) {
       int i;
-      if (STRINGIFY.contains(f1.value.getClass())) {
+      if (useEnumName.contains(f1.value.getClass())) {
         i = enumToString(f1.value).compareTo(enumToString(f2.value));
       } else {
         i = f1.value.compareTo(f2.value);
@@ -91,7 +96,7 @@ public class FacetValue<T extends Comparable<T>> implements Comparable<FacetValu
   public int compareTo(FacetValue<T> other) {
     int i = other.count - count; // doc count descending
     if (i == 0) {
-      if (STRINGIFY.contains(value.getClass())) {
+      if (useEnumName.contains(value.getClass())) {
         return enumToString(value).compareTo(enumToString(other.value));
       }
       return value.compareTo(other.value);

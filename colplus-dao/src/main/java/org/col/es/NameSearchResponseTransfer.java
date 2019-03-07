@@ -36,7 +36,7 @@ import static org.col.api.search.NameSearchParameter.NOM_STATUS;
 import static org.col.api.search.NameSearchParameter.PUBLISHED_IN_ID;
 import static org.col.api.search.NameSearchParameter.RANK;
 import static org.col.api.search.NameSearchParameter.STATUS;
-import static org.col.api.search.NameSearchParameter.TYPE;
+import static org.col.api.search.NameSearchParameter.*;
 
 /**
  * Converts the Elasticsearch response object to a NameSearchResponse instance.
