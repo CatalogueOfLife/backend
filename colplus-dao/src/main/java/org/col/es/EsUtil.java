@@ -57,7 +57,10 @@ public class EsUtil {
     Map<String, Object> indexSpec = new HashMap<>();
     indexSpec.put("settings", settings);
     indexSpec.put("mappings", mappings);
-    LOG.debug(pretty(indexSpec));
+
+    if (LOG.isTraceEnabled()) {
+      LOG.trace(pretty(indexSpec));
+    }
 
     Request request = new Request("PUT", index);
     request.setJsonEntity(SerializationUtil.serialize(indexSpec));

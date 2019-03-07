@@ -3,6 +3,7 @@ package org.col.es.model;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 
 import org.col.api.vocab.Issue;
 import org.col.api.vocab.NameField;
@@ -10,7 +11,6 @@ import org.col.api.vocab.NomStatus;
 import org.col.api.vocab.TaxonomicStatus;
 import org.col.es.annotations.Analyzers;
 import org.col.es.annotations.MapToType;
-import org.col.es.annotations.NotIndexed;
 import org.col.es.mapping.ESDataType;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
@@ -41,6 +41,8 @@ public class EsNameUsage {
   private String nameId;
   private String indexNameId;
   private String publishedInId;
+  private Integer decisionKey;
+  private UUID publisherKey;
   private Rank rank;
   private NameType type;
   private NomStatus nomStatus;
@@ -60,8 +62,7 @@ public class EsNameUsage {
     this.usageId = usageId;
   }
 
-  // See here why this probably makes sense:
-  // https://www.elastic.co/guide/en/elasticsearch/reference/current/tune-for-search-speed.html#_consider_mapping_identifiers_as_literal_keyword_literal
+  // keyword datatype is more efficient for term queries than integer
   @MapToType(ESDataType.KEYWORD)
   public Integer getDatasetKey() {
     return datasetKey;
@@ -122,6 +123,23 @@ public class EsNameUsage {
     this.publishedInId = publishedInId;
   }
 
+  public Integer getDecisionKey() {
+    return decisionKey;
+  }
+
+  public void setDecisionKey(Integer decisionKey) {
+    this.decisionKey = decisionKey;
+  }
+
+  @MapToType(ESDataType.KEYWORD)
+  public UUID getPublisherKey() {
+    return publisherKey;
+  }
+
+  public void setPublisherKey(UUID publisherKey) {
+    this.publisherKey = publisherKey;
+  }
+
   public Rank getRank() {
     return rank;
   }
@@ -179,7 +197,7 @@ public class EsNameUsage {
     this.issues = issues;
   }
 
-  @NotIndexed
+  @MapToType(ESDataType.BINARY)
   public String getPayload() {
     return payload;
   }
@@ -211,21 +229,52 @@ public class EsNameUsage {
     if (o == null || getClass() != o.getClass())
       return false;
     EsNameUsage that = (EsNameUsage) o;
-    return Objects.equals(usageId, that.usageId) && Objects.equals(datasetKey, that.datasetKey)
-        && Objects.equals(scientificNameWN, that.scientificNameWN)
-        && Objects.equals(authorship, that.authorship) && Objects.equals(vernacularNames, that.vernacularNames)
-        && Objects.equals(nameId, that.nameId) && Objects.equals(indexNameId, that.indexNameId)
-        && Objects.equals(publishedInId, that.publishedInId) && rank == that.rank && type == that.type && nomStatus == that.nomStatus
-        && Objects.equals(nameFields, that.nameFields) && status == that.status
-        && Objects.equals(issues, that.issues) && Objects.equals(payload, that.payload)
+    return true
+        && Objects.equals(authorship, that.authorship)
+        && Objects.equals(classification, that.classification)
         && Objects.equals(classificationIds, that.classificationIds)
-        && Objects.equals(classification, that.classification);
+        && Objects.equals(datasetKey, that.datasetKey)
+        && Objects.equals(decisionKey, that.decisionKey)
+        && Objects.equals(indexNameId, that.indexNameId)
+        && Objects.equals(issues, that.issues)
+        && Objects.equals(nameFields, that.nameFields)
+        && Objects.equals(nameId, that.nameId)
+        && nomStatus == that.nomStatus
+        && Objects.equals(payload, that.payload)
+        && Objects.equals(publishedInId, that.publishedInId)
+        && Objects.equals(publisherKey, that.publisherKey)
+        && rank == that.rank
+        && Objects.equals(scientificNameWN, that.scientificNameWN)
+        && Objects.equals(scientificNameSN, that.scientificNameSN)
+        && status == that.status
+        && type == that.type
+        && Objects.equals(usageId, that.usageId)
+        && Objects.equals(vernacularNames, that.vernacularNames);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(usageId, scientificNameWN, authorship, vernacularNames, datasetKey, nameId, indexNameId,
-        publishedInId, rank, type, nomStatus, nameFields, status, issues, payload, classificationIds, classification);
+    return Objects.hash(
+        authorship,
+        classification,
+        classificationIds,
+        datasetKey,
+        decisionKey,
+        indexNameId,
+        issues,
+        nameFields,
+        nameId,
+        nomStatus,
+        payload,
+        publishedInId,
+        publisherKey,
+        rank,
+        scientificNameWN,
+        scientificNameSN,
+        status,
+        type,
+        usageId,
+        vernacularNames);
   }
 
 }

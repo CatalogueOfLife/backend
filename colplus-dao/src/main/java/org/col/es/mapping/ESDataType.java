@@ -8,7 +8,7 @@ import java.util.HashMap;
  */
 public enum ESDataType {
 
-  KEYWORD, TEXT, INTEGER, BOOLEAN, DATE, BYTE, SHORT, LONG, FLOAT, DOUBLE, GEO_POINT, GEO_SHAPE, OBJECT, NESTED;
+  KEYWORD, TEXT, INTEGER, BOOLEAN, DATE, BYTE, SHORT, LONG, FLOAT, DOUBLE, GEO_POINT, GEO_SHAPE, BINARY, OBJECT, NESTED;
 
   /*
    * Map data type names to enum constants.

@@ -2,7 +2,6 @@ package org.col.api.search;
 
 import java.util.UUID;
 
-import org.col.api.model.EditorialDecision;
 import org.col.api.vocab.Issue;
 import org.col.api.vocab.NameField;
 import org.col.api.vocab.NomStatus;
@@ -68,11 +67,7 @@ public enum NameSearchParameter {
    */
   PUBLISHED_IN_ID(String.class),
   
-  /**
-   * Searches for name usages that have an editorial decision attached with the given mode.
-   * If NULL is explicitly searched for only usages without any decisions are to be returned.
-   */
-  DECISION_MODE(EditorialDecision.Mode.class);
+  DECISION_KEY(Integer.class);
 
   private final Class<?> type;
 

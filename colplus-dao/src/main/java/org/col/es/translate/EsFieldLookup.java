@@ -14,7 +14,7 @@ import static org.col.api.search.NameSearchParameter.PUBLISHED_IN_ID;
 import static org.col.api.search.NameSearchParameter.RANK;
 import static org.col.api.search.NameSearchParameter.STATUS;
 import static org.col.api.search.NameSearchParameter.TAXON_ID;
-import static org.col.api.search.NameSearchParameter.TYPE;
+import static org.col.api.search.NameSearchParameter.*;
 
 /**
  * Maps a name search parameter the corresponding Elasticsearch field(s). In principle a name search parameter may be mapped to multiple
@@ -28,12 +28,14 @@ public class EsFieldLookup extends EnumMap<NameSearchParameter, String[]> {
   private EsFieldLookup() {
     super(NameSearchParameter.class);
     putSingle(DATASET_KEY, "datasetKey");
+    putSingle(DECISION_KEY, "decisionKey");
     putSingle(FIELD, "nameFields");
     putSingle(ISSUE, "issues");
     putSingle(NAME_ID, "nameId");
     putSingle(NAME_INDEX_ID, "nameIndexId");
     putSingle(NOM_STATUS, "nomStatus");
     putSingle(PUBLISHED_IN_ID, "publishedInId");
+    putSingle(PUBLISHER_KEY, "publisherKey");
     putSingle(RANK, "rank");
     putSingle(STATUS, "status");
     putSingle(TYPE, "type");

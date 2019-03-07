@@ -1,8 +1,13 @@
 package org.col.api.search;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
 
 import com.google.common.base.Preconditions;
+
 import org.col.api.jackson.PermissiveEnumSerde;
 import org.col.api.vocab.Issue;
 
@@ -84,7 +89,7 @@ public class FacetValue<T extends Comparable<T>> implements Comparable<FacetValu
 
   @Override
   public int compareTo(FacetValue<T> other) {
-    int i = other.count - count; // doc count descending !
+    int i = other.count - count; // doc count descending
     if (i == 0) {
       if (STRINGIFY.contains(value.getClass())) {
         return enumToString(value).compareTo(enumToString(other.value));

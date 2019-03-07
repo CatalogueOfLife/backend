@@ -15,7 +15,7 @@
   <logger name="java.sql" level="DEBUG"/>
   <logger name="ru.yandex.qatools.embed" level="DEBUG"/>
   <logger name="de.flapdoodle.embed" level="DEBUG"/>
-  <logger name="org.col.es" level="TRACE"/> <!-- TRACE if you like to see ES queries and responses -->
+  <logger name="org.col.es" level="DEBUG"/> <!-- TRACE if you like to see ES queries and responses -->
   <logger name="org.col.db.mapper" level="DEBUG"/>
 
   <root level="INFO">
