@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.zip.InflaterInputStream;
 
@@ -28,15 +29,19 @@ import org.col.es.response.EsNameSearchResponse;
 import org.col.es.response.SearchHit;
 
 import static org.col.api.search.NameSearchParameter.DATASET_KEY;
+import static org.col.api.search.NameSearchParameter.DECISION_KEY;
 import static org.col.api.search.NameSearchParameter.FIELD;
 import static org.col.api.search.NameSearchParameter.ISSUE;
 import static org.col.api.search.NameSearchParameter.NAME_ID;
 import static org.col.api.search.NameSearchParameter.NAME_INDEX_ID;
 import static org.col.api.search.NameSearchParameter.NOM_STATUS;
 import static org.col.api.search.NameSearchParameter.PUBLISHED_IN_ID;
+import static org.col.api.search.NameSearchParameter.PUBLISHER_KEY;
 import static org.col.api.search.NameSearchParameter.RANK;
+import static org.col.api.search.NameSearchParameter.SECTOR_KEY;
 import static org.col.api.search.NameSearchParameter.STATUS;
-import static org.col.api.search.NameSearchParameter.*;
+import static org.col.api.search.NameSearchParameter.TAXON_ID;
+import static org.col.api.search.NameSearchParameter.TYPE;
 
 /**
  * Converts the Elasticsearch response object to a NameSearchResponse instance.
@@ -70,11 +75,7 @@ class NameSearchResponseTransfer {
    * @return
    */
   List<EsNameUsage> getDocuments() {
-    return esResponse.getHits()
-        .getHits()
-        .stream()
-        .map(SearchHit::getSource)
-        .collect(Collectors.toList());
+    return esResponse.getHits().getHits().stream().map(SearchHit::getSource).collect(Collectors.toList());
   }
 
   private List<NameUsageWrapper> transferNameUsages() throws IOException {
@@ -102,14 +103,18 @@ class NameSearchResponseTransfer {
     EsFacetsContainer esFacets = esResponse.getAggregations().getContextFilter().getFacetsContainer();
     Map<NameSearchParameter, Set<FacetValue<?>>> facets = new EnumMap<>(NameSearchParameter.class);
     addIfPresent(facets, DATASET_KEY, esFacets.getDatasetKey());
+    addIfPresent(facets, DECISION_KEY, esFacets.getDecisionKey());
     addIfPresent(facets, FIELD, esFacets.getField());
     addIfPresent(facets, ISSUE, esFacets.getIssue());
     addIfPresent(facets, NAME_ID, esFacets.getNameId());
     addIfPresent(facets, NAME_INDEX_ID, esFacets.getNameIndexId());
     addIfPresent(facets, NOM_STATUS, esFacets.getNomStatus());
     addIfPresent(facets, PUBLISHED_IN_ID, esFacets.getPublishedInId());
+    addIfPresent(facets, PUBLISHER_KEY, esFacets.getPublisherKey());
     addIfPresent(facets, RANK, esFacets.getRank());
+    addIfPresent(facets, SECTOR_KEY, esFacets.getSectorKey());
     addIfPresent(facets, STATUS, esFacets.getStatus());
+    addIfPresent(facets, TAXON_ID, esFacets.getTaxonId());
     addIfPresent(facets, TYPE, esFacets.getType());
     return facets;
   }
@@ -122,8 +127,10 @@ class NameSearchResponseTransfer {
         facets.put(param, createIntBuckets(esFacet));
       } else if (param.type().isEnum()) {
         facets.put(param, createEnumBuckets(esFacet, param));
+      } else if (param.type() == UUID.class) {
+        facets.put(param, createUuidBuckets(esFacet));
       } else {
-        throw new AssertionError("Unexpected parameter type: " + param.type());
+        throw new IllegalArgumentException("Unexpected parameter type: " + param.type());
       }
     }
   }
@@ -146,11 +153,19 @@ class NameSearchResponseTransfer {
 
   private static <U extends Enum<U>> Set<FacetValue<?>> createEnumBuckets(EsFacet esFacet, NameSearchParameter param) {
     @SuppressWarnings("unchecked")
-    Class<U> enumClass = (Class<U>) param.type();
+    Class<U> cls = (Class<U>) param.type();
     return esFacet.getBucketsContainer()
         .getBuckets()
         .stream()
-        .map(b -> FacetValue.forEnum(enumClass, b.getKey(), b.getDocCount()))
+        .map(b -> FacetValue.forEnum(cls, b.getKey(), b.getDocCount()))
+        .collect(TreeSet::new, TreeSet::add, TreeSet::addAll);
+  }
+
+  private static Set<FacetValue<?>> createUuidBuckets(EsFacet esFacet) {
+    return esFacet.getBucketsContainer()
+        .getBuckets()
+        .stream()
+        .map(b -> FacetValue.forUuid(b.getKey(), b.getDocCount()))
         .collect(TreeSet::new, TreeSet::add, TreeSet::addAll);
   }
 

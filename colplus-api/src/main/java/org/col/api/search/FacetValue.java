@@ -18,7 +18,7 @@ public class FacetValue<T extends Comparable<T>> implements Comparable<FacetValu
     return new FacetValue<>(val.toString(), count);
   }
 
-  public static FacetValue<UUID> forUUID(Object val, int count) {
+  public static FacetValue<UUID> forUuid(Object val, int count) {
     return new FacetValue<>(UUID.fromString(val.toString()), count);
   }
 

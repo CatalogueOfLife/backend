@@ -45,7 +45,7 @@ public class EsFieldLookup extends EnumMap<NameSearchParameter, String[]> {
     putSingle(TYPE, "type");
     putSingle(TAXON_ID, "classificationIds");
     if (size() != NameSearchParameter.values().length) {
-      throw new IllegalStateException("Not all name search parameters mapped to Document fields");
+      throw new IllegalStateException("Not all name search parameters mapped to document fields");
     }
   }
 
