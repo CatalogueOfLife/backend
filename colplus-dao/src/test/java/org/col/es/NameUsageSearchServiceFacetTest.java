@@ -8,10 +8,14 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.UUID;
 import java.util.zip.DeflaterOutputStream;
 
 import org.col.api.TestEntityGenerator;
+import org.col.api.model.Name;
+import org.col.api.model.NameUsage;
 import org.col.api.model.Page;
+import org.col.api.model.Taxon;
 import org.col.api.search.FacetValue;
 import org.col.api.search.NameSearchParameter;
 import org.col.api.search.NameSearchRequest;
@@ -53,6 +57,17 @@ public class NameUsageSearchServiceFacetTest extends EsReadTestBase {
   public void before() throws IOException {
     EsUtil.deleteIndex(client, indexName);
     EsUtil.createIndex(client, indexName, getEsConfig().nameUsage);
+  }
+
+  /*
+   * Create a minimalistic NameUsageWrapper - just enough to allow it to be indexed without NPEs & stuff.
+   */
+  private static NameUsageWrapper minimalNameUsage() {
+    NameUsage bogus = new Taxon();
+    bogus.setName(new Name());
+    NameUsageWrapper nuw = new NameUsageWrapper();
+    nuw.setUsage(bogus);
+    return nuw;
   }
 
   @Test
@@ -715,6 +730,68 @@ public class NameUsageSearchServiceFacetTest extends EsReadTestBase {
 
     assertEquals(expected, result.getFacets());
 
+  }
+
+  @Test // Make sure UUID facets work OK
+  public void testPublisherKey() throws IOException {
+    // Define search
+    NameSearchRequest nsr = new NameSearchRequest();
+    nsr.addFacet(NameSearchParameter.PUBLISHER_KEY);
+    Page page = new Page(100);
+
+    UUID uuid1 = UUID.randomUUID();
+    UUID uuid2 = UUID.randomUUID();
+
+    // UUID1
+    NameUsageWrapper nuw1 = minimalNameUsage();
+    nuw1.setPublisherKey(uuid1);
+    NameUsageWrapper nuw2 = minimalNameUsage();
+    nuw2.setPublisherKey(uuid1);
+    NameUsageWrapper nuw3 = minimalNameUsage();
+    nuw3.setPublisherKey(uuid1);
+
+    // UUID2
+    NameUsageWrapper nuw4 = minimalNameUsage();
+    nuw4.setPublisherKey(uuid2);
+    NameUsageWrapper nuw5 = minimalNameUsage();
+    nuw5.setPublisherKey(uuid2);
+
+    // NO UUID
+    NameUsageWrapper nuw6 = minimalNameUsage();
+    nuw6.setPublisherKey(null);
+    NameUsageWrapper nuw7 = minimalNameUsage();
+    nuw7.setPublisherKey(null);
+
+    NameUsageTransfer transfer = new NameUsageTransfer();
+
+    insert(client, indexName, transfer.toDocument(nuw1));
+    insert(client, indexName, transfer.toDocument(nuw2));
+    insert(client, indexName, transfer.toDocument(nuw3));
+    insert(client, indexName, transfer.toDocument(nuw4));
+    insert(client, indexName, transfer.toDocument(nuw5));
+    insert(client, indexName, transfer.toDocument(nuw6));
+    insert(client, indexName, transfer.toDocument(nuw7));
+    refreshIndex(client, indexName);
+
+    // Resurrect NameUsageWrapper instances b/c they got pruned upon insert.
+    nuw1.setPublisherKey(uuid1);
+    nuw2.setPublisherKey(uuid1);
+    nuw3.setPublisherKey(uuid1);
+    nuw4.setPublisherKey(uuid2);
+    nuw5.setPublisherKey(uuid2);
+    nuw6.setPublisherKey(null);
+    nuw7.setPublisherKey(null);
+
+    Map<NameSearchParameter, Set<FacetValue<?>>> expected = new HashMap<>();
+    Set<FacetValue<?>> pkFacet = new TreeSet<>();
+    pkFacet.add(FacetValue.forUuid(uuid1, 3));
+    pkFacet.add(FacetValue.forUuid(uuid2, 2));
+    expected.put(NameSearchParameter.PUBLISHER_KEY, pkFacet);    
+
+    NameSearchResponse result = svc.search(indexName, nsr, page);
+    
+    assertEquals(expected, result.getFacets());
+    
   }
 
   private static String getDummyPayload() {
