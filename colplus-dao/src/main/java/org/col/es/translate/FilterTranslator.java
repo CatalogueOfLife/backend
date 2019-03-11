@@ -14,8 +14,8 @@ import org.col.es.query.Query;
 import org.col.es.query.TermQuery;
 import org.col.es.query.TermsQuery;
 
-import static org.col.api.search.NameSearchRequest.NOT_NULL_VALUE;
-import static org.col.api.search.NameSearchRequest.NULL_VALUE;
+import static org.col.api.search.NameSearchRequest.IS_NOT_NULL;
+import static org.col.api.search.NameSearchRequest.IS_NULL;
 
 /**
  * Translates a single request parameter into an Elasticsearch query. If the parameter is multi-valued and contains no symbolic values (like
@@ -61,16 +61,16 @@ class FilterTranslator {
   }
 
   private boolean isLiteral(Object o) {
-    return !o.equals(NULL_VALUE) && !o.equals(NOT_NULL_VALUE);
+    return !o.equals(IS_NULL) && !o.equals(IS_NOT_NULL);
   }
 
   // Is one of the values of the query parameter the symbol for IS NULL?
   private boolean containsNullValue(NameSearchParameter param) {
-    return request.getFilterValue(param).stream().anyMatch(s -> s.equals(NULL_VALUE));
+    return request.getFilterValue(param).stream().anyMatch(s -> s.equals(IS_NULL));
   }
 
   // Is one of the values of the query parameter the symbol for IS NOT NULL?
   private boolean containsNotNullValue(NameSearchParameter param) {
-    return request.getFilterValue(param).stream().anyMatch(s -> s.equals(NOT_NULL_VALUE));
+    return request.getFilterValue(param).stream().anyMatch(s -> s.equals(IS_NOT_NULL));
   }
 }

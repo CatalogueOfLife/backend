@@ -543,7 +543,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     // Define search condition
     NameSearchRequest nsr = new NameSearchRequest();
     nsr.setHighlight(false);
-    nsr.addFilter(NameSearchParameter.ISSUE, NameSearchRequest.NULL_VALUE);
+    nsr.addFilter(NameSearchParameter.ISSUE, NameSearchRequest.IS_NULL);
 
     // Match
     NameUsageWrapper nuw1 = TestEntityGenerator.newNameUsageTaxonWrapper();
@@ -575,7 +575,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
 
     // Define search condition
     NameSearchRequest nsr = new NameSearchRequest();
-    nsr.addFilter(NameSearchParameter.ISSUE, NameSearchRequest.NOT_NULL_VALUE);
+    nsr.addFilter(NameSearchParameter.ISSUE, NameSearchRequest.IS_NOT_NULL);
 
     // No match
     NameUsageWrapper nuw1 = TestEntityGenerator.newNameUsageTaxonWrapper();

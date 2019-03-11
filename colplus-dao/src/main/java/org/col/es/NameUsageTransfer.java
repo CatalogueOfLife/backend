@@ -13,6 +13,8 @@ import java.util.zip.DeflaterOutputStream;
 
 import org.col.api.model.Name;
 import org.col.api.model.SimpleName;
+import org.col.api.model.Synonym;
+import org.col.api.model.Taxon;
 import org.col.api.model.VernacularName;
 import org.col.api.search.NameUsageWrapper;
 import org.col.api.vocab.NameField;
@@ -37,10 +39,10 @@ import static org.col.api.vocab.NameField.PUBLISHED_IN_ID;
 import static org.col.api.vocab.NameField.PUBLISHED_IN_PAGE;
 import static org.col.api.vocab.NameField.REMARKS;
 import static org.col.api.vocab.NameField.SANCTIONING_AUTHOR;
-import static org.col.api.vocab.NameField.WEBPAGE;
 import static org.col.api.vocab.NameField.SPECIFIC_EPITHET;
 import static org.col.api.vocab.NameField.STRAIN;
 import static org.col.api.vocab.NameField.UNINOMIAL;
+import static org.col.api.vocab.NameField.WEBPAGE;
 import static org.col.common.util.CollectionUtils.notEmpty;
 import static org.col.es.EsModule.NAME_USAGE_WRITER;
 
@@ -109,6 +111,11 @@ public class NameUsageTransfer {
     nuw.setPublisherKey(null);
     nuw.setIssues(null);
     nuw.setClassification(null);
+    if (nuw.getUsage().getClass() == Taxon.class) {
+      ((Taxon) nuw.getUsage()).setSectorKey(null);
+    } else if (nuw.getUsage().getClass() == Synonym.class) {
+      ((Synonym) nuw.getUsage()).getAccepted().setSectorKey(null);
+    }
   }
 
   /**
@@ -129,6 +136,11 @@ public class NameUsageTransfer {
     nuw.setPublisherKey(enu.getPublisherKey());
     nuw.setIssues(enu.getIssues());
     nuw.setClassification(extractClassifiction(enu));
+    if (nuw.getUsage().getClass() == Taxon.class) {
+      ((Taxon) nuw.getUsage()).setSectorKey(enu.getSectorKey());
+    } else if (nuw.getUsage().getClass() == Synonym.class) {
+      ((Synonym) nuw.getUsage()).getAccepted().setSectorKey(enu.getSectorKey());
+    }
   }
 
   /**
@@ -158,6 +170,11 @@ public class NameUsageTransfer {
     enu.setUsageId(nuw.getUsage().getId());
     enu.setType(name.getType());
     enu.setNameFields(getNonNullNameFields(name));
+    if (nuw.getUsage().getClass() == Taxon.class) {
+      enu.setSectorKey(((Taxon) nuw.getUsage()).getSectorKey());
+    } else if (nuw.getUsage().getClass() == Synonym.class) {
+      enu.setSectorKey(((Synonym) nuw.getUsage()).getAccepted().getSectorKey());
+    }
     prunePayload(nuw);
     if (ZIP_PAYLOAD) {
       enu.setPayload(deflate(nuw));

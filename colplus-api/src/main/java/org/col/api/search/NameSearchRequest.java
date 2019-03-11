@@ -32,12 +32,12 @@ public class NameSearchRequest {
   /**
    * Symbolic value to be used to indicate an IS NOT NULL document search.
    */
-  public static final String NOT_NULL_VALUE = "_NOT_NULL";
+  public static final String IS_NOT_NULL = "_NOT_NULL";
 
   /**
    * Symbolic value to be used to indicate an IS NULL document search.
    */
-  public static final String NULL_VALUE = "_NULL";
+  public static final String IS_NULL = "_NULL";
 
   private EnumMap<NameSearchParameter, List<Object>> filters;
 
@@ -91,11 +91,11 @@ public class NameSearchRequest {
   }
 
   public void addFilter(NameSearchParameter param, Iterable<?> values) {
-    values.forEach((s) -> addFilter(param, s == null ? NULL_VALUE : s.toString()));
+    values.forEach((s) -> addFilter(param, s == null ? IS_NULL : s.toString()));
   }
 
   public void addFilter(NameSearchParameter param, Object... values) {
-    Arrays.stream(values).forEach((v) -> addFilter(param, v == null ? NULL_VALUE : v.toString()));
+    Arrays.stream(values).forEach((v) -> addFilter(param, v == null ? IS_NULL : v.toString()));
   }
 
   /*
@@ -104,10 +104,10 @@ public class NameSearchRequest {
    */
   public void addFilter(NameSearchParameter param, String value) {
     value = StringUtils.trimToNull(value);
-    if (value == null || value.equals(NULL_VALUE)) {
-      addFilterValue(param, NULL_VALUE);
-    } else if (value.equals(NOT_NULL_VALUE)) {
-      addFilterValue(param, NOT_NULL_VALUE);
+    if (value == null || value.equals(IS_NULL)) {
+      addFilterValue(param, IS_NULL);
+    } else if (value.equals(IS_NOT_NULL)) {
+      addFilterValue(param, IS_NOT_NULL);
     } else if (param.type() == String.class) {
       addFilterValue(param, value);
     } else if (param.type() == UUID.class) {

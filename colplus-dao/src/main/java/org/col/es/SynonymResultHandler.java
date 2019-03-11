@@ -27,10 +27,10 @@ import static org.col.es.NameUsageTransfer.extractClassifiction;
 /**
  * Collects synonyms from Postgres/MyBatis until and adds their classification before inserting them into Elasticsearch.
  */
-class SynonymResultHandler implements ResultHandler<NameUsageWrapper>, AutoCloseable {
+final class SynonymResultHandler implements ResultHandler<NameUsageWrapper>, AutoCloseable {
 
   private static final Logger LOG = LoggerFactory.getLogger(SynonymResultHandler.class);
-  // The number of taxa we are going to retrieve to build an id-to-classification lookup table
+  // The number of distinct taxa to collect per cycle
   private static final int LOOKUP_TABLE_SIZE = 4096;
 
   private final List<String> taxonIds = new ArrayList<>(LOOKUP_TABLE_SIZE);
@@ -56,7 +56,7 @@ class SynonymResultHandler implements ResultHandler<NameUsageWrapper>, AutoClose
     collected.add(nuw);
     String taxonId = getTaxonId(nuw);
     if (!taxonId.equals(prevTaxonId)) {
-      // NB synonyms presumed to be ordered by taxon ID in NameUsageMapper.xml
+      // N.B. synonyms presumed to be ordered by taxon ID in NameUsageMapper.xml
       taxonIds.add(prevTaxonId = taxonId);
       if (taxonIds.size() == LOOKUP_TABLE_SIZE) {
         try {
@@ -106,7 +106,6 @@ class SynonymResultHandler implements ResultHandler<NameUsageWrapper>, AutoClose
     return svc.getDocuments(indexer.getIndexName(), esr);
   }
 
-  // Collectors.toMap inefficient for large maps in Java 8
   private static HashMap<String, List<SimpleName>> createLookupTable(List<EsNameUsage> taxa) {
     HashMap<String, List<SimpleName>> map = new HashMap<>(taxa.size(), 1F);
     taxa.forEach(enu -> map.put(enu.getUsageId(), extractClassifiction(enu)));

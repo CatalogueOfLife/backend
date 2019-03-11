@@ -23,6 +23,7 @@ import org.col.api.search.NameSearchParameter;
 import org.col.api.search.NameSearchResponse;
 import org.col.api.search.NameUsageWrapper;
 import org.col.es.model.EsNameUsage;
+import org.col.es.response.Bucket;
 import org.col.es.response.EsFacet;
 import org.col.es.response.EsFacetsContainer;
 import org.col.es.response.EsNameSearchResponse;
@@ -125,10 +126,10 @@ class NameSearchResponseTransfer {
         facets.put(param, createStringBuckets(esFacet));
       } else if (param.type() == Integer.class) {
         facets.put(param, createIntBuckets(esFacet));
-      } else if (param.type().isEnum()) {
-        facets.put(param, createEnumBuckets(esFacet, param));
       } else if (param.type() == UUID.class) {
         facets.put(param, createUuidBuckets(esFacet));
+      } else if (param.type().isEnum()) {
+        facets.put(param, createEnumBuckets(esFacet, param));
       } else {
         throw new IllegalArgumentException("Unexpected parameter type: " + param.type());
       }
@@ -136,37 +137,37 @@ class NameSearchResponseTransfer {
   }
 
   private static Set<FacetValue<?>> createStringBuckets(EsFacet esFacet) {
-    return esFacet.getBucketsContainer()
-        .getBuckets()
-        .stream()
-        .map(b -> FacetValue.forString(b.getKey(), b.getDocCount()))
-        .collect(TreeSet::new, TreeSet::add, TreeSet::addAll);
+    TreeSet<FacetValue<?>> facet = new TreeSet<>();
+    for (Bucket b : esFacet.getBucketsContainer().getBuckets()) {
+      facet.add(FacetValue.forString(b.getKey(), b.getDocCount()));
+    }
+    return facet;
   }
 
   private static Set<FacetValue<?>> createIntBuckets(EsFacet esFacet) {
-    return esFacet.getBucketsContainer()
-        .getBuckets()
-        .stream()
-        .map(b -> FacetValue.forInteger(b.getKey(), b.getDocCount()))
-        .collect(TreeSet::new, TreeSet::add, TreeSet::addAll);
+    TreeSet<FacetValue<?>> facet = new TreeSet<>();
+    for (Bucket b : esFacet.getBucketsContainer().getBuckets()) {
+      facet.add(FacetValue.forInteger(b.getKey(), b.getDocCount()));
+    }
+    return facet;
+  }
+
+  private static Set<FacetValue<?>> createUuidBuckets(EsFacet esFacet) {
+    TreeSet<FacetValue<?>> facet = new TreeSet<>();
+    for (Bucket b : esFacet.getBucketsContainer().getBuckets()) {
+      facet.add(FacetValue.forUuid(b.getKey(), b.getDocCount()));
+    }
+    return facet;
   }
 
   private static <U extends Enum<U>> Set<FacetValue<?>> createEnumBuckets(EsFacet esFacet, NameSearchParameter param) {
     @SuppressWarnings("unchecked")
-    Class<U> cls = (Class<U>) param.type();
-    return esFacet.getBucketsContainer()
-        .getBuckets()
-        .stream()
-        .map(b -> FacetValue.forEnum(cls, b.getKey(), b.getDocCount()))
-        .collect(TreeSet::new, TreeSet::add, TreeSet::addAll);
-  }
-
-  private static Set<FacetValue<?>> createUuidBuckets(EsFacet esFacet) {
-    return esFacet.getBucketsContainer()
-        .getBuckets()
-        .stream()
-        .map(b -> FacetValue.forUuid(b.getKey(), b.getDocCount()))
-        .collect(TreeSet::new, TreeSet::add, TreeSet::addAll);
+    Class<U> enumClass = (Class<U>) param.type();
+    TreeSet<FacetValue<?>> facet = new TreeSet<>();
+    for (Bucket b : esFacet.getBucketsContainer().getBuckets()) {
+      facet.add(FacetValue.forEnum(enumClass, b.getKey(), b.getDocCount()));
+    }
+    return facet;
   }
 
   private static InputStream inflate(String payload) {

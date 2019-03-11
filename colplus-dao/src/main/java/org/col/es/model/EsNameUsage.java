@@ -25,6 +25,7 @@ public class EsNameUsage {
 
   private String usageId;
   private Integer datasetKey;
+  private Integer sectorKey;
   /*
    * A Weakly normalized version of the original scientific name, used for auto-completion purposes. What weak and strong normalization
    * exactly is, is left intentionally vague, so we have room to experiment and fine-tune. The only requirement is that the same
@@ -62,14 +63,20 @@ public class EsNameUsage {
     this.usageId = usageId;
   }
 
-  // keyword datatype is more efficient for term queries than integer
-  @MapToType(ESDataType.KEYWORD)
   public Integer getDatasetKey() {
     return datasetKey;
   }
 
   public void setDatasetKey(Integer datasetKey) {
     this.datasetKey = datasetKey;
+  }
+
+  public Integer getSectorKey() {
+    return sectorKey;
+  }
+
+  public void setSectorKey(Integer sectorKey) {
+    this.sectorKey = sectorKey;
   }
 
   @Analyzers({AUTO_COMPLETE, IGNORE_CASE})

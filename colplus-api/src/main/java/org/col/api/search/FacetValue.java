@@ -18,13 +18,12 @@ public class FacetValue<T extends Comparable<T>> implements Comparable<FacetValu
     return new FacetValue<>(val.toString(), count);
   }
 
-  public static FacetValue<UUID> forUuid(Object val, int count) {
-    return new FacetValue<>(UUID.fromString(val.toString()), count);
+  public static FacetValue<Integer> forInteger(Object val, int count) {
+    return new FacetValue<>((Integer) val, count);
   }
 
-  public static FacetValue<Integer> forInteger(Object val, int count) {
-    Preconditions.checkArgument(val.getClass() == Integer.class, "%s could not be cast to integer", val);
-    return new FacetValue<>((Integer) val, count);
+  public static FacetValue<UUID> forUuid(Object val, int count) {
+    return new FacetValue<>(UUID.fromString(val.toString()), count);
   }
 
   public static <U extends Enum<U>> FacetValue<U> forEnum(Class<U> enumClass, Object val, int count) {
@@ -42,12 +41,7 @@ public class FacetValue<T extends Comparable<T>> implements Comparable<FacetValu
    * by document count descending first, and then by value.
    */
   public static <U extends Comparable<U>> Comparator<FacetValue<U>> getValueComparator() {
-    return new ValueComparator<>();
-  }
-
-  private static final class ValueComparator<U extends Comparable<U>> implements Comparator<FacetValue<U>> {
-    @Override
-    public int compare(FacetValue<U> f1, FacetValue<U> f2) {
+    return (f1, f2) -> {
       int i;
       if (useEnumName.contains(f1.value.getClass())) {
         i = enumToString(f1.value).compareTo(enumToString(f2.value));
@@ -55,7 +49,7 @@ public class FacetValue<T extends Comparable<T>> implements Comparable<FacetValu
         i = f1.value.compareTo(f2.value);
       }
       return i == 0 ? f2.count - f1.count : i;
-    }
+    };
   }
 
   private final T value;
