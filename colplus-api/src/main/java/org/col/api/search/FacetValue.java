@@ -19,7 +19,11 @@ public class FacetValue<T extends Comparable<T>> implements Comparable<FacetValu
   }
 
   public static FacetValue<Integer> forInteger(Object val, int count) {
-    return new FacetValue<>((Integer) val, count);
+    // Note that, for performance reasons, integer fields may be stored as strings in Elasticsearch
+    if (val.getClass() == Integer.class) {
+      return new FacetValue<>((Integer) val, count);
+    }
+    return new FacetValue<>(Integer.valueOf(val.toString()), count);
   }
 
   public static FacetValue<UUID> forUuid(Object val, int count) {
@@ -27,6 +31,7 @@ public class FacetValue<T extends Comparable<T>> implements Comparable<FacetValu
   }
 
   public static <U extends Enum<U>> FacetValue<U> forEnum(Class<U> enumClass, Object val, int count) {
+    // Enums are always stored using their ordinal value
     int ordinal = ((Integer) val).intValue();
     return new FacetValue<>(enumClass.getEnumConstants()[ordinal], count);
   }
