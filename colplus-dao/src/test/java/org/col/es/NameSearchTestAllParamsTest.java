@@ -27,7 +27,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.col.api.search.NameSearchParameter.DATASET_KEY;
+import static org.col.api.search.NameSearchParameter.*;
 import static org.col.api.search.NameSearchParameter.DECISION_KEY;
 import static org.col.api.search.NameSearchParameter.NAME_ID;
 import static org.col.api.search.NameSearchParameter.NAME_INDEX_ID;
@@ -110,11 +110,12 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
     req.addFilter(TAXON_ID, "3");
 
     /*
-     * Yikes - again, remember to resurrect the expected result, because NameUsageWrappers will get pruned on insert !!!
+     * Yikes - again, remember to resurrect the NameUsageWrappers b/c they will get pruned on insert !!!
      */
     nuw1.setClassification(Arrays.asList(t1, t2, t3));
     nuw2.setClassification(Arrays.asList(t2, t3, t4));
     nuw3.setClassification(Arrays.asList(t3, t4, t5));
+    nuw4.setClassification(Arrays.asList(t4, t5, t6));
     List<NameUsageWrapper> expected = Arrays.asList(nuw1, nuw2, nuw3);
 
     ResultPage<NameUsageWrapper> result = svc.search(indexName, req, new Page());
@@ -161,11 +162,15 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
     req.addFilter(TAXON_ID, "5");
 
     /*
-     * Yikes - again, remember to resurrect the expected result, because NameUsageWrappers will get pruned on insert !!!
+     * Yikes - again, remember to resurrect the NameUsageWrappers b/c they will get pruned on insert !!!
      */
+    nuw1.setClassification(Arrays.asList(t1, t2, t3));
     nuw2.setClassification(Arrays.asList(t2, t3, t4));
     nuw3.setClassification(Arrays.asList(t3, t4, t5));
     nuw4.setClassification(Arrays.asList(t4, t5, t6));
+    nuw5.setClassification(Arrays.asList(t5, t6, t7));
+    nuw6.setClassification(Arrays.asList(t6, t7, t8));
+
     List<NameUsageWrapper> expected = Arrays.asList(nuw2, nuw3, nuw4);
 
     ResultPage<NameUsageWrapper> result = svc.search(indexName, req, new Page());
@@ -204,6 +209,9 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
      */
     nuw1.setPublisherKey(uuid1);
     nuw2.setPublisherKey(uuid1);
+    nuw3.setPublisherKey(uuid2);
+    nuw4.setPublisherKey(null);
+
     List<NameUsageWrapper> expected = Arrays.asList(nuw1, nuw2);
 
     ResultPage<NameUsageWrapper> result = svc.search(indexName, req, new Page());
@@ -237,6 +245,11 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
     NameSearchRequest req = new NameSearchRequest();
     req.addFilter(PUBLISHER_KEY, IS_NULL);
 
+    nuw1.setPublisherKey(uuid1);
+    nuw2.setPublisherKey(uuid1);
+    nuw3.setPublisherKey(uuid2);
+    nuw4.setPublisherKey(null);
+
     List<NameUsageWrapper> expected = Arrays.asList(nuw4);
 
     ResultPage<NameUsageWrapper> result = svc.search(indexName, req, new Page());
@@ -269,6 +282,11 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
 
     NameSearchRequest req = new NameSearchRequest();
     req.addFilter(PUBLISHER_KEY, IS_NULL);
+
+    nuw1.setPublisherKey(uuid1);
+    nuw2.setPublisherKey(uuid1);
+    nuw3.setPublisherKey(uuid2);
+    nuw4.setPublisherKey(null);
 
     List<NameUsageWrapper> expected = Arrays.asList(nuw4);
 
@@ -306,6 +324,8 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
     nuw1.setPublisherKey(uuid1);
     nuw2.setPublisherKey(uuid1);
     nuw3.setPublisherKey(uuid2);
+    nuw4.setPublisherKey(null);
+
     List<NameUsageWrapper> expected = Arrays.asList(nuw1, nuw2, nuw3);
 
     ResultPage<NameUsageWrapper> result = svc.search(indexName, req, new Page());
@@ -354,8 +374,6 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
 
   @Test
   public void testDecisionKey2() throws IOException {
-    NameUsage bogus = new Taxon();
-    bogus.setName(new Name());
     Integer key1 = 100;
     Integer key2 = 101;
     NameUsageWrapper nuw1 = minimalNameUsage();
@@ -393,8 +411,6 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
 
   @Test
   public void testDecisionKey3() throws IOException {
-    NameUsage bogus = new Taxon();
-    bogus.setName(new Name());
     Integer key1 = 100;
     Integer key2 = 101;
     NameUsageWrapper nuw1 = minimalNameUsage();
@@ -825,6 +841,43 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
     assertEquals(expected, result.getResult());
 
     countdown(NOM_STATUS);
+  }
+
+  @Test
+  public void testSectorKey1() throws IOException {
+    Integer key1 = 100;
+    Integer key2 = 101;
+    NameUsageWrapper nuw1 = minimalNameUsage();
+    ((Taxon) nuw1.getUsage()).setSectorKey(key1);
+    NameUsageWrapper nuw2 = minimalNameUsage();
+    ((Taxon) nuw2.getUsage()).setSectorKey(key1);
+    NameUsageWrapper nuw3 = minimalNameUsage();
+    ((Taxon) nuw3.getUsage()).setSectorKey(key2);
+    NameUsageWrapper nuw4 = minimalNameUsage();
+    ((Taxon) nuw4.getUsage()).setSectorKey(null);
+
+    NameUsageTransfer transfer = new NameUsageTransfer();
+
+    insert(client, indexName, transfer.toDocument(nuw1));
+    insert(client, indexName, transfer.toDocument(nuw2));
+    insert(client, indexName, transfer.toDocument(nuw3));
+    insert(client, indexName, transfer.toDocument(nuw4));
+    refreshIndex(client, indexName);
+
+    NameSearchRequest req = new NameSearchRequest();
+    req.addFilter(SECTOR_KEY, IS_NOT_NULL);
+
+    ((Taxon) nuw1.getUsage()).setSectorKey(key1);
+    ((Taxon) nuw2.getUsage()).setSectorKey(key1);
+    ((Taxon) nuw3.getUsage()).setSectorKey(key2);
+    ((Taxon) nuw4.getUsage()).setSectorKey(null);
+    List<NameUsageWrapper> expected = Arrays.asList(nuw1, nuw2, nuw3);
+
+    ResultPage<NameUsageWrapper> result = svc.search(indexName, req, new Page());
+    assertEquals(expected, result.getResult());
+
+    countdown(SECTOR_KEY);
+
   }
 
   private static void countdown(NameSearchParameter param) {

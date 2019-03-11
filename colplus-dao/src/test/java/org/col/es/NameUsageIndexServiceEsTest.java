@@ -28,11 +28,11 @@ import static org.gbif.nameparser.api.Rank.PHYLUM;
 import static org.gbif.nameparser.api.Rank.SPECIES;
 import static org.junit.Assert.assertEquals;
 
-//@Ignore("Its too slow for jenkins most of the time")
+@Ignore("Its too slow for jenkins most of the time")
 public class NameUsageIndexServiceEsTest extends EsReadWriteTestBase {
 
   @Test // Nice in combination with PgImportIT.testGsdGithub
-  //@Ignore
+  @Ignore
   public void indexDataSet() throws IOException, EsException {
     try (RestClient client = getEsClient()) {
       NameUsageIndexServiceEs svc = new NameUsageIndexServiceEs(client, getEsConfig(), factory());
