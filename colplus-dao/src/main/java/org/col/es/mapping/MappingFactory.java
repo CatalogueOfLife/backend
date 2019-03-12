@@ -43,7 +43,7 @@ public class MappingFactory<T> {
    * However, when serializing enums using their ordinal value, you still have the choice of indexing as integers or as strings, which does
    * make a difference in Elasticsearch, and often you would still map them to keyword!
    */
-  private boolean mapEnumToInt = false;
+  private boolean mapEnumToInt = true;
 
   /**
    * Creates a document type mapping for the specified class name.
@@ -238,7 +238,7 @@ public class MappingFactory<T> {
       return mapType(getClassForTypeArgument(typeArg), null);
     }
     if (type.isEnum()) {
-      return mapEnumToInt ? int.class : String.class;
+      return mapEnumToInt ? byte.class : String.class;
     }
     return type;
   }

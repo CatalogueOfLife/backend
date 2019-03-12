@@ -855,6 +855,66 @@ public class NameUsageSearchServiceFacetTest extends EsReadTestBase {
     assertEquals(expected, result.getFacets());
 
   }
+  
+  @Test
+  public void testDatasetKey() throws IOException {
+    
+    // Define search
+    NameSearchRequest nsr = new NameSearchRequest();
+    nsr.addFacet(NameSearchParameter.DATASET_KEY);
+    Page page = new Page(100);
+
+    Integer key1 = 1000;
+    Integer key2 = 2000;
+
+    NameUsageWrapper nuw1 = minimalNameUsage();
+    NameUsageWrapper nuw2 = minimalNameUsage();
+    NameUsageWrapper nuw3 = minimalNameUsage();
+    NameUsageWrapper nuw4 = minimalNameUsage();
+    NameUsageWrapper nuw5 = minimalNameUsage();
+    NameUsageWrapper nuw6 = minimalNameUsage();
+    NameUsageWrapper nuw7 = minimalNameUsage();
+
+    nuw1.getUsage().getName().setDatasetKey(key1);
+    nuw2.getUsage().getName().setDatasetKey(key1);
+    nuw3.getUsage().getName().setDatasetKey(key1);
+    nuw4.getUsage().getName().setDatasetKey(key2);
+    nuw5.getUsage().getName().setDatasetKey(key2);
+    nuw6.getUsage().getName().setDatasetKey(null);
+    nuw7.getUsage().getName().setDatasetKey(null);
+ 
+    NameUsageTransfer transfer = new NameUsageTransfer();
+
+    insert(client, indexName, transfer.toDocument(nuw1));
+    insert(client, indexName, transfer.toDocument(nuw2));
+    insert(client, indexName, transfer.toDocument(nuw3));
+    insert(client, indexName, transfer.toDocument(nuw4));
+    insert(client, indexName, transfer.toDocument(nuw5));
+    insert(client, indexName, transfer.toDocument(nuw6));
+    
+    insert(client, indexName, transfer.toDocument(nuw7));
+    refreshIndex(client, indexName);
+
+    // Resurrect NameUsageWrapper instances b/c they got pruned upon insert.
+    nuw1.getUsage().getName().setDatasetKey(key1);
+    nuw2.getUsage().getName().setDatasetKey(key1);
+    nuw3.getUsage().getName().setDatasetKey(key1);
+    nuw4.getUsage().getName().setDatasetKey(key2);
+    nuw5.getUsage().getName().setDatasetKey(key2);
+    nuw6.getUsage().getName().setDatasetKey(null);
+    nuw7.getUsage().getName().setDatasetKey(null);
+
+    Map<NameSearchParameter, Set<FacetValue<?>>> expectedFacets = new HashMap<>();
+    Set<FacetValue<?>> datasetFacet = new TreeSet<>();
+    datasetFacet.add(FacetValue.forInteger(key1, 3));
+    datasetFacet.add(FacetValue.forInteger(key2, 2));
+    expectedFacets.put(NameSearchParameter.DATASET_KEY, datasetFacet);
+
+    NameSearchResponse result = svc.search(indexName, nsr, page);
+
+    assertEquals(expectedFacets, result.getFacets());
+    
+  }
 
   private static String getDummyPayload() {
     try {

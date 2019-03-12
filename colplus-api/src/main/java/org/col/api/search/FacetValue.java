@@ -19,7 +19,7 @@ public class FacetValue<T extends Comparable<T>> implements Comparable<FacetValu
   }
 
   public static FacetValue<Integer> forInteger(Object val, int count) {
-    // Note that, for performance reasons, integer fields may be stored as strings in Elasticsearch
+    // For performance reasons, integer fields may be stored as strings (keyword datatype) in Elasticsearch!
     if (val.getClass() == Integer.class) {
       return new FacetValue<>((Integer) val, count);
     }

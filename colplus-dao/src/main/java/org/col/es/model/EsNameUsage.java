@@ -63,6 +63,7 @@ public class EsNameUsage {
     this.usageId = usageId;
   }
 
+  @MapToType(ESDataType.KEYWORD)
   public Integer getDatasetKey() {
     return datasetKey;
   }
@@ -71,6 +72,7 @@ public class EsNameUsage {
     this.datasetKey = datasetKey;
   }
 
+  @MapToType(ESDataType.KEYWORD)
   public Integer getSectorKey() {
     return sectorKey;
   }
@@ -130,6 +132,7 @@ public class EsNameUsage {
     this.publishedInId = publishedInId;
   }
 
+  @MapToType(ESDataType.KEYWORD)
   public Integer getDecisionKey() {
     return decisionKey;
   }
