@@ -4,6 +4,7 @@ import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import com.google.common.collect.Maps;
 import org.col.api.vocab.*;
@@ -49,6 +50,10 @@ public class DatasetImport {
    * Present only if downloaded.
    */
   private String md5;
+  
+  // data for diffs
+  private String textTree;
+  private Set<String> names;
   
   // metrics
   private Integer descriptionCount;
@@ -142,6 +147,22 @@ public class DatasetImport {
   
   public void setMd5(String md5) {
     this.md5 = md5;
+  }
+  
+  public String getTextTree() {
+    return textTree;
+  }
+  
+  public void setTextTree(String textTree) {
+    this.textTree = textTree;
+  }
+  
+  public Set<String> getNames() {
+    return names;
+  }
+  
+  public void setNames(Set<String> names) {
+    this.names = names;
   }
   
   public Integer getVerbatimCount() {
@@ -318,6 +339,8 @@ public class DatasetImport {
         Objects.equals(finished, that.finished) &&
         Objects.equals(error, that.error) &&
         Objects.equals(md5, that.md5) &&
+        Objects.equals(textTree, that.textTree) &&
+        Objects.equals(names, that.names) &&
         Objects.equals(descriptionCount, that.descriptionCount) &&
         Objects.equals(distributionCount, that.distributionCount) &&
         Objects.equals(mediaCount, that.mediaCount) &&
@@ -342,8 +365,7 @@ public class DatasetImport {
   
   @Override
   public int hashCode() {
-    
-    return Objects.hash(datasetKey, attempt, state, downloadUri, download, started, finished, error, md5, descriptionCount, distributionCount, mediaCount, nameCount, referenceCount, taxonCount, verbatimCount, vernacularCount, distributionsByGazetteerCount, issuesCount, vernacularsByLanguageCount, mediaByTypeCount, namesByTypeCount, nameRelationsByTypeCount, namesByStatusCount, namesByOriginCount, namesByRankCount, taxaByRankCount, usagesByStatusCount, verbatimByTypeCount);
+    return Objects.hash(datasetKey, attempt, state, downloadUri, download, started, finished, error, md5, textTree, names, descriptionCount, distributionCount, mediaCount, nameCount, referenceCount, taxonCount, verbatimCount, vernacularCount, distributionsByGazetteerCount, issuesCount, vernacularsByLanguageCount, mediaByTypeCount, namesByTypeCount, nameRelationsByTypeCount, namesByStatusCount, namesByOriginCount, namesByRankCount, taxaByRankCount, usagesByStatusCount, verbatimByTypeCount);
   }
   
   public String attempt() {

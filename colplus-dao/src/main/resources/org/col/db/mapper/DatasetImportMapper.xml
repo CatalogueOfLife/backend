@@ -58,7 +58,9 @@
       usages_by_status_count,
       names_by_status_count,
       name_relations_by_type_count,
-      verbatim_by_type_count
+      verbatim_by_type_count,
+      text_tree,
+      names
     </sql>
 
     <sql id="PROPS">
@@ -86,7 +88,9 @@
       #{di.usagesByStatusCount, typeHandler=org.col.db.type2.HstoreTaxStatusCountTypeHandler}::hstore,
       #{di.namesByStatusCount, typeHandler=org.col.db.type2.HstoreNomStatusCountTypeHandler}::hstore,
       #{di.nameRelationsByTypeCount, typeHandler=org.col.db.type2.HstoreNameRelCountTypeHandler}::hstore,
-      #{di.verbatimByTypeCount, typeHandler=org.col.db.type2.HstoreTermCountTypeHandler}::hstore
+      #{di.verbatimByTypeCount, typeHandler=org.col.db.type2.HstoreTermCountTypeHandler}::hstore,
+      #{di.textTree},
+      #{di.names}
     </sql>
 
     <sql id="FROM">
@@ -123,7 +127,7 @@
     </resultMap>
 
     <select id="get" resultMap="datasetImportResultMap">
-        SELECT <include refid="SELECT" />
+        SELECT <include refid="SELECT" />, text_tree, names
         FROM <include refid="FROM" />
         WHERE dataset_key=#{key} AND attempt=#{attempt}
     </select>

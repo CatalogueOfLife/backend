@@ -158,6 +158,40 @@ LANGUAGE plpgsql;
 CREATE TRIGGER dataset_trigger BEFORE INSERT OR UPDATE
   ON dataset FOR EACH ROW EXECUTE PROCEDURE dataset_doc_update();
 
+CREATE TABLE dataset_import (
+  dataset_key INTEGER NOT NULL REFERENCES dataset,
+  attempt INTEGER NOT NULL,
+  state INTEGER NOT NULL,
+  error TEXT,
+  md5 TEXT,
+  started TIMESTAMP WITHOUT TIME ZONE,
+  finished TIMESTAMP WITHOUT TIME ZONE,
+  download_uri TEXT,
+  download TIMESTAMP WITHOUT TIME ZONE,
+  verbatim_count INTEGER,
+  name_count INTEGER,
+  taxon_count INTEGER,
+  reference_count INTEGER,
+  vernacular_count INTEGER,
+  distribution_count INTEGER,
+  description_count INTEGER,
+  media_count INTEGER,
+  issues_count HSTORE,
+  names_by_rank_count HSTORE,
+  taxa_by_rank_count HSTORE,
+  names_by_type_count HSTORE,
+  vernaculars_by_language_count HSTORE,
+  distributions_by_gazetteer_count HSTORE,
+  names_by_origin_count HSTORE,
+  usages_by_status_count HSTORE,
+  names_by_status_count HSTORE,
+  name_relations_by_type_count HSTORE,
+  verbatim_by_type_count HSTORE,
+  media_by_type_count HSTORE,
+  text_tree TEXT,
+  names TEXT[],
+  PRIMARY KEY (dataset_key, attempt)
+);
 
 CREATE TABLE sector (
   key serial PRIMARY KEY,
@@ -220,40 +254,6 @@ CREATE TABLE decision (
   modified_by INTEGER NOT NULL,
   UNIQUE (dataset_key, subject_id)
 );
-
-CREATE TABLE dataset_import (
-  dataset_key INTEGER NOT NULL REFERENCES dataset,
-  attempt INTEGER NOT NULL,
-  state INTEGER NOT NULL,
-  error TEXT,
-  md5 TEXT,
-  started TIMESTAMP WITHOUT TIME ZONE,
-  finished TIMESTAMP WITHOUT TIME ZONE,
-  download_uri TEXT,
-  download TIMESTAMP WITHOUT TIME ZONE,
-  verbatim_count INTEGER,
-  name_count INTEGER,
-  taxon_count INTEGER,
-  reference_count INTEGER,
-  vernacular_count INTEGER,
-  distribution_count INTEGER,
-  description_count INTEGER,
-  media_count INTEGER,
-  issues_count HSTORE,
-  names_by_rank_count HSTORE,
-  taxa_by_rank_count HSTORE,
-  names_by_type_count HSTORE,
-  vernaculars_by_language_count HSTORE,
-  distributions_by_gazetteer_count HSTORE,
-  names_by_origin_count HSTORE,
-  usages_by_status_count HSTORE,
-  names_by_status_count HSTORE,
-  name_relations_by_type_count HSTORE,
-  verbatim_by_type_count HSTORE,
-  media_by_type_count HSTORE,
-  PRIMARY KEY (dataset_key, attempt)
-);
-
 
 --
 -- PARTITIONED DATA TABLES

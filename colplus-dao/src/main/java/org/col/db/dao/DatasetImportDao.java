@@ -1,5 +1,7 @@
 package org.col.db.dao;
 
+import java.io.IOException;
+import java.io.StringWriter;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Function;
@@ -15,6 +17,8 @@ import org.col.api.model.ResultPage;
 import org.col.api.vocab.*;
 import org.col.db.mapper.DatasetImportMapper;
 import org.col.db.mapper.DatasetMapper;
+import org.col.db.mapper.NameMapper;
+import org.col.db.tree.TextTreePrinter;
 import org.col.db.type2.IntCount;
 import org.col.db.type2.StringCount;
 import org.gbif.dwc.terms.Term;
@@ -135,6 +139,14 @@ public class DatasetImportDao {
     try (SqlSession session = factory.openSession(true)) {
       DatasetImportMapper mapper = session.getMapper(DatasetImportMapper.class);
       updateMetrics(mapper, di);
+
+      StringWriter tree = new StringWriter();
+      TextTreePrinter.dataset(di.getDatasetKey(), factory, tree).print();
+      di.setTextTree(tree.toString());
+      di.setNames(session.getMapper(NameMapper.class).listNameIndexIds(di.getDatasetKey(), null));
+      
+    } catch (IOException e) {
+      LOG.error("Failed to print text tree for dataset {}", di.getDatasetKey(), e);
     }
   }
   
