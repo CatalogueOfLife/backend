@@ -8,10 +8,14 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.UUID;
 import java.util.zip.DeflaterOutputStream;
 
 import org.col.api.TestEntityGenerator;
+import org.col.api.model.Name;
+import org.col.api.model.NameUsage;
 import org.col.api.model.Page;
+import org.col.api.model.Taxon;
 import org.col.api.search.FacetValue;
 import org.col.api.search.NameSearchParameter;
 import org.col.api.search.NameSearchRequest;
@@ -53,6 +57,17 @@ public class NameUsageSearchServiceFacetTest extends EsReadTestBase {
   public void before() throws IOException {
     EsUtil.deleteIndex(client, indexName);
     EsUtil.createIndex(client, indexName, getEsConfig().nameUsage);
+  }
+
+  /*
+   * Create a minimalistic NameUsageWrapper - just enough to allow it to be indexed without NPEs & stuff.
+   */
+  private static NameUsageWrapper minimalNameUsage() {
+    NameUsage bogus = new Taxon();
+    bogus.setName(new Name());
+    NameUsageWrapper nuw = new NameUsageWrapper();
+    nuw.setUsage(bogus);
+    return nuw;
   }
 
   @Test
@@ -715,6 +730,190 @@ public class NameUsageSearchServiceFacetTest extends EsReadTestBase {
 
     assertEquals(expected, result.getFacets());
 
+  }
+
+  @Test // Make sure UUID facets work OK
+  public void testPublisherKey() throws IOException {
+    // Define search
+    NameSearchRequest nsr = new NameSearchRequest();
+    nsr.addFacet(NameSearchParameter.PUBLISHER_KEY);
+    Page page = new Page(100);
+
+    UUID uuid1 = UUID.randomUUID();
+    UUID uuid2 = UUID.randomUUID();
+
+    // UUID1
+    NameUsageWrapper nuw1 = minimalNameUsage();
+    nuw1.setPublisherKey(uuid1);
+    NameUsageWrapper nuw2 = minimalNameUsage();
+    nuw2.setPublisherKey(uuid1);
+    NameUsageWrapper nuw3 = minimalNameUsage();
+    nuw3.setPublisherKey(uuid1);
+
+    // UUID2
+    NameUsageWrapper nuw4 = minimalNameUsage();
+    nuw4.setPublisherKey(uuid2);
+    NameUsageWrapper nuw5 = minimalNameUsage();
+    nuw5.setPublisherKey(uuid2);
+
+    // NO UUID
+    NameUsageWrapper nuw6 = minimalNameUsage();
+    nuw6.setPublisherKey(null);
+    NameUsageWrapper nuw7 = minimalNameUsage();
+    nuw7.setPublisherKey(null);
+
+    NameUsageTransfer transfer = new NameUsageTransfer();
+
+    insert(client, indexName, transfer.toDocument(nuw1));
+    insert(client, indexName, transfer.toDocument(nuw2));
+    insert(client, indexName, transfer.toDocument(nuw3));
+    insert(client, indexName, transfer.toDocument(nuw4));
+    insert(client, indexName, transfer.toDocument(nuw5));
+    insert(client, indexName, transfer.toDocument(nuw6));
+    insert(client, indexName, transfer.toDocument(nuw7));
+    refreshIndex(client, indexName);
+
+    // Resurrect NameUsageWrapper instances b/c they got pruned upon insert.
+    nuw1.setPublisherKey(uuid1);
+    nuw2.setPublisherKey(uuid1);
+    nuw3.setPublisherKey(uuid1);
+    nuw4.setPublisherKey(uuid2);
+    nuw5.setPublisherKey(uuid2);
+    nuw6.setPublisherKey(null);
+    nuw7.setPublisherKey(null);
+
+    Map<NameSearchParameter, Set<FacetValue<?>>> expected = new HashMap<>();
+    Set<FacetValue<?>> pkFacet = new TreeSet<>();
+    pkFacet.add(FacetValue.forUuid(uuid1, 3));
+    pkFacet.add(FacetValue.forUuid(uuid2, 2));
+    expected.put(NameSearchParameter.PUBLISHER_KEY, pkFacet);
+
+    NameSearchResponse result = svc.search(indexName, nsr, page);
+
+    assertEquals(expected, result.getFacets());
+
+  }
+
+  @Test
+  public void testSectorKey() throws IOException {
+    // Define search
+    NameSearchRequest nsr = new NameSearchRequest();
+    nsr.addFacet(NameSearchParameter.SECTOR_KEY);
+    Page page = new Page(100);
+
+    Integer key1 = 1000;
+    Integer key2 = 2000;
+
+    // key1
+    NameUsageWrapper nuw1 = minimalNameUsage();
+    ((Taxon) nuw1.getUsage()).setSectorKey(key1);
+    NameUsageWrapper nuw2 = minimalNameUsage();
+    ((Taxon) nuw2.getUsage()).setSectorKey(key1);
+    NameUsageWrapper nuw3 = minimalNameUsage();
+    ((Taxon) nuw3.getUsage()).setSectorKey(key1);
+
+    // key2
+    NameUsageWrapper nuw4 = minimalNameUsage();
+    ((Taxon) nuw4.getUsage()).setSectorKey(key2);
+    NameUsageWrapper nuw5 = minimalNameUsage();
+    ((Taxon) nuw5.getUsage()).setSectorKey(key2);
+
+    // no sector key
+    NameUsageWrapper nuw6 = minimalNameUsage();
+    ((Taxon) nuw6.getUsage()).setSectorKey(null);
+    NameUsageWrapper nuw7 = minimalNameUsage();
+    ((Taxon) nuw7.getUsage()).setSectorKey(null);
+
+    NameUsageTransfer transfer = new NameUsageTransfer();
+
+    insert(client, indexName, transfer.toDocument(nuw1));
+    insert(client, indexName, transfer.toDocument(nuw2));
+    insert(client, indexName, transfer.toDocument(nuw3));
+    insert(client, indexName, transfer.toDocument(nuw4));
+    insert(client, indexName, transfer.toDocument(nuw5));
+    insert(client, indexName, transfer.toDocument(nuw6));
+    insert(client, indexName, transfer.toDocument(nuw7));
+    refreshIndex(client, indexName);
+
+    // Resurrect NameUsageWrapper instances b/c they got pruned upon insert.
+    ((Taxon) nuw1.getUsage()).setSectorKey(key1);
+    ((Taxon) nuw2.getUsage()).setSectorKey(key1);
+    ((Taxon) nuw3.getUsage()).setSectorKey(key1);
+    ((Taxon) nuw4.getUsage()).setSectorKey(key2);
+    ((Taxon) nuw5.getUsage()).setSectorKey(key2);
+    ((Taxon) nuw6.getUsage()).setSectorKey(null);
+    ((Taxon) nuw7.getUsage()).setSectorKey(null);
+
+    Map<NameSearchParameter, Set<FacetValue<?>>> expected = new HashMap<>();
+    Set<FacetValue<?>> skFacet = new TreeSet<>();
+    skFacet.add(FacetValue.forInteger(key1, 3));
+    skFacet.add(FacetValue.forInteger(key2, 2));
+    expected.put(NameSearchParameter.SECTOR_KEY, skFacet);
+
+    NameSearchResponse result = svc.search(indexName, nsr, page);
+
+    assertEquals(expected, result.getFacets());
+
+  }
+  
+  @Test
+  public void testDatasetKey() throws IOException {
+    
+    // Define search
+    NameSearchRequest nsr = new NameSearchRequest();
+    nsr.addFacet(NameSearchParameter.DATASET_KEY);
+    Page page = new Page(100);
+
+    Integer key1 = 1000;
+    Integer key2 = 2000;
+
+    NameUsageWrapper nuw1 = minimalNameUsage();
+    NameUsageWrapper nuw2 = minimalNameUsage();
+    NameUsageWrapper nuw3 = minimalNameUsage();
+    NameUsageWrapper nuw4 = minimalNameUsage();
+    NameUsageWrapper nuw5 = minimalNameUsage();
+    NameUsageWrapper nuw6 = minimalNameUsage();
+    NameUsageWrapper nuw7 = minimalNameUsage();
+
+    nuw1.getUsage().getName().setDatasetKey(key1);
+    nuw2.getUsage().getName().setDatasetKey(key1);
+    nuw3.getUsage().getName().setDatasetKey(key1);
+    nuw4.getUsage().getName().setDatasetKey(key2);
+    nuw5.getUsage().getName().setDatasetKey(key2);
+    nuw6.getUsage().getName().setDatasetKey(null);
+    nuw7.getUsage().getName().setDatasetKey(null);
+ 
+    NameUsageTransfer transfer = new NameUsageTransfer();
+
+    insert(client, indexName, transfer.toDocument(nuw1));
+    insert(client, indexName, transfer.toDocument(nuw2));
+    insert(client, indexName, transfer.toDocument(nuw3));
+    insert(client, indexName, transfer.toDocument(nuw4));
+    insert(client, indexName, transfer.toDocument(nuw5));
+    insert(client, indexName, transfer.toDocument(nuw6));
+    
+    insert(client, indexName, transfer.toDocument(nuw7));
+    refreshIndex(client, indexName);
+
+    // Resurrect NameUsageWrapper instances b/c they got pruned upon insert.
+    nuw1.getUsage().getName().setDatasetKey(key1);
+    nuw2.getUsage().getName().setDatasetKey(key1);
+    nuw3.getUsage().getName().setDatasetKey(key1);
+    nuw4.getUsage().getName().setDatasetKey(key2);
+    nuw5.getUsage().getName().setDatasetKey(key2);
+    nuw6.getUsage().getName().setDatasetKey(null);
+    nuw7.getUsage().getName().setDatasetKey(null);
+
+    Map<NameSearchParameter, Set<FacetValue<?>>> expectedFacets = new HashMap<>();
+    Set<FacetValue<?>> datasetFacet = new TreeSet<>();
+    datasetFacet.add(FacetValue.forInteger(key1, 3));
+    datasetFacet.add(FacetValue.forInteger(key2, 2));
+    expectedFacets.put(NameSearchParameter.DATASET_KEY, datasetFacet);
+
+    NameSearchResponse result = svc.search(indexName, nsr, page);
+
+    assertEquals(expectedFacets, result.getFacets());
+    
   }
 
   private static String getDummyPayload() {

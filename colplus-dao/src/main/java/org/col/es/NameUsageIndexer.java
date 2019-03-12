@@ -18,16 +18,18 @@ import org.slf4j.LoggerFactory;
 
 import static org.col.es.EsConfig.DEFAULT_TYPE_NAME;
 
-class NameUsageIndexer implements Consumer<List<NameUsageWrapper>> {
+final class NameUsageIndexer implements Consumer<List<NameUsageWrapper>> {
 
   private static final Logger LOG = LoggerFactory.getLogger(NameUsageIndexer.class);
   private static final ObjectWriter WRITER = EsModule.writerFor(EsNameUsage.class);
+
+  // Set to true for extra statistics (make sure it's false in production)
   private static final boolean EXTRA_STATS = false;
 
   /*
-   * The request body. With the current batch size of 4096 the request body can grow to about 11 MB for synonyms with zipped payloads, and
-   * 20 MB with unzipped payloads. A batch size of 4096 seems about optimal. A batch size of 2048 also performs well, a batch size of 8192
-   * appears to perform slightly worse.
+   * The request body. With a batch size of 4096 the request body can grow to about 11 MB for synonyms with zipped payloads, and 20 MB with
+   * unzipped payloads. A batch size of 4096 seems about optimal. A batch size of 2048 also performs well, a batch size of 8192 appears to
+   * perform slightly worse.
    */
   private final StringBuilder buf = new StringBuilder(1024 * 1024 * 4);
 
@@ -76,6 +78,7 @@ class NameUsageIndexer implements Consumer<List<NameUsageWrapper>> {
     buf.setLength(0);
     int docSize = 0;
     NameUsageTransfer transfer = new NameUsageTransfer();
+    DecimalFormat df = new DecimalFormat("0.0");
     try {
       String json;
       for (NameUsageWrapper nuw : batch) {
@@ -91,9 +94,9 @@ class NameUsageIndexer implements Consumer<List<NameUsageWrapper>> {
       double reqSize = ((double) buf.toString().getBytes(Charsets.UTF_8).length / (double) (1024 * 1024));
       double totSize = ((double) docSize / (double) (1024 * 1024));
       double avgSize = ((double) docSize / (double) (batch.size() * 1024));
-      String req = new DecimalFormat("0.0").format(reqSize);
-      String tot = new DecimalFormat("0.0").format(totSize);
-      String avg = new DecimalFormat("0.0").format(avgSize);
+      String req = df.format(reqSize);
+      String tot = df.format(totSize);
+      String avg = df.format(avgSize);
       LOG.debug("Successfully inserted {} name usages into index {}", batch.size(), index);
       LOG.debug("Average document size: {} KB. Total document size: {} MB. Request body size: {} MB.", avg, tot, req);
       indexed += batch.size();

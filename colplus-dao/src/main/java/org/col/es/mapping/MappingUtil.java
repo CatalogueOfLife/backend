@@ -14,7 +14,7 @@ import static java.lang.Character.isUpperCase;
 import static java.lang.Character.toLowerCase;
 
 class MappingUtil {
-  
+
   /*
    * Returns the type argument for a generic type (e.g. Person for List<Person>)
    */
@@ -28,7 +28,7 @@ class MappingUtil {
       throw new MappingException(e);
     }
   }
-  
+
   static ArrayList<Field> getFields(Class<?> cls) {
     Set<String> names = new HashSet<>();
     ArrayList<Field> allFields = new ArrayList<>();
@@ -50,7 +50,7 @@ class MappingUtil {
     }
     return allFields;
   }
-  
+
   static ArrayList<Method> getMappedProperties(Class<?> cls) {
     Set<String> names = new HashSet<>();
     ArrayList<Method> allMethods = new ArrayList<>();
@@ -71,7 +71,7 @@ class MappingUtil {
           continue;
         if (!isGetter(m))
           continue;
-        
+
         names.add(m.getName());
         allMethods.add(m);
       }
@@ -79,7 +79,7 @@ class MappingUtil {
     }
     return allMethods;
   }
-  
+
   private static boolean isGetter(Method m) {
     if (m.getReturnType() == Void.class)
       return false;
@@ -87,7 +87,7 @@ class MappingUtil {
       return false;
     return extractProperty(m.getName()) != null;
   }
-  
+
   static String extractProperty(String getter) {
     if (getter.startsWith("get") && getter.length() > 3 && isUpperCase(getter.charAt(3))) {
       return toLowerCase(getter.charAt(3)) + getter.substring(4);
@@ -97,5 +97,5 @@ class MappingUtil {
     }
     return null;
   }
-  
+
 }

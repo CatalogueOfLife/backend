@@ -13,6 +13,8 @@ import java.util.zip.DeflaterOutputStream;
 
 import org.col.api.model.Name;
 import org.col.api.model.SimpleName;
+import org.col.api.model.Synonym;
+import org.col.api.model.Taxon;
 import org.col.api.model.VernacularName;
 import org.col.api.search.NameUsageWrapper;
 import org.col.api.vocab.NameField;
@@ -37,10 +39,10 @@ import static org.col.api.vocab.NameField.PUBLISHED_IN_ID;
 import static org.col.api.vocab.NameField.PUBLISHED_IN_PAGE;
 import static org.col.api.vocab.NameField.REMARKS;
 import static org.col.api.vocab.NameField.SANCTIONING_AUTHOR;
-import static org.col.api.vocab.NameField.WEBPAGE;
 import static org.col.api.vocab.NameField.SPECIFIC_EPITHET;
 import static org.col.api.vocab.NameField.STRAIN;
 import static org.col.api.vocab.NameField.UNINOMIAL;
+import static org.col.api.vocab.NameField.WEBPAGE;
 import static org.col.common.util.CollectionUtils.notEmpty;
 import static org.col.es.EsModule.NAME_USAGE_WRITER;
 
@@ -105,8 +107,15 @@ public class NameUsageTransfer {
     nuw.getUsage().getName().setNomStatus(null);
     nuw.getUsage().getName().setPublishedInId(null);
     nuw.getUsage().getName().setType(null);
+    nuw.setDecisionKey(null);
+    nuw.setPublisherKey(null);
     nuw.setIssues(null);
     nuw.setClassification(null);
+    if (nuw.getUsage().getClass() == Taxon.class) {
+      ((Taxon) nuw.getUsage()).setSectorKey(null);
+    } else if (nuw.getUsage().getClass() == Synonym.class) {
+      ((Synonym) nuw.getUsage()).getAccepted().setSectorKey(null);
+    }
   }
 
   /**
@@ -119,12 +128,19 @@ public class NameUsageTransfer {
     nuw.getUsage().setId(enu.getUsageId());
     nuw.getUsage().getName().setDatasetKey(enu.getDatasetKey());
     nuw.getUsage().getName().setId(enu.getNameId());
-    nuw.getUsage().getName().setNameIndexId(enu.getIndexNameId());
+    nuw.getUsage().getName().setNameIndexId(enu.getNameIndexId());
     nuw.getUsage().getName().setNomStatus(enu.getNomStatus());
     nuw.getUsage().getName().setPublishedInId(enu.getPublishedInId());
     nuw.getUsage().getName().setType(enu.getType());
+    nuw.setDecisionKey(enu.getDecisionKey());
+    nuw.setPublisherKey(enu.getPublisherKey());
     nuw.setIssues(enu.getIssues());
     nuw.setClassification(extractClassifiction(enu));
+    if (nuw.getUsage().getClass() == Taxon.class) {
+      ((Taxon) nuw.getUsage()).setSectorKey(enu.getSectorKey());
+    } else if (nuw.getUsage().getClass() == Synonym.class) {
+      ((Synonym) nuw.getUsage()).getAccepted().setSectorKey(enu.getSectorKey());
+    }
   }
 
   /**
@@ -143,15 +159,22 @@ public class NameUsageTransfer {
     Name name = nuw.getUsage().getName();
     enu.setAuthorship(name.authorshipComplete());
     enu.setDatasetKey(name.getDatasetKey());
+    enu.setDecisionKey(nuw.getDecisionKey());
     enu.setNameId(name.getId());
-    enu.setIndexNameId(name.getNameIndexId());
+    enu.setNameIndexId(name.getNameIndexId());
     enu.setNomStatus(name.getNomStatus());
     enu.setPublishedInId(name.getPublishedInId());
+    enu.setPublisherKey(nuw.getPublisherKey());
     enu.setRank(name.getRank());
     enu.setStatus(nuw.getUsage().getStatus());
     enu.setUsageId(nuw.getUsage().getId());
     enu.setType(name.getType());
     enu.setNameFields(getNonNullNameFields(name));
+    if (nuw.getUsage().getClass() == Taxon.class) {
+      enu.setSectorKey(((Taxon) nuw.getUsage()).getSectorKey());
+    } else if (nuw.getUsage().getClass() == Synonym.class) {
+      enu.setSectorKey(((Synonym) nuw.getUsage()).getAccepted().getSectorKey());
+    }
     prunePayload(nuw);
     if (ZIP_PAYLOAD) {
       enu.setPayload(deflate(nuw));

@@ -5,13 +5,16 @@ import java.util.EnumMap;
 import org.col.api.search.NameSearchParameter;
 
 import static org.col.api.search.NameSearchParameter.DATASET_KEY;
+import static org.col.api.search.NameSearchParameter.DECISION_KEY;
 import static org.col.api.search.NameSearchParameter.FIELD;
 import static org.col.api.search.NameSearchParameter.ISSUE;
 import static org.col.api.search.NameSearchParameter.NAME_ID;
 import static org.col.api.search.NameSearchParameter.NAME_INDEX_ID;
 import static org.col.api.search.NameSearchParameter.NOM_STATUS;
 import static org.col.api.search.NameSearchParameter.PUBLISHED_IN_ID;
+import static org.col.api.search.NameSearchParameter.PUBLISHER_KEY;
 import static org.col.api.search.NameSearchParameter.RANK;
+import static org.col.api.search.NameSearchParameter.SECTOR_KEY;
 import static org.col.api.search.NameSearchParameter.STATUS;
 import static org.col.api.search.NameSearchParameter.TAXON_ID;
 import static org.col.api.search.NameSearchParameter.TYPE;
@@ -28,16 +31,22 @@ public class EsFieldLookup extends EnumMap<NameSearchParameter, String[]> {
   private EsFieldLookup() {
     super(NameSearchParameter.class);
     putSingle(DATASET_KEY, "datasetKey");
+    putSingle(DECISION_KEY, "decisionKey");
     putSingle(FIELD, "nameFields");
     putSingle(ISSUE, "issues");
     putSingle(NAME_ID, "nameId");
     putSingle(NAME_INDEX_ID, "nameIndexId");
     putSingle(NOM_STATUS, "nomStatus");
     putSingle(PUBLISHED_IN_ID, "publishedInId");
+    putSingle(PUBLISHER_KEY, "publisherKey");
     putSingle(RANK, "rank");
     putSingle(STATUS, "status");
+    putSingle(SECTOR_KEY, "sectorKey");
     putSingle(TYPE, "type");
     putSingle(TAXON_ID, "classificationIds");
+    if (size() != NameSearchParameter.values().length) {
+      throw new IllegalStateException("Not all name search parameters mapped to document fields");
+    }
   }
 
   public String lookup(NameSearchParameter param) {
