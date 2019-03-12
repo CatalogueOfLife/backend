@@ -86,8 +86,8 @@ public class DecisionRematcher {
           c.setSectorKey(s.getKey());
           tdao.copyTaxon(c, s.getTargetAsDatasetID(), user, Collections.emptySet());
         } else {
-          // mark 10 children as coming from this sector...
-          for (Taxon c : tm.children(Datasets.DRAFT_COL, t.getId(), new Page(0,3))) {
+          // mark 2 children as coming from this sector...
+          for (Taxon c : tm.children(Datasets.DRAFT_COL, t.getId(), new Page(0,2))) {
             c.setSectorKey(s.getKey());
             tm.update(c);
           }

@@ -77,7 +77,7 @@ public class AdminServer extends PgApp<AdminServerConfig> {
     env.jersey().register(new MatchingResource(ni));
     
     RestClient esClient = null;
-    if (cfg.es != null) {
+    if (cfg.es != null && !cfg.es.isEmpty()) {
       esClient = new EsClientFactory(cfg.es).createClient();
       env.lifecycle().manage(new ManagedEsClient(esClient));
     }

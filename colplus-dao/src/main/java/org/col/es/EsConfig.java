@@ -46,4 +46,9 @@ public class EsConfig {
   public String indexName(String name) {
     return environment == null ? name : environment + "-" + name;
   }
+  
+  @JsonIgnore
+  public boolean isEmpty() {
+    return hosts == null || nameUsage == null;
+  }
 }

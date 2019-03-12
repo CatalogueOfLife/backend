@@ -17,13 +17,21 @@ import org.apache.ibatis.jdbc.ScriptRunner;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.admin.config.AdminServerConfig;
+import org.col.api.model.Dataset;
+import org.col.api.model.DatasetImport;
 import org.col.api.vocab.Datasets;
+import org.col.api.vocab.ImportState;
 import org.col.api.vocab.Users;
 import org.col.db.MybatisFactory;
 import org.col.db.PgConfig;
-import org.col.db.dao.DecisionRematcher;
-import org.col.postgres.PgCopyUtils;
+import org.col.db.dao.DatasetImportDao;
+import org.col.db.mapper.DatasetMapper;
 import org.col.db.mapper.DatasetPartitionMapper;
+import org.col.es.EsClientFactory;
+import org.col.es.NameUsageIndexService;
+import org.col.es.NameUsageIndexServiceEs;
+import org.col.postgres.PgCopyUtils;
+import org.elasticsearch.client.RestClient;
 import org.postgresql.jdbc.PgConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -95,9 +103,6 @@ public class InitDbCmd extends ConfiguredCommand<AdminServerConfig> {
       }
       
       try (Connection con = cfg.db.connect()) {
-        // add draft hierarchy
-        loadDraftHierarchy(con);
-  
         ScriptRunner runner = PgConfig.scriptRunner(con);
         // add known datasets
         exec(PgConfig.DATASETS_FILE, runner, con, Resources.getResourceAsReader(PgConfig.DATASETS_FILE));
@@ -105,17 +110,32 @@ public class InitDbCmd extends ConfiguredCommand<AdminServerConfig> {
         exec(PgConfig.SECTORS_FILE, runner, con, Resources.getResourceAsReader(PgConfig.SECTORS_FILE));
         // add known decisions
         exec(PgConfig.DECISIONS_FILE, runner, con, Resources.getResourceAsReader(PgConfig.DECISIONS_FILE));
+        // add draft hierarchy linked to sectors
+        loadDraftHierarchy(con);
       }
-      
-      // rematch sector targets
-      rematchSectorTargets(factory);
+      // create draft metrics and index into ES
+      processDraftHierarchy(cfg, factory);
     }
   }
   
-  private static void rematchSectorTargets(SqlSessionFactory factory) {
-    LOG.info("Rematch sector targets");
+  private static void processDraftHierarchy(AdminServerConfig cfg, SqlSessionFactory factory) throws Exception {
+    LOG.info("Build import metrics for draft catalogue");
+    Dataset draft;
     try (SqlSession session = factory.openSession(true)) {
-      new DecisionRematcher(session).matchBrokenSectorTargets();
+      draft = session.getMapper(DatasetMapper.class).get(Datasets.DRAFT_COL);
+    }
+    DatasetImportDao dao = new DatasetImportDao(factory);
+    DatasetImport di = dao.create(draft);
+    dao.updateMetrics(di);
+    di.setState(ImportState.FINISHED);
+    dao.update(di);
+  
+    if (cfg.es != null && !cfg.es.isEmpty()) {
+      LOG.info("Build search index for draft catalogue");
+      try (RestClient esClient = new EsClientFactory(cfg.es).createClient()) {
+        NameUsageIndexService indexService = new NameUsageIndexServiceEs(esClient, cfg.es, factory);
+        indexService.indexDataset(Datasets.DRAFT_COL);
+      }
     }
   }
   
