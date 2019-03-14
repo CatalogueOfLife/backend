@@ -19,6 +19,7 @@ import org.col.admin.config.GbifConfig;
 import org.col.api.model.Dataset;
 import org.col.api.model.Page;
 import org.col.api.vocab.DataFormat;
+import org.col.api.vocab.DatasetType;
 import org.col.api.vocab.License;
 import org.col.parser.LicenseParser;
 import org.col.parser.SafeParser;
@@ -156,6 +157,27 @@ public class DatasetPager {
       LOG.info("Skip dataset without DWCA access: {} - {}", d.getGbifKey(), d.getTitle());
       return null;
     }
+    // type
+    if (GbifSync.PLAZI_KEY.equals(d.getGbifPublisherKey())) {
+      d.setType(DatasetType.ARTICLE);
+    } else if (g.subtype != null) {
+      switch (g.subtype) {
+        case "NOMENCLATOR_AUTHORITY":
+          d.setType(DatasetType.NOMENCLATURAL);
+          break;
+        case "TAXONOMIC_AUTHORITY":
+        case "GLOBAL_SPECIES_DATASET":
+          d.setType(DatasetType.GLOBAL);
+          break;
+        case "INVENTORY_REGIONAL":
+          d.setType(DatasetType.REGIONAL);
+          break;
+        default:
+          d.setType(DatasetType.OTHER);
+        }
+    } else {
+      d.setType(DatasetType.OTHER);
+    }
     d.setWebsite(uri(g.homepage));
     d.setLicense(SafeParser.parse(LicenseParser.PARSER, g.license).orElse(License.UNSPECIFIED, License.OTHER));
     //TODO: convert contact and authors
@@ -186,6 +208,7 @@ public class DatasetPager {
     public UUID parentDatasetKey;
     public UUID publishingOrganizationKey;
     public String doi;
+    public String subtype;
     public String title;
     public String description;
     public String homepage;

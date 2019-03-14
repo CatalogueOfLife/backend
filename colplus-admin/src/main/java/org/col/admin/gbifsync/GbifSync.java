@@ -2,6 +2,7 @@ package org.col.admin.gbifsync;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -30,6 +31,7 @@ import static org.col.admin.AdminServer.MILLIS_TO_DIE;
 public class GbifSync implements Managed {
   private static final Logger LOG = LoggerFactory.getLogger(GbifSync.class);
   private static final String THREAD_NAME = "gbif-sync";
+  public static final UUID PLAZI_KEY = UUID.fromString("7ce8aef0-9e92-11dc-8738-b8a03c50a862");
   
   private ScheduledExecutorService scheduler;
   private final GbifSyncJob job;
