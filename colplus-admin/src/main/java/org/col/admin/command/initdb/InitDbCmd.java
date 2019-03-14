@@ -106,7 +106,7 @@ public class InitDbCmd extends ConfiguredCommand<AdminServerConfig> {
         ScriptRunner runner = PgConfig.scriptRunner(con);
         // add known datasets
         exec(PgConfig.DATASETS_FILE, runner, con, Resources.getResourceAsReader(PgConfig.DATASETS_FILE));
-        // add known sectors
+        // add known manually curated sectors
         exec(PgConfig.SECTORS_FILE, runner, con, Resources.getResourceAsReader(PgConfig.SECTORS_FILE));
         // add known decisions
         exec(PgConfig.DECISIONS_FILE, runner, con, Resources.getResourceAsReader(PgConfig.DECISIONS_FILE));
@@ -141,9 +141,17 @@ public class InitDbCmd extends ConfiguredCommand<AdminServerConfig> {
   
   private static void loadDraftHierarchy(Connection con) throws Exception {
     PgConnection pgc = (PgConnection) con;
+    // Use sector exports from Global Assembly:
+    // https://github.com/Sp2000/colplus-repo#sector-exports
+    PgCopyUtils.copy(pgc, "sector", "/org/col/db/draft/sector.csv", ImmutableMap.<String, Object>builder()
+        .put("created_by", Users.DB_INIT)
+        .put("modified_by", Users.DB_INIT)
+        .build());
     PgCopyUtils.copy(pgc, "name_3", "/org/col/db/draft/name.csv", ImmutableMap.<String, Object>builder()
         .put("dataset_key", 3)
         .put("origin", 0)
+        .put("type", 0)
+        .put("nom_status", 1)
         .put("created_by", Users.DB_INIT)
         .put("modified_by", Users.DB_INIT)
         .build());
@@ -151,6 +159,7 @@ public class InitDbCmd extends ConfiguredCommand<AdminServerConfig> {
         .put("dataset_key", 3)
         .put("origin", 0)
         .put("according_to", "CoL")
+        .put("provisional", false)
         //.put("according_to_date", Year.now().getValue())
         .put("created_by", Users.DB_INIT)
         .put("modified_by", Users.DB_INIT)
