@@ -20,6 +20,12 @@ public enum DatasetType {
   REGIONAL,
   
   /**
+   * A dataset representing taxonomic treatments of a single scientific article.
+   * Mostly published through Plazi or Pensoft at this stage.
+   */
+  ARTICLE,
+  
+  /**
    * A list of names uploaded for personal use.
    */
   PERSONAL,
