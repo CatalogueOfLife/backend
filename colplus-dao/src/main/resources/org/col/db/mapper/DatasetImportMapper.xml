@@ -90,7 +90,7 @@
       #{di.nameRelationsByTypeCount, typeHandler=org.col.db.type2.HstoreNameRelCountTypeHandler}::hstore,
       #{di.verbatimByTypeCount, typeHandler=org.col.db.type2.HstoreTermCountTypeHandler}::hstore,
       #{di.textTree},
-      #{di.names}
+      #{di.names, typeHandler=org.col.db.type2.StringSetTypeHandler}
     </sql>
 
     <sql id="FROM">
@@ -113,6 +113,7 @@
 
     <!--  A mapping to Name, mostly auto mapped -->
     <resultMap id="datasetImportResultMap" type="DatasetImport" autoMapping="true">
+        <result property="names" column="names" typeHandler="org.col.db.type2.StringSetTypeHandler"/>
         <result property="issuesCount" column="issues_count" typeHandler="org.col.db.type2.HstoreIssueCountTypeHandler"/>
         <result property="namesByRankCount" column="names_by_rank_count" typeHandler="org.col.db.type2.HstoreRankCountTypeHandler"/>
         <result property="taxaByRankCount" column="taxa_by_rank_count" typeHandler="org.col.db.type2.HstoreRankCountTypeHandler"/>
