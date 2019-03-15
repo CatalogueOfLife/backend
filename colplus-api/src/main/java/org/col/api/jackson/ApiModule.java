@@ -83,6 +83,7 @@ public class ApiModule extends SimpleModule {
     // default enum serde
     ctxt.addDeserializers(new PermissiveEnumSerde.PermissiveEnumDeserializers());
     ctxt.addSerializers(new PermissiveEnumSerde.PermissiveEnumSerializers());
+    ctxt.addKeySerializers(new PermissiveEnumSerde.PermissiveEnumKeySerializers());
     // required to properly register serdes
     super.setupModule(ctxt);
     ctxt.setMixInAnnotations(Authorship.class, AuthorshipMixIn.class);

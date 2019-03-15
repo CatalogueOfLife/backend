@@ -102,4 +102,26 @@ public class PermissiveEnumSerde {
             return null;
         }
     }
+    
+    private static class PermissiveEnumFieldSerializer<T extends Enum> extends JsonSerializer<T> {
+    
+        @Override
+        public void serialize(T val, JsonGenerator jgen, SerializerProvider provider) throws IOException {
+            if (val == null) {
+                jgen.writeNull();
+            } else {
+                jgen.writeFieldName(PermissiveEnumSerde.enumValueName(val));
+            }
+        }
+    }
+    
+    static class PermissiveEnumKeySerializers extends Serializers.Base {
+        @Override
+        public JsonSerializer<?> findSerializer(SerializationConfig config, JavaType type, BeanDescription beanDesc) {
+            if (type.isEnumType() && !ApiModule.ENUM_CLASSES.contains(type.getRawClass())) {
+                return new PermissiveEnumFieldSerializer();
+            }
+            return null;
+        }
+    }
 }
