@@ -79,15 +79,18 @@ abstract class SectorRunnable implements Runnable {
       successCallback.accept(this);
       
     } catch (InterruptedException e) {
+      LOG.warn("Interrupted {}", this, e);
       state.setState(SectorImport.State.CANCELED);
       errorCallback.accept(this, e);
       
     } catch (Exception e) {
+      LOG.error("Error running {}", this, e);
       state.setState(SectorImport.State.FAILED);
       state.setError(ExceptionUtils.getRootCauseMessage(e));
       errorCallback.accept(this, e);
       
     } finally {
+      LOG.info("Completed {}", this);
       state.setFinished(LocalDateTime.now());
       try (SqlSession session = factory.openSession(true)) {
         SectorImportMapper sim = session.getMapper(SectorImportMapper.class);
@@ -154,5 +157,15 @@ abstract class SectorRunnable implements Runnable {
     if (Thread.currentThread().isInterrupted()) {
       throw new InterruptedException("Sync of sector " + sector.getKey() + " was cancelled");
     }
+  }
+  
+  @Override
+  public String toString() {
+    return this.getClass().getSimpleName() + "{" +
+        "datasetKey=" + datasetKey +
+        ", sector=" + sector +
+        ", created=" + created +
+        " by " + (user == null ? "?" : user.getUsername()) +
+        '}';
   }
 }
