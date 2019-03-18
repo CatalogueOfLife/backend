@@ -14,6 +14,7 @@ import io.dropwizard.auth.Auth;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.model.*;
+import org.col.api.vocab.Datasets;
 import org.col.db.dao.DecisionRematcher;
 import org.col.db.dao.TaxonDao;
 import org.col.db.mapper.SectorMapper;
@@ -43,23 +44,31 @@ public class SectorResource extends CRUDIntResource<Sector> {
     Integer secKey = super.create(obj, user, session);
     final DatasetID did = obj.getTargetAsDatasetID();
     TaxonMapper tm = session.getMapper(TaxonMapper.class);
+    
+    // reload full source and target
+    Taxon subject = tm.get(obj.getDatasetKey(), obj.getSubject().getId());
+    if (subject == null) {
+      throw new IllegalArgumentException("subject ID " + obj.getSubject().getId() + " not existing in dataset " + obj.getDatasetKey());
+    }
+    obj.setSubject(subject.toSimpleName());
+
+    Taxon target  = tm.get(Datasets.DRAFT_COL, obj.getTarget().getId());
+    if (target == null) {
+      throw new IllegalArgumentException("target ID " + obj.getTarget().getId() + " not existing in draft CoL");
+    }
+    obj.setTarget(target.toSimpleName());
+    
     TaxonDao tdao = new TaxonDao(session);
     List<Taxon> toCopy = new ArrayList<>();
     // create direct children in catalogue
     if (Sector.Mode.ATTACH == obj.getMode()) {
       // one taxon in ATTACH mode
-      Taxon src = tm.get(obj.getDatasetKey(), obj.getSubject().getId());
-      if (src != null) {
-        toCopy.add(src);
-      }
+      toCopy.add(subject);
     } else {
       // several taxa in MERGE mode
       toCopy = tm.children(obj.getDatasetKey(), obj.getSubject().getId(), new Page());
     }
   
-    if (toCopy.isEmpty()) {
-      throw new IllegalArgumentException("TaxonID " + obj.getSubject().getId() + " not existing in dataset " + obj.getDatasetKey());
-    }
     for (Taxon t : toCopy) {
       t.setSectorKey(obj.getKey());
       tdao.copyTaxon(t, did, user, Collections.emptySet());

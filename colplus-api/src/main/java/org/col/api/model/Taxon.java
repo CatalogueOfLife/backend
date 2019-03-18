@@ -5,7 +5,6 @@ import java.time.LocalDate;
 import java.util.EnumSet;
 import java.util.Objects;
 import java.util.Set;
-
 import javax.annotation.Nonnull;
 
 import com.google.common.base.Preconditions;
@@ -208,6 +207,10 @@ public class Taxon extends DataEntity implements NameUsage, DatasetEntity {
   
   public void setSectorKey(Integer sectorKey) {
     this.sectorKey = sectorKey;
+  }
+  
+  public SimpleName toSimpleName() {
+    return new SimpleName(id, name.getScientificName(), name.getAuthorship(), name.getRank());
   }
   
   @Override

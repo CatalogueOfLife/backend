@@ -2,6 +2,8 @@ package org.col.api.model;
 
 import java.util.Objects;
 
+import javax.validation.constraints.NotNull;
+
 import org.gbif.nameparser.api.Rank;
 
 /**
@@ -10,8 +12,11 @@ import org.gbif.nameparser.api.Rank;
  */
 public class SimpleName {
   private String id;
+  
+  @NotNull
   private String name;
   private String authorship;
+  @NotNull
   private Rank rank;
 
   public SimpleName() {}
