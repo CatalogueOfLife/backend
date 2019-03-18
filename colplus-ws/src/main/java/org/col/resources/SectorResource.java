@@ -41,7 +41,6 @@ public class SectorResource extends CRUDIntResource<Sector> {
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   @Override
   public Integer create(@Valid Sector obj, @Auth ColUser user, @Context SqlSession session) {
-    Integer secKey = super.create(obj, user, session);
     final DatasetID did = obj.getTargetAsDatasetID();
     TaxonMapper tm = session.getMapper(TaxonMapper.class);
     
@@ -57,7 +56,10 @@ public class SectorResource extends CRUDIntResource<Sector> {
       throw new IllegalArgumentException("target ID " + obj.getTarget().getId() + " not existing in draft CoL");
     }
     obj.setTarget(target.toSimpleName());
-    
+
+    // create sector
+    Integer secKey = super.create(obj, user, session);
+  
     TaxonDao tdao = new TaxonDao(session);
     List<Taxon> toCopy = new ArrayList<>();
     // create direct children in catalogue
