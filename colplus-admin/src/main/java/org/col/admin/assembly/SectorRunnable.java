@@ -7,12 +7,14 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
+import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.model.*;
 import org.col.api.vocab.Datasets;
 import org.col.common.util.LoggingUtils;
+import org.col.common.util.ObjectUtils;
 import org.col.db.mapper.DecisionMapper;
 import org.col.db.mapper.SectorImportMapper;
 import org.col.db.mapper.SectorMapper;
@@ -42,20 +44,16 @@ abstract class SectorRunnable implements Runnable {
   SectorRunnable(int sectorKey, SqlSessionFactory factory, NameUsageIndexService indexService,
                       Consumer<SectorRunnable> successCallback,
                       BiConsumer<SectorRunnable, Exception> errorCallback, ColUser user) {
-    this.user = user;
+    this.user = Preconditions.checkNotNull(user);
     try (SqlSession session = factory.openSession(true)) {
       // check if sector actually exists
       Sector s = session.getMapper(SectorMapper.class).get(sectorKey);
-      if (s == null) {
-        throw new IllegalArgumentException("Sector "+sectorKey+" does not exist");
-      }
-      this.sector = s;
+      this.sector = ObjectUtils.checkNotNull(s, "Sector "+sectorKey+" does not exist");
       this.datasetKey = sector.getDatasetKey();
       // check if target actually exists
-      Taxon target = session.getMapper(TaxonMapper.class).get(catalogueKey, sector.getTarget().getId());
-      if (target == null) {
-        throw new IllegalStateException("Sector " + sectorKey + " does have a non existing target id for catalogue " + catalogueKey);
-      }
+      Taxon target = ObjectUtils.checkNotNull(session.getMapper(TaxonMapper.class).get(catalogueKey, sector.getTarget().getId()),
+          "Sector " + sectorKey + " does have a non existing target id for catalogue " + catalogueKey
+      );
       // lookup next attempt
       List<SectorImport> imports = session.getMapper(SectorImportMapper.class).list(sectorKey, null, new Page(0,1));
       state.setAttempt(imports == null || imports.isEmpty() ? 1 : imports.get(0).getAttempt() + 1);

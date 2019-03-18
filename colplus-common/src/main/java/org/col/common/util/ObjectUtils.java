@@ -32,4 +32,24 @@ public class ObjectUtils {
     }
     return null;
   }
+  
+  /**
+   * Similar to Guavas Preconditions.checkNotNull() but raising IllegalArgumentException instead.
+   */
+  public static <T> T checkNotNull(T obj) {
+    if (obj == null) {
+      throw new IllegalArgumentException();
+    }
+    return obj;  }
+  
+  /**
+   * Similar to Guavas Preconditions.checkNotNull() but raising IllegalArgumentException instead.
+   */
+  public static <T> T checkNotNull(T obj, String message) {
+    if (obj == null) {
+      throw new IllegalArgumentException(message);
+    }
+    return obj;
+  }
+  
 }

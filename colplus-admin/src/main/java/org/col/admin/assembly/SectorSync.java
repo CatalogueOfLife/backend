@@ -89,7 +89,7 @@ public class SectorSync extends SectorRunnable {
     relinkAttachedSectors();
   
     state.setState( SectorImport.State.INDEXING);
-    indexService.indexSector(sector.getKey());
+    //indexService.indexSector(sector.getKey());
   
     state.setState( SectorImport.State.FINISHED);
   }
