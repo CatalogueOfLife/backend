@@ -69,5 +69,22 @@ public class NormalizerColdpIT extends NormalizerITBase {
       });
     }
   }
-
+  
+  /**
+   * https://github.com/Sp2000/colplus-backend/issues/307
+   */
+  @Test
+  public void testSelfRels() throws Exception {
+    normalize(2);
+    store.dump();
+    try (Transaction tx = store.getNeo().beginTx()) {
+      NeoUsage t = usageByID("10");
+      assertFalse(t.isSynonym());
+      assertTrue(synonyms(t.node).isEmpty());
+  
+      t = usageByID("11");
+      assertFalse(t.isSynonym());
+      synonyms(t.node, "12");
+    }
+  }
 }

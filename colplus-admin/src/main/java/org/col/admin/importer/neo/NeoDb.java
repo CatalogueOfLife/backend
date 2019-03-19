@@ -848,7 +848,8 @@ public class NeoDb implements ReferenceStore {
   }
   
   public void assignParent(Node parent, Node child) {
-    if (parent != null) {
+    // avoid self referencing loops
+    if (parent != null && !parent.equals(child)) {
       if (child.hasRelationship(RelType.PARENT_OF, Direction.INCOMING)) {
         // override existing parent!
         Node oldParent = null;
@@ -884,12 +885,20 @@ public class NeoDb implements ReferenceStore {
   /**
    * Creates a synonym relationship between the given synonym and the accepted node, updating labels accordingly
    * and also moving potentially existing parent_of relations.
+   * If the name of the synonym and accepted usage is the same node, do not create the relation and return null.
    * Homotypic relation flag is not set and expected to be added if known to be homotypic.
    *
-   * @return newly created synonym relation
+   * @return true if a synonym relation ws created
    */
-  public Relationship createSynonymRel(Node synonym, Node accepted) {
-    Relationship synRel = synonym.createRelationshipTo(accepted, RelType.SYNONYM_OF);
+  public boolean createSynonymRel(Node synonym, Node accepted) {
+    // make sure the synonyms name is not the same as the accepted name
+  
+    Node sn = getUsageNameNode(synonym);
+    Node an = getUsageNameNode(accepted);
+    if (sn != null && sn.equals(an)) {
+      return false;
+    }
+    synonym.createRelationshipTo(accepted, RelType.SYNONYM_OF);
     synonym.addLabel(Labels.SYNONYM);
     synonym.removeLabel(Labels.TAXON);
     // potentially move the parent relationship of the synonym
@@ -910,16 +919,18 @@ public class NeoDb implements ReferenceStore {
         //}
       }
     }
-    return synRel;
+    return true;
+  }
+  
+  private Node getUsageNameNode(Node usage) {
+    return usage.getSingleRelationship(RelType.HAS_NAME, Direction.OUTGOING).getOtherNode(usage);
   }
   
   /**
    * Get the name object for a usage via its HasName relation.
    */
   public NeoName nameByUsage(final Node usage) {
-    return names().objByNode(
-            usage.getSingleRelationship(RelType.HAS_NAME, Direction.OUTGOING).getOtherNode(usage)
-    );
+    return names().objByNode(getUsageNameNode(usage));
   }
   
   /**

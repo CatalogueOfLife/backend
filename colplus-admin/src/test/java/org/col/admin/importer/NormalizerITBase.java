@@ -6,10 +6,10 @@ import java.net.URI;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import javax.annotation.Nullable;
 
+import com.google.common.base.Preconditions;
 import com.google.common.io.Files;
 import org.apache.commons.io.FileUtils;
 import org.col.admin.config.NormalizerConfig;
@@ -17,6 +17,7 @@ import org.col.admin.importer.neo.NeoDb;
 import org.col.admin.importer.neo.NeoDbFactory;
 import org.col.admin.importer.neo.NotUniqueRuntimeException;
 import org.col.admin.importer.neo.model.*;
+import org.col.admin.importer.neo.traverse.Traversals;
 import org.col.admin.matching.NameIndexFactory;
 import org.col.api.model.Dataset;
 import org.col.api.model.IssueContainer;
@@ -29,8 +30,7 @@ import org.junit.Before;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.NotFoundException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 abstract class NormalizerITBase {
   
@@ -139,6 +139,23 @@ abstract class NormalizerITBase {
       assertEquals(parents.size(), parentIdsToVerify.length);
     }
     return parents;
+  }
+  
+  public Set<NeoUsage> synonyms(Node accepted, String... synonymNameIdsToVerify) {
+    Set<NeoUsage> synonyms = new HashSet<>();
+    for (Node sn : Traversals.SYNONYMS.traverse(accepted).nodes()) {
+      synonyms.add(Preconditions.checkNotNull(store.usageWithName(sn)));
+    }
+    if (synonymNameIdsToVerify != null) {
+      Set<String> ids = new HashSet<>();
+      ids.addAll(Arrays.asList(synonymNameIdsToVerify));
+      
+      assertEquals(ids.size(), synonyms.size());
+      for (NeoUsage s : synonyms) {
+        assertTrue(ids.contains(s.usage.getName().getId()));
+      }
+    }
+    return synonyms;
   }
 
   public boolean hasIssues(VerbatimEntity ent, Issue... issues) {

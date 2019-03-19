@@ -111,8 +111,7 @@ public class TaxonDaoTest extends DaoTestBase {
       
       session.commit();
       
-      // no synonym links added yet, expect empty synonymy even though basionym links
-      // exist!
+      // no synonym links added yet, expect empty synonymy as no homotypic synnym exists
       synonymy = tDao.getSynonymy(acc);
       assertTrue(synonymy.isEmpty());
       assertEquals(0, synonymy.size());

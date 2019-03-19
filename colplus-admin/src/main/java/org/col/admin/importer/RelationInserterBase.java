@@ -40,7 +40,9 @@ public abstract class RelationInserterBase implements NodeBatchProcessor {
           if (u.isSynonym()) {
             p = usageByID(acceptedTerm, v, u, Issue.ACCEPTED_ID_INVALID);
             if (p != null) {
-              store.createSynonymRel(u.node, p);
+              if (!store.createSynonymRel(u.node, p)) {
+                v.addIssue(Issue.ACCEPTED_ID_INVALID);
+              }
             } else {
               // if we ain't got no idea of the accepted flag it
               // the orphan synonym usage will be removed later by the normalizer
@@ -49,7 +51,7 @@ public abstract class RelationInserterBase implements NodeBatchProcessor {
             
           } else {
             p = usageByID(parentTerm, v, u, Issue.PARENT_ID_INVALID);
-            if (p != null) {
+            if (p != null && p.equals(u.node)) {
               store.assignParent(p, u.node);
             }
           }
