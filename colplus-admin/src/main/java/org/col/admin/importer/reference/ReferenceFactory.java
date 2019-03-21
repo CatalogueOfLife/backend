@@ -178,22 +178,18 @@ public class ReferenceFactory {
     return ref;
   }
   
-  private static CslDate yearToDate(Integer y) {
-    return yearToDate(y, null);
-  }
-  
-  private static CslDate yearToDate(Integer year, String literalYear) {
-    if (year == null && literalYear == null) {
+  private static CslDate yearToDate(Integer year, String raw) {
+    if (year == null && raw == null) {
       return null;
     }
     
     CslDate d = new CslDate();
     if (year != null) {
-      int[][] dateParts = new int[][]{{year, 1, 1}};
+      int[][] dateParts = new int[][]{{year}};
       d.setDateParts(dateParts);
-    }
-    if (literalYear != null) {
-      d.setLiteral(literalYear);
+    } else {
+      // use raw or literal???
+      d.setRaw(raw);
     }
     return d;
   }
