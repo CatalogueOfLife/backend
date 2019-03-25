@@ -69,6 +69,8 @@ public enum ColTerm implements Term, AlternativeNames {
   //link,
   subgenus,
   //genus,
+  subtribe,
+  tribe,
   subfamily,
   family,
   superfamily,

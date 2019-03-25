@@ -24,6 +24,8 @@ public class Classification {
       Rank.SUPERFAMILY,
       Rank.FAMILY,
       Rank.SUBFAMILY,
+      Rank.TRIBE,
+      Rank.SUBTRIBE,
       Rank.GENUS,
       Rank.SUBGENUS
   );
@@ -39,6 +41,8 @@ public class Classification {
   private String superfamily;
   private String family;
   private String subfamily;
+  private String tribe;
+  private String subtribe;
   private String genus;
   private String subgenus;
   
@@ -54,6 +58,8 @@ public class Classification {
     cl.setSuperfamily(src.superfamily);
     cl.setFamily(src.family);
     cl.setSubfamily(src.subfamily);
+    cl.setTribe(src.tribe);
+    cl.setSubtribe(src.subtribe);
     cl.setGenus(src.genus);
     cl.setSubgenus(src.subgenus);
     return cl;
@@ -105,6 +111,22 @@ public class Classification {
   
   public void setFamily(String family) {
     this.family = family;
+  }
+  
+  public String getTribe() {
+    return tribe;
+  }
+  
+  public void setTribe(String tribe) {
+    this.tribe = tribe;
+  }
+  
+  public String getSubtribe() {
+    return subtribe;
+  }
+  
+  public void setSubtribe(String subtribe) {
+    this.subtribe = subtribe;
   }
   
   public String getGenus() {
@@ -214,6 +236,12 @@ public class Classification {
       case subfamily:
         setSubfamily(name);
         return true;
+      case tribe:
+        setTribe(name);
+        return true;
+      case subtribe:
+        setSubtribe(name);
+        return true;
       case genus:
         setGenus(name);
         return true;
@@ -232,17 +260,35 @@ public class Classification {
       case PHYLUM:
         setPhylum(name);
         break;
+      case SUBPHYLUM:
+        setSubphylum(name);
+        break;
       case CLASS:
         setClass_(name);
         break;
+      case SUBCLASS:
+        setSubclass(name);
+        break;
       case ORDER:
         setOrder(name);
+        break;
+      case SUBORDER:
+        setSuborder(name);
         break;
       case SUPERFAMILY:
         setSuperfamily(name);
         break;
       case FAMILY:
         setFamily(name);
+        break;
+      case SUBFAMILY:
+        setSubfamily(name);
+        break;
+      case TRIBE:
+        setTribe(name);
+        break;
+      case SUBTRIBE:
+        setSubtribe(name);
         break;
       case GENUS:
         setGenus(name);
@@ -275,6 +321,10 @@ public class Classification {
         return getFamily();
       case SUBFAMILY:
         return getSubfamily();
+      case TRIBE:
+        return getTribe();
+      case SUBTRIBE:
+        return getSubtribe();
       case GENUS:
         return getGenus();
       case SUBGENUS:
@@ -325,14 +375,15 @@ public class Classification {
         Objects.equals(superfamily, that.superfamily) &&
         Objects.equals(family, that.family) &&
         Objects.equals(subfamily, that.subfamily) &&
+        Objects.equals(tribe, that.tribe) &&
+        Objects.equals(subtribe, that.subtribe) &&
         Objects.equals(genus, that.genus) &&
         Objects.equals(subgenus, that.subgenus);
   }
   
   @Override
   public int hashCode() {
-    
-    return Objects.hash(kingdom, phylum, subphylum, class_, subclass, order, suborder, superfamily, family, subfamily, genus, subgenus);
+    return Objects.hash(kingdom, phylum, subphylum, class_, subclass, order, suborder, superfamily, family, subfamily, tribe, subtribe, genus, subgenus);
   }
   
   public boolean equalsAboveRank(Classification o, Rank lowest) {
