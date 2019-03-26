@@ -9,17 +9,17 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import org.col.importer.neo.NeoDb;
-import org.col.importer.neo.NodeBatchProcessor;
-import org.col.importer.neo.model.NeoNameRel;
-import org.col.importer.neo.model.NeoUsage;
-import org.col.importer.reference.ReferenceFactory;
 import org.col.api.model.Dataset;
 import org.col.api.model.VerbatimEntity;
 import org.col.api.model.VerbatimRecord;
 import org.col.api.vocab.Issue;
 import org.col.common.collection.DefaultMap;
 import org.col.csv.CsvReader;
+import org.col.importer.neo.NeoDb;
+import org.col.importer.neo.NodeBatchProcessor;
+import org.col.importer.neo.model.NeoNameRel;
+import org.col.importer.neo.model.NeoUsage;
+import org.col.importer.reference.ReferenceFactory;
 import org.gbif.dwc.terms.Term;
 import org.neo4j.graphdb.Node;
 import org.slf4j.Logger;
@@ -61,13 +61,13 @@ public abstract class NeoInserter {
     interruptIfCancelled("Normalizer interrupted, exit early");
     store.endBatchMode();
     LOG.info("Neo batch inserter closed, data flushed to disk");
-    
+  
     final int batchV = vcounter;
     final int batchRec = store.size();
     interruptIfCancelled("Normalizer interrupted, exit early");
     postBatchInsert();
     LOG.info("Post batch insert completed, {} verbatim records processed creating {} new nodes", batchV, store.size() - batchRec);
-  
+    
     interruptIfCancelled("Normalizer interrupted, exit early");
     LOG.debug("Start processing explicit relations ...");
     store.process(null,5000, relationProcessor());

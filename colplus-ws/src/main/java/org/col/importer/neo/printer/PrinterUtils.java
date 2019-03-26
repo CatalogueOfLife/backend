@@ -1,5 +1,6 @@
 package org.col.importer.neo.printer;
 
+import java.io.StringWriter;
 import java.io.Writer;
 import javax.annotation.Nullable;
 
@@ -93,4 +94,9 @@ public class PrinterUtils {
     writer.flush();
   }
   
+  public static String textTree(GraphDatabaseService neo) throws Exception {
+    Writer writer = new StringWriter();
+    PrinterUtils.printTree(neo, writer, GraphFormat.TEXT);
+    return writer.toString().trim();
+  }
 }

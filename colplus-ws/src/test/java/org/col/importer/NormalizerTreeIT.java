@@ -17,16 +17,15 @@ import com.google.common.io.Files;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.col.api.model.Dataset;
+import org.col.api.vocab.DataFormat;
 import org.col.config.NormalizerConfig;
 import org.col.importer.neo.NeoDb;
 import org.col.importer.neo.NeoDbFactory;
 import org.col.importer.neo.model.NeoProperties;
 import org.col.importer.neo.model.RankedName;
-import org.col.importer.neo.printer.GraphFormat;
 import org.col.importer.neo.printer.PrinterUtils;
 import org.col.matching.NameIndexFactory;
-import org.col.api.model.Dataset;
-import org.col.api.vocab.DataFormat;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -67,7 +66,7 @@ public class NormalizerTreeIT {
     IntStream coldpIds = IntStream.rangeClosed(0, MAX_COLDP_ID);
 
     //acefIds = IntStream.empty();
-    // acefIds = IntStream.of(6,7);
+    //acefIds = IntStream.of(0);
     //dwcaIds = IntStream.empty();
     //dwcaIds = IntStream.of(31, 32, 33, 34);
     //coldpIds = IntStream.empty();
@@ -152,9 +151,7 @@ public class NormalizerTreeIT {
       InputStream tree = getClass().getResourceAsStream(resourceDir + "/expected.tree");
       String expected = IOUtils.toString(tree, Charsets.UTF_8).trim();
       
-      Writer writer = new StringWriter();
-      PrinterUtils.printTree(store.getNeo(), writer, GraphFormat.TEXT);
-      String neotree = writer.toString().trim();
+      String neotree = PrinterUtils.textTree(store.getNeo());
       assertFalse("Empty tree, probably no root node found", neotree.isEmpty());
       
       // compare trees

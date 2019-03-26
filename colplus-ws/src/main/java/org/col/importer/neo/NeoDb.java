@@ -771,6 +771,17 @@ public class NeoDb implements ReferenceStore {
     updateHomotypicNameKeys();
   }
   
+  /**
+   * dump treetext on console
+   */
+  public void debug() {
+    try {
+      System.out.println("TextTree:\n" + PrinterUtils.textTree(getNeo()) + "\n");
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
+  
   public void dump() {
     dump(new File("graphs/neodb.dot"));
   }

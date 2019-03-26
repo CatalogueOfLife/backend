@@ -51,7 +51,7 @@ public abstract class RelationInserterBase implements NodeBatchProcessor {
             
           } else {
             p = usageByID(parentTerm, v, u, Issue.PARENT_ID_INVALID);
-            if (p != null && p.equals(u.node)) {
+            if (p != null && !p.equals(u.node)) {
               store.assignParent(p, u.node);
             }
           }
