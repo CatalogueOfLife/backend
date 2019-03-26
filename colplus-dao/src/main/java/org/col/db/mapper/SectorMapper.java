@@ -6,8 +6,9 @@ import javax.annotation.Nullable;
 
 import org.apache.ibatis.annotations.Param;
 import org.col.api.model.Sector;
+import org.col.db.CRUDInt;
 
-public interface SectorMapper extends CRUDIntMapper<Sector> {
+public interface SectorMapper extends CRUDInt<Sector> {
   
   List<Sector> list(@Nullable @Param("datasetKey") Integer datasetKey);
   

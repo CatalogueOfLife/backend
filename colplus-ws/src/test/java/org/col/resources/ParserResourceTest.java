@@ -5,7 +5,7 @@ import javax.ws.rs.core.GenericType;
 
 import io.dropwizard.testing.ResourceHelpers;
 import org.col.WsServer;
-import org.col.WsServerConfig;
+import org.col.config.WsServerConfig;
 import org.col.api.model.Name;
 import org.col.api.model.NameAccordingTo;
 import org.col.dw.DropwizardPgAppRule;

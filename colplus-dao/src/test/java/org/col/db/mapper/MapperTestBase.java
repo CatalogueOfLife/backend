@@ -2,7 +2,7 @@ package org.col.db.mapper;
 
 import org.apache.ibatis.session.SqlSession;
 import org.col.db.PgSetupRule;
-import org.col.db.dao.DatasetImportDao;
+import org.col.dao.DatasetImportDao;
 import org.javers.core.Javers;
 import org.javers.core.JaversBuilder;
 import org.javers.core.diff.Diff;

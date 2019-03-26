@@ -1,12 +1,13 @@
 package org.col.db.mapper;
 
 import org.col.api.model.IntKey;
+import org.col.db.CRUDInt;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
-abstract class CRUDIntMapperTest<T extends IntKey, M extends CRUDIntMapper<T>> extends MapperTestBase<M> {
+abstract class CRUDIntMapperTest<T extends IntKey, M extends CRUDInt<T>> extends MapperTestBase<M> {
   
   public CRUDIntMapperTest(Class<M> mapperClazz) {
     super(mapperClazz);

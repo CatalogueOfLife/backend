@@ -11,12 +11,16 @@
     </encoder>
   </appender>
 
-  <logger name="org.apache.ibatis" level="INFO"/>
-  <logger name="java.sql" level="DEBUG"/>
-  <logger name="ru.yandex.qatools.embed" level="DEBUG"/>
-  <logger name="de.flapdoodle.embed" level="DEBUG"/>
+    <logger name="org.apache.http" level="INFO"/>
+    <logger name="org.col" level="INFO"/>
+    <logger name="org.col.admin" level="DEBUG"/>
+    <logger name="org.col.csv" level="DEBUG"/>
+    <logger name="org.col.common.io" level="DEBUG"/>
 
-  <root level="DEBUG">
+    <!--
+    <logger name="org.col.db.mapper.TaxonMapper" level="DEBUG"/>
+    -->
+    <root level="INFO">
     <appender-ref ref="CONSOLE"/>
   </root>
 

@@ -15,18 +15,19 @@ import javax.ws.rs.core.Response;
 import com.google.common.base.Function;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.col.api.model.*;
+import org.col.api.model.Dataset;
+import org.col.api.model.DatasetImport;
+import org.col.api.model.Page;
+import org.col.api.model.ResultPage;
 import org.col.api.search.DatasetSearchRequest;
 import org.col.api.vocab.ImportState;
 import org.col.common.io.DownloadUtil;
-import org.col.db.dao.DatasetDao;
-import org.col.db.dao.DatasetImportDao;
-import org.col.db.mapper.DatasetMapper;
+import org.col.dao.DatasetDao;
+import org.col.dao.DatasetImportDao;
 import org.col.dw.auth.Roles;
 import org.col.dw.jersey.MoreMediaTypes;
 import org.col.img.ImageService;
 import org.col.img.ImgConfig;
-import org.col.img.LogoUpdateJob;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,35 +38,20 @@ public class DatasetResource extends CRUDIntResource<Dataset> {
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(DatasetResource.class);
   private final SqlSessionFactory factory;
+  private final DatasetDao dao;
   private final ImageService imgService;
-  private final Function<Integer, File> scratchDirFunc;
-  private final DownloadUtil downloader;
   
   public DatasetResource(SqlSessionFactory factory, ImageService imgService, Function<Integer, File> scratchDirFunc, DownloadUtil downloader) {
-    super(Dataset.class, DatasetMapper.class);
+    super(Dataset.class, new DatasetDao(factory, downloader, imgService, scratchDirFunc));
+    dao = (DatasetDao) crud;
     this.factory = factory;
     this.imgService = imgService;
-    this.scratchDirFunc = scratchDirFunc;
-    this.downloader = downloader;
   }
   
   @GET
   public ResultPage<Dataset> list(@Valid @BeanParam Page page, @BeanParam DatasetSearchRequest req,
                                   @Context SqlSession session) {
-    return new DatasetDao(session).search(req, page);
-  }
-  
-  @Override
-  public Integer create(@Valid Dataset obj, ColUser user, SqlSession session) {
-    super.create(obj, user, session);
-    pullLogo(obj);
-    return obj.getKey();
-  }
-  
-  @Override
-  public void update(Integer key, Dataset obj, ColUser user, SqlSession session) {
-    super.update(key, obj, user, session);
-    pullLogo(obj);
+    return dao.search(req, page);
   }
   
   @GET
@@ -110,13 +96,4 @@ public class DatasetResource extends CRUDIntResource<Dataset> {
     return Response.ok().build();
   }
   
-  private Dataset get(int key) {
-    try (SqlSession sess = factory.openSession()) {
-      return sess.getMapper(DatasetMapper.class).get(key);
-    }
-  }
-  
-  private void pullLogo(Dataset d) {
-    LogoUpdateJob.updateDatasetAsync(d, factory, downloader, scratchDirFunc, imgService);
-  }
 }

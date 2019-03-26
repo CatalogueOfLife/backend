@@ -11,7 +11,7 @@ import org.col.api.model.Page;
 import org.col.api.model.Sector;
 import org.col.api.model.Taxon;
 import org.col.db.MybatisTestUtils;
-import org.col.db.dao.NameDao;
+import org.col.dao.NameDao;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Before;
 import org.junit.Test;
@@ -22,7 +22,7 @@ import static org.junit.Assert.assertEquals;
 /**
  *
  */
-public class TaxonMapperTest extends DatasetCRUDMapperTest<Taxon, TaxonMapper> {
+public class TaxonMapperTest extends DatasetCRUDTest<Taxon, TaxonMapper> {
   
   private static final int datasetKey = TestEntityGenerator.TAXON1.getDatasetKey();
   private Sector sector;

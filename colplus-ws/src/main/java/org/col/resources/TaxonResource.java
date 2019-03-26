@@ -12,7 +12,7 @@ import io.dropwizard.auth.Auth;
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.exception.NotFoundException;
 import org.col.api.model.*;
-import org.col.db.dao.TaxonDao;
+import org.col.dao.TaxonDao;
 import org.col.dw.auth.Roles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

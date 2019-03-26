@@ -140,11 +140,8 @@
     <modules>
         <module>colplus-api</module>
         <module>colplus-common</module>
-        <module>colplus-dw</module>
-        <module>colplus-dw-testing</module>
         <module>colplus-dao</module>
         <module>colplus-parser</module>
-        <module>colplus-admin</module>
         <module>colplus-ws</module>
     </modules>
 

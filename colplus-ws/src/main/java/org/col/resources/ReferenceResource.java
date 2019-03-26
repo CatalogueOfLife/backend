@@ -10,7 +10,7 @@ import org.col.api.exception.NotFoundException;
 import org.col.api.model.Page;
 import org.col.api.model.Reference;
 import org.col.api.model.ResultPage;
-import org.col.db.dao.ReferenceDao;
+import org.col.dao.ReferenceDao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

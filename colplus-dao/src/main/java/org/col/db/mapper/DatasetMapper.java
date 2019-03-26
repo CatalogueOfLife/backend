@@ -7,8 +7,9 @@ import org.apache.ibatis.annotations.Param;
 import org.col.api.model.Dataset;
 import org.col.api.model.Page;
 import org.col.api.search.DatasetSearchRequest;
+import org.col.db.CRUDInt;
 
-public interface DatasetMapper extends CRUDIntMapper<Dataset> {
+public interface DatasetMapper extends CRUDInt<Dataset> {
 
   int count(@Param("req") DatasetSearchRequest request);
 

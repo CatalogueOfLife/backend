@@ -4,7 +4,7 @@ import javax.ws.rs.client.WebTarget;
 
 import io.dropwizard.testing.ResourceHelpers;
 import org.col.WsServer;
-import org.col.WsServerConfig;
+import org.col.config.WsServerConfig;
 import org.col.dw.DropwizardPgAppRule;
 import org.junit.ClassRule;
 

@@ -31,9 +31,6 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
     this.factory = factory;
   }
 
-  /**
-   * Main method to index an entire dataset from postgres into ElasticSearch using the bulk API.
-   */
   @Override
   public void indexDataset(int datasetKey) {
     NameUsageIndexer indexer = new NameUsageIndexer(client, index);
@@ -67,39 +64,19 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
     logDatasetTotals(datasetKey, tCount, sCount, bCount);
   }
   
-  /**
-   * Main method to index an entire dataset from postgres into ElasticSearch using the bulk API.
-   */
   @Override
   public void indexSector(int sectorKey) {
-/*    NameUsageIndexer indexer = new NameUsageIndexer(client, index);
-    int tCount, sCount;
-    try (SqlSession session = factory.openSession()) {
-      createOrEmptyIndex(index, datasetKey);
-      NameUsageMapper mapper = session.getMapper(NameUsageMapper.class);
-      try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(indexer, 4096)) {
-        LOG.debug("Indexing taxa for dataset {}", datasetKey);
-        mapper.processDatasetTaxa(datasetKey, handler);
-      }
-      EsUtil.refreshIndex(client, index); // Necessary
-      tCount = indexer.documentsIndexed();
-      indexer.reset();
-      try (SynonymResultHandler handler = new SynonymResultHandler(indexer, datasetKey)) {
-        LOG.debug("Indexing synonyms for dataset {}", datasetKey);
-        mapper.processDatasetSynonyms(datasetKey, handler);
-      }
-      EsUtil.refreshIndex(client, index); // Optional
-      sCount = indexer.documentsIndexed();
-      // no bare names in the catalogues!
-    } catch (IOException e) {
-      throw new EsException(e);
-    }
-    LOG.info("Successfully indexed sector {}. Index: {}. Taxa: {}. Synonyms: {}. Total: {}.", sectorKey, index, tCount, sCount, (tCount + sCount));*/
+    int tCount = 0;
+    int sCount = 0;
+    LOG.warn("NOT indexed sector {}. Index: {}. Taxa: {}. Synonyms: {}. Total: {}.", sectorKey, index, tCount, sCount, (tCount + sCount));
   }
-
-  /**
-   * Re-indexes all datasets from scratch
-   */
+  
+  @Override
+  public void indexTaxa(int datasetKey, String... taxonIds) {
+    LOG.warn("NOT indexed taxa {} from dataset {}", taxonIds, datasetKey);
+  }
+  
+  @Override
   public void indexAll() {
     NameUsageIndexer indexer = new NameUsageIndexer(client, index);
     int tCount = 0, sCount = 0, bCount = 0;

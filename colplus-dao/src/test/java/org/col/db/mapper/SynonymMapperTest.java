@@ -9,7 +9,7 @@ import org.col.api.model.Synonym;
 import org.col.api.model.Taxon;
 import org.col.api.vocab.Origin;
 import org.col.api.vocab.TaxonomicStatus;
-import org.col.db.dao.NameDao;
+import org.col.dao.NameDao;
 import org.junit.Before;
 import org.junit.Test;
 

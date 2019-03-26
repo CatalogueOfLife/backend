@@ -7,12 +7,27 @@ public interface NameUsageIndexService {
 
   Logger LOG = LoggerFactory.getLogger(NameUsageIndexService.class);
   
+  /**
+   * Indexes all CoL usages from an entire sector from postgres into ElasticSearch using the bulk API.
+   */
   void indexSector(int sectorKey);
-
+  
+  /**
+   * Indexes an entire dataset from postgres into ElasticSearch using the bulk API.
+   */
   void indexDataset(int datasetKey);
-
+  
+  /**
+   * Re-indexes all datasets from scratch
+   */
   void indexAll();
-
+  
+  /**
+   * Indexes given taxa from the same dataset from postgres into ElasticSearch.
+   */
+  void indexTaxa(int datasetKey, String... taxonIds);
+  
+  
   /**
    * @return a pass through indexing service that does not do anything. Good for tests
    */
@@ -28,7 +43,15 @@ public interface NameUsageIndexService {
       public void indexDataset(int datasetKey) {
         LOG.info("No Elastic Search configured, pass through dataset {}", datasetKey);
       }
-
+  
+      /**
+       * Indexes all CoL usages from an entire sector from postgres into ElasticSearch using the bulk API.
+       */
+      @Override
+      public void indexTaxa(int datasetKey, String... taxonIds) {
+        LOG.info("No Elastic Search configured. Passing through taxa {}", taxonIds);
+      }
+    
       @Override
       public void indexAll() {
        LOG.info("No Elastic Search configured. Passing through");

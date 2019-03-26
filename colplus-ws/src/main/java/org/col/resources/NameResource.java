@@ -14,7 +14,7 @@ import org.col.api.model.*;
 import org.col.api.search.NameSearchParameter;
 import org.col.api.search.NameSearchRequest;
 import org.col.api.search.NameUsageWrapper;
-import org.col.db.dao.NameDao;
+import org.col.dao.NameDao;
 import org.col.db.mapper.NameMapper;
 import org.col.db.mapper.NameRelationMapper;
 import org.col.es.InvalidQueryException;

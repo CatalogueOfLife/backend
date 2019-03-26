@@ -1,5 +1,5 @@
 logging:
-  level: WARN
+  level: INFO
   loggers:
     "org.col": DEBUG
     "org.apache.http": WARN
@@ -13,6 +13,17 @@ db:
   database: ${db.database}
   user: ${db.user}
   password: ${db.password}
+normalizer:
+  directory: /tmp/colplus
+client:
+  timeout: 10000ms
+  connectionTimeout: 5000ms
+  timeToLive: 1h
+  cookiesEnabled: false
+  maxConnections: 64
+  maxConnectionsPerRoute: 16
+  keepAlive: 0ms
+  retries: 1
 auth:
   type: gbif
   api: "${gbif.api}"
