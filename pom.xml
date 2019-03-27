@@ -436,7 +436,9 @@
                 <version>${kryo-serializers.version}</version>
             </dependency>
 
-            <!-- unicode, transliterations -->
+            <!-- unicode, transliterations
+                Consider much simpler https://github.com/jirutka/unidecode
+            -->
             <dependency>
                 <groupId>com.ibm.icu</groupId>
                 <artifactId>icu4j</artifactId>

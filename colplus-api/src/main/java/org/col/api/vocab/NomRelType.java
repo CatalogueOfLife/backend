@@ -62,10 +62,15 @@ public enum NomRelType {
   BASED_ON(true, null, NomStatus.UNAVAILABLE),
   
   /**
-   * Current name is replacement for the related name.
+   * Current name is replacement for the homotypic related name.
    * Also called 'Nomen Novum' or 'avowed substitute'
+   *
+   * In zoology this is called a "new replacement name" or "new substitute name"
+   * and is easily confused with just "replacement name"
+   *
    * ICN: Article 7.3
-   * ICZN: Article 60.3.
+   * ICZN: Article 60.3, 67.8, 72.7
+   *
    */
   REPLACEMENT_NAME(true, null, NomStatus.ILLEGITIMATE),
   
