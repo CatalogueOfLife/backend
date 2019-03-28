@@ -1,5 +1,7 @@
 package org.col.es;
 
+import java.util.Collection;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,7 +27,7 @@ public interface NameUsageIndexService {
   /**
    * Indexes given taxa from the same dataset from postgres into ElasticSearch.
    */
-  void indexTaxa(int datasetKey, String... taxonIds);
+  void indexTaxa(int datasetKey, Collection<String> taxonIds);
   
   
   /**
@@ -48,7 +50,7 @@ public interface NameUsageIndexService {
        * Indexes all CoL usages from an entire sector from postgres into ElasticSearch using the bulk API.
        */
       @Override
-      public void indexTaxa(int datasetKey, String... taxonIds) {
+      public void indexTaxa(int datasetKey, Collection<String> taxonIds) {
         LOG.info("No Elastic Search configured. Passing through taxa {}", taxonIds);
       }
     

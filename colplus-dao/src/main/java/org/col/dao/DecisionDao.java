@@ -1,5 +1,9 @@
 package org.col.dao;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import com.google.common.collect.Lists;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.model.EditorialDecision;
@@ -26,7 +30,7 @@ public class DecisionDao extends CrudIntDao<EditorialDecision> {
       session.getMapper(DecisionMapper.class).create(obj);
     }
     if (obj.getSubject().getId() != null) {
-      indexService.indexTaxa(obj.getDatasetKey(), obj.getSubject().getId());
+      indexService.indexTaxa(obj.getDatasetKey(), Lists.newArrayList(obj.getSubject().getId()));
     }
   }
   
@@ -37,15 +41,20 @@ public class DecisionDao extends CrudIntDao<EditorialDecision> {
   @Override
   public int update(EditorialDecision obj) {
     try (SqlSession session = factory.openSession(true)) {
+      final List<String> ids = new ArrayList<>();
       DecisionMapper mapper = session.getMapper(DecisionMapper.class);
+      
       final EditorialDecision old = mapper.get(obj.getKey());
-      int changed = mapper.update(obj);
       if (old != null && old.getSubject().getId() != null && !old.getSubject().getId().equals(obj.getSubject().getId())) {
-        indexService.indexTaxa(old.getDatasetKey(), old.getSubject().getId());
+        ids.add(old.getSubject().getId());
       }
+      
+      int changed = mapper.update(obj);
       if (obj.getSubject().getId() != null) {
-        indexService.indexTaxa(obj.getDatasetKey(), obj.getSubject().getId());
+        ids.add(obj.getSubject().getId());
       }
+      
+      indexService.indexTaxa(obj.getDatasetKey(), ids);
       return changed;
     }
   }
@@ -57,7 +66,7 @@ public class DecisionDao extends CrudIntDao<EditorialDecision> {
       EditorialDecision obj = dm.get(key);
       int deleted = session.getMapper(DecisionMapper.class).delete(key);
       if (obj != null && obj.getSubject().getId() != null) {
-        indexService.indexTaxa(obj.getDatasetKey(), obj.getSubject().getId());
+        indexService.indexTaxa(obj.getDatasetKey(), Lists.newArrayList(obj.getSubject().getId()));
       }
       return deleted;
     }

@@ -1,4 +1,4 @@
-package org.col.jackson;
+package org.col.importer.jackson;
 
 import java.io.IOException;
 import java.util.Optional;

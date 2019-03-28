@@ -14,7 +14,8 @@ db:
   user: ${db.user}
   password: ${db.password}
 normalizer:
-  directory: /tmp/colplus
+  scratchDir: /tmp/colplus/scratch
+  archiveDir: /tmp/colplus/archives
 client:
   timeout: 10000ms
   connectionTimeout: 5000ms
@@ -24,21 +25,17 @@ client:
   maxConnectionsPerRoute: 16
   keepAlive: 0ms
   retries: 1
+es:
+  hosts: ${es.hosts}
+  ports: ${es.ports}
+  nameUsage:
+    modelClass: org.col.es.model.EsNameUsage
 auth:
   type: gbif
   api: "${gbif.api}"
   appkey: ${gbif.appkey}
   secret: "${gbif.secret}"
 jwtKey: 3254e6rftgbzg6tz7
-es:
-  # comma-separated strings of hosts and ports (numbers must match)
-  hosts: ${es.hosts}
-  ports: ${es.ports}
-  nameUsage:
-    modelClass: org.col.es.model.EsNameUsage
-    numShards: 1
-    numReplicas: 0
-    batchSize: 1000
 img:
   repo: ${img.repo}
 cors:

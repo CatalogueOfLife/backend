@@ -11,9 +11,6 @@
 
     <resultMap id="taxonResultMap" type="NameUsageWrapper" autoMapping="true" extends="issueResultMap">
         <id column="id" />
-        <result property="classificationIds" column="classificationIds" typeHandler="org.col.db.type.StringArrayTypeHandler"/>
-        <result property="classificationNames" column="classificationNames" typeHandler="org.col.db.type.StringArrayTypeHandler"/>
-        <result property="classificationRanks" column="classificationRanks" typeHandler="org.col.db.type.RankArrayTypeHandler"/>
         <association property="usage" javaType="Taxon" autoMapping="true">
             <id property="id" column="id" />
             <result property="lifezones" column="lifezones" typeHandler="org.col.db.type.LifezoneSetTypeHandler" />
@@ -22,6 +19,16 @@
         <collection property="vernacularNames" ofType="VernacularName" autoMapping="true" notNullColumn="v_key">
             <id property="key" column="v_key"/>
         </collection>
+    </resultMap>
+
+    <resultMap id="taxonWithClassificationResultMap" type="NameUsageWrapper" autoMapping="true" extends="taxonResultMap">
+        <result property="classificationIds" column="classificationIds" typeHandler="org.col.db.type.StringArrayTypeHandler"/>
+        <result property="classificationNames" column="classificationNames" typeHandler="org.col.db.type.StringArrayTypeHandler"/>
+        <result property="classificationRanks" column="classificationRanks" typeHandler="org.col.db.type.RankArrayTypeHandler"/>
+    </resultMap>
+
+    <resultMap id="taxonGetClassificationResultMap" type="NameUsageWrapper" autoMapping="true" extends="taxonResultMap">
+        <collection property="classification" ofType="SimpleName" column="{id=id,datasetKey=dataset_key}" autoMapping="true" select="selectClassification"/>
     </resultMap>
 
     <resultMap id="synonymResultMap" type="NameUsageWrapper" autoMapping="true" extends="issueResultMap">
@@ -67,7 +74,7 @@
     <!--  select all name usages of a dataset
         Using a optimal fetchsize to enable low memory footprint while keeping good performance using a resulthandler
     -->
-    <select id="processDatasetTaxa" parameterType="map" resultMap="taxonResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
+    <select id="processDatasetTaxa" parameterType="map" resultMap="taxonWithClassificationResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
         WITH RECURSIVE tree AS(
             SELECT
                 ARRAY[t.id]::text[] AS classificationIds,
@@ -108,5 +115,28 @@
             LEFT JOIN taxon_${datasetKey}    t ON n.id = t.name_id
             LEFT JOIN verbatim_${datasetKey} v ON v.key= n.verbatim_key
         WHERE t.id IS NULL AND s.taxon_id IS NULL
+    </select>
+
+    <select id="get" parameterType="map" resultMap="taxonGetClassificationResultMap">
+        SELECT
+        <include refid="taxonSelectFrom" />
+        WHERE t.id = #{id}
+    </select>
+
+    <select id="selectClassification" parameterType="map" resultType="SimpleName">
+        WITH RECURSIVE cl AS (
+            SELECT t.id, t.parent_id, n.scientific_name as name, n.authorship, n.rank
+            FROM <include refid="org.col.db.mapper.TaxonMapper.FROM"/>
+            WHERE t.id = #{id}
+
+            UNION
+
+            SELECT t.id, t.parent_id, n.scientific_name, n.authorship, n.rank
+            FROM <include refid="org.col.db.mapper.TaxonMapper.FROM"/>, cl
+            WHERE t.id = cl.parent_id
+        )
+        SELECT *
+        FROM cl
+        WHERE cl.id != #{id}
     </select>
 </mapper>

@@ -1,7 +1,10 @@
 package org.col.es;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -72,8 +75,23 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
   }
   
   @Override
-  public void indexTaxa(int datasetKey, String... taxonIds) {
-    LOG.warn("NOT indexed taxa {} from dataset {}", taxonIds, datasetKey);
+  public void indexTaxa(int datasetKey, Collection<String> taxonIds) {
+    NameUsageIndexer indexer = new NameUsageIndexer(client, index);
+    
+    try (SqlSession session = factory.openSession()) {
+      NameUsageMapper mapper = session.getMapper(NameUsageMapper.class);
+  
+      List<NameUsageWrapper> taxa = taxonIds.stream()
+          .map(id -> mapper.get(datasetKey, id))
+          .filter(Objects::nonNull)
+          .collect(Collectors.toList());
+      LOG.info("Indexing {} taxa from dataset {}", taxa.size(), datasetKey);
+      indexer.accept(taxa);
+      EsUtil.refreshIndex(client, index); // Necessary
+
+    } catch (IOException e) {
+      throw new EsException(e);
+    }
   }
   
   @Override

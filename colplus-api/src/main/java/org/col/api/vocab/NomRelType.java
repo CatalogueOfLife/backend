@@ -115,6 +115,7 @@ public enum NomRelType {
    * The current, superfluous name is available but illegitimate.
    * <p>
    * Includes the special case of isonyms which are identical names.
+   * Zoology: unnecessary substitue name
    */
   SUPERFLUOUS(true, NomStatus.ILLEGITIMATE, null),
   

@@ -1,4 +1,4 @@
-package org.col.dw.provider;
+package org.col.dw.jersey.provider;
 
 import org.col.api.vocab.Issue;
 import org.junit.Test;

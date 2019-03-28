@@ -1,6 +1,7 @@
 package org.col.db.mapper;
 
 import java.net.URI;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.ibatis.session.ResultContext;
@@ -24,6 +25,16 @@ public class NameUsageMapperTreeTest extends MapperTestBase<NameUsageMapper> {
   }
   
   private AtomicInteger counter = new AtomicInteger(0);
+  
+  @Test
+  public void getTaxa() throws Exception {
+    List<?> cl = mapper().selectClassification(NAME4.getDatasetKey(), "t15");
+    assertEquals(7, cl.size());
+    
+    NameUsageWrapper tax = mapper().get(NAME4.getDatasetKey(), "t15");
+    assertFalse(tax.getClassification().isEmpty());
+    assertEquals(cl, tax.getClassification());
+  }
   
   @Test
   public void processDatasetTaxa() throws Exception {

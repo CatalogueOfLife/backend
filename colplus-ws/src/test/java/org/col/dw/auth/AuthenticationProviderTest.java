@@ -13,15 +13,13 @@ import io.dropwizard.jackson.DiscoverableSubtypeResolver;
 import io.dropwizard.jackson.Jackson;
 import io.dropwizard.jersey.validation.Validators;
 import org.apache.commons.io.FileUtils;
+import org.assertj.core.api.Assertions;
 import org.col.common.io.Resources;
 import org.col.common.util.YamlUtils;
 import org.col.dw.auth.gbif.GBIFAuthenticationFactory;
 import org.col.dw.auth.map.MapAuthenticationFactory;
+import org.junit.Assert;
 import org.junit.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 public class AuthenticationProviderTest {
   
@@ -33,7 +31,7 @@ public class AuthenticationProviderTest {
   @Test
   public void isDiscoverable() throws Exception {
     // Make sure the types we specified in META-INF gets picked up
-    assertThat(new DiscoverableSubtypeResolver().getDiscoveredSubtypes())
+    Assertions.assertThat(new DiscoverableSubtypeResolver().getDiscoveredSubtypes())
         .contains(GBIFAuthenticationFactory.class)
         .contains(MapAuthenticationFactory.class);
   }
@@ -46,7 +44,7 @@ public class AuthenticationProviderTest {
         return Resources.stream(path);
       }
     }, "gbifAuth.yaml");
-    assertThat(apf).isInstanceOf(GBIFAuthenticationFactory.class);
+    Assertions.assertThat(apf).isInstanceOf(GBIFAuthenticationFactory.class);
   }
   
   @Test
@@ -57,12 +55,12 @@ public class AuthenticationProviderTest {
         return Resources.stream(path);
       }
     }, "mapAuth.yaml");
-    assertThat(apf).isInstanceOf(MapAuthenticationFactory.class);
+    Assertions.assertThat(apf).isInstanceOf(MapAuthenticationFactory.class);
     MapAuthenticationFactory.MapAuthentication maf = (MapAuthenticationFactory.MapAuthentication) apf.createAuthenticationProvider();
-    assertEquals(3, maf.getUsers().size());
+    Assert.assertEquals(3, maf.getUsers().size());
     for (MapAuthenticationFactory.Cred c : maf.getUsers().values()) {
-      assertNotNull(c.username);
-      assertNotNull(c.password);
+      Assert.assertNotNull(c.username);
+      Assert.assertNotNull(c.password);
     }
   }
   

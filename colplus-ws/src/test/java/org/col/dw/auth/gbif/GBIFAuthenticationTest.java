@@ -7,10 +7,9 @@ import org.col.api.model.ColUser;
 import org.col.api.vocab.Country;
 import org.col.common.io.Resources;
 import org.col.common.util.YamlUtils;
+import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
-
-import static org.junit.Assert.*;
 
 public class GBIFAuthenticationTest {
   final GBIFAuthentication gbif;
@@ -24,29 +23,29 @@ public class GBIFAuthenticationTest {
   @Test
   public void basicHeader() {
     // test some non ASCII passwords
-    assertEquals("Basic TGVtbXk6TcO2dMO2cmhlYWQ=", gbif.basicAuthHeader("Lemmy", "Mötörhead"));
+    Assert.assertEquals("Basic TGVtbXk6TcO2dMO2cmhlYWQ=", gbif.basicAuthHeader("Lemmy", "Mötörhead"));
   }
   
   @Test
   public void fromJson() throws IOException {
     ColUser u = gbif.fromJson(Resources.stream("gbif-user.json"));
-    assertEquals("manga@mailinator.com", u.getEmail());
-    assertEquals("Mänga", u.getLastname());
-    assertEquals("0000-1234-5678-0011", u.getOrcid());
-    assertEquals(Country.JAPAN, u.getCountry());
+    Assert.assertEquals("manga@mailinator.com", u.getEmail());
+    Assert.assertEquals("Mänga", u.getLastname());
+    Assert.assertEquals("0000-1234-5678-0011", u.getOrcid());
+    Assert.assertEquals(Country.JAPAN, u.getCountry());
   }
   
   @Test
   @Ignore("GBIF service needs to be mocked - this uses live services")
   public void authenticateGBIF() {
-    assertTrue(gbif.authenticateGBIF("markus", "xxx"));
-    assertTrue(gbif.authenticateGBIF("colplus", "xxx"));
+    Assert.assertTrue(gbif.authenticateGBIF("markus", "xxx"));
+    Assert.assertTrue(gbif.authenticateGBIF("colplus", "xxx"));
   }
   
   @Test
   @Ignore("GBIF service needs to be mocked - this uses live services")
   public void getUser() {
     ColUser u = gbif.getFullGbifUser("colplus");
-    assertNotNull(u);
+    Assert.assertNotNull(u);
   }
 }

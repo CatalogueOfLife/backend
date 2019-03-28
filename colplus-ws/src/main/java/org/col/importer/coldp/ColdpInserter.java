@@ -20,7 +20,7 @@ import org.col.importer.NormalizationFailedException;
 import org.col.importer.neo.NeoDb;
 import org.col.importer.neo.NodeBatchProcessor;
 import org.col.importer.reference.ReferenceFactory;
-import org.col.jackson.EnumParserSerde;
+import org.col.importer.jackson.EnumParserSerde;
 import org.col.api.datapackage.ColTerm;
 import org.col.api.jackson.PermissiveEnumSerde;
 import org.col.api.model.Dataset;
