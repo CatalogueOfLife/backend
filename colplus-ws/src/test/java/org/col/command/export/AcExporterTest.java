@@ -5,7 +5,7 @@ import java.io.File;
 import com.google.common.io.Files;
 import org.apache.commons.io.FileUtils;
 import org.col.api.vocab.Datasets;
-import org.col.config.WsServerConfig;
+import org.col.WsServerConfig;
 import org.col.db.MybatisTestUtils;
 import org.col.db.PgSetupRule;
 import org.col.db.mapper.InitMybatisRule;

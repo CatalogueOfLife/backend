@@ -15,7 +15,7 @@ import io.dropwizard.util.JarLocation;
 import org.col.WsServer;
 import org.col.command.initdb.InitDbCmd;
 import org.col.common.util.YamlUtils;
-import org.col.config.WsServerConfig;
+import org.col.WsServerConfig;
 import org.col.db.PgSetupRule;
 import org.col.dw.auth.map.MapAuthenticationFactory;
 import org.junit.After;

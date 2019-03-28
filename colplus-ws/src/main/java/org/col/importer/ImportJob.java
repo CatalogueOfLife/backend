@@ -15,7 +15,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.col.config.WsServerConfig;
+import org.col.WsServerConfig;
 import org.col.dao.DecisionRematcher;
 import org.col.importer.neo.NeoDb;
 import org.col.importer.neo.NeoDbFactory;

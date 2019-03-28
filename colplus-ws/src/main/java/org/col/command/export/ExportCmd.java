@@ -4,7 +4,7 @@ import io.dropwizard.cli.ConfiguredCommand;
 import io.dropwizard.setup.Bootstrap;
 import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
-import org.col.config.WsServerConfig;
+import org.col.WsServerConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -1,4 +1,4 @@
-package org.col.dw;
+package org.col;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,6 +13,7 @@ import org.col.common.util.YamlUtils;
 import org.col.db.EmbeddedColPg;
 import org.col.db.PgConfig;
 import org.col.db.PgSetupRule;
+import org.col.dw.BasicAuthClientFilter;
 import org.glassfish.jersey.client.JerseyClientBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,7 +22,7 @@ import org.slf4j.LoggerFactory;
  * An adaptation of the generic DropwizardAppRule that can be used as a junit class rule
  * to create integration tests against a running dropwizard instance.
  * <p>
- * DropwizardPgAppRule spins up an embedded postgres server
+ * WsServerRule spins up an embedded postgres server
  * and updates the PgConfig with the matching config parameters to access it via the MyBatisModule.
  * <p>
  * It also selects and configures DW to use a free application port.
@@ -34,13 +35,12 @@ import org.slf4j.LoggerFactory;
  *         .property(HTTP_AUTHENTICATION_BASIC_PASSWORD, "p1swd745").get();
  * </code>
  */
-public class DropwizardPgAppRule<C extends PgAppConfig> extends DropwizardAppRule<C> {
-  private static final Logger LOG = LoggerFactory.getLogger(DropwizardPgAppRule.class);
+public class WsServerRule extends DropwizardAppRule<WsServerConfig> {
+  private static final Logger LOG = LoggerFactory.getLogger(WsServerRule.class);
   private static EmbeddedColPg pg;
   
-  public DropwizardPgAppRule(Class<? extends PgApp<C>> applicationClass,
-                             String configPath, ConfigOverride... configOverrides) {
-    super(applicationClass, configPath, setupPg(configPath, configOverrides));
+  public WsServerRule(String configPath, ConfigOverride... configOverrides) {
+    super(WsServer.class, configPath, setupPg(configPath, configOverrides));
   }
   
   static class PgConfigInApp {
@@ -85,7 +85,7 @@ public class DropwizardPgAppRule<C extends PgAppConfig> extends DropwizardAppRul
   }
   
   public SqlSessionFactory getSqlSessionFactory() {
-    return ((PgApp) getTestSupport().getApplication()).getSqlSessionFactory();
+    return ((WsServer) getTestSupport().getApplication()).getSqlSessionFactory();
   }
   
   @Override

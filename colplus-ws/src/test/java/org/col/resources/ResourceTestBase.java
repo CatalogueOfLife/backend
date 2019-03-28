@@ -3,9 +3,7 @@ package org.col.resources;
 import javax.ws.rs.client.WebTarget;
 
 import io.dropwizard.testing.ResourceHelpers;
-import org.col.WsServer;
-import org.col.config.WsServerConfig;
-import org.col.dw.DropwizardPgAppRule;
+import org.col.WsServerRule;
 import org.junit.ClassRule;
 
 public class ResourceTestBase {
@@ -21,8 +19,7 @@ public class ResourceTestBase {
   }
   
   @ClassRule
-  public static final DropwizardPgAppRule<WsServerConfig> RULE =
-      new DropwizardPgAppRule<>(WsServer.class, ResourceHelpers.resourceFilePath("config-test.yaml"));
+  public static final WsServerRule RULE = new WsServerRule(ResourceHelpers.resourceFilePath("config-test.yaml"));
   
  
 }

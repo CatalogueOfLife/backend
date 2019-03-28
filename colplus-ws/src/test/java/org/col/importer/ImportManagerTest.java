@@ -11,7 +11,7 @@ import com.google.common.io.Files;
 import io.dropwizard.client.HttpClientBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSession;
-import org.col.config.WsServerConfig;
+import org.col.WsServerConfig;
 import org.col.matching.NameIndexFactory;
 import org.col.api.model.Dataset;
 import org.col.api.model.DatasetImport;

@@ -6,12 +6,12 @@ import io.dropwizard.ConfiguredBundle;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import org.apache.ibatis.session.SqlSessionFactory;
+import org.col.WsServerConfig;
 import org.col.db.MybatisFactory;
-import org.col.dw.PgAppConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MybatisBundle implements ConfiguredBundle<PgAppConfig> {
+public class MybatisBundle implements ConfiguredBundle<WsServerConfig> {
   
   private static final Logger LOG = LoggerFactory.getLogger(MybatisBundle.class);
   private static final String NAME = "mybatis";
@@ -27,7 +27,7 @@ public class MybatisBundle implements ConfiguredBundle<PgAppConfig> {
    *                   thrown as-is.
    */
   @Override
-  public void run(PgAppConfig cfg, Environment environment) throws Exception {
+  public void run(WsServerConfig cfg, Environment environment) throws Exception {
     HikariConfig hik = cfg.db.hikariConfig();
     // pool healthchecks
     hik.setHealthCheckRegistry(environment.healthChecks());

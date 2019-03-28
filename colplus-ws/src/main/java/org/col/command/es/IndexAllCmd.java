@@ -5,7 +5,7 @@ import io.dropwizard.cli.ConfiguredCommand;
 import io.dropwizard.setup.Bootstrap;
 import net.sourceforge.argparse4j.inf.Namespace;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.col.config.WsServerConfig;
+import org.col.WsServerConfig;
 import org.col.db.MybatisFactory;
 import org.col.es.EsClientFactory;
 import org.col.es.NameUsageIndexService;

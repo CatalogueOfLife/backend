@@ -21,7 +21,7 @@ import org.col.api.model.DatasetImport;
 import org.col.api.vocab.Datasets;
 import org.col.api.vocab.ImportState;
 import org.col.api.vocab.Users;
-import org.col.config.WsServerConfig;
+import org.col.WsServerConfig;
 import org.col.db.MybatisFactory;
 import org.col.db.PgConfig;
 import org.col.dao.DatasetImportDao;

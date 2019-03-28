@@ -10,7 +10,7 @@ import java.util.regex.Pattern;
 import com.google.common.io.Files;
 import org.apache.commons.io.FileUtils;
 import org.col.common.io.CompressionUtil;
-import org.col.config.WsServerConfig;
+import org.col.WsServerConfig;
 import org.col.postgres.PgCopyUtils;
 import org.postgresql.jdbc.PgConnection;
 import org.slf4j.Logger;

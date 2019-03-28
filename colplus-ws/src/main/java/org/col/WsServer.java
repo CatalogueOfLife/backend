@@ -1,7 +1,22 @@
 package org.col;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.dropwizard.Application;
+import io.dropwizard.client.DropwizardApacheConnector;
+import io.dropwizard.client.HttpClientBuilder;
+import io.dropwizard.client.JerseyClientBuilder;
+import io.dropwizard.client.JerseyClientConfiguration;
+import io.dropwizard.forms.MultiPartBundle;
+import io.dropwizard.jackson.Jackson;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
+import org.apache.http.client.config.CookieSpecs;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.col.api.datapackage.ColTerm;
+import org.col.api.jackson.ApiModule;
+import org.col.api.vocab.ColDwcTerm;
 import org.col.api.vocab.Datasets;
 import org.col.assembly.AssemblyCoordinator;
 import org.col.command.es.IndexAllCmd;
@@ -10,9 +25,12 @@ import org.col.command.export.ExportCmd;
 import org.col.command.initdb.InitDbCmd;
 import org.col.command.neoshell.ShellCmd;
 import org.col.common.io.DownloadUtil;
-import org.col.config.WsServerConfig;
-import org.col.dw.PgApp;
+import org.col.dw.auth.AuthBundle;
+import org.col.dw.cors.CorsBundle;
+import org.col.dw.db.MybatisBundle;
 import org.col.dw.es.ManagedEsClient;
+import org.col.dw.health.NameParserHealthCheck;
+import org.col.dw.jersey.ColJerseyBundle;
 import org.col.es.EsClientFactory;
 import org.col.es.NameUsageIndexService;
 import org.col.es.NameUsageIndexServiceEs;
@@ -23,20 +41,29 @@ import org.col.importer.ContinuousImporter;
 import org.col.importer.ImportManager;
 import org.col.matching.NameIndex;
 import org.col.matching.NameIndexFactory;
+import org.col.parser.NameParser;
 import org.col.resources.*;
 import org.elasticsearch.client.RestClient;
+import org.gbif.dwc.terms.TermFactory;
+import org.glassfish.jersey.client.rx.RxClient;
+import org.glassfish.jersey.client.rx.java8.RxCompletionStageInvoker;
+import org.glassfish.jersey.client.spi.ConnectorProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
 import static org.col.es.EsConfig.ES_INDEX_NAME_USAGE;
 
-public class WsServer extends PgApp<WsServerConfig> {
+public class WsServer extends Application<WsServerConfig> {
   private static final Logger LOG = LoggerFactory.getLogger(WsServer.class);
   // milliseconds to wait during shutdown before forcing a shutdown
   public static final int MILLIS_TO_DIE = 12000;
   
-  private Object adminApi;
+  private final MybatisBundle mybatis = new MybatisBundle();
+  private final AuthBundle auth = new AuthBundle();
+  protected CloseableHttpClient httpClient;
+  protected RxClient<RxCompletionStageInvoker> jerseyRxClient;
+  
   
   public static void main(final String[] args) throws Exception {
     SLF4JBridgeHandler.install();
@@ -45,7 +72,20 @@ public class WsServer extends PgApp<WsServerConfig> {
   
   @Override
   public void initialize(Bootstrap<WsServerConfig> bootstrap) {
-    super.initialize(bootstrap);
+    // our mybatis classes
+    bootstrap.addBundle(mybatis);
+    // various custom jersey providers
+    bootstrap.addBundle(new ColJerseyBundle());
+    bootstrap.addBundle(new MultiPartBundle());
+    bootstrap.addBundle(new CorsBundle());
+    // authentication which requires the UserMapper from mybatis AFTER the mybatis bundle has run
+    bootstrap.addBundle(auth);
+    // register CoLTerms
+    TermFactory.instance().registerTermEnum(ColDwcTerm.class);
+    TermFactory.instance().registerTermEnum(ColTerm.class);
+    // use a custom jackson mapper
+    ObjectMapper om = ApiModule.configureMapper(Jackson.newMinimalObjectMapper());
+    bootstrap.setObjectMapper(om);
     
     // add some cli commands not accessible via the admin interface
     bootstrap.addCommand(new InitDbCmd());
@@ -59,14 +99,39 @@ public class WsServer extends PgApp<WsServerConfig> {
     return "ws-server";
   }
   
+  /**
+   * Make sure to call this after the app has been bootstrapped, otherwise its null.
+   * Methods to add tasks or healthchecks can be sure to use the session factory.
+   */
+  public SqlSessionFactory getSqlSessionFactory() {
+    return mybatis.getSqlSessionFactory();
+  }
+  
   @Override
   public void run(WsServerConfig cfg, Environment env) {
-    super.run(cfg, env);
+    // http client pool is managed via DW lifecycle already
+    httpClient = new HttpClientBuilder(env).using(cfg.client).build(getName());
   
-    // turn off user cache as longs as we cannot sync between JVMs
-    cfg.authCache = false;
+    // reuse the same http client pool also for jersey clients!
+    JerseyClientBuilder builder = new JerseyClientBuilder(env)
+        //.withProperty(CommonProperties.FEATURE_AUTO_DISCOVERY_DISABLE, Boolean.TRUE)
+        .using(cfg.client)
+        .using((ConnectorProvider) (cl, runtimeConfig) ->
+            new DropwizardApacheConnector(httpClient, requestConfig(cfg.client), cfg.client.isChunkedEncodingEnabled())
+        );
+    // build both syncroneous and reactive clients sharing the same thread pool
   
   
+    jerseyRxClient = builder.buildRx(getName(), RxCompletionStageInvoker.class);
+  
+    // finally provide the SqlSessionFactory & http client
+    auth.getIdentityService().setSqlSessionFactory(mybatis.getSqlSessionFactory());
+    auth.getIdentityService().setClient(httpClient);
+  
+    // name parser
+    NameParser.PARSER.register(env.metrics());
+    env.healthChecks().register("name-parser", new NameParserHealthCheck());
+    
     // ES
     final RestClient esClient = new EsClientFactory(cfg.es).createClient();
 
@@ -94,7 +159,7 @@ public class WsServer extends PgApp<WsServerConfig> {
     }
   
     // async importer
-    final ImportManager importManager = new ImportManager(cfg, env.metrics(), super.httpClient, getSqlSessionFactory(), ni, indexService, imgService);
+    final ImportManager importManager = new ImportManager(cfg, env.metrics(), httpClient, getSqlSessionFactory(), ni, indexService, imgService);
     env.lifecycle().manage(importManager);
     env.jersey().register(new ImporterResource(importManager, getSqlSessionFactory()));
   
@@ -115,6 +180,7 @@ public class WsServer extends PgApp<WsServerConfig> {
   
     // exporter
     AcExporter exporter = new AcExporter(cfg);
+    
     // assembly
     AssemblyCoordinator assembly = new AssemblyCoordinator(getSqlSessionFactory(), env.metrics());
     env.lifecycle().manage(assembly);
@@ -122,7 +188,7 @@ public class WsServer extends PgApp<WsServerConfig> {
     
     // resources
     env.jersey().register(new DataPackageResource());
-    env.jersey().register(new DatasetResource(getSqlSessionFactory(), imgService, cfg::scratchDir, new DownloadUtil(super.httpClient)));
+    env.jersey().register(new DatasetResource(getSqlSessionFactory(), imgService, cfg::scratchDir, new DownloadUtil(httpClient)));
     env.jersey().register(new DecisionResource(getSqlSessionFactory(), indexService));
     env.jersey().register(new DocsResource(cfg));
     env.jersey().register(new NameResource(nuss));
@@ -132,13 +198,25 @@ public class WsServer extends PgApp<WsServerConfig> {
     env.jersey().register(new SectorResource(getSqlSessionFactory()));
     env.jersey().register(new TaxonResource());
     env.jersey().register(new TreeResource());
-    env.jersey().register(new UserResource(getJwtCoder()));
+    env.jersey().register(new UserResource(auth.getJwtCodec()));
     env.jersey().register(new VerbatimResource());
     env.jersey().register(new VocabResource());
     env.jersey().register(new MatchingResource(ni));
     env.jersey().register(new AssemblyResource(assembly, getSqlSessionFactory(), exporter));
-    env.jersey().register(new AdminResource(getSqlSessionFactory(), new DownloadUtil(super.httpClient), cfg.normalizer, imgService));
+    env.jersey().register(new AdminResource(getSqlSessionFactory(), new DownloadUtil(httpClient), cfg.normalizer, imgService));
   
   }
   
+  /**
+   * Mostly copied from HttpClientBuilder
+   */
+  private static RequestConfig requestConfig(JerseyClientConfiguration cfg) {
+    final String cookiePolicy =
+        cfg.isCookiesEnabled() ? CookieSpecs.DEFAULT : CookieSpecs.IGNORE_COOKIES;
+    return RequestConfig.custom().setCookieSpec(cookiePolicy)
+        .setSocketTimeout((int) cfg.getTimeout().toMilliseconds())
+        .setConnectTimeout((int) cfg.getConnectionTimeout().toMilliseconds())
+        .setConnectionRequestTimeout((int) cfg.getConnectionRequestTimeout().toMilliseconds())
+        .build();
+  }
 }

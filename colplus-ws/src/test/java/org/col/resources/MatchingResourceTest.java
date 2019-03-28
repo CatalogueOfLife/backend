@@ -1,12 +1,10 @@
-package org.col.admin.resources;
+package org.col.resources;
 
 import io.dropwizard.testing.ResourceHelpers;
-import org.col.WsServer;
 import org.col.api.model.Name;
 import org.col.api.model.NameMatch;
 import org.col.api.vocab.MatchType;
-import org.col.config.WsServerConfig;
-import org.col.dw.DropwizardPgAppRule;
+import org.col.WsServerRule;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 import org.junit.ClassRule;
@@ -18,8 +16,7 @@ import static org.junit.Assert.assertNotNull;
 public class MatchingResourceTest {
   
   @ClassRule
-  public static final DropwizardPgAppRule<WsServerConfig> RULE =
-      new DropwizardPgAppRule<>(WsServer.class, ResourceHelpers.resourceFilePath("config-test.yaml"));
+  public static final WsServerRule RULE = new WsServerRule(ResourceHelpers.resourceFilePath("config-test.yaml"));
   
   @Test
   public void match() {

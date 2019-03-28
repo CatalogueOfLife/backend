@@ -6,7 +6,7 @@ import io.dropwizard.client.HttpClientBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.col.api.vocab.Users;
 import org.col.command.initdb.InitDbCmd;
-import org.col.config.WsServerConfig;
+import org.col.WsServerConfig;
 import org.col.db.PgSetupRule;
 import org.col.es.IndexConfig;
 import org.col.es.NameUsageIndexService;

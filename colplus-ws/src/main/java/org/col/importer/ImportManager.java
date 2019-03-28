@@ -32,7 +32,7 @@ import org.col.api.vocab.Users;
 import org.col.common.concurrent.ExecutorUtils;
 import org.col.common.concurrent.StartNotifier;
 import org.col.common.io.DownloadUtil;
-import org.col.config.WsServerConfig;
+import org.col.WsServerConfig;
 import org.col.dao.DatasetImportDao;
 import org.col.db.mapper.DatasetMapper;
 import org.col.db.mapper.DatasetPartitionMapper;
