@@ -59,7 +59,7 @@ public enum NomRelType {
    * ICN Art. 46.4: e.g. if this name object represents G. tomentosum Nutt. ex Seem.
    * then the related name should be G. tomentosum Nutt.
    */
-  BASED_ON(true, null, NomStatus.UNAVAILABLE),
+  BASED_ON(true, null, NomStatus.NOT_ESTABLISHED),
   
   /**
    * Current name is replacement for the homotypic related name.
@@ -72,7 +72,7 @@ public enum NomRelType {
    * ICZN: Article 60.3, 67.8, 72.7
    *
    */
-  REPLACEMENT_NAME(true, null, NomStatus.ILLEGITIMATE),
+  REPLACEMENT_NAME(true, null, NomStatus.UNACCEPTABLE),
   
   /**
    * The current name or spelling is conserved / protected against the related name
@@ -107,7 +107,7 @@ public enum NomRelType {
    * ICN: Article 53
    * ICZN: Chapter 12, Article 52.
    */
-  LATER_HOMONYM(false, NomStatus.ILLEGITIMATE, null),
+  LATER_HOMONYM(false, NomStatus.UNACCEPTABLE, null),
   
   /**
    * Current name was superfluous at its time of publication,
@@ -117,7 +117,7 @@ public enum NomRelType {
    * Includes the special case of isonyms which are identical names.
    * Zoology: unnecessary substitue name
    */
-  SUPERFLUOUS(true, NomStatus.ILLEGITIMATE, null),
+  SUPERFLUOUS(true, NomStatus.UNACCEPTABLE, null),
   
   /**
    * A relation indicating two homotypic names, i.e. objective or nomenclatural synonymy, but not further specifying why.

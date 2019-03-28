@@ -23,13 +23,15 @@ import javax.annotation.Nullable;
  * Distilled to the most important entries relevant for both codes and leaving the detailed
  * status and argmumentation to free text and the name relations instead.
  * <p>
- * As valid/invalid is very overloaded in used for different things in both codes we avoid the term entirely.
+ * We use BioCode terminology as much as possible, see https://github.com/Sp2000/colplus-backend/issues/318
+ * As valid/invalid is very overloaded and used for different things in both codes we avoid the term entirely.
  * <p>
  * The main purpose for this enumeration is to differ between available/unavailable and legitimate/illegitimate names
  * that can be used as a correct/"valid" name.
  * <p>
  * See WFO Contributor Guidelines,
  *
+ * @see <a href="https://archive.bgbm.org/IAPT/biocode/biocode.html#Table">BioCode</a>
  * @see <a href="https://dev.e-taxonomy.eu/redmine/projects/edit/wiki/NomenclaturalStatus">EDIT CDM</a>
  * @see <a href="http://wiki.tdwg.org/twiki/bin/view/UBIF/LinneanCoreNomenclaturalStatus">TDWG LinneanCoreNomenclaturalStatus</a>
  * @see <a href="http://www.biologybrowser.org/nomglos">Nomenclatural Glossary for Zoology</a>
@@ -55,21 +57,21 @@ public enum NomStatus {
    * - suppressed publication
    * - tautonym (ICN) e.g. Opuntia opuntia H.Karst.
    */
-  UNAVAILABLE("nomen invalidum", "nom. inval.", "unavailable"),
+  NOT_ESTABLISHED("nomen invalidum", "nom. inval.", "unavailable"),
   
   /**
    * Botany: Names that are validly published and legitimate
    * Zoology: Available name and potentially valid, i.e. not otherwise invalid
    * for any other objective reason, such as being a junior homonym.
    */
-  LEGITIMATE("nomen legitimum", null, "potentially valid"),
+  ACCEPTABLE("nomen legitimum", null, "potentially valid"),
   
   /**
-   * An available name and thus has nomenclatural standing.
+   * An established name and thus has nomenclatural standing.
    * But one that objectively contravenes some of the rules laid down by nomenclatural codes
    * and thus cannot be used as a name for an accepted taxon.
    * <p>
-   * The name could be illegitimate because:
+   * The name could be unacceptable because:
    * <ul>
    * <li>Botany: superfluous at its time of publication (article 52), i.e., the taxon (as represented by the type) already has a name</li>
    * <li>Botany: the name has already been applied to another plant (a homonym) articles 53 and 54</li>
@@ -78,11 +80,12 @@ public enum NomStatus {
    * <li>Zoology: suppressed name</li>
    * </ul>
    */
-  ILLEGITIMATE("nomen illegitimum", "nom. illeg.", "objectively invalid"),
+  UNACCEPTABLE("nomen illegitimum", "nom. illeg.", "objectively invalid"),
   
   /**
    * A scientific name that enjoys special nomenclatural protection,
    * i.e. a name conserved, protected or sanctioned in respective code.
+   * 
    * Names classified as available and valid by action of the ICZN or ICBN exercising its Plenary Powers .
    * Includes rulings to conserve junior/later synonyms in place of rejected forgotten names (nomen oblitum)
    * via "Reversal of Precedence" in accordance with ICZN Article 23.9.1.
@@ -181,7 +184,7 @@ public enum NomStatus {
    * @return true if the name status indicates that it is validly published / available.
    */
   public boolean isAvailable() {
-    return this != CHRESONYM && this != MANUSCRIPT && this != UNAVAILABLE;
+    return this != CHRESONYM && this != MANUSCRIPT && this != NOT_ESTABLISHED;
   }
   
   /**
@@ -189,6 +192,6 @@ public enum NomStatus {
    * It excludes doubtful or unevaluated names.
    */
   public boolean isLegitimate() {
-    return this == LEGITIMATE || this == CONSERVED;
+    return this == ACCEPTABLE || this == CONSERVED;
   }
 }

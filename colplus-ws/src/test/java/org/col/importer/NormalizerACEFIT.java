@@ -192,14 +192,14 @@ public class NormalizerACEFIT extends NormalizerITBase {
       assertEquals("Engl.", u.usage.getName().authorshipComplete());
       assertEquals("nom.illeg.; superfluous at its time of publication", u.usage.getName().getRemarks());
       assertEquals("Markus non. A.lancea.", u.usage.getAccordingTo());
-      assertEquals(NomStatus.ILLEGITIMATE, u.usage.getName().getNomStatus());
+      assertEquals(NomStatus.UNACCEPTABLE, u.usage.getName().getNomStatus());
   
       u = usageByID("11");
       assertEquals("Abies alba", u.usage.getName().getScientificName());
       assertEquals("Mill.", u.usage.getName().authorshipComplete());
       assertEquals("valid", u.usage.getName().getRemarks());
       assertEquals("non Parolly", u.usage.getAccordingTo());
-      assertEquals(NomStatus.LEGITIMATE, u.usage.getName().getNomStatus());
+      assertEquals(NomStatus.ACCEPTABLE, u.usage.getName().getNomStatus());
     }
   }
   

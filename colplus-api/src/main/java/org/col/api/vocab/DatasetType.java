@@ -30,5 +30,11 @@ public enum DatasetType {
    */
   PERSONAL,
   
+  /**
+   * A taxonomic checklist focussed on providing OTU identifier backed by sequences,
+   * usually mixed with classic Linnean classifications.
+   */
+  OTU,
+
   OTHER;
 }

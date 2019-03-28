@@ -780,7 +780,7 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
     NameUsageWrapper nuw2 = minimalNameUsage();
     nuw2.getUsage().getName().setNomStatus(NomStatus.REJECTED);
     NameUsageWrapper nuw3 = minimalNameUsage();
-    nuw3.getUsage().getName().setNomStatus(NomStatus.UNAVAILABLE);
+    nuw3.getUsage().getName().setNomStatus(NomStatus.NOT_ESTABLISHED);
     NameUsageWrapper nuw4 = minimalNameUsage();
     nuw4.getUsage().getName().setNomStatus(null);
 
@@ -797,7 +797,7 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
 
     nuw1.getUsage().getName().setNomStatus(NomStatus.CHRESONYM);
     nuw2.getUsage().getName().setNomStatus(NomStatus.REJECTED);
-    nuw3.getUsage().getName().setNomStatus(NomStatus.UNAVAILABLE);
+    nuw3.getUsage().getName().setNomStatus(NomStatus.NOT_ESTABLISHED);
     nuw4.getUsage().getName().setNomStatus(null);
     List<NameUsageWrapper> expected = Arrays.asList(nuw3);
 
@@ -814,7 +814,7 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
     NameUsageWrapper nuw2 = minimalNameUsage();
     nuw2.getUsage().getName().setNomStatus(NomStatus.REJECTED);
     NameUsageWrapper nuw3 = minimalNameUsage();
-    nuw3.getUsage().getName().setNomStatus(NomStatus.UNAVAILABLE);
+    nuw3.getUsage().getName().setNomStatus(NomStatus.NOT_ESTABLISHED);
     NameUsageWrapper nuw4 = minimalNameUsage();
     nuw4.getUsage().getName().setNomStatus(null);
 
@@ -833,7 +833,7 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
 
     nuw1.getUsage().getName().setNomStatus(NomStatus.CHRESONYM);
     nuw2.getUsage().getName().setNomStatus(NomStatus.REJECTED);
-    nuw3.getUsage().getName().setNomStatus(NomStatus.UNAVAILABLE);
+    nuw3.getUsage().getName().setNomStatus(NomStatus.NOT_ESTABLISHED);
     nuw4.getUsage().getName().setNomStatus(null);
     List<NameUsageWrapper> expected = Arrays.asList(nuw1, nuw2, nuw4);
 
