@@ -1,2 +1,2 @@
-GBIFAuthenticationFactory
-MapAuthenticationFactory
+org.col.dw.auth.gbif.GBIFAuthenticationFactory
+org.col.dw.auth.map.MapAuthenticationFactory

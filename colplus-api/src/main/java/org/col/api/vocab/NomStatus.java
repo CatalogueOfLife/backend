@@ -85,7 +85,7 @@ public enum NomStatus {
   /**
    * A scientific name that enjoys special nomenclatural protection,
    * i.e. a name conserved, protected or sanctioned in respective code.
-   * 
+   *
    * Names classified as available and valid by action of the ICZN or ICBN exercising its Plenary Powers .
    * Includes rulings to conserve junior/later synonyms in place of rejected forgotten names (nomen oblitum)
    * via "Reversal of Precedence" in accordance with ICZN Article 23.9.1.
