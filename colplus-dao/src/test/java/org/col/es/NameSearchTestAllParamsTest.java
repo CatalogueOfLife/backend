@@ -793,7 +793,7 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
     refreshIndex(client, indexName);
 
     NameSearchRequest req = new NameSearchRequest();
-    req.addFilter(NOM_STATUS, "unavailable");
+    req.addFilter(NOM_STATUS, "not established");
 
     nuw1.getUsage().getName().setNomStatus(NomStatus.CHRESONYM);
     nuw2.getUsage().getName().setNomStatus(NomStatus.REJECTED);
