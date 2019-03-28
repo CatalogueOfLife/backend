@@ -3,6 +3,7 @@ package org.col.dw.auth;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.UUID;
 
 import io.jsonwebtoken.*;
 import org.col.api.model.ColUser;
@@ -23,13 +24,14 @@ public class JwtCodec {
   public String generate(ColUser user) throws JwtException {
     LocalDateTime now = LocalDateTime.now();
     LOG.info("Generating new token for {} {}", user.getUsername(), user.getKey());
-    return Jwts.builder()
+    JwtBuilder builder = Jwts.builder()
+        .setId(UUID.randomUUID().toString())
         .setIssuer(ISSUER)
         .setIssuedAt(DateUtils.toDate(now))
         .setSubject(user.getKey().toString())
         .setExpiration(DateUtils.toDate(now.plus(EXPIRE_IN_DAYS, ChronoUnit.DAYS)))
-        .signWith(SignatureAlgorithm.HS256, signingKey)
-        .compact();
+        .signWith(SignatureAlgorithm.HS256, signingKey);
+    return builder.compact();
   }
   
   public Jws<Claims> parse(String token) throws JwtException {
