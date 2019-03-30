@@ -38,7 +38,6 @@ abstract class NormalizerITBase {
   
   protected NeoDb store;
   private NormalizerConfig cfg;
-  private Path dwca;
   private final DataFormat format;
   
   NormalizerITBase(DataFormat format) {

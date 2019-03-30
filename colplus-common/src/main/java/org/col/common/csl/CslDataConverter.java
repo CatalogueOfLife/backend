@@ -1,21 +1,31 @@
 package org.col.common.csl;
 
+import java.io.IOException;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
 import de.undercouch.citeproc.csl.CSLDate;
 import de.undercouch.citeproc.csl.CSLItemData;
 import de.undercouch.citeproc.csl.CSLName;
 import de.undercouch.citeproc.csl.CSLType;
+import de.undercouch.citeproc.helper.json.StringJsonBuilderFactory;
+import org.col.api.jackson.ApiModule;
 import org.col.api.model.CslData;
 import org.col.api.model.CslDate;
 import org.col.api.model.CslName;
 import org.col.api.vocab.CSLRefType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * Converrs a CslData instance to a CSLItemData instance.
+ * Converts a CslData instance to a CSLItemData instance.
  */
-class CslDataConverter {
+public class CslDataConverter {
+  private static final Logger LOG = LoggerFactory.getLogger(CslDataConverter.class);
+  private static final ObjectMapper OM = new ObjectMapper();
+  private static final StringJsonBuilderFactory FACTORY = new StringJsonBuilderFactory();
   
-  static CSLItemData toCSLItemData(CslData src) {
+  public static CSLItemData toCSLItemData(CslData src) {
     return new CSLItemData(src.getId(), toCSLType(src.getType()), src.getCategories(),
         src.getLanguage(), src.getJournalAbbreviation(), src.getTitleShort(),
         toCSLNames(src.getAuthor()), toCSLNames(src.getCollectionEditor()),
@@ -42,6 +52,19 @@ class CslDataConverter {
         src.getVersion(), src.getVolume(), src.getYearSuffix());
   }
   
+  public static CslData toCslData(CSLItemData src) {
+    if (src != null) {
+      String json = (String)src.toJson(FACTORY.createJsonBuilder());
+      try {
+        return ApiModule.MAPPER.readValue(json, CslData.class);
+      } catch (IOException e) {
+        LOG.error("Failed to convert CSLItemData JSON to CslData: {}", json, e);
+        throw new IllegalArgumentException(e);
+      }
+    }
+    return null;
+  }
+
   private static CSLName[] toCSLNames(CslName[] src) {
     if (src == null) {
       return null;

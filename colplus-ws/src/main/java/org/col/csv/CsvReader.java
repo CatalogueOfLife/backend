@@ -98,19 +98,22 @@ public class CsvReader {
    * @throws IOException
    */
   protected void discoverSchemas(String termPrefix) throws IOException {
-    for (Path df : listDataFiles(folder)) {
-      putSchema(buildSchema(df, termPrefix));
-    }
-    // also include an optional data subfolder
-    for (Path df : listDataFiles(folder.resolve("data"))) {
-      putSchema(buildSchema(df, termPrefix));
-    }
-    // finally allow an optional subfolder called like the format
+    // allow root directory, optional data subfolder or a subfolder called like the format
+    List<Path> dirs = Lists.newArrayList(folder, folder.resolve("data"));
     if (subfolder != null) {
-      for (Path df : listDataFiles(folder.resolve(subfolder))) {
+      dirs.add(folder.resolve(subfolder));
+    }
+    
+    for (Path dir : dirs) {
+      for (Path df : listDataFiles(dir)) {
         putSchema(buildSchema(df, termPrefix));
       }
+      discoverMoreSchemas(dir);
     }
+  }
+  
+  protected void discoverMoreSchemas(Path dir) throws IOException {
+    // override to discover more schemas in any of the supported folders
   }
   
   /**
@@ -377,12 +380,20 @@ public class CsvReader {
     return rt;
   }
   
-  private static Iterable<Path> listDataFiles(Path folder) throws IOException {
+  protected static Iterable<Path> listDataFiles(Path folder) throws IOException {
+    return listFiles(folder, SUFFICES);
+  }
+  
+  protected static Iterable<Path> listFiles(Path folder) throws IOException {
+    return listFiles(folder, null);
+  }
+  
+  private static Iterable<Path> listFiles(Path folder, final Set<String> allowedSuffices) throws IOException {
     if (folder == null || !Files.isDirectory(folder)) return Collections.emptyList();
     return Files.newDirectoryStream(folder, new DirectoryStream.Filter<Path>() {
       @Override
       public boolean accept(Path p) throws IOException {
-        return Files.isRegularFile(p) && SUFFICES.contains(PathUtils.getFileExtension(p));
+        return Files.isRegularFile(p) && (allowedSuffices == null || allowedSuffices.contains(PathUtils.getFileExtension(p)));
       }
     });
   }

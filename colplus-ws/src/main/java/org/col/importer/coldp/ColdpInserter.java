@@ -1,12 +1,14 @@
 package org.col.importer.coldp;
 
-import java.io.BufferedReader;
-import java.io.IOException;
+import java.io.*;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
@@ -15,18 +17,29 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
+import de.undercouch.citeproc.bibtex.BibTeXConverter;
+import org.col.api.datapackage.ColTerm;
+import org.col.api.jackson.ApiModule;
+import org.col.api.jackson.PermissiveEnumSerde;
+import org.col.api.model.CslData;
+import org.col.api.model.Dataset;
+import org.col.api.model.Reference;
+import org.col.api.model.VerbatimRecord;
+import org.col.api.vocab.DataFormat;
+import org.col.api.vocab.Issue;
+import org.col.api.vocab.License;
+import org.col.common.csl.CslDataConverter;
 import org.col.importer.NeoInserter;
 import org.col.importer.NormalizationFailedException;
+import org.col.importer.jackson.EnumParserSerde;
 import org.col.importer.neo.NeoDb;
 import org.col.importer.neo.NodeBatchProcessor;
 import org.col.importer.reference.ReferenceFactory;
-import org.col.importer.jackson.EnumParserSerde;
-import org.col.api.datapackage.ColTerm;
-import org.col.api.jackson.PermissiveEnumSerde;
-import org.col.api.model.Dataset;
-import org.col.api.vocab.DataFormat;
-import org.col.api.vocab.License;
 import org.col.parser.LicenseParser;
+import org.gbif.dwc.terms.Term;
+import org.gbif.dwc.terms.TermFactory;
+import org.gbif.dwc.terms.UnknownTerm;
+import org.jbibtex.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,6 +50,11 @@ public class ColdpInserter extends NeoInserter {
 
   private static final Logger LOG = LoggerFactory.getLogger(ColdpInserter.class);
   private static final List<String> METADATA_FILENAMES = ImmutableList.of("metadata.yaml", "metadata.yml");
+  private static final String BIBTEX_NS = "http://bibtex.org/";
+  private static final Term BIBTEX_CLASS_TERM = new UnknownTerm(URI.create(BIBTEX_NS), "BibTeX", true);
+  private static final Term CSLJSON_CLASS_TERM = new UnknownTerm(URI.create("http://citationstyles.org"), "CSL-JSON", true);
+  private static final TypeReference<List<CslData>> CSLDATA_TYPE = new TypeReference<List<CslData>>() {
+  };
   private static final ObjectMapper OM;
   private static final ObjectReader DATASET_READER;
   static {
@@ -45,6 +63,9 @@ public class ColdpInserter extends NeoInserter {
         .registerModule(new JavaTimeModule())
         .registerModule(new ColdpYamlModule());
     DATASET_READER = OM.readerFor(Dataset.class);
+  
+    TermFactory.instance().registerTerm(BIBTEX_CLASS_TERM);
+    TermFactory.instance().registerTerm(CSLJSON_CLASS_TERM);
   }
   
   private ColdpInterpreter inter;
@@ -58,7 +79,7 @@ public class ColdpInserter extends NeoInserter {
    * quick check to see if all required files are existing.
    */
   @Override
-  public void batchInsert() throws NormalizationFailedException {
+  protected void batchInsert() throws NormalizationFailedException {
     try {
       inter = new ColdpInterpreter(store.getDataset(), reader.getMappingFlags(), refFactory, store);
 
@@ -68,7 +89,11 @@ public class ColdpInserter extends NeoInserter {
           inter::interpretReference,
           store::create
       );
-
+  
+      // insert CSL-JSON references
+      // insert BibTex references
+      insertExtendedReferences();
+      
       // name & relations
       insertEntities(reader, ColTerm.Name,
           inter::interpretName,
@@ -116,6 +141,77 @@ public class ColdpInserter extends NeoInserter {
       
     } catch (RuntimeException e) {
       throw new NormalizationFailedException("Failed to read ColDP files", e);
+    }
+  }
+  
+  private void insertExtendedReferences() {
+    ColdpReader coldp = (ColdpReader) reader;
+    if (coldp.hasExtendedReferences()) {
+      final int datasetKey = store.getDataset().getKey();
+      if (coldp.getBibtexFile() != null) {
+        insertBibTex(datasetKey, coldp.getBibtexFile());
+      }
+      if (coldp.getCslJsonFile() != null) {
+        insertCslJson(datasetKey, coldp.getCslJsonFile());
+      }
+    }
+  }
+  
+  private Term bibTexTerm(String name) {
+    return TermFactory.instance().findPropertyTerm(BIBTEX_NS + name);
+  }
+  
+  private void insertBibTex(final int datasetKey, File f) {
+    try {
+      InputStream is = new FileInputStream(f);
+      BibTeXConverter bc = new BibTeXConverter();
+      BibTeXDatabase db = bc.loadDatabase(is);
+      bc.toItemData(db).forEach((id, cslItem) -> {
+        BibTeXEntry bib = db.getEntries().get(new Key(id));
+        VerbatimRecord v = new VerbatimRecord();
+        v.setType(BIBTEX_CLASS_TERM);
+        v.setDatasetKey(datasetKey);
+        v.setFile(f.getName());
+        for (Map.Entry<Key, Value> field : bib.getFields().entrySet()) {
+          v.put(bibTexTerm(field.getKey().getValue()), field.getValue().toUserString());
+        }
+        store.put(v);
+  
+        try {
+          CslData csl = CslDataConverter.toCslData(cslItem);
+          csl.setId(id); // maybe superfluous but safe
+          Reference ref = refFactory.fromCsl(csl);
+          ref.setVerbatimKey(v.getKey());
+          store.create(ref);
+
+        } catch (RuntimeException e) {
+          v.addIssue(Issue.UNPARSABLE_REFERENCE);
+          LOG.warn("Failed to convert CslDataConverter into Reference: {}", e.getMessage(), e);
+          store.put(v);
+        }
+      });
+    } catch (IOException | ParseException e) {
+      LOG.error("Unable to read BibTex file {}", f, e);
+    }
+  }
+  
+  private void insertCslJson(int datasetKey, File f) {
+    try {
+
+      List<CslData> cslData = ApiModule.MAPPER.readValue(f, CSLDATA_TYPE);
+      cslData.forEach(csl -> {
+        VerbatimRecord v = new VerbatimRecord();
+        v.setType(CSLJSON_CLASS_TERM);
+        v.setDatasetKey(datasetKey);
+        v.setFile(f.getName());
+        store.put(v);
+  
+        Reference ref = refFactory.fromCsl(csl);
+        ref.setVerbatimKey(v.getKey());
+        store.create(ref);
+      });
+    } catch (IOException e) {
+      LOG.error("Unable to read CSL-JSON file {}", f, e);
     }
   }
 

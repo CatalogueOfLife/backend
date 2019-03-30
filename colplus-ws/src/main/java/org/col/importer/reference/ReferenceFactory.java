@@ -4,7 +4,6 @@ import java.time.LocalDate;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import javax.annotation.Nullable;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -13,6 +12,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.col.api.model.*;
 import org.col.api.vocab.Issue;
 import org.col.common.date.FuzzyDate;
+import org.col.common.util.ObjectUtils;
+import org.col.importer.neo.NeoDb;
 import org.col.parser.DateParser;
 import org.col.parser.UnparsableException;
 import org.slf4j.Logger;
@@ -33,8 +34,12 @@ public class ReferenceFactory {
   private static final CharSet PUNCTUATIONS = CharSet.getInstance(".?!;:,");
 
   private final Integer datasetKey;
-  private ReferenceStore store;
+  private final ReferenceStore store;
   
+  public ReferenceFactory(NeoDb db) {
+    this(db.getDataset().getKey(), db);
+  }
+
   public ReferenceFactory(Integer datasetKey, ReferenceStore store) {
     this.datasetKey = datasetKey;
     this.store = store;
@@ -86,6 +91,28 @@ public class ReferenceFactory {
     }
     return ref;
   }
+  
+  public Reference fromCsl(CslData csl) {
+    Reference ref = newReference(csl.getId());
+    ref.setCsl(csl);
+    //TODO: generate default citation string
+    updateIntYearFromCsl(ref);
+    return ref;
+  }
+  
+  public static void updateIntYearFromCsl(Reference ref) {
+    if (ref.getCsl().getIssued() != null) {
+      CslDate issued = ref.getCsl().getIssued();
+      if (issued.getDateParts() != null) {
+        ref.setYear(ref.getCsl().getIssued().getDateParts()[0][0]);
+      } else if (issued.getRaw() != null || issued.getLiteral() != null) {
+        Integer year = parseYear(ObjectUtils.coalesce(issued.getRaw(), issued.getLiteral()));
+        ref.setYear(year);
+      }
+    }
+  }
+  
+  
   
   public Reference fromCol(String id, String authors, String year, String title, String source, String doi, String link, IssueContainer issues) {
     Reference ref = fromACEF(id, authors, year, title, source, issues);
@@ -292,7 +319,7 @@ public class ReferenceFactory {
     }
   }
 
-  private Reference newReference(String id) {
+  public Reference newReference(String id) {
     Reference ref = new Reference();
     ref.setId(id);
     ref.setDatasetKey(datasetKey);

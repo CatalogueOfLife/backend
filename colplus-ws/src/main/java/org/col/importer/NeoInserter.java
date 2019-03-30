@@ -48,7 +48,7 @@ public abstract class NeoInserter {
     this.refFactory = refFactory;
   }
   
-  final void insertAll() throws NormalizationFailedException {
+  public final void insertAll() throws NormalizationFailedException {
     // the key will be preserved by the store
     Optional<Dataset> d = readMetadata();
     d.ifPresent(store::put);
@@ -165,9 +165,9 @@ public abstract class NeoInserter {
     });
   }
   
-  public abstract void batchInsert() throws NormalizationFailedException;
+  protected abstract void batchInsert() throws NormalizationFailedException;
   
-  public void postBatchInsert() throws NormalizationFailedException {
+  protected void postBatchInsert() throws NormalizationFailedException {
     // nothing by default
   }
   

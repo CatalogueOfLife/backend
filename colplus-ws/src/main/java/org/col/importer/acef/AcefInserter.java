@@ -50,7 +50,7 @@ public class AcefInserter extends NeoInserter {
    * quick check to see if all required files are existing.
    */
   @Override
-  public void batchInsert() throws NormalizationFailedException {
+  protected void batchInsert() throws NormalizationFailedException {
     try {
       inter = new AcefInterpreter(store.getDataset(), reader.getMappingFlags(), refFactory, store);
 
@@ -100,7 +100,7 @@ public class AcefInserter extends NeoInserter {
   }
   
   @Override
-  public void postBatchInsert() throws NormalizationFailedException {
+  protected void postBatchInsert() throws NormalizationFailedException {
     try (Transaction tx = store.getNeo().beginTx()){
       reader.stream(AcefTerm.NameReferencesLinks).forEach(this::addReferenceLink);
       tx.success();

@@ -21,7 +21,7 @@ import javax.annotation.Nullable;
  * Vocabulary for the nomenclatural status of a name.
  * <p>
  * Distilled to the most important entries relevant for both codes and leaving the detailed
- * status and argmumentation to free text and the name relations instead.
+ * status and argumentation to free text and the name relations instead.
  * <p>
  * We use BioCode terminology as much as possible, see https://github.com/Sp2000/colplus-backend/issues/318
  * As valid/invalid is very overloaded and used for different things in both codes we avoid the term entirely.

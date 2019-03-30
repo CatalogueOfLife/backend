@@ -1,15 +1,17 @@
 package org.col.importer.coldp;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.Set;
 
 import com.google.common.collect.ImmutableSet;
-import org.col.importer.NormalizationFailedException;
 import org.col.api.datapackage.ColTerm;
+import org.col.common.io.PathUtils;
 import org.col.csv.CsvReader;
 import org.col.csv.Schema;
+import org.col.importer.NormalizationFailedException;
 import org.gbif.dwc.terms.TermFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +33,9 @@ public class ColdpReader extends CsvReader {
     // make sure we are aware of ColTerms
     TermFactory.instance().registerTermEnum(ColTerm.class);
   }
+  
+  private File bibtex;
+  private File cslJson;
 
   private ColdpReader(Path folder) throws IOException {
     super(folder, "col", "coldp");
@@ -38,6 +43,29 @@ public class ColdpReader extends CsvReader {
 
   public static ColdpReader from(Path folder) throws IOException {
     return new ColdpReader(folder);
+  }
+  
+  @Override
+  protected void discoverMoreSchemas(Path dir) throws IOException {
+    // spot bibtex & csl-json
+    for (Path df : listFiles(dir)) {
+      if (PathUtils.getFilename(df).equalsIgnoreCase("reference.bib")) {
+        bibtex  = df.toFile();
+        LOG.info("BibTeX file found: {}", bibtex.getAbsolutePath());
+      
+      } else if (PathUtils.getFilename(df).equalsIgnoreCase("reference.json")) {
+        cslJson = df.toFile();
+        LOG.info("CSL-JSON file found: {}", cslJson.getAbsolutePath());
+      }
+    }
+  }
+  
+  public boolean hasExtendedReferences() {
+    return bibtex != null || cslJson != null;
+  }
+
+  private boolean hasReferences() {
+    return hasExtendedReferences() || hasSchema(ColTerm.Reference);
   }
   
   protected void validate() throws NormalizationFailedException.SourceInvalidException {
@@ -62,7 +90,7 @@ public class ColdpReader extends CsvReader {
     requireSchema(ColTerm.Name);
   
     // reference dependencies
-    if (!hasSchema(ColTerm.Reference)) {
+    if (!hasReferences()) {
       LOG.warn("No Reference mapped! Disallow referenceIDs");
       disallow(ColTerm.Name, ColTerm.publishedInID);
       disallow(ColTerm.NameRel, ColTerm.publishedInID);
@@ -112,5 +140,12 @@ public class ColdpReader extends CsvReader {
     
     reportMissingSchemas(ColTerm.class);
   }
-
+  
+  public File getBibtexFile() {
+    return bibtex;
+  }
+  
+  public File getCslJsonFile() {
+    return cslJson;
+  }
 }

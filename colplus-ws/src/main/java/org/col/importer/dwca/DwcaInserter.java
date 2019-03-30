@@ -34,7 +34,7 @@ public class DwcaInserter extends NeoInserter {
    * Before inserting it does a quick check to see if all required files are existing.
    */
   @Override
-  public void batchInsert() throws NormalizationFailedException {
+  protected void batchInsert() throws NormalizationFailedException {
     try {
       inter = new DwcInterpreter(store.getDataset(), reader.getMappingFlags(), refFactory, store);
 
