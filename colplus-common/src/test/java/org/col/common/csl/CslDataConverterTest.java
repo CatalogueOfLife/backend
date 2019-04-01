@@ -46,6 +46,7 @@ public class CslDataConverterTest {
         .author("Markus", "Döring")
         .DOI("10.1093/database/baw125")
         .URL("gbif.org")
+        .ISSN("1758-0463")
         .originalTitle("my orig tittel")
         .build();
     CslData conv = CslDataConverter.toCslData(csl);
@@ -54,8 +55,9 @@ public class CslDataConverterTest {
     assertEquals(csl.getOriginalTitle(), conv.getOriginalTitle());
     
     //TODO: https://github.com/Sp2000/colplus-backend/issues/322
-    //assertEquals(csl.getDOI(), conv.getDOI());
-    //assertEquals(csl.getURL(), conv.getURL());
+    assertEquals(csl.getDOI(), conv.getDOI());
+    assertEquals(csl.getURL(), conv.getURL());
+    assertEquals(csl.getISSN(), conv.getISSN());
   }
   
 }

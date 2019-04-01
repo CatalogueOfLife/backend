@@ -16,14 +16,14 @@ public class Synonym extends DataEntity implements NameUsage {
   private String id;
   @Nonnull
   private Name name;
-  private TaxonomicStatus status;
-  private String accordingTo;
-  private String remarks;
   @Nonnull
   private Taxon accepted;
   @Nonnull
   private Origin origin;
   private Integer verbatimKey;
+  private TaxonomicStatus status;
+  private String accordingTo;
+  private String remarks;
   
   @Override
   public String getId() {

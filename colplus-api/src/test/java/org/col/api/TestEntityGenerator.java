@@ -422,6 +422,9 @@ public class TestEntityGenerator {
     CslData csl = (CslData) random.create(CslData.class, CslName.class, CslDate.class);
     csl.getOriginalDate().setDateParts(new int[][] {{1752, 4, 4}, {1752, 8, 4}});
     csl.getSubmitted().setDateParts(new int[][] {{1850, 6, 12}});
+    csl.setURL("http://gbif.org");
+    csl.setDOI("10.1093/database/baw125");
+    csl.setISSN("1758-0463");
     return csl;
   }
 

@@ -6,10 +6,7 @@ import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.deser.std.FromStringDeserializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -37,7 +34,8 @@ public class ApiModule extends SimpleModule {
   }
   
   public static ObjectMapper configureMapper(ObjectMapper mapper) {
-    
+    // keep all capital fields as such, dont lowercase them!!
+    mapper.enable(MapperFeature.USE_STD_BEAN_NAMING);
     mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
     
     mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
