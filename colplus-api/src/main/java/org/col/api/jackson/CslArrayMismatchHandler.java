@@ -12,7 +12,7 @@ import org.col.api.model.CslName;
 
 /**
  * Lenient handler for deserializing CSL-JSON which contains array of strings for some properties
- * from some source like CrossRef and Mendeley where the JSON schema mandates a simple String.
+ * from some source like CrossRef and Mendeley where the JSON schema mand ates a simple String.
  *
  * Uses the fist entry instead.
  */

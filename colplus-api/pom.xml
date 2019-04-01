@@ -16,6 +16,15 @@
 
     <name>CoL backend services (API)</name>
 
+    <build>
+        <testResources>
+            <testResource>
+                <directory>src/test/resources</directory>
+                <filtering>false</filtering>
+            </testResource>
+        </testResources>
+    </build>
+
     <dependencies>
         <!-- GBIF -->
         <dependency>
