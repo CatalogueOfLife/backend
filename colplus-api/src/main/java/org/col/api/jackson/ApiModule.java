@@ -45,7 +45,9 @@ public class ApiModule extends SimpleModule {
     mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
     
     mapper.registerModule(new ApiModule());
-
+  
+    mapper.addHandler(new CslArrayMismatchHandler());
+    
     return mapper;
   }
   

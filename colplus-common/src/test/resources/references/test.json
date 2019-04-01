@@ -577,7 +577,7 @@
       "cites": []
     },
     "score": 1.0,
-    "short-title": [],
+    "title-short": [ "GGBN Standard" ],
     "source": "Crossref",
     "subtitle": [],
     "title": "The Global Genome Biodiversity Network (GGBN) Data Standard specification",

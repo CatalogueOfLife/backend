@@ -12,7 +12,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.col.api.model.*;
 import org.col.api.vocab.Issue;
 import org.col.common.date.FuzzyDate;
-import org.col.common.util.ObjectUtils;
+import org.col.api.util.ObjectUtils;
 import org.col.importer.neo.NeoDb;
 import org.col.parser.DateParser;
 import org.col.parser.UnparsableException;

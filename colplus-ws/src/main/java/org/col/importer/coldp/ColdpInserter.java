@@ -8,8 +8,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.module.SimpleModule;
@@ -185,8 +187,8 @@ public class ColdpInserter extends NeoInserter {
           store.create(ref);
 
         } catch (RuntimeException e) {
-          v.addIssue(Issue.UNPARSABLE_REFERENCE);
           LOG.warn("Failed to convert CslDataConverter into Reference: {}", e.getMessage(), e);
+          v.addIssue(Issue.UNPARSABLE_REFERENCE);
           store.put(v);
         }
       });
@@ -197,19 +199,40 @@ public class ColdpInserter extends NeoInserter {
   
   private void insertCslJson(int datasetKey, File f) {
     try {
-
-      List<CslData> cslData = ApiModule.MAPPER.readValue(f, CSLDATA_TYPE);
-      cslData.forEach(csl -> {
+  
+      JsonNode jsonNode = ApiModule.MAPPER.readTree(f);
+      if (!jsonNode.isArray()) {
+        LOG.error("Unable to read CSL-JSON file {}. Array required", f);
+        return;
+      }
+      
+      for (JsonNode jn : jsonNode) {
         VerbatimRecord v = new VerbatimRecord();
         v.setType(CSLJSON_CLASS_TERM);
         v.setDatasetKey(datasetKey);
         v.setFile(f.getName());
         store.put(v);
-  
-        Reference ref = refFactory.fromCsl(csl);
-        ref.setVerbatimKey(v.getKey());
-        store.create(ref);
-      });
+        
+        try {
+          CslData csl = ApiModule.MAPPER.treeToValue(jn, CslData.class);
+          // make sure we have an ID!!!
+          if (csl.getId() == null) {
+            if (csl.getDOI() != null) {
+              csl.setId(csl.getDOI());
+            } else {
+              throw new IllegalArgumentException("Missing required CSL id field");
+            }
+          }
+          Reference ref = refFactory.fromCsl(csl);
+          ref.setVerbatimKey(v.getKey());
+          store.create(ref);
+          
+        } catch (JsonProcessingException | RuntimeException e) {
+          LOG.warn("Failed to convert verbatim csl json {} into Reference: {}", v.getKey(), e.getMessage(), e);
+          v.addIssue(Issue.UNPARSABLE_REFERENCE);
+          store.put(v);
+        }
+      }
     } catch (IOException e) {
       LOG.error("Unable to read CSL-JSON file {}", f, e);
     }

@@ -54,7 +54,6 @@ public class CslDataConverterTest {
     assertEquals(csl.getTitle(), conv.getTitle());
     assertEquals(csl.getOriginalTitle(), conv.getOriginalTitle());
     
-    //TODO: https://github.com/Sp2000/colplus-backend/issues/322
     assertEquals(csl.getDOI(), conv.getDOI());
     assertEquals(csl.getURL(), conv.getURL());
     assertEquals(csl.getISSN(), conv.getISSN());

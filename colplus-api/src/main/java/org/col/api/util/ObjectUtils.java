@@ -1,4 +1,4 @@
-package org.col.common.util;
+package org.col.api.util;
 
 /**
  *
