@@ -65,4 +65,14 @@ public interface TaxonMapper extends DatasetCRUDMapper<Taxon> {
   List<Taxon> foreignChildren(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
   
   int deleteBySector(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
+  
+  /**
+   *
+   * @param datasetKey the datasetKey of the catalogue
+   * @param id the taxon id
+   * @param dkey the datasetKey that sectors are counted for
+   * @param delta the change to apply to the count for the given datasetKey, can be negative
+   */
+  void incDatasetSectorCount(@Param("datasetKey") int datasetKey, @Param("id") String id, @Param("dkey") int dkey, @Param("delta") int delta);
+  
 }

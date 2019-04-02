@@ -12,6 +12,7 @@
         t.species_estimate,
         t.species_estimate_reference_id,
         (select count(*) from taxon_${datasetKey} where parent_id=t.id) AS child_count,
+        t.dataset_sectors,
         <include refid="org.col.db.mapper.NameMapper.minimalNameCols">
             <property name="alias" value="n"/>
             <property name="prefix" value=""/>
@@ -42,9 +43,16 @@
     <resultMap id="treeResultMap" type="org.col.api.model.TreeNode$TreeNodeMybatis" autoMapping="true">
         <id property="id" column="id" />
         <result property="status" column="provisional" typeHandler="org.col.db.type2.TaxonStatusTypeHandler" />
+        <result property="datasetSectors" column="dataset_sectors" typeHandler="org.col.db.type2.JsonIntMapHandler" />
         <association property="_name" javaType="Name" resultMap="org.col.db.mapper.NameMapper.nameResultMap" />
         <association property="decision" javaType="EditorialDecision" resultMap="org.col.db.mapper.DecisionMapper.decisionResultMap" columnPrefix="ed_"/>
     </resultMap>
+
+    <select id="get" resultMap="treeResultMap">
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
+        WHERE t.id = #{id}
+    </select>
 
     <select id="root" resultMap="treeResultMap">
         SELECT <include refid="SELECT" />

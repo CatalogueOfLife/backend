@@ -11,6 +11,8 @@ import org.col.api.model.TreeNode;
  */
 public interface TreeMapper {
   
+  TreeNode get(@Param("datasetKey") int datasetKey, @Param("id") String id);
+  
   List<TreeNode> root(@Param("datasetKey") int datasetKey, @Param("page") Page page);
 
   List<TreeNode> parents(@Param("datasetKey") int datasetKey, @Param("id") String id);

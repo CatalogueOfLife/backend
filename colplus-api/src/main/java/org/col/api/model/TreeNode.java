@@ -1,5 +1,6 @@
 package org.col.api.model;
 
+import java.util.Map;
 import java.util.Objects;
 
 import org.col.api.vocab.TaxonomicStatus;
@@ -7,6 +8,7 @@ import org.gbif.nameparser.api.Rank;
 
 /**
  * A drastic simplification of a taxon with just the minimum information used to render in a tree.
+ * Adds various additional infos to support the assembly tree.
  */
 public class TreeNode implements ID {
 
@@ -21,6 +23,7 @@ public class TreeNode implements ID {
   private String speciesEstimateReferenceId;
   private Integer sectorKey;
   private Decision decision;
+  private Map<Integer, Integer> datasetSectors;
   
   /**
    * Exposes a structured name instance as a full name with html markup
@@ -127,6 +130,14 @@ public class TreeNode implements ID {
     this.decision = decision;
   }
   
+  public Map<Integer, Integer> getDatasetSectors() {
+    return datasetSectors;
+  }
+  
+  public void setDatasetSectors(Map<Integer, Integer> datasetSectors) {
+    this.datasetSectors = datasetSectors;
+  }
+  
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -137,15 +148,17 @@ public class TreeNode implements ID {
         Objects.equals(id, treeNode.id) &&
         Objects.equals(parentId, treeNode.parentId) &&
         Objects.equals(name, treeNode.name) &&
-        Objects.equals(rank, treeNode.rank) &&
-        Objects.equals(status, treeNode.status) &&
+        rank == treeNode.rank &&
+        status == treeNode.status &&
         Objects.equals(speciesEstimate, treeNode.speciesEstimate) &&
         Objects.equals(speciesEstimateReferenceId, treeNode.speciesEstimateReferenceId) &&
-        Objects.equals(sectorKey, treeNode.sectorKey);
+        Objects.equals(sectorKey, treeNode.sectorKey) &&
+        Objects.equals(decision, treeNode.decision) &&
+        Objects.equals(datasetSectors, treeNode.datasetSectors);
   }
   
   @Override
   public int hashCode() {
-    return Objects.hash(datasetKey, id, parentId, name, rank, status, childCount, speciesEstimate, speciesEstimateReferenceId, sectorKey);
+    return Objects.hash(datasetKey, id, parentId, name, rank, status, childCount, speciesEstimate, speciesEstimateReferenceId, sectorKey, decision, datasetSectors);
   }
 }

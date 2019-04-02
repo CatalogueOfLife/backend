@@ -241,5 +241,10 @@
         DELETE FROM taxon_${datasetKey} WHERE sector_key = #{sectorKey}
     </delete>
 
+    <update id="incDatasetSectorCount">
+        UPDATE taxon_${datasetKey}
+        SET dataset_sectors = jsonb_set( coalesce(dataset_sectors, '{}'), '{"${dkey}"}', to_jsonb( coalesce( (dataset_sectors->'${dkey}')::int, 0) + ${delta} ), true)
+        WHERE id=#{id}
+    </update>
 
 </mapper>

@@ -12,7 +12,7 @@ import org.col.es.NameUsageIndexService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DecisionDao extends CrudIntDao<EditorialDecision> {
+public class DecisionDao extends ChangeCrudDao<EditorialDecision, DecisionMapper> {
   
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(DecisionDao.class);
@@ -25,10 +25,7 @@ public class DecisionDao extends CrudIntDao<EditorialDecision> {
   }
   
   @Override
-  public void create(EditorialDecision obj) {
-    try (SqlSession session = factory.openSession(true)) {
-      session.getMapper(DecisionMapper.class).create(obj);
-    }
+  protected void postCreate(EditorialDecision obj, DecisionMapper mapper, SqlSession session) {
     if (obj.getSubject().getId() != null) {
       indexService.indexTaxa(obj.getDatasetKey(), Lists.newArrayList(obj.getSubject().getId()));
     }
@@ -39,36 +36,21 @@ public class DecisionDao extends CrudIntDao<EditorialDecision> {
    * If the previous version referred to a different subject id also update that taxon.
    */
   @Override
-  public int update(EditorialDecision obj) {
-    try (SqlSession session = factory.openSession(true)) {
-      final List<String> ids = new ArrayList<>();
-      DecisionMapper mapper = session.getMapper(DecisionMapper.class);
-      
-      final EditorialDecision old = mapper.get(obj.getKey());
-      if (old != null && old.getSubject().getId() != null && !old.getSubject().getId().equals(obj.getSubject().getId())) {
-        ids.add(old.getSubject().getId());
-      }
-      
-      int changed = mapper.update(obj);
-      if (obj.getSubject().getId() != null) {
-        ids.add(obj.getSubject().getId());
-      }
-      
-      indexService.indexTaxa(obj.getDatasetKey(), ids);
-      return changed;
+  protected void postUpdate(EditorialDecision obj, EditorialDecision old, DecisionMapper mapper, SqlSession session) {
+    final List<String> ids = new ArrayList<>();
+    if (old != null && old.getSubject().getId() != null && !old.getSubject().getId().equals(obj.getSubject().getId())) {
+      ids.add(old.getSubject().getId());
     }
+    if (obj.getSubject().getId() != null) {
+      ids.add(obj.getSubject().getId());
+    }
+    indexService.indexTaxa(obj.getDatasetKey(), ids);
   }
   
   @Override
-  public int delete(int key) {
-    try (SqlSession session = factory.openSession(true)) {
-      DecisionMapper dm = session.getMapper(DecisionMapper.class);
-      EditorialDecision obj = dm.get(key);
-      int deleted = session.getMapper(DecisionMapper.class).delete(key);
-      if (obj != null && obj.getSubject().getId() != null) {
-        indexService.indexTaxa(obj.getDatasetKey(), Lists.newArrayList(obj.getSubject().getId()));
-      }
-      return deleted;
+  protected void postDelete(int key, EditorialDecision old, DecisionMapper mapper, SqlSession session) {
+    if (old != null && old.getSubject().getId() != null) {
+      indexService.indexTaxa(old.getDatasetKey(), Lists.newArrayList(old.getSubject().getId()));
     }
   }
   

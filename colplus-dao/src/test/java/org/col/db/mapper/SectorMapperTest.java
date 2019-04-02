@@ -60,7 +60,7 @@ public class SectorMapperTest extends CRUDIntMapperTest<Sector, SectorMapper> {
     return create();
   }
   
-  static Sector create() {
+  public static Sector create() {
     Sector d = new Sector();
     d.setDatasetKey(datasetKey);
     d.setMode(Sector.Mode.ATTACH);

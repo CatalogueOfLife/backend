@@ -358,6 +358,7 @@ CREATE TABLE taxon (
   species_estimate INTEGER,
   species_estimate_reference_id TEXT,
   remarks TEXT,
+  dataset_sectors JSONB,
   created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   created_by INTEGER NOT NULL,
   modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),

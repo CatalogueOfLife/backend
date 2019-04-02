@@ -38,10 +38,6 @@ public class CrudIntDao<T extends IntKey> implements CRUDInt<T> {
     }
   }
   
-  /**
-   * Updates the decision in Postgres and updates the ES index for the taxon linked to the subject id.
-   * If the previous version referred to a different subject id also update that taxon.
-   */
   @Override
   public int update(T obj) {
     try (SqlSession session = factory.openSession(true)) {
