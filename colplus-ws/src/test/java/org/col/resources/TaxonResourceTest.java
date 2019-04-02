@@ -24,7 +24,7 @@ import static org.junit.Assert.assertNotNull;
 public class TaxonResourceTest extends ResourceTestBase {
   private final int datasetKey = TestEntityGenerator.DATASET11.getKey();
   
-  static GenericType<ResultPage<? extends TreeNode>> RESP_TYPE = new GenericType<ResultPage<? extends TreeNode>>() {};
+  static GenericType<ResultPage<TreeNode>> RESP_TYPE = new GenericType<ResultPage<TreeNode>>() {};
   
   @Rule
   public InitMybatisRule initMybatisRule = InitMybatisRule.apple(RULE.getSqlSessionFactory());

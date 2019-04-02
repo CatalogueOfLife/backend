@@ -172,6 +172,9 @@ public class DatasetPager {
         case "INVENTORY_REGIONAL":
           d.setType(DatasetType.REGIONAL);
           break;
+        case "TREATMENT_ARTICLE":
+          d.setType(DatasetType.ARTICLE);
+          break;
         default:
           d.setType(DatasetType.OTHER);
         }

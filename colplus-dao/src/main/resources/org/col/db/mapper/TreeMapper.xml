@@ -6,7 +6,6 @@
 
     <sql id="SELECT">
         t.dataset_key,
-        t.sector_key,
         t.id,
         t.parent_id,
         t.provisional,
@@ -19,17 +18,14 @@
         </include>,
         <choose>
             <when test="datasetKey != @org.col.api.vocab.Datasets@DRAFT_COL">
-                <include refid="org.col.db.mapper.SectorMapper.SelectVar">
-                    <property name="alias" value="s."/>
-                    <property name="prefix" value="s_"/>
-                </include>,
+                s.key AS sector_key,
                 <include refid="org.col.db.mapper.DecisionMapper.SelectVar">
                     <property name="alias" value="ed."/>
                     <property name="prefix" value="ed_"/>
                 </include>
             </when>
             <otherwise>
-                NULL AS s_key,
+                t.sector_key,
                 NULL AS ed_key
             </otherwise>
         </choose>
@@ -48,7 +44,6 @@
         <result property="status" column="provisional" typeHandler="org.col.db.type2.TaxonStatusTypeHandler" />
         <association property="_name" javaType="Name" resultMap="org.col.db.mapper.NameMapper.nameResultMap" />
         <association property="decision" javaType="EditorialDecision" resultMap="org.col.db.mapper.DecisionMapper.decisionResultMap" columnPrefix="ed_"/>
-        <association property="sector" javaType="Sector" resultMap="org.col.db.mapper.SectorMapper.sectorResultMap" columnPrefix="s_"/>
     </resultMap>
 
     <select id="root" resultMap="treeResultMap">

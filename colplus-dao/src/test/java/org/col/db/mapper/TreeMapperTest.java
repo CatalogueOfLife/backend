@@ -26,6 +26,8 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
     assertEquals(dataset11, (int) tn.getDatasetKey());
     assertNotNull(tn.getId());
     assertNull(tn.getParentId());
+    // make sure we get the html markup
+    assertEquals("<i>Larus</i> <i>fuscus</i>", tn.getName());
   }
   
   @Test
@@ -57,7 +59,7 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
     sm.create(s2);
     commit();
     
-    List<? extends TreeNode> nodes = mapper().children(DRAFT_COL, "t1", new Page());
+    List<TreeNode> nodes = mapper().children(DRAFT_COL, "t1", new Page());
     assertEquals(1, nodes.size());
     noSectorKeys(nodes);
   
@@ -101,20 +103,18 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
     dm.create(d2);
 
     
-    List<? extends TreeNode> nodes = mapper().children(dataset11, "t1", new Page());
+    List<TreeNode> nodes = mapper().children(dataset11, "t1", new Page());
     assertEquals(1, nodes.size());
-    equals(s, nodes.get(0).getSector());
+    assertEquals(s.getKey(), nodes.get(0).getSectorKey());
     equals(d1, nodes.get(0).getDecision());
-    noSectorKeys(nodes);
     
     nodes = mapper().parents(dataset11, "t4");
-    noSectorKeys(nodes);
     assertEquals(4, nodes.size());
   
-    assertNull(nodes.get(0).getSector());
-    assertNull(nodes.get(1).getSector());
-    equals(s, nodes.get(2).getSector());
-    assertNull(nodes.get(3).getSector());
+    assertNull(nodes.get(0).getSectorKey());
+    assertNull(nodes.get(1).getSectorKey());
+    assertEquals(s.getKey(), nodes.get(2).getSectorKey());
+    assertNull(nodes.get(3).getSectorKey());
   
     assertNull(nodes.get(0).getDecision());
     equals(d2, nodes.get(1).getDecision());
@@ -131,7 +131,7 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
     assertEquals(TestEntityGenerator.nullifyDate(o1), TestEntityGenerator.nullifyDate(o2));
   }
   
-  private static List<? extends TreeNode> noSectorKeys(List<? extends TreeNode> nodes) {
+  private static List<TreeNode> noSectorKeys(List<TreeNode> nodes) {
     valid(nodes);
     for (TreeNode n : nodes) {
       assertNull(n.getSectorKey());
@@ -139,23 +139,15 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
     return nodes;
   }
   
-  private static List<? extends TreeNode> noSectors(List<? extends TreeNode> nodes) {
+  private static List<TreeNode> noSectors(List<TreeNode> nodes) {
     valid(nodes);
     for (TreeNode n : nodes) {
-      assertNull(n.getSector());
-    }
-    return nodes;
-  }
-  
-  private static List<? extends TreeNode> noDecisions(List<? extends TreeNode> nodes) {
-    valid(nodes);
-    for (TreeNode n : nodes) {
-      assertNull(n.getDecision());
+      assertNull(n.getSectorKey());
     }
     return nodes;
   }
 
-  private static List<? extends TreeNode> valid(List<? extends TreeNode> nodes) {
+  private static List<TreeNode> valid(List<TreeNode> nodes) {
     for (TreeNode n : nodes) {
       assertNotNull(n.getId());
       assertNotNull(n.getDatasetKey());

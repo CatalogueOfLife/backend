@@ -12,7 +12,7 @@ import static org.junit.Assert.assertEquals;
 
 public class TreeResourceTest extends ResourceTestBase {
   
-  static GenericType<ResultPage<? extends TreeNode>> RESP_TYPE = new GenericType<ResultPage<? extends TreeNode>>() {};
+  static GenericType<ResultPage<TreeNode>> RESP_TYPE = new GenericType<ResultPage<TreeNode>>() {};
   
   @Rule
   public InitMybatisRule initMybatisRule = InitMybatisRule.apple(RULE.getSqlSessionFactory());
@@ -23,8 +23,10 @@ public class TreeResourceTest extends ResourceTestBase {
   
   @Test
   public void get() {
-    ResultPage<? extends TreeNode> root = base.path("/11/tree").request().get(RESP_TYPE);
+    ResultPage<TreeNode> root = base.path("/11/tree").request().get(RESP_TYPE);
     assertEquals(2, root.size());
+    // make sure we get the html markup
+    assertEquals("<i>Larus</i> <i>fuscus</i>", root.getResult().get(0).getName());
   }
   
 }

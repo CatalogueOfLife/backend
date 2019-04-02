@@ -20,10 +20,11 @@ public class TreeNode implements ID {
   private Integer speciesEstimate;
   private String speciesEstimateReferenceId;
   private Integer sectorKey;
-  private Sector sector;
   private Decision decision;
   
   /**
+   * Exposes a structured name instance as a full name with html markup
+   * instead of the regular name property.
    * Only to be used by mybatis mappers, nowhere else!!!
    */
   public static class TreeNodeMybatis extends TreeNode {
@@ -31,9 +32,10 @@ public class TreeNode implements ID {
   
     @Override
     public String getName() {
-      return _name == null ? null :_name.canonicalNameCompleteHtml();
+      return _name == null ? super.name :_name.canonicalNameCompleteHtml();
     }
   }
+  
   
   public Integer getDatasetKey() {
     return datasetKey;
@@ -115,14 +117,6 @@ public class TreeNode implements ID {
   
   public void setSectorKey(Integer sectorKey) {
     this.sectorKey = sectorKey;
-  }
-  
-  public Sector getSector() {
-    return sector;
-  }
-  
-  public void setSector(Sector sector) {
-    this.sector = sector;
   }
   
   public Decision getDecision() {
