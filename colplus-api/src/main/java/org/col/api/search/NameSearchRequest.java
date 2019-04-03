@@ -229,6 +229,14 @@ public class NameSearchRequest {
     this.highlight = highlight;
   }
 
+  public boolean isReverse() {
+    return reverse;
+  }
+
+  public void setReverse(boolean reverse) {
+    this.reverse = reverse;
+  }
+
   @JsonIgnore
   public boolean isEmpty() {
     return content == null
