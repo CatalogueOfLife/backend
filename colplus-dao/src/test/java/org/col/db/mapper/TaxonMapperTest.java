@@ -259,7 +259,8 @@ public class TaxonMapperTest extends DatasetCRUDTest<Taxon, TaxonMapper> {
   public void incDatasetSectorCount() throws Exception {
     mapper().incDatasetSectorCount(Datasets.DRAFT_COL, sector.getTarget().getId(), sector.getDatasetKey(), 7);
     TreeNode n = getTreeNode(sector.getTarget().getId());
-    assertEquals(7, (int) n.getDatasetSectors().get(sector.getDatasetKey()));
+    // t4 already has count=1 for dataset 11 when draft tree gets populated
+    assertEquals(8, (int) n.getDatasetSectors().get(sector.getDatasetKey()));
   }
   
   private TreeNode getTreeNode(String id) {

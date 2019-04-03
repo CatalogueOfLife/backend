@@ -72,7 +72,6 @@
         <name-parser.version>3.1.7-SNAPSHOT</name-parser.version>
         <neo4j-algorithms.version>3.4.0.0</neo4j-algorithms.version>
         <neo4j.version>3.4.3</neo4j.version>
-        <postgresql-embedded.version>2.10</postgresql-embedded.version>
         <postgresql.version>42.2.5</postgresql.version>
         <stax2.version>3.1.4</stax2.version>
         <tika.version>1.20</tika.version>
@@ -96,13 +95,13 @@
         <maven-surefire-plugin.version>2.22.1</maven-surefire-plugin.version>
         <versions-maven-plugin.version>2.4</versions-maven-plugin.version>
 
-        <!-- default maven properties to define the postgres server for running tests It uses an embedded,
-            cached postgres server in mavens build directory To use a different server please activate a personal
-            profile -->
-        <db.host>${project.build.directory}/pg-colplus</db.host>
+        <!-- default maven properties to define the postgres server for running tests.
+        To use a different server please activate a personal profile -->
+        <db.host>localhost</db.host>
         <db.database>colplus</db.database>
         <db.user>postgres</db.user>
         <db.password>postgres</db.password>
+
         <gbif.api>https://api.gbif.org/v1/</gbif.api>
         <gbif.appkey>col.plus</gbif.appkey>
         <gbif.secret>secret</gbif.secret>
@@ -527,12 +526,6 @@
                 <groupId>org.assertj</groupId>
                 <artifactId>assertj-core</artifactId>
                 <version>${assertj.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>ru.yandex.qatools.embed</groupId>
-                <artifactId>postgresql-embedded</artifactId>
-                <version>${postgresql-embedded.version}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>

@@ -140,11 +140,6 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>ru.yandex.qatools.embed</groupId>
-			<artifactId>postgresql-embedded</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
 			<groupId>org.col</groupId>
 			<artifactId>colplus-api</artifactId>
 			<classifier>tests</classifier>

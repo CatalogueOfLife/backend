@@ -24,10 +24,10 @@ public class PgConfig extends PgDbConfig {
   public static final String DECISIONS_FILE = "org/col/db/decisions.sql";
   
   /**
-   * Use null or an absolute file path starting with / to indicate an embedded postgres server
-   * If a path is given it is used to cache the postgres server installation, but not its data.
+   * Postgres server host. Defaults to localhost
    */
-  public String host;
+  public String host = "localhost";
+
   public int port = 5432;
   
   @Min(1)
@@ -87,13 +87,6 @@ public class PgConfig extends PgDbConfig {
   
   @Min(1000)
   public int connectionTimeout = sec(5);
-  
-  /**
-   * @return true if an embedded database should be used
-   */
-  public boolean embedded() {
-    return host == null || host.startsWith("/");
-  }
   
   /**
    * @return converted minutes in milliseconds
