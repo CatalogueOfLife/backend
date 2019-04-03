@@ -67,10 +67,6 @@ public class PgSetupRule extends ExternalResource {
   }
   
   public PgConnection connect() throws SQLException {
-    if (dataSource != null) {
-      LOG.debug("Connection via pool");
-      return (PgConnection) dataSource.getConnection();
-    }
     LOG.debug("Connection directly via JDBC");
     return (PgConnection) cfg.connect();
   }
