@@ -101,25 +101,47 @@ public class InitDbCmd extends ConfiguredCommand<WsServerConfig> {
         setupStandardPartitions(session);
         session.commit();
       }
-      
+  
+      Thread thread = new Thread(new DataInit(cfg, factory), "initdb-data");
+      LOG.info("Start non blocking insert of default data in separate thread");
+      thread.start();
+    }
+  }
+  
+  static class DataInit implements Runnable {
+    private final WsServerConfig cfg;
+    private final SqlSessionFactory factory;
+  
+    public DataInit(WsServerConfig cfg, SqlSessionFactory factory) {
+      this.cfg = cfg;
+      this.factory = factory;
+    }
+  
+    @Override
+    public void run() {
       try (Connection con = cfg.db.connect()) {
         ScriptRunner runner = PgConfig.scriptRunner(con);
-        // add known datasets
+        LOG.info("Insert known datasets");
         exec(PgConfig.DATASETS_FILE, runner, con, Resources.getResourceAsReader(PgConfig.DATASETS_FILE));
-        // add known manually curated sectors
+
+        LOG.info("Add known manually curated sectors");
         exec(PgConfig.SECTORS_FILE, runner, con, Resources.getResourceAsReader(PgConfig.SECTORS_FILE));
-        // add known decisions
+
+        LOG.info("Add known decisions");
         exec(PgConfig.DECISIONS_FILE, runner, con, Resources.getResourceAsReader(PgConfig.DECISIONS_FILE));
-        // add draft hierarchy linked to sectors
+
         loadDraftHierarchy(con);
+
+        processDraftHierarchy(cfg, factory);
+
+      } catch (Exception e) {
+        LOG.error("Failed to insert initdb data", e);
       }
-      // create draft metrics and index into ES
-      processDraftHierarchy(cfg, factory);
     }
   }
   
   private static void processDraftHierarchy(WsServerConfig cfg, SqlSessionFactory factory) throws Exception {
-    LOG.info("Build import metrics for draft catalogue");
+    LOG.info("Build import metrics for draft CoL and index into ES");
     Dataset draft;
     try (SqlSession session = factory.openSession(true)) {
       draft = session.getMapper(DatasetMapper.class).get(Datasets.DRAFT_COL);
@@ -140,6 +162,7 @@ public class InitDbCmd extends ConfiguredCommand<WsServerConfig> {
   }
   
   private static void loadDraftHierarchy(Connection con) throws Exception {
+    LOG.info("Insert CoL draft data linked to sectors");
     PgConnection pgc = (PgConnection) con;
     // Use sector exports from Global Assembly:
     // https://github.com/Sp2000/colplus-repo#sector-exports

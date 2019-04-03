@@ -87,6 +87,7 @@ public class PgSetupRule extends ExternalResource {
   
   public static void wipeDB(Connection con) throws SQLException {
     con.setAutoCommit(false);
+    LOG.debug("Recreate empty public schema");
     try (Statement st = con.createStatement()) {
       st.execute("DROP SCHEMA public CASCADE");
       st.execute("CREATE SCHEMA public");
