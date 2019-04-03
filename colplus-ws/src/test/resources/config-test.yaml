@@ -17,6 +17,10 @@ db:
   database: ${db.database}
   user: ${db.user}
   password: ${db.password}
+adminDb:
+  database: postgres
+  user: ${db.user}
+  password: ${db.password}
 normalizer:
   scratchDir: /tmp/colplus/scratch
   archiveDir: /tmp/colplus/archives

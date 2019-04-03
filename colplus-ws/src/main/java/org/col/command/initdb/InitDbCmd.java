@@ -72,7 +72,7 @@ public class InitDbCmd extends ConfiguredCommand<WsServerConfig> {
   }
   
   public static void execute(WsServerConfig cfg) throws Exception {
-    LOG.info("Starting database initialisation");
+    LOG.info("Starting database initialisation with admin connection {}", cfg.adminDb);
     try (Connection con = cfg.db.connect(cfg.adminDb);
          Statement st = con.createStatement()
     ) {
