@@ -89,53 +89,51 @@ public class InitDbCmd extends ConfiguredCommand<WsServerConfig> {
       exec(PgConfig.SCHEMA_FILE, runner, con, Resources.getResourceAsReader(PgConfig.SCHEMA_FILE));
       // add common data
       exec(PgConfig.DATA_FILE, runner, con, Resources.getResourceAsReader(PgConfig.DATA_FILE));
+      LOG.info("Insert known datasets");
+      exec(PgConfig.DATASETS_FILE, runner, con, Resources.getResourceAsReader(PgConfig.DATASETS_FILE));
     }
   
-    HikariConfig hikari = cfg.db.hikariConfig();
-    try (HikariDataSource dataSource = new HikariDataSource(hikari)) {
-      // configure single mybatis session factory
-      final SqlSessionFactory factory = MybatisFactory.configure(dataSource, "init");
-      
-      // add col & names index partitions
-      try (SqlSession session = factory.openSession()) {
-        setupStandardPartitions(session);
-        session.commit();
-      }
-  
-      Thread thread = new Thread(new DataInit(cfg, factory), "initdb-data");
-      LOG.info("Start non blocking insert of default data in separate thread");
-      thread.start();
-    }
+    Thread thread = new Thread(new DraftColInit(cfg), "initdb-data");
+    LOG.info("Start non blocking insert of default data in separate thread");
+    thread.start();
   }
   
-  static class DataInit implements Runnable {
+  static class DraftColInit implements Runnable {
     private final WsServerConfig cfg;
-    private final SqlSessionFactory factory;
-  
-    public DataInit(WsServerConfig cfg, SqlSessionFactory factory) {
+
+    public DraftColInit(WsServerConfig cfg) {
       this.cfg = cfg;
-      this.factory = factory;
     }
   
     @Override
     public void run() {
-      try (Connection con = cfg.db.connect()) {
-        ScriptRunner runner = PgConfig.scriptRunner(con);
-        LOG.info("Insert known datasets");
-        exec(PgConfig.DATASETS_FILE, runner, con, Resources.getResourceAsReader(PgConfig.DATASETS_FILE));
-
-        LOG.info("Add known manually curated sectors");
-        exec(PgConfig.SECTORS_FILE, runner, con, Resources.getResourceAsReader(PgConfig.SECTORS_FILE));
-
-        LOG.info("Add known decisions");
-        exec(PgConfig.DECISIONS_FILE, runner, con, Resources.getResourceAsReader(PgConfig.DECISIONS_FILE));
-
-        loadDraftHierarchy(con);
-
-        processDraftHierarchy(cfg, factory);
-
-      } catch (Exception e) {
-        LOG.error("Failed to insert initdb data", e);
+      HikariConfig hikari = cfg.db.hikariConfig();
+      try (HikariDataSource dataSource = new HikariDataSource(hikari)) {
+        // configure single mybatis session factory
+        final SqlSessionFactory factory = MybatisFactory.configure(dataSource, "init");
+  
+        // add col & names index partitions
+        try (SqlSession session = factory.openSession()) {
+          setupStandardPartitions(session);
+          session.commit();
+        }
+  
+        try (Connection con = cfg.db.connect()) {
+          ScriptRunner runner = PgConfig.scriptRunner(con);
+    
+          LOG.info("Add known manually curated sectors");
+          exec(PgConfig.SECTORS_FILE, runner, con, Resources.getResourceAsReader(PgConfig.SECTORS_FILE));
+    
+          LOG.info("Add known decisions");
+          exec(PgConfig.DECISIONS_FILE, runner, con, Resources.getResourceAsReader(PgConfig.DECISIONS_FILE));
+    
+          loadDraftHierarchy(con);
+    
+          processDraftHierarchy(cfg, factory);
+    
+        } catch (Exception e) {
+          LOG.error("Failed to insert initdb data", e);
+        }
       }
     }
   }
