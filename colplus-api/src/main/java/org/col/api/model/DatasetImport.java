@@ -277,6 +277,13 @@ public class DatasetImport {
     this.usagesByStatusCount = usagesByStatusCount;
   }
   
+  /**
+   * @return count of all usages, i.e. all taxa and synonyms, regardless of their status
+   */
+  public Integer getUsagesCount() {
+    return usagesByStatusCount == null ? 0 : usagesByStatusCount.values().stream().mapToInt(Integer::intValue).sum();
+  }
+
   public Map<NomStatus, Integer> getNamesByStatusCount() {
     return namesByStatusCount;
   }

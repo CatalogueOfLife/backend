@@ -139,8 +139,11 @@ public class DatasetImportDao {
     try (SqlSession session = factory.openSession(true)) {
       DatasetImportMapper mapper = session.getMapper(DatasetImportMapper.class);
       updateMetrics(mapper, di);
-
-      StringWriter tree = new StringWriter();
+      
+      // create writer with expected size to avoid unefficient groing and copying of the underlying char array
+      // assumes 120 chars on average per tree line
+      int rows = di.getUsagesCount() + 1;
+      StringWriter tree = new StringWriter(rows * 120);
       TextTreePrinter.dataset(di.getDatasetKey(), factory, tree).print();
       di.setTextTree(tree.toString());
       di.setNames(session.getMapper(NameMapper.class).listNameIndexIds(di.getDatasetKey(), null));
