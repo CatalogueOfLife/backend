@@ -151,11 +151,11 @@ public class WsServer extends Application<WsServerConfig> {
     // name index
     NameIndex ni;
     if (cfg.namesIndexFile == null) {
-      LOG.info("Using volatile in memory names index");
-      ni = NameIndexFactory.memory(Datasets.PCAT, getSqlSessionFactory());
+      LOG.info("Use volatile in memory names index");
+      ni = NameIndexFactory.memory(getSqlSessionFactory());
     } else {
-      LOG.info("Using names index at {}", cfg.namesIndexFile.getAbsolutePath());
-      ni = NameIndexFactory.persistent(Datasets.PCAT, cfg.namesIndexFile, getSqlSessionFactory());
+      LOG.info("Use persistent names index at {}", cfg.namesIndexFile.getAbsolutePath());
+      ni = NameIndexFactory.persistent(cfg.namesIndexFile, getSqlSessionFactory());
     }
   
     // async importer

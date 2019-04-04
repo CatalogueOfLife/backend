@@ -38,9 +38,7 @@
       deleted,
       di.finished AS imported,
       di.verbatim_count AS size,
-      case exists(select 1 from sector s where s.dataset_key=d.key) when true then array[3] end
-        || case names_index_contributor when true then array[2] end
-        AS contributes_to
+      case exists(select 1 from sector s where s.dataset_key=d.key) when true then array[3] end AS contributes_to
     </sql>
 
     <sql id="COLS">
@@ -120,14 +118,11 @@
              and the pCat is dealt with via the names_index_contributor
             -->
             <if test="req.contributesTo != null">
-                <if test="req.contributesTo == 2">
-                    AND names_index_contributor=true
-                </if>
                 <if test="req.contributesTo == 3">
                     AND exists(select 1 from sector s where s.dataset_key=d.key)
                 </if>
-                <!-- we only support catalogue 2 & 3 for now -->
-                <if test="req.contributesTo &lt; 2 or req.contributesTo &gt; 3">
+                <!-- we only support catalogue 3 for now -->
+                <if test="req.contributesTo != 3">
                     AND false
                 </if>
             </if>

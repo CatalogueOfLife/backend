@@ -10,7 +10,6 @@ ALTER SEQUENCE coluser_key_seq RESTART WITH 100;
 -- insert well known datasets
 INSERT INTO dataset (key, type, origin, import_frequency, title, alias, created_by, modified_by) VALUES
     (1, 1, 2, -1, 'Catalogue of Life',              'CoL',  0, 0),
-    (2, 1, 2, -1, 'Provisional Catalogue of Life',  'pCat', 0, 0),
     (3, 1, 2, -1, 'Draft Catalogue of Life',        'dCoL', 0, 0);
 
 ALTER SEQUENCE dataset_key_seq RESTART WITH 1000;
