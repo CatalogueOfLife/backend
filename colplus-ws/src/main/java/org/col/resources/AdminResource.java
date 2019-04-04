@@ -37,7 +37,7 @@ public class AdminResource {
   @POST
   @Path("/logo-update")
   public String updateAllLogos() {
-    LogoUpdateJob.updateAllAsync(factory, downloader, cfg::scratchDir, imgService);
+    LogoUpdateJob.updateAllAsync(factory, downloader, cfg::scratchFile, imgService);
     return "Started Logo Updater";
   }
   

@@ -67,14 +67,6 @@ public class WsServerConfig extends Configuration implements CorsBundleConfigura
   @NotNull
   public ImgConfig img = new ImgConfig();
   
-  @Valid
-  @NotNull
-  public File scratchDir = new File("/tmp/colplus");
-  
-  public File scratchDir(int datasetKey) {
-    return new File(scratchDir,"dataset" + datasetKey);
-  }
-  
   /**
    * Names index kvp file to persist map on disk. If empty will use a volatile memory index.
    */

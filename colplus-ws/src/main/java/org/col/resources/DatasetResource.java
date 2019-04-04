@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.function.BiFunction;
 import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 import javax.ws.rs.*;
@@ -12,7 +13,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import com.google.common.base.Function;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.model.Dataset;
@@ -41,8 +41,8 @@ public class DatasetResource extends CRUDIntResource<Dataset> {
   private final DatasetDao dao;
   private final ImageService imgService;
   
-  public DatasetResource(SqlSessionFactory factory, ImageService imgService, Function<Integer, File> scratchDirFunc, DownloadUtil downloader) {
-    super(Dataset.class, new DatasetDao(factory, downloader, imgService, scratchDirFunc));
+  public DatasetResource(SqlSessionFactory factory, ImageService imgService, BiFunction<Integer, String, File> scratchFileFunc, DownloadUtil downloader) {
+    super(Dataset.class, new DatasetDao(factory, downloader, imgService, scratchFileFunc));
     dao = (DatasetDao) crud;
     this.factory = factory;
     this.imgService = imgService;

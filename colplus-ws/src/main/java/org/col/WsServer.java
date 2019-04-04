@@ -188,7 +188,7 @@ public class WsServer extends Application<WsServerConfig> {
     
     // resources
     env.jersey().register(new DataPackageResource());
-    env.jersey().register(new DatasetResource(getSqlSessionFactory(), imgService, cfg::scratchDir, new DownloadUtil(httpClient)));
+    env.jersey().register(new DatasetResource(getSqlSessionFactory(), imgService, cfg.normalizer::scratchFile, new DownloadUtil(httpClient)));
     env.jersey().register(new DecisionResource(getSqlSessionFactory(), indexService));
     env.jersey().register(new DocsResource(cfg));
     env.jersey().register(new NameResource(nuss));

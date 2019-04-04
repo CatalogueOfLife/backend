@@ -25,15 +25,15 @@ public class AcExporterTest {
   @Before
   public void initCfg()  {
     cfg = new WsServerConfig();
-    cfg.db = pgSetupRule.getCfg();
+    cfg.db = PgSetupRule.getCfg();
     cfg.downloadDir = Files.createTempDir();
-    cfg.scratchDir  = Files.createTempDir();
+    cfg.normalizer.scratchDir  = Files.createTempDir();
   }
   
   @After
   public void cleanup()  {
     FileUtils.deleteQuietly(cfg.downloadDir);
-    FileUtils.deleteQuietly(cfg.scratchDir);
+    FileUtils.deleteQuietly(cfg.normalizer.scratchDir);
     if (arch != null) {
       FileUtils.deleteQuietly(arch);
     }
