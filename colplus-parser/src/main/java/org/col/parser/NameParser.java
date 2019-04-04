@@ -69,30 +69,75 @@ public class NameParser implements Parser<NameAccordingTo> {
     }
   }
   
+  /**
+   * Populates the parsed authorship of a given name instance by parsing a single authorship string.
+   * Only parses the authorship if the name itself is already parsed.
+   */
+  public void parseAuthorshipIntoName(NameAccordingTo nat, String authorship, IssueContainer v){
+    // try to add an authorship if not yet there
+    if (nat.getName().isParsed() && !Strings.isNullOrEmpty(authorship)) {
+      ParsedName pnAuthorship = parseAuthorship(authorship).orElseGet(() -> {
+        LOG.warn("Unparsable authorship {}", authorship);
+        v.addIssue(Issue.UNPARSABLE_AUTHORSHIP);
+        // add the full, unparsed authorship in this case to not lose it
+        ParsedName pn = new ParsedName();
+        pn.getCombinationAuthorship().getAuthors().add(authorship);
+        return pn;
+      });
+    
+      // we might have already parsed an authorship from the scientificName string which does not match up?
+      if (nat.getName().hasAuthorship() &&
+          !nat.getName().authorshipComplete().equalsIgnoreCase(pnAuthorship.authorshipComplete())) {
+        v.addIssue(Issue.INCONSISTENT_AUTHORSHIP);
+        LOG.info("Different authorship found in name {} than in parsed version: [{}] vs [{}]",
+            nat.getName(), nat.getName().authorshipComplete(), pnAuthorship.authorshipComplete());
+      }
+      nat.getName().setCombinationAuthorship(pnAuthorship.getCombinationAuthorship());
+      nat.getName().setSanctioningAuthor(pnAuthorship.getSanctioningAuthor());
+      nat.getName().setBasionymAuthorship(pnAuthorship.getBasionymAuthorship());
+      // propagate notes found in authorship
+      nat.getName().addRemark(pnAuthorship.getRemarks());
+      nat.getName().addRemark(pnAuthorship.getNomenclaturalNotes());
+      nat.addAccordingTo(pnAuthorship.getTaxonomicNote());
+    }
+  }
   
   /**
    * Fully parses a name using #parse(String, Rank) but converts names that throw a UnparsableException
    * into ParsedName objects with the scientific name, rank and name type given.
    */
   public Optional<NameAccordingTo> parse(String name, Rank rank, IssueContainer issues) {
-    if (StringUtils.isBlank(name)) {
+    Name n = new Name();
+    n.setScientificName(name);
+    n.setRank(rank);
+    return parse(n, issues);
+  }
+
+  /**
+   * Fully parses a name using #parse(String, Rank) but converts names that throw a UnparsableException
+   * into ParsedName objects with the scientific name, rank and name type given.
+   *
+   * Populates a given name instance with the parsing results.
+   */
+  public Optional<NameAccordingTo> parse(Name n, IssueContainer issues) {
+    if (StringUtils.isBlank(n.getScientificName())) {
       return Optional.empty();
     }
     
-    NameAccordingTo n;
+    NameAccordingTo nat;
     Timer.Context ctx = timer == null ? null : timer.time();
     try {
-      n = fromParsedName(PARSER_INTERNAL.parse(name, rank), issues);
-      n.getName().updateNameCache();
+      nat = fromParsedName(n, PARSER_INTERNAL.parse(n.getScientificName(), n.getRank()), issues);
+      nat.getName().updateNameCache();
       
     } catch (UnparsableNameException e) {
-      n = new NameAccordingTo();
-      n.setName(new Name());
-      n.getName().setRank(rank);
-      n.getName().setScientificName(e.getName());
-      n.getName().setType(e.getType());
+      nat = new NameAccordingTo();
+      nat.setName(n);
+      nat.getName().setRank(n.getRank());
+      nat.getName().setScientificName(e.getName());
+      nat.getName().setType(e.getType());
       // adds an issue in case the type indicates a parsable name
-      if (n.getName().getType().isParsable()) {
+      if (nat.getName().getType().isParsable()) {
         issues.addIssue(Issue.UNPARSABLE_NAME);
       }
     } finally {
@@ -100,11 +145,13 @@ public class NameParser implements Parser<NameAccordingTo> {
         ctx.stop();
       }
     }
-    return Optional.of(n);
+    return Optional.of(nat);
   }
   
-  private static NameAccordingTo fromParsedName(ParsedName pn, IssueContainer issues) {
-    Name n = new Name();
+  /**
+   * Uses an existing name instance to populate from a ParsedName instance
+   */
+  private static NameAccordingTo fromParsedName(Name n, ParsedName pn, IssueContainer issues) {
     n.setUninomial(pn.getUninomial());
     n.setGenus(pn.getGenus());
     n.setInfragenericEpithet(pn.getInfragenericEpithet());

@@ -4,12 +4,15 @@ import java.util.*;
 import java.util.function.Function;
 
 import com.google.common.collect.Lists;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.model.*;
 import org.col.api.vocab.EntityType;
 import org.col.api.vocab.Origin;
 import org.col.api.vocab.TaxonomicStatus;
 import org.col.db.mapper.*;
+import org.col.parser.NameParser;
+import org.gbif.nameparser.api.NameType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -281,11 +284,16 @@ public class TaxonDao {
     final int datasetKey = t.getDatasetKey();
     Name n = t.getName();
     if (n.getId() == null) {
+      if (!n.isParsed() && StringUtils.isBlank(n.getScientificName())) {
+        throw new IllegalArgumentException("Existing nameId, scientificName or atomized name field required");
+      }
       newKey(n);
       n.setOrigin(Origin.USER);
       n.applyUser(user);
       // make sure we use the same dataset
       n.setDatasetKey(datasetKey);
+      // does the name need parsing?
+      parseName(n);
       nMapper.create(n);
     } else {
       Name nExisting = nMapper.get(datasetKey, n.getId());
@@ -302,6 +310,24 @@ public class TaxonDao {
     session.commit();
     
     return t.getId();
+  }
+  
+  private void parseName(Name n){
+    if (!n.isParsed()) {
+      //TODO: pass in real verbatim record
+      VerbatimRecord v = new VerbatimRecord();
+      final String authorship = n.getAuthorship();
+      NameParser.PARSER.parse(n, v).ifPresent(nat -> {
+        // try to add an authorship if not yet there
+        NameParser.PARSER.parseAuthorshipIntoName(nat, authorship, v);
+      });
+      
+    } else {
+      if (n.getType() == null) {
+        n.setType(NameType.SCIENTIFIC);
+      }
+    }
+    n.updateNameCache();
   }
   
   public void update(Taxon obj, ColUser user) {

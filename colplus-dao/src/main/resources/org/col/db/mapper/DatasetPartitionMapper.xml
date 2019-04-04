@@ -16,6 +16,11 @@
         CREATE TABLE distribution_${key} (LIKE distribution INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
         CREATE TABLE media_${key} (LIKE media INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
         CREATE TABLE vernacular_name_${key} (LIKE vernacular_name INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
+
+        CREATE TRIGGER name_trigger_${key} BEFORE INSERT OR UPDATE
+        ON name_${key} FOR EACH ROW
+        WHEN (NEW.homotypic_name_id IS NULL)
+        EXECUTE PROCEDURE homotypic_name_id_default();
     </update>
 
     <update id="attach" parameterType="map">

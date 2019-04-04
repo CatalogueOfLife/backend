@@ -11,6 +11,8 @@ import org.col.api.model.*;
 import org.col.api.vocab.Gazetteer;
 import org.col.api.vocab.Origin;
 import org.col.api.vocab.TaxonomicStatus;
+import org.gbif.nameparser.api.NameType;
+import org.gbif.nameparser.api.Rank;
 import org.junit.Test;
 
 import static org.col.api.TestEntityGenerator.*;
@@ -160,4 +162,68 @@ public class TaxonDaoTest extends DaoTestBase {
     }
   }
   
+  @Test
+  public void create() {
+    final int datasetKey = DATASET11.getKey();
+    try (SqlSession session = session()) {
+      TaxonDao tDao = new TaxonDao(session());
+      
+      // try minimal atomized version
+      Name n = new Name();
+      n.setUninomial("Abies");
+      n.setScientificName("Abies Miller");
+      n.setRank(Rank.GENUS);
+      Taxon t = new Taxon();
+      t.setName(n);
+      t.setDatasetKey(datasetKey);
+      
+      String id = tDao.create(t, USER_EDITOR);
+      
+      Taxon t2 = tDao.get(datasetKey, id);
+      assertNotNull(t2.getId());
+      assertEquals(USER_EDITOR.getKey(), t2.getCreatedBy());
+      assertEquals(USER_EDITOR.getKey(), t2.getModifiedBy());
+      assertEquals(USER_EDITOR.getKey(), t2.getName().getCreatedBy());
+      assertEquals(USER_EDITOR.getKey(), t2.getName().getModifiedBy());
+      assertEquals(Rank.GENUS, t2.getName().getRank());
+      assertEquals("Abies", t2.getName().getScientificName());
+      assertEquals("Abies", t2.getName().getUninomial());
+      assertNull(t2.getName().getGenus());
+      assertNull(t2.getName().getSpecificEpithet());
+      assertEquals(t2.getName().getId(), t2.getName().getHomotypicNameId());
+      assertNotNull(t2.getName().getId());
+      assertNull(t2.getName().getAuthorship());
+      assertEquals(NameType.SCIENTIFIC, t2.getName().getType());
+  
+  
+      // try minimal atomized version
+      n = new Name();
+      n.setRank(Rank.SPECIES);
+      n.setScientificName("Abies alba");
+      n.setAuthorship("Miller 1999");
+      t = new Taxon();
+      t.setName(n);
+      t.setDatasetKey(datasetKey);
+  
+      id = tDao.create(t, USER_EDITOR);
+  
+      t2 = tDao.get(datasetKey, id);
+      assertNotNull(t2.getId());
+      assertEquals(USER_EDITOR.getKey(), t2.getCreatedBy());
+      assertEquals(USER_EDITOR.getKey(), t2.getModifiedBy());
+      assertEquals(USER_EDITOR.getKey(), t2.getName().getCreatedBy());
+      assertEquals(USER_EDITOR.getKey(), t2.getName().getModifiedBy());
+      assertEquals(Rank.SPECIES, t2.getName().getRank());
+      assertEquals("Abies alba", t2.getName().getScientificName());
+      assertEquals("Miller, 1999", t2.getName().getAuthorship());
+      assertEquals("Miller", t2.getName().getCombinationAuthorship().getAuthors().get(0));
+      assertEquals("1999", t2.getName().getCombinationAuthorship().getYear());
+      assertNull(t2.getName().getUninomial());
+      assertEquals("Abies", t2.getName().getGenus());
+      assertEquals("alba", t2.getName().getSpecificEpithet());
+      assertEquals(t2.getName().getId(), t2.getName().getHomotypicNameId());
+      assertNotNull(t2.getName().getId());
+      assertEquals(NameType.SCIENTIFIC, t2.getName().getType());
+    }
+  }
 }
