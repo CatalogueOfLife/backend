@@ -54,9 +54,6 @@ public class NameDao {
   }
   
   public void create(Name name) {
-    if (name.getHomotypicNameId() == null) {
-      name.setHomotypicNameId(name.getId());
-    }
     nMapper.create(name);
   }
   
