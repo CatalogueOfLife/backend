@@ -1,6 +1,7 @@
 package org.col.db.tree;
 
 import java.io.IOException;
+import java.io.StringWriter;
 import java.io.Writer;
 import java.util.LinkedList;
 
@@ -74,7 +75,16 @@ public class TextTreePrinter implements ResultHandler<Taxon> {
       return new TextTreePrinter(catalogueKey, sectorKey, s.getTarget().getId(), factory, writer);
     }
   }
-
+  
+  /**
+   * Creates a presized StringWriter based on the expected rows given
+   * to avoid expansion of the underlying buffer and array copying.
+   */
+  public static StringWriter sizedWriter(int expectedRows) {
+    // assumes 120 chars on average per tree line
+    return new StringWriter((expectedRows+1) * 120);
+  }
+  
   public void print() throws IOException {
     try {
       session = factory.openSession(true);
@@ -127,14 +137,16 @@ public class TextTreePrinter implements ResultHandler<Taxon> {
   private void print(Taxon t) throws IOException {
     printCore(t);
     if (t.getSectorKey() != null) {
-      writer.write(" (S"+t.getSectorKey()+")");
+      writer.write(" (S");
+      writer.write(t.getSectorKey().toString());
+      writer.write(')');
     }
-    writer.write("\n");
+    writer.write('\n');
   }
   
   private void print(Synonym s) throws IOException {
     printCore(s);
-    writer.write("\n");
+    writer.write('\n');
   }
   
   private void printCore(NameUsage u) throws IOException {

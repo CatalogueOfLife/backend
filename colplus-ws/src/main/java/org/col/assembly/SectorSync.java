@@ -64,7 +64,7 @@ public class SectorSync extends SectorRunnable {
       //TODO: usagesByRankCount
 
       try {
-        StringWriter tree = new StringWriter();
+        StringWriter tree = TextTreePrinter.sizedWriter(state.getNameCount());
         TextTreePrinter.sector(catalogueKey, sector.getKey(), factory, tree).print();
         state.setTextTree(tree.toString());
       } catch (IOException e) {
