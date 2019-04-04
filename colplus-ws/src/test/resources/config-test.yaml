@@ -34,7 +34,7 @@ client:
   keepAlive: 0ms
   retries: 1
 es:
-  hosts: localhost
+  hosts:
   ports: 9200
   nameUsage:
     modelClass: org.col.es.model.EsNameUsage

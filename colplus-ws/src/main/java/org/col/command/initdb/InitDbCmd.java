@@ -95,16 +95,6 @@ public class InitDbCmd extends ConfiguredCommand<WsServerConfig> {
       LOG.info("Insert known datasets");
       exec(PgConfig.DATASETS_FILE, runner, con, Resources.getResourceAsReader(PgConfig.DATASETS_FILE));
     }
-  
-    // cleanup ES
-    try (RestClient esClient = new EsClientFactory(cfg.es).createClient()){
-      if (esClient != null) {
-        LOG.info("Delete elastic search indices");
-        EsUtil.deleteIndex(esClient, cfg.es.allIndices());
-      } else {
-        LOG.warn("No ES configured, no elastic search indices deleted");
-      }
-    }
     
     // cleanup names index
     if (cfg.namesIndexFile != null && cfg.namesIndexFile.exists()) {
@@ -150,17 +140,17 @@ public class InitDbCmd extends ConfiguredCommand<WsServerConfig> {
         LOG.info("Add known decisions");
         exec(PgConfig.DECISIONS_FILE, runner, con, Resources.getResourceAsReader(PgConfig.DECISIONS_FILE));
       
-        loadDraftHierarchy(con);
-      
-        processDraftHierarchy(cfg, factory);
+        loadDraftHierarchy(con, factory);
       
       } catch (Exception e) {
         LOG.error("Failed to insert initdb data", e);
       }
+  
+      updateSearchIndex(cfg, factory);
     }
   }
   
-  private static void loadDraftHierarchy(Connection con) throws Exception {
+  private static void loadDraftHierarchy(Connection con, SqlSessionFactory factory) throws Exception {
     LOG.info("Insert CoL draft data linked to sectors");
     PgConnection pgc = (PgConnection) con;
     // Use sector exports from Global Assembly:
@@ -186,9 +176,7 @@ public class InitDbCmd extends ConfiguredCommand<WsServerConfig> {
         .put("created_by", Users.DB_INIT)
         .put("modified_by", Users.DB_INIT)
         .build());
-  }
   
-  private static void processDraftHierarchy(WsServerConfig cfg, SqlSessionFactory factory) throws Exception {
     LOG.info("Build import metrics for draft CoL and index into ES");
     Dataset draft;
     try (SqlSession session = factory.openSession(true)) {
@@ -199,10 +187,18 @@ public class InitDbCmd extends ConfiguredCommand<WsServerConfig> {
     dao.updateMetrics(di);
     di.setState(ImportState.FINISHED);
     dao.update(di);
+  }
+  
+  private static void updateSearchIndex(WsServerConfig cfg, SqlSessionFactory factory) throws Exception {
+    if (cfg.es == null || cfg.es.isEmpty()) {
+      LOG.warn("No ES configured, elastic search index not updated");
     
-    if (cfg.es != null && !cfg.es.isEmpty()) {
-      LOG.info("Build search index for draft catalogue");
+    } else {
       try (RestClient esClient = new EsClientFactory(cfg.es).createClient()) {
+        LOG.info("Delete elastic search indices for {} on {}", cfg.es.environment, cfg.es.hosts);
+        EsUtil.deleteIndex(esClient, cfg.es.allIndices());
+
+        LOG.info("Build search index for draft catalogue");
         NameUsageIndexService indexService = new NameUsageIndexServiceEs(esClient, cfg.es, factory);
         indexService.indexDataset(Datasets.DRAFT_COL);
       }
