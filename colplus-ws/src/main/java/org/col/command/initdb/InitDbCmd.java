@@ -118,6 +118,13 @@ public class InitDbCmd extends ConfiguredCommand<WsServerConfig> {
     if (cfg.normalizer.archiveDir.exists()) {
       FileUtils.cleanDirectory(cfg.normalizer.archiveDir);
     }
+  
+    if (cfg.namesIndexFile != null && cfg.namesIndexFile.exists()) {
+      LOG.info("Clear names index {}", cfg.namesIndexFile);
+      if (!cfg.namesIndexFile.delete()){
+        LOG.warn("Failed to remove names index {}", cfg.namesIndexFile);
+      }
+    }
 
     // load draft catalogue data
     HikariConfig hikari = cfg.db.hikariConfig();

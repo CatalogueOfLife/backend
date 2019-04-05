@@ -101,7 +101,7 @@ public class PgCopyUtils {
           sb.append(val);
         }
       }
-      LOG.info("Convert defaults {} to value string {}", defaults, sb.toString());
+      LOG.debug("Convert defaults {} to value string {}", defaults, sb.toString());
       return sb.toString();
     }
     
