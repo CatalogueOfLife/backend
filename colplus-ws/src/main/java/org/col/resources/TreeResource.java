@@ -1,17 +1,19 @@
 package org.col.resources;
 
 import java.util.List;
+import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
+import io.dropwizard.auth.Auth;
 import org.apache.ibatis.session.SqlSession;
-import org.col.api.model.Page;
-import org.col.api.model.ResultPage;
-import org.col.api.model.TreeNode;
+import org.col.api.model.*;
+import org.col.dao.TaxonDao;
 import org.col.db.mapper.TaxonMapper;
 import org.col.db.mapper.TreeMapper;
+import org.col.dw.auth.Roles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,6 +39,17 @@ public class TreeResource {
   @Path("{id}")
   public List<TreeNode> parents(@PathParam("datasetKey") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
     return session.getMapper(TreeMapper.class).parents(datasetKey, id);
+  }
+  
+  @DELETE
+  @Path("{id}")
+  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
+  public void deleteRecursively(@PathParam("datasetKey") int datasetKey, @PathParam("id") String id,
+                                @Auth ColUser user,
+                                @Context SqlSession session) {
+    TaxonDao dao = new TaxonDao(session);
+    dao.deleteRecursively(new DatasetID(datasetKey, id), user);
+    session.commit();
   }
   
   @GET

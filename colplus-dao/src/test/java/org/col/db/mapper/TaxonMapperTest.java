@@ -261,6 +261,18 @@ public class TaxonMapperTest extends DatasetCRUDTest<Taxon, TaxonMapper> {
     TreeNode n = getTreeNode(sector.getTarget().getId());
     // t4 already has count=1 for dataset 11 when draft tree gets populated
     assertEquals(8, (int) n.getDatasetSectors().get(sector.getDatasetKey()));
+    // cascades to all parents
+    assertEquals(9, (int) getTreeNode("t3").getDatasetSectors().get(sector.getDatasetKey()));
+    assertEquals(9, (int) getTreeNode("t2").getDatasetSectors().get(sector.getDatasetKey()));
+    assertEquals(9, (int) getTreeNode("t1").getDatasetSectors().get(sector.getDatasetKey()));
+  
+  
+    mapper().incDatasetSectorCount(Datasets.DRAFT_COL, "unreal", sector.getDatasetKey(), 10);
+    // cascades to all parents
+    assertEquals(9, (int) getTreeNode("t3").getDatasetSectors().get(sector.getDatasetKey()));
+    assertEquals(9, (int) getTreeNode("t2").getDatasetSectors().get(sector.getDatasetKey()));
+    assertEquals(9, (int) getTreeNode("t1").getDatasetSectors().get(sector.getDatasetKey()));
+  
   }
   
   private TreeNode getTreeNode(String id) {

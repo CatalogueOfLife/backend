@@ -6,9 +6,12 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
+import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
+import org.col.api.vocab.Datasets;
 import org.col.config.NormalizerConfig;
 import org.col.common.io.DownloadUtil;
+import org.col.dao.TaxonDao;
 import org.col.dw.auth.Roles;
 import org.col.img.ImageService;
 import org.col.img.LogoUpdateJob;
@@ -41,4 +44,13 @@ public class AdminResource {
     return "Started Logo Updater";
   }
   
+  @POST
+  @Path("/sector-count-update")
+  public boolean updateAllSectorCounts() {
+    try (SqlSession session = factory.openSession()) {
+      new TaxonDao(session).updateAllSectorCounts(Datasets.DRAFT_COL);
+      session.commit();
+      return true;
+    }
+  }
 }

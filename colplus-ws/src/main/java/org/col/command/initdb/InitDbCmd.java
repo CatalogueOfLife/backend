@@ -25,6 +25,7 @@ import org.col.api.vocab.ImportState;
 import org.col.api.vocab.Users;
 import org.col.common.io.PathUtils;
 import org.col.dao.DatasetImportDao;
+import org.col.dao.TaxonDao;
 import org.col.db.MybatisFactory;
 import org.col.db.PgConfig;
 import org.col.db.mapper.DatasetMapper;
@@ -153,6 +154,12 @@ public class InitDbCmd extends ConfiguredCommand<WsServerConfig> {
         LOG.error("Failed to insert initdb data", e);
       }
   
+      LOG.info("Update dataset sector counts");
+      try (SqlSession session = factory.openSession()) {
+        new TaxonDao(session).updateAllSectorCounts(Datasets.DRAFT_COL);
+        session.commit();
+      }
+      
       updateSearchIndex(cfg, factory);
     }
   }

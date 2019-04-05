@@ -6,6 +6,7 @@ import javax.annotation.Nullable;
 
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.session.ResultHandler;
+import org.col.api.model.ColUser;
 import org.col.api.model.Page;
 import org.col.api.model.Taxon;
 import org.gbif.nameparser.api.Rank;
@@ -37,6 +38,17 @@ public interface TaxonMapper extends DatasetCRUDMapper<Taxon> {
   List<Taxon> children(@Param("datasetKey") int datasetKey, @Param("id") String id, @Param("page") Page page);
   
   /**
+   * Move all children of a given taxon to a new parent.
+   * @param datasetKey
+   * @param parentId the current parentId
+   * @param newParentId the new parentId
+   * @return number of changed taxa
+   */
+  int updateParentId(@Param("datasetKey") int datasetKey,
+                     @Param("parentId") String parentId,
+                     @Param("newParentId") String newParentId,
+                     @Param("user") ColUser user);
+  /**
    * Iterates over all accepted descendants in a tree in breadth-first order for a given start taxon
    * and processes them with the supplied handler. If the start taxon is null all root taxa are used.
    *
@@ -67,7 +79,7 @@ public interface TaxonMapper extends DatasetCRUDMapper<Taxon> {
   int deleteBySector(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
   
   /**
-   *
+   * Recursively updates the sector count for a given taxon and all its parents.
    * @param datasetKey the datasetKey of the catalogue
    * @param id the taxon id
    * @param dkey the datasetKey that sectors are counted for
@@ -75,4 +87,5 @@ public interface TaxonMapper extends DatasetCRUDMapper<Taxon> {
    */
   void incDatasetSectorCount(@Param("datasetKey") int datasetKey, @Param("id") String id, @Param("dkey") int dkey, @Param("delta") int delta);
   
+  void resetDatasetSectorCount(@Param("datasetKey") int datasetKey);
 }

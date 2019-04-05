@@ -58,9 +58,6 @@ public class MybatisTestUtils {
     TaxonMapper tm = session.getMapper(TaxonMapper.class);
     tm.incDatasetSectorCount(DRAFT_COL, "t4", 11, 1);
     tm.incDatasetSectorCount(DRAFT_COL, "t5", 11, 1);
-    tm.incDatasetSectorCount(DRAFT_COL, "t3", 11, 2);
-    tm.incDatasetSectorCount(DRAFT_COL, "t2", 11, 2);
-    tm.incDatasetSectorCount(DRAFT_COL, "t1", 11, 2);
     session.commit();
   }
   

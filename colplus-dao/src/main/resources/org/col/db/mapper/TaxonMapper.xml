@@ -183,6 +183,13 @@
         WHERE id = #{id}
     </update>
 
+    <update id="updateParentId" parameterType="map">
+        UPDATE taxon_${datasetKey}
+        SET (parent_id, modified, modified_by)
+        = (#{newParentId}, now(), #{user.key})
+        WHERE parent_id = #{parentId}
+    </update>
+
     <delete id="delete" parameterType="map">
         DELETE FROM taxon_${datasetKey} WHERE id = #{id}
     </delete>
@@ -242,9 +249,27 @@
     </delete>
 
     <update id="incDatasetSectorCount">
+        WITH RECURSIVE x AS (
+            SELECT t.id, t.parent_id
+            FROM taxon_${datasetKey} t
+            WHERE t.id = #{id}
+        UNION
+            SELECT t.id, t.parent_id
+            FROM taxon_${datasetKey} t, x
+            WHERE t.id = x.parent_id
+        )
+
         UPDATE taxon_${datasetKey}
         SET dataset_sectors = jsonb_set( coalesce(dataset_sectors, '{}'), '{"${dkey}"}', to_jsonb( coalesce( (dataset_sectors->'${dkey}')::int, 0) + ${delta} ), true)
-        WHERE id=#{id}
+        WHERE id IN (SELECT id FROM x)
+    </update>
+
+    <update id="resetDatasetSectorCount">
+        UPDATE taxon_${datasetKey} AS t
+        SET dataset_sectors = NULL
+        FROM name n
+        WHERE n.id=t.name_id
+            AND n.rank &lt; 'genus'
     </update>
 
 </mapper>

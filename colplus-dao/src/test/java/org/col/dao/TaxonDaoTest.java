@@ -8,9 +8,11 @@ import org.apache.ibatis.session.SqlSession;
 import org.col.api.BeanPrinter;
 import org.col.api.TestEntityGenerator;
 import org.col.api.model.*;
+import org.col.api.vocab.Datasets;
 import org.col.api.vocab.Gazetteer;
 import org.col.api.vocab.Origin;
 import org.col.api.vocab.TaxonomicStatus;
+import org.col.db.MybatisTestUtils;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Test;
@@ -224,6 +226,15 @@ public class TaxonDaoTest extends DaoTestBase {
       assertEquals(t2.getName().getId(), t2.getName().getHomotypicNameId());
       assertNotNull(t2.getName().getId());
       assertEquals(NameType.SCIENTIFIC, t2.getName().getType());
+    }
+  }
+  
+  @Test
+  public void updateAllSectorCounts(){
+    MybatisTestUtils.populateDraftTree(session());
+    try (SqlSession session = session()) {
+      TaxonDao tDao = new TaxonDao(session);
+      tDao.updateAllSectorCounts(Datasets.DRAFT_COL, factory());
     }
   }
 }

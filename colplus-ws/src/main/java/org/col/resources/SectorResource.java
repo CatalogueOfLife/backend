@@ -93,7 +93,7 @@ public class SectorResource extends CRUDIntResource<Sector> {
   @GET
   public List<Sector> list(@Context SqlSession session,
                            @QueryParam("datasetKey") Integer datasetKey) {
-    return session.getMapper(SectorMapper.class).list(datasetKey);
+    return session.getMapper(SectorMapper.class).listByDataset(datasetKey);
   }
   
   @GET

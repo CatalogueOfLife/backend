@@ -4,9 +4,12 @@ import java.util.*;
 import java.util.function.Function;
 
 import com.google.common.collect.Lists;
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.model.*;
+import org.col.api.vocab.Datasets;
 import org.col.api.vocab.EntityType;
 import org.col.api.vocab.Origin;
 import org.col.api.vocab.TaxonomicStatus;
@@ -337,7 +340,43 @@ public class TaxonDao {
   }
   
   public void delete(DatasetID obj, ColUser user) {
+    Taxon t = tMapper.get(obj.getDatasetKey(), obj.getId());
+    relinkChildren(t, user);
+    // if this taxon had a sector we need to adjust parental counts
+    // we keep the sector as a broken sector around
+    SectorMapper sm = session.getMapper(SectorMapper.class);
+    Sector s = sm.getByTarget(obj.getDatasetKey(), obj.getId());
+    if (s != null) {
+      tMapper.incDatasetSectorCount(Datasets.DRAFT_COL, s.getTarget().getId(), s.getDatasetKey(), -1);
+    }
+    // deleting the taxon should cascade deletes to synonyms, vernaculars, etc
     tMapper.delete(obj.getDatasetKey(), obj.getId());
     session.commit();
   }
+  
+  public void deleteRecursively(DatasetID obj, ColUser user) {
+    throw new NotImplementedException("not yet done");
+  }
+  
+  /**
+   * Resets all dataset sector counts for an entire catalogue
+   * and rebuilds the counts from the currently mapped sectors
+   * @param catalogueKey
+   */
+  public void updateAllSectorCounts(int catalogueKey, SqlSessionFactory factory) {
+    tMapper.resetDatasetSectorCount(Datasets.DRAFT_COL);
+    int counter = 0;
+    for (Sector s : Pager.sectors(factory)) {
+      counter++;
+      tMapper.incDatasetSectorCount(catalogueKey, s.getTarget().getId(), s.getDatasetKey(), 1);
+    }
+    session.commit();
+    LOG.info("Updated dataset sector counts from all {} sectors", counter);
+  }
+  
+  private void relinkChildren(Taxon t, ColUser user){
+    int cnt = tMapper.updateParentId(t.getDatasetKey(), t.getId(), t.getParentId(), user);
+    LOG.debug("Moved {} children of {} to {}", cnt, t.getId(), t.getParentId());
+  }
+  
 }
