@@ -43,7 +43,7 @@
     <resultMap id="treeResultMap" type="org.col.api.model.TreeNode$TreeNodeMybatis" autoMapping="true">
         <id property="id" column="id" />
         <result property="status" column="provisional" typeHandler="org.col.db.type2.TaxonStatusTypeHandler" />
-        <result property="datasetSectors" column="dataset_sectors" typeHandler="org.col.db.type2.JsonIntMapHandler" />
+        <result property="datasetSectors" column="dataset_sectors" />
         <association property="_name" javaType="Name" resultMap="org.col.db.mapper.NameMapper.nameResultMap" />
         <association property="decision" javaType="EditorialDecision" resultMap="org.col.db.mapper.DecisionMapper.decisionResultMap" columnPrefix="ed_"/>
     </resultMap>

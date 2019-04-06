@@ -18,6 +18,7 @@ import org.gbif.nameparser.api.Rank;
 import org.junit.Test;
 
 import static org.col.api.TestEntityGenerator.*;
+import static org.col.api.vocab.Datasets.DRAFT_COL;
 import static org.junit.Assert.*;
 
 public class TaxonDaoTest extends DaoTestBase {
@@ -235,6 +236,18 @@ public class TaxonDaoTest extends DaoTestBase {
     try (SqlSession session = session()) {
       TaxonDao tDao = new TaxonDao(session);
       tDao.updateAllSectorCounts(Datasets.DRAFT_COL, factory());
+    }
+  }
+  
+  @Test
+  public void updateParentChange(){
+    MybatisTestUtils.populateDraftTree(session());
+    try (SqlSession session = session()) {
+      TaxonDao tDao = new TaxonDao(session);
+      Taxon t5 = tDao.get(DRAFT_COL,"t5");
+      assertEquals("t3", t5.getParentId());
+      t5.setParentId("t4");
+      tDao.update(t5, USER_EDITOR);
     }
   }
 }

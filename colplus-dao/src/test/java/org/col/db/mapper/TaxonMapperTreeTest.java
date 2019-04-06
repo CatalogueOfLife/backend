@@ -11,12 +11,12 @@ import com.google.common.collect.Sets;
 import org.apache.ibatis.session.ResultContext;
 import org.apache.ibatis.session.ResultHandler;
 import org.col.api.model.Taxon;
+import org.col.api.model.TaxonCountMap;
 import org.junit.Assert;
 import org.junit.Test;
 
 import static org.col.api.TestEntityGenerator.DATASET11;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 
 public class TaxonMapperTreeTest extends MapperTestBase<TaxonMapper> {
@@ -41,6 +41,15 @@ public class TaxonMapperTreeTest extends MapperTestBase<TaxonMapper> {
     countHandler.reset();
     mapper().processTree(DATASET11.getKey(), null,"t2", Sets.newHashSet("t6", "t30"), false, countHandler);
     Assert.assertEquals(8, countHandler.counter.get());
+  }
+  @Test
+  public void classificationCounts() throws Exception {
+    List<TaxonCountMap> x = mapper().classificationCounts(DATASET11.getKey(), "t20");
+    assertEquals(6, x.size());
+    for (TaxonCountMap c : x) {
+      assertNotNull(c.getId());
+      assertNull(c.getCount());
+    }
   }
   
   @Test

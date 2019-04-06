@@ -4,11 +4,13 @@ import java.util.List;
 import java.util.Set;
 import javax.annotation.Nullable;
 
+import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.session.ResultHandler;
 import org.col.api.model.ColUser;
 import org.col.api.model.Page;
 import org.col.api.model.Taxon;
+import org.col.api.model.TaxonCountMap;
 import org.gbif.nameparser.api.Rank;
 
 /**
@@ -32,6 +34,10 @@ public interface TaxonMapper extends DatasetCRUDMapper<Taxon> {
    * @return list of all parents starting with the immediate parent
    */
   List<Taxon> classification(@Param("datasetKey") int datasetKey, @Param("id") String id);
+  
+  TaxonCountMap getCounts(@Param("datasetKey") int datasetKey, @Param("id") String id);
+
+  List<TaxonCountMap> classificationCounts(@Param("datasetKey") int datasetKey, @Param("id") String id);
   
   int countChildren(@Param("datasetKey") int datasetKey, @Param("id") String id);
   
@@ -86,6 +92,8 @@ public interface TaxonMapper extends DatasetCRUDMapper<Taxon> {
    * @param delta the change to apply to the count for the given datasetKey, can be negative
    */
   void incDatasetSectorCount(@Param("datasetKey") int datasetKey, @Param("id") String id, @Param("dkey") int dkey, @Param("delta") int delta);
+  
+  void updateDatasetSectorCount(@Param("datasetKey") int datasetKey, @Param("id") String id, @Param("count") Int2IntMap count);
   
   void resetDatasetSectorCount(@Param("datasetKey") int datasetKey);
 }

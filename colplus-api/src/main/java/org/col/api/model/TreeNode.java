@@ -1,8 +1,8 @@
 package org.col.api.model;
 
-import java.util.Map;
 import java.util.Objects;
 
+import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import org.col.api.vocab.TaxonomicStatus;
 import org.gbif.nameparser.api.Rank;
 
@@ -23,7 +23,7 @@ public class TreeNode implements ID {
   private String speciesEstimateReferenceId;
   private Integer sectorKey;
   private Decision decision;
-  private Map<Integer, Integer> datasetSectors;
+  private Int2IntMap datasetSectors;
   
   /**
    * Exposes a structured name instance as a full name with html markup
@@ -130,11 +130,11 @@ public class TreeNode implements ID {
     this.decision = decision;
   }
   
-  public Map<Integer, Integer> getDatasetSectors() {
+  public Int2IntMap getDatasetSectors() {
     return datasetSectors;
   }
   
-  public void setDatasetSectors(Map<Integer, Integer> datasetSectors) {
+  public void setDatasetSectors(Int2IntMap datasetSectors) {
     this.datasetSectors = datasetSectors;
   }
   

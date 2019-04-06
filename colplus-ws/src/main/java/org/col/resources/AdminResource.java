@@ -48,7 +48,7 @@ public class AdminResource {
   @Path("/sector-count-update")
   public boolean updateAllSectorCounts() {
     try (SqlSession session = factory.openSession()) {
-      new TaxonDao(session).updateAllSectorCounts(Datasets.DRAFT_COL);
+      new TaxonDao(session).updateAllSectorCounts(Datasets.DRAFT_COL, factory);
       session.commit();
       return true;
     }

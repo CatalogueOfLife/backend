@@ -1,11 +1,13 @@
 package org.col.db.type2;
 
+import java.io.IOException;
 import java.sql.CallableStatement;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.base.Strings;
 import org.apache.ibatis.type.BaseTypeHandler;
 import org.apache.ibatis.type.JdbcType;
 import org.apache.ibatis.type.MappedJdbcTypes;
@@ -16,12 +18,12 @@ import org.col.api.jackson.ApiModule;
  * by using Jackson JSON (de)serialisation.
  */
 @MappedJdbcTypes(JdbcType.OTHER)
-abstract class JsonAbstractHandler<T> extends BaseTypeHandler<T> {
+public class JsonAbstractHandler<T> extends BaseTypeHandler<T> {
   
-  final String typeName;
+  private final Class<T> clazz;
   
-  public JsonAbstractHandler(String typeName) {
-    this.typeName = typeName;
+  public JsonAbstractHandler(Class<T> clazz) {
+    this.clazz = clazz;
   }
   
   @Override
@@ -31,7 +33,7 @@ abstract class JsonAbstractHandler<T> extends BaseTypeHandler<T> {
       String x = ApiModule.MAPPER.writeValueAsString(parameter);
       ps.setString(i, x);
     } catch (JsonProcessingException e) {
-      throw new SQLException("Unable to convert " + typeName + " to JSONB", e);
+      throw new SQLException("Unable to convert " + clazz.getSimpleName() + " to JSONB", e);
     }
   }
   
@@ -50,6 +52,15 @@ abstract class JsonAbstractHandler<T> extends BaseTypeHandler<T> {
     return fromString(cs.getString(columnIndex));
   }
   
-  abstract T fromString(String jsonb) throws SQLException;
-  
+
+  private T fromString(String jsonb) throws SQLException {
+    if (!Strings.isNullOrEmpty(jsonb)) {
+      try {
+        return ApiModule.MAPPER.readValue(jsonb, clazz);
+      } catch (IOException e) {
+        throw new SQLException("Unable to convert JSONB to " + clazz.getSimpleName(), e);
+      }
+    }
+    return null;
+  }
 }

@@ -7,7 +7,7 @@ import org.col.api.model.Name;
 
 @MappedTypes(Name.class)
 @MappedJdbcTypes(JdbcType.OTHER)
-public class JsonNameHandler extends Json2ClassHandler<Name> {
+public class JsonNameHandler extends JsonAbstractHandler<Name> {
   
   public JsonNameHandler() {
     super(Name.class);
