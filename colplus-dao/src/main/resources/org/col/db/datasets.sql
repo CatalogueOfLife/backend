@@ -442,8 +442,9 @@ INSERT INTO dataset (origin, type, code, title, import_frequency, created_by, mo
 (0, 4, 4, 'Testing Data ColDP',7, 0, 0, 3, 'https://github.com/Sp2000/data-testing/archive/master.zip');
 
 
+
 --------------------------
--- GBIF
+-- GBIF and others
 --   for the provisional catalogue
 -- key range above 2000
 ALTER SEQUENCE dataset_key_seq RESTART WITH 2000;
@@ -454,6 +455,8 @@ ALTER SEQUENCE dataset_key_seq RESTART WITH 2000;
 -- nom codes: 0=BACTERIAL, 1=BOTANICAL, 2=CULTIVARS, 3=VIRUS, 4=ZOOLOGICAL
 
 INSERT INTO dataset (gbif_key, created_by, modified_by, origin, code, data_access, title) VALUES
+    (null, 0, 0, 0, 1, 'https://storage.googleapis.com/powop-content/backbone/powoNames.zip', 'PoWO Names'),
+    (null, 0, 0, 0, 1, 'https://storage.googleapis.com/powop-content/backbone/powoPlantFamilies.zip', 'PoWO Families'),
     (null, 0, 0, 0, 1, 'https://github.com/mdoering/mycobank/raw/master/mycobank.zip', 'MycoBank'),
     ('00e791be-36ae-40ee-8165-0b2cb0b8c84f', 12, 12, 0, null, 'https://github.com/mdoering/famous-organism/archive/master.zip', 'Species named after famous people'),
     ('046bbc50-cae2-47ff-aa43-729fbf53f7c5', 12, 12, 0, 1,    'http://rs.gbif.org/datasets/protected/ipni.zip', 'International Plant Names Index'),
