@@ -43,7 +43,7 @@ public class EsUtilTest extends EsReadTestBase {
   public void deleteDataset() throws IOException {
     EsUtil.deleteIndex(client, indexName);
     EsUtil.createIndex(client, indexName, getEsConfig().nameUsage);
-    // Insert 3 documents (overwriting dataset key to know values)
+    // Insert 3 documents (overwriting dataset key to known values)
     NameUsageTransfer transfer = new NameUsageTransfer();
     EsNameUsage enu = transfer.toDocument(TestEntityGenerator.newNameUsageTaxonWrapper());
     enu.setDatasetKey(1);
@@ -69,9 +69,40 @@ public class EsUtilTest extends EsReadTestBase {
 
     i = EsUtil.deleteDataset(client, indexName, 3);
     assertEquals(0, i);
-
   }
-  
+
+  @Test
+  public void testDeleteSector() throws IOException {
+    EsUtil.deleteIndex(client, indexName);
+    EsUtil.createIndex(client, indexName, getEsConfig().nameUsage);
+    // Insert 3 documents (overwriting sector key to known values)
+    NameUsageTransfer transfer = new NameUsageTransfer();
+    EsNameUsage enu = transfer.toDocument(TestEntityGenerator.newNameUsageTaxonWrapper());
+    enu.setSectorKey(1);
+    insert(client, indexName, enu);
+    enu = transfer.toDocument(TestEntityGenerator.newNameUsageSynonymWrapper());
+    enu.setSectorKey(1);
+    insert(client, indexName, enu);
+    enu = transfer.toDocument(TestEntityGenerator.newNameUsageBareNameWrapper());
+    enu.setSectorKey(2);
+    insert(client, indexName, enu);
+    refreshIndex(client, indexName);
+    assertEquals(3, EsUtil.count(client, indexName));
+
+    int i = EsUtil.deleteSector(client, indexName, 1);
+    assertEquals(2, i);
+    refreshIndex(client, indexName);
+    assertEquals(1, EsUtil.count(client, indexName));
+
+    i = EsUtil.deleteSector(client, indexName, 2);
+    assertEquals(1, i);
+    refreshIndex(client, indexName);
+    assertEquals(0, EsUtil.count(client, indexName));
+
+    i = EsUtil.deleteSector(client, indexName, 3);
+    assertEquals(0, i);
+  }
+
   @Test
   public void indexExists() throws IOException {
     EsUtil.deleteIndex(client, indexName);

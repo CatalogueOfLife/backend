@@ -23,11 +23,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.col.es.NameUsageTransfer.extractClassifiction;
+import static org.col.es.SynonymResultHandler.KeyType.DATASET;
 
 /**
  * Collects synonyms from Postgres/MyBatis until and adds their classification before inserting them into Elasticsearch.
  */
 final class SynonymResultHandler implements ResultHandler<NameUsageWrapper>, AutoCloseable {
+
+  static enum KeyType {
+    DATASET, SECTOR
+  }
 
   private static final Logger LOG = LoggerFactory.getLogger(SynonymResultHandler.class);
   // The number of distinct taxa to collect per cycle
@@ -37,13 +42,19 @@ final class SynonymResultHandler implements ResultHandler<NameUsageWrapper>, Aut
   private final List<NameUsageWrapper> collected = new ArrayList<>(LOOKUP_TABLE_SIZE * 2);
 
   private final NameUsageIndexer indexer;
-  private final int datasetKey;
+  private final int key;
+  private final KeyType keyType;
 
   private String prevTaxonId = "";
 
-  SynonymResultHandler(NameUsageIndexer indexer, int datasetKey) {
+  SynonymResultHandler(NameUsageIndexer indexer, int key) {
+    this(indexer, key, KeyType.DATASET);
+  }
+
+  SynonymResultHandler(NameUsageIndexer indexer, int key, KeyType keyType) {
     this.indexer = indexer;
-    this.datasetKey = datasetKey;
+    this.key = key;
+    this.keyType = keyType;
   }
 
   @Override
@@ -94,8 +105,9 @@ final class SynonymResultHandler implements ResultHandler<NameUsageWrapper>, Aut
 
   private List<EsNameUsage> loadTaxa() throws IOException {
     NameUsageSearchService svc = new NameUsageSearchService(indexer.getIndexName(), indexer.getEsClient());
+    String field = keyType == DATASET ? "datasetKey" : "sectorKey";
     BoolQuery query = new BoolQuery()
-        .filter(new TermQuery("datasetKey", datasetKey))
+        .filter(new TermQuery(field, key))
         .filter(new TermsQuery("usageId", taxonIds));
     EsSearchRequest esr = EsSearchRequest.emptyRequest();
     // Keep memory footprint of lookup table as small as possible:

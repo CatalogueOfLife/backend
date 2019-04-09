@@ -40,6 +40,19 @@ public class NameUsageIndexServiceEsTest extends EsReadWriteTestBase {
     }
   }
 
+  /*
+   * To make a realistic test, run the SQL script in src/test/resources/org/col/es after having done a sizable import using PgImportIT. The
+   * import should must contain chromista. The script will make all chromista belong to sector 13.
+   */
+  @Test
+  @Ignore
+  public void indexSector() throws IOException, EsException {
+    try (RestClient client = getEsClient()) {
+      NameUsageIndexServiceEs svc = new NameUsageIndexServiceEs(client, getEsConfig(), factory());
+      svc.indexSector(13);
+    }
+  }
+
   @Test
   public void indexWithClassification() throws IOException, EsException {
 

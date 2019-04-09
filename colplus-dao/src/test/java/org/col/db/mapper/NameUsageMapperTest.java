@@ -26,7 +26,7 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
   
   @Test
   public void processDatasetTaxa() throws Exception {
-    mapper().processDatasetTaxa(NAME4.getDatasetKey(), new ResultHandler<NameUsageWrapper>() {
+    mapper().processDatasetTaxa(NAME4.getDatasetKey(), null,new ResultHandler<NameUsageWrapper>() {
       public void handleResult(ResultContext<? extends NameUsageWrapper> ctx) {
         counter.incrementAndGet();
         NameUsageWrapper obj = ctx.getResultObject();
@@ -58,7 +58,7 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
   
   @Test
   public void processDatasetSynonyms() throws Exception {
-    mapper().processDatasetSynonyms(NAME4.getDatasetKey(), new ResultHandler<NameUsageWrapper>() {
+    mapper().processDatasetSynonyms(NAME4.getDatasetKey(), null,new ResultHandler<NameUsageWrapper>() {
       public void handleResult(ResultContext<? extends NameUsageWrapper> ctx) {
         counter.incrementAndGet();
         assertTrue(ctx.getResultObject().getUsage().getStatus().isSynonym());
@@ -72,7 +72,7 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
   
   @Test
   public void processDatasetBareNames() throws Exception {
-    mapper().processDatasetBareNames(NAME4.getDatasetKey(), new ResultHandler<NameUsageWrapper>() {
+    mapper().processDatasetBareNames(NAME4.getDatasetKey(), null,new ResultHandler<NameUsageWrapper>() {
       public void handleResult(ResultContext<? extends NameUsageWrapper> ctx) {
         counter.incrementAndGet();
         assertNotNull(ctx.getResultObject());

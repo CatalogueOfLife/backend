@@ -82,6 +82,9 @@
                 ARRAY[n.scientific_name]::text[] AS classificationNames,
             <include refid="taxonSelectFrom" />
 	        WHERE t.parent_id IS NULL
+	        <if test="sectorKey != null">
+	        	AND t.sector_key = #{sectorKey}
+    	    </if>
 	        
             UNION
 
@@ -91,6 +94,9 @@
                 array_append(tree.classificationNames, n.scientific_name),
             <include refid="taxonSelectFrom" />
                 JOIN tree ON (tree.id = t.parent_id)
+		        <if test="sectorKey != null">
+		        	WHERE t.sector_key = #{sectorKey}
+	    	    </if>
 	   )
 	   SELECT * FROM tree
     </select>
@@ -101,6 +107,9 @@
         FROM <include refid="org.col.db.mapper.SynonymMapper.FROM"/>
             LEFT JOIN verbatim_${datasetKey} vb  ON vb.key = s.verbatim_key
             LEFT JOIN verbatim_${datasetKey} vbn ON vbn.key= n.verbatim_key
+	        <if test="sectorKey != null">
+	        	WHERE a.sector_key = #{sectorKey}
+    	    </if>
         ORDER BY s.taxon_id
     </select>
 
@@ -115,6 +124,9 @@
             LEFT JOIN taxon_${datasetKey}    t ON n.id = t.name_id
             LEFT JOIN verbatim_${datasetKey} v ON v.key= n.verbatim_key
         WHERE t.id IS NULL AND s.taxon_id IS NULL
+        <if test="sectorKey != null">
+        	AND n.sector_key = #{sectorKey}
+   	    </if>
     </select>
 
     <select id="get" parameterType="map" resultMap="taxonGetClassificationResultMap">

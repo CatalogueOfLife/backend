@@ -28,8 +28,9 @@ public class EsSearchRequest {
   private Integer size;
   private Integer from;
 
-  public void select(String... fields) {
+  public EsSearchRequest select(String... fields) {
     select = CollapsibleList.of(fields);
+    return this;
   }
 
   public List<String> getSelect() {
@@ -46,6 +47,11 @@ public class EsSearchRequest {
 
   public void setQuery(Query query) {
     this.query = query;
+  }
+
+  public EsSearchRequest whereEquals(String field, Object value) {
+    this.query = new TermQuery(field, value);
+    return this;
   }
 
   public Map<String, Aggregation> getAggregations() {
@@ -78,6 +84,11 @@ public class EsSearchRequest {
 
   public void setSize(Integer size) {
     this.size = size;
+  }
+
+  public EsSearchRequest size(Integer size) {
+    this.size = size;
+    return this;
   }
 
 }

@@ -13,6 +13,7 @@ import org.col.es.mapping.Mapping;
 import org.col.es.mapping.MappingFactory;
 import org.col.es.mapping.SerializationUtil;
 import org.col.es.query.EsSearchRequest;
+import org.col.es.query.Query;
 import org.col.es.query.TermQuery;
 import org.elasticsearch.client.Request;
 import org.elasticsearch.client.Response;
@@ -86,11 +87,20 @@ public class EsUtil {
 
   public static int deleteDataset(RestClient client, String index, int datasetKey) throws IOException {
     LOG.info("Deleting all documents from dataset {}", datasetKey);
+    return deleteByQuery(client, index, new TermQuery("datasetKey", datasetKey));
+  }
+  
+  public static int deleteSector(RestClient client, String index, int sectorKey) throws IOException {
+    LOG.info("Deleting all documents from dataset {}", sectorKey);
+    return deleteByQuery(client, index, new TermQuery("sectorKey", sectorKey));
+  }
+  
+  public static int deleteByQuery(RestClient client, String index, Query query) throws IOException {
     String url = String.format("%s/%s/_delete_by_query", index, EsConfig.DEFAULT_TYPE_NAME);
     Request request = new Request("POST", url);
-    EsSearchRequest query = new EsSearchRequest();
-    query.setQuery(new TermQuery("datasetKey", datasetKey));
-    request.setJsonEntity(EsModule.QUERY_WRITER.writeValueAsString(query));
+    EsSearchRequest esr = new EsSearchRequest();
+    esr.setQuery(query);
+    request.setJsonEntity(EsModule.QUERY_WRITER.writeValueAsString(esr));
     Response response = client.performRequest(request);
     if (response.getStatusLine().getStatusCode() >= 400) {
       throw new EsException(response.getStatusLine().getReasonPhrase());
@@ -99,7 +109,7 @@ public class EsUtil {
         EsModule.MAPPER.readValue(response.getEntity().getContent(), new TypeReference<Map<String, Object>>() {});
     Integer total = (Integer) feedback.get("total");
     LOG.info("Deleted {} documents from index {}", total, index);
-    return total.intValue();
+    return total.intValue();   
   }
 
   public static void refreshIndex(RestClient client, String name) throws IOException {
