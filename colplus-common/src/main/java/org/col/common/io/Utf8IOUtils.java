@@ -1,6 +1,7 @@
 package org.col.common.io;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 
 import com.google.common.io.Files;
 
@@ -11,11 +12,7 @@ public class Utf8Writers {
     return fromStream(new FileOutputStream(f));
   }
   
-  public static Writer fromStream(OutputStream stream) throws IOException {
-    try {
-      return new BufferedWriter(new OutputStreamWriter(stream, "UTF8"));
-    } catch (UnsupportedEncodingException e) {
-      throw new RuntimeException(e);
-    }
+  public static Writer fromStream(OutputStream stream) {
+    return new BufferedWriter(new OutputStreamWriter(stream, StandardCharsets.UTF_8));
   }
 }
