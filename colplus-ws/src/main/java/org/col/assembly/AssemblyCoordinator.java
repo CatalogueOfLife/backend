@@ -14,6 +14,8 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.model.ColUser;
 import org.col.api.model.SectorImport;
 import org.col.common.concurrent.ExecutorUtils;
+import org.col.dao.DatasetImportDao;
+import org.col.es.NameUsageIndexService;
 import org.gbif.nameparser.utils.NamedThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,14 +28,18 @@ public class AssemblyCoordinator implements Managed {
   
   private ExecutorService exec;
   private final SqlSessionFactory factory;
+  private final NameUsageIndexService indexService;
+  private final DatasetImportDao diDao;
   private final Map<Integer, Future> syncs = new ConcurrentHashMap<Integer, Future>();
   private final Map<Integer, SectorImport> imports = new ConcurrentHashMap<>();
   private final Timer timer;
   private final Counter counter;
   private final Counter failed;
   
-  public AssemblyCoordinator(SqlSessionFactory factory, MetricRegistry registry) {
+  public AssemblyCoordinator(SqlSessionFactory factory, DatasetImportDao diDao, NameUsageIndexService indexService, MetricRegistry registry) {
     this.factory = factory;
+    this.diDao = diDao;
+    this.indexService = indexService;
     timer = registry.timer("org.col.assembly.timer");
     counter = registry.counter("org.col.assembly.counter");
     failed = registry.counter("org.col.assembly.failed");
@@ -65,7 +71,7 @@ public class AssemblyCoordinator implements Managed {
       LOG.info("Sector {} already syncing", sectorKey);
       // ignore
     } else {
-      SectorSync ss = new SectorSync(sectorKey, factory, null, this::successCallBack, this::errorCallBack, user);
+      SectorSync ss = new SectorSync(sectorKey, factory, indexService, diDao, this::successCallBack, this::errorCallBack, user);
       syncs.put(sectorKey, exec.submit(ss));
       imports.put(sectorKey, ss.getState());
       LOG.info("Queued sync of sector {}", sectorKey);
@@ -79,7 +85,7 @@ public class AssemblyCoordinator implements Managed {
       // ignore
 
     } else {
-      SectorDelete sd = new SectorDelete(sectorKey, factory, null, this::successCallBack, this::errorCallBack, user);
+      SectorDelete sd = new SectorDelete(sectorKey, factory, indexService, this::successCallBack, this::errorCallBack, user);
       syncs.put(sectorKey, exec.submit(sd));
       imports.put(sectorKey, sd.getState());
       LOG.info("Queued deletion of sector {}", sectorKey);

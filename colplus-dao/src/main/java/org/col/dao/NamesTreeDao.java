@@ -7,8 +7,10 @@ import org.apache.ibatis.session.ResultContext;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
+import org.col.api.model.Sector;
 import org.col.common.io.Utf8IOUtils;
 import org.col.db.mapper.NameMapper;
+import org.col.db.mapper.SectorMapper;
 import org.col.db.tree.TextTreePrinter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,16 +33,31 @@ public class NamesTreeDao {
   public int updateDatasetNames(int datasetKey, int attempt) {
     int count;
     try (SqlSession session = factory.openSession(true);
-        NamesWriter handler = new NamesWriter(treeFile(datasetKey, attempt))
+        NamesWriter handler = new NamesWriter(namesFile(datasetKey, attempt))
     ){
       NameMapper nm = session.getMapper(NameMapper.class);
       nm.processIndexIds(datasetKey, null, handler);
       count = handler.counter;
-      LOG.info("Written text tree with {} lines for {}-{}", count, datasetKey, attempt);
+      LOG.info("Written {} index names for dataset {}-{}", count, datasetKey, attempt);
     }
     return count;
   }
   
+  public int updateSectorNames(int sectorKey, int attempt) {
+    int count;
+    try (SqlSession session = factory.openSession(true);
+         NamesWriter handler = new NamesWriter(sectorNamesFile(sectorKey, attempt))
+    ){
+      SectorMapper sm = session.getMapper(SectorMapper.class);
+      NameMapper nm = session.getMapper(NameMapper.class);
+      Sector s = sm.get(sectorKey);
+      nm.processIndexIds(s.getDatasetKey(), sectorKey, handler);
+      count = handler.counter;
+      LOG.info("Written {} index names for sector {}-{}", count, sectorKey, attempt);
+    }
+    return count;
+  }
+
   static class NamesWriter implements ResultHandler<String>, AutoCloseable {
     public int counter = 0;
     private final File f;
@@ -69,8 +86,12 @@ public class NamesTreeDao {
     @Override
     public void handleResult(ResultContext<? extends String> resultContext) {
       try {
-        w.append(resultContext.getResultObject());
-        w.append('\n');
+        String id = resultContext.getResultObject();
+        if (id != null) {
+          counter++;
+          w.append(id);
+          w.append('\n');
+        }
       } catch (IOException e) {
         LOG.error("Failed to write to {}", f.getAbsolutePath());
         throw new RuntimeException(e);
@@ -81,7 +102,19 @@ public class NamesTreeDao {
   public int updateDatasetTree(int datasetKey, int attempt) throws IOException {
     Writer writer = Utf8IOUtils.writerFromFile(treeFile(datasetKey, attempt));
     int count = TextTreePrinter.dataset(datasetKey, factory, writer).print();
-    LOG.info("Written text tree with {} lines for {}-{}", count, datasetKey, attempt);
+    LOG.info("Written text tree with {} lines for dataset {}-{}", count, datasetKey, attempt);
+    return count;
+  }
+  
+  public int updateSectorTree(int sectorKey, int attempt) throws IOException {
+    Writer writer = Utf8IOUtils.writerFromFile(sectorTreeFile(sectorKey, attempt));
+    Sector s;
+    try (SqlSession session = factory.openSession(true)) {
+      s = session.getMapper(SectorMapper.class).get(sectorKey);
+  
+    }
+    int count = TextTreePrinter.sector(s.getDatasetKey(), sectorKey, factory, writer).print();
+    LOG.info("Written text tree with {} lines for sector {}-{}", count, sectorKey, attempt);
     return count;
   }
 
@@ -103,19 +136,19 @@ public class NamesTreeDao {
     }
   }
   
-  private File sectorTreeFile(int sectorKey, int attempt) {
+  public File sectorTreeFile(int sectorKey, int attempt) {
     return new File(sectorDir(sectorKey), "tree/"+attempt+".txt");
   }
   
-  private File sectorNamesFile(int sectorKey, int attempt) {
+  public File sectorNamesFile(int sectorKey, int attempt) {
     return new File(sectorDir(sectorKey), "names/"+attempt+".txt");
   }
   
-  private File treeFile(int datasetKey, int attempt) {
+  public File treeFile(int datasetKey, int attempt) {
     return new File(datasetDir(datasetKey), "tree/"+attempt+".txt");
   }
   
-  private File namesFile(int datasetKey, int attempt) {
+  public File namesFile(int datasetKey, int attempt) {
     return new File(datasetDir(datasetKey), "names/"+attempt+".txt");
   }
   

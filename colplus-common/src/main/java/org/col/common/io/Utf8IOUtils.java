@@ -5,14 +5,22 @@ import java.nio.charset.StandardCharsets;
 
 import com.google.common.io.Files;
 
-public class Utf8Writers {
+public class Utf8IOUtils {
 
-  public static Writer fromFile(File f) throws IOException {
+  public static BufferedWriter writerFromFile(File f) throws IOException {
     Files.createParentDirs(f);
-    return fromStream(new FileOutputStream(f));
+    return writerFromStream(new FileOutputStream(f));
   }
   
-  public static Writer fromStream(OutputStream stream) {
+  public static BufferedWriter writerFromStream(OutputStream stream) {
     return new BufferedWriter(new OutputStreamWriter(stream, StandardCharsets.UTF_8));
+  }
+  
+  public static BufferedReader readerFromFile(File f) throws IOException {
+    return readerFromStream(new FileInputStream(f));
+  }
+  
+  public static BufferedReader readerFromStream(InputStream stream) {
+    return new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
   }
 }

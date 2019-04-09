@@ -43,7 +43,7 @@ import static org.col.api.vocab.NameField.SPECIFIC_EPITHET;
 import static org.col.api.vocab.NameField.STRAIN;
 import static org.col.api.vocab.NameField.UNINOMIAL;
 import static org.col.api.vocab.NameField.WEBPAGE;
-import static org.col.common.util.CollectionUtils.notEmpty;
+import static org.col.common.collection.CollectionUtils.notEmpty;
 import static org.col.es.EsModule.NAME_USAGE_WRITER;
 
 /**

@@ -1,7 +1,7 @@
 package org.col.dao;
 
+import java.io.File;
 import java.io.IOException;
-import java.io.StringWriter;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Function;
@@ -17,8 +17,6 @@ import org.col.api.model.ResultPage;
 import org.col.api.vocab.*;
 import org.col.db.mapper.DatasetImportMapper;
 import org.col.db.mapper.DatasetMapper;
-import org.col.db.mapper.NameMapper;
-import org.col.db.tree.TextTreePrinter;
 import org.col.db.type2.IntCount;
 import org.col.db.type2.StringCount;
 import org.gbif.dwc.terms.Term;
@@ -34,10 +32,16 @@ public class DatasetImportDao {
   private static final Logger LOG = LoggerFactory.getLogger(DatasetImportDao.class);
   
   private final SqlSessionFactory factory;
+  private final NamesTreeDao treeDao;
   
   
-  public DatasetImportDao(SqlSessionFactory factory) {
+  public DatasetImportDao(SqlSessionFactory factory, File repo) {
     this.factory = factory;
+    this.treeDao = new NamesTreeDao(factory, repo);
+  }
+  
+  public NamesTreeDao getTreeDao() {
+    return treeDao;
   }
   
   /**
@@ -139,11 +143,9 @@ public class DatasetImportDao {
     try (SqlSession session = factory.openSession(true)) {
       DatasetImportMapper mapper = session.getMapper(DatasetImportMapper.class);
       updateMetrics(mapper, di);
-      
-      StringWriter tree = TextTreePrinter.sizedWriter(di.getUsagesCount());
-      TextTreePrinter.dataset(di.getDatasetKey(), factory, tree).print();
-      di.setTextTree(tree.toString());
-      di.setNames(session.getMapper(NameMapper.class).listNameIndexIds(di.getDatasetKey(), null));
+  
+      treeDao.updateDatasetTree(di.getDatasetKey(), di.getAttempt());
+      treeDao.updateDatasetNames(di.getDatasetKey(), di.getAttempt());
       
     } catch (IOException e) {
       LOG.error("Failed to print text tree for dataset {}", di.getDatasetKey(), e);
@@ -238,4 +240,5 @@ public class DatasetImportDao {
     Preconditions.checkNotNull(di.getAttempt(), "attempt required for update");
     mapper.update(di);
   }
+  
 }

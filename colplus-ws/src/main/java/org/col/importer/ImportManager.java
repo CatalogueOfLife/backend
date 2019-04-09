@@ -259,7 +259,7 @@ public class ImportManager implements Managed {
   
   private void cancelAndReschedule(ImportState state, boolean truncate) {
     int counter = 0;
-    DatasetImportDao dao = new DatasetImportDao(factory);
+    DatasetImportDao dao = new DatasetImportDao(factory, cfg.textTreeRepo);
     Iterator<DatasetImport> iter = PagingUtil.pageAll(p -> dao.list(null, Lists.newArrayList(state), p));
     while (iter.hasNext()) {
       DatasetImport di = iter.next();

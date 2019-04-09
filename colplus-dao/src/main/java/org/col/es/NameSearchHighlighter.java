@@ -16,7 +16,7 @@ import org.gbif.nameparser.api.Authorship;
 import static org.col.api.search.NameSearchRequest.SearchContent.AUTHORSHIP;
 import static org.col.api.search.NameSearchRequest.SearchContent.SCIENTIFIC_NAME;
 import static org.col.api.search.NameSearchRequest.SearchContent.VERNACULAR_NAME;
-import static org.col.common.util.CollectionUtils.isEmpty;
+import static org.col.common.collection.CollectionUtils.isEmpty;
 import static org.col.es.NameUsageTransfer.normalizeStrongly;
 import static org.col.es.NameUsageTransfer.normalizeWeakly;
 

@@ -12,6 +12,7 @@ import io.dropwizard.client.HttpClientBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSession;
 import org.col.WsServerConfig;
+import org.col.dao.TreeRepoRule;
 import org.col.matching.NameIndexFactory;
 import org.col.api.model.Dataset;
 import org.col.api.model.DatasetImport;
@@ -49,6 +50,9 @@ public class ImportManagerTest {
   @Rule
   public InitMybatisRule initMybatisRule = InitMybatisRule.empty();
   
+  @Rule
+  public final TreeRepoRule treeRepoRule = new TreeRepoRule();
+  
   private static WsServerConfig provideConfig() {
     WsServerConfig cfg = new WsServerConfig();
     cfg.gbif.syncFrequency = 0;
@@ -77,7 +81,7 @@ public class ImportManagerTest {
         NameIndexFactory.passThru(), null, new ImageService(cfg.img));
     importManager.start();
   
-    diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory());
+    diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
     LOG.warn("Test initialized");
   }
   
@@ -140,7 +144,7 @@ public class ImportManagerTest {
     ResultPage<DatasetImport> imports = diDao.list(new Page());
     assertEquals(1, imports.size());
     assertEquals(d1.getKey(), imports.getResult().get(0).getDatasetKey());
-    assertEquals((Integer)1, imports.getResult().get(0).getAttempt());
+    assertEquals(1, imports.getResult().get(0).getAttempt());
     assertEquals(d1.getDataAccess(), imports.getResult().get(0).getDownloadUri());
   
     Set<ImportState> runningStates = Sets.newHashSet(ImportState.DOWNLOADING, ImportState.PROCESSING, ImportState.INSERTING);
@@ -154,7 +158,7 @@ public class ImportManagerTest {
     imports = diDao.list(new Page());
     assertEquals(2, imports.size());
     assertEquals(d2.getKey(), imports.getResult().get(0).getDatasetKey());
-    assertEquals((Integer)1, imports.getResult().get(0).getAttempt());
+    assertEquals(1, imports.getResult().get(0).getAttempt());
     assertEquals(d2.getDataAccess(), imports.getResult().get(0).getDownloadUri());
     assertEquals(d1.getKey(), imports.getResult().get(1).getDatasetKey());
     

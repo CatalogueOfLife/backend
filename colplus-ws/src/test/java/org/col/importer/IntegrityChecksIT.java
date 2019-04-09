@@ -16,6 +16,7 @@ import org.col.command.initdb.InitDbCmd;
 import org.col.config.ImporterConfig;
 import org.col.config.NormalizerConfig;
 import org.col.dao.DatasetImportDao;
+import org.col.dao.TreeRepoRule;
 import org.col.db.PgSetupRule;
 import org.col.db.mapper.DatasetMapper;
 import org.col.db.mapper.InitMybatisRule;
@@ -43,6 +44,9 @@ public class IntegrityChecksIT {
   
   @Rule
   public InitMybatisRule initMybatisRule = InitMybatisRule.empty();
+  
+  @Rule
+  public final TreeRepoRule treeRepoRule = new TreeRepoRule();
   
   @Before
   public void initCfg() {
@@ -97,7 +101,8 @@ public class IntegrityChecksIT {
   }
   
   DatasetImport metrics() {
-    return new DatasetImportDao(PgSetupRule.getSqlSessionFactory()).generateMetrics(dataset.getKey());
+    return new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo())
+        .generateMetrics(dataset.getKey());
   }
   
   

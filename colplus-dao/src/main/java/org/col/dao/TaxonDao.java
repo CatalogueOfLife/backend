@@ -401,11 +401,13 @@ public class TaxonDao {
     tMapper.resetDatasetSectorCount(Datasets.DRAFT_COL);
     int counter = 0;
     for (Sector s : Pager.sectors(factory)) {
-      counter++;
-      tMapper.incDatasetSectorCount(catalogueKey, s.getTarget().getId(), s.getDatasetKey(), 1);
+      if (s.getTarget() != null) {
+        counter++;
+        tMapper.incDatasetSectorCount(catalogueKey, s.getTarget().getId(), s.getDatasetKey(), 1);
+      }
     }
     session.commit();
-    LOG.info("Updated dataset sector counts from all {} sectors", counter);
+    LOG.info("Updated dataset sector counts from {} sectors", counter);
   }
   
   private void relinkChildren(Taxon t, ColUser user){

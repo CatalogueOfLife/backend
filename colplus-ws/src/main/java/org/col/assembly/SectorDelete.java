@@ -9,20 +9,21 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.model.ColUser;
 import org.col.api.model.Sector;
+import org.col.api.model.SectorImport;
 import org.col.db.mapper.SectorMapper;
 import org.col.db.mapper.TaxonMapper;
-import org.col.es.NameUsageIndexServiceEs;
+import org.col.es.NameUsageIndexService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Deletes a sector, all its data and all recursively delate also all included, nested sectors
+ * Deletes a sector, all its data and recursively deletes also all included, nested sectors!
  */
 public class SectorDelete extends SectorRunnable {
   private static final Logger LOG = LoggerFactory.getLogger(SectorDelete.class);
   private Set<Integer> visitedSectors = new HashSet<>();
   
-  public SectorDelete(int sectorKey, SqlSessionFactory factory, NameUsageIndexServiceEs indexService,
+  public SectorDelete(int sectorKey, SqlSessionFactory factory, NameUsageIndexService indexService,
                       Consumer<SectorRunnable> successCallback,
                       BiConsumer<SectorRunnable, Exception> errorCallback, ColUser user) {
     super(sectorKey, factory, indexService, successCallback, errorCallback, user);
@@ -30,8 +31,13 @@ public class SectorDelete extends SectorRunnable {
   
   @Override
   void doWork() {
+    state.setState( SectorImport.State.DELETING);
     deleteSector(sector.getKey());
+    
+    state.setState( SectorImport.State.INDEXING);
     updateSearchIndex();
+    
+    state.setState( SectorImport.State.FINISHED);
   }
   
   private void deleteSector(final int sectorKey) {
@@ -50,10 +56,15 @@ public class SectorDelete extends SectorRunnable {
       session.getMapper(SectorMapper.class).delete(sectorKey);
       LOG.info("Deleted sector {}", sectorKey);
     }
+    LOG.info("Deleted {} sectors in total", visitedSectors.size());
   }
   
   private void updateSearchIndex() {
-    LOG.info("TODO: Update search index for all {} sectors", visitedSectors.size());
+    for (int sKey : visitedSectors) {
+      indexService.deleteSector(sector.getKey());
+      LOG.info("Removed sector {} from search index", sKey);
+    }
+    LOG.info("Removed {} sectors from the search index", visitedSectors.size());
   }
   
 }

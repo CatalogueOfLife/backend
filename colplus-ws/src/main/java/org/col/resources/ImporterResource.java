@@ -10,9 +10,6 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
 import io.dropwizard.auth.Auth;
-import org.apache.ibatis.session.SqlSessionFactory;
-import org.col.importer.ImportManager;
-import org.col.importer.ImportRequest;
 import org.col.api.model.ColUser;
 import org.col.api.model.DatasetImport;
 import org.col.api.model.Page;
@@ -21,6 +18,8 @@ import org.col.api.vocab.ImportState;
 import org.col.dao.DatasetImportDao;
 import org.col.dw.auth.Roles;
 import org.col.dw.jersey.MoreMediaTypes;
+import org.col.importer.ImportManager;
+import org.col.importer.ImportRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,9 +32,9 @@ public class ImporterResource {
   private final ImportManager importManager;
   private final DatasetImportDao dao;
   
-  public ImporterResource(ImportManager importManager, SqlSessionFactory factory) {
+  public ImporterResource(ImportManager importManager, DatasetImportDao diDao) {
     this.importManager = importManager;
-    dao = new DatasetImportDao(factory);
+    dao = diDao;
   }
   
   @GET

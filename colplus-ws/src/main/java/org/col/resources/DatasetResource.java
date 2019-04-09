@@ -1,11 +1,10 @@
 package org.col.resources;
 
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
-import java.util.function.BiFunction;
+import java.util.stream.Stream;
 import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 import javax.ws.rs.*;
@@ -15,6 +14,7 @@ import javax.ws.rs.core.Response;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
+import org.col.WsServerConfig;
 import org.col.api.model.Dataset;
 import org.col.api.model.DatasetImport;
 import org.col.api.model.Page;
@@ -37,15 +37,15 @@ public class DatasetResource extends CRUDIntResource<Dataset> {
   
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(DatasetResource.class);
-  private final SqlSessionFactory factory;
   private final DatasetDao dao;
   private final ImageService imgService;
+  private final DatasetImportDao diDao;
   
-  public DatasetResource(SqlSessionFactory factory, ImageService imgService, BiFunction<Integer, String, File> scratchFileFunc, DownloadUtil downloader) {
-    super(Dataset.class, new DatasetDao(factory, downloader, imgService, scratchFileFunc));
+  public DatasetResource(SqlSessionFactory factory, ImageService imgService, WsServerConfig cfg, DownloadUtil downloader) {
+    super(Dataset.class, new DatasetDao(factory, downloader, imgService, cfg.normalizer::scratchFile));
     dao = (DatasetDao) crud;
-    this.factory = factory;
     this.imgService = imgService;
+    this.diDao = new DatasetImportDao(factory, cfg.textTreeRepo);
   }
   
   @GET
@@ -59,14 +59,28 @@ public class DatasetResource extends CRUDIntResource<Dataset> {
   public List<DatasetImport> getImports(@PathParam("key") int key,
                                         @QueryParam("state") List<ImportState> states,
                                         @QueryParam("limit") @DefaultValue("1") int limit) {
-    return new DatasetImportDao(factory).list(key, states, new Page(0, limit)).getResult();
+    return diDao.list(key, states, new Page(0, limit)).getResult();
   }
   
   @GET
   @Path("{key}/import/{attempt}")
   public DatasetImport getImportAttempt(@PathParam("key") int key,
                                         @PathParam("attempt") int attempt) {
-    return new DatasetImportDao(factory).getAttempt(key, attempt);
+    return diDao.getAttempt(key, attempt);
+  }
+  
+  @GET
+  @Path("{key}/import/{attempt}/tree")
+  public Stream<String> getImportAttemptTree(@PathParam("key") int key,
+                                     @PathParam("attempt") int attempt) throws IOException {
+    return diDao.getTreeDao().getDatasetTree(key, attempt);
+  }
+  
+  @GET
+  @Path("{key}/import/{attempt}/names")
+  public Stream<String> getImportAttemptNames(@PathParam("key") int key,
+                                              @PathParam("attempt") int attempt) {
+    return diDao.getTreeDao().getDatasetNames(key, attempt);
   }
   
   @GET

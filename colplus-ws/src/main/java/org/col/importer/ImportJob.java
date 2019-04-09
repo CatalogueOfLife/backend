@@ -79,7 +79,7 @@ public class ImportJob implements Runnable {
     this.factory = factory;
     this.index = index;
     this.indexService = indexService;
-    dao = new DatasetImportDao(factory);
+    dao = new DatasetImportDao(factory, cfg.textTreeRepo);
     this.imgService = imgService;
     
     this.notifier = notifier;

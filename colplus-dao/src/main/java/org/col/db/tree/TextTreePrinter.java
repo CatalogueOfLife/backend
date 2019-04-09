@@ -42,6 +42,7 @@ public class TextTreePrinter implements ResultHandler<Taxon> {
   
   private static final int indentation = 2;
   private int level = 0;
+  private int counter = 0;
   private final Writer writer;
   private final int datasetKey;
   private final Integer sectorKey;
@@ -85,7 +86,12 @@ public class TextTreePrinter implements ResultHandler<Taxon> {
     return new StringWriter((expectedRows+1) * 120);
   }
   
-  public void print() throws IOException {
+  /**
+   * @return number of written lines, i.e. name usages
+   * @throws IOException
+   */
+  public int print() throws IOException {
+    counter = 0;
     try {
       session = factory.openSession(true);
       sm = session.getMapper(SynonymMapper.class);
@@ -96,6 +102,7 @@ public class TextTreePrinter implements ResultHandler<Taxon> {
       writer.flush();
       session.close();
     }
+    return counter;
   }
   
   @Override
@@ -150,6 +157,7 @@ public class TextTreePrinter implements ResultHandler<Taxon> {
   }
   
   private void printCore(NameUsage u) throws IOException {
+    counter++;
     Name n = u.getName();
     writer.write(StringUtils.repeat(' ', level * indentation));
     if (u.isSynonym()) {

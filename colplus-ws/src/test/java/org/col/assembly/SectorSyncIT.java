@@ -9,6 +9,7 @@ import java.util.List;
 import com.google.common.base.Charsets;
 import org.apache.commons.io.IOUtils;
 import org.apache.ibatis.session.SqlSession;
+import org.col.dao.TreeRepoRule;
 import org.col.importer.PgImportRule;
 import org.col.api.model.Sector;
 import org.col.api.model.SimpleName;
@@ -22,10 +23,7 @@ import org.col.db.mapper.SectorMapper;
 import org.col.db.mapper.TaxonMapper;
 import org.col.db.tree.TextTreePrinter;
 import org.gbif.nameparser.api.Rank;
-import org.junit.ClassRule;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.*;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -38,6 +36,17 @@ public class SectorSyncIT {
   
   @Rule
   public final PgImportRule importRule = PgImportRule.create(DataFormat.ACEF, 1, 5, 6);
+  
+  @Rule
+  public final TreeRepoRule treeRepoRule = new TreeRepoRule();
+  
+  DatasetImportDao diDao;
+  
+  @Before
+  public void init () {
+    diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
+  }
+  
   
   public int datasetKey(int key, DataFormat format) {
     return importRule.datasetKey(key, format);
@@ -73,11 +82,12 @@ public class SectorSyncIT {
   }
   
   void sync(int sectorKey) throws InterruptedException {
-    SectorSync ss = new SectorSync(sectorKey, PgSetupRule.getSqlSessionFactory(), null,
+    
+    SectorSync ss = new SectorSync(sectorKey, PgSetupRule.getSqlSessionFactory(), null, diDao,
         SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, InitMybatisRule.TEST_USER);
     ss.run();
 
-    DatasetImportDao diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory());
+    DatasetImportDao diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
     diDao.createSuccess(Datasets.DRAFT_COL);
   }
   

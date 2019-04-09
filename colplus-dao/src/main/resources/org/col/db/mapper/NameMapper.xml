@@ -198,7 +198,7 @@
         WHERE n.dataset_key = #{datasetKey} AND t.id = #{taxonId}
     </select>
 
-    <select id="listNameIndexIds" resultType="String" >
+    <select id="processIndexIds" resultType="String" >
         SELECT DISTINCT name_index_id
         FROM name_${datasetKey}
         <if test="sectorKey != null">

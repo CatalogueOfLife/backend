@@ -1,5 +1,7 @@
 package org.col.resources;
 
+import java.io.IOException;
+import java.io.Reader;
 import java.util.List;
 import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
@@ -7,22 +9,21 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
-import com.github.difflib.algorithm.DiffException;
 import io.dropwizard.auth.Auth;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.col.command.export.AcExporter;
-import org.col.assembly.AssemblyCoordinator;
-import org.col.assembly.AssemblyState;
-import org.col.assembly.SyncRequest;
 import org.col.api.model.ColUser;
 import org.col.api.model.Page;
 import org.col.api.model.ResultPage;
 import org.col.api.model.SectorImport;
 import org.col.api.vocab.Datasets;
+import org.col.assembly.AssemblyCoordinator;
+import org.col.assembly.AssemblyState;
+import org.col.assembly.SyncRequest;
+import org.col.command.export.AcExporter;
 import org.col.db.mapper.SectorImportMapper;
-import org.col.db.tree.DiffReport;
 import org.col.db.tree.DiffService;
+import org.col.db.tree.NamesDiff;
 import org.col.dw.auth.Roles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,9 +38,9 @@ public class AssemblyResource {
   private final DiffService diff;
   private final AcExporter exporter;
   
-  public AssemblyResource(AssemblyCoordinator assembly, SqlSessionFactory factory, AcExporter exporter) {
+  public AssemblyResource(AssemblyCoordinator assembly, SqlSessionFactory factory, AcExporter exporter, DiffService diffService) {
     this.assembly = assembly;
-    this.diff = new DiffService(factory);
+    this.diff = diffService;
     this.exporter = exporter;
   }
   
@@ -91,22 +92,22 @@ public class AssemblyResource {
   
   @GET
   @Path("/sync/{sectorKey}/treediff")
-  public DiffReport diffTree(@PathParam("catKey") int catKey,
-                              @PathParam("sectorKey") int sectorKey,
-                              @QueryParam("attempts") String attempts,
-                              @Context SqlSession session) throws DiffException {
+  public Reader diffTree(@PathParam("catKey") int catKey,
+                         @PathParam("sectorKey") int sectorKey,
+                         @QueryParam("attempts") String attempts,
+                         @Context SqlSession session) throws IOException {
     requireDraft(catKey);
-    return diff.treeDiff(sectorKey, attempts);
+    return diff.sectorTreeDiff(sectorKey, attempts);
   }
   
   @GET
   @Path("/sync/{sectorKey}/namesdiff")
-  public DiffReport diffNames(@PathParam("catKey") int catKey,
-                               @PathParam("sectorKey") int sectorKey,
-                               @QueryParam("attempts") String attempts,
-                               @Context SqlSession session) throws DiffException {
+  public NamesDiff diffNames(@PathParam("catKey") int catKey,
+                             @PathParam("sectorKey") int sectorKey,
+                             @QueryParam("attempts") String attempts,
+                             @Context SqlSession session) throws IOException {
     requireDraft(catKey);
-    return diff.namesDiff(sectorKey, attempts);
+    return diff.sectorNamesDiff(sectorKey, attempts);
   }
 
   @DELETE

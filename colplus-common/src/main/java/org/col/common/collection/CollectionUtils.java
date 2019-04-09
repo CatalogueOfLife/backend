@@ -1,4 +1,4 @@
-package org.col.common.util;
+package org.col.common.collection;
 
 import java.util.Collection;
 import java.util.Map;

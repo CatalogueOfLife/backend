@@ -9,7 +9,7 @@ import org.col.api.search.NameSearchRequest;
 import org.col.api.search.NameSearchRequest.SearchContent;
 import org.col.es.query.Highlight;
 
-import static org.col.common.util.CollectionUtils.isEmpty;
+import static org.col.common.collection.CollectionUtils.isEmpty;
 
 /**
  * Translates the values in the NameSearchRequest.content field into a "highlight" object within the Elasticsearch search request.

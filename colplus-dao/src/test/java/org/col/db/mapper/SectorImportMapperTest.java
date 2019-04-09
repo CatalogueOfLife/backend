@@ -1,8 +1,6 @@
 package org.col.db.mapper;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Set;
 
 import com.google.common.collect.Lists;
 import org.col.api.RandomUtils;
@@ -43,12 +41,6 @@ public class SectorImportMapperTest extends MapperTestBase<SectorImportMapper> {
     d.setState(state);
     d.setStarted(LocalDateTime.now());
     d.setFinished(LocalDateTime.now());
-    d.setTextTree(RandomUtils.randomUnicodeString(1234567));
-    Set<String> names = new HashSet<>();
-    for (int i=0; i<1000; i++) {
-      names.add(RandomUtils.randomLatinString(8));
-    }
-    d.setNames(names);
     d.setNameCount(65432);
     d.setTaxonCount(5748329);
     d.setReferenceCount(9781);

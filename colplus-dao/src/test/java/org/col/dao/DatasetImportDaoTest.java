@@ -6,6 +6,7 @@ import org.col.api.vocab.*;
 import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
+import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -13,11 +14,16 @@ import static org.junit.Assert.assertFalse;
 
 public class DatasetImportDaoTest extends DaoTestBase {
   
+  DatasetImportDao dao;
+
+  @Before
+  public void init() {
+    dao = new DatasetImportDao(factory(), null);
+  }
+
   @Test
   public void generateDatasetImport() {
     
-    DatasetImportDao dao = new DatasetImportDao(factory());
-
     DatasetImport d = dao.generateMetrics(TestEntityGenerator.DATASET11.getKey());
   
     assertEquals((Integer) 0, d.getDescriptionCount());
@@ -70,4 +76,5 @@ public class DatasetImportDaoTest extends DaoTestBase {
     assertEquals(2, d.getVerbatimByTypeCount().size());
     assertEquals((Integer) 3, d.getVerbatimByTypeCount().get(AcefTerm.AcceptedSpecies));
   }
+
 }

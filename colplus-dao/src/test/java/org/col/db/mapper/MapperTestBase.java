@@ -1,8 +1,9 @@
 package org.col.db.mapper;
 
 import org.apache.ibatis.session.SqlSession;
-import org.col.db.PgSetupRule;
 import org.col.dao.DatasetImportDao;
+import org.col.dao.TreeRepoRule;
+import org.col.db.PgSetupRule;
 import org.javers.core.Javers;
 import org.javers.core.JaversBuilder;
 import org.javers.core.diff.Diff;
@@ -23,6 +24,9 @@ public abstract class MapperTestBase<T> {
   
   @Rule
   public final InitMybatisRule initMybatisRule;
+  
+  @Rule
+  public final TreeRepoRule treeRepoRule = new TreeRepoRule();
   
   public MapperTestBase(Class<T> mapperClazz) {
     this(mapperClazz, InitMybatisRule.apple());
@@ -51,7 +55,7 @@ public abstract class MapperTestBase<T> {
   
   protected void generateDatasetImport(int datasetKey) {
     commit();
-    DatasetImportDao dao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory());
+    DatasetImportDao dao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
     dao.createSuccess(datasetKey);
     commit();
   }

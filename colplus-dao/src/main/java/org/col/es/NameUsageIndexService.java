@@ -13,6 +13,11 @@ public interface NameUsageIndexService {
    * Indexes all CoL usages from an entire sector from postgres into ElasticSearch using the bulk API.
    */
   void indexSector(Integer sectorKey);
+  
+  /**
+   * Removed all CoL usage docs of the given sector from ElasticSearch, i.e. taxa and synonyms.
+   */
+  void deleteSector(Integer sectorKey);
 
   /**
    * Indexes an entire dataset from postgres into ElasticSearch using the bulk API.
@@ -38,6 +43,11 @@ public interface NameUsageIndexService {
       @Override
       public void indexSector(Integer sectorKey) {
         LOG.info("No Elastic Search configured, pass through sector {}", sectorKey);
+      }
+  
+      @Override
+      public void deleteSector(Integer sectorKey) {
+        LOG.info("No Elastic Search configured, pass through deletion of sector {}", sectorKey);
       }
 
       @Override

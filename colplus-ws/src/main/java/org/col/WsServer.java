@@ -17,7 +17,6 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.datapackage.ColTerm;
 import org.col.api.jackson.ApiModule;
 import org.col.api.vocab.ColDwcTerm;
-import org.col.api.vocab.Datasets;
 import org.col.assembly.AssemblyCoordinator;
 import org.col.command.es.IndexAllCmd;
 import org.col.command.export.AcExporter;
@@ -25,10 +24,13 @@ import org.col.command.export.ExportCmd;
 import org.col.command.initdb.InitDbCmd;
 import org.col.command.neoshell.ShellCmd;
 import org.col.common.io.DownloadUtil;
+import org.col.dao.DatasetImportDao;
+import org.col.db.tree.DiffService;
 import org.col.dw.auth.AuthBundle;
 import org.col.dw.cors.CorsBundle;
 import org.col.dw.db.MybatisBundle;
 import org.col.dw.es.ManagedEsClient;
+import org.col.dw.health.DiffHealthCheck;
 import org.col.dw.health.NameParserHealthCheck;
 import org.col.dw.jersey.ColJerseyBundle;
 import org.col.es.EsClientFactory;
@@ -158,10 +160,12 @@ public class WsServer extends Application<WsServerConfig> {
       ni = NameIndexFactory.persistent(cfg.namesIndexFile, getSqlSessionFactory());
     }
   
+    final DatasetImportDao diDao = new DatasetImportDao(getSqlSessionFactory(), cfg.textTreeRepo);
+    
     // async importer
     final ImportManager importManager = new ImportManager(cfg, env.metrics(), httpClient, getSqlSessionFactory(), ni, indexService, imgService);
     env.lifecycle().manage(importManager);
-    env.jersey().register(new ImporterResource(importManager, getSqlSessionFactory()));
+    env.jersey().register(new ImporterResource(importManager, diDao));
   
     if (cfg.importer.continousImportPolling > 0) {
       LOG.info("Enable continuous importing");
@@ -182,13 +186,16 @@ public class WsServer extends Application<WsServerConfig> {
     AcExporter exporter = new AcExporter(cfg);
     
     // assembly
-    AssemblyCoordinator assembly = new AssemblyCoordinator(getSqlSessionFactory(), env.metrics());
+    AssemblyCoordinator assembly = new AssemblyCoordinator(getSqlSessionFactory(), diDao, indexService, env.metrics());
     env.lifecycle().manage(assembly);
   
-    
+    // diff
+    DiffService diff = new DiffService(getSqlSessionFactory(), diDao.getTreeDao());
+    env.healthChecks().register("diff", new DiffHealthCheck(diff));
+  
     // resources
     env.jersey().register(new DataPackageResource());
-    env.jersey().register(new DatasetResource(getSqlSessionFactory(), imgService, cfg.normalizer::scratchFile, new DownloadUtil(httpClient)));
+    env.jersey().register(new DatasetResource(getSqlSessionFactory(), imgService, cfg, new DownloadUtil(httpClient)));
     env.jersey().register(new DecisionResource(getSqlSessionFactory(), indexService));
     env.jersey().register(new DocsResource(cfg));
     env.jersey().register(new NameResource(nuss));
@@ -202,7 +209,7 @@ public class WsServer extends Application<WsServerConfig> {
     env.jersey().register(new VerbatimResource());
     env.jersey().register(new VocabResource());
     env.jersey().register(new MatchingResource(ni));
-    env.jersey().register(new AssemblyResource(assembly, getSqlSessionFactory(), exporter));
+    env.jersey().register(new AssemblyResource(assembly, getSqlSessionFactory(), exporter, diff));
     env.jersey().register(new AdminResource(getSqlSessionFactory(), new DownloadUtil(httpClient), cfg.normalizer, imgService));
   
   }

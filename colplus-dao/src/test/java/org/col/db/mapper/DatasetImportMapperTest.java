@@ -80,7 +80,7 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     DatasetImport d1 = create();
     mapper().create(d1);
     commit();
-    assertEquals((Integer) 1, d1.getAttempt());
+    assertEquals(1, d1.getAttempt());
     
     DatasetImport d2 = mapper().list(d1.getDatasetKey(), null, new Page(0, 100)).get(0);
     assertNotNull(d2.getAttempt());

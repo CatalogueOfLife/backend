@@ -188,8 +188,6 @@ CREATE TABLE dataset_import (
   name_relations_by_type_count HSTORE,
   verbatim_by_type_count HSTORE,
   media_by_type_count HSTORE,
-  text_tree TEXT,
-  names TEXT[],
   PRIMARY KEY (dataset_key, attempt)
 );
 

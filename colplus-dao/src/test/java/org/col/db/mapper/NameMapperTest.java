@@ -2,7 +2,6 @@ package org.col.db.mapper;
 
 import java.util.List;
 
-import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import org.col.api.TestEntityGenerator;
 import org.col.api.model.Dataset;
@@ -19,7 +18,6 @@ import static org.junit.Assert.*;
  */
 public class NameMapperTest extends org.col.db.mapper.MapperTestBase<NameMapper> {
   
-  private static final Splitter SPACE_SPLITTER = Splitter.on(" ").trimResults();
   private NameMapper nameMapper;
   
   public NameMapperTest() {

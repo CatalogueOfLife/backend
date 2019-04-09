@@ -2,7 +2,6 @@ package org.col.api.model;
 
 import java.util.regex.Pattern;
 
-import com.google.common.collect.ImmutableSet;
 import org.col.api.datapackage.ColTerm;
 import org.col.api.jackson.ApiModule;
 import org.col.api.jackson.SerdeTestBase;
@@ -30,8 +29,6 @@ public class DatasetImportTest extends SerdeTestBase<DatasetImport> {
     d.setAttempt(12);
     d.setDatasetKey(Datasets.DRAFT_COL);
     d.setState(ImportState.FINISHED);
-    d.setTextTree("A\n  B\n  C\n    D\n");
-    d.setNames(ImmutableSet.of("123", "1234", "12345"));
     d.setDescriptionCount(231456);
     d.setDistributionCount(232456);
     d.setNameCount(2314453);

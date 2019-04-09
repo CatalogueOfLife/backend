@@ -58,9 +58,7 @@
       usages_by_status_count,
       names_by_status_count,
       name_relations_by_type_count,
-      verbatim_by_type_count,
-      text_tree,
-      names
+      verbatim_by_type_count
     </sql>
 
     <sql id="PROPS">
@@ -88,9 +86,7 @@
       #{di.usagesByStatusCount, typeHandler=org.col.db.type2.HstoreTaxStatusCountTypeHandler}::hstore,
       #{di.namesByStatusCount, typeHandler=org.col.db.type2.HstoreNomStatusCountTypeHandler}::hstore,
       #{di.nameRelationsByTypeCount, typeHandler=org.col.db.type2.HstoreNameRelCountTypeHandler}::hstore,
-      #{di.verbatimByTypeCount, typeHandler=org.col.db.type2.HstoreTermCountTypeHandler}::hstore,
-      #{di.textTree},
-      #{di.names, typeHandler=org.col.db.type2.StringSetTypeHandler}
+      #{di.verbatimByTypeCount, typeHandler=org.col.db.type2.HstoreTermCountTypeHandler}::hstore
     </sql>
 
     <sql id="FROM">
@@ -113,7 +109,6 @@
 
     <!--  A mapping to Name, mostly auto mapped -->
     <resultMap id="datasetImportResultMap" type="DatasetImport" autoMapping="true">
-        <result property="names" column="names" typeHandler="org.col.db.type2.StringSetTypeHandler"/>
         <result property="issuesCount" column="issues_count" typeHandler="org.col.db.type2.HstoreIssueCountTypeHandler"/>
         <result property="namesByRankCount" column="names_by_rank_count" typeHandler="org.col.db.type2.HstoreRankCountTypeHandler"/>
         <result property="taxaByRankCount" column="taxa_by_rank_count" typeHandler="org.col.db.type2.HstoreRankCountTypeHandler"/>
@@ -128,7 +123,7 @@
     </resultMap>
 
     <select id="get" resultMap="datasetImportResultMap">
-        SELECT <include refid="SELECT" />, text_tree, names
+        SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
         WHERE dataset_key=#{key} AND attempt=#{attempt}
     </select>
@@ -146,7 +141,6 @@
         ORDER BY started DESC, attempt DESC
         <include refid="org.col.db.mapper.Common.limit" />
     </select>
-
 
     <select id="countDescription" resultType="integer">
         SELECT count(*) FROM description_${key}

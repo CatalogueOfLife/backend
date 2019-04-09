@@ -8,6 +8,7 @@ import org.col.api.TestEntityGenerator;
 import org.col.api.model.*;
 import org.col.api.vocab.Datasets;
 import org.col.api.vocab.Origin;
+import org.col.dao.TreeRepoRule;
 import org.col.db.PgSetupRule;
 import org.col.dao.DatasetImportDao;
 import org.col.db.mapper.*;
@@ -32,6 +33,9 @@ public class SectorSyncTest {
   @Rule
   public final InitMybatisRule initMybatisRule = InitMybatisRule.tree();
   
+  @Rule
+  public final TreeRepoRule treeRepoRule = new TreeRepoRule();
+
   DatasetImportDao diDao;
   
   final int datasetKey = DATASET11.getKey();
@@ -79,7 +83,7 @@ public class SectorSyncTest {
       session.commit();
     }
   
-    diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory());
+    diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
     diDao.createSuccess(Datasets.DRAFT_COL);
   }
   
@@ -90,7 +94,7 @@ public class SectorSyncTest {
       assertEquals(1, nm.count(Datasets.DRAFT_COL));
     }
 
-    SectorSync ss = new SectorSync(sector.getKey(), PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(),
+    SectorSync ss = new SectorSync(sector.getKey(), PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), diDao,
         SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestEntityGenerator.USER_EDITOR);
     ss.run();
   

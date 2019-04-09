@@ -17,7 +17,7 @@ public class NamesTreeDaoTest extends DaoTestBase {
   
   public NamesTreeDaoTest() {
     super(InitMybatisRule.tree());
-    dao = new DatasetImportDao(factory());
+    dao = new DatasetImportDao(factory(), treeRepoRule.getRepo());
   }
   
   @Test
@@ -28,6 +28,15 @@ public class NamesTreeDaoTest extends DaoTestBase {
   
     Stream<String> lines = dao.getTreeDao().getDatasetTree(11, 1);
     assertEquals(expected.lines(), lines);
+  }
+  
+  @Test
+  public void roundtripNames() throws Exception {
+    dao.getTreeDao().updateDatasetNames(11, 1);
+    
+    Stream<String> lines = dao.getTreeDao().getDatasetNames(11, 1);
+    // we have only NULL index ids in this test dataset :)
+    assertFalse(lines.findFirst().isPresent());
   }
   
   public static <T> void assertEquals(Stream<T> expected, Stream<T> toTest) {

@@ -1,4 +1,4 @@
-package org.col.admin;
+package org.col;
 
 import org.col.common.util.HumanSize;
 import org.junit.Test;

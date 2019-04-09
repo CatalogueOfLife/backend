@@ -1,53 +1,46 @@
 package org.col.db.tree;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashSet;
+import java.io.BufferedReader;
+import java.io.File;
 
-import com.google.common.base.Charsets;
 import org.apache.commons.io.IOUtils;
-import org.col.api.model.SectorImport;
+import org.col.common.io.Resources;
+import org.col.dao.DaoTestBase;
+import org.col.dao.DatasetImportDao;
+import org.col.db.mapper.InitMybatisRule;
+import org.junit.Assert;
 import org.junit.Test;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
-public class DiffServiceTest {
+public class DiffServiceTest extends DaoTestBase {
   static int attemptCnt;
+  DiffService diff;
+  DatasetImportDao dao;
+  
+  public DiffServiceTest() {
+    super(InitMybatisRule.tree());
+    dao = new DatasetImportDao(factory(), treeRepoRule.getRepo());
+    diff = new DiffService(factory(), dao.getTreeDao());
+  }
+  
   
   @Test
-  public void treediff() throws Exception {
-    System.out.println(DiffService.treeDiff( syncImp("coldp.tree"), syncImp("coldp2.tree")));
+  public void udiff() throws Exception {
+    final File f1 = Resources.toFile("trees/coldp.tree");
+    final File f2 = Resources.toFile("trees/coldp2.tree");
+    
+    BufferedReader br = diff.udiff(new int[]{1,2}, i -> {
+      switch (i) {
+        case 1: return f1;
+        case 2: return f2;
+      }
+      return null;
+    });
+  
+  
+    String version = IOUtils.toString(br);
+    System.out.println(version);
+    
+    Assert.assertTrue(version.startsWith("---"));
   }
-  
-  @Test
-  public void namesdiff() throws Exception {
-    DiffReport.NamesDiff diff = DiffService.namesDiff( syncImp("c1", "c2", "3", "dghz"), syncImp("f1", "c2", "32"));
-    assertEquals(3, diff.getDeleted().size());
-    assertTrue(diff.getDeleted().contains("3"));
-  
-    assertEquals(2, diff.getInserted().size());
-    assertTrue(diff.getInserted().contains("f1"));
-  
-    System.out.println(diff);
-  }
-  
-  private static SectorImport syncImp(String... ids) throws IOException {
-    SectorImport si = new SectorImport();
-    si.setSectorKey(1);
-    si.setAttempt(attemptCnt++);
-    si.setNames(new HashSet<>());
-    for (String id : ids) {
-      si.getNames().add(id);
-    }
-    return si;
-  }
-  
-  private static SectorImport syncImp(String fn) throws IOException {
-    SectorImport si = new SectorImport();
-    si.setSectorKey(1);
-    si.setAttempt(attemptCnt++);
-    InputStream tree = DiffServiceTest.class.getResourceAsStream("/trees/"+fn);
-    si.setTextTree(IOUtils.toString(tree, Charsets.UTF_8).trim());
-    return si;
-  }
+
 }

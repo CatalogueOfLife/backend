@@ -17,7 +17,20 @@ public abstract class DaoTestBase {
   public static PgSetupRule pgSetupRule = new PgSetupRule();
   
   @Rule
-  public InitMybatisRule initMybatisRule = InitMybatisRule.apple();
+  public final InitMybatisRule initMybatisRule;
+  
+  @Rule
+  public final TreeRepoRule treeRepoRule = new TreeRepoRule();
+  
+  
+  public DaoTestBase(){
+    this(InitMybatisRule.apple());
+  }
+  
+  public DaoTestBase(InitMybatisRule initRule){
+    this.initMybatisRule = initRule;
+  }
+
   
   @Before
   public void initSession() {
@@ -25,10 +38,10 @@ public abstract class DaoTestBase {
   }
   
   @After
-  public void closeSession() {
+  public void cleanup() {
     session.close();
   }
-  
+
   protected SqlSessionFactory factory() {
     return pgSetupRule.getSqlSessionFactory();
   }

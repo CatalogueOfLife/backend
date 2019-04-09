@@ -16,6 +16,7 @@ import org.apache.ibatis.session.SqlSession;
 import org.col.command.initdb.InitDbCmd;
 import org.col.config.ImporterConfig;
 import org.col.config.NormalizerConfig;
+import org.col.dao.*;
 import org.col.importer.neo.NeoDb;
 import org.col.importer.neo.NeoDbFactory;
 import org.col.importer.neo.model.RankedName;
@@ -23,10 +24,6 @@ import org.col.matching.NameIndexFactory;
 import org.col.api.model.*;
 import org.col.api.vocab.*;
 import org.col.db.PgSetupRule;
-import org.col.dao.DatasetImportDao;
-import org.col.dao.NameDao;
-import org.col.dao.ReferenceDao;
-import org.col.dao.TaxonDao;
 import org.col.db.mapper.*;
 import org.gbif.dwc.terms.Term;
 import org.gbif.dwc.terms.UnknownTerm;
@@ -54,6 +51,9 @@ public class PgImportIT {
   
   @Rule
   public InitMybatisRule initMybatisRule = InitMybatisRule.empty();
+  
+  @Rule
+  public final TreeRepoRule treeRepoRule = new TreeRepoRule();
   
   @Before
   public void initCfg() {
@@ -132,7 +132,8 @@ public class PgImportIT {
   }
 
   DatasetImport metrics() {
-    return new DatasetImportDao(PgSetupRule.getSqlSessionFactory()).generateMetrics(dataset.getKey());
+    return new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo())
+        .generateMetrics(dataset.getKey());
   }
   
   

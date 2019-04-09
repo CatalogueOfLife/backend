@@ -7,6 +7,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.col.api.vocab.Users;
 import org.col.command.initdb.InitDbCmd;
 import org.col.WsServerConfig;
+import org.col.dao.TreeRepoRule;
 import org.col.db.PgSetupRule;
 import org.col.es.IndexConfig;
 import org.col.es.NameUsageIndexService;
@@ -24,6 +25,9 @@ public class ImportManagerDebugging {
   
   @ClassRule
   public static PgSetupRule pgSetupRule = new PgSetupRule(true);
+  
+  @Rule
+  public final TreeRepoRule treeRepoRule = new TreeRepoRule();
   
   private static WsServerConfig provideConfig() {
     WsServerConfig cfg = new WsServerConfig();
@@ -49,7 +53,7 @@ public class ImportManagerDebugging {
     MetricRegistry metrics = new MetricRegistry();
     
     final WsServerConfig cfg = provideConfig();
-    InitDbCmd.execute(cfg);
+    new InitDbCmd().execute(cfg);
     pgSetupRule.connectPool();
     
     hc = new HttpClientBuilder(metrics).using(cfg.client).build("local");

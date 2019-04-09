@@ -45,6 +45,7 @@ import org.slf4j.LoggerFactory;
  */
 public class InitDbCmd extends ConfiguredCommand<WsServerConfig> {
   private static final Logger LOG = LoggerFactory.getLogger(InitDbCmd.class);
+  private WsServerConfig cfg;
   
   public InitDbCmd() {
     super("initdb", "Initialises a new database schema");
@@ -70,9 +71,14 @@ public class InitDbCmd extends ConfiguredCommand<WsServerConfig> {
       System.out.format("You have %s seconds to abort if you did not intend to do so !!!\n", prompt);
       TimeUnit.SECONDS.sleep(prompt);
     }
-    
-    execute(cfg);
+  
+    this.cfg = cfg;
+    execute();
     System.out.println("Done !!!");
+  }
+  
+  private void execute() throws Exception {
+    execute(cfg);
   }
   
   public static void execute(WsServerConfig cfg) throws Exception {
@@ -148,7 +154,7 @@ public class InitDbCmd extends ConfiguredCommand<WsServerConfig> {
         LOG.info("Add known decisions");
         exec(PgConfig.DECISIONS_FILE, runner, con, Resources.getResourceAsReader(PgConfig.DECISIONS_FILE));
       
-        loadDraftHierarchy(con, factory);
+        loadDraftHierarchy(con, factory, cfg);
       
       } catch (Exception e) {
         LOG.error("Failed to insert initdb data", e);
@@ -164,7 +170,7 @@ public class InitDbCmd extends ConfiguredCommand<WsServerConfig> {
     }
   }
   
-  private static void loadDraftHierarchy(Connection con, SqlSessionFactory factory) throws Exception {
+  private static void loadDraftHierarchy(Connection con, SqlSessionFactory factory, WsServerConfig cfg) throws Exception {
     LOG.info("Insert CoL draft data linked to sectors");
     PgConnection pgc = (PgConnection) con;
     // Use sector exports from Global Assembly:
@@ -196,7 +202,7 @@ public class InitDbCmd extends ConfiguredCommand<WsServerConfig> {
     try (SqlSession session = factory.openSession(true)) {
       draft = session.getMapper(DatasetMapper.class).get(Datasets.DRAFT_COL);
     }
-    DatasetImportDao dao = new DatasetImportDao(factory);
+    DatasetImportDao dao = new DatasetImportDao(factory, cfg.textTreeRepo);
     DatasetImport di = dao.create(draft);
     dao.updateMetrics(di);
     di.setState(ImportState.FINISHED);

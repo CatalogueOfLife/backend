@@ -1,7 +1,6 @@
 package org.col.assembly;
 
 import java.io.IOException;
-import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,9 +19,12 @@ import org.col.api.vocab.EntityType;
 import org.col.api.vocab.Issue;
 import org.col.dao.DatasetImportDao;
 import org.col.dao.MatchingDao;
+import org.col.dao.NamesTreeDao;
 import org.col.dao.TaxonDao;
-import org.col.db.mapper.*;
-import org.col.db.tree.TextTreePrinter;
+import org.col.db.mapper.SectorImportMapper;
+import org.col.db.mapper.SectorMapper;
+import org.col.db.mapper.SynonymMapper;
+import org.col.db.mapper.TaxonMapper;
 import org.col.es.NameUsageIndexService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,11 +39,13 @@ public class SectorSync extends SectorRunnable {
       EntityType.VERNACULAR,
       EntityType.DISTRIBUTION
   );
+  private NamesTreeDao treeDao;
   
-  public SectorSync(int sectorKey, SqlSessionFactory factory, NameUsageIndexService indexService,
+  public SectorSync(int sectorKey, SqlSessionFactory factory, NameUsageIndexService indexService, DatasetImportDao diDao,
                     Consumer<SectorRunnable> successCallback,
                     BiConsumer<SectorRunnable, Exception> errorCallback, ColUser user) {
     super(sectorKey, factory, indexService, successCallback, errorCallback, user);
+    treeDao = diDao.getTreeDao();
   }
   
   @Override
@@ -64,13 +68,11 @@ public class SectorSync extends SectorRunnable {
       //TODO: usagesByRankCount
 
       try {
-        StringWriter tree = TextTreePrinter.sizedWriter(state.getNameCount());
-        TextTreePrinter.sector(catalogueKey, sector.getKey(), factory, tree).print();
-        state.setTextTree(tree.toString());
+        treeDao.updateSectorTree(sector.getKey(), state.getAttempt());
+        treeDao.updateSectorNames(sector.getKey(), state.getAttempt());
       } catch (IOException e) {
         LOG.error("Failed to print sector {} of catalogue {}", sector.getKey(), catalogueKey, e);
       }
-      state.setNames(session.getMapper(NameMapper.class).listNameIndexIds(catalogueKey, sector.getKey()));
     }
   }
   
@@ -89,7 +91,7 @@ public class SectorSync extends SectorRunnable {
     relinkAttachedSectors();
   
     state.setState( SectorImport.State.INDEXING);
-    //indexService.indexSector(sector.getKey());
+    indexService.indexSector(sector.getKey());
   
     state.setState( SectorImport.State.FINISHED);
   }

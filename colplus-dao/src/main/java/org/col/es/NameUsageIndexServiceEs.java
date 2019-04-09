@@ -77,7 +77,7 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
     NameUsageIndexer indexer = new NameUsageIndexer(client, index);
     int tCount, sCount, bCount;
     try (SqlSession session = factory.openSession()) {
-      Integer datasetKey = prepareSector(session, sectorKey);
+      Integer datasetKey = clearSector(session, sectorKey);
       NameUsageMapper mapper = session.getMapper(NameUsageMapper.class);
       try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(indexer, 4096)) {
         LOG.debug("Indexing taxa for sector {}", sectorKey);
@@ -104,7 +104,16 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
     }
     logSectorTotals(sectorKey, tCount, sCount, bCount);
   }
-
+  
+  @Override
+  public void deleteSector(Integer sectorKey) {
+    try (SqlSession session = factory.openSession()) {
+      clearSector(session, sectorKey);
+    } catch (IOException e) {
+      throw new EsException(e);
+    }
+  }
+  
   @Override
   public void indexTaxa(Integer datasetKey, Collection<String> taxonIds) {
     NameUsageIndexer indexer = new NameUsageIndexer(client, index);
@@ -173,15 +182,18 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
       EsUtil.createIndex(client, index, esConfig.nameUsage);
     }
   }
-
-  private Integer prepareSector(SqlSession session, Integer sectorKey) throws IOException {
+  
+  /**
+   * @return datasetKey of the deleted sector
+   */
+  private Integer clearSector(SqlSession session, Integer sectorKey) throws IOException {
     EsSearchRequest query = EsSearchRequest.emptyRequest();
     query.select("datasetKey").whereEquals("sectorKey", sectorKey).size(1);
     NameUsageSearchService svc = new NameUsageSearchService(index, client);
     List<EsNameUsage> result = svc.getDocuments(query);
     if (result.size() != 0) {
       int cnt = EsUtil.deleteSector(client, index, sectorKey);
-      LOG.debug("Deleted {} dpcuments from sector {} from index {}", cnt, sectorKey, index);
+      LOG.debug("Deleted all {} documents from sector {} from index {}", cnt, sectorKey, index);
       return result.get(0).getDatasetKey();
     }
     SectorMapper mapper = session.getMapper(SectorMapper.class);

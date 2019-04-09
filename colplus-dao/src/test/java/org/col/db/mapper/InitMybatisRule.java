@@ -15,6 +15,8 @@ import org.col.api.model.ColUser;
 import org.col.db.PgConfig;
 import org.col.db.PgSetupRule;
 import org.junit.rules.ExternalResource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A junit test rule that truncates all CoL tables, potentially loads some test
@@ -27,6 +29,7 @@ import org.junit.rules.ExternalResource;
  * Make sure its setup!
  */
 public class InitMybatisRule extends ExternalResource {
+  private static final Logger LOG = LoggerFactory.getLogger(InitMybatisRule.class);
   public static final ColUser TEST_USER = new ColUser();
   
   static {
@@ -43,7 +46,11 @@ public class InitMybatisRule extends ExternalResource {
   
   public enum TestData {
     NONE(1, 2, 3),
+    
+    // apple datasetKey=11
     APPLE(2, 11, 12),
+  
+    // tree datasetKey=11
     TREE(2, 11),
     
     /**
@@ -118,6 +125,7 @@ public class InitMybatisRule extends ExternalResource {
   @Override
   protected void before() throws Throwable {
     super.before();
+    LOG.info("Loading {} test data", testData);
     session = sqlSessionFactorySupplier.get().openSession(false);
     // create required partitions to load data
     partition();
