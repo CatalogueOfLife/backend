@@ -6,10 +6,7 @@ import org.col.api.TestEntityGenerator;
 import org.col.api.model.Name;
 import org.col.api.model.Taxon;
 import org.col.api.vocab.Origin;
-import org.col.db.mapper.DatasetPartitionMapper;
-import org.col.db.mapper.InitMybatisRule;
-import org.col.db.mapper.NameMapper;
-import org.col.db.mapper.TaxonMapper;
+import org.col.db.mapper.*;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 
@@ -51,12 +48,17 @@ public class MybatisTestUtils {
     Taxon t3 = draftTaxon(tm, datasetKey,"t3", n3, t2);
     Taxon t4 = draftTaxon(tm, datasetKey,"t4", n4, t3);
     Taxon t5 = draftTaxon(tm, datasetKey,"t5", n5, t3);
-  
+    
     session.commit();
   }
   
   public static void populateDraftTree(SqlSession session) {
     populateTestTree(DRAFT_COL, session);
+  
+    TaxonMapper tm = session.getMapper(TaxonMapper.class);
+    tm.incDatasetSectorCount(DRAFT_COL, "t4", 11, 1);
+    tm.incDatasetSectorCount(DRAFT_COL, "t5", 11, 1);
+    session.commit();
   }
   
   private static Name uninomial(NameMapper nm, int datasetKey, String id, String name, Rank rank) {

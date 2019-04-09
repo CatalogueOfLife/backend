@@ -12,22 +12,26 @@ import io.dropwizard.cli.ConfiguredCommand;
 import io.dropwizard.setup.Bootstrap;
 import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
+import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.jdbc.ScriptRunner;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
+import org.col.WsServerConfig;
 import org.col.api.model.Dataset;
 import org.col.api.model.DatasetImport;
 import org.col.api.vocab.Datasets;
 import org.col.api.vocab.ImportState;
 import org.col.api.vocab.Users;
-import org.col.WsServerConfig;
+import org.col.common.io.PathUtils;
+import org.col.dao.DatasetImportDao;
+import org.col.dao.TaxonDao;
 import org.col.db.MybatisFactory;
 import org.col.db.PgConfig;
-import org.col.dao.DatasetImportDao;
 import org.col.db.mapper.DatasetMapper;
 import org.col.db.mapper.DatasetPartitionMapper;
 import org.col.es.EsClientFactory;
+import org.col.es.EsUtil;
 import org.col.es.NameUsageIndexService;
 import org.col.es.NameUsageIndexServiceEs;
 import org.col.postgres.PgCopyUtils;
@@ -72,7 +76,7 @@ public class InitDbCmd extends ConfiguredCommand<WsServerConfig> {
   }
   
   public static void execute(WsServerConfig cfg) throws Exception {
-    LOG.info("Starting database initialisation");
+    LOG.info("Starting database initialisation with admin connection {}", cfg.adminDb);
     try (Connection con = cfg.db.connect(cfg.adminDb);
          Statement st = con.createStatement()
     ) {
@@ -89,57 +93,79 @@ public class InitDbCmd extends ConfiguredCommand<WsServerConfig> {
       exec(PgConfig.SCHEMA_FILE, runner, con, Resources.getResourceAsReader(PgConfig.SCHEMA_FILE));
       // add common data
       exec(PgConfig.DATA_FILE, runner, con, Resources.getResourceAsReader(PgConfig.DATA_FILE));
+      LOG.info("Insert known datasets");
+      exec(PgConfig.DATASETS_FILE, runner, con, Resources.getResourceAsReader(PgConfig.DATASETS_FILE));
+    }
+    
+    // cleanup names index
+    if (cfg.namesIndexFile != null && cfg.namesIndexFile.exists()) {
+      LOG.info("Clear names index at {}", cfg.namesIndexFile.getAbsolutePath());
+      if (!cfg.namesIndexFile.delete()) {
+        LOG.error("Unable to delete names index at {}", cfg.namesIndexFile.getAbsolutePath());
+        throw new IllegalStateException("Unable to delete names index at " + cfg.namesIndexFile.getAbsolutePath());
+      }
+    }
+    
+    // clear images, scratch dir & archive repo
+    LOG.info("Clear image cache {}", cfg.img.repo);
+    PathUtils.cleanDirectory(cfg.img.repo);
+  
+    LOG.info("Clear scratch dir {}", cfg.normalizer.scratchDir);
+    if (cfg.normalizer.scratchDir.exists()) {
+      FileUtils.cleanDirectory(cfg.normalizer.scratchDir);
     }
   
+    LOG.info("Clear archive repo {}", cfg.normalizer.archiveDir);
+    if (cfg.normalizer.archiveDir.exists()) {
+      FileUtils.cleanDirectory(cfg.normalizer.archiveDir);
+    }
+  
+    if (cfg.namesIndexFile != null && cfg.namesIndexFile.exists()) {
+      LOG.info("Clear names index {}", cfg.namesIndexFile);
+      if (!cfg.namesIndexFile.delete()){
+        LOG.warn("Failed to remove names index {}", cfg.namesIndexFile);
+      }
+    }
+
+    // load draft catalogue data
     HikariConfig hikari = cfg.db.hikariConfig();
     try (HikariDataSource dataSource = new HikariDataSource(hikari)) {
       // configure single mybatis session factory
       final SqlSessionFactory factory = MybatisFactory.configure(dataSource, "init");
-      
+    
       // add col & names index partitions
       try (SqlSession session = factory.openSession()) {
         setupStandardPartitions(session);
         session.commit();
       }
-      
+    
       try (Connection con = cfg.db.connect()) {
         ScriptRunner runner = PgConfig.scriptRunner(con);
-        // add known datasets
-        exec(PgConfig.DATASETS_FILE, runner, con, Resources.getResourceAsReader(PgConfig.DATASETS_FILE));
-        // add known manually curated sectors
+      
+        LOG.info("Add known manually curated sectors");
         exec(PgConfig.SECTORS_FILE, runner, con, Resources.getResourceAsReader(PgConfig.SECTORS_FILE));
-        // add known decisions
+      
+        LOG.info("Add known decisions");
         exec(PgConfig.DECISIONS_FILE, runner, con, Resources.getResourceAsReader(PgConfig.DECISIONS_FILE));
-        // add draft hierarchy linked to sectors
-        loadDraftHierarchy(con);
+      
+        loadDraftHierarchy(con, factory);
+      
+      } catch (Exception e) {
+        LOG.error("Failed to insert initdb data", e);
       }
-      // create draft metrics and index into ES
-      processDraftHierarchy(cfg, factory);
+  
+      LOG.info("Update dataset sector counts");
+      try (SqlSession session = factory.openSession()) {
+        new TaxonDao(session).updateAllSectorCounts(Datasets.DRAFT_COL, factory);
+        session.commit();
+      }
+      
+      updateSearchIndex(cfg, factory);
     }
   }
   
-  private static void processDraftHierarchy(WsServerConfig cfg, SqlSessionFactory factory) throws Exception {
-    LOG.info("Build import metrics for draft catalogue");
-    Dataset draft;
-    try (SqlSession session = factory.openSession(true)) {
-      draft = session.getMapper(DatasetMapper.class).get(Datasets.DRAFT_COL);
-    }
-    DatasetImportDao dao = new DatasetImportDao(factory);
-    DatasetImport di = dao.create(draft);
-    dao.updateMetrics(di);
-    di.setState(ImportState.FINISHED);
-    dao.update(di);
-  
-    if (cfg.es != null && !cfg.es.isEmpty()) {
-      LOG.info("Build search index for draft catalogue");
-      try (RestClient esClient = new EsClientFactory(cfg.es).createClient()) {
-        NameUsageIndexService indexService = new NameUsageIndexServiceEs(esClient, cfg.es, factory);
-        indexService.indexDataset(Datasets.DRAFT_COL);
-      }
-    }
-  }
-  
-  private static void loadDraftHierarchy(Connection con) throws Exception {
+  private static void loadDraftHierarchy(Connection con, SqlSessionFactory factory) throws Exception {
+    LOG.info("Insert CoL draft data linked to sectors");
     PgConnection pgc = (PgConnection) con;
     // Use sector exports from Global Assembly:
     // https://github.com/Sp2000/colplus-repo#sector-exports
@@ -164,11 +190,38 @@ public class InitDbCmd extends ConfiguredCommand<WsServerConfig> {
         .put("created_by", Users.DB_INIT)
         .put("modified_by", Users.DB_INIT)
         .build());
+  
+    LOG.info("Build import metrics for draft CoL and index into ES");
+    Dataset draft;
+    try (SqlSession session = factory.openSession(true)) {
+      draft = session.getMapper(DatasetMapper.class).get(Datasets.DRAFT_COL);
+    }
+    DatasetImportDao dao = new DatasetImportDao(factory);
+    DatasetImport di = dao.create(draft);
+    dao.updateMetrics(di);
+    di.setState(ImportState.FINISHED);
+    dao.update(di);
   }
   
+  private static void updateSearchIndex(WsServerConfig cfg, SqlSessionFactory factory) throws Exception {
+    if (cfg.es == null || cfg.es.isEmpty()) {
+      LOG.warn("No ES configured, elastic search index not updated");
+    
+    } else {
+      try (RestClient esClient = new EsClientFactory(cfg.es).createClient()) {
+        LOG.info("Delete elastic search indices for {} on {}", cfg.es.environment, cfg.es.hosts);
+        EsUtil.deleteIndex(esClient, cfg.es.allIndices());
+
+        LOG.info("Build search index for draft catalogue");
+        NameUsageIndexService indexService = new NameUsageIndexServiceEs(esClient, cfg.es, factory);
+        indexService.indexDataset(Datasets.DRAFT_COL);
+      }
+    }
+  }
+
   public static void setupStandardPartitions(SqlSession session) {
     DatasetPartitionMapper pm = session.getMapper(DatasetPartitionMapper.class);
-    for (int key : new int[]{Datasets.COL, Datasets.PCAT, Datasets.DRAFT_COL}) {
+    for (int key : new int[]{Datasets.COL, Datasets.DRAFT_COL}) {
       LOG.info("Create catalogue partition {}", key);
       pm.delete(key);
       pm.create(key);

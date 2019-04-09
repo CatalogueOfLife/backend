@@ -6,25 +6,24 @@ import java.nio.file.Paths;
 import com.google.common.io.Files;
 import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.session.SqlSession;
-import org.col.command.initdb.InitDbCmd;
-import org.col.config.ImporterConfig;
-import org.col.config.NormalizerConfig;
-import org.col.importer.neo.NeoDb;
-import org.col.importer.neo.NeoDbFactory;
-import org.col.matching.NameIndexFactory;
 import org.col.api.model.Dataset;
 import org.col.api.model.DatasetImport;
 import org.col.api.model.Name;
 import org.col.api.model.VerbatimRecord;
 import org.col.api.vocab.DataFormat;
-import org.col.api.vocab.Datasets;
 import org.col.api.vocab.Issue;
-import org.col.db.PgSetupRule;
+import org.col.command.initdb.InitDbCmd;
+import org.col.config.ImporterConfig;
+import org.col.config.NormalizerConfig;
 import org.col.dao.DatasetImportDao;
+import org.col.db.PgSetupRule;
 import org.col.db.mapper.DatasetMapper;
 import org.col.db.mapper.InitMybatisRule;
 import org.col.db.mapper.NameMapper;
 import org.col.db.mapper.VerbatimRecordMapper;
+import org.col.importer.neo.NeoDb;
+import org.col.importer.neo.NeoDbFactory;
+import org.col.matching.NameIndexFactory;
 import org.junit.*;
 
 import static org.junit.Assert.assertTrue;
@@ -84,7 +83,7 @@ public class IntegrityChecksIT {
       // normalize
       store = NeoDbFactory.create(dataset.getKey(), 1, cfg);
       store.put(dataset);
-      Normalizer norm = new Normalizer(store, Paths.get(url.toURI()), NameIndexFactory.memory(Datasets.PCAT, PgSetupRule.getSqlSessionFactory()));
+      Normalizer norm = new Normalizer(store, Paths.get(url.toURI()), NameIndexFactory.memory(PgSetupRule.getSqlSessionFactory()));
       norm.call();
       
       // import into postgres

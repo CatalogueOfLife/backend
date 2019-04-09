@@ -18,10 +18,11 @@ import org.col.api.jackson.ApiModule;
  * by using Jackson JSON (de)serialisation.
  */
 @MappedJdbcTypes(JdbcType.OTHER)
-public class AbstractJsonHandler<T> extends BaseTypeHandler<T> {
+public class JsonAbstractHandler<T> extends BaseTypeHandler<T> {
+  
   private final Class<T> clazz;
   
-  public AbstractJsonHandler(Class<T> clazz) {
+  public JsonAbstractHandler(Class<T> clazz) {
     this.clazz = clazz;
   }
   
@@ -32,7 +33,7 @@ public class AbstractJsonHandler<T> extends BaseTypeHandler<T> {
       String x = ApiModule.MAPPER.writeValueAsString(parameter);
       ps.setString(i, x);
     } catch (JsonProcessingException e) {
-      throw new SQLException("Unable to convert " + clazz.getSimpleName() + " to JSON", e);
+      throw new SQLException("Unable to convert " + clazz.getSimpleName() + " to JSONB", e);
     }
   }
   
@@ -51,6 +52,7 @@ public class AbstractJsonHandler<T> extends BaseTypeHandler<T> {
     return fromString(cs.getString(columnIndex));
   }
   
+
   private T fromString(String jsonb) throws SQLException {
     if (!Strings.isNullOrEmpty(jsonb)) {
       try {
@@ -61,5 +63,4 @@ public class AbstractJsonHandler<T> extends BaseTypeHandler<T> {
     }
     return null;
   }
-  
 }

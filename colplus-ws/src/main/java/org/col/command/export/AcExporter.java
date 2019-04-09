@@ -33,7 +33,7 @@ public class AcExporter {
    * @return final archive
    */
   public File export(int catalogueKey) throws IOException, SQLException {
-    File csvDir = new File(cfg.scratchDir, "exports/"+catalogueKey);
+    File csvDir = new File(cfg.normalizer.scratchDir(catalogueKey), "exports");
     try {
       // create csv files
       try (Connection c = cfg.db.connect()) {

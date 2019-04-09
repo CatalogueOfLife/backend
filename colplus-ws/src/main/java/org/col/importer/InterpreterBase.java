@@ -13,16 +13,14 @@ import com.google.common.collect.Lists;
 import com.ibm.icu.text.Transliterator;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.col.importer.neo.NeoDb;
-import org.col.importer.reference.ReferenceFactory;
-import org.col.api.exception.InvalidNameException;
 import org.col.api.model.*;
 import org.col.api.vocab.*;
 import org.col.common.date.FuzzyDate;
+import org.col.importer.neo.NeoDb;
+import org.col.importer.reference.ReferenceFactory;
 import org.col.parser.*;
 import org.gbif.dwc.terms.Term;
 import org.gbif.nameparser.api.NameType;
-import org.gbif.nameparser.api.ParsedName;
 import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -294,31 +292,7 @@ public class InterpreterBase {
     }
     
     // try to add an authorship if not yet there
-    if (nat.getName().isParsed() && !Strings.isNullOrEmpty(authorship)) {
-      ParsedName pnAuthorship = NameParser.PARSER.parseAuthorship(authorship).orElseGet(() -> {
-        LOG.warn("Unparsable authorship {}", authorship);
-        v.addIssue(Issue.UNPARSABLE_AUTHORSHIP);
-        // add the full, unparsed authorship in this case to not lose it
-        ParsedName pn = new ParsedName();
-        pn.getCombinationAuthorship().getAuthors().add(authorship);
-        return pn;
-      });
-      
-      // we might have already parsed an authorship from the scientificName string which does not match up?
-      if (nat.getName().hasAuthorship() &&
-          !nat.getName().authorshipComplete().equalsIgnoreCase(pnAuthorship.authorshipComplete())) {
-        v.addIssue(Issue.INCONSISTENT_AUTHORSHIP);
-        LOG.info("Different authorship [{}] found in dwc:scientificName=[{}] and dwc:scientificNameAuthorship=[{}]",
-            nat.getName().authorshipComplete(), sciname, pnAuthorship.authorshipComplete());
-      }
-      nat.getName().setCombinationAuthorship(pnAuthorship.getCombinationAuthorship());
-      nat.getName().setSanctioningAuthor(pnAuthorship.getSanctioningAuthor());
-      nat.getName().setBasionymAuthorship(pnAuthorship.getBasionymAuthorship());
-      // propagate notes found in authorship
-      nat.getName().addRemark(pnAuthorship.getRemarks());
-      nat.getName().addRemark(pnAuthorship.getNomenclaturalNotes());
-      nat.addAccordingTo(pnAuthorship.getTaxonomicNote());
-    }
+    NameParser.PARSER.parseAuthorshipIntoName(nat, authorship, v);
     
     // common basics
     nat.getName().setId(id);
@@ -342,18 +316,7 @@ public class InterpreterBase {
     }
     
     // finally update the scientificName with the canonical form if we can
-    try {
-      nat.getName().updateNameCache();
-    } catch (InvalidNameException e) {
-      LOG.info("Invalid atomised name found: {}", nat.getName());
-      v.addIssue(Issue.INCONSISTENT_NAME);
-      if (isAtomized) {
-        nat.getName().setScientificName(org.col.common.text.StringUtils.concat(genus, infraGenus, species, infraspecies));
-        v.addIssue(Issue.DOUBTFUL_NAME);
-      } else {
-        return Optional.empty();
-      }
-    }
+    nat.getName().updateNameCache();
     
     return Optional.of(nat);
   }

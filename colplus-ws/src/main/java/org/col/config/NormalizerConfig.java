@@ -4,6 +4,7 @@ import java.io.File;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
+import com.google.common.base.Preconditions;
 import org.apache.commons.io.FileUtils;
 import org.neo4j.graphdb.factory.GraphDatabaseBuilder;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
@@ -32,7 +33,7 @@ public class NormalizerConfig {
    * Used primarily for neo4j dbs.
    */
   @NotNull
-  public File scratchDir = new File("/tmp");
+  public File scratchDir = new File("/tmp/colplus");
   
   /**
    * Batchsize to use when processing all nodes, e.g. for normalising the flat classification
@@ -72,6 +73,11 @@ public class NormalizerConfig {
    */
   public File sourceDir(int datasetKey) {
     return new File(scratchDir(datasetKey), "source");
+  }
+  
+  public File scratchFile(int datasetKey, String fileName) {
+    Preconditions.checkArgument(!fileName.equalsIgnoreCase("normalizer") && !fileName.equalsIgnoreCase("source"));
+    return new File(scratchDir(datasetKey), fileName);
   }
   
   /**

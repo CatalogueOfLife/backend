@@ -151,11 +151,11 @@ public class WsServer extends Application<WsServerConfig> {
     // name index
     NameIndex ni;
     if (cfg.namesIndexFile == null) {
-      LOG.info("Using volatile in memory names index");
-      ni = NameIndexFactory.memory(Datasets.PCAT, getSqlSessionFactory());
+      LOG.info("Use volatile in memory names index");
+      ni = NameIndexFactory.memory(getSqlSessionFactory());
     } else {
-      LOG.info("Using names index at {}", cfg.namesIndexFile.getAbsolutePath());
-      ni = NameIndexFactory.persistent(Datasets.PCAT, cfg.namesIndexFile, getSqlSessionFactory());
+      LOG.info("Use persistent names index at {}", cfg.namesIndexFile.getAbsolutePath());
+      ni = NameIndexFactory.persistent(cfg.namesIndexFile, getSqlSessionFactory());
     }
   
     // async importer
@@ -188,7 +188,7 @@ public class WsServer extends Application<WsServerConfig> {
     
     // resources
     env.jersey().register(new DataPackageResource());
-    env.jersey().register(new DatasetResource(getSqlSessionFactory(), imgService, cfg::scratchDir, new DownloadUtil(httpClient)));
+    env.jersey().register(new DatasetResource(getSqlSessionFactory(), imgService, cfg.normalizer::scratchFile, new DownloadUtil(httpClient)));
     env.jersey().register(new DecisionResource(getSqlSessionFactory(), indexService));
     env.jersey().register(new DocsResource(cfg));
     env.jersey().register(new NameResource(nuss));

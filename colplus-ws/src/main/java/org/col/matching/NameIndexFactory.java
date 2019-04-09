@@ -3,6 +3,7 @@ package org.col.matching;
 import java.io.File;
 
 import org.apache.ibatis.session.SqlSessionFactory;
+import org.col.api.vocab.Datasets;
 import org.col.matching.authorship.AuthorComparator;
 import org.col.api.model.Name;
 import org.col.api.model.NameMatch;
@@ -35,8 +36,16 @@ public class NameIndexFactory {
     };
   }
   
+  public static NameIndex memory(SqlSessionFactory sqlFactory) {
+    return memory(Datasets.DRAFT_COL, sqlFactory);
+  }
+  
   public static NameIndex memory(int datasetKey, SqlSessionFactory sqlFactory) {
     return new NameIndexMapDB(DBMaker.memoryDB(), AuthorComparator.createWithAuthormap(), datasetKey, sqlFactory);
+  }
+  
+  public static NameIndex persistent(File location, SqlSessionFactory sqlFactory) {
+    return persistent(Datasets.DRAFT_COL, location, sqlFactory);
   }
   
   /**

@@ -6,10 +6,8 @@ import java.util.List;
 
 import com.google.common.collect.Lists;
 import org.col.api.TestEntityGenerator;
-import org.col.api.model.Name;
-import org.col.api.model.Page;
-import org.col.api.model.Sector;
-import org.col.api.model.Taxon;
+import org.col.api.model.*;
+import org.col.api.vocab.Datasets;
 import org.col.db.MybatisTestUtils;
 import org.col.dao.NameDao;
 import org.gbif.nameparser.api.Rank;
@@ -255,6 +253,31 @@ public class TaxonMapperTest extends DatasetCRUDTest<Taxon, TaxonMapper> {
       Taxon p = parents.removeLast();
       assertEquals(p.getId(), ht.getId());
     }
+  }
+  
+  @Test
+  public void incDatasetSectorCount() throws Exception {
+    mapper().incDatasetSectorCount(Datasets.DRAFT_COL, sector.getTarget().getId(), sector.getDatasetKey(), 7);
+    TreeNode n = getTreeNode(sector.getTarget().getId());
+    // t4 already has count=1 for dataset 11 when draft tree gets populated
+    assertEquals(8, (int) n.getDatasetSectors().get(sector.getDatasetKey()));
+    // cascades to all parents
+    assertEquals(9, (int) getTreeNode("t3").getDatasetSectors().get(sector.getDatasetKey()));
+    assertEquals(9, (int) getTreeNode("t2").getDatasetSectors().get(sector.getDatasetKey()));
+    assertEquals(9, (int) getTreeNode("t1").getDatasetSectors().get(sector.getDatasetKey()));
+  
+  
+    mapper().incDatasetSectorCount(Datasets.DRAFT_COL, "unreal", sector.getDatasetKey(), 10);
+    // cascades to all parents
+    assertEquals(9, (int) getTreeNode("t3").getDatasetSectors().get(sector.getDatasetKey()));
+    assertEquals(9, (int) getTreeNode("t2").getDatasetSectors().get(sector.getDatasetKey()));
+    assertEquals(9, (int) getTreeNode("t1").getDatasetSectors().get(sector.getDatasetKey()));
+  
+  }
+  
+  private TreeNode getTreeNode(String id) {
+    return session().getMapper(TreeMapper.class).get(Datasets.DRAFT_COL, id);
+    
   }
   
 }

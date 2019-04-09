@@ -178,7 +178,7 @@ public class ImportJob implements Runnable {
         store = NeoDbFactory.create(datasetKey, getAttempt(), cfg.normalizer);
         store.put(dataset);
         new Normalizer(store, sourceDir, index).call();
-        LogoUpdateJob.updateDatasetAsync(dataset, factory, downloader, cfg.normalizer::scratchDir, imgService);
+        LogoUpdateJob.updateDatasetAsync(dataset, factory, downloader, cfg.normalizer::scratchFile, imgService);
         
         LOG.info("Writing {} to Postgres!", datasetKey);
         updateState(ImportState.INSERTING);

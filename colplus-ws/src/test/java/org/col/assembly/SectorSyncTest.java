@@ -43,7 +43,7 @@ public class SectorSyncTest {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       // draft & name index partition
       final DatasetPartitionMapper pm = session.getMapper(DatasetPartitionMapper.class);
-      for (int datasetKey : Lists.newArrayList(Datasets.DRAFT_COL, Datasets.PCAT)) {
+      for (int datasetKey : Lists.newArrayList(Datasets.DRAFT_COL)) {
         pm.delete(datasetKey);
         pm.create(datasetKey);
         pm.attach(datasetKey);

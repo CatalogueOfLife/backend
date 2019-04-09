@@ -4,12 +4,19 @@ import java.util.*;
 import java.util.function.Function;
 
 import com.google.common.collect.Lists;
+import it.unimi.dsi.fastutil.ints.Int2IntMap;
+import org.apache.commons.lang3.NotImplementedException;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.model.*;
+import org.col.api.vocab.Datasets;
 import org.col.api.vocab.EntityType;
 import org.col.api.vocab.Origin;
 import org.col.api.vocab.TaxonomicStatus;
 import org.col.db.mapper.*;
+import org.col.parser.NameParser;
+import org.gbif.nameparser.api.NameType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -281,11 +288,16 @@ public class TaxonDao {
     final int datasetKey = t.getDatasetKey();
     Name n = t.getName();
     if (n.getId() == null) {
+      if (!n.isParsed() && StringUtils.isBlank(n.getScientificName())) {
+        throw new IllegalArgumentException("Existing nameId, scientificName or atomized name field required");
+      }
       newKey(n);
       n.setOrigin(Origin.USER);
       n.applyUser(user);
       // make sure we use the same dataset
       n.setDatasetKey(datasetKey);
+      // does the name need parsing?
+      parseName(n);
       nMapper.create(n);
     } else {
       Name nExisting = nMapper.get(datasetKey, n.getId());
@@ -304,14 +316,101 @@ public class TaxonDao {
     return t.getId();
   }
   
-  public void update(Taxon obj, ColUser user) {
-    obj.applyUser(user);
-    tMapper.update(obj);
-    session.commit();
+  private void parseName(Name n){
+    if (!n.isParsed()) {
+      //TODO: pass in real verbatim record
+      VerbatimRecord v = new VerbatimRecord();
+      final String authorship = n.getAuthorship();
+      NameParser.PARSER.parse(n, v).ifPresent(nat -> {
+        // try to add an authorship if not yet there
+        NameParser.PARSER.parseAuthorshipIntoName(nat, authorship, v);
+      });
+      
+    } else {
+      if (n.getType() == null) {
+        n.setType(NameType.SCIENTIFIC);
+      }
+    }
+    n.updateNameCache();
   }
   
+  public int update(Taxon t, ColUser user) {
+    t.applyUser(user);
+  
+    final Taxon old = tMapper.get(t.getDatasetKey(), t.getId());
+    int res = tMapper.update(t);
+    // has parent, i.e. classification been changed ?
+    if (!Objects.equals(old.getParentId(), t.getParentId())){
+      parentChanged(t.getDatasetKey(), t.getId(), old.getParentId(), t.getParentId());
+    }
+    session.commit();
+    return res;
+  }
+  
+  private void parentChanged(int datasetKey, String id, String oldParentId, String newParentId) {
+    // migrate entire DatasetSectors from old to new
+    Int2IntMap delta = tMapper.getCounts(datasetKey, id).getCount();
+    
+    // remove delta
+    for (TaxonCountMap tc : tMapper.classificationCounts(datasetKey, oldParentId)) {
+      tMapper.updateDatasetSectorCount(Datasets.DRAFT_COL, tc.getId(), mergeMapCounts(tc.getCount(), delta, -1));
+    }
+    session.commit(true);
+    // add counts
+    for (TaxonCountMap tc : tMapper.classificationCounts(datasetKey, newParentId)) {
+      tMapper.updateDatasetSectorCount(Datasets.DRAFT_COL, tc.getId(), mergeMapCounts(tc.getCount(), delta, 1));
+    }
+  }
+  
+  private Int2IntMap mergeMapCounts(Int2IntMap m1, Int2IntMap m2, int factor) {
+    for (Int2IntMap.Entry e : m2.int2IntEntrySet()) {
+      if (m1.containsKey(e.getIntKey())) {
+        m1.put(e.getIntKey(), m1.get(e.getIntKey()) + factor * e.getIntValue());
+      } else {
+        m1.put(e.getIntKey(), factor * e.getIntValue());
+      }
+    }
+    return m1;
+  }
+
   public void delete(DatasetID obj, ColUser user) {
+    Taxon t = tMapper.get(obj.getDatasetKey(), obj.getId());
+    relinkChildren(t, user);
+    // if this taxon had a sector we need to adjust parental counts
+    // we keep the sector as a broken sector around
+    SectorMapper sm = session.getMapper(SectorMapper.class);
+    Sector s = sm.getByTarget(obj.getDatasetKey(), obj.getId());
+    if (s != null) {
+      tMapper.incDatasetSectorCount(Datasets.DRAFT_COL, s.getTarget().getId(), s.getDatasetKey(), -1);
+    }
+    // deleting the taxon should cascade deletes to synonyms, vernaculars, etc
     tMapper.delete(obj.getDatasetKey(), obj.getId());
     session.commit();
   }
+  
+  public void deleteRecursively(DatasetID obj, ColUser user) {
+    throw new NotImplementedException("not yet done");
+  }
+  
+  /**
+   * Resets all dataset sector counts for an entire catalogue
+   * and rebuilds the counts from the currently mapped sectors
+   * @param catalogueKey
+   */
+  public void updateAllSectorCounts(int catalogueKey, SqlSessionFactory factory) {
+    tMapper.resetDatasetSectorCount(Datasets.DRAFT_COL);
+    int counter = 0;
+    for (Sector s : Pager.sectors(factory)) {
+      counter++;
+      tMapper.incDatasetSectorCount(catalogueKey, s.getTarget().getId(), s.getDatasetKey(), 1);
+    }
+    session.commit();
+    LOG.info("Updated dataset sector counts from all {} sectors", counter);
+  }
+  
+  private void relinkChildren(Taxon t, ColUser user){
+    int cnt = tMapper.updateParentId(t.getDatasetKey(), t.getId(), t.getParentId(), user);
+    LOG.debug("Moved {} children of {} to {}", cnt, t.getId(), t.getParentId());
+  }
+  
 }

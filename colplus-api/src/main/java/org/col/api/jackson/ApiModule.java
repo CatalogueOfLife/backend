@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.deser.std.FromStringDeserializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.collect.ImmutableSet;
+import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import org.col.api.datapackage.ColTerm;
 import org.col.api.vocab.CSLRefType;
 import org.col.api.vocab.ColDwcTerm;
@@ -60,13 +61,15 @@ public class ApiModule extends SimpleModule {
     addDeserializer(Term.class, new TermSerde.Deserializer());
     addDeserializer(CSLRefType.class, new CSLRefTypeSerde.Deserializer());
     addDeserializer(URI.class, new URIDeserializer());
+    addDeserializer(Int2IntMap.class, new FastutilsSerde.Deserializer());
     
     // then serializers:
     addSerializer(Country.class, new CountrySerde.Serializer());
     addSerializer(Language.class, new LanguageSerde.Serializer());
     addSerializer(Term.class, new TermSerde.ValueSerializer());
     addSerializer(CSLRefType.class, new CSLRefTypeSerde.Serializer());
-    
+    addSerializer(Int2IntMap.class, new FastutilsSerde.Serializer());
+  
     // then key deserializers
     addKeyDeserializer(Term.class, new TermSerde.TermKeyDeserializer());
     addKeyDeserializer(Country.class, new CountrySerde.KeyDeserializer());

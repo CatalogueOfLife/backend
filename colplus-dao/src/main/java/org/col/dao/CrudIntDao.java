@@ -1,8 +1,11 @@
 package org.col.dao;
 
+import java.util.List;
+
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.model.IntKey;
+import org.col.api.model.Page;
 import org.col.db.CRUDInt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,16 +35,19 @@ public class CrudIntDao<T extends IntKey> implements CRUDInt<T> {
   }
   
   @Override
+  public List<T> list(Page page) {
+    try (SqlSession session = factory.openSession()) {
+      return session.getMapper(mapperClass).list(page);
+    }
+  }
+  
+  @Override
   public void create(T obj) {
     try (SqlSession session = factory.openSession(true)) {
       session.getMapper(mapperClass).create(obj);
     }
   }
   
-  /**
-   * Updates the decision in Postgres and updates the ES index for the taxon linked to the subject id.
-   * If the previous version referred to a different subject id also update that taxon.
-   */
   @Override
   public int update(T obj) {
     try (SqlSession session = factory.openSession(true)) {
@@ -60,4 +66,5 @@ public class CrudIntDao<T extends IntKey> implements CRUDInt<T> {
   public int delete(Integer key) {
     return delete((int)key);
   }
+  
 }

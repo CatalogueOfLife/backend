@@ -2,9 +2,9 @@ package org.col.dao;
 
 import java.io.File;
 import java.util.List;
+import java.util.function.BiFunction;
 import javax.annotation.Nullable;
 
-import com.google.common.base.Function;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -26,16 +26,16 @@ public class DatasetDao extends CrudIntDao<Dataset> {
   
   private final DownloadUtil downloader;
   private final ImageService imgService;
-  private final Function<Integer, File> scratchDirFunc;
+  private final BiFunction<Integer, String, File> scratchFileFunc;
   
   public DatasetDao(SqlSessionFactory factory,
                     DownloadUtil downloader,
                     ImageService imgService,
-                    Function<Integer, File> scratchDirFunc) {
+                    BiFunction<Integer, String, File> scratchFileFunc) {
     super(factory, DatasetMapper.class);
     this.downloader = downloader;
     this.imgService = imgService;
-    this.scratchDirFunc = scratchDirFunc;
+    this.scratchFileFunc = scratchFileFunc;
   }
   
   public ResultPage<Dataset> search(@Nullable DatasetSearchRequest req, @Nullable Page page) {
@@ -73,7 +73,7 @@ public class DatasetDao extends CrudIntDao<Dataset> {
   }
   
   private void pullLogo(Dataset d) {
-    LogoUpdateJob.updateDatasetAsync(d, factory, downloader, scratchDirFunc, imgService);
+    LogoUpdateJob.updateDatasetAsync(d, factory, downloader, scratchFileFunc, imgService);
   }
   
 }

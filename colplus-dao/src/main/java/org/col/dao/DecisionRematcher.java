@@ -177,7 +177,7 @@ public class DecisionRematcher {
   
   private void matchDatasetNoLogs(final int datasetKey) {
     datasets++;
-    for (Sector s : sm.list(datasetKey)) {
+    for (Sector s : sm.listByDataset(datasetKey)) {
       if (!matchSector(s, true, false)){
         sectorFailed++;
       }

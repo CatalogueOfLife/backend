@@ -8,6 +8,7 @@ import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Comparator;
 
 import com.google.common.io.Resources;
 import org.apache.commons.io.FilenameUtils;
@@ -43,6 +44,43 @@ public class PathUtils {
       }
     }
     removeFileAndParentsIfEmpty(p.getParent());
+  }
+  
+  /**
+   * Quietly deletes a file, returning true if successful
+   */
+  public static boolean deleteQuietly(Path p) {
+    try {
+      Files.delete(p);
+      return true;
+    } catch (IOException e) {
+      return false;
+    }
+  }
+  
+  /**
+   * Recursively delete a directory including the given root dir.
+   * Does not following symbolic links.
+   */
+  public static void deleteRecursively(Path dir) throws IOException {
+    if (Files.exists(dir)) {
+      Files.walk(dir)
+          .sorted(Comparator.reverseOrder())
+          .forEach(PathUtils::deleteQuietly);
+    }
+  }
+  
+  /**
+   * Recursively delete all content of a directory but keeps the given root dir.
+   * Does not following symbolic links.
+   */
+  public static void cleanDirectory(Path dir) throws IOException {
+    if (Files.exists(dir)) {
+      Files.walk(dir)
+          .sorted(Comparator.reverseOrder())
+          .filter(p -> !p.equals(dir))
+          .forEach(PathUtils::deleteQuietly);
+    }
   }
   
   /**

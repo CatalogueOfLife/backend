@@ -139,8 +139,8 @@ public class DatasetImportDao {
     try (SqlSession session = factory.openSession(true)) {
       DatasetImportMapper mapper = session.getMapper(DatasetImportMapper.class);
       updateMetrics(mapper, di);
-
-      StringWriter tree = new StringWriter();
+      
+      StringWriter tree = TextTreePrinter.sizedWriter(di.getUsagesCount());
       TextTreePrinter.dataset(di.getDatasetKey(), factory, tree).print();
       di.setTextTree(tree.toString());
       di.setNames(session.getMapper(NameMapper.class).listNameIndexIds(di.getDatasetKey(), null));

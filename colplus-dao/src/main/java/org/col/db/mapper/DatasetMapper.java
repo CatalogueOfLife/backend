@@ -14,9 +14,7 @@ public interface DatasetMapper extends CRUDInt<Dataset> {
   int count(@Param("req") DatasetSearchRequest request);
 
   List<Dataset> search(@Param("req") DatasetSearchRequest request, @Param("page") Page page);
-
-  List<Dataset> list(@Param("page") Page page);
-
+  
   List<Integer> keys();
 
   /**

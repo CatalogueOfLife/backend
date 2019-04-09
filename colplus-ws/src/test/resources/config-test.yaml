@@ -17,6 +17,10 @@ db:
   database: ${db.database}
   user: ${db.user}
   password: ${db.password}
+adminDb:
+  database: postgres
+  user: ${db.user}
+  password: ${db.password}
 normalizer:
   scratchDir: /tmp/colplus/scratch
   archiveDir: /tmp/colplus/archives
@@ -30,7 +34,7 @@ client:
   keepAlive: 0ms
   retries: 1
 es:
-  hosts: localhost
+  hosts:
   ports: 9200
   nameUsage:
     modelClass: org.col.es.model.EsNameUsage

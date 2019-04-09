@@ -71,11 +71,8 @@ abstract class HstoreCountTypeHandlerBase<KEY extends Enum> extends BaseTypeHand
           }
         } catch (IllegalArgumentException e) {
           // ignore this entry
-          LOG.warn("Illegal enum {} value found in hstore: {}", enumClass.getSimpleName(), entry.getKey());
+          LOG.warn("Illegal {} value found in hstore: {}", enumClass.getSimpleName(), entry.getKey());
         }
-      }
-      if (typedMap.size() != rawMap.size()) {
-        LOG.error("BAD TYPE!!!");
       }
     }
     return sortMap(typedMap);

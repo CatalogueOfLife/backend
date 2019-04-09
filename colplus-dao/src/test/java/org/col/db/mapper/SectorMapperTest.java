@@ -36,9 +36,9 @@ public class SectorMapperTest extends CRUDIntMapperTest<Sector, SectorMapper> {
   @Test
   public void list() {
     add2Sectors();
-    assertEquals(2, mapper().list(datasetKey).size());
-    assertEquals(2, mapper().list(null).size());
-    assertEquals(0, mapper().list(-432).size());
+    assertEquals(2, mapper().listByDataset(datasetKey).size());
+    assertEquals(2, mapper().listByDataset(null).size());
+    assertEquals(0, mapper().listByDataset(-432).size());
   }
   
   @Test
@@ -60,7 +60,7 @@ public class SectorMapperTest extends CRUDIntMapperTest<Sector, SectorMapper> {
     return create();
   }
   
-  static Sector create() {
+  public static Sector create() {
     Sector d = new Sector();
     d.setDatasetKey(datasetKey);
     d.setMode(Sector.Mode.ATTACH);

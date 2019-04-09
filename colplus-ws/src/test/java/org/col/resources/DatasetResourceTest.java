@@ -10,7 +10,6 @@ import org.col.api.model.ResultPage;
 import org.col.api.search.DatasetSearchRequest;
 import org.col.api.vocab.DataFormat;
 import org.col.api.vocab.DatasetOrigin;
-import org.col.api.vocab.Datasets;
 import org.col.api.vocab.Frequency;
 import org.col.db.mapper.InitMybatisRule;
 import org.junit.Ignore;
@@ -51,7 +50,6 @@ public class DatasetResourceTest extends ResourceTestBase {
     assertEquals("A World Catalogue of Centipedes (Chilopoda) for the Web", resp.getResult().get(0).getTitle());
   
     req.setFormat(DataFormat.DWCA);
-    req.setContributesTo(Datasets.PCAT);
     resp = applySearch(base, req, page).request().get(RESULT_PAGE);
   
     assertEquals(5, resp.size());

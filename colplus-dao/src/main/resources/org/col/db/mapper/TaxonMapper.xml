@@ -92,6 +92,12 @@
         <association property="name" javaType="Name" resultMap="org.col.db.mapper.NameMapper.nameResultMap" columnPrefix="n_" />
     </resultMap>
 
+    <resultMap id="taxonCountResultMap" type="TaxonCountMap" autoMapping="false">
+        <id property="id" column="id" />
+        <result property="count" column="dataset_sectors" />
+    </resultMap>
+
+
     <select id="count" resultType="integer">
         <include refid="org.col.db.mapper.Common.countFromFinishedDatasetImport">
             <property name="column" value="taxon_count"/>
@@ -164,7 +170,27 @@
         WHERE x.id != #{id}
      </select>
 
-    <select id="get" resultMap="taxonResultMap">
+    <select id="getCounts" resultMap="taxonCountResultMap">
+        SELECT id, dataset_sectors
+        FROM taxon_${datasetKey}
+        WHERE id = #{id}
+    </select>
+
+    <select id="classificationCounts" resultMap="taxonCountResultMap">
+        WITH RECURSIVE x AS(
+            SELECT id, parent_id, dataset_sectors
+            FROM taxon_${datasetKey} t
+            WHERE t.id = #{id}
+        UNION
+            SELECT t.id, t.parent_id, t.dataset_sectors
+            FROM taxon_${datasetKey} t, x
+            WHERE t.id = x.parent_id
+        )
+        SELECT id, dataset_sectors
+        FROM x
+    </select>
+
+    <select id="get" resultMap="taxonResultMap" flushCache="true">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
         WHERE t.id = #{id}
@@ -181,6 +207,13 @@
         SET (<include refid="COLS" />, created, modified)
           = (<include refid="PROPS" />, now(), now())
         WHERE id = #{id}
+    </update>
+
+    <update id="updateParentId" parameterType="map">
+        UPDATE taxon_${datasetKey}
+        SET (parent_id, modified, modified_by)
+        = (#{newParentId}, now(), #{user.key})
+        WHERE parent_id = #{parentId}
     </update>
 
     <delete id="delete" parameterType="map">
@@ -241,5 +274,34 @@
         DELETE FROM taxon_${datasetKey} WHERE sector_key = #{sectorKey}
     </delete>
 
+    <update id="incDatasetSectorCount">
+        WITH RECURSIVE x AS (
+            SELECT t.id, t.parent_id
+            FROM taxon_${datasetKey} t
+            WHERE t.id = #{id}
+        UNION
+            SELECT t.id, t.parent_id
+            FROM taxon_${datasetKey} t, x
+            WHERE t.id = x.parent_id
+        )
+
+        UPDATE taxon_${datasetKey}
+        SET dataset_sectors = jsonb_set( coalesce(dataset_sectors, '{}'), '{"${dkey}"}', to_jsonb( coalesce( (dataset_sectors->'${dkey}')::int, 0) + ${delta} ), true)
+        WHERE id IN (SELECT id FROM x)
+    </update>
+
+    <update id="updateDatasetSectorCount">
+        UPDATE taxon_${datasetKey}
+        SET dataset_sectors = to_jsonb( #{count, typeHandler=org.col.db.type.FastutilIntIntHandler} )
+        WHERE id = #{id}
+    </update>
+
+    <update id="resetDatasetSectorCount">
+        UPDATE taxon_${datasetKey} AS t
+        SET dataset_sectors = NULL
+        FROM name n
+        WHERE n.id=t.name_id
+            AND n.rank &lt; 'genus'
+    </update>
 
 </mapper>

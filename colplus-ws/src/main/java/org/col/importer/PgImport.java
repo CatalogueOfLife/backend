@@ -223,9 +223,6 @@ public class PgImport implements Callable<Boolean> {
       final NameMapper nameMapper = session.getMapper(NameMapper.class);
       LOG.debug("Inserting all names");
       store.names().all().forEach(n -> {
-        if (n.name.getHomotypicNameId() == null) {
-          n.name.setHomotypicNameId(n.name.getId());
-        }
         n.name.setDatasetKey(dataset.getKey());
         updateVerbatimUserEntity(n.name);
         nameMapper.create(n.name);

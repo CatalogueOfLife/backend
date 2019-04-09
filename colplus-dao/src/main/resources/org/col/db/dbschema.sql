@@ -325,6 +325,17 @@ CREATE TABLE name (
   modified_by INTEGER NOT NULL
 ) PARTITION BY LIST (dataset_key);
 
+
+CREATE OR REPLACE FUNCTION homotypic_name_id_default() RETURNS trigger AS $$
+BEGIN
+    NEW.homotypic_name_id := NEW.id;
+    RETURN NEW;
+END
+$$
+LANGUAGE plpgsql;
+
+
+
 CREATE TABLE name_rel (
   key serial NOT NULL,
   verbatim_key INTEGER,
@@ -358,6 +369,7 @@ CREATE TABLE taxon (
   species_estimate INTEGER,
   species_estimate_reference_id TEXT,
   remarks TEXT,
+  dataset_sectors JSONB,
   created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   created_by INTEGER NOT NULL,
   modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),

@@ -4,11 +4,12 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.BiFunction;
 import javax.annotation.Nullable;
 import javax.imageio.ImageIO;
 
-import com.google.common.base.Function;
 import com.google.common.base.Strings;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -26,23 +27,23 @@ public class LogoUpdateJob implements Runnable {
   private final ImageService imgService;
   private final SqlSessionFactory factory;
   private final DownloadUtil downloader;
-  private final Function<Integer, File> scratchDirFunc;
+  private final BiFunction<Integer, String, File> scratchFileFunc;
   private final Dataset dataset;
   
   /**
    * Pulls all dataset logos asynchroneously in a new thread.
-   * @param scratchDirFunc function to return a scratch dir for a given datasetKey
+   * @param scratchFileFunc function to return a scratch dir for a given datasetKey
    */
-  public static void updateAllAsync(SqlSessionFactory factory, DownloadUtil downloader, Function<Integer, File> scratchDirFunc, ImageService imgService) {
-    Thread thread = new Thread(new LogoUpdateJob(null, factory, downloader, scratchDirFunc, imgService), "logo-updater");
+  public static void updateAllAsync(SqlSessionFactory factory, DownloadUtil downloader, BiFunction<Integer, String, File> scratchFileFunc, ImageService imgService) {
+    Thread thread = new Thread(new LogoUpdateJob(null, factory, downloader, scratchFileFunc, imgService), "logo-updater");
     thread.setDaemon(false);
     thread.start();
   }
   
-  public static void updateDatasetAsync(Dataset d, SqlSessionFactory factory, DownloadUtil downloader, Function<Integer, File> scratchDirFunc, ImageService imgService) {
+  public static void updateDatasetAsync(Dataset d, SqlSessionFactory factory, DownloadUtil downloader, BiFunction<Integer, String, File> scratchFileFunc, ImageService imgService) {
     if (d.getLogo() != null) {
       CompletableFuture.runAsync(
-          new LogoUpdateJob(d, factory, downloader,scratchDirFunc, imgService)
+          new LogoUpdateJob(d, factory, downloader,scratchFileFunc, imgService)
       );
     }
   }
@@ -50,12 +51,12 @@ public class LogoUpdateJob implements Runnable {
   /**
    * @param d if null pages through all datasets
    */
-  private LogoUpdateJob(@Nullable Dataset d, SqlSessionFactory factory, DownloadUtil downloader, Function<Integer, File> scratchDirFunc, ImageService imgService) {
+  private LogoUpdateJob(@Nullable Dataset d, SqlSessionFactory factory, DownloadUtil downloader, BiFunction<Integer, String, File> scratchFileFunc, ImageService imgService) {
     this.dataset = d;
     this.imgService = imgService;
     this.factory = factory;
     this.downloader = downloader;
-    this.scratchDirFunc = scratchDirFunc;
+    this.scratchFileFunc = scratchFileFunc;
   }
   
   @Override
@@ -102,7 +103,7 @@ public class LogoUpdateJob implements Runnable {
       if (Strings.isNullOrEmpty(fn)) {
         fn = "logo-original";
       }
-      File logo = new File(scratchDirFunc.apply(dataset.getKey()), fn);
+      File logo = scratchFileFunc.apply(dataset.getKey(), fn);
       try {
         downloader.download(dataset.getLogo(), logo);
         // now read image and copy to logo repo for resizing
@@ -114,6 +115,9 @@ public class LogoUpdateJob implements Runnable {
     
       } catch (IOException e) {
         LOG.error("Failed to read logo image {} from downloaded file {}", dataset.getLogo(), logo.getAbsolutePath(), e);
+
+      } finally {
+        FileUtils.deleteQuietly(logo);
       }
       return false;
     }

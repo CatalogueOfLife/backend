@@ -20,6 +20,32 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
   
   
   @Test
+  public void get() {
+    TreeNode tn = mapper().get(dataset11, "root-1");
+    assertEquals(dataset11, (int) tn.getDatasetKey());
+    assertNotNull(tn.getId());
+    assertNull(tn.getParentId());
+    // make sure we get the html markup
+    assertEquals("<i>Malus</i> <i>sylvestris</i>", tn.getName());
+    assertNull(tn.getDatasetSectors());
+  
+    MybatisTestUtils.populateDraftTree(session());
+
+    tn = mapper().get(DRAFT_COL, "t4");
+    assertNotNull(tn.getDatasetSectors());
+    assertEquals(1, (int) tn.getDatasetSectors().get(11));
+  
+    tn = mapper().get(DRAFT_COL, "t3");
+    assertEquals(2, (int) tn.getDatasetSectors().get(11));
+  
+    tn = mapper().get(DRAFT_COL, "t2");
+    assertEquals(2, (int) tn.getDatasetSectors().get(11));
+  
+    tn = mapper().get(DRAFT_COL, "t1");
+    assertEquals(2, (int) tn.getDatasetSectors().get(11));
+  }
+  
+  @Test
   public void root() {
     assertEquals(2, valid(mapper().root(dataset11, new Page())).size());
     TreeNode tn = mapper().root(dataset11, new Page()).get(0);

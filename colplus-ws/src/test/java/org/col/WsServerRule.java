@@ -10,7 +10,6 @@ import io.dropwizard.testing.junit.DropwizardAppRule;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.common.io.PortUtil;
 import org.col.common.util.YamlUtils;
-import org.col.db.EmbeddedColPg;
 import org.col.db.PgConfig;
 import org.col.db.PgSetupRule;
 import org.col.dw.BasicAuthClientFilter;
@@ -37,7 +36,6 @@ import org.slf4j.LoggerFactory;
  */
 public class WsServerRule extends DropwizardAppRule<WsServerConfig> {
   private static final Logger LOG = LoggerFactory.getLogger(WsServerRule.class);
-  private static EmbeddedColPg pg;
   
   public WsServerRule(String configPath, ConfigOverride... configOverrides) {
     super(WsServer.class, configPath, setupPg(configPath, configOverrides));
@@ -51,12 +49,7 @@ public class WsServerRule extends DropwizardAppRule<WsServerConfig> {
     List<ConfigOverride> overrides = Lists.newArrayList(configOverrides);
     try {
       PgConfigInApp cfg = YamlUtils.read(PgConfigInApp.class, new File(configPath));
-      if (cfg.db.embedded()) {
-        pg = new EmbeddedColPg(cfg.db);
-        pg.start();
-      } else {
-        LOG.info("Use external Postgres server {}/{}", cfg.db.host, cfg.db.database);
-      }
+      LOG.info("Use external Postgres server {}/{}", cfg.db.host, cfg.db.database);
   
       PgSetupRule.initDb(cfg.db);
 
@@ -86,14 +79,6 @@ public class WsServerRule extends DropwizardAppRule<WsServerConfig> {
   
   public SqlSessionFactory getSqlSessionFactory() {
     return ((WsServer) getTestSupport().getApplication()).getSqlSessionFactory();
-  }
-  
-  @Override
-  protected void after() {
-    if (pg != null) {
-      pg.stop();
-    }
-    super.after();
   }
   
   @Override

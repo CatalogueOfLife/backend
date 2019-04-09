@@ -113,9 +113,15 @@
   <select id="list" resultMap="sectorResultMap">
     SELECT <include refid="SELECT" />
     FROM <include refid="FROM" />
+    ORDER BY target_rank, key
+  </select>
+
+  <select id="listByDataset" resultMap="sectorResultMap">
+    SELECT <include refid="SELECT" />
+    FROM <include refid="FROM" />
     <bind name="idIsNull" value="false" />
     <include refid="WHERE" />
-    ORDER BY key
+    ORDER BY target_rank, key
   </select>
 
   <select id="listChildSectors" resultMap="sectorResultMap">
@@ -141,6 +147,12 @@
       LEFT JOIN taxon_3 t ON t.id=s.target_id
     <bind name="idIsNull" value="true" />
     <include refid="WHERE" />
+    ORDER BY key
+  </select>
+
+  <select id="processSectors" resultMap="sectorResultMap" parameterType="map" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
+    SELECT <include refid="SELECT" />
+    FROM <include refid="FROM" />
     ORDER BY key
   </select>
 

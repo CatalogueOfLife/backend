@@ -47,6 +47,13 @@ public class EsConfig {
     return environment == null ? name : environment + "-" + name;
   }
   
+  /**
+   * An ES expression to match all index names of the configured environment
+   */
+  public String allIndices() {
+    return environment == null ? "*" : environment + "-*";
+  }
+
   @JsonIgnore
   public boolean isEmpty() {
     return hosts == null || nameUsage == null;
