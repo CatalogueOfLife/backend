@@ -195,21 +195,21 @@ public class WsServer extends Application<WsServerConfig> {
   
     // resources
     env.jersey().register(new DataPackageResource());
-    env.jersey().register(new DatasetResource(getSqlSessionFactory(), imgService, cfg, new DownloadUtil(httpClient)));
+    env.jersey().register(new DatasetResource(getSqlSessionFactory(), imgService, cfg, new DownloadUtil(httpClient), diff));
     env.jersey().register(new DecisionResource(getSqlSessionFactory(), indexService));
     env.jersey().register(new DocsResource(cfg));
     env.jersey().register(new NameResource(nuss));
     env.jersey().register(new NameSearchResource(nuss));
     env.jersey().register(new ParserResource());
     env.jersey().register(new ReferenceResource());
-    env.jersey().register(new SectorResource(getSqlSessionFactory()));
+    env.jersey().register(new SectorResource(getSqlSessionFactory(), diDao, diff));
     env.jersey().register(new TaxonResource());
     env.jersey().register(new TreeResource());
     env.jersey().register(new UserResource(auth.getJwtCodec()));
     env.jersey().register(new VerbatimResource());
     env.jersey().register(new VocabResource());
     env.jersey().register(new MatchingResource(ni));
-    env.jersey().register(new AssemblyResource(assembly, getSqlSessionFactory(), exporter, diff));
+    env.jersey().register(new AssemblyResource(assembly, exporter));
     env.jersey().register(new AdminResource(getSqlSessionFactory(), new DownloadUtil(httpClient), cfg.normalizer, imgService));
   
   }

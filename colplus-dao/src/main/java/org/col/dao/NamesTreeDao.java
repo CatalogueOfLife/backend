@@ -122,10 +122,18 @@ public class NamesTreeDao {
     return streamFile(namesFile(datasetKey, attempt));
   }
   
-  public Stream<String> getDatasetTree(int datasetKey, int attempt) throws IOException {
+  public Stream<String> getDatasetTree(int datasetKey, int attempt) {
     return streamFile(treeFile(datasetKey, attempt));
   }
   
+  public Stream<String> getSectorNames(int sectorKey, int attempt) {
+    return streamFile(sectorNamesFile(sectorKey, attempt));
+  }
+  
+  public Stream<String> getSectorTree(int sectorKey, int attempt) {
+    return streamFile(sectorTreeFile(sectorKey, attempt));
+  }
+
   private static Stream<String> streamFile(File f) {
     try {
       BufferedReader br = Utf8IOUtils.readerFromFile(f);

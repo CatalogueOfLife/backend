@@ -3,6 +3,7 @@ package org.col.resources;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Reader;
 import java.util.List;
 import java.util.stream.Stream;
 import javax.annotation.security.RolesAllowed;
@@ -24,6 +25,8 @@ import org.col.api.vocab.ImportState;
 import org.col.common.io.DownloadUtil;
 import org.col.dao.DatasetDao;
 import org.col.dao.DatasetImportDao;
+import org.col.db.tree.DiffService;
+import org.col.db.tree.NamesDiff;
 import org.col.dw.auth.Roles;
 import org.col.dw.jersey.MoreMediaTypes;
 import org.col.img.ImageService;
@@ -40,12 +43,14 @@ public class DatasetResource extends CRUDIntResource<Dataset> {
   private final DatasetDao dao;
   private final ImageService imgService;
   private final DatasetImportDao diDao;
+  private final DiffService diff;
   
-  public DatasetResource(SqlSessionFactory factory, ImageService imgService, WsServerConfig cfg, DownloadUtil downloader) {
+  public DatasetResource(SqlSessionFactory factory, ImageService imgService, WsServerConfig cfg, DownloadUtil downloader, DiffService diff) {
     super(Dataset.class, new DatasetDao(factory, downloader, imgService, cfg.normalizer::scratchFile));
     dao = (DatasetDao) crud;
     this.imgService = imgService;
     this.diDao = new DatasetImportDao(factory, cfg.textTreeRepo);
+    this.diff = diff;
   }
   
   @GET
@@ -81,6 +86,22 @@ public class DatasetResource extends CRUDIntResource<Dataset> {
   public Stream<String> getImportAttemptNames(@PathParam("key") int key,
                                               @PathParam("attempt") int attempt) {
     return diDao.getTreeDao().getDatasetNames(key, attempt);
+  }
+  
+  @GET
+  @Path("{key}/treediff")
+  public Reader diffTree(@PathParam("key") int key,
+                         @QueryParam("attempts") String attempts,
+                         @Context SqlSession session) throws IOException {
+    return diff.datasetTreeDiff(key, attempts);
+  }
+  
+  @GET
+  @Path("{key}/namesdiff")
+  public NamesDiff diffNames(@PathParam("key") int key,
+                             @QueryParam("attempts") String attempts,
+                             @Context SqlSession session) throws IOException {
+    return diff.datasetNamesDiff(key, attempts);
   }
   
   @GET

@@ -27,8 +27,6 @@ public interface SectorImportMapper {
   /**
    * List all imports optionally filtered by their sectorKey and state(s).
    * Ordered by starting date from latest to historical.
-   * Not that the text tree and names properties are kept null deliberately to not pull too much data into memory.
-   * Use the get method on individual imports if the textTree or names is needed.
    */
   List<SectorImport> list(@Param("key") @Nullable Integer sectorKey,
                            @Param("states") @Nullable Collection<SectorImport.State> states,

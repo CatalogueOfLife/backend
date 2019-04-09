@@ -28,8 +28,6 @@
         error,
         started,
         finished,
-        text_tree,
-        names,
         name_count,
         taxon_count,
         reference_count,
@@ -47,8 +45,6 @@
         #{imp.error},
         #{imp.started},
         #{imp.finished},
-        #{imp.textTree},
-        #{imp.names, typeHandler=org.col.db.type2.StringSetTypeHandler},
         #{imp.nameCount},
         #{imp.taxonCount},
         #{imp.referenceCount},
@@ -84,7 +80,7 @@
     </resultMap>
 
     <select id="get" resultMap="sectorImportResultMap">
-        SELECT <include refid="SELECT" />, text_tree, names
+        SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
         WHERE sector_key=#{key} AND attempt=#{attempt}
     </select>

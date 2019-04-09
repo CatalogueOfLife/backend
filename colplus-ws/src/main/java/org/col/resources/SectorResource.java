@@ -1,8 +1,11 @@
 package org.col.resources;
 
+import java.io.IOException;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Stream;
 import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -15,11 +18,14 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.model.*;
 import org.col.api.vocab.Datasets;
+import org.col.dao.DatasetImportDao;
 import org.col.dao.DecisionRematcher;
 import org.col.dao.SectorDao;
 import org.col.dao.TaxonDao;
 import org.col.db.mapper.SectorMapper;
 import org.col.db.mapper.TaxonMapper;
+import org.col.db.tree.DiffService;
+import org.col.db.tree.NamesDiff;
 import org.col.dw.auth.Roles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,10 +38,14 @@ public class SectorResource extends CRUDIntResource<Sector> {
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(SectorResource.class);
   private final SqlSessionFactory factory;
+  private final DatasetImportDao diDao;
+  private final DiffService diff;
   
-  public SectorResource(SqlSessionFactory factory) {
+  public SectorResource(SqlSessionFactory factory, DatasetImportDao diDao, DiffService diffService) {
     super(Sector.class, new SectorDao(factory));
     this.factory = factory;
+    this.diDao = diDao;
+    this.diff = diffService;
   }
   
   @POST
@@ -119,4 +129,33 @@ public class SectorResource extends CRUDIntResource<Sector> {
     return s;
   }
   
+  @GET
+  @Path("{key}/import/{attempt}/tree")
+  public Stream<String> getImportAttemptTree(@PathParam("key") int key,
+                                             @PathParam("attempt") int attempt) throws IOException {
+    return diDao.getTreeDao().getSectorTree(key, attempt);
+  }
+  
+  @GET
+  @Path("{key}/import/{attempt}/names")
+  public Stream<String> getImportAttemptNames(@PathParam("key") int key,
+                                              @PathParam("attempt") int attempt) {
+    return diDao.getTreeDao().getSectorNames(key, attempt);
+  }
+  
+  @GET
+  @Path("{key}/treediff")
+  public Reader diffTree(@PathParam("key") int sectorKey,
+                         @QueryParam("attempts") String attempts,
+                         @Context SqlSession session) throws IOException {
+    return diff.sectorTreeDiff(sectorKey, attempts);
+  }
+  
+  @GET
+  @Path("{key}/namesdiff")
+  public NamesDiff diffNames(@PathParam("key") int sectorKey,
+                             @QueryParam("attempts") String attempts,
+                             @Context SqlSession session) throws IOException {
+    return diff.sectorNamesDiff(sectorKey, attempts);
+  }
 }

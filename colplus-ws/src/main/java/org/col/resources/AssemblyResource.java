@@ -1,7 +1,5 @@
 package org.col.resources;
 
-import java.io.IOException;
-import java.io.Reader;
 import java.util.List;
 import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
@@ -11,7 +9,6 @@ import javax.ws.rs.core.MediaType;
 
 import io.dropwizard.auth.Auth;
 import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.model.ColUser;
 import org.col.api.model.Page;
 import org.col.api.model.ResultPage;
@@ -22,8 +19,6 @@ import org.col.assembly.AssemblyState;
 import org.col.assembly.SyncRequest;
 import org.col.command.export.AcExporter;
 import org.col.db.mapper.SectorImportMapper;
-import org.col.db.tree.DiffService;
-import org.col.db.tree.NamesDiff;
 import org.col.dw.auth.Roles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,12 +30,10 @@ public class AssemblyResource {
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(AssemblyResource.class);
   private final AssemblyCoordinator assembly;
-  private final DiffService diff;
   private final AcExporter exporter;
   
-  public AssemblyResource(AssemblyCoordinator assembly, SqlSessionFactory factory, AcExporter exporter, DiffService diffService) {
+  public AssemblyResource(AssemblyCoordinator assembly, AcExporter exporter) {
     this.assembly = assembly;
-    this.diff = diffService;
     this.exporter = exporter;
   }
   
@@ -88,26 +81,6 @@ public class AssemblyResource {
                                        @Context SqlSession session) {
     requireDraft(catKey);
     return session.getMapper(SectorImportMapper.class).get(sectorKey, attempt);
-  }
-  
-  @GET
-  @Path("/sync/{sectorKey}/treediff")
-  public Reader diffTree(@PathParam("catKey") int catKey,
-                         @PathParam("sectorKey") int sectorKey,
-                         @QueryParam("attempts") String attempts,
-                         @Context SqlSession session) throws IOException {
-    requireDraft(catKey);
-    return diff.sectorTreeDiff(sectorKey, attempts);
-  }
-  
-  @GET
-  @Path("/sync/{sectorKey}/namesdiff")
-  public NamesDiff diffNames(@PathParam("catKey") int catKey,
-                             @PathParam("sectorKey") int sectorKey,
-                             @QueryParam("attempts") String attempts,
-                             @Context SqlSession session) throws IOException {
-    requireDraft(catKey);
-    return diff.sectorNamesDiff(sectorKey, attempts);
   }
 
   @DELETE
