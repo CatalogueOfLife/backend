@@ -10,6 +10,7 @@ import org.apache.ibatis.session.SqlSession;
 import org.col.api.model.Duplicate;
 import org.col.api.model.Page;
 import org.col.api.vocab.EqualityMode;
+import org.col.api.vocab.TaxonomicStatus;
 import org.col.dao.DuplicateDao;
 import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
@@ -30,8 +31,8 @@ public class DuplicateResource {
   public List<Duplicate> find(@PathParam("datasetKey") int datasetKey,
                               @QueryParam("mode") EqualityMode mode,
                               @QueryParam("rank") Rank rank,
-                              @QueryParam("status1") EqualityMode status1,
-                              @QueryParam("status2") EqualityMode status2,
+                              @QueryParam("status1") TaxonomicStatus status1,
+                              @QueryParam("status2") TaxonomicStatus status2,
                               @QueryParam("parentDifferent") Boolean parentDifferent,
                               @Valid @BeanParam Page page, @Context SqlSession session) {
     DuplicateDao dao = new DuplicateDao(session);
