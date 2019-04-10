@@ -9,8 +9,12 @@ import org.col.api.model.Page;
 import org.col.api.vocab.EqualityMode;
 import org.col.db.PgSetupRule;
 import org.col.postgres.PgCopyUtils;
+import org.gbif.nameparser.api.Rank;
 import org.junit.*;
 import org.postgresql.jdbc.PgConnection;
+
+import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 public class DuplicateMapperTest {
   
@@ -58,16 +62,28 @@ public class DuplicateMapperTest {
   
   @Test
   public void find() throws Exception {
-    Page p = new Page(0, 10);
+    Page p = new Page(0, 100);
     List<Duplicate> dups = mapper.find(datasetKey, EqualityMode.CANONICAL, null, null, null, null, p);
+    assertEquals(8, dups.size());
     for (Duplicate d : dups) {
-      Assert.assertNotNull(d.getUsage1().getId());
-      Assert.assertNotNull(d.getUsage2().getId());
-      Assert.assertNotEquals(d.getUsage1().getId(), d.getUsage2().getId());
-      Assert.assertNotNull(d.getUsage1().getName().getId());
-      Assert.assertNotNull(d.getUsage2().getName().getId());
-      Assert.assertEquals(d.getUsage1().getName().getScientificName(), d.getUsage2().getName().getScientificName());
+      System.out.println(d.getUsage1().getName().canonicalNameComplete());
+      System.out.println(d.getUsage2().getName().canonicalNameComplete());
+      System.out.println();
+      assertNotNull(d.getUsage1().getId());
+      assertNotNull(d.getUsage2().getId());
+      assertNotEquals(d.getUsage1().getId(), d.getUsage2().getId());
+      assertNotNull(d.getUsage1().getName().getId());
+      assertNotNull(d.getUsage2().getName().getId());
+      assertEquals(d.getUsage1().getName().getScientificName(), d.getUsage2().getName().getScientificName());
     }
-  }
   
+    dups = mapper.find(datasetKey, EqualityMode.CANONICAL, Rank.SUBSPECIES, null, null, null, p);
+    assertEquals(4, dups.size());
+    for (Duplicate d : dups) {
+      assertEquals(d.getUsage1().getName().getScientificName(), d.getUsage2().getName().getScientificName());
+      assertEquals(Rank.SUBSPECIES, d.getUsage1().getName().getRank());
+    }
+  
+    dups = mapper.find(datasetKey, EqualityMode.CANONICAL_WITH_AUTHORS, null, null, null, null, p);
+  }
 }

@@ -106,12 +106,14 @@
                 </otherwise>
             </choose>
             <if test="rank != null">
-                AND n1.rank=#{rank} AND n2.rank=#{rank}
+                AND n1.rank=#{rank}::rank AND n2.rank=#{rank}::rank
             </if>
             <if test="rank != null">
-                AND n1.rank=#{rank} AND n2.rank=#{rank}
+                AND n1.rank=#{rank}::rank AND n2.rank=#{rank}::rank
             </if>
         </where>
+    ORDER BY
+        n1.scientific_name
     </select>
 
 </mapper>
