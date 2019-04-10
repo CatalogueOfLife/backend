@@ -1,0 +1,55 @@
+key,dataset_key,line,file,type,terms,issues
+1,1000,35,Taxon.txt,dwc:Taxon,"{""dwca:ID"": ""40"", ""dwc:taxonID"": ""40"", ""dwc:taxonRank"": ""species"", ""dwc:scientificName"": ""Adiantum aethiopicum Hook. ex Bak."", ""dwc:acceptedNameUsageID"": ""a1""}",{31}
+2,1000,22,Taxon.txt,dwc:Taxon,"{""dwca:ID"": ""21"", ""dwc:taxonID"": ""21"", ""dwc:taxonRank"": ""subspecies"", ""dwc:scientificName"": ""Afrotyphlops schlegeli schlegeli (Peters, 1860)""}",{31}
+3,1000,14,Taxon.txt,dwc:Taxon,"{""dwca:ID"": ""13"", ""dwc:taxonID"": ""13"", ""dwc:taxonRank"": ""species"", ""dwc:scientificName"": ""Cleonus thunbergi 1842""}",{31}
+4,1000,43,Taxon.txt,dwc:Taxon,"{""dwca:ID"": ""48"", ""dwc:taxonID"": ""48"", ""dwc:taxonRank"": ""species"", ""dwc:scientificName"": ""Adiantum fragile Sw.""}",{31}
+5,1000,48,Taxon.txt,dwc:Taxon,"{""dwca:ID"": ""53"", ""dwc:taxonID"": ""53"", ""dwc:taxonRank"": ""species"", ""dwc:scientificName"": ""Athyrium pectinatum (Wall. ex Hope) C. Presl""}",{31}
+6,1000,9,Taxon.txt,dwc:Taxon,"{""dwca:ID"": ""8"", ""dwc:taxonID"": ""8"", ""dwc:taxonRank"": ""species"", ""dwc:scientificName"": ""Ceropegia juttae (Dinter) Bruyns""}",{31}
+7,1000,27,Taxon.txt,dwc:Taxon,"{""dwca:ID"": ""26"", ""dwc:taxonID"": ""26"", ""dwc:taxonRank"": ""subspecies"", ""dwc:scientificName"": ""Aspidoscelis deppii schizophorus""}",{31}
+8,1000,30,Taxon.txt,dwc:Taxon,"{""dwca:ID"": ""29"", ""dwc:taxonID"": ""29"", ""dwc:taxonRank"": ""subspecies"", ""dwc:scientificName"": ""Malayopython reticulatus jampeanus (Auliya et al., 2002)""}",{31}
+9,1000,6,Taxon.txt,dwc:Taxon,"{""dwca:ID"": ""5"", ""dwc:taxonID"": ""5"", ""dwc:taxonRank"": ""species"", ""dwc:scientificName"": ""Brachytarsus nebulosus""}",{31}
+10,1000,51,Taxon.txt,dwc:Taxon,"{""dwca:ID"": ""56"", ""dwc:taxonID"": ""56"", ""dwc:taxonRank"": ""species"", ""dwc:scientificName"": ""Athyrium pectinatum Fée"", ""dwc:acceptedNameUsageID"": ""a3""}",{31}
+11,1000,40,Taxon.txt,dwc:Taxon,"{""dwca:ID"": ""45"", ""dwc:taxonID"": ""45"", ""dwc:taxonRank"": ""species"", ""dwc:scientificName"": ""Acrostichum aureum Cav."", ""dwc:acceptedNameUsageID"": ""a1""}",{31}
+12,1000,17,Taxon.txt,dwc:Taxon,"{""dwca:ID"": ""16"", ""dwc:taxonID"": ""16"", ""dwc:taxonRank"": ""species"", ""dwc:scientificName"": ""Euops nigra Kôno, 1927""}",{31}
+13,1000,19,Taxon.txt,dwc:Taxon,"{""dwca:ID"": ""18"", ""dwc:taxonID"": ""18"", ""dwc:taxonRank"": ""species"", ""dwc:scientificName"": ""Flatosaria stali (Haglund, 1899)""}",{31}
+14,1000,38,Taxon.txt,dwc:Taxon,"{""dwca:ID"": ""43"", ""dwc:taxonID"": ""43"", ""dwc:taxonRank"": ""species"", ""dwc:scientificName"": ""Actiniopteris australis (L. fil.) Link""}",{31}
+15,1000,53,Taxon.txt,dwc:Taxon,"{""dwca:ID"": ""58"", ""dwc:taxonID"": ""58"", ""dwc:taxonRank"": ""species"", ""dwc:scientificName"": ""Botrypus virginianus (L.) Michx.""}",{31}
+16,1000,4,Taxon.txt,dwc:Taxon,"{""dwca:ID"": ""3"", ""dwc:taxonID"": ""3"", ""dwc:taxonRank"": ""species"", ""dwc:scientificName"": ""Actinoscytina belmontensis Tillyard, 1926""}",{31}
+17,1000,32,Taxon.txt,dwc:Taxon,"{""dwca:ID"": ""a1"", ""dwc:taxonID"": ""a1"", ""dwc:taxonRank"": ""species"", ""dwc:scientificName"": ""Testum acceptum""}",{31}
+18,1000,25,Taxon.txt,dwc:Taxon,"{""dwca:ID"": ""24"", ""dwc:taxonID"": ""24"", ""dwc:taxonRank"": ""subspecies"", ""dwc:scientificName"": ""Aspidoscelis deppii schizophorus (Smith & Brandon, 1968)""}",{31}
+19,1000,11,Taxon.txt,dwc:Taxon,"{""dwca:ID"": ""10"", ""dwc:taxonID"": ""10"", ""dwc:taxonRank"": ""species"", ""dwc:scientificName"": ""Cleonus aquila Fahraeus, 1842""}",{31}
+20,1000,46,Taxon.txt,dwc:Taxon,"{""dwca:ID"": ""51"", ""dwc:taxonID"": ""51"", ""dwc:taxonRank"": ""species"", ""dwc:scientificName"": ""Asplenium shikokianum Bak."", ""dwc:acceptedNameUsageID"": ""a1""}",{31}
+21,1000,45,Taxon.txt,dwc:Taxon,"{""dwca:ID"": ""50"", ""dwc:taxonID"": ""50"", ""dwc:taxonRank"": ""species"", ""dwc:scientificName"": ""Adiantum fructuosum Poepp. ex Spreng."", ""dwc:acceptedNameUsageID"": ""a1""}",{31}
+22,1000,12,Taxon.txt,dwc:Taxon,"{""dwca:ID"": ""11"", ""dwc:taxonID"": ""11"", ""dwc:taxonRank"": ""species"", ""dwc:scientificName"": ""Cleonus pudicus Ménetriés, 1849""}",{31}
+23,1000,24,Taxon.txt,dwc:Taxon,"{""dwca:ID"": ""23"", ""dwc:taxonID"": ""23"", ""dwc:taxonRank"": ""subspecies"", ""dwc:scientificName"": ""Anolis ricordii leberi Williams, 1965""}",{31}
+24,1000,33,Taxon.txt,dwc:Taxon,"{""dwca:ID"": ""a2"", ""dwc:taxonID"": ""a2"", ""dwc:taxonRank"": ""species"", ""dwc:scientificName"": ""Testata accepta""}",{31}
+25,1000,3,Taxon.txt,dwc:Taxon,"{""dwca:ID"": ""2"", ""dwc:taxonID"": ""2"", ""dwc:taxonRank"": ""species"", ""dwc:scientificName"": ""Actinomyces neui Funke et al., 1994""}",{31}
+26,1000,54,Taxon.txt,dwc:Taxon,"{""dwca:ID"": ""59"", ""dwc:taxonID"": ""59"", ""dwc:taxonRank"": ""species"", ""dwc:scientificName"": ""Cyclosorus cuneatus (C. Chr.) Ching"", ""dwc:acceptedNameUsageID"": ""a1""}",{31}
+27,1000,37,Taxon.txt,dwc:Taxon,"{""dwca:ID"": ""42"", ""dwc:taxonID"": ""42"", ""dwc:taxonRank"": ""species"", ""dwc:scientificName"": ""Adiantum aethiopicum Thunb."", ""dwc:acceptedNameUsageID"": ""a2""}",{31}
+28,1000,20,Taxon.txt,dwc:Taxon,"{""dwca:ID"": ""19"", ""dwc:taxonID"": ""19"", ""dwc:taxonRank"": ""species"", ""dwc:scientificName"": ""Flatosaria ståli (Haglund, 1899)""}","{13,31}"
+29,1000,16,Taxon.txt,dwc:Taxon,"{""dwca:ID"": ""15"", ""dwc:taxonID"": ""15"", ""dwc:taxonRank"": ""species"", ""dwc:scientificName"": ""Euops nigra Kono, 1927""}",{31}
+30,1000,41,Taxon.txt,dwc:Taxon,"{""dwca:ID"": ""46"", ""dwc:taxonID"": ""46"", ""dwc:taxonRank"": ""species"", ""dwc:scientificName"": ""Acrostichum aureum L.""}",{31}
+31,1000,50,Taxon.txt,dwc:Taxon,"{""dwca:ID"": ""55"", ""dwc:taxonID"": ""55"", ""dwc:taxonRank"": ""species"", ""dwc:scientificName"": ""Athyrium pectinatum Bedd."", ""dwc:acceptedNameUsageID"": ""a2""}",{31}
+32,1000,7,Taxon.txt,dwc:Taxon,"{""dwca:ID"": ""6"", ""dwc:taxonID"": ""6"", ""dwc:taxonRank"": ""species"", ""dwc:scientificName"": ""Brachytarsus nebulosus""}",{31}
+33,1000,29,Taxon.txt,dwc:Taxon,"{""dwca:ID"": ""28"", ""dwc:taxonID"": ""28"", ""dwc:taxonRank"": ""subspecies"", ""dwc:scientificName"": ""Garthia gaudichaudii dorbignii (Duméril & Bibron, 1836)""}",{31}
+34,1000,28,Taxon.txt,dwc:Taxon,"{""dwca:ID"": ""27"", ""dwc:taxonID"": ""27"", ""dwc:taxonRank"": ""subspecies"", ""dwc:scientificName"": ""Garthia gaudichaudii dorbignii (Duméril & Bibron, 1836)""}",{31}
+35,1000,8,Taxon.txt,dwc:Taxon,"{""dwca:ID"": ""7"", ""dwc:taxonID"": ""7"", ""dwc:taxonRank"": ""species"", ""dwc:scientificName"": ""Ceropegia juttae (Dinter) Bruyns""}",{31}
+36,1000,49,Taxon.txt,dwc:Taxon,"{""dwca:ID"": ""54"", ""dwc:taxonID"": ""54"", ""dwc:taxonRank"": ""species"", ""dwc:scientificName"": ""Athyrium pectinatum (Wall. ex Mett.) Bedd."", ""dwc:acceptedNameUsageID"": ""a1""}",{31}
+37,1000,42,Taxon.txt,dwc:Taxon,"{""dwca:ID"": ""47"", ""dwc:taxonID"": ""47"", ""dwc:taxonRank"": ""species"", ""dwc:scientificName"": ""Adiantum fragile Boj."", ""dwc:acceptedNameUsageID"": ""a1""}",{31}
+38,1000,15,Taxon.txt,dwc:Taxon,"{""dwca:ID"": ""14"", ""dwc:taxonID"": ""14"", ""dwc:taxonRank"": ""species"", ""dwc:scientificName"": ""Cleonus tunbergi 1842""}",{31}
+39,1000,21,Taxon.txt,dwc:Taxon,"{""dwca:ID"": ""20"", ""dwc:taxonID"": ""20"", ""dwc:taxonRank"": ""subspecies"", ""dwc:scientificName"": ""Afrotyphlops schlegelii schlegelii (Peters, 1860)""}",{31}
+40,1000,36,Taxon.txt,dwc:Taxon,"{""dwca:ID"": ""41"", ""dwc:taxonID"": ""41"", ""dwc:taxonRank"": ""species"", ""dwc:scientificName"": ""Adiantum aethiopicum L.""}",{31}
+41,1000,55,Taxon.txt,dwc:Taxon,"{""dwca:ID"": ""60"", ""dwc:taxonID"": ""60"", ""dwc:taxonRank"": ""species"", ""dwc:scientificName"": ""Cyclosorus cuneatus Ching ex Shing""}",{31}
+42,1000,2,Taxon.txt,dwc:Taxon,"{""dwca:ID"": ""1"", ""dwc:taxonID"": ""1"", ""dwc:taxonRank"": ""species"", ""dwc:scientificName"": ""Actinomyces neuii Funke et al., 1994""}",{31}
+43,1000,34,Taxon.txt,dwc:Taxon,"{""dwca:ID"": ""a3"", ""dwc:taxonID"": ""a3"", ""dwc:taxonRank"": ""species"", ""dwc:scientificName"": ""Testitus acceptus""}",{31}
+44,1000,23,Taxon.txt,dwc:Taxon,"{""dwca:ID"": ""22"", ""dwc:taxonID"": ""22"", ""dwc:taxonRank"": ""subspecies"", ""dwc:scientificName"": ""Anolis ricordii leberi Williams, 1965""}",{31}
+45,1000,13,Taxon.txt,dwc:Taxon,"{""dwca:ID"": ""12"", ""dwc:taxonID"": ""12"", ""dwc:taxonRank"": ""species"", ""dwc:scientificName"": ""Cleonus pudicus Ménétriés, 1849""}",{31}
+46,1000,44,Taxon.txt,dwc:Taxon,"{""dwca:ID"": ""49"", ""dwc:taxonID"": ""49"", ""dwc:taxonRank"": ""species"", ""dwc:scientificName"": ""Adiantum fructuosum Kunze""}",{31}
+47,1000,47,Taxon.txt,dwc:Taxon,"{""dwca:ID"": ""52"", ""dwc:taxonID"": ""52"", ""dwc:taxonRank"": ""species"", ""dwc:scientificName"": ""Asplenium shikokianum Mak.""}",{31}
+48,1000,10,Taxon.txt,dwc:Taxon,"{""dwca:ID"": ""9"", ""dwc:taxonID"": ""9"", ""dwc:taxonRank"": ""species"", ""dwc:scientificName"": ""Cleonus aquila Fåhraeus, 1842""}",{31}
+49,1000,26,Taxon.txt,dwc:Taxon,"{""dwca:ID"": ""25"", ""dwc:taxonID"": ""25"", ""dwc:taxonRank"": ""subspecies"", ""dwc:scientificName"": ""Aspidoscelis deppii schizophorus (Brandon et Smith 1968)""}",{31}
+50,1000,31,Taxon.txt,dwc:Taxon,"{""dwca:ID"": ""30"", ""dwc:taxonID"": ""30"", ""dwc:taxonRank"": ""subspecies"", ""dwc:scientificName"": ""Malayopython reticulatus jampeanus (Auliya, 2002)""}",{31}
+51,1000,5,Taxon.txt,dwc:Taxon,"{""dwca:ID"": ""4"", ""dwc:taxonID"": ""4"", ""dwc:taxonRank"": ""species"", ""dwc:scientificName"": ""Actinoscytina belmontensis Tillyard, 1926""}",{31}
+52,1000,52,Taxon.txt,dwc:Taxon,"{""dwca:ID"": ""57"", ""dwc:taxonID"": ""57"", ""dwc:taxonRank"": ""species"", ""dwc:scientificName"": ""Botrypus virginianus (L.) Holub"", ""dwc:acceptedNameUsageID"": ""a1""}",{31}
+53,1000,39,Taxon.txt,dwc:Taxon,"{""dwca:ID"": ""44"", ""dwc:taxonID"": ""44"", ""dwc:taxonRank"": ""species"", ""dwc:scientificName"": ""Actiniopteris australis Ettingsh."", ""dwc:acceptedNameUsageID"": ""a1""}",{31}
+54,1000,18,Taxon.txt,dwc:Taxon,"{""dwca:ID"": ""17"", ""dwc:taxonID"": ""17"", ""dwc:taxonRank"": ""species"", ""dwc:scientificName"": ""Euops nigrum Kono, 1927""}",{31}

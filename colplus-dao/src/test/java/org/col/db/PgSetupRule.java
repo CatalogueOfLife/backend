@@ -16,7 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A junit test rule that creates a {@link HikariDataSource} and stops it the end.
+ * A junit test rule that creates a {@link HikariDataSource} and SqlSessionFactory and stops it the end.
  * The rule was designed to share the pool across all tests of a test class
  * if it runs as a static {@link org.junit.ClassRule}.
  * <p>

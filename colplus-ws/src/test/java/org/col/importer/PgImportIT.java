@@ -184,6 +184,11 @@ public class PgImportIT {
     normalizeAndImport(DWCA, 27);
   }
   
+  @Test
+  public void testDuplicates() throws Exception {
+    normalizeAndImport(DWCA, 35);
+  }
+  
   /**
    * 1->2->1 should be: 1->2
    * <p>

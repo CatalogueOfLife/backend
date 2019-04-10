@@ -27,7 +27,15 @@ public class PgCopyUtils {
     return copy(con, table, resourceName, Collections.emptyMap());
   }
   
+  public static long copy(PgConnection con, String table, String resourceName, String nullValue) throws IOException, SQLException {
+    return copy(con, table, resourceName, Collections.emptyMap(), nullValue);
+  }
+
   public static long copy(PgConnection con, String table, String resourceName, Map<String, Object> defaults) throws IOException, SQLException {
+    return copy(con, table, resourceName, defaults, "");
+  }
+  
+  public static long copy(PgConnection con, String table, String resourceName, Map<String, Object> defaults, String nullValue) throws IOException, SQLException {
     con.setAutoCommit(false);
     CopyManager copy = ((PGConnection)con).getCopyAPI();
     con.commit();
@@ -35,7 +43,7 @@ public class PgCopyUtils {
     LOG.info("Copy {} to table {}", resourceName, table);
     InputStreamWithoutHeader in = new InputStreamWithoutHeader(PgCopyUtils.class.getResourceAsStream(resourceName), ',', '\n', defaults);
     String header = HEADER_JOINER.join(in.header);
-    long cnt = copy.copyIn("COPY " + table + "(" + header + ") FROM STDOUT WITH CSV NULL ''", in);
+    long cnt = copy.copyIn("COPY " + table + "(" + header + ") FROM STDOUT WITH CSV NULL '"+nullValue+"'", in);
 
     con.commit();
     return cnt;

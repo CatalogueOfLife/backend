@@ -5,16 +5,16 @@
 <mapper namespace="org.col.db.mapper.DuplicateMapper">
 
     <resultMap id="duplicateResultMap" type="Duplicate" autoMapping="true">
-        <association property="usage1" columnPrefix="1_">
-            <id column="1n_key" />
-            <discriminator column="_type1" javaType="string">
+        <association property="usage1" columnPrefix="u1_">
+            <id column="n_key" />
+            <discriminator column="type_" javaType="string">
                 <case value="tax" resultType="Taxon" resultMap="org.col.db.mapper.TaxonMapper.taxonResultMap"/>
                 <case value="syn" resultType="Synonym" resultMap="org.col.db.mapper.SynonymMapper.synonymResultMap"/>
             </discriminator>
         </association>
-        <association property="usage2" columnPrefix="2_">
-            <id column="2n_key" />
-            <discriminator column="_type2" javaType="string">
+        <association property="usage2" columnPrefix="u2_">
+            <id column="n_key" />
+            <discriminator column="type_" javaType="string">
                 <case value="tax" resultType="Taxon" resultMap="org.col.db.mapper.TaxonMapper.taxonResultMap"/>
                 <case value="syn" resultType="Synonym" resultMap="org.col.db.mapper.SynonymMapper.synonymResultMap"/>
             </discriminator>
@@ -24,74 +24,85 @@
 
 
     <select id="find" parameterType="map" resultMap="duplicateResultMap">
+        <bind name="isSyn1" value="status1 != null and status1.isSynonym()" />
+        <bind name="isSyn2" value="status2 != null and status2.isSynonym()" />
         SELECT
         <include refid="org.col.db.mapper.NameMapper.nameCols">
             <property name="alias" value="n1"/>
-            <property name="prefix" value="n1_"/>
+            <property name="prefix" value="u1_n_"/>
         </include>,
-        <if test="status1 != null and status1.isSynonym()">
-            'syn' AS _type1,
+        <if test="isSyn1">
+            'syn' AS u1_type_,
+            s1.id AS id1,
             <include refid="org.col.db.mapper.SynonymMapper.synCols">
                 <property name="alias" value="s1"/>
-                <property name="prefix" value="s1_"/>
+                <property name="prefix" value="u1_"/>
             </include>
         </if>
-        <if test="status1 == null or !status1.isSynonym()">
-            'tax' AS _type1,
+        <if test="!isSyn1">
+            'tax' AS u1_type_,
+            t1.id AS id1,
             <include refid="org.col.db.mapper.TaxonMapper.taxonCols">
                 <property name="alias" value="t1"/>
-                <property name="prefix" value="t1_"/>
+                <property name="prefix" value="u1_"/>
             </include>
         </if>,
 
         <include refid="org.col.db.mapper.NameMapper.nameCols">
             <property name="alias" value="n2"/>
-            <property name="prefix" value="n2_"/>
+            <property name="prefix" value="u2_n_"/>
         </include>,
-        <if test="status2 != null and status2.isSynonym()">
-            'syn' AS _type2,
+        <if test="isSyn2">
+            'syn' AS u2_type_,
+            s2.id AS id2,
             <include refid="org.col.db.mapper.SynonymMapper.synCols">
                 <property name="alias" value="s2"/>
-                <property name="prefix" value="s2_"/>
+                <property name="prefix" value="u2_"/>
             </include>
         </if>
-        <if test="status2 == null or !status2.isSynonym()">
-            'tax' AS _type2,
+        <if test="!isSyn2">
+            'tax' AS u2_type_,
+            t2.id AS id2,
             <include refid="org.col.db.mapper.TaxonMapper.taxonCols">
                 <property name="alias" value="t2"/>
-                <property name="prefix" value="t2_"/>
+                <property name="prefix" value="u2_"/>
             </include>
         </if>
 
     FROM
         name_${datasetKey} n1
-        <if test="status1 != null and status1.isSynonym()">
+        <if test="isSyn1">
             JOIN synonym_${datasetKey} s1 ON n1.id=s1.name_id
         </if>
-        <if test="status1 == null or !status1.isSynonym()">
+        <if test="!isSyn1">
             JOIN taxon_${datasetKey} t1 ON n1.id=t1.name_id
         </if>,
 
         name_${datasetKey} n2
-        <if test="status2 != null and status2.isSynonym()">
+        <if test="isSyn2">
             JOIN synonym_${datasetKey} s2 ON n2.id=s2.name_id
         </if>
-        <if test="status2 == null or !status2.isSynonym()">
+        <if test="!isSyn2">
             JOIN taxon_${datasetKey} t2 ON n2.id=t2.name_id
         </if>
 
         <where>
+            <if test="isSyn1">s1.id</if>
+            <if test="!isSyn1">t1.id</if>
+            !=
+            <if test="isSyn2">s2.id</if>
+            <if test="!isSyn2">t2.id</if>
+
             <choose>
                 <when test="mode = 'CANONICAL_WITH_AUTHORS'">
-                    n1.scientific_name = n2.scientific_name
-                    AND
-                    n1.authorship = n2.authorship
+                    AND n1.scientific_name = n2.scientific_name
+                    AND n1.authorship = n2.authorship
                 </when>
                 <when test="mode = 'CANONICAL'">
-                    n1.scientific_name = n2.scientific_name
+                    AND n1.scientific_name = n2.scientific_name
                 </when>
                 <otherwise>
-                    n1.names_index_id = n2.names_index_id
+                    AND n1.names_index_id = n2.names_index_id
                 </otherwise>
             </choose>
             <if test="rank != null">
