@@ -25,15 +25,16 @@ INSERT INTO name (dataset_key, id, homotypic_name_id, verbatim_key, scientific_n
 INSERT INTO name (dataset_key, id, homotypic_name_id, verbatim_key, scientific_name, genus, specific_epithet, rank, origin, type, created_by, modified_by) VALUES (11, 'name-3', 'name-2', null, 'Larus fusca', 'Larus', 'fusca', 'species'::rank, 0, 0, 0, 0);
 INSERT INTO name (dataset_key, id, homotypic_name_id, verbatim_key, scientific_name, genus, specific_epithet, rank, origin, type, created_by, modified_by) VALUES (11, 'name-4', 'name-4', null, 'Larus erfundus', 'Larus', 'erfundus', 'species'::rank, 0, 0, 0, 0);
 
-INSERT INTO taxon (id, dataset_key, verbatim_key, name_id, origin, created_by, modified_by) VALUES ('root-1', 11, 1, 'name-1', 0, 0, 0);
-INSERT INTO taxon (id, dataset_key, verbatim_key, name_id, origin, created_by, modified_by) VALUES ('root-2', 11, 5, 'name-2', 0, 0, 0);
+-- taxa
+INSERT INTO name_usage (id, dataset_key, status, is_synonym, verbatim_key, name_id, origin, created_by, modified_by) VALUES ('root-1', 11, 1, false, 1, 'name-1', 0, 0, 0);
+INSERT INTO name_usage (id, dataset_key, status, is_synonym, verbatim_key, name_id, origin, created_by, modified_by) VALUES ('root-2', 11, 1, false, 5, 'name-2', 0, 0, 0);
+-- synonyms
+INSERT INTO name_usage (id, dataset_key, status, is_synonym, parent_id, name_id, origin, created_by, modified_by) VALUES ('s1', 11, 2, true, 'root-2', 'name-3', 0, 0, 0);
+INSERT INTO name_usage (id, dataset_key, status, is_synonym, parent_id, name_id, origin, created_by, modified_by) VALUES ('s2', 11, 2, true, 'root-2', 'name-4', 0, 0, 0);
 
-INSERT INTO synonym (taxon_id, name_id, dataset_key, status, origin, created_by, modified_by) VALUES ('root-2', 'name-3', 11, 2, 0, 0, 0);
-INSERT INTO synonym (taxon_id, name_id, dataset_key, status, origin, created_by, modified_by) VALUES ('root-2', 'name-4', 11, 2, 0, 0, 0);
-
-INSERT INTO taxon_reference(dataset_key, taxon_id, reference_id) VALUES (11, 'root-1', 'ref-1' );
-INSERT INTO taxon_reference(dataset_key, taxon_id, reference_id) VALUES (11, 'root-2', 'ref-1' );
-INSERT INTO taxon_reference(dataset_key, taxon_id, reference_id) VALUES (11, 'root-2', 'ref-1b');
+INSERT INTO usage_reference(dataset_key, taxon_id, reference_id) VALUES (11, 'root-1', 'ref-1' );
+INSERT INTO usage_reference(dataset_key, taxon_id, reference_id) VALUES (11, 'root-2', 'ref-1' );
+INSERT INTO usage_reference(dataset_key, taxon_id, reference_id) VALUES (11, 'root-2', 'ref-1b');
 
 INSERT INTO name_rel (key, dataset_key, type, name_id, related_name_id, created_by, modified_by) VALUES (1, 11, 0, 'name-2', 'name-3', 0, 0);
 ALTER SEQUENCE name_rel_key_seq RESTART WITH 1000;

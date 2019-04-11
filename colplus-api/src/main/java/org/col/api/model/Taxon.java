@@ -5,31 +5,17 @@ import java.time.LocalDate;
 import java.util.EnumSet;
 import java.util.Objects;
 import java.util.Set;
-import javax.annotation.Nonnull;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Preconditions;
-import org.apache.commons.lang3.StringUtils;
 import org.col.api.vocab.Lifezone;
-import org.col.api.vocab.Origin;
 import org.col.api.vocab.TaxonomicStatus;
 
 /**
  *
  */
-public class Taxon extends DataEntity implements NameUsage, DatasetEntity {
+public class Taxon extends NameUsageBase {
   
-  private String id;
-  @Nonnull
-  private Integer datasetKey;
-  private Integer sectorKey;
-  private Integer verbatimKey;
-  @Nonnull
-  private Name name;
-  private boolean provisional = false;
-  @Nonnull
-  private Origin origin;
-  private String parentId;
-  private String accordingTo;
   private LocalDate accordingToDate;
   private Boolean fossil;
   private Boolean recent;
@@ -37,96 +23,19 @@ public class Taxon extends DataEntity implements NameUsage, DatasetEntity {
   private URI webpage;
   private Integer speciesEstimate;
   private String speciesEstimateReferenceId;
-  private String remarks;
   private Integer childCount;
-  
-  public String getId() {
-    return id;
-  }
-  
-  public void setId(String id) {
-    this.id = id;
-  }
-  
-  @Override
-  public Integer getDatasetKey() {
-    return datasetKey;
-  }
-  
-  @Override
-  public void setDatasetKey(Integer key) {
-    this.datasetKey = key;
-  }
-  
-  @Override
-  public Integer getVerbatimKey() {
-    return verbatimKey;
-  }
-  
-  @Override
-  public void setVerbatimKey(Integer verbatimKey) {
-    this.verbatimKey = verbatimKey;
-  }
-  
-  @Override
-  public Name getName() {
-    return name;
-  }
-  
-  public void setName(Name name) {
-    this.name = name;
-  }
-  
-  @Override
-  public TaxonomicStatus getStatus() {
-    return provisional ? TaxonomicStatus.PROVISIONALLY_ACCEPTED : TaxonomicStatus.ACCEPTED;
-  }
-  
+
   @Override
   public void setStatus(TaxonomicStatus status) {
     if (Preconditions.checkNotNull(status).isSynonym()) {
       throw new IllegalArgumentException("Taxa cannot have a synonym status");
     }
-    provisional = status == TaxonomicStatus.PROVISIONALLY_ACCEPTED;
+    super.setStatus(status);
   }
   
+  @JsonIgnore
   public boolean isProvisional() {
-    return provisional;
-  }
-  
-  public void setProvisional(boolean provisional) {
-    this.provisional = provisional;
-  }
-  
-  public Origin getOrigin() {
-    return origin;
-  }
-  
-  public void setOrigin(Origin origin) {
-    this.origin = origin;
-  }
-  
-  public String getParentId() {
-    return parentId;
-  }
-  
-  public void setParentId(String key) {
-    this.parentId = key;
-  }
-  
-  @Override
-  public String getAccordingTo() {
-    return accordingTo;
-  }
-  
-  public void setAccordingTo(String accordingTo) {
-    this.accordingTo = accordingTo;
-  }
-  
-  public void addAccordingTo(String accordingTo) {
-    if (!StringUtils.isBlank(accordingTo)) {
-      this.accordingTo = this.accordingTo == null ? accordingTo.trim() : this.accordingTo + " " + accordingTo.trim();
-    }
+    return getStatus() == TaxonomicStatus.PROVISIONALLY_ACCEPTED;
   }
   
   public LocalDate getAccordingToDate() {
@@ -193,54 +102,24 @@ public class Taxon extends DataEntity implements NameUsage, DatasetEntity {
     this.speciesEstimateReferenceId = speciesEstimateReferenceId;
   }
   
-  public String getRemarks() {
-    return remarks;
-  }
-  
-  public void setRemarks(String remarks) {
-    this.remarks = remarks;
-  }
-  
-  public Integer getSectorKey() {
-    return sectorKey;
-  }
-  
-  public void setSectorKey(Integer sectorKey) {
-    this.sectorKey = sectorKey;
-  }
-  
-  public SimpleName toSimpleName() {
-    return new SimpleName(id, name.getScientificName(), name.getAuthorship(), name.getRank());
-  }
-  
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     if (!super.equals(o)) return false;
     Taxon taxon = (Taxon) o;
-    return provisional == taxon.provisional /*&&
-        Objects.equals(id, taxon.id) &&
-        Objects.equals(datasetKey, taxon.datasetKey) &&
-        Objects.equals(verbatimKey, taxon.verbatimKey) &&
-        Objects.equals(name, taxon.name) &&
-        Objects.equals(origin, taxon.origin) &&
-        Objects.equals(parentId, taxon.parentId) &&
-        Objects.equals(accordingTo, taxon.accordingTo) &&
-        Objects.equals(accordingToDate, taxon.accordingToDate) &&
+    return Objects.equals(accordingToDate, taxon.accordingToDate) &&
         Objects.equals(fossil, taxon.fossil) &&
         Objects.equals(recent, taxon.recent) &&
         Objects.equals(lifezones, taxon.lifezones) &&
         Objects.equals(webpage, taxon.webpage) &&
         Objects.equals(speciesEstimate, taxon.speciesEstimate) &&
         Objects.equals(speciesEstimateReferenceId, taxon.speciesEstimateReferenceId) &&
-        Objects.equals(remarks, taxon.remarks) &&
-        Objects.equals(childCount, taxon.childCount) &&
-        Objects.equals(sectorKey, taxon.sectorKey)*/;
+        Objects.equals(childCount, taxon.childCount);
   }
   
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), id, datasetKey, verbatimKey, name, provisional, origin, parentId, accordingTo, accordingToDate, fossil, recent, lifezones, webpage, speciesEstimate, speciesEstimateReferenceId, remarks, childCount, sectorKey);
+    return Objects.hash(super.hashCode(), accordingToDate, fossil, recent, lifezones, webpage, speciesEstimate, speciesEstimateReferenceId, childCount);
   }
 }

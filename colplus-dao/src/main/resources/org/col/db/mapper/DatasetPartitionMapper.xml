@@ -9,9 +9,8 @@
         CREATE TABLE reference_${key} (LIKE reference INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
         CREATE TABLE name_${key} (LIKE name INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
         CREATE TABLE name_rel_${key} (LIKE name_rel INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
-        CREATE TABLE taxon_${key} (LIKE taxon INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
-        CREATE TABLE synonym_${key} (LIKE synonym INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
-        CREATE TABLE taxon_reference_${key} (LIKE taxon_reference INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
+        CREATE TABLE name_usage_${key} (LIKE name_usage INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
+        CREATE TABLE usage_reference_${key} (LIKE usage_reference INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
         CREATE TABLE description_${key} (LIKE description INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
         CREATE TABLE distribution_${key} (LIKE distribution INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
         CREATE TABLE media_${key} (LIKE media INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
@@ -28,9 +27,8 @@
         ALTER TABLE reference ATTACH PARTITION reference_${key} FOR VALUES IN ( ${key} );
         ALTER TABLE name ATTACH PARTITION name_${key} FOR VALUES IN ( ${key} );
         ALTER TABLE name_rel ATTACH PARTITION name_rel_${key} FOR VALUES IN ( ${key} );
-        ALTER TABLE taxon ATTACH PARTITION taxon_${key} FOR VALUES IN ( ${key} );
-        ALTER TABLE synonym ATTACH PARTITION synonym_${key} FOR VALUES IN ( ${key} );
-        ALTER TABLE taxon_reference ATTACH PARTITION taxon_reference_${key} FOR VALUES IN ( ${key} );
+        ALTER TABLE name_usage ATTACH PARTITION name_usage_${key} FOR VALUES IN ( ${key} );
+        ALTER TABLE usage_reference ATTACH PARTITION usage_reference_${key} FOR VALUES IN ( ${key} );
         ALTER TABLE distribution ATTACH PARTITION distribution_${key} FOR VALUES IN ( ${key} );
         ALTER TABLE description ATTACH PARTITION description_${key} FOR VALUES IN ( ${key} );
         ALTER TABLE vernacular_name ATTACH PARTITION vernacular_name_${key} FOR VALUES IN ( ${key} );
@@ -62,40 +60,36 @@
         ALTER TABLE name_rel_${key} ADD CONSTRAINT name_rel_${key}_name_id_fk FOREIGN KEY (name_id) REFERENCES name_${key} (id);
         ALTER TABLE name_rel_${key} ADD CONSTRAINT name_rel_${key}_related_name_id_fk FOREIGN KEY (related_name_id) REFERENCES name_${key} (id);
 
-        ALTER TABLE taxon_${key} ADD PRIMARY KEY (id);
-        CREATE index ON taxon_${key} (parent_id);
-        CREATE index ON taxon_${key} (name_id);
-        CREATE index ON taxon_${key} (verbatim_key);
-        CREATE index ON taxon_${key} (sector_key);
-        ALTER TABLE taxon_${key} ADD CONSTRAINT taxon_${key}_parent_id_fk FOREIGN KEY (parent_id) REFERENCES taxon_${key} (id);
-        ALTER TABLE taxon_${key} ADD CONSTRAINT taxon_${key}_name_id_fk FOREIGN KEY (name_id) REFERENCES name_${key} (id);
-        ALTER TABLE taxon_${key} ADD CONSTRAINT taxon_${key}_sector_fk FOREIGN KEY (sector_key) REFERENCES sector (key);
+        ALTER TABLE name_usage_${key} ADD PRIMARY KEY (id);
+        CREATE index ON name_usage_${key} (parent_id);
+        CREATE index ON name_usage_${key} (name_id);
+        CREATE index ON name_usage_${key} (verbatim_key);
+        CREATE index ON name_usage_${key} (sector_key);
+        ALTER TABLE name_usage_${key} ADD CONSTRAINT name_usage_${key}_parent_id_fk FOREIGN KEY (parent_id) REFERENCES name_usage_${key} (id);
+        ALTER TABLE name_usage_${key} ADD CONSTRAINT name_usage_${key}_name_id_fk FOREIGN KEY (name_id) REFERENCES name_${key} (id);
+        ALTER TABLE name_usage_${key} ADD CONSTRAINT name_usage_${key}_sector_fk FOREIGN KEY (sector_key) REFERENCES sector (key);
 
-        CREATE index ON synonym_${key} (taxon_id);
-        CREATE index ON synonym_${key} (name_id);
-        CREATE index ON synonym_${key} (verbatim_key);
-        ALTER TABLE synonym_${key} ADD CONSTRAINT synonym_${key}_taxon_id_fk FOREIGN KEY (taxon_id) REFERENCES taxon_${key} (id) ON DELETE CASCADE;
-        ALTER TABLE synonym_${key} ADD CONSTRAINT synonym_${key}_name_id_fk FOREIGN KEY (name_id) REFERENCES name_${key} (id);
+        CREATE index ON usage_reference_${key} (taxon_id);
 
         ALTER TABLE description_${key} ADD PRIMARY KEY (key);
         CREATE index ON description_${key} (taxon_id);
         CREATE index ON description_${key} (verbatim_key);
-        ALTER TABLE description_${key} ADD CONSTRAINT description_${key}_taxon_id_fk FOREIGN KEY (taxon_id) REFERENCES taxon_${key} (id) ON DELETE CASCADE;
+        ALTER TABLE description_${key} ADD CONSTRAINT description_${key}_taxon_id_fk FOREIGN KEY (taxon_id) REFERENCES name_usage_${key} (id) ON DELETE CASCADE;
 
         ALTER TABLE distribution_${key} ADD PRIMARY KEY (key);
         CREATE index ON distribution_${key} (taxon_id);
         CREATE index ON distribution_${key} (verbatim_key);
-        ALTER TABLE distribution_${key} ADD CONSTRAINT distribution_${key}_taxon_id_fk FOREIGN KEY (taxon_id) REFERENCES taxon_${key} (id) ON DELETE CASCADE;
+        ALTER TABLE distribution_${key} ADD CONSTRAINT distribution_${key}_taxon_id_fk FOREIGN KEY (taxon_id) REFERENCES name_usage_${key} (id) ON DELETE CASCADE;
 
         ALTER TABLE media_${key} ADD PRIMARY KEY (key);
         CREATE index ON media_${key} (taxon_id);
         CREATE index ON media_${key} (verbatim_key);
-        ALTER TABLE media_${key} ADD CONSTRAINT media_${key}_taxon_id_fk FOREIGN KEY (taxon_id) REFERENCES taxon_${key} (id) ON DELETE CASCADE;
+        ALTER TABLE media_${key} ADD CONSTRAINT media_${key}_taxon_id_fk FOREIGN KEY (taxon_id) REFERENCES name_usage_${key} (id) ON DELETE CASCADE;
 
         ALTER TABLE vernacular_name_${key} ADD PRIMARY KEY (key);
         CREATE index ON vernacular_name_${key} (taxon_id);
         CREATE index ON vernacular_name_${key} (verbatim_key);
-        ALTER TABLE vernacular_name_${key} ADD CONSTRAINT vernacular_name_${key}_taxon_id_fk FOREIGN KEY (taxon_id) REFERENCES taxon_${key} (id) ON DELETE CASCADE;
+        ALTER TABLE vernacular_name_${key} ADD CONSTRAINT vernacular_name_${key}_taxon_id_fk FOREIGN KEY (taxon_id) REFERENCES name_usage_${key} (id) ON DELETE CASCADE;
     </update>
 
     <update id="delete" parameterType="map">
@@ -103,9 +97,8 @@
         DROP TABLE IF EXISTS distribution_${key};
         DROP TABLE IF EXISTS media_${key};
         DROP TABLE IF EXISTS vernacular_name_${key};
-        DROP TABLE IF EXISTS taxon_reference_${key};
-        DROP TABLE IF EXISTS synonym_${key};
-        DROP TABLE IF EXISTS taxon_${key};
+        DROP TABLE IF EXISTS usage_reference_${key};
+        DROP TABLE IF EXISTS name_usage_${key};
         DROP TABLE IF EXISTS name_rel_${key};
         DROP TABLE IF EXISTS name_${key};
         DROP TABLE IF EXISTS reference_${key};

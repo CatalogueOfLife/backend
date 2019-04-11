@@ -171,6 +171,7 @@ CREATE TABLE dataset_import (
   verbatim_count INTEGER,
   name_count INTEGER,
   taxon_count INTEGER,
+  synonym_count INTEGER,
   reference_count INTEGER,
   vernacular_count INTEGER,
   distribution_count INTEGER,
@@ -349,14 +350,15 @@ CREATE TABLE name_rel (
   modified_by INTEGER NOT NULL
 ) PARTITION BY LIST (dataset_key);
 
-CREATE TABLE taxon (
+CREATE TABLE name_usage (
   id TEXT NOT NULL,
   dataset_key INTEGER NOT NULL,
   sector_key INTEGER,
   verbatim_key INTEGER,
   parent_id TEXT,
   name_id TEXT NOT NULL,
-  provisional BOOLEAN DEFAULT FALSE NOT NULL,
+  status INTEGER NOT NULL,
+  is_synonym BOOLEAN NOT NULL,
   origin INTEGER NOT NULL,
   according_to TEXT,
   according_to_date DATE,
@@ -374,22 +376,7 @@ CREATE TABLE taxon (
   modified_by INTEGER NOT NULL
 ) PARTITION BY LIST (dataset_key);
 
-CREATE TABLE synonym (
-  id TEXT,
-  taxon_id TEXT NOT NULL,
-  name_id TEXT NOT NULL,
-  dataset_key INTEGER NOT NULL,
-  verbatim_key INTEGER,
-  status INTEGER NOT NULL,
-  according_to TEXT,
-  origin INTEGER NOT NULL,
-  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
-  created_by INTEGER NOT NULL,
-  modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
-  modified_by INTEGER NOT NULL
-) PARTITION BY LIST (dataset_key);
-
-CREATE TABLE taxon_reference (
+CREATE TABLE usage_reference (
   dataset_key INTEGER NOT NULL,
   taxon_id TEXT NOT NULL,
   reference_id TEXT NOT NULL

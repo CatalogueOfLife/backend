@@ -45,6 +45,7 @@
       verbatim_count,
       name_count,
       taxon_count,
+      synonym_count,
       reference_count,
       vernacular_count,
       distribution_count,
@@ -73,6 +74,7 @@
       #{di.verbatimCount},
       #{di.nameCount},
       #{di.taxonCount},
+      #{di.synonymCount},
       #{di.referenceCount},
       #{di.vernacularCount},
       #{di.distributionCount},
@@ -158,7 +160,10 @@
         SELECT count(*) FROM reference_${key}
     </select>
     <select id="countTaxon" resultType="integer">
-        SELECT count(*) FROM taxon_${key}
+        SELECT count(*) FROM name_usage_${key} WHERE NOT is_synonym
+    </select>
+    <select id="countSynonym" resultType="integer">
+        SELECT count(*) FROM name_usage_${key} WHERE is_synonym
     </select>
     <select id="countVerbatim" resultType="integer">
         SELECT count(*) FROM verbatim_${key}
@@ -210,16 +215,13 @@
     </select>
     <select id="countTaxaByRank" resultType="StringCount">
         SELECT n.rank AS key, count(*) AS count
-        FROM taxon_${key} t JOIN name_${key} n ON t.name_id=n.id
+        FROM name_usage_${key} t JOIN name_${key} n ON t.name_id=n.id
+        WHERE NOT t.is_synonym
         GROUP BY n.rank
     </select>
     <select id="countUsagesByStatus" resultType="IntCount">
-        SELECT CASE WHEN provisional THEN 1 ELSE 0 END AS key, count(*) AS count
-        FROM taxon_${key}
-        GROUP BY provisional
-        UNION
         SELECT status AS key, count(*) AS count
-        FROM synonym_${key}
+        FROM name_usage_${key}
         GROUP BY status
     </select>
     <select id="countVerbatimByType" resultType="StringCount">

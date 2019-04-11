@@ -2,6 +2,7 @@ package org.col.api.model;
 
 import java.util.Objects;
 
+import org.col.api.vocab.Origin;
 import org.col.api.vocab.TaxonomicStatus;
 
 /**
@@ -28,6 +29,16 @@ public class BareName implements NameUsage {
   }
   
   @Override
+  public Integer getDatasetKey() {
+    return name.getDatasetKey();
+  }
+  
+  @Override
+  public void setDatasetKey(Integer key) {
+    name.setDatasetKey(key);
+  }
+  
+  @Override
   public Name getName() {
     return name;
   }
@@ -48,6 +59,16 @@ public class BareName implements NameUsage {
   }
   
   @Override
+  public String getRemarks() {
+    return name.getRemarks();
+  }
+  
+  @Override
+  public void setRemarks(String remarks) {
+    name.setRemarks(remarks);
+  }
+  
+  @Override
   public TaxonomicStatus getStatus() {
     return null;
   }
@@ -56,6 +77,16 @@ public class BareName implements NameUsage {
   public void setStatus(TaxonomicStatus status) {
     // nothing, throw if new status is supposed to be non null
     if (status != null) throw new IllegalArgumentException("Bare names do not have a taxonomic status");
+  }
+  
+  @Override
+  public Origin getOrigin() {
+    return name.getOrigin();
+  }
+  
+  @Override
+  public void setOrigin(Origin origin) {
+    name.setOrigin(origin);
   }
   
   @Override

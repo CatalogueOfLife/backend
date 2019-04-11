@@ -58,6 +58,7 @@ public class DatasetImport implements ImportAttempt {
   private Integer nameCount;
   private Integer referenceCount;
   private Integer taxonCount;
+  private Integer synonymCount;
   private Integer verbatimCount;
   private Integer vernacularCount;
   private Map<Gazetteer, Integer> distributionsByGazetteerCount = Maps.newHashMap();
@@ -175,6 +176,14 @@ public class DatasetImport implements ImportAttempt {
   
   public void setTaxonCount(Integer taxonCount) {
     this.taxonCount = taxonCount;
+  }
+  
+  public Integer getSynonymCount() {
+    return synonymCount;
+  }
+  
+  public void setSynonymCount(Integer synonymCount) {
+    this.synonymCount = synonymCount;
   }
   
   public Integer getReferenceCount() {
@@ -325,8 +334,8 @@ public class DatasetImport implements ImportAttempt {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     DatasetImport that = (DatasetImport) o;
-    return Objects.equals(datasetKey, that.datasetKey) &&
-        attempt == that.attempt &&
+    return attempt == that.attempt &&
+        Objects.equals(datasetKey, that.datasetKey) &&
         state == that.state &&
         Objects.equals(downloadUri, that.downloadUri) &&
         Objects.equals(download, that.download) &&
@@ -340,6 +349,7 @@ public class DatasetImport implements ImportAttempt {
         Objects.equals(nameCount, that.nameCount) &&
         Objects.equals(referenceCount, that.referenceCount) &&
         Objects.equals(taxonCount, that.taxonCount) &&
+        Objects.equals(synonymCount, that.synonymCount) &&
         Objects.equals(verbatimCount, that.verbatimCount) &&
         Objects.equals(vernacularCount, that.vernacularCount) &&
         Objects.equals(distributionsByGazetteerCount, that.distributionsByGazetteerCount) &&
@@ -358,7 +368,7 @@ public class DatasetImport implements ImportAttempt {
   
   @Override
   public int hashCode() {
-    return Objects.hash(datasetKey, attempt, state, downloadUri, download, started, finished, error, md5, descriptionCount, distributionCount, mediaCount, nameCount, referenceCount, taxonCount, verbatimCount, vernacularCount, distributionsByGazetteerCount, issuesCount, vernacularsByLanguageCount, mediaByTypeCount, namesByTypeCount, nameRelationsByTypeCount, namesByStatusCount, namesByOriginCount, namesByRankCount, taxaByRankCount, usagesByStatusCount, verbatimByTypeCount);
+    return Objects.hash(datasetKey, attempt, state, downloadUri, download, started, finished, error, md5, descriptionCount, distributionCount, mediaCount, nameCount, referenceCount, taxonCount, synonymCount, verbatimCount, vernacularCount, distributionsByGazetteerCount, issuesCount, vernacularsByLanguageCount, mediaByTypeCount, namesByTypeCount, nameRelationsByTypeCount, namesByStatusCount, namesByOriginCount, namesByRankCount, taxaByRankCount, usagesByStatusCount, verbatimByTypeCount);
   }
   
   public String attempt() {

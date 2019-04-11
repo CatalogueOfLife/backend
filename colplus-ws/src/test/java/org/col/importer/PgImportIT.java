@@ -315,6 +315,7 @@ public class PgImportIT {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       TaxonDao tdao = new TaxonDao(session);
       NameDao ndao = new NameDao(session);
+      NameUsageMapper uMapper = session.getMapper(NameUsageMapper.class);
       TaxonMapper taxMapper = session.getMapper(TaxonMapper.class);
       SynonymMapper synMapper = session.getMapper(SynonymMapper.class);
       vMapper = session.getMapper(VerbatimRecordMapper.class);
@@ -326,8 +327,7 @@ public class PgImportIT {
       assertIssue(n, Issue.ACCEPTED_ID_INVALID);
       
       // a bare name
-      assertTrue(taxMapper.listByNameID(dataset.getKey(), n.getId()).isEmpty());
-      assertTrue(synMapper.listByNameID(dataset.getKey(), n.getId()).isEmpty());
+      assertTrue(uMapper.listByNameID(dataset.getKey(), n.getId()).isEmpty());
       assertNull(tdao.get(dataset.getKey(), "s7"));
       
       n = ndao.get(dataset.getKey(), "s6");
@@ -335,9 +335,10 @@ public class PgImportIT {
       assertEquals(Rank.SPECIES, n.getRank());
       assertIssue(n, Issue.SYNONYM_DATA_MOVED);
       
-      List<Synonym> syns = synMapper.listByNameID(dataset.getKey(), n.getId());
+      List<NameUsage> syns = uMapper.listByNameID(dataset.getKey(), n.getId());
       assertEquals(1, syns.size());
-      Synonym s = syns.get(0);
+      assertTrue(syns.get(0).isSynonym());
+      Synonym s = (Synonym) syns.get(0);
       assertEquals("Astracantha arnacantha", s.getAccepted().getName().getScientificName());
       
       TaxonInfo t = tdao.getTaxonInfo(s.getAccepted());
@@ -422,7 +423,8 @@ public class PgImportIT {
       Name sn = ndao.get(dataset.getKey(), "Rho-140");
       assertEquals("Rhodacarus guevarai Guevara-Benitez, 1974", sn.canonicalNameComplete());
       
-      List<Synonym> syns = synMapper.listByNameID(dataset.getKey(), sn.getId());
+      // in acef name & taxon ids are the same
+      List<Synonym> syns = synMapper.listByTaxon(dataset.getKey(), sn.getId());
       assertEquals(1, syns.size());
       
       t = tdao.get(dataset.getKey(), "Rho-61");

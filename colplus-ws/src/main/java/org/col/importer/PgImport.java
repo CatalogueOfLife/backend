@@ -41,6 +41,7 @@ public class PgImport implements Callable<Boolean> {
   private BiMap<Integer, Integer> verbatimKeys = HashBiMap.create();
   private final AtomicInteger nCounter = new AtomicInteger(0);
   private final AtomicInteger tCounter = new AtomicInteger(0);
+  private final AtomicInteger sCounter = new AtomicInteger(0);
   private final AtomicInteger rCounter = new AtomicInteger(0);
   private final AtomicInteger diCounter = new AtomicInteger(0);
   private final AtomicInteger deCounter = new AtomicInteger(0);
@@ -74,9 +75,9 @@ public class PgImport implements Callable<Boolean> {
     
     updateMetadata();
 		LOG.info("Completed dataset {} insert with {} verbatim records, " +
-        "{} names, {} taxa, {} references, {} vernaculars, {} distributions, {} descriptions and {} media items",
+        "{} names, {} taxa, {} synonyms, {} references, {} vernaculars, {} distributions, {} descriptions and {} media items",
         dataset.getKey(), verbatimKeys.size(),
-        nCounter, tCounter, rCounter, vCounter, diCounter, deCounter, mCounter);
+        nCounter, tCounter, sCounter, rCounter, vCounter, diCounter, deCounter, mCounter);
 		return true;
 	}
 
@@ -187,8 +188,8 @@ public class PgImport implements Callable<Boolean> {
 
   private static <T extends UserManaged> T updateUser(T ent) {
     if (ent != null) {
-      ent.setCreatedBy(Users.MATCHER);
-      ent.setModifiedBy(Users.MATCHER);
+      ent.setCreatedBy(Users.IMPORTER);
+      ent.setModifiedBy(Users.IMPORTER);
     }
     return ent;
   }
@@ -276,6 +277,7 @@ public class PgImport implements Callable<Boolean> {
       MediaMapper mediaMapper = session.getMapper(MediaMapper.class);
       ReferenceMapper refMapper = session.getMapper(ReferenceMapper.class);
       TaxonMapper taxonMapper = session.getMapper(TaxonMapper.class);
+      SynonymMapper synMapper = session.getMapper(SynonymMapper.class);
       VernacularNameMapper vernacularMapper = session.getMapper(VernacularNameMapper.class);
 
       // iterate over taxonomic tree in depth first order, keeping postgres parent keys
@@ -291,26 +293,30 @@ public class PgImport implements Callable<Boolean> {
           updateVerbatimEntity(u);
           updateVerbatimEntity(nn);
 
-          // insert accepted taxon or synonym
-          String taxonId;
+          // update share props for taxon or synonym
+          NameUsageBase nu = u.usage;
+          nu.setName(nn.name);
+          nu.setDatasetKey(dataset.getKey());
+          updateUser(nu);
+          if (!parentIds.empty()) {
+            // use parent postgres key from stack, but keep it there
+            nu.setParentId(parentIds.peek());
+          } else if (u.isSynonym()) {
+            throw new IllegalStateException("Synonym node " + n.getId() + " without accepted taxon found: " + nn.name.getScientificName());
+          } else if (!n.hasLabel(Labels.ROOT)) {
+            throw new IllegalStateException("Non root node " + n.getId() + " with an accepted taxon without parent found: " + nn.name.getScientificName());
+          }
+  
+          // insert taxon or synonym
           if (u.isSynonym()) {
-            taxonId = parentIds.peek();
-            nameDao.addSynonym(dataset.getKey(), nn.name.getId(), taxonId, updateUser(u.getSynonym()));
+            synMapper.create(u.getSynonym());
+            sCounter.incrementAndGet();
 
           } else {
             Taxon tax = u.getTaxon();
-            if (!parentIds.empty()) {
-              // use parent postgres key from stack, but keep it there
-              tax.setParentId(parentIds.peek());
-            } else if (!n.hasLabel(Labels.ROOT)) {
-              throw new IllegalStateException("Non root node " + n.getId() + " with an accepted taxon without parent found: " + nn.name.getScientificName());
-            }
-
-            tax.setName(nn.name);
-            tax.setDatasetKey(dataset.getKey());
             taxonMapper.create(updateUser(tax));
             tCounter.incrementAndGet();
-            taxonId = tax.getId();
+            String taxonId = tax.getId();
 
             // push new postgres key onto stack for this taxon as we traverse in depth first
             parentIds.push(taxonId);

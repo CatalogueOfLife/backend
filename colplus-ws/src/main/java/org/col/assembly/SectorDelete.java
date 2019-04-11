@@ -11,7 +11,6 @@ import org.col.api.model.ColUser;
 import org.col.api.model.Sector;
 import org.col.api.model.SectorImport;
 import org.col.db.mapper.SectorMapper;
-import org.col.db.mapper.TaxonMapper;
 import org.col.es.NameUsageIndexService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

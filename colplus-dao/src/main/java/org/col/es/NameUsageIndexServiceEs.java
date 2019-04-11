@@ -10,10 +10,7 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.model.Sector;
 import org.col.api.search.NameUsageWrapper;
-import org.col.db.mapper.BatchResultHandler;
-import org.col.db.mapper.DatasetMapper;
-import org.col.db.mapper.NameUsageMapper;
-import org.col.db.mapper.SectorMapper;
+import org.col.db.mapper.*;
 import org.col.es.model.EsNameUsage;
 import org.col.es.query.EsSearchRequest;
 import org.elasticsearch.client.RestClient;
@@ -45,7 +42,7 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
     int tCount, sCount, bCount;
     try (SqlSession session = factory.openSession()) {
       createOrEmptyIndex(datasetKey);
-      NameUsageMapper mapper = session.getMapper(NameUsageMapper.class);
+      NameUsageWrapperMapper mapper = session.getMapper(NameUsageWrapperMapper.class);
       try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(indexer, 4096)) {
         LOG.debug("Indexing taxa for dataset {}", datasetKey);
         mapper.processDatasetTaxa(datasetKey, null, handler);
@@ -78,7 +75,7 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
     int tCount, sCount, bCount;
     try (SqlSession session = factory.openSession()) {
       Integer datasetKey = clearSector(session, sectorKey);
-      NameUsageMapper mapper = session.getMapper(NameUsageMapper.class);
+      NameUsageWrapperMapper mapper = session.getMapper(NameUsageWrapperMapper.class);
       try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(indexer, 4096)) {
         LOG.debug("Indexing taxa for sector {}", sectorKey);
         mapper.processDatasetTaxa(datasetKey, sectorKey, handler);
@@ -118,7 +115,7 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
   public void indexTaxa(Integer datasetKey, Collection<String> taxonIds) {
     NameUsageIndexer indexer = new NameUsageIndexer(client, index);
     try (SqlSession session = factory.openSession()) {
-      NameUsageMapper mapper = session.getMapper(NameUsageMapper.class);
+      NameUsageWrapperMapper mapper = session.getMapper(NameUsageWrapperMapper.class);
       List<NameUsageWrapper> taxa = taxonIds.stream()
           .map(id -> mapper.get(datasetKey, id))
           .filter(Objects::nonNull)
@@ -139,7 +136,7 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
       EsUtil.deleteIndex(client, index);
       EsUtil.createIndex(client, index, esConfig.nameUsage);
       List<Integer> keys = session.getMapper(DatasetMapper.class).keys();
-      NameUsageMapper mapper = session.getMapper(NameUsageMapper.class);
+      NameUsageWrapperMapper mapper = session.getMapper(NameUsageWrapperMapper.class);
       for (Integer datasetKey : keys) {
         int tc, sc, bc;
         try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(indexer, 4096)) {

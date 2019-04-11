@@ -2,9 +2,11 @@ package org.col.dao;
 
 import java.util.List;
 
-import com.google.common.base.Preconditions;
 import org.apache.ibatis.session.SqlSession;
-import org.col.api.model.*;
+import org.col.api.model.Name;
+import org.col.api.model.NameRelation;
+import org.col.api.model.Page;
+import org.col.api.model.ResultPage;
 import org.col.api.vocab.NomRelType;
 import org.col.db.mapper.NameMapper;
 import org.col.db.mapper.NameRelationMapper;
@@ -76,14 +78,6 @@ public class NameDao {
    */
   public List<NameRelation> relations(int datasetKey, String id) {
     return nrMapper.list(datasetKey, id);
-  }
-  
-  /**
-   * Adds a new synonym link for an existing taxon and synonym name
-   */
-  public void addSynonym(int datasetKey, String nameId, String taxonId, Synonym syn) {
-    Preconditions.checkNotNull(syn.getStatus(), "status must exist");
-    sMapper.create(datasetKey, nameId, taxonId, syn);
   }
   
 }

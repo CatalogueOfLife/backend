@@ -30,7 +30,7 @@ public class NeoUsage implements NeoNode, ID, VerbatimEntity {
   // the neo4j name node, related via HAS_NAME
   public Node nameNode;
   // either a taxon or a synonym - this can change during normalisation!
-  public NameUsage usage;
+  public NameUsageBase usage;
   public boolean homotypic = false;
 
   // supplementary infos for a taxon
@@ -44,23 +44,24 @@ public class NeoUsage implements NeoNode, ID, VerbatimEntity {
   public Classification classification;
   public List<String> remarks = Lists.newArrayList();
   
-  public static NeoUsage createTaxon(Origin origin, boolean provisional) {
-    return createTaxon(origin, null, provisional);
-  }
-  
-  public static NeoUsage createTaxon(Origin origin, Name name, boolean provisional) {
+  private static NeoUsage create(NameUsageBase nu, Origin origin, Name name, TaxonomicStatus status) {
     NeoUsage u = new NeoUsage();
-    Taxon tax = new Taxon();
-    tax.setProvisional(provisional);
-    tax.setOrigin(origin);
-
+    u.usage = nu;
+    u.usage.setStatus(status);
+    u.usage.setOrigin(origin);
     if (name != null) {
-      tax.setName(name);
+      u.usage.setName(name);
       name.setOrigin(origin);
     }
-    
-    u.usage = tax;
     return u;
+  }
+
+  public static NeoUsage createTaxon(Origin origin, TaxonomicStatus status) {
+    return createTaxon(origin, null, status);
+  }
+  
+  public static NeoUsage createTaxon(Origin origin, Name name, TaxonomicStatus status) {
+    return create(new Taxon(), origin, name, status);
   }
   
   public static NeoUsage createSynonym(Origin origin, TaxonomicStatus status) {
@@ -68,16 +69,7 @@ public class NeoUsage implements NeoNode, ID, VerbatimEntity {
   }
   
   public static NeoUsage createSynonym(Origin origin, Name name, TaxonomicStatus status) {
-    NeoUsage u = new NeoUsage();
-    Synonym syn = new Synonym();
-    syn.setOrigin(origin);
-    syn.setStatus(status);
-    if (name != null) {
-      syn.setName(name);
-      name.setOrigin(origin);
-    }
-    u.usage = syn;
-    return u;
+    return create(new Synonym(), origin, name, status);
   }
   
   @Override
@@ -136,6 +128,11 @@ public class NeoUsage implements NeoNode, ID, VerbatimEntity {
     remarks.add(remark);
   }
   
+  /**
+   * Converts the current taxon usage into a synonym instance
+   * @param status new synonym status
+   * @return the replaced taxon usage
+   */
   public Taxon convertToSynonym(TaxonomicStatus status) {
     Preconditions.checkArgument(!isSynonym(), "Usage needs to be a taxon");
     Preconditions.checkArgument(status.isSynonym(), "Status needs to be a synonym status");

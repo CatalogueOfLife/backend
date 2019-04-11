@@ -6,7 +6,10 @@ import org.col.api.TestEntityGenerator;
 import org.col.api.model.Name;
 import org.col.api.model.Taxon;
 import org.col.api.vocab.Origin;
-import org.col.db.mapper.*;
+import org.col.db.mapper.DatasetPartitionMapper;
+import org.col.db.mapper.InitMybatisRule;
+import org.col.db.mapper.NameMapper;
+import org.col.db.mapper.TaxonMapper;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 

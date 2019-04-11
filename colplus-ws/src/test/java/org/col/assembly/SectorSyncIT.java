@@ -20,7 +20,6 @@ import org.col.db.PgSetupRule;
 import org.col.dao.DatasetImportDao;
 import org.col.db.mapper.InitMybatisRule;
 import org.col.db.mapper.SectorMapper;
-import org.col.db.mapper.TaxonMapper;
 import org.col.db.tree.TextTreePrinter;
 import org.gbif.nameparser.api.Rank;
 import org.junit.*;

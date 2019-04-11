@@ -829,7 +829,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     Taxon t = new Taxon();
     t.setId("AAA");
     t.setName(n);
-    t.setProvisional(false);
+    t.setStatus(TaxonomicStatus.ACCEPTED);
     VernacularName vn = new VernacularName();
     vn.setName("laridae");
     NameUsageWrapper nuw1 = new NameUsageWrapper(t);
@@ -844,7 +844,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     t = new Taxon();
     t.setId("BBB");
     t.setName(n);
-    t.setProvisional(false);
+    t.setStatus(TaxonomicStatus.ACCEPTED);
     vn = new VernacularName();
     vn.setName("laridae");
     NameUsageWrapper nuw2 = new NameUsageWrapper(t);
@@ -858,7 +858,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     t = new Taxon();
     t.setId("CCC");
     t.setName(n);
-    t.setProvisional(false);
+    t.setStatus(TaxonomicStatus.ACCEPTED);
     vn = new VernacularName();
     vn.setName("laridae");
     NameUsageWrapper nuw3 = new NameUsageWrapper(t);
@@ -872,7 +872,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     t = new Taxon();
     t.setId("DDD");
     t.setName(n);
-    t.setProvisional(false);
+    t.setStatus(TaxonomicStatus.ACCEPTED);
     vn = new VernacularName();
     vn.setName("laridae");
     NameUsageWrapper nuw4 = new NameUsageWrapper(t);
@@ -886,7 +886,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     t = new Taxon();
     t.setId("EEE");
     t.setName(n);
-    t.setProvisional(false);
+    t.setStatus(TaxonomicStatus.ACCEPTED);
     vn = new VernacularName();
     vn.setName("laridae");
     NameUsageWrapper nuw5 = new NameUsageWrapper(t);
@@ -900,7 +900,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     t = new Taxon();
     t.setId("FFF");
     t.setName(n);
-    t.setProvisional(true); // <---
+    t.setStatus(TaxonomicStatus.PROVISIONALLY_ACCEPTED);
     vn = new VernacularName();
     vn.setName("laridae");
     NameUsageWrapper nuw6 = new NameUsageWrapper(t);

@@ -260,6 +260,7 @@ public class TestEntityGenerator {
    */
   public static Taxon newTaxon(int datasetKey, String id) {
     Taxon t = setUserDate(new Taxon());
+    t.setStatus(TaxonomicStatus.ACCEPTED);
     t.setAccordingTo("Foo");
     t.setAccordingToDate(LocalDate.of(2010, 11, 24));
     t.setDatasetKey(datasetKey);
@@ -282,13 +283,20 @@ public class TestEntityGenerator {
     return (CslData) new RandomInstance().create(CslData.class, CslName.class, CslDate.class);
   }
   
-  public static Synonym newSynonym(TaxonomicStatus status, Name name, Taxon accepted) {
+  public static Synonym newSynonym(String acceptedID) {
+    return newSynonym(NAME4, acceptedID);
+  }
+  public static Synonym newSynonym(Name name, String acceptedID) {
+    return newSynonym(TaxonomicStatus.SYNONYM, NAME4, acceptedID);
+  }
+  public static Synonym newSynonym(TaxonomicStatus status, Name name, String acceptedID) {
     Synonym s = setUserDate(new Synonym());
+    s.setDatasetKey(name.getDatasetKey());
     s.setId("syn" + ID_GEN.getAndIncrement());
     s.setName(name);
     s.setAccordingTo("non Döring 1999");
     s.setStatus(status);
-    s.setAccepted(accepted);
+    s.setParentId(acceptedID);
     s.setOrigin(Origin.SOURCE);
     return s;
   }

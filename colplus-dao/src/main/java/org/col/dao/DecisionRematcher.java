@@ -10,6 +10,7 @@ import org.col.api.model.*;
 import org.col.api.search.DatasetSearchRequest;
 import org.col.api.vocab.Datasets;
 import org.col.api.vocab.Origin;
+import org.col.api.vocab.TaxonomicStatus;
 import org.col.api.vocab.Users;
 import org.col.db.mapper.*;
 import org.gbif.nameparser.api.NameType;
@@ -69,7 +70,7 @@ public class DecisionRematcher {
   public boolean matchSector(Sector s, boolean subject, boolean target) {
     boolean success = true;
     if (subject) {
-      Taxon t = matchUniquely(s, s.getDatasetKey(), s.getSubject());
+      NameUsage t = matchUniquely(s, s.getDatasetKey(), s.getSubject());
       if (t != null) {
         s.getSubject().setId(t.getId());
       } else {
@@ -77,7 +78,7 @@ public class DecisionRematcher {
       }
     }
     if (target) {
-      Taxon t = matchUniquely(s, Datasets.DRAFT_COL, s.getTarget());
+      NameUsage t = matchUniquely(s, Datasets.DRAFT_COL, s.getTarget());
       if (t != null) {
         s.getTarget().setId(t.getId());
         if (s.getMode() == Sector.Mode.ATTACH) {
@@ -103,7 +104,7 @@ public class DecisionRematcher {
   private Taxon newTaxon(int datasetKey, SimpleName sn){
     Taxon t = new Taxon();
     t.setDatasetKey(datasetKey);
-    t.setProvisional(false);
+    t.setStatus(TaxonomicStatus.ACCEPTED);
     
     Name n = new Name();
     t.setName(n);
@@ -117,9 +118,9 @@ public class DecisionRematcher {
   }
   
   public boolean matchDecision(EditorialDecision ed) {
-    Taxon t = matchUniquely(ed, ed.getDatasetKey(), ed.getSubject());
-    boolean success = t != null;
-    ed.getSubject().setId(t.getId());
+    NameUsage u = matchUniquely(ed, ed.getDatasetKey(), ed.getSubject());
+    boolean success = u != null;
+    ed.getSubject().setId(u.getId());
     em.update(ed);
     return success;
   }
@@ -192,8 +193,8 @@ public class DecisionRematcher {
     }
   }
   
-  private Taxon matchUniquely(Decision d, int datasetKey, SimpleName sn){
-    List<Taxon> matches = mdao.matchDataset(sn, datasetKey);
+  private NameUsage matchUniquely(Decision d, int datasetKey, SimpleName sn){
+    List<NameUsage> matches = mdao.matchDataset(sn, datasetKey);
     if (matches.isEmpty()) {
       LOG.warn("{} {} cannot be rematched to dataset {} - lost {}", d.getClass().getSimpleName(), d.getKey(), datasetKey, sn);
     } else if (matches.size() > 1) {

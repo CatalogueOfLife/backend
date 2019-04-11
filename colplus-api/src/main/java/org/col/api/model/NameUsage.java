@@ -1,12 +1,13 @@
 package org.col.api.model;
 
 import org.apache.commons.lang3.StringUtils;
+import org.col.api.vocab.Origin;
 import org.col.api.vocab.TaxonomicStatus;
 
 /**
  *
  */
-public interface NameUsage extends ID, VerbatimEntity {
+public interface NameUsage extends DatasetEntity, ID, VerbatimEntity {
 
   Name getName();
   
@@ -15,7 +16,11 @@ public interface NameUsage extends ID, VerbatimEntity {
   TaxonomicStatus getStatus();
   
   void setStatus(TaxonomicStatus status);
-
+  
+  Origin getOrigin();
+  
+  void setOrigin(Origin origin);
+  
   String getAccordingTo();
   
   void setAccordingTo(String according);
@@ -38,4 +43,7 @@ public interface NameUsage extends ID, VerbatimEntity {
     }
   }
   
+  String getRemarks();
+  
+  void setRemarks(String remarks);
 }

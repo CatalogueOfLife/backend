@@ -2,6 +2,7 @@ package org.col.dao;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 import org.apache.ibatis.session.SqlSession;
@@ -13,6 +14,7 @@ import org.col.api.vocab.Gazetteer;
 import org.col.api.vocab.Origin;
 import org.col.api.vocab.TaxonomicStatus;
 import org.col.db.MybatisTestUtils;
+import org.col.db.mapper.SynonymMapper;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Test;
@@ -81,6 +83,7 @@ public class TaxonDaoTest extends DaoTestBase {
   public void synonyms() throws Exception {
     try (SqlSession session = session()) {
       TaxonDao tDao = new TaxonDao(session());
+      SynonymMapper sm = session.getMapper(SynonymMapper.class);
       NameDao nDao = new NameDao(session());
       
       final Taxon acc = TestEntityGenerator.TAXON1;
@@ -123,9 +126,13 @@ public class TaxonDaoTest extends DaoTestBase {
       
       // now add a single synonym relation
       Synonym syn = setUserDate(new Synonym());
+      syn.setDatasetKey(datasetKey);
+      syn.setId(UUID.randomUUID().toString());
       syn.setStatus(TaxonomicStatus.SYNONYM);
       syn.setOrigin(Origin.SOURCE);
-      nDao.addSynonym(datasetKey, syn1.getId(), acc.getId(), syn);
+      syn.setName(syn1);
+      syn.setParentId(acc.getId());
+      sm.create(syn);
       session.commit();
       
       synonymy = tDao.getSynonymy(acc);
@@ -133,11 +140,11 @@ public class TaxonDaoTest extends DaoTestBase {
       assertEquals(1, synonymy.size());
       assertEquals(0, synonymy.getMisapplied().size());
       assertEquals(0, synonymy.getHomotypic().size());
-      
-      nDao.addSynonym(datasetKey, syn2bas.getId(), acc.getId(), syn);
-      nDao.addSynonym(datasetKey, syn3bas.getId(), acc.getId(), syn);
+  
+      sm.create(updSyn(syn, syn2bas));
+      sm.create(updSyn(syn, syn3bas));
       syn.setStatus(TaxonomicStatus.MISAPPLIED);
-      nDao.addSynonym(datasetKey, syn21.getId(), acc.getId(), syn);
+      sm.create(updSyn(syn, syn21));
       session.commit();
       
       // at this stage we have 4 explicit synonym relations
@@ -149,9 +156,9 @@ public class TaxonDaoTest extends DaoTestBase {
       
       // add the remaining homotypic names as synonyms
       syn.setStatus(TaxonomicStatus.SYNONYM);
-      nDao.addSynonym(datasetKey, syn21.getId(), acc.getId(), syn);
-      nDao.addSynonym(datasetKey, syn22.getId(), acc.getId(), syn);
-      nDao.addSynonym(datasetKey, syn31.getId(), acc.getId(), syn);
+      sm.create(newSyn(syn, syn21));
+      sm.create(newSyn(syn, syn22));
+      sm.create(newSyn(syn, syn31));
       
       synonymy = tDao.getSynonymy(acc);
       assertEquals(7, synonymy.size());
@@ -165,6 +172,18 @@ public class TaxonDaoTest extends DaoTestBase {
     }
   }
   
+  static Synonym updSyn(Synonym syn, Name n) {
+    syn.setId(n.getId());
+    syn.setName(n);
+    return syn;
+  }
+  
+  static Synonym newSyn(Synonym syn, Name n) {
+    syn.setId(UUID.randomUUID().toString());
+    syn.setName(n);
+    return syn;
+  }
+
   @Test
   public void create() {
     final int datasetKey = DATASET11.getKey();

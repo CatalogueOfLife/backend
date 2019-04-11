@@ -31,6 +31,7 @@ public class TaxonDao {
   private final ReferenceMapper rMapper;
   private final SynonymMapper sMapper;
   private final TaxonMapper tMapper;
+  private final NameUsageMapper uMapper;
   private final VernacularNameMapper vMapper;
   private final Map<EntityType, TaxonExtensionMapper<? extends IntKey>> extMapper = new HashMap<>();
   
@@ -44,6 +45,7 @@ public class TaxonDao {
     rMapper = session.getMapper(ReferenceMapper.class);
     sMapper = session.getMapper(SynonymMapper.class);
     tMapper = session.getMapper(TaxonMapper.class);
+    uMapper = session.getMapper(NameUsageMapper.class);
     vMapper = session.getMapper(VernacularNameMapper.class);
   
     extMapper.put(EntityType.DISTRIBUTION, diMapper);
@@ -97,12 +99,19 @@ public class TaxonDao {
     return orig;
   }
   
+  /**
+   * @param syn the source synonym to copy
+   * @param accepted the new accepted taxon to attach the copied synonym to
+   * @param user
+   * @param lookupReference
+   */
   public void copySynonym(final Synonym syn, final DatasetID accepted, ColUser user, Function<Reference,String> lookupReference) {
     copyName(syn, accepted.getDatasetKey(), user, lookupReference);
     newKey(syn);
     syn.applyUser(user);
     syn.setOrigin(Origin.SOURCE);
-    sMapper.create(accepted.getDatasetKey(), syn.getName().getId(), accepted.getId(), syn);
+    syn.setParentId(accepted.getId());
+    sMapper.create(syn);
   }
   
   /**
@@ -164,16 +173,16 @@ public class TaxonDao {
     return tMapper.get(datasetKey, id);
   }
   
-  public List<Synonym> getSynonyms(int datasetKey, String nameId) {
-    return sMapper.listByNameID(datasetKey, nameId);
+  public List<Synonym> getSynonyms(int datasetKey, String taxonId) {
+    return sMapper.listByTaxon(datasetKey, taxonId);
   }
 
-  public Synonym getSynonym(int datasetKey, String nameId) {
-    if (nameId != null) {
-      List<Synonym> syns = getSynonyms(datasetKey, nameId);
+  public Synonym getSynonym(int datasetKey, String taxonId) {
+    if (taxonId != null) {
+      List<Synonym> syns = getSynonyms(datasetKey, taxonId);
       if (!syns.isEmpty()) {
         if (syns.size() > 1) {
-          LOG.debug("Multiple synonyms found for nameID {}", nameId);
+          LOG.debug("Multiple synonyms found for taxonId {}", taxonId);
         }
         return syns.get(0);
       }
@@ -411,7 +420,7 @@ public class TaxonDao {
   }
   
   private void relinkChildren(Taxon t, ColUser user){
-    int cnt = tMapper.updateParentId(t.getDatasetKey(), t.getId(), t.getParentId(), user);
+    int cnt = uMapper.updateParentId(t.getDatasetKey(), t.getId(), t.getParentId(), user);
     LOG.debug("Moved {} children of {} to {}", cnt, t.getId(), t.getParentId());
   }
   

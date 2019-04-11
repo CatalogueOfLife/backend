@@ -21,10 +21,7 @@ import org.col.dao.DatasetImportDao;
 import org.col.dao.MatchingDao;
 import org.col.dao.NamesTreeDao;
 import org.col.dao.TaxonDao;
-import org.col.db.mapper.SectorImportMapper;
-import org.col.db.mapper.SectorMapper;
-import org.col.db.mapper.SynonymMapper;
-import org.col.db.mapper.TaxonMapper;
+import org.col.db.mapper.*;
 import org.col.es.NameUsageIndexService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -207,7 +204,7 @@ public class SectorSync extends SectorRunnable {
       
       // Synonyms
       DatasetID acc = new DatasetID(tax);
-      for (Synonym syn : sMapper.listByTaxon(tax.getDatasetKey(), tax.getId())) {
+      for (Synonym syn : sMapper.listByTaxon(orig.getDatasetKey(), orig.getId())) {
         if (syn.getId() != null && decisions.containsKey(syn.getId())) {
           if (applyDecision(syn, decisions.get(syn.getId()))) {
             continue;
@@ -293,8 +290,8 @@ public class SectorSync extends SectorRunnable {
   private void deleteOld() {
     int count;
     try (SqlSession session = factory.openSession(true)) {
-      TaxonMapper tm = session.getMapper(TaxonMapper.class);
-      count = tm.deleteBySector(catalogueKey, sector.getKey());
+      NameUsageMapper m = session.getMapper(NameUsageMapper.class);
+      count = m.deleteBySector(catalogueKey, sector.getKey());
       LOG.info("Deleted {} existing taxa with their synonyms and related information from sector {}", count, sector.getKey());
     }
     

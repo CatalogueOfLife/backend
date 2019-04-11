@@ -43,6 +43,7 @@ public interface DatasetImportMapper {
   Integer countReference(@Param("key") int datasetKey);
   
   Integer countTaxon(@Param("key") int datasetKey);
+  Integer countSynonym(@Param("key") int datasetKey);
   
   Integer countVerbatim(@Param("key") int datasetKey);
   

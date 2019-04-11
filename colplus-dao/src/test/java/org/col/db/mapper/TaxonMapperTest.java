@@ -241,7 +241,7 @@ public class TaxonMapperTest extends DatasetCRUDTest<Taxon, TaxonMapper> {
     mapper().create(kingdom);
     
     LinkedList<Taxon> parents =
-        createClassification(kingdom, "p1", "c1", "o1", "sf1", "f1", "g1", "sg1", "s1");
+        createClassification(kingdom, "p1", "c1", "o1", "sf1", "f1", "g1", "sg1", "sp1");
     
     commit();
     

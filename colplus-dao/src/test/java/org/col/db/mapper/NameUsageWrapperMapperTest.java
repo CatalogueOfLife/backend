@@ -1,7 +1,5 @@
 package org.col.db.mapper;
 
-import java.net.URI;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.ibatis.session.ResultContext;
@@ -18,23 +16,13 @@ import static org.col.api.TestEntityGenerator.NAME4;
 import static org.junit.Assert.*;
 
 
-public class NameUsageMapperTreeTest extends MapperTestBase<NameUsageMapper> {
+public class NameUsageWrapperMapperTest extends MapperTestBase<NameUsageWrapperMapper> {
   
-  public NameUsageMapperTreeTest() {
-    super(NameUsageMapper.class, InitMybatisRule.tree());
+  public NameUsageWrapperMapperTest() {
+    super(NameUsageWrapperMapper.class);
   }
   
   private AtomicInteger counter = new AtomicInteger(0);
-  
-  @Test
-  public void getTaxa() throws Exception {
-    List<?> cl = mapper().selectClassification(NAME4.getDatasetKey(), "t15");
-    assertEquals(7, cl.size());
-    
-    NameUsageWrapper tax = mapper().get(NAME4.getDatasetKey(), "t15");
-    assertFalse(tax.getClassification().isEmpty());
-    assertEquals(cl, tax.getClassification());
-  }
   
   @Test
   public void processDatasetTaxa() throws Exception {
@@ -42,6 +30,12 @@ public class NameUsageMapperTreeTest extends MapperTestBase<NameUsageMapper> {
       public void handleResult(ResultContext<? extends NameUsageWrapper> ctx) {
         counter.incrementAndGet();
         NameUsageWrapper obj = ctx.getResultObject();
+        if (obj.getUsage().getId().equals("root-1")) {
+          assertEquals(4, obj.getIssues().size());
+        } else {
+          assertNull(obj.getIssues());
+        }
+
         Name n = obj.getUsage().getName();
         assertNotNull(n);
         assertNotNull(n.getId());
@@ -50,26 +44,16 @@ public class NameUsageMapperTreeTest extends MapperTestBase<NameUsageMapper> {
         assertTrue(obj.getUsage().isTaxon());
         Taxon t = (Taxon) obj.getUsage();
         assertNotNull(t.getId());
-        assertNotNull(t.getAccordingToDate());
-        assertEquals("M.Döring", t.getAccordingTo());
-        assertEquals((Integer) 10, t.getSpeciesEstimate());
-        assertEquals((Integer) 1, t.getVerbatimKey());
-        assertEquals("remark me", t.getRemarks());
-        assertEquals(URI.create("http://myspace.com"), t.getWebpage());
-        if (t.getId().equals("t1")) {
-          assertNull(t.getParentId());
-          assertTrue(obj.getClassification().isEmpty());
-        } else {
-          assertNotNull(t.getParentId());
-          assertFalse(obj.getClassification().isEmpty());
-        }
+        System.out.println(t.getId());
+        System.out.println(t.getParentId());
+        System.out.println(ctx.getResultObject().getClassification());
 
         for (VernacularName v : ctx.getResultObject().getVernacularNames()) {
           assertNotNull(v.getName());
         }
       }
     });
-    Assert.assertEquals(20, counter.get());
+    Assert.assertEquals(2, counter.get());
   }
   
   @Test
@@ -81,11 +65,9 @@ public class NameUsageMapperTreeTest extends MapperTestBase<NameUsageMapper> {
         assertTrue(ctx.getResultObject().getUsage().isSynonym());
         Synonym s = (Synonym) ctx.getResultObject().getUsage();
         assertNotNull(s.getAccepted());
-        assertEquals("M.Döring", s.getAccordingTo());
-        assertEquals((Integer) 1, s.getVerbatimKey());
       }
     });
-    Assert.assertEquals(4, counter.get());
+    Assert.assertEquals(2, counter.get());
   }
   
   @Test
@@ -98,6 +80,6 @@ public class NameUsageMapperTreeTest extends MapperTestBase<NameUsageMapper> {
         assertNotNull(ctx.getResultObject().getUsage().getName());
       }
     });
-    Assert.assertEquals(0, counter.get());
+    Assert.assertEquals(1, counter.get());
   }
 }
