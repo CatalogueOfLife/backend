@@ -30,6 +30,7 @@ public class DatasetImportDaoTest extends DaoTestBase {
     assertEquals((Integer) 0, d.getMediaCount());
     assertEquals((Integer) 2, d.getReferenceCount());
     assertEquals((Integer) 2, d.getTaxonCount());
+    assertEquals((Integer) 0, d.getSynonymCount());
     assertEquals((Integer) 3, d.getDistributionCount());
     assertEquals((Integer) 3, d.getVernacularCount());
     assertEquals((Integer) 5, d.getNameCount());

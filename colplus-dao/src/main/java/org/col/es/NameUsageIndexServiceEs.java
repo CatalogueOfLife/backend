@@ -10,7 +10,10 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.model.Sector;
 import org.col.api.search.NameUsageWrapper;
-import org.col.db.mapper.*;
+import org.col.db.mapper.BatchResultHandler;
+import org.col.db.mapper.DatasetMapper;
+import org.col.db.mapper.NameUsageWrapperMapper;
+import org.col.db.mapper.SectorMapper;
 import org.col.es.model.EsNameUsage;
 import org.col.es.query.EsSearchRequest;
 import org.elasticsearch.client.RestClient;
@@ -18,7 +21,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.col.es.EsConfig.ES_INDEX_NAME_USAGE;
-import static org.col.es.SynonymResultHandler.KeyType.SECTOR;
 
 public class NameUsageIndexServiceEs implements NameUsageIndexService {
 
@@ -39,23 +41,16 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
   @Override
   public void indexDataset(Integer datasetKey) {
     NameUsageIndexer indexer = new NameUsageIndexer(client, index);
-    int tCount, sCount, bCount;
+    int tCount, bCount;
     try (SqlSession session = factory.openSession()) {
       createOrEmptyIndex(datasetKey);
       NameUsageWrapperMapper mapper = session.getMapper(NameUsageWrapperMapper.class);
       try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(indexer, 4096)) {
-        LOG.debug("Indexing taxa for dataset {}", datasetKey);
-        mapper.processDatasetTaxa(datasetKey, null, handler);
+        LOG.debug("Indexing usages for dataset {}", datasetKey);
+        mapper.processDatasetUsages(datasetKey, null, handler);
       }
       EsUtil.refreshIndex(client, index); // Necessary
       tCount = indexer.documentsIndexed();
-      indexer.reset();
-      try (SynonymResultHandler handler = new SynonymResultHandler(indexer, datasetKey)) {
-        LOG.debug("Indexing synonyms for dataset {}", datasetKey);
-        mapper.processDatasetSynonyms(datasetKey, null, handler);
-      }
-      EsUtil.refreshIndex(client, index); // Optional
-      sCount = indexer.documentsIndexed();
       indexer.reset();
       try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(indexer, 4096)) {
         LOG.debug("Indexing bare names for dataset {}", datasetKey);
@@ -66,29 +61,22 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
     } catch (IOException e) {
       throw new EsException(e);
     }
-    logDatasetTotals(datasetKey, tCount, sCount, bCount);
+    logDatasetTotals(datasetKey, tCount, bCount);
   }
 
   @Override
   public void indexSector(Integer sectorKey) {
     NameUsageIndexer indexer = new NameUsageIndexer(client, index);
-    int tCount, sCount, bCount;
+    int tCount, bCount;
     try (SqlSession session = factory.openSession()) {
       Integer datasetKey = clearSector(session, sectorKey);
       NameUsageWrapperMapper mapper = session.getMapper(NameUsageWrapperMapper.class);
       try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(indexer, 4096)) {
-        LOG.debug("Indexing taxa for sector {}", sectorKey);
-        mapper.processDatasetTaxa(datasetKey, sectorKey, handler);
+        LOG.debug("Indexing usages for sector {}", sectorKey);
+        mapper.processDatasetUsages(datasetKey, sectorKey, handler);
       }
       EsUtil.refreshIndex(client, index); // Necessary
       tCount = indexer.documentsIndexed();
-      indexer.reset();
-      try (SynonymResultHandler handler = new SynonymResultHandler(indexer, sectorKey, SECTOR)) {
-        LOG.debug("Indexing synonyms for sector {}", sectorKey);
-        mapper.processDatasetSynonyms(datasetKey, sectorKey, handler);
-      }
-      EsUtil.refreshIndex(client, index); // Optional
-      sCount = indexer.documentsIndexed();
       indexer.reset();
       try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(indexer, 4096)) {
         LOG.debug("Indexing bare names for sector {}", sectorKey);
@@ -99,7 +87,7 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
     } catch (IOException e) {
       throw new EsException(e);
     }
-    logSectorTotals(sectorKey, tCount, sCount, bCount);
+    logSectorTotals(sectorKey, tCount, bCount);
   }
   
   @Override
@@ -131,27 +119,20 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
   @Override
   public void indexAll() {
     NameUsageIndexer indexer = new NameUsageIndexer(client, index);
-    int tCount = 0, sCount = 0, bCount = 0;
+    int tCount = 0, bCount = 0;
     try (SqlSession session = factory.openSession()) {
       EsUtil.deleteIndex(client, index);
       EsUtil.createIndex(client, index, esConfig.nameUsage);
       List<Integer> keys = session.getMapper(DatasetMapper.class).keys();
       NameUsageWrapperMapper mapper = session.getMapper(NameUsageWrapperMapper.class);
       for (Integer datasetKey : keys) {
-        int tc, sc, bc;
+        int tc, bc;
         try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(indexer, 4096)) {
           LOG.debug("Indexing taxa for dataset {}", datasetKey);
-          mapper.processDatasetTaxa(datasetKey, null, handler);
+          mapper.processDatasetUsages(datasetKey, null, handler);
         }
         EsUtil.refreshIndex(client, index);
         tc = indexer.documentsIndexed();
-        indexer.reset();
-        try (SynonymResultHandler handler = new SynonymResultHandler(indexer, datasetKey)) {
-          LOG.debug("Indexing synonyms for dataset {}", datasetKey);
-          mapper.processDatasetSynonyms(datasetKey, null, handler);
-        }
-        EsUtil.refreshIndex(client, index);
-        sc = indexer.documentsIndexed();
         indexer.reset();
         try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(indexer, 4096)) {
           LOG.debug("Indexing bare names for dataset {}", datasetKey);
@@ -161,14 +142,13 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
         bc = indexer.documentsIndexed();
         indexer.reset();
         tCount += tc;
-        sCount += sc;
         bCount += bc;
-        logDatasetTotals(datasetKey, tc, sc, bc);
+        logDatasetTotals(datasetKey, tc, bc);
       }
     } catch (IOException e) {
       throw new EsException(e);
     }
-    logTotals(tCount, sCount, bCount);
+    logTotals(tCount, bCount);
   }
 
   private void createOrEmptyIndex(int datasetKey) throws IOException {
@@ -201,18 +181,18 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
     return sector.getDatasetKey();
   }
 
-  private void logDatasetTotals(int datasetKey, int tCount, int sCount, int bCount) {
-    String fmt = "Successfully indexed dataset {}. Index: {}. Taxa: {}. Synonyms: {}. Bare names: {}. Total: {}.";
-    LOG.info(fmt, datasetKey, index, tCount, sCount, bCount, (tCount + sCount + bCount));
+  private void logDatasetTotals(int datasetKey, int tCount,int bCount) {
+    String fmt = "Successfully indexed dataset {}. Index: {}. Usages: {}. Bare names: {}. Total: {}.";
+    LOG.info(fmt, datasetKey, index, tCount, bCount, (tCount + bCount));
   }
 
-  private void logSectorTotals(int sectorKey, int tCount, int sCount, int bCount) {
-    String fmt = "Successfully indexed sector {}. Index: {}. Taxa: {}. Synonyms: {}. Bare names: {}. Total: {}.";
-    LOG.info(fmt, sectorKey, index, tCount, sCount, bCount, (tCount + sCount + bCount));
+  private void logSectorTotals(int sectorKey, int tCount, int bCount) {
+    String fmt = "Successfully indexed sector {}. Index: {}. Usages: {}. Bare names: {}. Total: {}.";
+    LOG.info(fmt, sectorKey, index, tCount, bCount, (tCount + bCount));
   }
 
-  private void logTotals(int tCount, int sCount, int bCount) {
-    String fmt = "Finished indexing datasets. Index: {}. Taxa: {}. Synonyms: {}. Bare names: {}. Total: {}.";
-    LOG.info(fmt, index, tCount, sCount, bCount, (tCount + sCount + bCount));
+  private void logTotals(int tCount, int bCount) {
+    String fmt = "Finished indexing datasets. Index: {}. Usages: {}. Bare names: {}. Total: {}.";
+    LOG.info(fmt, index, tCount, bCount, (tCount + bCount));
   }
 }

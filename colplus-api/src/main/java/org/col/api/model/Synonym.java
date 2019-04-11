@@ -38,14 +38,13 @@ public class Synonym extends NameUsageBase {
     this.accepted = accepted;
   }
   
-  
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     if (!super.equals(o)) return false;
     Synonym synonym = (Synonym) o;
-    return accepted.equals(synonym.accepted);
+    return Objects.equals(accepted, synonym.accepted);
   }
   
   @Override

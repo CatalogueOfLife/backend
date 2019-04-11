@@ -115,7 +115,7 @@
   <select id="subjectBroken" resultMap="decisionResultMap">
     SELECT <include refid="SELECT" />
     FROM <include refid="FROM" />
-      LEFT JOIN taxon t ON t.dataset_key=ed.dataset_key AND t.id=ed.subject_id
+      LEFT JOIN name_usage t ON t.dataset_key=ed.dataset_key AND t.id=ed.subject_id
     WHERE t.id IS NULL
     <if test="datasetKey != null">
       AND ed.dataset_key = #{datasetKey}

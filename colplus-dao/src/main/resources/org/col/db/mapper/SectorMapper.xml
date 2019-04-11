@@ -127,7 +127,7 @@
   <select id="listChildSectors" resultMap="sectorResultMap">
     SELECT <include refid="SELECT" />
     FROM <include refid="FROM" />
-      JOIN taxon_3 t ON t.id=s.target_id
+      JOIN name_usage_3 t ON t.id=s.target_id
     WHERE t.sector_key=#{key}
     ORDER BY key
   </select>
@@ -135,7 +135,7 @@
   <select id="subjectBroken" resultMap="sectorResultMap">
     SELECT <include refid="SELECT" />
     FROM <include refid="FROM" />
-      LEFT JOIN taxon t ON t.id=s.subject_id AND t.dataset_key = #{datasetKey}
+      LEFT JOIN name_usage t ON t.id=s.subject_id AND t.dataset_key = #{datasetKey}
     <bind name="idIsNull" value="true" />
     <include refid="WHERE" />
     ORDER BY key
@@ -144,7 +144,7 @@
   <select id="targetBroken" resultMap="sectorResultMap">
     SELECT <include refid="SELECT" />
     FROM <include refid="FROM" />
-      LEFT JOIN taxon_3 t ON t.id=s.target_id
+      LEFT JOIN name_usage_3 t ON t.id=s.target_id
     <bind name="idIsNull" value="true" />
     <include refid="WHERE" />
     ORDER BY key

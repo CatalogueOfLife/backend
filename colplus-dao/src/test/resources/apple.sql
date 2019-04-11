@@ -26,8 +26,8 @@ INSERT INTO name (dataset_key, id, homotypic_name_id, verbatim_key, scientific_n
 INSERT INTO name (dataset_key, id, homotypic_name_id, verbatim_key, scientific_name, genus, specific_epithet, rank, origin, type, created_by, modified_by) VALUES (11, 'name-4', 'name-4', null, 'Larus erfundus', 'Larus', 'erfundus', 'species'::rank, 0, 0, 0, 0);
 
 -- taxa
-INSERT INTO name_usage (id, dataset_key, status, is_synonym, verbatim_key, name_id, origin, created_by, modified_by) VALUES ('root-1', 11, 1, false, 1, 'name-1', 0, 0, 0);
-INSERT INTO name_usage (id, dataset_key, status, is_synonym, verbatim_key, name_id, origin, created_by, modified_by) VALUES ('root-2', 11, 1, false, 5, 'name-2', 0, 0, 0);
+INSERT INTO name_usage (id, dataset_key, status, is_synonym, verbatim_key, name_id, origin, created_by, modified_by) VALUES ('root-1', 11, 0, false, 1, 'name-1', 0, 0, 0);
+INSERT INTO name_usage (id, dataset_key, status, is_synonym, verbatim_key, name_id, origin, created_by, modified_by) VALUES ('root-2', 11, 0, false, 5, 'name-2', 0, 0, 0);
 -- synonyms
 INSERT INTO name_usage (id, dataset_key, status, is_synonym, parent_id, name_id, origin, created_by, modified_by) VALUES ('s1', 11, 2, true, 'root-2', 'name-3', 0, 0, 0);
 INSERT INTO name_usage (id, dataset_key, status, is_synonym, parent_id, name_id, origin, created_by, modified_by) VALUES ('s2', 11, 2, true, 'root-2', 'name-4', 0, 0, 0);

@@ -5,7 +5,7 @@ import javax.annotation.Nullable;
 
 import org.apache.ibatis.annotations.Param;
 import org.col.api.model.ColUser;
-import org.col.api.model.NameUsage;
+import org.col.api.model.NameUsageBase;
 import org.col.api.model.Page;
 import org.gbif.nameparser.api.Rank;
 
@@ -15,15 +15,15 @@ import org.gbif.nameparser.api.Rank;
  * <p>
  * Mapper sql should be reusing sql fragments from the 3 concrete implementations as much as possible avoiding duplication.
  */
-public interface NameUsageMapper extends DatasetCRUDMapper<NameUsage> {
+public interface NameUsageMapper {
   
   int count(@Param("datasetKey") int datasetKey);
   
-  List<NameUsage> list(@Param("datasetKey") int datasetKey, @Param("page") Page page);
+  List<NameUsageBase> list(@Param("datasetKey") int datasetKey, @Param("page") Page page);
   
-  List<NameUsage> listByNameID(@Param("datasetKey") int datasetKey, @Param("nameId") String nameId);
+  List<NameUsageBase> listByNameID(@Param("datasetKey") int datasetKey, @Param("nameId") String nameId);
   
-  List<NameUsage> listByName(@Param("datasetKey") int datasetKey,
+  List<NameUsageBase> listByName(@Param("datasetKey") int datasetKey,
                          @Param("name") String sciname,
                          @Nullable @Param("rank") Rank rank);
   

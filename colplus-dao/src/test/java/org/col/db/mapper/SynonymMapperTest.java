@@ -51,11 +51,12 @@ public class SynonymMapperTest extends MapperTestBase<SynonymMapper> {
     synonymMapper.create(s1);
     commit();
     
-    Synonym s2 = synonymMapper.get(s1.getName().getDatasetKey(), s1.getName().getId());
+    Synonym s2 = synonymMapper.get(s1.getDatasetKey(), s1.getId());
     assertNotNull(s2);
     
     // remove child count for comparison
     t.setChildCount(null);
+    s2.setAccepted(null);
     TestEntityGenerator.nullifyUserDate(s1);
     TestEntityGenerator.nullifyUserDate(s2);
     printDiff(s1, s2);
@@ -123,6 +124,7 @@ public class SynonymMapperTest extends MapperTestBase<SynonymMapper> {
     
     // now also add a misapplied name with the same name
     syn.setId(UUID.randomUUID().toString());
+    syn.setParentId(TestEntityGenerator.TAXON2.getId());
     syn.setStatus(TaxonomicStatus.MISAPPLIED);
     syn.setAccordingTo("auct. Döring");
     synonymMapper.create(syn);

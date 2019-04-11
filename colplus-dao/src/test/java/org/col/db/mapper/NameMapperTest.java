@@ -16,7 +16,7 @@ import static org.junit.Assert.*;
 /**
  *
  */
-public class NameMapperTest extends org.col.db.mapper.MapperTestBase<NameMapper> {
+public class NameMapperTest extends MapperTestBase<NameMapper> {
   
   private NameMapper nameMapper;
   

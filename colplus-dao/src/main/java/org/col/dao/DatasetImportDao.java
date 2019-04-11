@@ -160,6 +160,7 @@ public class DatasetImportDao {
     di.setMediaCount(mapper.countMedia(key));
     di.setNameCount(mapper.countName(key));
     di.setReferenceCount(mapper.countReference(key));
+    di.setSynonymCount(mapper.countSynonym(key));
     di.setTaxonCount(mapper.countTaxon(key));
     di.setVerbatimCount(mapper.countVerbatim(key));
     di.setVernacularCount(mapper.countVernacular(key));

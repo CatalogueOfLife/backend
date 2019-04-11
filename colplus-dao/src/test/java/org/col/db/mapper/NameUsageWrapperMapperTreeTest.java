@@ -7,7 +7,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.ibatis.session.ResultContext;
 import org.apache.ibatis.session.ResultHandler;
 import org.col.api.model.Name;
-import org.col.api.model.Synonym;
 import org.col.api.model.Taxon;
 import org.col.api.model.VernacularName;
 import org.col.api.search.NameUsageWrapper;
@@ -38,7 +37,7 @@ public class NameUsageWrapperMapperTreeTest extends MapperTestBase<NameUsageWrap
   
   @Test
   public void processDatasetTaxa() throws Exception {
-    mapper().processDatasetTaxa(NAME4.getDatasetKey(), null,new ResultHandler<NameUsageWrapper>() {
+    mapper().processDatasetUsages(NAME4.getDatasetKey(), null,new ResultHandler<NameUsageWrapper>() {
       public void handleResult(ResultContext<? extends NameUsageWrapper> ctx) {
         counter.incrementAndGet();
         NameUsageWrapper obj = ctx.getResultObject();
@@ -70,22 +69,6 @@ public class NameUsageWrapperMapperTreeTest extends MapperTestBase<NameUsageWrap
       }
     });
     Assert.assertEquals(20, counter.get());
-  }
-  
-  @Test
-  public void processDatasetSynonyms() throws Exception {
-    mapper().processDatasetSynonyms(NAME4.getDatasetKey(), null,new ResultHandler<NameUsageWrapper>() {
-      public void handleResult(ResultContext<? extends NameUsageWrapper> ctx) {
-        counter.incrementAndGet();
-        assertTrue(ctx.getResultObject().getUsage().getStatus().isSynonym());
-        assertTrue(ctx.getResultObject().getUsage().isSynonym());
-        Synonym s = (Synonym) ctx.getResultObject().getUsage();
-        assertNotNull(s.getAccepted());
-        assertEquals("M.Döring", s.getAccordingTo());
-        assertEquals((Integer) 1, s.getVerbatimKey());
-      }
-    });
-    Assert.assertEquals(4, counter.get());
   }
   
   @Test

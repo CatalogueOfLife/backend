@@ -39,52 +39,52 @@ public class TestEntityGenerator {
   /**
    * Corresponds exactly to dataset record inserted via apple.sql or tree.sql with key=11
    */
-  public final static Dataset DATASET11 = new Dataset();
+  public final static Dataset DATASET11 = setUser(new Dataset());
   /**
    * Corresponds exactly to dataset record inserted via apple.sql with key=12
    */
-  public final static Dataset DATASET12 = new Dataset();
+  public final static Dataset DATASET12 = setUser(new Dataset());
   /**
    * Corresponds exactly to 1st name record inserted via apple.sql
    */
-  public final static Name NAME1 = new Name();
+  public final static Name NAME1 = setUser( new Name());
   /**
    * Corresponds exactly to 2nd name record inserted via apple.sql
    */
-  public final static Name NAME2 = new Name();
+  public final static Name NAME2 = setUser( new Name());
   /**
    * Corresponds exactly to 3rd name record inserted via apple.sql
    */
-  public final static Name NAME3 = new Name();
+  public final static Name NAME3 = setUser( new Name());
   /**
    * Corresponds exactly to 4th name record inserted via apple.sql
    */
-  public final static Name NAME4 = new Name();
+  public final static Name NAME4 = setUser( new Name());
   /**
    * Corresponds exactly to 1st taxon record inserted via apple.sql
    */
-  public final static Taxon TAXON1 = new Taxon();
+  public final static Taxon TAXON1 = setUser( new Taxon());
   /**
    * Corresponds exactly to 2nd taxon record inserted via apple.sql
    */
-  public final static Taxon TAXON2 = new Taxon();
+  public final static Taxon TAXON2 = setUser( new Taxon());
   /**
    * Corresponds exactly to 1st taxon record inserted via apple.sql
    */
-  public final static Synonym SYN1 = new Synonym();
+  public final static Synonym SYN1 = setUser( new Synonym());
   /**
    * Corresponds exactly to 2nd taxon record inserted via apple.sql
    */
-  public final static Synonym SYN2 = new Synonym();
+  public final static Synonym SYN2 = setUser( new Synonym());
   /**
    * Corresponds exactly to 1st reference record inserted via apple.sql
    */
-  public final static Reference REF1 = new Reference();
+  public final static Reference REF1 = setUser( new Reference());
   /**
    * Corresponds exactly to 2nd reference record inserted via apple.sql
    */
-  public final static Reference REF2 = new Reference();
-  public final static Reference REF3 = new Reference();
+  public final static Reference REF2 = setUser( new Reference());
+  public final static Reference REF3 = setUser( new Reference());
   
   public final static int VERBATIM_KEY1 = 1;
   public final static int VERBATIM_KEY2 = 2;
@@ -118,6 +118,7 @@ public class TestEntityGenerator {
     DATASET11.setKey(11);
     DATASET12.setKey(12);
 
+    
     REF1.setId("ref-1");
     REF1.setDatasetKey(DATASET11.getKey());
     REF1.setCreatedBy(Users.DB_INIT);
@@ -194,24 +195,28 @@ public class TestEntityGenerator {
     TAXON1.setDatasetKey(DATASET11.getKey());
     TAXON1.setVerbatimKey(VERBATIM_KEY1);
     TAXON1.setName(NAME1);
+    TAXON1.setStatus(TaxonomicStatus.ACCEPTED);
     TAXON1.setOrigin(Origin.SOURCE);
     TAXON1.setCreatedBy(Users.DB_INIT);
     TAXON1.setModifiedBy(Users.DB_INIT);
     
     TAXON2.setId("root-2");
     TAXON2.setDatasetKey(DATASET11.getKey());
-    TAXON1.setVerbatimKey(VERBATIM_KEY5);
+    TAXON2.setVerbatimKey(VERBATIM_KEY5);
     TAXON2.setName(NAME2);
+    TAXON2.setStatus(TaxonomicStatus.ACCEPTED);
     TAXON2.setOrigin(Origin.SOURCE);
     TAXON2.setCreatedBy(Users.DB_INIT);
     TAXON2.setModifiedBy(Users.DB_INIT);
-    
+  
+    SYN1.setId("s1");
     SYN1.setName(NAME3);
     SYN1.setAccepted(TAXON2);
     SYN1.setStatus(TaxonomicStatus.SYNONYM);
     SYN1.setCreatedBy(Users.DB_INIT);
     SYN1.setModifiedBy(Users.DB_INIT);
-    
+  
+    SYN2.setId("s2");
     SYN2.setName(NAME4);
     SYN2.setAccepted(TAXON2);
     SYN2.setStatus(TaxonomicStatus.SYNONYM);
@@ -283,8 +288,9 @@ public class TestEntityGenerator {
     return (CslData) new RandomInstance().create(CslData.class, CslName.class, CslDate.class);
   }
   
-  public static Synonym newSynonym(String acceptedID) {
-    return newSynonym(NAME4, acceptedID);
+  public static Synonym newSynonym(Taxon accepted) {
+    Name n = newName("n-" + ID_GEN.getAndIncrement());
+    return newSynonym(n, accepted.getId());
   }
   public static Synonym newSynonym(Name name, String acceptedID) {
     return newSynonym(TaxonomicStatus.SYNONYM, NAME4, acceptedID);
@@ -528,8 +534,10 @@ public class TestEntityGenerator {
   }
 
   public static Taxon nullifyUserDate(Taxon taxon) {
-    nullifyUserDate((UserManaged) taxon);
-    nullifyUserDate(taxon.getName());
+    if (taxon != null) {
+      nullifyUserDate((UserManaged) taxon);
+      nullifyUserDate(taxon.getName());
+    }
     return taxon;
   }
   
@@ -541,10 +549,12 @@ public class TestEntityGenerator {
   }
 
   public static <T extends UserManaged> T nullifyUserDate(T managed) {
-    managed.setCreated(null);
-    managed.setCreatedBy(null);
-    managed.setModified(null);
-    managed.setModifiedBy(null);
+    if (managed != null) {
+      managed.setCreated(null);
+      managed.setCreatedBy(null);
+      managed.setModified(null);
+      managed.setModifiedBy(null);
+    }
     return managed;
   }
   

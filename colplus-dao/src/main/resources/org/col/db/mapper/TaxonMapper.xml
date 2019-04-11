@@ -148,11 +148,11 @@
     <select id="classificationCounts" resultMap="taxonCountResultMap">
         WITH RECURSIVE x AS(
         SELECT id, parent_id, dataset_sectors
-        FROM name_usage_${datasetKey} t
+        FROM name_usage_${datasetKey} u
         WHERE u.id = #{id}
         UNION
-        SELECT u.id, t.parent_id, t.dataset_sectors
-        FROM name_usage_${datasetKey} t, x
+        SELECT u.id, u.parent_id, u.dataset_sectors
+        FROM name_usage_${datasetKey} u, x
         WHERE u.id = x.parent_id
         )
         SELECT id, dataset_sectors
@@ -199,6 +199,7 @@
                 u.parent_id IS NULL
             </otherwise>
         </choose>
+            AND NOT u.is_synonym
 
         UNION
 
@@ -207,15 +208,16 @@
             ,concat_ws('|', x.path, n.scientific_name, u.id)  AS path
         </if>
         FROM <include refid="FROM" />
-        JOIN x ON x.id = t.parent_id
+        JOIN x ON x.id = u.parent_id
         <where>
             <if test="exclusions != null and !exclusions.isEmpty()">
                 u.id NOT IN
                 <foreach item="id" collection="exclusions" open="(" separator="," close=")">#{id}</foreach>
             </if>
             <if test="sectorKey != null">
-                AND t.sector_key = #{sectorKey}
+                AND u.sector_key = #{sectorKey}
             </if>
+            AND NOT u.is_synonym
         </where>
 
         )
@@ -228,9 +230,9 @@
     <select id="foreignChildren" resultMap="taxonResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
-        JOIN taxon_3 p ON p.id=t.parent_id
+        JOIN taxon_3 p ON p.id=u.parent_id
         WHERE p.sector_key=#{sectorKey}
-        AND t.sector_key!=#{sectorKey}
+        AND u.sector_key!=#{sectorKey}
     </select>
 
     <update id="incDatasetSectorCount">

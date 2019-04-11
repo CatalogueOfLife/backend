@@ -8,10 +8,10 @@
         t.dataset_key,
         t.id,
         t.parent_id,
-        t.provisional,
+        t.status,
         t.species_estimate,
         t.species_estimate_reference_id,
-        (select count(*) from taxon_${datasetKey} where parent_id=t.id) AS child_count,
+        (select count(*) from name_usage_${datasetKey} WHERE parent_id=t.id AND NOT is_synonym) AS child_count,
         t.dataset_sectors,
         <include refid="org.col.db.mapper.NameMapper.minimalNameCols">
             <property name="alias" value="n"/>
@@ -33,7 +33,7 @@
     </sql>
 
     <sql id="FROM">
-        taxon_${datasetKey} t JOIN name_${datasetKey} n ON t.name_id=n.id
+        name_usage_${datasetKey} t JOIN name_${datasetKey} n ON t.name_id=n.id
         <if test="datasetKey != @org.col.api.vocab.Datasets@DRAFT_COL">
             LEFT JOIN decision ed ON ed.subject_id=t.id AND ed.dataset_key=#{datasetKey}
             LEFT JOIN sector    s ON  s.subject_id=t.id AND  s.dataset_key=#{datasetKey}
@@ -42,7 +42,6 @@
 
     <resultMap id="treeResultMap" type="org.col.api.model.TreeNode$TreeNodeMybatis" autoMapping="true">
         <id property="id" column="id" />
-        <result property="status" column="provisional" typeHandler="org.col.db.type2.TaxonStatusTypeHandler" />
         <result property="datasetSectors" column="dataset_sectors" />
         <association property="_name" javaType="Name" resultMap="org.col.db.mapper.NameMapper.nameResultMap" />
         <association property="decision" javaType="EditorialDecision" resultMap="org.col.db.mapper.DecisionMapper.decisionResultMap" columnPrefix="ed_"/>
@@ -57,7 +56,7 @@
     <select id="root" resultMap="treeResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
-        WHERE t.parent_id IS NULL
+        WHERE t.parent_id IS NULL AND NOT is_synonym
         ORDER BY n.rank, n.scientific_name
         <include refid="org.col.db.mapper.Common.limit" />
     </select>
@@ -65,7 +64,7 @@
     <select id="children" resultMap="treeResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
-        WHERE t.parent_id = #{id}
+        WHERE t.parent_id = #{id} AND NOT is_synonym
         ORDER BY n.rank, n.scientific_name
         <include refid="org.col.db.mapper.Common.limit" />
     </select>
