@@ -41,8 +41,7 @@ public class DuplicateMapperTest {
       PgCopyUtils.copy(pgc, "dataset", "/duplicates/dataset.csv");
       PgCopyUtils.copy(pgc, "verbatim_1000", "/duplicates/verbatim.csv");
       PgCopyUtils.copy(pgc, "name_1000", "/duplicates/name.csv");
-      PgCopyUtils.copy(pgc, "taxon_1000", "/duplicates/taxon.csv");
-      PgCopyUtils.copy(pgc, "synonym_1000", "/duplicates/synonym.csv");
+      PgCopyUtils.copy(pgc, "name_usage_1000", "/duplicates/name_usage.csv");
   
       c.commit();
     }

@@ -105,11 +105,9 @@ public class AcefInterpreter extends InterpreterBase {
 
     } else {
       // taxon
-      u = NeoUsage.createTaxon(Origin.SOURCE, nat.get().getName(), false);
+      u = NeoUsage.createTaxon(Origin.SOURCE, nat.get().getName(), status);
       Taxon t = u.getTaxon();
       t.setOrigin(Origin.SOURCE);
-      t.setProvisional(TaxonomicStatus.PROVISIONALLY_ACCEPTED == status);
-      
       t.setAccordingTo(v.get(AcefTerm.LTSSpecialist));
       t.setAccordingToDate(date(v, Issue.ACCORDING_TO_DATE_INVALID, AcefTerm.LTSDate));
       t.setWebpage(uri(v, Issue.URL_INVALID, AcefTerm.InfraSpeciesURL, AcefTerm.SpeciesURL));

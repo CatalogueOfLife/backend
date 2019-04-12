@@ -10,6 +10,7 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.model.ColUser;
 import org.col.api.model.Sector;
 import org.col.api.model.SectorImport;
+import org.col.db.mapper.NameUsageMapper;
 import org.col.db.mapper.SectorMapper;
 import org.col.es.NameUsageIndexService;
 import org.slf4j.Logger;
@@ -48,8 +49,8 @@ public class SectorDelete extends SectorRunnable {
       }
     }
     try (SqlSession session = factory.openSession(true)) {
-      TaxonMapper tm = session.getMapper(TaxonMapper.class);
-      int count = tm.deleteBySector(catalogueKey, sectorKey);
+      NameUsageMapper um = session.getMapper(NameUsageMapper.class);
+      int count = um.deleteBySector(catalogueKey, sectorKey);
       LOG.info("Deleted {} existing taxa with their synonyms and related information from sector {}", count, sectorKey);
     
       session.getMapper(SectorMapper.class).delete(sectorKey);

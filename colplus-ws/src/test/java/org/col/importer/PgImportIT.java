@@ -335,7 +335,7 @@ public class PgImportIT {
       assertEquals(Rank.SPECIES, n.getRank());
       assertIssue(n, Issue.SYNONYM_DATA_MOVED);
       
-      List<NameUsage> syns = uMapper.listByNameID(dataset.getKey(), n.getId());
+      List<NameUsageBase> syns = uMapper.listByNameID(dataset.getKey(), n.getId());
       assertEquals(1, syns.size());
       assertTrue(syns.get(0).isSynonym());
       Synonym s = (Synonym) syns.get(0);

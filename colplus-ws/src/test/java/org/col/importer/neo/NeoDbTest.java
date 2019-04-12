@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import com.google.common.io.Files;
 import org.apache.commons.io.FileUtils;
+import org.col.api.vocab.TaxonomicStatus;
 import org.col.config.NormalizerConfig;
 import org.col.importer.neo.model.NeoName;
 import org.col.importer.neo.model.NeoUsage;
@@ -224,7 +225,7 @@ public class NeoDbTest {
   }
 
   public static NeoUsage taxon(String id) {
-    NeoUsage t = NeoUsage.createTaxon(Origin.SOURCE, false);
+    NeoUsage t = NeoUsage.createTaxon(Origin.SOURCE, TaxonomicStatus.ACCEPTED);
     t.usage.setName(RandomUtils.randomName());
     t.setId(id);
     return t;

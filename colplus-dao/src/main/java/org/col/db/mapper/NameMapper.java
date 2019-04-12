@@ -22,7 +22,7 @@ public interface NameMapper extends DatasetCRUDMapper<Name> {
   void processDataset(@Param("datasetKey") int datasetKey, ResultHandler<Name> handler);
   
   
-  Name getByTaxon(@Param("datasetKey") int datasetKey, @Param("taxonId") String taxonId);
+  Name getByUsage(@Param("datasetKey") int datasetKey, @Param("usageId") String usageId);
   
   /**
    * Lists all distinct name index ids from the names table.

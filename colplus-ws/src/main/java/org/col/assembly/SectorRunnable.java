@@ -18,6 +18,7 @@ import org.col.api.util.ObjectUtils;
 import org.col.db.mapper.DecisionMapper;
 import org.col.db.mapper.SectorImportMapper;
 import org.col.db.mapper.SectorMapper;
+import org.col.db.mapper.TaxonMapper;
 import org.col.es.NameUsageIndexService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

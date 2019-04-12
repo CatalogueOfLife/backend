@@ -7,6 +7,7 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import com.google.common.collect.Lists;
+import org.col.api.vocab.TaxonomicStatus;
 import org.col.importer.neo.NeoKryoFactory;
 import org.col.importer.neo.model.NeoName;
 import org.col.importer.neo.model.NeoUsage;
@@ -30,7 +31,7 @@ public class NeoKryoFactoryTest {
     NeoUsage t = new NeoUsage();
   
     Taxon taxon = new Taxon();
-    taxon.setProvisional(true);
+    taxon.setStatus(TaxonomicStatus.PROVISIONALLY_ACCEPTED);
     taxon.setName(new Name());
     taxon.getName().setScientificName("Abies alba");
     taxon.getName().setCombinationAuthorship(TestEntityGenerator.createAuthorship());

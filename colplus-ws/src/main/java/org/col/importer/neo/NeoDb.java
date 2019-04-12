@@ -996,7 +996,7 @@ public class NeoDb implements ReferenceStore {
                                                       Name name,
                                                       @Nullable NeoUsage source,
                                                       Rank excludeRankAndBelow) {
-    NeoUsage u = NeoUsage.createTaxon(origin, name, true);
+    NeoUsage u = NeoUsage.createTaxon(origin, name, TaxonomicStatus.PROVISIONALLY_ACCEPTED);
     // copyTaxon verbatim classification from source
     if (source != null) {
       if (source.classification != null) {

@@ -89,13 +89,13 @@
     </insert>
 
     <insert id="linkToTaxon">
-        INSERT INTO taxon_reference_${datasetKey} (dataset_key, taxon_id, reference_id)
+        INSERT INTO usage_reference_${datasetKey} (dataset_key, taxon_id, reference_id)
         VALUES ( #{datasetKey}, #{taxonId}, #{referenceId} )
     </insert>
 
     <select id="listByTaxon" resultType="string">
         SELECT reference_id
-        FROM taxon_reference
+        FROM usage_reference
         WHERE dataset_key = #{datasetKey}
             AND taxon_id = #{taxonId}
     </select>

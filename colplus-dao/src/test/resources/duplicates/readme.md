@@ -4,10 +4,8 @@ and then dumping the 4 data tables with the copy command like this:
 ```
 colplus=# \copy verbatim_1000 to 'verbatim.csv' WITH (FORMAT CSV, HEADER, NULL '')
 COPY 54
-colplus=# \copy synonym_1000 to 'synonym.csv' WITH (FORMAT CSV, HEADER, NULL '')
-COPY 12
-colplus=# \copy taxon_1000 to 'taxon.csv' WITH (FORMAT CSV, HEADER, NULL '')
-COPY 42
+colplus=# \copy name_usage_1000 to 'name_usage.csv' WITH (FORMAT CSV, HEADER, NULL '')
+COPY 54
 colplus=# \copy name_1000 to 'name.csv' WITH (FORMAT CSV, HEADER, NULL '')
 COPY 54
 ```

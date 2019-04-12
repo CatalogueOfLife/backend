@@ -198,6 +198,7 @@ public class TaxonDaoTest extends DaoTestBase {
       Taxon t = new Taxon();
       t.setName(n);
       t.setDatasetKey(datasetKey);
+      t.setStatus(TaxonomicStatus.ACCEPTED);
       
       String id = tDao.create(t, USER_EDITOR);
       
@@ -226,6 +227,7 @@ public class TaxonDaoTest extends DaoTestBase {
       t = new Taxon();
       t.setName(n);
       t.setDatasetKey(datasetKey);
+      t.setStatus(TaxonomicStatus.ACCEPTED);
   
       id = tDao.create(t, USER_EDITOR);
   

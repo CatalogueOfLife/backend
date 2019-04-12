@@ -201,7 +201,7 @@ public class TaxonDao {
    * Assemble a synonymy object from the list of synonymy names for a given accepted taxon.
    */
   public Synonymy getSynonymy(int datasetKey, String taxonId) {
-    Name accName = nMapper.getByTaxon(datasetKey, taxonId);
+    Name accName = nMapper.getByUsage(datasetKey, taxonId);
     Synonymy syn = new Synonymy();
     // get all synonyms and misapplied name
     // they come ordered by status, then homotypic group so its easy to arrange them

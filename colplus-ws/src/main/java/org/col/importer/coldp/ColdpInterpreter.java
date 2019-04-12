@@ -54,8 +54,7 @@ public class ColdpInterpreter extends InterpreterBase {
     return findName(v, ColTerm.nameID).map(n -> {
       
       //TODO: make sure no TAXON label already exists!!!
-  
-      NeoUsage u = NeoUsage.createTaxon(Origin.SOURCE, false);
+      NeoUsage u = NeoUsage.createTaxon(Origin.SOURCE, TaxonomicStatus.ACCEPTED);
       u.nameNode = n.node;
       u.setId(v.get(ColTerm.ID));
       u.setVerbatimKey(v.getKey());
@@ -63,7 +62,6 @@ public class ColdpInterpreter extends InterpreterBase {
       // taxon
       Taxon t = u.getTaxon();
       t.setOrigin(Origin.SOURCE);
-      t.setProvisional(false); //TODO: v.get(ColTerm.provisional)
       t.setAccordingTo(v.get(ColTerm.accordingTo));
       t.setAccordingToDate(date(v, Issue.ACCORDING_TO_DATE_INVALID, ColTerm.accordingToDate));
       //TODO: ColTerm.accordingToDateID for ORCIDS
@@ -71,6 +69,14 @@ public class ColdpInterpreter extends InterpreterBase {
       t.setFossil(bool(v, Issue.IS_FOSSIL_INVALID, ColTerm.fossil));
       t.setRecent(bool(v, Issue.IS_RECENT_INVALID, ColTerm.recent));
       t.setRemarks(v.get(ColTerm.remarks));
+      // status
+      TaxonomicStatus status = parse(TaxonomicStatusParser.PARSER, v.get(ColTerm.status)).orElse(SYN_NOTE).val;
+      if (status.isSynonym()) {
+        // override status as we require some accepted status on Taxon
+        v.addIssue(Issue.TAXONOMIC_STATUS_INVALID);
+        status = TaxonomicStatus.PROVISIONALLY_ACCEPTED;
+      }
+      t.setStatus(status);
     
       // lifezones
       setLifezones(t, v, ColTerm.lifezone);

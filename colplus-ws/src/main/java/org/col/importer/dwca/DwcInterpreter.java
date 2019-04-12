@@ -52,7 +52,7 @@ public class DwcInterpreter extends InterpreterBase {
       if (status.val.isSynonym()) {
         u = NeoUsage.createSynonym(Origin.SOURCE, nat.get().getName(), status.val);
       } else {
-        u = NeoUsage.createTaxon(Origin.SOURCE, nat.get().getName(), false);
+        u = NeoUsage.createTaxon(Origin.SOURCE, nat.get().getName(), status.val);
         interpretTaxon(u, v, status);
       }
   
@@ -177,7 +177,7 @@ public class DwcInterpreter extends InterpreterBase {
   private void interpretTaxon(NeoUsage u, VerbatimRecord v, EnumNote<TaxonomicStatus> status) {
     Taxon tax = u.getTaxon();
     // this can be a synonym at this stage which the class does not accept
-    tax.setProvisional(TaxonomicStatus.PROVISIONALLY_ACCEPTED == status.val || status.val.isSynonym());
+    tax.setStatus(status.val.isSynonym() ? TaxonomicStatus.PROVISIONALLY_ACCEPTED : status.val);
     tax.setWebpage(uri(v, Issue.URL_INVALID, DcTerm.references));
     tax.setFossil(null);
     tax.setRecent(null);

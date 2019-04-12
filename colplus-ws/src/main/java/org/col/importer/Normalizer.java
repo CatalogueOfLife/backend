@@ -668,7 +668,7 @@ public class Normalizer implements Callable<Boolean> {
   }
 
   private NeoUsage createHigherTaxon(String uninomial, Rank rank) {
-    NeoUsage t = NeoUsage.createTaxon(Origin.DENORMED_CLASSIFICATION, false);
+    NeoUsage t = NeoUsage.createTaxon(Origin.DENORMED_CLASSIFICATION, TaxonomicStatus.ACCEPTED);
 
     Name n = new Name();
     n.setUninomial(uninomial);

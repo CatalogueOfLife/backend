@@ -26,8 +26,6 @@ public class DataPackageBuilder {
       .put(ColTerm.created, Field.TYPE_DATETIME)
       .put(ColTerm.fossil, Field.TYPE_BOOLEAN)
       .put(ColTerm.recent, Field.TYPE_BOOLEAN)
-      .put(ColTerm.provisional, Field.TYPE_BOOLEAN)
-      
       .build();
   
   private static final Map<ColTerm, String> dataFormats = ImmutableMap.<ColTerm, String>builder()

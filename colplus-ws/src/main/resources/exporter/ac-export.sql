@@ -325,7 +325,7 @@ COPY (
     rk.key AS reference_id,
     r.id AS reference_code,
     s.dataset_key AS database_id
-  FROM taxon_reference_{{datasetKey}} tr
+  FROM usage_reference_{{datasetKey}} tr
     JOIN reference_{{datasetKey}} r ON r.id=tr.reference_id
     JOIN __ref_keys rk ON rk.id=r.id
     LEFT JOIN sector s ON r.sector_key=s.key

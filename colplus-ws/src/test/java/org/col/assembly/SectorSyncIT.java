@@ -9,18 +9,19 @@ import java.util.List;
 import com.google.common.base.Charsets;
 import org.apache.commons.io.IOUtils;
 import org.apache.ibatis.session.SqlSession;
-import org.col.dao.TreeRepoRule;
-import org.col.importer.PgImportRule;
+import org.col.api.model.NameUsageBase;
 import org.col.api.model.Sector;
 import org.col.api.model.SimpleName;
-import org.col.api.model.Taxon;
 import org.col.api.vocab.DataFormat;
 import org.col.api.vocab.Datasets;
-import org.col.db.PgSetupRule;
 import org.col.dao.DatasetImportDao;
+import org.col.dao.TreeRepoRule;
+import org.col.db.PgSetupRule;
 import org.col.db.mapper.InitMybatisRule;
+import org.col.db.mapper.NameUsageMapper;
 import org.col.db.mapper.SectorMapper;
 import org.col.db.tree.TextTreePrinter;
+import org.col.importer.PgImportRule;
 import org.gbif.nameparser.api.Rank;
 import org.junit.*;
 
@@ -51,15 +52,15 @@ public class SectorSyncIT {
     return importRule.datasetKey(key, format);
   }
   
-  Taxon getByName(int datasetKey, Rank rank, String name) {
+  NameUsageBase getByName(int datasetKey, Rank rank, String name) {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
-      List<Taxon> taxa = session.getMapper(TaxonMapper.class).listByName(datasetKey, name, rank);
+      List<NameUsageBase> taxa = session.getMapper(NameUsageMapper.class).listByName(datasetKey, name, rank);
       if (taxa.size() > 1) throw new IllegalStateException("Multiple taxa found for name="+name);
       return taxa.get(0);
     }
   }
   
-  static int createSector(Sector.Mode mode, Taxon src, Taxon target) {
+  static int createSector(Sector.Mode mode, NameUsageBase src, NameUsageBase target) {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       Sector sector = new Sector();
       sector.setMode(mode);
@@ -106,9 +107,9 @@ public class SectorSyncIT {
     print(datasetKey(1, DataFormat.ACEF));
     print(datasetKey(5, DataFormat.ACEF));
     print(datasetKey(6, DataFormat.ACEF));
-    
-    Taxon src = getByName(datasetKey(1, DataFormat.ACEF), Rank.ORDER, "Fabales");
-    Taxon trg = getByName(Datasets.DRAFT_COL, Rank.SUPERKINGDOM, "Biota");
+  
+    NameUsageBase src = getByName(datasetKey(1, DataFormat.ACEF), Rank.ORDER, "Fabales");
+    NameUsageBase trg = getByName(Datasets.DRAFT_COL, Rank.SUPERKINGDOM, "Biota");
     createSector(Sector.Mode.ATTACH, src, trg);
   
     src = getByName(datasetKey(5, DataFormat.ACEF), Rank.KINGDOM, "Animalia");

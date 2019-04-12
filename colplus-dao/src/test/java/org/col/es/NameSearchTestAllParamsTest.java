@@ -474,9 +474,12 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
     nuw2.getUsage().getName().setNameIndexId(key1);
     nuw3.getUsage().getName().setNameIndexId(key2);
     nuw4.getUsage().getName().setNameIndexId(null);
-    List<NameUsageWrapper> expected = Arrays.asList(nuw2);
+    List<NameUsageWrapper> expected = Arrays.asList(nuw3);
 
     ResultPage<NameUsageWrapper> result = svc.search(indexName, req, new Page());
+    for (NameUsageWrapper u : result.getResult()) {
+      assertEquals(key2, u.getUsage().getName().getNameIndexId());
+    }
     assertEquals(expected, result.getResult());
 
     countdown(NAME_INDEX_ID);
@@ -584,7 +587,7 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
     nuw2.getUsage().getName().setPublishedInId(key1);
     nuw3.getUsage().getName().setPublishedInId(key2);
     nuw4.getUsage().getName().setNameIndexId(null);
-    List<NameUsageWrapper> expected = Arrays.asList(nuw2);
+    List<NameUsageWrapper> expected = Arrays.asList(nuw3);
 
     ResultPage<NameUsageWrapper> result = svc.search(indexName, req, new Page());
     assertEquals(expected, result.getResult());
@@ -621,7 +624,7 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
     nuw2.getUsage().getName().setPublishedInId(key1);
     nuw3.getUsage().getName().setPublishedInId(key2);
     nuw4.getUsage().getName().setNameIndexId(null);
-    List<NameUsageWrapper> expected = Arrays.asList(nuw2, nuw4);
+    List<NameUsageWrapper> expected = Arrays.asList(nuw3, nuw4);
 
     ResultPage<NameUsageWrapper> result = svc.search(indexName, req, new Page());
     assertEquals(expected, result.getResult());
