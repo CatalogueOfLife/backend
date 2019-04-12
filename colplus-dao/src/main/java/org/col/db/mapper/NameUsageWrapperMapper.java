@@ -1,11 +1,9 @@
 package org.col.db.mapper;
 
-import java.util.List;
 import javax.annotation.Nullable;
 
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.session.ResultHandler;
-import org.col.api.model.SimpleName;
 import org.col.api.search.NameUsageWrapper;
 
 /**
@@ -31,7 +29,5 @@ public interface  NameUsageWrapperMapper {
                                ResultHandler<NameUsageWrapper> handler);
 
   NameUsageWrapper get(@Param("datasetKey") int datasetKey, @Param("id") String taxonId);
-
-  List<SimpleName> selectClassification(@Param("datasetKey") int datasetKey, @Param("id") String taxonId);
-
+  
 }

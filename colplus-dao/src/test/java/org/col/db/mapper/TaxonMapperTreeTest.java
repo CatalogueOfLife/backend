@@ -16,6 +16,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import static org.col.api.TestEntityGenerator.DATASET11;
+import static org.col.api.TestEntityGenerator.NAME4;
 import static org.junit.Assert.*;
 
 
@@ -50,6 +51,12 @@ public class TaxonMapperTreeTest extends MapperTestBase<TaxonMapper> {
       assertNotNull(c.getId());
       assertNull(c.getCount());
     }
+  }
+  
+  @Test
+  public void classificationSimple() throws Exception {
+    List<?> cl = mapper().classificationSimple(NAME4.getDatasetKey(), "t15");
+    assertEquals(7, cl.size());
   }
   
   @Test

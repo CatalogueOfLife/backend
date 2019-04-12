@@ -37,8 +37,6 @@
 
     <sql id="FROM">
         <include refid="org.col.db.mapper.NameUsageMapper.FROM"/>
-        JOIN name_usage_${datasetKey} a ON a.id=u.parent_id
-        JOIN name_${datasetKey} an ON an.id=a.name_id
     </sql>
 
 
