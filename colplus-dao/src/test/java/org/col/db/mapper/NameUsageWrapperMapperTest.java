@@ -5,6 +5,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.ibatis.session.ResultContext;
 import org.apache.ibatis.session.ResultHandler;
 import org.col.api.model.Name;
+import org.col.api.model.Synonym;
 import org.col.api.model.Taxon;
 import org.col.api.model.VernacularName;
 import org.col.api.search.NameUsageWrapper;
@@ -29,6 +30,7 @@ public class NameUsageWrapperMapperTest extends MapperTestBase<NameUsageWrapperM
       public void handleResult(ResultContext<? extends NameUsageWrapper> ctx) {
         counter.incrementAndGet();
         NameUsageWrapper obj = ctx.getResultObject();
+        assertNotNull(obj.getUsage().getId());
         if (obj.getUsage().getId().equals("root-1")) {
           assertEquals(4, obj.getIssues().size());
         } else {
@@ -40,11 +42,17 @@ public class NameUsageWrapperMapperTest extends MapperTestBase<NameUsageWrapperM
         assertNotNull(n.getId());
         assertNotNull(n.getDatasetKey());
 
-        assertTrue(obj.getUsage().isTaxon());
-        Taxon t = (Taxon) obj.getUsage();
-        assertNotNull(t.getId());
-        System.out.println(t.getId());
-        System.out.println(t.getParentId());
+        System.out.println(obj.getUsage().getId());
+        if (obj.getUsage().getId().startsWith("root")) {
+          assertTrue(obj.getUsage().isTaxon());
+          Taxon t = (Taxon) obj.getUsage();
+          System.out.println(t.getParentId());
+        } else {
+          assertTrue(obj.getUsage().isSynonym());
+          Synonym s = (Synonym) obj.getUsage();
+          assertNotNull(s.getParentId());
+          System.out.println(s.getParentId());
+        }
         System.out.println(ctx.getResultObject().getClassification());
 
         for (VernacularName v : ctx.getResultObject().getVernacularNames()) {
@@ -52,7 +60,7 @@ public class NameUsageWrapperMapperTest extends MapperTestBase<NameUsageWrapperM
         }
       }
     });
-    Assert.assertEquals(2, counter.get());
+    assertEquals(4, counter.get());
   }
   
   @Test

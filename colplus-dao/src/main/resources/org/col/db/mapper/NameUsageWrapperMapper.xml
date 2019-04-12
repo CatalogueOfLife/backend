@@ -95,10 +95,9 @@
             <property name="prefix" value="n_"/>
         </include>
         FROM name_${datasetKey} n
-            LEFT JOIN synonym_${datasetKey}  s ON n.id = s.name_id
-            LEFT JOIN taxon_${datasetKey}    t ON n.id = u.name_id
+            LEFT JOIN name_usage_${datasetKey}  u ON n.id = u.name_id
             LEFT JOIN verbatim_${datasetKey} v ON v.key= n.verbatim_key
-        WHERE u.id IS NULL AND s.taxon_id IS NULL
+        WHERE u.id IS NULL
         <if test="sectorKey != null">
         	AND n.sector_key = #{sectorKey}
    	    </if>
