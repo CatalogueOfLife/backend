@@ -270,7 +270,7 @@ public class Dataset extends DataEntity implements IntKey {
     contributesTo.add(catalogueKey);
   }
 
-  public boolean getNamesIndexContributor() {
+  public boolean isNamesIndexContributor() {
     return namesIndexContributor;
   }
   

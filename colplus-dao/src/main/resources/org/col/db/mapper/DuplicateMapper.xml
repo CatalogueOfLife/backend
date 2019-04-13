@@ -5,115 +5,91 @@
 <mapper namespace="org.col.db.mapper.DuplicateMapper">
 
     <resultMap id="duplicateResultMap" type="Duplicate" autoMapping="true">
-        <association property="usage1" columnPrefix="u1_">
-            <id column="n_key" />
-            <discriminator column="type_" javaType="string">
-                <case value="tax" resultType="Taxon" resultMap="org.col.db.mapper.TaxonMapper.taxonResultMap"/>
-                <case value="syn" resultType="Synonym" resultMap="org.col.db.mapper.SynonymMapper.synonymResultMap"/>
-            </discriminator>
-        </association>
-        <association property="usage2" columnPrefix="u2_">
-            <id column="n_key" />
-            <discriminator column="type_" javaType="string">
-                <case value="tax" resultType="Taxon" resultMap="org.col.db.mapper.TaxonMapper.taxonResultMap"/>
-                <case value="syn" resultType="Synonym" resultMap="org.col.db.mapper.SynonymMapper.synonymResultMap"/>
-            </discriminator>
-        </association>
+        <association property="usage1" columnPrefix="u1_" resultMap="org.col.db.mapper.NameUsageMapper.usageResultMap" />
+        <association property="usage2" columnPrefix="u2_" resultMap="org.col.db.mapper.NameUsageMapper.usageResultMap" />
     </resultMap>
 
 
-
     <select id="find" parameterType="map" resultMap="duplicateResultMap">
-        <bind name="isSyn1" value="status1 != null and status1.isSynonym()" />
-        <bind name="isSyn2" value="status2 != null and status2.isSynonym()" />
         SELECT
-        <include refid="org.col.db.mapper.NameMapper.nameCols">
-            <property name="alias" value="n1"/>
-            <property name="prefix" value="u1_n_"/>
-        </include>,
-        <if test="isSyn1">
-            'syn' AS u1_type_,
-            s1.id AS id1,
-            <include refid="org.col.db.mapper.SynonymMapper.synCols">
-                <property name="alias" value="s1"/>
-                <property name="prefix" value="u1_"/>
-            </include>
-        </if>
-        <if test="!isSyn1">
-            'tax' AS u1_type_,
-            t1.id AS id1,
+            u1.is_synonym AS u1_is_synonym,
             <include refid="org.col.db.mapper.TaxonMapper.taxonCols">
-                <property name="alias" value="t1"/>
+                <property name="alias" value="u1"/>
                 <property name="prefix" value="u1_"/>
-            </include>
-        </if>,
-
-        <include refid="org.col.db.mapper.NameMapper.nameCols">
-            <property name="alias" value="n2"/>
-            <property name="prefix" value="u2_n_"/>
-        </include>,
-        <if test="isSyn2">
-            'syn' AS u2_type_,
-            s2.id AS id2,
-            <include refid="org.col.db.mapper.SynonymMapper.synCols">
-                <property name="alias" value="s2"/>
-                <property name="prefix" value="u2_"/>
-            </include>
-        </if>
-        <if test="!isSyn2">
-            'tax' AS u2_type_,
-            t2.id AS id2,
+            </include>,
+            <include refid="org.col.db.mapper.NameMapper.nameCols">
+                <property name="alias" value="n1"/>
+                <property name="prefix" value="u1_n_"/>
+            </include>,
             <include refid="org.col.db.mapper.TaxonMapper.taxonCols">
-                <property name="alias" value="t2"/>
+                <property name="alias" value="a1"/>
+                <property name="prefix" value="u1_a_"/>
+            </include>,
+            <include refid="org.col.db.mapper.NameMapper.nameCols">
+                <property name="alias" value="an1"/>
+                <property name="prefix" value="u1_a_n_"/>
+            </include>,
+            u2.is_synonym AS u2_is_synonym,
+            <include refid="org.col.db.mapper.TaxonMapper.taxonCols">
+                <property name="alias" value="u2"/>
                 <property name="prefix" value="u2_"/>
+            </include>,
+            <include refid="org.col.db.mapper.NameMapper.nameCols">
+                <property name="alias" value="n2"/>
+                <property name="prefix" value="u2_n_"/>
+            </include>,
+            <include refid="org.col.db.mapper.TaxonMapper.taxonCols">
+                <property name="alias" value="a2"/>
+                <property name="prefix" value="u2_a_"/>
+            </include>,
+            <include refid="org.col.db.mapper.NameMapper.nameCols">
+                <property name="alias" value="an2"/>
+                <property name="prefix" value="u2_a_n_"/>
             </include>
-        </if>
-
-    FROM
-        name_${datasetKey} n1
-        <if test="isSyn1">
-            JOIN synonym_${datasetKey} s1 ON n1.id=s1.name_id
-        </if>
-        <if test="!isSyn1">
-            JOIN taxon_${datasetKey} t1 ON n1.id=t1.name_id
-        </if>,
-
-        name_${datasetKey} n2
-        <if test="isSyn2">
-            JOIN synonym_${datasetKey} s2 ON n2.id=s2.name_id
-        </if>
-        <if test="!isSyn2">
-            JOIN taxon_${datasetKey} t2 ON n2.id=t2.name_id
-        </if>
+        FROM
+            name_usage_${datasetKey} u1
+            JOIN name_${datasetKey} n1 ON u1.name_id=n1.id
+            LEFT JOIN name_usage_${datasetKey} a1 ON u1.parent_id=a1.id AND u1.is_synonym
+            LEFT JOIN name_${datasetKey} an1 ON a1.name_id=an1.id
+        ,
+            name_usage_${datasetKey} u2
+            JOIN name_${datasetKey} n2 ON u2.name_id=n2.id
+            LEFT JOIN name_usage_${datasetKey} a2 ON u2.parent_id=a2.id AND u2.is_synonym
+            LEFT JOIN name_${datasetKey} an2 ON a2.name_id=an2.id
 
         <where>
-            <if test="isSyn1">s1.id</if>
-            <if test="!isSyn1">t1.id</if>
-            !=
-            <if test="isSyn2">s2.id</if>
-            <if test="!isSyn2">t2.id</if>
-
+            u1.id &lt; u2.id
             <choose>
-                <when test="mode = 'CANONICAL_WITH_AUTHORS'">
-                    AND n1.scientific_name = n2.scientific_name
-                    AND n1.authorship = n2.authorship
+                <when test="mode.name() == 'NAMES_INDEX' ">
+                    AND n1.name_index_id = n2.name_index_id
                 </when>
-                <when test="mode = 'CANONICAL'">
+                <when test="mode.name() == 'CANONICAL' ">
                     AND n1.scientific_name = n2.scientific_name
                 </when>
                 <otherwise>
-                    AND n1.names_index_id = n2.names_index_id
+                    AND n1.scientific_name = n2.scientific_name
+                    AND n1.authorship = n2.authorship
                 </otherwise>
             </choose>
             <if test="rank != null">
                 AND n1.rank=#{rank}::rank AND n2.rank=#{rank}::rank
             </if>
-            <if test="rank != null">
-                AND n1.rank=#{rank}::rank AND n2.rank=#{rank}::rank
+            <if test="status1 != null">
+                AND u1.status=#{status1}
+            </if>
+            <if test="status2 != null">
+                AND u2.status=#{status2}
+            </if>
+            <if test="parentDifferent != null">
+                AND u1.parent_id <if test="parentDifferent">!</if>= u2.parent_id
             </if>
         </where>
-    ORDER BY
-        n1.scientific_name
+
+        ORDER BY
+            n1.scientific_name,
+            n2.scientific_name
+
+        <include refid="org.col.db.mapper.Common.limit" />
     </select>
 
 </mapper>

@@ -1,55 +1,58 @@
-taxonID	acceptedNameUsageID	rank	scientificName
-1		species	Actinomyces neuii Funke et al., 1994
-2		species	Actinomyces neui Funke et al., 1994
-3		species	Actinoscytina belmontensis Tillyard, 1926
-4		species	Actinoscytina belmontensis Tillyard, 1926
-5		species	Brachytarsus nebulosus
-6		species	Brachytarsus nebulosus
-7		species	Ceropegia juttae (Dinter) Bruyns
-8		species	Ceropegia juttae (Dinter) Bruyns
-9		species	Cleonus aquila Fåhraeus, 1842
-10		species	Cleonus aquila Fahraeus, 1842
-11		species	Cleonus pudicus Ménetriés, 1849
-12		species	Cleonus pudicus Ménétriés, 1849
-13		species	Cleonus thunbergi 1842
-14		species	Cleonus tunbergi 1842
-15		species	Euops nigra Kono, 1927
-16		species	Euops nigra Kôno, 1927
-17		species	Euops nigrum Kono, 1927
-18		species	Flatosaria stali (Haglund, 1899)
-19		species	Flatosaria ståli (Haglund, 1899)
-20		subspecies	Afrotyphlops schlegelii schlegelii (Peters, 1860)
-21		subspecies	Afrotyphlops schlegeli schlegeli (Peters, 1860)
-22		subspecies	Anolis ricordii leberi Williams, 1965
-23		subspecies	Anolis ricordii leberi Williams, 1965
-24		subspecies	Aspidoscelis deppii schizophorus (Smith & Brandon, 1968)
-25		subspecies	Aspidoscelis deppii schizophorus (Brandon et Smith 1968)
-26		subspecies	Aspidoscelis deppii schizophorus
-27		subspecies	Garthia gaudichaudii dorbignii (Duméril & Bibron, 1836)
-28		subspecies	Garthia gaudichaudii dorbignii (Duméril & Bibron, 1836)
-29		subspecies	Malayopython reticulatus jampeanus (Auliya et al., 2002)
-30		subspecies	Malayopython reticulatus jampeanus (Auliya, 2002)
-a1		species	Testum acceptum
-a2		species	Testata accepta
-a3		species	Testitus acceptus
-40	a1	species	Adiantum aethiopicum Hook. ex Bak.
-41		species	Adiantum aethiopicum L.
-42	a2	species	Adiantum aethiopicum Thunb.
-43		species	Actiniopteris australis (L. fil.) Link
-44	a1	species	Actiniopteris australis Ettingsh.
-45	a1	species	Acrostichum aureum Cav.
-46		species	Acrostichum aureum L.
-47	a1	species	Adiantum fragile Boj.
-48		species	Adiantum fragile Sw.
-49		species	Adiantum fructuosum Kunze
-50	a1	species	Adiantum fructuosum Poepp. ex Spreng.
-51	a1	species	Asplenium shikokianum Bak.
-52		species	Asplenium shikokianum Mak.
-53		species	Athyrium pectinatum (Wall. ex Hope) C. Presl
-54	a1	species	Athyrium pectinatum (Wall. ex Mett.) Bedd.
-55	a2	species	Athyrium pectinatum Bedd.
-56	a3	species	Athyrium pectinatum Fée
-57	a1	species	Botrypus virginianus (L.) Holub
-58		species	Botrypus virginianus (L.) Michx.
-59	a1	species	Cyclosorus cuneatus (C. Chr.) Ching
-60		species	Cyclosorus cuneatus Ching ex Shing
+taxonID	parentNameUsageID	acceptedNameUsageID	rank	scientificName
+h1			kingdom	Animalia
+h2			kingdom	Plantae
+f1	h2		family	Asteraceae
+1	h1		species	Actinomyces neuii Funke et al., 1994
+2	h1		species	Actinomyces neui Funke et al., 1994
+3	h1		species	Actinoscytina belmontensis Tillyard, 1926
+4	h1		species	Actinoscytina belmontensis Tillyard, 1926
+5	h1		species	Brachytarsus nebulosus
+6	h1		species	Brachytarsus nebulosus
+7	h1		species	Ceropegia juttae (Dinter) Bruyns
+8	h1		species	Ceropegia juttae (Dinter) Bruyns
+9	h1		species	Cleonus aquila Fåhraeus, 1842
+10	h1		species	Cleonus aquila Fahraeus, 1842
+11	h1		species	Cleonus pudicus Ménetriés, 1849
+12	h1		species	Cleonus pudicus Ménétriés, 1849
+13	h1		species	Cleonus thunbergi 1842
+14	h1		species	Cleonus tunbergi 1842
+15	h1		species	Euops nigra Kono, 1927
+16	h1		species	Euops nigra Kôno, 1927
+17	h1		species	Euops nigrum Kono, 1927
+18	h1		species	Flatosaria stali (Haglund, 1899)
+19	h1		species	Flatosaria ståli (Haglund, 1899)
+20	h1		subspecies	Afrotyphlops schlegelii schlegelii (Peters, 1860)
+21	h1		subspecies	Afrotyphlops schlegeli schlegeli (Peters, 1860)
+22	h1		subspecies	Anolis ricordii leberi Williams, 1965
+23	h2		subspecies	Anolis ricordii leberi Williams, 1965
+24	h1		subspecies	Aspidoscelis deppii schizophorus (Smith & Brandon, 1968)
+25	h1		subspecies	Aspidoscelis deppii schizophorus (Brandon et Smith 1968)
+26	h2		subspecies	Aspidoscelis deppii schizophorus
+27	h1		subspecies	Garthia gaudichaudii dorbignii (Duméril & Bibron, 1836)
+28	h1		subspecies	Garthia gaudichaudii dorbignii (Duméril & Bibron, 1836)
+29	h1		subspecies	Malayopython reticulatus jampeanus (Auliya et al., 2002)
+30	h1		subspecies	Malayopython reticulatus jampeanus (Auliya, 2002)
+a1	h1		species	Testum acceptum
+a2	h1		species	Testata accepta
+a3	h1		species	Testitus acceptus
+40	h1	a1	species	Adiantum aethiopicum Hook. ex Bak.
+41	h1		species	Adiantum aethiopicum L.
+42	h1	a2	species	Adiantum aethiopicum Thunb.
+43	h1		species	Actiniopteris australis (L. fil.) Link
+44	h1	a1	species	Actiniopteris australis Ettingsh.
+45	h1	a1	species	Acrostichum aureum Cav.
+46	h1		species	Acrostichum aureum L.
+47	h1	a1	species	Adiantum fragile Boj.
+48	h1		species	Adiantum fragile Sw.
+49	h1		species	Adiantum fructuosum Kunze
+50	h1	a1	species	Adiantum fructuosum Poepp. ex Spreng.
+51	h1	a1	species	Asplenium shikokianum Bak.
+52	h1		species	Asplenium shikokianum Mak.
+53	h1		species	Athyrium pectinatum (Wall. ex Hope) C. Presl
+54	h1	a1	species	Athyrium pectinatum (Wall. ex Mett.) Bedd.
+55	h1	a2	species	Athyrium pectinatum Bedd.
+56	h1	a3	species	Athyrium pectinatum Fée
+57	h1	a1	species	Botrypus virginianus (L.) Holub
+58	h1		species	Botrypus virginianus (L.) Michx.
+59	h1	a1	species	Cyclosorus cuneatus (C. Chr.) Ching
+60	h1		species	Cyclosorus cuneatus Ching ex Shing
