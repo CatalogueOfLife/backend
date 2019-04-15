@@ -233,8 +233,11 @@
 
     <delete id="deleteOrphans" parameterType="map">
         DELETE FROM name_${datasetKey} n
-        USING taxon_${datasetKey} t, synonym__${datasetKey} s
-        WHERE id = #{datasetKey}
+        WHERE NOT EXISTS (
+            SELECT NULL
+            FROM name_usage_${datasetKey} u
+            WHERE n.id = i.name_id
+        )
     </delete>
 
 </mapper>

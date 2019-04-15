@@ -16,7 +16,7 @@ public class PgCopyUtilsTest {
   PgConnection con;
   
   @ClassRule
-  public static PgSetupRule pgSetupRule = new PgSetupRule(false);
+  public static PgSetupRule pgSetupRule = new PgSetupRule();
 
   @Before
   public void init() throws SQLException {

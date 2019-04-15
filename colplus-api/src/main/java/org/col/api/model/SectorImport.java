@@ -39,6 +39,7 @@ public class SectorImport implements ImportAttempt {
   private Integer nameCount;
   private Integer referenceCount;
   private Integer taxonCount;
+  private Integer synonymCount;
   private Integer vernacularCount;
   private Map<Issue, Integer> issueCount;
   private StatusRankCounts usagesByRankCount = new StatusRankCounts();
@@ -139,6 +140,14 @@ public class SectorImport implements ImportAttempt {
     this.taxonCount = taxonCount;
   }
   
+  public Integer getSynonymCount() {
+    return synonymCount;
+  }
+  
+  public void setSynonymCount(Integer synonymCount) {
+    this.synonymCount = synonymCount;
+  }
+  
   public Integer getVernacularCount() {
     return vernacularCount;
   }
@@ -163,6 +172,7 @@ public class SectorImport implements ImportAttempt {
     this.usagesByRankCount = usagesByRankCount;
   }
   
+  
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -180,6 +190,7 @@ public class SectorImport implements ImportAttempt {
         Objects.equals(nameCount, that.nameCount) &&
         Objects.equals(referenceCount, that.referenceCount) &&
         Objects.equals(taxonCount, that.taxonCount) &&
+        Objects.equals(synonymCount, that.synonymCount) &&
         Objects.equals(vernacularCount, that.vernacularCount) &&
         Objects.equals(issueCount, that.issueCount) &&
         Objects.equals(usagesByRankCount, that.usagesByRankCount);
@@ -187,7 +198,7 @@ public class SectorImport implements ImportAttempt {
   
   @Override
   public int hashCode() {
-    return Objects.hash(sectorKey, attempt, state, started, finished, error, descriptionCount, distributionCount, mediaCount, nameCount, referenceCount, taxonCount, vernacularCount, issueCount, usagesByRankCount);
+    return Objects.hash(sectorKey, attempt, state, started, finished, error, descriptionCount, distributionCount, mediaCount, nameCount, referenceCount, taxonCount, synonymCount, vernacularCount, issueCount, usagesByRankCount);
   }
   
   public static List<State> runningStates() {

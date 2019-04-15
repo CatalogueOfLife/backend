@@ -4,7 +4,7 @@ import javax.ws.rs.core.GenericType;
 
 import org.col.api.model.ResultPage;
 import org.col.api.model.TreeNode;
-import org.col.db.mapper.InitMybatisRule;
+import org.col.db.mapper.TestDataRule;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -15,7 +15,7 @@ public class TreeResourceTest extends ResourceTestBase {
   static GenericType<ResultPage<TreeNode>> RESP_TYPE = new GenericType<ResultPage<TreeNode>>() {};
   
   @Rule
-  public InitMybatisRule initMybatisRule = InitMybatisRule.apple(RULE.getSqlSessionFactory());
+  public TestDataRule testDataRule = TestDataRule.apple(RULE.getSqlSessionFactory());
   
   public TreeResourceTest() {
     super("/dataset");

@@ -11,7 +11,7 @@ import org.col.api.model.Name;
 import org.col.api.model.NameMatch;
 import org.col.api.vocab.MatchType;
 import org.col.db.PgSetupRule;
-import org.col.db.mapper.InitMybatisRule;
+import org.col.db.mapper.TestDataRule;
 import org.col.parser.NameParser;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
@@ -29,7 +29,7 @@ public class NameIndexMapDBTest {
   public static PgSetupRule pgSetupRule = new PgSetupRule();
   
   @Rule
-  public InitMybatisRule initMybatisRule = InitMybatisRule.apple();
+  public TestDataRule testDataRule = TestDataRule.apple();
   
   @After
   public void stop() throws Exception {

@@ -19,7 +19,7 @@ import org.col.dao.DatasetImportDao;
 import org.col.dao.TreeRepoRule;
 import org.col.db.PgSetupRule;
 import org.col.db.mapper.DatasetMapper;
-import org.col.db.mapper.InitMybatisRule;
+import org.col.db.mapper.TestDataRule;
 import org.col.db.mapper.NameMapper;
 import org.col.db.mapper.VerbatimRecordMapper;
 import org.col.importer.neo.NeoDb;
@@ -43,7 +43,7 @@ public class IntegrityChecksIT {
   public static PgSetupRule pgSetupRule = new PgSetupRule();
   
   @Rule
-  public InitMybatisRule initMybatisRule = InitMybatisRule.empty();
+  public TestDataRule testDataRule = TestDataRule.empty();
   
   @Rule
   public final TreeRepoRule treeRepoRule = new TreeRepoRule();
@@ -55,11 +55,11 @@ public class IntegrityChecksIT {
     cfg.scratchDir = Files.createTempDir();
     dataset = new Dataset();
     dataset.setNamesIndexContributor(true);
-    dataset.setCreatedBy(InitMybatisRule.TEST_USER.getKey());
-    dataset.setModifiedBy(InitMybatisRule.TEST_USER.getKey());
+    dataset.setCreatedBy(TestDataRule.TEST_USER.getKey());
+    dataset.setModifiedBy(TestDataRule.TEST_USER.getKey());
 
-    InitDbCmd.setupStandardPartitions(initMybatisRule.getSqlSession());
-    initMybatisRule.commit();
+    InitDbCmd.setupStandardPartitions(testDataRule.getSqlSession());
+    testDataRule.commit();
  }
   
   @After

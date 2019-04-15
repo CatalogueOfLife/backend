@@ -8,7 +8,7 @@ import org.col.api.vocab.Datasets;
 import org.col.WsServerConfig;
 import org.col.db.MybatisTestUtils;
 import org.col.db.PgSetupRule;
-import org.col.db.mapper.InitMybatisRule;
+import org.col.db.mapper.TestDataRule;
 import org.junit.*;
 
 public class AcExporterTest {
@@ -20,7 +20,7 @@ public class AcExporterTest {
   public static PgSetupRule pgSetupRule = new PgSetupRule();
   
   @Rule
-  public InitMybatisRule initMybatisRule = InitMybatisRule.empty();
+  public TestDataRule testDataRule = TestDataRule.empty();
   
   @Before
   public void initCfg()  {
@@ -41,7 +41,7 @@ public class AcExporterTest {
   
   @Test
   public void export() throws Exception {
-    MybatisTestUtils.populateDraftTree(initMybatisRule.getSqlSession());
+    MybatisTestUtils.populateDraftTree(testDataRule.getSqlSession());
     AcExporter exp = new AcExporter(cfg);
     arch = exp.export(Datasets.DRAFT_COL);
   }

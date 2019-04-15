@@ -60,6 +60,7 @@ public class SectorSync extends SectorRunnable {
       state.setNameCount(sim.countName(catalogueKey, sector.getKey()));
       state.setReferenceCount(sim.countReference(catalogueKey, sector.getKey()));
       state.setTaxonCount(sim.countTaxon(catalogueKey, sector.getKey()));
+      state.setSynonymCount(sim.countSynonym(catalogueKey, sector.getKey()));
       state.setVernacularCount(sim.countVernacular(catalogueKey, sector.getKey()));
       state.setIssueCount(DatasetImportDao.countMap(Issue.class, sim.countIssues(catalogueKey, sector.getKey())));
       //TODO: usagesByRankCount

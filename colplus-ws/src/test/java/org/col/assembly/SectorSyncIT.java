@@ -17,7 +17,7 @@ import org.col.api.vocab.Datasets;
 import org.col.dao.DatasetImportDao;
 import org.col.dao.TreeRepoRule;
 import org.col.db.PgSetupRule;
-import org.col.db.mapper.InitMybatisRule;
+import org.col.db.mapper.TestDataRule;
 import org.col.db.mapper.NameUsageMapper;
 import org.col.db.mapper.SectorMapper;
 import org.col.db.tree.TextTreePrinter;
@@ -67,7 +67,7 @@ public class SectorSyncIT {
       sector.setDatasetKey(src.getDatasetKey());
       sector.setSubject(new SimpleName(src.getId(), src.getName().canonicalNameComplete(), src.getName().getRank()));
       sector.setTarget(new SimpleName(target.getId(), target.getName().canonicalNameComplete(), target.getName().getRank()));
-      sector.applyUser(InitMybatisRule.TEST_USER);
+      sector.applyUser(TestDataRule.TEST_USER);
       session.getMapper(SectorMapper.class).create(sector);
       return sector.getKey();
     }
@@ -84,7 +84,7 @@ public class SectorSyncIT {
   void sync(int sectorKey) throws InterruptedException {
     
     SectorSync ss = new SectorSync(sectorKey, PgSetupRule.getSqlSessionFactory(), null, diDao,
-        SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, InitMybatisRule.TEST_USER);
+        SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestDataRule.TEST_USER);
     ss.run();
 
     DatasetImportDao diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());

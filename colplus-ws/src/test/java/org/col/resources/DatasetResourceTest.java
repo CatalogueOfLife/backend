@@ -11,7 +11,7 @@ import org.col.api.search.DatasetSearchRequest;
 import org.col.api.vocab.DataFormat;
 import org.col.api.vocab.DatasetOrigin;
 import org.col.api.vocab.Frequency;
-import org.col.db.mapper.InitMybatisRule;
+import org.col.db.mapper.TestDataRule;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -25,7 +25,7 @@ public class DatasetResourceTest extends ResourceTestBase {
   static GenericType<ResultPage<Dataset>> RESULT_PAGE = new GenericType<ResultPage<Dataset>>() {};
   
   @Rule
-  public InitMybatisRule initMybatisRule = InitMybatisRule.datasets(RULE.getSqlSessionFactory());
+  public TestDataRule testDataRule = TestDataRule.datasets(RULE.getSqlSessionFactory());
 
   public DatasetResourceTest() {
     super("/dataset");

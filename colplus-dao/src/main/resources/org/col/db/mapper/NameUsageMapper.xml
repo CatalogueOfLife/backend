@@ -107,7 +107,7 @@
     <select id="listByName" resultMap="usageResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
-        WHERE n.scientific_name=#{name}
+        WHERE lower(n.scientific_name) = lower(#{name})
         <if test="rank != null">
             AND n.rank=#{rank}::rank
         </if>

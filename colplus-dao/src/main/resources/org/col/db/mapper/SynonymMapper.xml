@@ -54,6 +54,12 @@
         ORDER BY u.status, n.homotypic_name_id, n.scientific_name
     </select>
 
+    <select id="listByNameID" resultMap="synonymResultMap">
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
+        WHERE u.is_synonym AND u.name_id = #{nameId}
+    </select>
+
     <select id="count" resultType="integer">
         <include refid="org.col.db.mapper.Common.countFromFinishedDatasetImport">
             <property name="column" value="synonym_count"/>

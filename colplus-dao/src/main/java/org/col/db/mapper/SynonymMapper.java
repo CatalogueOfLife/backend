@@ -25,5 +25,7 @@ public interface SynonymMapper extends DatasetCRUDMapper<Synonym> {
    */
   List<Synonym> listByTaxon(@Param("datasetKey") int datasetKey, @Param("taxonId") String taxonId);
   
-
+  List<Synonym> listByNameID(@Param("datasetKey") int datasetKey, @Param("nameId") String nameId);
+  
+  
 }

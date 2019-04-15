@@ -50,7 +50,7 @@ public class PgImportIT {
   public static PgSetupRule pgSetupRule = new PgSetupRule();
   
   @Rule
-  public InitMybatisRule initMybatisRule = InitMybatisRule.empty();
+  public TestDataRule testDataRule = TestDataRule.empty();
   
   @Rule
   public final TreeRepoRule treeRepoRule = new TreeRepoRule();
@@ -62,12 +62,12 @@ public class PgImportIT {
     cfg.scratchDir = Files.createTempDir();
     dataset = new Dataset();
     dataset.setNamesIndexContributor(true);
-    dataset.setCreatedBy(InitMybatisRule.TEST_USER.getKey());
-    dataset.setModifiedBy(InitMybatisRule.TEST_USER.getKey());
+    dataset.setCreatedBy(TestDataRule.TEST_USER.getKey());
+    dataset.setModifiedBy(TestDataRule.TEST_USER.getKey());
 
     if (fullInit) {
-      InitDbCmd.setupStandardPartitions(initMybatisRule.getSqlSession());
-      initMybatisRule.commit();
+      InitDbCmd.setupStandardPartitions(testDataRule.getSqlSession());
+      testDataRule.commit();
     }
   }
   
@@ -424,13 +424,13 @@ public class PgImportIT {
       assertEquals("Rhodacarus guevarai Guevara-Benitez, 1974", sn.canonicalNameComplete());
       
       // in acef name & taxon ids are the same
-      List<Synonym> syns = synMapper.listByTaxon(dataset.getKey(), sn.getId());
-      assertEquals(1, syns.size());
+      Synonym syn = synMapper.get(dataset.getKey(), sn.getId());
+      assertNotNull(syn);
       
       t = tdao.get(dataset.getKey(), "Rho-61");
       assertEquals("Multidentorhodacarus denticulatus (Berlese, 1920)", t.getName().canonicalNameComplete());
       t.setChildCount(null);
-      assertEquals(t, syns.get(0).getAccepted());
+      assertEquals(t, syn.getAccepted());
     }
   }
   
@@ -560,7 +560,10 @@ public class PgImportIT {
       // one root
       assertEquals(1, tdao.listRoot(dataset.getKey(), new Page()).getResult().size());
   
-      Synonym s3 = tdao.getSynonym(dataset.getKey(), "1006-s3");
+      SynonymMapper sm = session.getMapper(SynonymMapper.class);
+      List<Synonym> syns = sm.listByNameID(dataset.getKey(), "1006-s3");
+      assertEquals(1, syns.size());
+      Synonym s3 = syns.get(0);
       assertEquals("Leonida taraxacoida Vill.", s3.getName().canonicalNameComplete());
       assertEquals("1006", s3.getAccepted().getId());
       assertEquals("Leontodon taraxacoides (Vill.) Mérat", s3.getAccepted().getName().canonicalNameComplete());

@@ -22,7 +22,7 @@ import org.col.api.vocab.*;
 import org.col.db.PgSetupRule;
 import org.col.dao.DatasetImportDao;
 import org.col.db.mapper.DatasetMapper;
-import org.col.db.mapper.InitMybatisRule;
+import org.col.db.mapper.TestDataRule;
 import org.col.img.ImageService;
 import org.junit.*;
 import org.slf4j.Logger;
@@ -48,7 +48,7 @@ public class ImportManagerTest {
   public static PgSetupRule pgSetupRule = new PgSetupRule();
   
   @Rule
-  public InitMybatisRule initMybatisRule = InitMybatisRule.empty();
+  public TestDataRule testDataRule = TestDataRule.empty();
   
   @Rule
   public final TreeRepoRule treeRepoRule = new TreeRepoRule();
@@ -99,8 +99,8 @@ public class ImportManagerTest {
     d.setTitle("Test dataset");
     d.setDataFormat(DataFormat.COLDP);
     d.setDataAccess(URI.create("https://raw.githubusercontent.com/Sp2000/colplus-backend/master/colplus-admin/src/test/resources/coldp/test.zip"));
-    d.setCreatedBy(InitMybatisRule.TEST_USER.getKey());
-    d.setModifiedBy(InitMybatisRule.TEST_USER.getKey());
+    d.setCreatedBy(TestDataRule.TEST_USER.getKey());
+    d.setModifiedBy(TestDataRule.TEST_USER.getKey());
   
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true) ) {
       session.getMapper(DatasetMapper.class).create(d);

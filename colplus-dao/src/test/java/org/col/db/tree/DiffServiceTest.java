@@ -7,7 +7,7 @@ import org.apache.commons.io.IOUtils;
 import org.col.common.io.Resources;
 import org.col.dao.DaoTestBase;
 import org.col.dao.DatasetImportDao;
-import org.col.db.mapper.InitMybatisRule;
+import org.col.db.mapper.TestDataRule;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -17,7 +17,7 @@ public class DiffServiceTest extends DaoTestBase {
   DatasetImportDao dao;
   
   public DiffServiceTest() {
-    super(InitMybatisRule.tree());
+    super(TestDataRule.tree());
     dao = new DatasetImportDao(factory(), treeRepoRule.getRepo());
     diff = new DiffService(factory(), dao.getTreeDao());
   }

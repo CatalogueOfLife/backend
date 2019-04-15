@@ -26,7 +26,7 @@ public class NameMapperTest extends MapperTestBase<NameMapper> {
   
   @Before
   public void initMappers() {
-    nameMapper = initMybatisRule.getMapper(NameMapper.class);
+    nameMapper = testDataRule.getMapper(NameMapper.class);
   }
   
   private static Name create(final String id, final Name basionym) throws Exception {

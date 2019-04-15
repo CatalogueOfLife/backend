@@ -25,11 +25,11 @@ import org.slf4j.LoggerFactory;
  * The rule was designed to run as a junit {@link org.junit.Rule} before every
  * test.
  * <p>
- * This rule requires a running postgres server via the {@link PgSetupRule}.
+ * Unless an explicit factory is given, this rule requires a connected postgres server with mybatis via the {@link PgSetupRule}.
  * Make sure its setup!
  */
-public class InitMybatisRule extends ExternalResource {
-  private static final Logger LOG = LoggerFactory.getLogger(InitMybatisRule.class);
+public class TestDataRule extends ExternalResource {
+  private static final Logger LOG = LoggerFactory.getLogger(TestDataRule.class);
   public static final ColUser TEST_USER = new ColUser();
   
   static {
@@ -45,13 +45,13 @@ public class InitMybatisRule extends ExternalResource {
   private final Supplier<SqlSessionFactory> sqlSessionFactorySupplier;
   
   public enum TestData {
-    NONE(1, 2, 3),
+    NONE(3),
     
     // apple datasetKey=11
-    APPLE(2, 11, 12),
+    APPLE(3, 11, 12),
   
     // tree datasetKey=11
-    TREE(2, 11),
+    TREE(3, 11),
     
     /**
      * Inits the datasets table with real col data from colplus-repo
@@ -69,44 +69,44 @@ public class InitMybatisRule extends ExternalResource {
     }
   }
   
-  public static InitMybatisRule empty() {
-    return new InitMybatisRule(TestData.NONE);
+  public static TestDataRule empty() {
+    return new TestDataRule(TestData.NONE);
   }
   
-  public static InitMybatisRule empty(SqlSessionFactory sqlSessionFactory) {
-    return new InitMybatisRule(TestData.NONE, () -> sqlSessionFactory);
+  public static TestDataRule empty(SqlSessionFactory sqlSessionFactory) {
+    return new TestDataRule(TestData.NONE, () -> sqlSessionFactory);
   }
   
-  public static InitMybatisRule apple() {
-    return new InitMybatisRule(TestData.APPLE);
+  public static TestDataRule apple() {
+    return new TestDataRule(TestData.APPLE);
   }
   
-  public static InitMybatisRule apple(SqlSessionFactory sqlSessionFactory) {
-    return new InitMybatisRule(TestData.APPLE, () -> sqlSessionFactory);
+  public static TestDataRule apple(SqlSessionFactory sqlSessionFactory) {
+    return new TestDataRule(TestData.APPLE, () -> sqlSessionFactory);
   }
   
-  public static InitMybatisRule tree() {
-    return new InitMybatisRule(TestData.TREE);
+  public static TestDataRule tree() {
+    return new TestDataRule(TestData.TREE);
   }
   
-  public static InitMybatisRule tree(SqlSessionFactory sqlSessionFactory) {
-    return new InitMybatisRule(TestData.TREE, () -> sqlSessionFactory);
+  public static TestDataRule tree(SqlSessionFactory sqlSessionFactory) {
+    return new TestDataRule(TestData.TREE, () -> sqlSessionFactory);
   }
 
-  public static InitMybatisRule datasets() {
-    return new InitMybatisRule(TestData.DATASETS);
+  public static TestDataRule datasets() {
+    return new TestDataRule(TestData.DATASETS);
   }
   
-  public static InitMybatisRule datasets(SqlSessionFactory sqlSessionFactory) {
-    return new InitMybatisRule(TestData.DATASETS, () -> sqlSessionFactory);
+  public static TestDataRule datasets(SqlSessionFactory sqlSessionFactory) {
+    return new TestDataRule(TestData.DATASETS, () -> sqlSessionFactory);
   }
   
-  private InitMybatisRule(TestData testData, Supplier<SqlSessionFactory> sqlSessionFactorySupplier) {
+  private TestDataRule(TestData testData, Supplier<SqlSessionFactory> sqlSessionFactorySupplier) {
     this.testData = testData;
     this.sqlSessionFactorySupplier = sqlSessionFactorySupplier;
   }
   
-  public InitMybatisRule(TestData testData) {
+  public TestDataRule(TestData testData) {
     this(testData, () -> PgSetupRule.getSqlSessionFactory());
   }
   
@@ -142,13 +142,8 @@ public class InitMybatisRule extends ExternalResource {
   }
   
   private void partition() {
-    final DatasetPartitionMapper pm = getMapper(DatasetPartitionMapper.class);
     for (Integer dk : testData.datasetKeys) {
-      pm.delete(dk);
-      pm.create(dk);
-      pm.buildIndices(dk);
-      pm.attach(dk);
-      session.commit();
+      PgSetupRule.partition(dk);
     }
   }
   

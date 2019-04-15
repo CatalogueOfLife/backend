@@ -7,7 +7,7 @@ import org.col.api.model.Name;
 import org.col.api.model.Taxon;
 import org.col.api.vocab.Origin;
 import org.col.db.mapper.DatasetPartitionMapper;
-import org.col.db.mapper.InitMybatisRule;
+import org.col.db.mapper.TestDataRule;
 import org.col.db.mapper.NameMapper;
 import org.col.db.mapper.TaxonMapper;
 import org.gbif.nameparser.api.NameType;
@@ -66,7 +66,7 @@ public class MybatisTestUtils {
   
   private static Name uninomial(NameMapper nm, int datasetKey, String id, String name, Rank rank) {
     Name n = new Name();
-    n.applyUser(InitMybatisRule.TEST_USER);
+    n.applyUser(TestDataRule.TEST_USER);
     n.setId(id);
     n.setNameIndexId(RandomUtils.randomLatinString(10));
     n.setHomotypicNameId(id);

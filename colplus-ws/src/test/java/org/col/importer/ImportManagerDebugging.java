@@ -24,7 +24,7 @@ public class ImportManagerDebugging {
   RestClient esClient;
   
   @ClassRule
-  public static PgSetupRule pgSetupRule = new PgSetupRule(true);
+  public static PgSetupRule pgSetupRule = new PgSetupRule();
   
   @Rule
   public final TreeRepoRule treeRepoRule = new TreeRepoRule();
@@ -54,7 +54,6 @@ public class ImportManagerDebugging {
     
     final WsServerConfig cfg = provideConfig();
     new InitDbCmd().execute(cfg);
-    pgSetupRule.connectPool();
     
     hc = new HttpClientBuilder(metrics).using(cfg.client).build("local");
     importManager = new ImportManager(cfg, metrics, hc, PgSetupRule.getSqlSessionFactory(),

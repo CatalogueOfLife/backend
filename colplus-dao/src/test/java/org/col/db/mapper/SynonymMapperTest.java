@@ -30,9 +30,9 @@ public class SynonymMapperTest extends MapperTestBase<SynonymMapper> {
   
   @Before
   public void initMappers() {
-    nameDao = new NameDao(initMybatisRule.getSqlSession());
-    synonymMapper = initMybatisRule.getMapper(SynonymMapper.class);
-    taxonMapper = initMybatisRule.getMapper(TaxonMapper.class);
+    nameDao = new NameDao(testDataRule.getSqlSession());
+    synonymMapper = testDataRule.getMapper(SynonymMapper.class);
+    taxonMapper = testDataRule.getMapper(TaxonMapper.class);
   }
 
   @Test

@@ -169,6 +169,9 @@ public enum Issue {
   TAXONOMIC_STATUS_INVALID(Group.TAXON, Level.ERROR,
       "dwc:taxonomicStatus could not be interpreted"),
   
+  PROVISIONAL_STATUS_INVALID(Group.TAXON, Level.ERROR,
+      "col:provisional is no boolean"),
+  
   LIFEZONE_INVALID(Group.TAXON, Level.WARNING,
       "acef:lifezone contains values that cannot be interpreted"),
   

@@ -59,7 +59,7 @@ public enum ColTerm implements Term, AlternativeNames {
   parentID,
   //nameID,
   referenceID,
-  //status,
+  provisional,
   accordingTo,
   accordingToID,
   accordingToDate,

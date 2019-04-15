@@ -160,7 +160,7 @@ public class TaxonMapperTest extends DatasetCRUDTest<Taxon, TaxonMapper> {
     Taxon parent = TestEntityGenerator.newTaxon("parent-1");
     mapper().create(parent);
     
-    NameDao nameDao = new NameDao(initMybatisRule.getSqlSession());
+    NameDao nameDao = new NameDao(testDataRule.getSqlSession());
     
     Name n1 = TestEntityGenerator.newName("XXX");
     n1.setScientificName("XXX");

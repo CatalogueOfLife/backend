@@ -107,25 +107,25 @@
     <select id="countDescription" resultType="integer">
         SELECT count(*)
         FROM description_${datasetKey} x
-            JOIN taxon_${datasetKey} t ON t.id=x.taxon_id
+            JOIN name_usage_${datasetKey} t ON t.id=x.taxon_id
         WHERE t.sector_key=${sectorKey}
     </select>
     <select id="countDistribution" resultType="integer">
         SELECT count(*)
         FROM distribution_${datasetKey} x
-            JOIN taxon_${datasetKey} t ON t.id=x.taxon_id
+            JOIN name_usage_${datasetKey} t ON t.id=x.taxon_id
         WHERE t.sector_key=${sectorKey}
     </select>
     <select id="countMedia" resultType="integer">
         SELECT count(*)
         FROM media_${datasetKey} x
-            JOIN taxon_${datasetKey} t ON t.id=x.taxon_id
+            JOIN name_usage_${datasetKey} t ON t.id=x.taxon_id
         WHERE t.sector_key=${sectorKey}
     </select>
     <select id="countVernacular" resultType="integer">
         SELECT count(*)
         FROM vernacular_name_${datasetKey} x
-            JOIN taxon_${datasetKey} t ON t.id=x.taxon_id
+            JOIN name_usage_${datasetKey} t ON t.id=x.taxon_id
         WHERE t.sector_key=${sectorKey}
     </select>
 
@@ -136,7 +136,10 @@
         SELECT count(*) FROM reference_${datasetKey} WHERE sector_key=${sectorKey}
     </select>
     <select id="countTaxon" resultType="integer">
-        SELECT count(*) FROM taxon_${datasetKey} WHERE sector_key=${sectorKey}
+        SELECT count(*) FROM name_usage_${datasetKey} WHERE NOT is_synonym AND sector_key=${sectorKey}
+    </select>
+    <select id="countSynonym" resultType="integer">
+        SELECT count(*) FROM name_usage_${datasetKey} WHERE is_synonym AND sector_key=${sectorKey}
     </select>
 
     <select id="countIssues" resultType="IntCount">
@@ -148,7 +151,7 @@
         UNION
             SELECT vt.key, vt.issues
             FROM verbatim_${datasetKey} vt
-            JOIN taxon_${datasetKey} t ON vt.key=t.verbatim_key
+            JOIN name_usage_${datasetKey} t ON vt.key=t.verbatim_key
             WHERE t.sector_key=${sectorKey}
         UNION
             SELECT vr.key, vr.issues

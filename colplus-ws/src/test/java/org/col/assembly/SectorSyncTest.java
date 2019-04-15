@@ -8,6 +8,7 @@ import org.col.api.TestEntityGenerator;
 import org.col.api.model.*;
 import org.col.api.vocab.Datasets;
 import org.col.api.vocab.Origin;
+import org.col.api.vocab.TaxonomicStatus;
 import org.col.dao.TreeRepoRule;
 import org.col.db.PgSetupRule;
 import org.col.dao.DatasetImportDao;
@@ -31,7 +32,7 @@ public class SectorSyncTest {
   public static PgSetupRule pgSetupRule = new PgSetupRule();
   
   @Rule
-  public final InitMybatisRule initMybatisRule = InitMybatisRule.tree();
+  public final TestDataRule testDataRule = TestDataRule.tree();
   
   @Rule
   public final TreeRepoRule treeRepoRule = new TreeRepoRule();
@@ -68,6 +69,7 @@ public class SectorSyncTest {
       colAttachment = new Taxon();
       colAttachment .setId("cole");
       colAttachment.setDatasetKey(Datasets.DRAFT_COL);
+      colAttachment.setStatus(TaxonomicStatus.ACCEPTED);
       colAttachment.setName(n);
       colAttachment.setOrigin(Origin.USER);
       colAttachment.applyUser(TestEntityGenerator.USER_EDITOR);
@@ -102,11 +104,13 @@ public class SectorSyncTest {
   
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       final NameMapper nm = session.getMapper(NameMapper.class);
-      assertEquals(20, nm.count(Datasets.DRAFT_COL));
+      assertEquals(24, nm.count(Datasets.DRAFT_COL));
   
       final TaxonMapper tm = session.getMapper(TaxonMapper.class);
+      final SynonymMapper sm = session.getMapper(SynonymMapper.class);
       assertEquals(1, tm.countRoot(Datasets.DRAFT_COL));
       assertEquals(20, tm.count(Datasets.DRAFT_COL));
+      assertEquals(4, sm.count(Datasets.DRAFT_COL));
       
       List<Taxon> taxa = tm.list(Datasets.DRAFT_COL, new Page(0, 100));
       assertEquals(20, taxa.size());

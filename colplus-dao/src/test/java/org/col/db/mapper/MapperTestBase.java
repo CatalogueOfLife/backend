@@ -23,34 +23,34 @@ public abstract class MapperTestBase<T> {
   public static PgSetupRule pgSetupRule = new PgSetupRule();
   
   @Rule
-  public final InitMybatisRule initMybatisRule;
+  public final TestDataRule testDataRule;
   
   @Rule
   public final TreeRepoRule treeRepoRule = new TreeRepoRule();
   
   public MapperTestBase(Class<T> mapperClazz) {
-    this(mapperClazz, InitMybatisRule.apple());
+    this(mapperClazz, TestDataRule.apple());
   }
   
-  public MapperTestBase(Class<T> mapperClazz, InitMybatisRule initMybatisRule) {
+  public MapperTestBase(Class<T> mapperClazz, TestDataRule testDataRule) {
     this.mapperClazz = mapperClazz;
-    this.initMybatisRule = initMybatisRule;
+    this.testDataRule = testDataRule;
   }
   
   public T mapper() {
-    return initMybatisRule.getMapper(mapperClazz);
+    return testDataRule.getMapper(mapperClazz);
   }
   
   public <X> X mapper(Class<X> clazz) {
-    return initMybatisRule.getMapper(clazz);
+    return testDataRule.getMapper(clazz);
   }
   
   public SqlSession session() {
-    return initMybatisRule.getSqlSession();
+    return testDataRule.getSqlSession();
   }
 
   public void commit() {
-    initMybatisRule.commit();
+    testDataRule.commit();
   }
   
   protected void generateDatasetImport(int datasetKey) {

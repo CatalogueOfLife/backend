@@ -64,11 +64,11 @@
                     AND n1.name_index_id = n2.name_index_id
                 </when>
                 <when test="mode.name() == 'CANONICAL' ">
-                    AND n1.scientific_name = n2.scientific_name
+                    AND lower(n1.scientific_name) = lower(n2.scientific_name)
                 </when>
                 <otherwise>
-                    AND n1.scientific_name = n2.scientific_name
-                    AND n1.authorship = n2.authorship
+                    AND lower(n1.scientific_name) = lower(n2.scientific_name)
+                    AND lower(n1.authorship) = lower(n2.authorship)
                 </otherwise>
             </choose>
             <if test="rank != null">

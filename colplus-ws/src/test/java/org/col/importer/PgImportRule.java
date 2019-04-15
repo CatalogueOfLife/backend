@@ -19,7 +19,7 @@ import org.col.api.model.Dataset;
 import org.col.api.vocab.DataFormat;
 import org.col.db.PgSetupRule;
 import org.col.db.mapper.DatasetMapper;
-import org.col.db.mapper.InitMybatisRule;
+import org.col.db.mapper.TestDataRule;
 
 /**
  * Imports the given datasets from the test resources
@@ -27,7 +27,7 @@ import org.col.db.mapper.InitMybatisRule;
  *
  * Requires a running postgres instance which is normally provided via the PgSetupRule ClassRule.
  */
-public class PgImportRule extends InitMybatisRule {
+public class PgImportRule extends TestDataRule {
   
   private NeoDb store;
   private NormalizerConfig cfg;
@@ -115,8 +115,8 @@ public class PgImportRule extends InitMybatisRule {
     URL url = getClass().getResource("/" + format.name().toLowerCase() + "/" + key);
     dataset = new Dataset();
     dataset.setContributesTo(null);
-    dataset.setCreatedBy(InitMybatisRule.TEST_USER.getKey());
-    dataset.setModifiedBy(InitMybatisRule.TEST_USER.getKey());
+    dataset.setCreatedBy(TestDataRule.TEST_USER.getKey());
+    dataset.setModifiedBy(TestDataRule.TEST_USER.getKey());
     dataset.setDataFormat(format);
     Path source = Paths.get(url.toURI());
 

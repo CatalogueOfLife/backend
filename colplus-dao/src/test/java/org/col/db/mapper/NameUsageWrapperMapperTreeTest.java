@@ -20,7 +20,7 @@ import static org.junit.Assert.*;
 public class NameUsageWrapperMapperTreeTest extends MapperTestBase<NameUsageWrapperMapper> {
   
   public NameUsageWrapperMapperTreeTest() {
-    super(NameUsageWrapperMapper.class, InitMybatisRule.tree());
+    super(NameUsageWrapperMapper.class, TestDataRule.tree());
   }
   
   private AtomicInteger counter = new AtomicInteger(0);

@@ -62,21 +62,16 @@ COPY (
 
 
 
--- create taxon int keys using a reusable sequence
+-- create usage int keys using a reusable sequence
 CREATE SEQUENCE __record_id_seq START 1000;
 CREATE TABLE __tax_keys (key int PRIMARY KEY DEFAULT nextval('__record_id_seq'), id text UNIQUE);
-INSERT INTO __tax_keys (id) SELECT id FROM taxon_{{datasetKey}};
-
--- create synonym int keys
-CREATE TABLE __syn_keys (key int PRIMARY KEY DEFAULT nextval('__record_id_seq'), nid text, tid text);
-INSERT INTO __syn_keys (nid, tid) SELECT name_id, taxon_id FROM synonym_{{datasetKey}};
-CREATE UNIQUE INDEX __syn_keys_unique ON __syn_keys (nid, tid);
+INSERT INTO __tax_keys (id) SELECT id FROM name_usage_{{datasetKey}};
 
 -- specialists aka scrutinizer
 CREATE TABLE __scrutinizer (key serial, dataset_key int, name text, unique(dataset_key, name));
 INSERT INTO __scrutinizer (name, dataset_key)
     SELECT DISTINCT t.according_to, s.dataset_key
-        FROM taxon_{{datasetKey}} t
+        FROM name_usage_{{datasetKey}} t
             LEFT JOIN sector s ON t.sector_key=s.key
         WHERE t.according_to IS NOT NULL;
 COPY (
@@ -89,9 +84,10 @@ COPY (
 COPY (
     WITH lifezones_x AS (
         SELECT t.id, unnest(t.lifezones) AS lfz, s.dataset_key
-        FROM taxon_{{datasetKey}} t
+        FROM name_usage_{{datasetKey}} t
             JOIN __tax_keys tk ON t.id=tk.id
             LEFT JOIN sector s ON t.sector_key=s.key
+        WHERE t.lifezones IS NOT NULL
     )
     SELECT NULL AS record_id, 
         id AS name_code, 
@@ -117,11 +113,11 @@ WITH RECURSIVE tree AS(
         CASE WHEN n.rank='family' THEN n.scientific_name ELSE NULL END AS family,
         CASE WHEN n.rank='family' THEN t.id ELSE NULL END AS family_id,
         CASE WHEN n.rank='species' THEN t.id ELSE NULL END AS species_id
-    FROM taxon_{{datasetKey}} t
+    FROM name_usage_{{datasetKey}} t
         JOIN __tax_keys tk ON t.id=tk.id
         JOIN name_{{datasetKey}} n ON n.id=t.name_id
         LEFT JOIN sector s ON t.sector_key=s.key
-    WHERE t.parent_id IS NULL
+    WHERE t.parent_id IS NULL AND NOT t.is_synonym
   UNION
     SELECT
         tk.key,
@@ -136,11 +132,11 @@ WITH RECURSIVE tree AS(
         CASE WHEN n.rank='family' THEN n.scientific_name ELSE tree.family END,
         CASE WHEN n.rank='family' THEN t.id ELSE tree.family_id END,
         CASE WHEN n.rank='species' THEN t.id ELSE tree.species_id END AS species_id
-    FROM taxon_{{datasetKey}} t
+    FROM name_usage_{{datasetKey}} t
         JOIN __tax_keys tk ON t.id=tk.id
         JOIN name_{{datasetKey}} n ON n.id=t.name_id
         LEFT JOIN sector s ON t.sector_key=s.key
-        JOIN tree ON (tree.id = t.parent_id)
+        JOIN tree ON (tree.id = t.parent_id) AND NOT t.is_synonym
 )
 SELECT * FROM tree
 );
@@ -204,65 +200,32 @@ SELECT
   n.infraspecific_epithet AS infraspecies,
   n.rank AS infraspecies_marker, -- TODO
   n.authorship AS author,
-  t.id AS accepted_name_code,
+  CASE WHEN t.is_synonym THEN t.parent_id ELSE t.id END AS accepted_name_code,
   t.remarks AS comment,
   t.according_to_date AS scrutiny_date,
-  CASE WHEN t.provisional THEN 4 ELSE 1 END AS sp2000_status_id, -- 1=ACCEPTED, 2=AMBIGUOUS_SYNONYM, 3=MISAPPLIED, 4=PROVISIONALLY_ACCEPTED, 5=SYNONYM
+  CASE WHEN t.status=0 THEN 1
+       WHEN t.status=1 THEN 4
+       WHEN t.status=2 THEN 5
+       WHEN t.status=3 THEN 2
+       WHEN t.status=4 THEN 3
+  END AS sp2000_status_id, -- 1=ACCEPTED, 2=AMBIGUOUS_SYNONYM, 3=MISAPPLIED, 4=PROVISIONALLY_ACCEPTED, 5=SYNONYM
+                           -- Java: ACCEPTED,PROVISIONALLY_ACCEPTED,SYNONYM,AMBIGUOUS_SYNONYM,MISAPPLIED
   c.dataset_key AS database_id,
   sc.key AS specialist_id,
   cf.key AS family_id,
   NULL AS specialist_code,
   c.family_id AS family_code,
-  1 AS is_accepted_name,
+  CASE WHEN t.is_synonym THEN 0 ELSE 1 END AS is_accepted_name,
   NULL AS GSDTaxonGUID,
   NULL AS GSDNameGUID,
   (NOT t.recent)::int AS is_extinct,
   t.fossil::int AS has_preholocene,
   t.recent::int AS has_modern
 FROM name_{{datasetKey}} n
-    JOIN taxon_{{datasetKey}} t ON n.id=t.name_id
+    JOIN name_usage_{{datasetKey}} t ON n.id=t.name_id
     JOIN __classification c ON t.id=c.id
     JOIN __classification cf ON c.family_id=cf.id
     LEFT JOIN __scrutinizer sc ON t.according_to=sc.name AND c.dataset_key=sc.dataset_key
-WHERE n.rank >= 'species'::rank
-
-UNION
-
-SELECT
-  sk.key AS record_id,
-  n.id AS name_code,
-  null AS web_site,
-  n.genus AS genus,
-  n.infrageneric_epithet AS subgenus,
-  n.specific_epithet AS species,
-  NULL AS infraspecies_parent_name_code,
-  n.infraspecific_epithet AS infraspecies,
-  n.rank AS infraspecies_marker, -- TODO
-  n.authorship AS author,
-  t.id AS accepted_name_code,
-  n.remarks AS comment,
-  t.according_to_date AS scrutiny_date,
-  CASE WHEN s.status=2 THEN 5
-       WHEN s.status=3 THEN 2
-       WHEN s.status=4 THEN 3
-  END AS sp2000_status_id, -- 1=ACCEPTED, 2=AMBIGUOUS_SYNONYM, 3=MISAPPLIED, 4=PROVISIONALLY_ACCEPTED, 5=SYNONYM
-                           -- Java: ACCEPTED,PROVISIONALLY_ACCEPTED,SYNONYM,AMBIGUOUS_SYNONYM,MISAPPLIED
-  sec.dataset_key AS database_id,
-  NULL AS specialist_id,
-  NULL AS family_id,
-  NULL AS specialist_code,
-  NULL AS family_code,
-  0 AS is_accepted_name,
-  NULL AS GSDTaxonGUID,
-  NULL AS GSDNameGUID,
-  NULL AS is_extinct,
-  NULL AS has_preholocene,
-  NULL AS has_modern
-FROM name_{{datasetKey}} n
-    JOIN synonym_{{datasetKey}} s ON n.id=s.name_id
-    JOIN taxon_{{datasetKey}} t ON t.id=s.taxon_id
-    JOIN __syn_keys sk ON s.name_id=sk.nid AND s.taxon_id=sk.tid
-    LEFT JOIN sector sec ON t.sector_key=sec.key
 WHERE n.rank >= 'species'::rank
 
 ) TO 'scientific_names.csv';
@@ -282,7 +245,7 @@ COPY (
     NULL AS is_infraspecies,
     r.id as reference_code 
   FROM vernacular_name_{{datasetKey}} v
-    JOIN taxon_{{datasetKey}} t ON t.id=v.taxon_id
+    JOIN name_usage_{{datasetKey}} t ON t.id=v.taxon_id
     LEFT JOIN reference_{{datasetKey}} r ON r.id=v.reference_id
     LEFT JOIN __ref_keys rk ON rk.id=r.id
     LEFT JOIN sector s ON t.sector_key=s.key
@@ -298,7 +261,7 @@ COPY (
     CASE WHEN d.status=0 THEN 'Native' WHEN d.status=1 THEN 'Domesticated' WHEN d.status=2 THEN 'Alien' WHEN d.status=3 THEN 'Uncertain' END AS DistributionStatus,
     s.dataset_key AS database_id
   FROM distribution_{{datasetKey}} d
-      JOIN taxon_{{datasetKey}} t ON t.id=d.taxon_id
+      JOIN name_usage_{{datasetKey}} t ON t.id=d.taxon_id
       LEFT JOIN sector s ON t.sector_key=s.key
 ) TO 'distribution.csv';
 
@@ -312,7 +275,7 @@ COPY (
     r.id AS reference_code,
     s.dataset_key AS database_id
   FROM name_{{datasetKey}} n
-    JOIN taxon_{{datasetKey}} t ON t.name_id=n.id
+    JOIN name_usage_{{datasetKey}} t ON t.name_id=n.id
     JOIN reference_{{datasetKey}} r ON r.id=n.published_in_id
     JOIN __ref_keys rk ON rk.id=r.id
     LEFT JOIN sector s ON r.sector_key=s.key
@@ -337,7 +300,6 @@ COPY (
 DROP TABLE __scrutinizer;
 DROP TABLE __ref_keys;
 DROP TABLE __tax_keys;
-DROP TABLE __syn_keys;
 DROP TABLE __classification;
 DROP TABLE __classification2;
 DROP SEQUENCE __record_id_seq;

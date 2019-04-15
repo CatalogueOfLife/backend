@@ -230,7 +230,7 @@
     <select id="foreignChildren" resultMap="taxonResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
-        JOIN taxon_3 p ON p.id=u.parent_id
+        JOIN name_usage_3 p ON p.id=u.parent_id
         WHERE p.sector_key=#{sectorKey}
         AND u.sector_key!=#{sectorKey}
     </select>

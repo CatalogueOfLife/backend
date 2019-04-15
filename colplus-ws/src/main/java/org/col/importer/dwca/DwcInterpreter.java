@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory;
  */
 public class DwcInterpreter extends InterpreterBase {
   private static final Logger LOG = LoggerFactory.getLogger(DwcInterpreter.class);
-  private static final EnumNote<TaxonomicStatus> NO_STATUS = new EnumNote<>(TaxonomicStatus.PROVISIONALLY_ACCEPTED, null);
+  private static final EnumNote<TaxonomicStatus> NO_STATUS = new EnumNote<>(TaxonomicStatus.ACCEPTED, null);
 
   private final MappingFlags mappingFlags;
 

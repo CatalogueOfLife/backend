@@ -11,7 +11,7 @@ import com.google.common.collect.Lists;
 import org.apache.ibatis.session.SqlSession;
 import org.col.common.concurrent.ExecutorUtils;
 import org.col.db.PgSetupRule;
-import org.col.db.mapper.InitMybatisRule;
+import org.col.db.mapper.TestDataRule;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -27,7 +27,7 @@ public class PgImportTest {
   public static PgSetupRule pgSetupRule = new PgSetupRule();
   
   @Rule
-  public InitMybatisRule initMybatisRule = InitMybatisRule.empty();
+  public TestDataRule testDataRule = TestDataRule.empty();
   AtomicInteger cnt = new AtomicInteger(0);
   
   static class PartitionJob implements Callable<Boolean> {

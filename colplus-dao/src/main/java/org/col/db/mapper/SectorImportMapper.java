@@ -41,6 +41,7 @@ public interface SectorImportMapper {
   
   Integer countReference(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
   Integer countTaxon(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
+  Integer countSynonym(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
   Integer countVernacular(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
   List<IntCount> countIssues(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
   

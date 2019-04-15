@@ -4,7 +4,7 @@ import java.io.BufferedReader;
 import java.util.Iterator;
 import java.util.stream.Stream;
 
-import org.col.db.mapper.InitMybatisRule;
+import org.col.db.mapper.TestDataRule;
 import org.gbif.utils.file.FileUtils;
 import org.junit.Assert;
 import org.junit.Test;
@@ -16,7 +16,7 @@ public class NamesTreeDaoTest extends DaoTestBase {
   DatasetImportDao dao;
   
   public NamesTreeDaoTest() {
-    super(InitMybatisRule.tree());
+    super(TestDataRule.tree());
     dao = new DatasetImportDao(factory(), treeRepoRule.getRepo());
   }
   

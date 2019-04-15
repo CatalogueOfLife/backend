@@ -7,12 +7,11 @@ import org.junit.rules.ExternalResource;
 
 /**
  * Base class for tests that want to write to ES, which in practice means reading from postgress.
- * Therefore this base class extends DaoTestBase.
  */
 public class EsReadWriteTestBase extends ExternalResource {
   
   @ClassRule
-  public static PgSetupRule pgSetupRule = new PgSetupRule(false);
+  public static PgSetupRule pgSetupRule = new PgSetupRule();
   
   @ClassRule
   public static EsSetupRule esSetupRule = new EsSetupRule();

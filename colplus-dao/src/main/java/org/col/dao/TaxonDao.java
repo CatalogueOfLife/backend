@@ -106,6 +106,7 @@ public class TaxonDao {
    * @param lookupReference
    */
   public void copySynonym(final Synonym syn, final DatasetID accepted, ColUser user, Function<Reference,String> lookupReference) {
+    syn.setDatasetKey(accepted.getDatasetKey());
     copyName(syn, accepted.getDatasetKey(), user, lookupReference);
     newKey(syn);
     syn.applyUser(user);
@@ -173,19 +174,26 @@ public class TaxonDao {
     return tMapper.get(datasetKey, id);
   }
   
-  public List<Synonym> getSynonyms(int datasetKey, String taxonId) {
+  public List<Synonym> getSynonymsOf(int datasetKey, String taxonId) {
     return sMapper.listByTaxon(datasetKey, taxonId);
   }
 
-  public Synonym getSynonym(int datasetKey, String taxonId) {
+  public Synonym getSynonymOf(int datasetKey, String taxonId) {
     if (taxonId != null) {
-      List<Synonym> syns = getSynonyms(datasetKey, taxonId);
+      List<Synonym> syns = getSynonymsOf(datasetKey, taxonId);
       if (!syns.isEmpty()) {
         if (syns.size() > 1) {
           LOG.debug("Multiple synonyms found for taxonId {}", taxonId);
         }
         return syns.get(0);
       }
+    }
+    return null;
+  }
+  
+  public Synonym getSynonym(int datasetKey, String synonymId) {
+    if (synonymId != null) {
+      return sMapper.get(datasetKey, synonymId);
     }
     return null;
   }

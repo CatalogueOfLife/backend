@@ -5,7 +5,7 @@ import org.col.api.model.Sector;
 import org.col.api.model.SimpleName;
 import org.col.db.MybatisTestUtils;
 import org.col.db.PgSetupRule;
-import org.col.db.mapper.InitMybatisRule;
+import org.col.db.mapper.TestDataRule;
 import org.col.db.mapper.SectorMapper;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Assert;
@@ -19,7 +19,7 @@ public class DecisionRematcherTest {
   public static PgSetupRule pg = new PgSetupRule();
   
   @Rule
-  public final InitMybatisRule importRule = InitMybatisRule.apple();
+  public final TestDataRule importRule = TestDataRule.apple();
 
   @Test
   public void matchDataset() {
@@ -76,7 +76,7 @@ public class DecisionRematcherTest {
       sector.setDatasetKey(datasetKey);
       sector.setSubject(src);
       sector.setTarget(target);
-      sector.applyUser(InitMybatisRule.TEST_USER);
+      sector.applyUser(TestDataRule.TEST_USER);
       session.getMapper(SectorMapper.class).create(sector);
       return sector.getKey();
     }

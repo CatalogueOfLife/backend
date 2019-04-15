@@ -1,7 +1,7 @@
 package org.col.dao;
 
 import org.col.db.PgSetupRule;
-import org.col.db.mapper.InitMybatisRule;
+import org.col.db.mapper.TestDataRule;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -16,7 +16,7 @@ public class DatasetSqlTest {
   public static PgSetupRule pgSetupRule = new PgSetupRule();
   
   @Rule
-  public InitMybatisRule initMybatisRule = InitMybatisRule.datasets();
+  public TestDataRule testDataRule = TestDataRule.datasets();
   
   @Test
   public void nothing() throws Exception {

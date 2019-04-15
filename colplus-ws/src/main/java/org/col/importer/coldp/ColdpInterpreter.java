@@ -1,6 +1,7 @@
 package org.col.importer.coldp;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import org.col.importer.MappingFlags;
@@ -70,14 +71,9 @@ public class ColdpInterpreter extends InterpreterBase {
       t.setRecent(bool(v, Issue.IS_RECENT_INVALID, ColTerm.recent));
       t.setRemarks(v.get(ColTerm.remarks));
       // status
-      TaxonomicStatus status = parse(TaxonomicStatusParser.PARSER, v.get(ColTerm.status)).orElse(SYN_NOTE).val;
-      if (status.isSynonym()) {
-        // override status as we require some accepted status on Taxon
-        v.addIssue(Issue.TAXONOMIC_STATUS_INVALID);
-        status = TaxonomicStatus.PROVISIONALLY_ACCEPTED;
+      if (Objects.equals(Boolean.TRUE, bool(v, Issue.PROVISIONAL_STATUS_INVALID, ColTerm.provisional))) {
+        t.setStatus(TaxonomicStatus.PROVISIONALLY_ACCEPTED);
       }
-      t.setStatus(status);
-    
       // lifezones
       setLifezones(t, v, ColTerm.lifezone);
     

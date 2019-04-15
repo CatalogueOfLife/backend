@@ -26,7 +26,7 @@ public class NameRelationMapperTest extends MapperTestBase<NameRelationMapper> {
   
   @Before
   public void init() {
-    nameRelationMapper = initMybatisRule.getMapper(NameRelationMapper.class);
+    nameRelationMapper = testDataRule.getMapper(NameRelationMapper.class);
   }
   
   @Test

@@ -3,7 +3,7 @@ package org.col.dao;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.db.PgSetupRule;
-import org.col.db.mapper.InitMybatisRule;
+import org.col.db.mapper.TestDataRule;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -17,18 +17,18 @@ public abstract class DaoTestBase {
   public static PgSetupRule pgSetupRule = new PgSetupRule();
   
   @Rule
-  public final InitMybatisRule initMybatisRule;
+  public final TestDataRule testDataRule;
   
   @Rule
   public final TreeRepoRule treeRepoRule = new TreeRepoRule();
   
   
   public DaoTestBase(){
-    this(InitMybatisRule.apple());
+    this(TestDataRule.apple());
   }
   
-  public DaoTestBase(InitMybatisRule initRule){
-    this.initMybatisRule = initRule;
+  public DaoTestBase(TestDataRule initRule){
+    this.testDataRule = initRule;
   }
 
   
@@ -47,7 +47,7 @@ public abstract class DaoTestBase {
   }
   
   protected SqlSession session() {
-    return initMybatisRule.getSqlSession();
+    return testDataRule.getSqlSession();
   }
   
   public <T> T mapper(Class<T> mapperClazz) {
@@ -55,6 +55,6 @@ public abstract class DaoTestBase {
   }
   
   public void commit() {
-    initMybatisRule.commit();
+    testDataRule.commit();
   }
 }

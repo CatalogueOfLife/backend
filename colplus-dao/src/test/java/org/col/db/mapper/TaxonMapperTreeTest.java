@@ -25,7 +25,7 @@ public class TaxonMapperTreeTest extends MapperTestBase<TaxonMapper> {
   CountHandler countHandler;
   
   public TaxonMapperTreeTest() {
-    super(TaxonMapper.class, InitMybatisRule.tree());
+    super(TaxonMapper.class, TestDataRule.tree());
   }
   
   
