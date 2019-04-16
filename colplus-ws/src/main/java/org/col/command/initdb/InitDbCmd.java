@@ -20,9 +20,7 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.WsServerConfig;
 import org.col.api.model.Dataset;
 import org.col.api.model.DatasetImport;
-import org.col.api.vocab.Datasets;
-import org.col.api.vocab.ImportState;
-import org.col.api.vocab.Users;
+import org.col.api.vocab.*;
 import org.col.common.io.PathUtils;
 import org.col.dao.DatasetImportDao;
 import org.col.dao.TaxonDao;
@@ -36,6 +34,7 @@ import org.col.es.NameUsageIndexService;
 import org.col.es.NameUsageIndexServiceEs;
 import org.col.postgres.PgCopyUtils;
 import org.elasticsearch.client.RestClient;
+import org.gbif.nameparser.api.NameType;
 import org.postgresql.jdbc.PgConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -158,6 +157,7 @@ public class InitDbCmd extends ConfiguredCommand<WsServerConfig> {
       
       } catch (Exception e) {
         LOG.error("Failed to insert initdb data", e);
+        throw e;
       }
   
       LOG.info("Update dataset sector counts");
@@ -179,19 +179,20 @@ public class InitDbCmd extends ConfiguredCommand<WsServerConfig> {
         .put("created_by", Users.DB_INIT)
         .put("modified_by", Users.DB_INIT)
         .build());
-    PgCopyUtils.copy(pgc, "name_3", "/org/col/db/draft/name.csv", ImmutableMap.<String, Object>builder()
-        .put("dataset_key", 3)
-        .put("origin", 0)
-        .put("type", 0)
-        .put("nom_status", 1)
+    PgCopyUtils.copy(pgc, "name_"+Datasets.DRAFT_COL, "/org/col/db/draft/name.csv", ImmutableMap.<String, Object>builder()
+        .put("dataset_key", Datasets.DRAFT_COL)
+        .put("origin", Origin.SOURCE)
+        .put("type", NameType.SCIENTIFIC)
+        .put("nom_status", NomStatus.ACCEPTABLE)
         .put("created_by", Users.DB_INIT)
         .put("modified_by", Users.DB_INIT)
         .build());
-    PgCopyUtils.copy(pgc, "taxon_3", "/org/col/db/draft/taxon.csv", ImmutableMap.<String, Object>builder()
-        .put("dataset_key", 3)
-        .put("origin", 0)
+    PgCopyUtils.copy(pgc, "name_usage_"+Datasets.DRAFT_COL, "/org/col/db/draft/taxon.csv", ImmutableMap.<String, Object>builder()
+        .put("dataset_key", Datasets.DRAFT_COL)
+        .put("origin", Origin.SOURCE)
         .put("according_to", "CoL")
-        .put("provisional", false)
+        .put("status", TaxonomicStatus.ACCEPTED)
+        .put("is_synonym", false)
         //.put("according_to_date", Year.now().getValue())
         .put("created_by", Users.DB_INIT)
         .put("modified_by", Users.DB_INIT)

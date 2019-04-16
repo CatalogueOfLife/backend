@@ -105,6 +105,8 @@ public class PgCopyUtils {
           sb.append((long)val);
         } else if (Boolean.class.isAssignableFrom(val.getClass())) {
           sb.append((boolean) val);
+        } else if (val.getClass().isEnum()) {
+          sb.append(((Enum) val).ordinal());
         } else {
           sb.append(val);
         }
