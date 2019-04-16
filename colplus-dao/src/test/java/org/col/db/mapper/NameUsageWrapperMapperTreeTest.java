@@ -7,6 +7,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.ibatis.session.ResultContext;
 import org.apache.ibatis.session.ResultHandler;
 import org.col.api.model.Name;
+import org.col.api.model.SimpleName;
 import org.col.api.model.Taxon;
 import org.col.api.model.VernacularName;
 import org.col.api.search.NameUsageWrapper;
@@ -47,7 +48,13 @@ public class NameUsageWrapperMapperTreeTest extends MapperTestBase<NameUsageWrap
         assertNotNull(n);
         assertNotNull(n.getId());
         assertNotNull(n.getDatasetKey());
-
+        
+        // classification should always include the taxon itself
+        // https://github.com/Sp2000/colplus-backend/issues/326
+        assertFalse(obj.getClassification().isEmpty());
+        SimpleName last = obj.getClassification().get(obj.getClassification().size()-1);
+        assertEquals(obj.getUsage().getId(), last.getId());
+        
         if ( obj.getUsage().getId().startsWith("t")) {
           assertTrue(obj.getUsage().isTaxon());
           Taxon t = (Taxon) obj.getUsage();
@@ -60,10 +67,8 @@ public class NameUsageWrapperMapperTreeTest extends MapperTestBase<NameUsageWrap
           assertEquals(URI.create("http://myspace.com"), t.getWebpage());
           if (t.getId().equals("t1")) {
             assertNull(t.getParentId());
-            assertTrue(obj.getClassification().isEmpty());
           } else {
             assertNotNull(t.getParentId());
-            assertFalse(obj.getClassification().isEmpty());
           }
           for (VernacularName v : ctx.getResultObject().getVernacularNames()) {
             assertNotNull(v.getName());

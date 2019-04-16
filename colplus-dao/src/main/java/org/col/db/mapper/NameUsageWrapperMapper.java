@@ -17,6 +17,7 @@ public interface  NameUsageWrapperMapper {
   /**
    * Iterates over all taxa with their vernaculars for a given dataset and processes them with the supplied handler. This allows a single
    * query to efficiently stream all its values without keeping them in memory.
+   * The classification attached includes the taxon or synonym itself!
    */
   void processDatasetUsages(@Param("datasetKey") Integer datasetKey, @Nullable @Param("sectorKey") Integer sectorKey,
                             ResultHandler<NameUsageWrapper> handler);

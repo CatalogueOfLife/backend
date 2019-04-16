@@ -46,7 +46,11 @@ public class NameUsageWrapper {
   public void setVernacularNames(List<VernacularName> vernacularNames) {
     this.vernacularNames = vernacularNames;
   }
-
+  
+  /**
+   * The entire classification for the usage starting with the highest root and
+   * including the taxon or synonym itself as the last entry in the list
+   */
   public List<SimpleName> getClassification() {
     return classification;
   }
@@ -56,16 +60,17 @@ public class NameUsageWrapper {
   }
 
   public void setClassificationIds(List<String> ids) {
-    // NB last element is the taxon itself. Couldn't figure out the SQL to exclude it
+    // NB last element is the taxon itself which should be included:
+    // https://github.com/Sp2000/colplus-backend/issues/326
     if (classification == null) {
-      classification = new ArrayList<>(ids.size() - 1);
+      classification = new ArrayList<>(ids.size());
       SimpleName sn;
-      for (int i = 0; i < ids.size() - 1; i++) {
+      for (int i = 0; i < ids.size(); i++) {
         (sn = new SimpleName()).setId(ids.get(i));
         classification.add(sn);
       }
     } else {
-      for (int i = 0; i < ids.size() - 1; i++) {
+      for (int i = 0; i < ids.size(); i++) {
         classification.get(i).setId(ids.get(i));
       }
     }
@@ -75,12 +80,12 @@ public class NameUsageWrapper {
     if (classification == null) {
       classification = new ArrayList<>(ranks.size());
       SimpleName sn;
-      for (int i = 0; i < ranks.size() - 1; i++) {
+      for (int i = 0; i < ranks.size(); i++) {
         (sn = new SimpleName()).setRank(ranks.get(i));
         classification.add(sn);
       }
     } else {
-      for (int i = 0; i < ranks.size() - 1; i++) {
+      for (int i = 0; i < ranks.size(); i++) {
         classification.get(i).setRank(ranks.get(i));
       }
     }
@@ -90,12 +95,12 @@ public class NameUsageWrapper {
     if (classification == null) {
       classification = new ArrayList<>(names.size());
       SimpleName sn;
-      for (int i = 0; i < names.size() - 1; i++) {
+      for (int i = 0; i < names.size(); i++) {
         (sn = new SimpleName()).setName(names.get(i));
         classification.add(sn);
       }
     } else {
-      for (int i = 0; i < names.size() - 1; i++) {
+      for (int i = 0; i < names.size(); i++) {
         classification.get(i).setName(names.get(i));
       }
     }
