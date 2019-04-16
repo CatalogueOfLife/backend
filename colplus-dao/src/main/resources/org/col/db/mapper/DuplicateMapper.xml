@@ -29,6 +29,8 @@
                 <property name="alias" value="an1"/>
                 <property name="prefix" value="u1_a_n_"/>
             </include>,
+            ed1.key AS decision_key1,
+
             u2.is_synonym AS u2_is_synonym,
             <include refid="org.col.db.mapper.TaxonMapper.taxonCols">
                 <property name="alias" value="u2"/>
@@ -45,17 +47,20 @@
             <include refid="org.col.db.mapper.NameMapper.nameCols">
                 <property name="alias" value="an2"/>
                 <property name="prefix" value="u2_a_n_"/>
-            </include>
+            </include>,
+            ed2.key AS decision_key2
         FROM
             name_usage_${datasetKey} u1
             JOIN name_${datasetKey} n1 ON u1.name_id=n1.id
             LEFT JOIN name_usage_${datasetKey} a1 ON u1.parent_id=a1.id AND u1.is_synonym
             LEFT JOIN name_${datasetKey} an1 ON a1.name_id=an1.id
+            LEFT JOIN decision ed1 ON ed1.subject_id=u1.id
         ,
             name_usage_${datasetKey} u2
             JOIN name_${datasetKey} n2 ON u2.name_id=n2.id
             LEFT JOIN name_usage_${datasetKey} a2 ON u2.parent_id=a2.id AND u2.is_synonym
             LEFT JOIN name_${datasetKey} an2 ON a2.name_id=an2.id
+            LEFT JOIN decision ed2 ON ed2.subject_id=u2.id
 
         <where>
             u1.id &lt; u2.id
@@ -82,6 +87,15 @@
             </if>
             <if test="parentDifferent != null">
                 AND u1.parent_id <if test="parentDifferent">!</if>= u2.parent_id
+            </if>
+            <if test="withDecision != null">
+                AND
+                <if test="withDecision">
+                    (ed1.key IS NOT NULL OR ed2.key IS NOT NULL)
+                </if>
+                <if test="!withDecision">
+                    ed1.key IS NULL AND ed2.key IS NULL
+                </if>
             </if>
         </where>
 

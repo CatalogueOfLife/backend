@@ -25,7 +25,7 @@ public class DuplicateDao {
     mapper = session.getMapper(DuplicateMapper.class);
   }
   
-  public List<Duplicate> find(int datasetKey, EqualityMode mode, Rank rank, TaxonomicStatus status1, TaxonomicStatus status2, Boolean parentDifferent, Page page) {
-      return mapper.find(datasetKey, mode, rank, status1, status2, parentDifferent, page);
+  public List<Duplicate> find(int datasetKey, EqualityMode mode, Rank rank, TaxonomicStatus status1, TaxonomicStatus status2, Boolean parentDifferent, Boolean withDecision, Page page) {
+      return mapper.find(datasetKey, mode, rank, status1, status2, parentDifferent, withDecision, page);
   }
 }

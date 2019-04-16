@@ -34,9 +34,10 @@ public class DuplicateResource {
                               @QueryParam("status1") TaxonomicStatus status1,
                               @QueryParam("status2") TaxonomicStatus status2,
                               @QueryParam("parentDifferent") Boolean parentDifferent,
+                              @QueryParam("withDecision") Boolean withDecision,
                               @Valid @BeanParam Page page, @Context SqlSession session) {
     DuplicateDao dao = new DuplicateDao(session);
-    return dao.find(datasetKey, mode, rank, status1, status2, parentDifferent, page);
+    return dao.find(datasetKey, mode, rank, status1, status2, parentDifferent, withDecision, page);
   }
   
 }

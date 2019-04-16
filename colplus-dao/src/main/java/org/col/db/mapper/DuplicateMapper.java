@@ -17,5 +17,6 @@ public interface DuplicateMapper {
                        @Param("status1") TaxonomicStatus status1,
                        @Param("status2") TaxonomicStatus status2,
                        @Param("parentDifferent") Boolean parentDifferent,
+                       @Param("withDecision") Boolean withDecision,
                        @Param("page") Page page);
 }
