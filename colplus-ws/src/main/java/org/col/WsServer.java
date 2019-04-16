@@ -26,6 +26,7 @@ import org.col.command.neoshell.ShellCmd;
 import org.col.common.io.DownloadUtil;
 import org.col.dao.DatasetImportDao;
 import org.col.db.tree.DiffService;
+import org.col.dw.ManagedCloseable;
 import org.col.dw.auth.AuthBundle;
 import org.col.dw.cors.CorsBundle;
 import org.col.dw.db.MybatisBundle;
@@ -159,6 +160,7 @@ public class WsServer extends Application<WsServerConfig> {
       LOG.info("Use persistent names index at {}", cfg.namesIndexFile.getAbsolutePath());
       ni = NameIndexFactory.persistent(cfg.namesIndexFile, getSqlSessionFactory());
     }
+    env.lifecycle().manage(new ManagedCloseable(ni));
   
     final DatasetImportDao diDao = new DatasetImportDao(getSqlSessionFactory(), cfg.textTreeRepo);
     
