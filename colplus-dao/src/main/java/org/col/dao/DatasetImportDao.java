@@ -190,7 +190,7 @@ public class DatasetImportDao {
     return map;
   }
   
-  private static <K> Map<K, Integer> countMap(Function<String, Optional<K>> converter, List<StringCount> counts) {
+  public static <K> Map<K, Integer> countMap(Function<String, Optional<K>> converter, List<StringCount> counts) {
     Map<K, Integer> map = new HashMap<>(counts.size());
     for (StringCount cnt : counts) {
       if (!Strings.isNullOrEmpty(cnt.getKey())) {
@@ -201,7 +201,7 @@ public class DatasetImportDao {
     return map;
   }
   
-  private static Optional<Rank> parseRank(String rank) {
+  public static Optional<Rank> parseRank(String rank) {
     return Optional.of(Rank.valueOf(rank.toUpperCase()));
   }
   

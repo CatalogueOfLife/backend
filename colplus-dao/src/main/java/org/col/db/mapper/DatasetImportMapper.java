@@ -31,9 +31,9 @@ public interface DatasetImportMapper {
                            @Param("states") @Nullable Collection<ImportState> states,
                            @Param("page") Page page);
   
-  void create(@Param("di") DatasetImport datasetImport);
+  void create(@Param("imp") DatasetImport datasetImport);
   
-  void update(@Param("di") DatasetImport datasetImport);
+  void update(@Param("imp") DatasetImport datasetImport);
 
   Integer countDescription(@Param("key") int datasetKey);
   Integer countDistribution(@Param("key") int datasetKey);

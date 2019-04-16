@@ -19,4 +19,9 @@ public interface ImportAttempt {
   String getError();
   
   void setError(String error);
+  
+  default String attempt() {
+    return "#" + getAttempt();
+  }
+  
 }

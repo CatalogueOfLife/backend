@@ -15,16 +15,18 @@ import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.model.*;
-import org.col.api.vocab.EntityType;
-import org.col.api.vocab.Issue;
+import org.col.api.vocab.*;
 import org.col.dao.DatasetImportDao;
 import org.col.dao.MatchingDao;
 import org.col.dao.NamesTreeDao;
 import org.col.dao.TaxonDao;
 import org.col.db.mapper.*;
 import org.col.es.NameUsageIndexService;
+import org.gbif.nameparser.api.NameType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.col.dao.DatasetImportDao.countMap;
 
 /**
  * Syncs/imports source data for a given sector into the assembled catalgoue
@@ -53,17 +55,29 @@ public class SectorSync extends SectorRunnable {
   
   private void metrics() {
     try (SqlSession session = factory.openSession(true)) {
-      SectorImportMapper sim = session.getMapper(SectorImportMapper.class);
-      state.setDescriptionCount(sim.countDescription(catalogueKey, sector.getKey()));
-      state.setDistributionCount(sim.countDistribution(catalogueKey, sector.getKey()));
-      state.setMediaCount(sim.countMedia(catalogueKey, sector.getKey()));
-      state.setNameCount(sim.countName(catalogueKey, sector.getKey()));
-      state.setReferenceCount(sim.countReference(catalogueKey, sector.getKey()));
-      state.setTaxonCount(sim.countTaxon(catalogueKey, sector.getKey()));
-      state.setSynonymCount(sim.countSynonym(catalogueKey, sector.getKey()));
-      state.setVernacularCount(sim.countVernacular(catalogueKey, sector.getKey()));
-      state.setIssueCount(DatasetImportDao.countMap(Issue.class, sim.countIssues(catalogueKey, sector.getKey())));
-      //TODO: usagesByRankCount
+      SectorImportMapper mapper = session.getMapper(SectorImportMapper.class);
+      final int key = sector.getKey();
+      state.setDescriptionCount(mapper.countDescription(catalogueKey, key));
+      state.setDistributionCount(mapper.countDistribution(catalogueKey, key));
+      state.setMediaCount(mapper.countMedia(catalogueKey, key));
+      state.setNameCount(mapper.countName(catalogueKey, key));
+      state.setReferenceCount(mapper.countReference(catalogueKey, key));
+      state.setTaxonCount(mapper.countTaxon(catalogueKey, key));
+      state.setSynonymCount(mapper.countSynonym(catalogueKey, key));
+      state.setVernacularCount(mapper.countVernacular(catalogueKey, key));
+      state.setIssuesCount(countMap(Issue.class, mapper.countIssues(catalogueKey, key)));
+  
+      state.setDistributionsByGazetteerCount(countMap(Gazetteer.class, mapper.countDistributionsByGazetteer(catalogueKey, key)));
+      state.setIssuesCount(countMap(Issue.class, mapper.countIssues(catalogueKey, key)));
+      state.setMediaByTypeCount(countMap(MediaType.class, mapper.countMediaByType(catalogueKey, key)));
+      state.setNameRelationsByTypeCount(countMap(NomRelType.class, mapper.countNameRelationsByType(catalogueKey, key)));
+      state.setNamesByOriginCount(countMap(Origin.class, mapper.countNamesByOrigin(catalogueKey, key)));
+      state.setNamesByRankCount(countMap(DatasetImportDao::parseRank, mapper.countNamesByRank(catalogueKey, key)));
+      state.setNamesByStatusCount(countMap(NomStatus.class, mapper.countNamesByStatus(catalogueKey, key)));
+      state.setNamesByTypeCount(countMap(NameType.class, mapper.countNamesByType(catalogueKey, key)));
+      state.setTaxaByRankCount(countMap(DatasetImportDao::parseRank, mapper.countTaxaByRank(catalogueKey, key)));
+      state.setUsagesByStatusCount(countMap(TaxonomicStatus.class, mapper.countUsagesByStatus(catalogueKey, key)));
+      state.setVernacularsByLanguageCount(countMap(Language::fromIsoCode, mapper.countVernacularsByLanguage(catalogueKey, key)));
 
       try {
         treeDao.updateSectorTree(sector.getKey(), state.getAttempt());
