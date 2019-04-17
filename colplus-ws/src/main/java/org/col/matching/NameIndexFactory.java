@@ -1,7 +1,9 @@
 package org.col.matching;
 
 import java.io.File;
+import java.io.IOException;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.vocab.Datasets;
 import org.col.matching.authorship.AuthorComparator;
@@ -44,14 +46,17 @@ public class NameIndexFactory {
     return new NameIndexMapDB(DBMaker.memoryDB(), AuthorComparator.createWithAuthormap(), datasetKey, sqlFactory);
   }
   
-  public static NameIndex persistent(File location, SqlSessionFactory sqlFactory) {
+  public static NameIndex persistent(File location, SqlSessionFactory sqlFactory) throws IOException {
     return persistent(Datasets.DRAFT_COL, location, sqlFactory);
   }
   
   /**
    * Creates or opens a persistent mapdb names index.
    */
-  public static NameIndex persistent(int datasetKey, File location, SqlSessionFactory sqlFactory) {
+  public static NameIndex persistent(int datasetKey, File location, SqlSessionFactory sqlFactory) throws IOException {
+    if (!location.exists()) {
+      FileUtils.forceMkdirParent(location);
+    }
     DBMaker.Maker maker = DBMaker
         .fileDB(location)
         .fileMmapEnableIfSupported();

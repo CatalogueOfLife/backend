@@ -40,3 +40,5 @@ img:
   repo: ${img.repo}
 cors:
   headers: "Authorization, Content-Type, Accept-Language, X-Requested-With"
+namesIndexFile: /tmp/colplus/nidx
+textTreeRepo: /tmp/colplus/trees

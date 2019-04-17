@@ -111,7 +111,7 @@ public class WsServer extends Application<WsServerConfig> {
   }
   
   @Override
-  public void run(WsServerConfig cfg, Environment env) {
+  public void run(WsServerConfig cfg, Environment env) throws Exception {
     // http client pool is managed via DW lifecycle already
     httpClient = new HttpClientBuilder(env).using(cfg.client).build(getName());
   
@@ -196,10 +196,14 @@ public class WsServer extends Application<WsServerConfig> {
     env.healthChecks().register("diff", new DiffHealthCheck(diff));
   
     // resources
+    env.jersey().register(new AdminResource(getSqlSessionFactory(), new DownloadUtil(httpClient), cfg.normalizer, imgService));
+    env.jersey().register(new AssemblyResource(assembly, exporter));
     env.jersey().register(new DataPackageResource());
     env.jersey().register(new DatasetResource(getSqlSessionFactory(), imgService, cfg, new DownloadUtil(httpClient), diff));
     env.jersey().register(new DecisionResource(getSqlSessionFactory(), indexService));
     env.jersey().register(new DocsResource(cfg));
+    env.jersey().register(new DuplicateResource());
+    env.jersey().register(new MatchingResource(ni));
     env.jersey().register(new NameResource(nuss));
     env.jersey().register(new NameSearchResource(nuss));
     env.jersey().register(new ParserResource());
@@ -210,10 +214,6 @@ public class WsServer extends Application<WsServerConfig> {
     env.jersey().register(new UserResource(auth.getJwtCodec()));
     env.jersey().register(new VerbatimResource());
     env.jersey().register(new VocabResource());
-    env.jersey().register(new MatchingResource(ni));
-    env.jersey().register(new AssemblyResource(assembly, exporter));
-    env.jersey().register(new AdminResource(getSqlSessionFactory(), new DownloadUtil(httpClient), cfg.normalizer, imgService));
-  
   }
   
   /**
