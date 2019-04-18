@@ -4,6 +4,7 @@ import java.util.Objects;
 import javax.annotation.Nonnull;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.StringUtils;
 import org.col.api.vocab.Origin;
 import org.col.api.vocab.TaxonomicStatus;
@@ -74,6 +75,13 @@ public abstract class NameUsageBase extends DataEntity implements NameUsage, Dat
   @Override
   public void setStatus(TaxonomicStatus status) {
     this.status = status;
+  }
+  
+  @JsonIgnore
+  public void setStatusIfNull(TaxonomicStatus status) {
+    if (this.status == null) {
+      this.status = Preconditions.checkNotNull(status);
+    }
   }
   
   @JsonIgnore

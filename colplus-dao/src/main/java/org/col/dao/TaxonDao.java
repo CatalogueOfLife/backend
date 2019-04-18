@@ -290,6 +290,7 @@ public class TaxonDao extends DatasetEntityDao<Taxon, TaxonMapper> {
       newKey(t);
       t.setOrigin(Origin.USER);
       t.applyUser(user);
+      t.setStatusIfNull(TaxonomicStatus.ACCEPTED);
       session.getMapper(TaxonMapper.class).create(t);
       
       session.commit();
