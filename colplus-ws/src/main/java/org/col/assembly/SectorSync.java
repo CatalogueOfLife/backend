@@ -13,10 +13,7 @@ import com.google.common.collect.ImmutableSet;
 import org.apache.ibatis.session.*;
 import org.col.api.model.*;
 import org.col.api.vocab.*;
-import org.col.dao.DatasetImportDao;
-import org.col.dao.MatchingDao;
-import org.col.dao.NamesTreeDao;
-import org.col.dao.TaxonDao;
+import org.col.dao.*;
 import org.col.db.mapper.*;
 import org.col.es.NameUsageIndexService;
 import org.gbif.nameparser.api.NameType;
@@ -222,7 +219,7 @@ public class SectorSync extends SectorRunnable {
         }
         // copy synonym, name, syn, refs
         syn.getName().setSectorKey(sector.getKey());
-        TaxonDao.copySynonym(session, syn, acc, user.getKey(), this::lookupReference);
+        SynonymDao.copySynonym(session, syn, acc, user.getKey(), this::lookupReference);
       }
       
       // commit in batches

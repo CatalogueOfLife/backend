@@ -24,10 +24,7 @@ import org.col.command.export.ExportCmd;
 import org.col.command.initdb.InitDbCmd;
 import org.col.command.neoshell.ShellCmd;
 import org.col.common.io.DownloadUtil;
-import org.col.dao.DatasetImportDao;
-import org.col.dao.NameDao;
-import org.col.dao.ReferenceDao;
-import org.col.dao.TaxonDao;
+import org.col.dao.*;
 import org.col.db.tree.DiffService;
 import org.col.dw.ManagedCloseable;
 import org.col.dw.auth.AuthBundle;
@@ -204,7 +201,8 @@ public class WsServer extends Application<WsServerConfig> {
     TaxonDao tdao = new TaxonDao(getSqlSessionFactory());
     NameDao ndao = new NameDao(getSqlSessionFactory());
     ReferenceDao rdao = new ReferenceDao(getSqlSessionFactory());
-
+    SynonymDao sdao = new SynonymDao(getSqlSessionFactory());
+    
     // resources
     env.jersey().register(new AdminResource(getSqlSessionFactory(), new DownloadUtil(httpClient), cfg.normalizer, imgService, tdao));
     env.jersey().register(new AssemblyResource(assembly, exporter));
@@ -219,6 +217,7 @@ public class WsServer extends Application<WsServerConfig> {
     env.jersey().register(new ParserResource());
     env.jersey().register(new ReferenceResource(rdao));
     env.jersey().register(new SectorResource(getSqlSessionFactory(), diDao, diff));
+    env.jersey().register(new SynonymResource(sdao));
     env.jersey().register(new TaxonResource(tdao));
     env.jersey().register(new TreeResource(tdao));
     env.jersey().register(new UserResource(auth.getJwtCodec()));

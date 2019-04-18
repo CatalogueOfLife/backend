@@ -78,26 +78,9 @@ public class TaxonDao extends DatasetEntityDao<Taxon, TaxonMapper> {
   }
   
   /**
-   * @param syn             the source synonym to copy
-   * @param accepted        the new accepted taxon to attach the copied synonym to
-   * @param user
-   * @param lookupReference
-   */
-  public static void copySynonym(final SqlSession session, final Synonym syn, final DatasetID accepted, int user,
-                                 Function<Reference, String> lookupReference) {
-    syn.setDatasetKey(accepted.getDatasetKey());
-    copyName(session, syn, accepted.getDatasetKey(), user, lookupReference);
-    newKey(syn);
-    syn.applyUser(user);
-    syn.setOrigin(Origin.SOURCE);
-    syn.setParentId(accepted.getId());
-    session.getMapper(SynonymMapper.class).create(syn);
-  }
-  
-  /**
    * Copies the given nam instance, modifying the original and assigning a new id
    */
-  private static void copyName(final SqlSession session, final NameUsage u, final int targetDatasetKey, int user,
+  static void copyName(final SqlSession session, final NameUsage u, final int targetDatasetKey, int user,
                                Function<Reference, String> lookupReference) {
     Name n = u.getName();
     n.applyUser(user);
@@ -264,6 +247,11 @@ public class TaxonDao extends DatasetEntityDao<Taxon, TaxonMapper> {
    */
   @Override
   public String create(Taxon t, int user) {
+    t.setStatusIfNull(TaxonomicStatus.ACCEPTED);
+    if (t.getStatus().isSynonym()) {
+      throw new IllegalArgumentException("Taxa cannot have a synonym status");
+    }
+
     try (SqlSession session = factory.openSession(false)) {
       final int datasetKey = t.getDatasetKey();
       Name n = t.getName();
@@ -290,7 +278,6 @@ public class TaxonDao extends DatasetEntityDao<Taxon, TaxonMapper> {
       newKey(t);
       t.setOrigin(Origin.USER);
       t.applyUser(user);
-      t.setStatusIfNull(TaxonomicStatus.ACCEPTED);
       session.getMapper(TaxonMapper.class).create(t);
       
       session.commit();
@@ -299,7 +286,7 @@ public class TaxonDao extends DatasetEntityDao<Taxon, TaxonMapper> {
     }
   }
   
-  private static void parseName(Name n) {
+  static void parseName(Name n) {
     if (!n.isParsed()) {
       //TODO: pass in real verbatim record
       VerbatimRecord v = new VerbatimRecord();

@@ -38,9 +38,6 @@ To see your applications health enter url `http://localhost:8081/healthcheck`
 ### colplus-api
 The main API with model classes.
 
-### colplus-admin
-Admin server which allows to load ACEF and Darwin Core Archive datasets, sync with the GBIF registry and more.
-
 ### colplus-common
 Shared common classes like utilities.
 
@@ -48,7 +45,7 @@ Shared common classes like utilities.
 The postgres persistence layer.
 
 ### colplus-ws
-The Dropwizard based JSON webservices.
+The Dropwizard based JSON webservices, importer and assembly code.
 
 
 
