@@ -31,7 +31,10 @@ public abstract class GlobalEntityResource<T extends GlobalEntity & UserManaged>
     this.dao = dao;
   }
   
-  @GET
+  /**
+   * Default list paging method is not exposed in Jersey so the root path can be overriden.
+   * To expose the default list just delegate here
+   */
   public ResultPage<T> list(@Valid @BeanParam Page page, @Context SqlSession session) {
     return dao.list(page);
   }

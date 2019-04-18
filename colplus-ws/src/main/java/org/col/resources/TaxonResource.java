@@ -1,20 +1,17 @@
 package org.col.resources;
 
 import java.util.List;
-import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
 import com.codahale.metrics.annotation.Timed;
-import io.dropwizard.auth.Auth;
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.exception.NotFoundException;
 import org.col.api.model.*;
 import org.col.dao.TaxonDao;
 import org.col.db.mapper.TaxonMapper;
-import org.col.dw.auth.Roles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,17 +34,6 @@ public class TaxonResource extends DatasetEntityResource<Taxon> {
                                 @QueryParam("root") boolean root,
                                 @Valid @BeanParam Page page) {
     return root ? dao.listRoot(datasetKey, page) : dao.list(datasetKey, page);
-  }
-  
-  /**
-   * @return the primary key of the object. Together with the CreatedResponseFilter will return a 201 location
-   */
-  @POST
-  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public String createChild(@PathParam("datasetKey") Integer datasetKey, @Valid Taxon obj, @Auth ColUser user) {
-    obj.setDatasetKey(datasetKey);
-    dao.create(obj, user.getKey());
-    return obj.getId();
   }
   
   @GET

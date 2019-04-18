@@ -3,13 +3,13 @@ package org.col.resources;
 import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
 import io.dropwizard.auth.Auth;
-import org.apache.ibatis.session.SqlSession;
 import org.col.api.exception.NotFoundException;
-import org.col.api.model.*;
+import org.col.api.model.ColUser;
+import org.col.api.model.DatasetEntity;
+import org.col.api.model.UserManaged;
 import org.col.dao.DatasetEntityDao;
 import org.col.dw.auth.Roles;
 import org.slf4j.Logger;
@@ -29,11 +29,6 @@ public abstract class DatasetEntityResource<T extends DatasetEntity & UserManage
   public DatasetEntityResource(Class<T> objClass, DatasetEntityDao<T, ?> dao) {
     this.objClass = objClass;
     this.dao = dao;
-  }
-  
-  @GET
-  public ResultPage<T> list(@PathParam("datasetKey") int datasetKey, @Valid @BeanParam Page page, @Context SqlSession session) {
-    return dao.list(datasetKey, page);
   }
 
   /**

@@ -1,11 +1,12 @@
 package org.col.resources;
 
+import javax.validation.Valid;
 import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
-import org.apache.ibatis.session.SqlSession;
+import org.col.api.model.Page;
 import org.col.api.model.Reference;
+import org.col.api.model.ResultPage;
 import org.col.dao.DatasetEntityDao;
 import org.col.db.mapper.ReferenceMapper;
 import org.slf4j.Logger;
@@ -24,14 +25,7 @@ public class ReferenceResource extends DatasetEntityResource<Reference>  {
   }
   
   @GET
-  @Path("{id}")
-  public Reference get(@PathParam("datasetKey") int datasetKey, @PathParam("id") String id, @QueryParam("page") String page,
-                       @Context SqlSession session) {
-    Reference ref = super.get(datasetKey, id);
-    if (page != null) {
-      ref.setPage(page);
-    }
-    return ref;
+  public ResultPage<Reference> list(@PathParam("datasetKey") int datasetKey, @Valid @BeanParam Page page) {
+    return dao.list(datasetKey, page);
   }
-  
 }
