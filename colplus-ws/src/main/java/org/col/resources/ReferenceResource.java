@@ -1,41 +1,35 @@
 package org.col.resources;
 
-import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.ibatis.session.SqlSession;
-import org.col.api.exception.NotFoundException;
-import org.col.api.model.Page;
 import org.col.api.model.Reference;
-import org.col.api.model.ResultPage;
-import org.col.dao.ReferenceDao;
+import org.col.dao.DatasetEntityDao;
+import org.col.db.mapper.ReferenceMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Path("/dataset/{datasetKey}/reference")
 @Produces(MediaType.APPLICATION_JSON)
 @SuppressWarnings("static-method")
-public class ReferenceResource {
+public class ReferenceResource extends DatasetEntityResource<Reference>  {
   
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(ReferenceResource.class);
   
-  @GET
-  public ResultPage<Reference> list(@PathParam("datasetKey") int datasetKey, @Valid @BeanParam Page page, @Context SqlSession session) {
-    ReferenceDao dao = new ReferenceDao(session);
-    return dao.list(datasetKey, page);
+  public ReferenceResource(DatasetEntityDao<Reference, ReferenceMapper> dao) {
+    super(Reference.class, dao);
   }
   
   @GET
   @Path("{id}")
   public Reference get(@PathParam("datasetKey") int datasetKey, @PathParam("id") String id, @QueryParam("page") String page,
                        @Context SqlSession session) {
-    ReferenceDao dao = new ReferenceDao(session);
-    Reference ref = dao.get(datasetKey, id, page);
-    if (ref == null) {
-      throw NotFoundException.idNotFound(Reference.class, datasetKey, id);
+    Reference ref = super.get(datasetKey, id);
+    if (page != null) {
+      ref.setPage(page);
     }
     return ref;
   }

@@ -25,6 +25,9 @@ import org.col.command.initdb.InitDbCmd;
 import org.col.command.neoshell.ShellCmd;
 import org.col.common.io.DownloadUtil;
 import org.col.dao.DatasetImportDao;
+import org.col.dao.NameDao;
+import org.col.dao.ReferenceDao;
+import org.col.dao.TaxonDao;
 import org.col.db.tree.DiffService;
 import org.col.dw.ManagedCloseable;
 import org.col.dw.auth.AuthBundle;
@@ -33,6 +36,7 @@ import org.col.dw.db.MybatisBundle;
 import org.col.dw.es.ManagedEsClient;
 import org.col.dw.health.DiffHealthCheck;
 import org.col.dw.health.NameParserHealthCheck;
+import org.col.dw.health.NamesIndexHealthCheck;
 import org.col.dw.jersey.ColJerseyBundle;
 import org.col.es.EsClientFactory;
 import org.col.es.NameUsageIndexService;
@@ -161,7 +165,8 @@ public class WsServer extends Application<WsServerConfig> {
       ni = NameIndexFactory.persistent(cfg.namesIndexFile, getSqlSessionFactory());
     }
     env.lifecycle().manage(new ManagedCloseable(ni));
-  
+    env.healthChecks().register("names-index", new NamesIndexHealthCheck(ni));
+
     final DatasetImportDao diDao = new DatasetImportDao(getSqlSessionFactory(), cfg.textTreeRepo);
     
     // async importer
@@ -195,8 +200,13 @@ public class WsServer extends Application<WsServerConfig> {
     DiffService diff = new DiffService(getSqlSessionFactory(), diDao.getTreeDao());
     env.healthChecks().register("diff", new DiffHealthCheck(diff));
   
+    // daos
+    TaxonDao tdao = new TaxonDao(getSqlSessionFactory());
+    NameDao ndao = new NameDao(getSqlSessionFactory());
+    ReferenceDao rdao = new ReferenceDao(getSqlSessionFactory());
+
     // resources
-    env.jersey().register(new AdminResource(getSqlSessionFactory(), new DownloadUtil(httpClient), cfg.normalizer, imgService));
+    env.jersey().register(new AdminResource(getSqlSessionFactory(), new DownloadUtil(httpClient), cfg.normalizer, imgService, tdao));
     env.jersey().register(new AssemblyResource(assembly, exporter));
     env.jersey().register(new DataPackageResource());
     env.jersey().register(new DatasetResource(getSqlSessionFactory(), imgService, cfg, new DownloadUtil(httpClient), diff));
@@ -204,13 +214,13 @@ public class WsServer extends Application<WsServerConfig> {
     env.jersey().register(new DocsResource(cfg));
     env.jersey().register(new DuplicateResource());
     env.jersey().register(new MatchingResource(ni));
-    env.jersey().register(new NameResource(nuss));
+    env.jersey().register(new NameResource(nuss, ndao));
     env.jersey().register(new NameSearchResource(nuss));
     env.jersey().register(new ParserResource());
-    env.jersey().register(new ReferenceResource());
+    env.jersey().register(new ReferenceResource(rdao));
     env.jersey().register(new SectorResource(getSqlSessionFactory(), diDao, diff));
-    env.jersey().register(new TaxonResource());
-    env.jersey().register(new TreeResource());
+    env.jersey().register(new TaxonResource(tdao));
+    env.jersey().register(new TreeResource(tdao));
     env.jersey().register(new UserResource(auth.getJwtCodec()));
     env.jersey().register(new VerbatimResource());
     env.jersey().register(new VocabResource());

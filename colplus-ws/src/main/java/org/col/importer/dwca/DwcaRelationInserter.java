@@ -9,17 +9,17 @@ import java.util.stream.Collectors;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
-import org.col.importer.MappingFlags;
-import org.col.importer.NormalizationFailedException;
-import org.col.importer.neo.NeoDb;
-import org.col.importer.neo.NodeBatchProcessor;
-import org.col.importer.neo.model.*;
-import org.col.api.model.ID;
+import org.col.api.model.DatasetEntity;
 import org.col.api.model.Name;
 import org.col.api.model.VerbatimRecord;
 import org.col.api.vocab.Issue;
 import org.col.api.vocab.Origin;
 import org.col.api.vocab.TaxonomicStatus;
+import org.col.importer.MappingFlags;
+import org.col.importer.NormalizationFailedException;
+import org.col.importer.neo.NeoDb;
+import org.col.importer.neo.NodeBatchProcessor;
+import org.col.importer.neo.model.*;
 import org.col.parser.NameParser;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.nameparser.api.Rank;
@@ -171,7 +171,7 @@ public class DwcaRelationInserter implements NodeBatchProcessor {
     return usages;
   }
   
-  private List<RankedUsage> usagesByIds(Iterable<String> taxonIDs, ID usage) {
+  private List<RankedUsage> usagesByIds(Iterable<String> taxonIDs, DatasetEntity usage) {
     List<RankedUsage> rankedNames = Lists.newArrayList();
     for (String id : taxonIDs) {
       if (!id.equals(usage.getId())) {

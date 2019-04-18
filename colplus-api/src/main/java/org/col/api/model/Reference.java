@@ -6,7 +6,7 @@ import javax.annotation.Nonnull;
 /**
  * Simplified citation class linked to an optional serial container.
  */
-public class Reference extends DataEntity implements ID, DatasetEntity, VerbatimEntity {
+public class Reference extends DataEntity implements DatasetEntity, VerbatimEntity {
   
   /**
    * Original key as provided by the dataset.

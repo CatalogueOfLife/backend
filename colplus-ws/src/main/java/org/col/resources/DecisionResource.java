@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory;
 @Path("/decision")
 @Produces(MediaType.APPLICATION_JSON)
 @SuppressWarnings("static-method")
-public class DecisionResource extends CRUDIntResource<EditorialDecision> {
+public class DecisionResource extends GlobalEntityResource<EditorialDecision> {
   
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(DecisionResource.class);
@@ -47,7 +47,7 @@ public class DecisionResource extends CRUDIntResource<EditorialDecision> {
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   @Path("/{key}/rematch")
   public EditorialDecision rematch(@PathParam("key") Integer key, @Context SqlSession session, @Auth ColUser user) {
-    EditorialDecision ed = getNonNull(key);
+    EditorialDecision ed = get(key);
     new DecisionRematcher(session).matchDecision(ed);
     session.commit();
     return ed;

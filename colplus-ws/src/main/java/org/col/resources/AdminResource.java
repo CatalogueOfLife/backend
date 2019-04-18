@@ -29,12 +29,14 @@ public class AdminResource {
   private final DownloadUtil downloader;
   private final NormalizerConfig cfg;
   private final ImageService imgService;
+  private final TaxonDao tdao;
   
-  public AdminResource(SqlSessionFactory factory, DownloadUtil downloader, NormalizerConfig cfg, ImageService imgService) {
+  public AdminResource(SqlSessionFactory factory, DownloadUtil downloader, NormalizerConfig cfg, ImageService imgService, TaxonDao tdao) {
     this.factory = factory;
     this.imgService = imgService;
     this.cfg = cfg;
     this.downloader = downloader;
+    this.tdao = tdao;
   }
   
   @POST
@@ -48,7 +50,7 @@ public class AdminResource {
   @Path("/sector-count-update")
   public boolean updateAllSectorCounts() {
     try (SqlSession session = factory.openSession()) {
-      new TaxonDao(session).updateAllSectorCounts(Datasets.DRAFT_COL, factory);
+      tdao.updateAllSectorCounts(Datasets.DRAFT_COL, factory);
       session.commit();
       return true;
     }

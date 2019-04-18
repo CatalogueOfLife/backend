@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
 
 @Path("/dataset")
 @SuppressWarnings("static-method")
-public class DatasetResource extends CRUDIntResource<Dataset> {
+public class DatasetResource extends GlobalEntityResource<Dataset> {
   
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(DatasetResource.class);
@@ -47,14 +47,14 @@ public class DatasetResource extends CRUDIntResource<Dataset> {
   
   public DatasetResource(SqlSessionFactory factory, ImageService imgService, WsServerConfig cfg, DownloadUtil downloader, DiffService diff) {
     super(Dataset.class, new DatasetDao(factory, downloader, imgService, cfg.normalizer::scratchFile));
-    dao = (DatasetDao) crud;
+    this.dao = (DatasetDao) super.dao;
     this.imgService = imgService;
     this.diDao = new DatasetImportDao(factory, cfg.textTreeRepo);
     this.diff = diff;
   }
   
   @GET
-  public ResultPage<Dataset> list(@Valid @BeanParam Page page, @BeanParam DatasetSearchRequest req,
+  public ResultPage<Dataset> search(@Valid @BeanParam Page page, @BeanParam DatasetSearchRequest req,
                                   @Context SqlSession session) {
     return dao.search(req, page);
   }

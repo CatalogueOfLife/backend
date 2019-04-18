@@ -10,10 +10,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.ImmutableSet;
-import org.apache.ibatis.session.ResultContext;
-import org.apache.ibatis.session.ResultHandler;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
+import org.apache.ibatis.session.*;
 import org.col.api.model.*;
 import org.col.api.vocab.*;
 import org.col.dao.DatasetImportDao;
@@ -154,7 +151,7 @@ public class SectorSync extends SectorRunnable {
   }
 
   private void processTree() {
-    try (SqlSession session = factory.openSession(false)) {
+    try (SqlSession session = factory.openSession(ExecutorType.BATCH,false)) {
       TaxonMapper tm = session.getMapper(TaxonMapper.class);
       final Set<String> blockedIds = decisions.values().stream()
           .filter(ed -> ed.getMode().equals(EditorialDecision.Mode.BLOCK))
@@ -169,14 +166,12 @@ public class SectorSync extends SectorRunnable {
   
   class TreeCopyHandler implements ResultHandler<Taxon> {
     final SqlSession session;
-    final TaxonDao dao;
     final SynonymMapper sMapper;
     int counter = 0;
     final Map<String, String> ids = new HashMap<>();
   
     TreeCopyHandler(SqlSession session) {
       this.session = session;
-      dao = new TaxonDao(session);
       sMapper = session.getMapper(SynonymMapper.class);
     }
     
@@ -213,7 +208,7 @@ public class SectorSync extends SectorRunnable {
 
       // Taxon: copy name, taxon, refs, vernaculars, distributions
       // this assigns a new taxonID !!!
-      DatasetID orig = dao.copyTaxon(tax, catalogueKey, parentID, user, COPY_DATA, this::lookupReference);
+      DatasetID orig = TaxonDao.copyTaxon(session, tax, catalogueKey, parentID, user.getKey(), COPY_DATA, this::lookupReference);
       // remember old to new id mapping
       ids.put(orig.getId(), tax.getId());
       
@@ -227,11 +222,11 @@ public class SectorSync extends SectorRunnable {
         }
         // copy synonym, name, syn, refs
         syn.getName().setSectorKey(sector.getKey());
-        dao.copySynonym(syn, acc, user, this::lookupReference);
+        TaxonDao.copySynonym(session, syn, acc, user.getKey(), this::lookupReference);
       }
       
       // commit in batches
-      if (counter++ % 100 == 0) {
+      if (counter++ % 1000 == 0) {
         session.commit();
       }
       state.setTaxonCount(counter);

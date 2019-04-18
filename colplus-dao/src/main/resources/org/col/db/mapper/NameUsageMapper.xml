@@ -117,7 +117,7 @@
     <update id="updateParentId" parameterType="map">
         UPDATE name_usage_${datasetKey}
         SET (parent_id, modified, modified_by)
-        = (#{newParentId}, now(), #{user.key})
+        = (#{newParentId}, now(), #{userKey})
         WHERE parent_id = #{parentId}
     </update>
 

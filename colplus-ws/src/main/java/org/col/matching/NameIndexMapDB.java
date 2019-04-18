@@ -55,6 +55,7 @@ public class NameIndexMapDB implements NameIndex {
   private final AuthorComparator authComp;
   private final int datasetKey;
   private final SqlSessionFactory sqlFactory;
+  private final NameDao dao;
   static final Hashids HASHIDS = new Hashids("fg5w6", 6,
       "0123456789abcdefghijklmnopqrstuvwxyz.-_+$");
   
@@ -90,6 +91,7 @@ public class NameIndexMapDB implements NameIndex {
     this.authComp = Preconditions.checkNotNull(authComp);
     this.datasetKey = datasetKey;
     this.sqlFactory = Preconditions.checkNotNull(sqlFactory);
+    dao = new NameDao(sqlFactory);
     
     pool = new KryoPool.Builder(new NameIndexKryoFactory())
         .softReferences()
@@ -285,12 +287,8 @@ public class NameIndexMapDB implements NameIndex {
     add(name);
     // insert into postgres dataset
     //TODO: consider to make this async and collect for batch inserts
-    try (SqlSession s = sqlFactory.openSession()) {
-      NameDao dao = new NameDao(s);
-      // this creates now a persistent names index key that will never be removed!
-      dao.create(name);
-      s.commit();
-    }
+    // this creates now a persistent names index key that will never be removed!
+    dao.create(name, Users.MATCHER);
     return name;
   }
   

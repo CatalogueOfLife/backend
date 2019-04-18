@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.col.api.vocab.Country;
 import org.col.api.vocab.Language;
 
-public class VernacularName extends DataEntity implements Referenced, VerbatimEntity, IntKey {
+public class VernacularName extends DataEntity implements Referenced, VerbatimEntity, GlobalEntity {
   
   @JsonIgnore
   private Integer key;

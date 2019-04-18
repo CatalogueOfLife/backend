@@ -12,7 +12,7 @@ import org.col.es.NameUsageIndexService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DecisionDao extends ChangeCrudDao<EditorialDecision, DecisionMapper> {
+public class DecisionDao extends GlobalEntityDao<EditorialDecision, DecisionMapper> {
   
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(DecisionDao.class);
@@ -20,12 +20,12 @@ public class DecisionDao extends ChangeCrudDao<EditorialDecision, DecisionMapper
   private final NameUsageIndexService indexService;
 
   public DecisionDao(SqlSessionFactory factory, NameUsageIndexService indexService) {
-    super(factory, DecisionMapper.class);
+    super(true, factory, DecisionMapper.class);
     this.indexService = indexService;
   }
   
   @Override
-  protected void postCreate(EditorialDecision obj, DecisionMapper mapper, SqlSession session) {
+  protected void createAfter(EditorialDecision obj, int user, DecisionMapper mapper, SqlSession session) {
     if (obj.getSubject().getId() != null) {
       indexService.indexTaxa(obj.getDatasetKey(), Lists.newArrayList(obj.getSubject().getId()));
     }
@@ -36,7 +36,7 @@ public class DecisionDao extends ChangeCrudDao<EditorialDecision, DecisionMapper
    * If the previous version referred to a different subject id also update that taxon.
    */
   @Override
-  protected void postUpdate(EditorialDecision obj, EditorialDecision old, DecisionMapper mapper, SqlSession session) {
+  protected void updateAfter(EditorialDecision obj, EditorialDecision old, int user, DecisionMapper mapper, SqlSession session) {
     final List<String> ids = new ArrayList<>();
     if (old != null && old.getSubject().getId() != null && !old.getSubject().getId().equals(obj.getSubject().getId())) {
       ids.add(old.getSubject().getId());
@@ -48,7 +48,7 @@ public class DecisionDao extends ChangeCrudDao<EditorialDecision, DecisionMapper
   }
   
   @Override
-  protected void postDelete(int key, EditorialDecision old, DecisionMapper mapper, SqlSession session) {
+  protected void deleteAfter(Integer key, EditorialDecision old, int user, DecisionMapper mapper, SqlSession session) {
     if (old != null && old.getSubject().getId() != null) {
       indexService.indexTaxa(old.getDatasetKey(), Lists.newArrayList(old.getSubject().getId()));
     }

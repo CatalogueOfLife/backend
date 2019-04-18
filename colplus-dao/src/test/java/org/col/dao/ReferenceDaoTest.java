@@ -2,6 +2,7 @@ package org.col.dao;
 
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.model.Page;
+import org.col.db.PgSetupRule;
 import org.junit.Test;
 
 public class ReferenceDaoTest extends DaoTestBase {
@@ -12,7 +13,7 @@ public class ReferenceDaoTest extends DaoTestBase {
   @Test
   public void list() {
     try (SqlSession session = session()) {
-      ReferenceDao dao = new ReferenceDao(session);
+      ReferenceDao dao = new ReferenceDao(PgSetupRule.getSqlSessionFactory());
       dao.list(11, new Page());
     }
   }

@@ -11,7 +11,7 @@ import static org.col.api.TestEntityGenerator.DATASET11;
 import static org.col.api.TestEntityGenerator.newNameRef;
 import static org.junit.Assert.assertEquals;
 
-public class SectorMapperTest extends CRUDIntMapperTest<Sector, SectorMapper> {
+public class SectorMapperTest extends GlobalCRUDMapperTest<Sector, SectorMapper> {
   
   private static final int datasetKey = DATASET11.getKey();
   

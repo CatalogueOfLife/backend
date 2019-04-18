@@ -8,7 +8,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.col.api.vocab.License;
 import org.col.api.vocab.MediaType;
 
-public class Media extends DataEntity implements Referenced, VerbatimEntity, IntKey {
+public class Media extends DataEntity implements Referenced, VerbatimEntity, GlobalEntity {
   @JsonIgnore
   private Integer key;
   private Integer verbatimKey;

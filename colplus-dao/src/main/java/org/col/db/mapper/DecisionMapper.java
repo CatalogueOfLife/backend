@@ -5,9 +5,8 @@ import javax.annotation.Nullable;
 
 import org.apache.ibatis.annotations.Param;
 import org.col.api.model.EditorialDecision;
-import org.col.db.CRUDInt;
 
-public interface DecisionMapper extends CRUDInt<EditorialDecision> {
+public interface DecisionMapper extends GlobalCRUDMapper<EditorialDecision> {
   
   List<EditorialDecision> list(@Nullable @Param("datasetKey") Integer datasetKey, @Nullable @Param("id") String id);
   

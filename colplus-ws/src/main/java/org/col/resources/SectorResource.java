@@ -2,12 +2,9 @@ package org.col.resources;
 
 import java.io.IOException;
 import java.io.Reader;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
 import javax.annotation.security.RolesAllowed;
-import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
@@ -16,14 +13,12 @@ import javax.ws.rs.core.MediaType;
 import io.dropwizard.auth.Auth;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.col.api.model.*;
-import org.col.api.vocab.Datasets;
+import org.col.api.model.ColUser;
+import org.col.api.model.Sector;
 import org.col.dao.DatasetImportDao;
 import org.col.dao.DecisionRematcher;
 import org.col.dao.SectorDao;
-import org.col.dao.TaxonDao;
 import org.col.db.mapper.SectorMapper;
-import org.col.db.mapper.TaxonMapper;
 import org.col.db.tree.DiffService;
 import org.col.db.tree.NamesDiff;
 import org.col.dw.auth.Roles;
@@ -33,7 +28,7 @@ import org.slf4j.LoggerFactory;
 @Path("/sector")
 @Produces(MediaType.APPLICATION_JSON)
 @SuppressWarnings("static-method")
-public class SectorResource extends CRUDIntResource<Sector> {
+public class SectorResource extends GlobalEntityResource<Sector> {
   
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(SectorResource.class);
@@ -46,51 +41,6 @@ public class SectorResource extends CRUDIntResource<Sector> {
     this.factory = factory;
     this.diDao = diDao;
     this.diff = diffService;
-  }
-  
-  @POST
-  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  @Override
-  public Integer create(@Valid Sector obj, @Auth ColUser user) {
-    try(SqlSession session = factory.openSession(false)) {
-      final DatasetID did = obj.getTargetAsDatasetID();
-      TaxonMapper tm = session.getMapper(TaxonMapper.class);
-      
-      // reload full source and target
-      Taxon subject = tm.get(obj.getDatasetKey(), obj.getSubject().getId());
-      if (subject == null) {
-        throw new IllegalArgumentException("subject ID " + obj.getSubject().getId() + " not existing in dataset " + obj.getDatasetKey());
-      }
-      obj.setSubject(subject.toSimpleName());
-  
-      Taxon target  = tm.get(Datasets.DRAFT_COL, obj.getTarget().getId());
-      if (target == null) {
-        throw new IllegalArgumentException("target ID " + obj.getTarget().getId() + " not existing in draft CoL");
-      }
-      obj.setTarget(target.toSimpleName());
-  
-      // create sector
-      Integer secKey = super.create(obj, user);
-    
-      TaxonDao tdao = new TaxonDao(session);
-      List<Taxon> toCopy = new ArrayList<>();
-      // create direct children in catalogue
-      if (Sector.Mode.ATTACH == obj.getMode()) {
-        // one taxon in ATTACH mode
-        toCopy.add(subject);
-      } else {
-        // several taxa in MERGE mode
-        toCopy = tm.children(obj.getDatasetKey(), obj.getSubject().getId(), new Page());
-      }
-    
-      for (Taxon t : toCopy) {
-        t.setSectorKey(obj.getKey());
-        tdao.copyTaxon(t, did, user, Collections.emptySet());
-      }
-      session.commit();
-    
-      return secKey;
-    }
   }
   
   @Override
@@ -123,7 +73,7 @@ public class SectorResource extends CRUDIntResource<Sector> {
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   @Path("/{key}/rematch")
   public Sector rematch(@PathParam("key") Integer key, @Context SqlSession session, @Auth ColUser user) {
-    Sector s = getNonNull(key);
+    Sector s = get(key);
     new DecisionRematcher(session).matchSector(s, true, true);
     session.commit();
     return s;

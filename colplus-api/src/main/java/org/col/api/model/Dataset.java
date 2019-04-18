@@ -19,7 +19,7 @@ import org.gbif.nameparser.api.NomCode;
 /**
  * Metadata about a dataset or a subset of it if parentKey is given.
  */
-public class Dataset extends DataEntity implements IntKey {
+public class Dataset extends DataEntity implements GlobalEntity {
   private Integer key;
   @NotNull
   private DatasetType type = DatasetType.OTHER;

@@ -19,7 +19,7 @@ import org.col.img.LogoUpdateJob;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DatasetDao extends CrudIntDao<Dataset> {
+public class DatasetDao extends GlobalEntityDao<Dataset, DatasetMapper> {
   
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(DatasetDao.class);
@@ -32,7 +32,7 @@ public class DatasetDao extends CrudIntDao<Dataset> {
                     DownloadUtil downloader,
                     ImageService imgService,
                     BiFunction<Integer, String, File> scratchFileFunc) {
-    super(factory, DatasetMapper.class);
+    super(false, factory, DatasetMapper.class);
     this.downloader = downloader;
     this.imgService = imgService;
     this.scratchFileFunc = scratchFileFunc;
@@ -60,16 +60,13 @@ public class DatasetDao extends CrudIntDao<Dataset> {
   }
   
   @Override
-  public void create(Dataset obj) {
-    super.create(obj);
+  protected void createAfter(Dataset obj, int user, DatasetMapper mapper, SqlSession session) {
     pullLogo(obj);
   }
   
   @Override
-  public int update(Dataset obj) {
-    int upd = super.update(obj);
+  protected void updateAfter(Dataset obj, Dataset old, int user, DatasetMapper mapper, SqlSession session) {
     pullLogo(obj);
-    return upd;
   }
   
   private void pullLogo(Dataset d) {

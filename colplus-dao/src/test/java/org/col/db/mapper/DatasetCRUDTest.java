@@ -2,13 +2,12 @@ package org.col.db.mapper;
 
 import org.col.api.TestEntityGenerator;
 import org.col.api.model.DatasetEntity;
-import org.col.api.model.ID;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
-abstract class DatasetCRUDTest<T extends DatasetEntity & ID, M extends DatasetCRUDMapper<T>> extends MapperTestBase<M> {
+abstract class DatasetCRUDTest<T extends DatasetEntity, M extends DatasetCRUDMapper<T>> extends MapperTestBase<M> {
   
   private final int datasetKey;
   

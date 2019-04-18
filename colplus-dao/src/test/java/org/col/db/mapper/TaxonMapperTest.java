@@ -8,8 +8,9 @@ import com.google.common.collect.Lists;
 import org.col.api.TestEntityGenerator;
 import org.col.api.model.*;
 import org.col.api.vocab.Datasets;
-import org.col.db.MybatisTestUtils;
 import org.col.dao.NameDao;
+import org.col.db.MybatisTestUtils;
+import org.col.db.PgSetupRule;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,6 +24,7 @@ import static org.junit.Assert.assertEquals;
 public class TaxonMapperTest extends DatasetCRUDTest<Taxon, TaxonMapper> {
   
   private static final int datasetKey = TestEntityGenerator.TAXON1.getDatasetKey();
+  private static int userKey = TestEntityGenerator.USER_EDITOR.getKey();
   private Sector sector;
   
   public TaxonMapperTest() {
@@ -159,13 +161,13 @@ public class TaxonMapperTest extends DatasetCRUDTest<Taxon, TaxonMapper> {
   public void children() throws Exception {
     Taxon parent = TestEntityGenerator.newTaxon("parent-1");
     mapper().create(parent);
-    
-    NameDao nameDao = new NameDao(testDataRule.getSqlSession());
+  
+    NameDao nameDao = new NameDao(PgSetupRule.getSqlSessionFactory());
     
     Name n1 = TestEntityGenerator.newName("XXX");
     n1.setScientificName("XXX");
     n1.setRank(Rank.SUBGENUS);
-    nameDao.create(n1);
+    nameDao.create(n1, userKey);
     
     Taxon c1 = TestEntityGenerator.newTaxon("child-1");
     c1.setName(n1);
@@ -175,7 +177,7 @@ public class TaxonMapperTest extends DatasetCRUDTest<Taxon, TaxonMapper> {
     Name n2 = TestEntityGenerator.newName("YYY");
     n1.setScientificName("YYY");
     n2.setRank(Rank.FAMILY);
-    nameDao.create(n2);
+    nameDao.create(n2, userKey);
     
     Taxon c2 = TestEntityGenerator.newTaxon("child-2");
     c2.setName(n2);
@@ -185,7 +187,7 @@ public class TaxonMapperTest extends DatasetCRUDTest<Taxon, TaxonMapper> {
     Name n3 = TestEntityGenerator.newName("ZZZ");
     n3.setScientificName("ZZZ");
     n3.setRank(Rank.INFRASPECIFIC_NAME);
-    nameDao.create(n3);
+    nameDao.create(n3, userKey);
     
     Taxon c3 = TestEntityGenerator.newTaxon("child-3");
     c3.setName(n3);
@@ -195,7 +197,7 @@ public class TaxonMapperTest extends DatasetCRUDTest<Taxon, TaxonMapper> {
     Name n4 = TestEntityGenerator.newName("AAA");
     n4.setScientificName("AAA");
     n4.setRank(Rank.SUBGENUS);
-    nameDao.create(n4);
+    nameDao.create(n4, userKey);
     
     Taxon c4 = TestEntityGenerator.newTaxon("child-4");
     c4.setName(n4);

@@ -9,7 +9,7 @@ import java.util.Objects;
 /**
  *
  */
-public class Distribution extends DataEntity implements Referenced, VerbatimEntity, IntKey {
+public class Distribution extends DataEntity implements Referenced, VerbatimEntity, GlobalEntity {
   
   @JsonIgnore
   private Integer key;

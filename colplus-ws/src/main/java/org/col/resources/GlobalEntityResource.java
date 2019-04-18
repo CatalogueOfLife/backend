@@ -3,14 +3,14 @@ package org.col.resources;
 import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
 import io.dropwizard.auth.Auth;
+import org.apache.ibatis.session.SqlSession;
 import org.col.api.exception.NotFoundException;
-import org.col.api.model.ColUser;
-import org.col.api.model.IntKey;
-import org.col.api.model.UserManaged;
-import org.col.db.CRUDInt;
+import org.col.api.model.*;
+import org.col.dao.GlobalEntityDao;
 import org.col.dw.auth.Roles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,19 +18,24 @@ import org.slf4j.LoggerFactory;
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @SuppressWarnings("static-method")
-public abstract class CRUDIntResource<T extends IntKey & UserManaged> {
+public abstract class GlobalEntityResource<T extends GlobalEntity & UserManaged> {
 
   private final Class<T> objClass;
-  protected final CRUDInt<T> crud;
+  protected final GlobalEntityDao<T, ?> dao;
 
   @SuppressWarnings("unused")
-  private static final Logger LOG = LoggerFactory.getLogger(CRUDIntResource.class);
+  private static final Logger LOG = LoggerFactory.getLogger(GlobalEntityResource.class);
 
-  public CRUDIntResource(Class<T> objClass, CRUDInt<T> crud) {
+  public GlobalEntityResource(Class<T> objClass, GlobalEntityDao<T, ?> dao) {
     this.objClass = objClass;
-    this.crud = crud;
+    this.dao = dao;
   }
-
+  
+  @GET
+  public ResultPage<T> list(@Valid @BeanParam Page page, @Context SqlSession session) {
+    return dao.list(page);
+  }
+  
   /**
    * @return the primary key of the object. Together with the CreatedResponseFilter will return a 201 location
    */
@@ -38,21 +43,13 @@ public abstract class CRUDIntResource<T extends IntKey & UserManaged> {
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public Integer create(@Valid T obj, @Auth ColUser user) {
     obj.applyUser(user);
-    crud.create(obj);
-    return obj.getKey();
+    return dao.create(obj, user.getKey());
   }
 
   @GET
   @Path("{key}")
   public T get(@PathParam("key") Integer key) {
-    return crud.get(key);
-  }
-  
-  /**
-   * Gets entity by its key and throws NotFoundException if not existing
-   */
-  public T getNonNull(Integer key) {
-    T obj = get(key);
+    T obj = dao.get(key);
     if (obj == null) {
       throw NotFoundException.keyNotFound(objClass, key);
     }
@@ -64,8 +61,7 @@ public abstract class CRUDIntResource<T extends IntKey & UserManaged> {
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void update(@PathParam("key") Integer key, T obj, @Auth ColUser user) {
     obj.setKey(key);
-    obj.applyUser(user);
-    int i = crud.update(obj);
+    int i = dao.update(obj, user.getKey());
     if (i == 0) {
       throw NotFoundException.keyNotFound(objClass, key);
     }
@@ -75,7 +71,7 @@ public abstract class CRUDIntResource<T extends IntKey & UserManaged> {
   @Path("{key}")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void delete(@PathParam("key") Integer key, @Auth ColUser user) {
-    int i = crud.delete(key);
+    int i = dao.delete(key, user.getKey());
     if (i == 0) {
       throw NotFoundException.keyNotFound(objClass, key);
     }

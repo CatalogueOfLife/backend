@@ -10,7 +10,7 @@ import org.gbif.nameparser.api.Rank;
  * A drastic simplification of a taxon with just the minimum information used to render in a tree.
  * Adds various additional infos to support the assembly tree.
  */
-public class TreeNode implements ID {
+public class TreeNode implements DatasetEntity {
 
   private Integer datasetKey;
   private String id;
@@ -39,11 +39,12 @@ public class TreeNode implements ID {
     }
   }
   
-  
+  @Override
   public Integer getDatasetKey() {
     return datasetKey;
   }
-
+  
+  @Override
   public void setDatasetKey(Integer datasetKey) {
     this.datasetKey = datasetKey;
   }

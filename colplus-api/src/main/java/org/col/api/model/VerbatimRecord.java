@@ -36,7 +36,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * Hexadecimal unicode escapes started by  "\\u": \\u00A9
  * Unicode code point escapes indicated by "\\u{}": \\u{2F80}
  */
-public class VerbatimRecord implements IssueContainer, IntKey, Serializable {
+public class VerbatimRecord implements IssueContainer, GlobalEntity, Serializable {
   private static final Logger LOG = LoggerFactory.getLogger(VerbatimRecord.class);
   private static final Pattern REMOVE_TAGS = Pattern.compile("</? *[a-z][a-z1-5]{0,5} *>", Pattern.CASE_INSENSITIVE);
   private static final Pattern ECMA_UNICODE = Pattern.compile("\\\\u\\{([0-9a-f]{4})}", Pattern.CASE_INSENSITIVE);

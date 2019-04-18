@@ -10,7 +10,7 @@ import static org.col.api.TestEntityGenerator.DATASET11;
 import static org.col.api.TestEntityGenerator.newNameRef;
 import static org.junit.Assert.assertEquals;
 
-public class DecisionMapperTest extends CRUDIntMapperTest<EditorialDecision, DecisionMapper> {
+public class DecisionMapperTest extends GlobalCRUDMapperTest<EditorialDecision, DecisionMapper> {
   
   public DecisionMapperTest() {
     super(DecisionMapper.class);

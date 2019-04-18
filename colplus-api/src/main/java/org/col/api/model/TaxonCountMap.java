@@ -4,16 +4,14 @@ import java.util.Objects;
 
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 
-public class TaxonCountMap implements ID {
+public class TaxonCountMap {
   private String id;
   private Int2IntMap count;
   
-  @Override
   public String getId() {
     return id;
   }
   
-  @Override
   public void setId(String id) {
     this.id = id;
   }

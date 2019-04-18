@@ -10,6 +10,7 @@ import org.col.api.model.Synonym;
 import org.col.api.model.Taxon;
 import org.col.api.vocab.TaxonomicStatus;
 import org.col.dao.NameDao;
+import org.col.db.PgSetupRule;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -23,6 +24,7 @@ public class SynonymMapperTest extends MapperTestBase<SynonymMapper> {
   private NameDao nameDao;
   private SynonymMapper synonymMapper;
   private TaxonMapper taxonMapper;
+  private static int user = TestEntityGenerator.USER_EDITOR.getKey();
   
   public SynonymMapperTest() {
     super(SynonymMapper.class);
@@ -30,7 +32,7 @@ public class SynonymMapperTest extends MapperTestBase<SynonymMapper> {
   
   @Before
   public void initMappers() {
-    nameDao = new NameDao(testDataRule.getSqlSession());
+    nameDao = new NameDao(PgSetupRule.getSqlSessionFactory());
     synonymMapper = testDataRule.getMapper(SynonymMapper.class);
     taxonMapper = testDataRule.getMapper(TaxonMapper.class);
   }
@@ -38,10 +40,10 @@ public class SynonymMapperTest extends MapperTestBase<SynonymMapper> {
   @Test
   public void roundtrip() {
     Name n = TestEntityGenerator.newName();
-    nameDao.create(n);
+    nameDao.create(n, user);
     
     Name an = TestEntityGenerator.newName();
-    nameDao.create(an);
+    nameDao.create(an, user);
     Taxon t = TestEntityGenerator.newTaxon(an.getDatasetKey(), RandomUtils.randomLatinString(25));
     t.setName(an);
     taxonMapper.create(t);
@@ -74,27 +76,27 @@ public class SynonymMapperTest extends MapperTestBase<SynonymMapper> {
     
     // homotypic 1
     Name syn1 = TestEntityGenerator.newName("syn1");
-    nameDao.create(syn1);
+    nameDao.create(syn1, user);
     
     // homotypic 2
     Name syn2bas = TestEntityGenerator.newName("syn2bas");
-    nameDao.create(syn2bas);
+    nameDao.create(syn2bas, user);
     
     Name syn21 = TestEntityGenerator.newName("syn2.1");
     syn21.setHomotypicNameId(syn2bas.getId());
-    nameDao.create(syn21);
+    nameDao.create(syn21, user);
     
     Name syn22 = TestEntityGenerator.newName("syn2.2");
     syn22.setHomotypicNameId(syn2bas.getId());
-    nameDao.create(syn22);
+    nameDao.create(syn22, user);
     
     // homotypic 3
     Name syn3bas = TestEntityGenerator.newName("syn3bas");
-    nameDao.create(syn3bas);
+    nameDao.create(syn3bas, user);
     
     Name syn31 = TestEntityGenerator.newName("syn3.1");
     syn31.setHomotypicNameId(syn3bas.getId());
-    nameDao.create(syn31);
+    nameDao.create(syn31, user);
     
     commit();
     

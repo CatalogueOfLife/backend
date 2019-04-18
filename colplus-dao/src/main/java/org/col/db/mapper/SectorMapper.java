@@ -6,9 +6,8 @@ import javax.annotation.Nullable;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.session.ResultHandler;
 import org.col.api.model.Sector;
-import org.col.db.CRUDInt;
 
-public interface SectorMapper extends CRUDInt<Sector>{
+public interface SectorMapper extends GlobalCRUDMapper<Sector> {
   
   Sector getByTarget(@Param("datasetKey") int datasetKey, @Param("id") String id);
 

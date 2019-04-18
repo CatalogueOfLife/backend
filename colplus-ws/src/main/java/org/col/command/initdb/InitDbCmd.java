@@ -161,10 +161,7 @@ public class InitDbCmd extends ConfiguredCommand<WsServerConfig> {
       }
   
       LOG.info("Update dataset sector counts");
-      try (SqlSession session = factory.openSession()) {
-        new TaxonDao(session).updateAllSectorCounts(Datasets.DRAFT_COL, factory);
-        session.commit();
-      }
+      new TaxonDao(factory).updateAllSectorCounts(Datasets.DRAFT_COL, factory);
       
       updateSearchIndex(cfg, factory);
     }

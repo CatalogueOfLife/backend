@@ -5,21 +5,21 @@ import java.util.stream.Stream;
 
 import com.esotericsoftware.kryo.pool.KryoPool;
 import com.google.common.base.Preconditions;
+import org.col.api.model.DatasetEntity;
+import org.col.api.model.VerbatimEntity;
+import org.col.api.vocab.Issue;
+import org.col.common.kryo.map.MapDbObjectSerializer;
 import org.col.importer.IdGenerator;
 import org.col.importer.neo.model.NeoNode;
 import org.col.importer.neo.model.NodeMock;
 import org.col.importer.neo.model.PropLabel;
-import org.col.api.model.ID;
-import org.col.api.model.VerbatimEntity;
-import org.col.api.vocab.Issue;
-import org.col.common.kryo.map.MapDbObjectSerializer;
 import org.mapdb.DB;
 import org.mapdb.Serializer;
 import org.neo4j.graphdb.Node;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class NeoCRUDStore<T extends ID & VerbatimEntity & NeoNode> {
+public class NeoCRUDStore<T extends DatasetEntity & VerbatimEntity & NeoNode> {
   private static final Logger LOG = LoggerFactory.getLogger(NeoCRUDStore.class);
   // nodeId -> obj
   private final Map<Long, T> objects;

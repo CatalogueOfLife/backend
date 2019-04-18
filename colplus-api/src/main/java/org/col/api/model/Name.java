@@ -21,7 +21,7 @@ import static org.gbif.nameparser.util.NameFormatter.HYBRID_MARKER;
 /**
  *
  */
-public class Name extends DataEntity implements ID, DatasetEntity, VerbatimEntity {
+public class Name extends DataEntity implements DatasetEntity, VerbatimEntity {
   
   /**
    * Primary key of the name as given in the dataset dwc:scientificNameID. Only guaranteed to be

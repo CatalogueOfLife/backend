@@ -26,8 +26,7 @@ public class DecisionRematcher {
   private final SectorMapper sm;
   private final DecisionMapper em;
   private final MatchingDao mdao;
-  private final TaxonDao tdao;
-  private final ColUser user;
+  private final int user = Users.DB_INIT;
   
   
   private int sectorTotal = 0;
@@ -43,8 +42,6 @@ public class DecisionRematcher {
     sm = session.getMapper(SectorMapper.class);
     em = session.getMapper(DecisionMapper.class);
     mdao = new MatchingDao(session);
-    tdao = new TaxonDao(session);
-    user = session.getMapper(UserMapper.class).get(Users.DB_INIT);
   }
   
   private void clearCounter() {
@@ -85,7 +82,7 @@ public class DecisionRematcher {
           // create single, new child
           Taxon c = newTaxon(Datasets.DRAFT_COL, s.getSubject());
           c.setSectorKey(s.getKey());
-          tdao.copyTaxon(c, s.getTargetAsDatasetID(), user, Collections.emptySet());
+          TaxonDao.copyTaxon(session, c, s.getTargetAsDatasetID(), user, Collections.emptySet());
         } else {
           // mark 2 children as coming from this sector...
           for (Taxon c : tm.children(Datasets.DRAFT_COL, t.getId(), new Page(0,2))) {

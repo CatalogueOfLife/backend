@@ -5,7 +5,7 @@ import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.col.api.vocab.Language;
 
-public class Description extends DataEntity implements Referenced, VerbatimEntity, IntKey {
+public class Description extends DataEntity implements Referenced, VerbatimEntity, GlobalEntity {
   @JsonIgnore
   private Integer key;
   private Integer verbatimKey;

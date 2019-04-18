@@ -4,7 +4,6 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import org.apache.ibatis.annotations.Param;
-import org.col.api.model.ColUser;
 import org.col.api.model.NameUsageBase;
 import org.col.api.model.Page;
 import org.gbif.nameparser.api.Rank;
@@ -37,7 +36,7 @@ public interface NameUsageMapper {
   int updateParentId(@Param("datasetKey") int datasetKey,
                      @Param("parentId") String parentId,
                      @Param("newParentId") String newParentId,
-                     @Param("user") ColUser user);
+                     @Param("userKey") int userKey);
   
   int deleteBySector(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
 

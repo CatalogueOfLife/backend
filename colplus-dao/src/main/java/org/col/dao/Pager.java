@@ -14,7 +14,7 @@ import org.col.api.model.Sector;
 import org.col.api.search.DatasetSearchRequest;
 import org.col.db.mapper.DatasetMapper;
 import org.col.db.mapper.DecisionMapper;
-import org.col.db.mapper.Pageable;
+import org.col.db.Pageable;
 import org.col.db.mapper.SectorMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

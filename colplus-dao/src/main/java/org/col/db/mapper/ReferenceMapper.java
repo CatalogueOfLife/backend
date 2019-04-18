@@ -4,18 +4,13 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.ibatis.annotations.Param;
-import org.col.api.model.Page;
 import org.col.api.model.Reference;
 
 /**
  *
  */
-public interface ReferenceMapper {
+public interface ReferenceMapper extends DatasetCRUDMapper<Reference> {
 
-	int count(@Param("datasetKey") int datasetKey);
-
-	List<Reference> list(@Param("datasetKey") int datasetKey, @Param("page") Page page);
-	
 	/**
 	 * @return all bibliographic reference ids for the given taxon
 	 */
@@ -27,10 +22,6 @@ public interface ReferenceMapper {
    * @param ids must contain at least one value, not allowed to be empty !!!
    */
   List<Reference> listByIds(@Param("datasetKey") int datasetKey, @Param("ids") Set<String> ids);
-  
-  Reference get(@Param("datasetKey") int datasetKey, @Param("id") String id);
-  
-  void create(Reference name);
   
   /**
    * Links a reference to a taxon

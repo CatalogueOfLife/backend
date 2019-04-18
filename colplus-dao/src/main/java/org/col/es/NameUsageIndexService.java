@@ -33,6 +33,12 @@ public interface NameUsageIndexService {
    * Indexes given taxa from the same dataset from postgres into ElasticSearch.
    */
   void indexTaxa(Integer datasetKey, Collection<String> taxonIds);
+  
+  /**
+   * Updates the classification for all descendants in the subtree identified by the rootTaxonId.
+   * All other information is left as is and no new docs are generated, i.e. all taxa must have been indexed before.
+   */
+  void updateClassification(Integer datasetKey, String rootTaxonId);
 
   /**
    * @return a pass through indexing service that does not do anything. Good for tests
@@ -65,6 +71,11 @@ public interface NameUsageIndexService {
 
       @Override
       public void indexAll() {
+        LOG.info("No Elastic Search configured. Passing through");
+      }
+  
+      @Override
+      public void updateClassification(Integer datasetKey, String rootTaxonId) {
         LOG.info("No Elastic Search configured. Passing through");
       }
     };

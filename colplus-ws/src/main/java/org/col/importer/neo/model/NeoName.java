@@ -2,18 +2,15 @@ package org.col.importer.neo.model;
 
 import java.util.Objects;
 
+import org.col.api.model.*;
 import org.col.importer.neo.NeoDbUtils;
-import org.col.api.model.ID;
-import org.col.api.model.Name;
-import org.col.api.model.NameAccordingTo;
-import org.col.api.model.VerbatimEntity;
 import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
 
 /**
  * Simple wrapper to hold a neo4j node together with a name
  */
-public class NeoName implements NeoNode, ID, VerbatimEntity {
+public class NeoName implements NeoNode, DatasetEntity, VerbatimEntity {
   private static final Label[] LABELS = new Label[]{Labels.NAME};
   
   public Node node;
@@ -66,6 +63,16 @@ public class NeoName implements NeoNode, ID, VerbatimEntity {
   @Override
   public void setId(String id) {
     name.setId(id);
+  }
+  
+  @Override
+  public Integer getDatasetKey() {
+    return name.getDatasetKey();
+  }
+  
+  @Override
+  public void setDatasetKey(Integer key) {
+    name.setDatasetKey(key);
   }
   
   @Override

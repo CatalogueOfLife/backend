@@ -25,7 +25,11 @@ public class TreeResource {
   
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(TreeResource.class);
+  private final TaxonDao dao;
   
+  public TreeResource(TaxonDao dao) {
+    this.dao = dao;
+  }
   
   @GET
   public ResultPage<TreeNode> root(@PathParam("datasetKey") int datasetKey, @Valid @BeanParam Page page, @Context SqlSession session) {
@@ -44,12 +48,8 @@ public class TreeResource {
   @DELETE
   @Path("{id}")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void deleteRecursively(@PathParam("datasetKey") int datasetKey, @PathParam("id") String id,
-                                @Auth ColUser user,
-                                @Context SqlSession session) {
-    TaxonDao dao = new TaxonDao(session);
-    dao.deleteRecursively(new DatasetID(datasetKey, id), user);
-    session.commit();
+  public void deleteRecursively(@PathParam("datasetKey") int datasetKey, @PathParam("id") String id, @Auth ColUser user) {
+    dao.deleteRecursively(datasetKey, id, user);
   }
   
   @GET

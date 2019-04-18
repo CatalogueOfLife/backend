@@ -45,6 +45,9 @@ public class PgImportIT {
   private Dataset dataset;
   private VerbatimRecordMapper vMapper;
   private boolean fullInit = true;
+  TaxonDao tdao;
+  NameDao ndao;
+  ReferenceDao rdao;
   
   @ClassRule
   public static PgSetupRule pgSetupRule = new PgSetupRule();
@@ -69,6 +72,10 @@ public class PgImportIT {
       InitDbCmd.setupStandardPartitions(testDataRule.getSqlSession());
       testDataRule.commit();
     }
+    
+    tdao = new TaxonDao(PgSetupRule.getSqlSessionFactory());
+    ndao = new NameDao(PgSetupRule.getSqlSessionFactory());
+    rdao = new ReferenceDao(PgSetupRule.getSqlSessionFactory());
   }
   
   @After
@@ -143,8 +150,6 @@ public class PgImportIT {
     normalizeAndImport(DWCA, 0);
     
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
-      NameDao ndao = new NameDao(session);
-      ReferenceDao rdao = new ReferenceDao(session);
       
       Name trametes_modesta = ndao.get(dataset.getKey(), "324805");
       
@@ -160,9 +165,6 @@ public class PgImportIT {
     
     // verify results
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
-      TaxonDao tdao = new TaxonDao(session);
-      NameDao ndao = new NameDao(session);
-      
       // check basionym
       Name n1006 = ndao.get(dataset.getKey(), "1006");
       assertEquals("Leontodon taraxacoides", n1006.getScientificName());
@@ -199,12 +201,11 @@ public class PgImportIT {
     normalizeAndImport(DWCA, 28);
     // verify results
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
-      NameDao dao = new NameDao(session);
       vMapper = session.getMapper(VerbatimRecordMapper.class);
       
       // check species name
-      Name n1 = dao.get(dataset.getKey(), "1");
-      Name n2 = dao.get(dataset.getKey(), "2");
+      Name n1 = ndao.get(dataset.getKey(), "1");
+      Name n2 = ndao.get(dataset.getKey(), "2");
       
       assertEquals(n2.getHomotypicNameId(), n1.getHomotypicNameId());
       assertTrue(n1.getId().equals(n2.getHomotypicNameId())
@@ -212,10 +213,10 @@ public class PgImportIT {
       assertIssue(n1, Issue.CHAINED_BASIONYM);
       assertIssue(n2, Issue.CHAINED_BASIONYM);
       
-      Name n10 = dao.get(dataset.getKey(), "10");
-      Name n11 = dao.get(dataset.getKey(), "11");
-      Name n12 = dao.get(dataset.getKey(), "12");
-      Name n13 = dao.get(dataset.getKey(), "13");
+      Name n10 = ndao.get(dataset.getKey(), "10");
+      Name n11 = ndao.get(dataset.getKey(), "11");
+      Name n12 = ndao.get(dataset.getKey(), "12");
+      Name n13 = ndao.get(dataset.getKey(), "13");
       
       assertEquals(n10.getId(), n10.getHomotypicNameId());
       assertEquals(n10.getId(), n11.getHomotypicNameId());
@@ -269,8 +270,6 @@ public class PgImportIT {
     
     // verify results
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
-      TaxonDao tdao = new TaxonDao(session);
-      
       // check species name
       Taxon tax = tdao.get(dataset.getKey(), "1000");
       assertEquals("Crepis pulchra", tax.getName().getScientificName());
@@ -313,11 +312,7 @@ public class PgImportIT {
     normalizeAndImport(ACEF, 0);
     
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
-      TaxonDao tdao = new TaxonDao(session);
-      NameDao ndao = new NameDao(session);
       NameUsageMapper uMapper = session.getMapper(NameUsageMapper.class);
-      TaxonMapper taxMapper = session.getMapper(TaxonMapper.class);
-      SynonymMapper synMapper = session.getMapper(SynonymMapper.class);
       vMapper = session.getMapper(VerbatimRecordMapper.class);
       
       Name n = ndao.get(dataset.getKey(), "s7");
@@ -357,8 +352,6 @@ public class PgImportIT {
     normalizeAndImport(ACEF, 1);
     
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
-      TaxonDao tdao = new TaxonDao(session);
-      
       Taxon t = tdao.get(dataset.getKey(), "14649");
       assertEquals("Zapoteca formosa", t.getName().getScientificName());
       assertEquals("(Kunth) H.M.Hern.", t.getName().authorshipComplete());
@@ -389,14 +382,13 @@ public class PgImportIT {
     normalizeAndImport(ACEF, 69);
     
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
-      NameDao ndao = new NameDao(session);
-      TaxonDao tdao = new TaxonDao(session);
+      TaxonMapper taxMapper = session.getMapper(TaxonMapper.class);
       SynonymMapper synMapper = session.getMapper(SynonymMapper.class);
       
       Taxon t = tdao.get(dataset.getKey(), "Rho-144");
       assertEquals("Afrogamasellus lokelei Daele, 1976", t.getName().canonicalNameComplete());
       
-      List<Taxon> classific = tdao.getClassification(t);
+      List<Taxon> classific = taxMapper.classification(t.getDatasetKey(), t.getId());
       LinkedList<RankedName> expected =
           Lists.newLinkedList(Lists.newArrayList(rn(Rank.KINGDOM, "Animalia"),
               rn(Rank.PHYLUM, "Arthropoda"), rn(Rank.CLASS, "Arachnida"),
@@ -439,8 +431,8 @@ public class PgImportIT {
     normalizeAndImport(ACEF, 6);
     
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
-      TaxonDao tdao = new TaxonDao(session);
-      
+      SynonymMapper sm = session.getMapper(SynonymMapper.class);
+  
       Taxon t = tdao.get(dataset.getKey(), "MD2");
       assertEquals("Latrodectus mactans", t.getName().getScientificName());
       assertEquals("(Fabricius, 1775)", t.getName().authorshipComplete());
@@ -470,7 +462,7 @@ public class PgImportIT {
       assertEquals(3, syn.getHeterotypic().size());
       assertEquals(0, syn.getHomotypic().size());
       
-      Synonym s = tdao.getSynonym(dataset.getKey(), "s5");
+      Synonym s = sm.get(dataset.getKey(), "s5");
       // assertEquals("auct. Whittaker 1981", s.getAccordingTo());
       assertEquals(TaxonomicStatus.MISAPPLIED, s.getStatus());
     }
@@ -484,8 +476,6 @@ public class PgImportIT {
     normalizeAndImport(DWCA, 29);
     
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
-      TaxonDao tdao = new TaxonDao(session);
-      
       Taxon annua = tdao.get(dataset.getKey(), "4");
       assertEquals("Poa annua L.", annua.getName().canonicalNameComplete());
       
@@ -510,7 +500,6 @@ public class PgImportIT {
         }
       }
       
-      NameDao ndao = new NameDao(session);
       NameRelationMapper actMapper = session.getMapper(NameRelationMapper.class);
       // Poa annua has not explicitly declared a basionym
       assertTrue(actMapper.list(dataset.getKey(), annua.getName().getId()).isEmpty());
@@ -534,12 +523,10 @@ public class PgImportIT {
   public void testSwampsSciNameIDs() throws Exception {
     normalizeAndImport(DWCA, 33);
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
-      NameDao ndao = new NameDao(session);
       Name n = ndao.get(dataset.getKey(), "30405");
       assertEquals("Haematomma ochroleucum var. porphyrium", n.getScientificName());
       assertEquals("30405", n.getId());
       
-      TaxonDao tdao = new TaxonDao(session);
       // this is buggy normalization of bad data - should really be just one...
       assertEquals(2, tdao.listRoot(dataset.getKey(), new Page()).getResult().size());
     }
@@ -549,14 +536,12 @@ public class PgImportIT {
   public void testColdpSpecs() throws Exception {
     normalizeAndImport(COLDP, 0);
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
-      NameDao ndao = new NameDao(session);
       Name n = ndao.get(dataset.getKey(), "1000");
       assertEquals("Platycarpha glomerata", n.getScientificName());
       assertEquals("(Thunberg) A.P.de Candolle", n.authorshipComplete());
       assertEquals("1000", n.getId());
       assertEquals(Rank.SPECIES, n.getRank());
     
-      TaxonDao tdao = new TaxonDao(session);
       // one root
       assertEquals(1, tdao.listRoot(dataset.getKey(), new Page()).getResult().size());
   

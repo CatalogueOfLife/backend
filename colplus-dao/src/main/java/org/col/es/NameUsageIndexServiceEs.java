@@ -115,7 +115,12 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
       throw new EsException(e);
     }
   }
-
+  
+  @Override
+  public void updateClassification(Integer datasetKey, String rootTaxonId) {
+    LOG.warn("Not implemented!");
+  }
+  
   @Override
   public void indexAll() {
     NameUsageIndexer indexer = new NameUsageIndexer(client, index);

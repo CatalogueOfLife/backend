@@ -1,14 +1,21 @@
 package org.col.importer;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Stack;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
+import org.col.api.model.*;
+import org.col.api.vocab.Users;
+import org.col.common.lang.InterruptedRuntimeException;
 import org.col.config.ImporterConfig;
+import org.col.db.mapper.*;
 import org.col.importer.neo.NeoDb;
 import org.col.importer.neo.model.Labels;
 import org.col.importer.neo.model.NeoName;
@@ -16,11 +23,6 @@ import org.col.importer.neo.model.NeoUsage;
 import org.col.importer.neo.model.RelType;
 import org.col.importer.neo.traverse.StartEndHandler;
 import org.col.importer.neo.traverse.TreeWalker;
-import org.col.api.model.*;
-import org.col.api.vocab.Users;
-import org.col.common.lang.InterruptedRuntimeException;
-import org.col.dao.NameDao;
-import org.col.db.mapper.*;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
 import org.slf4j.Logger;
@@ -155,24 +157,34 @@ public class PgImport implements Callable<Boolean> {
   }
   
   private void insertVerbatim() throws InterruptedException {
-    try (final SqlSession session = sessionFactory.openSession(false)) {
+    try (final SqlSession session = sessionFactory.openSession(ExecutorType.BATCH, false)) {
       VerbatimRecordMapper mapper = session.getMapper(VerbatimRecordMapper.class);
       int counter = 0;
+      Map<Integer, VerbatimRecord> batchCache = new HashMap<>();
       for (VerbatimRecord v : store.verbatimList()) {
         int storeKey = v.getKey();
         v.setKey(null);
         v.setDatasetKey(dataset.getKey());
         mapper.create(v);
-        verbatimKeys.put(storeKey, v.getKey());
+        batchCache.put(storeKey, v);
         if (++counter % batchSize == 0) {
-          interruptIfCancelled();
-          session.commit();
+          commitVerbatimBatch(session, batchCache);
           LOG.debug("Inserted {} verbatim records so far", counter);
         }
       }
-      session.commit();
+      commitVerbatimBatch(session, batchCache);
       LOG.info("Inserted {} verbatim records", counter);
     }
+  }
+  
+  private void commitVerbatimBatch(SqlSession session, Map<Integer, VerbatimRecord> batchCache) {
+    interruptIfCancelled();
+    session.commit();
+    // we only get the new keys after we committed in batch mode!!!
+    for (Map.Entry<Integer, VerbatimRecord> e : batchCache.entrySet()) {
+      verbatimKeys.put(e.getKey(), e.getValue().getKey());
+    }
+    batchCache.clear();
   }
   
   private <T extends VerbatimEntity & UserManaged> T updateVerbatimUserEntity(T ent) {
@@ -195,7 +207,7 @@ public class PgImport implements Callable<Boolean> {
   }
 
   private void insertReferences() throws InterruptedException {
-    try (final SqlSession session = sessionFactory.openSession(false)) {
+    try (final SqlSession session = sessionFactory.openSession(ExecutorType.BATCH, false)) {
       ReferenceMapper mapper = session.getMapper(ReferenceMapper.class);
       int counter = 0;
       for (Reference r : store.refList()) {
@@ -220,7 +232,7 @@ public class PgImport implements Callable<Boolean> {
    * Inserts all names, collecting all homotypic name keys for later updates if they havent been inserted already.
    */
   private void insertNames() {
-    try (final SqlSession session = sessionFactory.openSession(false)) {
+    try (final SqlSession session = sessionFactory.openSession(ExecutorType.BATCH, false)) {
       final NameMapper nameMapper = session.getMapper(NameMapper.class);
       LOG.debug("Inserting all names");
       store.names().all().forEach(n -> {
@@ -246,7 +258,7 @@ public class PgImport implements Callable<Boolean> {
       if (!rt.isNameRel()) continue;
 
       final AtomicInteger counter = new AtomicInteger(0);
-      try (final SqlSession session = sessionFactory.openSession(false)) {
+      try (final SqlSession session = sessionFactory.openSession(ExecutorType.BATCH, false)) {
         final NameRelationMapper nameRelationMapper = session.getMapper(NameRelationMapper.class);
         LOG.debug("Inserting all {} relations", rt);
         try (Transaction tx = store.getNeo().beginTx()) {
@@ -269,9 +281,8 @@ public class PgImport implements Callable<Boolean> {
 	 * insert taxa/synonyms with all the rest
 	 */
 	private void insertUsages() throws InterruptedException {
-		try (SqlSession session = sessionFactory.openSession(false)) {
+		try (SqlSession session = sessionFactory.openSession(ExecutorType.BATCH,false)) {
       LOG.info("Inserting remaining names and all taxa");
-      NameDao nameDao = new NameDao(session);
       DescriptionMapper descriptionMapper = session.getMapper(DescriptionMapper.class);
       DistributionMapper distributionMapper = session.getMapper(DistributionMapper.class);
       MediaMapper mediaMapper = session.getMapper(MediaMapper.class);

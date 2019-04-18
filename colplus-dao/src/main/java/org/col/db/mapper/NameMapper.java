@@ -13,15 +13,6 @@ import org.col.api.model.Name;
  */
 public interface NameMapper extends DatasetCRUDMapper<Name> {
   
-  /**
-   * Iterates over all names of a given dataset and processes them with the supplied handler.
-   * This allows a single query to efficiently stream all its values without keeping them in memory.
-   *
-   * @param handler to process each name with
-   */
-  void processDataset(@Param("datasetKey") int datasetKey, ResultHandler<Name> handler);
-  
-  
   Name getByUsage(@Param("datasetKey") int datasetKey, @Param("usageId") String usageId);
   
   /**
