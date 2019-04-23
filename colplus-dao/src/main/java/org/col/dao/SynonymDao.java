@@ -36,7 +36,7 @@ public class SynonymDao extends DatasetEntityDao<Synonym, SynonymMapper> {
     syn.setDatasetKey(accepted.getDatasetKey());
     TaxonDao.copyName(session, syn, accepted.getDatasetKey(), user, lookupReference);
     newKey(syn);
-    syn.applyUser(user);
+    syn.applyUser(user, true);
     syn.setOrigin(Origin.SOURCE);
     syn.setParentId(accepted.getId());
     session.getMapper(SynonymMapper.class).create(syn);

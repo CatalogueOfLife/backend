@@ -35,8 +35,12 @@ public interface UserManaged {
   }
   
   default void applyUser(Integer userKey) {
+    applyUser(userKey, false);
+  }
+  
+  default void applyUser(Integer userKey, boolean updateCreator) {
     setModifiedBy(userKey);
-    if (getCreatedBy() == null) {
+    if (updateCreator || getCreatedBy() == null) {
       setCreatedBy(userKey);
     }
   }
