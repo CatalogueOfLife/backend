@@ -1,6 +1,7 @@
 package org.col.dao;
 
 import java.util.List;
+import java.util.Set;
 
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.model.Duplicate;
@@ -25,8 +26,11 @@ public class DuplicateDao {
     mapper = session.getMapper(DuplicateMapper.class);
   }
   
-  public List<Duplicate> find(int datasetKey, EqualityMode mode, Rank rank, TaxonomicStatus status1, TaxonomicStatus status2, Boolean parentDifferent, Boolean withDecision, Page page) {
+  public List<Duplicate> find(int datasetKey, EqualityMode mode, Rank rank, Set<TaxonomicStatus> status, Boolean parentDifferent, Boolean withDecision, Page page) {
     mode = mode == null ? EqualityMode.NAMES_INDEX : mode;
-    return mapper.find(datasetKey, mode, rank, status1, status2, parentDifferent, withDecision, page);
+    // find duplicate keys on page
+    List<Object> keys = mapper.listKeys(datasetKey, mode, rank, status, parentDifferent, withDecision, page);
+    // load all duplicate usages
+    return mapper.listUsages(datasetKey, mode, rank, status, keys);
   }
 }

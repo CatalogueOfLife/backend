@@ -1,6 +1,7 @@
 package org.col.resources;
 
 import java.util.List;
+import java.util.Set;
 import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
@@ -31,13 +32,13 @@ public class DuplicateResource {
   public List<Duplicate> find(@PathParam("datasetKey") int datasetKey,
                               @QueryParam("mode") EqualityMode mode,
                               @QueryParam("rank") Rank rank,
-                              @QueryParam("status1") TaxonomicStatus status1,
-                              @QueryParam("status2") TaxonomicStatus status2,
+                              @QueryParam("status") Set<TaxonomicStatus> status,
                               @QueryParam("parentDifferent") Boolean parentDifferent,
                               @QueryParam("withDecision") Boolean withDecision,
                               @Valid @BeanParam Page page, @Context SqlSession session) {
     DuplicateDao dao = new DuplicateDao(session);
-    return dao.find(datasetKey, mode, rank, status1, status2, parentDifferent, withDecision, page);
+    //Set<TaxonomicStatus> statusSet = status == null ? Collections.emptySet() : new HashSet<>(status);
+    return dao.find(datasetKey, mode, rank, status, parentDifferent, withDecision, page);
   }
   
 }

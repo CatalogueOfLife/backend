@@ -6,6 +6,7 @@ import org.col.api.model.TreeNode;
 import org.col.db.MybatisTestUtils;
 import org.col.db.mapper.SectorMapperTest;
 import org.col.db.mapper.TreeMapper;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.col.api.vocab.Datasets.DRAFT_COL;
@@ -13,6 +14,12 @@ import static org.junit.Assert.assertEquals;
 
 public class SectorDaoTest extends DaoTestBase {
   static int user = TestEntityGenerator.USER_EDITOR.getKey();
+  
+  @Test
+  @Ignore
+  public void popTree() {
+    MybatisTestUtils.populateDraftTree(session());
+  }
   
   @Test
   public void create() {

@@ -1,7 +1,9 @@
 package org.col.db.mapper;
 
 import java.sql.Connection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.model.Duplicate;
@@ -14,8 +16,8 @@ import org.gbif.nameparser.api.Rank;
 import org.junit.*;
 import org.postgresql.jdbc.PgConnection;
 
-import static org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class DuplicateMapperTest {
   
@@ -61,50 +63,56 @@ public class DuplicateMapperTest {
   
   
   @Test
-  public void find() throws Exception {
+  public void keys() throws Exception {
+    Set<TaxonomicStatus> status = new HashSet<>();
+    List<Object> keys = mapper.listKeys(datasetKey, EqualityMode.CANONICAL, null, status, null, null, new Page(2,10));
+    assertEquals(10, keys.size());
+  
+    
     Page p = new Page(0, 100);
-    List<Duplicate> dups = mapper.find(datasetKey, EqualityMode.CANONICAL, null, null, null, null, null, p);
-    assertEquals(28, dups.size());
-    for (Duplicate d : dups) {
-      assertNotNull(d.getUsage1().getId());
-      assertNotNull(d.getUsage2().getId());
-      assertNotEquals(d.getUsage1().getId(), d.getUsage2().getId());
-      assertNotNull(d.getUsage1().getName().getId());
-      assertNotNull(d.getUsage2().getName().getId());
-      assertEquals(d.getUsage1().getName().getScientificName(), d.getUsage2().getName().getScientificName());
-    }
+    keys = mapper.listKeys(datasetKey, EqualityMode.CANONICAL, null,  status, null, null, p);
+    assertEquals(19, keys.size());
   
-    dups = mapper.find(datasetKey, EqualityMode.CANONICAL, Rank.SUBSPECIES, null, null, null, null, p);
-    assertEquals(6, dups.size());
-    for (Duplicate d : dups) {
-      assertEquals(d.getUsage1().getName().getScientificName(), d.getUsage2().getName().getScientificName());
-      assertEquals(Rank.SUBSPECIES, d.getUsage1().getName().getRank());
-    }
-  
-    dups = mapper.find(datasetKey, EqualityMode.CANONICAL_WITH_AUTHORS, Rank.SUBSPECIES, null, null, null, null, p);
-    assertEquals(2, dups.size());
-  
-    dups = mapper.find(datasetKey, EqualityMode.CANONICAL_WITH_AUTHORS, Rank.SUBSPECIES, TaxonomicStatus.PROVISIONALLY_ACCEPTED, null, null, null, p);
-    assertEquals(2, dups.size());
+    keys = mapper.listKeys(datasetKey, EqualityMode.CANONICAL, Rank.SUBSPECIES, status, null, null, p);
+    assertEquals(4, keys.size());
 
-    dups = mapper.find(datasetKey, EqualityMode.CANONICAL_WITH_AUTHORS, Rank.SUBSPECIES, TaxonomicStatus.ACCEPTED, null, null, null, p);
-    assertTrue(dups.isEmpty());
+    keys = mapper.listKeys(datasetKey, EqualityMode.CANONICAL_WITH_AUTHORS, Rank.SUBSPECIES, null, null, null, p);
+    assertEquals(2, keys.size());
   
-    dups = mapper.find(datasetKey, EqualityMode.NAMES_INDEX, Rank.SUBSPECIES, null, null, null, null, p);
-    assertEquals(7, dups.size());
+    status.add(TaxonomicStatus.PROVISIONALLY_ACCEPTED);
+    keys = mapper.listKeys(datasetKey, EqualityMode.CANONICAL_WITH_AUTHORS, Rank.SUBSPECIES, status, null, null, p);
+    assertEquals(2, keys.size());
   
-    dups = mapper.find(datasetKey, EqualityMode.NAMES_INDEX, Rank.SUBSPECIES, null, null, false, null, p);
-    assertEquals(4, dups.size());
+    status.clear();
+    status.add(TaxonomicStatus.ACCEPTED);
+    keys = mapper.listKeys(datasetKey, EqualityMode.CANONICAL_WITH_AUTHORS, Rank.SUBSPECIES, status, null, null, p);
+    assertTrue(keys.isEmpty());
 
-    dups = mapper.find(datasetKey, EqualityMode.NAMES_INDEX, Rank.SUBSPECIES, null, null, true, null, p);
-    assertEquals(3, dups.size());
+    keys = mapper.listKeys(datasetKey, EqualityMode.NAMES_INDEX, Rank.SUBSPECIES, status, null, null, p);
+    assertEquals(5, keys.size());
+
+    keys = mapper.listKeys(datasetKey, EqualityMode.NAMES_INDEX, Rank.SUBSPECIES, status, false, null, p);
+    assertEquals(4, keys.size());
+
+    keys = mapper.listKeys(datasetKey, EqualityMode.NAMES_INDEX, Rank.SUBSPECIES, status, true, null, p);
+    assertEquals(2, keys.size());
+
+    keys = mapper.listKeys(datasetKey, EqualityMode.NAMES_INDEX, Rank.SUBSPECIES, status, true, false, p);
+    assertEquals(2, keys.size());
+
+    keys = mapper.listKeys(datasetKey, EqualityMode.NAMES_INDEX, Rank.SUBSPECIES, status, true, true, p);
+    assertTrue(keys.isEmpty());
+  }
   
-    dups = mapper.find(datasetKey, EqualityMode.NAMES_INDEX, Rank.SUBSPECIES, null, null, true, false, p);
-    assertEquals(3, dups.size());
-  
-    dups = mapper.find(datasetKey, EqualityMode.NAMES_INDEX, Rank.SUBSPECIES, null, null, true, true, p);
+  @Test
+  public void listUsages() throws Exception {
+    Page p = new Page(0, 100);
+    Set<TaxonomicStatus> status = new HashSet<>();
+    List<Object> keys = mapper.listKeys(datasetKey, EqualityMode.CANONICAL, null, status, null, null, new Page(2,10));
+
+    List<Duplicate> dups = mapper.listUsages(datasetKey, EqualityMode.CANONICAL, null, status, keys);
     show(dups);
-    assertTrue(dups.isEmpty());
+    assertEquals(6, dups.size());
   }
   
   private void show(List<Duplicate> dups) {
@@ -112,8 +120,10 @@ public class DuplicateMapperTest {
     int idx = 1;
     for (Duplicate d : dups) {
       System.out.println(" #" + idx++);
-      System.out.println(d.getUsage1().getId() + "  " + d.getUsage1().getName().canonicalNameComplete());
-      System.out.println(d.getUsage2().getId() + "  " + d.getUsage2().getName().canonicalNameComplete());
+      System.out.println(" KEY: " + d.getKey());
+      for (Duplicate.UsageDecision u : d.getUsages()) {
+        System.out.println(u.getUsage().getId() + "  " + u.getUsage().getName().canonicalNameComplete());
+      }
     }
   }
 }

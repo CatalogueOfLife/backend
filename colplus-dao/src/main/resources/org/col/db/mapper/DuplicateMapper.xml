@@ -5,105 +5,117 @@
 <mapper namespace="org.col.db.mapper.DuplicateMapper">
 
     <resultMap id="duplicateResultMap" type="Duplicate" autoMapping="true">
-        <association property="usage1" columnPrefix="u1_" resultMap="org.col.db.mapper.NameUsageMapper.usageResultMap" />
-        <association property="usage2" columnPrefix="u2_" resultMap="org.col.db.mapper.NameUsageMapper.usageResultMap" />
+        <id column="key" property="key" />
+        <collection property="usages" ofType="UsageDecision">
+            <id column="u.id"/>
+            <association property="usage" resultMap="org.col.db.mapper.NameUsageMapper.usageResultMap" />
+            <association property="decision" javaType="EditorialDecision">
+                <id column="decision_key" property="key"/>
+            </association>
+        </collection>
     </resultMap>
 
+    <sql id="keySelect">
+        <choose>
+            <when test="mode.name() == 'NAMES_INDEX' ">
+                n.name_index_id
+            </when>
+            <when test="mode.name() == 'CANONICAL' ">
+                lower(n.scientific_name)
+            </when>
+            <otherwise>
+                lower(n.scientific_name) || ' ' || lower(coalesce(n.authorship, ''))
+            </otherwise>
+        </choose>
+    </sql>
 
-    <select id="find" parameterType="map" resultMap="duplicateResultMap">
-        SELECT
-            u1.is_synonym AS u1_is_synonym,
-            <include refid="org.col.db.mapper.TaxonMapper.taxonCols">
-                <property name="alias" value="u1"/>
-                <property name="prefix" value="u1_"/>
-            </include>,
-            <include refid="org.col.db.mapper.NameMapper.nameCols">
-                <property name="alias" value="n1"/>
-                <property name="prefix" value="u1_n_"/>
-            </include>,
-            <include refid="org.col.db.mapper.TaxonMapper.taxonCols">
-                <property name="alias" value="a1"/>
-                <property name="prefix" value="u1_a_"/>
-            </include>,
-            <include refid="org.col.db.mapper.NameMapper.nameCols">
-                <property name="alias" value="an1"/>
-                <property name="prefix" value="u1_a_n_"/>
-            </include>,
-            ed1.key AS decision_key1,
-
-            u2.is_synonym AS u2_is_synonym,
-            <include refid="org.col.db.mapper.TaxonMapper.taxonCols">
-                <property name="alias" value="u2"/>
-                <property name="prefix" value="u2_"/>
-            </include>,
-            <include refid="org.col.db.mapper.NameMapper.nameCols">
-                <property name="alias" value="n2"/>
-                <property name="prefix" value="u2_n_"/>
-            </include>,
-            <include refid="org.col.db.mapper.TaxonMapper.taxonCols">
-                <property name="alias" value="a2"/>
-                <property name="prefix" value="u2_a_"/>
-            </include>,
-            <include refid="org.col.db.mapper.NameMapper.nameCols">
-                <property name="alias" value="an2"/>
-                <property name="prefix" value="u2_a_n_"/>
-            </include>,
-            ed2.key AS decision_key2
+    <select id="listKeys" parameterType="map" resultType="Object">
+        SELECT <include refid="keySelect"/> AS key, n.scientific_name
         FROM
-            name_usage_${datasetKey} u1
-            JOIN name_${datasetKey} n1 ON u1.name_id=n1.id
-            LEFT JOIN name_usage_${datasetKey} a1 ON u1.parent_id=a1.id AND u1.is_synonym
-            LEFT JOIN name_${datasetKey} an1 ON a1.name_id=an1.id
-            LEFT JOIN decision ed1 ON ed1.subject_id=u1.id
-        ,
+            name_usage_${datasetKey} u
+            JOIN name_${datasetKey} n ON u.name_id=n.id
+            <if test="withDecision != null">
+                LEFT JOIN decision ed ON ed.subject_id=u.id
+            </if>,
             name_usage_${datasetKey} u2
             JOIN name_${datasetKey} n2 ON u2.name_id=n2.id
-            LEFT JOIN name_usage_${datasetKey} a2 ON u2.parent_id=a2.id AND u2.is_synonym
-            LEFT JOIN name_${datasetKey} an2 ON a2.name_id=an2.id
-            LEFT JOIN decision ed2 ON ed2.subject_id=u2.id
-
+            <if test="withDecision != null">
+                LEFT JOIN decision ed2 ON ed2.subject_id=u2.id
+            </if>
         <where>
-            u1.id &lt; u2.id
+            u.id &lt; u2.id
             <choose>
                 <when test="mode.name() == 'NAMES_INDEX' ">
-                    AND n1.name_index_id = n2.name_index_id
+                    AND n.name_index_id = n2.name_index_id
                 </when>
                 <when test="mode.name() == 'CANONICAL' ">
-                    AND lower(n1.scientific_name) = lower(n2.scientific_name)
+                    AND lower(n.scientific_name) = lower(n2.scientific_name)
                 </when>
                 <otherwise>
-                    AND lower(n1.scientific_name) = lower(n2.scientific_name)
-                    AND lower(n1.authorship) = lower(n2.authorship)
+                    AND lower(n.scientific_name) = lower(n2.scientific_name)
+                    AND lower(n.authorship) = lower(n2.authorship)
                 </otherwise>
             </choose>
             <if test="rank != null">
-                AND n1.rank=#{rank}::rank AND n2.rank=#{rank}::rank
+                AND n.rank=#{rank}::rank AND n2.rank=#{rank}::rank
             </if>
-            <if test="status1 != null">
-                AND u1.status=#{status1}
-            </if>
-            <if test="status2 != null">
-                AND u2.status=#{status2}
+            <if test="status != null and !status.isEmpty()">
+                AND u.status IN (<foreach collection="status" item="st" separator=",">#{st}</foreach>)
+                AND u2.status IN (<foreach collection="status" item="st" separator=",">#{st}</foreach>)
             </if>
             <if test="parentDifferent != null">
-                AND u1.parent_id <if test="parentDifferent">!</if>= u2.parent_id
+                AND u.parent_id <if test="parentDifferent">!</if>= u2.parent_id
             </if>
             <if test="withDecision != null">
                 AND
                 <if test="withDecision">
-                    (ed1.key IS NOT NULL OR ed2.key IS NOT NULL)
+                    (ed.key IS NOT NULL OR ed2.key IS NOT NULL)
                 </if>
                 <if test="!withDecision">
-                    ed1.key IS NULL AND ed2.key IS NULL
+                    ed.key IS NULL AND ed2.key IS NULL
                 </if>
             </if>
         </where>
-
-        ORDER BY
-            n1.scientific_name,
-            n2.scientific_name
-
+        ORDER BY n.scientific_name
         <include refid="org.col.db.mapper.Common.limit" />
+    </select>
+
+    <select id="listUsages" parameterType="map" resultMap="duplicateResultMap">
+        SELECT
+            <include refid="keySelect"/> AS key, u.is_synonym,
+            <include refid="org.col.db.mapper.TaxonMapper.taxonCols">
+                <property name="alias" value="u"/>
+                <property name="prefix" value=""/>
+            </include>,
+            <include refid="org.col.db.mapper.NameMapper.nameCols">
+                <property name="alias" value="n"/>
+                <property name="prefix" value="n_"/>
+            </include>,
+            <include refid="org.col.db.mapper.TaxonMapper.taxonCols">
+                <property name="alias" value="a"/>
+                <property name="prefix" value="a_"/>
+            </include>,
+            <include refid="org.col.db.mapper.NameMapper.nameCols">
+                <property name="alias" value="an"/>
+                <property name="prefix" value="a_n_"/>
+            </include>,
+            ed.key AS decision_key
+        FROM
+            name_usage_${datasetKey} u
+            JOIN name_${datasetKey} n ON u.name_id=n.id
+            LEFT JOIN name_usage_${datasetKey} a ON u.parent_id=a.id AND u.is_synonym
+            LEFT JOIN name_${datasetKey} an ON a.name_id=an.id
+            LEFT JOIN decision ed ON ed.subject_id=u.id
+        <where>
+            <include refid="keySelect"/> IN (<foreach collection="keys" item="k" separator=",">#{k}</foreach>)
+            <if test="rank != null">
+                AND n.rank=#{rank}::rank
+            </if>
+            <if test="status != null and !status.isEmpty()">
+                AND u.status IN (<foreach collection="status" item="st" separator=",">#{st}</foreach>)
+            </if>
+        </where>
+        ORDER BY n.scientific_name
     </select>
 
 </mapper>

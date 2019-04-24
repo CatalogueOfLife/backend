@@ -1,44 +1,61 @@
 package org.col.api.model;
 
+import java.util.List;
 import java.util.Objects;
 
 public class Duplicate {
+  private Object key;
+  private List<UsageDecision> usages;
   
-  private NameUsage usage1;
-  private Integer decisionKey1;
-  private NameUsage usage2;
-  private Integer decisionKey2;
+  public static class UsageDecision {
+    private NameUsage usage;
+    private EditorialDecision decision;
   
-  public NameUsage getUsage1() {
-    return usage1;
+    public NameUsage getUsage() {
+      return usage;
+    }
+  
+    public void setUsage(NameUsage usage) {
+      this.usage = usage;
+    }
+  
+    public EditorialDecision getDecision() {
+      return decision;
+    }
+  
+    public void setDecision(EditorialDecision decision) {
+      this.decision = decision;
+    }
+  
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) return true;
+      if (o == null || getClass() != o.getClass()) return false;
+      UsageDecision that = (UsageDecision) o;
+      return Objects.equals(usage, that.usage) &&
+          Objects.equals(decision, that.decision);
+    }
+  
+    @Override
+    public int hashCode() {
+      return Objects.hash(usage, decision);
+    }
   }
   
-  public void setUsage1(NameUsage usage1) {
-    this.usage1 = usage1;
+  public Object getKey() {
+    return key;
   }
   
-  public NameUsage getUsage2() {
-    return usage2;
+  public void setKey(Object key) {
+    this.key = key;
   }
   
-  public void setUsage2(NameUsage usage2) {
-    this.usage2 = usage2;
+  public List<UsageDecision> getUsages() {
+    return usages;
   }
   
-  public Integer getDecisionKey1() {
-    return decisionKey1;
-  }
-  
-  public void setDecisionKey1(Integer decisionKey1) {
-    this.decisionKey1 = decisionKey1;
-  }
-  
-  public Integer getDecisionKey2() {
-    return decisionKey2;
-  }
-  
-  public void setDecisionKey2(Integer decisionKey2) {
-    this.decisionKey2 = decisionKey2;
+  public void setUsages(List<UsageDecision> usages) {
+    this.usages = usages;
   }
   
   @Override
@@ -46,14 +63,12 @@ public class Duplicate {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     Duplicate duplicate = (Duplicate) o;
-    return Objects.equals(usage1, duplicate.usage1) &&
-        Objects.equals(decisionKey1, duplicate.decisionKey1) &&
-        Objects.equals(usage2, duplicate.usage2) &&
-        Objects.equals(decisionKey2, duplicate.decisionKey2);
+    return Objects.equals(key, duplicate.key) &&
+        Objects.equals(usages, duplicate.usages);
   }
   
   @Override
   public int hashCode() {
-    return Objects.hash(usage1, decisionKey1, usage2, decisionKey2);
+    return Objects.hash(key, usages);
   }
 }

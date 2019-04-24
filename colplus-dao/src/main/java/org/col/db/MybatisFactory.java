@@ -11,6 +11,7 @@ import org.apache.ibatis.transaction.jdbc.JdbcTransactionFactory;
 import org.apache.ibatis.type.EnumOrdinalTypeHandler;
 import org.apache.ibatis.type.TypeAliasRegistry;
 import org.apache.ibatis.type.TypeHandlerRegistry;
+import org.col.api.model.Duplicate;
 import org.col.api.model.Name;
 import org.col.api.model.TreeNode;
 import org.col.api.search.NameUsageWrapper;
@@ -78,6 +79,7 @@ public class MybatisFactory {
     registry.registerAlias(IntCount.class);
     registry.registerAlias(StringCount.class);
     registry.registerAlias("TreeNodeMybatis", TreeNode.TreeNodeMybatis.class);
+    registry.registerAlias("UsageDecision", Duplicate.UsageDecision.class);
   }
   
   private static void registerTypeHandlers(TypeHandlerRegistry registry) {
