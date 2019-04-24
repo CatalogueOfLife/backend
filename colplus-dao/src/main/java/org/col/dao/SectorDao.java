@@ -27,7 +27,7 @@ public class SectorDao extends GlobalEntityDao<Sector, SectorMapper> {
   @Override
   public Integer create(Sector obj, int user) {
     obj.applyUser(user);
-    try (SqlSession session = factory.openSession(ExecutorType.BATCH, false)) {
+    try (SqlSession session = factory.openSession(ExecutorType.SIMPLE, false)) {
       SectorMapper mapper = session.getMapper(SectorMapper.class);
   
       final DatasetID did = obj.getTargetAsDatasetID();
@@ -62,7 +62,7 @@ public class SectorDao extends GlobalEntityDao<Sector, SectorMapper> {
       }
   
       for (Taxon t : toCopy) {
-        t.setSectorKey(obj.getKey());
+        t.setSectorKey(secKey);
         TaxonDao.copyTaxon(session, t, did, user, Collections.emptySet());
       }
   

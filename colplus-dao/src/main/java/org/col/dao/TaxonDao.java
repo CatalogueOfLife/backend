@@ -56,7 +56,7 @@ public class TaxonDao extends DatasetEntityDao<Taxon, TaxonMapper> {
     copyName(session, t, targetDatasetKey, user, lookupReference);
     
     setKeys(t, targetDatasetKey);
-    t.applyUser(user);
+    t.applyUser(user, true);
     t.setOrigin(Origin.SOURCE);
     t.setParentId(targetParentID);
     session.getMapper(TaxonMapper.class).create(t);
@@ -83,7 +83,7 @@ public class TaxonDao extends DatasetEntityDao<Taxon, TaxonMapper> {
   static void copyName(final SqlSession session, final NameUsage u, final int targetDatasetKey, int user,
                                Function<Reference, String> lookupReference) {
     Name n = u.getName();
-    n.applyUser(user);
+    n.applyUser(user, true);
     n.setOrigin(Origin.SOURCE);
     if (n.getPublishedInId() != null) {
       ReferenceMapper rm = session.getMapper(ReferenceMapper.class);
