@@ -182,7 +182,23 @@ public class NameUsageTransfer {
       enu.setPayload(NAME_USAGE_WRITER.writeValueAsString(nuw));
     }
     return enu;
+  } 
+
+  static void saveClassification(NameUsageWrapper from, EsNameUsage to) {
+    if (notEmpty(from.getClassification())) {
+      int sz = from.getClassification().size();
+      List<String> ids = new ArrayList<>(sz);
+      List<Monomial> monomials = new ArrayList<>(sz);
+      SimpleName sn;
+      for (int i = 0; i < sz; i++) {
+        ids.add((sn = from.getClassification().get(i)).getId());
+        monomials.add(new Monomial(sn.getRank(), sn.getName()));
+      }
+      to.setClassification(monomials);
+      to.setClassificationIds(ids);
+    }
   }
+
 
   private static void saveScientificName(NameUsageWrapper from, EsNameUsage to) {
     String w = normalizeWeakly(from.getUsage().getName().getScientificName());
@@ -204,21 +220,6 @@ public class NameUsageTransfer {
           .map(VernacularName::getName)
           .collect(Collectors.toList());
       to.setVernacularNames(names);
-    }
-  }
-
-  private static void saveClassification(NameUsageWrapper from, EsNameUsage to) {
-    if (notEmpty(from.getClassification())) {
-      int sz = from.getClassification().size();
-      List<String> ids = new ArrayList<>(sz);
-      List<Monomial> monomials = new ArrayList<>(sz);
-      SimpleName sn;
-      for (int i = 0; i < sz; i++) {
-        ids.add((sn = from.getClassification().get(i)).getId());
-        monomials.add(new Monomial(sn.getRank(), sn.getName()));
-      }
-      to.setClassification(monomials);
-      to.setClassificationIds(ids);
     }
   }
 

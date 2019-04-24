@@ -29,6 +29,12 @@
         <result property="classificationRanks" column="classificationRanks" typeHandler="org.col.db.type.RankArrayTypeHandler"/>
     </resultMap>
 
+    <resultMap id="classificationResultMap" type="NameUsageWrapper">
+        <result property="classificationIds" column="classificationIds" typeHandler="org.col.db.type.StringArrayTypeHandler"/>
+        <result property="classificationNames" column="classificationNames" typeHandler="org.col.db.type.StringArrayTypeHandler"/>
+        <result property="classificationRanks" column="classificationRanks" typeHandler="org.col.db.type.RankArrayTypeHandler"/>
+    </resultMap>
+
     <resultMap id="taxonGetClassificationResultMap" type="NameUsageWrapper" autoMapping="true" extends="usageResultMap">
         <collection property="classification" ofType="SimpleName" column="{id=id,datasetKey=dataset_key}" autoMapping="true"
                     select="org.col.db.mapper.TaxonMapper.classificationSimple"/>
@@ -84,6 +90,27 @@
 		        <if test="sectorKey != null">
 		        	WHERE u.sector_key = #{sectorKey}
 	    	    </if>
+	   )
+	   SELECT * FROM tree
+    </select>
+
+    <select id="processTree" parameterType="map" resultMap="classificationResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">   
+        WITH RECURSIVE tree AS(
+            SELECT
+                ARRAY[u.id]::text[] AS classificationIds,
+                ARRAY[n.rank]::rank[] AS classificationRanks,
+                ARRAY[n.scientific_name]::text[] AS classificationNames
+		    FROM <include refid="org.col.db.mapper.NameUsageMapper.FROM"/>
+	        WHERE u.id = #{usageId} AND u.dataset_key = #{datasetKey}
+	        
+            UNION
+
+            SELECT
+                array_append(tree.classificationIds, u.id),
+                array_append(tree.classificationRanks, n.rank),
+                array_append(tree.classificationNames, n.scientific_name),
+		    FROM <include refid="org.col.db.mapper.NameUsageMapper.FROM"/>
+            JOIN tree ON (tree.id = u.parent_id)
 	   )
 	   SELECT * FROM tree
     </select>

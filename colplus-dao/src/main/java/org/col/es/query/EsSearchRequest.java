@@ -77,7 +77,7 @@ public class EsSearchRequest {
   public void setSort(List<SortField> sort) {
     this.sort = sort;
   }
-
+  
   public Integer getSize() {
     return size;
   }

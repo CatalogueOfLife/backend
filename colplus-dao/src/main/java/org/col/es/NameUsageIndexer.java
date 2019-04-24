@@ -11,7 +11,6 @@ import com.google.common.base.Charsets;
 import org.col.api.search.NameUsageWrapper;
 import org.col.es.model.EsNameUsage;
 import org.elasticsearch.client.Request;
-import org.elasticsearch.client.Response;
 import org.elasticsearch.client.RestClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,6 +53,20 @@ final class NameUsageIndexer implements Consumer<List<NameUsageWrapper>> {
     }
   }
 
+  void indexRaw(List<EsNameUsage> batch) {
+    buf.setLength(0);
+    try {
+      for (EsNameUsage doc : batch) {
+        buf.append(header);
+        buf.append(WRITER.writeValueAsString(doc));
+        buf.append("\n");
+      }
+      sendBatch(batch.size());
+    } catch (IOException e) {
+      throw new EsException(e);
+    }
+  }
+
   private void index(List<NameUsageWrapper> batch) {
     buf.setLength(0);
     NameUsageTransfer transfer = new NameUsageTransfer();
@@ -63,12 +76,7 @@ final class NameUsageIndexer implements Consumer<List<NameUsageWrapper>> {
         buf.append(WRITER.writeValueAsString(transfer.toDocument(nuw)));
         buf.append("\n");
       }
-      Request request = new Request("POST", "/_bulk");
-      request.setJsonEntity(buf.toString());
-      @SuppressWarnings("unused")
-      Response response = EsUtil.executeRequest(client, request);
-      LOG.debug("Successfully inserted {} name usages into index {}", batch.size(), index);
-      indexed += batch.size(); // TODO Inspect response and get number of documents actually indexed
+      sendBatch(batch.size());
     } catch (IOException e) {
       throw new EsException(e);
     }
@@ -87,22 +95,25 @@ final class NameUsageIndexer implements Consumer<List<NameUsageWrapper>> {
         docSize += json.getBytes(Charsets.UTF_8).length;
         buf.append("\n");
       }
-      Request request = new Request("POST", "/_bulk");
-      request.setJsonEntity(buf.toString());
-      @SuppressWarnings("unused")
-      Response response = EsUtil.executeRequest(client, request);
+      sendBatch(batch.size());
       double reqSize = ((double) buf.toString().getBytes(Charsets.UTF_8).length / (double) (1024 * 1024));
       double totSize = ((double) docSize / (double) (1024 * 1024));
       double avgSize = ((double) docSize / (double) (batch.size() * 1024));
       String req = df.format(reqSize);
       String tot = df.format(totSize);
       String avg = df.format(avgSize);
-      LOG.debug("Successfully inserted {} name usages into index {}", batch.size(), index);
       LOG.debug("Average document size: {} KB. Total document size: {} MB. Request body size: {} MB.", avg, tot, req);
-      indexed += batch.size();
     } catch (IOException e) {
       throw new EsException(e);
     }
+  }
+
+  private void sendBatch(int batchSize) throws IOException {
+    Request request = new Request("POST", "/_bulk");
+    request.setJsonEntity(buf.toString());
+    EsUtil.executeRequest(client, request);
+    LOG.debug("Successfully inserted {} name usages into index {}", batchSize, index);
+    indexed += batchSize;
   }
 
   /**

@@ -16,6 +16,8 @@ import org.col.db.mapper.NameUsageWrapperMapper;
 import org.col.db.mapper.SectorMapper;
 import org.col.es.model.EsNameUsage;
 import org.col.es.query.EsSearchRequest;
+import org.col.es.query.Query;
+import org.col.es.query.TermQuery;
 import org.elasticsearch.client.RestClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,7 +51,7 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
         LOG.debug("Indexing usages for dataset {}", datasetKey);
         mapper.processDatasetUsages(datasetKey, null, handler);
       }
-      EsUtil.refreshIndex(client, index); // Necessary
+      EsUtil.refreshIndex(client, index);
       tCount = indexer.documentsIndexed();
       indexer.reset();
       try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(indexer, 4096)) {
@@ -75,7 +77,7 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
         LOG.debug("Indexing usages for sector {}", sectorKey);
         mapper.processDatasetUsages(datasetKey, sectorKey, handler);
       }
-      EsUtil.refreshIndex(client, index); // Necessary
+      EsUtil.refreshIndex(client, index);
       tCount = indexer.documentsIndexed();
       indexer.reset();
       try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(indexer, 4096)) {
@@ -89,7 +91,7 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
     }
     logSectorTotals(sectorKey, tCount, bCount);
   }
-  
+
   @Override
   public void deleteSector(Integer sectorKey) {
     try (SqlSession session = factory.openSession()) {
@@ -98,7 +100,7 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
       throw new EsException(e);
     }
   }
-  
+
   @Override
   public void indexTaxa(Integer datasetKey, Collection<String> taxonIds) {
     NameUsageIndexer indexer = new NameUsageIndexer(client, index);
@@ -110,17 +112,25 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
           .collect(Collectors.toList());
       LOG.info("Indexing {} taxa from dataset {}", taxa.size(), datasetKey);
       indexer.accept(taxa);
-      EsUtil.refreshIndex(client, index); // Necessary
+      EsUtil.refreshIndex(client, index);
     } catch (IOException e) {
       throw new EsException(e);
     }
   }
-  
+
   @Override
   public void updateClassification(Integer datasetKey, String rootTaxonId) {
-    LOG.warn("Not implemented!");
+    NameUsageIndexer indexer = new NameUsageIndexer(client, index);
+    try (SqlSession session = factory.openSession()) {
+      NameUsageWrapperMapper mapper = session.getMapper(NameUsageWrapperMapper.class);
+      try (ClassificationUpdater updater = new ClassificationUpdater(indexer, datasetKey)) {
+        mapper.processTree(datasetKey, rootTaxonId, updater);
+      }
+    } catch (IOException e) {
+      throw new EsException(e);
+    }
   }
-  
+
   @Override
   public void indexAll() {
     NameUsageIndexer indexer = new NameUsageIndexer(client, index);
@@ -156,6 +166,10 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
     logTotals(tCount, bCount);
   }
 
+  public void indexClassification() {
+
+  }
+
   private void createOrEmptyIndex(int datasetKey) throws IOException {
     if (EsUtil.indexExists(client, index)) {
       EsUtil.deleteDataset(client, index, datasetKey);
@@ -164,7 +178,7 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
       EsUtil.createIndex(client, index, esConfig.nameUsage);
     }
   }
-  
+
   /**
    * @return datasetKey of the deleted sector
    */
@@ -186,7 +200,7 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
     return sector.getDatasetKey();
   }
 
-  private void logDatasetTotals(int datasetKey, int tCount,int bCount) {
+  private void logDatasetTotals(int datasetKey, int tCount, int bCount) {
     String fmt = "Successfully indexed dataset {}. Index: {}. Usages: {}. Bare names: {}. Total: {}.";
     LOG.info(fmt, datasetKey, index, tCount, bCount, (tCount + bCount));
   }
