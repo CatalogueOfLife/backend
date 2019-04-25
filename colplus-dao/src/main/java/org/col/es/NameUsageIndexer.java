@@ -53,15 +53,42 @@ final class NameUsageIndexer implements Consumer<List<NameUsageWrapper>> {
     }
   }
 
-  void indexRaw(List<EsNameUsage> batch) {
+  /**
+   * Indexes the provided "raw" documents. The documents are presumed to have their document ID nullified. Elasticsearch will fail otherwise
+   * since we use strict typing.
+   * 
+   * @param documents
+   */
+  void indexDocuments(List<EsNameUsage> documents) {
     buf.setLength(0);
     try {
-      for (EsNameUsage doc : batch) {
+      for (EsNameUsage doc : documents) {
         buf.append(header);
         buf.append(WRITER.writeValueAsString(doc));
         buf.append("\n");
       }
-      sendBatch(batch.size());
+      sendBatch(documents.size());
+    } catch (IOException e) {
+      throw new EsException(e);
+    }
+  }
+
+  /**
+   * Updates the provided documents. The documents are presumed to have their document ID set.
+   * 
+   * @param documents
+   */
+  void update(List<EsNameUsage> documents) {
+    buf.setLength(0);
+    try {
+      for (EsNameUsage doc : documents) {
+        buf.append(getUpdateHeader(doc.getDocumentId()));
+        doc.setDocumentId(null);
+        buf.append("{\"doc\":");
+        buf.append(WRITER.writeValueAsString(doc));
+        buf.append("}\n");
+      }
+      sendBatch(documents.size());
     } catch (IOException e) {
       throw new EsException(e);
     }
@@ -112,7 +139,6 @@ final class NameUsageIndexer implements Consumer<List<NameUsageWrapper>> {
     Request request = new Request("POST", "/_bulk");
     request.setJsonEntity(buf.toString());
     EsUtil.executeRequest(client, request);
-    LOG.debug("Successfully inserted {} name usages into index {}", batchSize, index);
     indexed += batchSize;
   }
 
@@ -148,6 +174,11 @@ final class NameUsageIndexer implements Consumer<List<NameUsageWrapper>> {
    */
   int documentsIndexed() {
     return indexed;
+  }
+
+  private String getUpdateHeader(String id) {
+    String fmt = "{\"update\":{\"_id\":\"%s\",\"_index\":\"%s\",\"_type\":\"%s\"}}%n";
+    return String.format(fmt, id, index, DEFAULT_TYPE_NAME);
   }
 
   private String getHeader() {

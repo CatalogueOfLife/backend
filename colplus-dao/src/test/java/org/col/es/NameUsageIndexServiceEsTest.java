@@ -28,7 +28,7 @@ import static org.gbif.nameparser.api.Rank.PHYLUM;
 import static org.gbif.nameparser.api.Rank.SPECIES;
 import static org.junit.Assert.assertEquals;
 
-@Ignore("Its too slow for jenkins most of the time")
+// @Ignore("Its too slow for jenkins most of the time")
 public class NameUsageIndexServiceEsTest extends EsReadWriteTestBase {
 
   @Test // Nice in combination with PgImportIT.testGsdGithub
@@ -41,8 +41,8 @@ public class NameUsageIndexServiceEsTest extends EsReadWriteTestBase {
   }
 
   /*
-   * To make a realistic test, run the SQL script in src/test/resources/org/col/es after having done a sizable import using PgImportIT. The
-   * import should must contain chromista. The script will make all chromista belong to sector 13.
+   * To make a realistic test (performance-wise), run the SQL script in src/test/resources/org/col/es after importing itis_global.zip (using
+   * PgImportIT). The import should must contain chromista. The script will make all chromista belong to sector 13.
    */
   @Test
   @Ignore
@@ -53,7 +53,22 @@ public class NameUsageIndexServiceEsTest extends EsReadWriteTestBase {
     }
   }
 
+  /*
+   * To make a realistic test (performance-wise), import itis_global.zip first (using PgImportIT). The only thing this test does is index
+   * the entire dataset first, and then re-indexes the insecta with exactly the same values they already had.
+   */
   @Test
+  @Ignore
+  public void updateClassification() throws IOException, EsException {
+    try (RestClient client = getEsClient()) {
+      NameUsageIndexServiceEs svc = new NameUsageIndexServiceEs(client, getEsConfig(), factory());
+      //svc.indexDataset(1000);
+      svc.updateClassification(1000, "41658578"); // Insecta
+    }
+  }
+
+  @Test
+  @Ignore
   public void indexWithClassification() throws IOException, EsException {
 
     try (RestClient client = getEsClient()) {

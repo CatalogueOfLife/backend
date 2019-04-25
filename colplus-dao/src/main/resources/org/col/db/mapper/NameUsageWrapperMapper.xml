@@ -97,19 +97,23 @@
     <select id="processTree" parameterType="map" resultMap="classificationResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">   
         WITH RECURSIVE tree AS(
             SELECT
+            	u.id AS id,
                 ARRAY[u.id]::text[] AS classificationIds,
                 ARRAY[n.rank]::rank[] AS classificationRanks,
                 ARRAY[n.scientific_name]::text[] AS classificationNames
-		    FROM <include refid="org.col.db.mapper.NameUsageMapper.FROM"/>
+		    FROM name_usage_${datasetKey} u
+            JOIN name_${datasetKey} n ON u.name_id=n.id
 	        WHERE u.id = #{usageId} AND u.dataset_key = #{datasetKey}
 	        
             UNION
 
             SELECT
+            	u.id,
                 array_append(tree.classificationIds, u.id),
                 array_append(tree.classificationRanks, n.rank),
-                array_append(tree.classificationNames, n.scientific_name),
-		    FROM <include refid="org.col.db.mapper.NameUsageMapper.FROM"/>
+                array_append(tree.classificationNames, n.scientific_name)
+		    FROM name_usage_${datasetKey} u
+            JOIN name_${datasetKey} n ON u.name_id=n.id
             JOIN tree ON (tree.id = u.parent_id)
 	   )
 	   SELECT * FROM tree

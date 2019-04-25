@@ -28,6 +28,7 @@ import static org.col.es.SynonymResultHandler.KeyType.DATASET;
 /**
  * Collects synonyms from Postgres/MyBatis until and adds their classification before inserting them into Elasticsearch.
  */
+@Deprecated
 final class SynonymResultHandler implements ResultHandler<NameUsageWrapper>, AutoCloseable {
 
   static enum KeyType {

@@ -65,6 +65,21 @@ public class NameUsageSearchService {
     }
   }
 
+  /**
+   * Returns the raw Elasticsearch documents matching the specified query, with payloads still pruned and zipped, and with Elasticsearch's
+   * internal document ID set on the EsNameUsage instances.
+   * 
+   * @param esSearchRequest
+   * @return
+   */
+  public List<EsNameUsage> getDocumentsWithDocId(EsSearchRequest esSearchRequest) {
+    try {
+      return getDocumentsWithDocId(index, esSearchRequest);
+    } catch (IOException e) {
+      throw new EsException(e);
+    }
+  }
+
   @VisibleForTesting
   NameSearchResponse search(String index, NameSearchRequest colSearchRequest, Page page) throws IOException {
     NameSearchRequestTranslator translator = new NameSearchRequestTranslator(colSearchRequest, page);
@@ -91,6 +106,13 @@ public class NameUsageSearchService {
     EsNameSearchResponse esResponse = executeSearchRequest(index, esSearchRequest);
     NameSearchResponseTransfer transfer = new NameSearchResponseTransfer(esResponse);
     return transfer.getDocuments();
+  }
+
+  @VisibleForTesting
+  List<EsNameUsage> getDocumentsWithDocId(String index, EsSearchRequest esSearchRequest) throws IOException {
+    EsNameSearchResponse esResponse = executeSearchRequest(index, esSearchRequest);
+    NameSearchResponseTransfer transfer = new NameSearchResponseTransfer(esResponse);
+    return transfer.getDocumentsWithDocId();
   }
 
   private EsNameSearchResponse executeSearchRequest(String index, EsSearchRequest esSearchRequest) throws IOException {

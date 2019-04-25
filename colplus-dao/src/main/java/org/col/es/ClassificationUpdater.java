@@ -1,11 +1,11 @@
 package org.col.es;
 
 import java.io.Closeable;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -18,13 +18,13 @@ import org.col.es.model.EsNameUsage;
 import org.col.es.query.BoolQuery;
 import org.col.es.query.EsSearchRequest;
 import org.col.es.query.SortField;
+import org.col.es.query.TermQuery;
 import org.col.es.query.TermsQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ClassificationUpdater implements Closeable, ResultHandler<NameUsageWrapper> {
 
-  @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(ClassificationUpdater.class);
 
   private static final int BATCH_SIZE = 4096;
@@ -45,7 +45,7 @@ public class ClassificationUpdater implements Closeable, ResultHandler<NameUsage
   }
 
   @Override
-  public void close() throws IOException {
+  public void close() {
     if (collected.size() != 0) {
       flush();
     }
@@ -60,21 +60,26 @@ public class ClassificationUpdater implements Closeable, ResultHandler<NameUsage
   }
 
   private void flush() {
+    LOG.debug("Received {} records from Postgres", collected.size());
     Map<String, NameUsageWrapper> lookups = collected.stream().collect(Collectors.toMap(this::getKey, Function.identity()));
-    List<EsNameUsage> documents = loadNameUsages();
+    List<EsNameUsage> documents = loadNameUsages(lookups.keySet());
+    LOG.debug("Found {} matching documents", documents.size());
     documents.forEach(enu -> {
       NameUsageWrapper nuw = lookups.get(enu.getUsageId());
+      enu.setUsageId(null); // Won't need to update that one
       NameUsageTransfer.saveClassification(nuw, enu);
     });
-    indexer.indexRaw(documents);
+    indexer.update(documents);
+    LOG.debug("Updated {} documents", documents.size());
+    collected.clear();
   }
 
-  private List<EsNameUsage> loadNameUsages() {
+  private List<EsNameUsage> loadNameUsages(Set<String> ids) {
     List<EsNameUsage> usages = new ArrayList<>(collected.size());
     List<String> terms = new ArrayList<>(1024);
-    for (NameUsageWrapper nuw : collected) {
-      terms.add(getKey(nuw));
-      if (terms.size() == 1024) { // Can't have more than this many terms in a TermsQuery
+    for (String id : ids) {
+      terms.add(id);
+      if (terms.size() == 1024) { // Max number of terms in TermsQuery is 1024
         usages.addAll(loadChunk(terms));
         terms.clear();
       }
@@ -85,15 +90,21 @@ public class ClassificationUpdater implements Closeable, ResultHandler<NameUsage
     return usages;
   }
 
+  /*
+   * Returns bare bones name usage documents containing only the internal document ID (needed for the update later on) and the usage ID (so
+   * they can be matched to the Postgres records).
+   */
   private List<EsNameUsage> loadChunk(List<String> terms) {
     EsSearchRequest query = EsSearchRequest.emptyRequest();
     BoolQuery constraints = new BoolQuery()
         .filter(new TermsQuery("usageId", terms))
-        .filter(new TermsQuery("datasetKey", datasetKey));
+        .filter(new TermQuery("datasetKey", datasetKey));
+    query.select("usageId");
     query.setQuery(constraints);
     query.setSort(Arrays.asList(SortField.DOC));
+    query.setSize(terms.size());
     NameUsageSearchService svc = new NameUsageSearchService(indexer.getIndexName(), indexer.getEsClient());
-    return svc.getDocuments(query);
+    return svc.getDocumentsWithDocId(query);
   }
 
   private String getKey(NameUsageWrapper nuw) {

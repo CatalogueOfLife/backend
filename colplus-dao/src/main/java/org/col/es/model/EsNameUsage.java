@@ -23,6 +23,9 @@ import static org.col.es.annotations.Analyzer.IGNORE_CASE;
  */
 public class EsNameUsage {
 
+  // Elasticsearch's own id for the document
+  private String documentId;
+
   private String usageId;
   private Integer datasetKey;
   private Integer sectorKey;
@@ -54,6 +57,14 @@ public class EsNameUsage {
   private List<String> classificationIds;
   private List<Monomial> classification;
   private String payload;
+
+  public String getDocumentId() {
+    return documentId;
+  }
+
+  public void setDocumentId(String documentId) {
+    this.documentId = documentId;
+  }
 
   public String getUsageId() {
     return usageId;
@@ -240,6 +251,7 @@ public class EsNameUsage {
       return false;
     EsNameUsage that = (EsNameUsage) o;
     return true
+        && Objects.equals(documentId, that.documentId)
         && Objects.equals(authorship, that.authorship)
         && Objects.equals(classification, that.classification)
         && Objects.equals(classificationIds, that.classificationIds)
@@ -265,6 +277,7 @@ public class EsNameUsage {
   @Override
   public int hashCode() {
     return Objects.hash(
+        documentId,
         authorship,
         classification,
         classificationIds,

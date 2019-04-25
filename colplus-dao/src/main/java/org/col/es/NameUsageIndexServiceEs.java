@@ -16,8 +16,6 @@ import org.col.db.mapper.NameUsageWrapperMapper;
 import org.col.db.mapper.SectorMapper;
 import org.col.es.model.EsNameUsage;
 import org.col.es.query.EsSearchRequest;
-import org.col.es.query.Query;
-import org.col.es.query.TermQuery;
 import org.elasticsearch.client.RestClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -125,11 +123,13 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
       NameUsageWrapperMapper mapper = session.getMapper(NameUsageWrapperMapper.class);
       try (ClassificationUpdater updater = new ClassificationUpdater(indexer, datasetKey)) {
         mapper.processTree(datasetKey, rootTaxonId, updater);
-      }
-    } catch (IOException e) {
+       }
+      EsUtil.refreshIndex(client, index);
+   } catch (IOException e) {
       throw new EsException(e);
     }
-  }
+    LOG.info("Successfully updated {} name usages", indexer.documentsIndexed());
+ }
 
   @Override
   public void indexAll() {

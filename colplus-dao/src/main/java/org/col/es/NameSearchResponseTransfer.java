@@ -79,6 +79,19 @@ class NameSearchResponseTransfer {
     return esResponse.getHits().getHits().stream().map(SearchHit::getSource).collect(Collectors.toList());
   }
 
+  /**
+   * Returns the raw Elasticsearch document with their internal document IDs set on the EsNameUsage instances.
+   * 
+   * @return
+   */
+  public List<EsNameUsage> getDocumentsWithDocId() {
+    return esResponse.getHits().getHits().stream().map(hit -> {
+      EsNameUsage enu = hit.getSource();
+      enu.setDocumentId(hit.getId());
+      return enu;
+    }).collect(Collectors.toList());
+  }
+
   private List<NameUsageWrapper> transferNameUsages() throws IOException {
     List<SearchHit<EsNameUsage>> hits = esResponse.getHits().getHits();
     List<NameUsageWrapper> nuws = new ArrayList<>(hits.size());
