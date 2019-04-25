@@ -13,6 +13,7 @@
     -->
     <typeAliases>
         <typeAlias type="org.col.api.model.TreeNode$TreeNodeMybatis" alias="TreeNodeMybatis" />
+        <typeAlias type="org.col.api.model.Duplicate$UsageDecision" alias="UsageDecision" />
         <package name="org.col.api.model" />
         <package name="org.col.api.search" />
         <package name="org.gbif.nameparser.api" />
