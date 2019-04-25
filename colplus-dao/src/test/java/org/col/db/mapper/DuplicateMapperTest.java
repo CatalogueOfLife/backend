@@ -19,6 +19,7 @@ import org.postgresql.jdbc.PgConnection;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+@Ignore
 public class DuplicateMapperTest {
   
   final static int datasetKey = 1000;
