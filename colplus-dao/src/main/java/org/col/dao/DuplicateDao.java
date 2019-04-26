@@ -3,10 +3,12 @@ package org.col.dao;
 import java.util.List;
 import java.util.Set;
 
+import com.google.common.base.Preconditions;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.model.Duplicate;
 import org.col.api.model.Page;
-import org.col.api.vocab.EqualityMode;
+import org.col.api.vocab.MatchingMode;
 import org.col.api.vocab.TaxonomicStatus;
 import org.col.db.mapper.DuplicateMapper;
 import org.gbif.nameparser.api.Rank;
@@ -26,11 +28,12 @@ public class DuplicateDao {
     mapper = session.getMapper(DuplicateMapper.class);
   }
   
-  public List<Duplicate> find(int datasetKey, EqualityMode mode, Rank rank, Set<TaxonomicStatus> status, Boolean parentDifferent, Boolean withDecision, Page page) {
-    mode = mode == null ? EqualityMode.NAMES_INDEX : mode;
-    // find duplicate keys on page
-    List<Object> keys = mapper.listKeys(datasetKey, mode, rank, status, parentDifferent, withDecision, page);
+  public List<Duplicate> find(MatchingMode mode, Integer minSize, int datasetKey, Integer sectorDatasetKey, Rank rank, Set<TaxonomicStatus> status, Boolean authorshipDifferent, Boolean parentDifferent, Boolean withDecision, Page page) {
+    mode = ObjectUtils.defaultIfNull(mode, MatchingMode.STRICT);
+    minSize = ObjectUtils.defaultIfNull(minSize, 2);
+    Preconditions.checkArgument(minSize > 1, "minimum group size must at least be 2");
+    
     // load all duplicate usages
-    return mapper.listUsages(datasetKey, mode, rank, status, keys);
+    return mapper.duplicates(mode, minSize, datasetKey, sectorDatasetKey, rank, status, authorshipDifferent, parentDifferent, withDecision, page);
   }
 }
