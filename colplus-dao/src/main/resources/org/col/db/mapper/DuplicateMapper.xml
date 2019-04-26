@@ -138,12 +138,18 @@
                 AND array_agg(u.status) @> array[<foreach collection="status" item="st" separator=",">#{st}</foreach>]
             </if>
             <if test="authorshipDifferent != null">
+                AND array_length(array_agg(DISTINCT n.authorship), 1)
                 <!-- make sure at least 2 authorships are different -->
-                AND array_length(array_agg(DISTINCT n.authorship), 1) &gt; 1
+                <if test="authorshipDifferent">&gt; 1</if>
+                <!-- make sure all authorships are the same -->
+                <if test="!authorshipDifferent">= 1</if>
             </if>
             <if test="parentDifferent != null">
+                AND array_length(array_agg(DISTINCT u.parent_id), 1)
                 <!-- make sure at least 2 parents are different -->
-                AND array_length(array_agg(DISTINCT u.parent_id), 1) &gt; 1
+                <if test="parentDifferent">&gt; 1</if>
+                <!-- make sure all parent ids are the same -->
+                <if test="!parentDifferent">= 1</if>
             </if>
         ORDER BY lower(n.scientific_name)
         <include refid="org.col.db.mapper.Common.limit" />

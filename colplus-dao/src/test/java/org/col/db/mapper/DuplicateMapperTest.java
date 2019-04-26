@@ -8,6 +8,8 @@ import java.util.Set;
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.model.Duplicate;
 import org.col.api.model.Page;
+import org.col.api.model.Synonym;
+import org.col.api.model.Taxon;
 import org.col.api.vocab.MatchingMode;
 import org.col.api.vocab.TaxonomicStatus;
 import org.col.db.PgSetupRule;
@@ -16,8 +18,7 @@ import org.gbif.nameparser.api.Rank;
 import org.junit.*;
 import org.postgresql.jdbc.PgConnection;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 @Ignore
 public class DuplicateMapperTest {
@@ -72,41 +73,78 @@ public class DuplicateMapperTest {
   @Test
   public void duplicates() {
     Set<TaxonomicStatus> status = new HashSet<>();
-    List<Duplicate> dups = mapper.duplicates(MatchingMode.STRICT, 2, datasetKey, null, null, null, null, null, null, new Page(0, 10));
+    int minSize = 2;
+    List<Duplicate> dups = mapper.duplicates(MatchingMode.STRICT, minSize, datasetKey, null, null, null, null, null, null, new Page(0, 10));
     show(dups);
-    assertEquals(10, dups.size());
+    assertComplete(10, dups, minSize);
     
     
     Page p = new Page(0, 100);
-    dups = mapper.duplicates(MatchingMode.STRICT, 2, datasetKey, null, null, status, null, null, null, p);
-    assertEquals(19, dups.size());
+    dups = mapper.duplicates(MatchingMode.STRICT, minSize, datasetKey, null, null, status, null, null, null, p);
+    show(dups);
+    assertComplete(19, dups, minSize);
     
-    dups = mapper.duplicates(MatchingMode.STRICT, 2, datasetKey, null, Rank.SUBSPECIES, status, null, null, null, p);
-    assertEquals(4, dups.size());
+    dups = mapper.duplicates(MatchingMode.STRICT, minSize, datasetKey, null, Rank.SUBSPECIES, status, null, null, null, p);
+    assertComplete(4, dups, minSize);
     
-    dups = mapper.duplicates(MatchingMode.STRICT, 2, datasetKey, null, Rank.SUBSPECIES, status, true, null, null, p);
-    assertEquals(2, dups.size());
+    dups = mapper.duplicates(MatchingMode.STRICT, minSize, datasetKey, null, Rank.SUBSPECIES, status, true, null, null, p);
+    assertComplete(2, dups, minSize);
     
     status.add(TaxonomicStatus.PROVISIONALLY_ACCEPTED);
-    dups = mapper.duplicates(MatchingMode.STRICT, 2, datasetKey, null, Rank.SUBSPECIES, status, true, null, null, p);
-    assertEquals(2, dups.size());
-    
+    dups = mapper.duplicates(MatchingMode.STRICT, minSize, datasetKey, null, Rank.SUBSPECIES, status, true, null, null, p);
+    assertComplete(2, dups, minSize);
+  
+    dups = mapper.duplicates(MatchingMode.STRICT, minSize, datasetKey, null, null, status, true, null, null, p);
+    assertComplete(5, dups, minSize);
+
+    status.add(TaxonomicStatus.SYNONYM);
+    dups = mapper.duplicates(MatchingMode.STRICT, minSize, datasetKey, null, null, status, true, null, null, p);
+    assertComplete(9, dups, minSize);
+  
+    dups = mapper.duplicates(MatchingMode.STRICT, minSize, datasetKey, null, null, status, false, null, null, p);
+    assertComplete(0, dups, minSize);
+
+    dups = mapper.duplicates(MatchingMode.STRICT, minSize, datasetKey, null, null, null, false, null, null, p);
+    assertComplete(5, dups, minSize);
+
+    dups = mapper.duplicates(MatchingMode.STRICT, 3, datasetKey, null, null, status, true, null, null, p);
+    assertComplete(2, dups, 3);
+  
+    dups = mapper.duplicates(MatchingMode.STRICT, minSize, datasetKey, null, null, status, true, true, null, p);
+    assertComplete(9, dups, minSize);
+  
+    dups = mapper.duplicates(MatchingMode.STRICT, minSize, datasetKey, null, null, status, null, true, null, p);
+    assertComplete(9, dups, minSize);
+  
+    dups = mapper.duplicates(MatchingMode.STRICT, minSize, datasetKey, null, null, status, null, false, null, p);
+    assertComplete(0, dups, minSize);
+
+
     status.clear();
     status.add(TaxonomicStatus.ACCEPTED);
-    dups = mapper.duplicates(MatchingMode.STRICT, 2, datasetKey, null, Rank.SUBSPECIES, status, true, null, null, p);
+    dups = mapper.duplicates(MatchingMode.STRICT, minSize, datasetKey, null, Rank.SUBSPECIES, status, true, null, null, p);
+    show(dups);
     assertTrue(dups.isEmpty());
     
-    
-    //dups = mapper.duplicates(MatchingMode.FUZZY, 2, datasetKey, null, Rank.SUBSPECIES, status, null, null, null, p);
-    //assertEquals(5, dups.size());
-    //
-    //dups = mapper.duplicates(MatchingMode.FUZZY, 2, datasetKey, null, Rank.SUBSPECIES, status, null, false, null, p);
-    //assertEquals(4, dups.size());
-    //
-    //dups = mapper.duplicates(MatchingMode.FUZZY, 2, datasetKey, null, Rank.SUBSPECIES, status, null, true, null, p);
-    //assertEquals(2, dups.size());
   }
   
+  private static void assertComplete(int expectedSize, List<Duplicate> dups, int minSize) {
+    assertEquals(expectedSize, dups.size());
+    for (Duplicate d : dups) {
+      assertTrue(d.getUsages().size() >= minSize);
+      for (Duplicate.UsageDecision u : d.getUsages()) {
+        assertNotNull(u.getUsage().getId());
+        assertNotNull(u.getUsage().getName());
+        assertNotNull(u.getUsage().getName().getScientificName());
+        if (u.getUsage().isSynonym()) {
+          Synonym s = (Synonym) u.getUsage();
+          assertNotNull(s.getAccepted());
+          assertNotNull(s.getAccepted().getName());
+          assertEquals(s.getAccepted().getId(), ((Synonym) u.getUsage()).getParentId());
+        }
+      }
+    }
+  }
   
   private static void showU(List<Duplicate.UsageDecision> dups) {
     System.out.println("---  ---  ---  ---");
@@ -119,10 +157,16 @@ public class DuplicateMapperTest {
     System.out.println("---  ---  ---  ---");
     int idx = 1;
     for (Duplicate d : dups) {
-      System.out.println(" #" + idx++);
-      System.out.println(" KEY: " + d.getKey());
+      System.out.println("\n#" + idx++ + "  " + d.getKey() + " ---");
       for (Duplicate.UsageDecision u : d.getUsages()) {
-        System.out.println(u.getUsage().getId() + "  " + u.getUsage().getName().canonicalNameComplete());
+        System.out.print(" " + u.getUsage().getId() + "  " + u.getUsage().getName().canonicalNameComplete() + "  " + u.getUsage().getStatus());
+        if (u.getUsage().isSynonym()) {
+          Synonym s = (Synonym) u.getUsage();
+          System.out.println(", pid="+s.getParentId() + ", acc="+s.getAccepted().getName().getScientificName());
+        } else {
+          Taxon t = (Taxon) u.getUsage();
+          System.out.println(", pid="+t.getParentId());
+        }
       }
     }
   }

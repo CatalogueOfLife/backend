@@ -24,7 +24,7 @@ public interface DuplicateMapper {
                              @Param("page") Page page);
   
   /**
-   * @param ids usage ids
+   * @param ids usage ids given as a single quoted concatenation as expected by postgres in an IN clause. e.g "'45', 'dft6z'"
    */
   List<Duplicate.UsageDecision> usagesByIds(@Param("datasetKey") int datasetKey, @Param("ids") String ids);
   
