@@ -4,9 +4,44 @@ import java.util.List;
 import java.util.Objects;
 
 public class Duplicate {
-  private Object key;
+  private String key;
   private List<UsageDecision> usages;
   
+  public static class Mybatis {
+    private String key;
+    private List<String> usages;
+  
+    public void setKey(String key) {
+      this.key = key;
+    }
+  
+    public void setUsages(List<String> usages) {
+      this.usages = usages;
+    }
+  
+    public String getKey() {
+      return key;
+    }
+  
+    public List<String> getUsages() {
+      return usages;
+    }
+  
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) return true;
+      if (o == null || getClass() != o.getClass()) return false;
+      Mybatis mybatis = (Mybatis) o;
+      return Objects.equals(key, mybatis.key) &&
+          Objects.equals(usages, mybatis.usages);
+    }
+  
+    @Override
+    public int hashCode() {
+      return Objects.hash(key, usages);
+    }
+  }
+
   public static class UsageDecision {
     private NameUsage usage;
     private EditorialDecision decision;
@@ -42,11 +77,11 @@ public class Duplicate {
     }
   }
   
-  public Object getKey() {
+  public String getKey() {
     return key;
   }
   
-  public void setKey(Object key) {
+  public void setKey(String key) {
     this.key = key;
   }
   

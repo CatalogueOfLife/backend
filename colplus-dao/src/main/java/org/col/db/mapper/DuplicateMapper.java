@@ -12,7 +12,7 @@ import org.gbif.nameparser.api.Rank;
 
 public interface DuplicateMapper {
   
-  List<Duplicate> duplicates(@Param("mode") MatchingMode mode,
+  List<Duplicate.Mybatis> duplicates(@Param("mode") MatchingMode mode,
                              @Param("minSize") Integer minSize,
                              @Param("datasetKey") int datasetKey,
                              @Param("sectorDatasetKey") Integer sectorDatasetKey,
@@ -24,8 +24,8 @@ public interface DuplicateMapper {
                              @Param("page") Page page);
   
   /**
-   * @param ids usage ids given as a single quoted concatenation as expected by postgres in an IN clause. e.g "'45', 'dft6z'"
+   * @param ids usage ids to return usage decisions for
    */
-  List<Duplicate.UsageDecision> usagesByIds(@Param("datasetKey") int datasetKey, @Param("ids") String ids);
+  List<Duplicate.UsageDecision> usagesByIds(@Param("datasetKey") int datasetKey, @Param("ids") List<String> ids);
   
 }

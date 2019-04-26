@@ -4,9 +4,9 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="org.col.db.mapper.DuplicateMapper">
 
-    <resultMap id="duplicateResultMap" type="Duplicate" autoMapping="true">
+    <resultMap id="duplicateResultMap" type="DuplicateMybatis" autoMapping="true">
         <id column="key" property="key" />
-        <collection property="usages" column="{datasetKey=dataset_key,ids=ids}" select="usagesByIds" ofType="UsageDecision" />
+        <result property="usages" column="ids" typeHandler="org.col.db.type.StringArrayTypeHandler" />
     </resultMap>
 
     <resultMap id="usageDecisionResultMap" type="UsageDecision" autoMapping="true">
@@ -43,80 +43,14 @@
             LEFT JOIN name_usage_${datasetKey} a ON u.parent_id=a.id AND u.is_synonym
             LEFT JOIN name_${datasetKey} an ON a.name_id=an.id
             LEFT JOIN decision ed ON ed.subject_id=u.id
-        WHERE u.id IN (${ids})
+        WHERE u.id IN (<foreach collection="ids" item="id" separator=",">#{id}</foreach>)
     </select>
-
-
-    <!--
-    <select id="listKeys" parameterType="map" resultType="Object">
-        SELECT <include refid="keySelect"/> AS key, n.scientific_name
-        FROM
-            name_usage_${datasetKey} u
-            JOIN name_${datasetKey} n ON u.name_id=n.id
-            <if test="withDecision != null">
-                LEFT JOIN decision ed ON ed.subject_id=u.id
-            </if>,
-            name_usage_${datasetKey} u2
-            JOIN name_${datasetKey} n2 ON u2.name_id=n2.id
-            <if test="withDecision != null">
-                LEFT JOIN decision ed2 ON ed2.subject_id=u2.id
-            </if>
-        <where>
-            u.id &lt; u2.id
-            <choose>
-                <when test="mode.name() == 'NAMES_INDEX' ">
-                    AND n.name_index_id = n2.name_index_id
-                </when>
-                <when test="mode.name() == 'CANONICAL' ">
-                    AND lower(n.scientific_name) = lower(n2.scientific_name)
-                </when>
-                <otherwise>
-                    AND lower(n.scientific_name) = lower(n2.scientific_name)
-                    AND lower(n.authorship) = lower(n2.authorship)
-                </otherwise>
-            </choose>
-            <if test="rank != null">
-                AND n.rank=#{rank}::rank AND n2.rank=#{rank}::rank
-            </if>
-            <if test="status != null and !status.isEmpty()">
-                AND u.status IN (<foreach collection="status" item="st" separator=",">#{st}</foreach>)
-                AND u2.status IN (<foreach collection="status" item="st" separator=",">#{st}</foreach>)
-            </if>
-            <if test="parentDifferent != null">
-                AND u.parent_id <if test="parentDifferent">!</if>= u2.parent_id
-            </if>
-            <if test="withDecision != null">
-                AND
-                <if test="withDecision">
-                    (ed.key IS NOT NULL OR ed2.key IS NOT NULL)
-                </if>
-                <if test="!withDecision">
-                    ed.key IS NULL AND ed2.key IS NULL
-                </if>
-            </if>
-        </where>
-        ORDER BY n.scientific_name
-        <include refid="org.col.db.mapper.Common.limit" />
-    </select>
-
-
-      List<Duplicate> duplicates(@Param("mode") MatchingMode mode,
-                             @Param("minSize") Integer minSize,
-                             @Param("datasetKey") int datasetKey,
-                             @Param("sectorDatasetKey") Integer sectorDatasetKey,
-                             @Param("rank") Rank rank,
-                             @Param("status") Set<TaxonomicStatus> status,
-                             @Param("authorshipDifferent") Boolean authorshipDifferent,
-                             @Param("parentDifferent") Boolean parentDifferent,
-                             @Param("withDecision") Boolean withDecision,
-                             @Param("page") Page page);
-    -->
 
     <select id="duplicates" parameterType="map" resultMap="duplicateResultMap">
         <!-- TODO: implement fuzzy MODE !!! -->
-        SELECT u.dataset_key, lower(n.scientific_name) AS key, '''' || string_agg(u.id, ''',''') || '''' AS ids
+        SELECT lower(n.scientific_name) AS key, array_agg(u.id) AS ids
         FROM name_usage_${datasetKey} u
-            JOIN name_${datasetKey} n ON u.name_id=n.id
+        JOIN name_${datasetKey} n ON u.name_id=n.id
         <where>
             <if test="sectorDatasetKey != null">
                 <!-- TODO: implement sectorDatasetKey -->
@@ -133,26 +67,25 @@
         </where>
         GROUP BY u.dataset_key, lower(n.scientific_name)
         HAVING count(*) >= #{minSize}
-            <if test="status != null and status.size() &gt; 1">
-                <!-- make sure all requested status are covered at least once -->
-                AND array_agg(u.status) @> array[<foreach collection="status" item="st" separator=",">#{st}</foreach>]
-            </if>
-            <if test="authorshipDifferent != null">
-                AND array_length(array_agg(DISTINCT n.authorship), 1)
-                <!-- make sure at least 2 authorships are different -->
-                <if test="authorshipDifferent">&gt; 1</if>
-                <!-- make sure all authorships are the same -->
-                <if test="!authorshipDifferent">= 1</if>
-            </if>
-            <if test="parentDifferent != null">
-                AND array_length(array_agg(DISTINCT u.parent_id), 1)
-                <!-- make sure at least 2 parents are different -->
-                <if test="parentDifferent">&gt; 1</if>
-                <!-- make sure all parent ids are the same -->
-                <if test="!parentDifferent">= 1</if>
-            </if>
+        <if test="status != null and status.size() &gt; 1">
+            <!-- make sure all requested status are covered at least once -->
+            AND array_agg(u.status) @> array[<foreach collection="status" item="st" separator=",">#{st}</foreach>]
+        </if>
+        <if test="authorshipDifferent != null">
+            AND array_length(array_agg(DISTINCT n.authorship), 1)
+            <!-- make sure at least 2 authorships are different -->
+            <if test="authorshipDifferent">&gt; 1</if>
+            <!-- make sure all authorships are the same -->
+            <if test="!authorshipDifferent">= 1</if>
+        </if>
+        <if test="parentDifferent != null">
+            AND array_length(array_agg(DISTINCT u.parent_id), 1)
+            <!-- make sure at least 2 parents are different -->
+            <if test="parentDifferent">&gt; 1</if>
+            <!-- make sure all parent ids are the same -->
+            <if test="!parentDifferent">= 1</if>
+        </if>
         ORDER BY lower(n.scientific_name)
         <include refid="org.col.db.mapper.Common.limit" />
     </select>
-
 </mapper>

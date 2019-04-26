@@ -1,7 +1,8 @@
 package org.col.dao;
 
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.ObjectUtils;
@@ -34,6 +35,29 @@ public class DuplicateDao {
     Preconditions.checkArgument(minSize > 1, "minimum group size must at least be 2");
     
     // load all duplicate usages
-    return mapper.duplicates(mode, minSize, datasetKey, sectorDatasetKey, rank, status, authorshipDifferent, parentDifferent, withDecision, page);
+    List<Duplicate.Mybatis> dupsTmp = mapper.duplicates(mode, minSize, datasetKey, sectorDatasetKey, rank, status, authorshipDifferent, parentDifferent, withDecision, page);
+    if (dupsTmp.isEmpty()) {
+      return Collections.EMPTY_LIST;
+    }
+    
+    List<String> ids = dupsTmp.stream()
+        .map(Duplicate.Mybatis::getUsages)
+        .flatMap(List::stream)
+        .collect(Collectors.toList());
+  
+    Map<String, Duplicate.UsageDecision> usages = mapper.usagesByIds(datasetKey, ids).stream()
+        .collect(Collectors.toMap(d -> d.getUsage().getId(), Function.identity()));
+    
+    List<Duplicate> dups = new ArrayList<>(dupsTmp.size());
+    for (Duplicate.Mybatis dm : dupsTmp) {
+      Duplicate d = new Duplicate();
+      d.setKey(dm.getKey());
+      d.setUsages(dm.getUsages().stream()
+          .map(usages::get)
+          .collect(Collectors.toList())
+      );
+      dups.add(d);
+    }
+    return dups;
   }
 }
