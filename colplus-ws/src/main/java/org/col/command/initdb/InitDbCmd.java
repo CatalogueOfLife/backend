@@ -178,6 +178,8 @@ public class InitDbCmd extends ConfiguredCommand<WsServerConfig> {
         .build());
     PgCopyUtils.copy(pgc, "name_"+Datasets.DRAFT_COL, "/org/col/db/draft/name.csv", ImmutableMap.<String, Object>builder()
         .put("dataset_key", Datasets.DRAFT_COL)
+        //TODO: remove default once the name csv contains a normalised column or we can use a function in PgCopyUtils to derive the value???
+        .put("scientific_name_normalized", "null")
         .put("origin", Origin.SOURCE)
         .put("type", NameType.SCIENTIFIC)
         .put("nom_status", NomStatus.ACCEPTABLE)

@@ -17,32 +17,32 @@ VALUES
     (11, 'r1',  'Full R1 citation', '{}', 1, 1),
     (11, 'r2',  'Full R2 citation', '{}', 1, 1);
 
-INSERT INTO name (dataset_key, verbatim_key, id, homotypic_name_id, scientific_name, uninomial, genus, specific_epithet, infraspecific_epithet, rank, origin, type, created_by, modified_by, published_in_id)
+INSERT INTO name (dataset_key, verbatim_key, id, homotypic_name_id, scientific_name_normalized, scientific_name, uninomial, genus, specific_epithet, infraspecific_epithet, rank, origin, type, created_by, modified_by, published_in_id)
 VALUES
- (11, 1, 'n1',  null,  'Animalia',   'Animalia', null, null, null, 'kingdom'::rank, 0, 0, 1, 1, 'r1'),
- (11, 1, 'n2',  null,  'Chordata',   'Chordata', null, null, null, 'phylum'::rank,  0, 0, 1, 1, 'r1'),
- (11, 1, 'n3',  null,  'Mammalia',   'Mammalia', null, null, null, 'class'::rank,   0, 0, 1, 1, 'r1'),
- (11, 1, 'n4',  null,  'Carnivora',  'Carnivora', null, null, null, 'order'::rank, 0, 0, 1, 1, 'r1'),
- (11, 1, 'n5',  null,  'Canidae',   'Canidae',  null, null, null, 'family'::rank, 0, 0, 1, 1, 'r1'),
- (11, 1, 'n6',  null,  'Felidae',   'Felidae',  null, null, null, 'family'::rank, 0, 0, 1, 1, 'r1'),
- (11, 1, 'n10', null, 'Lynx',      'Lynx',     null, null, null, 'genus'::rank, 0, 0, 1, 1, 'r1'),
- (11, 1, 'n11', null, 'Pardina',   'Pardina',  null, null, null, 'genus'::rank, 0, 0, 1, 1, 'r1'),
- (11, 1, 'n12', null, 'Lynx lynx',  null,     'Lynx', 'lynx', null, 'species'::rank, 0, 0, 1, 1, 'r1'),
- (11, 1, 'n13', null, 'Lynx rufus',  null,    'Lynx', 'rufus', null, 'species'::rank, 0, 0, 1, 1, 'r1'),
- (11, 2, 'n14', 'n13', 'Felis rufus',  null,   'Felis', 'rufus', null, 'species'::rank, 0, 0, 1, 1, 'r1'),
- (11, 1, 'n15', null, 'Lynx rufus subsp. baileyi', null, 'Lynx', 'rufus', 'baileyi', 'subspecies'::rank, 0, 0, 1, 1, 'r1'),
- (11, 1, 'n16', null, 'Lynx rufus subsp. gigas',   null, 'Lynx', 'rufus', 'gigas',   'subspecies'::rank, 0, 0, 1, 1, 'r1'),
- (11, 1, 'n20', null, 'Canis',   'Canis',     null, null, null, 'genus'::rank, 0, 0, 1, 1, 'r1'),
- (11, 1, 'n21', null, 'Alopsis', 'Alopsis',     null, null, null, 'genus'::rank, 0, 0, 1, 1, 'r1'),
- (11, 1, 'n22', null, 'Lupulus', 'Lupulus',     null, null, null, 'genus'::rank, 0, 0, 1, 1, 'r1'),
- (11, 1, 'n23', null, 'Canis adustus',    null,  'Canis', 'adustus',  null, 'species'::rank, 0, 0, 1, 1, 'r1'),
- (11, 1, 'n24', null, 'Canis argentinus', null,  'Canis', 'argentinus', null, 'species'::rank, 0, 0, 1, 1, 'r1'),
- (11, 1, 'n25', null, 'Canis aureus',     null,  'Canis', 'aureus',   null, 'species'::rank, 0, 0, 1, 1, 'r1'),
- (11, 1, 'n30', null, 'Urocyon', 'Urocyon',   null, null, null, 'genus'::rank, 0, 0, 1, 1, 'r1'),
- (11, 1, 'n31', null, 'Urocyon citrinus', null, 'Urocyon', 'citrinus', null, 'species'::rank, 0, 0, 1, 1, 'r1'),
- (11, 1, 'n32', null, 'Urocyon littoralis', null, 'Urocyon', 'littoralis', null, 'species'::rank, 0, 0, 1, 1, 'r1'),
- (11, null, 'n33', null, 'Urocyon minicephalus', null, 'Urocyon', 'minicephalus', null, 'species'::rank, 0, 0, 1, 1, 'r1'),
- (11, null, 'n34', null, 'Urocyon webbi', null, 'Urocyon', 'webbi', null, 'species'::rank, 0, 0, 1, 1, 'r1');
+ (11, 1, 'n1',  null,  'bla', 'Animalia',   'Animalia', null, null, null, 'kingdom'::rank, 0, 0, 1, 1, 'r1'),
+ (11, 1, 'n2',  null,  'bla', 'Chordata',   'Chordata', null, null, null, 'phylum'::rank,  0, 0, 1, 1, 'r1'),
+ (11, 1, 'n3',  null,  'bla', 'Mammalia',   'Mammalia', null, null, null, 'class'::rank,   0, 0, 1, 1, 'r1'),
+ (11, 1, 'n4',  null,  'bla', 'Carnivora',  'Carnivora', null, null, null, 'order'::rank, 0, 0, 1, 1, 'r1'),
+ (11, 1, 'n5',  null,  'bla', 'Canidae',   'Canidae',  null, null, null, 'family'::rank, 0, 0, 1, 1, 'r1'),
+ (11, 1, 'n6',  null,  'bla', 'Felidae',   'Felidae',  null, null, null, 'family'::rank, 0, 0, 1, 1, 'r1'),
+ (11, 1, 'n10', null,  'bla', 'Lynx',      'Lynx',     null, null, null, 'genus'::rank, 0, 0, 1, 1, 'r1'),
+ (11, 1, 'n11', null,  'bla', 'Pardina',   'Pardina',  null, null, null, 'genus'::rank, 0, 0, 1, 1, 'r1'),
+ (11, 1, 'n12', null,  'bla', 'Lynx lynx',  null,     'Lynx', 'lynx', null, 'species'::rank, 0, 0, 1, 1, 'r1'),
+ (11, 1, 'n13', null,  'bla', 'Lynx rufus',  null,    'Lynx', 'rufus', null, 'species'::rank, 0, 0, 1, 1, 'r1'),
+ (11, 2, 'n14', 'n13', 'bla', 'Felis rufus',  null,   'Felis', 'rufus', null, 'species'::rank, 0, 0, 1, 1, 'r1'),
+ (11, 1, 'n15', null,  'bla', 'Lynx rufus subsp. baileyi', null, 'Lynx', 'rufus', 'baileyi', 'subspecies'::rank, 0, 0, 1, 1, 'r1'),
+ (11, 1, 'n16', null,  'bla', 'Lynx rufus subsp. gigas',   null, 'Lynx', 'rufus', 'gigas',   'subspecies'::rank, 0, 0, 1, 1, 'r1'),
+ (11, 1, 'n20', null,  'bla', 'Canis',   'Canis',     null, null, null, 'genus'::rank, 0, 0, 1, 1, 'r1'),
+ (11, 1, 'n21', null,  'bla', 'Alopsis', 'Alopsis',     null, null, null, 'genus'::rank, 0, 0, 1, 1, 'r1'),
+ (11, 1, 'n22', null,  'bla', 'Lupulus', 'Lupulus',     null, null, null, 'genus'::rank, 0, 0, 1, 1, 'r1'),
+ (11, 1, 'n23', null,  'bla', 'Canis adustus',    null,  'Canis', 'adustus',  null, 'species'::rank, 0, 0, 1, 1, 'r1'),
+ (11, 1, 'n24', null,  'bla', 'Canis argentinus', null,  'Canis', 'argentinus', null, 'species'::rank, 0, 0, 1, 1, 'r1'),
+ (11, 1, 'n25', null,  'bla', 'Canis aureus',     null,  'Canis', 'aureus',   null, 'species'::rank, 0, 0, 1, 1, 'r1'),
+ (11, 1, 'n30', null,  'bla', 'Urocyon', 'Urocyon',   null, null, null, 'genus'::rank, 0, 0, 1, 1, 'r1'),
+ (11, 1, 'n31', null,  'bla', 'Urocyon citrinus', null, 'Urocyon', 'citrinus', null, 'species'::rank, 0, 0, 1, 1, 'r1'),
+ (11, 1, 'n32', null,  'bla', 'Urocyon littoralis', null, 'Urocyon', 'littoralis', null, 'species'::rank, 0, 0, 1, 1, 'r1'),
+ (11, null, 'n33', null, 'bla', 'Urocyon minicephalus', null, 'Urocyon', 'minicephalus', null, 'species'::rank, 0, 0, 1, 1, 'r1'),
+ (11, null, 'n34', null, 'bla', 'Urocyon webbi', null, 'Urocyon', 'webbi', null, 'species'::rank, 0, 0, 1, 1, 'r1');
 
 
 INSERT INTO name_usage (id, parent_id, dataset_key, verbatim_key, name_id, origin, status, is_synonym, created_by, modified_by) VALUES
