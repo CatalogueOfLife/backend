@@ -9,6 +9,7 @@ import org.col.api.model.Name;
 import org.col.api.model.Synonym;
 import org.col.api.model.Taxon;
 import org.col.api.vocab.TaxonomicStatus;
+import org.col.common.tax.AuthorshipNormalizer;
 import org.col.dao.NameDao;
 import org.col.db.PgSetupRule;
 import org.junit.Before;
@@ -21,6 +22,7 @@ import static org.junit.Assert.*;
  */
 public class SynonymMapperTest extends MapperTestBase<SynonymMapper> {
   
+  private static final AuthorshipNormalizer aNormalizer = AuthorshipNormalizer.createWithAuthormap();
   private NameDao nameDao;
   private SynonymMapper synonymMapper;
   private TaxonMapper taxonMapper;
@@ -32,7 +34,7 @@ public class SynonymMapperTest extends MapperTestBase<SynonymMapper> {
   
   @Before
   public void initMappers() {
-    nameDao = new NameDao(PgSetupRule.getSqlSessionFactory());
+    nameDao = new NameDao(PgSetupRule.getSqlSessionFactory(), aNormalizer);
     synonymMapper = testDataRule.getMapper(SynonymMapper.class);
     taxonMapper = testDataRule.getMapper(TaxonMapper.class);
   }

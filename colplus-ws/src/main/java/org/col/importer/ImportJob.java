@@ -16,6 +16,7 @@ import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.WsServerConfig;
+import org.col.common.tax.AuthorshipNormalizer;
 import org.col.dao.DecisionRematcher;
 import org.col.importer.neo.NeoDb;
 import org.col.importer.neo.NeoDbFactory;
@@ -59,6 +60,7 @@ public class ImportJob implements Runnable {
   private final NameIndex index;
   private final NameUsageIndexService indexService;
   private final ImageService imgService;
+  private final AuthorshipNormalizer aNormalizer;
   
   private final StartNotifier notifier;
   private final Consumer<ImportRequest> successCallback;
@@ -66,7 +68,8 @@ public class ImportJob implements Runnable {
   
   ImportJob(ImportRequest req, Dataset d,
             WsServerConfig cfg,
-            DownloadUtil downloader, SqlSessionFactory factory, NameIndex index, NameUsageIndexService indexService, ImageService imgService,
+            DownloadUtil downloader, SqlSessionFactory factory, AuthorshipNormalizer aNormalizer, NameIndex index,
+            NameUsageIndexService indexService, ImageService imgService,
             StartNotifier notifier,
             Consumer<ImportRequest> successCallback,
             BiConsumer<ImportRequest, Exception> errorCallback
@@ -78,6 +81,7 @@ public class ImportJob implements Runnable {
     this.downloader = downloader;
     this.factory = factory;
     this.index = index;
+    this.aNormalizer = aNormalizer;
     this.indexService = indexService;
     dao = new DatasetImportDao(factory, cfg.textTreeRepo);
     this.imgService = imgService;
@@ -183,7 +187,7 @@ public class ImportJob implements Runnable {
         LOG.info("Writing {} to Postgres!", datasetKey);
         updateState(ImportState.INSERTING);
         store = NeoDbFactory.open(datasetKey, getAttempt(), cfg.normalizer);
-        new PgImport(datasetKey, store, factory, cfg.importer).call();
+        new PgImport(datasetKey, store, factory, aNormalizer, cfg.importer).call();
         // update dataset with latest success attempt now that all data is in postgres - even if we fail further down
         dao.updateDatasetLastAttempt(di);
 

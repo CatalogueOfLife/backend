@@ -16,6 +16,8 @@ import org.apache.ibatis.session.ResultContext;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
+import org.col.common.tax.AuthorshipNormalizer;
+import org.col.common.tax.SciNameNormalizer;
 import org.col.matching.authorship.AuthorComparator;
 import org.col.api.model.Name;
 import org.col.api.model.NameMatch;
@@ -25,7 +27,6 @@ import org.col.api.vocab.Origin;
 import org.col.api.vocab.Users;
 import org.col.common.kryo.ApiKryoFactory;
 import org.col.common.kryo.map.MapDbObjectSerializer;
-import org.col.common.tax.SciNameNormalizer;
 import org.col.dao.NameDao;
 import org.col.db.mapper.NameMapper;
 import org.gbif.nameparser.api.NameType;
@@ -81,17 +82,15 @@ public class NameIndexMapDB implements NameIndex {
   
   
   /**
-   * @param dbMaker
-   * @param authComp
    * @param datasetKey the dataset the names index is stored in
    * @param sqlFactory sql session factory to talk to the data store backend if needed for inserts or initial loading
    */
-  public NameIndexMapDB(DBMaker.Maker dbMaker, AuthorComparator authComp, int datasetKey, SqlSessionFactory sqlFactory) {
+  public NameIndexMapDB(DBMaker.Maker dbMaker, AuthorshipNormalizer normalizer, int datasetKey, SqlSessionFactory sqlFactory) {
     this.db = dbMaker.make();
-    this.authComp = Preconditions.checkNotNull(authComp);
+    this.authComp = new AuthorComparator(normalizer);
     this.datasetKey = datasetKey;
     this.sqlFactory = Preconditions.checkNotNull(sqlFactory);
-    dao = new NameDao(sqlFactory);
+    dao = new NameDao(sqlFactory, normalizer);
     
     pool = new KryoPool.Builder(new NameIndexKryoFactory())
         .softReferences()

@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
+import org.col.common.tax.AuthorshipNormalizer;
 import org.col.matching.Equality;
 import org.col.api.model.Name;
 import org.col.parser.NameParser;
@@ -13,7 +14,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class AuthorComparatorTest {
-  AuthorComparator comp = AuthorComparator.createWithAuthormap();
+  AuthorComparator comp = new AuthorComparator(AuthorshipNormalizer.createWithAuthormap());
   
   public static Authorship parse(String x) {
     return NameParser.PARSER.parseAuthorship(x).get().getCombinationAuthorship();
@@ -24,136 +25,6 @@ public class AuthorComparatorTest {
       x = Strings.nullToEmpty(x) + " " + year;
     }
     return parse(x);
-  }
-  
-  @Test
-  public void testNormalize() throws Exception {
-    assertNull(comp.normalize(null));
-    assertNull(comp.normalize(" "));
-    assertNull(comp.normalize("."));
-    assertNull(comp.normalize(" (-) "));
-    
-    assertEquals("doring", comp.normalize("Döring"));
-    assertEquals("desireno", comp.normalize("Désírèñø"));
-    assertEquals("p m e l de la chapelle", comp.normalize("p m é l de la chapelle"));
-    
-    assertEquals("a j white", comp.normalize("A.J. White"));
-    assertEquals("j a white", comp.normalize("J A  WHITE"));
-    assertEquals("a j white", comp.normalize("A-J-White"));
-    assertEquals("a j white", comp.normalize("(A.J. White)"));
-    
-    assertEquals("colla", comp.normalize("Colla"));
-    assertEquals("schult", comp.normalize("Schult."));
-    assertEquals("nevski", comp.normalize("Nevski"));
-    assertEquals("w q yin", comp.normalize("W. Q. Yin"));
-    
-    assertEquals("g kirchn", comp.normalize("G.Kirchn."));
-    
-    assertEquals("a gray", comp.normalize("A.Gray"));
-    assertEquals("c chr", comp.normalize("C. Chr."));
-    assertEquals("h christ", comp.normalize("H. Christ"));
-    
-    assertEquals("l", comp.normalize("L."));
-    assertEquals("rchb", comp.normalize("Rchb."));
-    assertEquals("rchb", comp.normalize("Rchb."));
-    
-    assertEquals("muller", comp.normalize("Müller"));
-    assertEquals("muller", comp.normalize("Mueller"));
-    assertEquals("moller", comp.normalize("Moeller"));
-    
-    
-    assertEquals("l filius", comp.normalize("L. f."));
-    assertEquals("l filius", comp.normalize("L.fil."));
-    assertEquals("don filius", comp.normalize("Don f."));
-    assertEquals("don filius", comp.normalize("Don fil."));
-    assertEquals("don filius", comp.normalize("Don fil"));
-    assertEquals("f merck", comp.normalize("f. Merck"));
-    assertEquals("f merck", comp.normalize("f Merck"));
-    assertEquals("la don filius", comp.normalize("la Don f."));
-    assertEquals("f rich", comp.normalize("f. Rich."));
-    assertEquals("rich filius", comp.normalize("Rich. f."));
-    assertEquals("l filius", comp.normalize("L.f."));
-    assertEquals("l filius", comp.normalize("L. f."));
-    assertEquals("l filius", comp.normalize("L f"));
-    assertEquals("lf", comp.normalize("Lf"));
-  }
-  
-  @Test
-  public void testLookup() throws Exception {
-    assertNull(comp.lookup(null));
-    assertEquals(" ", comp.lookup(" "));
-    assertEquals(".", comp.lookup("."));
-    assertEquals("-", comp.lookup("-"));
-    
-    assertEquals("Döring", comp.lookup("Döring"));
-    assertEquals("desireno", comp.lookup("desireno"));
-    
-    assertEquals("a j white", comp.lookup("a j white"));
-    
-    assertEquals("l a colla", comp.lookup("colla"));
-    assertEquals("j a schultes", comp.lookup("schult"));
-    assertEquals("s a nevski", comp.lookup("nevski"));
-    assertEquals("w q yin", comp.lookup("w q yin"));
-    
-    assertEquals("g kirchner", comp.lookup("g kirchn"));
-    
-    assertEquals("c f a christensen", comp.lookup("c chr"));
-    assertEquals("h christ", comp.lookup("h christ"));
-    
-    assertEquals("c linnaus", comp.lookup("l"));
-    assertEquals("h g l reichenbach", comp.lookup("rchb"));
-    assertEquals("a p de candolle", comp.lookup("dc"));
-    assertEquals("j lamarck", comp.lookup("lam"));
-    // the input is a single author. so expect nothing
-    assertEquals("lam,dc", comp.lookup("lam,dc"));
-    
-    assertEquals("c linnaus filius", comp.lookup("l filius"));
-    assertEquals("c h bipontinus schultz", comp.lookup("sch bip"));
-    assertEquals("c h bipontinus schultz", comp.lookup("schultz bip"));
-  }
-  
-  
-  @Test
-  public void testAuthorParsing() throws Exception {
-    assertAuthor("l", null, "l");
-    assertAuthor("l bolus", "l", "bolus");
-    assertAuthor("f k c g s mark", "f k c g s", "mark");
-    assertAuthor("p m e l de la chapelle", "p m e l", "chapelle");
-    assertAuthor("doring", null, "doring");
-    assertAuthor("a j white", "a j", "white");
-    assertAuthor("white herbert harvey", null, "harvey");
-    assertAuthor("l a colla", "l a", "colla");
-    assertAuthor("w q yin", "w q", "yin");
-    assertAuthor("g kirchner", "g", "kirchner");
-    assertAuthor("h g l reichenbach", "h g l", "reichenbach");
-    assertAuthor("c linnaeus filius", "c", "linnaeus");
-  }
-  
-  private void assertAuthor(String full, String initials, String surname) {
-    AuthorComparator.Author a = new AuthorComparator.Author(full);
-    assertEquals(full, a.fullname);
-    assertEquals(initials, a.initials);
-    assertEquals(surname, a.surname);
-  }
-  
-  @Test
-  public void firstInitialsDiffer() throws Exception {
-    assertTrue(firstInitialsDiffer("a a mark", "a b mark"));
-    assertFalse(firstInitialsDiffer("k f mark", "k f mark"));
-    assertFalse(firstInitialsDiffer("k f mark", "f k mark"));
-    assertFalse(firstInitialsDiffer("k f mark", "k mark"));
-    assertFalse(firstInitialsDiffer("k mark", "k f mark"));
-    assertFalse(firstInitialsDiffer("f mark", "k f mark"));
-    assertFalse(firstInitialsDiffer("f mark", "f k mark"));
-    assertFalse(firstInitialsDiffer("f mark", "f k c g s mark"));
-    
-    assertTrue(firstInitialsDiffer("k mark", "f mark"));
-    assertTrue(firstInitialsDiffer("k f mark", "a f mark"));
-    assertTrue(firstInitialsDiffer("a a mark", "a b mark"));
-  }
-  
-  private boolean firstInitialsDiffer(String a1, String a2) {
-    return new AuthorComparator.Author(a1).firstInitialsDiffer(new AuthorComparator.Author(a2));
   }
   
   @Test

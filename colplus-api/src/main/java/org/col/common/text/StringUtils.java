@@ -1,7 +1,5 @@
 package org.col.common.text;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.CharsetDecoder;
@@ -13,7 +11,6 @@ import java.util.regex.Pattern;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Charsets;
 import com.google.common.base.Strings;
-import org.apache.commons.io.IOUtils;
 
 /**
  * Utils class adding specific string methods to existing guava {@link Strings} and commons {@link org.apache.commons.lang3.StringUtils}.
@@ -55,11 +52,6 @@ public class StringUtils {
       }
     }
     return sb.toString();
-  }
-
-  public static String hexStream(InputStream stream) throws IOException {
-    byte[] bytes = IOUtils.toByteArray(stream);
-    return StringUtils.hexString(bytes);
   }
 
   public static String hexString(byte[] data) {

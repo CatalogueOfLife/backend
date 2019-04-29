@@ -10,6 +10,7 @@ import com.google.common.collect.Sets;
 import org.apache.commons.io.LineIterator;
 import org.col.common.collection.ColumnExtractor;
 import org.col.common.io.Resources;
+import org.col.common.tax.AuthorshipNormalizer;
 import org.gbif.nameparser.api.Authorship;
 import org.junit.Test;
 
@@ -22,7 +23,7 @@ public class AuthorBucketerTest {
 
   public static Map<String, Set<String>> clusterNames(Iterator<String> authors) {
     Map<String, Set<String>> buckets = Maps.newHashMap();
-    AuthorComparator comp = AuthorComparator.createWithAuthormap();
+    AuthorComparator comp = new AuthorComparator(AuthorshipNormalizer.createWithAuthormap());
 
     while (authors.hasNext()) {
       String author = authors.next();

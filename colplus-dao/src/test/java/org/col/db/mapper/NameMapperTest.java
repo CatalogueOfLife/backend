@@ -29,9 +29,10 @@ public class NameMapperTest extends MapperTestBase<NameMapper> {
     nameMapper = testDataRule.getMapper(NameMapper.class);
   }
   
-  private static Name create(final String id, final Name basionym) throws Exception {
+  static Name create(final String id, final Name basionym) throws Exception {
     Name n = TestEntityGenerator.newName(id);
     n.setHomotypicNameId(basionym.getId());
+    n.setAuthorshipNormalized(Lists.newArrayList("linne", "walther"));
     return n;
   }
   

@@ -13,6 +13,7 @@ import org.col.api.vocab.Datasets;
 import org.col.api.vocab.Gazetteer;
 import org.col.api.vocab.Origin;
 import org.col.api.vocab.TaxonomicStatus;
+import org.col.common.tax.AuthorshipNormalizer;
 import org.col.db.MybatisTestUtils;
 import org.col.db.PgSetupRule;
 import org.col.db.mapper.SynonymMapper;
@@ -25,8 +26,9 @@ import static org.col.api.vocab.Datasets.DRAFT_COL;
 import static org.junit.Assert.*;
 
 public class TaxonDaoTest extends DaoTestBase {
+  private static final AuthorshipNormalizer aNormalizer = AuthorshipNormalizer.createWithAuthormap();
   TaxonDao tDao = new TaxonDao(PgSetupRule.getSqlSessionFactory());
-  NameDao nDao = new NameDao(PgSetupRule.getSqlSessionFactory());
+  NameDao nDao = new NameDao(PgSetupRule.getSqlSessionFactory(), aNormalizer);
   static int user = TestEntityGenerator.USER_EDITOR.getKey();
   
   @Test

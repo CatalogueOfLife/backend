@@ -46,15 +46,20 @@
         WHERE u.id IN (<foreach collection="ids" item="id" separator=",">#{id}</foreach>)
     </select>
 
+    <sql id="keyCol">
+        <choose>
+            <when test="mode.name() == 'FUZZY'">scientific_name_normalized</when>
+            <otherwise>lower(scientific_name)</otherwise>
+        </choose>
+    </sql>
     <select id="duplicates" parameterType="map" resultMap="duplicateResultMap">
-        <!-- TODO: implement fuzzy MODE !!! -->
-        SELECT lower(n.scientific_name) AS key, array_agg(u.id) AS ids
+        SELECT <include refid="keyCol" /> AS key, array_agg(u.id) AS ids
         FROM name_usage_${datasetKey} u
-        JOIN name_${datasetKey} n ON u.name_id=n.id
-        <where>
-            <if test="sectorDatasetKey != null">
-                <!-- TODO: implement sectorDatasetKey -->
+            JOIN name_${datasetKey} n ON u.name_id=n.id
+            <if test="withDecision != null">
+                LEFT JOIN decision ed ON ed.subject_id=u.id
             </if>
+        <where>
             <if test="rank != null">
                 AND n.rank=#{rank}::rank
             </if>
@@ -65,27 +70,33 @@
                 AND ed.key IS <if test="withDecision">NOT </if>NULL
             </if>
         </where>
-        GROUP BY u.dataset_key, lower(n.scientific_name)
+        GROUP BY <include refid="keyCol" />
         HAVING count(*) >= #{minSize}
         <if test="status != null and status.size() &gt; 1">
             <!-- make sure all requested status are covered at least once -->
             AND array_agg(u.status) @> array[<foreach collection="status" item="st" separator=",">#{st}</foreach>]
         </if>
+        <if test="sectorKey != null">
+            <!-- make sure at least one name comes from the requested sector -->
+            AND array_agg(u.sector_key) @> array[${sectorKey}]
+        </if>
         <if test="authorshipDifferent != null">
-            AND array_length(array_agg(DISTINCT n.authorship), 1)
+            AND count(
+                DISTINCT <choose><when test="mode.name() == 'FUZZY'">n.authorship_normalized</when><otherwise>n.authorship</otherwise></choose>
+            )
             <!-- make sure at least 2 authorships are different -->
             <if test="authorshipDifferent">&gt; 1</if>
             <!-- make sure all authorships are the same -->
-            <if test="!authorshipDifferent">= 1</if>
+            <if test="!authorshipDifferent">&lt;= 1</if>
         </if>
         <if test="parentDifferent != null">
-            AND array_length(array_agg(DISTINCT u.parent_id), 1)
+            AND count(DISTINCT u.parent_id)
             <!-- make sure at least 2 parents are different -->
             <if test="parentDifferent">&gt; 1</if>
             <!-- make sure all parent ids are the same -->
-            <if test="!parentDifferent">= 1</if>
+            <if test="!parentDifferent">&lt;= 1</if>
         </if>
-        ORDER BY lower(n.scientific_name)
+        ORDER BY <include refid="keyCol" />
         <include refid="org.col.db.mapper.Common.limit" />
     </select>
 </mapper>

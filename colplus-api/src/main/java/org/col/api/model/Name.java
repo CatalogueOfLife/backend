@@ -13,6 +13,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.col.api.jackson.IsEmptyFilter;
 import org.col.api.vocab.NomStatus;
 import org.col.api.vocab.Origin;
+import org.col.common.tax.SciNameNormalizer;
 import org.gbif.nameparser.api.*;
 import org.gbif.nameparser.util.NameFormatter;
 
@@ -58,6 +59,12 @@ public class Name extends DataEntity implements DatasetEntity, VerbatimEntity {
   private String scientificName;
   
   private String authorship;
+
+  /**
+   * Normalized authorship - only internal and not meant for API use!
+   */
+  @JsonIgnore
+  private List<String> authorshipNormalized;
   
   /**
    * Rank of the name from enumeration
@@ -277,6 +284,14 @@ public class Name extends DataEntity implements DatasetEntity, VerbatimEntity {
   }
   
   /**
+   * @return a normalized version of the scientific name useful for matching
+   */
+  @JsonIgnore
+  public String getScientificNameNormalized() {
+    return SciNameNormalizer.normalize(scientificName);
+  }
+
+  /**
    * WARN: avoid setting the cached scientificName for parsed names directly.
    * Use updateNameCache() instead!
    */
@@ -289,6 +304,14 @@ public class Name extends DataEntity implements DatasetEntity, VerbatimEntity {
    */
   public String getAuthorship() {
     return authorship;
+  }
+  
+  public List<String> getAuthorshipNormalized() {
+    return authorshipNormalized;
+  }
+  
+  public void setAuthorshipNormalized(List<String> authorshipNormalized) {
+    this.authorshipNormalized = authorshipNormalized;
   }
   
   /**

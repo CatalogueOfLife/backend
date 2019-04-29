@@ -69,10 +69,8 @@ public class DuplicateDaoTest {
     public void duplicates() {
       Set<TaxonomicStatus> status = new HashSet<>();
       int minSize = 2;
-      List<Duplicate> dups = find(MatchingMode.STRICT, minSize, datasetKey, null, null, null, null, null, null, new Page(0, 10));
-      show(dups);
+      List<Duplicate> dups = find(MatchingMode.STRICT, minSize, datasetKey, null, null, null, null, null, false, new Page(0, 10));
       assertComplete(10, dups, minSize);
-      System.out.println(watch);
       
       
       Page p = new Page(0, 100);
@@ -115,12 +113,28 @@ public class DuplicateDaoTest {
       dups = find(MatchingMode.STRICT, minSize, datasetKey, null, null, status, null, false, null, p);
       assertComplete(0, dups, minSize);
       
+  
+
+      // FUZZY mode
       
       status.clear();
-      status.add(TaxonomicStatus.ACCEPTED);
-      dups = find(MatchingMode.STRICT, minSize, datasetKey, null, Rank.SUBSPECIES, status, true, null, null, p);
+      dups = find(MatchingMode.FUZZY, minSize, datasetKey, null, null, status, null, null, null, p);
       show(dups);
-      assertTrue(dups.isEmpty());
+      assertComplete(23, dups, minSize);
+  
+      dups = find(MatchingMode.FUZZY, minSize, datasetKey, null, null, status, true, null, null, p);
+      assertComplete(10, dups, minSize);
+
+      dups = find(MatchingMode.FUZZY, minSize, datasetKey, null, Rank.SUBSPECIES, status, null, null, null, p);
+      show(dups);
+      assertComplete(5, dups, minSize);
+  
+      dups = find(MatchingMode.FUZZY, minSize, datasetKey, null, Rank.SUBSPECIES, status, false, null, null, p);
+      assertComplete(4, dups, minSize);
+
+      dups = find(MatchingMode.FUZZY, minSize, datasetKey, null, Rank.SUBSPECIES, status, true, null, null, p);
+      assertComplete(1, dups, minSize);
+      
       
       System.out.println(watch);
     }
@@ -161,6 +175,7 @@ public class DuplicateDaoTest {
         System.out.println("\n#" + idx++ + "  " + d.getKey() + " ---");
         for (Duplicate.UsageDecision u : d.getUsages()) {
           System.out.print(" " + u.getUsage().getId() + "  " + u.getUsage().getName().canonicalNameComplete() + "  " + u.getUsage().getStatus());
+          System.out.print(" -- " + u.getUsage().getName().getAuthorshipNormalized() + " -- ");
           if (u.getUsage().isSynonym()) {
             Synonym s = (Synonym) u.getUsage();
             System.out.println(", pid="+s.getParentId() + ", acc="+s.getAccepted().getName().getScientificName());

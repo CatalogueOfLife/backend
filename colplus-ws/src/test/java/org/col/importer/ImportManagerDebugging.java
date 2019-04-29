@@ -7,6 +7,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.col.api.vocab.Users;
 import org.col.command.initdb.InitDbCmd;
 import org.col.WsServerConfig;
+import org.col.common.tax.AuthorshipNormalizer;
 import org.col.dao.TreeRepoRule;
 import org.col.db.PgSetupRule;
 import org.col.es.IndexConfig;
@@ -18,7 +19,8 @@ import org.junit.*;
 
 @Ignore("manual import debugging")
 public class ImportManagerDebugging {
-  
+  static final AuthorshipNormalizer aNormalizer = AuthorshipNormalizer.createWithAuthormap();
+
   ImportManager importManager;
   CloseableHttpClient hc;
   RestClient esClient;
@@ -56,7 +58,7 @@ public class ImportManagerDebugging {
     new InitDbCmd().execute(cfg);
     
     hc = new HttpClientBuilder(metrics).using(cfg.client).build("local");
-    importManager = new ImportManager(cfg, metrics, hc, PgSetupRule.getSqlSessionFactory(),
+    importManager = new ImportManager(cfg, metrics, hc, PgSetupRule.getSqlSessionFactory(), aNormalizer,
         NameIndexFactory.passThru(), NameUsageIndexService.passThru(), new ImageService(cfg.img));
     importManager.start();
   }

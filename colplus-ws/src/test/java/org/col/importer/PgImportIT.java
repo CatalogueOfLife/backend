@@ -14,6 +14,7 @@ import jersey.repackaged.com.google.common.collect.Maps;
 import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.col.command.initdb.InitDbCmd;
+import org.col.common.tax.AuthorshipNormalizer;
 import org.col.config.ImporterConfig;
 import org.col.config.NormalizerConfig;
 import org.col.dao.*;
@@ -39,6 +40,7 @@ import static org.junit.Assert.*;
  */
 public class PgImportIT {
   
+  private static final AuthorshipNormalizer aNormalizer = AuthorshipNormalizer.createWithAuthormap();
   private NeoDb store;
   private NormalizerConfig cfg;
   private ImporterConfig icfg = new ImporterConfig();
@@ -74,7 +76,7 @@ public class PgImportIT {
     }
     
     tdao = new TaxonDao(PgSetupRule.getSqlSessionFactory());
-    ndao = new NameDao(PgSetupRule.getSqlSessionFactory());
+    ndao = new NameDao(PgSetupRule.getSqlSessionFactory(), aNormalizer);
     rdao = new ReferenceDao(PgSetupRule.getSqlSessionFactory());
   }
   
@@ -107,12 +109,12 @@ public class PgImportIT {
       // normalize
       store = NeoDbFactory.create(dataset.getKey(), 1, cfg);
       store.put(dataset);
-      Normalizer norm = new Normalizer(store, source, NameIndexFactory.memory(PgSetupRule.getSqlSessionFactory()));
+      Normalizer norm = new Normalizer(store, source, NameIndexFactory.memory(PgSetupRule.getSqlSessionFactory(), aNormalizer));
       norm.call();
       
       // import into postgres
       store = NeoDbFactory.open(dataset.getKey(), 1, cfg);
-      PgImport importer = new PgImport(dataset.getKey(), store, PgSetupRule.getSqlSessionFactory(), icfg);
+      PgImport importer = new PgImport(dataset.getKey(), store, PgSetupRule.getSqlSessionFactory(), aNormalizer, icfg);
       importer.call();
       
     } catch (Exception e) {

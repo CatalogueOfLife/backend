@@ -10,6 +10,7 @@ import org.col.api.model.IssueContainer;
 import org.col.api.model.Name;
 import org.col.api.model.NameMatch;
 import org.col.api.vocab.MatchType;
+import org.col.common.tax.AuthorshipNormalizer;
 import org.col.db.PgSetupRule;
 import org.col.db.mapper.TestDataRule;
 import org.col.parser.NameParser;
@@ -23,6 +24,8 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class NameIndexMapDBTest {
+  static final AuthorshipNormalizer aNormalizer = AuthorshipNormalizer.createWithAuthormap();
+
   NameIndex ni;
   
   @ClassRule
@@ -39,11 +42,11 @@ public class NameIndexMapDBTest {
   }
   
   void setupApple() throws Exception {
-    ni = NameIndexFactory.memory(11, PgSetupRule.getSqlSessionFactory());
+    ni = NameIndexFactory.memory(11, PgSetupRule.getSqlSessionFactory(), aNormalizer);
   }
   
   void setupTest() throws Exception {
-    ni = NameIndexFactory.memory(PgSetupRule.getSqlSessionFactory());
+    ni = NameIndexFactory.memory(PgSetupRule.getSqlSessionFactory(), aNormalizer);
     Collection<Name> names = Lists.newArrayList(
         name(1, "Animalia", Rank.KINGDOM, NomCode.ZOOLOGICAL),
         

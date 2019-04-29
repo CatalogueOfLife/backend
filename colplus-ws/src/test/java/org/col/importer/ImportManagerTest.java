@@ -12,6 +12,7 @@ import io.dropwizard.client.HttpClientBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSession;
 import org.col.WsServerConfig;
+import org.col.common.tax.AuthorshipNormalizer;
 import org.col.dao.TreeRepoRule;
 import org.col.matching.NameIndexFactory;
 import org.col.api.model.Dataset;
@@ -39,6 +40,7 @@ import static org.junit.Assert.assertFalse;
 @Ignore
 public class ImportManagerTest {
   private static final Logger LOG = LoggerFactory.getLogger(ImportManagerTest.class);
+  static final AuthorshipNormalizer aNormalizer = AuthorshipNormalizer.createWithAuthormap();
   
   ImportManager importManager;
   CloseableHttpClient hc;
@@ -77,7 +79,7 @@ public class ImportManagerTest {
     final WsServerConfig cfg = provideConfig();
     
     hc = new HttpClientBuilder(metrics).using(cfg.client).build("local");
-    importManager = new ImportManager(cfg, metrics, hc, PgSetupRule.getSqlSessionFactory(),
+    importManager = new ImportManager(cfg, metrics, hc, PgSetupRule.getSqlSessionFactory(), aNormalizer,
         NameIndexFactory.passThru(), null, new ImageService(cfg.img));
     importManager.start();
   

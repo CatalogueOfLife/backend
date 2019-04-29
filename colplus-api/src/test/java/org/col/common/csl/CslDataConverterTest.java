@@ -5,6 +5,7 @@ import de.undercouch.citeproc.csl.CSLItemDataBuilder;
 import org.col.api.model.CslData;
 import org.col.api.model.CslDate;
 import org.col.api.vocab.CSLRefType;
+import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -51,12 +52,12 @@ public class CslDataConverterTest {
         .build();
     CslData conv = CslDataConverter.toCslData(csl);
     assertNotNull(conv);
-    assertEquals(csl.getTitle(), conv.getTitle());
-    assertEquals(csl.getOriginalTitle(), conv.getOriginalTitle());
+    Assert.assertEquals(csl.getTitle(), conv.getTitle());
+    Assert.assertEquals(csl.getOriginalTitle(), conv.getOriginalTitle());
     
-    assertEquals(csl.getDOI(), conv.getDOI());
-    assertEquals(csl.getURL(), conv.getURL());
-    assertEquals(csl.getISSN(), conv.getISSN());
+    Assert.assertEquals(csl.getDOI(), conv.getDOI());
+    Assert.assertEquals(csl.getURL(), conv.getURL());
+    Assert.assertEquals(csl.getISSN(), conv.getISSN());
   }
   
 }

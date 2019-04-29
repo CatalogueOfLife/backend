@@ -15,7 +15,7 @@ public interface DuplicateMapper {
   List<Duplicate.Mybatis> duplicates(@Param("mode") MatchingMode mode,
                              @Param("minSize") Integer minSize,
                              @Param("datasetKey") int datasetKey,
-                             @Param("sectorDatasetKey") Integer sectorDatasetKey,
+                             @Param("sectorKey") Integer sectorKey,
                              @Param("rank") Rank rank,
                              @Param("status") Set<TaxonomicStatus> status,
                              @Param("authorshipDifferent") Boolean authorshipDifferent,

@@ -10,6 +10,7 @@ import com.google.common.io.Files;
 import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.col.command.initdb.InitDbCmd;
+import org.col.common.tax.AuthorshipNormalizer;
 import org.col.config.ImporterConfig;
 import org.col.config.NormalizerConfig;
 import org.col.importer.neo.NeoDb;
@@ -28,6 +29,8 @@ import org.col.db.mapper.TestDataRule;
  * Requires a running postgres instance which is normally provided via the PgSetupRule ClassRule.
  */
 public class PgImportRule extends TestDataRule {
+  
+  private static final AuthorshipNormalizer aNormalizer = AuthorshipNormalizer.createWithAuthormap();
   
   private NeoDb store;
   private NormalizerConfig cfg;
@@ -138,7 +141,7 @@ public class PgImportRule extends TestDataRule {
       
       // import into postgres
       store = NeoDbFactory.open(dataset.getKey(), 1, cfg);
-      PgImport importer = new PgImport(dataset.getKey(), store, PgSetupRule.getSqlSessionFactory(), icfg);
+      PgImport importer = new PgImport(dataset.getKey(), store, PgSetupRule.getSqlSessionFactory(), aNormalizer, icfg);
       importer.call();
       
     } catch (Exception e) {

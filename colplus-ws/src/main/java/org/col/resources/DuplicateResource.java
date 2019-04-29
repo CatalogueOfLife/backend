@@ -32,7 +32,7 @@ public class DuplicateResource {
   public List<Duplicate> find(@PathParam("datasetKey") int datasetKey,
                               @QueryParam("mode") MatchingMode mode,
                               @QueryParam("minSize") Integer minSize,
-                              @QueryParam("sectorDatasetKey") Integer sectorDatasetKey,
+                              @QueryParam("sectorKey") Integer sectorKey,
                               @QueryParam("rank") Rank rank,
                               @QueryParam("status") Set<TaxonomicStatus> status,
                               @QueryParam("parentDifferent") Boolean parentDifferent,
@@ -40,7 +40,7 @@ public class DuplicateResource {
                               @QueryParam("withDecision") Boolean withDecision,
                               @Valid @BeanParam Page page, @Context SqlSession session) {
     DuplicateDao dao = new DuplicateDao(session);
-    return dao.find(mode, minSize, datasetKey, sectorDatasetKey, rank, status, authorshipDifferent, parentDifferent, withDecision, page);
+    return dao.find(mode, minSize, datasetKey, sectorKey, rank, status, authorshipDifferent, parentDifferent, withDecision, page);
   }
   
 }

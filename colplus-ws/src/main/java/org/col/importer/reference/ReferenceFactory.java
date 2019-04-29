@@ -20,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.col.common.text.StringUtils.hasContent;
+
 /**
  * Dataset specific factory for reference instances. It mostly manages the CSL parsing and works
  * with variously structured input forms. Responsible for detecting and flagging of issues in

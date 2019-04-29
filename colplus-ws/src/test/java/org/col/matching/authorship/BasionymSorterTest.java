@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import com.google.common.collect.Lists;
 import org.col.api.model.Name;
+import org.col.common.tax.AuthorshipNormalizer;
 import org.col.parser.NameParser;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Test;
@@ -19,7 +20,8 @@ import static org.junit.Assert.*;
  * See http://dev.gbif.org/issues/browse/POR-398 for more.
  */
 public class BasionymSorterTest {
-  private final BasionymSorter sorter = new BasionymSorter();
+  
+  private final BasionymSorter sorter = new BasionymSorter(new AuthorComparator(AuthorshipNormalizer.createWithAuthormap()));
 
   private static Name parse(String x) {
     return NameParser.PARSER.parse(x).get().getName();

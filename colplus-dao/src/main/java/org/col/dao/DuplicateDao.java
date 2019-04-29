@@ -29,13 +29,13 @@ public class DuplicateDao {
     mapper = session.getMapper(DuplicateMapper.class);
   }
   
-  public List<Duplicate> find(MatchingMode mode, Integer minSize, int datasetKey, Integer sectorDatasetKey, Rank rank, Set<TaxonomicStatus> status, Boolean authorshipDifferent, Boolean parentDifferent, Boolean withDecision, Page page) {
+  public List<Duplicate> find(MatchingMode mode, Integer minSize, int datasetKey, Integer sectorKey, Rank rank, Set<TaxonomicStatus> status, Boolean authorshipDifferent, Boolean parentDifferent, Boolean withDecision, Page page) {
     mode = ObjectUtils.defaultIfNull(mode, MatchingMode.STRICT);
     minSize = ObjectUtils.defaultIfNull(minSize, 2);
     Preconditions.checkArgument(minSize > 1, "minimum group size must at least be 2");
     
     // load all duplicate usages
-    List<Duplicate.Mybatis> dupsTmp = mapper.duplicates(mode, minSize, datasetKey, sectorDatasetKey, rank, status, authorshipDifferent, parentDifferent, withDecision, page);
+    List<Duplicate.Mybatis> dupsTmp = mapper.duplicates(mode, minSize, datasetKey, sectorKey, rank, status, authorshipDifferent, parentDifferent, withDecision, page);
     if (dupsTmp.isEmpty()) {
       return Collections.EMPTY_LIST;
     }

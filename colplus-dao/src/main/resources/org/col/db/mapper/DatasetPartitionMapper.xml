@@ -53,6 +53,7 @@
         CREATE index ON name_${key} (published_in_id);
         CREATE index ON name_${key} (sector_key);
         CREATE index ON name_${key} (lower(scientific_name));
+        CREATE index ON name_${key} (scientific_name_normalized);
         ALTER TABLE name_${key} ADD CONSTRAINT name_${key}_publishedin_id_fk FOREIGN KEY (published_in_id) REFERENCES reference_${key} (id);
 
         ALTER TABLE name_rel_${key} ADD PRIMARY KEY (key);

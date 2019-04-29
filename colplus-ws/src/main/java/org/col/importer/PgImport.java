@@ -14,6 +14,7 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.model.*;
 import org.col.api.vocab.Users;
 import org.col.common.lang.InterruptedRuntimeException;
+import org.col.common.tax.AuthorshipNormalizer;
 import org.col.config.ImporterConfig;
 import org.col.db.mapper.*;
 import org.col.importer.neo.NeoDb;
@@ -39,6 +40,7 @@ public class PgImport implements Callable<Boolean> {
   private final NeoDb store;
   private final int batchSize;
   private final SqlSessionFactory sessionFactory;
+  private final AuthorshipNormalizer aNormalizer;
   private final Dataset dataset;
   private BiMap<Integer, Integer> verbatimKeys = HashBiMap.create();
   private final AtomicInteger nCounter = new AtomicInteger(0);
@@ -50,10 +52,11 @@ public class PgImport implements Callable<Boolean> {
   private final AtomicInteger mCounter = new AtomicInteger(0);
   private final AtomicInteger vCounter = new AtomicInteger(0);
   
-  public PgImport(int datasetKey, NeoDb store, SqlSessionFactory sessionFactory,
+  public PgImport(int datasetKey, NeoDb store, SqlSessionFactory sessionFactory, AuthorshipNormalizer aNormalizer,
                   ImporterConfig cfg) {
     this.dataset = store.getDataset();
     this.dataset.setKey(datasetKey);
+    this.aNormalizer = aNormalizer;
     this.store = store;
     this.batchSize = cfg.batchSize;
     this.sessionFactory = sessionFactory;
@@ -238,6 +241,8 @@ public class PgImport implements Callable<Boolean> {
       store.names().all().forEach(n -> {
         n.name.setDatasetKey(dataset.getKey());
         updateVerbatimUserEntity(n.name);
+        // normalize authorship on insert - sth the DAO normally does but we use the mapper directly in batch mode
+        n.name.setAuthorshipNormalized(aNormalizer.normalizeAllAndLookup(n.name));
         nameMapper.create(n.name);
         if (nCounter.incrementAndGet() % batchSize == 0) {
           interruptIfCancelled();

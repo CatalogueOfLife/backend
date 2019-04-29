@@ -9,9 +9,6 @@ import com.esotericsoftware.kryo.Serializer;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 
-import static com.esotericsoftware.minlog.Log.TRACE;
-import static com.esotericsoftware.minlog.Log.trace;
-
 /**
  * A serializer for {@link EnumMap}s.
  *
@@ -81,7 +78,6 @@ public class EnumMapSerializer extends Serializer<EnumMap<? extends Enum<?>, ?>>
       output.writeInt(entry.getKey().ordinal(), true);
       kryo.writeClassAndObject(output, entry.getValue());
     }
-    if (TRACE) trace("kryo", "Wrote EnumMap: " + map);
   }
 
   @SuppressWarnings("unchecked")

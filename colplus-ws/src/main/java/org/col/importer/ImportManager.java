@@ -33,6 +33,7 @@ import org.col.common.concurrent.ExecutorUtils;
 import org.col.common.concurrent.StartNotifier;
 import org.col.common.io.DownloadUtil;
 import org.col.WsServerConfig;
+import org.col.common.tax.AuthorshipNormalizer;
 import org.col.dao.DatasetImportDao;
 import org.col.db.mapper.DatasetMapper;
 import org.col.db.mapper.DatasetPartitionMapper;
@@ -59,17 +60,20 @@ public class ImportManager implements Managed {
   private final DownloadUtil downloader;
   private final SqlSessionFactory factory;
   private final NameIndex index;
+  private final AuthorshipNormalizer aNormalizer;
   private final NameUsageIndexService indexService;
   private final ImageService imgService;
   private final Timer importTimer;
   private final Counter failed;
   
   public ImportManager(WsServerConfig cfg, MetricRegistry registry, CloseableHttpClient client,
-                       SqlSessionFactory factory, NameIndex index, NameUsageIndexService indexService, ImageService imgService) {
+                       SqlSessionFactory factory, AuthorshipNormalizer aNormalizer, NameIndex index,
+                       NameUsageIndexService indexService, ImageService imgService) {
     this.cfg = cfg;
     this.factory = factory;
     this.downloader = new DownloadUtil(client, cfg.importer.githubToken, cfg.importer.githubTokenGeoff);
     this.index = index;
+    this.aNormalizer = aNormalizer;
     this.imgService = imgService;
     this.indexService = indexService;
     importTimer = registry.timer("org.col.import.timer");
@@ -215,7 +219,7 @@ public class ImportManager implements Managed {
         LOG.warn("Dataset {} was deleted and cannot be imported", req.datasetKey);
         throw NotFoundException.keyNotFound(Dataset.class, req.datasetKey);
       }
-      ImportJob job = new ImportJob(req, d, cfg, downloader, factory, index, indexService, imgService,
+      ImportJob job = new ImportJob(req, d, cfg, downloader, factory, aNormalizer, index, indexService, imgService,
           new StartNotifier() {
             @Override
             public void started() {

@@ -17,10 +17,6 @@
             <groupId>org.col</groupId>
             <artifactId>colplus-api</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.col</groupId>
-            <artifactId>colplus-common</artifactId>
-        </dependency>
 
         <!-- gbif-->
         <dependency>
