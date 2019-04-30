@@ -150,37 +150,31 @@ public class PgImportIT {
   @Test
   public void testPublishedIn() throws Exception {
     normalizeAndImport(DWCA, 0);
+
+    Name trametes_modesta = ndao.get(dataset.getKey(), "324805");
     
-    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
-      
-      Name trametes_modesta = ndao.get(dataset.getKey(), "324805");
-      
-      Reference pubIn = rdao.get(dataset.getKey(), trametes_modesta.getPublishedInId(), trametes_modesta.getPublishedInPage());
-      assertEquals("Norw. Jl Bot. 19: 236 (1972)", pubIn.getCitation());
-      assertEquals(".neodb.6aOv", pubIn.getId());
-    }
+    Reference pubIn = rdao.get(dataset.getKey(), trametes_modesta.getPublishedInId(), trametes_modesta.getPublishedInPage());
+    assertEquals("Norw. Jl Bot. 19: 236 (1972)", pubIn.getCitation());
+    assertEquals(".neodb.aW6r", pubIn.getId());
   }
   
   @Test
   public void testDwca1() throws Exception {
     normalizeAndImport(DWCA, 1);
     
-    // verify results
-    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
-      // check basionym
-      Name n1006 = ndao.get(dataset.getKey(), "1006");
-      assertEquals("Leontodon taraxacoides", n1006.getScientificName());
-      
-      List<NameRelation> rels = ndao.relations(dataset.getKey(), n1006.getId());
-      assertEquals(1, rels.size());
-      
-      Name bas = ndao.getBasionym(dataset.getKey(), n1006.getId());
-      assertEquals("Leonida taraxacoida", bas.getScientificName());
-      assertEquals(n1006.getHomotypicNameId(), bas.getHomotypicNameId());
-      
-      // check taxon parents
-      assertParents(tdao, "1006", "102", "30", "20", "10", "1");
-    }
+    // check basionym
+    Name n1006 = ndao.get(dataset.getKey(), "1006");
+    assertEquals("Leontodon taraxacoides", n1006.getScientificName());
+    
+    List<NameRelation> rels = ndao.relations(dataset.getKey(), n1006.getId());
+    assertEquals(1, rels.size());
+    
+    Name bas = ndao.getBasionym(dataset.getKey(), n1006.getId());
+    assertEquals("Leonida taraxacoida", bas.getScientificName());
+    assertEquals(n1006.getHomotypicNameId(), bas.getHomotypicNameId());
+    
+    // check taxon parents
+    assertParents(tdao, "1006", "102", "30", "20", "10", "1");
   }
   
   @Test
