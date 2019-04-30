@@ -1,7 +1,6 @@
 package org.col.db.tree;
 
 import java.io.IOException;
-import java.io.StringWriter;
 import java.io.Writer;
 import java.util.LinkedList;
 
@@ -11,9 +10,9 @@ import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.model.*;
+import org.col.db.mapper.NameUsageMapper;
 import org.col.db.mapper.SectorMapper;
 import org.col.db.mapper.SynonymMapper;
-import org.col.db.mapper.TaxonMapper;
 
 /**
  * Print an entire dataset in the indented text format used by TxtPrinter.
@@ -36,7 +35,7 @@ import org.col.db.mapper.TaxonMapper;
  * Absinthium viridifolium var. rupestre (L.) Besser
  * </pre>
  */
-public class TextTreePrinter implements ResultHandler<Taxon> {
+public class TextTreePrinter implements ResultHandler<NameUsageBase> {
   public static final String SYNONYM_SYMBOL = "*";
   public static final String BASIONYM_SYMBOL = "$";
   
@@ -50,7 +49,7 @@ public class TextTreePrinter implements ResultHandler<Taxon> {
   private final SqlSessionFactory factory;
   private SqlSession session;
   private SynonymMapper sm;
-  private final LinkedList<Taxon> parents = new LinkedList<>();
+  private final LinkedList<NameUsageBase> parents = new LinkedList<>();
   
   /**
    * @param sectorKey optional sectorKey to restrict printed tree to
@@ -78,15 +77,6 @@ public class TextTreePrinter implements ResultHandler<Taxon> {
   }
   
   /**
-   * Creates a presized StringWriter based on the expected rows given
-   * to avoid expansion of the underlying buffer and array copying.
-   */
-  public static StringWriter sizedWriter(int expectedRows) {
-    // assumes 120 chars on average per tree line
-    return new StringWriter((expectedRows+1) * 120);
-  }
-  
-  /**
    * @return number of written lines, i.e. name usages
    * @throws IOException
    */
@@ -95,8 +85,8 @@ public class TextTreePrinter implements ResultHandler<Taxon> {
     try {
       session = factory.openSession(true);
       sm = session.getMapper(SynonymMapper.class);
-      TaxonMapper tm = session.getMapper(TaxonMapper.class);
-      tm.processTree(datasetKey, sectorKey, startID, null, true, this);
+      NameUsageMapper num = session.getMapper(NameUsageMapper.class);
+      num.processTree(datasetKey, sectorKey, startID, null, true, true, this);
 
     } finally {
       writer.flush();
@@ -106,7 +96,22 @@ public class TextTreePrinter implements ResultHandler<Taxon> {
   }
   
   @Override
-  public void handleResult(ResultContext<? extends Taxon> resultContext) {
+  public void handleResult(ResultContext<? extends NameUsageBase> resultContext) {
+    try {
+      NameUsageBase u = resultContext.getResultObject();
+      // send end signals
+      while (!parents.isEmpty() && !parents.peekLast().getId().equals(u.getParentId())) {
+        end(parents.removeLast());
+      }
+      start(u);
+      parents.add(u);
+      
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public void handleResult2(ResultContext<? extends Taxon> resultContext) {
     try {
       Taxon t = resultContext.getResultObject();
       // send end signals
@@ -127,36 +132,7 @@ public class TextTreePrinter implements ResultHandler<Taxon> {
     }
   }
   
-  private void start(Taxon t) throws IOException {
-    print(t);
-    level++;
-  }
-  
-  private void start(Synonym s) throws IOException {
-    print(s);
-    level++;
-  }
-
-  private void end(NameUsage u) {
-    level--;
-  }
-  
-  private void print(Taxon t) throws IOException {
-    printCore(t);
-    if (t.getSectorKey() != null) {
-      writer.write(" (S");
-      writer.write(t.getSectorKey().toString());
-      writer.write(')');
-    }
-    writer.write('\n');
-  }
-  
-  private void print(Synonym s) throws IOException {
-    printCore(s);
-    writer.write('\n');
-  }
-  
-  private void printCore(NameUsage u) throws IOException {
+  private void start(NameUsageBase u) throws IOException {
     counter++;
     Name n = u.getName();
     writer.write(StringUtils.repeat(' ', level * indentation));
@@ -170,6 +146,22 @@ public class TextTreePrinter implements ResultHandler<Taxon> {
       writer.write(n.getRank().name().toLowerCase());
       writer.write("]");
     }
+    
+    if (u.isTaxon()) {
+      Taxon t = (Taxon) u;
+      if (t.getSectorKey() != null) {
+        writer.write(" (S");
+        writer.write(t.getSectorKey().toString());
+        writer.write(')');
+      }
+    }
+    
+    writer.write('\n');
+    level++;
+  }
+  
+  private void end(NameUsageBase u) {
+    level--;
   }
   
 }

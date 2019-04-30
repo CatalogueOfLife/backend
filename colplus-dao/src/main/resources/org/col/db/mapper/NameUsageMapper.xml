@@ -125,5 +125,50 @@
         DELETE FROM name_usage_${datasetKey} WHERE sector_key = #{sectorKey}
     </delete>
 
+    <select id="processTree" parameterType="map" resultMap="usageResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
+        WITH RECURSIVE x AS(
+        SELECT <include refid="SELECT" />
+        <if test="depthFirst">
+            ,concat_ws('|', n.scientific_name, u.id) AS path
+        </if>
+        FROM <include refid="FROM" />
+        WHERE
+        <choose>
+            <when test="startID != null">
+                u.id = #{startID}
+            </when>
+            <otherwise>
+                u.parent_id IS NULL
+            </otherwise>
+        </choose>
+        AND NOT u.is_synonym
+
+        UNION
+
+        SELECT <include refid="SELECT" />
+        <if test="depthFirst">
+            ,concat_ws('|', x.path, not u.is_synonym, n.scientific_name, u.id)  AS path
+        </if>
+        FROM <include refid="FROM" />
+        JOIN x ON x.id = u.parent_id
+        <where>
+            <if test="!includeSynonyms">
+                NOT u.is_synonym
+            </if>
+            <if test="exclusions != null and !exclusions.isEmpty()">
+                AND u.id NOT IN
+                <foreach item="id" collection="exclusions" open="(" separator="," close=")">#{id}</foreach>
+            </if>
+            <if test="sectorKey != null">
+                AND u.sector_key = #{sectorKey}
+            </if>
+        </where>
+
+        )
+        SELECT * FROM x
+        <if test="depthFirst">
+            ORDER BY x.path
+        </if>
+    </select>
 
 </mapper>

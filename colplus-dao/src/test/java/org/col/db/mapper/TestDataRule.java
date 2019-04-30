@@ -45,22 +45,24 @@ public class TestDataRule extends ExternalResource {
   private final Supplier<SqlSessionFactory> sqlSessionFactorySupplier;
   
   public enum TestData {
-    NONE(3),
+    NONE(null, 3),
     
     // apple datasetKey=11
-    APPLE(3, 11, 12),
+    APPLE(11, 3, 11, 12),
   
     // tree datasetKey=11
-    TREE(3, 11),
+    TREE(11, 3, 11),
     
     /**
      * Inits the datasets table with real col data from colplus-repo
      */
     DATASETS(2, 3);
-    
+  
+    public final Integer key;
     final Set<Integer> datasetKeys;
     
-    TestData(Integer... datasetKeys) {
+    TestData(Integer key, Integer... datasetKeys) {
+      this.key = key;
       if (datasetKeys == null) {
         this.datasetKeys = Collections.EMPTY_SET;
       } else {

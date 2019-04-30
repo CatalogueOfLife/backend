@@ -53,7 +53,10 @@ public interface TaxonMapper extends DatasetCRUDMapper<Taxon> {
    * @param startID taxon id to start the traversal. Will be included in the result. If null start with all root taxa
    * @param exclusions set of taxon ids to exclude from traversal. This will also exclude all descendants
    * @param depthFirst if true uses a depth first traversal which is more expensive then breadth first!
+   *
+   * @deprecated Use NameUsageMapper.process instead to also iterate over synonyms if wanted
    */
+  @Deprecated
   void processTree(@Param("datasetKey") int datasetKey,
                    @Param("sectorKey") Integer sectorKey,
                    @Param("startID") @Nullable String startID,
