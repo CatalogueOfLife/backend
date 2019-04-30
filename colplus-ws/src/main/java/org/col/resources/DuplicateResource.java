@@ -11,6 +11,7 @@ import org.apache.ibatis.session.SqlSession;
 import org.col.api.model.Duplicate;
 import org.col.api.model.Page;
 import org.col.api.vocab.MatchingMode;
+import org.col.api.vocab.NameCategory;
 import org.col.api.vocab.TaxonomicStatus;
 import org.col.dao.DuplicateDao;
 import org.gbif.nameparser.api.Rank;
@@ -33,6 +34,7 @@ public class DuplicateResource {
                               @QueryParam("mode") MatchingMode mode,
                               @QueryParam("minSize") Integer minSize,
                               @QueryParam("sectorKey") Integer sectorKey,
+                              @QueryParam("category") NameCategory category,
                               @QueryParam("rank") Rank rank,
                               @QueryParam("status") Set<TaxonomicStatus> status,
                               @QueryParam("parentDifferent") Boolean parentDifferent,
@@ -40,7 +42,7 @@ public class DuplicateResource {
                               @QueryParam("withDecision") Boolean withDecision,
                               @Valid @BeanParam Page page, @Context SqlSession session) {
     DuplicateDao dao = new DuplicateDao(session);
-    return dao.find(mode, minSize, datasetKey, sectorKey, rank, status, authorshipDifferent, parentDifferent, withDecision, page);
+    return dao.find(mode, minSize, datasetKey, sectorKey, category, rank, status, authorshipDifferent, parentDifferent, withDecision, page);
   }
   
 }

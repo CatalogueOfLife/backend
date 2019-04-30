@@ -8,6 +8,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.pool.KryoPool;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
@@ -16,9 +17,6 @@ import org.apache.ibatis.session.ResultContext;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.col.common.tax.AuthorshipNormalizer;
-import org.col.common.tax.SciNameNormalizer;
-import org.col.matching.authorship.AuthorComparator;
 import org.col.api.model.Name;
 import org.col.api.model.NameMatch;
 import org.col.api.vocab.MatchType;
@@ -27,8 +25,11 @@ import org.col.api.vocab.Origin;
 import org.col.api.vocab.Users;
 import org.col.common.kryo.ApiKryoFactory;
 import org.col.common.kryo.map.MapDbObjectSerializer;
+import org.col.common.tax.AuthorshipNormalizer;
+import org.col.common.tax.SciNameNormalizer;
 import org.col.dao.NameDao;
 import org.col.db.mapper.NameMapper;
+import org.col.matching.authorship.AuthorComparator;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
@@ -57,8 +58,9 @@ public class NameIndexMapDB implements NameIndex {
   private final int datasetKey;
   private final SqlSessionFactory sqlFactory;
   private final NameDao dao;
-  static final Hashids HASHIDS = new Hashids("fg5w6", 6,
-      "0123456789abcdefghijklmnopqrstuvwxyz.-_+$");
+  private static final String PREFIX = "NI";
+  private static final Hashids HASHIDS = new Hashids("zubgtefvw4ec567vctghej", 6,
+      "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
   
   
   static class NameList extends ArrayList<Name> {
@@ -266,7 +268,12 @@ public class NameIndexMapDB implements NameIndex {
   }
   
   private String newId() {
-    return HASHIDS.encode(counter.incrementAndGet());
+    return indexID(counter.incrementAndGet());
+  }
+  
+  @VisibleForTesting
+  static String indexID(long x) {
+    return PREFIX + HASHIDS.encode(x);
   }
   
   private Name insert(Name orig) {

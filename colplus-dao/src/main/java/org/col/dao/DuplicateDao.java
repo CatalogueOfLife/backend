@@ -10,6 +10,7 @@ import org.apache.ibatis.session.SqlSession;
 import org.col.api.model.Duplicate;
 import org.col.api.model.Page;
 import org.col.api.vocab.MatchingMode;
+import org.col.api.vocab.NameCategory;
 import org.col.api.vocab.TaxonomicStatus;
 import org.col.db.mapper.DuplicateMapper;
 import org.gbif.nameparser.api.Rank;
@@ -29,13 +30,13 @@ public class DuplicateDao {
     mapper = session.getMapper(DuplicateMapper.class);
   }
   
-  public List<Duplicate> find(MatchingMode mode, Integer minSize, int datasetKey, Integer sectorKey, Rank rank, Set<TaxonomicStatus> status, Boolean authorshipDifferent, Boolean parentDifferent, Boolean withDecision, Page page) {
+  public List<Duplicate> find(MatchingMode mode, Integer minSize, int datasetKey, Integer sectorKey, NameCategory category, Rank rank, Set<TaxonomicStatus> status, Boolean authorshipDifferent, Boolean parentDifferent, Boolean withDecision, Page page) {
     mode = ObjectUtils.defaultIfNull(mode, MatchingMode.STRICT);
     minSize = ObjectUtils.defaultIfNull(minSize, 2);
     Preconditions.checkArgument(minSize > 1, "minimum group size must at least be 2");
     
     // load all duplicate usages
-    List<Duplicate.Mybatis> dupsTmp = mapper.duplicates(mode, minSize, datasetKey, sectorKey, rank, status, authorshipDifferent, parentDifferent, withDecision, page);
+    List<Duplicate.Mybatis> dupsTmp = mapper.duplicates(mode, minSize, datasetKey, sectorKey, category, rank, status, authorshipDifferent, parentDifferent, withDecision, page);
     if (dupsTmp.isEmpty()) {
       return Collections.EMPTY_LIST;
     }

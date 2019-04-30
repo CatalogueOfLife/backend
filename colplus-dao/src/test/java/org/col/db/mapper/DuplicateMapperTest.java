@@ -11,6 +11,7 @@ import org.apache.ibatis.session.SqlSession;
 import org.col.api.model.Duplicate;
 import org.col.api.model.Page;
 import org.col.api.vocab.MatchingMode;
+import org.col.api.vocab.NameCategory;
 import org.col.api.vocab.TaxonomicStatus;
 import org.col.common.tax.SciNameNormalizer;
 import org.col.db.PgSetupRule;
@@ -80,7 +81,7 @@ public class DuplicateMapperTest {
   public void duplicates() {
     Set<TaxonomicStatus> status = new HashSet<>();
     status.add(TaxonomicStatus.PROVISIONALLY_ACCEPTED);
-    List<Duplicate.Mybatis> dups = mapper.duplicates(MatchingMode.STRICT, 2, datasetKey, null, Rank.SPECIES, status, false, false, false, new Page(0, 2));
+    List<Duplicate.Mybatis> dups = mapper.duplicates(MatchingMode.STRICT, 2, datasetKey, null, NameCategory.BINOMIAL, Rank.SPECIES, status, false, false, false, new Page(0, 2));
     assertEquals(2, dups.size());
     for (Duplicate.Mybatis d : dups) {
       assertFalse(d.getUsages().isEmpty());

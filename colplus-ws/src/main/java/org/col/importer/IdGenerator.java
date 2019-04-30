@@ -9,7 +9,7 @@ import org.col.common.text.StringUtils;
 import org.hashids.Hashids;
 
 public class IdGenerator {
-  private static final String availChars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_-";
+  private static final String availChars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
   private static final char PREFERRED_PREFIX = 'x';
   private final AtomicLong counter = new AtomicLong(0);
   private final Hashids hashids = new Hashids("dvr4GgTx", 4, availChars);

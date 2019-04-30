@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.Param;
 import org.col.api.model.Duplicate;
 import org.col.api.model.Page;
 import org.col.api.vocab.MatchingMode;
+import org.col.api.vocab.NameCategory;
 import org.col.api.vocab.TaxonomicStatus;
 import org.gbif.nameparser.api.Rank;
 
@@ -16,6 +17,7 @@ public interface DuplicateMapper {
                              @Param("minSize") Integer minSize,
                              @Param("datasetKey") int datasetKey,
                              @Param("sectorKey") Integer sectorKey,
+                             @Param("category") NameCategory category,
                              @Param("rank") Rank rank,
                              @Param("status") Set<TaxonomicStatus> status,
                              @Param("authorshipDifferent") Boolean authorshipDifferent,

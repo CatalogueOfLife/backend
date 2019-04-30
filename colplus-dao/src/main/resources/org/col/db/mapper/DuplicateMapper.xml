@@ -60,6 +60,14 @@
                 LEFT JOIN decision ed ON ed.subject_id=u.id
             </if>
         <where>
+            <if test="category != null">
+                <if test="category.highest != null">
+                    AND n.rank &gt;= #{category.highest}::rank
+                </if>
+                <if test="category.lowest != null">
+                    AND n.rank &lt;= #{category.lowest}::rank
+                </if>
+            </if>
             <if test="rank != null">
                 AND n.rank=#{rank}::rank
             </if>

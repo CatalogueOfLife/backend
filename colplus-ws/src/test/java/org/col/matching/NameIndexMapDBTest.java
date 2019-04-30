@@ -16,6 +16,7 @@ import org.col.db.mapper.TestDataRule;
 import org.col.parser.NameParser;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
+import org.hashids.Hashids;
 import org.junit.After;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -94,15 +95,16 @@ public class NameIndexMapDBTest {
   }
   
   @Test
-  public void testHasids() throws Exception {
-    assertEquals("l5w5nl", NameIndexMapDB.HASHIDS.encode(1000));
-    assertEquals("l5r34.", NameIndexMapDB.HASHIDS.encode(10000));
-    assertEquals("l54--r", NameIndexMapDB.HASHIDS.encode(100000));
-    assertEquals("5wb-9m", NameIndexMapDB.HASHIDS.encode(1000000));
-    assertEquals("575-qx", NameIndexMapDB.HASHIDS.encode(10000000));
-    assertEquals("5w4-q$n", NameIndexMapDB.HASHIDS.encode(20000000));
-    assertEquals("5qaej9m", NameIndexMapDB.HASHIDS.encode(50000000));
-    assertEquals("9q5+9_ry", NameIndexMapDB.HASHIDS.encode(Integer.MAX_VALUE));
+  public void indexID() {
+    assertEquals("NInjNO95",   NameIndexMapDB.indexID(1000));
+    assertEquals("NIjN3gp5",   NameIndexMapDB.indexID(10000));
+    assertEquals("NIjNmgn9",   NameIndexMapDB.indexID(100000));
+    assertEquals("NIjN09Bp",   NameIndexMapDB.indexID(1000000));
+    assertEquals("NINYq6p9",   NameIndexMapDB.indexID(10000000));
+    assertEquals("NIN3aMzZ",  NameIndexMapDB.indexID(20000000));
+    assertEquals("NINeayon",  NameIndexMapDB.indexID(50000000));
+    assertEquals("NIax2ggvA", NameIndexMapDB.indexID(Integer.MAX_VALUE));
+    assertEquals("NIgD1BB4BAyKG", NameIndexMapDB.indexID(Hashids.MAX_NUMBER));
   }
   
   @Test
@@ -172,7 +174,7 @@ public class NameIndexMapDBTest {
   static Name name(Integer key, String name, Rank rank, NomCode code) {
     Name n = NameParser.PARSER.parse(name, rank, IssueContainer.VOID).get().getName();
     if (key != null) {
-      n.setId(NameIndexMapDB.HASHIDS.encode(key));
+      n.setId(NameIndexMapDB.indexID(key));
     }
     n.setRank(rank);
     n.setCode(code);
@@ -209,7 +211,7 @@ public class NameIndexMapDBTest {
   }
   
   private NameMatch assertMatch(int key, String name, Rank rank, NomCode code) {
-    final String id = NameIndexMapDB.HASHIDS.encode(key);
+    final String id = NameIndexMapDB.indexID(key);
     NameMatch m = match(name, rank, code);
     if (!m.hasMatch() || !id.equals(m.getName().getId())) {
       System.out.println(m);
