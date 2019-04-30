@@ -86,18 +86,15 @@ public class DuplicateDaoTest {
       
       Page p = new Page(0, 100);
       dups = find(MatchingMode.STRICT, minSize, datasetKey, null, null, null, status, null, null, null, p);
-      show(dups);
       assertComplete(19, dups, minSize);
   
       dups = find(MatchingMode.STRICT, minSize, datasetKey, null, NameCategory.UNINOMIAL, null, status, null, null, null, p);
       assertComplete(0, dups, minSize);
   
       dups = find(MatchingMode.STRICT, minSize, datasetKey, null, NameCategory.BINOMIAL, null, status, null, null, null, p);
-      show(dups);
       assertComplete(15, dups, minSize);
   
       dups = find(MatchingMode.STRICT, minSize, datasetKey, null, NameCategory.TRINOMIAL, null, status, null, null, null, p);
-      show(dups);
       assertComplete(4, dups, minSize);
 
       
@@ -142,14 +139,12 @@ public class DuplicateDaoTest {
       
       status.clear();
       dups = find(MatchingMode.FUZZY, minSize, datasetKey, null, null, null, status, null, null, null, p);
-      show(dups);
       assertComplete(23, dups, minSize);
   
       dups = find(MatchingMode.FUZZY, minSize, datasetKey, null, null, null, status, true, null, null, p);
-      assertComplete(10, dups, minSize);
+      assertComplete(4, dups, minSize);
 
       dups = find(MatchingMode.FUZZY, minSize, datasetKey, null, null, Rank.SUBSPECIES, status, null, null, null, p);
-      show(dups);
       assertComplete(5, dups, minSize);
   
       dups = find(MatchingMode.FUZZY, minSize, datasetKey, null, null, Rank.SUBSPECIES, status, false, null, null, p);

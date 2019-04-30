@@ -107,14 +107,14 @@ import static org.junit.Assert.*;
       assertEqual(comp.normalizeName(n));
 
       n.setCombinationAuthorship(cr("1999", "Wálthèr", "Döring"));
-      assertEqual(comp.normalizeName(n), "1999", "doring", "walther");
+      assertEqual(comp.normalizeName(n), "doring", "walther");
       
       n.getCombinationAuthorship().setExAuthors(Lists.newArrayList("Käsekuchen"));
-      assertEqual(comp.normalizeName(n), "1999", "doring", "walther");
+      assertEqual(comp.normalizeName(n), "doring", "walther");
   
       n.setBasionymAuthorship(cr("1904", "B.C.Tremendous", "L.", "Linne"));
       n.getBasionymAuthorship().setExAuthors(Lists.newArrayList("BBC Tremendous", "L"));
-      assertEqual(comp.normalizeName(n), "1999", "1904", "b c tremendous", "c linnaus", "doring", "walther");
+      assertEqual(comp.normalizeName(n), "linnaus", "tremendous");
     }
   
     private static void assertEqual(List<String> totest, String... expected) {

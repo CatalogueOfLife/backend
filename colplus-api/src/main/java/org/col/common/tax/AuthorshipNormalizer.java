@@ -4,7 +4,6 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -65,7 +64,6 @@ public class AuthorshipNormalizer {
     LOG.info("Created author normalizer with {} abbreviation entries", map.size());
   }
   
-  
   /**
    * @return queue of normalized authors, never null.
    * ascii only, lower cased string without punctuation. Empty string instead of null.
@@ -91,29 +89,31 @@ public class AuthorshipNormalizer {
   }
   
   /**
-   * Shortcut doing author normalization for all combination, basionym authors and their ex-authors, doing a lookup of known authors
-   * and finally a alphabetical sorting of unique names only, merging ex and regular authors into a single list of unique names.
+   * Shortcut doing author normalization for a name useful for fuzzy comparison.
+   * Does ASCII folding, strips punctuation, ex authors, year and initials.
+   *
+   * Also does a lookup of known authors
+   * and finally a alphabetical sorting of unique names only.
    *
    * For names without a parsed authorship normalize the full authorship string but keep its order, not trying to parse it again.
+   *
+   * See https://github.com/Sp2000/colplus-backend/issues/341
    */
   public List<String> normalizeName(Name n) {
     if (n.hasAuthorship()) {
-      // only compare year and the main authors, ignore ex
-      List<String> normed = new ArrayList<>();
-      if (n.getCombinationAuthorship().getYear() != null) {
-        normed.add(n.getCombinationAuthorship().getYear());
+      // only compare basionym if existing, ignore ex and year
+      Authorship authors;
+      if (!n.getBasionymAuthorship().getAuthors().isEmpty()) {
+        authors = n.getBasionymAuthorship();
+      } else {
+        authors = n.getCombinationAuthorship();
       }
-      if (n.getBasionymAuthorship().getYear() != null) {
-        normed.add(n.getBasionymAuthorship().getYear());
-      }
-      Stream<String> comb = lookup(normalize(n.getCombinationAuthorship().getAuthors())).stream();
-      Stream<String> bas  = lookup(normalize(n.getBasionymAuthorship().getAuthors())).stream();
-      normed.addAll(Stream.concat(comb,bas)
+      return lookup(normalize(authors)).stream()
+          .map(Author::new)
+          .map(a -> a.surname)
           .distinct()
           .sorted()
-          .collect(Collectors.toList())
-      );
-      return normed;
+          .collect(Collectors.toList());
       
     } else if (n.getAuthorship() != null){
       return Lists.newArrayList(normalize(n.getAuthorship()));
