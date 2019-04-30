@@ -469,6 +469,27 @@ LANGUAGE SQL
 IMMUTABLE;
 
 
+-- tries to gracely convert text to ints, swallowing exceptions and using null instead
+CREATE OR REPLACE FUNCTION parseInt(v_value text) RETURNS INTEGER AS $$
+DECLARE v_int_value INTEGER DEFAULT NULL;
+BEGIN
+    IF v_value IS NOT NULL THEN
+        RAISE NOTICE 'Parse: "%"', v_value;
+        BEGIN
+            v_int_value := v_value::INTEGER;
+        EXCEPTION WHEN OTHERS THEN
+            RAISE NOTICE 'Invalid integer value: "%".  Returning NULL.', v_value;
+            BEGIN
+                v_int_value := substring(v_value, 1, 4)::INTEGER;
+            EXCEPTION WHEN OTHERS THEN
+                RETURN NULL;
+            END;
+        END;
+    END IF;
+    RETURN v_int_value;
+END;
+$$ LANGUAGE plpgsql;
+
 -- INDICES for non partitioned tables
 CREATE index ON dataset (gbif_key);
 CREATE index ON dataset_import (started);
