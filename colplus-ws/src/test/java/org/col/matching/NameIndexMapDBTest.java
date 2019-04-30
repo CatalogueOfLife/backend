@@ -176,6 +176,7 @@ public class NameIndexMapDBTest {
     }
     n.setRank(rank);
     n.setCode(code);
+    n.setAuthorshipNormalized(Lists.newArrayList("serialisation", "test", "only"));
     return TestEntityGenerator.setUserDate(n);
   }
   

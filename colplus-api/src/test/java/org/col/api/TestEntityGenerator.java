@@ -12,21 +12,19 @@ import com.google.common.collect.Lists;
 import org.col.api.model.*;
 import org.col.api.search.NameUsageWrapper;
 import org.col.api.vocab.*;
+import org.col.common.tax.AuthorshipNormalizer;
 import org.gbif.dwc.terms.DcTerm;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.GbifTerm;
 import org.gbif.dwc.terms.Term;
 import org.gbif.dwc.terms.UnknownTerm;
-import org.gbif.nameparser.api.Authorship;
-import org.gbif.nameparser.api.NamePart;
-import org.gbif.nameparser.api.NameType;
-import org.gbif.nameparser.api.Rank;
+import org.gbif.nameparser.api.*;
 
 /**
  * utility class to metrics new test instances to be used in tests.
  */
 public class TestEntityGenerator {
-
+  private final static AuthorshipNormalizer ANORMALIZER = AuthorshipNormalizer.createWithAuthormap();
   private final static Random RND = new Random();
   private final static RandomInstance random = new RandomInstance();
   private static final Splitter SPACE_SPLITTER = Splitter.on(" ").trimResults();
@@ -361,7 +359,10 @@ public class TestEntityGenerator {
     n.setRank(rank);
     n.setOrigin(Origin.SOURCE);
     n.setType(NameType.SCIENTIFIC);
+    n.setCode(NomCode.BOTANICAL);
+    n.setNomStatus(NomStatus.ACCEPTABLE);
     n.updateNameCache();
+    n.setAuthorshipNormalized(ANORMALIZER.normalizeName(n));
     n.addRemark("my first note");
     n.addRemark("my second note");
     return n;

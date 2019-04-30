@@ -54,8 +54,8 @@ public class NameUsageMapperTreeTest extends MapperTestBase<NameUsageMapper> {
   
     h = new CollectIdHandler<>();
     mapper().processTree(DATASET11.getKey(), null,null, null, true, true, h);
-    List<String> dfs = ImmutableList.of("t1","t2","t3","t4","t5","t20","s21","t23","t24","t25","s22",
-        "t30","t31","t32","t33","t34","t6","t10","t12","t13","s14","t15","t16","s11");
+    List<String> dfs = ImmutableList.of("t1","t2","t3","t4","t5","t20","s21","s22","t23","t24","t25",
+        "t30","t31","t32","t33","t34","t6","t10","s11","t12","t13","s14","t15","t16");
     assertEquals(dfs, h.list);
   }
   
