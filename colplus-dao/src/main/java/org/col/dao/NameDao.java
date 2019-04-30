@@ -26,13 +26,13 @@ public class NameDao extends DatasetEntityDao<Name, NameMapper> {
   
   @Override
   public String create(Name obj, int user) {
-    obj.setAuthorshipNormalized(normalizer.normalizeAllAndLookup(obj));
+    obj.setAuthorshipNormalized(normalizer.normalizeName(obj));
     return super.create(obj, user);
   }
   
   @Override
   protected void updateBefore(Name obj, Name old, int user, NameMapper mapper, SqlSession session) {
-    obj.setAuthorshipNormalized(normalizer.normalizeAllAndLookup(obj));
+    obj.setAuthorshipNormalized(normalizer.normalizeName(obj));
   }
   
   public Name getBasionym(int datasetKey, String id) {

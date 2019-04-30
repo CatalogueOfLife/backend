@@ -96,29 +96,30 @@ public class AuthorshipNormalizer {
    *
    * For names without a parsed authorship normalize the full authorship string but keep its order, not trying to parse it again.
    */
-  public List<String> normalizeAllAndLookup(Name n) {
+  public List<String> normalizeName(Name n) {
     if (n.hasAuthorship()) {
-      Stream<String> comb = combinedAuthorStream(n.getCombinationAuthorship());
-      Stream<String> bas  = combinedAuthorStream(n.getBasionymAuthorship());
-      return Stream.concat(comb, bas)
+      // only compare year and the main authors, ignore ex
+      List<String> normed = new ArrayList<>();
+      if (n.getCombinationAuthorship().getYear() != null) {
+        normed.add(n.getCombinationAuthorship().getYear());
+      }
+      if (n.getBasionymAuthorship().getYear() != null) {
+        normed.add(n.getBasionymAuthorship().getYear());
+      }
+      Stream<String> comb = lookup(normalize(n.getCombinationAuthorship().getAuthors())).stream();
+      Stream<String> bas  = lookup(normalize(n.getBasionymAuthorship().getAuthors())).stream();
+      normed.addAll(Stream.concat(comb,bas)
           .distinct()
           .sorted()
-          .collect(Collectors.toList());
-
+          .collect(Collectors.toList())
+      );
+      return normed;
+      
     } else if (n.getAuthorship() != null){
       return Lists.newArrayList(normalize(n.getAuthorship()));
     }
     
     return Collections.EMPTY_LIST;
-  }
-  
-  private Stream<String> combinedAuthorStream(Authorship a) {
-    if (a != null) {
-      Stream<String> sau = lookup(normalize(a.getAuthors())).stream();
-      Stream<String> sex = lookup(normalize(a.getExAuthors())).stream();
-      return Stream.concat(sau, sex);
-    }
-    return Stream.empty();
   }
   
   public static String normalize(String x) {

@@ -4,6 +4,7 @@ import java.io.Reader;
 import java.sql.Connection;
 import java.sql.Statement;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 
 import com.google.common.collect.ImmutableMap;
 import com.zaxxer.hikari.HikariConfig;
@@ -22,6 +23,7 @@ import org.col.api.model.Dataset;
 import org.col.api.model.DatasetImport;
 import org.col.api.vocab.*;
 import org.col.common.io.PathUtils;
+import org.col.common.tax.SciNameNormalizer;
 import org.col.dao.DatasetImportDao;
 import org.col.dao.TaxonDao;
 import org.col.db.MybatisFactory;
@@ -168,6 +170,7 @@ public class InitDbCmd extends ConfiguredCommand<WsServerConfig> {
   }
   
   private static void loadDraftHierarchy(Connection con, SqlSessionFactory factory, WsServerConfig cfg) throws Exception {
+
     LOG.info("Insert CoL draft data linked to sectors");
     PgConnection pgc = (PgConnection) con;
     // Use sector exports from Global Assembly:
@@ -176,16 +179,20 @@ public class InitDbCmd extends ConfiguredCommand<WsServerConfig> {
         .put("created_by", Users.DB_INIT)
         .put("modified_by", Users.DB_INIT)
         .build());
+    // id,homotypic_name_id,rank,scientific_name,uninomial
     PgCopyUtils.copy(pgc, "name_"+Datasets.DRAFT_COL, "/org/col/db/draft/name.csv", ImmutableMap.<String, Object>builder()
-        .put("dataset_key", Datasets.DRAFT_COL)
-        //TODO: remove default once the name csv contains a normalised column or we can use a function in PgCopyUtils to derive the value???
-        .put("scientific_name_normalized", "null")
-        .put("origin", Origin.SOURCE)
-        .put("type", NameType.SCIENTIFIC)
-        .put("nom_status", NomStatus.ACCEPTABLE)
-        .put("created_by", Users.DB_INIT)
-        .put("modified_by", Users.DB_INIT)
-        .build());
+          .put("dataset_key", Datasets.DRAFT_COL)
+          .put("origin", Origin.SOURCE)
+          .put("type", NameType.SCIENTIFIC)
+          .put("nom_status", NomStatus.ACCEPTABLE)
+          .put("created_by", Users.DB_INIT)
+          .put("modified_by", Users.DB_INIT)
+        .build(),
+        ImmutableMap.<String, Function<String[], String>>of(
+            "scientific_name_normalized", row -> SciNameNormalizer.normalize(row[3]),
+            "authorship_normalized", x -> null
+        )
+    );
     PgCopyUtils.copy(pgc, "name_usage_"+Datasets.DRAFT_COL, "/org/col/db/draft/taxon.csv", ImmutableMap.<String, Object>builder()
         .put("dataset_key", Datasets.DRAFT_COL)
         .put("origin", Origin.SOURCE)

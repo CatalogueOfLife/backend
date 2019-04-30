@@ -4,7 +4,9 @@ import java.sql.Connection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 
+import com.google.common.collect.ImmutableMap;
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.model.Duplicate;
@@ -13,8 +15,10 @@ import org.col.api.model.Synonym;
 import org.col.api.model.Taxon;
 import org.col.api.vocab.MatchingMode;
 import org.col.api.vocab.TaxonomicStatus;
+import org.col.common.tax.SciNameNormalizer;
 import org.col.db.PgSetupRule;
 import org.col.db.mapper.DatasetPartitionMapper;
+import org.col.postgres.AuthorshipNormFunc;
 import org.col.postgres.PgCopyUtils;
 import org.gbif.nameparser.api.Rank;
 import org.junit.*;
@@ -40,13 +44,19 @@ public class DuplicateDaoTest {
         pm.attach(datasetKey);
         session.commit();
       }
+  
+      final AuthorshipNormFunc aFunc = new AuthorshipNormFunc(18);
       
       try (Connection c = pgSetupRule.connect()) {
         PgConnection pgc = (PgConnection) c;
         
         PgCopyUtils.copy(pgc, "dataset", "/duplicates/dataset.csv");
         PgCopyUtils.copy(pgc, "verbatim_1000", "/duplicates/verbatim.csv");
-        PgCopyUtils.copy(pgc, "name_1000", "/duplicates/name.csv");
+        PgCopyUtils.copy(pgc, "name_1000", "/duplicates/name.csv", null, ImmutableMap.<String, Function<String[], String>>of(
+            "scientific_name_normalized", row -> SciNameNormalizer.normalize(row[6]),
+            "authorship_normalized", aFunc::normAuthorship
+            )
+        );
         PgCopyUtils.copy(pgc, "name_usage_1000", "/duplicates/name_usage.csv");
         
         c.commit();

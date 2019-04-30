@@ -102,19 +102,19 @@ import static org.junit.Assert.*;
     }
   
     @Test
-    public void normalizeAndLookup() throws Exception {
+    public void normalizeName() throws Exception {
       Name n = new Name();
-      assertEqual(comp.normalizeAllAndLookup(n));
+      assertEqual(comp.normalizeName(n));
 
       n.setCombinationAuthorship(cr("1999", "Wálthèr", "Döring"));
-      assertEqual(comp.normalizeAllAndLookup(n), "doring", "walther");
+      assertEqual(comp.normalizeName(n), "1999", "doring", "walther");
       
-      n.getCombinationAuthorship().setExAuthors(Lists.newArrayList("B.C.Tremendous", "L.", "Linne"));
-      assertEqual(comp.normalizeAllAndLookup(n), "b c tremendous", "c linnaus", "doring", "walther");
+      n.getCombinationAuthorship().setExAuthors(Lists.newArrayList("Käsekuchen"));
+      assertEqual(comp.normalizeName(n), "1999", "doring", "walther");
   
-      n.setBasionymAuthorship(cr("1904", "Walther"));
-      n.getBasionymAuthorship().setExAuthors(Lists.newArrayList("B.C.Tremendous", "L"));
-      assertEqual(comp.normalizeAllAndLookup(n), "b c tremendous", "c linnaus", "doring", "walther");
+      n.setBasionymAuthorship(cr("1904", "B.C.Tremendous", "L.", "Linne"));
+      n.getBasionymAuthorship().setExAuthors(Lists.newArrayList("BBC Tremendous", "L"));
+      assertEqual(comp.normalizeName(n), "1999", "1904", "b c tremendous", "c linnaus", "doring", "walther");
     }
   
     private static void assertEqual(List<String> totest, String... expected) {

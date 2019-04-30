@@ -242,7 +242,7 @@ public class PgImport implements Callable<Boolean> {
         n.name.setDatasetKey(dataset.getKey());
         updateVerbatimUserEntity(n.name);
         // normalize authorship on insert - sth the DAO normally does but we use the mapper directly in batch mode
-        n.name.setAuthorshipNormalized(aNormalizer.normalizeAllAndLookup(n.name));
+        n.name.setAuthorshipNormalized(aNormalizer.normalizeName(n.name));
         nameMapper.create(n.name);
         if (nCounter.incrementAndGet() % batchSize == 0) {
           interruptIfCancelled();

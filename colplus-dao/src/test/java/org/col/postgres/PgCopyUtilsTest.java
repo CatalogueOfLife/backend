@@ -3,13 +3,18 @@ package org.col.postgres;
 import java.io.File;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Map;
+import java.util.function.Function;
 
+import com.google.common.collect.ImmutableMap;
 import org.col.db.PgSetupRule;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.postgresql.jdbc.PgConnection;
+
+import static org.junit.Assert.assertEquals;
 
 public class PgCopyUtilsTest {
   
@@ -27,6 +32,27 @@ public class PgCopyUtilsTest {
   @After
   public void teardown() throws SQLException {
     con.close();
+  }
+  @Test
+  public void buildNsplit() throws Exception {
+    assertEquals("{Duméril,Bibron}", PgCopyUtils.buildPgArray( PgCopyUtils.splitPgArray("{Duméril,Bibron}")) );
+  }
+  
+  @Test
+  public void copy() throws Exception {
+    try (Statement st = con.createStatement()) {
+      st.execute("CREATE TABLE person (key serial primary key, name text, age int, town text, norm text, size int)");
+    }
+    PgCopyUtils.copy(con, "person", "/test.csv", null, null);
+
+    Map<String, Object> defs = ImmutableMap.of(
+        "town", "Berlin"
+    );
+    Map<String, Function<String[], String>> funcs = ImmutableMap.of(
+        "size", row -> String.valueOf(row[0].length()),
+        "norm", row -> row[0].toLowerCase()
+    );
+    PgCopyUtils.copy(con, "person", "/test.csv", defs, funcs);
   }
 
   @Test

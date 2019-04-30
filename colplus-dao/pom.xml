@@ -63,6 +63,10 @@
 
 		<!-- other -->
 		<dependency>
+			<groupId>com.univocity</groupId>
+			<artifactId>univocity-parsers</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>org.imgscalr</groupId>
 			<artifactId>imgscalr-lib</artifactId>
 		</dependency>
