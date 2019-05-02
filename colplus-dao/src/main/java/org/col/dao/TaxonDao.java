@@ -344,14 +344,15 @@ public class TaxonDao extends DatasetEntityDao<Taxon, TaxonMapper> {
     int cnt = session.getMapper(NameUsageMapper.class).updateParentId(datasetKey, id, t.getParentId(), user);
     LOG.debug("Moved {} children of {} to {}", cnt, t.getId(), t.getParentId());
     
-    // if this taxon had a sector we need to adjust parental counts
-    // we keep the sector as a broken sector around
-    SectorMapper sm = session.getMapper(SectorMapper.class);
-    Sector s = sm.getByTarget(datasetKey, id);
-    if (s != null) {
-      tMapper.incDatasetSectorCount(Datasets.DRAFT_COL, s.getTarget().getId(), s.getDatasetKey(), -1);
+    if (Datasets.DRAFT_COL == datasetKey) {
+      // if this taxon had a sector we need to adjust parental counts
+      // we keep the sector as a broken sector around
+      SectorMapper sm = session.getMapper(SectorMapper.class);
+      for (Sector s : sm.listByTarget(id)) {
+        tMapper.incDatasetSectorCount(Datasets.DRAFT_COL, s.getTarget().getId(), s.getDatasetKey(), -1);
+      }
     }
-  
+    
     // deleting the taxon now should cascade deletes to synonyms, vernaculars, etc but keep the name record!
   }
   

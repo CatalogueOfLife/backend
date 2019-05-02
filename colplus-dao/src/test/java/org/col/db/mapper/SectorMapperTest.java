@@ -9,7 +9,7 @@ import org.junit.Test;
 
 import static org.col.api.TestEntityGenerator.DATASET11;
 import static org.col.api.TestEntityGenerator.newNameRef;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 public class SectorMapperTest extends GlobalCRUDMapperTest<Sector, SectorMapper> {
   
@@ -33,6 +33,21 @@ public class SectorMapperTest extends GlobalCRUDMapperTest<Sector, SectorMapper>
     commit();
   }
   
+  @Test
+  public void getBySubject() {
+    add2Sectors();
+    assertNotNull(mapper().getBySubject(datasetKey, TestEntityGenerator.TAXON1.getId()));
+    assertNull(mapper().getBySubject(datasetKey+1, TestEntityGenerator.TAXON1.getId()));
+    assertNull(mapper().getBySubject(datasetKey, TestEntityGenerator.TAXON1.getId()+"dfrtgzh"));
+  }
+  
+  @Test
+  public void listByTarget() {
+    add2Sectors();
+    assertEquals(1, mapper().listByTarget("t4").size());
+    assertEquals(0, mapper().listByTarget("t32134").size());
+  }
+
   @Test
   public void list() {
     add2Sectors();

@@ -94,6 +94,18 @@
     WHERE key = #{key}
   </select>
 
+  <select id="getBySubject" resultMap="sectorResultMap">
+    SELECT <include refid="SELECT" />
+    FROM <include refid="FROM" />
+    WHERE dataset_key = #{datasetKey} AND subject_id = #{id}
+  </select>
+
+  <select id="listByTarget" resultMap="sectorResultMap">
+    SELECT <include refid="SELECT" />
+    FROM <include refid="FROM" />
+    WHERE target_id = #{id}
+  </select>
+
   <insert id="create" parameterType="Sector" useGeneratedKeys="true" keyProperty="key">
     INSERT INTO sector ( <include refid="COLS" />, created_by )
     VALUES ( <include refid="PROPS" />, #{createdBy} )
