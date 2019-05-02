@@ -12,17 +12,17 @@ public interface NameUsageIndexService {
   /**
    * Indexes all CoL usages from an entire sector from postgres into ElasticSearch using the bulk API.
    */
-  void indexSector(Integer sectorKey);
+  void indexSector(int sectorKey);
   
   /**
    * Removed all CoL usage docs of the given sector from ElasticSearch, i.e. taxa and synonyms.
    */
-  void deleteSector(Integer sectorKey);
+  void deleteSector(int sectorKey);
 
   /**
    * Indexes an entire dataset from postgres into ElasticSearch using the bulk API.
    */
-  void indexDataset(Integer datasetKey);
+  void indexDataset(int datasetKey);
 
   /**
    * Re-indexes all datasets from scratch
@@ -32,13 +32,13 @@ public interface NameUsageIndexService {
   /**
    * Indexes given taxa from the same dataset from postgres into ElasticSearch.
    */
-  void indexTaxa(Integer datasetKey, Collection<String> taxonIds);
+  void indexTaxa(int datasetKey, Collection<String> taxonIds);
   
   /**
    * Updates the classification for all descendants in the subtree identified by the rootTaxonId.
    * All other information is left as is and no new docs are generated, i.e. all taxa must have been indexed before.
    */
-  void updateClassification(Integer datasetKey, String rootTaxonId);
+  void updateClassification(int datasetKey, String rootTaxonId);
 
   /**
    * @return a pass through indexing service that does not do anything. Good for tests
@@ -47,17 +47,17 @@ public interface NameUsageIndexService {
     return new NameUsageIndexService() {
 
       @Override
-      public void indexSector(Integer sectorKey) {
+      public void indexSector(int sectorKey) {
         LOG.info("No Elastic Search configured, pass through sector {}", sectorKey);
       }
   
       @Override
-      public void deleteSector(Integer sectorKey) {
+      public void deleteSector(int sectorKey) {
         LOG.info("No Elastic Search configured, pass through deletion of sector {}", sectorKey);
       }
 
       @Override
-      public void indexDataset(Integer datasetKey) {
+      public void indexDataset(int datasetKey) {
         LOG.info("No Elastic Search configured, pass through dataset {}", datasetKey);
       }
 
@@ -65,7 +65,7 @@ public interface NameUsageIndexService {
        * Indexes all CoL usages from an entire sector from postgres into ElasticSearch using the bulk API.
        */
       @Override
-      public void indexTaxa(Integer datasetKey, Collection<String> taxonIds) {
+      public void indexTaxa(int datasetKey, Collection<String> taxonIds) {
         LOG.info("No Elastic Search configured. Passing through taxa {}", taxonIds);
       }
 
@@ -75,7 +75,7 @@ public interface NameUsageIndexService {
       }
   
       @Override
-      public void updateClassification(Integer datasetKey, String rootTaxonId) {
+      public void updateClassification(int datasetKey, String rootTaxonId) {
         LOG.info("No Elastic Search configured. Passing through");
       }
     };
