@@ -5,6 +5,7 @@ import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.ibatis.exceptions.PersistenceException;
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.model.*;
 import org.col.api.search.DatasetSearchRequest;
@@ -12,7 +13,10 @@ import org.col.api.vocab.Datasets;
 import org.col.api.vocab.Origin;
 import org.col.api.vocab.TaxonomicStatus;
 import org.col.api.vocab.Users;
-import org.col.db.mapper.*;
+import org.col.db.mapper.DatasetMapper;
+import org.col.db.mapper.DecisionMapper;
+import org.col.db.mapper.SectorMapper;
+import org.col.db.mapper.TaxonMapper;
 import org.gbif.nameparser.api.NameType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,35 +70,41 @@ public class DecisionRematcher {
   
   public boolean matchSector(Sector s, boolean subject, boolean target) {
     boolean success = true;
-    if (subject) {
-      NameUsage t = matchUniquely(s, s.getDatasetKey(), s.getSubject());
-      if (t != null) {
-        s.getSubject().setId(t.getId());
-      } else {
-        success = false;
-      }
-    }
-    if (target) {
-      NameUsage t = matchUniquely(s, Datasets.DRAFT_COL, s.getTarget());
-      if (t != null) {
-        s.getTarget().setId(t.getId());
-        if (s.getMode() == Sector.Mode.ATTACH) {
-          // create single, new child
-          Taxon c = newTaxon(Datasets.DRAFT_COL, s.getSubject());
-          c.setSectorKey(s.getKey());
-          TaxonDao.copyTaxon(session, c, s.getTargetAsDatasetID(), user, Collections.emptySet());
+    try {
+      if (subject) {
+        NameUsage t = matchUniquely(s, s.getDatasetKey(), s.getSubject());
+        if (t != null) {
+          s.getSubject().setId(t.getId());
         } else {
-          // mark 2 children as coming from this sector...
-          for (Taxon c : tm.children(Datasets.DRAFT_COL, t.getId(), new Page(0,2))) {
-            c.setSectorKey(s.getKey());
-            tm.update(c);
-          }
+          success = false;
         }
-      } else {
-        success = false;
       }
+      if (target) {
+        NameUsage t = matchUniquely(s, Datasets.DRAFT_COL, s.getTarget());
+        if (t != null) {
+          s.getTarget().setId(t.getId());
+          if (s.getMode() == Sector.Mode.ATTACH) {
+            // create single, new child
+            Taxon c = newTaxon(Datasets.DRAFT_COL, s.getSubject());
+            c.setSectorKey(s.getKey());
+            TaxonDao.copyTaxon(session, c, s.getTargetAsDatasetID(), user, Collections.emptySet());
+          } else {
+            // mark 2 children as coming from this sector...
+            for (Taxon c : tm.children(Datasets.DRAFT_COL, t.getId(), new Page(0,2))) {
+              c.setSectorKey(s.getKey());
+              tm.update(c);
+            }
+          }
+        } else {
+          success = false;
+        }
+      }
+      sm.update(s);
+
+    } catch (PersistenceException e) {
+      success = false;
+      LOG.error("Failed to update rematched sector {}", s, e);
     }
-    sm.update(s);
     return success;
   }
   
