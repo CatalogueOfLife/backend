@@ -123,13 +123,13 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
       NameUsageWrapperMapper mapper = session.getMapper(NameUsageWrapperMapper.class);
       try (ClassificationUpdater updater = new ClassificationUpdater(indexer, datasetKey)) {
         mapper.processTree(datasetKey, rootTaxonId, updater);
-       }
+      }
       EsUtil.refreshIndex(client, index);
-   } catch (IOException e) {
+    } catch (IOException e) {
       throw new EsException(e);
     }
     LOG.info("Successfully updated {} name usages", indexer.documentsIndexed());
- }
+  }
 
   @Override
   public void indexAll() {

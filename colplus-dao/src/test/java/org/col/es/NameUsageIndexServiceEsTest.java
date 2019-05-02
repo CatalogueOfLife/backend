@@ -28,7 +28,7 @@ import static org.gbif.nameparser.api.Rank.PHYLUM;
 import static org.gbif.nameparser.api.Rank.SPECIES;
 import static org.junit.Assert.assertEquals;
 
-// @Ignore("Its too slow for jenkins most of the time")
+@Ignore("Its too slow for jenkins most of the time")
 public class NameUsageIndexServiceEsTest extends EsReadWriteTestBase {
 
   @Test // Nice in combination with PgImportIT.testGsdGithub
@@ -58,7 +58,7 @@ public class NameUsageIndexServiceEsTest extends EsReadWriteTestBase {
    * the entire dataset first, and then re-indexes the insecta with exactly the same values they already had.
    */
   @Test
-  @Ignore
+  //@Ignore
   public void updateClassification() throws IOException, EsException {
     try (RestClient client = getEsClient()) {
       NameUsageIndexServiceEs svc = new NameUsageIndexServiceEs(client, getEsConfig(), factory());
