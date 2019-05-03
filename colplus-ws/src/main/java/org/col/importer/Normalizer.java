@@ -152,6 +152,7 @@ public class Normalizer implements Callable<Boolean> {
         // taxon or synonym
         if (u.isSynonym()) {
           Synonym s = u.getSynonym();
+          require(s, s.getId(), "id");
           require(s, s.getOrigin(), "origin");
     
           // no vernaculars, distribution etc
