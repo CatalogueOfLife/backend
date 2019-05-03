@@ -57,7 +57,7 @@ public class ColdpInterpreter extends InterpreterBase {
       //TODO: make sure no TAXON label already exists!!!
       NeoUsage u = NeoUsage.createTaxon(Origin.SOURCE, TaxonomicStatus.ACCEPTED);
       u.nameNode = n.node;
-      u.setId(v.get(ColTerm.ID));
+      u.setId(v.getRaw(ColTerm.ID));
       u.setVerbatimKey(v.getKey());
     
       // taxon
@@ -88,7 +88,7 @@ public class ColdpInterpreter extends InterpreterBase {
   }
   
   private Optional<NeoName> findName(VerbatimRecord v, Term nameId) {
-    NeoName n = store.names().objByID(v.get(nameId));
+    NeoName n = store.names().objByID(v.getRaw(nameId));
     if (n == null) {
       v.addIssue(Issue.NAME_ID_INVALID);
       v.addIssue(Issue.NOT_INTERPRETED);
@@ -108,6 +108,7 @@ public class ColdpInterpreter extends InterpreterBase {
   
       NeoUsage u = NeoUsage.createSynonym(Origin.SOURCE, status);
       u.nameNode = n.node;
+      String id = v.get(ColTerm.taxonID) + "-" + v.getRaw(ColTerm.nameID);
       u.setId(v.get(ColTerm.ID));
       u.setVerbatimKey(v.getKey());
   

@@ -9,16 +9,15 @@ import java.util.function.Function;
 import com.google.common.collect.ImmutableMap;
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.ibatis.session.SqlSession;
-import org.col.api.model.Duplicate;
-import org.col.api.model.Page;
-import org.col.api.model.Synonym;
-import org.col.api.model.Taxon;
+import org.col.api.TestEntityGenerator;
+import org.col.api.model.*;
 import org.col.api.vocab.MatchingMode;
 import org.col.api.vocab.NameCategory;
 import org.col.api.vocab.TaxonomicStatus;
 import org.col.common.tax.SciNameNormalizer;
 import org.col.db.PgSetupRule;
 import org.col.db.mapper.DatasetPartitionMapper;
+import org.col.db.mapper.DecisionMapper;
 import org.col.postgres.AuthorshipNormFunc;
 import org.col.postgres.PgCopyUtils;
 import org.gbif.nameparser.api.Rank;
@@ -62,6 +61,22 @@ public class DuplicateDaoTest {
         
         c.commit();
       }
+  
+      try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+        final DecisionMapper dm = session.getMapper(DecisionMapper.class);
+        create(dm,"15", Rank.SPECIES);
+        create(dm,"28", Rank.SUBSPECIES);
+        session.commit();
+      }
+    }
+    
+    private static void create(DecisionMapper dm, String id, Rank rank) {
+      EditorialDecision d = new EditorialDecision();
+      d.setDatasetKey(datasetKey);
+      d.setSubject(new SimpleName(id, "Nana", rank));
+      d.setMode(EditorialDecision.Mode.BLOCK);
+      d.applyUser(TestEntityGenerator.USER_EDITOR);
+      dm.create(d);
     }
     
     @Before
@@ -80,14 +95,23 @@ public class DuplicateDaoTest {
     public void duplicates() {
       Set<TaxonomicStatus> status = new HashSet<>();
       int minSize = 2;
-      List<Duplicate> dups = find(MatchingMode.STRICT, minSize, datasetKey, null, null, null, null, null, null, false, new Page(0, 10));
+      List<Duplicate> dups = find(MatchingMode.STRICT, minSize, datasetKey, null, null, null, null, null, null, null, new Page(0, 10));
       assertComplete(10, dups, minSize);
       
       
       Page p = new Page(0, 100);
       dups = find(MatchingMode.STRICT, minSize, datasetKey, null, null, null, status, null, null, null, p);
+      show(dups);
       assertComplete(19, dups, minSize);
   
+      dups = find(MatchingMode.STRICT, minSize, datasetKey, null, null, null, status, null, null, true, p);
+      show(dups);
+      assertComplete(2, dups, minSize);
+  
+      dups = find(MatchingMode.STRICT, minSize, datasetKey, null, null, null, status, null, null, false, p);
+      show(dups);
+      assertComplete(17, dups, minSize);
+
       dups = find(MatchingMode.STRICT, minSize, datasetKey, null, NameCategory.UNINOMIAL, null, status, null, null, null, p);
       assertComplete(0, dups, minSize);
   

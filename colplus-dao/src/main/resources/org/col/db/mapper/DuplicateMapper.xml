@@ -76,9 +76,6 @@
             <if test="status != null and !status.isEmpty()">
                 AND u.status IN (<foreach collection="status" item="st" separator=",">#{st}</foreach>)
             </if>
-            <if test="withDecision != null">
-                AND ed.key IS <if test="withDecision">NOT </if>NULL
-            </if>
         </where>
         GROUP BY <include refid="keyCol" />
         HAVING count(*) >= #{minSize}
@@ -89,6 +86,11 @@
         <if test="sectorKey != null">
             <!-- make sure at least one name comes from the requested sector -->
             AND array_agg(u.sector_key) @> array[${sectorKey}]
+        </if>
+        <if test="withDecision != null">
+            AND count(distinct ed.key)
+                <if test="withDecision">&gt; 0</if>
+                <if test="!withDecision">= 0</if>
         </if>
         <if test="authorshipDifferent != null">
             AND count(

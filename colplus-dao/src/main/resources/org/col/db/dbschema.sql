@@ -490,6 +490,28 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- array_agg alternative that ignores null values
+CREATE OR REPLACE FUNCTION fn_array_agg_nonull (
+    a anyarray
+    , b anyelement
+) RETURNS ANYARRAY
+AS $$
+BEGIN
+    IF b IS NOT NULL THEN
+        a := array_append(a, b);
+    END IF;
+    RETURN a;
+END;
+$$ IMMUTABLE LANGUAGE 'plpgsql';
+
+CREATE AGGREGATE array_agg_nonull(ANYELEMENT) (
+    SFUNC = fn_array_agg_nonull,
+    STYPE = ANYARRAY,
+    INITCOND = '{}'
+);
+
+
+
 -- INDICES for non partitioned tables
 CREATE index ON dataset (gbif_key);
 CREATE index ON dataset_import (started);
