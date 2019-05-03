@@ -48,6 +48,8 @@ public class TaxonDao extends DatasetEntityDao<Taxon, TaxonMapper> {
    * The original id is retained and finally returned.
    * An optional set of associated entity types can be indicated to be copied too.
    *
+   * The sectorKey found on the main taxon will also be applied to associated name, reference and other copied entities.
+   *
    * @return the original source taxon id
    */
   public static DatasetID copyTaxon(final SqlSession session, final Taxon t, final DatasetID targetParent, int user,
@@ -80,18 +82,17 @@ public class TaxonDao extends DatasetEntityDao<Taxon, TaxonMapper> {
   /**
    * Copies the given nam instance, modifying the original and assigning a new id
    */
-  static void copyName(final SqlSession session, final NameUsage u, final int targetDatasetKey, int user,
+  static void copyName(final SqlSession session, final NameUsageBase u, final int targetDatasetKey, int user,
                                Function<Reference, String> lookupReference) {
     Name n = u.getName();
     n.applyUser(user, true);
     n.setOrigin(Origin.SOURCE);
     if (n.getPublishedInId() != null) {
       ReferenceMapper rm = session.getMapper(ReferenceMapper.class);
-      Reference ref = setKeys(rm.get(n.getDatasetKey(), n.getPublishedInId()), targetDatasetKey);
-      //TODO: add sectorKey to reference
+      Reference ref = rm.get(n.getDatasetKey(), n.getPublishedInId());
       n.setPublishedInId(lookupReference.apply(ref));
     }
-    setKeys(n, targetDatasetKey);
+    setKeys(n, targetDatasetKey, u.getSectorKey());
     session.getMapper(NameMapper.class).create(n);
   }
   
@@ -100,23 +101,19 @@ public class TaxonDao extends DatasetEntityDao<Taxon, TaxonMapper> {
     return newKey(t);
   }
   
-  private static Name setKeys(Name n, int datasetKey) {
+  private static Name setKeys(Name n, int datasetKey, int sectorKey) {
     n.setDatasetKey(datasetKey);
+    n.setSectorKey(sectorKey);
     newKey(n);
     //TODO: should we update homotypic name based on the original ids if they are also in the sector???
     n.setHomotypicNameId(n.getId());
     return n;
   }
   
-  private static Reference setKeys(Reference r, int datasetKey) {
+  private static Reference setKeys(Reference r, int datasetKey, int sectorKey) {
     r.setDatasetKey(datasetKey);
+    r.setSectorKey(sectorKey);
     return newKey(r);
-  }
-  
-  private static <T extends VerbatimEntity & DatasetEntity> T newKey(T e) {
-    e.setVerbatimKey(null);
-    e.setId(UUID.randomUUID().toString());
-    return e;
   }
   
   public ResultPage<Taxon> listRoot(Integer datasetKey, Page page) {

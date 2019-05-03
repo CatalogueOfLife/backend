@@ -163,13 +163,14 @@ public class SectorSync extends SectorRunnable {
   
   class TreeCopyHandler implements ResultHandler<NameUsageBase> {
     final SqlSession session;
-    final SynonymMapper sMapper;
+    final ReferenceMapper rMapper;
     int counter = 0;
     final Map<String, String> ids = new HashMap<>();
+    final Map<String, String> refIds = new HashMap<>();
   
     TreeCopyHandler(SqlSession session) {
       this.session = session;
-      sMapper = session.getMapper(SynonymMapper.class);
+      rMapper = session.getMapper(ReferenceMapper.class);
     }
     
     @Override
@@ -257,13 +258,31 @@ public class SectorSync extends SectorRunnable {
       return false;
     }
 
+    //TODO: normalize references even across sectors?
     private String lookupReference(Reference ref) {
       if (ref != null) {
-        //TODO: lookup existing refs from other sectors
-        if (1 == 2) {
-          ref.setDatasetKey(catalogueKey);
-          ref.applyUser(user);
-          // TODO: Create ref
+        if (refIds.containsKey(ref.getId())) {
+          // we have seen this ref before
+          return refIds.get(ref.getId());
+        }
+        // sth new?
+        List<Reference> matches = rMapper.find(catalogueKey, ref.getCitation());
+        ref.setDatasetKey(catalogueKey);
+        ref.applyUser(user);
+        if (matches.isEmpty()) {
+          // insert new ref
+          ref.setSectorKey(sector.getKey());
+          DatasetID origID = ReferenceDao.copyReference(session, ref, catalogueKey, user.getKey());
+          refIds.put(origID.getId(), ref.getId());
+          return ref.getId();
+          
+        } else {
+          if (matches.size() > 1) {
+            LOG.warn("{} duplicate references in catalogue {} with citation {}", matches.size(), catalogueKey, ref.getCitation());
+          }
+          String refID = matches.get(0).getId();
+          refIds.put(ref.getId(), refID);
+          return refID;
         }
       }
       return null;

@@ -1,6 +1,7 @@
 package org.col.dao;
 
 import java.util.List;
+import java.util.UUID;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -101,6 +102,12 @@ public class DatasetEntityDao<T extends DatasetEntity & UserManaged, M extends D
   }
   protected void deleteAfter(int datasetKey, String id, T old, int user, M mapper, SqlSession session) {
     // override to do sth useful
+  }
+  
+  static <T extends VerbatimEntity & DatasetEntity> T newKey(T e) {
+    e.setVerbatimKey(null);
+    e.setId(UUID.randomUUID().toString());
+    return e;
   }
   
 }

@@ -43,7 +43,7 @@
     </sql>
 
     <sql id="FROM">
-        reference r
+        reference_${datasetKey} r
     </sql>
 
     <!-- A mapping to Reference, mostly auto mapped -->
@@ -62,7 +62,6 @@
     <select id="list" resultMap="referenceResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
-        WHERE r.dataset_key = #{datasetKey}
         ORDER BY id
         <include refid="org.col.db.mapper.Common.limit" />
     </select>
@@ -70,17 +69,23 @@
     <select id="listByIds" resultMap="referenceResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
-        WHERE r.dataset_key = #{datasetKey} AND id IN
+        WHERE id IN
         <foreach item="k" index="idx" collection="ids"
                  open="(" separator="," close=")">
             #{k}
         </foreach>
     </select>
 
+    <select id="find" resultMap="referenceResultMap">
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
+        WHERE r.citation=#{citation}
+    </select>
+
     <select id="get" resultMap="referenceResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
-        WHERE r.id = #{id} AND r.dataset_key = #{datasetKey}
+        WHERE r.id = #{id}
     </select>
 
     <insert id="create" parameterType="Reference" useGeneratedKeys="true" keyProperty="key">
