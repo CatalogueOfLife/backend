@@ -39,7 +39,7 @@ public class TaxonDao extends DatasetEntityDao<Taxon, TaxonMapper> {
   }
   
   public static DatasetID copyTaxon(SqlSession session, final Taxon t, final DatasetID target, int user, Set<EntityType> include) {
-    return copyTaxon(session, t, target.getDatasetKey(), target.getId(), user, include, TaxonDao::devNull);
+    return copyTaxon(session, t, target, user, include, TaxonDao::devNull);
   }
   
   /**
@@ -50,15 +50,15 @@ public class TaxonDao extends DatasetEntityDao<Taxon, TaxonMapper> {
    *
    * @return the original source taxon id
    */
-  public static DatasetID copyTaxon(final SqlSession session, final Taxon t, final int targetDatasetKey, final String targetParentID, int user,
+  public static DatasetID copyTaxon(final SqlSession session, final Taxon t, final DatasetID targetParent, int user,
                                     Set<EntityType> include, Function<Reference, String> lookupReference) {
     final DatasetID orig = new DatasetID(t);
-    copyName(session, t, targetDatasetKey, user, lookupReference);
+    copyName(session, t, targetParent.getDatasetKey(), user, lookupReference);
     
-    setKeys(t, targetDatasetKey);
+    setKeys(t, targetParent.getDatasetKey());
     t.applyUser(user, true);
     t.setOrigin(Origin.SOURCE);
-    t.setParentId(targetParentID);
+    t.setParentId(targetParent.getId());
     session.getMapper(TaxonMapper.class).create(t);
     
     // copy related entities
@@ -68,7 +68,7 @@ public class TaxonDao extends DatasetEntityDao<Taxon, TaxonMapper> {
         mapper.listByTaxon(orig.getDatasetKey(), orig.getId()).forEach(e -> {
           e.setKey(null);
           ((UserManaged) e).applyUser(user);
-          mapper.create(e, t.getId(), targetDatasetKey);
+          mapper.create(e, t.getId(), targetParent.getDatasetKey());
         });
       } else {
         // TODO copy refs, reflinks & name rels

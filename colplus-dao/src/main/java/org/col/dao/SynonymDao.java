@@ -31,8 +31,9 @@ public class SynonymDao extends DatasetEntityDao<Synonym, SynonymMapper> {
    * @param user
    * @param lookupReference
    */
-  public static void copySynonym(final SqlSession session, final Synonym syn, final DatasetID accepted, int user,
+  public static DatasetID copySynonym(final SqlSession session, final Synonym syn, final DatasetID accepted, int user,
                                  Function<Reference, String> lookupReference) {
+    final DatasetID orig = new DatasetID(syn);
     syn.setDatasetKey(accepted.getDatasetKey());
     TaxonDao.copyName(session, syn, accepted.getDatasetKey(), user, lookupReference);
     newKey(syn);
@@ -40,6 +41,7 @@ public class SynonymDao extends DatasetEntityDao<Synonym, SynonymMapper> {
     syn.setOrigin(Origin.SOURCE);
     syn.setParentId(accepted.getId());
     session.getMapper(SynonymMapper.class).create(syn);
+    return orig;
   }
   
   
