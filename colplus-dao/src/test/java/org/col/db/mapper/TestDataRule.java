@@ -161,12 +161,12 @@ public class TestDataRule extends ExternalResource {
     // finally create a test user to use in tests
     session.getMapper(UserMapper.class).create(TEST_USER);
     session.commit();
-    session.close();
   }
   
   @Override
   protected void after() {
     super.after();
+    session.close();
   }
   
   private void partition() {
@@ -233,6 +233,12 @@ public class TestDataRule extends ExternalResource {
                   "scientific_name_normalized", row -> SciNameNormalizer.normalize(row[testData.sciNameColumn])
               )
           );
+          copyTable(pgc, "name_rel",
+              ImmutableMap.<String, Object>of(
+                  "created_by", 0,
+                  "modified_by", 0
+              )
+          );
           copyTable(pgc, "name_usage",
               ImmutableMap.<String, Object>of(
                   "created_by", 0,
@@ -243,6 +249,7 @@ public class TestDataRule extends ExternalResource {
                   "is_synonym", TestDataRule::isSynonym
               )
           );
+          copyTable(pgc, "usage_reference");
           copyTable(pgc, "distribution",
               ImmutableMap.<String, Object>of(
                   "created_by", 0,

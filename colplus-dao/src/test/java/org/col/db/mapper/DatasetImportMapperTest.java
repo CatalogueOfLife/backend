@@ -149,7 +149,7 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
   public void counts() throws Exception {
     assertEquals((Integer) 5, mapper().countName(DATASET11.getKey()));
     assertEquals((Integer) 2, mapper().countTaxon(DATASET11.getKey()));
-    assertEquals((Integer) 2, mapper().countReference(DATASET11.getKey()));
+    assertEquals((Integer) 3, mapper().countReference(DATASET11.getKey()));
     assertEquals((Integer) 5, mapper().countVerbatim(DATASET11.getKey()));
     assertEquals((Integer) 3, mapper().countVernacular(DATASET11.getKey()));
     assertEquals((Integer) 3, mapper().countDistribution(DATASET11.getKey()));

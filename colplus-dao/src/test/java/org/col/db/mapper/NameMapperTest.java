@@ -166,18 +166,18 @@ public class NameMapperTest extends MapperTestBase<NameMapper> {
   public void listByReference() throws Exception {
     Name acc1 = newAcceptedName("Nom uno");
     nameMapper.create(acc1);
-    assertTrue(nameMapper.listByReference(REF2.getDatasetKey(), REF2.getId()).isEmpty());
+    assertTrue(nameMapper.listByReference(REF1b.getDatasetKey(), REF1b.getId()).isEmpty());
     
     Name acc2 = newAcceptedName("Nom duo");
-    acc2.setPublishedInId(REF2.getId());
+    acc2.setPublishedInId(REF1b.getId());
     Name acc3 = newAcceptedName("Nom tres");
-    acc3.setPublishedInId(REF2.getId());
+    acc3.setPublishedInId(REF1b.getId());
     nameMapper.create(acc2);
     nameMapper.create(acc3);
     
     // we have one ref from the apple.sql
     assertEquals(1, nameMapper.listByReference(REF1.getDatasetKey(), REF1.getId()).size());
-    assertEquals(2, nameMapper.listByReference(REF2.getDatasetKey(), REF2.getId()).size());
+    assertEquals(2, nameMapper.listByReference(REF1b.getDatasetKey(), REF1b.getId()).size());
   }
   
   private static Name newAcceptedName(String scientificName) {

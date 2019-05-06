@@ -1,6 +1,5 @@
 package org.col.db.mapper;
 
-import java.net.URI;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -59,12 +58,7 @@ public class NameUsageWrapperMapperTreeTest extends MapperTestBase<NameUsageWrap
           assertTrue(obj.getUsage().isTaxon());
           Taxon t = (Taxon) obj.getUsage();
           assertNotNull(t.getId());
-          assertNotNull(t.getAccordingToDate());
-          assertEquals("M.Döring", t.getAccordingTo());
-          assertEquals((Integer) 10, t.getSpeciesEstimate());
           assertEquals((Integer) 1, t.getVerbatimKey());
-          assertEquals("remark me", t.getRemarks());
-          assertEquals(URI.create("http://myspace.com"), t.getWebpage());
           if (t.getId().equals("t1")) {
             assertNull(t.getParentId());
           } else {

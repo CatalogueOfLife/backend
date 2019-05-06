@@ -81,8 +81,8 @@ public class TestEntityGenerator {
   /**
    * Corresponds exactly to 2nd reference record inserted via apple.sql
    */
+  public final static Reference REF1b = setUser( new Reference());
   public final static Reference REF2 = setUser( new Reference());
-  public final static Reference REF3 = setUser( new Reference());
   
   public final static int VERBATIM_KEY1 = 1;
   public final static int VERBATIM_KEY2 = 2;
@@ -118,19 +118,22 @@ public class TestEntityGenerator {
 
     
     REF1.setId("ref-1");
+    REF1.setCitation(REF1.getId());
     REF1.setDatasetKey(DATASET11.getKey());
     REF1.setCreatedBy(Users.DB_INIT);
     REF1.setModifiedBy(Users.DB_INIT);
     
-    REF2.setId("ref-1b");
+    REF1b.setId("ref-1b");
+    REF1b.setCitation(REF1b.getId());
+    REF1b.setDatasetKey(DATASET11.getKey());
+    REF1b.setCreatedBy(Users.DB_INIT);
+    REF1b.setModifiedBy(Users.DB_INIT);
+    
+    REF2.setId("ref-2");
+    REF2.setCitation(REF2.getId());
     REF2.setDatasetKey(DATASET11.getKey());
     REF2.setCreatedBy(Users.DB_INIT);
     REF2.setModifiedBy(Users.DB_INIT);
-    
-    REF3.setId("ref-2");
-    REF3.setDatasetKey(DATASET12.getKey());
-    REF3.setCreatedBy(Users.DB_INIT);
-    REF3.setModifiedBy(Users.DB_INIT);
     
     NAME1.setId("name-1");
     NAME1.setHomotypicNameId(NAME1.getId());
