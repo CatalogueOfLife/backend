@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URL;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
@@ -23,6 +24,11 @@ public class Resources {
     return ClassLoader.getSystemResourceAsStream(resourceName);
   }
   
+  public static boolean exists(String resourceName) {
+    URL url = ClassLoader.getSystemResource(resourceName);
+    return url != null;
+  }
+
   /**
    * @return stream of lines from a classpath resource file encoded in UTF8
    */

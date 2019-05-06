@@ -1,0 +1,25 @@
+verbatim_key,id,homotypic_name_id,scientific_name,uninomial,genus,specific_epithet,infraspecific_epithet,rank,published_in_id
+1,n1,,Animalia,Animalia,,,,kingdom,r1
+1,n2,,Chordata,Chordata,,,,phylum,r1
+1,n3,,Mammalia,Mammalia,,,,class,r1
+1,n4,,Carnivora,Carnivora,,,,order,r1
+1,n5,,Canidae,Canidae,,,,family,r1
+1,n6,,Felidae,Felidae,,,,family,r1
+1,n10,,Lynx,Lynx,,,,genus,r1
+1,n11,,Pardina,Pardina,,,,genus,r1
+1,n12,,Lynx lynx,,Lynx,lynx,,species,r1
+1,n13,,Lynx rufus,,Lynx,rufus,,species,r1
+2,n14,n13,Felis rufus,,Felis,rufus,,species,r1
+1,n15,,Lynx rufus subsp. baileyi,,Lynx,rufus,baileyi,subspecies,r1
+1,n16,,Lynx rufus subsp. gigas,,Lynx,rufus,gigas,subspecies,r1
+1,n20,,Canis,Canis,,,,genus,r1
+1,n21,,Alopsis,Alopsis,,,,genus,r1
+1,n22,,Lupulus,Lupulus,,,,genus,r1
+1,n23,,Canis adustus,,Canis,adustus,,species,r1
+1,n24,,Canis argentinus,,Canis,argentinus,,species,r1
+1,n25,,Canis aureus,,Canis,aureus,,species,r1
+1,n30,,Urocyon,Urocyon,,,,genus,r1
+1,n31,,Urocyon citrinus,,Urocyon,citrinus,,species,r1
+1,n32,,Urocyon littoralis,,Urocyon,littoralis,,species,r1
+,n33,,Urocyon minicephalus,,Urocyon,minicephalus,,species,r1
+,n34,,Urocyon webbi,,Urocyon,webbi,,species,r1

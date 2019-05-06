@@ -232,7 +232,8 @@
     </update>
 
     <delete id="delete" parameterType="map">
-        DELETE name_${datasetKey} WHERE id = #{id}
+        DELETE name_${datasetKey}
+        WHERE id = #{id}
     </delete>
 
     <delete id="deleteOrphans" parameterType="map">
@@ -242,6 +243,11 @@
             FROM name_usage_${datasetKey} u
             WHERE n.id = i.name_id
         )
+    </delete>
+
+    <delete id="deleteBySector" parameterType="map">
+        DELETE FROM name_${datasetKey}
+        WHERE sector_key=#{sectorKey}
     </delete>
 
 </mapper>

@@ -33,4 +33,6 @@ public interface ReferenceMapper extends DatasetCRUDMapper<Reference> {
 	 */
 	List<Reference> find(@Param("datasetKey") int datasetKey, @Param("citation") String citation);
 	
+	int deleteBySector(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
+	
 }

@@ -292,14 +292,18 @@ public class SectorSync extends SectorRunnable {
   private void deleteOld() {
     int count;
     try (SqlSession session = factory.openSession(true)) {
-      NameUsageMapper m = session.getMapper(NameUsageMapper.class);
-      count = m.deleteBySector(catalogueKey, sector.getKey());
+      NameUsageMapper um = session.getMapper(NameUsageMapper.class);
+      count = um.deleteBySector(catalogueKey, sector.getKey());
       LOG.info("Deleted {} existing taxa with their synonyms and related information from sector {}", count, sector.getKey());
+  
+      NameMapper nm = session.getMapper(NameMapper.class);
+      count = nm.deleteBySector(catalogueKey, sector.getKey());
+      LOG.info("Deleted {} names from sector {}", count, sector.getKey());
+  
+      ReferenceMapper rm = session.getMapper(ReferenceMapper.class);
+      count = rm.deleteBySector(catalogueKey, sector.getKey());
+      LOG.info("Deleted {} references from sector {}", count, sector.getKey());
     }
-    
-    // TODO: delete orphaned names
-    count = 0;
-    LOG.info("Deleted {} orphaned names from sector {}", count, sector.getKey());
   }
   
 }

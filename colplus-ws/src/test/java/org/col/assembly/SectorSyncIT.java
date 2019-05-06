@@ -91,10 +91,6 @@ public class SectorSyncIT {
     diDao.createSuccess(Datasets.DRAFT_COL);
   }
   
-  void printDraft() throws Exception {
-    print(Datasets.DRAFT_COL);
-  }
-  
   void print(int datasetKey) throws Exception {
     StringWriter writer = new StringWriter();
     writer.append("\nDATASET "+datasetKey+"\n");
@@ -104,6 +100,8 @@ public class SectorSyncIT {
 
   @Test
   public void test1_5_6() throws Exception {
+    print(Datasets.DRAFT_COL);
+    
     print(datasetKey(1, DataFormat.ACEF));
     print(datasetKey(5, DataFormat.ACEF));
     print(datasetKey(6, DataFormat.ACEF));

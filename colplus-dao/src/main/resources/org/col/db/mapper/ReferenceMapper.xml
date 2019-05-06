@@ -105,4 +105,9 @@
             AND taxon_id = #{taxonId}
     </select>
 
+    <delete id="deleteBySector" parameterType="map">
+        DELETE FROM reference_${datasetKey}
+        WHERE sector_key=#{sectorKey}
+    </delete>
+
 </mapper>
