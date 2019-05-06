@@ -9,18 +9,19 @@ import com.google.common.base.Preconditions;
 import com.google.common.io.Files;
 import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.session.SqlSession;
-import org.col.command.initdb.InitDbCmd;
+import org.col.api.model.ColUser;
+import org.col.api.model.Dataset;
+import org.col.api.vocab.DataFormat;
 import org.col.common.tax.AuthorshipNormalizer;
 import org.col.config.ImporterConfig;
 import org.col.config.NormalizerConfig;
+import org.col.db.PgSetupRule;
+import org.col.db.mapper.DatasetMapper;
+import org.col.db.mapper.UserMapper;
 import org.col.importer.neo.NeoDb;
 import org.col.importer.neo.NeoDbFactory;
 import org.col.matching.NameIndexFactory;
-import org.col.api.model.Dataset;
-import org.col.api.vocab.DataFormat;
-import org.col.db.PgSetupRule;
-import org.col.db.mapper.DatasetMapper;
-import org.col.db.mapper.TestDataRule;
+import org.junit.rules.ExternalResource;
 
 /**
  * Imports the given datasets from the test resources
@@ -28,7 +29,17 @@ import org.col.db.mapper.TestDataRule;
  *
  * Requires a running postgres instance which is normally provided via the PgSetupRule ClassRule.
  */
-public class PgImportRule extends TestDataRule {
+public class PgImportRule extends ExternalResource {
+  
+  static final ColUser IMPORT_USER = new ColUser();
+  static {
+    IMPORT_USER.setUsername("importator");
+    IMPORT_USER.setFirstname("Tim");
+    IMPORT_USER.setLastname("Tester");
+    IMPORT_USER.setEmail("tim.test@mailinator.com");
+    IMPORT_USER.getRoles().add(ColUser.Role.ADMIN);
+  }
+  
   
   private static final AuthorshipNormalizer aNormalizer = AuthorshipNormalizer.createWithAuthormap();
   
@@ -53,7 +64,6 @@ public class PgImportRule extends TestDataRule {
   }
 
   public PgImportRule(TestResource... datasets) {
-    super(TestData.NONE);
     this.datasets = datasets;
   }
   
@@ -87,9 +97,10 @@ public class PgImportRule extends TestDataRule {
     cfg = new NormalizerConfig();
     cfg.archiveDir = Files.createTempDir();
     cfg.scratchDir = Files.createTempDir();
-    InitDbCmd.setupStandardPartitions(getSqlSession());
-    commit();
-    
+    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+      session.getMapper(UserMapper.class).create(IMPORT_USER);
+    }
+  
     for (TestResource tr : datasets) {
       normalizeAndImport(tr.key, tr.format);
       datasetKeyMap.put(tr, dataset.getKey());
@@ -118,8 +129,8 @@ public class PgImportRule extends TestDataRule {
     URL url = getClass().getResource("/" + format.name().toLowerCase() + "/" + key);
     dataset = new Dataset();
     dataset.setContributesTo(null);
-    dataset.setCreatedBy(TestDataRule.TEST_USER.getKey());
-    dataset.setModifiedBy(TestDataRule.TEST_USER.getKey());
+    dataset.setCreatedBy(IMPORT_USER.getKey());
+    dataset.setModifiedBy(IMPORT_USER.getKey());
     dataset.setDataFormat(format);
     Path source = Paths.get(url.toURI());
 

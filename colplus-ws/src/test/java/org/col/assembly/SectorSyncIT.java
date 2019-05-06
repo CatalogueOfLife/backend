@@ -17,29 +17,35 @@ import org.col.api.vocab.Datasets;
 import org.col.dao.DatasetImportDao;
 import org.col.dao.TreeRepoRule;
 import org.col.db.PgSetupRule;
-import org.col.db.mapper.TestDataRule;
 import org.col.db.mapper.NameUsageMapper;
 import org.col.db.mapper.SectorMapper;
+import org.col.db.mapper.TestDataRule;
 import org.col.db.tree.TextTreePrinter;
 import org.col.importer.PgImportRule;
 import org.gbif.nameparser.api.Rank;
 import org.junit.*;
+import org.junit.rules.RuleChain;
+import org.junit.rules.TestRule;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
-@Ignore("Assertions need adjustments without the Biota root taxon")
+@Ignore("Work in progress")
 public class SectorSyncIT {
   
   @ClassRule
   public static PgSetupRule pg = new PgSetupRule();
   
-  @Rule
-  public final PgImportRule importRule = PgImportRule.create(DataFormat.ACEF, 1, 5, 6);
+  final PgImportRule importRule = PgImportRule.create(DataFormat.ACEF, 1, 5, 6);
+  final TreeRepoRule treeRepoRule = new TreeRepoRule();
+  final TestDataRule dataRule = TestDataRule.draft();
   
   @Rule
-  public final TreeRepoRule treeRepoRule = new TreeRepoRule();
-  
+  public TestRule chain= RuleChain
+      .outerRule(dataRule)
+      .around(treeRepoRule)
+      .around(importRule);
+
   DatasetImportDao diDao;
   
   @Before
@@ -107,11 +113,12 @@ public class SectorSyncIT {
     print(datasetKey(6, DataFormat.ACEF));
   
     NameUsageBase src = getByName(datasetKey(1, DataFormat.ACEF), Rank.ORDER, "Fabales");
-    NameUsageBase trg = getByName(Datasets.DRAFT_COL, Rank.SUPERKINGDOM, "Biota");
+    NameUsageBase trg = getByName(Datasets.DRAFT_COL, Rank.PHYLUM, "Tracheophyta");
     createSector(Sector.Mode.ATTACH, src, trg);
   
     src = getByName(datasetKey(5, DataFormat.ACEF), Rank.KINGDOM, "Animalia");
-    int s5 = createSector(Sector.Mode.ATTACH, src, trg);
+    trg = getByName(Datasets.DRAFT_COL, Rank.KINGDOM, "Animalia");
+    int s5 = createSector(Sector.Mode.MERGE, src, trg);
     sync(s5);
   
     src = getByName(datasetKey(6, DataFormat.ACEF), Rank.PHYLUM, "Arthropoda");
@@ -120,7 +127,7 @@ public class SectorSyncIT {
 
     syncAll();
     assertTree("cat1_5_6.txt");
-    //printDraft();
+    print(Datasets.DRAFT_COL);
   }
  
   void assertTree(String filename) throws IOException {

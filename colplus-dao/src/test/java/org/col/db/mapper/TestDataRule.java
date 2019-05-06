@@ -111,6 +111,14 @@ public class TestDataRule extends ExternalResource {
   public static TestDataRule tree(SqlSessionFactory sqlSessionFactory) {
     return new TestDataRule(TestData.TREE, () -> sqlSessionFactory);
   }
+  
+  public static TestDataRule draft() {
+    return new TestDataRule(TestData.DRAFT);
+  }
+  
+  public static TestDataRule draft(SqlSessionFactory sqlSessionFactory) {
+    return new TestDataRule(TestData.DRAFT, () -> sqlSessionFactory);
+  }
 
   public static TestDataRule datasets() {
     return new TestDataRule(TestData.DATASETS);
@@ -152,12 +160,13 @@ public class TestDataRule extends ExternalResource {
     loadData();
     // finally create a test user to use in tests
     session.getMapper(UserMapper.class).create(TEST_USER);
+    session.commit();
+    session.close();
   }
   
   @Override
   protected void after() {
     super.after();
-    session.close();
   }
   
   private void partition() {

@@ -75,6 +75,9 @@ public class DuplicateMapperTest {
   public void usagesByIds() {
     List<Duplicate.UsageDecision> res = mapper.usagesByIds(datasetKey, Lists.immutableListOf("45", "46"));
     assertEquals(2, res.size());
+    for (Duplicate.UsageDecision u : res) {
+      assertFalse(u.getClassification().isEmpty());
+    }
   }
   
   @Test

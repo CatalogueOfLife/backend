@@ -44,6 +44,7 @@ public class Duplicate {
 
   public static class UsageDecision {
     private NameUsage usage;
+    private List<SimpleName> classification;
     private EditorialDecision decision;
   
     public NameUsage getUsage() {
@@ -52,6 +53,14 @@ public class Duplicate {
   
     public void setUsage(NameUsage usage) {
       this.usage = usage;
+    }
+  
+    public List<SimpleName> getClassification() {
+      return classification;
+    }
+  
+    public void setClassification(List<SimpleName> classification) {
+      this.classification = classification;
     }
   
     public EditorialDecision getDecision() {
@@ -68,12 +77,13 @@ public class Duplicate {
       if (o == null || getClass() != o.getClass()) return false;
       UsageDecision that = (UsageDecision) o;
       return Objects.equals(usage, that.usage) &&
+          Objects.equals(classification, that.classification) &&
           Objects.equals(decision, that.decision);
     }
   
     @Override
     public int hashCode() {
-      return Objects.hash(usage, decision);
+      return Objects.hash(usage, classification, decision);
     }
   }
   

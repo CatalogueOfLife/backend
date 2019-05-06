@@ -15,6 +15,8 @@
         <association property="decision" javaType="EditorialDecision">
             <id column="decision_key" property="key"/>
         </association>
+        <collection property="classification" ofType="SimpleName" column="{id=id,datasetKey=dataset_key}" autoMapping="true"
+                    select="org.col.db.mapper.TaxonMapper.classificationSimple"/>
     </resultMap>
 
     <select id="usagesByIds" resultMap="usageDecisionResultMap">
