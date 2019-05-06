@@ -95,16 +95,16 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
 
   @Test
   public void count() throws Exception {
-    assertEquals(2, mapper().count(null));
+    assertEquals(3, mapper().count(null));
 
     mapper().create(create());
     mapper().create(create());
     // even thogh not committed we are in the same session so we see the new
     // datasets already
-    assertEquals(4, mapper().count(null));
+    assertEquals(5, mapper().count(null));
 
     commit();
-    assertEquals(4, mapper().count(null));
+    assertEquals(5, mapper().count(null));
   }
 
   @Test
@@ -130,6 +130,7 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
 
   private List<Dataset> createExpected() throws Exception {
     List<Dataset> ds = Lists.newArrayList();
+    ds.add(mapper().get(Datasets.DRAFT_COL));
     ds.add(mapper().get(TestEntityGenerator.DATASET11.getKey()));
     ds.add(mapper().get(TestEntityGenerator.DATASET12.getKey()));
     ds.add(create());
@@ -158,6 +159,7 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
 
     List<Dataset> res = removeCreated(mapper().list(p));
     assertEquals(4, res.size());
+    
     Javers javers = JaversBuilder.javers().build();
     Diff diff = javers.compare(ds.get(0), res.get(0));
     assertEquals(0, diff.getChanges().size());
@@ -166,8 +168,8 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
     // next page (d5-8)
     p.next();
     res = removeCreated(mapper().list(p));
-    assertEquals(3, res.size());
-    assertEquals(ds.subList(4, 7), res);
+    assertEquals(4, res.size());
+    assertEquals(ds.subList(4, 8), res);
 
     // next page (d9)
     p.next();
@@ -241,7 +243,7 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
     assertEquals(5, mapper().search(query, new Page()).size());
 
     query.setCreated(LocalDate.parse("2016-02-01"));
-    assertEquals(6, mapper().search(query, new Page()).size());
+    assertEquals(7, mapper().search(query, new Page()).size());
 
     query.setReleased(LocalDate.parse("2007-11-21"));
     query.setModified(LocalDate.parse("2031-12-31"));

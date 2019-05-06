@@ -7,9 +7,9 @@ import org.col.api.model.Name;
 import org.col.api.model.Taxon;
 import org.col.api.vocab.Origin;
 import org.col.db.mapper.DatasetPartitionMapper;
-import org.col.db.mapper.TestDataRule;
 import org.col.db.mapper.NameMapper;
 import org.col.db.mapper.TaxonMapper;
+import org.col.db.mapper.TestDataRule;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 
@@ -36,7 +36,7 @@ public class MybatisTestUtils {
    */
   public static void populateTestTree(int datasetKey, SqlSession session) {
     partition(session, datasetKey);
-  
+    
     NameMapper nm = session.getMapper(NameMapper.class);
   
     Name n1 = uninomial(nm, datasetKey,"n1", "Animalia", Rank.KINGDOM);
