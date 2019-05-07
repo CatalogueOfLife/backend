@@ -30,7 +30,8 @@ public class SectorSync extends SectorRunnable {
   private static Set<EntityType> COPY_DATA = ImmutableSet.of(
       EntityType.REFERENCE,
       EntityType.VERNACULAR,
-      EntityType.DISTRIBUTION
+      EntityType.DISTRIBUTION,
+      EntityType.REFERENCE
   );
   private NamesTreeDao treeDao;
   
@@ -208,7 +209,7 @@ public class SectorSync extends SectorRunnable {
       // copy usage with all associated information. This assigns a new id !!!
       DatasetID orig;
       if (u.isTaxon()) {
-        orig = TaxonDao.copyTaxon(session, (Taxon) u, parent, user.getKey(), COPY_DATA, this::lookupReference);
+        orig = TaxonDao.copyTaxon(session, (Taxon) u, parent, user.getKey(), COPY_DATA, this::lookupReference, this::lookupReference);
       } else {
         orig = SynonymDao.copySynonym(session, (Synonym) u, parent, user.getKey(), this::lookupReference);
       }
@@ -257,8 +258,20 @@ public class SectorSync extends SectorRunnable {
       }
       return false;
     }
-
-    //TODO: normalize references even across sectors?
+  
+    private String lookupReference(String refID) {
+      if (refID != null) {
+        if (refIds.containsKey(refID)) {
+          // we have seen this ref before
+          return refIds.get(refID);
+        }
+        // not seen before, load full reference
+        Reference r = rMapper.get(sector.getDatasetKey(), refID);
+        return lookupReference(r);
+      }
+      return null;
+    }
+    
     private String lookupReference(Reference ref) {
       if (ref != null) {
         if (refIds.containsKey(ref.getId())) {
@@ -266,12 +279,12 @@ public class SectorSync extends SectorRunnable {
           return refIds.get(ref.getId());
         }
         // sth new?
-        List<Reference> matches = rMapper.find(catalogueKey, ref.getCitation());
-        ref.setDatasetKey(catalogueKey);
-        ref.applyUser(user);
+        List<Reference> matches = rMapper.find(catalogueKey, sector.getKey(), ref.getCitation());
         if (matches.isEmpty()) {
           // insert new ref
+          ref.setDatasetKey(catalogueKey);
           ref.setSectorKey(sector.getKey());
+          ref.applyUser(user);
           DatasetID origID = ReferenceDao.copyReference(session, ref, catalogueKey, user.getKey());
           refIds.put(origID.getId(), ref.getId());
           return ref.getId();

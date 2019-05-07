@@ -80,6 +80,9 @@
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
         WHERE r.citation=#{citation}
+        <if test="sectorKey != null">
+            AND r.sector_key=#{sectorKey}
+        </if>
     </select>
 
     <select id="get" resultMap="referenceResultMap">

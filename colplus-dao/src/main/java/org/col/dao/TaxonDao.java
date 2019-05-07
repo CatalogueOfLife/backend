@@ -38,8 +38,12 @@ public class TaxonDao extends DatasetEntityDao<Taxon, TaxonMapper> {
     return null;
   }
   
+  private static String devNull(String r) {
+    return null;
+  }
+
   public static DatasetID copyTaxon(SqlSession session, final Taxon t, final DatasetID target, int user, Set<EntityType> include) {
-    return copyTaxon(session, t, target, user, include, TaxonDao::devNull);
+    return copyTaxon(session, t, target, user, include, TaxonDao::devNull, TaxonDao::devNull);
   }
   
   /**
@@ -53,7 +57,9 @@ public class TaxonDao extends DatasetEntityDao<Taxon, TaxonMapper> {
    * @return the original source taxon id
    */
   public static DatasetID copyTaxon(final SqlSession session, final Taxon t, final DatasetID targetParent, int user,
-                                    Set<EntityType> include, Function<Reference, String> lookupReference) {
+                                    Set<EntityType> include,
+                                    Function<Reference, String> lookupReference,
+                                    Function<String, String> lookupByIdReference) {
     final DatasetID orig = new DatasetID(t);
     copyName(session, t, targetParent.getDatasetKey(), user, lookupReference);
     
@@ -72,8 +78,17 @@ public class TaxonDao extends DatasetEntityDao<Taxon, TaxonMapper> {
           ((UserManaged) e).applyUser(user);
           mapper.create(e, t.getId(), targetParent.getDatasetKey());
         });
-      } else {
-        // TODO copy refs, reflinks & name rels
+        
+      } else if (EntityType.REFERENCE == type) {
+        // taxon ref links
+        final ReferenceMapper rm = session.getMapper(ReferenceMapper.class);
+        for (String rid : rm.listByTaxon(orig.getDatasetKey(), orig.getId())) {
+          String ridCopy = lookupByIdReference.apply(rid);
+          rm.linkToTaxon(t.getDatasetKey(), t.getId(), ridCopy);
+        }
+  
+      } else if (EntityType.NAME_RELATION == type) {
+        // TODO copy name rels
       }
     }
     return orig;
