@@ -72,8 +72,8 @@
                     AND n.rank &lt;= #{category.lowest}::rank
                 </if>
             </if>
-            <if test="rank != null">
-                AND n.rank=#{rank}::rank
+            <if test="ranks != null and !ranks.isEmpty()">
+                AND n.rank IN (<foreach collection="ranks" item="r" separator=",">#{r}::rank</foreach>)
             </if>
             <if test="status != null and !status.isEmpty()">
                 AND u.status IN (<foreach collection="status" item="st" separator=",">#{st}</foreach>)

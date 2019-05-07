@@ -18,7 +18,7 @@ public interface DuplicateMapper {
                              @Param("datasetKey") int datasetKey,
                              @Param("sectorKey") Integer sectorKey,
                              @Param("category") NameCategory category,
-                             @Param("rank") Rank rank,
+                             @Param("ranks") Set<Rank> ranks,
                              @Param("status") Set<TaxonomicStatus> status,
                              @Param("authorshipDifferent") Boolean authorshipDifferent,
                              @Param("parentDifferent") Boolean parentDifferent,

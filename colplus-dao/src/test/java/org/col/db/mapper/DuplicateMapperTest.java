@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.function.Function;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Sets;
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.model.Duplicate;
 import org.col.api.model.Page;
@@ -84,7 +85,9 @@ public class DuplicateMapperTest {
   public void duplicates() {
     Set<TaxonomicStatus> status = new HashSet<>();
     status.add(TaxonomicStatus.PROVISIONALLY_ACCEPTED);
-    List<Duplicate.Mybatis> dups = mapper.duplicates(MatchingMode.STRICT, 2, datasetKey, null, NameCategory.BINOMIAL, Rank.SPECIES, status, false, false, false, new Page(0, 2));
+    List<Duplicate.Mybatis> dups = mapper.duplicates(MatchingMode.STRICT, 2, datasetKey, null, NameCategory.BINOMIAL,
+        Sets.newHashSet(Rank.SPECIES), status, false, false, false,
+        new Page(0, 2));
     assertEquals(2, dups.size());
     for (Duplicate.Mybatis d : dups) {
       assertFalse(d.getUsages().isEmpty());

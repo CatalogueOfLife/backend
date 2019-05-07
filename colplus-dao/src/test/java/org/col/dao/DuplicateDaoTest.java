@@ -1,12 +1,11 @@
 package org.col.dao;
 
 import java.sql.Connection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Sets;
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.TestEntityGenerator;
@@ -122,14 +121,14 @@ public class DuplicateDaoTest {
       assertComplete(4, dups, minSize);
 
       
-      dups = find(MatchingMode.STRICT, minSize, datasetKey, null, null, Rank.SUBSPECIES, status, null, null, null, p);
+      dups = find(MatchingMode.STRICT, minSize, datasetKey, null, null, ranks(Rank.SUBSPECIES), status, null, null, null, p);
       assertComplete(4, dups, minSize);
       
-      dups = find(MatchingMode.STRICT, minSize, datasetKey, null, null, Rank.SUBSPECIES, status, true, null, null, p);
+      dups = find(MatchingMode.STRICT, minSize, datasetKey, null, null, ranks(Rank.SUBSPECIES), status, true, null, null, p);
       assertComplete(2, dups, minSize);
       
       status.add(TaxonomicStatus.PROVISIONALLY_ACCEPTED);
-      dups = find(MatchingMode.STRICT, minSize, datasetKey, null, null, Rank.SUBSPECIES, status, true, null, null, p);
+      dups = find(MatchingMode.STRICT, minSize, datasetKey, null, null, ranks(Rank.SUBSPECIES), status, true, null, null, p);
       assertComplete(2, dups, minSize);
       
       dups = find(MatchingMode.STRICT, minSize, datasetKey, null, null, null, status, true, null, null, p);
@@ -158,7 +157,6 @@ public class DuplicateDaoTest {
       assertComplete(0, dups, minSize);
       
   
-
       // FUZZY mode
       
       status.clear();
@@ -168,26 +166,37 @@ public class DuplicateDaoTest {
       dups = find(MatchingMode.FUZZY, minSize, datasetKey, null, null, null, status, true, null, null, p);
       assertComplete(4, dups, minSize);
 
-      dups = find(MatchingMode.FUZZY, minSize, datasetKey, null, null, Rank.SUBSPECIES, status, null, null, null, p);
+      dups = find(MatchingMode.FUZZY, minSize, datasetKey, null, null, ranks(Rank.SUBSPECIES), status, null, null, null, p);
       assertComplete(5, dups, minSize);
   
-      dups = find(MatchingMode.FUZZY, minSize, datasetKey, null, null, Rank.SUBSPECIES, status, false, null, null, p);
+      dups = find(MatchingMode.FUZZY, minSize, datasetKey, null, null, ranks(Rank.SPECIES, Rank.SUBSPECIES), status, null, null, null, p);
+      assertComplete(23, dups, minSize);
+
+      dups = find(MatchingMode.FUZZY, minSize, datasetKey, null, null, ranks(Rank.SUBSPECIES), status, false, null, null, p);
       assertComplete(4, dups, minSize);
 
-      dups = find(MatchingMode.FUZZY, minSize, datasetKey, null, null, Rank.SUBSPECIES, status, true, null, null, p);
+      dups = find(MatchingMode.FUZZY, minSize, datasetKey, null, null, ranks(Rank.SUBSPECIES), status, true, null, null, p);
       assertComplete(1, dups, minSize);
       
       
       System.out.println(watch);
     }
     
-    private List<Duplicate> find(MatchingMode mode, Integer minSize, int datasetKey, Integer sectorDatasetKey, NameCategory category, Rank rank, Set<TaxonomicStatus> status, Boolean authorshipDifferent, Boolean parentDifferent, Boolean withDecision, Page page) {
+    private static Set<Rank> ranks(Rank... rank) {
+      if (rank == null) {
+        return Collections.EMPTY_SET;
+      }
+      return Sets.newHashSet(rank);
+    }
+    
+    private List<Duplicate> find(MatchingMode mode, Integer minSize, int datasetKey, Integer sectorDatasetKey, NameCategory category, Set<Rank> ranks, Set<TaxonomicStatus> status, Boolean authorshipDifferent, Boolean parentDifferent, Boolean withDecision, Page page) {
       if (!watch.isStarted()) {
         watch.start();
       } else {
         watch.resume();
       }
-      List<Duplicate> result = dao.find(mode, minSize, datasetKey, sectorDatasetKey, category, rank, status, authorshipDifferent, parentDifferent, withDecision, page);
+  
+      List<Duplicate> result = dao.find(mode, minSize, datasetKey, sectorDatasetKey, category, ranks, status, authorshipDifferent, parentDifferent, withDecision, page);
       watch.suspend();
       return result;
     }

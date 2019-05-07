@@ -35,14 +35,14 @@ public class DuplicateResource {
                               @QueryParam("minSize") Integer minSize,
                               @QueryParam("sectorKey") Integer sectorKey,
                               @QueryParam("category") NameCategory category,
-                              @QueryParam("rank") Rank rank,
+                              @QueryParam("rank") Set<Rank> ranks,
                               @QueryParam("status") Set<TaxonomicStatus> status,
                               @QueryParam("parentDifferent") Boolean parentDifferent,
                               @QueryParam("authorshipDifferent") Boolean authorshipDifferent,
                               @QueryParam("withDecision") Boolean withDecision,
                               @Valid @BeanParam Page page, @Context SqlSession session) {
     DuplicateDao dao = new DuplicateDao(session);
-    return dao.find(mode, minSize, datasetKey, sectorKey, category, rank, status, authorshipDifferent, parentDifferent, withDecision, page);
+    return dao.find(mode, minSize, datasetKey, sectorKey, category, ranks, status, authorshipDifferent, parentDifferent, withDecision, page);
   }
   
 }
