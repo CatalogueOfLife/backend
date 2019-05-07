@@ -241,6 +241,25 @@ public class NormalizerACEFIT extends NormalizerITBase {
     }
   }
   
+  @Test
+  public void acefGenusOnly() throws Exception {
+    normalize(15);
+    try (Transaction tx = store.getNeo().beginTx()) {
+      NeoUsage t = usageByID("a");
+      assertEquals("Dictis", t.usage.getName().getScientificName());
+      assertEquals("L.Koch, 1872", t.usage.getName().getAuthorship());
+      assertEquals(Rank.GENUS, t.usage.getName().getRank());
+  
+      t = usageByID("ia");
+      assertNull(t);
+  
+      t = usageByID("ib");
+      assertEquals("Scyloxes asiatica carambula", t.usage.getName().getScientificName());
+      assertEquals("Dunin, 2001", t.usage.getName().getAuthorship());
+      assertEquals(Rank.INFRASPECIFIC_NAME, t.usage.getName().getRank());
+    }
+  }
+  
   /**
    * Full Systema Diptera dataset with 170.000 names. Takes 2 minutes, be patient
    */
