@@ -30,6 +30,7 @@ import org.col.api.model.VerbatimEntity;
 import org.col.api.model.VerbatimRecord;
 import org.col.api.vocab.DataFormat;
 import org.col.api.vocab.Issue;
+import org.gbif.dwc.terms.Term;
 import org.junit.After;
 import org.junit.Before;
 import org.neo4j.graphdb.Node;
@@ -102,6 +103,15 @@ abstract class NormalizerITBase {
     } catch (IOException | InterruptedException e) {
       throw new RuntimeException(e);
     }
+  }
+  
+  public VerbatimRecord vByLine(Term type, long line) {
+    for (VerbatimRecord v : store.verbatimList()) {
+      if (v.getType() == type && v.getLine() == line) {
+        return v;
+      }
+    }
+    return null;
   }
 
   public VerbatimRecord vByNameID(String id) {

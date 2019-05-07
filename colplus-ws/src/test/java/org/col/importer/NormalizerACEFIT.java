@@ -10,6 +10,7 @@ import org.col.importer.neo.model.NeoUsage;
 import org.col.importer.neo.traverse.Traversals;
 import org.col.api.model.*;
 import org.col.api.vocab.*;
+import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -163,8 +164,9 @@ public class NormalizerACEFIT extends NormalizerITBase {
       assertEquals("Lutzomyia preclara", t.usage.getName().getScientificName());
 
       t = usageByID("2");
-      assertEquals("Latrodectus spec.", t.usage.getName().getScientificName());
+      assertEquals("Latrodectus", t.usage.getName().getScientificName());
       assertEquals("(Fabricius, 1775)", t.usage.getName().authorshipComplete().trim());
+      assertEquals(Rank.GENUS, t.usage.getName().getRank());
 
       t = usageByID("3");
       assertEquals("Null bactus", t.usage.getName().getScientificName());
@@ -216,12 +218,10 @@ public class NormalizerACEFIT extends NormalizerITBase {
       assertTrue(v.hasIssue(Issue.PARSED_NAME_DIFFERS));
   
       u = usageByID("Eusphalerum_caucasicum_feldmanni");
-      assertEquals("feldmanni", u.usage.getName().getScientificName());
-      assertEquals("Zanetti, 2012", u.usage.getName().authorshipComplete());
-      v = verbatim(u.usage.getName());
+      assertNull(u);
+      
+      v = vByLine(AcefTerm.AcceptedInfraSpecificTaxa, 2);
       assertTrue(v.hasIssue(Issue.PARENT_ID_INVALID));
-      assertTrue(v.hasIssue(Issue.MISSING_GENUS));
-      assertTrue(v.hasIssue(Issue.PARSED_NAME_DIFFERS));
     }
   }
   
