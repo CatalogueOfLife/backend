@@ -15,22 +15,26 @@ import org.col.api.model.SimpleName;
 import org.col.api.vocab.DataFormat;
 import org.col.api.vocab.Datasets;
 import org.col.dao.DatasetImportDao;
+import org.col.dao.NamesTreeDao;
 import org.col.dao.TreeRepoRule;
 import org.col.db.PgSetupRule;
 import org.col.db.mapper.NameUsageMapper;
 import org.col.db.mapper.SectorMapper;
 import org.col.db.mapper.TestDataRule;
 import org.col.db.tree.TextTreePrinter;
+import org.col.es.NameUsageIndexService;
 import org.col.importer.PgImportRule;
 import org.gbif.nameparser.api.Rank;
-import org.junit.*;
+import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
-@Ignore("Work in progress")
 public class SectorSyncIT {
   
   @ClassRule
@@ -40,6 +44,7 @@ public class SectorSyncIT {
   final TreeRepoRule treeRepoRule = new TreeRepoRule();
   final TestDataRule dataRule = TestDataRule.draft();
   
+  
   @Rule
   public TestRule chain= RuleChain
       .outerRule(dataRule)
@@ -47,10 +52,12 @@ public class SectorSyncIT {
       .around(importRule);
 
   DatasetImportDao diDao;
+  NamesTreeDao treeDao;
   
   @Before
   public void init () {
     diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
+    treeDao = new NamesTreeDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
   }
   
   
@@ -79,7 +86,7 @@ public class SectorSyncIT {
     }
   }
     
-  void syncAll() throws InterruptedException {
+  void syncAll() throws IOException {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       for (Sector s : session.getMapper(SectorMapper.class).list(null)) {
         sync(s.getKey());
@@ -87,14 +94,12 @@ public class SectorSyncIT {
     }
   }
   
-  void sync(int sectorKey) throws InterruptedException {
+  void sync(int sectorKey) {
     
-    SectorSync ss = new SectorSync(sectorKey, PgSetupRule.getSqlSessionFactory(), null, diDao,
+    SectorSync ss = new SectorSync(sectorKey, PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), diDao,
         SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestDataRule.TEST_USER);
+    System.out.println("\n*** SECTOR SYNC " + sectorKey + " ***");
     ss.run();
-
-    DatasetImportDao diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
-    diDao.createSuccess(Datasets.DRAFT_COL);
   }
   
   void print(int datasetKey) throws Exception {
@@ -107,7 +112,6 @@ public class SectorSyncIT {
   @Test
   public void test1_5_6() throws Exception {
     print(Datasets.DRAFT_COL);
-    
     print(datasetKey(1, DataFormat.ACEF));
     print(datasetKey(5, DataFormat.ACEF));
     print(datasetKey(6, DataFormat.ACEF));
@@ -116,18 +120,16 @@ public class SectorSyncIT {
     NameUsageBase trg = getByName(Datasets.DRAFT_COL, Rank.PHYLUM, "Tracheophyta");
     createSector(Sector.Mode.ATTACH, src, trg);
   
-    src = getByName(datasetKey(5, DataFormat.ACEF), Rank.KINGDOM, "Animalia");
-    trg = getByName(Datasets.DRAFT_COL, Rank.KINGDOM, "Animalia");
-    int s5 = createSector(Sector.Mode.MERGE, src, trg);
-    sync(s5);
-  
-    src = getByName(datasetKey(6, DataFormat.ACEF), Rank.PHYLUM, "Arthropoda");
-    trg = getByName(Datasets.DRAFT_COL, Rank.PHYLUM, "Arthropoda");
+    src = getByName(datasetKey(5, DataFormat.ACEF), Rank.CLASS, "Insecta");
+    trg = getByName(Datasets.DRAFT_COL, Rank.CLASS, "Insecta");
     createSector(Sector.Mode.MERGE, src, trg);
+  
+    src = getByName(datasetKey(6, DataFormat.ACEF), Rank.FAMILY, "Theridiidae");
+    trg = getByName(Datasets.DRAFT_COL, Rank.CLASS, "Insecta");
+    createSector(Sector.Mode.ATTACH, src, trg);
 
     syncAll();
     assertTree("cat1_5_6.txt");
-    print(Datasets.DRAFT_COL);
   }
  
   void assertTree(String filename) throws IOException {
@@ -140,6 +142,7 @@ public class SectorSyncIT {
     assertFalse("Empty tree, probably no root node found", tree.isEmpty());
   
     // compare trees
+    System.out.println("\n*** DRAFT TREE ***");
     System.out.println(tree);
     assertEquals("Assembled tree not as expected", expected, tree);
   }
