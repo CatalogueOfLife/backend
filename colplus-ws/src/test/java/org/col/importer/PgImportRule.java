@@ -23,7 +23,6 @@ import org.col.importer.neo.NeoDb;
 import org.col.importer.neo.NeoDbFactory;
 import org.col.matching.NameIndexFactory;
 import org.junit.rules.ExternalResource;
-import org.mockito.Mock;
 
 /**
  * Imports the given datasets from the test resources
@@ -42,8 +41,6 @@ public class PgImportRule extends ExternalResource {
     IMPORT_USER.getRoles().add(ColUser.Role.ADMIN);
   }
   
-  @Mock
-  private ImageService imgService;
   private static final AuthorshipNormalizer aNormalizer = AuthorshipNormalizer.createWithAuthormap();
   
   private NeoDb store;
@@ -150,7 +147,7 @@ public class PgImportRule extends ExternalResource {
       // normalize
       store = NeoDbFactory.create(dataset.getKey(), 1, cfg);
       store.put(dataset);
-      Normalizer norm = new Normalizer(store, source, NameIndexFactory.passThru(), imgService);
+      Normalizer norm = new Normalizer(store, source, NameIndexFactory.passThru(), ImageService.passThru());
       norm.call();
       
       // import into postgres
