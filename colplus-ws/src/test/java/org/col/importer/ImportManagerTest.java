@@ -24,7 +24,7 @@ import org.col.db.PgSetupRule;
 import org.col.dao.DatasetImportDao;
 import org.col.db.mapper.DatasetMapper;
 import org.col.db.mapper.TestDataRule;
-import org.col.img.ImageService;
+import org.col.img.ImageServiceFS;
 import org.junit.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,7 +80,7 @@ public class ImportManagerTest {
     
     hc = new HttpClientBuilder(metrics).using(cfg.client).build("local");
     importManager = new ImportManager(cfg, metrics, hc, PgSetupRule.getSqlSessionFactory(), aNormalizer,
-        NameIndexFactory.passThru(), null, new ImageService(cfg.img));
+        NameIndexFactory.passThru(), null, new ImageServiceFS(cfg.img));
     importManager.start();
   
     diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());

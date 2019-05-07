@@ -23,6 +23,7 @@ import org.col.db.mapper.DatasetMapper;
 import org.col.db.mapper.TestDataRule;
 import org.col.db.mapper.NameMapper;
 import org.col.db.mapper.VerbatimRecordMapper;
+import org.col.img.ImageService;
 import org.col.importer.neo.NeoDb;
 import org.col.importer.neo.NeoDbFactory;
 import org.col.matching.NameIndexFactory;
@@ -89,7 +90,7 @@ public class IntegrityChecksIT {
       // normalize
       store = NeoDbFactory.create(dataset.getKey(), 1, cfg);
       store.put(dataset);
-      Normalizer norm = new Normalizer(store, Paths.get(url.toURI()), NameIndexFactory.memory(PgSetupRule.getSqlSessionFactory(), aNormalizer));
+      Normalizer norm = new Normalizer(store, Paths.get(url.toURI()), NameIndexFactory.memory(PgSetupRule.getSqlSessionFactory(), aNormalizer), ImageService.passThru());
       norm.call();
       
       // import into postgres

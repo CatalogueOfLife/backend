@@ -1,5 +1,7 @@
 package org.col.importer;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +17,8 @@ import org.col.api.model.VerbatimRecord;
 import org.col.api.vocab.Issue;
 import org.col.common.collection.DefaultMap;
 import org.col.csv.CsvReader;
+import org.col.img.ImageServiceFS;
+import org.col.img.ImageService;
 import org.col.importer.neo.NeoDb;
 import org.col.importer.neo.NodeBatchProcessor;
 import org.col.importer.neo.model.NeoNameRel;
@@ -37,22 +41,35 @@ public abstract class NeoInserter {
   protected final Path folder;
   protected final CsvReader reader;
   protected final ReferenceFactory refFactory;
+  protected final ImageService imgService;
   private int vcounter;
   private Map<Term, AtomicInteger> badTaxonFks = DefaultMap.createCounter();
   
   
-  public NeoInserter(Path folder, CsvReader reader, NeoDb store, ReferenceFactory refFactory) {
+  public NeoInserter(Path folder, CsvReader reader, NeoDb store, ReferenceFactory refFactory, ImageService imgService) {
     this.folder = folder;
     this.reader = reader;
     this.store = store;
     this.refFactory = refFactory;
+    this.imgService = imgService;
   }
   
   public final void insertAll() throws NormalizationFailedException {
     // the key will be preserved by the store
     Optional<Dataset> d = readMetadata();
     d.ifPresent(store::put);
-    
+  
+    // lookout for local logo file if we do not have a URL
+      if (!d.isPresent() || d.get().getLogo() == null) {
+        reader.logo().ifPresent(l -> {
+          try {
+            imgService.putDatasetLogo(store.getDataset().getKey(), ImageServiceFS.read(Files.newInputStream(l)));
+          } catch (IOException e) {
+            LOG.warn("Failed to read local logo file {}", l);
+          }
+        });
+      }
+  
     store.startBatchMode();
     interruptIfCancelled("Normalizer interrupted, exit early");
     batchInsert();

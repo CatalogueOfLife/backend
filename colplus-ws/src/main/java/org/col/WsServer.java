@@ -41,6 +41,7 @@ import org.col.es.NameUsageIndexService;
 import org.col.es.NameUsageIndexServiceEs;
 import org.col.es.NameUsageSearchService;
 import org.col.gbifsync.GbifSync;
+import org.col.img.ImageServiceFS;
 import org.col.img.ImageService;
 import org.col.importer.ContinuousImporter;
 import org.col.importer.ImportManager;
@@ -154,7 +155,7 @@ public class WsServer extends Application<WsServerConfig> {
     NameUsageSearchService nuss = new NameUsageSearchService(cfg.es.indexName(ES_INDEX_NAME_USAGE), esClient);
     
     // images
-    final ImageService imgService = new ImageService(cfg.img);
+    final ImageService imgService = new ImageServiceFS(cfg.img);
   
     // name index
     NameIndex ni;

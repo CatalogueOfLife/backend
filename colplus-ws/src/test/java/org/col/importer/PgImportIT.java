@@ -18,6 +18,7 @@ import org.col.common.tax.AuthorshipNormalizer;
 import org.col.config.ImporterConfig;
 import org.col.config.NormalizerConfig;
 import org.col.dao.*;
+import org.col.img.ImageService;
 import org.col.importer.neo.NeoDb;
 import org.col.importer.neo.NeoDbFactory;
 import org.col.importer.neo.model.RankedName;
@@ -30,6 +31,9 @@ import org.gbif.dwc.terms.Term;
 import org.gbif.dwc.terms.UnknownTerm;
 import org.gbif.nameparser.api.Rank;
 import org.junit.*;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import static org.col.api.TestEntityGenerator.setUserDate;
 import static org.col.api.vocab.DataFormat.*;
@@ -38,9 +42,12 @@ import static org.junit.Assert.*;
 /**
  *
  */
+@RunWith(MockitoJUnitRunner.class)
 public class PgImportIT {
   
   private static final AuthorshipNormalizer aNormalizer = AuthorshipNormalizer.createWithAuthormap();
+  @Mock
+  private ImageService imgService;
   private NeoDb store;
   private NormalizerConfig cfg;
   private ImporterConfig icfg = new ImporterConfig();
@@ -109,7 +116,7 @@ public class PgImportIT {
       // normalize
       store = NeoDbFactory.create(dataset.getKey(), 1, cfg);
       store.put(dataset);
-      Normalizer norm = new Normalizer(store, source, NameIndexFactory.memory(PgSetupRule.getSqlSessionFactory(), aNormalizer));
+      Normalizer norm = new Normalizer(store, source, NameIndexFactory.memory(PgSetupRule.getSqlSessionFactory(), aNormalizer), imgService);
       norm.call();
       
       // import into postgres

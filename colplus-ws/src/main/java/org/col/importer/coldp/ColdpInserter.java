@@ -31,6 +31,7 @@ import org.col.api.vocab.DataFormat;
 import org.col.api.vocab.Issue;
 import org.col.api.vocab.License;
 import org.col.common.csl.CslDataConverter;
+import org.col.img.ImageService;
 import org.col.importer.NeoInserter;
 import org.col.importer.NormalizationFailedException;
 import org.col.importer.jackson.EnumParserSerde;
@@ -72,8 +73,8 @@ public class ColdpInserter extends NeoInserter {
   
   private ColdpInterpreter inter;
 
-  public ColdpInserter(NeoDb store, Path folder, ReferenceFactory refFactory) throws IOException {
-    super(folder, ColdpReader.from(folder), store, refFactory);
+  public ColdpInserter(NeoDb store, Path folder, ReferenceFactory refFactory, ImageService imgService) throws IOException {
+    super(folder, ColdpReader.from(folder), store, refFactory, imgService);
   }
   
   /**

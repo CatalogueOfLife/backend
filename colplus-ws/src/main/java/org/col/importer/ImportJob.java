@@ -18,6 +18,7 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.WsServerConfig;
 import org.col.common.tax.AuthorshipNormalizer;
 import org.col.dao.DecisionRematcher;
+import org.col.img.ImageService;
 import org.col.importer.neo.NeoDb;
 import org.col.importer.neo.NeoDbFactory;
 import org.col.matching.NameIndex;
@@ -34,7 +35,6 @@ import org.col.common.lang.InterruptedRuntimeException;
 import org.col.common.util.LoggingUtils;
 import org.col.dao.DatasetImportDao;
 import org.col.es.NameUsageIndexService;
-import org.col.img.ImageService;
 import org.col.img.LogoUpdateJob;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -181,7 +181,9 @@ public class ImportJob implements Runnable {
         updateState(ImportState.PROCESSING);
         store = NeoDbFactory.create(datasetKey, getAttempt(), cfg.normalizer);
         store.put(dataset);
-        new Normalizer(store, sourceDir, index).call();
+        new Normalizer(store, sourceDir, index, imgService).call();
+  
+        LOG.info("Fetching logo for {}", datasetKey);
         LogoUpdateJob.updateDatasetAsync(dataset, factory, downloader, cfg.normalizer::scratchFile, imgService);
         
         LOG.info("Writing {} to Postgres!", datasetKey);

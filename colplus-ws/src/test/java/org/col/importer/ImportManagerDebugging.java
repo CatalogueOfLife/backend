@@ -12,7 +12,7 @@ import org.col.dao.TreeRepoRule;
 import org.col.db.PgSetupRule;
 import org.col.es.IndexConfig;
 import org.col.es.NameUsageIndexService;
-import org.col.img.ImageService;
+import org.col.img.ImageServiceFS;
 import org.col.matching.NameIndexFactory;
 import org.elasticsearch.client.RestClient;
 import org.junit.*;
@@ -59,7 +59,7 @@ public class ImportManagerDebugging {
     
     hc = new HttpClientBuilder(metrics).using(cfg.client).build("local");
     importManager = new ImportManager(cfg, metrics, hc, PgSetupRule.getSqlSessionFactory(), aNormalizer,
-        NameIndexFactory.passThru(), NameUsageIndexService.passThru(), new ImageService(cfg.img));
+        NameIndexFactory.passThru(), NameUsageIndexService.passThru(), new ImageServiceFS(cfg.img));
     importManager.start();
   }
   

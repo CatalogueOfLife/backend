@@ -29,6 +29,7 @@ import org.col.db.tree.DiffService;
 import org.col.db.tree.NamesDiff;
 import org.col.dw.auth.Roles;
 import org.col.dw.jersey.MoreMediaTypes;
+import org.col.img.ImageServiceFS;
 import org.col.img.ImageService;
 import org.col.img.ImgConfig;
 import org.slf4j.Logger;
@@ -119,7 +120,7 @@ public class DatasetResource extends GlobalEntityResource<Dataset> {
   })
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public Response uploadLogo(@PathParam("key") int key, InputStream img) throws IOException {
-    imgService.putDatasetLogo(get(key), ImageService.read(img));
+    imgService.putDatasetLogo(get(key), ImageServiceFS.read(img));
     return Response.ok().build();
   }
   

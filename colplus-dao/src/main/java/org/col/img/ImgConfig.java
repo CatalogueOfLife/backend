@@ -41,7 +41,7 @@ public class ImgConfig extends PgDbConfig {
   }
   
   private String filename(String prefix, Scale scale) {
-    return String.format("%s-%s.%s", prefix, scale.name().toLowerCase(), ImageService.IMAGE_FORMAT);
+    return String.format("%s-%s.%s", prefix, scale.name().toLowerCase(), ImageServiceFS.IMAGE_FORMAT);
   }
   
 }

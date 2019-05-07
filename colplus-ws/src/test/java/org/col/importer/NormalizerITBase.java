@@ -14,6 +14,7 @@ import com.google.common.base.Supplier;
 import com.google.common.io.Files;
 import org.apache.commons.io.FileUtils;
 import org.col.config.NormalizerConfig;
+import org.col.img.ImageService;
 import org.col.importer.neo.NeoDb;
 import org.col.importer.neo.NeoDbFactory;
 import org.col.importer.neo.NotUniqueRuntimeException;
@@ -92,7 +93,7 @@ abstract class NormalizerITBase {
       d.setDataFormat(format);
       d.setNamesIndexContributor(true);
       store.put(d);
-      Normalizer norm = new Normalizer(store, arch, nameIndexSupplier.get());
+      Normalizer norm = new Normalizer(store, arch, nameIndexSupplier.get(), ImageService.passThru());
       norm.call();
 
       // reopen
