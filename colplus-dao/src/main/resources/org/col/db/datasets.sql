@@ -6,9 +6,6 @@
 
 -- origin:  0=EXTERNAL, 1=UPLOADED, 2=MANAGED
 INSERT INTO dataset (key, origin, type, names_index_contributor, title, import_frequency, created_by, modified_by, data_format, data_access)
-VALUES ('1000', 0, 1, true, 'CoL Management Classification', 1, 0, 0, 0, 'https://raw.githubusercontent.com/Sp2000/colplus-repo/master/ACEF/higher-classification.dwca.zip');
-
-INSERT INTO dataset (key, origin, type, names_index_contributor, title, import_frequency, created_by, modified_by, data_format, data_access)
 SELECT x.id+1000, 0, 1, true, 'GSD ' || x.id, 1, 0, 0, 1, 'https://raw.githubusercontent.com/Sp2000/colplus-repo/master/ACEF/' || x.id || '.tar.gz'
 FROM (SELECT unnest(array[
 10,
