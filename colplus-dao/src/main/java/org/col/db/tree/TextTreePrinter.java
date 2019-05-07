@@ -9,10 +9,12 @@ import org.apache.ibatis.session.ResultContext;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.col.api.model.*;
+import org.col.api.model.Name;
+import org.col.api.model.NameUsageBase;
+import org.col.api.model.Sector;
+import org.col.api.model.Taxon;
 import org.col.db.mapper.NameUsageMapper;
 import org.col.db.mapper.SectorMapper;
-import org.col.db.mapper.SynonymMapper;
 
 /**
  * Print an entire dataset in the indented text format used by TxtPrinter.
@@ -48,7 +50,6 @@ public class TextTreePrinter implements ResultHandler<NameUsageBase> {
   private final String startID;
   private final SqlSessionFactory factory;
   private SqlSession session;
-  private SynonymMapper sm;
   private final LinkedList<NameUsageBase> parents = new LinkedList<>();
   
   /**
@@ -84,7 +85,6 @@ public class TextTreePrinter implements ResultHandler<NameUsageBase> {
     counter = 0;
     try {
       session = factory.openSession(true);
-      sm = session.getMapper(SynonymMapper.class);
       NameUsageMapper num = session.getMapper(NameUsageMapper.class);
       num.processTree(datasetKey, sectorKey, startID, null, true, true, this);
 
@@ -111,27 +111,6 @@ public class TextTreePrinter implements ResultHandler<NameUsageBase> {
     }
   }
 
-  public void handleResult2(ResultContext<? extends Taxon> resultContext) {
-    try {
-      Taxon t = resultContext.getResultObject();
-      // send end signals
-      while (!parents.isEmpty() && !parents.peekLast().getId().equals(t.getParentId())) {
-        end(parents.removeLast());
-      }
-      start(t);
-      
-      // synonyms
-      for (Synonym s : sm.listByTaxon(datasetKey, t.getId())) {
-        start(s);
-        end(s);
-      }
-      parents.add(t);
-    
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-  }
-  
   private void start(NameUsageBase u) throws IOException {
     counter++;
     Name n = u.getName();

@@ -91,7 +91,8 @@ public class InitDbCmd extends ConfiguredCommand<WsServerConfig> {
       st.execute("DROP DATABASE IF EXISTS \"" + cfg.db.database + "\"");
       
       LOG.info("Create new database {}", cfg.db.database);
-      st.execute("CREATE DATABASE  \"" + cfg.db.database + "\"" + " WITH OWNER " + cfg.db.user);
+      st.execute("CREATE DATABASE  \"" + cfg.db.database + "\"" +
+          " WITH ENCODING UTF8 LC_COLLATE 'C' LC_CTYPE 'C' OWNER " + cfg.db.user + " TEMPLATE template0");
     }
     
     try (Connection con = cfg.db.connect()) {

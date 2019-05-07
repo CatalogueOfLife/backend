@@ -7,7 +7,7 @@ The CoL backend consists of 2 [Dropwizard](https://www.dropwizard.io/) applicati
 ## Prerequisites
 1. Java 8 JDK
 1. Maven 3
-1. Postgres 11.
+1. Postgres 11
 
 ## Run the CoL applications locally
 ### colplus-admin
