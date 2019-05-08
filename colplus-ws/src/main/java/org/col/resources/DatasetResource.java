@@ -102,6 +102,9 @@ public class DatasetResource extends GlobalEntityResource<Dataset> {
       Writer writer = new BufferedWriter(new OutputStreamWriter(os));
       TextTreePrinter printer = TextTreePrinter.dataset(key, rootID, ranks, factory, writer);
       printer.print();
+      if (printer.getCounter() == 0) {
+        writer.write("--NONE--");
+      }
       writer.flush();
     };
     return Response.ok(stream).build();

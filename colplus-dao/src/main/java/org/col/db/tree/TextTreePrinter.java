@@ -112,6 +112,10 @@ public class TextTreePrinter implements ResultHandler<NameUsageBase> {
     return counter;
   }
   
+  public int getCounter() {
+    return counter;
+  }
+  
   @Override
   public void handleResult(ResultContext<? extends NameUsageBase> resultContext) {
     try {
