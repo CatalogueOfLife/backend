@@ -2,7 +2,7 @@ package org.col.db.tree;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.util.LinkedList;
+import java.util.*;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.ResultContext;
@@ -13,8 +13,10 @@ import org.col.api.model.Name;
 import org.col.api.model.NameUsageBase;
 import org.col.api.model.Sector;
 import org.col.api.model.Taxon;
+import org.col.api.util.ObjectUtils;
 import org.col.db.mapper.NameUsageMapper;
 import org.col.db.mapper.SectorMapper;
+import org.gbif.nameparser.api.Rank;
 
 /**
  * Print an entire dataset in the indented text format used by TxtPrinter.
@@ -48,6 +50,8 @@ public class TextTreePrinter implements ResultHandler<NameUsageBase> {
   private final int datasetKey;
   private final Integer sectorKey;
   private final String startID;
+  private final Set<Rank> ranks;
+  private final Rank lowestRank;
   private final SqlSessionFactory factory;
   private SqlSession session;
   private final LinkedList<NameUsageBase> parents = new LinkedList<>();
@@ -55,25 +59,38 @@ public class TextTreePrinter implements ResultHandler<NameUsageBase> {
   /**
    * @param sectorKey optional sectorKey to restrict printed tree to
    */
-  private TextTreePrinter(int datasetKey, Integer sectorKey, String startID, SqlSessionFactory factory, Writer writer) {
+  private TextTreePrinter(int datasetKey, Integer sectorKey, String startID, Set<Rank> ranks, SqlSessionFactory factory, Writer writer) {
     this.datasetKey = datasetKey;
     this.startID = startID;
     this.sectorKey = sectorKey;
     this.factory = factory;
     this.writer = writer;
+    this.ranks = ObjectUtils.coalesce(ranks, Collections.EMPTY_SET);
+    if (!ranks.isEmpty()) {
+      // spot lowest rank
+      LinkedList<Rank> rs = new LinkedList<>(ranks);
+      Collections.sort(rs);
+      lowestRank = rs.getLast();
+    } else {
+      lowestRank = null;
+    }
   }
   
   public static TextTreePrinter dataset(int datasetKey, SqlSessionFactory factory, Writer writer) {
-    return new TextTreePrinter(datasetKey, null, null, factory, writer);
+    return new TextTreePrinter(datasetKey, null, null, null, factory, writer);
   }
   
+  public static TextTreePrinter dataset(int datasetKey, String startID, Set<Rank> ranks, SqlSessionFactory factory, Writer writer) {
+    return new TextTreePrinter(datasetKey, null, startID, ranks, factory, writer);
+  }
+
   /**
    * Prints a sector from the given catalogue.
    */
   public static TextTreePrinter sector(int catalogueKey, final int sectorKey, SqlSessionFactory factory, Writer writer) {
     try (SqlSession session = factory.openSession(true)) {
       Sector s = session.getMapper(SectorMapper.class).get(sectorKey);
-      return new TextTreePrinter(catalogueKey, sectorKey, s.getTarget().getId(), factory, writer);
+      return new TextTreePrinter(catalogueKey, sectorKey, s.getTarget().getId(), null, factory, writer);
     }
   }
   
@@ -86,7 +103,7 @@ public class TextTreePrinter implements ResultHandler<NameUsageBase> {
     try {
       session = factory.openSession(true);
       NameUsageMapper num = session.getMapper(NameUsageMapper.class);
-      num.processTree(datasetKey, sectorKey, startID, null, true, true, this);
+      num.processTree(datasetKey, sectorKey, startID, null, lowestRank, true, true, this);
 
     } finally {
       writer.flush();
@@ -112,35 +129,39 @@ public class TextTreePrinter implements ResultHandler<NameUsageBase> {
   }
 
   private void start(NameUsageBase u) throws IOException {
-    counter++;
-    Name n = u.getName();
-    writer.write(StringUtils.repeat(' ', level * indentation));
-    if (u.isSynonym()) {
-      writer.write(SYNONYM_SYMBOL);
-    }
-    //TODO: flag basionyms
-    writer.write(n.canonicalName());
-    if (n.getRank() != null) {
-      writer.write(" [");
-      writer.write(n.getRank().name().toLowerCase());
-      writer.write("]");
-    }
-    
-    if (u.isTaxon()) {
-      Taxon t = (Taxon) u;
-      if (t.getSectorKey() != null) {
-        writer.write(" (S");
-        writer.write(t.getSectorKey().toString());
-        writer.write(')');
+    if (ranks.isEmpty() || ranks.contains(u.getName().getRank())) {
+      counter++;
+      Name n = u.getName();
+      writer.write(StringUtils.repeat(' ', level * indentation));
+      if (u.isSynonym()) {
+        writer.write(SYNONYM_SYMBOL);
       }
+      //TODO: flag basionyms
+      writer.write(n.canonicalName());
+      if (n.getRank() != null) {
+        writer.write(" [");
+        writer.write(n.getRank().name().toLowerCase());
+        writer.write("]");
+      }
+      
+      if (u.isTaxon()) {
+        Taxon t = (Taxon) u;
+        if (t.getSectorKey() != null) {
+          writer.write(" (S");
+          writer.write(t.getSectorKey().toString());
+          writer.write(')');
+        }
+      }
+      
+      writer.write('\n');
+      level++;
     }
-    
-    writer.write('\n');
-    level++;
   }
   
   private void end(NameUsageBase u) {
-    level--;
+    if (ranks.isEmpty() || ranks.contains(u.getName().getRank())) {
+      level--;
+    }
   }
   
 }

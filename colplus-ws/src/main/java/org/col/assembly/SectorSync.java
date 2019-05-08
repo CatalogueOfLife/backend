@@ -157,7 +157,7 @@ public class SectorSync extends SectorRunnable {
           .collect(Collectors.toSet());
       LOG.info("Traverse taxon tree, blocking {} nodes", blockedIds.size());
       final TreeCopyHandler treeHandler = new TreeCopyHandler(session);
-      um.processTree(datasetKey, null, sector.getSubject().getId(), blockedIds, true, false, treeHandler);
+      um.processTree(datasetKey, null, sector.getSubject().getId(), blockedIds, null, true, false, treeHandler);
       session.commit();
     }
   }

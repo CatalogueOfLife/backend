@@ -142,6 +142,9 @@
             </otherwise>
         </choose>
         AND NOT u.is_synonym
+        <if test="lowestRank">
+            AND n.rank &lt;= #{lowestRank}::rank
+        </if>
 
         UNION
 
@@ -161,6 +164,9 @@
             </if>
             <if test="sectorKey != null">
                 AND u.sector_key = #{sectorKey}
+            </if>
+            <if test="lowestRank">
+                AND n.rank &lt;= #{lowestRank}::rank
             </if>
         </where>
 

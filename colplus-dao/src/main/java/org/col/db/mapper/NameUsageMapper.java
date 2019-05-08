@@ -60,6 +60,7 @@ public interface NameUsageMapper {
                    @Param("sectorKey") Integer sectorKey,
                    @Param("startID") @Nullable String startID,
                    @Param("exclusions") @Nullable Set<String> exclusions,
+                   @Param("lowestRank") @Nullable Rank lowestRank,
                    @Param("includeSynonyms") boolean includeSynonyms,
                    @Param("depthFirst") boolean depthFirst,
                    ResultHandler<NameUsageBase> handler);

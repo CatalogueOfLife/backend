@@ -32,28 +32,28 @@ public class NameUsageMapperTreeTest extends MapperTestBase<NameUsageMapper> {
   @Test
   public void processTree() throws Exception {
     countHandler = new CountHandler<>();
-    mapper().processTree(DATASET11.getKey(), null, "t2", Sets.newHashSet("skipID"), true, false, countHandler);
+    mapper().processTree(DATASET11.getKey(), null, "t2", Sets.newHashSet("skipID"), null, true, false, countHandler);
     Assert.assertEquals(23, countHandler.counter.get());
   
     countHandler.reset();
-    mapper().processTree(DATASET11.getKey(), null,"t2", Sets.newHashSet("t6"), true, false, countHandler);
+    mapper().processTree(DATASET11.getKey(), null,"t2", Sets.newHashSet("t6"), null, true, false, countHandler);
     Assert.assertEquals(15, countHandler.counter.get());
   
     countHandler.reset();
-    mapper().processTree(DATASET11.getKey(), null,"t2", Sets.newHashSet("t6", "t30"), true, false, countHandler);
+    mapper().processTree(DATASET11.getKey(), null,"t2", Sets.newHashSet("t6", "t30"), null, true, false, countHandler);
     Assert.assertEquals(10, countHandler.counter.get());
   }
   
   @Test
   public void processTreeOrder() throws Exception {
     CollectIdHandler<NameUsageBase> h = new CollectIdHandler<>();
-    mapper().processTree(DATASET11.getKey(), null,null, null, true, false, h);
+    mapper().processTree(DATASET11.getKey(), null,null, null, null, true, false, h);
     List<String> bfs = ImmutableList.of("t1","t2","t3","t4","t5","t6","t10","t20","t30","t12","t13","t23","t24","t25",
         "t31","t32","t33","t34", "s11", "s21", "s22", "t15", "t16", "s14");
     assertEquals(bfs, h.list);
   
     h = new CollectIdHandler<>();
-    mapper().processTree(DATASET11.getKey(), null,null, null, true, true, h);
+    mapper().processTree(DATASET11.getKey(), null,null, null, null, true, true, h);
     List<String> dfs = ImmutableList.of("t1","t2","t3","t4","t5","t20","s21","s22","t23","t24","t25",
         "t30","t31","t32","t33","t34","t6","t10","s11","t12","t13","s14","t15","t16");
     assertEquals(dfs, h.list);

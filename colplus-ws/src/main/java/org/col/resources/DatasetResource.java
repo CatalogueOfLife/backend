@@ -1,10 +1,9 @@
 package org.col.resources;
 
 import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Reader;
+import java.io.*;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
 import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
@@ -12,6 +11,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.StreamingOutput;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -27,11 +27,13 @@ import org.col.dao.DatasetDao;
 import org.col.dao.DatasetImportDao;
 import org.col.db.tree.DiffService;
 import org.col.db.tree.NamesDiff;
+import org.col.db.tree.TextTreePrinter;
 import org.col.dw.auth.Roles;
 import org.col.dw.jersey.MoreMediaTypes;
 import org.col.img.ImageServiceFS;
 import org.col.img.ImageService;
 import org.col.img.ImgConfig;
+import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,9 +47,11 @@ public class DatasetResource extends GlobalEntityResource<Dataset> {
   private final ImageService imgService;
   private final DatasetImportDao diDao;
   private final DiffService diff;
+  private final SqlSessionFactory factory;
   
   public DatasetResource(SqlSessionFactory factory, ImageService imgService, WsServerConfig cfg, DownloadUtil downloader, DiffService diff) {
     super(Dataset.class, new DatasetDao(factory, downloader, imgService, cfg.normalizer::scratchFile));
+    this.factory = factory;
     this.dao = (DatasetDao) super.dao;
     this.imgService = imgService;
     this.diDao = new DatasetImportDao(factory, cfg.textTreeRepo);
@@ -89,6 +93,20 @@ public class DatasetResource extends GlobalEntityResource<Dataset> {
     return diDao.getTreeDao().getDatasetNames(key, attempt);
   }
   
+  @GET
+  @Path("{key}/texttree")
+  public Response textTree(@PathParam("key") int key,
+                         @QueryParam("root") String rootID,
+                         @QueryParam("rank") Set<Rank> ranks) {
+    StreamingOutput stream = os -> {
+      Writer writer = new BufferedWriter(new OutputStreamWriter(os));
+      TextTreePrinter printer = TextTreePrinter.dataset(key, rootID, ranks, factory, writer);
+      printer.print();
+      writer.flush();
+    };
+    return Response.ok(stream).build();
+  }
+
   @GET
   @Path("{key}/treediff")
   public Reader diffTree(@PathParam("key") int key,
