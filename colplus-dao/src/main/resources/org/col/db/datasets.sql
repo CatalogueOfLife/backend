@@ -433,10 +433,28 @@ UPDATE dataset SET
 WHERE key >= 1700 and key < 1800;
 
 
+--------------------------
+-- TEST DATASETS
+--   since late 2018 managed in their own github repos
+--------------------------
+
+-- for enums we use the int ordinal, i.e. array index starting with 0:
+-- origin:  http://api.col.plus/vocab/datasetorigin
+--          0=EXTERNAL, 1=UPLOADED, 2=MANAGED
+-- type:  http://api.col.plus/vocab/datasettype
+--          0=nomenclatural, 1=global, 2=regional, 3=personal, 4=other
+-- code:  http://api.col.plus/vocab/nomCode
+--          0=bacterial, 1=botanical, 2=cultivars, 3=virus, 4=zoological
+-- data_format:  http://api.col.plus/vocab/dataformat
+--          0=dwca, 1=acef, 2=tcs, 3=coldp
+
+-- use keys from range 1000-1500 for CoL GSD IDs+1000		      
+			      
 INSERT INTO dataset (origin, type, code, title, import_frequency, created_by, modified_by, data_format, data_access) VALUES
-(0, 4, 1, 'ColDP Example',     7, 0, 0, 3, 'https://github.com/Sp2000/coldp/archive/master.zip'),
-(0, 4, 4, 'Testing Data ACEF', 7, 0, 0, 1, 'https://github.com/Sp2000/data-testing/archive/master.zip'),
-(0, 4, 4, 'Testing Data ColDP',7, 0, 0, 3, 'https://github.com/Sp2000/data-testing/archive/master.zip');
+(0, 4, 1, 'ColDP Example',           7, 0, 0, 3, 'https://github.com/Sp2000/coldp/archive/master.zip'),
+(0, 4, 4, 'Testing Data ACEF',       7, 0, 0, 1, 'https://github.com/Sp2000/data-testing/archive/master.zip'),
+(0, 4, 4, 'Duplicates Testing Data', 7, 0, 0, 3, 'https://raw.githubusercontent.com/Sp2000/data-unit-tests/master/duplicates.zip'),
+(0, 4, 4, 'Testing Data ColDP',      7, 0, 0, 3, 'https://github.com/Sp2000/data-testing/archive/master.zip');
 
 
 
