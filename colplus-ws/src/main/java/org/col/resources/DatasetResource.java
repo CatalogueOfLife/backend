@@ -13,6 +13,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.WsServerConfig;
@@ -25,13 +26,14 @@ import org.col.api.vocab.ImportState;
 import org.col.common.io.DownloadUtil;
 import org.col.dao.DatasetDao;
 import org.col.dao.DatasetImportDao;
+import org.col.db.mapper.DatasetMapper;
 import org.col.db.tree.DiffService;
 import org.col.db.tree.NamesDiff;
 import org.col.db.tree.TextTreePrinter;
 import org.col.dw.auth.Roles;
 import org.col.dw.jersey.MoreMediaTypes;
-import org.col.img.ImageServiceFS;
 import org.col.img.ImageService;
+import org.col.img.ImageServiceFS;
 import org.col.img.ImgConfig;
 import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
@@ -95,23 +97,42 @@ public class DatasetResource extends GlobalEntityResource<Dataset> {
   
   @GET
   @Path("{key}/texttree")
+  @Produces(MediaType.TEXT_PLAIN)
   public Response textTree(@PathParam("key") int key,
                          @QueryParam("root") String rootID,
-                         @QueryParam("rank") Set<Rank> ranks) {
-    StreamingOutput stream = os -> {
-      Writer writer = new BufferedWriter(new OutputStreamWriter(os));
-      TextTreePrinter printer = TextTreePrinter.dataset(key, rootID, ranks, factory, writer);
-      printer.print();
-      if (printer.getCounter() == 0) {
-        writer.write("--NONE--");
-      }
-      writer.flush();
-    };
+                         @QueryParam("rank") Set<Rank> ranks,
+                         @Context SqlSession session) {
+    Integer attempt = session.getMapper(DatasetMapper.class).lastImportAttempt(key);
+    if (attempt == null) {
+      throw new NotFoundException();
+    }
+    
+    StreamingOutput stream;
+    if (rootID == null && (ranks == null || ranks.isEmpty())) {
+      // stream from pregenerated file
+      stream = os -> {
+        InputStream in = new FileInputStream(diDao.getTreeDao().treeFile(key, attempt));
+        IOUtils.copy(in, os);
+        os.flush();
+      };
+  
+    } else {
+      stream = os -> {
+        Writer writer = new BufferedWriter(new OutputStreamWriter(os));
+        TextTreePrinter printer = TextTreePrinter.dataset(key, rootID, ranks, factory, writer);
+        printer.print();
+        if (printer.getCounter() == 0) {
+          writer.write("--NONE--");
+        }
+        writer.flush();
+      };
+    }
     return Response.ok(stream).build();
   }
 
   @GET
   @Path("{key}/treediff")
+  @Produces(MediaType.TEXT_PLAIN)
   public Reader diffTree(@PathParam("key") int key,
                          @QueryParam("attempts") String attempts,
                          @Context SqlSession session) throws IOException {

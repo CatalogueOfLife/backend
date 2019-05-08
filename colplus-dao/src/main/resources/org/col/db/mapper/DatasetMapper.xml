@@ -266,6 +266,12 @@
         WHERE key = #{key}
     </update>
 
+    <select id="lastImportAttempt" resultType="Integer">
+        SELECT last_data_import_attempt
+        FROM dataset
+        WHERE key=#{key}
+    </select>
+
     <update id="updateLastImport" parameterType="integer">
         UPDATE dataset
         SET last_data_import_attempt = #{attempt}

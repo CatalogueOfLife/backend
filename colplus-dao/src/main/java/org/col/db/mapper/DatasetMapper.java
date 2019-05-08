@@ -37,7 +37,12 @@ public interface DatasetMapper extends GlobalCRUDMapper<Dataset> {
   Integer exists(@Param("key") int key);
 
   Dataset getByGBIF(@Param("key") UUID key);
-
+  
+  /**
+   * @return the last import attempt or null if never attempted
+   */
+  Integer lastImportAttempt(@Param("key") int datasetKey);
+  
   int updateLastImport(@Param("key") int key, @Param("attempt") int attempt);
 
 }
