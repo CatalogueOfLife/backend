@@ -66,9 +66,9 @@ public class TextTreePrinter implements ResultHandler<NameUsageBase> {
     this.factory = factory;
     this.writer = writer;
     this.ranks = ObjectUtils.coalesce(ranks, Collections.EMPTY_SET);
-    if (!ranks.isEmpty()) {
+    if (!this.ranks.isEmpty()) {
       // spot lowest rank
-      LinkedList<Rank> rs = new LinkedList<>(ranks);
+      LinkedList<Rank> rs = new LinkedList<>(this.ranks);
       Collections.sort(rs);
       lowestRank = rs.getLast();
     } else {
