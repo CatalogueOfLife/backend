@@ -46,6 +46,7 @@ public class TextTreePrinter implements ResultHandler<NameUsageBase> {
   private static final int indentation = 2;
   private int level = 0;
   private int counter = 0;
+  private final boolean showSector = false;
   private final Writer writer;
   private final int datasetKey;
   private final Integer sectorKey;
@@ -150,7 +151,7 @@ public class TextTreePrinter implements ResultHandler<NameUsageBase> {
       
       if (u.isTaxon()) {
         Taxon t = (Taxon) u;
-        if (t.getSectorKey() != null) {
+        if (showSector && t.getSectorKey() != null) {
           writer.write(" (S");
           writer.write(t.getSectorKey().toString());
           writer.write(')');
