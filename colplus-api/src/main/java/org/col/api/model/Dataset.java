@@ -9,6 +9,7 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import org.col.api.constraints.AbsoluteURI;
@@ -57,6 +58,7 @@ public class Dataset extends DataEntity implements GlobalEntity {
   @Min(0)
   private Integer completeness;
   private String notes;
+  @JsonProperty(access = JsonProperty.Access.READ_ONLY)
   private Set<Integer> contributesTo;
   private boolean namesIndexContributor;
   private LocalDateTime imported;
