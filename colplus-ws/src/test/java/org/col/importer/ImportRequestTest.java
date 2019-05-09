@@ -2,6 +2,7 @@ package org.col.importer;
 
 import java.util.List;
 import java.util.concurrent.PriorityBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 import com.google.common.collect.Lists;
 import org.col.api.vocab.Users;
@@ -12,10 +13,13 @@ import static org.junit.Assert.*;
 public class ImportRequestTest {
   
   @Test
-  public void compareTo() {
+  public void compareTo() throws Exception {
     ImportRequest r1 = new ImportRequest(1, Users.IMPORTER, false, false);
+    TimeUnit.MILLISECONDS.sleep(10);
     ImportRequest r2 = new ImportRequest(2, Users.IMPORTER, false, true);
+    TimeUnit.MILLISECONDS.sleep(10);
     ImportRequest r3 = new ImportRequest(3, Users.IMPORTER, true, false);
+    TimeUnit.MILLISECONDS.sleep(10);
     ImportRequest r4 = new ImportRequest(4, Users.IMPORTER, false, true);
   
     PriorityBlockingQueue<ImportRequest> queue = new PriorityBlockingQueue<>();

@@ -5,6 +5,7 @@ import java.util.Set;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import org.apache.ibatis.session.SqlSession;
 import org.col.api.TestEntityGenerator;
 import org.col.api.model.IssueContainer;
 import org.col.api.model.Name;
@@ -12,11 +13,12 @@ import org.col.api.model.NameMatch;
 import org.col.api.vocab.MatchType;
 import org.col.common.tax.AuthorshipNormalizer;
 import org.col.db.PgSetupRule;
+import org.col.db.mapper.NameMapper;
 import org.col.db.mapper.TestDataRule;
+import org.col.importer.IdGenerator;
 import org.col.parser.NameParser;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
-import org.hashids.Hashids;
 import org.junit.After;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -43,7 +45,11 @@ public class NameIndexMapDBTest {
   }
   
   void setupApple() throws Exception {
-    ni = NameIndexFactory.memory(11, PgSetupRule.getSqlSessionFactory(), aNormalizer);
+    ni = NameIndexFactory.memory(PgSetupRule.getSqlSessionFactory(), aNormalizer);
+    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession()) {
+      NameMapper nm = session.getMapper(NameMapper.class);
+      nm.processDataset(11, ctx -> ni.add(ctx.getResultObject()));
+    }
   }
   
   void setupTest() throws Exception {
@@ -92,19 +98,6 @@ public class NameIndexMapDBTest {
     assertMatch(5, "Larus erfunda", Rank.SPECIES, null);
     assertMatch(4, "Larus fusca", Rank.SPECIES, null);
     assertMatch(3, "Larus fuscus", Rank.SPECIES, null);
-  }
-  
-  @Test
-  public void indexID() {
-    assertEquals("NInjNO95",   NameIndexMapDB.indexID(1000));
-    assertEquals("NIjN3gp5",   NameIndexMapDB.indexID(10000));
-    assertEquals("NIjNmgn9",   NameIndexMapDB.indexID(100000));
-    assertEquals("NIjN09Bp",   NameIndexMapDB.indexID(1000000));
-    assertEquals("NINYq6p9",   NameIndexMapDB.indexID(10000000));
-    assertEquals("NIN3aMzZ",  NameIndexMapDB.indexID(20000000));
-    assertEquals("NINeayon",  NameIndexMapDB.indexID(50000000));
-    assertEquals("NIax2ggvA", NameIndexMapDB.indexID(Integer.MAX_VALUE));
-    assertEquals("NIgD1BB4BAyKG", NameIndexMapDB.indexID(Hashids.MAX_NUMBER));
   }
   
   @Test
@@ -173,9 +166,6 @@ public class NameIndexMapDBTest {
   
   static Name name(Integer key, String name, Rank rank, NomCode code) {
     Name n = NameParser.PARSER.parse(name, rank, IssueContainer.VOID).get().getName();
-    if (key != null) {
-      n.setId(NameIndexMapDB.indexID(key));
-    }
     n.setRank(rank);
     n.setCode(code);
     n.setAuthorshipNormalized(Lists.newArrayList("serialisation", "test", "only"));
@@ -211,7 +201,7 @@ public class NameIndexMapDBTest {
   }
   
   private NameMatch assertMatch(int key, String name, Rank rank, NomCode code) {
-    final String id = NameIndexMapDB.indexID(key);
+    final String id = IdGenerator.NAME_INDEX_IDS.id(key);
     NameMatch m = match(name, rank, code);
     if (!m.hasMatch() || !id.equals(m.getName().getId())) {
       System.out.println(m);

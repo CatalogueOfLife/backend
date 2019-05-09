@@ -10,8 +10,8 @@ public class IdGeneratorTest {
   
   @Test
   public void prefixed() {
-    IdGenerator gen = new IdGenerator("ice");
-    assertEquals("iceaW6r", gen.next());
+    IdGenerator gen = new IdGenerator("NI");
+    assertEquals("NIaW6r", gen.next());
   }
   
   @Test
@@ -23,4 +23,5 @@ public class IdGeneratorTest {
     assertEquals("x0aW6r", gen.next());
     
   }
+  
 }

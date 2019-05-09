@@ -4,16 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicLong;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.pool.KryoPool;
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
-import org.apache.ibatis.session.ResultContext;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -29,6 +26,7 @@ import org.col.common.tax.AuthorshipNormalizer;
 import org.col.common.tax.SciNameNormalizer;
 import org.col.dao.NameDao;
 import org.col.db.mapper.NameMapper;
+import org.col.importer.IdGenerator;
 import org.col.matching.authorship.AuthorComparator;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
@@ -52,7 +50,8 @@ public class NameIndexMapDB implements NameIndex {
   
   private final DB db;
   private final KryoPool pool;
-  private final AtomicLong counter = new AtomicLong(0);
+  private final IdGenerator idGen;
+  private int counter = 0;
   private final Map<String, NameList> names;
   private final AuthorComparator authComp;
   private final int datasetKey;
@@ -107,28 +106,22 @@ public class NameIndexMapDB implements NameIndex {
     
     if (names.size() == 0) {
       loadFromPg();
-    } else {
-      // init counter which we use for id generation
-      counter.set(names.size());
     }
-    LOG.info("Started name index mapdb with {} names", counter.get());
+    idGen = new IdGenerator(PREFIX, counter);
+    LOG.info("Started name index mapdb with {} names", counter);
   }
   
   private void loadFromPg() {
     LOG.info("Loading names from postgres into names index");
     try (SqlSession s = sqlFactory.openSession()) {
       NameMapper mapper = s.getMapper(NameMapper.class);
-      ResultHandler<Name> handler = new ResultHandler<Name>() {
-        @Override
-        public void handleResult(ResultContext<? extends Name> ctx) {
-          add(ctx.getResultObject());
-          if (counter.get() % 1000 == 0) {
-            LOG.debug("Added {} names", counter.get());
-          }
+      ResultHandler<Name> handler = ctx -> {
+        if (ctx.getResultObject().getId().startsWith(PREFIX)) {
+          addWithID(ctx.getResultObject());
         }
       };
       mapper.processDataset(datasetKey, handler);
-      LOG.info("Loaded {} names from postgres into names index", counter.get());
+      LOG.info("Loaded {} names from postgres into names index", counter);
     }
   }
   
@@ -267,15 +260,6 @@ public class NameIndexMapDB implements NameIndex {
     return m;
   }
   
-  private String newId() {
-    return indexID(counter.incrementAndGet());
-  }
-  
-  @VisibleForTesting
-  static String indexID(long x) {
-    return PREFIX + HASHIDS.encode(x);
-  }
-  
   private Name insert(Name orig) {
     Name name = new Name(orig);
     // reset all other keys
@@ -289,25 +273,27 @@ public class NameIndexMapDB implements NameIndex {
     name.setPublishedInPage(null);
     name.setCreatedBy(Users.MATCHER);
     name.setModifiedBy(Users.MATCHER);
-    // add to index map
+    // add to index map, assigning a new NI id
     add(name);
     // insert into postgres dataset
     //TODO: consider to make this async and collect for batch inserts
-    // this creates now a persistent names index key that will never be removed!
     dao.create(name, Users.MATCHER);
     return name;
   }
   
   @Override
   public int size() {
-    return (int) counter.get();
+    return counter;
   }
   
   @Override
   public void add(Name name) {
     // generate new id
-    name.setId(newId());
-    
+    name.setId(idGen.next());
+    addWithID(name);
+  }
+  
+  private synchronized void addWithID(Name name) {
     String key = key(name);
     NameList group;
     if (names.containsKey(key)) {
@@ -317,6 +303,7 @@ public class NameIndexMapDB implements NameIndex {
     }
     group.add(name);
     names.put(key, group);
+    counter++;
   }
   
   private static String key(Name n) {

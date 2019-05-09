@@ -1,9 +1,9 @@
+
 package org.col.matching;
 
 import java.io.File;
 import java.io.IOException;
 
-import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.model.Name;
@@ -40,12 +40,7 @@ public class NameIndexFactory {
   }
   
   public static NameIndex memory(SqlSessionFactory sqlFactory, AuthorshipNormalizer authorshipNormalizer) {
-    return memory(Datasets.DRAFT_COL, sqlFactory, authorshipNormalizer);
-  }
-  
-  @VisibleForTesting
-  static NameIndex memory(int datasetKey, SqlSessionFactory sqlFactory, AuthorshipNormalizer authorshipNormalizer) {
-    return new NameIndexMapDB(DBMaker.memoryDB(), authorshipNormalizer, datasetKey, sqlFactory);
+    return new NameIndexMapDB(DBMaker.memoryDB(), authorshipNormalizer, Datasets.DRAFT_COL, sqlFactory);
   }
 
   /**
