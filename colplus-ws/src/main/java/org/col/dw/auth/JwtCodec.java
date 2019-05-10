@@ -28,7 +28,7 @@ public class JwtCodec {
         .setId(UUID.randomUUID().toString())
         .setIssuer(ISSUER)
         .setIssuedAt(DateUtils.toDate(now))
-        .setSubject(user.getKey().toString())
+        .setSubject(user.getUsername())
         .setExpiration(DateUtils.toDate(now.plus(EXPIRE_IN_DAYS, ChronoUnit.DAYS)))
         .signWith(SignatureAlgorithm.HS256, signingKey);
     return builder.compact();

@@ -22,7 +22,7 @@ public class IdentityService {
   private static final Logger LOG = LoggerFactory.getLogger(IdentityService.class);
   
   private SqlSessionFactory sqlSessionFactory;
-  private ConcurrentHashMap<Integer, ColUser> cache;
+  private ConcurrentHashMap<String, ColUser> cache;
   private final AuthenticationProvider authProvider;
   
   public IdentityService(AuthenticationProvider authProvider, boolean useCache) {
@@ -41,15 +41,15 @@ public class IdentityService {
     authProvider.setClient(http);
   }
   
-  public ColUser get(Integer key) {
-    if (cache != null && cache.containsKey(key)) {
-      return cache.get(key);
+  public ColUser get(String username) {
+    if (cache != null && cache.containsKey(username)) {
+      return cache.get(username);
     }
     // try to load from DB - if its not there the user has never logged in before and sth is wrong
     try (SqlSession session = sqlSessionFactory.openSession()) {
-      ColUser user = session.getMapper(UserMapper.class).get(key);
+      ColUser user = session.getMapper(UserMapper.class).getByUsername(username);
       if (user == null) {
-        throw new IllegalArgumentException("ColUser " + key + " does not exist");
+        throw new IllegalArgumentException("ColUser " + username + " does not exist");
       }
       return cache(user);
     }
@@ -57,7 +57,7 @@ public class IdentityService {
   
   private ColUser cache(ColUser user) {
     if (cache != null) {
-      cache.put(user.getKey(), user);
+      cache.put(user.getUsername(), user);
     }
     return user;
   }
