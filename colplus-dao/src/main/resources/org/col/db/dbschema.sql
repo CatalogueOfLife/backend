@@ -2,10 +2,20 @@
 -- required extensions
 CREATE EXTENSION IF NOT EXISTS hstore;
 CREATE EXTENSION IF NOT EXISTS unaccent;
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
 
 -- use unaccent by default for all simple search
 CREATE TEXT SEARCH CONFIGURATION public.simple2 ( COPY = pg_catalog.simple );
 ALTER TEXT SEARCH CONFIGURATION simple2 ALTER MAPPING FOR hword, hword_part, word WITH unaccent;
+
+-- immutable unaccent function to be used in indexes
+-- see https://stackoverflow.com/questions/11005036/does-postgresql-support-accent-insensitive-collations
+CREATE OR REPLACE FUNCTION f_unaccent(text)
+  RETURNS text AS
+$func$
+SELECT public.unaccent('public.unaccent', $1)  -- schema-qualify function and dictionary
+$func$  LANGUAGE sql IMMUTABLE;
+
 
 CREATE TYPE rank AS ENUM (
   'domain',
@@ -139,6 +149,9 @@ CREATE TABLE dataset (
   modified_by INTEGER NOT NULL
 );
 
+
+CREATE INDEX ON dataset USING gin (f_unaccent(title) gin_trgm_ops);
+CREATE INDEX ON dataset USING gin (f_unaccent(alias) gin_trgm_ops);
 CREATE INDEX ON dataset USING gin(doc);
 
 CREATE OR REPLACE FUNCTION dataset_doc_update() RETURNS trigger AS $$

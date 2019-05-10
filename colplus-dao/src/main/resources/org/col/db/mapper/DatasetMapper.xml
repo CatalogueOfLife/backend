@@ -109,7 +109,11 @@
         deleted IS NULL
         <if test="req != null">
             <if test="req.q != null">
-                AND doc @@ plainto_tsquery('simple2', #{req.q})
+                AND (
+                    f_unaccent(title) ILIKE f_unaccent(#{req.q})
+                    OR f_unaccent(alias) ILIKE f_unaccent(#{req.q})
+                    OR doc @@ plainto_tsquery('simple2', #{req.q})
+                )
             </if>
             <if test="req.code != null">
                 AND code=#{req.code}
