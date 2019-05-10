@@ -110,8 +110,8 @@
         <if test="req != null">
             <if test="req.q != null">
                 AND (
-                    f_unaccent(title) ILIKE f_unaccent(#{req.q})
-                    OR f_unaccent(alias) ILIKE f_unaccent(#{req.q})
+                    f_unaccent(title) ILIKE f_unaccent('%${req.q}%')
+                    OR f_unaccent(alias) ILIKE f_unaccent('%${req.q}%')
                     OR doc @@ plainto_tsquery('simple2', #{req.q})
                 )
             </if>

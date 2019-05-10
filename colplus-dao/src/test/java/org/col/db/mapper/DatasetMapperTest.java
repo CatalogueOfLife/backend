@@ -332,6 +332,13 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
 
     query.setContributesTo(Datasets.DRAFT_COL);
     assertEquals(2, mapper().search(query, new Page()).size());
+    
+    // partial search
+    // https://github.com/Sp2000/colplus-backend/issues/353
+    query = DatasetSearchRequest.byQuery("wor");
+    List<Dataset> res = mapper().search(query, new Page());
+    assertEquals(1, res.size());
+  
   }
 
   private static List<Dataset> removeCreated(List<Dataset> ds) {
