@@ -45,8 +45,8 @@
             JOIN name_${datasetKey} n ON u.name_id=n.id
             LEFT JOIN name_usage_${datasetKey} a ON u.parent_id=a.id AND u.is_synonym
             LEFT JOIN name_${datasetKey} an ON a.name_id=an.id
+            LEFT JOIN reference_${datasetKey} r ON n.published_in_id=r.id
             LEFT JOIN decision ed ON ed.subject_id=u.id
-            LEFT JOIN reference r ON n.published_in_id=r.id
         WHERE u.id IN (<foreach collection="ids" item="id" separator=",">#{id}</foreach>)
     </select>
 

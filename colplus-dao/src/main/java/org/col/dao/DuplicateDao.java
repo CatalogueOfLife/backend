@@ -45,7 +45,7 @@ public class DuplicateDao {
         .map(Duplicate.Mybatis::getUsages)
         .flatMap(List::stream)
         .collect(Collectors.toList());
-  
+    
     Map<String, Duplicate.UsageDecision> usages = mapper.usagesByIds(datasetKey, ids).stream()
         .collect(Collectors.toMap(d -> d.getUsage().getId(), Function.identity()));
     
