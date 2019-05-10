@@ -406,11 +406,11 @@ INSERT INTO dataset (key, origin, type, names_index_contributor, code, title, im
 ('1202', 0, 1, true,  4, 'WoRMS Amphipoda',   1, 0, 0, 1, 'https://raw.githubusercontent.com/Sp2000/colplus-repo/master/ACEF/202.tar.gz'),
 ('1203', 0, 1, true,  4, 'ThripsWiki',        1, 0, 0, 1, 'https://github.com/Sp2000/data-thrips/archive/master.zip'),
 ('1204', 0, 1, true,  4, 'StaphBase',         1, 0, 0, 3, 'https://github.com/Sp2000/data-staphbase/archive/master.zip');
-UPDATE dataset set alias=title
-WHERE key IN (1027,1055,1074,1140,1141,1163,1202,1203,1204,1600,1601,1602,1700);
 
-INSERT INTO dataset (key, origin, type, names_index_contributor, code, title, alias, import_frequency, created_by, modified_by, data_format, data_access) VALUES
-('1000', 0, 1, true, null, 'Col Hierarchy', 'ColH' 1, 0, 0, 3, 'https://github.com/Sp2000/col-hierarchy/archive/master.zip');
+UPDATE dataset set alias=title WHERE key IN (1027,1055,1074,1140,1141,1163,1202,1203,1204,1600,1601,1602,1700);
+
+INSERT INTO dataset (key, origin, type, names_index_contributor, code, title, alias, import_frequency, created_by, modified_by, data_format, data_access)
+VALUES ('1000', 0, 1, true, null, 'Col Hierarchy', 'ColH', 1, 0, 0, 3, 'https://github.com/Sp2000/col-hierarchy/archive/master.zip');
 
 
 --------------------------
