@@ -242,6 +242,11 @@ public class InterpreterBase {
     // parse rank
     Rank rank = SafeParser.parse(RankParser.PARSER, vrank).orElse(Rank.UNRANKED, Issue.RANK_INVALID, v);
     atom.setRank(rank);
+    // populate uninomial?
+    if (!atom.isBinomial() && rank.isSupraspecific() && genus != null) {
+      atom.setUninomial(genus);
+      atom.setGenus(null);
+    }
 
     // we can getUsage the scientific name in various ways.
     // we parse all names from the scientificName + optional authorship
@@ -267,20 +272,23 @@ public class InterpreterBase {
         nat = natFromAtom.get();
         // if parsed compare with original atoms
         if (nat.getName().isParsed()) {
-          if ( (!Objects.equals(genus, nat.getName().getGenus())) ||
-              !Objects.equals(infraGenus, nat.getName().getInfragenericEpithet()) ||
-              !Objects.equals(species, nat.getName().getSpecificEpithet()) ||
-              !Objects.equals(infraspecies, nat.getName().getInfraspecificEpithet())
+          if ( (
+              !Objects.equals(atom.getUninomial(), nat.getName().getUninomial()) ||
+              !Objects.equals(atom.getGenus(), nat.getName().getGenus())) ||
+              !Objects.equals(atom.getInfragenericEpithet(), nat.getName().getInfragenericEpithet()) ||
+              !Objects.equals(atom.getSpecificEpithet(), nat.getName().getSpecificEpithet()) ||
+              !Objects.equals(atom.getInfraspecificEpithet(), nat.getName().getInfraspecificEpithet())
               ) {
             LOG.warn("Parsed and given name atoms differ: [{}] vs [{}]", nat.getName().canonicalNameComplete(), atom.canonicalNameComplete());
             v.addIssue(Issue.PARSED_NAME_DIFFERS);
             
             // use original name atoms if they do not contain a space
             if (hasNoSpace(genus) && hasNoSpace(infraGenus) && hasNoSpace(species) && hasNoSpace(infraspecies)) {
-              nat.getName().setGenus(genus);
-              nat.getName().setInfragenericEpithet(infraGenus);
-              nat.getName().setSpecificEpithet(species);
-              nat.getName().setInfraspecificEpithet(infraspecies);
+              nat.getName().setUninomial(atom.getUninomial());
+              nat.getName().setGenus(atom.getGenus());
+              nat.getName().setInfragenericEpithet(atom.getInfragenericEpithet());
+              nat.getName().setSpecificEpithet(atom.getSpecificEpithet());
+              nat.getName().setInfraspecificEpithet(atom.getInfraspecificEpithet());
             }
           }
         } else if (!Strings.isNullOrEmpty(authorship)) {
