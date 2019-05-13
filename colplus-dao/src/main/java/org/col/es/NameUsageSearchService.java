@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.annotations.VisibleForTesting;
 
 import org.col.api.model.Page;
+import org.col.api.search.AutoCompleteResponse;
 import org.col.api.search.NameSearchRequest;
 import org.col.api.search.NameSearchResponse;
 import org.col.es.model.EsNameUsage;
@@ -47,6 +48,10 @@ public class NameUsageSearchService {
     } catch (IOException e) {
       throw new EsException(e);
     }
+  }
+  
+  public AutoCompleteResponse autoComplete(String q) {
+    return null;
   }
 
   /**
