@@ -36,7 +36,6 @@ import static org.junit.Assert.assertEquals;
 
 public class NameUsageSearchServiceFacetTest extends EsReadTestBase {
 
-  private static final String indexName = "name_usage_test";
   private static final String dummyPayload = getDummyPayload();
 
   private static RestClient client;

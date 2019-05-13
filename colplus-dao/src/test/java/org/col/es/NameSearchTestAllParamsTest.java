@@ -46,8 +46,6 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
   private static final Logger LOG = LoggerFactory.getLogger(NameSearchTestAllParamsTest.class);
   private static EnumSet<NameSearchParameter> tested = EnumSet.noneOf(NameSearchParameter.class);
 
-  private static final String indexName = "name_usage_test";
-
   private static RestClient client;
   private static NameUsageSearchService svc;
 

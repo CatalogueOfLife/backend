@@ -166,10 +166,6 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
     logTotals(tCount, bCount);
   }
 
-  public void indexClassification() {
-
-  }
-
   private void createOrEmptyIndex(int datasetKey) throws IOException {
     if (EsUtil.indexExists(client, index)) {
       EsUtil.deleteDataset(client, index, datasetKey);
