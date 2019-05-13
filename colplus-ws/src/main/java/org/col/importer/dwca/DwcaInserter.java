@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
 
+import org.col.img.ImageService;
 import org.col.importer.NeoInserter;
 import org.col.importer.NormalizationFailedException;
 import org.col.importer.neo.NeoDb;
@@ -25,8 +26,8 @@ public class DwcaInserter extends NeoInserter {
   private static final Logger LOG = LoggerFactory.getLogger(DwcaInserter.class);
   private DwcInterpreter inter;
   
-  public DwcaInserter(NeoDb store, Path folder, ReferenceFactory refFactory) throws IOException {
-    super(folder, DwcaReader.from(folder), store, refFactory);
+  public DwcaInserter(NeoDb store, Path folder, ReferenceFactory refFactory, ImageService imgService) throws IOException {
+    super(folder, DwcaReader.from(folder), store, refFactory, imgService);
   }
   
   /**

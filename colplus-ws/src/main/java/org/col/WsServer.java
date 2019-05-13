@@ -24,6 +24,7 @@ import org.col.command.export.ExportCmd;
 import org.col.command.initdb.InitDbCmd;
 import org.col.command.neoshell.ShellCmd;
 import org.col.common.io.DownloadUtil;
+import org.col.common.tax.AuthorshipNormalizer;
 import org.col.dao.*;
 import org.col.db.tree.DiffService;
 import org.col.dw.ManagedCloseable;
@@ -40,6 +41,7 @@ import org.col.es.NameUsageIndexService;
 import org.col.es.NameUsageIndexServiceEs;
 import org.col.es.NameUsageSearchService;
 import org.col.gbifsync.GbifSync;
+import org.col.img.ImageServiceFS;
 import org.col.img.ImageService;
 import org.col.importer.ContinuousImporter;
 import org.col.importer.ImportManager;
@@ -136,6 +138,9 @@ public class WsServer extends Application<WsServerConfig> {
     NameParser.PARSER.register(env.metrics());
     env.healthChecks().register("name-parser", new NameParserHealthCheck());
     
+    // authorship lookup & norm
+    AuthorshipNormalizer aNormalizer = AuthorshipNormalizer.createWithAuthormap();
+  
     // ES
     final RestClient esClient = new EsClientFactory(cfg.es).createClient();
 
@@ -150,16 +155,16 @@ public class WsServer extends Application<WsServerConfig> {
     NameUsageSearchService nuss = new NameUsageSearchService(cfg.es.indexName(ES_INDEX_NAME_USAGE), esClient);
     
     // images
-    final ImageService imgService = new ImageService(cfg.img);
+    final ImageService imgService = new ImageServiceFS(cfg.img);
   
     // name index
     NameIndex ni;
     if (cfg.namesIndexFile == null) {
       LOG.info("Use volatile in memory names index");
-      ni = NameIndexFactory.memory(getSqlSessionFactory());
+      ni = NameIndexFactory.memory(getSqlSessionFactory(), aNormalizer);
     } else {
       LOG.info("Use persistent names index at {}", cfg.namesIndexFile.getAbsolutePath());
-      ni = NameIndexFactory.persistent(cfg.namesIndexFile, getSqlSessionFactory());
+      ni = NameIndexFactory.persistent(cfg.namesIndexFile, getSqlSessionFactory(), aNormalizer);
     }
     env.lifecycle().manage(new ManagedCloseable(ni));
     env.healthChecks().register("names-index", new NamesIndexHealthCheck(ni));
@@ -167,7 +172,8 @@ public class WsServer extends Application<WsServerConfig> {
     final DatasetImportDao diDao = new DatasetImportDao(getSqlSessionFactory(), cfg.textTreeRepo);
     
     // async importer
-    final ImportManager importManager = new ImportManager(cfg, env.metrics(), httpClient, getSqlSessionFactory(), ni, indexService, imgService);
+    final ImportManager importManager = new ImportManager(cfg, env.metrics(), httpClient, getSqlSessionFactory(),
+        aNormalizer, ni, indexService, imgService);
     env.lifecycle().manage(importManager);
     env.jersey().register(new ImporterResource(importManager, diDao));
   
@@ -199,7 +205,7 @@ public class WsServer extends Application<WsServerConfig> {
   
     // daos
     TaxonDao tdao = new TaxonDao(getSqlSessionFactory());
-    NameDao ndao = new NameDao(getSqlSessionFactory());
+    NameDao ndao = new NameDao(getSqlSessionFactory(), aNormalizer);
     ReferenceDao rdao = new ReferenceDao(getSqlSessionFactory());
     SynonymDao sdao = new SynonymDao(getSqlSessionFactory());
     

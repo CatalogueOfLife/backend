@@ -1,0 +1,4 @@
+key,taxon_id,area,gazetteer,reference_id
+1,root-1,Berlin,6,ref-1
+2,root-1,Leiden,6,ref-1b
+3,root-2,New York,6,ref-1b

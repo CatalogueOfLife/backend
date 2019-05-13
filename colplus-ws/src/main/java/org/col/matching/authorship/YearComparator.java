@@ -4,6 +4,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
+import org.col.common.tax.AuthorshipNormalizer;
 import org.col.matching.Equality;
 
 public class YearComparator {
@@ -23,7 +24,7 @@ public class YearComparator {
     if (m.find()) {
       return m.group(2);
     }
-    return AuthorComparator.normalize(y);
+    return AuthorshipNormalizer.normalize(y);
   }
   
   /**

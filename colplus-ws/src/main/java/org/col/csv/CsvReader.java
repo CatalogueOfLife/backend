@@ -1,9 +1,6 @@
 package org.col.csv;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.StringReader;
+import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -398,6 +395,18 @@ public class CsvReader {
     });
   }
   
+  public Optional<Path> logo() {
+    List<Path> sources = Lists.newArrayList(folder);
+    if (subfolder != null) {
+      sources.add(folder.resolve(subfolder));
+    }
+    for (Path p : sources) {
+      Path logo = p.resolve("logo.png");
+      if (Files.exists(logo)) return Optional.of(logo);
+    }
+    return Optional.empty();
+  }
+
   public Set<Term> rowTypes() {
     return schemas.keySet();
   }

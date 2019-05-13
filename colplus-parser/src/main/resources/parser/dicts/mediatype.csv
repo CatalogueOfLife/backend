@@ -1,8 +1,13 @@
+bild,IMAGE
+bilder,IMAGE
+film,VIDEO
 images,IMAGE
+movie,VIDEO
+movies,VIDEO
+movingimage,VIDEO
+movingimages,VIDEO
 photo,IMAGE
 photos,IMAGE
 picture,IMAGE
 pictures,IMAGE
-bild,IMAGE
-bilder,IMAGE
-film,MOVIE
+stillimage,IMAGE

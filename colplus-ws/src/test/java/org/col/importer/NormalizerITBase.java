@@ -10,9 +10,11 @@ import java.util.*;
 import javax.annotation.Nullable;
 
 import com.google.common.base.Preconditions;
+import com.google.common.base.Supplier;
 import com.google.common.io.Files;
 import org.apache.commons.io.FileUtils;
 import org.col.config.NormalizerConfig;
+import org.col.img.ImageService;
 import org.col.importer.neo.NeoDb;
 import org.col.importer.neo.NeoDbFactory;
 import org.col.importer.neo.NotUniqueRuntimeException;
@@ -20,6 +22,7 @@ import org.col.importer.neo.model.NeoName;
 import org.col.importer.neo.model.NeoUsage;
 import org.col.importer.neo.model.RankedUsage;
 import org.col.importer.neo.traverse.Traversals;
+import org.col.matching.NameIndex;
 import org.col.matching.NameIndexFactory;
 import org.col.api.model.Dataset;
 import org.col.api.model.IssueContainer;
@@ -27,6 +30,7 @@ import org.col.api.model.VerbatimEntity;
 import org.col.api.model.VerbatimRecord;
 import org.col.api.vocab.DataFormat;
 import org.col.api.vocab.Issue;
+import org.gbif.dwc.terms.Term;
 import org.junit.After;
 import org.junit.Before;
 import org.neo4j.graphdb.Node;
@@ -39,9 +43,16 @@ abstract class NormalizerITBase {
   protected NeoDb store;
   private NormalizerConfig cfg;
   private final DataFormat format;
+  private final Supplier<NameIndex> nameIndexSupplier;
   
+  NormalizerITBase(DataFormat format, Supplier<NameIndex> supplier) {
+    this.format = format;
+    nameIndexSupplier = supplier;
+  }
+
   NormalizerITBase(DataFormat format) {
     this.format = format;
+    nameIndexSupplier = NameIndexFactory::passThru;
   }
   
   @Before
@@ -81,8 +92,9 @@ abstract class NormalizerITBase {
       Dataset d = new Dataset();
       d.setKey(1);
       d.setDataFormat(format);
+      d.setNamesIndexContributor(true);
       store.put(d);
-      Normalizer norm = new Normalizer(store, arch, NameIndexFactory.passThru());
+      Normalizer norm = new Normalizer(store, arch, nameIndexSupplier.get(), ImageService.passThru());
       norm.call();
 
       // reopen
@@ -91,6 +103,15 @@ abstract class NormalizerITBase {
     } catch (IOException | InterruptedException e) {
       throw new RuntimeException(e);
     }
+  }
+  
+  public VerbatimRecord vByLine(Term type, long line) {
+    for (VerbatimRecord v : store.verbatimList()) {
+      if (v.getType() == type && v.getLine() == line) {
+        return v;
+      }
+    }
+    return null;
   }
 
   public VerbatimRecord vByNameID(String id) {

@@ -38,8 +38,12 @@ public class TaxonDao extends DatasetEntityDao<Taxon, TaxonMapper> {
     return null;
   }
   
+  private static String devNull(String r) {
+    return null;
+  }
+
   public static DatasetID copyTaxon(SqlSession session, final Taxon t, final DatasetID target, int user, Set<EntityType> include) {
-    return copyTaxon(session, t, target.getDatasetKey(), target.getId(), user, include, TaxonDao::devNull);
+    return copyTaxon(session, t, target, user, include, TaxonDao::devNull, TaxonDao::devNull);
   }
   
   /**
@@ -48,17 +52,21 @@ public class TaxonDao extends DatasetEntityDao<Taxon, TaxonMapper> {
    * The original id is retained and finally returned.
    * An optional set of associated entity types can be indicated to be copied too.
    *
+   * The sectorKey found on the main taxon will also be applied to associated name, reference and other copied entities.
+   *
    * @return the original source taxon id
    */
-  public static DatasetID copyTaxon(final SqlSession session, final Taxon t, final int targetDatasetKey, final String targetParentID, int user,
-                                    Set<EntityType> include, Function<Reference, String> lookupReference) {
+  public static DatasetID copyTaxon(final SqlSession session, final Taxon t, final DatasetID targetParent, int user,
+                                    Set<EntityType> include,
+                                    Function<Reference, String> lookupReference,
+                                    Function<String, String> lookupByIdReference) {
     final DatasetID orig = new DatasetID(t);
-    copyName(session, t, targetDatasetKey, user, lookupReference);
+    copyName(session, t, targetParent.getDatasetKey(), user, lookupReference);
     
-    setKeys(t, targetDatasetKey);
+    setKeys(t, targetParent.getDatasetKey());
     t.applyUser(user, true);
     t.setOrigin(Origin.SOURCE);
-    t.setParentId(targetParentID);
+    t.setParentId(targetParent.getId());
     session.getMapper(TaxonMapper.class).create(t);
     
     // copy related entities
@@ -68,10 +76,19 @@ public class TaxonDao extends DatasetEntityDao<Taxon, TaxonMapper> {
         mapper.listByTaxon(orig.getDatasetKey(), orig.getId()).forEach(e -> {
           e.setKey(null);
           ((UserManaged) e).applyUser(user);
-          mapper.create(e, t.getId(), targetDatasetKey);
+          mapper.create(e, t.getId(), targetParent.getDatasetKey());
         });
-      } else {
-        // TODO copy refs, reflinks & name rels
+        
+      } else if (EntityType.REFERENCE == type) {
+        // taxon ref links
+        final ReferenceMapper rm = session.getMapper(ReferenceMapper.class);
+        for (String rid : rm.listByTaxon(orig.getDatasetKey(), orig.getId())) {
+          String ridCopy = lookupByIdReference.apply(rid);
+          rm.linkToTaxon(t.getDatasetKey(), t.getId(), ridCopy);
+        }
+  
+      } else if (EntityType.NAME_RELATION == type) {
+        // TODO copy name rels
       }
     }
     return orig;
@@ -80,18 +97,17 @@ public class TaxonDao extends DatasetEntityDao<Taxon, TaxonMapper> {
   /**
    * Copies the given nam instance, modifying the original and assigning a new id
    */
-  static void copyName(final SqlSession session, final NameUsage u, final int targetDatasetKey, int user,
+  static void copyName(final SqlSession session, final NameUsageBase u, final int targetDatasetKey, int user,
                                Function<Reference, String> lookupReference) {
     Name n = u.getName();
     n.applyUser(user, true);
     n.setOrigin(Origin.SOURCE);
     if (n.getPublishedInId() != null) {
       ReferenceMapper rm = session.getMapper(ReferenceMapper.class);
-      Reference ref = setKeys(rm.get(n.getDatasetKey(), n.getPublishedInId()), targetDatasetKey);
-      //TODO: add sectorKey to reference
+      Reference ref = rm.get(n.getDatasetKey(), n.getPublishedInId());
       n.setPublishedInId(lookupReference.apply(ref));
     }
-    setKeys(n, targetDatasetKey);
+    setKeys(n, targetDatasetKey, u.getSectorKey());
     session.getMapper(NameMapper.class).create(n);
   }
   
@@ -100,23 +116,19 @@ public class TaxonDao extends DatasetEntityDao<Taxon, TaxonMapper> {
     return newKey(t);
   }
   
-  private static Name setKeys(Name n, int datasetKey) {
+  private static Name setKeys(Name n, int datasetKey, int sectorKey) {
     n.setDatasetKey(datasetKey);
+    n.setSectorKey(sectorKey);
     newKey(n);
     //TODO: should we update homotypic name based on the original ids if they are also in the sector???
     n.setHomotypicNameId(n.getId());
     return n;
   }
   
-  private static Reference setKeys(Reference r, int datasetKey) {
+  private static Reference setKeys(Reference r, int datasetKey, int sectorKey) {
     r.setDatasetKey(datasetKey);
+    r.setSectorKey(sectorKey);
     return newKey(r);
-  }
-  
-  private static <T extends VerbatimEntity & DatasetEntity> T newKey(T e) {
-    e.setVerbatimKey(null);
-    e.setId(UUID.randomUUID().toString());
-    return e;
   }
   
   public ResultPage<Taxon> listRoot(Integer datasetKey, Page page) {
@@ -344,14 +356,15 @@ public class TaxonDao extends DatasetEntityDao<Taxon, TaxonMapper> {
     int cnt = session.getMapper(NameUsageMapper.class).updateParentId(datasetKey, id, t.getParentId(), user);
     LOG.debug("Moved {} children of {} to {}", cnt, t.getId(), t.getParentId());
     
-    // if this taxon had a sector we need to adjust parental counts
-    // we keep the sector as a broken sector around
-    SectorMapper sm = session.getMapper(SectorMapper.class);
-    Sector s = sm.getByTarget(datasetKey, id);
-    if (s != null) {
-      tMapper.incDatasetSectorCount(Datasets.DRAFT_COL, s.getTarget().getId(), s.getDatasetKey(), -1);
+    if (Datasets.DRAFT_COL == datasetKey) {
+      // if this taxon had a sector we need to adjust parental counts
+      // we keep the sector as a broken sector around
+      SectorMapper sm = session.getMapper(SectorMapper.class);
+      for (Sector s : sm.listByTarget(id)) {
+        tMapper.incDatasetSectorCount(Datasets.DRAFT_COL, s.getTarget().getId(), s.getDatasetKey(), -1);
+      }
     }
-  
+    
     // deleting the taxon now should cascade deletes to synonyms, vernaculars, etc but keep the name record!
   }
   

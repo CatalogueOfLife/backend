@@ -80,6 +80,7 @@ public class MybatisFactory {
     registry.registerAlias(StringCount.class);
     registry.registerAlias("TreeNodeMybatis", TreeNode.TreeNodeMybatis.class);
     registry.registerAlias("UsageDecision", Duplicate.UsageDecision.class);
+    registry.registerAlias("DuplicateMybatis", Duplicate.Mybatis.class);
   }
   
   private static void registerTypeHandlers(TypeHandlerRegistry registry) {

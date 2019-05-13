@@ -9,6 +9,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 import com.google.common.base.Splitter;
+import org.col.img.ImageService;
 import org.col.importer.NeoInserter;
 import org.col.importer.NormalizationFailedException;
 import org.col.importer.neo.NeoDb;
@@ -41,8 +42,8 @@ public class AcefInserter extends NeoInserter {
   
   private AcefInterpreter inter;
   
-  public AcefInserter(NeoDb store, Path folder, ReferenceFactory refFactory) throws IOException {
-    super(folder, AcefReader.from(folder), store, refFactory);
+  public AcefInserter(NeoDb store, Path folder, ReferenceFactory refFactory, ImageService imgService) throws IOException {
+    super(folder, AcefReader.from(folder), store, refFactory, imgService);
   }
   
   /**
@@ -200,6 +201,10 @@ public class AcefInserter extends NeoInserter {
       d.setAuthorsAndEditors(dr.get(AcefTerm.AuthorsEditors, COMMA_SPLITTER));
       d.setDataFormat(DataFormat.ACEF);
     }
+    // lookout for logo file
+    reader.logo().ifPresent(l -> {
+    
+    });
     return Optional.ofNullable(d);
   }
   

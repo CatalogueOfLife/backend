@@ -27,4 +27,12 @@ public interface ReferenceMapper extends DatasetCRUDMapper<Reference> {
    * Links a reference to a taxon
    */
   void linkToTaxon(@Param("datasetKey") int datasetKey, @Param("taxonId") String taxonId, @Param("referenceId") String referenceId);
+	
+	/**
+	 * @return all bibliographic reference from a dataset by its full citation, optionally limited to a single sector
+	 */
+	List<Reference> find(@Param("datasetKey") int datasetKey, @Param("sectorKey") Integer sectorKey, @Param("citation") String citation);
+	
+	int deleteBySector(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
+	
 }

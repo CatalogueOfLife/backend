@@ -9,7 +9,9 @@ import org.col.api.model.Sector;
 
 public interface SectorMapper extends GlobalCRUDMapper<Sector> {
   
-  Sector getByTarget(@Param("datasetKey") int datasetKey, @Param("id") String id);
+  Sector getBySubject(@Param("datasetKey") int datasetKey, @Param("id") String id);
+  
+  List<Sector> listByTarget(@Param("id") String id);
 
   List<Sector> listByDataset(@Nullable @Param("datasetKey") Integer datasetKey);
   

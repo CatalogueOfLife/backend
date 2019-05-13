@@ -1,3 +1,4 @@
+
 package org.col.matching;
 
 import java.io.File;
@@ -5,10 +6,10 @@ import java.io.IOException;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.col.api.vocab.Datasets;
-import org.col.matching.authorship.AuthorComparator;
 import org.col.api.model.Name;
 import org.col.api.model.NameMatch;
+import org.col.api.vocab.Datasets;
+import org.col.common.tax.AuthorshipNormalizer;
 import org.mapdb.DBMaker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,29 +39,21 @@ public class NameIndexFactory {
     };
   }
   
-  public static NameIndex memory(SqlSessionFactory sqlFactory) {
-    return memory(Datasets.DRAFT_COL, sqlFactory);
+  public static NameIndex memory(SqlSessionFactory sqlFactory, AuthorshipNormalizer authorshipNormalizer) {
+    return new NameIndexMapDB(DBMaker.memoryDB(), authorshipNormalizer, Datasets.DRAFT_COL, sqlFactory);
   }
-  
-  public static NameIndex memory(int datasetKey, SqlSessionFactory sqlFactory) {
-    return new NameIndexMapDB(DBMaker.memoryDB(), AuthorComparator.createWithAuthormap(), datasetKey, sqlFactory);
-  }
-  
-  public static NameIndex persistent(File location, SqlSessionFactory sqlFactory) throws IOException {
-    return persistent(Datasets.DRAFT_COL, location, sqlFactory);
-  }
-  
+
   /**
    * Creates or opens a persistent mapdb names index.
    */
-  public static NameIndex persistent(int datasetKey, File location, SqlSessionFactory sqlFactory) throws IOException {
+  public static NameIndex persistent(File location, SqlSessionFactory sqlFactory, AuthorshipNormalizer authorshipNormalizer) throws IOException {
     if (!location.exists()) {
       FileUtils.forceMkdirParent(location);
     }
     DBMaker.Maker maker = DBMaker
         .fileDB(location)
         .fileMmapEnableIfSupported();
-    return new NameIndexMapDB(maker, AuthorComparator.createWithAuthormap(), datasetKey, sqlFactory);
+    return new NameIndexMapDB(maker, authorshipNormalizer, Datasets.DRAFT_COL, sqlFactory);
   }
   
 }

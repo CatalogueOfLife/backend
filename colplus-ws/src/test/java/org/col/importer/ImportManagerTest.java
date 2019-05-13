@@ -12,6 +12,7 @@ import io.dropwizard.client.HttpClientBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSession;
 import org.col.WsServerConfig;
+import org.col.common.tax.AuthorshipNormalizer;
 import org.col.dao.TreeRepoRule;
 import org.col.matching.NameIndexFactory;
 import org.col.api.model.Dataset;
@@ -23,7 +24,7 @@ import org.col.db.PgSetupRule;
 import org.col.dao.DatasetImportDao;
 import org.col.db.mapper.DatasetMapper;
 import org.col.db.mapper.TestDataRule;
-import org.col.img.ImageService;
+import org.col.img.ImageServiceFS;
 import org.junit.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,6 +40,7 @@ import static org.junit.Assert.assertFalse;
 @Ignore
 public class ImportManagerTest {
   private static final Logger LOG = LoggerFactory.getLogger(ImportManagerTest.class);
+  static final AuthorshipNormalizer aNormalizer = AuthorshipNormalizer.createWithAuthormap();
   
   ImportManager importManager;
   CloseableHttpClient hc;
@@ -77,8 +79,8 @@ public class ImportManagerTest {
     final WsServerConfig cfg = provideConfig();
     
     hc = new HttpClientBuilder(metrics).using(cfg.client).build("local");
-    importManager = new ImportManager(cfg, metrics, hc, PgSetupRule.getSqlSessionFactory(),
-        NameIndexFactory.passThru(), null, new ImageService(cfg.img));
+    importManager = new ImportManager(cfg, metrics, hc, PgSetupRule.getSqlSessionFactory(), aNormalizer,
+        NameIndexFactory.passThru(), null, new ImageServiceFS(cfg.img));
     importManager.start();
   
     diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());

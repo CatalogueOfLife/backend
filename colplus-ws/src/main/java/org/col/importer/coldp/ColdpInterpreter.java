@@ -38,26 +38,31 @@ public class ColdpInterpreter extends InterpreterBase {
     metadata.setDenormedClassificationMapped(true);
   }
 
-  Optional<Reference> interpretReference(VerbatimRecord rec) {
+  Optional<Reference> interpretReference(VerbatimRecord v) {
+    if (!v.hasTerm(ColTerm.ID)) {
+      return Optional.empty();
+    }
     return Optional.of(refFactory.fromCol(
-        rec.get(ColTerm.ID),
-        rec.get(ColTerm.author),
-        rec.get(ColTerm.year),
-        rec.get(ColTerm.title),
-        rec.get(ColTerm.source),
-        rec.get(ColTerm.doi),
-        rec.get(ColTerm.link),
-        rec
+        v.get(ColTerm.ID),
+        v.get(ColTerm.author),
+        v.get(ColTerm.year),
+        v.get(ColTerm.title),
+        v.get(ColTerm.source),
+        v.get(ColTerm.doi),
+        v.get(ColTerm.link),
+        v
     ));
   }
   
   Optional<NeoUsage> interpretTaxon(VerbatimRecord v) {
     return findName(v, ColTerm.nameID).map(n -> {
-      
+      if (!v.hasTerm(ColTerm.ID)) {
+        return null;
+      }
       //TODO: make sure no TAXON label already exists!!!
       NeoUsage u = NeoUsage.createTaxon(Origin.SOURCE, TaxonomicStatus.ACCEPTED);
       u.nameNode = n.node;
-      u.setId(v.get(ColTerm.ID));
+      u.setId(v.getRaw(ColTerm.ID));
       u.setVerbatimKey(v.getKey());
     
       // taxon
@@ -88,7 +93,7 @@ public class ColdpInterpreter extends InterpreterBase {
   }
   
   private Optional<NeoName> findName(VerbatimRecord v, Term nameId) {
-    NeoName n = store.names().objByID(v.get(nameId));
+    NeoName n = store.names().objByID(v.getRaw(nameId));
     if (n == null) {
       v.addIssue(Issue.NAME_ID_INVALID);
       v.addIssue(Issue.NOT_INTERPRETED);
@@ -108,7 +113,8 @@ public class ColdpInterpreter extends InterpreterBase {
   
       NeoUsage u = NeoUsage.createSynonym(Origin.SOURCE, status);
       u.nameNode = n.node;
-      u.setId(v.get(ColTerm.ID));
+      String id = v.get(ColTerm.taxonID) + "-" + v.getRaw(ColTerm.nameID);
+      u.setId(id);
       u.setVerbatimKey(v.getKey());
   
       Synonym s = u.getSynonym();

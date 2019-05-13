@@ -28,6 +28,8 @@ public class MybatisBundle implements ConfiguredBundle<WsServerConfig> {
    */
   @Override
   public void run(WsServerConfig cfg, Environment environment) throws Exception {
+    LOG.info("Connecting to database {} on {}", cfg.db.database, cfg.db.host);
+
     HikariConfig hik = cfg.db.hikariConfig();
     // pool healthchecks
     hik.setHealthCheckRegistry(environment.healthChecks());

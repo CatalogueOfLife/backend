@@ -13,6 +13,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.col.api.jackson.IsEmptyFilter;
 import org.col.api.vocab.NomStatus;
 import org.col.api.vocab.Origin;
+import org.col.common.tax.SciNameNormalizer;
 import org.gbif.nameparser.api.*;
 import org.gbif.nameparser.util.NameFormatter;
 
@@ -58,6 +59,12 @@ public class Name extends DataEntity implements DatasetEntity, VerbatimEntity {
   private String scientificName;
   
   private String authorship;
+
+  /**
+   * Normalized authorship - only internal and not meant for API use!
+   */
+  @JsonIgnore
+  private List<String> authorshipNormalized;
   
   /**
    * Rank of the name from enumeration
@@ -145,6 +152,14 @@ public class Name extends DataEntity implements DatasetEntity, VerbatimEntity {
    */
   private String publishedInPage;
   
+  /**
+   * Year the name was published. Taken either from the authorship
+   * or if not existing (e.g. botanical names) from the published in reference
+   *
+   * The value is readonly!
+   */
+  private Integer publishedInYear;
+
   @Nonnull
   private Origin origin;
   
@@ -197,6 +212,7 @@ public class Name extends DataEntity implements DatasetEntity, VerbatimEntity {
     this.nomStatus = n.nomStatus;
     this.publishedInId = n.publishedInId;
     this.publishedInPage = n.publishedInPage;
+    this.publishedInYear = n.publishedInYear;
     this.origin = n.origin;
     this.type = n.type;
     this.webpage = n.webpage;
@@ -277,6 +293,14 @@ public class Name extends DataEntity implements DatasetEntity, VerbatimEntity {
   }
   
   /**
+   * @return a normalized version of the scientific name useful for matching
+   */
+  @JsonIgnore
+  public String getScientificNameNormalized() {
+    return SciNameNormalizer.normalize(scientificName);
+  }
+
+  /**
    * WARN: avoid setting the cached scientificName for parsed names directly.
    * Use updateNameCache() instead!
    */
@@ -289,6 +313,14 @@ public class Name extends DataEntity implements DatasetEntity, VerbatimEntity {
    */
   public String getAuthorship() {
     return authorship;
+  }
+  
+  public List<String> getAuthorshipNormalized() {
+    return authorshipNormalized;
+  }
+  
+  public void setAuthorshipNormalized(List<String> authorshipNormalized) {
+    this.authorshipNormalized = authorshipNormalized;
   }
   
   /**
@@ -324,6 +356,14 @@ public class Name extends DataEntity implements DatasetEntity, VerbatimEntity {
   
   public void setPublishedInPage(String publishedInPage) {
     this.publishedInPage = publishedInPage;
+  }
+  
+  public Integer getPublishedInYear() {
+    return publishedInYear;
+  }
+  
+  public void setPublishedInYear(Integer publishedInYear) {
+    this.publishedInYear = publishedInYear;
   }
   
   public Origin getOrigin() {
@@ -694,6 +734,7 @@ public class Name extends DataEntity implements DatasetEntity, VerbatimEntity {
         nomStatus == name.nomStatus &&
         Objects.equals(publishedInId, name.publishedInId) &&
         Objects.equals(publishedInPage, name.publishedInPage) &&
+        Objects.equals(publishedInYear, name.publishedInYear) &&
         origin == name.origin &&
         type == name.type &&
         Objects.equals(webpage, name.webpage) &&
@@ -703,7 +744,7 @@ public class Name extends DataEntity implements DatasetEntity, VerbatimEntity {
   
   @Override
   public int hashCode() {
-    return Objects.hash(id, datasetKey, sectorKey, homotypicNameId, nameIndexId, scientificName, authorship, rank, uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, strain, candidatus, notho, combinationAuthorship, basionymAuthorship, sanctioningAuthor, code, nomStatus, publishedInId, publishedInPage, origin, type, webpage, fossil, remarks);
+    return Objects.hash(id, datasetKey, sectorKey, homotypicNameId, nameIndexId, scientificName, authorship, rank, uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, strain, candidatus, notho, combinationAuthorship, basionymAuthorship, sanctioningAuthor, code, nomStatus, publishedInId, publishedInPage, publishedInYear, origin, type, webpage, fossil, remarks);
   }
   
   @Override

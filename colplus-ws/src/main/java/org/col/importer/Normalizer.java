@@ -13,6 +13,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import org.col.img.ImageService;
 import org.col.importer.acef.AcefInserter;
 import org.col.importer.coldp.ColdpInserter;
 import org.col.importer.dwca.DwcaInserter;
@@ -54,16 +55,18 @@ public class Normalizer implements Callable<Boolean> {
   private final Path sourceDir;
   private final NeoDb store;
   private final ReferenceFactory refFactory;
+  private final ImageService imgService;
   private final NameIndex index;
   private MappingFlags meta;
   
   
-  public Normalizer(NeoDb store, Path sourceDir, NameIndex index) {
+  public Normalizer(NeoDb store, Path sourceDir, NameIndex index, ImageService imgService) {
     this.sourceDir = sourceDir;
     this.store = store;
     this.dataset = store.getDataset();
     refFactory = new ReferenceFactory(dataset.getKey(), store);
     this.index = index;
+    this.imgService = imgService;
   }
   
   /**
@@ -152,6 +155,7 @@ public class Normalizer implements Callable<Boolean> {
         // taxon or synonym
         if (u.isSynonym()) {
           Synonym s = u.getSynonym();
+          require(s, s.getId(), "id");
           require(s, s.getOrigin(), "origin");
     
           // no vernaculars, distribution etc
@@ -793,13 +797,13 @@ public class Normalizer implements Callable<Boolean> {
       NeoInserter inserter;
       switch (dataset.getDataFormat()) {
         case COLDP:
-          inserter = new ColdpInserter(store, sourceDir, refFactory);
+          inserter = new ColdpInserter(store, sourceDir, refFactory, imgService);
           break;
         case DWCA:
-          inserter = new DwcaInserter(store, sourceDir, refFactory);
+          inserter = new DwcaInserter(store, sourceDir, refFactory, imgService);
           break;
         case ACEF:
-          inserter = new AcefInserter(store, sourceDir, refFactory);
+          inserter = new AcefInserter(store, sourceDir, refFactory, imgService);
           break;
         default:
           throw new NormalizationFailedException("Unsupported data format " + dataset.getDataFormat());

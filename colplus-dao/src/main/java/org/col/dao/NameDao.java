@@ -7,6 +7,7 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.model.Name;
 import org.col.api.model.NameRelation;
 import org.col.api.vocab.NomRelType;
+import org.col.common.tax.AuthorshipNormalizer;
 import org.col.db.mapper.NameMapper;
 import org.col.db.mapper.NameRelationMapper;
 import org.slf4j.Logger;
@@ -16,9 +17,22 @@ public class NameDao extends DatasetEntityDao<Name, NameMapper> {
   
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(NameDao.class);
+  private final AuthorshipNormalizer normalizer;
   
-  public NameDao(SqlSessionFactory factory) {
+  public NameDao(SqlSessionFactory factory, AuthorshipNormalizer normalizer) {
     super(false, factory, NameMapper.class);
+    this.normalizer = normalizer;
+  }
+  
+  @Override
+  public String create(Name obj, int user) {
+    obj.setAuthorshipNormalized(normalizer.normalizeName(obj));
+    return super.create(obj, user);
+  }
+  
+  @Override
+  protected void updateBefore(Name obj, Name old, int user, NameMapper mapper, SqlSession session) {
+    obj.setAuthorshipNormalized(normalizer.normalizeName(obj));
   }
   
   public Name getBasionym(int datasetKey, String id) {

@@ -1,12 +1,14 @@
 package org.col.dao;
 
-import java.util.UUID;
 import java.util.function.Function;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.col.api.model.*;
+import org.col.api.model.DatasetID;
+import org.col.api.model.Name;
+import org.col.api.model.Reference;
+import org.col.api.model.Synonym;
 import org.col.api.vocab.Origin;
 import org.col.api.vocab.TaxonomicStatus;
 import org.col.db.mapper.NameMapper;
@@ -31,8 +33,9 @@ public class SynonymDao extends DatasetEntityDao<Synonym, SynonymMapper> {
    * @param user
    * @param lookupReference
    */
-  public static void copySynonym(final SqlSession session, final Synonym syn, final DatasetID accepted, int user,
+  public static DatasetID copySynonym(final SqlSession session, final Synonym syn, final DatasetID accepted, int user,
                                  Function<Reference, String> lookupReference) {
+    final DatasetID orig = new DatasetID(syn);
     syn.setDatasetKey(accepted.getDatasetKey());
     TaxonDao.copyName(session, syn, accepted.getDatasetKey(), user, lookupReference);
     newKey(syn);
@@ -40,13 +43,7 @@ public class SynonymDao extends DatasetEntityDao<Synonym, SynonymMapper> {
     syn.setOrigin(Origin.SOURCE);
     syn.setParentId(accepted.getId());
     session.getMapper(SynonymMapper.class).create(syn);
-  }
-  
-  
-  private static <T extends VerbatimEntity & DatasetEntity> T newKey(T e) {
-    e.setVerbatimKey(null);
-    e.setId(UUID.randomUUID().toString());
-    return e;
+    return orig;
   }
   
   /**

@@ -64,6 +64,7 @@ public abstract class GlobalEntityResource<T extends GlobalEntity & UserManaged>
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void update(@PathParam("key") Integer key, T obj, @Auth ColUser user) {
     obj.setKey(key);
+    obj.applyUser(user);
     int i = dao.update(obj, user.getKey());
     if (i == 0) {
       throw NotFoundException.keyNotFound(objClass, key);

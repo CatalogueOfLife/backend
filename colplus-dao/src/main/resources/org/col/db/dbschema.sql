@@ -2,10 +2,20 @@
 -- required extensions
 CREATE EXTENSION IF NOT EXISTS hstore;
 CREATE EXTENSION IF NOT EXISTS unaccent;
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
 
 -- use unaccent by default for all simple search
 CREATE TEXT SEARCH CONFIGURATION public.simple2 ( COPY = pg_catalog.simple );
 ALTER TEXT SEARCH CONFIGURATION simple2 ALTER MAPPING FOR hword, hword_part, word WITH unaccent;
+
+-- immutable unaccent function to be used in indexes
+-- see https://stackoverflow.com/questions/11005036/does-postgresql-support-accent-insensitive-collations
+CREATE OR REPLACE FUNCTION f_unaccent(text)
+  RETURNS text AS
+$func$
+SELECT public.unaccent('public.unaccent', $1)  -- schema-qualify function and dictionary
+$func$  LANGUAGE sql IMMUTABLE;
+
 
 CREATE TYPE rank AS ENUM (
   'domain',
@@ -139,6 +149,9 @@ CREATE TABLE dataset (
   modified_by INTEGER NOT NULL
 );
 
+
+CREATE INDEX ON dataset USING gin (f_unaccent(title) gin_trgm_ops);
+CREATE INDEX ON dataset USING gin (f_unaccent(alias) gin_trgm_ops);
 CREATE INDEX ON dataset USING gin(doc);
 
 CREATE OR REPLACE FUNCTION dataset_doc_update() RETURNS trigger AS $$
@@ -300,7 +313,9 @@ CREATE TABLE name (
   homotypic_name_id TEXT NOT NULL,
   name_index_id TEXT,
   scientific_name TEXT NOT NULL,
+  scientific_name_normalized TEXT NOT NULL,
   authorship TEXT,
+  authorship_normalized TEXT[],
   rank rank NOT NULL,
   uninomial TEXT,
   genus TEXT,
@@ -465,6 +480,49 @@ CREATE FUNCTION plaziGbifKey() RETURNS UUID AS $$
 $$
 LANGUAGE SQL
 IMMUTABLE;
+
+
+-- tries to gracely convert text to ints, swallowing exceptions and using null instead
+CREATE OR REPLACE FUNCTION parseInt(v_value text) RETURNS INTEGER AS $$
+DECLARE v_int_value INTEGER DEFAULT NULL;
+BEGIN
+    IF v_value IS NOT NULL THEN
+        RAISE NOTICE 'Parse: "%"', v_value;
+        BEGIN
+            v_int_value := v_value::INTEGER;
+        EXCEPTION WHEN OTHERS THEN
+            RAISE NOTICE 'Invalid integer value: "%".  Returning NULL.', v_value;
+            BEGIN
+                v_int_value := substring(v_value, 1, 4)::INTEGER;
+            EXCEPTION WHEN OTHERS THEN
+                RETURN NULL;
+            END;
+        END;
+    END IF;
+    RETURN v_int_value;
+END;
+$$ LANGUAGE plpgsql;
+
+-- array_agg alternative that ignores null values
+CREATE OR REPLACE FUNCTION fn_array_agg_nonull (
+    a anyarray
+    , b anyelement
+) RETURNS ANYARRAY
+AS $$
+BEGIN
+    IF b IS NOT NULL THEN
+        a := array_append(a, b);
+    END IF;
+    RETURN a;
+END;
+$$ IMMUTABLE LANGUAGE 'plpgsql';
+
+CREATE AGGREGATE array_agg_nonull(ANYELEMENT) (
+    SFUNC = fn_array_agg_nonull,
+    STYPE = ANYARRAY,
+    INITCOND = '{}'
+);
+
 
 
 -- INDICES for non partitioned tables

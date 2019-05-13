@@ -7,7 +7,7 @@ The CoL backend consists of 2 [Dropwizard](https://www.dropwizard.io/) applicati
 ## Prerequisites
 1. Java 8 JDK
 1. Maven 3
-1. Postgres 11.
+1. Postgres 11
 
 ## Run the CoL applications locally
 ### colplus-admin
@@ -36,13 +36,14 @@ To see your applications health enter url `http://localhost:8081/healthcheck`
 ## Maven modules
 
 ### colplus-api
-The main API with model classes.
-
-### colplus-common
-Shared common classes like utilities.
+The main API with model classes and shared common utilities classes.
 
 ### colplus-dao
 The postgres persistence layer.
+
+### colplus-parser
+Various parsers/interpreters used mostly for importing.
+Contains a GBIF name parser wrapper.
 
 ### colplus-ws
 The Dropwizard based JSON webservices, importer and assembly code.

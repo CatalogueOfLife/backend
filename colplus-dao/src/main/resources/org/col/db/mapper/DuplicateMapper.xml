@@ -4,118 +4,113 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="org.col.db.mapper.DuplicateMapper">
 
-    <resultMap id="duplicateResultMap" type="Duplicate" autoMapping="true">
+    <resultMap id="duplicateResultMap" type="DuplicateMybatis" autoMapping="true">
         <id column="key" property="key" />
-        <collection property="usages" ofType="UsageDecision">
-            <id column="u.id"/>
-            <association property="usage" resultMap="org.col.db.mapper.NameUsageMapper.usageResultMap" />
-            <association property="decision" javaType="EditorialDecision">
-                <id column="decision_key" property="key"/>
-            </association>
-        </collection>
+        <result property="usages" column="ids" typeHandler="org.col.db.type.StringArrayTypeHandler" />
     </resultMap>
 
-    <sql id="keySelect">
-        <choose>
-            <when test="mode.name() == 'NAMES_INDEX' ">
-                n.name_index_id
-            </when>
-            <when test="mode.name() == 'CANONICAL' ">
-                lower(n.scientific_name)
-            </when>
-            <otherwise>
-                lower(n.scientific_name) || ' ' || lower(coalesce(n.authorship, ''))
-            </otherwise>
-        </choose>
-    </sql>
+    <resultMap id="usageDecisionResultMap" type="UsageDecision" autoMapping="true">
+        <id column="u.id"/>
+        <association property="usage" resultMap="org.col.db.mapper.NameUsageMapper.usageResultMap" />
+        <association property="decision" javaType="EditorialDecision">
+            <id column="decision_key" property="key"/>
+        </association>
+        <collection property="classification" ofType="SimpleName" column="{id=id,datasetKey=dataset_key}" autoMapping="true"
+                    select="org.col.db.mapper.TaxonMapper.classificationSimple"/>
+    </resultMap>
 
-    <select id="listKeys" parameterType="map" resultType="Object">
-        SELECT <include refid="keySelect"/> AS key, n.scientific_name
-        FROM
-            name_usage_${datasetKey} u
-            JOIN name_${datasetKey} n ON u.name_id=n.id
-            <if test="withDecision != null">
-                LEFT JOIN decision ed ON ed.subject_id=u.id
-            </if>,
-            name_usage_${datasetKey} u2
-            JOIN name_${datasetKey} n2 ON u2.name_id=n2.id
-            <if test="withDecision != null">
-                LEFT JOIN decision ed2 ON ed2.subject_id=u2.id
-            </if>
-        <where>
-            u.id &lt; u2.id
-            <choose>
-                <when test="mode.name() == 'NAMES_INDEX' ">
-                    AND n.name_index_id = n2.name_index_id
-                </when>
-                <when test="mode.name() == 'CANONICAL' ">
-                    AND lower(n.scientific_name) = lower(n2.scientific_name)
-                </when>
-                <otherwise>
-                    AND lower(n.scientific_name) = lower(n2.scientific_name)
-                    AND lower(n.authorship) = lower(n2.authorship)
-                </otherwise>
-            </choose>
-            <if test="rank != null">
-                AND n.rank=#{rank}::rank AND n2.rank=#{rank}::rank
-            </if>
-            <if test="status != null and !status.isEmpty()">
-                AND u.status IN (<foreach collection="status" item="st" separator=",">#{st}</foreach>)
-                AND u2.status IN (<foreach collection="status" item="st" separator=",">#{st}</foreach>)
-            </if>
-            <if test="parentDifferent != null">
-                AND u.parent_id <if test="parentDifferent">!</if>= u2.parent_id
-            </if>
-            <if test="withDecision != null">
-                AND
-                <if test="withDecision">
-                    (ed.key IS NOT NULL OR ed2.key IS NOT NULL)
-                </if>
-                <if test="!withDecision">
-                    ed.key IS NULL AND ed2.key IS NULL
-                </if>
-            </if>
-        </where>
-        ORDER BY n.scientific_name
-        <include refid="org.col.db.mapper.Common.limit" />
-    </select>
-
-    <select id="listUsages" parameterType="map" resultMap="duplicateResultMap">
+    <select id="usagesByIds" resultMap="usageDecisionResultMap">
         SELECT
-            <include refid="keySelect"/> AS key, u.is_synonym,
-            <include refid="org.col.db.mapper.TaxonMapper.taxonCols">
-                <property name="alias" value="u"/>
-                <property name="prefix" value=""/>
-            </include>,
-            <include refid="org.col.db.mapper.NameMapper.nameCols">
-                <property name="alias" value="n"/>
-                <property name="prefix" value="n_"/>
-            </include>,
-            <include refid="org.col.db.mapper.TaxonMapper.taxonCols">
-                <property name="alias" value="a"/>
-                <property name="prefix" value="a_"/>
-            </include>,
-            <include refid="org.col.db.mapper.NameMapper.nameCols">
-                <property name="alias" value="an"/>
-                <property name="prefix" value="a_n_"/>
-            </include>,
-            ed.key AS decision_key
+        u.is_synonym,
+        <include refid="org.col.db.mapper.TaxonMapper.taxonCols">
+            <property name="alias" value="u"/>
+            <property name="prefix" value=""/>
+        </include>,
+        <include refid="org.col.db.mapper.NameMapper.nameCols">
+            <property name="alias" value="n"/>
+            <property name="prefix" value="n_"/>
+        </include>,
+        coalesce(parseInt(n.combination_year), r.year) AS n_publishedInYear,
+        <include refid="org.col.db.mapper.TaxonMapper.taxonCols">
+            <property name="alias" value="a"/>
+            <property name="prefix" value="a_"/>
+        </include>,
+        <include refid="org.col.db.mapper.NameMapper.nameCols">
+            <property name="alias" value="an"/>
+            <property name="prefix" value="a_n_"/>
+        </include>,
+        ed.key AS decision_key
         FROM
             name_usage_${datasetKey} u
             JOIN name_${datasetKey} n ON u.name_id=n.id
             LEFT JOIN name_usage_${datasetKey} a ON u.parent_id=a.id AND u.is_synonym
             LEFT JOIN name_${datasetKey} an ON a.name_id=an.id
+            LEFT JOIN reference_${datasetKey} r ON n.published_in_id=r.id
             LEFT JOIN decision ed ON ed.subject_id=u.id
+        WHERE u.id IN (<foreach collection="ids" item="id" separator=",">#{id}</foreach>)
+    </select>
+
+    <sql id="keyCol">
+        <choose>
+            <when test="mode.name() == 'FUZZY'">scientific_name_normalized</when>
+            <otherwise>lower(scientific_name)</otherwise>
+        </choose>
+    </sql>
+    <select id="duplicates" parameterType="map" resultMap="duplicateResultMap">
+        SELECT <include refid="keyCol" /> AS key, array_agg(u.id) AS ids
+        FROM name_usage_${datasetKey} u
+            JOIN name_${datasetKey} n ON u.name_id=n.id
+            <if test="withDecision != null">
+                LEFT JOIN decision ed ON ed.subject_id=u.id
+            </if>
         <where>
-            <include refid="keySelect"/> IN (<foreach collection="keys" item="k" separator=",">#{k}</foreach>)
-            <if test="rank != null">
-                AND n.rank=#{rank}::rank
+            <if test="category != null">
+                <if test="category.highest != null">
+                    AND n.rank &gt;= #{category.highest}::rank
+                </if>
+                <if test="category.lowest != null">
+                    AND n.rank &lt;= #{category.lowest}::rank
+                </if>
+            </if>
+            <if test="ranks != null and !ranks.isEmpty()">
+                AND n.rank IN (<foreach collection="ranks" item="r" separator=",">#{r}::rank</foreach>)
             </if>
             <if test="status != null and !status.isEmpty()">
                 AND u.status IN (<foreach collection="status" item="st" separator=",">#{st}</foreach>)
             </if>
         </where>
-        ORDER BY n.scientific_name
+        GROUP BY <include refid="keyCol" />
+        HAVING count(*) >= #{minSize}
+        <if test="status != null and status.size() &gt; 1">
+            <!-- make sure all requested status are covered at least once -->
+            AND array_agg(u.status) @> array[<foreach collection="status" item="st" separator=",">#{st}</foreach>]
+        </if>
+        <if test="sectorKey != null">
+            <!-- make sure at least one name comes from the requested sector -->
+            AND array_agg(u.sector_key) @> array[${sectorKey}]
+        </if>
+        <if test="withDecision != null">
+            AND count(distinct ed.key)
+                <if test="withDecision">&gt; 0</if>
+                <if test="!withDecision">= 0</if>
+        </if>
+        <if test="authorshipDifferent != null">
+            AND count(
+                DISTINCT <choose><when test="mode.name() == 'FUZZY'">n.authorship_normalized</when><otherwise>n.authorship</otherwise></choose>
+            )
+            <!-- make sure at least 2 authorships are different -->
+            <if test="authorshipDifferent">&gt; 1</if>
+            <!-- make sure all authorships are the same -->
+            <if test="!authorshipDifferent">&lt;= 1</if>
+        </if>
+        <if test="parentDifferent != null">
+            AND count(DISTINCT u.parent_id)
+            <!-- make sure at least 2 parents are different -->
+            <if test="parentDifferent">&gt; 1</if>
+            <!-- make sure all parent ids are the same -->
+            <if test="!parentDifferent">&lt;= 1</if>
+        </if>
+        ORDER BY <include refid="keyCol" />
+        <include refid="org.col.db.mapper.Common.limit" />
     </select>
-
 </mapper>

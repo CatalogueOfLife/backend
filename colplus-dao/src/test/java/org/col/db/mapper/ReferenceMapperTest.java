@@ -46,7 +46,7 @@ public class ReferenceMapperTest extends MapperTestBase<ReferenceMapper> {
     generateDatasetImport(DATASET11.getKey());
     commit();
     
-    assertEquals(5, mapper().count(DATASET11.getKey()));
+    assertEquals(6, mapper().count(DATASET11.getKey()));
   }
   
   @Test
@@ -61,7 +61,7 @@ public class ReferenceMapperTest extends MapperTestBase<ReferenceMapper> {
       mapper().create(r);
     }
     commit();
-    // list is sorted by id. From apple we get 2 records for dataset 11 that sort last:
+    // list is sorted by id. From apple we get 3 records for dataset 11 that sort last:
     //r10001
     //r10002
     //r10003
@@ -69,10 +69,12 @@ public class ReferenceMapperTest extends MapperTestBase<ReferenceMapper> {
     //r10005
     //ref-1
     //ref-1b
+    //ref-2
     in.add(REF1);
+    in.add(REF1b);
     in.add(REF2);
     List<Reference> out = mapper().list(DATASET11.getKey(), new Page());
-    assertEquals(7, out.size());
+    assertEquals(8, out.size());
 
     TestEntityGenerator.nullifyDate(in);
     TestEntityGenerator.nullifyDate(out);
@@ -83,16 +85,17 @@ public class ReferenceMapperTest extends MapperTestBase<ReferenceMapper> {
     assertEquals(in.get(4), out.get(4));
     assertEquals(in.get(5), out.get(5));
     assertEquals(in.get(6), out.get(6));
+    assertEquals(in.get(7), out.get(7));
     assertEquals(in, out);
   }
   
   @Test
   public void listByIds() {
     assertEquals(2, mapper().listByIds(11, Sets.newHashSet("ref-1", "ref-1b")).size());
-    assertEquals(1, mapper().listByIds(11, Sets.newHashSet("ref-1", "ref-2")).size());
+    assertEquals(1, mapper().listByIds(11, Sets.newHashSet("ref-1", "ref-12")).size());
     assertEquals(1, mapper().listByIds(11, Sets.newHashSet("ref-1b")).size());
     assertEquals(0, mapper().listByIds(12, Sets.newHashSet("ref-1b")).size());
-    assertEquals(1, mapper().listByIds(12, Sets.newHashSet("ref-2")).size());
+    assertEquals(0, mapper().listByIds(12, Sets.newHashSet("ref-2")).size());
   }
   
   private static Reference create() throws Exception {

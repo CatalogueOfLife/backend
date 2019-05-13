@@ -19,18 +19,23 @@ public interface NameUsageWrapperMapper {
    * query to efficiently stream all its values without keeping them in memory. The classification attached includes the taxon or synonym
    * itself!
    */
-  void processDatasetUsages(@Param("datasetKey") Integer datasetKey, @Nullable @Param("sectorKey") Integer sectorKey,
-      ResultHandler<NameUsageWrapper> handler);
+  void processDatasetUsages(@Param("datasetKey") Integer datasetKey,
+                            @Nullable @Param("sectorKey") Integer sectorKey,
+                            ResultHandler<NameUsageWrapper> handler);
 
   /**
    * Iterates over all bare names not linked to a synonym or taxon for a given dataset and processes them with the supplied handler. This
    * allows a single query to efficiently stream all its values without keeping them in memory.
    */
-  void processDatasetBareNames(@Param("datasetKey") Integer datasetKey, @Nullable @Param("sectorKey") Integer sectorKey,
-      ResultHandler<NameUsageWrapper> handler);
+  void processDatasetBareNames(@Param("datasetKey") Integer datasetKey,
+                               @Nullable @Param("sectorKey") Integer sectorKey,
+                               ResultHandler<NameUsageWrapper> handler);
 
-  void processTree(@Param("datasetKey") Integer datasetKey, @Param("usageId") String usageId, ResultHandler<NameUsageWrapper> handler);
+  void processTree(@Param("datasetKey") Integer datasetKey,
+                   @Param("usageId") String usageId,
+                   ResultHandler<NameUsageWrapper> handler);
 
-  NameUsageWrapper get(@Param("datasetKey") int datasetKey, @Param("id") String taxonId);
+  NameUsageWrapper get(@Param("datasetKey") int datasetKey,
+                       @Param("id") String taxonId);
 
 }

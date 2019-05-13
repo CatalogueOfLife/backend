@@ -39,7 +39,7 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
   }
 
   @Override
-  public void indexDataset(Integer datasetKey) {
+  public void indexDataset(int datasetKey) {
     NameUsageIndexer indexer = new NameUsageIndexer(client, index);
     int tCount, bCount;
     try (SqlSession session = factory.openSession()) {
@@ -65,7 +65,7 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
   }
 
   @Override
-  public void indexSector(Integer sectorKey) {
+  public void indexSector(int sectorKey) {
     NameUsageIndexer indexer = new NameUsageIndexer(client, index);
     int tCount, bCount;
     try (SqlSession session = factory.openSession()) {
@@ -91,7 +91,7 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
   }
 
   @Override
-  public void deleteSector(Integer sectorKey) {
+  public void deleteSector(int sectorKey) {
     try (SqlSession session = factory.openSession()) {
       clearSector(session, sectorKey);
     } catch (IOException e) {
@@ -100,24 +100,32 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
   }
 
   @Override
-  public void indexTaxa(Integer datasetKey, Collection<String> taxonIds) {
+  public void indexTaxa(int datasetKey, Collection<String> taxonIds) {
     NameUsageIndexer indexer = new NameUsageIndexer(client, index);
     try (SqlSession session = factory.openSession()) {
       NameUsageWrapperMapper mapper = session.getMapper(NameUsageWrapperMapper.class);
-      List<NameUsageWrapper> taxa = taxonIds.stream()
+      List<NameUsageWrapper> usages = taxonIds.stream()
           .map(id -> mapper.get(datasetKey, id))
           .filter(Objects::nonNull)
           .collect(Collectors.toList());
-      LOG.info("Indexing {} taxa from dataset {}", taxa.size(), datasetKey);
-      indexer.accept(taxa);
-      EsUtil.refreshIndex(client, index);
+      if (usages.isEmpty()) {
+        LOG.warn("All given usage ids from dataset {} are not existing and won't be indexed: {}", datasetKey, taxonIds);
+        
+      } else {
+        if (usages.size() != taxonIds.size()) {
+          LOG.warn("{} usage ids from dataset {} are not existing", (taxonIds.size()-usages.size()), datasetKey);
+        }
+        LOG.info("Indexing {} taxa from dataset {}", usages.size(), datasetKey);
+        indexer.accept(usages);
+        EsUtil.refreshIndex(client, index);
+      }
     } catch (IOException e) {
       throw new EsException(e);
     }
   }
 
   @Override
-  public void updateClassification(Integer datasetKey, String rootTaxonId) {
+  public void updateClassification(int datasetKey, String rootTaxonId) {
     NameUsageIndexer indexer = new NameUsageIndexer(client, index);
     try (SqlSession session = factory.openSession()) {
       NameUsageWrapperMapper mapper = session.getMapper(NameUsageWrapperMapper.class);

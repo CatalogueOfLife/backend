@@ -16,7 +16,9 @@ import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.WsServerConfig;
+import org.col.common.tax.AuthorshipNormalizer;
 import org.col.dao.DecisionRematcher;
+import org.col.img.ImageService;
 import org.col.importer.neo.NeoDb;
 import org.col.importer.neo.NeoDbFactory;
 import org.col.matching.NameIndex;
@@ -33,7 +35,6 @@ import org.col.common.lang.InterruptedRuntimeException;
 import org.col.common.util.LoggingUtils;
 import org.col.dao.DatasetImportDao;
 import org.col.es.NameUsageIndexService;
-import org.col.img.ImageService;
 import org.col.img.LogoUpdateJob;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,6 +60,7 @@ public class ImportJob implements Runnable {
   private final NameIndex index;
   private final NameUsageIndexService indexService;
   private final ImageService imgService;
+  private final AuthorshipNormalizer aNormalizer;
   
   private final StartNotifier notifier;
   private final Consumer<ImportRequest> successCallback;
@@ -66,7 +68,8 @@ public class ImportJob implements Runnable {
   
   ImportJob(ImportRequest req, Dataset d,
             WsServerConfig cfg,
-            DownloadUtil downloader, SqlSessionFactory factory, NameIndex index, NameUsageIndexService indexService, ImageService imgService,
+            DownloadUtil downloader, SqlSessionFactory factory, AuthorshipNormalizer aNormalizer, NameIndex index,
+            NameUsageIndexService indexService, ImageService imgService,
             StartNotifier notifier,
             Consumer<ImportRequest> successCallback,
             BiConsumer<ImportRequest, Exception> errorCallback
@@ -78,6 +81,7 @@ public class ImportJob implements Runnable {
     this.downloader = downloader;
     this.factory = factory;
     this.index = index;
+    this.aNormalizer = aNormalizer;
     this.indexService = indexService;
     dao = new DatasetImportDao(factory, cfg.textTreeRepo);
     this.imgService = imgService;
@@ -177,13 +181,15 @@ public class ImportJob implements Runnable {
         updateState(ImportState.PROCESSING);
         store = NeoDbFactory.create(datasetKey, getAttempt(), cfg.normalizer);
         store.put(dataset);
-        new Normalizer(store, sourceDir, index).call();
+        new Normalizer(store, sourceDir, index, imgService).call();
+  
+        LOG.info("Fetching logo for {}", datasetKey);
         LogoUpdateJob.updateDatasetAsync(dataset, factory, downloader, cfg.normalizer::scratchFile, imgService);
         
         LOG.info("Writing {} to Postgres!", datasetKey);
         updateState(ImportState.INSERTING);
         store = NeoDbFactory.open(datasetKey, getAttempt(), cfg.normalizer);
-        new PgImport(datasetKey, store, factory, cfg.importer).call();
+        new PgImport(datasetKey, store, factory, aNormalizer, cfg.importer).call();
         // update dataset with latest success attempt now that all data is in postgres - even if we fail further down
         dao.updateDatasetLastAttempt(di);
 

@@ -8,6 +8,7 @@ import com.google.common.collect.Lists;
 import org.col.api.TestEntityGenerator;
 import org.col.api.model.*;
 import org.col.api.vocab.Datasets;
+import org.col.common.tax.AuthorshipNormalizer;
 import org.col.dao.NameDao;
 import org.col.db.MybatisTestUtils;
 import org.col.db.PgSetupRule;
@@ -23,6 +24,7 @@ import static org.junit.Assert.assertEquals;
  */
 public class TaxonMapperTest extends DatasetCRUDTest<Taxon, TaxonMapper> {
   
+  private static final AuthorshipNormalizer aNormalizer = AuthorshipNormalizer.createWithAuthormap();
   private static final int datasetKey = TestEntityGenerator.TAXON1.getDatasetKey();
   private static int userKey = TestEntityGenerator.USER_EDITOR.getKey();
   private Sector sector;
@@ -162,7 +164,7 @@ public class TaxonMapperTest extends DatasetCRUDTest<Taxon, TaxonMapper> {
     Taxon parent = TestEntityGenerator.newTaxon("parent-1");
     mapper().create(parent);
   
-    NameDao nameDao = new NameDao(PgSetupRule.getSqlSessionFactory());
+    NameDao nameDao = new NameDao(PgSetupRule.getSqlSessionFactory(), aNormalizer);
     
     Name n1 = TestEntityGenerator.newName("XXX");
     n1.setScientificName("XXX");

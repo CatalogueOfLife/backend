@@ -12,7 +12,10 @@ import org.col.api.vocab.Datasets;
 import org.col.api.vocab.Origin;
 import org.col.api.vocab.TaxonomicStatus;
 import org.col.api.vocab.Users;
-import org.col.db.mapper.*;
+import org.col.db.mapper.DatasetMapper;
+import org.col.db.mapper.DecisionMapper;
+import org.col.db.mapper.SectorMapper;
+import org.col.db.mapper.TaxonMapper;
 import org.gbif.nameparser.api.NameType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,11 +72,21 @@ public class DecisionRematcher {
     if (subject) {
       NameUsage t = matchUniquely(s, s.getDatasetKey(), s.getSubject());
       if (t != null) {
-        s.getSubject().setId(t.getId());
+        // see if we already have a sector attached
+        Sector s2 = sm.getBySubject(s.getDatasetKey(), t.getId());
+        if (s2 != null) {
+          LOG.warn("Sector {} seems to be a duplicate of {} for {} in dataset {}", s, s2, t.getName().getScientificName(), s.getDatasetKey());
+          s.getSubject().setId(null);
+          success = false;
+        } else {
+          s.getSubject().setId(t.getId());
+        }
+
       } else {
         success = false;
       }
     }
+    
     if (target) {
       NameUsage t = matchUniquely(s, Datasets.DRAFT_COL, s.getTarget());
       if (t != null) {
@@ -94,7 +107,10 @@ public class DecisionRematcher {
         success = false;
       }
     }
-    sm.update(s);
+    
+    if (success) {
+      sm.update(s);
+    }
     return success;
   }
   

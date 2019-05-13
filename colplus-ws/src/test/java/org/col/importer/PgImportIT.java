@@ -13,18 +13,20 @@ import jersey.repackaged.com.google.common.collect.Lists;
 import jersey.repackaged.com.google.common.collect.Maps;
 import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.session.SqlSession;
+import org.col.api.model.*;
+import org.col.api.vocab.*;
 import org.col.command.initdb.InitDbCmd;
+import org.col.common.tax.AuthorshipNormalizer;
 import org.col.config.ImporterConfig;
 import org.col.config.NormalizerConfig;
 import org.col.dao.*;
+import org.col.db.PgSetupRule;
+import org.col.db.mapper.*;
+import org.col.img.ImageService;
 import org.col.importer.neo.NeoDb;
 import org.col.importer.neo.NeoDbFactory;
 import org.col.importer.neo.model.RankedName;
 import org.col.matching.NameIndexFactory;
-import org.col.api.model.*;
-import org.col.api.vocab.*;
-import org.col.db.PgSetupRule;
-import org.col.db.mapper.*;
 import org.gbif.dwc.terms.Term;
 import org.gbif.dwc.terms.UnknownTerm;
 import org.gbif.nameparser.api.Rank;
@@ -39,6 +41,7 @@ import static org.junit.Assert.*;
  */
 public class PgImportIT {
   
+  private static final AuthorshipNormalizer aNormalizer = AuthorshipNormalizer.createWithAuthormap();
   private NeoDb store;
   private NormalizerConfig cfg;
   private ImporterConfig icfg = new ImporterConfig();
@@ -74,7 +77,7 @@ public class PgImportIT {
     }
     
     tdao = new TaxonDao(PgSetupRule.getSqlSessionFactory());
-    ndao = new NameDao(PgSetupRule.getSqlSessionFactory());
+    ndao = new NameDao(PgSetupRule.getSqlSessionFactory(), aNormalizer);
     rdao = new ReferenceDao(PgSetupRule.getSqlSessionFactory());
   }
   
@@ -107,12 +110,12 @@ public class PgImportIT {
       // normalize
       store = NeoDbFactory.create(dataset.getKey(), 1, cfg);
       store.put(dataset);
-      Normalizer norm = new Normalizer(store, source, NameIndexFactory.memory(PgSetupRule.getSqlSessionFactory()));
+      Normalizer norm = new Normalizer(store, source, NameIndexFactory.memory(PgSetupRule.getSqlSessionFactory(), aNormalizer), ImageService.passThru());
       norm.call();
       
       // import into postgres
       store = NeoDbFactory.open(dataset.getKey(), 1, cfg);
-      PgImport importer = new PgImport(dataset.getKey(), store, PgSetupRule.getSqlSessionFactory(), icfg);
+      PgImport importer = new PgImport(dataset.getKey(), store, PgSetupRule.getSqlSessionFactory(), aNormalizer, icfg);
       importer.call();
       
     } catch (Exception e) {
@@ -148,37 +151,31 @@ public class PgImportIT {
   @Test
   public void testPublishedIn() throws Exception {
     normalizeAndImport(DWCA, 0);
+
+    Name trametes_modesta = ndao.get(dataset.getKey(), "324805");
     
-    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
-      
-      Name trametes_modesta = ndao.get(dataset.getKey(), "324805");
-      
-      Reference pubIn = rdao.get(dataset.getKey(), trametes_modesta.getPublishedInId(), trametes_modesta.getPublishedInPage());
-      assertEquals("Norw. Jl Bot. 19: 236 (1972)", pubIn.getCitation());
-      assertEquals(".neodb.6aOv", pubIn.getId());
-    }
+    Reference pubIn = rdao.get(dataset.getKey(), trametes_modesta.getPublishedInId(), trametes_modesta.getPublishedInPage());
+    assertEquals("Norw. Jl Bot. 19: 236 (1972)", pubIn.getCitation());
+    assertEquals(".neodb.aW6r", pubIn.getId());
   }
   
   @Test
   public void testDwca1() throws Exception {
     normalizeAndImport(DWCA, 1);
     
-    // verify results
-    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
-      // check basionym
-      Name n1006 = ndao.get(dataset.getKey(), "1006");
-      assertEquals("Leontodon taraxacoides", n1006.getScientificName());
-      
-      List<NameRelation> rels = ndao.relations(dataset.getKey(), n1006.getId());
-      assertEquals(1, rels.size());
-      
-      Name bas = ndao.getBasionym(dataset.getKey(), n1006.getId());
-      assertEquals("Leonida taraxacoida", bas.getScientificName());
-      assertEquals(n1006.getHomotypicNameId(), bas.getHomotypicNameId());
-      
-      // check taxon parents
-      assertParents(tdao, "1006", "102", "30", "20", "10", "1");
-    }
+    // check basionym
+    Name n1006 = ndao.get(dataset.getKey(), "1006");
+    assertEquals("Leontodon taraxacoides", n1006.getScientificName());
+    
+    List<NameRelation> rels = ndao.relations(dataset.getKey(), n1006.getId());
+    assertEquals(1, rels.size());
+    
+    Name bas = ndao.getBasionym(dataset.getKey(), n1006.getId());
+    assertEquals("Leonida taraxacoida", bas.getScientificName());
+    assertEquals(n1006.getHomotypicNameId(), bas.getHomotypicNameId());
+    
+    // check taxon parents
+    assertParents(tdao, "1006", "102", "30", "20", "10", "1");
   }
   
   @Test

@@ -20,7 +20,9 @@ import org.slf4j.LoggerFactory;
 
 /**
  * A junit test rule that creates a {@link HikariDataSource} and SqlSessionFactory for the colplus postgres db and stops it the end.
- * The rule inits a new db and creates a draft col partition needed to host the names index.
+ * By default the rule inits a new db and creates a draft col partition needed to host the names index,
+ * but it can also be configured to run without wiping.
+ *
  * The rule was designed to share the pool across all tests of a test class
  * if it runs as a static {@link org.junit.ClassRule}.
  */
@@ -31,8 +33,18 @@ public class PgSetupRule extends ExternalResource {
   private static SqlSessionFactory sqlSessionFactory;
   private static PgConfig cfg;
   
+  private final boolean wipe;
+  
   public static PgConfig getCfg() {
     return cfg;
+  }
+  
+  public PgSetupRule() {
+    this.wipe = true;
+  }
+
+  public PgSetupRule(boolean wipe) {
+    this.wipe = wipe;
   }
   
   public static SqlSessionFactory getSqlSessionFactory() {
@@ -44,7 +56,11 @@ public class PgSetupRule extends ExternalResource {
     super.before();
     try {
       cfg = YamlUtils.read(PgConfig.class, "/pg-test.yaml");
-      initDb(cfg);
+      if (wipe) {
+        initDb(cfg);
+      } else {
+        setupMybatis(cfg);
+      }
     } catch (Exception e) {
       LOG.error("Pg setup error: {}", e.getMessage(), e);
       shutdown();
@@ -67,14 +83,7 @@ public class PgSetupRule extends ExternalResource {
     }
   }
   
-  public static void initDb(PgConfig cfg) throws Exception {
-    try (Connection con = cfg.connect()) {
-      LOG.info("Init empty database schema");
-      wipeDB(con);
-      ScriptRunner runner = PgConfig.scriptRunner(con);
-      runner.runScript(Resources.getResourceAsReader(PgConfig.SCHEMA_FILE));
-      con.commit();
-    }
+  private static void setupMybatis(PgConfig cfg) throws Exception {
     LOG.info("Creating hikari pool for Postgres server {}/{}", cfg.host, cfg.database);
     HikariConfig hikari = cfg.hikariConfig();
     hikari.setAutoCommit(false);
@@ -83,6 +92,18 @@ public class PgSetupRule extends ExternalResource {
     // configure single mybatis session factory
     LOG.info("Configure MyBatis session factory");
     sqlSessionFactory = MybatisFactory.configure(dataSource, "test");
+  }
+  
+  public static void initDb(PgConfig cfg) throws Exception {
+    try (Connection con = cfg.connect()) {
+      LOG.info("Init empty database schema");
+      wipeDB(con);
+      ScriptRunner runner = PgConfig.scriptRunner(con);
+      runner.runScript(Resources.getResourceAsReader(PgConfig.SCHEMA_FILE));
+      con.commit();
+    }
+  
+    setupMybatis(cfg);
     
     // setup draft/names index partition
     partition(Datasets.DRAFT_COL);

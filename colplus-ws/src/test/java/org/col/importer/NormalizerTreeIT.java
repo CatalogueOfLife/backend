@@ -20,6 +20,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.col.api.model.Dataset;
 import org.col.api.vocab.DataFormat;
 import org.col.config.NormalizerConfig;
+import org.col.img.ImageService;
 import org.col.importer.neo.NeoDb;
 import org.col.importer.neo.NeoDbFactory;
 import org.col.importer.neo.model.NeoProperties;
@@ -141,7 +142,7 @@ public class NormalizerTreeIT {
       d.setDataFormat(format);
       store.put(d);
       
-      Normalizer norm = new Normalizer(store, source, NameIndexFactory.passThru());
+      Normalizer norm = new Normalizer(store, source, NameIndexFactory.passThru(), ImageService.passThru());
       norm.call();
       // reopen the neo db
       store = NeoDbFactory.open(datasetKey, 1, cfg);

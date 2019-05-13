@@ -10,7 +10,8 @@ import javax.ws.rs.core.MediaType;
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.model.Duplicate;
 import org.col.api.model.Page;
-import org.col.api.vocab.EqualityMode;
+import org.col.api.vocab.MatchingMode;
+import org.col.api.vocab.NameCategory;
 import org.col.api.vocab.TaxonomicStatus;
 import org.col.dao.DuplicateDao;
 import org.gbif.nameparser.api.Rank;
@@ -30,15 +31,18 @@ public class DuplicateResource {
   
   @GET
   public List<Duplicate> find(@PathParam("datasetKey") int datasetKey,
-                              @QueryParam("mode") EqualityMode mode,
-                              @QueryParam("rank") Rank rank,
+                              @QueryParam("mode") MatchingMode mode,
+                              @QueryParam("minSize") Integer minSize,
+                              @QueryParam("sectorKey") Integer sectorKey,
+                              @QueryParam("category") NameCategory category,
+                              @QueryParam("rank") Set<Rank> ranks,
                               @QueryParam("status") Set<TaxonomicStatus> status,
                               @QueryParam("parentDifferent") Boolean parentDifferent,
+                              @QueryParam("authorshipDifferent") Boolean authorshipDifferent,
                               @QueryParam("withDecision") Boolean withDecision,
                               @Valid @BeanParam Page page, @Context SqlSession session) {
     DuplicateDao dao = new DuplicateDao(session);
-    //Set<TaxonomicStatus> statusSet = status == null ? Collections.emptySet() : new HashSet<>(status);
-    return dao.find(datasetKey, mode, rank, status, parentDifferent, withDecision, page);
+    return dao.find(mode, minSize, datasetKey, sectorKey, category, ranks, status, authorshipDifferent, parentDifferent, withDecision, page);
   }
   
 }

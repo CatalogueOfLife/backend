@@ -5,13 +5,17 @@ import java.util.Set;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import org.apache.ibatis.session.SqlSession;
 import org.col.api.TestEntityGenerator;
 import org.col.api.model.IssueContainer;
 import org.col.api.model.Name;
 import org.col.api.model.NameMatch;
 import org.col.api.vocab.MatchType;
+import org.col.common.tax.AuthorshipNormalizer;
 import org.col.db.PgSetupRule;
+import org.col.db.mapper.NameMapper;
 import org.col.db.mapper.TestDataRule;
+import org.col.importer.IdGenerator;
 import org.col.parser.NameParser;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
@@ -23,6 +27,8 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class NameIndexMapDBTest {
+  static final AuthorshipNormalizer aNormalizer = AuthorshipNormalizer.createWithAuthormap();
+
   NameIndex ni;
   
   @ClassRule
@@ -39,11 +45,15 @@ public class NameIndexMapDBTest {
   }
   
   void setupApple() throws Exception {
-    ni = NameIndexFactory.memory(11, PgSetupRule.getSqlSessionFactory());
+    ni = NameIndexFactory.memory(PgSetupRule.getSqlSessionFactory(), aNormalizer);
+    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession()) {
+      NameMapper nm = session.getMapper(NameMapper.class);
+      nm.processDataset(11, ctx -> ni.add(ctx.getResultObject()));
+    }
   }
   
   void setupTest() throws Exception {
-    ni = NameIndexFactory.memory(PgSetupRule.getSqlSessionFactory());
+    ni = NameIndexFactory.memory(PgSetupRule.getSqlSessionFactory(), aNormalizer);
     Collection<Name> names = Lists.newArrayList(
         name(1, "Animalia", Rank.KINGDOM, NomCode.ZOOLOGICAL),
         
@@ -88,18 +98,6 @@ public class NameIndexMapDBTest {
     assertMatch(5, "Larus erfunda", Rank.SPECIES, null);
     assertMatch(4, "Larus fusca", Rank.SPECIES, null);
     assertMatch(3, "Larus fuscus", Rank.SPECIES, null);
-  }
-  
-  @Test
-  public void testHasids() throws Exception {
-    assertEquals("l5w5nl", NameIndexMapDB.HASHIDS.encode(1000));
-    assertEquals("l5r34.", NameIndexMapDB.HASHIDS.encode(10000));
-    assertEquals("l54--r", NameIndexMapDB.HASHIDS.encode(100000));
-    assertEquals("5wb-9m", NameIndexMapDB.HASHIDS.encode(1000000));
-    assertEquals("575-qx", NameIndexMapDB.HASHIDS.encode(10000000));
-    assertEquals("5w4-q$n", NameIndexMapDB.HASHIDS.encode(20000000));
-    assertEquals("5qaej9m", NameIndexMapDB.HASHIDS.encode(50000000));
-    assertEquals("9q5+9_ry", NameIndexMapDB.HASHIDS.encode(Integer.MAX_VALUE));
   }
   
   @Test
@@ -168,11 +166,9 @@ public class NameIndexMapDBTest {
   
   static Name name(Integer key, String name, Rank rank, NomCode code) {
     Name n = NameParser.PARSER.parse(name, rank, IssueContainer.VOID).get().getName();
-    if (key != null) {
-      n.setId(NameIndexMapDB.HASHIDS.encode(key));
-    }
     n.setRank(rank);
     n.setCode(code);
+    n.setAuthorshipNormalized(Lists.newArrayList("serialisation", "test", "only"));
     return TestEntityGenerator.setUserDate(n);
   }
   
@@ -205,7 +201,7 @@ public class NameIndexMapDBTest {
   }
   
   private NameMatch assertMatch(int key, String name, Rank rank, NomCode code) {
-    final String id = NameIndexMapDB.HASHIDS.encode(key);
+    final String id = IdGenerator.NAME_INDEX_IDS.id(key);
     NameMatch m = match(name, rank, code);
     if (!m.hasMatch() || !id.equals(m.getName().getId())) {
       System.out.println(m);

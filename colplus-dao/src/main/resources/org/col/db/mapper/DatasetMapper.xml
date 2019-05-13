@@ -109,7 +109,11 @@
         deleted IS NULL
         <if test="req != null">
             <if test="req.q != null">
-                AND doc @@ plainto_tsquery('simple2', #{req.q})
+                AND (
+                    f_unaccent(title) ILIKE f_unaccent('%${req.q}%')
+                    OR f_unaccent(alias) ILIKE f_unaccent('%${req.q}%')
+                    OR doc @@ plainto_tsquery('simple2', #{req.q})
+                )
             </if>
             <if test="req.code != null">
                 AND code=#{req.code}
@@ -265,6 +269,12 @@
           = (<include refid="PROPS" />, now())
         WHERE key = #{key}
     </update>
+
+    <select id="lastImportAttempt" resultType="Integer">
+        SELECT last_data_import_attempt
+        FROM dataset
+        WHERE key=#{key}
+    </select>
 
     <update id="updateLastImport" parameterType="integer">
         UPDATE dataset

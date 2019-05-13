@@ -33,7 +33,7 @@ public class NormalizerColdpIT extends NormalizerITBase {
   
       t = usageByNameID("1006-s3");
       assertTrue(t.isSynonym());
-      assertEquals(".neodb._yV_", t.getId());
+      assertEquals("1006-1006-s3", t.getId());
       assertEquals("1006-s3", t.usage.getName().getId());
       assertEquals("Leonida taraxacoida Vill.", t.usage.getName().canonicalNameComplete());
   

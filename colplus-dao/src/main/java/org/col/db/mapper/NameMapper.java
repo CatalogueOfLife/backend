@@ -47,4 +47,6 @@ public interface NameMapper extends DatasetCRUDMapper<Name> {
    */
   int deleteOrphans(@Param("datasetKey") int datasetKey);
   
+  int deleteBySector(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
+  
 }

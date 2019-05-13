@@ -6,9 +6,6 @@
 
 -- origin:  0=EXTERNAL, 1=UPLOADED, 2=MANAGED
 INSERT INTO dataset (key, origin, type, names_index_contributor, title, import_frequency, created_by, modified_by, data_format, data_access)
-VALUES ('1000', 0, 1, true, 'CoL Management Classification', 1, 0, 0, 0, 'https://raw.githubusercontent.com/Sp2000/colplus-repo/master/ACEF/higher-classification.dwca.zip');
-
-INSERT INTO dataset (key, origin, type, names_index_contributor, title, import_frequency, created_by, modified_by, data_format, data_access)
 SELECT x.id+1000, 0, 1, true, 'GSD ' || x.id, 1, 0, 0, 1, 'https://raw.githubusercontent.com/Sp2000/colplus-repo/master/ACEF/' || x.id || '.tar.gz'
 FROM (SELECT unnest(array[
 10,
@@ -410,10 +407,10 @@ INSERT INTO dataset (key, origin, type, names_index_contributor, code, title, im
 ('1203', 0, 1, true,  4, 'ThripsWiki',        1, 0, 0, 1, 'https://github.com/Sp2000/data-thrips/archive/master.zip'),
 ('1204', 0, 1, true,  4, 'StaphBase',         1, 0, 0, 3, 'https://github.com/Sp2000/data-staphbase/archive/master.zip');
 
-UPDATE dataset set alias=title
-WHERE key IN (1027,1055,1074,1140,1141,1163,1202,1203,1204,1600,1601,1602,1700);
+UPDATE dataset set alias=title WHERE key IN (1027,1055,1074,1140,1141,1163,1202,1203,1204,1600,1601,1602,1700);
 
-
+INSERT INTO dataset (key, origin, type, names_index_contributor, code, title, alias, import_frequency, created_by, modified_by, data_format, data_access)
+VALUES ('1000', 0, 1, true, null, 'Col Hierarchy', 'ColH', 1, 0, 0, 3, 'https://github.com/Sp2000/col-hierarchy/archive/master.zip');
 
 
 --------------------------
@@ -436,10 +433,28 @@ UPDATE dataset SET
 WHERE key >= 1700 and key < 1800;
 
 
+--------------------------
+-- TEST DATASETS
+--   since late 2018 managed in their own github repos
+--------------------------
+
+-- for enums we use the int ordinal, i.e. array index starting with 0:
+-- origin:  http://api.col.plus/vocab/datasetorigin
+--          0=EXTERNAL, 1=UPLOADED, 2=MANAGED
+-- type:  http://api.col.plus/vocab/datasettype
+--          0=nomenclatural, 1=global, 2=regional, 3=personal, 4=other
+-- code:  http://api.col.plus/vocab/nomCode
+--          0=bacterial, 1=botanical, 2=cultivars, 3=virus, 4=zoological
+-- data_format:  http://api.col.plus/vocab/dataformat
+--          0=dwca, 1=acef, 2=tcs, 3=coldp
+
+-- use keys from range 1000-1500 for CoL GSD IDs+1000		      
+			      
 INSERT INTO dataset (origin, type, code, title, import_frequency, created_by, modified_by, data_format, data_access) VALUES
-(0, 4, 1, 'ColDP Example',     7, 0, 0, 3, 'https://github.com/Sp2000/coldp/archive/master.zip'),
-(0, 4, 4, 'Testing Data ACEF', 7, 0, 0, 1, 'https://github.com/Sp2000/data-testing/archive/master.zip'),
-(0, 4, 4, 'Testing Data ColDP',7, 0, 0, 3, 'https://github.com/Sp2000/data-testing/archive/master.zip');
+(0, 4, 1, 'ColDP Example',           7, 0, 0, 3, 'https://github.com/Sp2000/coldp/archive/master.zip'),
+(0, 4, 4, 'Testing Data ACEF',       7, 0, 0, 1, 'https://github.com/Sp2000/data-testing/archive/master.zip'),
+(0, 4, 4, 'Duplicates Testing Data', 7, 0, 0, 3, 'https://raw.githubusercontent.com/Sp2000/data-unit-tests/master/duplicates.zip'),
+(0, 4, 4, 'Testing Data ColDP',      7, 0, 0, 3, 'https://github.com/Sp2000/data-testing/archive/master.zip');
 
 
 

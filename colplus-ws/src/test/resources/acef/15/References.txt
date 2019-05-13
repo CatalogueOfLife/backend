@@ -1,0 +1,6 @@
+"ReferenceID","Authors","Year","Title","Details"
+"Vir-2","King, A.M.Q., Adams, M.J., Carstens, E.B. and Lefkowitz, E.J. (Eds)","2012"," Virus taxonomy: classification and nomenclature of viruses: Ninth Report "
+of the International Committee on Taxonomy of Viruses"," San Diego: Elsevier."
+"Vir-1","Adams MJ, Carstens EB","2012"," Ratification vote on taxonomic proposals to the"
+International Committee on Taxonomy of Viruses"," Arch Virol. 2012"
+Jul;157(7):1411-22. Epub 2012 Apr 6. PubMed PMID: 22481600."

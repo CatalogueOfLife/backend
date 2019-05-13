@@ -14,6 +14,7 @@ import org.col.api.vocab.DataFormat;
 import org.col.api.vocab.DatasetType;
 import org.col.api.vocab.License;
 import org.col.config.NormalizerConfig;
+import org.col.img.ImageService;
 import org.col.importer.neo.NeoDb;
 import org.col.importer.neo.NeoDbFactory;
 import org.col.importer.reference.ReferenceFactory;
@@ -56,7 +57,7 @@ public class ColdpInserterTest {
       URL url = getClass().getResource(resource);
       Path coldp = Paths.get(url.toURI());
   
-      ColdpInserter ins = new ColdpInserter(store, coldp, new ReferenceFactory(store));
+      ColdpInserter ins = new ColdpInserter(store, coldp, new ReferenceFactory(store), ImageService.passThru());
       ins.insertAll();
 
     } catch (IOException | URISyntaxException e) {
@@ -69,7 +70,7 @@ public class ColdpInserterTest {
     URL url = getClass().getResource("/coldp/0");
     Path coldp0 = Paths.get(url.toURI());
     
-    ColdpInserter ins = new ColdpInserter(null, coldp0, null);
+    ColdpInserter ins = new ColdpInserter(null, coldp0, null, ImageService.passThru());
     Dataset d = ins.readMetadata().get();
     
     assertEquals(DatasetType.OTHER, d.getType());

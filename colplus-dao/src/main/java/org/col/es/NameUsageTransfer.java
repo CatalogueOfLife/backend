@@ -17,8 +17,8 @@ import org.col.api.model.Synonym;
 import org.col.api.model.Taxon;
 import org.col.api.model.VernacularName;
 import org.col.api.search.NameUsageWrapper;
-import org.col.api.vocab.NameField;
 import org.col.common.tax.SciNameNormalizer;
+import org.col.api.vocab.NameField;
 import org.col.es.model.EsNameUsage;
 import org.col.es.model.Monomial;
 

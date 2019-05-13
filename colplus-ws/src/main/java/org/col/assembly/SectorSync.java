@@ -23,14 +23,15 @@ import org.slf4j.LoggerFactory;
 import static org.col.dao.DatasetImportDao.countMap;
 
 /**
- * Syncs/imports source data for a given sector into the assembled catalgoue
+ * Syncs/imports source data for a given sector into the assembled catalogue
  */
 public class SectorSync extends SectorRunnable {
   private static final Logger LOG = LoggerFactory.getLogger(SectorSync.class);
   private static Set<EntityType> COPY_DATA = ImmutableSet.of(
       EntityType.REFERENCE,
       EntityType.VERNACULAR,
-      EntityType.DISTRIBUTION
+      EntityType.DISTRIBUTION,
+      EntityType.REFERENCE
   );
   private NamesTreeDao treeDao;
   
@@ -149,78 +150,71 @@ public class SectorSync extends SectorRunnable {
 
   private void processTree() {
     try (SqlSession session = factory.openSession(ExecutorType.BATCH,false)) {
-      TaxonMapper tm = session.getMapper(TaxonMapper.class);
+      NameUsageMapper um = session.getMapper(NameUsageMapper.class);
       final Set<String> blockedIds = decisions.values().stream()
           .filter(ed -> ed.getMode().equals(EditorialDecision.Mode.BLOCK))
           .map(ed -> ed.getSubject().getId())
           .collect(Collectors.toSet());
       LOG.info("Traverse taxon tree, blocking {} nodes", blockedIds.size());
       final TreeCopyHandler treeHandler = new TreeCopyHandler(session);
-      tm.processTree(datasetKey, null, sector.getSubject().getId(), blockedIds, false, treeHandler);
+      um.processTree(datasetKey, null, sector.getSubject().getId(), blockedIds, null, true, false, treeHandler);
       session.commit();
     }
   }
   
-  class TreeCopyHandler implements ResultHandler<Taxon> {
+  class TreeCopyHandler implements ResultHandler<NameUsageBase> {
     final SqlSession session;
-    final SynonymMapper sMapper;
+    final ReferenceMapper rMapper;
     int counter = 0;
     final Map<String, String> ids = new HashMap<>();
+    final Map<String, String> refIds = new HashMap<>();
   
     TreeCopyHandler(SqlSession session) {
       this.session = session;
-      sMapper = session.getMapper(SynonymMapper.class);
+      rMapper = session.getMapper(ReferenceMapper.class);
     }
     
     @Override
-    public void handleResult(ResultContext<? extends Taxon> ctxt) {
-      Taxon tax = ctxt.getResultObject();
-      tax.setSectorKey(sector.getKey());
-      tax.getName().setSectorKey(sector.getKey());
+    public void handleResult(ResultContext<? extends NameUsageBase> ctxt) {
+      NameUsageBase u = ctxt.getResultObject();
+      u.setSectorKey(sector.getKey());
+      u.getName().setSectorKey(sector.getKey());
   
-      if (decisions.containsKey(tax.getId())) {
-        if (applyDecision(tax, decisions.get(tax.getId()))) {
+      if (decisions.containsKey(u.getId())) {
+        if (applyDecision(u, decisions.get(u.getId()))) {
           // skip this taxon, but include children
           // use taxons parent also as the parentID for this so children link one level up
-          ids.put(tax.getId(), ids.get(tax.getParentId()));
+          ids.put(u.getId(), ids.get(u.getParentId()));
           return;
         }
       }
       
       String parentID;
       // treat root node according to sector mode
-      if (sector.getSubject().getId().equals(tax.getId())) {
+      if (sector.getSubject().getId().equals(u.getId())) {
         if (sector.getMode() == Sector.Mode.MERGE) {
           // in merge mode the root node itself is not copied
           // but all child taxa should be linked to the sector target, so remember ID:
-          ids.put(tax.getId(), sector.getTarget().getId());
+          ids.put(u.getId(), sector.getTarget().getId());
           return;
         }
         // we want to attach the root node under the sector target
         parentID = sector.getTarget().getId();
       } else {
         // all non root nodes have newly created parents
-        parentID = ids.get(tax.getParentId());
+        parentID = ids.get(u.getParentId());
       }
+      DatasetID parent = new DatasetID(catalogueKey, parentID);
 
-      // Taxon: copy name, taxon, refs, vernaculars, distributions
-      // this assigns a new taxonID !!!
-      DatasetID orig = TaxonDao.copyTaxon(session, tax, catalogueKey, parentID, user.getKey(), COPY_DATA, this::lookupReference);
-      // remember old to new id mapping
-      ids.put(orig.getId(), tax.getId());
-      
-      // Synonyms
-      DatasetID acc = new DatasetID(tax);
-      for (Synonym syn : sMapper.listByTaxon(orig.getDatasetKey(), orig.getId())) {
-        if (syn.getId() != null && decisions.containsKey(syn.getId())) {
-          if (applyDecision(syn, decisions.get(syn.getId()))) {
-            continue;
-          }
-        }
-        // copy synonym, name, syn, refs
-        syn.getName().setSectorKey(sector.getKey());
-        SynonymDao.copySynonym(session, syn, acc, user.getKey(), this::lookupReference);
+      // copy usage with all associated information. This assigns a new id !!!
+      DatasetID orig;
+      if (u.isTaxon()) {
+        orig = TaxonDao.copyTaxon(session, (Taxon) u, parent, user.getKey(), COPY_DATA, this::lookupReference, this::lookupReference);
+      } else {
+        orig = SynonymDao.copySynonym(session, (Synonym) u, parent, user.getKey(), this::lookupReference);
       }
+      // remember old to new id mapping
+      ids.put(orig.getId(), u.getId());
       
       // commit in batches
       if (counter++ % 1000 == 0) {
@@ -232,62 +226,76 @@ public class SectorSync extends SectorRunnable {
     /**
      * @return true if the taxon should be skipped
      */
-    private boolean applyDecision(Taxon tax, EditorialDecision ed) {
+    private boolean applyDecision(NameUsageBase u, EditorialDecision ed) {
       switch (ed.getMode()) {
         case BLOCK:
-          throw new IllegalStateException("Blocked taxon "+tax.getId()+" should not have been traversed");
+          throw new IllegalStateException("Blocked usage "+u.getId()+" should not have been traversed");
         case CHRESONYM:
           return true;
         case UPDATE:
-          updateUsage(tax, ed);
-          if (ed.getLifezones() != null) {
-            tax.setLifezones(ed.getLifezones());
+          if (ed.getName() != null) {
+            //TODO: update name
           }
-          if (ed.getFossil() != null) {
-            tax.setFossil(ed.getFossil());
+          if (ed.getStatus() != null) {
+            try {
+              u.setStatus(ed.getStatus());
+            } catch (IllegalArgumentException e) {
+              LOG.warn("Cannot convert {} {} {} into {}", u.getName().getRank(), u.getStatus(), u.getName().canonicalNameComplete(), ed.getStatus(), e);
+            }
           }
-          if (ed.getRecent() != null) {
-            tax.setRecent(ed.getRecent());
+          if (u.isTaxon()) {
+            Taxon t = (Taxon) u;
+            if (ed.getLifezones() != null) {
+              t.setLifezones(ed.getLifezones());
+            }
+            if (ed.getFossil() != null) {
+              t.setFossil(ed.getFossil());
+            }
+            if (ed.getRecent() != null) {
+              t.setRecent(ed.getRecent());
+            }
           }
       }
       return false;
     }
   
-    /**
-     * @return true if the synonym should be skipped
-     */
-    private boolean applyDecision(Synonym syn, EditorialDecision ed) {
-      switch (ed.getMode()) {
-        case BLOCK:
-          return true;
-        case CHRESONYM:
-          return true;
-        case UPDATE:
-          updateUsage(syn, ed);
-      }
-      return false;
-    }
-  
-    private void updateUsage(NameUsage u, EditorialDecision ed) {
-      if (ed.getName() != null) {
-        //TODO: update usage
-      }
-      if (ed.getStatus() != null) {
-        try {
-          u.setStatus(ed.getStatus());
-        } catch (IllegalArgumentException e) {
-          LOG.warn("Cannot convert {} {} {} into {}", u.getName().getRank(), u.getStatus(), u.getName().canonicalNameComplete(), ed.getStatus(), e);
+    private String lookupReference(String refID) {
+      if (refID != null) {
+        if (refIds.containsKey(refID)) {
+          // we have seen this ref before
+          return refIds.get(refID);
         }
+        // not seen before, load full reference
+        Reference r = rMapper.get(sector.getDatasetKey(), refID);
+        return lookupReference(r);
       }
+      return null;
     }
-
+    
     private String lookupReference(Reference ref) {
       if (ref != null) {
-        //TODO: lookup existing refs from other sectors
-        if (1 == 2) {
+        if (refIds.containsKey(ref.getId())) {
+          // we have seen this ref before
+          return refIds.get(ref.getId());
+        }
+        // sth new?
+        List<Reference> matches = rMapper.find(catalogueKey, sector.getKey(), ref.getCitation());
+        if (matches.isEmpty()) {
+          // insert new ref
           ref.setDatasetKey(catalogueKey);
+          ref.setSectorKey(sector.getKey());
           ref.applyUser(user);
-          // TODO: Create ref
+          DatasetID origID = ReferenceDao.copyReference(session, ref, catalogueKey, user.getKey());
+          refIds.put(origID.getId(), ref.getId());
+          return ref.getId();
+          
+        } else {
+          if (matches.size() > 1) {
+            LOG.warn("{} duplicate references in catalogue {} with citation {}", matches.size(), catalogueKey, ref.getCitation());
+          }
+          String refID = matches.get(0).getId();
+          refIds.put(ref.getId(), refID);
+          return refID;
         }
       }
       return null;
@@ -297,14 +305,18 @@ public class SectorSync extends SectorRunnable {
   private void deleteOld() {
     int count;
     try (SqlSession session = factory.openSession(true)) {
-      NameUsageMapper m = session.getMapper(NameUsageMapper.class);
-      count = m.deleteBySector(catalogueKey, sector.getKey());
+      NameUsageMapper um = session.getMapper(NameUsageMapper.class);
+      count = um.deleteBySector(catalogueKey, sector.getKey());
       LOG.info("Deleted {} existing taxa with their synonyms and related information from sector {}", count, sector.getKey());
+  
+      NameMapper nm = session.getMapper(NameMapper.class);
+      count = nm.deleteBySector(catalogueKey, sector.getKey());
+      LOG.info("Deleted {} names from sector {}", count, sector.getKey());
+  
+      ReferenceMapper rm = session.getMapper(ReferenceMapper.class);
+      count = rm.deleteBySector(catalogueKey, sector.getKey());
+      LOG.info("Deleted {} references from sector {}", count, sector.getKey());
     }
-    
-    // TODO: delete orphaned names
-    count = 0;
-    LOG.info("Deleted {} orphaned names from sector {}", count, sector.getKey());
   }
   
 }

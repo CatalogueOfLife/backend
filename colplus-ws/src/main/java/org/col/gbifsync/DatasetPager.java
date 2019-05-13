@@ -1,7 +1,6 @@
 package org.col.gbifsync;
 
 import java.net.URI;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
@@ -15,12 +14,12 @@ import javax.ws.rs.core.UriBuilder;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import org.col.config.GbifConfig;
 import org.col.api.model.Dataset;
 import org.col.api.model.Page;
 import org.col.api.vocab.DataFormat;
 import org.col.api.vocab.DatasetType;
 import org.col.api.vocab.License;
+import org.col.config.GbifConfig;
 import org.col.parser.LicenseParser;
 import org.col.parser.SafeParser;
 import org.col.parser.UriParser;
@@ -218,7 +217,7 @@ public class DatasetPager {
     public GCitation citation;
     public String license;
     public String modified;
-    public LocalDate pubDate;
+    public LocalDateTime pubDate;
     public List<GEndpoint> endpoints;
     public List<GContact> contacts;
   }

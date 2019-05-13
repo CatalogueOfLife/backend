@@ -1,0 +1,6 @@
+key,line,file,type,issues
+1,1,AcceptedSpecies.txt,acef:AcceptedSpecies,"{1,2,3,4}"
+2,2,AcceptedSpecies.txt,acef:AcceptedSpecies,{10}
+3,3,Synonyms.txt,acef:Synonyms,"{2,13}"
+4,4,Synonyms.txt,acef:Synonyms,{}
+5,5,AcceptedSpecies.txt,acef:AcceptedSpecies,

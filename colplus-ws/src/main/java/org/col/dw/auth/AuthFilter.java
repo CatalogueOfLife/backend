@@ -132,7 +132,7 @@ public class AuthFilter implements ContainerRequestFilter {
   private Optional<ColUser> doJWT(String token) {
     try {
       Jws<Claims> jws = jwt.parse(token);
-      return Optional.of(Integer.valueOf(jws.getBody().getSubject()))
+      return Optional.of(jws.getBody().getSubject())
           .map(idService::get);
       
     } catch (JwtException | IllegalArgumentException ex) {

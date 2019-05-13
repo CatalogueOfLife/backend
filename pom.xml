@@ -45,6 +45,7 @@
             liquibase, freemarker, jetty, jackson, metrics, etc. -->
         <assertj.version>3.11.1</assertj.version>
         <citeproc.version>1.0.1</citeproc.version>
+        <commons-collections4.version>4.3</commons-collections4.version>
         <commons-compress.version>1.18</commons-compress.version>
         <commons-io.version>2.6</commons-io.version>
         <dropwizard.version>1.3.8</dropwizard.version>
@@ -138,7 +139,6 @@
 
     <modules>
         <module>colplus-api</module>
-        <module>colplus-common</module>
         <module>colplus-dao</module>
         <module>colplus-parser</module>
         <module>colplus-ws</module>
@@ -169,11 +169,6 @@
                 <version>${project.version}</version>
                 <classifier>tests</classifier>
                 <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.col</groupId>
-                <artifactId>colplus-common</artifactId>
-                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.col</groupId>
@@ -461,6 +456,11 @@
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-compress</artifactId>
                 <version>${commons-compress.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-collections4</artifactId>
+                <version>${commons-collections4.version}</version>
             </dependency>
 
             <!-- other -->

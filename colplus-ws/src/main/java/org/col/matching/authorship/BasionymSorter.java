@@ -20,10 +20,6 @@ public class BasionymSorter {
   private static final Logger LOG = LoggerFactory.getLogger(BasionymSorter.class);
   private AuthorComparator authorComp;
   
-  public BasionymSorter() {
-    this.authorComp = AuthorComparator.createWithAuthormap();
-  }
-  
   public BasionymSorter(AuthorComparator authorComp) {
     this.authorComp = authorComp;
   }
