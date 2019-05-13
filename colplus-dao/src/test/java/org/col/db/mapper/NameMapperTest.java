@@ -45,6 +45,22 @@ public class NameMapperTest extends MapperTestBase<NameMapper> {
   }
   
   @Test
+  public void update() throws Exception {
+    Name n = TestEntityGenerator.newName("sk1");
+    mapper().create(n);
+    commit();
+    
+    n.setAuthorship("Berta & Tomate");
+    mapper().update(n);
+    commit();
+    
+    Name n2 = mapper().get(n.getDatasetKey(), n.getId());
+    
+    printDiff(n, n2);
+    assertEquals(n, n2);
+  }
+  
+  @Test
   public void roundtrip() throws Exception {
     Name n1 = TestEntityGenerator.newName("sk1");
     nameMapper.create(n1);

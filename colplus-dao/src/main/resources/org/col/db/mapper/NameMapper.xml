@@ -227,8 +227,9 @@
     </insert>
 
     <update id="update" parameterType="Name" keyProperty="id">
-        UPDATE name_${datasetKey} (<include refid="COLS" />, created, modified)
-        VALUES (<include refid="PROPS" />, now(), now())
+        UPDATE name_${datasetKey}
+        SET (<include refid="COLS" />, created, modified) = (<include refid="PROPS" />, now(), now())
+        WHERE id = #{id}
     </update>
 
     <delete id="delete" parameterType="map">
