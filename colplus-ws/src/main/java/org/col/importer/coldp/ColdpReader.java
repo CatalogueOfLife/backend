@@ -7,7 +7,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import com.google.common.collect.ImmutableSet;
-import org.col.api.datapackage.ColTerm;
+import org.col.api.datapackage.ColdpTerm;
 import org.col.common.io.PathUtils;
 import org.col.csv.CsvReader;
 import org.col.csv.Schema;
@@ -21,17 +21,17 @@ import org.slf4j.LoggerFactory;
  */
 public class ColdpReader extends CsvReader {
   private static final Logger LOG = LoggerFactory.getLogger(ColdpReader.class);
-  private static Set<ColTerm> ID_SCHEMAS = ImmutableSet.of(ColTerm.Reference, ColTerm.Name, ColTerm.Taxon);
-  private static Set<ColTerm> NAMEID_SCHEMAS = ImmutableSet.of(ColTerm.Synonym, ColTerm.Taxon, ColTerm.NameRel);
-  private static Set<ColTerm> TAXID_SCHEMAS = ImmutableSet.of(
-      ColTerm.Synonym, ColTerm.Description, ColTerm.Distribution, ColTerm.Media, ColTerm.VernacularName
+  private static Set<ColdpTerm> ID_SCHEMAS = ImmutableSet.of(ColdpTerm.Reference, ColdpTerm.Name, ColdpTerm.Taxon);
+  private static Set<ColdpTerm> NAMEID_SCHEMAS = ImmutableSet.of(ColdpTerm.Synonym, ColdpTerm.Taxon, ColdpTerm.NameRel);
+  private static Set<ColdpTerm> TAXID_SCHEMAS = ImmutableSet.of(
+      ColdpTerm.Synonym, ColdpTerm.Description, ColdpTerm.Distribution, ColdpTerm.Media, ColdpTerm.VernacularName
   );
-  private static Set<ColTerm> REFID_SCHEMAS = ImmutableSet.of(
-      ColTerm.Description, ColTerm.Distribution, ColTerm.VernacularName
+  private static Set<ColdpTerm> REFID_SCHEMAS = ImmutableSet.of(
+      ColdpTerm.Description, ColdpTerm.Distribution, ColdpTerm.VernacularName
   );
   static {
     // make sure we are aware of ColTerms
-    TermFactory.instance().registerTermEnum(ColTerm.class);
+    TermFactory.instance().registerTermEnum(ColdpTerm.class);
   }
   
   private File bibtex;
@@ -65,67 +65,71 @@ public class ColdpReader extends CsvReader {
   }
 
   private boolean hasReferences() {
-    return hasExtendedReferences() || hasSchema(ColTerm.Reference);
+    return hasExtendedReferences() || hasSchema(ColdpTerm.Reference);
   }
   
   protected void validate() throws NormalizationFailedException.SourceInvalidException {
     super.validate();
     
     // allow only COL row types
-    filterSchemas(rowType -> rowType instanceof ColTerm);
+    filterSchemas(rowType -> rowType instanceof ColdpTerm);
     
     // mandatory terms.
     // Fail early, if missing ignore file alltogether!!!
-    for (ColTerm t : ID_SCHEMAS) {
-      require(t, ColTerm.ID);
+    for (ColdpTerm t : ID_SCHEMAS) {
+      require(t, ColdpTerm.ID);
     }
-    for (ColTerm t : NAMEID_SCHEMAS) {
-      require(t, ColTerm.nameID);
+    for (ColdpTerm t : NAMEID_SCHEMAS) {
+      require(t, ColdpTerm.nameID);
     }
-    require(ColTerm.Name, ColTerm.scientificName);
-    require(ColTerm.Name, ColTerm.rank);
-    require(ColTerm.NameRel, ColTerm.relatedNameID);
-    require(ColTerm.NameRel, ColTerm.type);
+    // either require the scientificName or at least some parsed field
+    if (!hasData(ColdpTerm.Name, ColdpTerm.scientificName)) {
+      LOG.warn("No scientificName mapped! Require parsed name fields");
+      // genus & specificEpithet must exist otherwise!
+      require(ColdpTerm.Name, ColdpTerm.genus, ColdpTerm.specificEpithet);
+    }
+    require(ColdpTerm.NameRel, ColdpTerm.relatedNameID);
+    require(ColdpTerm.NameRel, ColdpTerm.type);
   
-    requireSchema(ColTerm.Name);
+    requireSchema(ColdpTerm.Name);
   
     // reference dependencies
     if (!hasReferences()) {
       LOG.warn("No Reference mapped! Disallow referenceIDs");
-      disallow(ColTerm.Name, ColTerm.publishedInID);
-      disallow(ColTerm.NameRel, ColTerm.publishedInID);
-      for (ColTerm rt : REFID_SCHEMAS) {
-        disallow(rt, ColTerm.referenceID);
+      disallow(ColdpTerm.Name, ColdpTerm.publishedInID);
+      disallow(ColdpTerm.NameRel, ColdpTerm.publishedInID);
+      for (ColdpTerm rt : REFID_SCHEMAS) {
+        disallow(rt, ColdpTerm.referenceID);
       }
     }
 
-    Optional<Schema> taxonOpt = schema(ColTerm.Taxon);
+    Optional<Schema> taxonOpt = schema(ColdpTerm.Taxon);
     if (taxonOpt.isPresent()) {
       Schema taxon = taxonOpt.get();
-      if (taxon.hasTerm(ColTerm.parentID)) {
+      if (taxon.hasTerm(ColdpTerm.parentID)) {
         mappingFlags.setParentNameMapped(true);
       } else {
         mappingFlags.setParentNameMapped(false);
         LOG.warn("No taxon parentID mapped");
       }
   
-      if (taxon.hasAnyTerm(ColTerm.HIGHER_RANKS)) {
+      if (taxon.hasAnyTerm(ColdpTerm.HIGHER_RANKS)) {
         mappingFlags.setDenormedClassificationMapped(true);
         LOG.info("Use denormalized taxon classification");
       } else {
         mappingFlags.setDenormedClassificationMapped(false);
       }
   
-      for (ColTerm t : TAXID_SCHEMAS) {
-        require(t, ColTerm.taxonID);
+      for (ColdpTerm t : TAXID_SCHEMAS) {
+        require(t, ColdpTerm.taxonID);
       }
   
-      require(ColTerm.Description, ColTerm.description);
-      require(ColTerm.Distribution, ColTerm.area);
-      require(ColTerm.VernacularName, ColTerm.name);
-      require(ColTerm.Media, ColTerm.url);
+      require(ColdpTerm.Description, ColdpTerm.description);
+      require(ColdpTerm.Distribution, ColdpTerm.area);
+      require(ColdpTerm.VernacularName, ColdpTerm.name);
+      require(ColdpTerm.Media, ColdpTerm.url);
   
-      if (hasSchema(ColTerm.Synonym)) {
+      if (hasSchema(ColdpTerm.Synonym)) {
         mappingFlags.setAcceptedNameMapped(true);
       } else {
         LOG.warn("No Synonyms mapped!");
@@ -133,12 +137,12 @@ public class ColdpReader extends CsvReader {
       
     } else {
       LOG.warn("No Taxa mapped, only inserting names!");
-      for (ColTerm t : TAXID_SCHEMAS) {
+      for (ColdpTerm t : TAXID_SCHEMAS) {
         schemas.remove(t);
       }
     }
     
-    reportMissingSchemas(ColTerm.class);
+    reportMissingSchemas(ColdpTerm.class);
   }
   
   public File getBibtexFile() {

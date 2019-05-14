@@ -17,7 +17,7 @@ import org.gbif.dwc.terms.Term;
  * <p>
  * To avoid dependency and clashes with DwC no terms are reused.
  */
-public enum ColTerm implements Term, AlternativeNames {
+public enum ColdpTerm implements Term, AlternativeNames {
   Reference(true),
   ID,
   citation,
@@ -35,12 +35,14 @@ public enum ColTerm implements Term, AlternativeNames {
   rank,
   genus,
   specificEpithet,
-  infragenericEpithet,  // TODO: newly added to ColDP, update docs & importer !!!
+  infragenericEpithet,
   infraspecificEpithet,
-  cultivarEpithet,      // TODO: newly added to ColDP, update docs & importer !!!
-  appendedPhrase,       // TODO: newly added to ColDP, update docs & importer !!!
+  cultivarEpithet,
+  appendedPhrase,
   publishedInID,
   publishedInPage,
+  publishedInYear,
+  original,
   code,
   status,
   //link,
@@ -125,19 +127,19 @@ public enum ColTerm implements Term, AlternativeNames {
   //referenceID
   ;
   
-  private static Map<String, ColTerm> LOOKUP = Maps.uniqueIndex(Arrays.asList(values()), ColTerm::normalize);
+  private static Map<String, ColdpTerm> LOOKUP = Maps.uniqueIndex(Arrays.asList(values()), ColdpTerm::normalize);
   
   /**
    * List of all higher rank terms in dwc, ordered by rank and starting with kingdom.
    */
-  public static final ColTerm[] HIGHER_RANKS = {ColTerm.kingdom,
-      ColTerm.phylum, ColTerm.subphylum,
-      ColTerm.class_, ColTerm.subclass,
-      ColTerm.order, ColTerm.suborder,
-      ColTerm.superfamily, ColTerm.family, ColTerm.subfamily,
-      ColTerm.genus, ColTerm.subgenus};
+  public static final ColdpTerm[] HIGHER_RANKS = {ColdpTerm.kingdom,
+      ColdpTerm.phylum, ColdpTerm.subphylum,
+      ColdpTerm.class_, ColdpTerm.subclass,
+      ColdpTerm.order, ColdpTerm.suborder,
+      ColdpTerm.superfamily, ColdpTerm.family, ColdpTerm.subfamily,
+      ColdpTerm.genus, ColdpTerm.subgenus};
   
-  public static Map<ColTerm, List<ColTerm>> RESOURCES = ImmutableMap.<ColTerm, List<ColTerm>>builder()
+  public static Map<ColdpTerm, List<ColdpTerm>> RESOURCES = ImmutableMap.<ColdpTerm, List<ColdpTerm>>builder()
       .put(Reference, ImmutableList.of(
           ID,
           citation,
@@ -237,12 +239,12 @@ public enum ColTerm implements Term, AlternativeNames {
   private final boolean isClass;
   private final String[] alternatives;
   
-  ColTerm() {
+  ColdpTerm() {
     this.alternatives = new String[0];
     this.isClass = false;
   }
   
-  ColTerm(boolean isClass, String... alternatives) {
+  ColdpTerm(boolean isClass, String... alternatives) {
     this.alternatives = alternatives;
     this.isClass = isClass;
   }
@@ -287,11 +289,11 @@ public enum ColTerm implements Term, AlternativeNames {
     return isClass ? Character.toUpperCase(x.charAt(0)) + x.substring(1) : x;
   }
   
-  private static String normalize(ColTerm t) {
+  private static String normalize(ColdpTerm t) {
     return normalize(t.name(), t.isClass);
   }
   
-  public static ColTerm find(String name, boolean isClass) {
+  public static ColdpTerm find(String name, boolean isClass) {
     return LOOKUP.getOrDefault(normalize(name, isClass), null);
   }
 }

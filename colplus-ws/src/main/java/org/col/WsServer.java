@@ -14,7 +14,7 @@ import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.col.api.datapackage.ColTerm;
+import org.col.api.datapackage.ColdpTerm;
 import org.col.api.jackson.ApiModule;
 import org.col.api.vocab.ColDwcTerm;
 import org.col.assembly.AssemblyCoordinator;
@@ -88,7 +88,7 @@ public class WsServer extends Application<WsServerConfig> {
     bootstrap.addBundle(auth);
     // register CoLTerms
     TermFactory.instance().registerTermEnum(ColDwcTerm.class);
-    TermFactory.instance().registerTermEnum(ColTerm.class);
+    TermFactory.instance().registerTermEnum(ColdpTerm.class);
     // use a custom jackson mapper
     ObjectMapper om = ApiModule.configureMapper(Jackson.newMinimalObjectMapper());
     bootstrap.setObjectMapper(om);

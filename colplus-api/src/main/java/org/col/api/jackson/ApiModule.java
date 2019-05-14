@@ -12,7 +12,7 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.collect.ImmutableSet;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
-import org.col.api.datapackage.ColTerm;
+import org.col.api.datapackage.ColdpTerm;
 import org.col.api.vocab.CSLRefType;
 import org.col.api.vocab.ColDwcTerm;
 import org.col.api.vocab.Country;
@@ -31,7 +31,7 @@ public class ApiModule extends SimpleModule {
   static {
     // register new term enums
     TermFactory.instance().registerTermEnum(ColDwcTerm.class);
-    TermFactory.instance().registerTermEnum(ColTerm.class);
+    TermFactory.instance().registerTermEnum(ColdpTerm.class);
   }
   
   public static ObjectMapper configureMapper(ObjectMapper mapper) {

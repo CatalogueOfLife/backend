@@ -5,7 +5,7 @@ import java.util.Objects;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import org.col.api.datapackage.ColTerm;
+import org.col.api.datapackage.ColdpTerm;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.nameparser.api.Rank;
 
@@ -204,7 +204,7 @@ public class Classification {
     return false;
   }
   
-  public boolean setByTerm(ColTerm rank, String name) {
+  public boolean setByTerm(ColdpTerm rank, String name) {
     switch (rank) {
       case kingdom:
         setKingdom(name);

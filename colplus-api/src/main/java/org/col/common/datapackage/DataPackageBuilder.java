@@ -7,7 +7,7 @@ import java.util.stream.Collectors;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import org.apache.commons.io.FilenameUtils;
-import org.col.api.datapackage.ColTerm;
+import org.col.api.datapackage.ColdpTerm;
 import org.col.api.datapackage.PackageDescriptor;
 import org.col.api.jackson.PermissiveEnumSerde;
 import org.col.common.text.StringUtils;
@@ -20,45 +20,45 @@ public class DataPackageBuilder {
   private static final String MONOMIAL_PATTERN = "[A-ZÏËÖÜÄÉÈČÁÀÆŒ](?:\\.|[a-zïëöüäåéèčáàæœ]+)(?:-[A-ZÏËÖÜÄÉÈČÁÀÆŒ]?[a-zïëöüäåéèčáàæœ]+)?";
   
   // only non string data types here
-  private static final Map<ColTerm, String> dataTypes = ImmutableMap.<ColTerm, String>builder()
-      .put(ColTerm.year, Field.TYPE_YEAR)
-      .put(ColTerm.accordingToDate, Field.TYPE_DATE)
-      .put(ColTerm.created, Field.TYPE_DATETIME)
-      .put(ColTerm.fossil, Field.TYPE_BOOLEAN)
-      .put(ColTerm.recent, Field.TYPE_BOOLEAN)
+  private static final Map<ColdpTerm, String> dataTypes = ImmutableMap.<ColdpTerm, String>builder()
+      .put(ColdpTerm.year, Field.TYPE_YEAR)
+      .put(ColdpTerm.accordingToDate, Field.TYPE_DATE)
+      .put(ColdpTerm.created, Field.TYPE_DATETIME)
+      .put(ColdpTerm.fossil, Field.TYPE_BOOLEAN)
+      .put(ColdpTerm.recent, Field.TYPE_BOOLEAN)
       .build();
   
-  private static final Map<ColTerm, String> dataFormats = ImmutableMap.<ColTerm, String>builder()
-      .put(ColTerm.link, Field.FORMAT_URI)
+  private static final Map<ColdpTerm, String> dataFormats = ImmutableMap.<ColdpTerm, String>builder()
+      .put(ColdpTerm.link, Field.FORMAT_URI)
       .build();
   
-  private static final Set<ColTerm> monomials = ImmutableSet.of(
-      ColTerm.kingdom, ColTerm.phylum, ColTerm.class_, ColTerm.order, ColTerm.family,
-      ColTerm.subphylum, ColTerm.subclass, ColTerm.suborder, ColTerm.subfamily,
-      ColTerm.superfamily
+  private static final Set<ColdpTerm> monomials = ImmutableSet.of(
+      ColdpTerm.kingdom, ColdpTerm.phylum, ColdpTerm.class_, ColdpTerm.order, ColdpTerm.family,
+      ColdpTerm.subphylum, ColdpTerm.subclass, ColdpTerm.suborder, ColdpTerm.subfamily,
+      ColdpTerm.superfamily
   );
 
-  private static final Map<ColTerm, Class<? extends Enum>> enums = ImmutableMap.<ColTerm, Class<? extends Enum>>builder()
-      .put(ColTerm.status, TaxonomicStatus.class)
-      .put(ColTerm.type, NomRelType.class)
-      .put(ColTerm.code, NomCode.class)
-      .put(ColTerm.country, Country.class)
-      .put(ColTerm.language, Language.class)
-      .put(ColTerm.format, DataFormat.class)
-      .put(ColTerm.gazetteer, Gazetteer.class)
-      .put(ColTerm.rank, Rank.class)
-      .put(ColTerm.lifezone, Lifezone.class)
+  private static final Map<ColdpTerm, Class<? extends Enum>> enums = ImmutableMap.<ColdpTerm, Class<? extends Enum>>builder()
+      .put(ColdpTerm.status, TaxonomicStatus.class)
+      .put(ColdpTerm.type, NomRelType.class)
+      .put(ColdpTerm.code, NomCode.class)
+      .put(ColdpTerm.country, Country.class)
+      .put(ColdpTerm.language, Language.class)
+      .put(ColdpTerm.format, DataFormat.class)
+      .put(ColdpTerm.gazetteer, Gazetteer.class)
+      .put(ColdpTerm.rank, Rank.class)
+      .put(ColdpTerm.lifezone, Lifezone.class)
       .build();
   
-  private static final Map<ColTerm, ForeignKey> foreignKeys = ImmutableMap.<ColTerm, ForeignKey>builder()
-      .put(ColTerm.referenceID, new ForeignKey(ColTerm.referenceID, ColTerm.Reference, ColTerm.ID))
-      .put(ColTerm.nameID, new ForeignKey(ColTerm.nameID, ColTerm.Name, ColTerm.ID))
-      .put(ColTerm.relatedNameID, new ForeignKey(ColTerm.relatedNameID, ColTerm.Name, ColTerm.ID))
-      .put(ColTerm.taxonID, new ForeignKey(ColTerm.taxonID, ColTerm.Taxon, ColTerm.ID))
-      .put(ColTerm.parentID, new ForeignKey(ColTerm.parentID, ColTerm.Taxon, ColTerm.ID))
+  private static final Map<ColdpTerm, ForeignKey> foreignKeys = ImmutableMap.<ColdpTerm, ForeignKey>builder()
+      .put(ColdpTerm.referenceID, new ForeignKey(ColdpTerm.referenceID, ColdpTerm.Reference, ColdpTerm.ID))
+      .put(ColdpTerm.nameID, new ForeignKey(ColdpTerm.nameID, ColdpTerm.Name, ColdpTerm.ID))
+      .put(ColdpTerm.relatedNameID, new ForeignKey(ColdpTerm.relatedNameID, ColdpTerm.Name, ColdpTerm.ID))
+      .put(ColdpTerm.taxonID, new ForeignKey(ColdpTerm.taxonID, ColdpTerm.Taxon, ColdpTerm.ID))
+      .put(ColdpTerm.parentID, new ForeignKey(ColdpTerm.parentID, ColdpTerm.Taxon, ColdpTerm.ID))
       .build();
 
-  private static final Set<ColTerm> required = ImmutableSet.of(ColTerm.ID, ColTerm.scientificName);
+  private static final Set<ColdpTerm> required = ImmutableSet.of(ColdpTerm.ID, ColdpTerm.scientificName);
   
   private String titleToName(String t) {
     if (StringUtils.hasContent(t)) {
@@ -74,7 +74,7 @@ public class DataPackageBuilder {
     
     if (pd.getResources() == null || pd.getResources().isEmpty()) {
       // use all as default!
-      pd.setResources(ColTerm.RESOURCES.keySet().stream()
+      pd.setResources(ColdpTerm.RESOURCES.keySet().stream()
           .map(t -> t.name().toLowerCase() + ".tsv")
           .collect(Collectors.toList())
       );
@@ -97,7 +97,7 @@ public class DataPackageBuilder {
   }
   
   private Schema buildSchema(String resource) {
-    ColTerm rowType = ColTerm.find(FilenameUtils.getBaseName(resource), true);
+    ColdpTerm rowType = ColdpTerm.find(FilenameUtils.getBaseName(resource), true);
     if (rowType == null) {
       throw new UnknownEntityException("Unknown entity " + resource);
 
@@ -108,7 +108,7 @@ public class DataPackageBuilder {
     Schema s = new Schema();
     s.setRowType(rowType);
     
-    for (ColTerm t : ColTerm.RESOURCES.get(rowType)) {
+    for (ColdpTerm t : ColdpTerm.RESOURCES.get(rowType)) {
       String type = dataTypes.getOrDefault(t, Field.TYPE_STRING);
       String format = dataFormats.getOrDefault(t, Field.FORMAT_DEFAULT);
       Map<String, Object> constraints = new HashMap<>();
@@ -118,7 +118,7 @@ public class DataPackageBuilder {
       if (required.contains(t)) {
         constraints.put(Field.CONSTRAINT_KEY_REQUIRED, true);
       }
-      if (ColTerm.ID == t) {
+      if (ColdpTerm.ID == t) {
         s.setPrimaryKey(t.simpleName());
         //constraints.put(Field.CONSTRAINT_KEY_UNIQUE, true);
       }
@@ -133,7 +133,7 @@ public class DataPackageBuilder {
     return s;
   }
   
-  private List<String> enumValues(ColTerm rowType, ColTerm t) {
+  private List<String> enumValues(ColdpTerm rowType, ColdpTerm t) {
     // special cases
     switch (t) {
       case country:
@@ -143,10 +143,10 @@ public class DataPackageBuilder {
     }
     
     Class<? extends Enum> enumClass;
-    if (t == ColTerm.status && rowType == ColTerm.Name) {
+    if (t == ColdpTerm.status && rowType == ColdpTerm.Name) {
       enumClass = NomStatus.class;
       
-    } else if (t == ColTerm.type && rowType == ColTerm.Media) {
+    } else if (t == ColdpTerm.type && rowType == ColdpTerm.Media) {
       enumClass = MediaType.class;
 
     } else {

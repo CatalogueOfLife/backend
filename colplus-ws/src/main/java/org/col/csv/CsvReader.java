@@ -167,10 +167,12 @@ public class CsvReader {
     }
   }
 
-  protected void require(Term rowType, Term term) {
-    if (hasData(rowType) && !hasData(rowType, term)) {
-      Schema s = schemas.remove(rowType);
-      LOG.warn("Required term {} missing. Ignore file {}!", term, s.file);
+  protected void require(Term rowType, Term... term) {
+    for (Term t : term) {
+      if (hasData(rowType) && !hasData(rowType, t)) {
+        Schema s = schemas.remove(rowType);
+        LOG.warn("Required term {} missing. Ignore file {}!", t, s.file);
+      }
     }
   }
   

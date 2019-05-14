@@ -2,7 +2,7 @@ package org.col.api.model;
 
 import java.util.regex.Pattern;
 
-import org.col.api.datapackage.ColTerm;
+import org.col.api.datapackage.ColdpTerm;
 import org.col.api.jackson.ApiModule;
 import org.col.api.jackson.SerdeTestBase;
 import org.col.api.vocab.Datasets;
@@ -45,7 +45,7 @@ public class DatasetImportTest extends SerdeTestBase<DatasetImport> {
     d.getVernacularsByLanguageCount().put(Language.HINDI, 12);
     d.getVerbatimByTypeCount().put(DwcTerm.Taxon, 12342);
     d.getVerbatimByTypeCount().put(AcefTerm.AcceptedSpecies, 78);
-    d.getVerbatimByTypeCount().put(ColTerm.Name, 641723);
+    d.getVerbatimByTypeCount().put(ColdpTerm.Name, 641723);
     return d;
   }
   

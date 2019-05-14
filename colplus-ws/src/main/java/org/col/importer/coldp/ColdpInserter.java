@@ -20,7 +20,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
 import de.undercouch.citeproc.bibtex.BibTeXConverter;
-import org.col.api.datapackage.ColTerm;
+import org.col.api.datapackage.ColdpTerm;
 import org.col.api.jackson.ApiModule;
 import org.col.api.jackson.PermissiveEnumSerde;
 import org.col.api.model.CslData;
@@ -88,7 +88,7 @@ public class ColdpInserter extends NeoInserter {
 
       // This inserts the plain references from the Reference file with no links to names, taxa or distributions.
       // Links are added afterwards in other methods when a ACEF:ReferenceID field is processed by lookup to the neo store.
-      insertEntities(reader, ColTerm.Reference,
+      insertEntities(reader, ColdpTerm.Reference,
           inter::interpretReference,
           store::create
       );
@@ -98,47 +98,47 @@ public class ColdpInserter extends NeoInserter {
       insertExtendedReferences();
       
       // name & relations
-      insertEntities(reader, ColTerm.Name,
+      insertEntities(reader, ColdpTerm.Name,
           inter::interpretName,
           store.names()::create
       );
-      insertNameRelations(reader, ColTerm.NameRel,
+      insertNameRelations(reader, ColdpTerm.NameRel,
           inter::interpretNameRelations,
-          ColTerm.nameID,
-          ColTerm.relatedNameID
+          ColdpTerm.nameID,
+          ColdpTerm.relatedNameID
       );
 
       // taxa
-      insertEntities(reader, ColTerm.Taxon,
+      insertEntities(reader, ColdpTerm.Taxon,
           inter::interpretTaxon,
           store.usages()::create
       );
       
       // synonyms
-      insertEntities(reader, ColTerm.Synonym,
+      insertEntities(reader, ColdpTerm.Synonym,
           inter::interpretSynonym,
           store.usages()::create
       );
   
       // supplementary
-      insertTaxonEntities(reader, ColTerm.Description,
+      insertTaxonEntities(reader, ColdpTerm.Description,
           inter::interpretDescription,
-          ColTerm.taxonID,
+          ColdpTerm.taxonID,
           (t, d) -> t.descriptions.add(d)
       );
-      insertTaxonEntities(reader, ColTerm.Distribution,
+      insertTaxonEntities(reader, ColdpTerm.Distribution,
           inter::interpretDistribution,
-          ColTerm.taxonID,
+          ColdpTerm.taxonID,
           (t, d) -> t.distributions.add(d)
       );
-      insertTaxonEntities(reader, ColTerm.Media,
+      insertTaxonEntities(reader, ColdpTerm.Media,
           inter::interpretMedia,
-          ColTerm.taxonID,
+          ColdpTerm.taxonID,
           (t, d) -> t.media.add(d)
       );
-      insertTaxonEntities(reader, ColTerm.VernacularName,
+      insertTaxonEntities(reader, ColdpTerm.VernacularName,
           inter::interpretVernacular,
-          ColTerm.taxonID,
+          ColdpTerm.taxonID,
           (t, d) -> t.vernacularNames.add(d)
       );
       
