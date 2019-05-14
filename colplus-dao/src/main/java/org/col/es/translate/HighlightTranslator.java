@@ -42,7 +42,7 @@ public class HighlightTranslator {
           fields.add("authorship");
           break;
         case SCIENTIFIC_NAME:
-          fields.add("scientificNameWN");
+          fields.add("scientificName");
           break;
         case VERNACULAR_NAME:
           fields.add("vernacularNames");

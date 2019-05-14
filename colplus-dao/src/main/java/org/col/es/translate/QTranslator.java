@@ -21,7 +21,7 @@ import static org.col.es.NameUsageTransfer.normalizeWeakly;
  */
 class QTranslator {
 
-  private static int MAX_NGRAM_SIZE = 10; // see from es-settings.json
+  private static int MAX_NGRAM_SIZE = 12; // see es-settings.json
 
   private static float SCI_NAME_BOOST = 1.2F;
   private static float AUTHORSHIP_BOOST = 1.0F;

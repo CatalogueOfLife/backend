@@ -3,6 +3,7 @@ package org.col.es;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collection;
 import java.util.EnumSet;
@@ -17,8 +18,8 @@ import org.col.api.model.Synonym;
 import org.col.api.model.Taxon;
 import org.col.api.model.VernacularName;
 import org.col.api.search.NameUsageWrapper;
-import org.col.common.tax.SciNameNormalizer;
 import org.col.api.vocab.NameField;
+import org.col.common.tax.SciNameNormalizer;
 import org.col.es.model.EsNameUsage;
 import org.col.es.model.Monomial;
 
@@ -182,7 +183,7 @@ public class NameUsageTransfer {
       enu.setPayload(NAME_USAGE_WRITER.writeValueAsString(nuw));
     }
     return enu;
-  } 
+  }
 
   static void saveClassification(NameUsageWrapper from, EsNameUsage to) {
     if (notEmpty(from.getClassification())) {
@@ -199,17 +200,25 @@ public class NameUsageTransfer {
     }
   }
 
-
   private static void saveScientificName(NameUsageWrapper from, EsNameUsage to) {
-    String w = normalizeWeakly(from.getUsage().getName().getScientificName());
-    String s = normalizeStrongly(from.getUsage().getName().getScientificName());
-    to.setScientificNameWN(w);
+    if (from.getUsage().getName().getScientificName() == null) {
+      return;
+    }
     /*
-     * Don't waste time indexing the same ngram tokens twice. Only index the strongly normalized variant if it differs from the weakly
-     * normalized variant. This if-logic is replicated at query time (see QTranslator).
+     * Don't waste time indexing the same ngram tokens twice. Only index the weakly/strongly normalized variant if it differs from the
+     * original name. This if-logic is replicated at query time (see QTranslator).
      */
-    if (!w.equals(s)) {
-      to.setScientificNameSN(s);
+    String name = from.getUsage().getName().getScientificName().toLowerCase();
+    String strong = normalizeStrongly(name);
+    if (strong.equals(name)) {
+      to.setScientificName(Arrays.asList(name));
+    } else {
+      String weak = normalizeWeakly(from.getUsage().getName().getScientificName());
+      if (name.equals(weak) || weak.equals(strong)) {
+        to.setScientificName(Arrays.asList(name, strong));
+      } else {
+        to.setScientificName(Arrays.asList(name, weak, strong));
+      }
     }
   }
 

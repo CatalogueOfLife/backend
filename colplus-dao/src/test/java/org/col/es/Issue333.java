@@ -2,11 +2,13 @@ package org.col.es;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.List;
 
 import org.col.api.model.Name;
 import org.col.api.model.Taxon;
 import org.col.api.search.NameSearchRequest;
+import org.col.api.search.NameSearchRequest.SearchContent;
 import org.col.api.search.NameUsageWrapper;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,7 +31,8 @@ public class Issue333 extends EsReadTestBase {
     index(createTestObjects());
     NameSearchRequest query = new NameSearchRequest();
     // This was said to only return the binomial, but not the trinomial.
-    query.setQ("Leptoiulus trilineatus");
+    query.setContent(EnumSet.of(SearchContent.SCIENTIFIC_NAME));
+    query.setQ("trilineatu");
     assertEquals(createTestObjects(), search(query).getResult());
   }
 
