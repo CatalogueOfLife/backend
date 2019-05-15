@@ -76,19 +76,47 @@ public class ReferenceFactory {
    * @return
    */
   public Reference fromACEF(String referenceID, String authors, String year, String title, String details, IssueContainer issues) {
-    Reference ref = newReference(referenceID);
+    Reference ref = fromAny(referenceID, null, authors, year, title, details, null, issues);
+    if (ref.getCsl() != null && !StringUtils.isBlank(details)) {
+      issues.addIssue(Issue.CITATION_CONTAINER_TITLE_UNPARSED);
+    }
+    return ref;
+  }
+  
+  public Reference fromColDP(String id, String citation, String authors, String year, String title, String source, String details,
+                             String doi, String link, IssueContainer issues) {
+    Reference ref = fromAny(id, citation, authors, year, title, source, details, issues);
+    // add extra link & doi
+    if (doi != null || link != null) {
+      if (ref.getCsl() == null) {
+        ref.setCsl(new CslData());
+      }
+      //TODO: clean & verify DOI & link
+      ref.getCsl().setDOI(doi);
+      ref.getCsl().setURL(link);
+    }
+    return ref;
+  }
+  
+  private Reference fromAny(String ID, String citation, String authors, String year, String title, String source, String details, IssueContainer issues) {
+    Reference ref = newReference(ID);
     ref.setYear(parseYear(year));
-    if (hasContent(authors, year, title, details)) {
-      ref.setCitation(buildCitation(authors, year, title, details));
+    if (hasContent(authors, year, title, source)) {
       CslData csl = new CslData();
       ref.setCsl(csl);
       csl.setAuthor(parseAuthors(authors));
       csl.setTitle(title);
       csl.setIssued(yearToDate(ref.getYear(), year));
+      csl.setContainerTitle(source);
       if (!StringUtils.isBlank(details)) {
-        csl.setContainerTitle(details);
-        issues.addIssue(Issue.CITATION_CONTAINER_TITLE_UNPARSED);
+        // details can include any of the following and probably more: volume, edition, series, page, publisher
+        // try to parse out volume and pages ???
+        csl.setPage(details);
+        issues.addIssue(Issue.CITATION_DETAILS_UNPARSED);
       }
+      ref.setCitation(buildCitation(authors, year, title, source, details));
+    } else {
+      ref.setCitation(citation);
     }
     return ref;
   }
@@ -113,20 +141,6 @@ public class ReferenceFactory {
     }
   }
   
-  
-  
-  public Reference fromCol(String id, String authors, String year, String title, String source, String doi, String link, IssueContainer issues) {
-    Reference ref = fromACEF(id, authors, year, title, source, issues);
-    // add extra link & doi
-    if (ref.getCsl() == null) {
-      ref.setCsl(new CslData());
-    }
-    //TODO: clean & verify DOI & link
-    ref.getCsl().setDOI(doi);
-    ref.getCsl().setURL(link);
-    return ref;
-  }
-    
     /**
      * Very similar to fromACEF but optionally providing a full citation given as
      * bibliographicCitation
@@ -152,7 +166,7 @@ public class ReferenceFactory {
       ref.setYear(parseYear(date));
       if (hasContent(creator, date, title, source)) {
         if (ref.getCitation() == null) {
-          ref.setCitation(buildCitation(creator, date, title, source));
+          ref.setCitation(buildCitation(creator, date, title, source, null));
         }
         CslData csl = new CslData();
         ref.setCsl(csl);
@@ -180,7 +194,7 @@ public class ReferenceFactory {
   public Reference fromDWC(String publishedInID, String publishedIn, String publishedInYear, IssueContainer issues) {
     String citation = publishedIn;
     if (publishedIn != null && publishedInYear != null && !publishedIn.contains(publishedInYear)) {
-      citation = buildCitation(null, publishedInYear, publishedIn, null);
+      citation = buildCitation(null, publishedInYear, publishedIn, null, null);
     }
     Reference ref = find(publishedInID, citation);
     if (ref == null) {
@@ -280,7 +294,11 @@ public class ReferenceFactory {
    * @return the full citation string
    */
   @VisibleForTesting
-  protected static String buildCitation(@Nullable String authors, @Nullable String year, @Nullable String title, @Nullable String container) {
+  protected static String buildCitation(@Nullable String authors,
+                                        @Nullable String year,
+                                        @Nullable String title,
+                                        @Nullable String container,
+                                        @Nullable String details) {
     StringBuilder sb = new StringBuilder();
     if (!StringUtils.isEmpty(authors)) {
       sb.append(authors.trim());
@@ -299,9 +317,16 @@ public class ReferenceFactory {
       appendDotIfMissing(sb);
     }
   
+    if (!StringUtils.isEmpty(details)) {
+      appendSpaceIfContent(sb);
+      sb.append(details.trim());
+    }
+
     if (!StringUtils.isEmpty(year)) {
       appendSpaceIfContent(sb);
+      sb.append("(");
       sb.append(year.trim());
+      sb.append(")");
       appendDotIfMissing(sb);
     }
 

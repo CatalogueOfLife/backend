@@ -25,6 +25,7 @@ public enum ColdpTerm implements Term, AlternativeNames {
   title,
   year,
   source,
+  details,
   doi,
   link,
   

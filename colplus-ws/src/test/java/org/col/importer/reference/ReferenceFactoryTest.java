@@ -14,6 +14,9 @@ import static org.junit.Assert.assertNull;
 
 public class ReferenceFactoryTest {
   
+  final String doi  = "10.1126/science.169.3946.635";
+  final String link = "http://dx.doi.org/10.1126/science.169.3946.635";
+  
   @Mock
   ReferenceStore refStore;
   ReferenceFactory rf;
@@ -28,7 +31,7 @@ public class ReferenceFactoryTest {
   
   @Test
   public void citation() {
-    assertEquals("M.Döring. Guess what? 2001.", rf.buildCitation("M.Döring", "2001", "Guess what?", null));
+    assertEquals("M.Döring. Guess what? (2001).", rf.buildCitation("M.Döring", "2001", "Guess what?", null, null));
   }
   
   @Test
@@ -36,17 +39,30 @@ public class ReferenceFactoryTest {
     Reference r = rf.fromACEF("referenceID", "authors", "1920", "title", "details", issues);
     assertEquals("referenceID", r.getId());
     assertEquals(1920, (int) r.getYear());
-    assertEquals("authors. title. details. 1920.", r.getCitation());
+    assertEquals("authors. title. details. (1920).", r.getCitation());
     assertEquals("authors", r.getCsl().getAuthor()[0].getLiteral());
     assertEquals("title", r.getCsl().getTitle());
     assertEquals("details", r.getCsl().getContainerTitle());
   }
   
   @Test
+  public void fromColDP() {
+    Reference r = rf.fromColDP("referenceID", "my full citation to be ignored", "authors", "1920", "title", "source", "7:details", doi, link, issues);
+    assertEquals("referenceID", r.getId());
+    assertEquals(1920, (int) r.getYear());
+    assertEquals("authors", r.getCsl().getAuthor()[0].getLiteral());
+    assertEquals("title", r.getCsl().getTitle());
+    assertEquals("source", r.getCsl().getContainerTitle());
+    assertEquals(doi, r.getCsl().getDOI());
+    assertEquals(link, r.getCsl().getURL());
+    assertEquals("authors. title. source. 7:details (1920).", r.getCitation());
+  }
+  
+  @Test
   public void fromDWC() {
     Reference r = rf.fromDWC("12345", "Dingle Doodle da", "1888", issues);
     assertEquals("12345", r.getId());
-    assertEquals("Dingle Doodle da. 1888.", r.getCitation());
+    assertEquals("Dingle Doodle da. (1888).", r.getCitation());
     assertEquals(1888, (int) r.getYear());
     assertNull(r.getCsl());
   }

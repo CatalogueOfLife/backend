@@ -42,12 +42,14 @@ public class ColdpInterpreter extends InterpreterBase {
     if (!v.hasTerm(ColdpTerm.ID)) {
       return Optional.empty();
     }
-    return Optional.of(refFactory.fromCol(
+    return Optional.of(refFactory.fromColDP(
         v.get(ColdpTerm.ID),
+        v.get(ColdpTerm.citation),
         v.get(ColdpTerm.author),
         v.get(ColdpTerm.year),
         v.get(ColdpTerm.title),
         v.get(ColdpTerm.source),
+        v.get(ColdpTerm.details),
         v.get(ColdpTerm.doi),
         v.get(ColdpTerm.link),
         v
