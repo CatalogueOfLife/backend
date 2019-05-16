@@ -32,7 +32,7 @@ public class ApiModuleTest {
     ed.setStatus(TaxonomicStatus.PROVISIONALLY_ACCEPTED);
     ed.getLifezones().add(Lifezone.MARINE);
     ed.getLifezones().add(Lifezone.FRESHWATER);
-    ed.setMode(EditorialDecision.Mode.CHRESONYM);
+    ed.setMode(EditorialDecision.Mode.UPDATE);
     
     String json = ApiModule.MAPPER.writeValueAsString(ed);
     assertTrue(json.contains("provisionally accepted"));

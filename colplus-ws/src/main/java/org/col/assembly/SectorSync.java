@@ -16,7 +16,9 @@ import org.col.api.vocab.*;
 import org.col.dao.*;
 import org.col.db.mapper.*;
 import org.col.es.NameUsageIndexService;
+import org.col.parser.NameParser;
 import org.gbif.nameparser.api.NameType;
+import org.gbif.nameparser.api.ParsedName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -230,11 +232,37 @@ public class SectorSync extends SectorRunnable {
       switch (ed.getMode()) {
         case BLOCK:
           throw new IllegalStateException("Blocked usage "+u.getId()+" should not have been traversed");
-        case CHRESONYM:
-          return true;
+        case REVIEWED:
+          return false;
         case UPDATE:
           if (ed.getName() != null) {
-            //TODO: update name
+            Name n = u.getName();
+            Name n2 = ed.getName();
+            if (n2.getCode() != null) {
+              n.setCode(n2.getCode());
+            }
+            if (n2.getNomStatus() != null) {
+              n.setNomStatus(n2.getNomStatus());
+            }
+            if (n2.getType() != null) {
+              n.setType(n2.getType());
+            }
+            if (n2.getRank() != null) {
+              n.setRank(n2.getRank());
+            }
+            if (n2.getAuthorship() != null) {
+              n.setAuthorship(n2.getAuthorship());
+              ParsedName pn = NameParser.PARSER.parseAuthorship(n2.getAuthorship()).orElseGet(() -> {
+                LOG.warn("Unparsable decision authorship {}", n2.getAuthorship());
+                // add the full, unparsed authorship in this case to not lose it
+                ParsedName pn2 = new ParsedName();
+                pn2.getCombinationAuthorship().getAuthors().add(n2.getAuthorship());
+                return pn2;
+              });
+              n.setCombinationAuthorship(pn.getCombinationAuthorship());
+              n.setSanctioningAuthor(pn.getSanctioningAuthor());
+              n.setBasionymAuthorship(pn.getBasionymAuthorship());
+            }
           }
           if (ed.getStatus() != null) {
             try {
