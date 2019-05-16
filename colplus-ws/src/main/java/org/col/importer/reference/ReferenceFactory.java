@@ -1,12 +1,16 @@
 package org.col.importer.reference;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.CharMatcher;
+import com.google.common.base.Splitter;
 import org.apache.commons.lang3.CharSet;
 import org.apache.commons.lang3.StringUtils;
 import org.col.api.model.*;
@@ -33,6 +37,16 @@ public class ReferenceFactory {
   private static final Logger LOG = LoggerFactory.getLogger(ReferenceFactory.class);
   private static final Pattern YEAR_PATTERN = Pattern.compile("(^|\\D+)(\\d{4})($|\\D+)");
   private static final CharSet PUNCTUATIONS = CharSet.getInstance(".?!;:,");
+  private static final Pattern NORM_WHITESPACE = Pattern.compile("\\s{2,}");
+  private static final String name     = "[\\p{L} -]+";
+  private static final String initials = "(?:\\p{Lu}(?:\\. ?| ))*";
+  // comma separated authors with (initials/firstname) surnames
+  private static final Splitter AUTHOR_SPLITTER = Splitter.on(CharMatcher.anyOf(",&")).trimResults();
+  private static final Pattern AUTHORS_PATTERN = Pattern.compile("^("+initials+") *("+ name +")$");
+  private static final Pattern AUTHORS_PREFIX = Pattern.compile("^((?:\\p{Ll}{1,5} ){1,2})(\\p{Lu})");
+  // semicolon separated authors with lastname, firstnames
+  private static final Splitter AUTHOR_SPLITTER_SEMI = Splitter.on(';').trimResults();
+  private static final Pattern AUTHORS_PATTERN_SEMI = Pattern.compile("^("+ name +")(?:, ?("+initials+"|"+name+"))?$");
 
   private final Integer datasetKey;
   private final ReferenceStore store;
@@ -104,7 +118,7 @@ public class ReferenceFactory {
     if (hasContent(authors, year, title, source)) {
       CslData csl = new CslData();
       ref.setCsl(csl);
-      csl.setAuthor(parseAuthors(authors));
+      csl.setAuthor(parseAuthors(authors, issues));
       csl.setTitle(title);
       csl.setIssued(yearToDate(ref.getYear(), year));
       csl.setContainerTitle(source);
@@ -170,7 +184,7 @@ public class ReferenceFactory {
         }
         CslData csl = new CslData();
         ref.setCsl(csl);
-        csl.setAuthor(parseAuthors(creator));
+        csl.setAuthor(parseAuthors(creator, issues));
         csl.setTitle(nullIfEmpty(title));
         csl.setIssued(toCslDate(date));
         if (!StringUtils.isEmpty(source)) {
@@ -271,13 +285,63 @@ public class ReferenceFactory {
     }
   }
   
-  private static CslName[] parseAuthors(String authorString) {
+  /**
+   * Try to parse the individual authors if they adhere to well known formats.
+   * Otherwise create a single author with an unparsed literal value.
+   * @param authorString
+   * @return
+   */
+  private static CslName[] parseAuthors(String authorString, IssueContainer issues) {
     if (StringUtils.isBlank(authorString)) {
       return null;
     }
+    authorString = NORM_WHITESPACE.matcher(authorString).replaceAll(" ");
+    List<CslName> names = new ArrayList<>();
+    // comma with initials?
+    for (String a : AUTHOR_SPLITTER.split(authorString)) {
+      Matcher m = AUTHORS_PATTERN.matcher(a);
+      if (m.find()) {
+        names.add(buildName(m.group(1), m.group(2)));
+      } else {
+        names.clear();
+        break;
+      }
+    }
+    // semicolons?
+    if (names.isEmpty() && authorString.contains(";")) {
+      for (String a : AUTHOR_SPLITTER_SEMI.split(authorString)) {
+        Matcher m = AUTHORS_PATTERN_SEMI.matcher(a);
+        if (m.find()) {
+          names.add(buildName(m.group(2), m.group(1)));
+        } else {
+          names.clear();
+          break;
+        }
+      }
+    }
+    // use entire string as literal
+    if (names.isEmpty()) {
+      CslName name = new CslName();
+      name.setLiteral(authorString);
+      issues.addIssue(Issue.CITATION_AUTHORS_UNPARSED);
+      return new CslName[]{name};
+    } else {
+      return names.toArray(new CslName[0]);
+    }
+  }
+  
+  private static CslName buildName(String given, String family){
     CslName name = new CslName();
-    name.setLiteral(authorString);
-    return new CslName[]{name};
+    if (given != null) {
+      name.setGiven(StringUtils.trimToNull(given));
+    }
+    Matcher pre = AUTHORS_PREFIX.matcher(family);
+    if (pre.find()) {
+      family = pre.replaceFirst(pre.group(2));
+      name.setNonDroppingParticle(StringUtils.trimToNull(pre.group(1)));
+    }
+    name.setFamily(StringUtils.trimToNull(family));
+    return name;
   }
   
   private static String nullIfEmpty(String s) {

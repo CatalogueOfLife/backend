@@ -62,10 +62,8 @@ public class NormalizerColdpIT extends NormalizerITBase {
       });
   
       store.refList().forEach(r -> {
-        VerbatimRecord v = store.getVerbatim(r.getVerbatimKey());
-        assertNotNull(v);
-        assertEquals(1, v.getIssues().size());
-        assertTrue(v.hasIssue(Issue.CITATION_CONTAINER_TITLE_UNPARSED));
+        assertNotNull(r.getCitation());
+        assertNotNull(r.getCsl().getTitle());
       });
     }
   }

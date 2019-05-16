@@ -1,5 +1,6 @@
 package org.col.importer.reference;
 
+import org.col.api.model.CslName;
 import org.col.api.model.IssueContainer;
 import org.col.api.model.Reference;
 import org.col.api.model.VerbatimRecord;
@@ -8,9 +9,7 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
 public class ReferenceFactoryTest {
   
@@ -40,7 +39,7 @@ public class ReferenceFactoryTest {
     assertEquals("referenceID", r.getId());
     assertEquals(1920, (int) r.getYear());
     assertEquals("authors. title. details. (1920).", r.getCitation());
-    assertEquals("authors", r.getCsl().getAuthor()[0].getLiteral());
+    assertEquals("authors", r.getCsl().getAuthor()[0].getFamily());
     assertEquals("title", r.getCsl().getTitle());
     assertEquals("details", r.getCsl().getContainerTitle());
   }
@@ -50,12 +49,64 @@ public class ReferenceFactoryTest {
     Reference r = rf.fromColDP("referenceID", "my full citation to be ignored", "authors", "1920", "title", "source", "7:details", doi, link, issues);
     assertEquals("referenceID", r.getId());
     assertEquals(1920, (int) r.getYear());
-    assertEquals("authors", r.getCsl().getAuthor()[0].getLiteral());
+    assertEquals("authors", r.getCsl().getAuthor()[0].getFamily());
     assertEquals("title", r.getCsl().getTitle());
     assertEquals("source", r.getCsl().getContainerTitle());
     assertEquals(doi, r.getCsl().getDOI());
     assertEquals(link, r.getCsl().getURL());
     assertEquals("authors. title. source. 7:details (1920).", r.getCitation());
+  }
+  
+  @Test
+  public void authors() {
+    // comma
+    Reference r = rf.fromColDP("id", null, "C.Ulloa Ulloa, P.  Acevedo-Rodríguez, S. G. Beck,  M. J.  de Belgrano, R. Bernal, P. E. Berry, L. Brako, M. dé Celis, G. Davidse, S. R. Gradstein, O. Hokche, B. León, S. de la León-Yánez, R. E. Magill, D. A. Neill, M. H. Nee, P. H. Raven, Stimmel, M. T. Strong, J. L. Villaseñor Ríos, J. L. Zarucchi, F. O. Zuloaga & P. M. Jørgensen", null, null, null, null, doi, link, issues);
+    assertEquals(23, r.getCsl().getAuthor().length);
+
+    CslName a = r.getCsl().getAuthor()[1];
+    assertEquals("P.", a.getGiven());
+    assertNull(a.getNonDroppingParticle());
+    assertEquals("Acevedo-Rodríguez", a.getFamily());
+  
+    a = r.getCsl().getAuthor()[3];
+    assertEquals("M. J.", a.getGiven());
+    assertEquals("de", a.getNonDroppingParticle());
+    assertEquals("Belgrano", a.getFamily());
+  
+    a = r.getCsl().getAuthor()[12];
+    assertEquals("S.", a.getGiven());
+    assertEquals("de la", a.getNonDroppingParticle());
+    assertEquals("León-Yánez", a.getFamily());
+  
+  
+    // semicolon
+    r = rf.fromColDP("id", null, "Ulloa, C.; Acevedo-Rodríguez, P.; Beck, Sigmund; de la Belgrano, Maria Josef; Simmel", null, null, null, null, doi, link, issues);
+    assertEquals(5, r.getCsl().getAuthor().length);
+  
+    a = r.getCsl().getAuthor()[0];
+    assertEquals("C.", a.getGiven());
+    assertNull(a.getNonDroppingParticle());
+    assertEquals("Ulloa", a.getFamily());
+
+    a = r.getCsl().getAuthor()[1];
+    assertEquals("P.", a.getGiven());
+    assertNull(a.getNonDroppingParticle());
+    assertEquals("Acevedo-Rodríguez", a.getFamily());
+  
+    a = r.getCsl().getAuthor()[2];
+    assertEquals("Sigmund", a.getGiven());
+    assertNull(a.getNonDroppingParticle());
+    assertEquals("Beck", a.getFamily());
+  
+    a = r.getCsl().getAuthor()[3];
+    assertEquals("Maria Josef", a.getGiven());
+    assertEquals("de la", a.getNonDroppingParticle());
+    assertEquals("Belgrano", a.getFamily());
+  
+    a = r.getCsl().getAuthor()[4];
+    assertNull(a.getGiven());
+    assertNull(a.getNonDroppingParticle());
+    assertEquals("Simmel", a.getFamily());
   }
   
   @Test

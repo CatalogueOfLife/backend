@@ -30,9 +30,9 @@ public class EditorialDecision extends Decision {
     BLOCK,
   
     /**
-     * Flags a name as a chresonym and blocks it from the assembly, keeping potential children.
+     * Flags a name as reviewed and accepted as it is.
      */
-    CHRESONYM,
+    REVIEWED,
 
     /**
      * Updates the subject using the configured name, status, lifezone and fossil flags
