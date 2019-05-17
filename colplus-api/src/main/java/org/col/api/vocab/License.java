@@ -53,7 +53,7 @@ public enum License {
   
   /**
    * Indicates if a license is a concrete license (true) or an abstracted license (false) like
-   * UNSPECIFIED or UNSUPPORTED.
+   * UNSPECIFIED.
    *
    * @return the license if concrete or not
    */
