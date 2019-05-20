@@ -10,6 +10,7 @@ import javax.ws.rs.core.MediaType;
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.model.Duplicate;
 import org.col.api.model.Page;
+import org.col.api.vocab.EntityType;
 import org.col.api.vocab.MatchingMode;
 import org.col.api.vocab.NameCategory;
 import org.col.api.vocab.TaxonomicStatus;
@@ -31,7 +32,7 @@ public class DuplicateResource {
   
   @GET
   public List<Duplicate> find(@PathParam("datasetKey") int datasetKey,
-                              @QueryParam("compareNames") boolean compareNames,
+                              @QueryParam("entity") @DefaultValue("NAME_USAGE") EntityType entity,
                               @QueryParam("mode") MatchingMode mode,
                               @QueryParam("minSize") Integer minSize,
                               @QueryParam("sectorKey") Integer sectorKey,
@@ -43,9 +44,14 @@ public class DuplicateResource {
                               @QueryParam("withDecision") Boolean withDecision,
                               @Valid @BeanParam Page page, @Context SqlSession session) {
     DuplicateDao dao = new DuplicateDao(session);
-    return compareNames ?
-        dao.findNames(mode, minSize, datasetKey, category, ranks, authorshipDifferent, page)
-      : dao.findUsages(mode, minSize, datasetKey, sectorKey, category, ranks, status, authorshipDifferent, parentDifferent, withDecision, page);
+    switch (entity) {
+      case NAME:
+        return dao.findNames(mode, minSize, datasetKey, category, ranks, authorshipDifferent, page);
+      case NAME_USAGE:
+        return dao.findUsages(mode, minSize, datasetKey, sectorKey, category, ranks, status, authorshipDifferent, parentDifferent, withDecision, page);
+      default:
+        throw new IllegalArgumentException("Duplicates only supported for NAME or NAME_USAGE entity");
+    }
   }
   
 }

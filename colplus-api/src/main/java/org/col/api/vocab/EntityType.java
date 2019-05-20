@@ -4,10 +4,10 @@ package org.col.api.vocab;
  * Enumeration of major entities in the system.
  */
 public enum EntityType {
+  ANY,
   NAME,
   NAME_RELATION,
-  TAXON,
-  SYNONYM,
+  NAME_USAGE,
   DESCRIPTION,
   DISTRIBUTION,
   MEDIA,
