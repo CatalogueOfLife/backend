@@ -183,12 +183,13 @@ public class SectorSync extends SectorRunnable {
       u.getName().setSectorKey(sector.getKey());
   
       if (decisions.containsKey(u.getId())) {
-        if (applyDecision(u, decisions.get(u.getId()))) {
-          // skip this taxon, but include children
-          // use taxons parent also as the parentID for this so children link one level up
-          ids.put(u.getId(), ids.get(u.getParentId()));
-          return;
-        }
+        applyDecision(u, decisions.get(u.getId()));
+      }
+      if (skipUsage(u)) {
+        // skip this taxon, but include children
+        // use taxons parent also as the parentID for this so children link one level up
+        ids.put(u.getId(), ids.get(u.getParentId()));
+        return;
       }
       
       String parentID;
@@ -225,15 +226,30 @@ public class SectorSync extends SectorRunnable {
       state.setTaxonCount(counter);
     }
   
-    /**
-     * @return true if the taxon should be skipped
-     */
-    private boolean applyDecision(NameUsageBase u, EditorialDecision ed) {
+    private boolean skipUsage(NameUsageBase u) {
+      Name n = u.getName();
+      
+      switch (n.getType()) {
+        case PLACEHOLDER:
+        case NO_NAME:
+        case HYBRID_FORMULA:
+        //case INFORMAL:
+          return true;
+      }
+      if (n.getNomStatus() != null) {
+        switch (n.getNomStatus()) {
+          case CHRESONYM:
+          case MANUSCRIPT:
+            return true;
+        }
+      }
+      return false;
+    }
+  
+    private void applyDecision(NameUsageBase u, EditorialDecision ed) {
       switch (ed.getMode()) {
         case BLOCK:
           throw new IllegalStateException("Blocked usage "+u.getId()+" should not have been traversed");
-        case REVIEWED:
-          return false;
         case UPDATE:
           if (ed.getName() != null) {
             Name n = u.getName();
@@ -283,8 +299,9 @@ public class SectorSync extends SectorRunnable {
               t.setRecent(ed.getRecent());
             }
           }
+        case REVIEWED:
+          // good. nothing to do
       }
-      return false;
     }
   
     private String lookupReference(String refID) {

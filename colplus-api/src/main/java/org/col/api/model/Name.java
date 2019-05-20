@@ -164,7 +164,7 @@ public class Name extends DataEntity implements DatasetEntity, VerbatimEntity {
   private Origin origin;
   
   /**
-   * The kind of name classified in broad catagories based on their syntactical structure
+   * The kind of name classified in broad categories based on their syntactical structure
    */
   private NameType type;
   
