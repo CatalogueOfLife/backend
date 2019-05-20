@@ -6,7 +6,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -194,35 +193,26 @@ public class MappingFactory<T> {
     return document;
   }
 
-  /*
-   * Returns false if the Java field does not contain the @Analyzers annotation. Otherwise it returns true.
-   */
-  private static boolean addMultiFields(KeywordField kf, AnnotatedElement fm) {
+  private static void addMultiFields(KeywordField kf, AnnotatedElement fm) {
     Analyzers annotation = fm.getAnnotation(Analyzers.class);
-    if (annotation == null) {
-      return false;
-    }
-    if (annotation.value().length == 0) {
-      return true;
-    }
-    List<Analyzer> value = Arrays.asList(annotation.value());
-    EnumSet<Analyzer> analyzers = EnumSet.copyOf(value);
-    for (Analyzer a : analyzers) {
-      switch (a) {
-        case IGNORE_CASE:
-          kf.addMultiField(IGNORE_CASE);
-          break;
-        case DEFAULT:
-          kf.addMultiField(DEFAULT);
-          break;
-        case AUTO_COMPLETE:
-          kf.addMultiField(AUTO_COMPLETE);
-          break;
-        default:
-          break;
+    if (annotation != null && annotation.value().length != 0) {
+      List<Analyzer> analyzers = Arrays.asList(annotation.value());
+      for (Analyzer a : analyzers) {
+        switch (a) {
+          case IGNORE_CASE:
+            kf.addMultiField(IGNORE_CASE);
+            break;
+          case DEFAULT:
+            kf.addMultiField(DEFAULT);
+            break;
+          case AUTO_COMPLETE:
+            kf.addMultiField(AUTO_COMPLETE);
+            break;
+          default:
+            break;
+        }
       }
     }
-    return true;
   }
 
   /*

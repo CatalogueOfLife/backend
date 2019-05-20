@@ -1,7 +1,5 @@
 package org.col.es.annotations;
 
-import org.col.es.mapping.MultiField;
-
 /**
  * Symbolic constants for the Elasticsearch analyzers defined within the CoL document store.
  */
@@ -13,12 +11,6 @@ public enum Analyzer {
    */
   DEFAULT,
 
-  /**
-   * The no-op analyzer. Indexes values as-is. Since the resulting index is accessed through the field name itself (not through a
-   * multi-field underneath it), the multi-field name is left empty (null). See {@link MultiField}.
-   */
-  KEYWORD,
-  
   /**
    * An analyzer that allows for case-insensitive searches while preserving whitespace in the search string.
    */
