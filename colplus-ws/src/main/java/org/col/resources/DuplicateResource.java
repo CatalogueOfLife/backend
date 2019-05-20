@@ -31,6 +31,7 @@ public class DuplicateResource {
   
   @GET
   public List<Duplicate> find(@PathParam("datasetKey") int datasetKey,
+                              @QueryParam("compareNames") boolean compareNames,
                               @QueryParam("mode") MatchingMode mode,
                               @QueryParam("minSize") Integer minSize,
                               @QueryParam("sectorKey") Integer sectorKey,
@@ -42,7 +43,9 @@ public class DuplicateResource {
                               @QueryParam("withDecision") Boolean withDecision,
                               @Valid @BeanParam Page page, @Context SqlSession session) {
     DuplicateDao dao = new DuplicateDao(session);
-    return dao.find(mode, minSize, datasetKey, sectorKey, category, ranks, status, authorshipDifferent, parentDifferent, withDecision, page);
+    return compareNames ?
+        dao.findNames(mode, minSize, datasetKey, category, ranks, authorshipDifferent, page)
+      : dao.findUsages(mode, minSize, datasetKey, sectorKey, category, ranks, status, authorshipDifferent, parentDifferent, withDecision, page);
   }
   
 }

@@ -30,13 +30,29 @@ public class DuplicateDao {
     mapper = session.getMapper(DuplicateMapper.class);
   }
   
-  public List<Duplicate> find(MatchingMode mode, Integer minSize, int datasetKey, Integer sectorKey, NameCategory category, Set<Rank> ranks, Set<TaxonomicStatus> status, Boolean authorshipDifferent, Boolean parentDifferent, Boolean withDecision, Page page) {
+  public List<Duplicate> findNames(MatchingMode mode, Integer minSize, int datasetKey, NameCategory category, Set<Rank> ranks, Boolean authorshipDifferent, Page page) {
+    return find(false, mode, minSize, datasetKey, null, category, ranks, null, authorshipDifferent, null, null, page);
+  }
+  
+  public List<Duplicate> findUsages(MatchingMode mode, Integer minSize, int datasetKey, Integer sectorKey, NameCategory category, Set<Rank> ranks,
+                              Set<TaxonomicStatus> status, Boolean authorshipDifferent, Boolean parentDifferent, Boolean withDecision, Page page) {
+    return find(false, mode, minSize, datasetKey, sectorKey, category, ranks, status, authorshipDifferent, parentDifferent, withDecision, page);
+  }
+  
+  private List<Duplicate> find(boolean compareNames, MatchingMode mode, Integer minSize, int datasetKey, Integer sectorKey, NameCategory category, Set<Rank> ranks,
+                              Set<TaxonomicStatus> status, Boolean authorshipDifferent, Boolean parentDifferent, Boolean withDecision,
+                              Page page) {
     mode = ObjectUtils.defaultIfNull(mode, MatchingMode.STRICT);
     minSize = ObjectUtils.defaultIfNull(minSize, 2);
     Preconditions.checkArgument(minSize > 1, "minimum group size must at least be 2");
     
-    // load all duplicate usages
-    List<Duplicate.Mybatis> dupsTmp = mapper.duplicates(mode, minSize, datasetKey, sectorKey, category, ranks, status, authorshipDifferent, parentDifferent, withDecision, page);
+    // load all duplicate usages or names
+    List<Duplicate.Mybatis> dupsTmp;
+    if (compareNames) {
+      dupsTmp = mapper.duplicateNames(mode, minSize, datasetKey, category, ranks, authorshipDifferent, page);
+    } else {
+      dupsTmp = mapper.duplicates(mode, minSize, datasetKey, sectorKey, category, ranks, status, authorshipDifferent, parentDifferent, withDecision, page);
+    }
     if (dupsTmp.isEmpty()) {
       return Collections.EMPTY_LIST;
     }
@@ -46,8 +62,14 @@ public class DuplicateDao {
         .flatMap(List::stream)
         .collect(Collectors.toList());
     
-    Map<String, Duplicate.UsageDecision> usages = mapper.usagesByIds(datasetKey, ids).stream()
-        .collect(Collectors.toMap(d -> d.getUsage().getId(), Function.identity()));
+    Map<String, Duplicate.UsageDecision> usages;
+    if (compareNames) {
+      usages = mapper.namesByIds(datasetKey, ids).stream()
+          .collect(Collectors.toMap(d -> d.getUsage().getName().getId(), Function.identity()));
+    } else {
+      usages = mapper.usagesByIds(datasetKey, ids).stream()
+          .collect(Collectors.toMap(d -> d.getUsage().getId(), Function.identity()));
+    }
     
     List<Duplicate> dups = new ArrayList<>(dupsTmp.size());
     for (Duplicate.Mybatis dm : dupsTmp) {

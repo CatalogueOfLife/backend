@@ -43,10 +43,12 @@ public class SectorResource extends GlobalEntityResource<Sector> {
     this.diff = diffService;
   }
   
+  @DELETE
   @Override
+  @Path("{key}")
   public void delete(Integer key, @Auth ColUser user) {
     // do not allow to delete a sector directly
-    // instead an asynchroneous sector deletion should be triggered in the admin-ws which also removes catalogue data
+    // instead an asynchroneous sector deletion should be triggered in the assembly resource which also removes catalogue data
     throw new NotAllowedException("Sectors cannot be deleted directly. Use the assembly service instead");
   }
   

@@ -19,6 +19,19 @@
                     select="org.col.db.mapper.TaxonMapper.classificationSimple"/>
     </resultMap>
 
+    <select id="namesByIds" resultMap="org.col.db.mapper.NameUsageWrapperMapper.bareNameResultMap">
+        SELECT
+        <include refid="org.col.db.mapper.NameMapper.nameCols">
+            <property name="alias" value="n"/>
+            <property name="prefix" value="n_"/>
+        </include>,
+        coalesce(parseInt(n.combination_year), r.year) AS n_publishedInYear
+        FROM
+            name_${datasetKey} n ON u.name_id=n.id
+            LEFT JOIN reference_${datasetKey} r ON n.published_in_id=r.id
+        WHERE n.id IN (<foreach collection="ids" item="id" separator=",">#{id}</foreach>)
+    </select>
+
     <select id="usagesByIds" resultMap="usageDecisionResultMap">
         SELECT
         u.is_synonym,
@@ -41,12 +54,12 @@
         </include>,
         ed.key AS decision_key
         FROM
-            name_usage_${datasetKey} u
-            JOIN name_${datasetKey} n ON u.name_id=n.id
-            LEFT JOIN name_usage_${datasetKey} a ON u.parent_id=a.id AND u.is_synonym
-            LEFT JOIN name_${datasetKey} an ON a.name_id=an.id
-            LEFT JOIN reference_${datasetKey} r ON n.published_in_id=r.id
-            LEFT JOIN decision ed ON ed.subject_id=u.id
+        name_usage_${datasetKey} u
+        JOIN name_${datasetKey} n ON u.name_id=n.id
+        LEFT JOIN name_usage_${datasetKey} a ON u.parent_id=a.id AND u.is_synonym
+        LEFT JOIN name_${datasetKey} an ON a.name_id=an.id
+        LEFT JOIN reference_${datasetKey} r ON n.published_in_id=r.id
+        LEFT JOIN decision ed ON ed.subject_id=u.id
         WHERE u.id IN (<foreach collection="ids" item="id" separator=",">#{id}</foreach>)
     </select>
 
@@ -56,6 +69,38 @@
             <otherwise>lower(scientific_name)</otherwise>
         </choose>
     </sql>
+
+    <select id="duplicateNames" parameterType="map" resultMap="duplicateResultMap">
+        SELECT <include refid="keyCol" /> AS key, array_agg(n.id) AS ids
+        FROM name_${datasetKey} n
+        <where>
+            <if test="category != null">
+                <if test="category.highest != null">
+                    AND n.rank &gt;= #{category.highest}::rank
+                </if>
+                <if test="category.lowest != null">
+                    AND n.rank &lt;= #{category.lowest}::rank
+                </if>
+            </if>
+            <if test="ranks != null and !ranks.isEmpty()">
+                AND n.rank IN (<foreach collection="ranks" item="r" separator=",">#{r}::rank</foreach>)
+            </if>
+        </where>
+        GROUP BY <include refid="keyCol" />
+        HAVING count(*) >= #{minSize}
+        <if test="authorshipDifferent != null">
+            AND count(
+            DISTINCT <choose><when test="mode.name() == 'FUZZY'">n.authorship_normalized</when><otherwise>n.authorship</otherwise></choose>
+            )
+            <!-- make sure at least 2 authorships are different -->
+            <if test="authorshipDifferent">&gt; 1</if>
+            <!-- make sure all authorships are the same -->
+            <if test="!authorshipDifferent">&lt;= 1</if>
+        </if>
+        ORDER BY <include refid="keyCol" />
+        <include refid="org.col.db.mapper.Common.limit" />
+    </select>
+
     <select id="duplicates" parameterType="map" resultMap="duplicateResultMap">
         SELECT <include refid="keyCol" /> AS key, array_agg(u.id) AS ids
         FROM name_usage_${datasetKey} u

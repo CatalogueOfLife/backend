@@ -94,4 +94,16 @@ public class DuplicateMapperTest {
       assertNotNull(d.getKey());
     }
   }
+  
+  @Test
+  public void duplicateNames() {
+    List<Duplicate.Mybatis> dups = mapper.duplicateNames(MatchingMode.STRICT, 2, datasetKey,  NameCategory.BINOMIAL,
+        Sets.newHashSet(Rank.SPECIES), false, new Page(0, 2));
+    assertEquals(2, dups.size());
+    for (Duplicate.Mybatis d : dups) {
+      assertFalse(d.getUsages().isEmpty());
+      assertNotNull(d.getKey());
+    }
+  }
+  
 }

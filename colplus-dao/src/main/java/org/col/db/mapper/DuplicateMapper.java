@@ -13,6 +13,17 @@ import org.gbif.nameparser.api.Rank;
 
 public interface DuplicateMapper {
   
+  List<Duplicate.Mybatis> duplicateNames(@Param("mode") MatchingMode mode,
+                                 @Param("minSize") Integer minSize,
+                                 @Param("datasetKey") int datasetKey,
+                                 @Param("category") NameCategory category,
+                                 @Param("ranks") Set<Rank> ranks,
+                                 @Param("authorshipDifferent") Boolean authorshipDifferent,
+                                 @Param("page") Page page);
+  
+  List<Duplicate.UsageDecision> namesByIds(@Param("datasetKey") int datasetKey, @Param("ids") List<String> ids);
+  
+  
   List<Duplicate.Mybatis> duplicates(@Param("mode") MatchingMode mode,
                              @Param("minSize") Integer minSize,
                              @Param("datasetKey") int datasetKey,
