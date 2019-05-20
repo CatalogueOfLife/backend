@@ -237,17 +237,16 @@
 
     <update id="incDatasetSectorCount">
         WITH RECURSIVE x AS (
-        SELECT u.id, u.parent_id
-        FROM name_usage_${datasetKey} u
-        WHERE u.id = #{id}
-        UNION
-        SELECT u.id, u.parent_id
-        FROM name_usage_${datasetKey} u, x
-        WHERE u.id = x.parent_id
+            SELECT u.id, u.parent_id
+            FROM name_usage_${datasetKey} u
+            WHERE u.id = #{id}
+            UNION
+            SELECT u.id, u.parent_id
+            FROM name_usage_${datasetKey} u, x
+            WHERE u.id = x.parent_id
         )
-
         UPDATE name_usage_${datasetKey}
-        SET dataset_sectors = jsonb_set( coalesce(dataset_sectors, '{}'), '{"${dkey}"}', to_jsonb( coalesce( (dataset_sectors->'${dkey}')::int, 0) + ${delta} ), true)
+        SET dataset_sectors = jsonb_set( coalesce(dataset_sectors, '{}'::jsonb), '{"${dkey}"}', to_jsonb( coalesce( (dataset_sectors->'${dkey}')::int, 0) + ${delta} ), true)
         WHERE id IN (SELECT id FROM x)
     </update>
 
@@ -262,8 +261,8 @@
         SET dataset_sectors = NULL
         FROM name n
         WHERE n.id=u.name_id
-        AND n.rank &lt; 'genus'
-        AND NOT u.is_synonym
+            AND n.rank &lt; 'genus'
+            AND NOT u.is_synonym
     </update>
 
 </mapper>

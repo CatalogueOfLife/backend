@@ -2,7 +2,7 @@ package org.col.common.datapackage;
 
 import java.util.Objects;
 
-import org.col.api.datapackage.ColTerm;
+import org.col.api.datapackage.ColdpTerm;
 
 /**
  *
@@ -15,7 +15,7 @@ public class Reference {
   public Reference() {
   }
   
-  public Reference(ColTerm resource, ColTerm fields) {
+  public Reference(ColdpTerm resource, ColdpTerm fields) {
     this.resource = resource.simpleName().toLowerCase();
     this.fields = fields.simpleName();
   }

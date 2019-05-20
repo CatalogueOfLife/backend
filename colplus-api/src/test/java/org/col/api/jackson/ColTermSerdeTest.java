@@ -1,6 +1,6 @@
 package org.col.api.jackson;
 
-import org.col.api.datapackage.ColTerm;
+import org.col.api.datapackage.ColdpTerm;
 import org.gbif.dwc.terms.Term;
 import org.junit.Assert;
 import org.junit.Test;
@@ -16,17 +16,17 @@ public class ColTermSerdeTest extends SerdeTestBase<Term> {
   
   @Override
   public Term genTestValue() throws Exception {
-    return ColTerm.Taxon;
+    return ColdpTerm.Taxon;
   }
   
   @Test
   public void testPrefix() throws Exception {
-    String val = ApiModule.MAPPER.writeValueAsString(ColTerm.Taxon);
+    String val = ApiModule.MAPPER.writeValueAsString(ColdpTerm.Taxon);
     System.out.println(val);
     Assert.assertTrue(val.contains(":"));
     Assert.assertEquals("\"col:Taxon\"", val);
   
-    val = ApiModule.MAPPER.writeValueAsString(ColTerm.class_);
+    val = ApiModule.MAPPER.writeValueAsString(ColdpTerm.class_);
     System.out.println(val);
     Assert.assertEquals("\"col:class\"", val);
   }

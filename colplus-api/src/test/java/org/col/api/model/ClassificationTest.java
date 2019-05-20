@@ -1,6 +1,6 @@
 package org.col.api.model;
 
-import org.col.api.datapackage.ColTerm;
+import org.col.api.datapackage.ColdpTerm;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Test;
 
@@ -43,7 +43,7 @@ public class ClassificationTest {
   public void higherRanks() {
     Classification c = new Classification();
     int hash = c.hashCode();
-    for (ColTerm t : ColTerm.HIGHER_RANKS) {
+    for (ColdpTerm t : ColdpTerm.HIGHER_RANKS) {
       assertTrue(c.setByTerm(t, "xyz"));
       assertNotEquals(hash, c.hashCode());
       hash = c.hashCode();

@@ -12,7 +12,7 @@ import org.col.importer.neo.model.NeoNameRel;
 import org.col.importer.neo.model.NeoUsage;
 import org.col.importer.neo.model.RelType;
 import org.col.importer.reference.ReferenceFactory;
-import org.col.api.datapackage.ColTerm;
+import org.col.api.datapackage.ColdpTerm;
 import org.col.api.model.*;
 import org.col.api.vocab.*;
 import org.col.parser.EnumNote;
@@ -39,48 +39,50 @@ public class ColdpInterpreter extends InterpreterBase {
   }
 
   Optional<Reference> interpretReference(VerbatimRecord v) {
-    if (!v.hasTerm(ColTerm.ID)) {
+    if (!v.hasTerm(ColdpTerm.ID)) {
       return Optional.empty();
     }
-    return Optional.of(refFactory.fromCol(
-        v.get(ColTerm.ID),
-        v.get(ColTerm.author),
-        v.get(ColTerm.year),
-        v.get(ColTerm.title),
-        v.get(ColTerm.source),
-        v.get(ColTerm.doi),
-        v.get(ColTerm.link),
+    return Optional.of(refFactory.fromColDP(
+        v.get(ColdpTerm.ID),
+        v.get(ColdpTerm.citation),
+        v.get(ColdpTerm.author),
+        v.get(ColdpTerm.year),
+        v.get(ColdpTerm.title),
+        v.get(ColdpTerm.source),
+        v.get(ColdpTerm.details),
+        v.get(ColdpTerm.doi),
+        v.get(ColdpTerm.link),
         v
     ));
   }
   
   Optional<NeoUsage> interpretTaxon(VerbatimRecord v) {
-    return findName(v, ColTerm.nameID).map(n -> {
-      if (!v.hasTerm(ColTerm.ID)) {
+    return findName(v, ColdpTerm.nameID).map(n -> {
+      if (!v.hasTerm(ColdpTerm.ID)) {
         return null;
       }
       //TODO: make sure no TAXON label already exists!!!
       NeoUsage u = NeoUsage.createTaxon(Origin.SOURCE, TaxonomicStatus.ACCEPTED);
       u.nameNode = n.node;
-      u.setId(v.getRaw(ColTerm.ID));
+      u.setId(v.getRaw(ColdpTerm.ID));
       u.setVerbatimKey(v.getKey());
     
       // taxon
       Taxon t = u.getTaxon();
       t.setOrigin(Origin.SOURCE);
-      t.setAccordingTo(v.get(ColTerm.accordingTo));
-      t.setAccordingToDate(date(v, Issue.ACCORDING_TO_DATE_INVALID, ColTerm.accordingToDate));
+      t.setAccordingTo(v.get(ColdpTerm.accordingTo));
+      t.setAccordingToDate(date(v, Issue.ACCORDING_TO_DATE_INVALID, ColdpTerm.accordingToDate));
       //TODO: ColTerm.accordingToDateID for ORCIDS
-      t.setWebpage(uri(v, Issue.URL_INVALID, ColTerm.link));
-      t.setFossil(bool(v, Issue.IS_FOSSIL_INVALID, ColTerm.fossil));
-      t.setRecent(bool(v, Issue.IS_RECENT_INVALID, ColTerm.recent));
-      t.setRemarks(v.get(ColTerm.remarks));
+      t.setWebpage(uri(v, Issue.URL_INVALID, ColdpTerm.link));
+      t.setFossil(bool(v, Issue.IS_FOSSIL_INVALID, ColdpTerm.fossil));
+      t.setRecent(bool(v, Issue.IS_RECENT_INVALID, ColdpTerm.recent));
+      t.setRemarks(v.get(ColdpTerm.remarks));
       // status
-      if (Objects.equals(Boolean.TRUE, bool(v, Issue.PROVISIONAL_STATUS_INVALID, ColTerm.provisional))) {
+      if (Objects.equals(Boolean.TRUE, bool(v, Issue.PROVISIONAL_STATUS_INVALID, ColdpTerm.provisional))) {
         t.setStatus(TaxonomicStatus.PROVISIONALLY_ACCEPTED);
       }
       // lifezones
-      setLifezones(t, v, ColTerm.lifezone);
+      setLifezones(t, v, ColdpTerm.lifezone);
     
       t.setSpeciesEstimate(null);
       t.setSpeciesEstimateReferenceId(null);
@@ -103,8 +105,8 @@ public class ColdpInterpreter extends InterpreterBase {
   }
   
   Optional<NeoUsage> interpretSynonym(VerbatimRecord v) {
-    return findName(v, ColTerm.nameID).map(n -> {
-      TaxonomicStatus status = parse(TaxonomicStatusParser.PARSER, v.get(ColTerm.status)).orElse(SYN_NOTE).val;
+    return findName(v, ColdpTerm.nameID).map(n -> {
+      TaxonomicStatus status = parse(TaxonomicStatusParser.PARSER, v.get(ColdpTerm.status)).orElse(SYN_NOTE).val;
       if (!status.isSynonym()) {
         v.addIssue(Issue.TAXONOMIC_STATUS_INVALID);
         // override status as we require some accepted status on Taxon and some synonym status for
@@ -113,12 +115,12 @@ public class ColdpInterpreter extends InterpreterBase {
   
       NeoUsage u = NeoUsage.createSynonym(Origin.SOURCE, status);
       u.nameNode = n.node;
-      String id = v.get(ColTerm.taxonID) + "-" + v.getRaw(ColTerm.nameID);
+      String id = v.get(ColdpTerm.taxonID) + "-" + v.getRaw(ColdpTerm.nameID);
       u.setId(id);
       u.setVerbatimKey(v.getKey());
   
       Synonym s = u.getSynonym();
-      s.setRemarks(v.get(ColTerm.remarks));
+      s.setRemarks(v.get(ColdpTerm.remarks));
       s.setAccordingTo(n.accordingTo);
       return u;
     });
@@ -126,10 +128,10 @@ public class ColdpInterpreter extends InterpreterBase {
   
   Optional<NeoNameRel> interpretNameRelations(VerbatimRecord rec) {
     NeoNameRel rel = new NeoNameRel();
-    SafeParser<NomRelType> type = SafeParser.parse(NomRelTypeParser.PARSER, rec.get(ColTerm.type));
+    SafeParser<NomRelType> type = SafeParser.parse(NomRelTypeParser.PARSER, rec.get(ColdpTerm.type));
     if (type.isPresent()) {
       rel.setType(RelType.from(type.get()));
-      rel.setNote(rec.get(ColTerm.remarks));
+      rel.setNote(rec.get(ColdpTerm.remarks));
       setReference(rel, rec);
       return Optional.of(rel);
     }
@@ -139,68 +141,68 @@ public class ColdpInterpreter extends InterpreterBase {
   List<VernacularName> interpretVernacular(VerbatimRecord rec) {
     return super.interpretVernacular(rec,
         this::setReference,
-        ColTerm.name,
-        ColTerm.transliteration,
-        ColTerm.language,
-        ColTerm.country
+        ColdpTerm.name,
+        ColdpTerm.transliteration,
+        ColdpTerm.language,
+        ColdpTerm.country
     );
   }
 
   List<Distribution> interpretDistribution(VerbatimRecord rec) {
     return super.interpretDistribution(rec, this::setReference,
-        ColTerm.area,
-        ColTerm.gazetteer,
-        ColTerm.status);
+        ColdpTerm.area,
+        ColdpTerm.gazetteer,
+        ColdpTerm.status);
   }
   
   List<Description> interpretDescription(VerbatimRecord rec) {
     return interpretDescription(rec, this::setReference,
-        ColTerm.description,
-        ColTerm.category,
-        ColTerm.language);
+        ColdpTerm.description,
+        ColdpTerm.category,
+        ColdpTerm.language);
   }
   
   List<Media> interpretMedia(VerbatimRecord rec) {
     return interpretMedia(rec, this::setReference,
-        ColTerm.type,
-        ColTerm.url,
-        ColTerm.link,
-        ColTerm.license,
-        ColTerm.creator,
-        ColTerm.created,
-        ColTerm.title,
-        ColTerm.format);
+        ColdpTerm.type,
+        ColdpTerm.url,
+        ColdpTerm.link,
+        ColdpTerm.license,
+        ColdpTerm.creator,
+        ColdpTerm.created,
+        ColdpTerm.title,
+        ColdpTerm.format);
   }
 
   Optional<NeoName> interpretName(VerbatimRecord v) {
-    Optional<NameAccordingTo> opt = interpretName(v.get(ColTerm.ID),
-        v.get(ColTerm.rank), v.get(ColTerm.scientificName), v.get(ColTerm.authorship),
-        v.get(ColTerm.genus), v.get(ColTerm.subgenus), v.get(ColTerm.specificEpithet), v.get(ColTerm.infraspecificEpithet),
-        v.get(ColTerm.code), v.get(ColTerm.status), v.get(ColTerm.link), v.get(ColTerm.remarks), v);
+    Optional<NameAccordingTo> opt = interpretName(v.get(ColdpTerm.ID),
+        v.get(ColdpTerm.rank), v.get(ColdpTerm.scientificName), v.get(ColdpTerm.authorship),
+        v.get(ColdpTerm.genus), v.get(ColdpTerm.subgenus), v.get(ColdpTerm.specificEpithet), v.get(ColdpTerm.infraspecificEpithet),
+        v.get(ColdpTerm.code), v.get(ColdpTerm.status), v.get(ColdpTerm.link), v.get(ColdpTerm.remarks), v);
     return opt.map(NeoName::new);
   }
   
   private Classification interpretClassification(VerbatimRecord v) {
     Classification cl = new Classification();
-    cl.setKingdom(v.get(ColTerm.kingdom));
-    cl.setPhylum(v.get(ColTerm.phylum));
-    cl.setClass_(v.get(ColTerm.class_));
-    cl.setOrder(v.get(ColTerm.order));
-    cl.setSuperfamily(v.get(ColTerm.superfamily));
-    cl.setFamily(v.get(ColTerm.family));
-    cl.setGenus(v.get(ColTerm.genus));
-    cl.setSubgenus(v.get(ColTerm.subgenus));
+    cl.setKingdom(v.get(ColdpTerm.kingdom));
+    cl.setPhylum(v.get(ColdpTerm.phylum));
+    cl.setClass_(v.get(ColdpTerm.class_));
+    cl.setOrder(v.get(ColdpTerm.order));
+    cl.setSuperfamily(v.get(ColdpTerm.superfamily));
+    cl.setFamily(v.get(ColdpTerm.family));
+    cl.setGenus(v.get(ColdpTerm.genus));
+    cl.setSubgenus(v.get(ColdpTerm.subgenus));
     return cl;
   }
   
   private void setReference(Referenced obj, VerbatimRecord v) {
-    if (v.hasTerm(ColTerm.referenceID)) {
-      Reference r = refFactory.find(v.get(ColTerm.referenceID), null);
+    if (v.hasTerm(ColdpTerm.referenceID)) {
+      Reference r = refFactory.find(v.get(ColdpTerm.referenceID), null);
       if (r != null) {
         obj.setReferenceId(r.getId());
       } else {
         LOG.info("ReferenceID {} not existing but referred from {} {}",
-            v.get(ColTerm.referenceID),
+            v.get(ColdpTerm.referenceID),
             obj.getClass().getSimpleName(),
             v.fileLine()
         );

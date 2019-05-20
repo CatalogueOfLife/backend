@@ -278,8 +278,14 @@ public enum Issue {
       "The name (authorship) contains unmatched brackets, i.e. it misses closing brackets usually indicating truncated data."),
   
   CITATION_CONTAINER_TITLE_UNPARSED(Group.REFERENCE, Level.INFO,
-      "Value for container title was accepted as-is"),
+      "Value for container title was stored literally when it probably included additional information, e.g. pages"),
   
+  CITATION_DETAILS_UNPARSED(Group.REFERENCE, Level.INFO,
+      "Value for reference details was stored literally and placed in CSL page"),
+  
+  CITATION_AUTHORS_UNPARSED(Group.REFERENCE, Level.INFO,
+      "Value for reference authors was stored literally and not broken down into individual authors"),
+
   CITATION_UNPARSED(Group.REFERENCE, Level.INFO,
       "Value for citation was accepted as-is");
   

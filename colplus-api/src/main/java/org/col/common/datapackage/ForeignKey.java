@@ -2,7 +2,7 @@ package org.col.common.datapackage;
 
 import java.util.Objects;
 
-import org.col.api.datapackage.ColTerm;
+import org.col.api.datapackage.ColdpTerm;
 
 /**
  *
@@ -14,7 +14,7 @@ public class ForeignKey {
   public ForeignKey() {
   }
   
-  public ForeignKey(ColTerm field, ColTerm resource, ColTerm resourceField) {
+  public ForeignKey(ColdpTerm field, ColdpTerm resource, ColdpTerm resourceField) {
     this.fields = field.simpleName();
     reference = new Reference(resource, resourceField);
   }

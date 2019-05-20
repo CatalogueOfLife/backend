@@ -1,6 +1,6 @@
 package org.col.importer.coldp;
 
-import org.col.api.datapackage.ColTerm;
+import org.col.api.datapackage.ColdpTerm;
 import org.gbif.utils.file.FileUtils;
 import org.junit.Test;
 
@@ -15,14 +15,14 @@ public class ColdpReaderTest {
     ColdpReader reader = ColdpReader.from(FileUtils.getClasspathFile("coldp/1").toPath());
     
     assertEquals(9, reader.schemas().size());
-    assertTrue(reader.hasSchema(ColTerm.Description));
-    assertTrue(reader.hasSchema(ColTerm.Distribution));
-    assertTrue(reader.hasSchema(ColTerm.Media));
-    assertTrue(reader.hasSchema(ColTerm.Name));
-    assertTrue(reader.hasSchema(ColTerm.NameRel));
-    assertTrue(reader.hasSchema(ColTerm.Reference));
-    assertTrue(reader.hasSchema(ColTerm.Synonym));
-    assertTrue(reader.hasSchema(ColTerm.Taxon));
-    assertTrue(reader.hasSchema(ColTerm.VernacularName));
+    assertTrue(reader.hasSchema(ColdpTerm.Description));
+    assertTrue(reader.hasSchema(ColdpTerm.Distribution));
+    assertTrue(reader.hasSchema(ColdpTerm.Media));
+    assertTrue(reader.hasSchema(ColdpTerm.Name));
+    assertTrue(reader.hasSchema(ColdpTerm.NameRel));
+    assertTrue(reader.hasSchema(ColdpTerm.Reference));
+    assertTrue(reader.hasSchema(ColdpTerm.Synonym));
+    assertTrue(reader.hasSchema(ColdpTerm.Taxon));
+    assertTrue(reader.hasSchema(ColdpTerm.VernacularName));
   }
 }

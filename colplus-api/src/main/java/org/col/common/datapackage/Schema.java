@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.col.api.datapackage.ColTerm;
+import org.col.api.datapackage.ColdpTerm;
 
 
 /**
@@ -15,16 +15,16 @@ import org.col.api.datapackage.ColTerm;
 public class Schema {
   
   @JsonIgnore
-  private ColTerm rowType;
+  private ColdpTerm rowType;
   private List<Field> fields = new ArrayList<>();
   private String primaryKey;
   private List<ForeignKey> foreignKeys = new ArrayList<>();
   
-  public ColTerm getRowType() {
+  public ColdpTerm getRowType() {
     return rowType;
   }
   
-  public void setRowType(ColTerm rowType) {
+  public void setRowType(ColdpTerm rowType) {
     this.rowType = rowType;
   }
   
