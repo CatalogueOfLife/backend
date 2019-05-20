@@ -21,5 +21,5 @@ ID	scientificName	authorship	rank	genus	specificEpithet	infraspecificEpithet	pub
 1010	Gundelia rosea	L.	species	Gundelia	rosea				botanical			
 1011	Gundelia tournefortii	L.	species	Gundelia	tournefortii				botanical			
 1001a	Crepis bakeri subsp. bakeri		subspecies	Crepis	bakeri	bakeri			botanical			
-1001b	Crepis bakeri subsp. cusickii	(Eastw.) Babc. & Stebbins	subspecies	Crepis	bakeri	cusickii	publishedInID	publishedInPage	botanical			
-1001c	Crepis bakeri subsp. idahoensis	Babc. & Stebbins	subspecies	Crepis	bakeri	idahoensis	publishedInID	publishedInPage	botanical			
+1001b	Crepis bakeri subsp. cusickii	(Eastw.) Babc. & Stebbins	subspecies	Crepis	bakeri	cusickii			botanical
+1001c	Crepis bakeri subsp. idahoensis	Babc. & Stebbins	subspecies	Crepis	bakeri	idahoensis			botanical

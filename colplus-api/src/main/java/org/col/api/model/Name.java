@@ -96,7 +96,7 @@ public class Name extends DataEntity implements DatasetEntity, VerbatimEntity {
   
   private String cultivarEpithet;
   
-  private String strain;
+  private String appendedPhrase;
   
   /**
    * A bacterial candidate name. Candidatus is a provisional status for incompletely described
@@ -202,7 +202,7 @@ public class Name extends DataEntity implements DatasetEntity, VerbatimEntity {
     this.specificEpithet = n.specificEpithet;
     this.infraspecificEpithet = n.infraspecificEpithet;
     this.cultivarEpithet = n.cultivarEpithet;
-    this.strain = n.strain;
+    this.appendedPhrase = n.appendedPhrase;
     this.candidatus = n.candidatus;
     this.notho = n.notho;
     this.combinationAuthorship = n.combinationAuthorship;
@@ -231,7 +231,7 @@ public class Name extends DataEntity implements DatasetEntity, VerbatimEntity {
     pn.setSpecificEpithet(n.getSpecificEpithet());
     pn.setInfraspecificEpithet(n.getInfraspecificEpithet());
     pn.setCultivarEpithet(n.getCultivarEpithet());
-    pn.setStrain(n.getStrain());
+    pn.setStrain(n.getAppendedPhrase());
     pn.setCombinationAuthorship(n.getCombinationAuthorship());
     pn.setBasionymAuthorship(n.getBasionymAuthorship());
     pn.setSanctioningAuthor(n.getSanctioningAuthor());
@@ -522,12 +522,12 @@ public class Name extends DataEntity implements DatasetEntity, VerbatimEntity {
     this.cultivarEpithet = cultivarEpithet;
   }
   
-  public String getStrain() {
-    return strain;
+  public String getAppendedPhrase() {
+    return appendedPhrase;
   }
   
-  public void setStrain(String strain) {
-    this.strain = strain;
+  public void setAppendedPhrase(String appendedPhrase) {
+    this.appendedPhrase = appendedPhrase;
   }
   
   public boolean isCandidatus() {
@@ -725,7 +725,7 @@ public class Name extends DataEntity implements DatasetEntity, VerbatimEntity {
         Objects.equals(specificEpithet, name.specificEpithet) &&
         Objects.equals(infraspecificEpithet, name.infraspecificEpithet) &&
         Objects.equals(cultivarEpithet, name.cultivarEpithet) &&
-        Objects.equals(strain, name.strain) &&
+        Objects.equals(appendedPhrase, name.appendedPhrase) &&
         notho == name.notho &&
         Objects.equals(combinationAuthorship, name.combinationAuthorship) &&
         Objects.equals(basionymAuthorship, name.basionymAuthorship) &&
@@ -744,7 +744,11 @@ public class Name extends DataEntity implements DatasetEntity, VerbatimEntity {
   
   @Override
   public int hashCode() {
-    return Objects.hash(id, datasetKey, sectorKey, homotypicNameId, nameIndexId, scientificName, authorship, rank, uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, strain, candidatus, notho, combinationAuthorship, basionymAuthorship, sanctioningAuthor, code, nomStatus, publishedInId, publishedInPage, publishedInYear, origin, type, webpage, fossil, remarks);
+    return Objects.hash(id, datasetKey, sectorKey, homotypicNameId, nameIndexId, scientificName, authorship, rank,
+        uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, appendedPhrase,
+        candidatus, notho, combinationAuthorship, basionymAuthorship, sanctioningAuthor, code, nomStatus,
+        publishedInId, publishedInPage, publishedInYear,
+        origin, type, webpage, fossil, remarks);
   }
   
   @Override
@@ -791,8 +795,8 @@ public class Name extends DataEntity implements DatasetEntity, VerbatimEntity {
       sb.append(" CV:").append(this.cultivarEpithet);
     }
     
-    if (this.strain != null) {
-      sb.append(" STR:").append(this.strain);
+    if (this.appendedPhrase != null) {
+      sb.append(" AP:").append(this.appendedPhrase);
     }
     
     if (this.combinationAuthorship != null) {

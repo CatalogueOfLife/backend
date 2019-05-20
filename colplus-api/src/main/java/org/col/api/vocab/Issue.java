@@ -65,6 +65,12 @@ public enum Issue {
   UNUSUAL_NAME_CHARACTERS(Group.NAME, Level.WARNING,
       "The name parts contain unusual characters."),
   
+  MULTI_WORD_EPITHET(Group.NAME, Level.WARNING,
+      "At least one epithet contains multiple words before parsing."),
+
+  UPPERCASE_EPITHET(Group.NAME, Level.WARNING,
+      "At least one epithet contains upper case letters."),
+  
   NULL_EPITHET(Group.NAME, Level.ERROR,
       "At least one epithet equals literal value \"null\" or \"none\"."),
   
@@ -264,6 +270,12 @@ public enum Issue {
   //
   // REFERENCE ISSUES
   //
+  
+  UNPARSABLE_YEAR(Group.REFERENCE, Level.WARNING,
+      "The given year of publication cannot be parsed into a sensible integer year."),
+  
+  UNLIKELY_YEAR(Group.REFERENCE, Level.WARNING,
+      "The given year of publication is unlikely to be real."),
   
   MULTIPLE_PUBLISHED_IN_REFERENCES(Group.REFERENCE, Level.WARNING,
       "There are multiple references for the original publication of a name."),

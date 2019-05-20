@@ -22,27 +22,7 @@ import org.col.api.vocab.NameField;
 import org.col.es.model.EsNameUsage;
 import org.col.es.model.Monomial;
 
-import static org.col.api.vocab.NameField.BASIONYM_AUTHORS;
-import static org.col.api.vocab.NameField.BASIONYM_EX_AUTHORS;
-import static org.col.api.vocab.NameField.BASIONYM_YEAR;
-import static org.col.api.vocab.NameField.CANDIDATUS;
-import static org.col.api.vocab.NameField.COMBINATION_AUTHORS;
-import static org.col.api.vocab.NameField.COMBINATION_EX_AUTHORS;
-import static org.col.api.vocab.NameField.COMBINATION_YEAR;
-import static org.col.api.vocab.NameField.CULTIVAR_EPITHET;
-import static org.col.api.vocab.NameField.GENUS;
-import static org.col.api.vocab.NameField.INFRAGENERIC_EPITHET;
-import static org.col.api.vocab.NameField.INFRASPECIFIC_EPITHET;
-import static org.col.api.vocab.NameField.NOM_STATUS;
-import static org.col.api.vocab.NameField.NOTHO;
-import static org.col.api.vocab.NameField.PUBLISHED_IN_ID;
-import static org.col.api.vocab.NameField.PUBLISHED_IN_PAGE;
-import static org.col.api.vocab.NameField.REMARKS;
-import static org.col.api.vocab.NameField.SANCTIONING_AUTHOR;
-import static org.col.api.vocab.NameField.SPECIFIC_EPITHET;
-import static org.col.api.vocab.NameField.STRAIN;
-import static org.col.api.vocab.NameField.UNINOMIAL;
-import static org.col.api.vocab.NameField.WEBPAGE;
+import static org.col.api.vocab.NameField.*;
 import static org.col.common.collection.CollectionUtils.notEmpty;
 import static org.col.es.EsModule.NAME_USAGE_WRITER;
 
@@ -247,7 +227,7 @@ public class NameUsageTransfer {
     addIfSet(fields, SANCTIONING_AUTHOR, name.getSanctioningAuthor());
     addIfSet(fields, WEBPAGE, name.getWebpage());
     addIfSet(fields, SPECIFIC_EPITHET, name.getSpecificEpithet());
-    addIfSet(fields, STRAIN, name.getStrain());
+    addIfSet(fields, APPENDED_PHRASE, name.getAppendedPhrase());
     addIfSet(fields, UNINOMIAL, name.getUninomial());
     if (name.isCandidatus()) {
       fields.add(CANDIDATUS);

@@ -158,7 +158,7 @@ public class NameParser implements Parser<NameAccordingTo> {
     n.setSpecificEpithet(pn.getSpecificEpithet());
     n.setInfraspecificEpithet(pn.getInfraspecificEpithet());
     n.setCultivarEpithet(pn.getCultivarEpithet());
-    n.setStrain(pn.getStrain());
+    n.setAppendedPhrase(pn.getStrain());
     n.setCombinationAuthorship(pn.getCombinationAuthorship());
     n.setBasionymAuthorship(pn.getBasionymAuthorship());
     n.setSanctioningAuthor(pn.getSanctioningAuthor());

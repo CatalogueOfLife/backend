@@ -167,6 +167,18 @@ public class VerbatimRecord implements IssueContainer, GlobalEntity, Serializabl
   }
   
   /**
+   * @return true if at least one term exists and is not null or an empty string
+   */
+  public boolean hasAny(Term... terms) {
+    for (Term t : terms) {
+      if (hasTerm(t)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
    * @return the raw value without any unescaping
    */
   public String getRaw(Term term) {

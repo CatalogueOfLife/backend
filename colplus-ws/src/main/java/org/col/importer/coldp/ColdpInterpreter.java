@@ -4,17 +4,20 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-import org.col.importer.MappingFlags;
+import org.col.api.datapackage.ColdpTerm;
+import org.col.api.model.*;
+import org.col.api.vocab.Issue;
+import org.col.api.vocab.NomRelType;
+import org.col.api.vocab.Origin;
+import org.col.api.vocab.TaxonomicStatus;
 import org.col.importer.InterpreterBase;
+import org.col.importer.MappingFlags;
 import org.col.importer.neo.NeoDb;
 import org.col.importer.neo.model.NeoName;
 import org.col.importer.neo.model.NeoNameRel;
 import org.col.importer.neo.model.NeoUsage;
 import org.col.importer.neo.model.RelType;
 import org.col.importer.reference.ReferenceFactory;
-import org.col.api.datapackage.ColdpTerm;
-import org.col.api.model.*;
-import org.col.api.vocab.*;
 import org.col.parser.EnumNote;
 import org.col.parser.NomRelTypeParser;
 import org.col.parser.SafeParser;
@@ -177,8 +180,24 @@ public class ColdpInterpreter extends InterpreterBase {
   Optional<NeoName> interpretName(VerbatimRecord v) {
     Optional<NameAccordingTo> opt = interpretName(v.get(ColdpTerm.ID),
         v.get(ColdpTerm.rank), v.get(ColdpTerm.scientificName), v.get(ColdpTerm.authorship),
-        v.get(ColdpTerm.genus), v.get(ColdpTerm.subgenus), v.get(ColdpTerm.specificEpithet), v.get(ColdpTerm.infraspecificEpithet),
+        v.get(ColdpTerm.genus), v.get(ColdpTerm.infragenericEpithet), v.get(ColdpTerm.specificEpithet), v.get(ColdpTerm.infraspecificEpithet),
+        v.get(ColdpTerm.cultivarEpithet), v.get(ColdpTerm.appendedPhrase),
         v.get(ColdpTerm.code), v.get(ColdpTerm.status), v.get(ColdpTerm.link), v.get(ColdpTerm.remarks), v);
+    // publishedIn
+    if (opt.isPresent()) {
+      Name n = opt.get().getName();
+      if (v.hasTerm(ColdpTerm.publishedInID)) {
+        Reference ref = refFactory.find(v.get(ColdpTerm.publishedInID), null);
+        if (ref != null) {
+          n.setPublishedInId(ref.getId());
+          n.setPublishedInPage(v.get(ColdpTerm.publishedInPage));
+          n.setPublishedInYear(parseYear(ColdpTerm.publishedInYear, v));
+        } else {
+          LOG.info("ReferenceID {} not existing but referred from Name file line {}", v.get(ColdpTerm.publishedInID), v.fileLine());
+          v.addIssue(Issue.REFERENCE_ID_INVALID);
+        }
+      }
+    }
     return opt.map(NeoName::new);
   }
   
@@ -186,18 +205,24 @@ public class ColdpInterpreter extends InterpreterBase {
     Classification cl = new Classification();
     cl.setKingdom(v.get(ColdpTerm.kingdom));
     cl.setPhylum(v.get(ColdpTerm.phylum));
+    cl.setSubphylum(v.get(ColdpTerm.subphylum));
     cl.setClass_(v.get(ColdpTerm.class_));
+    cl.setSubclass(v.get(ColdpTerm.subclass));
     cl.setOrder(v.get(ColdpTerm.order));
+    cl.setSuborder(v.get(ColdpTerm.suborder));
     cl.setSuperfamily(v.get(ColdpTerm.superfamily));
     cl.setFamily(v.get(ColdpTerm.family));
+    cl.setSubfamily(v.get(ColdpTerm.subfamily));
     cl.setGenus(v.get(ColdpTerm.genus));
     cl.setSubgenus(v.get(ColdpTerm.subgenus));
+    cl.setTribe(v.get(ColdpTerm.tribe));
+    cl.setSubtribe(v.get(ColdpTerm.subtribe));
     return cl;
   }
   
   private void setReference(Referenced obj, VerbatimRecord v) {
-    if (v.hasTerm(ColdpTerm.referenceID)) {
-      Reference r = refFactory.find(v.get(ColdpTerm.referenceID), null);
+    if (v.hasAny(ColdpTerm.referenceID, ColdpTerm.publishedInID)) {
+      Reference r = refFactory.find(v.getFirstRaw(ColdpTerm.referenceID, ColdpTerm.publishedInID), null);
       if (r != null) {
         obj.setReferenceId(r.getId());
       } else {
@@ -210,6 +235,5 @@ public class ColdpInterpreter extends InterpreterBase {
       }
     }
   }
-  
   
 }

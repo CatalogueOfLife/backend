@@ -17,6 +17,10 @@ public interface IssueContainer {
   
   boolean hasIssue(Issue issue);
   
+  default boolean hasIssues() {
+    return !getIssues().isEmpty();
+  }
+  
   /**
    * Reusable issue container that does not store anything.
    */

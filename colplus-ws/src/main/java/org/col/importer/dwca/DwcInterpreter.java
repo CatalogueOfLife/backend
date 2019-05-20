@@ -206,7 +206,7 @@ public class DwcInterpreter extends InterpreterBase {
         v.getFirst(DwcTerm.taxonRank, DwcTerm.verbatimTaxonRank), v.get(DwcTerm.scientificName),
         v.get(DwcTerm.scientificNameAuthorship),
         v.getFirst(GbifTerm.genericName, DwcTerm.genus), v.get(DwcTerm.subgenus),
-        v.get(DwcTerm.specificEpithet), v.get(DwcTerm.infraspecificEpithet),
+        v.get(DwcTerm.specificEpithet), v.get(DwcTerm.infraspecificEpithet), null, null,
         v.get(DwcTerm.nomenclaturalCode), v.get(DwcTerm.nomenclaturalStatus),
         v.getRaw(DcTerm.references), v.get(DwcTerm.nomenclaturalStatus), v);
     

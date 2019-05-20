@@ -174,9 +174,9 @@ public class AcefInterpreter extends InterpreterBase {
       authorship = v.get(AcefTerm.InfraSpeciesAuthorString);
     } else {
       if (v.hasTerm(AcefTerm.SpeciesEpithet)) {
-        rank = "species";
+        rank = Rank.SPECIES.name();
       } else {
-        rank = "genus";
+        rank = Rank.GENUS.name();
       }
       authorship = v.get(AcefTerm.AuthorString);
     }
@@ -200,10 +200,10 @@ public class AcefInterpreter extends InterpreterBase {
       );
       opt = Optional.of(nat);
     } else {
-      opt = interpretName(v.get(idTerm), rank, null, authorship, v.get(AcefTerm.Genus),
-          v.get(AcefTerm.SubGenusName), v.get(AcefTerm.SpeciesEpithet),
-          v.get(AcefTerm.InfraSpeciesEpithet), null, v.get(AcefTerm.GSDNameStatus), null,
-          null, v);
+      opt = interpretName(v.get(idTerm), rank, null, authorship,
+          v.get(AcefTerm.Genus), v.get(AcefTerm.SubGenusName), v.get(AcefTerm.SpeciesEpithet), v.get(AcefTerm.InfraSpeciesEpithet),
+          null, null,
+          null, v.get(AcefTerm.GSDNameStatus), null,null, v);
     }
     return opt;
   }
