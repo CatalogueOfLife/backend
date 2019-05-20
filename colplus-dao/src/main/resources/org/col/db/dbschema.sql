@@ -323,7 +323,7 @@ CREATE TABLE name (
   specific_epithet TEXT,
   infraspecific_epithet TEXT,
   cultivar_epithet TEXT,
-  strain TEXT,
+  appended_phrase TEXT,
   candidatus BOOLEAN DEFAULT FALSE,
   notho integer,
   basionym_authors TEXT[] DEFAULT '{}',
