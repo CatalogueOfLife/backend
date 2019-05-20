@@ -11,7 +11,7 @@ import org.junit.rules.ExternalResource;
 public class EsReadWriteTestBase extends ExternalResource {
   
   @ClassRule
-  public static PgSetupRule pgSetupRule = new PgSetupRule();
+  public static PgSetupRule pgSetupRule = new PgSetupRule(false);
   
   @ClassRule
   public static EsSetupRule esSetupRule = new EsSetupRule();

@@ -1,5 +1,15 @@
 {
 	"analysis": {
+		"tokenizer": {
+			"autocomplete": {
+				"type": "edge_ngram",
+				"min_gram": 2,
+				"max_gram": 12,
+				"token_chars": [
+					"letter"
+				]
+			}
+		},
 		"analyzer": {
 			"ignore_case": {
 				"tokenizer": "keyword",
@@ -11,16 +21,6 @@
 			},
 			"autocomplete_search": {
 				"tokenizer": "lowercase"
-			}
-		},
-		"tokenizer": {
-			"autocomplete": {
-				"type": "edge_ngram",
-				"min_gram": 2,
-				"max_gram": 12,
-				"token_chars": [
-					"letter"
-				]
 			}
 		}
 	},
