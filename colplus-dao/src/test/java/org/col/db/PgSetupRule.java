@@ -106,6 +106,7 @@ public class PgSetupRule extends ExternalResource {
     setupMybatis(cfg);
     
     // setup draft/names index partition
+    partition(Datasets.NAME_INDEX);
     partition(Datasets.DRAFT_COL);
   }
   

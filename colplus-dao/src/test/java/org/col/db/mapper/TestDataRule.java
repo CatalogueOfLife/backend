@@ -57,16 +57,16 @@ public class TestDataRule extends ExternalResource {
   private final Supplier<SqlSessionFactory> sqlSessionFactorySupplier;
   
   public enum TestData {
-    NONE(null, null, 3),
+    NONE(null, null, 2,3),
     
     // apple datasetKey=11
-    APPLE(11, 3,3, 11, 12),
+    APPLE(11, 3,2,3,11,12),
   
     // tree datasetKey=11
-    TREE(11, 2, 3, 11),
+    TREE(11, 2, 2,3,11),
   
     // basic draft hierarchy
-    DRAFT(3, 1, 3),
+    DRAFT(3, 1, 2,3),
 
     /**
      * Inits the datasets table with real col data from colplus-repo
