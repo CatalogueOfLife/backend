@@ -134,6 +134,11 @@ public class VerbatimRecord implements IssueContainer, GlobalEntity, Serializabl
   public void addIssues(Collection<Issue> issues) {
     this.issues.addAll(issues);
   }
+  
+  @Override
+  public boolean removeIssue(Issue issue) {
+    return issues.remove(issue);
+  }
 
   @Override
   public boolean hasIssue(Issue issue) {

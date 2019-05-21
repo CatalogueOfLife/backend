@@ -105,12 +105,24 @@
     <select id="get" resultMap="verbatimResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
-        WHERE dataset_key = #{datasetKey} AND key = #{key}
+        WHERE key = #{key}
+    </select>
+
+    <select id="getIssues" resultMap="verbatimResultMap">
+        SELECT v.issues
+        FROM <include refid="FROM" />
+        WHERE key = #{key}
     </select>
 
     <insert id="create" parameterType="VerbatimRecord" useGeneratedKeys="true" keyProperty="key">
         INSERT INTO verbatim_${datasetKey} (<include refid="COLS" />)
         VALUES (<include refid="PROPS" />)
     </insert>
+
+    <update id="update" parameterType="VerbatimRecord" keyProperty="key">
+        UPDATE verbatim_${datasetKey}
+        SET issues = #{issues, typeHandler=org.col.db.type2.IssueSetTypeHandler}::int[]
+        WHERE key = #{key}
+    </update>
 
 </mapper>

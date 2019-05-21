@@ -180,8 +180,7 @@
     <!--  select all names of a dataset
      Using a optimal fetchsize to enable low memory footprint while keeping good performance using a resulthandler
     -->
-    <select id="processDataset" parameterType="map" resultMap="nameResultMap" resultOrdered="true"
-            fetchSize="10000" resultSetType="FORWARD_ONLY">
+    <select id="processDataset" parameterType="map" resultMap="nameResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
         ORDER BY id
@@ -229,6 +228,12 @@
     <update id="update" parameterType="Name" keyProperty="id">
         UPDATE name_${datasetKey}
         SET (<include refid="COLS" />, created, modified) = (<include refid="PROPS" />, now(), now())
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateMatch" parameterType="map" keyProperty="id">
+        UPDATE name_${datasetKey}
+        SET (name_index_id, modified) = (#{nameIndexID}, now())
         WHERE id = #{id}
     </update>
 

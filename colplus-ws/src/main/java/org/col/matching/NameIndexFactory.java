@@ -40,7 +40,7 @@ public class NameIndexFactory {
   }
   
   public static NameIndex memory(SqlSessionFactory sqlFactory, AuthorshipNormalizer authorshipNormalizer) {
-    return new NameIndexMapDB(DBMaker.memoryDB(), authorshipNormalizer, Datasets.DRAFT_COL, sqlFactory);
+    return new NameIndexMapDB(DBMaker.memoryDB(), authorshipNormalizer, Datasets.NAME_INDEX, sqlFactory);
   }
 
   /**
@@ -53,7 +53,7 @@ public class NameIndexFactory {
     DBMaker.Maker maker = DBMaker
         .fileDB(location)
         .fileMmapEnableIfSupported();
-    return new NameIndexMapDB(maker, authorshipNormalizer, Datasets.DRAFT_COL, sqlFactory);
+    return new NameIndexMapDB(maker, authorshipNormalizer, Datasets.NAME_INDEX, sqlFactory);
   }
   
 }

@@ -15,6 +15,8 @@ public interface IssueContainer {
   
   void addIssue(Issue issue);
   
+  boolean removeIssue(Issue issue);
+  
   boolean hasIssue(Issue issue);
   
   default boolean hasIssues() {
@@ -40,7 +42,12 @@ public interface IssueContainer {
     public void addIssue(Issue issue) {
       // ignore
     }
-    
+  
+    @Override
+    public boolean removeIssue(Issue issue) {
+      return false;
+    }
+  
     @Override
     public boolean hasIssue(Issue issue) {
       return false;

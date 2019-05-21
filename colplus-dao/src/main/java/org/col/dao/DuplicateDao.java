@@ -31,7 +31,7 @@ public class DuplicateDao {
   }
   
   public List<Duplicate> findNames(MatchingMode mode, Integer minSize, int datasetKey, NameCategory category, Set<Rank> ranks, Boolean authorshipDifferent, Page page) {
-    return find(false, mode, minSize, datasetKey, null, category, ranks, null, authorshipDifferent, null, null, page);
+    return find(true, mode, minSize, datasetKey, null, category, ranks, null, authorshipDifferent, null, null, page);
   }
   
   public List<Duplicate> findUsages(MatchingMode mode, Integer minSize, int datasetKey, Integer sectorKey, NameCategory category, Set<Rank> ranks,

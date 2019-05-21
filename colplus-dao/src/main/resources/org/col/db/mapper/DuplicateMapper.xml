@@ -19,7 +19,15 @@
                     select="org.col.db.mapper.TaxonMapper.classificationSimple"/>
     </resultMap>
 
-    <select id="namesByIds" resultMap="org.col.db.mapper.NameUsageWrapperMapper.bareNameResultMap">
+    <resultMap id="nameDecisionResultMap" type="UsageDecision" autoMapping="true">
+        <id column="n_id"/>
+        <association property="usage" javaType="BareName">
+            <id column="n_id" />
+            <association property="name" javaType="Name" resultMap="org.col.db.mapper.NameMapper.nameResultMap" columnPrefix="n_" />
+        </association>
+    </resultMap>
+
+    <select id="namesByIds" resultMap="nameDecisionResultMap">
         SELECT
         <include refid="org.col.db.mapper.NameMapper.nameCols">
             <property name="alias" value="n"/>
@@ -27,7 +35,7 @@
         </include>,
         coalesce(parseInt(n.combination_year), r.year) AS n_publishedInYear
         FROM
-            name_${datasetKey} n ON u.name_id=n.id
+            name_${datasetKey} n
             LEFT JOIN reference_${datasetKey} r ON n.published_in_id=r.id
         WHERE n.id IN (<foreach collection="ids" item="id" separator=",">#{id}</foreach>)
     </select>

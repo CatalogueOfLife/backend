@@ -5,6 +5,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.Optional;
 import java.util.regex.Pattern;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.ext.ParamConverter;
 import javax.ws.rs.ext.ParamConverterProvider;
@@ -54,7 +55,7 @@ public class EnumParamConverterProvider implements ParamConverterProvider {
           return ApiModule.MAPPER.readValue('"' + value.trim() + '"', type);
         } catch (IOException e) {
           LOG.debug("Failed to convert {} into {}", value, type, e);
-          throw new IllegalArgumentException("Invalid " + type.getSimpleName() + " value: " + value);
+          throw new BadRequestException("Invalid " + type.getSimpleName() + " value: " + value);
         }
       });
     }

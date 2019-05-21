@@ -43,6 +43,14 @@ public interface NameMapper extends DatasetCRUDMapper<Name> {
   List<Name> indexGroup(@Param("id") String nameId);
   
   /**
+   *
+   * @param datasetKey
+   * @param id
+   * @param nameIndexID
+   */
+  void updateMatch(@Param("datasetKey") int datasetKey, @Param("id") String id, @Param("nameIndexID") String nameIndexID);
+  
+  /**
    * Delete all bare names of a dataset
    */
   int deleteOrphans(@Param("datasetKey") int datasetKey);

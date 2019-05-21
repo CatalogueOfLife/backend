@@ -45,6 +45,7 @@ import org.col.img.ImageServiceFS;
 import org.col.img.ImageService;
 import org.col.importer.ContinuousImporter;
 import org.col.importer.ImportManager;
+import org.col.matching.DatasetMatcher;
 import org.col.matching.NameIndex;
 import org.col.matching.NameIndexFactory;
 import org.col.parser.NameParser;
@@ -168,7 +169,8 @@ public class WsServer extends Application<WsServerConfig> {
     }
     env.lifecycle().manage(new ManagedCloseable(ni));
     env.healthChecks().register("names-index", new NamesIndexHealthCheck(ni));
-
+    final DatasetMatcher matcher = new DatasetMatcher(getSqlSessionFactory(), ni);
+    
     final DatasetImportDao diDao = new DatasetImportDao(getSqlSessionFactory(), cfg.textTreeRepo);
     
     // async importer

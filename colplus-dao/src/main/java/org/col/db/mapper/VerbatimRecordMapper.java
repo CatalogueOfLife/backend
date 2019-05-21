@@ -3,9 +3,11 @@ package org.col.db.mapper;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.annotation.Nullable;
 
 import org.apache.ibatis.annotations.Param;
+import org.col.api.model.IssueContainer;
 import org.col.api.model.Page;
 import org.col.api.model.VerbatimRecord;
 import org.col.api.vocab.Issue;
@@ -46,7 +48,10 @@ public interface VerbatimRecordMapper {
   
   VerbatimRecord get(@Param("datasetKey") int datasetKey, @Param("key") int key);
   
+  IssueContainer getIssues(@Param("datasetKey") int datasetKey, @Param("key") int key);
+
   void create(VerbatimRecord record);
   
+  void update(@Param("datasetKey") int datasetKey, @Param("key") int key, @Param("issues") Set<Issue> issues);
 }
 

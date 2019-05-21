@@ -32,7 +32,7 @@ public class DuplicateResource {
   
   @GET
   public List<Duplicate> find(@PathParam("datasetKey") int datasetKey,
-                              @QueryParam("entity") @DefaultValue("NAME_USAGE") EntityType entity,
+                              @QueryParam("entity") EntityType entity,
                               @QueryParam("mode") MatchingMode mode,
                               @QueryParam("minSize") Integer minSize,
                               @QueryParam("sectorKey") Integer sectorKey,
@@ -44,14 +44,13 @@ public class DuplicateResource {
                               @QueryParam("withDecision") Boolean withDecision,
                               @Valid @BeanParam Page page, @Context SqlSession session) {
     DuplicateDao dao = new DuplicateDao(session);
-    switch (entity) {
-      case NAME:
-        return dao.findNames(mode, minSize, datasetKey, category, ranks, authorshipDifferent, page);
-      case NAME_USAGE:
+    if (entity == null || entity == EntityType.NAME_USAGE) {
         return dao.findUsages(mode, minSize, datasetKey, sectorKey, category, ranks, status, authorshipDifferent, parentDifferent, withDecision, page);
-      default:
-        throw new IllegalArgumentException("Duplicates only supported for NAME or NAME_USAGE entity");
+      
+    } else if (entity == EntityType.NAME) {
+        return dao.findNames(mode, minSize, datasetKey, category, ranks, authorshipDifferent, page);
     }
+    throw new IllegalArgumentException("Duplicates only supported for NAME or NAME_USAGE entity");
   }
   
 }

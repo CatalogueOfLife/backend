@@ -182,35 +182,35 @@ public class DuplicateDaoTest {
       System.out.println(watch);
     }
   
-  @Test
+    @Test
     public void duplicateNames() {
     int minSize = 2;
     List<Duplicate> dups = findNames(MatchingMode.STRICT, minSize, datasetKey, null, null, null, new Page(0, 10));
-    assertComplete(10, dups, minSize);
+    assertCompleteBareName(10, dups, minSize);
     
     Page p = new Page(0, 100);
 
     dups = findNames(MatchingMode.STRICT, minSize, datasetKey, NameCategory.BINOMIAL, null, null, p);
     show(dups);
-    assertComplete(15, dups, minSize);
+    assertCompleteBareName(15, dups, minSize);
   
     dups = findNames(MatchingMode.STRICT, minSize, datasetKey, null, ranks(Rank.SUBSPECIES), null, p);
     show(dups);
-    assertComplete(4, dups, minSize);
+    assertCompleteBareName(4, dups, minSize);
     
     
     // FUZZY mode
     dups = findNames(MatchingMode.FUZZY, minSize, datasetKey, null, null, null, p);
     show(dups);
-    assertComplete(23, dups, minSize);
+    assertCompleteBareName(23, dups, minSize);
   
     dups = findNames(MatchingMode.FUZZY, minSize, datasetKey, null, ranks(Rank.SPECIES, Rank.SUBSPECIES), null, p);
     show(dups);
-    assertComplete(23, dups, minSize);
+    assertCompleteBareName(23, dups, minSize);
   
     dups = findNames(MatchingMode.FUZZY, minSize, datasetKey, null, ranks(Rank.SPECIES, Rank.SUBSPECIES), true, p);
     show(dups);
-    assertComplete(4, dups, minSize);
+    assertCompleteBareName(4, dups, minSize);
 
     System.out.println(watch);
   }
@@ -252,6 +252,7 @@ public class DuplicateDaoTest {
           assertNotNull(u.getUsage().getId());
           assertNotNull(u.getUsage().getName());
           assertNotNull(u.getUsage().getName().getScientificName());
+          assertNotNull(u.getUsage().getName().getId());
           if (u.getUsage().isSynonym()) {
             Synonym s = (Synonym) u.getUsage();
             assertNotNull(s.getAccepted());
@@ -261,6 +262,20 @@ public class DuplicateDaoTest {
         }
       }
     }
+  
+  private static void assertCompleteBareName(int expectedSize, List<Duplicate> dups, int minSize) {
+    assertEquals(expectedSize, dups.size());
+    for (Duplicate d : dups) {
+      assertTrue(d.getUsages().size() >= minSize);
+      for (Duplicate.UsageDecision u : d.getUsages()) {
+        assertNull(u.getUsage().getId());
+        assertNotNull(u.getUsage().getName());
+        assertNotNull(u.getUsage().getName().getScientificName());
+        assertNotNull(u.getUsage().getName().getId());
+        assertTrue(u.getUsage().isBareName());
+      }
+    }
+  }
     
     private static void show(List<Duplicate> dups) {
       System.out.println("---  ---  ---  ---");
@@ -273,7 +288,7 @@ public class DuplicateDaoTest {
           if (u.getUsage().isSynonym()) {
             Synonym s = (Synonym) u.getUsage();
             System.out.println(", pid="+s.getParentId() + ", acc="+s.getAccepted().getName().getScientificName());
-          } else {
+          } else if (u.getUsage().isTaxon()){
             Taxon t = (Taxon) u.getUsage();
             System.out.println(", pid="+t.getParentId());
           }

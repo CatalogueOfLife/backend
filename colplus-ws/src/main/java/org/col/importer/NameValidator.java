@@ -65,6 +65,11 @@ public class NameValidator {
     }
   
     @Override
+    public boolean removeIssue(Issue issue) {
+      return container.removeIssue(issue);
+    }
+  
+    @Override
     public boolean hasIssue(Issue issue) {
       load();
       return container.hasIssue(issue);

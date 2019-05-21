@@ -8,7 +8,7 @@ server:
 logging:
   level: INFO
   loggers:
-    "org.col": DEBUG
+    "org.col": INFO
   appenders:
     - type: console
 db:
