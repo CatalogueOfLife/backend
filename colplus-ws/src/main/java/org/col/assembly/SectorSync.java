@@ -18,6 +18,7 @@ import org.col.db.mapper.*;
 import org.col.es.NameUsageIndexService;
 import org.col.parser.NameParser;
 import org.gbif.nameparser.api.NameType;
+import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.ParsedName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -187,6 +188,7 @@ public class SectorSync extends SectorRunnable {
       }
       if (skipUsage(u)) {
         // skip this taxon, but include children
+        LOG.debug("Ignore {} [{}] type={}; status={}", u.getName().scientificNameAuthorship(), u.getId(), u.getName().getType(), u.getName().getNomStatus());
         // use taxons parent also as the parentID for this so children link one level up
         ids.put(u.getId(), ids.get(u.getParentId()));
         return;
@@ -233,7 +235,7 @@ public class SectorSync extends SectorRunnable {
         case PLACEHOLDER:
         case NO_NAME:
         case HYBRID_FORMULA:
-        //case INFORMAL:
+        case INFORMAL:
           return true;
       }
       if (n.getNomStatus() != null) {
@@ -242,6 +244,12 @@ public class SectorSync extends SectorRunnable {
           case MANUSCRIPT:
             return true;
         }
+      }
+      if (n.getCultivarEpithet() != null || n.getCode() == NomCode.CULTIVARS || n.getRank().isCultivarRank()) {
+        return true;
+      }
+      if (n.isIndetermined()) {
+        return true;
       }
       return false;
     }

@@ -675,21 +675,28 @@ public class Name extends DataEntity implements DatasetEntity, VerbatimEntity {
     return isParsed() ? NameFormatter.canonicalWithoutAuthorship(toParsedName(this))
         : getScientificName();
   }
-  
-  /**
-   * @See NameFormatter.canonicalMinimal()
-   */
-  public String canonicalNameMinimal() {
-    return isParsed() ? NameFormatter.canonicalMinimal(toParsedName(this)) : getScientificName();
-  }
-  
+ 
   /**
    * @See NameFormatter.canonicalComplete()
    */
   public String canonicalNameComplete() {
-    return isParsed() ? NameFormatter.canonicalComplete(toParsedName(this)) : getScientificName();
+    return isParsed() ? NameFormatter.canonicalComplete(toParsedName(this)) : scientificNameAuthorship();
   }
   
+  /**
+   * @return the scientificName plus authorship from cached fields, not parsed ones.
+   */
+  @JsonIgnore
+  public String scientificNameAuthorship() {
+    StringBuilder sb = new StringBuilder();
+    sb.append(scientificName);
+    if (authorship != null) {
+      sb.append(" ");
+      sb.append(authorship);
+    }
+    return sb.toString();
+  }
+
   /**
    * @return the complete canonical name formatted with basic html tags
    */
@@ -764,47 +771,57 @@ public class Name extends DataEntity implements DatasetEntity, VerbatimEntity {
     }
     
     if (this.type != null) {
+      if (id != null) {
+        sb.append(" ");
+      }
       sb.append("[");
       sb.append(this.type);
-      sb.append("] ");
+      sb.append("]");
     }
     
-    if (this.uninomial != null) {
-      sb.append(" U:").append(this.uninomial);
-    }
-    
-    if (this.genus != null) {
-      sb.append(" G:").append(this.genus);
-    }
-    
-    if (this.infragenericEpithet != null) {
-      sb.append(" IG:").append(this.infragenericEpithet);
-    }
-    
-    if (this.specificEpithet != null) {
-      sb.append(" S:").append(this.specificEpithet);
-    }
-    
-    sb.append(" R:").append(this.rank);
-    
-    if (this.infraspecificEpithet != null) {
-      sb.append(" IS:").append(this.infraspecificEpithet);
-    }
-    
-    if (this.cultivarEpithet != null) {
-      sb.append(" CV:").append(this.cultivarEpithet);
-    }
-    
-    if (this.appendedPhrase != null) {
-      sb.append(" AP:").append(this.appendedPhrase);
-    }
-    
-    if (this.combinationAuthorship != null) {
-      sb.append(" A:").append(this.combinationAuthorship);
-    }
-    
-    if (this.basionymAuthorship != null) {
-      sb.append(" BA:").append(this.basionymAuthorship);
+    if (isParsed()) {
+      if (this.uninomial != null) {
+        sb.append(" U:").append(this.uninomial);
+      }
+      
+      if (this.genus != null) {
+        sb.append(" G:").append(this.genus);
+      }
+      
+      if (this.infragenericEpithet != null) {
+        sb.append(" IG:").append(this.infragenericEpithet);
+      }
+      
+      if (this.specificEpithet != null) {
+        sb.append(" S:").append(this.specificEpithet);
+      }
+      
+      sb.append(" R:").append(this.rank);
+      
+      if (this.infraspecificEpithet != null) {
+        sb.append(" IS:").append(this.infraspecificEpithet);
+      }
+      
+      if (this.cultivarEpithet != null) {
+        sb.append(" CV:").append(this.cultivarEpithet);
+      }
+      
+      if (this.appendedPhrase != null) {
+        sb.append(" AP:").append(this.appendedPhrase);
+      }
+      
+      if (this.combinationAuthorship != null) {
+        sb.append(" A:").append(this.combinationAuthorship);
+      }
+      
+      if (this.basionymAuthorship != null) {
+        sb.append(" BA:").append(this.basionymAuthorship);
+      }
+      
+    } else {
+      sb.append(" SN:").append(this.scientificName);
+      sb.append(" AUTH:").append(this.authorship);
+  
     }
     
     if (this.publishedInId != null) {
