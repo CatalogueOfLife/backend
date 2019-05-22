@@ -1,44 +1,31 @@
 package org.col.importer.coldp;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
-import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.google.common.base.Charsets;
-import com.google.common.collect.ImmutableList;
 import de.undercouch.citeproc.bibtex.BibTeXConverter;
 import org.col.api.datapackage.ColdpTerm;
 import org.col.api.jackson.ApiModule;
-import org.col.api.jackson.PermissiveEnumSerde;
 import org.col.api.model.CslData;
 import org.col.api.model.Dataset;
 import org.col.api.model.Reference;
 import org.col.api.model.VerbatimRecord;
-import org.col.api.vocab.DataFormat;
 import org.col.api.vocab.Issue;
-import org.col.api.vocab.License;
 import org.col.common.csl.CslDataConverter;
 import org.col.img.ImageService;
 import org.col.importer.NeoInserter;
 import org.col.importer.NormalizationFailedException;
-import org.col.importer.jackson.EnumParserSerde;
 import org.col.importer.neo.NeoDb;
 import org.col.importer.neo.NodeBatchProcessor;
 import org.col.importer.reference.ReferenceFactory;
-import org.col.parser.LicenseParser;
 import org.gbif.dwc.terms.Term;
 import org.gbif.dwc.terms.TermFactory;
 import org.gbif.dwc.terms.UnknownTerm;
@@ -52,24 +39,9 @@ import org.slf4j.LoggerFactory;
 public class ColdpInserter extends NeoInserter {
 
   private static final Logger LOG = LoggerFactory.getLogger(ColdpInserter.class);
-  private static final List<String> METADATA_FILENAMES = ImmutableList.of("metadata.yaml", "metadata.yml");
   private static final String BIBTEX_NS = "http://bibtex.org/";
-  private static final Term BIBTEX_CLASS_TERM = new UnknownTerm(URI.create(BIBTEX_NS), "BibTeX", true);
-  private static final Term CSLJSON_CLASS_TERM = new UnknownTerm(URI.create("http://citationstyles.org"), "CSL-JSON", true);
-  private static final TypeReference<List<CslData>> CSLDATA_TYPE = new TypeReference<List<CslData>>() {
-  };
-  private static final ObjectMapper OM;
-  private static final ObjectReader DATASET_READER;
-  static {
-    OM = new ObjectMapper(new YAMLFactory())
-        .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-        .registerModule(new JavaTimeModule())
-        .registerModule(new ColdpYamlModule());
-    DATASET_READER = OM.readerFor(Dataset.class);
-  
-    TermFactory.instance().registerTerm(BIBTEX_CLASS_TERM);
-    TermFactory.instance().registerTerm(CSLJSON_CLASS_TERM);
-  }
+  static final Term BIBTEX_CLASS_TERM = new UnknownTerm(URI.create(BIBTEX_NS), "BibTeX", true);
+  static final Term CSLJSON_CLASS_TERM = new UnknownTerm(URI.create("http://citationstyles.org"), "CSL-JSON", true);
   
   private ColdpInterpreter inter;
 
@@ -249,37 +221,7 @@ public class ColdpInserter extends NeoInserter {
    */
   @Override
   protected Optional<Dataset> readMetadata() {
-    for (String fn : METADATA_FILENAMES) {
-      Path metapath = super.folder.resolve(fn);
-      if (Files.exists(metapath)) {
-        try {
-          BufferedReader reader = Files.newBufferedReader(metapath, Charsets.UTF_8);
-          Dataset d = DATASET_READER.readValue(reader);
-          d.setDataFormat(DataFormat.COLDP);
-          // TODO: transform contact ORCIDSs
-          return Optional.of(d);
-          
-        } catch (IOException e) {
-          LOG.error("Error reading " + fn, e);
-        }
-      }
-    }
-    return Optional.empty();
+    return MetadataParser.readMetadata(super.folder);
   }
   
-  static  class ColdpYamlModule extends SimpleModule {
-    public ColdpYamlModule() {
-      super("ColdpYaml");
-      EnumParserSerde<License> lserde = new EnumParserSerde<License>(LicenseParser.PARSER);
-      addDeserializer(License.class, lserde.new Deserializer());
-    }
-    
-    @Override
-    public void setupModule(SetupContext ctxt) {
-      // default enum serde
-      ctxt.addDeserializers(new PermissiveEnumSerde.PermissiveEnumDeserializers());
-      super.setupModule(ctxt);
-    }
-  }
-
 }

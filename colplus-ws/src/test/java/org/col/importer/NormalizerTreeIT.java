@@ -1,10 +1,14 @@
 package org.col.importer;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.InputStream;
+import java.io.Writer;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -21,6 +25,7 @@ import org.col.api.model.Dataset;
 import org.col.api.vocab.DataFormat;
 import org.col.config.NormalizerConfig;
 import org.col.img.ImageService;
+import org.col.importer.coldp.MetadataParser;
 import org.col.importer.neo.NeoDb;
 import org.col.importer.neo.NeoDbFactory;
 import org.col.importer.neo.model.NeoProperties;
@@ -137,9 +142,17 @@ public class NormalizerTreeIT {
       System.out.println("TEST " + format + " " + sourceKey);
       
       store = NeoDbFactory.create(datasetKey, 1, cfg);
+
       Dataset d = new Dataset();
       d.setKey(datasetKey);
       d.setDataFormat(format);
+      // check if dataset.yaml file exists for extended dataset properties
+      URL metaUrl = getClass().getResource(resourceDir + "/metadata.yaml");
+      if (metaUrl != null) {
+        Optional<Dataset> meta = MetadataParser.readMetadata(metaUrl.openStream());
+        meta.ifPresent( m -> d.setCode(m.getCode()));
+        System.out.println("Use code " + d.getCode());
+      }
       store.put(d);
       
       Normalizer norm = new Normalizer(store, source, NameIndexFactory.passThru(), ImageService.passThru());
