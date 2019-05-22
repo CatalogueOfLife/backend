@@ -12,6 +12,7 @@ import org.apache.ibatis.session.SqlSession;
 import org.col.api.model.ColUser;
 import org.col.api.model.Dataset;
 import org.col.api.vocab.DataFormat;
+import org.col.api.vocab.DatasetType;
 import org.col.common.tax.AuthorshipNormalizer;
 import org.col.config.ImporterConfig;
 import org.col.config.NormalizerConfig;
@@ -22,6 +23,7 @@ import org.col.img.ImageService;
 import org.col.importer.neo.NeoDb;
 import org.col.importer.neo.NeoDbFactory;
 import org.col.matching.NameIndexFactory;
+import org.gbif.nameparser.api.NomCode;
 import org.junit.rules.ExternalResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,11 +58,17 @@ public class PgImportRule extends ExternalResource {
   public static PgImportRule create(Object... params) {
     List<TestResource> resources = new ArrayList<>();
     DataFormat format = null;
+    NomCode code = null;
+    DatasetType type = DatasetType.OTHER;
     for (Object p : params) {
       if (p instanceof DataFormat) {
         format = (DataFormat) p;
+      } else if (p instanceof NomCode) {
+        code = (NomCode) p;
+      } else if (p instanceof DatasetType) {
+        type = (DatasetType) p;
       } else if (p instanceof Integer) {
-        resources.add(new TestResource((Integer)p, format));
+        resources.add(new TestResource((Integer)p, Preconditions.checkNotNull(format), code, type));
       }
     }
     return new PgImportRule(resources.toArray(new TestResource[0]));
@@ -73,10 +81,14 @@ public class PgImportRule extends ExternalResource {
   public static class TestResource {
     public final int key;
     public final DataFormat format;
+    public final NomCode code;
+    public final DatasetType type;
   
-    public TestResource(int key, DataFormat format) {
+    private TestResource(int key, DataFormat format, NomCode code, DatasetType type) {
       this.key = key;
       this.format = Preconditions.checkNotNull(format);
+      this.code = code;
+      this.type = type;
     }
   
     @Override
@@ -106,7 +118,7 @@ public class PgImportRule extends ExternalResource {
     }
   
     for (TestResource tr : datasets) {
-      normalizeAndImport(tr.key, tr.format);
+      normalizeAndImport(tr);
       datasetKeyMap.put(tr, dataset.getKey());
     }
   }
@@ -121,27 +133,24 @@ public class PgImportRule extends ExternalResource {
     }
   }
   
-  public Integer datasetKey(TestResource res) {
-    return datasetKeyMap.get(res);
-  }
-  
   public Integer datasetKey(int key, DataFormat format) {
-    return datasetKeyMap.get(new TestResource(key, format));
+    return datasetKeyMap.get(new TestResource(key, format, null, null));
   }
 
-  void normalizeAndImport(int key, DataFormat format) throws Exception {
-    URL url = getClass().getResource("/" + format.name().toLowerCase() + "/" + key);
+  void normalizeAndImport(TestResource tr) throws Exception {
+    URL url = getClass().getResource("/" + tr.format.name().toLowerCase() + "/" + tr.key);
+    Path source = Paths.get(url.toURI());
     dataset = new Dataset();
     dataset.setContributesTo(null);
     dataset.setCreatedBy(IMPORT_USER.getKey());
     dataset.setModifiedBy(IMPORT_USER.getKey());
-    dataset.setDataFormat(format);
-    Path source = Paths.get(url.toURI());
+    dataset.setDataFormat(tr.format);
+    dataset.setType(tr.type);
+    dataset.setCode(tr.code);
+    dataset.setTitle("Test Dataset " + source.toString());
 
+    // insert trusted dataset
     try {
-      // insert trusted dataset
-      dataset.setTitle("Test Dataset " + source.toString());
-      
       SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true);
       // this creates a new key, usually above 2000!
       session.getMapper(DatasetMapper.class).create(dataset);

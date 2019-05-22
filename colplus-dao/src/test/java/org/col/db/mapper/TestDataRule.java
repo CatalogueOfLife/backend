@@ -18,6 +18,7 @@ import org.apache.ibatis.jdbc.ScriptRunner;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.model.ColUser;
+import org.col.api.vocab.Datasets;
 import org.col.api.vocab.Origin;
 import org.col.api.vocab.TaxonomicStatus;
 import org.col.common.tax.SciNameNormalizer;
@@ -184,11 +185,12 @@ public class TestDataRule extends ExternalResource {
     }
   }
   
-  public void truncatePartition(int datasetKey) throws SQLException {
-    System.out.println("Truncate partition tables for dataset " + datasetKey);
+  public void truncateDraft() throws SQLException {
+    System.out.println("Truncate draft partition tables");
     try (java.sql.Statement st = session.getConnection().createStatement()) {
+      st.execute("TRUNCATE sector CASCADE");
       for (String table : new String[]{"name", "name_usage"}) {
-        st.execute("TRUNCATE "+table+"_3 CASCADE");
+        st.execute("TRUNCATE " + table + "_"+ Datasets.DRAFT_COL +" CASCADE");
       }
       session.getConnection().commit();
     }

@@ -44,7 +44,6 @@
         ALTER TABLE reference_${key} ADD PRIMARY KEY (id);
         CREATE index ON reference_${key} (verbatim_key);
         CREATE index ON reference_${key} (sector_key);
-        ALTER TABLE reference_${key} ADD CONSTRAINT reference_${key}_sector_fk FOREIGN KEY (sector_key) REFERENCES sector (key);
 
         ALTER TABLE name_${key} ADD PRIMARY KEY (id);
         CREATE index ON name_${key} (verbatim_key);
@@ -69,7 +68,6 @@
         CREATE index ON name_usage_${key} (sector_key);
         ALTER TABLE name_usage_${key} ADD CONSTRAINT name_usage_${key}_parent_id_fk FOREIGN KEY (parent_id) REFERENCES name_usage_${key} (id);
         ALTER TABLE name_usage_${key} ADD CONSTRAINT name_usage_${key}_name_id_fk FOREIGN KEY (name_id) REFERENCES name_${key} (id);
-        ALTER TABLE name_usage_${key} ADD CONSTRAINT name_usage_${key}_sector_fk FOREIGN KEY (sector_key) REFERENCES sector (key);
 
         CREATE index ON usage_reference_${key} (taxon_id);
 

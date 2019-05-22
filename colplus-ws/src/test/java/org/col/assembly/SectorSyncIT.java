@@ -25,8 +25,12 @@ import org.col.db.mapper.TestDataRule;
 import org.col.db.tree.TextTreePrinter;
 import org.col.es.NameUsageIndexService;
 import org.col.importer.PgImportRule;
+import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
-import org.junit.*;
+import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Ignore;
+import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
 
@@ -38,8 +42,13 @@ public class SectorSyncIT {
   public final static PgSetupRule pg = new PgSetupRule();
   public final static TestDataRule dataRule = TestDataRule.draft();
   public final static PgImportRule importRule = PgImportRule.create(
-      DataFormat.ACEF,  1, 5, 6,
-      DataFormat.COLDP, 0, 2);
+      NomCode.BOTANICAL,
+        DataFormat.ACEF,  1,
+        DataFormat.COLDP, 0,
+      NomCode.ZOOLOGICAL,
+        DataFormat.ACEF,  5, 6,
+        DataFormat.COLDP, 2
+  );
   public final static TreeRepoRule treeRepoRule = new TreeRepoRule();
   
   @ClassRule
@@ -57,7 +66,7 @@ public class SectorSyncIT {
     diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
     treeDao = new NamesTreeDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
     // reset draft
-    dataRule.truncatePartition(Datasets.DRAFT_COL);
+    dataRule.truncateDraft();
     dataRule.loadData(true);
   }
   
