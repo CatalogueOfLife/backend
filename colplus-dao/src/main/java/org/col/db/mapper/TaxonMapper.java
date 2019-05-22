@@ -4,10 +4,13 @@ import java.util.List;
 import java.util.Set;
 import javax.annotation.Nullable;
 
-import it.unimi.dsi.fastutil.ints.Int2IntMap;
+import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.session.ResultHandler;
-import org.col.api.model.*;
+import org.col.api.model.Page;
+import org.col.api.model.SimpleName;
+import org.col.api.model.Taxon;
+import org.col.api.model.TaxonCountMap;
 
 /**
  * Mapper dealing only with accepted name usages, i.e. Taxon instances.
@@ -86,9 +89,9 @@ public interface TaxonMapper extends DatasetCRUDMapper<Taxon> {
   void incDatasetSectorCount(@Param("datasetKey") int datasetKey, @Param("id") String id, @Param("dkey") int dkey, @Param("delta") int delta);
   
   /**
-   * Updates a single taxon sector count map by passing a delta map
+   * Updates a single taxon sector count map
    */
-  void updateDatasetSectorCount(@Param("datasetKey") int datasetKey, @Param("id") String id, @Param("count") Int2IntMap count);
+  void updateDatasetSectorCount(@Param("datasetKey") int datasetKey, @Param("id") String id, @Param("count") Int2IntOpenHashMap count);
   
   /**
    * Sets all sector counts above species level to null

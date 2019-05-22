@@ -100,7 +100,7 @@ public class ColdpInserter extends NeoInserter {
       // name & relations
       insertEntities(reader, ColdpTerm.Name,
           inter::interpretName,
-          store.names()::create
+          n -> store.names().create(n) != null
       );
       insertNameRelations(reader, ColdpTerm.NameRel,
           inter::interpretNameRelations,
@@ -111,13 +111,13 @@ public class ColdpInserter extends NeoInserter {
       // taxa
       insertEntities(reader, ColdpTerm.Taxon,
           inter::interpretTaxon,
-          store.usages()::create
+          t -> store.usages().create(t) != null
       );
       
       // synonyms
       insertEntities(reader, ColdpTerm.Synonym,
           inter::interpretSynonym,
-          store.usages()::create
+          s -> store.usages().create(s) != null
       );
   
       // supplementary

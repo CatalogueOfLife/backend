@@ -225,8 +225,8 @@ public class NormalizerDwcaIT extends NormalizerITBase {
 
       Map<String, String> expectedAccepted = Maps.newHashMap();
       expectedAccepted.put("1000", "Calendula arvensis");
-      expectedAccepted.put("10000", "Calendula incana subsp. incana");
-      expectedAccepted.put("10002", "Calendula incana subsp. maderensis");
+      expectedAccepted.put("10000", "Calendula incana incana");
+      expectedAccepted.put("10002", "Calendula incana maderensis");
 
       for (RankedUsage acc : store.accepted(syn.node)) {
         assertEquals(expectedAccepted.remove(store.names().objByNode(acc.nameNode).getId()), acc.name);

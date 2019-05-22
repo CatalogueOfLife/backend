@@ -65,7 +65,7 @@ public class AcefInserter extends NeoInserter {
       // species
       insertEntities(reader, AcefTerm.AcceptedSpecies,
           inter::interpretSpecies,
-          store::createNameAndUsage
+          u -> store.createNameAndUsage(u) != null
       );
       
       // infraspecies
@@ -74,13 +74,13 @@ public class AcefInserter extends NeoInserter {
       // so we cannot update the scientific name yet - we do this in the relation inserter instead!
       insertEntities(reader, AcefTerm.AcceptedInfraSpecificTaxa,
           inter::interpretInfraspecies,
-          store::createNameAndUsage
+          u -> store.createNameAndUsage(u) != null
       );
       
       // synonyms
       insertEntities(reader, AcefTerm.Synonyms,
           inter::interpretSynonym,
-          store::createNameAndUsage
+          u -> store.createNameAndUsage(u) != null
       );
   
       insertTaxonEntities(reader, AcefTerm.Distribution,

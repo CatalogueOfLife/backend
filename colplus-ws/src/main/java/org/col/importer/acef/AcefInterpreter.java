@@ -170,7 +170,7 @@ public class AcefInterpreter extends InterpreterBase {
     String authorship;
     String rank;
     if (v.hasTerm(AcefTerm.InfraSpeciesEpithet)) {
-      rank = v.get(AcefTerm.InfraSpeciesMarker);
+      rank = v.getOrDefault(AcefTerm.InfraSpeciesMarker, Rank.SUBSPECIES.name());
       authorship = v.get(AcefTerm.InfraSpeciesAuthorString);
     } else {
       if (v.hasTerm(AcefTerm.SpeciesEpithet)) {

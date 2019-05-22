@@ -134,7 +134,7 @@ public class TestDataRule extends ExternalResource {
   }
   
   public TestDataRule(TestData testData) {
-    this(testData, () -> PgSetupRule.getSqlSessionFactory());
+    this(testData, PgSetupRule::getSqlSessionFactory);
   }
   
   public <T> T getMapper(Class<T> mapperClazz) {
@@ -151,13 +151,13 @@ public class TestDataRule extends ExternalResource {
   
   @Override
   protected void before() throws Throwable {
-    super.before();
     LOG.info("Loading {} test data", testData);
+    super.before();
     session = sqlSessionFactorySupplier.get().openSession(false);
     // create required partitions to load data
     partition();
     truncate();
-    loadData();
+    loadData(false);
     // finally create a test user to use in tests
     session.getMapper(UserMapper.class).create(TEST_USER);
     session.commit();
@@ -177,14 +177,27 @@ public class TestDataRule extends ExternalResource {
   
   private void truncate() throws SQLException {
     System.out.println("Truncate tables");
-    java.sql.Statement st = session.getConnection().createStatement();
-    st.execute("TRUNCATE coluser CASCADE");
-    st.execute("TRUNCATE dataset CASCADE");
-    session.getConnection().commit();
-    st.close();
+    try (java.sql.Statement st = session.getConnection().createStatement()) {
+      st.execute("TRUNCATE coluser CASCADE");
+      st.execute("TRUNCATE dataset CASCADE");
+      session.getConnection().commit();
+    }
   }
   
-  private void loadData() throws SQLException, IOException {
+  public void truncatePartition(int datasetKey) throws SQLException {
+    System.out.println("Truncate partition tables for dataset " + datasetKey);
+    try (java.sql.Statement st = session.getConnection().createStatement()) {
+      for (String table : new String[]{"name", "name_usage"}) {
+        st.execute("TRUNCATE "+table+"_3 CASCADE");
+      }
+      session.getConnection().commit();
+    }
+  }
+  
+  /**
+   * @param skipGlobalTable if true only loads tables partitioned by datasetKey
+   */
+  public void loadData(final boolean skipGlobalTable) throws SQLException, IOException {
     // common data for all tests and even the empty one
     session.getConnection().commit();
     
@@ -210,10 +223,12 @@ public class TestDataRule extends ExternalResource {
             pgc = (PgConnection) c;
           }
   
-          String dRes = resData + "/dataset.csv";
-          URL url = PgCopyUtils.class.getResource(dRes);
-          if (url != null) {
-            PgCopyUtils.copy(pgc, "dataset", dRes);
+          if (!skipGlobalTable){
+            String dRes = resData + "/dataset.csv";
+            URL url = PgCopyUtils.class.getResource(dRes);
+            if (url != null) {
+              PgCopyUtils.copy(pgc, "dataset", dRes);
+            }
           }
           copyTable(pgc, "verbatim");
           copyTable(pgc, "reference",

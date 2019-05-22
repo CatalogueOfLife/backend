@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
+import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import org.col.api.model.Taxon;
 import org.col.api.model.TaxonCountMap;
 import org.junit.Assert;
@@ -43,7 +44,23 @@ public class TaxonMapperTreeTest extends MapperTestBase<TaxonMapper> {
     assertEquals(6, x.size());
     for (TaxonCountMap c : x) {
       assertNotNull(c.getId());
-      assertNull(c.getCount());
+      assertNotNull(c.getCount());
+      assertTrue(c.getCount().isEmpty());
+    }
+
+    mapper().updateDatasetSectorCount(DATASET11.getKey(), "t2", null);
+    mapper().updateDatasetSectorCount(DATASET11.getKey(), "t2", new Int2IntOpenHashMap());
+    Int2IntOpenHashMap cnt = new Int2IntOpenHashMap();
+    cnt.put(45, 6);
+    cnt.put(4, 666);
+    cnt.put(13, 169);
+    mapper().updateDatasetSectorCount(DATASET11.getKey(), "t3", cnt);
+    
+    x = mapper().classificationCounts(DATASET11.getKey(), "t20");
+    assertEquals(6, x.size());
+    for (TaxonCountMap c : x) {
+      assertNotNull(c.getId());
+      assertNotNull(c.getCount());
     }
   }
   

@@ -23,6 +23,8 @@ import org.col.importer.neo.NeoDb;
 import org.col.importer.neo.NeoDbFactory;
 import org.col.matching.NameIndexFactory;
 import org.junit.rules.ExternalResource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Imports the given datasets from the test resources
@@ -31,6 +33,7 @@ import org.junit.rules.ExternalResource;
  * Requires a running postgres instance which is normally provided via the PgSetupRule ClassRule.
  */
 public class PgImportRule extends ExternalResource {
+  private static final Logger LOG = LoggerFactory.getLogger(PgImportRule.class);
   
   static final ColUser IMPORT_USER = new ColUser();
   static {
@@ -92,6 +95,7 @@ public class PgImportRule extends ExternalResource {
   
   @Override
   protected void before() throws Throwable {
+    LOG.info("run PgImportRule with {} datasets", datasets.length);
     super.before();
   
     cfg = new NormalizerConfig();

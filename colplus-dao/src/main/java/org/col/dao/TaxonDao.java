@@ -5,6 +5,7 @@ import java.util.function.Function;
 
 import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
+import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -326,19 +327,20 @@ public class TaxonDao extends DatasetEntityDao<Taxon, TaxonMapper> {
   
   private static void parentChanged(TaxonMapper tm, int datasetKey, String id, String oldParentId, String newParentId) {
     // migrate entire DatasetSectors from old to new
-    Int2IntMap delta = tm.getCounts(datasetKey, id).getCount();
-    
-    // remove delta
-    for (TaxonCountMap tc : tm.classificationCounts(datasetKey, oldParentId)) {
-      tm.updateDatasetSectorCount(Datasets.DRAFT_COL, tc.getId(), mergeMapCounts(tc.getCount(), delta, -1));
-    }
-    // add counts
-    for (TaxonCountMap tc : tm.classificationCounts(datasetKey, newParentId)) {
-      tm.updateDatasetSectorCount(Datasets.DRAFT_COL, tc.getId(), mergeMapCounts(tc.getCount(), delta, 1));
+    Int2IntOpenHashMap delta = tm.getCounts(datasetKey, id).getCount();
+    if (delta != null && !delta.isEmpty()) {
+      // remove delta
+      for (TaxonCountMap tc : tm.classificationCounts(datasetKey, oldParentId)) {
+        tm.updateDatasetSectorCount(Datasets.DRAFT_COL, tc.getId(), mergeMapCounts(tc.getCount(), delta, -1));
+      }
+      // add counts
+      for (TaxonCountMap tc : tm.classificationCounts(datasetKey, newParentId)) {
+        tm.updateDatasetSectorCount(Datasets.DRAFT_COL, tc.getId(), mergeMapCounts(tc.getCount(), delta, 1));
+      }
     }
   }
   
-  private static Int2IntMap mergeMapCounts(Int2IntMap m1, Int2IntMap m2, int factor) {
+  private static Int2IntOpenHashMap mergeMapCounts(Int2IntOpenHashMap m1, Int2IntOpenHashMap m2, int factor) {
     for (Int2IntMap.Entry e : m2.int2IntEntrySet()) {
       if (m1.containsKey(e.getIntKey())) {
         m1.put(e.getIntKey(), m1.get(e.getIntKey()) + factor * e.getIntValue());
@@ -383,7 +385,7 @@ public class TaxonDao extends DatasetEntityDao<Taxon, TaxonMapper> {
   
       // remember sectors and count delte so we can delete them at the end
       List<Integer> sectorKeys = tm.listSectors(datasetKey, id);
-      Int2IntMap delta = tm.getCounts(datasetKey, id).getCount();
+      Int2IntOpenHashMap delta = tm.getCounts(datasetKey, id).getCount();
       List<TaxonCountMap> parents = tm.classificationCounts(datasetKey, id);
 
       // cascading delete

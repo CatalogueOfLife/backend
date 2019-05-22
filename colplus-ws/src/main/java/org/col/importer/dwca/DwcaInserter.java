@@ -42,7 +42,7 @@ public class DwcaInserter extends NeoInserter {
       // taxon core only, extensions are interpreted later
       insertEntities(reader, DwcTerm.Taxon,
           inter::interpret,
-          store::createNameAndUsage
+          u -> store.createNameAndUsage(u) != null
       );
   
       insertNameRelations(reader, ColDwcTerm.NameRelations,

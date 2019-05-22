@@ -2,7 +2,7 @@ package org.col.api.model;
 
 import java.util.Objects;
 
-import it.unimi.dsi.fastutil.ints.Int2IntMap;
+import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import org.col.api.vocab.TaxonomicStatus;
 import org.gbif.nameparser.api.Rank;
 
@@ -23,7 +23,7 @@ public class TreeNode implements DatasetEntity {
   private String speciesEstimateReferenceId;
   private Integer sectorKey;
   private Decision decision;
-  private Int2IntMap datasetSectors;
+  private Int2IntOpenHashMap datasetSectors;
   
   /**
    * Exposes a structured name instance as a full name with html markup
@@ -131,11 +131,11 @@ public class TreeNode implements DatasetEntity {
     this.decision = decision;
   }
   
-  public Int2IntMap getDatasetSectors() {
+  public Int2IntOpenHashMap getDatasetSectors() {
     return datasetSectors;
   }
   
-  public void setDatasetSectors(Int2IntMap datasetSectors) {
+  public void setDatasetSectors(Int2IntOpenHashMap datasetSectors) {
     this.datasetSectors = datasetSectors;
   }
   

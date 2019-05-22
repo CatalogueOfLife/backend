@@ -225,6 +225,45 @@ public class NormalizerACEFIT extends NormalizerITBase {
     }
   }
   
+  @Test
+  public void acefInfrspecies() throws Exception {
+    normalize(10);
+    try (Transaction tx = store.getNeo().beginTx()) {
+      NeoUsage u = usageByID("Scr-13-.01-.01-.00-.001-.001-.014-.b");
+      assertEquals("Odontotrypes farkaci habaensis", u.usage.getName().getScientificName());
+      assertEquals("Ochi, Kon & Bai, 2018", u.usage.getName().authorshipComplete());
+      assertEquals(Rank.INFRASPECIFIC_NAME, u.usage.getName().getRank());
+
+      // this is a duplicate ID and we expect the subspecies to be dropped in favor of the species
+      u = usageByID("Scr-04-.01-.01-.00-.002-.000-.009-.b");
+      assertEquals("Aegialia conferta", u.usage.getName().getScientificName());
+      assertEquals("Brown, 1931", u.usage.getName().authorshipComplete());
+      assertEquals(Rank.SPECIES, u.usage.getName().getRank());
+
+      VerbatimRecord v = verbatim(u.usage.getName());
+      assertTrue(v.hasIssue(Issue.ID_NOT_UNIQUE));
+      assertFalse(v.hasIssue(Issue.NOT_INTERPRETED));
+  
+  
+      int counter = 0;
+      for (VerbatimRecord vr : store.verbatimList()) {
+        counter++;
+        if (vr.getType() == AcefTerm.AcceptedInfraSpecificTaxa) {
+          if (vr.get(AcefTerm.AcceptedTaxonID).equals("Scr-04-.01-.01-.00-.002-.000-.009-.b")) {
+            // this is the duplicate
+            assertEquals("nigrella", vr.get(AcefTerm.InfraSpeciesEpithet));
+            assertTrue(vr.hasIssue(Issue.NOT_INTERPRETED));
+            assertTrue(vr.hasIssue(Issue.ID_NOT_UNIQUE));
+  
+          } else {
+            assertEquals("habaensis", vr.get(AcefTerm.InfraSpeciesEpithet));
+          }
+        }
+      }
+      assertEquals(5, counter);
+    }
+  }
+  
   private VerbatimRecord verbatim(VerbatimEntity obj) {
     return store.getVerbatim(obj.getVerbatimKey());
   }

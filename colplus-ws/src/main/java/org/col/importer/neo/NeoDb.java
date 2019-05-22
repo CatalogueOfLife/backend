@@ -592,7 +592,7 @@ public class NeoDb implements ReferenceStore {
   public Iterable<VerbatimRecord> verbatimList() {
     return verbatim.values();
   }
-  
+
   @Override
   public Reference refById(String id) {
     if (id != null) {

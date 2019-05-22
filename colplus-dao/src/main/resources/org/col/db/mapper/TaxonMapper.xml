@@ -147,13 +147,13 @@
 
     <select id="classificationCounts" resultMap="taxonCountResultMap">
         WITH RECURSIVE x AS(
-        SELECT id, parent_id, dataset_sectors
-        FROM name_usage_${datasetKey} u
-        WHERE u.id = #{id}
+            SELECT id, parent_id, dataset_sectors
+            FROM name_usage_${datasetKey} u
+            WHERE u.id = #{id}
         UNION
-        SELECT u.id, u.parent_id, u.dataset_sectors
-        FROM name_usage_${datasetKey} u, x
-        WHERE u.id = x.parent_id
+            SELECT u.id, u.parent_id, u.dataset_sectors
+            FROM name_usage_${datasetKey} u, x
+            WHERE u.id = x.parent_id
         )
         SELECT id, dataset_sectors
         FROM x
@@ -252,7 +252,7 @@
 
     <update id="updateDatasetSectorCount">
         UPDATE name_usage_${datasetKey}
-        SET dataset_sectors = to_jsonb( #{count, typeHandler=org.col.db.type.FastutilIntIntHandler} )
+        SET dataset_sectors = to_jsonb( #{count, typeHandler=org.col.db.type.FastutilIntIntHandler}::jsonb )
         WHERE id = #{id}
     </update>
 

@@ -203,6 +203,11 @@ public class VerbatimRecord implements IssueContainer, GlobalEntity, Serializabl
     return null;
   }
   
+  public String getOrDefault(Term term, String defaultValue) {
+    String val = get(term);
+    return val == null ? defaultValue : val;
+  }
+  
   public int size() {
     return terms.size();
   }
