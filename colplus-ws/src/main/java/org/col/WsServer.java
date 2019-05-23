@@ -200,7 +200,11 @@ public class WsServer extends Application<WsServerConfig> {
     // assembly
     AssemblyCoordinator assembly = new AssemblyCoordinator(getSqlSessionFactory(), diDao, indexService, env.metrics());
     env.lifecycle().manage(assembly);
-  
+    
+    // link assembly and import manager so they are aware of each other
+    importManager.setAssemblyCoordinator(assembly);
+    assembly.setImportManager(importManager);
+    
     // diff
     DiffService diff = new DiffService(getSqlSessionFactory(), diDao.getTreeDao());
     env.healthChecks().register("diff", new DiffHealthCheck(diff));

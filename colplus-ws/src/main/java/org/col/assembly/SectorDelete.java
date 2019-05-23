@@ -23,10 +23,10 @@ public class SectorDelete extends SectorRunnable {
   private static final Logger LOG = LoggerFactory.getLogger(SectorDelete.class);
   private Set<Integer> visitedSectors = new HashSet<>();
   
-  public SectorDelete(int sectorKey, SqlSessionFactory factory, NameUsageIndexService indexService,
+  public SectorDelete(Sector s, SqlSessionFactory factory, NameUsageIndexService indexService,
                       Consumer<SectorRunnable> successCallback,
                       BiConsumer<SectorRunnable, Exception> errorCallback, ColUser user) {
-    super(sectorKey, factory, indexService, successCallback, errorCallback, user);
+    super(s, factory, indexService, successCallback, errorCallback, user);
   }
   
   @Override

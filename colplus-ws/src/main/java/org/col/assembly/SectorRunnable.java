@@ -41,23 +41,23 @@ abstract class SectorRunnable implements Runnable {
   final ColUser user;
   final SectorImport state = new SectorImport();
   
-  SectorRunnable(int sectorKey, SqlSessionFactory factory, NameUsageIndexService indexService,
+  SectorRunnable(Sector s, SqlSessionFactory factory, NameUsageIndexService indexService,
                       Consumer<SectorRunnable> successCallback,
                       BiConsumer<SectorRunnable, Exception> errorCallback, ColUser user) {
     this.user = Preconditions.checkNotNull(user);
     try (SqlSession session = factory.openSession(true)) {
       // check if sector actually exists
-      Sector s = session.getMapper(SectorMapper.class).get(sectorKey);
-      this.sector = ObjectUtils.checkNotNull(s, "Sector "+sectorKey+" does not exist");
+      this.sector = ObjectUtils.checkNotNull(s, "Sector required");
       this.datasetKey = sector.getDatasetKey();
       // check if target actually exists
       Taxon target = ObjectUtils.checkNotNull(session.getMapper(TaxonMapper.class).get(catalogueKey, sector.getTarget().getId()),
-          "Sector " + sectorKey + " does have a non existing target id for catalogue " + catalogueKey
+          "Sector " + s.getKey() + " does have a non existing target id for catalogue " + catalogueKey
       );
       // lookup next attempt
-      List<SectorImport> imports = session.getMapper(SectorImportMapper.class).list(sectorKey, null, new Page(0,1));
+      List<SectorImport> imports = session.getMapper(SectorImportMapper.class).list(s.getKey(), null, new Page(0,1));
       state.setAttempt(imports == null || imports.isEmpty() ? 1 : imports.get(0).getAttempt() + 1);
-      state.setSectorKey(sectorKey);
+      state.setSectorKey(s.getKey());
+      state.setDatasetKey(datasetKey);
       state.setState(SectorImport.State.WAITING);
     }
     this.factory = factory;

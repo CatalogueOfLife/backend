@@ -163,6 +163,12 @@
         </include>
     </select>
 
+    <select id="hasData" resultType="boolean">
+        SELECT exists(
+            SELECT id FROM <include refid="FROM" /> LIMIT 1
+        )
+    </select>
+
     <select id="list" resultMap="nameResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />

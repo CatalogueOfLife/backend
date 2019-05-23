@@ -10,12 +10,18 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.google.common.collect.Lists;
 import io.dropwizard.lifecycle.Managed;
+import org.apache.ibatis.exceptions.PersistenceException;
+import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.model.ColUser;
+import org.col.api.model.Sector;
 import org.col.api.model.SectorImport;
 import org.col.common.concurrent.ExecutorUtils;
 import org.col.dao.DatasetImportDao;
+import org.col.db.mapper.NameMapper;
+import org.col.db.mapper.SectorMapper;
 import org.col.es.NameUsageIndexService;
+import org.col.importer.ImportManager;
 import org.gbif.nameparser.utils.NamedThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +33,7 @@ public class AssemblyCoordinator implements Managed {
   private static final String THREAD_NAME = "assembly-sync";
   
   private ExecutorService exec;
+  private ImportManager importManager;
   private final SqlSessionFactory factory;
   private final NameUsageIndexService indexService;
   private final DatasetImportDao diDao;
@@ -61,17 +68,60 @@ public class AssemblyCoordinator implements Managed {
     ExecutorUtils.shutdown(exec, MILLIS_TO_DIE, TimeUnit.MILLISECONDS);
   }
   
+  public void setImportManager(ImportManager importManager) {
+    this.importManager = importManager;
+  }
+  
   public AssemblyState getState() {
     return new AssemblyState(Lists.newArrayList(imports.values()), (int) failed.getCount(), (int) counter.getCount());
   }
   
-  public synchronized void syncSector(int sectorKey, ColUser user) {
+  /**
+   * Check if any sector from a given dataset is currently syncing and return the sector key. Otherwise null
+   */
+  public Integer hasSyncingSector(int datasetKey){
+    for (SectorImport si : imports.values()) {
+      if (si.getDatasetKey().equals(datasetKey)) {
+        return si.getSectorKey();
+      }
+    }
+    return null;
+  }
+  
+  /**
+   * Makes sure the dataset has data and is currently not importing
+   */
+  private void assertStableData(Sector s) throws IllegalArgumentException {
+    try (SqlSession session = factory.openSession(true)) {
+      try {
+        //make sure dataset is currently not imported
+        if (importManager != null && importManager.isRunning(s.getDatasetKey())) {
+          LOG.warn("Concurrently running dataset import. Cannot sync sector {} from dataset {}", s.getKey(), s.getDatasetKey());
+          throw new IllegalArgumentException("Dataset "+s.getDatasetKey()+" currently being imported. Cannot sync sector " + s.getKey());
+        }
+        NameMapper nm = session.getMapper(NameMapper.class);
+        if (nm.hasData(s.getDatasetKey())) {
+          return;
+        }
+      } catch (PersistenceException e) {
+        // missing partitions cause this
+        LOG.debug("No partition exists for dataset {}", s.getDatasetKey(), e);
+      }
+    }
+    LOG.warn("Cannot sync sector {} which has never been imported", s.getKey());
+    throw new IllegalArgumentException("Dataset empty. Cannot sync sector " + s.getKey());
+  }
+  
+  public synchronized void syncSector(int sectorKey, ColUser user) throws IllegalArgumentException {
     // is this sector already syncing?
     if (syncs.containsKey(sectorKey)) {
       LOG.info("Sector {} already syncing", sectorKey);
       // ignore
+      
     } else {
-      SectorSync ss = new SectorSync(sectorKey, factory, indexService, diDao, this::successCallBack, this::errorCallBack, user);
+      Sector s = readSector(sectorKey);
+      assertStableData(s);
+      SectorSync ss = new SectorSync(s, factory, indexService, diDao, this::successCallBack, this::errorCallBack, user);
       syncs.put(sectorKey, exec.submit(ss));
       imports.put(sectorKey, ss.getState());
       LOG.info("Queued sync of sector {}", sectorKey);
@@ -85,10 +135,17 @@ public class AssemblyCoordinator implements Managed {
       // ignore
 
     } else {
-      SectorDelete sd = new SectorDelete(sectorKey, factory, indexService, this::successCallBack, this::errorCallBack, user);
+      SectorDelete sd = new SectorDelete(readSector(sectorKey), factory, indexService, this::successCallBack, this::errorCallBack, user);
       syncs.put(sectorKey, exec.submit(sd));
       imports.put(sectorKey, sd.getState());
       LOG.info("Queued deletion of sector {}", sectorKey);
+    }
+  }
+  
+  private Sector readSector(int sectorKey) {
+    try (SqlSession session = factory.openSession(true)) {
+      SectorMapper sm = session.getMapper(SectorMapper.class);
+      return sm.get(sectorKey);
     }
   }
   
@@ -118,6 +175,7 @@ public class AssemblyCoordinator implements Managed {
   public void cancel(int sectorKey, ColUser user) {
     if (syncs.containsKey(sectorKey)) {
       imports.get(sectorKey).setState(SectorImport.State.CANCELED);
+      LOG.info("Sync of sector {} cancelled by user {}", sectorKey, user);
       syncs.get(sectorKey).cancel(true);
     }
   }

@@ -72,6 +72,15 @@
         </include>
     </select>
 
+    <select id="hasData" resultType="boolean">
+        SELECT exists(
+            SELECT id
+            FROM name_usage_${datasetKey}
+            WHERE NOT is_synonym
+            LIMIT 1
+        )
+    </select>
+
     <select id="countChildren" resultType="integer">
         SELECT count(*) FROM name_usage_${datasetKey}
         WHERE parent_id=#{id} AND NOT is_synonym

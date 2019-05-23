@@ -25,6 +25,7 @@ import org.col.dao.DatasetImportDao;
 import org.col.db.mapper.DatasetMapper;
 import org.col.db.mapper.TestDataRule;
 import org.col.img.ImageServiceFS;
+import org.gbif.nameparser.api.NomCode;
 import org.junit.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -98,9 +99,10 @@ public class ImportManagerTest {
     Dataset d = new Dataset();
     d.setType(DatasetType.GLOBAL);
     d.setOrigin(DatasetOrigin.EXTERNAL);
-    d.setTitle("Test dataset");
-    d.setDataFormat(DataFormat.COLDP);
-    d.setDataAccess(URI.create("https://raw.githubusercontent.com/Sp2000/colplus-backend/master/colplus-admin/src/test/resources/coldp/test.zip"));
+    d.setTitle("Moss Bug Base");
+    d.setCode(NomCode.BOTANICAL);
+    d.setDataFormat(DataFormat.ACEF);
+    d.setDataAccess(URI.create("https://github.com/Sp2000/colplus-repo/raw/master/ACEF/76.tar.gz"));
     d.setCreatedBy(TestDataRule.TEST_USER.getKey());
     d.setModifiedBy(TestDataRule.TEST_USER.getKey());
   
@@ -125,7 +127,7 @@ public class ImportManagerTest {
  
     // cancel
     LOG.warn("CANCEL");
-    importManager.cancel(d1.getKey());
+    importManager.cancel(d1.getKey(), null);
     TimeUnit.MILLISECONDS.sleep(500);
     LOG.warn("CHECK");
     assertTrue(importManager.hasEmptyQueue());
@@ -170,7 +172,7 @@ public class ImportManagerTest {
     assertEquals((int)d4.getKey(), queue.peek().datasetKey);
   
     // cancel d4
-    importManager.cancel(d4.getKey());
+    importManager.cancel(d4.getKey(), null);
     Thread.sleep(100);
     queue = importManager.queue();
     assertEquals(1, queue.size());
@@ -181,7 +183,7 @@ public class ImportManagerTest {
     assertEquals(d1.getKey(), imports.getResult().get(1).getDatasetKey());
   
     // cancel d1
-    importManager.cancel(d1.getKey());
+    importManager.cancel(d1.getKey(), null);
     TimeUnit.SECONDS.sleep(1);
     assertTrue(importManager.hasEmptyQueue());
     imports = diDao.list(new Page());

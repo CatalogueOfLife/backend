@@ -66,6 +66,15 @@
         </include>
     </select>
 
+    <select id="hasData" resultType="boolean">
+        SELECT exists(
+            SELECT id
+            FROM name_usage_${datasetKey}
+            WHERE is_synonym
+            LIMIT 1
+        )
+    </select>
+
     <select id="list" resultMap="synonymResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />

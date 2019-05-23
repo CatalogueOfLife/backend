@@ -99,16 +99,16 @@ public class SectorSyncIT {
   void syncAll() throws IOException {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       for (Sector s : session.getMapper(SectorMapper.class).list(null)) {
-        sync(s.getKey());
+        sync(s);
       }
     }
   }
   
-  void sync(int sectorKey) {
+  void sync(Sector s) {
     
-    SectorSync ss = new SectorSync(sectorKey, PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), diDao,
+    SectorSync ss = new SectorSync(s, PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), diDao,
         SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestDataRule.TEST_USER);
-    System.out.println("\n*** SECTOR SYNC " + sectorKey + " ***");
+    System.out.println("\n*** SECTOR SYNC " + s.getKey() + " ***");
     ss.run();
   }
   

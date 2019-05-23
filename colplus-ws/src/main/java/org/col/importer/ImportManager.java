@@ -29,6 +29,7 @@ import org.col.api.util.PagingUtil;
 import org.col.api.vocab.DatasetOrigin;
 import org.col.api.vocab.ImportState;
 import org.col.api.vocab.Users;
+import org.col.assembly.AssemblyCoordinator;
 import org.col.common.concurrent.ExecutorUtils;
 import org.col.common.concurrent.StartNotifier;
 import org.col.common.io.DownloadUtil;
@@ -54,6 +55,7 @@ public class ImportManager implements Managed {
   public static final String THREAD_NAME = "dataset-importer";
   
   private ThreadPoolExecutor exec;
+  private AssemblyCoordinator assemblyCoordinator;
   private final PriorityBlockingQueue<ImportRequest> queue = new PriorityBlockingQueue<ImportRequest>();
   private final Map<Integer, Future> futures = new ConcurrentHashMap<Integer, Future>();
   private final WsServerConfig cfg;
@@ -80,6 +82,10 @@ public class ImportManager implements Managed {
     failed = registry.counter("org.col.import.failed");
   }
   
+  public void setAssemblyCoordinator(AssemblyCoordinator assemblyCoordinator) {
+    this.assemblyCoordinator = assemblyCoordinator;
+  }
+  
   /**
    * Lists the current queue
    */
@@ -90,13 +96,13 @@ public class ImportManager implements Managed {
   /**
    * Cancels a running import job by its dataset key
    */
-  public void cancel(int datasetKey) {
+  public void cancel(int datasetKey, ColUser user) {
     queue.remove(new ImportRequest(datasetKey, Users.IMPORTER));
     Future f = futures.remove(datasetKey);
     if (f != null) {
       f.cancel(true);
-      LOG.info("Canceled import for dataset {}: {}", datasetKey);
-      
+      LOG.info("Canceled import for dataset {} by user {}", datasetKey, user);
+  
     } else {
       LOG.info("No import existing for dataset {}. Ignore", datasetKey);
     }
@@ -139,6 +145,14 @@ public class ImportManager implements Managed {
     } else if (queue.size() >= cfg.importer.maxQueue) {
       LOG.info("Import queued at max {} already. Skip dataset {}", queue.size(), req.datasetKey);
       throw new IllegalArgumentException("Import queue full, skip dataset " + req.datasetKey);
+    }
+    // is a sector from this dataset currently being synced?
+    if (assemblyCoordinator != null) {
+      Integer sectorKey = assemblyCoordinator.hasSyncingSector(req.datasetKey);
+      if (sectorKey != null) {
+        LOG.warn("Dataset {} used in running sync of sector {}", req.datasetKey, sectorKey);
+        throw new IllegalArgumentException("Import queue full, skip dataset " + req.datasetKey);
+      }
     }
     
     queue.add(req);
@@ -245,6 +259,13 @@ public class ImportManager implements Managed {
     return !futures.isEmpty();
   }
   
+  /**
+   * @return true if import for given dataset is running or queued
+   */
+  public boolean isRunning(int datasetKey) {
+    return futures.containsKey(datasetKey);
+  }
+
   @Override
   public void start() throws Exception {
     LOG.info("Starting import manager with {} import threads and a queue of {} max.",

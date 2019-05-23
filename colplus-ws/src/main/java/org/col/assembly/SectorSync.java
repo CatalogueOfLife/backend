@@ -38,10 +38,10 @@ public class SectorSync extends SectorRunnable {
   );
   private NamesTreeDao treeDao;
   
-  public SectorSync(int sectorKey, SqlSessionFactory factory, NameUsageIndexService indexService, DatasetImportDao diDao,
+  public SectorSync(Sector s, SqlSessionFactory factory, NameUsageIndexService indexService, DatasetImportDao diDao,
                     Consumer<SectorRunnable> successCallback,
                     BiConsumer<SectorRunnable, Exception> errorCallback, ColUser user) {
-    super(sectorKey, factory, indexService, successCallback, errorCallback, user);
+    super(s, factory, indexService, successCallback, errorCallback, user);
     treeDao = diDao.getTreeDao();
   }
   

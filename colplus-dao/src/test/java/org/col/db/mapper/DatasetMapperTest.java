@@ -33,8 +33,8 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
   public DatasetMapperTest() {
     super(DatasetMapper.class);
   }
-
-  private static Dataset create() {
+  
+  public static Dataset create() {
     Dataset d = new Dataset();
     d.applyUser(Users.DB_INIT);
     d.setType(DatasetType.GLOBAL);

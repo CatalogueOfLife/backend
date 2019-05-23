@@ -7,6 +7,7 @@ import org.col.api.TestEntityGenerator;
 import org.col.api.model.Dataset;
 import org.col.api.model.Name;
 import org.col.api.model.Page;
+import org.col.api.vocab.Datasets;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -128,6 +129,12 @@ public class NameMapperTest extends MapperTestBase<NameMapper> {
     commit();
     
     assertEquals(7, nameMapper.count(DATASET11.getKey()));
+  }
+  
+  @Test
+  public void hasData() throws Exception {
+    assertTrue(nameMapper.hasData(DATASET11.getKey()));
+    assertFalse(nameMapper.hasData(Datasets.NAME_INDEX));
   }
   
   @Test

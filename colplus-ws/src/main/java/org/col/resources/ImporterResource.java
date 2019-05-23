@@ -75,8 +75,8 @@ public class ImporterResource {
   @DELETE
   @Path("{key}")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void cancel(@PathParam("key") int datasetKey) {
-    importManager.cancel(datasetKey);
+  public void cancel(@PathParam("key") int datasetKey, @Auth ColUser user) {
+    importManager.cancel(datasetKey, user);
   }
   
 }

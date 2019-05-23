@@ -200,18 +200,20 @@ public class TestDataRule extends ExternalResource {
    * @param skipGlobalTable if true only loads tables partitioned by datasetKey
    */
   public void loadData(final boolean skipGlobalTable) throws SQLException, IOException {
-    // common data for all tests and even the empty one
     session.getConnection().commit();
-    
+  
+    ScriptRunner runner = new ScriptRunner(session.getConnection());
+    runner.setSendFullScript(true);
+
+    // common data for all tests and even the empty one
+    runner.runScript(Resources.getResourceAsReader(PgConfig.DATA_FILE));
+  
     if (testData != TestData.NONE) {
       System.out.format("Load %s test data\n\n", testData);
       
-      ScriptRunner runner = new ScriptRunner(session.getConnection());
-      runner.setSendFullScript(true);
       
       if (testData == TestData.DATASETS) {
         // known datasets
-        runner.runScript(Resources.getResourceAsReader(PgConfig.DATA_FILE));
         runner.runScript(Resources.getResourceAsReader(PgConfig.DATASETS_FILE));
   
       } else {
