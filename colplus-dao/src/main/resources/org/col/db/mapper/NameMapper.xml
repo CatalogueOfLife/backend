@@ -158,10 +158,10 @@
     </resultMap>
 
     <select id="count" resultType="integer">
-        <if test="datasetKey &lt; 100">
+        <if test="datasetKey &lt; 10">
             SELECT count(*) FROM name_${datasetKey}
         </if>
-        <if test="datasetKey &gt;= 100">
+        <if test="datasetKey &gt;= 10">
             <include refid="org.col.db.mapper.Common.countFromFinishedDatasetImport">
                 <property name="column" value="name_count"/>
             </include>

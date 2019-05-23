@@ -61,10 +61,12 @@
     </select>
 
     <select id="count" resultType="integer">
-        <if test="datasetKey &lt; 100">
-            SELECT count(*) FROM name_usage_${datasetKey}
+        <if test="datasetKey &lt; 10">
+            SELECT count(*)
+            FROM name_usage_${datasetKey}
+            WHERE is_synonym
         </if>
-        <if test="datasetKey &gt;= 100">
+        <if test="datasetKey &gt;= 10">
             <include refid="org.col.db.mapper.Common.countFromFinishedDatasetImport">
                 <property name="column" value="synonym_count"/>
             </include>
