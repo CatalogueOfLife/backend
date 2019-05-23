@@ -54,9 +54,14 @@
     </resultMap>
 
     <select id="count" resultType="integer">
-        <include refid="org.col.db.mapper.Common.countFromFinishedDatasetImport">
-            <property name="column" value="reference_count"/>
-        </include>
+        <if test="datasetKey &lt; 100">
+            SELECT count(*) FROM reference_${datasetKey}
+        </if>
+        <if test="datasetKey &gt;= 100">
+            <include refid="org.col.db.mapper.Common.countFromFinishedDatasetImport">
+                <property name="column" value="reference_count"/>
+            </include>
+        </if>
     </select>
 
     <select id="hasData" resultType="boolean">

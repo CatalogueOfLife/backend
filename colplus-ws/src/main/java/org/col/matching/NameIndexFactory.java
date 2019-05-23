@@ -28,7 +28,7 @@ public class NameIndexFactory {
       }
       
       @Override
-      public int size() {
+      public long size() {
         return 0;
       }
       

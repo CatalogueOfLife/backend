@@ -36,6 +36,7 @@ public class NameIndexMapDBTest {
   
   @Rule
   public TestDataRule testDataRule = TestDataRule.apple();
+  private final IdGenerator idGen = new IdGenerator("");
   
   @After
   public void stop() throws Exception {
@@ -46,6 +47,7 @@ public class NameIndexMapDBTest {
   
   void setupApple() throws Exception {
     ni = NameIndexFactory.memory(PgSetupRule.getSqlSessionFactory(), aNormalizer);
+    assertEquals(0, ni.size());
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession()) {
       NameMapper nm = session.getMapper(NameMapper.class);
       nm.processDataset(11, ctx -> ni.add(ctx.getResultObject()));
@@ -201,7 +203,7 @@ public class NameIndexMapDBTest {
   }
   
   private NameMatch assertMatch(int key, String name, Rank rank, NomCode code) {
-    final String id = IdGenerator.NAME_INDEX_IDS.id(key);
+    final String id = idGen.id(key);
     NameMatch m = match(name, rank, code);
     if (!m.hasMatch() || !id.equals(m.getName().getId())) {
       System.out.println(m);
@@ -210,7 +212,6 @@ public class NameIndexMapDBTest {
     );
     return m;
   }
-  
   
   private NameMatch assertInsert(String name, Rank rank, NomCode code) {
     NameMatch m = ni.match(name(null, name, rank, code), true, false);

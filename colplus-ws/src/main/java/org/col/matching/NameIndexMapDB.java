@@ -31,7 +31,7 @@ import org.col.matching.authorship.AuthorComparator;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
-import org.hashids.Hashids;
+import org.mapdb.Atomic;
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
 import org.mapdb.Serializer;
@@ -51,16 +51,12 @@ public class NameIndexMapDB implements NameIndex {
   private final DB db;
   private final KryoPool pool;
   private final IdGenerator idGen;
-  private int counter = 0;
+  private final Atomic.Long counter;
   private final Map<String, NameList> names;
   private final AuthorComparator authComp;
   private final int datasetKey;
   private final SqlSessionFactory sqlFactory;
   private final NameDao dao;
-  private static final String PREFIX = "NI";
-  private static final Hashids HASHIDS = new Hashids("zubgtefvw4ec567vctghej", 6,
-      "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
-  
   
   static class NameList extends ArrayList<Name> {
     NameList() {
@@ -96,6 +92,8 @@ public class NameIndexMapDB implements NameIndex {
     pool = new KryoPool.Builder(new NameIndexKryoFactory())
         .softReferences()
         .build();
+    counter = db.atomicLong("counter", 0)
+        .createOrOpen();
     names = db.hashMap("names")
         .keySerializer(Serializer.STRING_ASCII)
         .valueSerializer(new MapDbObjectSerializer<>(NameList.class, pool, 128))
@@ -106,9 +104,24 @@ public class NameIndexMapDB implements NameIndex {
     
     if (names.size() == 0) {
       loadFromPg();
+    } else {
+      // verify postgres and MapDb store match up - otherwise trust postgres
+      long pgCount = countPg();
+      if (pgCount != counter.get()) {
+        LOG.warn("Existing name index contains {} names, but postgres has {}", counter, pgCount);
+        names.clear();
+        counter.set(0);
+        loadFromPg();
+      }
     }
-    idGen = new IdGenerator(PREFIX, counter);
+    idGen = new IdGenerator("", counter::incrementAndGet);
     LOG.info("Started name index mapdb with {} names", counter);
+  }
+  
+  private long countPg() {
+    try (SqlSession s = sqlFactory.openSession()) {
+      return s.getMapper(NameMapper.class).count(datasetKey);
+    }
   }
   
   private void loadFromPg() {
@@ -116,9 +129,8 @@ public class NameIndexMapDB implements NameIndex {
     try (SqlSession s = sqlFactory.openSession()) {
       NameMapper mapper = s.getMapper(NameMapper.class);
       ResultHandler<Name> handler = ctx -> {
-        if (ctx.getResultObject().getId().startsWith(PREFIX)) {
-          addWithID(ctx.getResultObject());
-        }
+        addWithID(ctx.getResultObject());
+        counter.incrementAndGet();
       };
       mapper.processDataset(datasetKey, handler);
       LOG.info("Loaded {} names from postgres into names index", counter);
@@ -276,14 +288,13 @@ public class NameIndexMapDB implements NameIndex {
     // add to index map, assigning a new NI id
     add(name);
     // insert into postgres dataset
-    //TODO: consider to make this async and collect for batch inserts
     dao.create(name, Users.MATCHER);
     return name;
   }
   
   @Override
-  public int size() {
-    return counter;
+  public long size() {
+    return counter.get();
   }
   
   @Override
@@ -303,7 +314,6 @@ public class NameIndexMapDB implements NameIndex {
     }
     group.add(name);
     names.put(key, group);
-    counter++;
   }
   
   private static String key(Name n) {
