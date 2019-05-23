@@ -67,7 +67,6 @@ public class PgImportIT {
     cfg.archiveDir = Files.createTempDir();
     cfg.scratchDir = Files.createTempDir();
     dataset = new Dataset();
-    dataset.setNamesIndexContributor(true);
     dataset.setCreatedBy(TestDataRule.TEST_USER.getKey());
     dataset.setModifiedBy(TestDataRule.TEST_USER.getKey());
 

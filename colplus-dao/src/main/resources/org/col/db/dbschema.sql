@@ -139,7 +139,6 @@ CREATE TABLE dataset (
   import_frequency INTEGER NOT NULL DEFAULT 7,
   code INTEGER,
   notes text,
-  names_index_contributor BOOLEAN NOT NULL DEFAULT FALSE,
   last_data_import_attempt INTEGER,
   deleted TIMESTAMP WITHOUT TIME ZONE,
   doc tsvector,

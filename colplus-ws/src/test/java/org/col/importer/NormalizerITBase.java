@@ -92,7 +92,6 @@ abstract class NormalizerITBase {
       Dataset d = new Dataset();
       d.setKey(1);
       d.setDataFormat(format);
-      d.setNamesIndexContributor(true);
       store.put(d);
       Normalizer norm = new Normalizer(store, arch, nameIndexSupplier.get(), ImageService.passThru());
       norm.call();

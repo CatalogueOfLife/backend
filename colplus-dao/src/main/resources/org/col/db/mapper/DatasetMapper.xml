@@ -30,7 +30,6 @@
       "group",
       confidence,
       completeness,
-      names_index_contributor,
       created,
       created_by,
       modified,
@@ -66,7 +65,6 @@
       "group",
       confidence,
       completeness,
-      names_index_contributor,
       created_by,
       modified_by
     </sql>
@@ -96,7 +94,6 @@
       #{group},
       #{confidence},
       #{completeness},
-      #{namesIndexContributor},
       #{createdBy},
       #{modifiedBy}
     </sql>
@@ -118,9 +115,7 @@
             <if test="req.code != null">
                 AND code=#{req.code}
             </if>
-            <!-- for now this is rather hacky cause we sectors only apply to the draft CoL (key=3)
-             and the pCat is dealt with via the names_index_contributor
-            -->
+            <!-- for now this is rather hacky cause we sectors only apply to the draft CoL (key=3) -->
             <if test="req.contributesTo != null">
                 <if test="req.contributesTo == 3">
                     AND exists(select 1 from sector s where s.dataset_key=d.key)
