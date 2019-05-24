@@ -529,6 +529,24 @@ public class PgImportIT {
   }
   
   @Test
+  public void testVascanProparte() throws Exception {
+    normalizeAndImport(DWCA, 36);
+    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+      NameUsageMapper num = session.getMapper(NameUsageMapper.class);
+      Name n = ndao.get(dataset.getKey(), "9946");
+  
+      List<NameUsageBase> usages = num.listByNameID(n.getDatasetKey(), n.getId());
+      assertEquals(2, usages.size());
+      for (NameUsageBase u : usages) {
+        Synonym s = (Synonym) u;
+        assertTrue(s.getId().startsWith("9946"));
+      }
+      assertEquals(usages.get(0).getName(), usages.get(1).getName());
+      assertNotEquals(usages.get(0).getId(), usages.get(1).getId());
+    }
+  }
+  
+  @Test
   public void testColdpSpecs() throws Exception {
     normalizeAndImport(COLDP, 0);
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
@@ -587,12 +605,12 @@ public class PgImportIT {
     dataset.setContributesTo(null);
     
     //normalizeAndImport(URI.create("https://github.com/mdoering/data-ina/archive/master.zip"), COLDP);
-    //normalizeAndImport(URI.create("http://data.canadensys.net/ipt/archive.do?r=vascan"), DataFormat.DWCA);
+    normalizeAndImport(URI.create("http://data.canadensys.net/ipt/archive.do?r=vascan"), DataFormat.DWCA);
     //normalizeAndImport(URI.create("https://raw.githubusercontent.com/Sp2000/colplus-repo/master/higher-classification.dwca.zip"), DWCA);
     //normalizeAndImportFolder(new File("/Users/markus/code/col+/data-staphbase/coldp"), COLDP);
     //normalizeAndImport(URI.create("https://plutof.ut.ee/ipt/archive.do?r=unite_sh"), DataFormat.DWCA);
     //normalizeAndImportArchive(new File("/home/ayco/git-repos/colplus-repo/DWCA/itis_global.zip"), DWCA);
-    normalizeAndImportArchive(new File("/Users/markus/Downloads/data-ina-master.zip"), COLDP);
+    //normalizeAndImportArchive(new File("/Users/markus/Downloads/data-ina-master.zip"), COLDP);
     
   }
   

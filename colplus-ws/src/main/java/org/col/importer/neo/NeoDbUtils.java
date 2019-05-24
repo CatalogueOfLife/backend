@@ -28,6 +28,13 @@ public class NeoDbUtils {
   }
   
   /**
+   * @return true if the usage is a pro parte synoynm with multiple accepted names
+   */
+  public static boolean isProParteSynonym(Node usageNode) {
+    return usageNode.getDegree(RelType.SYNONYM_OF, Direction.OUTGOING) > 1;
+  }
+  
+  /**
    * @return if n is a Name node and used for a Taxon
    */
   public static boolean isAcceptedName(Node nameNode) {

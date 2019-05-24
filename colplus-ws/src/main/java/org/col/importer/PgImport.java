@@ -18,6 +18,7 @@ import org.col.common.tax.AuthorshipNormalizer;
 import org.col.config.ImporterConfig;
 import org.col.db.mapper.*;
 import org.col.importer.neo.NeoDb;
+import org.col.importer.neo.NeoDbUtils;
 import org.col.importer.neo.model.Labels;
 import org.col.importer.neo.model.NeoName;
 import org.col.importer.neo.model.NeoUsage;
@@ -42,7 +43,8 @@ public class PgImport implements Callable<Boolean> {
   private final SqlSessionFactory sessionFactory;
   private final AuthorshipNormalizer aNormalizer;
   private final Dataset dataset;
-  private BiMap<Integer, Integer> verbatimKeys = HashBiMap.create();
+  private final BiMap<Integer, Integer> verbatimKeys = HashBiMap.create();
+  private final Map<String, Integer> proParteIds = new HashMap();
   private final AtomicInteger nCounter = new AtomicInteger(0);
   private final AtomicInteger tCounter = new AtomicInteger(0);
   private final AtomicInteger sCounter = new AtomicInteger(0);
@@ -325,6 +327,16 @@ public class PgImport implements Callable<Boolean> {
   
           // insert taxon or synonym
           if (u.isSynonym()) {
+            if (NeoDbUtils.isProParteSynonym(n)) {
+              if (proParteIds.containsKey(u.getId())){
+                // we had that id before, append a suffix
+                int cnt = proParteIds.get(u.getId());
+                u.setId(u.getId() + "-pp" + cnt++);
+                proParteIds.put(u.getId(), cnt);
+              } else {
+                proParteIds.put(u.getId(), 2);
+              }
+            }
             synMapper.create(u.getSynonym());
             sCounter.incrementAndGet();
 
