@@ -382,9 +382,12 @@ public class TaxonDao extends DatasetEntityDao<Taxon, TaxonMapper> {
     try (SqlSession session = factory.openSession(false)) {
       TaxonMapper tm = session.getMapper(TaxonMapper.class);
       SectorMapper sm = session.getMapper(SectorMapper.class);
+      SectorImportMapper sim = session.getMapper(SectorImportMapper.class);
   
       // remember sectors and count delte so we can delete them at the end
       List<Integer> sectorKeys = tm.listSectors(datasetKey, id);
+      LOG.debug("Delete taxon {} and its {} nested sectors from dataset {} by user {}", id, sectorKeys.size(), datasetKey, user);
+
       Int2IntOpenHashMap delta = tm.getCounts(datasetKey, id).getCount();
       List<TaxonCountMap> parents = tm.classificationCounts(datasetKey, id);
 
@@ -399,6 +402,8 @@ public class TaxonDao extends DatasetEntityDao<Taxon, TaxonMapper> {
       }
       
       for (Integer key : sectorKeys) {
+        LOG.debug("Delete sector {} and its imports by user {}", key, user);
+        sim.delete(key);
         sm.delete(key);
       }
     }
