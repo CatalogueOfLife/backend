@@ -120,7 +120,7 @@ public class ImportManager implements Managed {
   /**
    * Uploads a new dataset and submits a forced, high priority import request.
    *
-   * @throws IllegalArgumentException if dataset was scheduled for importing already, queue was full,
+   * @throws IllegalArgumentException if dataset was scheduled for importing already, queue was full or is currently being synced in the assembly
    *                                  dataset does not exist or is not of matching origin
    */
   public ImportRequest submit(final int datasetKey, final InputStream content, ColUser user) throws IOException {
@@ -133,7 +133,7 @@ public class ImportManager implements Managed {
   }
   
   /**
-   * @throws IllegalArgumentException if dataset was scheduled for importing already, queue was full
+   * @throws IllegalArgumentException if dataset was scheduled for importing already, queue was full or is currently being synced in the assembly
    *                                  or dataset does not exist or is of origin managed
    */
   private synchronized ImportRequest submitValidDataset(final ImportRequest req) throws IllegalArgumentException {
@@ -151,7 +151,7 @@ public class ImportManager implements Managed {
       Integer sectorKey = assemblyCoordinator.hasSyncingSector(req.datasetKey);
       if (sectorKey != null) {
         LOG.warn("Dataset {} used in running sync of sector {}", req.datasetKey, sectorKey);
-        throw new IllegalArgumentException("Import queue full, skip dataset " + req.datasetKey);
+        throw new IllegalArgumentException("Dataset used in running sync of sector " + sectorKey);
       }
     }
     
