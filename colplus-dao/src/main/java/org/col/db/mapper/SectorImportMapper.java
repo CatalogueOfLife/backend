@@ -35,6 +35,12 @@ public interface SectorImportMapper {
   
   void create(@Param("imp") SectorImport sectorImport);
   
+  /**
+   * Deletes all imports for the given sector
+   */
+  int delete(@Param("key") int sectorKey);
+  
+  
   Integer countDescription(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
   Integer countDistribution(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
   Integer countMedia(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);

@@ -71,6 +71,11 @@
           VALUES (<include refid="PROPS" />)
     </insert>
 
+    <delete id="delete" parameterType="map">
+        DELETE FROM sector_import
+        WHERE sector_key=#{key}
+    </delete>
+
     <select id="countDescription" resultType="integer">
         SELECT count(*)
         FROM description_${datasetKey} x
