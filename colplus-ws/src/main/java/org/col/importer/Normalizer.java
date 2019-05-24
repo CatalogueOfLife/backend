@@ -31,6 +31,7 @@ import org.col.importer.neo.model.*;
 import org.col.importer.neo.traverse.Traversals;
 import org.col.importer.reference.ReferenceFactory;
 import org.col.matching.NameIndex;
+import org.col.parser.NameParser;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 import org.neo4j.graphdb.*;
@@ -670,7 +671,8 @@ public class Normalizer implements Callable<Boolean> {
     Name n = new Name();
     n.setUninomial(uninomial);
     n.setRank(rank);
-    n.setType(NameType.SCIENTIFIC);
+    // determine type - can e.g. be placeholders
+    n.setType(NameParser.PARSER.determineType(n).orElse(NameType.SCIENTIFIC));
     n.updateNameCache();
     t.usage.setName(n);
     // store both, which creates a single new neo node

@@ -11,9 +11,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.col.api.model.IssueContainer;
 import org.col.api.model.Name;
 import org.col.api.model.NameAccordingTo;
+import org.col.api.util.ObjectUtils;
 import org.col.api.vocab.Issue;
 import org.gbif.nameparser.NameParserGBIF;
 import org.gbif.nameparser.Warnings;
+import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.ParsedName;
 import org.gbif.nameparser.api.Rank;
 import org.gbif.nameparser.api.UnparsableNameException;
@@ -146,6 +148,20 @@ public class NameParser implements Parser<NameAccordingTo> {
       }
     }
     return Optional.of(nat);
+  }
+  
+  public Optional<NameType> determineType(Name name) {
+    String sciname = name.canonicalNameComplete();
+    if (StringUtils.isBlank(sciname)) {
+      return Optional.of(NameType.NO_NAME);
+    }
+    try {
+      ParsedName pn = PARSER_INTERNAL.parse(sciname, name.getRank());
+      return Optional.of(ObjectUtils.coalesce(pn.getType(), NameType.SCIENTIFIC));
+    
+    } catch (UnparsableNameException e) {
+      return Optional.of(ObjectUtils.coalesce(e.getType(), NameType.SCIENTIFIC));
+    }
   }
   
   /**

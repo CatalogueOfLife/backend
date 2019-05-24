@@ -7,10 +7,12 @@ import com.google.common.collect.Sets;
 import org.col.importer.neo.model.Labels;
 import org.col.importer.neo.model.NeoName;
 import org.col.importer.neo.model.NeoUsage;
+import org.col.importer.neo.model.RankedUsage;
 import org.col.importer.neo.traverse.Traversals;
 import org.col.api.model.*;
 import org.col.api.vocab.*;
 import org.gbif.dwc.terms.AcefTerm;
+import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -297,6 +299,30 @@ public class NormalizerACEFIT extends NormalizerITBase {
       assertEquals("Dunin, 2001", t.usage.getName().getAuthorship());
       assertEquals(Rank.INFRASPECIFIC_NAME, t.usage.getName().getRank());
     }
+  }
+  
+  /**
+   * Makes sure placeholder names in the denormed ACEF classification get flagged
+   */
+  @Test
+  public void acefNotAssigned() throws Exception {
+    normalize(16);
+    try (Transaction tx = store.getNeo().beginTx()) {
+      assertPlaceholderInParents("411000");
+      assertPlaceholderInParents("410933");
+      assertPlaceholderInParents("291295");
+    }
+  }
+  
+  void assertPlaceholderInParents(String id) {
+    NeoUsage t = usageByID(id);
+    for (RankedUsage u : store.parents(t.node)) {
+      NeoName n = store.names().objByNode(u.nameNode);
+      if (NameType.PLACEHOLDER == n.name.getType()) {
+        return;
+      }
+    }
+    fail("No placeholder name found in parents of " + id);
   }
   
   /**
