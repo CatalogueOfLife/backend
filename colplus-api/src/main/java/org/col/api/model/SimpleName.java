@@ -12,10 +12,15 @@ import org.gbif.nameparser.api.Rank;
  * the full scientific name in order to best deal with changing identifiers in sources.
  */
 public class SimpleName implements Comparable<SimpleName> {
-  private static final Comparator<SimpleName> NATURAL_ORDER_COMPARATOR =
-      Comparator.nullsLast(Comparator.comparing(SimpleName::getRank))
-          .thenComparing(Comparator.nullsLast(Comparator.comparing(SimpleName::getName)))
-          .thenComparing(Comparator.nullsLast(Comparator.comparing(SimpleName::getAuthorship)));
+  private static Comparator<String> nullSafeStringComparator = Comparator
+      .nullsLast(String::compareTo);
+  private static Comparator<Enum> nullSafeEnumComparator = Comparator
+      .nullsLast(Enum::compareTo);
+  
+  static final Comparator<SimpleName> NATURAL_ORDER =
+      Comparator.comparing(SimpleName::getRank, nullSafeEnumComparator)
+          .thenComparing(Comparator.comparing(SimpleName::getName, nullSafeStringComparator))
+          .thenComparing(Comparator.comparing(SimpleName::getAuthorship, nullSafeStringComparator));
   
   private String id;
   
@@ -111,6 +116,6 @@ public class SimpleName implements Comparable<SimpleName> {
   }
   
   public int compareTo(SimpleName other){
-    return NATURAL_ORDER_COMPARATOR.compare(this, other);
+    return NATURAL_ORDER.compare(this, other);
   }
 }
