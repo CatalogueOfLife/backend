@@ -35,6 +35,7 @@ public class SectorImportMapperTest extends MapperTestBase<SectorImportMapper> {
   
   private SectorImport create(SectorImport.State state) throws Exception {
     SectorImport d = new SectorImport();
+    d.setType(getClass().getSimpleName());
     d.setSectorKey(s.getKey());
     d.setAttempt(attempts++);
     d.setError("no error");

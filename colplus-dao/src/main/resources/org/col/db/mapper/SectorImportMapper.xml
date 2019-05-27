@@ -5,18 +5,21 @@
 <mapper namespace="org.col.db.mapper.SectorImportMapper">
 
     <sql id="SELECT">
+        type,
         sector_key,
         attempt,
         <include refid="org.col.db.mapper.DatasetImportMapper.metricsCols"/>
     </sql>
 
     <sql id="COLS">
+        type,
         sector_key,
         attempt,
         <include refid="org.col.db.mapper.DatasetImportMapper.metricsCols"/>
     </sql>
 
     <sql id="PROPS">
+        #{imp.type},
         #{imp.sectorKey},
         #{imp.attempt},
         <include refid="org.col.db.mapper.DatasetImportMapper.metricsProps"/>

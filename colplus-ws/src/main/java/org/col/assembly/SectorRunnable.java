@@ -12,9 +12,9 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.model.*;
+import org.col.api.util.ObjectUtils;
 import org.col.api.vocab.Datasets;
 import org.col.common.util.LoggingUtils;
-import org.col.api.util.ObjectUtils;
 import org.col.db.mapper.DecisionMapper;
 import org.col.db.mapper.SectorImportMapper;
 import org.col.db.mapper.SectorMapper;
@@ -49,6 +49,7 @@ abstract class SectorRunnable implements Runnable {
       // check if sector actually exists
       this.sector = ObjectUtils.checkNotNull(s, "Sector required");
       this.datasetKey = sector.getDatasetKey();
+      this.state.setType(getClass().getSimpleName());
       // check if target actually exists
       Taxon target = ObjectUtils.checkNotNull(session.getMapper(TaxonMapper.class).get(catalogueKey, sector.getTarget().getId()),
           "Sector " + s.getKey() + " does have a non existing target id for catalogue " + catalogueKey

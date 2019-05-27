@@ -16,8 +16,17 @@ public class SectorImport extends ImportMetrics<SectorImport.State> {
       return this != FINISHED && this != FAILED && this != CANCELED;
     }
   }
-
+  
+  private String type;
   private int sectorKey;
+  
+  public String getType() {
+    return type;
+  }
+  
+  public void setType(String type) {
+    this.type = type;
+  }
   
   public int getSectorKey() {
     return sectorKey;
@@ -33,12 +42,13 @@ public class SectorImport extends ImportMetrics<SectorImport.State> {
     if (o == null || getClass() != o.getClass()) return false;
     if (!super.equals(o)) return false;
     SectorImport that = (SectorImport) o;
-    return sectorKey == that.sectorKey;
+    return sectorKey == that.sectorKey &&
+        Objects.equals(type, that.type);
   }
   
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), sectorKey);
+    return Objects.hash(super.hashCode(), type, sectorKey);
   }
   
   public static List<State> runningStates() {
@@ -55,7 +65,7 @@ public class SectorImport extends ImportMetrics<SectorImport.State> {
   
   @Override
   public String attempt() {
-    return getSectorKey() + " - " + getAttempt();
+    return getType() + " " + getSectorKey() + " - " + getAttempt();
   }
   
 }

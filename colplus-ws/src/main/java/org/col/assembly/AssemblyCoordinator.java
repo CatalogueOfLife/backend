@@ -54,13 +54,16 @@ public class AssemblyCoordinator implements Managed {
     public final int datasetKey;
     public final Future future;
     public final SectorImport state;
-  
-    SectorFuture(int sectorKey, int datasetKey, Future future, SectorImport state) {
-      this.sectorKey = sectorKey;
-      this.datasetKey = datasetKey;
-      this.state = state;
+    public final boolean delete;
+    
+    private SectorFuture(SectorRunnable job, Future future) {
+      this.sectorKey = job.sector.getKey();
+      this.datasetKey = job.sector.getDatasetKey();
+      this.state = job.getState();
       this.future = future;
+      this.delete = job instanceof SectorDelete;
     }
+
   }
   
   public AssemblyCoordinator(SqlSessionFactory factory, DatasetImportDao diDao, NameUsageIndexService indexService, MetricRegistry registry) {
@@ -155,7 +158,7 @@ public class AssemblyCoordinator implements Managed {
     
     } else {
       assertStableData(job.sector);
-      syncs.put(job.sector.getKey(), new SectorFuture(job.sector.getKey(), job.sector.getDatasetKey(), exec.submit(job), job.getState()));
+      syncs.put(job.sector.getKey(), new SectorFuture(job, exec.submit(job)));
       LOG.info("Queued {} for {} targeting {}", job.getClass().getSimpleName(), job.sector, job.sector.getTarget());
     }
   }

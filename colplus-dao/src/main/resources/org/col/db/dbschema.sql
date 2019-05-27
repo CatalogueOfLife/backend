@@ -227,6 +227,7 @@ CREATE TABLE sector (
 CREATE TABLE sector_import (
   sector_key INTEGER NOT NULL REFERENCES sector,
   attempt INTEGER NOT NULL,
+  type TEXT NOT NULL,
   state INTEGER NOT NULL,
   error TEXT,
   started TIMESTAMP WITHOUT TIME ZONE,
