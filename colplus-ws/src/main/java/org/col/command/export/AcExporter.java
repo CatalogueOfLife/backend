@@ -1,6 +1,7 @@
 package org.col.command.export;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -39,7 +40,7 @@ public class AcExporter {
       try (Connection c = cfg.db.connect()) {
         c.setAutoCommit(false);
         InputStream sql = AcExporter.class.getResourceAsStream(EXPORT_SQL);
-        executeAcExportSql(catalogueKey, (PgConnection)c, new BufferedReader(new InputStreamReader(sql, "UTF8")), csvDir);
+        executeAcExportSql(catalogueKey, (PgConnection)c, new BufferedReader(new InputStreamReader(sql, StandardCharsets.UTF_8)), csvDir);
       } catch (UnsupportedEncodingException e) {
         throw new RuntimeException(e);
       }
@@ -47,7 +48,6 @@ public class AcExporter {
       File arch = new File(cfg.downloadDir, "ac-export.zip");
       if (arch.exists()) {
         LOG.debug("Remove previous export file {}", arch.getAbsolutePath());
-        arch.delete();
       }
       LOG.info("Creating final export archive {}", arch.getAbsolutePath());
       CompressionUtil.zipDir(csvDir, arch);

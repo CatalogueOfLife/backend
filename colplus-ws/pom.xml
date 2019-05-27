@@ -304,17 +304,6 @@
     <build>
         <defaultGoal>compile exec:java</defaultGoal>
 
-        <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-                <filtering>true</filtering>
-                <includes>
-                    <include>**/*.properties</include>
-                    <include>**/*.xml</include>
-                </includes>
-            </resource>
-        </resources>
-
 		<testResources>
 			<testResource>
 				<directory>src/test/resources</directory>
@@ -359,7 +348,7 @@
                     <dotGitDirectory>${project.basedir}/../.git</dotGitDirectory>
                     <verbose>true</verbose>
                     <generateGitPropertiesFile>true</generateGitPropertiesFile>
-                    <generateGitPropertiesFilename>${project.build.outputDirectory}/git.properties</generateGitPropertiesFilename>
+                    <generateGitPropertiesFilename>${project.build.outputDirectory}/version/git.properties</generateGitPropertiesFilename>
                     <!-- json -->
                     <format>properties</format>
                     <gitDescribe>
