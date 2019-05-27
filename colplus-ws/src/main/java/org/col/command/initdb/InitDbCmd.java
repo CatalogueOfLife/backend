@@ -203,9 +203,10 @@ public class InitDbCmd extends ConfiguredCommand<WsServerConfig> {
     AuthorshipNormalizer aNormalizer = AuthorshipNormalizer.createWithAuthormap();
     LOG.info("Use persistent names index at {}", cfg.namesIndexFile.getAbsolutePath());
     
-    NameIndex ni = NameIndexFactory.persistent(cfg.namesIndexFile, factory, aNormalizer);
-    DatasetMatcher matcher = new DatasetMatcher(factory, ni, false);
-    matcher.match(Datasets.DRAFT_COL);
+    try (NameIndex ni = NameIndexFactory.persistent(cfg.namesIndexFile, factory, aNormalizer)) {
+      DatasetMatcher matcher = new DatasetMatcher(factory, ni, false);
+      matcher.match(Datasets.DRAFT_COL);
+    }
   }
   
   private static void updateSearchIndex(WsServerConfig cfg, SqlSessionFactory factory) throws Exception {
