@@ -13,9 +13,9 @@ import org.gbif.nameparser.api.Rank;
  */
 public class SimpleName implements Comparable<SimpleName> {
   private static final Comparator<SimpleName> NATURAL_ORDER_COMPARATOR =
-      Comparator.comparing(SimpleName::getRank)
-          .thenComparing(SimpleName::getName)
-          .thenComparing(SimpleName::getAuthorship);
+      Comparator.nullsLast(Comparator.comparing(SimpleName::getRank))
+          .thenComparing(Comparator.nullsLast(Comparator.comparing(SimpleName::getName)))
+          .thenComparing(Comparator.nullsLast(Comparator.comparing(SimpleName::getAuthorship)));
   
   private String id;
   
