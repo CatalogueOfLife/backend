@@ -304,6 +304,17 @@
     <build>
         <defaultGoal>compile exec:java</defaultGoal>
 
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>**/*.properties</include>
+                    <include>**/*.xml</include>
+                </includes>
+            </resource>
+        </resources>
+
 		<testResources>
 			<testResource>
 				<directory>src/test/resources</directory>
@@ -333,6 +344,30 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
                 <!-- cfg is shared in motherpom -->
+            </plugin>
+            <plugin>
+                <groupId>pl.project13.maven</groupId>
+                <artifactId>git-commit-id-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>revision</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <dotGitDirectory>${project.basedir}/../.git</dotGitDirectory>
+                    <verbose>true</verbose>
+                    <generateGitPropertiesFile>true</generateGitPropertiesFile>
+                    <generateGitPropertiesFilename>${project.build.outputDirectory}/git.properties</generateGitPropertiesFilename>
+                    <!-- json -->
+                    <format>properties</format>
+                    <gitDescribe>
+                        <skip>false</skip>
+                        <always>false</always>
+                        <dirty>-dirty</dirty>
+                    </gitDescribe>
+                </configuration>
             </plugin>
         </plugins>
     </build>

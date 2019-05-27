@@ -1,12 +1,14 @@
 package org.col;
 
 import java.io.File;
+import java.util.Properties;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.Configuration;
 import io.dropwizard.client.JerseyClientConfiguration;
+import org.col.common.io.Resources;
 import org.col.config.GbifConfig;
 import org.col.config.ImporterConfig;
 import org.col.config.NormalizerConfig;
@@ -17,9 +19,14 @@ import org.col.dw.cors.CorsBundleConfiguration;
 import org.col.dw.cors.CorsConfiguration;
 import org.col.es.EsConfig;
 import org.col.img.ImgConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public class WsServerConfig extends Configuration implements CorsBundleConfiguration {
+  private static final Logger LOG = LoggerFactory.getLogger(WsServerConfig.class);
+  
+  public Properties version;
   
   @Valid
   @NotNull
@@ -93,4 +100,22 @@ public class WsServerConfig extends Configuration implements CorsBundleConfigura
   public CorsConfiguration getCorsConfiguration() {
     return cors;
   }
+  
+  public WsServerConfig() {
+    try {
+      version = new Properties();
+      version.load(Resources.reader("git.properties"));
+    } catch (Exception e) {
+      LOG.warn("Failed to load versions properties", e);
+      version = null;
+    }
+  }
+  
+  public String versionString() {
+    if (version != null) {
+      return version.getProperty("git.commit.id.describe");
+    }
+    return null;
+  }
+
 }
