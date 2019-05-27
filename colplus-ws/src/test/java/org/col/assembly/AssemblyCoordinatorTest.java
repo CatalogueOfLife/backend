@@ -18,7 +18,6 @@ import org.col.es.NameUsageIndexService;
 import org.gbif.nameparser.api.Rank;
 import org.junit.*;
 
-@Ignore("work in progress")
 public class AssemblyCoordinatorTest {
   @ClassRule
   public static PgSetupRule pgSetupRule = new PgSetupRule();

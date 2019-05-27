@@ -21,6 +21,7 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.model.ColUser;
 import org.col.api.model.Sector;
 import org.col.api.model.SectorImport;
+import org.col.api.model.SimpleName;
 import org.col.common.concurrent.ExecutorUtils;
 import org.col.dao.DatasetImportDao;
 import org.col.db.mapper.CollectResultHandler;
@@ -35,7 +36,7 @@ import org.slf4j.LoggerFactory;
 import static org.col.WsServer.MILLIS_TO_DIE;
 
 public class AssemblyCoordinator implements Managed {
-  private static  final Comparator<Sector> SECTOR_ORDER = Comparator.comparing(Sector::getTarget);
+  static  final Comparator<Sector> SECTOR_ORDER = Comparator.comparing(Sector::getTarget, Comparator.nullsLast(SimpleName::compareTo));
   private static final Logger LOG = LoggerFactory.getLogger(AssemblyCoordinator.class);
   private static final String THREAD_NAME = "assembly-sync";
   
@@ -202,7 +203,7 @@ public class AssemblyCoordinator implements Managed {
   
   
   
-  public void syncAll(ColUser user) {
+  public int syncAll(ColUser user) {
     LOG.warn("Sync all sectors triggered by user {}", user);
     CollectResultHandler<Sector> collector = new CollectResultHandler<>();
     try (SqlSession session = factory.openSession(false)) {
@@ -219,7 +220,9 @@ public class AssemblyCoordinator implements Managed {
         failed++;
       }
     }
-    LOG.info("Scheduled {} sectors for sync, {} failed", collector.getResults().size()-failed, failed);
+    int queued = collector.getResults().size()-failed;
+    LOG.info("Scheduled {} sectors for sync, {} failed", queued, failed);
+    return queued;
   }
   
 

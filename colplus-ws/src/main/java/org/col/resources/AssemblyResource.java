@@ -68,9 +68,9 @@ public class AssemblyResource {
   @POST
   @Path("/sync/all")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void syncAll(@PathParam("catKey") int catKey, @Auth ColUser user) {
+  public int syncAll(@PathParam("catKey") int catKey, @Auth ColUser user) {
     requireDraft(catKey);
-    assembly.syncAll(user);
+    return assembly.syncAll(user);
   }
   
   @DELETE

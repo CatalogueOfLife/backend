@@ -1,5 +1,5 @@
 key,dataset_key,mode,subject_rank,subject_name,target_rank,target_name,target_id
-1,1014,1,kingdom,Viruses,,,
+1,1014,1,kingdom,Viruses,kingdom,Viruses,
 2,1028,0,class,Corallochytrea,phylum,Choanozoa,72c9042f-6aa3-4812-9cdb-0492623bc30b
 3,1033,0,class,Ichthyosporea,phylum,Choanozoa,72c9042f-6aa3-4812-9cdb-0492623bc30b
 4,1033,0,genus,Amoebosporus,phylum,Choanozoa,72c9042f-6aa3-4812-9cdb-0492623bc30b
@@ -2802,8 +2802,8 @@ key,dataset_key,mode,subject_rank,subject_name,target_rank,target_name,target_id
 2801,1177,0,class,Dinophyceae,phylum,Miozoa,ff117d0d-e6e7-42d4-8110-c53f7c5ccca8
 2802,1115,0,phylum,Ochrophyta,kingdom,Chromista,6056cf1c-094c-4c8e-9dbb-db9fc064c254
 2803,1028,0,phylum,Oomycota,kingdom,Chromista,6056cf1c-094c-4c8e-9dbb-db9fc064c254
-2804,1115,1,kingdom,Bacteria,,,
-2805,1115,1,kingdom,Archaea,,,
+2804,1115,1,kingdom,Bacteria,kingdom,Bacteria,
+2805,1115,1,kingdom,Archaea,kingdom,Archaea,
 2806,1115,0,phylum,Acanthocephala,kingdom,Animalia,6f4bdf81-77d6-4bad-8dbe-65b4d44cd81a
 2807,1123,0,phylum,Placozoa,kingdom,Animalia,6f4bdf81-77d6-4bad-8dbe-65b4d44cd81a
 2808,1127,0,class,Cestoda,phylum,Platyhelminthes,e4e34715-ea06-4aab-aa24-60b960a6690a
