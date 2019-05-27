@@ -16,10 +16,12 @@ public class DatasetMatcher {
   private static final Logger LOG = LoggerFactory.getLogger(DatasetMatcher.class);
   private final SqlSessionFactory factory;
   private final NameIndex ni;
+  private final boolean updateIssues;
   
-  public DatasetMatcher(SqlSessionFactory factory, NameIndex ni) {
+  public DatasetMatcher(SqlSessionFactory factory, NameIndex ni, boolean updateIssues) {
     this.factory = factory;
     this.ni = ni;
+    this.updateIssues = updateIssues;
   }
   
   /**
@@ -30,7 +32,7 @@ public class DatasetMatcher {
     try (SqlSession session = factory.openSession(false)){
       try (SqlSession batchSession = factory.openSession(ExecutorType.BATCH, false)){
         NameMapper nm = session.getMapper(NameMapper.class);
-        BulkMatchHandler h = new BulkMatchHandler(ni, batchSession, datasetKey);
+        BulkMatchHandler h = new BulkMatchHandler(updateIssues, ni, batchSession, datasetKey);
         nm.processDataset(datasetKey, h);
         batchSession.commit();
         LOG.info("Updated {} out of {} name matches for dataset {}", h.updates, h.counter, datasetKey);
@@ -43,13 +45,15 @@ public class DatasetMatcher {
   static class BulkMatchHandler implements ResultHandler<Name> {
     int counter = 0;
     int updates = 0;
+    private final boolean updateIssues;
     private final int datasetKey;
     private final SqlSession session;
     private final NameIndex ni;
     private final NameMapper nm;
     private final VerbatimRecordMapper vm;
   
-    BulkMatchHandler(NameIndex ni, SqlSession session, int datasetKey) {
+    BulkMatchHandler(boolean updateIssues, NameIndex ni, SqlSession session, int datasetKey) {
+      this.updateIssues = updateIssues;
       this.datasetKey = datasetKey;
       this.ni = ni;
       this.session = session;
@@ -67,22 +71,25 @@ public class DatasetMatcher {
       if (!Objects.equals(oldId, m.hasMatch() ? m.getName().getId() : null)) {
         nm.updateMatch(datasetKey, n.getId(), m.hasMatch() ? m.getName().getId() : null);
         
-        IssueContainer v = n.getVerbatimKey() != null ? vm.getIssues(datasetKey, n.getVerbatimKey()) : null;
-        if (v != null) {
-          int hash = v.getIssues().hashCode();
-          clearMatchIssues(v);
-          if (m.hasMatch()) {
-            if (m.getType().issue != null) {
-              v.addIssue(m.getType().issue);
+        if (updateIssues) {
+          IssueContainer v = n.getVerbatimKey() != null ? vm.getIssues(datasetKey, n.getVerbatimKey()) : null;
+          if (v != null) {
+            int hash = v.getIssues().hashCode();
+            clearMatchIssues(v);
+            if (m.hasMatch()) {
+              if (m.getType().issue != null) {
+                v.addIssue(m.getType().issue);
+              }
+            } else {
+              v.addIssue(Issue.NAME_MATCH_NONE);
             }
-          } else {
-            v.addIssue(Issue.NAME_MATCH_NONE);
-          }
-          // only update verbatim if issues changed
-          if (hash != v.getIssues().hashCode()) {
-            vm.update(datasetKey, n.getVerbatimKey(), v.getIssues());
+            // only update verbatim if issues changed
+            if (hash != v.getIssues().hashCode()) {
+              vm.update(datasetKey, n.getVerbatimKey(), v.getIssues());
+            }
           }
         }
+        
         if (updates++ % 10000 == 0) {
           session.commit();
           LOG.debug("Updated {} out of {} name matches for dataset {}", updates, counter, datasetKey);

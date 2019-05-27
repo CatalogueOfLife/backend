@@ -199,22 +199,13 @@ public class InitDbCmd extends ConfiguredCommand<WsServerConfig> {
         .build());
   
     LOG.info("Match draft CoL to names index");
-    // we create a new names index denovo in memory just to write new hierarchy names into the names index dataset
+    // we create a new names index denovo to write new hierarchy names into the names index dataset
     AuthorshipNormalizer aNormalizer = AuthorshipNormalizer.createWithAuthormap();
-    NameIndex ni = NameIndexFactory.memory(factory, aNormalizer);
-    DatasetMatcher matcher = new DatasetMatcher(factory, ni);
+    LOG.info("Use persistent names index at {}", cfg.namesIndexFile.getAbsolutePath());
+    
+    NameIndex ni = NameIndexFactory.persistent(cfg.namesIndexFile, factory, aNormalizer);
+    DatasetMatcher matcher = new DatasetMatcher(factory, ni, false);
     matcher.match(Datasets.DRAFT_COL);
-  
-    //LOG.info("Build import metrics for draft CoL and index into ES");
-    //Dataset draft;
-    //try (SqlSession session = factory.openSession(true)) {
-    //  draft = session.getMapper(DatasetMapper.class).get(Datasets.DRAFT_COL);
-    //}
-    //DatasetImportDao dao = new DatasetImportDao(factory, cfg.textTreeRepo);
-    //DatasetImport di = dao.create(draft);
-    //dao.updateMetrics(di);
-    //di.setState(ImportState.FINISHED);
-    //dao.update(di);
   }
   
   private static void updateSearchIndex(WsServerConfig cfg, SqlSessionFactory factory) throws Exception {
