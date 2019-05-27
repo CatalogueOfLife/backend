@@ -47,16 +47,15 @@ public class NameIndexFactory {
   public static NameIndex persistentOrMemory(@Nullable File location, SqlSessionFactory sqlFactory, AuthorshipNormalizer aNormalizer) throws IOException {
     NameIndex ni;
     if (location == null) {
-      LOG.info("Use volatile in memory names index");
       ni = memory(sqlFactory, aNormalizer);
     } else {
-      LOG.info("Use persistent names index at {}", location.getAbsolutePath());
       ni = persistent(location, sqlFactory, aNormalizer);
     }
     return ni;
   }
   
   public static NameIndex memory(SqlSessionFactory sqlFactory, AuthorshipNormalizer authorshipNormalizer) {
+    LOG.info("Use volatile in memory names index");
     return new NameIndexMapDB(DBMaker.memoryDB(), authorshipNormalizer, Datasets.NAME_INDEX, sqlFactory);
   }
 
@@ -66,6 +65,9 @@ public class NameIndexFactory {
   public static NameIndex persistent(File location, SqlSessionFactory sqlFactory, AuthorshipNormalizer authorshipNormalizer) throws IOException {
     if (!location.exists()) {
       FileUtils.forceMkdirParent(location);
+      LOG.info("Create persistent names index at {}", location.getAbsolutePath());
+    } else {
+      LOG.info("Open persistent names index at {}", location.getAbsolutePath());
     }
     DBMaker.Maker maker = DBMaker
         .fileDB(location)

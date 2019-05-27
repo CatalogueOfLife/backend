@@ -369,7 +369,9 @@ public class NameIndexMapDB implements NameIndex {
   
   @Override
   public void close() throws Exception {
+    LOG.info("Closing names index db ...");
     db.close();
+    LOG.info("Names index db closed");
   }
   
 }
