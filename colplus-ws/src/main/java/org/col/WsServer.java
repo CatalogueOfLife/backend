@@ -158,14 +158,7 @@ public class WsServer extends Application<WsServerConfig> {
     final ImageService imgService = new ImageServiceFS(cfg.img);
   
     // name index
-    NameIndex ni;
-    if (cfg.namesIndexFile == null) {
-      LOG.info("Use volatile in memory names index");
-      ni = NameIndexFactory.memory(getSqlSessionFactory(), aNormalizer);
-    } else {
-      LOG.info("Use persistent names index at {}", cfg.namesIndexFile.getAbsolutePath());
-      ni = NameIndexFactory.persistent(cfg.namesIndexFile, getSqlSessionFactory(), aNormalizer);
-    }
+    NameIndex ni = NameIndexFactory.persistentOrMemory(cfg.namesIndexFile, getSqlSessionFactory(), aNormalizer);
     env.lifecycle().manage(new ManagedCloseable(ni));
     env.healthChecks().register("names-index", new NamesIndexHealthCheck(ni));
     

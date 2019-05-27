@@ -202,8 +202,8 @@ public class InitDbCmd extends ConfiguredCommand<WsServerConfig> {
     // we create a new names index denovo to write new hierarchy names into the names index dataset
     AuthorshipNormalizer aNormalizer = AuthorshipNormalizer.createWithAuthormap();
     LOG.info("Use persistent names index at {}", cfg.namesIndexFile.getAbsolutePath());
-    
-    try (NameIndex ni = NameIndexFactory.persistent(cfg.namesIndexFile, factory, aNormalizer)) {
+  
+    try (NameIndex ni = NameIndexFactory.persistentOrMemory(cfg.namesIndexFile, factory, aNormalizer)) {
       DatasetMatcher matcher = new DatasetMatcher(factory, ni, false);
       matcher.match(Datasets.DRAFT_COL);
     }

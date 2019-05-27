@@ -4,6 +4,8 @@ package org.col.matching;
 import java.io.File;
 import java.io.IOException;
 
+import javax.annotation.Nullable;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.model.Name;
@@ -37,6 +39,21 @@ public class NameIndexFactory {
       }
       
     };
+  }
+  
+  /**
+   * Returns a persistent index if location is given, otherwise an in memory one
+   */
+  public static NameIndex persistentOrMemory(@Nullable File location, SqlSessionFactory sqlFactory, AuthorshipNormalizer aNormalizer) throws IOException {
+    NameIndex ni;
+    if (location == null) {
+      LOG.info("Use volatile in memory names index");
+      ni = memory(sqlFactory, aNormalizer);
+    } else {
+      LOG.info("Use persistent names index at {}", location.getAbsolutePath());
+      ni = persistent(location, sqlFactory, aNormalizer);
+    }
+    return ni;
   }
   
   public static NameIndex memory(SqlSessionFactory sqlFactory, AuthorshipNormalizer authorshipNormalizer) {
