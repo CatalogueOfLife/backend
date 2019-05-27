@@ -208,9 +208,16 @@ public class AssemblyCoordinator implements Managed {
       sm.processAll(collector);
     }
     collector.getResults().sort(SECTOR_ORDER);
+    int failed = 0;
     for (Sector s : collector.getResults()) {
-      syncSector(s, user);
+      try {
+        syncSector(s, user);
+      } catch (IllegalArgumentException e) {
+        LOG.warn("Fail to sync {}: {}", s, e.getMessage());
+        failed++;
+      }
     }
+    LOG.info("Scheduled {} sectors for sync, {} failed", collector.getResults().size()-failed, failed);
   }
   
 

@@ -62,4 +62,26 @@ public class AssemblyCoordinatorTest {
     coord.syncSector(sector.getKey(), TestEntityGenerator.USER_EDITOR);
   }
   
+  @Test
+  public void syncAll() throws Exception {
+    Sector sector = new Sector();
+    sector.setMode(Sector.Mode.ATTACH);
+    sector.setSubject(new SimpleName("7", "Insecta", Rank.CLASS));
+    sector.setTarget(new SimpleName("123", "Arthropoda", Rank.PHYLUM));
+    sector.applyUser(TestEntityGenerator.USER_EDITOR);
+    
+    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+      final DatasetMapper dm = session.getMapper(DatasetMapper.class);
+      Dataset d = DatasetMapperTest.create();
+      dm.create(d);
+      
+      final SectorMapper sm = session.getMapper(SectorMapper.class);
+      // point to bad dataset
+      sector.setDatasetKey(d.getKey());
+      sm.create(sector);
+    }
+    
+    coord.syncAll(TestEntityGenerator.USER_EDITOR);
+  }
+  
 }

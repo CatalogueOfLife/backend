@@ -106,6 +106,12 @@
     WHERE target_id = #{id}
   </select>
 
+  <select id="processAll" parameterType="map" resultMap="sectorResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
+    SELECT <include refid="SELECT" />
+    FROM <include refid="FROM" />
+    ORDER BY key
+  </select>
+
   <insert id="create" parameterType="Sector" useGeneratedKeys="true" keyProperty="key">
     INSERT INTO sector ( <include refid="COLS" />, created_by )
     VALUES ( <include refid="PROPS" />, #{createdBy} )
