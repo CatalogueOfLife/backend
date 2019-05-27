@@ -144,9 +144,8 @@ public class AssemblyCoordinator implements Managed {
     queueJob(ss);
   }
 
-  public void deleteSector(int sectorKey, ColUser user) {
-    Sector s = readSector(sectorKey);
-    SectorDelete sd = new SectorDelete(s, factory, indexService, this::successCallBack, this::errorCallBack, user);
+  public void deleteSector(int sectorKey, ColUser user) throws IllegalArgumentException {
+    SectorDelete sd = new SectorDelete(readSector(sectorKey), factory, indexService, this::successCallBack, this::errorCallBack, user);
     queueJob(sd);
   }
   

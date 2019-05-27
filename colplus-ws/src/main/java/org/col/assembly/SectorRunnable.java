@@ -43,15 +43,17 @@ abstract class SectorRunnable implements Runnable {
   
   SectorRunnable(Sector s, SqlSessionFactory factory, NameUsageIndexService indexService,
                       Consumer<SectorRunnable> successCallback,
-                      BiConsumer<SectorRunnable, Exception> errorCallback, ColUser user) {
+                      BiConsumer<SectorRunnable, Exception> errorCallback, ColUser user) throws IllegalArgumentException{
     this.user = Preconditions.checkNotNull(user);
     try (SqlSession session = factory.openSession(true)) {
+      TaxonMapper tm = session.getMapper(TaxonMapper.class);
       // check if sector actually exists
       this.sector = ObjectUtils.checkNotNull(s, "Sector required");
+      ObjectUtils.checkNotNull(sector.getTarget(), s + " does not have any target");
       this.datasetKey = sector.getDatasetKey();
       this.state.setType(getClass().getSimpleName());
       // check if target actually exists
-      Taxon target = ObjectUtils.checkNotNull(session.getMapper(TaxonMapper.class).get(catalogueKey, sector.getTarget().getId()),
+      ObjectUtils.checkNotNull(tm.get(catalogueKey, sector.getTarget().getId()),
           "Sector " + s.getKey() + " does have a non existing target id for catalogue " + catalogueKey
       );
       // lookup next attempt

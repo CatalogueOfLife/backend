@@ -26,7 +26,7 @@ public class SectorDelete extends SectorRunnable {
   
   public SectorDelete(Sector s, SqlSessionFactory factory, NameUsageIndexService indexService,
                       Consumer<SectorRunnable> successCallback,
-                      BiConsumer<SectorRunnable, Exception> errorCallback, ColUser user) {
+                      BiConsumer<SectorRunnable, Exception> errorCallback, ColUser user) throws IllegalArgumentException {
     super(s, factory, indexService, successCallback, errorCallback, user);
   }
   

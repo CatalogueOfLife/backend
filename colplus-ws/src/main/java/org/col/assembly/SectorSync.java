@@ -40,7 +40,7 @@ public class SectorSync extends SectorRunnable {
   
   public SectorSync(Sector s, SqlSessionFactory factory, NameUsageIndexService indexService, DatasetImportDao diDao,
                     Consumer<SectorRunnable> successCallback,
-                    BiConsumer<SectorRunnable, Exception> errorCallback, ColUser user) {
+                    BiConsumer<SectorRunnable, Exception> errorCallback, ColUser user) throws IllegalArgumentException {
     super(s, factory, indexService, successCallback, errorCallback, user);
     treeDao = diDao.getTreeDao();
   }
