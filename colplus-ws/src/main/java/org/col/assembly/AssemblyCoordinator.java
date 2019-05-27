@@ -3,6 +3,7 @@ package org.col.assembly;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -22,6 +23,7 @@ import org.col.api.model.Sector;
 import org.col.api.model.SectorImport;
 import org.col.common.concurrent.ExecutorUtils;
 import org.col.dao.DatasetImportDao;
+import org.col.db.mapper.CollectResultHandler;
 import org.col.db.mapper.NameMapper;
 import org.col.db.mapper.SectorMapper;
 import org.col.es.NameUsageIndexService;
@@ -33,6 +35,7 @@ import org.slf4j.LoggerFactory;
 import static org.col.WsServer.MILLIS_TO_DIE;
 
 public class AssemblyCoordinator implements Managed {
+  private static  final Comparator<Sector> SECTOR_ORDER = Comparator.comparing(Sector::getTarget);
   private static final Logger LOG = LoggerFactory.getLogger(AssemblyCoordinator.class);
   private static final String THREAD_NAME = "assembly-sync";
   
@@ -113,8 +116,8 @@ public class AssemblyCoordinator implements Managed {
       try {
         //make sure dataset is currently not imported
         if (importManager != null && importManager.isRunning(s.getDatasetKey())) {
-          LOG.warn("Concurrently running dataset import. Cannot sync sector {} from dataset {}", s.getKey(), s.getDatasetKey());
-          throw new IllegalArgumentException("Dataset "+s.getDatasetKey()+" currently being imported. Cannot sync sector " + s.getKey());
+          LOG.warn("Concurrently running dataset import. Cannot sync {}", s);
+          throw new IllegalArgumentException("Dataset "+s.getDatasetKey()+" currently being imported. Cannot sync " + s);
         }
         NameMapper nm = session.getMapper(NameMapper.class);
         if (nm.hasData(s.getDatasetKey())) {
@@ -125,16 +128,19 @@ public class AssemblyCoordinator implements Managed {
         LOG.debug("No partition exists for dataset {}", s.getDatasetKey(), e);
       }
     }
-    LOG.warn("Cannot sync sector {} which has never been imported", s.getKey());
-    throw new IllegalArgumentException("Dataset empty. Cannot sync sector " + s.getKey());
+    LOG.warn("Cannot sync {} which has never been imported", s);
+    throw new IllegalArgumentException("Dataset empty. Cannot sync " + s);
   }
   
-  public synchronized void syncSector(int sectorKey, ColUser user) throws IllegalArgumentException {
-    Sector s = readSector(sectorKey);
+  public void syncSector(int sectorKey, ColUser user) throws IllegalArgumentException {
+    syncSector(readSector(sectorKey), user);
+  }
+  
+  private synchronized void syncSector(Sector s, ColUser user) throws IllegalArgumentException {
     SectorSync ss = new SectorSync(s, factory, indexService, diDao, this::successCallBack, this::errorCallBack, user);
     queueJob(ss);
   }
-  
+
   public void deleteSector(int sectorKey, ColUser user) {
     Sector s = readSector(sectorKey);
     SectorDelete sd = new SectorDelete(s, factory, indexService, this::successCallBack, this::errorCallBack, user);
@@ -144,13 +150,13 @@ public class AssemblyCoordinator implements Managed {
   private synchronized void queueJob(SectorRunnable job) throws IllegalArgumentException {
     // is this sector already syncing?
     if (syncs.containsKey(job.sector.getKey())) {
-      LOG.info("Sector {} already busy", job.sector.getKey());
+      LOG.info("{} already busy", job.sector);
       // ignore
     
     } else {
       assertStableData(job.sector);
       syncs.put(job.sector.getKey(), new SectorFuture(job.sector.getKey(), job.sector.getDatasetKey(), exec.submit(job), job.getState()));
-      LOG.info("Queued {} for sector {}", job.getClass().getSimpleName(), job.sector.getKey());
+      LOG.info("Queued {} for {} targeting {}", job.getClass().getSimpleName(), job.sector, job.sector.getTarget());
     }
   }
   
@@ -191,4 +197,21 @@ public class AssemblyCoordinator implements Managed {
       syncs.get(sectorKey).future.cancel(true);
     }
   }
+  
+  
+  
+  public void syncAll(ColUser user) {
+    LOG.warn("Sync all sectors triggered by user {}", user);
+    CollectResultHandler<Sector> collector = new CollectResultHandler<>();
+    try (SqlSession session = factory.openSession(false)) {
+      SectorMapper sm = session.getMapper(SectorMapper.class);
+      sm.processAll(collector);
+    }
+    collector.getResults().sort(SECTOR_ORDER);
+    for (Sector s : collector.getResults()) {
+      syncSector(s, user);
+    }
+  }
+  
+
 }

@@ -15,6 +15,7 @@ import org.col.api.vocab.Datasets;
  * A sector can be really small and the subject even be a species, but usually it is some higher taxon.
  */
 public class Sector extends Decision {
+  
   private SimpleName target;
   private Mode mode = Sector.Mode.ATTACH;
   

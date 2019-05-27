@@ -1,5 +1,6 @@
 package org.col.api.model;
 
+import java.util.Comparator;
 import java.util.Objects;
 
 import javax.validation.constraints.NotNull;
@@ -10,7 +11,12 @@ import org.gbif.nameparser.api.Rank;
  * A small class representing a name with an id. It can act as a reference to a scientific name in a dataset. It combines the source ID with
  * the full scientific name in order to best deal with changing identifiers in sources.
  */
-public class SimpleName {
+public class SimpleName implements Comparable<SimpleName> {
+  private static final Comparator<SimpleName> NATURAL_ORDER_COMPARATOR =
+      Comparator.comparing(SimpleName::getRank)
+          .thenComparing(SimpleName::getName)
+          .thenComparing(SimpleName::getAuthorship);
+  
   private String id;
   
   @NotNull
@@ -102,5 +108,9 @@ public class SimpleName {
       sb.append("]");
     }
     return sb.toString();
+  }
+  
+  public int compareTo(SimpleName other){
+    return NATURAL_ORDER_COMPARATOR.compare(this, other);
   }
 }
