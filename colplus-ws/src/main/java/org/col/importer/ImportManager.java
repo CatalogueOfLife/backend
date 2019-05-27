@@ -121,6 +121,7 @@ public class ImportManager implements Managed {
    * Uploads a new dataset and submits a forced, high priority import request.
    *
    * @throws IllegalArgumentException if dataset was scheduled for importing already, queue was full or is currently being synced in the assembly
+
    *                                  dataset does not exist or is not of matching origin
    */
   public ImportRequest submit(final int datasetKey, final InputStream content, ColUser user) throws IOException {

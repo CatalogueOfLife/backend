@@ -2,13 +2,17 @@ package org.col.assembly;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
-import com.google.common.collect.Lists;
 import io.dropwizard.lifecycle.Managed;
 import org.apache.ibatis.exceptions.PersistenceException;
 import org.apache.ibatis.session.SqlSession;
@@ -37,11 +41,24 @@ public class AssemblyCoordinator implements Managed {
   private final SqlSessionFactory factory;
   private final NameUsageIndexService indexService;
   private final DatasetImportDao diDao;
-  private final Map<Integer, Future> syncs = new ConcurrentHashMap<Integer, Future>();
-  private final Map<Integer, SectorImport> imports = new ConcurrentHashMap<>();
+  private final Map<Integer, SectorFuture> syncs = Collections.synchronizedMap(new LinkedHashMap<Integer, SectorFuture>());
   private final Timer timer;
   private final Counter counter;
   private final Counter failed;
+  
+  static class SectorFuture {
+    public final int sectorKey;
+    public final int datasetKey;
+    public final Future future;
+    public final SectorImport state;
+  
+    SectorFuture(int sectorKey, int datasetKey, Future future, SectorImport state) {
+      this.sectorKey = sectorKey;
+      this.datasetKey = datasetKey;
+      this.state = state;
+      this.future = future;
+    }
+  }
   
   public AssemblyCoordinator(SqlSessionFactory factory, DatasetImportDao diDao, NameUsageIndexService indexService, MetricRegistry registry) {
     this.factory = factory;
@@ -61,8 +78,8 @@ public class AssemblyCoordinator implements Managed {
   @Override
   public void stop() throws Exception {
     // orderly shutdown running imports
-    for (Future f : syncs.values()) {
-      f.cancel(true);
+    for (SectorFuture df : syncs.values()) {
+      df.future.cancel(true);
     }
     // fully shutdown threadpool within given time
     ExecutorUtils.shutdown(exec, MILLIS_TO_DIE, TimeUnit.MILLISECONDS);
@@ -73,16 +90,16 @@ public class AssemblyCoordinator implements Managed {
   }
   
   public AssemblyState getState() {
-    return new AssemblyState(Lists.newArrayList(imports.values()), (int) failed.getCount(), (int) counter.getCount());
+    return new AssemblyState(syncs.values(), (int) failed.getCount(), (int) counter.getCount());
   }
   
   /**
    * Check if any sector from a given dataset is currently syncing and return the sector key. Otherwise null
    */
   public Integer hasSyncingSector(int datasetKey){
-    for (SectorImport si : imports.values()) {
-      if (si.getDatasetKey().equals(datasetKey)) {
-        return si.getSectorKey();
+    for (SectorFuture df : syncs.values()) {
+      if (df.datasetKey == datasetKey) {
+        return df.sectorKey;
       }
     }
     return null;
@@ -113,32 +130,27 @@ public class AssemblyCoordinator implements Managed {
   }
   
   public synchronized void syncSector(int sectorKey, ColUser user) throws IllegalArgumentException {
-    // is this sector already syncing?
-    if (syncs.containsKey(sectorKey)) {
-      LOG.info("Sector {} already syncing", sectorKey);
-      // ignore
-      
-    } else {
-      Sector s = readSector(sectorKey);
-      assertStableData(s);
-      SectorSync ss = new SectorSync(s, factory, indexService, diDao, this::successCallBack, this::errorCallBack, user);
-      syncs.put(sectorKey, exec.submit(ss));
-      imports.put(sectorKey, ss.getState());
-      LOG.info("Queued sync of sector {}", sectorKey);
-    }
+    Sector s = readSector(sectorKey);
+    SectorSync ss = new SectorSync(s, factory, indexService, diDao, this::successCallBack, this::errorCallBack, user);
+    queueJob(ss);
   }
   
-  public synchronized void deleteSector(int sectorKey, ColUser user) {
+  public void deleteSector(int sectorKey, ColUser user) {
+    Sector s = readSector(sectorKey);
+    SectorDelete sd = new SectorDelete(s, factory, indexService, this::successCallBack, this::errorCallBack, user);
+    queueJob(sd);
+  }
+  
+  private synchronized void queueJob(SectorRunnable job) throws IllegalArgumentException {
     // is this sector already syncing?
-    if (syncs.containsKey(sectorKey)) {
-      LOG.info("Sector {} already busy", sectorKey);
+    if (syncs.containsKey(job.sector.getKey())) {
+      LOG.info("Sector {} already busy", job.sector.getKey());
       // ignore
-
+    
     } else {
-      SectorDelete sd = new SectorDelete(readSector(sectorKey), factory, indexService, this::successCallBack, this::errorCallBack, user);
-      syncs.put(sectorKey, exec.submit(sd));
-      imports.put(sectorKey, sd.getState());
-      LOG.info("Queued deletion of sector {}", sectorKey);
+      assertStableData(job.sector);
+      syncs.put(job.sector.getKey(), new SectorFuture(job.sector.getKey(), job.sector.getDatasetKey(), exec.submit(job), job.getState()));
+      LOG.info("Queued {} for sector {}", job.getClass().getSimpleName(), job.sector.getKey());
     }
   }
   
@@ -174,9 +186,9 @@ public class AssemblyCoordinator implements Managed {
   
   public void cancel(int sectorKey, ColUser user) {
     if (syncs.containsKey(sectorKey)) {
-      imports.get(sectorKey).setState(SectorImport.State.CANCELED);
+      syncs.get(sectorKey).state.setState(SectorImport.State.CANCELED);
       LOG.info("Sync of sector {} cancelled by user {}", sectorKey, user);
-      syncs.get(sectorKey).cancel(true);
+      syncs.get(sectorKey).future.cancel(true);
     }
   }
 }

@@ -1,6 +1,7 @@
 package org.col.assembly;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.col.api.model.SectorImport;
@@ -11,15 +12,16 @@ public class AssemblyState {
   public final int failed;
   public final int completed;
   
-  public AssemblyState(List<SectorImport> syncs, int syncsFailed, int syncsCompleted) {
+  public AssemblyState(Collection<AssemblyCoordinator.SectorFuture> syncs, int syncsFailed, int syncsCompleted) {
     SectorImport run = null;
-    for (SectorImport sync : syncs) {
-      if (sync.getState() == SectorImport.State.WAITING) {
-        queued.add(sync);
-      } else if(sync.getState().isRunning()) {
-        run = sync;
+    for (AssemblyCoordinator.SectorFuture sync : syncs) {
+      if (sync.state.getState() == SectorImport.State.WAITING) {
+        queued.add(sync.state);
+      } else if(sync.state.getState().isRunning()) {
+        run = sync.state;
       } else {
-        // he?
+        // should not be the case
+        throw new IllegalStateException("Non running or waiting sync with state "+sync.state.getState()+" found in queue for sector " + sync.sectorKey);
       }
     }
     this.running = run;
