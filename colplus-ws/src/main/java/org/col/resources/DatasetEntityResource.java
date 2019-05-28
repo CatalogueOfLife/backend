@@ -3,13 +3,13 @@ package org.col.resources;
 import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.UriInfo;
 
 import io.dropwizard.auth.Auth;
 import org.col.api.exception.NotFoundException;
-import org.col.api.model.ColUser;
-import org.col.api.model.DatasetEntity;
-import org.col.api.model.UserManaged;
+import org.col.api.model.*;
 import org.col.dao.DatasetEntityDao;
 import org.col.dw.auth.Roles;
 import org.slf4j.Logger;
@@ -30,7 +30,14 @@ public abstract class DatasetEntityResource<T extends DatasetEntity & UserManage
     this.objClass = objClass;
     this.dao = dao;
   }
-
+  
+  @GET
+  public ResultPage<T> list(@PathParam("datasetKey") int datasetKey,
+                            @Valid @BeanParam Page page,
+                            @Context UriInfo uri) {
+    return dao.list(datasetKey, page);
+  }
+  
   /**
    * @return the primary key of the object. Together with the CreatedResponseFilter will return a 201 location
    */

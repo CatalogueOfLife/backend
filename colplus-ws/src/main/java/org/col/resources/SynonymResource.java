@@ -1,11 +1,9 @@
 package org.col.resources;
 
-import javax.validation.Valid;
-import javax.ws.rs.*;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
-import org.col.api.model.Page;
-import org.col.api.model.ResultPage;
 import org.col.api.model.Synonym;
 import org.col.dao.SynonymDao;
 import org.slf4j.Logger;
@@ -23,11 +21,6 @@ public class SynonymResource extends DatasetEntityResource<Synonym> {
   public SynonymResource(SynonymDao dao) {
     super(Synonym.class, dao);
     this.dao = dao;
-  }
-  
-  @GET
-  public ResultPage<Synonym> list(@PathParam("datasetKey") int datasetKey, @Valid @BeanParam Page page) {
-    return dao.list(datasetKey, page);
   }
   
 }

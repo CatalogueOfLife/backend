@@ -1,12 +1,10 @@
 package org.col.resources;
 
-import javax.validation.Valid;
-import javax.ws.rs.*;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
-import org.col.api.model.Page;
 import org.col.api.model.Reference;
-import org.col.api.model.ResultPage;
 import org.col.dao.DatasetEntityDao;
 import org.col.db.mapper.ReferenceMapper;
 import org.slf4j.Logger;
@@ -23,9 +21,5 @@ public class ReferenceResource extends DatasetEntityResource<Reference>  {
   public ReferenceResource(DatasetEntityDao<Reference, ReferenceMapper> dao) {
     super(Reference.class, dao);
   }
-  
-  @GET
-  public ResultPage<Reference> list(@PathParam("datasetKey") int datasetKey, @Valid @BeanParam Page page) {
-    return dao.list(datasetKey, page);
-  }
+
 }
