@@ -43,6 +43,7 @@ public class SectorSync extends SectorRunnable {
                     BiConsumer<SectorRunnable, Exception> errorCallback, ColUser user) throws IllegalArgumentException {
     super(s, factory, indexService, successCallback, errorCallback, user);
     treeDao = diDao.getTreeDao();
+    assertSubjectID();
   }
   
   @Override

@@ -43,24 +43,21 @@ abstract class SectorRunnable implements Runnable {
   
   SectorRunnable(Sector s, SqlSessionFactory factory, NameUsageIndexService indexService,
                       Consumer<SectorRunnable> successCallback,
-                      BiConsumer<SectorRunnable, Exception> errorCallback, ColUser user) throws IllegalArgumentException{
+                      BiConsumer<SectorRunnable, Exception> errorCallback, ColUser user) throws IllegalArgumentException {
     this.user = Preconditions.checkNotNull(user);
     try (SqlSession session = factory.openSession(true)) {
       TaxonMapper tm = session.getMapper(TaxonMapper.class);
       // check if sector actually exists
       this.sector = ObjectUtils.checkNotNull(s, "Sector required");
-      ObjectUtils.checkNotNull(sector.getTarget(), s + " does not have any target");
       this.datasetKey = sector.getDatasetKey();
-      this.state.setType(getClass().getSimpleName());
-      // check if target actually exists
-      ObjectUtils.checkNotNull(tm.get(catalogueKey, sector.getTarget().getId()),
-          "Sector " + s.getKey() + " does have a non existing target id for catalogue " + catalogueKey
-      );
+      // assert that target actually exists. Subject might be bad - not needed for deletes!
+      assertTargetID(tm);
       // lookup next attempt
       List<SectorImport> imports = session.getMapper(SectorImportMapper.class).list(s.getKey(), null, new Page(0,1));
       state.setAttempt(imports == null || imports.isEmpty() ? 1 : imports.get(0).getAttempt() + 1);
       state.setSectorKey(s.getKey());
       state.setDatasetKey(datasetKey);
+      state.setType(getClass().getSimpleName());
       state.setState(SectorImport.State.WAITING);
     }
     this.factory = factory;
@@ -69,12 +66,27 @@ abstract class SectorRunnable implements Runnable {
     this.errorCallback = errorCallback;
   }
   
+  private void assertTargetID(TaxonMapper tm) throws IllegalArgumentException {
+    ObjectUtils.checkNotNull(sector.getTarget(), sector + " does not have any target");
+    // check if target actually exists
+    ObjectUtils.checkNotNull(tm.get(catalogueKey, sector.getTarget().getId()), "Sector " + sector.getKey() + " does have a non existing target id");
+  }
+  
+  void assertSubjectID() throws IllegalArgumentException {
+    try (SqlSession session = factory.openSession(true)) {
+      TaxonMapper tm = session.getMapper(TaxonMapper.class);
+      ObjectUtils.checkNotNull(sector.getSubject(), sector + " does not have any subject");
+      // check if subject actually exists
+      ObjectUtils.checkNotNull(tm.get(sector.getDatasetKey(), sector.getSubject().getId()),
+          "Sector " + sector.getKey() + " does have a non existing subject id for dataset " + sector.getDatasetKey());
+    }
+  }
+  
   @Override
   public void run() {
     LoggingUtils.setSectorMDC(sector.getKey(), state.getAttempt(), getClass());
     try {
       state.setStarted(LocalDateTime.now());
-  
       init();
       doWork();
       successCallback.accept(this);
