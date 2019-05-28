@@ -215,7 +215,7 @@ public class AssemblyCoordinator implements Managed {
     for (Sector s : collector.getResults()) {
       try {
         syncSector(s, user);
-      } catch (IllegalArgumentException e) {
+      } catch (RuntimeException e) {
         LOG.warn("Fail to sync {}: {}", s, e.getMessage());
         failed++;
       }

@@ -9,6 +9,7 @@ import java.util.function.Consumer;
 
 import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.ibatis.exceptions.PersistenceException;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.model.*;
@@ -50,7 +51,7 @@ abstract class SectorRunnable implements Runnable {
       // check if sector actually exists
       this.sector = ObjectUtils.checkNotNull(s, "Sector required");
       this.datasetKey = sector.getDatasetKey();
-      // assert that target actually exists. Subject might be bad - not needed for deletes!
+      // #ssert that target actually exists. Subject might be bad - not needed for deletes!
       assertTargetID(tm);
       // lookup next attempt
       List<SectorImport> imports = session.getMapper(SectorImportMapper.class).list(s.getKey(), null, new Page(0,1));
@@ -66,10 +67,10 @@ abstract class SectorRunnable implements Runnable {
     this.errorCallback = errorCallback;
   }
   
-  private void assertTargetID(TaxonMapper tm) throws IllegalArgumentException {
+  private Taxon assertTargetID(TaxonMapper tm) throws IllegalArgumentException {
     ObjectUtils.checkNotNull(sector.getTarget(), sector + " does not have any target");
     // check if target actually exists
-    ObjectUtils.checkNotNull(tm.get(catalogueKey, sector.getTarget().getId()), "Sector " + sector.getKey() + " does have a non existing target id");
+    return ObjectUtils.checkNotNull(tm.get(catalogueKey, sector.getTarget().getId()), "Sector " + sector.getKey() + " does have a non existing target id");
   }
   
   void assertSubjectID() throws IllegalArgumentException {
@@ -77,8 +78,12 @@ abstract class SectorRunnable implements Runnable {
       TaxonMapper tm = session.getMapper(TaxonMapper.class);
       ObjectUtils.checkNotNull(sector.getSubject(), sector + " does not have any subject");
       // check if subject actually exists
-      ObjectUtils.checkNotNull(tm.get(sector.getDatasetKey(), sector.getSubject().getId()),
-          "Sector " + sector.getKey() + " does have a non existing subject id for dataset " + sector.getDatasetKey());
+      String msg = "Sector " + sector.getKey() + " does have a non existing subject id for dataset " + sector.getDatasetKey();
+      try {
+        ObjectUtils.checkNotNull(tm.get(sector.getDatasetKey(), sector.getSubject().getId()), msg);
+      } catch (PersistenceException e) {
+        throw new IllegalArgumentException(msg, e);
+      }
     }
   }
   
