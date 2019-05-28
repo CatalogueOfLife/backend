@@ -25,6 +25,7 @@ public class SectorImport extends ImportMetrics<SectorImport.State> {
   }
   
   public void setWarnings(Collection<String> warnings) {
+    this.warnings.clear();
     this.warnings.addAll(warnings);
   }
   

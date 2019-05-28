@@ -1,22 +1,27 @@
 package org.col.assembly;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import org.apache.ibatis.session.*;
 import org.col.api.model.*;
 import org.col.api.vocab.Datasets;
 import org.col.api.vocab.EntityType;
+import org.col.api.vocab.Origin;
+import org.col.api.vocab.TaxonomicStatus;
+import org.col.dao.DatasetEntityDao;
 import org.col.dao.ReferenceDao;
 import org.col.dao.SynonymDao;
 import org.col.dao.TaxonDao;
+import org.col.db.mapper.NameMapper;
 import org.col.db.mapper.ReferenceMapper;
+import org.col.db.mapper.TaxonMapper;
 import org.col.parser.NameParser;
+import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.ParsedName;
+import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,9 +40,13 @@ public class TreeCopyHandler implements ResultHandler<NameUsageBase>, AutoClosea
   private final SectorImport state;
   private final Map<String, EditorialDecision> decisions;
   private final SqlSession session;
-  private final ReferenceMapper rMapper;
+  private final ReferenceMapper rm;
+  private final TaxonMapper tm;
+  private final NameMapper nm;
   private int counter = 0;
-  private final Map<String, String> ids = new HashMap<>();
+  private final Usage target;
+  private final Map<RanKnName, Usage> implicits = new HashMap<>();
+  private final Map<String, Usage> ids = new HashMap<>();
   private final Map<String, String> refIds = new HashMap<>();
   
   TreeCopyHandler(SqlSessionFactory factory, ColUser user, Sector sector, SectorImport state, Map<String, EditorialDecision> decisions) {
@@ -47,7 +56,116 @@ public class TreeCopyHandler implements ResultHandler<NameUsageBase>, AutoClosea
     this.decisions = decisions;
     // we open up a separate batch session that we can write to so we do not disturb the open main cursor for processing with this handler
     this.session = factory.openSession(ExecutorType.BATCH, false);
-    rMapper = session.getMapper(ReferenceMapper.class);
+    rm = session.getMapper(ReferenceMapper.class);
+    tm = session.getMapper(TaxonMapper.class);
+    nm = session.getMapper(NameMapper.class);
+    // load target taxon
+    Taxon t = tm.get(catalogueKey, sector.getTarget().getId());
+    target = new Usage(t.getId(), t.getName().getRank(), t.getStatus());
+  }
+  
+  private static class Usage {
+    String id;
+    Rank rank;
+    TaxonomicStatus status;
+    
+    Usage(String id, Rank rank, TaxonomicStatus status) {
+      this.id = id;
+      this.rank = rank;
+      this.status = status;
+    }
+  }
+  private static class RanKnName {
+    final Rank rank;
+    final String name;
+  
+    public RanKnName(Rank rank, String name) {
+      this.rank = rank;
+      this.name = name;
+    }
+  
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) return true;
+      if (o == null || getClass() != o.getClass()) return false;
+      RanKnName ranKnName = (RanKnName) o;
+      return rank == ranKnName.rank &&
+          Objects.equals(name, ranKnName.name);
+    }
+  
+    @Override
+    public int hashCode() {
+      return Objects.hash(rank, name);
+    }
+  }
+    
+    
+    private Usage usage(NameUsageBase u) {
+    return new Usage(u.getId(), u.getName().getRank(), u.getStatus());
+  }
+
+  private static List<Rank> IMPLICITS = ImmutableList.of(Rank.GENUS,Rank.SUBGENUS, Rank.SPECIES);
+  
+  private Usage createImplicit(Usage parent, Taxon taxon) {
+    List<Rank> implicitRanks = new ArrayList<>();
+    
+    // figure out if we need to create any implicit taxon
+    Name origName = taxon.getName();
+    if (origName.isParsed() && !origName.isIndetermined()) {
+      for (Rank r : IMPLICITS) {
+        if (parent.rank.higherThan(r) && r.higherThan(origName.getRank())) {
+          implicitRanks.add(r);
+        }
+      }
+  
+      for (Rank r : implicitRanks) {
+        Name n = new Name();
+        if (r == Rank.GENUS) {
+          n.setUninomial(origName.getGenus());
+        
+        } else if (r == Rank.SUBGENUS) {
+          if (origName.getInfragenericEpithet() == null) {
+            continue;
+          }
+          n.setUninomial(origName.getInfragenericEpithet());
+        
+        } else {
+          n.setGenus(origName.getGenus());
+          n.setSpecificEpithet(origName.getSpecificEpithet());
+        }
+        n.setRank(r);
+        n.setType(NameType.SCIENTIFIC);
+        n.updateNameCache();
+        RanKnName rnn = new RanKnName(r, n.getScientificName());
+        // did we create that implicit name before?
+        if (implicits.containsKey(rnn)) {
+          parent = implicits.get(rnn);
+          continue;
+        }
+  
+        DatasetEntityDao.newKey(n);
+        n.setDatasetKey(Datasets.DRAFT_COL);
+        n.setOrigin(Origin.IMPLICIT_NAME);
+        n.applyUser(user);
+        LOG.debug("Create implicit {} from {}: {}", r, origName.getScientificName(), n);
+        nm.create(n);
+  
+        Taxon t = new Taxon();
+        DatasetEntityDao.newKey(t);
+        t.setDatasetKey(Datasets.DRAFT_COL);
+        t.setName(n);
+        t.setParentId(parent.id);
+        t.setOrigin(Origin.IMPLICIT_NAME);
+        t.setStatus(TaxonomicStatus.ACCEPTED);
+        t.applyUser(user);
+        tm.create(t);
+  
+        parent = usage(t);
+        //reuse implicit names...
+        implicits.put(new RanKnName(n.getRank(), n.getScientificName()), parent);
+      }
+    }
+    return parent;
   }
   
   @Override
@@ -67,35 +185,39 @@ public class TreeCopyHandler implements ResultHandler<NameUsageBase>, AutoClosea
       return;
     }
     
-    String parentID;
+    Usage parent;
     // treat root node according to sector mode
     if (sector.getSubject().getId().equals(u.getId())) {
       if (sector.getMode() == Sector.Mode.MERGE) {
         // in merge mode the root node itself is not copied
-        // but all child taxa should be linked to the sector target, so remember ID:
-        ids.put(u.getId(), sector.getTarget().getId());
+        // but all child taxa should be linked to the sector target, so remember that ID mapping:
+        ids.put(u.getId(), target);
         return;
       }
       // we want to attach the root node under the sector target
-      parentID = sector.getTarget().getId();
+      parent = target;
     } else {
       // all non root nodes have newly created parents
-      parentID = ids.get(u.getParentId());
+      parent = ids.get(u.getParentId());
+      if (u.isTaxon() && u.getName().getRank().isSpeciesOrBelow()) {
+        // make sure we have a genus for species and a species for infraspecific taxa
+        parent = createImplicit(parent, (Taxon) u);
+      }
     }
-    DatasetID parent = new DatasetID(catalogueKey, parentID);
     
     // copy usage with all associated information. This assigns a new id !!!
     DatasetID orig;
+    DatasetID parentDID = new DatasetID(catalogueKey, parent.id);
     if (u.isTaxon()) {
-      orig = TaxonDao.copyTaxon(session, (Taxon) u, parent, user.getKey(), COPY_DATA, this::lookupReference, this::lookupReference);
+      orig = TaxonDao.copyTaxon(session, (Taxon) u, parentDID, user.getKey(), COPY_DATA, this::lookupReference, this::lookupReference);
     } else {
-      orig = SynonymDao.copySynonym(session, (Synonym) u, parent, user.getKey(), this::lookupReference);
+      orig = SynonymDao.copySynonym(session, (Synonym) u, parentDID, user.getKey(), this::lookupReference);
     }
     // remember old to new id mapping
-    ids.put(orig.getId(), u.getId());
+    ids.put(orig.getId(), usage(u));
     
     // commit in batches
-    if (counter++ % 1000 == 0) {
+    if (counter++ % 2000 == 0) {
       session.commit();
     }
     state.setTaxonCount(counter);
@@ -192,7 +314,7 @@ public class TreeCopyHandler implements ResultHandler<NameUsageBase>, AutoClosea
         return refIds.get(refID);
       }
       // not seen before, load full reference
-      Reference r = rMapper.get(sector.getDatasetKey(), refID);
+      Reference r = rm.get(sector.getDatasetKey(), refID);
       return lookupReference(r);
     }
     return null;
@@ -205,7 +327,7 @@ public class TreeCopyHandler implements ResultHandler<NameUsageBase>, AutoClosea
         return refIds.get(ref.getId());
       }
       // sth new?
-      List<Reference> matches = rMapper.find(catalogueKey, sector.getKey(), ref.getCitation());
+      List<Reference> matches = rm.find(catalogueKey, sector.getKey(), ref.getCitation());
       if (matches.isEmpty()) {
         // insert new ref
         ref.setDatasetKey(catalogueKey);

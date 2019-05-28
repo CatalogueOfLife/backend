@@ -29,7 +29,6 @@ import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Before;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
@@ -143,7 +142,6 @@ public class SectorSyncIT {
   }
   
   @Test
-  @Ignore("Work in progress")
   public void testImplicitGenus() throws Exception {
     print(Datasets.DRAFT_COL);
     print(datasetKey(0, DataFormat.COLDP));
