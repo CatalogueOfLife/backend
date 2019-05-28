@@ -30,19 +30,16 @@ public class DatasetMatcher {
    */
   public int match(int datasetKey) {
     try (SqlSession session = factory.openSession(false)){
-      try (SqlSession batchSession = factory.openSession(ExecutorType.BATCH, false)){
-        NameMapper nm = session.getMapper(NameMapper.class);
-        BulkMatchHandler h = new BulkMatchHandler(updateIssues, ni, batchSession, datasetKey);
-        nm.processDataset(datasetKey, h);
-        batchSession.commit();
-        LOG.info("Updated {} out of {} name matches for dataset {}", h.updates, h.counter, datasetKey);
-        return h.updates;
-      }
+      NameMapper nm = session.getMapper(NameMapper.class);
+      BulkMatchHandler h = new BulkMatchHandler(updateIssues, ni, factory, datasetKey);
+      nm.processDataset(datasetKey, h);
+      LOG.info("Updated {} out of {} name matches for dataset {}", h.updates, h.counter, datasetKey);
+      return h.updates;
     }
   }
   
   
-  static class BulkMatchHandler implements ResultHandler<Name> {
+  static class BulkMatchHandler implements ResultHandler<Name>, AutoCloseable {
     int counter = 0;
     int updates = 0;
     private final boolean updateIssues;
@@ -52,11 +49,11 @@ public class DatasetMatcher {
     private final NameMapper nm;
     private final VerbatimRecordMapper vm;
   
-    BulkMatchHandler(boolean updateIssues, NameIndex ni, SqlSession session, int datasetKey) {
+    BulkMatchHandler(boolean updateIssues, NameIndex ni, SqlSessionFactory factory, int datasetKey) {
       this.updateIssues = updateIssues;
       this.datasetKey = datasetKey;
       this.ni = ni;
-      this.session = session;
+      this.session = factory.openSession(ExecutorType.BATCH, false);
       this.nm = session.getMapper(NameMapper.class);
       this.vm = session.getMapper(VerbatimRecordMapper.class);
     }
@@ -102,6 +99,12 @@ public class DatasetMatcher {
       issues.removeIssue(Issue.NAME_MATCH_AMBIGUOUS);
       issues.removeIssue(Issue.NAME_MATCH_VARIANT);
       issues.removeIssue(Issue.NAME_MATCH_INSERTED);
+    }
+  
+    @Override
+    public void close() throws Exception {
+      session.commit();
+      session.close();
     }
   }
 }

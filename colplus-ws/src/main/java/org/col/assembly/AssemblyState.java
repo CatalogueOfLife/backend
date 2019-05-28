@@ -3,7 +3,9 @@ package org.col.assembly;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Queue;
 
+import com.google.common.collect.EvictingQueue;
 import org.col.api.model.SectorImport;
 
 public class AssemblyState {

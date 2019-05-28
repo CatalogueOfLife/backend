@@ -1,25 +1,23 @@
 package org.col.assembly;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import com.google.common.collect.ImmutableSet;
-import org.apache.ibatis.session.*;
+import org.apache.ibatis.session.ExecutorType;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.model.*;
 import org.col.api.vocab.*;
-import org.col.dao.*;
+import org.col.dao.DatasetImportDao;
+import org.col.dao.MatchingDao;
+import org.col.dao.NamesTreeDao;
 import org.col.db.mapper.*;
 import org.col.es.NameUsageIndexService;
-import org.col.parser.NameParser;
 import org.gbif.nameparser.api.NameType;
-import org.gbif.nameparser.api.NomCode;
-import org.gbif.nameparser.api.ParsedName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,12 +28,6 @@ import static org.col.dao.DatasetImportDao.countMap;
  */
 public class SectorSync extends SectorRunnable {
   private static final Logger LOG = LoggerFactory.getLogger(SectorSync.class);
-  private static Set<EntityType> COPY_DATA = ImmutableSet.of(
-      EntityType.REFERENCE,
-      EntityType.VERNACULAR,
-      EntityType.DISTRIBUTION,
-      EntityType.REFERENCE
-  );
   private NamesTreeDao treeDao;
   
   public SectorSync(Sector s, SqlSessionFactory factory, NameUsageIndexService indexService, DatasetImportDao diDao,
@@ -90,6 +82,7 @@ public class SectorSync extends SectorRunnable {
   private void sync() throws InterruptedException {
 
     state.setState( SectorImport.State.DELETING);
+    relinkForeignChildren();
     deleteOld();
     checkIfCancelled();
 
@@ -98,7 +91,7 @@ public class SectorSync extends SectorRunnable {
     checkIfCancelled();
   
     state.setState( SectorImport.State.RELINKING);
-    relinkForeignChildren();
+    rematchForeignChildren();
     relinkAttachedSectors();
   
     state.setState( SectorImport.State.INDEXING);
@@ -107,26 +100,53 @@ public class SectorSync extends SectorRunnable {
     state.setState( SectorImport.State.FINISHED);
   }
   
+  /**
+   * Temporarily relink all foreign children to the target taxon
+   * so we don't break referential integrity when deleting the sector.
+   */
   private void relinkForeignChildren() {
+    final String newParentID = sector.getTarget().getId();
+    processForeignChildren((tm, t) -> {
+        t.setParentId(newParentID);
+        tm.update(t);
+    });
+  }
+  
+  /**
+   * Link all foreign children back to their original parent inside the sector.
+   * If parent does not exist anymore keep it linked to the sectors target taxon.
+   */
+  private void rematchForeignChildren() {
     try (SqlSession session = factory.openSession(false)) {
-      TaxonMapper tm = session.getMapper(TaxonMapper.class);
-      MatchingDao mdao = new MatchingDao(session);
-      for (Taxon t : foreignChildren) {
+      final MatchingDao mdao = new MatchingDao(session);
+      
+      processForeignChildren((tm, t) -> {
         List<Taxon> matches = mdao.matchSector(t.getName(), sector.getKey());
         if (matches.isEmpty()) {
-          LOG.warn("{} with parent in sector {} cannot be rematched - becomes new root", t.getName(), sector.getKey());
-          t.setParentId(null);
+          LOG.warn("{} with parent in sector {} cannot be rematched", t.getName(), sector.getKey());
         } else {
           if (matches.size() > 1) {
-            LOG.warn("{} with parent in sector {} matches multiple - pick first {}", t.getName(), sector.getKey());
+            LOG.warn("{} with parent in sector {} matches {} times - pick first {}", t.getName(), sector.getKey(), matches.size(), matches.get(0));
           }
           t.setParentId(matches.get(0).getId());
+          tm.update(t);
         }
-        tm.update(t);
+      });
+    }
+  }
+  
+  private void processForeignChildren(BiConsumer<TaxonMapper, Taxon> processor) {
+    int counter = 0;
+    try (SqlSession session = factory.openSession(ExecutorType.BATCH, false)) {
+      TaxonMapper tm = session.getMapper(TaxonMapper.class);
+      for (Taxon t : foreignChildren) {
+        processor.accept(tm, t);
+        if (counter++ % 10000 == 0) {
+          session.commit();
+        }
       }
       session.commit();
     }
-    
   }
   
   private void relinkAttachedSectors() {
@@ -135,16 +155,19 @@ public class SectorSync extends SectorRunnable {
       MatchingDao mdao = new MatchingDao(session);
       for (Sector s : childSectors) {
         List<Taxon> matches = mdao.matchSector(s.getTarget(), sector.getKey());
-        if (matches.isEmpty()) {
-          LOG.warn("Child sector {} cannot be rematched to synced sector {} - lost {}", s.getKey(), sector.getKey(), s.getTarget());
-          s.getTarget().setId(null);
-          //TODO: warn in sync status !!!
-        } else if (matches.size() > 1) {
-          LOG.warn("Child sector {} cannot be rematched to synced sector {} - multiple names like {}", s.getKey(), sector.getKey(), s.getTarget());
-          s.getTarget().setId(null);
-          //TODO: warn in sync status !!!
-        } else {
+        if (matches.size()==1) {
           s.getTarget().setId(matches.get(0).getId());
+          
+        } else {
+          String warning;
+          s.getTarget().setId(null);
+          if (matches.isEmpty()) {
+            warning = "Child sector " + s.getKey() + " cannot be rematched to synced sector " + sector.getKey() + " - lost " + s.getTarget();
+          } else {
+            warning = "Child sector " + s.getKey() + " cannot be rematched to synced sector " + sector.getKey() + " - multiple names like  " + s.getTarget();
+          }
+          LOG.warn(warning);
+          state.addWarning(warning);
         }
         sm.update(s);
       }
@@ -153,206 +176,16 @@ public class SectorSync extends SectorRunnable {
   }
 
   private void processTree() {
-    try (SqlSession session = factory.openSession(ExecutorType.BATCH,false)) {
+    final Set<String> blockedIds = decisions.values().stream()
+        .filter(ed -> ed.getMode().equals(EditorialDecision.Mode.BLOCK))
+        .map(ed -> ed.getSubject().getId())
+        .collect(Collectors.toSet());
+    try (SqlSession session = factory.openSession(false);
+         TreeCopyHandler treeHandler = new TreeCopyHandler(factory, user, sector, state, decisions)
+    ){
       NameUsageMapper um = session.getMapper(NameUsageMapper.class);
-      final Set<String> blockedIds = decisions.values().stream()
-          .filter(ed -> ed.getMode().equals(EditorialDecision.Mode.BLOCK))
-          .map(ed -> ed.getSubject().getId())
-          .collect(Collectors.toSet());
       LOG.info("Traverse taxon tree, blocking {} nodes", blockedIds.size());
-      final TreeCopyHandler treeHandler = new TreeCopyHandler(session);
       um.processTree(datasetKey, null, sector.getSubject().getId(), blockedIds, null, true, false, treeHandler);
-      session.commit();
-    }
-  }
-  
-  class TreeCopyHandler implements ResultHandler<NameUsageBase> {
-    final SqlSession session;
-    final ReferenceMapper rMapper;
-    int counter = 0;
-    final Map<String, String> ids = new HashMap<>();
-    final Map<String, String> refIds = new HashMap<>();
-  
-    TreeCopyHandler(SqlSession session) {
-      this.session = session;
-      rMapper = session.getMapper(ReferenceMapper.class);
-    }
-    
-    @Override
-    public void handleResult(ResultContext<? extends NameUsageBase> ctxt) {
-      NameUsageBase u = ctxt.getResultObject();
-      u.setSectorKey(sector.getKey());
-      u.getName().setSectorKey(sector.getKey());
-  
-      if (decisions.containsKey(u.getId())) {
-        applyDecision(u, decisions.get(u.getId()));
-      }
-      if (skipUsage(u)) {
-        // skip this taxon, but include children
-        LOG.debug("Ignore {} [{}] type={}; status={}", u.getName().scientificNameAuthorship(), u.getId(), u.getName().getType(), u.getName().getNomStatus());
-        // use taxons parent also as the parentID for this so children link one level up
-        ids.put(u.getId(), ids.get(u.getParentId()));
-        return;
-      }
-      
-      String parentID;
-      // treat root node according to sector mode
-      if (sector.getSubject().getId().equals(u.getId())) {
-        if (sector.getMode() == Sector.Mode.MERGE) {
-          // in merge mode the root node itself is not copied
-          // but all child taxa should be linked to the sector target, so remember ID:
-          ids.put(u.getId(), sector.getTarget().getId());
-          return;
-        }
-        // we want to attach the root node under the sector target
-        parentID = sector.getTarget().getId();
-      } else {
-        // all non root nodes have newly created parents
-        parentID = ids.get(u.getParentId());
-      }
-      DatasetID parent = new DatasetID(catalogueKey, parentID);
-
-      // copy usage with all associated information. This assigns a new id !!!
-      DatasetID orig;
-      if (u.isTaxon()) {
-        orig = TaxonDao.copyTaxon(session, (Taxon) u, parent, user.getKey(), COPY_DATA, this::lookupReference, this::lookupReference);
-      } else {
-        orig = SynonymDao.copySynonym(session, (Synonym) u, parent, user.getKey(), this::lookupReference);
-      }
-      // remember old to new id mapping
-      ids.put(orig.getId(), u.getId());
-      
-      // commit in batches
-      if (counter++ % 1000 == 0) {
-        session.commit();
-      }
-      state.setTaxonCount(counter);
-    }
-  
-    private boolean skipUsage(NameUsageBase u) {
-      Name n = u.getName();
-      
-      switch (n.getType()) {
-        case PLACEHOLDER:
-        case NO_NAME:
-        case HYBRID_FORMULA:
-        case INFORMAL:
-          return true;
-      }
-      if (n.getNomStatus() != null) {
-        switch (n.getNomStatus()) {
-          case CHRESONYM:
-          case MANUSCRIPT:
-            return true;
-        }
-      }
-      if (n.getCultivarEpithet() != null || n.getCode() == NomCode.CULTIVARS || n.getRank().isCultivarRank()) {
-        return true;
-      }
-      if (n.isIndetermined()) {
-        return true;
-      }
-      return false;
-    }
-  
-    private void applyDecision(NameUsageBase u, EditorialDecision ed) {
-      switch (ed.getMode()) {
-        case BLOCK:
-          throw new IllegalStateException("Blocked usage "+u.getId()+" should not have been traversed");
-        case UPDATE:
-          if (ed.getName() != null) {
-            Name n = u.getName();
-            Name n2 = ed.getName();
-            if (n2.getCode() != null) {
-              n.setCode(n2.getCode());
-            }
-            if (n2.getNomStatus() != null) {
-              n.setNomStatus(n2.getNomStatus());
-            }
-            if (n2.getType() != null) {
-              n.setType(n2.getType());
-            }
-            if (n2.getRank() != null) {
-              n.setRank(n2.getRank());
-            }
-            if (n2.getAuthorship() != null) {
-              n.setAuthorship(n2.getAuthorship());
-              ParsedName pn = NameParser.PARSER.parseAuthorship(n2.getAuthorship()).orElseGet(() -> {
-                LOG.warn("Unparsable decision authorship {}", n2.getAuthorship());
-                // add the full, unparsed authorship in this case to not lose it
-                ParsedName pn2 = new ParsedName();
-                pn2.getCombinationAuthorship().getAuthors().add(n2.getAuthorship());
-                return pn2;
-              });
-              n.setCombinationAuthorship(pn.getCombinationAuthorship());
-              n.setSanctioningAuthor(pn.getSanctioningAuthor());
-              n.setBasionymAuthorship(pn.getBasionymAuthorship());
-            }
-          }
-          if (ed.getStatus() != null) {
-            try {
-              u.setStatus(ed.getStatus());
-            } catch (IllegalArgumentException e) {
-              LOG.warn("Cannot convert {} {} {} into {}", u.getName().getRank(), u.getStatus(), u.getName().canonicalNameComplete(), ed.getStatus(), e);
-            }
-          }
-          if (u.isTaxon()) {
-            Taxon t = (Taxon) u;
-            if (ed.getLifezones() != null) {
-              t.setLifezones(ed.getLifezones());
-            }
-            if (ed.getFossil() != null) {
-              t.setFossil(ed.getFossil());
-            }
-            if (ed.getRecent() != null) {
-              t.setRecent(ed.getRecent());
-            }
-          }
-        case REVIEWED:
-          // good. nothing to do
-      }
-    }
-  
-    private String lookupReference(String refID) {
-      if (refID != null) {
-        if (refIds.containsKey(refID)) {
-          // we have seen this ref before
-          return refIds.get(refID);
-        }
-        // not seen before, load full reference
-        Reference r = rMapper.get(sector.getDatasetKey(), refID);
-        return lookupReference(r);
-      }
-      return null;
-    }
-    
-    private String lookupReference(Reference ref) {
-      if (ref != null) {
-        if (refIds.containsKey(ref.getId())) {
-          // we have seen this ref before
-          return refIds.get(ref.getId());
-        }
-        // sth new?
-        List<Reference> matches = rMapper.find(catalogueKey, sector.getKey(), ref.getCitation());
-        if (matches.isEmpty()) {
-          // insert new ref
-          ref.setDatasetKey(catalogueKey);
-          ref.setSectorKey(sector.getKey());
-          ref.applyUser(user);
-          DatasetID origID = ReferenceDao.copyReference(session, ref, catalogueKey, user.getKey());
-          refIds.put(origID.getId(), ref.getId());
-          return ref.getId();
-          
-        } else {
-          if (matches.size() > 1) {
-            LOG.warn("{} duplicate references in catalogue {} with citation {}", matches.size(), catalogueKey, ref.getCitation());
-          }
-          String refID = matches.get(0).getId();
-          refIds.put(ref.getId(), refID);
-          return refID;
-        }
-      }
-      return null;
     }
   }
   

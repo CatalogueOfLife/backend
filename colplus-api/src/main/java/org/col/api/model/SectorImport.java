@@ -1,11 +1,10 @@
 package org.col.api.model;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.google.common.base.Predicates;
+import com.google.common.collect.EvictingQueue;
 
 public class SectorImport extends ImportMetrics<SectorImport.State> {
   
@@ -19,6 +18,19 @@ public class SectorImport extends ImportMetrics<SectorImport.State> {
   
   private String type;
   private int sectorKey;
+  private final Queue<String> warnings = EvictingQueue.create(10);
+  
+  public Collection<String> getWarnings() {
+    return warnings;
+  }
+  
+  public void setWarnings(Collection<String> warnings) {
+    this.warnings.addAll(warnings);
+  }
+  
+  public void addWarning(String warning) {
+    warnings.add(warning);
+  }
   
   public String getType() {
     return type;
@@ -42,12 +54,14 @@ public class SectorImport extends ImportMetrics<SectorImport.State> {
     if (o == null || getClass() != o.getClass()) return false;
     if (!super.equals(o)) return false;
     SectorImport that = (SectorImport) o;
+    // we dont include warnings as we dont persist them
     return sectorKey == that.sectorKey &&
         Objects.equals(type, that.type);
   }
   
   @Override
   public int hashCode() {
+    // we dont include warnings as we dont persist them
     return Objects.hash(super.hashCode(), type, sectorKey);
   }
   

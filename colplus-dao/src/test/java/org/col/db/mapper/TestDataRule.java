@@ -204,9 +204,11 @@ public class TestDataRule extends ExternalResource {
   
     ScriptRunner runner = new ScriptRunner(session.getConnection());
     runner.setSendFullScript(true);
-
-    // common data for all tests and even the empty one
-    runner.runScript(Resources.getResourceAsReader(PgConfig.DATA_FILE));
+  
+    if (!skipGlobalTable){
+      // common data for all tests and even the empty one
+      runner.runScript(Resources.getResourceAsReader(PgConfig.DATA_FILE));
+    }
   
     if (testData != TestData.NONE) {
       System.out.format("Load %s test data\n\n", testData);
