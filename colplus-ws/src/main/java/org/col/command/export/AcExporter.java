@@ -25,6 +25,7 @@ public class AcExporter {
   private static final Pattern COPY_END   = Pattern.compile("^\\s*\\)\\s*TO\\s*'(.+)'");
   private static final Pattern VAR_DATASET_KEY = Pattern.compile("\\{\\{datasetKey}}", Pattern.CASE_INSENSITIVE);
   private final WsServerConfig cfg;
+  private Writer logger;
   // we only allow a single export to run at a time
   private static boolean LOCK = false;
 
@@ -44,15 +45,22 @@ public class AcExporter {
     LOCK = false;
   }
 
+  private void log(String msg) throws IOException {
+    logger.append(msg);
+    logger.append("\n");
+    logger.flush();
+  }
+  
   /**
    * @return final archive
    */
-  public File export(int catalogueKey) throws IOException, SQLException, IllegalStateException {
+  public File export(int catalogueKey, Writer writer) throws IOException, SQLException, IllegalStateException {
     File csvDir = new File(cfg.normalizer.scratchDir(catalogueKey), "exports");
     if (!aquireLock()) {
       throw new IllegalStateException("There is a running export already");
     }
     try {
+      this.logger = writer;
       // create csv files
       try (Connection c = cfg.db.connect()) {
         c.setAutoCommit(false);
@@ -63,6 +71,7 @@ public class AcExporter {
       }
       // zip up archive and move to download
       File arch = new File(cfg.downloadDir, "ac-export.zip");
+      log("Zip up archive and move to download");
       if (arch.exists()) {
         LOG.debug("Remove previous export file {}", arch.getAbsolutePath());
       }
@@ -72,7 +81,10 @@ public class AcExporter {
       
     } finally {
       LOG.debug("Remove temp export directory {}", csvDir.getAbsolutePath());
+      log("Clean up temp files");
       FileUtils.deleteQuietly(csvDir);
+      log("Export completed");
+      this.logger = null;
       releaseLock();
     }
   }
@@ -93,7 +105,9 @@ public class AcExporter {
         // copy to file
         File f = new File(csvDir, m.group(1).trim());
         Files.createParentDirs(f);
-        LOG.info("Exporting {}", f.getAbsolutePath());
+        String msg = "Exporting " + f.getAbsolutePath();
+        log(msg);
+        LOG.info(msg);
         PgCopyUtils.dump(con, sb.toString(), f, COPY_WITH);
         sb = new StringBuilder();
       
@@ -111,8 +125,10 @@ public class AcExporter {
     con.commit();
   }
   
-  private void executeSql(PgConnection con, String sql) throws SQLException {
+  private void executeSql(PgConnection con, String sql) throws SQLException, IOException {
     try (Statement stmnt = con.createStatement()) {
+      String type = sql.contains(" ") ? sql.substring(0, sql.indexOf(' ')) + " " : "";
+      log("Execute "+type+"SQL");
       stmnt.execute(sql);
       con.commit();
     }

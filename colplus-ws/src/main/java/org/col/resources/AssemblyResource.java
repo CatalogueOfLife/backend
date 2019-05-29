@@ -1,11 +1,14 @@
 package org.col.resources;
 
+import java.io.*;
 import java.util.List;
 import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.StreamingOutput;
 
 import io.dropwizard.auth.Auth;
 import org.apache.ibatis.session.SqlSession;
@@ -102,10 +105,26 @@ public class AssemblyResource {
   @POST
   @Path("/exportAC")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void exportAC(@PathParam("catKey") int catKey, @Auth ColUser user) throws Exception {
+  @Produces(MediaType.TEXT_PLAIN)
+  public Response exportAC(@PathParam("catKey") int catKey, @Auth ColUser user) {
     requireDraft(catKey);
-    exporter.export(catKey);
-    throw new UnsupportedOperationException("not implemented yet");
+  
+    StreamingOutput stream = new StreamingOutput() {
+      @Override
+      public void write(OutputStream os) throws IOException, WebApplicationException {
+        Writer writer = new BufferedWriter(new OutputStreamWriter(os));
+        try {
+          exporter.export(catKey, writer);
+        } catch (Throwable e) {
+          writer.append("\n\n");
+          PrintWriter pw = new PrintWriter(writer);
+          e.printStackTrace(pw);
+          pw.flush();
+        }
+        writer.flush();
+      }
+    };
+    return Response.ok(stream).build();
   }
 
   

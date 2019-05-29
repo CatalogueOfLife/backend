@@ -9,6 +9,7 @@ import com.google.common.io.Files;
 import org.apache.commons.io.FileUtils;
 import org.col.api.vocab.Datasets;
 import org.col.WsServerConfig;
+import org.col.common.io.DevNullWriter;
 import org.col.db.MybatisTestUtils;
 import org.col.db.PgSetupRule;
 import org.col.db.mapper.TestDataRule;
@@ -48,7 +49,7 @@ public class AcExporterTest {
   public void export() throws Exception {
     MybatisTestUtils.populateDraftTree(testDataRule.getSqlSession());
     AcExporter exp = new AcExporter(cfg);
-    arch = exp.export(Datasets.DRAFT_COL);
+    arch = exp.export(Datasets.DRAFT_COL, new DevNullWriter());
   }
   
   @Test
@@ -88,7 +89,7 @@ public class AcExporterTest {
     @Override
     public void run() {
       try {
-        File arch = exp.export(Datasets.DRAFT_COL);
+        File arch = exp.export(Datasets.DRAFT_COL, new DevNullWriter());
         System.out.println("Export done: " + arch.getAbsolutePath());
       } catch (IOException | SQLException e) {
         throw new RuntimeException(e);

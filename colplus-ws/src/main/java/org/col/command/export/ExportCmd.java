@@ -1,5 +1,8 @@
 package org.col.command.export;
 
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
+
 import io.dropwizard.cli.ConfiguredCommand;
 import io.dropwizard.setup.Bootstrap;
 import net.sourceforge.argparse4j.inf.Namespace;
@@ -35,7 +38,7 @@ public class ExportCmd extends ConfiguredCommand<WsServerConfig> {
     System.out.format("Exporting dataset %s from %s on %s.\n", datasetKey, cfg.db.database, cfg.db.host);
   
     AcExporter exporter = new AcExporter(cfg);
-    exporter.export(datasetKey);
+    exporter.export(datasetKey, new OutputStreamWriter(System.out, StandardCharsets.UTF_8));
   }
   
 }
