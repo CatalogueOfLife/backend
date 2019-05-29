@@ -1,0 +1,38 @@
+
+description = "CoL backend services (API)"
+
+dependencies {
+    api(platform(rootProject))
+    implementation(platform("io.dropwizard:dropwizard-bom"))
+    compile("org.gbif:name-parser-api")
+    compile("org.gbif:dwc-api")
+    compile("org.mapdb:mapdb")
+    compile("com.esotericsoftware:kryo")
+    compile("de.javakaffee:kryo-serializers")
+    compile("de.undercouch:citeproc-java")
+    compile("org.citationstyles:styles")
+    compile("org.citationstyles:locales")
+    compile("javax.ws.rs:javax.ws.rs-api")
+    compile("javax.validation:validation-api")
+    compile("com.google.code.findbugs:jsr305")
+    compile("com.fasterxml.jackson.core:jackson-core")
+    compile("com.fasterxml.jackson.core:jackson-databind")
+    compile("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml")
+    compile("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
+    compile("com.fasterxml.jackson.core:jackson-annotations")
+    compile("org.apache.commons:commons-lang3")
+    compile("org.apache.commons:commons-text")
+    compile("org.apache.commons:commons-collections4")
+    compile("commons-io:commons-io")
+    compile("org.apache.commons:commons-compress")
+    compile("org.apache.httpcomponents:httpclient")
+    compile("it.unimi.dsi:fastutil")
+    compile("com.google.guava:guava")
+    compile("org.slf4j:slf4j-api")
+    testCompile("junit:junit")
+    testCompile("org.javers:javers-core")
+    testCompile("ch.qos.logback:logback-classic")
+    testCompile("org.slf4j:jcl-over-slf4j")
+    testCompile("org.slf4j:jul-to-slf4j")
+}
+

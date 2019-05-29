@@ -1,10 +1,14 @@
 **/*.iml
 **/target
+**/build
 **/.idea
 colplus-ws/graphs/
 colplus-ws/localhost/
 **/.DS_Store
 
+**/.mvn
+**/.gradle
+gradle
 **/.project
 **/.classpath
 **/.settings/
