@@ -147,15 +147,18 @@ DELETE FROM __classification WHERE rank < 'family'::rank;
 -- now we have only families and below left
 
 -- create incertae sedis families if missing
-CREATE TABLE __classification2 (LIKE __classification);
 CREATE SEQUENCE __unassigned_seq START 1;
 CREATE INDEX ON __classification (family_id);
-INSERT INTO __classification2 (key, dataset_key, id, family_id, rank, kingdom, phylum ,class, "order", superfamily, family)
-    SELECT DISTINCT nextval('__record_id_seq'), dataset_key, 'inc.sed-' || nextval('__unassigned_seq'), 'inc.sed-' || currval('__unassigned_seq'), 'family'::rank, kingdom, phylum ,class, "order", superfamily, 'Not assigned'
-        FROM __classification
-        WHERE family_id IS NULL;
 CREATE INDEX ON __classification (dataset_key, coalesce(kingdom,''), coalesce(phylum,''), coalesce(class,''), coalesce("order",''), coalesce(superfamily))
     WHERE family_id=NULL;
+CREATE TABLE __classification2 (LIKE __classification);
+ALTER  TABLE __classification2 ALTER COLUMN key SET DEFAULT nextval('__record_id_seq');
+ALTER  TABLE __classification2 ALTER COLUMN id  SET DEFAULT 'inc.sed-' || nextval('__unassigned_seq');
+ALTER  TABLE __classification2 ALTER COLUMN family_id  SET DEFAULT 'inc.sed-' || currval('__unassigned_seq');
+INSERT  INTO __classification2 (dataset_key, rank, kingdom, phylum ,class, "order", superfamily, family)
+    SELECT DISTINCT dataset_key, 'family'::rank, kingdom, phylum ,class, "order", superfamily, 'Not assigned'
+        FROM __classification
+        WHERE family_id IS NULL;
 CREATE UNIQUE INDEX ON __classification2 (dataset_key, coalesce(kingdom,''), coalesce(phylum,''), coalesce(class,''), coalesce("order",''), coalesce(superfamily));
 UPDATE __classification c SET family_id=f.id
     FROM __classification2 f
@@ -167,7 +170,7 @@ UPDATE __classification c SET family_id=f.id
         AND coalesce(c."order",'')    =coalesce(f."order",'')
         AND coalesce(c.superfamily,'')=coalesce(f.superfamily,'');
 INSERT INTO __classification SELECT * FROM __classification2;
-CREATE INDEX ON __classification (id);
+CREATE UNIQUE INDEX ON __classification (id);
 
 -- TODO rank marker table !!!
 
