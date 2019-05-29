@@ -10,8 +10,8 @@ import java.util.regex.Pattern;
 
 import com.google.common.io.Files;
 import org.apache.commons.io.FileUtils;
-import org.col.common.io.CompressionUtil;
 import org.col.WsServerConfig;
+import org.col.common.io.CompressionUtil;
 import org.col.postgres.PgCopyUtils;
 import org.postgresql.jdbc.PgConnection;
 import org.slf4j.Logger;
@@ -25,16 +25,33 @@ public class AcExporter {
   private static final Pattern COPY_END   = Pattern.compile("^\\s*\\)\\s*TO\\s*'(.+)'");
   private static final Pattern VAR_DATASET_KEY = Pattern.compile("\\{\\{datasetKey}}", Pattern.CASE_INSENSITIVE);
   private final WsServerConfig cfg;
+  // we only allow a single export to run at a time
+  private static boolean LOCK = false;
 
   public AcExporter(WsServerConfig cfg) {
     this.cfg = cfg;
   }
   
+  private synchronized boolean aquireLock(){
+    if (!LOCK) {
+      LOCK = true;
+      return true;
+    }
+    return false;
+  }
+  
+  private synchronized void releaseLock(){
+    LOCK = false;
+  }
+
   /**
    * @return final archive
    */
-  public File export(int catalogueKey) throws IOException, SQLException {
+  public File export(int catalogueKey) throws IOException, SQLException, IllegalStateException {
     File csvDir = new File(cfg.normalizer.scratchDir(catalogueKey), "exports");
+    if (!aquireLock()) {
+      throw new IllegalStateException("There is a running export already");
+    }
     try {
       // create csv files
       try (Connection c = cfg.db.connect()) {
@@ -56,6 +73,7 @@ public class AcExporter {
     } finally {
       LOG.debug("Remove temp export directory {}", csvDir.getAbsolutePath());
       FileUtils.deleteQuietly(csvDir);
+      releaseLock();
     }
   }
   

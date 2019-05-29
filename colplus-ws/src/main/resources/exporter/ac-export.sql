@@ -1,10 +1,11 @@
 DROP TABLE IF EXISTS __scrutinizer;
+DROP TABLE IF EXISTS __ref_keys;
 DROP TABLE IF EXISTS __tax_keys;
-DROP TABLE IF EXISTS __syn_keys;
 DROP TABLE IF EXISTS __classification;
 DROP TABLE IF EXISTS __classification2;
 DROP SEQUENCE IF EXISTS __record_id_seq;
 DROP SEQUENCE IF EXISTS __unassigned_seq;
+
 
 
 COPY (
@@ -45,7 +46,7 @@ ORDER BY d.key ASC, i.attempt DESC
 CREATE TABLE __ref_keys (key serial, id text UNIQUE);
 INSERT INTO __ref_keys (id) SELECT id FROM reference_{{datasetKey}};
 
--- TODO references.csv
+-- references
 COPY (
   SELECT rk.key AS record_id, 
     csl->>'author' AS author, 
