@@ -36,7 +36,7 @@
             the BOM for jersey and jackson. Before adding a specific version here make sure it is not already covered
             by these BOMs (use the right versions):
 
-            Main Dropwizard BOM: https://github.com/dropwizard/dropwizard/blob/v1.3.7/dropwizard-bom/pom.xml
+            Main Dropwizard BOM: https://github.com/dropwizard/dropwizard/blob/v1.3.12/dropwizard-bom/pom.xml
             Which also imports the Jersey BOM: https://github.com/jersey/jersey/blob/2.25.1/bom/pom.xml
             and Jackson BOM: https://github.com/FasterXML/jackson-bom/blob/jackson-bom-2.9.6/pom.xml
 
