@@ -2,6 +2,7 @@ package org.col.command.export;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.sql.SQLException;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -49,7 +50,10 @@ public class AcExporterTest {
   public void export() throws Exception {
     MybatisTestUtils.populateDraftTree(testDataRule.getSqlSession());
     AcExporter exp = new AcExporter(cfg);
-    arch = exp.export(Datasets.DRAFT_COL, new DevNullWriter());
+    StringWriter writer = new StringWriter();
+    arch = exp.export(Datasets.DRAFT_COL, writer);
+    System.out.println("LOGS:\n");
+    System.out.println(writer.toString());
   }
   
   @Test

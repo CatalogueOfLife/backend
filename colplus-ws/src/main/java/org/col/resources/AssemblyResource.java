@@ -112,7 +112,7 @@ public class AssemblyResource {
     StreamingOutput stream = new StreamingOutput() {
       @Override
       public void write(OutputStream os) throws IOException, WebApplicationException {
-        Writer writer = new BufferedWriter(new OutputStreamWriter(os));
+        Writer writer = new OutputStreamWriter(os);
         try {
           exporter.export(catKey, writer);
         } catch (Throwable e) {

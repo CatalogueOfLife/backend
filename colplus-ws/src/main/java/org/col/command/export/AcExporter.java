@@ -10,6 +10,7 @@ import java.util.regex.Pattern;
 
 import com.google.common.io.Files;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.col.WsServerConfig;
 import org.col.common.io.CompressionUtil;
 import org.col.postgres.PgCopyUtils;
@@ -105,9 +106,8 @@ public class AcExporter {
         // copy to file
         File f = new File(csvDir, m.group(1).trim());
         Files.createParentDirs(f);
-        String msg = "Exporting " + f.getAbsolutePath();
-        log(msg);
-        LOG.info(msg);
+        log("Exporting " + f.getName());
+        LOG.info("Exporting {}", f.getAbsolutePath());
         PgCopyUtils.dump(con, sb.toString(), f, COPY_WITH);
         sb = new StringBuilder();
       
@@ -127,8 +127,13 @@ public class AcExporter {
   
   private void executeSql(PgConnection con, String sql) throws SQLException, IOException {
     try (Statement stmnt = con.createStatement()) {
-      String type = sql.contains(" ") ? sql.substring(0, sql.indexOf(' ')) + " " : "";
-      log("Execute "+type+"SQL");
+      if (sql.startsWith("--")) {
+        if (sql.contains("\n")) {
+          log(StringUtils.capitalize(sql.substring(3, sql.indexOf('\n'))));
+        }
+      } else if (sql.contains(" ")){
+        log("Execute " + sql.substring(0, sql.indexOf(' ')) + " SQL");
+      }
       stmnt.execute(sql);
       con.commit();
     }
