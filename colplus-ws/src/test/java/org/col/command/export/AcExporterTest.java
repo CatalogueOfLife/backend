@@ -7,11 +7,9 @@ import java.sql.SQLException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.common.io.Files;
-import org.apache.commons.io.FileUtils;
-import org.col.api.vocab.Datasets;
 import org.col.WsServerConfig;
+import org.col.api.vocab.Datasets;
 import org.col.common.io.DevNullWriter;
-import org.col.db.MybatisTestUtils;
 import org.col.db.PgSetupRule;
 import org.col.db.mapper.TestDataRule;
 import org.junit.*;
@@ -27,7 +25,7 @@ public class AcExporterTest {
   public static PgSetupRule pgSetupRule = new PgSetupRule();
   
   @Rule
-  public TestDataRule testDataRule = TestDataRule.empty();
+  public TestDataRule testDataRule = TestDataRule.draftWithSectors();
   
   @Before
   public void initCfg()  {
@@ -39,16 +37,15 @@ public class AcExporterTest {
   
   @After
   public void cleanup()  {
-    FileUtils.deleteQuietly(cfg.downloadDir);
-    FileUtils.deleteQuietly(cfg.normalizer.scratchDir);
+    //FileUtils.deleteQuietly(cfg.downloadDir);
+    //FileUtils.deleteQuietly(cfg.normalizer.scratchDir);
     if (arch != null) {
-      FileUtils.deleteQuietly(arch);
+      //FileUtils.deleteQuietly(arch);
     }
   }
   
   @Test
   public void export() throws Exception {
-    MybatisTestUtils.populateDraftTree(testDataRule.getSqlSession());
     AcExporter exp = new AcExporter(cfg);
     StringWriter writer = new StringWriter();
     arch = exp.export(Datasets.DRAFT_COL, writer);
@@ -58,8 +55,6 @@ public class AcExporterTest {
   
   @Test
   public void exportConcurrently() throws Exception {
-    MybatisTestUtils.populateDraftTree(testDataRule.getSqlSession());
-  
     final AtomicInteger exCounter = new AtomicInteger(0);
     
     Thread.UncaughtExceptionHandler h = new Thread.UncaughtExceptionHandler() {

@@ -58,29 +58,34 @@ public class TestDataRule extends ExternalResource {
   private final Supplier<SqlSessionFactory> sqlSessionFactorySupplier;
   
   public enum TestData {
-    NONE(null, null, 2,3),
+    NONE(null, null, null,2,3),
     
     // apple datasetKey=11
-    APPLE(11, 3,2,3,11,12),
+    APPLE(11, 3,null, 2,3,11,12),
   
     // tree datasetKey=11
-    TREE(11, 2, 2,3,11),
+    TREE(11, 2, null, 2,3,11),
   
     // basic draft hierarchy
-    DRAFT(3, 1, 2,3),
+    DRAFT(3, 1, 2,2,3),
+  
+    // basic draft hierarchy
+    DRAFT_WITH_SECTORS(3, 2, 3,2,3),
 
     /**
      * Inits the datasets table with real col data from colplus-repo
      */
-    DATASETS(2, 3);
+    DATASETS(2, 3, null);
   
     public final Integer key;
     public final Integer sciNameColumn;
+    public final Integer taxStatusColumn;
     final Set<Integer> datasetKeys;
     
-    TestData(Integer key, Integer sciNameColumn, Integer... datasetKeys) {
+    TestData(Integer key, Integer sciNameColumn, Integer taxStatusColumn, Integer... datasetKeys) {
       this.key = key;
       this.sciNameColumn = sciNameColumn;
+      this.taxStatusColumn = taxStatusColumn;
       if (datasetKeys == null) {
         this.datasetKeys = Collections.EMPTY_SET;
       } else {
@@ -117,8 +122,8 @@ public class TestDataRule extends ExternalResource {
     return new TestDataRule(TestData.DRAFT);
   }
   
-  public static TestDataRule draft(SqlSessionFactory sqlSessionFactory) {
-    return new TestDataRule(TestData.DRAFT, () -> sqlSessionFactory);
+  public static TestDataRule draftWithSectors() {
+    return new TestDataRule(TestData.DRAFT_WITH_SECTORS);
   }
 
   public static TestDataRule datasets() {
@@ -267,7 +272,7 @@ public class TestDataRule extends ExternalResource {
                   "origin", Origin.SOURCE
               ),
               ImmutableMap.<String, Function<String[], String>>of(
-                  "is_synonym", TestDataRule::isSynonym
+                  "is_synonym", this::isSynonym
               )
           );
           copyTable(pgc, "usage_reference");
@@ -294,8 +299,8 @@ public class TestDataRule extends ExternalResource {
     }
   }
   
-  private static String isSynonym(String[] row) {
-    int statusKey = Integer.valueOf(row[2]);
+  private String isSynonym(String[] row) {
+    int statusKey = Integer.valueOf(row[testData.taxStatusColumn]);
     TaxonomicStatus ts = TaxonomicStatus.values()[statusKey];
     return String.valueOf(ts.isSynonym());
   }

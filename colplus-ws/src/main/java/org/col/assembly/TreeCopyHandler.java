@@ -135,6 +135,7 @@ public class TreeCopyHandler implements ResultHandler<NameUsageBase>, AutoClosea
         }
         n.setRank(r);
         n.setType(NameType.SCIENTIFIC);
+        n.setSectorKey(sector.getKey());
         n.updateNameCache();
         RanKnName rnn = new RanKnName(r, n.getScientificName());
         // did we create that implicit name before?
@@ -155,6 +156,7 @@ public class TreeCopyHandler implements ResultHandler<NameUsageBase>, AutoClosea
         t.setDatasetKey(Datasets.DRAFT_COL);
         t.setName(n);
         t.setParentId(parent.id);
+        t.setSectorKey(sector.getKey());
         t.setOrigin(Origin.IMPLICIT_NAME);
         t.setStatus(TaxonomicStatus.ACCEPTED);
         t.applyUser(user);

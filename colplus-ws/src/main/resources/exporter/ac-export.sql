@@ -98,7 +98,7 @@ COPY (
 ) TO 'lifezone.csv';
 
 
--- create a flattened classification table for all taxa
+-- create a flattened classification table for all usages incl taxa AND synonyms !!!
 CREATE TABLE __classification AS (
 WITH RECURSIVE tree AS(
     SELECT
@@ -172,17 +172,16 @@ UPDATE __classification c SET family_id=f.id
 INSERT INTO __classification SELECT * FROM __classification2;
 CREATE UNIQUE INDEX ON __classification (id);
 
--- use __ranks table created in AcExporter java code!
 
 -- families export
 COPY (
 SELECT key AS record_id,
       NULL AS hierarchy_code,
       kingdom, 
-      phylum, 
-      class, 
-      "order", 
-      family, 
+      coalesce(phylum, 'Not assigned') AS phylum,
+      coalesce(class, 'Not assigned') AS class,
+      coalesce("order", 'Not assigned') AS "order",
+      coalesce(family, 'Not assigned') AS family,
       superfamily, 
       dataset_key AS database_id, 
       id AS family_code, 
@@ -200,9 +199,9 @@ SELECT
   n.genus AS genus,
   n.infrageneric_epithet AS subgenus,
   n.specific_epithet AS species,
-  c.species_id AS infraspecies_parent_name_code,
+  CASE WHEN n.rank > 'species'::rank THEN c.species_id ELSE NULL END AS infraspecies_parent_name_code,
   n.infraspecific_epithet AS infraspecies,
-  r.marker AS infraspecies_marker,
+  r.marker AS infraspecies_marker,  -- uses __ranks table created in AcExporter java code!
   n.authorship AS author,
   CASE WHEN t.is_synonym THEN t.parent_id ELSE t.id END AS accepted_name_code,
   t.remarks AS comment,
@@ -214,7 +213,7 @@ SELECT
        WHEN t.status=4 THEN 3
   END AS sp2000_status_id, -- 1=ACCEPTED, 2=AMBIGUOUS_SYNONYM, 3=MISAPPLIED, 4=PROVISIONALLY_ACCEPTED, 5=SYNONYM
                            -- Java: ACCEPTED,PROVISIONALLY_ACCEPTED,SYNONYM,AMBIGUOUS_SYNONYM,MISAPPLIED
-  c.dataset_key AS database_id,
+  CASE WHEN t.is_synonym THEN cs.dataset_key ELSE c.dataset_key END AS database_id,
   sc.key AS specialist_id,
   cf.key AS family_id,
   NULL AS specialist_code,
@@ -227,8 +226,9 @@ SELECT
   t.recent::int AS has_modern
 FROM name_{{datasetKey}} n
     JOIN name_usage_{{datasetKey}} t ON n.id=t.name_id
-    JOIN __classification c ON t.id=c.id
-    JOIN __classification cf ON c.family_id=cf.id
+    LEFT JOIN __classification c  ON t.id=c.id
+    LEFT JOIN __classification cs ON t.parent_id=cs.id
+    LEFT JOIN __classification cf ON c.family_id=cf.id
     LEFT JOIN __ranks r ON n.rank=r.key
     LEFT JOIN __scrutinizer sc ON t.according_to=sc.name AND c.dataset_key=sc.dataset_key
 WHERE n.rank >= 'species'::rank
