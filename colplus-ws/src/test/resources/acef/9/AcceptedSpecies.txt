@@ -1,2 +1,3 @@
 AcceptedTaxonID	Genus	SpeciesEpithet	AuthorString	Sp2000NameStatus
 Lamprostiba_pu!chra	Lamprostiba	pu!chra	Pace, 2014	1
+1	Anterhynchium	alecto		accepted

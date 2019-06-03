@@ -64,11 +64,13 @@ public class NameParser implements Parser<NameAccordingTo> {
   public Optional<ParsedName> parseAuthorship(String authorship) {
     if (Strings.isNullOrEmpty(authorship)) return Optional.of(new ParsedName());
     try {
-      return Optional.of(PARSER_INTERNAL.parse("Abies alba " + authorship, Rank.SPECIES));
-      
+      ParsedName pn = PARSER_INTERNAL.parse("Abies alba " + authorship, Rank.SPECIES);
+      if (pn.getState() == ParsedName.State.COMPLETE) {
+        return Optional.of(pn);
+      }
     } catch (UnparsableNameException e) {
-      return Optional.empty();
     }
+    return Optional.empty();
   }
   
   /**

@@ -224,6 +224,14 @@ public class NormalizerACEFIT extends NormalizerITBase {
       
       v = vByLine(AcefTerm.AcceptedInfraSpecificTaxa, 2);
       assertTrue(v.hasIssue(Issue.PARENT_ID_INVALID));
+  
+  
+      u = usageByID("1-1");
+      assertEquals("Anterhynchium alecto lalepi", u.usage.getName().getScientificName());
+      assertEquals("(Cheesm.i.l.)", u.usage.getName().getAuthorship());
+      v = verbatim(u.usage.getName());
+      
+      assertTrue(v.hasIssue(Issue.UNPARSABLE_AUTHORSHIP));
     }
   }
   
