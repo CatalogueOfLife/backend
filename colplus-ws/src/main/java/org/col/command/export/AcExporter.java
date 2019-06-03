@@ -3,6 +3,7 @@ package org.col.command.export;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.regex.Matcher;
@@ -14,6 +15,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.col.WsServerConfig;
 import org.col.common.io.CompressionUtil;
 import org.col.postgres.PgCopyUtils;
+import org.gbif.nameparser.api.Rank;
 import org.postgresql.jdbc.PgConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,6 +67,16 @@ public class AcExporter {
       // create csv files
       try (Connection c = cfg.db.connect()) {
         c.setAutoCommit(false);
+        
+        String sqlRankTable = "CREATE TABLE __ranks (key rank PRIMARY KEY, marker TEXT)";
+        c.createStatement().execute(sqlRankTable);
+        PreparedStatement pst = c.prepareStatement("INSERT INTO __ranks (key, marker) values (?::rank, ?)");
+        for (Rank r : Rank.values()) {
+          pst.setString(1, r.name().toLowerCase());
+          pst.setString(2, r.getMarker());
+          pst.execute();
+        }
+        
         InputStream sql = AcExporter.class.getResourceAsStream(EXPORT_SQL);
         executeAcExportSql(catalogueKey, (PgConnection)c, new BufferedReader(new InputStreamReader(sql, StandardCharsets.UTF_8)), csvDir);
       } catch (UnsupportedEncodingException e) {

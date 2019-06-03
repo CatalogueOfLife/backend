@@ -110,7 +110,6 @@
         <img.repo>${project.build.directory}/img-repo</img.repo>
         <es.hosts>${project.build.directory}/es-colplus</es.hosts>
         <es.ports></es.ports>
-
     </properties>
 
     <licenses>

@@ -41,13 +41,16 @@ CREATE TYPE rank AS ENUM (
   'subcohort',
   'infracohort',
   'magnorder',
-  'superorder',
   'grandorder',
+  'superorder',
   'order',
   'suborder',
   'infraorder',
   'parvorder',
+  'megafamily',
+  'grandfamily',
   'superfamily',
+  'epifamily',
   'family',
   'subfamily',
   'infrafamily',
@@ -95,6 +98,7 @@ CREATE TYPE rank AS ENUM (
   'other',
   'unranked'
 );
+
 
 CREATE TABLE coluser (
   key serial PRIMARY KEY,

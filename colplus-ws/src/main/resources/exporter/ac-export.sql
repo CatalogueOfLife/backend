@@ -172,7 +172,7 @@ UPDATE __classification c SET family_id=f.id
 INSERT INTO __classification SELECT * FROM __classification2;
 CREATE UNIQUE INDEX ON __classification (id);
 
--- TODO rank marker table !!!
+-- use __ranks table created in AcExporter java code!
 
 -- families export
 COPY (
@@ -202,7 +202,7 @@ SELECT
   n.specific_epithet AS species,
   c.species_id AS infraspecies_parent_name_code,
   n.infraspecific_epithet AS infraspecies,
-  n.rank AS infraspecies_marker, -- TODO
+  r.marker AS infraspecies_marker,
   n.authorship AS author,
   CASE WHEN t.is_synonym THEN t.parent_id ELSE t.id END AS accepted_name_code,
   t.remarks AS comment,
@@ -229,6 +229,7 @@ FROM name_{{datasetKey}} n
     JOIN name_usage_{{datasetKey}} t ON n.id=t.name_id
     JOIN __classification c ON t.id=c.id
     JOIN __classification cf ON c.family_id=cf.id
+    LEFT JOIN __ranks r ON n.rank=r.key
     LEFT JOIN __scrutinizer sc ON t.according_to=sc.name AND c.dataset_key=sc.dataset_key
 WHERE n.rank >= 'species'::rank
 
@@ -306,5 +307,6 @@ DROP TABLE __ref_keys;
 DROP TABLE __tax_keys;
 DROP TABLE __classification;
 DROP TABLE __classification2;
+DROP TABLE IF EXISTS __ranks;
 DROP SEQUENCE __record_id_seq;
 DROP SEQUENCE __unassigned_seq;
