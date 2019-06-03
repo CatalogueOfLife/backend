@@ -107,18 +107,18 @@ public class TreeCopyHandler implements ResultHandler<NameUsageBase>, AutoClosea
   private static List<Rank> IMPLICITS = ImmutableList.of(Rank.GENUS,Rank.SUBGENUS, Rank.SPECIES);
   
   private Usage createImplicit(Usage parent, Taxon taxon) {
-    List<Rank> implicitRanks = new ArrayList<>();
+    List<Rank> neededRanks = new ArrayList<>();
     
     // figure out if we need to create any implicit taxon
     Name origName = taxon.getName();
     if (origName.isParsed() && !origName.isIndetermined()) {
       for (Rank r : IMPLICITS) {
         if (parent.rank.higherThan(r) && r.higherThan(origName.getRank())) {
-          implicitRanks.add(r);
+          neededRanks.add(r);
         }
       }
   
-      for (Rank r : implicitRanks) {
+      for (Rank r : neededRanks) {
         Name n = new Name();
         if (r == Rank.GENUS) {
           n.setUninomial(origName.getGenus());

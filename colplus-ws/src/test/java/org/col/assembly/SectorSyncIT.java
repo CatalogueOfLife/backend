@@ -15,12 +15,14 @@ import org.col.api.model.Sector;
 import org.col.api.model.SimpleName;
 import org.col.api.vocab.DataFormat;
 import org.col.api.vocab.Datasets;
+import org.col.api.vocab.Origin;
 import org.col.dao.DatasetImportDao;
 import org.col.dao.NamesTreeDao;
 import org.col.dao.TreeRepoRule;
 import org.col.db.PgSetupRule;
 import org.col.db.mapper.NameUsageMapper;
 import org.col.db.mapper.SectorMapper;
+import org.col.db.mapper.TaxonMapper;
 import org.col.db.mapper.TestDataRule;
 import org.col.db.tree.TextTreePrinter;
 import org.col.es.NameUsageIndexService;
@@ -82,6 +84,12 @@ public class SectorSyncIT {
     }
   }
   
+  NameUsageBase getByID(String id) {
+    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+      return session.getMapper(TaxonMapper.class).get(Datasets.DRAFT_COL, id);
+    }
+  }
+  
   static int createSector(Sector.Mode mode, NameUsageBase src, NameUsageBase target) {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       Sector sector = new Sector();
@@ -139,6 +147,12 @@ public class SectorSyncIT {
 
     syncAll();
     assertTree("cat1_5_6.txt");
+  
+    NameUsageBase vogelii   = getByName(Datasets.DRAFT_COL, Rank.SUBSPECIES, "Astragalus vogelii subsp. vogelii");
+    assertEquals(1, (int) vogelii.getSectorKey());
+  
+    NameUsageBase sp   = getByID(vogelii.getParentId());
+    assertEquals(Origin.SOURCE, vogelii.getOrigin());
   }
   
   @Test

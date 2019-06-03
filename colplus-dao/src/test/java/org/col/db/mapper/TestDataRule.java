@@ -61,10 +61,10 @@ public class TestDataRule extends ExternalResource {
     NONE(null, null, null,2,3),
     
     // apple datasetKey=11
-    APPLE(11, 3,null, 2,3,11,12),
+    APPLE(11, 3,2, 2,3,11,12),
   
     // tree datasetKey=11
-    TREE(11, 2, null, 2,3,11),
+    TREE(11, 2, 2, 2,3,11),
   
     // basic draft hierarchy
     DRAFT(3, 1, 2,2,3),
