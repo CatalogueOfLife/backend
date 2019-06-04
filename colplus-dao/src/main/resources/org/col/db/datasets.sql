@@ -407,25 +407,6 @@ INSERT INTO dataset (key, origin, type, code, title, alias, import_frequency, cr
 VALUES ('1000', 0, 1, null, 'Col Hierarchy', 'ColH', 1, 0, 0, 3, 'https://github.com/Sp2000/col-hierarchy/archive/master.zip');
 
 
---------------------------
--- TESTS
---   from https://github.com/Sp2000/data-unit-tests
--- use ID range 1700-1799
-ALTER SEQUENCE dataset_key_seq RESTART WITH 1700;
---------------------------
-
-
-INSERT INTO dataset (alias, title, origin, type, created_by, modified_by)
-SELECT x.alias, 'Unit Test: ' || x.alias, 0, 4, 0, 0
-    FROM (SELECT unnest(array['A1','A27','A3','A4','A5','A6','A99','B1','B2','B3','B4','B5','B6','B7','B8','B9']) AS alias) AS x;
-
-UPDATE dataset SET
-    website='https://github.com/Sp2000/colplus-backend/issues/193',
-    data_access='https://github.com/Sp2000/data-unit-tests/raw/master/' || alias || '.zip',
-    data_format=3,
-    import_frequency=1
-WHERE key >= 1700 and key < 1800;
-
 
 --------------------------
 -- TEST DATASETS
