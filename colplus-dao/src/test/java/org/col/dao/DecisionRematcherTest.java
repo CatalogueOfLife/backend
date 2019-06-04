@@ -46,7 +46,7 @@ public class DecisionRematcherTest {
       SectorMapper sm = session.getMapper(SectorMapper.class);
       DecisionRematcher rem = new DecisionRematcher(session);
       
-      rem.matchDataset(datasetKey);
+      rem.matchDatasetSubjects(datasetKey);
 
       Sector s1b = sm.get(s1);
       Assert.assertNotNull(s1b.getSubject().getId());

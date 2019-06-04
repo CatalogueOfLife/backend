@@ -72,6 +72,15 @@ public class SectorResource extends GlobalEntityResource<Sector> {
   
   @POST
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
+  @Path("/broken/rematch")
+  public void rematchDataset(@Context SqlSession session, @Auth ColUser user) {
+    DecisionRematcher matcher = new DecisionRematcher(session);
+    matcher.matchBrokenSectorTargets();
+    session.commit();
+  }
+  
+  @POST
+  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   @Path("/{key}/rematch")
   public Sector rematch(@PathParam("key") Integer key, @Context SqlSession session, @Auth ColUser user) {
     Sector s = get(key);
