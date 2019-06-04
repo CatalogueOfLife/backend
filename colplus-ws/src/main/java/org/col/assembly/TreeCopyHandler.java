@@ -120,6 +120,7 @@ public class TreeCopyHandler implements ResultHandler<NameUsageBase>, AutoClosea
   
       for (Rank r : neededRanks) {
         Name n = new Name();
+        n.setCode(origName.getCode());
         if (r == Rank.GENUS) {
           n.setUninomial(origName.getGenus());
         
@@ -175,6 +176,10 @@ public class TreeCopyHandler implements ResultHandler<NameUsageBase>, AutoClosea
     NameUsageBase u = ctxt.getResultObject();
     u.setSectorKey(sector.getKey());
     u.getName().setSectorKey(sector.getKey());
+    // before we apply a specific decision
+    if (sector.getCode() != null) {
+      u.getName().setCode(sector.getCode());
+    }
     
     if (decisions.containsKey(u.getId())) {
       applyDecision(u, decisions.get(u.getId()));

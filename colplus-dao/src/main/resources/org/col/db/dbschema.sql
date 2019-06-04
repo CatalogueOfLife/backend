@@ -220,6 +220,7 @@ CREATE TABLE sector (
   target_authorship TEXT,
   target_rank rank,
   mode INTEGER NOT NULL,
+  code INTEGER,
   note TEXT,
   created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   created_by INTEGER NOT NULL,

@@ -16,6 +16,7 @@
     ${alias}target_authorship AS ${prefix}target_authorship,
     ${alias}target_rank AS ${prefix}target_rank,
     ${alias}mode AS ${prefix}mode,
+    ${alias}code AS ${prefix}code,
     ${alias}note AS ${prefix}note,
     ${alias}modified AS ${prefix}modified,
     ${alias}modified_by AS ${prefix}modified_by,
@@ -41,6 +42,7 @@
     target_authorship,
     target_rank,
     mode,
+    code,
     note,
     modified,
     modified_by
@@ -57,6 +59,7 @@
     #{target.authorship},
     #{target.rank}::rank,
     #{mode},
+    #{code},
     #{note},
     now(),
     #{modifiedBy}

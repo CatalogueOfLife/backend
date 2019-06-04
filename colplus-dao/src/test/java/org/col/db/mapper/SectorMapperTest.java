@@ -5,6 +5,7 @@ import org.col.api.RandomUtils;
 import org.col.api.TestEntityGenerator;
 import org.col.api.model.Sector;
 import org.col.db.MybatisTestUtils;
+import org.gbif.nameparser.api.NomCode;
 import org.junit.Test;
 
 import static org.col.api.TestEntityGenerator.DATASET11;
@@ -79,6 +80,7 @@ public class SectorMapperTest extends GlobalCRUDMapperTest<Sector, SectorMapper>
     Sector d = new Sector();
     d.setDatasetKey(datasetKey);
     d.setMode(Sector.Mode.ATTACH);
+    d.setCode(NomCode.ZOOLOGICAL);
     d.setSubject(newNameRef());
     d.setTarget(newNameRef());
     d.setNote(RandomUtils.randomUnicodeString(1024));
