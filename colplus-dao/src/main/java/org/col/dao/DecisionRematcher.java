@@ -9,10 +9,7 @@ import org.col.api.model.*;
 import org.col.api.search.DatasetSearchRequest;
 import org.col.api.vocab.Datasets;
 import org.col.api.vocab.Users;
-import org.col.db.mapper.DatasetMapper;
-import org.col.db.mapper.DecisionMapper;
-import org.col.db.mapper.SectorMapper;
-import org.col.db.mapper.TaxonMapper;
+import org.col.db.mapper.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,7 +20,8 @@ public class DecisionRematcher {
   private final TaxonMapper tm;
   private final DatasetMapper dm;
   private final SectorMapper sm;
-  private final DecisionMapper em;
+  private final DecisionMapper dem;
+  private final EstimateMapper esm;
   private final MatchingDao mdao;
   private final int user = Users.DB_INIT;
   
@@ -39,7 +37,8 @@ public class DecisionRematcher {
     tm = session.getMapper(TaxonMapper.class);
     dm = session.getMapper(DatasetMapper.class);
     sm = session.getMapper(SectorMapper.class);
-    em = session.getMapper(DecisionMapper.class);
+    dem = session.getMapper(DecisionMapper.class);
+    esm = session.getMapper(EstimateMapper.class);
     mdao = new MatchingDao(session);
   }
   
@@ -100,8 +99,24 @@ public class DecisionRematcher {
   public boolean matchDecision(EditorialDecision ed) {
     NameUsage u = matchUniquely(ed, ed.getDatasetKey(), ed.getSubject());
     boolean success = u != null;
-    ed.getSubject().setId(u.getId());
-    em.update(ed);
+    if (success) {
+      ed.getSubject().setId(u.getId());
+    } else {
+      ed.getSubject().setId(null);
+    }
+    dem.update(ed);
+    return success;
+  }
+  
+  public boolean matchEstimate(SpeciesEstimate est) {
+    NameUsage u = matchUniquely(est, Datasets.DRAFT_COL, est.getSubject());
+    boolean success = u != null;
+    if (success) {
+      est.getSubject().setId(u.getId());
+    } else {
+      est.getSubject().setId(null);
+    }
+    esm.update(est);
     return success;
   }
   
@@ -139,6 +154,19 @@ public class DecisionRematcher {
     }
   }
   
+  public void matchBrokenEstimates() {
+    boolean first = true;
+    int failed = 0;
+    int total = 0;
+    for (SpeciesEstimate s : esm.broken()) {
+      if (!matchEstimate(s)) {
+        failed++;
+      }
+      total++;
+    }
+    LOG.info("Rematched {} broken estimate subjects. {} failed", total, failed);
+  }
+  
   public void matchBrokenSectorTargets() {
     clearCounter();
     // just rematch datasets which have sectors
@@ -166,7 +194,7 @@ public class DecisionRematcher {
       sectorTotal++;
     }
     
-    for (EditorialDecision e : em.list(datasetKey, null)) {
+    for (EditorialDecision e : dem.list(datasetKey, null)) {
       if (!matchDecision(e)){
         decisionFailed++;
       }

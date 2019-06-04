@@ -11,9 +11,7 @@
         ${alias}.fossil AS ${prefix}fossil,
         ${alias}.recent AS ${prefix}recent,
         ${alias}.lifezones AS ${prefix}lifezones,
-        ${alias}.webpage AS ${prefix}webpage,
-        ${alias}.species_estimate AS ${prefix}species_estimate,
-        ${alias}.species_estimate_reference_id AS ${prefix}species_estimate_reference_id
+        ${alias}.webpage AS ${prefix}webpage
     </sql>
 
     <sql id="SELECT">
@@ -34,9 +32,7 @@
         fossil,
         recent,
         lifezones,
-        webpage,
-        species_estimate,
-        species_estimate_reference_id
+        webpage
     </sql>
 
     <sql id="PROPS">
@@ -45,9 +41,7 @@
         #{fossil},
         #{recent},
         #{lifezones, typeHandler=org.col.db.type.LifezoneSetTypeHandler},
-        #{webpage, typeHandler=org.col.db.type.UriTypeHandler},
-        #{speciesEstimate},
-        #{speciesEstimateReferenceId}
+        #{webpage, typeHandler=org.col.db.type.UriTypeHandler}
     </sql>
 
     <sql id="FROM">

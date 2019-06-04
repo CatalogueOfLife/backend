@@ -280,6 +280,20 @@ CREATE TABLE decision (
   UNIQUE (dataset_key, subject_id)
 );
 
+CREATE TABLE estimate (
+  key serial PRIMARY KEY,
+  subject_id TEXT UNIQUE,
+  subject_name TEXT,
+  subject_authorship TEXT,
+  subject_rank rank,
+  estimate INTEGER,
+  reference_id TEXT,
+  note TEXT,
+  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  created_by INTEGER NOT NULL,
+  modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  modified_by INTEGER NOT NULL
+);
 --
 -- PARTITIONED DATA TABLES
 --
@@ -394,8 +408,6 @@ CREATE TABLE name_usage (
   recent BOOLEAN,
   lifezones INTEGER[] DEFAULT '{}',
   webpage TEXT,
-  species_estimate INTEGER,
-  species_estimate_reference_id TEXT,
   remarks TEXT,
   dataset_sectors JSONB,
   created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),

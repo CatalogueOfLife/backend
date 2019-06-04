@@ -232,9 +232,6 @@ public enum Issue {
   REFTYPE_INVALID(NAME_USAGE, Level.ERROR,
       "ACEF reference type values unparsable or missing"),
   
-  ESTIMATES_INVALID(NAME_USAGE, Level.ERROR,
-      "The given species estimates are no parsable, positive integer numbers"),
-  
   //
   // VERNACULAR ISSUES
   //

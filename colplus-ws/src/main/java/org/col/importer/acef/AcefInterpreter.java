@@ -117,9 +117,6 @@ public class AcefInterpreter extends InterpreterBase {
   
       // lifezones
       setLifezones(t, v, AcefTerm.LifeZone);
-  
-      t.setSpeciesEstimate(null);
-      t.setSpeciesEstimateReferenceId(null);
     }
     // for both synonyms and taxa
     u.usage.addAccordingTo(nat.get().getAccordingTo());

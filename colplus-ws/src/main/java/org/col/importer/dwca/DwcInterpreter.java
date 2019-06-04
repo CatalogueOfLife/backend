@@ -182,22 +182,6 @@ public class DwcInterpreter extends InterpreterBase {
     tax.setFossil(null);
     tax.setRecent(null);
     // t.setLifezones();
-    if (v.hasTerm(ColDwcTerm.speciesEstimate)) {
-      Integer est = v.getInt(ColDwcTerm.speciesEstimate, Issue.ESTIMATES_INVALID);
-      if (est != null && est != 0) {
-        if (est < 0) {
-          v.addIssue(Issue.ESTIMATES_INVALID);
-        } else {
-          tax.setSpeciesEstimate(est);
-          if (v.hasTerm(ColDwcTerm.speciesEstimateReference)) {
-            Reference ref = refFactory.fromCitation(null, v.get(ColDwcTerm.speciesEstimateReference), v);
-            if (ref != null) {
-              tax.setSpeciesEstimateReferenceId(ref.getId());
-            }
-          }
-        }
-      }
-    }
     tax.setRemarks(v.get(DwcTerm.taxonRemarks));
   }
   

@@ -87,9 +87,6 @@ public class ColdpInterpreter extends InterpreterBase {
       // lifezones
       setLifezones(t, v, ColdpTerm.lifezone);
     
-      t.setSpeciesEstimate(null);
-      t.setSpeciesEstimateReferenceId(null);
-    
       // flat classification for any usage
       u.classification = interpretClassification(v);
     

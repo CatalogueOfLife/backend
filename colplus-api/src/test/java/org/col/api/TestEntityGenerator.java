@@ -280,8 +280,6 @@ public class TestEntityGenerator {
     t.setRecent(true);
     t.setRemarks("Foo == Bar");
     t.setChildCount(0);
-    t.setSpeciesEstimate(81);
-    t.setSpeciesEstimateReferenceId(REF1.getId());
     return t;
   }
 

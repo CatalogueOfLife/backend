@@ -19,8 +19,7 @@ public class TreeNode implements DatasetEntity {
   private Rank rank;
   private TaxonomicStatus status;
   private int childCount;
-  private Integer speciesEstimate;
-  private String speciesEstimateReferenceId;
+  private SpeciesEstimate estimate;
   private Integer sectorKey;
   private Decision decision;
   private Int2IntOpenHashMap datasetSectors;
@@ -99,20 +98,12 @@ public class TreeNode implements DatasetEntity {
     this.childCount = childCount;
   }
   
-  public Integer getSpeciesEstimate() {
-    return speciesEstimate;
+  public SpeciesEstimate getEstimate() {
+    return estimate;
   }
   
-  public void setSpeciesEstimate(Integer speciesEstimate) {
-    this.speciesEstimate = speciesEstimate;
-  }
-  
-  public String getSpeciesEstimateReferenceId() {
-    return speciesEstimateReferenceId;
-  }
-  
-  public void setSpeciesEstimateReferenceId(String speciesEstimateReferenceId) {
-    this.speciesEstimateReferenceId = speciesEstimateReferenceId;
+  public void setEstimate(SpeciesEstimate estimate) {
+    this.estimate = estimate;
   }
   
   public Integer getSectorKey() {
@@ -151,8 +142,7 @@ public class TreeNode implements DatasetEntity {
         Objects.equals(name, treeNode.name) &&
         rank == treeNode.rank &&
         status == treeNode.status &&
-        Objects.equals(speciesEstimate, treeNode.speciesEstimate) &&
-        Objects.equals(speciesEstimateReferenceId, treeNode.speciesEstimateReferenceId) &&
+        Objects.equals(estimate, treeNode.estimate) &&
         Objects.equals(sectorKey, treeNode.sectorKey) &&
         Objects.equals(decision, treeNode.decision) &&
         Objects.equals(datasetSectors, treeNode.datasetSectors);
@@ -160,6 +150,6 @@ public class TreeNode implements DatasetEntity {
   
   @Override
   public int hashCode() {
-    return Objects.hash(datasetKey, id, parentId, name, rank, status, childCount, speciesEstimate, speciesEstimateReferenceId, sectorKey, decision, datasetSectors);
+    return Objects.hash(datasetKey, id, parentId, name, rank, status, childCount, estimate, sectorKey, decision, datasetSectors);
   }
 }
