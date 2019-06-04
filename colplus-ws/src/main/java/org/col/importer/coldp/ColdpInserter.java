@@ -220,7 +220,7 @@ public class ColdpInserter extends NeoInserter {
    * Reads the dataset metadata.yaml and puts it into the store
    */
   @Override
-  protected Optional<Dataset> readMetadata() {
+  public Optional<Dataset> readMetadata() {
     return MetadataParser.readMetadata(super.folder);
   }
   

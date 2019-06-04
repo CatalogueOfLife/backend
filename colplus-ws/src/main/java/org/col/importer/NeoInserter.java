@@ -191,6 +191,6 @@ public abstract class NeoInserter {
   
   protected abstract NodeBatchProcessor relationProcessor();
   
-  protected abstract Optional<Dataset> readMetadata();
+  public abstract Optional<Dataset> readMetadata();
   
 }

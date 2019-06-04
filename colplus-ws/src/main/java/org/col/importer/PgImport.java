@@ -5,6 +5,8 @@ import java.util.Map;
 import java.util.Stack;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
@@ -143,21 +145,30 @@ public class PgImport implements Callable<Boolean> {
       LOG.info("Updating dataset metadata for {}: {}", dataset.getKey(), dataset.getTitle());
       DatasetMapper mapper = session.getMapper(DatasetMapper.class);
       Dataset old = mapper.get(dataset.getKey());
-      if (dataset.getTitle() != null) {
-        // make sure we keep a title even if old
-        old.setTitle(dataset.getTitle());
-      }
-      old.setAuthorsAndEditors(dataset.getAuthorsAndEditors());
-      old.setContact(dataset.getContact());
-      old.setDescription(dataset.getDescription());
-      old.setWebsite(dataset.getWebsite());
-      old.setLicense(dataset.getLicense());
-      old.setOrganisations(dataset.getOrganisations());
-      old.setReleased(dataset.getReleased());
-      old.setVersion(dataset.getVersion());
+      copyIfNotNull(dataset::getAlias, old::setAlias);
+      copyIfNotNull(dataset::getAuthorsAndEditors, old::setAuthorsAndEditors);
+      copyIfNotNull(dataset::getCompleteness, old::setCompleteness);
+      copyIfNotNull(dataset::getConfidence, old::setConfidence);
+      copyIfNotNull(dataset::getContact, old::setContact);
+      copyIfNotNull(dataset::getDescription, old::setDescription);
+      copyIfNotNull(dataset::getGroup, old::setGroup);
+      copyIfNotNull(dataset::getLicense, old::setLicense);
+      copyIfNotNull(dataset::getOrganisations, old::setOrganisations);
+      copyIfNotNull(dataset::getReleased, old::setReleased);
+      copyIfNotNull(dataset::getTitle, old::setTitle);
+      copyIfNotNull(dataset::getType, old::setType);
+      copyIfNotNull(dataset::getVersion, old::setVersion);
+      copyIfNotNull(dataset::getWebsite, old::setWebsite);
       
       mapper.update(old);
       session.commit();
+    }
+  }
+  
+  private <T> void copyIfNotNull(Supplier<T> getter, Consumer<T> setter) {
+    T val = getter.get();
+    if (val != null) {
+      setter.accept(val);
     }
   }
   

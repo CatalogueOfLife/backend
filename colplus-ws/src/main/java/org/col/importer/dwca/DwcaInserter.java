@@ -101,7 +101,7 @@ public class DwcaInserter extends NeoInserter {
    * Reads the dataset metadata and puts it into the store
    */
   @Override
-  protected Optional<Dataset> readMetadata() {
+  public Optional<Dataset> readMetadata() {
     EmlParser parser = new EmlParser();
     Optional<Path> mf = ((DwcaReader)reader).getMetadataFile();
     if (mf.isPresent()) {
