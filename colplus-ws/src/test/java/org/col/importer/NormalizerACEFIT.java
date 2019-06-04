@@ -4,13 +4,13 @@ import java.net.URI;
 import java.util.Set;
 
 import com.google.common.collect.Sets;
+import org.col.api.model.*;
+import org.col.api.vocab.*;
 import org.col.importer.neo.model.Labels;
 import org.col.importer.neo.model.NeoName;
 import org.col.importer.neo.model.NeoUsage;
 import org.col.importer.neo.model.RankedUsage;
 import org.col.importer.neo.traverse.Traversals;
-import org.col.api.model.*;
-import org.col.api.vocab.*;
 import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
@@ -322,6 +322,24 @@ public class NormalizerACEFIT extends NormalizerITBase {
     }
   }
   
+  /**
+   * Makes sure placeholder names in the denormed ACEF classification get flagged
+   */
+  @Test
+  public void reimportFailed() throws Exception {
+    try {
+      normalize(17);
+      fail("Expected to fail normalization");
+    } catch (Exception e) {
+      // expected
+      // close neo store if open
+      if (store != null) {
+        store.close();
+      }
+    }
+    normalize(16);
+  }
+  
   void assertPlaceholderInParents(String id) {
     NeoUsage t = usageByID(id);
     for (RankedUsage u : store.parents(t.node)) {
@@ -350,7 +368,7 @@ public class NormalizerACEFIT extends NormalizerITBase {
   @Test
   @Ignore("external dependency")
   public void testGsdGithub() throws Exception {
-    normalize(URI.create("https://raw.githubusercontent.com/Sp2000/colplus-repo/master/ACEF/19.tar.gz"));
+    normalize(URI.create("https://raw.githubusercontent.com/Sp2000/colplus-repo/master/ACEF/201.tar.gz"));
   }
   
 }

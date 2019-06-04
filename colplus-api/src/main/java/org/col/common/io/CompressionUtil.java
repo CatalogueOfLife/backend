@@ -82,23 +82,20 @@ public class CompressionUtil {
     List<File> files = new ArrayList<File>();
     TarArchiveInputStream in = new TarArchiveInputStream(new GZIPInputStream(new FileInputStream(zipFile)));
     try {
-      TarArchiveEntry entry = in.getNextTarEntry();
-      while (entry != null) {
+      TarArchiveEntry entry;
+      while ((entry = in.getNextTarEntry()) != null) {
         if (entry.isDirectory()) {
           LOG.debug("TAR archive contains directories which are being ignored");
-          entry = in.getNextTarEntry();
           continue;
         }
         String fn = new File(entry.getName()).getName();
         if (fn.startsWith(".")) {
           LOG.debug("TAR archive contains a hidden file which is being ignored");
-          entry = in.getNextTarEntry();
           continue;
         }
         File targetFile = new File(directory, fn);
         if (targetFile.exists()) {
           LOG.warn("TAR archive contains duplicate filenames, only the first is being extracted");
-          entry = in.getNextTarEntry();
           continue;
         }
         LOG.debug("Extracting file: {} to: {}", entry.getName(), targetFile.getAbsolutePath());

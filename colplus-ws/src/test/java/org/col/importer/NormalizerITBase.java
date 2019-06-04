@@ -41,6 +41,7 @@ import static org.junit.Assert.*;
 abstract class NormalizerITBase {
   
   protected NeoDb store;
+  private int attempt;
   private NormalizerConfig cfg;
   private final DataFormat format;
   private final Supplier<NameIndex> nameIndexSupplier;
@@ -60,6 +61,7 @@ abstract class NormalizerITBase {
     cfg = new NormalizerConfig();
     cfg.archiveDir = Files.createTempDir();
     cfg.scratchDir = Files.createTempDir();
+    attempt = 1;
   }
 
   @After
@@ -80,27 +82,30 @@ abstract class NormalizerITBase {
     URL url = getClass().getResource("/" + format.name().toLowerCase() + "/" + datasetKey);
     normalize(Paths.get(url.toURI()));
   }
-
+  
   public void normalize(URI url) throws Exception {
     // download an decompress
     ExternalSourceUtil.consumeSource(url, this::normalize);
   }
-
+  
   protected void normalize(Path arch) {
     try {
-      store = NeoDbFactory.create(1, 1, cfg);
+      store = NeoDbFactory.create(1, attempt, cfg);
       Dataset d = new Dataset();
       d.setKey(1);
       d.setDataFormat(format);
       store.put(d);
       Normalizer norm = new Normalizer(store, arch, nameIndexSupplier.get(), ImageService.passThru());
       norm.call();
-
+    
       // reopen
-      store = NeoDbFactory.open(1, 1,  cfg);
-
+      store = NeoDbFactory.open(1, attempt,  cfg);
+    
     } catch (IOException | InterruptedException e) {
       throw new RuntimeException(e);
+
+    } finally {
+      attempt++;
     }
   }
   
