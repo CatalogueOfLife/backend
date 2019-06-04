@@ -407,10 +407,11 @@ INSERT INTO dataset (key, origin, type, code, title, alias, import_frequency, cr
 VALUES ('1000', 0, 1, null, 'Col Hierarchy', 'ColH', 1, 0, 0, 3, 'https://github.com/Sp2000/col-hierarchy/archive/master.zip');
 
 
-
 --------------------------
 -- TEST DATASETS
 --   since late 2018 managed in their own github repos
+-- use ID range 1700-1799
+ALTER SEQUENCE dataset_key_seq RESTART WITH 1700;
 --------------------------
 
 -- for enums we use the int ordinal, i.e. array index starting with 0:
@@ -422,9 +423,6 @@ VALUES ('1000', 0, 1, null, 'Col Hierarchy', 'ColH', 1, 0, 0, 3, 'https://github
 --          0=bacterial, 1=botanical, 2=cultivars, 3=virus, 4=zoological
 -- data_format:  http://api.col.plus/vocab/dataformat
 --          0=dwca, 1=acef, 2=tcs, 3=coldp
-
--- use keys from range 1000-1500 for CoL GSD IDs+1000		      
-			      
 INSERT INTO dataset (origin, type, code, title, import_frequency, created_by, modified_by, data_format, data_access) VALUES
 (0, 4, 1, 'ColDP Example',           7, 0, 0, 3, 'https://github.com/Sp2000/coldp/archive/master.zip'),
 (0, 4, 4, 'Testing Data ACEF',       7, 0, 0, 1, 'https://github.com/Sp2000/data-testing/archive/master.zip'),
