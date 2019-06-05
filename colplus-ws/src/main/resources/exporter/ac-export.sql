@@ -3,8 +3,28 @@ DROP TABLE IF EXISTS __ref_keys;
 DROP TABLE IF EXISTS __tax_keys;
 DROP TABLE IF EXISTS __classification;
 DROP TABLE IF EXISTS __classification2;
+DROP TABLE IF EXISTS __coverage;
+DROP TABLE IF EXISTS __coverage2;
 DROP SEQUENCE IF EXISTS __record_id_seq;
 DROP SEQUENCE IF EXISTS __unassigned_seq;
+
+
+CREATE TABLE __coverage AS
+    -- ATTACH MODE
+    SELECT s.dataset_key, subject_rank AS rank, subject_name AS name, array_to_string(classification(3, target_id, true), ' - ') AS classification
+    FROM sector s JOIN name_usage_3 t ON s.target_id=t.id
+    WHERE s.mode=0
+  UNION ALL
+    -- MERGE MODE
+    SELECT s.dataset_key, target_rank AS rank, target_name AS name, array_to_string(classification(3, target_id, false), ' - ') AS classification
+    FROM sector s JOIN name_usage_3 t ON s.target_id=t.id
+    WHERE s.mode=1;
+
+CREATE TABLE __coverage2 AS
+    SELECT dataset_key, string_agg(classification || ' - ' || groups, ';\n') AS coverage FROM (
+        SELECT dataset_key, classification, string_agg(name, ', ') AS groups FROM __coverage GROUP BY dataset_key, classification
+    ) AS foo GROUP BY dataset_key;
+CREATE INDEX ON __coverage2 (dataset_key);
 
 
 
@@ -19,7 +39,7 @@ SELECT DISTINCT ON (d.key)
  array_to_string(d.organisations, '; ') AS organization,
  d.contact AS contact_person,
  d.group AS taxa,
- NULL AS taxonomic_coverage,
+ cov.coverage AS taxonomic_coverage,
  d.description AS abstract,
  d.version AS version,
  coalesce(d.released, CURRENT_DATE) AS release_date,
@@ -33,11 +53,13 @@ SELECT DISTINCT ON (d.key)
  i.vernacular_count AS common_names,
  i.name_count AS total_names,
  0 AS is_new,
- coverage AS coverage,
+ d.coverage AS coverage,
  completeness AS completeness,
  confidence AS confidence
 FROM dataset d
     JOIN dataset_import i ON i.dataset_key=d.key
+    LEFT JOIN __sectors s ON s.dataset_key=d.key
+    LEFT JOIN __coverage2 cov ON cov.dataset_key=d.key
 WHERE d.key IN (SELECT distinct dataset_key FROM sector)
 ORDER BY d.key ASC, i.attempt DESC
 )
@@ -353,6 +375,8 @@ DROP TABLE __ref_keys;
 DROP TABLE __tax_keys;
 DROP TABLE __classification;
 DROP TABLE __classification2;
+DROP TABLE __coverage;
+DROP TABLE __coverage2;
 DROP TABLE IF EXISTS __ranks;
 DROP SEQUENCE __record_id_seq;
 DROP SEQUENCE __unassigned_seq;
