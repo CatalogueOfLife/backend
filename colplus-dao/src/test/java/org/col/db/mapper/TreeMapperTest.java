@@ -5,6 +5,7 @@ import java.util.List;
 import org.col.api.TestEntityGenerator;
 import org.col.api.model.*;
 import org.col.db.MybatisTestUtils;
+import org.gbif.nameparser.api.Rank;
 import org.junit.Test;
 
 import static org.col.api.vocab.Datasets.DRAFT_COL;
@@ -150,6 +151,39 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
     noSectors(noSectorKeys(nodes));
   }
   
+  SpeciesEstimate newEstimate(String id){
+    SpeciesEstimate s = new SpeciesEstimate();
+    s.setEstimate(5678);
+    SimpleName sn = new SimpleName(id, "Abies alba", Rank.SPECIES);
+    s.setSubject(sn);
+    s.applyUser(TestEntityGenerator.USER_USER);
+    return s;
+  }
+  
+  @Test
+  public void withEstimates() {
+    
+    MybatisTestUtils.populateDraftTree(session());
+  
+    EstimateMapper em = mapper(EstimateMapper.class);
+    
+    SpeciesEstimate s1 = newEstimate("t1");
+    em.create(s1);
+  
+    SpeciesEstimate s2 = newEstimate("t1");
+    em.create(s2);
+  
+    SpeciesEstimate s3 = newEstimate("t2");
+    em.create(s3);
+
+    List<TreeNode> nodes = mapper().root(DRAFT_COL, new Page());
+    assertEquals(1, nodes.size());
+    assertEquals(2, nodes.get(0).getEstimates().size());
+    for (SpeciesEstimate s : nodes.get(0).getEstimates()) {
+      assertEquals(s1.getEstimate(), s.getEstimate());
+    }
+  }
+
   /**
    * Tests for equality but removes user dates which are usually set by the db
    */

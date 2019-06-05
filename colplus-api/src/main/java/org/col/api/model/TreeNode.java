@@ -1,5 +1,6 @@
 package org.col.api.model;
 
+import java.util.List;
 import java.util.Objects;
 
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
@@ -19,7 +20,7 @@ public class TreeNode implements DatasetEntity {
   private Rank rank;
   private TaxonomicStatus status;
   private int childCount;
-  private SpeciesEstimate estimate;
+  private List<SpeciesEstimate> estimates;
   private Integer sectorKey;
   private Decision decision;
   private Int2IntOpenHashMap datasetSectors;
@@ -98,12 +99,12 @@ public class TreeNode implements DatasetEntity {
     this.childCount = childCount;
   }
   
-  public SpeciesEstimate getEstimate() {
-    return estimate;
+  public List<SpeciesEstimate> getEstimates() {
+    return estimates;
   }
   
-  public void setEstimate(SpeciesEstimate estimate) {
-    this.estimate = estimate;
+  public void setEstimates(List<SpeciesEstimate> estimates) {
+    this.estimates = estimates;
   }
   
   public Integer getSectorKey() {
@@ -142,7 +143,7 @@ public class TreeNode implements DatasetEntity {
         Objects.equals(name, treeNode.name) &&
         rank == treeNode.rank &&
         status == treeNode.status &&
-        Objects.equals(estimate, treeNode.estimate) &&
+        Objects.equals(estimates, treeNode.estimates) &&
         Objects.equals(sectorKey, treeNode.sectorKey) &&
         Objects.equals(decision, treeNode.decision) &&
         Objects.equals(datasetSectors, treeNode.datasetSectors);
@@ -150,6 +151,6 @@ public class TreeNode implements DatasetEntity {
   
   @Override
   public int hashCode() {
-    return Objects.hash(datasetKey, id, parentId, name, rank, status, childCount, estimate, sectorKey, decision, datasetSectors);
+    return Objects.hash(datasetKey, id, parentId, name, rank, status, childCount, estimates, sectorKey, decision, datasetSectors);
   }
 }
