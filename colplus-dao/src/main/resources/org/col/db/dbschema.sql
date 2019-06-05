@@ -283,7 +283,8 @@ CREATE TABLE decision (
 
 CREATE TABLE estimate (
   key serial PRIMARY KEY,
-  subject_id TEXT UNIQUE,
+  subject_id TEXT,
+  subject_kingdom TEXT,
   subject_name TEXT,
   subject_authorship TEXT,
   subject_rank rank,
@@ -539,8 +540,6 @@ CREATE AGGREGATE array_agg_nonull(ANYELEMENT) (
     STYPE = ANYARRAY,
     INITCOND = '{}'
 );
-
-
 
 -- INDICES for non partitioned tables
 CREATE index ON dataset (gbif_key);

@@ -9,9 +9,10 @@ DROP SEQUENCE IF EXISTS __unassigned_seq;
 
 
 COPY (
+(
 SELECT DISTINCT ON (d.key)
  coalesce(d.alias || ': ' || d.title, d.title) AS database_name_displayed,
- d.key AS record_id,
+ d.key - 1000 AS record_id,
  coalesce(d.alias, d.title) AS database_name,
  d.title AS database_full_name,
  d.website AS web_site,
@@ -39,6 +40,38 @@ FROM dataset d
     JOIN dataset_import i ON i.dataset_key=d.key
 WHERE d.key IN (SELECT distinct dataset_key FROM sector)
 ORDER BY d.key ASC, i.attempt DESC
+)
+
+UNION ALL
+
+SELECT
+ 'CoL Management Classification' AS database_name_displayed,
+ 500 AS record_id,
+ '' AS database_name,
+ 'A Higher Level Classification of All Living Organisms' AS database_full_name,
+ 'http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0119248' AS web_site,
+ 'CoL Hierarchy Panel' AS organization,
+ NULL AS contact_person,
+ 'Biota' AS taxa,
+ 'Animalia, Archaea, Bacteria, Chromista, Fungi, Plantae, Protozoa' AS taxonomic_coverage,
+ --'abs' AS abstract,
+ '"We present a consensus classification of life to embrace the more than 1.6 million species already provided by more than 3,000 taxonomists? expert opinions in a unified and coherent, hierarchically ranked system known as the Catalogue of Life (CoL). The intent of this collaborative effort is to provide a hierarchical classification serving not only the needs of the CoL''s database providers but also the diverse public-domain user community, most of whom are familiar with the Linnaean conceptual system of ordering taxon relationships. This classification is neither phylogenetic nor evolutionary but instead represents a consensus view that accommodates taxonomic choices and practical compromises among diverse expert opinions, public usages, and conflicting evidence about the boundaries between taxa and the ranks of major taxa, including kingdoms. Certain key issues, some not fully resolved, are addressed in particular. Beyond its immediate use as a management tool for the CoL and ITIS (Integrated Taxonomic Information System), it is immediately valuable as a reference for taxonomic and biodiversity research, as a tool for societal communication, and as a classificatory ""backbone"" for biodiversity databases, museum collections, libraries, and textbooks. Such a modern comprehensive hierarchy has not previously existed at this level of specificity." <i>PLoS ONE 10(4): e0119248. doi:10.1371/jou</i>' AS abstract,
+ '2015' AS version,
+ '2015-04-29' AS release_date,
+ NULL AS SpeciesCount,
+ NULL AS SpeciesEst,
+ 'Ruggiero M.A., Gordon D.P., Orrell T.M., Bailly N., Bourgoin T., Brusca R.C., Cavalier-Smith T., Guiry M.D., Kirk P.M.' AS authors_editors,
+ NULL AS accepted_species_names,
+ NULL AS accepted_infraspecies_names,
+ NULL AS species_synonyms,
+ NULL AS infraspecies_synonyms,
+ NULL AS common_names,
+ NULL AS total_names,
+ 0 AS is_new,
+ NULL AS coverage,
+ NULL AS completeness,
+ NULL AS confidence
+
 ) TO 'databases.csv';
 
 
@@ -53,7 +86,7 @@ COPY (
     csl#>>'{issued,literal}' AS year, 
     csl->>'title' AS title, 
     csl->>'containerTitle' AS source, 
-    s.dataset_key AS database_id, 
+    coalesce(s.dataset_key, 1500) - 1000 AS database_id,
     r.id AS reference_code
   FROM reference_{{datasetKey}} r
     JOIN __ref_keys rk ON rk.id=r.id
@@ -76,7 +109,7 @@ INSERT INTO __scrutinizer (name, dataset_key)
             LEFT JOIN sector s ON t.sector_key=s.key
         WHERE t.according_to IS NOT NULL;
 COPY (
-    SELECT key AS record_id, name AS specialist_name, null AS specialist_code, dataset_key AS database_id FROM __scrutinizer
+    SELECT key AS record_id, name AS specialist_name, null AS specialist_code, coalesce(dataset_key, 1500) - 1000 AS database_id FROM __scrutinizer
 ) TO 'specialists.csv';
 
 
@@ -93,7 +126,7 @@ COPY (
     SELECT NULL AS record_id, 
         id AS name_code, 
         CASE WHEN lfz=0 THEN 'brackish' WHEN lfz=1 THEN 'freshwater' WHEN lfz=2 THEN 'marine' WHEN lfz=3 THEN 'terrestrial' END AS lifezone, 
-        dataset_key AS database_id
+        coalesce(dataset_key, 1500) - 1000 AS database_id
     FROM lifezones_x
 ) TO 'lifezone.csv';
 
@@ -183,7 +216,7 @@ SELECT key AS record_id,
       coalesce("order", 'Not assigned') AS "order",
       coalesce(family, 'Not assigned') AS family,
       superfamily, 
-      dataset_key AS database_id, 
+      coalesce(dataset_key, 1500) - 1000 AS database_id,
       id AS family_code, 
       1 AS is_accepted_name
     FROM __classification
@@ -213,7 +246,7 @@ SELECT
        WHEN t.status=4 THEN 3
   END AS sp2000_status_id, -- 1=ACCEPTED, 2=AMBIGUOUS_SYNONYM, 3=MISAPPLIED, 4=PROVISIONALLY_ACCEPTED, 5=SYNONYM
                            -- Java: ACCEPTED,PROVISIONALLY_ACCEPTED,SYNONYM,AMBIGUOUS_SYNONYM,MISAPPLIED
-  CASE WHEN t.is_synonym THEN cs.dataset_key ELSE c.dataset_key END AS database_id,
+  CASE WHEN t.is_synonym THEN coalesce(cs.dataset_key, 1500) - 1000 ELSE coalesce(c.dataset_key, 1500) - 1000 END AS database_id,
   sc.key AS specialist_id,
   cf.key AS family_id,
   NULL AS specialist_code,
@@ -246,7 +279,7 @@ COPY (
     v.country, 
     NULL AS area, 
     rk.key as reference_id,
-    s.dataset_key AS database_id, 
+    coalesce(s.dataset_key, 1500) - 1000 AS database_id,
     NULL AS is_infraspecies,
     r.id as reference_code 
   FROM vernacular_name_{{datasetKey}} v
@@ -264,7 +297,7 @@ COPY (
     d.area AS distribution, 
     CASE WHEN d.gazetteer=0 THEN 'TDWG' WHEN d.gazetteer=1 THEN 'ISO' WHEN d.gazetteer=2 THEN 'FAO' ELSE 'TEXT' END AS StandardInUse,
     CASE WHEN d.status=0 THEN 'Native' WHEN d.status=1 THEN 'Domesticated' WHEN d.status=2 THEN 'Alien' WHEN d.status=3 THEN 'Uncertain' END AS DistributionStatus,
-    s.dataset_key AS database_id
+    coalesce(s.dataset_key, 1500) - 1000 AS database_id
   FROM distribution_{{datasetKey}} d
       JOIN name_usage_{{datasetKey}} t ON t.id=d.taxon_id
       LEFT JOIN sector s ON t.sector_key=s.key
@@ -278,7 +311,7 @@ COPY (
     'NomRef' AS reference_type, -- NomRef, TaxAccRef, ComNameRef
     rk.key AS reference_id,
     r.id AS reference_code,
-    s.dataset_key AS database_id
+    coalesce(s.dataset_key, 1500) - 1000 AS database_id
   FROM name_{{datasetKey}} n
     JOIN name_usage_{{datasetKey}} t ON t.name_id=n.id
     JOIN reference_{{datasetKey}} r ON r.id=n.published_in_id
@@ -292,7 +325,7 @@ COPY (
     'TaxAccRef' AS reference_type, -- NomRef, TaxAccRef, ComNameRef
     rk.key AS reference_id,
     r.id AS reference_code,
-    s.dataset_key AS database_id
+    coalesce(s.dataset_key, 1500) - 1000 AS database_id
   FROM usage_reference_{{datasetKey}} tr
     JOIN reference_{{datasetKey}} r ON r.id=tr.reference_id
     JOIN __ref_keys rk ON rk.id=r.id

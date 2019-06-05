@@ -173,6 +173,15 @@ public class InitDbCmd extends ConfiguredCommand<WsServerConfig> {
         .put("created_by", Users.DB_INIT)
         .put("modified_by", Users.DB_INIT)
         .build());
+    PgCopyUtils.copy(pgc, "reference_"+Datasets.DRAFT_COL, "/org/col/db/draft/reference.csv", ImmutableMap.<String, Object>builder()
+        .put("dataset_key", Datasets.DRAFT_COL)
+        .put("created_by", Users.DB_INIT)
+        .put("modified_by", Users.DB_INIT)
+        .build());
+    PgCopyUtils.copy(pgc, "estimate", "/org/col/db/draft/estimate.csv", ImmutableMap.<String, Object>builder()
+        .put("created_by", Users.DB_INIT)
+        .put("modified_by", Users.DB_INIT)
+        .build());
     // id,homotypic_name_id,rank,scientific_name,uninomial
     PgCopyUtils.copy(pgc, "name_"+Datasets.DRAFT_COL, "/org/col/db/draft/name.csv", ImmutableMap.<String, Object>builder()
           .put("dataset_key", Datasets.DRAFT_COL)
