@@ -123,7 +123,7 @@ public class NeoDb implements ReferenceStore {
           .valueSerializer(new MapDbObjectSerializer(Reference.class, pool, 128))
           .createOrOpen();
       refIndexCitation = mapDb.hashMap("refIndexCitation")
-          .keySerializer(Serializer.STRING_ASCII)
+          .keySerializer(Serializer.STRING)
           .valueSerializer(Serializer.STRING)
           .createOrOpen();
       

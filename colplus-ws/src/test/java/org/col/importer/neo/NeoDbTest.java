@@ -4,6 +4,8 @@ import java.io.IOException;
 
 import com.google.common.io.Files;
 import org.apache.commons.io.FileUtils;
+import org.col.api.TestEntityGenerator;
+import org.col.api.model.Reference;
 import org.col.api.vocab.TaxonomicStatus;
 import org.col.config.NormalizerConfig;
 import org.col.importer.neo.model.NeoName;
@@ -222,6 +224,26 @@ public class NeoDbTest {
       //assertEquals(tr, t.verbatim.getExtensionRecords(AcefTerm.Distribution).getUsage(0));
     }
     
+  }
+  
+  
+  /**
+   * https://github.com/Sp2000/colplus-backend/issues/389
+   */
+  @Test
+  public void createCyrillicRef() throws Exception {
+    try (Transaction tx = db.getNeo().beginTx()) {
+      // this citation has a nearly invisible cyrillic o that cannot be folded into ASCII
+      Reference r = TestEntityGenerator.newReference();
+      r.setCitation("Contribuciоnes al conocimiento de la flora del Gondwana Superior en la Argentina. XXXIII \"Ginkgoales\" de los Estratos de Potrerillos en la Precordillera de Mendoza.");
+      db.create(r);
+  
+      r = TestEntityGenerator.newReference();
+      r.setCitation("Mandarin:哦诶艾诶艾哦屁杰诶  Japanese:ｪｺｻｪ ｷｼｪｩｪ ｺｪｹ ｻｼ ｴｮｨｱ  Other: ወለi էዠለi   mබƖ tƕබƖ   ꀪꋬꊛ ꓄ꈚꋬꊛ");
+      db.create(r);
+
+      tx.success();
+    }
   }
 
   public static NeoUsage taxon(String id) {
