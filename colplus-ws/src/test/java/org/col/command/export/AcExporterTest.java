@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.common.io.Files;
+import org.apache.commons.io.FileUtils;
 import org.col.WsServerConfig;
 import org.col.api.vocab.Datasets;
 import org.col.common.io.DevNullWriter;
@@ -37,10 +38,10 @@ public class AcExporterTest {
   
   @After
   public void cleanup()  {
-    //FileUtils.deleteQuietly(cfg.downloadDir);
-    //FileUtils.deleteQuietly(cfg.normalizer.scratchDir);
+    FileUtils.deleteQuietly(cfg.downloadDir);
+    FileUtils.deleteQuietly(cfg.normalizer.scratchDir);
     if (arch != null) {
-      //FileUtils.deleteQuietly(arch);
+      FileUtils.deleteQuietly(arch);
     }
   }
   

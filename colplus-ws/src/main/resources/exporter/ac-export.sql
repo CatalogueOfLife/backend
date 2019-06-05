@@ -58,7 +58,6 @@ SELECT DISTINCT ON (d.key)
  confidence AS confidence
 FROM dataset d
     JOIN dataset_import i ON i.dataset_key=d.key
-    LEFT JOIN __sectors s ON s.dataset_key=d.key
     LEFT JOIN __coverage2 cov ON cov.dataset_key=d.key
 WHERE d.key IN (SELECT distinct dataset_key FROM sector)
 ORDER BY d.key ASC, i.attempt DESC
