@@ -160,9 +160,9 @@ public class TestDataRule extends ExternalResource {
     LOG.info("Loading {} test data", testData);
     super.before();
     session = sqlSessionFactorySupplier.get().openSession(false);
+    truncate();
     // create required partitions to load data
     partition();
-    truncate();
     loadData(false);
     // finally create a test user to use in tests
     session.getMapper(UserMapper.class).create(TEST_USER);
@@ -186,6 +186,9 @@ public class TestDataRule extends ExternalResource {
     try (java.sql.Statement st = session.getConnection().createStatement()) {
       st.execute("TRUNCATE coluser CASCADE");
       st.execute("TRUNCATE dataset CASCADE");
+      st.execute("TRUNCATE sector CASCADE");
+      st.execute("TRUNCATE estimate CASCADE");
+      st.execute("TRUNCATE decision  CASCADE");
       session.getConnection().commit();
     }
   }
