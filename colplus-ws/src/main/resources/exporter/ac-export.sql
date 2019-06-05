@@ -74,7 +74,6 @@ SELECT
 
 ) TO 'databases.csv';
 
-
 -- create reference int keys
 CREATE TABLE __ref_keys (key serial, id text UNIQUE);
 INSERT INTO __ref_keys (id) SELECT id FROM reference_{{datasetKey}};
@@ -94,6 +93,20 @@ COPY (
     
 ) TO 'references.csv';
 
+
+-- estimates
+COPY (
+  SELECT e.subject_id AS name_code,
+    e.subject_kingdom AS kingdom,
+    e.subject_name AS name,
+    e.subject_rank AS rank,
+    e.estimate,
+    r.citation AS source,
+    e.created AS inserted,
+    e.modified AS updated
+  FROM estimate e
+    LEFT JOIN reference_{{datasetKey}} r ON r.id=e.reference_id
+) TO 'estimates.csv';
 
 
 -- create usage int keys using a reusable sequence
