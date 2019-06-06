@@ -54,7 +54,7 @@ abstract class SectorRunnable implements Runnable {
       // #ssert that target actually exists. Subject might be bad - not needed for deletes!
       assertTargetID(tm);
       // lookup next attempt
-      List<SectorImport> imports = session.getMapper(SectorImportMapper.class).list(s.getKey(), null, new Page(0,1));
+      List<SectorImport> imports = session.getMapper(SectorImportMapper.class).list(s.getKey(), null,null, new Page(0,1));
       state.setAttempt(imports == null || imports.isEmpty() ? 1 : imports.get(0).getAttempt() + 1);
       state.setSectorKey(s.getKey());
       state.setDatasetKey(datasetKey);
