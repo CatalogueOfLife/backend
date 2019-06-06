@@ -1,9 +1,7 @@
 package org.col.importer.reference;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
@@ -42,11 +40,14 @@ public class ReferenceFactory {
   private static final String initials = "(?:\\p{Lu}(?:\\. ?| ))*";
   // comma separated authors with (initials/firstname) surnames
   private static final Splitter AUTHOR_SPLITTER = Splitter.on(CharMatcher.anyOf(",&")).trimResults();
-  private static final Pattern AUTHORS_PATTERN = Pattern.compile("^("+initials+") *("+ name +")$");
-  private static final Pattern AUTHORS_PREFIX = Pattern.compile("^((?:\\p{Ll}{1,5} ){1,2})(\\p{Lu})");
+  private static final Pattern AUTHOR_PATTERN = Pattern.compile("^("+initials+") *("+ name +")$");
+  // comma separated authors with surname, initials
+  private static final Pattern AUTHOR_PATTERN_SN_FN = Pattern.compile("^(" + name + "), *(" + initials + ")$");
   // semicolon separated authors with lastname, firstnames
   private static final Splitter AUTHOR_SPLITTER_SEMI = Splitter.on(';').trimResults();
   private static final Pattern AUTHORS_PATTERN_SEMI = Pattern.compile("^("+ name +")(?:, ?("+initials+"|"+name+"))?$");
+  // author parsing
+  private static final Pattern AUTHOR_PREFIX = Pattern.compile("^((?:\\p{Ll}{1,5} ){1,2})(\\p{Lu})");
 
   private final Integer datasetKey;
   private final ReferenceStore store;
@@ -291,15 +292,16 @@ public class ReferenceFactory {
    * @param authorString
    * @return
    */
-  private static CslName[] parseAuthors(String authorString, IssueContainer issues) {
+  @VisibleForTesting
+  static CslName[] parseAuthors(String authorString, IssueContainer issues) {
     if (StringUtils.isBlank(authorString)) {
       return null;
     }
     authorString = NORM_WHITESPACE.matcher(authorString).replaceAll(" ");
     List<CslName> names = new ArrayList<>();
-    // comma with initials?
+    // comma with initials in front?
     for (String a : AUTHOR_SPLITTER.split(authorString)) {
-      Matcher m = AUTHORS_PATTERN.matcher(a);
+      Matcher m = AUTHOR_PATTERN.matcher(a);
       if (m.find()) {
         names.add(buildName(m.group(1), m.group(2)));
       } else {
@@ -307,15 +309,33 @@ public class ReferenceFactory {
         break;
       }
     }
-    // semicolons?
-    if (names.isEmpty() && authorString.contains(";")) {
-      for (String a : AUTHOR_SPLITTER_SEMI.split(authorString)) {
-        Matcher m = AUTHORS_PATTERN_SEMI.matcher(a);
-        if (m.find()) {
-          names.add(buildName(m.group(2), m.group(1)));
-        } else {
-          names.clear();
-          break;
+    if (names.isEmpty()) {
+      // comma with initials behind?
+      Iterator<String> iter = AUTHOR_SPLITTER.split(authorString).iterator();
+      try {
+        while (iter.hasNext()) {
+          String a = iter.next() + "," + iter.next();
+          Matcher m = AUTHOR_PATTERN_SN_FN.matcher(a);
+          if (m.find()) {
+            names.add(buildName(m.group(2), m.group(1)));
+          } else {
+            names.clear();
+            break;
+          }
+        }
+      } catch (NoSuchElementException e) {
+        names.clear();
+      }
+      // semicolons?
+      if (names.isEmpty() && authorString.contains(";")) {
+        for (String a : AUTHOR_SPLITTER_SEMI.split(authorString)) {
+          Matcher m = AUTHORS_PATTERN_SEMI.matcher(a);
+          if (m.find()) {
+            names.add(buildName(m.group(2), m.group(1)));
+          } else {
+            names.clear();
+            break;
+          }
         }
       }
     }
@@ -335,7 +355,7 @@ public class ReferenceFactory {
     if (given != null) {
       name.setGiven(StringUtils.trimToNull(given));
     }
-    Matcher pre = AUTHORS_PREFIX.matcher(family);
+    Matcher pre = AUTHOR_PREFIX.matcher(family);
     if (pre.find()) {
       family = pre.replaceFirst(pre.group(2));
       name.setNonDroppingParticle(StringUtils.trimToNull(pre.group(1)));
