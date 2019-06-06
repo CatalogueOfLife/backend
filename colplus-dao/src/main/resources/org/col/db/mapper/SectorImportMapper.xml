@@ -57,7 +57,7 @@
 
     <select id="get" resultMap="sectorImportResultMap">
         SELECT <include refid="SELECT" />
-        FROM <include refid="FROM" />
+        FROM sector_import si
         WHERE sector_key=#{sectorKey} AND attempt=#{attempt}
     </select>
 
