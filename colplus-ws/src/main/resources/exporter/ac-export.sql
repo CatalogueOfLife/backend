@@ -102,10 +102,16 @@ INSERT INTO __ref_keys (id) SELECT id FROM reference_{{datasetKey}};
 -- references
 COPY (
   SELECT rk.key AS record_id, 
-    csl->>'author' AS author, 
-    csl#>>'{issued,literal}' AS year, 
-    csl->>'title' AS title, 
-    csl->>'containerTitle' AS source, 
+    coalesce(
+      csl-> 'author' ->0 ->> 'literal',
+      (SELECT string_agg((aJson->>'given') || ' ' || (aJson->>'family'), ', ') FROM jsonb_array_elements(csl->'author') AS aJson)
+    ) AS author,
+    coalesce(
+      csl#>>'{issued,literal}',
+      (csl#> '{issued,date-parts}'->0->0)::text
+    ) AS year,
+    csl->>'title' AS title,
+    csl->>'container-title  ' AS source,
     coalesce(s.dataset_key, 1500) - 1000 AS database_id,
     r.id AS reference_code
   FROM reference_{{datasetKey}} r
