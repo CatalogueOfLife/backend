@@ -49,6 +49,7 @@ public class AssemblyResource {
   @GET
   @Path("/sync")
   public ResultPage<SectorImport> list(@QueryParam("sectorKey") Integer sectorKey,
+                                       @QueryParam("datasetKey") Integer datasetKey,
                                        @QueryParam("state") List<SectorImport.State> states,
                                        @QueryParam("running") Boolean running,
                                        @Valid @BeanParam Page page,

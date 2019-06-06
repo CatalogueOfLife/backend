@@ -5,9 +5,9 @@
 <mapper namespace="org.col.db.mapper.SectorImportMapper">
 
     <sql id="SELECT">
-        type,
-        sector_key,
-        attempt,
+        si.type,
+        si.sector_key,
+        si.attempt,
         <include refid="org.col.db.mapper.DatasetImportMapper.metricsCols"/>
     </sql>
 
@@ -26,16 +26,22 @@
     </sql>
 
     <sql id="FROM">
-      sector_import
+      sector_import si
+        <if test="datasetKey != null">
+            JOIN sector s ON s.key=si.sector_key
+        </if>
     </sql>
 
     <sql id="WHERE">
         <where>
-            <if test="key != null">
-                sector_key = #{key}
+            <if test="sectorKey != null">
+                si.sector_key = #{sectorKey}
+            </if>
+            <if test="datasetKey != null">
+                AND s.dataset_key = #{datasetKey}
             </if>
             <if test="states != null &amp;&amp; !states.isEmpty()">
-                AND state IN
+                AND si.state IN
                 <foreach item="state" collection="states" open="(" separator="," close=")">
                     #{state}
                 </foreach>
@@ -52,7 +58,7 @@
     <select id="get" resultMap="sectorImportResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
-        WHERE sector_key=#{key} AND attempt=#{attempt}
+        WHERE sector_key=#{sectorKey} AND attempt=#{attempt}
     </select>
 
     <select id="count" resultType="integer">
