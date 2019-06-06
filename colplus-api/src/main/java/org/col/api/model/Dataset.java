@@ -10,7 +10,6 @@ import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import org.col.api.constraints.AbsoluteURI;
 import org.col.api.constraints.NotBlank;
@@ -72,7 +71,7 @@ public class Dataset extends DataEntity implements GlobalEntity {
   }
   
   public void setType(DatasetType type) {
-    this.type = Preconditions.checkNotNull(type);
+    this.type = type;
   }
   
   public void setKey(Integer key) {

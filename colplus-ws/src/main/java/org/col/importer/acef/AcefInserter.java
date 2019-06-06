@@ -228,6 +228,10 @@ public class AcefInserter extends NeoInserter {
       return SafeParser.parse(parser, v.get(term)).orNull();
     }
   
+    public <T> T get(Term term, Parser<T> parser, T defaultValue) {
+      return SafeParser.parse(parser, v.get(term)).orElse(defaultValue);
+    }
+
     public URI getURI(Term term) {
       return SafeParser.parse(UriParser.PARSER, v.get(term)).orNull();
     }

@@ -51,4 +51,12 @@ public class AcefInserterTest extends InserterBaseTest {
     assertNull(d.getCode());
   }
   
+  @Test
+  public void readMetadataBadType() throws Exception {
+    NeoInserter ins = setup("/acef/16");
+    Dataset d = ins.readMetadata().get();
+    
+    assertNull(d.getType());
+  }
+  
 }
