@@ -164,8 +164,9 @@ public class ReferenceFactoryTest {
     assertEquals(2008, (int) r.getYear());
     assertNotNull(r.getCsl());
     assertEquals("My great garden", r.getCsl().getTitle());
-    assertEquals("Dembridge, M.", r.getCsl().getAuthor()[0].getLiteral());
-    assertNotNull(r.getCsl().getIssued());
+    assertEquals("Dembridge", r.getCsl().getAuthor()[0].getFamily());
+    assertEquals("M.", r.getCsl().getAuthor()[0].getGiven());
+    assertEquals(2008, r.getCsl().getIssued().getDateParts()[0][0]);
     assertEquals("Journal of Herbs", r.getCsl().getContainerTitle());
   }
   
