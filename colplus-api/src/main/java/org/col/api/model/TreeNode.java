@@ -2,6 +2,7 @@ package org.col.api.model;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import org.col.api.vocab.TaxonomicStatus;
@@ -107,6 +108,19 @@ public class TreeNode implements DatasetEntity {
     this.estimates = estimates;
   }
   
+  /**
+   * @return the average of the listed estimates
+   */
+  public Integer getEstimate() {
+    if (estimates == null || estimates.isEmpty()) {
+      return null;
+    }
+    double avg = estimates.stream()
+        .filter(e -> e.getEstimate() != null)
+        .collect(Collectors.averagingInt(SpeciesEstimate::getEstimate));
+    return avg == 0 ? null : (int) avg;
+  }
+
   public Integer getSectorKey() {
     return sectorKey;
   }
