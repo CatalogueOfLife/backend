@@ -3,14 +3,26 @@ package org.col.assembly;
 import java.util.Objects;
 
 public class SyncRequest {
+  private Boolean all;
   private Integer sectorKey;
   private Integer datasetKey;
   
-  public SyncRequest() {
+  public static SyncRequest all() {
+    SyncRequest req = new SyncRequest();
+    req.setAll(true);
+    return req;
   }
   
-  public SyncRequest(Integer sectorKey) {
-    this.sectorKey = sectorKey;
+  public static SyncRequest sector(int sectorKey) {
+    SyncRequest req = new SyncRequest();
+    req.setSectorKey(sectorKey);
+    return req;
+  }
+  
+  public static SyncRequest dataset(int datasetKey) {
+    SyncRequest req = new SyncRequest();
+    req.setDatasetKey(datasetKey);
+    return req;
   }
   
   public Integer getSectorKey() {
@@ -29,17 +41,26 @@ public class SyncRequest {
     this.datasetKey = datasetKey;
   }
   
+  public Boolean getAll() {
+    return all;
+  }
+  
+  public void setAll(Boolean all) {
+    this.all = all;
+  }
+  
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     SyncRequest that = (SyncRequest) o;
-    return Objects.equals(sectorKey, that.sectorKey) &&
+    return Objects.equals(all, that.all) &&
+        Objects.equals(sectorKey, that.sectorKey) &&
         Objects.equals(datasetKey, that.datasetKey);
   }
   
   @Override
   public int hashCode() {
-    return Objects.hash(sectorKey, datasetKey);
+    return Objects.hash(all, sectorKey, datasetKey);
   }
 }

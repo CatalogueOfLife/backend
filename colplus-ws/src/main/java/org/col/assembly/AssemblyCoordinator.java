@@ -137,14 +137,18 @@ public class AssemblyCoordinator implements Managed {
   }
   
   public void sync(SyncRequest request, ColUser user) throws IllegalArgumentException {
-    if (request.getSectorKey() != null) {
-      syncSector(readSector(request.getSectorKey()), user);
-    }
-    if (request.getDatasetKey() != null) {
-      LOG.info("Sync all sectors in dataset {}", request.getDatasetKey());
-      try (SqlSession session = factory.openSession(true)) {
-        SectorMapper sm = session.getMapper(SectorMapper.class);
-        sm.processSectors(request.getDatasetKey(), (ctx) -> syncSector(ctx.getResultObject(), user));
+    if (request.getAll() != null && request.getAll()) {
+      syncAll(user);
+    } else {
+      if (request.getSectorKey() != null) {
+        syncSector(readSector(request.getSectorKey()), user);
+      }
+      if (request.getDatasetKey() != null) {
+        LOG.info("Sync all sectors in dataset {}", request.getDatasetKey());
+        try (SqlSession session = factory.openSession(true)) {
+          SectorMapper sm = session.getMapper(SectorMapper.class);
+          sm.processSectors(request.getDatasetKey(), (ctx) -> syncSector(ctx.getResultObject(), user));
+        }
       }
     }
   }
@@ -216,7 +220,7 @@ public class AssemblyCoordinator implements Managed {
   
   
   
-  public int syncAll(ColUser user) {
+  private int syncAll(ColUser user) {
     LOG.warn("Sync all sectors triggered by user {}", user);
     CollectResultHandler<Sector> collector = new CollectResultHandler<>();
     try (SqlSession session = factory.openSession(false)) {
