@@ -268,7 +268,7 @@ SELECT
   n.specific_epithet AS species,
   CASE WHEN n.rank > 'species'::rank THEN c.species_id ELSE NULL END AS infraspecies_parent_name_code,
   n.infraspecific_epithet AS infraspecies,
-  r.marker AS infraspecies_marker,  -- uses __ranks table created in AcExporter java code!
+  CASE WHEN n.rank > 'species'::rank THEN r.marker ELSE NULL END AS infraspecies_marker,  -- uses __ranks table created in AcExporter java code!
   n.authorship AS author,
   CASE WHEN t.is_synonym THEN t.parent_id ELSE t.id END AS accepted_name_code,
   t.remarks AS comment,
