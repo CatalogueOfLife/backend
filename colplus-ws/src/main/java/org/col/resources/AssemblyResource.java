@@ -63,9 +63,9 @@ public class AssemblyResource {
   @POST
   @Path("/sync")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void sync(@PathParam("catKey") int catKey, SyncRequest sector, @Auth ColUser user) {
+  public void sync(@PathParam("catKey") int catKey, SyncRequest request, @Auth ColUser user) {
     requireDraft(catKey);
-    assembly.syncSector(sector.getSectorKey(), user);
+    assembly.sync(request, user);
   }
   
   @POST

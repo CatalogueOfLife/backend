@@ -31,8 +31,8 @@ CREATE INDEX ON __coverage2 (dataset_key);
 COPY (
 (
 SELECT DISTINCT ON (d.key)
- coalesce(d.alias || ': ' || d.title, d.title) AS database_name_displayed,
  d.key - 1000 AS record_id,
+ coalesce(d.alias || ': ' || d.title, d.title) AS database_name_displayed,
  coalesce(d.alias, d.title) AS database_name,
  d.title AS database_full_name,
  d.website AS web_site,
@@ -66,8 +66,8 @@ ORDER BY d.key ASC, i.attempt DESC
 UNION ALL
 
 SELECT
- 'CoL Management Classification' AS database_name_displayed,
  500 AS record_id,
+ 'CoL Management Classification' AS database_name_displayed,
  '' AS database_name,
  'A Higher Level Classification of All Living Organisms' AS database_full_name,
  'http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0119248' AS web_site,
@@ -165,7 +165,7 @@ COPY (
 ) TO 'lifezone.csv';
 
 
--- create a flattened classification table for all usages incl taxa AND synonyms !!!
+-- create a flattened classification table for all usages incl taxa AND synonyms
 CREATE TABLE __classification AS (
 WITH RECURSIVE tree AS(
     SELECT

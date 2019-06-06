@@ -174,7 +174,7 @@
   <select id="processSectors" resultMap="sectorResultMap" parameterType="map" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
     SELECT <include refid="SELECT" />
     FROM <include refid="FROM" />
-    ORDER BY key
+    ORDER BY target_rank, key
   </select>
 
 </mapper>

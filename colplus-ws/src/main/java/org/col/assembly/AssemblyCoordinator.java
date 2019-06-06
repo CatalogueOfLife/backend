@@ -136,8 +136,17 @@ public class AssemblyCoordinator implements Managed {
     throw new IllegalArgumentException("Dataset empty. Cannot sync " + s);
   }
   
-  public void syncSector(int sectorKey, ColUser user) throws IllegalArgumentException {
-    syncSector(readSector(sectorKey), user);
+  public void sync(SyncRequest request, ColUser user) throws IllegalArgumentException {
+    if (request.getSectorKey() != null) {
+      syncSector(readSector(request.getSectorKey()), user);
+    }
+    if (request.getDatasetKey() != null) {
+      LOG.info("Sync all sectors in dataset {}", request.getDatasetKey());
+      try (SqlSession session = factory.openSession(true)) {
+        SectorMapper sm = session.getMapper(SectorMapper.class);
+        sm.processSectors(request.getDatasetKey(), (ctx) -> syncSector(ctx.getResultObject(), user));
+      }
+    }
   }
   
   private synchronized void syncSector(Sector s, ColUser user) throws IllegalArgumentException {
@@ -163,10 +172,14 @@ public class AssemblyCoordinator implements Managed {
     }
   }
   
-  private Sector readSector(int sectorKey) {
+  private Sector readSector(int sectorKey) throws IllegalArgumentException {
     try (SqlSession session = factory.openSession(true)) {
       SectorMapper sm = session.getMapper(SectorMapper.class);
-      return sm.get(sectorKey);
+      Sector s = sm.get(sectorKey);
+      if (s == null) {
+        throw new IllegalArgumentException("Sector "+sectorKey+" does not exist");
+      }
+      return s;
     }
   }
   
