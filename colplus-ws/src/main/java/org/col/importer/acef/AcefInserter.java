@@ -132,13 +132,15 @@ public class AcefInserter extends NeoInserter {
     String taxonID = emptyToNull(rec.get(AcefTerm.ID));
     String referenceID = emptyToNull(rec.get(AcefTerm.ReferenceID));
     String refTypeRaw = emptyToNull(rec.get(AcefTerm.ReferenceType)); // NomRef, TaxAccRef, ComNameRef
-    ReferenceTypeParser.ReferenceType refType = SafeParser.parse(ReferenceTypeParser.PARSER, refTypeRaw).orNull();
+    // we default to TaxAccRef, see https://github.com/Sp2000/colplus-repo/issues/33#issuecomment-500610124
+    ReferenceTypeParser.ReferenceType refType = SafeParser.parse(ReferenceTypeParser.PARSER, refTypeRaw)
+        .orElse(ReferenceTypeParser.ReferenceType.TaxAccRef, Issue.REFTYPE_INVALID, rec);
     
     // lookup NeoTaxon and reference
     NeoUsage u = store.usages().objByID(taxonID);
     Reference ref = store.refById(referenceID);
     Set<Issue> issues = EnumSet.noneOf(Issue.class);
-    if (u != null && ref != null && refType != null) {
+    if (u != null && ref != null) {
       switch (refType) {
         case NomRef:
           NeoName nn = store.nameByUsage(u.node);
@@ -165,9 +167,6 @@ public class AcefInserter extends NeoInserter {
       }
       if (ref == null) {
         issues.add(Issue.REFERENCE_ID_INVALID);
-      }
-      if (refType == null) {
-        issues.add(Issue.REFTYPE_INVALID);
       }
     }
     // persist new issue?
