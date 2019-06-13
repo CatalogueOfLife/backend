@@ -53,7 +53,7 @@ SELECT DISTINCT ON (d.key)
  i.vernacular_count AS common_names,
  i.name_count AS total_names,
  0 AS is_new,
- d.coverage AS coverage,
+ 'Global' AS coverage,
  completeness AS completeness,
  confidence AS confidence
 FROM dataset d
@@ -89,7 +89,7 @@ SELECT
  NULL AS common_names,
  NULL AS total_names,
  0 AS is_new,
- NULL AS coverage,
+ 'Global' AS coverage,
  NULL AS completeness,
  NULL AS confidence
 

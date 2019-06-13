@@ -136,7 +136,6 @@ CREATE TABLE dataset (
   data_format INTEGER,
   data_access TEXT,
   "group" TEXT,
-  coverage INTEGER,
   confidence INTEGER CHECK (confidence > 0 AND confidence <= 5),
   completeness INTEGER CHECK (completeness >= 0 AND completeness <= 100),
   origin INTEGER NOT NULL,
