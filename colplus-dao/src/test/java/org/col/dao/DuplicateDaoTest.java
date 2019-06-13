@@ -228,7 +228,7 @@ public class DuplicateDaoTest {
       } else {
         watch.resume();
       }
-      List<Duplicate> result = dao.findUsages(mode, minSize, datasetKey, sectorDatasetKey, category, ranks, status, authorshipDifferent, parentDifferent, withDecision, page);
+      List<Duplicate> result = dao.findUsages(mode, minSize, datasetKey, sectorDatasetKey, category, ranks, status, authorshipDifferent, parentDifferent, null, null, withDecision, page);
       watch.suspend();
       return result;
     }
@@ -239,7 +239,7 @@ public class DuplicateDaoTest {
     } else {
       watch.resume();
     }
-    List<Duplicate> result = dao.findNames(mode, minSize, datasetKey, category, ranks, authorshipDifferent, page);
+    List<Duplicate> result = dao.findNames(mode, minSize, datasetKey, category, ranks, null, null, authorshipDifferent, page);
     watch.suspend();
     return result;
   }

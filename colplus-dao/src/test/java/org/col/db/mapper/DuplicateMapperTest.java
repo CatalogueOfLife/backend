@@ -86,7 +86,7 @@ public class DuplicateMapperTest {
     Set<TaxonomicStatus> status = new HashSet<>();
     status.add(TaxonomicStatus.PROVISIONALLY_ACCEPTED);
     List<Duplicate.Mybatis> dups = mapper.duplicates(MatchingMode.STRICT, 2, datasetKey, null, NameCategory.BINOMIAL,
-        Sets.newHashSet(Rank.SPECIES), status, false, false, false,
+        Sets.newHashSet(Rank.SPECIES), status, false, false, null, null, false,
         new Page(0, 2));
     assertEquals(2, dups.size());
     for (Duplicate.Mybatis d : dups) {
@@ -98,12 +98,16 @@ public class DuplicateMapperTest {
   @Test
   public void duplicateNames() {
     List<Duplicate.Mybatis> dups = mapper.duplicateNames(MatchingMode.STRICT, 2, datasetKey,  NameCategory.BINOMIAL,
-        Sets.newHashSet(Rank.SPECIES), false, new Page(0, 2));
+        Sets.newHashSet(Rank.SPECIES), false, false, false, new Page(0, 2));
     assertEquals(2, dups.size());
     for (Duplicate.Mybatis d : dups) {
       assertFalse(d.getUsages().isEmpty());
       assertNotNull(d.getKey());
     }
+  
+    dups = mapper.duplicateNames(MatchingMode.STRICT, 2, datasetKey,  NameCategory.BINOMIAL,
+        Sets.newHashSet(Rank.SPECIES), false, true, true, new Page(0, 2));
+    assertEquals(0, dups.size());
   }
   
 }

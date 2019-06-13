@@ -78,24 +78,22 @@
         </choose>
     </sql>
 
-    <select id="duplicateNames" parameterType="map" resultMap="duplicateResultMap">
-        SELECT <include refid="keyCol" /> AS key, array_agg(n.id) AS ids
-        FROM name_${datasetKey} n
-        <where>
-            <if test="category != null">
-                <if test="category.highest != null">
-                    AND n.rank &gt;= #{category.highest}::rank
-                </if>
-                <if test="category.lowest != null">
-                    AND n.rank &lt;= #{category.lowest}::rank
-                </if>
+    <sql id="commonWhereClause">
+        <if test="category != null">
+            <if test="category.highest != null">
+                AND n.rank &gt;= #{category.highest}::rank
             </if>
-            <if test="ranks != null and !ranks.isEmpty()">
-                AND n.rank IN (<foreach collection="ranks" item="r" separator=",">#{r}::rank</foreach>)
+            <if test="category.lowest != null">
+                AND n.rank &lt;= #{category.lowest}::rank
             </if>
-        </where>
-        GROUP BY <include refid="keyCol" />
-        HAVING count(*) >= #{minSize}
+        </if>
+        <if test="ranks != null and !ranks.isEmpty()">
+            AND n.rank IN (<foreach collection="ranks" item="r" separator=",">#{r}::rank</foreach>)
+        </if>
+    </sql>
+
+    <sql id="commonHavingClause">
+        count(*) >= #{minSize}
         <if test="authorshipDifferent != null">
             AND count(
             DISTINCT <choose><when test="mode.name() == 'FUZZY'">n.authorship_normalized</when><otherwise>n.authorship</otherwise></choose>
@@ -105,6 +103,30 @@
             <!-- make sure all authorships are the same -->
             <if test="!authorshipDifferent">&lt;= 1</if>
         </if>
+        <if test="rankDifferent != null">
+            AND count(DISTINCT n.rank)
+            <!-- make sure at least 2 ranks are different -->
+            <if test="rankDifferent">&gt; 1</if>
+            <!-- make sure all ranks are the same -->
+            <if test="!rankDifferent">&lt;= 1</if>
+        </if>
+        <if test="codeDifferent != null">
+            AND count(DISTINCT n.code)
+            <!-- make sure at least 2 nom codes are different -->
+            <if test="codeDifferent">&gt; 1</if>
+            <!-- make sure all nom codes are the same -->
+            <if test="!codeDifferent">&lt;= 1</if>
+        </if>
+    </sql>
+
+    <select id="duplicateNames" parameterType="map" resultMap="duplicateResultMap">
+        SELECT <include refid="keyCol" /> AS key, array_agg(n.id) AS ids
+        FROM name_${datasetKey} n
+        <where>
+            <include refid="commonWhereClause"/>
+        </where>
+        GROUP BY <include refid="keyCol" />
+        HAVING <include refid="commonHavingClause"/>
         ORDER BY <include refid="keyCol" />
         <include refid="org.col.db.mapper.Common.limit" />
     </select>
@@ -117,23 +139,13 @@
                 LEFT JOIN decision ed ON ed.subject_id=u.id
             </if>
         <where>
-            <if test="category != null">
-                <if test="category.highest != null">
-                    AND n.rank &gt;= #{category.highest}::rank
-                </if>
-                <if test="category.lowest != null">
-                    AND n.rank &lt;= #{category.lowest}::rank
-                </if>
-            </if>
-            <if test="ranks != null and !ranks.isEmpty()">
-                AND n.rank IN (<foreach collection="ranks" item="r" separator=",">#{r}::rank</foreach>)
-            </if>
+            <include refid="commonWhereClause"/>
             <if test="status != null and !status.isEmpty()">
                 AND u.status IN (<foreach collection="status" item="st" separator=",">#{st}</foreach>)
             </if>
         </where>
         GROUP BY <include refid="keyCol" />
-        HAVING count(*) >= #{minSize}
+        HAVING <include refid="commonHavingClause"/>
         <if test="status != null and status.size() &gt; 1">
             <!-- make sure all requested status are covered at least once -->
             AND array_agg(u.status) @> array[<foreach collection="status" item="st" separator=",">#{st}</foreach>]
@@ -146,15 +158,6 @@
             AND count(distinct ed.key)
                 <if test="withDecision">&gt; 0</if>
                 <if test="!withDecision">= 0</if>
-        </if>
-        <if test="authorshipDifferent != null">
-            AND count(
-                DISTINCT <choose><when test="mode.name() == 'FUZZY'">n.authorship_normalized</when><otherwise>n.authorship</otherwise></choose>
-            )
-            <!-- make sure at least 2 authorships are different -->
-            <if test="authorshipDifferent">&gt; 1</if>
-            <!-- make sure all authorships are the same -->
-            <if test="!authorshipDifferent">&lt;= 1</if>
         </if>
         <if test="parentDifferent != null">
             AND count(DISTINCT u.parent_id)

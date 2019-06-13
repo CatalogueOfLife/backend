@@ -30,18 +30,20 @@ public class DuplicateDao {
     mapper = session.getMapper(DuplicateMapper.class);
   }
   
-  public List<Duplicate> findNames(MatchingMode mode, Integer minSize, int datasetKey, NameCategory category, Set<Rank> ranks, Boolean authorshipDifferent, Page page) {
-    return find(true, mode, minSize, datasetKey, null, category, ranks, null, authorshipDifferent, null, null, page);
+  public List<Duplicate> findNames(MatchingMode mode, Integer minSize, int datasetKey, NameCategory category, Set<Rank> ranks,
+                                   Boolean rankDifferent, Boolean codeDifferent, Boolean authorshipDifferent, Page page) {
+    return find(true, mode, minSize, datasetKey, null, category, ranks, null, authorshipDifferent, null, rankDifferent, codeDifferent,null, page);
   }
   
   public List<Duplicate> findUsages(MatchingMode mode, Integer minSize, int datasetKey, Integer sectorKey, NameCategory category, Set<Rank> ranks,
-                              Set<TaxonomicStatus> status, Boolean authorshipDifferent, Boolean parentDifferent, Boolean withDecision, Page page) {
-    return find(false, mode, minSize, datasetKey, sectorKey, category, ranks, status, authorshipDifferent, parentDifferent, withDecision, page);
+                              Set<TaxonomicStatus> status, Boolean authorshipDifferent, Boolean parentDifferent, Boolean rankDifferent,
+                                    Boolean codeDifferent, Boolean withDecision, Page page) {
+    return find(false, mode, minSize, datasetKey, sectorKey, category, ranks, status, authorshipDifferent, parentDifferent, rankDifferent, codeDifferent, withDecision, page);
   }
   
   private List<Duplicate> find(boolean compareNames, MatchingMode mode, Integer minSize, int datasetKey, Integer sectorKey, NameCategory category, Set<Rank> ranks,
-                              Set<TaxonomicStatus> status, Boolean authorshipDifferent, Boolean parentDifferent, Boolean withDecision,
-                              Page page) {
+                              Set<TaxonomicStatus> status, Boolean authorshipDifferent, Boolean parentDifferent,
+                               Boolean rankDifferent, Boolean codeDifferent, Boolean withDecision, Page page) {
     mode = ObjectUtils.defaultIfNull(mode, MatchingMode.STRICT);
     minSize = ObjectUtils.defaultIfNull(minSize, 2);
     Preconditions.checkArgument(minSize > 1, "minimum group size must at least be 2");
@@ -49,9 +51,9 @@ public class DuplicateDao {
     // load all duplicate usages or names
     List<Duplicate.Mybatis> dupsTmp;
     if (compareNames) {
-      dupsTmp = mapper.duplicateNames(mode, minSize, datasetKey, category, ranks, authorshipDifferent, page);
+      dupsTmp = mapper.duplicateNames(mode, minSize, datasetKey, category, ranks, authorshipDifferent, rankDifferent, codeDifferent, page);
     } else {
-      dupsTmp = mapper.duplicates(mode, minSize, datasetKey, sectorKey, category, ranks, status, authorshipDifferent, parentDifferent, withDecision, page);
+      dupsTmp = mapper.duplicates(mode, minSize, datasetKey, sectorKey, category, ranks, status, authorshipDifferent, parentDifferent, rankDifferent, codeDifferent, withDecision, page);
     }
     if (dupsTmp.isEmpty()) {
       return Collections.EMPTY_LIST;
