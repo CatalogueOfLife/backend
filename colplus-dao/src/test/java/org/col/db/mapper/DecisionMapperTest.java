@@ -7,7 +7,7 @@ import org.col.api.vocab.TaxonomicStatus;
 import org.junit.Test;
 
 import static org.col.api.TestEntityGenerator.DATASET11;
-import static org.col.api.TestEntityGenerator.newNameRef;
+import static org.col.api.TestEntityGenerator.newSimpleName;
 import static org.junit.Assert.assertEquals;
 
 public class DecisionMapperTest extends GlobalCRUDMapperTest<EditorialDecision, DecisionMapper> {
@@ -48,7 +48,7 @@ public class DecisionMapperTest extends GlobalCRUDMapperTest<EditorialDecision, 
   public static EditorialDecision create(int datasetKey) {
     EditorialDecision d = new EditorialDecision();
     d.setDatasetKey(datasetKey);
-    d.setSubject(newNameRef());
+    d.setSubject(TestEntityGenerator.newSimpleName());
     d.setMode(EditorialDecision.Mode.UPDATE);
     d.setName(TestEntityGenerator.newName());
     d.setStatus(TaxonomicStatus.AMBIGUOUS_SYNONYM);

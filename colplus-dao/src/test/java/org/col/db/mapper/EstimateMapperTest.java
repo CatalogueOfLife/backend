@@ -7,9 +7,6 @@ import org.col.api.model.SpeciesEstimate;
 import org.col.api.vocab.Datasets;
 import org.col.db.PgSetupRule;
 import org.junit.Before;
-import org.junit.Test;
-
-import static org.col.api.TestEntityGenerator.newNameRef;
 
 public class EstimateMapperTest extends GlobalCRUDMapperTest<SpeciesEstimate, EstimateMapper> {
   Reference ref;
@@ -30,7 +27,7 @@ public class EstimateMapperTest extends GlobalCRUDMapperTest<SpeciesEstimate, Es
   @Override
   SpeciesEstimate createTestEntity() {
     SpeciesEstimate d = new SpeciesEstimate();
-    d.setSubject(newNameRef());
+    d.setSubject(TestEntityGenerator.newSimpleNameWithoutStatusParent());
     d.setEstimate(34567);
     d.setReferenceId(ref.getId());
     d.setNote("I cannot remember why I did this.");

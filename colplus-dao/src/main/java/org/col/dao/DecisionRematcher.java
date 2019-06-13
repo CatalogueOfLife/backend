@@ -203,7 +203,7 @@ public class DecisionRematcher {
   }
   
   private NameUsage matchUniquely(Decision d, int datasetKey, SimpleName sn){
-    List<NameUsage> matches = mdao.matchDataset(sn, datasetKey);
+    List<? extends NameUsage> matches = mdao.matchDataset(sn, datasetKey);
     if (matches.isEmpty()) {
       LOG.warn("{} {} cannot be rematched to dataset {} - lost {}", d.getClass().getSimpleName(), d.getKey(), datasetKey, sn);
     } else if (matches.size() > 1) {

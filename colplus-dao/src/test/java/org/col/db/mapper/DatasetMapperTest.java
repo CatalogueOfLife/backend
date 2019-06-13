@@ -22,7 +22,7 @@ import org.javers.core.diff.Diff;
 import org.junit.Assert;
 import org.junit.Test;
 
-import static org.col.api.TestEntityGenerator.newNameRef;
+import static org.col.api.TestEntityGenerator.newSimpleName;
 import static org.junit.Assert.*;
 
 /**
@@ -210,8 +210,8 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
     Sector s = new Sector();
     s.setDatasetKey(datasetKey);
     s.setMode(Sector.Mode.ATTACH);
-    s.setSubject(newNameRef());
-    s.setTarget(newNameRef());
+    s.setSubject(TestEntityGenerator.newSimpleName());
+    s.setTarget(TestEntityGenerator.newSimpleName());
     s.setNote(RandomUtils.randomUnicodeString(128));
     s.setCreatedBy(TestEntityGenerator.USER_EDITOR.getKey());
     s.setModifiedBy(TestEntityGenerator.USER_EDITOR.getKey());

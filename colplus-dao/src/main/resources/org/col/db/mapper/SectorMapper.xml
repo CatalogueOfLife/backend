@@ -11,10 +11,14 @@
     ${alias}subject_name AS ${prefix}subject_name,
     ${alias}subject_authorship AS ${prefix}subject_authorship,
     ${alias}subject_rank AS ${prefix}subject_rank,
+    ${alias}subject_code AS ${prefix}subject_code,
+    ${alias}subject_status AS ${prefix}subject_status,
+    ${alias}subject_parent AS ${prefix}subject_parent,
     ${alias}target_id AS ${prefix}target_id,
     ${alias}target_name AS ${prefix}target_name,
     ${alias}target_authorship AS ${prefix}target_authorship,
     ${alias}target_rank AS ${prefix}target_rank,
+    ${alias}target_code AS ${prefix}target_code,
     ${alias}mode AS ${prefix}mode,
     ${alias}code AS ${prefix}code,
     ${alias}note AS ${prefix}note,
@@ -37,10 +41,14 @@
     subject_name,
     subject_authorship,
     subject_rank,
+    subject_code,
+    subject_status,
+    subject_parent,
     target_id,
     target_name,
     target_authorship,
     target_rank,
+    target_code,
     mode,
     code,
     note,
@@ -54,10 +62,14 @@
     #{subject.name},
     #{subject.authorship},
     #{subject.rank}::rank,
+    #{subject.code},
+    #{subject.status},
+    #{subject.parent},
     #{target.id},
     #{target.name},
     #{target.authorship},
     #{target.rank}::rank,
+    #{target.code},
     #{mode},
     #{code},
     #{note},
@@ -83,13 +95,9 @@
   <!-- A mapping to Distribution, mostly auto mapped -->
   <resultMap id="sectorResultMap" type="Sector" autoMapping="true">
     <id property="key" column="key" />
-    <association property="subject" javaType="SimpleName" resultMap="org.col.db.mapper.SectorMapper.refResultMap" columnPrefix="subject_" />
-    <association property="target" javaType="SimpleName" resultMap="org.col.db.mapper.SectorMapper.refResultMap" columnPrefix="target_" />
+    <association property="subject" javaType="SimpleName" autoMapping="true" columnPrefix="subject_" />
+    <association property="target" javaType="SimpleName" autoMapping="true" columnPrefix="target_" />
   </resultMap>
-
-  <resultMap id="refResultMap" type="SimpleName" autoMapping="true">
-  </resultMap>
-
 
   <select id="get" resultMap="sectorResultMap">
     SELECT <include refid="SELECT" />

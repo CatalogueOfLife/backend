@@ -10,6 +10,7 @@
     ${alias}subject_name AS ${prefix}subject_name,
     ${alias}subject_authorship AS ${prefix}subject_authorship,
     ${alias}subject_rank AS ${prefix}subject_rank,
+    ${alias}subject_code AS ${prefix}subject_code,
     ${alias}note AS ${prefix}note,
     ${alias}modified AS ${prefix}modified,
     ${alias}modified_by AS ${prefix}modified_by,
@@ -31,6 +32,7 @@
     subject_name,
     subject_authorship,
     subject_rank,
+    subject_code,
     note,
     modified,
     modified_by,
@@ -43,6 +45,7 @@
     #{subject.name},
     #{subject.authorship},
     #{subject.rank}::rank,
+    #{subject.code},
     #{note},
     now(),
     #{modifiedBy},
@@ -56,7 +59,7 @@
 
   <resultMap id="estimateResultMap" type="SpeciesEstimate" autoMapping="true">
     <id property="key" column="key" />
-    <association property="subject" javaType="SimpleName" resultMap="org.col.db.mapper.SectorMapper.refResultMap" columnPrefix="subject_" />
+    <association property="subject" javaType="SimpleName" autoMapping="true" columnPrefix="subject_" />
   </resultMap>
 
   <select id="get" resultMap="estimateResultMap">

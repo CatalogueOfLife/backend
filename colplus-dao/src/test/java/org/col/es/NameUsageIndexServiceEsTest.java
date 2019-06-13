@@ -77,12 +77,7 @@ public class NameUsageIndexServiceEsTest extends EsReadWriteTestBase {
       EsUtil.createIndex(client, index, getEsConfig().nameUsage);
       NameUsageIndexer indexer = new NameUsageIndexer(client, index);
       indexer.accept(createTaxa());
-      EsUtil.refreshIndex(client, index);
-      try (SynonymResultHandler srh = new SynonymResultHandler(indexer, 42)) {
-        for (NameUsageWrapper nuw : createSynonyms()) {
-          srh.handle(nuw);
-        }
-      }
+      indexer.accept(createSynonyms());
       EsUtil.refreshIndex(client, index);
 
       NameSearchRequest nsr = new NameSearchRequest();

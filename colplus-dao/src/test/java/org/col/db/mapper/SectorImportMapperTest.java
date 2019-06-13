@@ -25,8 +25,8 @@ public class SectorImportMapperTest extends MapperTestBase<SectorImportMapper> {
     s = new Sector();
     s.setDatasetKey(DATASET11.getKey());
     s.setMode(Sector.Mode.ATTACH);
-    s.setSubject(newNameRef());
-    s.setTarget(newNameRef());
+    s.setSubject(newSimpleName());
+    s.setTarget(newSimpleName());
     s.setNote(RandomUtils.randomUnicodeString(1024));
     s.setCreatedBy(TestEntityGenerator.USER_EDITOR.getKey());
     s.setModifiedBy(TestEntityGenerator.USER_EDITOR.getKey());
@@ -36,8 +36,8 @@ public class SectorImportMapperTest extends MapperTestBase<SectorImportMapper> {
     s2 = new Sector();
     s2.setDatasetKey(DATASET12.getKey());
     s2.setMode(Sector.Mode.ATTACH);
-    s2.setSubject(newNameRef());
-    s2.setTarget(newNameRef());
+    s2.setSubject(newSimpleName());
+    s2.setTarget(newSimpleName());
     s2.setNote(RandomUtils.randomUnicodeString(1024));
     s2.setCreatedBy(TestEntityGenerator.USER_EDITOR.getKey());
     s2.setModifiedBy(TestEntityGenerator.USER_EDITOR.getKey());

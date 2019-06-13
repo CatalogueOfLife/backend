@@ -462,17 +462,27 @@ public class TestEntityGenerator {
     rec.addIssue(Issue.POTENTIAL_VARIANT);
     return rec;
   }
-
-  public static SimpleName newNameRef() {
-    return newNameRef(RandomUtils.randomLatinString(5));
+  
+  public static SimpleName newSimpleNameWithoutStatusParent() {
+    SimpleName sn = newSimpleName(RandomUtils.randomLatinString(5));
+    sn.setStatus(null);
+    sn.setParent(null);
+    return sn;
   }
 
-  public static SimpleName newNameRef(String id) {
+  public static SimpleName newSimpleName() {
+    return newSimpleName(RandomUtils.randomLatinString(5));
+  }
+
+  public static SimpleName newSimpleName(String id) {
     SimpleName n = new SimpleName();
     n.setId(id);
     n.setName(RandomUtils.randomSpecies());
     n.setAuthorship(RandomUtils.randomAuthorship().toString());
     n.setRank(Rank.SPECIES);
+    n.setStatus(TaxonomicStatus.ACCEPTED);
+    n.setParent(RandomUtils.randomGenus());
+    n.setCode(NomCode.ZOOLOGICAL);
     return n;
   }
 
