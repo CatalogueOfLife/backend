@@ -124,15 +124,6 @@ COPY (
 -- estimates
 COPY (
   SELECT e.subject_id AS name_code,
-    CASE e.subject_code
-  		WHEN 4 THEN 'Animalia'
-  		WHEN 1 THEN 'Plantae' -- or Fungi
-  		WHEN 0 THEN 'Bacteria' -- or Archaea
-  		WHEN 3 THEN 'Viruses'
-  		WHEN NULL THEN 'Protozoa' -- or Chromista
-    END,
-    e.subject_name AS name,
-    e.subject_rank AS rank,
     e.estimate,
     r.citation AS source,
     e.created AS inserted,
@@ -272,7 +263,7 @@ SELECT key AS record_id,
 
 COPY (
 SELECT
-  c.key AS record_id,
+  tk.key AS record_id,
   t.id AS name_code,
   t.webpage AS web_site,
   n.genus AS genus,
@@ -310,6 +301,7 @@ FROM name_{{datasetKey}} n
     LEFT JOIN __classification cf ON c.family_id=cf.id
     LEFT JOIN __ranks r ON n.rank=r.key
     LEFT JOIN __scrutinizer sc ON t.according_to=sc.name AND c.dataset_key=sc.dataset_key
+    LEFT JOIN __tax_keys tk ON t.id=tk.id
 WHERE n.rank >= 'species'::rank
 
 ) TO 'scientific_names.csv';
@@ -317,7 +309,7 @@ WHERE n.rank >= 'species'::rank
 
 -- common_names 
 COPY (
-  SELECT NULL AS record_id, 
+  SELECT nextval('__record_id_seq') AS record_id,
     v.taxon_id AS name_code, 
     v.name AS common_name, 
     v.latin AS transliteration, 
@@ -338,7 +330,7 @@ COPY (
 
 -- distribution
 COPY (
-  SELECT NULL AS record_id, 
+  SELECT nextval('__record_id_seq') AS record_id,
     d.taxon_id AS name_code, 
     d.area AS distribution, 
     CASE WHEN d.gazetteer=0 THEN 'TDWG' WHEN d.gazetteer=1 THEN 'ISO' WHEN d.gazetteer=2 THEN 'FAO' ELSE 'TEXT' END AS StandardInUse,
@@ -352,7 +344,7 @@ COPY (
 
 -- scientific_name_references.csv
 COPY (
-  SELECT NULL AS record_id, 
+  SELECT nextval('__record_id_seq') AS record_id,
     t.id AS name_code,
     'NomRef' AS reference_type, -- NomRef, TaxAccRef, ComNameRef
     rk.key AS reference_id,
@@ -366,7 +358,7 @@ COPY (
 
   UNION
 
-  SELECT NULL AS record_id, 
+  SELECT nextval('__record_id_seq') AS record_id,
     tr.taxon_id AS name_code,
     'TaxAccRef' AS reference_type, -- NomRef, TaxAccRef, ComNameRef
     rk.key AS reference_id,
