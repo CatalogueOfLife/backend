@@ -124,7 +124,13 @@ COPY (
 -- estimates
 COPY (
   SELECT e.subject_id AS name_code,
-    e.subject_kingdom AS kingdom,
+    CASE e.subject_code
+  		WHEN 4 THEN 'Animalia'
+  		WHEN 1 THEN 'Plantae' -- or Fungi
+  		WHEN 0 THEN 'Bacteria' -- or Archaea
+  		WHEN 3 THEN 'Viruses'
+  		WHEN NULL THEN 'Protozoa' -- or Chromista
+    END,
     e.subject_name AS name,
     e.subject_rank AS rank,
     e.estimate,
