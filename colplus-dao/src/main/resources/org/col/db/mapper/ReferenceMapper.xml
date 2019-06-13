@@ -131,7 +131,6 @@
                 <choose>
                     <when test="sortBy == 'RELEVANCE'">
                         ts_rank_cd(doc, plainto_tsquery('simple2', #{req.q}))
-                        <bind name="rev" value="!req.reverse" />
                     </when>
                     <when test="sortBy == 'YEAR'">
                         r.year DESC NULLs LAST, r.id
