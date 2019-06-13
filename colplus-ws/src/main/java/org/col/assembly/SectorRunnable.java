@@ -76,9 +76,9 @@ abstract class SectorRunnable implements Runnable {
   void assertSubjectID() throws IllegalArgumentException {
     try (SqlSession session = factory.openSession(true)) {
       TaxonMapper tm = session.getMapper(TaxonMapper.class);
-      ObjectUtils.checkNotNull(sector.getSubject(), sector + " does not have any subject");
       // check if subject actually exists
-      String msg = "Sector " + sector.getKey() + " does have a non existing subject id for dataset " + sector.getDatasetKey();
+      ObjectUtils.checkNotNull(sector.getSubject(), sector + " does not have any subject");
+      String msg = "Sector " + sector.getKey() + " does have a non existing subject " + sector.getSubject() + " for dataset " + sector.getDatasetKey();
       try {
         ObjectUtils.checkNotNull(tm.get(sector.getDatasetKey(), sector.getSubject().getId()), msg);
       } catch (PersistenceException e) {

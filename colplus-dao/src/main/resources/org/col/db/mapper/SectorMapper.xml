@@ -123,6 +123,14 @@
     ORDER BY key
   </select>
 
+
+  <select id="processSectors" parameterType="map" resultMap="sectorResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
+    SELECT <include refid="SELECT" />
+    FROM <include refid="FROM" />
+    WHERE dataset_key = #{datasetKey}
+    ORDER BY target_rank, key
+  </select>
+
   <insert id="create" parameterType="Sector" useGeneratedKeys="true" keyProperty="key">
     INSERT INTO sector ( <include refid="COLS" />, created_by )
     VALUES ( <include refid="PROPS" />, #{createdBy} )
@@ -179,10 +187,5 @@
     ORDER BY key
   </select>
 
-  <select id="processSectors" resultMap="sectorResultMap" parameterType="map" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
-    SELECT <include refid="SELECT" />
-    FROM <include refid="FROM" />
-    ORDER BY target_rank, key
-  </select>
 
 </mapper>

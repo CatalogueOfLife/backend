@@ -2,10 +2,7 @@ package org.col.assembly;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -145,9 +142,16 @@ public class AssemblyCoordinator implements Managed {
       }
       if (request.getDatasetKey() != null) {
         LOG.info("Sync all sectors in dataset {}", request.getDatasetKey());
+        // collect all sectors first to see if they can be synced before actually submitting a single sync
+        List<Sector> sectors = new ArrayList<>();
         try (SqlSession session = factory.openSession(true)) {
           SectorMapper sm = session.getMapper(SectorMapper.class);
-          sm.processSectors(request.getDatasetKey(), (ctx) -> syncSector(ctx.getResultObject(), user));
+          sm.processSectors(request.getDatasetKey(), (ctx) -> sectors.add(ctx.getResultObject()));
+        }
+        // now that we have them schedule syncs
+        LOG.info("Queue {} sectors from dataset {} to sync", sectors.size(), request.getDatasetKey());
+        for (Sector s : sectors) {
+          syncSector(s, user);
         }
       }
     }
