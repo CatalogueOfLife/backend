@@ -130,6 +130,7 @@ COPY (
     e.modified AS updated
   FROM estimate e
     LEFT JOIN reference_{{datasetKey}} r ON r.id=e.reference_id
+  WHERE e.subject_id IS NOT NULL
 ) TO 'estimates.csv';
 
 
