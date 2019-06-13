@@ -9,6 +9,8 @@ import org.col.api.TestEntityGenerator;
 import org.col.api.model.CslData;
 import org.col.api.model.Page;
 import org.col.api.model.Reference;
+import org.col.api.search.ReferenceSearchRequest;
+import org.col.api.vocab.Datasets;
 import org.junit.Test;
 
 import static org.col.api.TestEntityGenerator.*;
@@ -89,6 +91,34 @@ public class ReferenceMapperTest extends MapperTestBase<ReferenceMapper> {
     assertEquals(in, out);
   }
   
+  @Test
+  public void search() throws Exception {
+    List<Reference> in = new ArrayList<>();
+    in.add(newReference("My diverse backyard baby", "Markus","Döring"));
+    in.add(newReference("On the road", "Jack","Kerouac"));
+    in.add(newReference("Mammal Species of the World. A Taxonomic and Geographic Reference (3rd ed)",  "Don E.","Wilson",  "DeeAnn M.","Reeder"));
+    for (Reference r : in) {
+      r.setDatasetKey(Datasets.DRAFT_COL);
+      r.setSectorKey(null);
+      mapper().create(r);
+    }
+    commit();
+    final String r1 = in.get(0).getId();
+    final String r2 = in.get(1).getId();
+    final String r3 = in.get(2).getId();
+  
+    ReferenceSearchRequest req = ReferenceSearchRequest.byQuery("backyard");
+    List<Reference> out = mapper().search(Datasets.DRAFT_COL, req, new Page());
+    assertEquals(1, out.size());
+    assertEquals(r1, out.get(0).getId());
+  
+    req = ReferenceSearchRequest.byQuery("Kerouac");
+    out = mapper().search(Datasets.DRAFT_COL, req, new Page());
+    assertEquals(1, out.size());
+    assertEquals(r2, out.get(0).getId());
+
+  }
+
   @Test
   public void listByIds() {
     assertEquals(2, mapper().listByIds(11, Sets.newHashSet("ref-1", "ref-1b")).size());

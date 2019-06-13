@@ -51,10 +51,11 @@ public class DatasetDao extends GlobalEntityDao<Dataset, DatasetMapper> {
       req.setQ(null);
       req.setSortBy(DatasetSearchRequest.SortBy.KEY);
     }
+    
     try (SqlSession session = factory.openSession()){
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
-      int total = dm.count(req);
       List<Dataset> result = dm.search(req, page);
+      int total = result.size() == page.getLimit() ? dm.count(req) : result.size();
       return new ResultPage<>(page, total, result);
     }
   }

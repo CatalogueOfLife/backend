@@ -44,6 +44,9 @@
         ALTER TABLE reference_${key} ADD PRIMARY KEY (id);
         CREATE index ON reference_${key} (verbatim_key);
         CREATE index ON reference_${key} (sector_key);
+        CREATE index ON reference_${key} USING gin(doc);
+        CREATE TRIGGER reference_trigger_${key} BEFORE INSERT OR UPDATE
+        ON reference_${key} FOR EACH ROW EXECUTE PROCEDURE reference_doc_update();
 
         ALTER TABLE name_${key} ADD PRIMARY KEY (id);
         CREATE index ON name_${key} (verbatim_key);

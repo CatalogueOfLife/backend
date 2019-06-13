@@ -4,7 +4,9 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.ibatis.annotations.Param;
+import org.col.api.model.Page;
 import org.col.api.model.Reference;
+import org.col.api.search.ReferenceSearchRequest;
 
 /**
  *
@@ -33,6 +35,10 @@ public interface ReferenceMapper extends DatasetCRUDMapper<Reference> {
 	 */
 	List<Reference> find(@Param("datasetKey") int datasetKey, @Param("sectorKey") Integer sectorKey, @Param("citation") String citation);
 	
+	List<Reference> search(@Param("datasetKey") int datasetKey, @Param("req") ReferenceSearchRequest request, @Param("page") Page page);
+	
+	int searchCount(@Param("datasetKey") int datasetKey, @Param("req") ReferenceSearchRequest request);
+
 	int deleteBySector(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
 	
 }

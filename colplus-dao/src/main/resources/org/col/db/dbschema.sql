@@ -324,11 +324,24 @@ CREATE TABLE reference (
   csl JSONB,
   citation TEXT,
   year int,
+  doc tsvector,
   created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   created_by INTEGER NOT NULL,
   modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   modified_by INTEGER NOT NULL
 ) PARTITION BY LIST (dataset_key);
+
+
+CREATE OR REPLACE FUNCTION reference_doc_update() RETURNS trigger AS $$
+BEGIN
+    NEW.doc :=
+      jsonb_to_tsvector('simple2', coalesce(NEW.csl,'{}'::jsonb), '["string", "numeric"]') ||
+      to_tsvector('simple2', coalesce(NEW.citation,'')) ||
+      to_tsvector('simple2', coalesce(NEW.year::text,''));
+    RETURN NEW;
+END
+$$
+LANGUAGE plpgsql;
 
 
 CREATE TABLE name (

@@ -396,8 +396,11 @@ public class TestEntityGenerator {
   public static Reference newReference() {
     return newReference(RandomUtils.randomLatinString(25));
   }
-
+  
   public static Reference newReference(String title) {
+    return newReference(title, "John","Smith",  "Betty","Jones");
+  }
+  public static Reference newReference(String title, String... authorParts) {
     Reference r = setUserDate(new Reference());
     r.setId("r" + ID_GEN.getAndIncrement());
     r.setDatasetKey(TestEntityGenerator.DATASET11.getKey());
@@ -408,15 +411,14 @@ public class TestEntityGenerator {
     csl.setContainerTitle("Nature");
     csl.setVolume("556");
     csl.setAbstrct("a very long article you should read");
-    CslName author1 = new CslName();
-    author1.setGiven("John");
-    author1.setFamily("Smith");
-    author1.setLiteral("John Smith");
-    CslName author2 = new CslName();
-    author2.setGiven("Betty");
-    author2.setFamily("Jones");
-    author2.setLiteral("Jones, Betty");
-    csl.setAuthor(new CslName[] {author1, author2});
+    List<CslName> authors = new ArrayList<>();
+    for (int idx = 0; idx < authorParts.length; idx=idx+2) {
+      CslName author = new CslName();
+      author.setGiven(authorParts[idx]);
+      author.setFamily(authorParts[idx+1]);
+      authors.add(author);
+    }
+    csl.setAuthor(authors.toArray(new CslName[0]));
     CslDate date = new CslDate();
     date.setDateParts(new int[][] {{2014, 8, 12}});
     date.setLiteral("2014-8-12");

@@ -1,11 +1,16 @@
 package org.col.dao;
 
+import java.util.List;
 import javax.annotation.Nullable;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.model.DatasetID;
+import org.col.api.model.Page;
 import org.col.api.model.Reference;
+import org.col.api.model.ResultPage;
+import org.col.api.search.ReferenceSearchRequest;
 import org.col.db.mapper.ReferenceMapper;
 
 public class ReferenceDao extends DatasetEntityDao<Reference, ReferenceMapper> {
@@ -36,5 +41,27 @@ public class ReferenceDao extends DatasetEntityDao<Reference, ReferenceMapper> {
     r.setDatasetKey(targetDatasetKey);
     session.getMapper(ReferenceMapper.class).create(r);
     return orig;
+  }
+  
+  public ResultPage<Reference> search(int datasetKey, ReferenceSearchRequest req, Page page) {
+    page = page == null ? new Page() : page;
+    req = req == null || req.isEmpty() ? new ReferenceSearchRequest() : req;
+    if (req.getSortBy() == null) {
+      if (!StringUtils.isBlank(req.getQ())) {
+        req.setSortBy(ReferenceSearchRequest.SortBy.RELEVANCE);
+      } else {
+        req.setSortBy(ReferenceSearchRequest.SortBy.NATIVE);
+      }
+    } else if (req.getSortBy() == ReferenceSearchRequest.SortBy.RELEVANCE && StringUtils.isBlank(req.getQ())) {
+      req.setQ(null);
+      req.setSortBy(ReferenceSearchRequest.SortBy.NATIVE);
+    }
+    
+    try (SqlSession session = factory.openSession()) {
+      ReferenceMapper mapper = session.getMapper(ReferenceMapper.class);
+      List<Reference> result = mapper.search(datasetKey, req, page);
+      int total = result.size() == page.getLimit() ? mapper.searchCount(datasetKey, req) : result.size();
+      return new ResultPage<>(page, total, result);
+    }
   }
 }
