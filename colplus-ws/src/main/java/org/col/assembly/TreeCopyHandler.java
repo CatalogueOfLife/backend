@@ -100,7 +100,7 @@ public class TreeCopyHandler implements ResultHandler<NameUsageBase>, AutoClosea
   }
     
     
-    private Usage usage(NameUsageBase u) {
+  private Usage usage(NameUsageBase u) {
     return new Usage(u.getId(), u.getName().getRank(), u.getStatus());
   }
 
