@@ -314,7 +314,7 @@ COPY (
     v.taxon_id AS name_code, 
     v.name AS common_name, 
     v.latin AS transliteration, 
-    trim(v.language),
+    lang.english AS language,
     trim(v.country),
     NULL AS area, 
     rk.key as reference_id,
@@ -323,6 +323,7 @@ COPY (
     r.id as reference_code 
   FROM vernacular_name_{{datasetKey}} v
     JOIN name_usage_{{datasetKey}} t ON t.id=v.taxon_id
+    LEFT JOIN __languages lang on lang.iso2=v.language
     LEFT JOIN reference_{{datasetKey}} r ON r.id=v.reference_id
     LEFT JOIN __ref_keys rk ON rk.id=r.id
     LEFT JOIN sector s ON t.sector_key=s.key
@@ -382,5 +383,6 @@ DROP TABLE __classification2;
 DROP TABLE __coverage;
 DROP TABLE __coverage2;
 DROP TABLE IF EXISTS __ranks;
+DROP TABLE IF EXISTS __languages;
 DROP SEQUENCE __record_id_seq;
 DROP SEQUENCE __unassigned_seq;

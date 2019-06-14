@@ -13,6 +13,7 @@ import com.google.common.io.Files;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.col.WsServerConfig;
+import org.col.api.vocab.Language;
 import org.col.common.io.CompressionUtil;
 import org.col.postgres.PgCopyUtils;
 import org.gbif.nameparser.api.Rank;
@@ -67,16 +68,7 @@ public class AcExporter {
       // create csv files
       try (Connection c = cfg.db.connect()) {
         c.setAutoCommit(false);
-        
-        String sqlRankTable = "CREATE TABLE __ranks (key rank PRIMARY KEY, marker TEXT)";
-        c.createStatement().execute(sqlRankTable);
-        PreparedStatement pst = c.prepareStatement("INSERT INTO __ranks (key, marker) values (?::rank, ?)");
-        for (Rank r : Rank.values()) {
-          pst.setString(1, r.name().toLowerCase());
-          pst.setString(2, r.getMarker());
-          pst.execute();
-        }
-        
+        setupTables(c);
         InputStream sql = AcExporter.class.getResourceAsStream(EXPORT_SQL);
         executeAcExportSql(catalogueKey, (PgConnection)c, new BufferedReader(new InputStreamReader(sql, StandardCharsets.UTF_8)), csvDir);
       } catch (UnsupportedEncodingException e) {
@@ -100,6 +92,32 @@ public class AcExporter {
       this.logger = null;
       releaseLock();
     }
+  }
+  
+  private static void setupTables(Connection c) throws SQLException {
+    String sqlTable = "CREATE TABLE __ranks (key rank PRIMARY KEY, marker TEXT)";
+    c.createStatement().execute(sqlTable);
+    PreparedStatement pst = c.prepareStatement("INSERT INTO __ranks (key, marker) values (?::rank, ?)");
+    for (Rank r : Rank.values()) {
+      pst.setString(1, r.name().toLowerCase());
+      pst.setString(2, r.getMarker());
+      pst.execute();
+    }
+    c.commit();
+    pst.close();
+  
+    sqlTable = "CREATE TABLE __languages(iso2 TEXT PRIMARY KEY, iso3 TEXT, english TEXT, native TEXT)";
+    c.createStatement().execute(sqlTable);
+    pst = c.prepareStatement("INSERT INTO __languages (iso2, iso3, english, native) values (?, ?, ?, ?)");
+    for (Language l : Language.values()) {
+      pst.setString(1, l.getIso2LetterCode());
+      pst.setString(2, l.getIso3LetterCode());
+      pst.setString(3, l.getTitleEnglish());
+      pst.setString(4, l.getTitleNative());
+      pst.execute();
+    }
+    c.commit();
+    pst.close();
   }
   
   /**
