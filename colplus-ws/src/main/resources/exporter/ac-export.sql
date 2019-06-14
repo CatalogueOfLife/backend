@@ -315,7 +315,7 @@ COPY (
     v.name AS common_name, 
     v.latin AS transliteration, 
     lang.english AS language,
-    trim(v.country),
+    trim(v.country) AS country,
     NULL AS area, 
     rk.key as reference_id,
     coalesce(s.dataset_key, 1500) - 1000 AS database_id,
