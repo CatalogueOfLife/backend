@@ -90,17 +90,21 @@ public class ReferenceFactory {
    * @param details     title of periodicals, volume number, and other common bibliographic details
    * @return
    */
-  public Reference fromACEF(String referenceID, String authors, String year, String title, String details, IssueContainer issues) {
-    Reference ref = fromAny(referenceID, null, authors, year, title, details, null, issues);
+  public static Reference fromACEF(int datasetKey, String referenceID, String authors, String year, String title, String details, IssueContainer issues) {
+    Reference ref = fromAny(datasetKey, referenceID, null, authors, year, title, details, null, issues);
     if (ref.getCsl() != null && !StringUtils.isBlank(details)) {
       issues.addIssue(Issue.CITATION_CONTAINER_TITLE_UNPARSED);
     }
     return ref;
   }
   
-  public Reference fromColDP(String id, String citation, String authors, String year, String title, String source, String details,
+  public Reference fromACEF(String referenceID, String authors, String year, String title, String details, IssueContainer issues) {
+    return fromACEF(datasetKey, referenceID, authors, year, title, details, issues);
+  }
+  
+  public static Reference fromColDP(int datasetKey, String id, String citation, String authors, String year, String title, String source, String details,
                              String doi, String link, IssueContainer issues) {
-    Reference ref = fromAny(id, citation, authors, year, title, source, details, issues);
+    Reference ref = fromAny(datasetKey, id, citation, authors, year, title, source, details, issues);
     // add extra link & doi
     if (doi != null || link != null) {
       if (ref.getCsl() == null) {
@@ -113,8 +117,13 @@ public class ReferenceFactory {
     return ref;
   }
   
-  private Reference fromAny(String ID, String citation, String authors, String year, String title, String source, String details, IssueContainer issues) {
-    Reference ref = newReference(ID);
+  public Reference fromColDP(String id, String citation, String authors, String year, String title, String source, String details,
+                             String doi, String link, IssueContainer issues) {
+    return fromColDP(datasetKey, id, citation, authors, year, title, source, details, doi, link, issues);
+  }
+  
+  private static Reference fromAny(int datasetKey, String ID, String citation, String authors, String year, String title, String source, String details, IssueContainer issues) {
+    Reference ref = newReference(datasetKey, ID);
     ref.setYear(parseYear(year));
     if (hasContent(authors, year, title, source)) {
       CslData csl = new CslData();
@@ -137,14 +146,14 @@ public class ReferenceFactory {
   }
   
   public Reference fromCsl(CslData csl) {
-    Reference ref = newReference(csl.getId());
+    Reference ref = newReference(datasetKey, csl.getId());
     ref.setCsl(csl);
     //TODO: generate default citation string
     updateIntYearFromCsl(ref);
     return ref;
   }
   
-  public static void updateIntYearFromCsl(Reference ref) {
+  private static void updateIntYearFromCsl(Reference ref) {
     if (ref.getCsl().getIssued() != null) {
       CslDate issued = ref.getCsl().getIssued();
       if (issued.getDateParts() != null) {
@@ -174,7 +183,7 @@ public class ReferenceFactory {
                           IssueContainer issues) {
     Reference ref = find(identifier, bibliographicCitation);
     if (ref == null) {
-      ref = newReference(identifier);
+      ref = newReference(datasetKey, identifier);
       if (!StringUtils.isBlank(bibliographicCitation)) {
         ref.setCitation(bibliographicCitation);
       }
@@ -213,7 +222,7 @@ public class ReferenceFactory {
     }
     Reference ref = find(publishedInID, citation);
     if (ref == null) {
-      ref = newReference(publishedInID);
+      ref = newReference(datasetKey, publishedInID);
       if (!StringUtils.isEmpty(publishedIn)) {
         ref.setCitation(citation);
         issues.addIssue(Issue.CITATION_UNPARSED);
@@ -226,7 +235,7 @@ public class ReferenceFactory {
   public Reference fromCitation(String id, String citation, IssueContainer issues) {
     Reference ref = find(id, citation);
     if (ref == null) {
-      ref = newReference(id);
+      ref = newReference(datasetKey, id);
       if (!StringUtils.isEmpty(citation)) {
         ref.setCitation(citation);
         issues.addIssue(Issue.CITATION_UNPARSED);
@@ -429,7 +438,7 @@ public class ReferenceFactory {
     }
   }
 
-  public Reference newReference(String id) {
+  private static Reference newReference(int datasetKey, String id) {
     Reference ref = new Reference();
     ref.setId(id);
     ref.setDatasetKey(datasetKey);
