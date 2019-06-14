@@ -77,6 +77,12 @@ public class TaxonDao extends DatasetEntityDao<Taxon, TaxonMapper> {
         mapper.listByTaxon(orig.getDatasetKey(), orig.getId()).forEach(e -> {
           e.setKey(null);
           ((UserManaged) e).applyUser(user);
+          // check if the entity refers to a reference which we need to lookup / copy
+          if (Referenced.class.isAssignableFrom(e.getClass())) {
+            Referenced eRef = (Referenced) e;
+            String ridCopy = lookupByIdReference.apply(eRef.getReferenceId());
+            eRef.setReferenceId(ridCopy);
+          }
           mapper.create(e, t.getId(), targetParent.getDatasetKey());
         });
         
