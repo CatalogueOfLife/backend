@@ -5,6 +5,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
+import org.col.api.vocab.EstimateType;
 import org.col.api.vocab.TaxonomicStatus;
 import org.gbif.nameparser.api.Rank;
 
@@ -109,7 +110,7 @@ public class TreeNode implements DatasetEntity {
   }
   
   /**
-   * @return the average of the listed estimates
+   * @return the average of the listed DESCRIBED_SPECIES_LIVING estimates
    */
   public Integer getEstimate() {
     if (estimates == null || estimates.isEmpty()) {
@@ -117,6 +118,7 @@ public class TreeNode implements DatasetEntity {
     }
     double avg = estimates.stream()
         .filter(e -> e.getEstimate() != null)
+        .filter(e -> e.getType() == EstimateType.DESCRIBED_SPECIES_LIVING)
         .collect(Collectors.averagingInt(SpeciesEstimate::getEstimate));
     return avg == 0 ? null : (int) avg;
   }

@@ -2,8 +2,11 @@ package org.col.api.model;
 
 import java.util.Objects;
 
+import org.col.api.vocab.EstimateType;
+
 public class SpeciesEstimate extends Decision {
   private Integer estimate;
+  private EstimateType type = EstimateType.DESCRIBED_SPECIES_LIVING;
   private String referenceId;
   
   public Integer getEstimate() {
@@ -14,6 +17,14 @@ public class SpeciesEstimate extends Decision {
     this.estimate = estimate;
   }
   
+  public EstimateType getType() {
+    return type;
+  }
+  
+  public void setType(EstimateType type) {
+    this.type = type;
+  }
+  
   public String getReferenceId() {
     return referenceId;
   }
@@ -22,6 +33,7 @@ public class SpeciesEstimate extends Decision {
     this.referenceId = referenceId;
   }
   
+  
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -29,12 +41,13 @@ public class SpeciesEstimate extends Decision {
     if (!super.equals(o)) return false;
     SpeciesEstimate that = (SpeciesEstimate) o;
     return Objects.equals(estimate, that.estimate) &&
+        type == that.type &&
         Objects.equals(referenceId, that.referenceId);
   }
   
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), estimate, referenceId);
+    return Objects.hash(super.hashCode(), estimate, type, referenceId);
   }
   
   @Override

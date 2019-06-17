@@ -295,6 +295,7 @@ CREATE TABLE estimate (
   subject_rank rank,
   subject_code INTEGER,
   estimate INTEGER,
+  type INTEGER,
   reference_id TEXT,
   note TEXT,
   created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),

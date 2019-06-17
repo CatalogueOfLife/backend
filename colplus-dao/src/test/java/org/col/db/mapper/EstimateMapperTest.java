@@ -5,6 +5,7 @@ import org.col.api.TestEntityGenerator;
 import org.col.api.model.Reference;
 import org.col.api.model.SpeciesEstimate;
 import org.col.api.vocab.Datasets;
+import org.col.api.vocab.EstimateType;
 import org.col.db.PgSetupRule;
 import org.junit.Before;
 
@@ -29,6 +30,7 @@ public class EstimateMapperTest extends GlobalCRUDMapperTest<SpeciesEstimate, Es
     SpeciesEstimate d = new SpeciesEstimate();
     d.setSubject(TestEntityGenerator.newSimpleNameWithoutStatusParent());
     d.setEstimate(34567);
+    d.setType(EstimateType.DESCRIBED_SPECIES_FOSSIL);
     d.setReferenceId(ref.getId());
     d.setNote("I cannot remember why I did this.");
     d.setCreatedBy(TestEntityGenerator.USER_EDITOR.getKey());

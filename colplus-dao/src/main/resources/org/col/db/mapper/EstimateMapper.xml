@@ -17,6 +17,7 @@
     ${alias}created AS ${prefix}created,
     ${alias}created_by AS ${prefix}created_by,
     ${alias}estimate AS ${prefix}estimate,
+    ${alias}type AS ${prefix}type,
     ${alias}reference_id AS ${prefix}reference_id
   </sql>
 
@@ -37,6 +38,7 @@
     modified,
     modified_by,
     estimate,
+    type,
     reference_id
   </sql>
 
@@ -50,6 +52,7 @@
     now(),
     #{modifiedBy},
     #{estimate},
+    #{type},
     #{referenceId}
   </sql>
 
