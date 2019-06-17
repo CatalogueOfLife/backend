@@ -40,7 +40,7 @@ public class LanguageParser extends ParserBase<String> {
         String iso = row[isoCol];
         if (iso != null) {
           for (int col : valCols) {
-            add(iso, row[col]);
+            add(row[col], iso);
           }
         }
       }
