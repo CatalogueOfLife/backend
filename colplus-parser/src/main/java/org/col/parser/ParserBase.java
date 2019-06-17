@@ -1,9 +1,12 @@
 package org.col.parser;
 
+import java.io.IOException;
 import java.util.Optional;
 
 import com.google.common.base.CharMatcher;
 import org.col.common.text.StringUtils;
+import org.gbif.utils.file.csv.CSVReader;
+import org.gbif.utils.file.csv.CSVReaderFactory;
 
 /**
  * A base parser implementation dealing with empty, invisible and punctuation values as empty results.
@@ -33,6 +36,10 @@ abstract class ParserBase<T> implements Parser<T> {
     }
     
     throw new UnparsableException(valueClass, value);
+  }
+  
+  protected CSVReader dictReader(String resourceFilename) throws IOException {
+    return CSVReaderFactory.build(getClass().getResourceAsStream("/parser/dicts/" + resourceFilename), "UTF8", ",", null, 0);
   }
   
   /**

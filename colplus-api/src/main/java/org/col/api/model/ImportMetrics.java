@@ -49,7 +49,7 @@ public class ImportMetrics<T extends Enum> implements ImportAttempt {
   private Map<Rank, Integer> namesByRankCount = Maps.newHashMap();
   private Map<NomRelType, Integer> nameRelationsByTypeCount = Maps.newHashMap();
   private Map<Gazetteer, Integer> distributionsByGazetteerCount = Maps.newHashMap();
-  private Map<Language, Integer> vernacularsByLanguageCount = Maps.newHashMap();
+  private Map<String, Integer> vernacularsByLanguageCount = Maps.newHashMap();
   private Map<MediaType, Integer> mediaByTypeCount = Maps.newHashMap();
   private Map<TaxonomicStatus, Integer> usagesByStatusCount = Maps.newHashMap();
   private Map<Rank, Integer> taxaByRankCount = Maps.newHashMap();
@@ -223,11 +223,11 @@ public class ImportMetrics<T extends Enum> implements ImportAttempt {
     this.distributionsByGazetteerCount = distributionsByGazetteerCount;
   }
   
-  public Map<Language, Integer> getVernacularsByLanguageCount() {
+  public Map<String, Integer> getVernacularsByLanguageCount() {
     return vernacularsByLanguageCount;
   }
   
-  public void setVernacularsByLanguageCount(Map<Language, Integer> vernacularsByLanguageCount) {
+  public void setVernacularsByLanguageCount(Map<String, Integer> vernacularsByLanguageCount) {
     this.vernacularsByLanguageCount = vernacularsByLanguageCount;
   }
   

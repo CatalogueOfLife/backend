@@ -68,7 +68,7 @@ public class SectorSync extends SectorRunnable {
       state.setNamesByTypeCount(countMap(NameType.class, mapper.countNamesByType(catalogueKey, key)));
       state.setTaxaByRankCount(countMap(DatasetImportDao::parseRank, mapper.countTaxaByRank(catalogueKey, key)));
       state.setUsagesByStatusCount(countMap(TaxonomicStatus.class, mapper.countUsagesByStatus(catalogueKey, key)));
-      state.setVernacularsByLanguageCount(countMap(Language::fromIsoCode, mapper.countVernacularsByLanguage(catalogueKey, key)));
+      state.setVernacularsByLanguageCount(countMap(mapper.countVernacularsByLanguage(catalogueKey, key)));
 
       try {
         treeDao.updateSectorTree(sector.getKey(), state.getAttempt());

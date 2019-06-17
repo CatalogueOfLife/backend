@@ -234,12 +234,12 @@ public class TestEntityGenerator {
     VernacularName vn = new VernacularName();
     vn.setName(name);
     vn.setLatin(name);
-    vn.setLanguage(Language.ENGLISH);
+    vn.setLanguage("eng");
     vn.setCountry(Country.UNITED_KINGDOM);
     return vn;
   }
 
-  public static VernacularName newVernacularName(String name, Language lang) {
+  public static VernacularName newVernacularName(String name, String lang) {
     VernacularName vn = new VernacularName();
     vn.setName(name);
     vn.setLatin(name);
@@ -495,7 +495,7 @@ public class TestEntityGenerator {
         Issue.DISTRIBUTION_AREA_INVALID);
     nuw.setIssues(issues);
     nuw.setVernacularNames(
-        Arrays.asList(newVernacularName("zeemeeuw", Language.DUTCH), newVernacularName("seagull")));
+        Arrays.asList(newVernacularName("zeemeeuw", "nel"), newVernacularName("seagull")));
     return nuw;
   }
 

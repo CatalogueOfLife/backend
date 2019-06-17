@@ -61,9 +61,9 @@ public class DatasetImportDaoTest extends DaoTestBase {
     assertEquals((Integer) 3, d.getDistributionsByGazetteerCount().get(Gazetteer.TEXT));
     
     assertEquals(3, d.getVernacularsByLanguageCount().size());
-    assertEquals((Integer) 1, d.getVernacularsByLanguageCount().get(Language.GERMAN));
-    assertEquals((Integer) 1, d.getVernacularsByLanguageCount().get(Language.ENGLISH));
-    assertEquals((Integer) 1, d.getVernacularsByLanguageCount().get(Language.DUTCH));
+    assertEquals((Integer) 1, d.getVernacularsByLanguageCount().get("deu"));
+    assertEquals((Integer) 1, d.getVernacularsByLanguageCount().get("eng"));
+    assertEquals((Integer) 1, d.getVernacularsByLanguageCount().get("nld"));
     
     assertEquals(2, d.getUsagesByStatusCount().size());
     assertEquals((Integer) 2, d.getUsagesByStatusCount().get(TaxonomicStatus.ACCEPTED));

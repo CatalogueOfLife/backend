@@ -323,7 +323,7 @@ COPY (
     r.id as reference_code 
   FROM vernacular_name_{{datasetKey}} v
     JOIN name_usage_{{datasetKey}} t ON t.id=v.taxon_id
-    LEFT JOIN __languages lang on lang.iso2=v.language
+    LEFT JOIN __languages lang on lang.iso3=v.language
     LEFT JOIN reference_{{datasetKey}} r ON r.id=v.reference_id
     LEFT JOIN __ref_keys rk ON rk.id=r.id
     LEFT JOIN sector s ON t.sector_key=s.key

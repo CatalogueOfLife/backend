@@ -8,7 +8,6 @@ import com.google.common.base.Optional;
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 import org.gbif.utils.file.csv.CSVReader;
-import org.gbif.utils.file.csv.CSVReaderFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,7 +25,7 @@ abstract class EnumNoteParser<T extends Enum> extends ParserBase<EnumNote<T>> {
     // read mappings from resource file
     try {
       LOG.info("Reading mappings from {}", mappingResourceFile);
-      CSVReader reader = CSVReaderFactory.build(getClass().getResourceAsStream("/parser/dicts/" + mappingResourceFile), "UTF8", ",", null, 0);
+      CSVReader reader = dictReader(mappingResourceFile);
       while (reader.hasNext()) {
         String[] row = reader.next();
         if (row.length == 0) continue;

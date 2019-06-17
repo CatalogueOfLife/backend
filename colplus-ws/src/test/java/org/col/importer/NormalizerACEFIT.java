@@ -92,7 +92,7 @@ public class NormalizerACEFIT extends NormalizerITBase {
       assertEquals(3, t.vernacularNames.size());
       Set<String> names = Sets.newHashSet("Ramkurthi", "Ram Kurthi", "отчество");
       for (VernacularName v : t.vernacularNames) {
-        assertEquals(v.getName().startsWith("R") ? Language.HINDI : Language.RUSSIAN,
+        assertEquals(v.getName().startsWith("R") ? "hin": "rus",
             v.getLanguage());
         assertTrue(names.remove(v.getName()));
       }

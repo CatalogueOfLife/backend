@@ -13,10 +13,12 @@ import com.google.common.io.Files;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.col.WsServerConfig;
-import org.col.api.vocab.Language;
 import org.col.common.io.CompressionUtil;
+import org.col.parser.LanguageParser;
 import org.col.postgres.PgCopyUtils;
 import org.gbif.nameparser.api.Rank;
+import org.gbif.utils.file.csv.CSVReader;
+import org.gbif.utils.file.csv.CSVReaderFactory;
 import org.postgresql.jdbc.PgConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -94,7 +96,7 @@ public class AcExporter {
     }
   }
   
-  private static void setupTables(Connection c) throws SQLException {
+  private static void setupTables(Connection c) throws SQLException, IOException {
     String sqlTable = "CREATE TABLE __ranks (key rank PRIMARY KEY, marker TEXT)";
     c.createStatement().execute(sqlTable);
     PreparedStatement pst = c.prepareStatement("INSERT INTO __ranks (key, marker) values (?::rank, ?)");
@@ -106,18 +108,30 @@ public class AcExporter {
     c.commit();
     pst.close();
   
-    sqlTable = "CREATE TABLE __languages(iso2 TEXT PRIMARY KEY, iso3 TEXT, english TEXT, native TEXT)";
+    sqlTable = "CREATE TABLE __languages(iso3 TEXT PRIMARY KEY, english TEXT)";
     c.createStatement().execute(sqlTable);
-    pst = c.prepareStatement("INSERT INTO __languages (iso2, iso3, english, native) values (?, ?, ?, ?)");
-    for (Language l : Language.values()) {
-      pst.setString(1, l.getIso2LetterCode());
-      pst.setString(2, l.getIso3LetterCode());
-      pst.setString(3, l.getTitleEnglish());
-      pst.setString(4, l.getTitleNative());
-      pst.execute();
+    pst = c.prepareStatement("INSERT INTO __languages (iso3, english) values (?, ?)");
+    // Id	Print_Name	Inverted_Name
+    CSVReader reader = CSVReaderFactory.build(
+        LanguageParser.class.getResourceAsStream("/parser/dicts/iso639/" + LanguageParser.ISO_CODE_FILE),
+        "UTF8", "\t", null, 1);
+    // iso tables contain duplicates, make sure we dont use them!
+    String last = "";
+    while (reader.hasNext()) {
+      String[] row = reader.next();
+      if (row.length == 0) continue;
+      String iso = row[0];
+      if (iso != null && !last.equalsIgnoreCase(iso)) {
+        pst.setString(1, iso);
+        pst.setString(2, row[1]);
+        pst.execute();
+        last = iso;
+      }
     }
     c.commit();
     pst.close();
+    reader.close();
+
   }
   
   /**

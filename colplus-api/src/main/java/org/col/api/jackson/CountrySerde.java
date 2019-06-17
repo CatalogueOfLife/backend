@@ -10,7 +10,6 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import org.col.api.vocab.Country;
-import org.col.api.vocab.Language;
 import org.gbif.dwc.terms.Term;
 
 /**
@@ -40,11 +39,11 @@ public class CountrySerde {
   public static class FieldSerializer extends JsonSerializer<Country> {
     
     @Override
-    public void serialize(Country lang, JsonGenerator jgen, SerializerProvider provider) throws IOException {
-      if (lang == null) {
+    public void serialize(Country country, JsonGenerator jgen, SerializerProvider provider) throws IOException {
+      if (country == null) {
         jgen.writeNull();
       } else {
-        jgen.writeFieldName(lang.getIso2LetterCode());
+        jgen.writeFieldName(country.getIso2LetterCode());
       }
     }
   }
@@ -63,7 +62,7 @@ public class CountrySerde {
       if (lang.isPresent()) {
         return lang.get();
       }
-      return ctxt.handleWeirdKey(Language.class, key, "Expected valid ISO 3 letter code");
+      return ctxt.handleWeirdKey(Country.class, key, "Expected valid ISO 3 letter code");
     }
   }
   

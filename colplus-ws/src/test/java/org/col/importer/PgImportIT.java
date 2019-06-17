@@ -272,9 +272,9 @@ public class PgImportIT {
       
       TaxonInfo info = tdao.getTaxonInfo(dataset.getKey(), tax.getId());
       // check vernaculars
-      Map<Language, String> expV = Maps.newHashMap();
-      expV.put(Language.GERMAN, "Schöner Pippau");
-      expV.put(Language.ENGLISH, "smallflower hawksbeard");
+      Map<String, String> expV = Maps.newHashMap();
+      expV.put("deu", "Schöner Pippau");
+      expV.put("eng", "smallflower hawksbeard");
       assertEquals(expV.size(), info.getVernacularNames().size());
       for (VernacularName vn : info.getVernacularNames()) {
         assertEquals(expV.remove(vn.getLanguage()), vn.getName());
@@ -366,7 +366,7 @@ public class PgImportIT {
       assertEquals(3, info.getVernacularNames().size());
       Set<String> names = Sets.newHashSet("Ramkurthi", "Ram Kurthi", "отчество");
       for (VernacularName v : info.getVernacularNames()) {
-        assertEquals(v.getName().startsWith("R") ? Language.HINDI : Language.RUSSIAN,
+        assertEquals(v.getName().startsWith("R") ? "hin" : "rus",
             v.getLanguage());
         assertTrue(names.remove(v.getName()));
       }
