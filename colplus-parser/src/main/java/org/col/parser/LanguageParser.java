@@ -3,7 +3,9 @@ package org.col.parser;
 import java.io.IOException;
 import java.util.Map;
 
+import com.google.common.base.Joiner;
 import com.google.common.collect.Maps;
+import org.apache.commons.lang3.StringUtils;
 import org.gbif.utils.file.csv.CSVReader;
 import org.gbif.utils.file.csv.CSVReaderFactory;
 import org.slf4j.Logger;
@@ -25,7 +27,7 @@ public class LanguageParser extends ParserBase<String> {
     addMappings();
   }
   
-  private void addMapping(String resFile, int isoCol, int... valCols) {
+  private void addMapping(String resFile, int isoCol, Integer forceCol, int... valCols) {
     try {
       LOG.info("Reading language mapping {}", resFile);
       CSVReader reader = dictReader(resFile);
@@ -39,8 +41,14 @@ public class LanguageParser extends ParserBase<String> {
   
         String iso = row[isoCol];
         if (iso != null) {
+          if (iso.equalsIgnoreCase("eng") || iso.equalsIgnoreCase("enc")) {
+            System.out.println(resFile + ": " + Joiner.on(";").join(row));
+          }
+          if (forceCol != null) {
+            add(row[forceCol], iso, true);
+          }
           for (int col : valCols) {
-            add(row[col], iso);
+            add(row[col], iso, false);
           }
         }
       }
@@ -53,13 +61,13 @@ public class LanguageParser extends ParserBase<String> {
   
   private void addMappings(){
     // Id	Print_Name	Inverted_Name
-    addMapping(ISO_CODE_FILE , 0,  0,1,2);
+    addMapping(ISO_CODE_FILE , 0,  null, 0,1,2);
     // Id	Part2B	Part2T	Part1	Scope	Language_Type	Ref_Name	Comment
     addMapping("iso-639-3_20190408.tab", 0,  3,6);
     // Id	Ref_Name	Ret_Reason	Change_To	Ret_Remedy	Effective
-    addMapping("iso-639-3_Retirements_20190408.tab", 3,  0,1);
+    addMapping("iso-639-3_Retirements_20190408.tab", 3,  null, 0,1);
     // ISO	english	native
-    addMapping("language-native.tab", 0,  1,2);
+    addMapping("language-native.tab", 0,  null, 1,2);
     // custom manually curated entries: ISO3	VALUE
     addMapping("language-custom.tab", 0,  1);
   }
@@ -69,10 +77,10 @@ public class LanguageParser extends ParserBase<String> {
    * Keys will be normalized with the same method used for parsing before inserting them to the mapping.
    * Blank strings and null values will be ignored!
    */
-  public void add(String key, String iso3) {
+  public void add(String key, String iso3, boolean force) {
     key = normalize(key);
     // keep the first mapping in case of clashes
-    if (key != null && !mapping.containsKey(key)) {
+    if (key != null && !StringUtils.isBlank(iso3) && (force || !mapping.containsKey(key))) {
       this.mapping.put(key, iso3.trim().toLowerCase());
     }
   }

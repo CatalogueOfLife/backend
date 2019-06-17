@@ -21,6 +21,7 @@ public class LanguageParserTest extends ParserTestBase<String> {
     assertParse("deu", "german");
     assertParse("deu", "deutsch");
     assertParse("deu", "GER");
+    assertParse("eng", "en");
 
     assertUnparsable("unknown");
     assertUnparsable("zz");
