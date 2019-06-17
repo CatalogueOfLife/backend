@@ -86,14 +86,6 @@ public class AssemblyResource {
     requireDraft(catKey);
     return session.getMapper(SectorImportMapper.class).get(sectorKey, attempt);
   }
-
-  @DELETE
-  @Path("/sector/{key}")
-  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void deleteSector(@PathParam("catKey") int catKey, @PathParam("key") int sectorKey, @Auth ColUser user) {
-    requireDraft(catKey);
-    assembly.deleteSector(sectorKey, user);
-  }
   
   @POST
   @Path("/exportAC")

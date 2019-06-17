@@ -219,7 +219,7 @@ public class WsServer extends Application<WsServerConfig> {
     env.jersey().register(new NameSearchResource(nuss));
     env.jersey().register(new ParserResource());
     env.jersey().register(new ReferenceResource(rdao));
-    env.jersey().register(new SectorResource(getSqlSessionFactory(), diDao, diff));
+    env.jersey().register(new SectorResource(getSqlSessionFactory(), diDao, diff, assembly));
     env.jersey().register(new SynonymResource(sdao));
     env.jersey().register(new TaxonResource(tdao));
     env.jersey().register(new TreeResource(tdao));

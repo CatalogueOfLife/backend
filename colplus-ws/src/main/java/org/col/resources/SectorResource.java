@@ -15,6 +15,7 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.model.ColUser;
 import org.col.api.model.Sector;
+import org.col.assembly.AssemblyCoordinator;
 import org.col.dao.DatasetImportDao;
 import org.col.dao.DecisionRematcher;
 import org.col.dao.SectorDao;
@@ -35,21 +36,23 @@ public class SectorResource extends GlobalEntityResource<Sector> {
   private final SqlSessionFactory factory;
   private final DatasetImportDao diDao;
   private final DiffService diff;
+  private final AssemblyCoordinator assembly;
   
-  public SectorResource(SqlSessionFactory factory, DatasetImportDao diDao, DiffService diffService) {
+  public SectorResource(SqlSessionFactory factory, DatasetImportDao diDao, DiffService diffService, AssemblyCoordinator assembly) {
     super(Sector.class, new SectorDao(factory));
     this.factory = factory;
     this.diDao = diDao;
     this.diff = diffService;
+    this.assembly = assembly;
   }
   
   @DELETE
   @Override
   @Path("{key}")
+  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void delete(Integer key, @Auth ColUser user) {
-    // do not allow to delete a sector directly
-    // instead an asynchroneous sector deletion should be triggered in the assembly resource which also removes catalogue data
-    throw new NotAllowedException("Sectors cannot be deleted directly. Use the assembly service instead");
+    // an asynchroneous sector deletion will be triggered which also removes catalogue data
+    assembly.deleteSector(key, user);
   }
   
   @GET
