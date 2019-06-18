@@ -124,6 +124,8 @@ COPY (
 -- estimates
 COPY (
   SELECT e.subject_id AS name_code,
+    e.subject_name AS name,
+    e.subject_rank AS rank,
     e.estimate,
     r.citation AS source,
     e.created AS inserted,
